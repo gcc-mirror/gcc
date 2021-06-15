@@ -4883,6 +4883,33 @@
    (set_attr "type" "vecload")])
 
 
+;; ISA 3.1 vector extend sign support
+(define_insn "vsx_sign_extend_v2di_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+	(unspec:V1TI [(match_operand:V2DI 1 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_SIGN_EXTEND))]
+  "TARGET_POWER10"
+ "vextsd2q %0,%1"
+[(set_attr "type" "vecexts")])
+
+(define_expand "vsignextend_v2di_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+	(unspec:V1TI [(match_operand:V2DI 1 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_SIGN_EXTEND))]
+  "TARGET_POWER10"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      rtx tmp = gen_reg_rtx (V2DImode);
+
+      emit_insn (gen_altivec_vrevev2di2(tmp, operands[1]));
+      emit_insn (gen_vsx_sign_extend_v2di_v1ti(operands[0], tmp));
+      DONE;
+     }
+
+  emit_insn (gen_vsx_sign_extend_v2di_v1ti(operands[0], operands[1]));
+})
+
 ;; ISA 3.0 vector extend sign support
 
 (define_insn "vsx_sign_extend_qi_<mode>"
@@ -4894,6 +4921,24 @@
   "vextsb2<wd> %0,%1"
   [(set_attr "type" "vecexts")])
 
+(define_expand "vsignextend_qi_<mode>"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+	(unspec:VIlong
+	 [(match_operand:V16QI 1 "vsx_register_operand" "v")]
+	 UNSPEC_VSX_SIGN_EXTEND))]
+  "TARGET_P9_VECTOR"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      rtx tmp = gen_reg_rtx (V16QImode);
+      emit_insn (gen_altivec_vrevev16qi2(tmp, operands[1]));
+      emit_insn (gen_vsx_sign_extend_qi_<mode>(operands[0], tmp));
+    }
+  else
+    emit_insn (gen_vsx_sign_extend_qi_<mode>(operands[0], operands[1]));
+  DONE;
+})
+
 (define_insn "vsx_sign_extend_hi_<mode>"
   [(set (match_operand:VSINT_84 0 "vsx_register_operand" "=v")
 	(unspec:VSINT_84
@@ -4903,13 +4948,49 @@
   "vextsh2<wd> %0,%1"
   [(set_attr "type" "vecexts")])
 
-(define_insn "*vsx_sign_extend_si_v2di"
+(define_expand "vsignextend_hi_<mode>"
+  [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
+	(unspec:VIlong
+	 [(match_operand:V8HI 1 "vsx_register_operand" "v")]
+	 UNSPEC_VSX_SIGN_EXTEND))]
+  "TARGET_P9_VECTOR"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+      rtx tmp = gen_reg_rtx (V8HImode);
+      emit_insn (gen_altivec_vrevev8hi2(tmp, operands[1]));
+      emit_insn (gen_vsx_sign_extend_hi_<mode>(operands[0], tmp));
+    }
+  else
+     emit_insn (gen_vsx_sign_extend_hi_<mode>(operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "vsx_sign_extend_si_v2di"
   [(set (match_operand:V2DI 0 "vsx_register_operand" "=v")
 	(unspec:V2DI [(match_operand:V4SI 1 "vsx_register_operand" "v")]
 		     UNSPEC_VSX_SIGN_EXTEND))]
   "TARGET_P9_VECTOR"
   "vextsw2d %0,%1"
   [(set_attr "type" "vecexts")])
+
+(define_expand "vsignextend_si_v2di"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=v")
+	(unspec:V2DI [(match_operand:V4SI 1 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_SIGN_EXTEND))]
+  "TARGET_P9_VECTOR"
+{
+  if (BYTES_BIG_ENDIAN)
+    {
+       rtx tmp = gen_reg_rtx (V4SImode);
+
+       emit_insn (gen_altivec_vrevev4si2(tmp, operands[1]));
+       emit_insn (gen_vsx_sign_extend_si_v2di(operands[0], tmp));
+    }
+  else
+     emit_insn (gen_vsx_sign_extend_si_v2di(operands[0], operands[1]));
+  DONE;
+})
 
 ;; ISA 3.1 vector sign extend
 ;; Move DI value from GPR to TI mode in VSX register, word 1.
