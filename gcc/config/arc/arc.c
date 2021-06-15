@@ -10129,6 +10129,31 @@ arc_process_double_reg_moves (rtx *operands)
   return true;
 }
 
+
+/* Check if we need to split a 64bit move.  We do not need to split it if we can
+   use vadd2 or ldd/std instructions.  */
+
+bool
+arc_split_move_p (rtx *operands)
+{
+  machine_mode mode = GET_MODE (operands[0]);
+
+  if (TARGET_LL64
+      && ((memory_operand (operands[0], mode)
+	   && (even_register_operand (operands[1], mode)
+	       || satisfies_constraint_Cm3 (operands[1])))
+	  || (memory_operand (operands[1], mode)
+	      && even_register_operand (operands[0], mode))))
+    return false;
+
+  if (TARGET_PLUS_QMACW
+      && even_register_operand (operands[0], mode)
+      && even_register_operand (operands[1], mode))
+    return false;
+
+  return true;
+}
+
 /* operands 0..1 are the operands of a 64 bit move instruction.
    split it into two moves with operands 2/3 and 4/5.  */
 
@@ -10145,25 +10170,6 @@ arc_split_move (rtx *operands)
     if (arc_process_double_reg_moves (operands))
       return;
   }
-
-  if (TARGET_LL64
-      && ((memory_operand (operands[0], mode)
-	   && (even_register_operand (operands[1], mode)
-	       || satisfies_constraint_Cm3 (operands[1])))
-	  || (memory_operand (operands[1], mode)
-	      && even_register_operand (operands[0], mode))))
-    {
-      emit_move_insn (operands[0], operands[1]);
-      return;
-    }
-
-  if (TARGET_PLUS_QMACW
-      && even_register_operand (operands[0], mode)
-      && even_register_operand (operands[1], mode))
-    {
-      emit_move_insn (operands[0], operands[1]);
-      return;
-    }
 
   if (TARGET_PLUS_QMACW
       && GET_CODE (operands[1]) == CONST_VECTOR)

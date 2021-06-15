@@ -113,6 +113,7 @@ inline namespace fundamentals_v2
       constexpr propagate_const() = default;
       propagate_const(const propagate_const& __p) = delete;
       constexpr propagate_const(propagate_const&& __p) = default;
+
       template <typename _Up, typename
 		enable_if<__and_<is_constructible<_Tp, _Up&&>,
 				 is_convertible<_Up&&, _Tp>>::value, bool
@@ -120,6 +121,7 @@ inline namespace fundamentals_v2
       constexpr propagate_const(propagate_const<_Up>&& __pu)
 	: _M_t(std::move(get_underlying(__pu)))
       {}
+
       template <typename _Up, typename
 		enable_if<__and_<is_constructible<_Tp, _Up&&>,
 				 __not_<is_convertible<_Up&&, _Tp>>>::value,
@@ -127,6 +129,7 @@ inline namespace fundamentals_v2
       constexpr explicit propagate_const(propagate_const<_Up>&& __pu)
 	: _M_t(std::move(get_underlying(__pu)))
       {}
+
       template <typename _Up, typename
 		enable_if<__and_<is_constructible<_Tp, _Up&&>,
 				 is_convertible<_Up&&, _Tp>,
@@ -136,6 +139,7 @@ inline namespace fundamentals_v2
       constexpr propagate_const(_Up&& __u)
 	: _M_t(std::forward<_Up>(__u))
       {}
+
       template <typename _Up, typename
 		enable_if<__and_<is_constructible<_Tp, _Up&&>,
 				 __not_<is_convertible<_Up&&, _Tp>>,
@@ -399,8 +403,10 @@ inline namespace fundamentals_v2
     }
 
   // [propagate_const.algorithms], specialized algorithms
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3413. propagate_const's swap [...] needs to be constrained and use a trait
   template <typename _Tp>
-    constexpr void
+    constexpr enable_if_t<__is_swappable<_Tp>::value, void>
     swap(propagate_const<_Tp>& __pt, propagate_const<_Tp>& __pt2)
       noexcept(__is_nothrow_swappable<_Tp>::value)
     {

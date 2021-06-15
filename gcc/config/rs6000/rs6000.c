@@ -4461,15 +4461,21 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_MMA) == 0)
     rs6000_isa_flags |= OPTION_MASK_MMA;
 
-  if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION) == 0)
+  if (TARGET_POWER10
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
 
   if (TARGET_POWER10 &&
       (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LD_CMPI) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LD_CMPI;
 
-  if (TARGET_POWER10 && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2LOGICAL) == 0)
+  if (TARGET_POWER10
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2LOGICAL) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2LOGICAL;
+
+  if (TARGET_POWER10
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2ADD) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2ADD;
 
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)

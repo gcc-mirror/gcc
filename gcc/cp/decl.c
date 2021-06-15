@@ -13991,6 +13991,8 @@ grokdeclarator (const cp_declarator *declarator,
 		storage_class = sc_none;
 	      }
 	  }
+	if (declspecs->explicit_specifier)
+	  store_explicit_specifier (decl, declspecs->explicit_specifier);
       }
     else
       {

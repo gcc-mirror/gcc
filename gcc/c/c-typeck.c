@@ -7294,23 +7294,35 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  && (AGGREGATE_TYPE_P (ttl) && TYPE_REVERSE_STORAGE_ORDER (ttl))
 	     != (AGGREGATE_TYPE_P (ttr) && TYPE_REVERSE_STORAGE_ORDER (ttr)))
 	{
+	  tree t;
+
 	  switch (errtype)
 	  {
 	  case ic_argpass:
 	    /* Do not warn for built-in functions, for example memcpy, since we
 	       control how they behave and they can be useful in this area.  */
 	    if (TREE_CODE (rname) != FUNCTION_DECL
-		|| !DECL_IS_UNDECLARED_BUILTIN (rname))
+		|| !fndecl_built_in_p (rname))
 	      warning_at (location, OPT_Wscalar_storage_order,
 			  "passing argument %d of %qE from incompatible "
 			  "scalar storage order", parmnum, rname);
 	    break;
 	  case ic_assign:
+	    /* Do not warn if the RHS is a call to a function that returns a
+	       pointer that is not an alias.  */
+	    if (TREE_CODE (rhs) != CALL_EXPR
+		|| (t = get_callee_fndecl (rhs)) == NULL_TREE
+		|| !DECL_IS_MALLOC (t))
 	    warning_at (location, OPT_Wscalar_storage_order,
 			"assignment to %qT from pointer type %qT with "
 			"incompatible scalar storage order", type, rhstype);
 	    break;
 	  case ic_init:
+	    /* Do not warn if the RHS is a call to a function that returns a
+	       pointer that is not an alias.  */
+	    if (TREE_CODE (rhs) != CALL_EXPR
+		|| (t = get_callee_fndecl (rhs)) == NULL_TREE
+		|| !DECL_IS_MALLOC (t))
 	    warning_at (location, OPT_Wscalar_storage_order,
 			"initialization of %qT from pointer type %qT with "
 			"incompatible scalar storage order", type, rhstype);

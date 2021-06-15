@@ -1,3 +1,115 @@
+2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-addadd.c: New file.
+
+2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.dg/sms-1.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-2.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-3.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-4.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-6.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-8.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-10.c: Remove scan-rtl-dump-times check.
+
+2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100999
+	* gdc.test/compilable/staticforeach.d: Add new tests.
+	* gdc.test/fail_compilation/diag16976.d: Likewise.
+	* gdc.test/fail_compilation/fail117.d: Likewise.
+	* gdc.test/fail_compilation/fail238_m32.d: Likewise.
+	* gdc.test/fail_compilation/fail238_m64.d: Likewise.
+	* gdc.test/fail_compilation/fail7424b.d: Likewise.
+	* gdc.test/fail_compilation/fail7424c.d: Likewise.
+	* gdc.test/fail_compilation/fail7424d.d: Likewise.
+	* gdc.test/fail_compilation/fail7424e.d: Likewise.
+	* gdc.test/fail_compilation/fail7424f.d: Likewise.
+	* gdc.test/fail_compilation/fail7424g.d: Likewise.
+	* gdc.test/fail_compilation/fail7424h.d: Likewise.
+	* gdc.test/fail_compilation/fail7424i.d: Likewise.
+	* gdc.test/fail_compilation/fail9766.d: Likewise.
+	* gdc.test/fail_compilation/ice9406.d: Likewise.
+	* gdc.test/compilable/extra-files/minimal/object.d: New file.
+	* gdc.test/compilable/interpret5.d: New test.
+	* gdc.test/compilable/minimal3.d: New test.
+	* gdc.test/compilable/test21742.d: New test.
+	* gdc.test/compilable/test22006.d: New test.
+	* gdc.test/fail_compilation/b12504.d: New test.
+	* gdc.test/fail_compilation/fail22006.d: New test.
+	* gdc.test/fail_compilation/test21927.d: New test.
+	* gdc.test/fail_compilation/test21939.d: New test.
+
+2021-06-11  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2021-05-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-ldcmpi.c: New file.
+	* gcc.target/powerpc/fusion-p10-2logical.c: New file.
+
+2021-06-11  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.dg/sms-4.c: Xfail for powerpc because changes in
+	instruction latency cause SMS to work or fail.
+
+2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100946
+	* g++.dg/cpp2a/concepts-return-req3.C: New test.
+
+2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100967
+	* gdc.dg/pr100967.d: New test.
+
+2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100964
+	* gdc.test/compilable/betterCarray.d: Add test cases.
+
+2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100935
+	* gdc.test/compilable/aggr_alignment.d: Add test cases.
+
+2021-06-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100065
+	* g++.dg/cpp2a/explicit18.C: New test.
+
+2021-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-14.c: New test.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100963
+	* g++.dg/cpp0x/initlist124.C: New test.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91706
+	* g++.dg/template/lookup17.C: New test.
+
 2021-06-07  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

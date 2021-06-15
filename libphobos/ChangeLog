@@ -1,3 +1,12 @@
+2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100999
+	* src/std/typecons.d (template Proxy): Check for field or property
+	functions as the else branch.
+
 2021-05-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

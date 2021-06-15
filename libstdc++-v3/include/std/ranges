@@ -163,7 +163,7 @@ namespace ranges
 	  constexpr explicit
 	  __box(in_place_t, _Args&&... __args)
 	  noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
-	  : _M_value{std::forward<_Args>(__args)...}
+	  : _M_value(std::forward<_Args>(__args)...)
 	  { }
 
 	constexpr bool
@@ -180,11 +180,11 @@ namespace ranges
 
 	constexpr _Tp*
 	operator->() noexcept
-	{ return &_M_value; }
+	{ return std::__addressof(_M_value); }
 
 	constexpr const _Tp*
 	operator->() const noexcept
-	{ return &_M_value; }
+	{ return std::__addressof(_M_value); }
       };
   } // namespace __detail
 
@@ -499,6 +499,10 @@ namespace ranges
 	_M_equal(const _Iterator& __x) const
 	{ return __x._M_value == _M_bound; }
 
+	constexpr auto
+	_M_distance_from(const _Iterator& __x) const
+	{ return _M_bound - __x._M_value; }
+
 	_Bound _M_bound = _Bound();
 
       public:
@@ -515,12 +519,12 @@ namespace ranges
 	friend constexpr iter_difference_t<_Winc>
 	operator-(const _Iterator& __x, const _Sentinel& __y)
 	  requires sized_sentinel_for<_Bound, _Winc>
-	{ return __x._M_value - __y._M_bound; }
+	{ return -__y._M_distance_from(__x); }
 
 	friend constexpr iter_difference_t<_Winc>
 	operator-(const _Sentinel& __x, const _Iterator& __y)
 	  requires sized_sentinel_for<_Bound, _Winc>
-	{ return -(__y - __x); }
+	{ return __x._M_distance_from(__y); }
       };
 
       _Winc _M_value = _Winc();
@@ -756,6 +760,10 @@ namespace views::__adaptor
     struct _Pipe;
 
   // The base class of every range adaptor closure.
+  //
+  // The derived class should define the optional static data member
+  // _S_has_simple_call_op to true if the behavior of this adaptor is
+  // independent of the constness/value category of the adaptor object.
   struct _RangeAdaptorClosure
   {
     // range | adaptor is equivalent to adaptor(range).
@@ -781,6 +789,10 @@ namespace views::__adaptor
   // The static data member _Derived::_S_arity must contain the total number of
   // arguments that the adaptor takes, and the class _Derived must introduce
   // _RangeAdaptor::operator() into the class scope via a using-declaration.
+  //
+  // The optional static data member _Derived::_S_has_simple_extra_args should
+  // be defined to true if the behavior of this adaptor is independent of the
+  // constness/value category of the extra arguments.
   template<typename _Derived>
     struct _RangeAdaptor
     {
@@ -795,6 +807,17 @@ namespace views::__adaptor
 	}
     };
 
+  // True if the range adaptor closure _Adaptor has a simple operator(), i.e.
+  // one that's not overloaded according to constness or value category of the
+  // _Adaptor object.
+  template<typename _Adaptor>
+    concept __closure_has_simple_call_op = _Adaptor::_S_has_simple_call_op;
+
+  // True if the behavior of the range adaptor non-closure _Adaptor is
+  // independent of the value category of its extra arguments.
+  template<typename _Adaptor>
+    concept __adaptor_has_simple_extra_args = _Adaptor::_S_has_simple_extra_args;
+
   // A range adaptor closure that represents partial application of
   // the range adaptor _Adaptor with arguments _Args.
   template<typename _Adaptor, typename... _Args>
@@ -808,7 +831,7 @@ namespace views::__adaptor
       { }
 
       // Invoke _Adaptor with arguments __r, _M_args... according to the
-      // value category of the range adaptor closure object.
+      // value category of this _Partial object.
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
 	constexpr auto
@@ -865,6 +888,59 @@ namespace views::__adaptor
 	operator()(_Range&& __r) const && = delete;
     };
 
+  // Partial specialization of the primary template for the case where the extra
+  // arguments of the adaptor can always be safely forwarded by const reference.
+  // This lets us get away with a single operator() overload, which makes
+  // overload resolution failure diagnostics more concise.
+  template<typename _Adaptor, typename... _Args>
+    requires __adaptor_has_simple_extra_args<_Adaptor>
+    struct _Partial<_Adaptor, _Args...> : _RangeAdaptorClosure
+    {
+      tuple<_Args...> _M_args;
+
+      constexpr
+      _Partial(_Args... __args)
+	: _M_args(std::move(__args)...)
+      { }
+
+      // Invoke _Adaptor with arguments __r, const _M_args&... regardless
+      // of the value category of this _Partial object.
+      template<typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{
+	  auto __forwarder = [&__r] (const auto&... __args) {
+	    return _Adaptor{}(std::forward<_Range>(__r), __args...);
+	  };
+	  return std::apply(__forwarder, _M_args);
+	}
+
+      static constexpr bool _S_has_simple_call_op = true;
+    };
+
+  // A lightweight specialization of the above template for the common case
+  // where _Adaptor accepts a single extra argument.
+  template<typename _Adaptor, typename _Arg>
+    requires __adaptor_has_simple_extra_args<_Adaptor>
+    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure
+    {
+      _Arg _M_arg;
+
+      constexpr
+      _Partial(_Arg __arg)
+	: _M_arg(std::move(__arg))
+      { }
+
+      template<typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{ return _Adaptor{}(std::forward<_Range>(__r), _M_arg); }
+
+      static constexpr bool _S_has_simple_call_op = true;
+    };
+
   template<typename _Lhs, typename _Rhs, typename _Range>
     concept __pipe_invocable
       = requires { std::declval<_Rhs>()(std::declval<_Lhs>()(std::declval<_Range>())); };
@@ -899,6 +975,32 @@ namespace views::__adaptor
       template<typename _Range>
 	constexpr auto
 	operator()(_Range&& __r) const && = delete;
+    };
+
+  // A partial specialization of the above primary template for the case where
+  // both adaptor operands have a simple operator().  This in turn lets us
+  // implement composition using a single simple operator(), which makes
+  // overload resolution failure diagnostics more concise.
+  template<typename _Lhs, typename _Rhs>
+    requires __closure_has_simple_call_op<_Lhs>
+      && __closure_has_simple_call_op<_Rhs>
+    struct _Pipe<_Lhs, _Rhs> : _RangeAdaptorClosure
+    {
+      [[no_unique_address]] _Lhs _M_lhs;
+      [[no_unique_address]] _Rhs _M_rhs;
+
+      constexpr
+      _Pipe(_Lhs __lhs, _Rhs __rhs)
+	: _M_lhs(std::move(__lhs)), _M_rhs(std::move(__rhs))
+      { }
+
+      template<typename _Range>
+	requires __pipe_invocable<const _Lhs&, const _Rhs&, _Range>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{ return _M_rhs(_M_lhs(std::forward<_Range>(__r))); }
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 } // namespace views::__adaptor
 
@@ -981,6 +1083,8 @@ namespace views::__adaptor
 	  else
 	    return subrange{std::forward<_Range>(__r)};
 	}
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 
     inline constexpr _All all;
@@ -1263,9 +1367,8 @@ namespace views::__adaptor
 	    _M_parent(__parent)
 	{ }
 
-	constexpr _Vp_iter
-	base() const &
-	  requires copyable<_Vp_iter>
+	constexpr const _Vp_iter&
+	base() const & noexcept
 	{ return _M_current; }
 
 	constexpr _Vp_iter
@@ -1435,6 +1538,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Filter>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _Filter filter;
@@ -1531,9 +1635,8 @@ namespace views::__adaptor
 	    : _M_current(std::move(__i._M_current)), _M_parent(__i._M_parent)
 	  { }
 
-	  constexpr _Base_iter
-	  base() const &
-	    requires copyable<_Base_iter>
+	  constexpr const _Base_iter&
+	  base() const & noexcept
 	  { return _M_current; }
 
 	  constexpr _Base_iter
@@ -1810,6 +1913,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Transform>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _Transform transform;
@@ -1990,6 +2094,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Take>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _Take take;
@@ -2109,6 +2214,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_TakeWhile>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _TakeWhile take_while;
@@ -2228,6 +2334,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Drop>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _Drop drop;
@@ -2311,6 +2418,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_DropWhile>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _DropWhile drop_while;
@@ -2668,6 +2776,8 @@ namespace views::__adaptor
 	  // 3474. Nesting join_views is broken because of CTAD
 	  return join_view<all_t<_Range>>{std::forward<_Range>(__r)};
 	}
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 
     inline constexpr _Join join;
@@ -3101,6 +3211,9 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Split>::operator();
       static constexpr int _S_arity = 2;
+      // The second argument of views::split is _not_ simple -- it can be a
+      // non-view range, the value category of which affects whether the call is
+      // well-formed.  So we must not define _S_has_simple_extra_args to true.
     };
 
     inline constexpr _Split split;
@@ -3240,6 +3353,8 @@ namespace views::__adaptor
 	  else
 	    return common_view{std::forward<_Range>(__r)};
 	}
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 
     inline constexpr _Common common;
@@ -3369,6 +3484,8 @@ namespace views::__adaptor
 	  else
 	    return reverse_view{std::forward<_Range>(__r)};
 	}
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 
     inline constexpr _Reverse reverse;
@@ -3407,8 +3524,8 @@ namespace views::__adaptor
 	: _M_base(std::move(base))
       { }
 
-      constexpr _Vp
-      base() const& requires copy_constructible<_Vp>
+      constexpr const _Vp&
+      base() const & noexcept
       { return _M_base; }
 
       constexpr _Vp
@@ -3657,16 +3774,22 @@ namespace views::__adaptor
 	    requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>>
 	  { return __x._M_current - __y._M_current; }
 
-	  friend _Sentinel<_Const>;
+	  template <bool> friend struct _Sentinel;
 	};
 
       template<bool _Const>
 	struct _Sentinel
 	{
 	private:
-	  constexpr bool
-	  _M_equal(const _Iterator<_Const>& __x) const
-	  { return __x._M_current == _M_end; }
+	  template<bool _Const2>
+	    constexpr bool
+	    _M_equal(const _Iterator<_Const2>& __x) const
+	    { return __x._M_current == _M_end; }
+
+	  template<bool _Const2>
+	    constexpr auto
+	    _M_distance_from(const _Iterator<_Const2>& __i) const
+	    { return _M_end - __i._M_current; }
 
 	  using _Base = elements_view::_Base<_Const>;
 	  sentinel_t<_Base> _M_end = sentinel_t<_Base>();
@@ -3702,14 +3825,14 @@ namespace views::__adaptor
 	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
 	    friend constexpr range_difference_t<_Base2>
 	    operator-(const _Iterator<_Const2>& __x, const _Sentinel& __y)
-	    { return __x._M_current - __y._M_end; }
+	    { return -__y._M_distance_from(__x); }
 
 	  template<bool _Const2,
 		   typename _Base2 = __detail::__maybe_const_t<_Const2, _Vp>>
 	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
-	    friend constexpr range_difference_t<_Base>
+	    friend constexpr range_difference_t<_Base2>
 	    operator-(const _Sentinel& __x, const _Iterator<_Const2>& __y)
-	    { return __x._M_end - __y._M_current; }
+	    { return __x._M_distance_from(__y); }
 
 	  friend _Sentinel<!_Const>;
 	};
@@ -3746,6 +3869,8 @@ namespace views::__adaptor
 	  {
 	    return elements_view<all_t<_Range>, _Nm>{std::forward<_Range>(__r)};
 	  }
+
+	static constexpr bool _S_has_simple_call_op = true;
       };
 
     template<size_t _Nm>

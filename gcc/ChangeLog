@@ -1,3 +1,55 @@
+2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_addadd): New function.
+	* config/rs6000/fusion.md: Regenerate file.
+	* config/rs6000/rs6000-cpus.def: Add
+	OPTION_MASK_P10_FUSION_2ADD to masks.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Handle default value of OPTION_MASK_P10_FUSION_2ADD.
+	* config/rs6000/rs6000.opt: Add -mpower10-fusion-2add.
+
+2021-06-11  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (define_attr "type"): Add types for fusion.
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10): Use new fusion types.
+	(gen_2logical): Use new fusion types.
+	* config/rs6000/fusion.md: Regenerate.
+
+2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backported from master:
+	2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (loop_end): Change it to
+	define_insn_and_split.
+
+2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backported from master:
+	2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (maddhisi4): Use VMAC2H instruction.
+	(machi): New pattern.
+	(umaddhisi4): Use VMAC2HU instruction.
+	(umachi): New pattern.
+
+2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backported from master:
+	2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_split_move_p): New prototype.
+	* config/arc/arc.c (arc_split_move_p): New function.
+	(arc_split_move): Clean up.
+	* config/arc/arc.md (movdi_insn): Clean up, use arc_split_move_p.
+	(movdf_insn): Likewise.
+	* config/arc/simdext.md (mov<VWH>_insn): Likewise.
+
+2021-06-08  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000-logue.c (rs6000_emit_prologue): Use
+	gen_frame_store.
+
 2021-06-07  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/100885

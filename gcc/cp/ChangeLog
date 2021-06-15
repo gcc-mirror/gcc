@@ -1,3 +1,37 @@
+2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100946
+	* constraint.cc (normalize_placeholder_type_constraints): When
+	normalizing a non-templated return-type-requirement, add a dummy
+	level to initial_parms.
+
+2021-06-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100065
+	* decl.c (grokdeclarator): Store a value-dependent
+	explicit-specifier even for deduction guides.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100963
+	* call.c (perfect_conversion_p): Check check_narrowing.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91706
+	* semantics.c (baselink_for_fns): Fix BASELINK_BINFO.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (duplicate_hash::hash): Comment out.
+	(trees_in::tree_value): Adjust loop counter.
+
 2021-06-07  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

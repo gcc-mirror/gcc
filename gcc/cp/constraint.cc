@@ -3088,6 +3088,15 @@ normalize_placeholder_type_constraints (tree t, bool diag)
      scope for this placeholder type; use them as the initial template
      parameters for normalization.  */
   tree initial_parms = TREE_PURPOSE (ci);
+
+  if (!initial_parms && TEMPLATE_TYPE_LEVEL (t) == 2)
+    /* This is a return-type-requirement of a non-templated requires-expression,
+       which are parsed under processing_template_decl == 1 and empty
+       current_template_parms; hence the 'auto' has level 2 and initial_parms
+       is empty.  Fix up initial_parms to be consistent with the value of
+       processing_template_decl whence the 'auto' was created.  */
+    initial_parms = build_tree_list (size_int (1), make_tree_vec (0));
+
   /* The 'auto' itself is used as the first argument in its own constraints,
      and its level is one greater than its template depth.  So in order to
      capture all used template parameters, we need to add an extra level of

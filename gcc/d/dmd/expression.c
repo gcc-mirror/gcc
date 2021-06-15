@@ -1044,8 +1044,11 @@ bool Expression::checkPostblit(Scope *sc, Type *t)
     t = t->baseElemOf();
     if (t->ty == Tstruct)
     {
-        // Bugzilla 11395: Require TypeInfo generation for array concatenation
-        semanticTypeInfo(sc, t);
+        if (global.params.useTypeInfo && Type::dtypeinfo)
+        {
+            // Bugzilla 11395: Require TypeInfo generation for array concatenation
+            semanticTypeInfo(sc, t);
+        }
 
         StructDeclaration *sd = ((TypeStruct *)t)->sym;
         if (sd->postblit)

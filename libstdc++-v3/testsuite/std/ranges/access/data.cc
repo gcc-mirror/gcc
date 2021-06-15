@@ -22,6 +22,10 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+template<typename T>
+  concept has_data
+    = requires (T&& t) { std::ranges::data(std::forward<T>(t)); };
+
 void
 test01()
 {
@@ -32,12 +36,18 @@ test01()
     int* data() { return &j; }
     const R* data() const noexcept { return nullptr; }
   };
+  static_assert( has_data<R&> );
+  static_assert( has_data<const R&> );
   R r;
   const R& c = r;
   VERIFY( std::ranges::data(r) == &r.j );
   static_assert( !noexcept(std::ranges::data(r)) );
   VERIFY( std::ranges::data(c) == (R*)nullptr );
   static_assert( noexcept(std::ranges::data(c)) );
+
+  // not lvalues and not borrowed ranges
+  static_assert( !has_data<R> );
+  static_assert( !has_data<const R> );
 }
 
 
@@ -49,29 +59,44 @@ test02()
 
   __gnu_test::test_range<int, __gnu_test::contiguous_iterator_wrapper> r(a);
   VERIFY( std::ranges::data(r) == std::to_address(std::ranges::begin(r)) );
+
+  static_assert( has_data<int(&)[2]> );
+  static_assert( has_data<decltype(r)&> );
+  static_assert( !has_data<int(&&)[2]> );
+  static_assert( !has_data<decltype(r)&&> );
 }
 
 struct R3
 {
-  long l = 0;
+  static inline int i;
+  static inline long l;
 
-  int* data() const { return nullptr; }
-  friend long* begin(R3& r) { return &r.l; }
-  friend const long* begin(const R3& r) { return &r.l + 1; }
+  int* data() & { return &i; }
+  friend long* begin(const R3& r) { return &l; }
+  friend const short* begin(const R3&&); // not defined
 };
 
-// N.B. this is a lie, begin on an R3 rvalue will return a dangling pointer.
 template<> constexpr bool std::ranges::enable_borrowed_range<R3> = true;
 
 void
 test03()
 {
+  static_assert( has_data<R3&> );
+  static_assert( has_data<R3> );  // borrowed range
+  static_assert( has_data<const R3&> );
+  static_assert( has_data<const R3> );  // borrowed range
+
   R3 r;
   const R3& c = r;
-  // r.data() can only be used on an lvalue, but ranges::begin(R3&&) is OK
-  // because R3 satisfies ranges::borrowed_range.
-  VERIFY( std::ranges::data(std::move(r)) == std::to_address(std::ranges::begin(std::move(r))) );
-  VERIFY( std::ranges::data(std::move(c)) == std::to_address(std::ranges::begin(std::move(c))) );
+  // PR libstdc++/100824
+  // ranges::data should treat the subexpression as an lvalue
+  VERIFY( std::ranges::data(std::move(r)) == &R3::i );
+  VERIFY( std::ranges::data(std::move(c)) == &R3::l );
+
+  // PR libstdc++/100824 comment 3
+  // Check for member data() should use decay-copy
+  struct A { int*&& data(); };
+  static_assert( has_data<A&> );
 }
 
 int

@@ -811,8 +811,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool
       __representable_as_double(_Tp __x) noexcept
       {
-	static_assert(numeric_limits<_Tp>::is_integer);
-	static_assert(!numeric_limits<_Tp>::is_signed);
+	static_assert(numeric_limits<_Tp>::is_integer, "");
+	static_assert(!numeric_limits<_Tp>::is_signed, "");
 	// All integers <= 2^53 are representable.
 	return (__x <= (1ull << __DBL_MANT_DIG__))
 	  // Between 2^53 and 2^54 only even numbers are representable.
@@ -824,8 +824,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool
       __p1_representable_as_double(_Tp __x) noexcept
       {
-	static_assert(numeric_limits<_Tp>::is_integer);
-	static_assert(!numeric_limits<_Tp>::is_signed);
+	static_assert(numeric_limits<_Tp>::is_integer, "");
+	static_assert(!numeric_limits<_Tp>::is_signed, "");
 	return numeric_limits<_Tp>::digits < __DBL_MANT_DIG__
 	  || (bool(__x + 1u) // return false if x+1 wraps around to zero
 	      && __detail::__representable_as_double(__x + 1u));
