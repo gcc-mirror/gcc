@@ -49,8 +49,8 @@
 #include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
-#include "rust-hir-liveness.h"
-#include "rust-hir-scan-deadcode.h"
+#include "rust-lint-marklive.h"
+#include "rust-lint-scan-deadcode.h"
 #include "rust-tycheck-dump.h"
 #include "rust-ast-resolve-unused.h"
 #include "rust-hir-const-fold.h"
@@ -573,7 +573,7 @@ Session::parse_file (const char *filename)
     }
 
   // liveness analysis
-  std::set<HirId> live_symbols = Analysis::Liveness::Analysis (hir);
+  std::set<HirId> live_symbols = Analysis::MarkLive::Analysis (hir);
 
   if (saw_errors ())
     return;

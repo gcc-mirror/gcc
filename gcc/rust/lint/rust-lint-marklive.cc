@@ -16,16 +16,16 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-hir-liveness.h"
+#include "rust-lint-marklive.h"
 #include "rust-hir-full.h"
 #include "rust-name-resolver.h"
 
 namespace Rust {
 namespace Analysis {
 
-class FindEntryPoint : public LivenessBase
+class FindEntryPoint : public MarkLiveBase
 {
-  using Rust::Analysis::LivenessBase::visit;
+  using Rust::Analysis::MarkLiveBase::visit;
 
 public:
   static std::vector<HirId> find (HIR::Crate &crate)
@@ -48,22 +48,22 @@ public:
   }
 
 private:
-  FindEntryPoint () : LivenessBase () {}
+  FindEntryPoint () : MarkLiveBase () {}
   std::vector<HirId> entryPoints;
   std::vector<HirId> getEntryPoint () { return entryPoints; }
 };
 
 std::set<HirId>
-Liveness::Analysis (HIR::Crate &crate)
+MarkLive::Analysis (HIR::Crate &crate)
 {
-  Liveness liveness (FindEntryPoint::find (crate));
-  liveness.go (crate);
+  MarkLive marklive (FindEntryPoint::find (crate));
+  marklive.go (crate);
 
-  return liveness.liveSymbols;
+  return marklive.liveSymbols;
 }
 
 void
-Liveness::go (HIR::Crate &crate)
+MarkLive::go (HIR::Crate &crate)
 {
   CrateNum crateNum = crate.get_mappings ().get_crate_num ();
   while (!worklist.empty ())
@@ -89,7 +89,7 @@ Liveness::go (HIR::Crate &crate)
 }
 
 void
-Liveness::visit (HIR::PathInExpression &expr)
+MarkLive::visit (HIR::PathInExpression &expr)
 {
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
@@ -119,7 +119,7 @@ Liveness::visit (HIR::PathInExpression &expr)
 }
 
 void
-Liveness::visit (HIR::IdentifierExpr &expr)
+MarkLive::visit (HIR::IdentifierExpr &expr)
 {
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
 

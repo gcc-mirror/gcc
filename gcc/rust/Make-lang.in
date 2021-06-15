@@ -80,7 +80,7 @@ GRS_OBJS = \
     rust/rust-tyty.o \
     rust/rust-tyctx.o \
     rust/rust-hir-const-fold.o \
-    rust/rust-hir-liveness.o \
+    rust/rust-lint-marklive.o \
     $(END)
 # removed object files from here
 
@@ -236,7 +236,7 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/resolve \
 	-I $(srcdir)/rust/util \
 	-I $(srcdir)/rust/typecheck \
-	-I $(srcdir)/rust/analysis
+	-I $(srcdir)/rust/lint
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
@@ -297,8 +297,8 @@ rust/%.o: rust/typecheck/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
-# build rust/analysis files in rust folder
-rust/%.o: rust/analysis/%.cc
+# build rust/lint files in rust folder
+rust/%.o: rust/lint/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
