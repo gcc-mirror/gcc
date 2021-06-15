@@ -302,6 +302,12 @@
    UNSPEC_VSX_XXSPLTD
    UNSPEC_VSX_DIVSD
    UNSPEC_VSX_DIVUD
+   UNSPEC_VSX_DIVSQ
+   UNSPEC_VSX_DIVUQ
+   UNSPEC_VSX_DIVESQ
+   UNSPEC_VSX_DIVEUQ
+   UNSPEC_VSX_MODSQ
+   UNSPEC_VSX_MODUQ
    UNSPEC_VSX_MULSD
    UNSPEC_VSX_SIGN_EXTEND
    UNSPEC_VSX_XVCVBF16SPN
@@ -1781,6 +1787,61 @@
 }
   [(set_attr "type" "div")])
 
+;; Vector integer signed/unsigned divide
+(define_insn "vsx_div_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "vsx_register_operand" "v")
+		      (match_operand:V1TI 2 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_DIVSQ))]
+  "TARGET_POWER10"
+  "vdivsq %0,%1,%2"
+  [(set_attr "type" "div")])
+
+(define_insn "vsx_udiv_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "vsx_register_operand" "v")
+		      (match_operand:V1TI 2 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_DIVUQ))]
+  "TARGET_POWER10"
+  "vdivuq %0,%1,%2"
+  [(set_attr "type" "div")])
+
+(define_insn "vsx_dives_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "vsx_register_operand" "v")
+		      (match_operand:V1TI 2 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_DIVESQ))]
+  "TARGET_POWER10"
+  "vdivesq %0,%1,%2"
+  [(set_attr "type" "div")])
+
+(define_insn "vsx_diveu_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "vsx_register_operand" "v")
+		      (match_operand:V1TI 2 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_DIVEUQ))]
+  "TARGET_POWER10"
+  "vdiveuq %0,%1,%2"
+  [(set_attr "type" "div")])
+
+(define_insn "vsx_mods_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "vsx_register_operand" "v")
+		      (match_operand:V1TI 2 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_MODSQ))]
+  "TARGET_POWER10"
+  "vmodsq %0,%1,%2"
+  [(set_attr "type" "div")])
+
+(define_insn "vsx_modu_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+	(unspec:V1TI [(match_operand:V1TI 1 "vsx_register_operand" "v")
+		      (match_operand:V1TI 2 "vsx_register_operand" "v")]
+		     UNSPEC_VSX_MODUQ))]
+  "TARGET_POWER10"
+  "vmoduq %0,%1,%2"
+  [(set_attr "type" "div")])
+
 ;; *tdiv* instruction returning the FG flag
 (define_expand "vsx_tdiv<mode>3_fg"
   [(set (match_dup 3)
@@ -3121,6 +3182,21 @@
 	  (match_operand:VSX_D 1 "vsx_register_operand" "wa")
 	  (parallel [(const_int 1) (const_int 0)])))]
   "TARGET_VSX"
+;; AIX does not support extended mnemonic xxswapd.  Use the basic
+;; mnemonic xxpermdi instead.
+  "xxpermdi %x0,%x1,%x1,2"
+  [(set_attr "type" "vecperm")])
+
+;; Swap upper/lower 64-bit values in a 128-bit vector
+(define_insn "xxswapd_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=v")
+     (subreg:V1TI
+	  (vec_select:V2DI
+	    (subreg:V2DI
+	      (match_operand:V1TI 1 "vsx_register_operand" "v") 0 )
+	  (parallel [(const_int 1)(const_int 0)]))
+           0))]
+  "TARGET_POWER10"
 ;; AIX does not support extended mnemonic xxswapd.  Use the basic
 ;; mnemonic xxpermdi instead.
   "xxpermdi %x0,%x1,%x1,2"
@@ -5524,6 +5600,19 @@
   "TARGET_P9_VECTOR"
   "vcmpneb %0,%1,%2"
   [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal v1ti (specified/not+eq:)
+(define_expand "vcmpnet"
+  [(set (match_operand:V1TI 0 "altivec_register_operand")
+	(not:V1TI
+	  (eq:V1TI (match_operand:V1TI 1 "altivec_register_operand")
+		   (match_operand:V1TI 2 "altivec_register_operand"))))]
+   "TARGET_POWER10"
+{
+  emit_insn (gen_eqvv1ti3 (operands[0], operands[1], operands[2]));
+  emit_insn (gen_one_cmplv1ti2 (operands[0], operands[0]));
+  DONE;
+})
 
 ;; Vector Compare Not Equal or Zero Byte
 (define_insn "vcmpnezb"

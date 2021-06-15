@@ -715,6 +715,9 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_step(x) __builtin_vec_step (* (__typeof__ (x) *) 0)
 
 #ifdef _ARCH_PWR10
+#define vec_dive __builtin_vec_dive
+#define vec_mod  __builtin_vec_mod
+
 /* May modify these macro definitions if future capabilities overload
    with support for different vector argument and result types.  */
 #define vec_cntlzm(a, b)	__builtin_altivec_vclzdm (a, b)

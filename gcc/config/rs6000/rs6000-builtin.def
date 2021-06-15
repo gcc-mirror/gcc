@@ -1269,6 +1269,15 @@
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+/* See the comment on BU_ALTIVEC_P.  */
+#define BU_P10V_AV_P(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_P (P10V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P10,	 		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_PREDICATE),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #define BU_P10V_AV_X(ENUM, NAME, ATTR)					\
   RS6000_BUILTIN_X (P10_BUILTIN_ ## ENUM,		/* ENUM */	\
 		    "__builtin_altivec_" NAME,		/* NAME */	\
@@ -2880,6 +2889,10 @@ BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
 /* Builtins for scalar instructions added in ISA 3.1 (power10).  */
+BU_P10V_AV_P (VCMPEQUT_P,	"vcmpequt_p",	CONST,	vector_eq_v1ti_p)
+BU_P10V_AV_P (VCMPGTST_P,	"vcmpgtst_p",	CONST,	vector_gt_v1ti_p)
+BU_P10V_AV_P (VCMPGTUT_P,	"vcmpgtut_p",	CONST,	vector_gtu_v1ti_p)
+
 BU_P10_POWERPC64_MISC_2 (CFUGED, "cfuged", CONST, cfuged)
 BU_P10_POWERPC64_MISC_2 (CNTLZDM, "cntlzdm", CONST, cntlzdm)
 BU_P10_POWERPC64_MISC_2 (CNTTZDM, "cnttzdm", CONST, cnttzdm)
@@ -2900,7 +2913,36 @@ BU_P10V_VSX_2 (XXGENPCVM_V16QI, "xxgenpcvm_v16qi", CONST, xxgenpcvm_v16qi)
 BU_P10V_VSX_2 (XXGENPCVM_V8HI, "xxgenpcvm_v8hi", CONST, xxgenpcvm_v8hi)
 BU_P10V_VSX_2 (XXGENPCVM_V4SI, "xxgenpcvm_v4si", CONST, xxgenpcvm_v4si)
 BU_P10V_VSX_2 (XXGENPCVM_V2DI, "xxgenpcvm_v2di", CONST, xxgenpcvm_v2di)
+BU_P10V_AV_2 (VCMPGTUT,		"vcmpgtut",	CONST,	vector_gtuv1ti)
+BU_P10V_AV_2 (VCMPGTST,		"vcmpgtst",	CONST,	vector_gtv1ti)
+BU_P10V_AV_2 (VCMPEQUT,		"vcmpequt",	CONST,	vector_eqv1ti)
+BU_P10V_AV_2 (CMPNET,		"vcmpnet",	CONST,	vcmpnet)
+BU_P10V_AV_2 (CMPGE_1TI,	"cmpge_1ti",    CONST,  vector_nltv1ti)
+BU_P10V_AV_2 (CMPGE_U1TI,	"cmpge_u1ti",   CONST,  vector_nltuv1ti)
+BU_P10V_AV_2 (CMPLE_1TI,	"cmple_1ti",    CONST,  vector_ngtv1ti)
+BU_P10V_AV_2 (CMPLE_U1TI,	"cmple_u1ti",   CONST,  vector_ngtuv1ti)
+BU_P10V_AV_2 (VNOR_V1TI_UNS,	"vnor_v1ti_uns",CONST,	norv1ti3)
+BU_P10V_AV_2 (VNOR_V1TI,	"vnor_v1ti",	CONST,	norv1ti3)
+BU_P10V_AV_2 (VCMPNET_P,	"vcmpnet_p",	CONST,	vector_ne_v1ti_p)
+BU_P10V_AV_2 (VCMPAET_P,	"vcmpaet_p",	CONST,	vector_ae_v1ti_p)
 
+BU_P10V_AV_2 (VMULEUD,	"vmuleud",	CONST,	vec_widen_umult_even_v2di)
+BU_P10V_AV_2 (VMULESD,	"vmulesd",	CONST,	vec_widen_smult_even_v2di)
+BU_P10V_AV_2 (VMULOUD,	"vmuloud",	CONST,	vec_widen_umult_odd_v2di)
+BU_P10V_AV_2 (VMULOSD,	"vmulosd",	CONST,	vec_widen_smult_odd_v2di)
+BU_P10V_AV_2 (VRLQ,		"vrlq",		CONST,	vrotlv1ti3)
+BU_P10V_AV_2 (VSLQ,		"vslq",		CONST,	vashlv1ti3)
+BU_P10V_AV_2 (VSRQ,		"vsrq",		CONST,	vlshrv1ti3)
+BU_P10V_AV_2 (VSRAQ,		"vsraq",	CONST,	vashrv1ti3)
+BU_P10V_AV_2 (VRLQNM,	"vrlqnm",	CONST,	altivec_vrlqnm)
+BU_P10V_AV_2 (DIV_V1TI,	"div_1ti",      CONST,  vsx_div_v1ti)
+BU_P10V_AV_2 (UDIV_V1TI,	"udiv_1ti",     CONST,  vsx_udiv_v1ti)
+BU_P10V_AV_2 (DIVES_V1TI,	"dives",	CONST,	vsx_dives_v1ti)
+BU_P10V_AV_2 (DIVEU_V1TI,	"diveu",	CONST,	vsx_diveu_v1ti)
+BU_P10V_AV_2 (MODS_V1TI,	"mods",		CONST,	vsx_mods_v1ti)
+BU_P10V_AV_2 (MODU_V1TI,	"modu",		CONST,	vsx_modu_v1ti)
+
+BU_P10V_AV_3 (VRLQMI,	"vrlqmi",	CONST,	altivec_vrlqmi)
 BU_P10V_AV_3 (VEXTRACTBL, "vextdubvlx", CONST, vextractlv16qi)
 BU_P10V_AV_3 (VEXTRACTHL, "vextduhvlx", CONST, vextractlv8hi)
 BU_P10V_AV_3 (VEXTRACTWL, "vextduwvlx", CONST, vextractlv4si)
