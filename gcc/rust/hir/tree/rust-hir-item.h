@@ -2884,33 +2884,28 @@ class ImplBlock : public VisItem
 {
   std::vector<std::unique_ptr<GenericParam> > generic_params;
   std::unique_ptr<Type> impl_type;
+  std::unique_ptr<TypePath> trait_ref;
   WhereClause where_clause;
   AST::AttrVec inner_attrs;
   Location locus;
   std::vector<std::unique_ptr<ImplItem> > impl_items;
 
 public:
-  std::string as_string () const override;
-
-  // Returns whether inherent impl block has inherent impl items.
-  bool has_impl_items () const { return !impl_items.empty (); }
-
-  // Mega-constructor
   ImplBlock (Analysis::NodeMapping mappings,
 	     std::vector<std::unique_ptr<ImplItem> > impl_items,
 	     std::vector<std::unique_ptr<GenericParam> > generic_params,
-	     std::unique_ptr<Type> impl_type, WhereClause where_clause,
+	     std::unique_ptr<Type> impl_type,
+	     std::unique_ptr<TypePath> trait_ref, WhereClause where_clause,
 	     Visibility vis, AST::AttrVec inner_attrs, AST::AttrVec outer_attrs,
 	     Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       generic_params (std::move (generic_params)),
-      impl_type (std::move (impl_type)),
+      impl_type (std::move (impl_type)), trait_ref (std::move (trait_ref)),
       where_clause (std::move (where_clause)),
       inner_attrs (std::move (inner_attrs)), locus (locus),
       impl_items (std::move (impl_items))
   {}
 
-  // Copy constructor with vector clone
   ImplBlock (ImplBlock const &other)
     : VisItem (other), impl_type (other.impl_type->clone_type ()),
       where_clause (other.where_clause), inner_attrs (other.inner_attrs),
@@ -2925,7 +2920,6 @@ public:
       impl_items.push_back (e->clone_inherent_impl_item ());
   }
 
-  // Overloaded assignment operator with vector clone
   ImplBlock &operator= (ImplBlock const &other)
   {
     VisItem::operator= (other);
@@ -2947,6 +2941,11 @@ public:
 
   ImplBlock (ImplBlock &&other) = default;
   ImplBlock &operator= (ImplBlock &&other) = default;
+
+  std::string as_string () const override;
+
+  // Returns whether inherent impl block has inherent impl items.
+  bool has_impl_items () const { return !impl_items.empty (); }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2976,6 +2975,14 @@ public:
   std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
   {
     return generic_params;
+  }
+
+  bool has_trait_ref () const { return trait_ref != nullptr; }
+
+  std::unique_ptr<TypePath> &get_trait_ref ()
+  {
+    rust_assert (has_trait_ref ());
+    return trait_ref;
   }
 
 protected:

@@ -387,7 +387,7 @@ public:
     HIR::ImplBlock *hir_impl_block
       = new HIR::ImplBlock (mapping, std::move (impl_items),
 			    std::move (generic_params),
-			    std::unique_ptr<HIR::Type> (impl_type),
+			    std::unique_ptr<HIR::Type> (impl_type), nullptr,
 			    where_clause, vis, impl_block.get_inner_attrs (),
 			    impl_block.get_outer_attrs (),
 			    impl_block.get_locus ());
@@ -507,6 +507,8 @@ public:
 
     HIR::Type *impl_type
       = ASTLoweringType::translate (impl_block.get_type ().get ());
+    HIR::TypePath *trait_ref
+      = ASTLowerTypePath::translate (impl_block.get_trait_path ());
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, impl_block.get_node_id (),
@@ -528,6 +530,7 @@ public:
       = new HIR::ImplBlock (mapping, std::move (impl_items),
 			    std::move (generic_params),
 			    std::unique_ptr<HIR::Type> (impl_type),
+			    std::unique_ptr<HIR::TypePath> (trait_ref),
 			    where_clause, vis, impl_block.get_inner_attrs (),
 			    impl_block.get_outer_attrs (),
 			    impl_block.get_locus ());
