@@ -66,6 +66,25 @@ package body GNAT_CUDA is
    --  least one procedure marked with aspect CUDA_Global. The values are
    --  Elists of the marked procedures.
 
+   procedure Build_And_Insert_CUDA_Initialization (N : Node_Id);
+   --  Builds declarations necessary for CUDA initialization and inserts them
+   --  in N, the package body that contains CUDA_Global nodes. These
+   --  declarations are:
+   --
+   --    * A symbol to hold the pointer P to the CUDA fat binary.
+   --
+   --    * A type definition T for a wrapper that contains the pointer to the
+   --      CUDA fat binary.
+   --
+   --    * An object of the aforementioned type to hold the aforementioned
+   --      pointer.
+   --
+   --    * For each CUDA_Global procedure in the package, a declaration of a C
+   --      string containing the function's name.
+   --
+   --    * A procedure that takes care of calling CUDA functions that register
+   --      CUDA_Global procedures with the runtime.
+
    function Get_CUDA_Kernels (Pack_Id : Entity_Id) return Elist_Id;
    --  Returns an Elist of all procedures marked with pragma CUDA_Global that
    --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
@@ -93,6 +112,23 @@ package body GNAT_CUDA is
       end if;
       Append_Elmt (Kernel, Kernels);
    end Add_CUDA_Kernel;
+
+   procedure Expand_CUDA_Package (N : Node_Id) is
+   begin
+
+      --  If not compiling for the host, do not do anything.
+
+      if not Debug_Flag_Underscore_C then
+         return;
+      end if;
+
+      --  If procedures marked with CUDA_Global have been defined within N,
+      --  we need to register them with the CUDA runtime at program startup.
+      --  This requires multiple declarations and function calls which need
+      --  to be appended to N's declarations.
+
+      Build_And_Insert_CUDA_Initialization (N);
+   end Expand_CUDA_Package;
 
    ----------
    -- Hash --
@@ -524,7 +560,7 @@ package body GNAT_CUDA is
    --  Start of processing for Build_And_Insert_CUDA_Initialization
 
    begin
-      if CUDA_Node_List = No_Elist or not Debug_Flag_Underscore_C then
+      if CUDA_Node_List = No_Elist then
          return;
       end if;
 
