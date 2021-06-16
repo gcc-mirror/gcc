@@ -4226,7 +4226,7 @@ build_vec_init (tree base, tree maxindex, tree init,
     {
       /* Shortcut zero element case to avoid unneeded constructor synthesis.  */
       if (init && TREE_SIDE_EFFECTS (init))
-	base = build2 (COMPOUND_EXPR, void_type_node, init, base);
+	base = build2 (COMPOUND_EXPR, ptype, init, base);
       return base;
     }
 
