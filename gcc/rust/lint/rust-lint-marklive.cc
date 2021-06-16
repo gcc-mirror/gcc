@@ -80,7 +80,7 @@ MarkLive::go (HIR::Crate &crate)
       else
 	{ // the item maybe inside a trait impl
 	  HirId parent_impl_id = UNKNOWN_HIRID;
-	  HIR::InherentImplItem *implItem
+	  HIR::ImplItem *implItem
 	    = mappings->lookup_hir_implitem (crateNum, hirId, &parent_impl_id);
 	  if (implItem != nullptr)
 	    implItem->accept_vis (*this);

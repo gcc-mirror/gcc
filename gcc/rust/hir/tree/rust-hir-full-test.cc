@@ -377,7 +377,7 @@ ConstantItem::as_string () const
 }
 
 std::string
-InherentImpl::as_string () const
+ImplBlock::as_string () const
 {
   std::string str = VisItem::as_string ();
 
@@ -398,7 +398,7 @@ InherentImpl::as_string () const
 	    {
 	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
-		"generic param in inherent impl.");
+		"generic param in impl.");
 	      return "nullptr_POINTER_MARK";
 	    }
 
@@ -406,7 +406,7 @@ InherentImpl::as_string () const
 	}
     }
 
-  str += "\n Type: " + trait_type->as_string ();
+  str += "\n Type: " + impl_type->as_string ();
 
   str += "\n Where clause: ";
   if (has_where_clause ())
@@ -434,8 +434,7 @@ InherentImpl::as_string () const
 	}
     }
 
-  // inherent impl items
-  str += "\n Inherent impl items: ";
+  str += "\n impl items: ";
   if (!has_impl_items ())
     {
       str += "none";
@@ -4605,7 +4604,7 @@ Trait::accept_vis (HIRVisitor &vis)
 }
 
 void
-InherentImpl::accept_vis (HIRVisitor &vis)
+ImplBlock::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

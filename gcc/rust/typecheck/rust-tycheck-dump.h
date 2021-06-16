@@ -48,7 +48,7 @@ public:
 	    + "\n";
   }
 
-  void visit (HIR::InherentImpl &impl_block) override
+  void visit (HIR::ImplBlock &impl_block) override
   {
     dump += indent () + "impl "
 	    + type_string (impl_block.get_type ()->get_mappings ()) + " {\n";

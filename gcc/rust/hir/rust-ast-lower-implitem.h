@@ -34,8 +34,8 @@ class ASTLowerImplItem : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::InherentImplItem *translate (AST::InherentImplItem *item,
-					   HirId parent_impl_id)
+  static HIR::ImplItem *translate (AST::InherentImplItem *item,
+				   HirId parent_impl_id)
   {
     ASTLowerImplItem resolver (parent_impl_id);
     item->accept_vis (resolver);
@@ -43,8 +43,8 @@ public:
     return resolver.translated;
   }
 
-  static HIR::InherentImplItem *translate (AST::TraitImplItem *item,
-					   HirId parent_impl_id)
+  static HIR::ImplItem *translate (AST::TraitImplItem *item,
+				   HirId parent_impl_id)
   {
     ASTLowerImplItem resolver (parent_impl_id);
     item->accept_vis (resolver);
@@ -254,8 +254,7 @@ private:
     : translated (nullptr), parent_impl_id (parent_impl_id)
   {}
 
-  HIR::InherentImplItem *translated;
-
+  HIR::ImplItem *translated;
   HirId parent_impl_id;
 };
 

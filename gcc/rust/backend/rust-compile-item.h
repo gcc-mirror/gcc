@@ -274,7 +274,7 @@ public:
     ctx->push_function (fndecl);
   }
 
-  void visit (HIR::InherentImpl &impl_block) override
+  void visit (HIR::ImplBlock &impl_block) override
   {
     TyTy::BaseType *self_lookup = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (

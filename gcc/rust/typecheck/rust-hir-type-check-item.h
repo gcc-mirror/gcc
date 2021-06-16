@@ -40,14 +40,14 @@ public:
     item->accept_vis (resolver);
   }
 
-  void visit (HIR::InherentImpl &impl_block) override
+  void visit (HIR::ImplBlock &impl_block) override
   {
     TyTy::BaseType *self = nullptr;
     if (!context->lookup_type (
 	  impl_block.get_type ()->get_mappings ().get_hirid (), &self))
       {
 	rust_error_at (impl_block.get_locus (),
-		       "failed to resolve Self for InherentImpl");
+		       "failed to resolve Self for ImplBlock");
 	return;
       }
 

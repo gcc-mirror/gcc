@@ -578,7 +578,7 @@ protected:
 };
 
 // A method (function belonging to a type)
-class Method : public InherentImplItem
+class Method : public ImplItem
 {
   Analysis::NodeMapping mappings;
 
@@ -1260,7 +1260,7 @@ protected:
 class LetStmt;
 
 // Rust function declaration HIR node
-class Function : public VisItem, public InherentImplItem
+class Function : public VisItem, public ImplItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -1426,7 +1426,7 @@ protected:
 };
 
 // Rust type alias (i.e. typedef) HIR node
-class TypeAlias : public VisItem, public InherentImplItem
+class TypeAlias : public VisItem, public ImplItem
 {
   Identifier new_type_name;
 
@@ -2183,7 +2183,7 @@ protected:
   Union *clone_item_impl () const override { return new Union (*this); }
 };
 
-class ConstantItem : public VisItem, public InherentImplItem
+class ConstantItem : public VisItem, public ImplItem
 {
   Identifier identifier;
   std::unique_ptr<Type> type;
@@ -2878,36 +2878,88 @@ protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Trait *clone_item_impl () const override { return new Trait (*this); }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual Trait* clone_statement_impl() const override {
-      return new Trait(*this);
-  }*/
 };
 
-// Implementation item declaration HIR node - abstract base class
-class Impl : public VisItem
+class ImplBlock : public VisItem
 {
-  // must be protected to allow subclasses to access them properly
-protected:
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
-
-  std::unique_ptr<Type> trait_type;
-
-  // bool has_where_clause;
+  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::unique_ptr<Type> impl_type;
   WhereClause where_clause;
-
-  // bool has_inner_attrs;
   AST::AttrVec inner_attrs;
-
-private:
-  // doesn't really need to be protected as write access probably not needed
   Location locus;
+  std::vector<std::unique_ptr<ImplItem> > impl_items;
 
 public:
+  std::string as_string () const override;
+
+  // Returns whether inherent impl block has inherent impl items.
+  bool has_impl_items () const { return !impl_items.empty (); }
+
+  // Mega-constructor
+  ImplBlock (Analysis::NodeMapping mappings,
+	     std::vector<std::unique_ptr<ImplItem> > impl_items,
+	     std::vector<std::unique_ptr<GenericParam> > generic_params,
+	     std::unique_ptr<Type> impl_type, WhereClause where_clause,
+	     Visibility vis, AST::AttrVec inner_attrs, AST::AttrVec outer_attrs,
+	     Location locus)
+    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
+      generic_params (std::move (generic_params)),
+      impl_type (std::move (impl_type)),
+      where_clause (std::move (where_clause)),
+      inner_attrs (std::move (inner_attrs)), locus (locus),
+      impl_items (std::move (impl_items))
+  {}
+
+  // Copy constructor with vector clone
+  ImplBlock (ImplBlock const &other)
+    : VisItem (other), impl_type (other.impl_type->clone_type ()),
+      where_clause (other.where_clause), inner_attrs (other.inner_attrs),
+      locus (other.locus)
+  {
+    generic_params.reserve (other.generic_params.size ());
+    for (const auto &e : other.generic_params)
+      generic_params.push_back (e->clone_generic_param ());
+
+    impl_items.reserve (other.impl_items.size ());
+    for (const auto &e : other.impl_items)
+      impl_items.push_back (e->clone_inherent_impl_item ());
+  }
+
+  // Overloaded assignment operator with vector clone
+  ImplBlock &operator= (ImplBlock const &other)
+  {
+    VisItem::operator= (other);
+    impl_type = other.impl_type->clone_type ();
+    where_clause = other.where_clause;
+    inner_attrs = other.inner_attrs;
+    locus = other.locus;
+
+    generic_params.reserve (other.generic_params.size ());
+    for (const auto &e : other.generic_params)
+      generic_params.push_back (e->clone_generic_param ());
+
+    impl_items.reserve (other.impl_items.size ());
+    for (const auto &e : other.impl_items)
+      impl_items.push_back (e->clone_inherent_impl_item ());
+
+    return *this;
+  }
+
+  ImplBlock (ImplBlock &&other) = default;
+  ImplBlock &operator= (ImplBlock &&other) = default;
+
+  void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<std::unique_ptr<ImplItem> > &get_impl_items ()
+  {
+    return impl_items;
+  };
+
+  const std::vector<std::unique_ptr<ImplItem> > &get_impl_items () const
+  {
+    return impl_items;
+  };
+
   // Returns whether impl has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
 
@@ -2919,7 +2971,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  std::unique_ptr<Type> &get_type () { return trait_type; };
+  std::unique_ptr<Type> &get_type () { return impl_type; };
 
   std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
   {
@@ -2927,119 +2979,7 @@ public:
   }
 
 protected:
-  // Mega-constructor
-  Impl (Analysis::NodeMapping mappings,
-	std::vector<std::unique_ptr<GenericParam> > generic_params,
-	std::unique_ptr<Type> trait_type, WhereClause where_clause,
-	Visibility vis, AST::AttrVec inner_attrs, AST::AttrVec outer_attrs,
-	Location locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      generic_params (std::move (generic_params)),
-      trait_type (std::move (trait_type)),
-      where_clause (std::move (where_clause)),
-      inner_attrs (std::move (inner_attrs)), locus (locus)
-  {}
-
-  // Copy constructor
-  Impl (Impl const &other)
-    : VisItem (other), trait_type (other.trait_type->clone_type ()),
-      where_clause (other.where_clause), inner_attrs (other.inner_attrs),
-      locus (other.locus)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-  }
-
-  // Assignment operator overload with cloning
-  Impl &operator= (Impl const &other)
-  {
-    VisItem::operator= (other);
-    trait_type = other.trait_type->clone_type ();
-    where_clause = other.where_clause;
-    inner_attrs = other.inner_attrs;
-    locus = other.locus;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    return *this;
-  }
-
-  // move constructors
-  Impl (Impl &&other) = default;
-  Impl &operator= (Impl &&other) = default;
-};
-
-// Regular "impl foo" impl block declaration HIR node
-class InherentImpl : public Impl
-{
-  // bool has_impl_items;
-  std::vector<std::unique_ptr<InherentImplItem> > impl_items;
-
-public:
-  std::string as_string () const override;
-
-  // Returns whether inherent impl block has inherent impl items.
-  bool has_impl_items () const { return !impl_items.empty (); }
-
-  // Mega-constructor
-  InherentImpl (Analysis::NodeMapping mappings,
-		std::vector<std::unique_ptr<InherentImplItem> > impl_items,
-		std::vector<std::unique_ptr<GenericParam> > generic_params,
-		std::unique_ptr<Type> trait_type, WhereClause where_clause,
-		Visibility vis, AST::AttrVec inner_attrs,
-		AST::AttrVec outer_attrs, Location locus)
-    : Impl (std::move (mappings), std::move (generic_params),
-	    std::move (trait_type), std::move (where_clause), std::move (vis),
-	    std::move (inner_attrs), std::move (outer_attrs), locus),
-      impl_items (std::move (impl_items))
-  {}
-
-  // Copy constructor with vector clone
-  InherentImpl (InherentImpl const &other) : Impl (other)
-  {
-    impl_items.reserve (other.impl_items.size ());
-    for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_inherent_impl_item ());
-  }
-
-  // Overloaded assignment operator with vector clone
-  InherentImpl &operator= (InherentImpl const &other)
-  {
-    Impl::operator= (other);
-
-    impl_items.reserve (other.impl_items.size ());
-    for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_inherent_impl_item ());
-
-    return *this;
-  }
-
-  // default move constructors
-  InherentImpl (InherentImpl &&other) = default;
-  InherentImpl &operator= (InherentImpl &&other) = default;
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  std::vector<std::unique_ptr<InherentImplItem> > &get_impl_items ()
-  {
-    return impl_items;
-  };
-
-  const std::vector<std::unique_ptr<InherentImplItem> > &get_impl_items () const
-  {
-    return impl_items;
-  };
-
-protected:
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  InherentImpl *clone_item_impl () const override
-  {
-    return new InherentImpl (*this);
-  }
+  ImplBlock *clone_item_impl () const override { return new ImplBlock (*this); }
 };
 
 // Abstract base class for an item used inside an extern block

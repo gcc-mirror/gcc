@@ -129,9 +129,9 @@ public:
   HIR::Item *lookup_hir_item (CrateNum crateNum, HirId id);
 
   void insert_hir_implitem (CrateNum crateNum, HirId id, HirId parent_impl_id,
-			    HIR::InherentImplItem *item);
-  HIR::InherentImplItem *lookup_hir_implitem (CrateNum crateNum, HirId id,
-					      HirId *parent_impl_id);
+			    HIR::ImplItem *item);
+  HIR::ImplItem *lookup_hir_implitem (CrateNum crateNum, HirId id,
+				      HirId *parent_impl_id);
 
   void insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr);
   HIR::Expr *lookup_hir_expr (CrateNum crateNum, HirId id);
@@ -177,14 +177,14 @@ public:
     return hirNodesWithinCrate[crate];
   }
 
-  void insert_impl_item_mapping (HirId impl_item_id, HIR::InherentImpl *impl)
+  void insert_impl_item_mapping (HirId impl_item_id, HIR::ImplBlock *impl)
   {
     rust_assert (hirImplItemsToImplMappings.find (impl_item_id)
 		 == hirImplItemsToImplMappings.end ());
     hirImplItemsToImplMappings[impl_item_id] = impl;
   }
 
-  HIR::InherentImpl *lookup_associated_impl (HirId impl_item_id)
+  HIR::ImplBlock *lookup_associated_impl (HirId impl_item_id)
   {
     auto lookup = hirImplItemsToImplMappings.find (impl_item_id);
     rust_assert (lookup != hirImplItemsToImplMappings.end ());
@@ -192,8 +192,7 @@ public:
   }
 
   void iterate_impl_items (
-    std::function<bool (HirId, HIR::InherentImplItem *, HIR::InherentImpl *)>
-      cb);
+    std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb);
 
 private:
   Mappings ();
@@ -217,11 +216,10 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::FunctionParam *> > hirParamMappings;
   std::map<CrateNum, std::map<HirId, HIR::StructExprField *> >
     hirStructFieldMappings;
-  std::map<CrateNum,
-	   std::map<HirId, std::pair<HirId, HIR::InherentImplItem *> > >
+  std::map<CrateNum, std::map<HirId, std::pair<HirId, HIR::ImplItem *> > >
     hirImplItemMappings;
   std::map<CrateNum, std::map<HirId, HIR::SelfParam *> > hirSelfParamMappings;
-  std::map<HirId, HIR::InherentImpl *> hirImplItemsToImplMappings;
+  std::map<HirId, HIR::ImplBlock *> hirImplItemsToImplMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;

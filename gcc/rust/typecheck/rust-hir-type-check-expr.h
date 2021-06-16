@@ -229,7 +229,7 @@ public:
       }
 
     auto resolved_candidate = candidates.at (0);
-    HIR::InherentImplItem *resolved_method = resolved_candidate.impl_item;
+    HIR::ImplItem *resolved_method = resolved_candidate.impl_item;
     TyTy::BaseType *lookup_tyty = resolved_candidate.ty;
 
     if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)

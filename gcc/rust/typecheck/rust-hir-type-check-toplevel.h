@@ -235,7 +235,7 @@ public:
     context->insert_type (function.get_mappings (), fnType);
   }
 
-  void visit (HIR::InherentImpl &impl_block) override
+  void visit (HIR::ImplBlock &impl_block) override
   {
     std::vector<TyTy::SubstitutionParamMapping> substitutions;
     if (impl_block.has_generics ())

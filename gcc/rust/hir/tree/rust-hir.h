@@ -645,19 +645,19 @@ public:
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
 
-class InherentImplItem
+class ImplItem
 {
 protected:
   // Clone function implementation as pure virtual method
-  virtual InherentImplItem *clone_inherent_impl_item_impl () const = 0;
+  virtual ImplItem *clone_inherent_impl_item_impl () const = 0;
 
 public:
-  virtual ~InherentImplItem () {}
+  virtual ~ImplItem () {}
 
   // Unique pointer custom clone function
-  std::unique_ptr<InherentImplItem> clone_inherent_impl_item () const
+  std::unique_ptr<ImplItem> clone_inherent_impl_item () const
   {
-    return std::unique_ptr<InherentImplItem> (clone_inherent_impl_item_impl ());
+    return std::unique_ptr<ImplItem> (clone_inherent_impl_item_impl ());
   }
 
   virtual std::string as_string () const = 0;

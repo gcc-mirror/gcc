@@ -373,24 +373,25 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    std::vector<std::unique_ptr<HIR::InherentImplItem> > impl_items;
+    std::vector<std::unique_ptr<HIR::ImplItem> > impl_items;
     std::vector<HirId> impl_item_ids;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
-	HIR::InherentImplItem *lowered
+	HIR::ImplItem *lowered
 	  = ASTLowerImplItem::translate (impl_item.get (),
 					 mapping.get_hirid ());
-	impl_items.push_back (std::unique_ptr<HIR::InherentImplItem> (lowered));
+	impl_items.push_back (std::unique_ptr<HIR::ImplItem> (lowered));
 	impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
       }
 
-    translated
-      = new HIR::InherentImpl (mapping, std::move (impl_items),
-			       std::move (generic_params),
-			       std::unique_ptr<HIR::Type> (impl_type),
-			       where_clause, vis, impl_block.get_inner_attrs (),
-			       impl_block.get_outer_attrs (),
-			       impl_block.get_locus ());
+    HIR::ImplBlock *hir_impl_block
+      = new HIR::ImplBlock (mapping, std::move (impl_items),
+			    std::move (generic_params),
+			    std::unique_ptr<HIR::Type> (impl_type),
+			    where_clause, vis, impl_block.get_inner_attrs (),
+			    impl_block.get_outer_attrs (),
+			    impl_block.get_locus ());
+    translated = hir_impl_block;
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
@@ -400,9 +401,7 @@ public:
 
     for (auto &impl_item_id : impl_item_ids)
       {
-	mappings->insert_impl_item_mapping (impl_item_id,
-					    static_cast<HIR::InherentImpl *> (
-					      translated));
+	mappings->insert_impl_item_mapping (impl_item_id, hir_impl_block);
       }
   }
 
@@ -514,24 +513,25 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    std::vector<std::unique_ptr<HIR::InherentImplItem> > impl_items;
+    std::vector<std::unique_ptr<HIR::ImplItem> > impl_items;
     std::vector<HirId> impl_item_ids;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
-	HIR::InherentImplItem *lowered
+	HIR::ImplItem *lowered
 	  = ASTLowerImplItem::translate (impl_item.get (),
 					 mapping.get_hirid ());
-	impl_items.push_back (std::unique_ptr<HIR::InherentImplItem> (lowered));
+	impl_items.push_back (std::unique_ptr<HIR::ImplItem> (lowered));
 	impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
       }
 
-    translated
-      = new HIR::InherentImpl (mapping, std::move (impl_items),
-			       std::move (generic_params),
-			       std::unique_ptr<HIR::Type> (impl_type),
-			       where_clause, vis, impl_block.get_inner_attrs (),
-			       impl_block.get_outer_attrs (),
-			       impl_block.get_locus ());
+    HIR::ImplBlock *hir_impl_block
+      = new HIR::ImplBlock (mapping, std::move (impl_items),
+			    std::move (generic_params),
+			    std::unique_ptr<HIR::Type> (impl_type),
+			    where_clause, vis, impl_block.get_inner_attrs (),
+			    impl_block.get_outer_attrs (),
+			    impl_block.get_locus ());
+    translated = hir_impl_block;
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
@@ -541,9 +541,7 @@ public:
 
     for (auto &impl_item_id : impl_item_ids)
       {
-	mappings->insert_impl_item_mapping (impl_item_id,
-					    static_cast<HIR::InherentImpl *> (
-					      translated));
+	mappings->insert_impl_item_mapping (impl_item_id, hir_impl_block);
       }
   }
 

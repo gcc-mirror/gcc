@@ -29,7 +29,7 @@ namespace Resolver {
 
 struct PathProbeCandidate
 {
-  HIR::InherentImplItem *impl_item;
+  HIR::ImplItem *impl_item;
   TyTy::BaseType *ty;
 };
 
@@ -43,16 +43,15 @@ public:
   {
     PathProbeType probe (receiver, segment_name);
     probe.mappings->iterate_impl_items (
-      [&] (HirId id, HIR::InherentImplItem *item,
-	   HIR::InherentImpl *impl) mutable -> bool {
+      [&] (HirId id, HIR::ImplItem *item,
+	   HIR::ImplBlock *impl) mutable -> bool {
 	probe.process_candidate (id, item, impl);
 	return true;
       });
     return probe.candidates;
   }
 
-  void process_candidate (HirId id, HIR::InherentImplItem *item,
-			  HIR::InherentImpl *impl)
+  void process_candidate (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl)
   {
     HirId impl_ty_id = impl->get_type ()->get_mappings ().get_hirid ();
     TyTy::BaseType *impl_block_ty = nullptr;

@@ -127,7 +127,7 @@ public:
   virtual void visit (TraitItemConst &item) = 0;
   virtual void visit (TraitItemType &item) = 0;
   virtual void visit (Trait &trait) = 0;
-  virtual void visit (InherentImpl &impl) = 0;
+  virtual void visit (ImplBlock &impl) = 0;
   virtual void visit (ExternalStaticItem &item) = 0;
   virtual void visit (ExternalFunctionItem &item) = 0;
   virtual void visit (ExternBlock &block) = 0;

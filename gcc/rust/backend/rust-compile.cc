@@ -137,9 +137,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
     {
       // this might fail because its a forward decl so we can attempt to
       // resolve it now
-      HIR::InherentImplItem *resolved_item
-	= ctx->get_mappings ()->lookup_hir_implitem (
-	  expr.get_mappings ().get_crate_num (), ref, nullptr);
+      HIR::ImplItem *resolved_item = ctx->get_mappings ()->lookup_hir_implitem (
+	expr.get_mappings ().get_crate_num (), ref, nullptr);
       if (resolved_item == nullptr)
 	{
 	  rust_error_at (expr.get_locus (), "failed to lookup forward decl");

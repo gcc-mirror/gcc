@@ -34,7 +34,7 @@ class TypeCheckTopLevelImplItem : public TypeCheckBase
 
 public:
   static void
-  Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self,
+  Resolve (HIR::ImplItem *item, TyTy::BaseType *self,
 	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
   {
     TypeCheckTopLevelImplItem resolver (self, substitutions);
@@ -213,7 +213,7 @@ class TypeCheckImplItem : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static void Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self)
+  static void Resolve (HIR::ImplItem *item, TyTy::BaseType *self)
   {
     TypeCheckImplItem resolver (self);
     item->accept_vis (resolver);

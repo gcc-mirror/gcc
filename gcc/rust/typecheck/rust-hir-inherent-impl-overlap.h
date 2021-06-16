@@ -25,14 +25,14 @@
 namespace Rust {
 namespace Resolver {
 
-class InherentImplItemToName : public TypeCheckBase
+class ImplItemToName : public TypeCheckBase
 {
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static bool resolve (HIR::InherentImplItem *item, std::string &name_result)
+  static bool resolve (HIR::ImplItem *item, std::string &name_result)
   {
-    InherentImplItemToName resolver (name_result);
+    ImplItemToName resolver (name_result);
     item->accept_vis (resolver);
     return resolver.ok;
   }
@@ -56,7 +56,7 @@ public:
   }
 
 private:
-  InherentImplItemToName (std::string &result)
+  ImplItemToName (std::string &result)
     : TypeCheckBase (), ok (false), result (result)
   {}
 
@@ -69,7 +69,7 @@ class GetLocusFromImplItem : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static bool Resolve (HIR::InherentImplItem *query, Location &locus)
+  static bool Resolve (HIR::ImplItem *query, Location &locus)
   {
     GetLocusFromImplItem resolver (locus);
     query->accept_vis (resolver);
@@ -113,18 +113,17 @@ public:
     OverlappingImplItemPass pass;
 
     // generate mappings
-    pass.mappings->iterate_impl_items ([&] (HirId id,
-					    HIR::InherentImplItem *impl_item,
-					    HIR::InherentImpl *impl) -> bool {
-      pass.process_impl_item (id, impl_item, impl);
-      return true;
-    });
+    pass.mappings->iterate_impl_items (
+      [&] (HirId id, HIR::ImplItem *impl_item, HIR::ImplBlock *impl) -> bool {
+	pass.process_impl_item (id, impl_item, impl);
+	return true;
+      });
 
     pass.scan ();
   }
 
-  void process_impl_item (HirId id, HIR::InherentImplItem *impl_item,
-			  HIR::InherentImpl *impl)
+  void process_impl_item (HirId id, HIR::ImplItem *impl_item,
+			  HIR::ImplBlock *impl)
   {
     // lets make a mapping of impl-item Self type to (impl-item,name):
     // {
@@ -137,11 +136,10 @@ public:
     rust_assert (ok);
 
     std::string impl_item_name;
-    ok = InherentImplItemToName::resolve (impl_item, impl_item_name);
+    ok = ImplItemToName::resolve (impl_item, impl_item_name);
     rust_assert (ok);
 
-    std::pair<HIR::InherentImplItem *, std::string> elem (impl_item,
-							  impl_item_name);
+    std::pair<HIR::ImplItem *, std::string> elem (impl_item, impl_item_name);
     impl_mappings[impl_type].insert (std::move (elem));
   }
 
@@ -166,17 +164,17 @@ public:
   }
 
   void possible_collision (
-    std::set<std::pair<HIR::InherentImplItem *, std::string> > query,
-    std::set<std::pair<HIR::InherentImplItem *, std::string> > candidate)
+    std::set<std::pair<HIR::ImplItem *, std::string> > query,
+    std::set<std::pair<HIR::ImplItem *, std::string> > candidate)
   {
     for (auto &q : query)
       {
-	HIR::InherentImplItem *query_impl_item = q.first;
+	HIR::ImplItem *query_impl_item = q.first;
 	std::string query_impl_item_name = q.second;
 
 	for (auto &c : candidate)
 	  {
-	    HIR::InherentImplItem *candidate_impl_item = c.first;
+	    HIR::ImplItem *candidate_impl_item = c.first;
 	    std::string candidate_impl_item_name = c.second;
 
 	    if (query_impl_item_name.compare (candidate_impl_item_name) == 0)
@@ -186,8 +184,8 @@ public:
       }
   }
 
-  void collision_detected (HIR::InherentImplItem *query,
-			   HIR::InherentImplItem *dup, const std::string &name)
+  void collision_detected (HIR::ImplItem *query, HIR::ImplItem *dup,
+			   const std::string &name)
   {
     Location qlocus; // query
     bool ok = GetLocusFromImplItem::Resolve (query, qlocus);
@@ -206,7 +204,7 @@ private:
   OverlappingImplItemPass () : TypeCheckBase () {}
 
   std::map<TyTy::BaseType *,
-	   std::set<std::pair<HIR::InherentImplItem *, std::string> > >
+	   std::set<std::pair<HIR::ImplItem *, std::string> > >
     impl_mappings;
 };
 
