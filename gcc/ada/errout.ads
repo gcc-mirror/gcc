@@ -279,7 +279,7 @@ package Errout is
    --      The character ? appearing anywhere in a message makes the message
    --      warning instead of a normal error message, and the text of the
    --      message will be preceded by "warning:" in the normal case. The
-   --      handling of warnings if further controlled by the Warning_Mode
+   --      handling of warnings is further controlled by the Warning_Mode
    --      option (-w switch), see package Opt for further details, and also by
    --      the current setting from pragma Warnings. This pragma applies only
    --      to warnings issued from the semantic phase (not the parser), but
