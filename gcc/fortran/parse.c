@@ -4485,6 +4485,9 @@ gfc_check_do_variable (gfc_symtree *st)
 {
   gfc_state_data *s;
 
+  if (!st)
+    return 0;
+
   for (s=gfc_state_stack; s; s = s->previous)
     if (s->do_variable == st)
       {
