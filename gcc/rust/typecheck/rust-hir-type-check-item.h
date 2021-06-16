@@ -55,21 +55,6 @@ public:
       TypeCheckImplItem::Resolve (impl_item.get (), self);
   }
 
-  void visit (HIR::TraitImpl &impl_block) override
-  {
-    TyTy::BaseType *self = nullptr;
-    if (!context->lookup_type (
-	  impl_block.get_type ()->get_mappings ().get_hirid (), &self))
-      {
-	rust_error_at (impl_block.get_locus (),
-		       "failed to resolve Self for TraitImpl");
-	return;
-      }
-
-    for (auto &impl_item : impl_block.get_impl_items ())
-      TypeCheckImplItem::Resolve (impl_item.get (), self);
-  }
-
   void visit (HIR::Function &function) override
   {
     TyTy::BaseType *lookup;

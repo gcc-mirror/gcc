@@ -43,14 +43,13 @@ public:
     return resolver.translated;
   }
 
-  static HIR::TraitImplItem *translate (AST::TraitImplItem *item,
-					HirId parent_impl_id)
+  static HIR::InherentImplItem *translate (AST::TraitImplItem *item,
+					   HirId parent_impl_id)
   {
     ASTLowerImplItem resolver (parent_impl_id);
     item->accept_vis (resolver);
-    rust_assert (resolver.trait_impl_item != nullptr);
-    // can get a way with this for now since they have the same hierarchy
-    return resolver.trait_impl_item;
+    rust_assert (resolver.translated != nullptr);
+    return resolver.translated;
   }
 
   void visit (AST::ConstantItem &constant) override
@@ -72,7 +71,6 @@ public:
 			       constant.get_outer_attrs (),
 			       constant.get_locus ());
     translated = translated_constant;
-    trait_impl_item = translated_constant;
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id,
@@ -161,7 +159,6 @@ public:
       }
 
     translated = fn;
-    trait_impl_item = fn;
   }
 
   void visit (AST::Method &method) override
@@ -250,17 +247,15 @@ public:
       }
 
     translated = mth;
-    trait_impl_item = mth;
   }
 
 private:
   ASTLowerImplItem (HirId parent_impl_id)
-    : translated (nullptr), trait_impl_item (nullptr),
-      parent_impl_id (parent_impl_id)
+    : translated (nullptr), parent_impl_id (parent_impl_id)
   {}
 
   HIR::InherentImplItem *translated;
-  HIR::TraitImplItem *trait_impl_item;
+
   HirId parent_impl_id;
 };
 

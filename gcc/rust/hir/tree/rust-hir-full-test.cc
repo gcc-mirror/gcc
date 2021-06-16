@@ -1084,88 +1084,6 @@ BlockExpr::as_string () const
 }
 
 std::string
-TraitImpl::as_string () const
-{
-  std::string str = VisItem::as_string ();
-
-  if (has_unsafe)
-    {
-      str += "unsafe ";
-    }
-
-  str += "impl ";
-
-  // generic params
-  str += "\n Generic params: ";
-  if (!has_generics ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &param : generic_params)
-	{
-	  str += "\n  " + param->as_string ();
-	}
-    }
-
-  str += "\n Has exclam: ";
-  if (has_exclam)
-    {
-      str += "true";
-    }
-  else
-    {
-      str += "false";
-    }
-
-  str += "\n TypePath (to trait): " + trait_path->as_string ();
-
-  str += "\n Type (struct to impl on): " + trait_type->as_string ();
-
-  str += "\n Where clause: ";
-  if (!has_where_clause ())
-    {
-      str += "none";
-    }
-  else
-    {
-      str += where_clause.as_string ();
-    }
-
-  // inner attributes
-  str += "\n inner attributes: ";
-  if (inner_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "inner attribute" syntax -
-       * just the body */
-      for (const auto &attr : inner_attrs)
-	{
-	  str += "\n  " + attr.as_string ();
-	}
-    }
-
-  str += "\n trait impl items: ";
-  if (!has_impl_items ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &item : impl_items)
-	{
-	  str += "\n  " + item->as_string ();
-	}
-    }
-
-  return str;
-}
-
-std::string
 TypeAlias::as_string () const
 {
   std::string str = VisItem::as_string ();
@@ -4688,12 +4606,6 @@ Trait::accept_vis (HIRVisitor &vis)
 
 void
 InherentImpl::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-TraitImpl::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

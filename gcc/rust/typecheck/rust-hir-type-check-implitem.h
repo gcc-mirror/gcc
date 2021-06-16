@@ -41,14 +41,6 @@ public:
     item->accept_vis (resolver);
   }
 
-  static void
-  Resolve (HIR::TraitImplItem *item, TyTy::BaseType *self,
-	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
-  {
-    TypeCheckTopLevelImplItem resolver (self, substitutions);
-    item->accept_vis (resolver);
-  }
-
   void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
@@ -222,12 +214,6 @@ class TypeCheckImplItem : public TypeCheckBase
 
 public:
   static void Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self)
-  {
-    TypeCheckImplItem resolver (self);
-    item->accept_vis (resolver);
-  }
-
-  static void Resolve (HIR::TraitImplItem *item, TyTy::BaseType *self)
   {
     TypeCheckImplItem resolver (self);
     item->accept_vis (resolver);

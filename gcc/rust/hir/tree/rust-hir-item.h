@@ -578,7 +578,7 @@ protected:
 };
 
 // A method (function belonging to a type)
-class Method : public InherentImplItem, public TraitImplItem
+class Method : public InherentImplItem
 {
   Analysis::NodeMapping mappings;
 
@@ -700,11 +700,6 @@ public:
     return get_mappings ();
   };
 
-  Analysis::NodeMapping get_trait_impl_mappings () const override
-  {
-    return get_mappings ();
-  };
-
   // Returns whether function has return type - if not, it is void.
   bool has_function_return_type () const { return return_type != nullptr; }
 
@@ -753,8 +748,6 @@ public:
 
   Location get_impl_locus () const final { return get_locus (); }
 
-  Location get_trait_impl_locus () const final { return get_locus (); }
-
   std::unique_ptr<BlockExpr> &get_function_body () { return function_body; }
   const std::unique_ptr<BlockExpr> &get_function_body () const
   {
@@ -765,13 +758,6 @@ protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Method *clone_inherent_impl_item_impl () const override
-  {
-    return new Method (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  Method *clone_trait_impl_item_impl () const override
   {
     return new Method (*this);
   }
@@ -1274,7 +1260,7 @@ protected:
 class LetStmt;
 
 // Rust function declaration HIR node
-class Function : public VisItem, public InherentImplItem, public TraitImplItem
+class Function : public VisItem, public InherentImplItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -1377,16 +1363,9 @@ public:
 
   Location get_impl_locus () const final { return get_locus (); }
 
-  Location get_trait_impl_locus () const final { return get_locus (); }
-
   void accept_vis (HIRVisitor &vis) override;
 
   Analysis::NodeMapping get_impl_mappings () const override
-  {
-    return get_mappings ();
-  };
-
-  Analysis::NodeMapping get_trait_impl_mappings () const override
   {
     return get_mappings ();
   };
@@ -1444,23 +1423,10 @@ protected:
   {
     return new Function (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  Function *clone_trait_impl_item_impl () const override
-  {
-    return new Function (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual Function* clone_statement_impl() const override {
-      return new Function(*this);
-  }*/
 };
 
 // Rust type alias (i.e. typedef) HIR node
-class TypeAlias : public VisItem, public TraitImplItem
+class TypeAlias : public VisItem, public InherentImplItem
 {
   Identifier new_type_name;
 
@@ -1512,11 +1478,8 @@ public:
   {
     VisItem::operator= (other);
     new_type_name = other.new_type_name;
-    // generic_params = other.generic_params;
     where_clause = other.where_clause;
     existing_type = other.existing_type->clone_type ();
-    // visibility = other.visibility->clone_visibility();
-    // outer_attrs = other.outer_attrs;
     locus = other.locus;
 
     generic_params.reserve (other.generic_params.size ());
@@ -1532,7 +1495,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  Location get_trait_impl_locus () const final { return get_locus (); }
+  Location get_impl_locus () const final { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1545,14 +1508,12 @@ public:
     return generic_params;
   }
 
-  // TODO: is this better? Or is a "vis_block" better?
   WhereClause &get_where_clause ()
   {
     rust_assert (has_where_clause ());
     return where_clause;
   }
 
-  // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_type_aliased ()
   {
     rust_assert (existing_type != nullptr);
@@ -1561,7 +1522,7 @@ public:
 
   Identifier get_new_type_name () const { return new_type_name; }
 
-  Analysis::NodeMapping get_trait_impl_mappings () const override
+  Analysis::NodeMapping get_impl_mappings () const override
   {
     return get_mappings ();
   };
@@ -1573,16 +1534,10 @@ protected:
 
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  TypeAlias *clone_trait_impl_item_impl () const override
+  TypeAlias *clone_inherent_impl_item_impl () const override
   {
     return new TypeAlias (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual TypeAlias* clone_statement_impl() const override {
-      return new TypeAlias(*this);
-  }*/
 };
 
 // Rust base struct declaration HIR node - abstract base class
@@ -2226,28 +2181,13 @@ protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Union *clone_item_impl () const override { return new Union (*this); }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual Union* clone_statement_impl() const override {
-      return new Union(*this);
-  }*/
 };
 
-/* "Constant item" HIR node - used for constant, compile-time expressions
- * within module scope (like constexpr) */
-class ConstantItem : public VisItem,
-		     public InherentImplItem,
-		     public TraitImplItem
+class ConstantItem : public VisItem, public InherentImplItem
 {
-  // either has an identifier or "_" - maybe handle in identifier?
-  // bool identifier_is_underscore;
-  // if no identifier declared, identifier will be "_"
   Identifier identifier;
-
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> const_expr;
-
   Location locus;
 
 public:
@@ -2284,15 +2224,13 @@ public:
   ConstantItem (ConstantItem &&other) = default;
   ConstantItem &operator= (ConstantItem &&other) = default;
 
-  /* Returns whether constant item is an "unnamed" (wildcard underscore used
-   * as identifier) constant. */
+  // Returns whether constant item is an "unnamed" (wildcard underscore used
+  // as identifier) constant.
   bool is_unnamed () const { return identifier == std::string ("_"); }
 
   Location get_locus () const { return locus; }
 
   Location get_impl_locus () const final { return get_locus (); }
-
-  Location get_trait_impl_locus () const final { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2303,11 +2241,6 @@ public:
   std::string get_identifier () { return identifier; }
 
   Analysis::NodeMapping get_impl_mappings () const override
-  {
-    return get_mappings ();
-  };
-
-  Analysis::NodeMapping get_trait_impl_mappings () const override
   {
     return get_mappings ();
   };
@@ -2326,19 +2259,6 @@ protected:
   {
     return new ConstantItem (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  ConstantItem *clone_trait_impl_item_impl () const override
-  {
-    return new ConstantItem (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual ConstantItem* clone_statement_impl() const override {
-      return new ConstantItem(*this);
-  }*/
 };
 
 /* Static item HIR node - items within module scope with fixed storage
@@ -3120,104 +3040,13 @@ protected:
   {
     return new InherentImpl (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual InherentImpl* clone_statement_impl() const override {
-      return new InherentImpl(*this);
-  }*/
-};
-
-// The "impl footrait for foo" impl block declaration HIR node
-class TraitImpl : public Impl
-{
-  bool has_unsafe;
-  bool has_exclam;
-  std::unique_ptr<Type> trait_path;
-
-  // bool has_impl_items;
-  std::vector<std::unique_ptr<TraitImplItem> > impl_items;
-
-public:
-  std::string as_string () const override;
-
-  // Returns whether trait impl has impl items.
-  bool has_impl_items () const { return !impl_items.empty (); }
-
-  // Mega-constructor
-  TraitImpl (Analysis::NodeMapping mappings, std::unique_ptr<Type> trait_path,
-	     bool is_unsafe, bool has_exclam,
-	     std::vector<std::unique_ptr<TraitImplItem> > impl_items,
-	     std::vector<std::unique_ptr<GenericParam> > generic_params,
-	     std::unique_ptr<Type> trait_type, WhereClause where_clause,
-	     Visibility vis, AST::AttrVec inner_attrs, AST::AttrVec outer_attrs,
-	     Location locus)
-    : Impl (std::move (mappings), std::move (generic_params),
-	    std::move (trait_type), std::move (where_clause), std::move (vis),
-	    std::move (inner_attrs), std::move (outer_attrs), locus),
-      has_unsafe (is_unsafe), has_exclam (has_exclam),
-      trait_path (std::move (trait_path)), impl_items (std::move (impl_items))
-  {}
-
-  // TODO: constructors with less params
-
-  // Copy constructor with vector clone
-  TraitImpl (TraitImpl const &other)
-    : Impl (other), has_unsafe (other.has_unsafe),
-      has_exclam (other.has_exclam),
-      trait_path (other.trait_path->clone_type ())
-  {
-    impl_items.reserve (other.impl_items.size ());
-    for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_trait_impl_item ());
-  }
-
-  // Overloaded assignment operator with vector clone
-  TraitImpl &operator= (TraitImpl const &other)
-  {
-    Impl::operator= (other);
-    trait_path = other.trait_path->clone_type ();
-    has_unsafe = other.has_unsafe;
-    has_exclam = other.has_exclam;
-
-    impl_items.reserve (other.impl_items.size ());
-    for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_trait_impl_item ());
-
-    return *this;
-  }
-
-  // move constructors
-  TraitImpl (TraitImpl &&other) = default;
-  TraitImpl &operator= (TraitImpl &&other) = default;
-
-  void accept_vis (HIRVisitor &vis) override;
-  std::vector<std::unique_ptr<TraitImplItem> > &get_impl_items ()
-  {
-    return impl_items;
-  };
-
-protected:
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  TraitImpl *clone_item_impl () const override { return new TraitImpl (*this); }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual TraitImpl* clone_statement_impl() const override {
-      return new TraitImpl(*this);
-  }*/
 };
 
 // Abstract base class for an item used inside an extern block
 class ExternalItem
 {
-  // bool has_outer_attrs;
   AST::AttrVec outer_attrs;
-
-  // bool has_visibility;
   Visibility visibility;
-
   Identifier item_name;
   Location locus;
 

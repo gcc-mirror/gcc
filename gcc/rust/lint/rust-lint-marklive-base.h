@@ -144,7 +144,6 @@ public:
   virtual void visit (HIR::TraitItemType &) override {}
   virtual void visit (HIR::Trait &) override {}
   virtual void visit (HIR::InherentImpl &) override {}
-  virtual void visit (HIR::TraitImpl &) override {}
 
   virtual void visit (HIR::ExternalStaticItem &) override {}
   virtual void visit (HIR::ExternalFunctionItem &) override {}

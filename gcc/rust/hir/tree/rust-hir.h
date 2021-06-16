@@ -645,8 +645,6 @@ public:
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
 
-/* Abstract base class for items used within an inherent impl block (the impl
- * name {} one) */
 class InherentImplItem
 {
 protected:
@@ -669,30 +667,6 @@ public:
   virtual Analysis::NodeMapping get_impl_mappings () const = 0;
 
   virtual Location get_impl_locus () const = 0;
-};
-
-// Abstract base class for items used in a trait impl
-class TraitImplItem
-{
-protected:
-  virtual TraitImplItem *clone_trait_impl_item_impl () const = 0;
-
-public:
-  virtual ~TraitImplItem (){};
-
-  // Unique pointer custom clone function
-  std::unique_ptr<TraitImplItem> clone_trait_impl_item () const
-  {
-    return std::unique_ptr<TraitImplItem> (clone_trait_impl_item_impl ());
-  }
-
-  virtual std::string as_string () const = 0;
-
-  virtual void accept_vis (HIRVisitor &vis) = 0;
-
-  virtual Analysis::NodeMapping get_trait_impl_mappings () const = 0;
-
-  virtual Location get_trait_impl_locus () const = 0;
 };
 
 // A crate HIR object - holds all the data for a single compilation unit

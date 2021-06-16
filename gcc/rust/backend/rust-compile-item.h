@@ -290,22 +290,6 @@ public:
 					compile_fns);
   }
 
-  void visit (HIR::TraitImpl &impl_block) override
-  {
-    TyTy::BaseType *self_lookup = nullptr;
-    if (!ctx->get_tyctx ()->lookup_type (
-	  impl_block.get_type ()->get_mappings ().get_hirid (), &self_lookup))
-      {
-	rust_error_at (impl_block.get_locus (),
-		       "failed to resolve type of impl");
-	return;
-      }
-
-    for (auto &impl_item : impl_block.get_impl_items ())
-      CompileInherentImplItem::Compile (self_lookup, impl_item.get (), ctx,
-					compile_fns);
-  }
-
 private:
   CompileItem (Context *ctx, bool compile_fns, TyTy::BaseType *concrete)
     : HIRCompileBase (ctx), compile_fns (compile_fns), concrete (concrete)

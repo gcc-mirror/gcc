@@ -104,13 +104,7 @@ public:
 	item.get ()->accept_vis (*this);
       }
   }
-  void visit (HIR::TraitImpl &impl) override
-  {
-    for (auto &&item : impl.get_impl_items ())
-      {
-	item.get ()->accept_vis (*this);
-      }
-  }
+
   void visit (HIR::LetStmt &stmt) override
   {
     if (stmt.has_init_expr ())
