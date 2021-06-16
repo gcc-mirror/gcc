@@ -149,11 +149,19 @@ public:
   {
     bool canonicalize_type_args = !impl_block.has_generics ();
     bool type_resolve_generic_args = false;
-    CanonicalPath impl_type
+
+    CanonicalPath impl_type_seg
       = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
 					     canonicalize_type_args,
 					     type_resolve_generic_args);
-    CanonicalPath impl_prefix = prefix.append (impl_type);
+    CanonicalPath trait_type_seg
+      = ResolveTypeToCanonicalPath::resolve (impl_block.get_trait_path (),
+					     canonicalize_type_args,
+					     type_resolve_generic_args);
+
+    CanonicalPath projection
+      = TraitImplProjection::resolve (trait_type_seg, impl_type_seg);
+    CanonicalPath impl_prefix = prefix.append (projection);
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);

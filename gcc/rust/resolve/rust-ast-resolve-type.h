@@ -162,6 +162,17 @@ public:
   }
 };
 
+class TraitImplProjection
+{
+public:
+  static CanonicalPath resolve (const CanonicalPath &trait_seg,
+				const CanonicalPath &impl_type_seg)
+  {
+    return CanonicalPath ("<" + impl_type_seg.get () + " as " + trait_seg.get ()
+			  + ">");
+  }
+};
+
 // FIXME: as part of imports and visibility we need to be able to keep a context
 // for handling PathInExpressions segments as they can be local to a particular
 // lexical scope requiring a context to be maintained for resolution
