@@ -91,7 +91,7 @@ namespace ranges
     using std::ranges::__detail::__maybe_borrowed_range;
     using std::__detail::__range_iter_t;
 
-    struct _Begin final
+    struct _Begin
     {
     private:
       template<typename _Tp>
@@ -105,8 +105,6 @@ namespace ranges
 	  else
 	    return noexcept(__decay_copy(begin(std::declval<_Tp&>())));
 	}
-
-      void operator&() const = delete;
 
     public:
       template<__maybe_borrowed_range _Tp>
@@ -144,7 +142,7 @@ namespace ranges
 	  { __decay_copy(end(__t)) } -> sentinel_for<__range_iter_t<_Tp>>;
 	};
 
-    struct _End final
+    struct _End
     {
     private:
       template<typename _Tp>
@@ -158,8 +156,6 @@ namespace ranges
 	  else
 	    return noexcept(__decay_copy(end(std::declval<_Tp&>())));
 	}
-
-      void operator&() const = delete;
 
     public:
       template<__maybe_borrowed_range _Tp>
@@ -193,7 +189,7 @@ namespace ranges
 	  return static_cast<const _Tp&&>(__t);
       }
 
-    struct _CBegin final
+    struct _CBegin
     {
       template<typename _Tp>
 	constexpr auto
@@ -203,8 +199,6 @@ namespace ranges
 	{
 	  return _Begin{}(__cust_access::__as_const<_Tp>(__e));
 	}
-
-      void operator&() const = delete;
     };
 
     struct _CEnd final
@@ -217,8 +211,6 @@ namespace ranges
 	{
 	  return _End{}(__cust_access::__as_const<_Tp>(__e));
 	}
-
-      void operator&() const = delete;
     };
 
     template<typename _Tp>
@@ -244,7 +236,7 @@ namespace ranges
 	  { _End{}(__t) } -> same_as<decltype(_Begin{}(__t))>;
 	};
 
-    struct _RBegin final
+    struct _RBegin
     {
     private:
       template<typename _Tp>
@@ -267,8 +259,6 @@ namespace ranges
 		return false;
 	    }
 	}
-
-      void operator&() const = delete;
 
     public:
       template<__maybe_borrowed_range _Tp>
@@ -304,7 +294,7 @@ namespace ranges
 	    -> sentinel_for<decltype(_RBegin{}(std::forward<_Tp>(__t)))>;
 	};
 
-    struct _REnd final
+    struct _REnd
     {
     private:
       template<typename _Tp>
@@ -328,8 +318,6 @@ namespace ranges
 	    }
 	}
 
-      void operator&() const = delete;
-
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
@@ -346,7 +334,7 @@ namespace ranges
 	}
     };
 
-    struct _CRBegin final
+    struct _CRBegin
     {
       template<typename _Tp>
 	constexpr auto
@@ -356,11 +344,9 @@ namespace ranges
 	{
 	  return _RBegin{}(__cust_access::__as_const<_Tp>(__e));
 	}
-
-      void operator&() const = delete;
     };
 
-    struct _CREnd final
+    struct _CREnd
     {
       template<typename _Tp>
 	constexpr auto
@@ -370,8 +356,6 @@ namespace ranges
 	{
 	  return _REnd{}(__cust_access::__as_const<_Tp>(__e));
 	}
-
-      void operator&() const = delete;
     };
 
     template<typename _Tp>
@@ -402,7 +386,7 @@ namespace ranges
 	  __detail::__to_unsigned_like(_End{}(__t) - _Begin{}(__t));
 	};
 
-    struct _Size final
+    struct _Size
     {
     private:
       template<typename _Tp>
@@ -419,8 +403,6 @@ namespace ranges
 	    return noexcept(_End{}(std::declval<_Tp&>())
 			    - _Begin{}(std::declval<_Tp&>()));
 	}
-
-      void operator&() const = delete;
 
     public:
       template<typename _Tp>
@@ -440,7 +422,7 @@ namespace ranges
 	}
     };
 
-    struct _SSize final
+    struct _SSize
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3403. Domain of ranges::ssize(E) doesn't match ranges::size(E)
@@ -469,8 +451,6 @@ namespace ranges
 	  else // Must be one of __max_diff_type or __max_size_type.
 	    return __detail::__max_diff_type(__size);
 	}
-
-      void operator&() const = delete;
     };
 
     template<typename _Tp>
@@ -487,7 +467,7 @@ namespace ranges
 	  bool(_Begin{}(__t) == _End{}(__t));
 	};
 
-    struct _Empty final
+    struct _Empty
     {
     private:
       template<typename _Tp>
@@ -502,8 +482,6 @@ namespace ranges
 	    return noexcept(bool(_Begin{}(std::declval<_Tp&>())
 		== _End{}(std::declval<_Tp&>())));
 	}
-
-      void operator&() const = delete;
 
     public:
       template<typename _Tp>
@@ -534,7 +512,7 @@ namespace ranges
     template<typename _Tp>
       concept __begin_data = contiguous_iterator<__range_iter_t<_Tp>>;
 
-    struct _Data final
+    struct _Data
     {
     private:
       template<typename _Tp>
@@ -546,8 +524,6 @@ namespace ranges
 	  else
 	    return noexcept(_Begin{}(std::declval<_Tp&>()));
 	}
-
-      void operator&() const = delete;
 
     public:
       template<__maybe_borrowed_range _Tp>
@@ -562,7 +538,7 @@ namespace ranges
 	}
     };
 
-    struct _CData final
+    struct _CData
     {
       template<typename _Tp>
 	constexpr auto
@@ -572,8 +548,6 @@ namespace ranges
 	{
 	  return _Data{}(__cust_access::__as_const<_Tp>(__e));
 	}
-
-      void operator&() const = delete;
     };
 
   } // namespace __cust_access
