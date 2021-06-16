@@ -1292,6 +1292,117 @@ vect_recog_widen_minus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
 				      "vect_recog_widen_minus_pattern");
 }
 
+/* Function vect_recog_popcount_pattern
+
+   Try to find the following pattern:
+
+   UTYPE1 A;
+   TYPE1 B;
+   UTYPE2 temp_in;
+   TYPE3 temp_out;
+   temp_in = (TYPE2)A;
+
+   temp_out = __builtin_popcount{,l,ll} (temp_in);
+   B = (TYPE1) temp_out;
+
+   TYPE2 may or may not be equal to TYPE3.
+   i.e. TYPE2 is equal to TYPE3 for __builtin_popcount
+   i.e. TYPE2 is not equal to TYPE3 for __builtin_popcountll
+
+   Input:
+
+   * STMT_VINFO: The stmt from which the pattern search begins.
+   here it starts with B = (TYPE1) temp_out;
+
+   Output:
+
+   * TYPE_OUT: The vector type of the output of this pattern.
+
+   * Return value: A new stmt that will be used to replace the sequence of
+   stmts that constitute the pattern. In this case it will be:
+   B = .POPCOUNT (A);
+*/
+
+static gimple *
+vect_recog_popcount_pattern (vec_info *vinfo,
+			     stmt_vec_info stmt_vinfo, tree *type_out)
+{
+  gassign *last_stmt = dyn_cast <gassign *> (stmt_vinfo->stmt);
+  gimple *popcount_stmt, *pattern_stmt;
+  tree rhs_oprnd, rhs_origin, lhs_oprnd, lhs_type, vec_type, new_var;
+  auto_vec<tree> vargs;
+
+  /* Find B = (TYPE1) temp_out. */
+  if (!last_stmt)
+    return NULL;
+  tree_code code = gimple_assign_rhs_code (last_stmt);
+  if (!CONVERT_EXPR_CODE_P (code))
+    return NULL;
+
+  lhs_oprnd = gimple_assign_lhs (last_stmt);
+  lhs_type = TREE_TYPE (lhs_oprnd);
+  if (!INTEGRAL_TYPE_P (lhs_type))
+    return NULL;
+
+  rhs_oprnd = gimple_assign_rhs1 (last_stmt);
+  if (TREE_CODE (rhs_oprnd) != SSA_NAME
+      || !has_single_use (rhs_oprnd))
+    return NULL;
+  popcount_stmt = SSA_NAME_DEF_STMT (rhs_oprnd);
+
+  /* Find temp_out = __builtin_popcount{,l,ll} (temp_in);  */
+  if (!is_gimple_call (popcount_stmt))
+    return NULL;
+  switch (gimple_call_combined_fn (popcount_stmt))
+    {
+    CASE_CFN_POPCOUNT:
+      break;
+    default:
+      return NULL;
+    }
+
+  if (gimple_call_num_args (popcount_stmt) != 1)
+    return NULL;
+
+  rhs_oprnd = gimple_call_arg (popcount_stmt, 0);
+  vect_unpromoted_value unprom_diff;
+  rhs_origin = vect_look_through_possible_promotion (vinfo, rhs_oprnd,
+						    &unprom_diff);
+
+  if (!rhs_origin)
+    return NULL;
+
+  /* Input and outout of .POPCOUNT should be same-precision integer.
+     Also A should be unsigned or same presion as temp_in,
+     otherwise there would be sign_extend from A to temp_in.  */
+  if (TYPE_PRECISION (unprom_diff.type) != TYPE_PRECISION (lhs_type)
+      || (!TYPE_UNSIGNED (unprom_diff.type)
+	  && (TYPE_PRECISION (unprom_diff.type)
+	      != TYPE_PRECISION (TREE_TYPE (rhs_oprnd)))))
+    return NULL;
+  vargs.safe_push (unprom_diff.op);
+
+  vect_pattern_detected ("vec_regcog_popcount_pattern", popcount_stmt);
+  vec_type = get_vectype_for_scalar_type (vinfo, lhs_type);
+  /* Do it only the backend existed popcount<vector_mode>2.  */
+  if (!direct_internal_fn_supported_p (IFN_POPCOUNT,
+				       vec_type,
+				       OPTIMIZE_FOR_SPEED))
+    return NULL;
+
+  /* Create B = .POPCOUNT (A).  */
+  new_var = vect_recog_temp_ssa_var (lhs_type, NULL);
+  pattern_stmt = gimple_build_call_internal_vec (IFN_POPCOUNT, vargs);
+  gimple_call_set_lhs (pattern_stmt, new_var);
+  gimple_set_location (pattern_stmt, gimple_location (last_stmt));
+  *type_out = vec_type;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "created pattern stmt: %G", pattern_stmt);
+  return pattern_stmt;
+}
+
 /* Function vect_recog_pow_pattern
 
    Try to find the following pattern:
@@ -5283,6 +5394,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   { vect_recog_sad_pattern, "sad" },
   { vect_recog_widen_sum_pattern, "widen_sum" },
   { vect_recog_pow_pattern, "pow" },
+  { vect_recog_popcount_pattern, "popcount" },
   { vect_recog_widen_shift_pattern, "widen_shift" },
   { vect_recog_rotate_pattern, "rotate" },
   { vect_recog_vector_vector_shift_pattern, "vector_vector_shift" },
