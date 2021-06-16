@@ -727,7 +727,7 @@ ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
       if (bb)
 	m_gori.exports (bb);
     }
-  enable_new_values (true);
+  m_new_value_p = true;
 }
 
 ranger_cache::~ranger_cache ()
