@@ -255,7 +255,7 @@ in the following sections.
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime @gol
 -Winvalid-imported-macros @gol
 -Wno-invalid-offsetof  -Wno-literal-suffix @gol
--Wno-mismatched-new-delete -Wmismatched-tags @gol
+-Wmismatched-new-delete -Wmismatched-tags @gol
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing @gol
 -Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor @gol
 -Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n} @gol
@@ -3963,7 +3963,7 @@ The warning is inactive inside a system header file, such as the STL, so
 one can still use the STL.  One may also instantiate or specialize
 templates.
 
-@item -Wno-mismatched-new-delete @r{(C++ and Objective-C++ only)}
+@item -Wmismatched-new-delete @r{(C++ and Objective-C++ only)}
 @opindex Wmismatched-new-delete
 @opindex Wno-mismatched-new-delete
 Warn for mismatches between calls to @code{operator new} or @code{operator
@@ -3995,7 +3995,7 @@ The related option @option{-Wmismatched-dealloc} diagnoses mismatches
 involving allocation and deallocation functions other than @code{operator
 new} and @code{operator delete}.
 
-@option{-Wmismatched-new-delete} is enabled by default.
+@option{-Wmismatched-new-delete} is included in @option{-Wall}.
 
 @item -Wmismatched-tags @r{(C++ and Objective-C++ only)}
 @opindex Wmismatched-tags
@@ -5539,6 +5539,8 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmemset-elt-size @gol
 -Wmemset-transposed-args @gol
 -Wmisleading-indentation @r{(only for C/C++)} @gol
+-Wmismatched-dealloc @gol
+-Wmismatched-new-delete @r{(only for C/C++)} @gol
 -Wmissing-attributes @gol
 -Wmissing-braces @r{(only for C/ObjC)} @gol
 -Wmultistatement-macros  @gol
@@ -6435,7 +6437,7 @@ Ignoring the warning can result in poorly optimized code.
 disable the warning, but this is not recommended and should be done only
 when non-existent profile data is justified.
 
-@item -Wno-mismatched-dealloc
+@item -Wmismatched-dealloc
 @opindex Wmismatched-dealloc
 @opindex Wno-mismatched-dealloc
 
@@ -6468,7 +6470,7 @@ void f (void)
 In C++, the related option @option{-Wmismatched-new-delete} diagnoses
 mismatches involving either @code{operator new} or @code{operator delete}.
 
-Option @option{-Wmismatched-dealloc} is enabled by default.
+Option @option{-Wmismatched-dealloc} is included in @option{-Wall}.
 
 @item -Wmultistatement-macros
 @opindex Wmultistatement-macros
@@ -7958,9 +7960,9 @@ Warnings controlled by the option can be disabled either by specifying
 Disable @option{-Wframe-larger-than=} warnings.  The option is equivalent
 to @option{-Wframe-larger-than=}@samp{SIZE_MAX} or larger.
 
-@item -Wno-free-nonheap-object
-@opindex Wno-free-nonheap-object
+@item -Wfree-nonheap-object
 @opindex Wfree-nonheap-object
+@opindex Wno-free-nonheap-object
 Warn when attempting to deallocate an object that was either not allocated
 on the heap, or by using a pointer that was not returned from a prior call
 to the corresponding allocation function.  For example, because the call
@@ -7977,7 +7979,7 @@ void f (char *p)
 @}
 @end smallexample
 
-@option{-Wfree-nonheap-object} is enabled by default.
+@option{-Wfree-nonheap-object} is included in @option{-Wall}.
 
 @item -Wstack-usage=@var{byte-size}
 @opindex Wstack-usage
