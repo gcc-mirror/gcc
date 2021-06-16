@@ -3815,6 +3815,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
   int proc_pointer;
   bool same_rank;
 
+  if (!lvalue->symtree)
+    return false;
+
   lhs_attr = gfc_expr_attr (lvalue);
   if (lvalue->ts.type == BT_UNKNOWN && !lhs_attr.proc_pointer)
     {
