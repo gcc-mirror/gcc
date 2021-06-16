@@ -1,3 +1,46 @@
+2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::begin, ranges::end)
+	(ranges::cbegin, ranges::cend, ranges::rbeing, ranges::rend)
+	(ranges::crbegin, ranges::crend, ranges::size, ranges::ssize)
+	(ranges::empty, ranges::data, ranges::cdata): Make types final.
+	Add deleted operator& overloads.
+	(ranges::advance, ranges::distance, ranges::next, ranges::prev):
+	Likewise.
+	* testsuite/std/ranges/headers/ranges/synopsis.cc: Replace
+	ill-formed & expressions with using-declarations. Add checks for
+	other function objects.
+
+2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (view_interface): Add noexcept to
+	empty, operator bool, data and size members.
+	(subrange): Add noexcept to constructors.
+	* include/std/ranges (single_view, ref_view): Add noexcept to
+	constructors.
+	(views::single, views::all): Add noexcept.
+	* testsuite/std/ranges/adaptors/all.cc: Check noexcept.
+	* testsuite/std/ranges/single_view.cc: Likewise.
+
+2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (subrange): Add __size_type typedef
+	and use it to simplify declarations.
+	(subrange(i, s, n)): Remove assertion.
+	* testsuite/std/ranges/subrange/constexpr.cc: New test.
+
+2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__cust_access::__decay_copy):
+	Replace with function object.
+	(__cust_access::__member_begin, ___cust_access::_adl_begin): Use
+	__decay_copy unqualified.
+	* include/bits/ranges_base.h (__member_end, __adl_end):
+	Likewise. Use __range_iter_t for type of ranges::begin.
+	(__member_rend): Use correct value category for rbegin argument.
+	(__member_data): Use __decay_copy unqualified.
+	(__begin_data): Use __range_iter_t for type of ranges::begin.
+
 2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ranges_base.h (ranges::empty): Check whether

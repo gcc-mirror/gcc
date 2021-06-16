@@ -1,3 +1,71 @@
+2021-06-15  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100876
+	* builtins.c: (gimple_call_return_array): Account for size_t
+	mangling as either unsigned int or unsigned long
+
+2021-06-15  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* compare-elim.c (try_eliminate_compare): Run DCE to clean things
+	up before eliminating comparisons.
+
+2021-06-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_bitwise_or::wi_fold): Make sure
+	nonzero|X is nonzero.
+	(range_op_bitwise_and_tests): Add tests for above.
+
+2021-06-15  Carl Love  <cel@us.ibm.com>
+
+	PR target/101022
+	* config/rs6000/rs6000-builtin.def (VCMPEQUT): Fix the ICODE for the
+	enum definition.
+	(VRLQ, VSLQ, VSRQ, VSRAQ): Remove unused BU_P10_OVERLOAD_2
+	definitions.
+
+2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92568
+	* gimplify.c (enum gimplify_defaultmap_kind): Add GDMK_SCALAR_TARGET.
+	(struct gimplify_omp_ctx): Extend defaultmap array by one.
+	(new_omp_context): Init defaultmap[GDMK_SCALAR_TARGET].
+	(omp_notice_variable): Update type classification for Fortran.
+	(gimplify_scan_omp_clauses): Update calls for new argument; handle
+	GDMK_SCALAR_TARGET; for Fortran, GDMK_POINTER avoid GOVD_MAP_0LEN_ARRAY.
+	* langhooks-def.h (lhd_omp_scalar_p): Add 'ptr_ok' argument.
+	* langhooks.c (lhd_omp_scalar_p): Likewise.
+	(LANG_HOOKS_OMP_ALLOCATABLE_P, LANG_HOOKS_OMP_SCALAR_TARGET_P): New.
+	(LANG_HOOKS_DECLS): Add them.
+	* langhooks.h (struct lang_hooks_for_decls): Add new hooks, update
+	omp_scalar_p pointer type to include the new bool argument.
+
+2021-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi
+	(Special Functions for Debugging the Analyzer): Add
+	__analyzer_dump_capacity.
+
+2021-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101046
+	* expr.c (expand_expr_real_2) <case VEC_PACK_FIX_TRUNC_EXPR,
+	case VEC_PACK_TRUNC_EXPR>: Clear subtarget when changing mode.
+
+2021-06-15  Richard Biener  <rguenther@suse.de>
+
+	* cfgloopanal.c (mark_irreducible_loops): Use a dominance
+	check to identify loop latches.
+	* cfgloop.c (verify_loop_structure): Likewise.
+	* loop-init.c (apply_loop_flags): Allow marked irreducible
+	regions even with multiple latches.
+	* predict.c (rebuild_frequencies): Simplify.
+
+2021-06-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadupdate.c
+	(jump_thread_path_registry::mark_threaded_blocks): Assert we
+	have marked irreducible regions.
+
 2021-06-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/100876

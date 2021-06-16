@@ -1696,8 +1696,7 @@ package body Exp_Ch3 is
 
       if Has_Task (Full_Type) then
          if Restriction_Active (No_Task_Hierarchy) then
-            Append_To (Args,
-              New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc));
+            Append_To (Args, Make_Integer_Literal (Loc, Library_Task_Level));
          else
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          end if;
@@ -2218,8 +2217,8 @@ package body Exp_Ch3 is
 
          if Has_Task (Rec_Type) then
             if Restriction_Active (No_Task_Hierarchy) then
-               Append_To (Args,
-                 New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc));
+               Append_To
+                 (Args, Make_Integer_Literal (Loc, Library_Task_Level));
             else
                Append_To (Args, Make_Identifier (Loc, Name_uMaster));
             end if;
@@ -4389,7 +4388,7 @@ package body Exp_Ch3 is
 
       declare
          Spec    : Node_Id;
-         Formals : List_Id := New_List;
+         Formals : List_Id;
 
       begin
          Formals := New_List (
@@ -9071,7 +9070,7 @@ package body Exp_Ch3 is
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uMaster),
              Parameter_Type      =>
-               New_Occurrence_Of (RTE (RE_Master_Id), Loc)));
+               New_Occurrence_Of (Standard_Integer, Loc)));
 
          Set_Has_Master_Entity (Proc_Id);
 

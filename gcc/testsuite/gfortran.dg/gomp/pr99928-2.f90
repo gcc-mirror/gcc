@@ -108,7 +108,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l11\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l11\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l11\\)" "gimple" } } ! FIXME. 
-  !$omp target parallel do lastprivate (l11) default(none) ! defaultmap(none)
+  !$omp target parallel do lastprivate (l11) default(none) defaultmap(none)
   do i = 1, 64
     l11 = i
   end do
@@ -117,7 +117,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l12\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l12\\)" "gimple" } } ! FIXME. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(l12\\)" "gimple" } }
-  !$omp target parallel do simd lastprivate (l12) default(none) ! defaultmap(none)
+  !$omp target parallel do simd lastprivate (l12) default(none) defaultmap(none)
   do i = 1, 64
     l12 = i
   end do
@@ -126,14 +126,14 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(j01\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp for\[^\n\r]*lastprivate\\(j01\\)" "gimple" } } ! NOTE: This is implementation detail. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(j01\\)" "gimple" } } ! NOTE: This is implementation detail. 
-  !$omp target parallel loop lastprivate (j01) default(none) ! defaultmap(none)
+  !$omp target parallel loop lastprivate (j01) default(none) defaultmap(none)
   do j01 = 0, 64
   end do
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l13" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l13\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp teams\[^\n\r]*shared\\(l13\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp distribute\[^\n\r]*lastprivate\\(l13\\)" "gimple" } }
-  !$omp target teams distribute lastprivate (l13) default(none) ! defaultmap(none)
+  !$omp target teams distribute lastprivate (l13) default(none) defaultmap(none)
   do i = 1, 64
     l13 = i
   end do
@@ -143,7 +143,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp distribute\[^\n\r]*lastprivate\\(l14\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l14\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l14\\)" "gimple" } } ! FIXME. 
-  !$omp target teams distribute parallel do lastprivate (l14) default(none) ! defaultmap(none)
+  !$omp target teams distribute parallel do lastprivate (l14) default(none) defaultmap(none)
   do i = 1, 64
     l14 = i
   end do
@@ -154,7 +154,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l15\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l15\\)" "gimple" } } ! FIXME. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(l15\\)" "gimple" } }
-  !$omp target teams distribute parallel do simd lastprivate (l15) default(none) ! defaultmap(none)
+  !$omp target teams distribute parallel do simd lastprivate (l15) default(none) defaultmap(none)
   do i = 1, 64
     l15 = i
   end do
@@ -163,7 +163,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp teams\[^\n\r]*shared\\(l16\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp distribute\[^\n\r]*lastprivate\\(l16\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(l16\\)" "gimple" } }
-  !$omp target teams distribute simd lastprivate (l16) default(none) ! defaultmap(none)
+  !$omp target teams distribute simd lastprivate (l16) default(none) defaultmap(none)
   do i = 1, 64
     l16 = i
   end do
@@ -174,13 +174,13 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(j02\\)" "gimple" } } ! NOTE: This is implementation detail. 
   ! { dg-final { scan-tree-dump "omp for\[^\n\r]*lastprivate\\(j02\\)" "gimple" } } ! NOTE: This is implementation detail. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(j02\\)" "gimple" } } ! NOTE: This is implementation detail. 
-  !$omp target teams loop lastprivate (j02) default(none) ! defaultmap(none)
+  !$omp target teams loop lastprivate (j02) default(none) defaultmap(none)
   do j02 = 0, 64
   end do
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l17" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l17\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(l17\\)" "gimple" } }
-  !$omp target simd lastprivate (l17) ! defaultmap(none)
+  !$omp target simd lastprivate (l17) defaultmap(none)
   do i = 1, 64
     l17 = i
   end do

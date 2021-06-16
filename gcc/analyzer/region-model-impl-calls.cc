@@ -206,6 +206,25 @@ region_model::impl_call_analyzer_describe (const gcall *call,
   warning_at (call->location, 0, "svalue: %qs", desc.m_buffer);
 }
 
+/* Handle a call to "__analyzer_dump_capacity".
+
+   Emit a warning describing the capacity of the base region of
+   the region pointed to by the 1st argument.
+   This is for use when debugging, and may be of use in DejaGnu tests.  */
+
+void
+region_model::impl_call_analyzer_dump_capacity (const gcall *call,
+						region_model_context *ctxt)
+{
+  tree t_ptr = gimple_call_arg (call, 0);
+  const svalue *sval_ptr = get_rvalue (t_ptr, ctxt);
+  const region *reg = deref_rvalue (sval_ptr, t_ptr, ctxt);
+  const region *base_reg = reg->get_base_region ();
+  const svalue *capacity = get_capacity (base_reg);
+  label_text desc = capacity->get_desc (true);
+  warning_at (call->location, 0, "capacity: %qs", desc.m_buffer);
+}
+
 /* Handle a call to "__analyzer_eval" by evaluating the input
    and dumping as a dummy warning, so that test cases can use
    dg-warning to validate the result (and so unexpected warnings will
@@ -312,6 +331,7 @@ region_model::impl_call_free (const call_details &cd)
 	 poisoning pointers.  */
       const region *freed_reg = ptr_to_region_sval->get_pointee ();
       unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+      m_dynamic_extents.remove (freed_reg);
     }
 }
 

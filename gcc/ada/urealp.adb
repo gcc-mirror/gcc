@@ -270,23 +270,21 @@ package body Urealp is
         15 => (Num =>  53_385_559, Den =>   45_392_361),  -- 1.176091259055681
         16 => (Num =>  78_897_839, Den =>   65_523_237)); -- 1.204119982655924
 
-      function Scale (X : Int; R : Ratio) return Int;
+      function Scale (X : Uint; R : Ratio) return Int;
       --  Compute the value of X scaled by R
 
       -----------
       -- Scale --
       -----------
 
-      function Scale (X : Int; R : Ratio) return Int is
-         type Wide_Int is range -2**63 .. 2**63 - 1;
-
+      function Scale (X : Uint; R : Ratio) return Int is
       begin
-         return Int (Wide_Int (X) * Wide_Int (R.Num) / Wide_Int (R.Den));
+         return UI_To_Int (X * R.Num / R.Den);
       end Scale;
 
    begin
       pragma Assert (U.Rbase /= 0);
-      return Scale (UI_To_Int (U.Den), Logs (U.Rbase));
+      return Scale (U.Den, Logs (U.Rbase));
    end Equivalent_Decimal_Exponent;
 
    ----------------

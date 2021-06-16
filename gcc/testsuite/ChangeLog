@@ -1,3 +1,49 @@
+2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92568
+	* gfortran.dg/gomp/pr99928-1.f90: Uncomment 'defaultmap(none)'.
+	* gfortran.dg/gomp/pr99928-2.f90: Uncomment 'defaultmap(none)'.
+	* gfortran.dg/gomp/pr99928-3.f90: Uncomment 'defaultmap(none)'.
+	* gfortran.dg/gomp/pr99928-4.f90: Uncomment 'defaultmap(none)'.
+	* gfortran.dg/gomp/pr99928-5.f90: Uncomment 'defaultmap(none)'.
+	* gfortran.dg/gomp/pr99928-6.f90: Uncomment 'defaultmap(none)'.
+	* gfortran.dg/gomp/pr99928-8.f90: Uncomment 'defaultmap(none)'.
+	* gfortran.dg/gomp/defaultmap-1.f90: New test.
+	* gfortran.dg/gomp/defaultmap-2.f90: New test.
+	* gfortran.dg/gomp/defaultmap-3.f90: New test.
+	* gfortran.dg/gomp/defaultmap-4.f90: New test.
+	* gfortran.dg/gomp/defaultmap-5.f90: New test.
+	* gfortran.dg/gomp/defaultmap-6.f90: New test.
+	* gfortran.dg/gomp/defaultmap-7.f90: New test.
+
+2021-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_dump_capacity): New decl.
+	* gcc.dg/analyzer/capacity-1.c: New test.
+	* gcc.dg/analyzer/capacity-2.c: New test.
+	* gcc.dg/analyzer/capacity-3.c: New test.
+
+2021-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101068
+	* gcc.dg/analyzer/explode-2a.c: New test.
+
+2021-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101046
+	* gcc.target/i386/pr101046.c: New test.
+
+2021-06-15  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* c-c++-common/Wattributes.c: Remove s390-specific check and add
+	new tests.
+	* gcc.dg/Wattributes-6.c: Likewise.
+
+2021-06-15  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/101020
+	* gcc.target/powerpc/float128-call.c: Adjust counts for be and le.
+
 2021-06-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/100876

@@ -212,6 +212,7 @@ struct gimplify_ctx
 enum gimplify_defaultmap_kind
 {
   GDMK_SCALAR,
+  GDMK_SCALAR_TARGET, /* w/ Fortran's target attr, implicit mapping, only.  */
   GDMK_AGGREGATE,
   GDMK_ALLOCATABLE,
   GDMK_POINTER
@@ -236,7 +237,7 @@ struct gimplify_omp_ctx
   bool order_concurrent;
   bool has_depend;
   bool in_for_exprs;
-  int defaultmap[4];
+  int defaultmap[5];
 };
 
 static struct gimplify_ctx *gimplify_ctxp;
@@ -461,6 +462,7 @@ new_omp_context (enum omp_region_type region_type)
   else
     c->default_kind = OMP_CLAUSE_DEFAULT_UNSPECIFIED;
   c->defaultmap[GDMK_SCALAR] = GOVD_MAP;
+  c->defaultmap[GDMK_SCALAR_TARGET] = GOVD_MAP;
   c->defaultmap[GDMK_AGGREGATE] = GOVD_MAP;
   c->defaultmap[GDMK_ALLOCATABLE] = GOVD_MAP;
   c->defaultmap[GDMK_POINTER] = GOVD_MAP;
@@ -7503,13 +7505,17 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 		{
 		  int gdmk;
 		  enum omp_clause_defaultmap_kind kind;
-		  if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
-		      || (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE
-			  && (TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
-			      == POINTER_TYPE)))
-		    gdmk = GDMK_POINTER;
-		  else if (lang_hooks.decls.omp_scalar_p (decl))
+		  if (lang_hooks.decls.omp_allocatable_p (decl))
+		    gdmk = GDMK_ALLOCATABLE;
+		  else if (lang_hooks.decls.omp_scalar_target_p (decl))
+		    gdmk = GDMK_SCALAR_TARGET;
+		  else if (lang_hooks.decls.omp_scalar_p (decl, false))
 		    gdmk = GDMK_SCALAR;
+		  else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+			   || (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE
+			       && (TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
+				   == POINTER_TYPE)))
+		    gdmk = GDMK_POINTER;
 		  else
 		    gdmk = GDMK_AGGREGATE;
 		  kind = lang_hooks.decls.omp_predetermined_mapping (decl);
@@ -8746,6 +8752,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
       if (!lang_GNU_Fortran ())
 	ctx->defaultmap[GDMK_POINTER] = GOVD_MAP | GOVD_MAP_0LEN_ARRAY;
       ctx->defaultmap[GDMK_SCALAR] = GOVD_FIRSTPRIVATE;
+      ctx->defaultmap[GDMK_SCALAR_TARGET] = (lang_GNU_Fortran ()
+					     ? GOVD_MAP : GOVD_FIRSTPRIVATE);
     }
   if (!lang_GNU_Fortran ())
     switch (code)
@@ -8827,7 +8835,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  if (error_operand_p (decl))
 	    goto do_add;
 	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c)
-	      && !lang_hooks.decls.omp_scalar_p (decl))
+	      && !lang_hooks.decls.omp_scalar_p (decl, true))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"non-scalar variable %qD in conditional "
@@ -10025,7 +10033,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      gdmkmax = GDMK_POINTER;
 	      break;
 	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR:
-	      gdmkmin = gdmkmax = GDMK_SCALAR;
+	      gdmkmin = GDMK_SCALAR;
+	      gdmkmax = GDMK_SCALAR_TARGET;
 	      break;
 	    case OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE:
 	      gdmkmin = gdmkmax = GDMK_AGGREGATE;
@@ -10066,12 +10075,18 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  case GDMK_SCALAR:
 		    ctx->defaultmap[gdmk] = GOVD_FIRSTPRIVATE;
 		    break;
+		  case GDMK_SCALAR_TARGET:
+		    ctx->defaultmap[gdmk] = (lang_GNU_Fortran ()
+					     ? GOVD_MAP : GOVD_FIRSTPRIVATE);
+		    break;
 		  case GDMK_AGGREGATE:
 		  case GDMK_ALLOCATABLE:
 		    ctx->defaultmap[gdmk] = GOVD_MAP;
 		    break;
 		  case GDMK_POINTER:
-		    ctx->defaultmap[gdmk] = GOVD_MAP | GOVD_MAP_0LEN_ARRAY;
+		    ctx->defaultmap[gdmk] = GOVD_MAP;
+		    if (!lang_GNU_Fortran ())
+		      ctx->defaultmap[gdmk] |= GOVD_MAP_0LEN_ARRAY;
 		    break;
 		  default:
 		    gcc_unreachable ();

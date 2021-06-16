@@ -615,10 +615,11 @@ lhd_omp_finish_clause (tree, gimple_seq *, bool)
 }
 
 /* Return true if DECL is a scalar variable (for the purpose of
-   implicit firstprivatization).  */
+   implicit firstprivatization & mapping). Only if alloc_ptr_ok
+   are allocatables and pointers accepted. */
 
 bool
-lhd_omp_scalar_p (tree decl)
+lhd_omp_scalar_p (tree decl, bool ptr_ok)
 {
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (type) == REFERENCE_TYPE)
@@ -627,7 +628,7 @@ lhd_omp_scalar_p (tree decl)
     type = TREE_TYPE (type);
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)
-      || TREE_CODE (type) == POINTER_TYPE)
+      || (ptr_ok && TREE_CODE (type) == POINTER_TYPE))
     return true;
   return false;
 }

@@ -1726,7 +1726,7 @@ package Sem_Util is
    --  subprogram call.
 
    function Is_Actual_Parameter (N : Node_Id) return Boolean;
-   --  Determines if N is an actual parameter in a subprogram call
+   --  Determines if N is an actual parameter in a subprogram or entry call
 
    function Is_Actual_Tagged_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of a formal of tagged type in a
@@ -2117,11 +2117,16 @@ package Sem_Util is
    --  conversions and hence variables.
 
    function Is_OK_Volatile_Context
-     (Context : Node_Id;
-      Obj_Ref : Node_Id) return Boolean;
+     (Context       : Node_Id;
+      Obj_Ref       : Node_Id;
+      Check_Actuals : Boolean) return Boolean;
    --  Determine whether node Context denotes a "non-interfering context" (as
    --  defined in SPARK RM 7.1.3(10)) where volatile reference Obj_Ref can
-   --  safely reside.
+   --  safely reside. When examining references that might be located within
+   --  actual parameters of a subprogram call that has not been resolved yet,
+   --  Check_Actuals should be False; such references will be assumed to be
+   --  legal. They will need to be checked again after subprogram call has
+   --  been resolved.
 
    function Is_Package_Contract_Annotation (Item : Node_Id) return Boolean;
    --  Determine whether aspect specification or pragma Item is one of the
@@ -3284,10 +3289,6 @@ package Sem_Util is
 
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S
-
-   function Within_Subprogram_Call (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N appears in an entry, function, or
-   --  procedure call.
 
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
    --  Output error message for incorrectly typed expression. Expr is the node

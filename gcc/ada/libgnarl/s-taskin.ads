@@ -773,6 +773,9 @@ package System.Tasking is
    Environment_Task_Level : constant Master_Level := 1;
    Independent_Task_Level : constant Master_Level := 2;
    Library_Task_Level     : constant Master_Level := 3;
+   --  Note that the value of Library_Task_Level is also hard coded in the
+   --  compiler, see Rtsfind.Library_Task_Level. The two should be kept in
+   --  sync.
 
    -------------------
    -- Priority info --

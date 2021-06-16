@@ -249,6 +249,18 @@ bit_range::dump_to_pp (pretty_printer *pp) const
   pp_wide_int (pp, get_next_bit_offset (), SIGNED);
 }
 
+/* Dump this object to stderr.  */
+
+DEBUG_FUNCTION void
+bit_range::dump () const
+{
+  pretty_printer pp;
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
 int
 bit_range::cmp (const bit_range &br1, const bit_range &br2)
 {

@@ -113,14 +113,14 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r13" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r13\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r13\\)" "gimple" } }
-  !$omp target parallel reduction(+:r13) default(none) ! defaultmap(none)
+  !$omp target parallel reduction(+:r13) default(none) defaultmap(none)
   r13 = r13 + 1
   !$omp end target parallel
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r14" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r14\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r14\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*reduction\\(\\+:r14\\)" "gimple" } } ! FIXME. 
-  !$omp target parallel do reduction(+:r14) default(none) ! defaultmap(none)
+  !$omp target parallel do reduction(+:r14) default(none) defaultmap(none)
   do i = 1, 64
     r14 = r14 + 1
   end do
@@ -129,7 +129,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r15\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*reduction\\(\\+:r15\\)" "gimple" } } ! FIXME. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r15\\)" "gimple" } }
-  !$omp target parallel do simd reduction(+:r15) default(none) ! defaultmap(none)
+  !$omp target parallel do simd reduction(+:r15) default(none) defaultmap(none)
   do i = 1, 64
     r15 = r15 + 1
   end do
@@ -138,21 +138,21 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(r16\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp for\[^\n\r]*reduction\\(\\+:r16\\)" "gimple" } } ! NOTE: This is implementation detail. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r16\\)" "gimple" } } ! NOTE: This is implementation detail. 
-  !$omp target parallel loop reduction(+:r16) default(none) ! defaultmap(none)
+  !$omp target parallel loop reduction(+:r16) default(none) defaultmap(none)
   do i = 1, 64
     r16 = r16 + 1
   end do
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r17" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r17\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:r17\\)" "gimple" } }
-  !$omp target teams reduction(+:r17) default(none) ! defaultmap(none)
+  !$omp target teams reduction(+:r17) default(none) defaultmap(none)
   r17 = r17 + 1
   !$omp end target teams
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r18" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r18\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:r18\\)" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:r18\\)" "gimple" } }
-  !$omp target teams distribute reduction(+:r18) default(none) ! defaultmap(none)
+  !$omp target teams distribute reduction(+:r18) default(none) defaultmap(none)
   do i = 1, 64
     r18 = r18 + 1
   end do
@@ -162,7 +162,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:r19\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r19\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*reduction\\(\\+:r19\\)" "gimple" } } ! FIXME. 
-  !$omp target teams distribute parallel do reduction(+:r19) default(none) ! defaultmap(none)
+  !$omp target teams distribute parallel do reduction(+:r19) default(none) defaultmap(none)
   do i = 1, 64
     r19 = r19 + 1
   end do
@@ -173,7 +173,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r20\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*reduction\\(\\+:r20\\)" "gimple" } } ! FIXME. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r20\\)" "gimple" } }
-  !$omp target teams distribute parallel do simd reduction(+:r20) default(none) ! defaultmap(none)
+  !$omp target teams distribute parallel do simd reduction(+:r20) default(none) defaultmap(none)
   do i = 1, 64
     r20 = r20 + 1
   end do
@@ -182,7 +182,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:r21\\)" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:r21\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r21\\)" "gimple" } }
-  !$omp target teams distribute simd reduction(+:r21) default(none) ! defaultmap(none)
+  !$omp target teams distribute simd reduction(+:r21) default(none) defaultmap(none)
   do i = 1, 64
     r21 = r21 + 1
   end do
@@ -193,14 +193,14 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(r22\\)" "gimple" } } ! NOTE: This is implementation detail. 
   ! { dg-final { scan-tree-dump "omp for\[^\n\r]*reduction\\(\\+:r22\\)" "gimple" } } ! NOTE: This is implementation detail. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r22\\)" "gimple" } } ! NOTE: This is implementation detail. 
-  !$omp target teams loop reduction(+:r22) default(none) ! defaultmap(none)
+  !$omp target teams loop reduction(+:r22) default(none) defaultmap(none)
   do i = 1, 64
     r22 = r22 + 1
   end do
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r23" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r23\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r23\\)" "gimple" } }
-  !$omp target simd reduction(+:r23) ! defaultmap(none)
+  !$omp target simd reduction(+:r23) defaultmap(none)
   do i = 1, 64
     r23 = r23 + 1
   end do

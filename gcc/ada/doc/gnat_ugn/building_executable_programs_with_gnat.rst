@@ -4629,8 +4629,18 @@ checks to be performed. The following checks are defined:
   in the string after :switch:`-gnaty`
   then proper indentation is checked, with the digit indicating the
   indentation level required. A value of zero turns off this style check.
-  The general style of required indentation is as specified by
-  the examples in the Ada Reference Manual. Full line comments must be
+  The rule checks that the following constructs start on a column that is
+  a multiple of the alignment level:
+
+  * beginnings of declarations (except record component declarations)
+    and statements;
+
+  * beginnings of the structural components of compound statements;
+
+  * ``end`` keyword that completes the declaration of a program unit declaration
+    or body or that completes a compound statement.
+
+  Full line comments must be
   aligned with the ``--`` starting on a column that is a multiple of
   the alignment level, or they may be aligned the same way as the following
   non-blank line (this is useful when full line comments appear in the middle
