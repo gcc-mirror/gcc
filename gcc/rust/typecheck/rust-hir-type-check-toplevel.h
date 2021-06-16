@@ -235,7 +235,7 @@ public:
     context->insert_type (function.get_mappings (), fnType);
   }
 
-  void visit (HIR::InherentImpl &impl_block) override
+  void visit (HIR::ImplBlock &impl_block) override
   {
     std::vector<TyTy::SubstitutionParamMapping> substitutions;
     if (impl_block.has_generics ())
@@ -262,47 +262,6 @@ public:
 	      }
 	  }
       }
-
-    auto self
-      = TypeCheckType::Resolve (impl_block.get_type ().get (), &substitutions);
-    if (self == nullptr || self->get_kind () == TyTy::TypeKind::ERROR)
-      return;
-
-    for (auto &impl_item : impl_block.get_impl_items ())
-      TypeCheckTopLevelImplItem::Resolve (impl_item.get (), self,
-					  substitutions);
-  }
-
-  void visit (HIR::TraitImpl &impl_block) override
-  {
-    std::vector<TyTy::SubstitutionParamMapping> substitutions;
-    if (impl_block.has_generics ())
-      {
-	for (auto &generic_param : impl_block.get_generic_params ())
-	  {
-	    switch (generic_param.get ()->get_kind ())
-	      {
-	      case HIR::GenericParam::GenericKind::LIFETIME:
-		// Skipping Lifetime completely until better handling.
-		break;
-
-		case HIR::GenericParam::GenericKind::TYPE: {
-		  auto param_type
-		    = TypeResolveGenericParam::Resolve (generic_param.get ());
-		  context->insert_type (generic_param->get_mappings (),
-					param_type);
-
-		  substitutions.push_back (TyTy::SubstitutionParamMapping (
-		    static_cast<HIR::TypeParam &> (*generic_param),
-		    param_type));
-		}
-		break;
-	      }
-	  }
-      }
-
-    // TODO
-    // resolve the trait and check all items implemented
 
     auto self
       = TypeCheckType::Resolve (impl_block.get_type ().get (), &substitutions);

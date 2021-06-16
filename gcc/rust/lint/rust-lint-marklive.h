@@ -80,37 +80,36 @@ public:
     expr.get_lhs ()->accept_vis (*this);
     expr.get_rhs ()->accept_vis (*this);
   }
+
   void visit (HIR::AssignmentExpr &expr) override
   {
     expr.visit_lhs (*this);
     expr.visit_rhs (*this);
   }
+
   void visit (HIR::Method &method) override
   {
     method.get_definition ().get ()->accept_vis (*this);
   }
+
   void visit (HIR::TraitItemFunc &item) override
   {
     item.get_block_expr ()->accept_vis (*this);
   }
+
   void visit (HIR::TraitItemMethod &item) override
   {
     item.get_block_expr ()->accept_vis (*this);
   }
-  void visit (HIR::InherentImpl &impl) override
+
+  void visit (HIR::ImplBlock &impl) override
   {
     for (auto &&item : impl.get_impl_items ())
       {
 	item.get ()->accept_vis (*this);
       }
   }
-  void visit (HIR::TraitImpl &impl) override
-  {
-    for (auto &&item : impl.get_impl_items ())
-      {
-	item.get ()->accept_vis (*this);
-      }
-  }
+
   void visit (HIR::LetStmt &stmt) override
   {
     if (stmt.has_init_expr ())

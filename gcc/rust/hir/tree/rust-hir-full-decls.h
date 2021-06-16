@@ -37,8 +37,7 @@ class GenericParam;
 class LifetimeParam;
 
 class TraitItem;
-class InherentImplItem;
-class TraitImplItem;
+class ImplItem;
 struct Crate;
 class PathExpr;
 
@@ -194,9 +193,7 @@ class TraitItemMethod;
 class TraitItemConst;
 class TraitItemType;
 class Trait;
-class Impl;
-class InherentImpl;
-class TraitImpl;
+class ImplBlock;
 class ExternalItem;
 class ExternalStaticItem;
 struct NamedFunctionParam;

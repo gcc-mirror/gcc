@@ -34,17 +34,8 @@ class CompileInherentImplItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static void Compile (TyTy::BaseType *self, HIR::InherentImplItem *item,
-		       Context *ctx, bool compile_fns,
-		       TyTy::BaseType *concrete = nullptr)
-  {
-    CompileInherentImplItem compiler (self, ctx, compile_fns, concrete);
-    item->accept_vis (compiler);
-  }
-
-  static void Compile (TyTy::BaseType *self, HIR::TraitImplItem *item,
-		       Context *ctx, bool compile_fns,
-		       TyTy::BaseType *concrete = nullptr)
+  static void Compile (TyTy::BaseType *self, HIR::ImplItem *item, Context *ctx,
+		       bool compile_fns, TyTy::BaseType *concrete = nullptr)
   {
     CompileInherentImplItem compiler (self, ctx, compile_fns, concrete);
     item->accept_vis (compiler);

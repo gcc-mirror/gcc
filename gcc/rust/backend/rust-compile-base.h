@@ -147,9 +147,8 @@ public:
   virtual void visit (HIR::TraitItemConst &item) {}
   virtual void visit (HIR::TraitItemType &item) {}
   virtual void visit (HIR::Trait &trait) {}
-  virtual void visit (HIR::InherentImpl &impl) {}
-  virtual void visit (HIR::TraitImpl &impl) {}
-  // virtual void visit(ExternalItem& item) {}
+  virtual void visit (HIR::ImplBlock &impl) {}
+
   virtual void visit (HIR::ExternalStaticItem &item) {}
   virtual void visit (HIR::ExternalFunctionItem &item) {}
   virtual void visit (HIR::ExternBlock &block) {}

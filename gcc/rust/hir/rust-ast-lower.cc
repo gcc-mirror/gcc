@@ -363,5 +363,33 @@ ASTLoweringBase::lower_self (AST::SelfParam &self)
 			 self.get_is_mut (), self.get_locus ());
 }
 
+void
+ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
+{
+  std::vector<HIR::GenericArgsBinding> binding_args; // TODO
+
+  std::string segment_name = segment.get_ident_segment ().as_string ();
+  bool has_separating_scope_resolution
+    = segment.get_separating_scope_resolution ();
+
+  std::vector<HIR::Lifetime> lifetime_args;
+  for (auto &lifetime : segment.get_generic_args ().get_lifetime_args ())
+    {
+      HIR::Lifetime l = lower_lifetime (lifetime);
+      lifetime_args.push_back (std::move (l));
+    }
+
+  std::vector<std::unique_ptr<HIR::Type> > type_args;
+  for (auto &type : segment.get_generic_args ().get_type_args ())
+    {
+      HIR::Type *t = ASTLoweringType::translate (type.get ());
+      type_args.push_back (std::unique_ptr<HIR::Type> (t));
+    }
+
+  translated_segment = new HIR::TypePathSegmentGeneric (
+    segment_name, has_separating_scope_resolution, std::move (lifetime_args),
+    std::move (type_args), std::move (binding_args), segment.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust
