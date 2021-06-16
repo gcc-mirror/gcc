@@ -5958,11 +5958,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			    || (!e->value.function.esym
 				&& e->symtree->n.sym->attr.pointer))
 			&& fsym && fsym->attr.target)
-		{
-		  gfc_conv_expr (&parmse, e);
-		  parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
-		}
-
+		/* Make sure the function only gets called once.  */
+		gfc_conv_expr_reference (&parmse, e, false);
 	      else if (e->expr_type == EXPR_FUNCTION
 		       && e->symtree->n.sym->result
 		       && e->symtree->n.sym->result != e->symtree->n.sym
