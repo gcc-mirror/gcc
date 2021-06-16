@@ -1394,7 +1394,8 @@ gimple_ranger::dump_bb (FILE *f, basic_block bb)
       for (x = 1; x < num_ssa_names; x++)
 	{
 	  tree name = gimple_range_ssa_p (ssa_name (x));
-	  if (name && m_cache.range_on_edge (range, e, name))
+	  if (name && gori ().has_edge_range_p (name, e)
+	      && m_cache.range_on_edge (range, e, name))
 	    {
 	      gimple *s = SSA_NAME_DEF_STMT (name);
 	      // Only print the range if this is the def block, or

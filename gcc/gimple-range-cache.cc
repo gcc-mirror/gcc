@@ -978,8 +978,7 @@ ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
 }
 
 
-// Implement range_on_edge. Return TRUE if the edge generates a range,
-// otherwise false.. but still return a range.
+// Implement range_on_edge.  Always return the best available range.
 
  bool
  ranger_cache::range_on_edge (irange &r, edge e, tree expr)
@@ -989,14 +988,11 @@ ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
       exit_range (r, expr, e->src);
       int_range_max edge_range;
       if (m_gori.outgoing_edge_range_p (edge_range, e, expr, *this))
-	{
-	  r.intersect (edge_range);
-	  return true;
-	}
+	r.intersect (edge_range);
+      return true;
     }
-  else
-    get_tree_range (r, expr, NULL);
-  return false;
+
+  return get_tree_range (r, expr, NULL);
 }
 
 
