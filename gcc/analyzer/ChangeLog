@@ -1,3 +1,93 @@
+2021-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99212
+	PR analyzer/101082
+	* engine.cc: Include "target.h".
+	(impl_run_checkers): Log BITS_BIG_ENDIAN, BYTES_BIG_ENDIAN, and
+	WORDS_BIG_ENDIAN.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Move support for masking
+	via ARG0 & CST into...
+	(region_model_manager::maybe_undo_optimize_bit_field_compare):
+	...this new function.  Flatten by converting from nested
+	conditionals to a series of early return statements to reject
+	failures.  Reject if type is not unsigned_char_type_node.
+	Handle BYTES_BIG_ENDIAN when determining which bits are bound
+	in the binding_map.
+	* region-model.h
+	(region_model_manager::maybe_undo_optimize_bit_field_compare):
+	New decl.
+	* store.cc (bit_range::dump): New function.
+	* store.h (bit_range::dump): New decl.
+
+2021-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::on_stmt): Handle __analyzer_dump_capacity.
+	(exploded_node::on_stmt): Drop m_sm_changes from on_stmt_flags.
+	(state_change_requires_new_enode_p): New function...
+	(exploded_graph::process_node): Call it, rather than querying
+	flags.m_sm_changes, so that dynamic-extent differences can also
+	trigger the splitting of nodes.
+	* exploded-graph.h (struct on_stmt_flags): Drop field m_sm_changes.
+	* program-state.cc (program_state::detect_leaks): Purge dead
+	heap-allocated regions from dynamic extents.
+	(selftest::test_program_state_1): Fix type of "size_in_bytes".
+	(selftest::test_program_state_merging): Likewise.
+	* region-model-impl-calls.cc
+	(region_model::impl_call_analyzer_dump_capacity): New.
+	(region_model::impl_call_free): Remove dynamic extents from the
+	freed region.
+	* region-model-reachability.h
+	(reachable_regions::begin_mutable_base_regs): New.
+	(reachable_regions::end_mutable_base_regs): New.
+	* region-model.cc: Include "tree-object-size.h".
+	(region_model::region_model): Support new field m_dynamic_extents.
+	(region_model::operator=): Likewise.
+	(region_model::operator==): Likewise.
+	(region_model::dump_to_pp): Dump sizes of dynamic regions.
+	(region_model::handle_unrecognized_call): Purge dynamic extents
+	from any regions that have escaped mutably:.
+	(region_model::get_capacity): New function.
+	(region_model::add_constraint): Unset dynamic extents when a
+	heap-allocated region's address is NULL.
+	(region_model::unbind_region_and_descendents): Purge dynamic
+	extents of unbound regions.
+	(region_model::can_merge_with_p): Call
+	m_dynamic_extents.can_merge_with_p.
+	(region_model::create_region_for_heap_alloc): Assert that
+	size_in_bytes's type is compatible with size_type_node.  Update
+	for renaming of record_dynamic_extents to set_dynamic_extents.
+	(region_model::create_region_for_alloca): Likewise.
+	(region_model::record_dynamic_extents): Rename to...
+	(region_model::set_dynamic_extents): ...this.  Assert that
+	size_in_bytes's type is compatible with size_type_node.  Add it
+	to the m_dynamic_extents map.
+	(region_model::get_dynamic_extents): New.
+	(region_model::unset_dynamic_extents): New.
+	(selftest::test_state_merging): Fix type of "size".
+	(selftest::test_malloc_constraints): Likewise.
+	(selftest::test_malloc): Verify dynamic extents.
+	(selftest::test_alloca): Likewise.
+	* region-model.h (region_to_value_map::is_empty): New.
+	(region_model::dynamic_extents_t): New typedef.
+	(region_model::impl_call_analyzer_dump_capacity): New decl.
+	(region_model::get_dynamic_extents): New function.
+	(region_model::get_dynamic_extents): New decl.
+	(region_model::set_dynamic_extents): New decl.
+	(region_model::unset_dynamic_extents): New decl.
+	(region_model::get_capacity): New decl.
+	(region_model::record_dynamic_extents): Rename to set_dynamic_extents.
+	(region_model::m_dynamic_extents): New field.
+
+2021-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_to_value_map::operator=): New.
+	(region_to_value_map::operator==): New.
+	(region_to_value_map::dump_to_pp): New.
+	(region_to_value_map::dump): New.
+	(region_to_value_map::can_merge_with_p): New.
+	* region-model.h (class region_to_value_map): New class.
+
 2021-06-13  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* call-string.cc (call_string::call_string): Use range based for

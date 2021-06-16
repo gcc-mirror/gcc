@@ -1,3 +1,8 @@
+2021-06-15  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* c-attribs.c (common_handle_aligned_attribute): Remove short
+	circuit and dead code.
+
 2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/101052
