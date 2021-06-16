@@ -1683,21 +1683,10 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	  return false;
 	}
 
-#if 1
       cons = gfc_constructor_lookup (base, limit);
       gcc_assert (cons);
       gfc_constructor_append_expr (&expr->value.constructor,
 				   gfc_copy_expr (cons->expr), NULL);
-#else
-      cons = gfc_constructor_lookup (base, limit);
-      if (cons)
-	gfc_constructor_append_expr (&expr->value.constructor,
-				     gfc_copy_expr (cons->expr), NULL);
-      else
-	{
-	  t = false;
-	}
-#endif
     }
 
   mpz_clear (ptr);
@@ -3487,7 +3476,6 @@ gfc_specification_expr (gfc_expr *e)
     {
       gfc_error ("Expression at %L must be of INTEGER type, found %s",
 		 &e->where, gfc_basic_typename (e->ts.type));
-      gfc_clear_ts (&e->ts);
       return false;
     }
 
@@ -3826,9 +3814,6 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
   bool is_pure, is_implicit_pure, rank_remap;
   int proc_pointer;
   bool same_rank;
-
-  if (!lvalue->symtree)
-    return false;
 
   lhs_attr = gfc_expr_attr (lvalue);
   if (lvalue->ts.type == BT_UNKNOWN && !lhs_attr.proc_pointer)
