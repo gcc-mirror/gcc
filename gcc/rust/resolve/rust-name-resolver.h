@@ -36,6 +36,14 @@ namespace Resolver {
 // impl X<T>   { fn test - path X::test}
 // impl X<i32> { fn test - path X<i32>::test }
 // impl X<f32> { fn test - path X<f32>::test }
+//
+// pub trait Trait { // ::a::Trait
+//   fn f(&self); // ::a::Trait::f
+// }
+//
+// impl Trait for Struct {
+//    fn f(&self) {} // <::a::Struct as ::a::Trait>::f
+// }
 class CanonicalPath
 {
 public:
