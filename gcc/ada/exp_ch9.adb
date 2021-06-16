@@ -1756,34 +1756,21 @@ package body Exp_Ch9 is
       --  Generate a dummy master if tasks or tasking hierarchies are
       --  prohibited.
 
-      --    _Master : constant Master_Id := 3;
+      --    _Master : constant Integer := Library_Task_Level;
 
       if not Tasking_Allowed
         or else Restrictions.Set (No_Task_Hierarchy)
         or else not RTE_Available (RE_Current_Master)
       then
-         declare
-            Expr : Node_Id;
-
-         begin
-            --  RE_Library_Task_Level is not always available in configurable
-            --  RunTime
-
-            if not RTE_Available (RE_Library_Task_Level) then
-               Expr := Make_Integer_Literal (Loc, Uint_3);
-            else
-               Expr := New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc);
-            end if;
-
-            Master_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, Name_uMaster),
-                Constant_Present    => True,
-                Object_Definition   =>
-                  New_Occurrence_Of (Standard_Integer, Loc),
-                Expression          => Expr);
-         end;
+         Master_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc, Name_uMaster),
+             Constant_Present    => True,
+             Object_Definition   =>
+               New_Occurrence_Of (Standard_Integer, Loc),
+             Expression          =>
+               Make_Integer_Literal (Loc, Library_Task_Level));
 
       --  Generate:
       --    _master : constant Integer := Current_Master.all;
@@ -3628,7 +3615,8 @@ package body Exp_Ch9 is
       Master_Decl :=
         Make_Object_Renaming_Declaration (Loc,
           Defining_Identifier => Master_Id,
-          Subtype_Mark        => New_Occurrence_Of (RTE (RE_Master_Id), Loc),
+          Subtype_Mark        =>
+            New_Occurrence_Of (Standard_Integer, Loc),
           Name                => Make_Identifier (Loc, Name_uMaster));
 
       Insert_Action (Context, Master_Decl);
@@ -14710,8 +14698,7 @@ package body Exp_Ch9 is
          if Restriction_Active (No_Task_Hierarchy) = False then
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          else
-            Append_To (Args,
-              New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc));
+            Append_To (Args, Make_Integer_Literal (Loc, Library_Task_Level));
          end if;
       end if;
 

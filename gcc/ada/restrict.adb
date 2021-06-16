@@ -66,7 +66,7 @@ package body Restrict is
 
    No_Specification_Of_Aspects : array (Aspect_Id) of Source_Ptr :=
                                    (others => No_Location);
-   --  Entries in this array are set to point to a previously occuring pragma
+   --  Entries in this array are set to point to a previously occurring pragma
    --  that activates a No_Specification_Of_Aspect check.
 
    No_Specification_Of_Aspect_Warning : array (Aspect_Id) of Boolean :=

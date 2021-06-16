@@ -2340,7 +2340,13 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	      tree vuse = gimple_phi_arg_def (phi, i);
 	      edge e = gimple_phi_arg_edge (phi, i);
 	      auto_vec<seq_entry> edge_seq;
-	      bitmap_copy (tem_refs_not_in_seq, refs_not_in_seq);
+	      bitmap_and_compl (tem_refs_not_in_seq,
+				refs_not_in_seq, refs_not_supported);
+	      /* If we've marked all refs we search for as unsupported
+		 we can stop processing and use the sequence as before
+		 the PHI.  */
+	      if (bitmap_empty_p (tem_refs_not_in_seq))
+		return 1;
 	      eret = sm_seq_valid_bb (loop, e->src, vuse, edge_seq,
 				      tem_refs_not_in_seq, refs_not_supported,
 				      true, fully_visited);
@@ -2379,9 +2385,9 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		  /* sm_other prevails.  */
 		  else if (first_edge_seq[i].second != edge_seq[i].second)
 		    {
-		      /* This is just an optimization.  */
-		      gcc_assert (bitmap_bit_p (refs_not_supported,
-						first_edge_seq[i].first));
+		      /* Make sure the ref is marked as not supported.  */
+		      bitmap_set_bit (refs_not_supported,
+				      first_edge_seq[i].first);
 		      first_edge_seq[i].second = sm_other;
 		      first_edge_seq[i].from = NULL_TREE;
 		    }
@@ -2533,7 +2539,12 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
       vec<seq_entry> seq;
       seq.create (4);
       auto_bitmap refs_not_in_seq (&lim_bitmap_obstack);
-      bitmap_copy (refs_not_in_seq, mem_refs);
+      bitmap_and_compl (refs_not_in_seq, mem_refs, refs_not_supported);
+      if (bitmap_empty_p (refs_not_in_seq))
+	{
+	  seq.release ();
+	  break;
+	}
       auto_bitmap fully_visited;
       int res = sm_seq_valid_bb (loop, e->src, NULL_TREE,
 				 seq, refs_not_in_seq,

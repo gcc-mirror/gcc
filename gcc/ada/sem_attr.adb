@@ -10751,10 +10751,11 @@ package body Sem_Attr is
                   Nm : Node_Id;
 
                   Note : Boolean := True;
-                  --  Skip this for the case of Unrestricted_Access occuring in
-                  --  the context of a Valid check, since this otherwise leads
-                  --  to a missed warning (the Valid check does not really
-                  --  modify!) If this case, Note will be reset to False.
+                  --  Skip this for the case of Unrestricted_Access occurring
+                  --  in the context of a Valid check, since this otherwise
+                  --  leads to a missed warning (the Valid check does not
+                  --  really modify!) If this case, Note will be reset to
+                  --  False.
 
                   --  Skip it as well if the type is an Access_To_Constant,
                   --  given that no use of the value can modify the prefix.

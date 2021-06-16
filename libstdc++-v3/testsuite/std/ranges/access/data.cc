@@ -22,6 +22,8 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+static_assert(__gnu_test::is_customization_point_object(std::ranges::data));
+
 template<typename T>
   concept has_data
     = requires (T&& t) { std::ranges::data(std::forward<T>(t)); };

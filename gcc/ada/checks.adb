@@ -2306,6 +2306,11 @@ package body Checks is
    is
       Loc : constant Source_Ptr := Sloc (Call);
 
+      function Parameter_Passing_Mechanism_Specified
+        (Typ : Entity_Id)
+         return Boolean;
+      --  Returns True if parameter-passing mechanism is specified for type Typ
+
       function May_Cause_Aliasing
         (Formal_1 : Entity_Id;
          Formal_2 : Entity_Id) return Boolean;
@@ -2331,6 +2336,19 @@ package body Checks is
       --  be tested. Formal_1 and Formal_2 denote the corresponding formals.
       --  Check contains all and-ed simple tests generated so far or remains
       --  unchanged in the case of detailed exception messaged.
+
+      -------------------------------------------
+      -- Parameter_Passing_Mechanism_Specified --
+      -------------------------------------------
+
+      function Parameter_Passing_Mechanism_Specified
+        (Typ : Entity_Id)
+         return Boolean
+      is
+      begin
+         return Is_Elementary_Type (Typ)
+           or else Is_By_Reference_Type (Typ);
+      end Parameter_Passing_Mechanism_Specified;
 
       ------------------------
       -- May_Cause_Aliasing --
@@ -2493,10 +2511,7 @@ package body Checks is
          --  Elementary types are always passed by value, therefore actuals of
          --  such types cannot lead to aliasing. An aggregate is an object in
          --  Ada 2012, but an actual that is an aggregate cannot overlap with
-         --  another actual. A type that is By_Reference (such as an array of
-         --  controlled types) is not subject to the check because any update
-         --  will be done in place and a subsequent read will always see the
-         --  correct value, see RM 6.2 (12/3).
+         --  another actual.
 
          if Nkind (Orig_Act_1) = N_Aggregate
            or else (Nkind (Orig_Act_1) = N_Qualified_Expression
@@ -2504,10 +2519,7 @@ package body Checks is
          then
             null;
 
-         elsif Is_Object_Reference (Orig_Act_1)
-           and then not Is_Elementary_Type (Etype (Orig_Act_1))
-           and then not Is_By_Reference_Type (Etype (Orig_Act_1))
-         then
+         elsif Is_Object_Reference (Orig_Act_1) then
             Actual_2 := Next_Actual (Actual_1);
             Formal_2 := Next_Formal (Formal_1);
             while Present (Actual_2) and then Present (Formal_2) loop
@@ -2518,18 +2530,28 @@ package body Checks is
                --  the mode of the two formals may lead to aliasing.
 
                if Is_Object_Reference (Orig_Act_2)
-                 and then not Is_Elementary_Type (Etype (Orig_Act_2))
                  and then May_Cause_Aliasing (Formal_1, Formal_2)
                then
-                  Remove_Side_Effects (Actual_1);
-                  Remove_Side_Effects (Actual_2);
 
-                  Overlap_Check
-                    (Actual_1 => Actual_1,
-                     Actual_2 => Actual_2,
-                     Formal_1 => Formal_1,
-                     Formal_2 => Formal_2,
-                     Check    => Check);
+                  --  The aliasing check only applies when some of the formals
+                  --  have their passing mechanism unspecified; RM 6.2 (12/3).
+
+                  if Parameter_Passing_Mechanism_Specified (Etype (Orig_Act_1))
+                       and then
+                     Parameter_Passing_Mechanism_Specified (Etype (Orig_Act_2))
+                  then
+                     null;
+                  else
+                     Remove_Side_Effects (Actual_1);
+                     Remove_Side_Effects (Actual_2);
+
+                     Overlap_Check
+                       (Actual_1 => Actual_1,
+                        Actual_2 => Actual_2,
+                        Formal_1 => Formal_1,
+                        Formal_2 => Formal_2,
+                        Check    => Check);
+                  end if;
                end if;
 
                Next_Actual (Actual_2);

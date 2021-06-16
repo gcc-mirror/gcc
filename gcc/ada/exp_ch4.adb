@@ -5193,8 +5193,8 @@ package body Exp_Ch4 is
                   end if;
 
                   if Restriction_Active (No_Task_Hierarchy) then
-                     Append_To (Args,
-                       New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc));
+                     Append_To
+                       (Args, Make_Integer_Literal (Loc, Library_Task_Level));
                   else
                      Append_To (Args,
                        New_Occurrence_Of

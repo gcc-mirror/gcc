@@ -664,6 +664,15 @@ package body Sem_Util is
                return Make_Level_Literal
                         (Scope_Depth (Enclosing_Dynamic_Scope (E)) + 1);
 
+            --  Check if E is an expansion-generated renaming of an iterator
+            --  by examining Related_Expression. If so, determine the
+            --  accessibility level based on the original expression.
+
+            elsif Ekind (E) in E_Constant | E_Variable
+              and then Present (Related_Expression (E))
+            then
+               return Accessibility_Level (Related_Expression (E));
+
             --  Normal object - get the level of the enclosing scope
 
             else
@@ -6955,19 +6964,30 @@ package body Sem_Util is
    -----------------------------
 
    function Current_Entity_In_Scope (N : Name_Id) return Entity_Id is
-      E  : Entity_Id;
       CS : constant Entity_Id := Current_Scope;
 
-      Transient_Case : constant Boolean := Scope_Is_Transient;
+      E  : Entity_Id;
 
    begin
       E := Get_Name_Entity_Id (N);
-      while Present (E)
-        and then Scope (E) /= CS
-        and then (not Transient_Case or else Scope (E) /= Scope (CS))
-      loop
-         E := Homonym (E);
-      end loop;
+
+      if No (E) then
+         null;
+
+      elsif Scope_Is_Transient then
+         while Present (E) loop
+            exit when Scope (E) = CS or else Scope (E) = Scope (CS);
+
+            E := Homonym (E);
+         end loop;
+
+      else
+         while Present (E) loop
+            exit when Scope (E) = CS;
+
+            E := Homonym (E);
+         end loop;
+      end if;
 
       return E;
    end Current_Entity_In_Scope;
@@ -14614,6 +14634,8 @@ package body Sem_Util is
    --------------------------------
 
    function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id is
+      S : constant Entity_Id := Scope (Id);
+
       function Inspect_Decls
         (Decls : List_Id;
          Taft  : Boolean := False) return Entity_Id;
@@ -14682,7 +14704,13 @@ package body Sem_Util is
    begin
       --  Deferred constant or incomplete type case
 
-      Prev := Current_Entity_In_Scope (Id);
+      Prev := Current_Entity (Id);
+
+      while Present (Prev) loop
+         exit when Scope (Prev) = S;
+
+         Prev := Homonym (Prev);
+      end loop;
 
       if Present (Prev)
         and then (Is_Incomplete_Type (Prev) or else Ekind (Prev) = E_Constant)
@@ -14695,13 +14723,12 @@ package body Sem_Util is
       --  Private or Taft amendment type case
 
       declare
-         Pkg      : constant Entity_Id := Scope (Id);
-         Pkg_Decl : Node_Id := Pkg;
+         Pkg_Decl : Node_Id;
 
       begin
-         if Present (Pkg)
-           and then Is_Package_Or_Generic_Package (Pkg)
-         then
+         if Present (S) and then Is_Package_Or_Generic_Package (S) then
+            Pkg_Decl := S;
+
             while Nkind (Pkg_Decl) /= N_Package_Specification loop
                Pkg_Decl := Parent (Pkg_Decl);
             end loop;
@@ -14726,7 +14753,7 @@ package body Sem_Util is
             --  Taft amendment type. The incomplete view should be located in
             --  the private declarations of the enclosing scope.
 
-            elsif In_Package_Body (Pkg) then
+            elsif In_Package_Body (S) then
                return Inspect_Decls (Private_Declarations (Pkg_Decl), True);
             end if;
          end if;
@@ -15440,7 +15467,9 @@ package body Sem_Util is
          when N_Parameter_Association =>
             return N = Explicit_Actual_Parameter (Parent (N));
 
-         when N_Subprogram_Call =>
+         when N_Entry_Call_Statement
+            | N_Subprogram_Call
+         =>
             return Is_List_Member (N)
               and then
                 List_Containing (N) = Parameter_Associations (Parent (N));
@@ -18765,8 +18794,9 @@ package body Sem_Util is
    ----------------------------
 
    function Is_OK_Volatile_Context
-     (Context : Node_Id;
-      Obj_Ref : Node_Id) return Boolean
+     (Context       : Node_Id;
+      Obj_Ref       : Node_Id;
+      Check_Actuals : Boolean) return Boolean
    is
       function Is_Protected_Operation_Call (Nod : Node_Id) return Boolean;
       --  Determine whether an arbitrary node denotes a call to a protected
@@ -18841,21 +18871,14 @@ package body Sem_Util is
       ------------------------------
 
       function Within_Volatile_Function (Id : Entity_Id) return Boolean is
-         Func_Id : Entity_Id;
+         pragma Assert (Ekind (Id) = E_Return_Statement);
+
+         Func_Id : constant Entity_Id := Return_Applies_To (Id);
 
       begin
-         --  Traverse the scope stack looking for a [generic] function
+         pragma Assert (Ekind (Func_Id) in E_Function | E_Generic_Function);
 
-         Func_Id := Id;
-         while Present (Func_Id) and then Func_Id /= Standard_Standard loop
-            if Ekind (Func_Id) in E_Function | E_Generic_Function then
-               return Is_Volatile_Function (Func_Id);
-            end if;
-
-            Func_Id := Scope (Func_Id);
-         end loop;
-
-         return False;
+         return Is_Volatile_Function (Func_Id);
       end Within_Volatile_Function;
 
       --  Local variables
@@ -18865,9 +18888,26 @@ package body Sem_Util is
    --  Start of processing for Is_OK_Volatile_Context
 
    begin
+      --  Ignore context restriction when doing preanalysis, e.g. on a copy of
+      --  an expression function, because this copy is not fully decorated and
+      --  it is not possible to reliably decide the legality of the context.
+      --  Any violations will be reported anyway when doing the full analysis.
+
+      if not Full_Analysis then
+         return True;
+      end if;
+
+      --  For actual parameters within explicit parameter associations switch
+      --  the context to the corresponding subprogram call.
+
+      if Nkind (Context) = N_Parameter_Association then
+         return Is_OK_Volatile_Context (Context       => Parent (Context),
+                                        Obj_Ref       => Obj_Ref,
+                                        Check_Actuals => Check_Actuals);
+
       --  The volatile object appears on either side of an assignment
 
-      if Nkind (Context) = N_Assignment_Statement then
+      elsif Nkind (Context) = N_Assignment_Statement then
          return True;
 
       --  The volatile object is part of the initialization expression of
@@ -18885,7 +18925,7 @@ package body Sem_Util is
          --  function is volatile.
 
          if Is_Return_Object (Obj_Id) then
-            return Within_Volatile_Function (Obj_Id);
+            return Within_Volatile_Function (Scope (Obj_Id));
 
          --  Otherwise this is a normal object initialization
 
@@ -18936,8 +18976,9 @@ package body Sem_Util is
               N_Slice
         and then Prefix (Context) = Obj_Ref
         and then Is_OK_Volatile_Context
-                   (Context => Parent (Context),
-                    Obj_Ref => Context)
+                   (Context       => Parent (Context),
+                    Obj_Ref       => Context,
+                    Check_Actuals => Check_Actuals)
       then
          return True;
 
@@ -18969,8 +19010,9 @@ package body Sem_Util is
                              | N_Unchecked_Type_Conversion
         and then Expression (Context) = Obj_Ref
         and then Is_OK_Volatile_Context
-                   (Context => Parent (Context),
-                    Obj_Ref => Context)
+                   (Context       => Parent (Context),
+                    Obj_Ref       => Context,
+                    Check_Actuals => Check_Actuals)
       then
          return True;
 
@@ -18985,17 +19027,43 @@ package body Sem_Util is
       elsif Within_Check (Context) then
          return True;
 
-      --  Assume that references to effectively volatile objects that appear
-      --  as actual parameters in a subprogram call are always legal. A full
-      --  legality check is done when the actuals are resolved (see routine
-      --  Resolve_Actuals).
+      --  References to effectively volatile objects that appear as actual
+      --  parameters in subprogram calls can be examined only after call itself
+      --  has been resolved. Before that, assume such references to be legal.
 
-      elsif Within_Subprogram_Call (Context) then
-         return True;
+      elsif Nkind (Context) in N_Subprogram_Call | N_Entry_Call_Statement then
+         if Check_Actuals then
+            declare
+               Call   : Node_Id;
+               Formal : Entity_Id;
+               Subp   : constant Entity_Id := Get_Called_Entity (Context);
+            begin
+               Find_Actual (Obj_Ref, Formal, Call);
+               pragma Assert (Call = Context);
 
-      --  Otherwise the context is not suitable for an effectively volatile
-      --  object.
+               --  An effectively volatile object may act as an actual when the
+               --  corresponding formal is of a non-scalar effectively volatile
+               --  type (SPARK RM 7.1.3(10)).
 
+               if not Is_Scalar_Type (Etype (Formal))
+                 and then Is_Effectively_Volatile_For_Reading (Etype (Formal))
+               then
+                  return True;
+
+               --  An effectively volatile object may act as an actual in a
+               --  call to an instance of Unchecked_Conversion. (SPARK RM
+               --  7.1.3(10)).
+
+               elsif Is_Unchecked_Conversion_Instance (Subp) then
+                  return True;
+
+               else
+                  return False;
+               end if;
+            end;
+         else
+            return True;
+         end if;
       else
          return False;
       end if;
@@ -21037,9 +21105,11 @@ package body Sem_Util is
    begin
       pragma Assert (Ekind (Func_Id) in E_Function | E_Generic_Function);
 
-      --  A function declared within a protected type is volatile
+      --  A protected function is volatile
 
-      if Is_Protected_Type (Scope (Func_Id)) then
+      if Nkind (Parent (Unit_Declaration_Node (Func_Id))) =
+           N_Protected_Definition
+      then
          return True;
 
       --  An instance of Ada.Unchecked_Conversion is a volatile function if
@@ -29508,36 +29578,6 @@ package body Sem_Util is
    begin
       return Scope_Within_Or_Same (Scope (E), S);
    end Within_Scope;
-
-   ----------------------------
-   -- Within_Subprogram_Call --
-   ----------------------------
-
-   function Within_Subprogram_Call (N : Node_Id) return Boolean is
-      Par : Node_Id;
-
-   begin
-      --  Climb the parent chain looking for a function or procedure call
-
-      Par := N;
-      while Present (Par) loop
-         if Nkind (Par) in N_Entry_Call_Statement
-                         | N_Function_Call
-                         | N_Procedure_Call_Statement
-         then
-            return True;
-
-         --  Prevent the search from going too far
-
-         elsif Is_Body_Or_Package_Declaration (Par) then
-            exit;
-         end if;
-
-         Par := Parent (Par);
-      end loop;
-
-      return False;
-   end Within_Subprogram_Call;
 
    ----------------
    -- Wrong_Type --

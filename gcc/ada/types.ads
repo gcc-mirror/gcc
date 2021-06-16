@@ -773,7 +773,7 @@ package Types is
       Overflow_Mode_Assertions : Overflow_Mode_Type;
       --  This field indicates the mode for handling code generation and
       --  overflow checking (if enabled) for intermediate expression values.
-      --  This applies to any expression occuring inside assertions.
+      --  This applies to any expression occurring inside assertions.
    end record;
 
    -----------------------------------

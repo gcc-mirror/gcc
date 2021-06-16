@@ -320,6 +320,9 @@ private:
   const svalue *maybe_fold_sub_svalue (tree type,
 				       const svalue *parent_svalue,
 				       const region *subregion);
+  const svalue *maybe_undo_optimize_bit_field_compare (tree type,
+						       const compound_svalue *compound_sval,
+						       tree cst, const svalue *arg1);
 
   unsigned m_next_region_id;
   root_region m_root_region;

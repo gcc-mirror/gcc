@@ -1,3 +1,279 @@
+2021-06-15  Steve Baird  <baird@adacore.com>
+
+	* exp_util.adb (Kill_Dead_Code): Generalize the existing
+	handling of if statements to handle case statements similarly.
+
+2021-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise.h (_gnat_builtin_longjmp): Delete.
+	(set_gnat_exit_status): Likewise.
+
+2021-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Possible_Side_Effect_In_SPARK): Handle component
+	declaration just like full type and subtype declarations.
+
+2021-06-15  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (First_And_Last_Node): Also apply to arbitrary late
+	declarations, not only subprogram specs.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Make_Class_Wide_Type): Make sure all the calls to
+	Reinit_Field_To_Zero are for the correct Ekinds.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* aspects.ads (No_Task_Parts): New aspect.
+	* snames.ads-tmpl: Add the aspect name.
+	* exp_ch6.adb (Might_Have_Tasks): Return False if this is a
+	class-wide type whose specific type has No_Task_Parts.
+	* freeze.adb (Check_No_Parts_Violations): This is an adaptation
+	of the procedure formerly known as
+	Check_No_Controlled_Parts_Violations, which now supports both
+	No_Controlled_Parts and No_Task_Parts.  It takes a parameter
+	indicating which aspect is being checked.
+	(Freeze_Entity): Call Check_No_Parts_Violations for both
+	aspects.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): The code for
+	Aspect_No_Controlled_Parts already works as is with
+	Aspect_No_Task_Parts.
+	* libgnat/a-iteint.ads: Add No_Task_Parts aspect to the two
+	iterator iterfaces.
+	* doc/gnat_rm/implementation_defined_aspects.rst: Add
+	documentation for the No_Task_Parts aspect.
+	* gnat_rm.texi: Regenerate.
+
+2021-06-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram.Build_Table.Visit_Node): Fix
+	handling of scopes for subprogram calls.
+
+2021-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb: Fix typos in comments related to access types.
+	* sem_util.adb (Is_Access_Variable): Stronger condition.
+
+2021-06-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* Make-generated.in: Add rule to copy runtime files needed
+	during stage1.
+	* raise.c: Remove obsolete symbols used during bootstrap.
+	* gcc-interface/Make-lang.in: Do not use libgnat sources during
+	stage1.
+	(GNAT_ADA_OBJS, GNATBIND_OBJS): Split in two parts, the common
+	part and the part only used outside of stage1.
+	(ADA_GENERATED_FILES): Add runtime files needed during bootstrap
+	when recent APIs are needed.
+	(ada/b_gnatb.adb): Remove prerequisite.
+	* gcc-interface/system.ads: Remove obsolete entries.
+
+2021-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc.c (__gnat_personality_seh0): Use PERSONALITY_FUNCTION.
+
+2021-06-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Confirming): Separate the handling of
+	Implicit_Dereference, for which no pragma is generated but which
+	is already checked for legality in Sem_Ch13, including renamed
+	discriminants in a derived type.
+	(Is_Confirming, Same_Name): For expanded names, only check
+	matching of selector, because prefix may correspond to original
+	and derived types with different names and/or scopes. Semantic
+	checks on aspect expression have already verified its legality.
+	Add comments regarding possible gaps in RM description of the
+	feature.
+
+2021-06-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* freeze.adb (Freeze_Subprogram): Don't propagate conventions
+	Intrinsic or Entry to anonymous access-to-subprogram types
+	associated with subprograms having those conventions. Update
+	related comment.
+	* sem_attr.adb (Resolve_Attribute, Attribute_*Access): Remove
+	special-case warning code for cases where a called subprogram
+	has convention Intrinsic as well as its formal's type (the
+	expected type for the Access attribute), since this case can no
+	longer occur.
+
+2021-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_imgv.adb (Expand_User_Defined_Enumeration_Image): Fix
+	typos.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.adb (Known_Component_Size,
+	Known_Static_Component_Size, Unknown_Component_Size): Use
+	Implementation_Base_Type instead of Base_Type.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen-gen_entities.adb (E_Loop_Parameter): Add
+	Interface_Name field.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* sem_cat.adb (Check_Non_Static_Default_Expr): Allow nonstatic
+	expression in predefined unit with pragma Preelaborate.
+
+2021-06-15  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_rm/intrinsic_subprograms.rst: More details on shift
+	operations for signed types. Also add the missing Import and
+	Convention on the example.
+	* gnat_rm.texi: Regenerate.
+
+2021-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc.c: Include <cstdarg> instead of <stdarg.h> in C++.
+	Include <stdbool.h> and unconditionally <stdlib.h> in C.
+
+2021-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Find_Overlaid_Entity): Simplify comment for
+	spec.
+	* sem_util.adb (Find_Overlaid_Entity): Remove defensive code
+	from body.
+
+2021-06-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* argv.c: Add include of <stdlib.h> for the runtime.
+	(gnat_argv): Change type to char ** and initialize to NULL.
+	(gnat_envp): Likewise.
+	* argv-lynxos178-raven-cert.c: Add include of <stdlib.h>.
+	(gnat_argv): Change type to char ** and initialize to NULL.
+	(gnat_envp): Likewise.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb (Setter_Needs_Parent): Add missing
+	Then_Actions.  Fix self-contradictory comment.
+	* exp_util.adb (Insert_Actions): Minor comment improvments.
+
+2021-06-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_eval.adb (Eval_Logical_Op, Test_Expression_Is_Foldable):
+	Add support for folding more "and"/"or" expressions.
+	* exp_util.adb (Side_Effect_Free): Fix handling of membership
+	tests.
+
+2021-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Actual): Replace repeated calls to
+	"Etype (F)" with references to "F_Typ", which keeps the results
+	of exactly that call.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb (To_Bit_Offset): Use 'Base to avoid overflow in
+	computations in Last_Bit when Offset = 'Last.
+	(Choose_Offset): Give a better error message when we run out of
+	fields.  In particular, point out that
+	Gen_IL.Internals.Bit_Offset'Last needs to be increased.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* atree.ads, einfo-utils.ads, einfo-utils.adb, fe.h, gen_il.adb,
+	gen_il.ads, gen_il-gen-gen_entities.adb,
+	gen_il-gen-gen_nodes.adb, sem_ch12.adb, sem_ch3.adb,
+	sem_util.adb, sinfo-utils.ads, treepr.adb, types.ads: Clean up
+	??? comments and other comments.
+	* atree.adb: Clean up ??? comments and other comments.
+	(Validate_Node): Fix bug: "Off_0 (N) < Off_L (N)"
+	should be "Off_0 (N) <= Off_L (N)".
+	* gen_il-gen.adb, gen_il-gen.ads: Clean up ???
+	comments and other comments.  Add support for getter-specific
+	and setter-specific preconditions.  Detect the error of putting
+	a field in the wrong subrange.  Misc cleanup.
+	(Node_Field vs. Entity_Field): Clean up Nmake.  Improve
+	comments.
+	* gen_il-utils.ads: Misc cleanup. Move...
+	* gen_il-internals.ads: ... here.
+	* gen_il-utils.adb: Misc cleanup. Move...
+	* gen_il-internals.adb: ... here.
+	* gen_il-fields.ads: Move Was_Default_Init_Box_Association,
+	which was in the wrong subrange.  Add comments.  Misc cleanup.
+	* gen_il-types.ads: Add Named_Access_Kind.
+	* sinfo-cn.adb: Clean up ??? comments and other comments.
+	Remove redundant assertions.
+	* einfo.ads, sinfo.ads: Clean up ??? comments and other
+	comments.  Remove all the comments indicating field offsets.
+	These are obsolete now that Gen_IL computes the offsets
+	automatically.
+
+2021-06-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.ads, errout.adb, errout.ads, exp_aggr.adb, exp_ch5.adb,
+	exp_ch6.adb, exp_ch8.adb, exp_ch9.adb, exp_imgv.adb,
+	exp_put_image.adb, fe.h, impunit.adb, impunit.ads,
+	libgnat/a-cobove.ads, libgnat/a-convec.ads, opt.ads,
+	par-ch12.adb, par-ch3.adb, par-ch4.adb, par-ch5.adb,
+	par-ch6.adb, par-prag.adb, par-util.adb, scans.ads, scng.adb,
+	sem_aggr.adb, sem_attr.adb, sem_ch10.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_ch3.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_ch8.adb, sem_elab.adb, sem_eval.adb, sem_prag.adb,
+	sem_res.adb, sem_type.adb, sem_util.adb, sem_util.ads,
+	sinfo.ads, snames.ads-tmpl, sprint.adb, switch-c.adb, usage.adb,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_rm/implementation_defined_aspects.rst,
+	gcc-interface/trans.c: Update all references to Ada 2020 to Ada
+	2022. Rename pragma Ada_2020 to Ada_2022.  Update documentation
+	accordingly.
+	* gnat_ugn.texi, gnat_rm.texi: Regenerate.
+
+2021-06-15  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Gather_Components): Factor the test that was
+	already being used to govern emitting a pre-Ada_2020 error
+	message into an expression function,
+	OK_Scope_For_Discrim_Value_Error_Messages. Call that new
+	function in two places: the point where the same test was being
+	performed previously, and in governing emission of a newer
+	Ada_2020 error message. In both cases, the out-mode parameter
+	Gather_Components.Report_Errors is set to True even if no error
+	messages are generated within Gather_Components.
+	* sem_util.ads: Correct a comment.
+
+2021-06-15  Richard Kenner  <kenner@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration, Build_Derived_Type):
+	Reinitialize Stored_Constraint when needed.
+	(Set_Modular_Size): Likewise.
+	* atree.adb: (Check_Vanishing_Fields): Add node id to debugging
+	information.
+
+2021-06-15  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Propagate_Invariant_Attributes): Call
+	Set_Has_Own_Invariants on the base type, because these are
+	Base_Type_Only. The problem is that the base type of a type is
+	indeed a base type when Set_Base_Type is called, but then the
+	type is mutated into a subtype in rare cases.
+	* atree.ads, atree.adb (Is_Entity): Export. Correct subtype of
+	parameter in body.
+	* gen_il-gen.adb: Improve getters so that "Pre => ..." can refer
+	to the value of the field. Put Warnings (Off) on some with
+	clauses that are not currently used, but might be used by such
+	Pre's.
+
+2021-06-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Access_Type_Declaration): Add comments to explain
+	the ordering of Mutate_Kind and Set_Directly_Designated_Type;
+	remove temporary setting of Ekind to E_Access_Type for building
+	_master objects, since now the Ekind is already set to its final
+	value. Move repeated code into Setup_Access_Type routine and use
+	it so that Process_Subtype is executed before mutating the kind
+	of the type entity.
+	* gen_il-gen-gen_entities.adb (Gen_Entities): Remove
+	Directly_Designated_Type from E_Void, E_Private_Record,
+	E_Limited_Private_Type and Incomplete_Kind; now it only belongs
+	to Access_Kind entities.
+	* sem_util.adb: Minor reformatting.
+
 2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Add PAT

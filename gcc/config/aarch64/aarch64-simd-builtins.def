@@ -263,14 +263,18 @@
   BUILTIN_VQ_HSI (TERNOP, smlal_hi_n, 0, NONE)
   BUILTIN_VQ_HSI (TERNOPU, umlal_hi_n, 0, NONE)
 
-  BUILTIN_VSQN_HSDI (UNOPUS, sqmovun, 0, NONE)
+  /* Implemented by aarch64_sqmovun<mode>.  */
+  BUILTIN_VQN (UNOPUS, sqmovun, 0, NONE)
+  BUILTIN_SD_HSDI (UNOPUS, sqmovun, 0, NONE)
 
   /* Implemented by aarch64_sqxtun2<mode>.  */
   BUILTIN_VQN (BINOP_UUS, sqxtun2, 0, NONE)
 
   /* Implemented by aarch64_<su>qmovn<mode>.  */
-  BUILTIN_VSQN_HSDI (UNOP, sqmovn, 0, NONE)
-  BUILTIN_VSQN_HSDI (UNOP, uqmovn, 0, NONE)
+  BUILTIN_VQN (UNOP, sqmovn, 0, NONE)
+  BUILTIN_SD_HSDI (UNOP, sqmovn, 0, NONE)
+  BUILTIN_VQN (UNOP, uqmovn, 0, NONE)
+  BUILTIN_SD_HSDI (UNOP, uqmovn, 0, NONE)
 
   /* Implemented by aarch64_<su>qxtn2<mode>.  */
   BUILTIN_VQN (BINOP, sqxtn2, 0, NONE)

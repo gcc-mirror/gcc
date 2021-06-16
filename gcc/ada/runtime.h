@@ -31,9 +31,11 @@
 
 /* This file provides common definitions used by GNAT C runtime files.  */
 
+/* The following include is here to meet the published VxWorks requirement
+   that the vxWorks.h header appear before any other header.  */
 #ifdef __vxworks
 #include "vxWorks.h"
-#endif /* __vxworks */
+#endif
 
 #ifndef ATTRIBUTE_UNUSED
 #define ATTRIBUTE_UNUSED __attribute__((unused))

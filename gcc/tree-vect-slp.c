@@ -1536,13 +1536,12 @@ vect_build_slp_tree (vec_info *vinfo,
 /* Helper for building an associated SLP node chain.  */
 
 static void
-vect_slp_build_two_operator_nodes (slp_tree perm,
+vect_slp_build_two_operator_nodes (slp_tree perm, tree vectype,
 				   slp_tree op0, slp_tree op1,
 				   stmt_vec_info oper1, stmt_vec_info oper2,
 				   vec<std::pair<unsigned, unsigned> > lperm)
 {
   unsigned group_size = SLP_TREE_LANES (op1);
-  tree vectype = SLP_TREE_VECTYPE (op1);
 
   slp_tree child1 = new _slp_tree;
   SLP_TREE_DEF_TYPE (child1) = vect_internal_def;
@@ -2087,7 +2086,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		  for (unsigned lane = 0; lane < group_size; ++lane)
 		    lperm.quick_push (std::make_pair
 		      (chains[lane][i].code != chains[0][i].code, lane));
-		  vect_slp_build_two_operator_nodes (child, op0, op1,
+		  vect_slp_build_two_operator_nodes (child, vectype, op0, op1,
 						     (chains[0][i].code == code
 						      ? op_stmt_info
 						      : other_op_stmt_info),

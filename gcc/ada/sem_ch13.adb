@@ -3382,6 +3382,13 @@ package body Sem_Ch13 is
                   | Aspect_Interrupt_Priority
                   | Aspect_Priority
                =>
+                  --  Verify the expression is static when Static_Priorities is
+                  --  enabled.
+
+                  if not Is_OK_Static_Expression (Expr) then
+                     Check_Restriction (Static_Priorities, Expr);
+                  end if;
+
                   if Nkind (N) in N_Subprogram_Body | N_Subprogram_Declaration
                   then
                      --  Analyze the aspect expression
@@ -7992,6 +7999,15 @@ package body Sem_Ch13 is
            ("extra parentheses surrounding aggregate not allowed", Aggr);
          return;
 
+      --  Reject the mixing of named and positional entries in the aggregate
+
+      elsif Present (Expressions (Aggr))
+        and then Present (Component_Associations (Aggr))
+      then
+         Error_Msg_N ("cannot mix positional and named entries in "
+                       & "enumeration rep clause", N);
+         return;
+
       --  All tests passed, so set rep clause in place
 
       else
@@ -8006,7 +8022,7 @@ package body Sem_Ch13 is
 
       Elit := First_Literal (Enumtype);
 
-      --  First the positional entries if any
+      --  Process positional entries
 
       if Present (Expressions (Aggr)) then
          Expr := First (Expressions (Aggr));
@@ -8035,11 +8051,10 @@ package body Sem_Ch13 is
             Next (Expr);
             Next (Elit);
          end loop;
-      end if;
 
-      --  Now process the named entries if present
+      --  Process named entries
 
-      if Present (Component_Associations (Aggr)) then
+      elsif Present (Component_Associations (Aggr)) then
          Assoc := First (Component_Associations (Aggr));
          while Present (Assoc) loop
             Choice := First (Choices (Assoc));
@@ -16578,18 +16593,7 @@ package body Sem_Ch13 is
       --  here because the processing for generic instantiation always makes
       --  subtypes, and we want the original frozen actual types.
 
-      --  If we are dealing with private types, then do the check on their
-      --  fully declared counterparts if the full declarations have been
-      --  encountered (they don't have to be visible, but they must exist).
-
       Source := Ancestor_Subtype (Etype (First_Formal (Act_Unit)));
-
-      if Is_Private_Type (Source)
-        and then Present (Underlying_Type (Source))
-      then
-         Source := Underlying_Type (Source);
-      end if;
-
       Target := Ancestor_Subtype (Etype (Act_Unit));
 
       --  If either type is generic, the instantiation happens within a generic
@@ -16598,6 +16602,16 @@ package body Sem_Ch13 is
 
       if Is_Generic_Type (Source) or else Is_Generic_Type (Target) then
          return;
+      end if;
+
+      --  If we are dealing with private types, then do the check on their
+      --  fully declared counterparts if the full declarations have been
+      --  encountered (they don't have to be visible, but they must exist).
+
+      if Is_Private_Type (Source)
+        and then Present (Underlying_Type (Source))
+      then
+         Source := Underlying_Type (Source);
       end if;
 
       if Is_Private_Type (Target)
@@ -16692,8 +16706,8 @@ package body Sem_Ch13 is
       --  in the same unit as the unchecked conversion, then set the flag
       --  No_Strict_Aliasing (no strict aliasing is implicit here)
 
-      if Is_Access_Type (Target) and then
-        In_Same_Source_Unit (Target, N)
+      if Is_Access_Type (Target)
+        and then In_Same_Source_Unit (Target, N)
       then
          Set_No_Strict_Aliasing (Implementation_Base_Type (Target));
       end if;

@@ -29,6 +29,7 @@
 --  not been explicitly With'ed.
 
 with Types; use Types;
+with Uintp; use Uintp;
 
 package Rtsfind is
 
@@ -1975,11 +1976,6 @@ package Rtsfind is
      RE_Conditional_Call,                -- System.Tasking
      RE_Asynchronous_Call,               -- System.Tasking
 
-     RE_Foreign_Task_Level,              -- System.Tasking
-     RE_Environment_Task_Level,          -- System.Tasking
-     RE_Independent_Task_Level,          -- System.Tasking
-     RE_Library_Task_Level,              -- System.Tasking
-
      RE_Ada_Task_Control_Block,          -- System.Tasking
 
      RE_Task_List,                       -- System.Tasking
@@ -1996,7 +1992,6 @@ package Rtsfind is
      RE_Task_Entry_Index,                -- System.Tasking
      RE_Self,                            -- System.Tasking
 
-     RE_Master_Id,                       -- System.Tasking
      RE_Unspecified_Priority,            -- System.Tasking
 
      RE_Activation_Chain,                -- System.Tasking
@@ -3665,11 +3660,6 @@ package Rtsfind is
      RE_Conditional_Call                 => System_Tasking,
      RE_Asynchronous_Call                => System_Tasking,
 
-     RE_Foreign_Task_Level               => System_Tasking,
-     RE_Environment_Task_Level           => System_Tasking,
-     RE_Independent_Task_Level           => System_Tasking,
-     RE_Library_Task_Level               => System_Tasking,
-
      RE_Ada_Task_Control_Block           => System_Tasking,
 
      RE_Task_List                        => System_Tasking,
@@ -3686,7 +3676,6 @@ package Rtsfind is
      RE_Task_Entry_Index                 => System_Tasking,
      RE_Self                             => System_Tasking,
 
-     RE_Master_Id                        => System_Tasking,
      RE_Unspecified_Priority             => System_Tasking,
 
      RE_Activation_Chain                 => System_Tasking,
@@ -3993,6 +3982,9 @@ package Rtsfind is
       System_Task_Info        => True,
       System_Unsigned_Types   => True,
       others                  => False);
+
+   Library_Task_Level : constant Uint := Uint_3;
+   --  Corresponds to System.Tasking.Library_Task_Level
 
    -----------------
    -- Subprograms --

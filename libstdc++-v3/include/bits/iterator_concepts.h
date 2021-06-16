@@ -930,7 +930,8 @@ namespace ranges
   {
     using std::__detail::__class_or_enum;
 
-    struct {
+    struct _Decay_copy final
+    {
       template<typename _Tp>
 	constexpr decay_t<_Tp>
 	operator()(_Tp&& __t) const

@@ -2584,27 +2584,30 @@ package body Freeze is
 
          --  Local declarations
 
-         Types_With_Aspect : Elist_Id :=
-           Get_Types_With_Aspect_In_Hierarchy (Typ);
-
-         Aspect_Value     : Entity_Id;
-         Curr_Value       : Entity_Id;
-         Curr_Typ_Elmt    : Elmt_Id;
-         Curr_Body_Elmt   : Elmt_Id;
-         Curr_Formal_Elmt : Elmt_Id;
-         Gen_Bodies       : Elist_Id;
-         Gen_Formals      : Elist_Id;
-         Scop             : Entity_Id;
+         Aspect_Value      : Entity_Id;
+         Curr_Value        : Entity_Id;
+         Curr_Typ_Elmt     : Elmt_Id;
+         Curr_Body_Elmt    : Elmt_Id;
+         Curr_Formal_Elmt  : Elmt_Id;
+         Gen_Bodies        : Elist_Id;
+         Gen_Formals       : Elist_Id;
+         Scop              : Entity_Id;
+         Types_With_Aspect : Elist_Id;
 
       --  Start of processing for Check_No_Parts_Violations
 
       begin
-         --  There are no types with No_Parts specified, so there
-         --  is nothing to check.
+         --  Nothing to check if the type is elementary or artificial
 
-         if Is_Empty_Elmt_List (Types_With_Aspect)
-           or else not Comes_From_Source (Typ)
-         then
+         if Is_Elementary_Type (Typ) or else not Comes_From_Source (Typ) then
+            return;
+         end if;
+
+         Types_With_Aspect := Get_Types_With_Aspect_In_Hierarchy (Typ);
+
+         --  Nothing to check if there are no types with No_Parts specified
+
+         if Is_Empty_Elmt_List (Types_With_Aspect) then
             return;
          end if;
 

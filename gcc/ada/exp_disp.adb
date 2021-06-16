@@ -868,6 +868,7 @@ package body Exp_Disp is
 
          Str_Loc : constant String := Build_Location_String (Loc);
 
+         A    : Node_Id;
          Cond : Node_Id;
          Msg  : Node_Id;
          Prec : Node_Id;
@@ -899,6 +900,15 @@ package body Exp_Disp is
             if No (Prec) or else Is_Ignored (Prec) then
                return;
             end if;
+
+            --  Ensure that the evaluation of the actuals will not produce side
+            --  effects (since the check will use a copy of the actuals).
+
+            A := First_Actual (Call_Node);
+            while Present (A) loop
+               Remove_Side_Effects (A);
+               Next_Actual (A);
+            end loop;
 
             --  The expression for the precondition is analyzed within the
             --  generated pragma. The message text is the last parameter of

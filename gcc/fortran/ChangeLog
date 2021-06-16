@@ -1,3 +1,22 @@
+2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92568
+	* dump-parse-tree.c (show_omp_clauses): Update for defaultmap.
+	* f95-lang.c (LANG_HOOKS_OMP_ALLOCATABLE_P,
+	LANG_HOOKS_OMP_SCALAR_TARGET_P): New.
+	* gfortran.h (enum gfc_omp_defaultmap,
+	enum gfc_omp_defaultmap_category): New.
+	* openmp.c (gfc_match_omp_clauses): Update defaultmap matching.
+	* trans-decl.c (gfc_finish_decl_attrs): Set GFC_DECL_SCALAR_TARGET.
+	* trans-openmp.c (gfc_omp_allocatable_p, gfc_omp_scalar_target_p): New.
+	(gfc_omp_scalar_p): Take 'ptr_alloc_ok' argument.
+	(gfc_trans_omp_clauses, gfc_split_omp_clauses): Update for
+	defaultmap changes.
+	* trans.h (gfc_omp_scalar_p): Update prototype.
+	(gfc_omp_allocatable_p, gfc_omp_scalar_target_p): New.
+	(struct lang_decl): Add scalar_target.
+	(GFC_DECL_SCALAR_TARGET, GFC_DECL_GET_SCALAR_TARGET): New.
+
 2021-06-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* resolve.c (resolve_variable): Remove *XCNEW used to
