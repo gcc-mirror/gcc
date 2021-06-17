@@ -1005,9 +1005,9 @@ package body Exp_Put_Image is
       return True;
    end Enable_Put_Image;
 
-   ---------------------------------
+   -------------------------
    -- Make_Put_Image_Name --
-   ---------------------------------
+   -------------------------
 
    function Make_Put_Image_Name
      (Loc : Source_Ptr; Typ : Entity_Id) return Entity_Id
@@ -1027,6 +1027,10 @@ package body Exp_Put_Image is
 
       return Make_Defining_Identifier (Loc, Sname);
    end Make_Put_Image_Name;
+
+   ---------------------------------
+   -- Image_Should_Call_Put_Image --
+   ---------------------------------
 
    function Image_Should_Call_Put_Image (N : Node_Id) return Boolean is
    begin
@@ -1048,6 +1052,10 @@ package body Exp_Put_Image is
          return not Is_Scalar_Type (U_Type);
       end;
    end Image_Should_Call_Put_Image;
+
+   ----------------------
+   -- Build_Image_Call --
+   ----------------------
 
    function Build_Image_Call (N : Node_Id) return Node_Id is
       --  For T'Image (X) Generate an Expression_With_Actions node:
