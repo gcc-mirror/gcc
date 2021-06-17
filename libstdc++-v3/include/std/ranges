@@ -796,7 +796,9 @@ namespace views::__adaptor
   //
   // The optional static data member _Derived::_S_has_simple_extra_args should
   // be defined to true if the behavior of this adaptor is independent of the
-  // constness/value category of the extra arguments.
+  // constness/value category of the extra arguments.  This data member could
+  // also be defined as a variable template parameterized by the types of the
+  // extra arguments.
   template<typename _Derived>
     struct _RangeAdaptor
     {
@@ -818,9 +820,10 @@ namespace views::__adaptor
     concept __closure_has_simple_call_op = _Adaptor::_S_has_simple_call_op;
 
   // True if the behavior of the range adaptor non-closure _Adaptor is
-  // independent of the value category of its extra arguments.
-  template<typename _Adaptor>
-    concept __adaptor_has_simple_extra_args = _Adaptor::_S_has_simple_extra_args;
+  // independent of the value category of its extra arguments _Args.
+  template<typename _Adaptor, typename... _Args>
+    concept __adaptor_has_simple_extra_args = _Adaptor::_S_has_simple_extra_args
+      || _Adaptor::template _S_has_simple_extra_args<_Args...>;
 
   // A range adaptor closure that represents partial application of
   // the range adaptor _Adaptor with arguments _Args.
@@ -897,7 +900,7 @@ namespace views::__adaptor
   // This lets us get away with a single operator() overload, which makes
   // overload resolution failure diagnostics more concise.
   template<typename _Adaptor, typename... _Args>
-    requires __adaptor_has_simple_extra_args<_Adaptor>
+    requires __adaptor_has_simple_extra_args<_Adaptor, _Args...>
     struct _Partial<_Adaptor, _Args...> : _RangeAdaptorClosure
     {
       tuple<_Args...> _M_args;
@@ -926,7 +929,7 @@ namespace views::__adaptor
   // A lightweight specialization of the above template for the common case
   // where _Adaptor accepts a single extra argument.
   template<typename _Adaptor, typename _Arg>
-    requires __adaptor_has_simple_extra_args<_Adaptor>
+    requires __adaptor_has_simple_extra_args<_Adaptor, _Arg>
     struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure
     {
       _Arg _M_arg;
@@ -2112,7 +2115,12 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Take>::operator();
       static constexpr int _S_arity = 2;
-      static constexpr bool _S_has_simple_extra_args = true;
+      // The count argument of views::take is not always simple -- it can be
+      // e.g. a move-only class that's implicitly convertible to the difference
+      // type.  But an integer-like count argument is surely simple.
+      template<typename _Tp>
+	static constexpr bool _S_has_simple_extra_args
+	  = ranges::__detail::__is_integer_like<_Tp>;
     };
 
     inline constexpr _Take take;
@@ -2352,7 +2360,9 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Drop>::operator();
       static constexpr int _S_arity = 2;
-      static constexpr bool _S_has_simple_extra_args = true;
+      template<typename _Tp>
+	static constexpr bool _S_has_simple_extra_args
+	  = _Take::_S_has_simple_extra_args<_Tp>;
     };
 
     inline constexpr _Drop drop;
@@ -3230,9 +3240,14 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Split>::operator();
       static constexpr int _S_arity = 2;
-      // The second argument of views::split is _not_ simple -- it can be a
-      // non-view range, the value category of which affects whether the call is
-      // well-formed.  So we must not define _S_has_simple_extra_args to true.
+      // The pattern argument of views::split is not always simple -- it can be
+      // a non-view range, the value category of which affects whether the call
+      // is well-formed.  But a scalar or a view pattern argument is surely
+      // simple.
+      template<typename _Pattern>
+	static constexpr bool _S_has_simple_extra_args
+	  = is_scalar_v<_Pattern> || (view<_Pattern>
+				      && copy_constructible<_Pattern>);
     };
 
     inline constexpr _Split split;
