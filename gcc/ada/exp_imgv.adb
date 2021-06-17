@@ -1044,6 +1044,15 @@ package body Exp_Imgv is
          return;
       end if;
 
+      --  If Image should be transformed using Put_Image, then do so. See
+      --  Exp_Put_Image for details.
+
+      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
+         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
+         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
+         return;
+      end if;
+
       Ptyp := Underlying_Type (Entity (Pref));
 
       --  Ada 2022 allows 'Image on private types, so fetch the underlying
@@ -1063,15 +1072,7 @@ package body Exp_Imgv is
 
       Enum_Case := False;
 
-      --  If this is a case where Image should be transformed using Put_Image,
-      --  then do so. See Exp_Put_Image for details.
-
-      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
-         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
-         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
-         return;
-
-      elsif Rtyp = Standard_Boolean then
+      if Rtyp = Standard_Boolean then
          --  Use inline expansion if the -gnatd_x switch is not passed to the
          --  compiler. Otherwise expand into a call to the runtime.
 
