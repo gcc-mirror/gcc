@@ -9145,6 +9145,8 @@ struct omp_target_walk_data
 
   tree current_closure;
   hash_set<tree> closure_vars_accessed;
+
+  hash_set<tree> local_decls;
 };
 
 static tree
@@ -9203,12 +9205,25 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
       return NULL_TREE;
     }
 
+  if (TREE_CODE (t) == BIND_EXPR)
+    {
+      tree block = BIND_EXPR_BLOCK (t);
+      for (tree var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
+	if (!data->local_decls.contains (var))
+	  data->local_decls.add (var);
+      return NULL_TREE;
+    }
+
   if (TREE_TYPE(t) && LAMBDA_TYPE_P (TREE_TYPE (t)))
     {
       tree lt = TREE_TYPE (t);
       gcc_assert (CLASS_TYPE_P (lt));
 
-      if (!data->lambda_objects_accessed.contains (t))
+      if (!data->lambda_objects_accessed.contains (t)
+	  /* Do not prepare to create target maps for locally declared
+	     lambdas or anonymous ones.  */
+	  && !data->local_decls.contains (t)
+	  && TREE_CODE (t) != TARGET_EXPR)
 	data->lambda_objects_accessed.add (t);
       *walk_subtrees = 0;
       return NULL_TREE;
@@ -9494,6 +9509,9 @@ finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
 	   i != data.lambda_objects_accessed.end (); ++i)
 	{
 	  tree lobj = *i;
+	  if (TREE_CODE (lobj) == TARGET_EXPR)
+	    lobj = TREE_OPERAND (lobj, 0);
+
 	  tree lt = TREE_TYPE (lobj);
 	  gcc_assert (LAMBDA_TYPE_P (lt) && CLASS_TYPE_P (lt));
 
@@ -9530,7 +9548,7 @@ finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
 		  tree exp = build3 (COMPONENT_REF, TREE_TYPE (fld),
 				     lobj, fld, NULL_TREE);
 		  tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
-		  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TO);
+		  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TOFROM);
 		  OMP_CLAUSE_DECL (c)
 		    = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
 		  OMP_CLAUSE_SIZE (c)
