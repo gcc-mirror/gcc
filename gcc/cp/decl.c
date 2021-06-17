@@ -2170,11 +2170,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (DECL_DELETED_FN (newdecl))
 	    {
 	      auto_diagnostic_group d;
-	      pedwarn (newdecl_loc, OPT_Wpedantic,
-		       "deleted definition of %qD is not first declaration",
-		       newdecl);
-	      inform (olddecl_loc,
-		      "previous declaration of %qD", olddecl);
+	      if (pedwarn (newdecl_loc, 0, "deleted definition of %qD "
+			   "is not first declaration", newdecl))
+		inform (olddecl_loc,
+			"previous declaration of %qD", olddecl);
 	    }
 	  DECL_DELETED_FN (newdecl) |= DECL_DELETED_FN (olddecl);
 	}
