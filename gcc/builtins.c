@@ -5451,8 +5451,10 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
       if (!addr && POINTER_TYPE_P (TREE_TYPE (ptr)))
 	{
 	  /* Set the maximum size if the reference is to the pointer
-	     itself (as opposed to what it points to).  */
+	     itself (as opposed to what it points to), and clear
+	     BASE0 since the offset isn't necessarily zero-based.  */
 	  pref->set_max_size_range ();
+	  pref->base0 = false;
 	  return true;
 	}
 
