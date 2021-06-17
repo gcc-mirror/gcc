@@ -198,7 +198,7 @@ rust_error_at (const RichLocation location, const char *fmt, ...)
 }
 
 void
-rust_debug (const Location location, const char *fmt, ...)
+rust_debug_loc (const Location location, const char *fmt, ...)
 {
   if (!rust_be_debug_p ())
     return;

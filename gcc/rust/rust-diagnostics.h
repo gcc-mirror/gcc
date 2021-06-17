@@ -127,14 +127,10 @@ struct Error
 } // namespace Rust
 
 // rust_debug uses normal printf formatting, not GCC diagnostic formatting.
-void
-rust_debug (const Location location, const char *fmt, ...) ATTRIBUTE_PRINTF_2;
+#define rust_debug(...) rust_debug_loc (Location (), __VA_ARGS__)
 
-template <typename... Args>
-inline void
-rust_debug (const char *fmt, Args... args)
-{
-  rust_debug (Location (), fmt, args...);
-}
+void
+rust_debug_loc (const Location location, const char *fmt,
+		...) ATTRIBUTE_PRINTF_2;
 
 #endif // !defined(RUST_DIAGNOSTICS_H)
