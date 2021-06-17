@@ -188,8 +188,6 @@ class ConstantItem;
 class StaticItem;
 struct TraitFunctionDecl;
 class TraitItemFunc;
-struct TraitMethodDecl;
-class TraitItemMethod;
 class TraitItemConst;
 class TraitItemType;
 class Trait;

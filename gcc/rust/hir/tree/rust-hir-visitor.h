@@ -123,7 +123,6 @@ public:
   virtual void visit (ConstantItem &const_item) = 0;
   virtual void visit (StaticItem &static_item) = 0;
   virtual void visit (TraitItemFunc &item) = 0;
-  virtual void visit (TraitItemMethod &item) = 0;
   virtual void visit (TraitItemConst &item) = 0;
   virtual void visit (TraitItemType &item) = 0;
   virtual void visit (Trait &trait) = 0;

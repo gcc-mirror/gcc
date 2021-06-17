@@ -143,7 +143,6 @@ public:
   virtual void visit (HIR::ConstantItem &const_item) {}
   virtual void visit (HIR::StaticItem &static_item) {}
   virtual void visit (HIR::TraitItemFunc &item) {}
-  virtual void visit (HIR::TraitItemMethod &item) {}
   virtual void visit (HIR::TraitItemConst &item) {}
   virtual void visit (HIR::TraitItemType &item) {}
   virtual void visit (HIR::Trait &trait) {}

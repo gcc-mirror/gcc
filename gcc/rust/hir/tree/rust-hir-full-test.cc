@@ -3599,105 +3599,11 @@ TraitFunctionDecl::as_string () const
     }
 
   str += "\n Function params: ";
-  if (has_params ())
+  if (is_method ())
     {
-      for (const auto &param : function_params)
-	{
-	  str += "\n  " + param.as_string ();
-	}
-    }
-  else
-    {
-      str += "none";
+      str += self.as_string ();
     }
 
-  str += "\n Return type: ";
-  if (has_return_type ())
-    {
-      str += return_type->as_string ();
-    }
-  else
-    {
-      str += "none (void)";
-    }
-
-  str += "\n Where clause: ";
-  if (has_where_clause ())
-    {
-      str += where_clause.as_string ();
-    }
-  else
-    {
-      str += "none";
-    }
-
-  return str;
-}
-
-std::string
-TraitItemMethod::as_string () const
-{
-  std::string str = "outer attributes: ";
-  if (outer_attrs.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      /* note that this does not print them with "outer attribute" syntax -
-       * just the body */
-      for (const auto &attr : outer_attrs)
-	{
-	  str += "\n  " + attr.as_string ();
-	}
-    }
-
-  str += "\n" + decl.as_string ();
-
-  str += "\n Definition (block expr): ";
-  if (has_definition ())
-    {
-      str += block_expr->as_string ();
-    }
-  else
-    {
-      str += "none";
-    }
-
-  return str;
-}
-
-std::string
-TraitMethodDecl::as_string () const
-{
-  std::string str = qualifiers.as_string () + "fn " + function_name;
-
-  // generic params
-  str += "\n Generic params: ";
-  if (generic_params.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &param : generic_params)
-	{
-	  // DEBUG: null pointer check
-	  if (param == nullptr)
-	    {
-	      rust_debug (
-		"something really terrible has gone wrong - null pointer "
-		"generic param in trait function decl.");
-	      return "nullptr_POINTER_MARK";
-	    }
-
-	  str += "\n  " + param->as_string ();
-	}
-    }
-
-  str += "\n Self param: " + self_param.as_string ();
-
-  str += "\n Function params: ";
   if (has_params ())
     {
       for (const auto &param : function_params)
@@ -3820,7 +3726,7 @@ SelfParam::as_string () const
 	  // type (i.e. not ref, no lifetime)
 	  std::string str;
 
-	  if (is_mut)
+	  if (is_mut ())
 	    {
 	      str += "mut ";
 	    }
@@ -3836,7 +3742,7 @@ SelfParam::as_string () const
 	  // ref and lifetime
 	  std::string str = "&" + lifetime.as_string () + " ";
 
-	  if (is_mut)
+	  if (is_mut ())
 	    {
 	      str += "mut ";
 	    }
@@ -3845,12 +3751,12 @@ SelfParam::as_string () const
 
 	  return str;
 	}
-      else if (has_ref)
+      else if (is_ref ())
 	{
 	  // ref with no lifetime
 	  std::string str = "&";
 
-	  if (is_mut)
+	  if (is_mut ())
 	    {
 	      str += " mut ";
 	    }
@@ -3864,7 +3770,7 @@ SelfParam::as_string () const
 	  // no ref, no type
 	  std::string str;
 
-	  if (is_mut)
+	  if (is_mut ())
 	    {
 	      str += "mut ";
 	    }
@@ -4575,12 +4481,6 @@ StaticItem::accept_vis (HIRVisitor &vis)
 
 void
 TraitItemFunc::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-TraitItemMethod::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }
