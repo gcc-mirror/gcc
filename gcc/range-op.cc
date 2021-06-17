@@ -1150,7 +1150,87 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  virtual enum tree_code lhs_op1_relation (const irange &lhs, const irange &op1,
+					   const irange &op2) const;
+  virtual enum tree_code lhs_op2_relation (const irange &lhs, const irange &op1,
+					   const irange &op2) const;
 } op_plus;
+
+// Check to see if the range of OP2 indicates anything about the relation
+// between LHS and OP1.
+
+enum tree_code
+operator_plus::lhs_op1_relation (const irange &lhs,
+				 const irange &op1,
+				 const irange &op2) const
+{
+  if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
+    return VREL_NONE;
+
+  tree type = lhs.type ();
+  unsigned prec = TYPE_PRECISION (type);
+  wi::overflow_type ovf1, ovf2;
+  signop sign = TYPE_SIGN (type);
+
+  // LHS = OP1 + 0  indicates LHS == OP1.
+  if (op2.zero_p ())
+    return EQ_EXPR;
+
+  if (TYPE_OVERFLOW_WRAPS (type))
+    {
+      wi::add (op1.lower_bound (), op2.lower_bound (), sign, &ovf1);
+      wi::add (op1.upper_bound (), op2.upper_bound (), sign, &ovf2);
+    }
+  else
+    ovf1 = ovf2 = wi::OVF_NONE;
+
+  // Never wrapping additions.
+  if (!ovf1 && !ovf2)
+    {
+      // Positive op2 means lhs > op1.
+      if (wi::gt_p (op2.lower_bound (), wi::zero (prec), sign))
+	return GT_EXPR;
+      if (wi::ge_p (op2.lower_bound (), wi::zero (prec), sign))
+	return GE_EXPR;
+
+      // Negative op2 means lhs < op1.
+      if (wi::lt_p (op2.upper_bound (), wi::zero (prec), sign))
+	return LT_EXPR;
+      if (wi::le_p (op2.upper_bound (), wi::zero (prec), sign))
+	return LE_EXPR;
+    }
+  // Always wrapping additions.
+  else if (ovf1 && ovf1 == ovf2)
+    {
+      // Positive op2 means lhs < op1.
+      if (wi::gt_p (op2.lower_bound (), wi::zero (prec), sign))
+	return LT_EXPR;
+      if (wi::ge_p (op2.lower_bound (), wi::zero (prec), sign))
+	return LE_EXPR;
+
+      // Negative op2 means lhs > op1.
+      if (wi::lt_p (op2.upper_bound (), wi::zero (prec), sign))
+	return GT_EXPR;
+      if (wi::le_p (op2.upper_bound (), wi::zero (prec), sign))
+	return GE_EXPR;
+    }
+
+  // If op2 does not contain 0, then LHS and OP1 can never be equal.
+  if (!range_includes_zero_p (&op2))
+    return NE_EXPR;
+
+  return VREL_NONE;
+}
+
+// PLUS is symmetrical, so we can simply call lhs_op1_relation with reversed
+// operands.
+
+enum tree_code
+operator_plus::lhs_op2_relation (const irange &lhs, const irange &op1,
+				 const irange &op2) const
+{
+  return lhs_op1_relation (lhs, op2, op1);
+}
 
 void
 operator_plus::wi_fold (irange &r, tree type,
