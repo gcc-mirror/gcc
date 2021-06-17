@@ -1,3 +1,54 @@
+2021-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101078
+	* g++.dg/template/access39.C: New test.
+
+2021-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100796
+	PR preprocessor/96391
+	* g++.dg/plugin/location-overflow-test-pr100796.c: New test.
+	* g++.dg/plugin/plugin.exp: Run it.
+
+2021-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101029
+	* g++.dg/ext/array4.C: New test.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101009
+	* gcc.dg/torture/pr101009.c: New testcase.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100981
+	* gfortran.dg/vect/pr100981-1.f90: New testcase.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100934
+	* gcc.dg/torture/pr100934.c: New testcase.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100791
+	* gcc.dg/pr100791.c: New testcase.
+
+2021-06-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/82376
+	* gfortran.dg/PR82376.f90: New test.
+
 2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* gcc.target/powerpc/fusion-p10-addadd.c: New file.

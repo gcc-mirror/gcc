@@ -1,3 +1,40 @@
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101009
+	* tree-data-ref.c (build_classic_dist_vector_1): Make sure
+	to set *init_b to true when we encounter a constant equal
+	index pair.
+	(compute_affine_dependence): Also dump the actual DR_REF.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100981
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	gimple_get_lhs to also handle calls.
+	* tree-vect-slp-patterns.c (complex_pattern::build): Transfer
+	reduction info.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100934
+	* tree-ssa-dom.c (pass_dominator::execute): Properly
+	mark irreducible regions.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100791
+	* tree-inline.c (copy_bb): When processing __builtin_va_arg_pack
+	copy fntype from original call.
+
 2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/genfusion.pl (gen_addadd): New function.

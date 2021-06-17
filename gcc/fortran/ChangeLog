@@ -1,3 +1,9 @@
+2021-06-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/82376
+	* trans-expr.c (gfc_conv_procedure_call): Evaluate function result
+	and then pass a pointer.
+
 2021-06-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 	    Steve Kargl  <kargl@gcc.gnu.org>
 
