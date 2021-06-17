@@ -5171,8 +5171,12 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
 	  || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fn))
 	return NULL_TREE;
 
+      /* Check the mangling, keeping in mind that operator new takes
+	 a size_t which could be unsigned int or unsigned long.  */
       tree fname = DECL_ASSEMBLER_NAME (fn);
-      if (!id_equal (fname, "_ZnwmPv")       // ordinary form
+      if (!id_equal (fname, "_ZnwjPv")       // ordinary form
+	  && !id_equal (fname, "_ZnwmPv")    // ordinary form
+	  && !id_equal (fname, "_ZnajPv")    // array form
 	  && !id_equal (fname, "_ZnamPv"))   // array form
 	return NULL_TREE;
 
