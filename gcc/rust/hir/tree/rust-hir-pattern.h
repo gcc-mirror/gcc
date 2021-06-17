@@ -77,7 +77,7 @@ public:
 
   Location locus;
 
-  std::string as_string () const;
+  std::string as_string () const override;
 
   // Returns whether the IdentifierPattern has a pattern to bind.
   bool has_pattern_to_bind () const { return to_bind != nullptr; }
