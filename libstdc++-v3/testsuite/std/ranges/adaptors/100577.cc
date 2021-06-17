@@ -28,16 +28,18 @@ namespace views = std::ranges::views;
 void
 test01()
 {
-  // Verify all multi-argument adaptors except for views::split are denoted
-  // to have simple extra arguments.
+  // Verify adaptors are deemed to have simple extra arguments when appropriate.
   using views::__adaptor::__adaptor_has_simple_extra_args;
-  static_assert(__adaptor_has_simple_extra_args<decltype(views::transform)>);
-  static_assert(__adaptor_has_simple_extra_args<decltype(views::filter)>);
-  static_assert(__adaptor_has_simple_extra_args<decltype(views::drop)>);
-  static_assert(__adaptor_has_simple_extra_args<decltype(views::take)>);
-  static_assert(__adaptor_has_simple_extra_args<decltype(views::take_while)>);
-  static_assert(__adaptor_has_simple_extra_args<decltype(views::drop_while)>);
-  static_assert(!__adaptor_has_simple_extra_args<decltype(views::split)>);
+  using std::identity;
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::transform), identity>);
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::filter), identity>);
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::drop), int>);
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::take), int>);
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::take_while), identity>);
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::drop_while), identity>);
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::split), std::string_view>);
+  static_assert(__adaptor_has_simple_extra_args<decltype(views::split), char>);
+  static_assert(!__adaptor_has_simple_extra_args<decltype(views::split), std::string>);
 
   // Verify all adaptor closures except for views::split(pattern) have a simple
   // operator().
@@ -53,15 +55,17 @@ test01()
   __closure_has_simple_call_op auto a08 = views::common;
   __closure_has_simple_call_op auto a09 = views::reverse;
   __closure_has_simple_call_op auto a10 = views::keys;
+  __closure_has_simple_call_op auto a11 = views::split(' ');
   // Verify composition of simple closures is simple.
   __closure_has_simple_call_op auto b
-    = (a00 | a01) | (a02 | a03) | (a04 | a05 | a06) | (a07 | a08 | a09 | a10);
+    = (a00 | a01) | (a02 | a03) | (a04 | a05 | a06) | (a07 | a08 | a09 | a10) | a11;
 
-  // Verify views::split is the exception.
-  auto a11 = views::split(' ');
-  static_assert(!__closure_has_simple_call_op<decltype(a11)>);
-  static_assert(!__closure_has_simple_call_op<decltype(a11 | a00)>);
-  static_assert(!__closure_has_simple_call_op<decltype(a00 | a11)>);
+  // Verify views::split(non_view_range) is an exception.
+  extern std::string s;
+  auto a12 = views::split(s);
+  static_assert(!__closure_has_simple_call_op<decltype(a12)>);
+  static_assert(!__closure_has_simple_call_op<decltype(a12 | a00)>);
+  static_assert(!__closure_has_simple_call_op<decltype(a00 | a12)>);
 }
 
 void
@@ -71,18 +75,14 @@ test02()
   // fallback deleted overload, so when a call is ill-formed overload resolution
   // fails.
   extern int x[10];
-  auto badarg = nullptr;
+  struct { } badarg;
   views::transform(badarg)(x); // { dg-error "no match" }
   views::filter(badarg)(x); // { dg-error "no match" }
-  views::take(badarg)(x); // { dg-error "no match" }
-  views::drop(badarg)(x); // { dg-error "no match" }
   views::take_while(badarg)(x); // { dg-error "no match" }
   views::drop_while(badarg)(x); // { dg-error "no match" }
 
   (views::transform(badarg) | views::all)(x); // { dg-error "no match" }
   (views::filter(badarg) | views::all)(x); // { dg-error "no match" }
-  (views::take(badarg) | views::all)(x); // { dg-error "no match" }
-  (views::drop(badarg) | views::all)(x); // { dg-error "no match" }
   (views::take_while(badarg) | views::all)(x); // { dg-error "no match" }
   (views::drop_while(badarg) | views::all)(x); // { dg-error "no match" }
 
@@ -96,6 +96,21 @@ test02()
   a0(x); // { dg-error "no match" };
   auto a1 = a0 | views::all;
   a1(x); // { dg-error "no match" }
+
+  views::take(badarg)(x); // { dg-error "deleted" }
+  views::drop(badarg)(x); // { dg-error "deleted" }
+  (views::take(badarg) | views::all)(x); // { dg-error "deleted" }
+  (views::drop(badarg) | views::all)(x); // { dg-error "deleted" }
+}
+
+void
+test03()
+{
+  // PR libstdc++/100940
+  extern int x[10];
+  struct S { operator int() && { return 5; }; };
+  x | std::views::take(S{});
+  x | std::views::drop(S{});
 }
 
 // { dg-prune-output "in requirements" }
