@@ -787,6 +787,8 @@ CUMULATIVE_ARGS;
 
 #define PROFILE_BEFORE_PROLOGUE 1
 
+#define NO_PROFILE_COUNTERS 1
+
 
 /* Trampolines for nested functions.  */
 
