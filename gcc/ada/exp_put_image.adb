@@ -1058,12 +1058,14 @@ package body Exp_Put_Image is
    ----------------------
 
    function Build_Image_Call (N : Node_Id) return Node_Id is
-      --  For T'Image (X) Generate an Expression_With_Actions node:
+      --  For T'[[Wide_]Wide_]Image (X) Generate an Expression_With_Actions
+      --  node:
       --
       --     do
       --        S : Buffer;
       --        U_Type'Put_Image (S, X);
-      --        Result : constant String := Get (S);
+      --        Result : constant [[Wide_]Wide_]String :=
+      --          [[Wide_[Wide_]]Get (S);
       --        Destroy (S);
       --     in Result end
       --
@@ -1091,14 +1093,33 @@ package body Exp_Put_Image is
             Image_Prefix));
       Result_Entity : constant Entity_Id :=
         Make_Temporary (Loc, 'R');
+
+      subtype Image_Name_Id is Name_Id with Static_Predicate =>
+        Image_Name_Id in Name_Image | Name_Wide_Image | Name_Wide_Wide_Image;
+      --  Attribute names that will be mapped to the corresponding result types
+      --  and functions.
+
+      Attribute_Name_Id : constant Name_Id := Attribute_Name (N);
+
+      Result_Typ    : constant Entity_Id :=
+        (case Image_Name_Id'(Attribute_Name_Id) is
+            when Name_Image           => Stand.Standard_String,
+            when Name_Wide_Image      => Stand.Standard_Wide_String,
+            when Name_Wide_Wide_Image => Stand.Standard_Wide_Wide_String);
+      Get_Func_Id   : constant RE_Id :=
+        (case Image_Name_Id'(Attribute_Name_Id) is
+            when Name_Image           => RE_Get,
+            when Name_Wide_Image      => RE_Wide_Get,
+            when Name_Wide_Wide_Image => RE_Wide_Wide_Get);
+
       Result_Decl : constant Node_Id :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Result_Entity,
           Object_Definition =>
-            New_Occurrence_Of (Stand.Standard_String, Loc),
+            New_Occurrence_Of (Result_Typ, Loc),
           Expression =>
             Make_Function_Call (Loc,
-              Name => New_Occurrence_Of (RTE (RE_Get), Loc),
+              Name => New_Occurrence_Of (RTE (Get_Func_Id), Loc),
               Parameter_Associations => New_List (
                 New_Occurrence_Of (Sink_Entity, Loc))));
       Actions : List_Id;
