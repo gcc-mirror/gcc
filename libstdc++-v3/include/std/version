@@ -130,8 +130,10 @@
 #define __cpp_lib_chrono 201611
 #define __cpp_lib_clamp 201603
 #if __cplusplus == 201703L // N.B. updated value in C++20
-# define __cpp_lib_constexpr_char_traits 201611L
-# define __cpp_lib_constexpr_string 201611L
+# if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+#  define __cpp_lib_constexpr_char_traits 201611L
+#  define __cpp_lib_constexpr_string 201611L
+# endif
 #endif
 #define __cpp_lib_enable_shared_from_this 201603
 #define __cpp_lib_execution 201902L // FIXME: should be 201603L
@@ -213,14 +215,18 @@
 // FIXME: #define __cpp_lib_execution 201902L
 #define __cpp_lib_integer_comparison_functions 202002L
 #define __cpp_lib_constexpr_algorithms 201806L
-#define __cpp_lib_constexpr_char_traits 201811L
+#ifdef __cpp_lib_is_constant_evaluated
+# define __cpp_lib_constexpr_char_traits 201811L
+#endif
 #define __cpp_lib_constexpr_complex 201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #define __cpp_lib_constexpr_functional 201907L
 #define __cpp_lib_constexpr_iterator 201811L
 #define __cpp_lib_constexpr_memory 201811L
 #define __cpp_lib_constexpr_numeric 201911L
-#define __cpp_lib_constexpr_string 201811L
+#ifdef __cpp_lib_is_constant_evaluated
+# define __cpp_lib_constexpr_string 201811L
+#endif
 #define __cpp_lib_constexpr_string_view 201811L
 #define __cpp_lib_constexpr_tuple 201811L
 #define __cpp_lib_constexpr_utility 201811L
