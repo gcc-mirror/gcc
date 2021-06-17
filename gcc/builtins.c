@@ -364,15 +364,6 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 	same_ref.offrng[1] = phi_arg_ref.offrng[1];
     }
 
-  if (phi_ref.sizrng[0] < 0)
-    {
-      /* Fail if none of the PHI's arguments resulted in updating PHI_REF
-	 (perhaps because they have all been already visited by prior
-	 recursive calls).  */
-      psnlim->leave_phi (ref);
-      return NULL_TREE;
-    }
-
   if (!same_ref.ref && same_ref.offrng[0] != 0)
     /* Clear BASE0 if not all the arguments refer to the same object and
        if not all their offsets are zero-based.  This allows the final
@@ -390,6 +381,15 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 	 was one.  */
       phi_ref.sizrng[0] = minsize;
       phi_ref.parmarray = parmarray;
+    }
+
+  if (phi_ref.sizrng[0] < 0)
+    {
+      /* Fail if none of the PHI's arguments resulted in updating PHI_REF
+	 (perhaps because they have all been already visited by prior
+	 recursive calls).  */
+      psnlim->leave_phi (ref);
+      return NULL_TREE;
     }
 
   /* Avoid changing *THIS.  */
