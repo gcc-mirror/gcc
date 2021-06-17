@@ -1,3 +1,40 @@
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100934
+	* gcc.dg/torture/pr100934.c: New testcase.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100791
+	* gcc.dg/pr100791.c: New testcase.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100509
+	* gcc.dg/pr100509.c: New testcase.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100492
+	* gcc.dg/torture/pr100492.c: New testcase.
+
+2021-06-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/82376
+	* gfortran.dg/PR82376.f90: New test.
+
 2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

@@ -1,3 +1,50 @@
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100934
+	* tree-ssa-dom.c (pass_dominator::execute): Properly
+	mark irreducible regions.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100791
+	* tree-inline.c (copy_bb): When processing __builtin_va_arg_pack
+	copy fntype from original call.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100513
+	* ipa-param-manipulation.c
+	(ipa_param_body_adjustments::modify_call_stmt): Avoid
+	altering SSA_NAME_DEF_STMT by adjusting the calls LHS
+	via gimple_call_lhs_ptr.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100509
+	* gimple-fold.c (fold_gimple_assign): Only call
+	get_symbol_constant_value on register type symbols.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100492
+	* tree-loop-distribution.c (find_seed_stmts_for_distribution):
+	Find nothing when the loop contains an irreducible region.
+
 2021-06-04  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
