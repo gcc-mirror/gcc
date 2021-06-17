@@ -1065,7 +1065,7 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
 		   e->src->index, e->dest->index);
 	  print_generic_expr (dump_file, name, TDF_SLIM);
 	}
-      // Simply calculate DEF_STMT on edge E usng the range query Q.
+      // Simply calculate DEF_STMT on edge E using the range query Q.
       fold_range (r, def_stmt, e, &q);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{

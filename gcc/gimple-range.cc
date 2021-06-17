@@ -135,20 +135,18 @@ fur_edge::query ()
   return m_query;
 }
 
-
 // Instantiate a stmt based fur_source.
-
 
 fur_stmt::fur_stmt (gimple *s, range_query *q)
 {
-  m_stmt= s;
+  m_stmt = s;
   if (q)
     m_query = q;
   else
     m_query = get_global_range_query ();
 }
 
-// Retirenve range of EXPR as it occurs as a use on stmt M_STMT.
+// Retrieve range of EXPR as it occurs as a use on stmt M_STMT.
 
 bool
 fur_stmt::get_operand (irange &r, tree expr)
@@ -175,8 +173,8 @@ fur_stmt::query ()
   return m_query;
 }
 
-// This version of fur_source will pick a range from a stmt, and register
-// also dependencies via a gori_compute object.  This is mostly an internal API.
+// This version of fur_source will pick a range from a stmt, and also register
+// dependencies via a gori_compute object.  This is mostly an internal API.
 
 class fur_depend : public fur_stmt
 {
@@ -187,15 +185,15 @@ private:
   gori_compute *m_gori;
 };
 
-// Instantiate a stmt based fur_source witrh a GORI object
+// Instantiate a stmt based fur_source with a GORI object
+
 inline
 fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
-							      : fur_stmt (s, q)
+  : fur_stmt (s, q)
 {
   gcc_checking_assert (gori);
   m_gori = gori;
 }
-
 
 // find and add any dependnecy between LHS and RHS
 
@@ -204,7 +202,6 @@ fur_depend::register_dependency (tree lhs, tree rhs)
 {
   m_gori->register_dependency (lhs, rhs);
 }
-
 
 // This version of fur_source will pick a range up from a list of ranges
 // supplied by the caller.
@@ -254,7 +251,7 @@ fur_list::fur_list (unsigned num, irange *list)
   m_limit = num;
 }
 
-// Get the next operand from the vector, ensure types are compatible,
+// Get the next operand from the vector, ensure types are compatible.
 
 bool
 fur_list::get_operand (irange &r, tree expr)
@@ -304,7 +301,6 @@ fold_range (irange &r, gimple *s, unsigned num_elements, irange *vector)
   fur_list src (num_elements, vector);
   return f.fold_stmt (r, s, src);
 }
-
 
 // Fold stmt S into range R using range query Q.
 

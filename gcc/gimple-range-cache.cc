@@ -385,7 +385,7 @@ block_range_cache::~block_range_cache ()
 }
 
 // Set the range for NAME on entry to block BB to R.
-// If it has not been // accessed yet, allocate it first.
+// If it has not been accessed yet, allocate it first.
 
 void
 block_range_cache::set_bb_range (tree name, const basic_block bb,
