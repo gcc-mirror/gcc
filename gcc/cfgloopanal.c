@@ -504,7 +504,7 @@ auto_vec<basic_block>
 get_loop_hot_path (const class loop *loop)
 {
   basic_block bb = loop->header;
-  vec<basic_block> path = vNULL;
+  auto_vec<basic_block> path;
   bitmap visited = BITMAP_ALLOC (NULL);
 
   while (true)
