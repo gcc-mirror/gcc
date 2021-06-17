@@ -9944,7 +9944,7 @@ This option causes GCC to create markers in the internal representation
 at the beginning of statements, and to keep them roughly in place
 throughout compilation, using them to guide the output of @code{is_stmt}
 markers in the line number table.  This is enabled by default when
-compiling with optimization (@option{-Os}, @option{-O}, @option{-O2},
+compiling with optimization (@option{-Os}, @option{-O1}, @option{-O2},
 @dots{}), and outputting DWARF 2 debug information at the normal level.
 
 @item -gvariable-location-views
@@ -10223,7 +10223,7 @@ that do not involve a space-speed tradeoff.
 As compared to @option{-O}, this option increases both compilation time
 and the performance of the generated code.
 
-@option{-O2} turns on all optimization flags specified by @option{-O}.  It
+@option{-O2} turns on all optimization flags specified by @option{-O1}.  It
 also turns on the following optimization flags:
 
 @c Please keep the following list alphabetized!
@@ -10370,7 +10370,7 @@ instructions and checks if the result can be simplified.  If loop unrolling
 is active, two passes are performed and the second is scheduled after
 loop unrolling.
 
-This option is enabled by default at optimization levels @option{-O},
+This option is enabled by default at optimization levels @option{-O1},
 @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -ffp-contract=@var{style}
@@ -10398,7 +10398,7 @@ Note that @option{-fno-omit-frame-pointer} doesn't guarantee the frame pointer
 is used in all functions.  Several targets always omit the frame pointer in
 leaf functions.
 
-Enabled by default at @option{-O} and higher.
+Enabled by default at @option{-O1} and higher.
 
 @item -foptimize-sibling-calls
 @opindex foptimize-sibling-calls
@@ -10552,7 +10552,7 @@ This option is the default for optimized compilation if the assembler and
 linker support it.  Use @option{-fno-merge-constants} to inhibit this
 behavior.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fmerge-all-constants
 @opindex fmerge-all-constants
@@ -10638,7 +10638,7 @@ long} on a 32-bit system, split the registers apart and allocate them
 independently.  This normally generates better code for those types,
 but may make debugging more difficult.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3},
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3},
 @option{-Os}.
 
 @item -fsplit-wide-types-early
@@ -10750,18 +10750,18 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 @opindex fauto-inc-dec
 Combine increments or decrements of addresses with memory accesses.
 This pass is always skipped on architectures that do not have
-instructions to support this.  Enabled by default at @option{-O} and
+instructions to support this.  Enabled by default at @option{-O1} and
 higher on architectures that support this.
 
 @item -fdce
 @opindex fdce
 Perform dead code elimination (DCE) on RTL@.
-Enabled by default at @option{-O} and higher.
+Enabled by default at @option{-O1} and higher.
 
 @item -fdse
 @opindex fdse
 Perform dead store elimination (DSE) on RTL@.
-Enabled by default at @option{-O} and higher.
+Enabled by default at @option{-O1} and higher.
 
 @item -fif-conversion
 @opindex fif-conversion
@@ -10770,7 +10770,7 @@ includes use of conditional moves, min, max, set flags and abs instructions, and
 some tricks doable by standard arithmetics.  The use of conditional execution
 on chips where it is available is controlled by @option{-fif-conversion2}.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}, but
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}, but
 not with @option{-Og}.
 
 @item -fif-conversion2
@@ -10778,7 +10778,7 @@ not with @option{-Og}.
 Use conditional execution (where available) to transform conditional jumps into
 branch-less equivalents.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}, but
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}, but
 not with @option{-Og}.
 
 @item -fdeclone-ctor-dtor
@@ -10958,7 +10958,7 @@ If supported for the target machine, attempt to reorder instructions
 to exploit instruction slots available after delayed branch
 instructions.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os},
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os},
 but not at @option{-Og}.
 
 @item -fschedule-insns
@@ -11196,7 +11196,7 @@ and the @option{large-stack-frame-growth} parameter to 400.
 @item -ftree-reassoc
 @opindex ftree-reassoc
 Perform reassociation on trees.  This flag is enabled by default
-at @option{-O} and higher.
+at @option{-O1} and higher.
 
 @item -fcode-hoisting
 @opindex fcode-hoisting
@@ -11219,7 +11219,7 @@ enabled by default at @option{-O3}.
 @item -ftree-forwprop
 @opindex ftree-forwprop
 Perform forward propagation on trees.  This flag is enabled by default
-at @option{-O} and higher.
+at @option{-O1} and higher.
 
 @item -ftree-fre
 @opindex ftree-fre
@@ -11227,12 +11227,12 @@ Perform full redundancy elimination (FRE) on trees.  The difference
 between FRE and PRE is that FRE only considers expressions
 that are computed on all paths leading to the redundant computation.
 This analysis is faster than PRE, though it exposes fewer redundancies.
-This flag is enabled by default at @option{-O} and higher.
+This flag is enabled by default at @option{-O1} and higher.
 
 @item -ftree-phiprop
 @opindex ftree-phiprop
 Perform hoisting of loads from conditional pointers on trees.  This
-pass is enabled by default at @option{-O} and higher.
+pass is enabled by default at @option{-O1} and higher.
 
 @item -fhoist-adjacent-loads
 @opindex fhoist-adjacent-loads
@@ -11244,24 +11244,24 @@ by default at @option{-O2} and higher.
 @item -ftree-copy-prop
 @opindex ftree-copy-prop
 Perform copy propagation on trees.  This pass eliminates unnecessary
-copy operations.  This flag is enabled by default at @option{-O} and
+copy operations.  This flag is enabled by default at @option{-O1} and
 higher.
 
 @item -fipa-pure-const
 @opindex fipa-pure-const
 Discover which functions are pure or constant.
-Enabled by default at @option{-O} and higher.
+Enabled by default at @option{-O1} and higher.
 
 @item -fipa-reference
 @opindex fipa-reference
 Discover which static variables do not escape the
 compilation unit.
-Enabled by default at @option{-O} and higher.
+Enabled by default at @option{-O1} and higher.
 
 @item -fipa-reference-addressable
 @opindex fipa-reference-addressable
 Discover read-only, write-only and non-addressable static variables.
-Enabled by default at @option{-O} and higher.
+Enabled by default at @option{-O1} and higher.
 
 @item -fipa-stack-alignment
 @opindex fipa-stack-alignment
@@ -11282,14 +11282,14 @@ cold functions are marked as cold. Also functions executed once (such as
 @code{cold}, @code{noreturn}, static constructors or destructors) are
 identified. Cold functions and loop less parts of functions executed once are
 then optimized for size.
-Enabled by default at @option{-O} and higher.
+Enabled by default at @option{-O1} and higher.
 
 @item -fipa-modref
 @opindex fipa-modref
 Perform interprocedural mod/ref analysis.  This optimization analyzes the side
 effects of functions (memory locations that are modified or referenced) and
 enables better optimization across the function call boundary.  This flag is
-enabled by default at @option{-O} and higher.
+enabled by default at @option{-O1} and higher.
 
 @item -fipa-cp
 @opindex fipa-cp
@@ -11417,7 +11417,7 @@ currently enabled, but may be enabled by @option{-O2} in the future.
 @item -ftree-sink
 @opindex ftree-sink
 Perform forward store motion on trees.  This flag is
-enabled by default at @option{-O} and higher.
+enabled by default at @option{-O1} and higher.
 
 @item -ftree-bit-ccp
 @opindex ftree-bit-ccp
@@ -11431,14 +11431,14 @@ It requires that @option{-ftree-ccp} is enabled.
 @opindex ftree-ccp
 Perform sparse conditional constant propagation (CCP) on trees.  This
 pass only operates on local scalar variables and is enabled by default
-at @option{-O} and higher.
+at @option{-O1} and higher.
 
 @item -fssa-backprop
 @opindex fssa-backprop
 Propagate information about uses of a value up the definition chain
 in order to simplify the definitions.  For example, this pass strips
 sign operations if the sign of a value never matters.  The flag is
-enabled by default at @option{-O} and higher.
+enabled by default at @option{-O1} and higher.
 
 @item -fssa-phiopt
 @opindex fssa-phiopt
@@ -11464,7 +11464,7 @@ be limited using @option{max-tail-merge-comparisons} parameter and
 @item -ftree-dce
 @opindex ftree-dce
 Perform dead code elimination (DCE) on trees.  This flag is enabled by
-default at @option{-O} and higher.
+default at @option{-O1} and higher.
 
 @item -ftree-builtin-call-dce
 @opindex ftree-builtin-call-dce
@@ -11489,26 +11489,26 @@ Perform a variety of simple scalar cleanups (constant/copy
 propagation, redundancy elimination, range propagation and expression
 simplification) based on a dominator tree traversal.  This also
 performs jump threading (to reduce jumps to jumps). This flag is
-enabled by default at @option{-O} and higher.
+enabled by default at @option{-O1} and higher.
 
 @item -ftree-dse
 @opindex ftree-dse
 Perform dead store elimination (DSE) on trees.  A dead store is a store into
 a memory location that is later overwritten by another store without
 any intervening loads.  In this case the earlier store can be deleted.  This
-flag is enabled by default at @option{-O} and higher.
+flag is enabled by default at @option{-O1} and higher.
 
 @item -ftree-ch
 @opindex ftree-ch
 Perform loop header copying on trees.  This is beneficial since it increases
 effectiveness of code motion optimizations.  It also saves one jump.  This flag
-is enabled by default at @option{-O} and higher.  It is not enabled
+is enabled by default at @option{-O1} and higher.  It is not enabled
 for @option{-Os}, since it usually increases code size.
 
 @item -ftree-loop-optimize
 @opindex ftree-loop-optimize
 Perform loop optimizations on trees.  This flag is enabled by default
-at @option{-O} and higher.
+at @option{-O1} and higher.
 
 @item -ftree-loop-linear
 @itemx -floop-strip-mine
@@ -11663,7 +11663,7 @@ in such a way that its value when exiting the loop can be determined using
 only its initial value and the number of loop iterations, replace uses of
 the final value by such a computation, provided it is sufficiently cheap.
 This reduces data dependencies and may allow further simplifications.
-Enabled by default at @option{-O} and higher.
+Enabled by default at @option{-O1} and higher.
 
 @item -fivopts
 @opindex fivopts
@@ -11705,13 +11705,13 @@ Perform temporary expression replacement during the SSA->normal phase.  Single
 use/single def temporaries are replaced at their use location with their
 defining expression.  This results in non-GIMPLE code, but gives the expanders
 much more complex trees to work on resulting in better RTL generation.  This is
-enabled by default at @option{-O} and higher.
+enabled by default at @option{-O1} and higher.
 
 @item -ftree-slsr
 @opindex ftree-slsr
 Perform straight-line strength reduction on trees.  This recognizes related
 expressions involving multiplications and replaces them by less expensive
-calculations when possible.  This is enabled by default at @option{-O} and
+calculations when possible.  This is enabled by default at @option{-O1} and
 higher.
 
 @item -ftree-vectorize
@@ -11892,7 +11892,7 @@ The default is @option{-fguess-branch-probability} at levels
 Reorder basic blocks in the compiled function in order to reduce number of
 taken branches and improve code locality.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -freorder-blocks-algorithm=@var{algorithm}
 @opindex freorder-blocks-algorithm
@@ -11903,7 +11903,7 @@ or @samp{stc}, the ``software trace cache'' algorithm, which tries to
 put all often executed code together, minimizing the number of branches
 executed by making extra copies of code.
 
-The default is @samp{simple} at levels @option{-O}, @option{-Os}, and
+The default is @samp{simple} at levels @option{-O1}, @option{-Os}, and
 @samp{stc} at levels @option{-O2}, @option{-O3}.
 
 @item -freorder-blocks-and-partition
@@ -12473,7 +12473,7 @@ explicit comparison operation.
 This pass only applies to certain targets that cannot explicitly represent
 the comparison operation before register allocation is complete.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fcprop-registers
 @opindex fcprop-registers
@@ -12481,7 +12481,7 @@ After register allocation and post-register allocation instruction splitting,
 perform a copy-propagation pass to try to reduce scheduling dependencies
 and occasionally eliminate the copy.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fprofile-correction
 @opindex fprofile-correction
