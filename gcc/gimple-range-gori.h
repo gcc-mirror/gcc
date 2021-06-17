@@ -157,6 +157,7 @@ public:
   bool has_edge_range_p (tree name, edge e = NULL);
   void dump (FILE *f);
 private:
+  bool may_recompute_p (tree name, edge e = NULL);
   bool compute_operand_range (irange &r, gimple *stmt, const irange &lhs,
 			      tree name, class fur_source &src);
   bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,

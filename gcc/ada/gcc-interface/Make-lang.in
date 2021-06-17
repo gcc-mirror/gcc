@@ -87,7 +87,8 @@ endif
 
 ifeq ($(STAGE1),True)
   ADA_INCLUDES=$(COMMON_ADA_INCLUDES)
-  GNATLIB=$(dir $(shell $(CC) -print-libgcc-file-name))adalib/libgnat.a $(STAGE1_LIBS)
+  adalib=$(dir $(shell $(CC) -print-libgcc-file-name))adalib
+  GNATLIB=$(adalib)/$(if $(wildcard $(adalib)/libgnat.a),libgnat.a,libgnat.so) $(STAGE1_LIBS)
 else
   ADA_INCLUDES=-nostdinc $(COMMON_ADA_INCLUDES) -Iada/libgnat -I$(srcdir)/ada/libgnat -Iada/gcc-interface -I$(srcdir)/ada/gcc-interface
 endif

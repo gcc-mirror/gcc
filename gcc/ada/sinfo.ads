@@ -4114,6 +4114,7 @@ package Sinfo is
       --  Loop_Actions
       --  Box_Present
       --  Inherited_Discriminant
+      --  Binding_Chars
 
       --  Note: this structure is used for both record component associations
       --  and array component associations, since the two cases aren't always
@@ -4121,7 +4122,11 @@ package Sinfo is
       --  list of selector names in the record aggregate case, or a list of
       --  discrete choices in the array aggregate case or an N_Others_Choice
       --  node (which appears as a singleton list). Box_Present gives support
-      --  to Ada 2005 (AI-287).
+      --  to Ada 2005 (AI-287). Binding_Chars is only set if GNAT extensions
+      --  are enabled and the given component association occurs within a
+      --  choice_expression; in this case, it is the Name_Id, if any, specified
+      --  via either of two syntactic forms: "Foo => Bar is Abc" or
+      --  "Foo => <Abc>".
 
       ----------------------------------
       -- 4.3.1  Component Choice List --
@@ -5013,11 +5018,16 @@ package Sinfo is
       --  Discrete_Choices
       --  Statements
       --  Has_SP_Choice
+      --  Multidefined_Bindings
 
       --  Note: in the list of Discrete_Choices, the tree passed to the back
       --  end does not have choice entries corresponding to names of statically
       --  predicated subtypes. Such entries are always expanded out to the list
-      --  of equivalent values or ranges.
+      --  of equivalent values or ranges. Multidefined_Bindings is True iff
+      --  more than one choice is present and each choice contains
+      --  at least one component association having a non-null Binding_Chars
+      --  attribute; this can only occur if GNAT extensions are enabled
+      --  and the type of the case selector is composite.
 
       -------------------------
       -- 5.5  Loop Statement --

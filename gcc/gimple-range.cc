@@ -135,20 +135,18 @@ fur_edge::query ()
   return m_query;
 }
 
-
 // Instantiate a stmt based fur_source.
-
 
 fur_stmt::fur_stmt (gimple *s, range_query *q)
 {
-  m_stmt= s;
+  m_stmt = s;
   if (q)
     m_query = q;
   else
     m_query = get_global_range_query ();
 }
 
-// Retirenve range of EXPR as it occurs as a use on stmt M_STMT.
+// Retrieve range of EXPR as it occurs as a use on stmt M_STMT.
 
 bool
 fur_stmt::get_operand (irange &r, tree expr)
@@ -175,8 +173,8 @@ fur_stmt::query ()
   return m_query;
 }
 
-// This version of fur_source will pick a range from a stmt, and register
-// also dependencies via a gori_compute object.  This is mostly an internal API.
+// This version of fur_source will pick a range from a stmt, and also register
+// dependencies via a gori_compute object.  This is mostly an internal API.
 
 class fur_depend : public fur_stmt
 {
@@ -187,15 +185,15 @@ private:
   gori_compute *m_gori;
 };
 
-// Instantiate a stmt based fur_source witrh a GORI object
+// Instantiate a stmt based fur_source with a GORI object
+
 inline
 fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
-							      : fur_stmt (s, q)
+  : fur_stmt (s, q)
 {
   gcc_checking_assert (gori);
   m_gori = gori;
 }
-
 
 // find and add any dependnecy between LHS and RHS
 
@@ -204,7 +202,6 @@ fur_depend::register_dependency (tree lhs, tree rhs)
 {
   m_gori->register_dependency (lhs, rhs);
 }
-
 
 // This version of fur_source will pick a range up from a list of ranges
 // supplied by the caller.
@@ -254,7 +251,7 @@ fur_list::fur_list (unsigned num, irange *list)
   m_limit = num;
 }
 
-// Get the next operand from the vector, ensure types are compatible,
+// Get the next operand from the vector, ensure types are compatible.
 
 bool
 fur_list::get_operand (irange &r, tree expr)
@@ -304,7 +301,6 @@ fold_range (irange &r, gimple *s, unsigned num_elements, irange *vector)
   fur_list src (num_elements, vector);
   return f.fold_stmt (r, s, src);
 }
-
 
 // Fold stmt S into range R using range query Q.
 
@@ -960,32 +956,29 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
 
       src.get_operand (r, arg);
       // From clz of minimum we can compute result maximum.
-      if (r.constant_p () && !r.varying_p ())
+      if (!r.undefined_p ())
 	{
-	  int newmaxi = prec - 1 - wi::floor_log2 (r.lower_bound ());
-	  // Argument is unsigned, so do nothing if it is [0, ...] range.
-	  if (newmaxi != prec)
+	  // From clz of minimum we can compute result maximum.
+	  if (wi::gt_p (r.lower_bound (), 0, TYPE_SIGN (r.type ())))
+	    {
+	      maxi = prec - 1 - wi::floor_log2 (r.lower_bound ());
+	      if (mini == -2)
+		mini = 0;
+	    }
+	  else if (!range_includes_zero_p (&r))
 	    {
 	      mini = 0;
-	      maxi = newmaxi;
+	      maxi = prec - 1;
 	    }
-	}
-      else if (!range_includes_zero_p (&r))
-	{
-	  maxi = prec - 1;
-	  mini = 0;
-	}
-      if (mini == -2)
-	break;
-      // From clz of maximum we can compute result minimum.
-      if (r.constant_p ())
-	{
-	  int newmini = prec - 1 - wi::floor_log2 (r.upper_bound ());
-	  if (newmini == prec)
+	  if (mini == -2)
+	    break;
+	  // From clz of maximum we can compute result minimum.
+	  wide_int max = r.upper_bound ();
+	  int newmini = prec - 1 - wi::floor_log2 (max);
+	  if (max == 0)
 	    {
-	      // Argument range is [0, 0].  If CLZ_DEFINED_VALUE_AT_ZERO
-	      // is 2 with VALUE of prec, return [prec, prec], otherwise
-	      // ignore the range.
+	      // If CLZ_DEFINED_VALUE_AT_ZERO is 2 with VALUE of prec,
+	      // return [prec, prec], otherwise ignore the range.
 	      if (maxi == prec)
 		mini = prec;
 	    }
@@ -1026,7 +1019,8 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
       src.get_operand (r, arg);
       if (!r.undefined_p ())
 	{
-	  if (r.lower_bound () != 0)
+	  // If arg is non-zero, then use [0, prec - 1].
+	  if (!range_includes_zero_p (&r))
 	    {
 	      mini = 0;
 	      maxi = prec - 1;
@@ -1394,7 +1388,8 @@ gimple_ranger::dump_bb (FILE *f, basic_block bb)
       for (x = 1; x < num_ssa_names; x++)
 	{
 	  tree name = gimple_range_ssa_p (ssa_name (x));
-	  if (name && m_cache.range_on_edge (range, e, name))
+	  if (name && gori ().has_edge_range_p (name, e)
+	      && m_cache.range_on_edge (range, e, name))
 	    {
 	      gimple *s = SSA_NAME_DEF_STMT (name);
 	      // Only print the range if this is the def block, or
@@ -1659,6 +1654,85 @@ disable_ranger (struct function *fun)
   delete fun->x_range_query;
 
   fun->x_range_query = &global_ranges;
+}
+
+// =========================================
+// Debugging helpers.
+// =========================================
+
+// Query all statements in the IL to precalculate computable ranges in RANGER.
+
+static DEBUG_FUNCTION void
+debug_seed_ranger (gimple_ranger &ranger)
+{
+  // Recalculate SCEV to make sure the dump lists everything.
+  if (scev_initialized_p ())
+    {
+      scev_finalize ();
+      scev_initialize ();
+    }
+
+  basic_block bb;
+  int_range_max r;
+  gimple_stmt_iterator gsi;
+  FOR_EACH_BB_FN (bb, cfun)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple *stmt = gsi_stmt (gsi);
+
+	if (is_gimple_debug (stmt))
+	  continue;
+
+	ranger.range_of_stmt (r, stmt);
+      }
+}
+
+// Dump all that ranger knows for the current function.
+
+DEBUG_FUNCTION void
+dump_ranger (FILE *out)
+{
+  gimple_ranger ranger;
+  debug_seed_ranger (ranger);
+  ranger.dump (out);
+}
+
+DEBUG_FUNCTION void
+debug_ranger ()
+{
+  dump_ranger (stderr);
+}
+
+// Dump all that ranger knows on a path of BBs.
+//
+// Note that the blocks are in reverse order, thus the exit block is
+// path[0].
+
+DEBUG_FUNCTION void
+dump_ranger (FILE *dump_file, const vec<basic_block> &path)
+{
+  if (path.length () == 0)
+    {
+      fprintf (dump_file, "empty\n");
+      return;
+    }
+
+  gimple_ranger ranger;
+  debug_seed_ranger (ranger);
+
+  unsigned i = path.length ();
+  do
+    {
+      i--;
+      ranger.dump_bb (dump_file, path[i]);
+    }
+  while (i > 0);
+}
+
+DEBUG_FUNCTION void
+debug_ranger (const vec<basic_block> &path)
+{
+  dump_ranger (stderr, path);
 }
 
 #include "gimple-range-tests.cc"

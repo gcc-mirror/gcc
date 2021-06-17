@@ -37,7 +37,7 @@ package body GNAT.Rewrite_Data is
    subtype SEO is Stream_Element_Offset;
 
    procedure Do_Output
-     (B      : in out Buffer;
+     (B      : Buffer;
       Data   : Stream_Element_Array;
       Output : not null access procedure (Data : Stream_Element_Array));
    --  Do the actual output. This ensures that we properly send the data
@@ -81,7 +81,7 @@ package body GNAT.Rewrite_Data is
    ---------------
 
    procedure Do_Output
-     (B      : in out Buffer;
+     (B      : Buffer;
       Data   : Stream_Element_Array;
       Output : not null access procedure (Data : Stream_Element_Array))
    is

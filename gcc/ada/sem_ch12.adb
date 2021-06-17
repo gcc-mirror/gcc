@@ -3903,12 +3903,7 @@ package body Sem_Ch12 is
             --  Check restriction imposed by AI05-073: a generic function
             --  cannot return an abstract type or an access to such.
 
-            --  This is a binding interpretation should it apply to earlier
-            --  versions of Ada as well as Ada 2012???
-
-            if Is_Abstract_Type (Designated_Type (Result_Type))
-              and then Ada_Version >= Ada_2012
-            then
+            if Is_Abstract_Type (Designated_Type (Result_Type)) then
                Error_Msg_N
                  ("generic function cannot have an access result "
                   & "that designates an abstract type", Spec);
@@ -4539,10 +4534,7 @@ package body Sem_Ch12 is
                --  If the current scope is itself an instance within a child
                --  unit, there will be duplications in the scope stack, and the
                --  unstacking mechanism in Inline_Instance_Body will fail.
-               --  This loses some rare cases of optimization, and might be
-               --  improved some day, if we can find a proper abstraction for
-               --  "the complete compilation context" that can be saved and
-               --  restored. ???
+               --  This loses some rare cases of optimization.
 
                if Is_Generic_Instance (Current_Scope) then
                   declare
@@ -4987,17 +4979,20 @@ package body Sem_Ch12 is
 
       if Gen_Comp /= Cunit_Entity (Current_Sem_Unit) then
 
-         --  Add some comments for the following two loops ???
+         --  Loop through enclosing scopes until we reach a generic instance,
+         --  package body, or subprogram.
 
          S := Current_Scope;
          while Present (S) and then S /= Standard_Standard loop
+
+            --  Save use clauses from enclosing scopes into Use_Clauses
+
             loop
                Num_Scopes := Num_Scopes + 1;
 
                Use_Clauses (Num_Scopes) :=
                  (Scope_Stack.Table
-                    (Scope_Stack.Last - Num_Scopes + 1).
-                       First_Use_Clause);
+                    (Scope_Stack.Last - Num_Scopes + 1).First_Use_Clause);
                End_Use_Clauses (Use_Clauses (Num_Scopes));
 
                exit when Scope_Stack.Last - Num_Scopes + 1 = Scope_Stack.First
@@ -5554,7 +5549,6 @@ package body Sem_Ch12 is
          --  If there is a formal subprogram with the same name as the unit
          --  itself, do not add this renaming declaration, to prevent
          --  ambiguities when there is a call with that name in the body.
-         --  This is a partial and ugly fix for one ACATS test. ???
 
          Renaming_Decl := First (Renaming_List);
          while Present (Renaming_Decl) loop
@@ -9764,6 +9758,7 @@ package body Sem_Ch12 is
       --  point of the current enclosing instance. Pending a better usage of
       --  Slocs to indicate instantiation places, we determine the place of
       --  origin of a node by finding the maximum sloc of any ancestor node.
+
       --  Why is this not equivalent to Top_Level_Location ???
 
       -------------------
@@ -12576,9 +12571,7 @@ package body Sem_Ch12 is
       --  errors, this may be an instance whose scope is a premature instance.
       --  In that case we must insure that the (legal) program does raise
       --  program error if executed. We generate a subprogram body for this
-      --  purpose. See DEC ac30vso.
-
-      --  Should not reference proprietary DEC tests in comments ???
+      --  purpose.
 
       elsif Serious_Errors_Detected = 0
         and then Nkind (Parent (Inst_Node)) /= N_Compilation_Unit
@@ -12705,7 +12698,7 @@ package body Sem_Ch12 is
 
       function Subtypes_Match (Gen_T, Act_T : Entity_Id) return Boolean;
       --  Check that base types are the same and that the subtypes match
-      --  statically. Used in several of the above.
+      --  statically. Used in several of the validation subprograms.
 
       --------------------------------------------
       --  Check_Shared_Variable_Control_Aspects --
@@ -12840,7 +12833,9 @@ package body Sem_Ch12 is
          T : constant Entity_Id := Get_Instance_Of (Gen_T);
 
       begin
-         --  Some detailed comments would be useful here ???
+         --  Check that the base types, root types (when dealing with class
+         --  wide types), or designated types (when dealing with anonymous
+         --  access types) of Gen_T and Act_T are statically matching subtypes.
 
          return ((Base_Type (T) = Act_T
                    or else Base_Type (T) = Base_Type (Act_T))
@@ -12852,9 +12847,7 @@ package body Sem_Ch12 is
                                 (Get_Instance_Of (Root_Type (Gen_T)),
                                  Root_Type (Act_T)))
 
-           or else
-             (Ekind (Gen_T) in E_Anonymous_Access_Subprogram_Type
-                             | E_Anonymous_Access_Type
+           or else (Is_Anonymous_Access_Type (Gen_T)
                and then Ekind (Act_T) = Ekind (Gen_T)
                and then Subtypes_Statically_Match
                           (Designated_Type (Gen_T), Designated_Type (Act_T)));
@@ -14029,9 +14022,12 @@ package body Sem_Ch12 is
                      and then Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
          then
             --  If the formal is an incomplete type, the actual can be
-            --  incomplete as well.
+            --  incomplete as well, but if an actual incomplete type has
+            --  a full view, then we'll retrieve that.
 
-            if Ekind (A_Gen_T) = E_Incomplete_Type then
+            if Ekind (A_Gen_T) = E_Incomplete_Type
+              and then not Present (Full_View (Act_T))
+            then
                null;
 
             elsif Is_Class_Wide_Type (Act_T)
@@ -14039,6 +14035,7 @@ package body Sem_Ch12 is
             then
                Error_Msg_N ("premature use of incomplete type", Actual);
                Abandon_Instantiation (Actual);
+
             else
                Act_T := Full_View (Act_T);
                Set_Entity (Actual, Act_T);
@@ -15626,7 +15623,8 @@ package body Sem_Ch12 is
          elsif Nkind (E) not in N_Entity then
             return False;
 
-         elsif Is_Child_Unit (E)
+         elsif Nkind (E) /= N_Expanded_Name
+           and then Is_Child_Unit (E)
            and then (Is_Instance_Node (Parent (N2))
                       or else (Nkind (Parent (N2)) = N_Expanded_Name
                                 and then N2 = Selector_Name (Parent (N2))
@@ -15636,7 +15634,19 @@ package body Sem_Ch12 is
             return True;
 
          else
-            Se := Scope (E);
+            --  E may be an expanded name - typically an operator - in which
+            --  case we must find its enclosing scope since expanded names
+            --  don't have corresponding scopes.
+
+            if Nkind (E) = N_Expanded_Name then
+               Se := Find_Enclosing_Scope (E);
+
+            --  Otherwise, E is an entity and will have Scope set
+
+            else
+               Se := Scope (E);
+            end if;
+
             while Se /= Gen_Scope loop
                if Se = Standard_Standard then
                   return True;

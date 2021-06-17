@@ -1462,13 +1462,8 @@ enum reg_class
    || TARGET_64BIT_MS_ABI \
    || (TARGET_MACHO && crtl->profile))
 
-/* If defined, a C expression whose value is nonzero when we want to use PUSH
-   instructions to pass outgoing arguments.  */
-
-#define PUSH_ARGS (TARGET_PUSH_ARGS && !ACCUMULATE_OUTGOING_ARGS)
-
 /* We want the stack and args grow in opposite directions, even if
-   PUSH_ARGS is 0.  */
+   targetm.calls.push_argument returns false.  */
 #define PUSH_ARGS_REVERSED 1
 
 /* Offset of first parameter from the argument pointer register value.  */

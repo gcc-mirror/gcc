@@ -37,6 +37,7 @@ with Exp_Aggr;       use Exp_Aggr;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Ch11;       use Exp_Ch11;
+with Freeze;         use Freeze;
 with Ghost;          use Ghost;
 with Inline;         use Inline;
 with Itypes;         use Itypes;
@@ -5315,6 +5316,186 @@ package body Exp_Util is
       end if;
    end Evolve_Or_Else;
 
+   -------------------------------
+   -- Expand_Sliding_Conversion --
+   -------------------------------
+
+   procedure Expand_Sliding_Conversion (N : Node_Id; Arr_Typ : Entity_Id) is
+
+      pragma Assert (Is_Array_Type (Arr_Typ)
+                      and then not Is_Constrained (Arr_Typ));
+
+      Constraints : List_Id;
+      Index       : Node_Id := First_Index (Arr_Typ);
+      Loc         : constant Source_Ptr := Sloc (N);
+      Subt_Decl   : Node_Id;
+      Subt        : Entity_Id;
+      Subt_Low    : Node_Id;
+      Subt_High   : Node_Id;
+
+      Act_Subt    : Entity_Id;
+      Act_Index   : Node_Id;
+      Act_Low     : Node_Id;
+      Act_High    : Node_Id;
+      Adjust_Incr : Node_Id;
+      Dimension   : Int := 0;
+      All_FLBs_Match : Boolean := True;
+
+   begin
+      if Is_Fixed_Lower_Bound_Array_Subtype (Arr_Typ) then
+         Constraints := New_List;
+
+         Act_Subt  := Get_Actual_Subtype (N);
+         Act_Index := First_Index (Act_Subt);
+
+         --  Loop over the indexes of the fixed-lower-bound array type or
+         --  subtype to build up an index constraint for constructing the
+         --  subtype that will be the target of a conversion of the array
+         --  object that may need a sliding conversion.
+
+         while Present (Index) loop
+            pragma Assert (Present (Act_Index));
+
+            Dimension := Dimension + 1;
+
+            Get_Index_Bounds (Act_Index, Act_Low, Act_High);
+
+            --  If Index defines a normal unconstrained range (range <>),
+            --  then we will simply use the bounds of the actual subtype's
+            --  corresponding index range.
+
+            if not Is_Fixed_Lower_Bound_Index_Subtype (Etype (Index)) then
+               Subt_Low  := Act_Low;
+               Subt_High := Act_High;
+
+            --  Otherwise, a range will be created with a low bound given by
+            --  the fixed lower bound of the array subtype's index, and with
+            --  high bound given by (Actual'Length + fixed lower bound - 1).
+
+            else
+               if Nkind (Index) = N_Subtype_Indication then
+                  Subt_Low :=
+                    New_Copy_Tree
+                      (Low_Bound (Range_Expression (Constraint (Index))));
+               else
+                  pragma Assert (Nkind (Index) = N_Range);
+
+                  Subt_Low := New_Copy_Tree (Low_Bound (Index));
+               end if;
+
+               --  If either we have a nonstatic lower bound, or the target and
+               --  source subtypes are statically known to have unequal lower
+               --  bounds, then we will need to make a subtype conversion to
+               --  slide the bounds. However, if all of the indexes' lower
+               --  bounds are static and known to be equal (the common case),
+               --  then no conversion will be needed, and we'll end up not
+               --  creating the subtype or the conversion (though we still
+               --  build up the index constraint, which will simply be unused).
+
+               if not (Compile_Time_Known_Value (Subt_Low)
+                        and then Compile_Time_Known_Value (Act_Low))
+                 or else Expr_Value (Subt_Low) /= Expr_Value (Act_Low)
+               then
+                  All_FLBs_Match := False;
+               end if;
+
+               --  Apply 'Pos to lower bound, which may be of an enumeration
+               --  type, before subtracting.
+
+               Adjust_Incr :=
+                 Make_Op_Subtract (Loc,
+                   Make_Attribute_Reference (Loc,
+                      Prefix         =>
+                        New_Occurrence_Of (Etype (Act_Index), Loc),
+                      Attribute_Name =>
+                        Name_Pos,
+                      Expressions    =>
+                        New_List (New_Copy_Tree (Subt_Low))),
+                   Make_Integer_Literal (Loc, 1));
+
+               --  Apply 'Val to the result of adding the increment to the
+               --  length, to handle indexes of enumeration types.
+
+               Subt_High :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     New_Occurrence_Of (Etype (Act_Index), Loc),
+                   Attribute_Name =>
+                     Name_Val,
+                   Expressions    =>
+                     New_List (Make_Op_Add (Loc,
+                                 Make_Attribute_Reference (Loc,
+                                   Prefix         =>
+                                     New_Occurrence_Of (Act_Subt, Loc),
+                                   Attribute_Name =>
+                                     Name_Length,
+                                   Expressions    =>
+                                     New_List
+                                       (Make_Integer_Literal
+                                          (Loc, Dimension))),
+                                 Adjust_Incr)));
+            end if;
+
+            Append (Make_Range (Loc, Subt_Low, Subt_High), Constraints);
+
+            Next (Index);
+            Next (Act_Index);
+         end loop;
+
+         --  If for each index with a fixed lower bound (FLB), the lower bound
+         --  of the corresponding index of the actual subtype is statically
+         --  known be equal to the FLB, then a sliding conversion isn't needed
+         --  at all, so just return without building a subtype or conversion.
+
+         if All_FLBs_Match then
+            return;
+         end if;
+
+         --  A sliding conversion is needed, so create the target subtype using
+         --  the index constraint created above, and rewrite the expression
+         --  as a conversion to that subtype.
+
+         Subt := Make_Temporary (Loc, 'S', Related_Node => N);
+         Set_Is_Internal (Subt);
+
+         Subt_Decl :=
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => Subt,
+             Subtype_Indication  =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (Arr_Typ,  Loc),
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints => Constraints)));
+
+         Mark_Rewrite_Insertion (Subt_Decl);
+
+         --  The actual subtype is an Itype, so we analyze the declaration,
+         --  but do not attach it to the tree.
+
+         Set_Parent (Subt_Decl, N);
+         Set_Is_Itype (Subt);
+         Analyze (Subt_Decl, Suppress => All_Checks);
+         Set_Associated_Node_For_Itype (Subt, N);
+         Set_Has_Delayed_Freeze (Subt, False);
+
+         --  We need to freeze the actual subtype immediately.  This is needed
+         --  because otherwise this Itype will not get frozen at all, and it is
+         --  always safe to freeze on creation because any associated types
+         --  must be frozen at this point.
+
+         Freeze_Itype (Subt, N);
+
+         Rewrite (N,
+                  Make_Type_Conversion (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (Subt, Loc),
+                    Expression   => Relocate_Node (N)));
+         Analyze (N);
+      end if;
+   end Expand_Sliding_Conversion;
+
    -----------------------------------------
    -- Expand_Static_Predicates_In_Choices --
    -----------------------------------------
@@ -5322,7 +5503,7 @@ package body Exp_Util is
    procedure Expand_Static_Predicates_In_Choices (N : Node_Id) is
       pragma Assert (Nkind (N) in N_Case_Statement_Alternative | N_Variant);
 
-      Choices : constant List_Id := Discrete_Choices (N);
+      Choices : List_Id := Discrete_Choices (N);
 
       Choice : Node_Id;
       Next_C : Node_Id;
@@ -5330,6 +5511,13 @@ package body Exp_Util is
       C      : Node_Id;
 
    begin
+      --  If this is an "others" alternative, we need to process any static
+      --  predicates in its Others_Discrete_Choices.
+
+      if Nkind (First (Choices)) = N_Others_Choice then
+         Choices := Others_Discrete_Choices (First (Choices));
+      end if;
+
       Choice := First (Choices);
       while Present (Choice) loop
          Next_C := Next (Choice);
@@ -6213,6 +6401,9 @@ package body Exp_Util is
                                         | N_Discriminant_Association
                                         | N_Parameter_Association
                                         | N_Pragma_Argument_Association
+                                        | N_Aggregate
+                                        | N_Delta_Aggregate
+                                        | N_Extension_Aggregate
               and then Nkind (Parent (Par)) not in N_Function_Call
                                                  | N_Procedure_Call_Statement
                                                  | N_Entry_Call_Statement

@@ -657,7 +657,7 @@ irange_allocator::~irange_allocator ()
   obstack_free (&m_obstack, NULL);
 }
 
-// Provide a hunk of memory from the obstack
+// Provide a hunk of memory from the obstack.
 inline void *
 irange_allocator::get_memory (unsigned num_bytes)
 {

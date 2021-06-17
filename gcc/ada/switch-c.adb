@@ -112,7 +112,7 @@ package body Switch.C is
 
          when '3' =>
             if Standard_Long_Long_Integer_Size /= 64 then
-               Bad_Switch ("-gnato3 not implemented for this configuration");
+               Bad_Switch ("-gnato3 requires Long_Long_Integer'Size = 64");
             else
                return Eliminated;
             end if;

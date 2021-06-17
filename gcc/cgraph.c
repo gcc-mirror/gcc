@@ -3074,10 +3074,10 @@ collect_callers_of_node_1 (cgraph_node *node, void *data)
 /* Collect all callers of cgraph_node and its aliases that are known to lead to
    cgraph_node (i.e. are not overwritable).  */
 
-vec<cgraph_edge *>
+auto_vec<cgraph_edge *>
 cgraph_node::collect_callers (void)
 {
-  vec<cgraph_edge *> redirect_callers = vNULL;
+  auto_vec<cgraph_edge *> redirect_callers;
   call_for_symbol_thunks_and_aliases (collect_callers_of_node_1,
 				    &redirect_callers, false);
   return redirect_callers;

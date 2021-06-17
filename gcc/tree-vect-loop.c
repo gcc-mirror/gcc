@@ -3209,7 +3209,7 @@ fold_left_reduction_fn (tree_code code, internal_fn *reduc_fn)
 
    Return FALSE if CODE currently cannot be vectorized as reduction.  */
 
-static bool
+bool
 reduction_fn_for_scalar_code (enum tree_code code, internal_fn *reduc_fn)
 {
   switch (code)

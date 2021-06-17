@@ -1,3 +1,10 @@
+2021-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100796
+	PR preprocessor/96391
+	* line-map.c (linemap_compare_locations): Only use comparison with
+	LINE_MAP_MAX_LOCATION_WITH_COLS to avoid abort.
+
 2021-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
 	    Torbjörn Svensson  <torbjorn.svensson@st.com>
 

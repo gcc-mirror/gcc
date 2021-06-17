@@ -239,7 +239,7 @@ package body Sinfo.Utils is
 
    begin
       for J in Fields'Range loop
-         if Fields (J) /= Link then -- Don't walk Parent!
+         if Fields (J) /= F_Link then -- Don't walk Parent!
             declare
                Desc : Field_Descriptor renames
                  Node_Field_Descriptors (Fields (J));
@@ -264,7 +264,7 @@ package body Sinfo.Utils is
 
    begin
       for J in Fields'Range loop
-         if Fields (J) /= Link then -- Don't walk Parent!
+         if Fields (J) /= F_Link then -- Don't walk Parent!
             declare
                Desc : Field_Descriptor renames
                  Node_Field_Descriptors (Fields (J));

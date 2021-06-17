@@ -1414,13 +1414,12 @@ duplicate_loop_to_header_edge (class loop *loop, edge e,
   for (i = 0; i < n; i++)
     {
       basic_block dominated, dom_bb;
-      vec<basic_block> dom_bbs;
       unsigned j;
 
       bb = bbs[i];
       bb->aux = 0;
 
-      dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
+      auto_vec<basic_block> dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
       FOR_EACH_VEC_ELT (dom_bbs, j, dominated)
 	{
 	  if (flow_bb_inside_loop_p (loop, dominated))
@@ -1429,7 +1428,6 @@ duplicate_loop_to_header_edge (class loop *loop, edge e,
 			CDI_DOMINATORS, first_active[i], first_active_latch);
 	  set_immediate_dominator (CDI_DOMINATORS, dominated, dom_bb);
 	}
-      dom_bbs.release ();
     }
   free (first_active);
 

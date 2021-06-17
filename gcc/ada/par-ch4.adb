@@ -1734,8 +1734,9 @@ package body Ch4 is
    --        aggregates (AI-287)
 
    function P_Record_Or_Array_Component_Association return Node_Id is
-      Assoc_Node : Node_Id;
-
+      Assoc_Node                  : Node_Id;
+      Box_Present                 : Boolean := False;
+      Box_With_Identifier_Present : Boolean := False;
    begin
       --  A loop indicates an iterated_component_association
 
@@ -1744,6 +1745,8 @@ package body Ch4 is
       end if;
 
       Assoc_Node := New_Node (N_Component_Association, Token_Ptr);
+      Set_Binding_Chars (Assoc_Node, No_Name);
+
       Set_Choices (Assoc_Node, P_Discrete_Choice_List);
       Set_Sloc (Assoc_Node, Token_Ptr);
       TF_Arrow;
@@ -1755,10 +1758,76 @@ package body Ch4 is
 
          Error_Msg_Ada_2005_Extension ("component association with '<'>");
 
+         Box_Present := True;
          Set_Box_Present (Assoc_Node);
-         Scan; -- Past box
-      else
+         Scan; -- past box
+      elsif Token = Tok_Less then
+         declare
+            Scan_State : Saved_Scan_State;
+            Id         : Node_Id;
+         begin
+            Save_Scan_State (Scan_State);
+            Scan; -- past "<"
+            if Token = Tok_Identifier then
+               Id := P_Defining_Identifier;
+               if Token = Tok_Greater then
+                  if Extensions_Allowed then
+                     Set_Box_Present (Assoc_Node);
+                     Set_Binding_Chars (Assoc_Node, Chars (Id));
+                     Box_Present := True;
+                     Box_With_Identifier_Present := True;
+                     Scan; -- past ">"
+                  else
+                     Error_Msg
+                       ("Identifier within box only supported under -gnatX",
+                        Token_Ptr);
+                     Box_Present := True;
+                     --  Avoid cascading errors by ignoring the identifier
+                  end if;
+               end if;
+            end if;
+            if not Box_Present then
+               --  it wasn't an "is <identifier>", so restore.
+               Restore_Scan_State (Scan_State);
+            end if;
+         end;
+      end if;
+
+      if not Box_Present then
          Set_Expression (Assoc_Node, P_Expression);
+      end if;
+
+      --  Check for "is <identifier>" for aggregate that is part of
+      --  a pattern for a general case statement.
+
+      if Token = Tok_Is then
+         declare
+            Scan_State : Saved_Scan_State;
+            Id         : Node_Id;
+         begin
+            Save_Scan_State (Scan_State);
+            Scan; -- past "is"
+            if Token = Tok_Identifier then
+               Id := P_Defining_Identifier;
+
+               if not Extensions_Allowed then
+                  Error_Msg
+                    ("IS following component association"
+                       & " only supported under -gnatX",
+                     Token_Ptr);
+               elsif Box_With_Identifier_Present then
+                  Error_Msg
+                    ("Both identifier-in-box and trailing identifier"
+                       & " specified for one component association",
+                     Token_Ptr);
+               else
+                  Set_Binding_Chars (Assoc_Node, Chars (Id));
+               end if;
+            else
+               --  It wasn't an "is <identifier>", so restore.
+               Restore_Scan_State (Scan_State);
+            end if;
+         end;
       end if;
 
       return Assoc_Node;

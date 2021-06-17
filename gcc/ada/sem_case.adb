@@ -43,12 +43,14 @@ with Stand;          use Stand;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
+with Table;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 
 with Ada.Unchecked_Deallocation;
 
 with GNAT.Heap_Sort_G;
+with GNAT.Sets;
 
 package body Sem_Case is
 
@@ -94,6 +96,114 @@ package body Sem_Case is
    function Choice_Image (Value : Uint; Ctype : Entity_Id) return Name_Id;
    --  Given a Pos value of enumeration type Ctype, returns the name
    --  ID of an appropriate string to be used in error message output.
+
+   package Composite_Case_Ops is
+
+      function Scalar_Part_Count (Subtyp : Entity_Id) return Nat;
+      --  Given the composite type Subtyp of a case selector, returns the
+      --  number of scalar parts in an object of this type. This is the
+      --  dimensionality of the associated Cartesian product space.
+
+      function Choice_Count (Alternatives : List_Id) return Nat;
+      --  The sum of the number of choices for each alternative in the given
+      --  list.
+
+      generic
+         Case_Statement : Node_Id;
+      package Choice_Analysis is
+
+         type Alternative_Id is
+           new Int range 1 .. List_Length (Alternatives (Case_Statement));
+         type Choice_Id is
+           new Int range 1 .. Choice_Count (Alternatives (Case_Statement));
+         type Part_Id is new Int range
+           1 .. Scalar_Part_Count (Etype (Expression (Case_Statement)));
+
+         type Discrete_Range_Info is
+           record
+              Low, High : Uint;
+           end record;
+
+         type Composite_Range_Info is array (Part_Id) of Discrete_Range_Info;
+
+         type Choice_Range_Info (Is_Others : Boolean := False) is
+           record
+              case Is_Others is
+                 when False =>
+                    Ranges : Composite_Range_Info;
+                 when True =>
+                    null;
+              end case;
+           end record;
+
+         type Choices_Range_Info is array (Choice_Id) of Choice_Range_Info;
+
+         package Value_Sets is
+
+            type Value_Set is private;
+            --  A set of points in the Cartesian product space defined
+            --  by the composite type of the case selector.
+            --  Implemented as an access type.
+
+            type Set_Comparison is
+              (Disjoint, Equal, Contains, Contained_By, Overlaps);
+
+            function Compare (S1, S2 : Value_Set) return Set_Comparison;
+            --  If either argument (or both) is empty, result is Disjoint.
+            --  Otherwise, result is Equal if the two sets are equal.
+
+            Empty : constant Value_Set;
+
+            function Matching_Values
+              (Info : Composite_Range_Info) return Value_Set;
+            --  The Cartesian product of the given array of ranges
+            --  (excluding any values outside the Cartesian product of the
+            --  component ranges).
+
+            procedure Union (Target : in out Value_Set; Source : Value_Set);
+            --  Add elements of Source into Target
+
+            procedure Remove (Target : in out Value_Set; Source : Value_Set);
+            --  Remove elements of Source from Target
+
+            function Complement_Is_Empty (Set : Value_Set) return Boolean;
+            --  Return True iff the set is "maximal", in the sense that it
+            --  includes every value in the Cartesian product of the
+            --  component ranges.
+
+            procedure Free_Value_Sets;
+            --  Reclaim storage associated with implementation of this package.
+
+         private
+            type Value_Set is new Natural;
+            --  An index for a table that will be declared in the package body.
+
+            Empty : constant Value_Set := 0;
+
+         end Value_Sets;
+
+         type Single_Choice_Info (Is_Others : Boolean := False) is
+           record
+              Alternative : Alternative_Id;
+              case Is_Others is
+                 when False =>
+                    Matches : Value_Sets.Value_Set;
+                 when True =>
+                    null;
+              end case;
+           end record;
+
+         type Choices_Info is array (Choice_Id) of Single_Choice_Info;
+
+         function Analysis return Choices_Info;
+         --  Parse the case choices in order to determine the set of
+         --  matching values associated with each choice.
+
+         type Bound_Values is array (Positive range <>) of Node_Id;
+
+      end Choice_Analysis;
+
+   end Composite_Case_Ops;
 
    procedure Expand_Others_Choice
      (Case_Table    : Choice_Table_Type;
@@ -980,6 +1090,1179 @@ package body Sem_Case is
       return Name_Find;
    end Choice_Image;
 
+   package body Composite_Case_Ops is
+
+      function Static_Array_Length (Subtyp : Entity_Id) return Nat;
+      --  Given a one-dimensional constrained array subtype with
+      --  statically known bounds, return its length.
+
+      -------------------------
+      -- Static_Array_Length --
+      -------------------------
+
+      function Static_Array_Length (Subtyp : Entity_Id) return Nat is
+         pragma Assert (Is_Constrained (Subtyp));
+         pragma Assert (Number_Dimensions (Subtyp) = 1);
+         Index : constant Node_Id := First_Index (Subtyp);
+         pragma Assert (Is_OK_Static_Range (Index));
+         Lo  : constant Uint := Expr_Value (Low_Bound (Index));
+         Hi  : constant Uint := Expr_Value (High_Bound (Index));
+         Len : constant Uint := UI_Max (0, (Hi - Lo) + 1);
+      begin
+         return UI_To_Int (Len);
+      end Static_Array_Length;
+
+      -----------------------
+      -- Scalar_Part_Count --
+      -----------------------
+
+      function Scalar_Part_Count (Subtyp : Entity_Id) return Nat is
+      begin
+         if Is_Scalar_Type (Subtyp) then
+            return 1;
+         elsif Is_Array_Type (Subtyp) then
+            return Static_Array_Length (Subtyp)
+              * Scalar_Part_Count (Component_Type (Subtyp));
+         elsif Is_Record_Type (Subtyp) then
+            pragma Assert (not Has_Discriminants (Subtyp));
+            declare
+               Result : Nat := 0;
+               Comp : Entity_Id := First_Component (Subtyp);
+            begin
+               while Present (Comp) loop
+                  Result := Result + Scalar_Part_Count (Etype (Comp));
+                  Next_Component (Comp);
+               end loop;
+               return Result;
+            end;
+         else
+            pragma Assert (False);
+            raise Program_Error;
+         end if;
+      end Scalar_Part_Count;
+
+      ------------------
+      -- Choice_Count --
+      ------------------
+
+      function Choice_Count (Alternatives : List_Id) return Nat is
+         Result : Nat := 0;
+         Alt : Node_Id := First (Alternatives);
+      begin
+         while Present (Alt) loop
+            Result := Result + List_Length (Discrete_Choices (Alt));
+            Next (Alt);
+         end loop;
+         return Result;
+      end Choice_Count;
+
+      package body Choice_Analysis is
+
+         function Component_Bounds_Info return Composite_Range_Info;
+         --  Returns the (statically known) bounds for each component.
+         --  The selector expression value (or any other value of the type
+         --  of the selector expression) can be thought of as a point in the
+         --  Cartesian product of these sets.
+
+         function Parse_Choice (Choice : Node_Id;
+                                Alt    : Node_Id) return Choice_Range_Info;
+         --  Extract Choice_Range_Info from a Choice node
+
+         ---------------------------
+         -- Component_Bounds_Info --
+         ---------------------------
+
+         function Component_Bounds_Info return Composite_Range_Info is
+            Result : Composite_Range_Info;
+            Next   : Part_Id := 1;
+            Done   : Boolean := False;
+
+            procedure Update_Result (Info : Discrete_Range_Info);
+            --  Initialize first remaining uninitialized element of Result.
+            --  Also set Next and Done.
+
+            -------------------
+            -- Update_Result --
+            -------------------
+
+            procedure Update_Result (Info : Discrete_Range_Info) is
+            begin
+               Result (Next) := Info;
+               if Next /= Part_Id'Last then
+                  Next := Next + 1;
+               else
+                  pragma Assert (not Done);
+                  Done := True;
+               end if;
+            end Update_Result;
+
+            procedure Traverse_Discrete_Parts (Subtyp : Entity_Id);
+            --  Traverse the given subtype, looking for discrete parts.
+            --  For an array subtype of length N, the element subtype
+            --  is traversed N times. For a record subtype, traverse
+            --  each component's subtype (once). When a discrete part is
+            --  found, call Update_Result.
+
+            -----------------------------
+            -- Traverse_Discrete_Parts --
+            -----------------------------
+
+            procedure Traverse_Discrete_Parts (Subtyp : Entity_Id) is
+            begin
+               if Is_Discrete_Type (Subtyp) then
+                  Update_Result
+                    ((Low  => Expr_Value (Type_Low_Bound (Subtyp)),
+                      High => Expr_Value (Type_High_Bound (Subtyp))));
+               elsif Is_Array_Type (Subtyp) then
+                  for I in 1 .. Static_Array_Length (Subtyp) loop
+                     Traverse_Discrete_Parts (Component_Type (Subtyp));
+                  end loop;
+               elsif Is_Record_Type (Subtyp) then
+                  pragma Assert (not Has_Discriminants (Subtyp));
+                  declare
+                     Comp : Entity_Id := First_Component (Subtyp);
+                  begin
+                     while Present (Comp) loop
+                        Traverse_Discrete_Parts (Etype (Comp));
+                        Next_Component (Comp);
+                     end loop;
+                  end;
+               else
+                  Error_Msg_N
+                    ("case selector type having a non-discrete non-record"
+                     & "  non-array subcomponent type not implemented",
+                     Expression (Case_Statement));
+               end if;
+            end Traverse_Discrete_Parts;
+         begin
+            Traverse_Discrete_Parts (Etype (Expression (Case_Statement)));
+            pragma Assert (Done or else Serious_Errors_Detected > 0);
+            return Result;
+         end Component_Bounds_Info;
+
+         Component_Bounds : constant Composite_Range_Info
+           := Component_Bounds_Info;
+
+         package Case_Bindings is
+
+            procedure Note_Binding
+              (Comp_Assoc : Node_Id;
+               Choice     : Node_Id;
+               Alt        : Node_Id);
+            --  Note_Binding is called once for each component association
+            --  that defines a binding (using either "A => B is X" or
+            --  "A => <X>" syntax);
+
+            procedure Check_Bindings;
+            --  After all calls to Note_Binding, check that bindings are
+            --  ok (e.g., check consistency among different choices of
+            --  one alternative).
+
+         end Case_Bindings;
+
+         procedure Refresh_Binding_Info (Aggr : Node_Id);
+         --  The parser records binding-related info in the tree.
+         --  The choice nodes that we see here might not be (will never be?)
+         --  the original nodes that were produced by the parser. The info
+         --  recorded by the parser is missing in that case, so this
+         --  procedure recovers it.
+         --
+         --  There are bugs here. In some cases involving nested aggregates,
+         --  the path back to the parser-created nodes is lost. In particular,
+         --  we may fail to detect an illegal case like
+         --   when (F1 | F2 => (Aa => Natural, Bb => Natural is X)) =>
+         --  This should be rejected because it is binding X to both the
+         --  F1.Bb and to the F2.Bb subcomponents of the case selector.
+         --  It would be nice if the not-specific-to-pattern-matching
+         --  aggregate-processing code could remain unaware of the existence
+         --  of this binding-related info but perhaps that isn't possible.
+
+         --------------------------
+         -- Refresh_Binding_Info --
+         --------------------------
+
+         procedure Refresh_Binding_Info (Aggr : Node_Id) is
+            Orig_Aggr : constant Node_Id := Original_Node (Aggr);
+            Orig_Comp : Node_Id := First (Component_Associations (Orig_Aggr));
+         begin
+            if Aggr = Orig_Aggr then
+               return;
+            end if;
+
+            while Present (Orig_Comp) loop
+               if Nkind (Orig_Comp) = N_Component_Association
+                 and then Binding_Chars (Orig_Comp) /= No_Name
+               then
+                  if List_Length (Choices (Orig_Comp)) /= 1 then
+                     --  Conceivably this could be checked during parsing,
+                     --  but checking is easier here.
+
+                     Error_Msg_N
+                       ("binding shared by multiple components", Orig_Comp);
+                     return;
+                  end if;
+
+                  declare
+                     Orig_Name : constant Name_Id :=
+                       Chars (First (Choices (Orig_Comp)));
+                     Comp : Node_Id := First (Component_Associations (Aggr));
+                     Matching_Comp : Node_Id := Empty;
+                  begin
+                     while Present (Comp) loop
+                        if Chars (First (Choices (Comp))) = Orig_Name then
+                           pragma Assert (not Present (Matching_Comp));
+                           Matching_Comp := Comp;
+                        end if;
+
+                        Next (Comp);
+                     end loop;
+
+                     pragma Assert (Present (Matching_Comp));
+
+                     Set_Binding_Chars
+                       (Matching_Comp,
+                        Binding_Chars (Orig_Comp));
+                  end;
+               end if;
+
+               Next (Orig_Comp);
+            end loop;
+         end Refresh_Binding_Info;
+
+         ------------------
+         -- Parse_Choice --
+         ------------------
+
+         function Parse_Choice (Choice : Node_Id;
+                                Alt    : Node_Id) return Choice_Range_Info
+         is
+            Result    : Choice_Range_Info (Is_Others => False);
+            Ranges    : Composite_Range_Info renames Result.Ranges;
+            Next_Part : Part_Id := 1;
+            Done      : Boolean := False;
+
+            procedure Update_Result (Discrete_Range : Discrete_Range_Info);
+            --  Initialize first remaining uninitialized element of Ranges.
+            --  Also set Next_Part and Done.
+
+            -------------------
+            -- Update_Result --
+            -------------------
+
+            procedure Update_Result (Discrete_Range : Discrete_Range_Info) is
+            begin
+               pragma Assert (not Done);
+               Ranges (Next_Part) := Discrete_Range;
+               if Next_Part = Part_Id'Last then
+                  Done := True;
+               else
+                  Next_Part := Next_Part + 1;
+               end if;
+            end Update_Result;
+
+            procedure Traverse_Choice (Expr : Node_Id);
+            --  Traverse a legal choice expression, looking for
+            --  values/ranges of discrete parts. Call Update_Result
+            --  for each.
+
+            ---------------------
+            -- Traverse_Choice --
+            ---------------------
+
+            procedure Traverse_Choice (Expr : Node_Id) is
+            begin
+               if Nkind (Expr) = N_Qualified_Expression then
+                  Traverse_Choice (Expression (Expr));
+
+               elsif Nkind (Expr) = N_Type_Conversion
+                  and then not Comes_From_Source (Expr)
+               then
+                  if Expr /= Original_Node (Expr) then
+                     Traverse_Choice (Original_Node (Expr));
+                  else
+                     Traverse_Choice (Expression (Expr));
+                  end if;
+
+               elsif Nkind (Expr) = N_Aggregate then
+                  if Is_Record_Type (Etype (Expr)) then
+                     Refresh_Binding_Info (Aggr => Expr);
+
+                     declare
+                        Comp : Node_Id :=
+                          First (Component_Associations (Expr));
+                        --  Ok to assume that components are in order here?
+                     begin
+                        while Present (Comp) loop
+                           pragma Assert (List_Length (Choices (Comp)) = 1);
+                           if Box_Present (Comp) then
+                              declare
+                                 Comp_Type : constant Entity_Id :=
+                                   Etype (First (Choices (Comp)));
+                              begin
+                                 if Is_Discrete_Type (Comp_Type) then
+                                    declare
+                                       Low  : constant Node_Id :=
+                                         Type_Low_Bound (Comp_Type);
+                                       High : constant Node_Id :=
+                                         Type_High_Bound (Comp_Type);
+                                    begin
+                                       Update_Result
+                                         ((Low  => Expr_Value (Low),
+                                           High => Expr_Value (High)));
+                                    end;
+                                 else
+                                    --  Need to recursively traverse type
+                                    --  here, calling Update_Result for
+                                    --  each discrete subcomponent.
+
+                                    Error_Msg_N
+                                      ("box values for nondiscrete pattern "
+                                       & "subcomponents unimplemented", Comp);
+                                 end if;
+                              end;
+                           else
+                              Traverse_Choice (Expression (Comp));
+                           end if;
+
+                           if Binding_Chars (Comp) /= No_Name
+                           then
+                              Case_Bindings.Note_Binding
+                                (Comp_Assoc => Comp,
+                                 Choice     => Choice,
+                                 Alt        => Alt);
+                           end if;
+
+                           Next (Comp);
+                        end loop;
+                     end;
+                  elsif Is_Array_Type (Etype (Expr)) then
+                     if Is_Non_Empty_List (Component_Associations (Expr)) then
+                        Error_Msg_N
+                          ("non-positional array aggregate as/within case "
+                           & "choice not implemented", Expr);
+                     end if;
+
+                     declare
+                        Subexpr : Node_Id := First (Expressions (Expr));
+                     begin
+                        while Present (Subexpr) loop
+                           Traverse_Choice (Subexpr);
+                           Next (Subexpr);
+                        end loop;
+                     end;
+                  else
+                     raise Program_Error;
+                  end if;
+               elsif Is_Discrete_Type (Etype (Expr)) then
+                  if Nkind (Expr) in N_Has_Entity and then
+                    Is_Type (Entity (Expr))
+                  then
+                     declare
+                        Low  : constant Node_Id :=
+                          Type_Low_Bound (Entity (Expr));
+                        High : constant Node_Id :=
+                          Type_High_Bound (Entity (Expr));
+                     begin
+                        Update_Result ((Low  => Expr_Value (Low),
+                                        High => Expr_Value (High)));
+                     end;
+                  else
+                     pragma Assert (Compile_Time_Known_Value (Expr));
+                     Update_Result ((Low | High => Expr_Value (Expr)));
+                  end if;
+               else
+                  Error_Msg_N
+                    ("non-aggregate case choice subexpression which is not"
+                     & " of a discrete type not implemented", Expr);
+               end if;
+            end Traverse_Choice;
+
+         begin
+            if Nkind (Choice) = N_Others_Choice then
+               return (Is_Others => True);
+            end if;
+            Traverse_Choice (Choice);
+
+            --  Avoid returning uninitialized garbage in error case
+            if not Done then
+               pragma Assert (Serious_Errors_Detected > 0);
+               Result.Ranges := (others => (Low => Uint_1, High => Uint_0));
+            end if;
+
+            return Result;
+         end Parse_Choice;
+
+         package body Case_Bindings is
+
+            type Binding is record
+               Comp_Assoc : Node_Id;
+               Choice     : Node_Id;
+               Alt        : Node_Id;
+            end record;
+
+            type Binding_Index is new Natural;
+
+            package Case_Bindings_Table is new Table.Table
+              (Table_Component_Type => Binding,
+               Table_Index_Type     => Binding_Index,
+               Table_Low_Bound      => 1,
+               Table_Initial        => 16,
+               Table_Increment      => 64,
+               Table_Name           => "Composite_Case_Ops.Case_Bindings");
+
+            ------------------
+            -- Note_Binding --
+            ------------------
+
+            procedure Note_Binding
+              (Comp_Assoc : Node_Id;
+               Choice     : Node_Id;
+               Alt        : Node_Id)
+            is
+            begin
+               Case_Bindings_Table.Append
+                 ((Comp_Assoc => Comp_Assoc,
+                   Choice     => Choice,
+                   Alt        => Alt));
+            end Note_Binding;
+
+            --------------------
+            -- Check_Bindings --
+            --------------------
+
+            procedure Check_Bindings
+            is
+               use Case_Bindings_Table;
+            begin
+               if Last = 0 then
+                  --  no bindings to check
+                  return;
+               end if;
+
+               declare
+                  Tab : Table_Type
+                          renames Case_Bindings_Table.Table (1 .. Last);
+
+                  function Same_Id (Idx1, Idx2 : Binding_Index)
+                    return Boolean is (
+                    Binding_Chars (Tab (Idx1).Comp_Assoc) =
+                    Binding_Chars (Tab (Idx2).Comp_Assoc));
+
+                  function Binding_Subtype (Idx : Binding_Index)
+                    return Entity_Id is
+                    (Etype (Nlists.First (Choices (Tab (Idx).Comp_Assoc))));
+               begin
+                  --  Verify that elements with given choice or alt value
+                  --  are contiguous, and that elements with equal
+                  --  choice values have same alt value.
+
+                  for Idx1 in 2 .. Tab'Last loop
+                     if Tab (Idx1 - 1).Choice /= Tab (Idx1).Choice then
+                        pragma Assert
+                          (for all Idx2 in Idx1 + 1 .. Tab'Last =>
+                             Tab (Idx2).Choice /= Tab (Idx1 - 1).Choice);
+                     else
+                        pragma Assert (Tab (Idx1 - 1).Alt = Tab (Idx1).Alt);
+                     end if;
+                     if Tab (Idx1 - 1).Alt /= Tab (Idx1).Alt then
+                        pragma Assert
+                          (for all Idx2 in Idx1 + 1 .. Tab'Last =>
+                             Tab (Idx2).Alt /= Tab (Idx1 - 1).Alt);
+                     end if;
+                  end loop;
+
+                  --  Check for user errors:
+                  --  1) Two choices for a given alternative shall define the
+                  --     same set of names. Can't have
+                  --        when (<X>, 0) | (0, <Y>) =>
+                  --  2) A choice shall not define a name twice. Can't have
+                  --        when (A => <X>, B => <X>, C => 0) =>
+                  --  3) Two definitions of a name within one alternative
+                  --     shall have statically matching component subtypes.
+                  --     Can't have
+                  --        type R is record Int : Integer;
+                  --                         Nat : Natural; end record;
+                  --        case R'(...) is
+                  --          when (<X>, 1) | (1, <X>) =>
+                  --  4) A given binding shall match only one value.
+                  --     Can't have
+                  --         (Fld1 | Fld2 => (Fld => <X>))
+                  --     For now, this is enforced *very* conservatively
+                  --     with respect to arrays - a binding cannot match
+                  --     any part of an array. This is temporary.
+
+                  for Idx1 in Tab'Range loop
+                     if Idx1 = 1
+                       or else Tab (Idx1 - 1).Alt /= Tab (Idx1).Alt
+                     then
+                        --  Process one alternative
+                        declare
+                           Alt_Start : constant Binding_Index := Idx1;
+                           Alt : constant Node_Id := Tab (Alt_Start).Alt;
+
+                           First_Choice : constant Node_Id :=
+                             Nlists.First (Discrete_Choices (Alt));
+                           First_Choice_Bindings : Natural := 0;
+                        begin
+                           --  Check for duplicates within one choice,
+                           --  and for choices with no bindings.
+
+                           if First_Choice /= Tab (Alt_Start).Choice then
+                              Error_Msg_N ("binding(s) missing for choice",
+                                           First_Choice);
+                              return;
+                           end if;
+
+                           declare
+                              Current_Choice : Node_Id := First_Choice;
+                              Choice_Start : Binding_Index := Alt_Start;
+                           begin
+                              for Idx2 in Alt_Start .. Tab'Last loop
+                                 exit when Tab (Idx2).Alt /= Alt;
+                                 if Tab (Idx2).Choice = Current_Choice then
+                                    for Idx3 in Choice_Start .. Idx2 - 1 loop
+                                       if Same_Id (Idx2, Idx3)
+                                       then
+                                          Error_Msg_N
+                                            ("duplicate binding in choice",
+                                             Current_Choice);
+                                          return;
+                                       end if;
+                                    end loop;
+                                 else
+                                    Next (Current_Choice);
+                                    pragma Assert (Present (Current_Choice));
+                                    Choice_Start := Idx2;
+
+                                    if Tab (Idx2).Choice /= Current_Choice
+                                    then
+                                       Error_Msg_N
+                                         ("binding(s) missing for choice",
+                                          Current_Choice);
+                                       return;
+                                    end if;
+                                 end if;
+                              end loop;
+
+                              --  If we made it through all the bindings
+                              --  for this alternative but didn't make it
+                              --  to the last choice, then bindings are
+                              --  missing for all remaining choices.
+                              --  We only complain about the first one.
+
+                              if Present (Next (Current_Choice)) then
+                                 Error_Msg_N
+                                   ("binding(s) missing for choice",
+                                     Next (Current_Choice));
+                                 return;
+                              end if;
+                           end;
+
+                           --  Count bindings for first choice of alternative
+
+                           for FC_Idx in Alt_Start .. Tab'Last loop
+                              exit when Tab (FC_Idx).Choice /= First_Choice;
+                              First_Choice_Bindings :=
+                                First_Choice_Bindings + 1;
+                           end loop;
+
+                           declare
+                              Current_Choice : Node_Id := First_Choice;
+                              Current_Choice_Bindings : Natural := 0;
+                           begin
+                              for Idx2 in Alt_Start .. Tab'Last loop
+                                 exit when Tab (Idx2).Alt /= Alt;
+
+                                 --  If starting a new choice
+
+                                 if Tab (Idx2).Choice /= Current_Choice then
+
+                                    --  Check count for choice just finished
+
+                                    if Current_Choice_Bindings
+                                      /= First_Choice_Bindings
+                                    then
+                                       Error_Msg_N
+                                         ("subsequent choice has different"
+                                          & " number of bindings than first"
+                                          & " choice", Current_Choice);
+                                    end if;
+
+                                    Current_Choice := Tab (Idx2).Choice;
+                                    Current_Choice_Bindings := 1;
+
+                                    --  Remember that Alt has both one or more
+                                    --  bindings and two or more choices; we'll
+                                    --  need to know this during expansion.
+
+                                    Set_Multidefined_Bindings (Alt, True);
+                                 else
+                                    Current_Choice_Bindings :=
+                                      Current_Choice_Bindings + 1;
+                                 end if;
+
+                                 --  Check that first choice has binding with
+                                 --  matching name; check subtype consistency.
+
+                                 declare
+                                    Found : Boolean := False;
+                                 begin
+                                    for FC_Idx in
+                                      Alt_Start ..
+                                      Alt_Start + Binding_Index
+                                                    (First_Choice_Bindings - 1)
+                                    loop
+                                       if Same_Id (Idx2, FC_Idx) then
+                                          if not Subtypes_Statically_Match
+                                            (Binding_Subtype (Idx2),
+                                             Binding_Subtype (FC_Idx))
+                                          then
+                                             Error_Msg_N
+                                               ("subtype of binding in "
+                                                & "subsequent choice does not "
+                                                & "match that in first choice",
+                                                Tab (Idx2).Comp_Assoc);
+                                          end if;
+                                          Found := True;
+                                          exit;
+                                       end if;
+                                    end loop;
+
+                                    if not Found then
+                                       Error_Msg_N
+                                         ("binding defined in subsequent "
+                                          & "choice not defined in first "
+                                          & "choice", Current_Choice);
+                                    end if;
+                                 end;
+
+                                 --  Check for illegal repeated binding
+                                 --  via an enclosing aggregate, as in
+                                 --  (F1 | F2 => (F3 => Natural is X,
+                                 --               F4 => Natural))
+                                 --  where the inner aggregate would be ok.
+
+                                 declare
+                                    Rover : Node_Id := Tab (Idx2).Comp_Assoc;
+                                 begin
+                                    while Rover /= Tab (Idx2).Choice loop
+                                       Rover :=
+                                         (if Is_List_Member (Rover) then
+                                            Parent (List_Containing (Rover))
+                                          else Parent (Rover));
+                                       pragma Assert (Present (Rover));
+                                       if Nkind (Rover)
+                                         = N_Component_Association
+                                         and then List_Length (Choices (Rover))
+                                         > 1
+                                       then
+                                          Error_Msg_N
+                                            ("binding shared by multiple "
+                                                & "enclosing components",
+                                             Tab (Idx2).Comp_Assoc);
+                                       end if;
+                                    end loop;
+                                 end;
+                              end loop;
+                           end;
+
+                           --  Construct the (unanalyzed) declarations for
+                           --  the current alternative. Then analyze them.
+
+                           if First_Choice_Bindings > 0 then
+                              declare
+                                 Loc : constant Source_Ptr := Sloc (Alt);
+                                 Declarations : constant List_Id := New_List;
+                                 Decl         : Node_Id;
+                              begin
+                                 for FC_Idx in
+                                   Alt_Start ..
+                                   Alt_Start +
+                                     Binding_Index (First_Choice_Bindings - 1)
+                                 loop
+                                    Decl := Make_Object_Declaration
+                                      (Sloc => Loc,
+                                       Defining_Identifier =>
+                                         Make_Defining_Identifier
+                                           (Loc,
+                                            Binding_Chars
+                                              (Tab (FC_Idx).Comp_Assoc)),
+                                        Object_Definition =>
+                                          New_Occurrence_Of
+                                            (Binding_Subtype (FC_Idx), Loc));
+
+                                    Append_To (Declarations, Decl);
+                                 end loop;
+
+                                 declare
+                                    Old_Statements : constant List_Id :=
+                                      Statements (Alt);
+                                    New_Statements : constant List_Id :=
+                                      New_List;
+
+                                    Block_Statement : constant Node_Id :=
+                                      Make_Block_Statement (Sloc => Loc,
+                                        Declarations => Declarations,
+                                        Handled_Statement_Sequence =>
+                                          Make_Handled_Sequence_Of_Statements
+                                            (Loc, Old_Statements),
+                                        Has_Created_Identifier => True);
+                                 begin
+                                    Append_To
+                                      (New_Statements, Block_Statement);
+
+                                    Set_Statements (Alt, New_Statements);
+                                 end;
+                              end;
+                           end if;
+                        end;
+                     end if;
+                  end loop;
+               end;
+            end Check_Bindings;
+         end Case_Bindings;
+
+         function Choice_Bounds_Info return Choices_Range_Info;
+         --  Returns mapping from any given Choice_Id value to that choice's
+         --  component-to-range map.
+
+         ------------------------
+         -- Choice_Bounds_Info --
+         ------------------------
+
+         function Choice_Bounds_Info return Choices_Range_Info is
+            Result : Choices_Range_Info;
+            Alt    : Node_Id := First (Alternatives (Case_Statement));
+            C_Id   : Choice_Id := 1;
+         begin
+            while Present (Alt) loop
+               declare
+                  Choice : Node_Id := First (Discrete_Choices (Alt));
+               begin
+                  while Present (Choice) loop
+                     Result (C_Id) := Parse_Choice (Choice, Alt => Alt);
+
+                     Next (Choice);
+                     if C_Id /= Choice_Id'Last then
+                        C_Id := C_Id + 1;
+                     end if;
+                  end loop;
+               end;
+               Next (Alt);
+            end loop;
+
+            pragma Assert (C_Id = Choice_Id'Last);
+
+            --  No more calls to Note_Binding, so time for checks.
+            Case_Bindings.Check_Bindings;
+
+            return Result;
+         end Choice_Bounds_Info;
+
+         Choices_Bounds : constant Choices_Range_Info := Choice_Bounds_Info;
+
+         package body Value_Sets is
+            use GNAT;
+
+            function Hash (Key : Uint) return Bucket_Range_Type is
+              (Bucket_Range_Type
+                 (UI_To_Int (Key mod (Uint_2 ** Uint_31))));
+
+            package Uint_Sets is new GNAT.Sets.Membership_Sets
+              (Uint, "=", Hash);
+
+            type Representative_Values_Array is
+              array (Part_Id) of Uint_Sets.Membership_Set;
+
+            function Representative_Values_Init
+              return Representative_Values_Array;
+            --  Select the representative values for each Part_Id value.
+            --  This function is called exactly once, immediately after it
+            --  is declared.
+
+            --------------------------------
+            -- Representative_Values_Init --
+            --------------------------------
+
+            function Representative_Values_Init
+              return Representative_Values_Array
+            is
+               --  For each range of each choice (as well as the range for the
+               --  component subtype, which is handled in the first loop),
+               --  insert the low bound of the range and the successor of
+               --  the high bound into the corresponding R_V element.
+               --
+               --  The idea we are trying to capture here is somewhat tricky.
+               --  Given an arbitrary point P1 in the Cartesian product
+               --  of the Component_Bounds sets, we want to be able
+               --  to map that to a point P2 in the (smaller) Cartesian product
+               --  of the Representative_Values sets that has the property
+               --  that for every choice of the case statement, P1 matches
+               --  the choice if and only if P2 also matches. Given that,
+               --  we can implement the overlapping/containment/etc. rules
+               --  safely by just looking at (using brute force enumeration)
+               --  the (smaller) Cartesian product of the R_V sets.
+               --  We are never going to actually perform this point-to-point
+               --  mapping - just the fact that it exists is enough to ensure
+               --  we can safely look at just the R_V sets.
+               --
+               --  The desired mapping can be implemented by mapping a point
+               --  P1 to a point P2 by reducing each of P1's coordinates down
+               --  to the largest element of the corresponding R_V set that is
+               --  less than or equal to the original coordinate value (such
+               --  an element Y will always exist because the R_V set for a
+               --  given component always includes the low bound of the
+               --  component subtype). It then suffices to show that every
+               --  choice in the case statement yields the same Boolean result
+               --  for P1 as for P2.
+               --
+               --  Suppose the contrary. Then there is some particular
+               --  coordinate position X (i.e., a Part_Id value) and some
+               --  choice C where exactly one of P1(X) and P2(X) belongs to
+               --  the (contiguous) range associated with C(X); call that
+               --  range L .. H. We know that P2(X) <= P1(X) because the
+               --  mapping never increases coordinate values. Consider three
+               --  cases: P1(X) lies within the L .. H range, or it is greater
+               --  than H, or it is lower than L.
+               --  The third case is impossible because reducing a value that
+               --  is less than L can only produce another such value,
+               --  violating the "exactly one" assumption. The second
+               --  case is impossible because L belongs to the corresponding
+               --  R_V set, so P2(X) >= L and both values belong to the
+               --  range, again violating the "exactly one" assumption.
+               --  Finally, the third case is impossible because H+1 belongs
+               --  to the corresponding R_V set, so P2(X) > H, so neither
+               --  value belongs to the range, again violating the "exactly
+               --  one" assumption. So our initial supposition was wrong. QED.
+
+               use Uint_Sets;
+
+               Result : constant Representative_Values_Array
+                 := (others => Uint_Sets.Create (Initial_Size => 32));
+
+               procedure Insert_Representative (Value : Uint; P : Part_Id);
+               --  Insert the given Value into the representative values set
+               --  for the given component if it belongs to the component's
+               --  subtype. Otherwise, do nothing.
+
+               ---------------------------
+               -- Insert_Representative --
+               ---------------------------
+
+               procedure Insert_Representative (Value : Uint; P : Part_Id) is
+               begin
+                  if Value >= Component_Bounds (P).Low and
+                    Value <= Component_Bounds (P).High
+                  then
+                     Insert (Result (P), Value);
+                  end if;
+               end Insert_Representative;
+
+            begin
+               for P in Part_Id loop
+                  Insert_Representative (Component_Bounds (P).Low, P);
+               end loop;
+               for C of Choices_Bounds loop
+                  if not C.Is_Others then
+                     for P in Part_Id loop
+                        if C.Ranges (P).Low <= C.Ranges (P).High then
+                           Insert_Representative (C.Ranges (P).Low, P);
+                           Insert_Representative (C.Ranges (P).High + 1, P);
+                        end if;
+                     end loop;
+                  end if;
+               end loop;
+               return Result;
+            end Representative_Values_Init;
+
+            Representative_Values : constant Representative_Values_Array
+              := Representative_Values_Init;
+            --  We want to avoid looking at every point in the Cartesian
+            --  product of all component values. Instead we select, for each
+            --  component, a set of representative values and then look only
+            --  at the Cartesian product of those sets. A single value can
+            --  safely represent a larger enclosing interval if every choice
+            --  for that component either completely includes or completely
+            --  excludes the interval. The elements of this array will be
+            --  populated by a call to Initialize_Representative_Values and
+            --  will remain constant after that.
+
+            type Value_Index_Base is new Natural;
+
+            function Value_Index_Count return Value_Index_Base;
+            --  Returns the product of the sizes of the Representative_Values
+            --  sets (i.e., the size of the Cartesian product of the sets).
+            --  May return zero if one of the sets is empty.
+            --  This function is called exactly once, immediately after it
+            --  is declared.
+
+            -----------------------
+            -- Value_Index_Count --
+            -----------------------
+
+            function Value_Index_Count return Value_Index_Base is
+               Result : Value_Index_Base := 1;
+            begin
+               for Set of Representative_Values loop
+                  Result := Result * Value_Index_Base (Uint_Sets.Size (Set));
+               end loop;
+               return Result;
+            end Value_Index_Count;
+
+            Max_Value_Index : constant Value_Index_Base := Value_Index_Count;
+
+            subtype Value_Index is Value_Index_Base range 1 .. Max_Value_Index;
+            type Value_Index_Set is array (Value_Index) of Boolean;
+
+            package Value_Index_Set_Table is new Table.Table
+              (Table_Component_Type => Value_Index_Set,
+               Table_Index_Type     => Value_Set,
+               Table_Low_Bound      => 1,
+               Table_Initial        => 16,
+               Table_Increment      => 100,
+               Table_Name           => "Composite_Case_Ops.Value_Sets");
+            --  A nonzero Value_Set value is an index into this table.
+
+            function Indexed (Index : Value_Set) return Value_Index_Set
+              is (Value_Index_Set_Table.Table.all (Index));
+
+            function Allocate_Table_Element (Initial_Value : Value_Index_Set)
+              return Value_Set;
+            --  Allocate and initialize a new table element; return its index.
+
+            ----------------------------
+            -- Allocate_Table_Element --
+            ----------------------------
+
+            function Allocate_Table_Element (Initial_Value : Value_Index_Set)
+              return Value_Set
+            is
+               use Value_Index_Set_Table;
+            begin
+               Append (Initial_Value);
+               return Last;
+            end Allocate_Table_Element;
+
+            procedure Assign_Table_Element (Index : Value_Set;
+                                            Value : Value_Index_Set);
+            --  Assign specified value to specified table element.
+
+            --------------------------
+            -- Assign_Table_Element --
+            --------------------------
+
+            procedure Assign_Table_Element (Index : Value_Set;
+                                            Value : Value_Index_Set)
+            is
+            begin
+               Value_Index_Set_Table.Table.all (Index) := Value;
+            end Assign_Table_Element;
+
+            -------------
+            -- Compare --
+            -------------
+
+            function Compare (S1, S2 : Value_Set) return Set_Comparison is
+            begin
+               if S1 = Empty or S2 = Empty then
+                  return Disjoint;
+               elsif Indexed (S1) = Indexed (S2) then
+                  return Equal;
+               else
+                  declare
+                     Intersection : constant Value_Index_Set
+                       := Indexed (S1) and Indexed (S2);
+                  begin
+                     if (for all Flag of Intersection => not Flag) then
+                        return Disjoint;
+                     elsif Intersection = Indexed (S1) then
+                        return Contained_By;
+                     elsif Intersection = Indexed (S2) then
+                        return Contains;
+                     else
+                        return Overlaps;
+                     end if;
+                  end;
+               end if;
+            end Compare;
+
+            -------------------------
+            -- Complement_Is_Empty --
+            -------------------------
+
+            function Complement_Is_Empty (Set : Value_Set) return Boolean
+              is (Set /= Empty
+                  and then (for all Flag of Indexed (Set) => Flag));
+
+            ---------------------
+            -- Free_Value_Sets --
+            ---------------------
+            procedure Free_Value_Sets is
+            begin
+               Value_Index_Set_Table.Free;
+            end Free_Value_Sets;
+
+            -----------
+            -- Union --
+            -----------
+
+            procedure Union (Target : in out Value_Set; Source : Value_Set) is
+            begin
+               if Source /= Empty then
+                  if Target = Empty then
+                     Target := Allocate_Table_Element (Indexed (Source));
+                  else
+                     Assign_Table_Element
+                       (Target, Indexed (Target) or Indexed (Source));
+                  end if;
+               end if;
+            end Union;
+
+            ------------
+            -- Remove --
+            ------------
+
+            procedure Remove (Target : in out Value_Set; Source : Value_Set) is
+            begin
+               if Source /= Empty and Target /= Empty then
+                  Assign_Table_Element
+                    (Target, Indexed (Target) and not Indexed (Source));
+                  if (for all V of Indexed (Target) => not V) then
+                     Target := Empty;
+                  end if;
+               end if;
+            end Remove;
+
+            ---------------------
+            -- Matching_Values --
+            ---------------------
+
+            function Matching_Values
+              (Info : Composite_Range_Info) return Value_Set
+            is
+               Matches    : Value_Index_Set;
+               Next_Index : Value_Index := 1;
+               Done       : Boolean := False;
+               Point      : array (Part_Id) of Uint;
+
+               procedure Test_Point_For_Match;
+               --  Point identifies a point in the Cartesian product of the
+               --  representative value sets. Record whether that Point
+               --  belongs to the product-of-ranges specified by Info.
+
+               --------------------------
+               -- Test_Point_For_Match --
+               --------------------------
+
+               procedure Test_Point_For_Match is
+                  function In_Range (Val : Uint; Rang : Discrete_Range_Info)
+                    return Boolean is
+                    ((Rang.Low <= Val) and then (Val <= Rang.High));
+               begin
+                  pragma Assert (not Done);
+                  Matches (Next_Index) :=
+                    (for all P in Part_Id => In_Range (Point (P), Info (P)));
+                  if Next_Index = Matches'Last then
+                     Done := True;
+                  else
+                     Next_Index := Next_Index + 1;
+                  end if;
+               end Test_Point_For_Match;
+
+               procedure Test_Points (P : Part_Id);
+               --  Iterate over the Cartesian product of the representative
+               --  value sets, calling Test_Point_For_Match for each point.
+
+               -----------------
+               -- Test_Points --
+               -----------------
+
+               procedure Test_Points (P : Part_Id) is
+                  use Uint_Sets;
+                  Iter : Iterator := Iterate (Representative_Values (P));
+               begin
+                  --  We could traverse here in sorted order, as opposed to
+                  --  whatever order the set iterator gives us.
+                  --  No need for that as long as every iteration over
+                  --  a given representative values set yields the same order.
+                  --  Not sorting is more efficient, but it makes it harder to
+                  --  interpret a Value_Index_Set bit vector when debugging.
+
+                  while Has_Next (Iter) loop
+                     Next (Iter, Point (P));
+
+                     --  If we have finished building up a Point value, then
+                     --  test it for matching. Otherwise, recurse to continue
+                     --  building up a point value.
+
+                     if P = Part_Id'Last then
+                        Test_Point_For_Match;
+                     else
+                        Test_Points (P + 1);
+                     end if;
+                  end loop;
+               end Test_Points;
+
+            begin
+               Test_Points (1);
+               if (for all Flag of Matches => not Flag) then
+                  return Empty;
+               end if;
+               return Allocate_Table_Element (Matches);
+            end Matching_Values;
+
+         end Value_Sets;
+
+         --------------
+         -- Analysis --
+         --------------
+
+         function Analysis return Choices_Info is
+            Result : Choices_Info;
+            Alt    : Node_Id := First (Alternatives (Case_Statement));
+            A_Id   : Alternative_Id := 1;
+            C_Id   : Choice_Id := 1;
+         begin
+            while Present (Alt) loop
+               declare
+                  Choice : Node_Id := First (Discrete_Choices (Alt));
+               begin
+                  while Present (Choice) loop
+                     if Nkind (Choice) = N_Others_Choice then
+                        pragma Assert (Choices_Bounds (C_Id).Is_Others);
+                        Result (C_Id) :=
+                          (Alternative => A_Id,
+                           Is_Others   => True);
+                     else
+                        Result (C_Id) :=
+                          (Alternative => A_Id,
+                           Is_Others   => False,
+                           Matches     => Value_Sets.Matching_Values
+                                            (Choices_Bounds (C_Id).Ranges));
+                     end if;
+                     Next (Choice);
+                     if C_Id /= Choice_Id'Last then
+                        C_Id := C_Id + 1;
+                     end if;
+                  end loop;
+               end;
+
+               Next (Alt);
+               if A_Id /= Alternative_Id'Last then
+                  A_Id := A_Id + 1;
+               end if;
+            end loop;
+
+            pragma Assert (A_Id = Alternative_Id'Last);
+            pragma Assert (C_Id = Choice_Id'Last);
+
+            return Result;
+         end Analysis;
+
+      end Choice_Analysis;
+
+   end Composite_Case_Ops;
+
    --------------------------
    -- Expand_Others_Choice --
    --------------------------
@@ -1379,6 +2662,15 @@ package body Sem_Case is
          --  later entry into the choices table so that they can be sorted
          --  later on.
 
+         procedure Check_Case_Pattern_Choices;
+         --  Check choices validity for the Ada extension case where the
+         --  selecting expression is not of a discrete type and so the
+         --  choices are patterns.
+
+         procedure Check_Composite_Case_Selector;
+         --  Check that the (non-discrete) type of the expression being
+         --  cased on is suitable.
+
          procedure Handle_Static_Predicate
            (Typ : Entity_Id;
             Lo  : Node_Id;
@@ -1500,6 +2792,195 @@ package body Sem_Case is
             Num_Choices := Num_Choices + 1;
          end Check;
 
+         --------------------------------
+         -- Check_Case_Pattern_Choices --
+         --------------------------------
+
+         procedure Check_Case_Pattern_Choices is
+            --  ??? Need to Free/Finalize value sets allocated here.
+
+            package Ops is new Composite_Case_Ops.Choice_Analysis
+              (Case_Statement => N);
+            use Ops;
+            use Ops.Value_Sets;
+
+            Empty : Value_Set renames Value_Sets.Empty;
+            --  Cope with hiding due to multiple use clauses
+
+            Info        : constant Choices_Info := Analysis;
+            Others_Seen : Boolean := False;
+
+         begin
+            declare
+               Matches : array (Alternative_Id) of Value_Sets.Value_Set :=
+                 (others => Empty);
+
+               Flag_Overlapping_Within_One_Alternative : constant Boolean :=
+                 False;
+               --  We may want to flag overlapping (perhaps with only a
+               --  warning) if the pattern binds an identifier, as in
+               --    when (Positive, <X>) | (Integer, <X>) =>
+
+               Covered : Value_Set := Empty;
+               --  The union of all alternatives seen so far
+
+            begin
+               for Choice of Info loop
+                  if Choice.Is_Others then
+                     Others_Seen := True;
+                  else
+                     if Flag_Overlapping_Within_One_Alternative
+                        and then (Compare (Matches (Choice.Alternative),
+                                  Choice.Matches) /= Disjoint)
+                     then
+                        Error_Msg_N
+                          ("bad overlapping within one alternative", N);
+                     end if;
+
+                     Union (Target => Matches (Choice.Alternative),
+                            Source => Choice.Matches);
+                  end if;
+               end loop;
+
+               for A1 in Alternative_Id loop
+                  for A2 in Alternative_Id
+                              range A1 + 1 .. Alternative_Id'Last
+                  loop
+                     case Compare (Matches (A1), Matches (A2)) is
+                        when Disjoint | Contained_By =>
+                           null; -- OK
+                        when Overlaps =>
+                           declare
+                              Uncovered_1, Uncovered_2 : Value_Set := Empty;
+                           begin
+                              Union (Uncovered_1, Matches (A1));
+                              Remove (Uncovered_1, Covered);
+                              Union (Uncovered_2, Matches (A2));
+                              Remove (Uncovered_2, Covered);
+
+                              --  Recheck for overlap after removing choices
+                              --  covered by earlier alternatives.
+
+                              case Compare (Uncovered_1, Uncovered_2) is
+                                 when Disjoint | Contained_By =>
+                                    null;
+                                 when Contains | Overlaps | Equal =>
+                                    Error_Msg_N
+                                      ("bad alternative overlapping", N);
+                              end case;
+                           end;
+
+                        when Equal =>
+                           Error_Msg_N ("alternatives match same values", N);
+                        when Contains =>
+                           Error_Msg_N ("alternatives in wrong order", N);
+                     end case;
+                  end loop;
+
+                  Union (Target => Covered, Source => Matches (A1));
+               end loop;
+
+               if (not Others_Seen) and then not Complement_Is_Empty (Covered)
+               then
+                  Error_Msg_N ("not all values are covered", N);
+               end if;
+            end;
+
+            Ops.Value_Sets.Free_Value_Sets;
+         end Check_Case_Pattern_Choices;
+
+         -----------------------------------
+         -- Check_Composite_Case_Selector --
+         -----------------------------------
+
+         procedure Check_Composite_Case_Selector is
+            --  Some of these restrictions will be relaxed eventually, but best
+            --  to initially err in the direction of being too restrictive.
+
+            procedure Check_Component_Subtype (Subtyp : Entity_Id);
+            --  Recursively traverse subcomponent types to perform checks.
+
+            -----------------------------
+            -- Check_Component_Subtype --
+            -----------------------------
+
+            procedure Check_Component_Subtype (Subtyp : Entity_Id) is
+            begin
+               if Has_Predicates (Subtyp) then
+                  Error_Msg_N
+                     ("subtype of case selector (or subcomponent thereof)" &
+                      "has predicate", N);
+               elsif Is_Discrete_Type (Subtyp) then
+                  if not Is_Static_Subtype (Subtyp) then
+                     Error_Msg_N
+                       ("discrete subtype of selector subcomponent is not " &
+                        "a static subtype", N);
+                  elsif Is_Enumeration_Type (Subtyp)
+                    and then Has_Enumeration_Rep_Clause (Subtyp)
+                  then
+                     Error_Msg_N
+                       ("enumeration type of selector subcomponent has " &
+                        "an enumeration representation clause", N);
+                  end if;
+               elsif Is_Array_Type (Subtyp) then
+                  pragma Assert (Is_Constrained (Subtyp));
+
+                  if Number_Dimensions (Subtyp) /= 1 then
+                     Error_Msg_N
+                       ("dimensionality of array type of case selector (or " &
+                        "subcomponent thereof) is greater than 1", N);
+                  elsif not Is_OK_Static_Range (First_Index (Subtyp)) then
+                     Error_Msg_N
+                       ("array subtype of case selector (or " &
+                        "subcomponent thereof) has nonstatic constraint", N);
+                  end if;
+                  Check_Component_Subtype (Component_Type (Subtyp));
+               elsif Is_Record_Type (Subtyp) then
+                  if Has_Discriminants (Subtyp) then
+                     Error_Msg_N
+                        ("type of case selector (or subcomponent thereof)" &
+                         "is discriminated", N);
+                  else
+                     declare
+                        Comp : Entity_Id := First_Component (Subtyp);
+                     begin
+                        while Present (Comp) loop
+                           Check_Component_Subtype (Etype (Comp));
+                           Next_Component (Comp);
+                        end loop;
+                     end;
+                  end if;
+               else
+                  Error_Msg_N
+                    ("type of case selector (or subcomponent thereof) is " &
+                     "not a discrete type, a record type, or an array type",
+                     N);
+               end if;
+            end Check_Component_Subtype;
+
+         begin
+            if not Is_Composite_Type (Subtyp) then
+               Error_Msg_N
+                 ("case selector type neither discrete nor composite", N);
+
+            elsif Is_Limited_Type (Subtyp) then
+               Error_Msg_N ("case selector type is limited", N);
+
+            elsif Is_Class_Wide_Type (Subtyp) then
+               Error_Msg_N ("case selector type is class-wide", N);
+
+            elsif Needs_Finalization (Subtyp) then
+               Error_Msg_N ("case selector type requires finalization", N);
+
+            elsif Is_Array_Type (Subtyp) and not Is_Constrained (Subtyp) then
+               Error_Msg_N
+                 ("case selector subtype is unconstrained array subtype", N);
+
+            else
+               Check_Component_Subtype (Subtyp);
+            end if;
+         end Check_Composite_Case_Selector;
+
          -----------------------------
          -- Handle_Static_Predicate --
          -----------------------------
@@ -1562,6 +3043,14 @@ package body Sem_Case is
          --  a complete mess.
 
          if not Is_Discrete_Type (Subtyp) or else Subtyp = Any_Type then
+
+            --  Hold on, maybe it isn't a complete mess after all.
+
+            if Extensions_Allowed and then Subtyp /= Any_Type then
+               Check_Composite_Case_Selector;
+               Check_Case_Pattern_Choices;
+            end if;
+
             return;
          end if;
 
@@ -1808,5 +3297,38 @@ package body Sem_Case is
       end Check_Choices;
 
    end Generic_Check_Choices;
+
+   ----------------------------
+   -- Is_Case_Choice_Pattern --
+   ----------------------------
+
+   function Is_Case_Choice_Pattern (Expr : Node_Id) return Boolean is
+      E : Node_Id := Expr;
+   begin
+      if not Extensions_Allowed then
+         return False;
+      end if;
+
+      loop
+         case Nkind (E) is
+            when N_Case_Statement_Alternative
+               | N_Case_Expression_Alternative
+            =>
+               --  We could return False if selecting expression is discrete,
+               --  but this doesn't seem to be worth the bother.
+               return True;
+
+            when N_Empty
+               | N_Statement_Other_Than_Procedure_Call
+               | N_Procedure_Call_Statement
+               | N_Declaration
+            =>
+               return False;
+
+            when others =>
+               E := Parent (E);
+         end case;
+      end loop;
+   end Is_Case_Choice_Pattern;
 
 end Sem_Case;

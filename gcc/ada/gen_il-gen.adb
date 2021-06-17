@@ -2019,7 +2019,7 @@ package body Gen_IL.Gen is
                      Put (S, ",\n");
                   end if;
 
-                  Put (S, "\1", Image (F));
+                  Put (S, "\1", F_Image (F));
                end if;
             end loop;
          end Put_Field_Array;
@@ -2081,7 +2081,7 @@ package body Gen_IL.Gen is
                   Put (S, ",\n");
                end if;
 
-               Put (S, "\1", Image (F));
+               Put (S, "\1", F_Image (F));
             end loop;
 
             Outdent (S, 1);
@@ -2161,7 +2161,7 @@ package body Gen_IL.Gen is
                   Put (S, ",\n");
                end if;
 
-               Put (S, "\1 => (\2_Field, \3)", Image (F),
+               Put (S, "\1 => (\2_Field, \3)", F_Image (F),
                     Image (Field_Table (F).Field_Type), Image (Field_Table (F).Offset));
             end loop;
 
@@ -2282,6 +2282,8 @@ package body Gen_IL.Gen is
             Outdent (B, 3);
             Put (B, "end Set_\1_Id_With_Parent;\n", Kind);
          end Put_Setter_With_Parent;
+
+      --  Start of processing for Put_Nodes
 
       begin
          Put (S, "with Seinfo; use Seinfo;\n");

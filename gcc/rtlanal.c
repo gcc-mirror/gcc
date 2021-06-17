@@ -4870,7 +4870,7 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	  /* If PUSH_ROUNDING is defined, it is possible for the
 	     stack to be momentarily aligned only to that amount,
 	     so we pick the least alignment.  */
-	  if (x == stack_pointer_rtx && PUSH_ARGS)
+	  if (x == stack_pointer_rtx && targetm.calls.push_argument (0))
 	    {
 	      poly_uint64 rounded_1 = PUSH_ROUNDING (poly_int64 (1));
 	      alignment = MIN (known_alignment (rounded_1), alignment);

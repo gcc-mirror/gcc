@@ -6495,7 +6495,6 @@ gimple_duplicate_sese_region (edge entry, edge exit,
   bool free_region_copy = false, copying_header = false;
   class loop *loop = entry->dest->loop_father;
   edge exit_copy;
-  vec<basic_block> doms = vNULL;
   edge redirected;
   profile_count total_count = profile_count::uninitialized ();
   profile_count entry_count = profile_count::uninitialized ();
@@ -6549,9 +6548,9 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
+  auto_vec<basic_block> doms;
   if (update_dominance)
     {
-      doms.create (0);
       doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
     }
 
@@ -6596,7 +6595,6 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       set_immediate_dominator (CDI_DOMINATORS, entry->dest, entry->src);
       doms.safe_push (get_bb_original (entry->dest));
       iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-      doms.release ();
     }
 
   /* Add the other PHI node arguments.  */
@@ -6662,7 +6660,6 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
   class loop *loop = exit->dest->loop_father;
   class loop *orig_loop = entry->dest->loop_father;
   basic_block switch_bb, entry_bb, nentry_bb;
-  vec<basic_block> doms;
   profile_count total_count = profile_count::uninitialized (),
 		exit_count = profile_count::uninitialized ();
   edge exits[2], nexits[2], e;
@@ -6705,7 +6702,8 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
-  doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
+  auto_vec<basic_block> doms = get_dominated_by_region (CDI_DOMINATORS, region,
+							n_region);
 
   total_count = exit->src->count;
   exit_count = exit->count ();
@@ -6785,7 +6783,6 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
   /* Anything that is outside of the region, but was dominated by something
      inside needs to update dominance info.  */
   iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-  doms.release ();
   /* Update the SSA web.  */
   update_ssa (TODO_update_ssa);
 
@@ -7567,7 +7564,7 @@ basic_block
 move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 		        basic_block exit_bb, tree orig_block)
 {
-  vec<basic_block> bbs, dom_bbs;
+  vec<basic_block> bbs;
   basic_block dom_entry = get_immediate_dominator (CDI_DOMINATORS, entry_bb);
   basic_block after, bb, *entry_pred, *exit_succ, abb;
   struct function *saved_cfun = cfun;
@@ -7599,9 +7596,9 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* The blocks that used to be dominated by something in BBS will now be
      dominated by the new block.  */
-  dom_bbs = get_dominated_by_region (CDI_DOMINATORS,
-				     bbs.address (),
-				     bbs.length ());
+  auto_vec<basic_block> dom_bbs = get_dominated_by_region (CDI_DOMINATORS,
+							   bbs.address (),
+							   bbs.length ());
 
   /* Detach ENTRY_BB and EXIT_BB from CFUN->CFG.  We need to remember
      the predecessor edges to ENTRY_BB and the successor edges to
@@ -7937,7 +7934,6 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   set_immediate_dominator (CDI_DOMINATORS, bb, dom_entry);
   FOR_EACH_VEC_ELT (dom_bbs, i, abb)
     set_immediate_dominator (CDI_DOMINATORS, abb, bb);
-  dom_bbs.release ();
 
   if (exit_bb)
     {
@@ -8687,7 +8683,6 @@ gimple_flow_call_edges_add (sbitmap blocks)
 void
 remove_edge_and_dominated_blocks (edge e)
 {
-  vec<basic_block> bbs_to_remove = vNULL;
   vec<basic_block> bbs_to_fix_dom = vNULL;
   edge f;
   edge_iterator ei;
@@ -8738,6 +8733,7 @@ remove_edge_and_dominated_blocks (edge e)
     }
 
   auto_bitmap df, df_idom;
+  auto_vec<basic_block> bbs_to_remove;
   if (none_removed)
     bitmap_set_bit (df_idom,
 		    get_immediate_dominator (CDI_DOMINATORS, e->dest)->index);
@@ -8804,7 +8800,6 @@ remove_edge_and_dominated_blocks (edge e)
 
   iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
 
-  bbs_to_remove.release ();
   bbs_to_fix_dom.release ();
 }
 
@@ -9917,22 +9912,20 @@ test_linear_chain ()
   calculate_dominance_info (CDI_DOMINATORS);
   ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_b));
   ASSERT_EQ (bb_b, get_immediate_dominator (CDI_DOMINATORS, bb_c));
-  vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
+  auto_vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
   ASSERT_EQ (1, dom_by_b.length ());
   ASSERT_EQ (bb_c, dom_by_b[0]);
   free_dominance_info (CDI_DOMINATORS);
-  dom_by_b.release ();
 
   /* Similarly for post-dominance: each BB in our chain is post-dominated
      by the one after it.  */
   calculate_dominance_info (CDI_POST_DOMINATORS);
   ASSERT_EQ (bb_b, get_immediate_dominator (CDI_POST_DOMINATORS, bb_a));
   ASSERT_EQ (bb_c, get_immediate_dominator (CDI_POST_DOMINATORS, bb_b));
-  vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
+  auto_vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
   ASSERT_EQ (1, postdom_by_b.length ());
   ASSERT_EQ (bb_a, postdom_by_b[0]);
   free_dominance_info (CDI_POST_DOMINATORS);
-  postdom_by_b.release ();
 
   pop_cfun ();
 }
@@ -9991,10 +9984,10 @@ test_diamond ()
   ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_b));
   ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_c));
   ASSERT_EQ (bb_a, get_immediate_dominator (CDI_DOMINATORS, bb_d));
-  vec<basic_block> dom_by_a = get_dominated_by (CDI_DOMINATORS, bb_a);
+  auto_vec<basic_block> dom_by_a = get_dominated_by (CDI_DOMINATORS, bb_a);
   ASSERT_EQ (3, dom_by_a.length ()); /* B, C, D, in some order.  */
   dom_by_a.release ();
-  vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
+  auto_vec<basic_block> dom_by_b = get_dominated_by (CDI_DOMINATORS, bb_b);
   ASSERT_EQ (0, dom_by_b.length ());
   dom_by_b.release ();
   free_dominance_info (CDI_DOMINATORS);
@@ -10004,10 +9997,10 @@ test_diamond ()
   ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_a));
   ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_b));
   ASSERT_EQ (bb_d, get_immediate_dominator (CDI_POST_DOMINATORS, bb_c));
-  vec<basic_block> postdom_by_d = get_dominated_by (CDI_POST_DOMINATORS, bb_d);
+  auto_vec<basic_block> postdom_by_d = get_dominated_by (CDI_POST_DOMINATORS, bb_d);
   ASSERT_EQ (3, postdom_by_d.length ()); /* A, B, C in some order.  */
   postdom_by_d.release ();
-  vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
+  auto_vec<basic_block> postdom_by_b = get_dominated_by (CDI_POST_DOMINATORS, bb_b);
   ASSERT_EQ (0, postdom_by_b.length ());
   postdom_by_b.release ();
   free_dominance_info (CDI_POST_DOMINATORS);

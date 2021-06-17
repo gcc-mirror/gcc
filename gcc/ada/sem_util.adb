@@ -1683,6 +1683,7 @@ package body Sem_Util is
       Subt        : Entity_Id;
       Disc_Type   : Entity_Id;
       Obj         : Node_Id;
+      Index       : Node_Id;
 
    begin
       Loc := Sloc (N);
@@ -1713,6 +1714,8 @@ package body Sem_Util is
 
       if Is_Array_Type (T) then
          Constraints := New_List;
+         Index := First_Index (T);
+
          for J in 1 .. Number_Dimensions (T) loop
 
             --  Build an array subtype declaration with the nominal subtype and
@@ -1720,13 +1723,24 @@ package body Sem_Util is
             --  local declarations for the subprogram, for analysis before any
             --  reference to the formal in the body.
 
-            Lo :=
-              Make_Attribute_Reference (Loc,
-                Prefix         =>
-                  Duplicate_Subexpr_No_Checks (Obj, Name_Req => True),
-                Attribute_Name => Name_First,
-                Expressions    => New_List (
-                  Make_Integer_Literal (Loc, J)));
+            --  If this is for an index with a fixed lower bound, then use
+            --  the fixed lower bound as the lower bound of the actual
+            --  subtype's corresponding index.
+
+            if not Is_Constrained (T)
+              and then Is_Fixed_Lower_Bound_Index_Subtype (Etype (Index))
+            then
+               Lo := New_Copy_Tree (Type_Low_Bound (Etype (Index)));
+
+            else
+               Lo :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     Duplicate_Subexpr_No_Checks (Obj, Name_Req => True),
+                   Attribute_Name => Name_First,
+                   Expressions    => New_List (
+                     Make_Integer_Literal (Loc, J)));
+            end if;
 
             Hi :=
               Make_Attribute_Reference (Loc,
@@ -1737,6 +1751,8 @@ package body Sem_Util is
                   Make_Integer_Literal (Loc, J)));
 
             Append (Make_Range (Loc, Lo, Hi), Constraints);
+
+            Next_Index (Index);
          end loop;
 
       --  If the type has unknown discriminants there is no constrained
@@ -7294,70 +7310,86 @@ package body Sem_Util is
       -----------------------
 
       function Is_Valid_Renaming (N : Node_Id) return Boolean is
-         function Check_Renaming (N : Node_Id) return Boolean;
-         --  Recursive function used to traverse all the prefixes of N
+      begin
+         if Is_Renaming (N)
+           and then not Is_Valid_Renaming (Renamed_Entity (Entity (N)))
+         then
+            return False;
+         end if;
 
-         --------------------
-         -- Check_Renaming --
-         --------------------
+         --  Check if any expression within the renamed object_name contains no
+         --  references to variables nor calls on nonstatic functions.
 
-         function Check_Renaming (N : Node_Id) return Boolean is
-         begin
-            if Is_Renaming (N)
-              and then not Check_Renaming (Renamed_Entity (Entity (N)))
-            then
-               return False;
-            end if;
+         if Nkind (N) = N_Indexed_Component then
+            declare
+               Indx : Node_Id;
 
-            if Nkind (N) = N_Indexed_Component then
-               declare
-                  Indx : Node_Id;
-
-               begin
-                  Indx := First (Expressions (N));
-                  while Present (Indx) loop
-                     if not Is_OK_Static_Expression (Indx) then
-                        return False;
-                     end if;
-
-                     Next_Index (Indx);
-                  end loop;
-               end;
-            end if;
-
-            if Has_Prefix (N) then
-               declare
-                  P : constant Node_Id := Prefix (N);
-
-               begin
-                  if Nkind (N) = N_Explicit_Dereference
-                    and then Is_Variable (P)
-                  then
-                     return False;
-
-                  elsif Is_Entity_Name (P)
-                    and then Ekind (Entity (P)) = E_Function
-                  then
-                     return False;
-
-                  elsif Nkind (P) = N_Function_Call then
+            begin
+               Indx := First (Expressions (N));
+               while Present (Indx) loop
+                  if not Is_OK_Static_Expression (Indx) then
                      return False;
                   end if;
 
-                  --  Recursion to continue traversing the prefix of the
-                  --  renaming expression
+                  Next_Index (Indx);
+               end loop;
+            end;
 
-                  return Check_Renaming (P);
-               end;
-            end if;
+         elsif Nkind (N) = N_Slice then
+            declare
+               Rng : constant Node_Id := Discrete_Range (N);
+            begin
+               --  Bounds specified as a range
 
-            return True;
-         end Check_Renaming;
+               if Nkind (Rng) = N_Range then
+                  if not Is_OK_Static_Range (Rng) then
+                     return False;
+                  end if;
 
-      --  Start of processing for Is_Valid_Renaming
+               --  Bounds specified as a constrained subtype indication
 
-      begin
-         return Check_Renaming (N);
+               elsif Nkind (Rng) = N_Subtype_Indication then
+                  if not Is_OK_Static_Range
+                       (Range_Expression (Constraint (Rng)))
+                  then
+                     return False;
+                  end if;
+
+               --  Bounds specified as a subtype name
+
+               elsif not Is_OK_Static_Expression (Rng) then
+                  return False;
+               end if;
+            end;
+         end if;
+
+         if Has_Prefix (N) then
+            declare
+               P : constant Node_Id := Prefix (N);
+
+            begin
+               if Nkind (N) = N_Explicit_Dereference
+                 and then Is_Variable (P)
+               then
+                  return False;
+
+               elsif Is_Entity_Name (P)
+                 and then Ekind (Entity (P)) = E_Function
+               then
+                  return False;
+
+               elsif Nkind (P) = N_Function_Call then
+                  return False;
+               end if;
+
+               --  Recursion to continue traversing the prefix of the
+               --  renaming expression
+
+               return Is_Valid_Renaming (P);
+            end;
+         end if;
+
+         return True;
       end Is_Valid_Renaming;
 
       --  Local variables
@@ -7482,8 +7514,8 @@ package body Sem_Util is
             Lo1, Lo2, Hi1, Hi2 : Node_Id;
 
          begin
-            Get_Index_Bounds (Etype (Obj1), Lo1, Hi1);
-            Get_Index_Bounds (Etype (Obj2), Lo2, Hi2);
+            Get_Index_Bounds (Discrete_Range (Obj1), Lo1, Hi1);
+            Get_Index_Bounds (Discrete_Range (Obj2), Lo2, Hi2);
 
             --  Check whether bounds are statically identical. There is no
             --  attempt to detect partial overlap of slices.
@@ -11523,7 +11555,9 @@ package body Sem_Util is
    -- Has_Access_Values --
    -----------------------
 
-   function Has_Access_Values (T : Entity_Id) return Boolean is
+   function Has_Access_Values
+     (T : Entity_Id; Include_Internal : Boolean) return Boolean
+   is
       Typ : constant Entity_Id := Underlying_Type (T);
 
    begin
@@ -11536,11 +11570,17 @@ package body Sem_Util is
       if No (Typ) then
          return False;
 
+      elsif not Include_Internal
+        and then T /= Typ
+        and then In_Internal_Unit (Typ)
+      then
+         return False;
+
       elsif Is_Access_Type (Typ) then
          return True;
 
       elsif Is_Array_Type (Typ) then
-         return Has_Access_Values (Component_Type (Typ));
+         return Has_Access_Values (Component_Type (Typ), Include_Internal);
 
       elsif Is_Record_Type (Typ) then
          declare
@@ -11555,7 +11595,7 @@ package body Sem_Util is
                --  Check for access component, tag field does not count, even
                --  though it is implemented internally using an access type.
 
-               if Has_Access_Values (Etype (Comp))
+               if Has_Access_Values (Etype (Comp), Include_Internal)
                  and then Chars (Comp) /= Name_uTag
                then
                   return True;

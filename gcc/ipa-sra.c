@@ -3755,7 +3755,7 @@ process_isra_node_results (cgraph_node *node,
   unsigned &suffix_counter = clone_num_suffixes->get_or_insert (
 			       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (
 				 node->decl)));
-  vec<cgraph_edge *> callers = node->collect_callers ();
+  auto_vec<cgraph_edge *> callers = node->collect_callers ();
   cgraph_node *new_node
     = node->create_virtual_clone (callers, NULL, new_adjustments, "isra",
 				  suffix_counter);

@@ -770,6 +770,18 @@ hook_void_CUMULATIVE_ARGS_tree (cumulative_args_t ca ATTRIBUTE_UNUSED,
 {
 }
 
+/* Default implementation of TARGET_PUSH_ARGUMENT.  */
+
+bool
+default_push_argument (unsigned int)
+{
+#ifdef PUSH_ROUNDING
+  return !ACCUMULATE_OUTGOING_ARGS;
+#else
+  return false;
+#endif
+}
+
 void
 default_function_arg_advance (cumulative_args_t, const function_arg_info &)
 {

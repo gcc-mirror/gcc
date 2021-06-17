@@ -1442,6 +1442,84 @@ dt_sort_cmp (const void *op1_, const void *op2_, void *)
   return (int)op1->code - (int)op2->code;
 }
 
+/* Linearize the associatable expression chain at START with the
+   associatable operation CODE (where PLUS_EXPR also allows MINUS_EXPR),
+   filling CHAIN with the result and using WORKLIST as intermediate storage.
+   CODE_STMT and ALT_CODE_STMT are filled with the first stmt using CODE
+   or MINUS_EXPR.  *CHAIN_STMTS if not NULL is filled with all computation
+   stmts, starting with START.  */
+
+static void
+vect_slp_linearize_chain (vec_info *vinfo,
+			  vec<std::pair<tree_code, gimple *> > &worklist,
+			  vec<chain_op_t> &chain,
+			  enum tree_code code, gimple *start,
+			  gimple *&code_stmt, gimple *&alt_code_stmt,
+			  vec<gimple *> *chain_stmts)
+{
+  /* For each lane linearize the addition/subtraction (or other
+     uniform associatable operation) expression tree.  */
+  worklist.safe_push (std::make_pair (code, start));
+  while (!worklist.is_empty ())
+    {
+      auto entry = worklist.pop ();
+      gassign *stmt = as_a <gassign *> (entry.second);
+      enum tree_code in_code = entry.first;
+      enum tree_code this_code = gimple_assign_rhs_code (stmt);
+      /* Pick some stmts suitable for SLP_TREE_REPRESENTATIVE.  */
+      if (!code_stmt
+	  && gimple_assign_rhs_code (stmt) == code)
+	code_stmt = stmt;
+      else if (!alt_code_stmt
+	       && gimple_assign_rhs_code (stmt) == MINUS_EXPR)
+	alt_code_stmt = stmt;
+      if (chain_stmts)
+	chain_stmts->safe_push (stmt);
+      for (unsigned opnum = 1; opnum <= 2; ++opnum)
+	{
+	  tree op = gimple_op (stmt, opnum);
+	  vect_def_type dt;
+	  stmt_vec_info def_stmt_info;
+	  bool res = vect_is_simple_use (op, vinfo, &dt, &def_stmt_info);
+	  gcc_assert (res);
+	  if (dt == vect_internal_def)
+	    {
+	      stmt_vec_info orig_def_stmt_info = def_stmt_info;
+	      def_stmt_info = vect_stmt_to_vectorize (def_stmt_info);
+	      if (def_stmt_info != orig_def_stmt_info)
+		op = gimple_get_lhs (def_stmt_info->stmt);
+	    }
+	  gimple *use_stmt;
+	  use_operand_p use_p;
+	  if (dt == vect_internal_def
+	      && single_imm_use (op, &use_p, &use_stmt)
+	      && is_gimple_assign (def_stmt_info->stmt)
+	      && (gimple_assign_rhs_code (def_stmt_info->stmt) == code
+		  || (code == PLUS_EXPR
+		      && (gimple_assign_rhs_code (def_stmt_info->stmt)
+			  == MINUS_EXPR))))
+	    {
+	      tree_code op_def_code = this_code;
+	      if (op_def_code == MINUS_EXPR && opnum == 1)
+		op_def_code = PLUS_EXPR;
+	      if (in_code == MINUS_EXPR)
+		op_def_code = op_def_code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR;
+	      worklist.safe_push (std::make_pair (op_def_code,
+						  def_stmt_info->stmt));
+	    }
+	  else
+	    {
+	      tree_code op_def_code = this_code;
+	      if (op_def_code == MINUS_EXPR && opnum == 1)
+		op_def_code = PLUS_EXPR;
+	      if (in_code == MINUS_EXPR)
+		op_def_code = op_def_code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR;
+	      chain.safe_push (chain_op_t (op_def_code, dt, op));
+	    }
+	}
+    }
+}
+
 typedef hash_map <vec <stmt_vec_info>, slp_tree,
 		  simple_hashmap_traits <bst_traits, slp_tree> >
   scalar_stmts_to_slp_tree_map_t;
@@ -1784,63 +1862,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	{
 	  /* For each lane linearize the addition/subtraction (or other
 	     uniform associatable operation) expression tree.  */
-	  worklist.safe_push (std::make_pair (code, stmts[lane]->stmt));
-	  while (!worklist.is_empty ())
-	    {
-	      auto entry = worklist.pop ();
-	      gassign *stmt = as_a <gassign *> (entry.second);
-	      enum tree_code in_code = entry.first;
-	      enum tree_code this_code = gimple_assign_rhs_code (stmt);
-	      /* Pick some stmts suitable for SLP_TREE_REPRESENTATIVE.  */
-	      if (!op_stmt_info
-		  && gimple_assign_rhs_code (stmt) == code)
-		op_stmt_info = vinfo->lookup_stmt (stmt);
-	      else if (!other_op_stmt_info
-		       && gimple_assign_rhs_code (stmt) == MINUS_EXPR)
-		other_op_stmt_info = vinfo->lookup_stmt (stmt);
-	      for (unsigned opnum = 1; opnum <= 2; ++opnum)
-		{
-		  tree op = gimple_op (stmt, opnum);
-		  vect_def_type dt;
-		  stmt_vec_info def_stmt_info;
-		  bool res = vect_is_simple_use (op, vinfo, &dt, &def_stmt_info);
-		  gcc_assert (res);
-		  if (dt == vect_internal_def)
-		    {
-		      def_stmt_info = vect_stmt_to_vectorize (def_stmt_info);
-		      op = gimple_get_lhs (def_stmt_info->stmt);
-		    }
-		  gimple *use_stmt;
-		  use_operand_p use_p;
-		  if (dt == vect_internal_def
-		      && single_imm_use (op, &use_p, &use_stmt)
-		      && is_gimple_assign (def_stmt_info->stmt)
-		      && (gimple_assign_rhs_code (def_stmt_info->stmt) == code
-			  || (code == PLUS_EXPR
-			      && (gimple_assign_rhs_code (def_stmt_info->stmt)
-				  == MINUS_EXPR))))
-		    {
-		      tree_code op_def_code = this_code;
-		      if (op_def_code == MINUS_EXPR && opnum == 1)
-			op_def_code = PLUS_EXPR;
-		      if (in_code == MINUS_EXPR)
-			op_def_code
-			  = op_def_code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR;
-		      worklist.safe_push (std::make_pair (op_def_code,
-							  def_stmt_info->stmt));
-		    }
-		  else
-		    {
-		      tree_code op_def_code = this_code;
-		      if (op_def_code == MINUS_EXPR && opnum == 1)
-			op_def_code = PLUS_EXPR;
-		      if (in_code == MINUS_EXPR)
-			op_def_code
-			  = op_def_code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR;
-		      chain.safe_push (chain_op_t (op_def_code, dt, op));
-		    }
-		}
-	    }
+	  gimple *op_stmt = NULL, *other_op_stmt = NULL;
+	  vect_slp_linearize_chain (vinfo, worklist, chain, code,
+				    stmts[lane]->stmt, op_stmt, other_op_stmt,
+				    NULL);
+	  if (!op_stmt_info && op_stmt)
+	    op_stmt_info = vinfo->lookup_stmt (op_stmt);
+	  if (!other_op_stmt_info && other_op_stmt)
+	    other_op_stmt_info = vinfo->lookup_stmt (other_op_stmt);
 	  if (chain.length () == 2)
 	    {
 	      /* In a chain of just two elements resort to the regular
@@ -3915,6 +3944,48 @@ vect_optimize_slp (vec_info *vinfo)
 	    }
 	}
     }
+
+  /* And any permutations of BB reductions.  */
+  if (is_a <bb_vec_info> (vinfo))
+    {
+      for (slp_instance instance : vinfo->slp_instances)
+	{
+	  if (SLP_INSTANCE_KIND (instance) != slp_inst_kind_bb_reduc)
+	    continue;
+	  slp_tree old = SLP_INSTANCE_TREE (instance);
+	  if (SLP_TREE_CODE (old) == VEC_PERM_EXPR
+	      && SLP_TREE_CHILDREN (old).length () == 1)
+	    {
+	      slp_tree child = SLP_TREE_CHILDREN (old)[0];
+	      if (SLP_TREE_DEF_TYPE (child) == vect_external_def)
+		{
+		  /* Preserve the special VEC_PERM we use to shield existing
+		     vector defs from the rest.  But make it a no-op.  */
+		  unsigned i = 0;
+		  for (std::pair<unsigned, unsigned> &p
+		       : SLP_TREE_LANE_PERMUTATION (old))
+		    p.second = i++;
+		}
+	      else
+		{
+		  SLP_INSTANCE_TREE (instance) = child;
+		  SLP_TREE_REF_COUNT (child)++;
+		  vect_free_slp_tree (old);
+		}
+	    }
+	  else if (SLP_TREE_LOAD_PERMUTATION (old).exists ()
+		   && SLP_TREE_REF_COUNT (old) == 1)
+	    {
+	      /* ???  For loads the situation is more complex since
+		 we can't modify the permute in place in case the
+		 node is used multiple times.  In fact for loads this
+		 should be somehow handled in the propagation engine.  */
+	      auto fn = [] (const void *a, const void *b)
+			      { return *(const int *)a - *(const int *)b; };
+	      SLP_TREE_LOAD_PERMUTATION (old).qsort (fn);
+	    }
+	}
+    }
 }
 
 /* Gather loads reachable from the individual SLP graph entries.  */
@@ -4492,7 +4563,6 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   return res;
 }
 
-
 /* Mark lanes of NODE that are live outside of the basic-block vectorized
    region and that can be vectorized using vectorizable_live_operation
    with STMT_VINFO_LIVE_P.  Not handled live operations will cause the
@@ -4596,6 +4666,55 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
 				   cost_vec, svisited, visited);
 }
 
+/* Determine whether we can vectorize the reduction epilogue for INSTANCE.  */
+
+static bool
+vectorizable_bb_reduc_epilogue (slp_instance instance,
+				stmt_vector_for_cost *cost_vec)
+{
+  enum tree_code reduc_code
+    = gimple_assign_rhs_code (instance->root_stmts[0]->stmt);
+  if (reduc_code == MINUS_EXPR)
+    reduc_code = PLUS_EXPR;
+  internal_fn reduc_fn;
+  tree vectype = SLP_TREE_VECTYPE (SLP_INSTANCE_TREE (instance));
+  if (!reduction_fn_for_scalar_code (reduc_code, &reduc_fn)
+      || reduc_fn == IFN_LAST
+      || !direct_internal_fn_supported_p (reduc_fn, vectype, OPTIMIZE_FOR_BOTH))
+    return false;
+
+  /* There's no way to cost a horizontal vector reduction via REDUC_FN so
+     cost log2 vector operations plus shuffles.  */
+  unsigned steps = floor_log2 (vect_nunits_for_cost (vectype));
+  record_stmt_cost (cost_vec, steps, vector_stmt, instance->root_stmts[0],
+		    vectype, 0, vect_body);
+  record_stmt_cost (cost_vec, steps, vec_perm, instance->root_stmts[0],
+		    vectype, 0, vect_body);
+  return true;
+}
+
+/* Prune from ROOTS all stmts that are computed as part of lanes of NODE
+   and recurse to children.  */
+
+static void
+vect_slp_prune_covered_roots (slp_tree node, hash_set<stmt_vec_info> &roots,
+			      hash_set<slp_tree> &visited)
+{
+  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def
+      || visited.add (node))
+    return;
+
+  stmt_vec_info stmt;
+  unsigned i;
+  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
+    roots.remove (vect_orig_stmt (stmt));
+
+  slp_tree child;
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    if (child)
+      vect_slp_prune_covered_roots (child, roots, visited);
+}
+
 /* Analyze statements in SLP instances of VINFO.  Return true if the
    operations are supported. */
 
@@ -4619,15 +4738,20 @@ vect_slp_analyze_operations (vec_info *vinfo)
 					     SLP_INSTANCE_TREE (instance),
 					     instance, visited, visited_vec,
 					     &cost_vec)
-	  /* Instances with a root stmt require vectorized defs for the
-	     SLP tree root.  */
-	  /* ???  Do inst->kind check instead.  */
-	  || (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ()
+	  /* CTOR instances require vectorized defs for the SLP tree root.  */
+	  || (SLP_INSTANCE_KIND (instance) == slp_inst_kind_ctor
 	      && (SLP_TREE_DEF_TYPE (SLP_INSTANCE_TREE (instance))
-		  != vect_internal_def)))
+		  != vect_internal_def))
+	  /* Check we can vectorize the reduction.  */
+	  || (SLP_INSTANCE_KIND (instance) == slp_inst_kind_bb_reduc
+	      && !vectorizable_bb_reduc_epilogue (instance, &cost_vec)))
         {
 	  slp_tree node = SLP_INSTANCE_TREE (instance);
-	  stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
+	  stmt_vec_info stmt_info;
+	  if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
+	    stmt_info = SLP_INSTANCE_ROOT_STMTS (instance)[0];
+	  else
+	    stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "removing SLP instance operations starting from: %G",
@@ -4652,6 +4776,34 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	      cost_vec.release ();
 	    }
 	}
+    }
+
+  /* Now look for SLP instances with a root that are covered by other
+     instances and remove them.  */
+  hash_set<stmt_vec_info> roots;
+  for (i = 0; vinfo->slp_instances.iterate (i, &instance); ++i)
+    if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
+      roots.add (SLP_INSTANCE_ROOT_STMTS (instance)[0]);
+  if (!roots.is_empty ())
+    {
+      visited.empty ();
+      for (i = 0; vinfo->slp_instances.iterate (i, &instance); ++i)
+	vect_slp_prune_covered_roots (SLP_INSTANCE_TREE (instance), roots,
+				      visited);
+      for (i = 0; vinfo->slp_instances.iterate (i, &instance); )
+	if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ()
+	    && !roots.contains (SLP_INSTANCE_ROOT_STMTS (instance)[0]))
+	  {
+	    stmt_vec_info root = SLP_INSTANCE_ROOT_STMTS (instance)[0];
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "removing SLP instance operations starting "
+			       "from: %G", root->stmt);
+	    vect_free_slp_instance (instance);
+	    vinfo->slp_instances.ordered_remove (i);
+	  }
+	else
+	  ++i;
     }
 
   /* Compute vectorizable live stmts.  */
@@ -5115,7 +5267,10 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 	continue;
 
       tree rhs = gimple_assign_rhs1 (assign);
-      if (gimple_assign_rhs_code (assign) == CONSTRUCTOR)
+      enum tree_code code = gimple_assign_rhs_code (assign);
+      use_operand_p use_p;
+      gimple *use_stmt;
+      if (code == CONSTRUCTOR)
 	{
 	  if (!VECTOR_TYPE_P (TREE_TYPE (rhs))
 	      || maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)),
@@ -5136,7 +5291,7 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 	  stmt_vec_info stmt_info = bb_vinfo->lookup_stmt (assign);
 	  BB_VINFO_GROUPED_STORES (bb_vinfo).safe_push (stmt_info);
 	}
-      else if (gimple_assign_rhs_code (assign) == BIT_INSERT_EXPR
+      else if (code == BIT_INSERT_EXPR
 	       && VECTOR_TYPE_P (TREE_TYPE (rhs))
 	       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)).is_constant ()
 	       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)).to_constant () > 1
@@ -5229,6 +5384,69 @@ vect_slp_check_for_constructors (bb_vec_info bb_vinfo)
 	    }
 	  else
 	    roots.release ();
+	}
+      else if (!VECTOR_TYPE_P (TREE_TYPE (rhs))
+	       && (associative_tree_code (code) || code == MINUS_EXPR)
+	       /* ???  The flag_associative_math and TYPE_OVERFLOW_WRAPS
+		  checks pessimize a two-element reduction.  PR54400.
+		  ???  In-order reduction could be handled if we only
+		  traverse one operand chain in vect_slp_linearize_chain.  */
+	       && ((FLOAT_TYPE_P (TREE_TYPE (rhs)) && flag_associative_math)
+		   || (INTEGRAL_TYPE_P (TREE_TYPE (rhs))
+		       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (rhs))))
+	       /* Ops with constants at the tail can be stripped here.  */
+	       && TREE_CODE (rhs) == SSA_NAME
+	       && TREE_CODE (gimple_assign_rhs2 (assign)) == SSA_NAME
+	       /* Should be the chain end.  */
+	       && (!single_imm_use (gimple_assign_lhs (assign),
+				    &use_p, &use_stmt)
+		   || !is_gimple_assign (use_stmt)
+		   || (gimple_assign_rhs_code (use_stmt) != code
+		       && ((code != PLUS_EXPR && code != MINUS_EXPR)
+			   || (gimple_assign_rhs_code (use_stmt)
+			       != (code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR))))))
+	{
+	  /* We start the match at the end of a possible association
+	     chain.  */
+	  auto_vec<chain_op_t> chain;
+	  auto_vec<std::pair<tree_code, gimple *> > worklist;
+	  auto_vec<gimple *> chain_stmts;
+	  gimple *code_stmt = NULL, *alt_code_stmt = NULL;
+	  if (code == MINUS_EXPR)
+	    code = PLUS_EXPR;
+	  internal_fn reduc_fn;
+	  if (!reduction_fn_for_scalar_code (code, &reduc_fn)
+	      || reduc_fn == IFN_LAST)
+	    continue;
+	  vect_slp_linearize_chain (bb_vinfo, worklist, chain, code, assign,
+				    /* ??? */
+				    code_stmt, alt_code_stmt, &chain_stmts);
+	  if (chain.length () > 1)
+	    {
+	      /* Sort the chain according to def_type and operation.  */
+	      chain.sort (dt_sort_cmp, bb_vinfo);
+	      /* ???  Now we'd want to strip externals and constants
+		 but record those to be handled in the epilogue.  */
+	      /* ???  For now do not allow mixing ops or externs/constants.  */
+	      bool invalid = false;
+	      for (unsigned i = 0; i < chain.length (); ++i)
+		if (chain[i].dt != vect_internal_def
+		    || chain[i].code != code)
+		  invalid = true;
+	      if (!invalid)
+		{
+		  vec<stmt_vec_info> stmts;
+		  stmts.create (chain.length ());
+		  for (unsigned i = 0; i < chain.length (); ++i)
+		    stmts.quick_push (bb_vinfo->lookup_def (chain[i].op));
+		  vec<stmt_vec_info> roots;
+		  roots.create (chain_stmts.length ());
+		  for (unsigned i = 0; i < chain_stmts.length (); ++i)
+		    roots.quick_push (bb_vinfo->lookup_stmt (chain_stmts[i]));
+		  bb_vinfo->roots.safe_push (slp_root (slp_inst_kind_bb_reduc,
+						       stmts, roots));
+		}
+	    }
 	}
     }
 }
@@ -6860,6 +7078,39 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
 	  tree r_constructor = build_constructor (rtype, v);
 	  rstmt = gimple_build_assign (lhs, r_constructor);
 	}
+    }
+  else if (instance->kind == slp_inst_kind_bb_reduc)
+    {
+      /* Largely inspired by reduction chain epilogue handling in
+	 vect_create_epilog_for_reduction.  */
+      vec<tree> vec_defs = vNULL;
+      vect_get_slp_defs (node, &vec_defs);
+      enum tree_code reduc_code
+	= gimple_assign_rhs_code (instance->root_stmts[0]->stmt);
+      /* ???  We actually have to reflect signs somewhere.  */
+      if (reduc_code == MINUS_EXPR)
+	reduc_code = PLUS_EXPR;
+      gimple_seq epilogue = NULL;
+      /* We may end up with more than one vector result, reduce them
+	 to one vector.  */
+      tree vec_def = vec_defs[0];
+      for (unsigned i = 1; i < vec_defs.length (); ++i)
+	vec_def = gimple_build (&epilogue, reduc_code, TREE_TYPE (vec_def),
+				vec_def, vec_defs[i]);
+      vec_defs.release ();
+      /* ???  Support other schemes than direct internal fn.  */
+      internal_fn reduc_fn;
+      if (!reduction_fn_for_scalar_code (reduc_code, &reduc_fn)
+	  || reduc_fn == IFN_LAST)
+	gcc_unreachable ();
+      tree scalar_def = gimple_build (&epilogue, as_combined_fn (reduc_fn),
+				      TREE_TYPE (TREE_TYPE (vec_def)), vec_def);
+
+      gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmts[0]->stmt);
+      gsi_insert_seq_before (&rgsi, epilogue, GSI_SAME_STMT);
+      gimple_assign_set_rhs_from_tree (&rgsi, scalar_def);
+      update_stmt (gsi_stmt (rgsi));
+      return;
     }
   else
     gcc_unreachable ();

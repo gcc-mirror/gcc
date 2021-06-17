@@ -1155,13 +1155,10 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 
   FOR_ALL_BB_FN (bb, cfun)
   {
-    vec<basic_block> dom_bbs;
-
     if (bb->aux != NULL)
       continue;
     bb->aux = bb;
-    dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
-    for (basic_block bb1 : dom_bbs)
+    for (basic_block bb1 : get_dominated_by (CDI_DOMINATORS, bb))
       if (bb1->aux == NULL && dominated_by_p (CDI_POST_DOMINATORS, bb, bb1)
 	  && bb1->loop_father == bb->loop_father)
 	{
@@ -1172,8 +1169,8 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 	      set_bb_annotated (bb, annotated_bb);
 	    }
 	}
-    dom_bbs = get_dominated_by (CDI_POST_DOMINATORS, bb);
-    for (basic_block bb1 : dom_bbs)
+
+    for (basic_block bb1 : get_dominated_by (CDI_POST_DOMINATORS, bb))
       if (bb1->aux == NULL && dominated_by_p (CDI_DOMINATORS, bb, bb1)
 	  && bb1->loop_father == bb->loop_father)
 	{

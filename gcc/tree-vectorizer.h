@@ -190,6 +190,7 @@ enum slp_instance_kind {
     slp_inst_kind_store,
     slp_inst_kind_reduc_group,
     slp_inst_kind_reduc_chain,
+    slp_inst_kind_bb_reduc,
     slp_inst_kind_ctor
 };
 
@@ -1971,6 +1972,7 @@ extern tree vect_get_loop_len (loop_vec_info, vec_loop_lens *, unsigned int,
 			       unsigned int);
 extern gimple_seq vect_gen_len (tree, tree, tree, tree);
 extern stmt_vec_info info_for_reduction (vec_info *, stmt_vec_info);
+extern bool reduction_fn_for_scalar_code (enum tree_code, internal_fn *);
 
 /* Drive for loop transformation stage.  */
 extern class loop *vect_transform_loop (loop_vec_info, gimple *);

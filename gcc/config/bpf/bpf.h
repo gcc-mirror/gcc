@@ -288,9 +288,6 @@ enum reg_class
    never used when passing arguments.  However, we still have to
    define the constants below.  */
 
-/* If nonzero, push insns will be used to pass outgoing arguments.  */
-#define PUSH_ARGS 0
-
 /* If nonzero, function arguments will be evaluated from last to
    first, rather than from first to last.  */
 #define PUSH_ARGS_REVERSED 1

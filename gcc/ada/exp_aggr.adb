@@ -54,6 +54,7 @@ with Ttypes;         use Ttypes;
 with Sem;            use Sem;
 with Sem_Aggr;       use Sem_Aggr;
 with Sem_Aux;        use Sem_Aux;
+with Sem_Case;       use Sem_Case;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch13;       use Sem_Ch13;
@@ -8514,6 +8515,11 @@ package body Exp_Aggr is
       --  statically allocated dispatch tables
 
       elsif Is_Static_Dispatch_Table_Aggregate (N) then
+         return;
+
+      --  Case pattern aggregates need to remain as aggregates
+
+      elsif Is_Case_Choice_Pattern (N) then
          return;
       end if;
 

@@ -532,6 +532,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Abstract_Type, Flag),
         Sm (Is_Actual_Subtype, Flag),
         Sm (Is_Asynchronous, Flag),
+        Sm (Is_Fixed_Lower_Bound_Array_Subtype, Flag),
+        Sm (Is_Fixed_Lower_Bound_Index_Subtype, Flag),
         Sm (Is_Generic_Actual_Type, Flag),
         Sm (Is_Non_Static_Subtype, Flag),
         Sm (Is_Private_Composite, Flag),

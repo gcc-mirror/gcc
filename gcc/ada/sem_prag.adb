@@ -4083,9 +4083,9 @@ package body Sem_Prag is
 
       procedure Check_Static_Constraint (Constr : Node_Id);
       --  Constr is a constraint from an N_Subtype_Indication node from a
-      --  component constraint in an Unchecked_Union type. This routine checks
-      --  that the constraint is static as required by the restrictions for
-      --  Unchecked_Union.
+      --  component constraint in an Unchecked_Union type, a range, or a
+      --  discriminant association. This routine checks that the constraint
+      --  is static as required by the restrictions for Unchecked_Union.
 
       procedure Check_Valid_Configuration_Pragma;
       --  Legality checks for placement of a configuration pragma
@@ -6458,11 +6458,6 @@ package body Sem_Prag is
       -- Check_Static_Constraint --
       -----------------------------
 
-      --  Note: for convenience in writing this procedure, in addition to
-      --  the officially (i.e. by spec) allowed argument which is always a
-      --  constraint, it also allows ranges and discriminant associations.
-      --  Above is not clear ???
-
       procedure Check_Static_Constraint (Constr : Node_Id) is
 
          procedure Require_Static (E : Node_Id);
@@ -6893,7 +6888,7 @@ package body Sem_Prag is
          Proc : Entity_Id := Empty;
 
       begin
-         --  The body of this procedure needs some comments ???
+         --  Perform sanity checks on Name
 
          if not Is_Entity_Name (Name) then
             Error_Pragma_Arg
@@ -6909,6 +6904,9 @@ package body Sem_Prag is
                  ("argument of pragma% must be parameterless procedure", Arg);
             end if;
 
+         --  Otherwise, search through interpretations looking for one which
+         --  has no parameters.
+
          else
             declare
                Found : Boolean := False;
@@ -6923,10 +6921,17 @@ package body Sem_Prag is
                   if Ekind (Proc) = E_Procedure
                     and then No (First_Formal (Proc))
                   then
+                     --  We found an interpretation, note it and continue
+                     --  looking looking to verify it is unique.
+
                      if not Found then
                         Found := True;
                         Set_Entity (Name, Proc);
                         Set_Is_Overloaded (Name, False);
+
+                     --  Two procedures with the same name, log an error
+                     --  since the name is ambiguous.
+
                      else
                         Error_Pragma_Arg
                           ("ambiguous handler name for pragma%", Arg);
@@ -6937,9 +6942,13 @@ package body Sem_Prag is
                end loop;
 
                if not Found then
+                  --  Issue an error if we haven't found a suitable match for
+                  --  Name.
+
                   Error_Pragma_Arg
                     ("argument of pragma% must be parameterless procedure",
                      Arg);
+
                else
                   Proc := Entity (Name);
                end if;
@@ -20409,7 +20418,8 @@ package body Sem_Prag is
                elsif Chars (Argx) = Name_Eliminated then
                   if Ttypes.Standard_Long_Long_Integer_Size /= 64 then
                      Error_Pragma_Arg
-                       ("Eliminated not implemented on this target", Argx);
+                       ("Eliminated requires Long_Long_Integer'Size = 64",
+                        Argx);
                   else
                      return Eliminated;
                   end if;

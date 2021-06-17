@@ -972,16 +972,18 @@ gori_compute::compute_operand1_and_operand2_range (irange &r,
   r.intersect (op_range);
   return true;
 }
-// Return TRUE if a range can be calcalated for NAME on edge E.
+// Return TRUE if a range can be calculated or recomputed for NAME on edge E.
 
 bool
 gori_compute::has_edge_range_p (tree name, edge e)
 {
-  // If no edge is specified, check if NAME is an export on any edge.
-  if (!e)
-    return is_export_p (name);
+  // Check if NAME is an export or can be recomputed.
+  if (e)
+    return is_export_p (name, e->src) || may_recompute_p (name, e);
 
-  return is_export_p (name, e->src);
+  // If no edge is specified, check if NAME can have a range calculated
+  // on any edge.
+  return is_export_p (name) || may_recompute_p (name);
 }
 
 // Dump what is known to GORI computes to listing file F.
@@ -990,6 +992,32 @@ void
 gori_compute::dump (FILE *f)
 {
   gori_map::dump (f);
+}
+
+// Return TRUE if NAME can be recomputed on edge E.  If any direct dependant
+// is exported on edge E, it may change the computed value of NAME.
+
+bool
+gori_compute::may_recompute_p (tree name, edge e)
+{
+  tree dep1 = depend1 (name);
+  tree dep2 = depend2 (name);
+
+  // If the first dependency is not set, there is no recompuation.
+  if (!dep1)
+    return false;
+
+  // Don't recalculate PHIs or statements with side_effects.
+  gimple *s = SSA_NAME_DEF_STMT (name);
+  if (is_a<gphi *> (s) || gimple_has_side_effects (s))
+    return false;
+
+  // If edge is specified, check if NAME can be recalculated on that edge.
+  if (e)
+    return ((is_export_p (dep1, e->src))
+	    || (dep2 && is_export_p (dep2, e->src)));
+
+  return (is_export_p (dep1)) || (dep2 && is_export_p (dep2));
 }
 
 // Calculate a range on edge E and return it in R.  Try to evaluate a
@@ -1025,6 +1053,27 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
 	    }
 	  return true;
 	}
+    }
+  // If NAME isn't exported, check if it can be recomputed.
+  else if (may_recompute_p (name, e))
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "recomputation attempt on edge %d->%d for ",
+		   e->src->index, e->dest->index);
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	}
+      // Simply calculate DEF_STMT on edge E using the range query Q.
+      fold_range (r, def_stmt, e, &q);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, " : Calculated :");
+	  r.dump (dump_file);
+	  fputc ('\n', dump_file);
+	}
+      return true;
     }
   return false;
 }

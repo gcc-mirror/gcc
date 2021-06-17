@@ -3253,7 +3253,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatw.I`
   *Disable warnings on overlapping actuals.*
 
-  This switch disables warnings on overlapping actuals in a call..
+  This switch disables warnings on overlapping actuals in a call.
 
 
 .. index:: -gnatwj  (gcc)
