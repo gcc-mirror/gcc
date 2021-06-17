@@ -81,7 +81,8 @@
   UNSPEC_MOV_FROM_LANE63
   UNSPEC_GATHER
   UNSPEC_SCATTER
-  UNSPEC_RCP])
+  UNSPEC_RCP
+  UNSPEC_FLBIT_INT])
 
 ;; }}}
 ;; {{{ Attributes
@@ -338,7 +339,8 @@
   [(not "not%b")
    (popcount "bcnt1_i32%b")
    (clz "flbit_i32%b")
-   (ctz "ff1_i32%b")])
+   (ctz "ff1_i32%b")
+   (clrsb "flbit_i32%i")])
 
 (define_code_attr revmnemonic
   [(minus "subrev%i")
@@ -1610,6 +1612,40 @@
   "s_<s_mnemonic>1\t%0, %1"
   [(set_attr "type" "sop1")
    (set_attr "length" "4,8")])
+
+(define_insn "gcn_flbit<mode>_int"
+  [(set (match_operand:SI 0 "register_operand"              "=Sg,Sg")
+	(unspec:SI [(match_operand:SIDI 1 "gcn_alu_operand" "SgA, B")]
+		   UNSPEC_FLBIT_INT))]
+  ""
+  {
+    if (<MODE>mode == SImode)
+      return "s_flbit_i32\t%0, %1";
+    else
+      return "s_flbit_i32_i64\t%0, %1";
+  }
+  [(set_attr "type" "sop1")
+   (set_attr "length" "4,8")])
+
+(define_expand "clrsb<mode>2"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(clrsb:SI (match_operand:SIDI 1 "gcn_alu_operand" "")))]
+  ""
+  {
+    rtx tmp = gen_reg_rtx (SImode);
+    /* FLBIT_I* counts sign or zero bits at the most-significant end of the
+       input register (and returns -1 for 0/-1 inputs).  We want the number of
+       *redundant* bits (i.e. that value minus one), and an answer of 31/63 for
+       0/-1 inputs.  We can do that in three instructions...  */
+    emit_insn (gen_gcn_flbit<mode>_int (tmp, operands[1]));
+    emit_insn (gen_uminsi3 (tmp, tmp,
+			    gen_int_mode (GET_MODE_BITSIZE (<MODE>mode),
+					  SImode)));
+    /* If we put this last, it can potentially be folded into a subsequent
+       arithmetic operation.  */
+    emit_insn (gen_subsi3 (operands[0], tmp, const1_rtx));
+    DONE;
+  })
 
 ;; }}}
 ;; {{{ ALU: generic 32-bit binop
