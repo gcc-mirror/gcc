@@ -4244,6 +4244,30 @@ range_op_bitwise_and_tests ()
   ASSERT_FALSE (res.contains_p (INT (0)));
 }
 
+static void
+range_relational_tests ()
+{
+  int_range<2> lhs (unsigned_char_type_node);
+  int_range<2> op1 (UCHAR (8), UCHAR (10));
+  int_range<2> op2 (UCHAR (20), UCHAR (20));
+
+  // Never wrapping additions mean LHS > OP1.
+  tree_code code = op_plus.lhs_op1_relation (lhs, op1, op2);
+  ASSERT_TRUE (code == GT_EXPR);
+
+  // Most wrapping additions mean nothing...
+  op1 = int_range<2> (UCHAR (8), UCHAR (10));
+  op2 = int_range<2> (UCHAR (0), UCHAR (255));
+  code = op_plus.lhs_op1_relation (lhs, op1, op2);
+  ASSERT_TRUE (code == VREL_NONE);
+
+  // However, always wrapping additions mean LHS < OP1.
+  op1 = int_range<2> (UCHAR (1), UCHAR (255));
+  op2 = int_range<2> (UCHAR (255), UCHAR (255));
+  code = op_plus.lhs_op1_relation (lhs, op1, op2);
+  ASSERT_TRUE (code == LT_EXPR);
+}
+
 void
 range_op_tests ()
 {
@@ -4251,6 +4275,7 @@ range_op_tests ()
   range_op_lshift_tests ();
   range_op_bitwise_and_tests ();
   range_op_cast_tests ();
+  range_relational_tests ();
 }
 
 } // namespace selftest
