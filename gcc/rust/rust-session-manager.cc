@@ -17,12 +17,12 @@
 // <http://www.gnu.org/licenses/>.
 // #include "rust-session-manager.h"
 
+#include <fstream>
+#include <sstream>
 #include "rust-session-manager.h"
 #include "rust-diagnostics.h"
 #include "diagnostic.h"
 #include "input.h"
-#include <fstream>
-#include <sstream>
 
 #include "target.h"
 #include "tm.h"

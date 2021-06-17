@@ -20,14 +20,13 @@
 #ifndef RUST_SESSION_MANAGER_H
 #define RUST_SESSION_MANAGER_H
 
+#include "rust-linemap.h"
+#include "rust-backend.h"
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
-#include "rust-system.h"
-
-#include "rust-linemap.h"
-#include "rust-backend.h"
 
 namespace Rust {
 // parser forward decl

@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-diagnostics.h"
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -31,7 +32,6 @@
 #include "convert.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "rust-diagnostics.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
