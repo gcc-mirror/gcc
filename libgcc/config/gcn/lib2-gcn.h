@@ -38,8 +38,8 @@ typedef int word_type __attribute__ ((mode (__word__)));
 /* Exported functions.  */
 extern SItype __divsi3 (SItype, SItype);
 extern SItype __modsi3 (SItype, SItype);
-extern SItype __udivsi3 (SItype, SItype);
-extern SItype __umodsi3 (SItype, SItype);
+extern USItype __udivsi3 (USItype, USItype);
+extern USItype __umodsi3 (USItype, USItype);
 extern HItype __divhi3 (HItype, HItype);
 extern HItype __modhi3 (HItype, HItype);
 extern UHItype __udivhi3 (UHItype, UHItype);
