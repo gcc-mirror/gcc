@@ -21,6 +21,7 @@
 // PR libstdc++/100577
 
 #include <ranges>
+#include <functional>
 
 namespace ranges = std::ranges;
 namespace views = std::ranges::views;
@@ -111,6 +112,19 @@ test03()
   struct S { operator int() && { return 5; }; };
   x | std::views::take(S{});
   x | std::views::drop(S{});
+}
+
+void
+test04()
+{
+  // Non-trivially-copyable extra arguments make a closure not simple.
+  using F = std::function<bool(bool)>;
+  static_assert(!std::is_trivially_copyable_v<F>);
+  using views::__adaptor::__closure_has_simple_call_op;
+  static_assert(!__closure_has_simple_call_op<decltype(views::take_while(std::declval<F>()))>);
+  static_assert(!__closure_has_simple_call_op<decltype(views::drop_while(std::declval<F>()))>);
+  static_assert(!__closure_has_simple_call_op<decltype(views::filter(std::declval<F>()))>);
+  static_assert(!__closure_has_simple_call_op<decltype(views::transform(std::declval<F>()))>);
 }
 
 // { dg-prune-output "in requirements" }

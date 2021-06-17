@@ -896,11 +896,12 @@ namespace views::__adaptor
     };
 
   // Partial specialization of the primary template for the case where the extra
-  // arguments of the adaptor can always be safely forwarded by const reference.
-  // This lets us get away with a single operator() overload, which makes
-  // overload resolution failure diagnostics more concise.
+  // arguments of the adaptor can always be safely and efficiently forwarded by
+  // const reference.  This lets us get away with a single operator() overload,
+  // which makes overload resolution failure diagnostics more concise.
   template<typename _Adaptor, typename... _Args>
     requires __adaptor_has_simple_extra_args<_Adaptor, _Args...>
+      && (is_trivially_copyable_v<_Args> && ...)
     struct _Partial<_Adaptor, _Args...> : _RangeAdaptorClosure
     {
       tuple<_Args...> _M_args;
@@ -930,6 +931,7 @@ namespace views::__adaptor
   // where _Adaptor accepts a single extra argument.
   template<typename _Adaptor, typename _Arg>
     requires __adaptor_has_simple_extra_args<_Adaptor, _Arg>
+      && is_trivially_copyable_v<_Arg>
     struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure
     {
       _Arg _M_arg;
