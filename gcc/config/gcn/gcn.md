@@ -1394,20 +1394,68 @@
 (define_code_attr iu [(sign_extend "i") (zero_extend "u")])
 (define_code_attr e [(sign_extend "e") (zero_extend "")])
 
-(define_insn "<su>mulsi3_highpart"
-  [(set (match_operand:SI 0 "register_operand"	       "= v")
+(define_expand "<su>mulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "")
 	(truncate:SI
 	  (lshiftrt:DI
 	    (mult:DI
 	      (any_extend:DI
-		(match_operand:SI 1 "register_operand" "% v"))
+		(match_operand:SI 1 "register_operand" ""))
 	      (any_extend:DI
-		(match_operand:SI 2 "register_operand" "vSv")))
+		(match_operand:SI 2 "gcn_alu_operand"  "")))
 	    (const_int 32))))]
   ""
-  "v_mul_hi<sgnsuffix>0\t%0, %2, %1"
-  [(set_attr "type" "vop3a")
-   (set_attr "length" "8")])
+{
+  if (can_create_pseudo_p ()
+      && !TARGET_GCN5
+      && !gcn_inline_immediate_operand (operands[2], SImode))
+    operands[2] = force_reg (SImode, operands[2]);
+
+  if (REG_P (operands[2]))
+    emit_insn (gen_<su>mulsi3_highpart_reg (operands[0], operands[1],
+					    operands[2]));
+  else
+    emit_insn (gen_<su>mulsi3_highpart_imm (operands[0], operands[1],
+					    operands[2]));
+
+  DONE;
+})
+
+(define_insn "<su>mulsi3_highpart_reg"
+  [(set (match_operand:SI 0 "register_operand"	       "=Sg,  v")
+	(truncate:SI
+	  (lshiftrt:DI
+	    (mult:DI
+	      (any_extend:DI
+		(match_operand:SI 1 "register_operand" "%Sg,  v"))
+	      (any_extend:DI
+		(match_operand:SI 2 "register_operand"  "Sg,vSv")))
+	    (const_int 32))))]
+  ""
+  "@
+  s_mul_hi<sgnsuffix>0\t%0, %1, %2
+  v_mul_hi<sgnsuffix>0\t%0, %2, %1"
+  [(set_attr "type" "sop2,vop3a")
+   (set_attr "length" "4,8")
+   (set_attr "gcn_version" "gcn5,*")])
+
+(define_insn "<su>mulsi3_highpart_imm"
+  [(set (match_operand:SI 0 "register_operand"	              "=Sg,Sg,v")
+	(truncate:SI
+	  (lshiftrt:DI
+	    (mult:DI
+	      (any_extend:DI
+		(match_operand:SI 1 "register_operand"         "Sg,Sg,v"))
+	      (match_operand:DI 2 "gcn_32bit_immediate_operand" "A, B,A"))
+	    (const_int 32))))]
+  "TARGET_GCN5 || gcn_inline_immediate_operand (operands[2], SImode)"
+  "@
+  s_mul_hi<sgnsuffix>0\t%0, %1, %2
+  s_mul_hi<sgnsuffix>0\t%0, %1, %2
+  v_mul_hi<sgnsuffix>0\t%0, %2, %1"
+  [(set_attr "type" "sop2,sop2,vop3a")
+   (set_attr "length" "4,8,8")
+   (set_attr "gcn_version" "gcn5,gcn5,*")])
 
 (define_insn "<u>mulhisi3"
   [(set (match_operand:SI 0 "register_operand"			"=v")
