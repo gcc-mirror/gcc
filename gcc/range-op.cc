@@ -1279,6 +1279,11 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  virtual bool op1_op2_relation_effect (irange &lhs_range,
+					tree type,
+					const irange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const;
 } op_minus;
 
 void 
@@ -1291,6 +1296,45 @@ operator_minus::wi_fold (irange &r, tree type,
   wide_int new_lb = wi::sub (lh_lb, rh_ub, s, &ov_lb);
   wide_int new_ub = wi::sub (lh_ub, rh_lb, s, &ov_ub);
   value_range_with_overflow (r, type, new_lb, new_ub, ov_lb, ov_ub);
+}
+
+// Check to see if the relation REL between OP1 and OP2 has any effect on the
+// LHS of the epxression.  If so, apply it to LHS_RANGE.
+
+bool
+operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
+				      const irange &op1_range ATTRIBUTE_UNUSED,
+				      const irange &op2_range ATTRIBUTE_UNUSED,
+				      relation_kind rel) const
+{
+  if (rel == VREL_NONE)
+    return false;
+
+  int_range<2> rel_range;
+  unsigned prec = TYPE_PRECISION (type);
+  signop sgn = TYPE_SIGN (type);
+
+  switch (rel)
+    {
+      // op1 > op2,  op1 - op2 can be restricted to  [1, max]
+      case GT_EXPR:
+	rel_range = int_range<2> (type, wi::one (prec),
+				  wi::max_value (prec, sgn));
+	break;
+      // op1 >= op2,  op1 - op2 can be restricted to  [0, max]
+      case GE_EXPR:
+	rel_range = int_range<2> (type, wi::zero (prec),
+				  wi::max_value (prec, sgn));
+	break;
+      // op1 == op2,  op1 - op2 can be restricted to  [0, 0]
+      case EQ_EXPR:
+	rel_range = int_range<2> (type, wi::zero (prec), wi::zero (prec));
+	break;
+      default:
+	return false;
+    }
+  lhs_range.intersect (rel_range);
+  return true;
 }
 
 bool
