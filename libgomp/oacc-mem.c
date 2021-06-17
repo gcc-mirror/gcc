@@ -402,9 +402,8 @@ acc_map_data (void *h, void *d, size_t s)
       gomp_mutex_unlock (&acc_dev->lock);
 
       struct target_mem_desc *tgt
-	= gomp_map_vars (acc_dev, mapnum, &hostaddrs, &devaddrs, &sizes,
-			 &kinds, true,
-			 GOMP_MAP_VARS_OPENACC | GOMP_MAP_VARS_ENTER_DATA);
+	= goacc_map_vars (acc_dev, NULL, mapnum, &hostaddrs, &devaddrs, &sizes,
+			  &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
       assert (tgt);
       assert (tgt->list_count == 1);
       splay_tree_key n = tgt->list[0].key;
@@ -572,9 +571,8 @@ goacc_enter_datum (void **hostaddrs, size_t *sizes, void *kinds, int async)
       goacc_aq aq = get_goacc_asyncqueue (async);
 
       struct target_mem_desc *tgt
-	= gomp_map_vars_async (acc_dev, aq, mapnum, hostaddrs, NULL, sizes,
-			       kinds, true, (GOMP_MAP_VARS_OPENACC
-					     | GOMP_MAP_VARS_ENTER_DATA));
+	= goacc_map_vars (acc_dev, aq, mapnum, hostaddrs, NULL, sizes,
+			  kinds, true, GOMP_MAP_VARS_ENTER_DATA);
       assert (tgt);
       assert (tgt->list_count == 1);
       n = tgt->list[0].key;
@@ -1070,7 +1068,7 @@ find_group_last (int pos, size_t mapnum, size_t *sizes, unsigned short *kinds)
 }
 
 /* Map variables for OpenACC "enter data".  We can't just call
-   gomp_map_vars_async once, because individual mapped variables might have
+   goacc_map_vars once, because individual mapped variables might have
    "exit data" called for them at different times.  */
 
 static void
@@ -1202,10 +1200,9 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	  gomp_mutex_unlock (&acc_dev->lock);
 
 	  struct target_mem_desc *tgt
-	    = gomp_map_vars_async (acc_dev, aq, groupnum, &hostaddrs[i], NULL,
-				   &sizes[i], &kinds[i], true,
-				   (GOMP_MAP_VARS_OPENACC
-				    | GOMP_MAP_VARS_ENTER_DATA));
+	    = goacc_map_vars (acc_dev, aq, groupnum, &hostaddrs[i], NULL,
+			      &sizes[i], &kinds[i], true,
+			      GOMP_MAP_VARS_ENTER_DATA);
 	  assert (tgt);
 
 	  gomp_mutex_lock (&acc_dev->lock);
