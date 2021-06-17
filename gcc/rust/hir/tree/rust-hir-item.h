@@ -305,45 +305,34 @@ public:
 // A self parameter in a method
 struct SelfParam
 {
+public:
+  enum ImplicitSelfKind
+  {
+    IMM,
+    MUT,
+    IMM_REF,
+    MUT_REF,
+    NONE
+  };
+
 private:
-  bool has_ref;
-  bool is_mut;
-  // bool has_lifetime; // only possible if also ref
+  ImplicitSelfKind self_kind;
   Lifetime lifetime;
-
-  // bool has_type; // only possible if not ref
   std::unique_ptr<Type> type;
-
   Location locus;
-
   Analysis::NodeMapping mappings;
 
-  // Unrestricted constructor used for error state
-  SelfParam (Analysis::NodeMapping mappings, Lifetime lifetime, bool has_ref,
-	     bool is_mut, Type *type)
-    : has_ref (has_ref), is_mut (is_mut), lifetime (std::move (lifetime)),
-      type (type), mappings (mappings)
+  SelfParam (Analysis::NodeMapping mappings, ImplicitSelfKind self_kind,
+	     Lifetime lifetime, Type *type)
+    : self_kind (self_kind), lifetime (std::move (lifetime)), type (type),
+      mappings (mappings)
   {}
-  // this is ok as no outside classes can ever call this
 
 public:
-  // Returns whether the self-param has a type field.
-  bool has_type () const { return type != nullptr; }
-
-  // Returns whether the self-param has a valid lifetime.
-  bool has_lifetime () const { return !lifetime.is_error (); }
-
-  // Returns whether the self-param is in an error state.
-  bool is_error () const
-  {
-    return has_type () && has_lifetime ();
-    // not having either is not an error
-  }
-
   // Type-based self parameter (not ref, no lifetime)
   SelfParam (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
 	     bool is_mut, Location locus)
-    : has_ref (false), is_mut (is_mut),
+    : self_kind (is_mut ? ImplicitSelfKind::MUT : ImplicitSelfKind::IMM),
       lifetime (Lifetime (mappings, Lifetime::LifetimeType::NAMED, "", locus)),
       type (std::move (type)), locus (locus), mappings (mappings)
   {}
@@ -351,13 +340,14 @@ public:
   // Lifetime-based self parameter (is ref, no type)
   SelfParam (Analysis::NodeMapping mappings, Lifetime lifetime, bool is_mut,
 	     Location locus)
-    : has_ref (true), is_mut (is_mut), lifetime (std::move (lifetime)),
-      locus (locus), mappings (mappings)
+    : self_kind (is_mut ? ImplicitSelfKind::MUT_REF
+			: ImplicitSelfKind::IMM_REF),
+      lifetime (std::move (lifetime)), locus (locus), mappings (mappings)
   {}
 
   // Copy constructor requires clone
   SelfParam (SelfParam const &other)
-    : has_ref (other.has_ref), is_mut (other.is_mut), lifetime (other.lifetime),
+    : self_kind (other.self_kind), lifetime (other.lifetime),
       locus (other.locus), mappings (other.mappings)
   {
     if (other.type != nullptr)
@@ -369,8 +359,8 @@ public:
   {
     if (other.type != nullptr)
       type = other.type->clone_type ();
-    is_mut = other.is_mut;
-    has_ref = other.has_ref;
+
+    self_kind = other.self_kind;
     lifetime = other.lifetime;
     locus = other.locus;
     mappings = other.mappings;
@@ -382,14 +372,27 @@ public:
   SelfParam (SelfParam &&other) = default;
   SelfParam &operator= (SelfParam &&other) = default;
 
+  static SelfParam error ()
+  {
+    return SelfParam (Analysis::NodeMapping::get_error (),
+		      ImplicitSelfKind::NONE, Lifetime::error (), nullptr);
+  }
+
+  // Returns whether the self-param has a type field.
+  bool has_type () const { return type != nullptr; }
+
+  // Returns whether the self-param has a valid lifetime.
+  bool has_lifetime () const { return !lifetime.is_error (); }
+
+  // Returns whether the self-param is in an error state.
+  bool is_error () const { return self_kind != ImplicitSelfKind::NONE; }
+
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
 
-  bool get_has_ref () const { return has_ref; };
-  bool get_is_mut () const { return is_mut; }
+  ImplicitSelfKind get_self_kind () const { return self_kind; }
 
-  // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_type ()
   {
     rust_assert (has_type ());
@@ -397,6 +400,18 @@ public:
   }
 
   Analysis::NodeMapping get_mappings () { return mappings; }
+
+  bool is_mut () const
+  {
+    return self_kind == ImplicitSelfKind::MUT
+	   || self_kind == ImplicitSelfKind::MUT_REF;
+  }
+
+  bool is_ref () const
+  {
+    return self_kind == ImplicitSelfKind::IMM_REF
+	   || self_kind == ImplicitSelfKind::MUT_REF;
+  }
 };
 
 // Qualifiers for function, i.e. const, unsafe, extern etc.
@@ -2319,61 +2334,29 @@ public:
   Type *get_type () { return type.get (); }
 
 protected:
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
   StaticItem *clone_item_impl () const override
   {
     return new StaticItem (*this);
   }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual StaticItem* clone_statement_impl() const override {
-      return new StaticItem(*this);
-  }*/
 };
 
 // Function declaration in traits
 struct TraitFunctionDecl
 {
 private:
-  // TODO: delete and replace with Function decl item? no as no body in this.
   FunctionQualifiers qualifiers;
   Identifier function_name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
-
-  // bool has_params;
-  // FunctionParams function_params;
-  std::vector<FunctionParam> function_params; // inlined
-
-  // bool has_return_type;
+  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::vector<FunctionParam> function_params;
   std::unique_ptr<Type> return_type;
-
-  // bool has_where_clause;
   WhereClause where_clause;
-
-  // should this store location info?
+  SelfParam self;
 
 public:
-  // Returns whether function decl has generic parameters.
-  bool has_generics () const { return !generic_params.empty (); }
-
-  // Returns whether function decl has regular parameters.
-  bool has_params () const { return !function_params.empty (); }
-
-  // Returns whether function has return type (otherwise is void).
-  bool has_return_type () const { return return_type != nullptr; }
-
-  // Returns whether function has a where clause.
-  bool has_where_clause () const { return !where_clause.is_empty (); }
-
   // Mega-constructor
   TraitFunctionDecl (Identifier function_name, FunctionQualifiers qualifiers,
 		     std::vector<std::unique_ptr<GenericParam> > generic_params,
-		     std::vector<FunctionParam> function_params,
+		     SelfParam self, std::vector<FunctionParam> function_params,
 		     std::unique_ptr<Type> return_type,
 		     WhereClause where_clause)
     : qualifiers (std::move (qualifiers)),
@@ -2381,7 +2364,7 @@ public:
       generic_params (std::move (generic_params)),
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
-      where_clause (std::move (where_clause))
+      where_clause (std::move (where_clause)), self (self)
   {}
 
   // Copy constructor with clone
@@ -2389,7 +2372,7 @@ public:
     : qualifiers (other.qualifiers), function_name (other.function_name),
       function_params (other.function_params),
       return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause)
+      where_clause (other.where_clause), self (other.self)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2406,6 +2389,7 @@ public:
     function_params = other.function_params;
     return_type = other.return_type->clone_type ();
     where_clause = other.where_clause;
+    self = other.self;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2419,6 +2403,26 @@ public:
   TraitFunctionDecl &operator= (TraitFunctionDecl &&other) = default;
 
   std::string as_string () const;
+
+  // Returns whether function decl has generic parameters.
+  bool has_generics () const { return !generic_params.empty (); }
+
+  // Returns whether function decl has regular parameters.
+  bool has_params () const { return !function_params.empty (); }
+
+  // Returns whether function has return type (otherwise is void).
+  bool has_return_type () const { return return_type != nullptr; }
+
+  // Returns whether function has a where clause.
+  bool has_where_clause () const { return !where_clause.is_empty (); }
+
+  bool is_method () const { return !self.is_error (); }
+
+  SelfParam &get_self ()
+  {
+    rust_assert (is_method ());
+    return self;
+  }
 };
 
 // Actual trait item function declaration within traits
@@ -2481,158 +2485,6 @@ protected:
   TraitItemFunc *clone_trait_item_impl () const override
   {
     return new TraitItemFunc (*this);
-  }
-};
-
-// Method declaration within traits
-struct TraitMethodDecl
-{
-private:
-  // TODO: delete and replace with Function decl item? no as no body.
-  FunctionQualifiers qualifiers;
-  Identifier function_name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
-
-  SelfParam self_param;
-
-  // bool has_params;
-  // FunctionParams function_params;
-  std::vector<FunctionParam> function_params; // inlined
-
-  // bool has_return_type;
-  std::unique_ptr<Type> return_type;
-
-  // bool has_where_clause;
-  WhereClause where_clause;
-
-  // should this store location info?
-
-public:
-  // Returns whether method decl has generic parameters.
-  bool has_generics () const { return !generic_params.empty (); }
-
-  // Returns whether method decl has regular parameters.
-  bool has_params () const { return !function_params.empty (); }
-
-  // Returns whether method has return type (otherwise is void).
-  bool has_return_type () const { return return_type != nullptr; }
-
-  // Returns whether method has a where clause.
-  bool has_where_clause () const { return !where_clause.is_empty (); }
-
-  // Mega-constructor
-  TraitMethodDecl (Identifier function_name, FunctionQualifiers qualifiers,
-		   std::vector<std::unique_ptr<GenericParam> > generic_params,
-		   SelfParam self_param,
-		   std::vector<FunctionParam> function_params,
-		   std::unique_ptr<Type> return_type, WhereClause where_clause)
-    : qualifiers (std::move (qualifiers)),
-      function_name (std::move (function_name)),
-      generic_params (std::move (generic_params)),
-      self_param (std::move (self_param)),
-      function_params (std::move (function_params)),
-      return_type (std::move (return_type)),
-      where_clause (std::move (where_clause))
-  {}
-
-  // Copy constructor with clone
-  TraitMethodDecl (TraitMethodDecl const &other)
-    : qualifiers (other.qualifiers), function_name (other.function_name),
-      self_param (other.self_param), function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-  }
-
-  ~TraitMethodDecl () = default;
-
-  // Overloaded assignment operator with clone
-  TraitMethodDecl &operator= (TraitMethodDecl const &other)
-  {
-    function_name = other.function_name;
-    qualifiers = other.qualifiers;
-    self_param = other.self_param;
-    function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
-    where_clause = other.where_clause;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    return *this;
-  }
-
-  // move constructors
-  TraitMethodDecl (TraitMethodDecl &&other) = default;
-  TraitMethodDecl &operator= (TraitMethodDecl &&other) = default;
-
-  std::string as_string () const;
-};
-
-// Actual trait item method declaration within traits
-class TraitItemMethod : public TraitItem
-{
-  AST::AttrVec outer_attrs;
-  TraitMethodDecl decl;
-  std::unique_ptr<Expr> block_expr;
-  Location locus;
-
-public:
-  // Returns whether method has a definition or is just a declaration.
-  bool has_definition () const { return block_expr != nullptr; }
-
-  TraitItemMethod (Analysis::NodeMapping mappings, TraitMethodDecl decl,
-		   std::unique_ptr<Expr> block_expr, AST::AttrVec outer_attrs,
-		   Location locus)
-    : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
-      decl (std::move (decl)), block_expr (std::move (block_expr)),
-      locus (locus)
-  {}
-
-  // Copy constructor with clone
-  TraitItemMethod (TraitItemMethod const &other)
-    : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
-      decl (other.decl), block_expr (other.block_expr->clone_expr ()),
-      locus (other.locus)
-  {}
-
-  // Overloaded assignment operator to clone
-  TraitItemMethod &operator= (TraitItemMethod const &other)
-  {
-    TraitItem::operator= (other);
-    outer_attrs = other.outer_attrs;
-    decl = other.decl;
-    block_expr = other.block_expr->clone_expr ();
-    locus = other.locus;
-    mappings = other.mappings;
-
-    return *this;
-  }
-
-  // move constructors
-  TraitItemMethod (TraitItemMethod &&other) = default;
-  TraitItemMethod &operator= (TraitItemMethod &&other) = default;
-
-  std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  std::unique_ptr<Expr> &get_block_expr () { return block_expr; }
-
-protected:
-  // Clone function implementation as (not pure) virtual method
-  TraitItemMethod *clone_trait_item_impl () const override
-  {
-    return new TraitItemMethod (*this);
   }
 };
 

@@ -142,7 +142,6 @@ public:
   virtual void visit (HIR::ConstantItem &) override {}
   virtual void visit (HIR::StaticItem &) override {}
   virtual void visit (HIR::TraitItemFunc &) override {}
-  virtual void visit (HIR::TraitItemMethod &) override {}
   virtual void visit (HIR::TraitItemConst &) override {}
   virtual void visit (HIR::TraitItemType &) override {}
   virtual void visit (HIR::Trait &) override {}

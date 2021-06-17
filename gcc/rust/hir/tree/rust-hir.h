@@ -460,6 +460,12 @@ public:
     return lifetime_type == NAMED && lifetime_name.empty ();
   }
 
+  static Lifetime error ()
+  {
+    return Lifetime (Analysis::NodeMapping::get_error (), LifetimeType::NAMED,
+		     "", Location ());
+  }
+
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;

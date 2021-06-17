@@ -97,11 +97,6 @@ public:
     item.get_block_expr ()->accept_vis (*this);
   }
 
-  void visit (HIR::TraitItemMethod &item) override
-  {
-    item.get_block_expr ()->accept_vis (*this);
-  }
-
   void visit (HIR::ImplBlock &impl) override
   {
     for (auto &&item : impl.get_impl_items ())

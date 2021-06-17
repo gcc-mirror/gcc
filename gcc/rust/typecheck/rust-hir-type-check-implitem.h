@@ -167,12 +167,13 @@ public:
     // hold all the params to the fndef
     std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
 
-    // add the self param at the front
+    // add the synthetic self param at the front, this is a placeholder for
+    // compilation to know parameter names. The types are ignored but we reuse
+    // the HIR identifier pattern which requires it
     HIR::SelfParam &self_param = method.get_self_param ();
     HIR::IdentifierPattern *self_pattern
       = new HIR::IdentifierPattern ("self", self_param.get_locus (),
-				    self_param.get_has_ref (),
-				    self_param.get_is_mut (),
+				    self_param.is_ref (), self_param.is_mut (),
 				    std::unique_ptr<HIR::Pattern> (nullptr));
     context->insert_type (self_param.get_mappings (), self->clone ());
     params.push_back (

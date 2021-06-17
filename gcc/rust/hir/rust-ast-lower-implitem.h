@@ -313,6 +313,7 @@ public:
 
     HIR::TraitFunctionDecl decl (ref.get_identifier (), std::move (qualifiers),
 				 std::move (generic_params),
+				 HIR::SelfParam::error (),
 				 std::move (function_params),
 				 std::move (return_type),
 				 std::move (where_clause));
@@ -374,12 +375,12 @@ public:
 	function_params.push_back (hir_param);
       }
 
-    HIR::TraitMethodDecl decl (ref.get_identifier (), std::move (qualifiers),
-			       std::move (generic_params),
-			       std::move (self_param),
-			       std::move (function_params),
-			       std::move (return_type),
-			       std::move (where_clause));
+    HIR::TraitFunctionDecl decl (ref.get_identifier (), std::move (qualifiers),
+				 std::move (generic_params),
+				 std::move (self_param),
+				 std::move (function_params),
+				 std::move (return_type),
+				 std::move (where_clause));
     HIR::Expr *block_expr
       = method.has_definition ()
 	  ? ASTLoweringExpr::translate (method.get_definition ().get ())
@@ -391,10 +392,9 @@ public:
 				   UNKNOWN_LOCAL_DEFID);
 
     translated
-      = new HIR::TraitItemMethod (mapping, std::move (decl),
-				  std::unique_ptr<HIR::Expr> (block_expr),
-				  method.get_outer_attrs (),
-				  method.get_locus ());
+      = new HIR::TraitItemFunc (mapping, std::move (decl),
+				std::unique_ptr<HIR::Expr> (block_expr),
+				method.get_outer_attrs (), method.get_locus ());
   }
 
   void visit (AST::TraitItemConst &constant) override

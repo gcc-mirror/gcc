@@ -70,7 +70,10 @@ public:
 			     HIR::SelfParam &self, Btype *decl_type,
 			     Location locus)
   {
-    if (!self.get_is_mut ())
+    bool is_immutable
+      = self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM
+	|| self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM_REF;
+    if (is_immutable)
       decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
     return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
