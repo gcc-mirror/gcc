@@ -1,3 +1,131 @@
+2021-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::has_edge_range_p): Check with
+	may_recompute_p.
+	(gori_compute::may_recompute_p): New.
+	(gori_compute::outgoing_edge_range_p): Perform recomputations.
+	* gimple-range-gori.h (class gori_compute): Add prototype.
+
+2021-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::range_on_edge): Always return
+	true when a range can be calculated.
+	* gimple-range.cc (gimple_ranger::dump_bb): Check has_edge_range_p.
+
+2021-06-16  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (-Wmismatched-dealloc, -Wmismatched-new-delete):
+	Correct documented defaults.
+
+2021-06-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Initialize
+	m_new_value_p directly.
+
+2021-06-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* config/i386/i386-expand.c (expand_vec_perm_2perm_pblendv):
+	Handle 64bit modes for TARGET_SSE4_1.
+	(expand_vec_perm_pshufb2): Handle 64bit modes for TARGET_SSSE3.
+	(expand_vec_perm_even_odd_pack): Handle V4HI mode.
+	(expand_vec_perm_even_odd_1) <case E_V4HImode>: Expand via
+	expand_vec_perm_pshufb2 for TARGET_SSSE3 and via
+	expand_vec_perm_even_odd_pack for TARGET_SSE4_1.
+	* config/i386/mmx.md (mmx_packusdw): New insn pattern.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur><addsub>hn<mode>):
+	Change to an expander that emits the correct instruction
+	depending on endianness.
+	(aarch64_<sur><addsub>hn<mode>_insn_le): Define.
+	(aarch64_<sur><addsub>hn<mode>_insn_be): Define.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Split generator
+	for aarch64_<su>qmovn builtins into scalar and vector
+	variants.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>qmovn<mode>_insn_le):
+	Define.
+	(aarch64_<su>qmovn<mode>_insn_be): Define.
+	(aarch64_<su>qmovn<mode>): Split into scalar and vector
+	variants. Change vector variant to an expander that emits the
+	correct instruction depending on endianness.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Split generator
+	for aarch64_sqmovun builtins into scalar and vector variants.
+	* config/aarch64/aarch64-simd.md (aarch64_sqmovun<mode>):
+	Split into scalar and vector variants. Change vector variant
+	to an expander that emits the correct instruction depending
+	on endianness.
+	(aarch64_sqmovun<mode>_insn_le): Define.
+	(aarch64_sqmovun<mode>_insn_be): Define.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_xtn<mode>_insn_le):
+	Define - modeling zero-high-half semantics.
+	(aarch64_xtn<mode>): Change to an expander that emits the
+	appropriate instruction depending on endianness.
+	(aarch64_xtn<mode>_insn_be): Define - modeling zero-high-half
+	semantics.
+	(aarch64_xtn2<mode>_le): Rename to...
+	(aarch64_xtn2<mode>_insn_le): This.
+	(aarch64_xtn2<mode>_be): Rename to...
+	(aarch64_xtn2<mode>_insn_be): This.
+	(vec_pack_trunc_<mode>): Emit truncation instruction instead
+	of aarch64_xtn.
+	* config/aarch64/iterators.md (Vnarrowd): Add Vnarrowd mode
+	attribute iterator.
+
+2021-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/100453
+	* tree-sra.c (create_access): Disqualify any const candidates
+	which are written to.
+	(sra_modify_expr): Do not store sub-replacements back to a const base.
+	(handle_unscalarized_data_in_subtree): Likewise.
+	(sra_modify_assign): Likewise.  Earlier, use TREE_READONLy test
+	instead of constant_decl_p.
+
+2021-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101062
+	* stor-layout.c (finish_bitfield_representative): For fields in unions
+	assume nextf is always NULL.
+	(finish_bitfield_layout): Compute bit field representatives also in
+	unions, but handle it as if each bitfield was the only field in the
+	aggregate.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101088
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Only look for
+	supported refs on edges.  Do not assert same ref but
+	different kind stores are unsuported but mark them so.
+	(hoist_memory_references): Only look for supported refs
+	on exits.
+
+2021-06-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/46235
+	* config/i386/i386.md: New define_split for bt followed by cmov.
+	(*bt<mode>_setcqi): New define_insn_and_split for bt followed by setc.
+	(*bt<mode>_setncqi): New define_insn_and_split for bt then setnc.
+	(*bt<mode>_setnc<mode>): New define_insn_and_split for bt followed
+	by setnc with zero extension.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101083
+	* tree-vect-slp.c (vect_slp_build_two_operator_nodes): Get
+	vectype as argument.
+	(vect_build_slp_tree_2): Adjust.
+
 2021-06-15  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/100876

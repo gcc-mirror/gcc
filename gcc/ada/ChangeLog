@@ -1,3 +1,189 @@
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Volatile_Function): Follow the exact wording
+	of SPARK (regarding volatile functions) and Ada (regarding
+	protected functions).
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_OK_Volatile_Context): All references to
+	volatile objects are legal in preanalysis.
+	(Within_Volatile_Function): Previously it was wrongly called on
+	Empty entities; now it is only called on E_Return_Statement,
+	which allow the body to be greatly simplified.
+
+2021-06-16  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Set_Slice_Subtype): Revert special-case
+	introduced previously, which is not needed as Itypes created for
+	slices are precisely always used.
+
+2021-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* urealp.adb (Scale): Change first paramter to Uint and adjust.
+	(Equivalent_Decimal_Exponent): Pass U.Den directly to Scale.
+	* libgnat/s-exponr.adb (Negative): Rename to...
+	(Safe_Negative): ...this and change its lower bound.
+	(Exponr): Adjust to above renaming and deal with Integer'First.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Flag_Effectively_Volatile_Objects): Detect also
+	allocators within restricted contexts and not just entity names.
+	(Resolve_Actuals): Remove duplicated code for detecting
+	restricted contexts; it is now exclusively done in
+	Is_OK_Volatile_Context.
+	(Resolve_Entity_Name): Adapt to new parameter of
+	Is_OK_Volatile_Context.
+	* sem_util.ads, sem_util.adb (Is_OK_Volatile_Context): Adapt to
+	handle contexts both inside and outside of subprogram call
+	actual parameters.
+	(Within_Subprogram_Call): Remove; now handled by
+	Is_OK_Volatile_Context itself and its parameter.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sinput.adb (Sloc_Range): Refactor several repeated calls to
+	Sloc and two comparisons with No_Location.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Fix handling of check depending
+	on the parameter passing mechanism.  Grammar adjustment ("has"
+	=> "have").
+	(Parameter_Passing_Mechanism_Specified): Add a hyphen in a comment.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Build_Slice_Assignment): Remove unused
+	initialization.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* restrict.adb, sem_attr.adb, types.ads: Fix typos in
+	"occuring"; refill comment as necessary.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Is_Actual_Parameter): Update comment.
+	* sem_util.adb (Is_Actual_Parameter): Also detect entry parameters.
+
+2021-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* rtsfind.ads, libgnarl/s-taskin.ads, exp_ch3.adb, exp_ch4.adb,
+	exp_ch6.adb, exp_ch9.adb, sem_ch6.adb: Move master related
+	entities to the expander directly.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Is_Assignment_Or_Object_Expression): Whitespace
+	cleanup.
+	(Is_Attribute_Expression): Prevent AST climbing from going to
+	the root of the compilation unit.
+
+2021-06-16  Steve Baird  <baird@adacore.com>
+
+	* doc/gnat_rm/implementation_advice.rst: Add a section for RM
+	A.18 .
+	* gnat_rm.texi: Regenerate.
+
+2021-06-16  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Enumeration_Representation_Clause): Add
+	check for the mixing of entries.
+
+2021-06-16  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch13.adb (Make_Aitem_Pragma): Check for static expressions
+	in Priority aspect arguments for restriction Static_Priorities.
+
+2021-06-16  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Accessibility_Level): Take into account
+	renamings of loop parameters.
+
+2021-06-16  Matthieu Eyraud  <eyraud@adacore.com>
+
+	* par_sco.adb (Set_Statement_Entry): Change sloc for dominance
+	marker.
+	(Traverse_One): Fix typo.
+	(Output_Header): Fix comment.
+
+2021-06-16  Richard Kenner  <kenner@adacore.com>
+
+	* exp_unst.adb (Register_Subprogram): Don't look for aliases for
+	subprograms that are generic.  Reorder tests for efficiency.
+
+2021-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Incomplete_Or_Partial_View): Retrieve the scope of
+	the parameter and use it to find its incomplete view, if any.
+
+2021-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Check_No_Parts_Violations): Return earlier if the
+	type is elementary or does not come from source.
+
+2021-06-16  Bob Duff  <duff@adacore.com>
+
+	* ghost.adb: Add another special case where full analysis is
+	needed. This bug is due to quirks in the way
+	Mark_And_Set_Ghost_Assignment works (it happens very early,
+	before name resolution is done).
+
+2021-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Current_Entity_In_Scope): Reimplement.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch8.adb (End_Scope): Remove extra parens.
+
+2021-06-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Build_Class_Wide_Check): Ensure that evaluation
+	of actuals is side effects free (since the check duplicates
+	actuals).
+
+2021-06-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Raise_Expression): Apply Ada_2020 rules
+	concerning the need for parentheses around Raise_Expressions in
+	various contexts.
+
+2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Validate_Unchecked_Conversion): Move detection
+	of generic types before switching to their private views; fix
+	style in using AND THEN.
+
+2021-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch3.adb (Analyze_Component_Declaration): Do not special
+	case raise expressions.
+
+2021-06-16  Sergey Rybin  <rybin@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Instead of referring to the formatting of the Ada examples in
+	Ada RM add use the list of checks that are actually performed.
+	* gnat_ugn.texi: Regenerate.
+
+2021-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* initialize.c: Do not include vxWorks.h and fcntl.h from here.
+	(__gnat_initialize) [__MINGW32__]: Remove #ifdef and attribute
+	(__gnat_initialize) [init_float]: Delete.
+	(__gnat_initialize) [VxWorks]: Likewise.
+	(__gnat_initialize) [PA-RISC HP-UX 10]: Likewise.
+	* runtime.h: Add comment about vxWorks.h include.
+
+2021-06-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-except.ads (ZCX_By_Default): Delete.
+	(Require_Body): Likewise.
+	* libgnat/s-except.adb: Replace body with pragma No_Body.
+
 2021-06-15  Steve Baird  <baird@adacore.com>
 
 	* exp_util.adb (Kill_Dead_Code): Generalize the existing

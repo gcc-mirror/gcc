@@ -1,3 +1,9 @@
+2021-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101078
+	PR c++/91706
+	* pt.c (tsubst_baselink): Update binfos in non-dependent case.
+
 2021-06-15  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* decl.c (duplicate_decls): Likewise.
