@@ -1139,7 +1139,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Collect all callers of cgraph_node and its aliases that are known to lead
      to NODE (i.e. are not overwritable) and that are not thunks.  */
-  vec<cgraph_edge *> collect_callers (void);
+  auto_vec<cgraph_edge *> collect_callers (void);
 
   /* Remove all callers from the node.  */
   void remove_callers (void);

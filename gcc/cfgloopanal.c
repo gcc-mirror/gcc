@@ -500,7 +500,7 @@ single_likely_exit (class loop *loop, vec<edge> exits)
    order against direction of edges from latch.  Specially, if
    header != latch, latch is the 1-st block.  */
 
-vec<basic_block>
+auto_vec<basic_block>
 get_loop_hot_path (const class loop *loop)
 {
   basic_block bb = loop->header;

@@ -4527,7 +4527,7 @@ create_specialized_node (struct cgraph_node *node,
 			 vec<tree> known_csts,
 			 vec<ipa_polymorphic_call_context> known_contexts,
 			 struct ipa_agg_replacement_value *aggvals,
-			 vec<cgraph_edge *> callers)
+			 vec<cgraph_edge *> &callers)
 {
   ipa_node_params *new_info, *info = ipa_node_params_sum->get (node);
   vec<ipa_replace_map *, va_gc> *replace_trees = NULL;
@@ -4672,7 +4672,6 @@ create_specialized_node (struct cgraph_node *node,
 
   ipcp_discover_new_direct_edges (new_node, known_csts, known_contexts, aggvals);
 
-  callers.release ();
   return new_node;
 }
 
@@ -5562,6 +5561,7 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 						      offset, val->value));
   val->spec_node = create_specialized_node (node, known_csts, known_contexts,
 					    aggvals, callers);
+  callers.release ();
   overall_size += val->local_size_cost;
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "     overall size reached %li\n",
@@ -5638,7 +5638,7 @@ decide_whether_version_node (struct cgraph_node *node)
 	}
 
       struct cgraph_node *clone;
-      vec<cgraph_edge *> callers = node->collect_callers ();
+      auto_vec<cgraph_edge *> callers = node->collect_callers ();
 
       for (int i = callers.length () - 1; i >= 0; i--)
 	{
@@ -5654,7 +5654,6 @@ decide_whether_version_node (struct cgraph_node *node)
 	  /* If node is not called by anyone, or all its caller edges are
 	     self-recursive, the node is not really in use, no need to do
 	     cloning.  */
-	  callers.release ();
 	  info->do_clone_for_all_contexts = false;
 	  return ret;
 	}

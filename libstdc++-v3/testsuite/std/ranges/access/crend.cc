@@ -22,6 +22,8 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+static_assert(__gnu_test::is_customization_point_object(std::ranges::crend));
+
 struct R1
 {
   int i = 0;

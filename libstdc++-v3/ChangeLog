@@ -1,3 +1,36 @@
+2021-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__decay_copy): Name type.
+
+2021-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::begin, ranges::end)
+	(ranges::cbegin, ranges::cend, ranges::rbeing, ranges::rend)
+	(ranges::crbegin, ranges::crend, ranges::size, ranges::ssize)
+	(ranges::empty, ranges::data, ranges::cdata): Remove final
+	keywords and deleted operator& overloads.
+	* testsuite/24_iterators/customization_points/iter_move.cc: Use
+	new is_customization_point_object function.
+	* testsuite/24_iterators/customization_points/iter_swap.cc:
+	Likewise.
+	* testsuite/std/concepts/concepts.lang/concept.swappable/swap.cc:
+	Likewise.
+	* testsuite/std/ranges/access/begin.cc: Likewise.
+	* testsuite/std/ranges/access/cbegin.cc: Likewise.
+	* testsuite/std/ranges/access/cdata.cc: Likewise.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/empty.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/access/rbegin.cc: Likewise.
+	* testsuite/std/ranges/access/rend.cc: Likewise.
+	* testsuite/std/ranges/access/size.cc: Likewise.
+	* testsuite/std/ranges/access/ssize.cc: Likewise.
+	* testsuite/util/testsuite_iterators.h
+	(is_customization_point_object): New function.
+
 2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ranges_base.h (ranges::begin, ranges::end)

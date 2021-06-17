@@ -1,3 +1,93 @@
+2021-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101078
+	PR c++/91706
+	* g++.dg/template/access39.C: New test.
+
+2021-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95501
+	PR fortran/95502
+	* gfortran.dg/pr95502.f90: New test.
+
+2021-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Revert:
+	2021-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95501
+	PR fortran/95502
+	* gfortran.dg/pr95502.f90: New test.
+
+2021-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95501
+	PR fortran/95502
+	* gfortran.dg/pr95502.f90: New test.
+
+2021-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100796
+	PR preprocessor/96391
+	* g++.dg/plugin/location-overflow-test-pr100796.c: New test.
+	* g++.dg/plugin/plugin.exp: Run it.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/narrow_zero_high_half.c: Add new tests.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/narrow_zero_high_half.c: Add new tests.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/narrow_zero_high_half.c: Add new tests.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/narrow_zero_high_half.c: Add new tests.
+
+2021-06-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/narrow_zero_high_half.c: New test.
+
+2021-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/100453
+	* gcc.dg/tree-ssa/pr100453.c: New test.
+
+2021-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/pr49888.c (f): Use noipa attribute instead of
+	noinline, noclone.
+
+2021-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101062
+	* gcc.dg/pr101062.c: New test.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101088
+	* gcc.dg/torture/pr101088.c: New testcase.
+
+2021-06-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/46235
+	* gcc.target/i386/bt-5.c: New test.
+	* gcc.target/i386/bt-6.c: New test.
+	* gcc.target/i386/bt-7.c: New test.
+
+2021-06-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/limited4.adb: Disable illegal code.
+
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101083
+	* gcc.dg/vect/pr97832-4.c: New testcase.
+
 2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92568

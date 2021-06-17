@@ -843,9 +843,9 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
   DUMP_VECT_SCOPE ("vect_slp_analyze_instance_dependence");
 
   /* The stores of this instance are at the root of the SLP tree.  */
-  slp_tree store = SLP_INSTANCE_TREE (instance);
-  if (! STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (store)))
-    store = NULL;
+  slp_tree store = NULL;
+  if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_store)
+    store = SLP_INSTANCE_TREE (instance);
 
   /* Verify we can sink stores to the vectorized stmt insert location.  */
   stmt_vec_info last_store_info = NULL;
@@ -2464,8 +2464,7 @@ vect_slp_analyze_instance_alignment (vec_info *vinfo,
     if (! vect_slp_analyze_node_alignment (vinfo, node))
       return false;
 
-  node = SLP_INSTANCE_TREE (instance);
-  if (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))
+  if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_store
       && ! vect_slp_analyze_node_alignment
 	     (vinfo, SLP_INSTANCE_TREE (instance)))
     return false;

@@ -1394,7 +1394,8 @@ gimple_ranger::dump_bb (FILE *f, basic_block bb)
       for (x = 1; x < num_ssa_names; x++)
 	{
 	  tree name = gimple_range_ssa_p (ssa_name (x));
-	  if (name && m_cache.range_on_edge (range, e, name))
+	  if (name && gori ().has_edge_range_p (name, e)
+	      && m_cache.range_on_edge (range, e, name))
 	    {
 	      gimple *s = SSA_NAME_DEF_STMT (name);
 	      // Only print the range if this is the def block, or
@@ -1659,6 +1660,85 @@ disable_ranger (struct function *fun)
   delete fun->x_range_query;
 
   fun->x_range_query = &global_ranges;
+}
+
+// =========================================
+// Debugging helpers.
+// =========================================
+
+// Query all statements in the IL to precalculate computable ranges in RANGER.
+
+static DEBUG_FUNCTION void
+debug_seed_ranger (gimple_ranger &ranger)
+{
+  // Recalculate SCEV to make sure the dump lists everything.
+  if (scev_initialized_p ())
+    {
+      scev_finalize ();
+      scev_initialize ();
+    }
+
+  basic_block bb;
+  int_range_max r;
+  gimple_stmt_iterator gsi;
+  FOR_EACH_BB_FN (bb, cfun)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple *stmt = gsi_stmt (gsi);
+
+	if (is_gimple_debug (stmt))
+	  continue;
+
+	ranger.range_of_stmt (r, stmt);
+      }
+}
+
+// Dump all that ranger knows for the current function.
+
+DEBUG_FUNCTION void
+dump_ranger (FILE *out)
+{
+  gimple_ranger ranger;
+  debug_seed_ranger (ranger);
+  ranger.dump (out);
+}
+
+DEBUG_FUNCTION void
+debug_ranger ()
+{
+  dump_ranger (stderr);
+}
+
+// Dump all that ranger knows on a path of BBs.
+//
+// Note that the blocks are in reverse order, thus the exit block is
+// path[0].
+
+DEBUG_FUNCTION void
+dump_ranger (FILE *dump_file, const vec<basic_block> &path)
+{
+  if (path.length () == 0)
+    {
+      fprintf (dump_file, "empty\n");
+      return;
+    }
+
+  gimple_ranger ranger;
+  debug_seed_ranger (ranger);
+
+  unsigned i = path.length ();
+  do
+    {
+      i--;
+      ranger.dump_bb (dump_file, path[i]);
+    }
+  while (i > 0);
+}
+
+DEBUG_FUNCTION void
+debug_ranger (const vec<basic_block> &path)
+{
+  dump_ranger (stderr, path);
 }
 
 #include "gimple-range-tests.cc"

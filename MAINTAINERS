@@ -224,6 +224,8 @@ option handling		Joseph Myers		<joseph@codesourcery.com>
 middle-end		Jeff Law		<jeffreyalaw@gmail.com>
 middle-end		Ian Lance Taylor	<ian@airs.com>
 middle-end		Richard Biener		<rguenther@suse.de>
+*vrp, ranger		Aldy Hernandez		<aldyh@redhat.com>
+*vrp, ranger		Andrew MacLeod		<amacleod@redhat.com>
 tree-ssa		Andrew MacLeod		<amacleod@redhat.com>
 tree browser/unparser	Sebastian Pop		<sebpop@gmail.com>
 scev, data dependence	Sebastian Pop		<sebpop@gmail.com>

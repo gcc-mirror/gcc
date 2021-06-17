@@ -17633,8 +17633,10 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 
   if (vmode == V8QImode)
     {
+      rtx m128 = GEN_INT (-128);
+
       for (i = nelt; i < 16; ++i)
-	rperm[i] = constm1_rtx;
+	rperm[i] = m128;
       vpmode = V16QImode;
     }
 
@@ -18972,7 +18974,8 @@ expand_vec_perm_2perm_pblendv (struct expand_vec_perm_d *d, bool two_insn)
     ;
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
-  else if (TARGET_SSE4_1 && GET_MODE_SIZE (vmode) == 16)
+  else if (TARGET_SSE4_1 && (GET_MODE_SIZE (vmode) == 16
+			     || GET_MODE_SIZE (vmode) == 8))
     ;
   else
     return false;
@@ -19229,13 +19232,30 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
 {
   rtx rperm[2][16], vperm, l, h, op, m128;
   unsigned int i, nelt, eltsz;
+  machine_mode mode;
+  rtx (*gen) (rtx, rtx, rtx);
 
-  if (!TARGET_SSSE3 || GET_MODE_SIZE (d->vmode) != 16)
+  if (!TARGET_SSSE3 || (GET_MODE_SIZE (d->vmode) != 16
+			&& GET_MODE_SIZE (d->vmode) != 8))
     return false;
   gcc_assert (!d->one_operand_p);
 
   if (d->testing_p)
     return true;
+
+  switch (GET_MODE_SIZE (d->vmode))
+    {
+    case 8:
+      mode = V8QImode;
+      gen = gen_mmx_pshufbv8qi3;
+      break;
+    case 16:
+      mode = V16QImode;
+      gen = gen_ssse3_pshufbv16qi3;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   nelt = d->nelt;
   eltsz = GET_MODE_UNIT_SIZE (d->vmode);
@@ -19247,7 +19267,7 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
   m128 = GEN_INT (-128);
   for (i = 0; i < nelt; ++i)
     {
-      unsigned j, e = d->perm[i];
+      unsigned j, k, e = d->perm[i];
       unsigned which = (e >= nelt);
       if (e >= nelt)
 	e -= nelt;
@@ -19257,26 +19277,29 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
 	  rperm[which][i*eltsz + j] = GEN_INT (e*eltsz + j);
 	  rperm[1-which][i*eltsz + j] = m128;
 	}
+
+      for (k = i*eltsz + j; k < 16; ++k)
+	rperm[0][k] = rperm[1][k] = m128;
     }
 
   vperm = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, rperm[0]));
   vperm = force_reg (V16QImode, vperm);
 
-  l = gen_reg_rtx (V16QImode);
-  op = gen_lowpart (V16QImode, d->op0);
-  emit_insn (gen_ssse3_pshufbv16qi3 (l, op, vperm));
+  l = gen_reg_rtx (mode);
+  op = gen_lowpart (mode, d->op0);
+  emit_insn (gen (l, op, vperm));
 
   vperm = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, rperm[1]));
   vperm = force_reg (V16QImode, vperm);
 
-  h = gen_reg_rtx (V16QImode);
-  op = gen_lowpart (V16QImode, d->op1);
-  emit_insn (gen_ssse3_pshufbv16qi3 (h, op, vperm));
+  h = gen_reg_rtx (mode);
+  op = gen_lowpart (mode, d->op1);
+  emit_insn (gen (h, op, vperm));
 
   op = d->target;
-  if (d->vmode != V16QImode)
-    op = gen_reg_rtx (V16QImode);
-  emit_insn (gen_iorv16qi3 (op, l, h));
+  if (d->vmode != mode)
+    op = gen_reg_rtx (mode);
+  emit_insn (gen_rtx_SET (op, gen_rtx_IOR (mode, l, h)));
   if (op != d->target)
     emit_move_insn (d->target, gen_lowpart (d->vmode, op));
 
@@ -19455,6 +19478,17 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
 
   switch (d->vmode)
     {
+    case E_V4HImode:
+      /* Required for "pack".  */
+      if (!TARGET_SSE4_1)
+	return false;
+      c = 0xffff;
+      s = 16;
+      half_mode = V2SImode;
+      gen_and = gen_andv2si3;
+      gen_pack = gen_mmx_packusdw;
+      gen_shift = gen_lshrv2si3;
+      break;
     case E_V8HImode:
       /* Required for "pack".  */
       if (!TARGET_SSE4_1)
@@ -19507,7 +19541,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
       end_perm = true;
       break;
     default:
-      /* Only V8QI, V8HI, V16QI, V16HI and V32QI modes
+      /* Only V4HI, V8QI, V8HI, V16QI, V16HI and V32QI modes
 	 are more profitable than general shuffles.  */
       return false;
     }
@@ -19698,18 +19732,25 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
       break;
 
     case E_V4HImode:
-      if (d->testing_p)
-	break;
-      /* We need 2*log2(N)-1 operations to achieve odd/even
-	 with interleave. */
-      t1 = gen_reg_rtx (V4HImode);
-      emit_insn (gen_mmx_punpckhwd (t1, d->op0, d->op1));
-      emit_insn (gen_mmx_punpcklwd (d->target, d->op0, d->op1));
-      if (odd)
-	t2 = gen_mmx_punpckhwd (d->target, d->target, t1);
+      if (TARGET_SSE4_1)
+	return expand_vec_perm_even_odd_pack (d);
+      else if (TARGET_SSSE3 && !TARGET_SLOW_PSHUFB)
+	return expand_vec_perm_pshufb2 (d);
       else
-	t2 = gen_mmx_punpcklwd (d->target, d->target, t1);
-      emit_insn (t2);
+	{
+	  if (d->testing_p)
+	    break;
+	  /* We need 2*log2(N)-1 operations to achieve odd/even
+	     with interleave. */
+	  t1 = gen_reg_rtx (V4HImode);
+	  emit_insn (gen_mmx_punpckhwd (t1, d->op0, d->op1));
+	  emit_insn (gen_mmx_punpcklwd (d->target, d->op0, d->op1));
+	  if (odd)
+	    t2 = gen_mmx_punpckhwd (d->target, d->target, t1);
+	  else
+	    t2 = gen_mmx_punpcklwd (d->target, d->target, t1);
+	  emit_insn (t2);
+	}
       break;
 
     case E_V8HImode:

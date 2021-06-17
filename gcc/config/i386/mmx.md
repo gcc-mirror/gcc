@@ -2477,6 +2477,22 @@
    (set_attr "type" "mmxshft,sselog,sselog")
    (set_attr "mode" "DI,TI,TI")])
 
+(define_insn_and_split "mmx_packusdw"
+  [(set (match_operand:V4HI 0 "register_operand" "=Yr,*x,Yw")
+	(vec_concat:V4HI
+	  (us_truncate:V2HI
+	    (match_operand:V2SI 1 "register_operand" "0,0,Yw"))
+	  (us_truncate:V2HI
+	    (match_operand:V2SI 2 "register_operand" "Yr,*x,Yw"))))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_pack (operands, US_TRUNCATE); DONE;"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "mode" "TI")])
+
 (define_insn_and_split "mmx_punpckhbw"
   [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
 	(vec_select:V8QI

@@ -3949,7 +3949,7 @@ oacc_entry_exit_ok (class loop *loop,
 		    reduction_info_table_type *reduction_list)
 {
   basic_block *loop_bbs = get_loop_body_in_dom_order (loop);
-  vec<basic_block> region_bbs
+  auto_vec<basic_block> region_bbs
     = get_all_dominated_blocks (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   bitmap in_loop_bbs = BITMAP_ALLOC (NULL);
@@ -3972,7 +3972,6 @@ oacc_entry_exit_ok (class loop *loop,
 	}
     }
 
-  region_bbs.release ();
   free (loop_bbs);
 
   BITMAP_FREE (in_loop_bbs);
