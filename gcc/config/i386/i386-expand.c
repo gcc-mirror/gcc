@@ -13811,10 +13811,17 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	wsmode = GET_MODE_INNER (wvmode);
 
 	val = convert_modes (wsmode, smode, val, true);
-	x = expand_simple_binop (wsmode, ASHIFT, val,
-				 GEN_INT (GET_MODE_BITSIZE (smode)),
-				 NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	val = expand_simple_binop (wsmode, IOR, val, x, x, 1, OPTAB_LIB_WIDEN);
+
+	if (smode == QImode && !TARGET_PARTIAL_REG_STALL)
+	  emit_insn (gen_insv_1 (wsmode, val, val));
+	else
+	  {
+	    x = expand_simple_binop (wsmode, ASHIFT, val,
+				     GEN_INT (GET_MODE_BITSIZE (smode)),
+				     NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    val = expand_simple_binop (wsmode, IOR, val, x, x, 1,
+				       OPTAB_LIB_WIDEN);
+	  }
 
 	x = gen_reg_rtx (wvmode);
 	ok = ix86_expand_vector_init_duplicate (mmx_ok, wvmode, x, val);
@@ -14788,6 +14795,9 @@ ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
 	case E_V8DFmode:
 	  cmp_mode = V8DImode;
 	  break;
+	case E_V2SFmode:
+	  cmp_mode = V2SImode;
+	  break;
 	case E_V4SFmode:
 	  cmp_mode = V4SImode;
 	  break;
@@ -14809,9 +14819,11 @@ ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
   idxv = gen_reg_rtx (cmp_mode);
   idx_tmp = convert_to_mode (GET_MODE_INNER (cmp_mode), idx, 1);
 
-  ok = ix86_expand_vector_init_duplicate (false, mode, valv, val);
+  ok = ix86_expand_vector_init_duplicate (TARGET_MMX_WITH_SSE,
+					  mode, valv, val);
   gcc_assert (ok);
-  ok = ix86_expand_vector_init_duplicate (false, cmp_mode, idxv, idx_tmp);
+  ok = ix86_expand_vector_init_duplicate (TARGET_MMX_WITH_SSE,
+					  cmp_mode, idxv, idx_tmp);
   gcc_assert (ok);
   vec[0] = target;
   vec[1] = valv;

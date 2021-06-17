@@ -1279,11 +1279,14 @@
 (define_expand "vec_setv2sf"
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:SF 1 "register_operand")
-   (match_operand 2 "const_int_operand")]
+   (match_operand 2 "vec_setm_mmx_operand")]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
-			  INTVAL (operands[2]));
+  if (CONST_INT_P (operands[2]))
+    ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
+			    INTVAL (operands[2]));
+  else
+    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
   DONE;
 })
 
@@ -2989,11 +2992,14 @@
 (define_expand "vec_setv2si"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:SI 1 "register_operand")
-   (match_operand 2 "const_int_operand")]
+   (match_operand 2 "vec_setm_mmx_operand")]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
-			  INTVAL (operands[2]));
+  if (CONST_INT_P (operands[2]))
+    ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
+			    INTVAL (operands[2]));
+  else
+    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
   DONE;
 })
 
@@ -3145,11 +3151,14 @@
 (define_expand "vec_setv4hi"
   [(match_operand:V4HI 0 "register_operand")
    (match_operand:HI 1 "register_operand")
-   (match_operand 2 "const_int_operand")]
+   (match_operand 2 "vec_setm_mmx_operand")]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
-			  INTVAL (operands[2]));
+  if (CONST_INT_P (operands[2]))
+    ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
+			    INTVAL (operands[2]));
+  else
+    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
   DONE;
 })
 
@@ -3177,11 +3186,14 @@
 (define_expand "vec_setv8qi"
   [(match_operand:V8QI 0 "register_operand")
    (match_operand:QI 1 "register_operand")
-   (match_operand 2 "const_int_operand")]
+   (match_operand 2 "vec_setm_mmx_operand")]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
 {
-  ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
-			  INTVAL (operands[2]));
+  if (CONST_INT_P (operands[2]))
+    ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
+			    INTVAL (operands[2]));
+  else
+    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
   DONE;
 })
 
