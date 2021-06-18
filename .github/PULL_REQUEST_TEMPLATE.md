@@ -1,3 +1,4 @@
+<!-- THIS COMMENT IS INVISIBLE IN THE FINAL PR, BUT FEEL FREE TO REMOVE IT
 Thank you for making Rust GCC better!
 
 If your PR fixes an issue, you can add "Fixes #issue_number" into this
@@ -16,9 +17,6 @@ Here is a checklist to help you with your PR.
 
 Note that you can skip the above if you are just opening a WIP PR in
 order to get feedback.
-
-Delete this line and everything above before opening your PR.
-
 ---
-
+-->
 *Please write a short comment explaining your change.
