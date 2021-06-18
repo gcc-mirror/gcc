@@ -24634,6 +24634,13 @@ gen_compile_unit_die (const char *filename)
     }
   else if (strcmp (language_string, "GNU F77") == 0)
     language = DW_LANG_Fortran77;
+  else if (strcmp (language_string, "GNU Rust") == 0)
+    {
+      if (dwarf_version >= 5 || !dwarf_strict)
+	language = DW_LANG_Rust;
+      else
+	language = DW_LANG_Rust_old;
+    }
   else if (dwarf_version >= 3 || !dwarf_strict)
     {
       if (strcmp (language_string, "GNU Ada") == 0)
