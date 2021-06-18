@@ -38,6 +38,8 @@ Clone the repository
 $ git clone git@github.com:Rust-GCC/gccrs.git
 ```
 
+#### Linux
+
 It is important to remember that GNU toolchain projects are designed to be built outside of their source directory
 which is why a build directory is created.
 
@@ -47,6 +49,19 @@ $ cd gccrs-build
 $ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-multilib --enable-languages=rust
 $ make
 ```
+
+#### MacOS
+
+The path of header dir and sysroot should be specified when you configure the project.
+```bash
+$ mkdir mac-build
+$ cd mac-build
+$ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-multilib --enable-languages=rust --with-native-system-header-dir=/usr/include --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk 
+$ make
+
+```
+
+#### Running GCC Rust
 
 Running the compiler itself without make install we can simply invoke the compiler proper:
 
