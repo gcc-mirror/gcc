@@ -1,3 +1,132 @@
+2021-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-06-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/100777
+	* gcc.target/powerpc/pr100777.c: New test.
+
+2021-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-06-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-4.c (__builtin_vsx_build_pair): Add
+	tests.  Update expected counts.
+	* gcc.target/powerpc/mma-builtin-5.c (__builtin_mma_build_acc): Add
+	tests.  Update expected counts.
+
+2021-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-05-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99842
+	* g++.target/powerpc/pr99842.C: New.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/100876
+	* g++.dg/warn/Wmismatched-new-delete-4.C: New test.
+	* g++.dg/warn/Wmismatched-new-delete-5.C: New test.
+	* g++.dg/warn/Wstringop-overflow-7.C: New test.
+	* g++.dg/warn/Wfree-nonheap-object-6.C: New test.
+	* g++.dg/analyzer/placement-new.C: Prune out expected warning.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100783
+	* gcc.dg/nonnull-6.c: New test.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100732
+	* gcc.dg/tree-ssa/builtin-snprintf-11.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-12.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-28.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-29.c: New test.
+	* gcc.dg/uninit-pr100732.c: New test.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100684
+	* g++.dg/warn/Wnonnull13.C: New test.
+	* g++.dg/warn/Wnonnull14.C: New test.
+	* g++.dg/warn/Wnonnull15.C: New test.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100619
+	* gcc.dg/pr100619.c: New test.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100574
+	* g++.dg/pr100574.C: New test.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100307
+	* g++.dg/warn/Wplacement-new-size-9.C: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-26.c: New test.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100250
+	* gcc.dg/uninit-pr100250.c: New test.
+
+2021-06-17  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-logadd.c: New file.
+
+2021-06-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	Backported from master:
+	2021-06-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-doublee.c: New test.
+	* gcc.target/s390/zvector/vec-floate.c: New test.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/pr49888.c (f): Use noipa attribute instead of
+	noinline, noclone.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100852
+	* g++.dg/opt/pr100852.C: New test.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/100965
+	* gfortran.dg/gomp/pr100965.f90: New test.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100898
+	* g++.dg/ext/va-arg-pack-3.C: New test.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/100902
+	* c-c++-common/gomp/pr100902-1.c: New test.
+
 2021-06-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101078

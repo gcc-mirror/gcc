@@ -1,3 +1,14 @@
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100783
+	* c-attribs.c (positional_argument): Bail on erroneous types.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100619
+	* c-attribs.c (build_attr_access_from_parms): Handle arbitrarily many
+	bounds.
+
 2021-05-14  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:

@@ -1,3 +1,162 @@
+2021-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-06-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/100777
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Use
+	create_tmp_reg_or_ssa_name().
+
+2021-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-06-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (build_pair): New built-in.
+	(build_acc): Likewise.
+	* config/rs6000/rs6000-call.c (mma_expand_builtin): Swap assemble
+	source operands in little-endian mode.
+	(rs6000_gimple_fold_mma_builtin): Handle VSX_BUILTIN_BUILD_PAIR.
+	(mma_init_builtins): Likewise.
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Handle endianness
+	ordering for the MMA assemble and build source operands.
+	* doc/extend.texi (__builtin_vsx_build_acc, __builtin_mma_build_pair):
+	Document.
+	(__builtin_mma_assemble_acc, __builtin_mma_assemble_pair): Remove
+	documentation.
+
+2021-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-05-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99842
+	* config/rs6000/predicates.md(mma_assemble_input_operand): Allow
+	indexed form addresses.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100876
+	* builtins.c: (gimple_call_return_array): Account for size_t
+	mangling as either unsigned int or unsigned long
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/100876
+	* builtins.c (gimple_call_return_array): Check for attribute fn spec.
+	Handle calls to placement new.
+	(ndecl_dealloc_argno): Avoid placement delete.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100732
+	* gimple-fold.c (gimple_fold_builtin_sprintf): Avoid folding calls
+	with either source or destination argument of invalid type.
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Avoid checking
+	calls with arguments of invalid type.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100684
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Handle C++ lambda.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100574
+	* builtins.c (access_ref::get_ref): Improve detection of PHIs with
+	all null arguments.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100307
+	* builtins.c (compute_objsize_r): Clear base0 for pointers.
+
+2021-06-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100250
+	* attribs.c (attr_access::array_as_string): Avoid dereferencing
+	a pointer when it's null.
+
+2021-06-17  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_logical_addsubf): Refactor to
+	add generation of logical-add and add-logical fusion pairs.  Add
+	earlyclobber to alts 0/1.
+	(gen_addadd): Add earlyclobber to alts 0/1.
+	* config/rs6000/rs6000-cpus.def: Add new fusion to ISA 3.1 mask
+	and powerpc mask.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Turn on
+	logical-add and add-logical fusion by default.
+	* config/rs6000/rs6000.opt: Add -mpower10-fusion-logical-add and
+	-mpower10-fusion-add-logical options.
+	* config/rs6000/fusion.md: Regenerate file.
+
+2021-06-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	Backported from master:
+	2021-06-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	PR target/100871
+	* config/s390/vecintrin.h (vec_doublee): Fix to use
+	  __builtin_s390_vflls.
+	(vec_floate): Fix to use __builtin_s390_vflrd.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101046
+	* expr.c (expand_expr_real_2) <case VEC_PACK_FIX_TRUNC_EXPR,
+	case VEC_PACK_TRUNC_EXPR>: Clear subtarget when changing mode.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101008
+	* simplify-rtx.c (relational_result): New function.
+	(simplify_logical_relational_operation,
+	simplify_relational_operation): Use it.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100852
+	* ifcvt.c (noce_get_alt_condition, noce_try_abs): Use
+	prev_nonnote_nondebug_insn instead of prev_nonnote_insn.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	* fold-const.c (fold_read_from_vector): Return NULL if trying to
+	read from a CONSTRUCTOR with vector type elements.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100898
+	* tree-inline.c (copy_bb): Only use gimple_call_arg_ptr if memcpy
+	should copy any arguments.  Don't call gimple_call_num_args
+	on id->call_stmt or call_stmt more than once.
+
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	* config/i386/i386-expand.c (ix86_expand_vector_init): Handle
+	concatenation from half-sized modes with TImode elements.
+
 2021-06-16  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
