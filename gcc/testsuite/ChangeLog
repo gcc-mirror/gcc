@@ -1,3 +1,8 @@
+2021-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101029
+	* g++.dg/ext/array4.C: New test.
+
 2021-06-16  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
