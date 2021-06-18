@@ -1720,11 +1720,15 @@
 
 (define_insn "lazy_load_multiple_insn"
   [(unspec_volatile
-    [(mem:BLK (match_operand:SI 0 "s_register_operand" "rk"))]
+    [(mem:BLK (match_operand:SI 0 "s_register_operand" "rk,rk"))]
     VUNSPEC_VLLDM)]
   "use_cmse && reload_completed"
-  "vlldm%?\\t%0"
-  [(set_attr "predicable" "yes")
+  "@
+   vscclrm\\t{vpr}\;vlldm\\t%0
+   vlldm\\t%0"
+  [(set_attr "arch" "fix_vlldm,*")
+   (set_attr "predicable" "no")
+   (set_attr "length" "8,4")
    (set_attr "type" "load_4")]
 )
 
