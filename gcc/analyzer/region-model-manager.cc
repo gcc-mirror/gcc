@@ -210,6 +210,17 @@ region_model_manager::get_or_create_constant_svalue (tree cst_expr)
   return cst_sval;
 }
 
+/* Return the svalue * for a constant_svalue for the INTEGER_CST
+   for VAL of type TYPE, creating it if necessary.  */
+
+const svalue *
+region_model_manager::get_or_create_int_cst (tree type, poly_int64 val)
+{
+  gcc_assert (type);
+  tree tree_cst = build_int_cst (type, val);
+  return get_or_create_constant_svalue (tree_cst);
+}
+
 /* Return the svalue * for a unknown_svalue for TYPE (which can be NULL),
    creating it if necessary.
    The unknown_svalue instances are reused, based on pointer equality
@@ -475,8 +486,7 @@ maybe_undo_optimize_bit_field_compare (tree type,
      shift it by the correct number of bits.  */
   const svalue *lhs = get_or_create_cast (type, sval);
   HOST_WIDE_INT bit_offset = bits.get_start_bit_offset ().to_shwi ();
-  tree shift_amt = build_int_cst (type, bit_offset);
-  const svalue *shift_sval = get_or_create_constant_svalue (shift_amt);
+  const svalue *shift_sval = get_or_create_int_cst (type, bit_offset);
   const svalue *shifted_sval = get_or_create_binop (type, LSHIFT_EXPR,
 						    lhs, shift_sval);
   /* Reapply the mask (needed for negative

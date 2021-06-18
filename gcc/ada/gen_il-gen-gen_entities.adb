@@ -119,13 +119,13 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (In_Use, Flag),
         Sm (Is_Ada_2005_Only, Flag),
         Sm (Is_Ada_2012_Only, Flag),
+        Sm (Is_Ada_2022_Only, Flag),
         Sm (Is_Aliased, Flag),
         Sm (Is_Atomic, Flag),
         Sm (Is_Bit_Packed_Array, Flag, Impl_Base_Type_Only),
         Sm (Is_Character_Type, Flag),
         Sm (Is_Checked_Ghost_Entity, Flag),
         Sm (Is_Child_Unit, Flag),
-        Sm (Is_Class_Wide_Clone, Flag),
         Sm (Is_Class_Wide_Equivalent_Type, Flag),
         Sm (Is_Compilation_Unit, Flag),
         Sm (Is_Concurrent_Record_Type, Flag),
@@ -203,6 +203,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Volatile_Type, Flag),
         Sm (Is_Volatile_Object, Flag),
         Sm (Is_Volatile_Full_Access, Flag),
+        Sm (Is_Wrapper, Flag),
         Sm (Kill_Elaboration_Checks, Flag),
         Sm (Kill_Range_Checks, Flag),
         Sm (Low_Bound_Tested, Flag),
@@ -279,7 +280,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (RM_Size, Uint),
         Sm (Extra_Formal, Node_Id),
         Sm (First_Entity, Node_Id),
-        Sm (Float_Rep, Float_Rep_Kind, Base_Type_Only),
         Sm (Generic_Homonym, Node_Id),
         Sm (Generic_Renamings, Elist_Id),
         Sm (Handler_Records, List_Id),
@@ -658,8 +658,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  first named subtype).
 
    Ab (Float_Kind, Real_Kind,
-       (Sm (Digits_Value, Uint),
-        Sm (Float_Rep, Float_Rep_Kind, Base_Type_Only)));
+       (Sm (Digits_Value, Uint)));
 
    Cc (E_Floating_Point_Type, Float_Kind);
        --  Floating point type, used for the anonymous base type of the
@@ -1089,6 +1088,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Predicate_Function_M, Flag),
         Sm (Is_Primitive_Wrapper, Flag),
         Sm (Is_Private_Primitive, Flag),
+        Sm (LSP_Subprogram, Node_Id),
         Sm (Mechanism, Mechanism_Type),
         Sm (Next_Inlined_Subprogram, Node_Id),
         Sm (Original_Protected_Subprogram, Node_Id),
@@ -1108,7 +1108,8 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  defined concatenation operator created whenever an array is declared.
        --  We do not make normal derived operators explicit in the tree, but the
        --  concatenation operators are made explicit.
-       (Sm (Extra_Accessibility_Of_Result, Node_Id)));
+       (Sm (Extra_Accessibility_Of_Result, Node_Id),
+        Sm (LSP_Subprogram, Node_Id)));
 
    Cc (E_Procedure, Subprogram_Kind,
        --  A procedure, created by a procedure declaration or a procedure
@@ -1138,6 +1139,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Primitive_Wrapper, Flag),
         Sm (Is_Private_Primitive, Flag),
         Sm (Is_Valued_Procedure, Flag),
+        Sm (LSP_Subprogram, Node_Id),
         Sm (Next_Inlined_Subprogram, Node_Id),
         Sm (Original_Protected_Subprogram, Node_Id),
         Sm (Postconditions_Proc, Node_Id),

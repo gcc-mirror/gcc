@@ -177,12 +177,12 @@ package Targparm is
    --  The default values here are used if no value is found in system.ads.
    --  This should normally happen if the special version of system.ads used
    --  by the compiler itself is in use or if the value is only relevant to a
-   --  particular target (e.g. AAMP). The default values are suitable for use
-   --  in normal environments. This approach allows the possibility of new
-   --  versions of the compiler (possibly with new system parameters added)
-   --  being used to compile older versions of the compiler sources, as well as
-   --  avoiding duplicating values in all system-*.ads files for flags that are
-   --  used on a few platforms only.
+   --  particular target. The default values are suitable for use in normal
+   --  environments. This approach allows the possibility of new versions of
+   --  the compiler (possibly with new system parameters added) being used to
+   --  compile older versions of the compiler sources, as well as avoiding
+   --  duplicating values in all system-*.ads files for flags that are used on
+   --  a few platforms only.
 
    --  All these parameters should be regarded as read only by all clients
    --  of the package. The only way they get modified is by calling the
@@ -469,10 +469,10 @@ package Targparm is
    -- Command Line Arguments --
    ----------------------------
 
-   --  For most ports of GNAT, command line arguments are supported. The
-   --  following flag is set to False for targets that do not support
-   --  command line arguments (VxWorks and AAMP). Note that support of
-   --  command line arguments is not required on such targets (RM A.15(13)).
+   --  Command line arguments are supported on most targets. The following flag
+   --  is set to False for targets that do not support command line arguments
+   --  (i.e. VxWorks). Note that support for command line arguments is not
+   --  required on such targets (RM A.15(13)).
 
    Command_Line_Args_On_Target : Boolean := True;
    --  Set False if no command line arguments on target. Note that if this
@@ -480,8 +480,8 @@ package Targparm is
    --  this causes suppression of generation of the argv/argc variables
    --  used to record command line arguments.
 
-   --  Similarly, most ports support the use of an exit status, but AAMP
-   --  is an exception (as allowed by RM A.15(18-20))
+   --  Similarly, most targets support the use of an exit status, but other
+   --  targets might not, as allowed by RM A.15(18-20).
 
    Exit_Status_Supported_On_Target : Boolean := True;
    --  Set False if returning of an exit status is not supported on target.

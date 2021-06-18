@@ -67,7 +67,9 @@ is
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_Map : constant Map;
+
    function Empty return Map;
+   pragma Ada_2022 (Empty);
 
    No_Element : constant Cursor;
 

@@ -130,6 +130,11 @@ package body Errout is
    --  or if it refers to an Etype that has an error posted on it, or if
    --  it references an Entity that has an error posted on it.
 
+   procedure Output_JSON_Message (Error_Id : Error_Msg_Id);
+   --  Output error message Error_Id and any subsequent continuation message
+   --  using a JSON format similar to the one GCC uses when passed
+   --  -fdiagnostics-format=json.
+
    procedure Output_Source_Line
      (L     : Physical_Line_Number;
       Sfile : Source_File_Index;
@@ -2055,6 +2060,133 @@ package body Errout is
       end if;
    end OK_Node;
 
+   -------------------------
+   -- Output_JSON_Message --
+   -------------------------
+
+   procedure Output_JSON_Message (Error_Id : Error_Msg_Id) is
+
+      procedure Write_JSON_Escaped_String (Str : String_Ptr);
+      --  Write each character of Str, taking care of preceding each quote and
+      --  backslash with a backslash. Note that this escaping differs from what
+      --  GCC does.
+      --
+      --  Indeed, the JSON specification mandates encoding wide characters
+      --  either as their direct UTF-8 representation or as their escaped
+      --  UTF-16 surrogate pairs representation. GCC seems to prefer escaping -
+      --  we choose to use the UTF-8 representation instead.
+
+      procedure Write_JSON_Location (Sptr : Source_Ptr);
+      --  Write Sptr as a JSON location, an object containing a file attribute,
+      --  a line number and a column number.
+
+      procedure Write_JSON_Span (Span : Source_Span);
+      --  Write Span as a JSON span, an object containing a "caret" attribute
+      --  whose value is the JSON location of Span.Ptr. If Span.First and
+      --  Span.Last are different from Span.Ptr, they will be printed as JSON
+      --  locations under the names "start" and "finish".
+
+      -------------------------------
+      -- Write_JSON_Escaped_String --
+      -------------------------------
+
+      procedure Write_JSON_Escaped_String (Str : String_Ptr) is
+      begin
+         for C of Str.all loop
+            if C = '"' or else C = '\' then
+               Write_Char ('\');
+            end if;
+
+            Write_Char (C);
+         end loop;
+      end Write_JSON_Escaped_String;
+
+      -------------------------
+      -- Write_JSON_Location --
+      -------------------------
+
+      procedure Write_JSON_Location (Sptr : Source_Ptr) is
+      begin
+         Write_Str ("{""file"":""");
+         Write_Name (Full_Ref_Name (Get_Source_File_Index (Sptr)));
+         Write_Str (""",""line"":");
+         Write_Int (Pos (Get_Physical_Line_Number (Sptr)));
+         Write_Str (", ""column"":");
+         Write_Int (Nat (Get_Column_Number (Sptr)));
+         Write_Str ("}");
+      end Write_JSON_Location;
+
+      ---------------------
+      -- Write_JSON_Span --
+      ---------------------
+
+      procedure Write_JSON_Span (Span : Source_Span) is
+      begin
+         Write_Str ("{""caret"":");
+         Write_JSON_Location (Span.Ptr);
+
+         if Span.Ptr /= Span.First then
+            Write_Str (",""start"":");
+            Write_JSON_Location (Span.First);
+         end if;
+
+         if Span.Ptr /= Span.Last then
+            Write_Str (",""finish"":");
+            Write_JSON_Location (Span.Last);
+         end if;
+
+         Write_Str ("}");
+      end Write_JSON_Span;
+
+      --  Local Variables
+
+      E : Error_Msg_Id := Error_Id;
+
+   --  Start of processing for Output_JSON_Message
+
+   begin
+
+      --  Print message kind
+
+      Write_Str ("{""kind"":");
+
+      if Errors.Table (E).Warn and then not Errors.Table (E).Warn_Err then
+         Write_Str ("""warning""");
+      elsif Errors.Table (E).Info or else Errors.Table (E).Check then
+         Write_Str ("""note""");
+      else
+         Write_Str ("""error""");
+      end if;
+
+      --  Print message location
+
+      Write_Str (",""locations"":[");
+      Write_JSON_Span (Errors.Table (E).Sptr);
+
+      if Errors.Table (E).Optr /= Errors.Table (E).Sptr.Ptr then
+         Write_Str (",{""caret"":");
+         Write_JSON_Location (Errors.Table (E).Optr);
+         Write_Str ("}");
+      end if;
+
+      --  Print message content
+
+      Write_Str ("],""message"":""");
+      Write_JSON_Escaped_String (Errors.Table (E).Text);
+
+      --  Print message continuations if present
+
+      E := E + 1;
+
+      while E <= Last_Error_Msg and then Errors.Table (E).Msg_Cont loop
+         Write_Str (", ");
+         Write_JSON_Escaped_String (Errors.Table (E).Text);
+         E := E + 1;
+      end loop;
+
+      Write_Str ("""}");
+   end Output_JSON_Message;
+
    ---------------------
    -- Output_Messages --
    ---------------------
@@ -2615,9 +2747,46 @@ package body Errout is
          Current_Error_Source_File := No_Source_File;
       end if;
 
+      if Opt.JSON_Output then
+         Set_Standard_Error;
+
+         E := First_Error_Msg;
+
+         --  Find first printable message
+
+         while E /= No_Error_Msg and then Errors.Table (E).Deleted loop
+            E := Errors.Table (E).Next;
+         end loop;
+
+         Write_Char ('[');
+
+         if E /= No_Error_Msg then
+
+            Output_JSON_Message (E);
+
+            E := Errors.Table (E).Next;
+
+            --  Skip deleted messages.
+            --  Also skip continuation messages, as they have already been
+            --  printed along the message they're attached to.
+
+            while E /= No_Error_Msg
+              and then not Errors.Table (E).Deleted
+              and then not Errors.Table (E).Msg_Cont
+            loop
+               Write_Char (',');
+               Output_JSON_Message (E);
+               E := Errors.Table (E).Next;
+            end loop;
+         end if;
+
+         Write_Char (']');
+
+         Set_Standard_Output;
+
       --  Brief Error mode
 
-      if Brief_Output or (not Full_List and not Verbose_Mode) then
+      elsif Brief_Output or (not Full_List and not Verbose_Mode) then
          Set_Standard_Error;
 
          E := First_Error_Msg;
@@ -2899,7 +3068,9 @@ package body Errout is
          Write_Error_Summary;
       end if;
 
-      Write_Max_Errors;
+      if not Opt.JSON_Output then
+         Write_Max_Errors;
+      end if;
 
       --  Even though Warning_Info_Messages are a subclass of warnings, they
       --  must not be treated as errors when -gnatwe is in effect.

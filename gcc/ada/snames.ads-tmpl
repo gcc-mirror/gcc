@@ -387,10 +387,6 @@ package Snames is
    --  Ada 83, Ada 95, and Ada 2005 mode as well, where they are technically
    --  considered to be implementation dependent pragmas.
 
-   --  The entries marked AAMP are AAMP specific pragmas that are recognized
-   --  only in GNAT for the AAMP. They are ignored in other versions with
-   --  appropriate warnings.
-
    First_Pragma_Name                   : constant Name_Id := N + $;
 
    --  Configuration pragmas are grouped at start. Note that there is a list
@@ -482,7 +478,6 @@ package Snames is
    Name_Suppress_Exception_Locations   : constant Name_Id := N + $; -- GNAT
    Name_Task_Dispatching_Policy        : constant Name_Id := N + $;
    Name_Unevaluated_Use_Of_Old         : constant Name_Id := N + $; -- GNAT
-   Name_Universal_Data                 : constant Name_Id := N + $; -- AAMP
    Name_Unsuppress                     : constant Name_Id := N + $; -- Ada 05
    Name_Use_VADS_Size                  : constant Name_Id := N + $; -- GNAT
    Name_Validity_Checks                : constant Name_Id := N + $; -- GNAT
@@ -547,7 +542,6 @@ package Snames is
    Name_Export_Function                : constant Name_Id := N + $; -- GNAT
    Name_Export_Object                  : constant Name_Id := N + $; -- GNAT
    Name_Export_Procedure               : constant Name_Id := N + $; -- GNAT
-   Name_Export_Value                   : constant Name_Id := N + $; -- GNAT
    Name_Export_Valued_Procedure        : constant Name_Id := N + $; -- GNAT
    Name_Extensions_Visible             : constant Name_Id := N + $; -- GNAT
    Name_External                       : constant Name_Id := N + $; -- GNAT
@@ -1706,7 +1700,6 @@ package Snames is
       --  in Sem_Prag.
 
    for Convention_Id'Size use 8;
-   --  Plenty of space for expansion
 
    subtype Convention_C_Family is Convention_Id
      range Convention_C .. Convention_CPP;
@@ -1811,7 +1804,6 @@ package Snames is
       Pragma_Suppress_Exception_Locations,
       Pragma_Task_Dispatching_Policy,
       Pragma_Unevaluated_Use_Of_Old,
-      Pragma_Universal_Data,
       Pragma_Unsuppress,
       Pragma_Use_VADS_Size,
       Pragma_Validity_Checks,
@@ -1862,7 +1854,6 @@ package Snames is
       Pragma_Export_Function,
       Pragma_Export_Object,
       Pragma_Export_Procedure,
-      Pragma_Export_Value,
       Pragma_Export_Valued_Procedure,
       Pragma_Extensions_Visible,
       Pragma_External,

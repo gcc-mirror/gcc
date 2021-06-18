@@ -56,6 +56,7 @@ extern const char *event_kind_to_string (enum event_kind ek);
      checker_event
        debug_event (EK_DEBUG)
        custom_event (EK_CUSTOM)
+	 precanned_custom_event
        statement_event (EK_STMT)
        function_entry_event (EK_FUNCTION_ENTRY)
        state_change_event (EK_STATE_CHANGE)
@@ -144,19 +145,30 @@ private:
   char *m_desc;
 };
 
-/* A concrete event subclass for custom events.  These are not filtered,
+/* An abstract event subclass for custom events.  These are not filtered,
    as they are likely to be pertinent to the diagnostic.  */
 
 class custom_event : public checker_event
 {
+protected:
+  custom_event (location_t loc, tree fndecl, int depth)
+  : checker_event (EK_CUSTOM, loc, fndecl, depth)
+  {
+  }
+};
+
+/* A concrete custom_event subclass with a precanned message.  */
+
+class precanned_custom_event : public custom_event
+{
 public:
-  custom_event (location_t loc, tree fndecl, int depth,
-		const char *desc)
-  : checker_event (EK_CUSTOM, loc, fndecl, depth),
+  precanned_custom_event (location_t loc, tree fndecl, int depth,
+			  const char *desc)
+  : custom_event (loc, fndecl, depth),
     m_desc (xstrdup (desc))
   {
   }
-  ~custom_event ()
+  ~precanned_custom_event ()
   {
     free (m_desc);
   }

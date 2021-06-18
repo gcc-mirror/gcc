@@ -1233,6 +1233,13 @@ Alphabetical List of All Switches
   marker is specified, the callgraph is decorated with information about
   dynamically allocated objects.
 
+.. index:: -fdiagnostics-format   (gcc)
+
+:switch:`-fdiagnostics-format=json`
+  Makes GNAT emit warning and error messages as JSON. Inhibits printing of
+  text warning and errors messages except if :switch:`-gnatv` or
+  :switch:`-gnatl` are present.
+
 
 .. index:: -fdump-scos  (gcc)
 
@@ -1741,8 +1748,7 @@ Alphabetical List of All Switches
   in bits.`
 
   ``Max_Unaligned_Field`` is the maximum size for unaligned bit field, which is
-  64 for the majority of GCC targets (but can be different on some targets like
-  AAMP).
+  64 for the majority of GCC targets (but can be different on some targets).
 
   ``Strict_Alignment`` is the equivalent of GCC macro ``STRICT_ALIGNMENT``
   documented as follows: `Define this macro to be the value 1 if instructions
@@ -1781,8 +1787,9 @@ Alphabetical List of All Switches
   where ``name`` is the string name of the type (which can have
   single spaces embedded in the name (e.g. long double), ``digs`` is
   the number of digits for the floating-point type, ``float_rep`` is
-  the float representation (I/V/A for IEEE-754-Binary, Vax_Native,
-  AAMP), ``size`` is the size in bits, ``alignment`` is the
+  the float representation (I for IEEE-754-Binary, which is
+  the only one supported at this time),
+  ``size`` is the size in bits, ``alignment`` is the
   alignment in bits. The name is followed by at least two blanks, fields
   are separated by at least one blank, and a LF character immediately
   follows the alignment field.
@@ -2003,8 +2010,7 @@ Alphabetical List of All Switches
   by the front end and will be visible in the
   :switch:`-gnatG` output.
 
-  When using a gcc-based back end (in practice this means using any version
-  of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
+  When using a gcc-based back end, then the use of
   :switch:`-gnatN` is deprecated, and the use of :switch:`-gnatn` is preferred.
   Historically front end inlining was more extensive than the gcc back end
   inlining, but that is no longer the case.
@@ -5687,8 +5693,7 @@ Subprogram Inlining Control
   This switch activates front-end inlining which also
   generates additional dependencies.
 
-  When using a gcc-based back end (in practice this means using any version
-  of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
+  When using a gcc-based back end, then the use of
   :switch:`-gnatN` is deprecated, and the use of :switch:`-gnatn` is preferred.
   Historically front end inlining was more extensive than the gcc back end
   inlining, but that is no longer the case.

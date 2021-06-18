@@ -10851,10 +10851,11 @@ package body Exp_Ch4 is
       Var       : Entity_Id;
 
    begin
-      --  Ensure that the bound variable is properly frozen. We must do
-      --  this before expansion because the expression is about to be
-      --  converted into a loop, and resulting freeze nodes may end up
-      --  in the wrong place in the tree.
+      --  Ensure that the bound variable as well as the type of Name of the
+      --  Iter_Spec if present are properly frozen. We must do this before
+      --  expansion because the expression is about to be converted into a
+      --  loop, and resulting freeze nodes may end up in the wrong place in the
+      --  tree.
 
       if Present (Iter_Spec) then
          Var := Defining_Identifier (Iter_Spec);
@@ -10868,6 +10869,10 @@ package body Exp_Ch4 is
          while Nkind (P) in N_Subexpr loop
             P := Parent (P);
          end loop;
+
+         if Present (Iter_Spec) then
+            Freeze_Before (P, Etype (Name (Iter_Spec)));
+         end if;
 
          Freeze_Before (P, Etype (Var));
       end;

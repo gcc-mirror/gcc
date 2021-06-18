@@ -913,6 +913,22 @@ package body Einfo.Utils is
       end if;
    end First_Formal_With_Extras;
 
+   ---------------
+   -- Float_Rep --
+   ---------------
+
+   function Float_Rep (N : Entity_Id) return Float_Rep_Kind is
+      pragma Unreferenced (N);
+      pragma Assert (Float_Rep_Kind'First = Float_Rep_Kind'Last);
+
+      --  There is only one value, so we don't need to store it, see types.ads.
+
+      Val : constant Float_Rep_Kind := IEEE_Binary;
+
+   begin
+      return Val;
+   end Float_Rep;
+
    -------------------------------------
    -- Get_Attribute_Definition_Clause --
    -------------------------------------
@@ -1835,9 +1851,6 @@ package body Einfo.Utils is
                when 16 .. 33 => return 2**14;
                when others   => return No_Uint;
             end case;
-
-         when AAMP =>
-            return Uint_2 ** Uint_7 - Uint_1;
       end case;
    end Machine_Emax_Value;
 
@@ -1849,7 +1862,6 @@ package body Einfo.Utils is
    begin
       case Float_Rep (Id) is
          when IEEE_Binary => return Uint_3 - Machine_Emax_Value (Id);
-         when AAMP        => return -Machine_Emax_Value (Id);
       end case;
    end Machine_Emin_Value;
 
@@ -1870,13 +1882,6 @@ package body Einfo.Utils is
                when 19 .. 33 => return UI_From_Int (113);
                when others   => return No_Uint;
             end case;
-
-         when AAMP =>
-            case Digs is
-               when  1 ..  6 => return Uint_24;
-               when  7 ..  9 => return UI_From_Int (40);
-               when others   => return No_Uint;
-            end case;
       end case;
    end Machine_Mantissa_Value;
 
@@ -1887,9 +1892,7 @@ package body Einfo.Utils is
    function Machine_Radix_Value (Id : E) return U is
    begin
       case Float_Rep (Id) is
-         when AAMP
-            | IEEE_Binary
-         =>
+         when IEEE_Binary =>
             return Uint_2;
       end case;
    end Machine_Radix_Value;
@@ -2766,6 +2769,18 @@ package body Einfo.Utils is
    begin
       Set_DIC_Procedure (Id, V);
    end Set_Partial_DIC_Procedure;
+
+   -------------------
+   -- Set_Float_Rep --
+   -------------------
+
+   procedure Set_Float_Rep
+     (Ignore_N : Entity_Id; Ignore_Val : Float_Rep_Kind) is
+   begin
+      pragma Assert (Float_Rep_Kind'First = Float_Rep_Kind'Last);
+      --  There is only one value, so we don't need to store it (see
+      --  types.ads).
+   end Set_Float_Rep;
 
    -----------------------------
    -- Set_Invariant_Procedure --

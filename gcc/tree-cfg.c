@@ -3752,6 +3752,15 @@ verify_gimple_assign_unary (gassign *stmt)
     case BIT_NOT_EXPR:
     case PAREN_EXPR:
     case CONJ_EXPR:
+      /* Disallow pointer and offset types for many of the unary gimple. */
+      if (POINTER_TYPE_P (lhs_type)
+	  || TREE_CODE (lhs_type) == OFFSET_TYPE)
+	{
+	  error ("invalid types for %qs", code_name);
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
       break;
 
     case ABSU_EXPR:
@@ -4127,6 +4136,19 @@ verify_gimple_assign_binary (gassign *stmt)
     case ROUND_MOD_EXPR:
     case RDIV_EXPR:
     case EXACT_DIV_EXPR:
+      /* Disallow pointer and offset types for many of the binary gimple. */
+      if (POINTER_TYPE_P (lhs_type)
+	  || TREE_CODE (lhs_type) == OFFSET_TYPE)
+	{
+	  error ("invalid types for %qs", code_name);
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  return true;
+	}
+      /* Continue with generic binary expression handling.  */
+      break;
+
     case MIN_EXPR:
     case MAX_EXPR:
     case BIT_IOR_EXPR:

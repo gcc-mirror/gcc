@@ -1395,7 +1395,7 @@ public:
       {
 	/* Compare with diagnostic_manager::add_events_for_superedge.  */
 	const int src_stack_depth = src_point.get_stack_depth ();
-	m_stack_pop_event = new custom_event
+	m_stack_pop_event = new precanned_custom_event
 	  (src_point.get_location (),
 	   src_point.get_fndecl (),
 	   src_stack_depth,

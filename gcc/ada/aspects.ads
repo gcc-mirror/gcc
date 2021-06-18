@@ -173,7 +173,6 @@ package Aspects is
       Aspect_Remote_Call_Interface,
       Aspect_Remote_Types,
       Aspect_Shared_Passive,
-      Aspect_Universal_Data,                -- GNAT
 
       --  Remaining aspects have a static boolean value that turns the aspect
       --  on or off. They all correspond to pragmas, but are only converted to
@@ -292,7 +291,6 @@ package Aspects is
       Aspect_Thread_Local_Storage       => True,
       Aspect_Test_Case                  => True,
       Aspect_Universal_Aliasing         => True,
-      Aspect_Universal_Data             => True,
       Aspect_Unmodified                 => True,
       Aspect_Unreferenced               => True,
       Aspect_Unreferenced_Objects       => True,
@@ -330,7 +328,7 @@ package Aspects is
    --  the occurrence of the aspect.
 
    subtype Library_Unit_Aspects is
-     Aspect_Id range Aspect_All_Calls_Remote .. Aspect_Universal_Data;
+     Aspect_Id range Aspect_All_Calls_Remote .. Aspect_Shared_Passive;
 
    --  The following subtype defines aspects accepting an optional static
    --  boolean parameter indicating if the aspect should be active or
@@ -734,7 +732,6 @@ package Aspects is
       Aspect_Unchecked_Union              => Name_Unchecked_Union,
       Aspect_Unimplemented                => Name_Unimplemented,
       Aspect_Universal_Aliasing           => Name_Universal_Aliasing,
-      Aspect_Universal_Data               => Name_Universal_Data,
       Aspect_Unmodified                   => Name_Unmodified,
       Aspect_Unreferenced                 => Name_Unreferenced,
       Aspect_Unreferenced_Objects         => Name_Unreferenced_Objects,
@@ -935,7 +932,6 @@ package Aspects is
       Aspect_Type_Invariant               => Always_Delay,
       Aspect_Unchecked_Union              => Always_Delay,
       Aspect_Universal_Aliasing           => Always_Delay,
-      Aspect_Universal_Data               => Always_Delay,
       Aspect_Unmodified                   => Always_Delay,
       Aspect_Unreferenced                 => Always_Delay,
       Aspect_Unreferenced_Objects         => Always_Delay,

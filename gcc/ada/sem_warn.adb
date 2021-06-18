@@ -1180,9 +1180,10 @@ package body Sem_Warn is
                --  Case of an unassigned variable
 
                --  First gather any Unset_Reference indication for E1. In the
-               --  case of a parameter, it is the Spec_Entity that is relevant.
+               --  case of an 'out' parameter, it is the Spec_Entity that is
+               --  relevant.
 
-               if Ekind (E1) in Formal_Kind
+               if Ekind (E1) = E_Out_Parameter
                  and then Present (Spec_Entity (E1))
                then
                   UR := Unset_Reference (Spec_Entity (E1));
@@ -1219,8 +1220,8 @@ package body Sem_Warn is
                --  the wanted effect is included in Never_Set_In_Source.
 
                elsif Warn_On_Constant
-                 and then (Ekind (E1) = E_Variable
-                            and then Has_Initial_Value (E1))
+                 and then Ekind (E1) = E_Variable
+                 and then Has_Initial_Value (E1)
                  and then Never_Set_In_Source_Check_Spec (E1)
                  and then not Generic_Package_Spec_Entity (E1)
                then
@@ -1298,9 +1299,9 @@ package body Sem_Warn is
                  --  never referenced, since again it seems odd to rely on
                  --  default initialization to set an out parameter value.
 
-                and then (Is_Access_Type (E1T)
-                           or else Ekind (E1) = E_Out_Parameter
-                           or else not Is_Fully_Initialized_Type (E1T))
+                 and then (Is_Access_Type (E1T)
+                             or else Ekind (E1) = E_Out_Parameter
+                             or else not Is_Fully_Initialized_Type (E1T))
                then
                   --  Do not output complaint about never being assigned a
                   --  value if a pragma Unmodified applies to the variable
@@ -1354,13 +1355,12 @@ package body Sem_Warn is
                      --  Suppress warning if composite type contains any access
                      --  component, since the logical effect of modifying a
                      --  parameter may be achieved by modifying a referenced
-                     --  object. This rationale does not apply to internal
-                     --  private types, so we warn even if a component is of
-                     --  something like Unbounded_String.
+                     --  object. This rationale does not apply to private
+                     --  types, so we warn in that case.
 
                      elsif Is_Composite_Type (E1T)
-                       and then Has_Access_Values
-                         (E1T, Include_Internal => False)
+                       and then not Is_Private_Type (E1T)
+                       and then Has_Access_Values (E1T)
                      then
                         null;
 
@@ -3669,6 +3669,9 @@ package body Sem_Warn is
    ---------------------------------
 
    procedure Warn_On_Overlapping_Actuals (Subp : Entity_Id; N : Node_Id) is
+      function Explicitly_By_Reference (Formal_Id : Entity_Id) return Boolean;
+      --  Returns True iff the type of Formal_Id is explicitly by-reference
+
       function Refer_Same_Object
         (Act1 : Node_Id;
          Act2 : Node_Id) return Boolean;
@@ -3679,6 +3682,24 @@ package body Sem_Warn is
       --  two names statically denotes a renaming declaration whose renamed
       --  object_name is known to refer to the same object as the other name
       --  (RM 6.4.1(6.11/3))
+
+      -----------------------------
+      -- Explicitly_By_Reference --
+      -----------------------------
+
+      function Explicitly_By_Reference
+        (Formal_Id : Entity_Id)
+         return Boolean
+      is
+         Typ : constant Entity_Id := Underlying_Type (Etype (Formal_Id));
+      begin
+         if Present (Typ) then
+            return Is_By_Reference_Type (Typ)
+              or else Convention (Typ) = Convention_Ada_Pass_By_Reference;
+         else
+            return False;
+         end if;
+      end Explicitly_By_Reference;
 
       -----------------------
       -- Refer_Same_Object --
@@ -3704,11 +3725,6 @@ package body Sem_Warn is
    --  Start of processing for Warn_On_Overlapping_Actuals
 
    begin
-
-      if Ada_Version < Ada_2012 and then not Warn_On_Overlap then
-         return;
-      end if;
-
       --  Exclude calls rewritten as enumeration literals
 
       if Nkind (N) not in N_Subprogram_Call | N_Entry_Call_Statement then
@@ -3792,26 +3808,23 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  If type is explicitly not by-copy, assume that
-                  --  aliasing is intended.
+                  --  If type is explicitly by-reference, then it is not
+                  --  covered by the legality rule, which only applies to
+                  --  elementary types. Actually, the aliasing is most
+                  --  likely intended, so don't emit a warning either.
 
-                  elsif
-                    Present (Underlying_Type (Etype (Form1)))
-                      and then
-                        (Is_By_Reference_Type
-                          (Underlying_Type (Etype (Form1)))
-                          or else
-                            Convention (Underlying_Type (Etype (Form1))) =
-                                         Convention_Ada_Pass_By_Reference)
+                  elsif Explicitly_By_Reference (Form1)
+                    or else Explicitly_By_Reference (Form2)
                   then
                      null;
 
-                  --  Under Ada 2012 we only report warnings on overlapping
-                  --  arrays and record types if switch is set.
+                  --  We only report warnings on overlapping arrays and record
+                  --  types if switch is set.
 
-                  elsif Ada_Version >= Ada_2012
-                    and then not Is_Elementary_Type (Etype (Form1))
-                    and then not Warn_On_Overlap
+                  elsif not Warn_On_Overlap
+                    and then not (Is_Elementary_Type (Etype (Form1))
+                                    and then
+                                  Is_Elementary_Type (Etype (Form2)))
                   then
                      null;
 
@@ -3825,7 +3838,7 @@ package body Sem_Warn is
 
                        Ada_Version < Ada_2012
 
-                       --  Overlap is only illegal in Ada 2012 in the case of
+                       --  Overlap is only illegal since Ada 2012 and only for
                        --  elementary types (passed by copy). For other types
                        --  we always have a warning in all versions. This is
                        --  clarified by AI12-0216.
@@ -3839,45 +3852,15 @@ package body Sem_Warn is
 
                        or else Error_To_Warning;
 
-                     --  If the call was written in prefix notation, and thus
-                     --  its prefix before rewriting was a selected component,
-                     --  count only visible actuals in call.
+                     --  For greater clarity, give name of formal
 
-                     if Is_Entity_Name (First_Actual (N))
-                       and then Nkind (Original_Node (N)) = Nkind (N)
-                       and then Nkind (Name (Original_Node (N))) =
-                                                     N_Selected_Component
-                       and then
-                         Is_Entity_Name (Prefix (Name (Original_Node (N))))
-                       and then
-                         Entity (Prefix (Name (Original_Node (N)))) =
-                           Entity (First_Actual (N))
-                     then
-                        if Act1 = First_Actual (N) then
-                           Error_Msg_FE
-                             ("<I<`IN OUT` prefix overlaps with "
-                              & "actual for&", Act1, Form2);
+                     Error_Msg_Node_2 := Form2;
 
-                        else
-                           --  For greater clarity, give name of formal
+                     --  This is one of the messages
 
-                           Error_Msg_Node_2 := Form2;
-                           Error_Msg_FE
-                             ("<I<writable actual for & overlaps with "
-                              & "actual for&", Act1, Form2);
-                        end if;
-
-                     else
-                        --  For greater clarity, give name of formal
-
-                        Error_Msg_Node_2 := Form2;
-
-                        --  This is one of the messages
-
-                        Error_Msg_FE
-                          ("<I<writable actual for & overlaps with "
-                           & "actual for&", Act1, Form1);
-                     end if;
+                     Error_Msg_FE
+                       ("<I<writable actual for & overlaps with actual for &",
+                        Act1, Form1);
                   end if;
                end if;
             end if;

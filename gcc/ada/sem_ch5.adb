@@ -1542,7 +1542,6 @@ package body Sem_Ch5 is
 
       elsif Extensions_Allowed and then Is_Overloaded (Exp) then
 
-         --  TBD: Generate better ambiguity diagnostics here.
          --  It would be nice if we could generate all the right error
          --  messages by calling "Resolve (Exp, Any_Type);" in the
          --  same way that they are generated a few lines below by the

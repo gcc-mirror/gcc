@@ -10906,8 +10906,8 @@ package body Exp_Dist is
                raise Program_Error;
             end if;
 
-            --  TBD: fixed point types???
-            --  TBverified numeric types with a biased representation???
+            --  What about fixed point types and numeric types with a biased
+            --  representation???
 
          end Find_Numeric_Representation;
 

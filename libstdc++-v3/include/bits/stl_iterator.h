@@ -639,8 +639,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Container          container_type;
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
-
-      constexpr back_insert_iterator() noexcept : container(nullptr) { }
 #endif
 
       /// The only way to create this %iterator is with a container.
@@ -742,8 +740,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Container          container_type;
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
-
-      constexpr front_insert_iterator() noexcept : container(nullptr) { }
 #endif
 
       /// The only way to create this %iterator is with a container.
@@ -843,17 +839,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
 #if __cplusplus > 201703L && defined __cpp_lib_concepts
       using _Iter = std::__detail::__range_iter_t<_Container>;
-
-    protected:
-      _Container* container = nullptr;
-      _Iter iter = _Iter();
 #else
       typedef typename _Container::iterator		_Iter;
-
+#endif
     protected:
       _Container* container;
       _Iter iter;
-#endif
 
     public:
       /// A nested typedef for the type of whatever container you used.
@@ -861,8 +852,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201703L && defined __cpp_lib_concepts
       using difference_type = ptrdiff_t;
-
-      insert_iterator() = default;
 #endif
 
       /**
@@ -1740,6 +1729,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr
     common_iterator()
     noexcept(is_nothrow_default_constructible_v<_It>)
+    requires default_initializable<_It>
     : _M_it(), _M_index(0)
     { }
 
@@ -2117,7 +2107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // iterator_concept defined in __counted_iter_concept
       // iterator_category defined in __counted_iter_cat
 
-      constexpr counted_iterator() = default;
+      constexpr counted_iterator() requires default_initializable<_It> = default;
 
       constexpr
       counted_iterator(_It __i, iter_difference_t<_It> __n)

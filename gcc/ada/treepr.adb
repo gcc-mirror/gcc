@@ -371,6 +371,8 @@ package body Treepr is
             return "Is_Elaboration_Warnings_OK_Id";
          when F_Is_RACW_Stub_Type =>
             return "Is_RACW_Stub_Type";
+         when F_LSP_Subprogram =>
+            return "LSP_Subprogram";
          when F_OK_To_Rename =>
             return "OK_To_Rename";
          when F_Referenced_As_LHS =>

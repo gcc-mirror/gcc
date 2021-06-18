@@ -1392,9 +1392,8 @@ package body Switch.C is
 
             when 'X' =>
                Ptr := Ptr + 1;
-               Extensions_Allowed   := True;
-               Ada_Version          := Ada_Version_Type'Last;
-               Ada_Version_Explicit := Ada_Version_Type'Last;
+               Ada_Version          := Ada_With_Extensions;
+               Ada_Version_Explicit := Ada_With_Extensions;
                Ada_Version_Pragma   := Empty;
 
             --  -gnaty (style checks)

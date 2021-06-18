@@ -9136,7 +9136,10 @@ package body Sem_Prag is
 
             Def_Id := Entity (Def_Id);
             Kill_Size_Check_Code (Def_Id);
-            Note_Possible_Modification (Get_Pragma_Arg (Arg1), Sure => False);
+            if Ekind (Def_Id) /= E_Constant then
+               Note_Possible_Modification
+                 (Get_Pragma_Arg (Arg1), Sure => False);
+            end if;
 
          else
             Process_Convention (C, Def_Id);
@@ -9146,7 +9149,10 @@ package body Sem_Prag is
 
             Mark_Ghost_Pragma (N, Def_Id);
             Kill_Size_Check_Code (Def_Id);
-            Note_Possible_Modification (Get_Pragma_Arg (Arg2), Sure => False);
+            if Ekind (Def_Id) /= E_Constant then
+               Note_Possible_Modification
+                 (Get_Pragma_Arg (Arg2), Sure => False);
+            end if;
          end if;
 
          --  Various error checks
@@ -10878,8 +10884,8 @@ package body Sem_Prag is
       procedure Record_Independence_Check (N : Node_Id; E : Entity_Id) is
          pragma Unreferenced (N, E);
       begin
-         --  For GCC back ends the validation is done a priori
-         --  ??? This code is dead, might be useful in the future
+         --  For GCC back ends the validation is done a priori. This code is
+         --  dead, but might be useful in the future.
 
          --  if not AAMP_On_Target then
          --     return;
@@ -12542,22 +12548,61 @@ package body Sem_Prag is
          --------------
 
          --  pragma Ada_2022;
+         --  pragma Ada_2022 (LOCAL_NAME):
 
          --  Note: this pragma also has some specific processing in Par.Prag
          --  because we want to set the Ada 2022 version mode during parsing.
 
+         --  The one argument form is used for managing the transition from Ada
+         --  2012 to Ada 2022 in the run-time library. If an entity is marked
+         --  as Ada_2022 only, then referencing the entity in any pre-Ada_2022
+         --  mode will generate a warning;for calls to Ada_2022 only primitives
+         --  that require overriding an error will be reported. In addition, in
+         --  any pre-Ada_2022 mode, a preference rule is established which does
+         --  not choose such an entity unless it is unambiguously specified.
+         --  This avoids extra subprograms marked this way from generating
+         --  ambiguities in otherwise legal pre-Ada 2022 programs. The one
+         --  argument form is intended for exclusive use in the GNAT run-time
+         --  library.
+
          when Pragma_Ada_2022 =>
+         declare
+            E_Id : Node_Id;
+
+         begin
             GNAT_Pragma;
 
-            Check_Arg_Count (0);
+            if Arg_Count = 1 then
+               Check_Arg_Is_Local_Name (Arg1);
+               E_Id := Get_Pragma_Arg (Arg1);
 
-            Check_Valid_Configuration_Pragma;
+               if Etype (E_Id) = Any_Type then
+                  return;
+               end if;
 
-            --  Now set appropriate Ada mode
+               Set_Is_Ada_2022_Only (Entity (E_Id));
+               Record_Rep_Item (Entity (E_Id), N);
 
-            Ada_Version          := Ada_2022;
-            Ada_Version_Explicit := Ada_2022;
-            Ada_Version_Pragma   := N;
+            else
+               Check_Arg_Count (0);
+
+               --  For Ada_2022 we unconditionally enforce the documented
+               --  configuration pragma placement, since we do not want to
+               --  tolerate mixed modes in a unit involving Ada 2022. That
+               --  would cause real difficulties for those cases where there
+               --  are incompatibilities between Ada 2012 and Ada 2022. We
+               --  could allow mixing of Ada 2012 and Ada 2022 but it's not
+               --  worth it.
+
+               Check_Valid_Configuration_Pragma;
+
+               --  Now set appropriate Ada mode
+
+               Ada_Version          := Ada_2022;
+               Ada_Version_Explicit := Ada_2022;
+               Ada_Version_Pragma   := N;
+            end if;
+         end;
 
          -------------------------------------
          -- Aggregate_Individually_Assign --
@@ -16289,25 +16334,6 @@ package body Sem_Prag is
               Arg_Mechanism       => Mechanism);
          end Export_Procedure;
 
-         ------------------
-         -- Export_Value --
-         ------------------
-
-         --  pragma Export_Value (
-         --     [Value     =>] static_integer_EXPRESSION,
-         --     [Link_Name =>] static_string_EXPRESSION);
-
-         when Pragma_Export_Value =>
-            GNAT_Pragma;
-            Check_Arg_Order ((Name_Value, Name_Link_Name));
-            Check_Arg_Count (2);
-
-            Check_Optional_Identifier (Arg1, Name_Value);
-            Check_Arg_Is_OK_Static_Expression (Arg1, Any_Integer);
-
-            Check_Optional_Identifier (Arg2, Name_Link_Name);
-            Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
-
          -----------------------------
          -- Export_Valued_Procedure --
          -----------------------------
@@ -16417,11 +16443,8 @@ package body Sem_Prag is
             Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_On then
-               Extensions_Allowed := True;
-               Ada_Version := Ada_Version_Type'Last;
-
+               Ada_Version := Ada_With_Extensions;
             else
-               Extensions_Allowed := False;
                Ada_Version := Ada_Version_Explicit;
                Ada_Version_Pragma := Empty;
             end if;
@@ -24935,16 +24958,6 @@ package body Sem_Prag is
             Record_Rep_Item (E, N);
          end Universal_Alias;
 
-         --------------------
-         -- Universal_Data --
-         --------------------
-
-         --  pragma Universal_Data [(library_unit_NAME)];
-
-         when Pragma_Universal_Data =>
-            GNAT_Pragma;
-            Error_Pragma ("??pragma% ignored (applies only to AAMP)");
-
          ----------------
          -- Unmodified --
          ----------------
@@ -31216,7 +31229,6 @@ package body Sem_Prag is
       Pragma_Export_Function                => -1,
       Pragma_Export_Object                  => -1,
       Pragma_Export_Procedure               => -1,
-      Pragma_Export_Value                   => -1,
       Pragma_Export_Valued_Procedure        => -1,
       Pragma_Extend_System                  => -1,
       Pragma_Extensions_Allowed             =>  0,
@@ -31371,7 +31383,6 @@ package body Sem_Prag is
       Pragma_Unevaluated_Use_Of_Old         =>  0,
       Pragma_Unimplemented_Unit             =>  0,
       Pragma_Universal_Aliasing             =>  0,
-      Pragma_Universal_Data                 =>  0,
       Pragma_Unmodified                     =>  0,
       Pragma_Unreferenced                   =>  0,
       Pragma_Unreferenced_Objects           =>  0,

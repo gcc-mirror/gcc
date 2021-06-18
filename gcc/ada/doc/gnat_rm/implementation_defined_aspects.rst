@@ -561,12 +561,6 @@ Aspect Universal_Aliasing
 
 This boolean aspect is equivalent to :ref:`pragma Universal_Aliasing<Pragma-Universal_Aliasing>`.
 
-Aspect Universal_Data
-=====================
-.. index:: Universal_Data
-
-This aspect is equivalent to :ref:`pragma Universal_Data<Pragma-Universal_Data>`.
-
 Aspect Unmodified
 =================
 .. index:: Unmodified

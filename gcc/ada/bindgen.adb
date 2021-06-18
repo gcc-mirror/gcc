@@ -2388,7 +2388,11 @@ package body Bindgen is
                                       Gnat_Version_String &
                                       """ & ASCII.NUL;");
             WBI ("   pragma Export (C, GNAT_Version, ""__gnat_version"");");
-
+            WBI ("");
+            WBI ("   GNAT_Version_Address : constant System.Address := " &
+                 "GNAT_Version'Address;");
+            WBI ("   pragma Export (C, GNAT_Version_Address, " &
+                 """__gnat_version_address"");");
             WBI ("");
             Set_String ("   Ada_Main_Program_Name : constant String := """);
             Get_Name_String (Units.Table (First_Unit_Entry).Uname);

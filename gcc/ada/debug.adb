@@ -145,7 +145,7 @@ package body Debug is
    --  d_d
    --  d_e  Ignore entry calls and requeue statements for elaboration
    --  d_f  Issue info messages related to GNATprove usage
-   --  d_g
+   --  d_g  Disable large static aggregates
    --  d_h  Disable the use of (perfect) hash functions for enumeration Value
    --  d_i  Ignore activations and calls to instances for elaboration
    --  d_j  Read JSON files and populate Repinfo tables (opposite of -gnatRjs)
@@ -964,6 +964,10 @@ package body Debug is
    --       understand analysis results. By default these are not issued as
    --       beginners find them confusing. Set automatically by GNATprove when
    --       switch --info is used.
+
+   --  d_g  Disable large static aggregates. The maximum size for a static
+   --       aggregate will be fairly modest, which is useful if the compiler
+   --       is using too much memory and time at compile time.
 
    --  d_h  The compiler does not make use of (perfect) hash functions in the
    --       implementation of the Value attribute for enumeration types.

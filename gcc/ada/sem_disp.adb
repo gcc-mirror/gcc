@@ -1239,7 +1239,9 @@ package body Sem_Disp is
               or else Get_TSS_Name (Subp) = TSS_Stream_Read
               or else Get_TSS_Name (Subp) = TSS_Stream_Write
 
-              or else Present (Contract (Overridden_Operation (Subp)))
+              or else
+               (Is_Wrapper (Subp)
+                 and then Present (LSP_Subprogram (Subp)))
 
               or else GNATprove_Mode);
 
@@ -2199,6 +2201,8 @@ package body Sem_Disp is
                      while Present (Elmt) loop
                         if Node (Elmt) = Orig_Prim then
                            Set_Overridden_Operation (S, Prim);
+                           Set_Is_Ada_2022_Only     (S,
+                             Is_Ada_2022_Only (Prim));
                            Set_Alias (Prim, Orig_Prim);
                            return Prim;
                         end if;
@@ -2644,8 +2648,7 @@ package body Sem_Disp is
    procedure Override_Dispatching_Operation
      (Tagged_Type : Entity_Id;
       Prev_Op     : Entity_Id;
-      New_Op      : Entity_Id;
-      Is_Wrapper  : Boolean := False)
+      New_Op      : Entity_Id)
    is
       Elmt : Elmt_Id;
       Prim : Node_Id;
@@ -2722,7 +2725,7 @@ package body Sem_Disp is
                --  wrappers of controlling functions since (at this stage)
                --  they are not yet decorated.
 
-               if not Is_Wrapper then
+               if not Is_Wrapper (New_Op) then
                   Check_Subtype_Conformant (New_Op, Prim);
 
                   Set_Is_Abstract_Subprogram (Prim,
@@ -2761,6 +2764,7 @@ package body Sem_Disp is
          Set_Alias (Prev_Op, New_Op);
          Set_DTC_Entity (Prev_Op, Empty);
          Set_Has_Controlling_Result (New_Op, Has_Controlling_Result (Prev_Op));
+         Set_Is_Ada_2022_Only (New_Op, Is_Ada_2022_Only (Prev_Op));
       end if;
    end Override_Dispatching_Operation;
 

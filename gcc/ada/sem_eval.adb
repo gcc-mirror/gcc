@@ -6223,7 +6223,7 @@ package body Sem_Eval is
             end;
 
          else
-            --  TBD: Implement Interval_Lists for real types
+            --  ??? Need to implement Interval_Lists for real types
 
             return False;
          end if;

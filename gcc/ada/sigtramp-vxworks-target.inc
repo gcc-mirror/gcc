@@ -100,7 +100,7 @@
 #define FUNCTION "%function"
 
 #ifdef __aarch64__
-#define REGNO_PC_OFFSET  80  /* aka V16, a scratch register */
+#define REGNO_PC_OFFSET  96  /* DWARF_ALT_FRAME_RETURN_COLUMN */
 #else
 #define REGNO_PC_OFFSET  15  /* PC_REGNUM */
 #endif
@@ -375,7 +375,7 @@ TCR(COMMON_CFI(G_REG_OFFSET(14))) \
 TCR(COMMON_CFI(G_REG_OFFSET(15))) \
 TCR(COMMON_CFI(G_REG_OFFSET(16))) \
 TCR(COMMON_CFI(G_REG_OFFSET(17))) \
-TCR(COMMON_CFI(G_REG_OFFSET(18))) \
+CR("# Leave alone R18, VxWorks reserved\n") \
 TCR(COMMON_CFI(G_REG_OFFSET(19))) \
 TCR(COMMON_CFI(G_REG_OFFSET(20))) \
 TCR(COMMON_CFI(G_REG_OFFSET(21))) \

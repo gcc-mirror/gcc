@@ -3391,12 +3391,9 @@ package body Sem_Res is
          --  Here we are resolving the corresponding expanded body, so we do
          --  need to perform normal freezing.
 
-         --  As elsewhere we do not emit freeze node within a generic. We make
-         --  an exception for entities that are expressions, only to detect
-         --  misuses of deferred constants and preserve the output of various
-         --  tests.
+         --  As elsewhere we do not emit freeze node within a generic.
 
-         if not Inside_A_Generic or else Is_Entity_Name (N) then
+         if not Inside_A_Generic then
             Freeze_Expression (N);
          end if;
 

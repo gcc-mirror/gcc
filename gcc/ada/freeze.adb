@@ -186,6 +186,72 @@ package body Freeze is
    --  the designated type. Otherwise freezing the access type does not freeze
    --  the designated type.
 
+   function Should_Freeze_Type (Typ : Entity_Id; E : Entity_Id) return Boolean;
+   --  If Typ is in the current scope or in an instantiation, then return True.
+   --  ???Expression functions (represented by E) shouldn't freeze types in
+   --  general, but our current expansion and freezing model requires an early
+   --  freezing when the dispatch table is needed or when building an aggregate
+   --  with a subtype of Typ, so return True also in this case.
+   --  Note that expression function completions do freeze and are
+   --  handled in Sem_Ch6.Analyze_Expression_Function.
+
+   ------------------------
+   -- Should_Freeze_Type --
+   ------------------------
+
+   function Should_Freeze_Type
+     (Typ : Entity_Id; E : Entity_Id) return Boolean
+   is
+      function Is_Dispatching_Call_Or_Aggregate
+        (N : Node_Id) return Traverse_Result;
+      --  Return Abandon if N is a dispatching call to a subprogram
+      --  declared in the same scope as Typ or an aggregate whose type
+      --  is Typ.
+
+      --------------------------------------
+      -- Is_Dispatching_Call_Or_Aggregate --
+      --------------------------------------
+
+      function Is_Dispatching_Call_Or_Aggregate
+        (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) = N_Function_Call
+           and then Present (Controlling_Argument (N))
+           and then Scope (Entity (Original_Node (Name (N))))
+                      = Scope (Typ)
+         then
+            return Abandon;
+         elsif Nkind (N) = N_Aggregate
+           and then Base_Type (Etype (N)) = Base_Type (Typ)
+         then
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Is_Dispatching_Call_Or_Aggregate;
+
+      -------------------------
+      -- Need_Dispatch_Table --
+      -------------------------
+
+      function Need_Dispatch_Table is new
+        Traverse_Func (Is_Dispatching_Call_Or_Aggregate);
+      --  Return Abandon if the input expression requires access to
+      --  Typ's dispatch table.
+
+      Decl : constant Node_Id :=
+        (if No (E) then E else Original_Node (Unit_Declaration_Node (E)));
+
+   --  Start of processing for Should_Freeze_Type
+
+   begin
+      return Within_Scope (Typ, Current_Scope)
+        or else In_Instance
+        or else (Present (Decl)
+                 and then Nkind (Decl) = N_Expression_Function
+                 and then Need_Dispatch_Table (Expression (Decl)) = Abandon);
+   end Should_Freeze_Type;
+
    procedure Process_Default_Expressions
      (E     : Entity_Id;
       After : in out Node_Id);
@@ -1408,7 +1474,7 @@ package body Freeze is
       --  pragmas force the creation of a wrapper for the inherited operation.
       --  If the ancestor is being overridden, the pragmas are constructed only
       --  to verify their legality, in case they contain calls to other
-      --  primitives that may haven been overridden.
+      --  primitives that may have been overridden.
 
       ---------------------------------------
       -- Build_Inherited_Condition_Pragmas --
@@ -1492,6 +1558,15 @@ package body Freeze is
          then
             Par_Prim := Overridden_Operation (Prim);
 
+            --  When the primitive is an LSP wrapper we climb to the parent
+            --  primitive that has the inherited contract.
+
+            if Is_Wrapper (Par_Prim)
+              and then Present (LSP_Subprogram (Par_Prim))
+            then
+               Par_Prim := LSP_Subprogram (Par_Prim);
+            end if;
+
             --  Analyze the contract items of the overridden operation, before
             --  they are rewritten as pragmas.
 
@@ -1530,6 +1605,15 @@ package body Freeze is
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
 
+            --  When the primitive is an LSP wrapper we climb to the parent
+            --  primitive that has the inherited contract.
+
+            if Is_Wrapper (Par_Prim)
+              and then Present (LSP_Subprogram (Par_Prim))
+            then
+               Par_Prim := LSP_Subprogram (Par_Prim);
+            end if;
+
             --  Analyze the contract items of the parent operation, and
             --  determine whether a wrapper is needed. This is determined
             --  when the condition is rewritten in sem_prag, using the
@@ -1563,14 +1647,22 @@ package body Freeze is
             --  statement with a call.
 
             declare
+               Alias_Id : constant Entity_Id  := Ultimate_Alias (Prim);
                Loc      : constant Source_Ptr := Sloc (R);
                Par_R    : constant Node_Id    := Parent (R);
                New_Body : Node_Id;
                New_Decl : Node_Id;
+               New_Id   : Entity_Id;
                New_Spec : Node_Id;
 
             begin
+               --  The wrapper must be analyzed in the scope of its wrapped
+               --  primitive (to ensure its correct decoration).
+
+               Push_Scope (Scope (Prim));
+
                New_Spec := Build_Overriding_Spec (Par_Prim, R);
+               New_Id   := Defining_Entity (New_Spec);
                New_Decl :=
                  Make_Subprogram_Declaration (Loc,
                    Specification => New_Spec);
@@ -1592,9 +1684,26 @@ package body Freeze is
                     Build_Class_Wide_Clone_Call
                       (Loc, Decls, Par_Prim, New_Spec);
 
+                  --  Adding minimum decoration
+
+                  Mutate_Ekind (New_Id, Ekind (Par_Prim));
+                  Set_LSP_Subprogram (New_Id, Par_Prim);
+                  Set_Is_Wrapper (New_Id);
+
                   Insert_List_After_And_Analyze
                     (Par_R, New_List (New_Decl, New_Body));
+
+                  --  Ensure correct decoration
+
+                  pragma Assert (Present (Alias (Prim)));
+                  pragma Assert (Present (Overridden_Operation (New_Id)));
+                  pragma Assert (Overridden_Operation (New_Id) = Alias_Id);
                end if;
+
+               pragma Assert (Is_Dispatching_Operation (Prim));
+               pragma Assert (Is_Dispatching_Operation (New_Id));
+
+               Pop_Scope;
             end;
          end if;
 
@@ -4006,7 +4115,9 @@ package body Freeze is
                Set_Etype (Formal, F_Type);
             end if;
 
-            if not From_Limited_With (F_Type) then
+            if not From_Limited_With (F_Type)
+              and then Should_Freeze_Type (F_Type, E)
+            then
                Freeze_And_Append (F_Type, N, Result);
             end if;
 
@@ -4183,7 +4294,9 @@ package body Freeze is
                Set_Etype (E, R_Type);
             end if;
 
-            Freeze_And_Append (R_Type, N, Result);
+            if Should_Freeze_Type (R_Type, E) then
+               Freeze_And_Append (R_Type, N, Result);
+            end if;
 
             --  Check suspicious return type for C function
 
@@ -4317,8 +4430,7 @@ package body Freeze is
 
            and then Convention (E) /= Convention_Intrinsic
 
-           --  Assume that ASM interface knows what it is doing. This deals
-           --  with e.g. unsigned.ads in the AAMP back end.
+           --  Assume that ASM interface knows what it is doing
 
            and then Convention (E) /= Convention_Assembler
          then
@@ -5952,11 +6064,12 @@ package body Freeze is
          --  Here for other than a subprogram or type
 
          else
-            --  If entity has a type, and it is not a generic unit, then freeze
-            --  it first (RM 13.14(10)).
+            --  If entity has a type declared in the current scope, and it is
+            --  not a generic unit, then freeze it first.
 
             if Present (Etype (E))
               and then Ekind (E) /= E_Generic_Function
+              and then Within_Scope (Etype (E), Current_Scope)
             then
                Freeze_And_Append (Etype (E), N, Result);
 
@@ -7784,7 +7897,7 @@ package body Freeze is
             --  tree. This is an unusual case, but there are some legitimate
             --  situations in which this occurs, notably when the expressions
             --  in the range of a type declaration are resolved. We simply
-            --  ignore the freeze request in this case. Is this right ???
+            --  ignore the freeze request in this case.
 
             if No (Parent_P) then
                return;
@@ -8044,7 +8157,7 @@ package body Freeze is
             end case;
 
             --  We fall through the case if we did not yet find the proper
-            --  place in the free for inserting the freeze node, so climb.
+            --  place in the tree for inserting the freeze node, so climb.
 
             P := Parent_P;
          end loop;

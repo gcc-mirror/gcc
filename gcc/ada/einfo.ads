@@ -612,7 +612,7 @@ package Einfo is
 
 --    Class_Wide_Clone
 --       Defined on subprogram entities. Set if the subprogram has a class-wide
---       ore- or postcondition, and the expression contains calls to other
+--       pre- or postcondition, and the expression contains calls to other
 --       primitive funtions of the type. Used to implement properly the
 --       semantics of inherited operations whose class-wide condition may
 --       be different from that of the ancestor (See AI012-0195).
@@ -2317,6 +2317,13 @@ package Einfo is
 --       the entity is part of a unit compiled with the normal no-argument form
 --       of pragma Ada_12 or Ada_2012.
 
+--    Is_Ada_2022_Only
+--       Defined in all entities, true if a valid pragma Ada_2022 applies to
+--       the entity which specifically names the entity, indicating that the
+--       entity is Ada 2022 only. Note that this flag is not set if the entity
+--       is part of a unit compiled with the normal no-argument form of pragma
+--       Ada_2022.
+
 --    Is_Aliased
 --       Defined in all entities. Set for objects and types whose declarations
 --       carry the keyword aliased, and on record components that have the
@@ -2377,12 +2384,6 @@ package Einfo is
 --    Is_Child_Unit
 --       Defined in all entities. Set only for defining entities of program
 --       units that are child units (but False for subunits).
-
---    Is_Class_Wide_Clone
---       Defined on subprogram entities. Set for subprograms built in order
---       to implement properly the inheritance of class-wide pre- or post-
---       conditions when the condition contains calls to other primitives
---       of the ancestor type. Used to implement AI12-0195.
 
 --    Is_Class_Wide_Equivalent_Type
 --       Defined in record types and subtypes. Set to True, if the type acts
@@ -2792,8 +2793,8 @@ package Einfo is
 
 --    Is_Interrupt_Handler
 --       Defined in procedures. Set if a pragma Interrupt_Handler applies
---       to the procedure. The procedure must be parameterless, and on all
---       targets except AAMP it must be a protected procedure.
+--       to the procedure. The procedure must be a parameterless protected
+--       procedure.
 
 --    Is_Intrinsic_Subprogram
 --       Defined in functions and procedures. It is set if a valid pragma
@@ -3400,6 +3401,11 @@ package Einfo is
 --    Is_Wrapper_Package (synthesized)
 --       Defined in package entities. Indicates that the package has been
 --       created as a wrapper for a subprogram instantiation.
+
+--    Is_Wrapper
+--       Defined in subprogram entities. Indicates that it has been created as
+--       a wrapper to handle inherited class-wide pre/post conditions that call
+--       overridden primitives or as a wrapper of a controlling function.
 
 --    Itype_Printed
 --       Defined in all type and subtype entities. Set in Itypes if the Itype
@@ -4708,6 +4714,12 @@ package Einfo is
 --       Defined in functions and procedures which have been classified as
 --       Is_Primitive_Wrapper. Set to the entity being wrapper.
 
+--    LSP_Subprogram
+--       Defined in subprogram entities. Set on wrappers created to handle
+--       inherited class-wide pre/post conditions that call overridden
+--       primitives. It references the parent primitive that has the
+--       class-wide pre/post conditions.
+
 ---------------------------
 -- Renaming and Aliasing --
 ---------------------------
@@ -4871,6 +4883,7 @@ package Einfo is
    --    In_Private_Part
    --    Is_Ada_2005_Only
    --    Is_Ada_2012_Only
+   --    Is_Ada_2022_Only
    --    Is_Bit_Packed_Array                  (base type only)
    --    Is_Aliased
    --    Is_Character_Type
@@ -5479,6 +5492,7 @@ package Einfo is
    --    Protection_Object                    (for concurrent kind)
    --    Subps_Index                          (non-generic case only)
    --    Interface_Alias
+   --    LSP_Subprogram                       (non-generic case only)
    --    Overridden_Operation
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
@@ -5538,6 +5552,7 @@ package Einfo is
    --    Is_Private_Primitive                 (non-generic case only)
    --    Is_Pure
    --    Is_Visible_Lib_Unit
+   --    Is_Wrapper
    --    Needs_No_Actuals
    --    Requires_Overriding                  (non-generic case only)
    --    Return_Present
@@ -5679,6 +5694,7 @@ package Einfo is
    --    Linker_Section_Pragma
    --    Contract
    --    Import_Pragma
+   --    LSP_Subprogram
    --    SPARK_Pragma
    --    Default_Expressions_Processed
    --    Has_Nested_Subprogram
@@ -5689,6 +5705,7 @@ package Einfo is
    --    Is_Machine_Code_Subprogram
    --    Is_Primitive
    --    Is_Pure
+   --    Is_Wrapper
    --    SPARK_Pragma_Inherited
    --    Interface_Name $$$
    --    Renamed_Entity $$$
@@ -5833,6 +5850,7 @@ package Einfo is
    --    Protection_Object                    (for concurrent kind)
    --    Subps_Index                          (non-generic case only)
    --    Interface_Alias
+   --    LSP_Subprogram                       (non-generic case only)
    --    Overridden_Operation                 (never for init proc)
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
@@ -5891,6 +5909,7 @@ package Einfo is
    --    Is_Private_Descendant
    --    Is_Private_Primitive                 (non-generic case only)
    --    Is_Pure
+   --    Is_Wrapper
    --    Is_Valued_Procedure
    --    Is_Visible_Lib_Unit
    --    Needs_No_Actuals

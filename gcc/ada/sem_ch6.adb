@@ -6265,7 +6265,9 @@ package body Sem_Ch6 is
 
             --  Null exclusion must match
 
-            if not Null_Exclusions_Match (Old_Formal, New_Formal) then
+            if not Relaxed_RM_Semantics
+              and then not Null_Exclusions_Match (Old_Formal, New_Formal)
+            then
                Conformance_Error
                  ("\null exclusion for& does not match", New_Formal);
 
@@ -7271,10 +7273,14 @@ package body Sem_Ch6 is
                then
                   Set_Overridden_Operation    (Subp, Alias (Overridden_Subp));
                   Inherit_Subprogram_Contract (Subp, Alias (Overridden_Subp));
+                  Set_Is_Ada_2022_Only        (Subp,
+                    Is_Ada_2022_Only (Alias (Overridden_Subp)));
 
                else
                   Set_Overridden_Operation    (Subp, Overridden_Subp);
                   Inherit_Subprogram_Contract (Subp, Overridden_Subp);
+                  Set_Is_Ada_2022_Only        (Subp,
+                    Is_Ada_2022_Only (Overridden_Subp));
                end if;
             end if;
          end if;
@@ -11888,10 +11894,13 @@ package body Sem_Ch6 is
                   if Present (Alias (S)) then
                      Set_Overridden_Operation    (E, Alias (S));
                      Inherit_Subprogram_Contract (E, Alias (S));
+                     Set_Is_Ada_2022_Only        (E,
+                       Is_Ada_2022_Only (Alias (S)));
 
                   else
                      Set_Overridden_Operation    (E, S);
                      Inherit_Subprogram_Contract (E, S);
+                     Set_Is_Ada_2022_Only        (E, Is_Ada_2022_Only (S));
                   end if;
 
                   --  When a dispatching operation overrides an inherited
@@ -12058,6 +12067,8 @@ package body Sem_Ch6 is
                   then
                      Set_Overridden_Operation    (S, Alias (E));
                      Inherit_Subprogram_Contract (S, Alias (E));
+                     Set_Is_Ada_2022_Only        (S,
+                       Is_Ada_2022_Only (Alias (E)));
 
                   --  Normal case of setting entity as overridden
 
@@ -12069,8 +12080,22 @@ package body Sem_Ch6 is
                   --  must check whether the target is an init_proc.
 
                   elsif not Is_Init_Proc (S) then
-                     Set_Overridden_Operation    (S, E);
-                     Inherit_Subprogram_Contract (S, E);
+
+                     --  LSP wrappers must override the ultimate alias of their
+                     --  wrapped dispatching primitive E; required to traverse
+                     --  the chain of ancestor primitives (c.f. Map_Primitives)
+                     --  They don't inherit contracts.
+
+                     if Is_Wrapper (S)
+                       and then Present (LSP_Subprogram (S))
+                     then
+                        Set_Overridden_Operation    (S, Ultimate_Alias (E));
+                     else
+                        Set_Overridden_Operation    (S, E);
+                        Inherit_Subprogram_Contract (S, E);
+                     end if;
+
+                     Set_Is_Ada_2022_Only (S, Is_Ada_2022_Only (E));
                   end if;
 
                   Check_Overriding_Indicator (S, E, Is_Primitive => True);
@@ -12097,8 +12122,22 @@ package body Sem_Ch6 is
                           Is_Predefined_Dispatching_Operation (Alias (E)))
                   then
                      if Present (Alias (E)) then
-                        Set_Overridden_Operation    (S, Alias (E));
-                        Inherit_Subprogram_Contract (S, Alias (E));
+
+                        --  LSP wrappers must override the ultimate alias of
+                        --  their wrapped dispatching primitive E; required to
+                        --  traverse the chain of ancestor primitives (see
+                        --  Map_Primitives). They don't inherit contracts.
+
+                        if Is_Wrapper (S)
+                          and then Present (LSP_Subprogram (S))
+                        then
+                           Set_Overridden_Operation    (S, Ultimate_Alias (E));
+                        else
+                           Set_Overridden_Operation    (S, Alias (E));
+                           Inherit_Subprogram_Contract (S, Alias (E));
+                        end if;
+
+                        Set_Is_Ada_2022_Only (S, Is_Ada_2022_Only (Alias (E)));
                      end if;
                   end if;
 

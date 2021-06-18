@@ -167,13 +167,10 @@ package Sem_Disp is
    procedure Override_Dispatching_Operation
      (Tagged_Type : Entity_Id;
       Prev_Op     : Entity_Id;
-      New_Op      : Entity_Id;
-      Is_Wrapper  : Boolean := False);
+      New_Op      : Entity_Id);
    --  Replace an implicit dispatching operation of the type Tagged_Type
    --  with an explicit one. Prev_Op is an inherited primitive operation which
-   --  is overridden by the explicit declaration of New_Op. Is_Wrapper is
-   --  True when New_Op is an internally generated wrapper of a controlling
-   --  function. The caller checks that Tagged_Type is indeed a tagged type.
+   --  is overridden by the explicit declaration of New_Op.
 
    procedure Propagate_Tag (Control : Node_Id; Actual : Node_Id);
    --  If a function call given by Actual is tag-indeterminate, its controlling

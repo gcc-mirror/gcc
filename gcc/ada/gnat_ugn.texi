@@ -3107,8 +3107,7 @@ that is performed by the front end of the compiler. This inlining does
 not require that the code generation be optimized. Like @code{-gnatn},
 the use of this switch generates additional dependencies.
 
-When using a gcc-based back end (in practice this means using any version
-of GNAT other than for the JVM, .NET or GNAAMP platforms), then the use of
+When using a gcc-based back end, then the use of
 @code{-gnatN} is deprecated, and the use of @code{-gnatn} is preferred.
 Historically front end inlining was more extensive than the gcc back end
 inlining, but that is no longer the case.
@@ -8581,6 +8580,18 @@ marker is specified, the callgraph is decorated with information about
 dynamically allocated objects.
 @end table
 
+@geindex -fdiagnostics-format (gcc)
+
+
+@table @asis
+
+@item @code{-fdiagnostics-format=json}
+
+Makes GNAT emit warning and error messages as JSON. Inhibits printing of
+text warning and errors messages except if @code{-gnatv} or
+@code{-gnatl} are present.
+@end table
+
 @geindex -fdump-scos (gcc)
 
 
@@ -9275,8 +9286,7 @@ be specified in GNAT. It is computed for GCC backends as @code{BIGGEST_ALIGNMENT
 follows: @cite{Biggest alignment that any data type can require on this machine@comma{} in bits.}
 
 @code{Max_Unaligned_Field} is the maximum size for unaligned bit field, which is
-64 for the majority of GCC targets (but can be different on some targets like
-AAMP).
+64 for the majority of GCC targets (but can be different on some targets).
 
 @code{Strict_Alignment} is the equivalent of GCC macro @code{STRICT_ALIGNMENT}
 documented as follows: @cite{Define this macro to be the value 1 if instructions will fail to work if given data not on the nominal alignment. If instructions will merely go slower in that case@comma{} define this macro as 0.}
@@ -9309,8 +9319,9 @@ name  digs float_rep size alignment
 where @code{name} is the string name of the type (which can have
 single spaces embedded in the name (e.g. long double), @code{digs} is
 the number of digits for the floating-point type, @code{float_rep} is
-the float representation (I/V/A for IEEE-754-Binary, Vax_Native,
-AAMP), @code{size} is the size in bits, @code{alignment} is the
+the float representation (I for IEEE-754-Binary, which is
+the only one supported at this time),
+@code{size} is the size in bits, @code{alignment} is the
 alignment in bits. The name is followed by at least two blanks, fields
 are separated by at least one blank, and a LF character immediately
 follows the alignment field.
@@ -9634,8 +9645,7 @@ pragma @code{Inline} is specified. This inlining is performed
 by the front end and will be visible in the
 @code{-gnatG} output.
 
-When using a gcc-based back end (in practice this means using any version
-of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
+When using a gcc-based back end, then the use of
 @code{-gnatN} is deprecated, and the use of @code{-gnatn} is preferred.
 Historically front end inlining was more extensive than the gcc back end
 inlining, but that is no longer the case.
@@ -14691,8 +14701,7 @@ see @ref{100,,Inlining of Subprograms}.
 This switch activates front-end inlining which also
 generates additional dependencies.
 
-When using a gcc-based back end (in practice this means using any version
-of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
+When using a gcc-based back end, then the use of
 @code{-gnatN} is deprecated, and the use of @code{-gnatn} is preferred.
 Historically front end inlining was more extensive than the gcc back end
 inlining, but that is no longer the case.

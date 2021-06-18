@@ -9703,10 +9703,10 @@ package body Exp_Ch3 is
             --  to override interface primitives.
 
             Mutate_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
+            Set_Is_Wrapper (Defining_Unit_Name (Func_Spec));
 
             Override_Dispatching_Operation
-              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec),
-               Is_Wrapper => True);
+              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec));
          end if;
 
       <<Next_Prim>>

@@ -84,7 +84,6 @@ package body Opt is
       Default_SSO_Config                    := Default_SSO;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed_Config := Exception_Locations_Suppressed;
-      Extensions_Allowed_Config             := Extensions_Allowed;
       External_Name_Exp_Casing_Config       := External_Name_Exp_Casing;
       External_Name_Imp_Casing_Config       := External_Name_Imp_Casing;
       Fast_Math_Config                      := Fast_Math;
@@ -123,7 +122,6 @@ package body Opt is
       Default_SSO                    := Save.Default_SSO;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed := Save.Exception_Locations_Suppressed;
-      Extensions_Allowed             := Save.Extensions_Allowed;
       External_Name_Exp_Casing       := Save.External_Name_Exp_Casing;
       External_Name_Imp_Casing       := Save.External_Name_Imp_Casing;
       Fast_Math                      := Save.Fast_Math;
@@ -165,7 +163,6 @@ package body Opt is
          Default_SSO                    => Default_SSO,
          Dynamic_Elaboration_Checks     => Dynamic_Elaboration_Checks,
          Exception_Locations_Suppressed => Exception_Locations_Suppressed,
-         Extensions_Allowed             => Extensions_Allowed,
          External_Name_Exp_Casing       => External_Name_Exp_Casing,
          External_Name_Imp_Casing       => External_Name_Imp_Casing,
          Fast_Math                      => Fast_Math,
@@ -204,7 +201,6 @@ package body Opt is
          Ada_Version_Pragma          := Empty;
          Default_SSO                 := ' ';
          Dynamic_Elaboration_Checks  := False;
-         Extensions_Allowed          := True;
          External_Name_Exp_Casing    := As_Is;
          External_Name_Imp_Casing    := Lowercase;
          No_Component_Reordering     := False;
@@ -263,7 +259,6 @@ package body Opt is
          Check_Policy_List           := Check_Policy_List_Config;
          Default_SSO                 := Default_SSO_Config;
          Dynamic_Elaboration_Checks  := Dynamic_Elaboration_Checks_Config;
-         Extensions_Allowed          := Extensions_Allowed_Config;
          External_Name_Exp_Casing    := External_Name_Exp_Casing_Config;
          External_Name_Imp_Casing    := External_Name_Imp_Casing_Config;
          Fast_Math                   := Fast_Math_Config;

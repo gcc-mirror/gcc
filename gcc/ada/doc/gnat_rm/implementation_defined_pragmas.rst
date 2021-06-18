@@ -2062,27 +2062,6 @@ string or a static string expressions that evaluates to the null
 string. In this case, no external name is generated. This form
 still allows the specification of parameter mechanisms.
 
-Pragma Export_Value
-===================
-
-Syntax:
-
-
-::
-
-  pragma Export_Value (
-    [Value     =>] static_integer_EXPRESSION,
-    [Link_Name =>] static_string_EXPRESSION);
-
-
-This pragma serves to export a static integer value for external use.
-The first argument specifies the value to be exported. The Link_Name
-argument specifies the symbolic name to be associated with the integer
-value. This pragma is useful for defining a named static value in Ada
-that can be referenced in assembly language units to be linked with
-the application. This pragma is currently supported only for the
-AAMP target and is ignored for other targets.
-
 Pragma Export_Valued_Procedure
 ==============================
 
@@ -2210,7 +2189,7 @@ extension mode (the use of Off as a parameter cancels the effect
 of the *-gnatX* command switch).
 
 In extension mode, the latest version of the Ada language is
-implemented (currently Ada 202x), and in addition a small number
+implemented (currently Ada 2022), and in addition a number
 of GNAT specific extensions are recognized as follows:
 
 * Constrained attribute for generic objects
@@ -2235,7 +2214,7 @@ of GNAT specific extensions are recognized as follows:
   This new aggregate syntax for arrays and containers is provided under -gnatX
   to experiment and confirm this new language syntax.
 
-* Casing on composite values
+* Casing on composite values (aka pattern matching)
 
   The selector for a case statement may be of a composite type, subject to
   some restrictions (described below). Aggregate syntax is used for choices
@@ -2246,7 +2225,7 @@ of GNAT specific extensions are recognized as follows:
 
   Consider this example:
 
-   .. code-block:: ada
+  .. code-block:: ada
 
       type Rec is record
          F1, F2 : Integer;
@@ -2321,6 +2300,50 @@ of GNAT specific extensions are recognized as follows:
   define the same set of bindings and the component subtypes for
   for a given identifer must all statically match. Currently, the case
   of a binding for a nondiscrete component is not implemented.
+
+* Fixed lower bounds for array types and subtypes
+
+  Unconstrained array types and subtypes can be specified with a lower bound
+  that is fixed to a certain value, by writing an index range that uses the
+  syntax "<lower-bound-expression> .. <>". This guarantees that all objects
+  of the type or subtype will have the specified lower bound.
+
+  For example, a matrix type with fixed lower bounds of zero for each
+  dimension can be declared by the following:
+
+  .. code-block:: ada
+
+      type Matrix is
+        array (Natural range 0 .. <>, Natural range 0 .. <>) of Integer;
+
+  Objects of type Matrix declared with an index constraint must have index
+  ranges starting at zero:
+
+  .. code-block:: ada
+
+      M1 : Matrix (0 .. 9, 0 .. 19);
+      M2 : Matrix (2 .. 11, 3 .. 22);  -- Warning about bounds; will raise CE
+
+  Similarly, a subtype of String can be declared that specifies the lower
+  bound of objects of that subtype to be 1:
+
+   .. code-block:: ada
+
+      subtype String_1 is String (1 .. <>);
+
+  If a string slice is passed to a formal of subtype String_1 in a call to
+  a subprogram S, the slice's bounds will "slide" so that the lower bound
+  is 1. Within S, the lower bound of the formal is known to be 1, so, unlike
+  a normal unconstrained String formal, there is no need to worry about
+  accounting for other possible lower-bound values. Sliding of bounds also
+  occurs in other contexts, such as for object declarations with an
+  unconstrained subtype with fixed lower bound, as well as in subtype
+  conversions.
+
+  Use of this feature increases safety by simplifying code, and can also
+  improve the efficiency of indexing operations, since the compiler statically
+  knows the lower bound of unconstrained array formals when the formal's
+  subtype has index ranges with static fixed lower bounds.
 
 .. _Pragma-Extensions_Visible:
 
@@ -3200,13 +3223,7 @@ Syntax:
 
 
 This program unit pragma is supported for parameterless protected procedures
-as described in Annex C of the Ada Reference Manual. On the AAMP target
-the pragma can also be specified for nonprotected parameterless procedures
-that are declared at the library level (which includes procedures
-declared at the top level of a library package). In the case of AAMP,
-when this pragma is applied to a nonprotected procedure, the instruction
-``IERET`` is generated for returns from the procedure, enabling
-maskable interrupts, in place of the normal return instruction.
+as described in Annex C of the Ada Reference Manual.
 
 Pragma Interrupt_State
 ======================
@@ -6999,32 +7016,6 @@ access types designating this type were subject to pragma No_Strict_Aliasing.
 For a detailed description of the strict aliasing optimization, and the
 situations in which it must be suppressed, see the section on
 ``Optimization and Strict Aliasing`` in the :title:`GNAT User's Guide`.
-
-.. _Pragma-Universal_Data:
-
-Pragma Universal_Data
-=====================
-
-Syntax:
-
-
-::
-
-  pragma Universal_Data [(library_unit_Name)];
-
-
-This pragma is supported only for the AAMP target and is ignored for
-other targets. The pragma specifies that all library-level objects
-(Counter 0 data) associated with the library unit are to be accessed
-and updated using universal addressing (24-bit addresses for AAMP5)
-rather than the default of 16-bit Data Environment (DENV) addressing.
-Use of this pragma will generally result in less efficient code for
-references to global data associated with the library unit, but
-allows such data to be located anywhere in memory. This pragma is
-a library unit pragma, but can also be used as a configuration pragma
-(including use in the :file:`gnat.adc` file). The functionality
-of this pragma is also available by applying the -univ switch on the
-compilations of units where universal addressing of the data is desired.
 
 .. _Pragma-Unmodified:
 

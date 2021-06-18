@@ -684,9 +684,11 @@ package body Exp_Aggr is
    begin
       --  We bump the maximum size unless the aggregate has a single component
       --  association, which will be more efficient if implemented with a loop.
+      --  The -gnatd_g switch disables this bumping.
 
-      if No (Expressions (N))
-        and then No (Next (First (Component_Associations (N))))
+      if (No (Expressions (N))
+            and then No (Next (First (Component_Associations (N)))))
+        or else Debug_Flag_Underscore_G
       then
          Max_Aggr_Size := Max_Aggregate_Size (N);
       else
@@ -7167,7 +7169,7 @@ package body Exp_Aggr is
             return Build_Siz_Exp (First (Discrete_Choices (Comp)));
 
          elsif Nkind (Comp) = N_Iterated_Element_Association then
-            return -1;    --  TBD, build expression for size of the domain
+            return -1;    --  ??? build expression for size of the domain
 
          else
             return -1;

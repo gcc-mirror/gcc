@@ -115,7 +115,6 @@ package Sem_Prag is
       Pragma_Type_Invariant               => True,
       Pragma_Unchecked_Union              => True,
       Pragma_Universal_Aliasing           => True,
-      Pragma_Universal_Data               => True,
       Pragma_Unmodified                   => True,
       Pragma_Unreferenced                 => True,
       Pragma_Unreferenced_Objects         => True,

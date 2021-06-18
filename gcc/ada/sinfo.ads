@@ -1099,7 +1099,7 @@ package Sinfo is
    --  Do_Accessibility_Check
    --    This flag is set on N_Parameter_Specification nodes to indicate
    --    that an accessibility check is required for the parameter. It is
-   --    not yet decided who takes care of this check (TBD ???).
+   --    not yet decided who takes care of this check???.
 
    --  Do_Discriminant_Check
    --    This flag is set on N_Selected_Component nodes to indicate that a
@@ -1190,7 +1190,7 @@ package Sinfo is
    --    N_Procedure_Call_Statement, N_Type_Conversion,
    --    N_Simple_Return_Statement, or N_Extended_Return_Statement
    --    node to indicate that the tag check can be suppressed. It is not
-   --    yet decided how this flag is used (TBD ???).
+   --    yet decided how this flag is used???.
 
    --  Elaborate_Present
    --    This flag is set in the N_With_Clause node to indicate that pragma

@@ -15222,14 +15222,15 @@ package body Sem_Ch12 is
             --  subunit of a generic contains an instance of a child unit of
             --  its generic parent unit.
 
-            elsif S = Current_Scope and then Is_Generic_Instance (S) then
+            elsif S = Current_Scope and then Is_Generic_Instance (S)
+              and then (In_Package_Body (S) or else In_Private_Part (S))
+            then
                declare
                   Par : constant Entity_Id :=
                           Generic_Parent (Package_Specification (S));
                begin
                   if Present (Par)
                     and then P = Scope (Par)
-                    and then (In_Package_Body (S) or else In_Private_Part (S))
                   then
                      Set_In_Private_Part (P);
                      Install_Private_Declarations (P);
