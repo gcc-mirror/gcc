@@ -590,9 +590,15 @@ public:
    The options array consists of couplets of information where the
    first item in each couplet is the string describing which option
    name was selected (arch, cpu, fpu) and the second is the value
-   passed for that option.  */
-const char *
-arm_canon_arch_option (int argc, const char **argv)
+   passed for that option.
+
+   arch_for_multilib is boolean variable taking value true or false.
+   arch_for_multilib is false when the canonical representation is for -march
+   option and it is true when canonical representation is for -mlibarch option.
+   On passing arch_for_multilib true the canonical string generated will be
+   without the compiler options which are not required for multilib linking.  */
+static const char *
+arm_canon_arch_option_1 (int argc, const char **argv, bool arch_for_multilib)
 {
   const char *arch = NULL;
   const char *cpu = NULL;
@@ -657,8 +663,8 @@ arm_canon_arch_option (int argc, const char **argv)
   /* First build up a bitmap describing the target architecture.  */
   if (arch)
     {
-      selected_arch = arm_parse_arch_option_name (all_architectures,
-						  "-march", arch);
+      selected_arch = arm_parse_arch_option_name (all_architectures, "-march",
+						  arch, !arch_for_multilib);
 
       if (selected_arch == NULL)
 	return "";
@@ -666,6 +672,15 @@ arm_canon_arch_option (int argc, const char **argv)
       arm_initialize_isa (target_isa, selected_arch->common.isa_bits);
       arm_parse_option_features (target_isa, &selected_arch->common,
 				 strchr (arch, '+'));
+      if (arch_for_multilib)
+	{
+	  const enum isa_feature removable_bits[] = {ISA_IGNORE_FOR_MULTILIB,
+						     isa_nobit};
+	  sbitmap isa_bits = sbitmap_alloc (isa_num_bits);
+	  arm_initialize_isa (isa_bits, removable_bits);
+	  bitmap_and_compl (target_isa, target_isa, isa_bits);
+	}
+
       if (fpu && strcmp (fpu, "auto") != 0)
 	{
 	  /* We assume that architectures do not have any FPU bits
@@ -682,7 +697,8 @@ arm_canon_arch_option (int argc, const char **argv)
   else if (cpu)
     {
       const cpu_option *selected_cpu
-	= arm_parse_cpu_option_name (all_cores, "-mcpu", cpu);
+	= arm_parse_cpu_option_name (all_cores, "-mcpu", cpu,
+				     !arch_for_multilib);
 
       if (selected_cpu == NULL)
 	return "";
@@ -1032,3 +1048,22 @@ arm_asm_auto_mfpu (int argc, const char **argv)
 #define TARGET_EXCEPT_UNWIND_INFO  arm_except_unwind_info
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
+
+/* Returns a canonical representation of the -march option from the current
+   -march string (if given) and other options on the command line that might
+   affect the architecture.  */
+const char *
+arm_canon_arch_option (int argc, const char **argv)
+{
+  return arm_canon_arch_option_1 (argc, argv, false);
+}
+
+/* Returns a canonical representation of the -mlibarch option from the current
+   -march string (if given) and other options on the command line that might
+   affect the architecture after removing the compiler extension options which
+   are not required for multilib linking.  */
+const char *
+arm_canon_arch_multilib_option (int argc, const char **argv)
+{
+  return arm_canon_arch_option_1 (argc, argv, true);
+}
