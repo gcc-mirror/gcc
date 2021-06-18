@@ -4157,10 +4157,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
 			build_empty_stmt (input_location));
       gfc_add_expr_to_block (&se->pre, tmp);
     }
-  if (TREE_CODE (type) == INTEGER_TYPE)
-    se->expr = fold_build1_loc (input_location, FIX_TRUNC_EXPR, type, mvar);
-  else
-    se->expr = convert (type, mvar);
+  se->expr = convert (type, mvar);
 }
 
 
