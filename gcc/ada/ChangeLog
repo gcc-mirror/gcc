@@ -1,3 +1,349 @@
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch3.adb (Check_Ops_From_Incomplete_Type): Protect against
+	no Primitive_Operations.
+
+2021-06-17  Vadim Godunko  <godunko@adacore.com>
+
+	* libgnat/a-strunb__shared.ads (Allocate): Additional parameter
+	to provide additional amount of space to be allocated.
+	* libgnat/a-strunb__shared.adb (Aligned_Max_Length): Limit
+	length to Natural'Last when requested length is larger than it.
+	(Allocate): Merge two slightly different implementations into
+	one.
+
+2021-06-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Discrete_Range_Cond): For an index subtype that
+	has a fixed lower bound, require that the range's lower bound
+	match that of the subtype.
+	(Selected_Range_Checks): Warn about the case where a static
+	lower bound does not equal an index subtype's fixed lower bound.
+	* einfo.ads (Is_Fixed_Lower_Bound_Array_Subtype,
+	Is_Fixed_Lower_Bound_Index_Subtype): Document new entity flag.
+	* exp_ch4.adb (Expand_N_Type_Conversion): If the operand is of
+	an unconstrained array subtype with fixed lower bound, then
+	Expand_Sliding_Conversion is applied to the operand.
+	* exp_ch6.adb (Expand_Simple_Function_Return): If the result
+	subtype is an unconstrained array subtype with fixed lower
+	bound, then Expand_Sliding_Conversion is applied to the return
+	object.
+	* exp_util.ads (Expand_Sliding_Conversion): New procedure for
+	applying a sliding subtype conversion to an array object of a
+	fixed-lower-bound subtype when needed.
+	* exp_util.adb: Add with_clause for Freeze.
+	(Expand_Sliding_Conversion): New procedure for applying a
+	sliding subtype conversion to an array object of a
+	fixed-lower-bound subtype when needed.  It traverses the indexes
+	of the unconstrained array type/subtype to create a target
+	constrained subtype and rewrites the array object to be a
+	conversion to that subtype, when there's at least one index
+	whose lower bound does not statically match the fixed-lower
+	bound of the target subtype.
+	* gen_il-fields.ads (type Opt_Field_Enum): Add literals
+	Is_Fixed_Lower_Bound_Array_Subtype and
+	Is_Fixed_Lower_Bound_Index_Subtype for new flags on type
+	entities.
+	* gen_il-gen-gen_entities.adb: Add calls to
+	Create_Semantic_Field for the new fixed-lower-bound flags on
+	type entities.
+	* par-ch3.adb (P_Array_Type_Definition): Add handling for
+	parsing of fixed-lower-bound index ranges in unconstrained array
+	types. Report an error if such an index is encountered and GNAT
+	language extensions are not enabled.
+	(P_Index_Subtype_Def_With_Fixed_Lower_Bound): Support procedure
+	for parsing unconstrained index ranges.
+	(P_Index_Or_Discriminant_Constraint): Add handling for parsing
+	of index constraints that specify ranges with fixed lower
+	bounds. Report an error if such an index is encountered and GNAT
+	language extensions are not enabled.
+	* sem_ch3.adb (Analyze_Object_Declaration): If the object's
+	nominal subtype is an array subtype with fixed lower bound, then
+	Expand_Sliding_Conversion is applied to the object.
+	(Array_Type_Declaration): Mark the array type and the subtypes
+	of any indexes that specify a fixed lower bound as being
+	fixed-lower-bound subtypes, and set the High_bound of the range
+	of such an index to the upper bound of the named subtype.
+	(Constrain_Array): For an array subtype with one or more index
+	ranges specifying a fixed lower bound, set Is_Constrained to
+	False and set the array subtype's
+	Is_Fixed_Lower_Bound_Array_Subtype flag to True.
+	(Constrain_Index): Mark the subtypes of an index that specifies
+	a fixed lower bound as being a fixed-lower-bound index subtype,
+	and set the High_bound of the range of such an index to the
+	upper bound of the base type of the array type's corresponding
+	index.
+	* sem_res.adb (Resolve_Actuals): If a formal is of an
+	unconstrained array subtype with fixed lower bound, then
+	Expand_Sliding_Conversion is applied to the actual.
+	* sem_util.adb (Build_Actual_Subtype): If the actual subtype
+	corresponds to an unconstrained array subtype having any indexes
+	with fixed lower bounds, then set the lower bounds of any such
+	indexes of the actual subtype to the appropriate fixed lower
+	bound of the formal subtype (rather than taking it from the
+	formal itself).
+	* sprint.adb (Sprint_Node_Actual, case N_Range): If a range's
+	Etype has a fixed lower bound, then print "<>" rather than the
+	High_Bound of the range.
+
+2021-06-17  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Has_Access_Values): New formal
+	Include_Internal to indicate whether internal types should be
+	included.
+	* sem_warn.adb (Check_References): Change E_Out_Parameter to
+	Formal_Kind, to match the comment about Spec_Entity.  Pass
+	Include_Internal => False to Has_Access_Values, so that we warn
+	on types with access values that happen to be in internal types,
+	such as Unbounded_String.
+	* sem_attr.adb (Attribute_Has_Access_Values): Pass
+	Include_Internal => True to Has_Access_Values, to preserve
+	existing behavior.
+	* libgnat/g-rewdat.adb (Do_Output): Change B from 'in out' to
+	'in', to avoid warning enabled by the change to sem_warn.adb.
+	* libgnat/s-objrea.adb (Check_Read_Offset): Change S from 'in
+	out' to 'in', to avoid warning enabled by the change to
+	sem_warn.adb.
+
+2021-06-17  Steve Baird  <baird@adacore.com>
+
+	* exp_ch5.adb
+	(Expand_N_Case_Statement.Expand_General_Case_Statement): New
+	subprogram.
+	(Expand_N_Case_Statement): If extensions are allowed and the
+	case selector is not of a discrete type, then call
+	Expand_General_Case_Statement to generate expansion instead of
+	flagging the non-discrete selector as an error.
+	* sem_case.ads (Is_Case_Choice_Pattern): New Boolean-valued
+	function for testing whether a given expression occurs as part
+	of a case choice pattern.
+	* sem_case.adb (Composite_Case_Ops): New package providing
+	support routines for the new form of case statements. This
+	includes a nested package, Composite_Case_Ops.Value_Sets, which
+	encapsulates the "representative values" implementation of
+	composite value sets.
+	(Check_Choices.Check_Case_Pattern_Choices): New procedure for
+	semantic checking of non-discrete case choices. This includes
+	the checks pertaining to coverage and overlapping.
+	(Check_Choices.Check_Composite_Case_Selector): New procedure for
+	semantic checking of non-discrete case selectors.
+	(Check_Choices): If extensions are allowed then a non-discrete
+	selector type no longer implies that an error must have been
+	flagged earlier.  Instead of simply returning, call
+	Check_Composite_Case_Selector and Check_Case_Pattern_Choices.
+	(Is_Case_Choice_Pattern): Body of new function declared in
+	sem_case.ads .
+	* sem_ch5.adb (Analyze_Case_Statement): If extensions are
+	allowed, then we can't use RM 5.4's "The selecting_expression is
+	expected to be of any discrete type" name resolution rule.
+	Handle the case where the type of the selecting expression is
+	not discrete, as well as the new ambiguous-name-resolution error
+	cases made possible by this change.
+	* sem_res.adb (Resolve_Entity_Name): It is ok to treat the name
+	of a type or subtype as an expression if it is part of a case
+	choice pattern, as in "(Field1 => Positive, Field2 => <>)".
+	* exp_aggr.adb (Expand_Record_Aggregate): Do not expand case
+	choice aggregates.
+	* gen_il-fields.ads: Define two new node attributes,
+	Binding_Chars and Multidefined_Bindings.
+	* gen_il-gen-gen_nodes.adb: The new Multidefined_Bindings
+	attribute is Boolean-valued and may be set on
+	N_Case_Statement_Alternative nodes. The new Binding_Chars
+	attribute is Name_Id-valued and may be set on
+	N_Component_Association nodes.
+	* par-ch4.adb (P_Record_Or_Array_Component_Association): When
+	parsing a component association, check for both new syntax forms
+	used to specify a bound value in a case-choice aggregate.  In
+	the case of a box value, an identifier may occur within the box,
+	as in "Foo => <Abc>" instead of "Foo => <>". In the more general
+	case, an expression (or a box) may be followed by "is
+	<identifier>", as in
+	"Foo => Bar is Abc" instead of just "Foo => Bar".
+	* sem_aggr.adb (Resolve_Record_Aggregate): Do not transform box
+	component values in a case-choice aggregate.
+	* sinfo.ads: Provide comments for the new attributes added in
+	gen_il-fields.ads.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Describe this
+	new feature in documentation for pragma Extensions_Allowed.
+	* gnat_rm.texi: Regenerate.
+
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Expression_With_Actions.Process_Action):
+	Do not abandon processing on a nested N_Expression_With_Actions
+	or N_Loop_Statement, otherwise we may miss some transient
+	declarations.
+
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_util.adb (Find_Hook_Context): Do not stop on an aggregate
+	node.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Valid_Renaming): Check not only indexed
+	components, but slices too.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Private_Extension_Declaration): Check
+	No_Wide_Characters restriction after rejecting illegal parent
+	types.
+	(Derived_Type_Declaration): Likewise.
+	(Find_Type_Of_Subtype_Indic): Remove check for
+	No_Wide_Characters restriction, which was done too early.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Valid_Renaming): Body moved from its nested
+	routine.
+
+2021-06-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Type): If the actual type for an
+	incomplete formal type is also incomplete, but has a Full_View,
+	use the Full_View of the actual type rather than the incomplete
+	view.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(-gnatw.I): Remove double period at the end of sentence.
+	* gnat_ugn.texi: Regenerate.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Denotes_Same_Object): Call Get_Index_Bounds with
+	the range of a slice object, not its type.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Fix style;
+	refactor repeated calls to Nkind; remove early RETURN.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Ignore formal of
+	generic types, but keep examining other parameters.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Remove dead code.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Remove repeated
+	code.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Overlap_Check): Replace Set_Casing with
+	Adjust_Name_Case and adapt surrounding code as needed.
+
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-putaim.ads, libgnat/s-putaim.adb: Move...
+	* libgnarl/s-putaim.ads, libgnarl/s-putaim.adb: ... here.
+
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* uintp.ads, uintp.adb (UI_To_Unsigned_64): New.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Get_Overflow_Mode): Reword error message.
+	* switch-c.adb (Get_Overflow_Mode): Likewise.
+
+2021-06-17  Richard Kenner  <kenner@adacore.com>
+
+	* exp_util.adb (Expand_Static_Predicates_In_Choices): Handle
+	Others_Discrete_Choices in N_Others_Choice.
+
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* atree.adb: Remove redundant comment with spec.
+	* sem_warn.adb: Fix typo in comment.
+
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* atree.adb: Do not suppress checks.
+
+2021-06-17  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb (Check_Missing_Others): Add comment.
+	(Build_Initialization_Call): Remove inaccurate accessibility
+	comment.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Remove
+	test for Ada2012.
+	(Analyze_Package_Instantiation): Remove speculative comment.
+	(Inline_Instance_Body): Add comments for loops.
+	(Build_Subprogram_Renaming): Remove comment about fix being
+	partial and "ugly."
+	(Instantiate_Subprogram_Body): Remove comment referencing DEC
+	related internal issue.
+	(Subtypes_Match): Add comment and simplify anonymous access
+	test.
+	(Is_Global): Add test for when E is an expanded name, and
+	calculate the scope accordingly.
+	* sem_ch6.adb (Analyze_Function_Return): Update comment
+	regarding accessibility, and add check for
+	Warn_On_Ada_2012_Compatibility.
+	(Mask_Type_Refs): Add comments.
+	(Analyze_Subprogram_Declaration): Remove mysterious suppression
+	of elaboration checks.
+	* sem_ch7.adb (Preserve_Full_Attributes): Preserve Is_Atomic
+	value.
+	* sem_ch8.adb (Most_Descendant_Use_Clause): Remove comment.
+	(Note_Redundant_Use): Fix calls to Find_First_Use to be
+	Find_Most_Prev.
+	(Get_Object_Name): Modify error message to be more descriptive.
+	(Known_But_Visible): Remove mysterious special case for
+	GNAT_Mode.
+	(Find_First_Use): Removed.
+	(Find_Most_Prev): Renamed from Find_First_Use.
+	* sem_prag.adb (Check_Static_Constraint): Add comments to
+	routine.
+
+2021-06-17  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb (Print_Node): Display the Entity or Associated_Node
+	fields if appropriate.
+	* sinfo-utils.ads (F_Associated_Node, F_Entity): Remove. These
+	are no longer needed.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Apply_Parameter_Aliasing_Checks): Replace calls to
+	Is_Object_Reference with calls to Is_Name_Reference; remove
+	asymmetric condition that only detected an aggregate as the
+	first actual (aggregate objects were just a special case of an
+	object reference that was not a name).
+
+2021-06-17  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb, gen_il-internals.ads: Generate field
+	enumeration literals with "F_" prefix.  Update all generated
+	references accordingly.
+	* atree.adb, einfo-utils.adb, sem_ch3.adb, sem_ch5.adb,
+	sem_ch6.adb, sem_ch8.adb, sinfo-cn.adb, sinfo-utils.adb,
+	sinfo-utils.ads, treepr.adb: Add "F_" prefix to all uses of the
+	field enumeration literals.
+
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/i-c.ads, libgnat/i-cexten.ads,
+	libgnat/i-cexten__128.ads: bool renamed C_bool.
+
+2021-06-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Reject allocators in
+	restricted contexts.
+
+2021-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Use libgnat.so if libgnat.a cannot
+	be found.
+
 2021-06-16  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (Is_Volatile_Function): Follow the exact wording

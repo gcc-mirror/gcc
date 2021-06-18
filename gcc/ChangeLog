@@ -1,3 +1,176 @@
+2021-06-17  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_logical_addsubf): Add
+	earlyclobber to alts 0/1.
+	(gen_addadd): Add earlyclobber to alts 0/1.
+	* config/rs6000/fusion.md: Regenerate file.
+
+2021-06-17  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgloopanal.c (get_loop_hot_path): Make path an auto_vec.
+
+2021-06-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc: Comment cleanups.
+	* gimple-range-gori.cc: Comment cleanups.
+	* gimple-range.cc: Comment/spacing cleanups
+	* value-range.h: Comment cleanups.
+
+2021-06-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/100704
+	* calls.c (expand_call): Replace PUSH_ARGS with
+	targetm.calls.push_argument (0).
+	(emit_library_call_value_1): Likewise.
+	* defaults.h (PUSH_ARGS): Removed.
+	(PUSH_ARGS_REVERSED): Replace PUSH_ARGS with
+	targetm.calls.push_argument (0).
+	* expr.c (block_move_libcall_safe_for_call_parm): Likewise.
+	(emit_push_insn): Pass the number bytes to push to
+	targetm.calls.push_argument and pass 0 if ARGS_ADDR is 0.
+	* hooks.c (hook_bool_uint_true): New.
+	* hooks.h (hook_bool_uint_true): Likewise.
+	* rtlanal.c (nonzero_bits1): Replace PUSH_ARGS with
+	targetm.calls.push_argument (0).
+	* target.def (push_argument): Add a targetm.calls hook.
+	* targhooks.c (default_push_argument): New.
+	* targhooks.h (default_push_argument): Likewise.
+	* config/bpf/bpf.h (PUSH_ARGS): Removed.
+	* config/cr16/cr16.c (TARGET_PUSH_ARGUMENT): New.
+	* config/cr16/cr16.h (PUSH_ARGS): Removed.
+	* config/i386/i386.c (ix86_push_argument): New.
+	(TARGET_PUSH_ARGUMENT): Likewise.
+	* config/i386/i386.h (PUSH_ARGS): Removed.
+	* config/m32c/m32c.c (TARGET_PUSH_ARGUMENT): New.
+	* config/m32c/m32c.h (PUSH_ARGS): Removed.
+	* config/nios2/nios2.h (PUSH_ARGS): Likewise.
+	* config/pru/pru.h (PUSH_ARGS): Likewise.
+	* doc/tm.texi.in: Remove PUSH_ARGS documentation.  Add
+	TARGET_PUSH_ARGUMENT hook.
+	* doc/tm.texi: Regenerated.
+
+2021-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97194
+	* config/i386/i386-expand.c (expand_vector_set_var):
+	Handle V2FS mode remapping.  Pass TARGET_MMX_WITH_SSE to
+	ix86_expand_vector_init_duplicate.
+	(ix86_expand_vector_init_duplicate): Emit insv_1 for
+	QImode for !TARGET_PARTIAL_REG_STALL.
+	* config/i386/predicates.md (vec_setm_mmx_operand): New predicate.
+	* config/i386/mmx.md (vec_setv2sf): Use vec_setm_mmx_operand
+	as operand 2 predicate.  Call ix86_expand_vector_set_var
+	for non-constant index operand.
+	(vec_setv2si): Ditto.
+	(vec_setv4hi): Ditto.
+	(vec_setv8qi): ditto.
+
+2021-06-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/100790
+	* gimple-range.cc (range_of_builtin_call): Cleanup clz and ctz
+	code.
+
+2021-06-17  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Use consistently -O1 instead of -O.
+
+2021-06-17  Martin Liska  <mliska@suse.cz>
+
+	* gcov-io.h: Update documentation entry about string format.
+
+2021-06-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	PR target/100871
+	* config/s390/vecintrin.h (vec_doublee): Fix to use
+	  __builtin_s390_vflls.
+	(vec_floate): Fix to use __builtin_s390_vflrd.
+
+2021-06-17  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* dominance.c (get_dominated_to_depth): Return auto_vec<basic_block>.
+	* dominance.h (get_dominated_to_depth): Likewise.
+	(get_all_dominated_blocks): Likewise.
+	* cfgcleanup.c (delete_unreachable_blocks): Adjust.
+	* gcse.c (hoist_code): Likewise.
+	* tree-cfg.c (remove_edge_and_dominated_blocks): Likewise.
+	* tree-parloops.c (oacc_entry_exit_ok): Likewise.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-phiprop.c (pass_phiprop::execute): Likewise.
+
+2021-06-17  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* dominance.c (get_dominated_by_region): Return auto_vec<basic_block>.
+	* dominance.h (get_dominated_by_region): Likewise.
+	* tree-cfg.c (gimple_duplicate_sese_region): Adjust.
+	(gimple_duplicate_sese_tail): Likewise.
+	(move_sese_region_to_fn): Likewise.
+
+2021-06-17  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* dominance.c (get_dominated_by): Return auto_vec<basic_block>.
+	* dominance.h (get_dominated_by): Likewise.
+	* auto-profile.c (afdo_find_equiv_class): Adjust.
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Likewise.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Likewise.
+	* tree-cfg.c (test_linear_chain): Likewise.
+	(test_diamond): Likewise.
+
+2021-06-17  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgloop.h (get_loop_hot_path): Return auto_vec<basic_block>.
+	* cfgloopanal.c (get_loop_hot_path): Likewise.
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Likewise.
+
+2021-06-17  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cgraph.c (cgraph_node::collect_callers): Return
+	auto_vec<cgraph_edge *>.
+	* cgraph.h (cgraph_node::collect_callers): Likewise.
+	* ipa-cp.c (create_specialized_node): Adjust.
+	(decide_about_value): Likewise.
+	(decide_whether_version_node): Likewise.
+	* ipa-sra.c (process_isra_node_results): Likewise.
+
+2021-06-17  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* vec.h (vl_ptr>::using_auto_storage): Handle null m_vec.
+	(auto_vec<T, 0>::auto_vec): Define move constructor, and delete copy
+	constructor.
+	(auto_vec<T, 0>::operator=): Define move assignment and delete copy
+	assignment.
+
+2021-06-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range.cc (debug_seed_ranger): New.
+	(dump_ranger): New.
+	(debug_ranger): New.
+
+2021-06-17  Richard Biener   <rguenther@suse.de>
+
+	PR tree-optimization/54400
+	* tree-vectorizer.h (enum slp_instance_kind): Add
+	slp_inst_kind_bb_reduc.
+	(reduction_fn_for_scalar_code): Declare.
+	* tree-vect-data-refs.c (vect_slp_analyze_instance_dependence):
+	Check SLP_INSTANCE_KIND instead of looking at the
+	representative.
+	(vect_slp_analyze_instance_alignment): Likewise.
+	* tree-vect-loop.c (reduction_fn_for_scalar_code): Export.
+	* tree-vect-slp.c (vect_slp_linearize_chain): Split out
+	chain linearization from vect_build_slp_tree_2 and generalize
+	for the use of BB reduction vectorization.
+	(vect_build_slp_tree_2): Adjust accordingly.
+	(vect_optimize_slp): Elide permutes at the root of BB reduction
+	instances.
+	(vectorizable_bb_reduc_epilogue): New function.
+	(vect_slp_prune_covered_roots): Likewise.
+	(vect_slp_analyze_operations): Use them.
+	(vect_slp_check_for_constructors): Recognize associatable
+	chains for BB reduction vectorization.
+	(vectorize_slp_instance_root_stmt): Generate code for the
+	BB reduction epilogue.
+
 2021-06-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-gori.cc (gori_compute::has_edge_range_p): Check with

@@ -1,3 +1,14 @@
+2021-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101106
+	* decl.c (duplicate_decls): Make 'deleted after first declaration'
+	pedwarn on by default.
+
+2021-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101029
+	* init.c (build_vec_init): Preserve the type of base.
+
 2021-06-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101078

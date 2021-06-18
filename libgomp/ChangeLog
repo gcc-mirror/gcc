@@ -1,3 +1,92 @@
+2021-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* hashtab.h (htab_clear): New function with initialization code
+	factored out from...
+	(htab_create): ...here, adjust to use htab_clear function.
+	* libgomp.h (REFCOUNT_SPECIAL): New symbol to denote range of
+	special refcount values, add comments.
+	(REFCOUNT_INFINITY): Adjust definition to use REFCOUNT_SPECIAL.
+	(REFCOUNT_LINK): Likewise.
+	(REFCOUNT_STRUCTELEM): New special refcount range for structure
+	element siblings.
+	(REFCOUNT_STRUCTELEM_P): Macro for testing for structure element
+	sibling maps.
+	(REFCOUNT_STRUCTELEM_FLAG_FIRST): Flag to indicate first sibling.
+	(REFCOUNT_STRUCTELEM_FLAG_LAST):  Flag to indicate last sibling.
+	(REFCOUNT_STRUCTELEM_FIRST_P): Macro to test _FIRST flag.
+	(REFCOUNT_STRUCTELEM_LAST_P): Macro to test _LAST flag.
+	(struct splay_tree_key_s): Add structelem_refcount and
+	structelem_refcount_ptr fields into a union with dynamic_refcount.
+	Add comments.
+	(gomp_map_vars): Delete declaration.
+	(gomp_map_vars_async): Likewise.
+	(gomp_unmap_vars): Likewise.
+	(gomp_unmap_vars_async): Likewise.
+	(goacc_map_vars): New declaration.
+	(goacc_unmap_vars): Likewise.
+	* oacc-mem.c (acc_map_data): Adjust to use goacc_map_vars.
+	(goacc_enter_datum): Likewise.
+	(goacc_enter_data_internal): Likewise.
+	* oacc-parallel.c (GOACC_parallel_keyed): Adjust to use goacc_map_vars
+	and goacc_unmap_vars.
+	(GOACC_data_start): Adjust to use goacc_map_vars.
+	(GOACC_data_end): Adjust to use goacc_unmap_vars.
+	* target.c (hash_entry_type): New typedef.
+	(htab_alloc): New function hook for hashtab.h.
+	(htab_free): Likewise.
+	(htab_hash): Likewise.
+	(htab_eq): Likewise.
+	(hashtab.h): Add file include.
+	(gomp_increment_refcount): New function.
+	(gomp_decrement_refcount): Likewise.
+	(gomp_map_vars_existing): Add refcount_set parameter, adjust to use
+	gomp_increment_refcount.
+	(gomp_map_fields_existing): Add refcount_set parameter, adjust calls
+	to gomp_map_vars_existing.
+	(gomp_map_vars_internal): Add refcount_set parameter, add local openmp_p
+	variable to guard OpenMP specific paths, adjust calls to
+	gomp_map_vars_existing, add structure element sibling splay_tree_key
+	sequence creation code, adjust Fortran map case to avoid increment
+	under OpenMP.
+	(gomp_map_vars): Adjust to static, add refcount_set parameter, manage
+	local refcount_set if caller passed in NULL, adjust call to
+	gomp_map_vars_internal.
+	(gomp_map_vars_async): Adjust and rename into...
+	(goacc_map_vars): ...this new function, adjust call to
+	gomp_map_vars_internal.
+	(gomp_remove_splay_tree_key): New function with code factored out from
+	gomp_remove_var_internal.
+	(gomp_remove_var_internal): Add code to handle removing multiple
+	splay_tree_key sequence for structure elements, adjust code to use
+	gomp_remove_splay_tree_key for splay-tree key removal.
+	(gomp_unmap_vars_internal): Add refcount_set parameter, adjust to use
+	gomp_decrement_refcount.
+	(gomp_unmap_vars): Adjust to static, add refcount_set parameter, manage
+	local refcount_set if caller passed in NULL, adjust call to
+	gomp_unmap_vars_internal.
+	(gomp_unmap_vars_async): Adjust and rename into...
+	(goacc_unmap_vars): ...this new function, adjust call to
+	gomp_unmap_vars_internal.
+	(GOMP_target): Manage refcount_set and adjust calls to gomp_map_vars and
+	gomp_unmap_vars.
+	(GOMP_target_ext): Likewise.
+	(gomp_target_data_fallback): Adjust call to gomp_map_vars.
+	(GOMP_target_data): Likewise.
+	(GOMP_target_data_ext): Likewise.
+	(GOMP_target_end_data): Adjust call to gomp_unmap_vars.
+	(gomp_exit_data): Add refcount_set parameter, adjust to use
+	gomp_decrement_refcount, adjust to queue splay-tree keys for removal
+	after main loop.
+	(GOMP_target_enter_exit_data): Manage refcount_set and adjust calls to
+	gomp_map_vars and gomp_exit_data.
+	(gomp_target_task_fn): Likewise.
+	* testsuite/libgomp.c-c++-common/refcount-1.c: New testcase.
+	* testsuite/libgomp.c-c++-common/struct-elem-1.c: New testcase.
+	* testsuite/libgomp.c-c++-common/struct-elem-2.c: New testcase.
+	* testsuite/libgomp.c-c++-common/struct-elem-3.c: New testcase.
+	* testsuite/libgomp.c-c++-common/struct-elem-4.c: New testcase.
+	* testsuite/libgomp.c-c++-common/struct-elem-5.c: New testcase.
+
 2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/92568
