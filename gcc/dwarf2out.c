@@ -5498,6 +5498,16 @@ is_fortran (const_tree decl)
   return is_fortran ();
 }
 
+/* Return TRUE if the language is Rust.  */
+
+static inline bool
+is_rust ()
+{
+  unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
+
+  return lang == DW_LANG_Rust || lang == DW_LANG_Rust_old;
+}
+
 /* Return TRUE if the language is Ada.  */
 
 static inline bool
@@ -12952,7 +12962,11 @@ base_type_die (tree type, bool reverse)
 	}
       if (TYPE_STRING_FLAG (type))
 	{
-	  if (TYPE_UNSIGNED (type))
+	  if ((dwarf_version >= 4 || !dwarf_strict)
+	      && is_rust ()
+	      && int_size_in_bytes (type) == 4)
+	    encoding = DW_ATE_UTF;
+	  else if (TYPE_UNSIGNED (type))
 	    encoding = DW_ATE_unsigned_char;
 	  else
 	    encoding = DW_ATE_signed_char;

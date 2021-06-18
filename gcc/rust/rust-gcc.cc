@@ -217,10 +217,8 @@ public:
 
   Btype *wchar_type ()
   {
-    // i think this is meant to be 32 bit from
-    // https://www.unicode.org/versions/Unicode13.0.0/ch03.pdf#G7404
-    int precision = 32;
-    tree wchar = make_unsigned_type (precision);
+    tree wchar = make_unsigned_type (32);
+    TYPE_STRING_FLAG (wchar) = 1;
     return this->make_type (wchar);
   }
 
