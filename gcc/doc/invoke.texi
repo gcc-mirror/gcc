@@ -4845,7 +4845,7 @@ The default @env{GCC_COLORS} is
 error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:\
 quote=01:path=01;36:fixit-insert=32:fixit-delete=31:\
 diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
-type-diff=01;32
+type-diff=01;32:fnname=01;32:targs=35
 @end smallexample
 @noindent
 where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
@@ -4889,6 +4889,14 @@ SGR substring for location information, @samp{file:line} or
 @item quote=
 @vindex quote GCC_COLORS @r{capability}
 SGR substring for information printed within quotes.
+
+@item fnname=
+@vindex fnname GCC_COLORS @r{capability}
+SGR substring for names of C++ functions.
+
+@item targs=
+@vindex targs GCC_COLORS @r{capability}
+SGR substring for C++ function template parameter bindings.
 
 @item fixit-insert=
 @vindex fixit-insert GCC_COLORS @r{capability}
