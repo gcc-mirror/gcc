@@ -1061,17 +1061,6 @@ namespace __variant
     using __visit_result_t
       = invoke_result_t<_Visitor, __get_t<0, _Variants>...>;
 
-  template<typename _Tp, typename... _Types>
-    constexpr inline bool __same_types = (is_same_v<_Tp, _Types> && ...);
-
-  template <typename _Visitor, typename _Variant, size_t... _Idxs>
-    constexpr bool __check_visitor_results(std::index_sequence<_Idxs...>)
-    {
-      return __same_types<
-	invoke_result_t<_Visitor, __get_t<_Idxs, _Variant>>...
-	>;
-    }
-
 } // namespace __variant
 } // namespace __detail
 
