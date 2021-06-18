@@ -51,8 +51,7 @@ constexpr bool
 test01()
 {
   container c;
-  std::insert_iterator<container> iter;
-  iter = std::inserter(c, c.begin());
+  std::insert_iterator<container> iter = std::inserter(c, c.begin());
   *iter++ = 1;
   int i = 2;
   *iter = i;

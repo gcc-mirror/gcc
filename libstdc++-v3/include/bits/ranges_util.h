@@ -241,7 +241,7 @@ namespace ranges
       [[no_unique_address]] _Size<__size_type> _M_size = {};
 
     public:
-      subrange() = default;
+      subrange() requires default_initializable<_It> = default;
 
       constexpr
       subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s)

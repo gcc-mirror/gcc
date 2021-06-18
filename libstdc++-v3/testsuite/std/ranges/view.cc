@@ -31,7 +31,7 @@
 
 static_assert(std::ranges::view<std::span<int>>);
 static_assert(std::ranges::view<std::span<int, 0>>);
-static_assert(!std::ranges::view<std::span<int, 1>>);
+static_assert(std::ranges::view<std::span<int, 1>>); // Changed with P2325R3
 static_assert(std::ranges::view<std::string_view>);
 static_assert(std::ranges::view<std::experimental::string_view>);
 

@@ -246,7 +246,7 @@
 #define __cpp_lib_math_constants 201907L
 #define __cpp_lib_polymorphic_allocator 201902L
 #if __cpp_lib_concepts
-# define __cpp_lib_ranges 201911L
+# define __cpp_lib_ranges 202106L
 #endif
 #if __cpp_lib_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE
 # define __cpp_lib_semaphore 201907L

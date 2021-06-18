@@ -96,6 +96,20 @@ test05()
   static_assert(noexcept(cs.empty())); // view_interface::empty()
 }
 
+void
+test06()
+{
+  // PR libstdc++/100475 comment #7
+  struct S {
+    S() = default;
+    S(std::initializer_list<S>) = delete;
+    S(const S&) {}
+  };
+  S obj;
+  auto x = std::views::single(obj);
+  auto y = std::views::single(std::move(obj));
+}
+
 int main()
 {
   test01();
@@ -103,4 +117,5 @@ int main()
   test03();
   test04();
   test05();
+  test06();
 }

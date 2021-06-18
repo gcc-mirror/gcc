@@ -113,10 +113,13 @@ namespace ranges
 	noexcept(is_nothrow_copy_constructible_v<_Tp>)
 	requires (!copyable<_Tp>)
 	{
-	  if ((bool)__that)
-	    this->emplace(*__that);
-	  else
-	    this->reset();
+	  if (this != std::__addressof(__that))
+	    {
+	      if ((bool)__that)
+		this->emplace(*__that);
+	      else
+		this->reset();
+	    }
 	  return *this;
 	}
 
@@ -125,37 +128,42 @@ namespace ranges
 	noexcept(is_nothrow_move_constructible_v<_Tp>)
 	requires (!movable<_Tp>)
 	{
-	  if ((bool)__that)
-	    this->emplace(std::move(*__that));
-	  else
-	    this->reset();
+	  if (this != std::__addressof(__that))
+	    {
+	      if ((bool)__that)
+		this->emplace(std::move(*__that));
+	      else
+		this->reset();
+	    }
 	  return *this;
 	}
       };
 
-    // For types which are already semiregular, this specialization of the
-    // semiregular wrapper stores the object directly without going through
+    // For types which are already copyable, this specialization of the
+    // copyable wrapper stores the object directly without going through
     // std::optional.  It provides just the subset of the primary template's
     // API that we currently use.
-    template<__boxable _Tp> requires semiregular<_Tp>
+    template<__boxable _Tp>
+      requires copyable<_Tp> || (is_nothrow_move_constructible_v<_Tp>
+				 && is_nothrow_copy_constructible_v<_Tp>)
       struct __box<_Tp>
       {
       private:
 	[[no_unique_address]] _Tp _M_value = _Tp();
 
       public:
-	__box() = default;
+	__box() requires default_initializable<_Tp> = default;
 
 	constexpr explicit
 	__box(const _Tp& __t)
 	noexcept(is_nothrow_copy_constructible_v<_Tp>)
-	: _M_value{__t}
+	: _M_value(__t)
 	{ }
 
 	constexpr explicit
 	__box(_Tp&& __t)
 	noexcept(is_nothrow_move_constructible_v<_Tp>)
-	: _M_value{std::move(__t)}
+	: _M_value(std::move(__t))
 	{ }
 
 	template<typename... _Args>
@@ -165,6 +173,38 @@ namespace ranges
 	  noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
 	  : _M_value(std::forward<_Args>(__args)...)
 	  { }
+
+	__box(const __box&) = default;
+	__box(__box&&) = default;
+	__box& operator=(const __box&) requires copyable<_Tp> = default;
+	__box& operator=(__box&&) requires copyable<_Tp> = default;
+
+	// When _Tp is nothrow_copy_constructible but not copy_assignable,
+	// copy assignment is implemented via destroy-then-copy-construct.
+	constexpr __box&
+	operator=(const __box& __that) noexcept
+	{
+	  static_assert(is_nothrow_copy_constructible_v<_Tp>);
+	  if (this != std::__addressof(__that))
+	    {
+	      _M_value.~_Tp();
+	      std::construct_at(std::__addressof(_M_value), *__that);
+	    }
+	  return *this;
+	}
+
+	// Likewise for move assignment.
+	constexpr __box&
+	operator=(__box&& __that) noexcept
+	{
+	  static_assert(is_nothrow_move_constructible_v<_Tp>);
+	  if (this != std::__addressof(__that))
+	    {
+	      _M_value.~_Tp();
+	      std::construct_at(std::__addressof(_M_value), std::move(*__that));
+	    }
+	  return *this;
+	}
 
 	constexpr bool
 	has_value() const noexcept
@@ -193,7 +233,7 @@ namespace ranges
     class single_view : public view_interface<single_view<_Tp>>
     {
     public:
-      single_view() = default;
+      single_view() requires default_initializable<_Tp> = default;
 
       constexpr explicit
       single_view(const _Tp& __t)
@@ -308,7 +348,7 @@ namespace ranges
   template<weakly_incrementable _Winc,
 	   semiregular _Bound = unreachable_sentinel_t>
     requires std::__detail::__weakly_eq_cmp_with<_Winc, _Bound>
-      && semiregular<_Winc>
+      && copyable<_Winc>
     class iota_view : public view_interface<iota_view<_Winc, _Bound>>
     {
     private:
@@ -337,7 +377,7 @@ namespace ranges
 	using value_type = _Winc;
 	using difference_type = __detail::__iota_diff_t<_Winc>;
 
-	_Iterator() = default;
+	_Iterator() requires default_initializable<_Winc> = default;
 
 	constexpr explicit
 	_Iterator(_Winc __value)
@@ -534,7 +574,7 @@ namespace ranges
       [[no_unique_address]] _Bound _M_bound = _Bound();
 
     public:
-      iota_view() = default;
+      iota_view() requires default_initializable<_Winc> = default;
 
       constexpr explicit
       iota_view(_Winc __value)
@@ -643,8 +683,6 @@ namespace views
     : public view_interface<basic_istream_view<_Val, _CharT, _Traits>>
     {
     public:
-      basic_istream_view() = default;
-
       constexpr explicit
       basic_istream_view(basic_istream<_CharT, _Traits>& __stream)
 	: _M_stream(std::__addressof(__stream))
@@ -653,8 +691,7 @@ namespace views
       constexpr auto
       begin()
       {
-	if (_M_stream != nullptr)
-	  *_M_stream >> _M_object;
+	*_M_stream >> _M_object;
 	return _Iterator{this};
       }
 
@@ -663,8 +700,8 @@ namespace views
       { return default_sentinel; }
 
     private:
-      basic_istream<_CharT, _Traits>* _M_stream = nullptr;
-      _Val _M_object = _Val();
+      basic_istream<_CharT, _Traits>* _M_stream;
+      _Val _M_object;
 
       struct _Iterator
       {
@@ -672,8 +709,6 @@ namespace views
 	using iterator_concept = input_iterator_tag;
 	using difference_type = ptrdiff_t;
 	using value_type = _Val;
-
-	_Iterator() = default;
 
 	constexpr explicit
 	_Iterator(basic_istream_view* __parent) noexcept
@@ -688,7 +723,6 @@ namespace views
 	_Iterator&
 	operator++()
 	{
-	  __glibcxx_assert(_M_parent->_M_stream != nullptr);
 	  *_M_parent->_M_stream >> _M_parent->_M_object;
 	  return *this;
 	}
@@ -699,21 +733,18 @@ namespace views
 
 	_Val&
 	operator*() const
-	{
-	  __glibcxx_assert(_M_parent->_M_stream != nullptr);
-	  return _M_parent->_M_object;
-	}
+	{ return _M_parent->_M_object; }
 
 	friend bool
 	operator==(const _Iterator& __x, default_sentinel_t)
 	{ return __x._M_at_end(); }
 
       private:
-	basic_istream_view* _M_parent = nullptr;
+	basic_istream_view* _M_parent;
 
 	bool
 	_M_at_end() const
-	{ return _M_parent == nullptr || !*_M_parent->_M_stream; }
+	{ return !*_M_parent->_M_stream; }
       };
 
       friend _Iterator;
@@ -1017,15 +1048,12 @@ namespace views::__adaptor
     class ref_view : public view_interface<ref_view<_Range>>
     {
     private:
-      _Range* _M_r = nullptr;
+      _Range* _M_r;
 
       static void _S_fun(_Range&); // not defined
       static void _S_fun(_Range&&) = delete;
 
     public:
-      constexpr
-      ref_view() noexcept = default;
-
       template<__detail::__not_same_as<ref_view> _Tp>
 	requires convertible_to<_Tp, _Range&>
 	  && requires { _S_fun(declval<_Tp>()); }
@@ -1202,6 +1230,16 @@ namespace views::__adaptor
 	{
 	  this->_M_reset();
 	  __other._M_reset();
+	  return *this;
+	}
+
+	constexpr __non_propagating_cache&
+	operator=(_Tp __val)
+	{
+	  this->_M_reset();
+	  std::construct_at(std::__addressof(this->_M_payload._M_payload),
+			    std::in_place, std::move(__val));
+	  this->_M_payload._M_engaged = true;
 	  return *this;
 	}
 
@@ -1382,7 +1420,7 @@ namespace views::__adaptor
 	using value_type = range_value_t<_Vp>;
 	using difference_type = range_difference_t<_Vp>;
 
-	_Iterator() = default;
+	_Iterator() requires default_initializable<_Vp_iter> = default;
 
 	constexpr
 	_Iterator(filter_view* __parent, _Vp_iter __current)
@@ -1494,7 +1532,9 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      filter_view() = default;
+      filter_view() requires (default_initializable<_Vp>
+			      && default_initializable<_Pred>)
+	= default;
 
       constexpr
       filter_view(_Vp __base, _Pred __pred)
@@ -1643,7 +1683,7 @@ namespace views::__adaptor
 	    = remove_cvref_t<invoke_result_t<_Fp&, range_reference_t<_Base>>>;
 	  using difference_type = range_difference_t<_Base>;
 
-	  _Iterator() = default;
+	  _Iterator() requires default_initializable<_Base_iter> = default;
 
 	  constexpr
 	  _Iterator(_Parent* __parent, _Base_iter __current)
@@ -1858,7 +1898,9 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      transform_view() = default;
+      transform_view() requires (default_initializable<_Vp>
+				 && default_initializable<_Fp>)
+	= default;
 
       constexpr
       transform_view(_Vp __base, _Fp __fun)
@@ -1993,7 +2035,7 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      take_view() = default;
+      take_view() requires default_initializable<_Vp> = default;
 
       constexpr
       take_view(_Vp base, range_difference_t<_Vp> __count)
@@ -2177,7 +2219,9 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      take_while_view() = default;
+      take_while_view() requires (default_initializable<_Vp>
+				  && default_initializable<_Pred>)
+	= default;
 
       constexpr
       take_while_view(_Vp base, _Pred __pred)
@@ -2265,7 +2309,7 @@ namespace views::__adaptor
 				      _M_cached_begin;
 
     public:
-      drop_view() = default;
+      drop_view() requires default_initializable<_Vp> = default;
 
       constexpr
       drop_view(_Vp __base, range_difference_t<_Vp> __count)
@@ -2381,7 +2425,9 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      drop_while_view() = default;
+      drop_while_view() requires (default_initializable<_Vp>
+				  && default_initializable<_Pred>)
+	= default;
 
       constexpr
       drop_while_view(_Vp __base, _Pred __pred)
@@ -2571,7 +2617,9 @@ namespace views::__adaptor
 	    = common_type_t<range_difference_t<_Base>,
 			    range_difference_t<range_reference_t<_Base>>>;
 
-	  _Iterator() = default;
+	  _Iterator() requires (default_initializable<_Outer_iter>
+				&& default_initializable<_Inner_iter>)
+	    = default;
 
 	  constexpr
 	  _Iterator(_Parent* __parent, _Outer_iter __outer)
@@ -2724,7 +2772,7 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      join_view() = default;
+      join_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
       join_view(_Vp __base)
@@ -2891,7 +2939,7 @@ namespace views::__adaptor
 	    if constexpr (forward_range<_Vp>)
 	      return _M_current;
 	    else
-	      return _M_parent->_M_current;
+	      return *_M_parent->_M_current;
 	  }
 
 	  constexpr auto&
@@ -2900,7 +2948,7 @@ namespace views::__adaptor
 	    if constexpr (forward_range<_Vp>)
 	      return _M_current;
 	    else
-	      return _M_parent->_M_current;
+	      return *_M_parent->_M_current;
 	  }
 
 	  _Parent* _M_parent = nullptr;
@@ -3146,12 +3194,14 @@ namespace views::__adaptor
       // XXX: _M_current is "present only if !forward_range<V>"
       [[no_unique_address]]
 	__detail::__maybe_present_t<!forward_range<_Vp>,
-				    iterator_t<_Vp>> _M_current;
+	  __detail::__non_propagating_cache<iterator_t<_Vp>>> _M_current;
       _Vp _M_base = _Vp();
 
 
     public:
-      split_view() = default;
+      split_view() requires (default_initializable<_Vp>
+			     && default_initializable<_Pattern>)
+	= default;
 
       constexpr
       split_view(_Vp __base, _Pattern __pattern)
@@ -3282,7 +3332,7 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      common_view() = default;
+      common_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
       common_view(_Vp __r)
@@ -3413,7 +3463,7 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      reverse_view() = default;
+      reverse_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
       reverse_view(_Vp __r)
@@ -3555,7 +3605,7 @@ namespace views::__adaptor
     class elements_view : public view_interface<elements_view<_Vp, _Nm>>
     {
     public:
-      elements_view() = default;
+      elements_view() requires default_initializable<_Vp> = default;
 
       constexpr explicit
       elements_view(_Vp base)
@@ -3676,7 +3726,7 @@ namespace views::__adaptor
 	    = remove_cvref_t<tuple_element_t<_Nm, range_value_t<_Base>>>;
 	  using difference_type = range_difference_t<_Base>;
 
-	  _Iterator() = default;
+	  _Iterator() requires default_initializable<iterator_t<_Base>> = default;
 
 	  constexpr explicit
 	  _Iterator(iterator_t<_Base> current)

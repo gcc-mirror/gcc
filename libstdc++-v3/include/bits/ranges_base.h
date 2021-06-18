@@ -619,8 +619,7 @@ namespace ranges
   /// [range.view] The ranges::view concept.
   template<typename _Tp>
     concept view
-      = range<_Tp> && movable<_Tp> && default_initializable<_Tp>
-	&& enable_view<_Tp>;
+      = range<_Tp> && movable<_Tp> && enable_view<_Tp>;
 
   // [range.refinements]
 
