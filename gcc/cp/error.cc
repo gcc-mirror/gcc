@@ -3543,7 +3543,7 @@ cp_print_error_function (diagnostic_context *context,
 	    fndecl = current_function_decl;
 
 	  pp_printf (context->printer, function_category (fndecl),
-		     cxx_printable_name_translate (fndecl, 2));
+		     fndecl);
 
 	  while (abstract_origin)
 	    {
@@ -3587,19 +3587,19 @@ cp_print_error_function (diagnostic_context *context,
 		    {
 		      if (context->show_column && s.column != 0)
 			pp_printf (context->printer,
-				   _("    inlined from %qs at %r%s:%d:%d%R"),
-				   cxx_printable_name_translate (fndecl, 2),
+				   _("    inlined from %qD at %r%s:%d:%d%R"),
+				   fndecl,
 				   "locus", s.file, s.line, s.column);
 		      else
 			pp_printf (context->printer,
-				   _("    inlined from %qs at %r%s:%d%R"),
-				   cxx_printable_name_translate (fndecl, 2),
+				   _("    inlined from %qD at %r%s:%d%R"),
+				   fndecl,
 				   "locus", s.file, s.line);
 
 		    }
 		  else
-		    pp_printf (context->printer, _("    inlined from %qs"),
-			       cxx_printable_name_translate (fndecl, 2));
+		    pp_printf (context->printer, _("    inlined from %qD"),
+			       fndecl);
 		}
 	    }
 	  pp_character (context->printer, ':');
@@ -3613,7 +3613,8 @@ cp_print_error_function (diagnostic_context *context,
 }
 
 /* Returns a description of FUNCTION using standard terminology.  The
-   result is a format string of the form "In CATEGORY %qs".  */
+   result is a format string of the form "In CATEGORY %qD".  */
+
 static const char *
 function_category (tree fn)
 {
@@ -3624,20 +3625,20 @@ function_category (tree fn)
       && DECL_FUNCTION_MEMBER_P (fn))
     {
       if (DECL_STATIC_FUNCTION_P (fn))
-	return _("In static member function %qs");
+	return _("In static member function %qD");
       else if (DECL_COPY_CONSTRUCTOR_P (fn))
-	return _("In copy constructor %qs");
+	return _("In copy constructor %qD");
       else if (DECL_CONSTRUCTOR_P (fn))
-	return _("In constructor %qs");
+	return _("In constructor %qD");
       else if (DECL_DESTRUCTOR_P (fn))
-	return _("In destructor %qs");
+	return _("In destructor %qD");
       else if (LAMBDA_FUNCTION_P (fn))
 	return _("In lambda function");
       else
-	return _("In member function %qs");
+	return _("In member function %qD");
     }
   else
-    return _("In function %qs");
+    return _("In function %qD");
 }
 
 /* Disable warnings about missing quoting in GCC diagnostics for
