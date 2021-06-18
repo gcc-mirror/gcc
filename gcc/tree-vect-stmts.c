@@ -9762,8 +9762,13 @@ vectorizable_load (vec_info *vinfo,
       if (slp_perm)
         {
 	  unsigned n_perms;
+	  /* For SLP we know we've seen all possible uses of dr_chain so
+	     direct vect_transform_slp_perm_load to DCE the unused parts.
+	     ???  This is a hack to prevent compile-time issues as seen
+	     in PR101120 and friends.  */
 	  bool ok = vect_transform_slp_perm_load (vinfo, slp_node, dr_chain,
-						  gsi, vf, false, &n_perms);
+						  gsi, vf, false, &n_perms,
+						  nullptr, true);
 	  gcc_assert (ok);
         }
       else

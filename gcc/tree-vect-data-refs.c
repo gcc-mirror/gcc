@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-hash-traits.h"
 #include "vec-perm-indices.h"
 #include "internal-fn.h"
+#include "gimple-fold.h"
 
 /* Return true if load- or store-lanes optab OPTAB is implemented for
    COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */
@@ -5026,7 +5027,7 @@ bump_vector_ptr (vec_info *vinfo,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree update = TYPE_SIZE_UNIT (vectype);
-  gassign *incr_stmt;
+  gimple *incr_stmt;
   ssa_op_iter iter;
   use_operand_p use_p;
   tree new_dataref_ptr;
@@ -5041,6 +5042,15 @@ bump_vector_ptr (vec_info *vinfo,
   incr_stmt = gimple_build_assign (new_dataref_ptr, POINTER_PLUS_EXPR,
 				   dataref_ptr, update);
   vect_finish_stmt_generation (vinfo, stmt_info, incr_stmt, gsi);
+  /* Fold the increment, avoiding excessive chains use-def chains of
+     those, leading to compile-time issues for passes until the next
+     forwprop pass which would do this as well.  */
+  gimple_stmt_iterator fold_gsi = gsi_for_stmt (incr_stmt);
+  if (fold_stmt (&fold_gsi, follow_all_ssa_edges))
+    {
+      incr_stmt = gsi_stmt (fold_gsi);
+      update_stmt (incr_stmt);
+    }
 
   /* Copy the points-to information if it exists. */
   if (DR_PTR_INFO (dr))
