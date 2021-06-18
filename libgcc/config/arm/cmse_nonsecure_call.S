@@ -102,6 +102,11 @@ blxns	    r4
 #ifdef __ARM_PCS_VFP
 vpop.f64    {d8-d15}
 #else
+/* VLLDM erratum mitigation sequence. */
+mrs	    r5, control
+tst	    r5, #8	  /* CONTROL_S.SFPA */
+it	    ne
+.inst.w	    0xeeb00a40	  /* vmovne s0, s0 */
 vlldm	    sp		  /* Lazy restore of d0-d16 and FPSCR.  */
 add	    sp, sp, #0x88 /* Free space used to save floating point registers.  */
 #endif /* __ARM_PCS_VFP */
