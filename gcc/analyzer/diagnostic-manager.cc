@@ -1587,7 +1587,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		 "this path would have been rejected as infeasible"
 		 " at this edge: ");
       pb.get_feasibility_problem ()->dump_to_pp (&pp);
-      emission_path->add_event (new custom_event
+      emission_path->add_event (new precanned_custom_event
 				(dst_point.get_location (),
 				 dst_point.get_fndecl (),
 				 dst_stack_depth,

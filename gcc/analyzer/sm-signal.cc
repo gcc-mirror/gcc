@@ -238,9 +238,10 @@ public:
     FINAL OVERRIDE
   {
     emission_path->add_event
-      (new custom_event (UNKNOWN_LOCATION, NULL_TREE, 0,
-			 "later on,"
-			 " when the signal is delivered to the process"));
+      (new precanned_custom_event
+       (UNKNOWN_LOCATION, NULL_TREE, 0,
+	"later on,"
+	" when the signal is delivered to the process"));
   }
 };
 
