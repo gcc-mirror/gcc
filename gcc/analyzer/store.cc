@@ -1177,6 +1177,16 @@ binding_cluster::get_any_binding (store_manager *mgr,
       return rmm_mgr->get_or_create_unknown_svalue (reg->get_type ());
     }
 
+  /* Alternatively, if this is a symbolic read and the cluster has any bindings,
+     then we don't know if we're reading those values or not, so the result
+     is also "UNKNOWN".  */
+  if (reg->get_offset ().symbolic_p ()
+      && m_map.elements () > 0)
+    {
+      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
+      return rmm_mgr->get_or_create_unknown_svalue (reg->get_type ());
+    }
+
   if (const svalue *compound_sval = maybe_get_compound_binding (mgr, reg))
     return compound_sval;
 
