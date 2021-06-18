@@ -824,19 +824,27 @@ ranger_cache::set_global_range (tree name, const irange &r)
 //  of an ssa_name in any given basic block.  Note, this does no additonal
 //  lookups, just accesses the data that is already known.
 
-// Get the range of NAME when the def occurs in block BB
+// Get the range of NAME when the def occurs in block BB.  If BB is NULL
+// get the best global value available.
 
 void
 ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
 {
   gcc_checking_assert (gimple_range_ssa_p (name));
-  gcc_checking_assert (bb == gimple_bb (SSA_NAME_DEF_STMT (name)));
+  gcc_checking_assert (!bb || bb == gimple_bb (SSA_NAME_DEF_STMT (name)));
 
   // Pick up the best global range available.
   if (!m_globals.get_global_range (r, name))
-    r = gimple_range_global (name);
+    {
+      // If that fails, try to calculate the range using just global values.
+      gimple *s = SSA_NAME_DEF_STMT (name);
+      if (gimple_get_lhs (s) == name)
+	fold_range (r, s, get_global_range_query ());
+      else
+	r = gimple_range_global (name);
+    }
 
-  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
+  if (bb && r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
       !cfun->can_throw_non_call_exceptions)
     r = range_nonzero (TREE_TYPE (name));
 }
@@ -853,12 +861,10 @@ ranger_cache::entry_range (irange &r, tree name, basic_block bb)
     }
 
   // Look for the on-entry value of name in BB from the cache.
+  // Otherwise pick up the best available global value.
   if (!m_on_entry.get_bb_range (r, name, bb))
-    {
-      // Try to pick up any known global value.
-      if (!m_globals.get_global_range (r, name))
-	r = gimple_range_global (name);
-    }
+    range_of_def (r, name);
+
   // Check if pointers have any non-null dereferences.  Non-call
   // exceptions mean we could throw in the middle of the block, so just
   // punt for now on those.

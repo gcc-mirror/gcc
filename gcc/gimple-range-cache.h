@@ -115,7 +115,7 @@ private:
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void propagate_cache (tree name);
 
-  void range_of_def (irange &r, tree name, basic_block bb);
+  void range_of_def (irange &r, tree name, basic_block bb = NULL);
   void entry_range (irange &r, tree expr, basic_block bb);
   void exit_range (irange &r, tree expr, basic_block bb);
 
