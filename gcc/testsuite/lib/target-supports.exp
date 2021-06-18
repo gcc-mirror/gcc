@@ -4671,6 +4671,23 @@ proc check_effective_target_arm_cmse_ok {} {
     } "-mcmse"];
 }
 
+# Return 1 if the target supports executing CMSE instructions, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_arm_cmse_hw { } {
+    return [check_runtime arm_cmse_hw_available {
+	int main (void)
+	{
+	    unsigned id_pfr1;
+	    asm ("ldr\t%0, =0xe000ed44\n" \
+		 "ldr\t%0, [%0]\n" \
+		 "sg" : "=l" (id_pfr1));
+	    /* Exit with code 0 iff security extension is available.  */
+	    return !(id_pfr1 & 0xf0);
+	}
+    } "-mcmse"]
+}
+
 # Return 1 if the target supports executing MVE instructions, 0
 # otherwise.
 
