@@ -3822,6 +3822,17 @@ foo:	data8	25
 	tls_first_minor=13
 	tls_as_opt=--fatal-warnings
 	;;
+  loongarch*-*-*)
+    conftest_s='
+	.section .tdata,"awT",@progbits
+x:	.word 2
+	.text
+	la.tls.gd $a0,x
+	bl __tls_get_addr'
+	tls_first_major=0
+	tls_first_minor=0
+	tls_as_opt='--fatal-warnings'
+	;;
   microblaze*-*-*)
     conftest_s='
 	.section .tdata,"awT",@progbits
