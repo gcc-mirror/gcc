@@ -81,6 +81,12 @@ Specify the name of the target architecture.
 EnumValue
 Enum(arm_arch) String(native) Value(-1) DriverOnly
 
+; Set to the name of target architecture which is required for
+; multilib linking.  This option is undocumented becuase it
+; should not be used by the users.
+mlibarch=
+Target RejectNegative JoinedOrMissing NoDWARFRecord DriverOnly Undocumented
+
 marm
 Target RejectNegative Negative(mthumb) InverseMask(THUMB)
 Generate code in 32 bit ARM state.
