@@ -1144,54 +1144,6 @@ namespace views::__adaptor
       using all_t = decltype(all(std::declval<_Range>()));
   } // namespace views
 
-  // The following simple algos are transcribed from ranges_algo.h to avoid
-  // having to include that entire header.
-  namespace __detail
-  {
-    template<typename _Iter, typename _Sent, typename _Tp>
-      constexpr _Iter
-      find(_Iter __first, _Sent __last, const _Tp& __value)
-      {
-	while (__first != __last
-	       && !(bool)(*__first == __value))
-	  ++__first;
-	return __first;
-      }
-
-    template<typename _Iter, typename _Sent, typename _Pred>
-      constexpr _Iter
-      find_if(_Iter __first, _Sent __last, _Pred __pred)
-      {
-	while (__first != __last
-	       && !(bool)std::__invoke(__pred, *__first))
-	  ++__first;
-	return __first;
-      }
-
-    template<typename _Iter, typename _Sent, typename _Pred>
-      constexpr _Iter
-      find_if_not(_Iter __first, _Sent __last, _Pred __pred)
-      {
-	while (__first != __last
-	       && (bool)std::__invoke(__pred, *__first))
-	  ++__first;
-	return __first;
-      }
-
-    template<typename _Iter1, typename _Sent1, typename _Iter2, typename _Sent2>
-      constexpr pair<_Iter1, _Iter2>
-      mismatch(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2)
-      {
-	while (__first1 != __last1 && __first2 != __last2
-	       && (bool)ranges::equal_to{}(*__first1, *__first2))
-	  {
-	    ++__first1;
-	    ++__first2;
-	  }
-	return { std::move(__first1), std::move(__first2) };
-      }
-  } // namespace __detail
-
   namespace __detail
   {
     template<typename _Tp>
@@ -1449,9 +1401,9 @@ namespace views::__adaptor
 	constexpr _Iterator&
 	operator++()
 	{
-	  _M_current = __detail::find_if(std::move(++_M_current),
-					 ranges::end(_M_parent->_M_base),
-					 std::ref(*_M_parent->_M_pred));
+	  _M_current = ranges::find_if(std::move(++_M_current),
+				       ranges::end(_M_parent->_M_base),
+				       std::ref(*_M_parent->_M_pred));
 	  return *this;
 	}
 
@@ -1560,9 +1512,9 @@ namespace views::__adaptor
 	  return {this, _M_cached_begin._M_get(_M_base)};
 
 	__glibcxx_assert(_M_pred.has_value());
-	auto __it = __detail::find_if(ranges::begin(_M_base),
-				      ranges::end(_M_base),
-				      std::ref(*_M_pred));
+	auto __it = ranges::find_if(ranges::begin(_M_base),
+				    ranges::end(_M_base),
+				    std::ref(*_M_pred));
 	_M_cached_begin._M_set(_M_base, __it);
 	return {this, std::move(__it)};
       }
@@ -2453,9 +2405,9 @@ namespace views::__adaptor
 	  return _M_cached_begin._M_get(_M_base);
 
 	__glibcxx_assert(_M_pred.has_value());
-	auto __it = __detail::find_if_not(ranges::begin(_M_base),
-					  ranges::end(_M_base),
-					  std::cref(*_M_pred));
+	auto __it = ranges::find_if_not(ranges::begin(_M_base),
+					ranges::end(_M_base),
+					std::cref(*_M_pred));
 	_M_cached_begin._M_set(_M_base, __it);
 	return __it;
       }
@@ -3031,8 +2983,8 @@ namespace views::__adaptor
 	      ++__current();
 	    else if constexpr (__detail::__tiny_range<_Pattern>)
 	      {
-		__current() = __detail::find(std::move(__current()), __end,
-					     *__pbegin);
+		__current() = ranges::find(std::move(__current()), __end,
+					   *__pbegin);
 		if (__current() != __end)
 		  ++__current();
 	      }
@@ -3040,7 +2992,7 @@ namespace views::__adaptor
 	      do
 		{
 		  auto [__b, __p]
-		    = __detail::mismatch(__current(), __end, __pbegin, __pend);
+		    = ranges::mismatch(__current(), __end, __pbegin, __pend);
 		  if (__p == __pend)
 		    {
 		      __current() = __b;
