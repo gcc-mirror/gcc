@@ -2410,69 +2410,36 @@
    (set_attr "prefix" "<round_saeonly_scalar_prefix>")
    (set_attr "mode" "<ssescalarmode>")])
 
-(define_insn "vec_addsubv4df3"
-  [(set (match_operand:V4DF 0 "register_operand" "=x")
-	(vec_merge:V4DF
-	  (minus:V4DF
-	    (match_operand:V4DF 1 "register_operand" "x")
-	    (match_operand:V4DF 2 "nonimmediate_operand" "xm"))
-	  (plus:V4DF (match_dup 1) (match_dup 2))
-	  (const_int 5)))]
-  "TARGET_AVX"
-  "vaddsubpd\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sseadd")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "V4DF")])
+(define_mode_attr addsub_cst [(V4DF "5") (V2DF "1")
+                              (V4SF "5") (V8SF "85")])
 
-(define_insn "vec_addsubv2df3"
-  [(set (match_operand:V2DF 0 "register_operand" "=x,x")
-	(vec_merge:V2DF
-	  (minus:V2DF
-	    (match_operand:V2DF 1 "register_operand" "0,x")
-	    (match_operand:V2DF 2 "vector_operand" "xBm,xm"))
-	  (plus:V2DF (match_dup 1) (match_dup 2))
-	  (const_int 1)))]
+(define_insn "vec_addsub<mode>3"
+  [(set (match_operand:VF_128_256 0 "register_operand" "=x,x")
+        (vec_merge:VF_128_256
+	  (minus:VF_128_256
+	    (match_operand:VF_128_256 1 "register_operand" "0,x")
+	    (match_operand:VF_128_256 2 "vector_operand" "xBm, xm"))
+	  (plus:VF_128_256 (match_dup 1) (match_dup 2))
+	  (const_int <addsub_cst>)))]
   "TARGET_SSE3"
   "@
-   addsubpd\t{%2, %0|%0, %2}
-   vaddsubpd\t{%2, %1, %0|%0, %1, %2}"
+   addsub<ssemodesuffix>\t{%2, %0|%0, %2}
+   vaddsub<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
-   (set_attr "atom_unit" "complex")
+   (set (attr "atom_unit")
+     (if_then_else
+       (match_test "<MODE>mode == V2DFmode")
+       (const_string "complex")
+       (const_string "*")))
    (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "V2DF")])
-
-(define_insn "vec_addsubv8sf3"
-  [(set (match_operand:V8SF 0 "register_operand" "=x")
-	(vec_merge:V8SF
-	  (minus:V8SF
-	    (match_operand:V8SF 1 "register_operand" "x")
-	    (match_operand:V8SF 2 "nonimmediate_operand" "xm"))
-	  (plus:V8SF (match_dup 1) (match_dup 2))
-	  (const_int 85)))]
-  "TARGET_AVX"
-  "vaddsubps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sseadd")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "V8SF")])
-
-(define_insn "vec_addsubv4sf3"
-  [(set (match_operand:V4SF 0 "register_operand" "=x,x")
-	(vec_merge:V4SF
-	  (minus:V4SF
-	    (match_operand:V4SF 1 "register_operand" "0,x")
-	    (match_operand:V4SF 2 "vector_operand" "xBm,xm"))
-	  (plus:V4SF (match_dup 1) (match_dup 2))
-	  (const_int 5)))]
-  "TARGET_SSE3"
-  "@
-   addsubps\t{%2, %0|%0, %2}
-   vaddsubps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
-   (set_attr "type" "sseadd")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "prefix_rep" "1,*")
-   (set_attr "mode" "V4SF")])
+   (set (attr "prefix_rep")
+     (if_then_else
+       (and (match_test "<MODE>mode == V4SFmode")
+	    (eq_attr "alternative" "0"))
+       (const_string "1")
+       (const_string "*")))
+   (set_attr "mode" "<MODE>")])
 
 (define_split
   [(set (match_operand:VF_128_256 0 "register_operand")
