@@ -349,7 +349,7 @@ public:
 	auto b = type.param_at (i).second;
 
 	auto unified_param = a->unify (b);
-	if (unified_param == nullptr)
+	if (unified_param->get_kind () == TypeKind::ERROR)
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -358,7 +358,7 @@ public:
 
     auto unified_return
       = base->get_return_type ()->unify (type.get_return_type ());
-    if (unified_return == nullptr)
+    if (unified_return->get_kind () == TypeKind::ERROR)
       {
 	BaseCmp::visit (type);
 	return;
@@ -477,7 +477,7 @@ public:
     // check base type
     auto base_resolved
       = base->get_element_type ()->unify (type.get_element_type ());
-    if (base_resolved == nullptr)
+    if (base_resolved->get_kind () == TypeKind::ERROR)
       {
 	BaseCmp::visit (type);
 	return;

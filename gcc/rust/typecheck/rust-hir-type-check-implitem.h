@@ -207,13 +207,13 @@ private:
 
   TyTy::BaseType *self;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
-}; // namespace Resolver
+};
 
 class TypeCheckImplItem : public TypeCheckBase
 {
+public:
   using Rust::Resolver::TypeCheckBase::visit;
 
-public:
   static void Resolve (HIR::ImplItem *item, TyTy::BaseType *self)
   {
     TypeCheckImplItem resolver (self);
@@ -238,7 +238,7 @@ public:
       }
 
     // need to get the return type from this
-    TyTy::FnType *resolve_fn_type = (TyTy::FnType *) lookup;
+    TyTy::FnType *resolve_fn_type = static_cast<TyTy::FnType *> (lookup);
     auto expected_ret_tyty = resolve_fn_type->get_return_type ();
     context->push_return_type (expected_ret_tyty);
 
@@ -246,7 +246,6 @@ public:
       = TypeCheckExpr::Resolve (function.get_definition ().get (), false);
 
     context->pop_return_type ();
-
     expected_ret_tyty->unify (block_expr_ty);
   }
 
@@ -280,10 +279,89 @@ public:
     expected_ret_tyty->unify (block_expr_ty);
   }
 
-private:
+protected:
   TypeCheckImplItem (TyTy::BaseType *self) : TypeCheckBase (), self (self) {}
 
   TyTy::BaseType *self;
+};
+
+class TypeCheckImplItemWithTrait : public TypeCheckImplItem
+{
+  using Rust::Resolver::TypeCheckBase::visit;
+
+public:
+  static const TraitItemReference &Resolve (HIR::ImplItem *item,
+					    TyTy::BaseType *self,
+					    TraitReference &trait_reference)
+  {
+    TypeCheckImplItemWithTrait resolver (self, trait_reference);
+    item->accept_vis (resolver);
+    return resolver.resolved_trait_item;
+  }
+
+  void visit (HIR::ConstantItem &constant) override { gcc_unreachable (); }
+
+  void visit (HIR::TypeAlias &type) override { gcc_unreachable (); }
+
+  void visit (HIR::Method &method) override { gcc_unreachable (); }
+
+  void visit (HIR::Function &function) override
+  {
+    TypeCheckImplItem::visit (function);
+
+    // we get the error checking from the base method here
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
+      return;
+
+    if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
+      return;
+
+    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
+    const TraitItemReference &trait_item_ref
+      = trait_reference.lookup_trait_item (
+	fntype->get_identifier (), TraitItemReference::TraitItemType::FN);
+
+    // unknown trait item
+    if (trait_item_ref.is_error ())
+      {
+	RichLocation r (function.get_locus ());
+	r.add_range (trait_reference.get_locus ());
+	rust_error_at (r, "method %<%s%> is not a member of trait %<%s%>",
+		       fntype->get_identifier ().c_str (),
+		       trait_reference.get_name ().c_str ());
+	return;
+      }
+
+    // check the types are compatible
+    if (!trait_item_ref.get_tyty ()->can_eq (fntype))
+      {
+	RichLocation r (function.get_locus ());
+	r.add_range (trait_item_ref.get_locus ());
+
+	rust_error_at (
+	  r, "method %<%s%> has an incompatible type for trait %<%s%>",
+	  fntype->get_identifier ().c_str (),
+	  trait_reference.get_name ().c_str ());
+	return;
+      }
+
+    resolved_trait_item = trait_item_ref;
+  }
+
+private:
+  TypeCheckImplItemWithTrait (TyTy::BaseType *self,
+			      TraitReference &trait_reference)
+    : TypeCheckImplItem (self), trait_reference (trait_reference),
+      resolved_trait_item (TraitItemReference::error_node ())
+  {
+    rust_assert (is_trait_impl_block ());
+  }
+
+  bool is_trait_impl_block () const { return !trait_reference.is_error (); }
+
+  TraitReference &trait_reference;
+  TraitItemReference &resolved_trait_item;
 };
 
 } // namespace Resolver
