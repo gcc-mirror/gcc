@@ -118,18 +118,20 @@ public:
   {
     // lookup the Node this resolves to
     NodeId ref;
-    if (!resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
-					 &ref))
+    auto nid = path.get_mappings ().get_nodeid ();
+    if (!resolver->lookup_resolved_type (nid, &ref))
       {
 	rust_fatal_error (path.get_locus (),
-			  "Failed to resolve node id to HIR");
+			  "failed to resolve node '%d' to HIR", nid);
 	return;
       }
 
     HirId hir_lookup;
     if (!context->lookup_type_by_node_id (ref, &hir_lookup))
       {
-	rust_error_at (path.get_locus (), "failed to lookup HIR node");
+	rust_error_at (path.get_locus (),
+		       "failed to lookup HIR %d for node '%s'", ref,
+		       path.as_string ().c_str ());
 	return;
       }
 

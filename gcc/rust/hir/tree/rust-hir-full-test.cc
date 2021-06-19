@@ -577,11 +577,12 @@ StructStruct::as_string () const
     {
       for (const auto &field : fields)
 	{
-	  str += "\n  " + field.as_string ();
+	  str += "\n  - " + field.as_string ();
 	}
+      str += "\n";
     }
 
-  return str;
+  return str + "::" + get_mappings ().as_string () + "\n";
 }
 
 std::string
