@@ -1,3 +1,95 @@
+2021-06-18  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300.c (h8300_select_cc_mode): Handle SYMBOL_REF.
+	* config/h8300/logical.md (<code><mode>3 logcial expander): Generate
+	more efficient code when the source can be trivially simplified.
+
+2021-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::range_of_def):  Calculate
+	a range if global is not available.
+	(ranger_cache::entry_range): Fallback to range_of_def.
+	* gimple-range-cache.h (range_of_def): Adjust prototype.
+
+2021-06-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101014
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Remove poor
+	value list.
+	(ranger_cache::~ranger_cache): Ditto.
+	(ranger_cache::enable_new_values): Delete.
+	(ranger_cache::push_poor_value): Delete.
+	(ranger_cache::range_of_def): Remove poor value processing.
+	(ranger_cache::entry_range): Ditto.
+	(ranger_cache::fill_block_cache): Ditto.
+	* gimple-range-cache.h (class ranger_cache): Remove poor value members.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Remove call.
+	* gimple-range.h (class gimple_ranger): Adjust.
+
+2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/100856
+	* common/config/arm/arm-common.c (arm_canon_arch_option_1): New function
+	derived from arm_canon_arch.
+	(arm_canon_arch_option): Call it.
+	(arm_canon_arch_multilib_option): New function.
+	* config/arm/arm-cpus.in (IGNORE_FOR_MULTILIB): New fgroup.
+	* config/arm/arm.h (arm_canon_arch_multilib_option): New prototype.
+	(CANON_ARCH_MULTILIB_SPEC_FUNCTION): New macro.
+	(MULTILIB_ARCH_CANONICAL_SPECS): New macro.
+	(DRIVER_SELF_SPECS): Add MULTILIB_ARCH_CANONICAL_SPECS.
+	* config/arm/arm.opt (mlibarch): New option.
+	* config/arm/t-rmprofile (MULTILIB_MATCHES): For armv8*-m, replace use
+	of march on RHS with mlibarch.
+
+2021-06-18  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* config.in: Regenerate.
+	* config/gcn/gcn.c (print_operand_address): Fix for global_load assembler
+	functions.
+	* configure: Regenerate.
+	* configure.ac: Fix for global_load assembler functions.
+
+2021-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101112
+	* tree-vect-slp.c (vect_slp_linearize_chain): Fix condition
+	to lookup a pattern stmt def.
+
+2021-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101062
+	* stor-layout.c (finish_bitfield_layout): Don't add bitfield
+	representatives in QUAL_UNION_TYPE.
+
+2021-06-18  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable):
+	Add counting of how many times it is done.
+	(factor_out_conditional_conversion): Likewise.
+	(match_simplify_replacement): Likewise.
+	(value_replacement): Likewise.
+	(spaceship_replacement): Likewise.
+	(cond_store_replacement): Likewise.
+	(cond_if_else_store_replacement_1): Likewise.
+	(hoist_adjacent_loads): Likewise.
+
+2021-06-18  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-cfg.c (verify_gimple_assign_unary): Reject point and offset
+	types on NEGATE_EXPR, ABS_EXPR, BIT_NOT_EXPR, PAREN_EXPR and CNONJ_EXPR.
+	(verify_gimple_assign_binary): Reject point and offset types on
+	MULT_EXPR, MULT_HIGHPART_EXPR, TRUNC_DIV_EXPR, CEIL_DIV_EXPR,
+	FLOOR_DIV_EXPR, ROUND_DIV_EXPR, TRUNC_MOD_EXPR, CEIL_MOD_EXPR,
+	FLOOR_MOD_EXPR, ROUND_MOD_EXPR, RDIV_EXPR, and EXACT_DIV_EXPR.
+
+2021-06-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_minmax): Add support for ISA
+	3.1 IEEE 128-bit floating point xsmaxcqp/xsmincqp instructions.
+	* config/rs6000/rs6000.md (s<minmax><mode>3, IEEE128 iterator):
+	New insns.
+
 2021-06-17  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/genfusion.pl (gen_logical_addsubf): Add

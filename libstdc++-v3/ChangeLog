@@ -1,3 +1,119 @@
+2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100387
+	* include/bits/ranges_algo.h (__minmax_fn::operator()): Rewrite
+	to limit comparison complexity to 3*N/2.
+	(__minmax_element_fn::operator()): Likewise.
+	(shift_right): Avoid premature std::move of __result.
+	* testsuite/25_algorithms/minmax/constrained.cc (test04, test05):
+	New tests.
+	* testsuite/25_algorithms/minmax_element/constrained.cc (test02):
+	Likewise.
+
+2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/concepts (convertible_to): Just use declval as per
+	LWG 3557.
+
+2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95833
+	* include/std/numeric (reduce(Iter, Iter, T, BinaryOp)): Replace
+	incorrect static_assert with ones matching the 'Mandates'
+	conditions in the standard.
+	* testsuite/26_numerics/reduce/95833.cc: New test.
+
+2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/char/1.cc: Use
+	diagnostic pragma to suppress -Wstringop-overread error.
+
+2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__find_fn, find, __find_if_fn)
+	(find_if, __find_if_not_fn, find_if_not, _in_in_result)
+	(__mismatch_fn, mismatch, __search_fn, search): Move to ...
+	* include/bits/ranges_util.h: ... here.
+	* include/std/ranges (__detail::find, __detail::find_if)
+	(__detail::find_if_not, __detail::mismatch): Remove.
+	(filter_view): Use ranges::find_if instead.
+	(drop_while_view): Use ranges::find_if_not instead.
+	(split_view): Use ranges::find and ranges::mismatch instead.
+
+2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/iterator_concepts.h (weakly_incrementable): Remove
+	default_initializable requirement.
+	* include/bits/ranges_base.h (ranges::view): Likewise.
+	* include/bits/ranges_util.h (subrange): Constrain the default
+	ctor.
+	* include/bits/stl_iterator.h (back_insert_iterator): Remove the
+	default ctor.
+	(front_insert_iterator): Likewise.
+	(insert_iterator): Likewise.  Remove NSDMIs.
+	(common_iterator): Constrain the default ctor.
+	(counted_iterator): Likewise.
+	* include/bits/stream_iterator.h (ostream_iterator): Remove the
+	default ctor.
+	* include/std/ranges (__detail::__box::operator=): Handle
+	self-assignment in the primary template.
+	(__detail::__box): In the partial specialization: adjust
+	constraints as per P2325.  Add specialized operator= for the
+	case when the wrapped type is not copyable.  Constrain the
+	default ctor.  Avoid list-initialization.
+	(single_view): Constraint the default ctor.
+	(iota_view): Relax semiregular constraint to copyable.
+	Constrain the default ctor.
+	(iota_view::_Iterator): Constraint the default ctor.
+	(basic_istream_view): Remove the default ctor.  Remove NSDMIs.
+	Remove redundant checks for empty _M_stream.
+	(basic_istream_view::_Iterator): Likewise.
+	(ref_view): Remove the default ctor.  Remove NSDMIs.
+	(ref_view::_Iterator): Constrain the default ctor.
+	(__detail::__non_propagating_cache::operator=): Define overload
+	for assigning from a value of the underlying type.
+	(filter_view): Likewise.
+	(filter_view::_Iterator): Likewise.
+	(transform_view): Likewise.
+	(transform_view::_Iterator): Likewise.
+	(take_view): Likewise.
+	(take_view::_Iterator): Likewise.
+	(take_while_view): Likewise.
+	(take_while_view::_Iterator): Likewise.
+	(drop_while_view): Likewise.
+	(drop_while_view::_Iterator): Likewise.
+	(join_view): Likewise.
+	(split_view::_OuterIter::__current): Adjust after changing the
+	type of _M_current.
+	(split_view::_M_current): Wrap it in a __non_propagating_cache.
+	(split_view::split_view): Constrain the default ctor.
+	(common_view): Constrain the default ctor.
+	(reverse_view): Likewise.
+	(elements_view): Likewise.
+	* include/std/span (enable_view<span<_ElementType, _Extent>>):
+	Define this partial specialization to true unconditionally.
+	* include/std/version (__cpp_lib_ranges): Adjust value.
+	* testsuite/24_iterators/back_insert_iterator/constexpr.cc:
+	Don't attempt to default construct a back_insert_iterator.
+	* testsuite/24_iterators/front_insert_iterator/constexpr.cc:
+	Don't attempt to default construct a front_insert_iterator.
+	* testsuite/24_iterators/insert_iterator/constexpr.cc:
+	Don't attempt to default construct an insert_iterator.
+	* testsuite/24_iterators/ostream_iterator/requirements/constexpr.cc:
+	Remove this test for default constructibility of ostream_iterator.
+	* testsuite/std/ranges/97600.cc: Don't attempt to default
+	construct a basic_istream_view.
+	* testsuite/std/ranges/adaptors/detail/semiregular_box.cc:
+	Rename to ...
+	* testsuite/std/ranges/adaptors/detail/copyable_box.cc: ... this.
+	(test02): Adjust now that __box is copyable-box not
+	semiregular-box.
+	(test03): New test.
+	* testsuite/std/ranges/p2325.cc: New test.
+	* testsuite/std/ranges/single_view.cc (test06): New test.
+	* testsuite/std/ranges/view.cc: Adjust now that view doesn't
+	require default_initializable.
+
 2021-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91488

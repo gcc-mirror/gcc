@@ -1,3 +1,38 @@
+2021-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (binding_cluster::get_any_binding): Make symbolic reads
+	from a cluster with concrete bindings return unknown.
+
+2021-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_int_cst): New.
+	(region_model_manager::maybe_undo_optimize_bit_field_compare): Use
+	it to simplify away a local tree.
+	* region-model.cc (region_model::on_setjmp): Likewise.
+	(region_model::on_longjmp): Likewise.
+	* region-model.h (region_model_manager::get_or_create_int_cst):
+	New decl.
+	* store.cc (binding_cluster::zero_fill_region): Use it to simplify
+	away a local tree.
+
+2021-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (class custom_event): Make abstract to allow for
+	custom vfuncs, splitting existing implementation into...
+	(class precanned_custom_event): New subclass.
+	(custom_event::get_desc): Move to...
+	(precanned_custom_event::get_desc): ...subclass.
+	* checker-path.h (class custom_event): Make abstract to allow for
+	custom vfuncs, splitting existing implementation into...
+	(class precanned_custom_event): New subclass.
+	* diagnostic-manager.cc (diagnostic_manager::add_events_for_eedge):
+	Use precanned_custom_event.
+	* engine.cc
+	(stale_jmp_buf::maybe_add_custom_events_for_superedge): Likewise.
+	* sm-signal.cc (signal_delivery_edge_info_t::add_events_to_path):
+	Likewise.
+
 2021-06-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99212
