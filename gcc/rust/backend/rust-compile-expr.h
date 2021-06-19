@@ -203,7 +203,7 @@ public:
 	      != 0)
 	    {
 	      rust_fatal_error (expr.get_locus (),
-				"bad float number in literal");
+				"bad floating-point number in literal");
 	      return;
 	    }
 

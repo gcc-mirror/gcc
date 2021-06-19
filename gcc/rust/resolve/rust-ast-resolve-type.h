@@ -150,7 +150,7 @@ public:
 	if (!ok)
 	  {
 	    rust_error_at (seg.get_locus (),
-			   "failed to resolve all generic args");
+			   "failed to resolve all generic arguments");
 	    return CanonicalPath::create_empty ();
 	  }
 

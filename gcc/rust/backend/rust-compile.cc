@@ -141,7 +141,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	expr.get_mappings ().get_crate_num (), ref, nullptr);
       if (resolved_item == nullptr)
 	{
-	  rust_error_at (expr.get_locus (), "failed to lookup forward decl");
+	  rust_error_at (expr.get_locus (),
+			 "failed to lookup forward declaration");
 	  return;
 	}
 
@@ -162,7 +163,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
       if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
-	  rust_error_at (expr.get_locus (), "forward decl was not compiled");
+	  rust_error_at (expr.get_locus (),
+			 "forward declaration was not compiled");
 	  return;
 	}
     }

@@ -1504,7 +1504,7 @@ TypeCheckCallExpr::visit (ADTType &type)
     {
       rust_error_at (
 	call.get_locus (),
-	"expected function, tuple struct or tuple variant, found struct `%s`",
+	"expected function, tuple struct or tuple variant, found struct %<%s%>",
 	type.get_name ().c_str ());
       return;
     }

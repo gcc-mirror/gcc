@@ -472,9 +472,9 @@ Parser<ManagedTokenSource>::parse_inner_attribute ()
 {
   if (lexer.peek_token ()->get_id () != HASH)
     {
-      Error error (
-	lexer.peek_token ()->get_locus (),
-	"BUG: token %<#%> is missing, but parse_inner_attribute was invoked.");
+      Error error (lexer.peek_token ()->get_locus (),
+		   "BUG: token %<#%> is missing, but %<parse_inner_attribute%> "
+		   "was invoked");
       add_error (std::move (error));
 
       return AST::Attribute::create_empty ();
@@ -12000,7 +12000,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
       add_error (
 	Error (t->get_locus (),
 	       "unrecognised token %qs as first token of struct expr field - "
-	       "expected identifier or int literal",
+	       "expected identifier or integer literal",
 	       t->get_token_description ()));
 
       return nullptr;
@@ -14402,7 +14402,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
       add_error (
 	Error (t->get_locus (),
 	       "unrecognised token %qs in struct (or enum) expression - "
-	       "expected %<}%>, identifier, int literal, or %<..%>",
+	       "expected %<}%>, identifier, integer literal, or %<..%>",
 	       t->get_token_description ()));
 
       return nullptr;

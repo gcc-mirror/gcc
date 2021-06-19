@@ -170,7 +170,7 @@ public:
     else if (!args.is_empty ())
       {
 	rust_error_at (path.get_locus (),
-		       "TypePath %s declares generic argument's but "
+		       "TypePath %s declares generic arguments but "
 		       "the type %s does not have any",
 		       path.as_string ().c_str (),
 		       translated->as_string ().c_str ());

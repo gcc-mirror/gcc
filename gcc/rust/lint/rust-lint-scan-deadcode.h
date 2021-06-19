@@ -49,7 +49,7 @@ public:
     if (live_symbols.find (hirId) == live_symbols.end ())
       {
 	rust_warning_at (function.get_locus (), 0,
-			 "function is never used: `%s`",
+			 "function is never used: %<%s%>",
 			 function.get_function_name ().c_str ());
 	return;
       }
