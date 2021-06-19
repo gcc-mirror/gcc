@@ -12150,7 +12150,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	  assemble_name (file, name);
 	}
       if (!TARGET_MACHO && !(TARGET_64BIT && TARGET_PECOFF)
-	  && code == 'P' && ! SYMBOL_REF_LOCAL_P (x))
+	  && code == 'P' && ix86_call_use_plt_p (x))
 	fputs ("@PLT", file);
       break;
 
@@ -15978,6 +15978,26 @@ rtx
 ix86_zero_extend_to_Pmode (rtx exp)
 {
   return force_reg (Pmode, convert_to_mode (Pmode, exp, 1));
+}
+
+/* Return true if the function is called via PLT.   */
+
+bool
+ix86_call_use_plt_p (rtx call_op)
+{
+  if (SYMBOL_REF_LOCAL_P (call_op))
+    {
+      if (SYMBOL_REF_DECL (call_op))
+	{
+	  /* NB: All ifunc functions must be called via PLT.  */
+	  cgraph_node *node
+	    = cgraph_node::get (SYMBOL_REF_DECL (call_op));
+	  if (node && node->ifunc_resolver)
+	    return true;
+	}
+      return false;
+    }
+  return true;
 }
 
 /* Return true if the function being called was marked with attribute
@@ -24581,6 +24601,9 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_GET_MULTILIB_ABI_NAME
 #define TARGET_GET_MULTILIB_ABI_NAME \
   ix86_get_multilib_abi_name
+
+#undef TARGET_IFUNC_REF_LOCAL_OK
+#define TARGET_IFUNC_REF_LOCAL_OK hook_bool_void_true
 
 static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 {

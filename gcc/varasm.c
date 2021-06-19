@@ -7474,7 +7474,8 @@ default_binds_local_p_3 (const_tree exp, bool shlib, bool weak_dominate,
      FIXME: We can resolve the weakref case more curefuly by looking at the
      weakref alias.  */
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp))
-      || (TREE_CODE (exp) == FUNCTION_DECL
+      || (!targetm.ifunc_ref_local_ok ()
+	  && TREE_CODE (exp) == FUNCTION_DECL
 	  && cgraph_node::get (exp)
 	  && cgraph_node::get (exp)->ifunc_resolver))
     return false;

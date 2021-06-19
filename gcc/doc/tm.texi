@@ -12359,6 +12359,11 @@ The support includes the assembler, linker and dynamic linker.
 The default value of this hook is based on target's libc.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_IFUNC_REF_LOCAL_OK (void)
+Return true if it is OK to reference indirect function resolvers
+locally.  The default is to return false.
+@end deftypefn
+
 @deftypefn {Target Hook} {unsigned int} TARGET_ATOMIC_ALIGN_FOR_MODE (machine_mode @var{mode})
 If defined, this function returns an appropriate alignment in bits for an
 atomic object of machine_mode @var{mode}.  If 0 is returned then the
