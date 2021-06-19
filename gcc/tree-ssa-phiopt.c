@@ -391,6 +391,32 @@ replace_phi_edge_with_variable (basic_block cond_block,
   basic_block bb = gimple_bb (phi);
   basic_block block_to_remove;
   gimple_stmt_iterator gsi;
+  tree phi_result = PHI_RESULT (phi);
+
+  /* Duplicate range info if we're the only things setting the target PHI.
+     This is needed as later on, the new_tree will be replacing
+     The assignement of the PHI.
+     For an example:
+     bb1:
+     _4 = min<a_1, 255>
+     goto bb2
+
+     range<-INF,255>
+     a_3 = PHI<_4(1)>
+     bb3:
+
+     use(a_3)
+     And _4 gets prograted into the use of a_3 and losing the range info.
+     This can't be done for more than 2 incoming edges as the progration
+     won't happen.  */
+  if (TREE_CODE (new_tree) == SSA_NAME
+      && EDGE_COUNT (gimple_bb (phi)->preds) == 2
+      && INTEGRAL_TYPE_P (TREE_TYPE (phi_result))
+      && !SSA_NAME_RANGE_INFO (new_tree)
+      && SSA_NAME_RANGE_INFO (phi_result))
+    duplicate_ssa_name_range_info (new_tree,
+				   SSA_NAME_RANGE_TYPE (phi_result),
+				   SSA_NAME_RANGE_INFO (phi_result));
 
   /* Change the PHI argument to new.  */
   SET_USE (PHI_ARG_DEF_PTR (phi, e->dest_idx), new_tree);
@@ -1385,16 +1411,6 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	   <bb 4>:
 	   # u_3 = PHI <u_6(3), 4294967295(2)>  */
       reset_flow_sensitive_info (lhs);
-      if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
-	{
-	  /* If available, we can use VR of phi result at least.  */
-	  tree phires = gimple_phi_result (phi);
-	  struct range_info_def *phires_range_info
-	    = SSA_NAME_RANGE_INFO (phires);
-	  if (phires_range_info)
-	    duplicate_ssa_name_range_info (lhs, SSA_NAME_RANGE_TYPE (phires),
-					   phires_range_info);
-	}
       gimple_stmt_iterator gsi_from;
       for (int i = prep_cnt - 1; i >= 0; --i)
 	{
@@ -1794,13 +1810,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   gimple_seq stmts = NULL;
   tree phi_result = PHI_RESULT (phi);
   result = gimple_build (&stmts, minmax, TREE_TYPE (phi_result), arg0, arg1);
-  /* Duplicate range info if we're the only things setting the target PHI.  */
-  if (!gimple_seq_empty_p (stmts)
-      && EDGE_COUNT (gimple_bb (phi)->preds) == 2
-      && !POINTER_TYPE_P (TREE_TYPE (phi_result))
-      && SSA_NAME_RANGE_INFO (phi_result))
-    duplicate_ssa_name_range_info (result, SSA_NAME_RANGE_TYPE (phi_result),
-				   SSA_NAME_RANGE_INFO (phi_result));
 
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
