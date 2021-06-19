@@ -1,5 +1,5 @@
 // rust-gcc.cc -- Rust frontend to gcc IR.
-// Copyright (C) 2011-2020 Free Software Foundation, Inc.
+// Copyright (C) 2011-2021 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 // forked from gccgo
 
@@ -217,10 +217,8 @@ public:
 
   Btype *wchar_type ()
   {
-    // i think this is meant to be 32 bit from
-    // https://www.unicode.org/versions/Unicode13.0.0/ch03.pdf#G7404
-    int precision = 32;
-    tree wchar = make_unsigned_type (precision);
+    tree wchar = make_unsigned_type (32);
+    TYPE_STRING_FLAG (wchar) = 1;
     return this->make_type (wchar);
   }
 
@@ -867,8 +865,6 @@ Gcc_backend::integer_type (bool is_unsigned, int bits)
     {
       if (bits == INT_TYPE_SIZE)
 	type = unsigned_type_node;
-      else if (bits == CHAR_TYPE_SIZE)
-	type = unsigned_char_type_node;
       else if (bits == SHORT_TYPE_SIZE)
 	type = short_unsigned_type_node;
       else if (bits == LONG_TYPE_SIZE)
@@ -882,8 +878,6 @@ Gcc_backend::integer_type (bool is_unsigned, int bits)
     {
       if (bits == INT_TYPE_SIZE)
 	type = integer_type_node;
-      else if (bits == CHAR_TYPE_SIZE)
-	type = signed_char_type_node;
       else if (bits == SHORT_TYPE_SIZE)
 	type = short_integer_type_node;
       else if (bits == LONG_TYPE_SIZE)
