@@ -1437,7 +1437,7 @@ See RS/6000 and PowerPC Options.
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
 -mindirect-branch-register -mharden-sls=@var{choice} @gol
--mindirect-branch-cs-prefix -mneeded}
+-mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -32809,6 +32809,19 @@ x32 environments.
 @opindex mneeded
 Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property for Linux target to
 indicate the micro-architecture ISA level required to execute the binary.
+
+@item -mno-direct-extern-access
+@opindex mno-direct-extern-access
+@opindex mdirect-extern-access
+Without @option{-fpic} nor @option{-fPIC}, always use the GOT pointer
+to access external symbols.  With @option{-fpic} or @option{-fPIC},
+treat access to protected symbols as local symbols.  The default is
+@option{-mdirect-extern-access}.
+
+@strong{Warning:} shared libraries compiled with
+@option{-mno-direct-extern-access} and executable compiled with
+@option{-mdirect-extern-access} may not be binary compatible if
+protected symbols are used in shared libraries and executable.
 @end table
 
 @node x86 Windows Options

@@ -363,6 +363,9 @@ unsigned int ix86_default_incoming_stack_boundary;
 /* Alignment for incoming stack boundary in bits.  */
 unsigned int ix86_incoming_stack_boundary;
 
+/* True if there is no direct access to extern symbols.  */
+bool ix86_has_no_direct_extern_access;
+
 /* Calling abi specific va_list type nodes.  */
 tree sysv_va_list_type_node;
 tree ms_va_list_type_node;
@@ -10514,13 +10517,17 @@ darwin_local_data_pic (rtx disp)
 }
 
 /* True if the function symbol operand X should be loaded from GOT.
+   If CALL_P is true, X is a call operand.
+
+   NB: -mno-direct-extern-access doesn't force load from GOT for
+   call.
 
    NB: In 32-bit mode, only non-PIC is allowed in inline assembly
    statements, since a PIC register could not be available at the
    call site.  */
 
 bool
-ix86_force_load_from_GOT_p (rtx x)
+ix86_force_load_from_GOT_p (rtx x, bool call_p)
 {
   return ((TARGET_64BIT || (!flag_pic && HAVE_AS_IX86_GOT32X))
 	  && !TARGET_PECOFF && !TARGET_MACHO
@@ -10528,11 +10535,16 @@ ix86_force_load_from_GOT_p (rtx x)
 	  && ix86_cmodel != CM_LARGE
 	  && ix86_cmodel != CM_LARGE_PIC
 	  && GET_CODE (x) == SYMBOL_REF
-	  && SYMBOL_REF_FUNCTION_P (x)
-	  && (!flag_plt
-	      || (SYMBOL_REF_DECL (x)
-		  && lookup_attribute ("noplt",
-				       DECL_ATTRIBUTES (SYMBOL_REF_DECL (x)))))
+	  && ((!call_p
+	       && (!ix86_direct_extern_access
+		   || (SYMBOL_REF_DECL (x)
+		       && lookup_attribute ("nodirect_extern_access",
+					    DECL_ATTRIBUTES (SYMBOL_REF_DECL (x))))))
+	      || (SYMBOL_REF_FUNCTION_P (x)
+		  && (!flag_plt
+		      || (SYMBOL_REF_DECL (x)
+			  && lookup_attribute ("noplt",
+					       DECL_ATTRIBUTES (SYMBOL_REF_DECL (x)))))))
 	  && !SYMBOL_REF_LOCAL_P (x));
 }
 
@@ -10799,7 +10811,11 @@ legitimate_pic_address_disp_p (rtx disp)
 	    }
 	  else if (!SYMBOL_REF_FAR_ADDR_P (op0)
 		   && (SYMBOL_REF_LOCAL_P (op0)
-		       || (HAVE_LD_PIE_COPYRELOC
+		       || ((ix86_direct_extern_access
+			    && !(SYMBOL_REF_DECL (op0)
+				 && lookup_attribute ("nodirect_extern_access",
+						      DECL_ATTRIBUTES (SYMBOL_REF_DECL (op0)))))
+			   && HAVE_LD_PIE_COPYRELOC
 			   && flag_pie
 			   && !SYMBOL_REF_WEAK (op0)
 			   && !SYMBOL_REF_FUNCTION_P (op0)))
@@ -13755,7 +13771,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
       if (code == 'P')
 	{
-	  if (ix86_force_load_from_GOT_p (x))
+	  if (ix86_force_load_from_GOT_p (x, true))
 	    {
 	      /* For inline assembly statement, load function address
 		 from GOT with 'P' operand modifier to avoid PLT.  */
@@ -22536,10 +22552,10 @@ int
 asm_preferred_eh_data_format (int code, int global)
 {
   /* PE-COFF is effectively always -fPIC because of the .reloc section.  */
-  if (flag_pic || TARGET_PECOFF)
+  if (flag_pic || TARGET_PECOFF || !ix86_direct_extern_access)
     {
       int type = DW_EH_PE_sdata8;
-      if (!TARGET_64BIT
+      if (ptr_mode == SImode
 	  || ix86_cmodel == CM_SMALL_PIC
 	  || (ix86_cmodel == CM_MEDIUM_PIC && (global || code)))
 	type = DW_EH_PE_sdata4;
@@ -23629,10 +23645,28 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 static bool
 ix86_binds_local_p (const_tree exp)
 {
-  return default_binds_local_p_3 (exp, flag_shlib != 0, true, true,
-				  (!flag_pic
-				   || (TARGET_64BIT
-				       && HAVE_LD_PIE_COPYRELOC != 0)));
+  bool direct_extern_access
+    = (ix86_direct_extern_access
+       && !(VAR_OR_FUNCTION_DECL_P (exp)
+	    && lookup_attribute ("nodirect_extern_access",
+				 DECL_ATTRIBUTES (exp))));
+  if (!direct_extern_access)
+    ix86_has_no_direct_extern_access = true;
+  return default_binds_local_p_3 (exp, flag_shlib != 0, true,
+				  direct_extern_access,
+				  (direct_extern_access
+				   && (!flag_pic
+				       || (TARGET_64BIT
+					   && HAVE_LD_PIE_COPYRELOC != 0))));
+}
+
+/* If flag_pic or ix86_direct_extern_access is false, then neither
+   local nor global relocs should be placed in readonly memory.  */
+
+static int
+ix86_reloc_rw_mask (void)
+{
+  return (flag_pic || !ix86_direct_extern_access) ? 3 : 0;
 }
 #endif
 
@@ -24696,6 +24730,11 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_IFUNC_REF_LOCAL_OK
 #define TARGET_IFUNC_REF_LOCAL_OK hook_bool_void_true
+
+#if !TARGET_MACHO && !TARGET_DLLIMPORT_DECL_ATTRIBUTES
+# undef TARGET_ASM_RELOC_RW_MASK
+# define TARGET_ASM_RELOC_RW_MASK ix86_reloc_rw_mask
+#endif
 
 static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 {

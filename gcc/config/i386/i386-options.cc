@@ -3775,6 +3775,36 @@ ix86_handle_fentry_name (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
+/* Handle a "nodirect_extern_access" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_nodirect_extern_access_attribute (tree *pnode, tree name,
+					 tree ARG_UNUSED (args),
+					 int ARG_UNUSED (flags),
+					 bool *no_add_attrs)
+{
+  tree node = *pnode;
+
+  if (VAR_OR_FUNCTION_DECL_P (node))
+    {
+      if ((!TREE_STATIC (node) && TREE_CODE (node) != FUNCTION_DECL
+	   && !DECL_EXTERNAL (node)) || !TREE_PUBLIC (node))
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute have effect only on public objects", name);
+	  *no_add_attrs = true;
+	}
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Table of valid machine attributes.  */
 const struct attribute_spec ix86_attribute_table[] =
 {
@@ -3855,6 +3885,8 @@ const struct attribute_spec ix86_attribute_table[] =
     ix86_handle_fentry_name, NULL },
   { "cf_check", 0, 0, true, false, false, false,
     ix86_handle_fndecl_attribute, NULL },
+  { "nodirect_extern_access", 0, 0, true, false, false, false,
+    handle_nodirect_extern_access_attribute, NULL },
 
   /* End element.  */
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
