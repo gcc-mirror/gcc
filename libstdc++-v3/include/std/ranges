@@ -2932,13 +2932,7 @@ namespace views::__adaptor
 
 	    constexpr _InnerIter<_Const>
 	    begin() const
-	      requires copyable<_OuterIter>
 	    { return _InnerIter<_Const>{_M_i}; }
-
-	    constexpr _InnerIter<_Const>
-	    begin()
-	      requires (!copyable<_OuterIter>)
-	    { return _InnerIter<_Const>{std::move(_M_i)}; }
 
 	    constexpr default_sentinel_t
 	    end() const
