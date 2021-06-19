@@ -1,3 +1,55 @@
+2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/100856
+	* common/config/arm/arm-common.c (arm_canon_arch_option_1): New function
+	derived from arm_canon_arch.
+	(arm_canon_arch_option): Call it.
+	(arm_canon_arch_multilib_option): New function.
+	* config/arm/arm-cpus.in (IGNORE_FOR_MULTILIB): New fgroup.
+	* config/arm/arm.h (arm_canon_arch_multilib_option): New prototype.
+	(CANON_ARCH_MULTILIB_SPEC_FUNCTION): New macro.
+	(MULTILIB_ARCH_CANONICAL_SPECS): New macro.
+	(DRIVER_SELF_SPECS): Add MULTILIB_ARCH_CANONICAL_SPECS.
+	* config/arm/arm.opt (mlibarch): New option.
+	* config/arm/t-rmprofile (MULTILIB_MATCHES): For armv8*-m, replace use
+	of march on RHS with mlibarch.
+
+2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/101016
+	* config/arm/arm_mve.h (__arm_vld1q): Change __ARM_mve_coerce(p0,
+	int8_t const *) to __ARM_mve_coerce1(p0, int8_t *) in the argument for
+	the polymorphic variants matching code.
+	(__arm_vld1q_z): Likewise.
+	(__arm_vld2q): Likewise.
+	(__arm_vld4q): Likewise.
+	(__arm_vldrbq_gather_offset): Likewise.
+	(__arm_vldrbq_gather_offset_z): Likewise.
+
+2021-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101062
+	* stor-layout.c (finish_bitfield_layout): Don't add bitfield
+	representatives in QUAL_UNION_TYPE.
+
+2021-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101062
+	* stor-layout.c (finish_bitfield_representative): For fields in unions
+	assume nextf is always NULL.
+	(finish_bitfield_layout): Compute bit field representatives also in
+	unions, but handle it as if each bitfield was the only field in the
+	aggregate.
+
 2021-06-17  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

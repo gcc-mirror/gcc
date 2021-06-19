@@ -1,3 +1,11 @@
+2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91488
+	* testsuite/libitm.c++/libstdc++-pr91488.C: New test.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.
