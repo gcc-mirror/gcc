@@ -836,7 +836,7 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       if (!is_gimple_assign (stmt_to_move))
 	return false;
 
-      tree lhs = gimple_assign_lhs  (stmt_to_move);
+      tree lhs = gimple_assign_lhs (stmt_to_move);
       gimple *use_stmt;
       use_operand_p use_p;
 
@@ -892,6 +892,7 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
       gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt_to_move);
       gsi_move_before (&gsi1, &gsi);
+      reset_flow_sensitive_info (gimple_assign_lhs (stmt_to_move));
     }
   if (seq)
     gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
