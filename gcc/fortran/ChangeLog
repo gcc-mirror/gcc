@@ -1,3 +1,16 @@
+2021-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95501
+	PR fortran/95502
+	* expr.c (gfc_check_pointer_assign): Avoid NULL pointer
+	dereference.
+	* match.c (gfc_match_pointer_assignment): Likewise.
+	* parse.c (gfc_check_do_variable): Avoid comparison with NULL
+	symtree.
+
 2021-06-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/82376

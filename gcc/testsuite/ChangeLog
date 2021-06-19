@@ -1,3 +1,66 @@
+2021-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95501
+	PR fortran/95502
+	* gfortran.dg/pr95502.f90: New test.
+
+2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/100856
+	* gcc.target/arm/acle/pr100856.c: New test.
+	* gcc.target/arm/multilib.exp: Add tests for cde options.
+
+2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/101016
+	* gcc.target/arm/mve/intrinsics/pr101016.c: New test.
+
+2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/99939
+	* gcc.target/arm/cmse/cmse-18.c: Add separate scan-assembler
+	directives check for target is v8.1-m.main+mve or not before
+	comparing the assembly output.
+	* gcc.target/arm/cmse/cmse-20.c: New test.
+
+2021-06-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-06-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/100777
+	* gcc.target/powerpc/pr100777.c: New test.
+
+2021-06-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-06-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-4.c (__builtin_vsx_build_pair): Add
+	tests.  Update expected counts.
+	* gcc.target/powerpc/mma-builtin-5.c (__builtin_mma_build_acc): Add
+	tests.  Update expected counts.
+
+2021-06-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-05-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99842
+	* g++.target/powerpc/pr99842.C: New.
+
 2021-06-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101029

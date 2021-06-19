@@ -1,3 +1,14 @@
+2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/99939
+	* config/arm/cmse_nonsecure_call.S: Add	__ARM_FEATURE_MVE
+	macro.
+	* config/arm/t-arm: To link cmse.o and cmse_nonsecure_call.o
+	on passing -mcmse option.
+
 2021-04-27  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/98952
