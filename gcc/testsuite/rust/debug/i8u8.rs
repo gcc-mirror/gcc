@@ -6,7 +6,7 @@ fn main () {
 // Use -w to avoid warnings about the unused variables
 // { dg-options "-w -g -dA" }
 // DW_ATE_signed_char = 6
-// { dg-final { scan-assembler-not "0x6\[^\n\r]* DW_AT_language" } } */
+// { dg-final { scan-assembler-not "0x6\[ \t]\[^\n\r]* DW_AT_encoding" } } */
 // DW_ATE_unsigned_char = 8
-// { dg-final { scan-assembler-not "0x8\[^\n\r]* DW_AT_language" } } */
+// { dg-final { scan-assembler-not "0x8\[ \t]\[^\n\r]* DW_AT_encoding" } } */
 }
