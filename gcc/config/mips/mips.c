@@ -22321,6 +22321,17 @@ mips_expand_msa_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
     }
 }
 
+void
+mips_expand_vec_cmp_expr (rtx *operands)
+{
+  rtx cond = operands[1];
+  rtx op0 = operands[2];
+  rtx op1 = operands[3];
+  rtx res = operands[0];
+
+  mips_expand_msa_cmp (res, GET_CODE (cond), op0, op1);
+}
+
 /* Expand VEC_COND_EXPR, where:
    MODE is mode of the result
    VIMODE equivalent integer mode
