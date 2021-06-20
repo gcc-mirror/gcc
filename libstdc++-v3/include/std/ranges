@@ -1195,6 +1195,10 @@ namespace views::__adaptor
 	  return *this;
 	}
 
+	constexpr explicit
+	operator bool() const noexcept
+	{ return this->_M_is_engaged(); }
+
 	constexpr _Tp&
 	operator*() noexcept
 	{ return this->_M_get(); }
@@ -3270,6 +3274,207 @@ namespace views::__adaptor
     };
 
     inline constexpr _LazySplit lazy_split;
+  } // namespace views
+
+  template<forward_range _Vp, forward_range _Pattern>
+    requires view<_Vp> && view<_Pattern>
+      && indirectly_comparable<iterator_t<_Vp>, iterator_t<_Pattern>,
+			       ranges::equal_to>
+  class split_view : public view_interface<split_view<_Vp, _Pattern>>
+  {
+  private:
+    _Pattern _M_pattern = _Pattern();
+    __detail::__non_propagating_cache<subrange<iterator_t<_Vp>>> _M_cached_begin;
+    _Vp _M_base = _Vp();
+
+    struct _Iterator;
+    struct _Sentinel;
+
+  public:
+    split_view() requires (default_initializable<_Vp>
+			   && default_initializable<_Pattern>)
+      = default;
+
+    constexpr
+    split_view(_Vp __base, _Pattern __pattern)
+      : _M_pattern(std::move(__pattern)),
+	_M_base(std::move(__base))
+    { }
+
+    template<forward_range _Range>
+      requires constructible_from<_Vp, views::all_t<_Range>>
+	&& constructible_from<_Pattern, single_view<range_value_t<_Range>>>
+    constexpr
+    split_view(_Range&& __r, range_value_t<_Range> __e)
+      : _M_pattern(views::single(__e)),
+	_M_base(views::all(std::forward<_Range>(__r)))
+    { }
+
+    constexpr _Vp
+    base() const& requires copyable<_Vp>
+    { return _M_base; }
+
+    constexpr _Vp
+    base() &&
+    { return std::move(_M_base); }
+
+    constexpr _Iterator
+    begin()
+    {
+      if (!_M_cached_begin)
+	_M_cached_begin = _M_find_next(ranges::begin(_M_base));
+      return {this, ranges::begin(_M_base), *_M_cached_begin};
+    }
+
+    constexpr auto
+    end()
+    {
+      if constexpr (common_range<_Vp>)
+	return _Iterator{this, ranges::end(_M_base), {}};
+      else
+	return _Sentinel{this};
+    }
+
+    constexpr subrange<iterator_t<_Vp>>
+    _M_find_next(iterator_t<_Vp> __it)
+    {
+      auto [__b, __e] = ranges::search(subrange(__it, ranges::end(_M_base)), _M_pattern);
+      if (__b != ranges::end(_M_base) && ranges::empty(_M_pattern))
+	{
+	  ++__b;
+	  ++__e;
+	}
+      return {__b, __e};
+    }
+
+  private:
+    struct _Iterator
+    {
+    private:
+      split_view* _M_parent = nullptr;
+      iterator_t<_Vp> _M_cur = iterator_t<_Vp>();
+      subrange<iterator_t<_Vp>> _M_next = subrange<iterator_t<_Vp>>();
+      bool _M_trailing_empty = false;
+
+      friend struct _Sentinel;
+
+    public:
+      using iterator_concept = forward_iterator_tag;
+      using iterator_category = input_iterator_tag;
+      using value_type = subrange<iterator_t<_Vp>>;
+      using difference_type = range_difference_t<_Vp>;
+
+      _Iterator() requires default_initializable<iterator_t<_Vp>> = default;
+
+      constexpr
+      _Iterator(split_view* __parent,
+		iterator_t<_Vp> __current,
+		subrange<iterator_t<_Vp>> __next)
+	: _M_parent(__parent),
+	  _M_cur(std::move(__current)),
+	  _M_next(std::move(__next))
+      { }
+
+      constexpr iterator_t<_Vp>
+      base() const
+      { return _M_cur; }
+
+      constexpr value_type
+      operator*() const
+      { return {_M_cur, _M_next.begin()}; }
+
+      constexpr _Iterator&
+      operator++()
+      {
+	_M_cur = _M_next.begin();
+	if (_M_cur != ranges::end(_M_parent->_M_base))
+	  {
+	    _M_cur = _M_next.end();
+	    if (_M_cur == ranges::end(_M_parent->_M_base))
+	      {
+		_M_trailing_empty = true;
+		_M_next = {_M_cur, _M_cur};
+	      }
+	    else
+	      _M_next = _M_parent->_M_find_next(_M_cur);
+	  }
+	else
+	  _M_trailing_empty = false;
+	return *this;
+      }
+
+      constexpr _Iterator
+      operator++(int)
+      {
+	auto __tmp = *this;
+	++*this;
+	return __tmp;
+      }
+
+      friend constexpr bool
+      operator==(const _Iterator& __x, const _Iterator& __y)
+      {
+	return __x._M_cur == __y._M_cur
+	  && __x._M_trailing_empty == __y._M_trailing_empty;
+      }
+    };
+
+    struct _Sentinel
+    {
+    private:
+      sentinel_t<_Vp> _M_end = sentinel_t<_Vp>();
+
+      constexpr bool
+      _M_equal(const _Iterator& __x) const
+      { return __x._M_cur == _M_end && !__x._M_trailing_empty; }
+
+    public:
+      constexpr explicit
+      _Sentinel(split_view* __parent)
+	: _M_end(ranges::end(__parent->_M_base))
+      { }
+
+      friend constexpr bool
+      operator==(const _Iterator& __x, const _Sentinel& __y)
+      { return __y._M_equal(__x); }
+    };
+  };
+
+  template<typename _Range, typename _Pattern>
+    split_view(_Range&&, _Pattern&&)
+      -> split_view<views::all_t<_Range>, views::all_t<_Pattern>>;
+
+  template<forward_range _Range>
+    split_view(_Range&&, range_value_t<_Range>)
+      -> split_view<views::all_t<_Range>, single_view<range_value_t<_Range>>>;
+
+  namespace views
+  {
+    namespace __detail
+    {
+      template<typename _Range, typename _Pattern>
+	concept __can_split_view
+	  = requires { split_view(std::declval<_Range>(), std::declval<_Pattern>()); };
+    } // namespace __detail
+
+    struct _Split : __adaptor::_RangeAdaptor<_Split>
+    {
+      template<viewable_range _Range, typename _Pattern>
+	requires __detail::__can_split_view<_Range, _Pattern>
+	constexpr auto
+	operator()(_Range&& __r, _Pattern&& __f) const
+	{
+	  return split_view(std::forward<_Range>(__r), std::forward<_Pattern>(__f));
+	}
+
+      using _RangeAdaptor<_Split>::operator();
+      static constexpr int _S_arity = 2;
+      template<typename _Pattern>
+	static constexpr bool _S_has_simple_extra_args
+	  = _LazySplit::_S_has_simple_extra_args<_Pattern>;
+    };
+
+    inline constexpr _Split split;
   } // namespace views
 
   namespace views

@@ -42,8 +42,6 @@ test01()
   static_assert(__adaptor_has_simple_extra_args<decltype(views::lazy_split), char>);
   static_assert(!__adaptor_has_simple_extra_args<decltype(views::lazy_split), std::string>);
 
-  // Verify all adaptor closures except for views::lazy_split(pattern) have a simple
-  // operator().
   using views::__adaptor::__closure_has_simple_call_op;
   __closure_has_simple_call_op auto a00 = views::all;
   __closure_has_simple_call_op auto a01 = views::transform(std::identity{});
@@ -57,6 +55,7 @@ test01()
   __closure_has_simple_call_op auto a09 = views::reverse;
   __closure_has_simple_call_op auto a10 = views::keys;
   __closure_has_simple_call_op auto a11 = views::lazy_split(' ');
+  __closure_has_simple_call_op auto a11a = views::split(' ');
   // Verify composition of simple closures is simple.
   __closure_has_simple_call_op auto b
     = (a00 | a01) | (a02 | a03) | (a04 | a05 | a06) | (a07 | a08 | a09 | a10) | a11;
@@ -67,6 +66,12 @@ test01()
   static_assert(!__closure_has_simple_call_op<decltype(a12)>);
   static_assert(!__closure_has_simple_call_op<decltype(a12 | a00)>);
   static_assert(!__closure_has_simple_call_op<decltype(a00 | a12)>);
+
+  // Likewise views::split(non_view_range).
+  auto a12a = views::split(s);
+  static_assert(!__closure_has_simple_call_op<decltype(a12a)>);
+  static_assert(!__closure_has_simple_call_op<decltype(a12a | a00)>);
+  static_assert(!__closure_has_simple_call_op<decltype(a00 | a12a)>);
 }
 
 void
@@ -97,6 +102,13 @@ test02()
   a0(x); // { dg-error "no match" };
   auto a1 = a0 | views::all;
   a1(x); // { dg-error "no match" }
+
+  views::split(badarg)(x); // { dg-error "deleted function" }
+  (views::split(badarg) | views::all)(x); // { dg-error "deleted function" }
+  auto a0a = views::split(badarg);
+  a0a(x); // { dg-error "no match" };
+  auto a1a = a0a | views::all;
+  a1a(x); // { dg-error "no match" }
 
   views::take(badarg)(x); // { dg-error "deleted" }
   views::drop(badarg)(x); // { dg-error "deleted" }

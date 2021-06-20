@@ -45,4 +45,5 @@ test01()
 
   // Verify changes to views::lazy_split.
   auto v6 = views::lazy_split(x, 5u);
+  auto v7 = views::split(x, 5u);
 }
