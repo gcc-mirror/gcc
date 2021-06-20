@@ -3086,6 +3086,14 @@ namespace views::__adaptor
 	    : _M_i(std::move(__i))
 	  { }
 
+	  constexpr iterator_t<_Base>
+	  base() const& requires copyable<iterator_t<_Base>>
+	  { return _M_i_current(); }
+
+	  constexpr iterator_t<_Base>
+	  base() &&
+	  { return std::move(_M_i_current()); }
+
 	  constexpr decltype(auto)
 	  operator*() const
 	  { return *_M_i_current(); }
