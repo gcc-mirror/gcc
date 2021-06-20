@@ -90,7 +90,7 @@ test03()
   // Propagating cached iterators during copy/move would cause these asserts
   // to fail here.
   auto v = views::single(1)
-    | views::split(1)
+    | views::lazy_split(1)
     | views::drop(0)
     | views::drop_while([](auto) { return false; })
     | views::filter([](auto) { return true; });

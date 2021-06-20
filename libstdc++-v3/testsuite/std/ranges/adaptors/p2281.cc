@@ -34,7 +34,7 @@ void
 test01()
 {
   auto split_into_strings = [] (auto p) {
-    return views::split(p) | views::transform([](auto r){
+    return views::lazy_split(p) | views::transform([](auto r){
       return std::string(r.begin(), ranges::next(r.begin(), r.end()));
     });
   };
@@ -60,19 +60,19 @@ struct move_only_range
 template<>
   inline constexpr bool std::ranges::enable_view<move_only_range> = true;
 
-template<auto split = views::split>
+template<auto lazy_split = views::lazy_split>
 void
 test02()
 {
   std::string_view s;
   move_only_range p;
-  static_assert(requires { s | split(std::move(p)); });
-  static_assert(requires { split(std::move(p))(s); });
-  static_assert(requires { split(std::move(p)) | views::all; });
-  static_assert(requires { views::all | split(std::move(p)); });
-  static_assert(!requires { split(p); });
-  static_assert(!requires { split(p) | views::all; });
-  static_assert(!requires { views::all | split(p); });
+  static_assert(requires { s | lazy_split(std::move(p)); });
+  static_assert(requires { lazy_split(std::move(p))(s); });
+  static_assert(requires { lazy_split(std::move(p)) | views::all; });
+  static_assert(requires { views::all | lazy_split(std::move(p)); });
+  static_assert(!requires { lazy_split(p); });
+  static_assert(!requires { lazy_split(p) | views::all; });
+  static_assert(!requires { views::all | lazy_split(p); });
 }
 
 int

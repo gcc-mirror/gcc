@@ -43,6 +43,6 @@ test01()
   // Verify changes to views::drop.
   auto v5 = views::drop(x, 0ull);
 
-  // Verify changes to views::split.
-  auto v6 = views::split(x, 5u);
+  // Verify changes to views::lazy_split.
+  auto v6 = views::lazy_split(x, 5u);
 }

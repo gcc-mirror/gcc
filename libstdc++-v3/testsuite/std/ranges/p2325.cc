@@ -113,14 +113,14 @@ test07()
 void
 test08()
 {
-  // Verify split_view is conditionally default constructible.
-  using type1 = ranges::split_view<ranges::ref_view<int[2]>, ranges::single_view<int>>;
+  // Verify lazy_split_view is conditionally default constructible.
+  using type1 = ranges::lazy_split_view<ranges::ref_view<int[2]>, ranges::single_view<int>>;
   static_assert(!default_initializable<type1>);
-  using type2 = ranges::split_view<ranges::single_view<int>, ranges::ref_view<int[2]>>;
+  using type2 = ranges::lazy_split_view<ranges::single_view<int>, ranges::ref_view<int[2]>>;
   static_assert(!default_initializable<type2>);
-  using type3 = ranges::split_view<ranges::ref_view<int[2]>, ranges::ref_view<int[2]>>;
+  using type3 = ranges::lazy_split_view<ranges::ref_view<int[2]>, ranges::ref_view<int[2]>>;
   static_assert(!default_initializable<type3>);
-  using type4 = ranges::split_view<ranges::single_view<int>, ranges::single_view<int>>;
+  using type4 = ranges::lazy_split_view<ranges::single_view<int>, ranges::single_view<int>>;
   static_assert(default_initializable<type4>);
 }
 

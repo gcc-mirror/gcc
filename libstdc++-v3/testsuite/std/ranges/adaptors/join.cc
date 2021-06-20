@@ -93,7 +93,7 @@ test05()
 {
   using namespace std::literals;
   std::vector<std::string> x = {"the", " ", "quick", " ", "brown", " ", "fox"};
-  auto v = x | views::join | views::split(' ');
+  auto v = x | views::join | views::lazy_split(' ');
   auto i = v.begin();
   VERIFY( ranges::equal(*i++, "the"sv) );
   VERIFY( ranges::equal(*i++, "quick"sv) );

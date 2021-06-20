@@ -2826,19 +2826,19 @@ namespace views::__adaptor
 	&& (remove_reference_t<_Range>::size() <= 1);
 
     template<typename _Base>
-      struct __split_view_outer_iter_cat
+      struct __lazy_split_view_outer_iter_cat
       { };
 
     template<forward_range _Base>
-      struct __split_view_outer_iter_cat<_Base>
+      struct __lazy_split_view_outer_iter_cat<_Base>
       { using iterator_category = input_iterator_tag; };
 
     template<typename _Base>
-      struct __split_view_inner_iter_cat
+      struct __lazy_split_view_inner_iter_cat
       { };
 
     template<forward_range _Base>
-      struct __split_view_inner_iter_cat<_Base>
+      struct __lazy_split_view_inner_iter_cat<_Base>
       {
       private:
 	static constexpr auto
@@ -2860,7 +2860,7 @@ namespace views::__adaptor
       && indirectly_comparable<iterator_t<_Vp>, iterator_t<_Pattern>,
 			       ranges::equal_to>
       && (forward_range<_Vp> || __detail::__tiny_range<_Pattern>)
-    class split_view : public view_interface<split_view<_Vp, _Pattern>>
+    class lazy_split_view : public view_interface<lazy_split_view<_Vp, _Pattern>>
     {
     private:
       template<bool _Const>
@@ -2871,17 +2871,17 @@ namespace views::__adaptor
 
       template<bool _Const>
 	struct _OuterIter
-	  : __detail::__split_view_outer_iter_cat<_Base<_Const>>
+	  : __detail::__lazy_split_view_outer_iter_cat<_Base<_Const>>
 	{
 	private:
-	  using _Parent = __detail::__maybe_const_t<_Const, split_view>;
-	  using _Base = split_view::_Base<_Const>;
+	  using _Parent = __detail::__maybe_const_t<_Const, lazy_split_view>;
+	  using _Base = lazy_split_view::_Base<_Const>;
 
 	  constexpr bool
 	  __at_end() const
 	  { return __current() == ranges::end(_M_parent->_M_base) && !_M_trailing_empty; }
 
-	  // [range.split.outer] p1
+	  // [range.lazy.split.outer] p1
 	  //  Many of the following specifications refer to the notional member
 	  //  current of outer-iterator.  current is equivalent to current_ if
 	  //  V models forward_range, and parent_->current_ otherwise.
@@ -2915,7 +2915,7 @@ namespace views::__adaptor
 	  using iterator_concept = conditional_t<forward_range<_Base>,
 						 forward_iterator_tag,
 						 input_iterator_tag>;
-	  // iterator_category defined in __split_view_outer_iter_cat
+	  // iterator_category defined in __lazy_split_view_outer_iter_cat
 	  using difference_type = range_difference_t<_Base>;
 
 	  struct value_type : view_interface<value_type>
@@ -2969,7 +2969,7 @@ namespace views::__adaptor
 	  operator++()
 	  {
 	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	    // 3505. split_view::outer-iterator::operator++ misspecified
+	    // 3505. lazy_split_view::outer-iterator::operator++ misspecified
 	    const auto __end = ranges::end(_M_parent->_M_base);
 	    if (__current() == __end)
 	      {
@@ -3037,10 +3037,10 @@ namespace views::__adaptor
 
       template<bool _Const>
 	struct _InnerIter
-	  : __detail::__split_view_inner_iter_cat<_Base<_Const>>
+	  : __detail::__lazy_split_view_inner_iter_cat<_Base<_Const>>
 	{
 	private:
-	  using _Base = split_view::_Base<_Const>;
+	  using _Base = lazy_split_view::_Base<_Const>;
 
 	  constexpr bool
 	  __at_end() const
@@ -3088,7 +3088,7 @@ namespace views::__adaptor
 	public:
 	  using iterator_concept
 	    = typename _OuterIter<_Const>::iterator_concept;
-	  // iterator_category defined in __split_view_inner_iter_cat
+	  // iterator_category defined in __lazy_split_view_inner_iter_cat
 	  using value_type = range_value_t<_Base>;
 	  using difference_type = range_difference_t<_Base>;
 
@@ -3166,12 +3166,12 @@ namespace views::__adaptor
 
 
     public:
-      split_view() requires (default_initializable<_Vp>
-			     && default_initializable<_Pattern>)
+      lazy_split_view() requires (default_initializable<_Vp>
+				  && default_initializable<_Pattern>)
 	= default;
 
       constexpr
-      split_view(_Vp __base, _Pattern __pattern)
+      lazy_split_view(_Vp __base, _Pattern __pattern)
 	: _M_pattern(std::move(__pattern)), _M_base(std::move(__base))
       { }
 
@@ -3179,7 +3179,7 @@ namespace views::__adaptor
 	requires constructible_from<_Vp, views::all_t<_Range>>
 	  && constructible_from<_Pattern, single_view<range_value_t<_Range>>>
 	constexpr
-	split_view(_Range&& __r, range_value_t<_Range> __e)
+	lazy_split_view(_Range&& __r, range_value_t<_Range> __e)
 	  : _M_pattern(views::single(std::move(__e))),
 	    _M_base(views::all(std::forward<_Range>(__r)))
 	{ }
@@ -3231,35 +3231,35 @@ namespace views::__adaptor
     };
 
   template<typename _Range, typename _Pattern>
-    split_view(_Range&&, _Pattern&&)
-      -> split_view<views::all_t<_Range>, views::all_t<_Pattern>>;
+    lazy_split_view(_Range&&, _Pattern&&)
+      -> lazy_split_view<views::all_t<_Range>, views::all_t<_Pattern>>;
 
   template<input_range _Range>
-    split_view(_Range&&, range_value_t<_Range>)
-      -> split_view<views::all_t<_Range>, single_view<range_value_t<_Range>>>;
+    lazy_split_view(_Range&&, range_value_t<_Range>)
+      -> lazy_split_view<views::all_t<_Range>, single_view<range_value_t<_Range>>>;
 
   namespace views
   {
     namespace __detail
     {
       template<typename _Range, typename _Pattern>
-	concept __can_split_view
-	  = requires { split_view(std::declval<_Range>(), std::declval<_Pattern>()); };
+	concept __can_lazy_split_view
+	  = requires { lazy_split_view(std::declval<_Range>(), std::declval<_Pattern>()); };
     } // namespace __detail
 
-    struct _Split : __adaptor::_RangeAdaptor<_Split>
+    struct _LazySplit : __adaptor::_RangeAdaptor<_LazySplit>
     {
       template<viewable_range _Range, typename _Pattern>
-	requires __detail::__can_split_view<_Range, _Pattern>
+	requires __detail::__can_lazy_split_view<_Range, _Pattern>
 	constexpr auto
 	operator()(_Range&& __r, _Pattern&& __f) const
 	{
-	  return split_view(std::forward<_Range>(__r), std::forward<_Pattern>(__f));
+	  return lazy_split_view(std::forward<_Range>(__r), std::forward<_Pattern>(__f));
 	}
 
-      using _RangeAdaptor<_Split>::operator();
+      using _RangeAdaptor<_LazySplit>::operator();
       static constexpr int _S_arity = 2;
-      // The pattern argument of views::split is not always simple -- it can be
+      // The pattern argument of views::lazy_split is not always simple -- it can be
       // a non-view range, the value category of which affects whether the call
       // is well-formed.  But a scalar or a view pattern argument is surely
       // simple.
@@ -3269,7 +3269,7 @@ namespace views::__adaptor
 				      && copy_constructible<_Pattern>);
     };
 
-    inline constexpr _Split split;
+    inline constexpr _LazySplit lazy_split;
   } // namespace views
 
   namespace views
