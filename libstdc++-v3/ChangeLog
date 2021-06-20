@@ -1,3 +1,23 @@
+2021-06-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (transform_view::_Iterator::_S_iter_concept):
+	Consider _Base instead of _Vp as per LWG 3555.
+	(elements_view::_Iterator::_S_iter_concept): Likewise.
+
+2021-06-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (split_view::_OuterIter::value_type::begin):
+	Remove the non-const overload, and remove the copyable constraint
+	on the const overload as per LWG 3553.
+
+2021-06-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h
+	(__detail::__common_iter_use_postfix_proxy): Add
+	move_constructible constraint as per LWG 3546.
+	(common_iterator::__postfix_proxy): Adjust initializer of
+	_M_keep as per LWG 3546.
+
 2021-06-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/100387
