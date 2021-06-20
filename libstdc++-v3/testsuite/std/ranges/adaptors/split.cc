@@ -193,6 +193,25 @@ test10()
   VERIFY( ranges::equal(v, (std::string_view[]){"x", "x"}) );
 }
 
+void
+test11()
+{
+  // LWG 3478
+  auto v = views::split("text"sv, "text"sv);
+  auto i = v.begin();
+  VERIFY( ranges::empty(*i++) );
+  VERIFY( ranges::empty(*i++) );
+  VERIFY( i == v.end() );
+
+  static_assert(ranges::distance(views::split(" text "sv, ' ')) == 3);
+  static_assert(ranges::distance(views::split(" t e x t "sv, ' ')) == 6);
+  static_assert(ranges::distance(views::split("  text  "sv, "  "sv)) == 3);
+  static_assert(ranges::distance(views::split("  text    "sv, "  "sv)) == 4);
+  static_assert(ranges::distance(views::split("  text     "sv, "  "sv)) == 4);
+  static_assert(ranges::distance(views::split("t"sv, 't')) == 2);
+  static_assert(ranges::distance(views::split("text"sv, ""sv)) == 4);
+}
+
 int
 main()
 {
@@ -206,4 +225,5 @@ main()
   test08();
   test09();
   test10();
+  test11();
 }

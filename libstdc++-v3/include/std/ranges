@@ -2879,7 +2879,7 @@ namespace views::__adaptor
 
 	  constexpr bool
 	  __at_end() const
-	  { return __current() == ranges::end(_M_parent->_M_base); }
+	  { return __current() == ranges::end(_M_parent->_M_base) && !_M_trailing_empty; }
 
 	  // [range.split.outer] p1
 	  //  Many of the following specifications refer to the notional member
@@ -2909,6 +2909,7 @@ namespace views::__adaptor
 	  [[no_unique_address]]
 	    __detail::__maybe_present_t<forward_range<_Vp>,
 					iterator_t<_Base>> _M_current;
+	  bool _M_trailing_empty = false;
 
 	public:
 	  using iterator_concept = conditional_t<forward_range<_Base>,
@@ -2971,7 +2972,10 @@ namespace views::__adaptor
 	    // 3505. split_view::outer-iterator::operator++ misspecified
 	    const auto __end = ranges::end(_M_parent->_M_base);
 	    if (__current() == __end)
-	      return *this;
+	      {
+		_M_trailing_empty = false;
+		return *this;
+	      }
 	    const auto [__pbegin, __pend] = subrange{_M_parent->_M_pattern};
 	    if (__pbegin == __pend)
 	      ++__current();
@@ -2980,7 +2984,11 @@ namespace views::__adaptor
 		__current() = ranges::find(std::move(__current()), __end,
 					   *__pbegin);
 		if (__current() != __end)
-		  ++__current();
+		  {
+		    ++__current();
+		    if (__current() == __end)
+		      _M_trailing_empty = true;
+		  }
 	      }
 	    else
 	      do
@@ -2990,6 +2998,8 @@ namespace views::__adaptor
 		  if (__p == __pend)
 		    {
 		      __current() = __b;
+		      if (__current() == __end)
+			_M_trailing_empty = true;
 		      break;
 		    }
 		} while (++__current() != __end);
@@ -3012,7 +3022,10 @@ namespace views::__adaptor
 	  friend constexpr bool
 	  operator==(const _OuterIter& __x, const _OuterIter& __y)
 	    requires forward_range<_Base>
-	  { return __x._M_current == __y._M_current; }
+	  {
+	    return __x._M_current == __y._M_current
+	      && __x._M_trailing_empty == __y._M_trailing_empty;
+	  }
 
 	  friend constexpr bool
 	  operator==(const _OuterIter& __x, default_sentinel_t)
