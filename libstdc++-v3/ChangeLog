@@ -1,3 +1,43 @@
+2021-06-20  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__non_propagating_cache::operator bool):
+	Define for split_view::begin().
+	(split_view): Define as per P2210.
+	(views::__detail::__can_split_view): Define.
+	(views::_Split, views::split): Define.
+	* testsuite/std/ranges/adaptors/100577.cc (test01, test02):
+	Test views::split.
+	* testsuite/std/ranges/adaptors/split.cc: New test.
+	* testsuite/std/ranges/p2325.cc (test08a): New test.
+	* testsuite/std/ranges/p2367.cc (test01): Test views::split.
+
+2021-06-20  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges: Rename views::split to views::lazy_split,
+	split_view to lazy_split_view, etc. throughout.
+	* testsuite/std/ranges/*: Likewise.
+	* testsuite/std/ranges/adaptors/lazy_split.cc: New file.
+	* testsuite/std/ranges/adaptors/lazy_split_neg.cc: New file.
+
+2021-06-20  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (split_view::_OuterIter::__at_end):
+	Check _M_trailing_empty.
+	(split_view::_OuterIter::_M_trailing_empty): Define this
+	data member.
+	(split_view::_OuterIter::operator++): Set _M_trailing_empty
+	appropriately.
+	(split_view::_OuterIter::operator==): Compare
+	_M_trailing_empty.
+	* testsuite/std/ranges/adaptors/100479.cc (test03): Expect two
+	split parts instead of one.
+	* testsuite/std/ranges/adaptors/split.cc (test11): New test.
+
+2021-06-20  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (split_view::_InnerIter::base): Define as
+	per P2210.
+
 2021-06-19  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (transform_view::_Iterator::_S_iter_concept):
