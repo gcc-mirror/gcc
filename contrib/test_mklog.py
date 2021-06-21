@@ -240,6 +240,9 @@ index 4ad78c1f77b..6687b368038 100644
 '''
 
 EXPECTED4 = '''\
+
+	PR 50209
+
 gcc/ChangeLog:
 
 	* ipa-icf.c:
