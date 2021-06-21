@@ -74,6 +74,7 @@ hppa port		John David Anglin	<dave.anglin@bell.net>
 i386 port		Jan Hubicka		<hubicka@ucw.cz>
 i386 port		Uros Bizjak		<ubizjak@gmail.com>
 i386 vector ISA extns	Kirill Yukhin		<kirill.yukhin@gmail.com>
+i386 vector ISA extns	Hongtao Liu		<hongtao.liu@intel.com>
 iq2000 port		Nick Clifton		<nickc@redhat.com>
 lm32 port		Sebastien Bourdeauducq	<sebastien@milkymist.org>
 m32r port		Nick Clifton		<nickc@redhat.com>
