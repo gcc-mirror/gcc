@@ -6,5 +6,5 @@ fn main () {
 // DW_ATE_UTF entered in DWARF 4.
 // { dg-options "-w -gdwarf-4 -dA" }
 // DW_ATE_UTF = 0x10
-// { dg-final { scan-assembler "0x10\[^\n\r]* DW_AT_encoding" } } */
+// { dg-final { scan-assembler "0x10\[ \t]\[^\n\r]* DW_AT_encoding" } } */
 }
