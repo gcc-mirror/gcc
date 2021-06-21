@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020, 2021 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -439,7 +439,14 @@ public:
 	TyTy::BaseType *field = type.get_field (i);
 	Btype *compiled_field_ty = TyTyResolveCompile::compile (ctx, field);
 
-	Backend::Btyped_identifier f (std::to_string (i), compiled_field_ty,
+	// rustc uses the convention __N, where N is an integer, to
+	// name the fields of a tuple.  We follow this as well,
+	// because this is used by GDB.  One further reason to prefer
+	// this, rather than simply emitting the integer, is that this
+	// approach makes it simpler to use a C-only debugger, or
+	// GDB's C mode, when debugging Rust.
+	Backend::Btyped_identifier f ("__" + std::to_string (i),
+				      compiled_field_ty,
 				      ctx->get_mappings ()->lookup_location (
 					type.get_ty_ref ()));
 	fields.push_back (std::move (f));
