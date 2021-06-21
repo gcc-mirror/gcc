@@ -147,4 +147,10 @@ package Sem_Case is
       --  the parent node (N_Variant, N_Case_Expression/Statement_Alternative).
 
    end Generic_Check_Choices;
+
+   function Is_Case_Choice_Pattern (Expr : Node_Id) return Boolean;
+   --  GNAT language extensions allow casing on a non-discrete value, with
+   --  patterns as case choices. Return True iff Expr is such a pattern, or
+   --  a subexpression thereof.
+
 end Sem_Case;

@@ -2172,6 +2172,9 @@ finish_bitfield_layout (tree t)
   tree field, prev;
   tree repr = NULL_TREE;
 
+  if (TREE_CODE (t) == QUAL_UNION_TYPE)
+    return;
+
   for (prev = NULL_TREE, field = TYPE_FIELDS (t);
        field; field = DECL_CHAIN (field))
     {

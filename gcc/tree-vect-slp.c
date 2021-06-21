@@ -1482,13 +1482,9 @@ vect_slp_linearize_chain (vec_info *vinfo,
 	  stmt_vec_info def_stmt_info;
 	  bool res = vect_is_simple_use (op, vinfo, &dt, &def_stmt_info);
 	  gcc_assert (res);
-	  if (dt == vect_internal_def)
-	    {
-	      stmt_vec_info orig_def_stmt_info = def_stmt_info;
-	      def_stmt_info = vect_stmt_to_vectorize (def_stmt_info);
-	      if (def_stmt_info != orig_def_stmt_info)
-		op = gimple_get_lhs (def_stmt_info->stmt);
-	    }
+	  if (dt == vect_internal_def
+	      && is_pattern_stmt_p (def_stmt_info))
+	    op = gimple_get_lhs (def_stmt_info->stmt);
 	  gimple *use_stmt;
 	  use_operand_p use_p;
 	  if (dt == vect_internal_def

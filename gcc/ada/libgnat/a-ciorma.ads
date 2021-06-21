@@ -70,6 +70,7 @@ is
    Empty_Map : constant Map;
 
    function Empty return Map;
+   pragma Ada_2022 (Empty);
 
    No_Element : constant Cursor;
    function Has_Element (Position : Cursor) return Boolean;

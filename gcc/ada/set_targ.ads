@@ -143,12 +143,14 @@ package Set_Targ is
    --
    --       name  digs float_rep precision alignment
    --
-   --     where name is the string name of the type (which can have single
-   --     spaces embedded in the name (e.g. long double). The name is followed
-   --     by at least two blanks. The following fields are as described above
-   --     for a Mode_Entry (where float_rep is I/V/A for IEEE-754-Binary,
-   --     Vax_Native, AAMP), fields are separated by at least one blank, and
-   --     a LF character immediately follows the alignment field.
+   --     where name is the string name of the type (which can have
+   --     single spaces embedded in the name (e.g. long double). The
+   --     name is followed by at least two blanks. The following fields
+   --     are as described above for a Mode_Entry (where float_rep is
+   --     I for IEEE-754-Binary, which is the only Float_Rep_Kind
+   --     currently supported), fields are separated by at least one
+   --     blank, and a LF character immediately follows the alignment
+   --     field.
    --
    --     ??? We do not write the size for backward compatibility reasons,
    --     which means that target.atp will not be a complete description for

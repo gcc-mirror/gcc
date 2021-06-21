@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;          use Atree;
-with Casing;         use Casing;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
@@ -2417,9 +2416,8 @@ package body Checks is
          Formal_2 : Entity_Id;
          Check    : in out Node_Id)
       is
-         Cond      : Node_Id;
-         ID_Casing : constant Casing_Type :=
-                       Identifier_Casing (Source_Index (Current_Sem_Unit));
+         Cond        : Node_Id;
+         Formal_Name : Bounded_String;
 
       begin
          --  Generate:
@@ -2451,15 +2449,17 @@ package body Checks is
 
             Store_String_Chars ("aliased parameters, actuals for """);
 
-            Get_Name_String (Chars (Formal_1));
-            Set_Casing (ID_Casing);
-            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+            Append (Formal_Name, Chars (Formal_1));
+            Adjust_Name_Case (Formal_Name, Sloc (Formal_1));
+            Store_String_Chars (To_String (Formal_Name));
 
             Store_String_Chars (""" and """);
 
-            Get_Name_String (Chars (Formal_2));
-            Set_Casing (ID_Casing);
-            Store_String_Chars (Name_Buffer (1 .. Name_Len));
+            Formal_Name.Length := 0;
+
+            Append (Formal_Name, Chars (Formal_2));
+            Adjust_Name_Case (Formal_Name, Sloc (Formal_2));
+            Store_String_Chars (To_String (Formal_Name));
 
             Store_String_Chars (""" overlap");
 
@@ -2507,29 +2507,16 @@ package body Checks is
       while Present (Actual_1) and then Present (Formal_1) loop
          Orig_Act_1 := Original_Actual (Actual_1);
 
-         --  Ensure that the actual is an object that is not passed by value.
-         --  Elementary types are always passed by value, therefore actuals of
-         --  such types cannot lead to aliasing. An aggregate is an object in
-         --  Ada 2012, but an actual that is an aggregate cannot overlap with
-         --  another actual.
-
-         if Nkind (Orig_Act_1) = N_Aggregate
-           or else (Nkind (Orig_Act_1) = N_Qualified_Expression
-                     and then Nkind (Expression (Orig_Act_1)) = N_Aggregate)
-         then
-            null;
-
-         elsif Is_Object_Reference (Orig_Act_1) then
+         if Is_Name_Reference (Orig_Act_1) then
             Actual_2 := Next_Actual (Actual_1);
             Formal_2 := Next_Formal (Formal_1);
             while Present (Actual_2) and then Present (Formal_2) loop
                Orig_Act_2 := Original_Actual (Actual_2);
 
-               --  The other actual we are testing against must also denote
-               --  a non pass-by-value object. Generate the check only when
-               --  the mode of the two formals may lead to aliasing.
+               --  Generate the check only when the mode of the two formals may
+               --  lead to aliasing.
 
-               if Is_Object_Reference (Orig_Act_2)
+               if Is_Name_Reference (Orig_Act_2)
                  and then May_Cause_Aliasing (Formal_1, Formal_2)
                then
 
@@ -5628,6 +5615,10 @@ package body Checks is
 
       --  If type is not defined, we can't determine its range
 
+      pragma Warnings (Off, "condition can only be True if invalid");
+      --  Otherwise the compiler warns on the check of Float_Rep below, because
+      --  there is only one value (see types.ads).
+
       if No (Typ)
 
         --  We don't deal with anything except IEEE floating-point types
@@ -5641,6 +5632,7 @@ package body Checks is
 
         or else Error_Posted (N) or else Error_Posted (Typ)
       then
+         pragma Warnings (On, "condition can only be True if invalid");
          OK := False;
          return;
       end if;
@@ -10519,16 +10511,36 @@ package body Checks is
             LB := New_Occurrence_Of (Discriminal (Entity (LB)), Loc);
          end if;
 
-         Left_Opnd :=
-           Make_Op_Lt (Loc,
-             Left_Opnd  =>
-               Convert_To
-                 (Base_Type (Typ), Duplicate_Subexpr_No_Checks (LB)),
+         --  If the index type has a fixed lower bound, then we require an
+         --  exact match of the range's lower bound against that fixed lower
+         --  bound.
 
-             Right_Opnd =>
-               Convert_To
-                 (Base_Type (Typ),
-                  Get_E_First_Or_Last (Loc, Typ, 0, Name_First)));
+         if Is_Fixed_Lower_Bound_Index_Subtype (Typ) then
+            Left_Opnd :=
+              Make_Op_Ne (Loc,
+                Left_Opnd  =>
+                  Convert_To
+                    (Base_Type (Typ), Duplicate_Subexpr_No_Checks (LB)),
+
+                Right_Opnd =>
+                  Convert_To
+                    (Base_Type (Typ),
+                     Get_E_First_Or_Last (Loc, Typ, 0, Name_First)));
+
+         --  Otherwise we do the expected less-than comparison
+
+         else
+            Left_Opnd :=
+              Make_Op_Lt (Loc,
+                Left_Opnd  =>
+                  Convert_To
+                    (Base_Type (Typ), Duplicate_Subexpr_No_Checks (LB)),
+
+                Right_Opnd =>
+                  Convert_To
+                    (Base_Type (Typ),
+                     Get_E_First_Or_Last (Loc, Typ, 0, Name_First)));
+         end if;
 
          if Nkind (HB) = N_Identifier
            and then Ekind (Entity (HB)) = E_Discriminant
@@ -10834,6 +10846,22 @@ package body Checks is
                   end if;
                end if;
 
+               --  Flag the case of a fixed-lower-bound index where the static
+               --  bounds are not equal.
+
+               if not Check_Added
+                 and then Is_Fixed_Lower_Bound_Index_Subtype (T_Typ)
+                 and then Expr_Value (LB) /= Expr_Value (T_LB)
+               then
+                  Add_Check
+                    (Compile_Time_Constraint_Error
+                       ((if Present (Warn_Node)
+                        then Warn_Node else Low_Bound (Expr)),
+                        "static value does not equal lower bound of}??",
+                        T_Typ));
+                  Check_Added := True;
+               end if;
+
                if Known_HB then
                   if Known_T_HB then
                      Out_Of_Range_H := T_HB < HB;
@@ -10985,7 +11013,6 @@ package body Checks is
 
       if Is_Array_Type (T_Typ) and then Is_Array_Type (S_Typ) then
          if Is_Constrained (T_Typ) then
-
             Expr_Actual := Get_Referenced_Object (Expr);
             Exptyp      := Get_Actual_Subtype (Expr_Actual);
 

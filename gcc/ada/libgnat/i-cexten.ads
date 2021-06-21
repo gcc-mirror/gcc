@@ -56,7 +56,7 @@ package Interfaces.C.Extensions is
 
    --  C bool
 
-   subtype bool is Interfaces.C.bool;
+   subtype bool is Interfaces.C.C_bool;
 
    --  64-bit integer types
 

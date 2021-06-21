@@ -703,6 +703,37 @@ package body Lib.Xref is
          Error_Msg_NE ("& is only defined in Ada 2012?y?", N, E);
       end if;
 
+      --  Warn if reference to Ada 2022 entity not in Ada 2022 mode. We only
+      --  detect real explicit references (modifications and references).
+
+      if Comes_From_Source (N)
+        and then Is_Ada_2022_Only (E)
+        and then not Is_Subprogram (E)
+        and then Ada_Version < Ada_2022
+        and then Warn_On_Ada_2022_Compatibility
+        and then (Typ = 'm' or else Typ = 'r')
+      then
+         Error_Msg_NE ("& is only defined in Ada 2022?y?", N, E);
+
+      --  Error on static and dispatching calls to Ada 2022 subprograms that
+      --  require overriding if we are not in Ada 2022 mode (since overriding
+      --  was skipped); warn if the subprogram does not require overriding.
+
+      elsif Comes_From_Source (N)
+        and then Is_Ada_2022_Only (E)
+        and then Ada_Version < Ada_2022
+        and then Is_Subprogram (E)
+        and then (Typ = 'r' or else Typ = 's' or else Typ = 'R')
+      then
+         if Requires_Overriding (E) then
+            Error_Msg_NE
+              ("& is only defined in Ada 2022 and requires overriding", N, E);
+
+         elsif Warn_On_Ada_2022_Compatibility then
+            Error_Msg_NE ("& is only defined in Ada 2022?y?", N, E);
+         end if;
+      end if;
+
       --  Do not generate references if we are within a postcondition sub-
       --  program, because the reference does not comes from source, and the
       --  preanalysis of the aspect has already created an entry for the ALI

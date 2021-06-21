@@ -1535,14 +1535,12 @@ package body Sem_Ch6 is
             --  Check RM 6.5 (5.9/3)
 
             if Has_Aliased then
-               if Ada_Version < Ada_2012 then
-
-                  --  Shouldn't this test Warn_On_Ada_2012_Compatibility ???
-                  --  Can it really happen (extended return???)
-
+               if Ada_Version < Ada_2012
+                 and then Warn_On_Ada_2012_Compatibility
+               then
                   Error_Msg_N
                     ("ALIASED only allowed for limited return objects "
-                     & "in Ada 2012??", N);
+                     & "in Ada 2012?y?", N);
 
                elsif not Is_Limited_View (R_Type) then
                   Error_Msg_N
@@ -1674,9 +1672,9 @@ package body Sem_Ch6 is
                Related_Nod => N);
          end if;
 
-         --  ??? A real run-time accessibility check is needed in cases
-         --  involving dereferences of access parameters. For now we just
-         --  check the static cases.
+         --  Perform static accessibility checks for cases involving
+         --  dereferences of access parameters. Runtime accessibility checks
+         --  get generated elsewhere.
 
          if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
            and then Is_Limited_View (Etype (Scope_Id))
@@ -1848,7 +1846,7 @@ package body Sem_Ch6 is
          --  Visible generic entity is callable within its own body
 
          Mutate_Ekind       (Gen_Id,  Ekind (Body_Id));
-         Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter,
+         Reinit_Field_To_Zero (Body_Id, F_Has_Out_Or_In_Out_Parameter,
            Old_Ekind =>
              (E_Function | E_Procedure |
                 E_Generic_Function | E_Generic_Procedure => True,
@@ -1929,7 +1927,7 @@ package body Sem_Ch6 is
 
       --  Outside of its body, unit is generic again
 
-      Reinit_Field_To_Zero (Gen_Id, Has_Nested_Subprogram,
+      Reinit_Field_To_Zero (Gen_Id, F_Has_Nested_Subprogram,
         Old_Ekind => (E_Function | E_Procedure => True, others => False));
       Mutate_Ekind (Gen_Id, Kind);
       Generate_Reference (Gen_Id, Body_Id, 'b', Set_Ref => False);
@@ -3827,7 +3825,8 @@ package body Sem_Ch6 is
          Result : Elist_Id := No_Elist;
 
          function Mask_Type_Refs (Node : Node_Id) return Traverse_Result;
-         --  Mask all types referenced in the subtree rooted at Node
+         --  Mask all types referenced in the subtree rooted at Node as
+         --  formally frozen.
 
          --------------------
          -- Mask_Type_Refs --
@@ -3835,7 +3834,8 @@ package body Sem_Ch6 is
 
          function Mask_Type_Refs (Node : Node_Id) return Traverse_Result is
             procedure Mask_Type (Typ : Entity_Id);
-            --  ??? what does this do?
+            --  Mask a given type as formally frozen when outside the current
+            --  scope, or else freeze the type.
 
             ---------------
             -- Mask_Type --
@@ -4610,16 +4610,16 @@ package body Sem_Ch6 is
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
-         Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter);
-         Reinit_Field_To_Zero (Body_Id, Needs_No_Actuals,
+         Reinit_Field_To_Zero (Body_Id, F_Has_Out_Or_In_Out_Parameter);
+         Reinit_Field_To_Zero (Body_Id, F_Needs_No_Actuals,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
-         Reinit_Field_To_Zero (Body_Id, Is_Predicate_Function,
+         Reinit_Field_To_Zero (Body_Id, F_Is_Predicate_Function,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
-         Reinit_Field_To_Zero (Body_Id, Protected_Subprogram,
+         Reinit_Field_To_Zero (Body_Id, F_Protected_Subprogram,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
 
          if Ekind (Body_Id) = E_Procedure then
-            Reinit_Field_To_Zero (Body_Id, Receiving_Entry);
+            Reinit_Field_To_Zero (Body_Id, F_Receiving_Entry);
          end if;
 
          Mutate_Ekind (Body_Id, E_Subprogram_Body);
@@ -5665,17 +5665,6 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      --  What is the following code for, it used to be
-
-      --  ???   Set_Suppress_Elaboration_Checks
-      --  ???     (Designator, Elaboration_Checks_Suppressed (Designator));
-
-      --  The following seems equivalent, but a bit dubious
-
-      if Elaboration_Checks_Suppressed (Designator) then
-         Set_Kill_Elaboration_Checks (Designator);
-      end if;
-
       --  For a compilation unit, set body required. This flag will only be
       --  reset if a valid Import or Interface pragma is processed later on.
 
@@ -6276,7 +6265,9 @@ package body Sem_Ch6 is
 
             --  Null exclusion must match
 
-            if not Null_Exclusions_Match (Old_Formal, New_Formal) then
+            if not Relaxed_RM_Semantics
+              and then not Null_Exclusions_Match (Old_Formal, New_Formal)
+            then
                Conformance_Error
                  ("\null exclusion for& does not match", New_Formal);
 
@@ -7282,10 +7273,14 @@ package body Sem_Ch6 is
                then
                   Set_Overridden_Operation    (Subp, Alias (Overridden_Subp));
                   Inherit_Subprogram_Contract (Subp, Alias (Overridden_Subp));
+                  Set_Is_Ada_2022_Only        (Subp,
+                    Is_Ada_2022_Only (Alias (Overridden_Subp)));
 
                else
                   Set_Overridden_Operation    (Subp, Overridden_Subp);
                   Inherit_Subprogram_Contract (Subp, Overridden_Subp);
+                  Set_Is_Ada_2022_Only        (Subp,
+                    Is_Ada_2022_Only (Overridden_Subp));
                end if;
             end if;
          end if;
@@ -11899,10 +11894,13 @@ package body Sem_Ch6 is
                   if Present (Alias (S)) then
                      Set_Overridden_Operation    (E, Alias (S));
                      Inherit_Subprogram_Contract (E, Alias (S));
+                     Set_Is_Ada_2022_Only        (E,
+                       Is_Ada_2022_Only (Alias (S)));
 
                   else
                      Set_Overridden_Operation    (E, S);
                      Inherit_Subprogram_Contract (E, S);
+                     Set_Is_Ada_2022_Only        (E, Is_Ada_2022_Only (S));
                   end if;
 
                   --  When a dispatching operation overrides an inherited
@@ -12069,6 +12067,8 @@ package body Sem_Ch6 is
                   then
                      Set_Overridden_Operation    (S, Alias (E));
                      Inherit_Subprogram_Contract (S, Alias (E));
+                     Set_Is_Ada_2022_Only        (S,
+                       Is_Ada_2022_Only (Alias (E)));
 
                   --  Normal case of setting entity as overridden
 
@@ -12080,8 +12080,22 @@ package body Sem_Ch6 is
                   --  must check whether the target is an init_proc.
 
                   elsif not Is_Init_Proc (S) then
-                     Set_Overridden_Operation    (S, E);
-                     Inherit_Subprogram_Contract (S, E);
+
+                     --  LSP wrappers must override the ultimate alias of their
+                     --  wrapped dispatching primitive E; required to traverse
+                     --  the chain of ancestor primitives (c.f. Map_Primitives)
+                     --  They don't inherit contracts.
+
+                     if Is_Wrapper (S)
+                       and then Present (LSP_Subprogram (S))
+                     then
+                        Set_Overridden_Operation    (S, Ultimate_Alias (E));
+                     else
+                        Set_Overridden_Operation    (S, E);
+                        Inherit_Subprogram_Contract (S, E);
+                     end if;
+
+                     Set_Is_Ada_2022_Only (S, Is_Ada_2022_Only (E));
                   end if;
 
                   Check_Overriding_Indicator (S, E, Is_Primitive => True);
@@ -12108,8 +12122,22 @@ package body Sem_Ch6 is
                           Is_Predefined_Dispatching_Operation (Alias (E)))
                   then
                      if Present (Alias (E)) then
-                        Set_Overridden_Operation    (S, Alias (E));
-                        Inherit_Subprogram_Contract (S, Alias (E));
+
+                        --  LSP wrappers must override the ultimate alias of
+                        --  their wrapped dispatching primitive E; required to
+                        --  traverse the chain of ancestor primitives (see
+                        --  Map_Primitives). They don't inherit contracts.
+
+                        if Is_Wrapper (S)
+                          and then Present (LSP_Subprogram (S))
+                        then
+                           Set_Overridden_Operation    (S, Ultimate_Alias (E));
+                        else
+                           Set_Overridden_Operation    (S, Alias (E));
+                           Inherit_Subprogram_Contract (S, Alias (E));
+                        end if;
+
+                        Set_Is_Ada_2022_Only (S, Is_Ada_2022_Only (Alias (E)));
                      end if;
                   end if;
 

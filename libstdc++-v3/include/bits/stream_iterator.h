@@ -192,11 +192,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _CharT*	_M_string;
 
     public:
-#if __cplusplus > 201703L
-      constexpr ostream_iterator() noexcept
-      : _M_stream(nullptr), _M_string(nullptr) { }
-#endif
-
       /// Construct from an ostream.
       ostream_iterator(ostream_type& __s)
       : _M_stream(std::__addressof(__s)), _M_string(0) {}

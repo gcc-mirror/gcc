@@ -37,6 +37,21 @@ using namespace std::literals;
 void
 test01()
 {
+  auto from_chars = [] (auto v) {
+    return std::stoi(std::string(v.data(), v.data() + v.size()));
+  };
+  auto ints = "1.2.3.4"sv
+    | views::split('.')
+    | views::transform(from_chars);
+  VERIFY( ranges::equal(ints, (int[]){1,2,3,4}) );
+}
+
+// The following testcases are adapted from lazy_split.cc.
+namespace from_lazy_split_cc
+{
+void
+test01()
+{
   auto x = "the  quick  brown  fox"sv;
   auto p = std::string{"  "};
   auto v = x | views::split(views::all(p)); // views::all is needed here after P2281.
@@ -109,52 +124,9 @@ test05()
 			str | views::filter(not_space_p)) );
 }
 
-void
-test06()
-{
-  std::string str = "hello world";
-  auto v = str | views::transform(std::identity{}) | views::split(' ');
-
-  // Verify that _Iterator<false> is implicitly convertible to _Iterator<true>.
-  static_assert(!std::same_as<decltype(ranges::begin(v)),
-			      decltype(ranges::cbegin(v))>);
-  auto b = ranges::cbegin(v);
-  b = ranges::begin(v);
-}
-
-void
-test07()
-{
-  char str[] = "banana split";
-  auto split = str | views::split(' ');
-  auto val = *split.begin();
-  auto b = val.begin();
-  auto b2 = b++;
-  static_assert( noexcept(iter_move(b)) );
-  static_assert( noexcept(iter_swap(b, b2)) );
-}
-
-void
-test08()
-{
-  char x[] = "the quick brown fox";
-  test_range<char, input_iterator_wrapper> rx(x, x+sizeof(x)-1);
-  auto v = rx | views::split(' ');
-  auto i = v.begin();
-  VERIFY( ranges::equal(*i, "the"sv) );
-  ++i;
-  VERIFY( ranges::equal(*i, "quick"sv) );
-  ++i;
-  VERIFY( ranges::equal(*i, "brown"sv) );
-  ++i;
-  VERIFY( ranges::equal(*i, "fox"sv) );
-  ++i;
-  VERIFY( i == v.end() );
-}
-
 template<auto split = views::split>
 void
-test09()
+test06()
 {
   // Verify SFINAE behavior.
   std::string s, p;
@@ -193,17 +165,37 @@ test10()
   VERIFY( ranges::equal(v, (std::string_view[]){"x", "x"}) );
 }
 
+void
+test11()
+{
+  // LWG 3478
+  auto v = views::split("text"sv, "text"sv);
+  auto i = v.begin();
+  VERIFY( ranges::empty(*i++) );
+  VERIFY( ranges::empty(*i++) );
+  VERIFY( i == v.end() );
+
+  static_assert(ranges::distance(views::split(" text "sv, ' ')) == 3);
+  static_assert(ranges::distance(views::split(" t e x t "sv, ' ')) == 6);
+  static_assert(ranges::distance(views::split("  text  "sv, "  "sv)) == 3);
+  static_assert(ranges::distance(views::split("  text    "sv, "  "sv)) == 4);
+  static_assert(ranges::distance(views::split("  text     "sv, "  "sv)) == 4);
+  static_assert(ranges::distance(views::split("t"sv, 't')) == 2);
+  static_assert(ranges::distance(views::split("text"sv, ""sv)) == 4);
+}
+} // namespace from_lazy_split_cc
+
 int
 main()
 {
   test01();
-  test02();
-  test03();
-  test04();
-  test05();
-  test06();
-  test07();
-  test08();
-  test09();
-  test10();
+
+  from_lazy_split_cc::test01();
+  from_lazy_split_cc::test02();
+  from_lazy_split_cc::test03();
+  from_lazy_split_cc::test04();
+  from_lazy_split_cc::test05();
+  from_lazy_split_cc::test06();
+  from_lazy_split_cc::test10();
+  from_lazy_split_cc::test11();
 }

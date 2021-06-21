@@ -831,26 +831,30 @@ package body Gen_IL.Gen is
 
       function Field_Size (T : Type_Enum) return Bit_Offset is
         (case T is
-          when Flag | Float_Rep_Kind => 1,
+          when Flag => 1,
 
           when Small_Paren_Count_Type | Component_Alignment_Kind => 2,
 
           when Node_Kind_Type | Entity_Kind_Type | Convention_Id => 8,
 
-           when Mechanism_Type
-              | List_Id
-              | Elist_Id
-              | Name_Id
-              | String_Id
-              | Uint
-              | Ureal
-              | Source_Ptr
-              | Union_Id
-              | Node_Id
-              | Node_Or_Entity_Type => 32,
+          when Mechanism_Type
+             | List_Id
+             | Elist_Id
+             | Name_Id
+             | String_Id
+             | Uint
+             | Ureal
+             | Source_Ptr
+             | Union_Id
+             | Node_Id
+             | Node_Or_Entity_Type => 32,
 
          when Between_Special_And_Abstract_Node_Types => -- can't happen
            Bit_Offset'Last);
+         --  Size in bits of a a field of type T. It must be a power of 2, and
+         --  must match the size of the type in GNAT, which sometimes requires
+         --  a Size clause in GNAT.
+         --
          --  Note that this is not the same as Type_Bit_Size of the field's
          --  type. For one thing, Type_Bit_Size only covers concrete node and
          --  entity types, which does not include most of the above. For
@@ -1012,11 +1016,20 @@ package body Gen_IL.Gen is
          end loop;
 
          --  Sort All_Fields based on how many concrete types have the field.
+         --  This is for efficiency; we want to choose the offsets of the most
+         --  common fields first, so they get low numbers.
 
          Sorting.Sort (All_Fields);
 
          --  Go through all the fields, and choose the lowest offset that is
-         --  free in all types that have the field.
+         --  free in all types that have the field. This is basically a
+         --  graph-coloring algorithm on the interference graph. The
+         --  interference graph is an undirected graph with the fields being
+         --  nodes (not nodes in the compiler!) in the graph, and an edge
+         --  between a pair of fields if they appear in the same node in the
+         --  compiler. The "colors" are fields offsets, except that a
+         --  complication compared to standard graph coloring is that fields
+         --  are different sizes.
 
          for F of All_Fields loop
             Field_Table (F).Offset := Choose_Offset (F);
@@ -2019,7 +2032,7 @@ package body Gen_IL.Gen is
                      Put (S, ",\n");
                   end if;
 
-                  Put (S, "\1", Image (F));
+                  Put (S, "\1", F_Image (F));
                end if;
             end loop;
          end Put_Field_Array;
@@ -2081,7 +2094,7 @@ package body Gen_IL.Gen is
                   Put (S, ",\n");
                end if;
 
-               Put (S, "\1", Image (F));
+               Put (S, "\1", F_Image (F));
             end loop;
 
             Outdent (S, 1);
@@ -2161,7 +2174,7 @@ package body Gen_IL.Gen is
                   Put (S, ",\n");
                end if;
 
-               Put (S, "\1 => (\2_Field, \3)", Image (F),
+               Put (S, "\1 => (\2_Field, \3)", F_Image (F),
                     Image (Field_Table (F).Field_Type), Image (Field_Table (F).Offset));
             end loop;
 
@@ -2282,6 +2295,8 @@ package body Gen_IL.Gen is
             Outdent (B, 3);
             Put (B, "end Set_\1_Id_With_Parent;\n", Kind);
          end Put_Setter_With_Parent;
+
+      --  Start of processing for Put_Nodes
 
       begin
          Put (S, "with Seinfo; use Seinfo;\n");

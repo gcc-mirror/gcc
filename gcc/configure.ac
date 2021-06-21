@@ -5357,6 +5357,28 @@ case "$target" in
     ;;
 esac
 
+# This tests if the assembler supports two registers for global_load functions
+# (like in LLVM versions <12) or one register (like in LLVM 12).
+case "$target" in
+  amdgcn-* | gcn-*)
+    AC_MSG_CHECKING(assembler fix for global_load functions)
+    gcc_cv_as_gcn_global_load_fixed=yes
+    if test x$gcc_cv_as != x; then
+      cat > conftest.s <<EOF
+	global_store_dwordx2    v[[1:2]], v[[4:5]], s[[14:15]]
+EOF
+      if $gcc_cv_as -triple=amdgcn--amdhsa -filetype=obj -mcpu=gfx900 -o conftest.o conftest.s > /dev/null 2>&1; then
+        gcc_cv_as_gcn_global_load_fixed=no
+      fi
+      rm -f conftest.s conftest.o conftest
+    fi
+    global_load_fixed=`if test x$gcc_cv_as_gcn_global_load_fixed = xyes; then echo 1; else echo 0; fi`
+    AC_DEFINE_UNQUOTED(HAVE_GCN_ASM_GLOBAL_LOAD_FIXED, $global_load_fixed,
+      [Define if your assembler has fixed global_load functions.])
+    AC_MSG_RESULT($gcc_cv_as_gcn_global_load_fixed)
+    ;;
+esac
+
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
 # info to the output file.  So, as supported targets are added to gas 2.11,

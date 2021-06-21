@@ -715,7 +715,7 @@ private
    --  Returns the system-specific character indicating the end of a text file.
    --  This is exported for use by child packages such as Enumeration_Aux to
    --  eliminate their needing to depend directly on Interfaces.C_Streams,
-   --  which is not available in certain target environments (such as AAMP).
+   --  which might not be available in certain target environments.
 
    procedure Initialize_Standard_Files;
    --  Initializes the file control blocks for the standard files. Called from

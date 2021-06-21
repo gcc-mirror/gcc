@@ -252,6 +252,11 @@ package Uintp is
    --  Converts universal integer value to Int. Constraint_Error if value is
    --  not in appropriate range.
 
+   type Unsigned_64 is mod 2**64;
+   function UI_To_Unsigned_64 (Input : Uint) return Unsigned_64;
+   --  Converts universal integer value to Unsigned_64. Constraint_Error if
+   --  value is not in appropriate range.
+
    function UI_To_CC (Input : Uint) return Char_Code;
    --  Converts universal integer value to Char_Code. Constraint_Error if value
    --  is not in Char_Code range.

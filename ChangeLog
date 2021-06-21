@@ -1,3 +1,12 @@
+2021-06-18  Antoni Boucher  <bouanto@zoho.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-06-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* MAINTAINERS (Various Maintainers): Add Andrew and myself
+	as *vrp and ranger maintainers.
+
 2021-06-05  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* MAINTAINERS: Adjust my entry in the DCO section so that it does

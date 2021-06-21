@@ -45,7 +45,7 @@ package body Sinfo.CN is
      (N : Node_Id)
    is
    begin
-      Reinit_Field_To_Zero (N, Char_Literal_Value);
+      Reinit_Field_To_Zero (N, F_Char_Literal_Value);
       Extend_Node (N);
    end Change_Character_Literal_To_Defining_Character_Literal;
 
@@ -130,7 +130,7 @@ package body Sinfo.CN is
      (N : Node_Id)
    is
    begin
-      Reinit_Field_To_Zero (N, Strval);
+      Reinit_Field_To_Zero (N, F_Strval);
       Extend_Node (N);
    end Change_Operator_Symbol_To_Defining_Operator_Symbol;
 
@@ -140,7 +140,7 @@ package body Sinfo.CN is
 
    procedure Change_Operator_Symbol_To_String_Literal (N : Node_Id) is
    begin
-      Reinit_Field_To_Zero (N, Chars);
+      Reinit_Field_To_Zero (N, F_Chars);
       Set_Entity (N, Empty);
       Mutate_Nkind (N, N_String_Literal);
    end Change_Operator_Symbol_To_String_Literal;

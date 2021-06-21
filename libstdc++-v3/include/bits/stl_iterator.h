@@ -639,8 +639,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Container          container_type;
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
-
-      constexpr back_insert_iterator() noexcept : container(nullptr) { }
 #endif
 
       /// The only way to create this %iterator is with a container.
@@ -742,8 +740,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Container          container_type;
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
-
-      constexpr front_insert_iterator() noexcept : container(nullptr) { }
 #endif
 
       /// The only way to create this %iterator is with a container.
@@ -843,17 +839,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
 #if __cplusplus > 201703L && defined __cpp_lib_concepts
       using _Iter = std::__detail::__range_iter_t<_Container>;
-
-    protected:
-      _Container* container = nullptr;
-      _Iter iter = _Iter();
 #else
       typedef typename _Container::iterator		_Iter;
-
+#endif
     protected:
       _Container* container;
       _Iter iter;
-#endif
 
     public:
       /// A nested typedef for the type of whatever container you used.
@@ -861,8 +852,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201703L && defined __cpp_lib_concepts
       using difference_type = ptrdiff_t;
-
-      insert_iterator() = default;
 #endif
 
       /**
@@ -1683,7 +1672,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _It>
       concept __common_iter_use_postfix_proxy
 	= (!requires (_It& __i) { { *__i++ } -> __can_reference; })
-	  && constructible_from<iter_value_t<_It>, iter_reference_t<_It>>;
+	  && constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
+	  && move_constructible<iter_value_t<_It>>;
   } // namespace __detail
 
   /// An iterator/sentinel adaptor for representing a non-common range.
@@ -1726,7 +1716,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iter_value_t<_It> _M_keep;
 
       __postfix_proxy(iter_reference_t<_It>&& __x)
-      : _M_keep(std::move(__x)) { }
+      : _M_keep(std::forward<iter_reference_t<_It>>(__x)) { }
 
       friend class common_iterator;
 
@@ -1740,6 +1730,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr
     common_iterator()
     noexcept(is_nothrow_default_constructible_v<_It>)
+    requires default_initializable<_It>
     : _M_it(), _M_index(0)
     { }
 
@@ -2117,7 +2108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // iterator_concept defined in __counted_iter_concept
       // iterator_category defined in __counted_iter_cat
 
-      constexpr counted_iterator() = default;
+      constexpr counted_iterator() requires default_initializable<_It> = default;
 
       constexpr
       counted_iterator(_It __i, iter_difference_t<_It> __n)

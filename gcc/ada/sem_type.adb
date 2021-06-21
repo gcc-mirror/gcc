@@ -1810,26 +1810,42 @@ package body Sem_Type is
       It2  := It;
       Nam2 := It.Nam;
 
-      --  Check whether one of the entities is an Ada 2005/2012 and we are
-      --  operating in an earlier mode, in which case we discard the Ada
-      --  2005/2012 entity, so that we get proper Ada 95 overload resolution.
+      --  Check whether one of the entities is an Ada 2005/2012/2022 and we
+      --  are operating in an earlier mode, in which case we discard the Ada
+      --  2005/2012/2022 entity, so that we get proper Ada 95 overload
+      --  resolution.
 
       if Ada_Version < Ada_2005 then
-         if Is_Ada_2005_Only (Nam1) or else Is_Ada_2012_Only (Nam1) then
+         if Is_Ada_2005_Only (Nam1)
+           or else Is_Ada_2012_Only (Nam1)
+           or else Is_Ada_2022_Only (Nam1)
+         then
             return It2;
-         elsif Is_Ada_2005_Only (Nam2) or else Is_Ada_2012_Only (Nam1) then
+
+         elsif Is_Ada_2005_Only (Nam2)
+           or else Is_Ada_2012_Only (Nam2)
+           or else Is_Ada_2022_Only (Nam2)
+         then
             return It1;
          end if;
-      end if;
 
-      --  Check whether one of the entities is an Ada 2012 entity and we are
-      --  operating in Ada 2005 mode, in which case we discard the Ada 2012
-      --  entity, so that we get proper Ada 2005 overload resolution.
+      --  Check whether one of the entities is an Ada 2012/2022 entity and we
+      --  are operating in Ada 2005 mode, in which case we discard the Ada 2012
+      --  Ada 2022 entity, so that we get proper Ada 2005 overload resolution.
 
-      if Ada_Version = Ada_2005 then
-         if Is_Ada_2012_Only (Nam1) then
+      elsif Ada_Version = Ada_2005 then
+         if Is_Ada_2012_Only (Nam1) or else Is_Ada_2022_Only (Nam1) then
             return It2;
-         elsif Is_Ada_2012_Only (Nam2) then
+         elsif Is_Ada_2012_Only (Nam2) or else Is_Ada_2022_Only (Nam2) then
+            return It1;
+         end if;
+
+      --  Ditto for Ada 2012 vs Ada 2022.
+
+      elsif Ada_Version = Ada_2012 then
+         if Is_Ada_2022_Only (Nam1) then
+            return It2;
+         elsif Is_Ada_2022_Only (Nam2) then
             return It1;
          end if;
       end if;

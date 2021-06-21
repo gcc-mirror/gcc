@@ -3729,7 +3729,7 @@ expand_call (tree exp, rtx target, int ignore)
      So the entire argument block must then be preallocated (i.e., we
      ignore PUSH_ROUNDING in that case).  */
 
-  int must_preallocate = !PUSH_ARGS;
+  int must_preallocate = !targetm.calls.push_argument (0);
 
   /* Size of the stack reserved for parameter registers.  */
   int reg_parm_stack_space = 0;
@@ -3838,7 +3838,7 @@ expand_call (tree exp, rtx target, int ignore)
 #endif
 
   if (! OUTGOING_REG_PARM_STACK_SPACE ((!fndecl ? fntype : TREE_TYPE (fndecl)))
-      && reg_parm_stack_space > 0 && PUSH_ARGS)
+      && reg_parm_stack_space > 0 && targetm.calls.push_argument (0))
     must_preallocate = 1;
 
   /* Set up a place to return a structure.  */
@@ -5479,7 +5479,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
     }
   else
     {
-      if (!PUSH_ARGS)
+      if (!targetm.calls.push_argument (0))
 	argblock = push_block (gen_int_mode (args_size.constant, Pmode), 0, 0);
     }
 

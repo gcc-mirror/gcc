@@ -2179,9 +2179,9 @@ package body Uintp is
       end if;
    end UI_To_CC;
 
-   ----------------
+   ---------------
    -- UI_To_Int --
-   ----------------
+   ---------------
 
    function UI_To_Int (Input : Uint) return Int is
       pragma Assert (Input /= No_Uint);
@@ -2229,6 +2229,46 @@ package body Uintp is
          end;
       end if;
    end UI_To_Int;
+
+   -----------------
+   -- UI_To_Uns64 --
+   -----------------
+
+   function UI_To_Unsigned_64 (Input : Uint) return Unsigned_64 is
+      pragma Assert (Input /= No_Uint);
+
+   begin
+      if Input < Uint_0 then
+         raise Constraint_Error;
+      end if;
+
+      if Direct (Input) then
+         return Unsigned_64 (Direct_Val (Input));
+
+      --  Case of input is more than one digit
+
+      else
+         if Input >= Uint_2**Int'(64) then
+            raise Constraint_Error;
+         end if;
+
+         declare
+            In_Length : constant Int := N_Digits (Input);
+            In_Vec    : UI_Vector (1 .. In_Length);
+            Ret_Int   : Unsigned_64 := 0;
+
+         begin
+            Init_Operand (Input, In_Vec);
+
+            for Idx in In_Vec'Range loop
+               Ret_Int :=
+                 Ret_Int * Unsigned_64 (Base) + Unsigned_64 (In_Vec (Idx));
+            end loop;
+
+            return Ret_Int;
+         end;
+      end if;
+   end UI_To_Unsigned_64;
 
    --------------
    -- UI_Write --

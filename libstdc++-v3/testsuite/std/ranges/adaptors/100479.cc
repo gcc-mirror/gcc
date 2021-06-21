@@ -90,16 +90,16 @@ test03()
   // Propagating cached iterators during copy/move would cause these asserts
   // to fail here.
   auto v = views::single(1)
-    | views::split(1)
+    | views::lazy_split(1)
     | views::drop(0)
     | views::drop_while([](auto) { return false; })
     | views::filter([](auto) { return true; });
   static_assert(ranges::forward_range<decltype(v)>);
-  VERIFY( ranges::next(v.begin()) == v.end() );
+  VERIFY( ranges::distance(v) == 2 );
   auto w = v;
-  VERIFY( ranges::next(w.begin()) == w.end() );
+  VERIFY( ranges::distance(v) == 2 );
   auto z = std::move(w);
-  VERIFY( ranges::next(z.begin()) == z.end() );
+  VERIFY( ranges::distance(v) == 2 );
   return true;
 }
 

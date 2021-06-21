@@ -39,6 +39,7 @@ import requests
 from unidiff import PatchSet
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
+prnum_regex = re.compile(r'PR (?P<comp>[a-z+-]+)/(?P<num>[0-9]+)')
 dr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<dr>DR [0-9]+)')
 dg_regex = re.compile(r'{\s+dg-(error|warning)')
 identifier_regex = re.compile(r'^([a-zA-Z0-9_#].*)')
@@ -66,6 +67,8 @@ PATCH must be generated using diff(1)'s -up or -cp options
 
 script_folder = os.path.realpath(__file__)
 root = os.path.dirname(os.path.dirname(script_folder))
+
+firstpr = ''
 
 
 def find_changelog(path):
@@ -134,6 +137,7 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
     prs = []
     out = ''
     diff = PatchSet(data)
+    global firstpr
 
     for file in diff:
         # skip files that can't be parsed
@@ -165,6 +169,9 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
                     elif dg_regex.search(line.value):
                         # Found dg-warning/dg-error line
                         break
+
+    if prs:
+        firstpr = prs[0]
 
     if fill_pr_titles:
         out += get_pr_titles(prs)
@@ -308,8 +315,14 @@ if __name__ == '__main__':
             start = list(takewhile(lambda l: not l.startswith('#'), lines))
             end = lines[len(start):]
             with open(args.changelog, 'w') as f:
+                if not start or not start[0]:
+                    # initial commit subject line 'component: [PRnnnnn]'
+                    m = prnum_regex.match(firstpr)
+                    if m:
+                        title = f'{m.group("comp")}: [PR{m.group("num")}]'
+                        start.insert(0, title)
                 if start:
-                    # appent empty line
+                    # append empty line
                     if start[-1] != '':
                         start.append('')
                 else:

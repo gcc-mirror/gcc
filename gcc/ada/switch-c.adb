@@ -112,7 +112,7 @@ package body Switch.C is
 
          when '3' =>
             if Standard_Long_Long_Integer_Size /= 64 then
-               Bad_Switch ("-gnato3 not implemented for this configuration");
+               Bad_Switch ("-gnato3 requires Long_Long_Integer'Size = 64");
             else
                return Eliminated;
             end if;
@@ -1392,9 +1392,8 @@ package body Switch.C is
 
             when 'X' =>
                Ptr := Ptr + 1;
-               Extensions_Allowed   := True;
-               Ada_Version          := Ada_Version_Type'Last;
-               Ada_Version_Explicit := Ada_Version_Type'Last;
+               Ada_Version          := Ada_With_Extensions;
+               Ada_Version_Explicit := Ada_With_Extensions;
                Ada_Version_Pragma   := Empty;
 
             --  -gnaty (style checks)

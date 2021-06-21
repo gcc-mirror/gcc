@@ -2827,7 +2827,7 @@ package body Sem_Ch3 is
             --  to the first encountered body.
 
             --  ??? A cleaner approach may be possible and/or this solution
-            --  could be extended to general-purpose late primitives, TBD.
+            --  could be extended to general-purpose late primitives.
 
             if Present (Ctrl_Typ) then
 
@@ -3055,7 +3055,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  TBD : other nonoverridable aspects.
+         --  What about other nonoverridable aspects???
       end Check_Nonoverridable_Aspects;
 
       ------------------------------------
@@ -3072,6 +3072,7 @@ package body Sem_Ch3 is
            and then Ekind (Prev) = E_Incomplete_Type
            and then Is_Tagged_Type (Prev)
            and then Is_Tagged_Type (T)
+           and then Present (Primitive_Operations (Prev))
          then
             Elmt := First_Elmt (Primitive_Operations (Prev));
             while Present (Elmt) loop
@@ -4620,6 +4621,13 @@ package body Sem_Ch3 is
                   Related_Id := Empty;
                end if;
 
+               --  If the object has an unconstrained array subtype with fixed
+               --  lower bound, then sliding to that bound may be needed.
+
+               if Is_Fixed_Lower_Bound_Array_Subtype (T) then
+                  Expand_Sliding_Conversion (E, T);
+               end if;
+
                Expand_Subtype_From_Expr
                  (N             => N,
                   Unc_Type      => T,
@@ -4760,7 +4768,7 @@ package body Sem_Ch3 is
       --  Now establish the proper kind and type of the object
 
       if Ekind (Id) = E_Void then
-         Reinit_Field_To_Zero (Id, Next_Inlined_Subprogram);
+         Reinit_Field_To_Zero (Id, F_Next_Inlined_Subprogram);
       end if;
 
       if Constant_Present (N) then
@@ -5120,6 +5128,8 @@ package body Sem_Ch3 is
          Set_Error_Posted       (T);
          goto Leave;
       end if;
+
+      Check_Wide_Character_Restriction (Parent_Type, Indic);
 
       --  Perhaps the parent type should be changed to the class-wide type's
       --  specific type in this case to prevent cascading errors ???
@@ -6022,6 +6032,7 @@ package body Sem_Ch3 is
       Nb_Index      : Pos;
       Priv          : Entity_Id;
       Related_Id    : Entity_Id;
+      Has_FLB_Index : Boolean := False;
 
    begin
       if Nkind (Def) = N_Constrained_Array_Definition then
@@ -6111,6 +6122,39 @@ package body Sem_Ch3 is
 
          Make_Index (Index, P, Related_Id, Nb_Index);
 
+         --  In the case where we have an unconstrained array with an index
+         --  given by a subtype_indication, this is necessarily a "fixed lower
+         --  bound" index. We change the upper bound of that index to the upper
+         --  bound of the index's subtype (denoted by the subtype_mark), since
+         --  that upper bound was originally set by the parser to be the same
+         --  as the lower bound. In truth, that upper bound corresponds to
+         --  a box ("<>"), and could be set to Empty, but it's convenient to
+         --  set it to the upper bound to avoid needing to add special tests
+         --  in various places for an Empty upper bound, and in any case that
+         --  accurately characterizes the index's range of values.
+
+         if Nkind (Def) = N_Unconstrained_Array_Definition
+           and then Nkind (Index) = N_Subtype_Indication
+         then
+            declare
+               Index_Subtype_High_Bound : constant Entity_Id :=
+                 Type_High_Bound (Entity (Subtype_Mark (Index)));
+            begin
+               Set_High_Bound (Range_Expression (Constraint (Index)),
+                               Index_Subtype_High_Bound);
+
+               --  Record that the array type has one or more indexes with
+               --  a fixed lower bound.
+
+               Has_FLB_Index := True;
+
+               --  Mark the index as belonging to an array type with a fixed
+               --  lower bound.
+
+               Set_Is_Fixed_Lower_Bound_Index_Subtype (Etype (Index));
+            end;
+         end if;
+
          --  Check error of subtype with predicate for index type
 
          Bad_Predicated_Subtype_Use
@@ -6181,7 +6225,7 @@ package body Sem_Ch3 is
       if Nkind (Def) = N_Constrained_Array_Definition then
 
          if Ekind (T) in Incomplete_Or_Private_Kind then
-            Reinit_Field_To_Zero (T, Stored_Constraint);
+            Reinit_Field_To_Zero (T, F_Stored_Constraint);
          else
             pragma Assert (Ekind (T) = E_Void);
          end if;
@@ -6228,7 +6272,7 @@ package body Sem_Ch3 is
       else pragma Assert (Nkind (Def) = N_Unconstrained_Array_Definition);
 
          if Ekind (T) in Incomplete_Or_Private_Kind then
-            Reinit_Field_To_Zero (T, Stored_Constraint);
+            Reinit_Field_To_Zero (T, F_Stored_Constraint);
          else
             pragma Assert (Ekind (T) = E_Void);
          end if;
@@ -6239,6 +6283,8 @@ package body Sem_Ch3 is
          Set_Scope                    (T, Current_Scope);
          Set_Component_Size           (T, Uint_0);
          Set_Is_Constrained           (T, False);
+         Set_Is_Fixed_Lower_Bound_Array_Subtype
+                                      (T, Has_FLB_Index);
          Set_First_Index              (T, First (Subtype_Marks (Def)));
          Set_Has_Delayed_Freeze       (T, True);
          Propagate_Concurrent_Flags   (T, Element_Type);
@@ -9747,7 +9793,7 @@ package body Sem_Ch3 is
       if Ekind (Derived_Type) in Incomplete_Or_Private_Kind
         and then Ekind (Parent_Base) in Modular_Integer_Kind | Array_Kind
       then
-         Reinit_Field_To_Zero (Derived_Type, Stored_Constraint);
+         Reinit_Field_To_Zero (Derived_Type, F_Stored_Constraint);
       end if;
 
       Set_Scope                  (Derived_Type, Current_Scope);
@@ -10918,6 +10964,15 @@ package body Sem_Ch3 is
 
                   elsif Comes_From_Source (Subp)
                      and then Present (Alias (Subp))
+                  then
+                     null;
+
+                  --  Skip reporting the error on Ada 2022 only subprograms
+                  --  that require overriding if we are not in Ada 2022 mode.
+
+                  elsif Ada_Version < Ada_2022
+                    and then Requires_Overriding (Subp)
+                    and then Is_Ada_2022_Only (Ultimate_Alias (Subp))
                   then
                      null;
 
@@ -12532,7 +12587,7 @@ package body Sem_Ch3 is
       Set_Associated_Node_For_Itype (Full, Related_Nod);
 
       if Ekind (Full) in Incomplete_Or_Private_Kind then
-         Reinit_Field_To_Zero (Full, Private_Dependents);
+         Reinit_Field_To_Zero (Full, F_Private_Dependents);
       end if;
 
       --  Set common attributes for all subtypes: kind, convention, etc.
@@ -13268,6 +13323,7 @@ package body Sem_Ch3 is
       Index                 : Node_Id;
       S, T                  : Entity_Id;
       Constraint_OK         : Boolean := True;
+      Is_FLB_Array_Subtype  : Boolean := False;
 
    begin
       T := Entity (Subtype_Mark (SI));
@@ -13311,6 +13367,48 @@ package body Sem_Ch3 is
 
             for J in 1 .. Number_Of_Constraints loop
                Constrain_Index (Index, S, Related_Nod, Related_Id, Suffix, J);
+
+               --  If the subtype of the index has been set to indicate that
+               --  it has a fixed lower bound, then record that the subtype's
+               --  entity will need to be marked as being a fixed-lower-bound
+               --  array subtype.
+
+               if S = First (Constraints (C)) then
+                  Is_FLB_Array_Subtype :=
+                    Is_Fixed_Lower_Bound_Index_Subtype (Etype (S));
+
+                  --  If the parent subtype (or should this be Etype of that?)
+                  --  is an FLB array subtype, we flag an error, because we
+                  --  don't currently allow subtypes of such subtypes to
+                  --  specify a fixed lower bound for any of their indexes,
+                  --  even if the index of the parent subtype is a "range <>"
+                  --  index.
+
+                  if Is_FLB_Array_Subtype
+                    and then Is_Fixed_Lower_Bound_Array_Subtype (T)
+                  then
+                     Error_Msg_NE
+                       ("index with fixed lower bound not allowed for subtype "
+                          & "of fixed-lower-bound }", S, T);
+
+                     Is_FLB_Array_Subtype := False;
+                  end if;
+
+               elsif Is_FLB_Array_Subtype
+                 and then not Is_Fixed_Lower_Bound_Index_Subtype (Etype (S))
+               then
+                  Error_Msg_NE
+                    ("constrained index not allowed for fixed-lower-bound "
+                       & "subtype of}", S, T);
+
+               elsif not Is_FLB_Array_Subtype
+                 and then Is_Fixed_Lower_Bound_Index_Subtype (Etype (S))
+               then
+                  Error_Msg_NE
+                    ("index with fixed lower bound not allowed for "
+                       & "constrained subtype of}", S, T);
+               end if;
+
                Next (Index);
                Next (S);
             end loop;
@@ -13337,7 +13435,9 @@ package body Sem_Ch3 is
          Set_First_Index (Def_Id, First_Index (T));
       end if;
 
-      Set_Is_Constrained     (Def_Id, True);
+      Set_Is_Constrained     (Def_Id, not Is_FLB_Array_Subtype);
+      Set_Is_Fixed_Lower_Bound_Array_Subtype
+                             (Def_Id, Is_FLB_Array_Subtype);
       Set_Is_Aliased         (Def_Id, Is_Aliased (T));
       Set_Is_Independent     (Def_Id, Is_Independent (T));
       Set_Depends_On_Private (Def_Id, Has_Private_Component (Def_Id));
@@ -14199,6 +14299,7 @@ package body Sem_Ch3 is
       Def_Id : Entity_Id;
       R      : Node_Id := Empty;
       T      : constant Entity_Id := Etype (Index);
+      Is_FLB_Index : Boolean := False;
 
    begin
       Def_Id :=
@@ -14211,6 +14312,20 @@ package body Sem_Ch3 is
             and then Attribute_Name (S) = Name_Range)
       then
          --  A Range attribute will be transformed into N_Range by Resolve
+
+         --  If a range has an Empty upper bound, then remember that for later
+         --  setting of the index subtype's Is_Fixed_Lower_Bound_Index_Subtype
+         --  flag, and also set the upper bound of the range to the index
+         --  subtype's upper bound rather than leaving it Empty. In truth,
+         --  that upper bound corresponds to a box ("<>"), but it's convenient
+         --  to set it to the upper bound to avoid needing to add special tests
+         --  in various places for an Empty upper bound, and in any case it
+         --  accurately characterizes the index's range of values.
+
+         if Nkind (S) = N_Range and then not Present (High_Bound (S)) then
+            Is_FLB_Index := True;
+            Set_High_Bound (S, Type_High_Bound (T));
+         end if;
 
          R := S;
 
@@ -14312,7 +14427,22 @@ package body Sem_Ch3 is
       Set_RM_Size        (Def_Id, RM_Size        (T));
       Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
 
-      Set_Scalar_Range   (Def_Id, R);
+      --  If this is a range for a fixed-lower-bound subtype, then set the
+      --  index itype's low bound to the FLB and the index itype's upper bound
+      --  to the high bound of the parent array type's index subtype. Also,
+      --  mark the itype as an FLB index subtype.
+
+      if Nkind (S) = N_Range and then Is_FLB_Index then
+         Set_Scalar_Range
+           (Def_Id,
+            Make_Range (Sloc (S),
+              Low_Bound  => Low_Bound (S),
+              High_Bound => Type_High_Bound (T)));
+         Set_Is_Fixed_Lower_Bound_Index_Subtype (Def_Id);
+
+      else
+         Set_Scalar_Range (Def_Id, R);
+      end if;
 
       Set_Etype (S, Def_Id);
       Set_Discrete_RM_Size (Def_Id);
@@ -15972,6 +16102,8 @@ package body Sem_Ch3 is
       then
          Set_Has_Yield_Aspect (New_Subp, Has_Yield_Aspect (Alias (New_Subp)));
       end if;
+
+      Set_Is_Ada_2022_Only (New_Subp, Is_Ada_2022_Only (Parent_Subp));
    end Derive_Subprogram;
 
    ------------------------
@@ -17120,6 +17252,8 @@ package body Sem_Ch3 is
          Error_Msg_N ("null exclusion can only apply to an access type", N);
       end if;
 
+      Check_Wide_Character_Restriction (Parent_Type, Indic);
+
       --  Avoid deriving parent primitives of underlying record views
 
       Build_Derived_Type (N, Parent_Type, T, Is_Completion,
@@ -17978,10 +18112,6 @@ package body Sem_Ch3 is
          Find_Type (S);
          Typ := Entity (S);
       end if;
-
-      --  Check No_Wide_Characters restriction
-
-      Check_Wide_Character_Restriction (Typ, S);
 
       return Typ;
    end Find_Type_Of_Subtype_Indic;
@@ -19225,19 +19355,19 @@ package body Sem_Ch3 is
       --  cannot have any invariants.
 
       if Ekind (CW_Type) in Incomplete_Or_Private_Kind then
-         Reinit_Field_To_Zero (CW_Type, Private_Dependents);
+         Reinit_Field_To_Zero (CW_Type, F_Private_Dependents);
 
       elsif Ekind (CW_Type) in Concurrent_Kind then
-         Reinit_Field_To_Zero (CW_Type, First_Private_Entity);
-         Reinit_Field_To_Zero (CW_Type, Scope_Depth_Value);
+         Reinit_Field_To_Zero (CW_Type, F_First_Private_Entity);
+         Reinit_Field_To_Zero (CW_Type, F_Scope_Depth_Value);
 
          if Ekind (CW_Type) in Task_Kind then
-            Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Checks_OK_Id);
-            Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Warnings_OK_Id);
+            Reinit_Field_To_Zero (CW_Type, F_Is_Elaboration_Checks_OK_Id);
+            Reinit_Field_To_Zero (CW_Type, F_Is_Elaboration_Warnings_OK_Id);
          end if;
 
          if Ekind (CW_Type) in E_Task_Type | E_Protected_Type then
-            Reinit_Field_To_Zero (CW_Type, SPARK_Aux_Pragma_Inherited);
+            Reinit_Field_To_Zero (CW_Type, F_SPARK_Aux_Pragma_Inherited);
          end if;
       end if;
 
@@ -19624,7 +19754,7 @@ package body Sem_Ch3 is
       Analyze_And_Resolve (Mod_Expr, Any_Integer);
 
       if Ekind (T) in Incomplete_Or_Private_Kind then
-         Reinit_Field_To_Zero (T, Stored_Constraint);
+         Reinit_Field_To_Zero (T, F_Stored_Constraint);
       end if;
 
       Set_Etype (T, T);
@@ -20428,7 +20558,7 @@ package body Sem_Ch3 is
          Id := Defining_Identifier (Discr);
 
          if Ekind (Id) = E_In_Parameter then
-            Reinit_Field_To_Zero (Id, Discriminal_Link);
+            Reinit_Field_To_Zero (Id, F_Discriminal_Link);
          end if;
 
          Mutate_Ekind (Id, E_Discriminant);
@@ -21316,7 +21446,7 @@ package body Sem_Ch3 is
             Set_Subtype_Indication
               (Parent (Priv_Dep), New_Occurrence_Of (Full_T, Sloc (Priv_Dep)));
             Reinit_Field_To_Zero
-              (Priv_Dep, Private_Dependents,
+              (Priv_Dep, F_Private_Dependents,
                Old_Ekind => E_Incomplete_Subtype);
             Mutate_Ekind (Priv_Dep, Subtype_Kind (Ekind (Full_T)));
             Set_Etype (Priv_Dep, Full_T);

@@ -189,6 +189,13 @@ package Gen_IL.Internals is
 
    function Image (F : Opt_Field_Enum) return String;
 
+   function F_Image (F : Opt_Field_Enum) return String is
+     ("F_" & Image (F));
+   --  Prepends "F_" to Image (F). This is used for the enumeration literals in
+   --  the generated Sinfo.Nodes.Node_Field and Einfo.Entities.Entity_Field
+   --  types. If we used Image (F), these enumeration literals would overload
+   --  the getter functions, which confuses gdb.
+
    procedure Nil (T : Node_Or_Entity_Type);
    --  Null procedure
 

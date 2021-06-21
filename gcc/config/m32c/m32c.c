@@ -1296,6 +1296,9 @@ m32c_push_rounding (poly_int64 n)
   return (n + 1) & ~1;
 }
 
+#undef TARGET_PUSH_ARGUMENT
+#define TARGET_PUSH_ARGUMENT hook_bool_uint_true
+
 /* Passing Arguments in Registers */
 
 /* Implements TARGET_FUNCTION_ARG.  Arguments are passed partly in

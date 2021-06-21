@@ -47,7 +47,7 @@ package body System.Object_Reader is
    function Trim_Trailing_Nuls (Str : String) return String;
    --  Return a copy of a string with any trailing NUL characters truncated
 
-   procedure Check_Read_Offset (S : in out Mapped_Stream; Size : uint32);
+   procedure Check_Read_Offset (S : Mapped_Stream; Size : uint32);
    --  Check that the SIZE bytes at the current offset are still in the stream
 
    -------------------------------------
@@ -1931,7 +1931,7 @@ package body System.Object_Reader is
       return To_String_Ptr_Len (Read (S));
    end Read;
 
-   procedure Check_Read_Offset (S : in out Mapped_Stream; Size : uint32) is
+   procedure Check_Read_Offset (S : Mapped_Stream; Size : uint32) is
    begin
       if S.Off + Offset (Size) > Offset (Last (S.Region)) then
          raise IO_Error with "could not read from object file";

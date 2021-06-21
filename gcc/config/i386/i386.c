@@ -4191,6 +4191,18 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
     }
 }
 
+/* Implement TARGET_PUSH_ARGUMENT.  */
+
+static bool
+ix86_push_argument (unsigned int npush)
+{
+  /* If SSE2 is available, use vector move to put large argument onto
+     stack.  NB:  In 32-bit mode, use 8-byte vector move.  */
+  return ((!TARGET_SSE2 || npush < (TARGET_64BIT ? 16 : 8))
+	  && TARGET_PUSH_ARGS
+	  && !ACCUMULATE_OUTGOING_ARGS);
+}
+
 
 /* Create the va_list data type.  */
 
@@ -23695,6 +23707,8 @@ ix86_run_selftests (void)
 #define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
+#undef TARGET_PUSH_ARGUMENT
+#define TARGET_PUSH_ARGUMENT ix86_push_argument
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS ix86_setup_incoming_varargs
 #undef TARGET_MUST_PASS_IN_STACK

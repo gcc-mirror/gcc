@@ -2062,27 +2062,6 @@ string or a static string expressions that evaluates to the null
 string. In this case, no external name is generated. This form
 still allows the specification of parameter mechanisms.
 
-Pragma Export_Value
-===================
-
-Syntax:
-
-
-::
-
-  pragma Export_Value (
-    [Value     =>] static_integer_EXPRESSION,
-    [Link_Name =>] static_string_EXPRESSION);
-
-
-This pragma serves to export a static integer value for external use.
-The first argument specifies the value to be exported. The Link_Name
-argument specifies the symbolic name to be associated with the integer
-value. This pragma is useful for defining a named static value in Ada
-that can be referenced in assembly language units to be linked with
-the application. This pragma is currently supported only for the
-AAMP target and is ignored for other targets.
-
 Pragma Export_Valued_Procedure
 ==============================
 
@@ -2210,7 +2189,7 @@ extension mode (the use of Off as a parameter cancels the effect
 of the *-gnatX* command switch).
 
 In extension mode, the latest version of the Ada language is
-implemented (currently Ada 202x), and in addition a small number
+implemented (currently Ada 2022), and in addition a number
 of GNAT specific extensions are recognized as follows:
 
 * Constrained attribute for generic objects
@@ -2235,6 +2214,136 @@ of GNAT specific extensions are recognized as follows:
   This new aggregate syntax for arrays and containers is provided under -gnatX
   to experiment and confirm this new language syntax.
 
+* Casing on composite values (aka pattern matching)
+
+  The selector for a case statement may be of a composite type, subject to
+  some restrictions (described below). Aggregate syntax is used for choices
+  of such a case statement; however, in cases where a "normal" aggregate would
+  require a discrete value, a discrete subtype may be used instead; box
+  notation can also be used to match all values (but currently only
+  for discrete subcomponents).
+
+  Consider this example:
+
+  .. code-block:: ada
+
+      type Rec is record
+         F1, F2 : Integer;
+      end record;
+
+      procedure Caser_1 (X : Rec) is
+      begin
+         case X is
+            when (F1 => Positive, F2 => Positive) =>
+               Do_This;
+            when (F1 => Natural, F2 => <>) | (F1 => <>, F2 => Natural) =>
+               Do_That;
+            when others =>
+                Do_The_Other_Thing;
+         end case;
+      end Caser_1;
+
+  If Caser_1 is called and both components of X are positive, then
+  Do_This will be called; otherwise, if either component is nonnegative
+  then Do_That will be called; otherwise, Do_The_Other_Thing will be called.
+
+  If the set of values that match the choice(s) of an earlier alternative
+  overlaps the corresponding set of a later alternative, then the first
+  set shall be a proper subset of the second (and the later alternative
+  will not be executed if the earlier alternative "matches"). All possible
+  values of the composite type shall be covered. The composite type of the
+  selector shall be a nonlimited untagged undiscriminated record type, all
+  of whose subcomponent subtypes are either static discrete subtypes or
+  record types that meet the same restrictions. Support for arrays is
+  planned, but not yet implemented.
+
+  In addition, pattern bindings are supported. This is a mechanism
+  for binding a name to a component of a matching value for use within
+  an alternative of a case statement. For a component association
+  that occurs within a case choice, the expression may be followed by
+  "is <identifier>". In the special case of a "box" component association,
+  the identifier may instead be provided within the box. Either of these
+  indicates that the given identifer denotes (a constant view of) the matching
+  subcomponent of the case selector.
+
+  Consider this example (which uses type Rec from the previous example):
+
+  .. code-block:: ada
+
+      procedure Caser_2 (X : Rec) is
+      begin
+         case X is
+            when (F1 => Positive is Abc, F2 => Positive) =>
+               Do_This (Abc)
+            when (F1 => Natural is N1, F2 => <N2>) |
+                 (F1 => <N2>, F2 => Natural is N1) =>
+               Do_That (Param_1 => N1, Param_2 => N2);
+            when others =>
+               Do_The_Other_Thing;
+         end case;
+      end Caser_2;
+
+  This example is the same as the previous one with respect to
+  determining whether Do_This, Do_That, or Do_The_Other_Thing will
+  be called. But for this version, Do_This takes a parameter and Do_That
+  takes two parameters. If Do_This is called, the actual parameter in the
+  call will be X.F1.
+
+  If Do_That is called, the situation is more complex because there are two
+  choices for that alternative. If Do_That is called because the first choice
+  matched (i.e., because X.F1 is nonnegative and either X.F1 or X.F2 is zero
+  or negative), then the actual parameters of the call will be (in order)
+  X.F1 and X.F2. If Do_That is called because the second choice matched (and
+  the first one did not), then the actual parameters will be reversed.
+
+  Within the choice list for single alternative, each choice must
+  define the same set of bindings and the component subtypes for
+  for a given identifer must all statically match. Currently, the case
+  of a binding for a nondiscrete component is not implemented.
+
+* Fixed lower bounds for array types and subtypes
+
+  Unconstrained array types and subtypes can be specified with a lower bound
+  that is fixed to a certain value, by writing an index range that uses the
+  syntax "<lower-bound-expression> .. <>". This guarantees that all objects
+  of the type or subtype will have the specified lower bound.
+
+  For example, a matrix type with fixed lower bounds of zero for each
+  dimension can be declared by the following:
+
+  .. code-block:: ada
+
+      type Matrix is
+        array (Natural range 0 .. <>, Natural range 0 .. <>) of Integer;
+
+  Objects of type Matrix declared with an index constraint must have index
+  ranges starting at zero:
+
+  .. code-block:: ada
+
+      M1 : Matrix (0 .. 9, 0 .. 19);
+      M2 : Matrix (2 .. 11, 3 .. 22);  -- Warning about bounds; will raise CE
+
+  Similarly, a subtype of String can be declared that specifies the lower
+  bound of objects of that subtype to be 1:
+
+   .. code-block:: ada
+
+      subtype String_1 is String (1 .. <>);
+
+  If a string slice is passed to a formal of subtype String_1 in a call to
+  a subprogram S, the slice's bounds will "slide" so that the lower bound
+  is 1. Within S, the lower bound of the formal is known to be 1, so, unlike
+  a normal unconstrained String formal, there is no need to worry about
+  accounting for other possible lower-bound values. Sliding of bounds also
+  occurs in other contexts, such as for object declarations with an
+  unconstrained subtype with fixed lower bound, as well as in subtype
+  conversions.
+
+  Use of this feature increases safety by simplifying code, and can also
+  improve the efficiency of indexing operations, since the compiler statically
+  knows the lower bound of unconstrained array formals when the formal's
+  subtype has index ranges with static fixed lower bounds.
 
 .. _Pragma-Extensions_Visible:
 
@@ -3114,13 +3223,7 @@ Syntax:
 
 
 This program unit pragma is supported for parameterless protected procedures
-as described in Annex C of the Ada Reference Manual. On the AAMP target
-the pragma can also be specified for nonprotected parameterless procedures
-that are declared at the library level (which includes procedures
-declared at the top level of a library package). In the case of AAMP,
-when this pragma is applied to a nonprotected procedure, the instruction
-``IERET`` is generated for returns from the procedure, enabling
-maskable interrupts, in place of the normal return instruction.
+as described in Annex C of the Ada Reference Manual.
 
 Pragma Interrupt_State
 ======================
@@ -6913,32 +7016,6 @@ access types designating this type were subject to pragma No_Strict_Aliasing.
 For a detailed description of the strict aliasing optimization, and the
 situations in which it must be suppressed, see the section on
 ``Optimization and Strict Aliasing`` in the :title:`GNAT User's Guide`.
-
-.. _Pragma-Universal_Data:
-
-Pragma Universal_Data
-=====================
-
-Syntax:
-
-
-::
-
-  pragma Universal_Data [(library_unit_Name)];
-
-
-This pragma is supported only for the AAMP target and is ignored for
-other targets. The pragma specifies that all library-level objects
-(Counter 0 data) associated with the library unit are to be accessed
-and updated using universal addressing (24-bit addresses for AAMP5)
-rather than the default of 16-bit Data Environment (DENV) addressing.
-Use of this pragma will generally result in less efficient code for
-references to global data associated with the library unit, but
-allows such data to be located anywhere in memory. This pragma is
-a library unit pragma, but can also be used as a configuration pragma
-(including use in the :file:`gnat.adc` file). The functionality
-of this pragma is also available by applying the -univ switch on the
-compilations of units where universal addressing of the data is desired.
 
 .. _Pragma-Unmodified:
 

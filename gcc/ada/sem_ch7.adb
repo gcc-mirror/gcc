@@ -2061,6 +2061,8 @@ package body Sem_Ch7 is
                            Replace_Elmt (Op_Elmt, New_Op);
                            Remove_Elmt  (Op_List, Op_Elmt_2);
                            Set_Overridden_Operation (New_Op, Parent_Subp);
+                           Set_Is_Ada_2022_Only     (New_Op,
+                             Is_Ada_2022_Only (Parent_Subp));
 
                            --  We don't need to inherit its dispatching slot.
                            --  Set_All_DT_Position has previously ensured that
@@ -2722,8 +2724,10 @@ package body Sem_Ch7 is
                                      (Priv, Size_Known_At_Compile_Time (Full));
          Set_Is_Volatile             (Priv, Is_Volatile                (Full));
          Set_Treat_As_Volatile       (Priv, Treat_As_Volatile          (Full));
+         Set_Is_Atomic               (Priv, Is_Atomic                  (Full));
          Set_Is_Ada_2005_Only        (Priv, Is_Ada_2005_Only           (Full));
          Set_Is_Ada_2012_Only        (Priv, Is_Ada_2012_Only           (Full));
+         Set_Is_Ada_2022_Only        (Priv, Is_Ada_2022_Only           (Full));
          Set_Has_Pragma_Unmodified   (Priv, Has_Pragma_Unmodified      (Full));
          Set_Has_Pragma_Unreferenced (Priv, Has_Pragma_Unreferenced    (Full));
          Set_Has_Pragma_Unreferenced_Objects
@@ -2733,7 +2737,6 @@ package body Sem_Ch7 is
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
          end if;
-         --  Why is atomic not copied here ???
 
          if Referenced (Full) then
             Set_Referenced (Priv);

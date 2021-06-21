@@ -447,8 +447,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Opt-in to view concept
     template<typename _ElementType, size_t _Extent>
       inline constexpr bool
-	enable_view<span<_ElementType, _Extent>>
-	  = _Extent == 0 || _Extent == dynamic_extent;
+	enable_view<span<_ElementType, _Extent>> = true;
   }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

@@ -234,91 +234,7 @@ namespace ranges
 
   inline constexpr __for_each_n_fn for_each_n{};
 
-  struct __find_fn
-  {
-    template<input_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Tp,
-	     typename _Proj = identity>
-      requires indirect_binary_predicate<ranges::equal_to,
-					 projected<_Iter, _Proj>, const _Tp*>
-      constexpr _Iter
-      operator()(_Iter __first, _Sent __last,
-		 const _Tp& __value, _Proj __proj = {}) const
-      {
-	while (__first != __last
-	    && !(std::__invoke(__proj, *__first) == __value))
-	  ++__first;
-	return __first;
-      }
-
-    template<input_range _Range, typename _Tp, typename _Proj = identity>
-      requires indirect_binary_predicate<ranges::equal_to,
-					 projected<iterator_t<_Range>, _Proj>,
-					 const _Tp*>
-      constexpr borrowed_iterator_t<_Range>
-      operator()(_Range&& __r, const _Tp& __value, _Proj __proj = {}) const
-      {
-	return (*this)(ranges::begin(__r), ranges::end(__r),
-		       __value, std::move(__proj));
-      }
-  };
-
-  inline constexpr __find_fn find{};
-
-  struct __find_if_fn
-  {
-    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
-	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr _Iter
-      operator()(_Iter __first, _Sent __last,
-		 _Pred __pred, _Proj __proj = {}) const
-      {
-	while (__first != __last
-	    && !(bool)std::__invoke(__pred, std::__invoke(__proj, *__first)))
-	  ++__first;
-	return __first;
-      }
-
-    template<input_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
-	       _Pred>
-      constexpr borrowed_iterator_t<_Range>
-      operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
-      {
-	return (*this)(ranges::begin(__r), ranges::end(__r),
-		       std::move(__pred), std::move(__proj));
-      }
-  };
-
-  inline constexpr __find_if_fn find_if{};
-
-  struct __find_if_not_fn
-  {
-    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
-	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
-      constexpr _Iter
-      operator()(_Iter __first, _Sent __last,
-		 _Pred __pred, _Proj __proj = {}) const
-      {
-	while (__first != __last
-	    && (bool)std::__invoke(__pred, std::__invoke(__proj, *__first)))
-	  ++__first;
-	return __first;
-      }
-
-    template<input_range _Range, typename _Proj = identity,
-	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
-	       _Pred>
-      constexpr borrowed_iterator_t<_Range>
-      operator()(_Range&& __r, _Pred __pred, _Proj __proj = {}) const
-      {
-	return (*this)(ranges::begin(__r), ranges::end(__r),
-		       std::move(__pred), std::move(__proj));
-      }
-  };
-
-  inline constexpr __find_if_not_fn find_if_not{};
+  // find, find_if and find_if_not are defined in <bits/ranges_util.h>.
 
   struct __find_first_of_fn
   {
@@ -421,134 +337,7 @@ namespace ranges
 
   inline constexpr __count_if_fn count_if{};
 
-  template<typename _Iter1, typename _Iter2>
-    struct in_in_result
-    {
-      [[no_unique_address]] _Iter1 in1;
-      [[no_unique_address]] _Iter2 in2;
-
-      template<typename _IIter1, typename _IIter2>
-	requires convertible_to<const _Iter1&, _IIter1>
-	  && convertible_to<const _Iter2&, _IIter2>
-	constexpr
-	operator in_in_result<_IIter1, _IIter2>() const &
-	{ return {in1, in2}; }
-
-      template<typename _IIter1, typename _IIter2>
-	requires convertible_to<_Iter1, _IIter1>
-	  && convertible_to<_Iter2, _IIter2>
-	constexpr
-	operator in_in_result<_IIter1, _IIter2>() &&
-	{ return {std::move(in1), std::move(in2)}; }
-    };
-
-  template<typename _Iter1, typename _Iter2>
-    using mismatch_result = in_in_result<_Iter1, _Iter2>;
-
-  struct __mismatch_fn
-  {
-    template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	     input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	     typename _Pred = ranges::equal_to,
-	     typename _Proj1 = identity, typename _Proj2 = identity>
-      requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
-      constexpr mismatch_result<_Iter1, _Iter2>
-      operator()(_Iter1 __first1, _Sent1 __last1,
-		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
-		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
-      {
-	while (__first1 != __last1 && __first2 != __last2
-	       && (bool)std::__invoke(__pred,
-				      std::__invoke(__proj1, *__first1),
-				      std::__invoke(__proj2, *__first2)))
-	{
-	  ++__first1;
-	  ++__first2;
-	}
-	return { std::move(__first1), std::move(__first2) };
-      }
-
-    template<input_range _Range1, input_range _Range2,
-	     typename _Pred = ranges::equal_to,
-	     typename _Proj1 = identity, typename _Proj2 = identity>
-      requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
-				     _Pred, _Proj1, _Proj2>
-      constexpr mismatch_result<iterator_t<_Range1>, iterator_t<_Range2>>
-      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
-		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
-      {
-	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-		       ranges::begin(__r2), ranges::end(__r2),
-		       std::move(__pred),
-		       std::move(__proj1), std::move(__proj2));
-      }
-  };
-
-  inline constexpr __mismatch_fn mismatch{};
-
-  struct __search_fn
-  {
-    template<forward_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	     forward_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	     typename _Pred = ranges::equal_to,
-	     typename _Proj1 = identity, typename _Proj2 = identity>
-      requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
-      constexpr subrange<_Iter1>
-      operator()(_Iter1 __first1, _Sent1 __last1,
-		 _Iter2 __first2, _Sent2 __last2, _Pred __pred = {},
-		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
-      {
-	if (__first1 == __last1 || __first2 == __last2)
-	  return {__first1, __first1};
-
-	for (;;)
-	  {
-	    for (;;)
-	      {
-		if (__first1 == __last1)
-		  return {__first1, __first1};
-		if (std::__invoke(__pred,
-				  std::__invoke(__proj1, *__first1),
-				  std::__invoke(__proj2, *__first2)))
-		  break;
-		++__first1;
-	      }
-	    auto __cur1 = __first1;
-	    auto __cur2 = __first2;
-	    for (;;)
-	      {
-		if (++__cur2 == __last2)
-		  return {__first1, ++__cur1};
-		if (++__cur1 == __last1)
-		  return {__cur1, __cur1};
-		if (!(bool)std::__invoke(__pred,
-					 std::__invoke(__proj1, *__cur1),
-					 std::__invoke(__proj2, *__cur2)))
-		  {
-		    ++__first1;
-		    break;
-		  }
-	      }
-	  }
-      }
-
-    template<forward_range _Range1, forward_range _Range2,
-	     typename _Pred = ranges::equal_to,
-	     typename _Proj1 = identity, typename _Proj2 = identity>
-      requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
-				     _Pred, _Proj1, _Proj2>
-      constexpr borrowed_subrange_t<_Range1>
-      operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
-		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
-      {
-	return (*this)(ranges::begin(__r1), ranges::end(__r1),
-		       ranges::begin(__r2), ranges::end(__r2),
-		       std::move(__pred),
-		       std::move(__proj1), std::move(__proj2));
-      }
-  };
-
-  inline constexpr __search_fn search{};
+  // in_in_result, mismatch and search are defined in <bits/ranges_util.h>.
 
   struct __search_n_fn
   {
@@ -3287,26 +3076,59 @@ namespace ranges
     template<input_range _Range, typename _Proj = identity,
 	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
 	       _Comp = ranges::less>
-      requires indirectly_copyable_storable<iterator_t<_Range>,
-      range_value_t<_Range>*>
+      requires indirectly_copyable_storable<iterator_t<_Range>, range_value_t<_Range>*>
       constexpr minmax_result<range_value_t<_Range>>
       operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
       {
 	auto __first = ranges::begin(__r);
 	auto __last = ranges::end(__r);
 	__glibcxx_assert(__first != __last);
+	auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
 	minmax_result<range_value_t<_Range>> __result = {*__first, *__first};
+	if (++__first == __last)
+	  return __result;
+	else
+	  {
+	    // At this point __result.min == __result.max, so a single
+	    // comparison with the next element suffices.
+	    auto&& __val = *__first;
+	    if (__comp_proj(__val, __result.min))
+	      __result.min = std::forward<decltype(__val)>(__val);
+	    else
+	      __result.max = std::forward<decltype(__val)>(__val);
+	  }
 	while (++__first != __last)
 	  {
-	    auto __tmp = *__first;
-	    if (std::__invoke(__comp,
-			      std::__invoke(__proj, __tmp),
-			      std::__invoke(__proj, __result.min)))
-	      __result.min = std::move(__tmp);
-	    if (!(bool)std::__invoke(__comp,
-				     std::__invoke(__proj, __tmp),
-				     std::__invoke(__proj, __result.max)))
-	      __result.max = std::move(__tmp);
+	    // Now process two elements at a time so that we perform at most
+	    // 1 + 3*(N-2)/2 comparisons in total (each of the (N-2)/2
+	    // iterations of this loop performs three comparisons).
+	    range_value_t<_Range> __val1 = *__first;
+	    if (++__first == __last)
+	      {
+		// N is odd; in this final iteration, we perform at most two
+		// comparisons, for a total of 1 + 3*(N-3)/2 + 2 comparisons,
+		// which is not more than 3*N/2, as required.
+		if (__comp_proj(__val1, __result.min))
+		  __result.min = std::move(__val1);
+		else if (!__comp_proj(__val1, __result.max))
+		  __result.max = std::move(__val1);
+		break;
+	      }
+	    auto&& __val2 = *__first;
+	    if (!__comp_proj(__val2, __val1))
+	      {
+		if (__comp_proj(__val1, __result.min))
+		  __result.min = std::move(__val1);
+		if (!__comp_proj(__val2, __result.max))
+		  __result.max = std::forward<decltype(__val2)>(__val2);
+	      }
+	    else
+	      {
+		if (__comp_proj(__val2, __result.min))
+		  __result.min = std::forward<decltype(__val2)>(__val2);
+		if (!__comp_proj(__val1, __result.max))
+		  __result.max = std::move(__val1);
+	      }
 	  }
 	return __result;
       }
@@ -3412,21 +3234,50 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	if (__first == __last)
-	  return {__first, __first};
-
+	auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
 	minmax_element_result<_Iter> __result = {__first, __first};
-	auto __i = __first;
-	while (++__i != __last)
+	if (__first == __last || ++__first == __last)
+	  return __result;
+	else
 	  {
-	    if (std::__invoke(__comp,
-			      std::__invoke(__proj, *__i),
-			      std::__invoke(__proj, *__result.min)))
-	      __result.min = __i;
-	    if (!(bool)std::__invoke(__comp,
-				     std::__invoke(__proj, *__i),
-				     std::__invoke(__proj, *__result.max)))
-	      __result.max = __i;
+	    // At this point __result.min == __result.max, so a single
+	    // comparison with the next element suffices.
+	    if (__comp_proj(*__first, *__result.min))
+	      __result.min = __first;
+	    else
+	      __result.max = __first;
+	  }
+	while (++__first != __last)
+	  {
+	    // Now process two elements at a time so that we perform at most
+	    // 1 + 3*(N-2)/2 comparisons in total (each of the (N-2)/2
+	    // iterations of this loop performs three comparisons).
+	    auto __prev = __first;
+	    if (++__first == __last)
+	      {
+		// N is odd; in this final iteration, we perform at most two
+		// comparisons, for a total of 1 + 3*(N-3)/2 + 2 comparisons,
+		// which is not more than 3*N/2, as required.
+		if (__comp_proj(*__prev, *__result.min))
+		  __result.min = __prev;
+		else if (!__comp_proj(*__prev, *__result.max))
+		  __result.max = __prev;
+		break;
+	      }
+	    if (!__comp_proj(*__first, *__prev))
+	      {
+		if (__comp_proj(*__prev, *__result.min))
+		  __result.min = __prev;
+		if (!__comp_proj(*__first, *__result.max))
+		  __result.max = __first;
+	      }
+	    else
+	      {
+		if (__comp_proj(*__first, *__result.min))
+		  __result.min = __first;
+		if (!__comp_proj(*__prev, *__result.max))
+		  __result.max = __prev;
+	      }
 	  }
 	return __result;
       }
@@ -3753,8 +3604,7 @@ namespace ranges
 		  // i.e. we are shifting out at least half of the range.  In
 		  // this case we can safely perform the shift with a single
 		  // move.
-		  std::move(std::move(__first), std::move(__dest_head),
-			    std::move(__result));
+		  std::move(std::move(__first), std::move(__dest_head), __result);
 		  return __result;
 		}
 	      ++__dest_head;

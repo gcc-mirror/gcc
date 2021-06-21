@@ -57,6 +57,7 @@ with Sem;            use Sem;
 with Sem_Aggr;       use Sem_Aggr;
 with Sem_Attr;       use Sem_Attr;
 with Sem_Aux;        use Sem_Aux;
+with Sem_Case;       use Sem_Case;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch4;        use Sem_Ch4;
@@ -3390,12 +3391,9 @@ package body Sem_Res is
          --  Here we are resolving the corresponding expanded body, so we do
          --  need to perform normal freezing.
 
-         --  As elsewhere we do not emit freeze node within a generic. We make
-         --  an exception for entities that are expressions, only to detect
-         --  misuses of deferred constants and preserve the output of various
-         --  tests.
+         --  As elsewhere we do not emit freeze node within a generic.
 
-         if not Inside_A_Generic or else Is_Entity_Name (N) then
+         if not Inside_A_Generic then
             Freeze_Expression (N);
          end if;
 
@@ -4770,6 +4768,13 @@ package body Sem_Res is
                --  Note: we do not apply the predicate checks for the case of
                --  OUT and IN OUT parameters. They are instead applied in the
                --  Expand_Actuals routine in Exp_Ch6.
+            end if;
+
+            --  If the formal is of an unconstrained array subtype with fixed
+            --  lower bound, then sliding to that bound may be needed.
+
+            if Is_Fixed_Lower_Bound_Array_Subtype (F_Typ) then
+               Expand_Sliding_Conversion (A, F_Typ);
             end if;
 
             --  An actual associated with an access parameter is implicitly
@@ -7768,10 +7773,12 @@ package body Sem_Res is
 
       --  Case of (sub)type name appearing in a context where an expression
       --  is expected. This is legal if occurrence is a current instance.
-      --  See RM 8.6 (17/3).
+      --  See RM 8.6 (17/3). It is also legal if the expression is
+      --  part of a choice pattern for a case stmt/expr having a
+      --  non-discrete selecting expression.
 
       elsif Is_Type (E) then
-         if Is_Current_Instance (N) then
+         if Is_Current_Instance (N) or else Is_Case_Choice_Pattern (N) then
             null;
 
          --  Any other use is an error

@@ -4,7 +4,27 @@
 	(logicals:QHSI (match_operand:QHSI 1 "register_operand" "")
 		       (match_operand:QHSI 2 "h8300_src_operand" "")))]
   ""
-  "")
+  "
+  {
+    enum machine_mode mode = GET_MODE (operands[0]);
+    /* DImodes are not considered tieable, as a result operations involving
+       subregs of DImode objects are considered expensive which can prevent
+       CSE from doing obvious simplifications.
+
+       We may ultimately change what is tieable, but this is an immediate
+       workaround while we evaluate changes to tieable modes.
+
+       The key in terms of what we want to handle is then the result of
+       the operation is not a constant.  */
+    if ((<CODE> == AND && operands[2] == CONSTM1_RTX (mode))
+	|| (<CODE> == IOR && operands[2] == CONST0_RTX (mode))
+	|| (<CODE> == XOR && operands[2] == CONST0_RTX (mode))
+	|| ((<CODE> == AND || <CODE> == IOR) && operands[1] == operands[2]))
+      {
+	emit_move_insn (operands[0], operands[1]);
+	DONE;
+      }
+  }")
 
 ;; There's a ton of cleanup to do from here below.
 ;; ----------------------------------------------------------------------

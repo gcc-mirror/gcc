@@ -4594,18 +4594,6 @@ package body Make is
             Add_Switch
               ("-aO" & Argv (4 .. Argv'Last), Binder);
 
-         --  -aamp_target=...
-
-         elsif Argv'Length >= 13 and then Argv (2 .. 13) = "aamp_target=" then
-            Add_Switch (Argv, Compiler);
-
-            --  Set the aamp_target environment variable so that the binder and
-            --  linker will use the proper target library. This is consistent
-            --  with how things work when -aamp_target is passed on the command
-            --  line to gnaampmake.
-
-            Setenv ("aamp_target", Argv (14 .. Argv'Last));
-
          --  -Adir (to gnatbind this is like a -aO switch, to gcc like a -I)
 
          elsif Argv (2) = 'A' then

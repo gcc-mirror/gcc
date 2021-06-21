@@ -196,6 +196,16 @@ package Einfo.Utils is
    function First_Component_Or_Discriminant     (Id : E) return E;
    function First_Formal                        (Id : E) return E;
    function First_Formal_With_Extras            (Id : E) return E;
+
+   function Float_Rep
+     (N : Entity_Id) return F with Inline, Pre =>
+      N in E_Void_Id
+         | Float_Kind_Id;
+   procedure Set_Float_Rep
+     (Ignore_N : Entity_Id; Ignore_Val : F) with Inline, Pre =>
+      Ignore_N in E_Void_Id
+         | Float_Kind_Id;
+
    function Has_Attach_Handler                  (Id : E) return B;
    function Has_DIC                             (Id : E) return B;
    function Has_Entries                         (Id : E) return B;

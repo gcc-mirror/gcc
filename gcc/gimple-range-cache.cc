@@ -385,7 +385,7 @@ block_range_cache::~block_range_cache ()
 }
 
 // Set the range for NAME on entry to block BB to R.
-// If it has not been // accessed yet, allocate it first.
+// If it has not been accessed yet, allocate it first.
 
 void
 block_range_cache::set_bb_range (tree name, const basic_block bb,
@@ -706,16 +706,13 @@ temporal_cache::set_always_current (tree name)
 
 // --------------------------------------------------------------------------
 
-ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
+ranger_cache::ranger_cache ()
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_update_list.create (0);
   m_update_list.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_update_list.truncate (0);
-  m_poor_value_list.create (0);
-  m_poor_value_list.safe_grow_cleared (20);
-  m_poor_value_list.truncate (0);
   m_temporal = new temporal_cache;
   unsigned x, lim = last_basic_block_for_fn (cfun);
   // Calculate outgoing range info upfront.  This will fully populate the
@@ -727,13 +724,11 @@ ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
       if (bb)
 	m_gori.exports (bb);
     }
-  m_new_value_p = true;
 }
 
 ranger_cache::~ranger_cache ()
 {
   delete m_temporal;
-  m_poor_value_list.release ();
   m_workback.release ();
   m_update_list.release ();
 }
@@ -746,17 +741,6 @@ ranger_cache::dump (FILE *f)
 {
   m_globals.dump (f);
   fprintf (f, "\n");
-}
-
-// Allow or disallow the cache to flag and query new values when propagation
-// is forced to use an unknown value.  The previous state is returned.
-
-bool
-ranger_cache::enable_new_values (bool state)
-{
-  bool ret = m_new_value_p;
-  m_new_value_p = state;
-  return ret;
 }
 
 // Dump the caches for basic block BB to file F.
@@ -836,67 +820,36 @@ ranger_cache::set_global_range (tree name, const irange &r)
   m_temporal->set_timestamp (name);
 }
 
-// Push a request for a new lookup in block BB of name.  Return true if
-// the request is actually made (ie, isn't a duplicate).
-
-bool
-ranger_cache::push_poor_value (basic_block bb, tree name)
-{
-  if (!m_new_value_p)
-    return false;
-  if (m_poor_value_list.length ())
-    {
-      // Don't push anything else to the same block.  If there are multiple 
-      // things required, another request will come during a later evaluation
-      // and this prevents oscillation building uneccessary depth.
-      if ((m_poor_value_list.last ()).bb == bb)
-	return false;
-    }
-
-  struct update_record rec;
-  rec.bb = bb;
-  rec.calc = name;
-  m_poor_value_list.safe_push (rec);
-  return true;
-}
-
 //  Provide lookup for the gori-computes class to access the best known range
 //  of an ssa_name in any given basic block.  Note, this does no additonal
 //  lookups, just accesses the data that is already known.
 
-// Get the range of NAME when the def occurs in block BB
+// Get the range of NAME when the def occurs in block BB.  If BB is NULL
+// get the best global value available.
 
 void
 ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
 {
   gcc_checking_assert (gimple_range_ssa_p (name));
-  gcc_checking_assert (bb == gimple_bb (SSA_NAME_DEF_STMT (name)));
+  gcc_checking_assert (!bb || bb == gimple_bb (SSA_NAME_DEF_STMT (name)));
 
+  // Pick up the best global range available.
   if (!m_globals.get_global_range (r, name))
     {
-      // If it doesn't have a value calculated, it means it's a
-      // "poor" value being used in some calculation.  Queue it up
-      // as a poor value to be improved later.
-      r = gimple_range_global (name);
-      if (push_poor_value (bb, name))
-	{
-	  if (DEBUG_RANGE_CACHE)
-	    {
-	      fprintf (dump_file,
-		       "*CACHE* no global def in bb %d for ", bb->index);
-	      print_generic_expr (dump_file, name, TDF_SLIM);
-	      fprintf (dump_file, " depth : %d\n",
-		       m_poor_value_list.length ());
-	    }
-	}
+      // If that fails, try to calculate the range using just global values.
+      gimple *s = SSA_NAME_DEF_STMT (name);
+      if (gimple_get_lhs (s) == name)
+	fold_range (r, s, get_global_range_query ());
+      else
+	r = gimple_range_global (name);
     }
-  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
+
+  if (bb && r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
       !cfun->can_throw_non_call_exceptions)
     r = range_nonzero (TREE_TYPE (name));
 }
 
-// Get the range of NAME as it occurs on entry to block BB.  If it is not set,
-// mark it as a poor value for possible later improvement.
+// Get the range of NAME as it occurs on entry to block BB.
 
 void
 ranger_cache::entry_range (irange &r, tree name, basic_block bb)
@@ -908,25 +861,10 @@ ranger_cache::entry_range (irange &r, tree name, basic_block bb)
     }
 
   // Look for the on-entry value of name in BB from the cache.
+  // Otherwise pick up the best available global value.
   if (!m_on_entry.get_bb_range (r, name, bb))
-    {
-      // If it has no entry but should, then mark this as a poor value.
-      // Its not a poor value if it does not have *any* edge ranges,
-      // Then global range is as good as it gets.
-      if (m_gori.has_edge_range_p (name) && push_poor_value (bb, name))
-	{
-	  if (DEBUG_RANGE_CACHE)
-	    {
-	      fprintf (dump_file,
-		       "*CACHE* no on entry range in bb %d for ", bb->index);
-	      print_generic_expr (dump_file, name, TDF_SLIM);
-	      fprintf (dump_file, " depth : %d\n", m_poor_value_list.length ());
-	    }
-	}
-      // Try to pick up any known global value as a best guess for now.
-      if (!m_globals.get_global_range (r, name))
-	r = gimple_range_global (name);
-    }
+    range_of_def (r, name);
+
   // Check if pointers have any non-null dereferences.  Non-call
   // exceptions mean we could throw in the middle of the block, so just
   // punt for now on those.
@@ -1195,7 +1133,6 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   edge e;
   int_range_max block_result;
   int_range_max undefined;
-  unsigned poor_list_start = m_poor_value_list.length ();  
 
   // At this point we shouldn't be looking at the def, entry or exit block.
   gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
@@ -1301,49 +1238,5 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   propagate_cache (name);
   if (DEBUG_RANGE_CACHE)
     fprintf (dump_file, "  Propagation update done.\n");
-
-  // Now that the cache has been updated, check to see if there were any 
-  // SSA_NAMES used in filling the cache which were "poor values".
-  // Evaluate them, and inject any new values into the propagation
-  // list, and see if it improves any on-entry values.
-  if (poor_list_start !=  m_poor_value_list.length ())
-    {
-      gcc_checking_assert (poor_list_start < m_poor_value_list.length ());
-      while (poor_list_start < m_poor_value_list.length ())
-	{
-	  // Find a range for this unresolved value.   
-	  // Note, this may spawn new cache filling cycles, but by the time it
-	  // is finished, the work vectors will all be back to the same state
-	  // as before the call.  The update record vector will always be
-	  // returned to the current state upon return.
-	  struct update_record rec = m_poor_value_list.pop ();
-	  basic_block calc_bb = rec.bb;
-	  int_range_max tmp;
-
-	  if (DEBUG_RANGE_CACHE)
-	    {
-	      fprintf (dump_file, "(%d:%d)Calculating ",
-		       m_poor_value_list.length () + 1, poor_list_start);
-	      print_generic_expr (dump_file, name, TDF_SLIM);
-	      fprintf (dump_file, " used POOR VALUE for ");
-	      print_generic_expr (dump_file, rec.calc, TDF_SLIM);
-	      fprintf (dump_file, " in bb%d, trying to improve:\n",
-		       calc_bb->index);
-	    }
-
-	  // Calculate a range at the exit from the block so the caches feeding
-	  // this block will be filled, and we'll get a "better" value.
-	  // Disallow additonal "poor values" during this phase to avoid
-	  // iterations that are unlikely to be profitable for this name.
-	  // See PR 101014.
-	  bool state = enable_new_values (false);
-	  query.range_on_exit (tmp, calc_bb, rec.calc);
-	  enable_new_values (state);
-	  
-	  // Then ask for NAME to be re-evaluated on outgoing edges and 
-	  // use any new values.
-	  propagate_updated_value (name, calc_bb);
-	}
-    }
 }
 

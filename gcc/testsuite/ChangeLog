@@ -1,3 +1,67 @@
+2021-06-18  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-2logical.c: Update pattern
+	match counts.
+	* gcc.target/powerpc/fusion-p10-addadd.c: Update pattern match
+	counts.
+	* gcc.target/powerpc/fusion-p10-ldcmpi.c: Update pattern match
+	counts.
+	* gcc.target/powerpc/fusion-p10-logadd.c: Update pattern match
+	counts.
+
+2021-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100283
+	PR fortran/101123
+	* gfortran.dg/min0_max0_1.f90: New test.
+	* gfortran.dg/min0_max0_2.f90: New test.
+
+2021-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/symbolic-7.c: New test.
+
+2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/100856
+	* gcc.target/arm/acle/pr100856.c: New test.
+	* gcc.target/arm/multilib.exp: Add tests for cde options.
+
+2021-06-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-minmax-2.c: New test.
+
+2021-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101106
+	* g++.dg/cpp0x/deleted15.C: New test.
+
+2021-06-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/100704
+	* gcc.target/i386/pr100704-1.c: New test.
+	* gcc.target/i386/pr100704-2.c: Likewise.
+	* gcc.target/i386/pr100704-3.c: Likewise.
+
+2021-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97194
+	* gcc.target/i386/sse4_1-vec-set-1.c: New test.
+	* gcc.target/i386/sse4_1-vec-set-2.c: ditto.
+
+2021-06-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr100790.c: New test.
+
+2021-06-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-doublee.c: New test.
+	* gcc.target/s390/zvector/vec-floate.c: New test.
+
+2021-06-17  Richard Biener   <rguenther@suse.de>
+
+	PR tree-optimization/54400
+	* gcc.dg/vect/bb-slp-pr54400.c: New testcase.
+
 2021-06-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101078

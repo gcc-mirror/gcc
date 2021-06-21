@@ -48,6 +48,7 @@ with Restrict;       use Restrict;
 with Rident;         use Rident;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
+with Sem_Case;       use Sem_Case;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch5;        use Sem_Ch5;
@@ -5190,7 +5191,18 @@ package body Sem_Aggr is
                --  replace the reference to the current instance by the target
                --  object of the aggregate.
 
-               if Present (Parent (Component))
+               if Is_Case_Choice_Pattern (N) then
+
+                  --  Do not transform box component values in a case-choice
+                  --  aggregate.
+
+                  Add_Association
+                   (Component      => Component,
+                    Expr       => Empty,
+                    Assoc_List => New_Assoc_List,
+                    Is_Box_Present => True);
+
+               elsif Present (Parent (Component))
                  and then Nkind (Parent (Component)) = N_Component_Declaration
                  and then Present (Expression (Parent (Component)))
                then

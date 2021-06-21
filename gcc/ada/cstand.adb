@@ -916,9 +916,9 @@ package body CStand is
       Set_Alignment       (Standard_String, Uint_1);
       Pack_String_Type    (Standard_String);
 
-      --  On targets where a storage unit is larger than a byte (such as AAMP),
-      --  pragma Pack has a real effect on the representation of type String,
-      --  and the type must be marked as having a nonstandard representation.
+      --  On targets where a storage unit is larger than a byte, pragma Pack
+      --  has a real effect on the representation of type String, and the type
+      --  must be marked as having a nonstandard representation.
 
       if System_Storage_Unit > Uint_8 then
          Set_Has_Non_Standard_Rep (Standard_String);

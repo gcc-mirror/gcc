@@ -5780,15 +5780,14 @@ package body Exp_Ch4 is
 
          --  Avoid processing temporary function results multiple times when
          --  dealing with nested expression_with_actions.
+         --  Similarly, do not process temporary function results in loops.
+         --  This is done by Expand_N_Loop_Statement and Build_Finalizer.
+         --  Note that we used to wrongly return Abandon instead of Skip here:
+         --  this is wrong since it means that we were ignoring lots of
+         --  relevant subsequent statements.
 
-         elsif Nkind (Act) = N_Expression_With_Actions then
-            return Abandon;
-
-         --  Do not process temporary function results in loops. This is done
-         --  by Expand_N_Loop_Statement and Build_Finalizer.
-
-         elsif Nkind (Act) = N_Loop_Statement then
-            return Abandon;
+         elsif Nkind (Act) in N_Expression_With_Actions | N_Loop_Statement then
+            return Skip;
          end if;
 
          return OK;
@@ -10852,10 +10851,11 @@ package body Exp_Ch4 is
       Var       : Entity_Id;
 
    begin
-      --  Ensure that the bound variable is properly frozen. We must do
-      --  this before expansion because the expression is about to be
-      --  converted into a loop, and resulting freeze nodes may end up
-      --  in the wrong place in the tree.
+      --  Ensure that the bound variable as well as the type of Name of the
+      --  Iter_Spec if present are properly frozen. We must do this before
+      --  expansion because the expression is about to be converted into a
+      --  loop, and resulting freeze nodes may end up in the wrong place in the
+      --  tree.
 
       if Present (Iter_Spec) then
          Var := Defining_Identifier (Iter_Spec);
@@ -10869,6 +10869,10 @@ package body Exp_Ch4 is
          while Nkind (P) in N_Subexpr loop
             P := Parent (P);
          end loop;
+
+         if Present (Iter_Spec) then
+            Freeze_Before (P, Etype (Name (Iter_Spec)));
+         end if;
 
          Freeze_Before (P, Etype (Var));
       end;
@@ -12586,6 +12590,13 @@ package body Exp_Ch4 is
          if Is_Constrained (Target_Type) then
             Apply_Length_Check (Operand, Target_Type);
          else
+            --  If the object has an unconstrained array subtype with fixed
+            --  lower bound, then sliding to that bound may be needed.
+
+            if Is_Fixed_Lower_Bound_Array_Subtype (Target_Type) then
+               Expand_Sliding_Conversion (Operand, Target_Type);
+            end if;
+
             Apply_Range_Check (Operand, Target_Type);
          end if;
 

@@ -419,6 +419,8 @@ replace_phi_edge_with_variable (basic_block cond_block,
   gsi = gsi_last_bb (cond_block);
   gsi_remove (&gsi, true);
 
+  statistics_counter_event (cfun, "Replace PHI with variable", 1);
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
 	      "COND_EXPR in block %d and PHI in block %d converted to straightline code.\n",
@@ -618,6 +620,9 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   /* Remove the original PHI stmt.  */
   gsi = gsi_for_stmt (phi);
   gsi_remove (&gsi, true);
+
+  statistics_counter_event (cfun, "factored out cast", 1);
+
   return newphi;
 }
 
@@ -892,6 +897,11 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
     gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
+
+  /* Add Statistic here even though replace_phi_edge_with_variable already
+     does it as we want to be able to count when match-simplify happens vs
+     the others.  */
+  statistics_counter_event (cfun, "match-simplify PHI replacement", 1);
 
   /* Note that we optimized this PHI.  */
   return true;
@@ -1196,6 +1206,8 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
       else
 	{
+	  statistics_counter_event (cfun, "Replace PHI with variable/value_replacement", 1);
+
 	  /* Replace the PHI arguments with arg. */
 	  SET_PHI_ARG_DEF (phi, e0->dest_idx, arg);
 	  SET_PHI_ARG_DEF (phi, e1->dest_idx, arg);
@@ -2320,6 +2332,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 
   gimple_stmt_iterator psi = gsi_for_stmt (phi);
   remove_phi_node (&psi, true);
+  statistics_counter_event (cfun, "spaceship replacement", 1);
 
   return true;
 }
@@ -2982,6 +2995,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
       fprintf (dump_file, "\nInserted a new PHI statement in joint block:\n");
       print_gimple_stmt (dump_file, new_stmt, 0, TDF_VOPS|TDF_MEMSYMS);
     }
+  statistics_counter_event (cfun, "conditional store replacement", 1);
 
   return true;
 }
@@ -3055,6 +3069,8 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
     }
   else
     gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
+
+  statistics_counter_event (cfun, "if-then-else store replacement", 1);
 
   return true;
 }
@@ -3469,6 +3485,7 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
       gsi_move_to_bb_end (&gsi2, bb0);
       gsi2 = gsi_for_stmt (def2);
       gsi_move_to_bb_end (&gsi2, bb0);
+      statistics_counter_event (cfun, "hoisted loads", 1);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{

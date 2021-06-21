@@ -1043,8 +1043,8 @@ binding_cluster::zero_fill_region (store_manager *mgr, const region *reg)
 
   /* Add a default binding to zero.  */
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  tree cst_zero = build_int_cst (integer_type_node, 0);
-  const svalue *cst_sval = sval_mgr->get_or_create_constant_svalue (cst_zero);
+  const svalue *cst_sval
+    = sval_mgr->get_or_create_int_cst (integer_type_node, 0);
   const svalue *bound_sval = cst_sval;
   if (reg->get_type ())
     bound_sval = sval_mgr->get_or_create_unaryop (reg->get_type (), NOP_EXPR,
@@ -1172,6 +1172,16 @@ binding_cluster::get_any_binding (store_manager *mgr,
   /* If this cluster has been touched by a symbolic write, then the content
      of any subregion not currently specifically bound is "UNKNOWN".  */
   if (m_touched)
+    {
+      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
+      return rmm_mgr->get_or_create_unknown_svalue (reg->get_type ());
+    }
+
+  /* Alternatively, if this is a symbolic read and the cluster has any bindings,
+     then we don't know if we're reading those values or not, so the result
+     is also "UNKNOWN".  */
+  if (reg->get_offset ().symbolic_p ()
+      && m_map.elements () > 0)
     {
       region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
       return rmm_mgr->get_or_create_unknown_svalue (reg->get_type ());

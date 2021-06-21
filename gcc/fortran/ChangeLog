@@ -1,3 +1,10 @@
+2021-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100283
+	PR fortran/101123
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax): Unconditionally
+	convert result of min/max to result type.
+
 2021-06-16  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95501

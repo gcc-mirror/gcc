@@ -2623,7 +2623,7 @@ package body Sem_Ch13 is
                      end if;
                   end loop;
 
-                  --  ??? TBD: Must check that "for result type R, if the
+                  --  ??? Must check that "for result type R, if the
                   --  function is a boundary entity for type R (see 7.3.2),
                   --  no type invariant applies to type R; if R has a
                   --  component type C, a similar rule applies to C."
@@ -13399,6 +13399,16 @@ package body Sem_Ch13 is
          Set_Is_Ada_2012_Only (Typ);
       end if;
 
+      --  Ada_2022
+
+      if not Has_Rep_Item (Typ, Name_Ada_2022, False)
+        and then Has_Rep_Item (Typ, Name_Ada_2022)
+        and then Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
+                   (Get_Rep_Item (Typ, Name_Ada_2022))
+      then
+         Set_Is_Ada_2022_Only (Typ);
+      end if;
+
       --  Atomic/Shared
 
       if not Has_Rep_Item (Typ, Name_Atomic, Name_Shared, False)
@@ -13581,7 +13591,8 @@ package body Sem_Ch13 is
       Address_Clause_Checks.Init;
       Unchecked_Conversions.Init;
 
-      --  ??? Might be needed in the future for some non GCC back-ends
+      --  The following might be needed in the future for some non-GCC back
+      --  ends:
       --  if AAMP_On_Target then
       --     Independence_Checks.Init;
       --  end if;
@@ -15058,7 +15069,7 @@ package body Sem_Ch13 is
 
                   --  For now we only deal with aspects that do not generate
                   --  subprograms, or that may mention current instances of
-                  --  types. These will require special handling (???TBD).
+                  --  types. These will require special handling???.
 
                   when Aspect_Invariant
                      | Aspect_Predicate
@@ -15095,7 +15106,11 @@ package body Sem_Ch13 is
                         begin
                            Assoc := First (Component_Associations (Expr));
                            while Present (Assoc) loop
-                              Find_Direct_Name (Expression (Assoc));
+                              if Nkind (Expression (Assoc)) in N_Has_Entity
+                              then
+                                 Find_Direct_Name (Expression (Assoc));
+                              end if;
+
                               Next (Assoc);
                            end loop;
                         end;

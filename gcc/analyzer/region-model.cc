@@ -1259,8 +1259,8 @@ region_model::on_setjmp (const gcall *call, const exploded_node *enode,
   /* Direct calls to setjmp return 0.  */
   if (tree lhs = gimple_call_lhs (call))
     {
-      tree zero = build_int_cst (TREE_TYPE (lhs), 0);
-      const svalue *new_sval = m_mgr->get_or_create_constant_svalue (zero);
+      const svalue *new_sval
+	= m_mgr->get_or_create_int_cst (TREE_TYPE (lhs), 0);
       const region *lhs_reg = get_lvalue (lhs, ctxt);
       set_value (lhs_reg, new_sval, ctxt);
     }
@@ -1291,15 +1291,14 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
   if (tree lhs = gimple_call_lhs (setjmp_call))
     {
       /* Passing 0 as the val to longjmp leads to setjmp returning 1.  */
-      tree t_zero = build_int_cst (TREE_TYPE (fake_retval), 0);
-      const svalue *zero_sval = m_mgr->get_or_create_constant_svalue (t_zero);
+      const svalue *zero_sval
+	= m_mgr->get_or_create_int_cst (TREE_TYPE (fake_retval), 0);
       tristate eq_zero = eval_condition (fake_retval_sval, EQ_EXPR, zero_sval);
       /* If we have 0, use 1.  */
       if (eq_zero.is_true ())
 	{
-	  tree t_one = build_int_cst (TREE_TYPE (fake_retval), 1);
 	  const svalue *one_sval
-	    = m_mgr->get_or_create_constant_svalue (t_one);
+	    = m_mgr->get_or_create_int_cst (TREE_TYPE (fake_retval), 1);
 	  fake_retval_sval = one_sval;
 	}
       else

@@ -49,12 +49,12 @@ test01()
   // Verify the changes to transform_view.
   only_cxx20_input_range auto v2 = v0 | views::transform([](int& c) -> auto& { return c; });
 
-  // Verify the changes to split_view.
-  only_cxx20_input_range auto v3 = v0 | views::split(12);
+  // Verify the changes to lazy_split_view.
+  only_cxx20_input_range auto v3 = v0 | views::lazy_split(12);
   static_assert(only_cxx20_input_range<decltype(*v3.begin())>);
 
   // Verify the changes to join_view.
-  only_cxx20_input_range auto v4 = v0 | views::split(12) | views::join;
+  only_cxx20_input_range auto v4 = v0 | views::lazy_split(12) | views::join;
 
   // Verify the changes to elements_view.
   only_cxx20_input_range auto v5
