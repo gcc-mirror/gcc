@@ -1587,6 +1587,15 @@ Multi-dimensional arrays can be modified, as shown by this example:
 
 which changes element (1,2) to 20 and (3,4) to 30.
 
+Attribute Valid_Image
+=======================
+.. index:: Valid_Image
+
+The ``'Valid_Image`` attribute is defined for enumeration types other than
+those in package Standard. This attribute is a function that takes
+a String, and returns Boolean. ``T'Valid_Image (S)`` returns True
+if and only if ``T'Value (S)`` would not raise Constraint_Error.
+
 Attribute Valid_Scalars
 =======================
 .. index:: Valid_Scalars

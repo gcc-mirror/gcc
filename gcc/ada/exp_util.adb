@@ -5343,10 +5343,15 @@ package body Exp_Util is
       All_FLBs_Match : Boolean := True;
 
    begin
-      --  Sliding should never be needed for string literals, because they have
-      --  their bounds set according to the applicable index constraint.
+      --  This procedure is called during semantic analysis, and we only expand
+      --  a sliding conversion when Expander_Active, to avoid doing it during
+      --  preanalysis (which can lead to problems with the target subtype not
+      --  getting properly expanded during later full analysis). Also, sliding
+      --  should never be needed for string literals, because their bounds are
+      --  determined directly based on the fixed lower bound of Arr_Typ and
+      --  their length.
 
-      if Nkind (N) /= N_String_Literal then
+      if Expander_Active and then Nkind (N) /= N_String_Literal then
          Constraints := New_List;
 
          Act_Subt  := Get_Actual_Subtype (N);

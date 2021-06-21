@@ -78,7 +78,7 @@ pragma Assertion_Policy (Pre => Ignore);
 with Ada.Strings.Maps;
 private with Ada.Finalization;
 private with System.Atomic_Counters;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 package Ada.Strings.Unbounded with
   Initial_Condition => Length (Null_Unbounded_String) = 0
@@ -744,7 +744,8 @@ private
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Unbounded_String);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class;
+      V : Unbounded_String);
 
    pragma Stream_Convert (Unbounded_String, To_Unbounded, To_String);
    --  Provide stream routines without dragging in Ada.Streams

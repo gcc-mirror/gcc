@@ -41,7 +41,7 @@ pragma Assertion_Policy (Pre => Ignore);
 
 with Ada.Strings.Maps;
 with Ada.Finalization;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 --  The language-defined package Strings.Unbounded provides a private type
 --  Unbounded_String and a set of operations. An object of type
@@ -748,7 +748,8 @@ private
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Unbounded_String);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class;
+      V : Unbounded_String);
 
    --  The Unbounded_String is using a buffered implementation to increase
    --  speed of the Append/Delete/Insert procedures. The Reference string

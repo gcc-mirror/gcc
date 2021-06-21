@@ -1864,7 +1864,7 @@ is
    ---------------
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Tree)
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Tree)
    is
       use System.Put_Images;
 

@@ -274,6 +274,9 @@ package body Expander is
                when N_Generic_Instantiation =>
                   Expand_N_Generic_Instantiation (N);
 
+               when N_Goto_When_Statement =>
+                  Expand_N_Goto_When_Statement (N);
+
                when N_Handled_Sequence_Of_Statements =>
                   Expand_N_Handled_Sequence_Of_Statements (N);
 
@@ -421,6 +424,9 @@ package body Expander is
                when N_Raise_Statement =>
                   Expand_N_Raise_Statement (N);
 
+               when N_Raise_When_Statement =>
+                  Expand_N_Raise_When_Statement (N);
+
                when N_Raise_Constraint_Error =>
                   Expand_N_Raise_Constraint_Error (N);
 
@@ -441,6 +447,9 @@ package body Expander is
 
                when N_Requeue_Statement =>
                   Expand_N_Requeue_Statement (N);
+
+               when N_Return_When_Statement =>
+                  Expand_N_Return_When_Statement (N);
 
                when N_Simple_Return_Statement =>
                   Expand_N_Simple_Return_Statement (N);

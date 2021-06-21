@@ -64,6 +64,7 @@ with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
 with Validsw;        use Validsw;
 
@@ -127,8 +128,16 @@ package body Exp_Ch5 is
       R_Type : Entity_Id;
       Rev    : Boolean) return Node_Id;
    --  Alternative to Expand_Assign_Array_Loop for packed bitfields. Generates
-   --  a call to the System.Bitfields.Copy_Bitfield, which is more efficient
-   --  than copying component-by-component.
+   --  a call to System.Bitfields.Copy_Bitfield, which is more efficient than
+   --  copying component-by-component.
+
+   function Expand_Assign_Array_Bitfield_Fast
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id) return Node_Id;
+   --  Alternative to Expand_Assign_Array_Bitfield. Generates a call to
+   --  System.Bitfields.Fast_Copy_Bitfield, which is more efficient than
+   --  Copy_Bitfield, but only works in restricted situations.
 
    function Expand_Assign_Array_Loop_Or_Bitfield
      (N      : Node_Id;
@@ -138,8 +147,8 @@ package body Exp_Ch5 is
       R_Type : Entity_Id;
       Ndim   : Pos;
       Rev    : Boolean) return Node_Id;
-   --  Calls either Expand_Assign_Array_Loop or Expand_Assign_Array_Bitfield as
-   --  appropriate.
+   --  Calls either Expand_Assign_Array_Loop, Expand_Assign_Array_Bitfield, or
+   --  Expand_Assign_Array_Bitfield_Fast as appropriate.
 
    procedure Expand_Assign_Record (N : Node_Id);
    --  N is an assignment of an untagged record value. This routine handles
@@ -1440,6 +1449,137 @@ package body Exp_Ch5 is
           R_Addr, R_Bit, L_Addr, L_Bit, Size));
    end Expand_Assign_Array_Bitfield;
 
+   ---------------------------------------
+   -- Expand_Assign_Array_Bitfield_Fast --
+   ---------------------------------------
+
+   function Expand_Assign_Array_Bitfield_Fast
+     (N      : Node_Id;
+      Larray : Entity_Id;
+      Rarray : Entity_Id) return Node_Id
+   is
+      pragma Assert (not Change_Of_Representation (N));
+      --  This won't work, for example, to copy a packed array to an unpacked
+      --  array.
+
+      --  For L (A .. B) := R (C .. D), we generate:
+      --
+      --     L := Fast_Copy_Bitfield (R, <offset of R(C)>, L, <offset of L(A)>,
+      --                              L (A .. B)'Length * L'Component_Size);
+      --
+      --  with L and R suitably uncheckedly converted to/from Val_2.
+      --  The offsets are from the start of L and R.
+
+      Loc  : constant Source_Ptr := Sloc (N);
+
+      L_Typ : constant Entity_Id := Etype (Larray);
+      R_Typ : constant Entity_Id := Etype (Rarray);
+      --  The original type of the arrays
+
+      L_Val : constant Node_Id :=
+        Unchecked_Convert_To (RTE (RE_Val_2), Larray);
+      R_Val : constant Node_Id :=
+        Unchecked_Convert_To (RTE (RE_Val_2), Rarray);
+      --  Converted values of left- and right-hand sides
+
+      L_Small : constant Boolean :=
+        Known_Static_RM_Size (L_Typ)
+          and then RM_Size (L_Typ) < Standard_Long_Long_Integer_Size;
+      R_Small : constant Boolean :=
+        Known_Static_RM_Size (R_Typ)
+          and then RM_Size (R_Typ) < Standard_Long_Long_Integer_Size;
+      --  Whether the above unchecked conversions need to be padded with zeros
+
+      C_Size : constant Uint := Component_Size (L_Typ);
+      pragma Assert (C_Size >= 1);
+      pragma Assert (C_Size = Component_Size (R_Typ));
+
+      Larray_Bounds : constant Range_Values :=
+        Get_Index_Bounds (First_Index (L_Typ));
+      L_Bounds : constant Range_Values :=
+        (if Nkind (Name (N)) = N_Slice
+         then Get_Index_Bounds (Discrete_Range (Name (N)))
+         else Larray_Bounds);
+      --  If the left-hand side is A (L..H), Larray_Bounds is A'Range, and
+      --  L_Bounds is L..H. If it's not a slice, we treat it like a slice
+      --  starting at A'First.
+
+      L_Bit : constant Node_Id :=
+        Make_Integer_Literal (Loc, (L_Bounds.L - Larray_Bounds.L) * C_Size);
+
+      Rarray_Bounds : constant Range_Values :=
+        Get_Index_Bounds (First_Index (R_Typ));
+      R_Bounds : constant Range_Values :=
+        (if Nkind (Expression (N)) = N_Slice
+         then Get_Index_Bounds (Discrete_Range (Expression (N)))
+         else Rarray_Bounds);
+
+      R_Bit : constant Node_Id :=
+        Make_Integer_Literal (Loc, (R_Bounds.L - Rarray_Bounds.L) * C_Size);
+
+      Size : constant Node_Id :=
+        Make_Op_Multiply (Loc,
+          Make_Attribute_Reference (Loc,
+            Prefix =>
+              Duplicate_Subexpr (Name (N), True),
+            Attribute_Name => Name_Length),
+          Make_Attribute_Reference (Loc,
+            Prefix =>
+              Duplicate_Subexpr (Larray, True),
+            Attribute_Name => Name_Component_Size));
+
+      L_Arg, R_Arg, Call : Node_Id;
+
+   begin
+      --  The semantics of unchecked conversion between bit-packed arrays that
+      --  are implemented as modular types and modular types is precisely that
+      --  of unchecked conversion between modular types. Therefore, if it needs
+      --  to be padded with zeros, the padding must be moved to the correct end
+      --  for memory order because System.Bitfield_Utils works in memory order.
+
+      if L_Small
+        and then (Bytes_Big_Endian xor Reverse_Storage_Order (L_Typ))
+      then
+         L_Arg := Make_Op_Shift_Left (Loc,
+           Left_Opnd  => L_Val,
+           Right_Opnd => Make_Integer_Literal (Loc,
+                           Standard_Long_Long_Integer_Size - RM_Size (L_Typ)));
+      else
+         L_Arg := L_Val;
+      end if;
+
+      if R_Small
+        and then (Bytes_Big_Endian xor Reverse_Storage_Order (R_Typ))
+      then
+         R_Arg := Make_Op_Shift_Left (Loc,
+           Left_Opnd  => R_Val,
+           Right_Opnd => Make_Integer_Literal (Loc,
+                           Standard_Long_Long_Integer_Size - RM_Size (R_Typ)));
+      else
+         R_Arg := R_Val;
+      end if;
+
+      Call := Make_Function_Call (Loc,
+        Name => New_Occurrence_Of (RTE (RE_Fast_Copy_Bitfield), Loc),
+        Parameter_Associations => New_List (
+          R_Arg, R_Bit, L_Arg, L_Bit, Size));
+
+      --  Conversely, the final unchecked conversion must take significant bits
+
+      if L_Small
+        and then (Bytes_Big_Endian xor Reverse_Storage_Order (L_Typ))
+      then
+         Call := Make_Op_Shift_Right (Loc,
+           Left_Opnd  => Call,
+           Right_Opnd => Make_Integer_Literal (Loc,
+                           Standard_Long_Long_Integer_Size - RM_Size (L_Typ)));
+      end if;
+
+      return Make_Assignment_Statement (Loc,
+        Name => Duplicate_Subexpr (Larray, True),
+        Expression => Unchecked_Convert_To (L_Typ, Call));
+   end Expand_Assign_Array_Bitfield_Fast;
+
    ------------------------------------------
    -- Expand_Assign_Array_Loop_Or_Bitfield --
    ------------------------------------------
@@ -1453,6 +1593,7 @@ package body Exp_Ch5 is
       Ndim   : Pos;
       Rev    : Boolean) return Node_Id
    is
+
       Slices : constant Boolean :=
         Nkind (Name (N)) = N_Slice or else Nkind (Expression (N)) = N_Slice;
       L_Prefix_Comp : constant Boolean :=
@@ -1467,23 +1608,23 @@ package body Exp_Ch5 is
                      N_Selected_Component | N_Indexed_Component | N_Slice;
 
    begin
-      --  Determine whether Copy_Bitfield is appropriate (will work, and will
-      --  be more efficient than component-by-component copy). Copy_Bitfield
-      --  doesn't work for reversed storage orders. It is efficient for slices
-      --  of bit-packed arrays. Copy_Bitfield can read and write bits that are
-      --  not part of the objects being copied, so we don't want to use it if
-      --  there are volatile or independent components. If the Prefix of the
-      --  slice is a component or slice, then it might be a part of an object
-      --  with some other volatile or independent components, so we disable the
-      --  optimization in that case as well. We could complicate this code by
-      --  actually looking for such volatile and independent components.
+      --  Determine whether Copy_Bitfield or Fast_Copy_Bitfield is appropriate
+      --  (will work, and will be more efficient than component-by-component
+      --  copy). Copy_Bitfield doesn't work for reversed storage orders. It is
+      --  efficient for slices of bit-packed arrays. Copy_Bitfield can read and
+      --  write bits that are not part of the objects being copied, so we don't
+      --  want to use it if there are volatile or independent components. If
+      --  the Prefix of the slice is a component or slice, then it might be a
+      --  part of an object with some other volatile or independent components,
+      --  so we disable the optimization in that case as well. We could
+      --  complicate this code by actually looking for such volatile and
+      --  independent components.
 
       if Is_Bit_Packed_Array (L_Type)
         and then Is_Bit_Packed_Array (R_Type)
         and then not Reverse_Storage_Order (L_Type)
         and then not Reverse_Storage_Order (R_Type)
         and then Ndim = 1
-        and then not Rev
         and then Slices
         and then not Has_Volatile_Component (L_Type)
         and then not Has_Volatile_Component (R_Type)
@@ -1491,14 +1632,87 @@ package body Exp_Ch5 is
         and then not Has_Independent_Components (R_Type)
         and then not L_Prefix_Comp
         and then not R_Prefix_Comp
-        and then RTE_Available (RE_Copy_Bitfield)
       then
-         return Expand_Assign_Array_Bitfield
-           (N, Larray, Rarray, L_Type, R_Type, Rev);
-      else
-         return Expand_Assign_Array_Loop
-           (N, Larray, Rarray, L_Type, R_Type, Ndim, Rev);
+         --  Here if Copy_Bitfield can work (except for the Rev test below).
+         --  Determine whether to call Fast_Copy_Bitfield instead. If we
+         --  are assigning slices, and all the relevant bounds are known at
+         --  compile time, and the maximum object size is no greater than
+         --  System.Bitfields.Val_Bits (i.e. Long_Long_Integer'Size / 2), and
+         --  we don't have enumeration representation clauses, we can use
+         --  Fast_Copy_Bitfield. The max size test is to ensure that the slices
+         --  cannot overlap boundaries not supported by Fast_Copy_Bitfield.
+
+         pragma Assert (Known_Component_Size (Base_Type (L_Type)));
+         pragma Assert (Known_Component_Size (Base_Type (R_Type)));
+
+         --  Note that L_Type and R_Type do not necessarily have the same base
+         --  type, because of array type conversions. Hence the need to check
+         --  various properties of both.
+
+         if Compile_Time_Known_Bounds (Base_Type (L_Type))
+           and then Compile_Time_Known_Bounds (Base_Type (R_Type))
+         then
+            declare
+               Left_Base_Index : constant Entity_Id :=
+                 First_Index (Base_Type (L_Type));
+               Left_Base_Range : constant Range_Values :=
+                 Get_Index_Bounds (Left_Base_Index);
+
+               Right_Base_Index : constant Entity_Id :=
+                 First_Index (Base_Type (R_Type));
+               Right_Base_Range : constant Range_Values :=
+                 Get_Index_Bounds (Right_Base_Index);
+
+               Known_Left_Slice_Low : constant Boolean :=
+                 (if Nkind (Name (N)) = N_Slice
+                    then Compile_Time_Known_Value
+                      (Get_Index_Bounds (Discrete_Range (Name (N))).L));
+               Known_Right_Slice_Low : constant Boolean :=
+                 (if Nkind (Expression (N)) = N_Slice
+                    then Compile_Time_Known_Value
+                      (Get_Index_Bounds (Discrete_Range (Expression (N))).H));
+
+               Val_Bits : constant Pos := Standard_Long_Long_Integer_Size / 2;
+
+            begin
+               if Left_Base_Range.H - Left_Base_Range.L < Val_Bits
+                 and then Right_Base_Range.H - Right_Base_Range.L < Val_Bits
+                 and then Known_Esize (L_Type)
+                 and then Known_Esize (R_Type)
+                 and then Known_Left_Slice_Low
+                 and then Known_Right_Slice_Low
+                 and then Compile_Time_Known_Value
+                   (Get_Index_Bounds (First_Index (Etype (Larray))).L)
+                 and then Compile_Time_Known_Value
+                   (Get_Index_Bounds (First_Index (Etype (Rarray))).L)
+                 and then
+                   not (Is_Enumeration_Type (Etype (Left_Base_Index))
+                          and then Has_Enumeration_Rep_Clause
+                            (Etype (Left_Base_Index)))
+                 and then RTE_Available (RE_Fast_Copy_Bitfield)
+               then
+                  pragma Assert (Esize (L_Type) /= 0);
+                  pragma Assert (Esize (R_Type) /= 0);
+
+                  return Expand_Assign_Array_Bitfield_Fast (N, Larray, Rarray);
+               end if;
+            end;
+         end if;
+
+         --  Fast_Copy_Bitfield can work if Rev is True, because the data is
+         --  passed and returned by copy. Copy_Bitfield cannot.
+
+         if not Rev and then RTE_Available (RE_Copy_Bitfield) then
+            return Expand_Assign_Array_Bitfield
+              (N, Larray, Rarray, L_Type, R_Type, Rev);
+         end if;
       end if;
+
+      --  Here if we did not return above, with Fast_Copy_Bitfield or
+      --  Copy_Bitfield.
+
+      return Expand_Assign_Array_Loop
+        (N, Larray, Rarray, L_Type, R_Type, Ndim, Rev);
    end Expand_Assign_Array_Loop_Or_Bitfield;
 
    --------------------------
@@ -3961,6 +4175,23 @@ package body Exp_Ch5 is
       Rewrite (N, New_Loop);
       Analyze (N);
    end Expand_Formal_Container_Element_Loop;
+
+   ----------------------------------
+   -- Expand_N_Goto_When_Statement --
+   ----------------------------------
+
+   procedure Expand_N_Goto_When_Statement (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+   begin
+      Rewrite (N,
+        Make_If_Statement (Loc,
+          Condition       => Condition (N),
+          Then_Statements => New_List (
+            Make_Goto_Statement (Loc,
+              Name => Name (N)))));
+
+      Analyze (N);
+   end Expand_N_Goto_When_Statement;
 
    ---------------------------
    -- Expand_N_If_Statement --

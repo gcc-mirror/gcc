@@ -47,14 +47,12 @@ package Gen_IL.Internals is
    use Type_Vectors;
    subtype Type_Vector is Type_Vectors.Vector;
 
-   procedure Ptypes (V : Type_Vector); -- for debugging
-
    type Type_Array is array (Type_Index range <>) of Type_Enum;
 
    ----------------
 
-   procedure Put_Types_With_Bars (S : in out Sink'Class; U : Type_Vector);
-   procedure Put_Type_Ids_With_Bars (S : in out Sink'Class; U : Type_Vector);
+   procedure Put_Types_With_Bars (S : in out Sink; U : Type_Vector);
+   procedure Put_Type_Ids_With_Bars (S : in out Sink; U : Type_Vector);
    --  Put the types with vertical bars in between, as in
    --     N_This | N_That | N_Other
    --  or
@@ -76,7 +74,6 @@ package Gen_IL.Internals is
    type Field_Index is new Positive;
    package Field_Vectors is new Vectors (Field_Index, Field_Enum);
    subtype Field_Vector is Field_Vectors.Vector;
-   procedure Pfields (V : Field_Vector); -- for debugging
 
    type Bit_Offset is new Root_Nat range 0 .. 32_000 - 1;
    --  Offset in bits. The number 32_000 is chosen because there are fewer than
@@ -213,7 +210,7 @@ package Gen_IL.Internals is
    --  True if Ancestor is an ancestor of Descendant. True for
    --  a type itself.
 
-   procedure Put_Type_Hierarchy (S : in out Sink'Class; Root : Root_Type);
+   procedure Put_Type_Hierarchy (S : in out Sink; Root : Root_Type);
 
    function Pos (T : Concrete_Type) return Root_Nat;
    --  Return Node_Kind'Pos (T) or Entity_Kind'Pos (T)

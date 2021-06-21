@@ -888,6 +888,17 @@ package body Sem_Ch12 is
    --  Verify that an attribute that appears as the default for a formal
    --  subprogram is a function or procedure with the correct profile.
 
+   procedure Validate_Formal_Type_Default (Decl : Node_Id);
+   --  Ada_2022 AI12-205: if a default subtype_mark is present, verify
+   --  that it is the name of a type in the same class as the formal.
+   --  The treatment parallels what is done in Instantiate_Type but differs
+   --  in a few ways so that this machinery cannot be reused as is: on one
+   --  hand there are no visibility issues for a default, because it is
+   --  analyzed in the same context as the formal type definition; on the
+   --  other hand the check needs to take into acount the use of a previous
+   --  formal type in the current formal type definition (see details in
+   --  AI12-0205).
+
    -------------------------------------------
    -- Data Structures for Generic Renamings --
    -------------------------------------------
@@ -1761,6 +1772,14 @@ package body Sem_Ch12 is
                   if No (Match) then
                      if Partial_Parameterization then
                         Process_Default (Formal);
+
+                     elsif Present (Default_Subtype_Mark (Formal)) then
+                        Match := New_Copy (Default_Subtype_Mark (Formal));
+                        Append_List
+                         (Instantiate_Type
+                          (Formal, Match, Analyzed_Formal, Assoc_List),
+                            Assoc_List);
+                        Append_Elmt (Entity (Match), Actuals_To_Freeze);
 
                      else
                         Error_Msg_Sloc := Sloc (Gen_Unit);
@@ -3527,6 +3546,10 @@ package body Sem_Ch12 is
 
       Set_Is_Generic_Type (T);
       Set_Is_First_Subtype (T);
+
+      if Present (Default_Subtype_Mark (Original_Node (N))) then
+         Validate_Formal_Type_Default (N);
+      end if;
 
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, T);
@@ -12683,6 +12706,11 @@ package body Sem_Ch12 is
       --  declaration, it carries the flag No_Predicate_On_Actual. it is part
       --  of the generic contract that the actual cannot have predicates.
 
+      function Subtypes_Match (Gen_T, Act_T : Entity_Id) return Boolean;
+      --  Check that base types are the same and that the subtypes match
+      --  statically. Used in several of the validation subprograms for
+      --  actuals in instantiations.
+
       procedure Validate_Array_Type_Instance;
       procedure Validate_Access_Subprogram_Instance;
       procedure Validate_Access_Type_Instance;
@@ -12695,10 +12723,6 @@ package body Sem_Ch12 is
       --  These procedures perform validation tests for the named case.
       --  Validate_Discriminated_Formal_Type is shared by formal private
       --  types and Ada 2012 formal incomplete types.
-
-      function Subtypes_Match (Gen_T, Act_T : Entity_Id) return Boolean;
-      --  Check that base types are the same and that the subtypes match
-      --  statically. Used in several of the validation subprograms.
 
       --------------------------------------------
       --  Check_Shared_Variable_Control_Aspects --
@@ -16991,4 +17015,424 @@ package body Sem_Ch12 is
       end if;
    end Valid_Default_Attribute;
 
+   ----------------------------------
+   -- Validate_Formal_Type_Default --
+   ----------------------------------
+
+   procedure Validate_Formal_Type_Default (Decl : Node_Id) is
+      Default : constant Node_Id :=
+        Default_Subtype_Mark (Original_Node (Decl));
+      Formal  : constant Entity_Id := Defining_Identifier (Decl);
+
+      Def_Sub  : Entity_Id;     --  Default subtype mark
+      Type_Def : Node_Id;
+
+      procedure Check_Discriminated_Formal;
+      --  Check that discriminants of default for private or incomplete
+      --  type match those of formal type.
+
+      function Reference_Formal (N : Node_Id) return Traverse_Result;
+      --  Check whether formal type definition mentions a previous formal
+      --  type of the same generic.
+
+      ----------------------
+      -- Reference_Formal --
+      ----------------------
+
+      function Reference_Formal (N : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (N)
+           and then Scope (Entity (N)) = Current_Scope
+         then
+            return Abandon;
+         else
+            return OK;
+         end if;
+      end Reference_Formal;
+
+      function Depends_On_Other_Formals is
+           new Traverse_Func (Reference_Formal);
+
+      function Default_Subtype_Matches
+        (Gen_T, Def_T : Entity_Id) return Boolean;
+
+      procedure Validate_Array_Type_Default;
+      --  Verify that dimension, indices, and component types of default
+      --  are compatible with formal array type definition.
+
+      procedure Validate_Derived_Type_Default;
+      --  Verify that ancestor and progenitor types match.
+
+      ---------------------------------
+      -- Check_Discriminated_Formal --
+      ---------------------------------
+
+      procedure Check_Discriminated_Formal is
+         Formal_Discr : Entity_Id;
+         Actual_Discr : Entity_Id;
+         Formal_Subt  : Entity_Id;
+
+      begin
+         if Has_Discriminants (Formal) then
+            if not Has_Discriminants (Def_Sub) then
+               Error_Msg_NE
+                 ("default for & must have discriminants", Default, Formal);
+
+            elsif Is_Constrained (Def_Sub) then
+               Error_Msg_NE
+                 ("default for & must be unconstrained", Default, Formal);
+
+            else
+               Formal_Discr := First_Discriminant (Formal);
+               Actual_Discr := First_Discriminant (Def_Sub);
+               while Formal_Discr /= Empty loop
+                  if Actual_Discr = Empty then
+                     Error_Msg_N
+                       ("discriminants on Formal do not match formal",
+                        Default);
+                  end if;
+
+                  Formal_Subt := Etype (Formal_Discr);
+
+                  --  Access discriminants match if designated types do
+
+                  if Ekind (Base_Type (Formal_Subt)) = E_Anonymous_Access_Type
+                    and then (Ekind (Base_Type (Etype (Actual_Discr)))) =
+                                E_Anonymous_Access_Type
+                    and then
+                        Designated_Type (Base_Type (Formal_Subt)) =
+                           Designated_Type (Base_Type (Etype (Actual_Discr)))
+                  then
+                     null;
+
+                  elsif Base_Type (Formal_Subt) /=
+                          Base_Type (Etype (Actual_Discr))
+                  then
+                     Error_Msg_N
+                       ("types of discriminants of default must match formal",
+                        Default);
+
+                  elsif not Subtypes_Statically_Match
+                              (Formal_Subt, Etype (Actual_Discr))
+                    and then Ada_Version >= Ada_95
+                  then
+                     Error_Msg_N
+                       ("subtypes of discriminants of default "
+                         & "must match formal",
+                        Default);
+                  end if;
+
+                  Next_Discriminant (Formal_Discr);
+                  Next_Discriminant (Actual_Discr);
+               end loop;
+
+               if Actual_Discr /= Empty then
+                  Error_Msg_NE
+                    ("discriminants on default do not match formal",
+                     Default, Formal);
+               end if;
+            end if;
+         end if;
+      end Check_Discriminated_Formal;
+
+      ---------------------------
+      -- Default_Subtype_Matches --
+      ---------------------------
+
+      function Default_Subtype_Matches
+        (Gen_T, Def_T : Entity_Id) return Boolean
+      is
+      begin
+         --  Check that the base types, root types (when dealing with class
+         --  wide types), or designated types (when dealing with anonymous
+         --  access types) of Gen_T and Def_T are statically matching subtypes.
+
+         return (Base_Type (Gen_T) = Base_Type (Def_T)
+                  and then Subtypes_Statically_Match (Gen_T, Def_T))
+
+           or else (Is_Class_Wide_Type (Gen_T)
+                     and then Is_Class_Wide_Type (Def_T)
+                     and then Default_Subtype_Matches
+                                (Root_Type (Gen_T), Root_Type (Def_T)))
+
+           or else (Is_Anonymous_Access_Type (Gen_T)
+               and then Ekind (Def_T) = Ekind (Gen_T)
+               and then Subtypes_Statically_Match
+                          (Designated_Type (Gen_T), Designated_Type (Def_T)));
+
+      end Default_Subtype_Matches;
+
+      ----------------------------------
+      --  Validate_Array_Type_Default --
+      ----------------------------------
+
+      procedure Validate_Array_Type_Default is
+         I1, I2 : Node_Id;
+         T2     : Entity_Id;
+      begin
+         if not Is_Array_Type (Def_Sub) then
+            Error_Msg_NE ("default for& must be an array type ",
+              Default, Formal);
+            return;
+
+         elsif Number_Dimensions (Def_Sub) /= Number_Dimensions (Formal)
+           or else Is_Constrained (Def_Sub) /=
+                   Is_Constrained (Formal)
+         then
+            Error_Msg_NE ("default array type does not match&",
+              Default, Formal);
+            return;
+         end if;
+
+         I1 := First_Index (Formal);
+         I2 := First_Index (Def_Sub);
+         for J in 1 .. Number_Dimensions (Formal) loop
+
+            --  If the indexes of the actual were given by a subtype_mark,
+            --  the index was transformed into a range attribute. Retrieve
+            --  the original type mark for checking.
+
+            if Is_Entity_Name (Original_Node (I2)) then
+               T2 := Entity (Original_Node (I2));
+            else
+               T2 := Etype (I2);
+            end if;
+
+            if not Subtypes_Statically_Match (Etype (I1), T2) then
+               Error_Msg_NE
+                 ("index types of default do not match those of formal &",
+                  Default, Formal);
+            end if;
+
+            Next_Index (I1);
+            Next_Index (I2);
+         end loop;
+
+         if not Default_Subtype_Matches
+           (Component_Type (Formal), Component_Type (Def_Sub))
+         then
+            Error_Msg_NE
+              ("component subtype of default does not match that of formal &",
+               Default, Formal);
+         end if;
+
+         if Has_Aliased_Components (Formal)
+           and then not Has_Aliased_Components (Default)
+         then
+            Error_Msg_NE
+              ("default must have aliased components to match formal type &",
+               Default, Formal);
+         end if;
+      end Validate_Array_Type_Default;
+
+      -----------------------------------
+      -- Validate_Derived_Type_Default --
+      -----------------------------------
+
+      procedure Validate_Derived_Type_Default is
+      begin
+         if not Is_Ancestor (Etype (Formal), Def_Sub) then
+            Error_Msg_NE ("default must be a descendent of&",
+              Default, Etype (Formal));
+         end if;
+
+         if Has_Interfaces (Formal) then
+            if not Has_Interfaces (Def_Sub) then
+               Error_Msg_NE
+                 ("default must implement all interfaces of formal&",
+                   Default, Formal);
+
+            else
+               declare
+                  Act_Iface_List : Elist_Id;
+                  Iface          : Node_Id;
+                  Iface_Ent      : Entity_Id;
+
+               begin
+                  Iface := First (Abstract_Interface_List (Formal));
+                  Collect_Interfaces (Def_Sub, Act_Iface_List);
+
+                  while Present (Iface) loop
+                     Iface_Ent := Entity (Iface);
+
+                     if Is_Ancestor (Iface_Ent, Def_Sub)
+                      or else Is_Progenitor (Iface_Ent, Def_Sub)
+                     then
+                        null;
+
+                     else
+                        Error_Msg_NE
+                          ("Default must implement interface&",
+                           Default, Etype (Iface));
+                     end if;
+
+                     Next (Iface);
+                  end loop;
+               end;
+            end if;
+         end if;
+      end Validate_Derived_Type_Default;
+
+      --  Start of processing for Validate_Formal_Type_Default
+
+   begin
+      Analyze (Default);
+      if not Is_Entity_Name (Default)
+        or else not Is_Type (Entity (Default))
+      then
+         Error_Msg_N
+           ("Expect type name for default of formal type", Default);
+         return;
+      else
+         Def_Sub := Entity (Default);
+      end if;
+
+      --  Formal derived_type declarations are transformed into full
+      --  type declarations or Private_Type_Extensions for ease of processing.
+
+      if Nkind (Decl) = N_Full_Type_Declaration then
+         Type_Def := Type_Definition (Decl);
+
+      elsif Nkind (Decl) = N_Private_Extension_Declaration then
+         Type_Def := Subtype_Indication (Decl);
+
+      else
+         Type_Def := Formal_Type_Definition (Decl);
+      end if;
+
+      if Depends_On_Other_Formals (Type_Def) = Abandon
+           and then Scope (Def_Sub) /= Current_Scope
+      then
+         Error_Msg_N ("default of formal type that depends on "
+           & "other formals must be a previous formal type", Default);
+         return;
+
+      elsif Def_Sub = Formal then
+         Error_Msg_N
+           ("default for formal type cannot be formal itsef", Default);
+         return;
+      end if;
+
+      case Nkind (Type_Def) is
+
+         when N_Formal_Private_Type_Definition =>
+            if (Is_Abstract_Type (Formal)
+              and then not Is_Abstract_Type (Def_Sub))
+            or else (Is_Limited_Type (Formal)
+              and then not Is_Limited_Type (Def_Sub))
+            then
+               Error_Msg_NE
+                 ("default for private type$ does not match",
+                     Default, Formal);
+            end if;
+
+            Check_Discriminated_Formal;
+
+         when N_Formal_Derived_Type_Definition =>
+            Check_Discriminated_Formal;
+            Validate_Derived_Type_Default;
+
+         when N_Formal_Incomplete_Type_Definition =>
+            if Is_Tagged_Type (Formal)
+              and then not Is_Tagged_Type (Def_Sub)
+            then
+               Error_Msg_NE
+                 ("default for & must be a tagged type", Default, Formal);
+            end if;
+
+            Check_Discriminated_Formal;
+
+         when N_Formal_Discrete_Type_Definition =>
+            if not Is_Discrete_Type (Def_Sub) then
+               Error_Msg_NE ("default for& must be a discrete type",
+                 Default, Formal);
+            end if;
+
+         when N_Formal_Signed_Integer_Type_Definition =>
+            if not Is_Integer_Type (Def_Sub) then
+               Error_Msg_NE ("default for& must be a discrete type",
+                 Default, Formal);
+            end if;
+
+         when N_Formal_Modular_Type_Definition =>
+            if not Is_Modular_Integer_Type (Def_Sub) then
+               Error_Msg_NE ("default for& must be a modular_integer Type",
+                 Default, Formal);
+            end if;
+
+         when N_Formal_Floating_Point_Definition =>
+            if not Is_Floating_Point_Type (Def_Sub) then
+               Error_Msg_NE ("default for& must be a floating_point type",
+                 Default, Formal);
+            end if;
+
+         when N_Formal_Ordinary_Fixed_Point_Definition =>
+            if not Is_Ordinary_Fixed_Point_Type (Def_Sub) then
+               Error_Msg_NE ("default for& must be "
+                 & "an ordinary_fixed_point type ",
+                 Default, Formal);
+            end if;
+
+         when N_Formal_Decimal_Fixed_Point_Definition =>
+            if not Is_Decimal_Fixed_Point_Type (Def_Sub) then
+               Error_Msg_NE ("default for& must be "
+                 & "an Decimal_fixed_point type ",
+                 Default, Formal);
+            end if;
+
+         when N_Array_Type_Definition =>
+            Validate_Array_Type_Default;
+
+         when N_Access_Function_Definition |
+           N_Access_Procedure_Definition =>
+            if Ekind (Def_Sub) /= E_Access_Subprogram_Type then
+               Error_Msg_NE ("default for& must be an Access_To_Subprogram",
+                 Default, Formal);
+            end if;
+            Check_Subtype_Conformant
+              (Designated_Type (Formal), Designated_Type (Def_Sub));
+
+         when N_Access_To_Object_Definition =>
+            if not Is_Access_Object_Type (Def_Sub) then
+               Error_Msg_NE ("default for& must be an Access_To_Object",
+                Default, Formal);
+
+            elsif not Default_Subtype_Matches
+              (Designated_Type (Formal), Designated_Type (Def_Sub))
+            then
+               Error_Msg_NE ("designated type of defaul does not match "
+                 & "designated type of formal type",
+                 Default, Formal);
+            end if;
+
+         when N_Record_Definition =>   -- Formal interface type
+            if not Is_Interface (Def_Sub) then
+               Error_Msg_NE
+                 ("default for formal interface type must be an interface",
+                  Default, Formal);
+
+            elsif Is_Limited_Type (Def_Sub) /= Is_Limited_Type (Formal)
+              or else Is_Task_Interface (Formal) /= Is_Task_Interface (Def_Sub)
+              or else Is_Protected_Interface (Formal) /=
+                      Is_Protected_Interface (Def_Sub)
+              or else Is_Synchronized_Interface (Formal) /=
+                      Is_Synchronized_Interface (Def_Sub)
+            then
+               Error_Msg_NE
+                 ("default for interface& does not match", Def_Sub, Formal);
+            end if;
+
+         when N_Derived_Type_Definition =>
+            Validate_Derived_Type_Default;
+
+         when N_Identifier =>   --  case of a private extension
+            Validate_Derived_Type_Default;
+
+         when N_Error =>
+            null;
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Validate_Formal_Type_Default;
 end Sem_Ch12;

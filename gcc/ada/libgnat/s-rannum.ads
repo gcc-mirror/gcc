@@ -57,7 +57,7 @@
 
 with Interfaces;
 
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 package System.Random_Numbers with
   SPARK_Mode => Off
@@ -148,7 +148,7 @@ private
    type State is array (0 .. N - 1) of State_Val with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : State);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : State);
 
    type Writable_Access (Self : access Generator) is limited null record;
    --  Auxiliary type to make Generator a self-referential type
@@ -162,7 +162,9 @@ private
 
       I : Integer := N;
       --  Current starting position in shift register S (N means uninitialized)
-      --  We should avoid using the identifier I here ???
+      --  Naming exception: I is fine to use here as it is the name used in the
+      --  original paper describing the Mersenne Twister and in common
+      --  descriptions of the algorithm.
    end record;
 
 end System.Random_Numbers;

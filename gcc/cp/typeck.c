@@ -7119,9 +7119,14 @@ cxx_mark_addressable (tree exp, bool array_ref_p)
 	    && TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
 	    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))))
 	  return true;
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case COMPONENT_REF:
+	if (bitfield_p (x))
+	  error ("attempt to take address of bit-field");
 	/* FALLTHRU */
       case ADDR_EXPR:
-      case COMPONENT_REF:
       case ARRAY_REF:
       case REALPART_EXPR:
       case IMAGPART_EXPR:
@@ -10306,7 +10311,10 @@ check_return_expr (tree retval, bool *no_warning)
 
      See finish_function and finalize_nrv for the rest of this optimization.  */
   if (retval)
-    STRIP_ANY_LOCATION_WRAPPER (retval);
+    {
+      retval = maybe_undo_parenthesized_ref (retval);
+      STRIP_ANY_LOCATION_WRAPPER (retval);
+    }
 
   bool named_return_value_okay_p = can_do_nrvo_p (retval, functype);
   if (fn_returns_value_p && flag_elide_constructors)
@@ -10339,10 +10347,6 @@ check_return_expr (tree retval, bool *no_warning)
 	 was an incomplete type.  Just treat this as 'return;' */
       if (VOID_TYPE_P (functype))
 	return error_mark_node;
-
-      /* If we had an id-expression obfuscated by force_paren_expr, we need
-	 to undo it so we can try to treat it as an rvalue below.  */
-      retval = maybe_undo_parenthesized_ref (retval);
 
       if (processing_template_decl)
 	retval = build_non_dependent_expr (retval);

@@ -126,12 +126,11 @@ package Rtsfind is
       Ada_Strings_Wide_Superbounded,
       Ada_Strings_Wide_Wide_Superbounded,
       Ada_Strings_Unbounded,
-      Ada_Strings_Text_Output,
+      Ada_Strings_Text_Buffers,
 
-      --  Children of Ada.Strings.Text_Output
+      --  Children of Ada.Strings.Text_Buffers
 
-      Ada_Strings_Text_Output_Utils,
-      Ada_Strings_Text_Output_Buffers,
+      Ada_Strings_Text_Buffers_Unbounded,
 
       --  Children of Ada.Text_IO (for Check_Text_IO_Special_Unit)
 
@@ -604,15 +603,14 @@ package Rtsfind is
 
      RE_Unbounded_String,                -- Ada.Strings.Unbounded
 
-     RE_Sink,                            -- Ada.Strings.Text_Output
+     RE_Root_Buffer_Type,                -- Ada.Strings.Text_Buffers
+     RE_Put_UTF_8,                       -- Ada.Strings.Text_Buffers
+     RE_Wide_Wide_Put,                   -- Ada.Strings.Text_Buffers
 
-     RE_Put_UTF_8,                       -- Ada.Strings.Text_Output.Utils
-     RE_Put_Wide_Wide_String,            -- Ada.Strings.Text_Output.Utils
-
-     RE_Buffer,                          -- Ada.Strings.Text_Output.Buffers
-     RE_New_Buffer,                      -- Ada.Strings.Text_Output.Buffers
-     RE_Destroy,                         -- Ada.Strings.Text_Output.Buffers
-     RE_Get,                             -- Ada.Strings.Text_Output.Buffers
+     RE_Buffer_Type,                     -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Get,                             -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Wide_Get,                        -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Wide_Wide_Get,                   -- Ada.Strings.Text_Buffers.Unbounded
 
      RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
 
@@ -838,7 +836,9 @@ package Rtsfind is
      RE_To_Bignum,                       -- System.Bignums
      RE_From_Bignum,                     -- System.Bignums
 
+     RE_Val_2,                           -- System.Bitfields
      RE_Copy_Bitfield,                   -- System.Bitfields
+     RE_Fast_Copy_Bitfield,              -- System.Bitfields
 
      RE_Bit_And,                         -- System.Bit_Ops
      RE_Bit_Eq,                          -- System.Bit_Ops
@@ -2036,9 +2036,13 @@ package Rtsfind is
 
      RE_Value_Decimal128,                -- System_Val_Decimal_128
 
-     RE_Value_Enumeration_8,             -- System.Val_Enum
-     RE_Value_Enumeration_16,            -- System.Val_Enum
-     RE_Value_Enumeration_32,            -- System.Val_Enum
+     RE_Value_Enumeration_8,             -- System.Val_Enum_8
+     RE_Value_Enumeration_16,            -- System.Val_Enum_16
+     RE_Value_Enumeration_32,            -- System.Val_Enum_32
+
+     RE_Valid_Enumeration_Value_8,       -- System.Val_Enum_8
+     RE_Valid_Enumeration_Value_16,      -- System.Val_Enum_16
+     RE_Valid_Enumeration_Value_32,      -- System.Val_Enum_32
 
      RE_Value_Fixed32,                   -- System_Val_Fixed_32
 
@@ -2280,15 +2284,14 @@ package Rtsfind is
 
      RE_Unbounded_String                 => Ada_Strings_Unbounded,
 
-     RE_Sink                             => Ada_Strings_Text_Output,
+     RE_Root_Buffer_Type                 => Ada_Strings_Text_Buffers,
+     RE_Put_UTF_8                        => Ada_Strings_Text_Buffers,
+     RE_Wide_Wide_Put                    => Ada_Strings_Text_Buffers,
 
-     RE_Put_UTF_8                        => Ada_Strings_Text_Output_Utils,
-     RE_Put_Wide_Wide_String             => Ada_Strings_Text_Output_Utils,
-
-     RE_Buffer                           => Ada_Strings_Text_Output_Buffers,
-     RE_New_Buffer                       => Ada_Strings_Text_Output_Buffers,
-     RE_Destroy                          => Ada_Strings_Text_Output_Buffers,
-     RE_Get                              => Ada_Strings_Text_Output_Buffers,
+     RE_Buffer_Type                      => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Get                              => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Wide_Get                         => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Wide_Wide_Get                    => Ada_Strings_Text_Buffers_Unbounded,
 
      RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
 
@@ -2514,7 +2517,9 @@ package Rtsfind is
      RE_To_Bignum                        => System_Bignums,
      RE_From_Bignum                      => System_Bignums,
 
+     RE_Val_2                            => System_Bitfields,
      RE_Copy_Bitfield                    => System_Bitfields,
+     RE_Fast_Copy_Bitfield               => System_Bitfields,
 
      RE_Bit_And                          => System_Bit_Ops,
      RE_Bit_Eq                           => System_Bit_Ops,
@@ -3726,6 +3731,12 @@ package Rtsfind is
 
      RE_Value_Enumeration_32             => System_Val_Enum_32,
 
+     RE_Valid_Enumeration_Value_8        => System_Val_Enum_8,
+
+     RE_Valid_Enumeration_Value_16       => System_Val_Enum_16,
+
+     RE_Valid_Enumeration_Value_32       => System_Val_Enum_32,
+
      RE_Value_Fixed32                    => System_Val_Fixed_32,
 
      RE_Value_Fixed64                    => System_Val_Fixed_64,
@@ -4074,10 +4085,11 @@ package Rtsfind is
    --  and without generating an error message, i.e. if the call will obtain
    --  the desired entity without any problems.
    --
-   --  If we call this and it returns True, we should generate a call to E.
-   --  In other words, the compiler should not call RTE_Available (E) until
-   --  it has decided it wants to generate a call to E. Otherwise we can get
-   --  spurious dependencies and elaboration orders.
+   --  If we call this and it returns True, we should generate a reference to
+   --  E (usually a call). In other words, for a subprogram E, the compiler
+   --  should not call RTE_Available (E) until it has decided it wants to
+   --  generate a call to E. Otherwise we can get spurious dependencies and
+   --  elaboration orders.
    --
    --     if RTE_Available (E) -- WRONG!
    --       and then <some condition>

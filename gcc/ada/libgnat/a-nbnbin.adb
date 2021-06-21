@@ -30,7 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
-with Ada.Strings.Text_Output.Utils;
 
 with Interfaces; use Interfaces;
 
@@ -432,12 +431,12 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    -- Put_Image --
    ---------------
 
-   procedure Put_Image (S : in out Sink'Class; V : Big_Integer) is
+   procedure Put_Image (S : in out Root_Buffer_Type'Class; V : Big_Integer) is
       --  This is implemented in terms of To_String. It might be more elegant
       --  and more efficient to do it the other way around, but this is the
       --  most expedient implementation for now.
    begin
-      Strings.Text_Output.Utils.Put_UTF_8 (S, To_String (V));
+      Strings.Text_Buffers.Put_UTF_8 (S, To_String (V));
    end Put_Image;
 
    ---------

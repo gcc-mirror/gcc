@@ -630,6 +630,35 @@ package body Util is
       Scan;
    end Merge_Identifier;
 
+   -------------------------------
+   -- Missing_Semicolon_On_When --
+   -------------------------------
+
+   function Missing_Semicolon_On_When return Boolean is
+      State : Saved_Scan_State;
+
+   begin
+      if not Token_Is_At_Start_Of_Line then
+         return False;
+
+      elsif Scopes (Scope.Last).Etyp /= E_Case then
+         return False;
+
+      else
+         Save_Scan_State (State);
+         Scan; -- past WHEN
+         Scan; -- past token after WHEN
+
+         if Token = Tok_Arrow then
+            Restore_Scan_State (State);
+            return True;
+         else
+            Restore_Scan_State (State);
+            return False;
+         end if;
+      end if;
+   end Missing_Semicolon_On_When;
+
    -------------------
    -- Next_Token_Is --
    -------------------

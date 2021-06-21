@@ -31,7 +31,7 @@
 
 private with Ada.Finalization;
 private with Ada.Streams;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 generic
    type Element_Type (<>) is private;
@@ -119,7 +119,7 @@ private
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Holder);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Holder);
 
    for Holder'Read use Read;
    for Holder'Write use Write;

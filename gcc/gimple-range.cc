@@ -1167,9 +1167,7 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
   // trigger new value calculations.  PR 100781.
   if (is_gimple_debug (stmt))
     {
-      bool state = m_cache.enable_new_values (false);
       m_cache.range_of_expr (r, expr, stmt);
-      m_cache.enable_new_values (state);
       return true;
     }
   basic_block bb = gimple_bb (stmt);

@@ -574,10 +574,11 @@ package body Rtsfind is
      range Ada_Streams_Stream_IO .. Ada_Streams_Stream_IO;
 
    subtype Ada_Strings_Descendant is Ada_Descendant
-     range Ada_Strings_Superbounded .. Ada_Strings_Text_Output_Buffers;
+     range Ada_Strings_Superbounded .. Ada_Strings_Text_Buffers_Unbounded;
 
-   subtype Ada_Strings_Text_Output_Descendant is Ada_Strings_Descendant
-     range Ada_Strings_Text_Output_Utils .. Ada_Strings_Text_Output_Buffers;
+   subtype Ada_Strings_Text_Buffers_Descendant is Ada_Strings_Descendant
+     range Ada_Strings_Text_Buffers_Unbounded ..
+           Ada_Strings_Text_Buffers_Unbounded;
 
    subtype Ada_Text_IO_Descendant is Ada_Descendant
      range Ada_Text_IO_Decimal_IO .. Ada_Text_IO_Modular_IO;
@@ -661,8 +662,8 @@ package body Rtsfind is
          elsif U_Id in Ada_Strings_Descendant then
             Name_Buffer (12) := '.';
 
-            if U_Id in Ada_Strings_Text_Output_Descendant then
-               Name_Buffer (24) := '.';
+            if U_Id in Ada_Strings_Text_Buffers_Descendant then
+               Name_Buffer (25) := '.';
             end if;
 
          elsif U_Id in Ada_Text_IO_Descendant then

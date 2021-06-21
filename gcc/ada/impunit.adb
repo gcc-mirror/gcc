@@ -632,16 +632,26 @@ package body Impunit is
     ("s-aotase", T),  -- System.Atomic_Operations.Test_And_Set
     ("s-atoope", T),  -- System.Atomic_Operations
     ("s-atopex", T),  -- System.Atomic_Operations.Exchange
+    ("a-sttebu", T),  -- Ada.Strings.Text_Buffers
+    ("a-stbuun", T),  -- Ada.Strings.Text_Buffers.Unbounded
+    ("a-stbubo", T),  -- Ada.Strings.Text_Buffers.Bounded
     ("a-stteou", T),  -- Ada.Strings.Text_Output
     ("a-stouut", T),  -- Ada.Strings.Text_Output.Utils
-    ("a-stoubu", T),  -- Ada.Strings.Text_Output.Buffers
     ("a-stoufi", T),  -- Ada.Strings.Text_Output.Files
     ("a-stobfi", T),  -- Ada.Strings.Text_Output.Basic_Files
     ("a-stobbu", T),  -- Ada.Strings.Text_Output.Bit_Buckets
     ("a-stoufo", T),  -- Ada.Strings.Text_Output.Formatting
     ("a-strsto", T),  -- Ada.Streams.Storage
     ("a-ststbo", T),  -- Ada.Streams.Storage.Bounded
-    ("a-ststun", T)   -- Ada.Streams.Storage.Unbounded
+    ("a-ststun", T),  -- Ada.Streams.Storage.Unbounded
+
+   ----------------------------------------
+   -- GNAT Defined Additions to Ada 2022 --
+   ----------------------------------------
+
+   ("a-stbufi", T),   -- Ada.Strings.Text_Buffers.Files
+   ("a-stbufo", T),   -- Ada.Strings.Text_Buffers.Formatting
+   ("a-stbuut", T)    -- Ada.Strings.Text_Buffers.Utils
    );
 
    -----------------------

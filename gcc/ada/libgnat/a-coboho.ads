@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 private with System;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 generic
    type Element_Type (<>) is private;
@@ -100,7 +100,7 @@ private
    --  (default) alignment instead.
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Holder);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Holder);
 
    type Element_Access is access all Element_Type;
    pragma Assert (Element_Access'Size = Standard'Address_Size,

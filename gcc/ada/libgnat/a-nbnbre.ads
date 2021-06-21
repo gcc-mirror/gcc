@@ -15,7 +15,7 @@
 
 with Ada.Numerics.Big_Numbers.Big_Integers;
 
-with Ada.Strings.Text_Output; use Ada.Strings.Text_Output;
+with Ada.Strings.Text_Buffers; use Ada.Strings.Text_Buffers;
 
 package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
@@ -138,7 +138,7 @@ is
    function From_Quotient_String (Arg : String) return Valid_Big_Real
      with Global => null;
 
-   procedure Put_Image (S : in out Sink'Class; V : Big_Real);
+   procedure Put_Image (S : in out Root_Buffer_Type'Class; V : Big_Real);
 
    function "+" (L : Valid_Big_Real) return Valid_Big_Real
      with Global => null;

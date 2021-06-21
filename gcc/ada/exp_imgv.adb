@@ -1422,6 +1422,71 @@ package body Exp_Imgv is
       Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
    end Expand_Image_Attribute;
 
+   ----------------------------------
+   -- Expand_Valid_Value_Attribute --
+   ----------------------------------
+
+   procedure Expand_Valid_Value_Attribute (N : Node_Id) is
+      Loc   : constant Source_Ptr := Sloc (N);
+      Btyp  : constant Entity_Id  := Base_Type (Entity (Prefix (N)));
+      Rtyp  : constant Entity_Id  := Root_Type (Btyp);
+      pragma Assert (Is_Enumeration_Type (Rtyp));
+
+      Args  : constant List_Id := Expressions (N);
+      Func  : RE_Id;
+      Ttyp  : Entity_Id;
+
+   begin
+      --  Generate:
+
+      --     Valid_Enumeration_Value _NN
+      --       (typS, typN'Address, typH'Unrestricted_Access, Num, X)
+
+      Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));
+
+      if Ttyp = Standard_Integer_8 then
+         Func := RE_Valid_Enumeration_Value_8;
+      elsif Ttyp = Standard_Integer_16 then
+         Func := RE_Valid_Enumeration_Value_16;
+      else
+         Func := RE_Valid_Enumeration_Value_32;
+      end if;
+
+      Prepend_To (Args,
+        Make_Attribute_Reference (Loc,
+          Prefix => New_Occurrence_Of (Rtyp, Loc),
+          Attribute_Name => Name_Pos,
+          Expressions => New_List (
+            Make_Attribute_Reference (Loc,
+              Prefix => New_Occurrence_Of (Rtyp, Loc),
+              Attribute_Name => Name_Last))));
+
+      if Present (Lit_Hash (Rtyp)) then
+         Prepend_To (Args,
+           Make_Attribute_Reference (Loc,
+             Prefix => New_Occurrence_Of (Lit_Hash (Rtyp), Loc),
+             Attribute_Name => Name_Unrestricted_Access));
+      else
+         Prepend_To (Args, Make_Null (Loc));
+      end if;
+
+      Prepend_To (Args,
+        Make_Attribute_Reference (Loc,
+          Prefix => New_Occurrence_Of (Lit_Indexes (Rtyp), Loc),
+          Attribute_Name => Name_Address));
+
+      Prepend_To (Args,
+        New_Occurrence_Of (Lit_Strings (Rtyp), Loc));
+
+      Rewrite (N,
+        Make_Function_Call (Loc,
+          Name =>
+            New_Occurrence_Of (RTE (Func), Loc),
+          Parameter_Associations => Args));
+
+      Analyze_And_Resolve (N, Standard_Boolean);
+   end Expand_Valid_Value_Attribute;
+
    ----------------------------
    -- Expand_Value_Attribute --
    ----------------------------
@@ -1490,27 +1555,25 @@ package body Exp_Imgv is
 
    procedure Expand_Value_Attribute (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
-      Typ   : constant Entity_Id  := Etype (N);
-      Btyp  : constant Entity_Id  := Base_Type (Typ);
-      Rtyp  : constant Entity_Id  := Root_Type (Typ);
-      Exprs : constant List_Id    := Expressions (N);
-      Args  : List_Id;
-      Func  : RE_Id;
+      Btyp  : constant Entity_Id  := Etype (N);
+      pragma Assert (Is_Base_Type (Btyp));
+      pragma Assert (Btyp = Base_Type (Entity (Prefix (N))));
+      Rtyp  : constant Entity_Id  := Root_Type (Btyp);
+
+      Args  : constant List_Id := Expressions (N);
       Ttyp  : Entity_Id;
       Vid   : RE_Id;
 
    begin
-      Args := Exprs;
-
       --  Fall through for all cases except user-defined enumeration type
       --  and decimal types, with Vid set to the Id of the entity for the
       --  Value routine and Args set to the list of parameters for the call.
 
-      if Rtyp = Standard_Character then
-         Vid := RE_Value_Character;
-
-      elsif Rtyp = Standard_Boolean then
+      if Rtyp = Standard_Boolean then
          Vid := RE_Value_Boolean;
+
+      elsif Rtyp = Standard_Character then
+         Vid := RE_Value_Character;
 
       elsif Rtyp = Standard_Wide_Character then
          Vid := RE_Value_Wide_Character;
@@ -1633,7 +1696,7 @@ package body Exp_Imgv is
          --  Case of pragma Discard_Names, transform the Value
          --  attribute to Btyp'Val (Long_Long_Integer'Value (Args))
 
-         if Discard_Names (First_Subtype (Typ))
+         if Discard_Names (First_Subtype (Btyp))
            or else No (Lit_Strings (Rtyp))
          then
             Rewrite (N,
@@ -1659,11 +1722,11 @@ package body Exp_Imgv is
             Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));
 
             if Ttyp = Standard_Integer_8 then
-               Func := RE_Value_Enumeration_8;
+               Vid := RE_Value_Enumeration_8;
             elsif Ttyp = Standard_Integer_16 then
-               Func := RE_Value_Enumeration_16;
+               Vid := RE_Value_Enumeration_16;
             else
-               Func := RE_Value_Enumeration_32;
+               Vid := RE_Value_Enumeration_32;
             end if;
 
             Prepend_To (Args,
@@ -1694,12 +1757,12 @@ package body Exp_Imgv is
 
             Rewrite (N,
               Make_Attribute_Reference (Loc,
-                Prefix => New_Occurrence_Of (Typ, Loc),
+                Prefix => New_Occurrence_Of (Btyp, Loc),
                 Attribute_Name => Name_Val,
                 Expressions => New_List (
                   Make_Function_Call (Loc,
                     Name =>
-                      New_Occurrence_Of (RTE (Func), Loc),
+                      New_Occurrence_Of (RTE (Vid), Loc),
                     Parameter_Associations => Args))));
 
             Analyze_And_Resolve (N, Btyp);
@@ -1711,11 +1774,7 @@ package body Exp_Imgv is
       --  Compiling package Ada.Tags under No_Run_Time_Mode we disable the
       --  expansion of the attribute into the function call statement to avoid
       --  generating spurious errors caused by the use of Integer_Address'Value
-      --  in our implementation of Ada.Tags.Internal_Tag
-
-      --  Seems like a bit of a odd approach, there should be a better way ???
-
-      --  There is a better way, test RTE_Available ???
+      --  in our implementation of Ada.Tags.Internal_Tag.
 
       if No_Run_Time_Mode
         and then Is_RTE (Rtyp, RE_Integer_Address)
@@ -1726,6 +1785,7 @@ package body Exp_Imgv is
          Rewrite (N,
            Unchecked_Convert_To (Rtyp,
              Make_Integer_Literal (Loc, Uint_0)));
+
       else
          Rewrite (N,
            Convert_To (Btyp,

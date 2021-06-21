@@ -2614,6 +2614,18 @@ package body Sem_Ch6 is
       Analyze_Dimension (N);
    end Analyze_Return_Statement;
 
+   -----------------------------------
+   -- Analyze_Return_When_Statement --
+   -----------------------------------
+
+   procedure Analyze_Return_When_Statement (N : Node_Id) is
+   begin
+      --  Verify the condition is a Boolean expression
+
+      Analyze_And_Resolve (Condition (N), Any_Boolean);
+      Check_Unset_Reference (Condition (N));
+   end Analyze_Return_When_Statement;
+
    -------------------------------------
    -- Analyze_Simple_Return_Statement --
    -------------------------------------

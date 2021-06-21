@@ -610,7 +610,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Defining_Identifier, Node_Id),
         Sy (Formal_Type_Definition, Node_Id),
         Sy (Discriminant_Specifications, List_Id, Default_No_List),
-        Sy (Unknown_Discriminants_Present, Flag)));
+        Sy (Unknown_Discriminants_Present, Flag),
+        Sy (Default_Subtype_Mark, Node_Id)));
 
    Cc (N_Full_Type_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
@@ -1018,6 +1019,10 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Name, Node_Id, Default_Empty),
         Sm (Exception_Junk, Flag)));
 
+   Cc (N_Goto_When_Statement, N_Statement_Other_Than_Procedure_Call,
+       (Sy (Name, Node_Id, Default_Empty),
+        Sy (Condition, Node_Id, Default_Empty)));
+
    Cc (N_Loop_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Identifier, Node_Id, Default_Empty),
         Sy (Iteration_Scheme, Node_Id, Default_Empty),
@@ -1034,6 +1039,11 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Name, Node_Id, Default_Empty),
         Sy (Expression, Node_Id, Default_Empty),
         Sm (From_At_End, Flag)));
+
+   Cc (N_Raise_When_Statement, N_Statement_Other_Than_Procedure_Call,
+       (Sy (Name, Node_Id, Default_Empty),
+        Sy (Expression, Node_Id, Default_Empty),
+        Sy (Condition, Node_Id, Default_Empty)));
 
    Cc (N_Requeue_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Name, Node_Id, Default_Empty),
@@ -1059,6 +1069,10 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Procedure_To_Call, Node_Id),
         Sm (Return_Statement_Entity, Node_Id),
         Sm (Storage_Pool, Node_Id)));
+
+   Cc (N_Return_When_Statement, N_Statement_Other_Than_Procedure_Call,
+       (Sy (Expression, Node_Id, Default_Empty),
+        Sy (Condition, Node_Id, Default_Empty)));
 
    Cc (N_Selective_Accept, N_Statement_Other_Than_Procedure_Call,
        (Sy (Select_Alternatives, List_Id),

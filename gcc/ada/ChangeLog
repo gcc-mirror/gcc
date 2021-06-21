@@ -1,3 +1,289 @@
+2021-06-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Constrain_Array): Add error checking for
+	fixed-lower-bound and constrained index ranges applied
+	inappropriately on subtypes of unconstrained and
+	fixed-lower-bound array types.
+	(Constrain_Index): Correct and refine comment related to
+	fixed-lower-bound index ranges.
+
+2021-06-18  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb: Improve comments.
+	* snames.ads-tmpl (Convention_Id): Remove "--  Plenty of space
+	for expansion", because that's irrelevant now that we are no
+	longer laying out node fields by hand.
+
+2021-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Denotes_Same_Object): Handle character literals
+	just like integer literals.
+
+2021-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Denotes_Same_Object): Explicitly test for node
+	kinds being the same; deal with renamings one-by-one; adjust
+	numbers in references to the Ada RM.
+
+2021-06-18  Bob Duff  <duff@adacore.com>
+
+	* sprint.adb (Write_Source_Line): Check for EOF in
+	Line_Terminator loop.  Note that when a source file is read in,
+	an EOF character is added to the end.
+
+2021-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aux.adb (Package_Specification): Add assertions to confirm
+	the kind of the of parameter and returned node.
+	* sem_ch12.adb (Remove_Parent): Reorder conditions; this change
+	appears to be semantically neutral, but is enough to avoid the
+	problematic call to Package_Specification.
+	* sem_util.adb (Is_Incomplete_Or_Private_Type): Replace loop
+	with a call to Package_Specification.
+
+2021-06-18  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): For Enum_Lit'Size, use
+	Enum_Type'Object_Size.
+
+2021-06-18  Olivier Hainque  <hainque@adacore.com>
+
+	* sigtramp-vxworks-target.inc (__aarch64__): Sync
+	REGNO_PC_OFFSET with the back-end DWARF_ALT_FRAME_RETURN_COLUMN.
+	In CFI_COMMON_REGS, leave r18 alone, VxWorks private.
+
+2021-06-18  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.adb (Process_Spec_Postconditions): Add missing
+	support for aliased subprograms and handle wrappers of
+	class-wide pre/post conditions.
+	(Process_Inherited_Preconditions): Add missing support for
+	aliased subprograms and handle wrappers of class-wide pre/post
+	conditions.
+	* einfo.ads (Class_Wide_Clone): Fix typo.
+	(Is_Class_Wide_Clone): Removed since it is not referenced.
+	(Is_Wrapper): Documenting new flag.
+	(LSP_Subprogram): Documenting new attribute.
+	* exp_ch3.adb (Make_Controlling_Function_Wrappers): Decorate
+	wrapper as Is_Wrapper and adjust call to
+	Override_Dispatching_Operation.
+	* freeze.adb (Build_Inherited_Condition_Pragmas): Fix typo in
+	documentation.
+	(Check_Inherited_Conditions): Handle LSP wrappers; ensure
+	correct decoration of LSP wrappers.
+	* gen_il-fields.ads (Is_Class_Wide_Clone): Removed.
+	(Is_Wrapper): Added.
+	(LSP_Subprogram): Added.
+	* gen_il-gen-gen_entities.adb (Is_Class_Wide_Clone): Removed.
+	(Is_Wrapper): Added.
+	(LSP_Subprogram): Added.
+	* gen_il-internals.adb (Image): Adding uppercase image of
+	LSP_Subprogram.
+	* sem_ch6.adb (New_Overloaded_Entity): Fix decoration of LSP
+	wrappers.
+	* sem_disp.ads (Override_Dispatching_Operation): Remove
+	parameter Is_Wrapper; no longer needed.
+	* sem_disp.adb (Check_Dispatching_Operation): Adjust assertion.
+	(Override_Dispatching_Operation): Remove parameter Is_Wrapper;
+	no longer needed.
+	* treepr.adb (Image): Adding uppercase image of LSP_Subprogram.
+
+2021-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Quantified_Expression): Ensure the type
+	of the name of a "for of" loop is frozen.
+	* exp_disp.adb (Check_Premature_Freezing): Complete condition to
+	take into account a private type completed by another private
+	type now that the freezing rule are better implemented.
+	* freeze.adb (Freeze_Entity.Freeze_Profile): Do not perform an
+	early freeze on types if not in the proper scope. Special case
+	expression functions that requires access to the dispatch table.
+	(Should_Freeze_Type): New.
+	* sem_ch13.adb (Resolve_Aspect_Expressions): Prevent assert
+	failure in case of an invalid tree (previous errors detected).
+	* sem_res.adb (Resolve): Remove kludge related to entities
+	causing incorrect premature freezing.
+	* sem_util.adb (Ensure_Minimum_Decoration): Add protection
+	against non base types.
+
+2021-06-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Constrain_Index): Set the High_Bound of a
+	fixed-lower-bound subtype's range to T (the subtype of the FLB
+	index being constrained) rather than Base_Type (T).
+
+2021-06-18  Bob Duff  <duff@adacore.com>
+
+	* ada_get_targ.adb, aspects.ads, checks.adb, cstand.adb,
+	einfo.ads, exp_attr.adb, freeze.adb, get_targ.adb,
+	libgnat/a-textio.ads, libgnat/g-memdum.ads,
+	libgnat/s-scaval__128.adb, libgnat/s-scaval.adb, make.adb,
+	osint.ads, par-prag.adb, sem_ch13.adb, sem_prag.adb,
+	sem_prag.ads, set_targ.adb, set_targ.ads, snames.ads-tmpl,
+	targparm.ads, types.ads: Remove AAMP-specific code.
+	* switch.ads: Minor reformatting.
+	* gen_il-fields.ads, gen_il-gen.adb,
+	gen_il-gen-gen_entities.adb, gen_il-types.ads, einfo-utils.adb,
+	einfo-utils.ads: Package Types now contains "type Float_Rep_Kind
+	is (IEEE_Binary);", which used to also have an enumeral AAMP.
+	Gen_IL can't handle fields of this type, which would be zero
+	sized. Therefore, we move the Float_Rep field into Einfo.Utils
+	as a synthesized attribute. (We do not delete the field
+	altogether, in case we want new floating-point representations
+	in the future.)
+	* doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_rm/implementation_defined_aspects.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/the_gnat_compilation_model.rst: Remove
+	AAMP-specific documentation.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2021-06-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Expand_Sliding_Conversion): Move test of
+	Is_Fixed_Lower_Bound_Subtype to an assertion. Exclude string
+	literals from sliding expansion.
+
+2021-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Cleanup conditions
+	related to Ada_Version.
+
+2021-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Address_Value): Simplify.
+
+2021-06-18  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Check_Array_Or_Scalar_Type): Use Expr_Value
+	instead of Intval, because the latter only exists in literals.
+	Remove Set_Etype on E1; setting the type is done elsewhere.
+
+2021-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Examine types of
+	both formal parameters; refactor a complex detection of
+	by-reference types.
+
+2021-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatcmd.adb: Fix handling of check and test commands.
+
+2021-06-18  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Add
+	documentation for the array fixed-lower-bound feature.
+	* gnat_rm.texi: Regenerate.
+
+2021-06-18  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Document switch.
+	* exp_aggr.adb: If -gnatd_g was given, then do not bump the
+	limit to 500_000.
+
+2021-06-18  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Has_Access_Values): Remove
+	Include_Internal parameter that was added in previous change.
+	* sem_warn.adb (Warnings_Off_E1): Back out E_Out_Parameter ==>
+	Formal_Kind change made previously. Check Is_Private_Type to
+	avoid warnings on private types. Misc cleanup.
+	* sem_attr.adb (Attribute_Has_Access_Values): Remove
+	Include_Internal parameter.
+
+2021-06-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Remove dead branch
+	for overlapping actuals in prefix notation.
+
+2021-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Do not
+	artificially record a possible modification for a constant.
+
+2021-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Code cleanups.
+
+2021-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb, exp_dist.adb, exp_unst.adb, sa_messages.ads,
+	sem_ch13.adb, sem_ch3.adb, sem_ch5.adb, sem_eval.adb,
+	sem_util.adb, sem_util.ads, sinfo.ads: Update comments.
+
+2021-06-18  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* back_end.adb (Scan_Back_End_Switches): Set Opt.JSON_Output to
+	True if -fdiagnostics-format=json option is found.
+	* back_end.ads (Scan_Compiler_Arguments): Mention
+	Opt.JSON_Output.
+	* errout.adb (Output_JSON_Message): New procedure.
+	(Output_Messages): If Opt.JSON_Output is True, print messages
+	with new Output_JSON_Message procedure.
+	* opt.ads: Declare JSON_Output variable.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Mention new -fdiagnostics-format option.
+	* gnat_ugn.texi: Regenerate.
+
+2021-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Null_Exclusions_Match): Relax null exclusion
+	mismatch check when Relaxed_RM_Semantics is set.
+
+2021-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* fe.h, opt.adb, opt.ads, par-prag.adb, sem_prag.adb,
+	switch-c.adb (Extensions_Allowed): Replace by a function.
+	(Ada_Version_Type): Add new value Ada_With_Extensions, to
+	replace setting of Extensions_Allowed.  Update setting of
+	Extensions_Allowed.
+
+2021-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb (Gen_Output_File_Ada): Generate a new constant
+	GNAT_Version_Address.
+	* libgnat/g-comver.adb (GNAT_Version_Address): New;
+	(GNAT_Version): Use GNAT_Version_Address to disable LTO warning.
+
+2021-06-18  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads (Is_Ada_2022_Only): Adding documentation.
+	* gen_il-fields.ads (Is_Ada_2022_Only): New flag.
+	* gen_il-gen-gen_entities.adb (Is_Ada_2022_Only): New flag.
+	* itypes.adb (Create_Null_Excluding_Itype): Inherit
+	Is_Ada_2022_Only.
+	* sem_ch3.adb (Check_Abstract_Overriding): Skip reporting error
+	on Ada 2022 only subprograms that require overriding if we are
+	not in Ada 2022 mode.
+	(Derive_Subprogram): Inherit Is_Ada_2022_Only.
+	* sem_ch6.adb (Check_Overriding_Indicator): Inherit
+	Is_Ada_2022_Only.
+	(New_Overloaded_Entity): Inherit Is_Ada_2022_Only.
+	* sem_ch7.adb (Declare_Inherited_Private_Subprograms): Inherit
+	Is_Ada_2022_Only.
+	(Preserve_Full_Attributes): Inherit Is_Ada_2022_Only.
+	* sem_disp.adb (Find_Hidden_Overridden_Primitive): Inherit
+	Is_Ada_2022_Only.
+	(Override_Dispatching_Operation): Inherit Is_Ada_2022_Only.
+	* sem_prag.adb (Analyze_Pragma): Allow form with argument for
+	Ada 2022.
+	* sem_type.adb: (Disambiguate): Deal with Is_Ada_2022_Only
+	* lib-xref.adb (Generate_Reference): Error on static and
+	dispatching calls to Ada 2022 subprograms that require
+	overriding if we are not in Ada 2022 mode; warn on other
+	references to Ada 2022 entities when not in Ada 2022 mode.
+	* sem_ch13.adb (Inherit_Aspects_At_Freeze_Point): Inherit
+	Ada_2020_Only.
+	* libgnat/a-cdlili.ads (Empty): Adding pragma Ada_2022.
+	* libgnat/a-cidlli.ads (Empty): Adding pragma Ada_2022.
+	* libgnat/a-ciorma.ads (Empty): Adding pragma Ada_2022.
+	* libgnat/a-cobove.ads (Empty): Adding pragma Ada_2022.
+	* libgnat/a-coorma.ads (Empty): Adding pragma Ada_2022.
+	(New_Vector): Adding pragma Ada_2022.
+	(Insert_Vector): Adding pragma Ada_2022.
+	(Prepend_Vector): Adding pragma Ada_2022.
+	(Append_Vector): Adding pragma Ada_2022.
+
 2021-06-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_ch3.adb (Check_Ops_From_Incomplete_Type): Protect against

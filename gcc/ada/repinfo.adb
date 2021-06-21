@@ -2030,7 +2030,7 @@ package body Repinfo is
          if List_Representation_Info_To_JSON then
             Write_Line (",");
             Write_Str ("  ""Small"": ");
-            UR_Write (Small_Value (Ent));
+            UR_Write_To_JSON (Small_Value (Ent));
          else
             Write_Str ("for ");
             List_Name (Ent);
@@ -2052,9 +2052,9 @@ package body Repinfo is
                if List_Representation_Info_To_JSON then
                   Write_Line (",");
                   Write_Str ("  ""Range"": [ ");
-                  UR_Write (Realval (Low_Bound (R)));
+                  UR_Write_To_JSON (Realval (Low_Bound (R)));
                   Write_Str (", ");
-                  UR_Write (Realval (High_Bound (R)));
+                  UR_Write_To_JSON (Realval (High_Bound (R)));
                   Write_Str (" ]");
                else
                   Write_Str ("for ");

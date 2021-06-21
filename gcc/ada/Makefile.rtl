@@ -296,6 +296,12 @@ GNATRTL_NONTASKING_OBJS= \
   a-strunb$(objext) \
   a-ststio$(objext) \
   a-stteou$(objext) \
+  a-sttebu$(objext) \
+  a-stbuun$(objext) \
+  a-stbubo$(objext) \
+  a-stbuut$(objext) \
+  a-stbufi$(objext) \
+  a-stbufo$(objext) \
   a-stunau$(objext) \
   a-stunha$(objext) \
   a-stuten$(objext) \
@@ -1193,6 +1199,13 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
     GCC_SPEC_FILES+=vxworks-$(ARCH_STR)-link.spec
     GCC_SPEC_FILES+=vxworks-cert-$(ARCH_STR)-link.spec
     GCC_SPEC_FILES+=vxworks-smp-$(ARCH_STR)-link.spec
+  endif
+
+  ifeq ($(strip $(filter-out vxworks7r2 powerpc64 rtp rtp-smp, $(target_os) $(target_cpu) $(THREAD_KIND))),)
+    # Shared libraries are only supported on PowerPC64, VxWorks7r2
+    # ATM.  Also this is disabled for kernel runtimes.
+    GNATLIB_SHARED = gnatlib-shared-dual
+    LIBRARY_VERSION := $(LIB_VERSION)
   endif
 endif
 
@@ -2449,6 +2462,7 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux.ads \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
@@ -2465,7 +2479,8 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
-  EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS) \
+				   $(TRASYM_DWARF_UNIX_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
   THREADSLIB=-lpthread -lrt

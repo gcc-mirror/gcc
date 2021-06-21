@@ -191,6 +191,8 @@ package Opt is
    --  are valid and in range of their representations. This feature is now
    --  fully enabled in the compiler.
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Back_Annotate_Rep_Info : Boolean := False;
    --  GNAT
    --  If set True, enables back annotation of representation information
@@ -1651,7 +1653,8 @@ package Opt is
    Unique_Error_Tag : Boolean := Tag_Errors;
    --  GNAT
    --  Indicates if error messages are to be prefixed by the string error:
-   --  Initialized from Tag_Errors, can be forced on with the -gnatU switch.
+   --  Initialized from Tag_Errors, can be forced on with the -gnatU switch and
+   --  disabled with -gnatd_U.
 
    Unnest_Subprogram_Mode : Boolean := False;
    --  If true, activates the circuitry for unnesting subprograms (see the spec

@@ -288,6 +288,10 @@ package Urealp is
    --  In the case where an expression is output, if Brackets is set to True,
    --  the expression is surrounded by square brackets.
 
+   procedure UR_Write_To_JSON (Real : Ureal);
+   --  Writes value of Real to standard output in the JSON data interchange
+   --  format specified by the ECMA-404 standard, for the -gnatRj output.
+
    procedure pr (Real : Ureal);
    pragma Export (Ada, pr);
    --  Writes value of Real to standard output with a terminating line return,

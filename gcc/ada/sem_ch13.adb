@@ -5230,7 +5230,9 @@ package body Sem_Ch13 is
 
             F := First_Formal (Subp);
 
-            if No (F) or else Etype (F) /= Class_Wide_Type (RTE (RE_Sink)) then
+            if No (F)
+              or else Etype (F) /= Class_Wide_Type (RTE (RE_Root_Buffer_Type))
+            then
                return False;
             end if;
 
@@ -14171,7 +14173,7 @@ package body Sem_Ch13 is
       begin
          Subp_Id := Make_Defining_Identifier (Loc, Sname);
 
-         --  S : Sink'Class
+         --  S : Root_Buffer_Type'Class
 
          Formals := New_List (
                       Make_Parameter_Specification (Loc,

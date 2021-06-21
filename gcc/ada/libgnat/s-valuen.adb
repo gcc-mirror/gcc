@@ -35,22 +35,21 @@ with System.Val_Util; use System.Val_Util;
 
 package body System.Value_N is
 
-   -----------------------
-   -- Value_Enumeration --
-   -----------------------
+   ---------------------------
+   -- Value_Enumeration_Pos --
+   ---------------------------
 
-   function Value_Enumeration
+   function Value_Enumeration_Pos
      (Names   : String;
       Indexes : System.Address;
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
       Str     : String)
-      return    Natural
+      return    Integer
    is
-      F : Natural;
-      L : Natural;
-      H : Natural;
-      S : String (Str'Range) := Str;
+      F, L : Integer;
+      H  : Natural;
+      S  : String (Str'Range) := Str;
 
       subtype Names_Index is
         Index_Type range Index_Type (Names'First)
@@ -69,32 +68,75 @@ package body System.Value_N is
    begin
       Normalize_String (S, F, L);
 
-      --  If we have a valid hash value, do a single lookup
+      declare
+         Normal : String renames S (F .. L);
 
-      H := (if Hash /= null then Hash.all (S (F .. L)) else Natural'Last);
+      begin
+         --  If we have a valid hash value, do a single lookup
 
-      if H /= Natural'Last then
-         if Names
-           (Natural (IndexesT (H)) ..
-            Natural (IndexesT (H + 1)) - 1) = S (F .. L)
-         then
-            return H;
-         end if;
+         H := (if Hash /= null then Hash.all (Normal) else Natural'Last);
 
-      --  Otherwise do a linear search
-
-      else
-         for J in 0 .. Num loop
+         if H /= Natural'Last then
             if Names
-              (Natural (IndexesT (J)) ..
-               Natural (IndexesT (J + 1)) - 1) = S (F .. L)
+              (Natural (IndexesT (H)) ..
+               Natural (IndexesT (H + 1)) - 1) = Normal
             then
-               return J;
+               return H;
             end if;
-         end loop;
-      end if;
 
-      Bad_Value (Str);
+         --  Otherwise do a linear search
+
+         else
+            for J in 0 .. Num loop
+               if Names
+                 (Natural (IndexesT (J)) ..
+                  Natural (IndexesT (J + 1)) - 1) = Normal
+               then
+                  return J;
+               end if;
+            end loop;
+         end if;
+      end;
+
+      return Invalid;
+   end Value_Enumeration_Pos;
+
+   -----------------------
+   -- Value_Enumeration --
+   -----------------------
+
+   function Value_Enumeration
+     (Names   : String;
+      Indexes : System.Address;
+      Hash    : Hash_Function_Ptr;
+      Num     : Natural;
+      Str     : String)
+      return    Natural
+   is
+      Result : constant Integer :=
+        Value_Enumeration_Pos (Names, Indexes, Hash, Num, Str);
+   begin
+      if Result = Invalid then
+         Bad_Value (Str);
+      else
+         return Result;
+      end if;
    end Value_Enumeration;
+
+   -----------------------------
+   -- Valid_Enumeration_Value --
+   -----------------------------
+
+   function Valid_Enumeration_Value
+     (Names   : String;
+      Indexes : System.Address;
+      Hash    : Hash_Function_Ptr;
+      Num     : Natural;
+      Str     : String)
+      return    Boolean
+   is
+   begin
+      return Value_Enumeration_Pos (Names, Indexes, Hash, Num, Str) /= Invalid;
+   end Valid_Enumeration_Value;
 
 end System.Value_N;

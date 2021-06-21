@@ -30,7 +30,7 @@ test01()
 {
   using namespace std::literals;
   auto x = "the  quick  brown  fox"sv;
-  auto v = views::split(x, std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
+  auto v = views::lazy_split(x, std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
 }
 
 void
@@ -38,8 +38,8 @@ test02()
 {
   using namespace std::literals;
   auto x = "the  quick  brown  fox"sv;
-  auto v1 = views::split(std::initializer_list<char>{' ', ' '})(x); // { dg-error "deleted" }
-  auto v2 = x | views::split(std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
+  auto v1 = views::lazy_split(std::initializer_list<char>{' ', ' '})(x); // { dg-error "deleted" }
+  auto v2 = x | views::lazy_split(std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
 }
 
 // { dg-prune-output "in requirements" }
