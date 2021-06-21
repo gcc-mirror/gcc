@@ -1952,6 +1952,206 @@ _mm256_maskz_cvtepu16_ph (__mmask16 __A, __m256i __B)
 					   __A);
 }
 
+/* Intrinsics vcvtph2pd.  */
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtph_pd (__m128h __A)
+{
+  return __builtin_ia32_vcvtph2pd128_mask (__A,
+					   _mm_setzero_pd (),
+					   (__mmask8) -1);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtph_pd (__m128d __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vcvtph2pd128_mask (__C, __A, __B);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtph_pd (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vcvtph2pd128_mask (__B, _mm_setzero_pd (), __A);
+}
+
+extern __inline __m256d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtph_pd (__m128h __A)
+{
+  return __builtin_ia32_vcvtph2pd256_mask (__A,
+					   _mm256_setzero_pd (),
+					   (__mmask8) -1);
+}
+
+extern __inline __m256d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtph_pd (__m256d __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vcvtph2pd256_mask (__C, __A, __B);
+}
+
+extern __inline __m256d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_cvtph_pd (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vcvtph2pd256_mask (__B,
+					   _mm256_setzero_pd (),
+					   __A);
+}
+
+/* Intrinsics vcvtph2ps.  */
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtxph_ps (__m128h __A)
+{
+  return __builtin_ia32_vcvtph2psx128_mask (__A,
+					   _mm_setzero_ps (),
+					   (__mmask8) -1);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtxph_ps (__m128 __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vcvtph2psx128_mask (__C, __A, __B);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtxph_ps (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vcvtph2psx128_mask (__B, _mm_setzero_ps (), __A);
+}
+
+extern __inline __m256
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtxph_ps (__m128h __A)
+{
+  return __builtin_ia32_vcvtph2psx256_mask (__A,
+					    _mm256_setzero_ps (),
+					    (__mmask8) -1);
+}
+
+extern __inline __m256
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtxph_ps (__m256 __A, __mmask8 __B, __m128h __C)
+{
+  return __builtin_ia32_vcvtph2psx256_mask (__C, __A, __B);
+}
+
+extern __inline __m256
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_cvtxph_ps (__mmask8 __A, __m128h __B)
+{
+  return __builtin_ia32_vcvtph2psx256_mask (__B,
+					    _mm256_setzero_ps (),
+					    __A);
+}
+
+/* Intrinsics vcvtxps2ph.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtxps_ph (__m128 __A)
+{
+  return __builtin_ia32_vcvtps2phx128_mask ((__v4sf) __A,
+					    _mm_setzero_ph (),
+					    (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtxps_ph (__m128h __A, __mmask8 __B, __m128 __C)
+{
+  return __builtin_ia32_vcvtps2phx128_mask ((__v4sf) __C, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtxps_ph (__mmask8 __A, __m128 __B)
+{
+  return __builtin_ia32_vcvtps2phx128_mask ((__v4sf) __B,
+					    _mm_setzero_ph (),
+					    __A);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtxps_ph (__m256 __A)
+{
+  return __builtin_ia32_vcvtps2phx256_mask ((__v8sf) __A,
+					    _mm_setzero_ph (),
+					    (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtxps_ph (__m128h __A, __mmask8 __B, __m256 __C)
+{
+  return __builtin_ia32_vcvtps2phx256_mask ((__v8sf) __C, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_cvtxps_ph (__mmask8 __A, __m256 __B)
+{
+  return __builtin_ia32_vcvtps2phx256_mask ((__v8sf) __B,
+					    _mm_setzero_ph (),
+					    __A);
+}
+
+/* Intrinsics vcvtpd2ph.  */
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtpd_ph (__m128d __A)
+{
+  return __builtin_ia32_vcvtpd2ph128_mask ((__v2df) __A,
+					   _mm_setzero_ph (),
+					   (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtpd_ph (__m128h __A, __mmask8 __B, __m128d __C)
+{
+  return __builtin_ia32_vcvtpd2ph128_mask ((__v2df) __C, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtpd_ph (__mmask8 __A, __m128d __B)
+{
+  return __builtin_ia32_vcvtpd2ph128_mask ((__v2df) __B,
+					   _mm_setzero_ph (),
+					   __A);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtpd_ph (__m256d __A)
+{
+  return __builtin_ia32_vcvtpd2ph256_mask ((__v4df) __A,
+					   _mm_setzero_ph (),
+					   (__mmask8) -1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtpd_ph (__m128h __A, __mmask8 __B, __m256d __C)
+{
+  return __builtin_ia32_vcvtpd2ph256_mask ((__v4df) __C, __A, __B);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_cvtpd_ph (__mmask8 __A, __m256d __B)
+{
+  return __builtin_ia32_vcvtpd2ph256_mask ((__v4df) __B,
+					   _mm_setzero_ph (),
+					   __A);
+}
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options
