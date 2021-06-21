@@ -422,7 +422,8 @@ package body Repinfo is
             Write_Line (";");
          end if;
 
-      --  Alignment is not always set for task and protected types
+      --  Alignment is not always set for task, protected, and class-wide
+      --  types.
 
       else
          pragma Assert
