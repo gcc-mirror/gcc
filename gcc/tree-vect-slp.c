@@ -1591,6 +1591,14 @@ vect_build_slp_tree (vec_info *vinfo,
       SLP_TREE_SCALAR_STMTS (res) = vNULL;
       SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
       res->failed = XNEWVEC (bool, group_size);
+      if (flag_checking)
+	{
+	  unsigned i;
+	  for (i = 0; i < group_size; ++i)
+	    if (!matches[i])
+	      break;
+	  gcc_assert (i < group_size);
+	}
       memcpy (res->failed, matches, sizeof (bool) * group_size);
     }
   else
@@ -1898,10 +1906,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  chains.quick_push (chain.copy ());
 	  chain.truncate (0);
 	}
-      if (chains.length () == group_size
-	  /* We cannot yet use SLP_TREE_CODE to communicate the operation.  */
-	  && op_stmt_info)
+      if (chains.length () == group_size)
 	{
+	  /* We cannot yet use SLP_TREE_CODE to communicate the operation.  */
+	  if (!op_stmt_info)
+	    {
+	      hard_fail = false;
+	      goto out;
+	    }
 	  /* Now we have a set of chains with the same length.  */
 	  /* 1. pre-sort according to def_type and operation.  */
 	  for (unsigned lane = 0; lane < group_size; ++lane)
