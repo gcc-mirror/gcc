@@ -2900,10 +2900,14 @@ gcn_expand_prologue ()
 	  rtx adjustment = gen_int_mode (sp_adjust, SImode);
 	  rtx insn = emit_insn (gen_addsi3_scalar_carry (sp_lo, sp_lo,
 							 adjustment, scc));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (sp,
-				     gen_rtx_PLUS (DImode, sp, adjustment)));
+	  if (!offsets->need_frame_pointer)
+	    {
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			    gen_rtx_SET (sp,
+					 gen_rtx_PLUS (DImode, sp,
+						       adjustment)));
+	    }
 	  emit_insn (gen_addcsi3_scalar_zero (sp_hi, sp_hi, scc));
 	}
 
@@ -2917,24 +2921,23 @@ gcn_expand_prologue ()
 	  rtx adjustment = gen_int_mode (fp_adjust, SImode);
 	  rtx insn = emit_insn (gen_addsi3_scalar_carry(fp_lo, sp_lo,
 							adjustment, scc));
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (fp,
-				     gen_rtx_PLUS (DImode, sp, adjustment)));
 	  emit_insn (gen_addcsi3_scalar (fp_hi, sp_hi,
 					 (fp_adjust < 0 ? GEN_INT (-1)
 					  : const0_rtx),
 					 scc, scc));
+
+	  /* Set the CFA to the entry stack address, as an offset from the
+	     frame pointer.  This is preferred because the frame pointer is
+	     saved in each frame, whereas the stack pointer is not.  */
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			gen_rtx_PLUS (DImode, fp,
+				      GEN_INT (-(offsets->pretend_size
+						 + offsets->callee_saves))));
 	}
 
       rtx_insn *seq = get_insns ();
       end_sequence ();
-
-      /* FIXME: Prologue insns should have this flag set for debug output, etc.
-	 but it causes issues for now.
-      for (insn = seq; insn; insn = NEXT_INSN (insn))
-        if (INSN_P (insn))
-	  RTX_FRAME_RELATED_P (insn) = 1;*/
 
       emit_insn (seq);
     }
@@ -3010,6 +3013,16 @@ gcn_expand_prologue ()
       add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 		    gen_rtx_SET (sp, gen_rtx_PLUS (DImode, sp,
 						   dbg_adjustment)));
+
+      if (offsets->need_frame_pointer)
+	{
+	  /* Set the CFA to the entry stack address, as an offset from the
+	     frame pointer.  This is necessary when alloca is used, and
+	     harmless otherwise.  */
+	  rtx neg_adjust = gen_int_mode (-offsets->callee_saves, DImode);
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			gen_rtx_PLUS (DImode, fp, neg_adjust));
+	}
 
       /* Make sure the flat scratch reg doesn't get optimised away.  */
       emit_insn (gen_prologue_use (gen_rtx_REG (DImode, FLAT_SCRATCH_REG)));
@@ -3112,6 +3125,23 @@ gcn_expand_epilogue (void)
     }
 
   emit_jump_insn (gen_gcn_return ());
+}
+
+/* Implement TARGET_FRAME_POINTER_REQUIRED.
+
+   Return true if the frame pointer should not be eliminated.  */
+
+bool
+gcn_frame_pointer_rqd (void)
+{
+  /* GDB needs the frame pointer in order to unwind properly,
+     but that's not important for the entry point, unless alloca is used.
+     It's not important for code execution, so we should repect the
+     -fomit-frame-pointer flag.  */
+  return (!flag_omit_frame_pointer
+	  && cfun
+	  && (cfun->calls_alloca
+	      || (cfun->machine && cfun->machine->normal_function)));
 }
 
 /* Implement TARGET_CAN_ELIMINATE.
@@ -6410,6 +6440,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_EMUTLS_VAR_INIT gcn_emutls_var_init
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN gcn_expand_builtin
+#undef  TARGET_FRAME_POINTER_REQUIRED
+#define TARGET_FRAME_POINTER_REQUIRED gcn_frame_pointer_rqd
 #undef  TARGET_FUNCTION_ARG
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE gcn_function_arg_advance
