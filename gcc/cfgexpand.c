@@ -2950,6 +2950,7 @@ expand_asm_stmt (gasm *stmt)
   unsigned ninputs = gimple_asm_ninputs (stmt);
   unsigned nlabels = gimple_asm_nlabels (stmt);
   unsigned i;
+  bool error_seen = false;
 
   /* ??? Diagnose during gimplification?  */
   if (ninputs + noutputs + nlabels > MAX_RECOG_OPERANDS)
@@ -3008,6 +3009,7 @@ expand_asm_stmt (gasm *stmt)
 		{
 		  /* ??? Diagnose during gimplification?  */
 		  error ("unknown register name %qs in %<asm%>", regname);
+		  error_seen = true;
 		}
 	      else if (j == -4)
 		{
@@ -3071,7 +3073,10 @@ expand_asm_stmt (gasm *stmt)
 		&& REG_P (DECL_RTL (output_tvec[j]))
 		&& HARD_REGISTER_P (DECL_RTL (output_tvec[j]))
 		&& output_hregno == REGNO (DECL_RTL (output_tvec[j])))
-	      error ("invalid hard register usage between output operands");
+	      {
+		error ("invalid hard register usage between output operands");
+		error_seen = true;
+	      }
 
 	  /* Verify matching constraint operands use the same hard register
 	     and that the non-matching constraint operands do not use the same
@@ -3094,13 +3099,19 @@ expand_asm_stmt (gasm *stmt)
 		  }
 		if (i == match
 		    && output_hregno != input_hregno)
-		  error ("invalid hard register usage between output operand "
-			 "and matching constraint operand");
+		  {
+		    error ("invalid hard register usage between output "
+			   "operand and matching constraint operand");
+		    error_seen = true;
+		  }
 		else if (early_clobber_p
 			 && i != match
 			 && output_hregno == input_hregno)
-		  error ("invalid hard register usage between earlyclobber "
-			 "operand and input operand");
+		  {
+		    error ("invalid hard register usage between "
+			   "earlyclobber operand and input operand");
+		    error_seen = true;
+		  }
 	      }
 	}
 
@@ -3178,7 +3189,10 @@ expand_asm_stmt (gasm *stmt)
 	    op = validize_mem (op);
 
 	  if (! allows_reg && !MEM_P (op))
-	    error ("output number %d not directly addressable", i);
+	    {
+	      error ("output number %d not directly addressable", i);
+	      error_seen = true;
+	    }
 	  if ((! allows_mem && MEM_P (op) && GET_MODE (op) != BLKmode)
 	      || GET_CODE (op) == CONCAT)
 	    {
@@ -3216,6 +3230,19 @@ expand_asm_stmt (gasm *stmt)
 
       if (is_inout)
 	inout_opnum.safe_push (i);
+    }
+
+  const char *str = gimple_asm_string (stmt);
+  if (error_seen)
+    {
+      ninputs = 0;
+      noutputs = 0;
+      inout_opnum.truncate (0);
+      output_rvec.truncate (0);
+      clobber_rvec.truncate (0);
+      constraints.truncate (0);
+      CLEAR_HARD_REG_SET (clobbered_regs);
+      str = "";
     }
 
   auto_vec<rtx, MAX_RECOG_OPERANDS> input_rvec;
@@ -3275,7 +3302,7 @@ expand_asm_stmt (gasm *stmt)
     }
 
   /* For in-out operands, copy output rtx to input rtx.  */
-  unsigned ninout = inout_opnum.length();
+  unsigned ninout = inout_opnum.length ();
   for (i = 0; i < ninout; i++)
     {
       int j = inout_opnum[i];
@@ -3329,7 +3356,7 @@ expand_asm_stmt (gasm *stmt)
 
   rtx body = gen_rtx_ASM_OPERANDS ((noutputs == 0 ? VOIDmode
 				    : GET_MODE (output_rvec[0])),
-				   ggc_strdup (gimple_asm_string (stmt)),
+				   ggc_strdup (str),
 				   "", 0, argvec, constraintvec,
 				   labelvec, locus);
   MEM_VOLATILE_P (body) = gimple_asm_volatile_p (stmt);
