@@ -57,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __cpp_lib_concepts
 // Define this here, included by all the headers that need to define it.
-#define __cpp_lib_ranges 201911L
+#define __cpp_lib_ranges 202106L
 
 namespace ranges
 {
