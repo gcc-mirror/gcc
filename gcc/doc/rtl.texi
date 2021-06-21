@@ -144,7 +144,7 @@ Currently, @file{rtl.def} defines these classes:
 @item RTX_OBJ
 An RTX code that represents an actual object, such as a register
 (@code{REG}) or a memory location (@code{MEM}, @code{SYMBOL_REF}).
-@code{LO_SUM}) is also included; instead, @code{SUBREG} and
+@code{LO_SUM} is also included; instead, @code{SUBREG} and
 @code{STRICT_LOW_PART} are not in this class, but in class
 @code{RTX_EXTRA}.
 
