@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020, 2021 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -249,7 +249,7 @@ private:
   // Token location.
   Location locus;
   // Associated text (if any) of token.
-  std::string *str;
+  std::unique_ptr<std::string> str;
   // TODO: maybe remove issues and just store std::string as value?
   /* Type hint for token based on lexer data (e.g. type suffix). Does not exist
    * for most tokens. */
@@ -298,7 +298,7 @@ public:
   Token (Token &&other) = default;
   Token &operator= (Token &&other) = default;
 
-  ~Token () { delete str; }
+  ~Token () = default;
 
   /* TODO: make_shared (which saves a heap allocation) does not work with the
    * private constructor */
