@@ -13400,11 +13400,11 @@ package body Sem_Prag is
             Obj_Or_Type_Id := Defining_Entity (Obj_Or_Type_Decl);
 
             --  Perform minimal verification to ensure that the argument is at
-            --  least a variable or a type. Subsequent finer grained checks
-            --  will be done at the end of the declarative region that
-            --  contains the pragma.
+            --  least an object or a type. Subsequent finer grained checks will
+            --  be done at the end of the declarative region that contains the
+            --  pragma.
 
-            if Ekind (Obj_Or_Type_Id) = E_Variable
+            if Ekind (Obj_Or_Type_Id) in E_Constant | E_Variable
               or else Is_Type (Obj_Or_Type_Id)
             then
 
