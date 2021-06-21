@@ -2,7 +2,7 @@
 // { dg-require-effective-target pthread }
 
 export module foo;
-// { dg-module-cmi foo }
+// { dg-module-cmi foo { target pthread } }
 
 export inline void frob (unsigned (&ary)[64])
 {
