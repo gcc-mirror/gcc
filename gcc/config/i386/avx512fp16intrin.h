@@ -7086,6 +7086,104 @@ _mm_maskz_fmul_round_sch (__mmask8 __A, __m128h __B, __m128h __C, const int __E)
 
 #endif /* __OPTIMIZE__ */
 
+#define _MM512_REDUCE_OP(op)						\
+  __m256h __T1 = (__m256h) _mm512_extractf64x4_pd ((__m512d) __A, 0);	\
+  __m256h __T2 = (__m256h) _mm512_extractf64x4_pd ((__m512d) __A, 1);	\
+  __m256h __T3 = (__T1 op __T2);					\
+  __m128h __T4 = (__m128h) _mm256_extractf128_pd ((__m256d) __T3, 0);	\
+  __m128h __T5 = (__m128h) _mm256_extractf128_pd ((__m256d) __T3, 1);	\
+  __m128h __T6 = (__T4 op __T5);					\
+  __m128h __T7 = (__m128h) __builtin_shuffle ((__m128h)__T6,		\
+		 (__v8hi) { 4, 5, 6, 7, 0, 1, 2, 3 });			\
+  __m128h __T8 = (__T6 op __T7);					\
+  __m128h __T9 = (__m128h) __builtin_shuffle ((__m128h)__T8,		\
+		 (__v8hi) { 2, 3, 0, 1, 4, 5, 6, 7 });			\
+  __m128h __T10 = __T8 op __T9;					\
+  return __T10[0] op __T10[1]
+
+// TODO reduce
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_reduce_add_ph (__m512h __A)
+{
+   _MM512_REDUCE_OP (+);
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_reduce_mul_ph (__m512h __A)
+{
+   _MM512_REDUCE_OP (*);
+}
+
+#undef _MM512_REDUCE_OP
+
+#ifdef __AVX512VL__
+
+#define _MM512_REDUCE_OP(op)						\
+  __m256h __T1 = (__m256h) _mm512_extractf64x4_pd ((__m512d) __A, 0);	\
+  __m256h __T2 = (__m256h) _mm512_extractf64x4_pd ((__m512d) __A, 1);	\
+  __m256h __T3 = __builtin_ia32_##op##ph256_mask (__T1, __T2,		\
+		 _mm256_setzero_ph (), (__mmask16) -1);		\
+  __m128h __T4 = (__m128h) _mm256_extractf128_pd ((__m256d) __T3, 0);	\
+  __m128h __T5 = (__m128h) _mm256_extractf128_pd ((__m256d) __T3, 1);	\
+  __m128h __T6 = __builtin_ia32_##op##ph128_mask			\
+		 (__T4, __T5, _mm_setzero_ph (),(__mmask8) -1);	\
+  __m128h __T7 = (__m128h) __builtin_shuffle ((__m128h)__T6,		\
+		 (__v8hi) { 2, 3, 0, 1, 6, 7, 4, 5 });			\
+  __m128h __T8 = (__m128h)  __builtin_ia32_##op##ph128_mask		\
+		 (__T6, __T7, _mm_setzero_ph (),(__mmask8) -1);	\
+  __m128h __T9 = (__m128h) __builtin_shuffle ((__m128h)__T8,		\
+		 (__v8hi) { 4, 5 });					\
+  __m128h __T10 = __builtin_ia32_##op##ph128_mask			\
+		  (__T8, __T9, _mm_setzero_ph (),(__mmask8) -1);	\
+  __m128h __T11 = (__m128h) __builtin_shuffle (__T10,			\
+		  (__v8hi) { 1, 0 });					\
+  __m128h __T12 = __builtin_ia32_##op##ph128_mask			\
+		  (__T10, __T11, _mm_setzero_ph (),(__mmask8) -1);	\
+  return __T12[0]
+
+#else
+
+#define _MM512_REDUCE_OP(op)						\
+  __m512h __T1 = (__m512h) __builtin_shuffle ((__m512d) __A,		\
+		 (__v8di) { 4, 5, 6, 7, 0, 0, 0, 0 });			\
+  __m512h __T2 = _mm512_##op##_ph (__A, __T1);				\
+  __m512h __T3 = (__m512h) __builtin_shuffle ((__m512d) __T2,		\
+		 (__v8di) { 2, 3, 0, 0, 0, 0, 0, 0 });			\
+  __m512h __T4 = _mm512_##op##_ph (__T2, __T3);			\
+  __m512h __T5 = (__m512h) __builtin_shuffle ((__m512d) __T4,		\
+		 (__v8di) { 1, 0, 0, 0, 0, 0, 0, 0 });			\
+  __m512h __T6 = _mm512_##op##_ph (__T4, __T5);			\
+  __m512h __T7 = (__m512h) __builtin_shuffle ((__m512) __T6,		\
+		 (__v16si) { 1, 0, 0, 0, 0, 0, 0, 0,			\
+			     0, 0, 0, 0, 0, 0, 0, 0 });		\
+  __m512h __T8 = _mm512_##op##_ph (__T6, __T7);			\
+  __m512h __T9 = (__m512h) __builtin_shuffle (__T8,			\
+		 (__v32hi) { 1, 0, 0, 0, 0, 0, 0, 0,			\
+			     0, 0, 0, 0, 0, 0, 0, 0,			\
+			     0, 0, 0, 0, 0, 0, 0, 0,			\
+			     0, 0, 0, 0, 0, 0, 0, 0 });		\
+  __m512h __T10 = _mm512_##op##_ph (__T8, __T9);			\
+  return __T10[0]
+#endif
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_reduce_min_ph (__m512h __A)
+{
+  _MM512_REDUCE_OP (min);
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_reduce_max_ph (__m512h __A)
+{
+  _MM512_REDUCE_OP (max);
+}
+
+#undef _MM512_REDUCE_OP
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options

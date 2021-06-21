@@ -3095,6 +3095,111 @@ _mm256_maskz_fcmul_pch (__mmask8 __A, __m256h __B, __m256h __C)
 						     __A);
 }
 
+#define _MM256_REDUCE_OP(op)						\
+  __m128h __T1 = (__m128h) _mm256_extractf128_pd ((__m256d) __A, 0);	\
+  __m128h __T2 = (__m128h) _mm256_extractf128_pd ((__m256d) __A, 1);	\
+  __m128h __T3 = (__T1 op __T2);					\
+  __m128h __T4 = (__m128h) __builtin_shuffle (__T3,			\
+		 (__v8hi) { 4, 5, 6, 7, 0, 1, 2, 3 });			\
+  __m128h __T5 = (__T3) op (__T4);					\
+  __m128h __T6 = (__m128h) __builtin_shuffle (__T5,			\
+		 (__v8hi) { 2, 3, 0, 1, 4, 5, 6, 7 });			\
+  __m128h __T7 = __T5 op __T6;						\
+  return __T7[0] op __T7[1]
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_reduce_add_ph (__m256h __A)
+{
+  _MM256_REDUCE_OP (+);
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_reduce_mul_ph (__m256h __A)
+{
+  _MM256_REDUCE_OP (*);
+}
+
+#undef _MM256_REDUCE_OP
+#define _MM256_REDUCE_OP(op)						\
+  __m128h __T1 = (__m128h) _mm256_extractf128_pd ((__m256d) __A, 0);	\
+  __m128h __T2 = (__m128h) _mm256_extractf128_pd ((__m256d) __A, 1);	\
+  __m128h __T3 = _mm_##op (__T1, __T2);				\
+  __m128h __T4 = (__m128h) __builtin_shuffle (__T3,			\
+		 (__v8hi) { 2, 3, 0, 1, 6, 7, 4, 5 });			\
+  __m128h __T5 = _mm_##op (__T3, __T4);				\
+  __m128h __T6 = (__m128h) __builtin_shuffle (__T5, (__v8hi) { 4, 5 }); \
+  __m128h __T7 = _mm_##op (__T5, __T6);				\
+  __m128h __T8 = (__m128h) __builtin_shuffle (__T7, (__v8hi) { 1, 0 }); \
+  __m128h __T9 = _mm_##op (__T7, __T8);				\
+  return __T9[0]
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_reduce_min_ph (__m256h __A)
+{
+  _MM256_REDUCE_OP (min_ph);
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_reduce_max_ph (__m256h __A)
+{
+  _MM256_REDUCE_OP (max_ph);
+}
+
+#define _MM_REDUCE_OP(op) 						\
+  __m128h __T1 = (__m128h) __builtin_shuffle (__A,			\
+		 (__v8hi) { 4, 5, 6, 7, 0, 1, 2, 3 });			\
+  __m128h __T2 = (__A) op (__T1);					\
+  __m128h __T3 = (__m128h) __builtin_shuffle (__T2,			\
+		 (__v8hi){ 2, 3, 0, 1, 4, 5, 6, 7 });			\
+  __m128h __T4 = __T2 op __T3;						\
+  return __T4[0] op __T4[1]
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_reduce_add_ph (__m128h __A)
+{
+  _MM_REDUCE_OP (+);
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_reduce_mul_ph (__m128h __A)
+{
+  _MM_REDUCE_OP (*);
+}
+
+#undef _MM_REDUCE_OP
+#define _MM_REDUCE_OP(op) 						\
+  __m128h __T1 = (__m128h) __builtin_shuffle (__A,			\
+		 (__v8hi) { 2, 3, 0, 1, 6, 7, 4, 5 });			\
+  __m128h __T2 = _mm_##op (__A, __T1);					\
+  __m128h __T3 = (__m128h) __builtin_shuffle (__T2, (__v8hi){ 4, 5 });	\
+  __m128h __T4 = _mm_##op (__T2, __T3);				\
+  __m128h __T5 = (__m128h) __builtin_shuffle (__T4, (__v8hi){ 1, 0 });	\
+  __m128h __T6 = _mm_##op (__T4, __T5);				\
+  return __T6[0]
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_reduce_min_ph (__m128h __A)
+{
+  _MM_REDUCE_OP (min_ph);
+}
+
+extern __inline _Float16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_reduce_max_ph (__m128h __A)
+{
+  _MM_REDUCE_OP (max_ph);
+}
+
+#undef _MM256_REDUCE_OP
+#undef _MM_REDUCE_OP
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options
