@@ -512,7 +512,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       if (!ok)
 	{
 	  rust_error_at (root_segment.get_locus (),
-			 "failed to resolve generic args");
+			 "failed to resolve generic arguments");
 	  return;
 	}
     }

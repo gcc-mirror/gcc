@@ -1323,7 +1323,7 @@ Lexer::parse_byte_char (Location loc)
       if (byte_char > 127)
 	{
 	  rust_error_at (get_current_location (),
-			 "byte char %<%c%> out of range", byte_char);
+			 "%<byte char%> %<%c%> out of range", byte_char);
 	  byte_char = 0;
 	}
 
@@ -1331,7 +1331,7 @@ Lexer::parse_byte_char (Location loc)
 
       if (current_char != '\'')
 	{
-	  rust_error_at (get_current_location (), "unclosed byte char");
+	  rust_error_at (get_current_location (), "unclosed %<byte char%>");
 	}
 
       skip_input ();
@@ -1349,7 +1349,7 @@ Lexer::parse_byte_char (Location loc)
 
       if (current_char != '\'')
 	{
-	  rust_error_at (get_current_location (), "unclosed byte char");
+	  rust_error_at (get_current_location (), "unclosed %<byte char%>");
 	}
 
       skip_input ();
@@ -1359,7 +1359,7 @@ Lexer::parse_byte_char (Location loc)
   else
     {
       rust_error_at (get_current_location (),
-		     "no character inside %<%> for byte char");
+		     "no character inside %<%> for %<byte char%>");
     }
 
   current_column += length;
@@ -1398,7 +1398,7 @@ Lexer::parse_byte_string (Location loc)
 	  if (output_char > 127)
 	    {
 	      rust_error_at (get_current_location (),
-			     "char %<%c%> in byte string out of range",
+			     "character %<%c%> in byte string out of range",
 			     output_char);
 	      output_char = 0;
 	    }
@@ -1880,7 +1880,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
 	  && type_hint != CORETYPE_UNKNOWN)
 	{
 	  rust_error_at (get_current_location (),
-			 "invalid type suffix %qs for float literal",
+			 "invalid type suffix %qs for floating-point literal",
 			 get_type_hint_string (type_hint));
 	  // ignore invalid type suffix as everything else seems fine
 	  type_hint = CORETYPE_UNKNOWN;
@@ -1929,7 +1929,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
 	  && type_hint != CORETYPE_UNKNOWN)
 	{
 	  rust_error_at (get_current_location (),
-			 "invalid type suffix %qs for float literal",
+			 "invalid type suffix %qs for floating-point literal",
 			 get_type_hint_string (type_hint));
 	  // ignore invalid type suffix as everything else seems fine
 	  type_hint = CORETYPE_UNKNOWN;
@@ -1975,7 +1975,7 @@ Lexer::parse_char_or_lifetime (Location loc)
 
       if (peek_codepoint_input ().value != '\'')
 	{
-	  rust_error_at (get_current_location (), "unended char literal");
+	  rust_error_at (get_current_location (), "unended character literal");
 	}
       else
 	{
@@ -2032,7 +2032,7 @@ Lexer::parse_char_or_lifetime (Location loc)
 	{
 	  rust_error_at (
 	    get_current_location (),
-	    "expected %' after character constant in char literal");
+	    "expected %' after character constant in character literal");
 	  return nullptr;
 	}
     }

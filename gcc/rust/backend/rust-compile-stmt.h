@@ -64,7 +64,8 @@ public:
     if (!ctx->get_tyctx ()->lookup_type (stmt.get_mappings ().get_hirid (),
 					 &ty))
       {
-	rust_fatal_error (stmt.get_locus (), "failed to lookup var decl type");
+	rust_fatal_error (stmt.get_locus (),
+			  "failed to lookup variable declaration type");
 	return;
       }
 
@@ -72,7 +73,7 @@ public:
     if (!ctx->lookup_var_decl (stmt.get_mappings ().get_hirid (), &var))
       {
 	rust_fatal_error (stmt.get_locus (),
-			  "failed to lookup compiled variable decl");
+			  "failed to lookup compiled variable declaration");
 	return;
       }
 

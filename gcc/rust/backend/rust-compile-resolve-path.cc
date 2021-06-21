@@ -117,7 +117,7 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 	  else
 	    {
 	      rust_error_at (expr.get_locus (),
-			     "failed to lookup definition decl");
+			     "failed to lookup definition declaration");
 	      return;
 	    }
 	}
@@ -125,7 +125,7 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
       if (!ctx->lookup_function_decl (lookup->get_ty_ref (), &fn))
 	{
 	  rust_fatal_error (expr.get_locus (),
-			    "forward decl was not compiled 1");
+			    "forward declaration was not compiled");
 	  return;
 	}
     }

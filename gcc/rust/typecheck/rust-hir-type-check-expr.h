@@ -654,7 +654,8 @@ public:
 		      == TyTy::InferType::INTEGRAL));
 	  if (!valid)
 	    {
-	      rust_error_at (expr.get_locus (), "cannot apply unary ! to %s",
+	      rust_error_at (expr.get_locus (),
+			     "cannot apply unary %<!%> to %s",
 			     negated_expr_ty->as_string ().c_str ());
 	      return;
 	    }
@@ -983,7 +984,8 @@ public:
     if (!block_expr->is_unit ())
       {
 	rust_error_at (expr.get_loop_block ()->get_locus_slow (),
-		       "expected () got %s", block_expr->as_string ().c_str ());
+		       "expected %<()%> got %s",
+		       block_expr->as_string ().c_str ());
 	return;
       }
 
@@ -1011,7 +1013,8 @@ public:
     if (!block_expr->is_unit ())
       {
 	rust_error_at (expr.get_loop_block ()->get_locus_slow (),
-		       "expected () got %s", block_expr->as_string ().c_str ());
+		       "expected %<()%> got %s",
+		       block_expr->as_string ().c_str ());
 	return;
       }
 
@@ -1023,7 +1026,7 @@ public:
   {
     if (!inside_loop)
       {
-	rust_error_at (expr.get_locus (), "cannot `break` outside of a loop");
+	rust_error_at (expr.get_locus (), "cannot %<break%> outside of a loop");
 	return;
       }
 
@@ -1036,7 +1039,7 @@ public:
 	if (loop_context->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    rust_error_at (expr.get_locus (),
-			   "can only break with a value inside `loop`");
+			   "can only break with a value inside %<loop%>");
 	    return;
 	  }
 
@@ -1052,7 +1055,7 @@ public:
     if (!inside_loop)
       {
 	rust_error_at (expr.get_locus (),
-		       "cannot `continue` outside of a loop");
+		       "cannot %<continue%> outside of a loop");
 	return;
       }
 
