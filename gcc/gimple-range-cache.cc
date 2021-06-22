@@ -132,7 +132,7 @@ non_null_ref::process_name (tree name)
 class ssa_block_ranges
 {
 public:
-  virtual void set_bb_range (const basic_block bb, const irange &r) = 0;
+  virtual bool set_bb_range (const basic_block bb, const irange &r) = 0;
   virtual bool get_bb_range (irange &r, const basic_block bb) = 0;
   virtual bool bb_range_p (const basic_block bb) = 0;
 
@@ -165,7 +165,7 @@ class sbr_vector : public ssa_block_ranges
 public:
   sbr_vector (tree t, irange_allocator *allocator);
 
-  virtual void set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
+  virtual bool set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
   virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
   virtual bool bb_range_p (const basic_block bb) OVERRIDE;
 protected:
@@ -196,7 +196,7 @@ sbr_vector::sbr_vector (tree t, irange_allocator *allocator)
 
 // Set the range for block BB to be R.
 
-void
+bool
 sbr_vector::set_bb_range (const basic_block bb, const irange &r)
 {
   irange *m;
@@ -208,6 +208,7 @@ sbr_vector::set_bb_range (const basic_block bb, const irange &r)
   else
     m = m_irange_allocator->allocate (r);
   m_tab[bb->index] = m;
+  return true;
 }
 
 // Return the range associated with block BB in R.  Return false if
@@ -252,7 +253,7 @@ class sbr_sparse_bitmap : public ssa_block_ranges
 {
 public:
   sbr_sparse_bitmap (tree t, irange_allocator *allocator, bitmap_obstack *bm);
-  virtual void set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
+  virtual bool set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
   virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
   virtual bool bb_range_p (const basic_block bb) OVERRIDE;
 private:
@@ -312,13 +313,13 @@ sbr_sparse_bitmap::bitmap_get_quad (const_bitmap head, int quad)
 
 // Set the range on entry to basic block BB to R.
 
-void
+bool
 sbr_sparse_bitmap::set_bb_range (const basic_block bb, const irange &r)
 {
   if (r.undefined_p ())
     {
       bitmap_set_quad (bitvec, bb->index, SBR_UNDEF);
-      return;
+      return true;
     }
 
   // Loop thru the values to see if R is already present.
@@ -328,11 +329,11 @@ sbr_sparse_bitmap::set_bb_range (const basic_block bb, const irange &r)
 	if (!m_range[x])
 	  m_range[x] = m_irange_allocator->allocate (r);
 	bitmap_set_quad (bitvec, bb->index, x + 1);
-	return;
+	return true;
       }
   // All values are taken, default to VARYING.
   bitmap_set_quad (bitvec, bb->index, SBR_VARYING);
-  return;
+  return false;
 }
 
 // Return the range associated with block BB in R.  Return false if
@@ -387,7 +388,7 @@ block_range_cache::~block_range_cache ()
 // Set the range for NAME on entry to block BB to R.
 // If it has not been accessed yet, allocate it first.
 
-void
+bool
 block_range_cache::set_bb_range (tree name, const basic_block bb,
 				 const irange &r)
 {
@@ -413,7 +414,7 @@ block_range_cache::set_bb_range (tree name, const basic_block bb,
 						m_irange_allocator);
 	}
     }
-  m_ssa_ranges[v]->set_bb_range (bb, r);
+  return m_ssa_ranges[v]->set_bb_range (bb, r);
 }
 
 
@@ -1061,13 +1062,18 @@ ranger_cache::propagate_cache (tree name)
       // If the range on entry has changed, update it.
       if (new_range != current_range)
 	{
+	  bool ok_p = m_on_entry.set_bb_range (name, bb, new_range);
 	  if (DEBUG_RANGE_CACHE) 
 	    {
-	      fprintf (dump_file, "      Updating range to ");
-	      new_range.dump (dump_file);
+	      if (!ok_p)
+		fprintf (dump_file, "     Cache failure to store value.");
+	      else
+		{
+		  fprintf (dump_file, "      Updating range to ");
+		  new_range.dump (dump_file);
+		}
 	      fprintf (dump_file, "\n      Updating blocks :");
 	    }
-	  m_on_entry.set_bb_range (name, bb, new_range);
 	  // Mark each successor that has a range to re-check its range
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (m_on_entry.bb_range_p (name, e->dest))
@@ -1080,12 +1086,12 @@ ranger_cache::propagate_cache (tree name)
 	    fprintf (dump_file, "\n");
 	}
     }
-    if (DEBUG_RANGE_CACHE)
-      {
-	fprintf (dump_file, "DONE visiting blocks for ");
-	print_generic_expr (dump_file, name, TDF_SLIM);
-	fprintf (dump_file, "\n");
-      }
+  if (DEBUG_RANGE_CACHE)
+    {
+      fprintf (dump_file, "DONE visiting blocks for ");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
 }
 
 // Check to see if an update to the value for NAME in BB has any effect
