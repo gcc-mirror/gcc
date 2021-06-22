@@ -398,7 +398,14 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 		      && dominated_by_p (CDI_POST_DOMINATORS, commondom, bb)
 		      /* If the blocks are possibly within the same irreducible
 			 cycle the above check breaks down.  */
-		      && !(bb->flags & commondom->flags & BB_IRREDUCIBLE_LOOP))
+		      && !((bb->flags & commondom->flags & BB_IRREDUCIBLE_LOOP)
+			   && bb->loop_father == commondom->loop_father)
+		      && !((commondom->flags & BB_IRREDUCIBLE_LOOP)
+			   && flow_loop_nested_p (commondom->loop_father,
+						  bb->loop_father))
+		      && !((bb->flags & BB_IRREDUCIBLE_LOOP)
+			   && flow_loop_nested_p (bb->loop_father,
+						  commondom->loop_father)))
 		    continue;
 		  bb = EDGE_PRED (bb, PHI_ARG_INDEX_FROM_USE (use_p))->src;
 		}
