@@ -1172,21 +1172,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      continue;
 	    }
 
-	  if (need_same_oprnds)
-	    {
-	      tree other_op1 = (call_stmt
-				? gimple_call_arg (call_stmt, 1)
-				: gimple_assign_rhs2 (stmt));
-	      if (!operand_equal_p (first_op1, other_op1, 0))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Build SLP failed: different shift "
-				     "arguments in %G", stmt);
-		  /* Mismatch.  */
-		  continue;
-		}
-	    }
 	  if (!load_p
 	      && first_stmt_code == BIT_FIELD_REF
 	      && (TREE_OPERAND (gimple_assign_rhs1 (first_stmt_info->stmt), 0)
@@ -1224,6 +1209,22 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 				 "in %G", stmt);
 	      /* Mismatch.  */
 	      continue;
+	    }
+
+	  if (need_same_oprnds)
+	    {
+	      tree other_op1 = (call_stmt
+				? gimple_call_arg (call_stmt, 1)
+				: gimple_assign_rhs2 (stmt));
+	      if (!operand_equal_p (first_op1, other_op1, 0))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: different shift "
+				     "arguments in %G", stmt);
+		  /* Mismatch.  */
+		  continue;
+		}
 	    }
 
 	  if (!types_compatible_p (vectype, *node_vectype))
