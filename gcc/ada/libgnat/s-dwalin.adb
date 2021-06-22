@@ -31,7 +31,6 @@
 
 with Ada.Characters.Handling;
 with Ada.Containers.Generic_Array_Sort;
-with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;
 with Ada.Unchecked_Deallocation;
 
 with Interfaces; use Interfaces;
@@ -42,7 +41,6 @@ with System.Bounded_Strings;   use System.Bounded_Strings;
 with System.IO;                use System.IO;
 with System.Mmap;              use System.Mmap;
 with System.Object_Reader;     use System.Object_Reader;
-with System.Traceback_Entries; use System.Traceback_Entries;
 with System.Storage_Elements;  use System.Storage_Elements;
 
 package body System.Dwarf_Lines is
@@ -1864,7 +1862,7 @@ package body System.Dwarf_Lines is
 
    procedure Symbolic_Traceback
      (Cin          :        Dwarf_Context;
-      Traceback    :        AET.Tracebacks_Array;
+      Traceback    :        STE.Tracebacks_Array;
       Suppress_Hex :        Boolean;
       Symbol_Found :    out Boolean;
       Res          : in out System.Bounded_Strings.Bounded_String)
@@ -1893,7 +1891,7 @@ package body System.Dwarf_Lines is
          --  If the buffer is full, no need to do any useless work
          exit when Is_Full (Res);
 
-         Addr_In_Traceback := PC_For (Traceback (J));
+         Addr_In_Traceback := STE.PC_For (Traceback (J));
 
          Offset_To_Lookup := Addr_In_Traceback - C.Load_Address;
 
