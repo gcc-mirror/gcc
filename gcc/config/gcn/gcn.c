@@ -5642,13 +5642,22 @@ print_operand_address (FILE *file, rtx mem)
 	      if (vgpr_offset == NULL_RTX)
 		/* In this case, the vector offset is zero, so we use the first
 		   lane of v1, which is initialized to zero.  */
-		fprintf (file, "v[1:2]");
+		{
+		  if (HAVE_GCN_ASM_GLOBAL_LOAD_FIXED)
+		    fprintf (file, "v1");
+		  else
+		    fprintf (file, "v[1:2]");
+		}
 	      else if (REG_P (vgpr_offset)
 		       && VGPR_REGNO_P (REGNO (vgpr_offset)))
 		{
-		  fprintf (file, "v[%d:%d]",
-			   REGNO (vgpr_offset) - FIRST_VGPR_REG,
-			   REGNO (vgpr_offset) - FIRST_VGPR_REG + 1);
+		  if (HAVE_GCN_ASM_GLOBAL_LOAD_FIXED)
+		    fprintf (file, "v%d",
+			     REGNO (vgpr_offset) - FIRST_VGPR_REG);
+		  else
+		    fprintf (file, "v[%d:%d]",
+			     REGNO (vgpr_offset) - FIRST_VGPR_REG,
+			     REGNO (vgpr_offset) - FIRST_VGPR_REG + 1);
 		}
 	      else
 		output_operand_lossage ("bad ADDR_SPACE_GLOBAL address");

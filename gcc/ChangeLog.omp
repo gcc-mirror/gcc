@@ -1,3 +1,13 @@
+2021-06-22  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	gcc/configure.ac: fix register issue for global_load assembler functions
+
+	* config.in: Regenerate.
+	* config/gcn/gcn.c (print_operand_address): Fix for global_load
+	assembler functions.
+	* configure: Regenerate.
+	* configure.ac: Fix for global_load assembler functions.
+
 2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
