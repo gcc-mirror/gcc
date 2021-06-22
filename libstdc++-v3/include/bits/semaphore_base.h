@@ -254,7 +254,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__update > 1)
 	__atomic_notify_address_bare(&_M_counter, true);
       else
-	__atomic_notify_address_bare(&_M_counter, false);
+	__atomic_notify_address_bare(&_M_counter, true);
+// FIXME - Figure out why this does not wake a waiting thread
+//	__atomic_notify_address_bare(&_M_counter, false);
     }
 
   private:
