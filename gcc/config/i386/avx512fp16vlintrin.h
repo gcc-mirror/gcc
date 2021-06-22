@@ -151,6 +151,59 @@ _mm256_zextph128_ph256 (__m128h __A)
 					 (__m128) __A, 0);
 }
 
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_conj_pch (__m256h __A)
+{
+  return (__m256h) _mm256_xor_epi32 ((__m256i) __A, _mm256_set1_epi32 (1<<31));
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_conj_pch (__m256h __W, __mmask8 __U, __m256h __A)
+{
+  return (__m256h) __builtin_ia32_movaps256_mask ((__v8sf)
+						   _mm256_conj_pch (__A),
+						  (__v8sf) __W,
+						  (__mmask8) __U);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_conj_pch (__mmask8 __U, __m256h __A)
+{
+  return (__m256h) __builtin_ia32_movaps256_mask ((__v8sf)
+						   _mm256_conj_pch (__A),
+						  (__v8sf)
+						   _mm256_setzero_ps (),
+						  (__mmask8) __U);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_conj_pch (__m128h __A)
+{
+  return (__m128h) _mm_xor_epi32 ((__m128i) __A, _mm_set1_epi32 (1<<31));
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_conj_pch (__m128h __W, __mmask8 __U, __m128h __A)
+{
+  return (__m128h) __builtin_ia32_movaps128_mask ((__v4sf) _mm_conj_pch (__A),
+						  (__v4sf) __W,
+						  (__mmask8) __U);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_conj_pch (__mmask8 __U, __m128h __A)
+{
+  return (__m128h) __builtin_ia32_movaps128_mask ((__v4sf) _mm_conj_pch (__A),
+						  (__v4sf) _mm_setzero_ps (),
+						  (__mmask8) __U);
+}
+
 /* Intrinsics v[add,sub,mul,div]ph.  */
 extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))

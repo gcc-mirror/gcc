@@ -721,6 +721,33 @@ _mm512_maskz_div_round_ph (__mmask32 __A, __m512h __B, __m512h __C,
 					       (A), (D)))
 #endif  /* __OPTIMIZE__  */
 
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_conj_pch (__m512h __A)
+{
+  return (__m512h) _mm512_xor_epi32 ((__m512i) __A, _mm512_set1_epi32 (1<<31));
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_conj_pch (__m512h __W, __mmask16 __U, __m512h __A)
+{
+  return (__m512h)
+    __builtin_ia32_movaps512_mask ((__v16sf) _mm512_conj_pch (__A),
+				   (__v16sf) __W,
+				   (__mmask16) __U);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_conj_pch (__mmask16 __U, __m512h __A)
+{
+  return (__m512h)
+    __builtin_ia32_movaps512_mask ((__v16sf) _mm512_conj_pch (__A),
+				   (__v16sf) _mm512_setzero_ps (),
+				   (__mmask16) __U);
+}
+
 /* Intrinsics of v[add,sub,mul,div]sh.  */
 extern __inline __m128h
   __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
