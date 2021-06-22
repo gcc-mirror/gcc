@@ -731,10 +731,12 @@ ranger_cache::ranger_cache ()
       if (bb)
 	m_gori.exports (bb);
     }
+  m_propfail = BITMAP_ALLOC (NULL);
 }
 
 ranger_cache::~ranger_cache ()
 {
+  BITMAP_FREE (m_propfail);
   if (m_oracle)
     delete m_oracle;
   delete m_temporal;
@@ -990,7 +992,9 @@ ranger_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
 void
 ranger_cache::add_to_update (basic_block bb)
 {
-  if (!m_update_list.contains (bb))
+  // If propagation has failed for BB, or its already in the list, don't
+  // add it again.
+  if (!bitmap_bit_p (m_propfail, bb->index) &&  !m_update_list.contains (bb))
     m_update_list.quick_push (bb);
 }
 
@@ -1007,6 +1011,7 @@ ranger_cache::propagate_cache (tree name)
   int_range_max current_range;
   int_range_max e_range;
 
+  gcc_checking_assert (bitmap_empty_p (m_propfail));
   // Process each block by seeing if its calculated range on entry is
   // the same as its cached value. If there is a difference, update
   // the cache to reflect the new value, and check to see if any
@@ -1063,6 +1068,9 @@ ranger_cache::propagate_cache (tree name)
       if (new_range != current_range)
 	{
 	  bool ok_p = m_on_entry.set_bb_range (name, bb, new_range);
+	  // If the cache couldn't set the value, mark it as failed.
+	  if (!ok_p)
+	    bitmap_set_bit (m_propfail, bb->index);
 	  if (DEBUG_RANGE_CACHE) 
 	    {
 	      if (!ok_p)
@@ -1092,6 +1100,7 @@ ranger_cache::propagate_cache (tree name)
       print_generic_expr (dump_file, name, TDF_SLIM);
       fprintf (dump_file, "\n");
     }
+  bitmap_clear (m_propfail);
 }
 
 // Check to see if an update to the value for NAME in BB has any effect

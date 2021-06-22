@@ -121,6 +121,7 @@ private:
 
   void propagate_updated_value (tree name, basic_block bb);
 
+  bitmap m_propfail;
   vec<basic_block> m_workback;
   vec<basic_block> m_update_list;
 };
