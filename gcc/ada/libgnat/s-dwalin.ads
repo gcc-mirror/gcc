@@ -35,15 +35,14 @@
 --
 --  Files must be compiled with at least minimal debugging information (-g1).
 
-with Ada.Exceptions.Traceback;
-
+with System.Bounded_Strings;
 with System.Object_Reader;
 with System.Storage_Elements;
-with System.Bounded_Strings;
+with System.Traceback_Entries;
 
 package System.Dwarf_Lines is
 
-   package AET renames Ada.Exceptions.Traceback;
+   package STE renames System.Traceback_Entries;
    package SOR renames System.Object_Reader;
 
    type Dwarf_Context (In_Exception : Boolean := False) is private;
@@ -83,7 +82,7 @@ package System.Dwarf_Lines is
 
    procedure Symbolic_Traceback
      (Cin          :        Dwarf_Context;
-      Traceback    :        AET.Tracebacks_Array;
+      Traceback    :        STE.Tracebacks_Array;
       Suppress_Hex :        Boolean;
       Symbol_Found :    out Boolean;
       Res          : in out System.Bounded_Strings.Bounded_String);
