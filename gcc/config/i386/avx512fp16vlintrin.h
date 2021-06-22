@@ -3253,6 +3253,68 @@ _mm_reduce_max_ph (__m128h __A)
 #undef _MM256_REDUCE_OP
 #undef _MM_REDUCE_OP
 
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_blend_ph (__mmask16 __U, __m256h __A, __m256h __W)
+{
+  return (__m256h) __builtin_ia32_movdquhi256_mask ((__v16hi) __W,
+						    (__v16hi) __A,
+						    (__mmask16) __U);
+
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_permutex2var_ph (__m256h __A, __m256i __I, __m256h __B)
+{
+  return (__m256h) __builtin_ia32_vpermi2varhi256_mask ((__v16hi) __A,
+						       (__v16hi) __I,
+						       (__v16hi) __B,
+						       (__mmask16)-1);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_permutexvar_ph (__m256i __A, __m256h __B)
+{
+  return (__m256h) __builtin_ia32_permvarhi256_mask ((__v16hi) __B,
+						     (__v16hi) __A,
+						     (__v16hi)
+						     (_mm256_setzero_ph ()),
+						     (__mmask16)-1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_blend_ph (__mmask8 __U, __m128h __A, __m128h __W)
+{
+  return (__m128h) __builtin_ia32_movdquhi128_mask ((__v8hi) __W,
+						    (__v8hi) __A,
+						    (__mmask8) __U);
+
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_permutex2var_ph (__m128h __A, __m128i __I, __m128h __B)
+{
+  return (__m128h) __builtin_ia32_vpermi2varhi128_mask ((__v8hi) __A,
+						       (__v8hi) __I,
+						       (__v8hi) __B,
+						       (__mmask8)-1);
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_permutexvar_ph (__m128i __A, __m128h __B)
+{
+  return (__m128h) __builtin_ia32_permvarhi128_mask ((__v8hi) __B,
+						     (__v8hi) __A,
+						     (__v8hi)
+						     (_mm_setzero_ph ()),
+						     (__mmask8)-1);
+}
+
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__
 #pragma GCC pop_options

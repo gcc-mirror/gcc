@@ -7211,6 +7211,37 @@ _mm512_reduce_max_ph (__m512h __A)
 
 #undef _MM512_REDUCE_OP
 
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_blend_ph (__mmask32 __U, __m512h __A, __m512h __W)
+{
+  return (__m512h) __builtin_ia32_movdquhi512_mask ((__v32hi) __W,
+						    (__v32hi) __A,
+						    (__mmask32) __U);
+
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_permutex2var_ph (__m512h __A, __m512i __I, __m512h __B)
+{
+  return (__m512h) __builtin_ia32_vpermi2varhi512_mask ((__v32hi) __A,
+						       (__v32hi) __I,
+						       (__v32hi) __B,
+						       (__mmask32)-1);
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_permutexvar_ph (__m512i __A, __m512h __B)
+{
+  return (__m512h) __builtin_ia32_permvarhi512_mask ((__v32hi) __B,
+						     (__v32hi) __A,
+						     (__v32hi)
+						     (_mm512_setzero_ph ()),
+						     (__mmask32)-1);
+}
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options
