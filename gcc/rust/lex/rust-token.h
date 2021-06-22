@@ -262,9 +262,9 @@ private:
   {}
 
   // Token constructor from token id, location, and a string.
-  Token (TokenId token_id, Location location, const std::string &paramStr)
-    : token_id (token_id), locus (location), str (new std::string (paramStr)),
-      type_hint (CORETYPE_UNKNOWN)
+  Token (TokenId token_id, Location location, std::string &&paramStr)
+    : token_id (token_id), locus (location),
+      str (new std::string (std::move (paramStr))), type_hint (CORETYPE_UNKNOWN)
   {}
 
   // Token constructor from token id, location, and a char.
@@ -281,10 +281,10 @@ private:
   {}
 
   // Token constructor from token id, location, a string, and type hint.
-  Token (TokenId token_id, Location location, const std::string &paramStr,
+  Token (TokenId token_id, Location location, std::string &&paramStr,
 	 PrimitiveCoreType parType)
-    : token_id (token_id), locus (location), str (new std::string (paramStr)),
-      type_hint (parType)
+    : token_id (token_id), locus (location),
+      str (new std::string (std::move (paramStr))), type_hint (parType)
   {}
 
 public:
@@ -311,34 +311,37 @@ public:
   }
 
   // Makes and returns a new TokenPtr of type IDENTIFIER.
-  static TokenPtr make_identifier (Location locus, const std::string &str)
+  static TokenPtr make_identifier (Location locus, std::string &&str)
   {
     // return std::make_shared<Token> (IDENTIFIER, locus, str);
-    return TokenPtr (new Token (IDENTIFIER, locus, str));
+    return TokenPtr (new Token (IDENTIFIER, locus, std::move (str)));
   }
 
   // Makes and returns a new TokenPtr of type INT_LITERAL.
-  static TokenPtr make_int (Location locus, const std::string &str,
+  static TokenPtr make_int (Location locus, std::string &&str,
 			    PrimitiveCoreType type_hint = CORETYPE_UNKNOWN)
   {
     // return std::make_shared<Token> (INT_LITERAL, locus, str, type_hint);
-    return TokenPtr (new Token (INT_LITERAL, locus, str, type_hint));
+    return TokenPtr (
+      new Token (INT_LITERAL, locus, std::move (str), type_hint));
   }
 
   // Makes and returns a new TokenPtr of type FLOAT_LITERAL.
-  static TokenPtr make_float (Location locus, const std::string &str,
+  static TokenPtr make_float (Location locus, std::string &&str,
 			      PrimitiveCoreType type_hint = CORETYPE_UNKNOWN)
   {
     // return std::make_shared<Token> (FLOAT_LITERAL, locus, str, type_hint);
-    return TokenPtr (new Token (FLOAT_LITERAL, locus, str, type_hint));
+    return TokenPtr (
+      new Token (FLOAT_LITERAL, locus, std::move (str), type_hint));
   }
 
   // Makes and returns a new TokenPtr of type STRING_LITERAL.
-  static TokenPtr make_string (Location locus, const std::string &str)
+  static TokenPtr make_string (Location locus, std::string &&str)
   {
     // return std::make_shared<Token> (STRING_LITERAL, locus, str,
     // CORETYPE_STR);
-    return TokenPtr (new Token (STRING_LITERAL, locus, str, CORETYPE_STR));
+    return TokenPtr (
+      new Token (STRING_LITERAL, locus, std::move (str), CORETYPE_STR));
   }
 
   // Makes and returns a new TokenPtr of type CHAR_LITERAL.
@@ -356,17 +359,17 @@ public:
   }
 
   // Makes and returns a new TokenPtr of type BYTE_STRING_LITERAL (fix).
-  static TokenPtr make_byte_string (Location locus, const std::string &str)
+  static TokenPtr make_byte_string (Location locus, std::string &&str)
   {
     // return std::make_shared<Token> (BYTE_STRING_LITERAL, locus, str);
-    return TokenPtr (new Token (BYTE_STRING_LITERAL, locus, str));
+    return TokenPtr (new Token (BYTE_STRING_LITERAL, locus, std::move (str)));
   }
 
   // Makes and returns a new TokenPtr of type LIFETIME.
-  static TokenPtr make_lifetime (Location locus, const std::string &str)
+  static TokenPtr make_lifetime (Location locus, std::string &&str)
   {
     // return std::make_shared<Token> (LIFETIME, locus, str);
-    return TokenPtr (new Token (LIFETIME, locus, str));
+    return TokenPtr (new Token (LIFETIME, locus, std::move (str)));
   }
 
   // Gets id of the token.

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020, 2021 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -1436,7 +1436,7 @@ Lexer::parse_byte_string (Location loc)
 
   str.shrink_to_fit ();
 
-  return Token::make_byte_string (loc, str);
+  return Token::make_byte_string (loc, std::move (str));
 }
 
 // Parses a raw byte string.
@@ -1509,7 +1509,7 @@ Lexer::parse_raw_byte_string (Location loc)
 
   str.shrink_to_fit ();
 
-  return Token::make_byte_string (loc, str);
+  return Token::make_byte_string (loc, std::move (str));
 }
 
 // Parses a raw identifier.
@@ -1559,7 +1559,7 @@ Lexer::parse_raw_identifier (Location loc)
     {
       str.shrink_to_fit ();
 
-      return Token::make_identifier (loc, str);
+      return Token::make_identifier (loc, std::move (str));
     }
 }
 
@@ -1623,7 +1623,7 @@ Lexer::parse_string (Location loc)
     }
 
   str.shrink_to_fit ();
-  return Token::make_string (loc, str);
+  return Token::make_string (loc, std::move (str));
 }
 
 // Parses an identifier or keyword.
@@ -1659,7 +1659,7 @@ Lexer::parse_identifier_or_keyword (Location loc)
 
   TokenId keyword = classify_keyword (str);
   if (keyword == IDENTIFIER)
-    return Token::make_identifier (loc, str);
+    return Token::make_identifier (loc, std::move (str));
   else
     return Token::make (keyword, loc);
 }
@@ -1736,7 +1736,7 @@ Lexer::parse_raw_string (Location loc, int initial_hash_count)
 
   str.shrink_to_fit ();
 
-  return Token::make_string (loc, str);
+  return Token::make_string (loc, std::move (str));
 }
 
 template <typename IsDigitFunc>
@@ -1797,7 +1797,7 @@ Lexer::parse_non_decimal_int_literal (Location loc, IsDigitFunc is_digit_func,
 						 : "<insert unknown base>")));
       return nullptr;
     }
-  return Token::make_int (loc, existent_str, type_hint);
+  return Token::make_int (loc, std::move (existent_str), type_hint);
 }
 
 // Parses a hex, binary or octal int literal.
@@ -1889,7 +1889,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
       current_column += length;
 
       str.shrink_to_fit ();
-      return Token::make_float (loc, str, type_hint);
+      return Token::make_float (loc, std::move (str), type_hint);
     }
   else if (current_char == '.' && check_valid_float_dot_end (peek_input (1)))
     {
@@ -1909,7 +1909,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
       current_column += length;
 
       str.shrink_to_fit ();
-      return Token::make_float (loc, str, CORETYPE_UNKNOWN);
+      return Token::make_float (loc, std::move (str), CORETYPE_UNKNOWN);
     }
   else if (current_char == 'E' || current_char == 'e')
     {
@@ -1938,7 +1938,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
       current_column += length;
 
       str.shrink_to_fit ();
-      return Token::make_float (loc, str, type_hint);
+      return Token::make_float (loc, std::move (str), type_hint);
     }
   else
     {
@@ -1952,7 +1952,7 @@ Lexer::parse_decimal_int_or_float (Location loc)
       current_column += length;
 
       str.shrink_to_fit ();
-      return Token::make_int (loc, str, type_hint);
+      return Token::make_int (loc, std::move (str), type_hint);
     }
 }
 
@@ -2026,7 +2026,7 @@ Lexer::parse_char_or_lifetime (Location loc)
 	  current_column += length;
 
 	  str.shrink_to_fit ();
-	  return Token::make_lifetime (loc, str);
+	  return Token::make_lifetime (loc, std::move (str));
 	}
       else
 	{
