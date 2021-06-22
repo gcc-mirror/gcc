@@ -232,6 +232,7 @@ emit_documentation (const char *in_fname)
 			  deftype, hook_array[j].docname,
 			  hook_array[j].type, namex);
 		}
+	      printf ("\n@c hook-start:%s", hook_array[i].name);
 	      if (hook_array[i].doc[0])
 		{
 		  printf ("\n");
@@ -245,6 +246,7 @@ emit_documentation (const char *in_fname)
 		    }
 		  printf ("\n@end %s", deftype);
 		}
+	      printf ("\n@c hook-end");
 	    }
 	  if (++i >= (int) (sizeof hook_array / sizeof hook_array[0])
 	      || !hook_array[i].doc)

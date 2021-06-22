@@ -44,21 +44,7 @@ DEFHOOKPODX (close_paren, const char *, ")")
 /* Assembler instructions for creating various kinds of integer object.  */
 DEFHOOKPOD
 (byte_op,
- "@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_HI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PSI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_SI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PDI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_DI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PTI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_TI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_HI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PSI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_SI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PDI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_DI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PTI_OP\n\
-@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_TI_OP\n\
-These hooks specify assembly directives for creating certain kinds\n\
+ "These hooks specify assembly directives for creating certain kinds\n\
 of integer object.  The @code{TARGET_ASM_BYTE_OP} directive creates a\n\
 byte-sized object, the @code{TARGET_ASM_ALIGNED_HI_OP} one creates an\n\
 aligned two-byte object, and so on.  Any of the hooks may be\n\
