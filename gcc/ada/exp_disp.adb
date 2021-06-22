@@ -93,10 +93,6 @@ package body Exp_Disp is
    --  Duplicate_Subexpr with an explicit dereference when From is an access
    --  parameter.
 
-   function Original_View_In_Visible_Part (Typ : Entity_Id) return Boolean;
-   --  Check if the type has a private view or if the public view appears in
-   --  the visible part of a package spec.
-
    function Prim_Op_Kind
      (Prim : Entity_Id;
       Typ  : Entity_Id) return Node_Id;
@@ -7393,31 +7389,6 @@ package body Exp_Disp is
          return Res;
       end if;
    end New_Value;
-
-   -----------------------------------
-   -- Original_View_In_Visible_Part --
-   -----------------------------------
-
-   function Original_View_In_Visible_Part (Typ : Entity_Id) return Boolean is
-      Scop : constant Entity_Id := Scope (Typ);
-
-   begin
-      --  The scope must be a package
-
-      if not Is_Package_Or_Generic_Package (Scop) then
-         return False;
-      end if;
-
-      --  A type with a private declaration has a private view declared in
-      --  the visible part.
-
-      if Has_Private_Declaration (Typ) then
-         return True;
-      end if;
-
-      return List_Containing (Parent (Typ)) =
-        Visible_Declarations (Package_Specification (Scop));
-   end Original_View_In_Visible_Part;
 
    ------------------
    -- Prim_Op_Kind --

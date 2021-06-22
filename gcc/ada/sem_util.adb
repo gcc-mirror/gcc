@@ -13399,7 +13399,10 @@ package body Sem_Util is
    -- Has_Preelaborable_Initialization --
    --------------------------------------
 
-   function Has_Preelaborable_Initialization (E : Entity_Id) return Boolean is
+   function Has_Preelaborable_Initialization
+     (E                              : Entity_Id;
+      Formal_Types_Have_Preelab_Init : Boolean := False) return Boolean
+   is
       Has_PE : Boolean;
 
       procedure Check_Components (E : Entity_Id);
@@ -13453,7 +13456,9 @@ package body Sem_Util is
             --  component type has PI.
 
             if No (Exp) then
-               if not Has_Preelaborable_Initialization (Etype (Ent)) then
+               if not Has_Preelaborable_Initialization
+                        (Etype (Ent), Formal_Types_Have_Preelab_Init)
+               then
                   Has_PE := False;
                   exit;
                end if;
@@ -13499,7 +13504,8 @@ package body Sem_Util is
       --  Array types have PI if the component type has PI
 
       elsif Is_Array_Type (E) then
-         Has_PE := Has_Preelaborable_Initialization (Component_Type (E));
+         Has_PE := Has_Preelaborable_Initialization
+                     (Component_Type (E), Formal_Types_Have_Preelab_Init);
 
       --  A derived type has preelaborable initialization if its parent type
       --  has preelaborable initialization and (in the case of a derived record
@@ -13509,6 +13515,14 @@ package body Sem_Util is
       --  initialization.
 
       elsif Is_Derived_Type (E) then
+
+         --  When the rule of RM 10.2.1(11.8/5) applies, we presume a component
+         --  of a generic formal derived type has preelaborable initialization.
+         --  (See comment on spec of Has_Preelaborable_Initialization.)
+
+         if Is_Generic_Type (E) and then Formal_Types_Have_Preelab_Init then
+            return True;
+         end if;
 
          --  If the derived type is a private extension then it doesn't have
          --  preelaborable initialization.
@@ -13545,7 +13559,16 @@ package body Sem_Util is
       --  have preelaborable initialization.
 
       elsif Is_Private_Type (E) then
-         return False;
+
+         --  When the rule of RM 10.2.1(11.8/5) applies, we presume a component
+         --  of a generic formal private type has preelaborable initialization.
+         --  (See comment on spec of Has_Preelaborable_Initialization.)
+
+         if Is_Generic_Type (E) and then Formal_Types_Have_Preelab_Init then
+            return True;
+         else
+            return False;
+         end if;
 
       --  Record type has PI if it is non private and all components have PI
 
@@ -16276,6 +16299,49 @@ package body Sem_Util is
         or else Is_Synchronized_Interface (T)
         or else Is_Task_Interface (T);
    end Is_Concurrent_Interface;
+
+   ------------------------------------------------------
+   -- Is_Conjunction_Of_Formal_Preelab_Init_Attributes --
+   ------------------------------------------------------
+
+   function Is_Conjunction_Of_Formal_Preelab_Init_Attributes
+     (Expr : Node_Id) return Boolean
+   is
+
+      function Is_Formal_Preelab_Init_Attribute
+        (N : Node_Id) return Boolean;
+      --  Returns True if N is a Preelaborable_Initialization attribute
+      --  applied to a generic formal type, or N's Original_Node is such
+      --  an attribute.
+
+      --------------------------------------
+      -- Is_Formal_Preelab_Init_Attribute --
+      --------------------------------------
+
+      function Is_Formal_Preelab_Init_Attribute
+        (N : Node_Id) return Boolean
+      is
+         Orig_N : constant Node_Id := Original_Node (N);
+
+      begin
+         return Nkind (Orig_N) = N_Attribute_Reference
+           and then Attribute_Name (Orig_N) = Name_Preelaborable_Initialization
+           and then Is_Entity_Name (Prefix (Orig_N))
+           and then Is_Generic_Type (Entity (Prefix (Orig_N)));
+      end Is_Formal_Preelab_Init_Attribute;
+
+   --  Start of Is_Conjunction_Of_Formal_Preelab_Init_Attributes
+
+   begin
+      return Is_Formal_Preelab_Init_Attribute (Expr)
+        or else (Nkind (Expr) = N_Op_And
+                  and then
+                    Is_Conjunction_Of_Formal_Preelab_Init_Attributes
+                      (Left_Opnd (Expr))
+                  and then
+                    Is_Conjunction_Of_Formal_Preelab_Init_Attributes
+                      (Right_Opnd (Expr)));
+   end Is_Conjunction_Of_Formal_Preelab_Init_Attributes;
 
    -----------------------
    -- Is_Constant_Bound --
@@ -25995,6 +26061,33 @@ package body Sem_Util is
          return S;
       end if;
    end Original_Corresponding_Operation;
+
+   -----------------------------------
+   -- Original_View_In_Visible_Part --
+   -----------------------------------
+
+   function Original_View_In_Visible_Part
+     (Typ : Entity_Id) return Boolean
+   is
+      Scop : constant Entity_Id := Scope (Typ);
+
+   begin
+      --  The scope must be a package
+
+      if not Is_Package_Or_Generic_Package (Scop) then
+         return False;
+      end if;
+
+      --  A type with a private declaration has a private view declared in
+      --  the visible part.
+
+      if Has_Private_Declaration (Typ) then
+         return True;
+      end if;
+
+      return List_Containing (Parent (Typ)) =
+        Visible_Declarations (Package_Specification (Scop));
+   end Original_View_In_Visible_Part;
 
    -------------------
    -- Output_Entity --

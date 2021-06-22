@@ -175,6 +175,7 @@ package body Sem_Attr is
    Attribute_22 : constant Attribute_Class_Array := Attribute_Class_Array'(
       Attribute_Enum_Rep                     |
       Attribute_Enum_Val                     => True,
+      Attribute_Preelaborable_Initialization => True,
       others                                 => False);
 
    --  The following array contains all attributes that imply a modification
@@ -5408,6 +5409,45 @@ package body Sem_Attr is
             end if;
          end if;
 
+      ----------------------------------
+      -- Preelaborable_Initialization --
+      ----------------------------------
+
+      when Attribute_Preelaborable_Initialization =>
+         Check_E0;
+         Check_Type;
+
+         --  If we're in an instance, we know that the legality of the
+         --  attribute prefix type was already checked in the generic.
+
+         if not In_Instance then
+
+            --  If the prefix type is a generic formal type, then it must be
+            --  either a formal private type or a formal derived type.
+
+            if Is_Generic_Type (P_Type) then
+               if not Is_Private_Type (P_Type)
+                 and then not Is_Derived_Type (P_Type)
+               then
+                  Error_Attr_P ("formal type prefix of % attribute must be "
+                                 & "formal private or formal derived type");
+               end if;
+
+            --  Otherwise, the prefix type must be a nonformal composite
+            --  type declared within the visible part of a package or
+            --  generic package.
+
+            elsif not Is_Composite_Type (P_Type)
+              or else not Original_View_In_Visible_Part (P_Type)
+            then
+               Error_Attr_P
+                 ("prefix of % attribute must be composite type declared "
+                    & "in visible part of a package or generic package");
+            end if;
+         end if;
+
+         Set_Etype (N, Standard_Boolean);
+
       --------------
       -- Priority --
       --------------
@@ -8182,15 +8222,16 @@ package body Sem_Attr is
       --  is to say if we are within an instantiation. Same processing applies
       --  to selected GNAT attributes.
 
-      elsif (Id = Attribute_Atomic_Always_Lock_Free or else
-             Id = Attribute_Definite                or else
-             Id = Attribute_Descriptor_Size         or else
-             Id = Attribute_Has_Access_Values       or else
-             Id = Attribute_Has_Discriminants       or else
-             Id = Attribute_Has_Tagged_Values       or else
-             Id = Attribute_Lock_Free               or else
-             Id = Attribute_Type_Class              or else
-             Id = Attribute_Unconstrained_Array     or else
+      elsif (Id = Attribute_Atomic_Always_Lock_Free      or else
+             Id = Attribute_Definite                     or else
+             Id = Attribute_Descriptor_Size              or else
+             Id = Attribute_Has_Access_Values            or else
+             Id = Attribute_Has_Discriminants            or else
+             Id = Attribute_Has_Tagged_Values            or else
+             Id = Attribute_Lock_Free                    or else
+             Id = Attribute_Preelaborable_Initialization or else
+             Id = Attribute_Type_Class                   or else
+             Id = Attribute_Unconstrained_Array          or else
              Id = Attribute_Max_Alignment_For_Allocation)
         and then not Is_Generic_Type (P_Entity)
       then
@@ -8315,15 +8356,20 @@ package body Sem_Attr is
       --  unconstrained arrays. Furthermore, it is essential to fold this
       --  in the packed case, since otherwise the value will be incorrect.
 
-      elsif Id = Attribute_Atomic_Always_Lock_Free or else
-            Id = Attribute_Definite                or else
-            Id = Attribute_Descriptor_Size         or else
-            Id = Attribute_Has_Access_Values       or else
-            Id = Attribute_Has_Discriminants       or else
-            Id = Attribute_Has_Tagged_Values       or else
-            Id = Attribute_Lock_Free               or else
-            Id = Attribute_Type_Class              or else
-            Id = Attribute_Unconstrained_Array     or else
+      --  Folding can also be done for Preelaborable_Initialization based on
+      --  whether the prefix type has preelaborable initialization, even though
+      --  the attribute is nonstatic.
+
+      elsif Id = Attribute_Atomic_Always_Lock_Free      or else
+            Id = Attribute_Definite                     or else
+            Id = Attribute_Descriptor_Size              or else
+            Id = Attribute_Has_Access_Values            or else
+            Id = Attribute_Has_Discriminants            or else
+            Id = Attribute_Has_Tagged_Values            or else
+            Id = Attribute_Lock_Free                    or else
+            Id = Attribute_Preelaborable_Initialization or else
+            Id = Attribute_Type_Class                   or else
+            Id = Attribute_Unconstrained_Array          or else
             Id = Attribute_Component_Size
       then
          Static := False;
@@ -9608,6 +9654,17 @@ package body Sem_Attr is
 
             Fold_Uint (N, Expr_Value (E1) - 1, Static);
          end if;
+
+      ----------------------------------
+      -- Preelaborable_Initialization --
+      ----------------------------------
+
+      when Attribute_Preelaborable_Initialization =>
+         Fold_Uint
+           (N,
+            UI_From_Int
+              (Boolean'Pos (Has_Preelaborable_Initialization (P_Type))),
+            Static);
 
       -----------
       -- Range --

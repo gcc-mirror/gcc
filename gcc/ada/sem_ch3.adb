@@ -2648,6 +2648,48 @@ package body Sem_Ch3 is
          E := First_Entity (Current_Scope);
          while Present (E) loop
             Resolve_Aspect_Expressions (E);
+
+            --  Now that the aspect expressions have been resolved, if this is
+            --  at the end of the visible declarations, we can set the flag
+            --  Known_To_Have_Preelab_Init properly on types declared in the
+            --  visible part, which is needed for checking whether full types
+            --  in the private part satisfy the Preelaborable_Initialization
+            --  aspect of the partial view. We can't wait for the creation of
+            --  the pragma by Analyze_Aspects_At_Freeze_Point, because the
+            --  freeze point may occur after the end of the package declaration
+            --  (in the case of nested packages).
+
+            if Is_Type (E)
+              and then L = Visible_Declarations (Parent (L))
+              and then Has_Aspect (E, Aspect_Preelaborable_Initialization)
+            then
+               declare
+                  ASN  : constant Node_Id :=
+                    Find_Aspect (E, Aspect_Preelaborable_Initialization);
+                  Expr : constant Node_Id := Expression (ASN);
+               begin
+                  --  Set Known_To_Have_Preelab_Init to True if aspect has no
+                  --  expression, or if the expression is True (or was folded
+                  --  to True), or if the expression is a conjunction of one or
+                  --  more Preelaborable_Initialization attributes applied to
+                  --  formal types and wasn't folded to False. (Note that
+                  --  Is_Conjunction_Of_Formal_Preelab_Init_Attributes goes to
+                  --  Original_Node if needed, hence test for Standard_False.)
+
+                  if not Present (Expr)
+                    or else (Is_Entity_Name (Expr)
+                              and then Entity (Expr) = Standard_True)
+                    or else
+                      (Is_Conjunction_Of_Formal_Preelab_Init_Attributes (Expr)
+                        and then
+                          not (Is_Entity_Name (Expr)
+                                and then Entity (Expr) = Standard_False))
+                  then
+                     Set_Known_To_Have_Preelab_Init (E);
+                  end if;
+               end;
+            end if;
+
             Next_Entity (E);
          end loop;
       end Resolve_Aspects;

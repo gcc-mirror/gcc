@@ -5530,6 +5530,21 @@ package body Exp_Attr is
          end if;
       end Pred;
 
+      ----------------------------------
+      -- Preelaborable_Initialization --
+      ----------------------------------
+
+      when Attribute_Preelaborable_Initialization =>
+
+         --  This attribute should already be folded during analysis, but if
+         --  for some reason it hasn't been, we fold it now.
+
+         Fold_Uint
+           (N,
+            UI_From_Int
+              (Boolean'Pos (Has_Preelaborable_Initialization (Ptyp))),
+            Static => False);
+
       --------------
       -- Priority --
       --------------

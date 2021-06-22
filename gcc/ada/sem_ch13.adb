@@ -1455,9 +1455,17 @@ package body Sem_Ch13 is
                      --  Aspect Full_Access_Only must be analyzed last so that
                      --  aspects Volatile and Atomic, if any, are analyzed.
 
+                     --  Skip creation of pragma Preelaborable_Initialization
+                     --  in the case where the aspect has an expression,
+                     --  because the pragma is only needed for setting flag
+                     --  Known_To_Have_Preelab_Init, which is set by other
+                     --  means following resolution of the aspect expression.
+
                      if A_Id not in Aspect_Export
                                   | Aspect_Full_Access_Only
                                   | Aspect_Import
+                       and then (A_Id /= Aspect_Preelaborable_Initialization
+                                  or else not Present (Expression (ASN)))
                      then
                         Make_Pragma_From_Boolean_Aspect (ASN);
                      end if;
@@ -2915,6 +2923,7 @@ package body Sem_Ch13 is
                             | Aspect_Async_Writers
                             | Aspect_Effective_Reads
                             | Aspect_Effective_Writes
+                            | Aspect_Preelaborable_Initialization
             then
                Error_Msg_Name_1 := Nam;
 
@@ -2951,6 +2960,7 @@ package body Sem_Ch13 is
                                   | Aspect_Async_Writers
                                   | Aspect_Effective_Reads
                                   | Aspect_Effective_Writes
+                                  | Aspect_Preelaborable_Initialization
                   then
                      Error_Msg_N
                        ("aspect % not allowed for formal type declaration",
@@ -13700,6 +13710,7 @@ package body Sem_Ch13 is
                                       | Attribute_Iterable
                                       | Attribute_Iterator_Element
                                       | Attribute_Output
+                                      | Attribute_Put_Image
                                       | Attribute_Read
                                       | Attribute_Variable_Indexing
                                       | Attribute_Write;
