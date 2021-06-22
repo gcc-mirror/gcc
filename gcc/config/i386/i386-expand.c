@@ -1316,6 +1316,9 @@ find_nearest_reg_def (rtx_insn *insn, int regno1, int regno2)
   return false;
 }
 
+/* INSN_UID of the last insn emitted by zero store peephole2s.  */
+int ix86_last_zero_store_uid;
+
 /* Split lea instructions into a sequence of instructions
    which are executed on ALU to avoid AGU stalls.
    It is assumed that it is allowed to clobber flags register
