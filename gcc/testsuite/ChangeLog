@@ -1,3 +1,63 @@
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c (extsd2q): Update expected
+	count.
+	Add tests for vec_signextq.
+	* gcc.target/powerpc/p9-sign_extend-runnable.c:  New test case.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/fp128_conversions.c: New file.
+	* gcc.target/powerpc/int_128bit-runnable.c(vextsd2q,
+	vcmpuq, vcmpsq, vcmpequq, vcmpequq., vcmpgtsq, vcmpgtsq.
+	vcmpgtuq, vcmpgtuq.): Update scan-assembler-times.
+	(ppc_native_128bit): Remove dg-require-effective-target.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c: Add shift_right, shift_left
+	tests.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c: Add 128-bit DFP
+	conversion tests.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c: New test file.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/check-builtin-vec_rlnm-runnable.c:
+	New runnable test case.
+	* gcc.target/powerpc/vec-rlmi-rlnm.c: Update scan assembler times
+	for xxlor instruction.
+
+2021-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101106
+	* g++.dg/cpp0x/deleted15.C: New test.
+
+2021-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100879
+	* g++.dg/diagnostic/enum3.C: New test.
+
+2021-06-21  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	Backported from master:
+	2021-06-18  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-2logical.c: Update pattern
+	match counts.
+	* gcc.target/powerpc/fusion-p10-addadd.c: Update pattern match
+	counts.
+	* gcc.target/powerpc/fusion-p10-ldcmpi.c: Update pattern match
+	counts.
+	* gcc.target/powerpc/fusion-p10-logadd.c: Update pattern match
+	counts.
+
 2021-06-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

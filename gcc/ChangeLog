@@ -1,3 +1,128 @@
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_signextll, vec_signexti, vec_signextq):
+	Add define for new builtins.
+	* config/rs6000/altivec.md(altivec_vreveti2): Add define_expand.
+	* config/rs6000/rs6000-builtin.def (VSIGNEXTI, VSIGNEXTLL):  Add
+	overloaded builtin definitions.
+	(VSIGNEXTSB2W, VSIGNEXTSH2W, VSIGNEXTSB2D, VSIGNEXTSH2D,VSIGNEXTSW2D,
+	VSIGNEXTSD2Q):	Add builtin expansions.
+	(SIGNEXT): Add P10 overload definition.
+	* config/rs6000/rs6000-call.c (P9V_BUILTIN_VEC_VSIGNEXTI,
+	P9V_BUILTIN_VEC_VSIGNEXTLL, P10_BUILTIN_VEC_SIGNEXT): Add
+	overloaded argument definitions.
+	* config/rs6000/vsx.md (vsx_sign_extend_v2di_v1ti): Add define_insn.
+	(vsignextend_v2di_v1ti, vsignextend_qi_<mode>, vsignextend_hi_<mode>,
+	vsignextend_si_v2di)[VIlong]: Add define_expand.
+	Make define_insn vsx_sign_extend_si_v2di visible.
+	* doc/extend.texi:  Add documentation for the vec_signexti,
+	vec_signextll builtins and vec_signextq.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000.c (__fixkfti, __fixunskfti, __floattikf,
+	__floatuntikf): Names changed to __fixkfti_sw, __fixunskfti_sw,
+	__floattikf_sw, __floatuntikf_sw respectively.
+	* config/rs6000/rs6000.md (floatti<mode>2, floatunsti<mode>2,
+	fix_trunc<mode>ti2, fixuns_trunc<mode>ti2): Add
+	define_insn for mode IEEE 128.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vslq, altivec_vsrq):
+	Rename to altivec_vslq_<mode>, altivec_vsrq_<mode>, mode VEC_TI.
+	* config/rs6000/vector.md (VEC_TI): Was named VSX_TI in vsx.md.
+	(vashlv1ti3): Change to vashl<mode>3, mode VEC_TI.
+	(vlshrv1ti3): Change to vlshr<mode>3, mode VEC_TI.
+	* config/rs6000/vsx.md (VSX_TI): Remove define_mode_iterator. Update
+	uses of VSX_TI to VEC_TI.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/dfp.md (floattitd2, fixtdti2): New define_insns.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_dive, vec_mod): Add define for new
+	builtins.
+	* config/rs6000/altivec.md (UNSPEC_VMULEUD, UNSPEC_VMULESD,
+	UNSPEC_VMULOUD, UNSPEC_VMULOSD): New unspecs.
+	(altivec_eqv1ti, altivec_gtv1ti, altivec_gtuv1ti, altivec_vmuleud,
+	altivec_vmuloud, altivec_vmulesd, altivec_vmulosd, altivec_vrlq,
+	altivec_vrlqmi, altivec_vrlqmi_inst, altivec_vrlqnm,
+	altivec_vrlqnm_inst, altivec_vslq, altivec_vsrq, altivec_vsraq,
+	altivec_vcmpequt_p, altivec_vcmpgtst_p, altivec_vcmpgtut_p): New
+	define_insn.
+	(vec_widen_umult_even_v2di, vec_widen_smult_even_v2di,
+	vec_widen_umult_odd_v2di, vec_widen_smult_odd_v2di, altivec_vrlqmi,
+	altivec_vrlqnm): New define_expands.
+	* config/rs6000/rs6000-builtin.def (VCMPEQUT_P, VCMPGTST_P,
+	VCMPGTUT_P): Add macro expansions.
+	(BU_P10V_AV_P): Add builtin predicate definition.
+	(VCMPGTUT, VCMPGTST, VCMPEQUT, CMPNET, CMPGE_1TI,
+	CMPGE_U1TI, CMPLE_1TI, CMPLE_U1TI, VNOR_V1TI_UNS, VNOR_V1TI, VCMPNET_P,
+	VCMPAET_P, VMULEUD, VMULESD, VMULOUD, VMULOSD, VRLQ,
+	VSLQ, VSRQ, VSRAQ, VRLQNM, DIV_V1TI, UDIV_V1TI, DIVES_V1TI, DIVEU_V1TI,
+	MODS_V1TI, MODU_V1TI, VRLQMI): New macro expansions.
+	(VRLQ, VSLQ, VSRQ, VSRAQ, DIVE, MOD): New overload expansions.
+	* config/rs6000/rs6000-call.c (P10_BUILTIN_VCMPEQUT,
+	P10V_BUILTIN_CMPGE_1TI, P10V_BUILTIN_CMPGE_U1TI,
+	P10V_BUILTIN_VCMPGTUT, P10V_BUILTIN_VCMPGTST,
+	P10V_BUILTIN_CMPLE_1TI, P10V_BUILTIN_VCMPLE_U1TI,
+	P10V_BUILTIN_DIV_V1TI, P10V_BUILTIN_UDIV_V1TI,
+	P10V_BUILTIN_VMULESD, P10V_BUILTIN_VMULEUD,
+	P10V_BUILTIN_VMULOSD, P10V_BUILTIN_VMULOUD,
+	P10V_BUILTIN_VNOR_V1TI, P10V_BUILTIN_VNOR_V1TI_UNS,
+	P10V_BUILTIN_VRLQ, P10V_BUILTIN_VRLQMI,
+	P10V_BUILTIN_VRLQNM, P10V_BUILTIN_VSLQ,
+	P10V_BUILTIN_VSRQ, P10V_BUILTIN_VSRAQ,
+	P10V_BUILTIN_VCMPGTUT_P, P10V_BUILTIN_VCMPGTST_P,
+	P10V_BUILTIN_VCMPEQUT_P, P10V_BUILTIN_VCMPGTUT_P,
+	P10V_BUILTIN_VCMPGTST_P, P10V_BUILTIN_CMPNET,
+	P10V_BUILTIN_VCMPNET_P, P10V_BUILTIN_VCMPAET_P,
+	P10V_BUILTIN_DIVES_V1TI, P10V_BUILTIN_MODS_V1TI,
+	P10V_BUILTIN_MODU_V1TI):
+	New overloaded definitions.
+	(rs6000_gimple_fold_builtin) [P10V_BUILTIN_VCMPEQUT,
+	P10V_BUILTIN_CMPNET, P10V_BUILTIN_CMPGE_1TI,
+	P10V_BUILTIN_CMPGE_U1TI, P10V_BUILTIN_VCMPGTUT,
+	P10V_BUILTIN_VCMPGTST, P10V_BUILTIN_CMPLE_1TI,
+	P10V_BUILTIN_CMPLE_U1TI]: New case statements.
+	(rs6000_init_builtins) [bool_V1TI_type_node, int_ftype_int_v1ti_v1ti]:
+	New assignments.
+	(altivec_init_builtins): New E_V1TImode case statement.
+	(builtin_function_type)[P10_BUILTIN_128BIT_VMULEUD,
+	P10_BUILTIN_128BIT_VMULOUD, P10_BUILTIN_128BIT_DIVEU_V1TI,
+	P10_BUILTIN_128BIT_MODU_V1TI, P10_BUILTIN_CMPGE_U1TI,
+	P10_BUILTIN_VCMPGTUT, P10_BUILTIN_VCMPEQUT]: New case statements.
+	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute) [E_TImode,
+	E_V1TImode]: New case statements.
+	* config/rs6000/rs6000.h (rs6000_builtin_type_index): New enum
+	value RS6000_BTI_bool_V1TI.
+	* config/rs6000/vector.md (vector_gtv1ti,vector_nltv1ti,
+	vector_gtuv1ti, vector_nltuv1ti, vector_ngtv1ti, vector_ngtuv1ti,
+	vector_eq_v1ti_p, vector_ne_v1ti_p, vector_ae_v1ti_p,
+	vector_gt_v1ti_p, vector_gtu_v1ti_p, vrotlv1ti3, vashlv1ti3,
+	vlshrv1ti3, vashrv1ti3): New define_expands.
+	* config/rs6000/vsx.md (UNSPEC_VSX_DIVSQ, UNSPEC_VSX_DIVUQ,
+	UNSPEC_VSX_DIVESQ, UNSPEC_VSX_DIVEUQ, UNSPEC_VSX_MODSQ,
+	UNSPEC_VSX_MODUQ): New unspecs.
+	(mulv2di3, vsx_div_v1ti, vsx_udiv_v1ti, vsx_dives_v1ti,
+	vsx_diveu_v1ti,	vsx_mods_v1ti, vsx_modu_v1ti, xxswapd_v1ti): New
+	define_insns.
+	(vcmpnet): New define_expand.
+	* doc/extend.texi: Add documentation for the new builtins vec_rl,
+	vec_rlmi, vec_rlnm, vec_sl, vec_sr, vec_sra, vec_mule, vec_mulo,
+	vec_div, vec_dive, vec_mod, vec_cmpeq, vec_cmpne, vec_cmpgt, vec_cmplt,
+	vec_cmpge, vec_cmple, vec_all_eq, vec_all_ne, vec_all_gt, vec_all_lt,
+	vec_all_ge, vec_all_le, vec_any_eq, vec_any_ne, vec_any_gt, vec_any_lt,
+	vec_any_ge, vec_any_le.
+
+2021-06-21  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vrl<VI_char>mi): Fix
+	bug in argument generation.
+
 2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	Backported from master:
