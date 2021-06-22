@@ -1,3 +1,91 @@
+2021-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR target/88529
+	* df-scan.c (df_ref_record): Check that regno < endregno.
+	* function.c (assign_parms, expand_function_end): Do nothing with a
+	TYPE_EMPTY_P result.
+
+2021-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101120
+	* tree-vect-data-refs.c (bump_vector_ptr): Fold the
+	built increment.
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Add
+	DR chain DCE capability.
+	* tree-vectorizer.h (vect_transform_slp_perm_load): Adjust.
+	* tree-vect-stmts.c (vectorizable_load): Remove unused
+	loads in the DR chain for SLP.
+
+2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* gimplify.c (gimplify_asm_expr): Don't diagnose errors if
+	output or input operands were already error_mark_node.
+	* cfgexpand.c (expand_asm_stmt): If errors are emitted,
+	remove all inputs, outputs and clobbers from the asm and
+	set template to "".
+
+2021-06-21  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/arm/arm_neon.h (vceq_s8): Replace builtin with __a == __b.
+	(vceq_s16): Likewise.
+	(vceq_s32): Likewise.
+	(vceq_u8): Likewise.
+	(vceq_u16): Likewise.
+	(vceq_u32): Likewise.
+	(vceq_p8): Likewise.
+	(vceqq_s8): Likewise.
+	(vceqq_s16): Likewise.
+	(vceqq_s32): Likewise.
+	(vceqq_u8): Likewise.
+	(vceqq_u16): Likewise.
+	(vceqq_u32): Likewise.
+	(vceqq_p8): Likewise.
+	(vceq_f32): Gate __a == __b on __FAST_MATH__.
+	(vceqq_f32): Likewise.
+	(vceq_f16): Likewise.
+	(vceqq_f16): Likewise.
+
+2021-06-21  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/97906
+	* config/arm/iterators.md (NEON_VACMP): Remove.
+	* config/arm/neon.md (neon_vca<cmp_op><mode>): Use GLTE instead of GTGE
+	iterator.
+	(neon_vca<cmp_op><mode>_insn): Likewise.
+	(neon_vca<cmp_op_unsp><mode>_insn_unspec): Use NEON_VAGLTE instead of
+	NEON_VACMP.
+
+2021-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101121
+	* tree-vect-slp.c (vect_build_slp_tree_2): To not fail fatally
+	when we just lack a stmt with the desired op when doing permutation.
+	(vect_build_slp_tree): When caching a failed SLP build attempt
+	assert that at least one lane is marked as not matching.
+
+2021-06-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101142
+	* config/i386/i386.md: (*anddi_1): Disparage slightly the mask
+	register alternative.
+	(*and<mode>_1): Ditto.
+	(*andqi_1): Ditto.
+	(*andn<mode>_1): Ditto.
+	(*<code><mode>_1): Ditto.
+	(*<code>qi_1): Ditto.
+	(*one_cmpl<mode>2_1): Ditto.
+	(*one_cmplsi2_1_zext): Ditto.
+	(*one_cmplqi2_1): Ditto.
+	* config/i386/i386.c (x86_order_regs_for_local_alloc): Change
+	the order of mask registers to be before general registers.
+
+2021-06-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/11877
+	* config/i386/i386.md: New define_peephole2s to shrink writing
+	1, 2 or 4 consecutive zeros to memory when optimizing for size.
+
 2021-06-18  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* config/h8300/h8300.c (h8300_select_cc_mode): Handle SYMBOL_REF.

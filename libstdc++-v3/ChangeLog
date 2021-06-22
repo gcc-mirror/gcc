@@ -1,3 +1,18 @@
+2021-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/mutex (__try_to_lock): Move to __detail namespace.
+	(struct __try_lock_impl): Replace with ...
+	(__detail::__try_lock_impl<Idx>(tuple<Lockables...>&)): New
+	function templates to implement std::try_lock.
+	(try_lock): Use new __try_lock_impl.
+	(__detail::__lock_impl(int, int&, L0&, L1&...)): New function
+	template to implement std::lock.
+	(lock): Use __lock_impl.
+
+2021-06-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_cmp.h (__cpp_lib_ranges): Adjust value.
+
 2021-06-20  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (__non_propagating_cache::operator bool):

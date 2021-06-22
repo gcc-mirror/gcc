@@ -1,3 +1,356 @@
+2021-06-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Selected_Range_Checks): In the case of a
+	qualified_expression where the qualifying subtype is an
+	unconstrained array subtype with fixed lower bounds for some of
+	its indexes, generate tests to check that those bounds are equal
+	to the corresponding lower bounds of the qualified array object.
+
+2021-06-21  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-valuen.ads (Value_Enumeration,
+	Valid_Enumeration_Value): Inline.
+	(Value_Enumeration_Pos): Add Pure_Function.
+
+2021-06-21  Justin Squirek  <squirek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Document new
+	feature under pragma Extensions_Allowed.
+	* gnat_rm.texi: Regenerate.
+	* errout.adb, errout.ads (Error_Msg_GNAT_Extension): Created to
+	issue errors when parsing extension only constructs.
+	* exp_ch11.adb, exp_ch11.ads (Expand_N_Raise_When_Statement):
+	Created to expand raise ... when constucts.
+	* exp_ch5.adb, exp_ch5.ads (Expand_N_Goto_When_Statement):
+	Created to expand goto ... when constructs.
+	* exp_ch6.adb, exp_ch6.ads (Expand_N_Return_When_Statement):
+	Created to expand return ... when constructs.
+	* expander.adb (Expand): Add case entries for "when" constructs.
+	* gen_il-gen-gen_nodes.adb, gen_il-types.ads: Add entries for
+	"when" constructs.
+	* par-ch11.adb (P_Raise_Statement): Add processing for raise ...
+	when.
+	* par-ch5.adb (Missing_Semicolon_On_Exit): Renamed to
+	Missing_Semicolon_On_When and moved to par-util.adb.
+	* par-ch6.adb (Get_Return_Kind): Renamed from Is_Simple and
+	processing added for "return ... when" return kind.
+	(Is_Simple): Renamed to Get_Return_Kind.
+	(P_Return_Statement): Add case for return ... when variant of
+	return statement.
+	* par-util.adb, par.adb (Missing_Semicolon_On_When): Added to
+	centeralize parsing of "when" keywords in the context of "when"
+	constructs.
+	* sem.adb (Analyze): Add case for "when" constructs.
+	* sem_ch11.adb, sem_ch11.ads (Analyze_Raise_When_Statement):
+	Created to analyze raise ... when constructs.
+	* sem_ch5.adb, sem_ch5.ads (Analyzed_Goto_When_Statement):
+	Created to analyze goto ... when constructs.
+	* sem_ch6.adb, sem_ch6.ads (Analyze_Return_When_Statement):
+	Created to analyze return ... when constructs.
+	* sprint.adb (Sprint_Node_Actual): Add entries for new "when"
+	nodes.
+
+2021-06-21  Steve Baird  <baird@adacore.com>
+
+	* Make-generated.in (GEN_IL_FLAGS): Keep only GNAT flags.
+	(ada/stamp-gen_il): Remove dependencies on libgnat/ sources.  Do not
+	copy libgnat/ sources locally and tidy up.
+	* Makefile.rtl: Include object files for new Text_Buffer units
+	in the GNATRTL_NONTASKING_OBJS list.
+	* exp_put_image.ads, exp_put_image.adb: Update Rtsfind calls to
+	match new specs. For example, calls to RE_Sink are replaced with
+	calls to RE_Root_Buffer_Type. Update comments and change
+	subprogram names accordingly (e.g., Preload_Sink is changed to
+	Preload_Root_Buffer_Type).
+	* impunit.adb: Add 6 new predefined units (Text_Buffers and 5
+	child units thereof).
+	* rtsfind.ads, rtsfind.adb: Add interfaces for accessing the
+	Ada.Strings.Text_Buffers package and declarations
+	therein (including the Unbounded child unit). Do not (yet)
+	delete interfaces for accessing the old Text_Output package.
+	* sem_attr.adb (Check_Put_Image_Attribute): Replace RE_Sink uses
+	with RE_Root_Buffer_Type and update comments accordingly.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Update call to
+	reflect name change of callee (that is, the former Preload_Sink
+	is now Preload_Root_Buffer_Type).
+	* sem_ch13.adb (Has_Good_Profile): Replace RE_Sink use with
+	RE_Root_Buffer_Type.
+	(Build_Spec): Update comment describing a parameter type.
+	* gen_il.ads: Remove clauses for the old Text_Output package and
+	add them for Ada.Streams.Stream_IO.
+	(Sink): Declare.
+	(Create_File): Likewise.
+	(Increase_Indent): Likewise.
+	(Decrease_Indent): Likewise.
+	(Put): Likewise.
+	(LF): Likewise.
+	* gen_il.adb: Add clauses for Ada.Streams.Stream_IO.
+	(Create_File): New procedure.
+	(Increase_Indent): Likewise.
+	(Decrease_Indent): Likewise.
+	(Put): New procedures.
+	* gen_il-gen.adb: Add clauses for Ada.Text_IO.  Replace
+	Sink'Class with Sink throughout.  Use string concatenation and
+	LF marker instead of formatted strings and "\n" marker.  Update
+	Indent/Outdent calls to use new Increase_Indent/Decrease_Indent
+	names.
+	(Put_Membership_Query_Decl): Remove.
+	* gen_il-internals.ads: Replace Sink'Class with Sink throughout.
+	(Ptypes): Remove.
+	(Pfields): Likewise.
+	* gen_il-internals.adb: Remove clauses for GNAT.OS_Lib and
+	Ada.Strings.Text_Buffers.Files.  Replace Sink'Class with Sink
+	throughout.  Use string concatenation and LF marker instead of
+	formatted strings and "\n" marker.
+	(Stdout): Remove.
+	(Ptypes): Likewise.
+	(Pfields): Likewise.
+	* libgnarl/s-putaim.ads: Modify context clause, update
+	declaration of subtype Sink to refer to
+	Text_Buffers.Root_Buffer_Type instead of the old
+	Text_Output.Sink type.
+	* libgnarl/s-putaim.adb: Modify context clause and add use
+	clause to refer to Text_Buffers package.
+	* libgnat/a-cbdlli.ads, libgnat/a-cbdlli.adb,
+	libgnat/a-cbhama.ads, libgnat/a-cbhama.adb,
+	libgnat/a-cbhase.ads, libgnat/a-cbhase.adb,
+	libgnat/a-cbmutr.ads, libgnat/a-cbmutr.adb,
+	libgnat/a-cborma.ads, libgnat/a-cborma.adb,
+	libgnat/a-cborse.ads, libgnat/a-cborse.adb,
+	libgnat/a-cdlili.ads, libgnat/a-cdlili.adb,
+	libgnat/a-cidlli.ads, libgnat/a-cidlli.adb,
+	libgnat/a-cihama.ads, libgnat/a-cihama.adb,
+	libgnat/a-cihase.ads, libgnat/a-cihase.adb,
+	libgnat/a-cimutr.ads, libgnat/a-cimutr.adb,
+	libgnat/a-ciorma.ads, libgnat/a-ciorma.adb,
+	libgnat/a-ciormu.ads, libgnat/a-ciormu.adb,
+	libgnat/a-ciorse.ads, libgnat/a-ciorse.adb,
+	libgnat/a-coboho.ads, libgnat/a-coboho.adb,
+	libgnat/a-cobove.ads, libgnat/a-cobove.adb,
+	libgnat/a-cohama.ads, libgnat/a-cohama.adb,
+	libgnat/a-cohase.ads, libgnat/a-cohase.adb,
+	libgnat/a-coinho.ads, libgnat/a-coinho.adb,
+	libgnat/a-coinho__shared.ads, libgnat/a-coinho__shared.adb,
+	libgnat/a-coinve.ads, libgnat/a-coinve.adb,
+	libgnat/a-comutr.ads, libgnat/a-comutr.adb,
+	libgnat/a-convec.ads, libgnat/a-convec.adb,
+	libgnat/a-coorma.ads, libgnat/a-coorma.adb,
+	libgnat/a-coormu.ads, libgnat/a-coormu.adb,
+	libgnat/a-coorse.ads, libgnat/a-coorse.adb,
+	libgnat/a-nbnbin.ads, libgnat/a-nbnbin.adb,
+	libgnat/a-nbnbin__gmp.adb, libgnat/a-nbnbre.ads,
+	libgnat/a-nbnbre.adb, libgnat/a-strunb.ads,
+	libgnat/a-strunb.adb, libgnat/a-strunb__shared.ads,
+	libgnat/a-strunb__shared.adb, libgnat/s-rannum.ads,
+	libgnat/s-rannum.adb: Modify Put_Image procedure used in
+	Put_Image aspect specification to conform to Ada profile
+	rules (in particular, the first parameter shall be of type
+	Ada.Strings.Text_Buffers.Root_Buffer_Type'Class).
+	* libgnat/a-sttebu.ads, libgnat/a-sttebu.adb,
+	libgnat/a-stbubo.ads, libgnat/a-stbubo.adb,
+	libgnat/a-stbufi.ads, libgnat/a-stbufi.adb,
+	libgnat/a-stbufo.ads, libgnat/a-stbufo.adb,
+	libgnat/a-stbuun.ads, libgnat/a-stbuun.adb,
+	libgnat/a-stbuut.ads, libgnat/a-stbuut.adb: A new predefined
+	unit, Ada.Strings.Text_Buffers, and five child units.  Two of
+	the five are RM-defined: Bounded and Unbounded. The remaining
+	three are GNAT-defined: Files, Utils, and Formatting. The buffer
+	type corresponding to an output file, type Files.File_Buffer, is
+	simpler (and perhaps therefore slower) than its predecessor.
+	Caching similar to what was being done before could be added
+	later if that seems appropriate.
+	* libgnat/s-putima.ads: Modify context clause, update
+	declaration of subtype Sink to refer to
+	Text_Buffers.Root_Buffer_Type instead of the old
+	Text_Output.Sink type.
+	* libgnat/s-putima.adb: Modify context clause.  Update
+	Indent/Outdent calls to use new Increase_Indent/Decrease_Indent
+	names; ditto for "Put_String => Put" name change.
+	* libgnat/a-stteou__bootstrap.ads: Delete.
+
+2021-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array_Bitfield_Fast): If big-endian
+	ordering is in effect for the operands and they are small,
+	adjust the unchecked conversions done around them.
+
+2021-06-21  Richard Kenner  <kenner@adacore.com>
+
+	* einfo.ads (Return_Statement): Add documentation.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Set it.
+	* gen_il-fields.ads: Add it.
+	* gen_il-gen-gen_entities.adb: Add it.
+
+2021-06-21  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.ads, libgnat/s-bitfie.ads, libgnat/s-bituti.adb,
+	libgnat/s-bituti.ads (Fast_Copy_Bitfield): New run-time library
+	function to copy bit fields faster than Copy_Bitfield. Cannot be
+	called with zero-size bit fields.  Remove obsolete ??? comments
+	from s-bituti.adb; we already do "avoid calling this if
+	Forwards_OK is False".
+	* exp_ch5.adb (Expand_Assign_Array_Loop_Or_Bitfield,
+	Expand_Assign_Array_Bitfield_Fast): Generate calls to
+	Fast_Copy_Bitfield when appropriate.
+	* sem_util.adb, sem_util.ads (Get_Index_Bounds): Two new
+	functions for getting the index bounds. These are more
+	convenient than the procedure of the same name, because they can
+	be used to initialize constants.
+
+2021-06-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* gen_il-fields.ads: Add Default_Subtype_Mark to enumeration
+	type for fields.
+	* gen_il-gen-gen_nodes.adb: Add call to create new field for
+	Formal_Type_Declaration node.
+	* par-ch12.adb (P_Formal_Type_Declaration): in Ada_2022 mode,
+	recognize new syntax for default: "or use subtype_mark".
+	(P_Formal_Type_Definition): Ditto for the case of a formal
+	incomplete type.
+	* sinfo.ads: Add field Default_Subtype_Mark to
+	N_Formal_Type_Declaration.
+	* sem_ch12.adb (Validate_Formal_Type_Default): New procedure, to
+	apply legality rules to default subtypes in formal type
+	declarations. Some legality rules apply to all defaults, such as
+	the requirement that the default for a formal type that depends
+	on previous formal entities must itself be a previously declared
+	formal of the same unit. Other checks are kind- specific.
+	(Analyze_Associations): Use specified default if there is no
+	actual provided for a formal type in an instance.
+	(Analyze_Formal_Type_Declaration): Call
+	Validate_Formal_Type_Default when default subtype is present.
+
+2021-06-21  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-valuen.ads, libgnat/s-valuen.adb
+	(Value_Enumeration_Pos): New function to compute the 'Pos of the
+	enumeration literal for a given String.  Return a special value
+	instead of raising an exception on invalid input. Called by both
+	Valid_Enumeration_Image and Value_Enumeration.
+	(Valid_Enumeration_Image): Return a Boolean indicating whether
+	the String is a valid Image for the given enumeration type.
+	(Value_Enumeration): Implement in terms of
+	Value_Enumeration_Pos.
+	* libgnat/s-vaenu8.ads, libgnat/s-vaen16.ads,
+	libgnat/s-vaen32.ads: Rename Valid_Enumeration_Image from the
+	instances.
+	* libgnat/s-valuti.ads: Correct documentation (it was not true
+	for the null string).
+	* libgnat/s-valuti.adb (Normalize_String): Do not raise
+	Constraint_Error for the null string, nor strings containing
+	nothing but blanks, so that Valid_Enumeration_Image can return
+	False in these cases, rather than raising an exception.
+	* rtsfind.ads (RE_Value_Enumeration_8, RE_Value_Enumeration_16,
+	RE_Value_Enumeration_32): New functions.
+	(RTE_Available): Improve comment (E doesn't have to be a
+	subprogram, although that's the usual case).
+	* sem_attr.adb (nalid_Value): Semantic analysis for new
+	attribute.
+	* exp_attr.adb: Call Expand_Valid_Value_Attribute for new
+	attribute.
+	* exp_imgv.ads, exp_imgv.adb (Expand_Valid_Value_Attribute): New
+	procedure to expand Valid_Value into a call to
+	Valid_Enumeration_Image_NN.
+	(Expand_Value_Attribute): Misc code cleanups.  Remove two ???
+	mark comments. RTE_Available won't work here.  For one thing,
+	RTE_Available (X) shouldn't be called until the compiler has
+	decided to make use of X (see comments on RTE_Available), and in
+	this case we're trying to AVOID calling something.
+	* snames.ads-tmpl: New attribute name.
+	* doc/gnat_rm/implementation_defined_attributes.rst: Document
+	new attribute.
+	* gnat_rm.texi: Regenerate.
+
+2021-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Assume_No_Invalid_Values): Declare.
+	* opt.ads (Assume_No_Invalid_Values): Add warning comment.
+
+2021-06-21  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-bituti.ads (Small_Size): Do not include 0 in this
+	type.
+	* libgnat/s-bituti.adb (Copy_Bitfield): Do nothing for 0-bit
+	bitfields.
+
+2021-06-21  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch9.adb (Build_Simple_Entry_Call): Add comment.
+	* libgnat/s-rannum.adb (Random): Update comment.
+	* libgnat/s-rannum.ads (Generator): Update comment.
+
+2021-06-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst (Address
+	Clauses): Fix unbalanced parens.
+	* gnat_rm.texi: Regenerate.
+
+2021-06-21  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* errout.adb (Handle_Serious_Error): Capitalize comment.
+	* exp_dbug.adb (Set_Entity_Name): Capitalize sentence.
+	* exp_dist.adb (Expand_All_Calls_Remote_Subprogram_Call): Fix
+	typo.
+	* sem_ch3.adb (Modular_Type_Declaration): Add space after comma.
+
+2021-06-21  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* debug.adb: Document -gnatd_U as taken.
+	* err_vars.ads (Warning_Doc_Switch): Set to True.
+	* errout.ads (Errout): Update documentation.
+	* gnat1drv.adb (Adjust_Global_Switches): React to -gnatd_U.
+	* hostparm.ads (Tag_Errors): Set to True.
+	* opt.ads (Unique_Error_Tag): Document -gnatd_U.
+
+2021-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* urealp.ads (UR_Write_To_JSON): Declare.
+	* urealp.adb (Decimal_Exponent_Hi): Treat numbers in base 10
+	specially and rewrite handling of numbers in other bases.
+	(Decimal_Exponent_Lo): Likewise.
+	(Normalize): Minor tweak.
+	(UR_Write_To_JSON): New wrapper procedure around UR_Write.
+	* repinfo.adb (List_Type_Info): When the output is to JSON, call
+	UR_Write_To_JSON instead of UR_Write.
+
+2021-06-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Indexed_Component_Bit_Offset): Return an unknown
+	offset for components within multidimensional arrays; remove
+	redundant parens.
+
+2021-06-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Find_Overlaid_Entity): Ignore references to
+	components and discriminants.
+
+2021-06-21  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl (aarch64-linux) [LIBGNAT_TARGET_PAIRS]: Add
+	$(TRASYM_DWARF_UNIX_PAIRS).
+	[EXTRA_GNAT_RTL_NONTASKING_OBJS]: Add $(TRASYM_DWARF_UNIX_OBJS)
+
+2021-06-21  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Expand_Sliding_Conversion): Only perform
+	expansion when Expander_Active is True. Add a comment about this
+	and refine existing comment regarding string literals.
+
+2021-06-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Denotes_Same_Object): Simplify handling of
+	slices.
+
+2021-06-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Object_Renaming): Rename from Is_Renaming;
+	simplify; adapt callers.
+
+2021-06-21  Frederic Konrad  <konrad@adacore.com>
+
+	* Makefile.rtl: Compiles both static and dynamic libgnat for
+	powerpc64-wrs-vxworks7r2.
+
 2021-06-18  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb (Constrain_Array): Add error checking for
