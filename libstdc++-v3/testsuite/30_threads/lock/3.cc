@@ -37,7 +37,7 @@ struct user_lock
     is_locked = true;
   }
 
-  bool try_lock() 
+  bool try_lock()
   { return is_locked ? false : (is_locked = true); }
 
   void unlock()
@@ -62,6 +62,8 @@ int main()
 	{
 	  //heterogeneous types
 	  std::lock(m1, m2, m3);
+	  VERIFY( !m1.try_lock() );
+	  VERIFY( !m3.try_lock() );
 	  m1.unlock();
 	  m2.unlock();
 	  m3.unlock();
