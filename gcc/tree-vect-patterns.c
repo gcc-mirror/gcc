@@ -1385,9 +1385,9 @@ vect_recog_popcount_pattern (vec_info *vinfo,
   vect_pattern_detected ("vec_regcog_popcount_pattern", popcount_stmt);
   vec_type = get_vectype_for_scalar_type (vinfo, lhs_type);
   /* Do it only the backend existed popcount<vector_mode>2.  */
-  if (!direct_internal_fn_supported_p (IFN_POPCOUNT,
-				       vec_type,
-				       OPTIMIZE_FOR_SPEED))
+  if (!vec_type
+      || !direct_internal_fn_supported_p (IFN_POPCOUNT, vec_type,
+					  OPTIMIZE_FOR_SPEED))
     return NULL;
 
   /* Create B = .POPCOUNT (A).  */
