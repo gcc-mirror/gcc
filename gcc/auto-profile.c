@@ -95,7 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #define DEFAULT_AUTO_PROFILE_FILE "fbdata.afdo"
-#define AUTO_PROFILE_VERSION 1
+#define AUTO_PROFILE_VERSION 2
 
 namespace autofdo
 {
