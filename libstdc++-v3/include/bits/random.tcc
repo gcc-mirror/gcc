@@ -3231,7 +3231,7 @@ namespace __detail
     }
 
 
-  template<typename _IntType>
+  template<typename _IntType, typename>
     seed_seq::seed_seq(std::initializer_list<_IntType> __il)
     {
       for (auto __iter = __il.begin(); __iter != __il.end(); ++__iter)
