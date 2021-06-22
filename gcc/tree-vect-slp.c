@@ -969,6 +969,20 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	      continue;
 	    }
 
+	  if (!load_p && rhs_code == CALL_EXPR)
+	    {
+	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
+				       as_a <gcall *> (stmt)))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: different calls in %G",
+				     stmt);
+		  /* Mismatch.  */
+		  continue;
+		}
+	    }
+
 	  if (need_same_oprnds)
 	    {
 	      tree other_op1 = (call_stmt
@@ -980,20 +994,6 @@ vect_build_slp_tree_1 (unsigned char *swap,
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "Build SLP failed: different shift "
 				     "arguments in %G", stmt);
-		  /* Mismatch.  */
-		  continue;
-		}
-	    }
-
-	  if (!load_p && rhs_code == CALL_EXPR)
-	    {
-	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
-				       as_a <gcall *> (stmt)))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Build SLP failed: different calls in %G",
-				     stmt);
 		  /* Mismatch.  */
 		  continue;
 		}
