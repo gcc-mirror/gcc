@@ -699,6 +699,17 @@
    (V4DI "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")
    (V4SI "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
    (V2DI "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
+(define_mode_iterator VI12_VI48F_AVX512VLBW
+  [(V16SI "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
+   (V8DI "TARGET_AVX512F") (V8DF "TARGET_AVX512F")
+   (V8SI "TARGET_AVX512VL") (V8SF "TARGET_AVX512VL")
+   (V4DI "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")
+   (V4SI "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
+   (V2DI "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")
+   (V64QI "TARGET_AVX512BW") (V16QI "TARGET_AVX512VL")
+   (V32QI "TARGET_AVX512VL && TARGET_AVX512BW") (V32HI "TARGET_AVX512BW")
+   (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
+
 (define_mode_iterator VI48F_256 [V8SI V8SF V4DI V4DF])
 
 (define_mode_iterator VF_AVX512
@@ -23009,7 +23020,7 @@
   "TARGET_AVX512F"
   "operands[2] = CONST0_RTX (<MODE>mode);")
 
-(define_insn "<avx512>_expand<mode>_mask"
+(define_insn "expand<mode>_mask"
   [(set (match_operand:VI48F 0 "register_operand" "=v,v")
 	(unspec:VI48F
 	  [(match_operand:VI48F 1 "nonimmediate_operand" "v,m")
@@ -23036,6 +23047,62 @@
    (set_attr "prefix" "evex")
    (set_attr "memory" "none,load")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*expand<mode>_mask"
+  [(set (match_operand:VI12_VI48F_AVX512VLBW 0 "register_operand")
+	(unspec:VI12_VI48F_AVX512VLBW
+	  [(match_operand:VI12_VI48F_AVX512VLBW 1 "nonimmediate_operand")
+	   (match_operand:VI12_VI48F_AVX512VLBW 2 "nonimm_or_0_operand")
+	   (match_operand 3 "const_int_operand")]
+	  UNSPEC_EXPAND))]
+  "ix86_pre_reload_split ()
+   && (TARGET_AVX512VBMI2 || GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) >= 4)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  unsigned HOST_WIDE_INT mask = INTVAL (operands[3]);
+  bool has_zero = false;
+  unsigned n = GET_MODE_NUNITS (<MODE>mode), i;
+  unsigned ones = 0;
+
+  /* If all ones bits is in mask's lower part,
+     get number of ones and assign it to ONES.  */
+  for (i = 0; i != n; i++)
+    {
+      if ((mask & HOST_WIDE_INT_1U << i) && has_zero)
+	break;
+
+      /* Record first zero bit.  */
+      if (!(mask & HOST_WIDE_INT_1U << i) && !has_zero)
+	{
+	  has_zero = true;
+	  ones = i;
+	}
+    }
+
+  if (!has_zero)
+    ones = n;
+
+  if (i != n || (ones != 0 && ones != n))
+    {
+      rtx reg = gen_reg_rtx (<avx512fmaskmode>mode);
+      emit_move_insn (reg, operands[3]);
+      enum insn_code icode;
+      if (i == n)
+      /* For masks with all one bits in it's lower part,
+	 we can transform v{,p}expand* to vmovdq* with
+	 mask operand.  */
+	icode = CODE_FOR_<avx512>_load<mode>_mask;
+      else
+	icode = CODE_FOR_expand<mode>_mask;
+      emit_insn (GEN_FCN (icode) (operands[0], operands[1], operands[2], reg));
+    }
+  else
+    /* For ALL_MASK_ONES or CONST0_RTX mask, transform it to simple mov.  */
+    emit_move_insn (operands[0], ones ? operands[1] : operands[2]);
+  DONE;
+})
 
 (define_expand "expand<mode>_maskz"
   [(set (match_operand:VI12_AVX512VLBW 0 "register_operand")

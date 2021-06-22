@@ -1,3 +1,9 @@
+2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* c-typeck.c (c_mark_addressable): Diagnose trying to make
+	bit-fields addressable.
+
 2021-06-15  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* c-decl.c (merge_decls): Copy DECL_USER_ALIGN if DECL_ALIGN is

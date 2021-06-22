@@ -1688,6 +1688,7 @@ OBJS = \
 	value-query.o \
 	value-range.o \
 	value-range-equiv.o \
+	value-relation.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \

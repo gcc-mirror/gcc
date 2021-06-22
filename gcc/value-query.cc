@@ -174,6 +174,7 @@ range_query::get_value_range (const_tree expr, gimple *stmt)
 range_query::range_query ()
 {
   equiv_alloc = new equiv_allocator;
+  m_oracle = NULL;
 }
 
 range_query::~range_query ()
@@ -451,4 +452,53 @@ global_range_query::range_of_expr (irange &r, tree expr, gimple *stmt)
   get_range_global (r, expr);
 
   return true;
+}
+
+// Return any known relation between SSA1 and SSA2 before stmt S is executed.
+// If GET_RANGE is true, query the range of both operands first to ensure
+// the defintions have been processed and any relations have be created.
+
+relation_kind
+range_query::query_relation (gimple *s, tree ssa1, tree ssa2, bool get_range)
+{
+  int_range_max tmp;
+  if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
+    return VREL_NONE;
+
+  // Ensure ssa1 and ssa2 have both been evaluated.
+  if (get_range)
+    {
+      range_of_expr (tmp, ssa1, s);
+      range_of_expr (tmp, ssa2, s);
+    }
+  return m_oracle->query_relation (gimple_bb (s), ssa1, ssa2);
+}
+
+// Return any known relation between SSA1 and SSA2 on edge E.
+// If GET_RANGE is true, query the range of both operands first to ensure
+// the defintions have been processed and any relations have be created.
+
+relation_kind
+range_query::query_relation (edge e, tree ssa1, tree ssa2, bool get_range)
+{
+  basic_block bb;
+  int_range_max tmp;
+  if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
+    return VREL_NONE;
+
+  // Use destination block if it has a single predecessor, and this picks
+  // up any relation on the edge.
+  // Otherwise choose the src edge and the result is the same as on-exit.
+  if (!single_pred_p (e->dest))
+    bb = e->src;
+  else
+    bb = e->dest;
+
+  // Ensure ssa1 and ssa2 have both been evaluated.
+  if (get_range)
+    {
+      range_on_edge (tmp, e, ssa1);
+      range_on_edge (tmp, e, ssa2);
+    }
+  return m_oracle->query_relation (bb, ssa1, ssa2);
 }

@@ -1,3 +1,48 @@
+2021-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR target/88529
+	* g++.target/i386/empty-class1.C: New test.
+
+2021-06-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67302
+	* g++.dg/opt/nrv21.C: New test.
+
+2021-06-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/80431
+	* g++.dg/cpp0x/nsdmi-virtual1a.C: New test.
+
+2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* c-c++-common/pr100785.c: New test.
+	* gcc.dg/pr48552-1.c: Don't expect invalid lvalue errors.
+	* gcc.dg/pr48552-2.c: Likewise.
+
+2021-06-21  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/97906
+	* gcc.target/arm/simd/pr97906.c: New test.
+
+2021-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101121
+	* gfortran.dg/pr101121.f: New testcase.
+
+2021-06-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101142
+	* gcc.target/i386/spill_to_mask-1.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-2.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-3.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-4.c: Adjust testcase.
+
+2021-06-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/11877
+	* gcc.target/i386/pr11877.c: New test case.
+
 2021-06-18  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/fusion-p10-2logical.c: Update pattern

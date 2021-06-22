@@ -47,14 +47,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-range.h"
 
-// Evaluate expression EXPR using the source information the class was
-// instantiated with.  Place the result in R, and return TRUE.  If a range
-// cannot be calculated, return FALSE.
+// Construct a fur_source, and set the m_query field.
+
+fur_source::fur_source (range_query *q)
+{
+  if (q)
+    m_query = q;
+  else if (cfun)
+    m_query = get_range_query (cfun);
+  else
+    m_query = get_global_range_query ();
+  m_gori = NULL;
+}
+
+// Invoke range_of_expr on EXPR.
 
 bool
 fur_source::get_operand (irange &r, tree expr)
 {
-  return get_range_query (cfun)->range_of_expr (r, expr);
+  return m_query->range_of_expr (r, expr);
 }
 
 // Evaluate EXPR for this stmt as a PHI argument on edge E.  Use the current
@@ -63,23 +74,36 @@ fur_source::get_operand (irange &r, tree expr)
 bool
 fur_source::get_phi_operand (irange &r, tree expr, edge e)
 {
-  return get_range_query (cfun)->range_on_edge (r, e, expr);
+  return m_query->range_on_edge (r, e, expr);
 }
 
-// Default is to not register any dependencies from fold_using_range.
+// Default is no relation.
+
+relation_kind
+fur_source::query_relation (tree op1 ATTRIBUTE_UNUSED,
+			    tree op2 ATTRIBUTE_UNUSED)
+{
+  return VREL_NONE;
+}
+
+// Default registers nothing.
 
 void
-fur_source::register_dependency (tree lhs ATTRIBUTE_UNUSED,
-				 tree rhs ATTRIBUTE_UNUSED)
+fur_source::register_relation (gimple *s ATTRIBUTE_UNUSED,
+			       relation_kind k ATTRIBUTE_UNUSED,
+			       tree op1 ATTRIBUTE_UNUSED,
+			       tree op2 ATTRIBUTE_UNUSED)
 {
 }
 
-// Default object is the current range query.
+// Default registers nothing.
 
-range_query *
-fur_source::query ()
+void
+fur_source::register_relation (edge e ATTRIBUTE_UNUSED,
+			       relation_kind k ATTRIBUTE_UNUSED,
+			       tree op1 ATTRIBUTE_UNUSED,
+			       tree op2 ATTRIBUTE_UNUSED)
 {
-  return get_range_query (cfun);
 }
 
 // This version of fur_source will pick a range up off an edge.
@@ -90,22 +114,16 @@ public:
   fur_edge (edge e, range_query *q = NULL);
   virtual bool get_operand (irange &r, tree expr) OVERRIDE;
   virtual bool get_phi_operand (irange &r, tree expr, edge e) OVERRIDE;
-  virtual range_query *query () OVERRIDE;
 private:
-  range_query *m_query;
   edge m_edge;
 };
 
 // Instantiate an edge based fur_source.
 
 inline
-fur_edge::fur_edge (edge e, range_query *q)
+fur_edge::fur_edge (edge e, range_query *q) : fur_source (q)
 {
   m_edge = e;
-  if (q)
-    m_query = q;
-  else
-    m_query = get_range_query (cfun);
 }
 
 // Get the value of EXPR on edge m_edge.
@@ -122,31 +140,19 @@ fur_edge::get_operand (irange &r, tree expr)
 bool
 fur_edge::get_phi_operand (irange &r, tree expr, edge e)
 {
-  // edge to edge recalculations not supoprted yet, until we sort it out.
+  // Edge to edge recalculations not supoprted yet, until we sort it out.
   gcc_checking_assert (e == m_edge);
   return m_query->range_on_edge (r, e, expr);
 }
 
-// Return the current range_query object.
-
-range_query *
-fur_edge::query ()
-{
-  return m_query;
-}
-
 // Instantiate a stmt based fur_source.
 
-fur_stmt::fur_stmt (gimple *s, range_query *q)
+fur_stmt::fur_stmt (gimple *s, range_query *q) : fur_source (q)
 {
   m_stmt = s;
-  if (q)
-    m_query = q;
-  else
-    m_query = get_global_range_query ();
 }
 
-// Retrieve range of EXPR as it occurs as a use on stmt M_STMT.
+// Retreive range of EXPR as it occurs as a use on stmt M_STMT.
 
 bool
 fur_stmt::get_operand (irange &r, tree expr)
@@ -165,12 +171,12 @@ fur_stmt::get_phi_operand (irange &r, tree expr, edge e)
   return e_src.get_operand (r, expr);
 }
 
-// Return the current range_query object.
+// Return relation based from m_stmt.
 
-range_query *
-fur_stmt::query ()
+relation_kind
+fur_stmt::query_relation (tree op1, tree op2)
 {
-  return m_query;
+  return m_query->query_relation (m_stmt, op1, op2);
 }
 
 // This version of fur_source will pick a range from a stmt, and also register
@@ -180,12 +186,15 @@ class fur_depend : public fur_stmt
 {
 public:
   fur_depend (gimple *s, gori_compute *gori, range_query *q = NULL);
-  virtual void register_dependency (tree lhs, tree rhs) OVERRIDE;
+  virtual void register_relation (gimple *stmt, relation_kind k, tree op1,
+				  tree op2) OVERRIDE;
+  virtual void register_relation (edge e, relation_kind k, tree op1,
+				  tree op2) OVERRIDE;
 private:
-  gori_compute *m_gori;
+  relation_oracle *m_oracle;
 };
 
-// Instantiate a stmt based fur_source with a GORI object
+// Instantiate a stmt based fur_source with a GORI object.
 
 inline
 fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
@@ -193,14 +202,28 @@ fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
 {
   gcc_checking_assert (gori);
   m_gori = gori;
+  // Set relations if there is an oracle in the range_query.
+  // This will enable registering of relationships as they are discovered.
+  m_oracle = q->oracle ();
+
 }
 
-// find and add any dependnecy between LHS and RHS
+// Register a relation on a stmt if there is an oracle.
 
 void
-fur_depend::register_dependency (tree lhs, tree rhs)
+fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
 {
-  m_gori->register_dependency (lhs, rhs);
+  if (m_oracle)
+    m_oracle->register_relation (s, k, op1, op2);
+}
+
+// Register a relation on an edge if there is an oracle.
+
+void
+fur_depend::register_relation (edge e, relation_kind k, tree op1, tree op2)
+{
+  if (m_oracle)
+    m_oracle->register_relation (e, k, op1, op2);
 }
 
 // This version of fur_source will pick a range up from a list of ranges
@@ -223,7 +246,7 @@ private:
 
 // One range supplied for unary operations.
 
-fur_list::fur_list (irange &r1)
+fur_list::fur_list (irange &r1) : fur_source (NULL)
 {
   m_list = m_local;
   m_index = 0;
@@ -233,7 +256,7 @@ fur_list::fur_list (irange &r1)
 
 // Two ranges supplied for binary operations.
 
-fur_list::fur_list (irange &r1, irange &r2)
+fur_list::fur_list (irange &r1, irange &r2) : fur_source (NULL)
 {
   m_list = m_local;
   m_index = 0;
@@ -244,7 +267,7 @@ fur_list::fur_list (irange &r1, irange &r2)
 
 // Arbitrary number of ranges in a vector.
 
-fur_list::fur_list (unsigned num, irange *list)
+fur_list::fur_list (unsigned num, irange *list) : fur_source (NULL)
 {
   m_list = list;
   m_index = 0;
@@ -257,7 +280,7 @@ bool
 fur_list::get_operand (irange &r, tree expr)
 {
   if (m_index >= m_limit)
-    return get_range_query (cfun)->range_of_expr (r, expr);
+    return m_query->range_of_expr (r, expr);
   r = m_list[m_index++];
   gcc_checking_assert (range_compatible_p (TREE_TYPE (expr), r.type ()));
   return true;
@@ -289,7 +312,6 @@ fold_range (irange &r, gimple *s, irange &r1, irange &r2)
   fur_list src (r1, r2);
   return f.fold_stmt (r, s, src);
 }
-
 
 // Fold stmt S into range R using NUM_ELEMENTS from VECTOR as the initial
 // operands encountered.
@@ -636,18 +658,50 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 	  // Fold range, and register any dependency if available.
 	  int_range<2> r2 (type);
 	  handler->fold_range (r, type, range1, r2);
-	  if (lhs)
-	    src.register_dependency (lhs, op1);
+	  if (lhs && gimple_range_ssa_p (op1))
+	    {
+	      if (src.gori ())
+		src.gori ()->register_dependency (lhs, op1);
+	      relation_kind rel;
+	      rel = handler->lhs_op1_relation (r, range1, range1);
+	      if (rel != VREL_NONE)
+		src.register_relation (s, rel, lhs, op1);
+	    }
 	}
       else if (src.get_operand (range2, op2))
 	{
+	  relation_kind rel = src.query_relation (op1, op2);
+	  if (dump_file && (dump_flags & TDF_DETAILS) && rel != VREL_NONE)
+	    {
+	      fprintf (dump_file, " folding with relation ");
+	      print_relation (dump_file, rel);
+	      fputc ('\n', dump_file);
+	    }
 	  // Fold range, and register any dependency if available.
-	  handler->fold_range (r, type, range1, range2);
+	  handler->fold_range (r, type, range1, range2, rel);
+	  relation_fold_and_or (r, s, src);
 	  if (lhs)
 	    {
-	      src.register_dependency (lhs, op1);
-	      src.register_dependency (lhs, op2);
+	      if (src.gori ())
+		{
+		  src.gori ()->register_dependency (lhs, op1);
+		  src.gori ()->register_dependency (lhs, op2);
+		}
+	      if (gimple_range_ssa_p (op1))
+		{
+		  rel = handler->lhs_op1_relation (r, range1, range2);
+		  if (rel != VREL_NONE)
+		    src.register_relation (s, rel, lhs, op1);
+		}
+	      if (gimple_range_ssa_p (op2))
+		{
+		  rel= handler->lhs_op2_relation (r, range1, range2);
+		  if (rel != VREL_NONE)
+		    src.register_relation (s, rel, lhs, op2);
+		}
 	    }
+	  else if (is_a<gcond *> (s))
+	    postfold_gcond_edges (as_a<gcond *> (s), src);
 	}
       else
 	r.set_varying (type);
@@ -686,8 +740,8 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
     {
       tree ssa = TREE_OPERAND (base, 0);
       tree lhs = gimple_get_lhs (stmt);
-      if (lhs && gimple_range_ssa_p (ssa))
-	src.register_dependency (lhs, ssa);
+      if (lhs && gimple_range_ssa_p (ssa) && src.gori ())
+	src.gori ()->register_dependency (lhs, ssa);
       gcc_checking_assert (irange::supports_type_p (TREE_TYPE (ssa)));
       src.get_operand (r, ssa);
       range_cast (r, TREE_TYPE (gimple_assign_rhs1 (stmt)));
@@ -764,8 +818,8 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       edge e = gimple_phi_arg_edge (phi, x);
 
       // Register potential dependencies for stale value tracking.
-      if (gimple_range_ssa_p (arg))
-	src.register_dependency (phi_def, arg);
+      if (gimple_range_ssa_p (arg) && src.gori ())
+	src.gori ()->register_dependency (phi_def, arg);
 
       // Get the range of the argument on its edge.
       src.get_phi_operand (arg_range, arg, e);
@@ -1149,6 +1203,12 @@ fold_using_range::range_of_cond_expr  (irange &r, gassign *s, fur_source &src)
   return true;
 }
 
+gimple_ranger::gimple_ranger ()
+{
+  // If the cache has a relation oracle, use it.
+  m_oracle = m_cache.oracle ();
+}
+
 bool
 gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
 {
@@ -1464,6 +1524,185 @@ fold_using_range::range_of_ssa_name_with_loop_info (irange &r, tree name,
     r.set_varying (type);
 }
 
+// -----------------------------------------------------------------------
+
+// Check if an && or || expression can be folded based on relations. ie
+//   c_2 = a_6 > b_7
+//   c_3 = a_6 < b_7
+//   c_4 = c_2 && c_3
+// c_2 and c_3 can never be true at the same time,
+// Therefore c_4 can always resolve to false based purely on the relations.
+
+void
+fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
+					fur_source &src)
+{
+  // No queries or already folded.
+  if (!src.gori () || !src.query ()->oracle () || lhs_range.singleton_p ())
+    return;
+
+  // Only care about AND and OR expressions.
+  enum tree_code code = gimple_expr_code (s);
+  bool is_and = false;
+  if (code == BIT_AND_EXPR || code == TRUTH_AND_EXPR)
+    is_and = true;
+  else if (code != BIT_IOR_EXPR && code != TRUTH_OR_EXPR)
+    return;
+
+  tree lhs = gimple_get_lhs (s);
+  tree ssa1 = gimple_range_ssa_p (gimple_range_operand1 (s));
+  tree ssa2 = gimple_range_ssa_p (gimple_range_operand2 (s));
+
+  // Deal with || and && only when there is a full set of symbolics.
+  if (!lhs || !ssa1 || !ssa2
+      || (TREE_CODE (TREE_TYPE (lhs)) != BOOLEAN_TYPE)
+      || (TREE_CODE (TREE_TYPE (ssa1)) != BOOLEAN_TYPE)
+      || (TREE_CODE (TREE_TYPE (ssa2)) != BOOLEAN_TYPE))
+    return;
+
+  // Now we know its a boolean AND or OR expression with boolean operands.
+  // Ideally we search dependencies for common names, and see what pops out.
+  // until then, simply try to resolve direct dependencies.
+
+  // Both names will need to have 2 direct dependencies.
+  tree ssa1_dep2 = src.gori ()->depend2 (ssa1);
+  tree ssa2_dep2 = src.gori ()->depend2 (ssa2);
+  if (!ssa1_dep2 || !ssa2_dep2)
+    return;
+
+  tree ssa1_dep1 = src.gori ()->depend1 (ssa1);
+  tree ssa2_dep1 = src.gori ()->depend1 (ssa2);
+  // Make sure they are the same dependencies, and detect the order of the
+  // relationship.
+  bool reverse_op2 = true;
+  if (ssa1_dep1 == ssa2_dep1 && ssa1_dep2 == ssa2_dep2)
+    reverse_op2 = false;
+  else if (ssa1_dep1 != ssa2_dep2 || ssa1_dep2 != ssa2_dep1)
+    return;
+
+  range_operator *handler1 = gimple_range_handler (SSA_NAME_DEF_STMT (ssa1));
+  range_operator *handler2 = gimple_range_handler (SSA_NAME_DEF_STMT (ssa2));
+
+  int_range<2> bool_one (boolean_true_node, boolean_true_node);
+
+  relation_kind relation1 = handler1->op1_op2_relation (bool_one);
+  relation_kind relation2 = handler2->op1_op2_relation (bool_one);
+  if (relation1 == VREL_NONE || relation2 == VREL_NONE)
+    return;
+
+  if (reverse_op2)
+    relation2 = relation_negate (relation2);
+
+  // x && y is false if the relation intersection of the true cases is NULL.
+  if (is_and && relation_intersect (relation1, relation2) == VREL_EMPTY)
+    lhs_range = int_range<2> (boolean_false_node, boolean_false_node);
+  // x || y is true if the union of the true cases is NO-RELATION..
+  // ie, one or the other being true covers the full range of possibilties.
+  else if (!is_and && relation_union (relation1, relation2) == VREL_NONE)
+    lhs_range = bool_one;
+  else
+    return;
+
+  range_cast (lhs_range, TREE_TYPE (lhs));
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  Relation adjustment: ");
+      print_generic_expr (dump_file, ssa1, TDF_SLIM);
+      fprintf (dump_file, "  and ");
+      print_generic_expr (dump_file, ssa2, TDF_SLIM);
+      fprintf (dump_file, "  combine to produce ");
+      lhs_range.dump (dump_file);
+      fputc ('\n', dump_file);
+    }
+
+  return;
+}
+
+// Register any outgoing edge relations from a conditional branch.
+
+void
+fold_using_range::postfold_gcond_edges (gcond *s, fur_source &src)
+{
+  int_range_max r;
+  tree name;
+  range_operator *handler;
+  basic_block bb = gimple_bb (s);
+
+  edge e0 = EDGE_SUCC (bb, 0);
+  if (!single_pred_p (e0->dest))
+    e0 = NULL;
+
+  edge e1 = EDGE_SUCC (bb, 1);
+  if (!single_pred_p (e1->dest))
+    e1 = NULL;
+
+  // At least one edge needs to be single pred.
+  if (!e0 && !e1)
+    return;
+
+  // First, register the gcond itself.  This will catch statements like
+  // if (a_2 < b_5)
+  tree ssa1 = gimple_range_ssa_p (gimple_range_operand1 (s));
+  tree ssa2 = gimple_range_ssa_p (gimple_range_operand2 (s));
+  if (ssa1 && ssa2)
+    {
+      handler = gimple_range_handler (s);
+      gcc_checking_assert (handler);
+      if (e0)
+	{
+	  gcond_edge_range (r, e0);
+	  relation_kind relation = handler->op1_op2_relation (r);
+	  if (relation != VREL_NONE)
+	    src.register_relation (e0, relation, ssa1, ssa2);
+	}
+      if (e1)
+	{
+	  gcond_edge_range (r, e1);
+	  relation_kind relation = handler->op1_op2_relation (r);
+	  if (relation != VREL_NONE)
+	    src.register_relation (e1, relation, ssa1, ssa2);
+	}
+    }
+
+  // Outgoing relations of GORI exports require a gori engine.
+  if (!src.gori ())
+    return;
+
+  range_query *q = src.query ();
+  // Now look for other relations in the exports.  This will find stmts
+  // leading to the condition such as:
+  // c_2 = a_4 < b_7
+  // if (c_2)
+
+  FOR_EACH_GORI_EXPORT_NAME (*(src.gori ()), bb, name)
+    {
+      if (TREE_CODE (TREE_TYPE (name)) != BOOLEAN_TYPE)
+	continue;
+      gimple *stmt = SSA_NAME_DEF_STMT (name);
+      handler = gimple_range_handler (stmt);
+      if (!handler)
+	continue;
+      tree ssa1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
+      tree ssa2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
+      if (ssa1 && ssa2)
+	{
+	  if (e0 && src.gori ()->outgoing_edge_range_p (r, e0, name, *q)
+	      && r.singleton_p ())
+	    {
+	      relation_kind relation = handler->op1_op2_relation (r);
+	      if (relation != VREL_NONE)
+		src.register_relation (e0, relation, ssa1, ssa2);
+	    }
+	  if (e1 && src.gori ()->outgoing_edge_range_p (r, e1, name, *q)
+	      && r.singleton_p ())
+	    {
+	      relation_kind relation = handler->op1_op2_relation (r);
+	      if (relation != VREL_NONE)
+		src.register_relation (e1, relation, ssa1, ssa2);
+	    }
+	}
+    }
+}
 // --------------------------------------------------------------------------
 // trace_ranger implementation.
 

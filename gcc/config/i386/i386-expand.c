@@ -1316,6 +1316,9 @@ find_nearest_reg_def (rtx_insn *insn, int regno1, int regno2)
   return false;
 }
 
+/* INSN_UID of the last insn emitted by zero store peephole2s.  */
+int ix86_last_zero_store_uid;
+
 /* Split lea instructions into a sequence of instructions
    which are executed on ALU to avoid AGU stalls.
    It is assumed that it is allowed to clobber flags register
@@ -10969,11 +10972,12 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 
 	  op = fixup_modeless_constant (op, mode);
 
-	  /* NB: 3-operands load implied it's a mask load,
+	  /* NB: 3-operands load implied it's a mask load or v{p}expand*,
 	     and that mask operand shoud be at the end.
 	     Keep all-ones mask which would be simplified by the expander.  */
 	  if (nargs == 3 && i == 2 && klass == load
-	      && constm1_operand (op, mode))
+	      && constm1_operand (op, mode)
+	      && insn_p->operand[i].predicate (op, mode))
 	    ;
 	  else if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	    op = copy_to_mode_reg (mode, op);

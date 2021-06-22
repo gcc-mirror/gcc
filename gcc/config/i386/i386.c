@@ -8196,6 +8196,7 @@ ix86_expand_prologue (void)
   bool save_stub_call_needed;
   rtx static_chain = NULL_RTX;
 
+  ix86_last_zero_store_uid = 0;
   if (ix86_function_naked (current_function_decl))
     {
       if (flag_stack_usage_info)
