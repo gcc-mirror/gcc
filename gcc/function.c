@@ -3821,17 +3821,22 @@ assign_parms (tree fndecl)
       tree decl_result = DECL_RESULT (fndecl);
       rtx decl_rtl = DECL_RTL (decl_result);
 
-      if ((REG_P (decl_rtl)
-	   ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
-	   : DECL_REGISTER (decl_result))
-	  /* Unless the psABI says not to.  */
-	  && !TYPE_EMPTY_P (TREE_TYPE (decl_result)))
+      if (REG_P (decl_rtl)
+	  ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
+	  : DECL_REGISTER (decl_result))
 	{
 	  rtx real_decl_rtl;
 
-	  real_decl_rtl = targetm.calls.function_value (TREE_TYPE (decl_result),
-							fndecl, true);
-	  REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
+	  /* Unless the psABI says not to.  */
+	  if (TYPE_EMPTY_P (TREE_TYPE (decl_result)))
+	    real_decl_rtl = NULL_RTX;
+	  else
+	    {
+	      real_decl_rtl
+		= targetm.calls.function_value (TREE_TYPE (decl_result),
+						fndecl, true);
+	      REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
+	    }
 	  /* The delay slot scheduler assumes that crtl->return_rtx
 	     holds the hard register containing the return value, not a
 	     temporary pseudo.  */
