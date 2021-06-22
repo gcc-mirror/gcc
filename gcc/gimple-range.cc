@@ -1457,7 +1457,7 @@ gimple_ranger::dump_bb (FILE *f, basic_block bb)
 		  m_cache.block_range (range, bb, name, false) ||
 		  m_cache.block_range (range, e->dest, name, false))
 		{
-		  range_on_edge (range, e, name);
+		  m_cache.range_on_edge (range, e, name);
 		  if (!range.varying_p ())
 		    {
 		      fprintf (f, "%d->%d ", e->src->index,
