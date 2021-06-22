@@ -1591,6 +1591,14 @@ vect_build_slp_tree (vec_info *vinfo,
       SLP_TREE_SCALAR_STMTS (res) = vNULL;
       SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
       res->failed = XNEWVEC (bool, group_size);
+      if (flag_checking)
+	{
+	  unsigned i;
+	  for (i = 0; i < group_size; ++i)
+	    if (!matches[i])
+	      break;
+	  gcc_assert (i < group_size);
+	}
       memcpy (res->failed, matches, sizeof (bool) * group_size);
     }
   else
@@ -1898,10 +1906,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  chains.quick_push (chain.copy ());
 	  chain.truncate (0);
 	}
-      if (chains.length () == group_size
-	  /* We cannot yet use SLP_TREE_CODE to communicate the operation.  */
-	  && op_stmt_info)
+      if (chains.length () == group_size)
 	{
+	  /* We cannot yet use SLP_TREE_CODE to communicate the operation.  */
+	  if (!op_stmt_info)
+	    {
+	      hard_fail = false;
+	      goto out;
+	    }
 	  /* Now we have a set of chains with the same length.  */
 	  /* 1. pre-sort according to def_type and operation.  */
 	  for (unsigned lane = 0; lane < group_size; ++lane)
@@ -6272,14 +6284,15 @@ vect_get_slp_defs (vec_info *,
    If ANALYZE_ONLY is TRUE, only check that it is possible to create valid
    permute statements for the SLP node NODE.  Store the number of vector
    permute instructions in *N_PERMS and the number of vector load
-   instructions in *N_LOADS.  */
+   instructions in *N_LOADS.  If DCE_CHAIN is true, remove all definitions
+   that were not needed.  */
 
 bool
 vect_transform_slp_perm_load (vec_info *vinfo,
 			      slp_tree node, vec<tree> dr_chain,
 			      gimple_stmt_iterator *gsi, poly_uint64 vf,
 			      bool analyze_only, unsigned *n_perms,
-			      unsigned int *n_loads)
+			      unsigned int *n_loads, bool dce_chain)
 {
   stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
   int vec_index = 0;
@@ -6358,6 +6371,7 @@ vect_transform_slp_perm_load (vec_info *vinfo,
     }
   auto_sbitmap used_in_lanes (in_nlanes);
   bitmap_clear (used_in_lanes);
+  auto_bitmap used_defs;
 
   unsigned int count = mask.encoded_nelts ();
   mask.quick_grow (count);
@@ -6465,11 +6479,20 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 					       mask_vec);
 		      vect_finish_stmt_generation (vinfo, stmt_info, perm_stmt,
 						   gsi);
+		      if (dce_chain)
+			{
+			  bitmap_set_bit (used_defs, first_vec_index + ri);
+			  bitmap_set_bit (used_defs, second_vec_index + ri);
+			}
 		    }
 		  else
-		    /* If mask was NULL_TREE generate the requested
-		       identity transform.  */
-		    perm_stmt = SSA_NAME_DEF_STMT (first_vec);
+		    {
+		      /* If mask was NULL_TREE generate the requested
+			 identity transform.  */
+		      perm_stmt = SSA_NAME_DEF_STMT (first_vec);
+		      if (dce_chain)
+			bitmap_set_bit (used_defs, first_vec_index + ri);
+		    }
 
 		  /* Store the vector statement in NODE.  */
 		  SLP_TREE_VEC_STMTS (node)[vect_stmts_counter++] = perm_stmt;
@@ -6508,6 +6531,16 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 	    *n_loads += 1;
 	}
     }
+
+  if (dce_chain)
+    for (unsigned i = 0; i < dr_chain.length (); ++i)
+      if (!bitmap_bit_p (used_defs, i))
+	{
+	  gimple *stmt = SSA_NAME_DEF_STMT (dr_chain[i]);
+	  gimple_stmt_iterator rgsi = gsi_for_stmt (stmt);
+	  gsi_remove (&rgsi, true);
+	  release_defs (stmt);
+	}
 
   return true;
 }

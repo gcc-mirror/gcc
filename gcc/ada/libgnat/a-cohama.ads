@@ -36,7 +36,7 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Hash_Tables;
 private with Ada.Finalization;
 private with Ada.Streams;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 --  The language-defined generic package Containers.Hashed_Maps provides
 --  private types Map and Cursor, and a set of operations for each type. A map
@@ -431,7 +431,7 @@ private
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Map);
 
    overriding procedure Adjust (Container : in out Map);
 

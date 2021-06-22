@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Text_Output.Utils;
 with System.Unsigned_Types; use System.Unsigned_Types;
 
 package body Ada.Numerics.Big_Numbers.Big_Reals is
@@ -619,12 +618,12 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
    -- Put_Image --
    ---------------
 
-   procedure Put_Image (S : in out Sink'Class; V : Big_Real) is
+   procedure Put_Image (S : in out Root_Buffer_Type'Class; V : Big_Real) is
       --  This is implemented in terms of To_String. It might be more elegant
       --  and more efficient to do it the other way around, but this is the
       --  most expedient implementation for now.
    begin
-      Strings.Text_Output.Utils.Put_UTF_8 (S, To_String (V));
+      Strings.Text_Buffers.Put_UTF_8 (S, To_String (V));
    end Put_Image;
 
    ---------

@@ -886,6 +886,19 @@ package body Errout is
                               Last  => Last_Sloc (Lst)));
    end Error_Msg_FE;
 
+   ------------------------------
+   -- Error_Msg_GNAT_Extension --
+   ------------------------------
+
+   procedure Error_Msg_GNAT_Extension (Extension : String) is
+      Loc : constant Source_Ptr := Token_Ptr;
+   begin
+      if not Extensions_Allowed then
+         Error_Msg (Extension & " is a 'G'N'A'T specific extension", Loc);
+         Error_Msg ("\unit must be compiled with -gnatX switch", Loc);
+      end if;
+   end Error_Msg_GNAT_Extension;
+
    ------------------------
    -- Error_Msg_Internal --
    ------------------------
@@ -1032,7 +1045,7 @@ package body Errout is
          if In_Extended_Main_Source_Unit (Sptr) then
             null;
 
-         --  If the main unit has not been read yet. the warning must be on
+         --  If the main unit has not been read yet. The warning must be on
          --  a configuration file: gnat.adc or user-defined. This means we
          --  are not parsing the main unit yet, so skip following checks.
 

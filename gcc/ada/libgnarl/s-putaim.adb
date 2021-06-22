@@ -29,12 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
-with Ada.Strings.Text_Output.Utils;
-use Ada.Strings.Text_Output;
-use Ada.Strings.Text_Output.Utils;
-
 package body System.Put_Task_Images is
+
+   use Ada.Strings.Text_Buffers;
 
    procedure Put_Image_Protected (S : in out Sink'Class) is
    begin

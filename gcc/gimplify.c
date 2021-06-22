@@ -6323,12 +6323,14 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (!allows_reg && allows_mem)
 	mark_addressable (TREE_VALUE (link));
 
+      tree orig = TREE_VALUE (link);
       tret = gimplify_expr (&TREE_VALUE (link), pre_p, post_p,
 			    is_inout ? is_gimple_min_lval : is_gimple_lvalue,
 			    fb_lvalue | fb_mayfail);
       if (tret == GS_ERROR)
 	{
-	  error ("invalid lvalue in %<asm%> output %d", i);
+	  if (orig != error_mark_node)
+	    error ("invalid lvalue in %<asm%> output %d", i);
 	  ret = tret;
 	}
 
@@ -6523,8 +6525,9 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  mark_addressable (TREE_VALUE (link));
 	  if (tret == GS_ERROR)
 	    {
-	      error_at (EXPR_LOC_OR_LOC (TREE_VALUE (link), input_location),
-			"memory input %d is not directly addressable", i);
+	      if (inputv != error_mark_node)
+		error_at (EXPR_LOC_OR_LOC (TREE_VALUE (link), input_location),
+			  "memory input %d is not directly addressable", i);
 	      ret = tret;
 	    }
 	}

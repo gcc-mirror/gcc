@@ -626,7 +626,7 @@ package body Sem_Ch10 is
    --  Start of processing for Analyze_Compilation_Unit
 
    begin
-      Exp_Put_Image.Preload_Sink (N);
+      Exp_Put_Image.Preload_Root_Buffer_Type (N);
 
       Process_Compilation_Unit_Pragmas (N);
 

@@ -29,6 +29,7 @@ package Sem_Ch11 is
    procedure Analyze_Handled_Statements                 (N : Node_Id);
    procedure Analyze_Raise_Expression                   (N : Node_Id);
    procedure Analyze_Raise_Statement                    (N : Node_Id);
+   procedure Analyze_Raise_When_Statement               (N : Node_Id);
    procedure Analyze_Raise_xxx_Error                    (N : Node_Id);
 
    procedure Analyze_Exception_Handlers (L : List_Id);

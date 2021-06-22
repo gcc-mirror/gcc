@@ -2214,6 +2214,23 @@ of GNAT specific extensions are recognized as follows:
   This new aggregate syntax for arrays and containers is provided under -gnatX
   to experiment and confirm this new language syntax.
 
+* Additional ``when`` constructs
+
+  In addition to the ``exit when CONDITION`` control structure, several
+  additional constructs are allowed following this format. Including
+  ``return when CONDITION``, ``goto when CONDITION``, and
+  ``raise [with EXCEPTION_MESSAGE] when CONDITION.``
+
+  Some examples:
+
+  .. code-block:: ada
+
+      return Result when Variable > 10;
+
+      raise Program_Error with "Element is null" when Element = null;
+
+      goto End_Of_Subprogram when Variable = -1;
+
 * Casing on composite values (aka pattern matching)
 
   The selector for a case statement may be of a composite type, subject to

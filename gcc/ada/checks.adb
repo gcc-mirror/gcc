@@ -11106,6 +11106,56 @@ package body Checks is
                end;
             end if;
 
+         --  If the context is a qualified_expression where the subtype is
+         --  an unconstrained array subtype with fixed-lower-bound indexes,
+         --  then consistency checks must be done between the lower bounds
+         --  of any such indexes and the corresponding lower bounds of the
+         --  qualified array object.
+
+         elsif Is_Fixed_Lower_Bound_Array_Subtype (T_Typ)
+           and then Nkind (Parent (Expr)) = N_Qualified_Expression
+           and then not Do_Access
+         then
+            declare
+               Ndims : constant Pos := Number_Dimensions (T_Typ);
+
+               Qual_Index : Node_Id;
+               Expr_Index : Node_Id;
+
+            begin
+               Expr_Actual := Get_Referenced_Object (Expr);
+               Exptyp      := Get_Actual_Subtype (Expr_Actual);
+
+               Qual_Index := First_Index (T_Typ);
+               Expr_Index := First_Index (Exptyp);
+
+               for Indx in 1 .. Ndims loop
+                  if Nkind (Expr_Index) /= N_Raise_Constraint_Error then
+
+                     --  If this index of the qualifying array subtype has
+                     --  a fixed lower bound, then apply a check that the
+                     --  corresponding lower bound of the array expression
+                     --  is equal to it.
+
+                     if Is_Fixed_Lower_Bound_Index_Subtype (Etype (Qual_Index))
+                     then
+                        Evolve_Or_Else
+                          (Cond,
+                           Make_Op_Ne (Loc,
+                             Left_Opnd   =>
+                               Get_E_First_Or_Last
+                                 (Loc, Exptyp, Indx, Name_First),
+                             Right_Opnd  =>
+                               New_Copy_Tree
+                                 (Type_Low_Bound (Etype (Qual_Index)))));
+                     end if;
+
+                     Next (Qual_Index);
+                     Next (Expr_Index);
+                  end if;
+               end loop;
+            end;
+
          else
             --  For a conversion to an unconstrained array type, generate an
             --  Action to check that the bounds of the source value are within

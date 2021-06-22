@@ -1825,6 +1825,18 @@ package body Sem_Ch5 is
       raise Program_Error;
    end Analyze_Goto_Statement;
 
+   ---------------------------------
+   -- Analyze_Goto_When_Statement --
+   ---------------------------------
+
+   procedure Analyze_Goto_When_Statement (N : Node_Id) is
+   begin
+      --  Verify the condition is a Boolean expression
+
+      Analyze_And_Resolve (Condition (N), Any_Boolean);
+      Check_Unset_Reference (Condition (N));
+   end Analyze_Goto_When_Statement;
+
    --------------------------
    -- Analyze_If_Statement --
    --------------------------

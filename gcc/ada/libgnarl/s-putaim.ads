@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Text_Output;
+with Ada.Strings.Text_Buffers;
 with Ada.Task_Identification;
 
 package System.Put_Task_Images is
@@ -39,7 +39,7 @@ package System.Put_Task_Images is
    --  separate from System.Put_Images to avoid dragging the tasking runtimes
    --  into nontasking programs.
 
-   subtype Sink is Ada.Strings.Text_Output.Sink;
+   subtype Sink is Ada.Strings.Text_Buffers.Root_Buffer_Type;
 
    procedure Put_Image_Protected (S : in out Sink'Class);
    procedure Put_Image_Task

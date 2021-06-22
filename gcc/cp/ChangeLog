@@ -1,3 +1,21 @@
+2021-06-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67302
+	* typeck.c (check_return_expr): Call maybe_undo_parenthesized_ref
+	sooner, before the NRVO handling.
+
+2021-06-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/80431
+	* tree.c (bot_replace): Use convert_to_base to build the
+	conversion to the (morally) virtual base.
+
+2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* typeck.c (cxx_mark_addressable): Diagnose trying to make
+	bit-fields addressable.
+
 2021-06-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101106

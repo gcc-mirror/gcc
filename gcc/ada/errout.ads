@@ -519,7 +519,7 @@ package Errout is
    --  The prefixes error and warning are supplied automatically (depending
    --  on the use of the ? insertion character), and the call to the error
    --  message routine supplies the text. The "error: " prefix is omitted
-   --  in brief error message formats.
+   --  if -gnatd_U is among the options given to gnat.
 
    --  Reserved Ada keywords in the message are in the default keyword case
    --  (determined from the given source program), surrounded by quotation
@@ -941,6 +941,11 @@ package Errout is
 
    procedure Error_Msg_Ada_2022_Feature (Feature : String; Loc : Source_Ptr);
    --  Analogous to Error_Msg_Ada_2012_Feature, for Ada 2022
+
+   procedure Error_Msg_GNAT_Extension (Extension : String);
+   --  If not operating with extensions allowed, posts errors complaining
+   --  that Extension is only supported when the -gnatX switch is enabled,
+   --  with appropriate suggestions to fix it.
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message

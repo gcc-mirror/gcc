@@ -70,7 +70,7 @@ package body Ada.Containers.Bounded_Holders is
    ---------------
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Holder)
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Holder)
    is
       use System.Put_Images;
    begin

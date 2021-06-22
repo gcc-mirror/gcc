@@ -7262,8 +7262,8 @@ package body Sem_Util is
    -------------------------
 
    function Denotes_Same_Object (A1, A2 : Node_Id) return Boolean is
-      function Is_Renaming (N : Node_Id) return Boolean;
-      --  Return true if N names a renaming entity
+      function Is_Object_Renaming (N : Node_Id) return Boolean;
+      --  Return true if N names an object renaming entity
 
       function Is_Valid_Renaming (N : Node_Id) return Boolean;
       --  For renamings, return False if the prefix of any dereference within
@@ -7271,35 +7271,16 @@ package body Sem_Util is
       --  renamed object_name contains references to variables or calls on
       --  nonstatic functions; otherwise return True (RM 6.4.1(6.10/3))
 
-      -----------------
-      -- Is_Renaming --
-      -----------------
+      ------------------------
+      -- Is_Object_Renaming --
+      ------------------------
 
-      function Is_Renaming (N : Node_Id) return Boolean is
+      function Is_Object_Renaming (N : Node_Id) return Boolean is
       begin
-         if not Is_Entity_Name (N) then
-            return False;
-         end if;
-
-         case Ekind (Entity (N)) is
-            when E_Variable | E_Constant =>
-               return Present (Renamed_Object (Entity (N)));
-
-            when E_Exception
-               | E_Function
-               | E_Generic_Function
-               | E_Generic_Package
-               | E_Generic_Procedure
-               | E_Operator
-               | E_Package
-               | E_Procedure
-            =>
-               return Present (Renamed_Entity (Entity (N)));
-
-            when others =>
-               return False;
-         end case;
-      end Is_Renaming;
+         return Is_Entity_Name (N)
+           and then Ekind (Entity (N)) in E_Variable | E_Constant
+           and then Present (Renamed_Object (Entity (N)));
+      end Is_Object_Renaming;
 
       -----------------------
       -- Is_Valid_Renaming --
@@ -7307,7 +7288,7 @@ package body Sem_Util is
 
       function Is_Valid_Renaming (N : Node_Id) return Boolean is
       begin
-         if Is_Renaming (N)
+         if Is_Object_Renaming (N)
            and then not Is_Valid_Renaming (Renamed_Entity (Entity (N)))
          then
             return False;
@@ -7481,9 +7462,12 @@ package body Sem_Util is
                --  Check whether bounds are statically identical. There is no
                --  attempt to detect partial overlap of slices.
 
-               return Denotes_Same_Object (Lo1, Lo2)
-                        and then
-                      Denotes_Same_Object (Hi1, Hi2);
+               return Is_OK_Static_Expression (Lo1)
+                 and then Is_OK_Static_Expression (Lo2)
+                 and then Is_OK_Static_Expression (Hi1)
+                 and then Is_OK_Static_Expression (Hi2)
+                 and then Expr_Value (Lo1) = Expr_Value (Lo2)
+                 and then Expr_Value (Hi1) = Expr_Value (Hi2);
             end;
          end if;
 
@@ -7494,29 +7478,15 @@ package body Sem_Util is
       --  no references to variables nor calls on nonstatic functions (RM
       --  6.4.1(6.11/3)).
 
-      elsif Is_Renaming (A1)
+      elsif Is_Object_Renaming (A1)
         and then Is_Valid_Renaming (A1)
       then
          return Denotes_Same_Object (Renamed_Entity (Entity (A1)), A2);
 
-      elsif Is_Renaming (A2)
+      elsif Is_Object_Renaming (A2)
         and then Is_Valid_Renaming (A2)
       then
          return Denotes_Same_Object (A1, Renamed_Entity (Entity (A2)));
-
-      --  In the recursion, integer literals appear as slice bounds
-
-      elsif Nkind (A1) = N_Integer_Literal
-        and then Nkind (A2) = N_Integer_Literal
-      then
-         return Intval (A1) = Intval (A2);
-
-      --  Likewise for character literals
-
-      elsif Nkind (A1) = N_Character_Literal
-        and then Nkind (A2) = N_Character_Literal
-      then
-         return Char_Literal_Value (A1) = Char_Literal_Value (A2);
 
       else
          return False;
@@ -9467,6 +9437,18 @@ package body Sem_Util is
 
          if Is_Entity_Name (Expr) then
             Ent := Entity (Expr);
+
+            --  If expansion is disabled, then we might see an entity of a
+            --  protected component or of a discriminant of a concurrent unit.
+            --  Ignore such entities, because further warnings for overlays
+            --  expect this routine to only collect entities of entire objects.
+
+            if Ekind (Ent) in E_Component | E_Discriminant then
+               pragma Assert
+                 (not Expander_Active
+                  and then Is_Concurrent_Type (Scope (Ent)));
+               Ent := Empty;
+            end if;
             return;
 
          --  Check for components
@@ -10959,6 +10941,23 @@ package body Sem_Util is
          L := N;
          H := N;
       end if;
+   end Get_Index_Bounds;
+
+   function Get_Index_Bounds
+     (N             : Node_Id;
+      Use_Full_View : Boolean := False) return Range_Nodes is
+      Result : Range_Nodes;
+   begin
+      Get_Index_Bounds (N, Result.L, Result.H, Use_Full_View);
+      return Result;
+   end Get_Index_Bounds;
+
+   function Get_Index_Bounds
+     (N             : Node_Id;
+      Use_Full_View : Boolean := False) return Range_Values is
+      Nodes : constant Range_Nodes := Get_Index_Bounds (N, Use_Full_View);
+   begin
+      return (Expr_Value (Nodes.L), Expr_Value (Nodes.H));
    end Get_Index_Bounds;
 
    -----------------------------
@@ -14845,6 +14844,12 @@ package body Sem_Util is
          return No_Uint;
       end if;
 
+      --  Do not attempt to compute offsets within multi-dimensional arrays
+
+      if Present (Next_Index (Ind)) then
+         return No_Uint;
+      end if;
+
       if Nkind (Ind) = N_Subtype_Indication then
          Ind := Constraint (Ind);
 
@@ -14861,7 +14866,7 @@ package body Sem_Util is
 
       --  Return the scaled offset
 
-      return Off * (Expr_Value (Exp) - Expr_Value (Low_Bound ((Ind))));
+      return Off * (Expr_Value (Exp) - Expr_Value (Low_Bound (Ind)));
    end Indexed_Component_Bit_Offset;
 
    -----------------------------
@@ -26996,7 +27001,7 @@ package body Sem_Util is
    is
    begin
       --  The only entities for which we track constant values are variables
-      --  which are not renamings, constants and formal parameters, so check
+      --  that are not renamings, constants and formal parameters, so check
       --  if we have this case.
 
       --  Note: it may seem odd to track constant values for constants, but in

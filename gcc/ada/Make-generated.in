@@ -13,19 +13,12 @@ endif
 fsrcdir := $(shell cd $(srcdir);${PWD_COMMAND})
 
 GEN_IL_INCLUDES = -I$(fsrcdir)/ada
-GEN_IL_FLAGS = -a -q -g -gnata -j0 -gnat2012 -gnatw.g -gnatyg -gnatU $(GEN_IL_INCLUDES)
+GEN_IL_FLAGS = -gnata -gnat2012 -gnatw.g -gnatyg -gnatU $(GEN_IL_INCLUDES)
 
 ada/seinfo_tables.ads ada/seinfo_tables.adb ada/sinfo.h ada/einfo.h ada/nmake.ads ada/nmake.adb ada/seinfo.ads ada/sinfo-nodes.ads ada/sinfo-nodes.adb ada/einfo-entities.ads ada/einfo-entities.adb: ada/stamp-gen_il ; @true
-ada/stamp-gen_il: $(fsrcdir)/ada/gen_il* $(fsrcdir)/ada/libgnat/a-sto*.ad? $(fsrcdir)/ada/libgnat/a-stteou__bootstrap.ads
+ada/stamp-gen_il: $(fsrcdir)/ada/gen_il*
 	$(MKDIR) ada/gen_il
-	# Copy recent runtime files needed by gen_il that may not be available
-	# in the base compiler.
-	$(CP) -f $(fsrcdir)/ada/libgnat/a-sto*.ad? ada/gen_il
-	$(CP) -f $(fsrcdir)/ada/libgnat/a-stteou__bootstrap.ads ada/gen_il/a-stteou.ads
-	cd ada/gen_il ; gnatmake $(GEN_IL_FLAGS) gen_il-main.adb
-	# ignore errors when running gen_il-main due to bootstrap
-	# considerations
-	-cd ada/gen_il ; ./gen_il-main
+	cd ada/gen_il ; gnatmake -q -g $(GEN_IL_FLAGS) gen_il-main ; ./gen_il-main
 	$(fsrcdir)/../move-if-change ada/gen_il/seinfo_tables.ads ada/seinfo_tables.ads
 	$(fsrcdir)/../move-if-change ada/gen_il/seinfo_tables.adb ada/seinfo_tables.adb
 	$(fsrcdir)/../move-if-change ada/gen_il/sinfo.h ada/sinfo.h

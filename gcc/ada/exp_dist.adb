@@ -2859,9 +2859,9 @@ package body Exp_Dist is
       if E_Calling_Stubs = Empty then
          RCI_Locator := RCI_Locator_Table.Get (RCI_Package);
 
-         --  The RCI_Locator package and calling stub are is inserted at the
-         --  top level in the current unit, and must appear in the proper scope
-         --  so that it is not prematurely removed by the GCC back end.
+         --  The RCI_Locator package and calling stub are inserted at the top
+         --  level in the current unit, and must appear in the proper scope so
+         --  that it is not prematurely removed by the GCC back end.
 
          declare
             Scop : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);

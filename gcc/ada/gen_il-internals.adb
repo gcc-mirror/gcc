@@ -207,44 +207,44 @@ package body Gen_IL.Internals is
    -- Put_Types_With_Bars --
    -------------------------
 
-   procedure Put_Types_With_Bars (S : in out Sink'Class; U : Type_Vector) is
+   procedure Put_Types_With_Bars (S : in out Sink; U : Type_Vector) is
       First_Time : Boolean := True;
    begin
-      Indent (S, 3);
+      Increase_Indent (S, 3);
 
       for T of U loop
          if First_Time then
             First_Time := False;
          else
-            Put (S, "\n| ");
+            Put (S, LF & "| ");
          end if;
 
-         Put (S, "\1", Image (T));
+         Put (S, Image (T));
       end loop;
 
-      Outdent (S, 3);
+      Decrease_Indent (S, 3);
    end Put_Types_With_Bars;
 
    ----------------------------
    -- Put_Type_Ids_With_Bars --
    ----------------------------
 
-   procedure Put_Type_Ids_With_Bars (S : in out Sink'Class; U : Type_Vector) is
+   procedure Put_Type_Ids_With_Bars (S : in out Sink; U : Type_Vector) is
       First_Time : Boolean := True;
    begin
-      Indent (S, 3);
+      Increase_Indent (S, 3);
 
       for T of U loop
          if First_Time then
             First_Time := False;
          else
-            Put (S, "\n| ");
+            Put (S, LF & "| ");
          end if;
 
-         Put (S, "\1", Id_Image (T));
+         Put (S, Id_Image (T));
       end loop;
 
-      Outdent (S, 3);
+      Decrease_Indent (S, 3);
    end Put_Type_Ids_With_Bars;
 
    -----------
@@ -431,7 +431,7 @@ package body Gen_IL.Internals is
    -- Put_Type_Hierarchy --
    ------------------------
 
-   procedure Put_Type_Hierarchy (S : in out Sink'Class; Root : Root_Type) is
+   procedure Put_Type_Hierarchy (S : in out Sink; Root : Root_Type) is
       Level : Natural := 0;
 
       function Indentation return String is ((1 .. 3 * Level => ' '));
@@ -444,7 +444,7 @@ package body Gen_IL.Internals is
 
       procedure Pre (T : Node_Or_Entity_Type) is
       begin
-         Put (S, "--  \1\2\n", Indentation, Image (T));
+         Put (S, "--  " & Indentation & Image (T) & LF);
          Level := Level + 1;
       end Pre;
 
@@ -456,7 +456,7 @@ package body Gen_IL.Internals is
          --  an arbitrary definition of "many".
 
          if Num_Concrete_Descendants (T) > 10 then
-            Put (S, "--  \1end \2\n", Indentation, Image (T));
+            Put (S, "--  " & Indentation & "end " & Image (T) & LF);
          end if;
       end Post;
 
@@ -468,13 +468,13 @@ package body Gen_IL.Internals is
    --  Start of processing for Put_Type_Hierarchy
 
    begin
-      Put (S, "--  Type hierarchy for \1\n", N_Or_E);
-      Put (S, "--\n");
+      Put (S, "--  Type hierarchy for " & N_Or_E & LF);
+      Put (S, "--" & LF);
 
       Iterate_Types (Root, Pre'Access, Post'Access);
 
-      Put (S, "--\n");
-      Put (S, "--  End type hierarchy for \1\n\n", N_Or_E);
+      Put (S, "--" & LF);
+      Put (S, "--  End type hierarchy for " & N_Or_E & LF & LF);
    end Put_Type_Hierarchy;
 
    ---------
@@ -488,28 +488,5 @@ package body Gen_IL.Internals is
    begin
       return Type_Enum'Pos (T) - Type_Enum'Pos (First);
    end Pos;
-
-   Stdout : Sink'Class renames Files.Standard_Output.all;
-
-   --  The following procedures are for use in gdb. They use the 'Put_Image
-   --  attribute. That is commented out, because we don't want this new feature
-   --  used in the compiler. If you need this for debugging, just uncomment
-   --  those lines back in, and rebuild.
-
-   pragma Warnings (Off);
-   procedure Ptypes (V : Type_Vector) is
-   begin
---      Type_Vector'Put_Image (Stdout, V);
-      New_Line (Stdout);
-      Flush (Stdout);
-   end Ptypes;
-
-   procedure Pfields (V : Field_Vector) is
-   begin
---      Field_Vector'Put_Image (Stdout, V);
-      New_Line (Stdout);
-      Flush (Stdout);
-   end Pfields;
-   pragma Warnings (On);
 
 end Gen_IL.Internals;

@@ -2387,7 +2387,7 @@
 (define_expand "neon_vca<cmp_op><mode>"
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand")
         (neg:<V_cmp_result>
-          (GTGE:<V_cmp_result>
+          (GLTE:<V_cmp_result>
             (abs:VCVTF (match_operand:VCVTF 1 "s_register_operand"))
             (abs:VCVTF (match_operand:VCVTF 2 "s_register_operand")))))]
   "TARGET_NEON"
@@ -2406,7 +2406,7 @@
 (define_insn "neon_vca<cmp_op><mode>_insn"
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w")
         (neg:<V_cmp_result>
-          (GTGE:<V_cmp_result>
+          (GLTE:<V_cmp_result>
             (abs:VCVTF (match_operand:VCVTF 1 "s_register_operand" "w"))
             (abs:VCVTF (match_operand:VCVTF 2 "s_register_operand" "w")))))]
   "TARGET_NEON && flag_unsafe_math_optimizations"
@@ -2418,7 +2418,7 @@
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand" "=w")
         (unspec:<V_cmp_result> [(match_operand:VCVTF 1 "s_register_operand" "w")
 		                (match_operand:VCVTF 2 "s_register_operand" "w")]
-                               NEON_VACMP))]
+                               NEON_VAGLTE))]
   "TARGET_NEON"
   "vac<cmp_op_unsp>.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "type" "neon_fp_compare_s<q>")]

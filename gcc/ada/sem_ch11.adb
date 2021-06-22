@@ -662,6 +662,18 @@ package body Sem_Ch11 is
       Kill_Current_Values (Last_Assignment_Only => True);
    end Analyze_Raise_Statement;
 
+   ----------------------------------
+   -- Analyze_Raise_When_Statement --
+   ----------------------------------
+
+   procedure Analyze_Raise_When_Statement (N : Node_Id) is
+   begin
+      --  Verify the condition is a Boolean expression
+
+      Analyze_And_Resolve (Condition (N), Any_Boolean);
+      Check_Unset_Reference (Condition (N));
+   end Analyze_Raise_When_Statement;
+
    -----------------------------
    -- Analyze_Raise_xxx_Error --
    -----------------------------

@@ -2359,112 +2359,120 @@ __extension__ extern __inline uint8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_s8 (int8x8_t __a, int8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vceqv8qi (__a, __b);
+  return (uint8x8_t) (__a == __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_s16 (int16x4_t __a, int16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vceqv4hi (__a, __b);
+  return (uint16x4_t) (__a == __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_s32 (int32x2_t __a, int32x2_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vceqv2si (__a, __b);
+  return (uint32x2_t) (__a == __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_f32 (float32x2_t __a, float32x2_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x2_t) (__a == __b);
+#else
   return (uint32x2_t)__builtin_neon_vceqv2sf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vceqv8qi ((int8x8_t) __a, (int8x8_t) __b);
+  return (uint8x8_t) (__a == __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vceqv4hi ((int16x4_t) __a, (int16x4_t) __b);
+  return (uint16x4_t) (__a == __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vceqv2si ((int32x2_t) __a, (int32x2_t) __b);
+  return (uint32x2_t) (__a == __b);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_p8 (poly8x8_t __a, poly8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vceqv8qi ((int8x8_t) __a, (int8x8_t) __b);
+  return (uint8x8_t) (__a == __b);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_s8 (int8x16_t __a, int8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vceqv16qi (__a, __b);
+  return (uint8x16_t) (__a == __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_s16 (int16x8_t __a, int16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vceqv8hi (__a, __b);
+  return (uint16x8_t) (__a == __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_s32 (int32x4_t __a, int32x4_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vceqv4si (__a, __b);
+  return (uint32x4_t) (__a == __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_f32 (float32x4_t __a, float32x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x4_t) (__a == __b);
+#else
   return (uint32x4_t)__builtin_neon_vceqv4sf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vceqv16qi ((int8x16_t) __a, (int8x16_t) __b);
+  return (uint8x16_t) (__a == __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vceqv8hi ((int16x8_t) __a, (int16x8_t) __b);
+  return (uint16x8_t) (__a == __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vceqv4si ((int32x4_t) __a, (int32x4_t) __b);
+  return (uint32x4_t) (__a == __b);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_p8 (poly8x16_t __a, poly8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vceqv16qi ((int8x16_t) __a, (int8x16_t) __b);
+  return (uint8x16_t) (__a == __b);
 }
 
 __extension__ extern __inline uint8x8_t
@@ -17195,14 +17203,22 @@ __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceq_f16 (float16x4_t __a, float16x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x4_t) (__a == __b);
+#else
   return (uint16x4_t)__builtin_neon_vceqv4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vceqq_f16 (float16x8_t __a, float16x8_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x8_t) (__a == __b);
+#else
   return (uint16x8_t)__builtin_neon_vceqv8hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x4_t

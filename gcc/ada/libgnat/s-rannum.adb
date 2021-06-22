@@ -86,7 +86,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Text_Output.Utils;
 with Ada.Unchecked_Conversion;
 
 with System.Random_Seed;
@@ -178,7 +177,10 @@ is
    function Random (Gen : Generator) return Unsigned_32 is
       G : Generator renames Gen.Writable.Self.all;
       Y : State_Val;
-      I : Integer;      --  should avoid use of identifier I ???
+      I : Integer;
+      --  Naming exception: I is fine to use here as it is the name used in
+      --  the original paper describing the Mersenne Twister and in common
+      --  descriptions of the algorithm.
 
    begin
       I := G.I;
@@ -686,9 +688,9 @@ is
    ---------------
 
    procedure Put_Image
-     (S : in out Strings.Text_Output.Sink'Class; V : State) is
+     (S : in out Strings.Text_Buffers.Root_Buffer_Type'Class; V : State) is
    begin
-      Strings.Text_Output.Utils.Put_String (S, Image (V));
+      Strings.Text_Buffers.Put (S, Image (V));
    end Put_Image;
 
    -----------

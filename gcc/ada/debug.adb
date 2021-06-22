@@ -186,7 +186,7 @@ package body Debug is
    --  d_R
    --  d_S
    --  d_T  Output trace information on invocation path recording
-   --  d_U
+   --  d_U  Disable prepending messages with "error:".
    --  d_V  Enable verifications on the expanded tree
    --  d_W
    --  d_X
@@ -1016,6 +1016,9 @@ package body Debug is
 
    --  d_T  The compiler outputs trace information to standard output whenever
    --       an invocation path is recorded.
+
+   --  d_U  Disable prepending 'error:' to error messages. This used to be the
+   --       default and can be seen as the opposite of -gnatU.
 
    --  d_V  Enable verification of the expanded code before calling the backend
    --       and generate error messages on each inconsistency found.

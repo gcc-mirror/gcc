@@ -32,6 +32,7 @@ package Exp_Ch6 is
    procedure Expand_N_Extended_Return_Statement (N : Node_Id);
    procedure Expand_N_Function_Call             (N : Node_Id);
    procedure Expand_N_Procedure_Call_Statement  (N : Node_Id);
+   procedure Expand_N_Return_When_Statement     (N : Node_Id);
    procedure Expand_N_Simple_Return_Statement   (N : Node_Id);
    procedure Expand_N_Subprogram_Body           (N : Node_Id);
    procedure Expand_N_Subprogram_Body_Stub      (N : Node_Id);

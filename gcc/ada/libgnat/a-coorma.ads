@@ -36,7 +36,7 @@ with Ada.Iterator_Interfaces;
 private with Ada.Containers.Red_Black_Trees;
 private with Ada.Finalization;
 private with Ada.Streams;
-private with Ada.Strings.Text_Output;
+private with Ada.Strings.Text_Buffers;
 
 generic
    type Key_Type is private;
@@ -267,7 +267,7 @@ private
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map);
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Map);
 
    overriding procedure Adjust (Container : in out Map);
 

@@ -1905,47 +1905,6 @@ package body Ch5 is
    function P_Exit_Statement return Node_Id is
       Exit_Node : Node_Id;
 
-      function Missing_Semicolon_On_Exit return Boolean;
-      --  This function deals with the following specialized situation
-      --
-      --    when 'x' =>
-      --       exit [identifier]
-      --    when 'y' =>
-      --
-      --  This looks like a messed up EXIT WHEN, when in fact the problem
-      --  is a missing semicolon. It is called with Token pointing to the
-      --  WHEN token, and returns True if a semicolon is missing before
-      --  the WHEN as in the above example.
-
-      -------------------------------
-      -- Missing_Semicolon_On_Exit --
-      -------------------------------
-
-      function Missing_Semicolon_On_Exit return Boolean is
-         State : Saved_Scan_State;
-
-      begin
-         if not Token_Is_At_Start_Of_Line then
-            return False;
-
-         elsif Scopes (Scope.Last).Etyp /= E_Case then
-            return False;
-
-         else
-            Save_Scan_State (State);
-            Scan; -- past WHEN
-            Scan; -- past token after WHEN
-
-            if Token = Tok_Arrow then
-               Restore_Scan_State (State);
-               return True;
-            else
-               Restore_Scan_State (State);
-               return False;
-            end if;
-         end if;
-      end Missing_Semicolon_On_Exit;
-
    --  Start of processing for P_Exit_Statement
 
    begin
@@ -1975,7 +1934,7 @@ package body Ch5 is
          end loop Check_No_Exit_Name;
       end if;
 
-      if Token = Tok_When and then not Missing_Semicolon_On_Exit then
+      if Token = Tok_When and then not Missing_Semicolon_On_When then
          Scan; -- past WHEN
          Set_Condition (Exit_Node, P_Condition);
 
@@ -2010,7 +1969,15 @@ package body Ch5 is
       Scan; -- past GOTO (or TO)
       Set_Name (Goto_Node, P_Qualified_Simple_Name_Resync);
       Append_Elmt (Goto_Node, Goto_List);
-      No_Constraint;
+
+      if Token = Tok_When then
+         Error_Msg_GNAT_Extension ("goto when statement");
+
+         Scan; -- past WHEN
+         Mutate_Nkind (Goto_Node, N_Goto_When_Statement);
+         Set_Condition (Goto_Node, P_Expression_No_Right_Paren);
+      end if;
+
       TF_Semicolon;
       return Goto_Node;
    end P_Goto_Statement;

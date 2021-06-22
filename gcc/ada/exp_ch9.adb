@@ -282,7 +282,11 @@ package body Exp_Ch9 is
       Concval : Node_Id;
       Ename   : Node_Id;
       Index   : Node_Id);
-   --  Some comments here would be useful ???
+   --  Build the call corresponding to the task entry call. N is the task entry
+   --  call, Concval is the concurrent object, Ename is the entry name and
+   --  Index is the entry family index.
+   --  Note that N might be expanded into an N_Block_Statement if it gets
+   --  inlined.
 
    function Build_Task_Proc_Specification (T : Entity_Id) return Node_Id;
    --  This routine constructs a specification for the procedure that we will

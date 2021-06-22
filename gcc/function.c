@@ -3821,9 +3821,11 @@ assign_parms (tree fndecl)
       tree decl_result = DECL_RESULT (fndecl);
       rtx decl_rtl = DECL_RTL (decl_result);
 
-      if (REG_P (decl_rtl)
-	  ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
-	  : DECL_REGISTER (decl_result))
+      if ((REG_P (decl_rtl)
+	   ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
+	   : DECL_REGISTER (decl_result))
+	  /* Unless the psABI says not to.  */
+	  && !TYPE_EMPTY_P (TREE_TYPE (decl_result)))
 	{
 	  rtx real_decl_rtl;
 
@@ -5410,9 +5412,11 @@ expand_function_end (void)
       tree decl_result = DECL_RESULT (current_function_decl);
       rtx decl_rtl = DECL_RTL (decl_result);
 
-      if (REG_P (decl_rtl)
-	  ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
-	  : DECL_REGISTER (decl_result))
+      if ((REG_P (decl_rtl)
+	   ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
+	   : DECL_REGISTER (decl_result))
+	  /* Unless the psABI says not to.  */
+	  && !TYPE_EMPTY_P (TREE_TYPE (decl_result)))
 	{
 	  rtx real_decl_rtl = crtl->return_rtx;
 	  complex_mode cmode;

@@ -1351,6 +1351,18 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  conditions are met, an error message is issued, and the merge is
       --  carried out, modifying the Chars field of Prev.
 
+      function Missing_Semicolon_On_When return Boolean;
+      --  This function deals with the following specialized situations
+      --
+      --    when 'x' =>
+      --       exit/return [identifier]
+      --    when 'y' =>
+      --
+      --  This looks like a messed up EXIT WHEN or RETURN WHEN, when in fact
+      --  the problem is a missing semicolon. It is called with Token pointing
+      --  to the WHEN token, and returns True if a semicolon is missing before
+      --  the WHEN as in the above example.
+
       function Next_Token_Is (Tok : Token_Type) return Boolean;
       --  Looks at token after current one and returns True if the token type
       --  matches Tok. The scan is unconditionally restored on return.

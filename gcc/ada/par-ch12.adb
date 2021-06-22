@@ -559,6 +559,20 @@ package body Ch12 is
 
       if Def_Node /= Error then
          Set_Formal_Type_Definition (Decl_Node, Def_Node);
+
+         if Token = Tok_Or then
+            Error_Msg_Ada_2022_Feature
+              ("default for formal type", Sloc (Decl_Node));
+            Scan;   --  Past OR
+
+            if Token /= Tok_Use then
+               Error_Msg_SC ("missing USE for default subtype");
+            else
+               Scan;   -- Past USE
+               Set_Default_Subtype_Mark (Decl_Node, P_Name);
+            end if;
+         end if;
+
          P_Aspect_Specifications (Decl_Node);
 
       else
@@ -727,11 +741,18 @@ package body Ch12 is
                return Error;
             end if;
 
+         when Tok_Or =>
+            --  Ada_2022: incomplete type with default
+            return
+                 New_Node (N_Formal_Incomplete_Type_Definition, Token_Ptr);
+
          when Tok_Private =>
             return P_Formal_Private_Type_Definition;
 
          when Tok_Tagged =>
-            if Next_Token_Is (Tok_Semicolon) then
+            if Next_Token_Is (Tok_Semicolon)
+              or else Next_Token_Is (Tok_Or)
+            then
                Typedef_Node :=
                  New_Node (N_Formal_Incomplete_Type_Definition, Token_Ptr);
                Set_Tagged_Present (Typedef_Node);

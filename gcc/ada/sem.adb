@@ -298,6 +298,9 @@ package body Sem is
          when N_Goto_Statement =>
             Analyze_Goto_Statement (N);
 
+         when N_Goto_When_Statement =>
+            Analyze_Goto_When_Statement (N);
+
          when N_Handled_Sequence_Of_Statements =>
             Analyze_Handled_Statements (N);
 
@@ -505,6 +508,9 @@ package body Sem is
          when N_Raise_Statement =>
             Analyze_Raise_Statement (N);
 
+         when N_Raise_When_Statement =>
+            Analyze_Raise_When_Statement (N);
+
          when N_Raise_xxx_Error =>
             Analyze_Raise_xxx_Error (N);
 
@@ -525,6 +531,9 @@ package body Sem is
 
          when N_Requeue_Statement =>
             Analyze_Requeue (N);
+
+         when N_Return_When_Statement =>
+            Analyze_Return_When_Statement (N);
 
          when N_Simple_Return_Statement =>
             Analyze_Simple_Return_Statement (N);
