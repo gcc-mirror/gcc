@@ -182,6 +182,15 @@ private:
   gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
 };
 
+// These routines provide a GIMPLE interface to the range-ops code.
+extern bool gimple_range_calc_op1 (irange &r, const gimple *s,
+				   const irange &lhs_range);
+extern bool gimple_range_calc_op1 (irange &r, const gimple *s,
+				   const irange &lhs_range,
+				   const irange &op2_range);
+extern bool gimple_range_calc_op2 (irange &r, const gimple *s,
+				   const irange &lhs_range,
+				   const irange &op1_range);
 
 // For each name that is an import into BB's exports..
 #define FOR_EACH_GORI_IMPORT_NAME(gori, bb, name)			\
