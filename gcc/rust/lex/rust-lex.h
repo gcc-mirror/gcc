@@ -15,6 +15,12 @@ struct RAIIFile
 private:
   FILE *file;
 
+  void close ()
+  {
+    if (file != nullptr && file != stdin)
+      fclose (file);
+  }
+
 public:
   RAIIFile (const char *filename)
   {
@@ -31,17 +37,14 @@ public:
   RAIIFile (RAIIFile &&other) : file (other.file) { other.file = nullptr; }
   RAIIFile &operator= (RAIIFile &&other)
   {
+    close ();
     file = other.file;
     other.file = nullptr;
 
     return *this;
   }
 
-  ~RAIIFile ()
-  {
-    if (file != nullptr && file != stdin)
-      fclose (file);
-  }
+  ~RAIIFile () { close (); }
 
   FILE *get_raw () { return file; }
 };
