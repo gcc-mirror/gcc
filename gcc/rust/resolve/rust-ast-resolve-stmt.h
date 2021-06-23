@@ -39,8 +39,6 @@ public:
     stmt->accept_vis (resolver);
   };
 
-  ~ResolveStmt () {}
-
   void visit (AST::ExprStmtWithBlock &stmt) override
   {
     ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id ());
@@ -65,6 +63,70 @@ public:
     PatternDeclaration::go (stmt.get_pattern ().get (), stmt.get_node_id ());
     if (stmt.has_type ())
       ResolveType::go (stmt.get_type ().get (), stmt.get_node_id ());
+  }
+
+  void visit (AST::TupleStruct &struct_decl) override
+  {
+    auto path = CanonicalPath (struct_decl.get_identifier ());
+    resolver->get_type_scope ().insert (
+      path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (struct_decl.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    NodeId scope_node_id = struct_decl.get_node_id ();
+    resolver->get_type_scope ().push (scope_node_id);
+
+    if (struct_decl.has_generics ())
+      {
+	for (auto &generic : struct_decl.get_generic_params ())
+	  {
+	    ResolveGenericParam::go (generic.get (),
+				     struct_decl.get_node_id ());
+	  }
+      }
+
+    struct_decl.iterate ([&] (AST::TupleField &field) mutable -> bool {
+      ResolveType::go (field.get_field_type ().get (),
+		       struct_decl.get_node_id ());
+      return true;
+    });
+
+    resolver->get_type_scope ().pop ();
+  }
+
+  void visit (AST::StructStruct &struct_decl) override
+  {
+    auto path = CanonicalPath (struct_decl.get_identifier ());
+    resolver->get_type_scope ().insert (
+      path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (struct_decl.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    NodeId scope_node_id = struct_decl.get_node_id ();
+    resolver->get_type_scope ().push (scope_node_id);
+
+    if (struct_decl.has_generics ())
+      {
+	for (auto &generic : struct_decl.get_generic_params ())
+	  {
+	    ResolveGenericParam::go (generic.get (),
+				     struct_decl.get_node_id ());
+	  }
+      }
+
+    struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
+      ResolveType::go (field.get_field_type ().get (),
+		       struct_decl.get_node_id ());
+      return true;
+    });
+
+    resolver->get_type_scope ().pop ();
   }
 
 private:
