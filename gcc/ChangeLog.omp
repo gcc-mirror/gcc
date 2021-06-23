@@ -1,3 +1,12 @@
+2021-06-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101167
+	* omp-low.c (lower_omp_regimplify_p): Regimplify also PARM_DECLs
+	and RESULT_DECLs that have DECL_HAS_VALUE_EXPR_P set.
+
 2021-06-22  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	gcc/configure.ac: fix register issue for global_load assembler functions
