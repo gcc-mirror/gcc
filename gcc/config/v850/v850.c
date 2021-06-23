@@ -2583,7 +2583,7 @@ construct_dispose_instruction (rtx op)
   int                stack_bytes;
   unsigned long int  mask;
   int		     i;
-  static char        buff[ 100 ]; /* XXX */
+  static char        buff[ 120 ]; /* XXX */
   int                use_callt = 0;
   
   if (count <= 2)
@@ -2704,7 +2704,7 @@ construct_prepare_instruction (rtx op)
   int                stack_bytes;
   unsigned long int  mask;
   int		     i;
-  static char        buff[ 100 ]; /* XXX */
+  static char        buff[ 120 ]; /* XXX */
   int		     use_callt = 0;
   
   if (XVECLEN (op, 0) <= 1)
