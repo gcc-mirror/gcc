@@ -240,6 +240,9 @@ index 4ad78c1f77b..6687b368038 100644
 '''
 
 EXPECTED4 = '''\
+
+	PR 50209
+
 gcc/ChangeLog:
 
 	* ipa-icf.c:
@@ -317,9 +320,10 @@ index 00000000000..dcc8999c446
 EXPECTED5 = '''\
 PR target/95046 - Vectorize V2SFmode operations
 
+	PR target/95046
+
 gcc/testsuite/ChangeLog:
 
-	PR target/95046
 	* gcc.target/i386/pr95046-6.c: New test.
 
 '''
@@ -377,9 +381,11 @@ index 00000000000..f3d6d11e61e
 '''
 
 EXPECTED7 = '''\
-gcc/testsuite/ChangeLog:
 
 	DR 2237
+
+gcc/testsuite/ChangeLog:
+
 	* g++.dg/DRs/dr2237.C: New test.
 
 '''
