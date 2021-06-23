@@ -1300,7 +1300,7 @@ vect_recog_widen_minus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
    TYPE1 B;
    UTYPE2 temp_in;
    TYPE3 temp_out;
-   temp_in = (TYPE2)A;
+   temp_in = (UTYPE2)A;
 
    temp_out = __builtin_popcount{,l,ll} (temp_in);
    B = (TYPE1) temp_out;
@@ -1372,8 +1372,8 @@ vect_recog_popcount_pattern (vec_info *vinfo,
   if (!rhs_origin)
     return NULL;
 
-  /* Input and outout of .POPCOUNT should be same-precision integer.
-     Also A should be unsigned or same presion as temp_in,
+  /* Input and output of .POPCOUNT should be same-precision integer.
+     Also A should be unsigned or same precision as temp_in,
      otherwise there would be sign_extend from A to temp_in.  */
   if (TYPE_PRECISION (unprom_diff.type) != TYPE_PRECISION (lhs_type)
       || (!TYPE_UNSIGNED (unprom_diff.type)
@@ -1384,10 +1384,10 @@ vect_recog_popcount_pattern (vec_info *vinfo,
 
   vect_pattern_detected ("vec_regcog_popcount_pattern", popcount_stmt);
   vec_type = get_vectype_for_scalar_type (vinfo, lhs_type);
-  /* Do it only the backend existed popcount<vector_mode>2.  */
-  if (!direct_internal_fn_supported_p (IFN_POPCOUNT,
-				       vec_type,
-				       OPTIMIZE_FOR_SPEED))
+  /* Do it only if the backend has popcount<vector_mode>2 pattern.  */
+  if (!vec_type
+      || !direct_internal_fn_supported_p (IFN_POPCOUNT, vec_type,
+					  OPTIMIZE_FOR_SPEED))
     return NULL;
 
   /* Create B = .POPCOUNT (A).  */

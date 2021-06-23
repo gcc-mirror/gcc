@@ -111,6 +111,7 @@ extern bool ix86_use_lea_for_mov (rtx_insn *, rtx[]);
 extern bool ix86_avoid_lea_for_addr (rtx_insn *, rtx[]);
 extern void ix86_split_lea_for_addr (rtx_insn *, rtx[], machine_mode);
 extern bool ix86_lea_for_add_ok (rtx_insn *, rtx[]);
+extern int ix86_last_zero_store_uid;
 extern bool ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high);
 extern bool ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn);
 extern bool ix86_agi_dependent (rtx_insn *set_insn, rtx_insn *use_insn);

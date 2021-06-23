@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #include "range.h"
-#include "range-op.h"
 #include "value-query.h"
+#include "range-op.h"
 #include "gimple-range-edge.h"
 #include "gimple-range-gori.h"
 #include "gimple-range-cache.h"
@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 class gimple_ranger : public range_query
 {
 public:
+  gimple_ranger ();
   virtual bool range_of_stmt (irange &r, gimple *, tree name = NULL) OVERRIDE;
   virtual bool range_of_expr (irange &r, tree name, gimple * = NULL) OVERRIDE;
   virtual bool range_on_edge (irange &r, edge e, tree name) OVERRIDE;
@@ -74,15 +75,25 @@ protected:
 
 // Source of all operands for fold_using_range and gori_compute.
 // It abstracts out the source of an operand so it can come from a stmt or
-// and edge or anywhere a derived classof fur_source wants.
+// and edge or anywhere a derived class of fur_source wants.
+// THe default simply picks up ranges from the current range_query.
 
 class fur_source
 {
 public:
+  fur_source (range_query *q = NULL);
+  inline range_query *query () { return m_query; }
+  inline class gori_compute *gori () { return m_gori; };
   virtual bool get_operand (irange &r, tree expr);
   virtual bool get_phi_operand (irange &r, tree expr, edge e);
-  virtual void register_dependency (tree lhs, tree rhs);
-  virtual range_query *query ();
+  virtual relation_kind query_relation (tree op1, tree op2);
+  virtual void register_relation (gimple *stmt, relation_kind k, tree op1,
+				  tree op2);
+  virtual void register_relation (edge e, relation_kind k, tree op1,
+				  tree op2);
+protected:
+  range_query *m_query;
+  gori_compute *m_gori;
 };
 
 // fur_stmt is the specification for drawing an operand from range_query Q
@@ -94,9 +105,8 @@ public:
   fur_stmt (gimple *s, range_query *q = NULL);
   virtual bool get_operand (irange &r, tree expr) OVERRIDE;
   virtual bool get_phi_operand (irange &r, tree expr, edge e) OVERRIDE;
-  virtual range_query *query () OVERRIDE;
+  virtual relation_kind query_relation (tree op1, tree op2) OVERRIDE;
 private:
-  range_query *m_query;
   gimple *m_stmt;
 };
 
@@ -132,6 +142,8 @@ protected:
   bool range_of_phi (irange &r, gphi *phi, fur_source &src);
   void range_of_ssa_name_with_loop_info (irange &, tree, class loop *, gphi *,
 					 fur_source &src);
+  void relation_fold_and_or (irange& lhs_range, gimple *s, fur_source &src);
+  void postfold_gcond_edges (gcond *s, fur_source &src);
 };
 
 

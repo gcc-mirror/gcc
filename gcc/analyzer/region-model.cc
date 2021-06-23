@@ -1443,6 +1443,17 @@ assert_compat_types (tree src_type, tree dst_type)
     }
 }
 
+/* Return true if SRC_TYPE can be converted to DST_TYPE as a no-op.  */
+
+static bool
+compat_types_p (tree src_type, tree dst_type)
+{
+  if (src_type && dst_type && !VOID_TYPE_P (dst_type))
+    if (!(useless_type_conversion_p (src_type, dst_type)))
+      return false;
+  return true;
+}
+
 /* Get the region for PV within this region_model,
    emitting any diagnostics to CTXT.  */
 
@@ -3402,8 +3413,8 @@ const region *
 region_model::create_region_for_heap_alloc (const svalue *size_in_bytes)
 {
   const region *reg = m_mgr->create_region_for_heap_alloc ();
-  assert_compat_types (size_in_bytes->get_type (), size_type_node);
-  set_dynamic_extents (reg, size_in_bytes);
+  if (compat_types_p (size_in_bytes->get_type (), size_type_node))
+    set_dynamic_extents (reg, size_in_bytes);
   return reg;
 }
 
@@ -3414,8 +3425,8 @@ const region *
 region_model::create_region_for_alloca (const svalue *size_in_bytes)
 {
   const region *reg = m_mgr->create_region_for_alloca (m_current_frame);
-  assert_compat_types (size_in_bytes->get_type (), size_type_node);
-  set_dynamic_extents (reg, size_in_bytes);
+  if (compat_types_p (size_in_bytes->get_type (), size_type_node))
+    set_dynamic_extents (reg, size_in_bytes);
   return reg;
 }
 

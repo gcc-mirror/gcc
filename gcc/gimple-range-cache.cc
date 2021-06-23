@@ -714,6 +714,12 @@ ranger_cache::ranger_cache ()
   m_update_list.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_update_list.truncate (0);
   m_temporal = new temporal_cache;
+  // If DOM info is available, spawn an oracle as well.
+  if (dom_info_available_p (CDI_DOMINATORS))
+      m_oracle = new relation_oracle ();
+    else
+      m_oracle = NULL;
+
   unsigned x, lim = last_basic_block_for_fn (cfun);
   // Calculate outgoing range info upfront.  This will fully populate the
   // m_maybe_variant bitmap which will help eliminate processing of names
@@ -728,6 +734,8 @@ ranger_cache::ranger_cache ()
 
 ranger_cache::~ranger_cache ()
 {
+  if (m_oracle)
+    delete m_oracle;
   delete m_temporal;
   m_workback.release ();
   m_update_list.release ();
@@ -750,6 +758,8 @@ ranger_cache::dump_bb (FILE *f, basic_block bb)
 {
   m_gori.gori_map::dump (f, bb, false);
   m_on_entry.dump (f, bb);
+  if (m_oracle)
+    m_oracle->dump (f, bb);
 }
 
 // Get the global range for NAME, and return in R.  Return false if the

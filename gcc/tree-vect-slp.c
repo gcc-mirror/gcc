@@ -1177,21 +1177,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      continue;
 	    }
 
-	  if (need_same_oprnds)
-	    {
-	      tree other_op1 = (call_stmt
-				? gimple_call_arg (call_stmt, 1)
-				: gimple_assign_rhs2 (stmt));
-	      if (!operand_equal_p (first_op1, other_op1, 0))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Build SLP failed: different shift "
-				     "arguments in %G", stmt);
-		  /* Mismatch.  */
-		  continue;
-		}
-	    }
 	  if (!load_p
 	      && first_stmt_code == BIT_FIELD_REF
 	      && (TREE_OPERAND (gimple_assign_rhs1 (first_stmt_info->stmt), 0)
@@ -1229,6 +1214,22 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 				 "or possibly trapping operation in %G", stmt);
 	      /* Mismatch.  */
 	      continue;
+	    }
+
+	  if (need_same_oprnds)
+	    {
+	      tree other_op1 = (call_stmt
+				? gimple_call_arg (call_stmt, 1)
+				: gimple_assign_rhs2 (stmt));
+	      if (!operand_equal_p (first_op1, other_op1, 0))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: different shift "
+				     "arguments in %G", stmt);
+		  /* Mismatch.  */
+		  continue;
+		}
 	    }
 
 	  if (!types_compatible_p (vectype, *node_vectype))
@@ -1963,15 +1964,15 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      if (dt == vect_constant_def
 		  || dt == vect_external_def)
 		{
-		/* We can always build those.  Might want to sort last
-		   or defer building.  */
-		   vec<tree> ops;
-		   ops.create (group_size);
-		   for (lane = 0; lane < group_size; ++lane)
-		     ops.quick_push (chains[lane][n].op);
-		   slp_tree child = vect_create_new_slp_node (ops);
-		   SLP_TREE_DEF_TYPE (child) = dt;
-		   children.safe_push (child);
+		  /* We can always build those.  Might want to sort last
+		     or defer building.  */
+		  vec<tree> ops;
+		  ops.create (group_size);
+		  for (lane = 0; lane < group_size; ++lane)
+		    ops.quick_push (chains[lane][n].op);
+		  slp_tree child = vect_create_new_slp_node (ops);
+		  SLP_TREE_DEF_TYPE (child) = dt;
+		  children.safe_push (child);
 		}
 	      else if (dt != vect_internal_def)
 		{
@@ -2036,9 +2037,10 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 			dump_printf_loc (MSG_NOTE, vect_location,
 					 "failed to match up op %d\n", n);
 		      op_stmts.release ();
-		      matches[lane] = false;
 		      if (lane != group_size - 1)
 			matches[0] = false;
+		      else
+			matches[lane] = false;
 		      goto out;
 		    }
 		  if (dump_enabled_p ())

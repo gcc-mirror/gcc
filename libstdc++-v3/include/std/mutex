@@ -514,39 +514,61 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @cond undocumented
   namespace __detail
   {
+    // Lock the last lockable, after all previous ones are locked.
     template<typename _Lockable>
-      inline unique_lock<_Lockable>
-      __try_to_lock(_Lockable& __l)
-      { return unique_lock<_Lockable>{__l, try_to_lock}; }
-
-    // Lock the last element of the tuple, after all previous ones are locked.
-    template<int _Idx, typename... _Lockables>
-      inline __enable_if_t<_Idx + 1 == sizeof...(_Lockables), int>
-      __try_lock_impl(tuple<_Lockables&...>& __lockables)
+      inline int
+      __try_lock_impl(_Lockable& __lockable)
       {
-	if (auto __lock = __detail::__try_to_lock(std::get<_Idx>(__lockables)))
+	if (unique_lock<_Lockable> __lock{__lockable, try_to_lock})
 	  {
 	    __lock.release();
 	    return -1;
 	  }
 	else
-	  return _Idx;
+	  return 0;
       }
 
-    // Lock tuple elements starting from _Idx.
-    template<int _Idx, typename... _Lockables>
-      inline __enable_if_t<_Idx + 1 != sizeof...(_Lockables), int>
-      __try_lock_impl(tuple<_Lockables&...>& __lockables)
+    // Lock each lockable in turn.
+    // Use iteration if all lockables are the same type, recursion otherwise.
+    template<typename _L0, typename... _Lockables>
+      inline int
+      __try_lock_impl(_L0& __l0, _Lockables&... __lockables)
       {
-	if (auto __lock = __detail::__try_to_lock(std::get<_Idx>(__lockables)))
+#if __cplusplus >= 201703L
+	if constexpr ((is_same_v<_L0, _Lockables> && ...))
 	  {
-	    int __idx = __detail::__try_lock_impl<_Idx + 1>(__lockables);
-	    if (__idx == -1)
-	      __lock.release();
-	    return __idx;
+	    constexpr int _Np = 1 + sizeof...(_Lockables);
+	    unique_lock<_L0> __locks[_Np] = {
+		{__l0, defer_lock}, {__lockables, defer_lock}...
+	    };
+	    for (int __i = 0; __i < _Np; ++__i)
+	      {
+		if (!__locks[__i].try_lock())
+		  {
+		    const int __failed = __i;
+		    while (__i--)
+		      __locks[__i].unlock();
+		    return __failed;
+		  }
+	      }
+	    for (auto& __l : __locks)
+	      __l.release();
+	    return -1;
 	  }
 	else
-	  return _Idx;
+#endif
+	if (unique_lock<_L0> __lock{__l0, try_to_lock})
+	  {
+	    int __idx = __detail::__try_lock_impl(__lockables...);
+	    if (__idx == -1)
+	      {
+		__lock.release();
+		return -1;
+	      }
+	    return __idx + 1;
+	  }
+	else
+	  return 0;
       }
 
   } // namespace __detail
@@ -562,12 +584,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Sequentially calls try_lock() on each argument.
    */
-  template<typename _Lock1, typename _Lock2, typename... _Lock3>
+  template<typename _L1, typename _L2, typename... _L3>
     int
-    try_lock(_Lock1& __l1, _Lock2& __l2, _Lock3&... __l3)
+    try_lock(_L1& __l1, _L2& __l2, _L3&... __l3)
     {
-      auto __lockables = std::tie(__l1, __l2, __l3...);
-      return __detail::__try_lock_impl<0>(__lockables);
+      return __detail::__try_lock_impl(__l1, __l2, __l3...);
     }
 
   /// @cond undocumented
@@ -589,8 +610,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		int __failed = 1; // index that couldn't be locked
 		{
 		  unique_lock<_L0> __first(__l0);
-		  auto __rest = std::tie(__l1...);
-		  __failed += __detail::__try_lock_impl<0>(__rest);
+		  __failed += __detail::__try_lock_impl(__l1...);
 		  if (!__failed)
 		    {
 		      __i = -1; // finished
@@ -620,15 +640,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @post All arguments are locked.
    *
    *  All arguments are locked via a sequence of calls to lock(), try_lock()
-   *  and unlock().  If the call exits via an exception any locks that were
-   *  obtained will be released.
+   *  and unlock().  If this function exits via an exception any locks that
+   *  were obtained will be released.
    */
   template<typename _L1, typename _L2, typename... _L3>
     void
     lock(_L1& __l1, _L2& __l2, _L3&... __l3)
     {
-      int __i = 0;
-      __detail::__lock_impl(__i, 0, __l1, __l2, __l3...);
+#if __cplusplus >= 201703L
+      if constexpr (is_same_v<_L1, _L2> && (is_same_v<_L1, _L3> && ...))
+	{
+	  constexpr int _Np = 2 + sizeof...(_L3);
+	  unique_lock<_L1> __locks[] = {
+	      {__l1, defer_lock}, {__l2, defer_lock}, {__l3, defer_lock}...
+	  };
+	  int __first = 0;
+	  do {
+	    __locks[__first].lock();
+	    for (int __j = 1; __j < _Np; ++__j)
+	      {
+		const int __idx = (__first + __j) % _Np;
+		if (!__locks[__idx].try_lock())
+		  {
+		    for (int __k = __j; __k != 0; --__k)
+		      __locks[(__first + __k - 1) % _Np].unlock();
+		    __first = __idx;
+		    break;
+		  }
+	      }
+	  } while (!__locks[__first].owns_lock());
+
+	  for (auto& __l : __locks)
+	    __l.release();
+	}
+      else
+#endif
+	{
+	  int __i = 0;
+	  __detail::__lock_impl(__i, 0, __l1, __l2, __l3...);
+	}
     }
 
 #if __cplusplus >= 201703L

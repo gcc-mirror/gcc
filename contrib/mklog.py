@@ -304,7 +304,7 @@ if __name__ == '__main__':
     parser.add_argument('input', nargs='?',
                         help='Patch file (or missing, read standard input)')
     parser.add_argument('-b', '--pr-numbers', action='store',
-                        type=lambda arg: arg.split(','), nargs="?",
+                        type=lambda arg: arg.split(','), nargs='?',
                         help='Add the specified PRs (comma separated)')
     parser.add_argument('-s', '--no-functions', action='store_true',
                         help='Do not generate function names in ChangeLogs')

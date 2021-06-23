@@ -300,6 +300,19 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   true,						/* slow_unaligned_access */
 };
 
+/* Costs to use when optimizing for T-HEAD c906.  */
+static const struct riscv_tune_param thead_c906_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)}, /* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)}, /* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)}, /* fp_div */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (4)}, /* int_mul */
+  {COSTS_N_INSNS (6), COSTS_N_INSNS (6)}, /* int_div */
+  1,            /* issue_rate */
+  3,            /* branch_cost */
+  5,            /* memory_cost */
+  false,            /* slow_unaligned_access */
+};
+
 /* Costs to use when optimizing for size.  */
 static const struct riscv_tune_param optimize_size_tune_info = {
   {COSTS_N_INSNS (1), COSTS_N_INSNS (1)},	/* fp_add */
@@ -348,6 +361,7 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "sifive-3-series", generic, &rocket_tune_info },
   { "sifive-5-series", generic, &rocket_tune_info },
   { "sifive-7-series", sifive_7, &sifive_7_tune_info },
+  { "thead-c906", generic, &thead_c906_tune_info },
   { "size", generic, &optimize_size_tune_info },
 };
 

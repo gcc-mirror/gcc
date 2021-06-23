@@ -87,7 +87,7 @@
 #  include <bits/uses_allocator_args.h>
 #endif
 
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L && __cplusplus <= 202002L
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -132,7 +132,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // C++11
+#endif // C++11 to C++20
 
 #if __cplusplus >= 201703L
 // Parallel STL algorithms

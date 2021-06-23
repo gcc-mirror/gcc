@@ -5360,7 +5360,7 @@ range_check_type (tree etype)
       else
 	return NULL_TREE;
     }
-  else if (POINTER_TYPE_P (etype))
+  else if (POINTER_TYPE_P (etype) || TREE_CODE (etype) == OFFSET_TYPE)
     etype = unsigned_type_for (etype);
   return etype;
 }
