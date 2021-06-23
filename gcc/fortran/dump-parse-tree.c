@@ -1781,7 +1781,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       if (i != OMP_DEFAULTMAP_CAT_UNCATEGORIZED)
 	{
 	  fputc (':', dumpfile);
-	  switch ((enum gfc_omp_defaultmap) i)
+	  switch ((enum gfc_omp_defaultmap_category) i)
 	    {
 	    case OMP_DEFAULTMAP_CAT_SCALAR: dfltmap = "SCALAR"; break;
 	    case OMP_DEFAULTMAP_CAT_AGGREGATE: dfltmap = "AGGREGATE"; break;
