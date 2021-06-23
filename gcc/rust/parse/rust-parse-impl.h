@@ -3980,7 +3980,12 @@ Parser<ManagedTokenSource>::parse_struct (AST::Visibility vis,
       lexer.skip_token ();
 
       // parse tuple fields
-      std::vector<AST::TupleField> tuple_fields = parse_tuple_fields ();
+      std::vector<AST::TupleField> tuple_fields;
+      // Might be empty tuple for unit tuple struct.
+      if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
+	tuple_fields = std::vector<AST::TupleField> ();
+      else
+	tuple_fields = parse_tuple_fields ();
 
       // tuple parameters must have closing parenthesis
       if (!skip_token (RIGHT_PAREN))
