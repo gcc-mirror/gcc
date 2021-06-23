@@ -4071,8 +4071,8 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
       BIND_EXPR_BLOCK (first) = replace_blk;
       /* The top block has one child, so far, and we have now got a 
 	 superblock.  */
-      BLOCK_SUPERCONTEXT (block) = top_block;
-      BLOCK_SUBBLOCKS (top_block) = block;
+      BLOCK_SUPERCONTEXT (replace_blk) = top_block;
+      BLOCK_SUBBLOCKS (top_block) = replace_blk;
     }
 
   /* Wrap the function body in a try {} catch (...) {} block, if exceptions
