@@ -236,6 +236,10 @@ push_access_scope (tree t)
     push_nested_class (DECL_FRIEND_CONTEXT (t));
   else if (DECL_CLASS_SCOPE_P (t))
     push_nested_class (DECL_CONTEXT (t));
+  else if (deduction_guide_p (t) && DECL_ARTIFICIAL (t))
+    /* An artificial deduction guide should have the same access as
+       the constructor.  */
+    push_nested_class (TREE_TYPE (TREE_TYPE (t)));
   else
     push_to_top_level ();
 
@@ -255,7 +259,9 @@ pop_access_scope (tree t)
   if (TREE_CODE (t) == FUNCTION_DECL)
     current_function_decl = saved_access_scope->pop();
 
-  if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
+  if (DECL_FRIEND_CONTEXT (t)
+      || DECL_CLASS_SCOPE_P (t)
+      || (deduction_guide_p (t) && DECL_ARTIFICIAL (t)))
     pop_nested_class ();
   else
     pop_from_top_level ();
@@ -28804,9 +28810,6 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
     DECL_ABSTRACT_ORIGIN (ded_tmpl) = fn_tmpl;
   if (ci)
     set_constraints (ded_tmpl, ci);
-  /* The artificial deduction guide should have same access as the
-     constructor.  */
-  DECL_CONTEXT (ded_fn) = type;
 
   return ded_tmpl;
 }
