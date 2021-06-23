@@ -18,7 +18,13 @@ static_assert(std::is_same_v<
 static_assert(std::is_same_v<
 	      decltype(std::unordered_multimap{{std::pair{1, 2.0},
 		      {2, 3.0}, {3, 4.0}},
-		    {}, std::hash<int>{}, {}}),
+		    {}, std::hash<int>{}, std::equal_to<int>{}}),
+	      std::unordered_multimap<int, double>>);
+
+static_assert(std::is_same_v<
+	      decltype(std::unordered_multimap{{std::pair{1, 2.0},
+		      {2, 3.0}, {3, 4.0}},
+		    {}, std::hash<int>{}, std::allocator<std::pair<const int, double>>{}}),
 	      std::unordered_multimap<int, double>>);
 
 static_assert(std::is_same_v<
@@ -68,9 +74,14 @@ void f()
 
   static_assert(std::is_same_v<
 		decltype(std::unordered_multimap{x.begin(), x.end(),
-		      {}, std::hash<int>{}, {}}),
+		      {}, std::hash<int>{}, std::equal_to<int>{}}),
 		std::unordered_multimap<int, double>>);
-  
+
+  static_assert(std::is_same_v<
+		decltype(std::unordered_multimap{x.begin(), x.end(),
+		      {}, std::hash<int>{}, std::allocator<std::pair<const int, double>>{}}),
+		std::unordered_multimap<int, double>>);
+
   static_assert(std::is_same_v<
 		decltype(std::unordered_multimap(x.begin(), x.end(),
 				  {})),

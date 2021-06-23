@@ -42,7 +42,7 @@ static_assert(std::is_same_v<
 
 static_assert(std::is_same_v<
 	      decltype(std::multimap{{std::pair{1, 2.0}, {2, 3.0}, {3, 4.0}},
-		    {}}),
+		    std::less<int>{}}),
 	      std::multimap<int, double>>);
 
 static_assert(std::is_same_v<
@@ -77,7 +77,7 @@ void f()
 
   static_assert(std::is_same_v<
 		decltype(std::multimap(x.begin(), x.end(),
-				       {})),
+				       std::less<int>{})),
 		std::multimap<int, double>>);
 
   static_assert(std::is_same_v<
@@ -119,7 +119,7 @@ void g()
 
   static_assert(std::is_same_v<
 		decltype(std::multimap(x.begin(), x.end(),
-				       {})),
+				       std::less<int>{})),
 		std::multimap<int, double>>);
 
   static_assert(std::is_same_v<
@@ -158,7 +158,7 @@ void h()
 
   static_assert(std::is_same_v<
 		decltype(std::multimap(x.begin(), x.end(),
-				       {})),
+				       std::less<int>{})),
 		std::multimap<int, double>>);
 
   static_assert(std::is_same_v<
