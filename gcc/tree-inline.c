@@ -3491,17 +3491,11 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
      automatically replaced by the VAR_DECL.  */
   insert_decl_map (id, p, var);
 
-  /* Even if P was TREE_READONLY, the new VAR should not be.
-     In the original code, we would have constructed a
-     temporary, and then the function body would have never
-     changed the value of P.  However, now, we will be
-     constructing VAR directly.  The constructor body may
-     change its value multiple times as it is being
-     constructed.  Therefore, it must not be TREE_READONLY;
-     the back-end assumes that TREE_READONLY variable is
-     assigned to only once.  */
-  if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (p)))
-    TREE_READONLY (var) = 0;
+  /* Even if P was TREE_READONLY, the new VAR should not be.  In the original
+     code, we would have constructed a temporary, and then the function body
+     would have never changed the value of P.  However, now, we will be
+     constructing VAR directly.  Therefore, it must not be TREE_READONLY.  */
+  TREE_READONLY (var) = 0;
 
   tree rhs = value;
   if (value
