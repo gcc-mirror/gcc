@@ -19,9 +19,11 @@ static_assert(std::is_same_v<
 	      decltype(std::multiset{{1, 2, 3}, std::less<int>{}, {}}),
 	      std::multiset<int>>);
 
+/* FIXME: GCC 12 rejects this due to PR c++/101174
 static_assert(std::is_same_v<
-	      decltype(std::multiset{{1, 2, 3}, {}}),
+	      decltype(std::multiset{{1, 2, 3}, std::less<int>{}}),
 	      std::multiset<int>>);
+*/
 
 static_assert(std::is_same_v<
 	      decltype(std::multiset{{1, 2, 3}, SimpleAllocator<int>{}}),
@@ -52,7 +54,7 @@ void f()
 
   static_assert(std::is_same_v<
 		decltype(std::multiset(x.begin(), x.end(),
-				  {})),
+				  std::less<int>{})),
 		std::multiset<int>>);
 
   static_assert(std::is_same_v<
@@ -103,7 +105,7 @@ void g()
 
   static_assert(std::is_same_v<
 		decltype(std::multiset(x.begin(), x.end(),
-				  {})),
+				  std::less<int>{})),
 		std::multiset<int>>);
 
   static_assert(std::is_same_v<

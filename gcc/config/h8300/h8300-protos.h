@@ -36,10 +36,11 @@ extern const char *output_simode_bld (int, rtx[]);
 extern void final_prescan_insn (rtx_insn *, rtx *, int);
 extern int h8300_expand_movsi (rtx[]);
 extern machine_mode  h8300_select_cc_mode (RTX_CODE, rtx, rtx);
-extern const char *output_logical_op (machine_mode, rtx_code code, rtx *);
-extern unsigned int compute_logical_op_length (machine_mode, rtx_code, rtx *);
+extern const char *output_logical_op (machine_mode, rtx_code code,
+				      rtx *, rtx_insn *);
+extern unsigned int compute_logical_op_length (machine_mode, rtx_code,
+					      rtx *, rtx_insn *);
 
-extern int compute_logical_op_cc (machine_mode, rtx *);
 extern int compute_a_shift_cc (rtx, rtx *);
 #ifdef HAVE_ATTR_cc
 extern enum attr_cc compute_plussi_cc (rtx *);

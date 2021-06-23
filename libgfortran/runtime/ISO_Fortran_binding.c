@@ -254,10 +254,7 @@ CFI_allocate (CFI_cdesc_t *dv, const CFI_index_t lower_bounds[],
 	{
 	  dv->dim[i].lower_bound = lower_bounds[i];
 	  dv->dim[i].extent = upper_bounds[i] - dv->dim[i].lower_bound + 1;
-	  if (i == 0)
-	    dv->dim[i].sm = dv->elem_len;
-	  else
-	    dv->dim[i].sm = dv->elem_len * dv->dim[i - 1].extent;
+	  dv->dim[i].sm = dv->elem_len * arr_len;
 	  arr_len *= dv->dim[i].extent;
         }
     }

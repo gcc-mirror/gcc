@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-add-options no_pch }
 
 // Define macros for some common variables names that we must not use for
 // naming variables, parameters etc. in the library.
@@ -214,6 +215,11 @@
 
 #if defined (__linux__) && defined (__sparc__)
 #undef y
+#endif
+
+#if ! __has_include(<newlib.h>)
+// newlib's <sys/cdefs.h> defines __lockable as a macro, so we can't use it.
+# define __lockable		cannot be used as an identifier
 #endif
 
 #ifdef __sun__

@@ -2,7 +2,7 @@
 # Tell the float128 functions that the ISA 3.1 hardware support can
 # be compiled it to be selected via IFUNC functions.
 
-FLOAT128_HW_INSNS	= -DFLOAT128_HW_INSNS
+FLOAT128_HW_INSNS	+= -DFLOAT128_HW_INSNS_ISA3_1
 
 # New functions for hardware support
 
@@ -14,7 +14,7 @@ fp128_3_1_hw_obj	= $(fp128_3_1_hw_static_obj) $(fp128_3_1_hw_shared_obj)
 
 # Build the hardware support functions with appropriate hardware support
 FP128_3_1_CFLAGS_HW	 = -Wno-type-limits -mvsx -mfloat128 \
-			   -mpower10 \
+			   -mcpu=power10 \
 			   -mfloat128-hardware -mno-gnu-attribute \
 			   -I$(srcdir)/soft-fp \
 			   -I$(srcdir)/config/rs6000 \

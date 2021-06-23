@@ -1,3 +1,196 @@
+2021-06-22  Sergei Trofimovich  <siarheit@google.com>
+
+	* doc/rtl.texi: drop unbalanced parenthesis.
+
+2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101156
+	* gimplify.c (gimplify_expr): Remove premature incorrect
+	optimization.
+
+2021-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/101159
+	* tree-vect-patterns.c (vect_recog_popcount_pattern): Fix some
+	comment typos.
+
+2021-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101160
+	* function.c (assign_parms): For decl_result with TYPE_EMPTY_P type
+	clear crtl->return_rtx instead of keeping it referencing a pseudo.
+
+2021-06-22  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101162
+	* fold-const.c (range_check_type): Handle OFFSET_TYPE like pointer
+	types.
+
+2021-06-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (range_relational_tests): New.
+	(range_op_tests): Call range_relational_tests.
+
+2021-06-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_cast::lhs_op1_relation): New.
+	(operator_identity::lhs_op1_relation): Mew.
+
+2021-06-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_minus::op1_op2_relation_effect): New.
+
+2021-06-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_plus::lhs_op1_relation): New.
+	(operator_plus::lhs_op2_relation): New.
+
+2021-06-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Create a
+	relation_oracle if dominators exist.
+	(ranger_cache::~ranger_cache): Dispose of oracle.
+	(ranger_cache::dump_bb): Dump oracle.
+	* gimple-range.cc (fur_source::fur_source): New.
+	(fur_source::get_operand): Use mmeber query.
+	(fur_source::get_phi_operand): Use member_query.
+	(fur_source::query_relation): New.
+	(fur_source::register_dependency): Delete.
+	(fur_source::register_relation): New.
+	(fur_edge::fur_edge): Adjust.
+	(fur_edge::get_phi_operand): Fix comment.
+	(fur_edge::query): Delete.
+	(fur_stmt::fur_stmt): Adjust.
+	(fur_stmt::query): Delete.
+	(fur_depend::fur_depend): Adjust.
+	(fur_depend::register_relation): New.
+	(fur_depend::register_relation): New.
+	(fur_list::fur_list): Adjust.
+	(fur_list::get_operand): Use member query.
+	(fold_using_range::range_of_range_op): Process and query relations.
+	(fold_using_range::range_of_address): Adjust dependency call.
+	(fold_using_range::range_of_phi): Ditto.
+	(gimple_ranger::gimple_ranger): New.  Use ranger_ache oracle.
+	(fold_using_range::relation_fold_and_or): New.
+	(fold_using_range::postfold_gcond_edges): New.
+	* gimple-range.h (class gimple_ranger): Adjust.
+	(class fur_source): Adjust members.
+	(class fur_stmt): Ditto.
+	(class fold_using_range): Ditto.
+
+2021-06-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (range_operator::wi_fold): Apply relation effect.
+	(range_operator::fold_range): Adjust and apply relation effect.
+	(*::fold_range): Add relation parameters.
+	(*::op1_range): Ditto.
+	(*::op2_range): Ditto.
+	(range_operator::lhs_op1_relation): New.
+	(range_operator::lhs_op2_relation): New.
+	(range_operator::op1_op2_relation): New.
+	(range_operator::op1_op2_relation_effect): New.
+	(relop_early_resolve): New.
+	(operator_equal::op1_op2_relation): New.
+	(operator_equal::fold_range): Call relop_early_resolve.
+	(operator_not_equal::op1_op2_relation): New.
+	(operator_not_equal::fold_range): Call relop_early_resolve.
+	(operator_lt::op1_op2_relation): New.
+	(operator_lt::fold_range): Call relop_early_resolve.
+	(operator_le::op1_op2_relation): New.
+	(operator_le::fold_range): Call relop_early_resolve.
+	(operator_gt::op1_op2_relation): New.
+	(operator_gt::fold_range): Call relop_early_resolve.
+	(operator_ge::op1_op2_relation): New.
+	(operator_ge::fold_range): Call relop_early_resolve.
+	* range-op.h (class range_operator): Adjust parameters and methods.
+
+2021-06-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in (OBJS): Add value-relation.o.
+	* gimple-range.h: Adjust include files.
+	* tree-data-ref.c: Adjust include file order.
+	* value-query.cc (range_query::get_value_range): Default to no oracle.
+	(range_query::query_relation): New.
+	(range_query::query_relation): New.
+	* value-query.h (class range_query): Adjust.
+	* value-relation.cc: New.
+	* value-relation.h: New.
+
+2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101151
+	* tree-ssa-sink.c (statement_sink_location): Expand irreducible
+	region check.
+
+2021-06-22  Jojo R  <rjiejie@linux.alibaba.com>
+
+	* config/riscv/riscv.c (thead_c906_tune_info): New.
+	(riscv_tune_info_table): Use new tune.
+
+2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101158
+	* tree-vect-slp.c (vect_build_slp_tree_1): Move same operand
+	checking after checking for matching operation.
+
+2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101159
+	* tree-vect-patterns.c (vect_recog_popcount_pattern): Add
+	missing NULL vectype check.
+
+2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101154
+	* tree-vect-slp.c (vect_build_slp_tree_2): Fix out-of-bound access.
+
+2021-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/11877
+	* config/i386/i386-protos.h (ix86_last_zero_store_uid): Declare.
+	* config/i386/i386-expand.c (ix86_last_zero_store_uid): New variable.
+	* config/i386/i386.c (ix86_expand_prologue): Clear it.
+	* config/i386/i386.md (peephole2s for 1/2/4 stores of const0_rtx):
+	Remove "" from match_operand.  Emit new insns using emit_move_insn and
+	set ix86_last_zero_store_uid to INSN_UID of the last store.
+	Add peephole2s for 1/2/4 stores of const0_rtx following previous
+	successful peep2s.
+
+2021-06-22  Martin Liska  <mliska@suse.cz>
+
+	* auto-profile.c (AUTO_PROFILE_VERSION): Bump as string format
+	was changed.
+
+2021-06-22  Martin Liska  <mliska@suse.cz>
+
+	* gcov-io.h: Remove padding entries.
+
+2021-06-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/97770
+	* tree-vect-patterns.c (vect_recog_popcount_pattern):
+	New.
+	(vect_recog_func vect_vect_recog_func_ptrs): Add new pattern.
+
+2021-06-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100267
+	* config/i386/i386-builtin.def (BDESC): Adjust builtin name.
+	* config/i386/sse.md (<avx512>_expand<mode>_mask): Rename to ..
+	(expand<mode>_mask): this ..
+	(*expand<mode>_mask): New pre_reload splitter to transform
+	v{,p}expand* to vmov* when mask is zero, all ones, or has all
+	ones in it's lower part, otherwise still generate
+	v{,p}expand*.
+
+2021-06-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100310
+	* config/i386/i386-expand.c
+	(ix86_expand_special_args_builtin): Keep constm1_operand only
+	if it satisfies insn's operand predicate.
+
 2021-06-21  Jason Merrill  <jason@redhat.com>
 
 	PR target/88529

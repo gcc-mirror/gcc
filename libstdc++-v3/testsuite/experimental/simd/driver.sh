@@ -5,8 +5,22 @@ abi=0
 name=
 srcdir="$(cd "${0%/*}" && pwd)/tests"
 sim="$GCC_TEST_SIMULATOR"
-quiet=false
-verbose=false
+
+# output_mode values:
+# print only failures with minimal context
+readonly really_quiet=0
+# as above plus same-line output of last successful test
+readonly same_line=1
+# as above plus percentage
+readonly percentage=2
+# print one line per finished test with minimal context on failure
+readonly verbose=3
+# print one line per finished test with full output of the compiler and test
+readonly really_verbose=4
+
+output_mode=$really_quiet
+[ -t 1 ] && output_mode=$same_line
+
 timeout=180
 run_expensive=false
 if [ -n "$GCC_TEST_RUN_EXPENSIVE" ]; then
@@ -21,8 +35,12 @@ Usage: $0 [Options] <g++ invocation>
 
 Options:
   -h, --help          Print this message and exit.
-  -q, --quiet         Only print failures.
-  -v, --verbose       Print compiler and test output on failure.
+  -q, --quiet         Disable same-line progress output (default if stdout is
+                      not a tty).
+  -p, --percentage    Add percentage to default same-line progress output.
+  -v, --verbose       Print one line per test and minimal extra information on
+                      failure.
+  -vv                 Print all compiler and test output.
   -t <type>, --type <type>
                       The value_type to test (default: $type).
   -a [0-9], --abi [0-9]
@@ -36,9 +54,10 @@ Options:
                       GCC_TEST_SIMULATOR).
   --timeout-factor <x>
                       Multiply the default timeout with x.
-  --run-expensive     Compile and run tests marked as expensive (default:
+  -x, --run-expensive Compile and run tests marked as expensive (default:
                       true if GCC_TEST_RUN_EXPENSIVE is set, false otherwise).
-  --only <pattern>    Compile and run only tests matching the given pattern.
+  -o <pattern>, --only <pattern>
+                      Compile and run only tests matching the given pattern.
 EOF
 }
 
@@ -49,70 +68,73 @@ while [ $# -gt 0 ]; do
     exit
     ;;
   -q|--quiet)
-    quiet=true
+    output_mode=$really_quiet
+    ;;
+  -p|--percentage)
+    output_mode=$percentage
     ;;
   -v|--verbose)
-    verbose=true
+    if [ $output_mode -lt $verbose ]; then
+      output_mode=$verbose
+    else
+      output_mode=$really_verbose
+    fi
     ;;
-  --run-expensive)
+  -x|--run-expensive)
     run_expensive=true
     ;;
   -k|--keep-failed)
     keep_failed=true
     ;;
-  --only)
+  -o|--only)
     only="$2"
     shift
-    ;;
-  --only=*)
-    only="${1#--only=}"
     ;;
   -t|--type)
     type="$2"
     shift
     ;;
-  --type=*)
-    type="${1#--type=}"
-    ;;
   -a|--abi)
     abi="$2"
     shift
-    ;;
-  --abi=*)
-    abi="${1#--abi=}"
     ;;
   -n|--name)
     name="$2"
     shift
     ;;
-  --name=*)
-    name="${1#--name=}"
-    ;;
   --srcdir)
     srcdir="$2"
     shift
-    ;;
-  --srcdir=*)
-    srcdir="${1#--srcdir=}"
     ;;
   --sim)
     sim="$2"
     shift
     ;;
-  --sim=*)
-    sim="${1#--sim=}"
-    ;;
   --timeout-factor)
     timeout=$(awk "BEGIN { print int($timeout * $2) }")
     shift
     ;;
-  --timeout-factor=*)
-    x=${1#--timeout-factor=}
-    timeout=$(awk "BEGIN { print int($timeout * $x) }")
-    ;;
   --)
     shift
     break
+    ;;
+  --*=*)
+    opt="$1"
+    shift
+    value=${opt#*=}
+    set -- ${opt%=$value} "$value" ${1+"$@"}
+    continue
+    ;;
+  -[ahknopqtvx][ahknopqtvx]*)
+    opt="$1"
+    shift
+    next=${opt#??}
+    set -- ${opt%$next} "-$next" ${1+"$@"}
+    continue
+    ;;
+  -*)
+    echo "Error: Unrecognized option '$1'" >&2
+    exit 1
     ;;
   *)
     break
@@ -120,6 +142,17 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+if [ $output_mode = $percentage ]; then
+  inc_progress() {
+    {
+      flock -n 9
+      n=$(($(cat .progress) + 1))
+      echo $n >&9
+      echo $n
+    } 9<>.progress
+  }
+fi
 
 CXX="$1"
 shift
@@ -133,6 +166,7 @@ sum="${testname}.sum"
 if [ -n "$only" ]; then
   if echo "$testname"|awk "{ exit /$only/ }"; then
     touch "$log" "$sum"
+    [ $output_mode = $percentage ] && inc_progress >/dev/null
     exit 0
   fi
 fi
@@ -146,35 +180,58 @@ else
   exit 1
 fi
 
+if [ $output_mode = $percentage ]; then
+  show_progress() {
+    n=$(inc_progress)
+    read total < .progress_total
+    total=${total}0
+    printf "\e[1G\e[K[%3d %%] ${src##*/} $type $abiflag" \
+      $((n * 1005 / total))
+  }
+  trap 'show_progress' EXIT
+  prefix="\e[1G\e[K"
+elif [ $output_mode = $same_line ]; then
+  show_progress() {
+    printf "\e[1G\e[K${src##*/} $type $abiflag"
+  }
+  trap 'show_progress' EXIT
+  prefix="\e[1G\e[K"
+else
+  prefix=""
+fi
+
 fail() {
+  printf "$prefix"
   echo "FAIL: $src $type $abiflag ($*)" | tee -a "$sum" "$log"
 }
 
 xpass() {
+  printf "$prefix"
   echo "XPASS: $src $type $abiflag ($*)" | tee -a "$sum" "$log"
 }
 
 xfail() {
-  $quiet || echo "XFAIL: $src $type $abiflag ($*)"
+  [ $output_mode -ge $verbose ] && echo "XFAIL: $src $type $abiflag ($*)"
   echo "XFAIL: $src $type $abiflag ($*)" >> "$sum"
   echo "XFAIL: $src $type $abiflag ($*)" >> "$log"
 }
 
 pass() {
-  $quiet || echo "PASS: $src $type $abiflag ($*)"
+  [ $output_mode -ge $verbose ] && echo "PASS: $src $type $abiflag ($*)"
   echo "PASS: $src $type $abiflag ($*)" >> "$sum"
   echo "PASS: $src $type $abiflag ($*)" >> "$log"
 }
 
 unsupported() {
-  $quiet || echo "UNSUPPORTED: $src $type $abiflag ($*)"
+  test
+  [ $output_mode -ge $verbose ] && echo "UNSUPPORTED: $src $type $abiflag ($*)"
   echo "UNSUPPORTED: $src $type $abiflag ($*)" >> "$sum"
   echo "UNSUPPORTED: $src $type $abiflag ($*)" >> "$log"
 }
 
 write_log_and_verbose() {
   echo "$*" >> "$log"
-  if $verbose; then
+  if [ $output_mode = $really_verbose ]; then
     if [ -z "$COLUMNS" ] || ! type fmt>/dev/null; then
       echo "$*"
     else
@@ -265,7 +322,7 @@ if read_src_option timeout-factor factor; then
 fi
 
 log_output() {
-  if $verbose; then
+  if [ $output_mode = $really_verbose ]; then
     maxcol=${1:-1024}
     awk "
 BEGIN { count = 0 }
@@ -323,7 +380,7 @@ verify_compilation() {
     warnings=$(grep -ic 'warning:' "$log")
     if [ $warnings -gt 0 ]; then
       fail "excess warnings:" $warnings
-      if ! $verbose && ! $quiet; then
+      if [ $output_mode = $verbose ]; then
         grep -i 'warning:' "$log" | head -n5
       fi
     elif [ "$xfail" = "compile" ]; then
@@ -344,7 +401,7 @@ verify_compilation() {
         fail "excess errors:" $errors
       fi
     fi
-    if ! $verbose && ! $quiet; then
+    if [ $output_mode = $verbose ]; then
       grep -i 'error:' "$log" | head -n5
     fi
     return 1
@@ -365,7 +422,7 @@ verify_test() {
     return 0
   else
     $keep_failed || rm "$exe"
-    if ! $verbose && ! $quiet; then
+    if [ $output_mode = $verbose ]; then
       grep -i fail "$log" | head -n5
     fi
     if [ $exitstatus -eq 124 ]; then

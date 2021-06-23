@@ -191,10 +191,9 @@ check-simd: $(srcdir)/experimental/simd/generate_makefile.sh \
 	    ${glibcxx_srcdir}/scripts/check_simd \
 	    testsuite_files_simd \
 	    ${glibcxx_builddir}/scripts/testsuite_flags
-	@echo "WARNING: Adding -fno-tree-vrp to CXXFLAGS to work around PR98834."
 	@rm -f .simd.summary
 	@echo "Generating simd testsuite subdirs and Makefiles ..."
-	@${glibcxx_srcdir}/scripts/check_simd "${glibcxx_srcdir}" "${glibcxx_builddir}" "$(CXXFLAGS) -fno-tree-vrp" | \
+	@${glibcxx_srcdir}/scripts/check_simd "${glibcxx_srcdir}" "${glibcxx_builddir}" "$(CXXFLAGS)" | \
 	  while read subdir; do \
 	    $(MAKE) -C "$${subdir}"; \
 	    tail -n20 $${subdir}/simd_testsuite.sum | \

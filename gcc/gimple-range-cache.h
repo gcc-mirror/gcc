@@ -50,7 +50,7 @@ public:
   block_range_cache ();
   ~block_range_cache ();
 
-  void set_bb_range (tree name, const basic_block bb, const irange &r);
+  bool set_bb_range (tree name, const basic_block bb, const irange &r);
   bool get_bb_range (irange &r, tree name, const basic_block bb);
   bool bb_range_p (tree name, const basic_block bb);
 
@@ -121,6 +121,7 @@ private:
 
   void propagate_updated_value (tree name, basic_block bb);
 
+  bitmap m_propfail;
   vec<basic_block> m_workback;
   vec<basic_block> m_update_list;
 };

@@ -17467,10 +17467,23 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 
   if (!d->one_operand_p)
     {
-      if (!TARGET_XOP || GET_MODE_SIZE (d->vmode) != 16)
+      if (GET_MODE_SIZE (d->vmode) == 8)
 	{
-	  if (TARGET_AVX2
-	      && valid_perm_using_mode_p (V2TImode, d))
+	  if (!TARGET_XOP)
+	    return false;
+	  vmode = V8QImode;
+	}
+      else if (GET_MODE_SIZE (d->vmode) == 16)
+	{
+	  if (!TARGET_XOP)
+	    return false;
+	}
+      else if (GET_MODE_SIZE (d->vmode) == 32)
+	{
+	  if (!TARGET_AVX2)
+	    return false;
+
+	  if (valid_perm_using_mode_p (V2TImode, d))
 	    {
 	      if (d->testing_p)
 		return true;
@@ -17492,6 +17505,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	    }
 	  return false;
 	}
+      else
+	return false;
     }
   else
     {
@@ -17651,8 +17666,22 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
     {
       rtx m128 = GEN_INT (-128);
 
+      /* Remap elements from the second operand, as we have to
+	 account for inactive top 8 elements from the first operand.  */
+      if (!d->one_operand_p)
+	for (i = 0; i < nelt; ++i)
+	  {
+	    int ival = INTVAL (rperm[i]);
+	    if (ival >= 8)
+	      ival += 8;
+	    rperm[i] = GEN_INT (ival);
+	  }
+
+      /* V8QI is emulated with V16QI instruction, fill inactive
+	 elements in the top 8 positions with zeros.  */
       for (i = nelt; i < 16; ++i)
 	rperm[i] = m128;
+
       vpmode = V16QImode;
     }
 
@@ -17660,36 +17689,54 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 				gen_rtvec_v (GET_MODE_NUNITS (vpmode), rperm));
   vperm = force_reg (vpmode, vperm);
 
-  target = d->target;
-  if (d->vmode != vmode)
+  if (vmode == d->vmode)
+    target = d->target;
+  else
     target = gen_reg_rtx (vmode);
+
   op0 = gen_lowpart (vmode, d->op0);
+
   if (d->one_operand_p)
     {
+      rtx (*gen) (rtx, rtx, rtx);
+
       if (vmode == V8QImode)
-	emit_insn (gen_mmx_pshufbv8qi3 (target, op0, vperm));
+	gen = gen_mmx_pshufbv8qi3;
       else if (vmode == V16QImode)
-	emit_insn (gen_ssse3_pshufbv16qi3 (target, op0, vperm));
+	gen = gen_ssse3_pshufbv16qi3;
       else if (vmode == V32QImode)
-	emit_insn (gen_avx2_pshufbv32qi3 (target, op0, vperm));
+	gen = gen_avx2_pshufbv32qi3;
       else if (vmode == V64QImode)
-	emit_insn (gen_avx512bw_pshufbv64qi3 (target, op0, vperm));
+	gen = gen_avx512bw_pshufbv64qi3;
       else if (vmode == V8SFmode)
-	emit_insn (gen_avx2_permvarv8sf (target, op0, vperm));
+	gen = gen_avx2_permvarv8sf;
       else if (vmode == V8SImode)
-	emit_insn (gen_avx2_permvarv8si (target, op0, vperm));
+	gen = gen_avx2_permvarv8si;
       else if (vmode == V16SFmode)
-	emit_insn (gen_avx512f_permvarv16sf (target, op0, vperm));
+	gen = gen_avx512f_permvarv16sf;
       else if (vmode == V16SImode)
-	emit_insn (gen_avx512f_permvarv16si (target, op0, vperm));
+	gen = gen_avx512f_permvarv16si;
       else
 	gcc_unreachable ();
+
+      emit_insn (gen (target, op0, vperm));
     }
   else
     {
+      rtx (*gen) (rtx, rtx, rtx, rtx);
+
       op1 = gen_lowpart (vmode, d->op1);
-      emit_insn (gen_xop_pperm (target, op0, op1, vperm));
+
+      if (vmode == V8QImode)
+	gen = gen_mmx_ppermv64;
+      else if (vmode == V16QImode)
+	gen = gen_xop_pperm;
+      else
+	gcc_unreachable ();
+
+      emit_insn (gen (target, op0, op1, vperm));
     }
+
   if (target != d->target)
     emit_move_insn (d->target, gen_lowpart (d->vmode, target));
 
