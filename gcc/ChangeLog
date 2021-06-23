@@ -1,3 +1,10 @@
+2021-06-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100310
+	* config/i386/i386-expand.c
+	(ix86_expand_special_args_builtin): Keep constm1_operand only
+	if it satisfies insn's operand predicate.
+
 2021-06-21  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/altivec.h (vec_signextll, vec_signexti, vec_signextq):

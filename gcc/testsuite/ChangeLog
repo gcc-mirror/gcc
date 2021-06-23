@@ -1,3 +1,8 @@
+2021-06-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100310
+	* gcc.target/i386/pr100310.c: New test.
+
 2021-06-21  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/int_128bit-runnable.c (extsd2q): Update expected
