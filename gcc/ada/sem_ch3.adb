@@ -10392,6 +10392,7 @@ package body Sem_Ch3 is
               (Discr_Expr (J), Check_Concurrent => True)
          then
             Discrim_Present := True;
+            exit;
          end if;
       end loop;
 
