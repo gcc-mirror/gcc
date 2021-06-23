@@ -1,3 +1,11 @@
+2021-06-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101143
+	* region-model.cc (compat_types_p): New function.
+	(region_model::create_region_for_heap_alloc): Convert assertion to
+	an error check.
+	(region_model::create_region_for_alloca): Likewise.
+
 2021-06-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* store.cc (binding_cluster::get_any_binding): Make symbolic reads

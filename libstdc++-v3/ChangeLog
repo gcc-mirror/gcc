@@ -1,3 +1,44 @@
+2021-06-22  Jonathan Wakely  <jwakely@redhat.com>
+	    Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/std/mutex (lock): Replace recursion with iteration
+	when lockables all have the same type.
+	(__detail::__try_lock_impl): Likewise. Pass lockables as
+	parameters, instead of a tuple. Always lock the first one, and
+	recurse for the rest.
+	(__detail::__lock_impl): Adjust call to __try_lock_impl.
+	(__detail::__try_to_lock): Remove.
+	* testsuite/30_threads/lock/3.cc: Check that mutexes are locked.
+	* testsuite/30_threads/lock/4.cc: Also test non-heterogeneous
+	arguments.
+	* testsuite/30_threads/unique_lock/cons/60497.cc: Also check
+	std::try_lock.
+	* testsuite/30_threads/try_lock/5.cc: New test.
+
+2021-06-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory (declare_reachable, undeclare_reachable)
+	(declare_no_pointers, undeclare_no_pointers, get_pointer_safety)
+	(pointer_safety): Only define for C++11 to C++20 inclusive.
+	* testsuite/20_util/pointer_safety/1.cc: Do not run for C++23.
+
+2021-06-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (seed_seq): Constrain initializer-list
+	constructor.
+	* include/bits/random.tcc (seed_seq): Add template parameter.
+	* testsuite/26_numerics/random/seed_seq/cons/default.cc: Check
+	for noexcept.
+	* testsuite/26_numerics/random/seed_seq/cons/initlist.cc: Check
+	constraints.
+
+2021-06-22  Thomas Rodgers  <rodgert@appliantology.com>
+
+	PR libstdc++/100806
+	* include/bits/semaphore_base.h (__atomic_semaphore::_M_release):
+	Force _M_release() to wake all waiting threads.
+	* testsuite/30_threads/semaphore/100806.cc: New test.
+
 2021-06-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/mutex (__try_to_lock): Move to __detail namespace.
