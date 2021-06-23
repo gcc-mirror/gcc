@@ -1,3 +1,80 @@
+2021-06-22  Thomas Rodgers  <rodgert@appliantology.com>
+
+	Backported from master:
+	2021-06-22  Thomas Rodgers  <rodgert@appliantology.com>
+
+	PR libstdc++/100806
+	* include/bits/semaphore_base.h (__atomic_semaphore::_M_release):
+	Force _M_release() to wake all waiting threads.
+	* testsuite/30_threads/semaphore/100806.cc: New test.
+
+2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95833
+	* include/std/numeric (reduce(Iter, Iter, T, BinaryOp)): Replace
+	incorrect static_assert with ones matching the 'Mandates'
+	conditions in the standard.
+	* testsuite/26_numerics/reduce/95833.cc: New test.
+
+2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/char/1.cc: Use
+	diagnostic pragma to suppress -Wstringop-overread error.
+
+2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91488
+	* include/bits/basic_string.h (__cpp_lib_constexpr_string): Only
+	define C++20 value when std::is_constant_evaluated is available.
+	* include/bits/char_traits.h (__cpp_lib_constexpr_char_traits):
+	Likewise.
+	(__constant_string_p, __constant_array_p): Give external
+	linkage.
+	* include/std/version (__cpp_lib_constexpr_char_traits)
+	(__cpp_lib_constexpr_string): Only define C++20 values when
+	is_constant_evaluated is available.
+
+2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100940
+	* include/std/ranges (__adaptor::_Partial): For the "simple"
+	forwarding partial specializations, also require that
+	the extra arguments are trivially copyable.
+	* testsuite/std/ranges/adaptors/100577.cc (test04): New test.
+
+2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100940
+	* include/std/ranges (__adaptor::_RangeAdaptor): Document the
+	template form of _S_has_simple_extra_args.
+	(__adaptor::__adaptor_has_simple_extra_args): Add _Args template
+	parameter pack.  Try to treat _S_has_simple_extra_args as a
+	variable template parameterized by _Args.
+	(__adaptor::_Partial): Pass _Arg/_Args to the constraint
+	__adaptor_has_simple_extra_args.
+	(views::_Take::_S_has_simple_extra_args): Templatize according
+	to the type of the extra argument.
+	(views::_Drop::_S_has_simple_extra_args): Likewise.
+	(views::_Split::_S_has_simple_extra_args): Define.
+	* testsuite/std/ranges/adaptors/100577.cc (test01, test02):
+	Adjust after changes to _S_has_simple_extra_args mechanism.
+	(test03): Define.
+
 2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

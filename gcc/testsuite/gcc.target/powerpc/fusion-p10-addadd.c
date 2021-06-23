@@ -32,9 +32,7 @@ vlong vaddadd2(vlong s, vlong a, vlong b, vlong c)
   return a+b+c;
 }
 
-/* { dg-final { scan-assembler-times "fuse_add_add/0"                1 } } */
-/* { dg-final { scan-assembler-times "fuse_add_add/1"                1 } } */
-/* { dg-final { scan-assembler-times "fuse_add_add/2"                1 } } */
-/* { dg-final { scan-assembler-times "fuse_vaddudm_vaddudm/0"        1 } } */
-/* { dg-final { scan-assembler-times "fuse_vaddudm_vaddudm/1"        1 } } */
-/* { dg-final { scan-assembler-times "fuse_vaddudm_vaddudm/2"        1 } } */
+/* { dg-final { scan-assembler-times {\mfuse_add_add\M/}                3 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mfuse_vaddudm_vaddudm\M/}        3 { target lp64 } } } */
+/* { dg-final { scan-assembler-times {\mfuse_add_add\M/}                3 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mfuse_vaddudm_vaddudm\M/}        0 { target ilp32 } } } */

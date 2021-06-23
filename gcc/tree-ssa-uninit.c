@@ -529,6 +529,9 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
 	continue;
 
       tree arg = gimple_call_arg (stmt, argno - 1);
+      if (!POINTER_TYPE_P (TREE_TYPE (arg)))
+	/* Avoid actual arguments with invalid types.  */
+	continue;
 
       ao_ref ref;
       ao_ref_init_from_ptr_and_size (&ref, arg, access_size);

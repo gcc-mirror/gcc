@@ -1,3 +1,8 @@
+2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100981
+	* testsuite/libgomp.fortran/pr100981-2.f90: New testcase.
+
 2021-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backported from master:

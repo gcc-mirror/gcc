@@ -1409,7 +1409,7 @@ gfc_match_pointer_assignment (void)
   gfc_matching_procptr_assignment = 0;
 
   m = gfc_match (" %v =>", &lvalue);
-  if (m != MATCH_YES)
+  if (m != MATCH_YES || !lvalue->symtree)
     {
       m = MATCH_NO;
       goto cleanup;

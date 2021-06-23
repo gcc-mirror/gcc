@@ -1,3 +1,14 @@
+2021-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/x86/ffi64.c (classify_argument): For FFI_TYPE_STRUCT set words
+	to number of words needed for type->size + byte_offset bytes rather
+	than just type->size bytes.  Compute pos before the loop and check
+	total size of the structure.
+	* testsuite/libffi.call/nested_struct12.c: New test.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.

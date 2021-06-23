@@ -237,12 +237,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
 
-#if __cplusplus == 201703L
-// Unofficial macro indicating P0426R1 support
-# define __cpp_lib_constexpr_char_traits 201611L
-#else
-// Also support P1032R1 in C++20
+#ifdef __cpp_lib_is_constant_evaluated
+// Unofficial macro indicating P1032R1 support in C++20
 # define __cpp_lib_constexpr_char_traits 201811L
+#else
+// Unofficial macro indicating P0426R1 support in C++17
+# define __cpp_lib_constexpr_char_traits 201611L
 #endif
 
   /**
@@ -253,7 +253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Assumes that _CharT is a built-in character type.
    */
   template<typename _CharT>
-    static _GLIBCXX_ALWAYS_INLINE constexpr bool
+    _GLIBCXX_ALWAYS_INLINE constexpr bool
     __constant_string_p(const _CharT* __s)
     {
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
@@ -276,7 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Assumes that _CharT is a built-in character type.
    */
   template<typename _CharT>
-    static _GLIBCXX_ALWAYS_INLINE constexpr bool
+    _GLIBCXX_ALWAYS_INLINE constexpr bool
     __constant_char_array_p(const _CharT* __a, size_t __n)
     {
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED

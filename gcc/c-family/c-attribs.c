@@ -694,6 +694,9 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
 
   if (tree argtype = type_argument_type (fntype, ipos))
     {
+      if (argtype == error_mark_node)
+	return NULL_TREE;
+
       if (flags & POSARG_ELLIPSIS)
 	{
 	  if (argno < 1)
@@ -5031,16 +5034,25 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
       /* Create the attribute access string from the arg spec string,
 	 optionally followed by position of the VLA bound argument if
 	 it is one.  */
-      char specbuf[80];
-      int len = snprintf (specbuf, sizeof specbuf, "%c%u%s",
-			  attr_access::mode_chars[access_deferred],
-			  argpos, s);
-      gcc_assert ((size_t) len < sizeof specbuf);
+      {
+	size_t specend = spec.length ();
+	if (!specend)
+	  {
+	    spec = '+';
+	    specend = 1;
+	  }
 
-      if (!spec.length ())
-	spec += '+';
-
-      spec += specbuf;
+	/* Format the access string in place.  */
+	int len = snprintf (NULL, 0, "%c%u%s",
+			    attr_access::mode_chars[access_deferred],
+			    argpos, s);
+	spec.resize (specend + len + 1);
+	sprintf (&spec[specend], "%c%u%s",
+		 attr_access::mode_chars[access_deferred],
+		 argpos, s);
+	/* Trim the trailing NUL.  */
+	spec.resize (specend + len);
+      }
 
       /* The (optional) list of expressions denoting the VLA bounds
 	 N in ARGTYPE <arg>[Ni]...[Nj]...[Nk].  */
@@ -5065,8 +5077,13 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
 		{
 		  /* BOUND previously seen in the parameter list.  */
 		  TREE_PURPOSE (vb) = size_int (*psizpos);
-		  sprintf (specbuf, "$%u", *psizpos);
-		  spec += specbuf;
+		  /* Format the position string in place.  */
+		  int len = snprintf (NULL, 0, "$%u", *psizpos);
+		  size_t specend = spec.length ();
+		  spec.resize (specend + len + 1);
+		  sprintf (&spec[specend], "$%u", *psizpos);
+		  /* Trim the trailing NUL.  */
+		  spec.resize (specend + len);
 		}
 	      else
 		{

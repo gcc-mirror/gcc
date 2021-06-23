@@ -39,8 +39,10 @@ import requests
 from unidiff import PatchSet
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
+prnum_regex = re.compile(r'PR (?P<comp>[a-z+-]+)/(?P<num>[0-9]+)')
 dr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<dr>DR [0-9]+)')
 dg_regex = re.compile(r'{\s+dg-(error|warning)')
+pr_filename_regex = re.compile(r'(^|[\W_])[Pp][Rr](?P<pr>\d{4,})')
 identifier_regex = re.compile(r'^([a-zA-Z0-9_#].*)')
 comment_regex = re.compile(r'^\/\*')
 struct_regex = re.compile(r'^(class|struct|union|enum)\s+'
@@ -51,7 +53,7 @@ fn_regex = re.compile(r'([a-zA-Z_][^()\s]*)\s*\([^*]')
 template_and_param_regex = re.compile(r'<[^<>]*>')
 md_def_regex = re.compile(r'\(define.*\s+"(.*)"')
 bugzilla_url = 'https://gcc.gnu.org/bugzilla/rest.cgi/bug?id=%s&' \
-               'include_fields=summary'
+               'include_fields=summary,component'
 
 function_extensions = {'.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def', '.md'}
 
@@ -66,6 +68,8 @@ PATCH must be generated using diff(1)'s -up or -cp options
 
 script_folder = os.path.realpath(__file__)
 root = os.path.dirname(os.path.dirname(script_folder))
+
+firstpr = ''
 
 
 def find_changelog(path):
@@ -115,26 +119,32 @@ def sort_changelog_files(changed_file):
 
 
 def get_pr_titles(prs):
-    output = ''
-    for pr in prs:
+    output = []
+    for idx, pr in enumerate(prs):
         pr_id = pr.split('/')[-1]
         r = requests.get(bugzilla_url % pr_id)
         bugs = r.json()['bugs']
         if len(bugs) == 1:
-            output += '%s - %s\n' % (pr, bugs[0]['summary'])
-            print(output)
+            prs[idx] = 'PR %s/%s' % (bugs[0]['component'], pr_id)
+            out = '%s - %s\n' % (prs[idx], bugs[0]['summary'])
+            if out not in output:
+                output.append(out)
     if output:
-        output += '\n'
-    return output
+        output.append('')
+    return '\n'.join(output)
 
 
-def generate_changelog(data, no_functions=False, fill_pr_titles=False):
+def generate_changelog(data, no_functions=False, fill_pr_titles=False,
+                       additional_prs=None):
     changelogs = {}
     changelog_list = []
     prs = []
     out = ''
     diff = PatchSet(data)
+    global firstpr
 
+    if additional_prs:
+        prs = [pr for pr in additional_prs if pr not in prs]
     for file in diff:
         # skip files that can't be parsed
         if file.path == '/dev/null':
@@ -150,32 +160,52 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
             # Only search first ten lines as later lines may
             # contains commented code which a note that it
             # has not been tested due to a certain PR or DR.
+            this_file_prs = []
             for line in list(file)[0][0:10]:
                 m = pr_regex.search(line.value)
                 if m:
                     pr = m.group('pr')
                     if pr not in prs:
                         prs.append(pr)
+                        this_file_prs.append(pr.split('/')[-1])
                 else:
                     m = dr_regex.search(line.value)
                     if m:
                         dr = m.group('dr')
                         if dr not in prs:
                             prs.append(dr)
+                            this_file_prs.append(dr.split('/')[-1])
                     elif dg_regex.search(line.value):
                         # Found dg-warning/dg-error line
                         break
+            # PR number in the file name
+            fname = os.path.basename(file.path)
+            m = pr_filename_regex.search(fname)
+            if m:
+                pr = m.group('pr')
+                pr2 = 'PR ' + pr
+                if pr not in this_file_prs and pr2 not in prs:
+                    prs.append(pr2)
+
+    if prs:
+        firstpr = prs[0]
 
     if fill_pr_titles:
         out += get_pr_titles(prs)
+
+    # print list of PR entries before ChangeLog entries
+    if prs:
+        if not out:
+            out += '\n'
+        for pr in prs:
+            out += '\t%s\n' % pr
+        out += '\n'
 
     # sort ChangeLog so that 'testsuite' is at the end
     for changelog in sorted(changelog_list, key=lambda x: 'testsuite' in x):
         files = changelogs[changelog]
         out += '%s:\n' % os.path.join(changelog, 'ChangeLog')
         out += '\n'
-        for pr in prs:
-            out += '\t%s\n' % pr
         # new and deleted files should be at the end
         for file in sorted(files, key=sort_changelog_files):
             assert file.path.startswith(changelog)
@@ -273,6 +303,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=help_message)
     parser.add_argument('input', nargs='?',
                         help='Patch file (or missing, read standard input)')
+    parser.add_argument('-b', '--pr-numbers', action='store',
+                        type=lambda arg: arg.split(','), nargs='?',
+                        help='Add the specified PRs (comma separated)')
     parser.add_argument('-s', '--no-functions', action='store_true',
                         help='Do not generate function names in ChangeLogs')
     parser.add_argument('-p', '--fill-up-bug-titles', action='store_true',
@@ -296,14 +329,20 @@ if __name__ == '__main__':
         update_copyright(data)
     else:
         output = generate_changelog(data, args.no_functions,
-                                    args.fill_up_bug_titles)
+                                    args.fill_up_bug_titles, args.pr_numbers)
         if args.changelog:
             lines = open(args.changelog).read().split('\n')
             start = list(takewhile(lambda l: not l.startswith('#'), lines))
             end = lines[len(start):]
             with open(args.changelog, 'w') as f:
+                if not start or not start[0]:
+                    # initial commit subject line 'component: [PRnnnnn]'
+                    m = prnum_regex.match(firstpr)
+                    if m:
+                        title = f'{m.group("comp")}: [PR{m.group("num")}]'
+                        start.insert(0, title)
                 if start:
-                    # appent empty line
+                    # append empty line
                     if start[-1] != '':
                         start.append('')
                 else:

@@ -1172,7 +1172,8 @@
   (match_test "(mode == V16QImode
 		&& (vsx_register_operand (op, mode)
 		    || (MEM_P (op)
-			&& quad_address_p (XEXP (op, 0), mode, false))))"))
+			&& (indexed_or_indirect_address (XEXP (op, 0), mode)
+			    || quad_address_p (XEXP (op, 0), mode, false)))))"))
 
 ;; Return 1 if this operand is valid for an MMA disassemble insn.
 (define_predicate "mma_disassemble_output_operand"

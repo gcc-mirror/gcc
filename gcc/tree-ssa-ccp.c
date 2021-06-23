@@ -3541,6 +3541,7 @@ pass_post_ipa_warn::execute (function *fun)
 	    continue;
 
 	  tree fndecl = gimple_call_fndecl (stmt);
+	  const bool closure = fndecl && DECL_LAMBDA_FUNCTION_P (fndecl);
 
 	  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
 	    {
@@ -3548,6 +3549,9 @@ pass_post_ipa_warn::execute (function *fun)
 	      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
 		continue;
 	      if (!integer_zerop (arg))
+		continue;
+	      if (i == 0 && closure)
+		/* Avoid warning for the first argument to lambda functions.  */
 		continue;
 	      if (!bitmap_empty_p (nonnullargs)
 		  && !bitmap_bit_p (nonnullargs, i))

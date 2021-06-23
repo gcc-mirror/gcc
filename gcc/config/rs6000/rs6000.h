@@ -2332,7 +2332,6 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_MMA		MASK_MMA	/* ISA 3.1 MMA.  */
 #define RS6000_BTM_P10		MASK_POWER10
 
-
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
 				 | RS6000_BTM_P8_VECTOR			\
@@ -2445,6 +2444,7 @@ enum rs6000_builtin_type_index
   RS6000_BTI_bool_V8HI,          /* __vector __bool short */
   RS6000_BTI_bool_V4SI,          /* __vector __bool int */
   RS6000_BTI_bool_V2DI,          /* __vector __bool long */
+  RS6000_BTI_bool_V1TI,          /* __vector __bool 128-bit */
   RS6000_BTI_pixel_V8HI,         /* __vector __pixel */
   RS6000_BTI_long,	         /* long_integer_type_node */
   RS6000_BTI_unsigned_long,      /* long_unsigned_type_node */
@@ -2498,6 +2498,7 @@ enum rs6000_builtin_type_index
 #define bool_V8HI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V8HI])
 #define bool_V4SI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V4SI])
 #define bool_V2DI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V2DI])
+#define bool_V1TI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V1TI])
 #define pixel_V8HI_type_node	      (rs6000_builtin_types[RS6000_BTI_pixel_V8HI])
 
 #define long_long_integer_type_internal_node  (rs6000_builtin_types[RS6000_BTI_long_long])

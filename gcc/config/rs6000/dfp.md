@@ -226,6 +226,13 @@
   [(set_attr "type" "dfp")
    (set_attr "size" "128")])
 
+(define_insn "floattitd2"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
+	(float:TD (match_operand:TI 1 "gpc_reg_operand" "v")))]
+  "TARGET_POWER10"
+  "dcffixqq %0,%1"
+  [(set_attr "type" "dfp")])
+
 ;; Convert a decimal64/128 to a decimal64/128 whose value is an integer.
 ;; This is the first stage of converting it to an integer type.
 
@@ -247,6 +254,13 @@
   "dctfix<q> %0,%1"
   [(set_attr "type" "dfp")
    (set_attr "size" "<bits>")])
+
+(define_insn "fixtdti2"
+  [(set (match_operand:TI 0 "gpc_reg_operand" "=v")
+	(fix:TI (match_operand:TD 1 "gpc_reg_operand" "d")))]
+  "TARGET_POWER10"
+  "dctfixqq %0,%1"
+  [(set_attr "type" "dfp")])
 
 ;; Decimal builtin support
 

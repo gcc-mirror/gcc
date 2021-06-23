@@ -2388,7 +2388,8 @@ attr_access::array_as_string (tree type) const
 	  const char *p = end;
 	  for ( ; p != str && *p-- != ']'; );
 	  if (*p == '$')
-	    index_type = build_index_type (TREE_VALUE (size));
+	    /* SIZE may have been cleared.  Use it with care.  */
+	    index_type = build_index_type (size ? TREE_VALUE (size) : size);
 	}
       else if (minsize)
 	index_type = build_index_type (size_int (minsize - 1));
