@@ -46,7 +46,9 @@
 #endif
 
 #define SW_OR_HW(SW, HW) (__builtin_cpu_supports ("ieee128") ? HW : SW)
+#ifdef FLOAT128_HW_INSNS_ISA3_1
 #define SW_OR_HW_ISA3_1(SW, HW) (__builtin_cpu_supports ("arch_3_1") ? HW : SW)
+#endif
 
 /* Resolvers.  */
 static __typeof__ (__addkf3_sw) *
@@ -97,6 +99,7 @@ __floatdikf_resolve (void)
   return SW_OR_HW (__floatdikf_sw, __floatdikf_hw);
 }
 
+#ifdef FLOAT128_HW_INSNS_ISA3_1
 static __typeof__ (__floattikf_sw) *
 __floattikf_resolve (void)
 {
@@ -108,6 +111,7 @@ __floatuntikf_resolve (void)
 {
   return SW_OR_HW_ISA3_1 (__floatuntikf_sw, __floatuntikf_hw);
 }
+#endif
 
 static __typeof__ (__floatunsikf_sw) *
 __floatunsikf_resolve (void)
@@ -121,7 +125,7 @@ __floatundikf_resolve (void)
   return SW_OR_HW (__floatundikf_sw, __floatundikf_hw);
 }
 
-
+#ifdef FLOAT128_HW_INSNS_ISA3_1
 static __typeof__ (__fixkfti_sw) *
 __fixkfti_resolve (void)
 {
@@ -133,6 +137,7 @@ __fixunskfti_resolve (void)
 {
   return SW_OR_HW_ISA3_1 (__fixunskfti_sw, __fixunskfti_hw);
 }
+#endif
 
 static __typeof__ (__fixkfsi_sw) *
 __fixkfsi_resolve (void)
@@ -323,6 +328,7 @@ TFtype __floatsikf (SItype_ppc)
 TFtype __floatdikf (DItype_ppc)
   __attribute__ ((__ifunc__ ("__floatdikf_resolve")));
 
+#ifdef FLOAT128_HW_INSNS_ISA3_1
 TFtype __floattikf (TItype_ppc)
   __attribute__ ((__ifunc__ ("__floattikf_resolve")));
 
@@ -334,6 +340,7 @@ TItype_ppc __fixkfti (TFtype)
 
 UTItype_ppc __fixunskfti (TFtype)
   __attribute__ ((__ifunc__ ("__fixunskfti_resolve")));
+#endif
 
 TFtype __floatunsikf (USItype_ppc)
   __attribute__ ((__ifunc__ ("__floatunsikf_resolve")));

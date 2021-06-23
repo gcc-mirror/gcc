@@ -460,9 +460,9 @@ powerpc*-*-linux*)
   CFLAGS="$saved_CFLAGS"
 
   saved_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS -mpower10 -mfloat128-hardware"
+  CFLAGS="$CFLAGS -mcpu=power10 -mfloat128-hardware"
   AC_CACHE_CHECK([for PowerPC ISA 3.1 to build hardware __float128 libraries],
-		 [libgcc_cv_powerpc_float128_hw],
+		 [libgcc_cv_powerpc_3_1_float128_hw],
 		 [AC_COMPILE_IFELSE(
     [AC_LANG_SOURCE([#include <sys/auxv.h>
      #ifndef AT_PLATFORM
@@ -471,15 +471,15 @@ powerpc*-*-linux*)
      #ifndef __BUILTIN_CPU_SUPPORTS__
      #error "__builtin_cpu_supports is not available"
      #endif
-     vector unsigned char add (vector unsigned char a, vector unsigned char b)
+     vector unsigned char conv (vector unsigned char qs)
      {
        vector unsigned char ret;
-       __asm__ ("xscvsqqp %0,%1,%2" : "=v" (ret) : "v" (a), "v" (b));
+       __asm__ ("xscvsqqp %0,%1" : "=v" (ret) : "v" (qs));
        return ret;
      }
-     void *add_resolver (void) { return (void *) add; }
-     __float128 add_ifunc (__float128, __float128)
-	__attribute__ ((__ifunc__ ("add_resolver")));])],
+     void *conv_resolver (void) { return (void *) conv; }
+     __float128 conv_ifunc (__float128)
+	__attribute__ ((__ifunc__ ("conv_resolver")));])],
     [libgcc_cv_powerpc_3_1_float128_hw=yes],
     [libgcc_cv_powerpc_3_1_float128_hw=no])])
   CFLAGS="$saved_CFLAGS"
