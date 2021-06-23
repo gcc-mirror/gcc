@@ -13164,7 +13164,9 @@ lower_omp_regimplify_p (tree *tp, int *walk_subtrees,
   tree t = *tp;
 
   /* Any variable with DECL_VALUE_EXPR needs to be regimplified.  */
-  if (VAR_P (t) && data == NULL && DECL_HAS_VALUE_EXPR_P (t))
+  if ((VAR_P (t) || TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
+      && data == NULL
+      && DECL_HAS_VALUE_EXPR_P (t))
     return t;
 
   if (task_shared_vars
