@@ -210,6 +210,9 @@ protected:
   void compile_function_body (Bfunction *fndecl,
 			      std::unique_ptr<HIR::BlockExpr> &function_body,
 			      bool has_return_type);
+
+  bool compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
+				 std::vector<Bvariable *> &locals);
 };
 
 } // namespace Compile

@@ -216,6 +216,86 @@ public:
     infered = type;
   }
 
+  void visit (HIR::Function &function) override
+  {
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
+    if (function.has_generics ())
+      {
+	for (auto &generic_param : function.get_generic_params ())
+	  {
+	    switch (generic_param.get ()->get_kind ())
+	      {
+	      case HIR::GenericParam::GenericKind::LIFETIME:
+		// Skipping Lifetime completely until better handling.
+		break;
+
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  auto param_type
+		    = TypeResolveGenericParam::Resolve (generic_param.get ());
+		  context->insert_type (generic_param->get_mappings (),
+					param_type);
+
+		  substitutions.push_back (TyTy::SubstitutionParamMapping (
+		    static_cast<HIR::TypeParam &> (*generic_param),
+		    param_type));
+		}
+		break;
+	      }
+	  }
+      }
+
+    TyTy::BaseType *ret_type = nullptr;
+    if (!function.has_function_return_type ())
+      ret_type = new TyTy::TupleType (function.get_mappings ().get_hirid ());
+    else
+      {
+	auto resolved
+	  = TypeCheckType::Resolve (function.get_return_type ().get ());
+	if (resolved == nullptr)
+	  {
+	    rust_error_at (function.get_locus (),
+			   "failed to resolve return type");
+	    return;
+	  }
+
+	ret_type = resolved->clone ();
+	ret_type->set_ref (
+	  function.get_return_type ()->get_mappings ().get_hirid ());
+      }
+
+    std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
+    for (auto &param : function.get_function_params ())
+      {
+	// get the name as well required for later on
+	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
+	params.push_back (
+	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
+						       param_tyty));
+
+	context->insert_type (param.get_mappings (), param_tyty);
+      }
+
+    auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
+				    function.get_function_name (), false,
+				    std::move (params), ret_type,
+				    std::move (substitutions));
+    context->insert_type (function.get_mappings (), fnType);
+
+    TyTy::FnType *resolved_fn_type = fnType;
+    auto expected_ret_tyty = resolved_fn_type->get_return_type ();
+    context->push_return_type (expected_ret_tyty);
+
+    auto block_expr_ty
+      = TypeCheckExpr::Resolve (function.get_definition ().get (), false);
+
+    context->pop_return_type ();
+
+    if (block_expr_ty->get_kind () != TyTy::NEVER)
+      expected_ret_tyty->unify (block_expr_ty);
+
+    infered = fnType;
+  }
+
 private:
   TypeCheckStmt (bool inside_loop)
     : TypeCheckBase (), infered (nullptr), inside_loop (inside_loop)

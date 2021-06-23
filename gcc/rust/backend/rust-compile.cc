@@ -212,20 +212,8 @@ CompileBlock::visit (HIR::BlockExpr &expr)
     }
 
   std::vector<Bvariable *> locals;
-  rib->iterate_decls ([&] (NodeId n, Location) mutable -> bool {
-    Resolver::Definition d;
-    bool ok = ctx->get_resolver ()->lookup_definition (n, &d);
-    rust_assert (ok);
-
-    HIR::Stmt *decl = nullptr;
-    ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
-    rust_assert (ok);
-
-    Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
-    locals.push_back (compiled);
-
-    return true;
-  });
+  bool ok = compile_locals_for_block (*rib, fndecl, locals);
+  rust_assert (ok);
 
   Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
   Bblock *new_block
@@ -413,6 +401,41 @@ HIRCompileBase::compile_function_body (
 	    }
 	}
     }
+}
+
+bool
+HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
+					  std::vector<Bvariable *> &locals)
+{
+  rib.iterate_decls ([&] (NodeId n, Location) mutable -> bool {
+    Resolver::Definition d;
+    bool ok = ctx->get_resolver ()->lookup_definition (n, &d);
+    rust_assert (ok);
+
+    HIR::Stmt *decl = nullptr;
+    ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
+    rust_assert (ok);
+
+    // if its a function we extract this out side of this fn context
+    // and it is not a local to this function
+    bool is_item = ctx->get_mappings ()->lookup_hir_item (
+		     decl->get_mappings ().get_crate_num (),
+		     decl->get_mappings ().get_hirid ())
+		   != nullptr;
+    if (is_item)
+      {
+	HIR::Item *item = static_cast<HIR::Item *> (decl);
+	CompileItem::compile (item, ctx, true);
+	return true;
+      }
+
+    Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
+    locals.push_back (compiled);
+
+    return true;
+  });
+
+  return true;
 }
 
 // Mr Mangle time

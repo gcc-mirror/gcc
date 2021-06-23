@@ -129,6 +129,61 @@ public:
     resolver->get_type_scope ().pop ();
   }
 
+  void visit (AST::Function &function) override
+  {
+    auto path = ResolveFunctionItemToCanonicalPath::resolve (function);
+    resolver->get_name_scope ().insert (
+      path, function.get_node_id (), function.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (function.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (function.get_node_id (),
+				     Definition{function.get_node_id (),
+						function.get_node_id ()});
+
+    NodeId scope_node_id = function.get_node_id ();
+    resolver->get_name_scope ().push (scope_node_id);
+    resolver->get_type_scope ().push (scope_node_id);
+    resolver->get_label_scope ().push (scope_node_id);
+    resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+    resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+    resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+    if (function.has_generics ())
+      {
+	for (auto &generic : function.get_generic_params ())
+	  ResolveGenericParam::go (generic.get (), function.get_node_id ());
+      }
+
+    if (function.has_return_type ())
+      ResolveType::go (function.get_return_type ().get (),
+		       function.get_node_id ());
+
+    // we make a new scope so the names of parameters are resolved and shadowed
+    // correctly
+    for (auto &param : function.get_function_params ())
+      {
+	ResolveType::go (param.get_type ().get (), param.get_node_id ());
+	PatternDeclaration::go (param.get_pattern ().get (),
+				param.get_node_id ());
+
+	// the mutability checker needs to verify for immutable decls the number
+	// of assignments are <1. This marks an implicit assignment
+	resolver->mark_assignment_to_decl (param.get_pattern ()->get_node_id (),
+					   param.get_node_id ());
+      }
+
+    // resolve the function body
+    ResolveExpr::go (function.get_definition ().get (),
+		     function.get_node_id ());
+
+    resolver->get_name_scope ().pop ();
+    resolver->get_type_scope ().pop ();
+    resolver->get_label_scope ().pop ();
+  }
+
 private:
   ResolveStmt (NodeId parent) : ResolverBase (parent) {}
 };

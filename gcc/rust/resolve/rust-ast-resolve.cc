@@ -499,9 +499,8 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
   else
     {
       rust_error_at (expr->get_locus (),
-		     "unknown root segment in path %s lookup %s",
-		     expr->as_string ().c_str (),
-		     root_ident_seg.as_string ().c_str ());
+		     "Cannot find path %<%s%> in this scope",
+		     expr->as_string ().c_str ());
       return;
     }
 
