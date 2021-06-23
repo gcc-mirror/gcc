@@ -1442,6 +1442,8 @@ checked_options["flag_omit_frame_pointer"]++
 checked_options["TARGET_ALIGN_CALL"]++
 checked_options["TARGET_CASE_VECTOR_PC_RELATIVE"]++
 checked_options["arc_size_opt_level"]++
+# arm exceptions
+checked_options["arm_fp16_format"]++
 
 
 for (i = 0; i < n_opts; i++) {
