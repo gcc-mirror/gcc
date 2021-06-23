@@ -3487,9 +3487,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   /* Step values are irrelevant for aliasing if the number of vector
      iterations is equal to the number of scalar iterations (which can
      happen for fully-SLP loops).  */
-  bool ignore_step_p = known_eq (LOOP_VINFO_VECT_FACTOR (loop_vinfo), 1U);
+  bool vf_one_p = known_eq (LOOP_VINFO_VECT_FACTOR (loop_vinfo), 1U);
 
-  if (!ignore_step_p)
+  if (!vf_one_p)
     {
       /* Convert the checks for nonzero steps into bound tests.  */
       tree value;
@@ -3542,6 +3542,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
       bool preserves_scalar_order_p
 	= vect_preserves_scalar_order_p (dr_info_a, dr_info_b);
+      bool ignore_step_p
+	  = (vf_one_p
+	     && (preserves_scalar_order_p
+		 || operand_equal_p (DR_STEP (dr_info_a->dr),
+				     DR_STEP (dr_info_b->dr))));
 
       /* Skip the pair if inter-iteration dependencies are irrelevant
 	 and intra-iteration dependencies are guaranteed to be honored.  */
