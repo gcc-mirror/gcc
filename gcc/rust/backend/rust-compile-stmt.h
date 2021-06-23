@@ -35,27 +35,21 @@ public:
   {
     CompileStmt compiler (ctx);
     stmt->accept_vis (compiler);
-    rust_assert (compiler.ok);
     return compiler.translated;
   }
 
   void visit (HIR::ExprStmtWithBlock &stmt) override
   {
-    ok = true;
     translated = CompileExpr::Compile (stmt.get_expr (), ctx);
   }
 
   void visit (HIR::ExprStmtWithoutBlock &stmt) override
   {
-    ok = true;
     translated = CompileExpr::Compile (stmt.get_expr (), ctx);
   }
 
   void visit (HIR::LetStmt &stmt) override
   {
-    // marks that the statement has been looked at
-    ok = true;
-
     // nothing to do
     if (!stmt.has_init_expr ())
       return;
@@ -96,11 +90,8 @@ public:
   }
 
 private:
-  CompileStmt (Context *ctx)
-    : HIRCompileBase (ctx), ok (false), translated (nullptr)
-  {}
+  CompileStmt (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
 
-  bool ok;
   Bexpression *translated;
 };
 

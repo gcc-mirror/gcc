@@ -342,6 +342,8 @@ public:
     : BaseType (ref, ty_ref, TypeKind::TUPLE, refs), fields (fields)
   {}
 
+  static TupleType *get_unit_type (HirId ref) { return new TupleType (ref); }
+
   void accept_vis (TyVisitor &vis) override;
 
   bool is_unit () const override { return this->fields.empty (); }
