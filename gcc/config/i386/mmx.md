@@ -2331,6 +2331,19 @@
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")])
 
+;; XOP permute instructions
+(define_insn "mmx_ppermv64"
+  [(set (match_operand:V8QI 0 "register_operand" "=x")
+	(unspec:V8QI
+	  [(match_operand:V8QI 1 "register_operand" "x")
+	   (match_operand:V8QI 2 "register_operand" "x")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "xm")]
+	  UNSPEC_XOP_PERMUTE))]
+  "TARGET_XOP && TARGET_MMX_WITH_SSE"
+  "vpperm\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "sse4arg")
+   (set_attr "mode" "TI")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel integral logical operations
