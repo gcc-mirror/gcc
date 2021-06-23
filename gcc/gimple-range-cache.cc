@@ -846,20 +846,9 @@ ranger_cache::register_dependency (tree name, tree dep)
 bool
 ranger_cache::push_poor_value (basic_block bb, tree name)
 {
-  if (m_poor_value_list.length ())
-    {
-      // Don't push anything else to the same block.  If there are multiple 
-      // things required, another request will come during a later evaluation
-      // and this prevents oscillation building uneccessary depth.
-      if ((m_poor_value_list.last ()).bb == bb)
-	return false;
-    }
-
-  struct update_record rec;
-  rec.bb = bb;
-  rec.calc = name;
-  m_poor_value_list.safe_push (rec);
-  return true;
+  // Disable poor value processing for GCC 11.  It has been disabled in GCC 12
+  // as adding too much churn/compile time for too little benefit.
+  return false;
 }
 
 //  Provide lookup for the gori-computes class to access the best known range
