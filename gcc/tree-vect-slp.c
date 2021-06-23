@@ -3467,11 +3467,27 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
   return opt_result::success ();
 }
 
+struct slpg_vertex
+{
+  slpg_vertex (slp_tree node_)
+    : node (node_), visited (0), perm_out (0), materialize (0) {}
+
+  int get_perm_in () const { return materialize ? materialize : perm_out; }
+
+  slp_tree node;
+  unsigned visited : 1;
+  /* The permutation on the outgoing lanes (towards SLP parents).  */
+  int perm_out;
+  /* The permutation that is applied by this node.  perm_out is
+     relative to this.  */
+  int materialize;
+};
+
 /* Fill the vertices and leafs vector with all nodes in the SLP graph.  */
 
 static void
 vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
-			 vec<slp_tree> &vertices, vec<int> &leafs)
+			 vec<slpg_vertex> &vertices, vec<int> &leafs)
 {
   unsigned i;
   slp_tree child;
@@ -3480,7 +3496,7 @@ vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
     return;
 
   node->vertex = vertices.length ();
-  vertices.safe_push (node);
+  vertices.safe_push (slpg_vertex (node));
 
   bool leaf = true;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
@@ -3496,7 +3512,7 @@ vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
 /* Fill the vertices and leafs vector with all nodes in the SLP graph.  */
 
 static void
-vect_slp_build_vertices (vec_info *info, vec<slp_tree> &vertices,
+vect_slp_build_vertices (vec_info *info, vec<slpg_vertex> &vertices,
 			 vec<int> &leafs)
 {
   hash_set<slp_tree> visited;
@@ -3568,39 +3584,28 @@ vect_optimize_slp (vec_info *vinfo)
 
   slp_tree node;
   unsigned i;
-  auto_vec<slp_tree> vertices;
+  auto_vec<slpg_vertex> vertices;
   auto_vec<int> leafs;
   vect_slp_build_vertices (vinfo, vertices, leafs);
 
   struct graph *slpg = new_graph (vertices.length ());
-  FOR_EACH_VEC_ELT (vertices, i, node)
-    {
-      unsigned j;
-      slp_tree child;
-      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
-	if (child)
-	  add_edge (slpg, i, child->vertex);
-    }
+  for (slpg_vertex &v : vertices)
+    for (slp_tree child : SLP_TREE_CHILDREN (v.node))
+      if (child)
+	add_edge (slpg, v.node->vertex, child->vertex);
 
   /* Compute (reverse) postorder on the inverted graph.  */
   auto_vec<int> ipo;
   graphds_dfs (slpg, &leafs[0], leafs.length (), &ipo, false, NULL, NULL);
 
-  auto_sbitmap n_visited (vertices.length ());
-  auto_sbitmap n_materialize (vertices.length ());
-  auto_vec<int> n_perm (vertices.length ());
   auto_vec<vec<unsigned> > perms;
-
-  bitmap_clear (n_visited);
-  bitmap_clear (n_materialize);
-  n_perm.quick_grow_cleared (vertices.length ());
   perms.safe_push (vNULL); /* zero is no permute */
 
   /* Produce initial permutations.  */
   for (i = 0; i < leafs.length (); ++i)
     {
       int idx = leafs[i];
-      slp_tree node = vertices[idx];
+      slp_tree node = vertices[idx].node;
 
       /* Handle externals and constants optimistically throughout the
 	 iteration.  */
@@ -3611,7 +3616,7 @@ vect_optimize_slp (vec_info *vinfo)
       /* Leafs do not change across iterations.  Note leafs also double
 	 as entries to the reverse graph.  */
       if (!slpg->vertices[idx].succ)
-	bitmap_set_bit (n_visited, idx);
+	vertices[idx].visited = 1;
       /* Loads are the only thing generating permutes.  */
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
@@ -3660,7 +3665,7 @@ vect_optimize_slp (vec_info *vinfo)
       for (unsigned j = 0; j < SLP_TREE_LANES (node); ++j)
 	perm[j] = SLP_TREE_LOAD_PERMUTATION (node)[j] - imin;
       perms.safe_push (perm);
-      n_perm[idx] = perms.length () - 1;
+      vertices[idx].perm_out = perms.length () - 1;
     }
 
   /* Propagate permutes along the graph and compute materialization points.  */
@@ -3674,13 +3679,13 @@ vect_optimize_slp (vec_info *vinfo)
       for (i = vertices.length (); i > 0 ; --i)
 	{
 	  int idx = ipo[i-1];
-	  slp_tree node = vertices[idx];
+	  slp_tree node = vertices[idx].node;
 	  /* For leafs there's nothing to do - we've seeded permutes
 	     on those above.  */
 	  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
 	    continue;
 
-	  bitmap_set_bit (n_visited, idx);
+	  vertices[idx].visited = 1;
 
 	  /* We cannot move a permute across a store.  */
 	  if (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))
@@ -3698,13 +3703,9 @@ vect_optimize_slp (vec_info *vinfo)
 		 permutes we have to verify the permute, when unifying lanes,
 		 will not unify different constants.  For example see
 		 gcc.dg/vect/bb-slp-14.c for a case that would break.  */
-	      if (!bitmap_bit_p (n_visited, succ_idx))
+	      if (!vertices[succ_idx].visited)
 		continue;
-	      int succ_perm = n_perm[succ_idx];
-	      /* Once we materialize succs permutation its output lanes
-		 appear unpermuted to us.  */
-	      if (bitmap_bit_p (n_materialize, succ_idx))
-		succ_perm = 0;
+	      int succ_perm = vertices[succ_idx].perm_out;
 	      if (perm == -1)
 		perm = succ_perm;
 	      else if (succ_perm == 0)
@@ -3721,15 +3722,20 @@ vect_optimize_slp (vec_info *vinfo)
 
 	  if (perm == -1)
 	    /* Pick up pre-computed leaf values.  */
-	    perm = n_perm[idx];
-	  else if (!vect_slp_perms_eq (perms, perm, n_perm[idx]))
+	    perm = vertices[idx].perm_out;
+	  else if (!vect_slp_perms_eq (perms, perm,
+				       vertices[idx].get_perm_in ()))
 	    {
 	      if (iteration > 1)
 		/* Make sure we eventually converge.  */
 		gcc_checking_assert (perm == 0);
-	      n_perm[idx] = perm;
 	      if (perm == 0)
-		bitmap_clear_bit (n_materialize, idx);
+		{
+		  vertices[idx].perm_out = 0;
+		  vertices[idx].materialize = 0;
+		}
+	      if (!vertices[idx].materialize)
+		vertices[idx].perm_out = perm;
 	      changed = true;
 	    }
 
@@ -3756,8 +3762,8 @@ vect_optimize_slp (vec_info *vinfo)
 	    for (graph_edge *pred = slpg->vertices[idx].pred;
 		 pred; pred = pred->pred_next)
 	      {
-		gcc_checking_assert (bitmap_bit_p (n_visited, pred->src));
-		int pred_perm = n_perm[pred->src];
+		gcc_checking_assert (vertices[pred->src].visited);
+		int pred_perm = vertices[pred->src].get_perm_in ();
 		if (!vect_slp_perms_eq (perms, perm, pred_perm))
 		  {
 		    all_preds_permuted = false;
@@ -3766,9 +3772,10 @@ vect_optimize_slp (vec_info *vinfo)
 	      }
 	  if (!all_preds_permuted)
 	    {
-	      if (!bitmap_bit_p (n_materialize, idx))
+	      if (!vertices[idx].materialize)
 		changed = true;
-	      bitmap_set_bit (n_materialize, idx);
+	      vertices[idx].materialize = perm;
+	      vertices[idx].perm_out = 0;
 	    }
 	}
     }
@@ -3777,11 +3784,11 @@ vect_optimize_slp (vec_info *vinfo)
   /* Materialize.  */
   for (i = 0; i < vertices.length (); ++i)
     {
-      int perm = n_perm[i];
+      int perm = vertices[i].get_perm_in ();
       if (perm <= 0)
 	continue;
 
-      slp_tree node = vertices[i];
+      slp_tree node = vertices[i].node;
 
       /* First permute invariant/external original successors.  */
       unsigned j;
@@ -3808,7 +3815,7 @@ vect_optimize_slp (vec_info *vinfo)
 			    SLP_TREE_SCALAR_OPS (child), true);
 	}
 
-      if (bitmap_bit_p (n_materialize, i))
+      if (vertices[i].materialize)
 	{
 	  if (SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	    /* For loads simply drop the permutation, the load permutation
@@ -3897,7 +3904,7 @@ vect_optimize_slp (vec_info *vinfo)
   /* Now elide load permutations that are not necessary.  */
   for (i = 0; i < leafs.length (); ++i)
     {
-      node = vertices[leafs[i]];
+      node = vertices[leafs[i]].node;
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
 
