@@ -1606,13 +1606,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// [1] https://github.com/cassioneri/calendar
 	// [2] https://accu.org/journals/overload/28/155/overload155.pdf#page=16
 
+	// Furthermore, if y%100 != 0, then y%400==0 is equivalent to y%16==0,
+	// so we can rearrange the expression to (mult_100 ? y % 4 : y % 16)==0
+	// which is equivalent to (y & (mult_100 ? 15 : 3)) == 0.
+	// See https://gcc.gnu.org/pipermail/libstdc++/2021-June/052815.html
+
 	constexpr uint32_t __multiplier   = 42949673;
 	constexpr uint32_t __bound        = 42949669;
 	constexpr uint32_t __max_dividend = 1073741799;
 	constexpr uint32_t __offset       = __max_dividend / 2 / 100 * 100;
 	const bool __is_multiple_of_100
 	  = __multiplier * (_M_y + __offset) < __bound;
-	return (!__is_multiple_of_100 || _M_y % 400 == 0) && _M_y % 4 == 0;
+	return (_M_y & (__is_multiple_of_100 ? 15 : 3)) == 0;
       }
 
       explicit constexpr
