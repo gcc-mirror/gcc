@@ -1974,8 +1974,7 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
   local_vars_transform *lvd = (local_vars_transform *) d;
 
   /* For each var in this bind expr (that has a frame id, which means it was
-     accessed), build a frame reference for each and then walk the bind expr
-     statements, substituting the frame ref for the original var.  */
+     accessed), build a frame reference and add it as the DECL_VALUE_EXPR.  */
 
   if (TREE_CODE (*stmt) == BIND_EXPR)
     {
@@ -1991,13 +1990,9 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  /* Re-write the variable's context to be in the actor func.  */
 	  DECL_CONTEXT (lvar) = lvd->context;
 
-	/* For capture proxies, this could include the decl value expr.  */
-	if (local_var.is_lambda_capture || local_var.has_value_expr_p)
-	  {
-	    tree ve = DECL_VALUE_EXPR (lvar);
-	    cp_walk_tree (&ve, transform_local_var_uses, d, NULL);
+	  /* For capture proxies, this could include the decl value expr.  */
+	  if (local_var.is_lambda_capture || local_var.has_value_expr_p)
 	    continue; /* No frame entry for this.  */
-	  }
 
 	  /* TODO: implement selective generation of fields when vars are
 	     known not-used.  */
@@ -2011,103 +2006,13 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  tree fld_idx = build3_loc (lvd->loc, COMPONENT_REF, TREE_TYPE (lvar),
 				     lvd->actor_frame, fld_ref, NULL_TREE);
 	  local_var.field_idx = fld_idx;
-	}
-      /* FIXME: we should be able to do this in the loop above, but (at least
-	 for range for) there are cases where the DECL_INITIAL contains
-	 forward references.
-	 So, now we've built the revised var in the frame, substitute uses of
-	 it in initializers and the bind expr body.  */
-      for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
-	   lvar = DECL_CHAIN (lvar))
-	{
-	  /* we need to walk some of the decl trees, which might contain
-	     references to vars replaced at a higher level.  */
-	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses, d,
-			NULL);
-	  cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses, d, NULL);
-	  cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses, d,
-			NULL);
+	  SET_DECL_VALUE_EXPR (lvar, fld_idx);
+	  DECL_HAS_VALUE_EXPR_P (lvar) = true;
 	}
       cp_walk_tree (&BIND_EXPR_BODY (*stmt), transform_local_var_uses, d, NULL);
-
-      /* Now we have processed and removed references to the original vars,
-	 we can drop those from the bind - leaving capture proxies alone.  */
-      for (tree *pvar = &BIND_EXPR_VARS (*stmt); *pvar != NULL;)
-	{
-	  bool existed;
-	  local_var_info &local_var
-	    = lvd->local_var_uses->get_or_insert (*pvar, &existed);
-	  gcc_checking_assert (existed);
-
-	  /* Leave lambda closure captures alone, we replace the *this
-	     pointer with the frame version and let the normal process
-	     deal with the rest.
-	     Likewise, variables with their value found elsewhere.
-	     Skip past unused ones too.  */
-	  if (local_var.is_lambda_capture
-	     || local_var.has_value_expr_p
-	     || local_var.field_id == NULL_TREE)
-	    {
-	      pvar = &DECL_CHAIN (*pvar);
-	      continue;
-	    }
-
-	  /* Discard this one, we replaced it.  */
-	  *pvar = DECL_CHAIN (*pvar);
-	}
-
       *do_subtree = 0; /* We've done the body already.  */
       return NULL_TREE;
     }
-
-  tree var_decl = *stmt;
-  /* Look inside cleanups, we don't want to wrap a statement list in a
-     cleanup.  */
-  bool needs_cleanup = true;
-  if (TREE_CODE (var_decl) == CLEANUP_POINT_EXPR)
-    var_decl = TREE_OPERAND (var_decl, 0);
-  else
-    needs_cleanup = false;
-
-  /* Look inside the decl_expr for the actual var.  */
-  bool decl_expr_p = TREE_CODE (var_decl) == DECL_EXPR;
-  if (decl_expr_p && TREE_CODE (DECL_EXPR_DECL (var_decl)) == VAR_DECL)
-    var_decl = DECL_EXPR_DECL (var_decl);
-  else if (TREE_CODE (var_decl) != VAR_DECL)
-    return NULL_TREE;
-
-  /* VAR_DECLs that are not recorded can belong to the proxies we've placed
-     for the promise and coroutine handle(s), to global vars or to compiler
-     temporaries.  Skip past these, we will handle them later.  */
-  local_var_info *local_var_i = lvd->local_var_uses->get (var_decl);
-
-  if (local_var_i == NULL)
-    return NULL_TREE;
-
-  if (local_var_i->is_lambda_capture
-      || local_var_i->is_static
-      || local_var_i->has_value_expr_p)
-    return NULL_TREE;
-
-  /* This is our revised 'local' i.e. a frame slot.  */
-  tree revised = local_var_i->field_idx;
-  gcc_checking_assert (DECL_CONTEXT (var_decl) == lvd->context);
-
-  if (decl_expr_p && DECL_INITIAL (var_decl))
-    {
-      location_t loc = DECL_SOURCE_LOCATION (var_decl);
-      tree r
-	= cp_build_modify_expr (loc, revised, INIT_EXPR,
-				DECL_INITIAL (var_decl), tf_warning_or_error);
-      if (needs_cleanup)
-	r = coro_build_cvt_void_expr_stmt (r, EXPR_LOCATION (*stmt));
-      *stmt = r;
-    }
-  else
-    *stmt = revised;
-
-  if (decl_expr_p)
-    *do_subtree = 0; /* We've accounted for the nested use.  */
   return NULL_TREE;
 }
 
