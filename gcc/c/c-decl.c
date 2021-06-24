@@ -1295,7 +1295,7 @@ pop_scope (void)
 	case VAR_DECL:
 	  /* Warnings for unused variables.  */
 	  if ((!TREE_USED (p) || !DECL_READ_P (p))
-	      && !TREE_NO_WARNING (p)
+	      && !warning_suppressed_p (p, OPT_Wunused_but_set_variable)
 	      && !DECL_IN_SYSTEM_HEADER (p)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p)
@@ -2159,8 +2159,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 
       if (DECL_IN_SYSTEM_HEADER (newdecl)
 	  || DECL_IN_SYSTEM_HEADER (olddecl)
-	  || TREE_NO_WARNING (newdecl)
-	  || TREE_NO_WARNING (olddecl))
+	  || warning_suppressed_p (newdecl, OPT_Wpedantic)
+	  || warning_suppressed_p (olddecl, OPT_Wpedantic))
 	return true;  /* Allow OLDDECL to continue in use.  */
 
       if (variably_modified_type_p (newtype, NULL))
@@ -2956,7 +2956,7 @@ duplicate_decls (tree newdecl, tree olddecl)
   if (!diagnose_mismatched_decls (newdecl, olddecl, &newtype, &oldtype))
     {
       /* Avoid `unused variable' and other warnings for OLDDECL.  */
-      TREE_NO_WARNING (olddecl) = 1;
+      suppress_warning (olddecl, OPT_Wunused);
       return false;
     }
 
@@ -7543,10 +7543,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			   FIELD_DECL, declarator->u.id.id, type);
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
 	if (bitfield && !declarator->u.id.id)
-	  {
-	    TREE_NO_WARNING (decl) = 1;
-	    DECL_PADDING_P (decl) = 1;
-	  }
+	  DECL_PADDING_P (decl) = 1;
 
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
@@ -10244,7 +10241,7 @@ finish_function (location_t end_loc)
       && targetm.warn_func_return (fndecl)
       && warning (OPT_Wreturn_type,
 		  "no return statement in function returning non-void"))
-    TREE_NO_WARNING (fndecl) = 1;
+    suppress_warning (fndecl, OPT_Wreturn_type);
 
   /* Complain about parameters that are only set, but never otherwise used.  */
   if (warn_unused_but_set_parameter)
@@ -10259,7 +10256,7 @@ finish_function (location_t end_loc)
 	    && !DECL_READ_P (decl)
 	    && DECL_NAME (decl)
 	    && !DECL_ARTIFICIAL (decl)
-	    && !TREE_NO_WARNING (decl))
+	    && !warning_suppressed_p (decl, OPT_Wunused_but_set_parameter))
 	  warning_at (DECL_SOURCE_LOCATION (decl),
 		      OPT_Wunused_but_set_parameter,
 		      "parameter %qD set but not used", decl);
@@ -12126,19 +12123,20 @@ c_write_global_declarations_1 (tree globals)
 	{
 	  if (C_DECL_USED (decl))
 	    {
+	      /* TODO: Add OPT_Wundefined-inline.  */
 	      if (pedwarn (input_location, 0, "%q+F used but never defined",
 			   decl))
-		TREE_NO_WARNING (decl) = 1;
+		suppress_warning (decl /* OPT_Wundefined-inline.  */);
 	    }
 	  /* For -Wunused-function warn about unused static prototypes.  */
 	  else if (warn_unused_function
 		   && ! DECL_ARTIFICIAL (decl)
-		   && ! TREE_NO_WARNING (decl))
+		   && ! warning_suppressed_p (decl, OPT_Wunused_function))
 	    {
 	      if (warning (OPT_Wunused_function,
 			   "%q+F declared %<static%> but never defined",
 			   decl))
-		TREE_NO_WARNING (decl) = 1;
+		suppress_warning (decl, OPT_Wunused_function);
 	    }
 	}
 

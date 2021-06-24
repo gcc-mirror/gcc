@@ -7558,7 +7558,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after,
     ret.original_code = MODIFY_EXPR;
   else
     {
-      TREE_NO_WARNING (ret.value) = 1;
+      suppress_warning (ret.value, OPT_Wparentheses);
       ret.original_code = ERROR_MARK;
     }
   ret.original_type = NULL;
@@ -9088,7 +9088,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  expr = c_parser_expression (parser);
 	  if (TREE_CODE (expr.value) == MODIFY_EXPR)
-	    TREE_NO_WARNING (expr.value) = 1;
+	    suppress_warning (expr.value, OPT_Wparentheses);
 	  if (expr.original_code != C_MAYBE_CONST_EXPR
 	      && expr.original_code != SIZEOF_EXPR)
 	    expr.original_code = ERROR_MARK;
