@@ -5417,13 +5417,23 @@ if test x"$insn" != x; then
  gcc_GAS_CHECK_FEATURE([--gdwarf-5 option],
   gcc_cv_as_gdwarf_5_flag,
   [elf,2,36,0], [--gdwarf-5], [$insn],
-  [if test x$gcc_cv_readelf != x \
-      && $gcc_cv_readelf -wi conftest.o 2>&1 \
+  [if test x$gcc_cv_objdump != x \
+      && $gcc_cv_objdump -Wi conftest.o 2>&1 \
 	 | grep DW_TAG_compile_unit > /dev/null 2>&1; then
      gcc_cv_as_gdwarf_5_flag=yes;
    fi],[AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
 [Define if your assembler supports the --gdwarf-5 option.])])
 
+ case $target_os in
+   win32 | pe | cygwin* | mingw32*)
+     section_flags=\"dr\"
+     function_type=".def foo; .scl 2; .type 32; .endef"
+     function_size="";;
+   *)
+     section_flags=\"\",%progbits
+     function_type=".type foo, %function"
+     function_size=".size foo, .-foo";;
+ esac
  dwarf4_debug_info_size=0x46
  dwarf4_high_pc_form=7
  dwarf4_debug_aranges_size=0x2c
@@ -5435,16 +5445,16 @@ if test x"$insn" != x; then
 .Ltext0:
 	.p2align 4
 	.globl	foo
-	.type	foo, %function
+	$function_type
 foo:
 .LFB0:
 .LM1:
 	$insn
 .LM2:
 .LFE0:
-	.size	foo, .-foo
+	$function_size
 .Letext0:
-	.section	.debug_info,\"\",%progbits
+	.section	.debug_info,$section_flags
 .Ldebug_info0:
 	.4byte	$dwarf4_debug_info_size
 	.2byte	0x4
@@ -5468,7 +5478,7 @@ foo:
 	.byte	0x1
 	.byte	0x9c
 	.byte	0
-	.section	.debug_abbrev,\"\",%progbits
+	.section	.debug_abbrev,$section_flags
 .Ldebug_abbrev0:
 	.byte	0x1
 	.byte	0x11
@@ -5511,7 +5521,7 @@ foo:
 	.byte	0
 	.byte	0
 	.byte	0
-	.section	.debug_aranges,\"\",%progbits
+	.section	.debug_aranges,$section_flags
 	.4byte	$dwarf4_debug_aranges_size
 	.2byte	0x2
 	.4byte	.Ldebug_info0
@@ -5523,7 +5533,7 @@ foo:
 	.${dwarf4_addr_size}byte	.Letext0-.Ltext0
 	.${dwarf4_addr_size}byte	0
 	.${dwarf4_addr_size}byte	0
-	.section	.debug_line,\"\",%progbits
+	.section	.debug_line,$section_flags
 .Ldebug_line0:
 	.4byte	.LELT0-.LSLT0
 .LSLT0:
@@ -5577,7 +5587,7 @@ foo:
 	.byte	0x1
 	.byte	0x1
 .LELT0:
-	.section	.debug_str,\"\",%progbits
+	.section	.debug_str,$section_flags
 	.ident	\"GCC\"
 "
    dwarf4_success=no
@@ -5633,10 +5643,10 @@ foo:
    conftest_s="\
 	.text
 	.globl	foo
-	.type	foo, %function
+	$function_type
 foo:
 	$insn
-	.size	foo, .-foo
+	$function_size
 	.file	1 \"foo.c\"
 "
    gcc_GAS_CHECK_FEATURE([working --gdwarf-4/--gdwarf-5 for all sources],
@@ -5644,8 +5654,8 @@ foo:
      [--gdwarf-4],
      [$conftest_s],
      [changequote(,)dnl
-      if test x$gcc_cv_readelf != x \
-	 && $gcc_cv_readelf -w conftest.o 2>&1 \
+      if test x$gcc_cv_objdump != x \
+	 && $gcc_cv_objdump -W conftest.o 2>&1 \
 		| grep conftest.s > /dev/null 2>&1; then
 	gcc_cv_as_working_gdwarf_n_flag=no
       else
