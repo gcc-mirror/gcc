@@ -4438,7 +4438,12 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   FOR_EACH_CONSTRUCTOR_ELT (v, i, index, value)
     {
       tree orig_value = value;
-      init_subob_ctx (ctx, new_ctx, index, value);
+      /* Like in cxx_eval_store_expression, omit entries for empty fields.  */
+      bool no_slot = TREE_CODE (type) == RECORD_TYPE && is_empty_field (index);
+      if (no_slot)
+	new_ctx = *ctx;
+      else
+	init_subob_ctx (ctx, new_ctx, index, value);
       int pos_hint = -1;
       if (new_ctx.ctor != ctx->ctor)
 	{
@@ -4484,6 +4489,8 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (index))));
 	  changed = true;
 	}
+      else if (no_slot)
+	changed = true;
       else
 	{
 	  if (TREE_CODE (type) == UNION_TYPE
