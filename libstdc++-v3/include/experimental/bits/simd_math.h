@@ -119,10 +119,10 @@ template <typename _Up, typename _Tp, typename _Abi>
 
 //}}}
 // _GLIBCXX_SIMD_MATH_CALL2_ {{{
-#define _GLIBCXX_SIMD_MATH_CALL2_(__name, arg2_)                               \
+#define _GLIBCXX_SIMD_MATH_CALL2_(__name, __arg2)                              \
 template <                                                                     \
   typename _Tp, typename _Abi, typename...,                                    \
-  typename _Arg2 = _Extra_argument_type<arg2_, _Tp, _Abi>,                     \
+  typename _Arg2 = _Extra_argument_type<__arg2, _Tp, _Abi>,                    \
   typename _R = _Math_return_type_t<                                           \
     decltype(std::__name(declval<double>(), _Arg2::declval())), _Tp, _Abi>>    \
   enable_if_t<is_floating_point_v<_Tp>, _R>                                    \
@@ -137,7 +137,7 @@ template <typename _Up, typename _Tp, typename _Abi>                           \
       declval<double>(),                                                       \
       declval<enable_if_t<                                                     \
 	conjunction_v<                                                         \
-	  is_same<arg2_, _Tp>,                                                 \
+	  is_same<__arg2, _Tp>,                                                \
 	  negation<is_same<__remove_cvref_t<_Up>, simd<_Tp, _Abi>>>,           \
 	  is_convertible<_Up, simd<_Tp, _Abi>>, is_floating_point<_Tp>>,       \
 	double>>())),                                                          \
@@ -147,10 +147,10 @@ template <typename _Up, typename _Tp, typename _Abi>                           \
 
 // }}}
 // _GLIBCXX_SIMD_MATH_CALL3_ {{{
-#define _GLIBCXX_SIMD_MATH_CALL3_(__name, arg2_, arg3_)                        \
+#define _GLIBCXX_SIMD_MATH_CALL3_(__name, __arg2, __arg3)                      \
 template <typename _Tp, typename _Abi, typename...,                            \
-	  typename _Arg2 = _Extra_argument_type<arg2_, _Tp, _Abi>,             \
-	  typename _Arg3 = _Extra_argument_type<arg3_, _Tp, _Abi>,             \
+	  typename _Arg2 = _Extra_argument_type<__arg2, _Tp, _Abi>,            \
+	  typename _Arg3 = _Extra_argument_type<__arg3, _Tp, _Abi>,            \
 	  typename _R = _Math_return_type_t<                                   \
 	    decltype(std::__name(declval<double>(), _Arg2::declval(),          \
 				 _Arg3::declval())),                           \
