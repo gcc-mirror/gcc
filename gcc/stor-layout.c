@@ -2086,7 +2086,10 @@ finish_bitfield_representative (tree repr, tree field)
       /* If there was an error, the field may be not laid out
          correctly.  Don't bother to do anything.  */
       if (TREE_TYPE (nextf) == error_mark_node)
-	return;
+	{
+	  TREE_TYPE (repr) = error_mark_node;
+	  return;
+	}
       maxsize = size_diffop (DECL_FIELD_OFFSET (nextf),
 			     DECL_FIELD_OFFSET (repr));
       if (tree_fits_uhwi_p (maxsize))
