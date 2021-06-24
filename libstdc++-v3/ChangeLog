@@ -1,3 +1,70 @@
+2021-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101174
+	* testsuite/23_containers/multiset/cons/deduction.cc:
+	Uncomment CTAD example that was rejected by this bug.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+
+2021-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (chrono::year::is_leap()): Fix incorrect
+	logic in comment.
+
+2021-06-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/README.md: New file.
+
+2021-06-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/driver.sh: Rewrite output
+	verbosity logic. Add -p/--percentage option. Allow -v/--verbose
+	to be used twice. Add -x and -o short options. Parse long
+	options with = instead of separating space generically. Parce
+	contracted short options. Make unrecognized options an error.
+	If same-line output is active, trap on EXIT to increment the
+	progress (only with --percentage), erase the line and print the
+	current status.
+	* testsuite/experimental/simd/generate_makefile.sh: Initialize
+	helper files for progress account keeping. Update help target
+	for changes to DRIVEROPTS.
+
+2021-06-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/Makefile.am (check-simd): Remove -fno-tree-vrp flag
+	and associated warning.
+	* testsuite/Makefile.in: Regenerate.
+
+2021-06-23  Cassio Neri  <cassio.neri@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+
+	* include/std/chrono (chrono::year::is_leap()): Optimize.
+
+2021-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/86439
+	* testsuite/23_containers/map/cons/deduction.cc: Replace ambiguous
+	CTAD examples.
+	* testsuite/23_containers/multimap/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/deduction.cc: Likewise.
+	Mention one of the replaced examples is broken due to PR101174.
+	* testsuite/23_containers/set/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: Replace
+	ambiguous CTAD examples.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc: Likewise.
+
+2021-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/mutex (__detail::__try_lock_impl): Rename
+	parameter to avoid clashing with newlib's __lockable macro.
+	(try_lock): Add 'inline' specifier.
+	* testsuite/17_intro/names.cc: Add check for __lockable.
+	* testsuite/30_threads/try_lock/5.cc: Add options for pthreads.
+
 2021-06-22  Jonathan Wakely  <jwakely@redhat.com>
 	    Matthias Kretz  <m.kretz@gsi.de>
 

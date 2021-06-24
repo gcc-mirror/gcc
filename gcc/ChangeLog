@@ -1,3 +1,148 @@
+2021-06-23  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* doc/lto.texi (Design Overview): Update that slim objects are
+	the default.
+
+2021-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def: Take OPTION_MASK_PCREL_OPT out
+	of OTHER_POWER10_MASKS so it will not be enabled by default.
+
+2021-06-23  Richard Biener  <rguenther@suse.de>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* tree-inline.c (setup_one_parameter): Set TREE_READONLY of the
+	param replacement unconditionally.  Adjust comment.
+
+2021-06-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-range-fold.o
+	* gimple-range-fold.cc: New.
+	* gimple-range-fold.h: New.
+	* gimple-range-gori.cc (gimple_range_calc_op1): Move to here.
+	(gimple_range_calc_op2): Ditto.
+	* gimple-range-gori.h: Move prototypes to here.
+	* gimple-range.cc: Adjust include files.
+	(fur_source:fur_source): Relocate to gimple-range-fold.cc.
+	(fur_source::get_operand): Ditto.
+	(fur_source::get_phi_operand): Ditto.
+	(fur_source::query_relation): Ditto.
+	(fur_source::register_relation): Ditto.
+	(class fur_edge): Ditto.
+	(fur_edge::fur_edge): Ditto.
+	(fur_edge::get_operand): Ditto.
+	(fur_edge::get_phi_operand): Ditto.
+	(fur_stmt::fur_stmt): Ditto.
+	(fur_stmt::get_operand): Ditto.
+	(fur_stmt::get_phi_operand): Ditto.
+	(fur_stmt::query_relation): Ditto.
+	(class fur_depend): Relocate to gimple-range-fold.h.
+	(fur_depend::fur_depend): Relocate to gimple-range-fold.cc.
+	(fur_depend::register_relation): Ditto.
+	(fur_depend::register_relation): Ditto.
+	(class fur_list): Ditto.
+	(fur_list::fur_list): Ditto.
+	(fur_list::get_operand): Ditto.
+	(fur_list::get_phi_operand): Ditto.
+	(fold_range): Ditto.
+	(adjust_pointer_diff_expr): Ditto.
+	(gimple_range_adjustment): Ditto.
+	(gimple_range_base_of_assignment): Ditto.
+	(gimple_range_operand1): Ditto.
+	(gimple_range_operand2): Ditto.
+	(gimple_range_calc_op1): Relocate to gimple-range-gori.cc.
+	(gimple_range_calc_op2): Ditto.
+	(fold_using_range::fold_stmt): Relocate to gimple-range-fold.cc.
+	(fold_using_range::range_of_range_op): Ditto.
+	(fold_using_range::range_of_address): Ditto.
+	(fold_using_range::range_of_phi): Ditto.
+	(fold_using_range::range_of_call): Ditto.
+	(fold_using_range::range_of_builtin_ubsan_call): Ditto.
+	(fold_using_range::range_of_builtin_call): Ditto.
+	(fold_using_range::range_of_cond_expr): Ditto.
+	(fold_using_range::range_of_ssa_name_with_loop_info): Ditto.
+	(fold_using_range::relation_fold_and_or): Ditto.
+	(fold_using_range::postfold_gcond_edges): Ditto.
+	* gimple-range.h: Add gimple-range-fold.h to include files. Change
+	GIMPLE_RANGE_STMT_H to GIMPLE_RANGE_H.
+	(gimple_range_handler): Relocate to gimple-range-fold.h.
+	(gimple_range_ssa_p): Ditto.
+	(range_compatible_p): Ditto.
+	(class fur_source): Ditto.
+	(class fur_stmt): Ditto.
+	(class fold_using_range): Ditto.
+	(gimple_range_calc_op1): Relocate to gimple-range-gori.h
+	(gimple_range_calc_op2): Ditto.
+
+2021-06-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101148
+	PR tree-optimization/101014
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Adjust.
+	(ranger_cache::~ranger_cache): Adjust.
+	(ranger_cache::block_range): Check if propagation disallowed.
+	(ranger_cache::propagate_cache): Disallow propagation if new value
+	can't be stored properly.
+	* gimple-range-cache.h (ranger_cache::m_propfail): New member.
+
+2021-06-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (class ssa_block_ranges): Adjust prototype.
+	(sbr_vector::set_bb_range): Return true.
+	(class sbr_sparse_bitmap): Adjust.
+	(sbr_sparse_bitmap::set_bb_range): Return value.
+	(block_range_cache::set_bb_range): Return value.
+	(ranger_cache::propagate_cache): Use return value to print msg.
+	* gimple-range-cache.h (class block_range_cache): Adjust.
+
+2021-06-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (dump_bb): Use range_on_edge from the cache.
+
+2021-06-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/logical.md (<code><mode>3<ccnz>): Use <cczn>
+	so this pattern can be used for test/compare removal.  Pass
+	current insn to compute_logical_op_length and output_logical_op.
+	* config/h8300/h8300.c (compute_logical_op_cc): Remove.
+	(h8300_and_costs): Add argument to compute_logical_op_length.
+	(output_logical_op): Add new argument.  Use it to determine if the
+	condition codes are used and adjust the output accordingly.
+	(compute_logical_op_length): Add new argument and update length
+	computations when condition codes are used.
+	* config/h8300/h8300-protos.h (compute_logical_op_length): Update
+	prototype.
+	(output_logical_op): Likewise.
+
+2021-06-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* config/i386/i386-expand.c (expand_vec_perm_pshufb):
+	Handle 64bit modes for TARGET_XOP.  Use indirect gen_* functions.
+	* config/i386/mmx.md (mmx_ppermv64): New insn pattern.
+	* config/i386/i386.md (unspec): Move UNSPEC_XOP_PERMUTE from ...
+	* config/i386/sse.md (unspec): ... here.
+
+2021-06-23  Martin Liska  <mliska@suse.cz>
+
+	PR target/98636
+	* optc-save-gen.awk: Put back arm_fp16_format to
+	checked_options.
+
+2021-06-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101175
+	* config/i386/i386.md (bsr_rex64): Add zero-flag setting RTX.
+	(bsr): Ditto.
+	(*bsrhi): Remove.
+	(clz<mode>2): Update RTX pattern for additions.
+
+2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101167
+	* omp-low.c (lower_omp_regimplify_p): Regimplify also PARM_DECLs
+	and RESULT_DECLs that have DECL_HAS_VALUE_EXPR_P set.
+
 2021-06-22  Sergei Trofimovich  <siarheit@google.com>
 
 	* doc/rtl.texi: drop unbalanced parenthesis.
