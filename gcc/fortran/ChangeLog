@@ -1,3 +1,14 @@
+2021-06-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Fix enum type used
+	for dumping gfc_omp_defaultmap_category.
+
+2021-06-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/100337
+	* trans-intrinsic.c (conv_co_collective): Check stat for null ptr
+	before dereferrencing.
+
 2021-06-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/100283

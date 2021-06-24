@@ -1208,7 +1208,9 @@ enum c_omp_region_type
   C_ORT_OMP			= 1 << 0,
   C_ORT_ACC			= 1 << 1,
   C_ORT_DECLARE_SIMD		= 1 << 2,
-  C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD
+  C_ORT_TARGET			= 1 << 3,
+  C_ORT_OMP_DECLARE_SIMD	= C_ORT_OMP | C_ORT_DECLARE_SIMD,
+  C_ORT_OMP_TARGET		= C_ORT_OMP | C_ORT_TARGET
 };
 
 extern tree c_finish_omp_master (location_t, tree);

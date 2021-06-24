@@ -75,9 +75,11 @@
 				 | OPTION_MASK_P9_VECTOR)
 
 /* Flags that need to be turned off if -mno-power10.  */
+/* We comment out PCREL_OPT here to disable it by default because SPEC2017
+   performance was degraded by it.  */
 #define OTHER_POWER10_MASKS	(OPTION_MASK_MMA			\
 				 | OPTION_MASK_PCREL			\
-				 | OPTION_MASK_PCREL_OPT		\
+				 /* | OPTION_MASK_PCREL_OPT */		\
 				 | OPTION_MASK_PREFIXED)
 
 #define ISA_3_1_MASKS_SERVER	(ISA_3_0_MASKS_SERVER			\

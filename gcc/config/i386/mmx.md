@@ -2639,6 +2639,78 @@
    (set_attr "type" "mmxcvt,sselog,sselog")
    (set_attr "mode" "DI,TI,TI")])
 
+(define_insn "sse4_1_<code>v4qiv4hi2"
+  [(set (match_operand:V4HI 0 "register_operand" "=Yr,*x,Yw")
+	(any_extend:V4HI
+	  (vec_select:V4QI
+	    (match_operand:V8QI 1 "register_operand" "Yr,*x,Yw")
+	    (parallel [(const_int 0) (const_int 1)
+		       (const_int 2) (const_int 3)]))))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "%vpmov<extsuffix>bw\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,maybe_evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "sse4_1_<code>v2hiv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=Yr,*x,v")
+	(any_extend:V2SI
+	  (vec_select:V2HI
+	    (match_operand:V4HI 1 "register_operand" "Yr,*x,v")
+	    (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "%vpmov<extsuffix>wd\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,maybe_evex")
+   (set_attr "mode" "TI")])
+
+;; Pack/unpack vector modes
+(define_mode_attr mmxpackmode
+  [(V4HI "V8QI") (V2SI "V4HI")])
+
+(define_expand "vec_pack_trunc_<mode>"
+  [(match_operand:<mmxpackmode> 0 "register_operand")
+   (match_operand:MMXMODE24 1 "register_operand")
+   (match_operand:MMXMODE24 2 "register_operand")]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx op1 = gen_lowpart (<mmxpackmode>mode, operands[1]);
+  rtx op2 = gen_lowpart (<mmxpackmode>mode, operands[2]);
+  ix86_expand_vec_extract_even_odd (operands[0], op1, op2, 0);
+  DONE;
+})
+
+(define_mode_attr mmxunpackmode
+  [(V8QI "V4HI") (V4HI "V2SI")])
+
+(define_expand "vec_unpacks_lo_<mode>"
+  [(match_operand:<mmxunpackmode> 0 "register_operand")
+   (match_operand:MMXMODE12 1 "register_operand")]
+  "TARGET_MMX_WITH_SSE"
+  "ix86_expand_sse_unpack (operands[0], operands[1], false, false); DONE;")
+
+(define_expand "vec_unpacks_hi_<mode>"
+  [(match_operand:<mmxunpackmode> 0 "register_operand")
+   (match_operand:MMXMODE12 1 "register_operand")]
+  "TARGET_MMX_WITH_SSE"
+  "ix86_expand_sse_unpack (operands[0], operands[1], false, true); DONE;")
+
+(define_expand "vec_unpacku_lo_<mode>"
+  [(match_operand:<mmxunpackmode> 0 "register_operand")
+   (match_operand:MMXMODE12 1 "register_operand")]
+  "TARGET_MMX_WITH_SSE"
+  "ix86_expand_sse_unpack (operands[0], operands[1], true, false); DONE;")
+
+(define_expand "vec_unpacku_hi_<mode>"
+  [(match_operand:<mmxunpackmode> 0 "register_operand")
+   (match_operand:MMXMODE12 1 "register_operand")]
+  "TARGET_MMX_WITH_SSE"
+  "ix86_expand_sse_unpack (operands[0], operands[1], true, true); DONE;")
+
 (define_insn "*mmx_pinsrd"
   [(set (match_operand:V2SI 0 "register_operand" "=x,Yv")
         (vec_merge:V2SI

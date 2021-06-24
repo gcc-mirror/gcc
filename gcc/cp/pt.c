@@ -236,6 +236,10 @@ push_access_scope (tree t)
     push_nested_class (DECL_FRIEND_CONTEXT (t));
   else if (DECL_CLASS_SCOPE_P (t))
     push_nested_class (DECL_CONTEXT (t));
+  else if (deduction_guide_p (t) && DECL_ARTIFICIAL (t))
+    /* An artificial deduction guide should have the same access as
+       the constructor.  */
+    push_nested_class (TREE_TYPE (TREE_TYPE (t)));
   else
     push_to_top_level ();
 
@@ -255,7 +259,9 @@ pop_access_scope (tree t)
   if (TREE_CODE (t) == FUNCTION_DECL)
     current_function_decl = saved_access_scope->pop();
 
-  if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
+  if (DECL_FRIEND_CONTEXT (t)
+      || DECL_CLASS_SCOPE_P (t)
+      || (deduction_guide_p (t) && DECL_ARTIFICIAL (t)))
     pop_nested_class ();
   else
     pop_from_top_level ();
@@ -18880,9 +18886,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case OACC_DATA:
     case OMP_TARGET_DATA:
     case OMP_TARGET:
-      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), (TREE_CODE (t) == OACC_DATA)
-				? C_ORT_ACC : C_ORT_OMP, args, complain,
-				in_decl);
+      tmp = tsubst_omp_clauses (OMP_CLAUSES (t),
+				TREE_CODE (t) == OACC_DATA
+				? C_ORT_ACC
+				: TREE_CODE (t) == OMP_TARGET
+				? C_ORT_OMP_TARGET : C_ORT_OMP,
+				args, complain, in_decl);
       keep_next_level (true);
       stmt = begin_omp_structured_block ();
 
@@ -28804,9 +28813,6 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
     DECL_ABSTRACT_ORIGIN (ded_tmpl) = fn_tmpl;
   if (ci)
     set_constraints (ded_tmpl, ci);
-  /* The artificial deduction guide should have same access as the
-     constructor.  */
-  DECL_CONTEXT (ded_fn) = type;
 
   return ded_tmpl;
 }
@@ -28880,6 +28886,8 @@ is_spec_or_derived (tree etype, tree tmpl)
   return !err;
 }
 
+static tree alias_ctad_tweaks (tree, tree);
+
 /* Return a C++20 aggregate deduction candidate for TYPE initialized from
    INIT.  */
 
@@ -28891,6 +28899,15 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
 
   if (init == NULL_TREE)
     return NULL_TREE;
+
+  if (DECL_ALIAS_TEMPLATE_P (tmpl))
+    {
+      tree under = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+      tree tinfo = get_template_info (under);
+      if (tree guide = maybe_aggr_guide (TI_TEMPLATE (tinfo), init, args))
+	return alias_ctad_tweaks (tmpl, guide);
+      return NULL_TREE;
+    }
 
   /* We might be creating a guide for a class member template, e.g.,
 

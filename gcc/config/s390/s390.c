@@ -13110,33 +13110,25 @@ output_asm_nops (const char *user, int hw)
     }
 }
 
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
+/* Output assembler code to FILE to call a profiler hook.  */
 
 void
-s390_function_profiler (FILE *file, int labelno)
+s390_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
-  rtx op[8];
-
-  char label[128];
-  ASM_GENERATE_INTERNAL_LABEL (label, "LP", labelno);
+  rtx op[4];
 
   fprintf (file, "# function profiler \n");
 
   op[0] = gen_rtx_REG (Pmode, RETURN_REGNUM);
   op[1] = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
   op[1] = gen_rtx_MEM (Pmode, plus_constant (Pmode, op[1], UNITS_PER_LONG));
-  op[7] = GEN_INT (UNITS_PER_LONG);
+  op[3] = GEN_INT (UNITS_PER_LONG);
 
-  op[2] = gen_rtx_REG (Pmode, 1);
-  op[3] = gen_rtx_SYMBOL_REF (Pmode, label);
-  SYMBOL_REF_FLAGS (op[3]) = SYMBOL_FLAG_LOCAL;
-
-  op[4] = gen_rtx_SYMBOL_REF (Pmode, flag_fentry ? "__fentry__" : "_mcount");
+  op[2] = gen_rtx_SYMBOL_REF (Pmode, flag_fentry ? "__fentry__" : "_mcount");
   if (flag_pic)
     {
-      op[4] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[4]), UNSPEC_PLT);
-      op[4] = gen_rtx_CONST (Pmode, op[4]);
+      op[2] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[2]), UNSPEC_PLT);
+      op[2] = gen_rtx_CONST (Pmode, op[2]);
     }
 
   if (flag_record_mcount)
@@ -13150,20 +13142,19 @@ s390_function_profiler (FILE *file, int labelno)
 	warning (OPT_Wcannot_profile, "nested functions cannot be profiled "
 		 "with %<-mfentry%> on s390");
       else
-	output_asm_insn ("brasl\t0,%4", op);
+	output_asm_insn ("brasl\t0,%2", op);
     }
   else if (TARGET_64BIT)
     {
       if (flag_nop_mcount)
-	output_asm_nops ("-mnop-mcount", /* stg */ 3 + /* larl */ 3 +
-			 /* brasl */ 3 + /* lg */ 3);
+	output_asm_nops ("-mnop-mcount", /* stg */ 3 + /* brasl */ 3 +
+			 /* lg */ 3);
       else
 	{
 	  output_asm_insn ("stg\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
-	    output_asm_insn (".cfi_rel_offset\t%0,%7", op);
-	  output_asm_insn ("larl\t%2,%3", op);
-	  output_asm_insn ("brasl\t%0,%4", op);
+	    output_asm_insn (".cfi_rel_offset\t%0,%3", op);
+	  output_asm_insn ("brasl\t%0,%2", op);
 	  output_asm_insn ("lg\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
 	    output_asm_insn (".cfi_restore\t%0", op);
@@ -13172,15 +13163,14 @@ s390_function_profiler (FILE *file, int labelno)
   else
     {
       if (flag_nop_mcount)
-	output_asm_nops ("-mnop-mcount", /* st */ 2 + /* larl */ 3 +
-			 /* brasl */ 3 + /* l */ 2);
+	output_asm_nops ("-mnop-mcount", /* st */ 2 + /* brasl */ 3 +
+			 /* l */ 2);
       else
 	{
 	  output_asm_insn ("st\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
-	    output_asm_insn (".cfi_rel_offset\t%0,%7", op);
-	  output_asm_insn ("larl\t%2,%3", op);
-	  output_asm_insn ("brasl\t%0,%4", op);
+	    output_asm_insn (".cfi_rel_offset\t%0,%3", op);
+	  output_asm_insn ("brasl\t%0,%2", op);
 	  output_asm_insn ("l\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
 	    output_asm_insn (".cfi_restore\t%0", op);

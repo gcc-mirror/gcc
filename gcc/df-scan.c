@@ -2576,9 +2576,21 @@ df_ref_record (enum df_ref_class cl,
 
       if (GET_CODE (reg) == SUBREG)
 	{
-	  regno += subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
-					SUBREG_BYTE (reg), GET_MODE (reg));
-	  endregno = regno + subreg_nregs (reg);
+	  int off = subreg_regno_offset (regno, GET_MODE (SUBREG_REG (reg)),
+					 SUBREG_BYTE (reg), GET_MODE (reg));
+	  unsigned int nregno = regno + off;
+	  endregno = nregno + subreg_nregs (reg);
+	  if (off < 0 && regno < (unsigned) -off)
+	    /* Deal with paradoxical SUBREGs on big endian where
+	       in debug insns the hard reg number might be smaller
+	       than -off, such as (subreg:DI (reg:SI 0 [+4 ]) 0));
+	       RA decisions shouldn't be affected by debug insns
+	       and so RA can decide to put pseudo into a hard reg
+	       with small REGNO, even when it is referenced in
+	       a paradoxical SUBREG in a debug insn.  */
+	    regno = 0;
+	  else
+	    regno = nregno;
 	}
       else
 	endregno = END_REGNO (reg);
