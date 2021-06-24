@@ -1465,12 +1465,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	TARGET_EXPR_NO_ELIDE (stmt) = 1;
       break;
 
-    case REQUIRES_EXPR:
-      /* Emit the value of the requires-expression.  */
-      *stmt_p = evaluate_requires_expr (stmt);
-      *walk_subtrees = 0;
-      break;
-
     case TEMPLATE_ID_EXPR:
       gcc_assert (concept_check_p (stmt));
       /* Emit the value of the concept check.  */
@@ -2706,6 +2700,10 @@ cp_fold (tree x)
       r = cp_fold (TREE_OPERAND (x, 0));
       if (tree_invariant_p (r))
 	x = r;
+      break;
+
+    case REQUIRES_EXPR:
+      x = evaluate_requires_expr (x);
       break;
 
     default:

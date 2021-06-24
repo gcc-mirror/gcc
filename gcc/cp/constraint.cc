@@ -3340,7 +3340,7 @@ evaluate_concept_check (tree check)
 }
 
 /* Evaluate the requires-expression T, returning either boolean_true_node
-   or boolean_false_node.  This is used during gimplification and constexpr
+   or boolean_false_node.  This is used during folding and constexpr
    evaluation.  */
 
 tree
