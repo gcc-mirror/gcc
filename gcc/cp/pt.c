@@ -18886,9 +18886,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case OACC_DATA:
     case OMP_TARGET_DATA:
     case OMP_TARGET:
-      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), (TREE_CODE (t) == OACC_DATA)
-				? C_ORT_ACC : C_ORT_OMP, args, complain,
-				in_decl);
+      tmp = tsubst_omp_clauses (OMP_CLAUSES (t),
+				TREE_CODE (t) == OACC_DATA
+				? C_ORT_ACC
+				: TREE_CODE (t) == OMP_TARGET
+				? C_ORT_OMP_TARGET : C_ORT_OMP,
+				args, complain, in_decl);
       keep_next_level (true);
       stmt = begin_omp_structured_block ();
 
