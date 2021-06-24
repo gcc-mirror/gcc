@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* Definitions of target machine for GNU compiler,
-   for IBM RS/6000 POWER running AIX V7.2.
+   for IBM RS/6000 POWER running AIX V7.3.
    Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
@@ -114,6 +114,7 @@ do {									\
       builtin_define ("_AIX61");     \
       builtin_define ("_AIX71");     \
       builtin_define ("_AIX72");     \
+      builtin_define ("_AIX73");     \
       TARGET_OS_AIX_CPP_BUILTINS (); \
     }                                \
   while (0)
