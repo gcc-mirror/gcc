@@ -230,6 +230,91 @@ public:
 			       empty.get_locus ());
   }
 
+  void visit (AST::Function &function) override
+  {
+    // ignore for now and leave empty
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::FunctionQualifiers qualifiers (
+      HIR::FunctionQualifiers::AsyncConstStatus::NONE, false);
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    // need
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (function.has_generics ())
+      {
+	generic_params = lower_generic_params (function.get_generic_params ());
+      }
+
+    Identifier function_name = function.get_function_name ();
+    Location locus = function.get_locus ();
+
+    std::unique_ptr<HIR::Type> return_type
+      = function.has_return_type () ? std::unique_ptr<HIR::Type> (
+	  ASTLoweringType::translate (function.get_return_type ().get ()))
+				    : nullptr;
+
+    std::vector<HIR::FunctionParam> function_params;
+    for (auto &param : function.get_function_params ())
+      {
+	auto translated_pattern = std::unique_ptr<HIR::Pattern> (
+	  ASTLoweringPattern::translate (param.get_pattern ().get ()));
+	auto translated_type = std::unique_ptr<HIR::Type> (
+	  ASTLoweringType::translate (param.get_type ().get ()));
+
+	auto crate_num = mappings->get_current_crate ();
+	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+				       mappings->get_next_hir_id (crate_num),
+				       UNKNOWN_LOCAL_DEFID);
+
+	auto hir_param
+	  = HIR::FunctionParam (mapping, std::move (translated_pattern),
+				std::move (translated_type),
+				param.get_locus ());
+	function_params.push_back (hir_param);
+      }
+
+    bool terminated = false;
+    std::unique_ptr<HIR::BlockExpr> function_body
+      = std::unique_ptr<HIR::BlockExpr> (
+	ASTLoweringBlock::translate (function.get_definition ().get (),
+				     &terminated));
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    mappings->insert_location (crate_num,
+			       function_body->get_mappings ().get_hirid (),
+			       function.get_locus ());
+
+    auto fn
+      = new HIR::Function (mapping, std::move (function_name),
+			   std::move (qualifiers), std::move (generic_params),
+			   std::move (function_params), std::move (return_type),
+			   std::move (where_clause), std::move (function_body),
+			   std::move (vis), function.get_outer_attrs (), locus);
+
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       fn);
+    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
+			       fn);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       function.get_locus ());
+
+    // add the mappings for the function params at the end
+    for (auto &param : fn->get_function_params ())
+      {
+	mappings->insert_hir_param (mapping.get_crate_num (),
+				    param.get_mappings ().get_hirid (), &param);
+	mappings->insert_location (crate_num, mapping.get_hirid (),
+				   param.get_locus ());
+      }
+
+    translated = fn;
+  }
+
 private:
   ASTLoweringStmt () : translated (nullptr), terminated (false) {}
 

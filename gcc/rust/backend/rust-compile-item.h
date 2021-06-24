@@ -213,26 +213,10 @@ public:
       }
 
     std::vector<Bvariable *> locals;
-    rib->iterate_decls ([&] (NodeId n, Location) mutable -> bool {
-      Resolver::Definition d;
-      bool ok = ctx->get_resolver ()->lookup_definition (n, &d);
-      rust_assert (ok);
+    bool ok = compile_locals_for_block (*rib, fndecl, locals);
+    rust_assert (ok);
 
-      HIR::Stmt *decl = nullptr;
-      ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
-      rust_assert (ok);
-
-      Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
-      locals.push_back (compiled);
-
-      return true;
-    });
-
-    bool toplevel_item
-      = function.get_mappings ().get_local_defid () != UNKNOWN_LOCAL_DEFID;
-    Bblock *enclosing_scope
-      = toplevel_item ? NULL : ctx->peek_enclosing_scope ();
-
+    Bblock *enclosing_scope = NULL;
     HIR::BlockExpr *function_body = function.get_definition ().get ();
     Location start_location = function_body->get_locus ();
     Location end_location = function_body->get_closing_locus ();
