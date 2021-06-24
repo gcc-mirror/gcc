@@ -2657,13 +2657,13 @@ template <typename _Abi>
 	else if constexpr (__is_avx512_pd<_Tp, _Np>())
 	  return _mm512_roundscale_pd(__x, 0x0b);
 	else if constexpr (__is_avx_ps<_Tp, _Np>())
-	  return _mm256_round_ps(__x, 0x3);
+	  return _mm256_round_ps(__x, 0xb);
 	else if constexpr (__is_avx_pd<_Tp, _Np>())
-	  return _mm256_round_pd(__x, 0x3);
+	  return _mm256_round_pd(__x, 0xb);
 	else if constexpr (__have_sse4_1 && __is_sse_ps<_Tp, _Np>())
-	  return __auto_bitcast(_mm_round_ps(__to_intrin(__x), 0x3));
+	  return __auto_bitcast(_mm_round_ps(__to_intrin(__x), 0xb));
 	else if constexpr (__have_sse4_1 && __is_sse_pd<_Tp, _Np>())
-	  return _mm_round_pd(__x, 0x3);
+	  return _mm_round_pd(__x, 0xb);
 	else if constexpr (__is_sse_ps<_Tp, _Np>())
 	  {
 	    auto __truncated
@@ -2786,13 +2786,13 @@ template <typename _Abi>
 	else if constexpr (__is_avx512_pd<_Tp, _Np>())
 	  return _mm512_roundscale_pd(__x, 0x09);
 	else if constexpr (__is_avx_ps<_Tp, _Np>())
-	  return _mm256_round_ps(__x, 0x1);
+	  return _mm256_round_ps(__x, 0x9);
 	else if constexpr (__is_avx_pd<_Tp, _Np>())
-	  return _mm256_round_pd(__x, 0x1);
+	  return _mm256_round_pd(__x, 0x9);
 	else if constexpr (__have_sse4_1 && __is_sse_ps<_Tp, _Np>())
-	  return __auto_bitcast(_mm_floor_ps(__to_intrin(__x)));
+	  return __auto_bitcast(_mm_round_ps(__to_intrin(__x), 0x9));
 	else if constexpr (__have_sse4_1 && __is_sse_pd<_Tp, _Np>())
-	  return _mm_floor_pd(__x);
+	  return _mm_round_pd(__x, 0x9);
 	else
 	  return _Base::_S_floor(__x);
       }
@@ -2808,13 +2808,13 @@ template <typename _Abi>
 	else if constexpr (__is_avx512_pd<_Tp, _Np>())
 	  return _mm512_roundscale_pd(__x, 0x0a);
 	else if constexpr (__is_avx_ps<_Tp, _Np>())
-	  return _mm256_round_ps(__x, 0x2);
+	  return _mm256_round_ps(__x, 0xa);
 	else if constexpr (__is_avx_pd<_Tp, _Np>())
-	  return _mm256_round_pd(__x, 0x2);
+	  return _mm256_round_pd(__x, 0xa);
 	else if constexpr (__have_sse4_1 && __is_sse_ps<_Tp, _Np>())
-	  return __auto_bitcast(_mm_ceil_ps(__to_intrin(__x)));
+	  return __auto_bitcast(_mm_round_ps(__to_intrin(__x), 0xa));
 	else if constexpr (__have_sse4_1 && __is_sse_pd<_Tp, _Np>())
-	  return _mm_ceil_pd(__x);
+	  return _mm_round_pd(__x, 0xa);
 	else
 	  return _Base::_S_ceil(__x);
       }
