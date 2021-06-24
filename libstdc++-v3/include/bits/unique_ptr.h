@@ -402,7 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Dereference the stored pointer.
       typename add_lvalue_reference<element_type>::type
-      operator*() const
+      operator*() const noexcept(noexcept(*std::declval<pointer>()))
       {
 	__glibcxx_assert(get() != pointer());
 	return *get();
@@ -655,6 +655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Access an element of owned array.
       typename std::add_lvalue_reference<element_type>::type
       operator[](size_t __i) const
+      noexcept(noexcept(std::declval<pointer>()[std::declval<size_t&>()]))
       {
 	__glibcxx_assert(get() != pointer());
 	return get()[__i];
