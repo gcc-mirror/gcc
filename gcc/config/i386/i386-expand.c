@@ -5161,6 +5161,18 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	  else
 	    unpack = gen_sse4_1_sign_extendv2siv2di2;
 	  break;
+	case E_V8QImode:
+	  if (unsigned_p)
+	    unpack = gen_sse4_1_zero_extendv4qiv4hi2;
+	  else
+	    unpack = gen_sse4_1_sign_extendv4qiv4hi2;
+	  break;
+	case E_V4HImode:
+	  if (unsigned_p)
+	    unpack = gen_sse4_1_zero_extendv2hiv2si2;
+	  else
+	    unpack = gen_sse4_1_sign_extendv2hiv2si2;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -5172,10 +5184,24 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	}
       else if (high_p)
 	{
-	  /* Shift higher 8 bytes to lower 8 bytes.  */
-	  tmp = gen_reg_rtx (V1TImode);
-	  emit_insn (gen_sse2_lshrv1ti3 (tmp, gen_lowpart (V1TImode, src),
-					 GEN_INT (64)));
+	  switch (GET_MODE_SIZE (imode))
+	    {
+	    case 16:
+	      /* Shift higher 8 bytes to lower 8 bytes.  */
+	      tmp = gen_reg_rtx (V1TImode);
+	      emit_insn (gen_sse2_lshrv1ti3 (tmp, gen_lowpart (V1TImode, src),
+					     GEN_INT (64)));
+	      break;
+	    case 8:
+	      /* Shift higher 4 bytes to lower 4 bytes.  */
+	      tmp = gen_reg_rtx (V1DImode);
+	      emit_insn (gen_mmx_lshrv1di3 (tmp, gen_lowpart (V1DImode, src),
+					    GEN_INT (32)));
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
 	  tmp = gen_lowpart (imode, tmp);
 	}
       else
@@ -5206,6 +5232,18 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	    unpack = gen_vec_interleave_highv4si;
 	  else
 	    unpack = gen_vec_interleave_lowv4si;
+	  break;
+	case E_V8QImode:
+	  if (high_p)
+	    unpack = gen_mmx_punpckhbw;
+	  else
+	    unpack = gen_mmx_punpcklbw;
+	  break;
+	case E_V4HImode:
+	  if (high_p)
+	    unpack = gen_mmx_punpckhwd;
+	  else
+	    unpack = gen_mmx_punpcklwd;
 	  break;
 	default:
 	  gcc_unreachable ();

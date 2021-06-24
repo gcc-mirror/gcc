@@ -976,9 +976,6 @@
  [(V8SI "si") (V8SF "ps") (V4DF "pd")
   (V16SI "si") (V16SF "ps") (V8DF "pd")])
 
-;; Instruction suffix for sign and zero extensions.
-(define_code_attr extsuffix [(sign_extend "sx") (zero_extend "zx")])
-
 ;; i128 for integer vectors and TARGET_AVX2, f128 otherwise.
 ;; i64x4 or f64x4 for 512bit modes.
 (define_mode_attr i128
