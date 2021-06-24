@@ -1,3 +1,48 @@
+2021-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2021-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def: Take OPTION_MASK_PCREL_OPT out
+	of OTHER_POWER10_MASKS so it will not be enabled by default.
+
+2021-06-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_minmax): Add support for ISA
+	3.1 IEEE 128-bit floating point xsmaxcqp/xsmincqp instructions.
+	* config/rs6000/rs6000.md (s<minmax><mode>3, IEEE128 iterator):
+	New insns.
+
+2021-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2021-06-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101175
+	* config/i386/i386.md (bsr_rex64): Add zero-flag setting RTX.
+	(bsr): Ditto.
+	(*bsrhi): Remove.
+	(clz<mode>2): Update RTX pattern for additions.
+
+2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101167
+	* omp-low.c (lower_omp_regimplify_p): Regimplify also PARM_DECLs
+	and RESULT_DECLs that have DECL_HAS_VALUE_EXPR_P set.
+
+2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* cfgexpand.c (expand_asm_stmt): If errors are emitted,
+	remove all inputs, outputs and clobbers from the asm and
+	set template to "".
+
 2021-06-22  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/100310

@@ -1,3 +1,12 @@
+2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* typeck.c (cxx_mark_addressable): Diagnose trying to make
+	bit-fields addressable.
+
 2021-06-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101106
