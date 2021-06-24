@@ -109,6 +109,9 @@ public:
   // unsafe.Pointer is represented as *void.
   virtual Btype *void_type () = 0;
 
+  // get unit-type
+  virtual Btype *unit_type () = 0;
+
   // Get the unnamed boolean type.
   virtual Btype *bool_type () = 0;
 

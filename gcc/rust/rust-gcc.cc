@@ -171,6 +171,19 @@ public:
 
   Btype *void_type () { return this->make_type (void_type_node); }
 
+  Btype *unit_type ()
+  {
+    static Btype *unit_type;
+    if (unit_type == nullptr)
+      {
+	auto unit_type_node = integer_type (true, 0);
+	unit_type = named_type ("()", unit_type_node,
+				::Linemap::predeclared_location ());
+      }
+
+    return unit_type;
+  }
+
   Btype *bool_type () { return this->make_type (boolean_type_node); }
 
   Btype *char_type () { return this->make_type (char_type_node); }
@@ -297,7 +310,10 @@ public:
     return this->make_expression (null_pointer_node);
   }
 
-  Bexpression *unit_expression () { return this->make_expression (void_node); }
+  Bexpression *unit_expression ()
+  {
+    return this->make_expression (integer_zero_node);
+  }
 
   Bexpression *var_expression (Bvariable *var, Location);
 

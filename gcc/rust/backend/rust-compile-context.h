@@ -423,7 +423,7 @@ public:
   {
     if (type.num_fields () == 0)
       {
-	translated = ctx->get_backend ()->void_type ();
+	translated = ctx->get_backend ()->unit_type ();
 	return;
       }
 
@@ -544,7 +544,7 @@ public:
 
   void visit (TyTy::NeverType &) override
   {
-    translated = ctx->get_backend ()->void_type ();
+    translated = ctx->get_backend ()->unit_type ();
   }
 
 private:

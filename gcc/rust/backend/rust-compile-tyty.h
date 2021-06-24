@@ -42,8 +42,6 @@ public:
     return compiler.translated;
   }
 
-  ~TyTyCompile () {}
-
   void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
 
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
@@ -53,7 +51,7 @@ public:
   void visit (TyTy::TupleType &type) override
   {
     if (type.num_fields () == 0)
-      translated = backend->void_type ();
+      translated = backend->unit_type ();
     else
       gcc_unreachable ();
   }
@@ -224,7 +222,7 @@ public:
 
   void visit (TyTy::NeverType &) override
   {
-    translated = backend->void_type ();
+    translated = backend->unit_type ();
   }
 
 private:

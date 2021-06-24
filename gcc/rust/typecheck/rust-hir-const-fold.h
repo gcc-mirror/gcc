@@ -54,7 +54,7 @@ public:
   void visit (TyTy::TupleType &type) override
   {
     if (type.num_fields () == 0)
-      translated = backend->void_type ();
+      translated = backend->unit_type ();
     else
       gcc_unreachable ();
   }
