@@ -865,22 +865,6 @@ template <typename _Tp, typename _Abi>
   abs(const simd<_Tp, _Abi>& __x)
   { return {__private_init, _Abi::_SimdImpl::_S_abs(__data(__x))}; }
 
-template <typename _Tp, typename _Abi>
-  enable_if_t<!is_floating_point_v<_Tp> && is_signed_v<_Tp>, simd<_Tp, _Abi>>
-  fabs(const simd<_Tp, _Abi>& __x)
-  { return {__private_init, _Abi::_SimdImpl::_S_abs(__data(__x))}; }
-
-// the following are overloads for functions in <cstdlib> and not covered by
-// [parallel.simd.math]. I don't see much value in making them work, though
-/*
-template <typename _Abi> simd<long, _Abi> labs(const simd<long, _Abi> &__x)
-{ return {__private_init, _Abi::_SimdImpl::abs(__data(__x))}; }
-
-template <typename _Abi> simd<long long, _Abi> llabs(const simd<long long, _Abi>
-&__x)
-{ return {__private_init, _Abi::_SimdImpl::abs(__data(__x))}; }
-*/
-
 #define _GLIBCXX_SIMD_CVTING2(_NAME)                                           \
 template <typename _Tp, typename _Abi>                                         \
   _GLIBCXX_SIMD_INTRINSIC simd<_Tp, _Abi> _NAME(                               \
