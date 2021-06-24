@@ -234,7 +234,8 @@ namespace __detail
 // unrolled/pack execution helpers
 // __execute_n_times{{{
 template <typename _Fp, size_t... _I>
-  _GLIBCXX_SIMD_INTRINSIC constexpr void
+  [[__gnu__::__flatten__]] _GLIBCXX_SIMD_INTRINSIC constexpr
+  void
   __execute_on_index_sequence(_Fp&& __f, index_sequence<_I...>)
   { ((void)__f(_SizeConstant<_I>()), ...); }
 
@@ -254,7 +255,8 @@ template <size_t _Np, typename _Fp>
 // }}}
 // __generate_from_n_evaluations{{{
 template <typename _R, typename _Fp, size_t... _I>
-  _GLIBCXX_SIMD_INTRINSIC constexpr _R
+  [[__gnu__::__flatten__]] _GLIBCXX_SIMD_INTRINSIC constexpr
+  _R
   __execute_on_index_sequence_with_return(_Fp&& __f, index_sequence<_I...>)
   { return _R{__f(_SizeConstant<_I>())...}; }
 
@@ -269,7 +271,8 @@ template <size_t _Np, typename _R, typename _Fp>
 // }}}
 // __call_with_n_evaluations{{{
 template <size_t... _I, typename _F0, typename _FArgs>
-  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  [[__gnu__::__flatten__]] _GLIBCXX_SIMD_INTRINSIC constexpr
+  auto
   __call_with_n_evaluations(index_sequence<_I...>, _F0&& __f0, _FArgs&& __fargs)
   { return __f0(__fargs(_SizeConstant<_I>())...); }
 
@@ -285,7 +288,8 @@ template <size_t _Np, typename _F0, typename _FArgs>
 // }}}
 // __call_with_subscripts{{{
 template <size_t _First = 0, size_t... _It, typename _Tp, typename _Fp>
-  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  [[__gnu__::__flatten__]] _GLIBCXX_SIMD_INTRINSIC constexpr
+  auto
   __call_with_subscripts(_Tp&& __x, index_sequence<_It...>, _Fp&& __fun)
   { return __fun(__x[_First + _It]...); }
 
