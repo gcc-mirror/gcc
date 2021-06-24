@@ -251,17 +251,16 @@
 		   (logicals:QHSI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*<code><mode>3_clobber_flags"
+(define_insn "*<code><mode>3<cczn>"
   [(set (match_operand:QHSI 0 "h8300_dst_operand" "=rQ")
 	(logicals:QHSI
 	  (match_operand:QHSI 1 "h8300_dst_operand" "%0")
 	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))
    (clobber (reg:CC CC_REG))]
   "h8300_operands_match_p (operands)"
-  { return output_logical_op (<MODE>mode, <CODE>, operands); }
+  { return output_logical_op (<MODE>mode, <CODE>, operands, insn); }
   [(set (attr "length")
-	(symbol_ref "compute_logical_op_length (<MODE>mode, <CODE>, operands)"))])
-
+	(symbol_ref "compute_logical_op_length (<MODE>mode, <CODE>, operands, insn)"))])
 
 ;; ----------------------------------------------------------------------
 ;; NOT INSTRUCTIONS

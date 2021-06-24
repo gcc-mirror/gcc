@@ -1,3 +1,21 @@
+2021-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101174
+	* pt.c (push_access_scope): For artificial deduction guides,
+	set the access scope to that of the constructor.
+	(pop_access_scope): Likewise.
+	(build_deduction_guide): Don't set DECL_CONTEXT on the guide.
+
+2021-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/86439
+	* call.c (print_error_for_call_failure): Constify 'args' parameter.
+	(perform_dguide_overload_resolution): Define.
+	* cp-tree.h: (perform_dguide_overload_resolution): Declare.
+	* pt.c (do_class_deduction): Use perform_dguide_overload_resolution
+	instead of build_new_function_call.  Don't use tf_decltype or
+	set cp_unevaluated_operand.  Remove unnecessary NULL_TREE tests.
+
 2021-06-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/67302

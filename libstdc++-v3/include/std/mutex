@@ -517,9 +517,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Lock the last lockable, after all previous ones are locked.
     template<typename _Lockable>
       inline int
-      __try_lock_impl(_Lockable& __lockable)
+      __try_lock_impl(_Lockable& __l)
       {
-	if (unique_lock<_Lockable> __lock{__lockable, try_to_lock})
+	if (unique_lock<_Lockable> __lock{__l, try_to_lock})
 	  {
 	    __lock.release();
 	    return -1;
@@ -585,7 +585,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Sequentially calls try_lock() on each argument.
    */
   template<typename _L1, typename _L2, typename... _L3>
-    int
+    inline int
     try_lock(_L1& __l1, _L2& __l2, _L3&... __l3)
     {
       return __detail::__try_lock_impl(__l1, __l2, __l3...);

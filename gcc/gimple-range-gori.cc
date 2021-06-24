@@ -29,6 +29,72 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
 
+// Calculate what we can determine of the range of this unary
+// statement's operand if the lhs of the expression has the range
+// LHS_RANGE.  Return false if nothing can be determined.
+
+bool
+gimple_range_calc_op1 (irange &r, const gimple *stmt, const irange &lhs_range)
+{
+  gcc_checking_assert (gimple_num_ops (stmt) < 3);
+
+  // An empty range is viral.
+  tree type = TREE_TYPE (gimple_range_operand1 (stmt));
+  if (lhs_range.undefined_p ())
+    {
+      r.set_undefined ();
+      return true;
+    }
+  // Unary operations require the type of the first operand in the
+  // second range position.
+  int_range<2> type_range (type);
+  return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
+						 type_range);
+}
+
+// Calculate what we can determine of the range of this statement's
+// first operand if the lhs of the expression has the range LHS_RANGE
+// and the second operand has the range OP2_RANGE.  Return false if
+// nothing can be determined.
+
+bool
+gimple_range_calc_op1 (irange &r, const gimple *stmt,
+		       const irange &lhs_range, const irange &op2_range)
+{
+  // Unary operation are allowed to pass a range in for second operand
+  // as there are often additional restrictions beyond the type which
+  // can be imposed.  See operator_cast::op1_range().
+  tree type = TREE_TYPE (gimple_range_operand1 (stmt));
+  // An empty range is viral.
+  if (op2_range.undefined_p () || lhs_range.undefined_p ())
+    {
+      r.set_undefined ();
+      return true;
+    }
+  return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
+						 op2_range);
+}
+
+// Calculate what we can determine of the range of this statement's
+// second operand if the lhs of the expression has the range LHS_RANGE
+// and the first operand has the range OP1_RANGE.  Return false if
+// nothing can be determined.
+
+bool
+gimple_range_calc_op2 (irange &r, const gimple *stmt,
+		       const irange &lhs_range, const irange &op1_range)
+{
+  tree type = TREE_TYPE (gimple_range_operand2 (stmt));
+  // An empty range is viral.
+  if (op1_range.undefined_p () || lhs_range.undefined_p ())
+    {
+      r.set_undefined ();
+      return true;
+    }
+  return gimple_range_handler (stmt)->op2_range (r, type, lhs_range,
+						 op1_range);
+}
+
 // Return TRUE if GS is a logical && or || expression.
 
 static inline bool

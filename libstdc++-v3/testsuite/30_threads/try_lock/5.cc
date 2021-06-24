@@ -1,4 +1,7 @@
-// { dg-do run { target c++11 } }
+// { dg-do run }
+// { dg-additional-options "-pthread" { target pthread } }
+// { dg-require-effective-target c++11 }
+// { dg-require-gthreads "" }
 
 #include <mutex>
 #include <testsuite_hooks.h>

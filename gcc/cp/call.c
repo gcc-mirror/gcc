@@ -4629,7 +4629,7 @@ perform_overload_resolution (tree fn,
    functions.  */
 
 static void
-print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
+print_error_for_call_failure (tree fn, const vec<tree, va_gc> *args,
 			      struct z_candidate *candidates)
 {
   tree targs = NULL_TREE;
@@ -4652,6 +4652,40 @@ print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
 	      name, build_tree_list_vec (args));
   if (candidates)
     print_z_candidates (loc, candidates);
+}
+
+/* Perform overload resolution on the set of deduction guides DGUIDES
+   using ARGS.  Returns the selected deduction guide, or error_mark_node
+   if overload resolution fails.  */
+
+tree
+perform_dguide_overload_resolution (tree dguides, const vec<tree, va_gc> *args,
+				    tsubst_flags_t complain)
+{
+  z_candidate *candidates;
+  bool any_viable_p;
+  tree result;
+
+  gcc_assert (deduction_guide_p (OVL_FIRST (dguides)));
+
+  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
+  void *p = conversion_obstack_alloc (0);
+
+  z_candidate *cand = perform_overload_resolution (dguides, args, &candidates,
+						   &any_viable_p, complain);
+  if (!cand)
+    {
+      if (complain & tf_error)
+	print_error_for_call_failure (dguides, args, candidates);
+      result = error_mark_node;
+    }
+  else
+    result = cand->fn;
+
+  /* Free all the conversions we allocated.  */
+  obstack_free (&conversion_obstack, p);
+
+  return result;
 }
 
 /* Return an expression for a call to FN (a namespace-scope function,

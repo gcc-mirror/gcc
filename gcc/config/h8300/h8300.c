@@ -1100,7 +1100,7 @@ h8300_and_costs (rtx x)
   operands[1] = XEXP (x, 0);
   operands[2] = XEXP (x, 1);
   operands[3] = x;
-  return compute_logical_op_length (GET_MODE (x), AND, operands) / 2;
+  return compute_logical_op_length (GET_MODE (x), AND, operands, NULL) / 2;
 }
 
 /* Compute the cost of a shift insn.  */
@@ -2881,7 +2881,7 @@ compute_plussi_cc (rtx *operands)
 /* Output a logical insn.  */
 
 const char *
-output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
+output_logical_op (machine_mode mode, rtx_code code, rtx *operands, rtx_insn *insn)
 {
   /* Pretend that every byte is affected if both operands are registers.  */
   const unsigned HOST_WIDE_INT intval =
@@ -2906,6 +2906,19 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
   const char *opname;
   char insn_buf[100];
 
+  /* INSN is the current insn, we examine its overall form to see if we're
+     supposed to set or clobber the condition codes.
+
+     This is important to know.  If we are setting condition codes, then we
+     must do the operation in MODE and not in some smaller size.
+
+     The key is to look at the second object in the PARALLEL. If it is not
+     a CLOBBER, then we care about the condition codes.  */
+  rtx pattern = PATTERN (insn);
+  gcc_assert (GET_CODE (pattern) == PARALLEL);
+  rtx second_op = XVECEXP (pattern, 0, 1);
+  bool cc_meaningful = (GET_CODE (second_op) != CLOBBER);
+
   switch (code)
     {
     case AND:
@@ -2928,8 +2941,9 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
       output_asm_insn (insn_buf, operands);
       break;
     case E_HImode:
-      /* First, see if we can finish with one insn.  */
-      if (b0 != 0 && b1 != 0)
+      /* First, see if we can (or must) finish with one insn.  */
+      if (cc_meaningful
+	  || (b0 != 0 && b1 != 0))
 	{
 	  sprintf (insn_buf, "%s.w\t%%T2,%%T0", opname);
 	  output_asm_insn (insn_buf, operands);
@@ -2964,10 +2978,11 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
 
       /* Check if doing everything with one insn is no worse than
 	 using multiple insns.  */
-      if (w0 != 0 && w1 != 0
-	  && !(lower_half_easy_p && upper_half_easy_p)
-	  && !(code == IOR && w1 == 0xffff
-	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
+      if (cc_meaningful
+	  || (w0 != 0 && w1 != 0
+	      && !(lower_half_easy_p && upper_half_easy_p)
+	      && !(code == IOR && w1 == 0xffff
+		   && (w0 & 0x8000) != 0 && lower_half_easy_p)))
 	{
 	  sprintf (insn_buf, "%s.l\t%%S2,%%S0", opname);
 	  output_asm_insn (insn_buf, operands);
@@ -3037,7 +3052,7 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
 /* Compute the length of a logical insn.  */
 
 unsigned int
-compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
+compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands, rtx_insn *insn)
 {
   /* Pretend that every byte is affected if both operands are registers.  */
   const unsigned HOST_WIDE_INT intval =
@@ -3061,6 +3076,23 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
   /* Insn length.  */
   unsigned int length = 0;
 
+  /* INSN is the current insn, we examine its overall form to see if we're
+     supposed to set or clobber the condition codes.
+
+     This is important to know.  If we are setting condition codes, then we
+     must do the operation in MODE and not in some smaller size.
+
+     The key is to look at the second object in the PARALLEL. If it is not
+     a CLOBBER, then we care about the condition codes.  */
+  bool cc_meaningful = false;
+  if (insn)
+    {
+      rtx pattern = PATTERN (insn);
+      gcc_assert (GET_CODE (pattern) == PARALLEL);
+      rtx second_op = XVECEXP (pattern, 0, 1);
+      cc_meaningful = (GET_CODE (second_op) != CLOBBER);
+    }
+
   switch (mode)
     {
     case E_QImode:
@@ -3068,7 +3100,8 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
 
     case E_HImode:
       /* First, see if we can finish with one insn.  */
-      if (b0 != 0 && b1 != 0)
+      if (cc_meaningful
+	  || (b0 != 0 && b1 != 0))
 	{
 	  length = h8300_length_from_table (operands[1], operands[2],
 					    &logicw_length_table);
@@ -3098,10 +3131,11 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
 
       /* Check if doing everything with one insn is no worse than
 	 using multiple insns.  */
-      if (w0 != 0 && w1 != 0
-	  && !(lower_half_easy_p && upper_half_easy_p)
-	  && !(code == IOR && w1 == 0xffff
-	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
+      if (cc_meaningful
+	  || (w0 != 0 && w1 != 0
+	      && !(lower_half_easy_p && upper_half_easy_p)
+	      && !(code == IOR && w1 == 0xffff
+		   && (w0 & 0x8000) != 0 && lower_half_easy_p)))
 	{
 	  length = h8300_length_from_table (operands[1], operands[2],
 					    &logicl_length_table);
@@ -3158,80 +3192,6 @@ compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
   return length;
 }
 
-/* Compute which flag bits are valid after a logical insn.  */
-
-int
-compute_logical_op_cc (machine_mode mode, rtx *operands)
-{
-  /* Figure out the logical op that we need to perform.  */
-  enum rtx_code code = GET_CODE (operands[3]);
-  /* Pretend that every byte is affected if both operands are registers.  */
-  const unsigned HOST_WIDE_INT intval =
-    (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
-			      /* Always use the full instruction if the
-				 first operand is in memory.  It is better
-				 to use define_splits to generate the shorter
-				 sequence where valid.  */
-			      && register_operand (operands[1], VOIDmode)
-			      ? INTVAL (operands[2]) : 0x55555555);
-  /* The determinant of the algorithm.  If we perform an AND, 0
-     affects a bit.  Otherwise, 1 affects a bit.  */
-  const unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
-  /* Break up DET into pieces.  */
-  const unsigned HOST_WIDE_INT b0 = (det >>  0) & 0xff;
-  const unsigned HOST_WIDE_INT b1 = (det >>  8) & 0xff;
-  const unsigned HOST_WIDE_INT w0 = (det >>  0) & 0xffff;
-  const unsigned HOST_WIDE_INT w1 = (det >> 16) & 0xffff;
-  int lower_half_easy_p = 0;
-  int upper_half_easy_p = 0;
-  /* Condition code.  */
-  enum attr_old_cc cc = OLD_CC_CLOBBER;
-
-  switch (mode)
-    {
-    case E_HImode:
-      /* First, see if we can finish with one insn.  */
-      if (b0 != 0 && b1 != 0)
-	{
-	  cc = OLD_CC_SET_ZNV;
-	}
-      break;
-    case E_SImode:
-      /* Determine if the lower half can be taken care of in no more
-	 than two bytes.  */
-      lower_half_easy_p = (b0 == 0
-			   || b1 == 0
-			   || (code != IOR && w0 == 0xffff));
-
-      /* Determine if the upper half can be taken care of in no more
-         than two bytes.  */
-      upper_half_easy_p = ((code != IOR && w1 == 0xffff)
-			   || (code == AND && w1 == 0xff00));
-
-      /* Check if doing everything with one insn is no worse than
-	 using multiple insns.  */
-      if (w0 != 0 && w1 != 0
-	  && !(lower_half_easy_p && upper_half_easy_p)
-	  && !(code == IOR && w1 == 0xffff
-	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
-	{
-	  cc = OLD_CC_SET_ZNV;
-	}
-      else
-	{
-	  if (code == IOR
-	      && w1 == 0xffff
-	      && (w0 & 0x8000) != 0)
-	    {
-	      cc = OLD_CC_SET_ZNV;
-	    }
-	}
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  return cc;
-}
 
 #if 0
 /* Expand a conditional branch.  */

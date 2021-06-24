@@ -17467,10 +17467,23 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 
   if (!d->one_operand_p)
     {
-      if (!TARGET_XOP || GET_MODE_SIZE (d->vmode) != 16)
+      if (GET_MODE_SIZE (d->vmode) == 8)
 	{
-	  if (TARGET_AVX2
-	      && valid_perm_using_mode_p (V2TImode, d))
+	  if (!TARGET_XOP)
+	    return false;
+	  vmode = V8QImode;
+	}
+      else if (GET_MODE_SIZE (d->vmode) == 16)
+	{
+	  if (!TARGET_XOP)
+	    return false;
+	}
+      else if (GET_MODE_SIZE (d->vmode) == 32)
+	{
+	  if (!TARGET_AVX2)
+	    return false;
+
+	  if (valid_perm_using_mode_p (V2TImode, d))
 	    {
 	      if (d->testing_p)
 		return true;
@@ -17492,6 +17505,8 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	    }
 	  return false;
 	}
+      else
+	return false;
     }
   else
     {
@@ -17651,8 +17666,22 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
     {
       rtx m128 = GEN_INT (-128);
 
+      /* Remap elements from the second operand, as we have to
+	 account for inactive top 8 elements from the first operand.  */
+      if (!d->one_operand_p)
+	for (i = 0; i < nelt; ++i)
+	  {
+	    int ival = INTVAL (rperm[i]);
+	    if (ival >= 8)
+	      ival += 8;
+	    rperm[i] = GEN_INT (ival);
+	  }
+
+      /* V8QI is emulated with V16QI instruction, fill inactive
+	 elements in the top 8 positions with zeros.  */
       for (i = nelt; i < 16; ++i)
 	rperm[i] = m128;
+
       vpmode = V16QImode;
     }
 
@@ -17660,36 +17689,54 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 				gen_rtvec_v (GET_MODE_NUNITS (vpmode), rperm));
   vperm = force_reg (vpmode, vperm);
 
-  target = d->target;
-  if (d->vmode != vmode)
+  if (vmode == d->vmode)
+    target = d->target;
+  else
     target = gen_reg_rtx (vmode);
+
   op0 = gen_lowpart (vmode, d->op0);
+
   if (d->one_operand_p)
     {
+      rtx (*gen) (rtx, rtx, rtx);
+
       if (vmode == V8QImode)
-	emit_insn (gen_mmx_pshufbv8qi3 (target, op0, vperm));
+	gen = gen_mmx_pshufbv8qi3;
       else if (vmode == V16QImode)
-	emit_insn (gen_ssse3_pshufbv16qi3 (target, op0, vperm));
+	gen = gen_ssse3_pshufbv16qi3;
       else if (vmode == V32QImode)
-	emit_insn (gen_avx2_pshufbv32qi3 (target, op0, vperm));
+	gen = gen_avx2_pshufbv32qi3;
       else if (vmode == V64QImode)
-	emit_insn (gen_avx512bw_pshufbv64qi3 (target, op0, vperm));
+	gen = gen_avx512bw_pshufbv64qi3;
       else if (vmode == V8SFmode)
-	emit_insn (gen_avx2_permvarv8sf (target, op0, vperm));
+	gen = gen_avx2_permvarv8sf;
       else if (vmode == V8SImode)
-	emit_insn (gen_avx2_permvarv8si (target, op0, vperm));
+	gen = gen_avx2_permvarv8si;
       else if (vmode == V16SFmode)
-	emit_insn (gen_avx512f_permvarv16sf (target, op0, vperm));
+	gen = gen_avx512f_permvarv16sf;
       else if (vmode == V16SImode)
-	emit_insn (gen_avx512f_permvarv16si (target, op0, vperm));
+	gen = gen_avx512f_permvarv16si;
       else
 	gcc_unreachable ();
+
+      emit_insn (gen (target, op0, vperm));
     }
   else
     {
+      rtx (*gen) (rtx, rtx, rtx, rtx);
+
       op1 = gen_lowpart (vmode, d->op1);
-      emit_insn (gen_xop_pperm (target, op0, op1, vperm));
+
+      if (vmode == V8QImode)
+	gen = gen_mmx_ppermv64;
+      else if (vmode == V16QImode)
+	gen = gen_xop_pperm;
+      else
+	gcc_unreachable ();
+
+      emit_insn (gen (target, op0, op1, vperm));
     }
+
   if (target != d->target)
     emit_move_insn (d->target, gen_lowpart (d->vmode, target));
 
@@ -20658,8 +20705,9 @@ ix86_expand_vec_interleave (rtx targ, rtx op0, rtx op1, bool high_p)
   gcc_assert (ok);
 }
 
-/* Optimize vector MUL generation for V8QI, V16QI and V32QI
-   under TARGET_AVX512BW. i.e. for v16qi a * b, it has
+/* This function is similar as ix86_expand_vecop_qihi,
+   but optimized under AVX512BW by using vpmovwb.
+   For example, optimize vector MUL generation like
 
    vpmovzxbw ymm2, xmm0
    vpmovzxbw ymm3, xmm1
@@ -20669,13 +20717,14 @@ ix86_expand_vec_interleave (rtx targ, rtx op0, rtx op1, bool high_p)
    it would take less instructions than ix86_expand_vecop_qihi.
    Return true if success.  */
 
-bool
-ix86_expand_vecmul_qihi (rtx dest, rtx op1, rtx op2)
+static bool
+ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 {
   machine_mode himode, qimode = GET_MODE (dest);
   rtx hop1, hop2, hdest;
   rtx (*gen_extend)(rtx, rtx);
   rtx (*gen_truncate)(rtx, rtx);
+  bool uns_p = (code == ASHIFTRT) ? false : true;
 
   /* There's no V64HImode multiplication instruction.  */
   if (qimode == E_V64QImode)
@@ -20696,17 +20745,17 @@ ix86_expand_vecmul_qihi (rtx dest, rtx op1, rtx op2)
     {
     case E_V8QImode:
       himode = V8HImode;
-      gen_extend = gen_zero_extendv8qiv8hi2;
+      gen_extend = uns_p ? gen_zero_extendv8qiv8hi2 : gen_extendv8qiv8hi2;
       gen_truncate = gen_truncv8hiv8qi2;
       break;
     case E_V16QImode:
       himode = V16HImode;
-      gen_extend = gen_zero_extendv16qiv16hi2;
+      gen_extend = uns_p ? gen_zero_extendv16qiv16hi2 : gen_extendv16qiv16hi2;
       gen_truncate = gen_truncv16hiv16qi2;
       break;
     case E_V32QImode:
       himode = V32HImode;
-      gen_extend = gen_zero_extendv32qiv32hi2;
+      gen_extend = uns_p ? gen_zero_extendv32qiv32hi2 : gen_extendv32qiv32hi2;
       gen_truncate = gen_truncv32hiv32qi2;
       break;
     default:
@@ -20718,7 +20767,7 @@ ix86_expand_vecmul_qihi (rtx dest, rtx op1, rtx op2)
   hdest = gen_reg_rtx (himode);
   emit_insn (gen_extend (hop1, op1));
   emit_insn (gen_extend (hop2, op2));
-  emit_insn (gen_rtx_SET (hdest, simplify_gen_binary (MULT, himode,
+  emit_insn (gen_rtx_SET (hdest, simplify_gen_binary (code, himode,
 						      hop1, hop2)));
   emit_insn (gen_truncate (dest, hdest));
   return true;
@@ -20726,8 +20775,9 @@ ix86_expand_vecmul_qihi (rtx dest, rtx op1, rtx op2)
 
 /* Expand a vector operation shift by constant for a V*QImode in terms of the
    same operation on V*HImode. Return true if success. */
-bool
-ix86_expand_vec_shift_qihi_constant (enum rtx_code code, rtx dest, rtx op1, rtx op2)
+static bool
+ix86_expand_vec_shift_qihi_constant (enum rtx_code code,
+				     rtx dest, rtx op1, rtx op2)
 {
   machine_mode qimode, himode;
   HOST_WIDE_INT and_constant, xor_constant;
@@ -20839,6 +20889,16 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   bool uns_p = false;
   int i;
 
+  if (CONST_INT_P (op2)
+      && (code == ASHIFT || code == LSHIFTRT || code == ASHIFTRT)
+      && ix86_expand_vec_shift_qihi_constant (code, dest, op1, op2))
+    return;
+
+  if (TARGET_AVX512BW
+      && VECTOR_MODE_P (GET_MODE (op2))
+      && ix86_expand_vecop_qihi2 (code, dest, op1, op2))
+    return;
+
   switch (qimode)
     {
     case E_V16QImode:
@@ -20860,7 +20920,6 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       gcc_unreachable ();
     }
 
-  op2_l = op2_h = op2;
   switch (code)
     {
     case MULT:
@@ -20889,17 +20948,46 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       op1_h = gen_reg_rtx (himode);
       ix86_expand_sse_unpack (op1_l, op1, uns_p, false);
       ix86_expand_sse_unpack (op1_h, op1, uns_p, true);
+      /* vashr/vlshr/vashl  */
+      if (GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT)
+	{
+	  rtx tmp = force_reg (qimode, op2);
+	  op2_l = gen_reg_rtx (himode);
+	  op2_h = gen_reg_rtx (himode);
+	  ix86_expand_sse_unpack (op2_l, tmp, uns_p, false);
+	  ix86_expand_sse_unpack (op2_h, tmp, uns_p, true);
+	}
+      else
+	op2_l = op2_h = op2;
+
       full_interleave = true;
       break;
     default:
       gcc_unreachable ();
     }
 
-  /* Perform the operation.  */
-  res_l = expand_simple_binop (himode, code, op1_l, op2_l, NULL_RTX,
-			       1, OPTAB_DIRECT);
-  res_h = expand_simple_binop (himode, code, op1_h, op2_h, NULL_RTX,
-			       1, OPTAB_DIRECT);
+  /* Perform vashr/vlshr/vashl.  */
+  if (code != MULT
+      && GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT)
+    {
+      res_l = gen_reg_rtx (himode);
+      res_h = gen_reg_rtx (himode);
+      emit_insn (gen_rtx_SET (res_l,
+			      simplify_gen_binary (code, himode,
+						   op1_l, op2_l)));
+      emit_insn (gen_rtx_SET (res_h,
+			      simplify_gen_binary (code, himode,
+						   op1_h, op2_h)));
+    }
+  /* Performance mult/ashr/lshr/ashl.  */
+  else
+    {
+      res_l = expand_simple_binop (himode, code, op1_l, op2_l, NULL_RTX,
+				   1, OPTAB_DIRECT);
+      res_h = expand_simple_binop (himode, code, op1_h, op2_h, NULL_RTX,
+				   1, OPTAB_DIRECT);
+    }
+
   gcc_assert (res_l && res_h);
 
   /* Merge the data back into the right place.  */

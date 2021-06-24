@@ -1651,7 +1651,8 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 /* Nonzero if this map clause is for an OpenACC compute construct's reduction
-   variable.  */
+   variable or OpenMP map clause mentioned also in in_reduction clause on the
+   same construct.  */
 #define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 /* Nonzero on map clauses added implicitly for reduction clauses on combined

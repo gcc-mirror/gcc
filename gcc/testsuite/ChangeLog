@@ -1,3 +1,51 @@
+2021-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101174
+	* g++.dg/cpp1z/class-deduction-access3.C: New test.
+	* g++.dg/cpp1z/class-deduction91.C: New test.
+
+2021-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/pcrel-opt-inc-di.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-df.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-di.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-hi.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-qi.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-sf.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-si.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-vector.c: Enable -mpcrel-opt to
+	test it.
+	* gcc.target/powerpc/pcrel-opt-st-df.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-di.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-hi.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-qi.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-sf.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-si.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-vector.c: Enable -mpcrel-opt to
+	test it.
+
+2021-06-23  Xi Ruoyao  <xry111@mengyan@123.wang>
+
+	* gcc.c-torture/execute/950704-1.c: Add -fwrapv to avoid
+	undefined behavior.
+
+2021-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/86439
+	* g++.dg/cpp1z/class-deduction88.C: New test.
+	* g++.dg/cpp1z/class-deduction89.C: New test.
+	* g++.dg/cpp1z/class-deduction90.C: New test.
+
+2021-06-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101175
+	* gcc.target/i386/pr101175.c: New test.
+
+2021-06-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/100337
+	* gfortran.dg/coarray_collectives_17.f90: New test.
+
 2021-06-22  Sandra Loosemore  <sandra@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

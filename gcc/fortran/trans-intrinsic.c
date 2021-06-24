@@ -11242,8 +11242,28 @@ conv_co_collective (gfc_code *code)
   if (flag_coarray == GFC_FCOARRAY_SINGLE)
     {
       if (stat != NULL_TREE)
-	gfc_add_modify (&block, stat,
-			fold_convert (TREE_TYPE (stat), integer_zero_node));
+	{
+	  /* For optional stats, check the pointer is valid before zero'ing.  */
+	  if (gfc_expr_attr (stat_expr).optional)
+	    {
+	      tree tmp;
+	      stmtblock_t ass_block;
+	      gfc_start_block (&ass_block);
+	      gfc_add_modify (&ass_block, stat,
+			      fold_convert (TREE_TYPE (stat),
+					    integer_zero_node));
+	      tmp = fold_build2 (NE_EXPR, logical_type_node,
+				 gfc_build_addr_expr (NULL_TREE, stat),
+				 null_pointer_node);
+	      tmp = fold_build3 (COND_EXPR, void_type_node, tmp,
+				 gfc_finish_block (&ass_block),
+				 build_empty_stmt (input_location));
+	      gfc_add_expr_to_block (&block, tmp);
+	    }
+	  else
+	    gfc_add_modify (&block, stat,
+			    fold_convert (TREE_TYPE (stat), integer_zero_node));
+	}
       return gfc_finish_block (&block);
     }
 

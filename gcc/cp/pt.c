@@ -236,6 +236,10 @@ push_access_scope (tree t)
     push_nested_class (DECL_FRIEND_CONTEXT (t));
   else if (DECL_CLASS_SCOPE_P (t))
     push_nested_class (DECL_CONTEXT (t));
+  else if (deduction_guide_p (t) && DECL_ARTIFICIAL (t))
+    /* An artificial deduction guide should have the same access as
+       the constructor.  */
+    push_nested_class (TREE_TYPE (TREE_TYPE (t)));
   else
     push_to_top_level ();
 
@@ -255,7 +259,9 @@ pop_access_scope (tree t)
   if (TREE_CODE (t) == FUNCTION_DECL)
     current_function_decl = saved_access_scope->pop();
 
-  if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
+  if (DECL_FRIEND_CONTEXT (t)
+      || DECL_CLASS_SCOPE_P (t)
+      || (deduction_guide_p (t) && DECL_ARTIFICIAL (t)))
     pop_nested_class ();
   else
     pop_from_top_level ();
@@ -18880,9 +18886,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case OACC_DATA:
     case OMP_TARGET_DATA:
     case OMP_TARGET:
-      tmp = tsubst_omp_clauses (OMP_CLAUSES (t), (TREE_CODE (t) == OACC_DATA)
-				? C_ORT_ACC : C_ORT_OMP, args, complain,
-				in_decl);
+      tmp = tsubst_omp_clauses (OMP_CLAUSES (t),
+				TREE_CODE (t) == OACC_DATA
+				? C_ORT_ACC
+				: TREE_CODE (t) == OMP_TARGET
+				? C_ORT_OMP_TARGET : C_ORT_OMP,
+				args, complain, in_decl);
       keep_next_level (true);
       stmt = begin_omp_structured_block ();
 
@@ -28804,9 +28813,6 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
     DECL_ABSTRACT_ORIGIN (ded_tmpl) = fn_tmpl;
   if (ci)
     set_constraints (ded_tmpl, ci);
-  /* The artificial deduction guide should have same access as the
-     constructor.  */
-  DECL_CONTEXT (ded_fn) = type;
 
   return ded_tmpl;
 }
@@ -29382,7 +29388,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
     if (tree guide = maybe_aggr_guide (tmpl, init, args))
       cands = lookup_add (guide, cands);
 
-  tree call = error_mark_node;
+  tree fndecl = error_mark_node;
 
   /* If this is list-initialization and the class has a list constructor, first
      try deducing from the list as a single argument, as [over.match.list].  */
@@ -29396,11 +29402,9 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
       }
   if (list_cands)
     {
-      ++cp_unevaluated_operand;
-      call = build_new_function_call (list_cands, &args, tf_decltype);
-      --cp_unevaluated_operand;
+      fndecl = perform_dguide_overload_resolution (list_cands, args, tf_none);
 
-      if (call == error_mark_node)
+      if (fndecl == error_mark_node)
 	{
 	  /* That didn't work, now try treating the list as a sequence of
 	     arguments.  */
@@ -29416,31 +29420,22 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 	     "user-declared constructors", type);
       return error_mark_node;
     }
-  else if (!cands && call == error_mark_node)
+  else if (!cands && fndecl == error_mark_node)
     {
       error ("cannot deduce template arguments of %qT, as it has no viable "
 	     "deduction guides", type);
       return error_mark_node;
     }
 
-  if (call == error_mark_node)
-    {
-      ++cp_unevaluated_operand;
-      call = build_new_function_call (cands, &args, tf_decltype);
-      --cp_unevaluated_operand;
-    }
+  if (fndecl == error_mark_node)
+    fndecl = perform_dguide_overload_resolution (cands, args, tf_none);
 
-  if (call == error_mark_node)
+  if (fndecl == error_mark_node)
     {
       if (complain & tf_warning_or_error)
 	{
 	  error ("class template argument deduction failed:");
-
-	  ++cp_unevaluated_operand;
-	  call = build_new_function_call (cands, &args,
-					  complain | tf_decltype);
-	  --cp_unevaluated_operand;
-
+	  perform_dguide_overload_resolution (cands, args, complain);
 	  if (elided)
 	    inform (input_location, "explicit deduction guides not considered "
 		    "for copy-initialization");
@@ -29451,8 +29446,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
      constructor is chosen, the initialization is ill-formed.  */
   else if (flags & LOOKUP_ONLYCONVERTING)
     {
-      tree fndecl = cp_get_callee_fndecl_nofold (call);
-      if (fndecl && DECL_NONCONVERTING_P (fndecl))
+      if (DECL_NONCONVERTING_P (fndecl))
 	{
 	  if (complain & tf_warning_or_error)
 	    {
@@ -29470,12 +29464,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
   /* If CTAD succeeded but the type doesn't have any explicit deduction
      guides, this deduction might not be what the user intended.  */
-  if (call != error_mark_node && !any_dguides_p)
+  if (fndecl != error_mark_node && !any_dguides_p)
     {
-      tree fndecl = cp_get_callee_fndecl_nofold (call);
-      if (fndecl != NULL_TREE
-	  && (!DECL_IN_SYSTEM_HEADER (fndecl)
-	      || global_dc->dc_warn_system_headers)
+      if ((!DECL_IN_SYSTEM_HEADER (fndecl)
+	   || global_dc->dc_warn_system_headers)
 	  && warning (OPT_Wctad_maybe_unsupported,
 		      "%qT may not intend to support class template argument "
 		      "deduction", type))
@@ -29483,7 +29475,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 		"warning");
     }
 
-  return cp_build_qualified_type (TREE_TYPE (call), cp_type_quals (ptype));
+  return cp_build_qualified_type (TREE_TYPE (TREE_TYPE (fndecl)),
+				  cp_type_quals (ptype));
 }
 
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced

@@ -1035,7 +1035,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       element_type&
-      operator[](ptrdiff_t __i) const
+      operator[](ptrdiff_t __i) const noexcept
       {
 	__glibcxx_assert(_M_get() != nullptr);
 	__glibcxx_assert(!extent<_Tp>::value || __i < extent<_Tp>::value);
