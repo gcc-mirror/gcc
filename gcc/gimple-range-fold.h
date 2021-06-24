@@ -158,6 +158,6 @@ protected:
   void range_of_ssa_name_with_loop_info (irange &, tree, class loop *, gphi *,
 					 fur_source &src);
   void relation_fold_and_or (irange& lhs_range, gimple *s, fur_source &src);
-  void postfold_gcond_edges (gcond *s, fur_source &src);
+  void postfold_gcond_edges (gcond *s, irange &lhs_range, fur_source &src);
 };
 #endif // GCC_GIMPLE_RANGE_FOLD_H

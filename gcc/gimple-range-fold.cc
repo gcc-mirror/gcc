@@ -617,7 +617,7 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 		}
 	    }
 	  else if (is_a<gcond *> (s))
-	    postfold_gcond_edges (as_a<gcond *> (s), src);
+	    postfold_gcond_edges (as_a<gcond *> (s), r, src);
 	}
       else
 	r.set_varying (type);
@@ -1247,9 +1247,11 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
 // Register any outgoing edge relations from a conditional branch.
 
 void
-fold_using_range::postfold_gcond_edges (gcond *s, fur_source &src)
+fold_using_range::postfold_gcond_edges (gcond *s, irange& lhs_range,
+					fur_source &src)
 {
   int_range_max r;
+  int_range<2> e0_range, e1_range;
   tree name;
   range_operator *handler;
   basic_block bb = gimple_bb (s);
@@ -1257,10 +1259,27 @@ fold_using_range::postfold_gcond_edges (gcond *s, fur_source &src)
   edge e0 = EDGE_SUCC (bb, 0);
   if (!single_pred_p (e0->dest))
     e0 = NULL;
+  else
+    {
+      // If this edge is never taken, ignore it.
+      gcond_edge_range (e0_range, e0);
+      e0_range.intersect (lhs_range);
+      if (e0_range.undefined_p ())
+	e0 = NULL;
+    }
+
 
   edge e1 = EDGE_SUCC (bb, 1);
   if (!single_pred_p (e1->dest))
     e1 = NULL;
+  else
+    {
+      // If this edge is never taken, ignore it.
+      gcond_edge_range (e1_range, e1);
+      e1_range.intersect (lhs_range);
+      if (e1_range.undefined_p ())
+	e1 = NULL;
+    }
 
   // At least one edge needs to be single pred.
   if (!e0 && !e1)
@@ -1276,15 +1295,13 @@ fold_using_range::postfold_gcond_edges (gcond *s, fur_source &src)
       gcc_checking_assert (handler);
       if (e0)
 	{
-	  gcond_edge_range (r, e0);
-	  relation_kind relation = handler->op1_op2_relation (r);
+	  relation_kind relation = handler->op1_op2_relation (e0_range);
 	  if (relation != VREL_NONE)
 	    src.register_relation (e0, relation, ssa1, ssa2);
 	}
       if (e1)
 	{
-	  gcond_edge_range (r, e1);
-	  relation_kind relation = handler->op1_op2_relation (r);
+	  relation_kind relation = handler->op1_op2_relation (e1_range);
 	  if (relation != VREL_NONE)
 	    src.register_relation (e1, relation, ssa1, ssa2);
 	}
