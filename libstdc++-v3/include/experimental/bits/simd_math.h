@@ -1304,6 +1304,8 @@ template <typename _Tp, typename _Abi>
   {
     if constexpr (simd_size_v<_Tp, _Abi> == 1)
       return std::copysign(__x[0], __y[0]);
+    else if constexpr (__is_fixed_size_abi_v<_Abi>)
+      return {__private_init, _Abi::_SimdImpl::_S_copysign(__data(__x), __data(__y))};
     else if constexpr (is_same_v<_Tp, long double> && sizeof(_Tp) == 12)
       // Remove this case once __bit_cast is implemented via __builtin_bit_cast.
       // It is necessary, because __signmask below cannot be computed at compile
@@ -1315,7 +1317,7 @@ template <typename _Tp, typename _Abi>
 	using _V = simd<_Tp, _Abi>;
 	using namespace std::experimental::__float_bitwise_operators;
 	_GLIBCXX_SIMD_USE_CONSTEXPR_API auto __signmask = _V(1) ^ _V(-1);
-	return (__x & (__x ^ __signmask)) | (__y & __signmask);
+	return (__x & ~__signmask) | (__y & __signmask);
       }
   }
 

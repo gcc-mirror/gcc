@@ -1663,7 +1663,7 @@ template <int _Np>
     _GLIBCXX_SIMD_APPLY_ON_TUPLE(_Tp, ldexp)
     _GLIBCXX_SIMD_APPLY_ON_TUPLE(_Tp, fmod)
     _GLIBCXX_SIMD_APPLY_ON_TUPLE(_Tp, remainder)
-    // copysign in simd_math.h
+    _GLIBCXX_SIMD_APPLY_ON_TUPLE(_Tp, copysign)
     _GLIBCXX_SIMD_APPLY_ON_TUPLE(_Tp, nextafter)
     _GLIBCXX_SIMD_APPLY_ON_TUPLE(_Tp, fdim)
     _GLIBCXX_SIMD_APPLY_ON_TUPLE(_Tp, fmax)

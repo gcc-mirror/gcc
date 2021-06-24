@@ -5189,6 +5189,12 @@ template <typename _Tp, typename _Ap>
     return {__private_init,
 	    _Ap::_SimdImpl::_S_bit_and(__data(__a), __data(__b))};
   }
+
+template <typename _Tp, typename _Ap>
+  _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_SIMD_CONSTEXPR
+  enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Ap>>
+  operator~(const simd<_Tp, _Ap>& __a)
+  { return {__private_init, _Ap::_SimdImpl::_S_complement(__data(__a))}; }
 } // namespace __float_bitwise_operators }}}
 
 _GLIBCXX_SIMD_END_NAMESPACE
