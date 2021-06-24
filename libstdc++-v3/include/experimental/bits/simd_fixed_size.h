@@ -1026,55 +1026,6 @@ template <typename _Tp, int _Np, typename... _As, typename _Next, int _Remain>
   };
 
 // }}}
-// _AbisInSimdTuple {{{
-template <typename _Tp>
-  struct _SeqOp;
-
-template <size_t _I0, size_t... _Is>
-  struct _SeqOp<index_sequence<_I0, _Is...>>
-  {
-    using _FirstPlusOne = index_sequence<_I0 + 1, _Is...>;
-    using _NotFirstPlusOne = index_sequence<_I0, (_Is + 1)...>;
-    template <size_t _First, size_t _Add>
-    using _Prepend = index_sequence<_First, _I0 + _Add, (_Is + _Add)...>;
-  };
-
-template <typename _Tp>
-  struct _AbisInSimdTuple;
-
-template <typename _Tp>
-  struct _AbisInSimdTuple<_SimdTuple<_Tp>>
-  {
-    using _Counts = index_sequence<0>;
-    using _Begins = index_sequence<0>;
-  };
-
-template <typename _Tp, typename _Ap>
-  struct _AbisInSimdTuple<_SimdTuple<_Tp, _Ap>>
-  {
-    using _Counts = index_sequence<1>;
-    using _Begins = index_sequence<0>;
-  };
-
-template <typename _Tp, typename _A0, typename... _As>
-  struct _AbisInSimdTuple<_SimdTuple<_Tp, _A0, _A0, _As...>>
-  {
-    using _Counts = typename _SeqOp<typename _AbisInSimdTuple<
-      _SimdTuple<_Tp, _A0, _As...>>::_Counts>::_FirstPlusOne;
-    using _Begins = typename _SeqOp<typename _AbisInSimdTuple<
-      _SimdTuple<_Tp, _A0, _As...>>::_Begins>::_NotFirstPlusOne;
-  };
-
-template <typename _Tp, typename _A0, typename _A1, typename... _As>
-  struct _AbisInSimdTuple<_SimdTuple<_Tp, _A0, _A1, _As...>>
-  {
-    using _Counts = typename _SeqOp<typename _AbisInSimdTuple<
-      _SimdTuple<_Tp, _A1, _As...>>::_Counts>::template _Prepend<1, 0>;
-    using _Begins = typename _SeqOp<typename _AbisInSimdTuple<
-      _SimdTuple<_Tp, _A1, _As...>>::_Begins>::template _Prepend<0, 1>;
-  };
-
-// }}}
 // __autocvt_to_simd {{{
 template <typename _Tp, bool = is_arithmetic_v<__remove_cvref_t<_Tp>>>
   struct __autocvt_to_simd
