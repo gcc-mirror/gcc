@@ -2611,13 +2611,14 @@ template <typename _Abi>
       _S_ldexp(_SimdWrapper<_Tp, _Np> __x,
 	       __fixed_size_storage_t<int, _Np> __exp)
       {
-	if constexpr (__is_avx512_abi<_Abi>())
+	if constexpr (sizeof(__x) == 64 || __have_avx512vl)
 	  {
 	    const auto __xi = __to_intrin(__x);
 	    constexpr _SimdConverter<int, simd_abi::fixed_size<_Np>, _Tp, _Abi>
 	      __cvt;
 	    const auto __expi = __to_intrin(__cvt(__exp));
-	    constexpr auto __k1 = _Abi::template _S_implicit_mask_intrin<_Tp>();
+	    using _Up = __bool_storage_member_type_t<_Np>;
+	    constexpr _Up __k1 = _Np < sizeof(_Up) * __CHAR_BIT__ ? _Up((1ULL << _Np) - 1) : ~_Up();
 	    if constexpr (sizeof(__xi) == 16)
 	      {
 		if constexpr (sizeof(_Tp) == 8)
