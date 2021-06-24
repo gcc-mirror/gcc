@@ -1127,7 +1127,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
 
   /* Avoid spurious warnings with VLAs (c++/54583).  */
   if (TYPE_SIZE (t) && EXPR_P (TYPE_SIZE (t)))
-    TREE_NO_WARNING (TYPE_SIZE (t)) = 1;
+    suppress_warning (TYPE_SIZE (t), OPT_Wunused);
 
   /* Push these needs up to the ARRAY_TYPE so that initialization takes
      place more easily.  */

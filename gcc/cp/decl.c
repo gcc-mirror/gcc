@@ -850,7 +850,7 @@ wrapup_namespace_globals ()
 	      && !TREE_PUBLIC (decl)
 	      && !DECL_ARTIFICIAL (decl)
 	      && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl)
-	      && !TREE_NO_WARNING (decl))
+	      && !warning_suppressed_p (decl, OPT_Wunused_function))
 	    warning_at (DECL_SOURCE_LOCATION (decl),
 			OPT_Wunused_function,
 			"%qF declared %<static%> but never defined", decl);
@@ -13906,10 +13906,7 @@ grokdeclarator (const cp_declarator *declarator,
 		decl = build_decl (id_loc, FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
 		if (bitfield && !unqualified_id)
-		  {
-		    TREE_NO_WARNING (decl) = 1;
-		    DECL_PADDING_P (decl) = 1;
-		  }
+		  DECL_PADDING_P (decl) = 1;
 
 		if (storage_class == sc_mutable)
 		  {
@@ -17495,7 +17492,7 @@ finish_function (bool inline_p)
       /* Don't complain if we are declared noreturn.  */
       && !TREE_THIS_VOLATILE (fndecl)
       && !DECL_NAME (DECL_RESULT (fndecl))
-      && !TREE_NO_WARNING (fndecl)
+      && !warning_suppressed_p (fndecl, OPT_Wreturn_type)
       /* Structor return values (if any) are set by the compiler.  */
       && !DECL_CONSTRUCTOR_P (fndecl)
       && !DECL_DESTRUCTOR_P (fndecl)
@@ -17523,7 +17520,7 @@ finish_function (bool inline_p)
       else if (warning_at (&richloc, OPT_Wreturn_type,
 			   "no return statement in function returning "
 			   "non-void"))
-	TREE_NO_WARNING (fndecl) = 1;
+	suppress_warning (fndecl, OPT_Wreturn_type);
     }
 
   /* Lambda closure members are implicitly constexpr if possible.  */
@@ -17597,7 +17594,7 @@ finish_function (bool inline_p)
 	    && !DECL_READ_P (decl)
 	    && DECL_NAME (decl)
 	    && !DECL_ARTIFICIAL (decl)
-	    && !TREE_NO_WARNING (decl)
+	    && !warning_suppressed_p (decl,OPT_Wunused_but_set_parameter)
 	    && !DECL_IN_SYSTEM_HEADER (decl)
 	    && TREE_TYPE (decl) != error_mark_node
 	    && !TYPE_REF_P (TREE_TYPE (decl))
@@ -18088,7 +18085,7 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 {
   if (undeduced_auto_decl (decl))
     {
-      if (TREE_NO_WARNING (decl) && seen_error ())
+      if (warning_suppressed_p (decl) && seen_error ())
 	/* We probably already complained about deduction failure.  */;
       else if (complain & tf_error)
 	error ("use of %qD before deduction of %<auto%>", decl);

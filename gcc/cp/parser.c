@@ -1,3 +1,4 @@
+
 /* -*- C++ -*- Parser.
    Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
@@ -5322,7 +5323,7 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
   /* The operands of a fold-expression are cast-expressions, so binary or
      conditional expressions are not allowed.  We check this here to avoid
      tentative parsing.  */
-  if (EXPR_P (expr1) && TREE_NO_WARNING (expr1))
+  if (EXPR_P (expr1) && warning_suppressed_p (expr1, OPT_Wparentheses))
     /* OK, the expression was parenthesized.  */;
   else if (is_binary_op (TREE_CODE (expr1)))
     error_at (location_of (expr1),
@@ -5604,7 +5605,10 @@ cp_parser_primary_expression (cp_parser *parser,
 	/* Consume the `)'.  */
 	token = cp_lexer_peek_token (parser->lexer);
 	location_t close_paren_loc = token->location;
+	bool no_wparens = warning_suppressed_p (expr, OPT_Wparentheses);
 	expr.set_range (open_paren_loc, close_paren_loc);
+	if (no_wparens)
+	  suppress_warning (expr, OPT_Wparentheses);
 	if (!parens.require_close (parser)
 	    && !cp_parser_uncommitted_to_tentative_parse_p (parser))
 	  cp_parser_skip_to_end_of_statement (parser);

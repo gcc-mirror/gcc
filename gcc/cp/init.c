@@ -3536,11 +3536,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	       the arguments to the constructor call.  */
 	    {
 	      /* CLEANUP is compiler-generated, so no diagnostics.  */
-	      TREE_NO_WARNING (cleanup) = true;
+	      suppress_warning (cleanup);
 	      init_expr = build2 (TRY_CATCH_EXPR, void_type_node,
 				  init_expr, cleanup);
 	      /* Likewise, this try-catch is compiler-generated.  */
-	      TREE_NO_WARNING (init_expr) = true;
+	      suppress_warning (init_expr);
 	    }
 	  else
 	    /* Ack!  First we allocate the memory.  Then we set our sentry
@@ -3562,7 +3562,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      sentry = TARGET_EXPR_SLOT (begin);
 
 	      /* CLEANUP is compiler-generated, so no diagnostics.  */
-	      TREE_NO_WARNING (cleanup) = true;
+	      suppress_warning (cleanup);
 
 	      TARGET_EXPR_CLEANUP (begin)
 		= build3 (COND_EXPR, void_type_node, sentry,
@@ -3576,7 +3576,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 			  build2 (COMPOUND_EXPR, void_type_node, init_expr,
 				  end));
 	      /* Likewise, this is compiler-generated.  */
-	      TREE_NO_WARNING (init_expr) = true;
+	      suppress_warning (init_expr);
 	    }
 	}
     }
@@ -3823,7 +3823,7 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
 
   /* Wrap it in a NOP_EXPR so warn_if_unused_value doesn't complain.  */
   rval = build1_loc (loc, NOP_EXPR, TREE_TYPE (rval), rval);
-  TREE_NO_WARNING (rval) = 1;
+  suppress_warning (rval, OPT_Wunused_value);
 
   return rval;
 }
@@ -3995,7 +3995,7 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 			  fold_convert (TREE_TYPE (base), nullptr_node));
   /* This is a compiler generated comparison, don't emit
      e.g. -Wnonnull-compare warning for it.  */
-  TREE_NO_WARNING (cond) = 1;
+  suppress_warning (cond, OPT_Wnonnull_compare);
   body = build3_loc (loc, COND_EXPR, void_type_node,
 		     cond, body, integer_zero_node);
   COND_EXPR_IS_VEC_DELETE (body) = true;
@@ -4665,7 +4665,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       atype = build_pointer_type (atype);
       stmt_expr = build1 (NOP_EXPR, atype, stmt_expr);
       stmt_expr = cp_build_fold_indirect_ref (stmt_expr);
-      TREE_NO_WARNING (stmt_expr) = 1;
+      suppress_warning (stmt_expr /* What warning? */);
     }
 
   return stmt_expr;
@@ -4935,7 +4935,7 @@ build_delete (location_t loc, tree otype, tree addr,
   /* This is a compiler generated comparison, don't emit
      e.g. -Wnonnull-compare warning for it.  */
   else if (TREE_CODE (ifexp) == NE_EXPR)
-    TREE_NO_WARNING (ifexp) = 1;
+    suppress_warning (ifexp, OPT_Wnonnull_compare);
 
   if (!integer_nonzerop (ifexp))
     expr = build3 (COND_EXPR, void_type_node, ifexp, expr, void_node);
