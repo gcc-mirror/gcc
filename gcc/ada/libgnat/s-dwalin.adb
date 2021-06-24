@@ -47,6 +47,10 @@ package body System.Dwarf_Lines is
 
    SSU : constant := System.Storage_Unit;
 
+   function Get_Load_Displacement (C : Dwarf_Context) return Storage_Offset;
+   --  Return the displacement between the load address present in the binary
+   --  and the run-time address at which it is loaded (i.e. non-zero for PIE).
+
    function String_Length (Str : Str_Access) return Natural;
    --  Return the length of the C string Str
 
@@ -74,7 +78,7 @@ package body System.Dwarf_Lines is
 
    procedure Read_Aranges_Entry
      (C     : in out Dwarf_Context;
-      Start :    out Storage_Offset;
+      Start :    out Address;
       Len   :    out Storage_Count);
    --  Read a single .debug_aranges pair
 
@@ -86,7 +90,7 @@ package body System.Dwarf_Lines is
 
    procedure Aranges_Lookup
      (C           : in out Dwarf_Context;
-      Addr        :        Storage_Offset;
+      Addr        :        Address;
       Info_Offset :    out Offset;
       Success     :    out Boolean);
    --  Search for Addr in .debug_aranges and return offset Info_Offset in
@@ -151,7 +155,7 @@ package body System.Dwarf_Lines is
 
    procedure Symbolic_Address
      (C           : in out Dwarf_Context;
-      Addr        :        Storage_Offset;
+      Addr        :        Address;
       Dir_Name    :    out Str_Access;
       File_Name   :    out Str_Access;
       Subprg_Name :    out String_Ptr_Len;
@@ -368,6 +372,19 @@ package body System.Dwarf_Lines is
       end loop;
    end For_Each_Row;
 
+   ---------------------------
+   -- Get_Load_Displacement --
+   ---------------------------
+
+   function Get_Load_Displacement (C : Dwarf_Context) return Storage_Offset is
+   begin
+      if C.Load_Address /= Null_Address then
+         return C.Load_Address - Address (Get_Load_Address (C.Obj.all));
+      else
+         return 0;
+      end if;
+   end Get_Load_Displacement;
+
    ---------------------
    -- Initialize_Pass --
    ---------------------
@@ -403,18 +420,19 @@ package body System.Dwarf_Lines is
    ---------------
 
    function Is_Inside (C : Dwarf_Context; Addr : Address) return Boolean is
+      Disp : constant Storage_Offset := Get_Load_Displacement (C);
+
    begin
-      return (Addr >= C.Low + C.Load_Address
-                and then Addr <= C.High + C.Load_Address);
+      return Addr >= C.Low + Disp and then Addr <= C.High + Disp;
    end Is_Inside;
 
    -----------------
    -- Low_Address --
    -----------------
 
-   function Low_Address (C : Dwarf_Context) return System.Address is
+   function Low_Address (C : Dwarf_Context) return Address is
    begin
-      return C.Load_Address + C.Low;
+      return C.Low + Get_Load_Displacement (C);
    end Low_Address;
 
    ----------
@@ -448,12 +466,12 @@ package body System.Dwarf_Lines is
 
       Success := True;
 
-      --  Get memory bounds for executable code.  Note that such code
+      --  Get address bounds for executable code. Note that such code
       --  might come from multiple sections.
 
       Get_Xcode_Bounds (C.Obj.all, Lo, Hi);
-      C.Low  := Storage_Offset (Lo);
-      C.High := Storage_Offset (Hi);
+      C.Low  := Address (Lo);
+      C.High := Address (Hi);
 
       --  Create a stream for debug sections
 
@@ -1046,7 +1064,7 @@ package body System.Dwarf_Lines is
 
    procedure Aranges_Lookup
      (C           : in out Dwarf_Context;
-      Addr        :        Storage_Offset;
+      Addr        :        Address;
       Info_Offset :    out Offset;
       Success     :    out Boolean)
    is
@@ -1060,7 +1078,7 @@ package body System.Dwarf_Lines is
 
          loop
             declare
-               Start : Storage_Offset;
+               Start : Address;
                Len   : Storage_Count;
             begin
                Read_Aranges_Entry (C, Start, Len);
@@ -1391,7 +1409,7 @@ package body System.Dwarf_Lines is
 
    procedure Read_Aranges_Entry
      (C     : in out Dwarf_Context;
-      Start :    out Storage_Offset;
+      Start :    out Address;
       Len   :    out Storage_Count)
    is
    begin
@@ -1403,7 +1421,7 @@ package body System.Dwarf_Lines is
          begin
             S     := Read (C.Aranges);
             L     := Read (C.Aranges);
-            Start := Storage_Offset (S);
+            Start := Address (S);
             Len   := Storage_Count (L);
          end;
 
@@ -1413,7 +1431,7 @@ package body System.Dwarf_Lines is
          begin
             S     := Read (C.Aranges);
             L     := Read (C.Aranges);
-            Start := Storage_Offset (S);
+            Start := Address (S);
             Len   := Storage_Count (L);
          end;
 
@@ -1503,11 +1521,12 @@ package body System.Dwarf_Lines is
          Info_Offset : Offset;
          Line_Offset : Offset;
          Success     : Boolean;
-         Ar_Start    : Storage_Offset;
+         Ar_Start    : Address;
          Ar_Len      : Storage_Count;
          Start, Len  : uint32;
          First, Last : Natural;
          Mid         : Natural;
+
       begin
          Seek (C.Aranges, 0);
 
@@ -1522,7 +1541,7 @@ package body System.Dwarf_Lines is
 
             loop
                Read_Aranges_Entry (C, Ar_Start, Ar_Len);
-               exit when Ar_Start = 0 and Ar_Len = 0;
+               exit when Ar_Start = Null_Address and Ar_Len = 0;
 
                Len   := uint32 (Ar_Len);
                Start := uint32 (Ar_Start - C.Low);
@@ -1578,7 +1597,7 @@ package body System.Dwarf_Lines is
 
    procedure Symbolic_Address
      (C           : in out Dwarf_Context;
-      Addr        :        Storage_Offset;
+      Addr        :        Address;
       Dir_Name    :    out Str_Access;
       File_Name   :    out Str_Access;
       Subprg_Name :    out String_Ptr_Len;
@@ -1871,7 +1890,6 @@ package body System.Dwarf_Lines is
       C : Dwarf_Context := Cin;
 
       Addr_In_Traceback : Address;
-      Offset_To_Lookup  : Storage_Offset;
 
       Dir_Name    : Str_Access;
       File_Name   : Str_Access;
@@ -1893,11 +1911,9 @@ package body System.Dwarf_Lines is
 
          Addr_In_Traceback := STE.PC_For (Traceback (J));
 
-         Offset_To_Lookup := Addr_In_Traceback - C.Load_Address;
-
          Symbolic_Address
            (C,
-            Offset_To_Lookup,
+            Addr_In_Traceback - Get_Load_Displacement (C),
             Dir_Name,
             File_Name,
             Subprg_Name,
