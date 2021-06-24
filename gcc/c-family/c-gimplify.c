@@ -713,7 +713,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
 	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))
 	  && !warn_init_self)
-	TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
+	suppress_warning (DECL_EXPR_DECL (*expr_p), OPT_Winit_self);
       break;
 
     case PREINCREMENT_EXPR:

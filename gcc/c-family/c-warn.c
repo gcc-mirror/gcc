@@ -155,7 +155,7 @@ overflow_warning (location_t loc, tree value, tree expr)
 			 value);
 
   if (warned)
-    TREE_NO_WARNING (value) = 1;
+    suppress_warning (value, OPT_Woverflow);
 }
 
 /* Helper function for walk_tree.  Unwrap C_MAYBE_CONST_EXPRs in an expression
@@ -219,7 +219,7 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
       && INTEGRAL_TYPE_P (TREE_TYPE (op_left))
       && !CONSTANT_CLASS_P (stripped_op_left)
       && TREE_CODE (stripped_op_left) != CONST_DECL
-      && !TREE_NO_WARNING (op_left)
+      && !warning_suppressed_p (op_left, OPT_Wlogical_op)
       && TREE_CODE (op_right) == INTEGER_CST
       && !integer_zerop (op_right)
       && !integer_onep (op_right))
@@ -234,7 +234,7 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
 	  = warning_at (location, OPT_Wlogical_op,
 			"logical %<and%> applied to non-boolean constant");
       if (warned)
-	TREE_NO_WARNING (op_left) = true;
+	suppress_warning (op_left, OPT_Wlogical_op);
       return;
     }
 
@@ -588,7 +588,7 @@ bool
 warn_if_unused_value (const_tree exp, location_t locus, bool quiet)
 {
  restart:
-  if (TREE_USED (exp) || TREE_NO_WARNING (exp))
+  if (TREE_USED (exp) || warning_suppressed_p (exp, OPT_Wunused_value))
     return false;
 
   /* Don't warn about void constructs.  This includes casting to void,
@@ -2410,7 +2410,7 @@ do_warn_unused_parameter (tree fn)
        decl; decl = DECL_CHAIN (decl))
     if (!TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL
 	&& DECL_NAME (decl) && !DECL_ARTIFICIAL (decl)
-	&& !TREE_NO_WARNING (decl))
+	&& !warning_suppressed_p (decl, OPT_Wunused_parameter))
       warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wunused_parameter,
 		  "unused parameter %qD", decl);
 }
