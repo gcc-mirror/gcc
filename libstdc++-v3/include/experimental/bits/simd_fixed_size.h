@@ -1480,7 +1480,7 @@ template <int _Np>
 #define _GLIBCXX_SIMD_FIXED_OP(name_, op_)                                     \
     template <typename _Tp, typename... _As>                                   \
       static inline constexpr _SimdTuple<_Tp, _As...> name_(                   \
-	const _SimdTuple<_Tp, _As...> __x, const _SimdTuple<_Tp, _As...> __y)  \
+	const _SimdTuple<_Tp, _As...>& __x, const _SimdTuple<_Tp, _As...>& __y)\
       {                                                                        \
 	return __x._M_apply_per_chunk(                                         \
 	  [](auto __impl, auto __xx, auto __yy) constexpr {                    \
@@ -1780,8 +1780,7 @@ template <int _Np>
     // _S_masked_unary {{{2
     template <template <typename> class _Op, typename _Tp, typename... _As>
       static inline _SimdTuple<_Tp, _As...>
-      _S_masked_unary(const _MaskMember __bits,
-		      const _SimdTuple<_Tp, _As...> __v) // TODO: const-ref __v?
+      _S_masked_unary(const _MaskMember __bits, const _SimdTuple<_Tp, _As...>& __v)
       {
 	return __v._M_apply_wrapped([&__bits](auto __meta,
 					      auto __native) constexpr {
