@@ -11,7 +11,7 @@ the environment variables documented below.
 ### `target_list`
 
 Similar to dejagnu target lists: E.g. 
-`target_list="unix{-march=sandybridge,-march=native/-ffast-math,-march=native/-ffinite-math-only}" 
+`target_list="unix{-march=sandybridge,-march=native/-ffast-math,-march=native/-ffinite-math-only}"` 
 would create three subdirs in `testsuite/simd/` to run the complete simd 
 testsuite first with `-march=sandybridge`, then with `-march=native 
 -ffast-math`, and finally with `-march=native -ffinite-math-only`.
@@ -21,7 +21,7 @@ testsuite first with `-march=sandybridge`, then with `-march=native
 
 This variable can be set to a path to a file which is equivalent to a dejagnu 
 board. The file needs to be a valid `sh` script since it is sourced from the 
-`scripts/check_simd` script. It's purpose is to set the `target_list` variable 
+`scripts/check_simd` script. Its purpose is to set the `target_list` variable 
 depending on `$target_triplet` (or whatever else makes sense for you). Example:
 
 ```sh
@@ -52,7 +52,7 @@ the `target_list` variable. In the example above `define_target power7
 `power7` which always uses the flags `-mcpu=power7` and `-static` when 
 compiling tests and prepends `$HOME/bin/run_on_gccfarm gcc112` to test 
 executables. In `target_list` you can now use the name `power7`. E.g. 
-`target_list="power7 power7/-ffast-math"` or it's shorthand 
+`target_list="power7 power7/-ffast-math"` or its shorthand 
 `target_list="power7{,-ffast-math}"`.
 
 
@@ -109,7 +109,7 @@ A test starts with the copyright header, directly followed by directives
 influencing the set of tests to generate and whether the test driver should 
 expect a failure.
 
-Then the test must at least `#include "bits/verify.h", which provides `main` 
+Then the test must at least `#include "bits/verify.h"`, which provides `main` 
 and declares a `template <typename V> void test()` function, which the test has 
 to define. The template parameter is set to `simd<T, Abi>` type where `T` and 
 `Abi` are determined by the type and ABI subset dimensions.
