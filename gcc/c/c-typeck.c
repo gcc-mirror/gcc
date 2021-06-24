@@ -6131,6 +6131,7 @@ build_c_cast (location_t loc, tree type, tree expr)
      return value reflects this.  */
   if (int_operands
       && INTEGRAL_TYPE_P (type)
+      && value != error_mark_node
       && !EXPR_INT_CONST_OPERANDS (value))
     value = note_integer_operands (value);
 
