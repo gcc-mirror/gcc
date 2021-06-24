@@ -645,11 +645,8 @@ template <typename _Tp, typename _Abi>
 	return __r;
       }
     else if constexpr (__is_fixed_size_abi_v<_Abi>)
-      {
-	return {__private_init,
-		_Abi::_SimdImpl::_S_frexp(__data(__x), __data(*__exp))};
+      return {__private_init, _Abi::_SimdImpl::_S_frexp(__data(__x), __data(*__exp))};
 #if _GLIBCXX_SIMD_X86INTRIN
-      }
     else if constexpr (__have_avx512f)
       {
 	constexpr size_t _Np = simd_size_v<_Tp, _Abi>;
@@ -667,8 +664,8 @@ template <typename _Tp, typename _Abi>
 		_Abi::_CommonImpl::_S_blend(_SimdWrapper<bool, _Np>(
 					      __isnonzero),
 					    __v, __getmant_avx512(__v))};
-#endif // _GLIBCXX_SIMD_X86INTRIN
       }
+#endif // _GLIBCXX_SIMD_X86INTRIN
     else
       {
 	// fallback implementation
@@ -751,14 +748,7 @@ template <typename _Tp, typename _Abi>
     if constexpr (_Np == 1)
       return std::logb(__x[0]);
     else if constexpr (__is_fixed_size_abi_v<_Abi>)
-      {
-	return {__private_init,
-		__data(__x)._M_apply_per_chunk([](auto __impl, auto __xx) {
-		  using _V = typename decltype(__impl)::simd_type;
-		  return __data(
-		    std::experimental::logb(_V(__private_init, __xx)));
-		})};
-      }
+      return {__private_init, _Abi::_SimdImpl::_S_logb(__data(__x))};
 #if _GLIBCXX_SIMD_X86INTRIN // {{{
     else if constexpr (__have_avx512vl && __is_sse_ps<_Tp, _Np>())
       return {__private_init,
@@ -829,9 +819,7 @@ template <typename _Tp, typename _Abi>
   enable_if_t<is_floating_point_v<_Tp>, simd<_Tp, _Abi>>
   modf(const simd<_Tp, _Abi>& __x, simd<_Tp, _Abi>* __iptr)
   {
-    if constexpr (__is_scalar_abi<_Abi>()
-		  || (__is_fixed_size_abi_v<
-			_Abi> && simd_size_v<_Tp, _Abi> == 1))
+    if constexpr (simd_size_v<_Tp, _Abi> == 1)
       {
 	_Tp __tmp;
 	_Tp __r = std::modf(__x[0], &__tmp);
@@ -1474,6 +1462,8 @@ template <typename _Tp, typename _Abi>
   }
 // }}}
 
+#undef _GLIBCXX_SIMD_CVTING2
+#undef _GLIBCXX_SIMD_CVTING3
 #undef _GLIBCXX_SIMD_MATH_CALL_
 #undef _GLIBCXX_SIMD_MATH_CALL2_
 #undef _GLIBCXX_SIMD_MATH_CALL3_
