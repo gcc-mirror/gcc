@@ -208,6 +208,11 @@
 #undef r
 #endif
 
+#if defined (__linux__) && defined (__arm__)
+// <sys/ucontext.h> defines fpregset_t::fpregs::j
+#undef j
+#endif
+
 #if defined (__linux__) && defined (__powerpc__)
 // <asm/types.h> defines __vector128::u
 #undef u
@@ -220,6 +225,15 @@
 #if ! __has_include(<newlib.h>)
 // newlib's <sys/cdefs.h> defines __lockable as a macro, so we can't use it.
 # define __lockable		cannot be used as an identifier
+// newlib's <time.h> defines __tzrule_type with these members.
+#undef d
+#undef m
+#undef n
+#undef s
+// newlib's <math.h> uses this for parameters
+#undef x
+// newlib's <inttypes.h> uses this for parameters
+#undef j
 #endif
 
 #ifdef __sun__

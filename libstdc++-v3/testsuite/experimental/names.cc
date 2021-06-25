@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++11 } }
+// { dg-add-options no_pch }
 
 // Define macros for some common variables names that we must not use for
 // naming variables, parameters etc. in the library.
