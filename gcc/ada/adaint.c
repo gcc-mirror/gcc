@@ -2485,7 +2485,7 @@ __gnat_number_of_cpus (void)
 {
   int cores = 1;
 
-#ifdef _SC_NPROCESSORS_ONLN
+#if defined (_SC_NPROCESSORS_ONLN)
   cores = (int) sysconf (_SC_NPROCESSORS_ONLN);
 
 #elif defined (__QNX__)
