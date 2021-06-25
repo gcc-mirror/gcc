@@ -10492,7 +10492,26 @@ package body Sem_Ch3 is
                   Apply_Range_Check (Discr_Expr (J), Etype (Discr));
                end if;
 
-               Force_Evaluation (Discr_Expr (J));
+               --  If the value of the discriminant may be visible in
+               --  another unit or child unit, create an external name
+               --  for it. We use the name of the object or component
+               --  that carries the discriminated subtype. The code
+               --  below may generate external symbols for the discriminant
+               --  expression when not strictly needed, which is harmless.
+
+               if Expander_Active
+                 and then Comes_From_Source (Def)
+                 and then not Is_Subprogram (Current_Scope)
+                 and then Nkind (Parent (Def)) in
+                   N_Object_Declaration | N_Component_Declaration
+               then
+                  Force_Evaluation (
+                    Discr_Expr (J),
+                    Related_Id => Defining_Identifier (Parent (Def)),
+                    Discr_Number => J);
+               else
+                  Force_Evaluation (Discr_Expr (J));
+               end if;
             end if;
 
             --  Check that the designated type of an access discriminant's
