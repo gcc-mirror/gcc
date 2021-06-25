@@ -843,6 +843,8 @@ public:
 
   bool get_is_tuple () { return is_tuple; }
 
+  bool is_unit () const override { return this->fields.empty (); }
+
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
