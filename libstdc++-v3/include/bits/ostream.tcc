@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__os.good())
 	_M_ok = true;
-      else
+      else if (__os.bad())
 	__os.setstate(ios_base::failbit);
     }
 
@@ -236,19 +236,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_ostream<_CharT, _Traits>::
     tellp()
     {
+      sentry __cerb(*this);
       pos_type __ret = pos_type(-1);
-      __try
-	{
-	  if (!this->fail())
-	    __ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::out);
-	}
-      __catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);		
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
+      if (!this->fail())
+	__ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::out);
       return __ret;
     }
 
@@ -257,30 +248,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_ostream<_CharT, _Traits>::
     seekp(pos_type __pos)
     {
-      ios_base::iostate __err = ios_base::goodbit;
-      __try
+      sentry __cerb(*this);
+      if (!this->fail())
 	{
-	  if (!this->fail())
-	    {
-	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 136.  seekp, seekg setting wrong streams?
-	      const pos_type __p = this->rdbuf()->pubseekpos(__pos,
-							     ios_base::out);
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 136.  seekp, seekg setting wrong streams?
+	  const pos_type __p = this->rdbuf()->pubseekpos(__pos, ios_base::out);
 
-	      // 129. Need error indication from seekp() and seekg()
-	      if (__p == pos_type(off_type(-1)))
-		__err |= ios_base::failbit;
-	    }
+	  // 129. Need error indication from seekp() and seekg()
+	  if (__p == pos_type(off_type(-1)))
+	    this->setstate(ios_base::failbit);
 	}
-      __catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);		
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
-      if (__err)
-	this->setstate(__err);
       return *this;
     }
 
@@ -289,30 +267,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_ostream<_CharT, _Traits>::
     seekp(off_type __off, ios_base::seekdir __dir)
     {
-      ios_base::iostate __err = ios_base::goodbit;
-      __try
+      sentry __cerb(*this);
+      if (!this->fail())
 	{
-	  if (!this->fail())
-	    {
-	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 136.  seekp, seekg setting wrong streams?
-	      const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
-							     ios_base::out);
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 136.  seekp, seekg setting wrong streams?
+	  const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
+							 ios_base::out);
 
-	      // 129. Need error indication from seekp() and seekg()
-	      if (__p == pos_type(off_type(-1)))
-		__err |= ios_base::failbit;
-	    }
+	  // 129. Need error indication from seekp() and seekg()
+	  if (__p == pos_type(off_type(-1)))
+	    this->setstate(ios_base::failbit);
 	}
-      __catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);		
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
-      if (__err)
-	this->setstate(__err);
       return *this;
     }
 
