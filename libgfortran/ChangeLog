@@ -1,3 +1,10 @@
+2021-06-24  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93524
+	* runtime/ISO_Fortran_binding.c (CFI_allocate): Fix
+	sm computation.
+
 2021-06-06  Andre Vehreschild  <vehre@gcc.gnu.org>
 	    Steve Kargl  <kargl@gcc.gnu.org>
 
