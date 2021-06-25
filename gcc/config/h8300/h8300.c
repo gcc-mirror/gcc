@@ -1947,9 +1947,10 @@ h8300_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
   if (op1 == const0_rtx
       && (cond == EQ || cond == NE || cond == LT || cond == GE)
       && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
-          || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
-          || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
-          || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT
+	  || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
+	  || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
+	  || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT
+	  || GET_CODE (op0) == ASHIFTRT || GET_CODE (op0) == LSHIFTRT
 	  || GET_CODE (op0) == MULT || GET_CODE (op0) == SYMBOL_REF
 	  || GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND
 	  || REG_P (op0) || MEM_P (op0)))
