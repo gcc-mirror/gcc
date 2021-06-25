@@ -138,6 +138,13 @@ MarkLive::visit (HIR::IdentifierExpr &expr)
 	}
       ref_node_id = def.parent;
     }
+  else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+    {
+      rust_error_at (expr.get_locus (),
+		     "Failed to lookup type reference for node: %s",
+		     expr.as_string ().c_str ());
+      return;
+    }
 
   if (ref_node_id == UNKNOWN_NODEID)
     {

@@ -109,30 +109,79 @@ public:
 
   void visit (HIR::IdentifierExpr &expr) override
   {
-    // need to look up the reference for this identifier
-    NodeId ref_node_id;
-    if (!ctx->get_resolver ()->lookup_resolved_name (
-	  expr.get_mappings ().get_nodeid (), &ref_node_id))
+    NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
+
+    bool is_value = false;
+    NodeId ref_node_id = UNKNOWN_NODEID;
+    if (ctx->get_resolver ()->lookup_resolved_name (ast_node_id, &ref_node_id))
       {
-	rust_fatal_error (expr.get_locus (), "failed to look up resolved name");
+	// these ref_node_ids will resolve to a pattern declaration but we are
+	// interested in the definition that this refers to get the parent id
+	Resolver::Definition def;
+	if (!ctx->get_resolver ()->lookup_definition (ref_node_id, &def))
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "unknown reference for resolved name");
+	    return;
+	  }
+	ref_node_id = def.parent;
+	is_value = true;
+      }
+    else if (!ctx->get_resolver ()->lookup_resolved_type (ast_node_id,
+							  &ref_node_id))
+      {
+	rust_error_at (expr.get_locus (),
+		       "Failed to lookup type reference for node: %s",
+		       expr.as_string ().c_str ());
 	return;
       }
 
-    // these ref_node_ids will resolve to a pattern declaration but we are
-    // interested in the definition that this refers to get the parent id
-    Resolver::Definition def;
-    if (!ctx->get_resolver ()->lookup_definition (ref_node_id, &def))
+    if (ref_node_id == UNKNOWN_NODEID)
       {
-	rust_error_at (expr.get_locus (), "unknown reference");
+	rust_fatal_error (expr.get_locus (), "unresolved IdentifierExpr: %s",
+			  expr.as_string ().c_str ());
 	return;
       }
 
+    // node back to HIR
     HirId ref;
     if (!ctx->get_mappings ()->lookup_node_to_hir (
-	  expr.get_mappings ().get_crate_num (), def.parent, &ref))
+	  expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
       {
-	rust_fatal_error (expr.get_locus (), "reverse lookup failure");
+	rust_error_at (expr.get_locus (), "reverse lookup failure");
 	return;
+      }
+
+    TyTy::BaseType *lookup = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (ref, &lookup))
+      {
+	rust_fatal_error (expr.get_locus (),
+			  "failed to find type relevant to this context: %s",
+			  expr.get_mappings ().as_string ().c_str ());
+	return;
+      }
+
+    bool is_type_ref = !is_value;
+    if (is_type_ref)
+      {
+	// this might be a case for
+	//
+	// struct S;
+	//
+	// fn main() {
+	//    let s = S;
+	// }
+
+	if (lookup->is_unit ())
+	  {
+	    translated = ctx->get_backend ()->unit_expression ();
+	    return;
+	  }
+
+	// rust actually treats like this an fn call or structs with fields but
+	// unit structs are just the struct name lets catch it with an is-unit
+	// check
+	gcc_unreachable ();
       }
 
     Bfunction *fn = nullptr;
