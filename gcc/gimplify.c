@@ -1601,7 +1601,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
     {
       maybe_add_early_return_predict_stmt (pre_p);
       greturn *ret = gimple_build_return (ret_expr);
-      gimple_set_no_warning (ret, TREE_NO_WARNING (stmt));
+      copy_warning (ret, stmt);
       gimplify_seq_add_stmt (pre_p, ret);
       return GS_ALL_DONE;
     }
@@ -1663,7 +1663,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
 	 we can wind up warning about an uninitialized value for this.  Due
 	 to how this variable is constructed and initialized, this is never
 	 true.  Give up and never warn.  */
-      TREE_NO_WARNING (result) = 1;
+      suppress_warning (result, OPT_Wuninitialized);
 
       gimplify_ctxp->return_temp = result;
     }
@@ -1677,7 +1677,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
 
   maybe_add_early_return_predict_stmt (pre_p);
   ret = gimple_build_return (result);
-  gimple_set_no_warning (ret, TREE_NO_WARNING (stmt));
+  copy_warning (ret, stmt);
   gimplify_seq_add_stmt (pre_p, ret);
 
   return GS_ALL_DONE;
@@ -4252,7 +4252,8 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 				 &arm2);
   cond_stmt = gimple_build_cond (pred_code, arm1, arm2, label_true,
 				 label_false);
-  gimple_set_no_warning (cond_stmt, TREE_NO_WARNING (COND_EXPR_COND (expr)));
+  gimple_set_location (cond_stmt, EXPR_LOCATION (expr));
+  copy_warning (cond_stmt, COND_EXPR_COND (expr));
   gimplify_seq_add_stmt (&seq, cond_stmt);
   gimple_stmt_iterator gsi = gsi_last (seq);
   maybe_fold_stmt (&gsi);
@@ -5682,7 +5683,7 @@ gimplify_modify_expr_complex_part (tree *expr_p, gimple_seq *pre_p,
 
   ocode = code == REALPART_EXPR ? IMAGPART_EXPR : REALPART_EXPR;
   other = build1 (ocode, TREE_TYPE (rhs), lhs);
-  TREE_NO_WARNING (other) = 1;
+  suppress_warning (other);
   other = get_formal_tmp_var (other, pre_p);
 
   realpart = code == REALPART_EXPR ? rhs : other;
@@ -5967,7 +5968,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       assign = gimple_build_assign (*to_p, *from_p);
       gimple_set_location (assign, EXPR_LOCATION (*expr_p));
       if (COMPARISON_CLASS_P (*from_p))
-	gimple_set_no_warning (assign, TREE_NO_WARNING (*from_p));
+	copy_warning (assign, *from_p);
     }
 
   if (gimplify_ctxp->into_ssa && is_gimple_reg (*to_p))
@@ -6729,7 +6730,7 @@ gimple_push_cleanup (tree var, tree cleanup, bool eh_only, gimple_seq *pre_p,
 	  /* Because of this manipulation, and the EH edges that jump
 	     threading cannot redirect, the temporary (VAR) will appear
 	     to be used uninitialized.  Don't warn.  */
-	  TREE_NO_WARNING (var) = 1;
+	  suppress_warning (var, OPT_Wuninitialized);
 	}
     }
   else
@@ -14624,7 +14625,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	    gimplify_and_add (EH_FILTER_FAILURE (*expr_p), &failure);
 	    ehf = gimple_build_eh_filter (EH_FILTER_TYPES (*expr_p), failure);
-	    gimple_set_no_warning (ehf, TREE_NO_WARNING (*expr_p));
+	    copy_warning (ehf, *expr_p);
 	    gimplify_seq_add_stmt (pre_p, ehf);
 	    ret = GS_ALL_DONE;
 	    break;

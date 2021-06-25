@@ -1095,7 +1095,9 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
 		    bool exact /* = false */,
 		    const wide_int bndrng[2] /* = NULL */)
 {
-  if ((expr && TREE_NO_WARNING (expr)) || TREE_NO_WARNING (arg))
+  const opt_code opt = OPT_Wstringop_overread;
+  if ((expr && warning_suppressed_p (expr, opt))
+      || warning_suppressed_p (arg, opt))
     return;
 
   loc = expansion_point_location_if_in_system_header (loc);
@@ -1123,14 +1125,14 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
       if (bndrng)
 	{
 	  if (wi::ltu_p (maxsiz, bndrng[0]))
-	    warned = warning_at (loc, OPT_Wstringop_overread,
+	    warned = warning_at (loc, opt,
 				 "%K%qD specified bound %s exceeds "
 				 "maximum object size %E",
 				 expr, func, bndstr, maxobjsize);
 	  else
 	    {
 	      bool maybe = wi::to_wide (size) == bndrng[0];
-	      warned = warning_at (loc, OPT_Wstringop_overread,
+	      warned = warning_at (loc, opt,
 				   exact
 				   ? G_("%K%qD specified bound %s exceeds "
 					"the size %E of unterminated array")
@@ -1145,7 +1147,7 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
 	    }
 	}
       else
-	warned = warning_at (loc, OPT_Wstringop_overread,
+	warned = warning_at (loc, opt,
 			     "%K%qD argument missing terminating nul",
 			     expr, func);
     }
@@ -1154,14 +1156,14 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
       if (bndrng)
 	{
 	  if (wi::ltu_p (maxsiz, bndrng[0]))
-	    warned = warning_at (loc, OPT_Wstringop_overread,
+	    warned = warning_at (loc, opt,
 				 "%qs specified bound %s exceeds "
 				 "maximum object size %E",
 				 fname, bndstr, maxobjsize);
 	  else
 	    {
 	      bool maybe = wi::to_wide (size) == bndrng[0];
-	      warned = warning_at (loc, OPT_Wstringop_overread,
+	      warned = warning_at (loc, opt,
 				   exact
 				   ? G_("%qs specified bound %s exceeds "
 					"the size %E of unterminated array")
@@ -1176,7 +1178,7 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
 	    }
 	}
       else
-	warned = warning_at (loc, OPT_Wstringop_overread,
+	warned = warning_at (loc, opt,
 			     "%qs argument missing terminating nul",
 			     fname);
     }
@@ -1185,9 +1187,9 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
     {
       inform (DECL_SOURCE_LOCATION (decl),
 	      "referenced argument declared here");
-      TREE_NO_WARNING (arg) = 1;
+      suppress_warning (arg, opt);
       if (expr)
-	TREE_NO_WARNING (expr) = 1;
+	suppress_warning (expr, opt);
     }
 }
 
@@ -1445,14 +1447,14 @@ c_strlen (tree arg, int only_value, c_strlen_data *data, unsigned eltsize)
     {
       /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
-	  && !TREE_NO_WARNING (arg)
+	  && !warning_suppressed_p (arg, OPT_Warray_bounds)
 	  && warning_at (loc, OPT_Warray_bounds,
 			 "offset %qwi outside bounds of constant string",
 			 eltoff))
 	{
 	  if (decl)
 	    inform (DECL_SOURCE_LOCATION (decl), "%qE declared here", decl);
-	  TREE_NO_WARNING (arg) = 1;
+	  suppress_warning (arg, OPT_Warray_bounds);
 	}
       return NULL_TREE;
     }
@@ -3947,10 +3949,10 @@ determine_block_size (tree len, rtx len_rtx,
    accessing an object with SIZE.  */
 
 static bool
-maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
+maybe_warn_for_bound (opt_code opt, location_t loc, tree exp, tree func,
 		      tree bndrng[2], tree size, const access_data *pad = NULL)
 {
-  if (!bndrng[0] || TREE_NO_WARNING (exp))
+  if (!bndrng[0] || warning_suppressed_p (exp, opt))
     return false;
 
   tree maxobjsize = max_object_size ();
@@ -4042,7 +4044,7 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
 		inform (EXPR_LOCATION (pad->src.ref),
 			"source object allocated here");
 	    }
-	  TREE_NO_WARNING (exp) = true;
+	  suppress_warning (exp, opt);
 	}
 
       return warned;
@@ -4089,14 +4091,14 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
     return false;
   else if (tree_int_cst_equal (bndrng[0], bndrng[1]))
     warned = (func
-	      ? warning_at (loc, OPT_Wstringop_overflow_,
+	      ? warning_at (loc, opt,
 			    (maybe
 			     ? G_("%K%qD specified bound %E may exceed "
 				  "destination size %E")
 			     : G_("%K%qD specified bound %E exceeds "
 				  "destination size %E")),
 			    exp, func, bndrng[0], size)
-	      : warning_at (loc, OPT_Wstringop_overflow_,
+	      : warning_at (loc, opt,
 			    (maybe
 			     ? G_("%Kspecified bound %E may exceed "
 				  "destination size %E")
@@ -4105,14 +4107,14 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
 			    exp, bndrng[0], size));
   else
     warned = (func
-	      ? warning_at (loc, OPT_Wstringop_overflow_,
+	      ? warning_at (loc, opt,
 			    (maybe
 			     ? G_("%K%qD specified bound [%E, %E] may exceed "
 				  "destination size %E")
 			     : G_("%K%qD specified bound [%E, %E] exceeds "
 				  "destination size %E")),
 			    exp, func, bndrng[0], bndrng[1], size)
-	      : warning_at (loc, OPT_Wstringop_overflow_,
+	      : warning_at (loc, opt,
 			    (maybe
 			     ? G_("%Kspecified bound [%E, %E] exceeds "
 				  "destination size %E")
@@ -4131,7 +4133,7 @@ maybe_warn_for_bound (int opt, location_t loc, tree exp, tree func,
 	    inform (EXPR_LOCATION (pad->dst.ref),
 		    "destination object allocated here");
 	}
-      TREE_NO_WARNING (exp) = true;
+      suppress_warning (exp, opt);
     }
 
   return warned;
@@ -4357,7 +4359,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 				exp, range[0], range[1], size));
 
       if (warned)
-	TREE_NO_WARNING (exp) = true;
+	suppress_warning (exp, OPT_Wstringop_overread);
 
       return warned;
     }
@@ -4400,7 +4402,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 			    exp, range[0], range[1], size));
 
   if (warned)
-    TREE_NO_WARNING (exp) = true;
+    suppress_warning (exp, OPT_Wstringop_overread);
 
   return warned;
 }
@@ -4779,8 +4781,10 @@ check_access (tree exp, tree dstwrite,
 		  && tree_fits_uhwi_p (dstwrite)
 		  && tree_int_cst_lt (dstwrite, range[0]))))
 	{
-	  if (TREE_NO_WARNING (exp)
-	      || (pad && pad->dst.ref && TREE_NO_WARNING (pad->dst.ref)))
+	  const opt_code opt = OPT_Wstringop_overflow_;
+	  if (warning_suppressed_p (exp, opt)
+	      || (pad && pad->dst.ref
+		  && warning_suppressed_p (pad->dst.ref, opt)))
 	    return false;
 
 	  location_t loc = tree_inlined_location (exp);
@@ -4791,12 +4795,12 @@ check_access (tree exp, tree dstwrite,
 		 and a source of unknown length.  The call will write
 		 at least one byte past the end of the destination.  */
 	      warned = (func
-			? warning_at (loc, OPT_Wstringop_overflow_,
+			? warning_at (loc, opt,
 				      "%K%qD writing %E or more bytes into "
 				      "a region of size %E overflows "
 				      "the destination",
 				      exp, func, range[0], dstsize)
-			: warning_at (loc, OPT_Wstringop_overflow_,
+			: warning_at (loc, opt,
 				      "%Kwriting %E or more bytes into "
 				      "a region of size %E overflows "
 				      "the destination",
@@ -4817,7 +4821,7 @@ check_access (tree exp, tree dstwrite,
 
 	  if (warned)
 	    {
-	      TREE_NO_WARNING (exp) = true;
+	      suppress_warning (exp, OPT_Wstringop_overflow_);
 	      if (pad)
 		pad->dst.inform_access (pad->mode);
 	    }
@@ -4852,9 +4856,9 @@ check_access (tree exp, tree dstwrite,
 
 	  if (size != maxobjsize && tree_int_cst_lt (size, range[0]))
 	    {
-	      int opt = (dstwrite || mode != access_read_only
-			 ? OPT_Wstringop_overflow_
-			 : OPT_Wstringop_overread);
+	      opt_code opt = (dstwrite || mode != access_read_only
+			      ? OPT_Wstringop_overflow_
+			      : OPT_Wstringop_overread);
 	      maybe_warn_for_bound (opt, loc, exp, func, range, size, pad);
 	      return false;
 	    }
@@ -4890,19 +4894,21 @@ check_access (tree exp, tree dstwrite,
 
   if (overread)
     {
-      if (TREE_NO_WARNING (exp)
-	  || (srcstr && TREE_NO_WARNING (srcstr))
-	  || (pad && pad->src.ref && TREE_NO_WARNING (pad->src.ref)))
+      const opt_code opt = OPT_Wstringop_overread;
+      if (warning_suppressed_p (exp, opt)
+	  || (srcstr && warning_suppressed_p (srcstr, opt))
+	  || (pad && pad->src.ref
+	      && warning_suppressed_p (pad->src.ref, opt)))
 	return false;
 
       location_t loc = tree_inlined_location (exp);
       const bool read
 	= mode == access_read_only || mode == access_read_write;
       const bool maybe = pad && pad->dst.parmarray;
-      if (warn_for_access (loc, func, exp, OPT_Wstringop_overread, range,
-			   slen, false, read, maybe))
+      if (warn_for_access (loc, func, exp, opt, range, slen, false, read,
+			   maybe))
 	{
-	  TREE_NO_WARNING (exp) = true;
+	  suppress_warning (exp, opt);
 	  if (pad)
 	    pad->src.inform_access (access_read_only);
 	}
@@ -7462,8 +7468,7 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
   /* Expand the library call ourselves using a stabilized argument
      list to avoid re-evaluating the function's arguments twice.  */
   tree call = build_call_nofold_loc (loc, fndecl, 3, arg1, arg2, len);
-  if (TREE_NO_WARNING (exp))
-    TREE_NO_WARNING (call) = true;
+  copy_warning (call, exp);
   gcc_assert (TREE_CODE (call) == CALL_EXPR);
   CALL_EXPR_TAILCALL (call) = CALL_EXPR_TAILCALL (exp);
   return expand_call (call, target, target == const0_rtx);
@@ -13898,10 +13903,11 @@ maybe_emit_free_warning (tree exp)
 	      else
 		{
 		  tree alloc_decl = gimple_call_fndecl (def_stmt);
-		  int opt = (DECL_IS_OPERATOR_NEW_P (alloc_decl)
-			     || DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
-			     ? OPT_Wmismatched_new_delete
-			     : OPT_Wmismatched_dealloc);
+		  const opt_code opt =
+		    (DECL_IS_OPERATOR_NEW_P (alloc_decl)
+		     || DECL_IS_OPERATOR_DELETE_P (dealloc_decl)
+		     ? OPT_Wmismatched_new_delete
+		     : OPT_Wmismatched_dealloc);
 		  warned = warning_at (loc, opt,
 				       "%K%qD called on pointer returned "
 				       "from a mismatched allocation "
@@ -14012,7 +14018,7 @@ fold_builtin_varargs (location_t loc, tree fndecl, tree *args, int nargs)
     {
       ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
       SET_EXPR_LOCATION (ret, loc);
-      TREE_NO_WARNING (ret) = 1;
+      suppress_warning (ret);
       return ret;
     }
   return NULL_TREE;

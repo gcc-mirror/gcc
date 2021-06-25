@@ -411,8 +411,8 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
 	  DECL_USER_ALIGN (field) = DECL_USER_ALIGN (decl);
 	  DECL_IGNORED_P (field) = DECL_IGNORED_P (decl);
 	  DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (decl);
-	  TREE_NO_WARNING (field) = TREE_NO_WARNING (decl);
 	  TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (decl);
+	  copy_warning (field, decl);
 
 	  /* Declare the transformation and adjust the original DECL.  For a
 	     variable or for a parameter when not optimizing, we make it point

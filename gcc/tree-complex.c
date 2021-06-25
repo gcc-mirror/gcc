@@ -456,12 +456,12 @@ create_one_component_var (tree type, tree orig, const char *prefix,
       SET_DECL_DEBUG_EXPR (r, build1 (code, type, orig));
       DECL_HAS_DEBUG_EXPR_P (r) = 1;
       DECL_IGNORED_P (r) = 0;
-      TREE_NO_WARNING (r) = TREE_NO_WARNING (orig);
+      copy_warning (r, orig);
     }
   else
     {
       DECL_IGNORED_P (r) = 1;
-      TREE_NO_WARNING (r) = 1;
+      suppress_warning (r);
     }
 
   return r;

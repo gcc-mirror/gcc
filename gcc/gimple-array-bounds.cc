@@ -175,7 +175,7 @@ bool
 array_bounds_checker::check_array_ref (location_t location, tree ref,
 				       bool ignore_off_by_one)
 {
-  if (TREE_NO_WARNING (ref))
+  if (warning_suppressed_p (ref, OPT_Warray_bounds))
     /* Return true to have the caller prevent warnings for enclosing
        refs.  */
     return true;
@@ -346,7 +346,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
       /* Avoid more warnings when checking more significant subscripts
 	 of the same expression.  */
       ref = TREE_OPERAND (ref, 0);
-      TREE_NO_WARNING (ref) = 1;
+      suppress_warning (ref, OPT_Warray_bounds);
 
       if (decl)
 	ref = decl;
@@ -411,7 +411,7 @@ bool
 array_bounds_checker::check_mem_ref (location_t location, tree ref,
 				     bool ignore_off_by_one)
 {
-  if (TREE_NO_WARNING (ref))
+  if (warning_suppressed_p (ref, OPT_Warray_bounds))
     return false;
 
   tree arg = TREE_OPERAND (ref, 0);
@@ -770,7 +770,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	    }
 	}
 
-      TREE_NO_WARNING (ref) = 1;
+      suppress_warning (ref, OPT_Warray_bounds);
       return true;
     }
 
@@ -787,7 +787,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 		      "intermediate array offset %wi is outside array bounds "
 		      "of %qT", tmpidx, reftype))
 	{
-	  TREE_NO_WARNING (ref) = 1;
+	  suppress_warning (ref, OPT_Warray_bounds);
 	  return true;
 	}
     }
@@ -818,7 +818,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t)
 	warned = check_mem_ref (location, t, ignore_off_by_one);
 
       if (warned)
-	TREE_NO_WARNING (t) = true;
+	suppress_warning (t, OPT_Warray_bounds);
 
       t = TREE_OPERAND (t, 0);
     }
@@ -826,7 +826,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t)
 
   if (TREE_CODE (t) != MEM_REF
       || TREE_CODE (TREE_OPERAND (t, 0)) != ADDR_EXPR
-      || TREE_NO_WARNING (t))
+      || warning_suppressed_p (t, OPT_Warray_bounds))
     return;
 
   tree tem = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
@@ -886,7 +886,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t)
       if (DECL_P (t))
 	inform (DECL_SOURCE_LOCATION (t), "while referencing %qD", t);
 
-      TREE_NO_WARNING (t) = 1;
+      suppress_warning (t, OPT_Warray_bounds);
     }
 }
 
@@ -980,9 +980,10 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
        See pr98266 and pr97595.  */
     *walk_subtree = false;
 
-  /* Propagate the no-warning bit to the outer expression.  */
+  /* Propagate the no-warning bit to the outer statement to avoid also
+     issuing -Wstringop-overflow/-overread for the out-of-bounds accesses.  */
   if (warned)
-    TREE_NO_WARNING (t) = true;
+    suppress_warning (wi->stmt, OPT_Warray_bounds);
 
   return NULL_TREE;
 }

@@ -330,7 +330,8 @@ get_format_string (tree format, location_t *ploc)
 static bool
 ATTRIBUTE_GCC_DIAG (5, 6)
 fmtwarn (const substring_loc &fmt_loc, location_t param_loc,
-	 const char *corrected_substring, int opt, const char *gmsgid, ...)
+	 const char *corrected_substring, opt_code opt,
+	 const char *gmsgid, ...)
 {
   format_string_diagnostic_t diag (fmt_loc, NULL, param_loc, NULL,
 				   corrected_substring);
@@ -345,7 +346,8 @@ fmtwarn (const substring_loc &fmt_loc, location_t param_loc,
 static bool
 ATTRIBUTE_GCC_DIAG (6, 8) ATTRIBUTE_GCC_DIAG (7, 8)
 fmtwarn_n (const substring_loc &fmt_loc, location_t param_loc,
-	   const char *corrected_substring, int opt, unsigned HOST_WIDE_INT n,
+	   const char *corrected_substring, opt_code opt,
+	   unsigned HOST_WIDE_INT n,
 	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
   format_string_diagnostic_t diag (fmt_loc, NULL, param_loc, NULL,
@@ -921,7 +923,7 @@ struct call_info
   }
 
   /* Return the warning option corresponding to the called function.  */
-  int warnopt () const
+  opt_code warnopt () const
   {
     return bounded ? OPT_Wformat_truncation_ : OPT_Wformat_overflow_;
   }
@@ -4680,7 +4682,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
 
   bool success = compute_format_length (info, &res, ptr_qry.rvals);
   if (res.warned)
-    gimple_set_no_warning (info.callstmt, true);
+    suppress_warning (info.callstmt, info.warnopt ());
 
   /* When optimizing and the printf return value optimization is enabled,
      attempt to substitute the computed result for the return value of

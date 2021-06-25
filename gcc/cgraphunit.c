@@ -1074,7 +1074,7 @@ check_global_declaration (symtab_node *snode)
       && ! DECL_ARTIFICIAL (decl)
       && ! TREE_PUBLIC (decl))
     {
-      if (TREE_NO_WARNING (decl))
+      if (warning_suppressed_p (decl, OPT_Wunused))
 	;
       else if (snode->referred_to_p (/*include_self=*/false))
 	pedwarn (input_location, 0, "%q+F used but never defined", decl);
