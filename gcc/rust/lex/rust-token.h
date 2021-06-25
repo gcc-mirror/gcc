@@ -57,6 +57,9 @@ enum PrimitiveCoreType
   CORETYPE_U32,
   CORETYPE_U64,
   CORETYPE_U128,
+  // Pure decimals are used for tuple index.
+  // Also means there is no type hint.
+  CORETYPE_PURE_DECIMAL,
   // arch-dependent pointer sizes
   CORETYPE_ISIZE = CORETYPE_INT,
   CORETYPE_USIZE = CORETYPE_UINT
@@ -391,7 +394,10 @@ return *str;
 }*/
 
   // Gets token's type hint info.
-  PrimitiveCoreType get_type_hint () const { return type_hint; }
+  PrimitiveCoreType get_type_hint () const
+  {
+    return type_hint == CORETYPE_PURE_DECIMAL ? CORETYPE_UNKNOWN : type_hint;
+  }
 
   // diagnostics (error reporting)
   const char *get_token_description () const
@@ -435,6 +441,9 @@ return *str;
   {
     return is_literal () || token_id == IDENTIFIER || token_id == LIFETIME;
   }
+
+  // Returns whether the token is a pure decimal int literal
+  bool is_pure_decimal () const { return type_hint == CORETYPE_PURE_DECIMAL; }
 };
 } // namespace Rust
 

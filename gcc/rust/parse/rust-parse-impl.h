@@ -14083,6 +14083,12 @@ Parser<ManagedTokenSource>::parse_tuple_index_expr (
   std::string index = index_tok->get_str ();
 
   // convert to integer
+  if (!index_tok->is_pure_decimal ())
+    {
+      Error error (index_tok->get_locus (),
+		   "tuple index should be a pure decimal literal");
+      add_error (std::move (error));
+    }
   int index_int = atoi (index.c_str ());
 
   Location locus = tuple_expr->get_locus_slow ();
