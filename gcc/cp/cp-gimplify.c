@@ -101,8 +101,8 @@ genericize_eh_spec_block (tree *stmt_p)
   tree failure = build_call_n (call_unexpected_fn, 1, build_exc_ptr ());
 
   *stmt_p = build_gimple_eh_filter_tree (body, allowed, failure);
-  TREE_NO_WARNING (*stmt_p) = true;
-  TREE_NO_WARNING (TREE_OPERAND (*stmt_p, 1)) = true;
+  suppress_warning (*stmt_p);
+  suppress_warning (TREE_OPERAND (*stmt_p, 1));
 }
 
 /* Return the first non-compound statement in STMT.  */
@@ -220,7 +220,7 @@ gimplify_expr_stmt (tree *stmt_p)
 	{
 	  if (!IS_EMPTY_STMT (stmt)
 	      && !VOID_TYPE_P (TREE_TYPE (stmt))
-	      && !TREE_NO_WARNING (stmt))
+	      && !warning_suppressed_p (stmt, OPT_Wunused_value))
 	    warning (OPT_Wunused_value, "statement with no effect");
 	}
       else
@@ -1328,7 +1328,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case THROW_EXPR:
       {
 	location_t loc = location_of (stmt);
-	if (TREE_NO_WARNING (stmt))
+	if (warning_suppressed_p (stmt /* What warning? */))
 	  /* Never mind.  */;
 	else if (wtd->try_block)
 	  {
@@ -1463,12 +1463,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  && TREE_CODE (TARGET_EXPR_INITIAL (stmt)) == CONSTRUCTOR
 	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (TARGET_EXPR_INITIAL (stmt)))
 	TARGET_EXPR_NO_ELIDE (stmt) = 1;
-      break;
-
-    case REQUIRES_EXPR:
-      /* Emit the value of the requires-expression.  */
-      *stmt_p = evaluate_requires_expr (stmt);
-      *walk_subtrees = 0;
       break;
 
     case TEMPLATE_ID_EXPR:
@@ -2449,8 +2443,9 @@ cp_fold (tree x)
 	    ;
 	  else if (COMPARISON_CLASS_P (x))
 	    {
-	      if (TREE_NO_WARNING (org_x) && warn_nonnull_compare)
-		TREE_NO_WARNING (x) = 1;
+	      if (warn_nonnull_compare
+		  && warning_suppressed_p (org_x, OPT_Wnonnull_compare))
+		suppress_warning (x, OPT_Wnonnull_compare);
 	    }
 	  /* Otherwise give up on optimizing these, let GIMPLE folders
 	     optimize those later on.  */
@@ -2458,8 +2453,9 @@ cp_fold (tree x)
 		   || op1 != TREE_OPERAND (org_x, 1))
 	    {
 	      x = build2_loc (loc, code, TREE_TYPE (org_x), op0, op1);
-	      if (TREE_NO_WARNING (org_x) && warn_nonnull_compare)
-		TREE_NO_WARNING (x) = 1;
+	      if (warn_nonnull_compare
+		  && warning_suppressed_p (org_x, OPT_Wnonnull_compare))
+		suppress_warning (x, OPT_Wnonnull_compare);
 	    }
 	  else
 	    x = org_x;
@@ -2708,6 +2704,10 @@ cp_fold (tree x)
 	x = r;
       break;
 
+    case REQUIRES_EXPR:
+      x = evaluate_requires_expr (x);
+      break;
+
     default:
       return org_x;
     }
@@ -2715,7 +2715,7 @@ cp_fold (tree x)
   if (EXPR_P (x) && TREE_CODE (x) == code)
     {
       TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
-      TREE_NO_WARNING (x) = TREE_NO_WARNING (org_x);
+      copy_warning (x, org_x);
     }
 
   if (!c.evaluation_restricted_p ())

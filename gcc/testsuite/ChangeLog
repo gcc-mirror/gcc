@@ -1,3 +1,79 @@
+2021-06-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp30.c: New.
+
+2021-06-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/pr101189.c: New.
+
+2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98832
+	* g++.dg/cpp2a/class-deduction-alias9.C: New test.
+
+2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101182
+	* g++.dg/cpp2a/concepts-requires25.C: New test.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101171
+	* gcc.dg/pr101171.c: New test.
+
+2021-06-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* gcc.dg/vect/vect-nb-iter-ub-3.c (dg-additional-options):
+	Add --param vect-epilogues-nomask=0.
+	* gcc.target/i386/pr97249-1.c (foo): Add #pragma GCC unroll
+	to avoid loop vectorization.
+	(foo1): Ditto.
+	(foo2): Ditto.
+
+2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-addsubv2df.c: New testcase.
+	* gcc.target/i386/vect-addsubv4sf.c: Likewise.
+	* gcc.target/i386/vect-addsubv4df.c: Likewise.
+	* gcc.target/i386/vect-addsubv8sf.c: Likewise.
+	* gcc.target/i386/vect-addsub-2.c: Likewise.
+	* gcc.target/i386/vect-addsub-3.c: Likewise.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101170
+	* gcc.dg/pr101170.c: New test.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101172
+	* gcc.dg/pr101172.c: New test.
+
+2021-06-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/mnop-mcount-m31-mzarch.c: Adapt to the new
+	prologue size.
+	* gcc.target/s390/mnop-mcount-m64.c: Likewise.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/target-in-reduction-1.c: New test.
+	* c-c++-common/gomp/clauses-1.c: Add in_reduction clauses on
+	target or combined target constructs.
+
+2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101105
+	* gcc.dg/torture/pr101105.c: New testcase.
+
+2021-06-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98434
+	* gcc.target/i386/pr98434-1.c: New test.
+	* gcc.target/i386/pr98434-2.c: New test.
+	* gcc.target/i386/avx512vl-pr95488-1.c: Adjust testcase.
+
 2021-06-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101174

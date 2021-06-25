@@ -2143,7 +2143,7 @@ execute_sm (class loop *loop, im_mem_ref *ref,
       /* If not emitting a load mark the uninitialized state on the
 	 loop entry as not to be warned for.  */
       tree uninit = create_tmp_reg (TREE_TYPE (aux->tmp_var));
-      TREE_NO_WARNING (uninit) = 1;
+      suppress_warning (uninit, OPT_Wuninitialized);
       load = gimple_build_assign (aux->tmp_var, uninit);
     }
   lim_data = init_lim_data (load);

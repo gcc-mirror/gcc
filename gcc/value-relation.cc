@@ -444,7 +444,7 @@ equiv_oracle::dump (FILE *f) const
 {
   fprintf (f, "Equivalency dump\n");
   for (unsigned i = 0; i < m_equiv.length (); i++)
-    if (m_equiv[i])
+    if (m_equiv[i] && BASIC_BLOCK_FOR_FN (cfun, i))
       {
 	fprintf (f, "BB%d\n", i);
 	dump (f, BASIC_BLOCK_FOR_FN (cfun, i));
@@ -757,9 +757,9 @@ relation_oracle::find_relation_block (unsigned bb, const_bitmap b1,
     {
       unsigned op1 = SSA_NAME_VERSION (ptr->op1 ());
       unsigned op2 = SSA_NAME_VERSION (ptr->op2 ());
-      if (bitmap_bit_p (b1, op1) && bitmap_bit_p (b1, op2))
+      if (bitmap_bit_p (b1, op1) && bitmap_bit_p (b2, op2))
 	return ptr->kind ();
-      if (bitmap_bit_p (b1, op2) && bitmap_bit_p (b1, op1))
+      if (bitmap_bit_p (b1, op2) && bitmap_bit_p (b2, op1))
 	return relation_swap (ptr->kind ());
     }
 
@@ -925,8 +925,9 @@ relation_oracle::dump (FILE *f) const
 {
   fprintf (f, "Relation dump\n");
   for (unsigned i = 0; i < m_relations.length (); i++)
-    {
-      fprintf (f, "BB%d\n", i);
-      dump (f, BASIC_BLOCK_FOR_FN (cfun, i));
-    }
+    if (BASIC_BLOCK_FOR_FN (cfun, i))
+      {
+	fprintf (f, "BB%d\n", i);
+	dump (f, BASIC_BLOCK_FOR_FN (cfun, i));
+      }
 }

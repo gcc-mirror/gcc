@@ -699,7 +699,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 				   build_int_cst (TREE_TYPE (max), 1));
 	      /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	      if (EXPR_P (max))
-		TREE_NO_WARNING (max) = 1;
+		suppress_warning (max, OPT_Woverflow);
 	    }
 
 	  vr_p->update (min, max);
@@ -739,7 +739,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 				   build_int_cst (TREE_TYPE (min), 1));
 	      /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	      if (EXPR_P (min))
-		TREE_NO_WARNING (min) = 1;
+		suppress_warning (min, OPT_Woverflow);
 	    }
 
 	  vr_p->update (min, max);
@@ -3355,7 +3355,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
 	  max = fold_build2 (MINUS_EXPR, TREE_TYPE (op0), max, one);
 	  /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	  if (EXPR_P (max))
-	    TREE_NO_WARNING (max) = 1;
+	    suppress_warning (max, OPT_Woverflow);
 	}
     }
   else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
@@ -3369,7 +3369,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
 	  min = fold_build2 (PLUS_EXPR, TREE_TYPE (op0), min, one);
 	  /* Signal to compare_values_warnv this expr doesn't overflow.  */
 	  if (EXPR_P (min))
-	    TREE_NO_WARNING (min) = 1;
+	    suppress_warning (min, OPT_Woverflow);
 	}
     }
 

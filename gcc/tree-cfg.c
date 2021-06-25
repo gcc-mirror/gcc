@@ -9445,7 +9445,7 @@ pass_warn_function_return::execute (function *fun)
   /* If we see "return;" in some basic block, then we do reach the end
      without returning a value.  */
   else if (warn_return_type > 0
-	   && !TREE_NO_WARNING (fun->decl)
+	   && !warning_suppressed_p (fun->decl, OPT_Wreturn_type)
 	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fun->decl))))
     {
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
@@ -9454,14 +9454,14 @@ pass_warn_function_return::execute (function *fun)
 	  greturn *return_stmt = dyn_cast <greturn *> (last);
 	  if (return_stmt
 	      && gimple_return_retval (return_stmt) == NULL
-	      && !gimple_no_warning_p (last))
+	      && !warning_suppressed_p (last, OPT_Wreturn_type))
 	    {
 	      location = gimple_location (last);
 	      if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
 		location = fun->function_end_locus;
 	      if (warning_at (location, OPT_Wreturn_type,
 			      "control reaches end of non-void function"))
-		TREE_NO_WARNING (fun->decl) = 1;
+		suppress_warning (fun->decl, OPT_Wreturn_type);
 	      break;
 	    }
 	}
@@ -9469,7 +9469,7 @@ pass_warn_function_return::execute (function *fun)
 	 into __builtin_unreachable () call with BUILTINS_LOCATION.
 	 Recognize those too.  */
       basic_block bb;
-      if (!TREE_NO_WARNING (fun->decl))
+      if (!warning_suppressed_p (fun->decl, OPT_Wreturn_type))
 	FOR_EACH_BB_FN (bb, fun)
 	  if (EDGE_COUNT (bb->succs) == 0)
 	    {
@@ -9493,7 +9493,7 @@ pass_warn_function_return::execute (function *fun)
 		    location = fun->function_end_locus;
 		  if (warning_at (location, OPT_Wreturn_type,
 				  "control reaches end of non-void function"))
-		    TREE_NO_WARNING (fun->decl) = 1;
+		    suppress_warning (fun->decl, OPT_Wreturn_type);
 		  break;
 		}
 	    }

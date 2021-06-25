@@ -1299,7 +1299,7 @@ operator_minus::wi_fold (irange &r, tree type,
 }
 
 // Check to see if the relation REL between OP1 and OP2 has any effect on the
-// LHS of the epxression.  If so, apply it to LHS_RANGE.
+// LHS of the expression.  If so, apply it to LHS_RANGE.
 
 bool
 operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,

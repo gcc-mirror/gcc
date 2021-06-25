@@ -1635,6 +1635,24 @@ extern bool gimple_inexpensive_call_p (gcall *);
 extern bool stmt_can_terminate_bb_p (gimple *);
 extern location_t gimple_or_expr_nonartificial_location (gimple *, tree);
 
+/* Return the disposition for a warning (or all warnings by default)
+   for a statement.  */
+extern bool warning_suppressed_p (const gimple *, opt_code = all_warnings)
+  ATTRIBUTE_NONNULL (1);
+/* Set the disposition for a warning (or all warnings by default)
+   at a location to enabled by default.  */
+extern void suppress_warning (gimple *, opt_code = all_warnings,
+			      bool = true) ATTRIBUTE_NONNULL (1);
+
+/* Copy the warning disposition mapping from one statement to another.  */
+extern void copy_warning (gimple *, const gimple *)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_NONNULL (2);
+/* Copy the warning disposition mapping from an expression to a statement.  */
+extern void copy_warning (gimple *, const_tree)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_NONNULL (2);
+/* Copy the warning disposition mapping from a statement to an expression.  */
+extern void copy_warning (tree, const gimple *)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_NONNULL (2);
 
 /* Formal (expression) temporary table handling: multiple occurrences of
    the same scalar expression are evaluated into the same temporary.  */
@@ -1855,15 +1873,16 @@ gimple_block (const gimple *g)
   return LOCATION_BLOCK (g->location);
 }
 
+/* Forward declare.  */
+static inline void gimple_set_location (gimple *, location_t);
 
 /* Set BLOCK to be the lexical scope block holding statement G.  */
 
 static inline void
 gimple_set_block (gimple *g, tree block)
 {
-  g->location = set_block (g->location, block);
+  gimple_set_location (g, set_block (g->location, block));
 }
-
 
 /* Return location information for statement G.  */
 
@@ -1887,6 +1906,8 @@ gimple_location_safe (const gimple *g)
 static inline void
 gimple_set_location (gimple *g, location_t location)
 {
+  /* Copy the no-warning data to the statement location.  */
+  copy_warning (location, g->location);
   g->location = location;
 }
 

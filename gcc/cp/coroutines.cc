@@ -1078,7 +1078,7 @@ finish_co_await_expr (location_t kw, tree expr)
      is declared to return non-void (most likely).  This is correct - we
      synthesize the return for the ramp in the compiler.  So suppress any
      extraneous warnings during substitution.  */
-  TREE_NO_WARNING (current_function_decl) = true;
+  suppress_warning (current_function_decl, OPT_Wreturn_type);
 
   /* If we don't know the promise type, we can't proceed, build the
      co_await with the expression unchanged.  */
@@ -1154,7 +1154,7 @@ finish_co_yield_expr (location_t kw, tree expr)
      is declared to return non-void (most likely).  This is correct - we
      synthesize the return for the ramp in the compiler.  So suppress any
      extraneous warnings during substitution.  */
-  TREE_NO_WARNING (current_function_decl) = true;
+  suppress_warning (current_function_decl, OPT_Wreturn_type);
 
   /* If we don't know the promise type, we can't proceed, build the
      co_await with the expression unchanged.  */
@@ -1235,7 +1235,7 @@ finish_co_return_stmt (location_t kw, tree expr)
      is declared to return non-void (most likely).  This is correct - we
      synthesize the return for the ramp in the compiler.  So suppress any
      extraneous warnings during substitution.  */
-  TREE_NO_WARNING (current_function_decl) = true;
+  suppress_warning (current_function_decl, OPT_Wreturn_type);
 
   if (processing_template_decl
       && check_for_bare_parameter_packs (expr))
@@ -1259,7 +1259,7 @@ finish_co_return_stmt (location_t kw, tree expr)
 
   /* Suppress -Wreturn-type for co_return, we need to check indirectly
      whether the promise type has a suitable return_void/return_value.  */
-  TREE_NO_WARNING (current_function_decl) = true;
+  suppress_warning (current_function_decl, OPT_Wreturn_type);
 
   if (!processing_template_decl && warn_sequence_point)
     verify_sequence_points (expr);
@@ -2458,7 +2458,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* done.  */
   r = build_stmt (loc, RETURN_EXPR, NULL);
-  TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
+  suppress_warning (r); /* We don't want a warning about this.  */
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
@@ -2467,7 +2467,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   add_stmt (r);
 
   r = build_stmt (loc, RETURN_EXPR, NULL);
-  TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
+  suppress_warning (r); /* We don't want a warning about this.  */
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
@@ -4142,7 +4142,7 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
       finish_if_stmt_cond (not_iarc, not_iarc_if);
       /* If the initial await resume called value is false, rethrow...  */
       tree rethrow = build_throw (fn_start, NULL_TREE);
-      TREE_NO_WARNING (rethrow) = true;
+      suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
       finish_then_clause (not_iarc_if);
       tree iarc_scope = IF_SCOPE (not_iarc_if);
@@ -4243,7 +4243,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       /* For early errors, we do not want a diagnostic about the missing
 	 ramp return value, since the user cannot fix this - a 'return' is
 	 not allowed in a coroutine.  */
-      TREE_NO_WARNING (orig) = true;
+      suppress_warning (orig, OPT_Wreturn_type);
       /* Discard the body, we can't process it further.  */
       pop_stmt_list (DECL_SAVED_TREE (orig));
       DECL_SAVED_TREE (orig) = push_stmt_list ();
@@ -4269,7 +4269,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       DECL_SAVED_TREE (orig) = push_stmt_list ();
       append_to_statement_list (fnbody, &DECL_SAVED_TREE (orig));
       /* Suppress warnings about the missing return value.  */
-      TREE_NO_WARNING (orig) = true;
+      suppress_warning (orig, OPT_Wreturn_type);
       return false;
     }
 
@@ -4948,7 +4948,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
       DECL_SAVED_TREE (orig) = newbody;
       /* Suppress warnings about the missing return value.  */
-      TREE_NO_WARNING (orig) = true;
+      suppress_warning (orig, OPT_Wreturn_type);
       return false;
     }
 
@@ -5159,7 +5159,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					      promise_type, fn_start);
       finish_expr_stmt (del_coro_fr);
       tree rethrow = build_throw (fn_start, NULL_TREE);
-      TREE_NO_WARNING (rethrow) = true;
+      suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
       finish_handler (handler);
       TRY_HANDLERS (ramp_cleanup) = pop_stmt_list (TRY_HANDLERS (ramp_cleanup));

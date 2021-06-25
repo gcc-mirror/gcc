@@ -1911,8 +1911,7 @@ array_to_pointer_conversion (location_t loc, tree exp)
 
   STRIP_TYPE_NOPS (exp);
 
-  if (TREE_NO_WARNING (orig_exp))
-    TREE_NO_WARNING (exp) = 1;
+  copy_warning (exp, orig_exp);
 
   ptrtype = build_pointer_type (restype);
 
@@ -1945,8 +1944,7 @@ function_to_pointer_conversion (location_t loc, tree exp)
 
   STRIP_TYPE_NOPS (exp);
 
-  if (TREE_NO_WARNING (orig_exp))
-    TREE_NO_WARNING (exp) = 1;
+  copy_warning (exp, orig_exp);
 
   return build_unary_op (loc, ADDR_EXPR, exp, false);
 }
@@ -2055,8 +2053,7 @@ default_function_array_conversion (location_t loc, struct c_expr exp)
 	    exp.value = TREE_OPERAND (exp.value, 0);
 	  }
 
-	if (TREE_NO_WARNING (orig_exp))
-	  TREE_NO_WARNING (exp.value) = 1;
+	copy_warning (exp.value, orig_exp);
 
 	lvalue_array_p = !not_lvalue && lvalue_p (exp.value);
 	if (!flag_isoc99 && !lvalue_array_p)
@@ -2154,7 +2151,8 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
       tmp = create_tmp_var_raw (nonatomic_type);
       tmp_addr = build_unary_op (loc, ADDR_EXPR, tmp, false);
       TREE_ADDRESSABLE (tmp) = 1;
-      TREE_NO_WARNING (tmp) = 1;
+      /* Do not disable warnings for TMP even though it's artificial.
+	 -Winvalid-memory-model depends on it.  */
 
       /* Issue __atomic_load (&expr, &tmp, SEQ_CST);  */
       fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_LOAD);
@@ -2251,8 +2249,7 @@ default_conversion (tree exp)
   orig_exp = exp;
   STRIP_TYPE_NOPS (exp);
 
-  if (TREE_NO_WARNING (orig_exp))
-    TREE_NO_WARNING (exp) = 1;
+  copy_warning (exp, orig_exp);
 
   if (code == VOID_TYPE)
     {
@@ -2616,7 +2613,7 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 	  if (warn_strict_aliasing > 2)
 	    if (strict_aliasing_warning (EXPR_LOCATION (pointer),
 					 type, TREE_OPERAND (pointer, 0)))
-	      TREE_NO_WARNING (pointer) = 1;
+	      suppress_warning (pointer, OPT_Wstrict_aliasing_);
 	}
 
       if (TREE_CODE (pointer) == ADDR_EXPR
@@ -3218,7 +3215,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   /* If -Wnonnull warning has been diagnosed, avoid diagnosing it again
      later.  */
   if (warned_p && TREE_CODE (result) == CALL_EXPR)
-    TREE_NO_WARNING (result) = 1;
+    suppress_warning (result, OPT_Wnonnull);
 
   /* In this improbable scenario, a nested function returns a VM type.
      Create a TARGET_EXPR so that the call always has a LHS, much as
@@ -4167,7 +4164,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
 						      TYPE_UNQUALIFIED);
   val = create_tmp_var_raw (nonatomic_rhs_type);
   TREE_ADDRESSABLE (val) = 1;
-  TREE_NO_WARNING (val) = 1;
+  suppress_warning (val);
   rhs = build4 (TARGET_EXPR, nonatomic_rhs_type, val, rhs, NULL_TREE,
 		NULL_TREE);
   TREE_SIDE_EFFECTS (rhs) = 1;
@@ -4268,7 +4265,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
 
       newval = create_tmp_var_raw (nonatomic_lhs_type);
       TREE_ADDRESSABLE (newval) = 1;
-      TREE_NO_WARNING (newval) = 1;
+      suppress_warning (newval);
       rhs = build4 (TARGET_EXPR, nonatomic_lhs_type, newval, func_call,
 		    NULL_TREE, NULL_TREE);
       SET_EXPR_LOCATION (rhs, loc);
@@ -4287,12 +4284,12 @@ cas_loop:
   old = create_tmp_var_raw (nonatomic_lhs_type);
   old_addr = build_unary_op (loc, ADDR_EXPR, old, false);
   TREE_ADDRESSABLE (old) = 1;
-  TREE_NO_WARNING (old) = 1;
+  suppress_warning (old);
 
   newval = create_tmp_var_raw (nonatomic_lhs_type);
   newval_addr = build_unary_op (loc, ADDR_EXPR, newval, false);
   TREE_ADDRESSABLE (newval) = 1;
-  TREE_NO_WARNING (newval) = 1;
+  suppress_warning (newval);
 
   loop_decl = create_artificial_label (loc);
   loop_label = build1 (LABEL_EXPR, void_type_node, loop_decl);
@@ -4781,8 +4778,6 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	else
 	  val = build2 (code, TREE_TYPE (arg), arg, inc);
 	TREE_SIDE_EFFECTS (val) = 1;
-	if (TREE_CODE (val) != code)
-	  TREE_NO_WARNING (val) = 1;
 	ret = val;
 	goto return_build_unary_op;
       }
@@ -6131,6 +6126,7 @@ build_c_cast (location_t loc, tree type, tree expr)
      return value reflects this.  */
   if (int_operands
       && INTEGRAL_TYPE_P (type)
+      && value != error_mark_node
       && !EXPR_INT_CONST_OPERANDS (value))
     value = note_integer_operands (value);
 
@@ -10961,7 +10957,8 @@ c_finish_return (location_t loc, tree retval, tree origtype)
     }
 
   ret_stmt = build_stmt (loc, RETURN_EXPR, retval);
-  TREE_NO_WARNING (ret_stmt) |= no_warning;
+  if (no_warning)
+    suppress_warning (ret_stmt, OPT_Wreturn_type);
   return add_stmt (ret_stmt);
 }
 
@@ -11237,7 +11234,8 @@ emit_side_effect_warnings (location_t loc, tree expr)
     ;
   else if (!TREE_SIDE_EFFECTS (expr))
     {
-      if (!VOID_TYPE_P (TREE_TYPE (expr)) && !TREE_NO_WARNING (expr))
+      if (!VOID_TYPE_P (TREE_TYPE (expr))
+	  && !warning_suppressed_p (expr, OPT_Wunused_value))
 	warning_at (loc, OPT_Wunused_value, "statement with no effect");
     }
   else if (TREE_CODE (expr) == COMPOUND_EXPR)
@@ -11253,8 +11251,8 @@ emit_side_effect_warnings (location_t loc, tree expr)
       if (!TREE_SIDE_EFFECTS (r)
 	  && !VOID_TYPE_P (TREE_TYPE (r))
 	  && !CONVERT_EXPR_P (r)
-	  && !TREE_NO_WARNING (r)
-	  && !TREE_NO_WARNING (expr))
+	  && !warning_suppressed_p (r, OPT_Wunused_value)
+	  && !warning_suppressed_p (expr, OPT_Wunused_value))
 	warning_at (cloc, OPT_Wunused_value,
 		    "right-hand operand of comma expression has no effect");
     }
@@ -11423,7 +11421,7 @@ c_finish_stmt_expr (location_t loc, tree body)
       last = c_wrap_maybe_const (last, true);
       /* Do not warn if the return value of a statement expression is
 	 unused.  */
-      TREE_NO_WARNING (last) = 1;
+      suppress_warning (last, OPT_Wunused);
       return last;
     }
 
@@ -15502,7 +15500,7 @@ c_omp_clause_copy_ctor (tree clause, tree dst, tree src)
   tree tmp = create_tmp_var (nonatomic_type);
   tree tmp_addr = build_fold_addr_expr (tmp);
   TREE_ADDRESSABLE (tmp) = 1;
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tree src_addr = build_fold_addr_expr (src);
   tree dst_addr = build_fold_addr_expr (dst);
   tree seq_cst = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);

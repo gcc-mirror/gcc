@@ -190,6 +190,8 @@ static int lto_wrapper_num_args;
 static char **pass_through_items = NULL;
 static unsigned int num_pass_through_items;
 
+static char *ltrans_objects = NULL;
+
 static bool debug;
 static bool save_temps;
 static bool verbose;
@@ -736,6 +738,14 @@ all_symbols_read_handler (void)
   if (nop)
     {
       use_original_files ();
+      return LDPS_OK;
+    }
+
+  if (ltrans_objects)
+    {
+      FILE *objs = fopen (ltrans_objects, "r");
+      add_output_files (objs);
+      fclose (objs);
       return LDPS_OK;
     }
 
@@ -1345,6 +1355,8 @@ process_option (const char *option)
 	  break;
 	}
     }
+  else if (startswith (option, "-ltrans-objects="))
+    ltrans_objects = xstrdup (option + strlen ("-ltrans-objects="));
   else
     {
       int size;

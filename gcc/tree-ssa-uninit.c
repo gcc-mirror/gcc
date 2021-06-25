@@ -87,17 +87,33 @@ has_undefined_value_p (tree t)
 	      && possibly_undefined_names->contains (t)));
 }
 
-/* Like has_undefined_value_p, but don't return true if TREE_NO_WARNING
-   is set on SSA_NAME_VAR.  */
+/* Return true if EXPR should suppress either uninitialized warning.  */
+
+static inline bool
+get_no_uninit_warning (tree expr)
+{
+  return warning_suppressed_p (expr, OPT_Wuninitialized);
+}
+
+/* Suppress both uninitialized warnings for EXPR.  */
+
+static inline void
+set_no_uninit_warning (tree expr)
+{
+  suppress_warning (expr, OPT_Wuninitialized);
+}
+
+/* Like has_undefined_value_p, but don't return true if the no-warning
+   bit is set on SSA_NAME_VAR for either uninit warning.  */
 
 static inline bool
 uninit_undefined_value_p (tree t)
 {
   if (!has_undefined_value_p (t))
     return false;
-  if (SSA_NAME_VAR (t) && TREE_NO_WARNING (SSA_NAME_VAR (t)))
-    return false;
-  return true;
+  if (!SSA_NAME_VAR (t))
+    return true;
+  return !get_no_uninit_warning (SSA_NAME_VAR (t));
 }
 
 /* Emit warnings for uninitialized variables.  This is done in two passes.
@@ -165,10 +181,10 @@ warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
   /* TREE_NO_WARNING either means we already warned, or the front end
      wishes to suppress the warning.  */
   if ((context
-       && (gimple_no_warning_p (context)
+       && (warning_suppressed_p (context, OPT_Wuninitialized)
 	   || (gimple_assign_single_p (context)
-	       && TREE_NO_WARNING (gimple_assign_rhs1 (context)))))
-      || TREE_NO_WARNING (expr))
+	       && get_no_uninit_warning (gimple_assign_rhs1 (context)))))
+      || get_no_uninit_warning (expr))
     return;
 
   if (context != NULL && gimple_has_location (context))
@@ -185,7 +201,7 @@ warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
   auto_diagnostic_group d;
   if (warning_at (location, wc, gmsgid, expr))
     {
-      TREE_NO_WARNING (expr) = 1;
+      suppress_warning (expr, wc);
 
       if (location == DECL_SOURCE_LOCATION (var))
 	return;
@@ -260,7 +276,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
   use_operand_p luse_p;
   imm_use_iterator liter;
 
-  if (TREE_NO_WARNING (rhs))
+  if (get_no_uninit_warning (rhs))
     return NULL_TREE;
 
   /* Do not warn if the base was marked so or this is a
@@ -268,7 +284,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
   tree base = ao_ref_base (&ref);
   if ((VAR_P (base)
        && DECL_HARD_REGISTER (base))
-      || TREE_NO_WARNING (base))
+      || get_no_uninit_warning (base))
     return NULL_TREE;
 
   /* Do not warn if the access is fully outside of the variable.  */
@@ -407,7 +423,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
     rhs = TREE_OPERAND (rhs, 0);
 
   /* Check again since RHS may have changed above.  */
-  if (TREE_NO_WARNING (rhs))
+  if (get_no_uninit_warning (rhs))
     return NULL_TREE;
 
   /* Avoid warning about empty types such as structs with no members.
@@ -435,7 +451,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
 	     uses or accesses by functions as it may hide important
 	     locations.  */
 	  if (lhs)
-	    TREE_NO_WARNING (rhs) = 1;
+	    set_no_uninit_warning (rhs);
 	  warned = true;
 	}
     }

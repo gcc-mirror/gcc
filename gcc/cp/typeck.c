@@ -3326,10 +3326,7 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
        member = DECL_CHAIN (member))
     if (DECL_NAME (member) == member_name)
       break;
-  tree res = build_simple_component_ref (ptrmem, member);
-
-  TREE_NO_WARNING (res) = 1;
-  return res;
+  return build_simple_component_ref (ptrmem, member);
 }
 
 /* Given an expression PTR for a pointer, return an expression
@@ -3443,7 +3440,7 @@ cp_build_indirect_ref_1 (location_t loc, tree ptr, ref_operator errorstring,
 	  if (warn_strict_aliasing > 2
 	      && cp_strict_aliasing_warning (EXPR_LOCATION (ptr),
 					     type, TREE_OPERAND (ptr, 0)))
-	    TREE_NO_WARNING (ptr) = 1;
+	    suppress_warning (ptr, OPT_Wstrict_aliasing);
 	}
 
       if (VOID_TYPE_P (t))
@@ -4068,7 +4065,7 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
     {
       tree c = extract_call_expr (ret);
       if (TREE_CODE (c) == CALL_EXPR)
-	TREE_NO_WARNING (c) = 1;
+	suppress_warning (c, OPT_Wnonnull);
     }
 
   if (allocated != NULL)
@@ -4450,14 +4447,14 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
   if (!warn_address
       || (complain & tf_warning) == 0
       || c_inhibit_evaluation_warnings != 0
-      || TREE_NO_WARNING (op))
+      || warning_suppressed_p (op, OPT_Waddress))
     return;
 
   tree cop = fold_for_warn (op);
 
   if (TREE_CODE (cop) == ADDR_EXPR
       && decl_with_nonnull_addr_p (TREE_OPERAND (cop, 0))
-      && !TREE_NO_WARNING (cop))
+      && !warning_suppressed_p (cop, OPT_Waddress))
     warning_at (location, OPT_Waddress, "the address of %qD will never "
 		"be NULL", TREE_OPERAND (cop, 0));
 
@@ -4878,7 +4875,7 @@ cp_build_binary_op (const op_location_t &location,
 	  else if (TREE_CODE (type0) == ARRAY_TYPE
 		   && !char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type0)))
 		   /* Set by finish_parenthesized_expr.  */
-		   && !TREE_NO_WARNING (op1)
+		   && !warning_suppressed_p (op1, OPT_Wsizeof_array_div)
 		   && (complain & tf_warning))
 	    maybe_warn_sizeof_array_div (location, first_arg, type0,
 					 op1, non_reference (type1));
@@ -5297,7 +5294,7 @@ cp_build_binary_op (const op_location_t &location,
 	  pfn0 = cp_fully_fold (pfn0);
 	  /* Avoid -Waddress warnings (c++/64877).  */
 	  if (TREE_CODE (pfn0) == ADDR_EXPR)
-	    TREE_NO_WARNING (pfn0) = 1;
+	    suppress_warning (pfn0, OPT_Waddress);
 	  pfn1 = pfn_from_ptrmemfunc (op1);
 	  pfn1 = cp_fully_fold (pfn1);
 	  delta0 = delta_from_ptrmemfunc (op0);
@@ -7062,7 +7059,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
                                             tf_warning_or_error);
       arg = build2 (COMPOUND_EXPR, TREE_TYPE (real_result),
 		    arg, real_result);
-      TREE_NO_WARNING (arg) = 1;
+      suppress_warning (arg /* What warning? */);
       return arg;
     }
 
@@ -8978,7 +8975,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 
   TREE_SIDE_EFFECTS (result) = 1;
   if (!plain_assign)
-    TREE_NO_WARNING (result) = 1;
+    suppress_warning (result, OPT_Wparentheses);
 
  ret:
   if (preeval)
@@ -9022,7 +9019,7 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	{
 	  if (rval == error_mark_node)
 	    return rval;
-	  TREE_NO_WARNING (rval) = 1;
+	  suppress_warning (rval /* What warning? */);
 	  if (processing_template_decl)
 	    {
 	      if (overload != NULL_TREE)
@@ -9629,13 +9626,13 @@ convert_for_assignment (tree type, tree rhs,
   if (warn_parentheses
       && TREE_CODE (type) == BOOLEAN_TYPE
       && TREE_CODE (rhs) == MODIFY_EXPR
-      && !TREE_NO_WARNING (rhs)
+      && !warning_suppressed_p (rhs, OPT_Wparentheses)
       && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
       && (complain & tf_warning)
       && warning_at (rhs_loc, OPT_Wparentheses,
 		     "suggest parentheses around assignment used as "
 		     "truth value"))
-    TREE_NO_WARNING (rhs) = 1;
+    suppress_warning (rhs, OPT_Wparentheses);
 
   if (complain & tf_warning)
     warn_for_address_or_pointer_of_packed_member (type, rhs);

@@ -4529,7 +4529,7 @@ no_linkage_error (tree decl)
 	  || (errorcount + sorrycount > 0
 	      && DECL_LANG_SPECIFIC (decl)
 	      && DECL_TEMPLATE_INFO (decl)
-	      && TREE_NO_WARNING (decl))))
+	      && warning_suppressed_p (decl /* What warning? */))))
     /* In C++11 it's ok if the decl is defined.  */
     return;
 
@@ -5204,7 +5204,7 @@ c_parse_final_cleanups (void)
 	  && warning_at (DECL_SOURCE_LOCATION (decl), 0,
 			 "inline function %qD used but never defined", decl))
 	/* Avoid a duplicate warning from check_global_declaration.  */
-	TREE_NO_WARNING (decl) = 1;
+	suppress_warning (decl, OPT_Wunused);
     }
 
   /* So must decls that use a type with no linkage.  */

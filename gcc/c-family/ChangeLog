@@ -1,3 +1,10 @@
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum c_omp_region_type): Add C_ORT_TARGET and
+	C_ORT_OMP_TARGET.
+	* c-omp.c (c_omp_split_clauses): For OMP_CLAUSE_IN_REDUCTION on
+	combined target constructs also add map (always, tofrom:) clause.
+
 2021-06-15  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* c-attribs.c (common_handle_aligned_attribute): Remove short

@@ -1698,6 +1698,7 @@ OBJS = \
 	vmsdbgout.o \
 	vr-values.o \
 	vtable-verify.o \
+	warning-control.o \
 	web.o \
 	wide-int.o \
 	wide-int-print.o \
@@ -1709,8 +1710,8 @@ OBJS = \
 
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
-OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
-	diagnostic-format-json.o json.o \
+OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
+	diagnostic-show-locus.o diagnostic-format-json.o json.o \
 	edit-context.o \
 	pretty-print.o intl.o \
 	sbitmap.o \
@@ -2650,6 +2651,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-modref.h $(srcdir)/ipa-modref.c \
   $(srcdir)/ipa-modref-tree.h \
   $(srcdir)/signop.h \
+  $(srcdir)/diagnostic-spec.h $(srcdir)/diagnostic-spec.c \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.c \
   $(srcdir)/dwarf2cfi.c \

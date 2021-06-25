@@ -1431,7 +1431,7 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
   if (!acs.overlap ())
     return false;
 
-  if (gimple_no_warning_p (call))
+  if (warning_suppressed_p (call, OPT_Wrestrict))
     return true;
 
   /* For convenience.  */
@@ -1680,10 +1680,11 @@ maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
    be issued, false otherwise.
    Both initial values of the offsets and their final value computed
    by the function by incrementing the initial value by the size are
-   validated.  Return true if the offsets are not valid and a diagnostic
-   has been issued, or would have been issued if DO_WARN had been true.  */
+   validated.  Return the warning number if the offsets are not valid
+   and a diagnostic has been issued, or would have been issued if
+   DO_WARN had been true, otherwise an invalid warning number.  */
 
-static bool
+static opt_code
 maybe_diag_access_bounds (gimple *call, tree func, int strict,
 			  const builtin_memref &ref, offset_int wroff,
 			  bool do_warn)
@@ -1695,28 +1696,31 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
      since the result is used to make codegen decisions.  */
   if (ref.sizrange[0] > maxobjsize)
     {
+      const opt_code opt = OPT_Wstringop_overflow_;
       /* Return true without issuing a warning.  */
       if (!do_warn)
-	return true;
+	return opt;
 
-      if (ref.ref && TREE_NO_WARNING (ref.ref))
-	return false;
+      if (ref.ref && warning_suppressed_p (ref.ref, OPT_Wstringop_overflow_))
+	return no_warning;
 
+      bool warned = false;
       if (warn_stringop_overflow)
 	{
 	  if (ref.sizrange[0] == ref.sizrange[1])
-	    return warning_at (loc, OPT_Wstringop_overflow_,
-			       "%G%qD specified bound %wu "
-			       "exceeds maximum object size %wu",
-			       call, func, ref.sizrange[0].to_uhwi (),
-			       maxobjsize.to_uhwi ());
-
-	  return warning_at (loc, OPT_Wstringop_overflow_,
-			     "%G%qD specified bound between %wu and %wu "
-			     "exceeds maximum object size %wu",
-			     call, func, ref.sizrange[0].to_uhwi (),
-			     ref.sizrange[1].to_uhwi (),
-			     maxobjsize.to_uhwi ());
+	    warned = warning_at (loc, opt,
+				 "%G%qD specified bound %wu "
+				 "exceeds maximum object size %wu",
+				 call, func, ref.sizrange[0].to_uhwi (),
+				 maxobjsize.to_uhwi ());
+	  else
+	    warned = warning_at (loc, opt,
+				 "%G%qD specified bound between %wu and %wu "
+				 "exceeds maximum object size %wu",
+				 call, func, ref.sizrange[0].to_uhwi (),
+				 ref.sizrange[1].to_uhwi (),
+				 maxobjsize.to_uhwi ());
+	  return warned ? opt : no_warning;
 	}
     }
 
@@ -1729,18 +1733,19 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
   offset_int ooboff[] = { ref.offrange[0], ref.offrange[1], wroff };
   tree oobref = ref.offset_out_of_bounds (strict, ooboff);
   if (!oobref)
-    return false;
+    return no_warning;
 
+  const opt_code opt = OPT_Warray_bounds;
   /* Return true without issuing a warning.  */
   if (!do_warn)
-    return true;
+    return opt;
 
   if (!warn_array_bounds)
-    return false;
+    return no_warning;
 
-  if (TREE_NO_WARNING (ref.ptr)
-      || (ref.ref && TREE_NO_WARNING (ref.ref)))
-    return false;
+  if (warning_suppressed_p (ref.ptr, opt)
+      || (ref.ref && warning_suppressed_p (ref.ref, opt)))
+    return no_warning;
 
   char rangestr[2][64];
   if (ooboff[0] == ooboff[1]
@@ -1770,7 +1775,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
 	  && TREE_CODE (type = TREE_TYPE (ref.base)) == ARRAY_TYPE)
 	{
 	  auto_diagnostic_group d;
-	  if (warning_at (loc, OPT_Warray_bounds,
+	  if (warning_at (loc, opt,
 			  "%G%qD pointer overflow between offset %s "
 			  "and size %s accessing array %qD with type %qT",
 			  call, func, rangestr[0], rangestr[1], ref.base, type))
@@ -1780,13 +1785,13 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
 	      warned = true;
 	    }
 	  else
-	    warned = warning_at (loc, OPT_Warray_bounds,
+	    warned = warning_at (loc, opt,
 				 "%G%qD pointer overflow between offset %s "
 				 "and size %s",
 				 call, func, rangestr[0], rangestr[1]);
 	}
       else
-	warned = warning_at (loc, OPT_Warray_bounds,
+	warned = warning_at (loc, opt,
 			     "%G%qD pointer overflow between offset %s "
 			     "and size %s",
 			     call, func, rangestr[0], rangestr[1]);
@@ -1802,7 +1807,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
 	{
 	  auto_diagnostic_group d;
 	  if ((ref.basesize < maxobjsize
-	       && warning_at (loc, OPT_Warray_bounds,
+	       && warning_at (loc, opt,
 			      form
 			      ? G_("%G%qD forming offset %s is out of "
 				   "the bounds [0, %wu] of object %qD with "
@@ -1811,7 +1816,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
 				   "[0, %wu] of object %qD with type %qT"),
 			      call, func, rangestr[0], ref.basesize.to_uhwi (),
 			      ref.base, TREE_TYPE (ref.base)))
-	      || warning_at (loc, OPT_Warray_bounds,
+	      || warning_at (loc, opt,
 			     form
 			     ? G_("%G%qD forming offset %s is out of "
 				  "the bounds of object %qD with type %qT")
@@ -1826,7 +1831,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
 	    }
 	}
       else if (ref.basesize < maxobjsize)
-	warned = warning_at (loc, OPT_Warray_bounds,
+	warned = warning_at (loc, opt,
 			     form
 			     ? G_("%G%qD forming offset %s is out "
 				  "of the bounds [0, %wu]")
@@ -1834,7 +1839,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
 				  "of the bounds [0, %wu]"),
 			     call, func, rangestr[0], ref.basesize.to_uhwi ());
       else
-	warned = warning_at (loc, OPT_Warray_bounds,
+	warned = warning_at (loc, opt,
 			     form
 			     ? G_("%G%qD forming offset %s is out of bounds")
 			     : G_("%G%qD offset %s is out of bounds"),
@@ -1848,7 +1853,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
 	type = TREE_TYPE (type);
       type = TYPE_MAIN_VARIANT (type);
 
-      if (warning_at (loc, OPT_Warray_bounds,
+      if (warning_at (loc, opt,
 		      "%G%qD offset %s from the object at %qE is out "
 		      "of the bounds of %qT",
 		      call, func, rangestr[0], ref.base, type))
@@ -1866,7 +1871,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
       tree refop = TREE_OPERAND (ref.ref, 0);
       tree type = TYPE_MAIN_VARIANT (TREE_TYPE (ref.ref));
 
-      if (warning_at (loc, OPT_Warray_bounds,
+      if (warning_at (loc, opt,
 		      "%G%qD offset %s from the object at %qE is out "
 		      "of the bounds of referenced subobject %qD with "
 		      "type %qT at offset %wi",
@@ -1883,7 +1888,7 @@ maybe_diag_access_bounds (gimple *call, tree func, int strict,
 	}
     }
 
-  return warned;
+  return warned ? opt : no_warning;
 }
 
 /* Check a CALL statement for restrict-violations and issue warnings
@@ -1894,7 +1899,7 @@ check_call (range_query *query, gimple *call)
 {
   /* Avoid checking the call if it has already been diagnosed for
      some reason.  */
-  if (gimple_no_warning_p (call))
+  if (warning_suppressed_p (call, OPT_Wrestrict))
     return;
 
   tree func = gimple_call_fndecl (call);
@@ -1980,11 +1985,10 @@ check_call (range_query *query, gimple *call)
       || (dstwr && !INTEGRAL_TYPE_P (TREE_TYPE (dstwr))))
     return;
 
-  if (!check_bounds_or_overlap (query, call, dst, src, dstwr, NULL_TREE))
-    return;
-
+  opt_code opt = check_bounds_or_overlap (query, call, dst, src, dstwr,
+					  NULL_TREE);
   /* Avoid diagnosing the call again.  */
-  gimple_set_no_warning (call, true);
+  suppress_warning (call, opt);
 }
 
 } /* anonymous namespace */
@@ -1996,7 +2000,7 @@ check_call (range_query *query, gimple *call)
    without issue a warning.  Return the OPT_Wxxx constant corresponding
    to the warning if one has been detected and zero otherwise.  */
 
-int
+opt_code
 check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 			 tree srcsize, bool bounds_only /* = false */,
 			 bool do_warn /* = true */)
@@ -2006,7 +2010,7 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 				  bounds_only, do_warn);
 }
 
-int
+opt_code
 check_bounds_or_overlap (range_query *query,
 			 gimple *call, tree dst, tree src, tree dstsize,
 			 tree srcsize, bool bounds_only /* = false */,
@@ -2032,16 +2036,20 @@ check_bounds_or_overlap (range_query *query,
   /* Validate offsets to each reference before the access first to make
      sure they are within the bounds of the destination object if its
      size is known, or PTRDIFF_MAX otherwise.  */
-  if (maybe_diag_access_bounds (call, func, strict, dstref, wroff, do_warn)
-      || maybe_diag_access_bounds (call, func, strict, srcref, 0, do_warn))
+  opt_code opt
+    = maybe_diag_access_bounds (call, func, strict, dstref, wroff, do_warn);
+  if (opt == no_warning)
+    opt = maybe_diag_access_bounds (call, func, strict, srcref, 0, do_warn);
+
+  if (opt != no_warning)
     {
       if (do_warn)
-	gimple_set_no_warning (call, true);
-      return OPT_Warray_bounds;
+	suppress_warning (call, opt);
+      return opt;
     }
 
   if (!warn_restrict || bounds_only || !src)
-    return 0;
+    return no_warning;
 
   if (!bounds_only)
     {
@@ -2051,7 +2059,7 @@ check_bounds_or_overlap (range_query *query,
 	case BUILT_IN_MEMMOVE_CHK:
 	case BUILT_IN_MEMSET:
 	case BUILT_IN_MEMSET_CHK:
-	  return 0;
+	  return no_warning;
 	default:
 	  break;
 	}
@@ -2064,26 +2072,26 @@ check_bounds_or_overlap (range_query *query,
 	 not point to objects and so do not indicate an overlap;
 	 such calls could be the result of sanitization and jump
 	 threading).  */
-      if (!integer_zerop (dst) && !gimple_no_warning_p (call))
+      if (!integer_zerop (dst) && !warning_suppressed_p (call, OPT_Wrestrict))
 	{
 	  warning_at (loc, OPT_Wrestrict,
 		      "%G%qD source argument is the same as destination",
 		      call, func);
-	  gimple_set_no_warning (call, true);
+	  suppress_warning (call, OPT_Wrestrict);
 	  return OPT_Wrestrict;
 	}
 
-      return 0;
+      return no_warning;
     }
 
   /* Return false when overlap has been detected.  */
   if (maybe_diag_overlap (loc, call, acs))
     {
-      gimple_set_no_warning (call, true);
+      suppress_warning (call, OPT_Wrestrict);
       return OPT_Wrestrict;
     }
 
-  return 0;
+  return no_warning;
 }
 
 gimple_opt_pass *

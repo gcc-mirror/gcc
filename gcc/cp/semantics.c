@@ -835,12 +835,12 @@ maybe_convert_cond (tree cond)
   cond = convert_from_reference (cond);
 
   if (TREE_CODE (cond) == MODIFY_EXPR
-      && !TREE_NO_WARNING (cond)
       && warn_parentheses
+      && !warning_suppressed_p (cond, OPT_Wparentheses)
       && warning_at (cp_expr_loc_or_input_loc (cond),
 		     OPT_Wparentheses, "suggest parentheses around "
 				       "assignment used as truth value"))
-    TREE_NO_WARNING (cond) = 1;
+    suppress_warning (cond, OPT_Wparentheses);
 
   return condition_conversion (cond);
 }
@@ -1197,7 +1197,7 @@ finish_return_stmt (tree expr)
     {
       /* Suppress -Wreturn-type for this function.  */
       if (warn_return_type)
-	TREE_NO_WARNING (current_function_decl) = true;
+	suppress_warning (current_function_decl, OPT_Wreturn_type);
       return error_mark_node;
     }
 
@@ -1219,7 +1219,8 @@ finish_return_stmt (tree expr)
     }
 
   r = build_stmt (input_location, RETURN_EXPR, expr);
-  TREE_NO_WARNING (r) |= no_warning;
+  if (no_warning)
+    suppress_warning (r, OPT_Wreturn_type);
   r = maybe_cleanup_point_expr_void (r);
   r = add_stmt (r);
 
@@ -2105,7 +2106,7 @@ finish_parenthesized_expr (cp_expr expr)
 {
   if (EXPR_P (expr))
     /* This inhibits warnings in c_common_truthvalue_conversion.  */
-    TREE_NO_WARNING (expr) = 1;
+    suppress_warning (expr, OPT_Wparentheses);
 
   if (TREE_CODE (expr) == OFFSET_REF
       || TREE_CODE (expr) == SCOPE_REF)
@@ -5979,12 +5980,12 @@ cp_check_omp_declare_reduction (tree udr)
     {
       gcc_assert (TREE_CODE (data.stmts[0]) == DECL_EXPR
 		  && TREE_CODE (data.stmts[1]) == DECL_EXPR);
-      if (TREE_NO_WARNING (DECL_EXPR_DECL (data.stmts[0])))
+      if (warning_suppressed_p (DECL_EXPR_DECL (data.stmts[0]) /* What warning? */))
 	return true;
       data.combiner_p = true;
       if (cp_walk_tree (&data.stmts[2], cp_check_omp_declare_reduction_r,
 			&data, NULL))
-	TREE_NO_WARNING (DECL_EXPR_DECL (data.stmts[0])) = 1;
+	suppress_warning (DECL_EXPR_DECL (data.stmts[0]) /* What warning? */);
     }
   if (i >= 6)
     {
@@ -5995,7 +5996,7 @@ cp_check_omp_declare_reduction (tree udr)
 			&data, NULL)
 	  || cp_walk_tree (&DECL_INITIAL (DECL_EXPR_DECL (data.stmts[3])),
 			   cp_check_omp_declare_reduction_r, &data, NULL))
-	TREE_NO_WARNING (DECL_EXPR_DECL (data.stmts[0])) = 1;
+	suppress_warning (DECL_EXPR_DECL (data.stmts[0])  /* Wat warning? */);
       if (i == 7)
 	gcc_assert (TREE_CODE (data.stmts[6]) == DECL_EXPR);
     }

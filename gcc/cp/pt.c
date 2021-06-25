@@ -10954,9 +10954,9 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
      constant expressions.  */
   if (!targs && limit_bad_template_recursion (tldcl))
     {
-      /* Avoid no_linkage_errors and unused function warnings for this
-	 decl.  */
-      TREE_NO_WARNING (tldcl) = 1;
+      /* Avoid no_linkage_errors and unused function (and all other)
+	 warnings for this decl.  */
+      suppress_warning (tldcl);
       return false;
     }
 
@@ -17079,7 +17079,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree op1 = tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl);
 	tree op2 = tsubst_copy (TREE_OPERAND (t, 2), args, complain, in_decl);
 	r = build_nt (code, op0, op1, op2);
-	TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
+	copy_warning (r, t);
 	return r;
       }
 
@@ -19172,8 +19172,7 @@ tsubst_omp_udr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       block = finish_omp_structured_block (block);
       block = maybe_cleanup_point_expr_void (block);
       add_decl_expr (omp_out);
-      if (TREE_NO_WARNING (DECL_EXPR_DECL (stmts[0])))
-	TREE_NO_WARNING (omp_out) = 1;
+      copy_warning (omp_out, DECL_EXPR_DECL (stmts[0]));
       add_decl_expr (omp_in);
       finish_expr_stmt (block);
     }
@@ -19854,17 +19853,17 @@ tsubst_copy_and_build (tree t,
 	tree r = build_x_binary_op
 	  (input_location, TREE_CODE (t),
 	   op0,
-	   (TREE_NO_WARNING (TREE_OPERAND (t, 0))
+	   (warning_suppressed_p (TREE_OPERAND (t, 0))
 	    ? ERROR_MARK
 	    : TREE_CODE (TREE_OPERAND (t, 0))),
 	   op1,
-	   (TREE_NO_WARNING (TREE_OPERAND (t, 1))
+	   (warning_suppressed_p (TREE_OPERAND (t, 1))
 	    ? ERROR_MARK
 	    : TREE_CODE (TREE_OPERAND (t, 1))),
 	   /*overload=*/NULL,
 	   complain|decltype_flag);
-	if (EXPR_P (r) && TREE_NO_WARNING (t))
-	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
+	if (EXPR_P (r))
+	  copy_warning (r, t);
 
 	RETURN (r);
       }
@@ -20000,8 +19999,8 @@ tsubst_copy_and_build (tree t,
 	   set and must be copied.  In the latter case,
 	   build_x_modify_expr sets it and it must not be reset
 	   here.  */
-	if (TREE_NO_WARNING (t))
-	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
+	if (warning_suppressed_p (t, OPT_Wparentheses))
+	  suppress_warning (r, OPT_Wparentheses);
 
 	RETURN (r);
       }
@@ -28886,6 +28885,8 @@ is_spec_or_derived (tree etype, tree tmpl)
   return !err;
 }
 
+static tree alias_ctad_tweaks (tree, tree);
+
 /* Return a C++20 aggregate deduction candidate for TYPE initialized from
    INIT.  */
 
@@ -28897,6 +28898,15 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
 
   if (init == NULL_TREE)
     return NULL_TREE;
+
+  if (DECL_ALIAS_TEMPLATE_P (tmpl))
+    {
+      tree under = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+      tree tinfo = get_template_info (under);
+      if (tree guide = maybe_aggr_guide (TI_TEMPLATE (tinfo), init, args))
+	return alias_ctad_tweaks (tmpl, guide);
+      return NULL_TREE;
+    }
 
   /* We might be creating a guide for a class member template, e.g.,
 

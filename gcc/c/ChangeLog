@@ -1,3 +1,30 @@
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101176
+	* c-parser.c (c_parser_has_attribute_expression): Set source range for
+	the result.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101171
+	* c-typeck.c (build_c_cast): Don't call note_integer_operands on
+	error_mark_node.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (omp_split_clauses): Pass C_ORT_OMP_TARGET instead of
+	C_ORT_OMP for clauses on target construct.
+	(OMP_TARGET_CLAUSE_MASK): Add in_reduction clause.
+	(c_parser_omp_target): For non-combined target add
+	map (always, tofrom:) clauses for OMP_CLAUSE_IN_REDUCTION.  Pass
+	C_ORT_OMP_TARGET to c_finish_omp_clauses.
+	* c-typeck.c (handle_omp_array_sections): Adjust ort handling
+	for addition of C_ORT_OMP_TARGET and simplify, mapping clauses are
+	never present on C_ORT_*DECLARE_SIMD.
+	(c_finish_omp_clauses): Likewise.  Handle OMP_CLAUSE_IN_REDUCTION
+	on C_ORT_OMP_TARGET, set OMP_CLAUSE_MAP_IN_REDUCTION on
+	corresponding map clauses.
+
 2021-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/100785

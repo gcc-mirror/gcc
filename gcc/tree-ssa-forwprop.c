@@ -403,7 +403,8 @@ combine_cond_expr_cond (gimple *stmt, enum tree_code code, tree type,
       return NULL_TREE;
     }
 
-  fold_undefer_overflow_warnings (!gimple_no_warning_p (stmt), stmt, 0);
+  bool nowarn = warning_suppressed_p (stmt, OPT_Wstrict_overflow);
+  fold_undefer_overflow_warnings (!nowarn, stmt, 0);
 
   return t;
 }

@@ -7558,7 +7558,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after,
     ret.original_code = MODIFY_EXPR;
   else
     {
-      TREE_NO_WARNING (ret.value) = 1;
+      suppress_warning (ret.value, OPT_Wparentheses);
       ret.original_code = ERROR_MARK;
     }
   ret.original_type = NULL;
@@ -8406,6 +8406,7 @@ c_parser_has_attribute_expression (c_parser *parser)
 {
   gcc_assert (c_parser_next_token_is_keyword (parser,
 					      RID_BUILTIN_HAS_ATTRIBUTE));
+  location_t start = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
 
   c_inhibit_evaluation_warnings++;
@@ -8484,6 +8485,7 @@ c_parser_has_attribute_expression (c_parser *parser)
 
   parser->translate_strings_p = save_translate_strings_p;
 
+  location_t finish = c_parser_peek_token (parser)->location;
   if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
     c_parser_consume_token (parser);
   else
@@ -8512,6 +8514,7 @@ c_parser_has_attribute_expression (c_parser *parser)
   else
     result.value =  boolean_false_node;
 
+  set_c_expr_source_range (&result, start, finish);
   return result;
 }
 
@@ -9085,7 +9088,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  expr = c_parser_expression (parser);
 	  if (TREE_CODE (expr.value) == MODIFY_EXPR)
-	    TREE_NO_WARNING (expr.value) = 1;
+	    suppress_warning (expr.value, OPT_Wparentheses);
 	  if (expr.original_code != C_MAYBE_CONST_EXPR
 	      && expr.original_code != SIZEOF_EXPR)
 	    expr.original_code = ERROR_MARK;

@@ -605,8 +605,6 @@ ignore_overflows (tree expr, tree orig)
 tree
 cp_fold_convert (tree type, tree expr)
 {
-  bool nowarn = TREE_NO_WARNING (expr);
-
   tree conv;
   if (TREE_TYPE (expr) == type)
     conv = expr;
@@ -630,8 +628,8 @@ cp_fold_convert (tree type, tree expr)
       conv = ignore_overflows (conv, expr);
     }
 
-  if (nowarn && TREE_CODE (expr) == TREE_CODE (conv))
-    TREE_NO_WARNING (conv) = nowarn;
+  if (TREE_CODE (expr) == TREE_CODE (conv))
+    copy_warning (conv, expr);
 
   return conv;
 }
@@ -1208,7 +1206,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	/* The second part of a compound expr contains the value.  */
 	tree op1 = TREE_OPERAND (expr,1);
 	tree new_op1;
-	if (implicit != ICV_CAST && !TREE_NO_WARNING (expr))
+	if (implicit != ICV_CAST && !warning_suppressed_p (expr /* What warning? */))
 	  new_op1 = convert_to_void (op1, ICV_RIGHT_OF_COMMA, complain);
 	else
 	  new_op1 = convert_to_void (op1, ICV_CAST, complain);
@@ -1394,7 +1392,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
             if (warn_unused_value
 		&& implicit != ICV_CAST
                 && (complain & tf_warning)
-                && !TREE_NO_WARNING (expr)
+                && !warning_suppressed_p (expr, OPT_Wunused_value)
                 && !is_reference)
               warning_at (loc, OPT_Wunused_value, "value computed is not used");
             expr = TREE_OPERAND (expr, 0);
@@ -1578,7 +1576,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
     {
       if (implicit != ICV_CAST
 	  && warn_unused_value
-	  && !TREE_NO_WARNING (expr)
+	  && !warning_suppressed_p (expr, OPT_Wunused_value)
 	  && !processing_template_decl
 	  && !cp_unevaluated_operand
 	  && (complain & tf_warning))

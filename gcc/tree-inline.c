@@ -1116,7 +1116,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	  *tp = fold_build2 (MEM_REF, type, ptr, TREE_OPERAND (*tp, 1));
 	  TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	  TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
-	  TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
+	  copy_warning (*tp, old);
 	  if (MR_DEPENDENCE_CLIQUE (old) != 0)
 	    {
 	      MR_DEPENDENCE_CLIQUE (*tp)
@@ -1375,7 +1375,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	  *tp = fold_build2 (MEM_REF, type, ptr, TREE_OPERAND (*tp, 1));
 	  TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	  TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
-	  TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
+	  copy_warning (*tp, old);
 	  if (MR_DEPENDENCE_CLIQUE (old) != 0)
 	    {
 	      MR_DEPENDENCE_CLIQUE (*tp)
@@ -3769,7 +3769,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 
   /* Do not have the rest of GCC warn about this variable as it should
      not be visible to the user.  */
-  TREE_NO_WARNING (var) = 1;
+  suppress_warning (var /* OPT_Wuninitialized? */);
 
   declare_inline_vars (id->block, var);
 
@@ -5027,7 +5027,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	 initialized.  We do not want to issue a warning about that
 	 uninitialized variable.  */
       if (DECL_P (modify_dest))
-	TREE_NO_WARNING (modify_dest) = 1;
+	suppress_warning (modify_dest, OPT_Wuninitialized);
 
       if (gimple_call_return_slot_opt_p (call_stmt))
 	{

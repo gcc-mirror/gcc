@@ -1037,27 +1037,12 @@ ranger_cache::propagate_cache (tree name)
       new_range.set_undefined ();
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
+	  range_on_edge (e_range, e, name);
 	  if (DEBUG_RANGE_CACHE)
-	    fprintf (dump_file, "   edge %d->%d :", e->src->index, bb->index);
-	  // Get whatever range we can for this edge.
-	  if (!m_gori.outgoing_edge_range_p (e_range, e, name, *this))
 	    {
-	      exit_range (e_range, name, e->src);
-	      if (DEBUG_RANGE_CACHE)
-		{
-		  fprintf (dump_file, "No outgoing edge range, picked up ");
-		  e_range.dump (dump_file);
-		  fprintf (dump_file, "\n");
-		}
-	    }
-	  else
-	    {
-	      if (DEBUG_RANGE_CACHE)
-		{
-		  fprintf (dump_file, "outgoing range :");
-		  e_range.dump (dump_file);
-		  fprintf (dump_file, "\n");
-		}
+	      fprintf (dump_file, "   edge %d->%d :", e->src->index, bb->index);
+	      e_range.dump (dump_file);
+	      fprintf (dump_file, "\n");
 	    }
 	  new_range.union_ (e_range);
 	  if (new_range.varying_p ())
@@ -1074,7 +1059,11 @@ ranger_cache::propagate_cache (tree name)
 	  if (DEBUG_RANGE_CACHE) 
 	    {
 	      if (!ok_p)
-		fprintf (dump_file, "     Cache failure to store value.");
+		{
+		  fprintf (dump_file, "   Cache failure to store value:");
+		  print_generic_expr (dump_file, name, TDF_SLIM);
+		  fprintf (dump_file, "  ");
+		}
 	      else
 		{
 		  fprintf (dump_file, "      Updating range to ");

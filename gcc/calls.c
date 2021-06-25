@@ -1623,7 +1623,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
   if (!fndecl || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return false;
 
-  if (TREE_NO_WARNING (exp) || !warn_stringop_overread)
+  if (!warn_stringop_overread || warning_suppressed_p (exp, OPT_Wstringop_overread))
     return false;
 
   /* Avoid clearly invalid calls (more checking done below).  */
@@ -1739,7 +1739,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 				 exp, fndecl, bndrng[0], bndrng[1],
 				 maxobjsize);
 	  if (warned)
-	    TREE_NO_WARNING (exp) = true;
+	    suppress_warning (exp, OPT_Wstringop_overread);
 
 	  return warned;
 	}
@@ -1916,7 +1916,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
     }
 
   if (any_arg_warned)
-    TREE_NO_WARNING (exp) = true;
+    suppress_warning (exp, OPT_Wstringop_overread);
 
   return any_arg_warned;
 }
@@ -1979,7 +1979,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 
   /* Set if a warning has been issued for any argument (used to decide
      whether to emit an informational note at the end).  */
-  bool any_warned = false;
+  opt_code opt_warned = N_OPTS;
 
   /* A string describing the attributes that the warnings issued by this
      function apply to.  Used to print one informational note per function
@@ -2054,7 +2054,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	*sizstr = '\0';
 
       /* Set if a warning has been issued for the current argument.  */
-      bool arg_warned = false;
+      opt_code arg_warned = N_OPTS;
       location_t loc = EXPR_LOCATION (exp);
       tree ptr = access.second.ptr;
       if (*sizstr
@@ -2067,24 +2067,25 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	      const std::string argtypestr
 		= access.second.array_as_string (ptrtype);
 
-	      arg_warned = warning_at (loc, OPT_Wstringop_overflow_,
-				       "%Kbound argument %i value %s is "
-				       "negative for a variable length array "
-				       "argument %i of type %s",
-				       exp, sizidx + 1, sizstr,
-				       ptridx + 1, argtypestr.c_str ());
+	      if (warning_at (loc, OPT_Wstringop_overflow_,
+			      "%Kbound argument %i value %s is "
+			      "negative for a variable length array "
+			      "argument %i of type %s",
+			      exp, sizidx + 1, sizstr,
+			      ptridx + 1, argtypestr.c_str ()))
+		arg_warned = OPT_Wstringop_overflow_;
 	    }
-	  else
-	    arg_warned = warning_at (loc, OPT_Wstringop_overflow_,
-				     "%Kargument %i value %s is negative",
-				     exp, sizidx + 1, sizstr);
+	  else if (warning_at (loc, OPT_Wstringop_overflow_,
+			       "%Kargument %i value %s is negative",
+			       exp, sizidx + 1, sizstr))
+	    arg_warned = OPT_Wstringop_overflow_;
 
-	  if (arg_warned)
+	  if (arg_warned != N_OPTS)
 	    {
 	      append_attrname (access, attrstr, sizeof attrstr);
 	      /* Remember a warning has been issued and avoid warning
 		 again below for the same attribute.  */
-	      any_warned = true;
+	      opt_warned = arg_warned;
 	      continue;
 	    }
 	}
@@ -2122,31 +2123,33 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 		  const std::string argtypestr
 		    = access.second.array_as_string (ptrtype);
 
-		  arg_warned = warning_at (loc, OPT_Wnonnull,
-					   "%Kargument %i of variable length "
-					   "array %s is null but "
-					   "the corresponding bound argument "
-					   "%i value is %s",
-					   exp, sizidx + 1, argtypestr.c_str (),
-					   ptridx + 1, sizstr);
+		  if (warning_at (loc, OPT_Wnonnull,
+				  "%Kargument %i of variable length "
+				  "array %s is null but "
+				  "the corresponding bound argument "
+				  "%i value is %s",
+				  exp, sizidx + 1, argtypestr.c_str (),
+				  ptridx + 1, sizstr))
+		    arg_warned = OPT_Wnonnull;
 		}
-	      else
-		arg_warned = warning_at (loc, OPT_Wnonnull,
-					 "%Kargument %i is null but "
-					 "the corresponding size argument "
-					 "%i value is %s",
-					 exp, ptridx + 1, sizidx + 1,
-					 sizstr);
+	      else if (warning_at (loc, OPT_Wnonnull,
+				   "%Kargument %i is null but "
+				   "the corresponding size argument "
+				   "%i value is %s",
+				   exp, ptridx + 1, sizidx + 1,
+				   sizstr))
+		arg_warned = OPT_Wnonnull;
 	    }
 	  else if (access_size && access.second.static_p)
 	    {
 	      /* Warn about null pointers for [static N] array arguments
 		 but do not warn for ordinary (i.e., nonstatic) arrays.  */
-	      arg_warned = warning_at (loc, OPT_Wnonnull,
-				       "%Kargument %i to %<%T[static %E]%> "
-				       "is null where non-null expected",
-				       exp, ptridx + 1, argtype,
-				       access_size);
+	      if (warning_at (loc, OPT_Wnonnull,
+			      "%Kargument %i to %<%T[static %E]%> "
+			      "is null where non-null expected",
+			      exp, ptridx + 1, argtype,
+			      access_size))
+		arg_warned = OPT_Wnonnull;		
 	    }
 
 	  if (arg_warned)
@@ -2154,7 +2157,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	      append_attrname (access, attrstr, sizeof attrstr);
 	      /* Remember a warning has been issued and avoid warning
 		 again below for the same attribute.  */
-	      any_warned = true;
+	      opt_warned = OPT_Wnonnull;
 	      continue;
 	    }
 	}
@@ -2190,17 +2193,17 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
       /* Clear the no-warning bit in case it was set by check_access
 	 in a prior iteration so that accesses via different arguments
 	 are diagnosed.  */
-      TREE_NO_WARNING (exp) = false;
+      suppress_warning (exp, OPT_Wstringop_overflow_, false);
       access_mode mode = data.mode;
       if (mode == access_deferred)
 	mode = TYPE_READONLY (argtype) ? access_read_only : access_read_write;
       check_access (exp, access_size, /*maxread=*/ NULL_TREE, srcsize,
 		    dstsize, mode, &data);
 
-      if (TREE_NO_WARNING (exp))
+      if (warning_suppressed_p (exp, OPT_Wstringop_overflow_))
+	opt_warned = OPT_Wstringop_overflow_;
+      if (opt_warned != N_OPTS)
 	{
-	  any_warned = true;
-
 	  if (access.second.internal_p)
 	    inform (loc, "referencing argument %u of type %qT",
 		    ptridx + 1, ptrtype);
@@ -2222,7 +2225,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 		"in a call with type %qT and attribute %qs",
 		fntype, attrstr);
     }
-  else if (any_warned)
+  else if (opt_warned != N_OPTS)
     {
       if (fndecl)
 	inform (DECL_SOURCE_LOCATION (fndecl),
@@ -2233,7 +2236,8 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
     }
 
   /* Set the bit in case if was cleared and not set above.  */
-  TREE_NO_WARNING (exp) = true;
+  if (opt_warned != N_OPTS)
+    suppress_warning (exp, opt_warned);
 }
 
 /* Fill in ARGS_SIZE and ARGS array based on the parameters found in

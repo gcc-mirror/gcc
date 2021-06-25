@@ -2963,9 +2963,12 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   new_stmt = gimple_build_assign (name, lhs);
   gimple_set_location (new_stmt, locus);
   lhs = unshare_expr (lhs);
-  /* Set TREE_NO_WARNING on the rhs of the load to avoid uninit
-     warnings.  */
-  TREE_NO_WARNING (gimple_assign_rhs1 (new_stmt)) = 1;
+  {
+    /* Set the no-warning bit on the rhs of the load to avoid uninit
+       warnings.  */
+    tree rhs1 = gimple_assign_rhs1 (new_stmt);
+    suppress_warning (rhs1, OPT_Wuninitialized);
+  }
   gsi_insert_on_edge (e1, new_stmt);
 
   /* 3) Create a PHI node at the join block, with one argument

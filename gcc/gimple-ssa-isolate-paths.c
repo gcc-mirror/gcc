@@ -400,6 +400,11 @@ diag_returned_locals (bool maybe, const locmap_t &locmap)
       gimple *stmt = (*it).first;
       const args_loc_t &argsloc = (*it).second;
       location_t stmtloc = gimple_location (stmt);
+      if (stmtloc == UNKNOWN_LOCATION)
+	/* When multiple return statements are merged into one it
+	   may not have an associated location.  Use the location
+	   of the closing brace instead.  */
+	stmtloc = cfun->function_end_locus;
 
       auto_diagnostic_group d;
       unsigned nargs = argsloc.locvec.length ();

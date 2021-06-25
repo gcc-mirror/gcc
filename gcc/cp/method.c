@@ -3284,7 +3284,7 @@ defaultable_fn_check (tree fn)
       /* Avoid do_warn_unused_parameter warnings.  */
       for (tree p = FUNCTION_FIRST_USER_PARM (fn); p; p = DECL_CHAIN (p))
 	if (DECL_NAME (p))
-	  TREE_NO_WARNING (p) = 1;
+	  suppress_warning (p, OPT_Wunused_parameter);
 
       if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
 	/* Defer checking.  */;
