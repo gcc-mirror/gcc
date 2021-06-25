@@ -54,6 +54,12 @@ public:
     expr.get_expr ().get ()->accept_vis (*this);
   }
 
+  void visit (HIR::LazyBooleanExpr &expr) override
+  {
+    expr.get_lhs()->accept_vis(*this);
+    expr.get_rhs()->accept_vis(*this);
+  }
+
   void visit (HIR::BlockExpr &expr) override
   {
     expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
