@@ -192,8 +192,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       sentry __cerb(*this);
       if (__cerb)
 	{
+	  ios_base::iostate __err = ios_base::goodbit;
 	  __try
-	    { _M_write(__s, __n); }
+	    {
+	      if (this->rdbuf()->sputn(__s, __n) != __n)
+		__err = ios_base::badbit;
+	    }
 	  __catch(__cxxabiv1::__forced_unwind&)
 	    {
 	      this->_M_setstate(ios_base::badbit);		
@@ -201,6 +205,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  __catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(ios_base::badbit);
 	}
       return *this;
     }
