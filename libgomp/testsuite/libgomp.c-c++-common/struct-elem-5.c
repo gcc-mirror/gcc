@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target offload_device_nonshared_as } } */
 
 struct S
 {
