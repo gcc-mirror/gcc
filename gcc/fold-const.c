@@ -250,7 +250,7 @@ fold_undefer_overflow_warnings (bool issue, const gimple *stmt, int code)
   if (!issue || warnmsg == NULL)
     return;
 
-  if (gimple_no_warning_p (stmt))
+  if (warning_suppressed_p (stmt, OPT_Wstrict_overflow))
     return;
 
   /* Use the smallest code level when deciding to issue the
@@ -4250,8 +4250,7 @@ fold_truth_not_expr (location_t loc, tree arg)
 
       tree ret = build2_loc (loc, code, type, TREE_OPERAND (arg, 0),
 			     TREE_OPERAND (arg, 1));
-      if (TREE_NO_WARNING (arg))
-	TREE_NO_WARNING (ret) = 1;
+      copy_warning (ret, arg);
       return ret;
     }
 
@@ -9346,7 +9345,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	  tem = fold_build1_loc (loc, code, type, TREE_OPERAND (op0, 1));
 	  /* First do the assignment, then return converted constant.  */
 	  tem = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (tem), op0, tem);
-	  TREE_NO_WARNING (tem) = 1;
+	  suppress_warning (tem /* What warning? */);
 	  TREE_USED (tem) = 1;
 	  return tem;
 	}
@@ -13519,10 +13518,10 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	  TYPE_CACHED_VALUES (tmp) = NULL;
 	}
     }
-  else if (TREE_NO_WARNING (expr) && (DECL_P (expr) || EXPR_P (expr)))
+  else if (warning_suppressed_p (expr) && (DECL_P (expr) || EXPR_P (expr)))
     {
-      /* Allow TREE_NO_WARNING to be set.  Perhaps we shouldn't allow that
-	 and change builtins.c etc. instead - see PR89543.  */
+      /* Allow the no-warning bit to be set.  Perhaps we shouldn't allow
+	 that and change builtins.c etc. instead - see PR89543.  */
       size_t sz = tree_size (expr);
       buf = XALLOCAVAR (union tree_node, sz);
       memcpy ((char *) buf, expr, sz);

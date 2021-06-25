@@ -3527,7 +3527,7 @@ pass_post_ipa_warn::execute (function *fun)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
-	  if (!is_gimple_call (stmt) || gimple_no_warning_p (stmt))
+	  if (!is_gimple_call (stmt) || warning_suppressed_p (stmt, OPT_Wnonnull))
 	    continue;
 
 	  tree fntype = gimple_call_fntype (stmt);

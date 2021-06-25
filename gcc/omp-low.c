@@ -5695,7 +5695,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		 able to notice this and not store anything at all, but
 		 we're generating code too early.  Suppress the warning.  */
 	      if (!by_ref)
-		TREE_NO_WARNING (var) = 1;
+		suppress_warning (var, OPT_Wuninitialized);
 	      break;
 
 	    case OMP_CLAUSE__CONDTEMP_:
@@ -6676,7 +6676,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
       uid = create_tmp_var (ptr_type_node, "simduid");
       /* Don't want uninit warnings on simduid, it is always uninitialized,
 	 but we use it not for the value, but for the DECL_UID only.  */
-      TREE_NO_WARNING (uid) = 1;
+      suppress_warning (uid, OPT_Wuninitialized);
       c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__SIMDUID_);
       OMP_CLAUSE__SIMDUID__DECL (c) = uid;
       OMP_CLAUSE_CHAIN (c) = gimple_omp_for_clauses (ctx->stmt);
@@ -7104,7 +7104,7 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
 	      if (predicate
 		  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 		      || OMP_CLAUSE_LINEAR_NO_COPYIN (c)))
-		TREE_NO_WARNING (new_var) = 1;
+		suppress_warning (new_var, OPT_Wuninitialized);
 	    }
 
 	  if (!maybe_simt && simduid && DECL_HAS_VALUE_EXPR_P (new_var))
@@ -7938,7 +7938,7 @@ lower_send_clauses (tree clauses, gimple_seq *ilist, gimple_seq *olist,
 	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
 	      && !by_ref
 	      && is_task_ctx (ctx))
-	    TREE_NO_WARNING (var) = 1;
+	    suppress_warning (var);
 	  do_in = true;
 	  break;
 
@@ -12800,7 +12800,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		      {
 			if (is_gimple_reg (var)
 			    && OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c))
-			  TREE_NO_WARNING (var) = 1;
+			  suppress_warning (var);
 			var = build_fold_addr_expr (var);
 		      }
 		    else
@@ -12824,7 +12824,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			   we'll get a warning for the store to avar.
 			   Don't warn in that case, the mapping might
 			   be implicit.  */
-			TREE_NO_WARNING (var) = 1;
+			suppress_warning (var, OPT_Wuninitialized);
 			gimplify_assign (avar, var, &ilist);
 		      }
 		    avar = build_fold_addr_expr (avar);
@@ -12978,7 +12978,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (omp_is_reference (var))
 		  t = build_simple_mem_ref (var);
 		else if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c))
-		  TREE_NO_WARNING (var) = 1;
+		  suppress_warning (var);
 		if (TREE_CODE (type) != POINTER_TYPE)
 		  t = fold_convert (pointer_sized_int_node, t);
 		t = fold_convert (TREE_TYPE (x), t);
@@ -12991,7 +12991,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		tree avar = create_tmp_var (TREE_TYPE (var));
 		mark_addressable (avar);
 		if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c))
-		  TREE_NO_WARNING (var) = 1;
+		  suppress_warning (var);
 		gimplify_assign (avar, var, &ilist);
 		avar = build_fold_addr_expr (avar);
 		gimplify_assign (x, avar, &ilist);

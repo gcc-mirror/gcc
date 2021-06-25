@@ -1938,7 +1938,7 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
 		     strinfo *si = NULL, bool plus_one = false,
 		     bool rawmem = false)
 {
-  if (!len || gimple_no_warning_p (stmt))
+  if (!len || warning_suppressed_p (stmt, OPT_Wstringop_overflow_))
     return;
 
   /* The DECL of the function performing the write if it is done
@@ -1957,7 +1957,7 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
   else
     return;
 
-  if (TREE_NO_WARNING (dest))
+  if (warning_suppressed_p (dest, OPT_Wstringop_overflow_))
     return;
 
   const int ostype = rawmem ? 0 : 1;
@@ -2101,7 +2101,7 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
   if (!warned)
     return;
 
-  gimple_set_no_warning (stmt, true);
+  suppress_warning (stmt, OPT_Wstringop_overflow_);
 
   aref.inform_access (access_write_only);
 }
@@ -2624,16 +2624,16 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi,
   len = fold_convert_loc (loc, type, unshare_expr (srclen));
   len = fold_build2_loc (loc, PLUS_EXPR, type, len, build_int_cst (type, 1));
 
-  /* Set the no-warning bit on the transformed statement?  */
-  bool set_no_warning = false;
+  /* Disable warning for the transformed statement?  */
+  opt_code no_warning_opt = no_warning;
 
-  if (const strinfo *chksi = olddsi ? olddsi : dsi)
-    if (si
-	&& check_bounds_or_overlap (stmt, chksi->ptr, si->ptr, NULL_TREE, len))
-      {
-	gimple_set_no_warning (stmt, true);
-	set_no_warning = true;
-      }
+  if (const strinfo *chksi = si ? olddsi ? olddsi : dsi : NULL)
+    {
+      no_warning_opt = check_bounds_or_overlap (stmt, chksi->ptr, si->ptr,
+						NULL_TREE, len);
+      if (no_warning_opt)
+	suppress_warning (stmt, no_warning_opt);
+    }
 
   if (fn == NULL_TREE)
     return;
@@ -2667,8 +2667,8 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi,
   else if (dump_file && (dump_flags & TDF_DETAILS) != 0)
     fprintf (dump_file, "not possible.\n");
 
-  if (set_no_warning)
-    gimple_set_no_warning (stmt, true);
+  if (no_warning_opt)
+    suppress_warning (stmt, no_warning_opt);
 }
 
 /* Check the size argument to the built-in forms of stpncpy and strncpy
@@ -2796,7 +2796,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 			  pointer_query *ptr_qry /* = NULL */)
 {
   gimple *stmt = gsi_stmt (gsi);
-  if (gimple_no_warning_p (stmt))
+  if (warning_suppressed_p (stmt, OPT_Wstringop_truncation))
     return false;
 
   wide_int cntrange[2];
@@ -3156,9 +3156,10 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
   else
     srclenp1 = NULL_TREE;
 
-  if (check_bounds_or_overlap (stmt, dst, src, dstlenp1, srclenp1))
+  opt_code opt = check_bounds_or_overlap (stmt, dst, src, dstlenp1, srclenp1);
+  if (opt != no_warning)
     {
-      gimple_set_no_warning (stmt, true);
+      suppress_warning (stmt, opt);
       return;
     }
 
@@ -3169,7 +3170,7 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
   if (!pss || pss->first <= 0)
     {
       if (maybe_diag_stxncpy_trunc (*gsi, src, len))
-	gimple_set_no_warning (stmt, true);
+	suppress_warning (stmt, OPT_Wstringop_truncation);
 
       return;
     }
@@ -3206,8 +3207,8 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
       /* Issue -Wstringop-overflow when appending or when writing into
 	 a destination of a known size.  Otherwise, when copying into
 	 a destination of an unknown size, it's truncation.  */
-      int opt = (append_p || dstsize
-		 ? OPT_Wstringop_overflow_ : OPT_Wstringop_truncation);
+      opt_code opt = (append_p || dstsize
+		      ? OPT_Wstringop_overflow_ : OPT_Wstringop_truncation);
       warned = warning_at (callloc, opt,
 			   "%G%qD specified bound depends on the length "
 			   "of the source argument",
@@ -3448,8 +3449,8 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi,
 	srclen = get_string_length (si);
     }
 
-  /* Set the no-warning bit on the transformed statement?  */
-  bool set_no_warning = false;
+  /* Disable warning for the transformed statement?  */
+  opt_code no_warning_opt = no_warning;
 
   if (dsi == NULL || get_string_length (dsi) == NULL_TREE)
     {
@@ -3466,12 +3467,10 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi,
 	  }
 
 	tree sptr = si && si->ptr ? si->ptr : src;
-
-	if (check_bounds_or_overlap (stmt, dst, sptr, NULL_TREE, slen))
-	  {
-	    gimple_set_no_warning (stmt, true);
-	    set_no_warning = true;
-	  }
+	no_warning_opt = check_bounds_or_overlap (stmt, dst, sptr, NULL_TREE,
+						  slen);
+	if (no_warning_opt)
+	  suppress_warning (stmt, no_warning_opt);
       }
 
       /* strcat (p, q) can be transformed into
@@ -3578,11 +3577,10 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi,
       tree dstsize = fold_build2 (PLUS_EXPR, type, dstlen, one);
       tree sptr = si && si->ptr ? si->ptr : src;
 
-      if (check_bounds_or_overlap (stmt, dst, sptr, dstsize, srcsize))
-	{
-	  gimple_set_no_warning (stmt, true);
-	  set_no_warning = true;
-	}
+      no_warning_opt = check_bounds_or_overlap (stmt, dst, sptr, dstsize,
+						srcsize);
+      if (no_warning_opt)
+	suppress_warning (stmt, no_warning_opt);
     }
 
   tree len = NULL_TREE;
@@ -3648,8 +3646,8 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi,
   else if (dump_file && (dump_flags & TDF_DETAILS) != 0)
     fprintf (dump_file, "not possible.\n");
 
-  if (set_no_warning)
-    gimple_set_no_warning (stmt, true);
+  if (no_warning_opt)
+    suppress_warning (stmt, no_warning_opt);
 }
 
 /* Handle a call to an allocation function like alloca, malloc or calloc,

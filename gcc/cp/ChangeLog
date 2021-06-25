@@ -1,3 +1,33 @@
+2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98832
+	* pt.c (maybe_aggr_guide): Handle alias templates appropriately.
+
+2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101182
+	* constraint.cc (evaluate_requires_expr): Adjust function comment.
+	* cp-gimplify.c (cp_genericize_r) <case REQUIRES_EXPR>: Move to ...
+	(cp_fold) <case REQUIRES_EXPR>: ... here.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_omp_split_clauses): Pass C_ORT_OMP_TARGET instead of
+	C_ORT_OMP for clauses on target construct.
+	(OMP_TARGET_CLAUSE_MASK): Add in_reduction clause.
+	(cp_parser_omp_target): For non-combined target add
+	map (always, tofrom:) clauses for OMP_CLAUSE_IN_REDUCTION.  Pass
+	C_ORT_OMP_TARGET to finish_omp_clauses.
+	* semantics.c (handle_omp_array_sections_1): Adjust ort handling
+	for addition of C_ORT_OMP_TARGET and simplify, mapping clauses are
+	never present on C_ORT_*DECLARE_SIMD.
+	(handle_omp_array_sections): Likewise.
+	(finish_omp_clauses): Likewise.  Handle OMP_CLAUSE_IN_REDUCTION
+	on C_ORT_OMP_TARGET, set OMP_CLAUSE_MAP_IN_REDUCTION on
+	corresponding map clauses.
+	* pt.c (tsubst_expr): Pass C_ORT_OMP_TARGET instead of C_ORT_OMP for
+	clauses on target construct.
+
 2021-06-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101174

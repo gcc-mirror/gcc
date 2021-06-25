@@ -2807,9 +2807,6 @@ expand_call_stmt (gcall *stmt)
   if (gimple_call_nothrow_p (stmt))
     TREE_NOTHROW (exp) = 1;
 
-  if (gimple_no_warning_p (stmt))
-    TREE_NO_WARNING (exp) = 1;
-
   CALL_EXPR_TAILCALL (exp) = gimple_call_tail_p (stmt);
   CALL_EXPR_MUST_TAIL_CALL (exp) = gimple_call_must_tail_p (stmt);
   CALL_EXPR_RETURN_SLOT_OPT (exp) = gimple_call_return_slot_opt_p (stmt);
@@ -2822,6 +2819,9 @@ expand_call_stmt (gcall *stmt)
   CALL_EXPR_VA_ARG_PACK (exp) = gimple_call_va_arg_pack_p (stmt);
   CALL_EXPR_BY_DESCRIPTOR (exp) = gimple_call_by_descriptor_p (stmt);
   SET_EXPR_LOCATION (exp, gimple_location (stmt));
+
+  /* Must come after copying location.  */
+  copy_warning (exp, stmt);
 
   /* Ensure RTL is created for debug args.  */
   if (decl && DECL_HAS_DEBUG_ARGS_P (decl))

@@ -1,3 +1,234 @@
+2021-06-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101189
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Pass
+	LHS range of condition to postfold routine.
+	(fold_using_range::postfold_gcond_edges): Only process the TRUE or
+	FALSE edge if the LHS range supports it being taken.
+	* gimple-range-fold.h (postfold_gcond_edges): Add range parameter.
+
+2021-06-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (equiv_oracle::dump): Do not dump NULL blocks.
+	(relation_oracle::find_relation_block): Check correct bitmap.
+	(relation_oracle::dump): Do not dump NULL blocks.
+
+2021-06-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::propagate_cache): Call
+	range_on_edge instead of manually calculating.
+
+2021-06-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc: Fix comment.
+
+2021-06-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* config/i386/i386-expand.c (ix86_expand_sse_unpack):
+	Handle V8QI and V4HI modes.
+	* config/i386/mmx.md (sse4_1_<any_extend:code>v4qiv4hi2):
+	New insn pattern.
+	(sse4_1_<any_extend:code>v4qiv4hi2): Ditto.
+	(mmxpackmode): New mode attribute.
+	(vec_pack_trunc_<mmxpackmode:mode>): New expander.
+	(mmxunpackmode): New mode attribute.
+	(vec_unpacks_lo_<mmxunpackmode:mode>): New expander.
+	(vec_unpacks_hi_<mmxunpackmode:mode>): Ditto.
+	(vec_unpacku_lo_<mmxunpackmode:mode>): Ditto.
+	(vec_unpacku_hi_<mmxunpackmode:mode>): Ditto.
+	* config/i386/i386.md (extsuffix): Move from ...
+	* config/i386/sse.md: ... here.
+
+2021-06-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (dwarf2out_assembly_start): Emit .file 0 marker here..
+	(dwarf2out_finish): ...instead of here.
+
+2021-06-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (--gdwarf-5 option): Use objdump instead of readelf.
+	(working --gdwarf-4/--gdwarf-5 for all sources): Likewise.
+	(--gdwarf-4 not refusing generated .debug_line): Adjust for Windows.
+	* configure: Regenerate.
+
+2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/sse.md (vec_addsubv4df3, vec_addsubv2df3,
+	vec_addsubv8sf3, vec_addsubv4sf3): Merge into ...
+	(vec_addsub<mode>3): ... using a new addsub_cst mode attribute.
+
+2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/sse.md (avx_addsubv4df3): Rename to
+	vec_addsubv4df3.
+	(avx_addsubv8sf3): Rename to vec_addsubv8sf3.
+	(sse3_addsubv2df3): Rename to vec_addsubv2df3.
+	(sse3_addsubv4sf3): Rename to vec_addsubv4sf3.
+	* config/i386/i386-builtin.def: Adjust.
+	* internal-fn.def (VEC_ADDSUB): New internal optab fn.
+	* optabs.def (vec_addsub_optab): New optab.
+	* tree-vect-slp-patterns.c (class addsub_pattern): New.
+	(slp_patterns): Add addsub_pattern.
+	* tree-vect-slp.c (vect_optimize_slp): Disable propagation
+	across CFN_VEC_ADDSUB.
+	* tree-vectorizer.h (vect_pattern::vect_pattern): Make
+	m_ops optional.
+	* doc/md.texi (vec_addsub<mode>3): Document.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101170
+	* df-scan.c (df_ref_record): For paradoxical big-endian SUBREGs
+	where regno + subreg_regno_offset wraps around use 0 as starting
+	regno.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101172
+	* stor-layout.c (finish_bitfield_representative): If nextf has
+	error_mark_node type, set repr type to error_mark_node too.
+
+2021-06-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_function_profiler): Ignore labelno
+	parameter.
+	* config/s390/s390.h (NO_PROFILE_COUNTERS): Define.
+
+2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_optimize_slp): Do not propagate
+	across operations that have different semantics on different
+	lanes.
+
+2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_MAP_IN_REDUCTION): Document meaning for OpenMP.
+	* gimplify.c (gimplify_scan_omp_clauses): For OpenMP map clauses
+	with OMP_CLAUSE_MAP_IN_REDUCTION flag partially defer gimplification
+	of non-decl OMP_CLAUSE_DECL.  For OMP_CLAUSE_IN_REDUCTION on
+	OMP_TARGET user outer_ctx instead of ctx for placeholders and
+	initializer/combiner gimplification.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_MAP_IN_REDUCTION
+	on target constructs.
+	(lower_rec_input_clauses): Likewise.
+	(lower_omp_target): Likewise.
+	* omp-expand.c (expand_omp_target): Temporarily ignore nowait clause
+	on target if in_reduction is present.
+
+2021-06-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-predcom.c (class pcom_worker): New class.
+	(release_chain): Renamed to...
+	(pcom_worker::release_chain): ...this.
+	(release_chains): Renamed to...
+	(pcom_worker::release_chains): ...this.
+	(aff_combination_dr_offset): Renamed to...
+	(pcom_worker::aff_combination_dr_offset): ...this.
+	(determine_offset): Renamed to...
+	(pcom_worker::determine_offset): ...this.
+	(class comp_ptrs): New class.
+	(split_data_refs_to_components): Renamed to...
+	(pcom_worker::split_data_refs_to_components): ...this,
+	and update with class comp_ptrs.
+	(suitable_component_p): Renamed to...
+	(pcom_worker::suitable_component_p): ...this.
+	(filter_suitable_components): Renamed to...
+	(pcom_worker::filter_suitable_components): ...this.
+	(valid_initializer_p): Renamed to...
+	(pcom_worker::valid_initializer_p): ...this.
+	(find_looparound_phi): Renamed to...
+	(pcom_worker::find_looparound_phi): ...this.
+	(add_looparound_copies): Renamed to...
+	(pcom_worker::add_looparound_copies): ...this.
+	(determine_roots_comp): Renamed to...
+	(pcom_worker::determine_roots_comp): ...this.
+	(determine_roots): Renamed to...
+	(pcom_worker::determine_roots): ...this.
+	(single_nonlooparound_use): Renamed to...
+	(pcom_worker::single_nonlooparound_use): ...this.
+	(remove_stmt): Renamed to...
+	(pcom_worker::remove_stmt): ...this.
+	(execute_pred_commoning_chain): Renamed to...
+	(pcom_worker::execute_pred_commoning_chain): ...this.
+	(execute_pred_commoning): Renamed to...
+	(pcom_worker::execute_pred_commoning): ...this.
+	(struct epcc_data): New member worker.
+	(execute_pred_commoning_cbck): Call execute_pred_commoning
+	with pcom_worker pointer.
+	(find_use_stmt): Renamed to...
+	(pcom_worker::find_use_stmt): ...this.
+	(find_associative_operation_root): Renamed to...
+	(pcom_worker::find_associative_operation_root): ...this.
+	(find_common_use_stmt): Renamed to...
+	(pcom_worker::find_common_use_stmt): ...this.
+	(combinable_refs_p): Renamed to...
+	(pcom_worker::combinable_refs_p): ...this.
+	(reassociate_to_the_same_stmt): Renamed to...
+	(pcom_worker::reassociate_to_the_same_stmt): ...this.
+	(stmt_combining_refs): Renamed to...
+	(pcom_worker::stmt_combining_refs): ...this.
+	(combine_chains): Renamed to...
+	(pcom_worker::combine_chains): ...this.
+	(try_combine_chains): Renamed to...
+	(pcom_worker::try_combine_chains): ...this.
+	(prepare_initializers_chain): Renamed to...
+	(pcom_worker::prepare_initializers_chain): ...this.
+	(prepare_initializers): Renamed to...
+	(pcom_worker::prepare_initializers): ...this.
+	(prepare_finalizers_chain): Renamed to...
+	(pcom_worker::prepare_finalizers_chain): ...this.
+	(prepare_finalizers): Renamed to...
+	(pcom_worker::prepare_finalizers): ...this.
+	(tree_predictive_commoning_loop): Renamed to...
+	(pcom_worker::tree_predictive_commoning_loop): ...this, adjust
+	some calls and remove some cleanup code.
+	(tree_predictive_commoning): Adjusted to use pcom_worker instance.
+	(static variable looparound_phis): Remove.
+	(static variable name_expansions): Remove.
+
+2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (slpg_vertex): New struct.
+	(vect_slp_build_vertices): Adjust.
+	(vect_optimize_slp): Likewise.  Maintain an outgoing permute
+	and a materialized one.
+
+2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101105
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list):
+	Only ignore steps when they are equal or scalar order is preserved.
+
+2021-06-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98434
+	* config/i386/i386-expand.c (ix86_expand_vec_interleave):
+	Adjust comments for ix86_expand_vecop_qihi2.
+	(ix86_expand_vecmul_qihi): Renamed to ..
+	(ix86_expand_vecop_qihi2): Adjust function prototype to
+	support shift operation, add static to definition.
+	(ix86_expand_vec_shift_qihi_constant): Add static to definition.
+	(ix86_expand_vecop_qihi): Call ix86_expand_vecop_qihi2 and
+	ix86_expand_vec_shift_qihi_constant.
+	* config/i386/i386-protos.h (ix86_expand_vecmul_qihi): Deleted.
+	(ix86_expand_vec_shift_qihi_constant): Deleted.
+	* config/i386/sse.md (VI12_256_512_AVX512VL): New mode
+	iterator.
+	(mulv8qi3): Call ix86_expand_vecop_qihi directly, add
+	condition TARGET_64BIT.
+	(mul<mode>3): Ditto.
+	(<insn><mode>3): Ditto.
+	(vlshr<mode>3): Extend to support avx512 vlshr.
+	(v<insn><mode>3): New expander for
+	vashr/vlshr/vashl.
+	(v<insn>v8qi3): Ditto.
+	(vashrv8hi3<mask_name>): Renamed to ..
+	(vashr<mode>3): And extend to support V16QImode for avx512.
+	(vashrv16qi3): Deleted.
+	(vashrv2di3<mask_name>): Extend expander to support avx512
+	instruction.
+
 2021-06-23  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* doc/lto.texi (Design Overview): Update that slim objects are

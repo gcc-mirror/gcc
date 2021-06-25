@@ -2044,7 +2044,7 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
 	 not point to objects and so do not indicate an overlap;
 	 such calls could be the result of sanitization and jump
 	 threading).  */
-      if (!integer_zerop (dest) && !gimple_no_warning_p (stmt))
+      if (!integer_zerop (dest) && !warning_suppressed_p (stmt, OPT_Wrestrict))
 	{
 	  tree func = gimple_call_fndecl (stmt);
 
@@ -2071,9 +2071,9 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
   if (nonstr)
     {
       /* Avoid folding calls with unterminated arrays.  */
-      if (!gimple_no_warning_p (stmt))
+      if (!warning_suppressed_p (stmt, OPT_Wstringop_overread))
 	warn_string_no_nul (loc, NULL_TREE, "strcpy", src, nonstr);
-      gimple_set_no_warning (stmt, true);
+      suppress_warning (stmt, OPT_Wstringop_overread);
       return false;
     }
 
@@ -2481,7 +2481,7 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 
   unsigned HOST_WIDE_INT dstsize;
 
-  bool nowarn = gimple_no_warning_p (stmt);
+  bool nowarn = warning_suppressed_p (stmt, OPT_Wstringop_overflow_);
 
   if (!nowarn && compute_builtin_object_size (dst, 1, &dstsize))
     {
@@ -2504,7 +2504,7 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 				    "destination size %wu"),
 			       stmt, fndecl, len, dstsize);
 	  if (nowarn)
-	    gimple_set_no_warning (stmt, true);
+	    suppress_warning (stmt, OPT_Wstringop_overflow_);
 	}
     }
 
@@ -2520,7 +2520,7 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
       if (warning_at (loc, OPT_Wstringop_overflow_,
 		      "%G%qD specified bound %E equals source length",
 		      stmt, fndecl, len))
-	gimple_set_no_warning (stmt, true);
+	suppress_warning (stmt, OPT_Wstringop_overflow_);
     }
 
   tree fn = builtin_decl_implicit (BUILT_IN_STRCAT);
@@ -3105,7 +3105,8 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
 	 not point to objects and so do not indicate an overlap;
 	 such calls could be the result of sanitization and jump
 	 threading).  */
-      if (!integer_zerop (dest) && !gimple_no_warning_p (stmt))
+      if (!integer_zerop (dest)
+	  && !warning_suppressed_p (stmt, OPT_Wrestrict))
 	{
 	  tree func = gimple_call_fndecl (stmt);
 
@@ -3288,10 +3289,10 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
   if (data.decl)
     {
       /* Avoid folding calls with unterminated arrays.  */
-      if (!gimple_no_warning_p (stmt))
+      if (!warning_suppressed_p (stmt, OPT_Wstringop_overread))
 	warn_string_no_nul (loc, NULL_TREE, "stpcpy", src, data.decl, size,
 			    exact);
-      gimple_set_no_warning (stmt, true);
+      suppress_warning (stmt, OPT_Wstringop_overread);
       return false;
     }
 
@@ -3554,8 +3555,7 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
 
       /* Propagate the NO_WARNING bit to avoid issuing the same
 	 warning more than once.  */
-      if (gimple_no_warning_p (stmt))
-	gimple_set_no_warning (repl, true);
+      copy_warning (repl, stmt);
 
       gimple_seq_add_stmt_without_update (&stmts, repl);
       if (tree lhs = gimple_call_lhs (stmt))
@@ -3606,8 +3606,7 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
 
       /* Propagate the NO_WARNING bit to avoid issuing the same
 	 warning more than once.  */
-      if (gimple_no_warning_p (stmt))
-	gimple_set_no_warning (repl, true);
+      copy_warning (repl, stmt);
 
       gimple_seq_add_stmt_without_update (&stmts, repl);
       if (tree lhs = gimple_call_lhs (stmt))
@@ -6065,7 +6064,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 {
   bool changed = false;
   gimple *stmt = gsi_stmt (*gsi);
-  bool nowarning = gimple_no_warning_p (stmt);
+  bool nowarning = warning_suppressed_p (stmt, OPT_Wstrict_overflow);
   unsigned i;
   fold_defer_overflow_warnings ();
 

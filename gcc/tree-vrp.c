@@ -406,10 +406,10 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 	return -2;
 
       if (strict_overflow_p != NULL
-	  /* Symbolic range building sets TREE_NO_WARNING to declare
+	  /* Symbolic range building sets the no-warning bit to declare
 	     that overflow doesn't happen.  */
-	  && (!inv1 || !TREE_NO_WARNING (val1))
-	  && (!inv2 || !TREE_NO_WARNING (val2)))
+	  && (!inv1 || !warning_suppressed_p (val1, OPT_Woverflow))
+	  && (!inv2 || !warning_suppressed_p (val2, OPT_Woverflow)))
 	*strict_overflow_p = true;
 
       if (!inv1)
@@ -432,10 +432,10 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 	return -2;
 
       if (strict_overflow_p != NULL
-	  /* Symbolic range building sets TREE_NO_WARNING to declare
+	  /* Symbolic range building sets the no-warning bit to declare
 	     that overflow doesn't happen.  */
-	  && (!sym1 || !TREE_NO_WARNING (val1))
-	  && (!sym2 || !TREE_NO_WARNING (val2)))
+	  && (!sym1 || !warning_suppressed_p (val1, OPT_Woverflow))
+	  && (!sym2 || !warning_suppressed_p (val2, OPT_Woverflow)))
 	*strict_overflow_p = true;
 
       const signop sgn = TYPE_SIGN (TREE_TYPE (val1));

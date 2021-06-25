@@ -2246,12 +2246,12 @@ create_access_replacement (struct access *access, tree reg_type = NULL_TREE)
 	  DECL_HAS_DEBUG_EXPR_P (repl) = 1;
 	}
       if (access->grp_no_warning)
-	TREE_NO_WARNING (repl) = 1;
+	suppress_warning (repl /* Be more selective! */);
       else
-	TREE_NO_WARNING (repl) = TREE_NO_WARNING (access->base);
+	copy_warning (repl, access->base);
     }
   else
-    TREE_NO_WARNING (repl) = 1;
+    suppress_warning (repl /* Be more selective! */);
 
   if (dump_file)
     {
@@ -3562,7 +3562,7 @@ generate_subtree_copies (struct access *access, tree agg,
 	    }
 	  else
 	    {
-	      TREE_NO_WARNING (repl) = 1;
+	      suppress_warning (repl /* Be more selective! */);
 	      if (access->grp_partial_lhs)
 		repl = force_gimple_operand_gsi (gsi, repl, true, NULL_TREE,
 						 !insert_after,

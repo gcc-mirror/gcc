@@ -9499,7 +9499,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	{
 	  /* Avoid copying empty classes.  */
 	  val = build2 (COMPOUND_EXPR, type, arg, to);
-	  TREE_NO_WARNING (val) = 1;
+	  suppress_warning (val, OPT_Wunused);
 	}
       else if (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (as_base)))
 	{
@@ -9530,7 +9530,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 		      build2 (MEM_REF, array_type, arg0, alias_set),
 		      build2 (MEM_REF, array_type, arg, alias_set));
 	  val = build2 (COMPOUND_EXPR, TREE_TYPE (to), t, to);
-          TREE_NO_WARNING (val) = 1;
+          suppress_warning (val, OPT_Wunused);
 	}
 
       cp_warn_deprecated_use (fn, complain);
@@ -9604,7 +9604,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     {
       tree c = extract_call_expr (call);
       if (TREE_CODE (c) == CALL_EXPR)
-	TREE_NO_WARNING (c) = 1;
+	suppress_warning (c /* Suppress all warnings.  */);
     }
   if (TREE_CODE (fn) == ADDR_EXPR)
     {
@@ -12554,11 +12554,11 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
     TREE_ADDRESSABLE (var) = 1;
 
   if (TREE_CODE (decl) == FIELD_DECL
-      && extra_warnings && !TREE_NO_WARNING (decl))
+      && extra_warnings && !warning_suppressed_p (decl))
     {
       warning (OPT_Wextra, "a temporary bound to %qD only persists "
 	       "until the constructor exits", decl);
-      TREE_NO_WARNING (decl) = true;
+      suppress_warning (decl);
     }
 
   /* Recursively extend temps in this initializer.  */

@@ -1,3 +1,89 @@
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_math.h
+	(_GLIBCXX_SIMD_MATH_CALL2_): Rename arg2_ to __arg2.
+	(_GLIBCXX_SIMD_MATH_CALL3_): Rename arg2_ to __arg2 and arg3_ to
+	__arg3.
+
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (__execute_on_index_sequence)
+	(__execute_on_index_sequence_with_return)
+	(__call_with_n_evaluations, __call_with_subscripts): Add flatten
+	attribute.
+
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h (_S_trunc, _S_floor)
+	(_S_ceil): Set bit 8 (_MM_FROUND_NO_EXC) on AVX and SSE4.1
+	roundp[sd] calls.
+
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h (_S_ldexp): The AVX512F
+	implementation doesn't require a _VecBltnBtmsk ABI tag, it
+	requires either a 64-Byte input (in which case AVX512F must be
+	available) or AVX512VL.
+
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_math.h: Undefine internal
+	macros after use.
+	(frexp): Move #if to a more sensible position and reformat
+	preceding code.
+	(logb): Call _SimdImpl::_S_logb for fixed_size instead of
+	duplicating the code here.
+	(modf): Simplify condition.
+
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_math.h (fabs): Remove
+	fabs(simd<integral>) overload.
+
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_converter.h
+	(_SimdConverter::operator()): Pass _SimdTuple by const-ref.
+	* include/experimental/bits/simd_fixed_size.h
+	(_GLIBCXX_SIMD_FIXED_OP): Pass binary operator _SimdTuple
+	arguments by const-ref.
+	(_S_masked_unary): Pass _SimdTuple by const-ref.
+
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_fixed_size.h
+	(_AbisInSimdTuple): Removed.
+
+2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h: Add missing operator~
+	overload for simd<floating-point> to __float_bitwise_operators.
+	* include/experimental/bits/simd_builtin.h
+	(_SimdImplBuiltin::_S_complement): Bitcast to int (and back) to
+	implement complement for floating-point vectors.
+	* include/experimental/bits/simd_fixed_size.h
+	(_SimdImplFixedSize::_S_copysign): New function, forwarding to
+	copysign implementation of _SimdTuple members.
+	* include/experimental/bits/simd_math.h (copysign): Call
+	_SimdImpl::_S_copysign for fixed_size arguments. Simplify
+	generic copysign implementation using the new ~ operator.
+
+2021-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/simd/README.md: Fix typos.
+
+2021-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h (__shared_ptr_access::operator[]):
+	Add noexcept.
+	* include/bits/unique_ptr.h (unique_ptr::operator*): Add
+	conditional noexcept as per LWG 2762.
+	* testsuite/20_util/shared_ptr/observers/array.cc: Check that
+	dereferencing cannot throw.
+	* testsuite/20_util/shared_ptr/observers/get.cc: Likewise.
+	* testsuite/20_util/optional/observers/lwg2762.cc: New test.
+	* testsuite/20_util/unique_ptr/lwg2762.cc: New test.
+
 2021-06-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101174

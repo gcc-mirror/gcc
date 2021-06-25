@@ -3375,7 +3375,6 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 tree
 c_wrap_maybe_const (tree expr, bool non_const)
 {
-  bool nowarning = TREE_NO_WARNING (expr);
   location_t loc = EXPR_LOCATION (expr);
 
   /* This should never be called for C++.  */
@@ -3386,8 +3385,6 @@ c_wrap_maybe_const (tree expr, bool non_const)
   STRIP_TYPE_NOPS (expr);
   expr = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (expr), NULL, expr);
   C_MAYBE_CONST_EXPR_NON_CONST (expr) = non_const;
-  if (nowarning)
-    TREE_NO_WARNING (expr) = 1;
   protected_set_expr_location (expr, loc);
 
   return expr;
@@ -3633,12 +3630,12 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       break;
 
     case MODIFY_EXPR:
-      if (!TREE_NO_WARNING (expr)
+      if (!warning_suppressed_p (expr, OPT_Wparentheses)
 	  && warn_parentheses
 	  && warning_at (location, OPT_Wparentheses,
 			 "suggest parentheses around assignment used as "
 			 "truth value"))
-	TREE_NO_WARNING (expr) = 1;
+	suppress_warning (expr, OPT_Wparentheses);
       break;
 
     case CONST_DECL:
@@ -6019,7 +6016,7 @@ check_function_arguments_recurse (void (*callback)
 				  void *ctx, tree param,
 				  unsigned HOST_WIDE_INT param_num)
 {
-  if (TREE_NO_WARNING (param))
+  if (warning_suppressed_p (param))
     return;
 
   if (CONVERT_EXPR_P (param)

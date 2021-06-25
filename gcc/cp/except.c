@@ -466,7 +466,8 @@ expand_end_catch_block (void)
 	  || DECL_DESTRUCTOR_P (current_function_decl)))
     {
       tree rethrow = build_throw (input_location, NULL_TREE);
-      TREE_NO_WARNING (rethrow) = true;
+      /* Disable all warnings for the generated rethrow statement.  */
+      suppress_warning (rethrow);
       finish_expr_stmt (rethrow);
     }
 }

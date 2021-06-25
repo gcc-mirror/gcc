@@ -3845,7 +3845,7 @@ expand_omp_for_generic (struct omp_region *region,
 	  for (i = first_zero_iter1;
 	       i < (fd->ordered ? fd->ordered : fd->collapse); i++)
 	    if (SSA_VAR_P (counts[i]))
-	      TREE_NO_WARNING (counts[i]) = 1;
+	      suppress_warning (counts[i], OPT_Wuninitialized);
 	  gsi_prev (&gsi);
 	  e = split_block (entry_bb, gsi_stmt (gsi));
 	  entry_bb = e->dest;
@@ -3862,7 +3862,7 @@ expand_omp_for_generic (struct omp_region *region,
 	     be executed in that case, so just avoid uninit warnings.  */
 	  for (i = first_zero_iter2; i < fd->ordered; i++)
 	    if (SSA_VAR_P (counts[i]))
-	      TREE_NO_WARNING (counts[i]) = 1;
+	      suppress_warning (counts[i], OPT_Wuninitialized);
 	  if (zero_iter1_bb)
 	    make_edge (zero_iter2_bb, entry_bb, EDGE_FALLTHRU);
 	  else
@@ -7051,7 +7051,7 @@ expand_omp_taskloop_for_outer (struct omp_region *region,
 	     be executed in that case, so just avoid uninit warnings.  */
 	  for (i = first_zero_iter; i < fd->collapse; i++)
 	    if (SSA_VAR_P (counts[i]))
-	      TREE_NO_WARNING (counts[i]) = 1;
+	      suppress_warning (counts[i], OPT_Wuninitialized);
 	  gsi_prev (&gsi);
 	  edge e = split_block (entry_bb, gsi_stmt (gsi));
 	  entry_bb = e->dest;

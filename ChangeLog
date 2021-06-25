@@ -1,3 +1,7 @@
+2021-06-24  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* .gitignore: Add entry for cscope.out.
+
 2021-06-22  liuhongt  <hongtao.liu@intel.com>
 
 	* MAINTAINERS: Remove my Write After Approval entry.

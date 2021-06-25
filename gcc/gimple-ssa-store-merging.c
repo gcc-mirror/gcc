@@ -4339,10 +4339,12 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		      MR_DEPENDENCE_BASE (ops[j]) = base;
 		    }
 		  if (!integer_zerop (mask))
-		    /* The load might load some bits (that will be masked off
-		       later on) uninitialized, avoid -W*uninitialized
-		       warnings in that case.  */
-		    TREE_NO_WARNING (ops[j]) = 1;
+		    {
+		      /* The load might load some bits (that will be masked
+			 off later on) uninitialized, avoid -W*uninitialized
+			 warnings in that case.  */
+		      suppress_warning (ops[j], OPT_Wuninitialized);
+		    }
 
 		  stmt = gimple_build_assign (make_ssa_name (dest_type), ops[j]);
 		  gimple_set_location (stmt, load_loc);
@@ -4524,7 +4526,7 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		 provably uninitialized (no stores at all yet or previous
 		 store a CLOBBER) we'd optimize away the load and replace
 		 it e.g. with 0.  */
-	      TREE_NO_WARNING (load_src) = 1;
+	      suppress_warning (load_src, OPT_Wuninitialized);
 	      stmt = gimple_build_assign (tem, load_src);
 	      gimple_set_location (stmt, loc);
 	      gimple_set_vuse (stmt, new_vuse);

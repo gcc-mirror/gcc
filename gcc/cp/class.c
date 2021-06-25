@@ -6704,7 +6704,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	     laying out an Objective-C class.  The ObjC ABI differs
 	     from the C++ ABI, and so we do not want a warning
 	     here.  */
-	  && !TREE_NO_WARNING (field)
+	  && !warning_suppressed_p (field, OPT_Wabi)
 	  && !last_field_was_bitfield
 	  && !integer_zerop (size_binop (TRUNC_MOD_EXPR,
 					 DECL_FIELD_BIT_OFFSET (field),

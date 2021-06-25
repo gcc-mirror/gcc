@@ -458,7 +458,7 @@ ch_base::copy_headers (function *fun)
 			  && gimple_cond_code (stmt) != NE_EXPR
 			  && INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 			  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs)))
-			gimple_set_no_warning (stmt, true);
+			suppress_warning (stmt, OPT_Wstrict_overflow_);
 		    }
 		  else if (is_gimple_assign (stmt))
 		    {
@@ -469,7 +469,7 @@ ch_base::copy_headers (function *fun)
 			  && rhs_code != NE_EXPR
 			  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 			  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (rhs1)))
-			gimple_set_no_warning (stmt, true);
+			suppress_warning (stmt, OPT_Wstrict_overflow_);
 		    }
 		}
 	    }

@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_H
 
 #include "tree-core.h"
+#include "options.h"
 
 /* Convert a target-independent built-in function code to a combined_fn.  */
 
@@ -6440,5 +6441,31 @@ public:
   /* Implicitly convert back to a location_t, using the combined location.  */
   operator location_t () const { return m_combined_loc; }
 };
+
+/* Code that doesn't refer to any warning.  Has no effect on suppression
+   functions.  */
+constexpr opt_code no_warning = opt_code ();
+/* Wildcard code that refers to all warnings.  */
+constexpr opt_code all_warnings = N_OPTS;
+
+/* Return the disposition for a warning (or all warnings by default)
+   at a location.  */
+extern bool warning_suppressed_at (location_t, opt_code = all_warnings);
+/* Set the disposition for a warning (or all warnings by default)
+   at a location to disabled by default.  */
+extern bool suppress_warning_at (location_t, opt_code = all_warnings,
+				 bool = true);
+/* Copy warning disposition from one location to another.  */
+extern void copy_warning (location_t, location_t);
+
+/* Return the disposition for a warning (or all warnings by default)
+   for an expression.  */
+extern bool warning_suppressed_p (const_tree, opt_code = all_warnings);
+/* Set the disposition for a warning (or all warnings by default)
+   at a location to disabled by default.  */
+extern void suppress_warning (tree, opt_code = all_warnings, bool = true)
+  ATTRIBUTE_NONNULL (1);
+/* Copy warning disposition from one expression to another.  */
+extern void copy_warning (tree, const_tree);
 
 #endif  /* GCC_TREE_H  */

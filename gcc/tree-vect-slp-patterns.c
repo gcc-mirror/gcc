@@ -1577,11 +1577,13 @@ addsub_pattern::build (vec_info *vinfo)
 			       (TREE_TYPE (gimple_assign_lhs (rep->stmt))));
   gimple_call_set_nothrow (call, true);
   gimple_set_bb (call, gimple_bb (rep->stmt));
-  SLP_TREE_REPRESENTATIVE (node) = vinfo->add_pattern_stmt (call, rep);
-  STMT_VINFO_RELEVANT (SLP_TREE_REPRESENTATIVE (node)) = vect_used_in_scope;
-  STMT_SLP_TYPE (SLP_TREE_REPRESENTATIVE (node)) = pure_slp;
-  STMT_VINFO_VECTYPE (SLP_TREE_REPRESENTATIVE (node)) = SLP_TREE_VECTYPE (node);
-  STMT_VINFO_SLP_VECT_ONLY_PATTERN (SLP_TREE_REPRESENTATIVE (node)) = true;
+  stmt_vec_info new_rep = vinfo->add_pattern_stmt (call, rep);
+  SLP_TREE_REPRESENTATIVE (node) = new_rep;
+  STMT_VINFO_RELEVANT (new_rep) = vect_used_in_scope;
+  STMT_SLP_TYPE (new_rep) = pure_slp;
+  STMT_VINFO_VECTYPE (new_rep) = SLP_TREE_VECTYPE (node);
+  STMT_VINFO_SLP_VECT_ONLY_PATTERN (new_rep) = true;
+  STMT_VINFO_REDUC_DEF (new_rep) = STMT_VINFO_REDUC_DEF (vect_orig_stmt (rep));
   SLP_TREE_CODE (node) = ERROR_MARK;
   SLP_TREE_LANE_PERMUTATION (node).release ();
 
