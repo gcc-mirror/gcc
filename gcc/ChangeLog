@@ -1,3 +1,14 @@
+2021-06-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2021-06-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101175
+	* config/i386/i386.md (bsr_rex64): Add zero-flag setting RTX.
+	(bsr): Ditto.
+	(*bsrhi): Remove.
+	(clz<mode>2): Update RTX pattern for additions.
+
 2021-06-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	Backported from master:
