@@ -419,7 +419,8 @@ gimple_range_global (tree name)
   gcc_checking_assert (gimple_range_ssa_p (name));
   tree type = TREE_TYPE (name);
 
-  if (SSA_NAME_IS_DEFAULT_DEF (name) || (cfun && cfun->after_inlining))
+  if (SSA_NAME_IS_DEFAULT_DEF (name) || (cfun && cfun->after_inlining)
+      || is_a<gphi *> (SSA_NAME_DEF_STMT (name)))
     {
       value_range vr;
       get_range_global (vr, name);
