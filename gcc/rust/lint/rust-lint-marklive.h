@@ -65,6 +65,11 @@ public:
     expr.get_expr ().get ()->accept_vis (*this);
   }
 
+  void visit (HIR::GroupedExpr &expr) override
+  {
+    expr.get_expr_in_parens()->accept_vis(*this);
+  }
+
   void visit (HIR::BlockExpr &expr) override
   {
     expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
