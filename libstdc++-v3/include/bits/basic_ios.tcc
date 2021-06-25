@@ -43,7 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (this->rdbuf())
 	_M_streambuf_state = __state;
       else
-	  _M_streambuf_state = __state | badbit;
+	_M_streambuf_state = __state | badbit;
       if (this->exceptions() & this->rdstate())
 	__throw_ios_failure(__N("basic_ios::clear"));
     }

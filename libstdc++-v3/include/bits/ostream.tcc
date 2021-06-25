@@ -213,21 +213,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 60. What is a formatted input function?
       // basic_ostream::flush() is *not* an unformatted output function.
-      ios_base::iostate __err = ios_base::goodbit;
-      __try
+      // 581. flush() not unformatted function
+      // basic_ostream::flush() *is* an unformatted output function.
+      if (__streambuf_type* __buf = this->rdbuf())
 	{
-	  if (this->rdbuf() && this->rdbuf()->pubsync() == -1)
-	    __err |= ios_base::badbit;
+	  sentry __cerb(*this);
+	  if (__cerb)
+	    {
+	      ios_base::iostate __err = ios_base::goodbit;
+	      __try
+		{
+		  if (this->rdbuf()->pubsync() == -1)
+		    __err |= ios_base::badbit;
+		}
+	      __catch(__cxxabiv1::__forced_unwind&)
+		{
+		  this->_M_setstate(ios_base::badbit);
+		  __throw_exception_again;
+		}
+	      __catch(...)
+		{ this->_M_setstate(ios_base::badbit); }
+	      if (__err)
+		this->setstate(__err);
+	    }
 	}
-      __catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);		
-	  __throw_exception_again;
-	}
-      __catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
-      if (__err)
-	this->setstate(__err);
       return *this;
     }
 

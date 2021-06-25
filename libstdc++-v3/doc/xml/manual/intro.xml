@@ -743,6 +743,12 @@ requirements of the license of GCC.
     <listitem><para>In C++11 mode, remove the pow(float,int), etc., signatures.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr581"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#581">581</link>:
+	<emphasis><code>flush()</code> not unformatted function</emphasis>
+    </term>
+    <listitem><para>Change it to be a unformatted output function (i.e. construct a sentry and catch exceptions).
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr586"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#586">586</link>:
 	<emphasis>string inserter not a formatted function</emphasis>
     </term>
