@@ -619,7 +619,8 @@ public:
 
   void visit (HIR::NegationExpr &expr) override
   {
-    auto negated_expr_ty = TypeCheckExpr::Resolve (expr.get_expr (), false);
+    auto negated_expr_ty
+      = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
 
     // https://doc.rust-lang.org/reference/expressions/operator-expr.html#negation-operators
     switch (expr.get_expr_type ())

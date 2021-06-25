@@ -341,7 +341,7 @@ public:
 
   void visit (HIR::NegationExpr &expr) override
   {
-    auto negated_expr = ConstFoldExpr::fold (expr.get_expr ());
+    auto negated_expr = ConstFoldExpr::fold (expr.get_expr ().get ());
     if (negated_expr == nullptr)
       return;
 
