@@ -56,8 +56,13 @@ public:
 
   void visit (HIR::LazyBooleanExpr &expr) override
   {
-    expr.get_lhs()->accept_vis(*this);
-    expr.get_rhs()->accept_vis(*this);
+    expr.get_lhs ()->accept_vis (*this);
+    expr.get_rhs ()->accept_vis (*this);
+  }
+
+  void visit (HIR::TypeCastExpr &expr) override
+  {
+    expr.get_expr ().get ()->accept_vis (*this);
   }
 
   void visit (HIR::BlockExpr &expr) override
