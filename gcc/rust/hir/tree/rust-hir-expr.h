@@ -300,8 +300,6 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  Expr *get_expr () { return main_or_left_expr.get (); }
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

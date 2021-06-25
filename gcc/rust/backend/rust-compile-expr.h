@@ -354,7 +354,7 @@ public:
   void visit (HIR::NegationExpr &expr) override
   {
     auto op = expr.get_expr_type ();
-    auto negated_expr = CompileExpr::Compile (expr.get_expr (), ctx);
+    auto negated_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
     auto location = expr.get_locus ();
 
     translated
