@@ -39,6 +39,11 @@ public:
   void visit (HIR::PathInExpression &expr) override;
   void visit (HIR::IdentifierExpr &expr) override;
 
+  void visit (HIR::BorrowExpr &expr) override
+  {
+    expr.get_expr ().get ()->accept_vis (*this);
+  }
+
   void visit (HIR::BlockExpr &expr) override
   {
     expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
@@ -50,6 +55,7 @@ public:
 	expr.get_final_expr ().get ()->accept_vis (*this);
       }
   }
+
   void visit (HIR::Function &function) override
   {
     function.get_definition ().get ()->accept_vis (*this);
