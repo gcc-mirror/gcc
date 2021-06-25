@@ -52,6 +52,71 @@ enum TypeKind
   ERROR
 };
 
+class TypeKindFormat
+{
+public:
+  static std::string to_string (TypeKind kind)
+  {
+    switch (kind)
+      {
+      case TypeKind::INFER:
+	return "Infer";
+
+      case TypeKind::ADT:
+	return "ADT";
+
+      case TypeKind::STR:
+	return "STR";
+
+      case TypeKind::REF:
+	return "REF";
+
+      case TypeKind::PARAM:
+	return "PARAM";
+
+      case TypeKind::ARRAY:
+	return "ARRAY";
+
+      case TypeKind::FNDEF:
+	return "FnDef";
+
+      case TypeKind::FNPTR:
+	return "FnPtr";
+
+      case TypeKind::TUPLE:
+	return "Tuple";
+
+      case TypeKind::BOOL:
+	return "Bool";
+
+      case TypeKind::CHAR:
+	return "Char";
+
+      case TypeKind::INT:
+	return "Int";
+
+      case TypeKind::UINT:
+	return "Uint";
+
+      case TypeKind::FLOAT:
+	return "Float";
+
+      case TypeKind::USIZE:
+	return "Usize";
+
+      case TypeKind::ISIZE:
+	return "Isize";
+
+      case TypeKind::NEVER:
+	return "Never";
+
+      case TypeKind::ERROR:
+	return "ERROR";
+      }
+    gcc_unreachable ();
+  }
+};
+
 class TyVisitor;
 class BaseType
 {
@@ -138,7 +203,8 @@ public:
 
   std::string debug_str () const
   {
-    return as_string () + ":" + mappings_str ();
+    return TypeKindFormat::to_string (get_kind ()) + ":" + as_string () + ":"
+	   + mappings_str ();
   }
 
   void debug () const
@@ -777,6 +843,8 @@ public:
 
   bool get_is_tuple () { return is_tuple; }
 
+  bool is_unit () const override { return this->fields.empty (); }
+
   void accept_vis (TyVisitor &vis) override;
 
   std::string as_string () const override;
@@ -1405,71 +1473,6 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool is_unit () const override { return true; }
-};
-
-class TypeKindFormat
-{
-public:
-  static std::string to_string (TypeKind kind)
-  {
-    switch (kind)
-      {
-      case TypeKind::INFER:
-	return "Infer";
-
-      case TypeKind::ADT:
-	return "ADT";
-
-      case TypeKind::STR:
-	return "STR";
-
-      case TypeKind::REF:
-	return "REF";
-
-      case TypeKind::PARAM:
-	return "PARAM";
-
-      case TypeKind::ARRAY:
-	return "ARRAY";
-
-      case TypeKind::FNDEF:
-	return "FnDef";
-
-      case TypeKind::FNPTR:
-	return "FnPtr";
-
-      case TypeKind::TUPLE:
-	return "Tuple";
-
-      case TypeKind::BOOL:
-	return "Bool";
-
-      case TypeKind::CHAR:
-	return "Char";
-
-      case TypeKind::INT:
-	return "Int";
-
-      case TypeKind::UINT:
-	return "Uint";
-
-      case TypeKind::FLOAT:
-	return "Float";
-
-      case TypeKind::USIZE:
-	return "Usize";
-
-      case TypeKind::ISIZE:
-	return "Isize";
-
-      case TypeKind::NEVER:
-	return "Never";
-
-      case TypeKind::ERROR:
-	return "ERROR";
-      }
-    gcc_unreachable ();
-  }
 };
 
 } // namespace TyTy

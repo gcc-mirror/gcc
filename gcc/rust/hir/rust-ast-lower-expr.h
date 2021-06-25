@@ -467,6 +467,24 @@ public:
 				 expr.get_locus ());
   }
 
+  void visit (AST::StructExprStruct &struct_expr) override
+  {
+    HIR::PathInExpression *path
+      = ASTLowerPathInExpression::translate (&struct_expr.get_struct_name ());
+    HIR::PathInExpression copied_path (*path);
+    delete path;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, struct_expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated = new HIR::StructExprStruct (mapping, copied_path,
+					    struct_expr.get_inner_attrs (),
+					    struct_expr.get_outer_attrs (),
+					    struct_expr.get_locus ());
+  }
+
   void visit (AST::StructExprStructFields &struct_expr) override
   {
     // bit of a hack for now
