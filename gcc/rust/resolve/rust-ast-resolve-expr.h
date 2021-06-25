@@ -219,6 +219,14 @@ public:
     ResolveExpr::go (elems.get_elem_to_copy ().get (), elems.get_node_id ());
   }
 
+  // this this an empty struct constructor like 'S {}'
+  void visit (AST::StructExprStruct &struct_expr) override
+  {
+    ResolveExpr::go (&struct_expr.get_struct_name (),
+		     struct_expr.get_node_id ());
+  }
+
+  // this this a struct constructor with fields
   void visit (AST::StructExprStructFields &struct_expr) override
   {
     ResolveExpr::go (&struct_expr.get_struct_name (),

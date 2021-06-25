@@ -527,6 +527,20 @@ public:
       }
   }
 
+  void visit (HIR::StructExprStruct &struct_expr) override
+  {
+    TyTy::BaseType *tyty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (
+	  struct_expr.get_mappings ().get_hirid (), &tyty))
+      {
+	rust_error_at (struct_expr.get_locus (), "unknown type");
+	return;
+      }
+
+    rust_assert (tyty->is_unit ());
+    translated = ctx->get_backend ()->unit_expression ();
+  }
+
   void visit (HIR::StructExprStructFields &struct_expr) override
   {
     TyTy::BaseType *tyty = nullptr;

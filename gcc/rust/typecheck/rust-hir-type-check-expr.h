@@ -827,6 +827,21 @@ public:
       = TypeCheckExpr::Resolve (elems.get_elem_to_copy (), false);
   }
 
+  // empty struct
+  void visit (HIR::StructExprStruct &struct_expr) override
+  {
+    TyTy::BaseType *struct_path_ty
+      = TypeCheckExpr::Resolve (&struct_expr.get_struct_name (), false);
+    if (struct_path_ty->get_kind () != TyTy::TypeKind::ADT)
+      {
+	rust_error_at (struct_expr.get_struct_name ().get_locus (),
+		       "expected an ADT type for constructor");
+	return;
+      }
+
+    infered = struct_path_ty;
+  }
+
   void visit (HIR::StructExprStructFields &struct_expr) override
   {
     infered = TypeCheckStructExpr::Resolve (&struct_expr);
