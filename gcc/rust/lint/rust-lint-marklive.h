@@ -44,6 +44,11 @@ public:
     expr.get_expr ().get ()->accept_vis (*this);
   }
 
+  void visit (HIR::DereferenceExpr &expr) override
+  {
+    expr.get_expr ().get ()->accept_vis (*this);
+  }
+
   void visit (HIR::BlockExpr &expr) override
   {
     expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
