@@ -6610,7 +6610,6 @@ package body Exp_Disp is
       Append_Elmt (DT, DT_Decl);
 
       Analyze_List (Result, Suppress => All_Checks);
-      Set_Has_Dispatch_Table (Typ);
 
       --  Mark entities containing dispatch tables. Required by the backend to
       --  handle them properly.
@@ -6642,6 +6641,8 @@ package body Exp_Disp is
       end if;
 
    <<Leave_SCIL>>
+
+      Set_Has_Dispatch_Table (Typ);
 
       --  Register the tagged type in the call graph nodes table
 
