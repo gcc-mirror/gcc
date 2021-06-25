@@ -4712,7 +4712,7 @@ package body Exp_Disp is
       Exname             : Entity_Id;
       HT_Link            : Entity_Id;
       ITable             : Node_Id;
-      I_Depth            : Nat := 0;
+      I_Depth            : Nat;
       Iface_Table_Node   : Node_Id;
       Name_ITable        : Name_Id;
       Nb_Prim            : Nat := 0;

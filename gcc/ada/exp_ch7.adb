@@ -6067,7 +6067,7 @@ package body Exp_Ch7 is
          Pop_Scope;
       end if;
 
-      --  Build dispatch tables of library level tagged types
+      --  Build dispatch tables of library-level tagged types
 
       if Tagged_Type_Expansion
         and then (Is_Compilation_Unit (Id)
