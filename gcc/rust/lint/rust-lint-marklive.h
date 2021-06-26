@@ -103,6 +103,17 @@ public:
       }
   }
 
+  void visit (HIR::LoopExpr &expr) override
+  {
+    expr.get_loop_block ()->accept_vis (*this);
+  }
+
+  void visit (HIR::BreakExpr &expr) override
+  {
+    if (expr.has_break_expr ())
+      expr.get_expr ()->accept_vis (*this);
+  }
+
   void visit (HIR::Function &function) override
   {
     function.get_definition ().get ()->accept_vis (*this);
