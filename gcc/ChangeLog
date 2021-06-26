@@ -1,3 +1,45 @@
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_optimize_slp): Do not propagate
+	across operations that have different semantics on different
+	lanes.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101158
+	* tree-vect-slp.c (vect_build_slp_tree_1): Move same operand
+	checking after checking for matching operation.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101151
+	* tree-ssa-sink.c (statement_sink_location): Expand irreducible
+	region check.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101105
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list):
+	Only ignore steps when they are equal or scalar order is preserved.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100672
+	* fold-const.c (fold_negate_expr_1): Use element_precision.
+	(negate_expr_p): Likewise.
+
 2021-06-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (dwarf2out_assembly_start): Emit .file 0 marker here..
