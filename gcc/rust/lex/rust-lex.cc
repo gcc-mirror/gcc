@@ -942,23 +942,26 @@ Lexer::parse_in_exponent_part ()
 	}
 
       // parse another decimal number for exponent
-      auto str_length_pair = parse_in_decimal ();
-      str += str_length_pair.first;
-      additional_length_offset += str_length_pair.second;
+      auto str_length = parse_in_decimal ();
+      str += std::get<0> (str_length);
+      additional_length_offset += std::get<1> (str_length);
     }
   return std::make_pair (str, additional_length_offset);
 }
 
 // Parses a decimal integer.
-std::pair<std::string, int>
+std::tuple<std::string, int, bool>
 Lexer::parse_in_decimal ()
 {
+  /* A pure decimal contains only digits.  */
+  bool pure_decimal = true;
   int additional_length_offset = 0;
   std::string str;
   while (ISDIGIT (current_char) || current_char == '_')
     {
       if (current_char == '_')
 	{
+	  pure_decimal = false;
 	  // don't add _ to number
 	  skip_input ();
 	  current_char = peek_input ();
@@ -974,7 +977,7 @@ Lexer::parse_in_decimal ()
       skip_input ();
       current_char = peek_input ();
     }
-  return std::make_pair (str, additional_length_offset);
+  return std::make_tuple (str, additional_length_offset, pure_decimal);
 }
 
 /* Parses escapes (and string continues) in "byte" strings and characters. Does
@@ -1842,13 +1845,14 @@ Lexer::parse_decimal_int_or_float (Location loc)
   str += current_char;
 
   int length = 1;
+  bool first_zero = current_char == '0';
 
   current_char = peek_input ();
 
   // parse initial decimal integer (or first integer part of float) literal
-  auto initial_decimal_pair = parse_in_decimal ();
-  str += initial_decimal_pair.first;
-  length += initial_decimal_pair.second;
+  auto initial_decimal = parse_in_decimal ();
+  str += std::get<0> (initial_decimal);
+  length += std::get<1> (initial_decimal);
 
   // detect float literal
   if (current_char == '.' && is_float_digit (peek_input (1)))
@@ -1862,9 +1866,9 @@ Lexer::parse_decimal_int_or_float (Location loc)
       length++;
 
       // parse another decimal number for float
-      auto second_decimal_pair = parse_in_decimal ();
-      str += second_decimal_pair.first;
-      length += second_decimal_pair.second;
+      auto second_decimal = parse_in_decimal ();
+      str += std::get<0> (second_decimal);
+      length += std::get<1> (second_decimal);
 
       // parse in exponent part if it exists
       auto exponent_pair = parse_in_exponent_part ();
@@ -1947,6 +1951,13 @@ Lexer::parse_decimal_int_or_float (Location loc)
       // parse in type suffix if it exists
       auto type_suffix_pair = parse_in_type_suffix ();
       PrimitiveCoreType type_hint = type_suffix_pair.first;
+      /* A "real" pure decimal doesn't have a suffix and no zero prefix.  */
+      if (type_hint == CORETYPE_UNKNOWN)
+	{
+	  bool pure_decimal = std::get<2> (initial_decimal);
+	  if (pure_decimal && (!first_zero || str.size () == 1))
+	    type_hint = CORETYPE_PURE_DECIMAL;
+	}
       length += type_suffix_pair.second;
 
       current_column += length;

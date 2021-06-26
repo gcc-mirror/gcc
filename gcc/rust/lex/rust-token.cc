@@ -99,6 +99,8 @@ get_type_hint_string (PrimitiveCoreType type)
       return "u64";
     case CORETYPE_U128:
       return "u128";
+    case CORETYPE_PURE_DECIMAL:
+      return "pure_decimal";
     case CORETYPE_UNKNOWN:
     default:
       return "unknown";

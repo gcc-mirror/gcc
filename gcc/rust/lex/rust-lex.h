@@ -71,7 +71,7 @@ private:
   // Builds a token from the input queue.
   TokenPtr build_token ();
 
-  std::pair<std::string, int> parse_in_decimal ();
+  std::tuple<std::string, int, bool> parse_in_decimal ();
   std::pair<std::string, int> parse_in_exponent_part ();
   std::pair<PrimitiveCoreType, int> parse_in_type_suffix ();
   std::tuple<char, int, bool> parse_escape (char opening_char);
