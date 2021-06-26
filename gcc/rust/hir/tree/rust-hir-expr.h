@@ -3387,6 +3387,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_cond () { return condition; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

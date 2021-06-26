@@ -131,6 +131,12 @@ public:
       expr.get_expr ()->accept_vis (*this);
   }
 
+  void visit (HIR::WhileLetLoopExpr &expr) override
+  {
+    expr.get_loop_block ()->accept_vis (*this);
+    expr.get_cond ()->accept_vis (*this);
+  }
+
   void visit (HIR::ExprStmtWithoutBlock &stmt) override
   {
     stmt.get_expr ()->accept_vis (*this);
