@@ -67,18 +67,26 @@ public:
 
   void visit (HIR::GroupedExpr &expr) override
   {
-    expr.get_expr_in_parens()->accept_vis(*this);
+    expr.get_expr_in_parens ()->accept_vis (*this);
   }
 
   void visit (HIR::ArrayExpr &expr) override
   {
-    expr.get_internal_elements()->accept_vis(*this);
+    expr.get_internal_elements ()->accept_vis (*this);
   }
 
   void visit (HIR::ArrayElemsValues &expr) override
   {
-    expr.iterate([&](HIR::Expr *expr) mutable -> bool {
-      expr->accept_vis(*this);
+    expr.iterate ([&] (HIR::Expr *expr) mutable -> bool {
+      expr->accept_vis (*this);
+      return true;
+    });
+  }
+
+  void visit (HIR::TupleExpr &expr) override
+  {
+    expr.iterate ([&] (HIR::Expr *expr) mutable -> bool {
+      expr->accept_vis (*this);
       return true;
     });
   }

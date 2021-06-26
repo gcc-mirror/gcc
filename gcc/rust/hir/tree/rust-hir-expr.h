@@ -1064,6 +1064,15 @@ public:
 
   bool is_unit () const { return tuple_elems.size () == 0; }
 
+  void iterate (std::function<bool (Expr *)> cb)
+  {
+    for (auto &tuple_elem : tuple_elems)
+      {
+	if (!cb (tuple_elem.get ()))
+	  return;
+      }
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
