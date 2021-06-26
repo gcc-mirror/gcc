@@ -54,6 +54,43 @@ public:
     expr.get_expr ().get ()->accept_vis (*this);
   }
 
+  void visit (HIR::LazyBooleanExpr &expr) override
+  {
+    expr.get_lhs ()->accept_vis (*this);
+    expr.get_rhs ()->accept_vis (*this);
+  }
+
+  void visit (HIR::TypeCastExpr &expr) override
+  {
+    expr.get_expr ().get ()->accept_vis (*this);
+  }
+
+  void visit (HIR::GroupedExpr &expr) override
+  {
+    expr.get_expr_in_parens ()->accept_vis (*this);
+  }
+
+  void visit (HIR::ArrayExpr &expr) override
+  {
+    expr.get_internal_elements ()->accept_vis (*this);
+  }
+
+  void visit (HIR::ArrayElemsValues &expr) override
+  {
+    expr.iterate ([&] (HIR::Expr *expr) mutable -> bool {
+      expr->accept_vis (*this);
+      return true;
+    });
+  }
+
+  void visit (HIR::TupleExpr &expr) override
+  {
+    expr.iterate ([&] (HIR::Expr *expr) mutable -> bool {
+      expr->accept_vis (*this);
+      return true;
+    });
+  }
+
   void visit (HIR::BlockExpr &expr) override
   {
     expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
