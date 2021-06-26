@@ -1656,12 +1656,11 @@ package body System.Object_Reader is
 
    function Get_Load_Address (Obj : Object_File) return uint64 is
    begin
-      if Obj.Format in Any_PECOFF then
-         return Obj.ImageBase;
-
-      else
-         raise Format_Error with "Get_Load_Address not implemented";
-      end if;
+      case Obj.Format is
+         when ELF        => return 0;
+         when Any_PECOFF => return Obj.ImageBase;
+         when XCOFF32    => raise Format_Error;
+      end case;
    end Get_Load_Address;
 
    -----------------
