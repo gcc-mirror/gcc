@@ -1,3 +1,10 @@
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	* lto-plugin.c (ltrans_objects): New global.
+	(all_symbols_read_handler): If -ltrans-objects was specified,
+	add the output files from the specified file directly.
+	(process_option): Handle -ltrans-objects.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	* lto-plugin.c (LTO_SEGMENT_NAME): Remove.

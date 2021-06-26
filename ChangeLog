@@ -1,3 +1,7 @@
+2021-06-25  Matthias Kretz  <m.kretz@gsi.de>
+
+	* MAINTAINERS: Add myself for write after approval and DCO
+
 2021-06-24  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* .gitignore: Add entry for cscope.out.

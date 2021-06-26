@@ -1,3 +1,65 @@
+2021-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100752
+	* parser.c (cp_parser_declarator): Pass flags down to
+	cp_parser_declarator.  Also pass static_p/member_p.
+
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	* call.c (build_over_call): Replace direct uses of TREE_NO_WARNING
+	with warning_suppressed_p, suppress_warning, and copy_no_warning, or
+	nothing if not necessary.
+	(set_up_extended_ref_temp): Same.
+	* class.c (layout_class_type): Same.
+	* constraint.cc (constraint_satisfaction_value): Same.
+	* coroutines.cc (finish_co_await_expr): Same.
+	(finish_co_yield_expr): Same.
+	(finish_co_return_stmt): Same.
+	(build_actor_fn): Same.
+	(coro_rewrite_function_body): Same.
+	(morph_fn_to_coro): Same.
+	* cp-gimplify.c (genericize_eh_spec_block): Same.
+	(gimplify_expr_stmt): Same.
+	(cp_genericize_r): Same.
+	(cp_fold): Same.
+	* cp-ubsan.c (cp_ubsan_instrument_vptr): Same.
+	* cvt.c (cp_fold_convert): Same.
+	(convert_to_void): Same.
+	* decl.c (wrapup_namespace_globals): Same.
+	(grokdeclarator): Same.
+	(finish_function): Same.
+	(require_deduced_type): Same.
+	* decl2.c (no_linkage_error): Same.
+	(c_parse_final_cleanups): Same.
+	* except.c (expand_end_catch_block): Same.
+	* init.c (build_new_1): Same.
+	(build_new): Same.
+	(build_vec_delete_1): Same.
+	(build_vec_init): Same.
+	(build_delete): Same.
+	* method.c (defaultable_fn_check): Same.
+	* parser.c (cp_parser_fold_expression): Same.
+	(cp_parser_primary_expression): Same.
+	* pt.c (push_tinst_level_loc): Same.
+	(tsubst_copy): Same.
+	(tsubst_omp_udr): Same.
+	(tsubst_copy_and_build): Same.
+	* rtti.c (build_if_nonnull): Same.
+	* semantics.c (maybe_convert_cond): Same.
+	(finish_return_stmt): Same.
+	(finish_parenthesized_expr): Same.
+	(cp_check_omp_declare_reduction): Same.
+	* tree.c (build_cplus_array_type): Same.
+	* typeck.c (build_ptrmemfunc_access_expr): Same.
+	(cp_build_indirect_ref_1): Same.
+	(cp_build_function_call_vec): Same.
+	(warn_for_null_address): Same.
+	(cp_build_binary_op): Same.
+	(unary_complex_lvalue): Same.
+	(cp_build_modify_expr): Same.
+	(build_x_modify_expr): Same.
+	(convert_for_assignment): Same.
+
 2021-06-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/98832

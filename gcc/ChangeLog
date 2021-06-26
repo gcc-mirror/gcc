@@ -1,3 +1,131 @@
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101216
+	* calls.c (maybe_warn_rdwr_sizes): Use the no_warning constant.
+
+2021-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300.c (select_cc_mode): Handle ASHIFTRT and LSHIFTRT.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101202
+	* tree-vect-slp.c (vect_optimize_slp): Explicitely handle
+	failed nodes.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp-patterns.c (addsub_pattern::build): Copy
+	STMT_VINFO_REDUC_DEF from the original representative.
+
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (warn_string_no_nul): Replace uses of TREE_NO_WARNING,
+	gimple_no_warning_p and gimple_set_no_warning with
+	warning_suppressed_p, and suppress_warning.
+	(c_strlen): Same.
+	(maybe_warn_for_bound): Same.
+	(warn_for_access): Same.
+	(check_access): Same.
+	(expand_builtin_strncmp): Same.
+	(fold_builtin_varargs): Same.
+	* calls.c (maybe_warn_nonstring_arg): Same.
+	(maybe_warn_rdwr_sizes): Same.
+	* cfgexpand.c (expand_call_stmt): Same.
+	* cgraphunit.c (check_global_declaration): Same.
+	* fold-const.c (fold_undefer_overflow_warnings): Same.
+	(fold_truth_not_expr): Same.
+	(fold_unary_loc): Same.
+	(fold_checksum_tree): Same.
+	* gimple-array-bounds.cc (array_bounds_checker::check_array_ref): Same.
+	(array_bounds_checker::check_mem_ref): Same.
+	(array_bounds_checker::check_addr_expr): Same.
+	(array_bounds_checker::check_array_bounds): Same.
+	* gimple-expr.c (copy_var_decl): Same.
+	* gimple-fold.c (gimple_fold_builtin_strcpy): Same.
+	(gimple_fold_builtin_strncat): Same.
+	(gimple_fold_builtin_stxcpy_chk): Same.
+	(gimple_fold_builtin_stpcpy): Same.
+	(gimple_fold_builtin_sprintf): Same.
+	(fold_stmt_1): Same.
+	* gimple-ssa-isolate-paths.c (diag_returned_locals): Same.
+	* gimple-ssa-nonnull-compare.c (do_warn_nonnull_compare): Same.
+	* gimple-ssa-sprintf.c (handle_printf_call): Same.
+	* gimple-ssa-store-merging.c (imm_store_chain_info::output_merged_store): Same.
+	* gimple-ssa-warn-restrict.c (maybe_diag_overlap): Same.
+	* gimple-ssa-warn-restrict.h: Adjust declarations.
+	(maybe_diag_access_bounds): Replace uses of TREE_NO_WARNING,
+	gimple_no_warning_p and gimple_set_no_warning with
+	warning_suppressed_p, and suppress_warning.
+	(check_call): Same.
+	(check_bounds_or_overlap): Same.
+	* gimple.c (gimple_build_call_from_tree): Same.
+	* gimplify.c (gimplify_return_expr): Same.
+	(gimplify_cond_expr): Same.
+	(gimplify_modify_expr_complex_part): Same.
+	(gimplify_modify_expr): Same.
+	(gimple_push_cleanup): Same.
+	(gimplify_expr): Same.
+	* omp-expand.c (expand_omp_for_generic): Same.
+	(expand_omp_taskloop_for_outer): Same.
+	* omp-low.c (lower_rec_input_clauses): Same.
+	(lower_lastprivate_clauses): Same.
+	(lower_send_clauses): Same.
+	(lower_omp_target): Same.
+	* tree-cfg.c (pass_warn_function_return::execute): Same.
+	* tree-complex.c (create_one_component_var): Same.
+	* tree-inline.c (remap_gimple_op_r): Same.
+	(copy_tree_body_r): Same.
+	(declare_return_variable): Same.
+	(expand_call_inline): Same.
+	* tree-nested.c (lookup_field_for_decl): Same.
+	* tree-sra.c (create_access_replacement): Same.
+	(generate_subtree_copies): Same.
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Same.
+	* tree-ssa-forwprop.c (combine_cond_expr_cond): Same.
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Same.
+	* tree-ssa-loop-im.c (execute_sm): Same.
+	* tree-ssa-phiopt.c (cond_store_replacement): Same.
+	* tree-ssa-strlen.c (maybe_warn_overflow): Same.
+	(handle_builtin_strcpy): Same.
+	(maybe_diag_stxncpy_trunc): Same.
+	(handle_builtin_stxncpy_strncat): Same.
+	(handle_builtin_strcat): Same.
+	* tree-ssa-uninit.c (get_no_uninit_warning): Same.
+	(set_no_uninit_warning): Same.
+	(uninit_undefined_value_p): Same.
+	(warn_uninit): Same.
+	(maybe_warn_operand): Same.
+	* tree-vrp.c (compare_values_warnv): Same.
+	* vr-values.c (vr_values::extract_range_for_var_from_comparison_expr): Same.
+	(test_for_singularity): Same.
+	* gimple.h (warning_suppressed_p): New function.
+	(suppress_warning): Same.
+	(copy_no_warning): Same.
+	(gimple_set_block): Call gimple_set_location.
+	(gimple_set_location): Call copy_warning.
+
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	* tree.h (warning_suppressed_at, copy_warning,
+	warning_suppressed_p, suppress_warning): New functions.
+
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostic-spec.o.
+	* gengtype.c (open_base_files): Add diagnostic-spec.h.
+	* diagnostic-spec.c: New file.
+	* diagnostic-spec.h: New file.
+	* tree.h (no_warning, all_warnings, suppress_warning_at): New
+	declarations.
+	* warning-control.cc: New file.
+
+2021-06-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101185
+	* config/i386/i386.c (x86_order_regs_for_local_alloc):
+	Revert r12-1669.
+
 2021-06-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/101189
