@@ -119,6 +119,12 @@ public:
     function.get_definition ().get ()->accept_vis (*this);
   }
 
+  void visit (HIR::ReturnExpr &expr) override
+  {
+    if (expr.has_return_expr ())
+      expr.get_expr ()->accept_vis (*this);
+  }
+
   void visit (HIR::ExprStmtWithoutBlock &stmt) override
   {
     stmt.get_expr ()->accept_vis (*this);
