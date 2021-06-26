@@ -70,6 +70,19 @@ public:
     expr.get_expr_in_parens()->accept_vis(*this);
   }
 
+  void visit (HIR::ArrayExpr &expr) override
+  {
+    expr.get_internal_elements()->accept_vis(*this);
+  }
+
+  void visit (HIR::ArrayElemsValues &expr) override
+  {
+    expr.iterate([&](HIR::Expr *expr) mutable -> bool {
+      expr->accept_vis(*this);
+      return true;
+    });
+  }
+
   void visit (HIR::BlockExpr &expr) override
   {
     expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
