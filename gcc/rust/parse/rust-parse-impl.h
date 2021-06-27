@@ -495,7 +495,6 @@ Parser<ManagedTokenSource>::parse_inner_attribute ()
     return AST::Attribute::create_empty ();
 
   AST::Attribute actual_attribute = parse_attribute_body ();
-  lexer.skip_token ();
 
   if (!skip_token (RIGHT_SQUARE))
     return AST::Attribute::create_empty ();
@@ -785,6 +784,7 @@ Parser<ManagedTokenSource>::parse_attr_input ()
 	// create actual LiteralExpr
 	AST::LiteralExpr lit_expr (t->get_str (), lit_type, t->get_type_hint (),
 				   {}, t->get_locus ());
+	lexer.skip_token ();
 
 	std::unique_ptr<AST::AttrInput> attr_input_lit (
 	  new AST::AttrInputLiteral (std::move (lit_expr)));
