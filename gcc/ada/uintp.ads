@@ -92,7 +92,7 @@ package Uintp is
 
    subtype Valid_Uint is Uint with Predicate => Valid_Uint /= No_Uint;
    subtype Unat is Valid_Uint with Predicate => Unat >= Uint_0;
-   subtype Upos is Valid_Uint with Predicate => Upos >= Uint_0;
+   subtype Upos is Valid_Uint with Predicate => Upos >= Uint_1;
    subtype Nonzero_Uint is Valid_Uint with Predicate => Nonzero_Uint /= Uint_0;
 
    type UI_Vector is array (Pos range <>) of Int;

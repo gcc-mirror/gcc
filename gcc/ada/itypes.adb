@@ -62,7 +62,7 @@ package body Itypes is
       end if;
 
       --  Make sure Esize (Typ) was properly initialized, it should be since
-      --  New_Internal_Entity/New_External_Entity call Init_Size_Align.
+      --  New_Internal_Entity/New_External_Entity call Reinit_Size_Align.
 
       pragma Assert (Esize (Typ) = Uint_0);
 

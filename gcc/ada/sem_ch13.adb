@@ -862,7 +862,7 @@ package body Sem_Ch13 is
         and then not Has_Alignment_Clause (Typ)
         and then Size mod (Alignment (Typ) * SSU) /= 0
       then
-         Init_Alignment (Typ);
+         Reinit_Alignment (Typ);
       end if;
    end Alignment_Check_For_Size_Change;
 
@@ -6746,9 +6746,9 @@ package body Sem_Ch13 is
                   Analyze (Decl, Suppress => All_Checks);
 
                   Set_Has_Delayed_Freeze        (New_Ctyp, False);
-                  Init_Esize                    (New_Ctyp);
+                  Reinit_Esize                  (New_Ctyp);
                   Set_RM_Size                   (New_Ctyp, Csize);
-                  Init_Alignment                (New_Ctyp);
+                  Reinit_Alignment              (New_Ctyp);
                   Set_Is_Itype                  (New_Ctyp, True);
                   Set_Associated_Node_For_Itype (New_Ctyp, U_Ent);
 
@@ -7322,13 +7322,14 @@ package body Sem_Ch13 is
                      if Is_First_Subtype (U_Ent) then
                         if Is_Elementary_Type (U_Ent) then
                            if Size <= System_Storage_Unit then
-                              Init_Esize (U_Ent, System_Storage_Unit);
+                              Set_Esize
+                                (U_Ent, UI_From_Int (System_Storage_Unit));
                            elsif Size <= 16 then
-                              Init_Esize (U_Ent, 16);
+                              Set_Esize (U_Ent, Uint_16);
                            elsif Size <= 32 then
-                              Init_Esize (U_Ent, 32);
+                              Set_Esize (U_Ent, Uint_32);
                            else
-                              Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
+                              Set_Esize (U_Ent, (Size + 63) / 64 * 64);
                            end if;
 
                            Alignment_Check_For_Size_Change
@@ -8652,9 +8653,6 @@ package body Sem_Ch13 is
                         Set_Normalized_First_Bit (Comp, Fbit mod SSU);
                         Set_Normalized_Position  (Comp, Fbit / SSU);
 
-                        Set_Normalized_Position_Max
-                          (Comp, Normalized_Position (Comp));
-
                         if Warn_On_Overridden_Size
                           and then Has_Size_Clause (Etype (Comp))
                           and then RM_Size (Etype (Comp)) /= Esize (Comp)
@@ -8685,9 +8683,6 @@ package body Sem_Ch13 is
                            Set_Esize                (Ocomp, 1 + (Lbit - Fbit));
                            Set_Normalized_First_Bit (Ocomp, Fbit mod SSU);
                            Set_Normalized_Position  (Ocomp, Fbit / SSU);
-
-                           Set_Normalized_Position_Max
-                             (Ocomp, Normalized_Position (Ocomp));
 
                            --  Note: we don't use Set_Biased here, because we
                            --  already gave a warning above if needed, and we
@@ -12104,8 +12099,7 @@ package body Sem_Ch13 is
          Set_Component_Bit_Offset    (Fent, Uint_0);
          Set_Normalized_Position     (Fent, Uint_0);
          Set_Normalized_First_Bit    (Fent, Uint_0);
-         Set_Normalized_Position_Max (Fent, Uint_0);
-         Init_Esize                  (Fent, System_Address_Size);
+         Set_Esize                   (Fent, UI_From_Int (System_Address_Size));
 
          Set_Component_Clause (Fent,
            Make_Component_Clause (Loc,
@@ -16133,10 +16127,10 @@ package body Sem_Ch13 is
    procedure Set_Enum_Esize (T : Entity_Id) is
       Lo : Uint;
       Hi : Uint;
-      Sz : Nat;
+      Sz : Unat;
 
    begin
-      Init_Alignment (T);
+      Reinit_Alignment (T);
 
       --  Find the minimum standard size (8,16,32,64,128) that fits
 
@@ -16144,37 +16138,38 @@ package body Sem_Ch13 is
       Hi := Enumeration_Rep (Entity (Type_High_Bound (T)));
 
       if Lo < 0 then
-         if Lo >= -Uint_2**07 and then Hi < Uint_2**07 then
-            Sz := Standard_Character_Size;  -- May be > 8 on some targets
+         if Lo >= -Uint_2**7 and then Hi < Uint_2**7 then
+            Sz := UI_From_Int (Standard_Character_Size);
+            --  Might be > 8 on some targets
 
          elsif Lo >= -Uint_2**15 and then Hi < Uint_2**15 then
-            Sz := 16;
+            Sz := Uint_16;
 
          elsif Lo >= -Uint_2**31 and then Hi < Uint_2**31 then
-            Sz := 32;
+            Sz := Uint_32;
 
          elsif Lo >= -Uint_2**63 and then Hi < Uint_2**63 then
-            Sz := 64;
+            Sz := Uint_64;
 
          else pragma Assert (Lo >= -Uint_2**127 and then Hi < Uint_2**127);
-            Sz := 128;
+            Sz := Uint_128;
          end if;
 
       else
-         if Hi < Uint_2**08 then
-            Sz := Standard_Character_Size;  -- May be > 8 on some targets
+         if Hi < Uint_2**8 then
+            Sz := UI_From_Int (Standard_Character_Size);
 
          elsif Hi < Uint_2**16 then
-            Sz := 16;
+            Sz := Uint_16;
 
          elsif Hi < Uint_2**32 then
-            Sz := 32;
+            Sz := Uint_32;
 
          elsif Hi < Uint_2**64 then
-            Sz := 64;
+            Sz := Uint_64;
 
          else pragma Assert (Hi < Uint_2**128);
-            Sz := 128;
+            Sz := Uint_128;
          end if;
       end if;
 
@@ -16190,9 +16185,9 @@ package body Sem_Ch13 is
 
         and then not Target_Short_Enums
       then
-         Init_Esize (T, Standard_Integer_Size);
+         Set_Esize (T, UI_From_Int (Standard_Integer_Size));
       else
-         Init_Esize (T, Sz);
+         Set_Esize (T, Sz);
       end if;
    end Set_Enum_Esize;
 

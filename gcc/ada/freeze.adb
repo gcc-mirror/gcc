@@ -7467,7 +7467,7 @@ package body Freeze is
 
         and then not Target_Short_Enums
       then
-         Init_Esize (Typ, Standard_Integer_Size);
+         Set_Esize (Typ, UI_From_Int (Standard_Integer_Size));
          Set_Alignment (Typ, Alignment (Standard_Integer));
 
       --  Normal Ada case or size clause present or not Long_C_Enums on target
@@ -9076,7 +9076,7 @@ package body Freeze is
             Actual_Size := 128;
          end if;
 
-         Init_Esize (Typ, Actual_Size);
+         Set_Esize (Typ, UI_From_Int (Actual_Size));
          Adjust_Esize_For_Alignment (Typ);
       end if;
 
@@ -9132,7 +9132,7 @@ package body Freeze is
       --  Set Esize to calculated size if not set already
 
       if not Known_Esize (Typ) then
-         Init_Esize (Typ, Actual_Size);
+         Set_Esize (Typ, UI_From_Int (Actual_Size));
       end if;
 
       --  Set RM_Size if not already set. If already set, check value

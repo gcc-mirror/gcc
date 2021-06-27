@@ -3762,17 +3762,6 @@ package Einfo is
 --       units from the start of the record to the lowest addressed storage
 --       unit containing part or all of the field.
 
---    Normalized_Position_Max
---       Defined in components and discriminants. For almost all cases, this
---       is the same as Normalized_Position. The one exception is for the case
---       of a discriminated record containing one or more arrays whose length
---       depends on discriminants. In this case, the Normalized_Position_Max
---       field represents the maximum possible value of Normalized_Position
---       assuming min/max values for discriminant subscripts in all fields.
---       This is used by Layout in front end layout mode to properly compute
---       the maximum size of such records (needed for allocation purposes when
---       there are default discriminants, and also for the 'Size value).
-
 --    Number_Dimensions (synthesized)
 --       Applies to array types and subtypes. Returns the number of dimensions
 --       of the array type or subtype as a value of type Pos.
@@ -5228,7 +5217,6 @@ package Einfo is
    --    Linker_Section_Pragma $$$
    --    Normalized_First_Bit
    --    Current_Value                         (always Empty)
-   --    Normalized_Position_Max
    --    Component_Bit_Offset
    --    Esize
    --    Component_Clause
@@ -5328,7 +5316,6 @@ package Einfo is
    --  E_Discriminant
    --    Normalized_First_Bit
    --    Current_Value                         (always Empty)
-   --    Normalized_Position_Max
    --    Component_Bit_Offset
    --    Esize
    --    Component_Clause

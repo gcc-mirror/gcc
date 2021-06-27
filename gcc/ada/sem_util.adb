@@ -24986,7 +24986,7 @@ package body Sem_Util is
       Set_Public_Status (N);
 
       if Kind in Type_Kind then
-         Init_Size_Align (N);
+         Reinit_Size_Align (N);
       end if;
 
       return N;
@@ -25010,7 +25010,7 @@ package body Sem_Util is
       Append_Entity   (N, Scope_Id);
 
       if Kind in Type_Kind then
-         Init_Size_Align (N);
+         Reinit_Size_Align (N);
       end if;
 
       return N;
