@@ -1,3 +1,17 @@
+2021-06-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96204
+	* pt.c (instantiate_class_template_1): Enter the scope of the
+	type when calling most_specialized_partial_spec.
+
+2021-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101040
+	PR c++/97566
+	* class.c (is_empty_field): Handle null argument.
+	* constexpr.c (cxx_eval_bare_aggregate): Discard initializer
+	for empty field.
+
 2021-06-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/100752

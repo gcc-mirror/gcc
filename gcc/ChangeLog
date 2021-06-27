@@ -1,3 +1,26 @@
+2021-06-26  Jason Merrill  <jason@redhat.com>
+
+	* except.c: #include "dwarf2.h" instead of "dwarf2out.h".
+
+2021-06-26  Andrew Pinski  <apinski@marvell.com>
+
+	* genmatch.c (lower_cond): Copy for_subst_vec
+	for the simplify also.
+	(lower): Swap the order for lower_for and lower_cond.
+
+2021-06-26  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (match_simplify_replacement): Reset
+	flow senatitive info on the moved ssa set.
+
+2021-06-26  Andrew Pinski  <apinski@marvell.com>
+
+	* fold-const.c (fold_cond_expr_with_comparison):
+	Exand arg0 into comp_code, arg00, and arg01.
+	(fold_ternary_loc): Use invert_tree_comparison
+	instead of fold_invert_truthvalue for the case
+	where we have A CMP B ? C : A.
+
 2021-06-25  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/101216
