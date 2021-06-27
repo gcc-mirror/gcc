@@ -2423,6 +2423,21 @@ public:
     rust_assert (is_method ());
     return self;
   }
+
+  Identifier get_function_name () const { return function_name; }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+
+  std::unique_ptr<Type> &get_return_type ()
+  {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
+
+  std::vector<FunctionParam> &get_function_params () { return function_params; }
 };
 
 // Actual trait item function declaration within traits
@@ -2478,7 +2493,15 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  std::unique_ptr<Expr> &get_block_expr () { return block_expr; }
+  TraitFunctionDecl &get_decl () { return decl; }
+
+  bool has_block_defined () const { return block_expr != nullptr; }
+
+  std::unique_ptr<Expr> &get_block_expr ()
+  {
+    rust_assert (has_block_defined ());
+    return block_expr;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2494,10 +2517,7 @@ class TraitItemConst : public TraitItem
   AST::AttrVec outer_attrs;
   Identifier name;
   std::unique_ptr<Type> type;
-
-  // bool has_expression;
   std::unique_ptr<Expr> expr;
-
   Location locus;
 
 public:
@@ -2543,6 +2563,18 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  Identifier get_name () const { return name; }
+
+  bool has_expr () const { return expr != nullptr; }
+
+  std::unique_ptr<Type> &get_type () { return type; }
+
+  std::unique_ptr<Expr> &get_expr ()
+  {
+    rust_assert (has_expr ());
+    return expr;
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemConst *clone_trait_item_impl () const override
@@ -2557,12 +2589,8 @@ class TraitItemType : public TraitItem
   AST::AttrVec outer_attrs;
 
   Identifier name;
-
-  // bool has_type_param_bounds;
-  // TypeParamBounds type_param_bounds;
   std::vector<std::unique_ptr<TypeParamBound> >
     type_param_bounds; // inlined form
-
   Location locus;
 
 public:
@@ -2614,6 +2642,13 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  Identifier get_name () const { return name; }
+
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemType *clone_trait_item_impl () const override
@@ -2660,6 +2695,13 @@ public:
 
   // Returns whether trait has trait items.
   bool has_trait_items () const { return !trait_items.empty (); }
+
+  std::vector<std::unique_ptr<TraitItem> > &get_trait_items ()
+  {
+    return trait_items;
+  }
+
+  Identifier get_name () const { return name; }
 
   // Mega-constructor
   Trait (Analysis::NodeMapping mappings, Identifier name, bool is_unsafe,

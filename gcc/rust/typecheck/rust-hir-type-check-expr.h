@@ -915,7 +915,9 @@ public:
 	auto candidates = PathProbeType::Probe (tyseg, seg.get_segment ());
 	if (candidates.size () == 0)
 	  {
-	    rust_error_at (seg.get_locus (), "failed to resolve path segment");
+	    rust_error_at (
+	      seg.get_locus (),
+	      "failed to resolve path segment using an impl Probe");
 	    return;
 	  }
 	else if (candidates.size () > 1)

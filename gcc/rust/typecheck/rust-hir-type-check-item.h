@@ -24,6 +24,7 @@
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-stmt.h"
+#include "rust-hir-trait-resolve.h"
 #include "rust-tyty-visitor.h"
 
 namespace Rust {
@@ -42,6 +43,14 @@ public:
 
   void visit (HIR::ImplBlock &impl_block) override
   {
+    TraitReference &trait_reference = TraitResolver::error_node ();
+    if (impl_block.has_trait_ref ())
+      {
+	std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
+	trait_reference = TraitResolver::Resolve (*ref.get ());
+	rust_assert (!trait_reference.is_error ());
+      }
+
     TyTy::BaseType *self = nullptr;
     if (!context->lookup_type (
 	  impl_block.get_type ()->get_mappings ().get_hirid (), &self))
@@ -52,7 +61,13 @@ public:
       }
 
     for (auto &impl_item : impl_block.get_impl_items ())
-      TypeCheckImplItem::Resolve (impl_item.get (), self);
+      {
+	if (trait_reference.is_error ())
+	  TypeCheckImplItem::Resolve (impl_item.get (), self);
+	else
+	  TypeCheckImplItemWithTrait::Resolve (impl_item.get (), self,
+					       trait_reference);
+      }
   }
 
   void visit (HIR::Function &function) override
