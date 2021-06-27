@@ -12837,10 +12837,11 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  tree arg00 = TREE_OPERAND (arg0, 0);
 	  tree arg01 = TREE_OPERAND (arg0, 1);
 	  comp_code = invert_tree_comparison (comp_code, HONOR_NANS (arg00));
-	  tem = fold_cond_expr_with_comparison (loc, type, comp_code,
-						arg00,
-						arg01,
-						op2, op1);
+	  if (comp_code != ERROR_MARK)
+	    tem = fold_cond_expr_with_comparison (loc, type, comp_code,
+						  arg00,
+						  arg01,
+						  op2, op1);
 	  if (tem)
 	    return tem;
 	}
