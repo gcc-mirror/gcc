@@ -1,3 +1,7 @@
+2021-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/torture/pr101230-1.c: New test.
+
 2021-06-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/96204

@@ -1,3 +1,17 @@
+2021-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/101230
+	* fold-const.c (fold_ternary_loc): Check
+	the return value of invert_tree_comparison.
+
+2021-06-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.gcc: Add SPDX License Identifier.
+	(powerpc-ibm-aix789): Default to aix73.h.
+	(powerpc-ibm-aix7.2.*.*): New stanza.
+	* config/rs6000/aix72.h: Add SPDX License Identifier.
+	* config/rs6000/aix73.h: New file.
+
 2021-06-26  Jason Merrill  <jason@redhat.com>
 
 	* except.c: #include "dwarf2.h" instead of "dwarf2out.h".
