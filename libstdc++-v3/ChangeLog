@@ -1,3 +1,74 @@
+2021-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ostream.tcc (basic_ostream::write): Call sputn
+	directly instead of using _M_write. Do setstate(__err) all
+	outside the try-catch block.
+	* include/std/ostream (basic_ostream::_M_write): Declare
+	private. Use __ostream_insert. Do not define for the versioned
+	namespace.
+
+2021-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 581 change.
+	* doc/html/manual/bugs.html: Regenerate.
+	* include/bits/basic_ios.tcc: Whitespace.
+	* include/bits/ostream.tcc (basic_ostream::flush()): Construct
+	sentry.
+	* testsuite/27_io/basic_ostream/flush/char/2.cc: Check
+	additional cases.
+	* testsuite/27_io/basic_ostream/flush/char/exceptions_badbit_throw.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/exceptions_badbit_throw.cc:
+	Likewise.
+
+2021-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ostream.tcc (sentry): Only set failbit if badbit
+	is set, not if eofbit is set.
+	(tellp, seekp, seekp): Create sentry object. Do not set badbit
+	on exceptions.
+	* testsuite/27_io/basic_ostream/seekp/char/exceptions_badbit_throw.cc:
+	Adjust expected behaviour.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/exceptions_badbit_throw.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/tellp/char/exceptions_badbit_throw.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/exceptions_badbit_throw.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/seekp/char/n3168.cc: New test.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/n3168.cc: New test.
+	* testsuite/27_io/basic_ostream/tellp/char/n3168.cc: New test.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/n3168.cc: New test.
+
+2021-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/syncstream (basic_syncbuf::swap()): Remove
+	noexcept, as per LWG 3498.
+
+2021-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97088
+	* testsuite/17_intro/names.cc: Undef more names for newlib and
+	also for arm-none-linux-gnueabi.
+	* testsuite/experimental/names.cc: Disable PCH.
+
+2021-06-25  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (__bit_cast): Implement via
+	__builtin_bit_cast #if available.
+	(__proposed::simd_bit_cast): Add overloads for simd and
+	simd_mask, which use __builtin_bit_cast (or __bit_cast #if not
+	available), which return an object of the requested type with
+	the same bits as the argument.
+	* include/experimental/bits/simd_math.h: Use simd_bit_cast
+	instead of __bit_cast to allow casts to fixed_size_simd.
+	(copysign): Remove branch that was only required if __bit_cast
+	cannot be constexpr.
+	* testsuite/experimental/simd/tests/bits/test_values.h: Switch
+	from __bit_cast to __proposed::simd_bit_cast since the former
+	will not cast fixed_size objects anymore.
+
 2021-06-24  Matthias Kretz  <m.kretz@gsi.de>
 
 	* include/experimental/bits/simd_math.h

@@ -38,6 +38,9 @@ import requests
 
 from unidiff import PatchSet
 
+LINE_LIMIT = 100
+TAB_WIDTH = 8
+
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
 prnum_regex = re.compile(r'PR (?P<comp>[a-z+-]+)/(?P<num>[0-9]+)')
 dr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<dr>DR [0-9]+)')
@@ -134,6 +137,16 @@ def get_pr_titles(prs):
     return '\n'.join(output)
 
 
+def append_changelog_line(out, relative_path, text):
+    line = f'\t* {relative_path}:'
+    if len(line.replace('\t', ' ' * TAB_WIDTH) + ' ' + text) <= LINE_LIMIT:
+        out += f'{line} {text}\n'
+    else:
+        out += f'{line}\n'
+        out += f'\t{text}\n'
+    return out
+
+
 def generate_changelog(data, no_functions=False, fill_pr_titles=False,
                        additional_prs=None):
     changelogs = {}
@@ -213,12 +226,12 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
             relative_path = file.path[len(changelog):].lstrip('/')
             functions = []
             if file.is_added_file:
-                msg = 'New test' if in_tests else 'New file'
-                out += '\t* %s: %s.\n' % (relative_path, msg)
+                msg = 'New test.' if in_tests else 'New file.'
+                out = append_changelog_line(out, relative_path, msg)
             elif file.is_removed_file:
-                out += '\t* %s: Removed.\n' % (relative_path)
+                out = append_changelog_line(out, relative_path, 'Removed.')
             elif hasattr(file, 'is_rename') and file.is_rename:
-                out += '\t* %s: Moved to...\n' % (relative_path)
+                out = append_changelog_line(out, relative_path, 'Moved to...')
                 new_path = file.target_file[2:]
                 # A file can be theoretically moved to a location that
                 # belongs to a different ChangeLog.  Let user fix it.
@@ -227,6 +240,7 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
                 out += '\t* %s: ...here.\n' % (new_path)
             elif os.path.basename(file.path) in generated_files:
                 out += '\t* %s: Regenerate.\n' % (relative_path)
+                append_changelog_line(out, relative_path, 'Regenerate.')
             else:
                 if not no_functions:
                     for hunk in file:

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 # GCC target-specific configuration file.
 # Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
@@ -3099,13 +3100,26 @@ rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
 	use_gcc_stdint=wrap
 	default_use_cxa_atexit=yes
 	;;
-rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
+rs6000-ibm-aix7.2.* | powerpc-ibm-aix7.2.*)
 	tmake_file="rs6000/t-aix52 t-slibgcc"
 	if test x$cpu_is_64bit = xyes; then
 	    tm_file="${tm_file} rs6000/biarch64.h"
 	    tmake_file="rs6000/t-aix64 t-slibgcc"
 	fi
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix72.h rs6000/xcoff.h rs6000/aix-stdint.h"
+	extra_options="${extra_options} rs6000/aix64.opt"
+	use_collect2=yes
+	thread_file='aix'
+	use_gcc_stdint=wrap
+	default_use_cxa_atexit=yes
+	;;
+rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
+	tmake_file="rs6000/t-aix52 t-slibgcc"
+	if test x$cpu_is_64bit = xyes; then
+	    tm_file="${tm_file} rs6000/biarch64.h"
+	    tmake_file="rs6000/t-aix64 t-slibgcc"
+	fi
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix73.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
 	thread_file='aix'

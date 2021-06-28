@@ -1,3 +1,58 @@
+2021-06-27  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/torture/pr101230-1.c: New test.
+
+2021-06-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96204
+	* g++.dg/template/access40.C: New test.
+	* g++.dg/template/access40a.C: New test.
+
+2021-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101040
+	PR c++/97566
+	* g++.dg/cpp2a/no_unique_address13.C: New test.
+
+2021-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100752
+	* g++.dg/cpp0x/noexcept69.C: New test.
+	* g++.dg/parse/saved1.C: Adjust dg-error.
+	* g++.dg/template/crash50.C: Likewise.
+
+2021-06-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-vector-rvalues.cc (check_div): Add specialization
+	for v4f, to avoid relying on exact floating-point equality.
+	* jit.dg/test-vector-types.cc (check_div): Likewise.
+
+2021-06-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-asm.c: Remove i?86-*-* from target specifier.
+	* jit.dg/test-asm.cc: Likewise.
+
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101216
+	* gcc.dg/Wnonnull-7.c: New test.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101202
+	* gcc.dg/torture/pr101202.c: New testcase.
+
+2021-06-25  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* g++.dg/no-stack-protector-attr-3.C (dg-final): Adjust for MIPS.
+
+2021-06-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101185
+	* gcc.target/i386/bitwise_mask_op-3.c: Add xfail to
+	temporarily avoid regression, eventually xfail should be
+	removed.
+
 2021-06-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/tree-ssa/evrp30.c: New.

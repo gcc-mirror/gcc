@@ -621,30 +621,64 @@ proc gcc-dg-runtest { testcases flags default-extra-flags } {
     }
 }
 
-proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
+# Check if frontend has CTF support
+proc gcc-dg-frontend-supports-ctf { target_compile trivial } {
     global srcdir subdir
 
+    set comp_output [$target_compile \
+	    "$srcdir/$subdir/$trivial" "trivial.S" assembly \
+	    "additional_flags=-gctf"]
+    if { ! [string match \
+	    "*CTF debug info requested, but not supported for * frontend*" \
+	    $comp_output] } {
+	remove-build-file "trivial.S"
+	return 1
+    }
+    return 0
+}
+
+# Check if the target system supports the debug format
+proc gcc-dg-target-supports-debug-format { target_compile trivial type } {
+    global srcdir subdir
+
+    set comp_output [$target_compile \
+	    "$srcdir/$subdir/$trivial" "trivial.S" assembly \
+	    "additional_flags=$type"]
+    if { ! [string match "*: target system does not support the * debug format*" \
+	    $comp_output] } {
+	remove-build-file "trivial.S"
+	return 1
+    }
+    return 0
+}
+
+proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
     if ![info exists DEBUG_TORTURE_OPTIONS] {
 	set DEBUG_TORTURE_OPTIONS ""
-	foreach type {-gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+} {
-	    set comp_output [$target_compile \
-		    "$srcdir/$subdir/$trivial" "trivial.S" assembly \
-		    "additional_flags=$type"]
-	    if { ! [string match "*: target system does not support the * debug format*" \
-		    $comp_output] } {
-		remove-build-file "trivial.S"
-		foreach level {1 "" 3} {
-		    if { ($type == "-gdwarf-2") && ($level != "") } {
-			lappend DEBUG_TORTURE_OPTIONS [list "${type}" "-g${level}"]
-			foreach opt $opt_opts {
-			    lappend DEBUG_TORTURE_OPTIONS \
-				    [list "${type}" "-g${level}" "$opt" ]
-			}
-		    } else {
-			lappend DEBUG_TORTURE_OPTIONS [list "${type}${level}"]
-			foreach opt $opt_opts {
-			    lappend DEBUG_TORTURE_OPTIONS \
-				    [list "${type}${level}" "$opt" ]
+	foreach type {-gctf -gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+} {
+	    if { $type == "-gctf" } {
+		if [expr [gcc-dg-frontend-supports-ctf \
+			  $target_compile $trivial]] {
+		    # At this time, running tests with various opt levels or
+		    # ctf debug info levels does not add value.
+		    lappend DEBUG_TORTURE_OPTIONS  [list "${type}"]
+		}
+	    } else {
+		if [expr [gcc-dg-target-supports-debug-format \
+			  $target_compile $trivial $type]] {
+		    foreach level {1 "" 3} {
+			if { ($type == "-gdwarf-2") && ($level != "") } {
+			    lappend DEBUG_TORTURE_OPTIONS [list "${type}" "-g${level}"]
+			    foreach opt $opt_opts {
+				lappend DEBUG_TORTURE_OPTIONS \
+					[list "${type}" "-g${level}" "$opt" ]
+			    }
+			} else {
+			    lappend DEBUG_TORTURE_OPTIONS [list "${type}${level}"]
+			    foreach opt $opt_opts {
+				lappend DEBUG_TORTURE_OPTIONS \
+					[list "${type}${level}" "$opt" ]
+			    }
 			}
 		    }
 		}
@@ -686,6 +720,15 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
 		    && [string match "*O*" "$flags"] \
 		    && ( [string match "*coff*" "$flags"] \
 			 || [string match "*stabs*" "$flags"] ) } {
+		set doit 0
+	    }
+
+	    # These tests check for information which is not emitted for CTF
+	    # as CTF type information is emitted for entities at file and 
+	    # global scope only.
+	    if { ([string match {*/debug-[126].c} "$nshort"] \
+		  || [string match {*/enum-[12].C} "$nshort"] ) \
+		  && [string match "*ctf*" "$flags"] } {
 		set doit 0
 	    }
 

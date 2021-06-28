@@ -414,9 +414,6 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   else if (info && info->param_adjustments)
     clone_info::get_create (new_node)->param_adjustments
 	 = info->param_adjustments;
-  if (info && info->performed_splits)
-    clone_info::get_create (new_node)->performed_splits
-	 = vec_safe_copy (info->performed_splits);
   new_node->split_part = split_part;
 
   FOR_EACH_VEC_ELT (redirect_callers, i, e)

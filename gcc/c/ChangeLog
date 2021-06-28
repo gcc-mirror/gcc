@@ -1,3 +1,29 @@
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	* c-decl.c (pop_scope): Replace direct uses of TREE_NO_WARNING with
+	warning_suppressed_p, suppress_warning, and copy_no_warning.
+	(diagnose_mismatched_decls): Same.
+	(duplicate_decls): Same.
+	(grokdeclarator): Same.
+	(finish_function): Same.
+	(c_write_global_declarations_1): Same.
+	* c-fold.c (c_fully_fold_internal): Same.
+	* c-parser.c (c_parser_expr_no_commas): Same.
+	(c_parser_postfix_expression): Same.
+	* c-typeck.c (array_to_pointer_conversion): Same.
+	(function_to_pointer_conversion): Same.
+	(default_function_array_conversion): Same.
+	(convert_lvalue_to_rvalue): Same.
+	(default_conversion): Same.
+	(build_indirect_ref): Same.
+	(build_function_call_vec): Same.
+	(build_atomic_assign): Same.
+	(build_unary_op): Same.
+	(c_finish_return): Same.
+	(emit_side_effect_warnings): Same.
+	(c_finish_stmt_expr): Same.
+	(c_omp_clause_copy_ctor): Same.
+
 2021-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/101176

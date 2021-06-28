@@ -3048,6 +3048,68 @@
 	  UNSPEC_PCMP))]
   "operands[5] = GEN_INT (INTVAL (operands[5]) ^ 4);")
 
+(define_insn_and_split "*avx_cmp<mode>3_lt"
+ [(set (match_operand:VF_128_256  0 "register_operand")
+	(vec_merge:VF_128_256
+	  (match_operand:VF_128_256 1 "vector_operand")
+	  (match_operand:VF_128_256 2 "vector_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:<sseintvecmode> 3 "register_operand")
+	     (match_operand:<sseintvecmode> 4 "const0_operand")
+	     (match_operand:SI 5 "const_0_to_7_operand")]
+	     UNSPEC_PCMP)))]
+  "TARGET_AVX512VL && ix86_pre_reload_split ()
+  /* LT or GE 0 */
+  && ((INTVAL (operands[5]) == 1 && !MEM_P (operands[2]))
+      || (INTVAL (operands[5]) == 5 && !MEM_P (operands[1])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VF_128_256
+	  [(match_dup 2)
+	   (match_dup 1)
+	   (lt:VF_128_256
+	     (match_dup 3)
+	     (match_dup 4))]
+	    UNSPEC_BLENDV))]
+{
+  if (INTVAL (operands[5]) == 5)
+    std::swap (operands[1], operands[2]);
+})
+
+(define_insn_and_split "*avx_cmp<mode>3_ltint"
+ [(set (match_operand:VI48_AVX  0 "register_operand")
+	(vec_merge:VI48_AVX
+	  (match_operand:VI48_AVX 1 "vector_operand")
+	  (match_operand:VI48_AVX 2 "vector_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:VI48_AVX 3 "register_operand")
+	     (match_operand:VI48_AVX 4 "const0_operand")
+	     (match_operand:SI 5 "const_0_to_7_operand")]
+	     UNSPEC_PCMP)))]
+  "TARGET_AVX512VL && ix86_pre_reload_split ()
+  /* LT or GE 0 */
+  && ((INTVAL (operands[5]) == 1 && !MEM_P (operands[2]))
+      || (INTVAL (operands[5]) == 5 && !MEM_P (operands[1])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:<ssebytemode>
+	  [(match_dup 2)
+	   (match_dup 1)
+	   (subreg:<ssebytemode>
+	     (lt:VI48_AVX
+	      (match_dup 3)
+	      (match_dup 4)) 0)]
+	    UNSPEC_BLENDV))]
+{
+  if (INTVAL (operands[5]) == 5)
+    std::swap (operands[1], operands[2]);
+  operands[0] = gen_lowpart (<ssebytemode>mode, operands[0]);
+  operands[1] = gen_lowpart (<ssebytemode>mode, operands[1]);
+  operands[2] = gen_lowpart (<ssebytemode>mode, operands[2]);
+})
+
 (define_insn "avx_vmcmp<mode>3"
   [(set (match_operand:VF_128 0 "register_operand" "=x")
 	(vec_merge:VF_128
@@ -13063,6 +13125,96 @@
   DONE;
 })
 
+(define_insn_and_split "*avx2_pcmp<mode>3_3"
+ [(set (match_operand:VI1_AVX2  0 "register_operand")
+	(vec_merge:VI1_AVX2
+	  (match_operand:VI1_AVX2 1 "vector_operand")
+	  (match_operand:VI1_AVX2 2 "vector_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:VI1_AVX2 3 "register_operand")
+	     (match_operand:VI1_AVX2 4 "const0_operand")
+	     (match_operand:SI 5 "const_0_to_7_operand")]
+	     UNSPEC_PCMP)))]
+  "TARGET_AVX512VL && ix86_pre_reload_split ()
+  /* LT or GE 0 */
+  && ((INTVAL (operands[5]) == 1 && !MEM_P (operands[2]))
+      || (INTVAL (operands[5]) == 5 && !MEM_P (operands[1])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	  [(match_dup 2)
+	   (match_dup 1)
+	   (lt:VI1_AVX2
+	     (match_dup 3)
+	     (match_dup 4))]
+	     UNSPEC_BLENDV))]
+{
+  if (INTVAL (operands[5]) == 5)
+    std::swap (operands[1], operands[2]);
+})
+
+(define_insn_and_split "*avx2_pcmp<mode>3_4"
+ [(set (match_operand:VI1_AVX2  0 "register_operand")
+	(vec_merge:VI1_AVX2
+	  (match_operand:VI1_AVX2 1 "vector_operand")
+	  (match_operand:VI1_AVX2 2 "vector_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(subreg:VI1_AVX2 (not (match_operand 3 "register_operand")) 0)
+	     (match_operand:VI1_AVX2 4 "const0_operand")
+	     (match_operand:SI 5 "const_0_to_7_operand")]
+	     UNSPEC_PCMP)))]
+  "TARGET_AVX512VL && ix86_pre_reload_split ()
+  && GET_MODE_CLASS (GET_MODE (operands[3])) == MODE_VECTOR_INT
+  && GET_MODE_SIZE (GET_MODE (operands[3])) == <MODE_SIZE>
+  /* LT or GE 0 */
+  && ((INTVAL (operands[5]) == 1 && !MEM_P (operands[1]))
+      || (INTVAL (operands[5]) == 5 && !MEM_P (operands[2])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (lt:VI1_AVX2
+	     (match_dup 3)
+	     (match_dup 4))]
+	     UNSPEC_BLENDV))]
+{
+  if (INTVAL (operands[5]) == 1)
+    std::swap (operands[1], operands[2]);
+  operands[3] = gen_lowpart (<MODE>mode, operands[3]);
+})
+
+(define_insn_and_split "*avx2_pcmp<mode>3_5"
+ [(set (match_operand:VI1_AVX2  0 "register_operand")
+	(vec_merge:VI1_AVX2
+	  (match_operand:VI1_AVX2 1 "vector_operand")
+	  (match_operand:VI1_AVX2 2 "vector_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(not:VI1_AVX2 (match_operand:VI1_AVX2 3 "register_operand"))
+	     (match_operand:VI1_AVX2 4 "const0_operand")
+	     (match_operand:SI 5 "const_0_to_7_operand")]
+	     UNSPEC_PCMP)))]
+  "TARGET_AVX512VL && ix86_pre_reload_split ()
+  /* LT or GE 0 */
+  && ((INTVAL (operands[5]) == 1 && !MEM_P (operands[1]))
+      || (INTVAL (operands[5]) == 5 && !MEM_P (operands[2])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (lt:VI1_AVX2
+	     (match_dup 3)
+	     (match_dup 4))]
+	     UNSPEC_BLENDV))]
+{
+  if (INTVAL (operands[5]) == 1)
+    std::swap (operands[1], operands[2]);
+})
+
 (define_expand "<avx512>_eq<mode>3<mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
 	(unspec:<avx512fmaskmode>
@@ -17897,6 +18049,28 @@
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "btver2_decode" "vector,vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*<sse4_1_avx2>_pblendvb_lt_subreg_not"
+  [(set (match_operand:VI1_AVX2 0 "register_operand")
+	(unspec:VI1_AVX2
+	  [(match_operand:VI1_AVX2 2 "vector_operand")
+	   (match_operand:VI1_AVX2 1 "register_operand")
+	   (lt:VI1_AVX2
+	     (subreg:VI1_AVX2
+	       (not (match_operand 3 "register_operand")) 0)
+	     (match_operand:VI1_AVX2 4 "const0_operand"))]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1
+   && GET_MODE_CLASS (GET_MODE (operands[3])) == MODE_VECTOR_INT
+   && GET_MODE_SIZE (GET_MODE (operands[3])) == <MODE_SIZE>
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	 [(match_dup 1) (match_dup 2)
+	  (lt:VI1_AVX2 (match_dup 3) (match_dup 4))] UNSPEC_BLENDV))]
+  "operands[3] = gen_lowpart (<MODE>mode, operands[3]);")
 
 (define_insn "sse4_1_pblendw"
   [(set (match_operand:V8HI 0 "register_operand" "=Yr,*x,x")

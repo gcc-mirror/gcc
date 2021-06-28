@@ -491,6 +491,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = __and_< is_base_of<_Tp, _Up>,
 		    __not_<is_same<__remove_cv<_Tp>, __remove_cv<_Up>>> >;
 
+      // This checks whether p[n] is noexcept, but fails gracefully when
+      // element_type is incomplete. The standard requires a complete type
+      // for unique_ptr<T[], D>, but we try to support it anyway (PR 101236).
+      template<typename _Ptr, typename _Elt>
+	static constexpr auto
+	_S_nothrow_deref(size_t __n)
+	-> decltype(sizeof(_Elt) != 0) // PR c++/101239
+	{ return noexcept(std::declval<_Ptr>()[__n]); }
+
+      template<typename _Ptr, typename _Elt>
+	static constexpr bool
+	_S_nothrow_deref(...)
+	{ return false; }
+
     public:
       using pointer	  = typename __uniq_ptr_impl<_Tp, _Dp>::pointer;
       using element_type  = _Tp;
@@ -655,7 +669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Access an element of owned array.
       typename std::add_lvalue_reference<element_type>::type
       operator[](size_t __i) const
-      noexcept(noexcept(std::declval<pointer>()[std::declval<size_t&>()]))
+      noexcept(_S_nothrow_deref<pointer, element_type>(0))
       {
 	__glibcxx_assert(get() != pointer());
 	return get()[__i];

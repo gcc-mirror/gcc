@@ -22170,12 +22170,10 @@ cp_parser_declarator (cp_parser* parser,
 	cp_parser_parse_tentatively (parser);
 
       /* Parse the dependent declarator.  */
-      declarator = cp_parser_declarator (parser, dcl_kind,
-					 CP_PARSER_FLAGS_NONE,
+      declarator = cp_parser_declarator (parser, dcl_kind, flags,
 					 /*ctor_dtor_or_conv_p=*/NULL,
 					 /*parenthesized_p=*/NULL,
-					 /*member_p=*/false,
-					 friend_p, /*static_p=*/false);
+					 member_p, friend_p, static_p);
 
       /* If we are parsing an abstract-declarator, we must handle the
 	 case where the dependent declarator is absent.  */

@@ -1306,6 +1306,7 @@ lower_cond (simplify *s, vec<simplify *>& simplifiers)
     {
       simplify *ns = new simplify (s->kind, s->id, matchers[i], s->result,
 				   s->for_vec, s->capture_ids);
+      ns->for_subst_vec.safe_splice (s->for_subst_vec);
       simplifiers.safe_push (ns);
     }
 }
@@ -1543,24 +1544,27 @@ static void
 lower (vec<simplify *>& simplifiers, bool gimple)
 {
   auto_vec<simplify *> out_simplifiers;
-  for (unsigned i = 0; i < simplifiers.length (); ++i)
-    lower_opt (simplifiers[i], out_simplifiers);
+  for (auto s: simplifiers)
+    lower_opt (s, out_simplifiers);
 
   simplifiers.truncate (0);
-  for (unsigned i = 0; i < out_simplifiers.length (); ++i)
-    lower_commutative (out_simplifiers[i], simplifiers);
+  for (auto s: out_simplifiers)
+    lower_commutative (s, simplifiers);
 
+  /* Lower for needs to happen before lowering cond
+     to support (for cnd (cond vec_cond)).  This is
+     safe as substitution delay does not happen for
+     cond or vec_cond. */
   out_simplifiers.truncate (0);
-  if (gimple)
-    for (unsigned i = 0; i < simplifiers.length (); ++i)
-      lower_cond (simplifiers[i], out_simplifiers);
-  else
-    out_simplifiers.safe_splice (simplifiers);
-
+  for (auto s: simplifiers)
+    lower_for (s, out_simplifiers);
 
   simplifiers.truncate (0);
-  for (unsigned i = 0; i < out_simplifiers.length (); ++i)
-    lower_for (out_simplifiers[i], simplifiers);
+  if (gimple)
+    for (auto s: out_simplifiers)
+      lower_cond (s, simplifiers);
+  else
+    simplifiers.safe_splice (out_simplifiers);
 }
 
 
