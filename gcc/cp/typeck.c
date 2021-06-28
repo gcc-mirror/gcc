@@ -7081,9 +7081,14 @@ cxx_mark_addressable (tree exp, bool array_ref_p)
 	    && TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
 	    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))))
 	  return true;
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case COMPONENT_REF:
+	if (bitfield_p (x))
+	  error ("attempt to take address of bit-field");
 	/* FALLTHRU */
       case ADDR_EXPR:
-      case COMPONENT_REF:
       case ARRAY_REF:
       case REALPART_EXPR:
       case IMAGPART_EXPR:

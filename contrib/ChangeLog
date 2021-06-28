@@ -1,3 +1,14 @@
+2021-06-23  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Sync.
+	* test_mklog.py: Likewise.
+
+2021-06-23  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Use the new wrapper.
+	* git-commit-mklog.py: New file.
+	* prepare-commit-msg: Support GCC_MKLOG_ARGS.
+
 2021-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

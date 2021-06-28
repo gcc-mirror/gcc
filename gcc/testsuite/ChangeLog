@@ -1,3 +1,85 @@
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101158
+	* gfortran.dg/pr101158.f90: New testcase.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101151
+	* gcc.dg/torture/pr101151.c: New testcase.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101105
+	* gcc.dg/torture/pr101105.c: New testcase.
+
+2021-06-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100672
+	* gcc.dg/torture/pr100672.c: New testcase.
+
+2021-06-24  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93524
+	* gfortran.dg/pr93524.c: New.
+	* gfortran.dg/pr93524.f90: New.
+
+2021-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backported from master:
+	2021-06-23  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/pcrel-opt-inc-di.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-df.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-di.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-hi.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-qi.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-sf.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-si.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-ld-vector.c: Enable -mpcrel-opt to
+	test it.
+	* gcc.target/powerpc/pcrel-opt-st-df.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-di.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-hi.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-qi.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-sf.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-si.c: Enable -mpcrel-opt to test it.
+	* gcc.target/powerpc/pcrel-opt-st-vector.c: Enable -mpcrel-opt to
+	test it.
+
+2021-06-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-minmax-2.c: New test.
+
+2021-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2021-06-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101175
+	* gcc.target/i386/pr101175.c: New test.
+
+2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* c-c++-common/pr100785.c: New test.
+
 2021-06-22  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/100310

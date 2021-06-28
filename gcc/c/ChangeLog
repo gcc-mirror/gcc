@@ -1,3 +1,12 @@
+2021-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/100785
+	* c-typeck.c (c_mark_addressable): Diagnose trying to make
+	bit-fields addressable.
+
 2021-06-17  Martin Sebor  <msebor@redhat.com>
 
 	PR c/100783

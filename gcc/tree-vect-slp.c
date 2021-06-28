@@ -1172,21 +1172,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      continue;
 	    }
 
-	  if (need_same_oprnds)
-	    {
-	      tree other_op1 = (call_stmt
-				? gimple_call_arg (call_stmt, 1)
-				: gimple_assign_rhs2 (stmt));
-	      if (!operand_equal_p (first_op1, other_op1, 0))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Build SLP failed: different shift "
-				     "arguments in %G", stmt);
-		  /* Mismatch.  */
-		  continue;
-		}
-	    }
 	  if (!load_p
 	      && first_stmt_code == BIT_FIELD_REF
 	      && (TREE_OPERAND (gimple_assign_rhs1 (first_stmt_info->stmt), 0)
@@ -1224,6 +1209,22 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 				 "in %G", stmt);
 	      /* Mismatch.  */
 	      continue;
+	    }
+
+	  if (need_same_oprnds)
+	    {
+	      tree other_op1 = (call_stmt
+				? gimple_call_arg (call_stmt, 1)
+				: gimple_assign_rhs2 (stmt));
+	      if (!operand_equal_p (first_op1, other_op1, 0))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: different shift "
+				     "arguments in %G", stmt);
+		  /* Mismatch.  */
+		  continue;
+		}
 	    }
 
 	  if (!types_compatible_p (vectype, *node_vectype))
@@ -3179,11 +3180,25 @@ vect_optimize_slp (vec_info *vinfo)
 
 	  bitmap_set_bit (n_visited, idx);
 
-	  /* We cannot move a permute across a store.  */
-	  if (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))
-	      && DR_IS_WRITE
-		   (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))))
+	  /* We do not handle stores with a permutation.  */
+	  stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
+	  if (STMT_VINFO_DATA_REF (rep)
+	      && DR_IS_WRITE (STMT_VINFO_DATA_REF (rep)))
 	    continue;
+	  /* We cannot move a permute across an operation that is
+	     not independent on lanes.  Note this is an explicit
+	     negative list since that's much shorter than the respective
+	     positive one but it's critical to keep maintaining it.  */
+	  if (is_gimple_call (STMT_VINFO_STMT (rep)))
+	    switch (gimple_call_combined_fn (STMT_VINFO_STMT (rep)))
+	      {
+	      case CFN_COMPLEX_ADD_ROT90:
+	      case CFN_COMPLEX_ADD_ROT270:
+	      case CFN_COMPLEX_MUL:
+	      case CFN_COMPLEX_MUL_CONJ:
+		continue;
+	      default:;
+	      }
 
 	  int perm = -1;
 	  for (graph_edge *succ = slpg->vertices[idx].succ;

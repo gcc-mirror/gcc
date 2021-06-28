@@ -5033,8 +5033,17 @@ c_mark_addressable (tree exp, bool array_ref_p)
 	    && TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
 	    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))))
 	  return true;
-	/* FALLTHRU */
+	x = TREE_OPERAND (x, 0);
+	break;
+
       case COMPONENT_REF:
+	if (DECL_C_BIT_FIELD (TREE_OPERAND (x, 1)))
+	  {
+	    error ("cannot take address of bit-field %qD",
+		   TREE_OPERAND (x, 1));
+	    return false;
+	  }
+	/* FALLTHRU */
       case ADDR_EXPR:
       case ARRAY_REF:
       case REALPART_EXPR:
