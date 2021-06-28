@@ -9942,7 +9942,7 @@
   DONE;
 })
 
-(define_insn "avx512f_sfixupimm<mode><sd_maskz_name><round_saeonly_name>"
+(define_insn "avx512f_sfixupimm<mode><maskz_scalar_name><round_saeonly_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
           (unspec:VF_128
@@ -9951,10 +9951,10 @@
 	     (match_operand:<sseintvecmode> 3 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 	     (match_operand:SI 4 "const_0_to_255_operand")]
 	    UNSPEC_FIXUPIMM)
-	  (match_dup 1)
+	  (match_dup 2)
 	  (const_int 1)))]
    "TARGET_AVX512F"
-   "vfixupimm<ssescalarmodesuffix>\t{%4, <round_saeonly_sd_mask_op5>%3, %2, %0<sd_mask_op5>|%0<sd_mask_op5>, %2, %<iptr>3<round_saeonly_sd_mask_op5>, %4}";
+   "vfixupimm<ssescalarmodesuffix>\t{%4, <round_saeonly_maskz_scalar_op5>%3, %2, %0<maskz_scalar_op5>|%0<maskz_scalar_op5>, %2, %<iptr>3<round_saeonly_maskz_scalar_op5>, %4}";
    [(set_attr "prefix" "evex")
    (set_attr "mode" "<ssescalarmode>")])
 
@@ -9968,7 +9968,7 @@
 		(match_operand:<sseintvecmode> 3 "<round_saeonly_nimm_scalar_predicate>" "<round_saeonly_constraint>")
 		(match_operand:SI 4 "const_0_to_255_operand")]
 	       UNSPEC_FIXUPIMM)
-	    (match_dup 1)
+	    (match_dup 2)
 	    (const_int 1))
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]

@@ -117,6 +117,25 @@
 	 (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))
 ])
 
+(define_subst_attr "maskz_scalar_name" "maskz_scalar" "" "_maskz_1")
+(define_subst_attr "maskz_scalar_op5" "maskz_scalar" "" "%{%6%}%N5")
+
+(define_subst "maskz_scalar"
+  [(set (match_operand:SUBST_V 0)
+	(vec_merge:SUBST_V
+	  (match_operand:SUBST_V 1)
+	  (match_operand:SUBST_V 2)
+	  (const_int 1)))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+	(vec_merge:SUBST_V
+	  (vec_merge:SUBST_V
+	    (match_dup 1)
+	    (match_operand:SUBST_V 3 "const0_operand" "C")
+	    (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
+	  (match_dup 2)
+	  (const_int 1)))])
+
 (define_subst_attr "round_name" "round" "" "_round")
 (define_subst_attr "round_mask_operand2" "mask" "%R2" "%R4")
 (define_subst_attr "round_mask_operand3" "mask" "%R3" "%R5")
@@ -163,6 +182,7 @@
 (define_subst_attr "round_saeonly_mask_operand3" "mask" "%r3" "%r5")
 (define_subst_attr "round_saeonly_mask_operand4" "mask" "%r4" "%r6")
 (define_subst_attr "round_saeonly_mask_scalar_merge_operand4" "mask_scalar_merge" "%r4" "%r5")
+(define_subst_attr "round_saeonly_maskz_scalar_operand5" "maskz_scalar" "%r5" "%r7")
 (define_subst_attr "round_saeonly_sd_mask_operand5" "sd" "%r5" "%r7")
 (define_subst_attr "round_saeonly_op2" "round_saeonly" "" "%r2")
 (define_subst_attr "round_saeonly_op3" "round_saeonly" "" "%r3")
@@ -175,6 +195,7 @@
 (define_subst_attr "round_saeonly_mask_op4" "round_saeonly" "" "<round_saeonly_mask_operand4>")
 (define_subst_attr "round_saeonly_mask_scalar_merge_op4" "round_saeonly" "" "<round_saeonly_mask_scalar_merge_operand4>")
 (define_subst_attr "round_saeonly_sd_mask_op5" "round_saeonly" "" "<round_saeonly_sd_mask_operand5>")
+(define_subst_attr "round_saeonly_maskz_scalar_op5" "round_saeonly" "" "<round_saeonly_maskz_scalar_operand5>")
 (define_subst_attr "round_saeonly_mask_arg3" "round_saeonly" "" ", operands[<mask_expand_op3>]")
 (define_subst_attr "round_saeonly_constraint" "round_saeonly" "vm" "v")
 (define_subst_attr "round_saeonly_constraint2" "round_saeonly" "m" "v")
