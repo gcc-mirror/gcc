@@ -123,6 +123,10 @@
 #define ptr (
 #endif
 
+// This clashes with newlib so don't use it.
+# define __lockable		cannot be used as an identifier
+
+
 // Common template parameter names
 #define OutputIterator		OutputIterator is not a reserved name
 #define InputIterator		InputIterator is not a reserved name
@@ -222,9 +226,9 @@
 #undef y
 #endif
 
-#if ! __has_include(<newlib.h>)
-// newlib's <sys/cdefs.h> defines __lockable as a macro, so we can't use it.
-# define __lockable		cannot be used as an identifier
+#if __has_include(<newlib.h>)
+// newlib's <sys/cdefs.h> defines __lockable as a macro.
+#undef __lockable
 // newlib's <time.h> defines __tzrule_type with these members.
 #undef d
 #undef m
