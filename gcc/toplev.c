@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optinfo-emit-json.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
+#include "ipa-param-manipulation.h"
 #include "dbgcnt.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
@@ -2393,6 +2394,7 @@ toplev::finalize (void)
   ipa_reference_c_finalize ();
   ipa_fnsummary_c_finalize ();
   ipa_modref_c_finalize ();
+  ipa_edge_modifications_finalize ();
 
   cgraph_c_finalize ();
   cgraphunit_c_finalize ();

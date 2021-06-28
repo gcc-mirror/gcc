@@ -1506,8 +1506,6 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
     }
 
   clone_info *callee_info = clone_info::get (e->callee);
-  clone_info *caller_info = clone_info::get (e->caller);
-
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "updating call of %s -> %s: ",
@@ -1515,18 +1513,6 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
       if (callee_info && callee_info->param_adjustments)
 	callee_info->param_adjustments->dump (symtab->dump_file);
-      unsigned performed_len
-	= caller_info ? vec_safe_length (caller_info->performed_splits) : 0;
-      if (performed_len > 0)
-	fprintf (symtab->dump_file, "Performed splits records:\n");
-      for (unsigned i = 0; i < performed_len; i++)
-	{
-	  ipa_param_performed_split *sm
-	    = &(*caller_info->performed_splits)[i];
-	  print_node_brief (symtab->dump_file, "  dummy_decl: ", sm->dummy_decl,
-			    TDF_UID);
-	  fprintf (symtab->dump_file, ", unit_offset: %u\n", sm->unit_offset);
-	}
     }
 
   if (ipa_param_adjustments *padjs
@@ -1541,10 +1527,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 	remove_stmt_from_eh_lp (e->call_stmt);
 
       tree old_fntype = gimple_call_fntype (e->call_stmt);
-      new_stmt = padjs->modify_call (e->call_stmt,
-				     caller_info
-				     ? caller_info->performed_splits : NULL,
-				     e->callee->decl, false);
+      new_stmt = padjs->modify_call (e, false);
       cgraph_node *origin = e->callee;
       while (origin->clone_of)
 	origin = origin->clone_of;
@@ -1564,6 +1547,9 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
     }
   else
     {
+      if (flag_checking
+	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	ipa_verify_edge_has_no_modifications (e);
       new_stmt = e->call_stmt;
       gimple_call_set_fndecl (new_stmt, e->callee->decl);
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);

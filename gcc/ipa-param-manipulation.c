@@ -62,6 +62,80 @@ static const char *ipa_param_op_names[IPA_PARAM_PREFIX_COUNT]
      "IPA_PARAM_OP_NEW",
      "IPA_PARAM_OP_SPLIT"};
 
+/* Structure to hold declarations representing pass-through IPA-SRA splits.  In
+   essence, it tells new index for a combination of original index and
+   offset.  */
+
+struct pass_through_split_map
+{
+  /* Original argument index.  */
+  unsigned base_index;
+  /* Offset of the split part in the original argument.  */
+  unsigned unit_offset;
+  /* Index of the split part in the call statement - where clone
+     materialization put it.  */
+  int new_index;
+};
+
+/* Information about some call statements that needs to be conveyed from clone
+   materialization to edge redirection. */
+
+class ipa_edge_modification_info
+{
+ public:
+  ipa_edge_modification_info ()
+    {}
+
+  /* Mapping of original argument indices to where those arguments sit in the
+     call statement now or to a negative index if they were removed.  */
+  auto_vec<int> index_map;
+  /* Information about ISRA replacements put into the call statement at the
+     clone materialization stages.  */
+  auto_vec<pass_through_split_map> pass_through_map;
+  /* Necessary adjustment to ipa_param_adjustments::m_always_copy_start when
+     redirecting the call.  */
+  int always_copy_delta = 0;
+};
+
+/* Class for storing and retrieving summaries about cal statement
+   modifications.  */
+
+class ipa_edge_modification_sum
+  : public call_summary <ipa_edge_modification_info *>
+{
+ public:
+  ipa_edge_modification_sum (symbol_table *table)
+    : call_summary<ipa_edge_modification_info *> (table)
+  {
+  }
+
+  /* Hook that is called by summary when an edge is duplicated.  */
+
+  virtual void duplicate (cgraph_edge *,
+			  cgraph_edge *,
+			  ipa_edge_modification_info *old_info,
+			  ipa_edge_modification_info *new_info)
+  {
+    new_info->index_map.safe_splice (old_info->index_map);
+    new_info->pass_through_map.safe_splice (old_info->pass_through_map);
+    new_info->always_copy_delta = old_info->always_copy_delta;
+  }
+};
+
+/* Call summary to store information about edges which have had their arguments
+   partially modified already.  */
+
+static ipa_edge_modification_sum *ipa_edge_modifications;
+
+/* Fail compilation if CS has any summary associated with it in
+   ipa_edge_modifications.  */
+
+DEBUG_FUNCTION void
+ipa_verify_edge_has_no_modifications (cgraph_edge *cs)
+{
+  gcc_assert (!ipa_edge_modifications || !ipa_edge_modifications->get (cs));
+}
+
 /* Fill an empty vector ARGS with PARM_DECLs representing formal parameters of
    FNDECL.  The function should not be called during LTO WPA phase except for
    thunks (or functions with bodies streamed in). */
@@ -459,146 +533,45 @@ isra_get_ref_base_and_offset (tree expr, tree *base_p, unsigned *unit_offset_p)
   return true;
 }
 
-/* Return true if EXPR describes a transitive split (i.e. one that happened for
-   both the caller and the callee) as recorded in PERFORMED_SPLITS.  In that
-   case, store index of the respective record in PERFORMED_SPLITS into
-   *SM_IDX_P and the unit offset from all handled components in EXPR into
-   *UNIT_OFFSET_P.  */
-
-static bool
-transitive_split_p (vec<ipa_param_performed_split, va_gc> *performed_splits,
-		    tree expr, unsigned *sm_idx_p, unsigned *unit_offset_p)
-{
-  tree base;
-  if (!isra_get_ref_base_and_offset (expr, &base, unit_offset_p))
-    return false;
-
-  if (TREE_CODE (base) == SSA_NAME)
-    {
-      base = SSA_NAME_VAR (base);
-      if (!base)
-	return false;
-    }
-
-  unsigned len = vec_safe_length (performed_splits);
-  for (unsigned i = 0 ; i < len; i++)
-    {
-      ipa_param_performed_split *sm = &(*performed_splits)[i];
-      if (sm->dummy_decl == base)
-	{
-	  *sm_idx_p = i;
-	  return true;
-	}
-    }
-  return false;
-}
-
-/* Structure to hold declarations representing transitive IPA-SRA splits.  In
-   essence, if we need to pass UNIT_OFFSET of a parameter which originally has
-   number BASE_INDEX, we should pass down REPL.  */
-
-struct transitive_split_map
-{
-  tree repl;
-  unsigned base_index;
-  unsigned unit_offset;
-};
-
-/* If call STMT contains any parameters representing transitive splits as
-   described by PERFORMED_SPLITS, return the number of extra parameters that
-   were addded during clone materialization and fill in INDEX_MAP with adjusted
-   indices of corresponding original parameters and TRANS_MAP with description
-   of all transitive replacement descriptions.  Otherwise return zero. */
-
-static unsigned
-init_transitive_splits (vec<ipa_param_performed_split, va_gc> *performed_splits,
-			gcall *stmt, vec <unsigned> *index_map,
-			auto_vec <transitive_split_map> *trans_map)
-{
-  unsigned phony_arguments = 0;
-  unsigned stmt_idx = 0, base_index = 0;
-  unsigned nargs = gimple_call_num_args (stmt);
-  while (stmt_idx < nargs)
-    {
-      unsigned unit_offset_delta;
-      tree base_arg = gimple_call_arg (stmt, stmt_idx);
-
-      if (phony_arguments > 0)
-	index_map->safe_push (stmt_idx);
-
-      unsigned sm_idx;
-      stmt_idx++;
-      if (transitive_split_p (performed_splits, base_arg, &sm_idx,
-			      &unit_offset_delta))
-	{
-	  if (phony_arguments == 0)
-	    /* We have optimistically avoided constructing index_map do far but
-	       now it is clear it will be necessary, so let's create the easy
-	       bit we skipped until now.  */
-	    for (unsigned k = 0; k < stmt_idx; k++)
-	      index_map->safe_push (k);
-
-	  tree dummy = (*performed_splits)[sm_idx].dummy_decl;
-	  for (unsigned j = sm_idx; j < performed_splits->length (); j++)
-	    {
-	      ipa_param_performed_split *caller_split
-		= &(*performed_splits)[j];
-	      if (caller_split->dummy_decl != dummy)
-		break;
-
-	      tree arg = gimple_call_arg (stmt, stmt_idx);
-	      struct transitive_split_map tsm;
-	      tsm.repl = arg;
-	      tsm.base_index = base_index;
-	      if (caller_split->unit_offset >= unit_offset_delta)
-		{
-		  tsm.unit_offset
-		    = (caller_split->unit_offset - unit_offset_delta);
-		  trans_map->safe_push (tsm);
-		}
-
-	      phony_arguments++;
-	      stmt_idx++;
-	    }
-	}
-      base_index++;
-    }
-  return phony_arguments;
-}
-
-/* Modify actual arguments of a function call in statement STMT, assuming it
-   calls CALLEE_DECL.  CALLER_ADJ must be the description of parameter
-   adjustments of the caller or NULL if there are none.  Return the new
-   statement that replaced the old one.  When invoked, cfun and
-   current_function_decl have to be set to the caller.  */
+/* Modify actual arguments of a function call in statement currently belonging
+   to CS, and make it call CS->callee->decl.  Return the new statement that
+   replaced the old one.  When invoked, cfun and current_function_decl have to
+   be set to the caller.  */
 
 gcall *
-ipa_param_adjustments::modify_call (gcall *stmt,
-				    vec<ipa_param_performed_split,
-				        va_gc> *performed_splits,
-				    tree callee_decl, bool update_references)
+ipa_param_adjustments::modify_call (cgraph_edge *cs,
+				    bool update_references)
 {
+  gcall *stmt = cs->call_stmt;
+  tree callee_decl = cs->callee->decl;
+
+  ipa_edge_modification_info *mod_info
+    = ipa_edge_modifications ? ipa_edge_modifications->get (cs) : NULL;
+  if (mod_info && symtab->dump_file)
+    {
+      fprintf (symtab->dump_file, "Information about pre-exiting "
+	       "modifications.\n  Index map:");
+      unsigned idx_len = mod_info->index_map.length ();
+      for (unsigned i = 0; i < idx_len; i++)
+	fprintf (symtab->dump_file, " %i", mod_info->index_map[i]);
+      fprintf (symtab->dump_file, "\n  Pass-through split map: ");
+      unsigned ptm_len = mod_info->pass_through_map.length ();
+      for (unsigned i = 0; i < ptm_len; i++)
+	fprintf (symtab->dump_file,
+		 " (base_index: %u, offset: %u, new_index: %i)",
+		 mod_info->pass_through_map[i].base_index,
+		 mod_info->pass_through_map[i].unit_offset,
+		 mod_info->pass_through_map[i].new_index);
+      fprintf (symtab->dump_file, "\n  Always-copy delta: %i\n",
+	       mod_info->always_copy_delta);
+    }
+
   unsigned len = vec_safe_length (m_adj_params);
   auto_vec<tree, 16> vargs (len);
-  tree old_decl = gimple_call_fndecl (stmt);
   unsigned old_nargs = gimple_call_num_args (stmt);
+  unsigned orig_nargs = mod_info ? mod_info->index_map.length () : old_nargs;
   auto_vec<bool, 16> kept (old_nargs);
   kept.quick_grow_cleared (old_nargs);
-
-  auto_vec <unsigned, 16> index_map;
-  auto_vec <transitive_split_map> trans_map;
-  bool transitive_remapping = false;
-
-  if (performed_splits)
-    {
-      unsigned removed = init_transitive_splits (performed_splits,
-						 stmt, &index_map, &trans_map);
-      if (removed > 0)
-	{
-	  transitive_remapping = true;
-	  old_nargs -= removed;
-	}
-    }
 
   cgraph_node *current_node = cgraph_node::get (current_function_decl);
   if (update_references)
@@ -612,13 +585,16 @@ ipa_param_adjustments::modify_call (gcall *stmt,
       ipa_adjusted_param *apm = &(*m_adj_params)[i];
       if (apm->op == IPA_PARAM_OP_COPY)
 	{
-	  unsigned index = apm->base_index;
-	  if (index >= old_nargs)
+	  int index = apm->base_index;
+	  if ((unsigned) index >= orig_nargs)
 	    /* Can happen if the original call has argument mismatch,
 	       ignore.  */
 	    continue;
-	  if (transitive_remapping)
-	    index = index_map[apm->base_index];
+	  if (mod_info)
+	    {
+	      index = mod_info->index_map[apm->base_index];
+	      gcc_assert (index >= 0);
+	    }
 
 	  tree arg = gimple_call_arg (stmt, index);
 
@@ -636,14 +612,17 @@ ipa_param_adjustments::modify_call (gcall *stmt,
 	 materialization.  */
       gcc_assert (apm->op == IPA_PARAM_OP_SPLIT);
 
-      /* We have to handle transitive changes differently using the maps we
-	 have created before.  So look into them first.  */
+      /* We have to handle pass-through changes differently using the map
+	 clone materialziation might have left behind.  */
       tree repl = NULL_TREE;
-      for (unsigned j = 0; j < trans_map.length (); j++)
-	if (trans_map[j].base_index == apm->base_index
-	    && trans_map[j].unit_offset == apm->unit_offset)
+      unsigned ptm_len = mod_info ? mod_info->pass_through_map.length () : 0;
+      for (unsigned j = 0; j < ptm_len; j++)
+	if (mod_info->pass_through_map[j].base_index == apm->base_index
+	    && mod_info->pass_through_map[j].unit_offset == apm->unit_offset)
 	  {
-	    repl = trans_map[j].repl;
+	    int repl_idx = mod_info->pass_through_map[j].new_index;
+	    gcc_assert (repl_idx >= 0);
+	    repl = gimple_call_arg (stmt, repl_idx);
 	    break;
 	  }
       if (repl)
@@ -652,12 +631,15 @@ ipa_param_adjustments::modify_call (gcall *stmt,
 	  continue;
 	}
 
-      unsigned index = apm->base_index;
-      if (index >= old_nargs)
+      int index = apm->base_index;
+      if ((unsigned) index >= orig_nargs)
 	/* Can happen if the original call has argument mismatch, ignore.  */
 	continue;
-      if (transitive_remapping)
-	index = index_map[apm->base_index];
+      if (mod_info)
+	{
+	  index = mod_info->index_map[apm->base_index];
+	  gcc_assert (index >= 0);
+	}
       tree base = gimple_call_arg (stmt, index);
 
       /* We create a new parameter out of the value of the old one, we can
@@ -773,8 +755,16 @@ ipa_param_adjustments::modify_call (gcall *stmt,
     }
 
   if (m_always_copy_start >= 0)
-    for (unsigned i = m_always_copy_start; i < old_nargs; i++)
-      vargs.safe_push (gimple_call_arg (stmt, i));
+    {
+      int always_copy_start = m_always_copy_start;
+      if (mod_info)
+	{
+	  always_copy_start += mod_info->always_copy_delta;
+	  gcc_assert (always_copy_start >= 0);
+	}
+      for (unsigned i = always_copy_start; i < old_nargs; i++)
+	vargs.safe_push (gimple_call_arg (stmt, i));
+    }
 
   /* For optimized away parameters, add on the caller side
      before the call
@@ -782,6 +772,7 @@ ipa_param_adjustments::modify_call (gcall *stmt,
      stmts and associate D#X with parm in decl_debug_args_lookup
      vector to say for debug info that if parameter parm had been passed,
      it would have value parm_Y(D).  */
+  tree old_decl = gimple_call_fndecl (stmt);
   if (MAY_HAVE_DEBUG_BIND_STMTS && old_decl && callee_decl)
     {
       vec<tree, va_gc> **debug_args = NULL;
@@ -799,13 +790,17 @@ ipa_param_adjustments::modify_call (gcall *stmt,
 	{
 	  if (!is_gimple_reg (old_parm) || kept[i])
 	    continue;
-	  tree origin = DECL_ORIGIN (old_parm);
 	  tree arg;
-	  if (transitive_remapping)
-	    arg = gimple_call_arg (stmt, index_map[i]);
+	  if (mod_info)
+	    {
+	      if (mod_info->index_map[i] < 0)
+		continue;
+	      arg = gimple_call_arg (stmt, mod_info->index_map[i]);
+	    }
 	  else
 	    arg = gimple_call_arg (stmt, i);
 
+	  tree origin = DECL_ORIGIN (old_parm);
 	  if (!useless_type_conversion_p (TREE_TYPE (origin), TREE_TYPE (arg)))
 	    {
 	      if (!fold_convertible_p (TREE_TYPE (origin), arg))
@@ -909,6 +904,9 @@ ipa_param_adjustments::modify_call (gcall *stmt,
 	gsi_prev (&gsi);
       }
     while (gsi_stmt (gsi) != gsi_stmt (prev_gsi));
+
+  if (mod_info)
+    ipa_edge_modifications->remove (cs);
   return new_stmt;
 }
 
@@ -931,13 +929,11 @@ ipa_param_adjustments::debug ()
   dump (stderr);
 }
 
-/* Register that REPLACEMENT should replace parameter described in APM and
-   optionally as DUMMY to mark transitive splits across calls.  */
+/* Register that REPLACEMENT should replace parameter described in APM.  */
 
 void
 ipa_param_body_adjustments::register_replacement (ipa_adjusted_param *apm,
-						  tree replacement,
-						  tree dummy)
+						  tree replacement)
 {
   gcc_checking_assert (apm->op == IPA_PARAM_OP_SPLIT
 		       || apm->op == IPA_PARAM_OP_NEW);
@@ -945,7 +941,7 @@ ipa_param_body_adjustments::register_replacement (ipa_adjusted_param *apm,
   ipa_param_body_replacement psr;
   psr.base = m_oparms[apm->prev_clone_index];
   psr.repl = replacement;
-  psr.dummy = dummy;
+  psr.dummy = NULL_TREE;
   psr.unit_offset = apm->unit_offset;
   m_replacements.safe_push (psr);
 }
@@ -1007,9 +1003,6 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
   auto_vec<bool, 16> kept;
   kept.reserve_exact (m_oparms.length ());
   kept.quick_grow_cleared (m_oparms.length ());
-  auto_vec<tree, 16> isra_dummy_decls;
-  isra_dummy_decls.reserve_exact (m_oparms.length ());
-  isra_dummy_decls.quick_grow_cleared (m_oparms.length ());
 
   unsigned adj_len = vec_safe_length (m_adj_params);
   m_method2func = ((TREE_CODE (TREE_TYPE (m_fndecl)) == METHOD_TYPE)
@@ -1055,35 +1048,7 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	  if (apm->op == IPA_PARAM_OP_SPLIT)
 	    {
 	      m_split_modifications_p = true;
-
-	      if (m_id)
-		{
-		  tree dummy_decl;
-		  if (!isra_dummy_decls[prev_index])
-		    {
-		      dummy_decl = copy_decl_to_var (m_oparms[prev_index],
-						     m_id);
-		      /* Any attempt to remap this dummy in this particular
-			 instance of clone materialization should yield
-			 itself.  */
-		      insert_decl_map (m_id, dummy_decl, dummy_decl);
-
-		      DECL_CHAIN (dummy_decl) = *vars;
-		      *vars = dummy_decl;
-		      isra_dummy_decls[prev_index] = dummy_decl;
-		    }
-		  else
-		    dummy_decl = isra_dummy_decls[prev_index];
-
-		  register_replacement (apm, new_parm, dummy_decl);
-		  ipa_param_performed_split ps;
-		  ps.dummy_decl = dummy_decl;
-		  ps.unit_offset = apm->unit_offset;
-		  vec_safe_push (clone_info::get_create
-				   (m_id->dst_node)->performed_splits, ps);
-		}
-	      else
-		register_replacement (apm, new_parm);
+	      register_replacement (apm, new_parm);
 	    }
         }
       else
@@ -1110,8 +1075,6 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	  {
 	    if (!m_id->decl_map->get (m_oparms[i]))
 	      {
-		/* TODO: Perhaps at least aggregate-type params could re-use
-		   their isra_dummy_decl here?  */
 		tree var = copy_decl_to_var (m_oparms[i], m_id);
 		insert_decl_map (m_id, m_oparms[i], var);
 		/* Declare this new variable.  */
@@ -1502,220 +1465,329 @@ ipa_param_body_adjustments::modify_assignment (gimple *stmt,
   return any;
 }
 
-/* Data passed to remap_split_decl_to_dummy through walk_tree.  */
+/* Record information about what modifications to call arguments have already
+   been done by clone materialization into a summary describing CS.  The
+   information is stored in NEW_INDEX_MAP, NEW_PT_MAP and NEW_ALWAYS_COPY_DELTA
+   and correspond to equivalent fields in ipa_edge_modification_info.  Return
+   the edge summary.  */
 
-struct simple_tree_swap_info
+static ipa_edge_modification_info *
+record_argument_state_1 (cgraph_edge *cs, const vec<int> &new_index_map,
+			 const vec<pass_through_split_map> &new_pt_map,
+			 int new_always_copy_delta)
+
 {
-  /* Change FROM to TO.  */
-  tree from, to;
-  /* And set DONE to true when doing so.  */
-  bool done;
-};
+  ipa_edge_modification_info *sum = ipa_edge_modifications->get_create (cs);
 
-/* Simple remapper to remap a split parameter to the same expression based on a
-   special dummy decl so that edge redirections can detect transitive splitting
-   and finish them.  */
-
-static tree
-remap_split_decl_to_dummy (tree *tp, int *walk_subtrees, void *data)
-{
-  tree t = *tp;
-
-  if (DECL_P (t) || TREE_CODE (t) == SSA_NAME)
+  unsigned len = sum->pass_through_map.length ();
+  for (unsigned i = 0; i < len; i++)
     {
-      struct simple_tree_swap_info *swapinfo
-	= (struct simple_tree_swap_info *) data;
-      if (t == swapinfo->from
-	  || (TREE_CODE (t) == SSA_NAME
-	      && SSA_NAME_VAR (t) == swapinfo->from))
-	{
-	  *tp = swapinfo->to;
-	  swapinfo->done = true;
-	}
-      *walk_subtrees = 0;
+      unsigned oldnew = sum->pass_through_map[i].new_index;
+      sum->pass_through_map[i].new_index = new_index_map[oldnew];
     }
-  else if (TYPE_P (t))
-      *walk_subtrees = 0;
+
+  len = sum->index_map.length ();
+  if (len > 0)
+    {
+      unsigned nptlen = new_pt_map.length ();
+      for (unsigned j = 0; j < nptlen; j++)
+	{
+	  int inverse = -1;
+	  for (unsigned i = 0; i < len ; i++)
+	    if ((unsigned) sum->index_map[i] == new_pt_map[j].base_index)
+	    {
+	      inverse = i;
+	      break;
+	    }
+	  gcc_assert (inverse >= 0);
+	  pass_through_split_map ptm_item;
+
+	  ptm_item.base_index = inverse;
+	  ptm_item.unit_offset = new_pt_map[j].unit_offset;
+	  ptm_item.new_index = new_pt_map[j].new_index;
+	  sum->pass_through_map.safe_push (ptm_item);
+	}
+
+      for (unsigned i = 0; i < len; i++)
+	{
+	  int idx = sum->index_map[i];
+	  if (idx < 0)
+	    continue;
+	  sum->index_map[i] = new_index_map[idx];
+	}
+    }
   else
-    *walk_subtrees = 1;
-  return NULL_TREE;
+    {
+      sum->pass_through_map.safe_splice (new_pt_map);
+      sum->index_map.safe_splice (new_index_map);
+    }
+  sum->always_copy_delta += new_always_copy_delta;
+  return sum;
 }
 
+/* Record information about what modifications to call arguments have already
+   been done by clone materialization into a summary of an edge describing the
+   call in this clone and all its clones.  NEW_INDEX_MAP, NEW_PT_MAP and
+   NEW_ALWAYS_COPY_DELTA have the same meaning as record_argument_state_1.
+
+   In order to associate the info with the right edge summaries, we need
+   address of the ORIG_STMT in the function from which we are cloning (because
+   the edges have not yet been re-assigned to the new statement that has just
+   been created) and ID, the structure governing function body copying.  */
+
+static void
+record_argument_state (copy_body_data *id, gimple *orig_stmt,
+		       const vec<int> &new_index_map,
+		       const vec<pass_through_split_map> &new_pt_map,
+		       int new_always_copy_delta)
+{
+  if (!ipa_edge_modifications)
+    ipa_edge_modifications = new ipa_edge_modification_sum (symtab);
+
+  struct cgraph_node *this_node = id->dst_node;
+  ipa_edge_modification_info *first_sum = NULL;
+  cgraph_edge *cs = this_node->get_edge (orig_stmt);
+  if (cs)
+    first_sum = record_argument_state_1 (cs, new_index_map, new_pt_map,
+					 new_always_copy_delta);
+  else
+    gcc_assert (this_node->clones);
+
+  if (!this_node->clones)
+    return;
+  for (cgraph_node *subclone = this_node->clones; subclone != this_node;)
+    {
+      cs = subclone->get_edge (orig_stmt);
+      if (cs)
+	{
+	  if (!first_sum)
+	    first_sum = record_argument_state_1 (cs, new_index_map, new_pt_map,
+						 new_always_copy_delta);
+	  else
+	    {
+	      ipa_edge_modification_info *s2
+		= ipa_edge_modifications->get_create (cs);
+	      s2->index_map.truncate (0);
+	      s2->index_map.safe_splice (first_sum->index_map);
+	      s2->pass_through_map.truncate (0);
+	      s2->pass_through_map.safe_splice (first_sum->pass_through_map);
+	      s2->always_copy_delta = first_sum->always_copy_delta;
+	    }
+	}
+      else
+	gcc_assert (subclone->clones);
+
+      if (subclone->clones)
+	subclone = subclone->clones;
+      else if (subclone->next_sibling_clone)
+	subclone = subclone->next_sibling_clone;
+      else
+	{
+	  while (subclone != this_node && !subclone->next_sibling_clone)
+	    subclone = subclone->clone_of;
+	  if (subclone != this_node)
+	    subclone = subclone->next_sibling_clone;
+	}
+    }
+}
 
 /* If the call statement pointed at by STMT_P contains any expressions that
    need to replaced with a different one as noted by ADJUSTMENTS, do so.  f the
    statement needs to be rebuilt, do so.  Return true if any modifications have
-   been performed.
+   been performed.  ORIG_STMT, if not NULL, is the original statement in the
+   function that is being cloned from, which at this point can be used to look
+   up call_graph edges.
 
    If the method is invoked as a part of IPA clone materialization and if any
-   parameter split is transitive, i.e. it applies to the functin that is being
-   modified and also to the callee of the statement, replace the parameter
-   passed to old callee with an equivalent expression based on a dummy decl
-   followed by PARM_DECLs representing the actual replacements.  The actual
-   replacements will be then converted into SSA_NAMEs and then
-   ipa_param_adjustments::modify_call will find the appropriate ones and leave
-   only those in the call.  */
+   parameter split is pass-through, i.e. it applies to the functin that is
+   being modified and also to the callee of the statement, replace the
+   parameter passed to old callee with all of the replacement a callee might
+   possibly want and record the performed argument modifications in
+   ipa_edge_modifications.  Likewise if any argument has already been left out
+   because it is not necessary.  */
 
 bool
-ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p)
+ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p,
+					      gimple *orig_stmt)
 {
-  gcall *stmt = *stmt_p;
   auto_vec <unsigned, 4> pass_through_args;
   auto_vec <unsigned, 4> pass_through_pbr_indices;
+  auto_vec <HOST_WIDE_INT, 4> pass_through_offsets;
+  gcall *stmt = *stmt_p;
+  unsigned nargs = gimple_call_num_args (stmt);
+  bool recreate = false;
 
-  if (m_split_modifications_p && m_id)
+  for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
-      for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
+      tree t = gimple_call_arg (stmt, i);
+      gcc_assert (TREE_CODE (t) != BIT_FIELD_REF
+		  && TREE_CODE (t) != IMAGPART_EXPR
+		  && TREE_CODE (t) != REALPART_EXPR);
+
+      /* The follow-up patch will check whether t needs to be removed, that's
+	 why this condition is in the loop.  */
+
+      if (!m_split_modifications_p)
+	continue;
+
+      tree base;
+      unsigned agg_arg_offset;
+      if (!isra_get_ref_base_and_offset (t, &base, &agg_arg_offset))
+	continue;
+
+      bool by_ref = false;
+      if (TREE_CODE (base) == SSA_NAME)
 	{
-	  tree t = gimple_call_arg (stmt, i);
-	  gcc_assert (TREE_CODE (t) != BIT_FIELD_REF
-		      && TREE_CODE (t) != IMAGPART_EXPR
-		      && TREE_CODE (t) != REALPART_EXPR);
-
-	  tree base;
-	  unsigned unit_offset;
-	  if (!isra_get_ref_base_and_offset (t, &base, &unit_offset))
+	  if (!SSA_NAME_IS_DEFAULT_DEF (base))
 	    continue;
+	  base = SSA_NAME_VAR (base);
+	  gcc_checking_assert (base);
+	  by_ref = true;
+	}
+      if (TREE_CODE (base) != PARM_DECL)
+	continue;
 
-	  bool by_ref = false;
-	  if (TREE_CODE (base) == SSA_NAME)
+      bool base_among_replacements = false;
+      unsigned j, repl_list_len = m_replacements.length ();
+      for (j = 0; j < repl_list_len; j++)
+	{
+	  ipa_param_body_replacement *pbr = &m_replacements[j];
+	  if (pbr->base == base)
 	    {
-	      if (!SSA_NAME_IS_DEFAULT_DEF (base))
-		continue;
-	      base = SSA_NAME_VAR (base);
-	      gcc_checking_assert (base);
-	      by_ref = true;
+	      base_among_replacements = true;
+	      break;
 	    }
-	  if (TREE_CODE (base) != PARM_DECL)
-	    continue;
+	}
+      if (!base_among_replacements)
+	continue;
 
-	  bool base_among_replacements = false;
-	  unsigned j, repl_list_len = m_replacements.length ();
-	  for (j = 0; j < repl_list_len; j++)
+      /* We still have to distinguish between an end-use that we have to
+	 transform now and a pass-through, which happens in the following
+	 two cases.  */
+
+      /* TODO: After we adjust ptr_parm_has_nonarg_uses to also consider
+	 &MEM_REF[ssa_name + offset], we will also have to detect that case
+	 here.    */
+
+      if (TREE_CODE (t) == SSA_NAME
+	  && SSA_NAME_IS_DEFAULT_DEF (t)
+	  && SSA_NAME_VAR (t)
+	  && TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL)
+	{
+	  /* This must be a by_reference pass-through.  */
+	  recreate = true;
+	  gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
+	  pass_through_args.safe_push (i);
+	  pass_through_pbr_indices.safe_push (j);
+	  pass_through_offsets.safe_push (agg_arg_offset);
+	}
+      else if (!by_ref && AGGREGATE_TYPE_P (TREE_TYPE (t)))
+	{
+	  /* Currently IPA-SRA guarantees the aggregate access type
+	     exactly matches in this case.  So if it does not match, it is
+	     a pass-through argument that will be sorted out at edge
+	     redirection time.  */
+	  ipa_param_body_replacement *pbr
+	    = lookup_replacement_1 (base, agg_arg_offset);
+
+	  if (!pbr
+	      || (TYPE_MAIN_VARIANT (TREE_TYPE (t))
+		  != TYPE_MAIN_VARIANT (TREE_TYPE (pbr->repl))))
 	    {
-	      ipa_param_body_replacement *pbr = &m_replacements[j];
-	      if (pbr->base == base)
-		{
-		  base_among_replacements = true;
-		  break;
-		}
-	    }
-	  if (!base_among_replacements)
-	    continue;
-
-	  /* We still have to distinguish between an end-use that we have to
-	     transform now and a pass-through, which happens in the following
-	     two cases.  */
-
-	  /* TODO: After we adjust ptr_parm_has_nonarg_uses to also consider
-	     &MEM_REF[ssa_name + offset], we will also have to detect that case
-	     here.    */
-
-	  if (TREE_CODE (t) == SSA_NAME
-	      && SSA_NAME_IS_DEFAULT_DEF (t)
-	      && SSA_NAME_VAR (t)
-	      && TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL)
-	    {
-	      /* This must be a by_reference pass-through.  */
-	      gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
+	      recreate = true;
 	      pass_through_args.safe_push (i);
 	      pass_through_pbr_indices.safe_push (j);
-	    }
-	  else if (!by_ref && AGGREGATE_TYPE_P (TREE_TYPE (t)))
-	    {
-	      /* Currently IPA-SRA guarantees the aggregate access type
-		 exactly matches in this case.  So if it does not match, it is
-		 a pass-through argument that will be sorted out at edge
-		 redirection time.  */
-	      ipa_param_body_replacement *pbr
-		= lookup_replacement_1 (base, unit_offset);
-
-	      if (!pbr
-		  || (TYPE_MAIN_VARIANT (TREE_TYPE (t))
-		      != TYPE_MAIN_VARIANT (TREE_TYPE (pbr->repl))))
-		{
-		  pass_through_args.safe_push (i);
-		  pass_through_pbr_indices.safe_push (j);
-		}
+	      pass_through_offsets.safe_push (agg_arg_offset);
 	    }
 	}
     }
 
-  unsigned nargs = gimple_call_num_args (stmt);
-  if (!pass_through_args.is_empty ())
+  if (!recreate)
     {
-      auto_vec<tree, 16> vargs;
-      unsigned pt_idx = 0;
+      /* No need to rebuild the statement, let's just modify arguments
+	 and the LHS if/as appropriate.  */
+      bool modified = false;
       for (unsigned i = 0; i < nargs; i++)
 	{
-	  if (pt_idx < pass_through_args.length ()
-	      && i == pass_through_args[pt_idx])
-	    {
-	      unsigned j = pass_through_pbr_indices[pt_idx];
-	      pt_idx++;
-	      tree base = m_replacements[j].base;
-
-	      /* Map base will get mapped to the special transitive-isra marker
-		 dummy decl. */
-	      struct simple_tree_swap_info swapinfo;
-	      swapinfo.from = base;
-	      swapinfo.to = m_replacements[j].dummy;
-	      swapinfo.done = false;
-	      tree arg = gimple_call_arg (stmt, i);
-	      walk_tree (&arg, remap_split_decl_to_dummy, &swapinfo, NULL);
-	      gcc_assert (swapinfo.done);
-	      vargs.safe_push (arg);
-	      /* Now let's push all replacements pertaining to this parameter
-		 so that all gimple register ones get correct SSA_NAMES.  Edge
-		 redirection will weed out the dummy argument as well as all
-		 unused replacements later.  */
-	      unsigned int repl_list_len = m_replacements.length ();
-	      for (; j < repl_list_len; j++)
-		{
-		  if (m_replacements[j].base != base)
-		    break;
-		  vargs.safe_push (m_replacements[j].repl);
-		}
-	    }
-	  else
-	    {
-	      tree t = gimple_call_arg (stmt, i);
-	      modify_expression (&t, true);
-	      vargs.safe_push (t);
-	    }
+	  tree *t = gimple_call_arg_ptr (stmt, i);
+	  modified |= modify_expression (t, true);
 	}
-      gcall *new_stmt = gimple_build_call_vec (gimple_call_fn (stmt), vargs);
-      if (gimple_has_location (stmt))
-	gimple_set_location (new_stmt, gimple_location (stmt));
-      gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
-      gimple_call_copy_flags (new_stmt, stmt);
-      if (tree lhs = gimple_call_lhs (stmt))
+      if (gimple_call_lhs (stmt))
 	{
-	  modify_expression (&lhs, false);
-	  /* Avoid adjusting SSA_NAME_DEF_STMT of a SSA lhs, SSA names
-	     have not yet been remapped.  */
-	  *gimple_call_lhs_ptr (new_stmt) = lhs;
+	  tree *t = gimple_call_lhs_ptr (stmt);
+	  modified |= modify_expression (t, false);
 	}
-      *stmt_p = new_stmt;
-      return true;
+      return modified;
     }
 
-  /* Otherwise, no need to rebuild the statement, let's just modify arguments
-     and the LHS if/as appropriate.  */
-  bool modified = false;
+  auto_vec<int, 16> index_map;
+  auto_vec<pass_through_split_map, 4> pass_through_map;
+  auto_vec<tree, 16> vargs;
+  int always_copy_delta = 0;
+  unsigned pt_idx = 0;
+  int new_arg_idx = 0;
   for (unsigned i = 0; i < nargs; i++)
     {
-      tree *t = gimple_call_arg_ptr (stmt, i);
-      modified |= modify_expression (t, true);
+      if (pt_idx < pass_through_args.length ()
+	  && i == pass_through_args[pt_idx])
+	{
+	  unsigned j = pass_through_pbr_indices[pt_idx];
+	  unsigned agg_arg_offset = pass_through_offsets[pt_idx];
+	  pt_idx++;
+	  always_copy_delta--;
+	  tree base = m_replacements[j].base;
+
+	  /* In order to be put into SSA form, we have to push all replacements
+	     pertaining to this parameter as parameters to the call statement.
+	     Edge redirection will need to use edge summary to weed out the
+	     unnecessary ones.  */
+	  unsigned repl_list_len = m_replacements.length ();
+	  for (; j < repl_list_len; j++)
+	    {
+	      if (m_replacements[j].base != base)
+		break;
+	      if (m_replacements[j].unit_offset < agg_arg_offset)
+		continue;
+	      pass_through_split_map pt_map;
+	      pt_map.base_index = i;
+	      pt_map.unit_offset
+		= m_replacements[j].unit_offset - agg_arg_offset;
+	      pt_map.new_index = new_arg_idx;
+	      pass_through_map.safe_push (pt_map);
+	      vargs.safe_push (m_replacements[j].repl);
+	      new_arg_idx++;
+	      always_copy_delta++;
+	    }
+	  index_map.safe_push (-1);
+	}
+      else
+	{
+	  tree t = gimple_call_arg (stmt, i);
+	  modify_expression (&t, true);
+	  vargs.safe_push (t);
+	  index_map.safe_push (new_arg_idx);
+	  new_arg_idx++;
+	}
     }
 
-  if (gimple_call_lhs (stmt))
+  gcall *new_stmt = gimple_build_call_vec (gimple_call_fn (stmt), vargs);
+  if (gimple_has_location (stmt))
+    gimple_set_location (new_stmt, gimple_location (stmt));
+  gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
+  gimple_call_copy_flags (new_stmt, stmt);
+  if (tree lhs = gimple_call_lhs (stmt))
     {
-      tree *t = gimple_call_lhs_ptr (stmt);
-      modified |= modify_expression (t, false);
+      modify_expression (&lhs, false);
+      /* Avoid adjusting SSA_NAME_DEF_STMT of a SSA lhs, SSA names
+	 have not yet been remapped.  */
+      *gimple_call_lhs_ptr (new_stmt) = lhs;
     }
+  *stmt_p = new_stmt;
 
-  return modified;
+  if (orig_stmt)
+    record_argument_state (m_id, orig_stmt, index_map, pass_through_map,
+			   always_copy_delta);
+  return true;
 }
 
 /* If the statement STMT contains any expressions that need to replaced with a
@@ -1726,7 +1798,8 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p)
 
 bool
 ipa_param_body_adjustments::modify_gimple_stmt (gimple **stmt,
-						gimple_seq *extra_stmts)
+						gimple_seq *extra_stmts,
+						gimple *orig_stmt)
 {
   bool modified = false;
   tree *t;
@@ -1746,7 +1819,7 @@ ipa_param_body_adjustments::modify_gimple_stmt (gimple **stmt,
       break;
 
     case GIMPLE_CALL:
-      modified |= modify_call_stmt ((gcall **) stmt);
+      modified |= modify_call_stmt ((gcall **) stmt, orig_stmt);
       break;
 
     case GIMPLE_ASM:
@@ -1803,7 +1876,7 @@ ipa_param_body_adjustments::modify_cfun_body ()
 	  gimple *stmt = gsi_stmt (gsi);
 	  gimple *stmt_copy = stmt;
 	  gimple_seq extra_stmts = NULL;
-	  bool modified = modify_gimple_stmt (&stmt, &extra_stmts);
+	  bool modified = modify_gimple_stmt (&stmt, &extra_stmts, NULL);
 	  if (stmt != stmt_copy)
 	    {
 	      gcc_checking_assert (modified);
@@ -1951,4 +2024,18 @@ ipa_param_body_adjustments::perform_cfun_body_modifications ()
 
   return cfg_changed;
 }
+
+
+/* Deallocate summaries which otherwise stay alive until the end of
+   compilation.  */
+
+void
+ipa_edge_modifications_finalize ()
+{
+  if (!ipa_edge_modifications)
+    return;
+  delete ipa_edge_modifications;
+  ipa_edge_modifications = NULL;
+}
+
 
