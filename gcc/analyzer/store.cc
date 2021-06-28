@@ -241,12 +241,18 @@ binding_key::cmp (const binding_key *k1, const binding_key *k2)
 void
 bit_range::dump_to_pp (pretty_printer *pp) const
 {
-  pp_string (pp, "start: ");
-  pp_wide_int (pp, m_start_bit_offset, SIGNED);
-  pp_string (pp, ", size: ");
-  pp_wide_int (pp, m_size_in_bits, SIGNED);
-  pp_string (pp, ", next: ");
-  pp_wide_int (pp, get_next_bit_offset (), SIGNED);
+  byte_range bytes (0, 0);
+  if (as_byte_range (&bytes))
+    bytes.dump_to_pp (pp);
+  else
+    {
+      pp_string (pp, "start: ");
+      pp_wide_int (pp, m_start_bit_offset, SIGNED);
+      pp_string (pp, ", size: ");
+      pp_wide_int (pp, m_size_in_bits, SIGNED);
+      pp_string (pp, ", next: ");
+      pp_wide_int (pp, get_next_bit_offset (), SIGNED);
+    }
 }
 
 /* Dump this object to stderr.  */
@@ -327,6 +333,42 @@ bit_range::from_mask (unsigned HOST_WIDE_INT mask, bit_range *out)
 
   *out = bit_range (first_set_iter_bit_idx, num_set_bits);
   return true;
+}
+
+/* Attempt to convert this bit_range to a byte_range.
+   Return true if it is possible, writing the result to *OUT.
+   Otherwise return false.  */
+
+bool
+bit_range::as_byte_range (byte_range *out) const
+{
+  if (m_start_bit_offset % BITS_PER_UNIT == 0
+      && m_size_in_bits % BITS_PER_UNIT == 0)
+    {
+      out->m_start_byte_offset = m_start_bit_offset / BITS_PER_UNIT;
+      out->m_size_in_bytes = m_size_in_bits / BITS_PER_UNIT;
+      return true;
+    }
+  return false;
+}
+
+/* Dump this object to PP.  */
+
+void
+byte_range::dump_to_pp (pretty_printer *pp) const
+{
+  if (m_size_in_bytes == 1)
+    {
+      pp_string (pp, "byte ");
+      pp_wide_int (pp, m_start_byte_offset, SIGNED);
+    }
+  else
+    {
+      pp_string (pp, "bytes ");
+      pp_wide_int (pp, m_start_byte_offset, SIGNED);
+      pp_string (pp, "-");
+      pp_wide_int (pp, get_last_byte_offset (), SIGNED);
+    }
 }
 
 /* class concrete_binding : public binding_key.  */
