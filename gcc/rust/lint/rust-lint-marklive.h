@@ -201,12 +201,19 @@ public:
       }
   }
 
+  void visit (HIR::StructExprStruct &stct) override
+  {
+    stct.get_struct_name ().accept_vis (*this);
+  }
+
   void visit (HIR::StructExprStructFields &stct) override
   {
     stct.iterate ([&] (HIR::StructExprField *field) -> bool {
       field->accept_vis (*this);
       return true;
     });
+
+    stct.get_struct_name ().accept_vis (*this);
     if (stct.has_struct_base ())
       {
 	stct.struct_base->base_struct.get ()->accept_vis (*this);

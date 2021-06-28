@@ -46,20 +46,34 @@ public:
   void visit (HIR::Function &function) override
   {
     HirId hirId = function.get_mappings ().get_hirid ();
-    if (live_symbols.find (hirId) == live_symbols.end ())
-      {
-	rust_warning_at (function.get_locus (), 0,
-			 "function is never used: %<%s%>",
-			 function.get_function_name ().c_str ());
-	return;
-      }
+    warning (hirId, function.get_locus (), "function",
+	     function.get_function_name (), "used");
+  }
+
+  void visit (HIR::StructStruct &stct) override
+  {
+    HirId hirId = stct.get_mappings ().get_hirid ();
+    warning (hirId, stct.get_locus (), "struct", stct.get_identifier (),
+	     "constructed");
   }
 
 private:
   std::set<HirId> live_symbols;
-  // std::set<HirId> dead_codes;
+  Resolver::Resolver *resolver;
 
-  ScanDeadcode (std::set<HirId> &live_symbols) : live_symbols (live_symbols){};
+  ScanDeadcode (std::set<HirId> &live_symbols)
+    : live_symbols (live_symbols), resolver (Resolver::Resolver::get ()){};
+
+  void warning (HirId hirId, Location loc, const std::string &span,
+		const std::string &name, const std::string &participle) const
+  {
+    if (live_symbols.find (hirId) == live_symbols.end ())
+      {
+	rust_warning_at (loc, 0, "%s is never %s: %<%s%>", span.c_str (),
+			 participle.c_str (), name.c_str ());
+	return;
+      }
+  }
 };
 
 } // namespace Analysis
