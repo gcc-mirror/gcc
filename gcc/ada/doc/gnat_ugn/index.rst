@@ -40,12 +40,12 @@ GNAT User's Guide for Native Platforms
    :maxdepth: 3
    :numbered:
 
-   gnat_ugn/about_this_guide
-   gnat_ugn/getting_started_with_gnat
-   gnat_ugn/the_gnat_compilation_model
-   gnat_ugn/building_executable_programs_with_gnat
-   gnat_ugn/gnat_utility_programs
-   gnat_ugn/gnat_and_program_execution
+   about_this_guide
+   getting_started_with_gnat
+   the_gnat_compilation_model
+   building_executable_programs_with_gnat
+   gnat_utility_programs
+   gnat_and_program_execution
 
 .. raw:: latex
 
@@ -54,10 +54,10 @@ GNAT User's Guide for Native Platforms
 .. toctree::
    :maxdepth: 3
 
-   A. Platform-Specific Information <gnat_ugn/platform_specific_information>
-   B. Example of Binder Output <gnat_ugn/example_of_binder_output>
-   C. Elaboration Order Handling in GNAT <gnat_ugn/elaboration_order_handling_in_gnat>
-   D. Inline Assembler <gnat_ugn/inline_assembler>
-   E. GNU Free Documentation License <share/gnu_free_documentation_license>
+   A. Platform-Specific Information <platform_specific_information>
+   B. Example of Binder Output <example_of_binder_output>
+   C. Elaboration Order Handling in GNAT <elaboration_order_handling_in_gnat>
+   D. Inline Assembler <inline_assembler>
+   E. GNU Free Documentation License <gnu_free_documentation_license>
 
 

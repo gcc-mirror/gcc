@@ -808,32 +808,24 @@ ada.tags: force
 
 # Generate documentation.
 
-doc/gnat_ugn.info: ada/gnat_ugn.texi \
-   $(gcc_docdir)/include/fdl.texi $(gcc_docdir)/include/gcc-common.texi	\
-   gcc-vers.texi
-	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(gcc_docdir)/include \
-            -I$(srcdir)/ada -o $@ $<; \
+doc/gnat_ugn/info/texinfo/gnat_ugn.info: $(SPHINX_FILES)
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/info; \
 	else true; fi
 
-doc/gnat_rm.info: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
-   $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
-	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(gcc_docdir)/include \
-            -I$(srcdir)/ada -o $@ $<; \
+doc/gnat_rm/info/texinfo/gnat_rm.info: $(SPHINX_FILES)
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/info; \
 	else true; fi
 
-doc/gnat-style.info: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi	\
-   $(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
-	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(gcc_docdir)/include \
-            -I$(srcdir)/ada -o $@ $<; \
+doc/gnat-style/info/texinfo/gnat-style.info: $(SPHINX_FILES)
+	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/info; \
 	else true; fi
 
-ADA_INFOFILES = doc/gnat_ugn.info doc/gnat_rm.info doc/gnat-style.info
+ADA_INFOFILES = doc/gnat_ugn/info/texinfo/gnat_ugn.info \
+		doc/gnat_rm/info/texinfo/gnat_rm.info \
+		doc/gnat-style/info/texinfo/gnat-style.info
 
 ada.info: $(ADA_INFOFILES)
 
@@ -844,25 +836,32 @@ ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn.info \
 	$(DESTDIR)$(infodir)/gnat_rm.info \
 	$(DESTDIR)$(infodir)/gnat-style.info
 
-ADA_DVIFILES = doc/gnat_ugn.dvi \
-               doc/gnat_rm.dvi doc/gnat-style.dvi
+$(DESTDIR)$(infodir)/gnat_ugn.info: doc/gnat_ugn/info/texinfo/gnat_ugn.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-ada.dvi: $(ADA_DVIFILES)
+$(DESTDIR)$(infodir)/gnat_rm.info: doc/gnat_rm/info/texinfo/gnat_rm.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-ada.install-dvi: $(ADA_DVIFILES)
-	@$(NORMAL_INSTALL)
-	test -z "$(dvidir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
-	@list='$(ADA_DVIFILES)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(dvi__strip_dir) \
-	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
-	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
-	done
+$(DESTDIR)$(infodir)/gnat-style.info: doc/gnat-style/info/texinfo/gnat-style.info installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
 
-ADA_PDFFILES = doc/gnat_ugn.pdf \
-               doc/gnat_rm.pdf doc/gnat-style.pdf
+ADA_PDFFILES = doc/gnat_ugn/pdf/latex/gnat_ugn.pdf\
+	       doc/gnat_rm/pdf/latex/gnat_rm.pdf \
+	       doc/gnat-style/pdf/latex/gnat-style.pdf
 
 ada.pdf: $(ADA_PDFFILES)
+
+doc/gnat_ugn/pdf/latex/gnat_ugn.pdf: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/pdf
+
+doc/gnat_rm/pdf/latex/gnat_rm.pdf: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/pdf
+
+doc/gnat-style/pdf/latex/gnat-style.pdf: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/pdf
 
 ada.install-pdf: $(ADA_PDFFILES)
 	@$(NORMAL_INSTALL)
@@ -874,33 +873,18 @@ ada.install-pdf: $(ADA_PDFFILES)
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
-ada.html:
+ada.html: doc/gnat_ugn/html/html/index.html doc/gnat_rm/html/html/index.html doc/gnat-style/html/html/index.html
+
+doc/gnat_ugn/html/html/index.html: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_ugn BUILDDIR=$(objdir)/doc/gnat_ugn/html
+
+doc/gnat_rm/html/html/index.html: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat_rm BUILDDIR=$(objdir)/doc/gnat_rm/html
+
+doc/gnat-style/html/html/index.html: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/ada/doc/gnat-style BUILDDIR=$(objdir)/doc/gnat-style/html
 
 ada.install-html:
-
-doc/gnat_ugn.dvi: ada/gnat_ugn.texi \
-	$(gcc_docdir)/include/fdl.texi	\
-	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
-	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
-
-doc/gnat_rm.dvi: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
-	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
-	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
-
-doc/gnat-style.dvi: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
-	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
-
-doc/gnat_ugn.pdf: ada/gnat_ugn.texi \
-	$(gcc_docdir)/include/fdl.texi	\
-	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
-	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
-
-doc/gnat_rm.pdf: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
-	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
-	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
-
-doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
-	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
 
 # Install hooks:
 # gnat1 is installed elsewhere as part of $(COMPILERS).
