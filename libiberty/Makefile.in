@@ -21,6 +21,10 @@
 
 libiberty_topdir = @libiberty_topdir@
 srcdir = @srcdir@
+abs_srcdir = @abs_srcdir@
+abs_docdir = @abs_srcdir@/doc
+abs_top_builddir = @abs_top_builddir@
+abs_doc_builddir = @abs_top_builddir@/doc
 
 prefix = @prefix@
 
@@ -57,7 +61,6 @@ CC = @CC@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
 RANLIB = @RANLIB@
-MAKEINFO = @MAKEINFO@
 PERL = @PERL@
 
 PICFLAG = @PICFLAG@
@@ -274,7 +277,7 @@ $(TESTLIB): $(REQUIRED_OFILES) $(CONFIGURED_OFILES)
 	  $(REQUIRED_OFILES) $(CONFIGURED_OFILES)
 	$(RANLIB) $(TESTLIB)
 
-info: libiberty.info info-subdir
+info: doc/texinfo/libiberty.info info-subdir
 install-info: install-info-subdir
 clean-info: clean-info-subdir
 
@@ -296,7 +299,7 @@ install-dvi: $(LIBIBERTY_DVIFILES)
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/$$f"; \
 	done
 
-LIBIBERTY_PDFFILES = libiberty.pdf
+LIBIBERTY_PDFFILES = doc/pdf/latex/libiberty.pdf
 
 pdf: $(LIBIBERTY_PDFFILES) pdf-subdir
 
@@ -315,7 +318,7 @@ install-pdf: $(LIBIBERTY_PDFFILES)
 	done
 
 # html, install-html targets
-HTMLS = libiberty.html
+HTMLS = doc/html/html/index.html
 
 html: $(HTMLS)
 
@@ -345,34 +348,24 @@ install-html-am: $(HTMLS)
 	  fi; \
 	done
 
-TEXISRC = \
-	$(srcdir)/libiberty.texi \
-	$(srcdir)/copying-lib.texi \
-	$(srcdir)/obstacks.texi \
-	$(srcdir)/functions.texi
+RST_FILES:=$(shell find $(srcdir) -name *.rst)
+SPHINX_CONFIG_FILES:=$(srcdir)/doc/conf.py $(srcdir)/../doc/baseconf.py
+SPHINX_FILES:=$(RST_FILES) $(SPHINX_CONFIG_FILES)
 
-# Additional files that have texi snippets that need to be collected
-# and sorted.  Some are here because the sources are imported from
-# elsewhere.  Others represent headers in ../include.
-TEXIFILES = fnmatch.txh pexecute.txh simple-object.txh
+doc/texinfo/libiberty.info: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc info SOURCEDIR=$(abs_docdir) BUILDDIR=$(abs_doc_builddir)/info
 
-libiberty.info : $(srcdir)/libiberty.texi $(TEXISRC)
-	$(MAKEINFO) -I$(srcdir) $(srcdir)/libiberty.texi
+doc/pdf/latex/libiberty.pdf: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_docdir) BUILDDIR=$(abs_doc_builddir)/pdf
 
-libiberty.dvi : $(srcdir)/libiberty.texi $(TEXISRC)
-	texi2dvi $(srcdir)/libiberty.texi
-
-libiberty.pdf : $(srcdir)/libiberty.texi $(TEXISRC)
-	texi2pdf $(srcdir)/libiberty.texi
-
-libiberty.html : $(srcdir)/libiberty.texi $(TEXISRC)
-	$(MAKEINFO) --no-split --html -I$(srcdir) -o $@ $<
+doc/html/html/index.html: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_docdir) BUILDDIR=$(abs_doc_builddir)/html
 
 @MAINT@$(srcdir)/functions.texi : stamp-functions
 @MAINT@	@true
 
-@MAINT@stamp-functions : $(CFILES:%=$(srcdir)/%) $(TEXIFILES:%=$(srcdir)/%) $(srcdir)/gather-docs Makefile
-@MAINT@@HAVE_PERL@	$(PERL) $(srcdir)/gather-docs $(srcdir) $(srcdir)/functions.texi $(CFILES) $(TEXIFILES)
+@MAINT@stamp-functions : $(CFILES:%=$(srcdir)/%) $(srcdir)/gather-docs Makefile
+@MAINT@@HAVE_PERL@	$(PERL) $(srcdir)/gather-docs $(srcdir)
 @MAINT@	echo stamp > stamp-functions
 
 INSTALL_DEST = @INSTALL_DEST@

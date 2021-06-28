@@ -273,45 +273,12 @@ AM_V_DVIPS = $(am__v_DVIPS_@AM_V@)
 am__v_DVIPS_ = $(am__v_DVIPS_@AM_DEFAULT_V@)
 am__v_DVIPS_0 = @echo "  DVIPS   " $@;
 am__v_DVIPS_1 = 
-AM_V_MAKEINFO = $(am__v_MAKEINFO_@AM_V@)
-am__v_MAKEINFO_ = $(am__v_MAKEINFO_@AM_DEFAULT_V@)
-am__v_MAKEINFO_0 = @echo "  MAKEINFO" $@;
-am__v_MAKEINFO_1 = 
-AM_V_INFOHTML = $(am__v_INFOHTML_@AM_V@)
-am__v_INFOHTML_ = $(am__v_INFOHTML_@AM_DEFAULT_V@)
-am__v_INFOHTML_0 = @echo "  INFOHTML" $@;
-am__v_INFOHTML_1 = 
-AM_V_TEXI2DVI = $(am__v_TEXI2DVI_@AM_V@)
-am__v_TEXI2DVI_ = $(am__v_TEXI2DVI_@AM_DEFAULT_V@)
-am__v_TEXI2DVI_0 = @echo "  TEXI2DVI" $@;
-am__v_TEXI2DVI_1 = 
-AM_V_TEXI2PDF = $(am__v_TEXI2PDF_@AM_V@)
-am__v_TEXI2PDF_ = $(am__v_TEXI2PDF_@AM_DEFAULT_V@)
-am__v_TEXI2PDF_0 = @echo "  TEXI2PDF" $@;
-am__v_TEXI2PDF_1 = 
-AM_V_texinfo = $(am__v_texinfo_@AM_V@)
-am__v_texinfo_ = $(am__v_texinfo_@AM_DEFAULT_V@)
-am__v_texinfo_0 = -q
-am__v_texinfo_1 = 
-AM_V_texidevnull = $(am__v_texidevnull_@AM_V@)
-am__v_texidevnull_ = $(am__v_texidevnull_@AM_DEFAULT_V@)
-am__v_texidevnull_0 = > /dev/null
-am__v_texidevnull_1 = 
-INFO_DEPS = libgomp.info
-am__TEXINFO_TEX_DIR = $(srcdir)/../gcc/doc/include
-DVIS = libgomp.dvi
-PDFS = libgomp.pdf
-PSS = libgomp.ps
-HTMLS = libgomp.html
-TEXINFOS = libgomp.texi
-TEXI2DVI = texi2dvi
-TEXI2PDF = $(TEXI2DVI) --pdf --batch
-MAKEINFOHTML = $(MAKEINFO) --html
-AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS)
-DVIPS = dvips
+INFO_DEPS = doc/info/texinfo/libgomp.info
+PDFS = doc/pdf/latex/libgomp.pdf
+HTMLS = doc/html/html/index.html
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
-	ctags-recursive dvi-recursive html-recursive info-recursive \
-	install-data-recursive install-dvi-recursive \
+	ctags-recursive html-recursive info-recursive \
+	install-data-recursive \
 	install-exec-recursive install-html-recursive \
 	install-info-recursive install-pdf-recursive \
 	install-ps-recursive install-recursive installcheck-recursive \
@@ -398,7 +365,6 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
-MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -441,6 +407,7 @@ XLDFLAGS = @XLDFLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
+abs_doc_builddir = @abs_top_builddir@/doc
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
@@ -461,7 +428,6 @@ config_path = @config_path@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
-dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
@@ -594,16 +560,6 @@ LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
 
-# Automake Documentation:
-# If your package has Texinfo files in many directories, you can use the
-# variable TEXINFO_TEX to tell Automake where to find the canonical
-# `texinfo.tex' for your package. The value of this variable should be
-# the relative path from the current `Makefile.am' to `texinfo.tex'.
-TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
-
-# Defines info, dvi, pdf and html targets
-MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
-info_TEXINFOS = libgomp.texi
 @GENINSRC_FALSE@STAMP_GENINSRC = 
 
 # AM_CONDITIONAL on configure option --generated-files-in-srcdir
@@ -624,7 +580,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .c .dvi .f90 .lo .o .obj .ps
+.SUFFIXES: .c .f90 .lo .o .obj .ps
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/plugin/Makefrag.am $(top_srcdir)/../multilib.am $(am__configure_deps)
@@ -836,48 +792,11 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool config.lt
 
-libgomp.dvi: libgomp.texi  
-	$(AM_V_TEXI2DVI)TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
-	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
-	$(TEXI2DVI) $(AM_V_texinfo) --build-dir=$(@:.dvi=.t2d) -o $@ $(AM_V_texidevnull) \
-	`test -f 'libgomp.texi' || echo '$(srcdir)/'`libgomp.texi
+doc/pdf/latex/libgomp.pdf: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/pdf
 
-libgomp.pdf: libgomp.texi  
-	$(AM_V_TEXI2PDF)TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
-	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
-	$(TEXI2PDF) $(AM_V_texinfo) --build-dir=$(@:.pdf=.t2p) -o $@ $(AM_V_texidevnull) \
-	`test -f 'libgomp.texi' || echo '$(srcdir)/'`libgomp.texi
-
-libgomp.html: libgomp.texi  
-	$(AM_V_MAKEINFO)rm -rf $(@:.html=.htp)
-	$(AM_V_at)if $(MAKEINFOHTML) $(AM_MAKEINFOHTMLFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
-	 -o $(@:.html=.htp) `test -f 'libgomp.texi' || echo '$(srcdir)/'`libgomp.texi; \
-	then \
-	  rm -rf $@ && mv $(@:.html=.htp) $@; \
-	else \
-	  rm -rf $(@:.html=.htp); exit 1; \
-	fi
-.dvi.ps:
-	$(AM_V_DVIPS)TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
-	$(DVIPS) $(AM_V_texinfo) -o $@ $<
-
-uninstall-dvi-am:
-	@$(NORMAL_UNINSTALL)
-	@list='$(DVIS)'; test -n "$(dvidir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(dvidir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(dvidir)/$$f"; \
-	done
-
-uninstall-html-am:
-	@$(NORMAL_UNINSTALL)
-	@list='$(HTMLS)'; test -n "$(htmldir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " rm -rf '$(DESTDIR)$(htmldir)/$$f'"; \
-	  rm -rf "$(DESTDIR)$(htmldir)/$$f"; \
-	done
+doc/html/html/index.html: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/html
 
 uninstall-info-am:
 	@$(PRE_UNINSTALL)
@@ -941,8 +860,8 @@ mostlyclean-aminfo:
 	-rm -rf libgomp.t2d libgomp.t2p
 
 clean-aminfo:
-	-test -z "libgomp.dvi libgomp.pdf libgomp.ps libgomp.html" \
-	|| rm -rf libgomp.dvi libgomp.pdf libgomp.ps libgomp.html
+	-test -z "doc/pdf/latex/libgomp.pdf libgomp.html" \
+	|| rm -rf doc/pdf/latex/libgomp.pdf libgomp.html
 
 maintainer-clean-aminfo:
 	@list='$(INFO_DEPS)'; for i in $$list; do \
@@ -1172,9 +1091,6 @@ distclean: distclean-recursive
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-local distclean-tags
 
-dvi: dvi-recursive
-
-dvi-am: $(DVIS)
 
 html: html-recursive
 
@@ -1187,23 +1103,6 @@ info-am: $(INFO_DEPS)
 install-data-am: install-info-am install-nodist_fincludeHEADERS \
 	install-nodist_libsubincludeHEADERS
 
-install-dvi: install-dvi-recursive
-
-install-dvi-am: $(DVIS)
-	@$(NORMAL_INSTALL)
-	@list='$(DVIS)'; test -n "$(dvidir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(dvidir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(dvidir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(dvidir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(dvidir)" || exit $$?; \
-	done
 install-exec-am: install-exec-local install-nodist_toolexeclibHEADERS \
 	install-toolexeclibLTLIBRARIES
 
@@ -1326,7 +1225,7 @@ ps: ps-recursive
 
 ps-am: $(PSS)
 
-uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
+uninstall-am: uninstall-html-am uninstall-info-am \
 	uninstall-nodist_fincludeHEADERS \
 	uninstall-nodist_libsubincludeHEADERS \
 	uninstall-nodist_toolexeclibHEADERS uninstall-pdf-am \
@@ -1340,9 +1239,9 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 	clean-toolexeclibLTLIBRARIES cscope cscopelist-am ctags \
 	ctags-am dist-info distclean distclean-compile \
 	distclean-generic distclean-hdr distclean-libtool \
-	distclean-local distclean-tags dvi dvi-am html html-am info \
+	distclean-local distclean-tags html html-am info \
 	info-am install install-am install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
+	install-exec install-exec-am \
 	install-exec-local install-html install-html-am install-info \
 	install-info-am install-man install-nodist_fincludeHEADERS \
 	install-nodist_libsubincludeHEADERS \
@@ -1354,7 +1253,7 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 	maintainer-clean-local mostlyclean mostlyclean-aminfo \
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
 	mostlyclean-local pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-dvi-am uninstall-html-am \
+	uninstall-am uninstall-html-am \
 	uninstall-info-am uninstall-nodist_fincludeHEADERS \
 	uninstall-nodist_libsubincludeHEADERS \
 	uninstall-nodist_toolexeclibHEADERS uninstall-pdf-am \
@@ -1393,15 +1292,18 @@ env.o: libgomp_f.h
 
 all-local: $(STAMP_GENINSRC)
 
-stamp-geninsrc: libgomp.info
+RST_FILES:=$(shell find $(srcdir) -name *.rst)
+SPHINX_CONFIG_FILES:=$(srcdir)/doc/conf.py $(srcdir)/../doc/baseconf.py
+SPHINX_FILES:=$(RST_FILES) $(SPHINX_CONFIG_FILES)
+
+export BUGURL=$(PACKAGE_BUGURL)
+
+stamp-geninsrc: doc/info/texinfo/libgomp.info
 	cp -p $(top_builddir)/libgomp.info $(srcdir)/libgomp.info
 	@touch $@
 
-libgomp.info: $(STAMP_BUILD_INFO)
-
-stamp-build-info: libgomp.texi
-	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libgomp.info $(srcdir)/libgomp.texi
-	@touch $@
+doc/info/texinfo/libgomp.info: $(SPHINX_FILES)
+	+ make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/doc BUILDDIR=$(abs_doc_builddir)/info
 
 # target overrides
 -include $(tmake_file)

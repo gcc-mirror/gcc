@@ -1253,6 +1253,21 @@ else
 fi
 AC_SUBST(GENERATED_MANPAGES)
 
+# See if sphinx-build has been installed and is modern enough
+# that we can use it.
+AC_MSG_CHECKING([for sphinx-build])
+if sphinx-build -j auto -h &>/dev/null ; then
+  SPHINX_BUILD=sphinx-build
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_WARN([
+  *** sphinx-build is missing or too old.
+  *** Info and man pages documentation will not be built.])
+  AC_MSG_RESULT(no)
+  SPHINX_BUILD=
+fi
+AC_SUBST(SPHINX_BUILD)
+
 MISSING="${CONFIG_SHELL-/bin/sh} $ac_aux_dir/missing"
 
 # How about lex?
