@@ -2054,7 +2054,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	*sizstr = '\0';
 
       /* Set if a warning has been issued for the current argument.  */
-      opt_code arg_warned = N_OPTS;
+      opt_code arg_warned = no_warning;
       location_t loc = EXPR_LOCATION (exp);
       tree ptr = access.second.ptr;
       if (*sizstr
@@ -2080,7 +2080,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 			       exp, sizidx + 1, sizstr))
 	    arg_warned = OPT_Wstringop_overflow_;
 
-	  if (arg_warned != N_OPTS)
+	  if (arg_warned != no_warning)
 	    {
 	      append_attrname (access, attrstr, sizeof attrstr);
 	      /* Remember a warning has been issued and avoid warning
@@ -2152,7 +2152,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 		arg_warned = OPT_Wnonnull;		
 	    }
 
-	  if (arg_warned)
+	  if (arg_warned != no_warning)
 	    {
 	      append_attrname (access, attrstr, sizeof attrstr);
 	      /* Remember a warning has been issued and avoid warning

@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       void
-      swap(basic_syncbuf& __other) noexcept
+      swap(basic_syncbuf& __other)
       {
 	using _ATr = allocator_traits<_Alloc>;
 	if constexpr (!_ATr::propagate_on_container_swap::value)

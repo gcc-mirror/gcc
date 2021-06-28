@@ -1,3 +1,16 @@
+2021-06-25  Martin Sebor  <msebor@redhat.com>
+
+	* c-common.c (c_wrap_maybe_const): Remove TREE_NO_WARNING.
+	(c_common_truthvalue_conversion): Replace direct uses of
+	TREE_NO_WARNING with warning_suppressed_p, suppress_warning, and
+	copy_no_warning.
+	(check_function_arguments_recurse): Same.
+	* c-gimplify.c (c_gimplify_expr): Same.
+	* c-warn.c (overflow_warning): Same.
+	(warn_logical_operator): Same.
+	(warn_if_unused_value): Same.
+	(do_warn_unused_parameter): Same.
+
 2021-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (enum c_omp_region_type): Add C_ORT_TARGET and

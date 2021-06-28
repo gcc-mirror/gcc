@@ -11769,8 +11769,11 @@ instantiate_class_template_1 (tree type)
   deferring_access_check_sentinel acs (dk_no_deferred);
 
   /* Determine what specialization of the original template to
-     instantiate.  */
+     instantiate; do this relative to the scope of the class for
+     sake of access checking.  */
+  push_nested_class (type);
   t = most_specialized_partial_spec (type, tf_warning_or_error);
+  pop_nested_class ();
   if (t == error_mark_node)
     return error_mark_node;
   else if (t)

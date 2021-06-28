@@ -136,7 +136,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "output.h"
 #include "dwarf2asm.h"
-#include "dwarf2out.h"
+#include "dwarf2.h"
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "cfgrtl.h"

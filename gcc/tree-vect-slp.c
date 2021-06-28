@@ -3689,26 +3689,33 @@ vect_optimize_slp (vec_info *vinfo)
 
 	  vertices[idx].visited = 1;
 
-	  /* We do not handle stores with a permutation.  */
-	  stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
-	  if (STMT_VINFO_DATA_REF (rep)
-	      && DR_IS_WRITE (STMT_VINFO_DATA_REF (rep)))
-	    continue;
-	  /* We cannot move a permute across an operation that is
-	     not independent on lanes.  Note this is an explicit
-	     negative list since that's much shorter than the respective
-	     positive one but it's critical to keep maintaining it.  */
-	  if (is_gimple_call (STMT_VINFO_STMT (rep)))
-	    switch (gimple_call_combined_fn (STMT_VINFO_STMT (rep)))
-	      {
-	      case CFN_COMPLEX_ADD_ROT90:
-	      case CFN_COMPLEX_ADD_ROT270:
-	      case CFN_COMPLEX_MUL:
-	      case CFN_COMPLEX_MUL_CONJ:
-	      case CFN_VEC_ADDSUB:
+	  /* We still eventually have failed backedge SLP nodes in the
+	     graph, those are only cancelled when analyzing operations.
+	     Simply treat them as transparent ops, propagating permutes
+	     through them.  */
+	  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
+	    {
+	      /* We do not handle stores with a permutation.  */
+	      stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
+	      if (STMT_VINFO_DATA_REF (rep)
+		  && DR_IS_WRITE (STMT_VINFO_DATA_REF (rep)))
 		continue;
-	      default:;
-	      }
+	      /* We cannot move a permute across an operation that is
+		 not independent on lanes.  Note this is an explicit
+		 negative list since that's much shorter than the respective
+		 positive one but it's critical to keep maintaining it.  */
+	      if (is_gimple_call (STMT_VINFO_STMT (rep)))
+		switch (gimple_call_combined_fn (STMT_VINFO_STMT (rep)))
+		  {
+		  case CFN_COMPLEX_ADD_ROT90:
+		  case CFN_COMPLEX_ADD_ROT270:
+		  case CFN_COMPLEX_MUL:
+		  case CFN_COMPLEX_MUL_CONJ:
+		  case CFN_VEC_ADDSUB:
+		    continue;
+		  default:;
+		  }
+	    }
 
 	  int perm = -1;
 	  for (graph_edge *succ = slpg->vertices[idx].succ;
@@ -3812,7 +3819,9 @@ vect_optimize_slp (vec_info *vinfo)
       slp_tree child;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
 	{
-	  if (!child || SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+	  if (!child
+	      || (SLP_TREE_DEF_TYPE (child) != vect_constant_def
+		  && SLP_TREE_DEF_TYPE (child) != vect_external_def))
 	    continue;
 
 	  /* If the vector is uniform there's nothing to do.  */
@@ -3912,6 +3921,52 @@ vect_optimize_slp (vec_info *vinfo)
 	}
     }
 
+  /* Elide any permutations at BB reduction roots.  */
+  if (is_a <bb_vec_info> (vinfo))
+    {
+      for (slp_instance instance : vinfo->slp_instances)
+	{
+	  if (SLP_INSTANCE_KIND (instance) != slp_inst_kind_bb_reduc)
+	    continue;
+	  slp_tree old = SLP_INSTANCE_TREE (instance);
+	  if (SLP_TREE_CODE (old) == VEC_PERM_EXPR
+	      && SLP_TREE_CHILDREN (old).length () == 1)
+	    {
+	      slp_tree child = SLP_TREE_CHILDREN (old)[0];
+	      if (SLP_TREE_DEF_TYPE (child) == vect_external_def)
+		{
+		  /* Preserve the special VEC_PERM we use to shield existing
+		     vector defs from the rest.  But make it a no-op.  */
+		  unsigned i = 0;
+		  for (std::pair<unsigned, unsigned> &p
+		       : SLP_TREE_LANE_PERMUTATION (old))
+		    p.second = i++;
+		}
+	      else
+		{
+		  SLP_INSTANCE_TREE (instance) = child;
+		  SLP_TREE_REF_COUNT (child)++;
+		  vect_free_slp_tree (old);
+		}
+	    }
+	  else if (SLP_TREE_LOAD_PERMUTATION (old).exists ()
+		   && SLP_TREE_REF_COUNT (old) == 1
+		   && vertices[old->vertex].materialize)
+	    {
+	      /* ???  For loads the situation is more complex since
+		 we can't modify the permute in place in case the
+		 node is used multiple times.  In fact for loads this
+		 should be somehow handled in the propagation engine.  */
+	      /* Apply the reverse permutation to our stmts.  */
+	      int perm = vertices[old->vertex].get_perm_in ();
+	      vect_slp_permute (perms[perm],
+				SLP_TREE_SCALAR_STMTS (old), true);
+	      vect_slp_permute (perms[perm],
+				SLP_TREE_LOAD_PERMUTATION (old), true);
+	    }
+	}
+    }
+
   /* Free the perms vector used for propagation.  */
   while (!perms.is_empty ())
     perms.pop ().release ();
@@ -3975,48 +4030,6 @@ vect_optimize_slp (vec_info *vinfo)
 	    {
 	      SLP_TREE_LOAD_PERMUTATION (node).release ();
 	      continue;
-	    }
-	}
-    }
-
-  /* And any permutations of BB reductions.  */
-  if (is_a <bb_vec_info> (vinfo))
-    {
-      for (slp_instance instance : vinfo->slp_instances)
-	{
-	  if (SLP_INSTANCE_KIND (instance) != slp_inst_kind_bb_reduc)
-	    continue;
-	  slp_tree old = SLP_INSTANCE_TREE (instance);
-	  if (SLP_TREE_CODE (old) == VEC_PERM_EXPR
-	      && SLP_TREE_CHILDREN (old).length () == 1)
-	    {
-	      slp_tree child = SLP_TREE_CHILDREN (old)[0];
-	      if (SLP_TREE_DEF_TYPE (child) == vect_external_def)
-		{
-		  /* Preserve the special VEC_PERM we use to shield existing
-		     vector defs from the rest.  But make it a no-op.  */
-		  unsigned i = 0;
-		  for (std::pair<unsigned, unsigned> &p
-		       : SLP_TREE_LANE_PERMUTATION (old))
-		    p.second = i++;
-		}
-	      else
-		{
-		  SLP_INSTANCE_TREE (instance) = child;
-		  SLP_TREE_REF_COUNT (child)++;
-		  vect_free_slp_tree (old);
-		}
-	    }
-	  else if (SLP_TREE_LOAD_PERMUTATION (old).exists ()
-		   && SLP_TREE_REF_COUNT (old) == 1)
-	    {
-	      /* ???  For loads the situation is more complex since
-		 we can't modify the permute in place in case the
-		 node is used multiple times.  In fact for loads this
-		 should be somehow handled in the propagation engine.  */
-	      auto fn = [] (const void *a, const void *b)
-			      { return *(const int *)a - *(const int *)b; };
-	      SLP_TREE_LOAD_PERMUTATION (old).qsort (fn);
 	    }
 	}
     }

@@ -405,10 +405,11 @@ template <typename _Tp, typename _Abi>
     using _Vp = simd<_Tp, _Abi>;
     using _Up = make_unsigned_t<__int_for_sizeof_t<_Tp>>;
     using namespace std::experimental::__float_bitwise_operators;
+    using namespace std::experimental::__proposed;
     const _Vp __exponent_mask
       = __infinity_v<_Tp>; // 0x7f800000 or 0x7ff0000000000000
     return static_simd_cast<rebind_simd_t<int, _Vp>>(
-      __bit_cast<rebind_simd_t<_Up, _Vp>>(__v & __exponent_mask)
+	     simd_bit_cast<rebind_simd_t<_Up, _Vp>>(__v & __exponent_mask)
       >> (__digits_v<_Tp> - 1));
   }
 
@@ -697,11 +698,9 @@ template <typename _Tp, typename _Abi>
 	// (inf and NaN are excluded by -ffinite-math-only)
 	const auto __iszero_inf_nan = __x == 0;
 #else
-	const auto __as_int
-	  = __bit_cast<rebind_simd_t<__int_for_sizeof_t<_Tp>, _V>>(abs(__x));
-	const auto __inf
-	  = __bit_cast<rebind_simd_t<__int_for_sizeof_t<_Tp>, _V>>(
-	    _V(__infinity_v<_Tp>));
+	using _Ip = __int_for_sizeof_t<_Tp>;
+	const auto __as_int = simd_bit_cast<rebind_simd_t<_Ip, _V>>(abs(__x));
+	const auto __inf = simd_bit_cast<rebind_simd_t<_Ip, _V>>(_V(__infinity_v<_Tp>));
 	const auto __iszero_inf_nan = static_simd_cast<typename _V::mask_type>(
 	  __as_int == 0 || __as_int >= __inf);
 #endif
@@ -719,10 +718,10 @@ template <typename _Tp, typename _Abi>
 	where(__value_isnormal.__cvt(), __e) = __exponent_bits;
 	static_assert(sizeof(_IV) == sizeof(__value_isnormal));
 	const _IV __offset
-	  = (__bit_cast<_IV>(__value_isnormal) & _IV(__exp_adjust))
-	    | (__bit_cast<_IV>(static_simd_cast<_MaskType>(__exponent_bits == 0)
-			       & static_simd_cast<_MaskType>(__x != 0))
-	       & _IV(__exp_adjust + __exp_offset));
+	  = (simd_bit_cast<_IV>(__value_isnormal) & _IV(__exp_adjust))
+	      | (simd_bit_cast<_IV>(static_simd_cast<_MaskType>(__exponent_bits == 0)
+				      & static_simd_cast<_MaskType>(__x != 0))
+		   & _IV(__exp_adjust + __exp_offset));
 	*__exp = simd_cast<_Samesize<int, _V>>(__e - __offset);
 	return __mant;
       }
@@ -786,7 +785,7 @@ template <typename _Tp, typename _Abi>
 	  using namespace std::experimental::__proposed;
 	  using _IV = rebind_simd_t<
 	    conditional_t<sizeof(_Tp) == sizeof(_LLong), _LLong, int>, _V>;
-	  return (__bit_cast<_IV>(__v) >> (__digits_v<_Tp> - 1))
+	  return (simd_bit_cast<_IV>(__v) >> (__digits_v<_Tp> - 1))
 		 - (__max_exponent_v<_Tp> - 1);
 	};
 	_V __r = static_simd_cast<_V>(__exponent(abs_x));
@@ -953,6 +952,7 @@ template <typename _VV>
 	// Skylake-AVX512 (not even for SSE and AVX vectors, and really bad for
 	// AVX-512).
 	using namespace __float_bitwise_operators;
+	using namespace __proposed;
 	_V __absx = abs(__x);          // no error
 	_V __absy = abs(__y);          // no error
 	_V __hi = max(__absx, __absy); // no error
@@ -1000,9 +1000,9 @@ template <typename _VV>
 #ifdef __FAST_MATH__
 	    using _Ip = __int_for_sizeof_t<_Tp>;
 	    using _IV = rebind_simd_t<_Ip, _V>;
-	    const auto __as_int = __bit_cast<_IV>(__hi_exp);
+	    const auto __as_int = simd_bit_cast<_IV>(__hi_exp);
 	    const _V __scale
-	      = __bit_cast<_V>(2 * __bit_cast<_Ip>(_Tp(1)) - __as_int);
+	      = simd_bit_cast<_V>(2 * simd_bit_cast<_Ip>(_Tp(1)) - __as_int);
 #else
 	    const _V __scale = (__hi_exp ^ __inf) * _Tp(.5);
 #endif
@@ -1090,6 +1090,7 @@ _GLIBCXX_SIMD_CVTING2(hypot)
     else
       {
 	using namespace __float_bitwise_operators;
+	using namespace __proposed;
 	const _V __absx = abs(__x);                 // no error
 	const _V __absy = abs(__y);                 // no error
 	const _V __absz = abs(__z);                 // no error
@@ -1169,9 +1170,9 @@ _GLIBCXX_SIMD_CVTING2(hypot)
 #ifdef __FAST_MATH__
 		using _Ip = __int_for_sizeof_t<_Tp>;
 		using _IV = rebind_simd_t<_Ip, _V>;
-		const auto __as_int = __bit_cast<_IV>(__hi_exp);
+		const auto __as_int = simd_bit_cast<_IV>(__hi_exp);
 		const _V __scale
-		  = __bit_cast<_V>(2 * __bit_cast<_Ip>(_Tp(1)) - __as_int);
+		  = simd_bit_cast<_V>(2 * simd_bit_cast<_Ip>(_Tp(1)) - __as_int);
 #else
 		const _V __scale = (__hi_exp ^ __inf) * _Tp(.5);
 #endif
@@ -1278,12 +1279,6 @@ template <typename _Tp, typename _Abi>
       return std::copysign(__x[0], __y[0]);
     else if constexpr (__is_fixed_size_abi_v<_Abi>)
       return {__private_init, _Abi::_SimdImpl::_S_copysign(__data(__x), __data(__y))};
-    else if constexpr (is_same_v<_Tp, long double> && sizeof(_Tp) == 12)
-      // Remove this case once __bit_cast is implemented via __builtin_bit_cast.
-      // It is necessary, because __signmask below cannot be computed at compile
-      // time.
-      return simd<_Tp, _Abi>(
-	[&](auto __i) { return std::copysign(__x[__i], __y[__i]); });
     else
       {
 	using _V = simd<_Tp, _Abi>;
