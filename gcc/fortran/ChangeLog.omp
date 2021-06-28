@@ -1,3 +1,11 @@
+2021-06-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Fix enum type used
+	for dumping gfc_omp_defaultmap_category.
+
 2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
