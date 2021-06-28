@@ -32,12 +32,24 @@ template<typename T, bool Nothrow>
   using UPtr = std::unique_ptr<T, deleter<Nothrow>>;
 
 // noexcept-specifier depends on the pointer type
-static_assert( noexcept(*std::declval<UPtr<int, true>&>()), "" );
-static_assert( ! noexcept(*std::declval<UPtr<int, false>&>()), "" );
+static_assert( noexcept(*std::declval<UPtr<int, true>&>()), "LWG 2762" );
+static_assert( ! noexcept(*std::declval<UPtr<int, false>&>()), "LWG 2762" );
 
 // This has always been required, even in C++11.
-static_assert( noexcept(std::declval<UPtr<int, false>&>().operator->()), "" );
+static_assert( noexcept(std::declval<std::unique_ptr<long>>().operator->()),
+	       "operator-> is always noexcept" );
+static_assert( noexcept(std::declval<UPtr<int, false>&>().operator->()),
+	       "operator-> is always noexcept" );
 
-// This is not required by the standard
-static_assert( noexcept(std::declval<UPtr<int[], true>&>()[0]), "" );
-static_assert( ! noexcept(std::declval<UPtr<int[], false>&>()[0]), "" );
+// This is not required by the standard, but we make it depend on the pointer.
+static_assert( noexcept(std::declval<std::unique_ptr<long[]>>()[0]), "QoI" );
+static_assert( noexcept(std::declval<UPtr<int[], true>&>()[0]), "QoI" );
+static_assert( ! noexcept(std::declval<UPtr<int[], false>&>()[0]), "QoI" );
+
+// This is forbidden by the standard ("T shall be a complete type")
+// but we try to support it anyway, see PR libstdc++/101236.
+struct Incomplete;
+static_assert( ! noexcept(std::declval<UPtr<Incomplete[], true>>()[0]),
+	       "this would be noexcept if the type was complete");
+static_assert( ! noexcept(std::declval<UPtr<Incomplete[], false>>()[0]),
+	       "this would still be noexcept(false) if the type was complete");
