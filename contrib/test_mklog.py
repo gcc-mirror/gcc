@@ -443,6 +443,27 @@ gcc/ChangeLog:
 
 '''
 
+PATCH10 = '''\
+diff --git a/libgomp/doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst b/libgomp/doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst
+new file mode 100644
+index 00000000000..ad3c6d856fc
+--- /dev/null
++++ b/libgomp/doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst
+@@ -0,0 +1,3 @@
++
++
++
+
+'''
+
+EXPECTED10 = '''\
+libgomp/ChangeLog:
+
+	* doc/the-libgomp-abi/implementing-firstprivate-lastprivate-copyin-and-copyprivate-clauses.rst:
+	New file.
+
+'''
+
 class TestMklog(unittest.TestCase):
     def test_macro_definition(self):
         changelog = generate_changelog(PATCH1)
@@ -485,3 +506,7 @@ class TestMklog(unittest.TestCase):
     def test_define_macro_parsing(self):
         changelog = generate_changelog(PATCH9)
         assert changelog == EXPECTED9
+
+    def test_long_filenames(self):
+        changelog = generate_changelog(PATCH10)
+        assert changelog == EXPECTED10
