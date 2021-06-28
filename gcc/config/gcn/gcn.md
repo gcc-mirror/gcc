@@ -1371,10 +1371,13 @@
 
 ; Vector multiply has vop3a encoding, but no corresponding vop2a, so no long
 ; immediate.
+; The "s_mulk_i32" variant sets SCC to indicate overflow (which we don't care
+; about here, but we need to indicate the clobbering).
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand"	       "= Sg,Sg, Sg,   v")
         (mult:SI (match_operand:SI 1 "gcn_alu_operand" "%SgA, 0,SgA,   v")
-		 (match_operand:SI 2 "gcn_alu_operand" " SgA, J,  B,vASv")))]
+		 (match_operand:SI 2 "gcn_alu_operand" " SgA, J,  B,vASv")))
+   (clobber (match_scratch:BI 3				 "=X,cs,  X,   X"))]
   ""
   "@
    s_mul_i32\t%0, %1, %2
