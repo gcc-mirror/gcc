@@ -4319,9 +4319,7 @@ package body Inline is
          --  functions, i.e. nested subprogram bodies, so inlining is not
          --  possible.
 
-         elsif Nkind (Decl) = N_Subtype_Declaration
-           and then Present (Aspect_Specifications (Decl))
-         then
+         elsif Nkind (Decl) = N_Subtype_Declaration then
             declare
                A    : Node_Id;
                A_Id : Aspect_Id;
