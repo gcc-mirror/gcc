@@ -1526,6 +1526,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  : !opt_for_fn (id->dst_fn, flag_var_tracking_assignments)))
     return NULL;
 
+  if (!is_gimple_debug (stmt)
+      && id->param_body_adjs
+      && id->param_body_adjs->m_dead_stmts.contains (stmt))
+    return NULL;
+
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
      different from our input (e.g. RETURN_EXPR is deleted and morphs
@@ -1790,10 +1795,15 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 
       if (gimple_debug_bind_p (stmt))
 	{
+	  tree value;
+	  if (id->param_body_adjs
+	      && id->param_body_adjs->m_dead_stmts.contains (stmt))
+	    value = NULL_TREE;
+	  else
+	    value = gimple_debug_bind_get_value (stmt);
 	  gdebug *copy
 	    = gimple_build_debug_bind (gimple_debug_bind_get_var (stmt),
-				       gimple_debug_bind_get_value (stmt),
-				       stmt);
+				       value, stmt);
 	  if (id->reset_location)
 	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
@@ -2675,7 +2685,9 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
       phi = si.phi ();
       res = PHI_RESULT (phi);
       new_res = res;
-      if (!virtual_operand_p (res))
+      if (!virtual_operand_p (res)
+	  && (!id->param_body_adjs
+	      || !id->param_body_adjs->m_dead_stmts.contains (phi)))
 	{
 	  walk_tree (&new_res, copy_tree_body_r, id, NULL);
 	  if (EDGE_COUNT (new_bb->preds) == 0)

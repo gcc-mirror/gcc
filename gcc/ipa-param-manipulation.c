@@ -970,6 +970,84 @@ ipa_param_body_adjustments::carry_over_param (tree t)
   return new_parm;
 }
 
+/* Populate m_dead_stmts given that DEAD_PARAM is going to be removed without
+   any replacement or splitting.  REPL is the replacement VAR_SECL to base any
+   remaining uses of a removed parameter on.  */
+
+void
+ipa_param_body_adjustments::mark_dead_statements (tree dead_param)
+{
+  /* Current IPA analyses which remove unused parameters never remove a
+     non-gimple register ones which have any use except as parameters in other
+     calls, so we can safely leve them as they are.  */
+  if (!is_gimple_reg (dead_param))
+    return;
+  tree parm_ddef = ssa_default_def (m_id->src_cfun, dead_param);
+  if (!parm_ddef || has_zero_uses (parm_ddef))
+    return;
+
+  auto_vec<tree, 4> stack;
+  m_dead_ssas.add (parm_ddef);
+  stack.safe_push (parm_ddef);
+  while (!stack.is_empty ())
+    {
+      imm_use_iterator imm_iter;
+      use_operand_p use_p;
+      tree t = stack.pop ();
+
+      insert_decl_map (m_id, t, error_mark_node);
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, t)
+	{
+	  gimple *stmt = USE_STMT (use_p);
+
+	  /* Calls containing dead arguments cannot be deleted,
+	     modify_call_stmt will instead remove just the argument later on.
+	     If isra_track_scalar_value_uses in ipa-sra.c is extended to look
+	     through const functions, we will need to do so here too.  */
+	  if (is_gimple_call (stmt)
+	      || (m_id->blocks_to_copy
+		  && !bitmap_bit_p (m_id->blocks_to_copy,
+				    gimple_bb (stmt)->index)))
+	    continue;
+
+	  if (is_gimple_debug (stmt))
+	    {
+	      m_dead_stmts.add (stmt);
+	      gcc_assert (gimple_debug_bind_p (stmt));
+	    }
+	  else if (gimple_code (stmt) == GIMPLE_PHI)
+	    {
+	      gphi *phi = as_a <gphi *> (stmt);
+	      int ix = PHI_ARG_INDEX_FROM_USE (use_p);
+
+	      if (!m_id->blocks_to_copy
+		  || bitmap_bit_p (m_id->blocks_to_copy,
+				   gimple_phi_arg_edge (phi, ix)->src->index))
+		{
+		  m_dead_stmts.add (phi);
+		  tree res = gimple_phi_result (phi);
+		  if (!m_dead_ssas.add (res))
+		    stack.safe_push (res);
+		}
+	    }
+	  else if (is_gimple_assign (stmt))
+	    {
+	      m_dead_stmts.add (stmt);
+	      if (!gimple_clobber_p (stmt))
+		{
+		  tree lhs = gimple_assign_lhs (stmt);
+		  gcc_assert (TREE_CODE (lhs) == SSA_NAME);
+		  if (!m_dead_ssas.add (lhs))
+		    stack.safe_push (lhs);
+		}
+	    }
+	  else
+	    /* IPA-SRA does not analyze other types of statements.  */
+	    gcc_unreachable ();
+	}
+    }
+}
+
 /* Common initialization performed by all ipa_param_body_adjustments
    constructors.  OLD_FNDECL is the declaration we take original arguments
    from, (it may be the same as M_FNDECL).  VARS, if non-NULL, is a pointer to
@@ -1003,6 +1081,9 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
   auto_vec<bool, 16> kept;
   kept.reserve_exact (m_oparms.length ());
   kept.quick_grow_cleared (m_oparms.length ());
+  auto_vec<bool, 16> split;
+  split.reserve_exact (m_oparms.length ());
+  split.quick_grow_cleared (m_oparms.length ());
 
   unsigned adj_len = vec_safe_length (m_adj_params);
   m_method2func = ((TREE_CODE (TREE_TYPE (m_fndecl)) == METHOD_TYPE)
@@ -1048,6 +1129,7 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	  if (apm->op == IPA_PARAM_OP_SPLIT)
 	    {
 	      m_split_modifications_p = true;
+	      split[prev_index] = true;
 	      register_replacement (apm, new_parm);
 	    }
         }
@@ -1080,6 +1162,11 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 		/* Declare this new variable.  */
 		DECL_CHAIN (var) = *vars;
 		*vars = var;
+
+		/* If this is not a split but a real removal, init hash sets
+		   that will guide what not to copy to the new body.  */
+		if (!split[i])
+		  mark_dead_statements (m_oparms[i]);
 	      }
 	  }
 	else
@@ -1136,9 +1223,10 @@ ipa_param_body_adjustments
 ::ipa_param_body_adjustments (vec<ipa_adjusted_param, va_gc> *adj_params,
 			      tree fndecl)
   : m_adj_params (adj_params), m_adjustments (NULL), m_reset_debug_decls (),
-    m_split_modifications_p (false), m_fndecl (fndecl), m_id (NULL),
-    m_oparms (), m_new_decls (), m_new_types (), m_replacements (),
-    m_removed_decls (), m_removed_map (), m_method2func (false)
+    m_split_modifications_p (false), m_dead_stmts (), m_dead_ssas (),
+    m_fndecl (fndecl), m_id (NULL), m_oparms (), m_new_decls (),
+    m_new_types (), m_replacements (), m_removed_decls (), m_removed_map (),
+    m_method2func (false)
 {
   common_initialization (fndecl, NULL, NULL);
 }
@@ -1152,9 +1240,9 @@ ipa_param_body_adjustments
 ::ipa_param_body_adjustments (ipa_param_adjustments *adjustments,
 			      tree fndecl)
   : m_adj_params (adjustments->m_adj_params), m_adjustments (adjustments),
-    m_reset_debug_decls (), m_split_modifications_p (false), m_fndecl (fndecl),
-    m_id (NULL), m_oparms (), m_new_decls (), m_new_types (),
-    m_replacements (), m_removed_decls (), m_removed_map (),
+    m_reset_debug_decls (), m_split_modifications_p (false), m_dead_stmts (),
+    m_dead_ssas (), m_fndecl (fndecl), m_id (NULL), m_oparms (), m_new_decls (),
+    m_new_types (), m_replacements (), m_removed_decls (), m_removed_map (),
     m_method2func (false)
 {
   common_initialization (fndecl, NULL, NULL);
@@ -1175,9 +1263,10 @@ ipa_param_body_adjustments
 			      copy_body_data *id, tree *vars,
 			      vec<ipa_replace_map *, va_gc> *tree_map)
   : m_adj_params (adjustments->m_adj_params), m_adjustments (adjustments),
-    m_reset_debug_decls (), m_split_modifications_p (false), m_fndecl (fndecl),
-    m_id (id), m_oparms (), m_new_decls (), m_new_types (), m_replacements (),
-    m_removed_decls (), m_removed_map (), m_method2func (false)
+    m_reset_debug_decls (), m_split_modifications_p (false), m_dead_stmts (),
+    m_dead_ssas (),m_fndecl (fndecl), m_id (id), m_oparms (), m_new_decls (),
+    m_new_types (), m_replacements (), m_removed_decls (), m_removed_map (),
+    m_method2func (false)
 {
   common_initialization (old_fndecl, vars, tree_map);
 }
@@ -1624,8 +1713,9 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p,
 		  && TREE_CODE (t) != IMAGPART_EXPR
 		  && TREE_CODE (t) != REALPART_EXPR);
 
-      /* The follow-up patch will check whether t needs to be removed, that's
-	 why this condition is in the loop.  */
+      if (TREE_CODE (t) == SSA_NAME
+	  && m_dead_ssas.contains (t))
+	recreate = true;
 
       if (!m_split_modifications_p)
 	continue;
@@ -1763,10 +1853,19 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p,
       else
 	{
 	  tree t = gimple_call_arg (stmt, i);
-	  modify_expression (&t, true);
-	  vargs.safe_push (t);
-	  index_map.safe_push (new_arg_idx);
-	  new_arg_idx++;
+	  if (TREE_CODE (t) == SSA_NAME
+	      && m_dead_ssas.contains (t))
+	    {
+	      always_copy_delta--;
+	      index_map.safe_push (-1);
+	    }
+	  else
+	    {
+	      modify_expression (&t, true);
+	      vargs.safe_push (t);
+	      index_map.safe_push (new_arg_idx);
+	      new_arg_idx++;
+	    }
 	}
     }
 

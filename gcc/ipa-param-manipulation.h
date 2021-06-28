@@ -342,6 +342,12 @@ public:
   /* Set to true if there are any IPA_PARAM_OP_SPLIT adjustments among stored
      adjustments.  */
   bool m_split_modifications_p;
+
+  /* Sets of statements and SSA_NAMEs that only manipulate data from parameters
+     removed because they are not necessary.  */
+  hash_set<gimple *> m_dead_stmts;
+  hash_set<tree> m_dead_ssas;
+
 private:
   void common_initialization (tree old_fndecl, tree *vars,
 			      vec<ipa_replace_map *, va_gc> *tree_map);
