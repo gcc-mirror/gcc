@@ -19,6 +19,7 @@
 #ifndef RUST_AST_RESOLVE_UNUSED_H
 #define RUST_AST_RESOLVE_UNUSED_H
 
+#include "rust-hir-map.h"
 #include "rust-ast-resolve-base.h"
 
 namespace Rust {
@@ -35,8 +36,20 @@ public:
       bool ok = r->lookup_canonical_path (decl_node_id, &ident);
       rust_assert (ok);
 
+      Analysis::Mappings *map = Analysis::Mappings::get ();
+      HirId decl_hir_id;
+      // ScanUnused is conflicting with the dead code analysis here on types and
+      // functions. So just ignoring the warnings of item which will be handled
+      // by dead code analysis.
+      HIR::Item *found_item = nullptr;
+      if (map->lookup_node_to_hir (r->get_crate_num (), decl_node_id,
+				   &decl_hir_id))
+	{
+	  found_item = map->lookup_hir_item (r->get_crate_num (), decl_hir_id);
+	}
+
       if (!r->have_references_for_node (decl_node_id)
-	  && ident.get ().at (0) != '_')
+	  && ident.get ().at (0) != '_' && !found_item)
 	{
 	  rust_warning_at (locus, 0, "unused name '%s'", ident.get ().c_str ());
 	}
@@ -48,7 +61,8 @@ public:
   {
     auto resolver = Resolver::get ();
     resolver->iterate_name_ribs ([&] (Rib *r) -> void { ScanRib (r); });
-    resolver->iterate_type_ribs ([&] (Rib *r) -> void { ScanRib (r); });
+    // ScanUnused is conflicting with the dead code analysis here on types.
+    // resolver->iterate_type_ribs ([&] (Rib *r) -> void { ScanRib (r); });
     resolver->iterate_label_ribs ([&] (Rib *r) -> void { ScanRib (r); });
   }
 };
