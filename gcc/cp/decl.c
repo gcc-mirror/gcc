@@ -10969,17 +10969,6 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
   if (type == error_mark_node || size == error_mark_node)
     return error_mark_node;
 
-  /* 8.3.4/1: If the type of the identifier of D contains the auto
-     type-specifier, the program is ill-formed.  */
-  if (type_uses_auto (type))
-    {
-      if (name)
-	error_at (loc, "%qD declared as array of %qT", name, type);
-      else
-	error ("creating array of %qT", type);
-      return error_mark_node;
-    }
-
   /* If there are some types which cannot be array elements,
      issue an error-message and return.  */
   switch (TREE_CODE (type))
