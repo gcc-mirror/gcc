@@ -2027,7 +2027,7 @@ package body Sem_Util is
          --  the original constraint from its component declaration.
 
          Sel := Entity (Selector_Name (N));
-         if Nkind (Parent (Sel)) /= N_Component_Declaration then
+         if Parent_Kind (Sel) /= N_Component_Declaration then
             return Empty;
          end if;
       end if;
@@ -6366,8 +6366,8 @@ package body Sem_Util is
          Is_Type_In_Pkg :=
            Is_Package_Or_Generic_Package (B_Scope)
              and then
-               Nkind (Parent (Declaration_Node (First_Subtype (T)))) /=
-                                                           N_Package_Body;
+           Parent_Kind (Declaration_Node (First_Subtype (T))) /=
+             N_Package_Body;
 
          while Present (Id) loop
 
@@ -6385,8 +6385,8 @@ package body Sem_Util is
               and then (Is_Type_In_Pkg
                          or else Is_Derived_Type (B_Type)
                          or else Is_Primitive (Id))
-              and then Nkind (Parent (Parent (Id)))
-                         not in N_Formal_Subprogram_Declaration
+              and then Parent_Kind (Parent (Id))
+                                    not in N_Formal_Subprogram_Declaration
             then
                Is_Prim := False;
 
@@ -10772,22 +10772,26 @@ package body Sem_Util is
          when E_Class_Wide_Type =>
             return Get_Fullest_View (Root_Type (E), Include_PAT);
 
-         when  E_Class_Wide_Subtype =>
+         when E_Class_Wide_Subtype =>
             if Present (Equivalent_Type (E)) then
                return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
             elsif Present (Cloned_Subtype (E)) then
                return Get_Fullest_View (Cloned_Subtype (E), Include_PAT);
             end if;
 
-         when E_Protected_Type | E_Protected_Subtype
-            | E_Task_Type |  E_Task_Subtype =>
+         when E_Protected_Subtype
+            | E_Protected_Type
+            | E_Task_Subtype
+            | E_Task_Type
+         =>
             if Present (Corresponding_Record_Type (E)) then
                return Get_Fullest_View (Corresponding_Record_Type (E),
                                         Include_PAT);
             end if;
 
          when E_Access_Protected_Subprogram_Type
-            | E_Anonymous_Access_Protected_Subprogram_Type =>
+            | E_Anonymous_Access_Protected_Subprogram_Type
+         =>
             if Present (Equivalent_Type (E)) then
                return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
             end if;
@@ -20042,7 +20046,8 @@ package body Sem_Util is
 
    function Is_Renamed_Entry (Proc_Nam : Entity_Id) return Boolean is
       Orig_Node : Node_Id := Empty;
-      Subp_Decl : Node_Id := Parent (Parent (Proc_Nam));
+      Subp_Decl : Node_Id :=
+        (if No (Parent (Proc_Nam)) then Empty else Parent (Parent (Proc_Nam)));
 
       function Is_Entry (Nam : Node_Id) return Boolean;
       --  Determine whether Nam is an entry. Traverse selectors if there are
@@ -24339,6 +24344,26 @@ package body Sem_Util is
             EWA_Inner_Scope_Level := EWA_Inner_Scope_Level + 1;
          end if;
 
+         --  If the node is a block, we need to process all declarations
+         --  in the block and make new entities for each.
+
+         if Nkind (N) = N_Block_Statement and then Present (Declarations (N))
+         then
+            declare
+               Decl : Node_Id := First (Declarations (N));
+
+            begin
+               while Present (Decl) loop
+                  if Nkind (Decl) = N_Object_Declaration then
+                     Add_New_Entity (Defining_Identifier (Decl),
+                                     New_Copy (Defining_Identifier (Decl)));
+                  end if;
+
+                  Next (Decl);
+               end loop;
+            end;
+         end if;
+
          declare
             procedure Action (U : Union_Id);
             procedure Action (U : Union_Id) is
@@ -27072,7 +27097,7 @@ package body Sem_Util is
       --  or an exception handler). We skip this if Cond is True, since the
       --  capturing of values from conditional tests handles this ok.
 
-      if Cond then
+      if Cond or else No (N) then
          return True;
       end if;
 
@@ -29471,42 +29496,55 @@ package body Sem_Util is
    --------------------
 
    function Validated_View (Typ : Entity_Id) return Entity_Id is
-      Continue : Boolean;
-      Val_Typ  : Entity_Id;
-
    begin
-      Continue := True;
-      Val_Typ  := Base_Type (Typ);
+      --  Scalar types can be always validated. In fast, switiching to the base
+      --  type would drop the range constraints and force validation to use a
+      --  larger type than necessary.
+
+      if Is_Scalar_Type (Typ) then
+         return Typ;
+
+      --  Array types can be validated even when they are derived, because
+      --  validation only requires their bounds and component types to be
+      --  accessible. In fact, switching to the parent type would pollute
+      --  expansion of attribute Valid_Scalars with unnecessary conversion
+      --  that might not be eliminated by the frontend.
+
+      elsif Is_Array_Type (Typ) then
+         return Typ;
+
+      --  For other types, in particular for record subtypes, we switch to the
+      --  base type.
+
+      elsif not Is_Base_Type (Typ) then
+         return Validated_View (Base_Type (Typ));
 
       --  Obtain the full view of the input type by stripping away concurrency,
       --  derivations, and privacy.
 
-      while Continue loop
-         Continue := False;
-
-         if Is_Concurrent_Type (Val_Typ) then
-            if Present (Corresponding_Record_Type (Val_Typ)) then
-               Continue := True;
-               Val_Typ  := Corresponding_Record_Type (Val_Typ);
-            end if;
-
-         elsif Is_Derived_Type (Val_Typ) then
-            Continue := True;
-            Val_Typ  := Etype (Val_Typ);
-
-         elsif Is_Private_Type (Val_Typ) then
-            if Present (Underlying_Full_View (Val_Typ)) then
-               Continue := True;
-               Val_Typ  := Underlying_Full_View (Val_Typ);
-
-            elsif Present (Full_View (Val_Typ)) then
-               Continue := True;
-               Val_Typ  := Full_View (Val_Typ);
-            end if;
+      elsif Is_Concurrent_Type (Typ) then
+         if Present (Corresponding_Record_Type (Typ)) then
+            return Corresponding_Record_Type (Typ);
+         else
+            return Typ;
          end if;
-      end loop;
 
-      return Val_Typ;
+      elsif Is_Derived_Type (Typ) then
+         return Validated_View (Etype (Typ));
+
+      elsif Is_Private_Type (Typ) then
+         if Present (Underlying_Full_View (Typ)) then
+            return Validated_View (Underlying_Full_View (Typ));
+
+         elsif Present (Full_View (Typ)) then
+            return Validated_View (Full_View (Typ));
+         else
+            return Typ;
+         end if;
+
+      else
+         return Typ;
+      end if;
    end Validated_View;
 
    -----------------------

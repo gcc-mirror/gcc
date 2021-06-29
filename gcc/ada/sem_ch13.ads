@@ -125,8 +125,7 @@ package Sem_Ch13 is
    --  set if the type is not currently biased, but biasing it is the only
    --  way to meet the requirement. If the type is currently biased, then
    --  this biased size is used in the initial check, and Biased is False.
-   --  If the size is too small, and an error message is given, then both
-   --  Esize and RM_Size are reset to the allowed minimum value in T.
+   --  For a Component_Size clause, T is the component type.
 
    function Has_Compatible_Representation
      (Target_Type, Operand_Type : Entity_Id) return Boolean;

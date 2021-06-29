@@ -414,34 +414,34 @@ package Atree is
    --  The following functions return the contents of the indicated field of
    --  the node referenced by the argument, which is a Node_Id.
 
-   function No                           (N : Node_Id) return Boolean;
+   function No (N : Node_Id) return Boolean;
    pragma Inline (No);
    --  Tests given Id for equality with the Empty node. This allows notations
    --  like "if No (Variant_Part)" as opposed to "if Variant_Part = Empty".
 
-   function Parent                       (N : Node_Id) return Node_Id;
+   function Parent (N : Node_Or_Entity_Id) return Node_Or_Entity_Id;
    pragma Inline (Parent);
    --  Returns the parent of a node if the node is not a list member, or else
    --  the parent of the list containing the node if the node is a list member.
 
-   function Paren_Count                  (N : Node_Id) return Nat;
+   function Paren_Count (N : Node_Id) return Nat;
    pragma Inline (Paren_Count);
    --  Number of parentheses that surround an expression
 
-   function Present                      (N : Node_Id) return Boolean;
+   function Present (N : Node_Id) return Boolean;
    pragma Inline (Present);
    --  Tests given Id for inequality with the Empty node. This allows notations
    --  like "if Present (Statement)" as opposed to "if Statement /= Empty".
 
-   procedure Set_Original_Node         (N : Node_Id; Val : Node_Id);
+   procedure Set_Original_Node (N : Node_Id; Val : Node_Id);
    pragma Inline (Set_Original_Node);
    --  Note that this routine is used only in very peculiar cases. In normal
    --  cases, the Original_Node link is set by calls to Rewrite.
 
-   procedure Set_Parent                (N : Node_Id; Val : Node_Id);
+   procedure Set_Parent (N : Node_Or_Entity_Id; Val : Node_Or_Entity_Id);
    pragma Inline (Set_Parent);
 
-   procedure Set_Paren_Count           (N : Node_Id; Val : Nat);
+   procedure Set_Paren_Count (N : Node_Id; Val : Nat);
    pragma Inline (Set_Paren_Count);
 
    ---------------------------

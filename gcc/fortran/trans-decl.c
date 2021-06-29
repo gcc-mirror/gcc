@@ -1045,7 +1045,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       if (GFC_TYPE_ARRAY_LBOUND (type, dim) == NULL_TREE)
 	{
 	  GFC_TYPE_ARRAY_LBOUND (type, dim) = create_index_var ("lbound", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_LBOUND (type, dim));
 	}
       /* Don't try to use the unknown bound for assumed shape arrays.  */
       if (GFC_TYPE_ARRAY_UBOUND (type, dim) == NULL_TREE
@@ -1053,13 +1053,13 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	      || dim < GFC_TYPE_ARRAY_RANK (type) - 1))
 	{
 	  GFC_TYPE_ARRAY_UBOUND (type, dim) = create_index_var ("ubound", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_UBOUND (type, dim));
 	}
 
       if (GFC_TYPE_ARRAY_STRIDE (type, dim) == NULL_TREE)
 	{
 	  GFC_TYPE_ARRAY_STRIDE (type, dim) = create_index_var ("stride", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_STRIDE (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_STRIDE (type, dim));
 	}
     }
   for (dim = GFC_TYPE_ARRAY_RANK (type);
@@ -1068,21 +1068,21 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       if (GFC_TYPE_ARRAY_LBOUND (type, dim) == NULL_TREE)
 	{
 	  GFC_TYPE_ARRAY_LBOUND (type, dim) = create_index_var ("lbound", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_LBOUND (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_LBOUND (type, dim));
 	}
       /* Don't try to use the unknown ubound for the last coarray dimension.  */
       if (GFC_TYPE_ARRAY_UBOUND (type, dim) == NULL_TREE
           && dim < GFC_TYPE_ARRAY_RANK (type) + GFC_TYPE_ARRAY_CORANK (type) - 1)
 	{
 	  GFC_TYPE_ARRAY_UBOUND (type, dim) = create_index_var ("ubound", nest);
-	  TREE_NO_WARNING (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 1;
+	  suppress_warning (GFC_TYPE_ARRAY_UBOUND (type, dim));
 	}
     }
   if (GFC_TYPE_ARRAY_OFFSET (type) == NULL_TREE)
     {
       GFC_TYPE_ARRAY_OFFSET (type) = gfc_create_var_np (gfc_array_index_type,
 							"offset");
-      TREE_NO_WARNING (GFC_TYPE_ARRAY_OFFSET (type)) = 1;
+      suppress_warning (GFC_TYPE_ARRAY_OFFSET (type));
 
       if (nest)
 	gfc_add_decl_to_parent_function (GFC_TYPE_ARRAY_OFFSET (type));
@@ -1094,7 +1094,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       && as->type != AS_ASSUMED_SIZE)
     {
       GFC_TYPE_ARRAY_SIZE (type) = create_index_var ("size", nest);
-      TREE_NO_WARNING (GFC_TYPE_ARRAY_SIZE (type)) = 1;
+      suppress_warning (GFC_TYPE_ARRAY_SIZE (type));
     }
 
   if (POINTER_TYPE_P (type))
@@ -1299,7 +1299,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 
   /* Avoid uninitialized warnings for optional dummy arguments.  */
   if (sym->attr.optional)
-    TREE_NO_WARNING (decl) = 1;
+    suppress_warning (decl);
 
   /* We should never get deferred shape arrays here.  We used to because of
      frontend bugs.  */
@@ -5986,7 +5986,7 @@ generate_local_decl (gfc_symbol * sym)
 			     "does not have a default initializer",
 			     sym->name, &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING(sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	    }
 	  else if (warn_unused_dummy_argument)
 	    {
@@ -5996,7 +5996,7 @@ generate_local_decl (gfc_symbol * sym)
 			     &sym->declared_at);
 
 	      if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING(sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	    }
 	}
 
@@ -6012,7 +6012,7 @@ generate_local_decl (gfc_symbol * sym)
 			   "explicitly imported at %L", sym->name,
 			   &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING(sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	    }
 	  else if (!sym->attr.use_assoc)
 	    {
@@ -6030,7 +6030,7 @@ generate_local_decl (gfc_symbol * sym)
 			     "Unused variable %qs declared at %L",
 			     sym->name, &sym->declared_at);
 	      if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING(sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	    }
 	}
 
@@ -6145,7 +6145,7 @@ generate_local_decl (gfc_symbol * sym)
 	  /* Silence bogus "unused parameter" warnings from the
 	     middle end.  */
 	  if (sym->backend_decl != NULL_TREE)
-		TREE_NO_WARNING (sym->backend_decl) = 1;
+		suppress_warning (sym->backend_decl);
 	}
     }
 
@@ -6976,7 +6976,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 			 "Return value of function %qs at %L not set",
 			 sym->name, &sym->declared_at);
 	  if (warn_return_type > 0)
-	    TREE_NO_WARNING(sym->backend_decl) = 1;
+	    suppress_warning (sym->backend_decl);
 	}
       if (result != NULL_TREE)
 	gfc_add_expr_to_block (&body, gfc_generate_return ());

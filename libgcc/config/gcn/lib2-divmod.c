@@ -102,15 +102,15 @@ __modsi3 (SItype a, SItype b)
 }
 
 
-SItype
-__udivsi3 (SItype a, SItype b)
+USItype
+__udivsi3 (USItype a, USItype b)
 {
   return udivmodsi4 (a, b, 0);
 }
 
 
-SItype
-__umodsi3 (SItype a, SItype b)
+USItype
+__umodsi3 (USItype a, USItype b)
 {
   return udivmodsi4 (a, b, 1);
 }

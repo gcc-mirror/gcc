@@ -2758,7 +2758,6 @@ package body Sem_Ch3 is
                Resolve_Aspects;
 
             elsif L /= Visible_Declarations (Parent (L))
-              or else No (Private_Declarations (Parent (L)))
               or else Is_Empty_List (Private_Declarations (Parent (L)))
             then
                Adjust_Decl;
@@ -6189,7 +6188,7 @@ package body Sem_Ch3 is
          --  the master_id associated with an anonymous access to task type
          --  component (see Expand_N_Full_Type_Declaration.Build_Master)
 
-         Set_Parent (Element_Type, Parent (T));
+         Copy_Parent (To => Element_Type, From => T);
 
          --  Ada 2005 (AI-230): In case of components that are anonymous access
          --  types the level of accessibility depends on the enclosing type
@@ -10361,7 +10360,7 @@ package body Sem_Ch3 is
                if Discrim_Present then
                   null;
 
-               elsif Nkind (Parent (Parent (Def))) = N_Component_Declaration
+               elsif Parent_Kind (Parent (Def)) = N_Component_Declaration
                  and then Has_Per_Object_Constraint
                             (Defining_Identifier (Parent (Parent (Def))))
                then
@@ -19133,21 +19132,8 @@ package body Sem_Ch3 is
       -------------------
 
       function Is_Local_Type (Typ : Entity_Id) return Boolean is
-         Scop : Entity_Id;
-
       begin
-         Scop := Scope (Typ);
-         while Present (Scop)
-           and then Scop /= Standard_Standard
-         loop
-            if Scop = Scope (Current_Scope) then
-               return True;
-            end if;
-
-            Scop := Scope (Scop);
-         end loop;
-
-         return False;
+         return Scope_Within (Inner => Typ, Outer => Scope (Current_Scope));
       end Is_Local_Type;
 
    --  Start of processing for Is_Visible_Component
@@ -22391,10 +22377,10 @@ package body Sem_Ch3 is
 
       Final_Storage_Only := not Is_Controlled (T);
 
-      --  Ada 2005: Check whether an explicit Limited is present in a derived
+      --  Ada 2005: Check whether an explicit "limited" is present in a derived
       --  type declaration.
 
-      if Nkind (Parent (Def)) = N_Derived_Type_Definition
+      if Parent_Kind (Def) = N_Derived_Type_Definition
         and then Limited_Present (Parent (Def))
       then
          Set_Is_Limited_Record (T);

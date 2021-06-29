@@ -205,6 +205,7 @@ subroutine bar (ea1, ea2, ep1, ep2, eat1, eat2, et1, et2, ei1, ei2)
   pointer :: ep1, ep2, ep3
   target :: eat1, eat2, eat3, et1, et2, et3
   optional :: ea1, ep1, eat1, et1, ei1
+  logical :: shared_memory
 
   allocate(ea3, eat3, ep3)
 
@@ -212,19 +213,28 @@ subroutine bar (ea1, ea2, ep1, ep2, eat1, eat2, et1, et2, ei1, ei2)
   eat1 = 2; eat2 = 2; eat3 = 2; et1 = 2; et2 = 2; et3 = 2
   ei1 = 2; ei2 = 2; ei3 = 2
 
+  shared_memory = .false.
+  !$omp target map(to: shared_memory)
+    shared_memory = .true.
+  !$omp end target
+
   ! While here 'scalar' implies nonallocatable/nonpointer and
   ! the target attribute plays no role.
   !$omp target defaultmap(tofrom:scalar) defaultmap(firstprivate:allocatable) &
-  !$omp&       defaultmap(none:aggregate) defaultmap(firstprivate:pointer)
-    if (ea1 /= 2) stop 91
-    if (ea2 /= 2) stop 92
-    if (ea3 /= 2) stop 93
-    if (ep1 /= 2) stop 94
-    if (ep2 /= 2) stop 95
-    if (ep3 /= 2) stop 96
-    if (eat1 /= 2) stop 97
-    if (eat2 /= 2) stop 98
-    if (eat3 /= 2) stop 99
+  !$omp&       defaultmap(none:aggregate) defaultmap(firstprivate:pointer) &
+  !$omp&       map(always, to: shared_memory)
+    if (shared_memory) then
+      ! Due to fortran/90742 this fails when doing non-shared memory offloading
+      if (ea1 /= 2) stop 91
+      if (ea2 /= 2) stop 92
+      if (ea3 /= 2) stop 93
+      if (ep1 /= 2) stop 94
+      if (ep2 /= 2) stop 95
+      if (ep3 /= 2) stop 96
+      if (eat1 /= 2) stop 97
+      if (eat2 /= 2) stop 98
+      if (eat3 /= 2) stop 99
+    end if
     if (et1 /= 2) stop 100
     if (et2 /= 2) stop 101
     if (et3 /= 2) stop 102
@@ -232,8 +242,11 @@ subroutine bar (ea1, ea2, ep1, ep2, eat1, eat2, et1, et2, ei1, ei2)
     if (ei2 /= 2) stop 104
     if (ei3 /= 2) stop 105
     ep1 => null(); ep2 => null(); ep3 => null()
-    ea1 = 1; ea2 = 1; ea3 = 1
-    eat1 = 1; eat2 = 1; eat3 = 1
+    if (shared_memory) then
+      ! Due to fortran/90742 this fails when doing non-shared memory offloading
+      ea1 = 1; ea2 = 1; ea3 = 1
+      eat1 = 1; eat2 = 1; eat3 = 1
+    end if
     et1 = 1; et2 = 1; et3 = 1
     ei1 = 1; ei2 = 1; ei3 = 1
   !$omp end target

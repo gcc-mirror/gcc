@@ -2713,6 +2713,10 @@ package body Checks is
 
       Subp_Spec := Parent (Subp);
 
+      if No (Subp_Spec) then
+         return;
+      end if;
+
       if Nkind (Subp_Spec) = N_Defining_Program_Unit_Name then
          Subp_Spec := Parent (Subp_Spec);
       end if;

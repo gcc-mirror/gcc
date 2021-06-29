@@ -1,3 +1,14 @@
+2021-06-28  Martin Sebor  <msebor@redhat.com>
+
+	* objc-act.c (objc_maybe_build_modify_expr): Replace direct uses
+	of TREE_NO_WARNING with warning_suppressed_p, and suppress_warning.
+	(objc_build_incr_expr_for_property_ref): Same.
+	(objc_build_struct): Same.
+	(synth_module_prologue): Same.
+	* objc-gnu-runtime-abi-01.c (gnu_runtime_01_initialize): Same.
+	* objc-next-runtime-abi-01.c (next_runtime_01_initialize): Same.
+	* objc-next-runtime-abi-02.c (next_runtime_02_initialize): Same.
+
 2021-06-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* Make-lang.in (cc1-obj-checksum.c): Check previous

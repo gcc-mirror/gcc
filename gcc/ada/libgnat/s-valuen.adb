@@ -35,6 +35,16 @@ with System.Val_Util; use System.Val_Util;
 
 package body System.Value_N is
 
+   function Value_Enumeration_Pos
+     (Names   : String;
+      Indexes : System.Address;
+      Hash    : Hash_Function_Ptr;
+      Num     : Natural;
+      Str     : String)
+      return    Integer with Pure_Function;
+   --  Same as Value_Enumeration, except returns negative if Value_Enumeration
+   --  would raise Constraint_Error.
+
    ---------------------------
    -- Value_Enumeration_Pos --
    ---------------------------
@@ -98,8 +108,24 @@ package body System.Value_N is
          end if;
       end;
 
-      return Invalid;
+      return -1;
    end Value_Enumeration_Pos;
+
+   -----------------------------
+   -- Valid_Value_Enumeration --
+   -----------------------------
+
+   function Valid_Value_Enumeration
+     (Names   : String;
+      Indexes : System.Address;
+      Hash    : Hash_Function_Ptr;
+      Num     : Natural;
+      Str     : String)
+      return    Boolean
+   is
+   begin
+      return Value_Enumeration_Pos (Names, Indexes, Hash, Num, Str) >= 0;
+   end Valid_Value_Enumeration;
 
    -----------------------
    -- Value_Enumeration --
@@ -115,28 +141,15 @@ package body System.Value_N is
    is
       Result : constant Integer :=
         Value_Enumeration_Pos (Names, Indexes, Hash, Num, Str);
+
    begin
-      if Result = Invalid then
+      --  The comparison eliminates the need for a range check on return
+
+      if Result < 0 then
          Bad_Value (Str);
       else
          return Result;
       end if;
    end Value_Enumeration;
-
-   -----------------------------
-   -- Valid_Enumeration_Value --
-   -----------------------------
-
-   function Valid_Enumeration_Value
-     (Names   : String;
-      Indexes : System.Address;
-      Hash    : Hash_Function_Ptr;
-      Num     : Natural;
-      Str     : String)
-      return    Boolean
-   is
-   begin
-      return Value_Enumeration_Pos (Names, Indexes, Hash, Num, Str) /= Invalid;
-   end Valid_Enumeration_Value;
 
 end System.Value_N;

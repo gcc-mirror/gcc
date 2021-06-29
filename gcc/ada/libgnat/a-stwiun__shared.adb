@@ -76,7 +76,7 @@ package body Ada.Strings.Wide_Unbounded is
          Reference (Empty_Shared_Wide_String'Access);
          DR := Empty_Shared_Wide_String'Access;
 
-      --  Left string is empty, return Rigth string
+      --  Left string is empty, return Right string
 
       elsif LR.Last = 0 then
          Reference (RR);

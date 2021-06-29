@@ -59,6 +59,11 @@ generic
 package Ada.Containers.Formal_Ordered_Sets with
   SPARK_Mode
 is
+   --  Contracts in this unit are meant for analysis only, not for run-time
+   --  checking.
+
+   pragma Assertion_Policy (Pre => Ignore);
+   pragma Assertion_Policy (Post => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean

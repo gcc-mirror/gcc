@@ -829,12 +829,12 @@ pdp11_asm_print_operand_punct_valid_p (unsigned char c)
 }
 
 void
-print_operand_address (FILE *file, register rtx addr)
+print_operand_address (FILE *file, rtx addr)
 {
-  register rtx breg;
+  rtx breg;
   rtx offset;
   int again = 0;
-  
+
  retry:
 
   switch (GET_CODE (addr))
@@ -1160,12 +1160,11 @@ pdp11_addr_cost (rtx addr, machine_mode mode, addr_space_t as ATTRIBUTE_UNUSED,
 static int
 pdp11_insn_cost (rtx_insn *insn, bool speed)
 {
-  int base_cost, i;
+  int base_cost;
   rtx pat, set, dest, src, src2;
   machine_mode mode;
-  const char *fmt;
   enum rtx_code op;
-  
+
   if (recog_memoized (insn) < 0)
     return 0;
 
@@ -1462,24 +1461,24 @@ bool
 pushpop_regeq (rtx op, int regno)
 {
   rtx addr;
-  
+
   /* False if not memory reference.  */
   if (GET_CODE (op) != MEM)
     return FALSE;
-  
+
   /* Get the address of the memory reference.  */
   addr = XEXP (op, 0);
 
   if (GET_CODE (addr) == MEM)
     addr = XEXP (addr, 0);
-    
+
   switch (GET_CODE (addr))
     {
     case PRE_DEC:
     case POST_INC:
     case PRE_MODIFY:
     case POST_MODIFY:
-      return REGNO (XEXP (addr, 0)) == regno;
+      return REGNO (XEXP (addr, 0)) == (unsigned) regno;
     default:
       return FALSE;
     }
@@ -1771,8 +1770,7 @@ int
 pdp11_initial_elimination_offset (int from, int to)
 {
   /* Get the size of the register save area.  */
-  int spoff;
-  
+
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return get_frame_size ();
   else if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
@@ -2106,15 +2104,14 @@ pdp11_cmp_length (rtx *operands, int words)
 {
   rtx inops[2];
   rtx exops[4][2];
-  rtx lb[1];
   int i, len = 0;
 
   if (!reload_completed)
     return 2;
-  
+
   inops[0] = operands[0];
   inops[1] = operands[1];
-  
+
   pdp11_expand_operands (inops, exops, 2, words, NULL, big);
 
   for (i = 0; i < words; i++)

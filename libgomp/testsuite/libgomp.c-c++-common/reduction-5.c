@@ -1,4 +1,4 @@
-/* { dg-additional-options "-foffload=nvptx-none=-latomic" { target { offload_target_nvptx } } } */
+/* { dg-additional-options "-foffload-options=nvptx-none=-latomic" { target { offload_target_nvptx } } } */
 /* C / C++'s logical AND and OR operators take any scalar argument
    which compares (un)equal to 0 - the result 1 or 0 and of type int.
 

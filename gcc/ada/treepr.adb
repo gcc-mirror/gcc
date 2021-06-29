@@ -412,7 +412,7 @@ package body Treepr is
             return Nlists.Parent (List_Id (N));
 
          when Node_Range =>
-            return Atree.Parent (Node_Or_Entity_Id (N));
+            return Parent (Node_Or_Entity_Id (N));
 
          when others =>
             Write_Int (Int (N));

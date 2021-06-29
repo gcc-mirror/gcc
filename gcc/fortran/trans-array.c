@@ -2764,7 +2764,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   desc = ss_info->data.array.descriptor;
   offset = gfc_index_zero_node;
   offsetvar = gfc_create_var_np (gfc_array_index_type, "offset");
-  TREE_NO_WARNING (offsetvar) = 1;
+  suppress_warning (offsetvar);
   TREE_USED (offsetvar) = 0;
   gfc_trans_array_constructor_value (&outer_loop->pre, type, desc, c,
 				     &offset, &offsetvar, dynamic);

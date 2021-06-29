@@ -541,7 +541,7 @@ record_decl_address (plugin_context *ctx, decl_addr_value value)
   **slot = value;
   /* We don't want GCC to warn about e.g. static functions
      without a code definition.  */
-  TREE_NO_WARNING (value.decl) = 1;
+  suppress_warning (value.decl);
   return *slot;
 }
 

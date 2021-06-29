@@ -2100,9 +2100,15 @@ fnon-call-exceptions
 Common Var(flag_non_call_exceptions) Optimization
 Support synchronous non-call exceptions.
 
+; -foffload=<targets> is documented
+; -foffload=<targets>=<options> is supported for backward compatibility
 foffload=
-Common Driver Joined MissingArgError(options or targets missing after %qs)
--foffload=<targets>=<options>	Specify offloading targets and options for them.
+Driver Joined MissingArgError(targets missing after %qs)
+-foffload=<targets>	Specify offloading targets
+
+foffload-options=
+Common Driver Joined MissingArgError(options or targets=options missing after %qs)
+-foffload=<targets>=<options>	Specify options for the offloading targets
 
 foffload-abi=
 Common Joined RejectNegative Enum(offload_abi) Var(flag_offload_abi) Init(OFFLOAD_ABI_UNSET)

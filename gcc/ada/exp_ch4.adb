@@ -9626,6 +9626,7 @@ package body Exp_Ch4 is
 
             if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
               and then ((not LOK) or else (Llo = LLB))
+              and then not CodePeer_Mode
             then
                Rewrite (N,
                  Make_If_Expression (Loc,

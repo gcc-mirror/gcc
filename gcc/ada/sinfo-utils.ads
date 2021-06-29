@@ -27,6 +27,18 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 
 package Sinfo.Utils is
 
+   -------------------------------
+   -- Parent-related operations --
+   -------------------------------
+
+   procedure Copy_Parent (To, From : Node_Or_Entity_Id);
+   --  Does Set_Parent (To, Parent (From)), except that if To or From are
+   --  empty, does nothing. If From is empty but To is not, then Parent (To)
+   --  should already be Empty.
+
+   function Parent_Kind (N : Node_Id) return Node_Kind;
+   --  Same as Nkind (Parent (N)), except if N is Empty, return N_Empty
+
    -------------------------
    -- Iterator Procedures --
    -------------------------

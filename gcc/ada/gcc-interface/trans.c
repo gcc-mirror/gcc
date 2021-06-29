@@ -5363,7 +5363,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 	 because of the unstructured form of EH used by fe_sjlj_eh, there
 	 might be forward edges going to __builtin_setjmp receivers on which
 	 it is uninitialized, although they will never be actually taken.  */
-      TREE_NO_WARNING (gnu_jmpsave_decl) = 1;
+      suppress_warning (gnu_jmpsave_decl, OPT_Wuninitialized);
       gnu_jmpbuf_decl
 	= create_var_decl (get_identifier ("JMP_BUF"), NULL_TREE,
 			   jmpbuf_type,
@@ -8805,7 +8805,7 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
       else
 	{
 	  *expr_p = create_tmp_var (type, NULL);
-	  TREE_NO_WARNING (*expr_p) = 1;
+	  suppress_warning (*expr_p);
 	}
 
       gimplify_and_add (TREE_OPERAND (expr, 0), pre_p);

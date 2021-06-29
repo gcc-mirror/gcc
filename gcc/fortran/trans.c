@@ -129,7 +129,7 @@ gfc_create_var_np (tree type, const char *prefix)
 
   /* No warnings for anonymous variables.  */
   if (prefix == NULL)
-    TREE_NO_WARNING (t) = 1;
+    suppress_warning (t);
 
   return t;
 }

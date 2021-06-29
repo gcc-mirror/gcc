@@ -242,8 +242,8 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  The initial Ekind value for a newly created entity. Also used as the
        --  Ekind for Standard_Void_Type, a type entity in Standard used as a
        --  dummy type for the return type of a procedure (the reason we create
-       --  this type is to share the circuits for performing overload resolution
-       --  on calls).
+       --  this type is to share the circuits for performing overload
+       --  resolution on calls).
        (Sm (Alignment, Uint),
         Sm (Contract, Node_Id),
         Sm (Is_Elaboration_Warnings_OK_Id, Flag),
@@ -254,7 +254,9 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Current_Value, Node_Id), -- setter only
         Sm (Has_Predicates, Flag), -- setter only
         Sm (Initialization_Statements, Node_Id), -- setter only
-        Sm (Is_Param_Block_Component_Type, Flag, Base_Type_Only), -- setter only
+        Sm (Is_Param_Block_Component_Type, Flag, Base_Type_Only),
+        -- setter only
+
         Sm (Package_Instantiation, Node_Id), -- setter only
         Sm (Related_Expression, Node_Id), -- setter only
 
@@ -302,83 +304,32 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Current_Value, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id)));
 
-   Cc (E_Component, Object_Kind,
-       --  Components of a record declaration, private declarations of
-       --  protected objects.
+   Ab (Record_Field_Kind, Object_Kind,
        (Sm (Component_Bit_Offset, Uint),
         Sm (Component_Clause, Node_Id),
         Sm (Corresponding_Record_Component, Node_Id),
-        Sm (Discriminant_Checking_Func, Node_Id),
-        Sm (DT_Entry_Count, Uint,
-            Pre => "Is_Tag (N)"),
-        Sm (DT_Offset_To_Top_Func, Node_Id,
-            Pre => "Is_Tag (N)"),
         Sm (Entry_Formal, Node_Id),
         Sm (Esize, Uint),
         Sm (Interface_Name, Node_Id),
-        Sm (Linker_Section_Pragma, Node_Id),
-        Sm (Normalized_First_Bit, Uint),
-        Sm (Normalized_Position, Uint),
-        Sm (Normalized_Position_Max, Uint),
-        Sm (Original_Record_Component, Node_Id),
-        Sm (Prival, Node_Id,
-            Pre => "Is_Protected_Component (N)"),
-        Sm (Related_Type, Node_Id)));
-
-   Cc (E_Constant, Object_Kind,
-       --  Constants created by an object declaration with a constant keyword
-       (Sm (Activation_Record_Component, Node_Id),
-        Sm (Actual_Subtype, Node_Id),
-        Sm (Alignment, Uint),
-        Sm (BIP_Initialization_Call, Node_Id),
-        Sm (Contract, Node_Id),
-        Sm (Discriminal_Link, Node_Id),
-        Sm (Encapsulating_State, Node_Id),
-        Sm (Esize, Uint),
-        Sm (Extra_Accessibility, Node_Id),
-        Sm (Full_View, Node_Id),
-        Sm (Initialization_Statements, Node_Id),
-        Sm (Interface_Name, Node_Id),
-        Sm (Is_Elaboration_Checks_OK_Id, Flag),
-        Sm (Is_Elaboration_Warnings_OK_Id, Flag),
-        Sm (Is_Finalized_Transient, Flag),
-        Sm (Is_Ignored_Transient, Flag),
-        Sm (Last_Aggregate_Assignment, Node_Id),
-        Sm (Linker_Section_Pragma, Node_Id),
-        Sm (Optimize_Alignment_Space, Flag),
-        Sm (Optimize_Alignment_Time, Flag),
-        Sm (Prival_Link, Node_Id),
-        Sm (Related_Expression, Node_Id),
-        Sm (Related_Type, Node_Id),
-        Sm (Return_Statement, Node_Id),
-        Sm (Size_Check_Code, Node_Id),
-        Sm (SPARK_Pragma, Node_Id),
-        Sm (SPARK_Pragma_Inherited, Flag),
-        Sm (Status_Flag_Or_Transient_Decl, Node_Id)));
-
-   Cc (E_Discriminant, Object_Kind,
-       --  A discriminant, created by the use of a discriminant in a type
-       --  declaration.
-       (Sm (Component_Bit_Offset, Uint),
-        Sm (Component_Clause, Node_Id),
-        Sm (Corresponding_Discriminant, Node_Id),
-        Sm (Corresponding_Record_Component, Node_Id),
-        Sm (CR_Discriminant, Node_Id),
-        Sm (Discriminal, Node_Id),
-        Sm (Discriminant_Default_Value, Node_Id),
-        Sm (Discriminant_Number, Uint),
-        Sm (Entry_Formal, Node_Id),
-        Sm (Esize, Uint),
-        Sm (Interface_Name, Node_Id),
-        Sm (Is_Completely_Hidden, Flag),
         Sm (Linker_Section_Pragma, Node_Id),
         Sm (Normalized_First_Bit, Uint),
         Sm (Normalized_Position, Uint),
         Sm (Normalized_Position_Max, Uint),
         Sm (Original_Record_Component, Node_Id)));
 
-   Cc (E_Loop_Parameter, Object_Kind,
-       --  A loop parameter created by a for loop
+   Cc (E_Component, Record_Field_Kind,
+       --  Components of a record declaration, private declarations of
+       --  protected objects.
+       (Sm (Discriminant_Checking_Func, Node_Id),
+        Sm (DT_Entry_Count, Uint,
+            Pre => "Is_Tag (N)"),
+        Sm (DT_Offset_To_Top_Func, Node_Id,
+            Pre => "Is_Tag (N)"),
+        Sm (Prival, Node_Id,
+            Pre => "Is_Protected_Component (N)"),
+        Sm (Related_Type, Node_Id)));
+
+   Ab (Allocatable_Kind, Object_Kind,
        (Sm (Activation_Record_Component, Node_Id),
         Sm (Alignment, Uint),
         Sm (Esize, Uint),
@@ -389,45 +340,55 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Related_Expression, Node_Id),
         Sm (Status_Flag_Or_Transient_Decl, Node_Id)));
 
-   Cc (E_Variable, Object_Kind,
-       --  Variables created by an object declaration with no constant keyword
-       (Sm (Activation_Record_Component, Node_Id),
-        Sm (Actual_Subtype, Node_Id),
-        Sm (Alignment, Uint),
-        Sm (Anonymous_Designated_Type, Node_Id),
+   Ab (Constant_Or_Variable_Kind, Allocatable_Kind,
+       (Sm (Actual_Subtype, Node_Id),
         Sm (BIP_Initialization_Call, Node_Id),
         Sm (Contract, Node_Id),
-        Sm (Debug_Renaming_Link, Node_Id),
         Sm (Discriminal_Link, Node_Id),
         Sm (Encapsulating_State, Node_Id),
-        Sm (Esize, Uint),
         Sm (Extra_Accessibility, Node_Id),
+        Sm (Initialization_Statements, Node_Id),
+        Sm (Is_Elaboration_Checks_OK_Id, Flag),
+        Sm (Is_Elaboration_Warnings_OK_Id, Flag),
+        Sm (Last_Aggregate_Assignment, Node_Id),
+        Sm (Optimize_Alignment_Space, Flag),
+        Sm (Optimize_Alignment_Time, Flag),
+        Sm (Prival_Link, Node_Id),
+        Sm (Related_Type, Node_Id),
+        Sm (Return_Statement, Node_Id),
+        Sm (Size_Check_Code, Node_Id),
+        Sm (SPARK_Pragma, Node_Id),
+        Sm (SPARK_Pragma_Inherited, Flag)));
+
+   Cc (E_Constant, Constant_Or_Variable_Kind,
+       --  Constants created by an object declaration with a constant keyword
+       (Sm (Full_View, Node_Id)));
+
+   Cc (E_Discriminant, Record_Field_Kind,
+       --  A discriminant, created by the use of a discriminant in a type
+       --  declaration.
+       (Sm (Corresponding_Discriminant, Node_Id),
+        Sm (CR_Discriminant, Node_Id),
+        Sm (Discriminal, Node_Id),
+        Sm (Discriminant_Default_Value, Node_Id),
+        Sm (Discriminant_Number, Uint),
+        Sm (Is_Completely_Hidden, Flag)));
+
+   Cc (E_Loop_Parameter, Allocatable_Kind);
+   --  A loop parameter created by a for loop
+
+   Cc (E_Variable, Constant_Or_Variable_Kind,
+       --  Variables created by an object declaration with no constant keyword
+       (Sm (Anonymous_Designated_Type, Node_Id),
+        Sm (Debug_Renaming_Link, Node_Id),
         Sm (Extra_Constrained, Node_Id),
         Sm (Has_Initial_Value, Flag),
         Sm (Hiding_Loop_Variable, Node_Id),
-        Sm (Initialization_Statements, Node_Id),
-        Sm (Interface_Name, Node_Id),
-        Sm (Is_Elaboration_Checks_OK_Id, Flag),
-        Sm (Is_Elaboration_Warnings_OK_Id, Flag),
-        Sm (Is_Finalized_Transient, Flag),
-        Sm (Is_Ignored_Transient, Flag),
-        Sm (Last_Aggregate_Assignment, Node_Id),
         Sm (Last_Assignment, Node_Id),
-        Sm (Linker_Section_Pragma, Node_Id),
         Sm (OK_To_Rename, Flag),
-        Sm (Optimize_Alignment_Space, Flag),
-        Sm (Optimize_Alignment_Time, Flag),
         Sm (Part_Of_Constituents, Elist_Id),
         Sm (Part_Of_References, Elist_Id),
-        Sm (Prival_Link, Node_Id),
-        Sm (Related_Expression, Node_Id),
-        Sm (Related_Type, Node_Id),
-        Sm (Return_Statement, Node_Id),
         Sm (Shared_Var_Procs_Instance, Node_Id),
-        Sm (Size_Check_Code, Node_Id),
-        Sm (SPARK_Pragma, Node_Id),
-        Sm (SPARK_Pragma_Inherited, Flag),
-        Sm (Status_Flag_Or_Transient_Decl, Node_Id),
         Sm (Suppress_Initialization, Flag),
         Sm (Unset_Reference, Node_Id),
         Sm (Validated_Object, Node_Id)));

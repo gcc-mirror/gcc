@@ -1232,7 +1232,9 @@ package body Atree is
          if Field in Node_Range then
             New_N := Union_Id (Copy_Separate_Tree (Node_Id (Field)));
 
-            if Parent (Node_Id (Field)) = Source then
+            if Present (Node_Id (Field))
+              and then Parent (Node_Id (Field)) = Source
+            then
                Set_Parent (Node_Id (New_N), New_Id);
             end if;
 
@@ -1801,16 +1803,14 @@ package body Atree is
       end if;
    end Paren_Count;
 
-   ------------
-   -- Parent --
-   ------------
-
-   function Parent (N : Node_Id) return Node_Id is
+   function Parent (N : Node_Or_Entity_Id) return Node_Or_Entity_Id is
    begin
+      pragma Assert (Atree.Present (N));
+
       if Is_List_Member (N) then
          return Parent (List_Containing (N));
       else
-         return Node_Id (Link (N));
+         return Node_Or_Entity_Id (Link (N));
       end if;
    end Parent;
 
@@ -2126,9 +2126,9 @@ package body Atree is
    -- Set_Parent --
    ----------------
 
-   procedure Set_Parent (N : Node_Id; Val : Node_Id) is
+   procedure Set_Parent (N : Node_Or_Entity_Id; Val : Node_Or_Entity_Id) is
    begin
-      pragma Assert (not Locked);
+      pragma Assert (Atree.Present (N));
       pragma Assert (not In_List (N));
       Set_Link (N, Union_Id (Val));
    end Set_Parent;

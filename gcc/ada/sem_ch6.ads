@@ -51,6 +51,9 @@ package Sem_Ch6 is
    --  and body declarations. Returns the defining entity for the
    --  specification N.
 
+   function Can_Override_Operator (Subp : Entity_Id) return Boolean;
+   --  Returns true if Subp can override a predefined operator
+
    procedure Check_Conventions (Typ : Entity_Id);
    --  Ada 2005 (AI-430): Check that the conventions of all inherited and
    --  overridden dispatching operations of type Typ are consistent with their

@@ -2423,7 +2423,6 @@ __gnat_portable_spawn (char *args[] ATTRIBUTE_UNUSED)
   if (pid == 0)
     {
       /* The child. */
-      __gnat_in_child_after_fork = 1;
       if (execv (args[0], MAYBE_TO_PTR32 (args)) != 0)
 	_exit (1);
     }

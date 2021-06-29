@@ -1,3 +1,212 @@
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* config/bpf/bpf.c (bpf_expand_prologue): Do not mark insns as
+	frame related.
+	(bpf_expand_epilogue): Likewise.
+	* config/bpf/bpf.h (DWARF2_FRAME_INFO): Define to 0.
+	Do not define DBX_DEBUGGING_INFO.
+
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* doc/invoke.texi: Document the CTF and BTF debug info options.
+
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+	    David Faust  <david.faust@oracle.com>
+	    Jose E. Marchesi  <jose.marchesi@oracle.com>
+	    Weimin Pan  <weimin.pan@oracle.com>
+
+	* Makefile.in: Add ctfc.*, ctfout.c and btfout.c files to
+	GTFILES.  Add new object files.
+	* common.opt: Add CTF and BTF debug info options.
+	* btfout.c: New file.
+	* ctfc.c: Likewise.
+	* ctfc.h: Likewise.
+	* ctfout.c: Likewise.
+	* dwarf2ctf.c: Likewise.
+	* dwarf2ctf.h: Likewise.
+	* dwarf2cfi.c (dwarf2out_do_frame): Acknowledge CTF_DEBUG and
+	BTF_DEBUG.
+	* dwarf2out.c (dwarf2out_source_line): Likewise.
+	(dwarf2out_finish): Skip emitting DWARF if CTF or BTF are to
+	be generated.
+	(debug_format_do_cu): New function.
+	(dwarf2out_early_finish): Traverse DIEs and emit CTF/BTF for
+	them if	requested.
+	Include dwarf2ctf.c.
+	* final.c (dwarf2_debug_info_emitted_p): Acknowledge DWARF-based debug
+	formats.
+	* flag-types.h (enum debug_info_type): Add CTF_DEBUG and BTF_DEBUG.
+	(CTF_DEBUG): New bitmask.
+	(BTF_DEBUG): Likewise.
+	(enum ctf_debug_info_levels): New enum.
+	* gengtype.c (open_base_files): Handle ctfc.h.
+	(main): Handle uint32_t type.
+	* flags.h (btf_debuginfo_p): New definition.
+	(dwarf_based_debuginfo_p): Likewise.
+	* opts.c (debug_type_names): Add entries for CTF and BTF.
+	(btf_debuginfo_p): New function.
+	(dwarf_based_debuginfo_p): Likewise.
+	(common_handle_option): Handle -gctfN and -gbtf options.
+	(set_debug_level): Set CTF_DEBUG, BTF_DEBUG whenever appropriate.
+	* toplev.c (process_options): Inform the user and ignore -gctfLEVEL if
+	frontend is not C.
+
+2021-06-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* dwarf2out.c (AT_class): Function is no longer static.
+	(AT_int): Likewise.
+	(AT_unsigned): Likewise.
+	(AT_loc): Likewise.
+	(get_AT): Likewise.
+	(get_AT_string): Likewise.
+	(get_AT_flag): Likewise.
+	(get_AT_unsigned): Likewise.
+	(get_AT_ref): Likewise.
+	(new_die_raw): Likewise.
+	(lookup_decl_die): Likewise.
+	(base_type_die): Likewise.
+	(add_name_attribute): Likewise.
+	(add_AT_int): Likewise.
+	(add_AT_unsigned): Likewise.
+	(add_AT_loc): Likewise.
+	(dw_get_die_tag): New function.
+	(dw_get_die_child): Likewise.
+	(dw_get_die_sib): Likewise.
+	(struct dwarf_file_data): Move from here to dwarf2out.h
+	(struct dw_attr_struct): Likewise.
+	* dwarf2out.h: Analogous changes.
+
+2021-06-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93385
+	* ipa-param-manipulation.h (class ipa_param_body_adjustments): New
+	members m_dead_stmts and m_dead_ssas.
+	* ipa-param-manipulation.c
+	(ipa_param_body_adjustments::mark_dead_statements): New function.
+	(ipa_param_body_adjustments::common_initialization): Call it on
+	all removed but not split parameters.
+	(ipa_param_body_adjustments::ipa_param_body_adjustments): Initialize
+	new mwmbers.
+	(ipa_param_body_adjustments::modify_call_stmt): Remove arguments that
+	are dead.
+	* tree-inline.c (remap_gimple_stmt): Do not copy dead statements, reset
+	dead debug statements.
+	(copy_phis_for_bb): Do not copy dead PHI nodes.
+
+2021-06-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93385
+	* symtab-clones.h (clone_info): Removed member param_adjustments.
+	* ipa-param-manipulation.h: Adjust initial comment to reflect how we
+	deal with pass-through splits now.
+	(ipa_param_performed_split): Removed.
+	(ipa_param_adjustments::modify_call): Adjusted parameters.
+	(class ipa_param_body_adjustments): Adjusted parameters of
+	register_replacement, modify_gimple_stmt and modify_call_stmt.
+	(ipa_verify_edge_has_no_modifications): Declare.
+	(ipa_edge_modifications_finalize): Declare.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Remove
+	performed_splits processing, pas only edge to padjs->modify_call,
+	check that call arguments were not modified if they should not have
+	been.
+	* cgraphclones.c (cgraph_node::create_clone): Do not copy performed
+	splits.
+	* ipa-param-manipulation.c (struct pass_through_split_map): New type.
+	(ipa_edge_modification_info): Likewise.
+	(ipa_edge_modification_sum): Likewise.
+	(ipa_edge_modifications): New edge summary.
+	(ipa_verify_edge_has_no_modifications): New function.
+	(transitive_split_p): Removed.
+	(transitive_split_map): Likewise.
+	(init_transitive_splits): Likewise.
+	(ipa_param_adjustments::modify_call): Adjusted to use the new edge
+	summary instead of performed_splits.
+	(ipa_param_body_adjustments::register_replacement): Drop dummy
+	parameter, set base_index of the created ipa_param_body_replacement.
+	(phi_arg_will_live_p): New function.
+	(ipa_param_body_adjustments::common_initialization): Do not create
+	IPA_SRA dummy decls.
+	(simple_tree_swap_info): Removed.
+	(remap_split_decl_to_dummy): Likewise.
+	(record_argument_state_1): New function.
+	(record_argument_state): Likewise.
+	(ipa_param_body_adjustments::modify_call_stmt): New parameter
+	orig_stmt.  Do not work with dummy decls, save necessary info about
+	changes to ipa_edge_modifications.
+	(ipa_param_body_adjustments::modify_gimple_stmt): New parameter
+	orig_stmt, pass it to modify_call_stmt.
+	(ipa_param_body_adjustments::modify_cfun_body): Adjust call to
+	modify_gimple_stmt.
+	(ipa_edge_modifications_finalize): New function.
+	* tree-inline.c (remap_gimple_stmt): Pass original statement to
+	modify_gimple_stmt.
+	(copy_phis_for_bb): Do not copy dead PHI nodes.
+	(expand_call_inline): Do not remap performed_splits.
+	(update_clone_info): Likewise.
+	* toplev.c: Include ipa-param-manipulation.h.
+	(toplev::finalize): Call ipa_edge_modifications_finalize.
+
+2021-06-28  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Duplicate range
+	info if we're the only things setting the target PHI.
+	(value_replacement): Don't duplicate range here.
+	(minmax_replacement): Likewise.
+
+2021-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101229
+	* gimple-walk.c (gimple_walk_op): Handle PHIs.
+
+2021-06-28  Martin Liska  <mliska@suse.cz>
+
+	* config/v850/v850.c (construct_dispose_instruction): Allocate
+	a bigger buffer.
+	(construct_prepare_instruction): Likewise.
+
+2021-06-28  Martin Liska  <mliska@suse.cz>
+
+	* config/v850/v850.c (v850_option_override): Build default
+	target node.
+	(v850_can_inline_p): New.  Allow MASK_PROLOG_FUNCTION to be
+	ignored for inlining.
+	(TARGET_CAN_INLINE_P): New.
+
+2021-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101207
+	* tree-vect-slp.c (vect_optimize_slp): Do BB reduction
+	permute eliding for load permutations properly.
+
+2021-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101173
+	* gimple-loop-interchange.cc
+	(tree_loop_interchange::valid_data_dependences): Disallow outer
+	loop dependence distance of zero.
+
+2021-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100648
+	* config/i386/sse.md (*avx_cmp<mode>3_lt): New
+	define_insn_and_split.
+	(*avx_cmp<mode>3_ltint): Ditto.
+	(*avx2_pcmp<mode>3_3): Ditto.
+	(*avx2_pcmp<mode>3_4): Ditto.
+	(*avx2_pcmp<mode>3_5): Ditto.
+
+2021-06-28  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-builtin.def (IX86_BUILTIN_BLENDVPD256,
+	IX86_BUILTIN_BLENDVPS256, IX86_BUILTIN_PBLENDVB256,
+	IX86_BUILTIN_BLENDVPD, IX86_BUILTIN_BLENDVPS,
+	IX86_BUILTIN_PBLENDVB128): Replace icode with
+	CODE_FOR_nothing.
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Fold blendv
+	builtins.
+	* config/i386/sse.md (*<sse4_1_avx2>_pblendvb_lt_subreg_not):
+	New pre_reload splitter.
+
 2021-06-27  Andrew Pinski  <apinski@marvell.com>
 
 	PR middle-end/101230

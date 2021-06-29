@@ -282,7 +282,7 @@ static void next_runtime_01_initialize (void)
 						TYPE_DECL,
 						objc_selector_name,
 						objc_selector_type));
-  TREE_NO_WARNING (type) = 1;
+  suppress_warning (type);
 
   build_v1_class_template ();
   build_super_template ();

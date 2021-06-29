@@ -64,6 +64,11 @@ generic
 package Ada.Containers.Formal_Hashed_Maps with
   SPARK_Mode
 is
+   --  Contracts in this unit are meant for analysis only, not for run-time
+   --  checking.
+
+   pragma Assertion_Policy (Pre => Ignore);
+   pragma Assertion_Policy (Post => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is private with
