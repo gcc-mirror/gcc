@@ -89,7 +89,7 @@ CXX_AND_OBJCXX_OBJS = \
 	cp/call.o cp/class.o cp/constexpr.o cp/constraint.o \
 	cp/coroutines.o cp/cp-gimplify.o \
 	cp/cp-objcp-common.o cp/cp-ubsan.o \
-	cp/cvt.o cp/cxx-pretty-print.o \
+	cp/cvt.o cp/contracts.o cp/cxx-pretty-print.o \
 	cp/decl.o cp/decl2.o cp/dump.o \
 	cp/error.o cp/except.o cp/expr.o \
 	cp/friend.o cp/init.o \

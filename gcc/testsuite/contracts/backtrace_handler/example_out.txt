@@ -1,0 +1,12 @@
+LD_PRELOAD=./libhandle_contract_violation.so ./assert_fail
+contract violation: assert_fail.cpp:3: fun1::x < 0 is false [with contract level=default]
+violation occurs here:
+./assert_fail[0x4011ad]
+./assert_fail[0x4011e0]
+./assert_fail[0x401230]
+./assert_fail[0x4011f1]
+./assert_fail[0x401219]
+/usr/lib/libc.so.6(__libc_start_main+0xf3)[0x7f26e4fa9223]
+./assert_fail[0x4010be]
+[0x0]
+end of violation

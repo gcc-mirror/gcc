@@ -39,6 +39,7 @@ std_headers = \
 	${std_srcdir}/complex \
 	${std_srcdir}/concepts \
 	${std_srcdir}/condition_variable \
+	${std_srcdir}/contract \
 	${std_srcdir}/coroutine \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \

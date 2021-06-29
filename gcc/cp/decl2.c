@@ -1420,6 +1420,9 @@ cp_check_const_attributes (tree attributes)
   tree attr;
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
+      if (cxx_contract_attribute_p (attr))
+	continue;
+
       tree arg;
       for (arg = TREE_VALUE (attr); arg && TREE_CODE (arg) == TREE_LIST;
 	   arg = TREE_CHAIN (arg))
@@ -4459,6 +4462,28 @@ collect_ada_namespace (tree namespc, const char *source_file)
   for (; decl; decl = TREE_CHAIN (decl))
     if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
       collect_ada_namespace (decl, source_file);
+}
+
+/* cp_tree_defined_p helper -- returns TP if TP is undefined.  */
+
+static tree
+cp_tree_defined_p_r (tree *tp, int *, void *)
+{
+  enum tree_code code = TREE_CODE (*tp);
+  if ((code == FUNCTION_DECL || code == VAR_DECL)
+      && !decl_defined_p (*tp))
+    return *tp;
+  return NULL_TREE;
+}
+
+/* Returns true iff there is a definition for all entities referenced in the
+   tree TP.  */
+
+bool
+cp_tree_defined_p (tree tp)
+{
+  tree undefined_t = walk_tree (&tp, cp_tree_defined_p_r, NULL, NULL);
+  return !undefined_t;
 }
 
 /* Returns true iff there is a definition available for variable or

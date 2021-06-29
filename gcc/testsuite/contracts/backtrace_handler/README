@@ -1,0 +1,12 @@
+build and install gcc to $prefix, then to see the raw backtrace info run:
+LD_LIBRARY_PATH=$prefix/lib64 CXX=$prefix/bin/g++ make run
+
+for a filtered view using addr2line, see ./prettytrace.sh:
+LD_LIBRARY_PATH=$prefix/lib64 CXX=$prefix/bin/g++ make run |& ./prettytrace.sh
+
+prettytrace.sh relies on addr2line and c++filt to lookup and demangle names,
+and misc coreutils
+
+example_out.txt has an example of the raw output while example_pretty.txt
+shows the corresponding prettified output
+

@@ -1194,6 +1194,30 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       wtd->bind_expr_stack.pop ();
       break;
 
+    case ASSERTION_STMT:
+    case PRECONDITION_STMT:
+    case POSTCONDITION_STMT:
+      {
+	if (tree check = build_contract_check (stmt))
+	  {
+	//     verbatim ("MAKE CHECK");
+	//     debug_expression (check);
+	    /* Mark the current function as possibly throwing exceptions
+	       (through invocation of the contract violation handler).  */
+	    current_function_returns_abnormally = 1;
+	    TREE_NOTHROW (current_function_decl) = 0;
+
+	    *stmt_p = check;
+	    return cp_genericize_r (stmt_p, walk_subtrees, data);
+	  }
+
+	/* If we didn't build a check, replace it with void_node so we don't
+	   leak contracts into GENERIC.  */
+	*stmt_p = void_node;
+	*walk_subtrees = 0;
+      }
+      break;
+
     case USING_STMT:
       {
 	tree block = NULL_TREE;

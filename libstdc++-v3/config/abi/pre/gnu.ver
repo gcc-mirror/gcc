@@ -2282,6 +2282,18 @@ GLIBCXX_3.4.26 {
     _ZNSt7codecvtID[is]Du*;
     _ZT[ISV]St7codecvtID[is]Du*E;
 
+    # std::contract_violation::contract_violation (int, std::string_view, std::string_view, std::string_view, std::string_view, std::string_view, std::contract_violation_continuation_mode)
+    _ZNSt18contract_violationC1EiSt17basic_string_viewIcSt11char_traitsIcEES3_S3_S3_S3_St36contract_violation_continuation_mode;
+    _ZNKSt18contract_violation11line_numberEv;
+    _ZNKSt18contract_violation13function_nameEv;
+    _ZNKSt18contract_violation15assertion_levelEv;
+    _ZNKSt18contract_violation14assertion_roleEv;
+    _ZNKSt18contract_violation7commentEv;
+    _ZNKSt18contract_violation9file_nameEv;
+    _ZNKSt18contract_violation17continuation_modeEv;
+
+    _Z25handle_contract_violationRKSt18contract_violation;
+    _Z23__on_contract_violationbiPKcS0_S0_S0_S0_i;
 } GLIBCXX_3.4.25;
 
 GLIBCXX_3.4.27 {

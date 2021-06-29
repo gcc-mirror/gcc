@@ -7013,6 +7013,30 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       r = void_node;
       break;
 
+    case ASSERTION_STMT:
+    case PRECONDITION_STMT:
+    case POSTCONDITION_STMT:
+      {
+	contract_semantic semantic = get_contract_semantic (t);
+	if (semantic == CCS_IGNORE)
+	  break;
+
+	tree c = CONTRACT_CONDITION (t);
+	if (semantic == CCS_ASSUME && !cp_tree_defined_p (c))
+	  break;
+
+	/* Evaluate the generated check.  */
+	r = cxx_eval_constant_expression (ctx, c, false, non_constant_p,
+					  overflow_p);
+	if (r == boolean_false_node)
+	  {
+	    if (!ctx->quiet)
+	      error_at (EXPR_LOCATION (c), "contract predicate %qE is %qE", c, r);
+	    *non_constant_p = true;
+	  }
+      }
+      break;
+
     case TEMPLATE_ID_EXPR:
       {
         /* We can evaluate template-id that refers to a concept only if
@@ -8920,6 +8944,13 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  error_at (loc, "%<goto%> is not a constant expression");
 	return false;
       }
+
+    case ASSERTION_STMT:
+    case PRECONDITION_STMT:
+    case POSTCONDITION_STMT:
+      if (!RECUR (CONTRACT_CONDITION (t), rval))
+	return false;
+      return true;
 
     case LABEL_EXPR:
       t = LABEL_EXPR_LABEL (t);

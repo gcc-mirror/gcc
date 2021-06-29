@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-name-hint.h"
 #include "memmodel.h"
 #include "c-family/known-headers.h"
+#include "contracts.h"
 
 
 /* The lexer.  */
@@ -1454,6 +1455,17 @@ cp_ensure_no_oacc_routine (cp_parser *parser)
       parser->oacc_routine = NULL;
     }
 }
+
+/* True if ATTR is an assertion.  */
+
+bool
+cp_contract_assertion_p (const_tree attr)
+{
+  /* This is only an assertion if it is a valid cxx contract attribute and the
+     statement is an ASSERTION_STMT.  */
+  return cxx_contract_attribute_p (attr)
+    && TREE_CODE (CONTRACT_STATEMENT (attr)) == ASSERTION_STMT;
+}
 
 /* Decl-specifiers.  */
 
@@ -1474,7 +1486,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
 
 static cp_declarator *make_call_declarator
   (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier,
-   tree, tree, tree, tree, location_t);
+   tree, tree, tree, tree, tree, location_t);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1646,7 +1658,8 @@ make_ptrmem_declarator (cp_cv_quals cv_qualifiers, tree class_type,
 /* Make a declarator for the function given by TARGET, with the
    indicated PARMS.  The CV_QUALIFIERS apply to the function, as in
    "const"-qualified member function.  The EXCEPTION_SPECIFICATION
-   indicates what exceptions can be thrown.  */
+   indicates what exceptions can be thrown.  STD_ATTRS contains
+   attributes and any contracts that apply to the function. */
 
 cp_declarator *
 make_call_declarator (cp_declarator *target,
@@ -1658,6 +1671,7 @@ make_call_declarator (cp_declarator *target,
 		      tree exception_specification,
 		      tree late_return_type,
 		      tree requires_clause,
+		      tree std_attrs,
 		      location_t parens_loc)
 {
   cp_declarator *declarator;
@@ -1681,6 +1695,8 @@ make_call_declarator (cp_declarator *target,
     }
   else
     declarator->parameter_pack_p = false;
+
+  declarator->std_attributes = std_attrs;
 
   return declarator;
 }
@@ -1773,23 +1789,32 @@ make_parameter_declarator (cp_decl_specifier_seq *decl_specifiers,
   return parameter;
 }
 
-/* Returns true iff DECLARATOR  is a declaration for a function.  */
+/* Returns a pointer to the function declarator iff DECLARATOR is a
+   declaration for a function.  Returns NULL otherwise.  */
 
-static bool
-function_declarator_p (const cp_declarator *declarator)
+const cp_declarator *
+find_innermost_function_declarator (const cp_declarator *declarator)
 {
   while (declarator)
     {
       if (declarator->kind == cdk_function
 	  && declarator->declarator->kind == cdk_id)
-	return true;
+	return declarator;
       if (declarator->kind == cdk_id
 	  || declarator->kind == cdk_decomp
 	  || declarator->kind == cdk_error)
-	return false;
+	return NULL;
       declarator = declarator->declarator;
     }
-  return false;
+  return NULL;
+}
+
+/* Returns true iff DECLARATOR  is a declaration for a function.  */
+
+bool
+function_declarator_p (const cp_declarator *declarator)
+{
+  return find_innermost_function_declarator (declarator) != NULL;
 }
 
 /* The parser.  */
@@ -2052,11 +2077,14 @@ cp_parser_context_new (cp_parser_context* next)
   parser->unparsed_queues->last ().nsdmis
 #define unparsed_noexcepts \
   parser->unparsed_queues->last ().noexcepts
+#define unparsed_contracts \
+  parser->unparsed_queues->last ().contracts
 
 static void
 push_unparsed_function_queues (cp_parser *parser)
 {
-  cp_unparsed_functions_entry e = { NULL, make_tree_vector (), NULL, NULL };
+  cp_unparsed_functions_entry e
+      = { NULL, make_tree_vector (), NULL, NULL, NULL };
   vec_safe_push (parser->unparsed_queues, e);
 }
 
@@ -2162,6 +2190,8 @@ static enum tree_code cp_parser_assignment_operator_opt
   (cp_parser *);
 static cp_expr cp_parser_expression
   (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false, bool = false);
+static cp_expr cp_parser_conditional_expression
+  (cp_parser *);
 static cp_expr cp_parser_constant_expression
   (cp_parser *, int = 0, bool * = NULL, bool = false);
 static cp_expr cp_parser_builtin_offsetof
@@ -2557,6 +2587,10 @@ static tree cp_parser_transaction_cancel
 static tree cp_parser_yield_expression
   (cp_parser *);
 
+/* Contracts */
+
+static void cp_parser_late_contract_condition
+  (cp_parser *, tree, tree);
 
 enum pragma_context {
   pragma_external,
@@ -2764,6 +2798,8 @@ static bool cp_parser_compound_literal_p
 static bool cp_parser_array_designator_p
   (cp_parser *);
 static bool cp_parser_init_statement_p
+  (cp_parser *);
+static bool cp_parser_skip_up_to_closing_square_bracket
   (cp_parser *);
 static bool cp_parser_skip_to_closing_square_bracket
   (cp_parser *);
@@ -4177,6 +4213,9 @@ cp_parser_new (cp_lexer *lexer)
 
   /* We are not processing a declarator.  */
   parser->in_declarator_p = false;
+
+  /* We are not parsing a friend declaration.  */
+  parser->declaring_friend_p = false;
 
   /* We are not processing a template-argument-list.  */
   parser->in_template_argument_list_p = false;
@@ -10466,15 +10505,7 @@ cp_parser_constant_expression (cp_parser* parser,
      determine whether a particular assignment-expression is in fact
      constant.  */
   if (strict_p)
-    {
-      /* Parse the binary expressions (logical-or-expression).  */
-      expression = cp_parser_binary_expression (parser, false, false, false,
-						PREC_NOT_OPERATOR, NULL);
-      /* If the next token is a `?' then we're actually looking at
-	 a conditional-expression; otherwise we're done.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_QUERY))
-	expression = cp_parser_question_colon_clause (parser, expression);
-    }
+    expression = cp_parser_conditional_expression (parser);
   else
     expression = cp_parser_assignment_expression (parser);
   /* Restore the old settings.  */
@@ -11543,8 +11574,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       exception_spec,
 				       return_type,
 				       trailing_requires_clause,
+				       std_attrs,
 				       UNKNOWN_LOCATION);
-    declarator->std_attributes = std_attrs;
 
     fco = grokmethod (&return_type_specs,
 		      declarator,
@@ -11827,6 +11858,16 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
   return attrs;
 }
 
+/* True if and only if the name is one of the contract types.  */
+
+static bool
+contract_attribute_p (const_tree id)
+{
+  return is_attribute_p ("assert", id)
+    || is_attribute_p ("pre", id)
+    || is_attribute_p ("post", id);
+}
+
 /* Parse a statement.
 
    statement:
@@ -11867,7 +11908,10 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
   is a (possibly labeled) if statement which is not enclosed in braces
   and has an else clause.  This is used to implement -Wparentheses.
 
-  CHAIN is a vector of if-else-if conditions.  */
+  CHAIN is a vector of if-else-if conditions.
+
+  Note that this version of parsing restricts assertions to be attached to
+  empty statements. */
 
 static void
 cp_parser_statement (cp_parser* parser, tree in_statement_expr,
@@ -11907,6 +11951,23 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
+
+  /* If we have contracts, check that they're valid in this context.  */
+  if (std_attrs != error_mark_node)
+    {
+      if (tree pre = lookup_attribute ("pre", std_attrs))
+	error_at (EXPR_LOCATION (TREE_VALUE (pre)),
+		  "preconditions cannot be statements");
+      else if (tree post = lookup_attribute ("post", std_attrs))
+	error_at (EXPR_LOCATION (TREE_VALUE (post)),
+		  "postconditions cannot be statements");
+
+    /* Check that assertions are null statements.  */
+    if (cp_contract_assertion_p (std_attrs))
+      if (token->type != CPP_SEMICOLON)
+	error_at (token->location, "assertions must be followed by %<;%>");
+    }
+
   /* Remember the location of the first token in the statement.  */
   cp_token *statement_token = token;
   statement_location = token->location;
@@ -12095,6 +12156,15 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  else
 	    warning_at (statement_location, OPT_Wattributes,
 			"%<fallthrough%> attribute not followed by %<;%>");
+	  std_attrs = NULL_TREE;
+	}
+
+      /* Handle [[assert: ...]];  */
+      if (cp_contract_assertion_p (std_attrs))
+	{
+	  /* Add the assertion as a statement in the current block.  */
+	  gcc_assert (!statement || statement == error_mark_node);
+	  emit_assertion (std_attrs);
 	  std_attrs = NULL_TREE;
 	}
     }
@@ -15201,7 +15271,12 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 		   declared.  */;
 	      else
 		{
-		  if (decl_specs->type && CLASS_TYPE_P (decl_specs->type))
+		  if (find_contract (attrs))
+		    {
+		      diagnose_misapplied_contracts (attrs);
+		      attrs = NULL_TREE;
+		    }
+		  else if (decl_specs->type && CLASS_TYPE_P (decl_specs->type))
 		    {
 		      /*  This is an attribute following a
 			  class-specifier.  */
@@ -16220,6 +16295,21 @@ cp_parser_conversion_declarator_opt (cp_parser* parser)
    }
 
   return NULL;
+}
+
+/* Parse a conditional-expression.  */
+
+static cp_expr
+cp_parser_conditional_expression (cp_parser *parser)
+{
+  /* Parse the binary expressions (logical-or-expression).  */
+  cp_expr expression = cp_parser_binary_expression (parser, false, false, false,
+						    PREC_NOT_OPERATOR, NULL);
+  /* If the next token is a `?' then we're actually looking at
+     a conditional-expression; otherwise we're done.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_QUERY))
+    expression = cp_parser_question_colon_clause (parser, expression);
+  return expression;
 }
 
 /* Parse an (optional) ctor-initializer.
@@ -22591,7 +22681,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    = cp_parser_exception_specification_opt (parser,
 							     flags);
 
+		  bool saved_declaring_friend_p = parser->declaring_friend_p;
+		  parser->declaring_friend_p = friend_p;
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
+		  parser->declaring_friend_p = saved_declaring_friend_p;
 
 		  /* In here, we handle cases where attribute is used after
 		     the function declaration.  For example:
@@ -22617,8 +22710,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     exception_specification,
 						     late_return,
 						     requires_clause,
+						     attrs,
 						     parens_loc);
-		  declarator->std_attributes = attrs;
 		  declarator->attributes = gnu_attrs;
 		  /* Any subsequent parameter lists are to do with
 		     return type, so are not those of the declared
@@ -24663,11 +24756,11 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
   return result;
 }
 
-/* Consume tokens up to, and including, the next non-nested closing `]'.
+/* Consume tokens up to, but not including, the next non-nested closing `]'.
    Returns true iff we found a closing `]'.  */
 
 static bool
-cp_parser_skip_to_closing_square_bracket (cp_parser *parser)
+cp_parser_skip_up_to_closing_square_bracket (cp_parser *parser)
 {
   unsigned square_depth = 0;
 
@@ -24692,19 +24785,28 @@ cp_parser_skip_to_closing_square_bracket (cp_parser *parser)
 
         case CPP_CLOSE_SQUARE:
 	  if (!square_depth--)
-	    {
-	      cp_lexer_consume_token (parser->lexer);
-	      return true;
-	    }
+	    return true;
 	  break;
 
 	default:
 	  break;
 	}
 
-      /* Consume the token.  */
+      /* Consume the current token, skipping it.  */
       cp_lexer_consume_token (parser->lexer);
     }
+}
+
+/* Consume tokens up to, and including, the next non-nested closing `]'.
+   Returns true iff we found a closing `]'.  */
+
+static bool
+cp_parser_skip_to_closing_square_bracket (cp_parser *parser)
+{
+  bool found = cp_parser_skip_up_to_closing_square_bracket (parser);
+  if (found)
+    cp_lexer_consume_token (parser->lexer);
+  return found;
 }
 
 /* Return true if we are looking at an array-designator, false otherwise.  */
@@ -25545,6 +25647,56 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  cp_parser_late_parsing_nsdmi (parser, decl);
 	}
       vec_safe_truncate (unparsed_nsdmis, 0);
+
+      /* Now contract attributes.  */
+      FOR_EACH_VEC_SAFE_ELT (unparsed_contracts, ix, decl)
+	{
+	  tree ctx = DECL_CONTEXT (decl);
+	  if (class_type != ctx)
+	    {
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      class_type = ctx;
+	      pushed_scope = push_scope (class_type);
+	    }
+
+	  temp_override<tree> cfd(current_function_decl, decl);
+
+	  /* Make sure that any template parameters are in scope.  */
+	  maybe_begin_member_template_processing (decl);
+
+	  /* Make sure that any member-function parameters are in scope.
+	     This function doesn't expect ccp to be set.  */
+	  current_class_ptr = current_class_ref = NULL_TREE;
+	  inject_parm_decls (decl);
+
+	  /* 'this' is not allowed in static member functions.  */
+	  unsigned char local_variables_forbidden_p
+	    = parser->local_variables_forbidden_p;
+	  if (DECL_THIS_STATIC (decl))
+	    parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
+
+	  /* Now we can parse contract conditions.  */
+	  for (tree a = DECL_ATTRIBUTES (decl); a; a = TREE_CHAIN (a))
+	    {
+	      if (cxx_contract_attribute_p (a))
+		cp_parser_late_contract_condition (parser, decl, a);
+	    }
+
+	  /* Restore the state of local_variables_forbidden_p.  */
+	  parser->local_variables_forbidden_p = local_variables_forbidden_p;
+
+	  /* Remove any member-function parameters from the symbol table.  */
+	  pop_injected_parms ();
+
+	  /* Remove any template parameters from the symbol table.  */
+	  maybe_end_member_template_processing ();
+
+	  /* Perform any deferred contract matching.  */
+	  match_deferred_contracts (decl);
+	}
+      vec_safe_truncate (unparsed_contracts, 0);
+
       current_class_ptr = save_ccp;
       current_class_ref = save_ccr;
       if (pushed_scope)
@@ -25658,6 +25810,8 @@ cp_parser_class_head (cp_parser* parser,
 
   /* Parse the attributes.  */
   attributes = cp_parser_attributes_opt (parser);
+  if (find_contract (attributes))
+    diagnose_misapplied_contracts (attributes);
 
   /* If the next token is `::', that is invalid -- but sometimes
      people do try to write:
@@ -26773,6 +26927,13 @@ cp_parser_member_declaration (cp_parser* parser)
 	      decl = grokfield (declarator, &decl_specifiers,
 				initializer, /*init_const_expr_p=*/true,
 				asm_specification, attributes);
+
+	      /* If we've declared a member function with contracts, ensure we
+		 do late parsing for the contracts even if we have no function
+		 body to parse at that time.  */
+	      if (DECL_DECLARES_FUNCTION_P (decl) && DECL_CONTRACTS (decl))
+		vec_safe_push (unparsed_funs_with_definitions, decl);
+
 	      if (parser->fully_implicit_function_template_p)
 		{
 		  if (friend_p)
@@ -28533,10 +28694,364 @@ cp_parser_std_attribute_list (cp_parser *parser, tree attr_ns)
   return attributes;
 }
 
+/* Optionally parse a C++20 contract role. A NULL return means that no
+   contract role was specified.
+
+    contract-role:
+      % default
+      % identifier
+
+   If the identifier does not name a known contract role, it will
+   be assumed to be default. Returns the identifier for the role
+   token.  */
+
+static tree
+cp_parser_contract_role (cp_parser *parser)
+{
+  gcc_assert (cp_lexer_next_token_is (parser->lexer, CPP_MOD));
+  cp_lexer_consume_token (parser->lexer);
+
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  tree role_id = NULL_TREE;
+  if (token->type == CPP_NAME)
+    role_id = token->u.value;
+  else if (token->type == CPP_KEYWORD && token->keyword == RID_DEFAULT)
+    role_id = get_identifier ("default");
+  else
+    {
+      error_at (token->location, "expected contract-role");
+      return error_mark_node;
+    }
+  cp_lexer_consume_token (parser->lexer);
+
+  /* FIXME: Warn about invalid/unknown roles?  */
+  return role_id;
+}
+
+/* Parse an optional contract mode.
+
+     contract-mode:
+	contract-semantic
+	[contract-level] [contract-role]
+
+     contract-semantic:
+       check_never_continue
+       check_maybe_continue
+       check_always_continue
+
+     contract-level:
+       default
+       audit
+       axiom
+
+     contract-role:
+       default
+       identifier
+
+   This grammar is taken from P1332R0. During parsing, this sets options
+   on the MODE object to determine the configuration of the contract.
+
+   Returns a tree containing the identifiers used in the configuration.
+   This is either an IDENTIFIER with the literal semantic or a TREE_LIST
+   whose TREE_VALUE is the contract-level and whose TREE_PURPOSE is the
+   contract-role, if any. NULL_TREE is returned if no information is
+   given (i.e., all defaults selected).  */
+
+static tree
+cp_parser_contract_mode_opt (cp_parser *parser,
+			     bool postcondition_p)
+{
+  /* The mode is empty; the level and role are default.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+    return NULL_TREE;
+
+  /* There is only a role; the level is default.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_MOD))
+    {
+      tree role_id = cp_parser_contract_role (parser);
+      return build_tree_list (role_id, get_identifier ("default"));
+    }
+
+  /* Otherwise, match semantic or level.  */
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  contract_level level = CONTRACT_INVALID;
+  contract_semantic semantic = CCS_INVALID;
+  tree config_id;
+  if (token->type == CPP_NAME)
+    {
+      config_id = token->u.value;
+
+      /* Either a named level, a concrete semantic, or an identifier
+	 for a postcondition.  */
+      const char *ident = IDENTIFIER_POINTER (token->u.value);
+      level = map_contract_level (ident);
+      semantic = map_contract_semantic (ident);
+
+      /* The identifier is the return value for a postcondition.  */
+      if (level == CONTRACT_INVALID && semantic == CCS_INVALID
+	  && postcondition_p)
+	return NULL_TREE;
+    }
+  else if (token->type == CPP_KEYWORD && token->keyword == RID_DEFAULT)
+    {
+      config_id = get_identifier ("default");
+      level = CONTRACT_DEFAULT;
+    }
+  else
+    {
+      /* We got some other token other than a ':'.  */
+      error_at (token->location, "expected contract semantic or level");
+      return NULL_TREE;
+    }
+
+  /* Consume the literal semantic or level token.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  if (semantic == CCS_INVALID && level == CONTRACT_INVALID)
+    {
+      error_at (token->location,
+		"expected contract level: "
+		"%<default%>, %<audit%>, or %<axiom%>");
+      return NULL_TREE;
+    }
+
+  /* We matched an explicit semantic. */
+  if (semantic != CCS_INVALID)
+    {
+      if (cp_lexer_next_token_is (parser->lexer, CPP_MOD))
+	{
+	  error ("invalid use of contract role for explicit semantic");
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      return config_id;
+    }
+
+  /* We matched a level, there may be a role; otherwise this is default.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_MOD))
+    {
+      tree role_id = cp_parser_contract_role (parser);
+      return build_tree_list (role_id, config_id);
+    }
+
+  return build_tree_list (NULL_TREE, config_id);
+}
+
+static tree
+find_error (tree *tp, int *, void *)
+{
+  if (*tp == error_mark_node)
+    return *tp;
+  return NULL_TREE;
+}
+
+static bool
+contains_error_p (tree t)
+{
+  return walk_tree (&t, find_error, NULL, NULL);
+}
+
+/* Parse a standard C++20 contract attribute specifier.
+
+  contract-attribute-specifier:
+    [ [ assert contract-level [opt] : conditional-expression ] ]
+    [ [ pre contract-level [opt] : conditional-expression ] ]
+    [ [ post contract-level [opt] identifier [opt] : conditional-expression ] ]
+
+   For free functions, we cannot determine the type of the postcondition
+   identifier because the we haven't called grokdeclarator yet. In those
+   cases we parse the postcondition as if the identifier was declared as
+   'auto <identifier>'. We then instantiate the postcondition once the
+   return type is known.
+
+   For member functions, contracts are in the complete-class context, so the
+   parse is deferred. We also have the return type avaialable (unless it's
+   deduced), so we don't need to parse the postcondition in terms of a
+   placeholder.  */
+
+static tree
+cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
+{
+  gcc_assert (contract_attribute_p (attribute));
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  location_t loc = token->location;
+
+  bool assertion_p = is_attribute_p ("assert", attribute);
+  bool postcondition_p = is_attribute_p ("post", attribute);
+
+  /* Parse the optional mode.  */
+  tree mode = cp_parser_contract_mode_opt (parser, postcondition_p);
+
+  /* Check for postcondition identifiers.  */
+  cp_expr identifier;
+  if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    identifier = cp_parser_identifier (parser);
+  if (identifier == error_mark_node)
+    return error_mark_node;
+
+  cp_parser_require (parser, CPP_COLON, RT_COLON);
+
+  /* Defer the parsing of pre/post contracts inside class definitions.
+     Note that friends are not member functions and thus not in the complete
+     class context.  */
+  tree contract;
+  if (!assertion_p
+      && current_class_type
+      && TYPE_BEING_DEFINED (current_class_type)
+      && !parser->declaring_friend_p)
+    {
+      /* Skip until we reach an unenclose ']'. If we ran into an unnested ']'
+	 that doesn't close the attribute, return an error and let the attribute
+	 handling code emit an error for missing ']]'.  */
+      cp_token *first = cp_lexer_peek_token (parser->lexer);
+      cp_parser_skip_to_closing_parenthesis_1 (parser,
+					       /*recovering=*/false,
+					       CPP_CLOSE_SQUARE,
+					       /*consume_paren=*/false);
+      if (cp_lexer_peek_token (parser->lexer)->type != CPP_CLOSE_SQUARE
+	  || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_CLOSE_SQUARE)
+	return error_mark_node;
+      cp_token *last = cp_lexer_peek_token (parser->lexer);
+
+      /* Build a deferred-parse node.  */
+      tree condition = make_node (DEFERRED_PARSE);
+      DEFPARSE_TOKENS (condition) = cp_token_cache_new (first, last);
+      DEFPARSE_INSTANTIATIONS (condition) = NULL;
+
+      /* And it's corresponding contract.  */
+      contract = grok_contract (attribute, mode, identifier, condition, loc);
+    }
+  else
+    {
+      /* Enable location wrappers when parsing contracts.  */
+      auto suppression = make_temp_override (suppress_location_wrappers, 0);
+
+      /* Build a fake variable for the result identifier.  */
+      tree result = NULL_TREE;
+      if (identifier)
+	{
+	  begin_scope (sk_block, NULL_TREE);
+	  result = make_postcondition_variable (identifier);
+	  ++processing_template_decl;
+	}
+
+      /* Parse the condition, ensuring that parameters or the return variable
+	 aren't flagged for use outside the body of a function.  */
+      ++processing_contract_condition;
+      cp_expr condition = cp_parser_conditional_expression (parser);
+      --processing_contract_condition;
+
+      /* Try to recover from errors by scanning up to the end of the
+	 attribute.  Sometimes we get partially parsed expressions, so
+	 we need to search the condition for errors.  */
+      if (contains_error_p (condition))
+	cp_parser_skip_up_to_closing_square_bracket (parser);
+
+      /* Build the contract.  */
+      contract = grok_contract (attribute, mode, result, condition, loc);
+
+      /* Leave our temporary scope for the postcondition result.  */
+      if (result)
+	{
+	  --processing_template_decl;
+	  pop_bindings_and_leave_scope ();
+	}
+    }
+
+  if (!flag_contracts)
+    {
+      error_at (loc, "contracts are only available with %<-fcontracts%>");
+      return error_mark_node;
+    }
+
+  return finish_contract_attribute (attribute, contract);
+}
+
+/* Parse a contract condition for a deferred contract.  */
+
+void cp_parser_late_contract_condition (cp_parser *parser,
+					tree fn,
+					tree attribute)
+{
+  tree contract = TREE_VALUE (TREE_VALUE (attribute));
+
+  /* Make sure we've gotten something that hasn't been parsed yet or that
+     we're not parsing an invalid contract.  */
+  tree condition = CONTRACT_CONDITION (contract);
+  if (TREE_CODE (condition) != DEFERRED_PARSE)
+    return;
+
+  tree identifier = NULL_TREE;
+  if (TREE_CODE (contract) == POSTCONDITION_STMT)
+    identifier = POSTCONDITION_IDENTIFIER (contract);
+
+  /* Build a fake variable for the result identifier.  */
+  tree result = NULL_TREE;
+  if (identifier)
+    {
+      /* TODO: Can we guarantee that the identifier has a location? */
+      location_t loc = cp_expr_location (contract);
+      tree type = TREE_TYPE (TREE_TYPE (fn));
+      if (!check_postcondition_result (fn, type, loc))
+	{
+	  invalidate_contract (contract);
+	  return;
+	}
+
+      begin_scope (sk_block, NULL_TREE);
+      result = make_postcondition_variable (identifier, type);
+      ++processing_template_decl;
+    }
+
+  /* 'this' is not allowed in preconditions of constructors or in postconditions
+     of destructors.  Note that the previous value of this variable is
+     established by the calling function, so we need to save it here.  */
+  tree saved_ccr = current_class_ref;
+  tree saved_ccp = current_class_ptr;
+  if ((DECL_CONSTRUCTOR_P (fn) && PRECONDITION_P (contract)) ||
+       (DECL_DESTRUCTOR_P (fn) && POSTCONDITION_P (contract)))
+    {
+      current_class_ref = current_class_ptr = NULL_TREE;
+      parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
+    }
+
+  push_unparsed_function_queues (parser);
+
+  /* Push the saved tokens onto the parser's lexer stack.  */
+  cp_token_cache *tokens = DEFPARSE_TOKENS (condition);
+  cp_parser_push_lexer_for_tokens (parser, tokens);
+
+  /* Parse the condition, ensuring that parameters or the return variable
+     aren't flagged for use outside the body of a function.  */
+  ++processing_contract_condition;
+  condition = cp_parser_conditional_expression (parser);
+  --processing_contract_condition;
+
+  /* Revert to the main lexer.  */
+  cp_parser_pop_lexer (parser);
+
+  /* Restore the queue.  */
+  pop_unparsed_function_queues (parser);
+
+  current_class_ref = saved_ccr;
+  current_class_ptr = saved_ccp;
+
+  /* Commit to changes.  */
+  update_late_contract (contract, result, condition);
+
+  /* Leave our temporary scope for the postcondition result.  */
+  if (result)
+    {
+      --processing_template_decl;
+      pop_bindings_and_leave_scope ();
+    }
+}
+
 /* Parse a standard C++-11 attribute specifier.
 
    attribute-specifier:
      [ [ attribute-using-prefix [opt] attribute-list ] ]
+     contract-attribute-specifier
      alignment-specifier
 
    attribute-using-prefix:
@@ -28544,7 +29059,15 @@ cp_parser_std_attribute_list (cp_parser *parser, tree attr_ns)
 
    alignment-specifier:
      alignas ( type-id ... [opt] )
-     alignas ( alignment-expression ... [opt] ).  */
+     alignas ( alignment-expression ... [opt] ).
+
+   Extensions for contracts:
+
+   contract-attribute-specifier:
+     [ [ assert :  contract-mode [opt] : conditional-expression ] ]
+     [ [ pre :  contract-mode [opt] : conditional-expression ] ]
+     [ [ post :  contract-mode [opt] identifier [opt] :
+	 conditional-expression ] ]  */
 
 static tree
 cp_parser_std_attribute_spec (cp_parser *parser)
@@ -28556,9 +29079,26 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_OPEN_SQUARE)
     {
       tree attr_ns = NULL_TREE;
+      tree attr_name = NULL_TREE;
 
       cp_lexer_consume_token (parser->lexer);
       cp_lexer_consume_token (parser->lexer);
+
+      token = cp_lexer_peek_token (parser->lexer);
+      if (token->type == CPP_NAME)
+	{
+	  attr_name = token->u.value;
+	  attr_name = canonicalize_attr_name (attr_name);
+	}
+
+      /* Handle contract-attribute-specs specially.  */
+      if (attr_name && contract_attribute_p (attr_name))
+	{
+	  tree attrs = cp_parser_contract_attribute_spec (parser, attr_name);
+	  if (attrs != error_mark_node)
+	    attributes = attrs;
+	  goto finish_attrs;
+	}
 
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
 	{
@@ -28588,6 +29128,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 
       attributes = cp_parser_std_attribute_list (parser, attr_ns);
 
+      finish_attrs:
       if (!cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE)
 	  || !cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE))
 	cp_parser_skip_to_end_of_statement (parser);
@@ -30575,6 +31116,8 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
     cp_parser_ctor_initializer_opt_and_function_body
       (parser, /*in_function_try_block=*/false);
 
+  fn = current_function_decl;
+
   /* Finish the function.  */
   fn = finish_function (inline_p);
 
@@ -31521,6 +32064,16 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
   tree spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl));
   if (UNPARSED_NOEXCEPT_SPEC_P (spec))
     vec_safe_push (unparsed_noexcepts, decl);
+
+  /* If a member function has attributes, they are all deferred.  */
+  for (tree attr = DECL_ATTRIBUTES (decl); attr; attr = TREE_CHAIN (attr))
+    {
+      if (cxx_contract_attribute_p (attr))
+	{
+	  vec_safe_push (unparsed_contracts, decl);
+	  break;
+	}
+    }
 }
 
 /* DEFAULT_ARG contains the saved tokens for the initializer of DECL,

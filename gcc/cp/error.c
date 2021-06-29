@@ -557,7 +557,8 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       else
 	{
 	  pp_cxx_cv_qualifier_seq (pp, t);
-	  pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
+	  if (tree id = TYPE_IDENTIFIER (t))
+	    pp_cxx_tree_identifier (pp, id);
 	}
       break;
 

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "spellcheck-tree.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-inline.h"
 
 static int is_subobject_of_p (tree, tree);
 static tree dfs_lookup_base (tree, void *);
@@ -1917,6 +1918,38 @@ maybe_check_overriding_exception_spec (tree overrider, tree basefn)
   return true;
 }
 
+/* Replace the any contract attributes on OVERRIDER with a copy where any
+   references to BASEFN's PARM_DECLs have been rewritten to the corresponding
+   PARM_DECL in OVERRIDER.  */
+
+static void
+inherit_base_contracts (tree overrider, tree basefn)
+{
+  tree last = NULL_TREE, contract_attrs = NULL_TREE;
+  for (tree a = DECL_CONTRACTS (basefn);
+      a != NULL_TREE;
+      a = CONTRACT_CHAIN (a))
+    {
+      tree c = copy_node (a);
+      TREE_VALUE (c) = build_tree_list (TREE_PURPOSE (TREE_VALUE (c)),
+					copy_node (CONTRACT_STATEMENT (c)));
+
+      tree src = basefn;
+      tree dst = overrider;
+      remap_contract (src, dst, CONTRACT_STATEMENT (c), /*duplicate_p=*/true);
+
+      CONTRACT_COMMENT (CONTRACT_STATEMENT (c)) =
+	copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
+
+      chainon (last, c);
+      last = c;
+      if (!contract_attrs)
+	contract_attrs = c;
+    }
+
+  set_decl_contracts (overrider, contract_attrs);
+}
+
 /* Check that virtual overrider OVERRIDER is acceptable for base function
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 
@@ -2076,6 +2109,33 @@ check_final_overrider (tree overrider, tree basefn)
 	}
       return 0;
     }
+
+  if (!DECL_HAS_CONTRACTS_P (basefn) && DECL_HAS_CONTRACTS_P (overrider))
+    {
+      auto_diagnostic_group d;
+      error ("function with contracts %q+D overriding contractless function",
+	     overrider);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %qD", basefn);
+      return 0;
+    }
+  else if (DECL_HAS_CONTRACTS_P (basefn) && !DECL_HAS_CONTRACTS_P (overrider))
+    {
+      /* We're inheriting basefn's contracts; create a copy of them but
+	 replace references to their parms to our parms.  */
+      inherit_base_contracts (overrider, basefn);
+    }
+  else if (DECL_HAS_CONTRACTS_P (basefn) && DECL_HAS_CONTRACTS_P (overrider))
+    {
+      /* We're in the process of completing the overrider's class, which means
+	 our conditions definitely are not parsed so simply chain on the
+	 basefn for later checking.
+
+	 Note that OVERRIDER's contracts will have been fully parsed at the
+	 point the deferred match is run.  */
+      defer_guarded_contract_match (overrider, basefn, DECL_CONTRACTS (basefn));
+    }
+
   if (DECL_FINAL_P (basefn))
     {
       auto_diagnostic_group d;
