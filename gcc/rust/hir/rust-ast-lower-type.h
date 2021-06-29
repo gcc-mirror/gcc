@@ -281,6 +281,8 @@ public:
       case AST::Lifetime::LifetimeType::WILDCARD:
 	ltt = HIR::Lifetime::LifetimeType::WILDCARD;
 	break;
+      default:
+	gcc_unreachable ();
       }
 
     HIR::Lifetime lt (mapping, ltt, param.get_lifetime ().get_lifetime_name (),
