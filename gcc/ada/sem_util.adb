@@ -415,16 +415,14 @@ package body Sem_Util is
                if Debug_Flag_Underscore_B then
                   return Make_Level_Literal (Typ_Access_Level (Etype (N)));
 
-               --  For function calls the level is that of the subprogram,
-               --  otherwise (for allocators etc.) we get the level of the
-               --  corresponding anonymous access type which is calculated
-               --  through the normal path of execution.
+               --  For function calls the level is that of the innermost
+               --  master, otherwise (for allocators etc.) we get the level
+               --  of the corresponding anonymous access type, which is
+               --  calculated through the normal path of execution.
 
-               elsif Nkind (N) = N_Function_Call
-                 and then Nkind (Name (N)) /= N_Explicit_Dereference
-               then
+               elsif Nkind (N) = N_Function_Call then
                   return Make_Level_Literal
-                           (Subprogram_Access_Level (Entity (Name (N))));
+                           (Innermost_Master_Scope_Depth (Expr));
                end if;
             end if;
 
@@ -29382,10 +29380,22 @@ package body Sem_Util is
                             (Associated_Node_For_Itype (Typ));
 
                if Present (Def_Ent) then
-                  --  When the type comes from an anonymous access parameter,
-                  --  the level is that of the subprogram declaration.
+                  --  When the defining entity is a subprogram then we know the
+                  --  anonymous access type Typ has been generated to either
+                  --  describe an anonymous access type formal or an anonymous
+                  --  access result type.
 
-                  if Ekind (Def_Ent) in Subprogram_Kind then
+                  --  Since we are only interested in the formal case, avoid
+                  --  the anonymous access result type.
+
+                  if Ekind (Def_Ent) in Subprogram_Kind
+                    and then not (Ekind (Def_Ent) = E_Function
+                                   and then Etype (Def_Ent) = Typ)
+                  then
+                     --  When the type comes from an anonymous access
+                     --  parameter, the level is that of the subprogram
+                     --  declaration.
+
                      return Scope_Depth (Def_Ent);
 
                   --  When the type is an access discriminant, the level is

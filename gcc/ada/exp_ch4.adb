@@ -6911,7 +6911,6 @@ package body Exp_Ch4 is
             if Ada_Version >= Ada_2012
               and then Is_Acc
               and then Ekind (Ltyp) = E_Anonymous_Access_Type
-              and then not No_Dynamic_Accessibility_Checks_Enabled (Lop)
             then
                declare
                   Expr_Entity : Entity_Id := Empty;
@@ -6928,11 +6927,26 @@ package body Exp_Ch4 is
                      end if;
                   end if;
 
+                  --  When restriction No_Dynamic_Accessibility_Checks is in
+                  --  effect, expand the membership test to a static value
+                  --  since we cannot rely on dynamic levels.
+
+                  if No_Dynamic_Accessibility_Checks_Enabled (Lop) then
+                     if Static_Accessibility_Level
+                          (Lop, Object_Decl_Level)
+                            > Type_Access_Level (Rtyp)
+                     then
+                        Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+                     else
+                        Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+                     end if;
+                     Analyze_And_Resolve (N, Restyp);
+
                   --  If a conversion of the anonymous access value to the
                   --  tested type would be illegal, then the result is False.
 
-                  if not Valid_Conversion
-                           (Lop, Rtyp, Lop, Report_Errs => False)
+                  elsif not Valid_Conversion
+                              (Lop, Rtyp, Lop, Report_Errs => False)
                   then
                      Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
                      Analyze_And_Resolve (N, Restyp);

@@ -870,6 +870,44 @@ used, the compiler is allowed to suppress the elaboration counter normally
 associated with the unit. This counter is typically used to check for access
 before elaboration and to control multiple elaboration attempts.
 
+No_Dynamic_Accessibility_Checks
+-------------------------------
+.. index:: No_Dynamic_Accessibility_Checks
+
+[GNAT] No dynamic accessibility checks are generated when this restriction is
+in effect. Instead, dangling references are prevented via more conservative
+compile-time checking. More specifically, existing compile-time checks are
+enforced but with more conservative assumptions about the accessibility levels
+of the relevant entities. These conservative assumptions eliminate the need for
+dynamic accessibility checks.
+
+These new rules for computing (at compile-time) the accessibility level of an
+anonymous access type T are as follows:
+
+*
+ If T is a function result type then, from the caller's perspective, its level
+ is that of the innermost master enclosing the function call. From the callee's
+ perspective, the level of parameters and local variables of the callee is
+ statically deeper than the level of T.
+
+ For any other accessibility level L such that the level of parameters and local
+ variables of the callee is statically deeper than L, the level of T (from the
+ callee's perspective) is also statically deeper than L.
+*
+ If T is the type of a formal parameter then, from the caller's perspective,
+ its level is at least as deep as that of the type of the corresponding actual
+ parameter (whatever that actual parameter might be). From the callee's
+ perspective, the level of parameters and local variables of the callee is
+ statically deeper than the level of T.
+*
+ If T is the type of a discriminant then its level is that of the discriminated
+ type.
+*
+ If T is the type of a stand-alone object then its level is the level of the
+ object.
+*
+ In all other cases, the level of T is as defined by the existing rules of Ada.
+
 No_Dynamic_Sized_Objects
 ------------------------
 .. index:: No_Dynamic_Sized_Objects
