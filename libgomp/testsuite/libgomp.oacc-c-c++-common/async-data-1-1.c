@@ -3,8 +3,6 @@
    Due to one data mapping, this isn't using the libgomp 'cbuf' buffering.
 */
 
-/* { dg-xfail-run-if "TODO" { openacc_radeon_accel_selected } } */
-
 
 #include <stdlib.h>
 
