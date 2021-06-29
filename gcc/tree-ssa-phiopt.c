@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "gimple-range.h"
 #include "gimple-match.h"
+#include "dbgcnt.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
@@ -390,7 +391,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
   gimple_stmt_iterator gsi;
   tree phi_result = PHI_RESULT (phi);
 
-  /* Duplicate range info if we're the only things setting the target PHI.
+  /* Duplicate range info if they are the only things setting the target PHI.
      This is needed as later on, the new_tree will be replacing
      The assignement of the PHI.
      For an example:
@@ -398,19 +399,22 @@ replace_phi_edge_with_variable (basic_block cond_block,
      _4 = min<a_1, 255>
      goto bb2
 
-     range<-INF,255>
+     # RANGE [-INF, 255]
      a_3 = PHI<_4(1)>
      bb3:
 
      use(a_3)
-     And _4 gets prograted into the use of a_3 and losing the range info.
-     This can't be done for more than 2 incoming edges as the progration
-     won't happen.  */
+     And _4 gets propagated into the use of a_3 and losing the range info.
+     This can't be done for more than 2 incoming edges as the propagation
+     won't happen.
+     The new_tree needs to be defined in the same basic block as the conditional.  */
   if (TREE_CODE (new_tree) == SSA_NAME
       && EDGE_COUNT (gimple_bb (phi)->preds) == 2
       && INTEGRAL_TYPE_P (TREE_TYPE (phi_result))
       && !SSA_NAME_RANGE_INFO (new_tree)
-      && SSA_NAME_RANGE_INFO (phi_result))
+      && SSA_NAME_RANGE_INFO (phi_result)
+      && gimple_bb (SSA_NAME_DEF_STMT (new_tree)) == cond_block
+      && dbg_cnt (phiopt_edge_range))
     duplicate_ssa_name_range_info (new_tree,
 				   SSA_NAME_RANGE_TYPE (phi_result),
 				   SSA_NAME_RANGE_INFO (phi_result));
