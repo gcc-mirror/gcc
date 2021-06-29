@@ -3729,16 +3729,11 @@ vect_optimize_slp (vec_info *vinfo)
 	    perm = vertices[idx].perm_out;
 	  else
 	    {
-	      perm = -1;
-	      bool all_constant = true;
+	      perm = vertices[idx].get_perm_in ();
 	      for (graph_edge *succ = slpg->vertices[idx].succ;
 		   succ; succ = succ->succ_next)
 		{
 		  int succ_idx = succ->dest;
-		  slp_tree succ_node = vertices[succ_idx].node;
-		  if (SLP_TREE_DEF_TYPE (succ_node) != vect_external_def
-		      && SLP_TREE_DEF_TYPE (succ_node) != vect_constant_def)
-		    all_constant = false;
 		  int succ_perm = vertices[succ_idx].perm_out;
 		  /* Handle unvisited (and constant) nodes optimistically.  */
 		  /* ???  But for constants once we want to handle
@@ -3750,25 +3745,34 @@ vect_optimize_slp (vec_info *vinfo)
 		    continue;
 		  if (perm == -1)
 		    perm = succ_perm;
-		  else if (succ_perm == 0)
-		    {
-		      perm = 0;
-		      break;
-		    }
-		  else if (!vect_slp_perms_eq (perms, perm, succ_perm))
+		  else if (succ_perm == 0
+			   || !vect_slp_perms_eq (perms, perm, succ_perm))
 		    {
 		      perm = 0;
 		      break;
 		    }
 		}
-	      /* We still lack a forward propagation of materializations
-		 and thus only allow "any" permutes on constant or external
-		 nodes which we handle during materialization by looking
-		 at SLP children.  So avoid having internal "any" permutes
-		 for now, see gcc.dg/vect/bb-slp-71.c for a testcase that
-		 breaks when removing this restriction.  */
-	      if (perm == -1 && all_constant)
-		perm = 0;
+
+	      /* If this is a node we do not want to eventually unshare
+		 but it can be permuted at will, verify all users have
+		 the same permutations registered and otherwise drop to
+		 zero.  */
+	      if (perm == -1
+		  && SLP_TREE_DEF_TYPE (node) != vect_external_def
+		  && SLP_TREE_DEF_TYPE (node) != vect_constant_def)
+		{
+		  int preds_perm = -1;
+		  for (graph_edge *pred = slpg->vertices[idx].pred;
+		       pred; pred = pred->pred_next)
+		    {
+		      int pred_perm = vertices[pred->src].get_perm_in ();
+		      if (preds_perm == -1)
+			preds_perm = pred_perm;
+		      else if (!vect_slp_perms_eq (perms,
+						   pred_perm, preds_perm))
+			perm = 0;
+		    }
+		}
 
 	      if (!vect_slp_perms_eq (perms, perm,
 				      vertices[idx].get_perm_in ()))
@@ -3836,6 +3840,47 @@ vect_optimize_slp (vec_info *vinfo)
 	}
     }
   while (changed);
+  statistics_counter_event (cfun, "SLP optimize perm iterations", iteration);
+
+  /* Compute pre-order.  */
+  auto_vec<int> heads;
+  heads.reserve (vinfo->slp_instances.length ());
+  for (slp_instance inst : vinfo->slp_instances)
+    heads.quick_push (SLP_INSTANCE_TREE (inst)->vertex);
+  auto_vec<int> po;
+  graphds_dfs (slpg, &heads[0], heads.length (), &po, true, NULL, NULL);
+
+  /* Propagate materialized permutes to "any" permute nodes.  For heads
+     ending up as "any" (reductions with just invariants), set them to
+     no permute.  */
+  for (int idx : heads)
+    if (vertices[idx].perm_out == -1)
+      vertices[idx].perm_out = 0;
+  for (i = po.length (); i > 0; --i)
+    {
+      int idx = po[i-1];
+      int perm_in = vertices[idx].get_perm_in ();
+      slp_tree node = vertices[idx].node;
+      if (SLP_TREE_DEF_TYPE (node) == vect_external_def
+	  || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
+	continue;
+      gcc_assert (perm_in != -1);
+      for (graph_edge *succ = slpg->vertices[idx].succ;
+	   succ; succ = succ->succ_next)
+	{
+	  slp_tree succ_node = vertices[succ->dest].node;
+	  if (SLP_TREE_DEF_TYPE (succ_node) == vect_external_def
+	      || SLP_TREE_DEF_TYPE (succ_node) == vect_constant_def)
+	    continue;
+	  if (vertices[succ->dest].perm_out == -1)
+	    vertices[succ->dest].perm_out = perm_in;
+	  else
+	    /* Propagation should have ensured that all preds have the same
+	       permutation.  */
+	    gcc_assert (vect_slp_perms_eq (perms, perm_in,
+					   vertices[succ->dest].perm_out));
+	}
+    }
 
   /* Materialize.  */
   for (i = 0; i < vertices.length (); ++i)
