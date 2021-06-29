@@ -3499,13 +3499,21 @@ vect_slp_build_vertices (hash_set<slp_tree> &visited, slp_tree node,
   vertices.safe_push (slpg_vertex (node));
 
   bool leaf = true;
+  bool force_leaf = false;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     if (child)
       {
 	leaf = false;
 	vect_slp_build_vertices (visited, child, vertices, leafs);
       }
-  if (leaf)
+    else
+      force_leaf = true;
+  /* Since SLP discovery works along use-def edges all cycles have an
+     entry - but there's the exception of cycles where we do not handle
+     the entry explicitely (but with a NULL SLP node), like some reductions
+     and inductions.  Force those SLP PHIs to act as leafs to make them
+     backwards reachable.  */
+  if (leaf || force_leaf)
     leafs.safe_push (node->vertex);
 }
 
@@ -3519,18 +3527,8 @@ vect_slp_build_vertices (vec_info *info, vec<slpg_vertex> &vertices,
   unsigned i;
   slp_instance instance;
   FOR_EACH_VEC_ELT (info->slp_instances, i, instance)
-    {
-      unsigned n_v = vertices.length ();
-      unsigned n_l = leafs.length ();
-      vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
-			       leafs);
-      /* If we added vertices but no entries to the reverse graph we've
-	 added a cycle that is not backwards-reachable.   Push the entry
-	 to mimic as leaf then.  */
-      if (vertices.length () > n_v
-	  && leafs.length () == n_l)
-	leafs.safe_push (SLP_INSTANCE_TREE (instance)->vertex);
-    }
+    vect_slp_build_vertices (visited, SLP_INSTANCE_TREE (instance), vertices,
+			     leafs);
 }
 
 /* Apply (reverse) bijectite PERM to VEC.  */
