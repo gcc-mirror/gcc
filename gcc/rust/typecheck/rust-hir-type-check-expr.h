@@ -1121,7 +1121,6 @@ private:
     for (size_t i = 0; i < expr.get_num_segments (); i++)
       {
 	HIR::PathExprSegment &seg = expr.get_segments ().at (i);
-	bool have_more_segments = i < expr.get_num_segments ();
 	bool is_root = *offset == 0;
 	NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
 
