@@ -1,3 +1,13 @@
+2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (C Language Options): Sort options
+	alphabetically in optlist and also the description itself.
+	Remove leftover -fallow-single-precision from and add missing
+	-fgnu-tm to the optlist.
+
 2021-06-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

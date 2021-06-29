@@ -197,17 +197,16 @@ in the following sections.
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
-@gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
--fpermitted-flt-eval-methods=@var{standard} @gol
--aux-info @var{filename}  -fallow-parameterless-variadic-functions @gol
--fno-asm  -fno-builtin  -fno-builtin-@var{function}  -fgimple@gol
--fhosted  -ffreestanding @gol
+@gccoptlist{-ansi  -std=@var{standard}  -aux-info @var{filename} @gol
+-fallow-parameterless-variadic-functions  -fno-asm  @gol
+-fno-builtin  -fno-builtin-@var{function}  -fcond-mismatch @gol
+-ffreestanding  -fgimple  -fgnu-tm  -fgnu89-inline  -fhosted @gol
+-flax-vector-conversions  -fms-extensions @gol
 -fopenacc  -fopenacc-dim=@var{geom} @gol
 -fopenmp  -fopenmp-simd @gol
--fms-extensions  -fplan9-extensions  -fsso-struct=@var{endianness} @gol
--fallow-single-precision  -fcond-mismatch  -flax-vector-conversions @gol
--fsigned-bitfields  -fsigned-char @gol
--funsigned-bitfields  -funsigned-char}
+-fpermitted-flt-eval-methods=@var{standard} @gol
+-fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields @gol
+-fsigned-char  -funsigned-char  -fsso-struct=@var{endianness}}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -2452,50 +2451,6 @@ and will almost certainly change in incompatible ways in future
 releases.
 @end table
 
-@item -fgnu89-inline
-@opindex fgnu89-inline
-The option @option{-fgnu89-inline} tells GCC to use the traditional
-GNU semantics for @code{inline} functions when in C99 mode.
-@xref{Inline,,An Inline Function is As Fast As a Macro}.
-Using this option is roughly equivalent to adding the
-@code{gnu_inline} function attribute to all inline functions
-(@pxref{Function Attributes}).
-
-The option @option{-fno-gnu89-inline} explicitly tells GCC to use the
-C99 semantics for @code{inline} when in C99 or gnu99 mode (i.e., it
-specifies the default behavior).
-This option is not supported in @option{-std=c90} or
-@option{-std=gnu90} mode.
-
-The preprocessor macros @code{__GNUC_GNU_INLINE__} and
-@code{__GNUC_STDC_INLINE__} may be used to check which semantics are
-in effect for @code{inline} functions.  @xref{Common Predefined
-Macros,,,cpp,The C Preprocessor}.
-
-@item -fpermitted-flt-eval-methods=@var{style}
-@opindex fpermitted-flt-eval-methods
-@opindex fpermitted-flt-eval-methods=c11
-@opindex fpermitted-flt-eval-methods=ts-18661-3
-ISO/IEC TS 18661-3 defines new permissible values for
-@code{FLT_EVAL_METHOD} that indicate that operations and constants with
-a semantic type that is an interchange or extended format should be
-evaluated to the precision and range of that type.  These new values are
-a superset of those permitted under C99/C11, which does not specify the
-meaning of other positive values of @code{FLT_EVAL_METHOD}.  As such, code
-conforming to C11 may not have been written expecting the possibility of
-the new values.
-
-@option{-fpermitted-flt-eval-methods} specifies whether the compiler
-should allow only the values of @code{FLT_EVAL_METHOD} specified in C99/C11,
-or the extended set of values specified in ISO/IEC TS 18661-3.
-
-@var{style} is either @code{c11} or @code{ts-18661-3} as appropriate.
-
-The default when in a standards compliant mode (@option{-std=c11} or similar)
-is @option{-fpermitted-flt-eval-methods=c11}.  The default when in a GNU
-dialect (@option{-std=gnu11} or similar) is
-@option{-fpermitted-flt-eval-methods=ts-18661-3}.
-
 @item -aux-info @var{filename}
 @opindex aux-info
 Output to the given filename prototyped declarations for all functions
@@ -2576,22 +2531,11 @@ built-in functions selectively when using @option{-fno-builtin} or
 #define strcpy(d, s)    __builtin_strcpy ((d), (s))
 @end smallexample
 
-@item -fgimple
-@opindex fgimple
-
-Enable parsing of function definitions marked with @code{__GIMPLE}.
-This is an experimental feature that allows unit testing of GIMPLE
-passes.
-
-@item -fhosted
-@opindex fhosted
-@cindex hosted environment
-
-Assert that compilation targets a hosted environment.  This implies
-@option{-fbuiltin}.  A hosted environment is one in which the
-entire standard library is available, and in which @code{main} has a return
-type of @code{int}.  Examples are nearly everything except a kernel.
-This is equivalent to @option{-fno-freestanding}.
+@item -fcond-mismatch
+@opindex fcond-mismatch
+Allow conditional expressions with mismatched types in the second and
+third arguments.  The value of such an expression is void.  This option
+is not supported for C++.
 
 @item -ffreestanding
 @opindex ffreestanding
@@ -2605,6 +2549,86 @@ This is equivalent to @option{-fno-hosted}.
 
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 freestanding and hosted environments.
+
+@item -fgimple
+@opindex fgimple
+
+Enable parsing of function definitions marked with @code{__GIMPLE}.
+This is an experimental feature that allows unit testing of GIMPLE
+passes.
+
+@item -fgnu-tm
+@opindex fgnu-tm
+When the option @option{-fgnu-tm} is specified, the compiler
+generates code for the Linux variant of Intel's current Transactional
+Memory ABI specification document (Revision 1.1, May 6 2009).  This is
+an experimental feature whose interface may change in future versions
+of GCC, as the official specification changes.  Please note that not
+all architectures are supported for this feature.
+
+For more information on GCC's support for transactional memory,
+@xref{Enabling libitm,,The GNU Transactional Memory Library,libitm,GNU
+Transactional Memory Library}.
+
+Note that the transactional memory feature is not supported with
+non-call exceptions (@option{-fnon-call-exceptions}).
+
+@item -fgnu89-inline
+@opindex fgnu89-inline
+The option @option{-fgnu89-inline} tells GCC to use the traditional
+GNU semantics for @code{inline} functions when in C99 mode.
+@xref{Inline,,An Inline Function is As Fast As a Macro}.
+Using this option is roughly equivalent to adding the
+@code{gnu_inline} function attribute to all inline functions
+(@pxref{Function Attributes}).
+
+The option @option{-fno-gnu89-inline} explicitly tells GCC to use the
+C99 semantics for @code{inline} when in C99 or gnu99 mode (i.e., it
+specifies the default behavior).
+This option is not supported in @option{-std=c90} or
+@option{-std=gnu90} mode.
+
+The preprocessor macros @code{__GNUC_GNU_INLINE__} and
+@code{__GNUC_STDC_INLINE__} may be used to check which semantics are
+in effect for @code{inline} functions.  @xref{Common Predefined
+Macros,,,cpp,The C Preprocessor}.
+
+@item -fhosted
+@opindex fhosted
+@cindex hosted environment
+
+Assert that compilation targets a hosted environment.  This implies
+@option{-fbuiltin}.  A hosted environment is one in which the
+entire standard library is available, and in which @code{main} has a return
+type of @code{int}.  Examples are nearly everything except a kernel.
+This is equivalent to @option{-fno-freestanding}.
+
+@item -flax-vector-conversions
+@opindex flax-vector-conversions
+Allow implicit conversions between vectors with differing numbers of
+elements and/or incompatible element types.  This option should not be
+used for new code.
+
+@item -fms-extensions
+@opindex fms-extensions
+Accept some non-standard constructs used in Microsoft header files.
+
+In C++ code, this allows member names in structures to be similar
+to previous types declarations.
+
+@smallexample
+typedef int UOW;
+struct ABC @{
+  UOW UOW;
+@};
+@end smallexample
+
+Some cases of unnamed fields in structures and unions are only
+accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
+fields within structs/unions}, for details.
+
+Note that this option is off for all targets except for x86
+targets using ms-abi.
 
 @item -fopenacc
 @opindex fopenacc
@@ -2647,42 +2671,29 @@ Enable handling of OpenMP's SIMD directives with @code{#pragma omp}
 in C/C++ and @code{!$omp} in Fortran. Other OpenMP directives
 are ignored.
 
-@item -fgnu-tm
-@opindex fgnu-tm
-When the option @option{-fgnu-tm} is specified, the compiler
-generates code for the Linux variant of Intel's current Transactional
-Memory ABI specification document (Revision 1.1, May 6 2009).  This is
-an experimental feature whose interface may change in future versions
-of GCC, as the official specification changes.  Please note that not
-all architectures are supported for this feature.
+@item -fpermitted-flt-eval-methods=@var{style}
+@opindex fpermitted-flt-eval-methods
+@opindex fpermitted-flt-eval-methods=c11
+@opindex fpermitted-flt-eval-methods=ts-18661-3
+ISO/IEC TS 18661-3 defines new permissible values for
+@code{FLT_EVAL_METHOD} that indicate that operations and constants with
+a semantic type that is an interchange or extended format should be
+evaluated to the precision and range of that type.  These new values are
+a superset of those permitted under C99/C11, which does not specify the
+meaning of other positive values of @code{FLT_EVAL_METHOD}.  As such, code
+conforming to C11 may not have been written expecting the possibility of
+the new values.
 
-For more information on GCC's support for transactional memory,
-@xref{Enabling libitm,,The GNU Transactional Memory Library,libitm,GNU
-Transactional Memory Library}.
+@option{-fpermitted-flt-eval-methods} specifies whether the compiler
+should allow only the values of @code{FLT_EVAL_METHOD} specified in C99/C11,
+or the extended set of values specified in ISO/IEC TS 18661-3.
 
-Note that the transactional memory feature is not supported with
-non-call exceptions (@option{-fnon-call-exceptions}).
+@var{style} is either @code{c11} or @code{ts-18661-3} as appropriate.
 
-@item -fms-extensions
-@opindex fms-extensions
-Accept some non-standard constructs used in Microsoft header files.
-
-In C++ code, this allows member names in structures to be similar
-to previous types declarations.
-
-@smallexample
-typedef int UOW;
-struct ABC @{
-  UOW UOW;
-@};
-@end smallexample
-
-Some cases of unnamed fields in structures and unions are only
-accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
-fields within structs/unions}, for details.
-
-Note that this option is off for all targets except for x86
-targets using ms-abi.
+The default when in a standards compliant mode (@option{-std=c11} or similar)
+is @option{-fpermitted-flt-eval-methods=c11}.  The default when in a GNU
+dialect (@option{-std=gnu11} or similar) is
+@option{-fpermitted-flt-eval-methods=ts-18661-3}.
 
 @item -fplan9-extensions
 @opindex fplan9-extensions
@@ -2695,17 +2706,26 @@ fields declared using a typedef.  @xref{Unnamed Fields,,Unnamed
 struct/union fields within structs/unions}, for details.  This is only
 supported for C, not C++.
 
-@item -fcond-mismatch
-@opindex fcond-mismatch
-Allow conditional expressions with mismatched types in the second and
-third arguments.  The value of such an expression is void.  This option
-is not supported for C++.
+@item -fsigned-bitfields
+@itemx -funsigned-bitfields
+@itemx -fno-signed-bitfields
+@itemx -fno-unsigned-bitfields
+@opindex fsigned-bitfields
+@opindex funsigned-bitfields
+@opindex fno-signed-bitfields
+@opindex fno-unsigned-bitfields
+These options control whether a bit-field is signed or unsigned, when the
+declaration does not use either @code{signed} or @code{unsigned}.  By
+default, such a bit-field is signed, because this is consistent: the
+basic integer types such as @code{int} are signed types.
 
-@item -flax-vector-conversions
-@opindex flax-vector-conversions
-Allow implicit conversions between vectors with differing numbers of
-elements and/or incompatible element types.  This option should not be
-used for new code.
+@item -fsigned-char
+@opindex fsigned-char
+Let the type @code{char} be signed, like @code{signed char}.
+
+Note that this is equivalent to @option{-fno-unsigned-char}, which is
+the negative form of @option{-funsigned-char}.  Likewise, the option
+@option{-fno-signed-char} is equivalent to @option{-funsigned-char}.
 
 @item -funsigned-char
 @opindex funsigned-char
@@ -2725,27 +2745,6 @@ make such a program work with the opposite default.
 The type @code{char} is always a distinct type from each of
 @code{signed char} or @code{unsigned char}, even though its behavior
 is always just like one of those two.
-
-@item -fsigned-char
-@opindex fsigned-char
-Let the type @code{char} be signed, like @code{signed char}.
-
-Note that this is equivalent to @option{-fno-unsigned-char}, which is
-the negative form of @option{-funsigned-char}.  Likewise, the option
-@option{-fno-signed-char} is equivalent to @option{-funsigned-char}.
-
-@item -fsigned-bitfields
-@itemx -funsigned-bitfields
-@itemx -fno-signed-bitfields
-@itemx -fno-unsigned-bitfields
-@opindex fsigned-bitfields
-@opindex funsigned-bitfields
-@opindex fno-signed-bitfields
-@opindex fno-unsigned-bitfields
-These options control whether a bit-field is signed or unsigned, when the
-declaration does not use either @code{signed} or @code{unsigned}.  By
-default, such a bit-field is signed, because this is consistent: the
-basic integer types such as @code{int} are signed types.
 
 @item -fsso-struct=@var{endianness}
 @opindex fsso-struct
