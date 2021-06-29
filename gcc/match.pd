@@ -5018,7 +5018,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (convert @0) INTEGER_CST@1)
   (if (((POINTER_TYPE_P (TREE_TYPE (@0))
 	 && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@0)))
-	 && INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+	 && INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	 /* Don't perform this optimization in GENERIC if @0 has reference
+	    type when sanitizing.  See PR101210.  */
+	 && !(GENERIC
+	      && TREE_CODE (TREE_TYPE (@0)) == REFERENCE_TYPE
+	      && (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))))
 	|| (INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	    && POINTER_TYPE_P (TREE_TYPE (@1))
 	    && !FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@1)))))
