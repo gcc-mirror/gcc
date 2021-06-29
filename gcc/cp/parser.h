@@ -388,7 +388,7 @@ struct GTY(()) cp_parser {
   /* When parsing #pragma acc routine, this is a pointer to a helper data
      structure.  */
   cp_oacc_routine_data * GTY((skip)) oacc_routine;
-  
+
   /* Nonzero if parsing a parameter list where 'auto' should trigger an implicit
      template parameter.  */
   bool auto_is_implicit_function_template_parm_p;

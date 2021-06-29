@@ -1646,6 +1646,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 		 there were no definition, and vice versa.  */
 	      DECL_INITIAL (fn) = NULL_TREE;
 	      duplicate_decls (spec, fn, /*hiding=*/is_friend);
+
 	      /* The call to duplicate_decls will have applied
 		 [temp.expl.spec]:
 
@@ -11990,6 +11991,7 @@ instantiate_class_template_1 (tree type)
 	      r = tsubst (t, args, tf_error, NULL_TREE);
 	      if (TREE_CODE (t) == TEMPLATE_DECL)
 		--processing_template_decl;
+
 	      set_current_access_from_decl (r);
 	      finish_member_declaration (r);
 	      /* Instantiate members marked with attribute used.  */
@@ -16558,7 +16560,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* This can happen for a parameter name used later in a function
 	     declaration (such as in a late-specified return type).  Just
 	     make a dummy decl, since it's only used for its type.  */
-	  gcc_assert (cp_unevaluated_operand != 0);
+	  gcc_assert (cp_unevaluated_operand);
 	  r = tsubst_decl (t, args, complain);
 	  /* Give it the template pattern as its context; its true context
 	     hasn't been instantiated yet and this is good enough for
@@ -21178,6 +21180,7 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
 	}
       return error_mark_node;
     }
+
   return fndecl;
 }
 
@@ -25411,12 +25414,9 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 {
   /* The arguments used to instantiate DECL, from the most general
      template.  */
-  tree code_pattern;
+  tree code_pattern = DECL_TEMPLATE_RESULT (tmpl);
 
-  code_pattern = DECL_TEMPLATE_RESULT (tmpl);
-
-  /* Make sure that we can see identifiers, and compute access
-     correctly.  */
+  /* Make sure that we can see identifiers, and compute access correctly.  */
   push_access_scope (decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)

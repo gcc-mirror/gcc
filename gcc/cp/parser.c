@@ -11538,10 +11538,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     declarator = make_call_declarator (declarator, param_list, quals,
 				       VIRT_SPEC_UNSPECIFIED,
-                                       REF_QUAL_NONE,
+				       REF_QUAL_NONE,
 				       tx_qual,
 				       exception_spec,
-                                       return_type,
+				       return_type,
 				       trailing_requires_clause,
 				       UNKNOWN_LOCATION);
     declarator->std_attributes = std_attrs;
@@ -24681,6 +24681,7 @@ cp_parser_skip_to_closing_square_bracket (cp_parser *parser)
 	  if (!parser->lexer->in_pragma)
 	    break;
 	  /* FALLTHRU */
+
 	case CPP_EOF:
 	  /* If we've run out of tokens, then there is no closing `]'.  */
 	  return false;
@@ -26743,6 +26744,7 @@ cp_parser_member_declaration (cp_parser* parser)
 							      &decl_specifiers,
 							      declarator,
 							      attributes);
+
 		  if (parser->fully_implicit_function_template_p)
 		    decl = finish_fully_implicit_template (parser, decl);
 		  /* If the member was not a friend, declare it here.  */
@@ -26766,6 +26768,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      else
 		if (declarator->kind == cdk_function)
 		  declarator->id_loc = token->location;
+
 	      /* Create the declaration.  */
 	      decl = grokfield (declarator, &decl_specifiers,
 				initializer, /*init_const_expr_p=*/true,
@@ -28340,6 +28343,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       attr_id = canonicalize_attr_name (attr_id);
       attribute = build_tree_list (build_tree_list (NULL_TREE, attr_id),
 				   NULL_TREE);
+
       /* We used to treat C++11 noreturn attribute as equivalent to GNU's,
 	 but no longer: we have to be able to tell [[noreturn]] and
 	 __attribute__((noreturn)) apart.  */
@@ -28660,8 +28664,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 /* Parse a standard C++-11 attribute-specifier-seq.
 
    attribute-specifier-seq:
-     attribute-specifier-seq [opt] attribute-specifier
- */
+     attribute-specifier-seq [opt] attribute-specifier  */
 
 static tree
 cp_parser_std_attribute_spec_seq (cp_parser *parser)
@@ -30481,12 +30484,13 @@ cp_parser_function_definition_from_specifiers_and_declarator
     {
       timevar_id_t tv;
       if (DECL_DECLARED_INLINE_P (current_function_decl))
-        tv = TV_PARSE_INLINE;
+	tv = TV_PARSE_INLINE;
       else
-        tv = TV_PARSE_FUNC;
+	tv = TV_PARSE_FUNC;
       timevar_push (tv);
+
       fn = cp_parser_function_definition_after_declarator (parser,
-							 /*inline_p=*/false);
+							   /*inline_p=*/false);
       timevar_pop (tv);
     }
 
@@ -30583,6 +30587,7 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
 
   /* Generate code for it, if necessary.  */
   expand_or_defer_fn (fn);
+
   /* Restore the saved values.  */
   parser->in_unbraced_linkage_specification_p
     = saved_in_unbraced_linkage_specification_p;
@@ -31422,6 +31427,7 @@ static void
 cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
 {
   timevar_push (TV_PARSE_INMETH);
+
   /* If this member is a template, get the underlying
      FUNCTION_DECL.  */
   if (DECL_FUNCTION_TEMPLATE_P (member_function))

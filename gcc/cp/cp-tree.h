@@ -7265,7 +7265,7 @@ extern tree get_template_argument_pack_elems	(const_tree);
 extern tree get_function_template_decl		(const_tree);
 extern tree resolve_nondeduced_context		(tree, tsubst_flags_t);
 extern tree resolve_nondeduced_context_or_error	(tree, tsubst_flags_t);
-extern hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
+extern hashval_t iterative_hash_template_arg	(tree arg, hashval_t val);
 extern tree coerce_template_parms               (tree, tree, tree);
 extern tree coerce_template_parms               (tree, tree, tree, tsubst_flags_t);
 extern tree canonicalize_type_argument		(tree, tsubst_flags_t);
@@ -7325,7 +7325,7 @@ extern tree lookup_fnfields			(tree, tree, int, tsubst_flags_t);
 extern tree lookup_member			(tree, tree, int, bool,
 						 tsubst_flags_t,
 						 access_failure_info *afi = NULL);
-extern tree lookup_member_fuzzy		(tree, tree, bool);
+extern tree lookup_member_fuzzy			(tree, tree, bool);
 extern tree locate_field_accessor		(tree, tree, bool);
 extern int look_for_overrides			(tree, tree);
 extern void get_pure_virtuals			(tree);

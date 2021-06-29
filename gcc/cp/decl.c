@@ -2250,7 +2250,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		= DECL_DECLARED_INLINE_P (new_result);
 	      DECL_DISREGARD_INLINE_LIMITS (old_result)
 	        |= DECL_DISREGARD_INLINE_LIMITS (new_result);
-
 	    }
 	  else
 	    {
@@ -9864,7 +9863,6 @@ grokfndecl (tree ctype,
 			orig_declarator);
 	      return NULL_TREE;
 	    }
-
 
 	  /* A friend declaration of the form friend void f<>().  Record
 	     the information in the TEMPLATE_ID_EXPR.  */
