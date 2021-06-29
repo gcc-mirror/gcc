@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
+#include "memmodel.h"
 #include "tm_p.h"
 #include "output.h"
 #include "dwarf2asm.h"
