@@ -1,3 +1,11 @@
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+	    David Faust  <david.faust@oracle.com>
+	    Jose E. Marchesi  <jose.marchesi@oracle.com>
+	    Weimin Pan  <weimin.pan@oracle.com>
+
+	* ctf.h: New file.
+	* btf.h: Likewise.
+
 2021-05-06  Tom Tromey  <tom@tromey.com>
 
 	* hashtab.h (htab_eq_string): Declare.

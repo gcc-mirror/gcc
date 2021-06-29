@@ -2007,7 +2007,7 @@ objc_maybe_build_modify_expr (tree lhs, tree rhs)
 	 correct (maybe a more sophisticated implementation could
 	 avoid generating the compound expression if not needed), but
 	 we need to turn it off.  */
-      TREE_NO_WARNING (compound_expr) = 1;
+      suppress_warning (compound_expr, OPT_Wunused);
       return compound_expr;
     }
   else
@@ -2129,7 +2129,7 @@ objc_build_incr_expr_for_property_ref (location_t location,
 
   /* Prevent C++ from warning with -Wall that "right operand of comma
      operator has no effect".  */
-  TREE_NO_WARNING (compound_expr) = 1;
+  suppress_warning (compound_expr, OPT_Wunused);
   return compound_expr;
 }
 
@@ -2262,8 +2262,9 @@ objc_build_struct (tree klass, tree fields, tree super_name)
       DECL_FIELD_IS_BASE (base) = 1;
 
       if (fields)
-	TREE_NO_WARNING (fields) = 1;	/* Suppress C++ ABI warnings -- we   */
-#endif					/* are following the ObjC ABI here.  */
+	/* Suppress C++ ABI warnings: we are following the ObjC ABI here.  */
+	suppress_warning (fields, OPT_Wabi);
+#endif
       DECL_CHAIN (base) = fields;
       fields = base;
     }
@@ -3112,19 +3113,19 @@ synth_module_prologue (void)
 						TYPE_DECL,
 						objc_object_name,
 						objc_object_type));
-  TREE_NO_WARNING (type) = 1;
+  suppress_warning (type);
 
   type = lang_hooks.decls.pushdecl (build_decl (input_location,
 						TYPE_DECL,
 						objc_instancetype_name,
 						objc_instancetype_type));
-  TREE_NO_WARNING (type) = 1;
+  suppress_warning (type);
 
   type = lang_hooks.decls.pushdecl (build_decl (input_location,
 						TYPE_DECL,
 						objc_class_name,
 						objc_class_type));
-  TREE_NO_WARNING (type) = 1;
+  suppress_warning (type);
 
   /* Forward-declare '@interface Protocol'.  */
   type = get_identifier (PROTOCOL_OBJECT_CLASS_NAME);

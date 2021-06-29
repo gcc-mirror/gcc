@@ -150,23 +150,23 @@ tree get_dtype_type_node (void)
       field = gfc_add_field_to_struct_1 (dtype_node,
 					 get_identifier ("elem_len"),
 					 size_type_node, &dtype_chain);
-      TREE_NO_WARNING (field) = 1;
+      suppress_warning (field);
       field = gfc_add_field_to_struct_1 (dtype_node,
 					 get_identifier ("version"),
 					 integer_type_node, &dtype_chain);
-      TREE_NO_WARNING (field) = 1;
+      suppress_warning (field);
       field = gfc_add_field_to_struct_1 (dtype_node,
 					 get_identifier ("rank"),
 					 signed_char_type_node, &dtype_chain);
-      TREE_NO_WARNING (field) = 1;
+      suppress_warning (field);
       field = gfc_add_field_to_struct_1 (dtype_node,
 					 get_identifier ("type"),
 					 signed_char_type_node, &dtype_chain);
-      TREE_NO_WARNING (field) = 1;
+      suppress_warning (field);
       field = gfc_add_field_to_struct_1 (dtype_node,
 					 get_identifier ("attribute"),
 					 short_integer_type_node, &dtype_chain);
-      TREE_NO_WARNING (field) = 1;
+      suppress_warning (field);
       gfc_finish_type (dtype_node);
       TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (dtype_node)) = 1;
       dtype_type_node = dtype_node;
@@ -1453,17 +1453,17 @@ gfc_get_desc_dim_type (void)
   decl = gfc_add_field_to_struct_1 (type,
 				    get_identifier ("stride"),
 				    gfc_array_index_type, &chain);
-  TREE_NO_WARNING (decl) = 1;
+  suppress_warning (decl);
 
   decl = gfc_add_field_to_struct_1 (type,
 				    get_identifier ("lbound"),
 				    gfc_array_index_type, &chain);
-  TREE_NO_WARNING (decl) = 1;
+  suppress_warning (decl);
 
   decl = gfc_add_field_to_struct_1 (type,
 				    get_identifier ("ubound"),
 				    gfc_array_index_type, &chain);
-  TREE_NO_WARNING (decl) = 1;
+  suppress_warning (decl);
 
   /* Finish off the type.  */
   gfc_finish_type (type);
@@ -1853,19 +1853,19 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
   decl = gfc_add_field_to_struct_1 (fat_type,
 				    get_identifier ("offset"),
 				    gfc_array_index_type, &chain);
-  TREE_NO_WARNING (decl) = 1;
+  suppress_warning (decl);
 
   /* Add the dtype component.  */
   decl = gfc_add_field_to_struct_1 (fat_type,
 				    get_identifier ("dtype"),
 				    get_dtype_type_node (), &chain);
-  TREE_NO_WARNING (decl) = 1;
+  suppress_warning (decl);
 
   /* Add the span component.  */
   decl = gfc_add_field_to_struct_1 (fat_type,
 				    get_identifier ("span"),
 				    gfc_array_index_type, &chain);
-  TREE_NO_WARNING (decl) = 1;
+  suppress_warning (decl);
 
   /* Build the array type for the stride and bound components.  */
   if (dimen + codimen > 0)
@@ -1878,7 +1878,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
 
       decl = gfc_add_field_to_struct_1 (fat_type, get_identifier ("dim"),
 					arraytype, &chain);
-      TREE_NO_WARNING (decl) = 1;
+      suppress_warning (decl);
     }
 
   if (flag_coarray == GFC_FCOARRAY_LIB)
@@ -1886,7 +1886,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
       decl = gfc_add_field_to_struct_1 (fat_type,
 					get_identifier ("token"),
 					prvoid_type_node, &chain);
-      TREE_NO_WARNING (decl) = 1;
+      suppress_warning (decl);
     }
 
   /* Finish off the type.  */
@@ -2882,7 +2882,7 @@ copy_derived_types:
 	  token = gfc_find_component (derived, caf_name, true, true, NULL);
 	  gcc_assert (token);
 	  c->caf_token = token->backend_decl;
-	  TREE_NO_WARNING (c->caf_token) = 1;
+	  suppress_warning (c->caf_token);
 	}
     }
 
@@ -3547,11 +3547,11 @@ gfc_get_caf_vector_type (int dim)
       tmp = gfc_add_field_to_struct_1 (vect_struct_type,
 				       get_identifier ("vector"),
 				       pvoid_type_node, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       tmp = gfc_add_field_to_struct_1 (vect_struct_type,
 				       get_identifier ("kind"),
 				       integer_type_node, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       gfc_finish_type (vect_struct_type);
 
       chain = 0;
@@ -3559,34 +3559,34 @@ gfc_get_caf_vector_type (int dim)
       tmp = gfc_add_field_to_struct_1 (triplet_struct_type,
 				       get_identifier ("lower_bound"),
 				       gfc_array_index_type, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       tmp = gfc_add_field_to_struct_1 (triplet_struct_type,
 				       get_identifier ("upper_bound"),
 				       gfc_array_index_type, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       tmp = gfc_add_field_to_struct_1 (triplet_struct_type, get_identifier ("stride"),
 				       gfc_array_index_type, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       gfc_finish_type (triplet_struct_type);
 
       chain = 0;
       union_type = make_node (UNION_TYPE);
       tmp = gfc_add_field_to_struct_1 (union_type, get_identifier ("v"),
                                        vect_struct_type, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       tmp = gfc_add_field_to_struct_1 (union_type, get_identifier ("triplet"),
 				       triplet_struct_type, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       gfc_finish_type (union_type);
 
       chain = 0;
       vec_type = make_node (RECORD_TYPE);
       tmp = gfc_add_field_to_struct_1 (vec_type, get_identifier ("nvec"),
 				       size_type_node, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       tmp = gfc_add_field_to_struct_1 (vec_type, get_identifier ("u"),
 				       union_type, &chain);
-      TREE_NO_WARNING (tmp) = 1;
+      suppress_warning (tmp);
       gfc_finish_type (vec_type);
       TYPE_NAME (vec_type) = get_identifier ("caf_vector_t");
     }
@@ -3613,11 +3613,11 @@ gfc_get_caf_reference_type ()
   tmp = gfc_add_field_to_struct_1 (c_struct_type,
 				   get_identifier ("offset"),
 				   gfc_array_index_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (c_struct_type,
 				   get_identifier ("caf_token_offset"),
 				   gfc_array_index_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   gfc_finish_type (c_struct_type);
 
   chain = 0;
@@ -3625,15 +3625,15 @@ gfc_get_caf_reference_type ()
   tmp = gfc_add_field_to_struct_1 (s_struct_type,
 				   get_identifier ("start"),
 				   gfc_array_index_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (s_struct_type,
 				   get_identifier ("end"),
 				   gfc_array_index_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (s_struct_type,
 				   get_identifier ("stride"),
 				   gfc_array_index_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   gfc_finish_type (s_struct_type);
 
   chain = 0;
@@ -3641,25 +3641,25 @@ gfc_get_caf_reference_type ()
   tmp = gfc_add_field_to_struct_1 (v_struct_type,
 				   get_identifier ("vector"),
 				   pvoid_type_node, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (v_struct_type,
 				   get_identifier ("nvec"),
 				   size_type_node, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (v_struct_type,
 				   get_identifier ("kind"),
 				   integer_type_node, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   gfc_finish_type (v_struct_type);
 
   chain = 0;
   union_type = make_node (UNION_TYPE);
   tmp = gfc_add_field_to_struct_1 (union_type, get_identifier ("s"),
 				   s_struct_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (union_type, get_identifier ("v"),
 				   v_struct_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   gfc_finish_type (union_type);
 
   tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node,
@@ -3674,40 +3674,40 @@ gfc_get_caf_reference_type ()
 						    gfc_index_zero_node,
 					 gfc_rank_cst[GFC_MAX_DIMENSIONS - 1])),
 		&chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (a_struct_type,
 				   get_identifier ("static_array_type"),
 				   integer_type_node, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (a_struct_type, get_identifier ("dim"),
 				   dim_union_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   gfc_finish_type (a_struct_type);
 
   chain = 0;
   u_union_type = make_node (UNION_TYPE);
   tmp = gfc_add_field_to_struct_1 (u_union_type, get_identifier ("c"),
 				   c_struct_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (u_union_type, get_identifier ("a"),
 				   a_struct_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   gfc_finish_type (u_union_type);
 
   chain = 0;
   reference_type = make_node (RECORD_TYPE);
   tmp = gfc_add_field_to_struct_1 (reference_type, get_identifier ("next"),
 				   build_pointer_type (reference_type), &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (reference_type, get_identifier ("type"),
 				   integer_type_node, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (reference_type, get_identifier ("item_size"),
 				   size_type_node, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   tmp = gfc_add_field_to_struct_1 (reference_type, get_identifier ("u"),
 				   u_union_type, &chain);
-  TREE_NO_WARNING (tmp) = 1;
+  suppress_warning (tmp);
   gfc_finish_type (reference_type);
   TYPE_NAME (reference_type) = get_identifier ("caf_reference_t");
 

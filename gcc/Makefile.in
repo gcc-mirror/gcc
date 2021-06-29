@@ -1319,6 +1319,9 @@ OBJS = \
 	cfgloopanal.o \
 	cfgloopmanip.o \
 	cfgrtl.o \
+	ctfc.o \
+	ctfout.o \
+	btfout.o \
 	symtab.o \
 	symtab-thunks.o \
 	symtab-clones.o \
@@ -1359,6 +1362,7 @@ OBJS = \
 	dumpfile.o \
 	dwarf2asm.o \
 	dwarf2cfi.o \
+	dwarf2ctf.o \
 	dwarf2out.o \
 	early-remat.o \
 	emit-rtl.o \
@@ -2655,7 +2659,11 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.c \
   $(srcdir)/dwarf2cfi.c \
+  $(srcdir)/dwarf2ctf.c \
   $(srcdir)/dwarf2out.c \
+  $(srcdir)/ctfc.h \
+  $(srcdir)/ctfout.c \
+  $(srcdir)/btfout.c \
   $(srcdir)/tree-vect-generic.c \
   $(srcdir)/gimple-isel.cc \
   $(srcdir)/dojump.c $(srcdir)/emit-rtl.h \

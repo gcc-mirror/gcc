@@ -196,6 +196,7 @@ private:
   hash_set<const svalue *> m_mutable_at_unknown_call_svals;
 };
 
+class byte_range;
 class concrete_binding;
 
 /* An enum for discriminating between "direct" vs "default" levels of
@@ -267,6 +268,8 @@ private:
   enum binding_kind m_kind;
 };
 
+/* A concrete range of bits.  */
+
 struct bit_range
 {
   bit_range (bit_offset_t start_bit_offset, bit_size_t size_in_bits)
@@ -308,8 +311,30 @@ struct bit_range
 
   static bool from_mask (unsigned HOST_WIDE_INT mask, bit_range *out);
 
+  bool as_byte_range (byte_range *out) const;
+
   bit_offset_t m_start_bit_offset;
   bit_size_t m_size_in_bits;
+};
+
+/* A concrete range of bytes.  */
+
+struct byte_range
+{
+  byte_range (byte_offset_t start_byte_offset, byte_size_t size_in_bytes)
+  : m_start_byte_offset (start_byte_offset),
+    m_size_in_bytes (size_in_bytes)
+  {}
+
+  void dump_to_pp (pretty_printer *pp) const;
+
+  byte_offset_t get_last_byte_offset () const
+  {
+    return m_start_byte_offset + m_size_in_bytes - 1;
+  }
+
+  byte_offset_t m_start_byte_offset;
+  byte_size_t m_size_in_bytes;
 };
 
 /* Concrete subclass of binding_key, for describing a concrete range of

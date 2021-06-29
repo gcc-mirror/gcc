@@ -1,3 +1,15 @@
+2021-06-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (byte_offset_t): New typedef.
+	* store.cc (bit_range::dump_to_pp): Dump as a byte range if
+	possible.
+	(bit_range::as_byte_range): New.
+	(byte_range::dump_to_pp): New.
+	* store.h (class byte_range): New forward decl.
+	(struct bit_range): Add comment.
+	(bit_range::as_byte_range): New decl.
+	(struct byte_range): New.
+
 2021-06-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101143

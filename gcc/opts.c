@@ -42,7 +42,7 @@ static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
 const char *const debug_type_names[] =
 {
-  "none", "stabs", "dwarf-2", "xcoff", "vms"
+  "none", "stabs", "dwarf-2", "xcoff", "vms", "ctf", "btf"
 };
 
 /* Bitmasks of fundamental debug info formats indexed by enum
@@ -50,13 +50,14 @@ const char *const debug_type_names[] =
 
 static uint32_t debug_type_masks[] =
 {
-  NO_DEBUG, DBX_DEBUG, DWARF2_DEBUG, XCOFF_DEBUG, VMS_DEBUG
+  NO_DEBUG, DBX_DEBUG, DWARF2_DEBUG, XCOFF_DEBUG, VMS_DEBUG,
+  CTF_DEBUG, BTF_DEBUG
 };
 
 /* Names of the set of debug formats requested by user.  Updated and accessed
    via debug_set_names.  */
 
-static char df_set_names[sizeof "none stabs dwarf-2 xcoff vms"];
+static char df_set_names[sizeof "none stabs dwarf-2 xcoff vms ctf btf"];
 
 /* Get enum debug_info_type of the specified debug format, for error messages.
    Can be used only for individual debug format types.  */
@@ -126,12 +127,29 @@ debug_set_names (uint32_t w_symbols)
   return df_set_names;
 }
 
+/* Return TRUE iff BTF debug info is enabled.  */
+
+bool
+btf_debuginfo_p ()
+{
+  return (write_symbols & BTF_DEBUG);
+}
+
 /* Return TRUE iff dwarf2 debug info is enabled.  */
 
 bool
 dwarf_debuginfo_p ()
 {
   return (write_symbols & DWARF2_DEBUG);
+}
+
+/* Return true iff the debug info format is to be generated based on DWARF
+   DIEs (like CTF and BTF debug info formats).  */
+
+bool dwarf_based_debuginfo_p ()
+{
+  return ((write_symbols & CTF_DEBUG)
+	  || (write_symbols & BTF_DEBUG));
 }
 
 /* Parse the -femit-struct-debug-detailed option value
@@ -2868,6 +2886,24 @@ common_handle_option (struct gcc_options *opts,
                        loc);
       break;
 
+    case OPT_gbtf:
+      set_debug_level (BTF_DEBUG, false, arg, opts, opts_set, loc);
+      /* set the debug level to level 2, but if already at level 3,
+	 don't lower it.  */
+      if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL)
+	opts->x_debug_info_level = DINFO_LEVEL_NORMAL;
+      break;
+
+    case OPT_gctf:
+      set_debug_level (CTF_DEBUG, false, arg, opts, opts_set, loc);
+      /* CTF generation feeds off DWARF dies.  For optimal CTF, switch debug
+	 info level to 2.  If off or at level 1, set it to level 2, but if
+	 already at level 3, don't lower it.  */
+      if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL
+	  && opts->x_ctf_debug_info_level > CTFINFO_LEVEL_NONE)
+	opts->x_debug_info_level = DINFO_LEVEL_NORMAL;
+      break;
+
     case OPT_gdwarf:
       if (arg && strlen (arg) != 0)
         {
@@ -3116,7 +3152,10 @@ set_debug_level (uint32_t dinfo, int extended, const char *arg,
 	  if (extended == 2)
 	    {
 #if defined DWARF2_DEBUGGING_INFO || defined DWARF2_LINENO_DEBUGGING_INFO
-	      opts->x_write_symbols = DWARF2_DEBUG;
+	      if (opts->x_write_symbols & CTF_DEBUG)
+		opts->x_write_symbols |= DWARF2_DEBUG;
+	      else
+		opts->x_write_symbols = DWARF2_DEBUG;
 #elif defined DBX_DEBUGGING_INFO
 	      opts->x_write_symbols = DBX_DEBUG;
 #endif
@@ -3125,41 +3164,81 @@ set_debug_level (uint32_t dinfo, int extended, const char *arg,
 	  if (opts->x_write_symbols == NO_DEBUG)
 	    warning_at (loc, 0, "target system does not support debug output");
 	}
-    }
-  else
-    {
-      /* Does it conflict with an already selected debug format?  */
-      if (opts_set->x_write_symbols != NO_DEBUG
-	  && opts->x_write_symbols != NO_DEBUG
-	  && dinfo != opts->x_write_symbols)
+      else if ((opts->x_write_symbols & CTF_DEBUG)
+	       || (opts->x_write_symbols & BTF_DEBUG))
 	{
-	  gcc_assert (debug_set_count (dinfo) <= 1);
-	  error_at (loc, "debug format %qs conflicts with prior selection",
-		    debug_type_names[debug_set_to_format (dinfo)]);
+	  opts->x_write_symbols |= DWARF2_DEBUG;
+	  opts_set->x_write_symbols |= DWARF2_DEBUG;
 	}
-
-      opts->x_write_symbols = dinfo;
-      opts_set->x_write_symbols = dinfo;
-    }
-
-  /* A debug flag without a level defaults to level 2.
-     If off or at level 1, set it to level 2, but if already
-     at level 3, don't lower it.  */ 
-  if (*arg == '\0')
-    {
-      if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL)
-	opts->x_debug_info_level = DINFO_LEVEL_NORMAL;
     }
   else
     {
-      int argval = integral_argument (arg);
-      if (argval == -1)
-	error_at (loc, "unrecognized debug output level %qs", arg);
-      else if (argval > 3)
-	error_at (loc, "debug output level %qs is too high", arg);
+      /* Make and retain the choice if both CTF and DWARF debug info are to
+	 be generated.  */
+      if (((dinfo == DWARF2_DEBUG) || (dinfo == CTF_DEBUG))
+	  && ((opts->x_write_symbols == (DWARF2_DEBUG|CTF_DEBUG))
+	      || (opts->x_write_symbols == DWARF2_DEBUG)
+	      || (opts->x_write_symbols == CTF_DEBUG)))
+	{
+	  opts->x_write_symbols |= dinfo;
+	  opts_set->x_write_symbols |= dinfo;
+	}
+      /* However, CTF and BTF are not allowed together at this time.  */
+      else if (((dinfo == DWARF2_DEBUG) || (dinfo == BTF_DEBUG))
+	       && ((opts->x_write_symbols == (DWARF2_DEBUG|BTF_DEBUG))
+		   || (opts->x_write_symbols == DWARF2_DEBUG)
+		   || (opts->x_write_symbols == BTF_DEBUG)))
+	{
+	  opts->x_write_symbols |= dinfo;
+	  opts_set->x_write_symbols |= dinfo;
+	}
       else
-	opts->x_debug_info_level = (enum debug_info_levels) argval;
+	{
+	  /* Does it conflict with an already selected debug format?  */
+	  if (opts_set->x_write_symbols != NO_DEBUG
+	      && opts->x_write_symbols != NO_DEBUG
+	      && dinfo != opts->x_write_symbols)
+	    {
+	      gcc_assert (debug_set_count (dinfo) <= 1);
+	      error_at (loc, "debug format %qs conflicts with prior selection",
+			debug_type_names[debug_set_to_format (dinfo)]);
+	    }
+	  opts->x_write_symbols = dinfo;
+	  opts_set->x_write_symbols = dinfo;
+	}
     }
+
+  if (dinfo != BTF_DEBUG)
+    {
+      /* A debug flag without a level defaults to level 2.
+	 If off or at level 1, set it to level 2, but if already
+	 at level 3, don't lower it.  */
+      if (*arg == '\0')
+	{
+	  if (dinfo == CTF_DEBUG)
+	    opts->x_ctf_debug_info_level = CTFINFO_LEVEL_NORMAL;
+	  else if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL)
+	    opts->x_debug_info_level = DINFO_LEVEL_NORMAL;
+	}
+      else
+	{
+	  int argval = integral_argument (arg);
+	  if (argval == -1)
+	    error_at (loc, "unrecognized debug output level %qs", arg);
+	  else if (argval > 3)
+	    error_at (loc, "debug output level %qs is too high", arg);
+	  else
+	    {
+	      if (dinfo == CTF_DEBUG)
+		opts->x_ctf_debug_info_level
+		  = (enum ctf_debug_info_levels) argval;
+	      else
+		opts->x_debug_info_level = (enum debug_info_levels) argval;
+	    }
+	}
+    }
+  else if (*arg != '\0')
+    error_at (loc, "unrecognized btf debug output level %qs", arg);
 }
 
 /* Arrange to dump core on error for diagnostic context DC.  (The

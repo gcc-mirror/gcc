@@ -29,7 +29,9 @@ enum debug_info_type
   DINFO_TYPE_DWARF2 = 2,	  /* Dwarf v2 debug info.  */
   DINFO_TYPE_XCOFF = 3,		  /* IBM/Xcoff debug info.  */
   DINFO_TYPE_VMS = 4,		  /* VMS debug info.  */
-  DINFO_TYPE_MAX = DINFO_TYPE_VMS /* Marker only.  */
+  DINFO_TYPE_CTF = 5,		  /* CTF debug info.  */
+  DINFO_TYPE_BTF = 6,		  /* BTF debug info.  */
+  DINFO_TYPE_MAX = DINFO_TYPE_BTF /* Marker only.  */
 };
 
 #define NO_DEBUG      (0U)
@@ -41,6 +43,10 @@ enum debug_info_type
 #define XCOFF_DEBUG   (1U << DINFO_TYPE_XCOFF)
 /* Write VMS debug info (using vmsdbgout.c).  */
 #define VMS_DEBUG     (1U << DINFO_TYPE_VMS)
+/* Write CTF debug info (using ctfout.c).  */
+#define CTF_DEBUG     (1U << DINFO_TYPE_CTF)
+/* Write BTF debug info (using btfout.c).  */
+#define BTF_DEBUG     (1U << DINFO_TYPE_BTF)
 /* Note: Adding new definitions to handle -combination- of debug formats,
    like VMS_AND_DWARF2_DEBUG is not recommended.  This definition remains
    here for historical reasons.  */
@@ -54,6 +60,19 @@ enum debug_info_levels
   DINFO_LEVEL_TERSE,	/* Write minimal info to support tracebacks only.  */
   DINFO_LEVEL_NORMAL,	/* Write info for all declarations (and line table).  */
   DINFO_LEVEL_VERBOSE	/* Write normal info plus #define/#undef info.  */
+};
+
+/* CTF debug info levels.
+   CTF debug info levels are untied with DWARF debug info levels because CTF
+   may co-exist with DWARF.  */
+enum ctf_debug_info_levels
+{
+  CTFINFO_LEVEL_NONE = 0,     /* Write no CTF debug info.  */
+  CTFINFO_LEVEL_TERSE = 1,    /* Write CTF information to support tracebacks
+				 only.  Not Implemented.  */
+  CTFINFO_LEVEL_NORMAL = 2    /* Write CTF type information for all entities
+				 (functions, data objects, variables etc.)
+				 at file-scope or global-scope only.  */
 };
 
 /* A major contribution to object and executable size is debug

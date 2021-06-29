@@ -1,3 +1,15 @@
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* simple-object.c (handle_lto_debug_sections): Copy over .BTF section.
+
+2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
+	    David Faust  <david.faust@oracle.com>
+	    Jose E. Marchesi  <jose.marchesi@oracle.com>
+	    Weimin Pan  <weimin.pan@oracle.com>
+
+	* simple-object.c (handle_lto_debug_sections): Copy over .ctf
+	sections.
+
 2021-06-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/100734

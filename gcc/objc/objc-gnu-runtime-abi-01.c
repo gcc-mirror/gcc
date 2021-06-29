@@ -213,7 +213,7 @@ static void gnu_runtime_01_initialize (void)
 						TYPE_DECL,
 						objc_selector_name,
 						objc_selector_type));
-  TREE_NO_WARNING (type) = 1;
+  suppress_warning (type);
 
   /* typedef id (*IMP)(id, SEL, ...); */
   ftype = build_varargs_function_type_list (objc_object_type,

@@ -1526,6 +1526,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  : !opt_for_fn (id->dst_fn, flag_var_tracking_assignments)))
     return NULL;
 
+  if (!is_gimple_debug (stmt)
+      && id->param_body_adjs
+      && id->param_body_adjs->m_dead_stmts.contains (stmt))
+    return NULL;
+
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
      different from our input (e.g. RETURN_EXPR is deleted and morphs
@@ -1790,10 +1795,15 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 
       if (gimple_debug_bind_p (stmt))
 	{
+	  tree value;
+	  if (id->param_body_adjs
+	      && id->param_body_adjs->m_dead_stmts.contains (stmt))
+	    value = NULL_TREE;
+	  else
+	    value = gimple_debug_bind_get_value (stmt);
 	  gdebug *copy
 	    = gimple_build_debug_bind (gimple_debug_bind_get_var (stmt),
-				       gimple_debug_bind_get_value (stmt),
-				       stmt);
+				       value, stmt);
 	  if (id->reset_location)
 	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
@@ -1922,7 +1932,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
   if (id->param_body_adjs)
     {
       gimple_seq extra_stmts = NULL;
-      id->param_body_adjs->modify_gimple_stmt (&copy, &extra_stmts);
+      id->param_body_adjs->modify_gimple_stmt (&copy, &extra_stmts, stmt);
       if (!gimple_seq_empty_p (extra_stmts))
 	{
 	  memset (&wi, 0, sizeof (wi));
@@ -2675,7 +2685,9 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
       phi = si.phi ();
       res = PHI_RESULT (phi);
       new_res = res;
-      if (!virtual_operand_p (res))
+      if (!virtual_operand_p (res)
+	  && (!id->param_body_adjs
+	      || !id->param_body_adjs->m_dead_stmts.contains (phi)))
 	{
 	  walk_tree (&new_res, copy_tree_body_r, id, NULL);
 	  if (EDGE_COUNT (new_bb->preds) == 0)
@@ -4730,7 +4742,6 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
   use_operand_p use;
   gimple *simtenter_stmt = NULL;
   vec<tree> *simtvars_save;
-  clone_info *info;
 
   /* The gimplifier uses input_location in too many places, such as
      internal_get_tmp_var ().  */
@@ -5054,40 +5065,6 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 
   /* Add local vars in this inlined callee to caller.  */
   add_local_variables (id->src_cfun, cfun, id);
-
-  info = clone_info::get (id->src_node);
-  if (info && info->performed_splits)
-    {
-      clone_info *dst_info = clone_info::get_create (id->dst_node);
-      /* Any calls from the inlined function will be turned into calls from the
-	 function we inline into.  We must preserve notes about how to split
-	 parameters such calls should be redirected/updated.  */
-      unsigned len = vec_safe_length (info->performed_splits);
-      for (unsigned i = 0; i < len; i++)
-	{
-	  ipa_param_performed_split ps
-	    = (*info->performed_splits)[i];
-	  ps.dummy_decl = remap_decl (ps.dummy_decl, id);
-	  vec_safe_push (dst_info->performed_splits, ps);
-	}
-
-      if (flag_checking)
-	{
-	  len = vec_safe_length (dst_info->performed_splits);
-	  for (unsigned i = 0; i < len; i++)
-	    {
-	      ipa_param_performed_split *ps1
-		= &(*dst_info->performed_splits)[i];
-	      for (unsigned j = i + 1; j < len; j++)
-		{
-		  ipa_param_performed_split *ps2
-		    = &(*dst_info->performed_splits)[j];
-		  gcc_assert (ps1->dummy_decl != ps2->dummy_decl
-			      || ps1->unit_offset != ps2->unit_offset);
-		}
-	    }
-	}
-    }
 
   if (dump_enabled_p ())
     {
@@ -6112,23 +6089,10 @@ tree_versionable_function_p (tree fndecl)
 static void
 update_clone_info (copy_body_data * id)
 {
-  clone_info *dst_info = clone_info::get (id->dst_node);
-  vec<ipa_param_performed_split, va_gc> *cur_performed_splits
-    = dst_info ? dst_info->performed_splits : NULL;
-  if (cur_performed_splits)
-    {
-      unsigned len = cur_performed_splits->length ();
-      for (unsigned i = 0; i < len; i++)
-	{
-	  ipa_param_performed_split *ps = &(*cur_performed_splits)[i];
-	  ps->dummy_decl = remap_decl (ps->dummy_decl, id);
-	}
-    }
-
-  struct cgraph_node *node;
-  if (!id->dst_node->clones)
+  struct cgraph_node *this_node = id->dst_node;
+  if (!this_node->clones)
     return;
-  for (node = id->dst_node->clones; node != id->dst_node;)
+  for (cgraph_node *node = this_node->clones; node != this_node;)
     {
       /* First update replace maps to match the new body.  */
       clone_info *info = clone_info::get (node);
@@ -6140,53 +6104,6 @@ update_clone_info (copy_body_data * id)
 	      struct ipa_replace_map *replace_info;
 	      replace_info = (*info->tree_map)[i];
 	      walk_tree (&replace_info->new_tree, copy_tree_body_r, id, NULL);
-	    }
-	}
-      if (info && info->performed_splits)
-	{
-	  unsigned len = vec_safe_length (info->performed_splits);
-	  for (unsigned i = 0; i < len; i++)
-	    {
-	      ipa_param_performed_split *ps
-		= &(*info->performed_splits)[i];
-	      ps->dummy_decl = remap_decl (ps->dummy_decl, id);
-	    }
-	}
-      if (unsigned len = vec_safe_length (cur_performed_splits))
-	{
-	  /* We do not want to add current performed splits when we are saving
-	     a copy of function body for later during inlining, that would just
-	     duplicate all entries.  So let's have a look whether anything
-	     referring to the first dummy_decl is present.  */
-	  if (!info)
-	    info = clone_info::get_create (node);
-	  unsigned dst_len = vec_safe_length (info->performed_splits);
-	  ipa_param_performed_split *first = &(*cur_performed_splits)[0];
-	  for (unsigned i = 0; i < dst_len; i++)
-	    if ((*info->performed_splits)[i].dummy_decl
-		== first->dummy_decl)
-	      {
-		len = 0;
-		break;
-	      }
-
-	  for (unsigned i = 0; i < len; i++)
-	    vec_safe_push (info->performed_splits,
-			   (*cur_performed_splits)[i]);
-	  if (flag_checking)
-	    {
-	      for (unsigned i = 0; i < dst_len; i++)
-		{
-		  ipa_param_performed_split *ps1
-		    = &(*info->performed_splits)[i];
-		  for (unsigned j = i + 1; j < dst_len; j++)
-		    {
-		      ipa_param_performed_split *ps2
-			= &(*info->performed_splits)[j];
-		      gcc_assert (ps1->dummy_decl != ps2->dummy_decl
-				  || ps1->unit_offset != ps2->unit_offset);
-		    }
-		}
 	    }
 	}
 

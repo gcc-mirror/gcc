@@ -1,3 +1,36 @@
+2021-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/streambuf.tcc (__copy_streambufs_eof): Remove
+	explicit instantiation declarations.
+	* src/c++11/streambuf-inst.cc (__copy_streambufs_eof): Remove
+	explicit instantiation definitions.
+
+2021-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97088
+	* testsuite/17_intro/names.cc: Fix #if condition for names used
+	by newlib headers.
+
+2021-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101236
+	* include/bits/unique_ptr.h (unique_ptr<T[], D>::operator[]):
+	Fail gracefully if element_type is incomplete.
+	* testsuite/20_util/unique_ptr/cons/incomplete.cc: Clarify that
+	the standard doesn't require this test to work for array types.
+	* testsuite/20_util/unique_ptr/lwg2762.cc: Check that incomplete
+	types can be used with array specialization.
+	* testsuite/20_util/unique_ptr/101236.cc: New test.
+
+2021-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 415 change.
+	* doc/html/manual/bugs.html: Regenerate.
+	* include/bits/istream.tcc (ws): Create sentry and catch
+	exceptions.
+	* testsuite/27_io/basic_istream/ws/char/lwg415.cc: New test.
+	* testsuite/27_io/basic_istream/ws/wchar_t/lwg415.cc: New test.
+
 2021-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ostream.tcc (basic_ostream::write): Call sputn

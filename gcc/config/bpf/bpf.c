@@ -349,7 +349,6 @@ bpf_expand_prologue (void)
 						      hard_frame_pointer_rtx,
 						      fp_offset - 8));
 		  insn = emit_move_insn (mem, gen_rtx_REG (DImode, regno));
-		  RTX_FRAME_RELATED_P (insn) = 1;
 		  fp_offset -= 8;
 		}
 	    }
@@ -364,7 +363,6 @@ bpf_expand_prologue (void)
     {
       insn = emit_move_insn (stack_pointer_rtx,
 			     hard_frame_pointer_rtx);
-      RTX_FRAME_RELATED_P (insn) = 1;
 
       if (size > 0)
 	{
@@ -372,7 +370,6 @@ bpf_expand_prologue (void)
 					 gen_rtx_PLUS (Pmode,
 						       stack_pointer_rtx,
 						       GEN_INT (-size))));
-	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
 }
@@ -412,7 +409,6 @@ bpf_expand_epilogue (void)
 						      hard_frame_pointer_rtx,
 						      fp_offset - 8));
 		  insn = emit_move_insn (gen_rtx_REG (DImode, regno), mem);
-		  RTX_FRAME_RELATED_P (insn) = 1;
 		  fp_offset -= 8;
 		}
 	    }
