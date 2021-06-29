@@ -1,3 +1,13 @@
+2021-06-28  Clément Chigot  <clement.chigot@atos.net>
+
+	* xcoff.c (SSUBTYP_DWRNGES): New define.
+	(xcoff_add): Use correct XCOFF DWARF section subtype
+	for DEBUG_RANGES. Remove lineoff workaround.
+	Adjust base_address.
+	(xcoff_initialize_syminfo): Adapt to new base_address.
+	(xcoff_lookup_pc): Likewise.
+	(xcoff_initialize_fileline): Likewise.
+
 2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/99703

@@ -1,3 +1,8 @@
+2021-06-28  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Handle correctly long lines.
+	* test_mklog.py: Test it.
+
 2021-06-23  Martin Liska  <mliska@suse.cz>
 
 	* gcc-git-customization.sh: Use the new wrapper.

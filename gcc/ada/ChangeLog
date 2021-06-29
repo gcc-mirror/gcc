@@ -1,3 +1,10 @@
+2021-06-28  Martin Sebor  <msebor@redhat.com>
+
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu):
+	Replace TREE_NO_WARNING with suppress_warning.
+	(gnat_gimplify_expr): Same.
+	* gcc-interface/utils.c (gnat_pushdecl): Same.
+
 2021-06-21  Gary Dismukes  <dismukes@adacore.com>
 
 	* checks.adb (Selected_Range_Checks): In the case of a

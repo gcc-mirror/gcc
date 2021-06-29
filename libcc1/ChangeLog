@@ -1,3 +1,8 @@
+2021-06-28  Martin Sebor  <msebor@redhat.com>
+
+	* libcp1plugin.cc (record_decl_address): Replace a direct use
+	of TREE_NO_WARNING with suppress_warning.
+
 2021-05-05  Tom Tromey  <tom@tromey.com>
 
 	* compiler.cc (make_regexp): Take const std::string.

@@ -1,3 +1,20 @@
+2021-06-28  Martin Sebor  <msebor@redhat.com>
+
+	* trans-array.c (trans_array_constructor): Replace direct uses
+	of TREE_NO_WARNING with warning_suppressed_p, and suppress_warning.
+	* trans-decl.c (gfc_build_qualified_array): Same.
+	(gfc_build_dummy_array_decl): Same.
+	(generate_local_decl): Same.
+	(gfc_generate_function_code): Same.
+	* trans-openmp.c (gfc_omp_clause_default_ctor): Same.
+	(gfc_omp_clause_copy_ctor): Same.
+	* trans-types.c (get_dtype_type_node): Same.
+	(gfc_get_desc_dim_type): Same.
+	(gfc_get_array_descriptor_base): Same.
+	(gfc_get_caf_vector_type): Same.
+	(gfc_get_caf_reference_type): Same.
+	* trans.c (gfc_create_var_np): Same.
+
 2021-06-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Fix enum type used
