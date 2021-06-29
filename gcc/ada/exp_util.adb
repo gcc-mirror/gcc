@@ -13129,11 +13129,11 @@ package body Exp_Util is
                                            (Component_Type (Ityp))));
       end if;
 
-      if Ialign /= No_Uint and then Ialign > Maximum_Alignment then
+      if Present (Ialign) and then Ialign > Maximum_Alignment then
          return True;
 
-      elsif Ialign /= No_Uint
-        and then Oalign /= No_Uint
+      elsif Present (Ialign)
+        and then Present (Oalign)
         and then Ialign <= Oalign
       then
          return True;

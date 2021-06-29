@@ -384,19 +384,19 @@ package body Einfo.Utils is
 
    function Known_Component_Bit_Offset            (E : Entity_Id) return B is
    begin
-      return Component_Bit_Offset (E) /= No_Uint;
+      return Present (Component_Bit_Offset (E));
    end Known_Component_Bit_Offset;
 
    function Known_Static_Component_Bit_Offset     (E : Entity_Id) return B is
    begin
-      return Component_Bit_Offset (E) /= No_Uint
+      return Present (Component_Bit_Offset (E))
         and then Component_Bit_Offset (E) >= Uint_0;
    end Known_Static_Component_Bit_Offset;
 
    function Known_Component_Size                  (E : Entity_Id) return B is
    begin
       return Component_Size (E) /= Uint_0
-        and then Component_Size (E) /= No_Uint;
+        and then Present (Component_Size (E));
    end Known_Component_Size;
 
    function Known_Static_Component_Size           (E : Entity_Id) return B is
@@ -407,7 +407,7 @@ package body Einfo.Utils is
    function Known_Esize                           (E : Entity_Id) return B is
    begin
       return Esize (E) /= Uint_0
-        and then Esize (E) /= No_Uint;
+        and then Present (Esize (E));
    end Known_Esize;
 
    function Known_Static_Esize                    (E : Entity_Id) return B is
@@ -428,29 +428,29 @@ package body Einfo.Utils is
 
    function Known_Normalized_First_Bit            (E : Entity_Id) return B is
    begin
-      return Normalized_First_Bit (E) /= No_Uint;
+      return Present (Normalized_First_Bit (E));
    end Known_Normalized_First_Bit;
 
    function Known_Static_Normalized_First_Bit     (E : Entity_Id) return B is
    begin
-      return Normalized_First_Bit (E) /= No_Uint
+      return Present (Normalized_First_Bit (E))
         and then Normalized_First_Bit (E) >= Uint_0;
    end Known_Static_Normalized_First_Bit;
 
    function Known_Normalized_Position             (E : Entity_Id) return B is
    begin
-      return Normalized_Position (E) /= No_Uint;
+      return Present (Normalized_Position (E));
    end Known_Normalized_Position;
 
    function Known_Static_Normalized_Position      (E : Entity_Id) return B is
    begin
-      return Normalized_Position (E) /= No_Uint
+      return Present (Normalized_Position (E))
         and then Normalized_Position (E) >= Uint_0;
    end Known_Static_Normalized_Position;
 
    function Known_RM_Size                         (E : Entity_Id) return B is
    begin
-      return RM_Size (E) /= No_Uint
+      return Present (RM_Size (E))
         and then (RM_Size (E) /= Uint_0
                     or else Is_Discrete_Type (E)
                     or else Is_Fixed_Point_Type (E));
@@ -506,7 +506,7 @@ package body Einfo.Utils is
       pragma Assert
         (not Known_Esize (Id) or else Esize (Id) = V);
       pragma Assert
-        (RM_Size (Id) = No_Uint
+        (No (RM_Size (Id))
            or else RM_Size (Id) = Uint_0
            or else RM_Size (Id) = V);
       Set_Esize (Id, UI_From_Int (V));

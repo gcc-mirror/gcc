@@ -577,7 +577,7 @@ package body Exp_Disp is
          --  If number of primitives already set in the tag component, use it
 
          if Present (Tag_Comp)
-           and then DT_Entry_Count (Tag_Comp) /= No_Uint
+           and then Present (DT_Entry_Count (Tag_Comp))
          then
             return UI_To_Int (DT_Entry_Count (Tag_Comp));
 
@@ -8008,14 +8008,14 @@ package body Exp_Disp is
                          (Find_Dispatching_Type (Interface_Alias (Prim)), Typ,
                           Use_Full_View => True)
             then
-               pragma Assert (DT_Position (Prim) = No_Uint
-                 and then Present (DTC_Entity (Interface_Alias (Prim))));
+               pragma Assert (No (DT_Position (Prim)));
+               pragma Assert (Present (DTC_Entity (Interface_Alias (Prim))));
 
                E := Interface_Alias (Prim);
                Set_DT_Position_Value (Prim, DT_Position (E));
 
                pragma Assert
-                 (DT_Position (Alias (Prim)) = No_Uint
+                 (No (DT_Position (Alias (Prim)))
                     or else DT_Position (Alias (Prim)) = DT_Position (E));
                Set_DT_Position_Value (Alias (Prim), DT_Position (E));
                Set_Fixed_Prim (UI_To_Int (DT_Position (Prim)));
@@ -8066,7 +8066,7 @@ package body Exp_Disp is
 
             --  Skip primitives previously set entries
 
-            if DT_Position (Prim) /= No_Uint then
+            if Present (DT_Position (Prim)) then
                null;
 
             --  Primitives covering interface primitives are handled later
@@ -8099,7 +8099,7 @@ package body Exp_Disp is
       while Present (Prim_Elmt) loop
          Prim := Node (Prim_Elmt);
 
-         if DT_Position (Prim) = No_Uint
+         if No (DT_Position (Prim))
            and then Present (Interface_Alias (Prim))
          then
             pragma Assert (Present (Alias (Prim))
@@ -8111,14 +8111,14 @@ package body Exp_Disp is
                  (Find_Dispatching_Type (Interface_Alias (Prim)), Typ,
                   Use_Full_View => True)
             then
-               pragma Assert (DT_Position (Alias (Prim)) /= No_Uint);
+               pragma Assert (Present (DT_Position (Alias (Prim))));
                Set_DT_Position_Value (Prim, DT_Position (Alias (Prim)));
 
             --  Otherwise it will be placed in the secondary DT
 
             else
                pragma Assert
-                 (DT_Position (Interface_Alias (Prim)) /= No_Uint);
+                 (Present (DT_Position (Interface_Alias (Prim))));
                Set_DT_Position_Value (Prim,
                  DT_Position (Interface_Alias (Prim)));
             end if;
@@ -8147,7 +8147,7 @@ package body Exp_Disp is
          --  At this point all the primitives MUST have a position in the
          --  dispatch table.
 
-         if DT_Position (Prim) = No_Uint then
+         if No (DT_Position (Prim)) then
             raise Program_Error;
          end if;
 
@@ -8767,7 +8767,7 @@ package body Exp_Disp is
          --  (primary or secondary) dispatch table.
 
          if Present (DTC_Entity (Prim))
-           and then DT_Position (Prim) /= No_Uint
+           and then Present (DT_Position (Prim))
          then
             Write_Str (" at #");
             Write_Int (UI_To_Int (DT_Position (Prim)));

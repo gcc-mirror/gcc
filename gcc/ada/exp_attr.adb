@@ -8043,7 +8043,7 @@ package body Exp_Attr is
 
       --  Common processing for record and array component case
 
-      if Siz /= No_Uint and then Siz /= 0 then
+      if Present (Siz) and then Siz /= 0 then
          declare
             CS : constant Boolean := Comes_From_Source (N);
 

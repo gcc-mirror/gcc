@@ -2294,7 +2294,7 @@ package body Exp_Ch4 is
       --  We can only do this if we in fact have full range information (which
       --  won't be the case if either operand is bignum at this stage).
 
-      if Llo /= No_Uint and then Rlo /= No_Uint then
+      if Present (Llo) and then Present (Rlo) then
          case N_Op_Compare (Nkind (N)) is
             when N_Op_Eq =>
                if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then

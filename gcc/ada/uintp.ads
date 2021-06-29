@@ -90,22 +90,13 @@ package Uintp is
    Uint_Minus_127 : constant Uint;
    Uint_Minus_128 : constant Uint;
 
-   subtype Valid_Uint is Uint with Predicate => Valid_Uint /= No_Uint;
-   subtype Unat is Valid_Uint with Predicate => Unat >= Uint_0;
-   subtype Upos is Valid_Uint with Predicate => Upos >= Uint_1;
+   function No (X : Uint) return Boolean is (X = No_Uint);
+   function Present (X : Uint) return Boolean is (not No (X));
+
+   subtype Valid_Uint is Uint with Predicate => Present (Valid_Uint);
+   subtype Unat is Valid_Uint with Predicate => Unat >= Uint_0; -- natural
+   subtype Upos is Valid_Uint with Predicate => Upos >= Uint_1; -- positive
    subtype Nonzero_Uint is Valid_Uint with Predicate => Nonzero_Uint /= Uint_0;
-
-   type UI_Vector is array (Pos range <>) of Int;
-   --  Vector containing the integer values of a Uint value
-
-   --  Note: An earlier version of this package used pointers of arrays of Ints
-   --  (dynamically allocated) for the Uint type. The change leads to a few
-   --  less natural idioms used throughout this code, but eliminates all uses
-   --  of the heap except for the table package itself. For example, Uint
-   --  parameters are often converted to UI_Vectors for internal manipulation.
-   --  This is done by creating the local UI_Vector using the function N_Digits
-   --  on the Uint to find the size needed for the vector, and then calling
-   --  Init_Operand to copy the values out of the table into the vector.
 
    -----------------
    -- Subprograms --
@@ -253,12 +244,12 @@ package Uintp is
    function UI_From_CC (Input : Char_Code) return Uint;
    --  Converts Char_Code value to universal integer form
 
-   function UI_To_Int (Input : Uint) return Int;
+   function UI_To_Int (Input : Valid_Uint) return Int;
    --  Converts universal integer value to Int. Constraint_Error if value is
    --  not in appropriate range.
 
    type Unsigned_64 is mod 2**64;
-   function UI_To_Unsigned_64 (Input : Uint) return Unsigned_64;
+   function UI_To_Unsigned_64 (Input : Valid_Uint) return Unsigned_64;
    --  Converts universal integer value to Unsigned_64. Constraint_Error if
    --  value is not in appropriate range.
 
@@ -270,22 +261,6 @@ package Uintp is
    --  Approximate number of binary bits in given universal integer. This
    --  function is used for capacity checks, and it can be one bit off
    --  without affecting its usage.
-
-   function Vector_To_Uint
-     (In_Vec   : UI_Vector;
-      Negative : Boolean) return Uint;
-   --  Functions that calculate values in UI_Vectors, call this function to
-   --  create and return the Uint value. In_Vec contains the multiple precision
-   --  (Base) representation of a non-negative value. Leading zeroes are
-   --  permitted. Negative is set if the desired result is the negative of the
-   --  given value. The result will be either the appropriate directly
-   --  represented value, or a table entry in the proper canonical format is
-   --  created and returned.
-   --
-   --  Note that Init_Operand puts a signed value in the result vector, but
-   --  Vector_To_Uint is always presented with a non-negative value. The
-   --  processing of signs is something that is done by the caller before
-   --  calling Vector_To_Uint.
 
    ---------------------
    -- Output Routines --
@@ -537,8 +512,9 @@ private
    --  Some subprograms defined in this package manipulate the Udigits table
    --  directly, while for others it is more convenient to work with locally
    --  defined arrays of the digits of the Universal Integers. The type
-   --  UI_Vector is defined for this purpose and some internal subprograms
-   --  used for converting from one to the other are defined.
+   --  UI_Vector is declared in the package body for this purpose and some
+   --  internal subprograms used for converting from one to the other are
+   --  defined.
 
    type Uint_Entry is record
       Length : aliased Pos;

@@ -808,7 +808,7 @@ package body Repinfo is
    --  Start of processing for List_GCC_Expression
 
    begin
-      if U = No_Uint then
+      if No (U) then
          Write_Unknown_Val;
       else
          Print_Expr (U);
@@ -2117,7 +2117,7 @@ package body Repinfo is
 
    function Rep_Not_Constant (Val : Node_Ref_Or_Val) return Boolean is
    begin
-      if Val = No_Uint or else Val < 0 then
+      if No (Val) or else Val < 0 then
          return True;
       else
          return False;
@@ -2316,7 +2316,7 @@ package body Repinfo is
    --  Start of processing for Rep_Value
 
    begin
-      if Val = No_Uint then
+      if No (Val) then
          return No_Uint;
 
       else
@@ -2402,7 +2402,7 @@ package body Repinfo is
    procedure Write_Val (Val : Node_Ref_Or_Val; Paren : Boolean := False) is
    begin
       if Rep_Not_Constant (Val) then
-         if List_Representation_Info < 3 or else Val = No_Uint then
+         if List_Representation_Info < 3 or else No (Val) then
             Write_Unknown_Val;
 
          else

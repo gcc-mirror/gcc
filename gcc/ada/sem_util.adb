@@ -11901,7 +11901,7 @@ package body Sem_Util is
 
                Check_Prefix;
                Offs := Indexed_Component_Bit_Offset (Expr);
-               if Offs = No_Uint then
+               if No (Offs) then
                   Offs := Component_Size (Typ);
                end if;
             end;
@@ -11932,7 +11932,7 @@ package body Sem_Util is
                else
                   --  If we have an offset, see if it is compatible
 
-                  if Offs /= No_Uint and Offs > Uint_0 then
+                  if Present (Offs) and Offs > Uint_0 then
                      if Offs mod (System_Storage_Unit * ObjA) /= 0 then
                         Set_Result (Known_Incompatible);
                      end if;
@@ -11961,7 +11961,7 @@ package body Sem_Util is
 
                   --  If we got an alignment, see if it is acceptable
 
-                  if ExpA /= No_Uint and then ExpA < ObjA then
+                  if Present (ExpA) and then ExpA < ObjA then
                      Set_Result (Known_Incompatible);
                   end if;
 
@@ -11969,7 +11969,7 @@ package body Sem_Util is
                   --  alignment, then we are fine. Otherwise, if its size is
                   --  known, it must be big enough for the required alignment.
 
-                  if Offs /= No_Uint then
+                  if Present (Offs) then
                      null;
 
                   --  See if Expr is an object with known size
@@ -11990,7 +11990,7 @@ package body Sem_Util is
                   --  acceptable, since the size is always a multiple of the
                   --  alignment.
 
-                  if SizA /= No_Uint then
+                  if Present (SizA) then
                      if SizA mod (ObjA * Ttypes.System_Storage_Unit) /= 0 then
                         Set_Result (Known_Incompatible);
                      end if;
@@ -12001,7 +12001,7 @@ package body Sem_Util is
          --  If we do not know required alignment, any non-zero offset is a
          --  potential problem (but certainly may be OK, so result is unknown).
 
-         elsif Offs /= No_Uint then
+         elsif Present (Offs) then
             Set_Result (Unknown);
 
          --  If we can't find the result by direct comparison of alignment
@@ -15044,7 +15044,7 @@ package body Sem_Util is
    begin
       --  Return early if the component size is not known or variable
 
-      if Off = No_Uint or else Off < Uint_0 then
+      if No (Off) or else Off < Uint_0 then
          return No_Uint;
       end if;
 
@@ -15567,7 +15567,7 @@ package body Sem_Util is
          --  Pragma Invalid_Scalars did not specify an invalid value for this
          --  type. Fall back to the value provided by the binder.
 
-         if Value = No_Uint then
+         if No (Value) then
             return Invalid_Binder_Value;
          else
             return Make_Integer_Literal (Loc, Intval => Value);
@@ -28271,7 +28271,7 @@ package body Sem_Util is
    begin
       --  Detect an attempt to set a different value for the same scalar type
 
-      pragma Assert (Slot = No_Uint);
+      pragma Assert (No (Slot));
       Slot := Value;
    end Set_Invalid_Scalar_Value;
 

@@ -9189,7 +9189,7 @@ package body Sem_Attr is
                   Fold_Uint (N, Uint_0, Static);
 
                when LT =>
-                  if Diff /= No_Uint then
+                  if Present (Diff) then
                      Fold_Uint (N, Diff + 1, Static);
                   end if;
 
@@ -9710,7 +9710,7 @@ package body Sem_Attr is
                Fold_Uint (N, Uint_0, Static);
 
             when LT =>
-               if Diff /= No_Uint then
+               if Present (Diff) then
                   Fold_Uint (N, Diff + 1, Static);
                end if;
 

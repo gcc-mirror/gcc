@@ -776,7 +776,7 @@ package body Repinfo.Input is
             --  Compute Component_Bit_Offset from Position and First_Bit,
             --  either symbolically or literally depending on Position.
 
-            if Position = No_Uint or else First_Bit = No_Uint then
+            if No (Position) or else No (First_Bit) then
                Error ("bit offset expected");
             end if;
 

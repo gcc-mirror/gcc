@@ -438,7 +438,7 @@ package body Exp_Dbug is
                     Enable
                       or else Is_Packed
                                 (Underlying_Type (Etype (Prefix (Ren))))
-                      or else (First_Bit /= No_Uint
+                      or else (Present (First_Bit)
                                 and then First_Bit /= Uint_0);
                end;
 

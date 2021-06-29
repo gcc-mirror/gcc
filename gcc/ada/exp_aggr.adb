@@ -504,7 +504,7 @@ package body Exp_Aggr is
       --  Scalar types are OK if their size is a multiple of Storage_Unit
 
       elsif Is_Scalar_Type (Ctyp) then
-         pragma Assert (Csiz /= No_Uint);
+         pragma Assert (Present (Csiz));
 
          if Csiz mod System_Storage_Unit /= 0 then
             return False;

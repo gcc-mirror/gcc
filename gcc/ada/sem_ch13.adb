@@ -6631,7 +6631,7 @@ package body Sem_Ch13 is
             elsif Duplicate_Clause then
                null;
 
-            elsif Align /= No_Uint then
+            elsif Present (Align) then
                Set_Has_Alignment_Clause (U_Ent);
 
                --  Tagged type case, check for attempt to set alignment to a
@@ -6721,7 +6721,7 @@ package body Sem_Ch13 is
             elsif Rep_Item_Too_Early (Btype, N) then
                null;
 
-            elsif Csize /= No_Uint then
+            elsif Present (Csize) then
                Check_Size (Expr, Ctyp, Csize, Biased);
 
                --  For the biased case, build a declaration for a subtype that
@@ -7061,7 +7061,7 @@ package body Sem_Ch13 is
             elsif Duplicate_Clause then
                null;
 
-            elsif Radix /= No_Uint then
+            elsif Present (Radix) then
                Set_Has_Machine_Radix_Clause (U_Ent);
                Set_Has_Non_Standard_Rep (Base_Type (U_Ent));
 
@@ -7274,7 +7274,7 @@ package body Sem_Ch13 is
                Error_Msg_N
                  (Attr_Name & " cannot be given for unconstrained array", Nam);
 
-            elsif Size /= No_Uint then
+            elsif Present (Size) then
                declare
                   Etyp : constant Entity_Id :=
                     (if Is_Type (U_Ent) then U_Ent else Etype (U_Ent));
@@ -8106,7 +8106,7 @@ package body Sem_Ch13 is
             --  the list. The final checks for completeness and ordering are
             --  skipped in this case.
 
-            if Val = No_Uint then
+            if No (Val) then
                Err := True;
 
             elsif Val < Lo or else Hi < Val then
@@ -8185,7 +8185,7 @@ package body Sem_Ch13 is
                         Expr := Expression (Assoc);
                         Val := Static_Integer (Expr);
 
-                        if Val = No_Uint then
+                        if No (Val) then
                            Err := True;
 
                         elsif Val < Lo or else Hi < Val then
@@ -8220,12 +8220,12 @@ package body Sem_Ch13 is
             else
                Val := Enumeration_Rep (Elit);
 
-               if Min = No_Uint then
+               if No (Min) then
                   Min := Val;
                end if;
 
-               if Val /= No_Uint then
-                  if Max /= No_Uint and then Val <= Max then
+               if Present (Val) then
+                  if Present (Max) and then Val <= Max then
                      Error_Msg_NE
                        ("enumeration value for& not ordered!",
                         Enumeration_Rep_Expr (Elit), Elit);
@@ -8510,9 +8510,9 @@ package body Sem_Ch13 is
             Fbit  := Static_Integer (First_Bit (CC));
             Lbit  := Static_Integer (Last_Bit  (CC));
 
-            if Posit /= No_Uint
-              and then Fbit /= No_Uint
-              and then Lbit /= No_Uint
+            if Present (Posit)
+              and then Present (Fbit)
+              and then Present (Lbit)
             then
                if Posit < 0 then
                   Error_Msg_N ("position cannot be negative", Position (CC));
@@ -11943,7 +11943,7 @@ package body Sem_Ch13 is
                   begin
                      --  Skip components with unknown offsets
 
-                     if CBO /= No_Uint and then CBO >= 0 then
+                     if Present (CBO) and then CBO >= 0 then
                         Error_Msg_Uint_1 := CBO - Nbit;
 
                         if Warn and then Error_Msg_Uint_1 > 0 then
@@ -12058,7 +12058,7 @@ package body Sem_Ch13 is
             Pcomp := First_Entity (Tagged_Parent);
             while Present (Pcomp) loop
                if Ekind (Pcomp) in E_Discriminant | E_Component then
-                  if Component_Bit_Offset (Pcomp) /= No_Uint
+                  if Present (Component_Bit_Offset (Pcomp))
                     and then Known_Static_Esize (Pcomp)
                   then
                      Parent_Last_Bit :=
@@ -13127,7 +13127,7 @@ package body Sem_Ch13 is
       Align : constant Uint := Static_Integer (Expr);
 
    begin
-      if Align = No_Uint then
+      if No (Align) then
          return No_Uint;
 
       elsif Align < 0 then
@@ -16270,7 +16270,7 @@ package body Sem_Ch13 is
 
             elsif Nkind (N) = N_Selected_Component then
                Off := Component_Bit_Offset (Entity (Selector_Name (N)));
-               if Off /= No_Uint and then Off >= Uint_0 then
+               if Present (Off) and then Off >= Uint_0 then
                   Val := Val + Off;
                   N   := Prefix (N);
                else
@@ -16279,7 +16279,7 @@ package body Sem_Ch13 is
 
             elsif Nkind (N) = N_Indexed_Component then
                Off := Indexed_Component_Bit_Offset (N);
-               if Off /= No_Uint then
+               if Present (Off) then
                   Val := Val + Off;
                   N   := Prefix (N);
                else

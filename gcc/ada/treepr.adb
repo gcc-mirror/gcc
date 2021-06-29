@@ -614,7 +614,7 @@ package body Treepr is
       Write_Str (UI_Image (Val));
       Write_Str (")  ");
 
-      if Val /= No_Uint then
+      if Present (Val) then
          Write_Location (End_Location (N));
       end if;
    end Print_End_Span;
