@@ -116,4 +116,60 @@ _mm_blendv_epi8 (__m128i __A, __m128i __B, __m128i __mask)
   return (__m128i) vec_sel ((__v16qu) __A, (__v16qu) __B, __lmask);
 }
 
+__inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_testz_si128 (__m128i __A, __m128i __B)
+{
+  /* Note: This implementation does NOT set "zero" or "carry" flags.  */
+  const __v16qu __zero = {0};
+  return vec_all_eq (vec_and ((__v16qu) __A, (__v16qu) __B), __zero);
+}
+
+__inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_testc_si128 (__m128i __A, __m128i __B)
+{
+  /* Note: This implementation does NOT set "zero" or "carry" flags.  */
+  const __v16qu __zero = {0};
+  const __v16qu __notA = vec_nor ((__v16qu) __A, (__v16qu) __A);
+  return vec_all_eq (vec_and ((__v16qu) __notA, (__v16qu) __B), __zero);
+}
+
+__inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_testnzc_si128 (__m128i __A, __m128i __B)
+{
+  /* Note: This implementation does NOT set "zero" or "carry" flags.  */
+  return _mm_testz_si128 (__A, __B) == 0 && _mm_testc_si128 (__A, __B) == 0;
+}
+
+__inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_test_all_zeros (__m128i __A, __m128i __mask)
+{
+  const __v16qu __zero = {0};
+  return vec_all_eq (vec_and ((__v16qu) __A, (__v16qu) __mask), __zero);
+}
+
+__inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_test_all_ones (__m128i __A)
+{
+  const __v16qu __ones = vec_splats ((unsigned char) 0xff);
+  return vec_all_eq ((__v16qu) __A, __ones);
+}
+
+__inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_test_mix_ones_zeros (__m128i __A, __m128i __mask)
+{
+  const __v16qu __zero = {0};
+  const __v16qu __Amasked = vec_and ((__v16qu) __A, (__v16qu) __mask);
+  const int any_ones = vec_any_ne (__Amasked, __zero);
+  const __v16qu __notA = vec_nor ((__v16qu) __A, (__v16qu) __A);
+  const __v16qu __notAmasked = vec_and ((__v16qu) __notA, (__v16qu) __mask);
+  const int any_zeros = vec_any_ne (__notAmasked, __zero);
+  return any_ones * any_zeros;
+}
+
 #endif
