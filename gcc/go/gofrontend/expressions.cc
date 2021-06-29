@@ -15141,7 +15141,7 @@ Struct_construction_expression::do_copy()
 }
 
 // Flatten a struct construction expression.  Store the values into
-// temporaries in case they need interface conversion.
+// temporaries if they may need interface conversion.
 
 Expression*
 Struct_construction_expression::do_flatten(Gogo*, Named_object*,
@@ -15155,10 +15155,13 @@ Struct_construction_expression::do_flatten(Gogo*, Named_object*,
     return this;
 
   Location loc = this->location();
+  const Struct_field_list* fields = this->type_->struct_type()->fields();
+  Struct_field_list::const_iterator pf = fields->begin();
   for (Expression_list::iterator pv = this->vals()->begin();
        pv != this->vals()->end();
-       ++pv)
+       ++pv, ++pf)
     {
+      go_assert(pf != fields->end());
       if (*pv != NULL)
 	{
           if ((*pv)->is_error_expression() || (*pv)->type()->is_error_type())
@@ -15166,7 +15169,8 @@ Struct_construction_expression::do_flatten(Gogo*, Named_object*,
               go_assert(saw_errors());
               return Expression::make_error(loc);
             }
-	  if (!(*pv)->is_multi_eval_safe())
+	  if (pf->type()->interface_type() != NULL
+	      && !(*pv)->is_multi_eval_safe())
 	    {
 	      Temporary_statement* temp =
 		Statement::make_temporary(NULL, *pv, loc);
@@ -15441,7 +15445,7 @@ Array_construction_expression::do_check_types(Gogo*)
 }
 
 // Flatten an array construction expression.  Store the values into
-// temporaries in case they need interface conversion.
+// temporaries if they may need interface conversion.
 
 Expression*
 Array_construction_expression::do_flatten(Gogo*, Named_object*,
@@ -15458,6 +15462,11 @@ Array_construction_expression::do_flatten(Gogo*, Named_object*,
 
   // If this is a constant array, we don't need temporaries.
   if (this->is_constant_array() || this->is_static_initializer())
+    return this;
+
+  // If the array element type is not an interface type, we don't need
+  // temporaries.
+  if (this->type_->array_type()->element_type()->interface_type() == NULL)
     return this;
 
   Location loc = this->location();
