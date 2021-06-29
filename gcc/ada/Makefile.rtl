@@ -2196,6 +2196,11 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
     EH_MECHANISM=-gcc
   endif
 
+  ifeq ($(strip $(filter-out aarch64%,$(target_cpu))),)
+    LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+    EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+  endif
+
   ifeq ($(strip $(filter-out aarch64% riscv%,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += a-nallfl.ads<libgnat/a-nallfl__wraplf.ads
   endif
