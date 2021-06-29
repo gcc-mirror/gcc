@@ -303,7 +303,75 @@ public:
 
   void visit (HIR::TypeAlias &type) override { gcc_unreachable (); }
 
-  void visit (HIR::Method &method) override { gcc_unreachable (); }
+  void visit (HIR::Method &method) override
+  {
+    TypeCheckImplItem::visit (method);
+
+    // we get the error checking from the base method here
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (method.get_mappings ().get_hirid (), &lookup))
+      return;
+
+    if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
+      return;
+
+    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
+    const TraitItemReference &trait_item_ref
+      = trait_reference.lookup_trait_item (
+	fntype->get_identifier (), TraitItemReference::TraitItemType::FN);
+
+    // unknown trait item
+    if (trait_item_ref.is_error ())
+      {
+	RichLocation r (method.get_locus ());
+	r.add_range (trait_reference.get_locus ());
+	rust_error_at (r, "method %<%s%> is not a member of trait %<%s%>",
+		       fntype->get_identifier ().c_str (),
+		       trait_reference.get_name ().c_str ());
+	return;
+      }
+
+    rust_assert (trait_item_ref.get_tyty ()->get_kind ()
+		 == TyTy::TypeKind::FNDEF);
+    TyTy::FnType *trait_item_fntype
+      = static_cast<TyTy::FnType *> (trait_item_ref.get_tyty ());
+
+    // sets substitute self into the trait_item_ref->tyty
+    TyTy::SubstitutionParamMapping *self_mapping = nullptr;
+    for (auto &param_mapping : trait_item_fntype->get_substs ())
+      {
+	const HIR::TypeParam &type_param = param_mapping.get_generic_param ();
+	if (type_param.get_type_representation ().compare ("Self") == 0)
+	  {
+	    self_mapping = &param_mapping;
+	    break;
+	  }
+      }
+    rust_assert (self_mapping != nullptr);
+
+    std::vector<TyTy::SubstitutionArg> mappings;
+    mappings.push_back (TyTy::SubstitutionArg (self_mapping, self));
+
+    TyTy::SubstitutionArgumentMappings implicit_self_substs (
+      mappings, method.get_locus ());
+    trait_item_fntype
+      = trait_item_fntype->handle_substitions (implicit_self_substs);
+
+    // check the types are compatible
+    if (!trait_item_fntype->can_eq (fntype))
+      {
+	RichLocation r (method.get_locus ());
+	r.add_range (trait_item_ref.get_locus ());
+
+	rust_error_at (
+	  r, "method %<%s%> has an incompatible type for trait %<%s%>",
+	  fntype->get_identifier ().c_str (),
+	  trait_reference.get_name ().c_str ());
+	return;
+      }
+
+    resolved_trait_item = trait_item_ref;
+  }
 
   void visit (HIR::Function &function) override
   {
@@ -333,8 +401,34 @@ public:
 	return;
       }
 
+    rust_assert (trait_item_ref.get_tyty ()->get_kind ()
+		 == TyTy::TypeKind::FNDEF);
+    TyTy::FnType *trait_item_fntype
+      = static_cast<TyTy::FnType *> (trait_item_ref.get_tyty ());
+
+    // sets substitute self into the trait_item_ref->tyty
+    TyTy::SubstitutionParamMapping *self_mapping = nullptr;
+    for (auto &param_mapping : trait_item_fntype->get_substs ())
+      {
+	const HIR::TypeParam &type_param = param_mapping.get_generic_param ();
+	if (type_param.get_type_representation ().compare ("Self") == 0)
+	  {
+	    self_mapping = &param_mapping;
+	    break;
+	  }
+      }
+    rust_assert (self_mapping != nullptr);
+
+    std::vector<TyTy::SubstitutionArg> mappings;
+    mappings.push_back (TyTy::SubstitutionArg (self_mapping, self));
+
+    TyTy::SubstitutionArgumentMappings implicit_self_substs (
+      mappings, function.get_locus ());
+    trait_item_fntype
+      = trait_item_fntype->handle_substitions (implicit_self_substs);
+
     // check the types are compatible
-    if (!trait_item_ref.get_tyty ()->can_eq (fntype))
+    if (!trait_item_fntype->can_eq (fntype))
       {
 	RichLocation r (function.get_locus ());
 	r.add_range (trait_item_ref.get_locus ());

@@ -33,9 +33,11 @@ class ResolveTraitItemToRef : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static TraitItemReference Resolve (HIR::TraitItem &item)
+  static TraitItemReference
+  Resolve (HIR::TraitItem &item, TyTy::BaseType *self,
+	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
   {
-    ResolveTraitItemToRef resolver;
+    ResolveTraitItemToRef resolver (self, substitutions);
     item.accept_vis (resolver);
     return resolver.resolved;
   }
@@ -89,7 +91,6 @@ public:
     if (!context->lookup_type (fn.get_mappings ().get_hirid (), &ty))
       {
 	HIR::TraitFunctionDecl &function = fn.get_decl ();
-	std::vector<TyTy::SubstitutionParamMapping> substitutions;
 	if (function.has_generics ())
 	  {
 	    for (auto &generic_param : function.get_generic_params ())
@@ -135,6 +136,21 @@ public:
 	  }
 
 	std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
+	if (function.is_method ())
+	  {
+	    // add the synthetic self param at the front, this is a placeholder
+	    // for compilation to know parameter names. The types are ignored
+	    // but we reuse the HIR identifier pattern which requires it
+	    HIR::SelfParam &self_param = function.get_self ();
+	    HIR::IdentifierPattern *self_pattern = new HIR::IdentifierPattern (
+	      "self", self_param.get_locus (), self_param.is_ref (),
+	      self_param.is_mut (), std::unique_ptr<HIR::Pattern> (nullptr));
+	    context->insert_type (self_param.get_mappings (), self->clone ());
+	    params.push_back (
+	      std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern,
+							   self->clone ()));
+	  }
+
 	for (auto &param : function.get_function_params ())
 	  {
 	    // get the name as well required for later on
@@ -163,11 +179,16 @@ public:
   }
 
 private:
-  ResolveTraitItemToRef ()
-    : TypeCheckBase (), resolved (TraitItemReference::error ())
+  ResolveTraitItemToRef (
+    TyTy::BaseType *self,
+    std::vector<TyTy::SubstitutionParamMapping> substitutions)
+    : TypeCheckBase (), resolved (TraitItemReference::error ()), self (self),
+      substitutions (substitutions)
   {}
 
   TraitItemReference resolved;
+  TyTy::BaseType *self;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
 };
 
 class TraitResolver : public TypeCheckBase
@@ -224,11 +245,41 @@ private:
 	return tref;
       }
 
+    TyTy::BaseType *self = nullptr;
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
+    for (auto &generic_param : trait_reference->get_generic_params ())
+      {
+	switch (generic_param.get ()->get_kind ())
+	  {
+	  case HIR::GenericParam::GenericKind::LIFETIME:
+	    // Skipping Lifetime completely until better handling.
+	    break;
+
+	    case HIR::GenericParam::GenericKind::TYPE: {
+	      auto param_type
+		= TypeResolveGenericParam::Resolve (generic_param.get ());
+	      context->insert_type (generic_param->get_mappings (), param_type);
+
+	      auto &typaram = static_cast<HIR::TypeParam &> (*generic_param);
+	      substitutions.push_back (
+		TyTy::SubstitutionParamMapping (typaram, param_type));
+
+	      if (typaram.get_type_representation ().compare ("Self") == 0)
+		{
+		  self = param_type;
+		}
+	    }
+	    break;
+	  }
+      }
+
+    rust_assert (self != nullptr);
+
     std::vector<TraitItemReference> item_refs;
     for (auto &item : trait_reference->get_trait_items ())
       {
 	TraitItemReference trait_item_ref
-	  = ResolveTraitItemToRef::Resolve (*item.get ());
+	  = ResolveTraitItemToRef::Resolve (*item.get (), self, substitutions);
 	item_refs.push_back (std::move (trait_item_ref));
       }
 

@@ -310,16 +310,15 @@ public:
     NodeId scope_node_id = trait.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
-    // TODO
     // we need to inject an implicit self TypeParam here
-    // see: https://doc.rust-lang.org/reference/items/traits.html
+    AST::TypeParam *implicit_self
+      = new AST::TypeParam ("Self", trait.get_locus ());
+    trait.insert_implict_self (
+      std::unique_ptr<AST::GenericParam> (implicit_self));
 
-    if (trait.has_generics ())
+    for (auto &generic : trait.get_generic_params ())
       {
-	for (auto &generic : trait.get_generic_params ())
-	  {
-	    ResolveGenericParam::go (generic.get (), trait.get_node_id ());
-	  }
+	ResolveGenericParam::go (generic.get (), trait.get_node_id ());
       }
 
     for (auto &item : trait.get_trait_items ())
@@ -371,20 +370,73 @@ public:
     resolver->get_label_scope ().pop ();
   }
 
-  void visit (AST::TraitItemMethod &) override
+  void visit (AST::TraitItemMethod &func) override
   {
-    // TODO
+    NodeId scope_node_id = func.get_node_id ();
+    resolver->get_name_scope ().push (scope_node_id);
+    resolver->get_type_scope ().push (scope_node_id);
+    resolver->get_label_scope ().push (scope_node_id);
+    resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+    resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+    resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+    AST::TraitMethodDecl &function = func.get_trait_method_decl ();
+    if (function.has_generics ())
+      {
+	for (auto &generic : function.get_generic_params ())
+	  ResolveGenericParam::go (generic.get (), func.get_node_id ());
+      }
+
+    if (function.has_return_type ())
+      ResolveType::go (function.get_return_type ().get (), func.get_node_id ());
+
+    // self turns into (self: Self) as a function param
+    AST::SelfParam &self_param = function.get_self_param ();
+    AST::IdentifierPattern self_pattern (
+      self_param.get_node_id (), "self", self_param.get_locus (),
+      self_param.get_has_ref (), self_param.get_is_mut (),
+      std::unique_ptr<AST::Pattern> (nullptr));
+
+    std::vector<std::unique_ptr<AST::TypePathSegment> > segments;
+    segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+      new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
+
+    AST::TypePath self_type_path (std::move (segments),
+				  self_param.get_locus ());
+
+    ResolveType::go (&self_type_path, self_param.get_node_id ());
+    PatternDeclaration::go (&self_pattern, self_param.get_node_id ());
+
+    resolver->mark_assignment_to_decl (self_pattern.get_node_id (),
+				       self_pattern.get_node_id ());
+
+    // we make a new scope so the names of parameters are resolved and shadowed
+    // correctly
+    for (auto &param : function.get_function_params ())
+      {
+	ResolveType::go (param.get_type ().get (), param.get_node_id ());
+	PatternDeclaration::go (param.get_pattern ().get (),
+				param.get_node_id ());
+
+	// the mutability checker needs to verify for immutable decls the number
+	// of assignments are <1. This marks an implicit assignment
+	resolver->mark_assignment_to_decl (param.get_pattern ()->get_node_id (),
+					   param.get_node_id ());
+      }
+
+    // trait items have an optional body
+    if (func.has_definition ())
+      ResolveExpr::go (func.get_definition ().get (), func.get_node_id ());
+
+    resolver->get_name_scope ().pop ();
+    resolver->get_type_scope ().pop ();
+    resolver->get_label_scope ().pop ();
   }
 
-  void visit (AST::TraitItemConst &) override
-  {
-    // TODO
-  }
+  // TODO
+  void visit (AST::TraitItemConst &) override { gcc_unreachable (); }
 
-  void visit (AST::TraitItemType &) override
-  {
-    // TODO
-  }
+  void visit (AST::TraitItemType &) override { gcc_unreachable (); }
 
 private:
   ResolveItem () : ResolverBase (UNKNOWN_NODEID) {}

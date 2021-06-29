@@ -3382,24 +3382,11 @@ class Trait : public VisItem
 {
   bool has_unsafe;
   Identifier name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
-
-  // bool has_type_param_bounds;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
-    type_param_bounds; // inlined form
-
-  // bool has_where_clause;
+  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
   WhereClause where_clause;
-
   std::vector<Attribute> inner_attrs;
-
-  // bool has_trait_items;
   std::vector<std::unique_ptr<TraitItem> > trait_items;
-
   Location locus;
 
 public:
@@ -3432,7 +3419,6 @@ public:
 	 std::vector<std::unique_ptr<TraitItem> > trait_items, Visibility vis,
 	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs,
 	 Location locus)
-
     : VisItem (std::move (vis), std::move (outer_attrs)),
       has_unsafe (is_unsafe), name (std::move (name)),
       generic_params (std::move (generic_params)),
@@ -3530,11 +3516,15 @@ public:
     return type_param_bounds;
   }
 
-  // TODO: is this better? Or is a "vis_block" better?
   WhereClause &get_where_clause ()
   {
     rust_assert (has_where_clause ());
     return where_clause;
+  }
+
+  void insert_implict_self (std::unique_ptr<AST::GenericParam> &&param)
+  {
+    generic_params.push_back (std::move (param));
   }
 
 protected:

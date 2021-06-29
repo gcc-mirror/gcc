@@ -385,7 +385,7 @@ public:
   bool has_lifetime () const { return !lifetime.is_error (); }
 
   // Returns whether the self-param is in an error state.
-  bool is_error () const { return self_kind != ImplicitSelfKind::NONE; }
+  bool is_error () const { return self_kind == ImplicitSelfKind::NONE; }
 
   std::string as_string () const;
 
@@ -2364,7 +2364,7 @@ public:
       generic_params (std::move (generic_params)),
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)), self (self)
+      where_clause (std::move (where_clause)), self (std::move (self))
   {}
 
   // Copy constructor with clone
@@ -2661,24 +2661,11 @@ protected:
 class Trait : public VisItem
 {
   bool has_unsafe;
-
   Identifier name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
-
-  // bool has_type_param_bounds;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
-    type_param_bounds; // inlined form
-
-  // bool has_where_clause;
+  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
   WhereClause where_clause;
-
-  // bool has_trait_items;
   std::vector<std::unique_ptr<TraitItem> > trait_items;
-
   Location locus;
 
 public:
@@ -2767,6 +2754,16 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
