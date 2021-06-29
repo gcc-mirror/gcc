@@ -1458,8 +1458,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* -(A + B) -> (-B) - A.  */
 (simplify
  (negate (plus:c @0 negate_expr_p@1))
- (if (!HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type))
-      && !HONOR_SIGNED_ZEROS (element_mode (type)))
+ (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+      && !HONOR_SIGNED_ZEROS (type))
   (minus (negate @1) @0)))
 
 /* -(A - B) -> B - A.  */
