@@ -3,6 +3,27 @@
 	Backported from master:
 	2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
 
+	PR other/67300
+	* common.opt (-foffload=): Update description.
+	(-foffload-options=): New.
+	* doc/invoke.texi (C Language Options): Document
+	-foffload and -foffload-options.
+	* gcc.c (check_offload_target_name): New, split off from
+	handle_foffload_option.
+	(check_foffload_target_names): New.
+	(handle_foffload_option): Handle -foffload=default.
+	(driver_handle_option): Update for -foffload-options.
+	* lto-opts.c (lto_write_options): Use -foffload-options
+	instead of -foffload.
+	* lto-wrapper.c (merge_and_complain, append_offload_options):
+	Likewise.
+	* opts.c (common_handle_option): Likewise.
+
+2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
+
 	* doc/invoke.texi (C Language Options): Sort options
 	alphabetically in optlist and also the description itself.
 	Remove leftover -fallow-single-precision from and add missing

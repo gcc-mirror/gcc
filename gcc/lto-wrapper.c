@@ -436,7 +436,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  break;
 
 
-	case OPT_foffload_:
+	case OPT_foffload_options_:
 	  append_option (decoded_options, decoded_options_count, foption);
 	  break;
 	}
@@ -812,7 +812,7 @@ append_offload_options (obstack *argv_obstack, const char *target,
       unsigned argc;
       struct cl_decoded_option *option = &options[i];
 
-      if (option->opt_index != OPT_foffload_)
+      if (option->opt_index != OPT_foffload_options_)
 	continue;
 
       /* If option argument starts with '-' then no target is specified.  That
@@ -823,11 +823,7 @@ append_offload_options (obstack *argv_obstack, const char *target,
       else
 	{
 	  opts = strchr (option->arg, '=');
-	  /* If there are offload targets specified, but no actual options,
-	     there is nothing to do here.  */
-	  if (!opts)
-	    continue;
-
+	  gcc_assert (opts);
 	  cur = option->arg;
 
 	  while (cur < opts)

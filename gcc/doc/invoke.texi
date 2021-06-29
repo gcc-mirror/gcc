@@ -202,6 +202,7 @@ in the following sections.
 -fno-builtin  -fno-builtin-@var{function}  -fcond-mismatch @gol
 -ffreestanding  -fgimple  -fgnu-tm  -fgnu89-inline  -fhosted @gol
 -flax-vector-conversions  -fms-extensions @gol
+-foffload=@var{arg}  -foffload-options=@var{arg} @gol
 -fopenacc  -fopenacc-dim=@var{geom} @gol
 -fopenmp  -fopenmp-simd @gol
 -fpermitted-flt-eval-methods=@var{standard} @gol
@@ -2629,6 +2630,46 @@ fields within structs/unions}, for details.
 
 Note that this option is off for all targets except for x86
 targets using ms-abi.
+
+@item -foffload=disable
+@itemx -foffload=default
+@itemx -foffload=@var{target-list}
+@opindex foffload
+@cindex Offloading targets
+@cindex OpenACC offloading targets
+@cindex OpenMP offloading targets
+Specify for which OpenMP and OpenACC offload targets code should be generated.
+The default behavior, equivalent to @option{-foffload=default}, is to generate
+code for all supported offload targets.  The @option{-foffload=disable} form
+generates code only for the host fallback, while
+@option{-foffload=@var{target-list}} generates code only for the specified
+comma-separated list of offload targets.
+
+Offload targets are specified in GCC's internal target-triplet format. You can
+run the compiler with @option{-v} to show the list of configured offload targets
+under @code{OFFLOAD_TARGET_NAMES}.
+
+@item -foffload-options=@var{options}
+@itemx -foffload-options=@var{target-triplet-list}=@var{options}
+@opindex foffload
+@cindex Offloading options
+@cindex OpenACC offloading options
+@cindex OpenMP offloading options
+
+With @option{-foffload-options=@var{options}}, GCC passes the specified
+@var{options} to the compilers for all enabled offloading targets.  You can
+specify options that apply only to a specific target or targets by using
+the @option{-foffload-options=@var{target-list}=@var{options}} form.  The
+@var{target-list} is a comma-separated list in the same format as for the
+@option{-foffload=} option.
+
+Typical command lines are
+
+@smallexample
+-foffload-options=-lgfortran -foffload-options=-lm
+-foffload-options="-lgfortran -lm" -foffload-options=nvptx-none=-latomic
+-foffload-options=amdgcn-amdhsa=-march=gfx906 -foffload-options=-lm
+@end smallexample
 
 @item -fopenacc
 @opindex fopenacc

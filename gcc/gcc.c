@@ -3971,6 +3971,84 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
 static const char *spec_lang = 0;
 static int last_language_n_infiles;
 
+
+/* Check that GCC is configured to support the offload target.  */
+
+static bool
+check_offload_target_name (const char *target, ptrdiff_t len)
+{
+  const char *n, *c = OFFLOAD_TARGETS;
+  while (c)
+    {
+      n = strchr (c, ',');
+      if (n == NULL)
+	n = strchr (c, '\0');
+      if (len == n - c && strncmp (target, c, n - c) == 0)
+	break;
+      c = *n ? n + 1 : NULL;
+    }
+  if (!c)
+    {
+      char *s;
+      auto_vec<const char*> candidates;
+      char *cand = (char *) alloca (strlen (OFFLOAD_TARGETS) + 1);
+      c = OFFLOAD_TARGETS;
+      while (c)
+	{
+	  n = strchr (c, ',');
+	  if (n == NULL)
+	    n = strchr (c, '\0');
+	  strncpy (cand, c, n - c);
+	  cand[n - c] = '\0';
+	  candidates.safe_push (cand);
+	  c = *n ? n + 1 : NULL;
+	}
+      error ("GCC is not configured to support %q.*s as offload target",
+	     len, target);
+      const char *hint = candidates_list_and_hint (target, s, candidates);
+      if (hint)
+	inform (UNKNOWN_LOCATION,
+		"valid offload targets are: %s; did you mean %qs?", s, hint);
+      else
+	inform (UNKNOWN_LOCATION, "valid offload targets are: %s", s);
+      XDELETEVEC (s);
+      return false;
+    }
+  return true;
+}
+
+/* Sanity check for -foffload-options.  */
+
+static void
+check_foffload_target_names (const char *arg)
+{
+  const char *cur, *next, *end;
+  /* If option argument starts with '-' then no target is specified and we
+     do not need to parse it.  */
+  if (arg[0] == '-')
+    return;
+  end = strchr (arg, '=');
+  if (end == NULL)
+    {
+      error ("%<=%>options missing after %<-foffload-options=%>target");
+      return;
+    }
+
+  cur = arg;
+  while (cur < end)
+    {
+      next = strchr (cur, ',');
+      if (next == NULL)
+	next = end;
+      next = (next > end) ? end : next;
+
+      /* Retain non-supported targets after printing an error as those will not
+	 be processed; each enabled target only processes its triplet.  */
+      check_offload_target_name (cur, next - cur);
+      cur = next + 1;
+   }
+}
+
 /* Parse -foffload option argument.  */
 
 static void
@@ -4000,33 +4078,24 @@ handle_foffload_option (const char *arg)
       memcpy (target, cur, next - cur);
       target[next - cur] = '\0';
 
-      /* If 'disable' is passed to the option, stop parsing the option and clean
-         the list of offload targets.  */
-      if (strcmp (target, "disable") == 0)
+      /* Reset offloading list and continue.  */
+      if (strcmp (target, "default") == 0)
+	{
+	  free (offload_targets);
+	  offload_targets = NULL;
+	  goto next_item;
+	}
+
+      /* If 'disable' is passed to the option, clean the list of
+	 offload targets and return, even if more targets follow.
+	 Likewise if GCC is not configured to support that offload target.  */
+      if (strcmp (target, "disable") == 0
+	  || !check_offload_target_name (target, next - cur))
 	{
 	  free (offload_targets);
 	  offload_targets = xstrdup ("");
-	  break;
+	  return;
 	}
-
-      /* Check that GCC is configured to support the offload target.  */
-      c = OFFLOAD_TARGETS;
-      while (c)
-	{
-	  n = strchr (c, ',');
-	  if (n == NULL)
-	    n = strchr (c, '\0');
-
-	  if (next - cur == n - c && strncmp (target, c, n - c) == 0)
-	    break;
-
-	  c = *n ? n + 1 : NULL;
-	}
-
-      if (!c)
-	fatal_error (input_location,
-		     "GCC is not configured to support %s as offload target",
-		     target);
 
       if (!offload_targets)
 	{
@@ -4061,7 +4130,7 @@ handle_foffload_option (const char *arg)
 	      memcpy (offload_targets + offload_targets_len, target, next - cur + 1);
 	    }
 	}
-
+next_item:
       cur = next + 1;
       XDELETEVEC (target);
     }
@@ -4493,8 +4562,16 @@ driver_handle_option (struct gcc_options *opts,
       flag_wpa = "";
       break;
 
+    case OPT_foffload_options_:
+      check_foffload_target_names (arg);
+      break;
+
     case OPT_foffload_:
       handle_foffload_option (arg);
+      if (arg[0] == '-' || NULL != strchr (arg, '='))
+	save_switch (concat ("-foffload-options=", arg, NULL),
+		     0, NULL, validated, true);
+      do_save = false;
       break;
 
     default:

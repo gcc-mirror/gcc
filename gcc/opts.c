@@ -2636,7 +2636,7 @@ common_handle_option (struct gcc_options *opts,
       /* Deferred.  */
       break;
 
-    case OPT_foffload_:
+    case OPT_foffload_options_:
       /* Deferred.  */
       break;
 
