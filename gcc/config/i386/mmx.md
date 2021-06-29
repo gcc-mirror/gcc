@@ -788,6 +788,24 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
 
+(define_insn "vec_addsubv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+	(vec_merge:V2SF
+	  (minus:V2SF
+	    (match_operand:V2SF 1 "register_operand" "0,x")
+	    (match_operand:V2SF 2 "register_operand" "x,x"))
+	  (plus:V2SF (match_dup 1) (match_dup 2))
+	  (const_int 1)))]
+  "TARGET_SSE3 && TARGET_MMX_WITH_SSE"
+  "@
+   addsubps\t{%2, %0|%0, %2}
+   vaddsubps\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseadd")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix_rep" "1,*")
+   (set_attr "mode" "V4SF")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point comparisons
