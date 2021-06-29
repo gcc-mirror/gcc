@@ -15147,48 +15147,6 @@ Struct_construction_expression::do_copy()
   return ret;
 }
 
-// Flatten a struct construction expression.  Store the values into
-// temporaries if they may need interface conversion.
-
-Expression*
-Struct_construction_expression::do_flatten(Gogo*, Named_object*,
-					   Statement_inserter* inserter)
-{
-  if (this->vals() == NULL)
-    return this;
-
-  // If this is a constant struct, we don't need temporaries.
-  if (this->is_constant_struct() || this->is_static_initializer())
-    return this;
-
-  Location loc = this->location();
-  const Struct_field_list* fields = this->type_->struct_type()->fields();
-  Struct_field_list::const_iterator pf = fields->begin();
-  for (Expression_list::iterator pv = this->vals()->begin();
-       pv != this->vals()->end();
-       ++pv, ++pf)
-    {
-      go_assert(pf != fields->end());
-      if (*pv != NULL)
-	{
-          if ((*pv)->is_error_expression() || (*pv)->type()->is_error_type())
-            {
-              go_assert(saw_errors());
-              return Expression::make_error(loc);
-            }
-	  if (pf->type()->interface_type() != NULL
-	      && !(*pv)->is_multi_eval_safe())
-	    {
-	      Temporary_statement* temp =
-		Statement::make_temporary(NULL, *pv, loc);
-	      inserter->insert(temp);
-	      *pv = Expression::make_temporary_reference(temp, loc);
-	    }
-	}
-    }
-  return this;
-}
-
 // Make implicit type conversions explicit.
 
 void
@@ -15449,55 +15407,6 @@ Array_construction_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	}
     }
-}
-
-// Flatten an array construction expression.  Store the values into
-// temporaries if they may need interface conversion.
-
-Expression*
-Array_construction_expression::do_flatten(Gogo*, Named_object*,
-					   Statement_inserter* inserter)
-{
-  if (this->is_error_expression())
-    {
-      go_assert(saw_errors());
-      return this;
-    }
-
-  if (this->vals() == NULL)
-    return this;
-
-  // If this is a constant array, we don't need temporaries.
-  if (this->is_constant_array() || this->is_static_initializer())
-    return this;
-
-  // If the array element type is not an interface type, we don't need
-  // temporaries.
-  if (this->type_->array_type()->element_type()->interface_type() == NULL)
-    return this;
-
-  Location loc = this->location();
-  for (Expression_list::iterator pv = this->vals()->begin();
-       pv != this->vals()->end();
-       ++pv)
-    {
-      if (*pv != NULL)
-	{
-          if ((*pv)->is_error_expression() || (*pv)->type()->is_error_type())
-            {
-              go_assert(saw_errors());
-              return Expression::make_error(loc);
-            }
-	  if (!(*pv)->is_multi_eval_safe())
-	    {
-	      Temporary_statement* temp =
-		Statement::make_temporary(NULL, *pv, loc);
-	      inserter->insert(temp);
-	      *pv = Expression::make_temporary_reference(temp, loc);
-	    }
-	}
-    }
-  return this;
 }
 
 // Make implicit type conversions explicit.
@@ -15768,14 +15677,14 @@ Slice_construction_expression::create_array_val()
 // the new temp statement.
 
 Expression*
-Slice_construction_expression::do_flatten(Gogo* gogo, Named_object* no,
+Slice_construction_expression::do_flatten(Gogo*, Named_object*,
                                           Statement_inserter* inserter)
 {
   if (this->type()->array_type() == NULL)
-    return NULL;
-
-  // Base class flattening first
-  this->Array_construction_expression::do_flatten(gogo, no, inserter);
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(this->location());
+    }
 
   // Create a stack-allocated storage temp if storage won't escape
   if (!this->storage_escapes_
@@ -15784,7 +15693,7 @@ Slice_construction_expression::do_flatten(Gogo* gogo, Named_object* no,
     {
       Location loc = this->location();
       this->array_val_ = this->create_array_val();
-      go_assert(this->array_val_);
+      go_assert(this->array_val_ != NULL);
       Temporary_statement* temp =
           Statement::make_temporary(this->valtype_, this->array_val_, loc);
       inserter->insert(temp);

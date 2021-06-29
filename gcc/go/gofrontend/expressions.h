@@ -3806,9 +3806,6 @@ class Struct_construction_expression : public Expression,
   Expression*
   do_copy();
 
-  Expression*
-  do_flatten(Gogo*, Named_object*, Statement_inserter*);
-
   Bexpression*
   do_get_backend(Translate_context*);
 
@@ -3880,9 +3877,6 @@ protected:
   const std::vector<unsigned long>*
   indexes()
   { return this->indexes_; }
-
-  Expression*
-  do_flatten(Gogo*, Named_object*, Statement_inserter*);
 
   // Get the backend constructor for the array values.
   Bexpression*
