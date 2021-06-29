@@ -1561,6 +1561,9 @@ cp_check_const_attributes (tree attributes)
   tree attr;
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
+      if (cxx_contract_attribute_p (attr))
+	continue;
+
       tree arg;
       /* As we implement alignas using gnu::aligned attribute and
 	 alignas argument is a constant expression, force manifestly
@@ -2106,7 +2109,17 @@ void
 comdat_linkage (tree decl)
 {
   if (flag_weak)
-    make_decl_one_only (decl, cxx_comdat_group (decl));
+    {
+      make_decl_one_only (decl, cxx_comdat_group (decl));
+      if (HAVE_COMDAT_GROUP && flag_contracts && DECL_CONTRACTS (decl))
+	{
+	  symtab_node *n = symtab_node::get (decl);
+	  if (tree pre = DECL_PRE_FN (decl))
+	    cgraph_node::get_create (pre)->add_to_same_comdat_group (n);
+	  if (tree post = DECL_POST_FN (decl))
+	    cgraph_node::get_create (post)->add_to_same_comdat_group (n);
+	}
+    }
   else if (TREE_CODE (decl) == FUNCTION_DECL
 	   || (VAR_P (decl) && DECL_ARTIFICIAL (decl)))
     /* We can just emit function and compiler-generated variables

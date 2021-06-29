@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #define WITHLIBC	(1<<3)
 /* Skip this option.  */
 #define SKIPOPT		(1<<4)
+/* Add -lstdc++exp for experimental features that need library support.  */
+#define EXPERIMENTAL	(1<<5)
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
@@ -158,6 +160,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
       switch (decoded_options[i].opt_index)
 	{
+	case OPT_fcontracts:
+	  args[i] |= EXPERIMENTAL;
+	  ++added;
+	  break;
+
 	case OPT_nostdlib:
 	case OPT_nostdlib__:
 	case OPT_nodefaultlibs:
@@ -347,6 +354,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  generate_option (OPT_x, "none", 1, CL_DRIVER,
 			   &new_decoded_options[j]);
 	}
+
+      if ((args[i] & EXPERIMENTAL)
+	  && which_library == USE_LIBSTDCXX)
+	generate_option (OPT_l, "stdc++exp", 1, CL_DRIVER,
+			 &new_decoded_options[++j]);
 
       if ((args[i] & SKIPOPT) != 0)
 	--j;

@@ -11247,10 +11247,21 @@ check_return_expr (tree retval, bool *no_warning)
 
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
-    retval = cp_build_init_expr (result, retval);
+    {
+      /* If there's a postcondition for a scalar return value, wrap
+	 retval in a call to the postcondition function.  */
+      if (tree post = apply_postcondition_to_return (retval))
+	retval = post;
+      retval = cp_build_init_expr (result, retval);
+    }
 
   if (tree set = maybe_set_retval_sentinel ())
     retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);
+
+  /* If there's a postcondition for an aggregate return value, call the
+     postcondition function after the return object is initialized.  */
+  if (tree post = apply_postcondition_to_return (result))
+    retval = build2 (COMPOUND_EXPR, void_type_node, retval, post);
 
   return retval;
 }

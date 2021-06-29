@@ -582,6 +582,17 @@ DEFTREECODE (CO_YIELD_EXPR, "co_yield", tcc_expression, 2)
 
 DEFTREECODE (CO_RETURN_EXPR, "co_return", tcc_statement, 2)
 
+/* Different flavors of contracts.
+
+   Assertions and preconditions have two operands: a node containing
+   the their mode and condition. Postconditions have an additional
+   operand to store the optional name for the result value.
+
+   CONTRACT_SEMANTIC has the computed behavior of the contract.  */
+DEFTREECODE (ASSERTION_STMT, "assertion_stmt", tcc_statement, 3)
+DEFTREECODE (PRECONDITION_STMT, "precondition_stmt", tcc_statement, 3)
+DEFTREECODE (POSTCONDITION_STMT, "postcondition_stmt", tcc_statement, 4)
+
 /*
 Local variables:
 mode:c
