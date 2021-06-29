@@ -1457,6 +1457,100 @@
    (set_attr "length" "4,8,8")
    (set_attr "gcn_version" "gcn5,gcn5,*")])
 
+(define_expand "<su>mulsidi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(mult:DI (any_extend:DI
+		   (match_operand:SI 1 "register_operand" ""))
+		 (any_extend:DI
+		   (match_operand:SI 2 "nonmemory_operand" ""))))]
+  ""
+{
+  if (can_create_pseudo_p ()
+      && !TARGET_GCN5
+      && !gcn_inline_immediate_operand (operands[2], SImode))
+    operands[2] = force_reg (SImode, operands[2]);
+
+  if (REG_P (operands[2]))
+    emit_insn (gen_<su>mulsidi3_reg (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_<su>mulsidi3_imm (operands[0], operands[1], operands[2]));
+
+  DONE;
+})
+
+(define_insn_and_split "<su>mulsidi3_reg"
+  [(set (match_operand:DI 0 "register_operand"           "=&Sg, &v")
+	(mult:DI (any_extend:DI
+		   (match_operand:SI 1 "register_operand" "%Sg,  v"))
+		 (any_extend:DI
+		   (match_operand:SI 2 "register_operand"  "Sg,vSv"))))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx dstlo = gen_lowpart (SImode, operands[0]);
+    rtx dsthi = gen_highpart_mode (SImode, DImode, operands[0]);
+    emit_insn (gen_mulsi3 (dstlo, operands[1], operands[2]));
+    emit_insn (gen_<su>mulsi3_highpart (dsthi, operands[1], operands[2]));
+    DONE;
+  }
+  [(set_attr "gcn_version" "gcn5,*")])
+
+(define_insn_and_split "<su>mulsidi3_imm"
+  [(set (match_operand:DI 0 "register_operand"                "=&Sg,&Sg,&v")
+	(mult:DI (any_extend:DI
+		   (match_operand:SI 1 "register_operand"       "Sg, Sg, v"))
+		 (match_operand:DI 2 "gcn_32bit_immediate_operand"
+								 "A,  B, A")))]
+  "TARGET_GCN5 || gcn_inline_immediate_operand (operands[2], SImode)"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    rtx dstlo = gen_lowpart (SImode, operands[0]);
+    rtx dsthi = gen_highpart_mode (SImode, DImode, operands[0]);
+    emit_insn (gen_mulsi3 (dstlo, operands[1], operands[2]));
+    emit_insn (gen_<su>mulsi3_highpart (dsthi, operands[1], operands[2]));
+    DONE;
+  }
+  [(set_attr "gcn_version" "gcn5,gcn5,*")])
+
+(define_insn_and_split "muldi3"
+  [(set (match_operand:DI 0 "register_operand"         "=&Sg,&Sg, &v,&v")
+	(mult:DI (match_operand:DI 1 "register_operand" "%Sg, Sg,  v, v")
+		 (match_operand:DI 2 "nonmemory_operand" "Sg,  i,vSv, A")))
+   (clobber (match_scratch:SI 3 "=&Sg,&Sg,&v,&v"))
+   (clobber (match_scratch:BI 4  "=cs, cs, X, X"))
+   (clobber (match_scratch:DI 5   "=X,  X,cV,cV"))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx tmp = operands[3];
+    rtx dsthi = gen_highpart_mode (SImode, DImode, operands[0]);
+    rtx op1lo = gcn_operand_part (DImode, operands[1], 0);
+    rtx op1hi = gcn_operand_part (DImode, operands[1], 1);
+    rtx op2lo = gcn_operand_part (DImode, operands[2], 0);
+    rtx op2hi = gcn_operand_part (DImode, operands[2], 1);
+    emit_insn (gen_umulsidi3 (operands[0], op1lo, op2lo));
+    emit_insn (gen_mulsi3 (tmp, op1lo, op2hi));
+    rtx add = gen_rtx_SET (dsthi, gen_rtx_PLUS (SImode, dsthi, tmp));
+    rtx clob1 = gen_rtx_CLOBBER (VOIDmode, operands[4]);
+    rtx clob2 = gen_rtx_CLOBBER (VOIDmode, operands[5]);
+    add = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, add, clob1, clob2));
+    emit_insn (add);
+    emit_insn (gen_mulsi3 (tmp, op1hi, op2lo));
+    add = gen_rtx_SET (dsthi, gen_rtx_PLUS (SImode, dsthi, tmp));
+    clob1 = gen_rtx_CLOBBER (VOIDmode, operands[4]);
+    clob2 = gen_rtx_CLOBBER (VOIDmode, operands[5]);
+    add = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, add, clob1, clob2));
+    emit_insn (add);
+    DONE;
+  }
+  [(set_attr "gcn_version" "gcn5,gcn5,*,*")])
+
 (define_insn "<u>mulhisi3"
   [(set (match_operand:SI 0 "register_operand"			"=v")
 	(mult:SI
