@@ -4004,13 +4004,15 @@ check_offload_target_name (const char *target, ptrdiff_t len)
 	  n = strchr (c, ',');
 	  if (n == NULL)
 	    n = strchr (c, '\0');
+	  if (n - c == 0)
+	    break;
 	  strncpy (cand, c, n - c);
 	  cand[n - c] = '\0';
 	  candidates.safe_push (cand);
 	  c = *n ? n + 1 : NULL;
 	}
       error ("GCC is not configured to support %q.*s as offload target",
-	     len, target);
+	     (int) len, target);
       const char *hint = candidates_list_and_hint (target, s, candidates);
       if (hint)
 	inform (UNKNOWN_LOCATION,
