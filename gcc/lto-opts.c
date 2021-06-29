@@ -174,7 +174,8 @@ lto_write_options (void)
 	 We do not need those.  The only exception is -foffload option, if we
 	 write it in offload_lto section.  Also drop all diagnostic options.  */
       if ((cl_options[option->opt_index].flags & (CL_DRIVER|CL_WARNING))
-	  && (!lto_stream_offload_p || option->opt_index != OPT_foffload_))
+	  && (!lto_stream_offload_p
+	      || option->opt_index != OPT_foffload_options_))
 	continue;
 
       for (j = 0; j < option->canonical_option_num_elements; ++j)

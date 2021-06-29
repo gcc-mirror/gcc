@@ -1,4 +1,4 @@
-/* { dg-additional-options "-foffload=nvptx-none=-latomic" { target { offload_target_nvptx } } } */
+/* { dg-additional-options "-foffload-options=nvptx-none=-latomic" { target { offload_target_nvptx } } } */
 
 #include <stdlib.h>
 
