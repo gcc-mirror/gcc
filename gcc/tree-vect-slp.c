@@ -3470,12 +3470,11 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 struct slpg_vertex
 {
   slpg_vertex (slp_tree node_)
-    : node (node_), visited (0), perm_out (0), materialize (0) {}
+    : node (node_), perm_out (-1), materialize (0) {}
 
   int get_perm_in () const { return materialize ? materialize : perm_out; }
 
   slp_tree node;
-  unsigned visited : 1;
   /* The permutation on the outgoing lanes (towards SLP parents).  */
   int perm_out;
   /* The permutation that is applied by this node.  perm_out is
@@ -3567,7 +3566,8 @@ vect_slp_perms_eq (const vec<vec<unsigned> > &perms,
 		   int perm_a, int perm_b)
 {
   return (perm_a == perm_b
-	  || (perms[perm_a].length () == perms[perm_b].length ()
+	  || (perm_a != -1 && perm_b != -1
+	      && perms[perm_a].length () == perms[perm_b].length ()
 	      && memcmp (&perms[perm_a][0], &perms[perm_b][0],
 			 sizeof (unsigned) * perms[perm_a].length ()) == 0));
 }
@@ -3614,7 +3614,7 @@ vect_optimize_slp (vec_info *vinfo)
       /* Leafs do not change across iterations.  Note leafs also double
 	 as entries to the reverse graph.  */
       if (!slpg->vertices[idx].succ)
-	vertices[idx].visited = 1;
+	vertices[idx].perm_out = 0;
       /* Loads are the only thing generating permutes.  */
       if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
 	continue;
@@ -3668,11 +3668,16 @@ vect_optimize_slp (vec_info *vinfo)
 
   /* Propagate permutes along the graph and compute materialization points.  */
   bool changed;
+  bool do_materialization = false;
   unsigned iteration = 0;
   do
     {
       changed = false;
       ++iteration;
+
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "SLP optimize iteration %d\n", iteration);
 
       for (i = vertices.length (); i > 0 ; --i)
 	{
@@ -3685,19 +3690,21 @@ vect_optimize_slp (vec_info *vinfo)
 	      || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
 	    continue;
 
-	  vertices[idx].visited = 1;
-
 	  /* We still eventually have failed backedge SLP nodes in the
 	     graph, those are only cancelled when analyzing operations.
 	     Simply treat them as transparent ops, propagating permutes
 	     through them.  */
 	  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
 	    {
-	      /* We do not handle stores with a permutation.  */
+	      /* We do not handle stores with a permutation, so all
+		 incoming permutes must have been materialized.  */
 	      stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
 	      if (STMT_VINFO_DATA_REF (rep)
 		  && DR_IS_WRITE (STMT_VINFO_DATA_REF (rep)))
-		continue;
+		{
+		  vertices[idx].perm_out = 0;
+		  continue;
+		}
 	      /* We cannot move a permute across an operation that is
 		 not independent on lanes.  Note this is an explicit
 		 negative list since that's much shorter than the respective
@@ -3710,63 +3717,82 @@ vect_optimize_slp (vec_info *vinfo)
 		  case CFN_COMPLEX_MUL:
 		  case CFN_COMPLEX_MUL_CONJ:
 		  case CFN_VEC_ADDSUB:
+		    vertices[idx].perm_out = 0;
 		    continue;
 		  default:;
 		  }
 	    }
 
-	  int perm = -1;
-	  for (graph_edge *succ = slpg->vertices[idx].succ;
-	       succ; succ = succ->succ_next)
-	    {
-	      int succ_idx = succ->dest;
-	      /* Handle unvisited nodes optimistically.  */
-	      /* ???  But for constants once we want to handle non-bijective
-		 permutes we have to verify the permute, when unifying lanes,
-		 will not unify different constants.  For example see
-		 gcc.dg/vect/bb-slp-14.c for a case that would break.  */
-	      if (!vertices[succ_idx].visited)
-		continue;
-	      int succ_perm = vertices[succ_idx].perm_out;
-	      if (perm == -1)
-		perm = succ_perm;
-	      else if (succ_perm == 0)
-		{
-		  perm = 0;
-		  break;
-		}
-	      else if (!vect_slp_perms_eq (perms, perm, succ_perm))
-		{
-		  perm = 0;
-		  break;
-		}
-	    }
-
-	  if (perm == -1)
+	  int perm;
+	  if (!slpg->vertices[idx].succ)
 	    /* Pick up pre-computed leaf values.  */
 	    perm = vertices[idx].perm_out;
-	  else if (!vect_slp_perms_eq (perms, perm,
-				       vertices[idx].get_perm_in ()))
+	  else
 	    {
-	      if (iteration > 1)
-		/* Make sure we eventually converge.  */
-		gcc_checking_assert (perm == 0);
-	      if (perm == 0)
+	      perm = -1;
+	      bool all_constant = true;
+	      for (graph_edge *succ = slpg->vertices[idx].succ;
+		   succ; succ = succ->succ_next)
 		{
-		  vertices[idx].perm_out = 0;
-		  vertices[idx].materialize = 0;
+		  int succ_idx = succ->dest;
+		  slp_tree succ_node = vertices[succ_idx].node;
+		  if (SLP_TREE_DEF_TYPE (succ_node) != vect_external_def
+		      && SLP_TREE_DEF_TYPE (succ_node) != vect_constant_def)
+		    all_constant = false;
+		  int succ_perm = vertices[succ_idx].perm_out;
+		  /* Handle unvisited (and constant) nodes optimistically.  */
+		  /* ???  But for constants once we want to handle
+		     non-bijective permutes we have to verify the permute,
+		     when unifying lanes, will not unify different constants.
+		     For example see gcc.dg/vect/bb-slp-14.c for a case
+		     that would break.  */
+		  if (succ_perm == -1)
+		    continue;
+		  if (perm == -1)
+		    perm = succ_perm;
+		  else if (succ_perm == 0)
+		    {
+		      perm = 0;
+		      break;
+		    }
+		  else if (!vect_slp_perms_eq (perms, perm, succ_perm))
+		    {
+		      perm = 0;
+		      break;
+		    }
 		}
-	      if (!vertices[idx].materialize)
-		vertices[idx].perm_out = perm;
-	      changed = true;
+	      /* We still lack a forward propagation of materializations
+		 and thus only allow "any" permutes on constant or external
+		 nodes which we handle during materialization by looking
+		 at SLP children.  So avoid having internal "any" permutes
+		 for now, see gcc.dg/vect/bb-slp-71.c for a testcase that
+		 breaks when removing this restriction.  */
+	      if (perm == -1 && all_constant)
+		perm = 0;
+
+	      if (!vect_slp_perms_eq (perms, perm,
+				      vertices[idx].get_perm_in ()))
+		{
+		  /* Make sure we eventually converge.  */
+		  gcc_checking_assert (vertices[idx].get_perm_in () == -1
+				       || perm == 0);
+		  if (perm == 0)
+		    {
+		      vertices[idx].perm_out = 0;
+		      vertices[idx].materialize = 0;
+		    }
+		  if (!vertices[idx].materialize)
+		    vertices[idx].perm_out = perm;
+		  changed = true;
+		}
 	    }
 
-	  if (perm == 0)
+	  /* Elide pruning at materialization points in the first
+	     iteration phase.  */
+	  if (!do_materialization)
 	    continue;
 
-	  /* Elide pruning at materialization points in the first
-	     iteration so every node was visited once at least.  */
-	  if (iteration == 1)
+	  if (perm == 0 || perm == -1)
 	    continue;
 
 	  /* Decide on permute materialization.  Look whether there's
@@ -3784,8 +3810,8 @@ vect_optimize_slp (vec_info *vinfo)
 	    for (graph_edge *pred = slpg->vertices[idx].pred;
 		 pred; pred = pred->pred_next)
 	      {
-		gcc_checking_assert (vertices[pred->src].visited);
 		int pred_perm = vertices[pred->src].get_perm_in ();
+		gcc_checking_assert (pred_perm != -1);
 		if (!vect_slp_perms_eq (perms, perm, pred_perm))
 		  {
 		    all_preds_permuted = false;
@@ -3800,8 +3826,16 @@ vect_optimize_slp (vec_info *vinfo)
 	      vertices[idx].perm_out = 0;
 	    }
 	}
+
+      /* If the initial propagation converged, switch on materialization
+	 and re-propagate.  */
+      if (!changed && !do_materialization)
+	{
+	  do_materialization = true;
+	  changed = true;
+	}
     }
-  while (changed || iteration == 1);
+  while (changed);
 
   /* Materialize.  */
   for (i = 0; i < vertices.length (); ++i)
