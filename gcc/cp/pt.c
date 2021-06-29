@@ -26003,7 +26003,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   td = template_for_substitution (d);
   args = gen_args;
 
-  if (VAR_P (d))
+  if (variable_template_specialization_p (d))
     {
       /* Look up an explicit specialization, if any.  */
       tree tid = lookup_template_variable (gen_tmpl, gen_args);
