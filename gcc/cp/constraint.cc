@@ -926,12 +926,7 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
   tree norm = NULL_TREE;
   if (tree ci = get_constraints (decl))
     {
-      push_nested_class_guard pncs (DECL_CONTEXT (d));
-
-      temp_override<tree> ovr (current_function_decl);
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	current_function_decl = decl;
-
+      push_access_scope_guard pas (decl);
       norm = get_normalized_constraints_from_info (ci, tmpl, diag);
     }
 

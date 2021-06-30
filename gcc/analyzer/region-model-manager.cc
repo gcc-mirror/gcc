@@ -477,7 +477,7 @@ maybe_undo_optimize_bit_field_compare (tree type,
     bound_bits = bit_range (BITS_PER_UNIT - bits.get_next_bit_offset (),
 			    bits.m_size_in_bits);
   const concrete_binding *conc
-    = get_store_manager ()->get_concrete_binding (bound_bits, BK_direct);
+    = get_store_manager ()->get_concrete_binding (bound_bits);
   const svalue *sval = map.get (conc);
   if (!sval)
     return NULL;
@@ -686,13 +686,13 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
 	      return get_or_create_cast (type, char_sval);
 	}
 
-  /* SUB(INIT(r)).FIELD -> INIT(r.FIELD)
-     i.e.
-     Subvalue(InitialValue(R1), FieldRegion(R2, F))
-       -> InitialValue(FieldRegion(R1, F)).  */
   if (const initial_svalue *init_sval
-        = parent_svalue->dyn_cast_initial_svalue ())
+	= parent_svalue->dyn_cast_initial_svalue ())
     {
+      /* SUB(INIT(r)).FIELD -> INIT(r.FIELD)
+	 i.e.
+	 Subvalue(InitialValue(R1), FieldRegion(R2, F))
+	 -> InitialValue(FieldRegion(R1, F)).  */
       if (const field_region *field_reg = subregion->dyn_cast_field_region ())
 	{
 	  const region *field_reg_new
@@ -700,7 +700,23 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
 				field_reg->get_field ());
 	  return get_or_create_initial_value (field_reg_new);
 	}
+      /* SUB(INIT(r)[ELEMENT] -> INIT(e[ELEMENT])
+	 i.e.
+	 Subvalue(InitialValue(R1), ElementRegion(R2, IDX))
+	 -> InitialValue(ElementRegion(R1, IDX)).  */
+      if (const element_region *element_reg = subregion->dyn_cast_element_region ())
+	{
+	  const region *element_reg_new
+	    = get_element_region (init_sval->get_region (),
+				  element_reg->get_type (),
+				  element_reg->get_index ());
+	  return get_or_create_initial_value (element_reg_new);
+	}
     }
+
+  if (const repeated_svalue *repeated_sval
+	= parent_svalue->dyn_cast_repeated_svalue ())
+    return get_or_create_cast (type, repeated_sval->get_inner_svalue ());
 
   return NULL;
 }
@@ -725,6 +741,255 @@ region_model_manager::get_or_create_sub_svalue (tree type,
   RETURN_UNKNOWN_IF_TOO_COMPLEX (sub_sval);
   m_sub_values_map.put (key, sub_sval);
   return sub_sval;
+}
+
+/* Subroutine of region_model_manager::get_or_create_repeated_svalue.
+   Return a folded svalue, or NULL.  */
+
+const svalue *
+region_model_manager::maybe_fold_repeated_svalue (tree type,
+						  const svalue *outer_size,
+						  const svalue *inner_svalue)
+{
+  /* If INNER_SVALUE is the same size as OUTER_SIZE,
+     turn into simply a cast.  */
+  if (tree cst_outer_num_bytes = outer_size->maybe_get_constant ())
+    {
+      HOST_WIDE_INT num_bytes_inner_svalue
+	= int_size_in_bytes (inner_svalue->get_type ());
+      if (num_bytes_inner_svalue != -1)
+	if (num_bytes_inner_svalue
+	    == (HOST_WIDE_INT)tree_to_uhwi (cst_outer_num_bytes))
+	  {
+	    if (type)
+	      return get_or_create_cast (type, inner_svalue);
+	    else
+	      return inner_svalue;
+	  }
+    }
+
+  /* Handle zero-fill of a specific type.  */
+  if (tree cst = inner_svalue->maybe_get_constant ())
+    if (zerop (cst) && type)
+      return get_or_create_cast (type, inner_svalue);
+
+  return NULL;
+}
+
+/* Return the svalue * of type TYPE in which INNER_SVALUE is repeated
+   enough times to be of size OUTER_SIZE, creating it if necessary.
+   e.g. for filling buffers with a constant value.  */
+
+const svalue *
+region_model_manager::get_or_create_repeated_svalue (tree type,
+						     const svalue *outer_size,
+						     const svalue *inner_svalue)
+{
+  if (const svalue *folded
+	= maybe_fold_repeated_svalue (type, outer_size, inner_svalue))
+    return folded;
+
+  repeated_svalue::key_t key (type, outer_size, inner_svalue);
+  if (repeated_svalue **slot = m_repeated_values_map.get (key))
+    return *slot;
+  repeated_svalue *repeated_sval
+    = new repeated_svalue (type, outer_size, inner_svalue);
+  RETURN_UNKNOWN_IF_TOO_COMPLEX (repeated_sval);
+  m_repeated_values_map.put (key, repeated_sval);
+  return repeated_sval;
+}
+
+/* Attempt to get the bit_range for FIELD within a RECORD_TYPE.
+   Return true and write the result to OUT if successful.
+   Return false otherwise.  */
+
+static bool
+get_bit_range_for_field (tree field, bit_range *out)
+{
+  bit_size_t bit_size;
+  if (!int_size_in_bits (TREE_TYPE (field), &bit_size))
+    return false;
+  int field_bit_offset = int_bit_position (field);
+  *out = bit_range (field_bit_offset, bit_size);
+  return true;
+}
+
+/* Attempt to get the byte_range for FIELD within a RECORD_TYPE.
+   Return true and write the result to OUT if successful.
+   Return false otherwise.  */
+
+static bool
+get_byte_range_for_field (tree field, byte_range *out)
+{
+  bit_range field_bits (0, 0);
+  if (!get_bit_range_for_field (field, &field_bits))
+    return false;
+  return field_bits.as_byte_range (out);
+}
+
+/* Attempt to determine if there is a specific field within RECORD_TYPE
+   at BYTES.  If so, return it, and write the location of BYTES relative
+   to the field to *OUT_RANGE_WITHIN_FIELD.
+   Otherwise, return NULL_TREE.
+   For example, given:
+     struct foo { uint32 a; uint32; b};
+   and
+     bytes = {bytes 6-7} (of foo)
+   we have bytes 3-4 of field b.  */
+
+static tree
+get_field_at_byte_range (tree record_type, const byte_range &bytes,
+			 byte_range *out_range_within_field)
+{
+  bit_offset_t bit_offset = bytes.m_start_byte_offset * BITS_PER_UNIT;
+
+  tree field = get_field_at_bit_offset (record_type, bit_offset);
+  if (!field)
+    return NULL_TREE;
+
+  byte_range field_bytes (0,0);
+  if (!get_byte_range_for_field (field, &field_bytes))
+    return NULL_TREE;
+
+  /* Is BYTES fully within field_bytes?  */
+  byte_range bytes_within_field (0,0);
+  if (!field_bytes.contains_p (bytes, &bytes_within_field))
+    return NULL_TREE;
+
+  *out_range_within_field = bytes_within_field;
+  return field;
+}
+
+/* Subroutine of region_model_manager::get_or_create_bits_within.
+   Return a folded svalue, or NULL.  */
+
+const svalue *
+region_model_manager::maybe_fold_bits_within_svalue (tree type,
+						     const bit_range &bits,
+						     const svalue *inner_svalue)
+{
+  tree inner_type = inner_svalue->get_type ();
+  /* Fold:
+       BITS_WITHIN ((0, sizeof (VAL), VAL))
+     to:
+       CAST(TYPE, VAL).  */
+  if (bits.m_start_bit_offset == 0 && inner_type)
+    {
+      bit_size_t inner_type_size;
+      if (int_size_in_bits (inner_type, &inner_type_size))
+	if (inner_type_size == bits.m_size_in_bits)
+	  {
+	    if (type)
+	      return get_or_create_cast (type, inner_svalue);
+	    else
+	      return inner_svalue;
+	  }
+    }
+
+  /* Kind-specific folding.  */
+  if (const svalue *sval
+      = inner_svalue->maybe_fold_bits_within (type, bits, this))
+    return sval;
+
+  byte_range bytes (0,0);
+  if (bits.as_byte_range (&bytes) && inner_type)
+    switch (TREE_CODE (inner_type))
+      {
+      default:
+	break;
+      case ARRAY_TYPE:
+	{
+	  /* Fold:
+	       BITS_WITHIN (range, KIND(REG))
+	     to:
+	       BITS_WITHIN (range - offsetof(ELEMENT), KIND(REG.ELEMENT))
+	     if range1 is a byte-range fully within one ELEMENT.  */
+	  tree element_type = TREE_TYPE (inner_type);
+	  HOST_WIDE_INT element_byte_size
+	    = int_size_in_bytes (element_type);
+	  if (element_byte_size > 0)
+	    {
+	      HOST_WIDE_INT start_idx
+		= (bytes.get_start_byte_offset ().to_shwi ()
+		   / element_byte_size);
+	      HOST_WIDE_INT last_idx
+		= (bytes.get_last_byte_offset ().to_shwi ()
+		   / element_byte_size);
+	      if (start_idx == last_idx)
+		{
+		  if (const initial_svalue *initial_sval
+		      = inner_svalue->dyn_cast_initial_svalue ())
+		    {
+		      bit_offset_t start_of_element
+			= start_idx * element_byte_size * BITS_PER_UNIT;
+		      bit_range bits_within_element
+			(bits.m_start_bit_offset - start_of_element,
+			 bits.m_size_in_bits);
+		      const svalue *idx_sval
+			= get_or_create_int_cst (integer_type_node, start_idx);
+		      const region *element_reg =
+			get_element_region (initial_sval->get_region (),
+					    element_type, idx_sval);
+		      const svalue *element_reg_sval
+			= get_or_create_initial_value (element_reg);
+		      return get_or_create_bits_within (type,
+							bits_within_element,
+							element_reg_sval);
+		    }
+		}
+	    }
+	}
+	break;
+      case RECORD_TYPE:
+	{
+	  /* Fold:
+	       BYTES_WITHIN (range, KIND(REG))
+	     to:
+	       BYTES_WITHIN (range - offsetof(FIELD), KIND(REG.FIELD))
+	     if range1 is fully within FIELD.  */
+	  byte_range bytes_within_field (0, 0);
+	  if (tree field = get_field_at_byte_range (inner_type, bytes,
+						    &bytes_within_field))
+	    {
+	      if (const initial_svalue *initial_sval
+		  = inner_svalue->dyn_cast_initial_svalue ())
+		{
+		  const region *field_reg =
+		    get_field_region (initial_sval->get_region (), field);
+		  const svalue *initial_reg_sval
+		    = get_or_create_initial_value (field_reg);
+		  return get_or_create_bits_within
+		    (type,
+		     bytes_within_field.as_bit_range (),
+		     initial_reg_sval);
+		}
+	    }
+	}
+	break;
+      }
+  return NULL;
+}
+
+/* Return the svalue * of type TYPE for extracting BITS from INNER_SVALUE,
+   creating it if necessary.  */
+
+const svalue *
+region_model_manager::get_or_create_bits_within (tree type,
+						 const bit_range &bits,
+						 const svalue *inner_svalue)
+{
+  if (const svalue *folded
+	= maybe_fold_bits_within_svalue (type, bits, inner_svalue))
+    return folded;
+
+  bits_within_svalue::key_t key (type, bits, inner_svalue);
+  if (bits_within_svalue **slot = m_bits_within_values_map.get (key))
+    return *slot;
+  bits_within_svalue *bits_within_sval
+    = new bits_within_svalue (type, bits, inner_svalue);
+  RETURN_UNKNOWN_IF_TOO_COMPLEX (bits_within_sval);
+  m_bits_within_values_map.put (key, bits_within_sval);
+  return bits_within_sval;
 }
 
 /* Return the svalue * that decorates ARG as being unmergeable,
@@ -966,6 +1231,38 @@ region_model_manager::get_offset_region (const region *parent,
   return offset_reg;
 }
 
+/* Return the region that describes accessing the subregion of type
+   TYPE of size BYTE_SIZE_SVAL within PARENT, creating it if necessary.  */
+
+const region *
+region_model_manager::get_sized_region (const region *parent,
+					tree type,
+					const svalue *byte_size_sval)
+{
+  if (byte_size_sval->get_type () != size_type_node)
+    byte_size_sval = get_or_create_cast (size_type_node, byte_size_sval);
+
+  /* If PARENT is already that size, return it.  */
+  const svalue *parent_byte_size_sval = parent->get_byte_size_sval (this);
+  if (tree parent_size_cst = parent_byte_size_sval->maybe_get_constant ())
+    if (tree size_cst = byte_size_sval->maybe_get_constant ())
+      {
+	tree comparison
+	  = fold_binary (EQ_EXPR, boolean_type_node, parent_size_cst, size_cst);
+	if (comparison == boolean_true_node)
+	  return parent;
+      }
+
+  sized_region::key_t key (parent, type, byte_size_sval);
+  if (sized_region *reg = m_sized_regions.get (key))
+    return reg;
+
+  sized_region *sized_reg
+    = new sized_region (alloc_region_id (), parent, type, byte_size_sval);
+  m_sized_regions.put (key, sized_reg);
+  return sized_reg;
+}
+
 /* Return the region that describes accessing PARENT_REGION as if
    it were of type TYPE, creating it if necessary.  */
 
@@ -1180,6 +1477,9 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   log_uniq_map (logger, show_objs, "unaryop_svalue", m_unaryop_values_map);
   log_uniq_map (logger, show_objs, "binop_svalue", m_binop_values_map);
   log_uniq_map (logger, show_objs, "sub_svalue", m_sub_values_map);
+  log_uniq_map (logger, show_objs, "repeated_svalue", m_repeated_values_map);
+  log_uniq_map (logger, show_objs, "bits_within_svalue",
+		m_bits_within_values_map);
   log_uniq_map (logger, show_objs, "unmergeable_svalue",
 		m_unmergeable_values_map);
   log_uniq_map (logger, show_objs, "widening_svalue", m_widening_values_map);
@@ -1198,6 +1498,7 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   log_uniq_map (logger, show_objs, "field_region", m_field_regions);
   log_uniq_map (logger, show_objs, "element_region", m_element_regions);
   log_uniq_map (logger, show_objs, "offset_region", m_offset_regions);
+  log_uniq_map (logger, show_objs, "sized_region", m_sized_regions);
   log_uniq_map (logger, show_objs, "cast_region", m_cast_regions);
   log_uniq_map (logger, show_objs, "frame_region", m_frame_regions);
   log_uniq_map (logger, show_objs, "symbolic_region", m_symbolic_regions);

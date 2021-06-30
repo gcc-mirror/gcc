@@ -2242,7 +2242,7 @@ close_at_file (void)
   if (n_args == 0)
     return;
 
-  char **argv = (char **) alloca (sizeof (char *) * (n_args + 1));
+  char **argv = XALLOCAVEC (char *, n_args + 1);
   char *temp_file = make_at_file ();
   char *at_argument = concat ("@", temp_file, NULL);
   FILE *f = fopen (temp_file, "w");
@@ -3251,7 +3251,7 @@ execute (void)
       n_commands++;
 
   /* Get storage for each command.  */
-  commands = (struct command *) alloca (n_commands * sizeof (struct command));
+  commands = XALLOCAVEC (struct command, n_commands);
 
   /* Split argbuf into its separate piped processes,
      and record info about each one.
@@ -3430,13 +3430,13 @@ execute (void)
     struct pex_time *times = NULL;
     int ret_code = 0;
 
-    statuses = (int *) alloca (n_commands * sizeof (int));
+    statuses = XALLOCAVEC (int, n_commands);
     if (!pex_get_status (pex, n_commands, statuses))
       fatal_error (input_location, "failed to get exit status: %m");
 
     if (report_times || report_times_to_file)
       {
-	times = (struct pex_time *) alloca (n_commands * sizeof (struct pex_time));
+	times = XALLOCAVEC (struct pex_time, n_commands);
 	if (!pex_get_times (pex, n_commands, times))
 	  fatal_error (input_location, "failed to get process times: %m");
       }
@@ -3752,6 +3752,7 @@ display_help (void)
   fputs (_("  -dumpspecs               Display all of the built in spec strings.\n"), stdout);
   fputs (_("  -dumpversion             Display the version of the compiler.\n"), stdout);
   fputs (_("  -dumpmachine             Display the compiler's target processor.\n"), stdout);
+  fputs (_("  -foffload=<targets>      Specify offloading targets.\n"), stdout);
   fputs (_("  -print-search-dirs       Display the directories in the compiler's search path.\n"), stdout);
   fputs (_("  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"), stdout);
   fputs (_("  -print-file-name=<lib>   Display the full path to library <lib>.\n"), stdout);
@@ -3997,24 +3998,22 @@ check_offload_target_name (const char *target, ptrdiff_t len)
     {
       char *s;
       auto_vec<const char*> candidates;
-      char *cand = (char *) alloca (strlen (OFFLOAD_TARGETS) + 1);
-      c = OFFLOAD_TARGETS;
-      while (c)
-	{
-	  n = strchr (c, ',');
-	  if (n == NULL)
-	    n = strchr (c, '\0');
-	  if (n - c == 0)
-	    break;
-	  strncpy (cand, c, n - c);
-	  cand[n - c] = '\0';
-	  candidates.safe_push (cand);
-	  c = *n ? n + 1 : NULL;
-	}
-      error ("GCC is not configured to support %q.*s as offload target",
-	     (int) len, target);
-      const char *hint = candidates_list_and_hint (target, s, candidates);
-      if (hint)
+      size_t olen = strlen (OFFLOAD_TARGETS) + 1;
+      char *cand = XALLOCAVEC (char, olen);
+      memcpy (cand, OFFLOAD_TARGETS, olen);
+      for (c = strtok (cand, ","); c; c = strtok (NULL, ","))
+	candidates.safe_push (c);
+
+      char *target2 = XALLOCAVEC (char, len + 1);
+      memcpy (target2, target, len);
+      target2[len] = '\0';
+
+      error ("GCC is not configured to support %qs as offload target", target2);
+
+      const char *hint = candidates_list_and_hint (target2, s, candidates);
+      if (candidates.is_empty ())
+	inform (UNKNOWN_LOCATION, "no offloading targets configured");
+      else if (hint)
 	inform (UNKNOWN_LOCATION,
 		"valid offload targets are: %s; did you mean %qs?", s, hint);
       else

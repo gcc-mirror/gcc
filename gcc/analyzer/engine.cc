@@ -2275,6 +2275,7 @@ exploded_graph::get_or_create_node (const program_point &point,
 	  if (pruned_state.can_merge_with_p (existing_state, point,
 					     &merged_state))
 	    {
+	      merged_state.validate (m_ext_state);
 	      if (logger)
 		logger->log ("merging new state with that of EN: %i",
 			     existing_enode->m_index);
@@ -2794,6 +2795,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
       items.quick_push (it);
       const program_state &state = iter_enode->get_state ();
       program_state *next_state = &it->m_processed_state;
+      next_state->validate (m_ext_state);
       const program_point &iter_point = iter_enode->get_point ();
       if (const superedge *iter_sedge = iter_point.get_from_edge ())
 	{
@@ -2807,6 +2809,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
 	    next_state->m_region_model->update_for_phis
 	      (snode, last_cfg_superedge, &ctxt);
 	}
+      next_state->validate (m_ext_state);
     }
 
   /* Attempt to partition the items into a set of merged states.
@@ -2823,10 +2826,12 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
       unsigned iter_merger_idx;
       FOR_EACH_VEC_ELT (merged_states, iter_merger_idx, merged_state)
 	{
+	  merged_state->validate (m_ext_state);
 	  program_state merge (m_ext_state);
 	  if (it_state.can_merge_with_p (*merged_state, next_point, &merge))
 	    {
 	      *merged_state = merge;
+	      merged_state->validate (m_ext_state);
 	      it->m_merger_idx = iter_merger_idx;
 	      if (logger)
 		logger->log ("reusing merger state %i for item %i (EN: %i)",

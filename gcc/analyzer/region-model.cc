@@ -393,6 +393,14 @@ region_model::debug () const
   dump (true);
 }
 
+/* Assert that this object is valid.  */
+
+void
+region_model::validate () const
+{
+  m_store.validate ();
+}
+
 /* Canonicalize the store and constraints, to maximize the chance of
    equality between region_model instances.  */
 
@@ -847,11 +855,9 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
     case STRING_CST:
       {
 	/* e.g. "struct s2 x = {{'A', 'B', 'C', 'D'}};".  */
-	/* Add a default binding, rather than a direct one, so that array
-	   access will "inherit" the individual chars.  */
 	const svalue *rhs_sval = get_rvalue (rhs1, ctxt);
 	m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
-			   BK_default, ctxt ? ctxt->get_uncertainty () : NULL);
+			   ctxt ? ctxt->get_uncertainty () : NULL);
       }
       break;
     }
@@ -1662,8 +1668,7 @@ region_model::get_initial_value_for_global (const region *reg) const
 	    {
 	      /* Get the value for REG within base_reg_init.  */
 	      binding_cluster c (base_reg);
-	      c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init,
-		      BK_direct);
+	      c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init);
 	      const svalue *sval
 		= c.get_any_binding (m_mgr->get_store_manager (), reg);
 	      if (sval)
@@ -1854,45 +1859,7 @@ region_model::get_rvalue_for_bits (tree type,
 				   const bit_range &bits) const
 {
   const svalue *sval = get_store_value (reg);
-  if (const compound_svalue *compound_sval = sval->dyn_cast_compound_svalue ())
-    {
-      const binding_map &map = compound_sval->get_map ();
-      binding_map result_map;
-      for (auto iter : map)
-	{
-	  const binding_key *key = iter.first;
-	  if (const concrete_binding *conc_key
-	      = key->dyn_cast_concrete_binding ())
-	    {
-	      /* Ignore concrete bindings outside BITS.  */
-	      if (!conc_key->get_bit_range ().intersects_p (bits))
-		continue;
-	      if ((conc_key->get_start_bit_offset ()
-		   < bits.get_start_bit_offset ())
-		  || (conc_key->get_next_bit_offset ()
-		      > bits.get_next_bit_offset ()))
-		{
-		  /* If we have any concrete keys that aren't fully within BITS,
-		     then bail out.  */
-		  return m_mgr->get_or_create_unknown_svalue (type);
-		}
-	      const concrete_binding *offset_conc_key
-		    = m_mgr->get_store_manager ()->get_concrete_binding
-			(conc_key->get_start_bit_offset ()
-			   - bits.get_start_bit_offset (),
-			 conc_key->get_size_in_bits (),
-			 conc_key->get_kind ());
-		  const svalue *sval = iter.second;
-		  result_map.put (offset_conc_key, sval);
-	    }
-	  else
-	    /* If we have any symbolic keys we can't get it as bits.  */
-	    return m_mgr->get_or_create_unknown_svalue (type);
-	}
-      return m_mgr->get_or_create_compound_svalue (type, result_map);
-    }
-
-  return m_mgr->get_or_create_unknown_svalue (type);
+  return m_mgr->get_or_create_bits_within (type, bits, sval);
 }
 
 /* A subclass of pending_diagnostic for complaining about writes to
@@ -2035,6 +2002,10 @@ region_model::get_capacity (const region *reg) const
 	  }
       }
       break;
+    case RK_SIZED:
+      /* Look through sized regions to get at the capacity
+	 of the underlying regions.  */
+      return get_capacity (reg->get_parent_region ());
     }
 
   if (const svalue *recorded = get_dynamic_extents (reg))
@@ -2056,7 +2027,7 @@ region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
   check_for_writable_region (lhs_reg, ctxt);
 
   m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
-		     BK_direct, ctxt ? ctxt->get_uncertainty () : NULL);
+		     ctxt ? ctxt->get_uncertainty () : NULL);
 }
 
 /* Set the value of the region given by LHS to the value given by RHS.  */
@@ -2085,6 +2056,14 @@ void
 region_model::purge_region (const region *reg)
 {
   m_store.purge_region (m_mgr->get_store_manager(), reg);
+}
+
+/* Fill REG with SVAL.  */
+
+void
+region_model::fill_region (const region *reg, const svalue *sval)
+{
+  m_store.fill_region (m_mgr->get_store_manager(), reg, sval);
 }
 
 /* Zero-fill REG.  */
@@ -2710,6 +2689,9 @@ region_model::get_representative_path_var_1 (const region *reg,
 				 addr_parent, offset_pv.m_tree),
 			 parent_pv.m_stack_depth);
       }
+
+    case RK_SIZED:
+      return path_var (NULL_TREE, 0);
 
     case RK_CAST:
       {

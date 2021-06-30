@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /* Definitions of target machine for GNU compiler,
    for some generic XCOFF file format
    Copyright (C) 2001-2021 Free Software Foundation, Inc.
@@ -249,7 +250,7 @@
 #define DOUBLE_INT_ASM_OP "\t.llong\t"
 
 /* Output before instructions.  */
-#define TEXT_SECTION_ASM_OP "\t.csect .text[PR]"
+#define TEXT_SECTION_ASM_OP "\t.csect .text[PR],5"
 
 /* Output before writable data.  */
 #define DATA_SECTION_ASM_OP \

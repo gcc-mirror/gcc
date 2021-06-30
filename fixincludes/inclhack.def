@@ -3151,7 +3151,8 @@ fix = {
     c_fix     = machine_name;
 
     test_text = "/* MACH_DIFF: */\n"
-    "#if defined( i386 ) || defined( sparc ) || defined( vax )"
+    "#if defined( i386 ) || defined( sparc ) || defined( vax ) || "
+    "defined( linux ) || __has_include ( <linux.h> )"
     "\n/* no uniform test, so be careful  :-) */";
 };
 

@@ -503,9 +503,7 @@ void test_26 (struct coord *p, struct coord *q)
      the dest value.  */
   *p = *q;
   __analyzer_eval (p->x); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (p->y == 17); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): should have been overwritten with q->y
+  __analyzer_eval (p->y == 17); /* { dg-warning "TRUE" } */
 
   __analyzer_eval (q->x); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (q->y == 17); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
@@ -522,19 +520,11 @@ void test_27 (struct coord *p)
 void test_28 (struct coord *p)
 {
   memset (p, 0, sizeof (struct coord) * 10);
-  __analyzer_eval (p[0].x == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail):
-  __analyzer_eval (p[0].y == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail):
+  __analyzer_eval (p[0].x == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (p[0].y == 0); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (p[9].x == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail):
-  __analyzer_eval (p[9].y == 0); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail):
+  __analyzer_eval (p[9].x == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (p[9].y == 0); /* { dg-warning "TRUE" } */
 
   __analyzer_eval (p[10].x == 0); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (p[10].y == 0); /* { dg-warning "UNKNOWN" } */
@@ -1035,8 +1025,8 @@ void test_52 (struct big b)
 {
   struct big d;
   memcpy (&d, &b, sizeof (struct big));
-  __analyzer_eval (b.ia[0] == d.ia[0]); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
+  __analyzer_eval (b.ia[0] == d.ia[0]); /* { dg-warning "TRUE" } */
+  __analyzer_eval (b.ia[1023] == d.ia[1023]); /* { dg-warning "TRUE" } */
 }
 
 void test_53 (const char *msg)
