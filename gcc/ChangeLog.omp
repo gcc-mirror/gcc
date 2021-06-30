@@ -1,3 +1,15 @@
+2021-07-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.c (close_at_file, execute): Replace alloca by XALLOCAVEC.
+	(check_offload_target_name): Fix splitting OFFLOAD_TARGETS into
+	a candidate list; better inform no offload target is configured
+	and fix hint extraction when passed target is not '\0' at [len].
+	* common.opt (foffload): Add tailing '.'.
+	(foffload-options): Likewise; fix flag name in the help string.
+
 2021-07-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from master:

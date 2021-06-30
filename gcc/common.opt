@@ -2086,11 +2086,11 @@ Support synchronous non-call exceptions.
 ; -foffload=<targets>=<options> is supported for backward compatibility
 foffload=
 Driver Joined MissingArgError(targets missing after %qs)
--foffload=<targets>	Specify offloading targets
+-foffload=<targets>	Specify offloading targets.
 
 foffload-options=
 Common Driver Joined MissingArgError(options or targets=options missing after %qs)
--foffload=<targets>=<options>	Specify options for the offloading targets
+-foffload-options=<targets>=<options>	Specify options for the offloading targets.
 
 foffload-abi=
 Common Joined RejectNegative Enum(offload_abi) Var(flag_offload_abi) Init(OFFLOAD_ABI_UNSET)
