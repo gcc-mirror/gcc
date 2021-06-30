@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
-
+#if ! __cpp_inline_variables
   template<typename _UIntType,
 	   size_t __w, size_t __n, size_t __m, size_t __r,
 	   _UIntType __a, size_t __u, _UIntType __d, size_t __s,
@@ -313,6 +313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _UIntType
     mersenne_twister_engine<_UIntType, __w, __n, __m, __r, __a, __u, __d,
 			    __s, __b, __t, __c, __l, __f>::default_seed;
+#endif
 
   template<typename _UIntType,
 	   size_t __w, size_t __n, size_t __m, size_t __r,
@@ -515,7 +516,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
-
+#if ! __cpp_inline_variables
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     constexpr size_t
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::word_size;
@@ -531,6 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     constexpr _UIntType
     subtract_with_carry_engine<_UIntType, __w, __s, __r>::default_seed;
+#endif
 
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     void
@@ -666,7 +668,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
-
+#if ! __cpp_inline_variables
   template<typename _RandomNumberEngine, size_t __p, size_t __r>
     constexpr size_t
     discard_block_engine<_RandomNumberEngine, __p, __r>::block_size;
@@ -674,6 +676,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _RandomNumberEngine, size_t __p, size_t __r>
     constexpr size_t
     discard_block_engine<_RandomNumberEngine, __p, __r>::used_block;
+#endif
 
   template<typename _RandomNumberEngine, size_t __p, size_t __r>
     typename discard_block_engine<_RandomNumberEngine,
@@ -799,10 +802,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __sum;
     }
 
-
+#if ! __cpp_inline_variables
   template<typename _RandomNumberEngine, size_t __k>
     constexpr size_t
     shuffle_order_engine<_RandomNumberEngine, __k>::table_size;
+#endif
 
   namespace __detail
   {
