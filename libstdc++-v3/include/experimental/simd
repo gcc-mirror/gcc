@@ -35,6 +35,23 @@
 
 #if __cplusplus >= 201703L
 
+/** @defgroup par-ts Parallelism TS
+ *  @ingroup experimental
+ *
+ * Components defined by the _C++ Extensions for Parallelism_
+ * Technical Specification.
+ *
+ * - ISO/IEC TS 19570:2015 C++ Extensions for Parallelism
+ * - ISO/IEC TS 19570:2018 C++ Extensions for Parallelism, Version 2
+ */
+
+/** @defgroup ts_simd Data parallel extensions
+ *  @ingroup par-ts
+ *
+ *  Data-parallel types library.
+ *  @since C++17
+ */
+/// @ingroup ts_simd
 #define __cpp_lib_experimental_parallel_simd 201803
 
 #pragma GCC diagnostic push

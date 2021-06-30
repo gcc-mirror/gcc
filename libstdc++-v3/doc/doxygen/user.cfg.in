@@ -1013,6 +1013,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/experimental/ratio \
                          include/experimental/regex \
                          include/experimental/set \
+                         include/experimental/simd \
                          include/experimental/string \
                          include/experimental/string_view \
                          include/experimental/system_error \
@@ -1333,13 +1334,6 @@ CLANG_DATABASE_PATH    =
 # The default value is: YES.
 
 ALPHABETICAL_INDEX     = YES
-
-# The COLS_IN_ALPHA_INDEX tag can be used to specify the number of columns in
-# which the alphabetical index list will be split.
-# Minimum value: 1, maximum value: 20, default value: 5.
-# This tag requires that the tag ALPHABETICAL_INDEX is set to YES.
-
-COLS_IN_ALPHA_INDEX    = 2
 
 # In case all classes in a project start with a common prefix, all classes will
 # be put under the same header in the alphabetical index. The IGNORE_PREFIX tag
@@ -2415,7 +2409,8 @@ PREDEFINED             = __cplusplus=201703L \
                          "_GLIBCXX_END_NAMESPACE_CXX11= " \
                          "_GLIBCXX_END_NAMESPACE_LDBL= " \
                          "_GLIBCXX_TEMPLATE_ARGS=...  " \
-                         _GLIBCXX_DEPRECATED \
+                         "_GLIBCXX_DEPRECATED= " \
+                         "_GLIBCXX_DEPRECATED_SUGGEST(E)= " \
                          _GLIBCXX_CONSTEXPR=constexpr \
                          _GLIBCXX_USE_CONSTEXPR=constexpr \
                          "_GLIBCXX_THROW(E)= " \
@@ -2430,6 +2425,7 @@ PREDEFINED             = __cplusplus=201703L \
                          _GLIBCXX_USE_NANOSLEEP \
                          __cpp_exceptions \
                          __cpp_rtti \
+                         __cpp_inline_variables \
                          ATOMIC_INT_LOCK_FREE=2 \
                          PB_DS_DATA_TRUE_INDICATOR \
                          PB_DS_STATIC_ASSERT=// \
@@ -2440,11 +2436,16 @@ PREDEFINED             = __cplusplus=201703L \
                          __glibcxx_class_requires2=// \
                          __glibcxx_class_requires3=// \
                          __glibcxx_class_requires4=// \
-                         "__attribute__(X)=" \
+                         "__attribute__(X)= " \
                          _GLIBCXX14_CONSTEXPR=constexpr \
                          _GLIBCXX17_CONSTEXPR=constexpr \
                          _GLIBCXX20_CONSTEXPR=constexpr \
-                         _GLIBCXX17_DEPRECATED= \
+                         "_GLIBCXX11_DEPRECATED= " \
+                         "_GLIBCXX11_DEPRECATED_SUGGEST(E)= " \
+                         "_GLIBCXX17_DEPRECATED= " \
+                         "_GLIBCXX17_DEPRECATED_SUGGEST(E)= " \
+                         "_GLIBCXX20_DEPRECATED(E)= " \
+                         "_GLIBCXX20_DEPRECATED(E)= " \
                          _GLIBCXX17_INLINE=inline
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
