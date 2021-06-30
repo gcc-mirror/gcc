@@ -60,9 +60,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __g);
 
-  /*
-   * Implementation-space details.
-   */
+  /// @cond undocumented
+  // Implementation-space details.
   namespace __detail
   {
     template<typename _UIntType, size_t __w,
@@ -212,6 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       >;
 
   } // namespace __detail
+  /// @endcond
 
   /**
    * @addtogroup random_generators Random Number Generators

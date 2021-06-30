@@ -1723,6 +1723,7 @@ namespace __variant
       return __detail::__variant::__get<_Np>(std::move(__v));
     }
 
+  /// @cond undocumented
   template<typename _Result_type, typename _Visitor, typename... _Variants>
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
@@ -1734,6 +1735,7 @@ namespace __variant
       return (*__func_ptr)(std::forward<_Visitor>(__visitor),
 			   std::forward<_Variants>(__variants)...);
     }
+  /// @endcond
 
   template<typename _Visitor, typename... _Variants>
     constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
@@ -1784,6 +1786,7 @@ namespace __variant
     }
 #endif
 
+  /// @cond undocumented
   template<bool, typename... _Types>
     struct __variant_hash_call_base_impl
     {
@@ -1814,6 +1817,7 @@ namespace __variant
     using __variant_hash_call_base =
     __variant_hash_call_base_impl<(__poison_hash<remove_const_t<_Types>>::
 				   __enable_hash_call &&...), _Types...>;
+  /// @endcond
 
   template<typename... _Types>
     struct hash<variant<_Types...>>
