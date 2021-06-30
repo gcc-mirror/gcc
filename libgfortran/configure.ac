@@ -222,10 +222,6 @@ AM_CONDITIONAL(LIBGFOR_MINIMAL, [test "x${target_cpu}" = xnvptx])
 LIBGOMP_CHECKED_INT_KINDS="1 2 4 8 16"
 LIBGOMP_CHECKED_REAL_KINDS="4 8 10 16"
 
-if test "x${target_cpu}" = xamdgcn; then
-  # amdgcn only has limited support for __int128.
-  LIBGOMP_CHECKED_INT_KINDS="1 2 4 8"
-fi
 AC_SUBST(LIBGOMP_CHECKED_INT_KINDS)
 AC_SUBST(LIBGOMP_CHECKED_REAL_KINDS)
 

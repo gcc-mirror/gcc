@@ -1314,24 +1314,54 @@ operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
   unsigned prec = TYPE_PRECISION (type);
   signop sgn = TYPE_SIGN (type);
 
-  switch (rel)
+  // == and != produce [0,0] and ~[0,0] regardless of wrapping.
+  if (rel == EQ_EXPR)
+    rel_range = int_range<2> (type, wi::zero (prec), wi::zero (prec));
+  else if (rel == NE_EXPR)
+    rel_range = int_range<2> (type, wi::zero (prec), wi::zero (prec),
+			      VR_ANTI_RANGE);
+  else if (TYPE_OVERFLOW_WRAPS (type))
     {
-      // op1 > op2,  op1 - op2 can be restricted to  [1, max]
-      case GT_EXPR:
-	rel_range = int_range<2> (type, wi::one (prec),
-				  wi::max_value (prec, sgn));
-	break;
-      // op1 >= op2,  op1 - op2 can be restricted to  [0, max]
-      case GE_EXPR:
-	rel_range = int_range<2> (type, wi::zero (prec),
-				  wi::max_value (prec, sgn));
-	break;
-      // op1 == op2,  op1 - op2 can be restricted to  [0, 0]
-      case EQ_EXPR:
-	rel_range = int_range<2> (type, wi::zero (prec), wi::zero (prec));
-	break;
-      default:
-	return false;
+      switch (rel)
+	{
+	  // For wrapping signed values and unsigned, if op1 > op2 or
+	  // op1 < op2, then op1 - op2 can be restricted to ~[0, 0].
+	  case GT_EXPR:
+	  case LT_EXPR:
+	      rel_range = int_range<2> (type, wi::zero (prec), wi::zero (prec),
+					VR_ANTI_RANGE);
+	    break;
+	  default:
+	    return false;
+	}
+    }
+  else
+    {
+      switch (rel)
+	{
+	  // op1 > op2, op1 - op2 can be restricted to [1, +INF]
+	  case GT_EXPR:
+	    rel_range = int_range<2> (type, wi::one (prec),
+				      wi::max_value (prec, sgn));
+	    break;
+	  // op1 >= op2, op1 - op2 can be restricted to [0, +INF]
+	  case GE_EXPR:
+	    rel_range = int_range<2> (type, wi::zero (prec),
+				      wi::max_value (prec, sgn));
+	    break;
+	  // op1 < op2, op1 - op2 can be restricted to [-INF, -1]
+	  case LT_EXPR:
+	    rel_range = int_range<2> (type, wi::min_value (prec, sgn),
+				      wi::minus_one (prec));
+	    break;
+	  // op1 <= op2, op1 - op2 can be restricted to [-INF, 0]
+	  case LE_EXPR:
+	    rel_range = int_range<2> (type, wi::min_value (prec, sgn),
+				      wi::zero (prec));
+	    break;
+	  default:
+	    return false;
+	}
     }
   lhs_range.intersect (rel_range);
   return true;

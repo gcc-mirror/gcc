@@ -49,13 +49,13 @@ package System.Val_Enum_32 is
       return    Natural
      renames Impl.Value_Enumeration;
 
-   function Valid_Enumeration_Value_32
+   function Valid_Value_Enumeration_32
      (Names   : String;
       Indexes : System.Address;
       Hash    : Impl.Hash_Function_Ptr;
       Num     : Natural;
       Str     : String)
       return    Boolean
-     renames Impl.Valid_Enumeration_Value;
+     renames Impl.Valid_Value_Enumeration;
 
 end System.Val_Enum_32;

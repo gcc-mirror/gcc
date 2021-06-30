@@ -1439,17 +1439,17 @@ package body Exp_Imgv is
    begin
       --  Generate:
 
-      --     Valid_Enumeration_Value _NN
+      --     Valid_Value_Enumeration_NN
       --       (typS, typN'Address, typH'Unrestricted_Access, Num, X)
 
       Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));
 
       if Ttyp = Standard_Integer_8 then
-         Func := RE_Valid_Enumeration_Value_8;
+         Func := RE_Valid_Value_Enumeration_8;
       elsif Ttyp = Standard_Integer_16 then
-         Func := RE_Valid_Enumeration_Value_16;
+         Func := RE_Valid_Value_Enumeration_16;
       else
-         Func := RE_Valid_Enumeration_Value_32;
+         Func := RE_Valid_Value_Enumeration_32;
       end if;
 
       Prepend_To (Args,

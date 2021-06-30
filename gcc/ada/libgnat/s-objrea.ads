@@ -120,8 +120,11 @@ package System.Object_Reader is
       PPC64,
       --  64-bit PowerPC
 
-      ARM);
+      ARM,
       --  32-bit ARM
+
+      AARCH64);
+      --  64-bit ARM
 
    ------------------
    -- Target types --

@@ -435,7 +435,7 @@ package body Sem_Ch11 is
       --  postcondition, since in that case there are no source references, and
       --  we need to preserve deferred references from the enclosing scope.
 
-      if ((Is_Subprogram (Current_Scope) or else Is_Entry (Current_Scope))
+      if (Is_Subprogram_Or_Entry (Current_Scope)
            and then Chars (Current_Scope) /= Name_uPostconditions)
          or else Ekind (Current_Scope) in E_Block | E_Task_Type
       then

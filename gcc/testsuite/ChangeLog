@@ -1,3 +1,28 @@
+2021-06-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr101254.c: New.
+
+2021-06-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gcc.target/i386/pr95046-9.c: New test.
+
+2021-06-29  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr67790.c: Un-XFAIL.
+	* gcc.dg/vect/bb-slp-71.c: New testcase.
+
+2021-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101210
+	* g++.dg/ubsan/pr101210.C: New test.
+
+2021-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101242
+	* gcc.dg/vect/bb-slp-pr101242.c: New testcase.
+	* gcc.dg/vect/pr67790.c: XFAIL scan for zero VEC_PERM_EXPR.
+
 2021-06-28  Martin Sebor  <msebor@redhat.com>
 
 	* g++.dg/uninit-pr74762.C: New test.

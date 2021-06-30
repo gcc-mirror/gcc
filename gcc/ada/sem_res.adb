@@ -9162,8 +9162,9 @@ package body Sem_Res is
          return;
       end if;
 
-      if Nkind (Parent (N)) = N_Indexed_Component
-        or else Nkind (Parent (Parent (N))) = N_Indexed_Component
+      if Present (Parent (N))
+        and then (Nkind (Parent (N)) = N_Indexed_Component
+                    or else Nkind (Parent (Parent (N))) = N_Indexed_Component)
       then
          Result_Type := Base_Type (Typ);
       end if;

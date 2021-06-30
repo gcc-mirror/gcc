@@ -187,6 +187,10 @@ package body SPARK_Specific is
                             | Generic_Subprogram_Kind
                             | Subprogram_Kind
       then
+         if No (Unit_Declaration_Node (N)) then
+            return Empty;
+         end if;
+
          Context := Parent (Unit_Declaration_Node (N));
 
          --  If this was a library-level subprogram then replace Context with

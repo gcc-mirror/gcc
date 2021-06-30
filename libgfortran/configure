@@ -6017,7 +6017,7 @@ case "$host" in
     case "$enable_cet" in
       auto)
 	# Check if target supports multi-byte NOPs
-	# and if assembler supports CET insn.
+	# and if compiler and assembler support CET insn.
 	cet_save_CFLAGS="$CFLAGS"
 	CFLAGS="$CFLAGS -fcf-protection"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -6216,10 +6216,6 @@ fi
 LIBGOMP_CHECKED_INT_KINDS="1 2 4 8 16"
 LIBGOMP_CHECKED_REAL_KINDS="4 8 10 16"
 
-if test "x${target_cpu}" = xamdgcn; then
-  # amdgcn only has limited support for __int128.
-  LIBGOMP_CHECKED_INT_KINDS="1 2 4 8"
-fi
 
 
 
@@ -12731,7 +12727,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12744 "configure"
+#line 12730 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12837,7 +12833,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12850 "configure"
+#line 12836 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15532,16 +15528,6 @@ freebsd* | dragonfly*)
   esac
   ;;
 
-gnu*)
-  version_type=linux
-  need_lib_prefix=no
-  need_version=no
-  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
-  soname_spec='${libname}${release}${shared_ext}$major'
-  shlibpath_var=LD_LIBRARY_PATH
-  hardcode_into_libs=yes
-  ;;
-
 haiku*)
   version_type=linux
   need_lib_prefix=no
@@ -15663,7 +15649,7 @@ linux*oldld* | linux*aout* | linux*coff*)
 # project, but have not yet been accepted: they are GCC-local changes
 # for the time being.  (See
 # https://lists.gnu.org/archive/html/libtool-patches/2018-05/msg00000.html)
-linux* | k*bsd*-gnu | kopensolaris*-gnu | uclinuxfdpiceabi)
+linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu* | uclinuxfdpiceabi)
   version_type=linux
   need_lib_prefix=no
   need_version=no

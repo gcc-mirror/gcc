@@ -241,6 +241,10 @@ package body Aspects is
       --  find the declaration node where the aspects reside. This is usually
       --  the parent or the parent of the parent.
 
+      if No (Parent (Owner)) then
+         return Empty;
+      end if;
+
       Decl := Parent (Owner);
       if not Permits_Aspect_Specifications (Decl) then
          Decl := Parent (Decl);
@@ -488,6 +492,7 @@ package body Aspects is
 
    function Permits_Aspect_Specifications (N : Node_Id) return Boolean is
    begin
+      pragma Assert (Present (N));
       return Has_Aspect_Specifications_Flag (Nkind (N));
    end Permits_Aspect_Specifications;
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991-2021 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
@@ -21361,8 +21362,11 @@ rs6000_xcoff_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_BSS;
 
   /* Align to at least UNIT size.  */
-  if ((flags & SECTION_CODE) != 0 || !decl || !DECL_P (decl))
+  if (!decl || !DECL_P (decl))
     align = MIN_UNITS_PER_WORD;
+  /* Align code CSECT to at least 32 bytes.  */
+  else if ((flags & SECTION_CODE) != 0)
+    align = MAX ((DECL_ALIGN (decl) / BITS_PER_UNIT), 32);
   else
     /* Increase alignment of large objects if not already stricter.  */
     align = MAX ((DECL_ALIGN (decl) / BITS_PER_UNIT),

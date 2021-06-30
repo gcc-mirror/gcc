@@ -202,7 +202,10 @@ package Gen_IL.Internals is
         Nil'Access);
    --  Iterate top-down on the type hierarchy. Call Pre and Post before and
    --  after walking child types. Note that this ignores union types, because
-   --  they are nonhierarchical.
+   --  they are nonhierarchical. The order in which concrete types are visited
+   --  matches the order of the generated enumeration types Node_Kind and
+   --  Entity_Kind, which is not the same as the order of the Type_Enum
+   --  type in Gen_IL.Types.
 
    function Is_Descendant (Ancestor, Descendant : Node_Or_Entity_Type)
      return Boolean;
@@ -211,9 +214,6 @@ package Gen_IL.Internals is
    --  a type itself.
 
    procedure Put_Type_Hierarchy (S : in out Sink; Root : Root_Type);
-
-   function Pos (T : Concrete_Type) return Root_Nat;
-   --  Return Node_Kind'Pos (T) or Entity_Kind'Pos (T)
 
    ----------------
 

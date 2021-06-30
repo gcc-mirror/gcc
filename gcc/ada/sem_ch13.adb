@@ -8561,7 +8561,7 @@ package body Sem_Ch13 is
 
                      Generate_Reference
                        (Comp, Component_Name (CC), Set_Ref => False);
-                     Set_Entity (Component_Name (CC), Comp);
+                     Set_Entity_With_Checks (Component_Name (CC), Comp);
 
                      --  Update Fbit and Lbit to the actual bit number
 
@@ -10652,7 +10652,7 @@ package body Sem_Ch13 is
       --  in particular, it has no type.
 
       Err : Boolean;
-      --  Set False if error
+      --  Set True if error
 
       --  On entry to this procedure, Entity (Ident) contains a copy of the
       --  original expression from the aspect, saved for this purpose, and
@@ -10786,7 +10786,9 @@ package body Sem_Ch13 is
          --  Indicate that the expression comes from an aspect specification,
          --  which is used in subsequent analysis even if expansion is off.
 
-         Set_Parent (End_Decl_Expr, ASN);
+         if Present (End_Decl_Expr) then
+            Set_Parent (End_Decl_Expr, ASN);
+         end if;
 
          --  In a generic context the original aspect expressions have not
          --  been preanalyzed, so do it now. There are no conformance checks
@@ -12479,8 +12481,6 @@ package body Sem_Ch13 is
 
             else
                Size_Too_Small_Error (Asiz);
-               Set_Esize   (T, Asiz);
-               Set_RM_Size (T, Asiz);
             end if;
          end;
 
@@ -12518,8 +12518,6 @@ package body Sem_Ch13 is
 
             if Siz < M then
                Size_Too_Small_Error (M);
-               Set_Esize   (T, M);
-               Set_RM_Size (T, M);
             else
                Biased := True;
             end if;

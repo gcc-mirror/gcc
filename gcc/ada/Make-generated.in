@@ -18,7 +18,9 @@ GEN_IL_FLAGS = -gnata -gnat2012 -gnatw.g -gnatyg -gnatU $(GEN_IL_INCLUDES)
 ada/seinfo_tables.ads ada/seinfo_tables.adb ada/sinfo.h ada/einfo.h ada/nmake.ads ada/nmake.adb ada/seinfo.ads ada/sinfo-nodes.ads ada/sinfo-nodes.adb ada/einfo-entities.ads ada/einfo-entities.adb: ada/stamp-gen_il ; @true
 ada/stamp-gen_il: $(fsrcdir)/ada/gen_il*
 	$(MKDIR) ada/gen_il
-	cd ada/gen_il ; gnatmake -q -g $(GEN_IL_FLAGS) gen_il-main ; ./gen_il-main
+	cd ada/gen_il; gnatmake -q -g $(GEN_IL_FLAGS) gen_il-main
+	# Ignore errors to work around finalization issues in older compilers
+	- cd ada/gen_il; ./gen_il-main
 	$(fsrcdir)/../move-if-change ada/gen_il/seinfo_tables.ads ada/seinfo_tables.ads
 	$(fsrcdir)/../move-if-change ada/gen_il/seinfo_tables.adb ada/seinfo_tables.adb
 	$(fsrcdir)/../move-if-change ada/gen_il/sinfo.h ada/sinfo.h

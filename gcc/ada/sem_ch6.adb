@@ -132,9 +132,6 @@ package body Sem_Ch6 is
    --  Does all the real work of Analyze_Subprogram_Body. This is split out so
    --  that we can use RETURN but not skip the debug output at the end.
 
-   function Can_Override_Operator (Subp : Entity_Id) return Boolean;
-   --  Returns true if Subp can override a predefined operator.
-
    procedure Check_Conformance
      (New_Id                   : Entity_Id;
       Old_Id                   : Entity_Id;
@@ -7321,7 +7318,7 @@ package body Sem_Ch6 is
       --  predefined signature, because we know already that there is no
       --  explicit overridden operation.
 
-      elsif Nkind (Subp) = N_Defining_Operator_Symbol then
+      elsif Chars (Subp) in Any_Operator_Name then
          if Must_Not_Override (Spec) then
 
             --  If this is not a primitive or a protected subprogram, then
@@ -8313,7 +8310,12 @@ package body Sem_Ch6 is
       Typ : Entity_Id;
 
    begin
-      if Nkind (Subp) /= N_Defining_Operator_Symbol then
+      --  Return False if not an operator. We test the name rather than testing
+      --  that the Nkind is N_Defining_Operator_Symbol, because there are cases
+      --  where an operator entity can be an N_Defining_Identifier (such as for
+      --  function instantiations).
+
+      if Chars (Subp) not in Any_Operator_Name then
          return False;
 
       else
@@ -11709,7 +11711,7 @@ package body Sem_Ch6 is
          if Inside_Freezing_Actions = 0
            and then Is_Package_Or_Generic_Package (Current_Scope)
            and then In_Private_Part (Current_Scope)
-           and then Nkind (Parent (E)) = N_Private_Extension_Declaration
+           and then Parent_Kind (E) = N_Private_Extension_Declaration
            and then Nkind (Parent (S)) = N_Full_Type_Declaration
            and then Full_View (Defining_Identifier (Parent (E)))
                       = Defining_Identifier (Parent (S))

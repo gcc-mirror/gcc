@@ -1,3 +1,19 @@
+2021-06-29  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/lib2-bswapti2.c: New file.
+	* config/gcn/lib2-divmod-di.c: New file.
+	* config/gcn/lib2-gcn.h (DItype, UDItype, TItype, UTItype): Add
+	typedefs.
+	(__divdi3, __moddi3, __udivdi3, __umoddi3): Add prototypes.
+	* config/gcn/t-amdgcn (LIB2ADD): Add lib2-divmod-di.c and
+	lib2-bswapti2.c.
+
+2021-06-29  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/lib2-divmod.c (__udivsi3, __umodsi3): Change argument and
+	return types to USItype.
+	* config/gcn/lib2-gcn.h (__udivsi3, __umodsi3): Update prototypes.
+
 2021-06-23  Kewen Lin  <linkw@linux.ibm.com>
 
 	* configure: Regenerate.

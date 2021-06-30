@@ -1200,13 +1200,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
     GCC_SPEC_FILES+=vxworks-cert-$(ARCH_STR)-link.spec
     GCC_SPEC_FILES+=vxworks-smp-$(ARCH_STR)-link.spec
   endif
-
-  ifeq ($(strip $(filter-out vxworks7r2 powerpc64 rtp rtp-smp, $(target_os) $(target_cpu) $(THREAD_KIND))),)
-    # Shared libraries are only supported on PowerPC64, VxWorks7r2
-    # ATM.  Also this is disabled for kernel runtimes.
-    GNATLIB_SHARED = gnatlib-shared-dual
-    LIBRARY_VERSION := $(LIB_VERSION)
-  endif
 endif
 
 # PowerPC and e500v2 VxWorks 653
@@ -1464,12 +1457,12 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(targ
         endif
       endif
 
-      EXTRA_GNATRTL_NONTASKING_OBJS += i-vxwork.o i-vxwoio.o
+      EXTRA_GNATRTL_NONTASKING_OBJS += i-vxinco.o i-vxwork.o i-vxwoio.o
     endif
   endif
 
   EXTRA_GNATRTL_NONTASKING_OBJS += s-stchop.o
-  EXTRA_GNATRTL_TASKING_OBJS += i-vxinco.o s-vxwork.o s-vxwext.o
+  EXTRA_GNATRTL_TASKING_OBJS += s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 
@@ -2971,6 +2964,13 @@ endif
 ifeq ($(strip $(filter-out linux%,$(target_os))),)
   LIBGNAT_TARGET_PAIRS += \
     g-sercom.adb<libgnat/g-sercom__linux.adb
+endif
+
+# Turn on shared gnatlib for specific vx7r2 targets for RTP runtimes. Once
+# all targets are ported the target_cpu selector can be removed.
+ifeq ($(strip $(filter-out vxworks7r2 powerpc64 x86_64 rtp rtp-smp, $(target_os) $(target_cpu) $(THREAD_KIND))),)
+    GNATLIB_SHARED = gnatlib-shared-dual
+    LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 LIBGNAT_TARGET_PAIRS += \

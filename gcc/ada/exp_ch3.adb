@@ -30,6 +30,7 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
+with Expander;       use Expander;
 with Exp_Aggr;       use Exp_Aggr;
 with Exp_Atag;       use Exp_Atag;
 with Exp_Ch4;        use Exp_Ch4;
@@ -6985,12 +6986,16 @@ package body Exp_Ch3 is
             --  happen when the aggregate is limited and the declared object
             --  has a following address clause; it happens also when generating
             --  C code for an aggregate that has an alignment or address clause
-            --  (see Analyze_Object_Declaration).
+            --  (see Analyze_Object_Declaration). Resolution is done without
+            --  expansion because it will take place when the declaration
+            --  itself is expanded.
 
             if (Is_Limited_Type (Typ) or else Modify_Tree_For_C)
               and then not Analyzed (Expr)
             then
+               Expander_Mode_Save_And_Set (False);
                Resolve (Expr, Typ);
+               Expander_Mode_Restore;
             end if;
 
             Convert_Aggr_In_Object_Decl (N);

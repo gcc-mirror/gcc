@@ -136,48 +136,42 @@ package body Style is
             Tref := Source_Text (Get_Source_File_Index (Sref));
             Tdef := Source_Text (Get_Source_File_Index (Sdef));
 
-            --  Ignore operator name case completely. This also catches the
-            --  case of where one is an operator and the other is not. This
-            --  is a phenomenon from rewriting of operators as functions,
-            --  and is to be ignored.
+            --  Ignore case of operator names. This also catches the case
+            --  where one is an operator and the other is not. This is a
+            --  phenomenon from rewriting of operators as functions, and is
+            --  to be ignored.
 
             if Tref (Sref) = '"' or else Tdef (Sdef) = '"' then
                return;
 
             else
-               while Tref (Sref) = Tdef (Sdef) loop
+               loop
+                  --  If end of identifiers, all done. Note that they are the
+                  --  same length.
 
-                  --  If end of identifier, all done
+                  pragma Assert
+                    (Identifier_Char (Tref (Sref)) =
+                     Identifier_Char (Tdef (Sdef)));
 
                   if not Identifier_Char (Tref (Sref)) then
                      return;
-
-                  --  Otherwise loop continues
-
-                  else
-                     Sref := Sref + 1;
-                     Sdef := Sdef + 1;
                   end if;
+
+                  --  Case mismatch
+
+                  if Tref (Sref) /= Tdef (Sdef) then
+                     Error_Msg_Node_1 := Def;
+                     Error_Msg_Sloc := Sloc (Def);
+                     Error_Msg -- CODEFIX
+                       ("(style) bad casing of & declared#", Sref, Ref);
+                     return;
+                  end if;
+
+                  Sref := Sref + 1;
+                  Sdef := Sdef + 1;
                end loop;
 
-               --  Fall through loop when mismatch between identifiers
-               --  If either identifier is not terminated, error.
-
-               if Identifier_Char (Tref (Sref))
-                    or else
-                  Identifier_Char (Tdef (Sdef))
-               then
-                  Error_Msg_Node_1 := Def;
-                  Error_Msg_Sloc := Sloc (Def);
-                  Error_Msg -- CODEFIX
-                    ("(style) bad casing of & declared#", Sref, Ref);
-                  return;
-
-               --  Else end of identifiers, and they match
-
-               else
-                  return;
-               end if;
+               pragma Assert (False);
             end if;
          end if;
 

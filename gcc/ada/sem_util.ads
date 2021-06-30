@@ -1328,9 +1328,9 @@ package Sem_Util is
 
    function Get_Fullest_View
      (E : Entity_Id; Include_PAT : Boolean := True) return Entity_Id;
-   --  Get the fullest possible view of E, looking through private,
-   --  limited, packed array and other implementation types.  If Include_PAT
-   --  is False, don't look inside packed array types.
+   --  Get the fullest possible view of E, looking through private, limited,
+   --  packed array and other implementation types. If Include_PAT is False,
+   --  don't look inside packed array types.
 
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if the underlying type of T is an access type, or has a
@@ -3290,7 +3290,7 @@ package Sem_Util is
 
    function Validated_View (Typ : Entity_Id) return Entity_Id;
    --  Obtain the "validated view" of arbitrary type Typ which is suitable for
-   --  verification by attributes 'Valid_Scalars. This view is the type itself
+   --  verification by attribute 'Valid_Scalars. This view is the type itself
    --  or its full view while stripping away concurrency, derivations, and
    --  privacy.
 

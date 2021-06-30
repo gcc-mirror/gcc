@@ -56,14 +56,16 @@ private:
 					       gimple *);
   bool simplify_internal_call_using_ranges (gimple_stmt_iterator *, gimple *);
 
-  bool two_valued_val_range_p (tree, tree *, tree *);
-  bool op_with_boolean_value_range_p (tree);
-  tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool);
-  tree compare_names (enum tree_code, tree, tree, bool *);
-  const value_range_equiv *get_vr_for_comparison (int, value_range_equiv *);
+  bool two_valued_val_range_p (tree, tree *, tree *, gimple *);
+  bool op_with_boolean_value_range_p (tree, gimple *);
+  tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool,
+				gimple *);
+  tree compare_names (enum tree_code, tree, tree, bool *, gimple *s);
+  const value_range_equiv *get_vr_for_comparison (int, value_range_equiv *,
+						  gimple *s);
   tree vrp_evaluate_conditional_warnv_with_ops_using_ranges (enum tree_code,
 							     tree, tree,
-							     bool *);
+							     bool *, gimple *s);
   void cleanup_edges_and_switches (void);
 
   /* Vectors of edges that need removing and switch statements that

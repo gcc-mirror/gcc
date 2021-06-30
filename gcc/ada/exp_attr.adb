@@ -248,7 +248,7 @@ package body Exp_Attr is
    is
       Loc      : constant Source_Ptr := Sloc (Attr);
       Comp_Typ : constant Entity_Id :=
-        Get_Fullest_View (Component_Type (Array_Typ));
+        Validated_View (Component_Type (Array_Typ));
 
       function Validate_Component
         (Obj_Id  : Entity_Id;
@@ -535,7 +535,7 @@ package body Exp_Attr is
       is
          Field_Id  : constant Entity_Id := Defining_Entity (Field);
          Field_Nam : constant Name_Id   := Chars (Field_Id);
-         Field_Typ : constant Entity_Id := Get_Fullest_View (Etype (Field_Id));
+         Field_Typ : constant Entity_Id := Validated_View (Etype (Field_Id));
          Attr_Nam  : Name_Id;
 
       begin
@@ -7396,7 +7396,7 @@ package body Exp_Attr is
       -------------------
 
       when Attribute_Valid_Scalars => Valid_Scalars : declare
-         Val_Typ : constant Entity_Id := Get_Fullest_View (Ptyp);
+         Val_Typ : constant Entity_Id := Validated_View (Ptyp);
          Expr    : Node_Id;
 
       begin

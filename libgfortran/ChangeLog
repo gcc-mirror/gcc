@@ -1,3 +1,9 @@
+2021-06-29  Julian Brown  <julian@codesourcery.com>
+
+	PR target/96306
+	* configure.ac: Remove stanza that removes KIND=16 integers for AMD GCN.
+	* configure: Regenerate.
+
 2021-06-22  Sandra Loosemore  <sandra@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
