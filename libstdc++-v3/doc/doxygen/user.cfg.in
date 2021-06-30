@@ -1092,7 +1092,8 @@ RECURSIVE              = NO
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = Makefile
+EXCLUDE                = Makefile \
+                         include/experimental/bits/net.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -2446,7 +2447,9 @@ PREDEFINED             = __cplusplus=201703L \
                          "_GLIBCXX17_DEPRECATED_SUGGEST(E)= " \
                          "_GLIBCXX20_DEPRECATED(E)= " \
                          "_GLIBCXX20_DEPRECATED(E)= " \
-                         _GLIBCXX17_INLINE=inline
+                         _GLIBCXX17_INLINE=inline \
+			 _GLIBCXX_CHRONO_INT64_T=int64_t \
+			 _GLIBCXX_DEFAULT_ABI_TAG
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

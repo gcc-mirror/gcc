@@ -63,15 +63,13 @@ namespace filesystem
 {
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
-  /** @addtogroup filesystem
-   *  @{
-   */
-
   class path;
 
   /// @cond undocumented
 namespace __detail
 {
+  /// @addtogroup filesystem
+  /// @{
   template<typename _CharT>
     inline constexpr bool __is_encoded_char = false;
   template<>
@@ -238,10 +236,15 @@ namespace __detail
 	return basic_string<_EcharT>(__first, __last);
     }
 
+  /// @} group filesystem
 } // namespace __detail
   /// @endcond
 
-  /// A filesystem path.
+  /// @addtogroup filesystem
+  /// @{
+
+  /// A filesystem path
+  /// @ingroup filesystem
   class path
   {
   public:
@@ -693,7 +696,8 @@ namespace __detail
     struct _Parser;
   };
 
-  /// @relates std::filesystem::path @{
+  /// @{
+  /// @relates std::filesystem::path
 
   inline void swap(path& __lhs, path& __rhs) noexcept { __lhs.swap(__rhs); }
 
@@ -1347,6 +1351,8 @@ namespace __detail
 _GLIBCXX_END_NAMESPACE_CXX11
 } // namespace filesystem
 
+/// @cond undocumented
+
 inline ptrdiff_t
 distance(filesystem::path::iterator __first, filesystem::path::iterator __last)
 { return __path_iter_distance(__first, __last); }
@@ -1357,6 +1363,8 @@ template<typename _InputIterator, typename _Distance>
   { __path_iter_advance(__i, static_cast<ptrdiff_t>(__n)); }
 
 extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
+
+/// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

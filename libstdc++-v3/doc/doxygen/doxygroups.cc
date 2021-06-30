@@ -19,7 +19,7 @@
 /** @namespace std
  *  @brief ISO C++ entities toplevel namespace is std.
 */
-/** @namespace std
+/** @namespace std::literals
  *  @brief ISO C++ inline namespace for literal suffixes.
 */
 /** @namespace std::__detail
@@ -43,7 +43,7 @@
  *  @ingroup extensions
 */
 /** @namespace __gnu_cxx::__detail
- *  @brief Implementation details not part of the namespace __gnu_cxx 
+ *  @brief Implementation details not part of the namespace __gnu_cxx
  *  interface.
 */
 /** @namespace __gnu_internal
