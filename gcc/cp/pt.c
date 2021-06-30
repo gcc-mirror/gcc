@@ -224,7 +224,7 @@ static void instantiate_body (tree pattern, tree args, tree d, bool nested);
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
    template, VAR_DECL for static member variable, or TYPE_DECL for
-   alias template (needed by instantiate_decl).  */
+   for a class or alias template (needed by instantiate_decl).  */
 
 void
 push_access_scope (tree t)
@@ -234,6 +234,9 @@ push_access_scope (tree t)
 
   if (DECL_FRIEND_CONTEXT (t))
     push_nested_class (DECL_FRIEND_CONTEXT (t));
+  else if (DECL_IMPLICIT_TYPEDEF_P (t)
+	   && CLASS_TYPE_P (TREE_TYPE (t)))
+    push_nested_class (TREE_TYPE (t));
   else if (DECL_CLASS_SCOPE_P (t))
     push_nested_class (DECL_CONTEXT (t));
   else if (deduction_guide_p (t) && DECL_ARTIFICIAL (t))
@@ -260,6 +263,8 @@ pop_access_scope (tree t)
     current_function_decl = saved_access_scope->pop();
 
   if (DECL_FRIEND_CONTEXT (t)
+      || (DECL_IMPLICIT_TYPEDEF_P (t)
+	  && CLASS_TYPE_P (TREE_TYPE (t)))
       || DECL_CLASS_SCOPE_P (t)
       || (deduction_guide_p (t) && DECL_ARTIFICIAL (t)))
     pop_nested_class ();

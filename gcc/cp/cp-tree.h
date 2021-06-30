@@ -8463,21 +8463,24 @@ is_constrained_auto (const_tree t)
   return is_auto (t) && PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t);
 }
 
-/* RAII class to push/pop class scope T; if T is not a class, do nothing.  */
+/* RAII class to push/pop the access scope for T.  */
 
-struct push_nested_class_guard
+struct push_access_scope_guard
 {
-  bool push;
-  push_nested_class_guard (tree t)
-    : push (t && CLASS_TYPE_P (t))
+  tree decl;
+  push_access_scope_guard (tree t)
+    : decl (t)
   {
-    if (push)
-      push_nested_class (t);
+    if (VAR_OR_FUNCTION_DECL_P (decl)
+	|| TREE_CODE (decl) == TYPE_DECL)
+      push_access_scope (decl);
+    else
+      decl = NULL_TREE;
   }
-  ~push_nested_class_guard ()
+  ~push_access_scope_guard ()
   {
-    if (push)
-      pop_nested_class ();
+    if (decl)
+      pop_access_scope (decl);
   }
 };
 
