@@ -13,5 +13,6 @@
 /* { dg-options "-gctf" } */
 
 /* { dg-require-effective-target float16 } */
+/* { dg-add-options float16 } */
 
 _Float16 f16;
