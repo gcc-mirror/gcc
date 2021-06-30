@@ -11199,12 +11199,14 @@
 (define_mode_iterator PMOV_SRC_MODE_4 [V4DI V2DI V4SI])
 (define_mode_attr pmov_dst_4
   [(V4DI "V4HI") (V2DI "V2HI") (V4SI "V4HI")])
+(define_mode_attr pmov_dst_4_lower
+  [(V4DI "v4hi") (V2DI "v2hi") (V4SI "v4hi")])
 (define_mode_attr pmov_dst_zeroed_4
   [(V4DI "V4HI") (V2DI "V6HI") (V4SI "V4HI")])
 (define_mode_attr pmov_suff_4
   [(V4DI "qw") (V2DI "qw") (V4SI "dw")])
 
-(define_expand "trunc<mode><pmov_dst_4>2"
+(define_expand "trunc<mode><pmov_dst_4_lower>2"
   [(set (match_operand:<pmov_dst_4> 0 "register_operand")
 	(truncate:<pmov_dst_4>
 	  (match_operand:PMOV_SRC_MODE_4 1 "register_operand")))]
