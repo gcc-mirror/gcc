@@ -7561,7 +7561,7 @@ extern tree invalidate_contract			(tree);
 extern tree make_postcondition_variable		(cp_expr);
 extern tree make_postcondition_variable		(cp_expr, tree);
 extern bool check_postcondition_result		(tree, tree, location_t);
-extern void rebuild_postconditions		(tree, tree);
+extern void rebuild_postconditions		(tree);
 extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
 extern tree finish_contract_attribute		(tree, tree);
 extern void update_late_contract		(tree, tree, tree);
@@ -7585,7 +7585,6 @@ extern void set_contracts_original_fn		(tree, tree);
 extern tree start_postcondition_statement	();
 extern void finish_postcondition_statement	(tree);
 extern tree build_contract_check		(tree);
-extern vec<tree, va_gc> *build_arg_list		(tree);
 extern tree get_postcondition_result_parameter	(tree);
 extern tree get_precondition_function		(tree);
 extern tree get_postcondition_function		(tree);
@@ -7594,6 +7593,10 @@ extern tree get_contracts_original_fn		(tree);
 extern void emit_assertion			(tree);
 extern void emit_preconditions			(tree);
 extern void emit_postconditions			(tree);
+extern void maybe_update_postconditions		(tree);
+extern void start_function_contracts		(tree);
+extern void finish_function_contracts		(tree);
+extern tree apply_postcondition_to_return	(tree, tree);
 
 inline void
 set_decl_contracts (tree decl, tree contract_attrs)

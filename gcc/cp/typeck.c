@@ -10075,39 +10075,6 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
     }
 }
 
-/* Rewrite the expression of a returned expression so that it invokes the
-   postcondition function as needed.  */
-
-static tree
-apply_postcondition_to_return (tree post, tree expr)
-{
-  if (!expr || expr == error_mark_node)
-    return expr;
-
-  vec<tree, va_gc> *args = build_arg_list (current_function_decl);
-
-  // FIXME: do we need forward_parm or similar?
-  if (get_postcondition_result_parameter (current_function_decl))
-    vec_safe_push (args, expr);
-
-  push_deferring_access_checks (dk_no_check);
-  tree call = finish_call_expr (post,
-				&args,
-				/*disallow_virtual=*/true,
-				/*koenig_p=*/false,
-				/*complain=*/tf_warning_or_error);
-  gcc_assert (call != error_mark_node);
-
-  /* We may not have actually built a CALL_EXPR; for instance if the
-     return type is large (contracts-large-return.C).  */
-  if (TREE_CODE (call) == CALL_EXPR)
-    CALL_FROM_THUNK_P (call) = 1;
-
-  pop_deferring_access_checks ();
-
-  return call;
-}
-
 /* Check that returning RETVAL from the current function is valid.
    Return an expression explicitly showing all conversions required to
    change RETVAL into the function return type, and to assign it to

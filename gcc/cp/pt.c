@@ -19935,14 +19935,6 @@ tsubst_copy_and_build (tree t,
 				RECUR (TREE_OPERAND (t, 0)),
 				complain|decltype_flag));
 
-    case FLOAT_EXPR:
-      /* FIXME: This case was taken out, presumably because everything is
-	 moving to use IMPLICIT_CONV_EXPR. However, cvt.c is still producing
-	 FLOAT_EXPRs in some cases.  */
-      if (!type_dependent_expression_p (TREE_OPERAND (t, 0)))
-	return t;
-      /* Fall through. */
-
     case FIX_TRUNC_EXPR:
       /* convert_like should have created an IMPLICIT_CONV_EXPR.  */
       gcc_unreachable ();

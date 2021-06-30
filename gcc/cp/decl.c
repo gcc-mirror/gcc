@@ -103,7 +103,6 @@ static void store_parm_decls (tree);
 static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
 static location_t smallest_type_location (const cp_decl_specifier_seq*);
-static void finish_function_contracts (tree fndecl);
 
 /* The following symbols are subsumed in the cp_global_trees array, and
    listed here individually for documentation purposes.
@@ -945,28 +944,6 @@ determine_local_discriminator (tree decl)
     }
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-}
-
-/* Called on attribute lists that must not contain contracts.  If any
-   contracts are present, issue an error diagnostic and return true.  */
-
-bool
-diagnose_misapplied_contracts (tree attributes)
-{
-  if (attributes == NULL_TREE)
-    return false;
-
-  tree contract_attr = find_contract (attributes);
-  if (!contract_attr)
-    return false;
-
-  error_at (EXPR_LOCATION (CONTRACT_STATEMENT (contract_attr)),
-	    "contracts must appertain to a function type");
-
-  /* Invalidate the contract so we don't treat it as valid later on.  */
-  invalidate_contract (TREE_VALUE (TREE_VALUE (contract_attr)));
-
-  return true;
 }
 
 
@@ -10408,7 +10385,7 @@ grokfndecl (tree ctype,
     }
 
   if (DECL_HAS_CONTRACTS_P (decl))
-    rebuild_postconditions (decl, TREE_TYPE (type));
+    rebuild_postconditions (decl);
 
   /* Check main's type after attributes have been applied.  */
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
@@ -17153,34 +17130,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   push_operator_bindings ();
 
-  bool starting_guarded_p = !processing_template_decl
-      && DECL_ORIGINAL_FN (decl1) == NULL_TREE
-      && contract_any_active_p (DECL_CONTRACTS (decl1))
-      && !DECL_CONSTRUCTOR_P (decl1)
-      && !DECL_DESTRUCTOR_P (decl1);
-  /* Contracts may have just been added without a chance to parse them, though
-     we still need the PRE_FN available to generate a call to it.  */
-  if (starting_guarded_p && !DECL_PRE_FN (decl1))
-    build_contract_function_decls (decl1);
-
-  /* If we're starting a guarded function with valid contracts, we need to
-     insert a call to the pre function.  */
-  if (starting_guarded_p && DECL_PRE_FN (decl1)
-      && DECL_PRE_FN (decl1) != error_mark_node)
-    {
-      vec<tree, va_gc> *args = build_arg_list (decl1);
-
-      push_deferring_access_checks (dk_no_check);
-      tree call = finish_call_expr (DECL_PRE_FN (decl1), &args,
-				    /*disallow_virtual=*/true,
-				    /*koenig_p=*/false,
-				    /*complain=*/tf_warning_or_error);
-      gcc_assert (call != error_mark_node);
-      pop_deferring_access_checks ();
-
-      /* Just add the call expression.  */
-      finish_expr_stmt (call);
-    }
+  start_function_contracts (decl1);
 
   if (!processing_template_decl
       && (flag_lifetime_dse > 1)
@@ -17670,13 +17620,6 @@ finish_function (bool inline_p)
 			      current_eh_spec_block);
     }
 
-  /* True if this is a guarded function.  */
-  bool finishing_guarded_p = !processing_template_decl
-    && DECL_ORIGINAL_FN (fndecl) == NULL_TREE
-    && contract_any_active_p (DECL_CONTRACTS (fndecl))
-    && !DECL_CONSTRUCTOR_P (fndecl)
-    && !DECL_DESTRUCTOR_P (fndecl);
-
   /* If we're saving up tree structure, tie off the function now.  */
   DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
 
@@ -17945,72 +17888,9 @@ finish_function (bool inline_p)
 
   invoke_plugin_callbacks (PLUGIN_FINISH_PARSE_FUNCTION, fndecl);
 
-  if (finishing_guarded_p)
-    finish_function_contracts (fndecl);
+  finish_function_contracts (fndecl);
 
   return fndecl;
-}
-
-/* Finish up the pre & post function definitions for a guarded FNDECL,
-   and compile those functions all the way to assembler language output.  */
-
-static void
-finish_function_contracts (tree fndecl)
-{
-  for (tree ca = DECL_CONTRACTS (fndecl); ca; ca = CONTRACT_CHAIN (ca))
-    {
-      tree contract = CONTRACT_STATEMENT (ca);
-      if (!CONTRACT_CONDITION (contract)
-	  || CONTRACT_CONDITION_DEFERRED_P (contract)
-	  || CONTRACT_CONDITION (contract) == error_mark_node)
-	return;
-    }
-
-  int flags = SF_DEFAULT | SF_PRE_PARSED;
-  tree finished_pre = NULL_TREE, finished_post = NULL_TREE;
-
-  /* If either the pre or post functions are bad, don't bother emitting
-     any contracts.  The program is already ill-formed.  */
-  tree pre = DECL_PRE_FN (fndecl);
-  tree post = DECL_POST_FN (fndecl);
-  if (pre == error_mark_node || post == error_mark_node)
-    return;
-
-  /* Create a copy of the contracts with references to fndecl's args replaced
-     with references to either the args of pre or post function.  */
-  tree contracts = copy_list (DECL_CONTRACTS (fndecl));
-  for (tree attr = contracts; attr; attr = CONTRACT_CHAIN (attr))
-    {
-      tree contract = copy_node (CONTRACT_STATEMENT (attr));
-      if (TREE_CODE (contract) == PRECONDITION_STMT)
-	remap_contract (fndecl, pre, contract, /*duplicate_p=*/false);
-      else if (TREE_CODE (contract) == POSTCONDITION_STMT)
-	remap_contract (fndecl, post, contract, /*duplicate_p=*/false);
-      TREE_VALUE (attr) = build_tree_list (NULL_TREE, contract);
-    }
-
-  if (pre && DECL_INITIAL (fndecl) != error_mark_node)
-    {
-      DECL_PENDING_INLINE_P (pre) = false;
-      start_preparsed_function (pre, DECL_ATTRIBUTES (pre), flags);
-      emit_preconditions (contracts);
-      finished_pre = finish_function (false);
-      expand_or_defer_fn (finished_pre);
-    }
-  if (post && DECL_INITIAL (fndecl) != error_mark_node)
-    {
-      DECL_PENDING_INLINE_P (post) = false;
-      start_preparsed_function (post,
-				DECL_ATTRIBUTES (post),
-				flags);
-      emit_postconditions (contracts);
-
-      tree res = get_postcondition_result_parameter (fndecl);
-      if (res)
-	finish_return_stmt (res);
-      finished_post = finish_function (false);
-      expand_or_defer_fn (finished_post);
-    }
 }
 
 
