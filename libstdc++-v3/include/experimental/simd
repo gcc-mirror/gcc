@@ -33,6 +33,8 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_SIMD
 #define _GLIBCXX_EXPERIMENTAL_SIMD
 
+#if __cplusplus >= 201703L
+
 #define __cpp_lib_experimental_parallel_simd 201803
 
 #pragma GCC diagnostic push
@@ -66,5 +68,6 @@
 
 #pragma GCC diagnostic pop
 
+#endif // C++17
 #endif // _GLIBCXX_EXPERIMENTAL_SIMD
 // vim: ft=cpp
