@@ -162,6 +162,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-coormu$(objext) \
   a-coorse$(objext) \
   a-coprnu$(objext) \
+  a-costso$(objext) \
   a-coteio$(objext) \
   a-crbltr$(objext) \
   a-crbtgk$(objext) \

@@ -29,6 +29,8 @@
 
 with Ada.Unchecked_Deallocation;
 
+with Ada.Containers.Stable_Sorting; use Ada.Containers.Stable_Sorting;
+
 with System; use type System.Address;
 with System.Put_Images;
 
@@ -674,156 +676,6 @@ is
       ----------
 
       procedure Sort (Container : in out List) is
-
-         type List_Descriptor is
-            record
-               First, Last : Node_Access;
-               Length      : Count_Type;
-            end record;
-
-         function Merge_Sort (Arg : List_Descriptor) return List_Descriptor;
-         --  Sort list of given length using MergeSort; length must be >= 2.
-         --  As required by RM, the sort is stable.
-
-         ----------------
-         -- Merge_Sort --
-         ----------------
-
-         function Merge_Sort (Arg : List_Descriptor) return List_Descriptor
-         is
-            procedure Split_List
-              (Unsplit : List_Descriptor; Part1, Part2 : out List_Descriptor);
-            --  Split list into two parts for divide-and-conquer.
-            --  Unsplit.Length must be >= 2.
-
-            function Merge_Parts
-              (Part1, Part2 : List_Descriptor) return List_Descriptor;
-            --  Merge two sorted lists, preserving sorted property.
-
-            ----------------
-            -- Split_List --
-            ----------------
-
-            procedure Split_List
-              (Unsplit : List_Descriptor; Part1, Part2 : out List_Descriptor)
-            is
-               Rover : Node_Access := Unsplit.First;
-               Bump_Count : constant Count_Type := (Unsplit.Length - 1) / 2;
-            begin
-               for Iter in 1 .. Bump_Count loop
-                  Rover := Rover.Next;
-               end loop;
-
-               Part1 := (First  => Unsplit.First,
-                         Last   => Rover,
-                         Length => Bump_Count + 1);
-
-               Part2 := (First => Rover.Next,
-                         Last  => Unsplit.Last,
-                         Length => Unsplit.Length - Part1.Length);
-
-               --  Detach
-               Part1.Last.Next := null;
-               Part2.First.Prev := null;
-            end Split_List;
-
-            -----------------
-            -- Merge_Parts --
-            -----------------
-
-            function Merge_Parts
-              (Part1, Part2 : List_Descriptor) return List_Descriptor
-            is
-               Empty  : constant List_Descriptor := (null, null, 0);
-
-               procedure Detach_First (Source   : in out List_Descriptor;
-                                       Detached : out Node_Access);
-               --  Detach the first element from a non-empty list and
-               --  return the detached node via the Detached parameter.
-
-               ------------------
-               -- Detach_First --
-               ------------------
-
-               procedure Detach_First (Source   : in out List_Descriptor;
-                                       Detached : out Node_Access) is
-               begin
-                  Detached := Source.First;
-
-                  if Source.Length = 1 then
-                     Source := Empty;
-                  else
-                     Source := (Source.First.Next,
-                                Source.Last,
-                                Source.Length - 1);
-
-                     Detached.Next.Prev := null;
-                     Detached.Next := null;
-                  end if;
-               end Detach_First;
-
-               P1     : List_Descriptor := Part1;
-               P2     : List_Descriptor := Part2;
-               Merged : List_Descriptor := Empty;
-
-               Take_From_P2 : Boolean;
-               Detached     : Node_Access;
-
-            --  Start of processing for Merge_Parts
-
-            begin
-               while (P1.Length /= 0) or (P2.Length /= 0) loop
-                  if P1.Length = 0 then
-                     Take_From_P2 := True;
-                  elsif P2.Length = 0 then
-                     Take_From_P2 := False;
-                  else
-                     --  If the compared elements are equal then Take_From_P2
-                     --  must be False in order to ensure stability.
-
-                     Take_From_P2 := P2.First.Element < P1.First.Element;
-                  end if;
-
-                  if Take_From_P2 then
-                     Detach_First (P2, Detached);
-                  else
-                     Detach_First (P1, Detached);
-                  end if;
-
-                  if Merged.Length = 0 then
-                     Merged := (First | Last => Detached, Length => 1);
-                  else
-                     Detached.Prev := Merged.Last;
-                     Merged.Last.Next := Detached;
-                     Merged.Last := Detached;
-                     Merged.Length := Merged.Length + 1;
-                  end if;
-               end loop;
-               return Merged;
-            end Merge_Parts;
-
-         --  Start of processing for Merge_Sort
-
-         begin
-            if Arg.Length < 2 then
-               --  already sorted
-               return Arg;
-            end if;
-
-            declare
-               Part1, Part2 : List_Descriptor;
-            begin
-               Split_List (Unsplit => Arg, Part1 => Part1, Part2 => Part2);
-
-               Part1 := Merge_Sort (Part1);
-               Part2 := Merge_Sort (Part2);
-
-               return Merge_Parts (Part1, Part2);
-            end;
-         end Merge_Sort;
-
-      --  Start of processing for Sort
-
       begin
          if Container.Length <= 1 then
             return;
@@ -838,28 +690,43 @@ is
          --  element tampering by a generic actual subprogram.
 
          declare
-            Lock     : With_Lock (Container.TC'Unchecked_Access);
+            Lock : With_Lock (Container.TC'Unchecked_Access);
 
-            Unsorted : constant List_Descriptor :=
-                                  (First  => Container.First,
-                                   Last   => Container.Last,
-                                   Length => Container.Length);
+            package Descriptors is new List_Descriptors
+              (Node_Ref => Node_Access, Nil => null);
+            use Descriptors;
 
-            Sorted   : List_Descriptor;
+            function Next (N : Node_Access) return Node_Access is (N.Next);
+            procedure Set_Next (N : Node_Access; Next : Node_Access)
+              with Inline;
+            procedure Set_Prev (N : Node_Access; Prev : Node_Access)
+              with Inline;
+            function "<" (L, R : Node_Access) return Boolean is
+              (L.Element < R.Element);
+            procedure Update_Container (List : List_Descriptor) with Inline;
+
+            procedure Set_Next (N : Node_Access; Next : Node_Access) is
+            begin
+               N.Next := Next;
+            end Set_Next;
+
+            procedure Set_Prev (N : Node_Access; Prev : Node_Access) is
+            begin
+               N.Prev := Prev;
+            end Set_Prev;
+
+            procedure Update_Container (List : List_Descriptor) is
+            begin
+               Container.First  := List.First;
+               Container.Last   := List.Last;
+               Container.Length := List.Length;
+            end Update_Container;
+
+            procedure Sort_List is new Doubly_Linked_List_Sort;
          begin
-            --  If a call to the formal < operator references the container
-            --  during sorting, seeing an empty container seems preferable
-            --  to seeing an internally inconsistent container.
-            --
-            Container.First  := null;
-            Container.Last   := null;
-            Container.Length := 0;
-
-            Sorted := Merge_Sort (Unsorted);
-
-            Container.First  := Sorted.First;
-            Container.Last   := Sorted.Last;
-            Container.Length := Sorted.Length;
+            Sort_List (List_Descriptor'(First  => Container.First,
+                                        Last   => Container.Last,
+                                        Length => Container.Length));
          end;
 
          pragma Assert (Container.First.Prev = null);
