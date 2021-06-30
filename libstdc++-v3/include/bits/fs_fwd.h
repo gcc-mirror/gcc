@@ -40,17 +40,18 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-/** @addtogroup filesystem
- *  @{
- */
-
 /// ISO C++ 2017 namespace for File System library
 namespace filesystem
 {
 #if _GLIBCXX_USE_CXX11_ABI
+/// @cond undocumented
 inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
+/// @endcond
 #endif
 
+/** @addtogroup filesystem
+ *  @{
+ */
 
   class file_status;
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
@@ -61,6 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   class recursive_directory_iterator;
 _GLIBCXX_END_NAMESPACE_CXX11
 
+  /// Information about free space on a disk
   struct space_info
   {
     uintmax_t capacity;
@@ -72,12 +74,13 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #endif
   };
 
+  /// Enumerated type representing the type of a file
   enum class file_type : signed char {
       none = 0, not_found = -1, regular = 1, directory = 2, symlink = 3,
       block = 4, character = 5, fifo = 6, socket = 7, unknown = 8
   };
 
-  /// Bitmask type
+  /// Bitmask type controlling effects of `filesystem::copy`
   enum class copy_options : unsigned short {
       none = 0,
       skip_existing = 1, overwrite_existing = 2, update_existing = 4,
@@ -86,6 +89,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
       directories_only = 64, create_symlinks = 128, create_hard_links = 256
   };
 
+  /// @{
+  /// @relates copy_options
   constexpr copy_options
   operator&(copy_options __x, copy_options __y) noexcept
   {
@@ -128,9 +133,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
   inline copy_options&
   operator^=(copy_options& __x, copy_options __y) noexcept
   { return __x = __x ^ __y; }
+  /// @}
 
 
-  /// Bitmask type
+  /// Bitmask type representing file access permissions
   enum class perms : unsigned {
       none		=  0,
       owner_read	=  0400,
@@ -153,6 +159,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
       unknown		=  0xFFFF,
   };
 
+  /// @{
+  /// @relates perm_options
   constexpr perms
   operator&(perms __x, perms __y) noexcept
   {
@@ -195,8 +203,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
   inline perms&
   operator^=(perms& __x, perms __y) noexcept
   { return __x = __x ^ __y; }
+  /// @}
 
-  /// Bitmask type
+  /// Bitmask type controlling changes to permissions
   enum class perm_options : unsigned {
       replace	= 0x1,
       add	= 0x2,
@@ -204,6 +213,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
       nofollow	= 0x8
   };
 
+  /// @{
+  /// @relates perm_options
   constexpr perm_options
   operator&(perm_options __x, perm_options __y) noexcept
   {
@@ -246,12 +257,15 @@ _GLIBCXX_END_NAMESPACE_CXX11
   inline perm_options&
   operator^=(perm_options& __x, perm_options __y) noexcept
   { return __x = __x ^ __y; }
+  /// @}
 
-  // Bitmask type
+  /// Bitmask type controlling directory iteration
   enum class directory_options : unsigned char {
       none = 0, follow_directory_symlink = 1, skip_permission_denied = 2
   };
 
+  /// @{
+  /// @relates directory_options
   constexpr directory_options
   operator&(directory_options __x, directory_options __y) noexcept
   {
@@ -294,7 +308,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
   inline directory_options&
   operator^=(directory_options& __x, directory_options __y) noexcept
   { return __x = __x ^ __y; }
+  /// @}
 
+  /// The type used for file timestamps
   using file_time_type = __file_clock::time_point;
 
   // operational functions
@@ -338,8 +354,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
   bool is_regular_file(file_status) noexcept;
   bool is_symlink(file_status) noexcept;
 
-} // namespace filesystem
 /// @}
+} // namespace filesystem
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
