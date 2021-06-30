@@ -1,3 +1,13 @@
+2021-06-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100752
+	* g++.dg/cpp0x/noexcept69.C: New test.
+	* g++.dg/parse/saved1.C: Adjust dg-error.
+	* g++.dg/template/crash50.C: Likewise.
+
 2021-06-25  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

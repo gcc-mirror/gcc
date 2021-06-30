@@ -1,3 +1,12 @@
+2021-06-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100752
+	* parser.c (cp_parser_declarator): Pass flags down to
+	cp_parser_declarator.  Also pass static_p/member_p.
+
 2021-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
