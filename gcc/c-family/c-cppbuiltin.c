@@ -628,6 +628,31 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
       cpp_define_unused (pfile, "__FINITE_MATH_ONLY__=0");
     }
+
+  if (!prev->x_flag_reciprocal_math && cur->x_flag_reciprocal_math)
+    cpp_define_unused (pfile, "__RECIPROCAL_MATH__");
+  else if (prev->x_flag_reciprocal_math && !cur->x_flag_reciprocal_math)
+    cpp_undef (pfile, "__RECIPROCAL_MATH__");
+
+  if (!prev->x_flag_signed_zeros && cur->x_flag_signed_zeros)
+    cpp_undef (pfile, "__NO_SIGNED_ZEROS__");
+  else if (prev->x_flag_signed_zeros && !cur->x_flag_signed_zeros)
+    cpp_define_unused (pfile, "__NO_SIGNED_ZEROS__");
+
+  if (!prev->x_flag_trapping_math && cur->x_flag_trapping_math)
+    cpp_undef (pfile, "__NO_TRAPPING_MATH__");
+  else if (prev->x_flag_trapping_math && !cur->x_flag_trapping_math)
+    cpp_define_unused (pfile, "__NO_TRAPPING_MATH__");
+
+  if (!prev->x_flag_associative_math && cur->x_flag_associative_math)
+    cpp_define_unused (pfile, "__ASSOCIATIVE_MATH__");
+  else if (prev->x_flag_associative_math && !cur->x_flag_associative_math)
+    cpp_undef (pfile, "__ASSOCIATIVE_MATH__");
+
+  if (!prev->x_flag_rounding_math && cur->x_flag_rounding_math)
+    cpp_define_unused (pfile, "__ROUNDING_MATH__");
+  else if (prev->x_flag_rounding_math && !cur->x_flag_rounding_math)
+    cpp_undef (pfile, "__ROUNDING_MATH__");
 }
 
 
