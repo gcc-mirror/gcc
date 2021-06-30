@@ -10502,13 +10502,30 @@ package body Sem_Ch3 is
                if Expander_Active
                  and then Comes_From_Source (Def)
                  and then not Is_Subprogram (Current_Scope)
-                 and then Nkind (Parent (Def)) in
-                   N_Object_Declaration | N_Component_Declaration
                then
-                  Force_Evaluation (
-                    Discr_Expr (J),
-                    Related_Id => Defining_Identifier (Parent (Def)),
-                    Discr_Number => J);
+                  declare
+                     Id : Entity_Id := Empty;
+                  begin
+                     if Nkind (Parent (Def)) = N_Object_Declaration then
+                        Id := Defining_Identifier (Parent (Def));
+
+                     elsif Nkind (Parent (Def)) = N_Component_Definition
+                       and then
+                         Nkind (Parent (Parent (Def)))
+                            = N_Component_Declaration
+                     then
+                        Id := Defining_Identifier (Parent (Parent (Def)));
+                     end if;
+
+                     if Present (Id) then
+                        Force_Evaluation (
+                          Discr_Expr (J),
+                          Related_Id => Id,
+                          Discr_Number => J);
+                     else
+                        Force_Evaluation (Discr_Expr (J));
+                     end if;
+                  end;
                else
                   Force_Evaluation (Discr_Expr (J));
                end if;
