@@ -1,5 +1,5 @@
 /* Definitions for C++ contract levels.  Implements functionality described in
-   the working draft version of contracts, P1290, P1332, and P1429.
+   the N4820 working draft version of contracts, P1290, P1332, and P1429.
    Copyright (C) 2020 Free Software Foundation, Inc.
    Contributed by Jeff Chapman II (jchapman@lock3software.com)
 

@@ -1200,8 +1200,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       {
 	if (tree check = build_contract_check (stmt))
 	  {
-	//     verbatim ("MAKE CHECK");
-	//     debug_expression (check);
 	    /* Mark the current function as possibly throwing exceptions
 	       (through invocation of the contract violation handler).  */
 	    current_function_returns_abnormally = 1;

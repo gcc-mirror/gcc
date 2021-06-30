@@ -1467,6 +1467,7 @@ duplicate_function_template_decls (tree newdecl, tree olddecl)
    grokdecl. Friend declarations are merged together before attributes are
    processed, which complicates the processing of contracts. In particular, we
    need to compare and possibly remap contracts in duplicate_decls.  */
+/* FIXME make this go away.  */
 
 static tree friend_attributes;
 
@@ -2931,26 +2932,28 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	      if (DECL_INITIAL (olddecl)
 		  && DECL_CONTRACTS (newdecl)
 		  && !DECL_CONTRACTS (olddecl))
-		    copy_contract_attributes (olddecl, newdecl);
-	      else {
-	      /* Temporarily undo the re-contexting of parameters so we
-		 can actually remap parameters.  The inliner won't replace
-		 parameters if we don't do this.  */
-	      tree args = DECL_ARGUMENTS (newdecl);
-	      for (tree p = args; p; p = DECL_CHAIN (p))
-		DECL_CONTEXT (p) = newdecl;
+		copy_contract_attributes (olddecl, newdecl);
+	      else
+		{
+		  /* Temporarily undo the re-contexting of parameters so we can
+		     actually remap parameters.  The inliner won't replace
+		     parameters if we don't do this.  */
+		  tree args = DECL_ARGUMENTS (newdecl);
+		  for (tree p = args; p; p = DECL_CHAIN (p))
+		    DECL_CONTEXT (p) = newdecl;
 
-	      /* Save new argument names for use in contracts parsing, unless
-		 we've already started parsing the body of olddecl (particular
-		 issues arise when newdecl is from a prior friend decl with no
-		 argument names, see modules/contracts-tpl-friend-1).  */
-	      if (tree contracts = DECL_CONTRACTS (olddecl))
-		remap_contracts (newdecl, olddecl, contracts, true);
+		  /* Save new argument names for use in contracts parsing,
+		     unless we've already started parsing the body of olddecl
+		     (particular issues arise when newdecl is from a prior
+		     friend decl with no argument names, see
+		     modules/contracts-tpl-friend-1).  */
+		  if (tree contracts = DECL_CONTRACTS (olddecl))
+		    remap_contracts (newdecl, olddecl, contracts, true);
 
-	      /* And reverse this operation again. */
-	      for (tree p = args; p; p = DECL_CHAIN (p))
-		DECL_CONTEXT (p) = olddecl;
-	      }
+		  /* And reverse this operation again. */
+		  for (tree p = args; p; p = DECL_CHAIN (p))
+		    DECL_CONTEXT (p) = olddecl;
+		}
 
 	      DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 	    }

@@ -834,10 +834,7 @@ write_encoding (const tree decl)
 				d);
 
       /* If this is the pre/post function for a guarded function, append
-	 pre/post in the vendor specific portion of the mangling.
-
-	 TODO: this likely needs standardizing.
-	 TODO: do we need special handling in other tools like the demangler? */
+	 .pre/post, like something from create_virtual_clone.  */
       if (DECL_IS_PRE_FN_P (decl))
 	write_string (".pre");
       else if (DECL_IS_POST_FN_P (decl))

@@ -110,13 +110,13 @@ handle_contract_violation (const std::contract_violation &violation)
 // We take POD types here to make synthesis easier
 int
 __on_contract_violation (bool continue_,
-                         int line_number,
-                         const char *file_name,
-                         const char *function_name,
-                         const char *comment,
-                         const char *assertion_level,
-                         const char *assertion_role,
-                         int continuation_mode)
+			 int line_number,
+			 const char *file_name,
+			 const char *function_name,
+			 const char *comment,
+			 const char *assertion_level,
+			 const char *assertion_role,
+			 int continuation_mode)
 {
   using cvmc = std::contract_violation_continuation_mode;
   std::contract_violation violation (line_number,

@@ -16297,12 +16297,16 @@ cp_parser_conversion_declarator_opt (cp_parser* parser)
   return NULL;
 }
 
-/* Parse a conditional-expression.  */
+/* Parse a conditional-expression.
+
+   conditional-expression :
+	logical-or-expression
+	logical-or-expression ? expression : assignment-expression  */
 
 static cp_expr
 cp_parser_conditional_expression (cp_parser *parser)
 {
-  /* Parse the binary expressions (logical-or-expression).  */
+  /* Parse the binary expression (logical-or-expression).  */
   cp_expr expression = cp_parser_binary_expression (parser, false, false, false,
 						    PREC_NOT_OPERATOR, NULL);
   /* If the next token is a `?' then we're actually looking at

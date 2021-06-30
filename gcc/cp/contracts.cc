@@ -1409,7 +1409,7 @@ build_contract_condition_function (tree fndecl, bool pre)
   tree *last = &arg_types;
 
   /* FIXME will later optimizations delete unused args to prevent extra arg
-   * passing? do we care? */
+     passing? do we care? */
   tree class_type = NULL_TREE;
   for (tree arg_type = TYPE_ARG_TYPES (TREE_TYPE (fn));
       arg_type && arg_type != void_list_node;
