@@ -3746,6 +3746,7 @@ display_help (void)
   fputs (_("  -dumpspecs               Display all of the built in spec strings.\n"), stdout);
   fputs (_("  -dumpversion             Display the version of the compiler.\n"), stdout);
   fputs (_("  -dumpmachine             Display the compiler's target processor.\n"), stdout);
+  fputs (_("  -foffload=<targets>      Specify offloading targets.\n"), stdout);
   fputs (_("  -print-search-dirs       Display the directories in the compiler's search path.\n"), stdout);
   fputs (_("  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"), stdout);
   fputs (_("  -print-file-name=<lib>   Display the full path to library <lib>.\n"), stdout);

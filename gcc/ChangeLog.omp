@@ -3,6 +3,12 @@
 	Backported from master:
 	2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
 
+	* common.opt (foffload): Remove help as Driver only.
+	* gcc.c (display_help): Add -foffload.
+
+	Backported from master:
+	2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gcc.c (close_at_file, execute): Replace alloca by XALLOCAVEC.
 	(check_offload_target_name): Fix splitting OFFLOAD_TARGETS into
 	a candidate list; better inform no offload target is configured
