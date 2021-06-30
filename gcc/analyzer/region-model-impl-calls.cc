@@ -389,36 +389,15 @@ region_model::impl_call_memset (const call_details &cd)
   const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
 					  cd.get_ctxt ());
 
-  if (tree num_bytes = num_bytes_sval->maybe_get_constant ())
-    {
-      /* "memset" of zero size is a no-op.  */
-      if (zerop (num_bytes))
-	return true;
+  const svalue *fill_value_u8
+    = m_mgr->get_or_create_cast (unsigned_char_type_node, fill_value_sval);
 
-      /* Set with known amount.  */
-      byte_size_t reg_size;
-      if (dest_reg->get_byte_size (&reg_size))
-	{
-	  /* Check for an exact size match.  */
-	  if (reg_size == wi::to_offset (num_bytes))
-	    {
-	      if (tree cst = fill_value_sval->maybe_get_constant ())
-		{
-		  if (zerop (cst))
-		    {
-		      zero_fill_region (dest_reg);
-		      return true;
-		    }
-		}
-	    }
-	}
-    }
-
-  check_for_writable_region (dest_reg, cd.get_ctxt ());
-
-  /* Otherwise, mark region's contents as unknown.  */
-  mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
-  return false;
+  const region *sized_dest_reg = m_mgr->get_sized_region (dest_reg,
+							  NULL_TREE,
+							  num_bytes_sval);
+  check_for_writable_region (sized_dest_reg, cd.get_ctxt ());
+  fill_region (sized_dest_reg, fill_value_u8);
+  return true;
 }
 
 /* Handle the on_call_pre part of "operator new".  */

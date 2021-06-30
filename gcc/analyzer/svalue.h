@@ -41,6 +41,8 @@ enum svalue_kind
   SK_UNARYOP,
   SK_BINOP,
   SK_SUB,
+  SK_REPEATED,
+  SK_BITS_WITHIN,
   SK_UNMERGEABLE,
   SK_PLACEHOLDER,
   SK_WIDENING,
@@ -63,6 +65,9 @@ enum svalue_kind
      unaryop_svalue (SK_UNARYOP): unary operation on another svalue
      binop_svalue (SK_BINOP): binary operation on two svalues
      sub_svalue (SK_SUB): the result of accessing a subregion
+     repeated_svalue (SK_REPEATED): repeating an svalue to fill a larger region
+     bits_within_svalue (SK_BITS_WITHIN): a range of bits/bytes within a larger
+       svalue
      unmergeable_svalue (SK_UNMERGEABLE): a value that is so interesting
        from a control-flow perspective that it can inhibit state-merging
      placeholder_svalue (SK_PLACEHOLDER): for use in selftests.
@@ -107,6 +112,10 @@ public:
   dyn_cast_binop_svalue () const { return NULL; }
   virtual const sub_svalue *
   dyn_cast_sub_svalue () const { return NULL; }
+  virtual const repeated_svalue *
+  dyn_cast_repeated_svalue () const { return NULL; }
+  virtual const bits_within_svalue *
+  dyn_cast_bits_within_svalue () const { return NULL; }
   virtual const unmergeable_svalue *
   dyn_cast_unmergeable_svalue () const { return NULL; }
   virtual const widening_svalue *
@@ -137,6 +146,16 @@ public:
   static int cmp_ptr_ptr (const void *, const void *);
 
   bool involves_p (const svalue *other) const;
+
+  const svalue *
+  extract_bit_range (tree type,
+		     const bit_range &subrange,
+		     region_model_manager *mgr) const;
+
+  virtual const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const;
 
  protected:
   svalue (complexity c, tree type)
@@ -175,9 +194,9 @@ public:
     }
 
     void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
     bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     const region *m_reg;
@@ -222,7 +241,7 @@ is_a_helper <const region_svalue *>::test (const svalue *sval)
 template <> struct default_hash_traits<region_svalue::key_t>
 : public member_function_hash_traits<region_svalue::key_t>
 {
-  static const bool empty_zero_p = true;
+  static const bool empty_zero_p = false;
 };
 
 namespace ana {
@@ -252,6 +271,11 @@ public:
   static tristate eval_condition (const constant_svalue *lhs,
 				  enum tree_code op,
 				  const constant_svalue *rhs);
+
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
 
  private:
   tree m_cst_expr;
@@ -285,6 +309,11 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
+
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
 };
 
 /* An enum describing a particular kind of "poisoned" value.  */
@@ -327,9 +356,9 @@ public:
     }
 
     void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
     bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     enum poison_kind m_kind;
     tree m_type;
@@ -364,7 +393,7 @@ is_a_helper <const poisoned_svalue *>::test (const svalue *sval)
 template <> struct default_hash_traits<poisoned_svalue::key_t>
 : public member_function_hash_traits<poisoned_svalue::key_t>
 {
-  static const bool empty_zero_p = true;
+  static const bool empty_zero_p = false;
 };
 
 namespace ana {
@@ -426,9 +455,9 @@ public:
     }
 
     void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
     bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     setjmp_record m_record;
     tree m_type;
@@ -467,7 +496,7 @@ is_a_helper <const setjmp_svalue *>::test (const svalue *sval)
 template <> struct default_hash_traits<setjmp_svalue::key_t>
 : public member_function_hash_traits<setjmp_svalue::key_t>
 {
-  static const bool empty_zero_p = true;
+  static const bool empty_zero_p = false;
 };
 
 namespace ana {
@@ -548,9 +577,9 @@ public:
     }
 
     void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
     bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     enum tree_code m_op;
@@ -574,6 +603,11 @@ public:
   enum tree_code get_op () const { return m_op; }
   const svalue *get_arg () const { return m_arg; }
 
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
+
  private:
   enum tree_code m_op;
   const svalue *m_arg;
@@ -592,7 +626,7 @@ is_a_helper <const unaryop_svalue *>::test (const svalue *sval)
 template <> struct default_hash_traits<unaryop_svalue::key_t>
 : public member_function_hash_traits<unaryop_svalue::key_t>
 {
-  static const bool empty_zero_p = true;
+  static const bool empty_zero_p = false;
 };
 
 namespace ana {
@@ -630,9 +664,9 @@ public:
     }
 
     void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
     bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     enum tree_code m_op;
@@ -683,7 +717,7 @@ is_a_helper <const binop_svalue *>::test (const svalue *sval)
 template <> struct default_hash_traits<binop_svalue::key_t>
 : public member_function_hash_traits<binop_svalue::key_t>
 {
-  static const bool empty_zero_p = true;
+  static const bool empty_zero_p = false;
 };
 
 namespace ana {
@@ -719,9 +753,9 @@ public:
     }
 
     void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
     bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     const svalue *m_parent_svalue;
@@ -762,7 +796,182 @@ is_a_helper <const sub_svalue *>::test (const svalue *sval)
 template <> struct default_hash_traits<sub_svalue::key_t>
 : public member_function_hash_traits<sub_svalue::key_t>
 {
-  static const bool empty_zero_p = true;
+  static const bool empty_zero_p = false;
+};
+
+namespace ana {
+
+/* Concrete subclass of svalue representing repeating an inner svalue
+   (possibly not a whole number of times) to fill a larger region of
+   type TYPE of size OUTER_SIZE bytes.  */
+
+class repeated_svalue : public svalue
+{
+public:
+  /* A support class for uniquifying instances of repeated_svalue.  */
+  struct key_t
+  {
+    key_t (tree type,
+	   const svalue *outer_size,
+	   const svalue *inner_svalue)
+    : m_type (type), m_outer_size (outer_size), m_inner_svalue (inner_svalue)
+    {}
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_type);
+      hstate.add_ptr (m_outer_size);
+      hstate.add_ptr (m_inner_svalue);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      return (m_type == other.m_type
+	      && m_outer_size == other.m_outer_size
+	      && m_inner_svalue == other.m_inner_svalue);
+    }
+
+    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
+    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
+
+    tree m_type;
+    const svalue *m_outer_size;
+    const svalue *m_inner_svalue;
+  };
+  repeated_svalue (tree type,
+		   const svalue *outer_size,
+		   const svalue *inner_svalue);
+
+  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_REPEATED; }
+  const repeated_svalue *dyn_cast_repeated_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void accept (visitor *v) const FINAL OVERRIDE;
+
+  const svalue *get_outer_size () const { return m_outer_size; }
+  const svalue *get_inner_svalue () const { return m_inner_svalue; }
+
+  bool all_zeroes_p () const;
+
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
+
+ private:
+  const svalue *m_outer_size;
+  const svalue *m_inner_svalue;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const repeated_svalue *>::test (const svalue *sval)
+{
+  return sval->get_kind () == SK_REPEATED;
+}
+
+template <> struct default_hash_traits<repeated_svalue::key_t>
+: public member_function_hash_traits<repeated_svalue::key_t>
+{
+  static const bool empty_zero_p = false;
+};
+
+namespace ana {
+
+/* A range of bits/bytes within another svalue
+   e.g. bytes 5-39 of INITIAL_SVALUE(R).
+   These can be generated for prefixes and suffixes when part of a binding
+   is clobbered, so that we don't lose too much information.  */
+
+class bits_within_svalue : public svalue
+{
+public:
+  /* A support class for uniquifying instances of bits_within_svalue.  */
+  struct key_t
+  {
+    key_t (tree type,
+	   const bit_range &bits,
+	   const svalue *inner_svalue)
+    : m_type (type), m_bits (bits), m_inner_svalue (inner_svalue)
+    {}
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_type);
+      hstate.add_ptr (m_inner_svalue);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      return (m_type == other.m_type
+	      && m_bits == other.m_bits
+	      && m_inner_svalue == other.m_inner_svalue);
+    }
+
+    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
+    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
+
+    tree m_type;
+    bit_range m_bits;
+    const svalue *m_inner_svalue;
+  };
+  bits_within_svalue (tree type,
+		      const bit_range &bits,
+		      const svalue *inner_svalue);
+
+  enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_BITS_WITHIN; }
+  const bits_within_svalue *
+  dyn_cast_bits_within_svalue () const FINAL OVERRIDE
+  {
+    return this;
+  }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void accept (visitor *v) const FINAL OVERRIDE;
+  bool implicitly_live_p (const svalue_set *,
+			  const region_model *) const FINAL OVERRIDE;
+
+  const bit_range &get_bits () const { return m_bits; }
+  const svalue *get_inner_svalue () const { return m_inner_svalue; }
+
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
+
+ private:
+  const bit_range m_bits;
+  const svalue *m_inner_svalue;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const bits_within_svalue *>::test (const svalue *sval)
+{
+  return sval->get_kind () == SK_BITS_WITHIN;
+}
+
+template <> struct default_hash_traits<bits_within_svalue::key_t>
+: public member_function_hash_traits<bits_within_svalue::key_t>
+{
+  static const bool empty_zero_p = false;
 };
 
 namespace ana {
@@ -888,9 +1097,9 @@ public:
     }
 
     void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
     bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     function_point m_point;
@@ -952,7 +1161,7 @@ is_a_helper <widening_svalue *>::test (svalue *sval)
 template <> struct default_hash_traits<widening_svalue::key_t>
 : public member_function_hash_traits<widening_svalue::key_t>
 {
-  static const bool empty_zero_p = true;
+  static const bool empty_zero_p = false;
 };
 
 namespace ana {
@@ -1000,9 +1209,9 @@ public:
     }
 
     void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = NULL_TREE; }
+    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
     bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == NULL_TREE; }
+    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     const binding_map *m_map_ptr;
@@ -1029,6 +1238,11 @@ public:
     return key_t (get_type (), &m_map);
   }
 
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
+
  private:
   static complexity calc_complexity (const binding_map &map);
 
@@ -1048,7 +1262,7 @@ is_a_helper <compound_svalue *>::test (svalue *sval)
 template <> struct default_hash_traits<compound_svalue::key_t>
 : public member_function_hash_traits<compound_svalue::key_t>
 {
-  static const bool empty_zero_p = true;
+  static const bool empty_zero_p = false;
 };
 
 namespace ana {
