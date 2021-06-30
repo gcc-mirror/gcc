@@ -7022,12 +7022,26 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  break;
 
 	tree c = CONTRACT_CONDITION (t);
-	if (semantic == CCS_ASSUME && !cp_tree_defined_p (c))
-	  break;
+	if (semantic == CCS_ASSUME)
+	  {
+	    /* For an assume contract, try evaluating it without instantiating
+	       anything.  If non-constant, assume it's satisfied.  */
 
-	/* Evaluate the generated check.  */
-	r = cxx_eval_constant_expression (ctx, c, false, non_constant_p,
-					  overflow_p);
+	    if (!cp_tree_defined_p (c))
+	      break;
+
+	    bool dummy_nc = false, dummy_ov = false;
+	    constexpr_ctx new_ctx = *ctx;
+	    new_ctx.quiet = true;
+	    r = cxx_eval_constant_expression (&new_ctx, c, false,
+					      &dummy_nc, &dummy_ov);
+	    if (dummy_nc)
+	      break;
+	  }
+	else
+	  /* Evaluate the generated check.  */
+	  r = cxx_eval_constant_expression (ctx, c, false, non_constant_p,
+					    overflow_p);
 	if (r == boolean_false_node)
 	  {
 	    if (!ctx->quiet)
@@ -8948,6 +8962,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case ASSERTION_STMT:
     case PRECONDITION_STMT:
     case POSTCONDITION_STMT:
+      if (!checked_contract_p (get_contract_semantic (t)))
+	return true;
       if (!RECUR (CONTRACT_CONDITION (t), rval))
 	return false;
       return true;
