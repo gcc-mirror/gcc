@@ -1,3 +1,244 @@
+2021-06-29  Richard Kenner  <kenner@adacore.com>
+
+	* sem_util.adb (Visit_Node): Add handling for N_Block_Statement
+	with declarations.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo-utils.adb
+	(Unknown_Alignment): Simply negate the Known_ counterpart.
+	(Unknown_Component_Bit_Offset): Likewise.
+	(Unknown_Esize): Likewise.
+	(Unknown_Normalized_First_Bit): Likewise.
+	(Unknown_Normalized_Position): Likewise.
+	(Unknown_Normalized_Position_Max): Likewise.
+	(Unknown_RM_Size): Likewise.
+
+2021-06-29  Boris Yakobowski  <yakobowski@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Mod): Remove special case for mod -1
+	in CodePeer_Mode.
+
+2021-06-29  Aleksandra Pasek  <pasek@adacore.com>
+
+	* libgnat/s-objrea.adb (EM_AARCH64): New Constant.
+	(Initialize): Handle EM_AARCH64 case.
+	(Read_Address): Handle AARCH64 case.
+	* libgnat/s-objrea.ads (Object_Arch): Add AARCH64 record
+	component.
+
+2021-06-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_Record_Representation_Clause): Call
+	Set_Entity_With_Checks instead of Set_Entity, so we perform the
+	check for correct casing.
+	* style.adb (Check_Identifier): Minor comment improvement.
+	Cleanup overly complicated code.
+
+2021-06-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Convert_Aggr_In_Object_Decl): After expansion of
+	the aggregate, the expression can be removed from the
+	declaration, except if the object is class-wide, in which case
+	the aggregate provides the actual type. In other cases the
+	presence of the expression may lead to spurious freezing issue.
+	* exp_ch3.adb (Expand_N_Object_Declaration): If the expression
+	in the declaration is an aggregate with delayed expansion (as is
+	the case for objects of a limited type, or a subsequent address
+	specification) the aggregate must be resolved at this point.
+	This resolution must not include expansion, because the
+	expansion of the enclosing declaration will construct the
+	necessary aggregate expansion.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.ads (Adjust_Name_Case): Remove obsolete and now unused
+	variant.
+	* errout.adb (Adjust_Name_Case): Likewise; fix variant that uses
+	a custom buffer to also use it for names in Standard_Location.
+
+2021-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Freeze_Subprogram_Body): Add missing "freeze".
+	(Install_Body): Likewise.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* adaint.c (__gnat_portable_spawn): Revert change that
+	introduced setting of __gnat_in_child_after_fork.
+
+2021-06-29  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnarl/s-tasdeb.ads (Known_Tasks): Add Atomic_Components
+	aspect.
+
+2021-06-29  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl (x86_64-vx7r2) [EXTRA_GNATRTL_TASKING_OBJS]: Move
+	i-vxinco.o out of RTP runtime.
+
+2021-06-29  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfdlli.ads: Use pragma Assertion_Policy to disable
+	pre and postconditions.
+	* libgnat/a-cfhama.ads: Likewise.
+	* libgnat/a-cfhase.ads: Likewise.
+	* libgnat/a-cfinve.ads: Likewise.
+	* libgnat/a-cforma.ads: Likewise.
+	* libgnat/a-cforse.ads: Likewise.
+	* libgnat/a-cofove.ads: Likewise.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Get_Fullest_View): Refill comment; remove extra
+	extra after period.
+	* sem_util.adb (Get_Fullest_View): Fix style.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Remove explicit check for
+	missing, because a subsequent call to Is_Empty_List will detect
+	them anyway.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* freeze.adb (Freeze_All): Simplify by reusing
+	Is_Subprogram_Or_Entry.
+	* sem_ch11.adb (Analyze_Handled_Statement): Likewise.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Prevent cascaded
+	errors once for the subprogram call, not for every pair of
+	actual parameters.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Is_Local_Type): Simplify by reusing Scope_Within.
+
+2021-06-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.ads (Can_Override_Operator): Function declaration
+	moved from package body to package spec.
+	* sem_ch6.adb (Check_Overriding_Indicator): Now use test of
+	whether the subprogram's Chars is an operator name, to handle
+	cases of function instances whose entity is
+	N_Defining_Identifier rather than N_Defining_Operator_Symbol.
+	(Can_Override_Operator): Function declaration moved to package
+	spec.  Now use test of whether the subprogram's Chars is an
+	operator name, to handle cases of function instances whose
+	entity is N_Defining_Identifier rather than
+	N_Defining_Operator_Symbol.
+	* sem_ch8.adb (Analyze_Renamed_Subprogram): Check for
+	possibility of an overridden predefined operator, and suppress
+	the "not overriding" message in that case.
+
+2021-06-29  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl: Add a new ifeq for vx7r2 shared gnatlib.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Build_Array_VS_Func): Restore uses of
+	Validated_View.
+	(Build_Record_VS_Func): Likewise.
+	(Expand_N_Attribute_Reference): Likewise.
+	* sem_util.adb (Validated_View): Behave as an identity function
+	for arrays and scalars.
+
+2021-06-29  Bob Duff  <duff@adacore.com>
+
+	* atree.adb, atree.ads (Parent, Set_Parent): Assert node is
+	Present.
+	(Copy_Parent, Parent_Kind): New helper routines.
+	* gen_il-gen.adb: Add with clause.
+	* nlists.adb (Parent): Assert Parent of list is Present.
+	* aspects.adb, checks.adb, exp_aggr.adb, exp_ch6.adb,
+	exp_util.adb, lib-xref-spark_specific.adb, osint.ads,
+	sem_ch12.adb, sem_ch13.adb, sem_ch3.adb, sem_ch6.adb,
+	sem_dim.adb, sem_prag.adb, sem_res.adb, sem_util.adb,
+	treepr.adb: Do not call Parent and Set_Parent on the Empty node.
+	* libgnat/a-stwiun__shared.adb, libgnat/a-stzunb__shared.adb:
+	Minor: Fix typos in comments.
+	* einfo.ads: Minor comment update.
+	* sinfo-utils.ads, sinfo-utils.adb (Parent_Kind, Copy_Parent):
+	New functions.
+
+2021-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo-input.adb (Read_JSON_Stream): Fix typo.
+
+2021-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtsfind.ads (RE_Id): Change RE_Valid_Enumeration_Value_NN into
+	RE_Valid_Value_Enumeration_NN.
+	(RE_Unit_Table): Adjust to above renaming.
+	* exp_imgv.adb (Expand_Valid_Value_Attribute): Likewise.
+	* libgnat/s-valuen.ads (Invalid): Remove.
+	(Value_Enumeration_Pos): Move to...
+	* libgnat/s-valuen.adb (Value_Enumeration_Pos): ...here.
+	Return -1 instead of Invalid.
+	(Value_Enumeration): Compare against 0 instead of Invalid.
+	(Valid_Enumeration_Value): Likewise.  Rename to...
+	(Valid_Value_Enumeration): ...this.
+	* libgnat/s-vaenu8.ads (Valid_Enumeration_Value_8): Rename into...
+	(Valid_Value_Enumeration_8): ...this.
+	* libgnat/s-vaen16.ads (Valid_Enumeration_Value_16): Rename into...
+	(Valid_Value_Enumeration_16): ...this.
+	* libgnat/s-vaen32.ads (Valid_Enumeration_Value_32): Rename into...
+	(Valid_Value_Enumeration_32): ...this.
+
+2021-06-29  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads (Component_Bit_Offset, Component_Size): Update
+	documentation: Repinfo is the package where these negative
+	values are documented.
+	* einfo-utils.adb (Known_Component_Size,
+	Known_Static_Component_Size, Unknown_Component_Size): Remove
+	calls to Implementation_Base_Type, because Component_Size is an
+	Impl_Base_Type_Only field (see Gen_Entities).
+	* sem_ch13.ads, sem_ch13.adb (Check_Size): Do not set Esize and
+	RM_Size. This is unnecessary in the case of Size. For
+	Component_Size, it is wrong, because we would be setting the
+	Esize and RM_Size of the component type.
+
+2021-06-29  Pascal Obry  <obry@adacore.com>
+
+	* s-oscons-tmplt.c: Add some OS constants.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Validated_View): Fix style in comment.
+	* sem_util.adb (Validated_View): Rewrite in recursive style.
+
+2021-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Make-generated.in (ada/stamp-gen_il): Ignore errors from
+	running gen_il-main.
+
+2021-06-29  Richard Kenner  <kenner@adacore.com>
+
+	* gen_il-gen-gen_entities.adb (Record_Field_Kind,
+	Allocatable_Kind): Add new abstract kinds.
+	(Constant_Or_Variable_Kind): Likewise.
+	(E_Constant, E_Variable, E_Loop_Parameter): Use them.
+	(E_Discriminant, E_Component): Likewise.
+	* gen_il-types.ads (type Opt_Type_Enum): Add them.
+
+2021-06-29  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb (Put_C_Type_And_Subtypes): Put the correct
+	numbers.
+	* gen_il-internals.ads, gen_il-internals.adb: (Pos): Remove this
+	function. It was assuming that the order of the enumeration
+	literals in Type_Enum is the same as the order of the generated
+	types Node_Kind and Entity_Kind, which is not true.
+
+2021-06-29  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Explicitly use
+	Validated_View for record objects.
+
 2021-06-28  Martin Sebor  <msebor@redhat.com>
 
 	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu):
