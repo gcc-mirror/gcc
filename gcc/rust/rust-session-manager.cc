@@ -572,6 +572,9 @@ Session::parse_file (const char *filename)
       dump_type_resolution (hir);
     }
 
+  if (saw_errors ())
+    return;
+
   // liveness analysis
   std::set<HirId> live_symbols = Analysis::MarkLive::Analysis (hir);
 
