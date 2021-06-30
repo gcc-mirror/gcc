@@ -2867,60 +2867,189 @@ vcltq_u32 (uint32x4_t __a, uint32x4_t __b)
   return (__a < __b);
 }
 
+__extension__ extern __inline int8x8_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vabs_s8 (int8x8_t __a)
+{
+  return (int8x8_t)__builtin_neon_vabsv8qi (__a);
+}
+
+__extension__ extern __inline int16x4_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vabs_s16 (int16x4_t __a)
+{
+  return (int16x4_t)__builtin_neon_vabsv4hi (__a);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vabs_s32 (int32x2_t __a)
+{
+  return (int32x2_t)__builtin_neon_vabsv2si (__a);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vabs_f32 (float32x2_t __a)
+{
+  return (float32x2_t)__builtin_neon_vabsv2sf (__a);
+}
+
+__extension__ extern __inline int8x16_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vabsq_s8 (int8x16_t __a)
+{
+  return (int8x16_t)__builtin_neon_vabsv16qi (__a);
+}
+
+__extension__ extern __inline int16x8_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vabsq_s16 (int16x8_t __a)
+{
+  return (int16x8_t)__builtin_neon_vabsv8hi (__a);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vabsq_s32 (int32x4_t __a)
+{
+  return (int32x4_t)__builtin_neon_vabsv4si (__a);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vabsq_f32 (float32x4_t __a)
+{
+  return (float32x4_t)__builtin_neon_vabsv4sf (__a);
+}
+
+__extension__ extern __inline int8x8_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vqabs_s8 (int8x8_t __a)
+{
+  return (int8x8_t)__builtin_neon_vqabsv8qi (__a);
+}
+
+__extension__ extern __inline int16x4_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vqabs_s16 (int16x4_t __a)
+{
+  return (int16x4_t)__builtin_neon_vqabsv4hi (__a);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vqabs_s32 (int32x2_t __a)
+{
+  return (int32x2_t)__builtin_neon_vqabsv2si (__a);
+}
+
+__extension__ extern __inline int8x16_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vqabsq_s8 (int8x16_t __a)
+{
+  return (int8x16_t)__builtin_neon_vqabsv16qi (__a);
+}
+
+__extension__ extern __inline int16x8_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vqabsq_s16 (int16x8_t __a)
+{
+  return (int16x8_t)__builtin_neon_vqabsv8hi (__a);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
+vqabsq_s32 (int32x4_t __a)
+{
+  return (int32x4_t)__builtin_neon_vqabsv4si (__a);
+}
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcage_f32 (float32x2_t __a, float32x2_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x2_t) (vabs_f32 (__a) >= vabs_f32 (__b));
+#else
   return (uint32x2_t)__builtin_neon_vcagev2sf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcageq_f32 (float32x4_t __a, float32x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x4_t) (vabsq_f32 (__a) >= vabsq_f32 (__b));
+#else
   return (uint32x4_t)__builtin_neon_vcagev4sf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcale_f32 (float32x2_t __a, float32x2_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x2_t) (vabs_f32 (__a) <= vabs_f32 (__b));
+#else
   return (uint32x2_t)__builtin_neon_vcagev2sf (__b, __a);
+#endif
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcaleq_f32 (float32x4_t __a, float32x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x4_t) (vabsq_f32 (__a) <= vabsq_f32 (__b));
+#else
   return (uint32x4_t)__builtin_neon_vcagev4sf (__b, __a);
+#endif
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcagt_f32 (float32x2_t __a, float32x2_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x2_t) (vabs_f32 (__a) > vabs_f32 (__b));
+#else
   return (uint32x2_t)__builtin_neon_vcagtv2sf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcagtq_f32 (float32x4_t __a, float32x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x4_t) (vabsq_f32 (__a) > vabsq_f32 (__b));
+#else
   return (uint32x4_t)__builtin_neon_vcagtv4sf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcalt_f32 (float32x2_t __a, float32x2_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x2_t) (vabs_f32 (__a) < vabs_f32 (__b));
+#else
   return (uint32x2_t)__builtin_neon_vcagtv2sf (__b, __a);
+#endif
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcaltq_f32 (float32x4_t __a, float32x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint32x4_t) (vabsq_f32 (__a) < vabsq_f32 (__b));
+#else
   return (uint32x4_t)__builtin_neon_vcagtv4sf (__b, __a);
+#endif
 }
 
 __extension__ extern __inline uint8x8_t
@@ -5618,104 +5747,6 @@ __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vsliq_n_p16 (poly16x8_t __a, poly16x8_t __b, const int __c)
 {
   return (poly16x8_t)__builtin_neon_vsli_nv8hi ((int16x8_t) __a, (int16x8_t) __b, __c);
-}
-
-__extension__ extern __inline int8x8_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_s8 (int8x8_t __a)
-{
-  return (int8x8_t)__builtin_neon_vabsv8qi (__a);
-}
-
-__extension__ extern __inline int16x4_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_s16 (int16x4_t __a)
-{
-  return (int16x4_t)__builtin_neon_vabsv4hi (__a);
-}
-
-__extension__ extern __inline int32x2_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_s32 (int32x2_t __a)
-{
-  return (int32x2_t)__builtin_neon_vabsv2si (__a);
-}
-
-__extension__ extern __inline float32x2_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_f32 (float32x2_t __a)
-{
-  return (float32x2_t)__builtin_neon_vabsv2sf (__a);
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_s8 (int8x16_t __a)
-{
-  return (int8x16_t)__builtin_neon_vabsv16qi (__a);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_s16 (int16x8_t __a)
-{
-  return (int16x8_t)__builtin_neon_vabsv8hi (__a);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_s32 (int32x4_t __a)
-{
-  return (int32x4_t)__builtin_neon_vabsv4si (__a);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_f32 (float32x4_t __a)
-{
-  return (float32x4_t)__builtin_neon_vabsv4sf (__a);
-}
-
-__extension__ extern __inline int8x8_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vqabs_s8 (int8x8_t __a)
-{
-  return (int8x8_t)__builtin_neon_vqabsv8qi (__a);
-}
-
-__extension__ extern __inline int16x4_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vqabs_s16 (int16x4_t __a)
-{
-  return (int16x4_t)__builtin_neon_vqabsv4hi (__a);
-}
-
-__extension__ extern __inline int32x2_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vqabs_s32 (int32x2_t __a)
-{
-  return (int32x2_t)__builtin_neon_vqabsv2si (__a);
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vqabsq_s8 (int8x16_t __a)
-{
-  return (int8x16_t)__builtin_neon_vqabsv16qi (__a);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vqabsq_s16 (int16x8_t __a)
-{
-  return (int16x8_t)__builtin_neon_vqabsv8hi (__a);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vqabsq_s32 (int32x4_t __a)
-{
-  return (int32x4_t)__builtin_neon_vqabsv4si (__a);
 }
 
 __extension__ extern __inline int8x8_t
@@ -17147,56 +17178,88 @@ __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcage_f16 (float16x4_t __a, float16x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x4_t) (vabs_f16 (__a) >= vabs_f16 (__b));
+#else
   return (uint16x4_t)__builtin_neon_vcagev4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcageq_f16 (float16x8_t __a, float16x8_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x8_t) (vabsq_f16 (__a) >= vabsq_f16 (__b));
+#else
   return (uint16x8_t)__builtin_neon_vcagev8hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcagt_f16 (float16x4_t __a, float16x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x4_t) (vabs_f16 (__a) > vabs_f16 (__b));
+#else
   return (uint16x4_t)__builtin_neon_vcagtv4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcagtq_f16 (float16x8_t __a, float16x8_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x8_t) (vabsq_f16 (__a) > vabsq_f16 (__b));
+#else
   return (uint16x8_t)__builtin_neon_vcagtv8hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcale_f16 (float16x4_t __a, float16x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x4_t) (vabs_f16 (__a) <= vabs_f16 (__b));
+#else
   return (uint16x4_t)__builtin_neon_vcalev4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcaleq_f16 (float16x8_t __a, float16x8_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x8_t) (vabsq_f16 (__a) <= vabsq_f16 (__b));
+#else
   return (uint16x8_t)__builtin_neon_vcalev8hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcalt_f16 (float16x4_t __a, float16x4_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x4_t) (vabs_f16 (__a) < vabs_f16 (__b));
+#else
   return (uint16x4_t)__builtin_neon_vcaltv4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vcaltq_f16 (float16x8_t __a, float16x8_t __b)
 {
+#ifdef __FAST_MATH__
+  return (uint16x8_t) (vabsq_f16 (__a) < vabsq_f16 (__b));
+#else
   return (uint16x8_t)__builtin_neon_vcaltv8hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline uint16x4_t
