@@ -145,16 +145,16 @@
        unsigned HOST_WIDE_INT val = TARGET_64BIT ? 0xfa1e0ff3 : 0xfb1e0ff3;
 
        if (imm == val)
-	 return 1;
+	 return true;
 
        /* NB: Encoding is byte based.  */
        if (TARGET_64BIT)
 	 for (; imm >= val; imm >>= 8)
 	   if (imm == val)
-	     return 1;
+	     return true;
       }
 
-  return 0;
+  return false;
 })
 
 ;; Return true if VALUE can be stored in a sign extended immediate field.
@@ -1559,15 +1559,15 @@
       unsigned HOST_WIDE_INT ei;
 
       if (!CONST_INT_P (er))
-	return 0;
+	return false;
       ei = INTVAL (er);
       if (i < nelt2 && ei != i)
-	return 0;
+	return false;
       if (i >= nelt2 && (ei < nelt || ei >= nelt << 1))
-	return 0;
+	return false;
     }
 
-  return 1;
+  return true;
 })
 
 ;; Return true if OP is a vzeroall operation, known to be a PARALLEL.
