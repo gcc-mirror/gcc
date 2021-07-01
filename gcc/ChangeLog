@@ -1,3 +1,8 @@
+2021-06-30  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/power10.md (power10-fused-load, power10-fused-store,
+	power10-fused_alu, power10-fused-vec, power10-fused-branch): New.
+
 2021-06-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_optimize_slp): Do not propagate
