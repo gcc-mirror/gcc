@@ -3571,7 +3571,7 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
 
   cmp_op0 = force_reg (cmp_ops_mode, cmp_op0);
 
-  int (*op1_predicate)(rtx, machine_mode)
+  bool (*op1_predicate)(rtx, machine_mode)
     = VECTOR_MODE_P (cmp_ops_mode) ? vector_operand : nonimmediate_operand;
 
   if (!op1_predicate (cmp_op1, cmp_ops_mode))

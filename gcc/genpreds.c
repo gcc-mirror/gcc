@@ -110,7 +110,7 @@ process_define_predicate (md_rtx_info *info)
 
    becomes
 
-       static inline int basereg_operand_1(rtx op, machine_mode mode)
+       static inline bool basereg_operand_1(rtx op, machine_mode mode)
        {
          if (GET_CODE (op) == SUBREG)
            op = SUBREG_REG (op);
@@ -151,7 +151,7 @@ write_predicate_subfunction (struct pred_data *p)
 
   p->exp = and_exp;
 
-  printf ("static inline int\n"
+  printf ("static inline bool\n"
 	  "%s_1 (rtx op ATTRIBUTE_UNUSED, machine_mode mode ATTRIBUTE_UNUSED)\n",
 	  p->name);
   rtx_reader_ptr->print_md_ptr_loc (p->c_block);
@@ -651,7 +651,7 @@ write_one_predicate_function (struct pred_data *p)
 
   /* A normal predicate can legitimately not look at machine_mode
      if it accepts only CONST_INTs and/or CONST_WIDE_INT and/or CONST_DOUBLEs.  */
-  printf ("int\n%s (rtx op, machine_mode mode ATTRIBUTE_UNUSED)\n{\n",
+  printf ("bool\n%s (rtx op, machine_mode mode ATTRIBUTE_UNUSED)\n{\n",
 	  p->name);
   write_predicate_stmts (p->exp);
   fputs ("}\n\n", stdout);
@@ -1416,7 +1416,7 @@ write_tm_preds_h (void)
 #ifdef HAVE_MACHINE_MODES");
 
   FOR_ALL_PREDICATES (p)
-    printf ("extern int %s (rtx, machine_mode);\n", p->name);
+    printf ("extern bool %s (rtx, machine_mode);\n", p->name);
 
   puts ("#endif /* HAVE_MACHINE_MODES */\n");
 
