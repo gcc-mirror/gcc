@@ -1,3 +1,240 @@
+2021-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95006
+	* analyzer.h (class repeated_svalue): New forward decl.
+	(class bits_within_svalue): New forward decl.
+	(class sized_region): New forward decl.
+	(get_field_at_bit_offset): New forward decl.
+	* engine.cc (exploded_graph::get_or_create_node): Validate the
+	merged state.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Validate the states at each stage.
+	* program-state.cc (program_state::validate): Validate
+	m_region_model.
+	* region-model-impl-calls.cc (region_model::impl_call_memset):
+	Replace special-case logic for handling constant sizes with
+	a call to fill_region of a sized_region with the given fill value.
+	* region-model-manager.cc (maybe_undo_optimize_bit_field_compare):
+	Drop DK_direct.
+	(region_model_manager::maybe_fold_sub_svalue):  Fold element-based
+	subregions of an initial value into initial values of an element.
+	Fold subvalues of repeated svalues.
+	(region_model_manager::maybe_fold_repeated_svalue): New.
+	(region_model_manager::get_or_create_repeated_svalue): New.
+	(get_bit_range_for_field): New.
+	(get_byte_range_for_field): New.
+	(get_field_at_byte_range): New.
+	(region_model_manager::maybe_fold_bits_within_svalue): New.
+	(region_model_manager::get_or_create_bits_within): New.
+	(region_model_manager::get_sized_region): New.
+	(region_model_manager::log_stats): Update for addition of
+	m_repeated_values_map, m_bits_within_values_map, and
+	m_sized_regions.
+	* region-model.cc (region_model::validate): New.
+	(region_model::on_assignment): Drop enum binding_kind.
+	(region_model::get_initial_value_for_global): Likewise.
+	(region_model::get_rvalue_for_bits): Replace body with call to
+	get_or_create_bits_within.
+	(region_model::get_capacity): Handle RK_SIZED.
+	(region_model::set_value): Drop enum binding_kind.
+	(region_model::fill_region): New.
+	(region_model::get_representative_path_var_1): Handle RK_SIZED.
+	* region-model.h (visitor::visit_repeated_svalue): New.
+	(visitor::visit_bits_within_svalue): New.
+	(region_model_manager::get_or_create_repeated_svalue): New decl.
+	(region_model_manager::get_or_create_bits_within): New decl.
+	(region_model_manager::get_sized_region): New decl.
+	(region_model_manager::maybe_fold_repeated_svalue): New decl.
+	(region_model_manager::maybe_fold_bits_within_svalue): New decl.
+	(region_model_manager::repeated_values_map_t): New typedef.
+	(region_model_manager::m_repeated_values_map): New field.
+	(region_model_manager::bits_within_values_map_t): New typedef.
+	(region_model_manager::m_bits_within_values_map): New field.
+	(region_model_manager::m_sized_regions): New field.
+	(region_model::fill_region): New decl.
+	* region.cc (region::get_base_region): Handle RK_SIZED.
+	(region::base_region_p): Likewise.
+	(region::get_byte_size_sval): New.
+	(get_field_at_bit_offset): Make non-static.
+	(region::calc_offset): Move implementation of cases to
+	get_relative_concrete_offset vfunc implementations.  Handle
+	RK_SIZED.
+	(region::get_relative_concrete_offset): New.
+	(decl_region::get_svalue_for_initializer): Drop enum binding_kind.
+	(field_region::get_relative_concrete_offset): New, from
+	region::calc_offset.
+	(element_region::get_relative_concrete_offset): Likewise.
+	(offset_region::get_relative_concrete_offset): Likewise.
+	(sized_region::accept): New.
+	(sized_region::dump_to_pp): New.
+	(sized_region::get_byte_size): New.
+	(sized_region::get_bit_size): New.
+	* region.h (enum region_kind): Add RK_SIZED.
+	(region::dyn_cast_sized_region): New.
+	(region::get_byte_size): Make virtual.
+	(region::get_bit_size): Likewise.
+	(region::get_byte_size_sval): New decl.
+	(region::get_relative_concrete_offset): New decl.
+	(field_region::get_relative_concrete_offset): New decl.
+	(element_region::get_relative_concrete_offset): Likewise.
+	(offset_region::get_relative_concrete_offset): Likewise.
+	(class sized_region): New.
+	* store.cc (binding_kind_to_string): Delete.
+	(binding_key::make): Drop enum binding_kind.
+	(binding_key::dump_to_pp): Delete.
+	(binding_key::cmp_ptrs): Drop enum binding_kind.
+	(bit_range::contains_p): New.
+	(byte_range::dump): New.
+	(byte_range::contains_p): New.
+	(byte_range::cmp): New.
+	(concrete_binding::dump_to_pp): Drop enum binding_kind.
+	(concrete_binding::cmp_ptr_ptr): Likewise.
+	(symbolic_binding::dump_to_pp): Likewise.
+	(symbolic_binding::cmp_ptr_ptr): Likewise.
+	(binding_map::apply_ctor_val_to_range): Likewise.
+	(binding_map::apply_ctor_pair_to_child_region): Likewise.
+	(binding_map::get_overlapping_bindings): New.
+	(binding_map::remove_overlapping_bindings): New.
+	(binding_cluster::validate): New.
+	(binding_cluster::bind): Drop enum binding_kind.
+	(binding_cluster::bind_compound_sval): Likewise.
+	(binding_cluster::purge_region): Likewise.
+	(binding_cluster::zero_fill_region): Reimplement in terms of...
+	(binding_cluster::fill_region): New.
+	(binding_cluster::mark_region_as_unknown): Drop enum binding_kind.
+	(binding_cluster::get_binding): Likewise.
+	(binding_cluster::get_binding_recursive): Likewise.
+	(binding_cluster::get_any_binding): Likewise.
+	(binding_cluster::maybe_get_compound_binding): Reimplement.
+	(binding_cluster::get_overlapping_bindings): Delete.
+	(binding_cluster::remove_overlapping_bindings): Reimplement in
+	terms of binding_map::remove_overlapping_bindings.
+	(binding_cluster::can_merge_p): Update for removal of
+	enum binding_kind.
+	(binding_cluster::on_unknown_fncall): Drop enum binding_kind.
+	(binding_cluster::maybe_get_simple_value): Likewise.
+	(store_manager::get_concrete_binding): Likewise.
+	(store_manager::get_symbolic_binding): Likewise.
+	(store::validate): New.
+	(store::set_value): Drop enum binding_kind.
+	(store::zero_fill_region): Reimplement in terms of...
+	(store::fill_region): New.
+	(selftest::test_binding_key_overlap): Drop enum binding_kind.
+	* store.h (enum binding_kind): Delete.
+	(binding_kind_to_string): Delete decl.
+	(binding_key::make): Drop enum binding_kind.
+	(binding_key::dump_to_pp): Make pure virtual.
+	(binding_key::get_kind): Delete.
+	(binding_key::mark_deleted): Delete.
+	(binding_key::mark_empty): Delete.
+	(binding_key::is_deleted): Delete.
+	(binding_key::is_empty): Delete.
+	(binding_key::binding_key): Delete.
+	(binding_key::impl_hash): Delete.
+	(binding_key::impl_eq): Delete.
+	(binding_key::m_kind): Delete.
+	(bit_range::get_last_bit_offset): New.
+	(bit_range::contains_p): New.
+	(byte_range::contains_p): New.
+	(byte_range::operator==): New.
+	(byte_range::get_start_byte_offset): New.
+	(byte_range::get_next_byte_offset): New.
+	(byte_range::get_last_byte_offset): New.
+	(byte_range::as_bit_range): New.
+	(byte_range::cmp): New.
+	(concrete_binding::concrete_binding): Drop enum binding_kind.
+	(concrete_binding::hash): Likewise.
+	(concrete_binding::operator==): Likewise.
+	(concrete_binding::mark_deleted): New.
+	(concrete_binding::mark_empty): New.
+	(concrete_binding::is_deleted): New.
+	(concrete_binding::is_empty): New.
+	(default_hash_traits<ana::concrete_binding>::empty_zero_p): Make false.
+	(symbolic_binding::symbolic_binding): Drop enum binding_kind.
+	(symbolic_binding::hash): Likewise.
+	(symbolic_binding::operator==): Likewise.
+	(symbolic_binding::mark_deleted): New.
+	(symbolic_binding::mark_empty): New.
+	(symbolic_binding::is_deleted): New.
+	(symbolic_binding::is_empty): New.
+	(binding_map::remove_overlapping_bindings): New decl.
+	(binding_map::get_overlapping_bindings): New decl.
+	(binding_cluster::validate): New decl.
+	(binding_cluster::bind): Drop enum binding_kind.
+	(binding_cluster::fill_region): New decl.
+	(binding_cluster::get_binding): Drop enum binding_kind.
+	(binding_cluster::get_binding_recursive): Likewise.
+	(binding_cluster::get_overlapping_bindings): Delete.
+	(store::validate): New decl.
+	(store::set_value): Drop enum binding_kind.
+	(store::fill_region): New decl.
+	(store_manager::get_concrete_binding): Drop enum binding_kind.
+	(store_manager::get_symbolic_binding): Likewise.
+	* svalue.cc (svalue::cmp_ptr): Handle SK_REPEATED and
+	SK_BITS_WITHIN.
+	(svalue::extract_bit_range): New.
+	(svalue::maybe_fold_bits_within): New.
+	(constant_svalue::maybe_fold_bits_within): New.
+	(unknown_svalue::maybe_fold_bits_within): New.
+	(unaryop_svalue::maybe_fold_bits_within): New.
+	(repeated_svalue::repeated_svalue): New.
+	(repeated_svalue::dump_to_pp): New.
+	(repeated_svalue::accept): New.
+	(repeated_svalue::all_zeroes_p): New.
+	(repeated_svalue::maybe_fold_bits_within): New.
+	(bits_within_svalue::bits_within_svalue): New.
+	(bits_within_svalue::dump_to_pp): New.
+	(bits_within_svalue::maybe_fold_bits_within): New.
+	(bits_within_svalue::accept): New.
+	(bits_within_svalue::implicitly_live_p): New.
+	(compound_svalue::maybe_fold_bits_within): New.
+	* svalue.h (enum svalue_kind): Add SK_REPEATED and SK_BITS_WITHIN.
+	(svalue::dyn_cast_repeated_svalue): New.
+	(svalue::dyn_cast_bits_within_svalue): New.
+	(svalue::extract_bit_range): New decl.
+	(svalue::maybe_fold_bits_within): New vfunc decl.
+	(region_svalue::key_t::mark_empty): Use 2 rather than NULL_TREE.
+	(region_svalue::key_t::is_empty): Likewise.
+	(default_hash_traits<region_svalue::key_t>::empty_zero_p): Make false.
+	(constant_svalue::maybe_fold_bits_within): New.
+	(unknown_svalue::maybe_fold_bits_within): New.
+	(poisoned_svalue::key_t::mark_empty): Use 2 rather than NULL_TREE.
+	(poisoned_svalue::key_t::is_empty): Likewise.
+	(default_hash_traits<poisoned_svalue::key_t>::empty_zero_p): Make
+	false.
+	(setjmp_svalue::key_t::mark_empty): Use 2 rather than NULL_TREE.
+	(setjmp_svalue::key_t::is_empty): Likewise.
+	(default_hash_traits<setjmp_svalue::key_t>::empty_zero_p): Make
+	false.
+	(unaryop_svalue::key_t::mark_empty): Use 2 rather than NULL_TREE.
+	(unaryop_svalue::key_t::is_empty): Likewise.
+	(unaryop_svalue::maybe_fold_bits_within): New.
+	(default_hash_traits<unaryop_svalue::key_t>::empty_zero_p): Make
+	false.
+	(binop_svalue::key_t::mark_empty): Use 2 rather than NULL_TREE.
+	(binop_svalue::key_t::is_empty): Likewise.
+	(default_hash_traits<binop_svalue::key_t>::empty_zero_p): Make
+	false.
+	(sub_svalue::key_t::mark_empty): Use 2 rather than NULL_TREE.
+	(sub_svalue::key_t::is_empty): Likewise.
+	(default_hash_traits<sub_svalue::key_t>::empty_zero_p): Make
+	false.
+	(class repeated_svalue): New.
+	(is_a_helper <const repeated_svalue *>::test): New.
+	(struct default_hash_traits<repeated_svalue::key_t>): New.
+	(class bits_within_svalue): New.
+	(is_a_helper <const bits_within_svalue *>::test): New.
+	(struct default_hash_traits<bits_within_svalue::key_t>): New.
+	(widening_svalue::key_t::mark_empty): Use 2 rather than NULL_TREE.
+	(widening_svalue::key_t::is_empty): Likewise.
+	(default_hash_traits<widening_svalue::key_t>::empty_zero_p): Make
+	false.
+	(compound_svalue::key_t::mark_empty): Use 2 rather than NULL_TREE.
+	(compound_svalue::key_t::is_empty): Likewise.
+	(compound_svalue::maybe_fold_bits_within): New.
+	(default_hash_traits<compound_svalue::key_t>::empty_zero_p): Make
+	false.
+
 2021-06-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (byte_offset_t): New typedef.

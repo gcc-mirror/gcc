@@ -1,3 +1,112 @@
+2021-06-30  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* config/gcn/gcn.c: Include dwarf2.h.
+	(gcn_addr_space_debug): New function.
+	(TARGET_ADDR_SPACE_DEBUG): New hook.
+
+2021-06-30  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* common/config/gcn/gcn-common.c
+	(gcn_option_optimization_table): Change OPT_fomit_frame_pointer to -O3.
+	* config/gcn/gcn.c (gcn_expand_prologue): Prefer the frame pointer
+	when emitting CFI.
+	(gcn_expand_prologue): Prefer the frame pointer when emitting CFI.
+	(gcn_frame_pointer_rqd): New function.
+	(TARGET_FRAME_POINTER_REQUIRED): New hook.
+
+2021-06-30  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* config/gcn/gcn.c (move_callee_saved_registers): Emit CFI notes for
+	prologue register saves.
+	(gcn_debug_unwind_info): Use UI_DWARF2.
+	(gcn_dwarf_register_number): Map DWARF_LINK_REGISTER to DWARF PC.
+	(gcn_dwarf_register_span): DWARF_LINK_REGISTER doesn't span.
+	* config/gcn/gcn.h: (DWARF_FRAME_RETURN_COLUMN): New define.
+	(DWARF_LINK_REGISTER): New define.
+	(FIRST_PSEUDO_REGISTER): Increment.
+	(FIXED_REGISTERS): Add entry for DWARF_LINK_REGISTER.
+	(CALL_USED_REGISTERS): Likewise.
+	(REGISTER_NAMES): Likewise.
+
+2021-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101267
+	* tree-vect-stmts.c (vect_check_scalar_mask): Adjust
+	API and use SLP compatible interface of vect_is_simple_use.
+	Reject not vectorized SLP defs for callers that do not support
+	that.
+	(vect_check_store_rhs): Handle masked stores and pass down
+	the appropriate operator index.
+	(vectorizable_call): Adjust.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.  Handle SLP pecularity of
+	masked loads.
+	(vect_is_simple_use): Remove special-casing of masked stores.
+
+2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* common.opt (foffload): Remove help as Driver only.
+	* gcc.c (display_help): Add -foffload.
+
+2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.c (close_at_file, execute): Replace alloca by XALLOCAVEC.
+	(check_offload_target_name): Fix splitting OFFLOAD_TARGETS into
+	a candidate list; better inform no offload target is configured
+	and fix hint extraction when passed target is not '\0' at [len].
+	* common.opt (foffload): Add tailing '.'.
+	(foffload-options): Likewise; fix flag name in the help string.
+
+2021-06-30  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h: Move vabs intrinsics before vcage_f32.
+	(vcage_f32): Gate comparison on __FAST_MATH__.
+	(vcageq_f32): Likewise.
+	(vcale_f32): Likewise.
+	(vcaleq_f32): Likewise.
+	(vcagt_f32): Likewise.
+	(vcagtq_f32): Likewise.
+	(vcalt_f32): Likewise.
+	(vcaltq_f32): Likewise.
+	(vcage_f16): Likewise.
+	(vcageq_f16): Likewise.
+	(vcale_f16): Likewise.
+	(vcaleq_f16): Likewise.
+	(vcagt_f16): Likewise.
+	(vcagtq_f16): Likewise.
+	(vcalt_f16): Likewise.
+	(vcaltq_f16): Likewise.
+
+2021-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101264
+	* tree-vect-slp.c (vect_optimize_slp): Propagate the
+	computed perm_in to all "any" permute successors
+	we cannot de-duplicate immediately.
+
+2021-06-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101248
+	* config/i386/sse.md
+	(avx512f_sfixupimm<mode><sd_maskz_name><round_saeonly_name>):
+	Refined to ..
+	(avx512f_sfixupimm<mode><maskz_scalar_name><round_saeonly_name>):
+	this.
+	(avx512f_sfixupimm<mode>_mask<round_saeonly_name>"): Refined.
+	* config/i386/subst.md (maskz_scalar): New define_subst.
+	(maskz_scalar_name): New subst_attr.
+	(maskz_scalar_op5): Ditto.
+	(round_saeonly_maskz_scalar_op5): Ditto.
+	(round_saeonly_maskz_scalar_operand5): Ditto.
+
+2021-06-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_section_type_flags):
+	Increase code CSECT alignment to at least 32 bytes.
+	* config/rs6000/xcoff.h (TEXT_SECTION_ASM_OP): Add 32 byte
+	alignment designation.
+
 2021-06-29  Sergei Trofimovich  <siarheit@google.com>
 
 	* doc/generic.texi: Fix s/net yet/not yet/ typo.
