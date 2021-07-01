@@ -4150,6 +4150,8 @@ Parser<ManagedTokenSource>::parse_struct_field ()
   // parse visibility, if it exists
   AST::Visibility vis = parse_visibility ();
 
+  Location locus = lexer.peek_token ()->get_locus ();
+
   // parse field name
   const_TokenPtr field_name_tok = lexer.peek_token ();
   if (field_name_tok->get_id () != IDENTIFIER)
@@ -4180,7 +4182,7 @@ Parser<ManagedTokenSource>::parse_struct_field ()
     }
 
   return AST::StructField (std::move (field_name), std::move (field_type),
-			   std::move (vis), std::move (outer_attrs));
+			   std::move (vis), locus, std::move (outer_attrs));
 }
 
 // Parses tuple fields in tuple/tuple struct declarations.

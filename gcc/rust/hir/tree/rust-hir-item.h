@@ -1448,8 +1448,6 @@ public:
 
   Location locus;
 
-  // should this store location info?
-
   // Returns whether struct field has any outer attributes.
   bool has_outer_attributes () const { return !outer_attrs.empty (); }
 
