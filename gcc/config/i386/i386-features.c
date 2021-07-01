@@ -544,71 +544,83 @@ general_scalar_chain::compute_convert_gain ()
 	  += m * ix86_cost->int_store[2] - ix86_cost->sse_store[sse_cost_idx];
       else if (MEM_P (src) && REG_P (dst))
 	igain += m * ix86_cost->int_load[2] - ix86_cost->sse_load[sse_cost_idx];
-      else if (GET_CODE (src) == ASHIFT
-	       || GET_CODE (src) == ASHIFTRT
-	       || GET_CODE (src) == LSHIFTRT)
-	{
-	  if (m == 2)
-	    {
-	      if (INTVAL (XEXP (src, 1)) >= 32)
-		igain += ix86_cost->add;
-	      else
-		igain += ix86_cost->shift_const;
-	    }
-
-	  igain += ix86_cost->shift_const - ix86_cost->sse_op;
-
-	  if (CONST_INT_P (XEXP (src, 0)))
-	    igain -= vector_const_cost (XEXP (src, 0));
-	}
-      else if (GET_CODE (src) == PLUS
-	       || GET_CODE (src) == MINUS
-	       || GET_CODE (src) == IOR
-	       || GET_CODE (src) == XOR
-	       || GET_CODE (src) == AND)
-	{
-	  igain += m * ix86_cost->add - ix86_cost->sse_op;
-	  /* Additional gain for andnot for targets without BMI.  */
-	  if (GET_CODE (XEXP (src, 0)) == NOT
-	      && !TARGET_BMI)
-	    igain += m * ix86_cost->add;
-
-	  if (CONST_INT_P (XEXP (src, 0)))
-	    igain -= vector_const_cost (XEXP (src, 0));
-	  if (CONST_INT_P (XEXP (src, 1)))
-	    igain -= vector_const_cost (XEXP (src, 1));
-	}
-      else if (GET_CODE (src) == NEG
-	       || GET_CODE (src) == NOT)
-	igain += m * ix86_cost->add - ix86_cost->sse_op - COSTS_N_INSNS (1);
-      else if (GET_CODE (src) == ABS
-	       || GET_CODE (src) == SMAX
-	       || GET_CODE (src) == SMIN
-	       || GET_CODE (src) == UMAX
-	       || GET_CODE (src) == UMIN)
-	{
-	  /* We do not have any conditional move cost, estimate it as a
-	     reg-reg move.  Comparisons are costed as adds.  */
-	  igain += m * (COSTS_N_INSNS (2) + ix86_cost->add);
-	  /* Integer SSE ops are all costed the same.  */
-	  igain -= ix86_cost->sse_op;
-	}
-      else if (GET_CODE (src) == COMPARE)
-	{
-	  /* Assume comparison cost is the same.  */
-	}
-      else if (CONST_INT_P (src))
-	{
-	  if (REG_P (dst))
-	    /* DImode can be immediate for TARGET_64BIT and SImode always.  */
-	    igain += m * COSTS_N_INSNS (1);
-	  else if (MEM_P (dst))
-	    igain += (m * ix86_cost->int_store[2]
-		     - ix86_cost->sse_store[sse_cost_idx]);
-	  igain -= vector_const_cost (src);
-	}
       else
-	gcc_unreachable ();
+	switch (GET_CODE (src))
+	  {
+	  case ASHIFT:
+	  case ASHIFTRT:
+	  case LSHIFTRT:
+	    if (m == 2)
+	      {
+		if (INTVAL (XEXP (src, 1)) >= 32)
+		  igain += ix86_cost->add;
+		else
+		  igain += ix86_cost->shift_const;
+	      }
+
+	    igain += ix86_cost->shift_const - ix86_cost->sse_op;
+
+	    if (CONST_INT_P (XEXP (src, 0)))
+	      igain -= vector_const_cost (XEXP (src, 0));
+	    break;
+
+	  case AND:
+	  case IOR:
+	  case XOR:
+	  case PLUS:
+	  case MINUS:
+	    igain += m * ix86_cost->add - ix86_cost->sse_op;
+	    /* Additional gain for andnot for targets without BMI.  */
+	    if (GET_CODE (XEXP (src, 0)) == NOT
+		&& !TARGET_BMI)
+	      igain += m * ix86_cost->add;
+
+	    if (CONST_INT_P (XEXP (src, 0)))
+	      igain -= vector_const_cost (XEXP (src, 0));
+	    if (CONST_INT_P (XEXP (src, 1)))
+	      igain -= vector_const_cost (XEXP (src, 1));
+	    break;
+
+	  case NEG:
+	  case NOT:
+	    igain -= ix86_cost->sse_op + COSTS_N_INSNS (1);
+
+	    if (GET_CODE (XEXP (src, 0)) != ABS)
+	      {
+		igain += m * ix86_cost->add;
+		break;
+	      }
+	    /* FALLTHRU */
+
+	  case ABS:
+	  case SMAX:
+	  case SMIN:
+	  case UMAX:
+	  case UMIN:
+	    /* We do not have any conditional move cost, estimate it as a
+	       reg-reg move.  Comparisons are costed as adds.  */
+	    igain += m * (COSTS_N_INSNS (2) + ix86_cost->add);
+	    /* Integer SSE ops are all costed the same.  */
+	    igain -= ix86_cost->sse_op;
+	    break;
+
+	  case COMPARE:
+	    /* Assume comparison cost is the same.  */
+	    break;
+
+	  case CONST_INT:
+	    if (REG_P (dst))
+	      /* DImode can be immediate for TARGET_64BIT and SImode always.  */
+	      igain += m * COSTS_N_INSNS (1);
+	    else if (MEM_P (dst))
+	      igain += (m * ix86_cost->int_store[2]
+			- ix86_cost->sse_store[sse_cost_idx]);
+	    igain -= vector_const_cost (src);
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	  }
 
       if (igain != 0 && dump_file)
 	{
@@ -1009,7 +1021,19 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 
     case NEG:
       src = XEXP (src, 0);
-      convert_op (&src, insn);
+
+      if (GET_CODE (src) == ABS)
+	{
+	  src = XEXP (src, 0);
+	  convert_op (&src, insn);
+	  subreg = gen_reg_rtx (vmode);
+	  emit_insn_before (gen_rtx_SET (subreg,
+					 gen_rtx_ABS (vmode, src)), insn);
+	  src = subreg;
+	}
+      else
+	convert_op (&src, insn);
+
       subreg = gen_reg_rtx (vmode);
       emit_insn_before (gen_move_insn (subreg, CONST0_RTX (vmode)), insn);
       src = gen_rtx_MINUS (vmode, subreg, src);
@@ -1042,9 +1066,10 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 
       gcc_assert (REG_P (src) && GET_MODE (src) == DImode);
       subreg = gen_rtx_SUBREG (V2DImode, src, 0);
-      emit_insn_before (gen_vec_interleave_lowv2di (copy_rtx_if_shared (subreg),
-						    copy_rtx_if_shared (subreg),
-						    copy_rtx_if_shared (subreg)),
+      emit_insn_before (gen_vec_interleave_lowv2di
+			(copy_rtx_if_shared (subreg),
+			 copy_rtx_if_shared (subreg),
+			 copy_rtx_if_shared (subreg)),
 			insn);
       dst = gen_rtx_REG (CCmode, FLAGS_REG);
       src = gen_rtx_UNSPEC (CCmode, gen_rtvec (2, copy_rtx_if_shared (subreg),
@@ -1400,11 +1425,11 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 	return false;
       /* Fallthru.  */
 
-    case PLUS:
-    case MINUS:
+    case AND:
     case IOR:
     case XOR:
-    case AND:
+    case PLUS:
+    case MINUS:
       if (!REG_P (XEXP (src, 1))
 	  && !MEM_P (XEXP (src, 1))
 	  && !CONST_INT_P (XEXP (src, 1)))
@@ -1413,16 +1438,30 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
       if (GET_MODE (XEXP (src, 1)) != mode
 	  && !CONST_INT_P (XEXP (src, 1)))
 	return false;
+
+      /* Check for andnot case.  */
+      if (GET_CODE (src) != AND
+	  || GET_CODE (XEXP (src, 0)) != NOT)
+	break;
+
+      src = XEXP (src, 0);
+      /* FALLTHRU */
+
+    case NOT:
       break;
+
+    case NEG:
+      /* Check for nabs case.  */
+      if (GET_CODE (XEXP (src, 0)) != ABS)
+	break;
+
+      src = XEXP (src, 0);
+      /* FALLTHRU */
 
     case ABS:
       if ((mode == DImode && !TARGET_AVX512VL)
 	  || (mode == SImode && !TARGET_SSSE3))
 	return false;
-      break;
-
-    case NEG:
-    case NOT:
       break;
 
     case REG:
@@ -1438,12 +1477,8 @@ general_scalar_to_vector_candidate_p (rtx_insn *insn, enum machine_mode mode)
 
   if (!REG_P (XEXP (src, 0))
       && !MEM_P (XEXP (src, 0))
-      && !CONST_INT_P (XEXP (src, 0))
-      /* Check for andnot case.  */
-      && (GET_CODE (src) != AND
-	  || GET_CODE (XEXP (src, 0)) != NOT
-	  || !REG_P (XEXP (XEXP (src, 0), 0))))
-      return false;
+      && !CONST_INT_P (XEXP (src, 0)))
+    return false;
 
   if (GET_MODE (XEXP (src, 0)) != mode
       && !CONST_INT_P (XEXP (src, 0)))
