@@ -106,15 +106,15 @@ package body Errout is
       Opan     : Source_Span;
       Msg_Cont : Boolean;
       Node     : Node_Id);
-   --  This is the low level routine used to post messages after dealing with
+   --  This is the low-level routine used to post messages after dealing with
    --  the issue of messages placed on instantiations (which get broken up
-   --  into separate calls in Error_Msg). Sptr is the location on which the
+   --  into separate calls in Error_Msg). Span is the location on which the
    --  flag will be placed in the output. In the case where the flag is on
    --  the template, this points directly to the template, not to one of the
-   --  instantiation copies of the template. Optr is the original location
+   --  instantiation copies of the template. Opan is the original location
    --  used to flag the error, and this may indeed point to an instantiation
-   --  copy. So typically we can see Optr pointing to the template location
-   --  in an instantiation copy when Sptr points to the source location of
+   --  copy. So typically we can see Opan pointing to the template location
+   --  in an instantiation copy when Span points to the source location of
    --  the actual instantiation (i.e the line with the new). Msg_Cont is
    --  set true if this is a continuation message. Node is the relevant
    --  Node_Id for this message, to be used to compute the enclosing entity if
