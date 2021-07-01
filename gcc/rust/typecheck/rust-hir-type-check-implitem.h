@@ -100,6 +100,21 @@ public:
       }
 
     std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
+    if (function.is_method ())
+      {
+	// add the synthetic self param at the front, this is a placeholder for
+	// compilation to know parameter names. The types are ignored but we
+	// reuse the HIR identifier pattern which requires it
+	HIR::SelfParam &self_param = function.get_self_param ();
+	HIR::IdentifierPattern *self_pattern = new HIR::IdentifierPattern (
+	  "self", self_param.get_locus (), self_param.is_ref (),
+	  self_param.is_mut (), std::unique_ptr<HIR::Pattern> (nullptr));
+	context->insert_type (self_param.get_mappings (), self->clone ());
+	params.push_back (
+	  std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern,
+						       self->clone ()));
+      }
+
     for (auto &param : function.get_function_params ())
       {
 	// get the name as well required for later on
@@ -112,90 +127,10 @@ public:
       }
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
-				    function.get_function_name (), false,
-				    std::move (params), ret_type,
-				    std::move (substitutions));
+				    function.get_function_name (),
+				    function.is_method (), std::move (params),
+				    ret_type, std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
-  }
-
-  void visit (HIR::Method &method) override
-  {
-    if (method.has_generics ())
-      {
-	for (auto &generic_param : method.get_generic_params ())
-	  {
-	    switch (generic_param.get ()->get_kind ())
-	      {
-	      case HIR::GenericParam::GenericKind::LIFETIME:
-		// Skipping Lifetime completely until better handling.
-		break;
-
-		case HIR::GenericParam::GenericKind::TYPE: {
-		  auto param_type
-		    = TypeResolveGenericParam::Resolve (generic_param.get ());
-		  context->insert_type (generic_param->get_mappings (),
-					param_type);
-
-		  substitutions.push_back (TyTy::SubstitutionParamMapping (
-		    static_cast<HIR::TypeParam &> (*generic_param),
-		    param_type));
-		}
-		break;
-	      }
-	  }
-      }
-
-    TyTy::BaseType *ret_type = nullptr;
-    if (!method.has_function_return_type ())
-      ret_type = new TyTy::TupleType (method.get_mappings ().get_hirid ());
-    else
-      {
-	auto resolved
-	  = TypeCheckType::Resolve (method.get_return_type ().get ());
-	if (resolved == nullptr)
-	  {
-	    rust_error_at (method.get_locus (),
-			   "failed to resolve return type");
-	    return;
-	  }
-
-	ret_type = resolved->clone ();
-	ret_type->set_ref (
-	  method.get_return_type ()->get_mappings ().get_hirid ());
-      }
-
-    // hold all the params to the fndef
-    std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
-
-    // add the synthetic self param at the front, this is a placeholder for
-    // compilation to know parameter names. The types are ignored but we reuse
-    // the HIR identifier pattern which requires it
-    HIR::SelfParam &self_param = method.get_self_param ();
-    HIR::IdentifierPattern *self_pattern
-      = new HIR::IdentifierPattern ("self", self_param.get_locus (),
-				    self_param.is_ref (), self_param.is_mut (),
-				    std::unique_ptr<HIR::Pattern> (nullptr));
-    context->insert_type (self_param.get_mappings (), self->clone ());
-    params.push_back (
-      std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern,
-						   self->clone ()));
-
-    for (auto &param : method.get_function_params ())
-      {
-	// get the name as well required for later on
-	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
-	params.push_back (
-	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
-						       param_tyty));
-
-	context->insert_type (param.get_mappings (), param_tyty);
-      }
-
-    auto fnType
-      = new TyTy::FnType (method.get_mappings ().get_hirid (),
-			  method.get_method_name (), true, std::move (params),
-			  ret_type, std::move (substitutions));
-    context->insert_type (method.get_mappings (), fnType);
   }
 
 private:
@@ -249,36 +184,6 @@ public:
     expected_ret_tyty->unify (block_expr_ty);
   }
 
-  void visit (HIR::Method &method) override
-  {
-    TyTy::BaseType *lookup;
-    if (!context->lookup_type (method.get_mappings ().get_hirid (), &lookup))
-      {
-	rust_error_at (method.get_locus (), "failed to lookup function type");
-	return;
-      }
-
-    if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
-      {
-	rust_error_at (method.get_locus (),
-		       "found invalid type for function [%s]",
-		       lookup->as_string ().c_str ());
-	return;
-      }
-
-    // need to get the return type from this
-    TyTy::FnType *resolve_fn_type = (TyTy::FnType *) lookup;
-    auto expected_ret_tyty = resolve_fn_type->get_return_type ();
-    context->push_return_type (expected_ret_tyty);
-
-    auto block_expr_ty
-      = TypeCheckExpr::Resolve (method.get_definition ().get (), false);
-
-    context->pop_return_type ();
-
-    expected_ret_tyty->unify (block_expr_ty);
-  }
-
 protected:
   TypeCheckImplItem (TyTy::BaseType *self) : TypeCheckBase (), self (self) {}
 
@@ -302,8 +207,6 @@ public:
   void visit (HIR::ConstantItem &constant) override { gcc_unreachable (); }
 
   void visit (HIR::TypeAlias &type) override { gcc_unreachable (); }
-
-  void visit (HIR::Method &method) override { gcc_unreachable (); }
 
   void visit (HIR::Function &function) override
   {
@@ -333,8 +236,34 @@ public:
 	return;
       }
 
+    rust_assert (trait_item_ref.get_tyty ()->get_kind ()
+		 == TyTy::TypeKind::FNDEF);
+    TyTy::FnType *trait_item_fntype
+      = static_cast<TyTy::FnType *> (trait_item_ref.get_tyty ());
+
+    // sets substitute self into the trait_item_ref->tyty
+    TyTy::SubstitutionParamMapping *self_mapping = nullptr;
+    for (auto &param_mapping : trait_item_fntype->get_substs ())
+      {
+	const HIR::TypeParam &type_param = param_mapping.get_generic_param ();
+	if (type_param.get_type_representation ().compare ("Self") == 0)
+	  {
+	    self_mapping = &param_mapping;
+	    break;
+	  }
+      }
+    rust_assert (self_mapping != nullptr);
+
+    std::vector<TyTy::SubstitutionArg> mappings;
+    mappings.push_back (TyTy::SubstitutionArg (self_mapping, self));
+
+    TyTy::SubstitutionArgumentMappings implicit_self_substs (
+      mappings, function.get_locus ());
+    trait_item_fntype
+      = trait_item_fntype->handle_substitions (implicit_self_substs);
+
     // check the types are compatible
-    if (!trait_item_ref.get_tyty ()->can_eq (fntype))
+    if (!trait_item_fntype->can_eq (fntype))
       {
 	RichLocation r (function.get_locus ());
 	r.add_range (trait_item_ref.get_locus ());

@@ -308,7 +308,8 @@ public:
 			   std::move (qualifiers), std::move (generic_params),
 			   std::move (function_params), std::move (return_type),
 			   std::move (where_clause), std::move (function_body),
-			   std::move (vis), function.get_outer_attrs (), locus);
+			   std::move (vis), function.get_outer_attrs (),
+			   HIR::SelfParam::error (), locus);
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),

@@ -451,79 +451,6 @@ ImplBlock::as_string () const
 }
 
 std::string
-Method::as_string () const
-{
-  std::string str ("Method: \n ");
-
-  str += vis.as_string () + " " + qualifiers.as_string ();
-
-  str += " fn " + method_name;
-
-  // generic params
-  str += "\n Generic params: ";
-  if (generic_params.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &param : generic_params)
-	{
-	  // DEBUG: null pointer check
-	  if (param == nullptr)
-	    {
-	      rust_debug (
-		"something really terrible has gone wrong - null pointer "
-		"generic param in method.");
-	      return "nullptr_POINTER_MARK";
-	    }
-
-	  str += "\n  " + param->as_string ();
-	}
-    }
-
-  str += "\n Self param: " + self_param.as_string ();
-
-  str += "\n Function params: ";
-  if (function_params.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &param : function_params)
-	{
-	  str += "\n  " + param.as_string ();
-	}
-    }
-
-  str += "\n Return type: ";
-  if (has_return_type ())
-    {
-      str += return_type->as_string ();
-    }
-  else
-    {
-      str += "none (void)";
-    }
-
-  str += "\n Where clause: ";
-  if (has_where_clause ())
-    {
-      str += where_clause.as_string ();
-    }
-  else
-    {
-      str += "none";
-    }
-
-  str += "\n Block expr (body): \n  ";
-  str += function_body->as_string ();
-
-  return str;
-}
-
-std::string
 StructStruct::as_string () const
 {
   std::string str = VisItem::as_string ();
@@ -4356,12 +4283,6 @@ LifetimeWhereClauseItem::accept_vis (HIRVisitor &vis)
 
 void
 TypeBoundWhereClauseItem::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-Method::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

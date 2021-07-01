@@ -385,7 +385,7 @@ public:
   bool has_lifetime () const { return !lifetime.is_error (); }
 
   // Returns whether the self-param is in an error state.
-  bool is_error () const { return self_kind != ImplicitSelfKind::NONE; }
+  bool is_error () const { return self_kind == ImplicitSelfKind::NONE; }
 
   std::string as_string () const;
 
@@ -589,192 +589,6 @@ protected:
   /*virtual*/ Visibility *clone_visibility_impl () const
   {
     return new Visibility (*this);
-  }
-};
-
-// A method (function belonging to a type)
-class Method : public ImplItem
-{
-  Analysis::NodeMapping mappings;
-
-  // moved from impl items for consistency
-  AST::AttrVec outer_attrs;
-  Visibility vis;
-
-  FunctionQualifiers qualifiers;
-  Identifier method_name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
-
-  SelfParam self_param;
-
-  // bool has_params;
-  // FunctionParams function_params;
-  std::vector<FunctionParam> function_params; // inlined
-
-  // bool has_return_type;
-  // FunctionReturnType return_type;
-  std::unique_ptr<Type> return_type; // inlined
-
-  // bool has_where_clause;
-  WhereClause where_clause;
-
-  std::unique_ptr<BlockExpr> function_body;
-
-  Location locus;
-
-public:
-  // Returns whether the method has generic parameters.
-  bool has_generics () const { return !generic_params.empty (); }
-
-  // Returns whether the method has parameters.
-  bool has_params () const { return !function_params.empty (); }
-
-  // Returns whether the method has a return type (void otherwise).
-  bool has_return_type () const { return return_type != nullptr; }
-
-  // Returns whether the where clause exists (i.e. has items)
-  bool has_where_clause () const { return !where_clause.is_empty (); }
-
-  // Returns whether method has a non-default visibility.
-  bool has_visibility () const { return !vis.is_error (); }
-
-  // Mega-constructor with all possible fields
-  Method (Analysis::NodeMapping mappings, Identifier method_name,
-	  FunctionQualifiers qualifiers,
-	  std::vector<std::unique_ptr<GenericParam> > generic_params,
-	  SelfParam self_param, std::vector<FunctionParam> function_params,
-	  std::unique_ptr<Type> return_type, WhereClause where_clause,
-	  std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	  AST::AttrVec outer_attrs, Location locus = Location ())
-    : mappings (mappings), outer_attrs (std::move (outer_attrs)),
-      vis (std::move (vis)), qualifiers (std::move (qualifiers)),
-      method_name (std::move (method_name)),
-      generic_params (std::move (generic_params)),
-      self_param (std::move (self_param)),
-      function_params (std::move (function_params)),
-      return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)),
-      function_body (std::move (function_body)), locus (locus)
-  {}
-
-  // TODO: add constructor with less fields
-
-  // Copy constructor with clone
-  Method (Method const &other)
-    : mappings (other.mappings), outer_attrs (other.outer_attrs),
-      vis (other.vis), qualifiers (other.qualifiers),
-      method_name (other.method_name), self_param (other.self_param),
-      function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause),
-      function_body (other.function_body->clone_block_expr ()),
-      locus (other.locus)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-  }
-
-  // Overloaded assignment operator to clone
-  Method &operator= (Method const &other)
-  {
-    mappings = other.mappings;
-    method_name = other.method_name;
-    outer_attrs = other.outer_attrs;
-    vis = other.vis;
-    qualifiers = other.qualifiers;
-    self_param = other.self_param;
-    function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
-    where_clause = other.where_clause;
-    function_body = other.function_body->clone_block_expr ();
-    locus = other.locus;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    return *this;
-  }
-
-  // move constructors
-  Method (Method &&other) = default;
-  Method &operator= (Method &&other) = default;
-
-  std::string as_string () const override;
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  Analysis::NodeMapping get_mappings () const { return mappings; };
-
-  Analysis::NodeMapping get_impl_mappings () const override
-  {
-    return get_mappings ();
-  };
-
-  // Returns whether function has return type - if not, it is void.
-  bool has_function_return_type () const { return return_type != nullptr; }
-
-  std::vector<FunctionParam> &get_function_params () { return function_params; }
-  const std::vector<FunctionParam> &get_function_params () const
-  {
-    return function_params;
-  }
-
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
-  {
-    return generic_params;
-  }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
-  {
-    return generic_params;
-  }
-
-  // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition ()
-  {
-    rust_assert (function_body != nullptr);
-    return function_body;
-  }
-
-  SelfParam &get_self_param () { return self_param; }
-  const SelfParam &get_self_param () const { return self_param; }
-
-  // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
-
-  // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
-
-  Identifier get_method_name () const { return method_name; }
-
-  Location get_locus () const { return locus; }
-
-  Location get_impl_locus () const final { return get_locus (); }
-
-  std::unique_ptr<BlockExpr> &get_function_body () { return function_body; }
-  const std::unique_ptr<BlockExpr> &get_function_body () const
-  {
-    return function_body;
-  }
-
-protected:
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  Method *clone_inherent_impl_item_impl () const override
-  {
-    return new Method (*this);
   }
 };
 
@@ -1267,11 +1081,6 @@ protected:
   }*/
 };
 
-// Parameters used in a function - TODO inline?
-/*struct FunctionParams {
-    std::vector<FunctionParam> function_params;
-};*/
-
 class LetStmt;
 
 // Rust function declaration HIR node
@@ -1279,23 +1088,12 @@ class Function : public VisItem, public ImplItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
-
-  // bool has_function_params;
-  // FunctionParams function_params;
-  std::vector<FunctionParam> function_params; // inlined
-
-  // bool has_function_return_type;
+  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::vector<FunctionParam> function_params;
   std::unique_ptr<Type> return_type;
-
-  // bool has_where_clause;
   WhereClause where_clause;
-
   std::unique_ptr<BlockExpr> function_body;
-
+  SelfParam self;
   Location locus;
 
 public:
@@ -1320,7 +1118,7 @@ public:
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	    AST::AttrVec outer_attrs, Location locus)
+	    AST::AttrVec outer_attrs, SelfParam self, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       qualifiers (std::move (qualifiers)),
       function_name (std::move (function_name)),
@@ -1328,10 +1126,9 @@ public:
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
-      function_body (std::move (function_body)), locus (locus)
+      function_body (std::move (function_body)), self (std::move (self)),
+      locus (locus)
   {}
-
-  // TODO: add constructor with less fields
 
   // Copy constructor with clone
   Function (Function const &other)
@@ -1341,7 +1138,7 @@ public:
       return_type (other.return_type->clone_type ()),
       where_clause (other.where_clause),
       function_body (other.function_body->clone_block_expr ()),
-      locus (other.locus)
+      self (other.self), locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -1354,14 +1151,12 @@ public:
     VisItem::operator= (other);
     function_name = other.function_name;
     qualifiers = other.qualifiers;
-    // generic_params = other.generic_params;
     function_params = other.function_params;
     return_type = other.return_type->clone_type ();
     where_clause = other.where_clause;
     function_body = other.function_body->clone_block_expr ();
-    // visibility = other.visibility->clone_visibility();
-    // outer_attrs = other.outer_attrs;
     locus = other.locus;
+    self = other.self;
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -1425,6 +1220,14 @@ public:
   {
     rust_assert (has_return_type ());
     return return_type;
+  }
+
+  bool is_method () const { return !self.is_error (); }
+
+  SelfParam &get_self_param ()
+  {
+    rust_assert (is_method ());
+    return self;
   }
 
 protected:
@@ -2364,7 +2167,7 @@ public:
       generic_params (std::move (generic_params)),
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)), self (self)
+      where_clause (std::move (where_clause)), self (std::move (self))
   {}
 
   // Copy constructor with clone
@@ -2661,24 +2464,11 @@ protected:
 class Trait : public VisItem
 {
   bool has_unsafe;
-
   Identifier name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
-
-  // bool has_type_param_bounds;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
-    type_param_bounds; // inlined form
-
-  // bool has_where_clause;
+  std::vector<std::unique_ptr<GenericParam> > generic_params;
+  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
   WhereClause where_clause;
-
-  // bool has_trait_items;
   std::vector<std::unique_ptr<TraitItem> > trait_items;
-
   Location locus;
 
 public:
@@ -2767,6 +2557,16 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

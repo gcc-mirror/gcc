@@ -160,7 +160,6 @@ struct SelfParam;
 struct FunctionQualifiers;
 struct FunctionParam;
 struct Visibility;
-class Method;
 class VisItem;
 class Module;
 class ModuleBodied;

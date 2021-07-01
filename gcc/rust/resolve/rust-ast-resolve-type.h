@@ -312,9 +312,7 @@ public:
 
     // if it has a type lets resolve it
     if (param.has_type ())
-      {
-	ResolveType::go (param.get_type ().get (), param.get_node_id ());
-      }
+      ResolveType::go (param.get_type ().get (), param.get_node_id ());
 
     // for now lets focus on handling the basics: like struct<T> { a:T, ....}
     resolver->get_type_scope ().insert (
@@ -328,11 +326,7 @@ public:
   }
 
 private:
-  ResolveGenericParam (NodeId parent)
-    : ResolverBase (parent),
-
-      ok (false)
-  {}
+  ResolveGenericParam (NodeId parent) : ResolverBase (parent), ok (false) {}
 
   bool ok;
 };

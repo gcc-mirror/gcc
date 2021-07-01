@@ -468,7 +468,6 @@ class SubstitutionParamMapping
 {
 public:
   SubstitutionParamMapping (const HIR::TypeParam &generic, ParamType *param)
-
     : generic (generic), param (param)
   {}
 

@@ -95,21 +95,6 @@ public:
       }
   }
 
-  void visit (HIR::Method &method) override
-  {
-    Identifier name = method.get_method_name ();
-    if (search.as_string ().compare (name) == 0)
-      {
-	HirId tyid = method.get_mappings ().get_hirid ();
-	TyTy::BaseType *ty = nullptr;
-	bool ok = context->lookup_type (tyid, &ty);
-	rust_assert (ok);
-
-	PathProbeCandidate candidate{&method, ty};
-	candidates.push_back (std::move (candidate));
-      }
-  }
-
 private:
   PathProbeType (TyTy::BaseType *receiver, const HIR::PathIdentSegment &query)
     : TypeCheckBase (), receiver (receiver), search (query)
@@ -145,11 +130,6 @@ public:
   void visit (HIR::Function &function) override
   {
     r.add_range (function.get_locus ());
-  }
-
-  void visit (HIR::Method &method) override
-  {
-    r.add_range (method.get_locus ());
   }
 
 private:
