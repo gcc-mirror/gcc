@@ -1034,6 +1034,13 @@
    (V8DI "V8HF") (V4DI "V8HF") (V2DI "V8HF")
    (V8DF "V8HF") (V16SF "V16HF") (V8SF "V8HF")])
 
+;; Mapping of vector modes to vector hf modes of same element.
+(define_mode_attr ssePHmodelower
+  [(V32HI "v32hf") (V16HI "v16hf") (V8HI "v8hf")
+   (V16SI "v16hf") (V8SI "v8hf") (V4SI "v4hf")
+   (V8DI "v8hf") (V4DI "v4hf") (V2DI "v2hf")
+   (V8DF "v8hf") (V16SF "v16hf") (V8SF "v8hf")])
+
 ;; Mapping of vector modes to packed single mode of the same size
 (define_mode_attr ssePSmode
   [(V16SI "V16SF") (V8DF "V16SF")
@@ -6175,6 +6182,12 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "HF")])
 
+(define_expand "fix<fixunssuffix>_trunc<ssePHmodelower><mode>2"
+  [(set (match_operand:VI2H_AVX512VL 0 "register_operand")
+	(any_fix:VI2H_AVX512VL
+	  (match_operand:<ssePHmode> 1 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16")
+
 (define_insn "avx512fp16_fix<fixunssuffix>_trunc<mode>2<mask_name><round_saeonly_name>"
   [(set (match_operand:VI2H_AVX512VL 0 "register_operand" "=v")
 	(any_fix:VI2H_AVX512VL
@@ -6184,6 +6197,21 @@
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "fix<fixunssuffix>_truncv4hf<mode>2"
+  [(set (match_operand:VI4_128_8_256 0 "register_operand")
+	(any_fix:VI4_128_8_256
+	  (match_operand:V4HF 1 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  if (!MEM_P (operands[1]))
+    {
+      operands[1] = lowpart_subreg (V8HFmode, operands[1], V4HFmode);
+      emit_insn (gen_avx512fp16_fix<fixunssuffix>_trunc<mode>2 (operands[0],
+								operands[1]));
+      DONE;
+    }
+})
 
 (define_insn "avx512fp16_fix<fixunssuffix>_trunc<mode>2<mask_name>"
   [(set (match_operand:VI4_128_8_256 0 "register_operand" "=v")
@@ -6206,6 +6234,21 @@
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "fix<fixunssuffix>_truncv2hfv2di2"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(any_fix:V2DI
+	  (match_operand:V2HF 1 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  if (!MEM_P (operands[1]))
+    {
+      operands[1] = lowpart_subreg (V8HFmode, operands[1], V2HFmode);
+      emit_insn (gen_avx512fp16_fix<fixunssuffix>_truncv2di2 (operands[0],
+							      operands[1]));
+      DONE;
+  }
+})
 
 (define_insn "avx512fp16_fix<fixunssuffix>_truncv2di2<mask_name>"
   [(set (match_operand:V2DI 0 "register_operand" "=v")
