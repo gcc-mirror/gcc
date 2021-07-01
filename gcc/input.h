@@ -88,6 +88,39 @@ class char_span
 extern char_span location_get_source_line (const char *file_path, int line);
 
 extern bool location_missing_trailing_newline (const char *file_path);
+
+/* Forward decl of slot within file_cache, so that the definition doesn't
+   need to be in this header.  */
+class file_cache_slot;
+
+/* A cache of source files for use when emitting diagnostics
+   (and in a few places in the C/C++ frontends).
+
+   Results are only valid until the next call to the cache, as
+   slots can be evicted.
+
+   Filenames are stored by pointer, and so must outlive the cache
+   instance.  */
+
+class file_cache
+{
+ public:
+  file_cache ();
+  ~file_cache ();
+
+  file_cache_slot *lookup_or_add_file (const char *file_path);
+  void forcibly_evict_file (const char *file_path);
+
+ private:
+  file_cache_slot *evicted_cache_tab_entry (unsigned *highest_use_count);
+  file_cache_slot *add_file (const char *file_path);
+  file_cache_slot *lookup_file (const char *file_path);
+
+ private:
+  static const size_t num_file_slots = 16;
+  file_cache_slot *m_file_slots;
+};
+
 extern expanded_location
 expand_location_to_spelling_point (location_t,
 				   enum location_aspect aspect

@@ -136,6 +136,9 @@ struct diagnostic_context
   /* Where most of the diagnostic formatting work is done.  */
   pretty_printer *printer;
 
+  /* Cache of source code.  */
+  file_cache *m_file_cache;
+
   /* The number of times we have issued diagnostics.  */
   int diagnostic_count[DK_LAST_DIAGNOSTIC_KIND];
 
