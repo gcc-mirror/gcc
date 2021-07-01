@@ -2693,9 +2693,7 @@ package body Errout is
                      Write_Buffer_Char (Buf, Cur_Loc);
                   end if;
 
-                  Cur_Loc := Cur_Loc + 1;
-
-                  if Buf (Cur_Loc - 1) = ASCII.LF then
+                  if Buf (Cur_Loc) = ASCII.LF then
                      Cur_Line := Cur_Line + 1;
 
                      --  Output ... for skipped lines
@@ -2720,6 +2718,8 @@ package body Errout is
                            Width);
                      end if;
                   end if;
+
+                  Cur_Loc := Cur_Loc + 1;
                end loop;
             end;
 
