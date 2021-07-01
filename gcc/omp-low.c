@@ -6376,11 +6376,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  if (code == MINUS_EXPR)
 		    code = PLUS_EXPR;
 
-		  /* C/C++ permits FP/complex with || and &&.  */
-		  bool is_fp_and_or
-		    = ((code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
-		       && (FLOAT_TYPE_P (TREE_TYPE (new_var))
-			   || TREE_CODE (TREE_TYPE (new_var)) == COMPLEX_TYPE));
+		  bool is_truth_op
+		    = (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR);
 		  tree new_vard = new_var;
 		  if (is_simd && omp_is_reference (var))
 		    {
@@ -6431,17 +6428,18 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			}
 		      tree ivar2 = ivar;
 		      tree ref2 = ref;
-		      if (is_fp_and_or)
+		      if (is_truth_op)
 			{
 			  tree zero = build_zero_cst (TREE_TYPE (ivar));
 			  ivar2 = fold_build2_loc (clause_loc, NE_EXPR,
-						   integer_type_node, ivar,
+						   boolean_type_node, ivar,
 						   zero);
 			  ref2 = fold_build2_loc (clause_loc, NE_EXPR,
-						  integer_type_node, ref, zero);
+						  boolean_type_node, ref,
+						  zero);
 			}
 		      x = build2 (code, TREE_TYPE (ref), ref2, ivar2);
-		      if (is_fp_and_or)
+		      if (is_truth_op)
 			x = fold_convert (TREE_TYPE (ref), x);
 		      ref = build_outer_var_ref (var, ctx);
 		      gimplify_assign (ref, x, &llist[1]);
@@ -6463,19 +6461,19 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			  tree ref = build_outer_var_ref (var, ctx);
 			  tree new_var2 = new_var;
 			  tree ref2 = ref;
-			  if (is_fp_and_or)
+			  if (is_truth_op)
 			    {
 			      tree zero = build_zero_cst (TREE_TYPE (new_var));
 			      new_var2
 				= fold_build2_loc (clause_loc, NE_EXPR,
-						   integer_type_node, new_var,
+						   boolean_type_node, new_var,
 						   zero);
 			      ref2 = fold_build2_loc (clause_loc, NE_EXPR,
-						      integer_type_node, ref,
+						      boolean_type_node, ref,
 						      zero);
 			    }
 			  x = build2 (code, TREE_TYPE (ref2), ref2, new_var2);
-			  if (is_fp_and_or)
+			  if (is_truth_op)
 			    x = fold_convert (TREE_TYPE (new_var), x);
 			  ref = build_outer_var_ref (var, ctx);
 			  gimplify_assign (ref, x, dlist);
@@ -7416,12 +7414,7 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
       if (code == MINUS_EXPR)
         code = PLUS_EXPR;
 
-      /* C/C++ permits FP/complex with || and &&.  */
-      bool is_fp_and_or = ((code == TRUTH_ANDIF_EXPR
-			    || code == TRUTH_ORIF_EXPR)
-			   && (FLOAT_TYPE_P (TREE_TYPE (new_var))
-			       || (TREE_CODE (TREE_TYPE (new_var))
-				   == COMPLEX_TYPE)));
+      bool is_truth_op = (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR);
       if (count == 1)
 	{
 	  tree addr = build_fold_addr_expr_loc (clause_loc, ref);
@@ -7430,17 +7423,17 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
 	  ref = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (addr)), addr);
 	  tree new_var2 = new_var;
 	  tree ref2 = ref;
-	  if (is_fp_and_or)
+	  if (is_truth_op)
 	    {
 	      tree zero = build_zero_cst (TREE_TYPE (new_var));
 	      new_var2 = fold_build2_loc (clause_loc, NE_EXPR,
-					  integer_type_node, new_var, zero);
-	      ref2 = fold_build2_loc (clause_loc, NE_EXPR, integer_type_node,
+					  boolean_type_node, new_var, zero);
+	      ref2 = fold_build2_loc (clause_loc, NE_EXPR, boolean_type_node,
 				      ref, zero);
 	    }
 	  x = fold_build2_loc (clause_loc, code, TREE_TYPE (new_var2), ref2,
 			       new_var2);
-	  if (is_fp_and_or)
+	  if (is_truth_op)
 	    x = fold_convert (TREE_TYPE (new_var), x);
 	  x = build2 (OMP_ATOMIC, void_type_node, addr, x);
 	  OMP_ATOMIC_MEMORY_ORDER (x) = OMP_MEMORY_ORDER_RELAXED;
@@ -7548,16 +7541,16 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
 	    {
 	      tree out2 = out;
 	      tree priv2 = priv;
-	      if (is_fp_and_or)
+	      if (is_truth_op)
 		{
 		  tree zero = build_zero_cst (TREE_TYPE (out));
 		  out2 = fold_build2_loc (clause_loc, NE_EXPR,
-					  integer_type_node, out, zero);
+					  boolean_type_node, out, zero);
 		  priv2 = fold_build2_loc (clause_loc, NE_EXPR,
-					   integer_type_node, priv, zero);
+					   boolean_type_node, priv, zero);
 		}
 	      x = build2 (code, TREE_TYPE (out2), out2, priv2);
-	      if (is_fp_and_or)
+	      if (is_truth_op)
 		x = fold_convert (TREE_TYPE (out), x);
 	      out = unshare_expr (out);
 	      gimplify_assign (out, x, &sub_seq);
@@ -7594,16 +7587,16 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
 	{
 	  tree new_var2 = new_var;
 	  tree ref2 = ref;
-	  if (is_fp_and_or)
+	  if (is_truth_op)
 	    {
 	      tree zero = build_zero_cst (TREE_TYPE (new_var));
 	      new_var2 = fold_build2_loc (clause_loc, NE_EXPR,
-					  integer_type_node, new_var, zero);
-	      ref2 = fold_build2_loc (clause_loc, NE_EXPR, integer_type_node,
+					  boolean_type_node, new_var, zero);
+	      ref2 = fold_build2_loc (clause_loc, NE_EXPR, boolean_type_node,
 				      ref, zero);
 	    }
 	  x = build2 (code, TREE_TYPE (ref), ref2, new_var2);
-	  if (is_fp_and_or)
+	  if (is_truth_op)
 	    x = fold_convert (TREE_TYPE (new_var), x);
 	  ref = build_outer_var_ref (var, ctx);
 	  gimplify_assign (ref, x, &sub_seq);
