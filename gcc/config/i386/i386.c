@@ -23163,6 +23163,19 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
     }
 }
 
+/* Return a scratch register in MODE for vector load and store.  */
+
+rtx
+ix86_gen_scratch_sse_rtx (machine_mode mode)
+{
+  if (TARGET_SSE)
+    return gen_rtx_REG (mode, (TARGET_64BIT
+			       ? LAST_REX_SSE_REG
+			       : LAST_SSE_REG));
+  else
+    return gen_reg_rtx (mode);
+}
+
 /* Address space support.
 
    This is not "far pointers" in the 16-bit sense, but an easy way

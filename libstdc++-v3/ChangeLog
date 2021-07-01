@@ -1,3 +1,45 @@
+2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101258
+	* doc/doxygen/user.cfg.in (INPUT): Add <experimental/simd>.
+	(COLS_IN_ALPHA_INDEX): Remove obsolete tag.
+	(PREDEFINED): Add/fix some more macros that need to be expanded.
+	* include/bits/random.h: Stop Doxygen from documenting internal
+	implementation details.
+	* include/bits/random.tcc: Likewise.
+	* include/bits/this_thread_sleep.h: Fix @file name.
+	* include/experimental/bits/simd.h: Add to Doxygen group. Do not
+	document internal implementation details.
+	* include/experimental/bits/simd_detail.h: Do not document
+	internal implementation details.
+	* include/experimental/simd: Define Doxygen groups.
+	* include/experimental/type_traits: Improve documentation for
+	the header file. Define groups. Use @since commands.
+	* include/std/scoped_allocator (scoped_allocator_adaptor): Move
+	declaration before undocumented region.
+	* include/std/type_traits (true_type, false_type): Use using
+	declaration instead of typedef.
+	(is_invocable_v, is_nothrow_invocable_v, is_invocable_r_v)
+	(is_nothrow_invocable_r_v): Move definitions next to other C++17
+	variable templates.
+	Do not document internal implementation details. Move misplaced
+	group-end command. Define group for variable templates.
+	* include/std/variant: Do not document internal implementation
+	details.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/simd: Do not define anything pre-C++17.
+
+2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc [__cpp_inline_variables]: Remove
+	redundant definitions of static constexpr member variables.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
 2021-06-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/streambuf.tcc (__copy_streambufs_eof): Remove

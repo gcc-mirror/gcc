@@ -2,9 +2,15 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512f -mavx512vl -mavx512dq" } */
 /* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } }
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to2\\\}" 5 } }  */
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to4\\\}" 10 } }  */
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 5 } }  */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to2\\\}" 2 { target { ! ia32 } } } }  */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to4\\\}" 4 { target { ! ia32 } } } }  */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to2\\\}" 5 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to4\\\}" 7 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 2 } }  */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %xmm\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %ymm\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[\\t \]+%r\[^\n\]*, %xmm\[0-9\]+" 3 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[\\t \]+%r\[^\n\]*, %ymm\[0-9\]+" 3 { target { ! ia32 } } } } */
 
 typedef int v4si  __attribute__ ((vector_size (16)));
 typedef int v8si  __attribute__ ((vector_size (32)));

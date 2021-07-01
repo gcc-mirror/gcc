@@ -366,7 +366,7 @@ extern bool umips_12bit_offset_address_p (rtx, machine_mode);
 extern bool mips_9bit_offset_address_p (rtx, machine_mode);
 extern bool lwsp_swsp_address_p (rtx, machine_mode);
 extern bool m16_based_address_p (rtx, machine_mode,
-			         int (*)(rtx_def*, machine_mode)); 
+				 bool (*)(rtx_def*, machine_mode));
 extern rtx mips_expand_thread_pointer (rtx);
 extern void mips16_expand_get_fcsr (rtx);
 extern void mips16_expand_set_fcsr (rtx);

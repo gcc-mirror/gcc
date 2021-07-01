@@ -14,6 +14,8 @@
 
 /* { dg-require-effective-target float64 } */
 /* { dg-require-effective-target float64x } */
+/* { dg-add-options float64 } */
+/* { dg-add-options float64x } */
 
 _Float64 f64;
 _Float64x f64x;

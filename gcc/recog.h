@@ -393,7 +393,7 @@ which_op_alt ()
 /* A table defined in insn-output.c that give information about
    each insn-code value.  */
 
-typedef int (*insn_operand_predicate_fn) (rtx, machine_mode);
+typedef bool (*insn_operand_predicate_fn) (rtx, machine_mode);
 typedef const char * (*insn_output_fn) (rtx *, rtx_insn *);
 
 struct insn_gen_fn

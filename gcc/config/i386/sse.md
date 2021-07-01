@@ -24814,3 +24814,34 @@
   "TARGET_WIDEKL"
   "aes<aeswideklvariant>\t{%0}"
   [(set_attr "type" "other")])
+
+;; Modes handled by broadcast patterns.  NB: Allow V64QI and V32HI with
+;; TARGET_AVX512F since ix86_expand_vector_init_duplicate can expand
+;; without TARGET_AVX512BW which is used by memset vector broadcast
+;; expander to XI with:
+;; 	vmovd		%edi, %xmm15
+;;	vpbroadcastb	%xmm15, %ymm15
+;;	vinserti64x4	$0x1, %ymm15, %zmm15, %zmm15
+
+(define_mode_iterator INT_BROADCAST_MODE
+  [(V64QI "TARGET_AVX512F") (V32QI "TARGET_AVX") V16QI
+   (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI
+   (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX") V4SI
+   (V8DI "TARGET_AVX512F && TARGET_64BIT")
+   (V4DI "TARGET_AVX && TARGET_64BIT") (V2DI "TARGET_64BIT")])
+
+;; Broadcast from an integer.  NB: Enable broadcast only if we can move
+;; from GPR to SSE register directly.
+(define_expand "vec_duplicate<mode>"
+  [(set (match_operand:INT_BROADCAST_MODE 0 "register_operand")
+	(vec_duplicate:INT_BROADCAST_MODE
+	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand")))]
+  "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC"
+{
+  if (!ix86_expand_vector_init_duplicate (false,
+					  GET_MODE (operands[0]),
+					  operands[0],
+					  operands[1]))
+    gcc_unreachable ();
+  DONE;
+})

@@ -45,6 +45,9 @@
 #include <arm_neon.h>
 #endif
 
+/** @ingroup ts_simd
+ * @{
+ */
 /* There are several closely related types, with the following naming
  * convention:
  * _Tp: vectorizable (arithmetic) type (or any type)
@@ -4035,6 +4038,7 @@ template <typename _Tp, typename _Abi, size_t _Np>
 
 // }}}
 
+/// @cond undocumented
 // _SmartReference {{{
 template <typename _Up, typename _Accessor = _Up,
 	  typename _ValueType = typename _Up::value_type>
@@ -4316,6 +4320,7 @@ template <typename _Tp, size_t _Np, typename>
   struct __deduce_impl : public __deduce_fixed_size_fallback<_Tp, _Np> {};
 
 //}}}1
+/// @endcond
 
 // simd_mask {{{
 template <typename _Tp, typename _Abi>
@@ -4663,6 +4668,7 @@ template <typename _Tp, typename _Abi>
 
 // }}}
 
+/// @cond undocumented
 // __data(simd_mask) {{{
 template <typename _Tp, typename _Ap>
   _GLIBCXX_SIMD_INTRINSIC constexpr const auto&
@@ -4675,6 +4681,7 @@ template <typename _Tp, typename _Ap>
   { return __x._M_data; }
 
 // }}}
+/// @endcond
 
 // simd_mask reductions [simd_mask.reductions] {{{
 template <typename _Tp, typename _Abi>
@@ -4817,6 +4824,7 @@ find_last_set(_ExactBool)
 
 // }}}
 
+/// @cond undocumented
 // _SimdIntOperators{{{1
 template <typename _V, typename _Impl, bool>
   class _SimdIntOperators {};
@@ -4937,6 +4945,7 @@ template <typename _V, typename _Impl>
   };
 
 //}}}1
+/// @endcond
 
 // simd {{{
 template <typename _Tp, typename _Abi>
@@ -5212,6 +5221,7 @@ template <typename _Tp, typename _Abi>
   };
 
 // }}}
+/// @cond undocumented
 // __data {{{
 template <typename _Tp, typename _Ap>
   _GLIBCXX_SIMD_INTRINSIC constexpr const auto&
@@ -5255,7 +5265,9 @@ template <typename _Tp, typename _Ap>
   operator~(const simd<_Tp, _Ap>& __a)
   { return {__private_init, _Ap::_SimdImpl::_S_complement(__data(__a))}; }
 } // namespace __float_bitwise_operators }}}
+/// @endcond
 
+/// @}
 _GLIBCXX_SIMD_END_NAMESPACE
 
 #endif // __cplusplus >= 201703L

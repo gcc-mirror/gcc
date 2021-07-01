@@ -41,6 +41,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  template<typename... _Elements>
+    class tuple;
+
+  template<typename _Tp>
+    class reference_wrapper;
+
   /**
    * @defgroup metaprogramming Metaprogramming
    * @ingroup utilities
@@ -48,6 +54,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Template utilities for compile-time introspection and modification,
    * including type classification traits, type property inspection traits
    * and type transformation traits.
+   *
+   * @since C++11
    *
    * @{
    */
@@ -72,25 +80,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _Tp integral_constant<_Tp, __v>::value;
 
   /// The type used as a compile-time boolean with true value.
-  typedef integral_constant<bool, true>     true_type;
+  using true_type =  integral_constant<bool, true>;
 
   /// The type used as a compile-time boolean with false value.
-  typedef integral_constant<bool, false>    false_type;
+  using false_type = integral_constant<bool, false>;
 
+  /// @cond undocumented
+  /// bool_constant for C++11
   template<bool __v>
     using __bool_constant = integral_constant<bool, __v>;
+  /// @endcond
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 # define __cpp_lib_bool_constant 201505
+  /// Alias template for compile-time boolean constant types.
+  /// @since C++17
   template<bool __v>
     using bool_constant = integral_constant<bool, __v>;
 #endif
 
-  // Meta programming helper types.
+  // Metaprogramming helper types.
 
   template<bool, typename, typename>
     struct conditional;
 
+  /// @cond undocumented
   template <typename _Type>
     struct __type_identity
     { using type = _Type; };
@@ -148,13 +162,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __not_
     : public __bool_constant<!bool(_Pp::value)>
     { };
+  /// @endcond
 
 #if __cplusplus >= 201703L
 
+  /// @cond undocumented
   template<typename... _Bn>
     inline constexpr bool __or_v = __or_<_Bn...>::value;
   template<typename... _Bn>
     inline constexpr bool __and_v = __and_<_Bn...>::value;
+  /// @endcond
 
 #define __cpp_lib_logical_traits 201510
 
@@ -173,6 +190,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __not_<_Pp>
     { };
 
+  /** @ingroup variable_templates
+   * @{
+   */
   template<typename... _Bn>
     inline constexpr bool conjunction_v = conjunction<_Bn...>::value;
 
@@ -181,6 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Pp>
     inline constexpr bool negation_v = negation<_Pp>::value;
+  /// @}
 
 #endif // C++17
 
@@ -191,6 +212,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_function;
   template<typename>
     struct is_void;
+  template<typename>
+    struct remove_cv;
+  template<typename>
+    struct is_const;
+
+  /// @cond undocumented
   template<typename>
     struct __is_array_unknown_bounds;
 
@@ -223,15 +250,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __failure_type
   { };
 
-  template<typename>
-    struct remove_cv;
-
   // __remove_cv_t (std::remove_cv_t for C++11).
   template<typename _Tp>
     using __remove_cv_t = typename remove_cv<_Tp>::type;
-
-  template<typename>
-    struct is_const;
 
   // Primary type categories.
 
@@ -242,6 +263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_void_helper<void>
     : public true_type { };
+  /// @endcond
 
   /// is_void
   template<typename _Tp>
@@ -249,6 +271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_void_helper<__remove_cv_t<_Tp>>::type
     { };
 
+  /// @cond undocumented
   template<typename>
     struct __is_integral_helper
     : public false_type { };
@@ -362,6 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_3>
     : public true_type { };
 #endif
+  /// @endcond
 
   /// is_integral
   template<typename _Tp>
@@ -369,6 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_integral_helper<__remove_cv_t<_Tp>>::type
     { };
 
+  /// @cond undocumented
   template<typename>
     struct __is_floating_point_helper
     : public false_type { };
@@ -390,6 +415,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_floating_point_helper<__float128>
     : public true_type { };
 #endif
+  /// @endcond
 
   /// is_floating_point
   template<typename _Tp>
@@ -518,6 +544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// __is_nullptr_t (deprecated extension).
+  /// @deprecated Use `is_null_pointer` instead.
   template<typename _Tp>
     struct __is_nullptr_t
     : public is_null_pointer<_Tp>
@@ -567,6 +594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_compound
     : public __not_<is_fundamental<_Tp>>::type { };
 
+  /// @cond undocumented
   template<typename _Tp>
     struct __is_member_pointer_helper
     : public false_type { };
@@ -574,6 +602,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Cp>
     struct __is_member_pointer_helper<_Tp _Cp::*>
     : public true_type { };
+  /// @endcond
 
   /// is_member_pointer
   template<typename _Tp>
@@ -584,6 +613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename, typename>
     struct is_same;
 
+  /// @cond undocumented
   template<typename _Tp, typename... _Types>
     using __is_one_of = __or_<is_same<_Tp, _Types>...>;
 
@@ -644,6 +674,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_referenceable<_Tp, __void_t<_Tp&>>
     : public true_type
     { };
+  /// @endcond
 
   // Type properties.
 
@@ -674,7 +705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  // is_trivially_copyable
+  /// is_trivially_copyable
   template<typename _Tp>
     struct is_trivially_copyable
     : public integral_constant<bool, __is_trivially_copyable(_Tp)>
@@ -692,7 +723,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  /// is_pod (deprecated in C++20)
+  /** is_pod (deprecated in C++20)
+   * @deprecated Use `is_standard_layout && is_trivial` instead.
+   */
   // Could use is_standard_layout && is_trivial instead of the builtin.
   template<typename _Tp>
     struct
@@ -704,7 +737,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  /// is_literal_type
+  /** is_literal_type
+   * @deprecated Deprecated in C++20. The idea of a literal type isn't useful.
+   */
   template<typename _Tp>
     struct
     _GLIBCXX17_DEPRECATED
@@ -730,6 +765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201402L
 #define __cpp_lib_is_final 201402L
   /// is_final
+  /// @since C++14
   template<typename _Tp>
     struct is_final
     : public integral_constant<bool, __is_final(_Tp)>
@@ -742,6 +778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, __is_abstract(_Tp)>
     { };
 
+  /// @cond undocumented
   template<typename _Tp,
 	   bool = is_arithmetic<_Tp>::value>
     struct __is_signed_helper
@@ -751,6 +788,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_signed_helper<_Tp, true>
     : public integral_constant<bool, _Tp(-1) < _Tp(0)>
     { };
+  /// @endcond
 
   /// is_signed
   template<typename _Tp>
@@ -764,14 +802,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __and_<is_arithmetic<_Tp>, __not_<is_signed<_Tp>>>
     { };
 
-
-  // Destructible and constructible type properties.
-
-  /**
-   *  @brief  Utility to simplify expressions used in unevaluated operands
-   *  @ingroup utilities
-   */
-
+  /// @cond undocumented
   template<typename _Tp, typename _Up = _Tp&&>
     _Up
     __declval(int);
@@ -779,6 +810,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     _Tp
     __declval(long);
+  /// @endcond
 
   template<typename _Tp>
     auto declval() noexcept -> decltype(__declval<_Tp>(0));
@@ -789,6 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename>
     struct remove_all_extents;
 
+  /// @cond undocumented
   template<typename _Tp>
     struct __is_array_known_bounds
     : public integral_constant<bool, (extent<_Tp>::value > 0)>
@@ -798,6 +831,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_array_unknown_bounds
     : public __and_<is_array<_Tp>, __not_<extent<_Tp>>>
     { };
+
+  // Destructible and constructible type properties.
 
   // In N3290 is_destructible does not say anything about function
   // types and abstract types, see LWG 2049. This implementation
@@ -840,6 +875,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct __is_destructible_safe<_Tp, false, true>
     : public true_type { };
+  /// @endcond
 
   /// is_destructible
   template<typename _Tp>
@@ -849,6 +885,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
 	"template argument must be a complete class or an unbounded array");
     };
+
+  /// @cond undocumented
 
   // is_nothrow_destructible requires that is_destructible is
   // satisfied as well.  We realize that by mimicing the
@@ -891,6 +929,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct __is_nt_destructible_safe<_Tp, false, true>
     : public true_type { };
+  /// @endcond
 
   /// is_nothrow_destructible
   template<typename _Tp>
@@ -901,10 +940,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
+  /// @cond undocumented
   template<typename _Tp, typename... _Args>
     struct __is_constructible_impl
     : public __bool_constant<__is_constructible(_Tp, _Args...)>
     { };
+  /// @endcond
 
   /// is_constructible
   template<typename _Tp, typename... _Args>
@@ -924,6 +965,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
+  /// @cond undocumented
   template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_copy_constructible_impl;
 
@@ -935,6 +977,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_copy_constructible_impl<_Tp, true>
     : public __is_constructible_impl<_Tp, const _Tp&>
     { };
+  /// @endcond
 
   /// is_copy_constructible
   template<typename _Tp>
@@ -945,6 +988,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
+  /// @cond undocumented
   template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_move_constructible_impl;
 
@@ -956,6 +1000,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_move_constructible_impl<_Tp, true>
     : public __is_constructible_impl<_Tp, _Tp&&>
     { };
+  /// @endcond
 
   /// is_move_constructible
   template<typename _Tp>
@@ -966,9 +1011,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
+  /// @cond undocumented
   template<typename _Tp, typename... _Args>
     using __is_nothrow_constructible_impl
       = __bool_constant<__is_nothrow_constructible(_Tp, _Args...)>;
+  /// @endcond
 
   /// is_nothrow_constructible
   template<typename _Tp, typename... _Args>
@@ -988,7 +1035,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-
+  /// @cond undocumented
   template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_nothrow_copy_constructible_impl;
 
@@ -1000,6 +1047,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nothrow_copy_constructible_impl<_Tp, true>
     : public __is_nothrow_constructible_impl<_Tp, const _Tp&>
     { };
+  /// @endcond
 
   /// is_nothrow_copy_constructible
   template<typename _Tp>
@@ -1010,6 +1058,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
+  /// @cond undocumented
   template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_nothrow_move_constructible_impl;
 
@@ -1021,6 +1070,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nothrow_move_constructible_impl<_Tp, true>
     : public __is_nothrow_constructible_impl<_Tp, _Tp&&>
     { };
+  /// @endcond
 
   /// is_nothrow_move_constructible
   template<typename _Tp>
@@ -1605,6 +1655,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Sign modifications.
 
+  /// @cond undocumented
+
   // Utility for constructing identically cv-qualified types.
   template<typename _Unqualified, bool _IsConst, bool _IsVol>
     struct __cv_selector;
@@ -1776,6 +1828,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __type
 	= typename __make_unsigned_selector<char32_t, false, true>::__type;
     };
+  /// @endcond
 
   // Given an integral/enum type, return the corresponding unsigned
   // integer type.
@@ -1789,6 +1842,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct make_unsigned<bool>;
 
+  /// @cond undocumented
 
   // Utility for finding the signed versions of unsigned integral types.
   template<typename _Tp>
@@ -1902,6 +1956,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __type
 	= typename __make_signed_selector<char32_t, false, true>::__type;
     };
+  /// @endcond
 
   // Given an integral/enum type, return the corresponding signed
   // integer type.
@@ -1979,7 +2034,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __remove_pointer_helper<_Tp, __remove_cv_t<_Tp>>
     { };
 
-  /// add_pointer
   template<typename _Tp, bool = __or_<__is_referenceable<_Tp>,
 				      is_void<_Tp>>::value>
     struct __add_pointer_helper
@@ -1989,6 +2043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __add_pointer_helper<_Tp, true>
     { typedef typename remove_reference<_Tp>::type*     type; };
 
+  /// add_pointer
   template<typename _Tp>
     struct add_pointer
     : public __add_pointer_helper<_Tp>
@@ -2082,6 +2137,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <size_t _Len, typename... _Types>
     const size_t aligned_union<_Len, _Types...>::alignment_value;
 
+  /// @cond undocumented
+
   // Decay trait for arrays and functions, used for perfect forwarding
   // in make_pair, make_tuple, etc.
   template<typename _Up,
@@ -2101,6 +2158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Up>
     struct __decay_selector<_Up, false, true>
     { typedef typename add_pointer<_Up>::type __type; };
+  /// @endcond
 
   /// decay
   template<typename _Tp>
@@ -2112,12 +2170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __decay_selector<__remove_type>::__type type;
     };
 
-  // __decay_t (std::decay_t for C++11).
-  template<typename _Tp>
-    using __decay_t = typename decay<_Tp>::type;
-
-  template<typename _Tp>
-    class reference_wrapper;
+  /// @cond undocumented
 
   // Helper which adds a reference to a type when given a reference_wrapper
   template<typename _Tp>
@@ -2132,12 +2185,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp& __type;
     };
 
+  // __decay_t (std::decay_t for C++11).
+  template<typename _Tp>
+    using __decay_t = typename decay<_Tp>::type;
+
   template<typename _Tp>
     using __decay_and_strip = __strip_reference_wrapper<__decay_t<_Tp>>;
-
+  /// @endcond
 
   // Primary template.
-  /// Define a member typedef @c type only if a boolean constant is true.
+  /// Define a member typedef `type` only if a boolean constant is true.
   template<bool, typename _Tp = void>
     struct enable_if
     { };
@@ -2147,12 +2204,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct enable_if<true, _Tp>
     { typedef _Tp type; };
 
+  /// @cond undocumented
+
   // __enable_if_t (std::enable_if_t for C++11)
   template<bool _Cond, typename _Tp = void>
     using __enable_if_t = typename enable_if<_Cond, _Tp>::type;
 
+  // Helper for SFINAE constraints
   template<typename... _Cond>
     using _Require = __enable_if_t<__and_<_Cond...>::value>;
+
+  // __remove_cvref_t (std::remove_cvref_t for C++11).
+  template<typename _Tp>
+    using __remove_cvref_t
+     = typename remove_cv<typename remove_reference<_Tp>::type>::type;
+  /// @endcond
 
   // Primary template.
   /// Define a member typedef @c type to one of two argument types.
@@ -2165,17 +2231,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct conditional<false, _Iftrue, _Iffalse>
     { typedef _Iffalse type; };
 
-  // __remove_cvref_t (std::remove_cvref_t for C++11).
-  template<typename _Tp>
-    using __remove_cvref_t
-     = typename remove_cv<typename remove_reference<_Tp>::type>::type;
-
   /// common_type
   template<typename... _Tp>
     struct common_type;
 
   // Sfinae-friendly common_type implementation:
 
+  /// @cond undocumented
   struct __do_common_type_impl
   {
     template<typename _Tp, typename _Up>
@@ -2278,6 +2340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct __underlying_type_impl<_Tp, false>
     { };
+  /// @endcond
 
   /// The underlying type of an enum.
   template<typename _Tp>
@@ -2285,12 +2348,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __underlying_type_impl<_Tp>
     { };
 
+  /// @cond undocumented
   template<typename _Tp>
     struct __declval_protector
     {
       static const bool __stop = false;
     };
+  /// @endcond
 
+  /** Utility to simplify expressions used in unevaluated operands
+   *  @since C++11
+   *  @ingroup utilities
+   */
   template<typename _Tp>
     auto declval() noexcept -> decltype(__declval<_Tp>(0))
     {
@@ -2307,6 +2376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_result_of_sfinae 201210
 
+  /// @cond undocumented
   struct __invoke_memfun_ref { };
   struct __invoke_memfun_deref { };
   struct __invoke_memobj_ref { };
@@ -2490,6 +2560,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Functor, _ArgTypes...
       >::type
     { };
+  /// @endcond
 
   template<typename _Functor, typename... _ArgTypes>
     struct result_of<_Functor(_ArgTypes...)>
@@ -2536,6 +2607,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename...> using void_t = void;
 #endif
 
+  /// @cond undocumented
+
   /// Implementation of the detection idiom (negative case).
   template<typename _Default, typename _AlwaysVoid,
 	   template<typename...> class _Op, typename... _Args>
@@ -2565,8 +2638,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __detected_or_t
       = typename __detected_or<_Default, _Op, _Args...>::type;
 
-  /// @} group metaprogramming
-
   /**
    *  Use SFINAE to determine if the type _Tp has a publicly-accessible
    *  member type _NTYPE.
@@ -2587,9 +2658,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Tp>
     struct __is_nothrow_swappable;
 
-  template<typename... _Elements>
-    class tuple;
-
   template<typename>
     struct __is_tuple_like_impl : false_type
     { };
@@ -2603,6 +2671,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_tuple_like
     : public __is_tuple_like_impl<__remove_cvref_t<_Tp>>::type
     { };
+  /// @endcond
 
   template<typename _Tp>
     _GLIBCXX20_CONSTEXPR
@@ -2621,6 +2690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
     noexcept(__is_nothrow_swappable<_Tp>::value);
 
+  /// @cond undocumented
   namespace __swappable_details {
     using std::swap;
 
@@ -2670,6 +2740,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_nothrow_swappable
     : public __is_nothrow_swappable_impl<_Tp>::type
     { };
+  /// @endcond
 
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
 #define __cpp_lib_is_swappable 201603
@@ -2705,6 +2776,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       is_nothrow_swappable<_Tp>::value;
 #endif // __cplusplus >= 201402L
 
+  /// @cond undocumented
   namespace __swappable_with_details {
     using std::swap;
 
@@ -2764,6 +2836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef decltype(__test<_Tp&>(0)) type;
     };
+  /// @endcond
 
   /// is_swappable_with
   template<typename _Tp, typename _Up>
@@ -2800,6 +2873,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cplusplus >= 201402L
 
 #endif// c++1z or gnu++11
+
+  /// @cond undocumented
 
   // __is_invocable (std::is_invocable for C++11)
 
@@ -2912,6 +2987,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void operator=(__nonesuch const&) = delete;
   };
 #pragma GCC diagnostic pop
+  /// @endcond
 
 #if __cplusplus >= 201703L
 # define __cpp_lib_is_invocable 201703
@@ -2971,6 +3047,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"each argument type must be a complete class or an unbounded array");
     };
 
+  /// @cond undocumented
   template<typename _Result, typename _Ret, typename = void>
     struct __is_nt_invocable_impl : false_type { };
 
@@ -2980,6 +3057,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __or_<is_void<_Ret>,
 	    __is_nothrow_convertible<typename _Result::type, _Ret>>
     { };
+  /// @endcond
 
   /// std::is_nothrow_invocable_r
   template<typename _Ret, typename _Fn, typename... _ArgTypes>
@@ -2995,29 +3073,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(std::__is_complete_or_unbounded(__type_identity<_Ret>{}),
 	"_Ret must be a complete class or an unbounded array");
     };
-
-  /// std::is_invocable_v
-  template<typename _Fn, typename... _Args>
-    inline constexpr bool is_invocable_v = is_invocable<_Fn, _Args...>::value;
-
-  /// std::is_nothrow_invocable_v
-  template<typename _Fn, typename... _Args>
-    inline constexpr bool is_nothrow_invocable_v
-      = is_nothrow_invocable<_Fn, _Args...>::value;
-
-  /// std::is_invocable_r_v
-  template<typename _Ret, typename _Fn, typename... _Args>
-    inline constexpr bool is_invocable_r_v
-      = is_invocable_r<_Ret, _Fn, _Args...>::value;
-
-  /// std::is_nothrow_invocable_r_v
-  template<typename _Ret, typename _Fn, typename... _Args>
-    inline constexpr bool is_nothrow_invocable_r_v
-      = is_nothrow_invocable_r<_Ret, _Fn, _Args...>::value;
 #endif // C++17
 
 #if __cplusplus >= 201703L
 # define __cpp_lib_type_trait_variable_templates 201510L
+  /**
+   * @defgroup variable_templates Variable templates for type traits.
+   * @ingroup metaprogramming
+   *
+   * The variable `is_foo_v<T>` is a boolean constant with the same value
+   * as the type trait `is_foo<T>::value`.
+   *
+   * @since C++17
+   */
+
+  /** @ingroup variable_templates
+   * @{
+   */
 template <typename _Tp>
   inline constexpr bool is_void_v = is_void<_Tp>::value;
 template <typename _Tp>
@@ -3184,6 +3256,18 @@ template <typename _Base, typename _Derived>
   inline constexpr bool is_base_of_v = is_base_of<_Base, _Derived>::value;
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
+template<typename _Fn, typename... _Args>
+  inline constexpr bool is_invocable_v = is_invocable<_Fn, _Args...>::value;
+template<typename _Fn, typename... _Args>
+  inline constexpr bool is_nothrow_invocable_v
+    = is_nothrow_invocable<_Fn, _Args...>::value;
+template<typename _Ret, typename _Fn, typename... _Args>
+  inline constexpr bool is_invocable_r_v
+    = is_invocable_r<_Ret, _Fn, _Args...>::value;
+template<typename _Ret, typename _Fn, typename... _Args>
+  inline constexpr bool is_nothrow_invocable_r_v
+    = is_nothrow_invocable_r<_Ret, _Fn, _Args...>::value;
+/// @}
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
@@ -3198,6 +3282,7 @@ template <typename _From, typename _To>
 	"template argument must be a complete class or an unbounded array");
     };
 
+  /// @ingroup variable_templates
   template<typename _Tp>
     inline constexpr bool has_unique_object_representations_v
       = has_unique_object_representations<_Tp>::value;
@@ -3211,7 +3296,7 @@ template <typename _From, typename _To>
     : bool_constant<__is_aggregate(remove_cv_t<_Tp>)>
     { };
 
-  /// is_aggregate_v
+  /// @ingroup variable_templates
   template<typename _Tp>
     inline constexpr bool is_aggregate_v = is_aggregate<_Tp>::value;
 #endif
@@ -3280,16 +3365,21 @@ template <typename _From, typename _To>
     : public __is_array_unknown_bounds<_Tp>
     { };
 
+  /// @ingroup variable_templates
   template<typename _Tp>
     inline constexpr bool is_bounded_array_v
       = is_bounded_array<_Tp>::value;
 
+  /// @ingroup variable_templates
   template<typename _Tp>
     inline constexpr bool is_unbounded_array_v
       = is_unbounded_array<_Tp>::value;
 
 #if __cplusplus > 202002L
 #define __cpp_lib_is_scoped_enum 202011L
+
+  /// @since C++23
+  //@{
 
   template<typename _Tp>
     struct is_scoped_enum
@@ -3312,6 +3402,9 @@ template <typename _From, typename _To>
     : bool_constant<!requires(_Tp __t, void(*__f)(int)) { __f(__t); }>
     { };
 
+  /**
+   * @ingroup variable_templates
+   */
   template<typename _Tp>
     inline constexpr bool is_scoped_enum_v = is_scoped_enum<_Tp>::value;
 #endif // C++23
@@ -3320,11 +3413,14 @@ template <typename _From, typename _To>
 
 #define __cpp_lib_is_constant_evaluated 201811L
 
+  /// Returns true only when called during constant evaluation.
   constexpr inline bool
   is_constant_evaluated() noexcept
   { return __builtin_is_constant_evaluated(); }
+  /// @}
 #endif
 
+  /// @cond undocumented
   template<typename _From, typename _To>
     using __copy_cv = typename __match_cv_qualifiers<_From, _To>::__type;
 
@@ -3378,12 +3474,14 @@ template <typename _From, typename _To>
     struct __common_ref_impl<_Xp&, _Yp&&>
     : __common_ref_impl<_Yp&&, _Xp&>
     { };
+  /// @endcond
 
   template<typename _Tp, typename _Up,
 	   template<typename> class _TQual, template<typename> class _UQual>
     struct basic_common_reference
     { };
 
+  /// @cond undocumented
   template<typename _Tp>
     struct __xref
     { template<typename _Up> using __type = __copy_cv<_Tp, _Up>; };
@@ -3402,6 +3500,7 @@ template <typename _From, typename _To>
 					remove_cvref_t<_Tp2>,
 					__xref<_Tp1>::template __type,
 					__xref<_Tp2>::template __type>::type;
+  /// @endcond
 
   template<typename... _Tp>
     struct common_reference;
@@ -3419,6 +3518,7 @@ template <typename _From, typename _To>
     struct common_reference<_Tp0>
     { using type = _Tp0; };
 
+  /// @cond undocumented
   template<typename _Tp1, typename _Tp2, int _Bullet = 1, typename = void>
     struct __common_reference_impl
     : __common_reference_impl<_Tp1, _Tp2, _Bullet + 1>
@@ -3488,8 +3588,11 @@ template <typename _From, typename _To>
 			      void_t<common_reference_t<_Tp1, _Tp2>>>
     : public common_reference<common_reference_t<_Tp1, _Tp2>, _Rest...>
     { };
+  /// @endcond
 
 #endif // C++2a
+
+  /// @} group metaprogramming
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

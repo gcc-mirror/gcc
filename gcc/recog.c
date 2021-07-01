@@ -1393,7 +1393,7 @@ valid_insn_p (rtx_insn *insn)
   return true;
 }
 
-/* Return 1 if OP is a valid general operand for machine mode MODE.
+/* Return true if OP is a valid general operand for machine mode MODE.
    This is either a register reference, a memory reference,
    or a constant.  In the case of a memory reference, the address
    is checked for general validity for the target machine.
@@ -1407,7 +1407,7 @@ valid_insn_p (rtx_insn *insn)
    The main use of this function is as a predicate in match_operand
    expressions in the machine description.  */
 
-int
+bool
 general_operand (rtx op, machine_mode mode)
 {
   enum rtx_code code = GET_CODE (op);
@@ -1420,12 +1420,12 @@ general_operand (rtx op, machine_mode mode)
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
       && GET_MODE_CLASS (mode) != MODE_INT
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
-    return 0;
+    return false;
 
   if (CONST_INT_P (op)
       && mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
-    return 0;
+    return false;
 
   if (CONSTANT_P (op))
     return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode
@@ -1439,7 +1439,7 @@ general_operand (rtx op, machine_mode mode)
      OP's mode must match MODE if MODE specifies a mode.  */
 
   if (GET_MODE (op) != mode)
-    return 0;
+    return false;
 
   if (code == SUBREG)
     {
@@ -1452,7 +1452,7 @@ general_operand (rtx op, machine_mode mode)
 	 get cleaned up by cleanup_subreg_operands.  */
       if (!reload_completed && MEM_P (sub)
 	  && paradoxical_subreg_p (op))
-	return 0;
+	return false;
 #endif
       /* Avoid memories with nonzero SUBREG_BYTE, as offsetting the memory
          may result in incorrect reference.  We should simplify all valid
@@ -1463,7 +1463,7 @@ general_operand (rtx op, machine_mode mode)
       if (!reload_completed
 	  && maybe_ne (SUBREG_BYTE (op), 0)
 	  && MEM_P (sub))
-	return 0;
+	return false;
 
       if (REG_P (sub)
 	  && REGNO (sub) < FIRST_PSEUDO_REGISTER
@@ -1474,7 +1474,7 @@ general_operand (rtx op, machine_mode mode)
 	     operand reload presentation.  LRA needs to treat them as
 	     valid.  */
 	  && ! LRA_SUBREG_P (op))
-	return 0;
+	return false;
 
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
 	 create such rtl, and we must reject it.  */
@@ -1486,7 +1486,7 @@ general_operand (rtx op, machine_mode mode)
 	     mode.  */
 	  && ! lra_in_progress 
 	  && paradoxical_subreg_p (op))
-	return 0;
+	return false;
 
       op = sub;
       code = GET_CODE (op);
@@ -1501,7 +1501,7 @@ general_operand (rtx op, machine_mode mode)
       rtx y = XEXP (op, 0);
 
       if (! volatile_ok && MEM_VOLATILE_P (op))
-	return 0;
+	return false;
 
       /* Use the mem's mode, since it will be reloaded thus.  LRA can
 	 generate move insn with invalid addresses which is made valid
@@ -1509,19 +1509,19 @@ general_operand (rtx op, machine_mode mode)
 	 transformations.  */
       if (lra_in_progress
 	  || memory_address_addr_space_p (GET_MODE (op), y, MEM_ADDR_SPACE (op)))
-	return 1;
+	return true;
     }
 
-  return 0;
+  return false;
 }
 
-/* Return 1 if OP is a valid memory address for a memory reference
+/* Return true if OP is a valid memory address for a memory reference
    of mode MODE.
 
    The main use of this function is as a predicate in match_operand
    expressions in the machine description.  */
 
-int
+bool
 address_operand (rtx op, machine_mode mode)
 {
   /* Wrong mode for an address expr.  */
@@ -1532,13 +1532,13 @@ address_operand (rtx op, machine_mode mode)
   return memory_address_p (mode, op);
 }
 
-/* Return 1 if OP is a register reference of mode MODE.
+/* Return true if OP is a register reference of mode MODE.
    If MODE is VOIDmode, accept a register in any mode.
 
    The main use of this function is as a predicate in match_operand
    expressions in the machine description.  */
 
-int
+bool
 register_operand (rtx op, machine_mode mode)
 {
   if (GET_CODE (op) == SUBREG)
@@ -1552,29 +1552,29 @@ register_operand (rtx op, machine_mode mode)
 	 but currently it does result from (SUBREG (REG)...) where the
 	 reg went on the stack.)  */
       if (!REG_P (sub) && (reload_completed || !MEM_P (sub)))
-	return 0;
+	return false;
     }
   else if (!REG_P (op))
-    return 0;
+    return false;
   return general_operand (op, mode);
 }
 
-/* Return 1 for a register in Pmode; ignore the tested mode.  */
+/* Return true for a register in Pmode; ignore the tested mode.  */
 
-int
+bool
 pmode_register_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 {
   return register_operand (op, Pmode);
 }
 
-/* Return 1 if OP should match a MATCH_SCRATCH, i.e., if it is a SCRATCH
+/* Return true if OP should match a MATCH_SCRATCH, i.e., if it is a SCRATCH
    or a hard register.  */
 
-int
+bool
 scratch_operand (rtx op, machine_mode mode)
 {
   if (GET_MODE (op) != mode && mode != VOIDmode)
-    return 0;
+    return false;
 
   return (GET_CODE (op) == SCRATCH
 	  || (REG_P (op)
@@ -1583,12 +1583,12 @@ scratch_operand (rtx op, machine_mode mode)
 		      && REGNO_REG_CLASS (REGNO (op)) != NO_REGS))));
 }
 
-/* Return 1 if OP is a valid immediate operand for mode MODE.
+/* Return true if OP is a valid immediate operand for mode MODE.
 
    The main use of this function is as a predicate in match_operand
    expressions in the machine description.  */
 
-int
+bool
 immediate_operand (rtx op, machine_mode mode)
 {
   /* Don't accept CONST_INT or anything similar
@@ -1596,12 +1596,12 @@ immediate_operand (rtx op, machine_mode mode)
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
       && GET_MODE_CLASS (mode) != MODE_INT
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
-    return 0;
+    return false;
 
   if (CONST_INT_P (op)
       && mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
-    return 0;
+    return false;
 
   return (CONSTANT_P (op)
 	  && (GET_MODE (op) == mode || mode == VOIDmode
@@ -1612,29 +1612,29 @@ immediate_operand (rtx op, machine_mode mode)
 					    : mode, op));
 }
 
-/* Returns 1 if OP is an operand that is a CONST_INT of mode MODE.  */
+/* Return true if OP is an operand that is a CONST_INT of mode MODE.  */
 
-int
+bool
 const_int_operand (rtx op, machine_mode mode)
 {
   if (!CONST_INT_P (op))
-    return 0;
+    return false;
 
   if (mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
-    return 0;
+    return false;
 
-  return 1;
+  return true;
 }
 
 #if TARGET_SUPPORTS_WIDE_INT
-/* Returns 1 if OP is an operand that is a CONST_INT or CONST_WIDE_INT
+/* Return true if OP is an operand that is a CONST_INT or CONST_WIDE_INT
    of mode MODE.  */
-int
+bool
 const_scalar_int_operand (rtx op, machine_mode mode)
 {
   if (!CONST_SCALAR_INT_P (op))
-    return 0;
+    return false;
 
   if (CONST_INT_P (op))
     return const_int_operand (op, mode);
@@ -1646,10 +1646,10 @@ const_scalar_int_operand (rtx op, machine_mode mode)
       int bitsize = GET_MODE_BITSIZE (int_mode);
 
       if (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT > bitsize)
-	return 0;
+	return false;
 
       if (prec == bitsize)
-	return 1;
+	return true;
       else
 	{
 	  /* Multiword partial int.  */
@@ -1658,23 +1658,23 @@ const_scalar_int_operand (rtx op, machine_mode mode)
 	  return (sext_hwi (x, prec & (HOST_BITS_PER_WIDE_INT - 1)) == x);
 	}
     }
-  return 1;
+  return true;
 }
 
-/* Returns 1 if OP is an operand that is a constant integer or constant
+/* Return true if OP is an operand that is a constant integer or constant
    floating-point number of MODE.  */
 
-int
+bool
 const_double_operand (rtx op, machine_mode mode)
 {
   return (GET_CODE (op) == CONST_DOUBLE)
 	  && (GET_MODE (op) == mode || mode == VOIDmode);
 }
 #else
-/* Returns 1 if OP is an operand that is a constant integer or constant
+/* Return true if OP is an operand that is a constant integer or constant
    floating-point number of MODE.  */
 
-int
+bool
 const_double_operand (rtx op, machine_mode mode)
 {
   /* Don't accept CONST_INT or anything similar
@@ -1682,25 +1682,26 @@ const_double_operand (rtx op, machine_mode mode)
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
       && GET_MODE_CLASS (mode) != MODE_INT
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
-    return 0;
+    return false;
 
   return ((CONST_DOUBLE_P (op) || CONST_INT_P (op))
 	  && (mode == VOIDmode || GET_MODE (op) == mode
 	      || GET_MODE (op) == VOIDmode));
 }
 #endif
-/* Return 1 if OP is a general operand that is not an immediate
+/* Return true if OP is a general operand that is not an immediate
    operand of mode MODE.  */
 
-int
+bool
 nonimmediate_operand (rtx op, machine_mode mode)
 {
   return (general_operand (op, mode) && ! CONSTANT_P (op));
 }
 
-/* Return 1 if OP is a register reference or immediate value of mode MODE.  */
+/* Return true if OP is a register reference or
+   immediate value of mode MODE.  */
 
-int
+bool
 nonmemory_operand (rtx op, machine_mode mode)
 {
   if (CONSTANT_P (op))
@@ -1708,20 +1709,20 @@ nonmemory_operand (rtx op, machine_mode mode)
   return register_operand (op, mode);
 }
 
-/* Return 1 if OP is a valid operand that stands for pushing a
+/* Return true if OP is a valid operand that stands for pushing a
    value of mode MODE onto the stack.
 
    The main use of this function is as a predicate in match_operand
    expressions in the machine description.  */
 
-int
+bool
 push_operand (rtx op, machine_mode mode)
 {
   if (!MEM_P (op))
-    return 0;
+    return false;
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
+    return false;
 
   poly_int64 rounded_size = GET_MODE_SIZE (mode);
 
@@ -1734,7 +1735,7 @@ push_operand (rtx op, machine_mode mode)
   if (known_eq (rounded_size, GET_MODE_SIZE (mode)))
     {
       if (GET_CODE (op) != STACK_PUSH_CODE)
-	return 0;
+	return false;
     }
   else
     {
@@ -1746,31 +1747,31 @@ push_operand (rtx op, machine_mode mode)
 	  || (STACK_GROWS_DOWNWARD
 	      ? maybe_ne (offset, -rounded_size)
 	      : maybe_ne (offset, rounded_size)))
-	return 0;
+	return false;
     }
 
   return XEXP (op, 0) == stack_pointer_rtx;
 }
 
-/* Return 1 if OP is a valid operand that stands for popping a
+/* Return true if OP is a valid operand that stands for popping a
    value of mode MODE off the stack.
 
    The main use of this function is as a predicate in match_operand
    expressions in the machine description.  */
 
-int
+bool
 pop_operand (rtx op, machine_mode mode)
 {
   if (!MEM_P (op))
-    return 0;
+    return false;
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
+    return false;
 
   op = XEXP (op, 0);
 
   if (GET_CODE (op) != STACK_POP_CODE)
-    return 0;
+    return false;
 
   return XEXP (op, 0) == stack_pointer_rtx;
 }
@@ -1794,13 +1795,13 @@ memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
-/* Return 1 if OP is a valid memory reference with mode MODE,
+/* Return true if OP is a valid memory reference with mode MODE,
    including a valid address.
 
    The main use of this function is as a predicate in match_operand
    expressions in the machine description.  */
 
-int
+bool
 memory_operand (rtx op, machine_mode mode)
 {
   rtx inner;
@@ -1811,7 +1812,7 @@ memory_operand (rtx op, machine_mode mode)
     return MEM_P (op) && general_operand (op, mode);
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
+    return false;
 
   inner = op;
   if (GET_CODE (inner) == SUBREG)
@@ -1820,10 +1821,10 @@ memory_operand (rtx op, machine_mode mode)
   return (MEM_P (inner) && general_operand (op, mode));
 }
 
-/* Return 1 if OP is a valid indirect memory reference with mode MODE;
+/* Return true if OP is a valid indirect memory reference with mode MODE;
    that is, a memory reference whose address is a general_operand.  */
 
-int
+bool
 indirect_operand (rtx op, machine_mode mode)
 {
   /* Before reload, a SUBREG isn't in memory (see memory_operand, above).  */
@@ -1831,7 +1832,7 @@ indirect_operand (rtx op, machine_mode mode)
       && GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
     {
       if (mode != VOIDmode && GET_MODE (op) != mode)
-	return 0;
+	return false;
 
       /* The only way that we can have a general_operand as the resulting
 	 address is if OFFSET is zero and the address already is an operand
@@ -1848,10 +1849,10 @@ indirect_operand (rtx op, machine_mode mode)
 	  && general_operand (XEXP (op, 0), Pmode));
 }
 
-/* Return 1 if this is an ordered comparison operator (not including
+/* Return true if this is an ordered comparison operator (not including
    ORDERED and UNORDERED).  */
 
-int
+bool
 ordered_comparison_operator (rtx op, machine_mode mode)
 {
   if (mode != VOIDmode && GET_MODE (op) != mode)
@@ -1874,10 +1875,10 @@ ordered_comparison_operator (rtx op, machine_mode mode)
     }
 }
 
-/* Return 1 if this is a comparison operator.  This allows the use of
+/* Return true if this is a comparison operator.  This allows the use of
    MATCH_OPERATOR to recognize all the branch insns.  */
 
-int
+bool
 comparison_operator (rtx op, machine_mode mode)
 {
   return ((mode == VOIDmode || GET_MODE (op) == mode)

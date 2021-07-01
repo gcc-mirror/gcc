@@ -1,3 +1,8 @@
+2021-06-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* make-temp-file.c (usrtmp): Remove.
+	(choose_tmpdir): Remove use of usrtmp.
+
 2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* simple-object.c (handle_lto_debug_sections): Copy over .BTF section.

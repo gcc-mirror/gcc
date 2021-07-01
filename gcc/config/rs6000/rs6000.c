@@ -1146,7 +1146,7 @@ static bool set_to_load_agen (rtx_insn *,rtx_insn *);
 static bool insn_terminates_group_p (rtx_insn *, enum group_termination);
 static bool insn_must_be_first_in_group (rtx_insn *);
 static bool insn_must_be_last_in_group (rtx_insn *);
-int easy_vector_constant (rtx, machine_mode);
+bool easy_vector_constant (rtx, machine_mode);
 static rtx rs6000_debug_legitimize_address (rtx, rtx, machine_mode);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
 #if TARGET_MACHO

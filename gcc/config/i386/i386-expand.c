@@ -190,6 +190,82 @@ ix86_expand_clear (rtx dest)
   emit_insn (tmp);
 }
 
+/* Return true if V can be broadcasted from an integer of WIDTH bits
+   which is returned in VAL_BROADCAST.  Otherwise, return false.  */
+
+static bool
+ix86_broadcast (HOST_WIDE_INT v, unsigned int width,
+		HOST_WIDE_INT &val_broadcast)
+{
+  wide_int val = wi::uhwi (v, HOST_BITS_PER_WIDE_INT);
+  val_broadcast = wi::extract_uhwi (val, 0, width);
+  for (unsigned int i = width; i < HOST_BITS_PER_WIDE_INT; i += width)
+    {
+      HOST_WIDE_INT each = wi::extract_uhwi (val, i, width);
+      if (val_broadcast != each)
+	return false;
+    }
+  val_broadcast = sext_hwi (val_broadcast, width);
+  return true;
+}
+
+/* Convert the CONST_WIDE_INT operand OP to broadcast in MODE.  */
+
+static rtx
+ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
+{
+  /* Don't use integer vector broadcast if we can't move from GPR to SSE
+     register directly.  */
+  if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+    return nullptr;
+
+  /* Convert CONST_WIDE_INT to a non-standard SSE constant integer
+     broadcast only if vector broadcast is available.  */
+  if (!TARGET_AVX
+      || !CONST_WIDE_INT_P (op)
+      || standard_sse_constant_p (op, mode))
+    return nullptr;
+
+  HOST_WIDE_INT val = CONST_WIDE_INT_ELT (op, 0);
+  HOST_WIDE_INT val_broadcast;
+  scalar_int_mode broadcast_mode;
+  if (TARGET_AVX2
+      && ix86_broadcast (val, GET_MODE_BITSIZE (QImode),
+			 val_broadcast))
+    broadcast_mode = QImode;
+  else if (TARGET_AVX2
+	   && ix86_broadcast (val, GET_MODE_BITSIZE (HImode),
+			      val_broadcast))
+    broadcast_mode = HImode;
+  else if (ix86_broadcast (val, GET_MODE_BITSIZE (SImode),
+			   val_broadcast))
+    broadcast_mode = SImode;
+  else if (TARGET_64BIT
+	   && ix86_broadcast (val, GET_MODE_BITSIZE (DImode),
+			      val_broadcast))
+    broadcast_mode = DImode;
+  else
+    return nullptr;
+
+  /* Check if OP can be broadcasted from VAL.  */
+  for (int i = 1; i < CONST_WIDE_INT_NUNITS (op); i++)
+    if (val != CONST_WIDE_INT_ELT (op, i))
+      return nullptr;
+
+  unsigned int nunits = (GET_MODE_SIZE (mode)
+			 / GET_MODE_SIZE (broadcast_mode));
+  machine_mode vector_mode;
+  if (!mode_for_vector (broadcast_mode, nunits).exists (&vector_mode))
+    gcc_unreachable ();
+  rtx target = ix86_gen_scratch_sse_rtx (vector_mode);
+  bool ok = ix86_expand_vector_init_duplicate (false, vector_mode,
+					       target,
+					       GEN_INT (val_broadcast));
+  gcc_assert (ok);
+  target = lowpart_subreg (mode, target, vector_mode);
+  return target;
+}
+
 void
 ix86_expand_move (machine_mode mode, rtx operands[])
 {
@@ -347,25 +423,87 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	  && optimize)
 	op1 = copy_to_mode_reg (mode, op1);
 
-      if (can_create_pseudo_p ()
-	  && CONST_DOUBLE_P (op1))
+      if (can_create_pseudo_p ())
 	{
-	  /* If we are loading a floating point constant to a register,
-	     force the value to memory now, since we'll get better code
-	     out the back end.  */
-
-	  op1 = validize_mem (force_const_mem (mode, op1));
-	  if (!register_operand (op0, mode))
+	  if (CONST_DOUBLE_P (op1))
 	    {
-	      rtx temp = gen_reg_rtx (mode);
-	      emit_insn (gen_rtx_SET (temp, op1));
-	      emit_move_insn (op0, temp);
-	      return;
+	      /* If we are loading a floating point constant to a
+		 register, force the value to memory now, since we'll
+		 get better code out the back end.  */
+
+	      op1 = validize_mem (force_const_mem (mode, op1));
+	      if (!register_operand (op0, mode))
+		{
+		  rtx temp = gen_reg_rtx (mode);
+		  emit_insn (gen_rtx_SET (temp, op1));
+		  emit_move_insn (op0, temp);
+		  return;
+		}
+	    }
+	  else if (GET_MODE_SIZE (mode) >= 16)
+	    {
+	      rtx tmp = ix86_convert_const_wide_int_to_broadcast
+		(GET_MODE (op0), op1);
+	      if (tmp != nullptr)
+		op1 = tmp;
 	    }
 	}
     }
 
   emit_insn (gen_rtx_SET (op0, op1));
+}
+
+static rtx
+ix86_broadcast_from_integer_constant (machine_mode mode, rtx op)
+{
+  int nunits = GET_MODE_NUNITS (mode);
+  if (nunits < 2)
+    return nullptr;
+
+  /* Don't use integer vector broadcast if we can't move from GPR to SSE
+     register directly.  */
+  if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+    return nullptr;
+
+  /* Convert CONST_VECTOR to a non-standard SSE constant integer
+     broadcast only if vector broadcast is available.  */
+  if (!(TARGET_AVX2
+	|| (TARGET_AVX
+	    && (GET_MODE_INNER (mode) == SImode
+		|| GET_MODE_INNER (mode) == DImode)))
+      || standard_sse_constant_p (op, mode))
+    return nullptr;
+
+  /* Don't broadcast from a 64-bit integer constant in 32-bit mode.  */
+  if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT)
+    return nullptr;
+
+  rtx constant = get_pool_constant (XEXP (op, 0));
+  if (GET_CODE (constant) != CONST_VECTOR)
+    return nullptr;
+
+  /* There could be some rtx like
+     (mem/u/c:V16QI (symbol_ref/u:DI ("*.LC1")))
+     but with "*.LC1" refer to V2DI constant vector.  */
+  if (GET_MODE (constant) != mode)
+    {
+      constant = simplify_subreg (mode, constant, GET_MODE (constant),
+				  0);
+      if (constant == nullptr || GET_CODE (constant) != CONST_VECTOR)
+	return nullptr;
+    }
+
+  rtx first = XVECEXP (constant, 0, 0);
+
+  for (int i = 1; i < nunits; ++i)
+    {
+      rtx tmp = XVECEXP (constant, 0, i);
+      /* Vector duplicate value.  */
+      if (!rtx_equal_p (tmp, first))
+	return nullptr;
+    }
+
+  return first;
 }
 
 void
@@ -407,7 +545,36 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
 	  op1 = simplify_gen_subreg (mode, r, imode, SUBREG_BYTE (op1));
 	}
       else
-	op1 = validize_mem (force_const_mem (mode, op1));
+	{
+	  machine_mode mode = GET_MODE (op0);
+	  rtx tmp = ix86_convert_const_wide_int_to_broadcast
+	    (mode, op1);
+	  if (tmp == nullptr)
+	    op1 = validize_mem (force_const_mem (mode, op1));
+	  else
+	    op1 = tmp;
+	}
+    }
+
+  if (can_create_pseudo_p ()
+      && GET_MODE_SIZE (mode) >= 16
+      && GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      && (MEM_P (op1)
+	  && SYMBOL_REF_P (XEXP (op1, 0))
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (op1, 0))))
+    {
+      rtx first = ix86_broadcast_from_integer_constant (mode, op1);
+      if (first != nullptr)
+	{
+	  /* Broadcast to XMM/YMM/ZMM register from an integer
+	     constant.  */
+	  op1 = ix86_gen_scratch_sse_rtx (mode);
+	  bool ok = ix86_expand_vector_init_duplicate (false, mode,
+						       op1, first);
+	  gcc_assert (ok);
+	  emit_move_insn (op0, op1);
+	  return;
+	}
     }
 
   /* We need to check memory alignment for SSE mode since attribute
@@ -3571,7 +3738,7 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
 
   cmp_op0 = force_reg (cmp_ops_mode, cmp_op0);
 
-  int (*op1_predicate)(rtx, machine_mode)
+  bool (*op1_predicate)(rtx, machine_mode)
     = VECTOR_MODE_P (cmp_ops_mode) ? vector_operand : nonimmediate_operand;
 
   if (!op1_predicate (cmp_op1, cmp_ops_mode))
@@ -13739,7 +13906,7 @@ static bool expand_vec_perm_1 (struct expand_vec_perm_d *d);
 /* A subroutine of ix86_expand_vector_init.  Store into TARGET a vector
    with all elements equal to VAR.  Return true if successful.  */
 
-static bool
+bool
 ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 				   rtx target, rtx val)
 {

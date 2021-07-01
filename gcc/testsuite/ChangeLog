@@ -1,3 +1,68 @@
+2021-06-30  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* gcc.dg/debug/ctf/ctf-skip-types-4.c: Add dg-add-options float64 and
+	float64x.
+
+2021-06-30  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-minmax.c: Adjust expected code for
+	power10.
+	* lib/target-supports.exp (check_effective_target_has_arch_pwr10):
+	New.
+
+2021-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-access2.C: New test.
+
+2021-06-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100975
+	DR 2397
+	* g++.dg/cpp0x/auto24.C: Remove dg-error.
+	* g++.dg/cpp0x/auto3.C: Adjust dg-error.
+	* g++.dg/cpp0x/auto42.C: Likewise.
+	* g++.dg/cpp0x/initlist75.C: Likewise.
+	* g++.dg/cpp0x/initlist80.C: Likewise.
+	* g++.dg/diagnostic/auto1.C: Remove dg-error.
+	* g++.dg/cpp23/auto-array.C: New test.
+
+2021-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101267
+	* gfortran.dg/pr101267.f90: New testcase.
+
+2021-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95006
+	* gcc.dg/analyzer/clobbers-1.c: New test.
+	* gcc.dg/analyzer/clobbers-2.c: New test.
+	* gcc.dg/analyzer/data-model-1.c (test_26): Mark xfail as fixed.
+	(test_28): Likewise.
+	(test_52): Likewise.  Add coverage for end of buffer.
+	* gcc.dg/analyzer/explode-1.c: Add leak warning.
+	* gcc.dg/analyzer/memset-1.c (test_3): Mark xfail as fixed.
+	(test_4): Use char.  Mark xfail as fixed.
+	(test_6b): New.
+	(test_7): Mark xfail as fixed.  Add coverage for start of buffer.
+	(test_8): New.
+	(test_9): New.
+	* gcc.dg/analyzer/memset-CVE-2017-18549-1.c: New test.
+	* gcc.dg/analyzer/symbolic-8.c: New test.
+
+2021-06-30  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* gcc.dg/debug/ctf/ctf-skip-types-2.c: Add dg-add-options float16.
+
+2021-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101264
+	* gfortran.dg/pr101264.f90: New testcase.
+
+2021-06-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101248
+	* gcc.target/i386/pr101248.c: New test.
+
 2021-06-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/pr101254.c: New.

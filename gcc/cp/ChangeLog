@@ -1,3 +1,19 @@
+2021-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (get_normalized_constraints_from_decl): Use
+	push_access_scope_guard instead of push_nested_class_guard.
+	* cp-tree.h (struct push_nested_class_guard): Replace with ...
+	(struct push_access_scope_guard): ... this.
+	* pt.c (push_access_scope): When the argument corresponds to
+	a class type, push the class instead of its context.
+	(pop_access_scope): Adjust accordingly.
+
+2021-06-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100975
+	DR 2397
+	* decl.c (create_array_type_for_decl): Allow array of auto.
+
 2021-06-29  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (instantiate_decl): Only consider partial specializations of

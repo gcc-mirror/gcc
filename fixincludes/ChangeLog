@@ -1,3 +1,12 @@
+2021-06-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR other/91085
+	* fixfixes.c (check_has_inc): New static function.
+	  (machine_name_fix): Don't replace header names in
+	  __has_include(...).
+	* inclhack.def (machine_name): Adjust test.
+	* tests/base/testing.h: Update.
+
 2020-12-14  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* fixincl.x: Rerun genfixes.

@@ -3845,7 +3845,9 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
      directly for non-aggregates to avoid creating a garbage CONSTRUCTOR.  */
   tree val;
   constexpr_ctx new_ctx;
-  if (CP_AGGREGATE_TYPE_P (elem_type))
+  if (is_really_empty_class (elem_type, /*ignore_vptr*/false))
+    return build_constructor (elem_type, NULL);
+  else if (CP_AGGREGATE_TYPE_P (elem_type))
     {
       tree empty_ctor = build_constructor (init_list_type_node, NULL);
       val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
