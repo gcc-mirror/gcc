@@ -1,6 +1,8 @@
 struct Point {
     x: f64,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
     y: f64,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
 }
 
 impl Point {
@@ -15,7 +17,9 @@ impl Point {
 
 struct Rectangle {
     p1: Point,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
     p2: Point,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
 }
 
 impl Rectangle {

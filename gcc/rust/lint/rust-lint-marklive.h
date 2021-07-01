@@ -38,6 +38,9 @@ public:
 
   void visit (HIR::PathInExpression &expr) override;
   void visit (HIR::IdentifierExpr &expr) override;
+  void visit (HIR::FieldAccessExpr &expr) override;
+  void visit (HIR::TupleIndexExpr &expr) override;
+  void visit (HIR::MethodCallExpr &expr) override;
 
   void visit (HIR::BorrowExpr &expr) override
   {
@@ -156,6 +159,10 @@ public:
   void visit (HIR::CallExpr &expr) override
   {
     expr.get_fnexpr ()->accept_vis (*this);
+    expr.iterate_params ([&] (HIR::Expr *expr) -> bool {
+      expr->accept_vis (*this);
+      return true;
+    });
   }
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override
@@ -226,9 +233,17 @@ private:
   std::set<HirId> scannedSymbols;
   Analysis::Mappings *mappings;
   Resolver::Resolver *resolver;
+  Resolver::TypeCheckContext *tyctx;
   MarkLive (std::vector<HirId> worklist)
     : worklist (worklist), mappings (Analysis::Mappings::get ()),
-      resolver (Resolver::Resolver::get ()){};
+      resolver (Resolver::Resolver::get ()),
+      tyctx (Resolver::TypeCheckContext::get ()){};
+
+  void mark_hir_id (HirId);
+  bool visit_path_segment (HIR::PathExprSegment);
+  void find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id,
+			 Location locus, const std::string &node_name);
+  void node_id_to_hir_id (CrateNum, NodeId, HirId &, Location);
 };
 
 } // namespace Analysis

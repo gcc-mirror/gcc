@@ -1,5 +1,6 @@
 struct Foo<A> {
     a: A,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
 }
 
 impl Foo<isize> {

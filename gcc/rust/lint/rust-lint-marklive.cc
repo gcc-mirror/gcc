@@ -92,47 +92,127 @@ void
 MarkLive::visit (HIR::PathInExpression &expr)
 {
   expr.iterate_path_segments ([&] (HIR::PathExprSegment &seg) -> bool {
-    NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
-    NodeId ref_node_id = UNKNOWN_NODEID;
-    HirId ref;
-    if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-      {
-	Resolver::Definition def;
-	if (!resolver->lookup_definition (ref_node_id, &def))
-	  {
-	    rust_error_at (seg.get_locus (),
-			   "unknown reference for resolved name");
-	    return false;
-	  }
-	ref_node_id = def.parent;
-      }
-    else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
-      {
-	return false;
-      }
+    return visit_path_segment (seg);
+  });
+}
 
-    if (!mappings->lookup_node_to_hir (seg.get_mappings ().get_crate_num (),
-				       ref_node_id, &ref))
-      {
-	rust_error_at (seg.get_locus (), "reverse lookup failure");
-	return false;
-      }
-    if (scannedSymbols.find (ref) == scannedSymbols.end ())
-      {
-	worklist.push_back (ref);
-      }
-    liveSymbols.emplace (ref);
+void
+MarkLive::visit (HIR::MethodCallExpr &expr)
+{
+  expr.get_receiver ()->accept_vis (*this);
+  visit_path_segment (expr.get_method_name ());
+  expr.iterate_params ([&] (HIR::Expr *param) -> bool {
+    param->accept_vis (*this);
     return true;
   });
+
+  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  find_ref_node_id (ast_node_id, ref_node_id, expr.get_locus (),
+		    expr.as_string ());
+
+  // node back to HIR
+  HirId ref;
+  node_id_to_hir_id (expr.get_mappings ().get_crate_num (), ref_node_id, ref,
+		     expr.get_locus ());
+  mark_hir_id (ref);
+}
+
+bool
+MarkLive::visit_path_segment (HIR::PathExprSegment seg)
+{
+  NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+    {
+      Resolver::Definition def;
+      if (!resolver->lookup_definition (ref_node_id, &def))
+	{
+	  rust_error_at (seg.get_locus (),
+			 "unknown reference for resolved name");
+	  return false;
+	}
+      ref_node_id = def.parent;
+    }
+  else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+    {
+      return false;
+    }
+  HirId ref;
+  node_id_to_hir_id (seg.get_mappings ().get_crate_num (), ref_node_id, ref,
+		     seg.get_locus ());
+  mark_hir_id (ref);
+  return true;
+}
+
+void
+MarkLive::visit (HIR::FieldAccessExpr &expr)
+{
+  // visit receiver at first
+  expr.get_receiver_expr ()->accept_vis (*this);
+
+  // resolve the receiver back to ADT type
+  TyTy::BaseType *receiver = nullptr;
+  if (!tyctx->lookup_type (
+	expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver))
+    {
+      rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
+		     "unresolved type for receiver");
+    }
+  rust_assert (receiver->get_kind () == TyTy::TypeKind::ADT);
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
+
+  // get the field index
+  size_t index = 0;
+  adt->get_field (expr.get_field_name (), &index);
+  if (index >= adt->num_fields ())
+    {
+      rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
+		     "cannot access struct %s by index: %ld",
+		     adt->get_name ().c_str (), index);
+      return;
+    }
+  // get the field hir id
+  HirId field_id = adt->get_field (index)->get_ref ();
+  mark_hir_id (field_id);
+}
+
+void
+MarkLive::visit (HIR::TupleIndexExpr &expr)
+{
+  // TODO: unused tuple field detection
+  expr.get_tuple_expr ()->accept_vis (*this);
 }
 
 void
 MarkLive::visit (HIR::IdentifierExpr &expr)
 {
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
-
-  // then lookup the reference_node_id
   NodeId ref_node_id = UNKNOWN_NODEID;
+  find_ref_node_id (ast_node_id, ref_node_id, expr.get_locus (),
+		    expr.as_string ());
+
+  // node back to HIR
+  HirId ref;
+  node_id_to_hir_id (expr.get_mappings ().get_crate_num (), ref_node_id, ref,
+		     expr.get_locus ());
+  mark_hir_id (ref);
+}
+
+void
+MarkLive::mark_hir_id (HirId id)
+{
+  if (scannedSymbols.find (id) == scannedSymbols.end ())
+    {
+      worklist.push_back (id);
+    }
+  liveSymbols.emplace (id);
+}
+
+void
+MarkLive::find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id,
+			    Location locus, const std::string &node_name)
+{
   if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
       // these ref_node_ids will resolve to a pattern declaration but we are
@@ -140,41 +220,28 @@ MarkLive::visit (HIR::IdentifierExpr &expr)
       Resolver::Definition def;
       if (!resolver->lookup_definition (ref_node_id, &def))
 	{
-	  rust_error_at (expr.get_locus (),
-			 "unknown reference for resolved name");
+	  rust_error_at (locus, "unknown reference for resolved name");
 	  return;
 	}
       ref_node_id = def.parent;
     }
   else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
     {
-      rust_error_at (expr.get_locus (),
-		     "Failed to lookup type reference for node: %s",
-		     expr.as_string ().c_str ());
+      rust_error_at (locus, "Failed to lookup type reference for node: %s",
+		     node_name.c_str ());
       return;
     }
+}
 
-  if (ref_node_id == UNKNOWN_NODEID)
+void
+MarkLive::node_id_to_hir_id (CrateNum crateNum, NodeId ref_node_id, HirId &ref,
+			     Location locus)
+{
+  if (!mappings->lookup_node_to_hir (crateNum, ref_node_id, &ref))
     {
-      rust_error_at (expr.get_locus (), "unresolved node: %s",
-		     expr.as_string ().c_str ());
+      rust_error_at (locus, "reverse lookup failure");
       return;
     }
-
-  // node back to HIR
-  HirId ref;
-  if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				     ref_node_id, &ref))
-    {
-      rust_error_at (expr.get_locus (), "reverse lookup failure");
-      return;
-    }
-
-  if (scannedSymbols.find (ref) == scannedSymbols.end ())
-    {
-      worklist.push_back (ref);
-    }
-  liveSymbols.emplace (ref);
 }
 
 } // namespace Analysis

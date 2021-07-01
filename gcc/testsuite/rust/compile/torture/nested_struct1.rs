@@ -1,11 +1,13 @@
 struct Point {
     x: f64,
     y: f64,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
 }
 
 struct Rectangle {
     p1: Point,
     p2: Point,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
 }
 
 fn main() {

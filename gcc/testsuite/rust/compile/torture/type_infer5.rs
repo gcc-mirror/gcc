@@ -1,6 +1,7 @@
 struct Foo {
     a: i32,
     b: i32,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
 }
 
 fn main() {
