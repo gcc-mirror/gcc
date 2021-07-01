@@ -2038,6 +2038,7 @@ is_float128 (tree node)
 }
 
 static bool bitfield_used = false;
+static bool packed_layout = false;
 
 /* Recursively dump in BUFFER Ada declarations corresponding to NODE of type
    TYPE.  SPC is the indentation level.  LIMITED_ACCESS indicates whether NODE
@@ -2851,14 +2852,14 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		return 1;
 	      }
 
-	    /* ??? Packed record layout is not supported.  */
+	    /* Packed record layout is not fully supported.  */
 	    if (TYPE_PACKED (TREE_TYPE (t)))
 	      {
-		warning_at (DECL_SOURCE_LOCATION (t), 0,
-			    "unsupported record layout");
+		warning_at (DECL_SOURCE_LOCATION (t), 0, "packed layout");
 		pp_string (buffer, "pragma Compile_Time_Warning (True, ");
-		pp_string (buffer, "\"probably incorrect record layout\");");
+		pp_string (buffer, "\"packed layout may be incorrect\");");
 		newline_and_indent (buffer, spc);
+		packed_layout = true;
 	      }
 
 	    if (orig && TYPE_NAME (orig))
@@ -2951,7 +2952,8 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
 	  pp_string (buffer, " : ");
 
-	  if (TREE_CODE (TREE_TYPE (TREE_TYPE (t))) != POINTER_TYPE)
+	  if (TREE_CODE (TREE_TYPE (TREE_TYPE (t))) != POINTER_TYPE
+	      && !packed_layout)
 	    pp_string (buffer, "aliased ");
 
 	  if (TYPE_NAME (TREE_TYPE (t)))
@@ -3185,7 +3187,8 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE
 	      && (TYPE_NAME (TREE_TYPE (t))
 		  || (TREE_CODE (TREE_TYPE (t)) != INTEGER_TYPE
-		      && TREE_CODE (TREE_TYPE (t)) != ENUMERAL_TYPE)))
+		      && TREE_CODE (TREE_TYPE (t)) != ENUMERAL_TYPE))
+	      && !packed_layout)
 	    pp_string (buffer, "aliased ");
 
 	  if (TREE_READONLY (t) && TREE_CODE (t) != FIELD_DECL)
@@ -3352,7 +3355,7 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
       pp_string (buffer, "Unchecked_Union => True");
     }
 
-  if (bitfield_used)
+  if (bitfield_used || packed_layout)
     {
       char buf[32];
       pp_comma (buffer);
@@ -3363,6 +3366,7 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
       sprintf (buf, "Alignment => %d", TYPE_ALIGN (node) / BITS_PER_UNIT);
       pp_string (buffer, buf);
       bitfield_used = false;
+      packed_layout = false;
     }
 
   if (nested)
