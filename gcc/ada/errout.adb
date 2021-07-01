@@ -2473,7 +2473,8 @@ package body Errout is
          function Get_Line_End
            (Buf : Source_Buffer_Ptr;
             Loc : Source_Ptr) return Source_Ptr;
-         --  Get the source location for the end of the line in Buf for Loc
+         --  Get the source location for the end of the line in Buf for Loc. If
+         --  Loc is past the end of Buf already, return Buf'Last.
 
          function Get_Line_Start
            (Buf : Source_Buffer_Ptr;
@@ -2515,9 +2516,9 @@ package body Errout is
            (Buf : Source_Buffer_Ptr;
             Loc : Source_Ptr) return Source_Ptr
          is
-            Cur_Loc : Source_Ptr := Loc;
+            Cur_Loc : Source_Ptr := Source_Ptr'Min (Loc, Buf'Last);
          begin
-            while Cur_Loc <= Buf'Last
+            while Cur_Loc < Buf'Last
               and then Buf (Cur_Loc) /= ASCII.LF
             loop
                Cur_Loc := Cur_Loc + 1;
