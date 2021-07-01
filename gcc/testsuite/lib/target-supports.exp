@@ -1576,6 +1576,22 @@ proc check_effective_target_fortran_real_10 { } {
     }]
 }
 
+# Return 1 if the target supports Fortran real kind C_FLOAT128,
+# 0 otherwise.  This differs from check_effective_target_fortran_real_16
+# because __float128 has the additional requirement that it be the
+# 128-bit IEEE encoding; even if __float128 is available in C, it may not
+# have a corresponding Fortran kind on targets (PowerPC) that use some 
+# other encoding for long double/TFmode/real(16).
+proc check_effective_target_fortran_real_c_float128 { } {
+    return [check_no_compiler_messages fortran_real_c_float128 executable {
+	! Fortran
+	use iso_c_binding
+	real(kind=c_float128) :: x
+	x = cos (x)
+	end
+    }]
+}
+
 # Return 1 if the target supports Fortran's IEEE modules,
 # 0 otherwise.
 #
