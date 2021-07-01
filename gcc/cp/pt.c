@@ -10268,10 +10268,6 @@ finish_template_variable (tree var, tsubst_flags_t complain)
   tree templ = TREE_OPERAND (var, 0);
   tree arglist = TREE_OPERAND (var, 1);
 
-  tree tmpl_args = DECL_TI_ARGS (DECL_TEMPLATE_RESULT (templ));
-  arglist = add_outermost_template_args (tmpl_args, arglist);
-
-  templ = most_general_template (templ);
   tree parms = DECL_TEMPLATE_PARMS (templ);
   arglist = coerce_innermost_template_parms (parms, arglist, templ, complain,
 					     /*req_all*/true,
@@ -11774,11 +11770,8 @@ instantiate_class_template_1 (tree type)
   deferring_access_check_sentinel acs (dk_no_deferred);
 
   /* Determine what specialization of the original template to
-     instantiate; do this relative to the scope of the class for
-     sake of access checking.  */
-  push_nested_class (type);
+     instantiate.  */
   t = most_specialized_partial_spec (type, tf_warning_or_error);
-  pop_nested_class ();
   if (t == error_mark_node)
     return error_mark_node;
   else if (t)
@@ -21134,7 +21127,7 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
       /* We need to determine if we're using a partial or explicit
 	 specialization now, because the type of the variable could be
 	 different.  */
-      tree tid = lookup_template_variable (gen_tmpl, targ_ptr);
+      tree tid = lookup_template_variable (tmpl, targ_ptr);
       tree elt = most_specialized_partial_spec (tid, complain);
       if (elt == error_mark_node)
 	pattern = error_mark_node;
@@ -24987,25 +24980,32 @@ most_specialized_partial_spec (tree target, tsubst_flags_t complain)
   tree outer_args = NULL_TREE;
   tree tmpl, args;
 
+  tree decl;
   if (TYPE_P (target))
     {
       tree tinfo = CLASSTYPE_TEMPLATE_INFO (target);
       tmpl = TI_TEMPLATE (tinfo);
       args = TI_ARGS (tinfo);
+      decl = TYPE_NAME (target);
     }
   else if (TREE_CODE (target) == TEMPLATE_ID_EXPR)
     {
       tmpl = TREE_OPERAND (target, 0);
       args = TREE_OPERAND (target, 1);
+      decl = DECL_TEMPLATE_RESULT (tmpl);
     }
   else if (VAR_P (target))
     {
       tree tinfo = DECL_TEMPLATE_INFO (target);
       tmpl = TI_TEMPLATE (tinfo);
       args = TI_ARGS (tinfo);
+      decl = target;
     }
   else
     gcc_unreachable ();
+
+  push_access_scope_guard pas (decl);
+  deferring_access_check_sentinel acs (dk_no_deferred);
 
   tree main_tmpl = most_general_template (tmpl);
 
@@ -26011,8 +26011,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   if (variable_template_specialization_p (d))
     {
       /* Look up an explicit specialization, if any.  */
-      tree tid = lookup_template_variable (gen_tmpl, gen_args);
-      tree elt = most_specialized_partial_spec (tid, tf_warning_or_error);
+      tree elt = most_specialized_partial_spec (d, tf_warning_or_error);
       if (elt && elt != error_mark_node)
 	{
 	  td = TREE_VALUE (elt);
