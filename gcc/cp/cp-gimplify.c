@@ -1200,11 +1200,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       {
 	if (tree check = build_contract_check (stmt))
 	  {
-	    /* Mark the current function as possibly throwing exceptions
-	       (through invocation of the contract violation handler).  */
-	    current_function_returns_abnormally = 1;
-	    TREE_NOTHROW (current_function_decl) = 0;
-
 	    *stmt_p = check;
 	    return cp_genericize_r (stmt_p, walk_subtrees, data);
 	  }

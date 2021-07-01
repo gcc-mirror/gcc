@@ -1573,8 +1573,8 @@ get_contract_role_name (tree contract)
 }
 
 static void
-build_contract_handler_fn (tree contract,
-			   contract_continuation cmode)
+build_contract_handler_call (tree contract,
+			     contract_continuation cmode)
 {
   const char *level = get_contract_level_name (contract);
   const char *role = get_contract_role_name (contract);
@@ -1604,10 +1604,10 @@ build_contract_handler_fn (tree contract,
     violation_fn = on_contract_violation_fn;
   else
     violation_fn = on_contract_violation_never_fn;
-  tree call = build_call_expr (violation_fn, 8, continue_mode, line_number,
-			       file_name, function_name, comment,
-			       level_str, role_str,
-			       continuation);
+  tree call = build_call_n (violation_fn, 8, continue_mode, line_number,
+			    file_name, function_name, comment,
+			    level_str, role_str,
+			    continuation);
 
   finish_expr_stmt (call);
 }
@@ -1645,7 +1645,7 @@ build_contract_check (tree contract)
 
   /* Ignored contracts are never checked or assumed.  */
   if (semantic == CCS_IGNORE)
-    return build1 (NOP_EXPR, void_type_node, integer_zero_node);
+    return void_node;
 
   remap_dummy_this (current_function_decl, &CONTRACT_CONDITION (contract));
   tree condition = CONTRACT_CONDITION (contract);
@@ -1656,7 +1656,7 @@ build_contract_check (tree contract)
      of turning it into a compile time assumption fails and emits run time
      code.  We don't want that, so just turn these into NOP.  */
   if (semantic == CCS_ASSUME && !cp_tree_defined_p (condition))
-    return build1 (NOP_EXPR, void_type_node, integer_zero_node);
+    return void_node;
 
   tree if_stmt = begin_if_stmt ();
   tree cond = build_x_unary_op (EXPR_LOCATION (contract),
@@ -1668,7 +1668,7 @@ build_contract_check (tree contract)
   if (semantic == CCS_ASSUME)
     {
       tree unreachable_fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-      tree call = build_call_expr (unreachable_fn, 0);
+      tree call = build_call_n (unreachable_fn, 0);
       finish_expr_stmt (call);
     }
   else
@@ -1682,7 +1682,7 @@ build_contract_check (tree contract)
 	  default: gcc_unreachable ();
 	}
 
-      build_contract_handler_fn (contract, cmode);
+      build_contract_handler_call (contract, cmode);
     }
 
   finish_then_clause (if_stmt);

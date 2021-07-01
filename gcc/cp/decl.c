@@ -17628,13 +17628,6 @@ finish_function (bool inline_p)
 
   finish_fname_decls ();
 
-  /* If this function can't throw any exceptions, remember that.  */
-  if (!processing_template_decl
-      && !cp_function_chain->can_throw
-      && !flag_non_call_exceptions
-      && !decl_replaceable_p (fndecl))
-    TREE_NOTHROW (fndecl) = 1;
-
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
      this function's blocks.  */
@@ -17858,6 +17851,13 @@ finish_function (bool inline_p)
       && !DECL_IMMEDIATE_FUNCTION_P (fndecl)
       && !DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     cp_genericize (fndecl);
+
+  /* If this function can't throw any exceptions, remember that.  */
+  if (!processing_template_decl
+      && !cp_function_chain->can_throw
+      && !flag_non_call_exceptions
+      && !decl_replaceable_p (fndecl))
+    TREE_NOTHROW (fndecl) = 1;
 
   /* Emit the resumer and destroyer functions now, providing that we have
      not encountered some fatal error.  */
