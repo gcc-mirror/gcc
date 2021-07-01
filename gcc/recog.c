@@ -1420,12 +1420,12 @@ general_operand (rtx op, machine_mode mode)
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
       && GET_MODE_CLASS (mode) != MODE_INT
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
-    return 0;
+    return false;
 
   if (CONST_INT_P (op)
       && mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
-    return 0;
+    return false;
 
   if (CONSTANT_P (op))
     return ((GET_MODE (op) == VOIDmode || GET_MODE (op) == mode
@@ -1439,7 +1439,7 @@ general_operand (rtx op, machine_mode mode)
      OP's mode must match MODE if MODE specifies a mode.  */
 
   if (GET_MODE (op) != mode)
-    return 0;
+    return false;
 
   if (code == SUBREG)
     {
@@ -1452,7 +1452,7 @@ general_operand (rtx op, machine_mode mode)
 	 get cleaned up by cleanup_subreg_operands.  */
       if (!reload_completed && MEM_P (sub)
 	  && paradoxical_subreg_p (op))
-	return 0;
+	return false;
 #endif
       /* Avoid memories with nonzero SUBREG_BYTE, as offsetting the memory
          may result in incorrect reference.  We should simplify all valid
@@ -1463,7 +1463,7 @@ general_operand (rtx op, machine_mode mode)
       if (!reload_completed
 	  && maybe_ne (SUBREG_BYTE (op), 0)
 	  && MEM_P (sub))
-	return 0;
+	return false;
 
       if (REG_P (sub)
 	  && REGNO (sub) < FIRST_PSEUDO_REGISTER
@@ -1474,7 +1474,7 @@ general_operand (rtx op, machine_mode mode)
 	     operand reload presentation.  LRA needs to treat them as
 	     valid.  */
 	  && ! LRA_SUBREG_P (op))
-	return 0;
+	return false;
 
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
 	 create such rtl, and we must reject it.  */
@@ -1486,7 +1486,7 @@ general_operand (rtx op, machine_mode mode)
 	     mode.  */
 	  && ! lra_in_progress 
 	  && paradoxical_subreg_p (op))
-	return 0;
+	return false;
 
       op = sub;
       code = GET_CODE (op);
@@ -1501,7 +1501,7 @@ general_operand (rtx op, machine_mode mode)
       rtx y = XEXP (op, 0);
 
       if (! volatile_ok && MEM_VOLATILE_P (op))
-	return 0;
+	return false;
 
       /* Use the mem's mode, since it will be reloaded thus.  LRA can
 	 generate move insn with invalid addresses which is made valid
@@ -1509,10 +1509,10 @@ general_operand (rtx op, machine_mode mode)
 	 transformations.  */
       if (lra_in_progress
 	  || memory_address_addr_space_p (GET_MODE (op), y, MEM_ADDR_SPACE (op)))
-	return 1;
+	return true;
     }
 
-  return 0;
+  return false;
 }
 
 /* Return true if OP is a valid memory address for a memory reference
@@ -1552,10 +1552,10 @@ register_operand (rtx op, machine_mode mode)
 	 but currently it does result from (SUBREG (REG)...) where the
 	 reg went on the stack.)  */
       if (!REG_P (sub) && (reload_completed || !MEM_P (sub)))
-	return 0;
+	return false;
     }
   else if (!REG_P (op))
-    return 0;
+    return false;
   return general_operand (op, mode);
 }
 
@@ -1574,7 +1574,7 @@ bool
 scratch_operand (rtx op, machine_mode mode)
 {
   if (GET_MODE (op) != mode && mode != VOIDmode)
-    return 0;
+    return false;
 
   return (GET_CODE (op) == SCRATCH
 	  || (REG_P (op)
@@ -1596,12 +1596,12 @@ immediate_operand (rtx op, machine_mode mode)
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
       && GET_MODE_CLASS (mode) != MODE_INT
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
-    return 0;
+    return false;
 
   if (CONST_INT_P (op)
       && mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
-    return 0;
+    return false;
 
   return (CONSTANT_P (op)
 	  && (GET_MODE (op) == mode || mode == VOIDmode
@@ -1618,13 +1618,13 @@ bool
 const_int_operand (rtx op, machine_mode mode)
 {
   if (!CONST_INT_P (op))
-    return 0;
+    return false;
 
   if (mode != VOIDmode
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
-    return 0;
+    return false;
 
-  return 1;
+  return true;
 }
 
 #if TARGET_SUPPORTS_WIDE_INT
@@ -1634,7 +1634,7 @@ bool
 const_scalar_int_operand (rtx op, machine_mode mode)
 {
   if (!CONST_SCALAR_INT_P (op))
-    return 0;
+    return false;
 
   if (CONST_INT_P (op))
     return const_int_operand (op, mode);
@@ -1646,10 +1646,10 @@ const_scalar_int_operand (rtx op, machine_mode mode)
       int bitsize = GET_MODE_BITSIZE (int_mode);
 
       if (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT > bitsize)
-	return 0;
+	return false;
 
       if (prec == bitsize)
-	return 1;
+	return true;
       else
 	{
 	  /* Multiword partial int.  */
@@ -1658,7 +1658,7 @@ const_scalar_int_operand (rtx op, machine_mode mode)
 	  return (sext_hwi (x, prec & (HOST_BITS_PER_WIDE_INT - 1)) == x);
 	}
     }
-  return 1;
+  return true;
 }
 
 /* Return true if OP is an operand that is a constant integer or constant
@@ -1682,7 +1682,7 @@ const_double_operand (rtx op, machine_mode mode)
   if (GET_MODE (op) == VOIDmode && mode != VOIDmode
       && GET_MODE_CLASS (mode) != MODE_INT
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
-    return 0;
+    return false;
 
   return ((CONST_DOUBLE_P (op) || CONST_INT_P (op))
 	  && (mode == VOIDmode || GET_MODE (op) == mode
@@ -1719,10 +1719,10 @@ bool
 push_operand (rtx op, machine_mode mode)
 {
   if (!MEM_P (op))
-    return 0;
+    return false;
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
+    return false;
 
   poly_int64 rounded_size = GET_MODE_SIZE (mode);
 
@@ -1735,7 +1735,7 @@ push_operand (rtx op, machine_mode mode)
   if (known_eq (rounded_size, GET_MODE_SIZE (mode)))
     {
       if (GET_CODE (op) != STACK_PUSH_CODE)
-	return 0;
+	return false;
     }
   else
     {
@@ -1747,7 +1747,7 @@ push_operand (rtx op, machine_mode mode)
 	  || (STACK_GROWS_DOWNWARD
 	      ? maybe_ne (offset, -rounded_size)
 	      : maybe_ne (offset, rounded_size)))
-	return 0;
+	return false;
     }
 
   return XEXP (op, 0) == stack_pointer_rtx;
@@ -1763,15 +1763,15 @@ bool
 pop_operand (rtx op, machine_mode mode)
 {
   if (!MEM_P (op))
-    return 0;
+    return false;
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
+    return false;
 
   op = XEXP (op, 0);
 
   if (GET_CODE (op) != STACK_POP_CODE)
-    return 0;
+    return false;
 
   return XEXP (op, 0) == stack_pointer_rtx;
 }
@@ -1812,7 +1812,7 @@ memory_operand (rtx op, machine_mode mode)
     return MEM_P (op) && general_operand (op, mode);
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
+    return false;
 
   inner = op;
   if (GET_CODE (inner) == SUBREG)
@@ -1832,7 +1832,7 @@ indirect_operand (rtx op, machine_mode mode)
       && GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
     {
       if (mode != VOIDmode && GET_MODE (op) != mode)
-	return 0;
+	return false;
 
       /* The only way that we can have a general_operand as the resulting
 	 address is if OFFSET is zero and the address already is an operand
