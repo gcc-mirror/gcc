@@ -142,7 +142,8 @@ public:
 			   std::move (qualifiers), std::move (generic_params),
 			   std::move (function_params), std::move (return_type),
 			   std::move (where_clause), std::move (function_body),
-			   std::move (vis), function.get_outer_attrs (), locus);
+			   std::move (vis), function.get_outer_attrs (),
+			   HIR::SelfParam::error (), locus);
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id, fn);
@@ -217,12 +218,12 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
     auto mth
-      = new HIR::Method (mapping, std::move (method_name),
-			 std::move (qualifiers), std::move (generic_params),
-			 std::move (self_param), std::move (function_params),
-			 std::move (return_type), std::move (where_clause),
-			 std::move (method_body), std::move (vis),
-			 method.get_outer_attrs (), locus);
+      = new HIR::Function (mapping, std::move (method_name),
+			   std::move (qualifiers), std::move (generic_params),
+			   std::move (function_params), std::move (return_type),
+			   std::move (where_clause), std::move (method_body),
+			   std::move (vis), method.get_outer_attrs (),
+			   std::move (self_param), locus);
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id, mth);

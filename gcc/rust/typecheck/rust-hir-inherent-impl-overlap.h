@@ -37,12 +37,6 @@ public:
     return resolver.ok;
   }
 
-  void visit (HIR::Method &method) override
-  {
-    ok = true;
-    result.assign (method.get_method_name ());
-  }
-
   void visit (HIR::Function &function) override
   {
     ok = true;
@@ -86,12 +80,6 @@ public:
   {
     ok = true;
     locus = function.get_locus ();
-  }
-
-  void visit (HIR::Method &method) override
-  {
-    ok = true;
-    locus = method.get_locus ();
   }
 
 private:

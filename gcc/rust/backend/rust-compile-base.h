@@ -121,7 +121,6 @@ public:
   // virtual void visit(WhereClauseItem& item) {}
   virtual void visit (HIR::LifetimeWhereClauseItem &item) {}
   virtual void visit (HIR::TypeBoundWhereClauseItem &item) {}
-  virtual void visit (HIR::Method &method) {}
   virtual void visit (HIR::ModuleBodied &module) {}
   virtual void visit (HIR::ModuleNoBody &module) {}
   virtual void visit (HIR::ExternCrate &crate) {}

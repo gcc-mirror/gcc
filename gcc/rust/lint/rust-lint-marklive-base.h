@@ -117,7 +117,6 @@ public:
 
   virtual void visit (HIR::LifetimeWhereClauseItem &) override {}
   virtual void visit (HIR::TypeBoundWhereClauseItem &) override {}
-  virtual void visit (HIR::Method &) override {}
   virtual void visit (HIR::ModuleBodied &) override {}
   virtual void visit (HIR::ModuleNoBody &) override {}
   virtual void visit (HIR::ExternCrate &) override {}

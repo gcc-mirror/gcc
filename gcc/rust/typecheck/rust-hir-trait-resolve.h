@@ -162,9 +162,9 @@ public:
 	  }
 
 	ty = new TyTy::FnType (fn.get_mappings ().get_hirid (),
-			       function.get_function_name (), false,
-			       std::move (params), ret_type,
-			       std::move (substitutions));
+			       function.get_function_name (),
+			       function.is_method (), std::move (params),
+			       ret_type, std::move (substitutions));
 	context->insert_type (fn.get_mappings (), ty);
       }
 
