@@ -1540,9 +1540,8 @@ dump_ada_import (pretty_printer *buffer, tree t, int spc)
    otherwise in BUFFER.  */
 
 static void
-check_name (pretty_printer *buffer, tree t)
+check_type_name_conflict (pretty_printer *buffer, tree t)
 {
-  const char *s;
   tree tmp = TREE_TYPE (t);
 
   while (TREE_CODE (tmp) == POINTER_TYPE && !TYPE_NAME (tmp))
@@ -1550,6 +1549,8 @@ check_name (pretty_printer *buffer, tree t)
 
   if (TREE_CODE (tmp) != FUNCTION_TYPE)
     {
+      const char *s;
+
       if (TREE_CODE (tmp) == IDENTIFIER_NODE)
 	s = IDENTIFIER_POINTER (tmp);
       else if (!TYPE_NAME (tmp))
@@ -1641,7 +1642,7 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 	{
 	  if (DECL_NAME (arg))
 	    {
-	      check_name (buffer, arg);
+	      check_type_name_conflict (buffer, arg);
 	      pp_ada_tree_identifier (buffer, DECL_NAME (arg), NULL_TREE,
 				      false);
 	      pp_string (buffer, " : ");
@@ -1710,7 +1711,8 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 static void
 dump_ada_array_domains (pretty_printer *buffer, tree node, int spc)
 {
-  int first = 1;
+  bool first = true;
+
   pp_left_paren (buffer);
 
   for (; TREE_CODE (node) == ARRAY_TYPE; node = TREE_TYPE (node))
@@ -1724,7 +1726,7 @@ dump_ada_array_domains (pretty_printer *buffer, tree node, int spc)
 
 	  if (!first)
 	    pp_string (buffer, ", ");
-	  first = 0;
+	  first = false;
 
 	  if (min)
 	    dump_ada_node (buffer, min, NULL_TREE, spc, false, true);
@@ -1738,7 +1740,10 @@ dump_ada_array_domains (pretty_printer *buffer, tree node, int spc)
 	    pp_string (buffer, "0");
 	}
       else
-	pp_string (buffer, "size_t");
+	{
+	  pp_string (buffer, "size_t");
+	  first = false;
+	}
     }
   pp_right_paren (buffer);
 }
@@ -3152,8 +3157,9 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       if (need_indent)
 	INDENT (spc);
 
-      if (TREE_CODE (t) == FIELD_DECL && DECL_NAME (t))
-	check_name (buffer, t);
+      if ((TREE_CODE (t) == FIELD_DECL || TREE_CODE (t) == VAR_DECL)
+	  && DECL_NAME (t))
+	check_type_name_conflict (buffer, t);
 
       /* Print variable/type's name.  */
       dump_ada_node (buffer, t, t, spc, false, true);
