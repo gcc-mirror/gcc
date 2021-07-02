@@ -1115,8 +1115,10 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 # endif
 #endif
 
-/* CTF support.  */
+/* CTF and BTF support.  */
 #undef CTF_INFO_SECTION_NAME
-#define CTF_INFO_SECTION_NAME "__CTF,__ctf,regular,debug"
+#define CTF_INFO_SECTION_NAME "__CTF_BTF,__ctf,regular,debug"
+#undef BTF_INFO_SECTION_NAME
+#define BTF_INFO_SECTION_NAME "__CTF_BTF,__btf,regular,debug"
 
 #endif /* CONFIG_DARWIN_H */
