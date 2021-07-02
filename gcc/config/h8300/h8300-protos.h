@@ -41,7 +41,7 @@ extern const char *output_logical_op (machine_mode, rtx_code code,
 extern unsigned int compute_logical_op_length (machine_mode, rtx_code,
 					      rtx *, rtx_insn *);
 
-extern int compute_a_shift_cc (rtx, rtx *);
+extern int compute_a_shift_cc (rtx *, rtx_code);
 #ifdef HAVE_ATTR_cc
 extern enum attr_cc compute_plussi_cc (rtx *);
 #endif

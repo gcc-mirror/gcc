@@ -4297,11 +4297,9 @@ compute_a_shift_length (rtx operands[3], rtx_code code)
 /* Compute which flag bits are valid after a shift insn.  */
 
 int
-compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
+compute_a_shift_cc (rtx operands[3], rtx_code code)
 {
-  rtx shift = operands[3];
-  machine_mode mode = GET_MODE (shift);
-  enum rtx_code code = GET_CODE (shift);
+  machine_mode mode = GET_MODE (operands[0]);
   enum shift_type shift_type;
   enum shift_mode shift_mode;
   struct shift_info info;
@@ -4358,16 +4356,18 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
     {
     case SHIFT_SPECIAL:
       if (info.remainder == 0)
-	return info.cc_special;
+	return (info.cc_special == OLD_CC_SET_ZN
+		|| info.cc_special == OLD_CC_SET_ZNV);
 
       /* Fall through.  */
 
     case SHIFT_INLINE:
-      return info.cc_inline;
+      return (info.cc_inline == OLD_CC_SET_ZN
+	      || info.cc_inline == OLD_CC_SET_ZNV);
       
     case SHIFT_ROT_AND:
       /* This case always ends with an and instruction.  */
-      return OLD_CC_SET_ZNV;
+      return true;
       
     case SHIFT_LOOP:
       /* A loop to shift by a "large" constant value.
@@ -4375,9 +4375,11 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
       if (info.shift2 != NULL)
 	{
 	  if (n % 2)
-	    return info.cc_inline;
+	    return (info.cc_inline == OLD_CC_SET_ZN
+		    || info.cc_inline == OLD_CC_SET_ZNV);
+		
 	}
-      return OLD_CC_CLOBBER;
+      return false;
       
     default:
       gcc_unreachable ();
