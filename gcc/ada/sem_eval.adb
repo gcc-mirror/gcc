@@ -5741,6 +5741,8 @@ package body Sem_Eval is
       elsif Has_Dynamic_Predicate_Aspect (Typ)
         or else (Is_Derived_Type (Typ)
                   and then Has_Aspect (Typ, Aspect_Dynamic_Predicate))
+        or else (Has_Aspect (Typ, Aspect_Predicate)
+                  and then not Has_Static_Predicate (Typ))
       then
          return False;
 
