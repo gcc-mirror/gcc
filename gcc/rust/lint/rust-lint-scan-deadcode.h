@@ -46,15 +46,37 @@ public:
   void visit (HIR::Function &function) override
   {
     HirId hirId = function.get_mappings ().get_hirid ();
-    warning (hirId, function.get_locus (), "function",
-	     function.get_function_name (), "used");
+    if (should_warn (hirId))
+      {
+	rust_warning_at (function.get_locus (), 0, "%s is never %s: %<%s%>",
+			 "function", "used",
+			 function.get_function_name ().c_str ());
+      }
   }
 
   void visit (HIR::StructStruct &stct) override
   {
     HirId hirId = stct.get_mappings ().get_hirid ();
-    warning (hirId, stct.get_locus (), "struct", stct.get_identifier (),
-	     "constructed");
+    if (should_warn (hirId))
+      {
+	rust_warning_at (stct.get_locus (), 0, "%s is never %s: %<%s%>",
+			 "struct", "constructed",
+			 stct.get_identifier ().c_str ());
+      }
+    else
+      {
+	// only warn the unused fields when in unwarned struct.
+	stct.iterate ([&] (HIR::StructField &field) -> bool {
+	  HirId field_hir_id = field.get_mappings ().get_hirid ();
+	  if (should_warn (field_hir_id))
+	    {
+	      rust_warning_at (field.get_locus (), 0, "%s is never %s: %<%s%>",
+			       "field", "read",
+			       field.get_field_name ().c_str ());
+	    }
+	  return true;
+	});
+      }
   }
 
 private:
@@ -64,15 +86,11 @@ private:
   ScanDeadcode (std::set<HirId> &live_symbols)
     : live_symbols (live_symbols), resolver (Resolver::Resolver::get ()){};
 
-  void warning (HirId hirId, Location loc, const std::string &span,
-		const std::string &name, const std::string &participle) const
+  bool should_warn (HirId hirId)
   {
-    if (live_symbols.find (hirId) == live_symbols.end ())
-      {
-	rust_warning_at (loc, 0, "%s is never %s: %<%s%>", span.c_str (),
-			 participle.c_str (), name.c_str ());
-	return;
-      }
+    // TODO: There are more condition to check if should warn, i.e visibility,
+    // attributes.
+    return live_symbols.find (hirId) == live_symbols.end ();
   }
 };
 

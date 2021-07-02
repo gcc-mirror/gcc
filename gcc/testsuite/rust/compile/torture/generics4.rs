@@ -1,6 +1,8 @@
 struct Foo<T> {
     a: T,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
     b: bool,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
 }
 
 fn test<T>(a: T) -> Foo<T> {

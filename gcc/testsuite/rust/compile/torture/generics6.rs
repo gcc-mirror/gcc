@@ -3,6 +3,7 @@ struct Foo<T>(T);
 struct Bar<T> {
     a: Foo<T>,
     b: bool,
+// { dg-warning "field is never read" "" { target *-*-* } .-1 }
 }
 
 fn main() {

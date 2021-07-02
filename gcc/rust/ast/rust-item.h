@@ -1841,9 +1841,9 @@ private:
   Identifier field_name;
   std::unique_ptr<Type> field_type;
 
-  // should this store location info?
-
   NodeId node_id;
+
+  Location locus;
 
 public:
   // Returns whether struct field has any outer attributes.
@@ -1853,17 +1853,18 @@ public:
   bool has_visibility () const { return !visibility.is_error (); }
 
   StructField (Identifier field_name, std::unique_ptr<Type> field_type,
-	       Visibility vis,
+	       Visibility vis, Location locus,
 	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       field_name (std::move (field_name)), field_type (std::move (field_type)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
 
   // Copy constructor
   StructField (StructField const &other)
     : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      field_name (other.field_name), node_id (other.node_id)
+      field_name (other.field_name), node_id (other.node_id),
+      locus (other.locus)
   {
     // guard to prevent null dereference
     if (other.field_type != nullptr)
@@ -1903,7 +1904,8 @@ public:
   // Creates an error state struct field.
   static StructField create_error ()
   {
-    return StructField (std::string (""), nullptr, Visibility::create_error ());
+    return StructField (std::string (""), nullptr, Visibility::create_error (),
+			Location ());
   }
 
   std::string as_string () const;
@@ -1913,6 +1915,8 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   Identifier get_field_name () const { return field_name; }
+
+  Location get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_field_type ()
