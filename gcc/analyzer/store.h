@@ -297,7 +297,15 @@ struct bit_range
 	    && m_size_in_bits == other.m_size_in_bits);
   }
 
+  bool intersects_p (const bit_range &other) const
+  {
+    return (get_start_bit_offset () < other.get_next_bit_offset ()
+	    && other.get_start_bit_offset () < get_next_bit_offset ());
+  }
+
   static int cmp (const bit_range &br1, const bit_range &br2);
+
+  static bool from_mask (unsigned HOST_WIDE_INT mask, bit_range *out);
 
   bit_offset_t m_start_bit_offset;
   bit_size_t m_size_in_bits;
@@ -337,6 +345,8 @@ public:
 
   const concrete_binding *dyn_cast_concrete_binding () const FINAL OVERRIDE
   { return this; }
+
+  const bit_range &get_bit_range () const { return m_bit_range; }
 
   bit_offset_t get_start_bit_offset () const
   {
@@ -739,6 +749,14 @@ public:
   get_concrete_binding (bit_offset_t start_bit_offset,
 			bit_offset_t size_in_bits,
 			enum binding_kind kind);
+  const concrete_binding *
+  get_concrete_binding (const bit_range &bits,
+			enum binding_kind kind)
+  {
+    return get_concrete_binding (bits.get_start_bit_offset (),
+				 bits.m_size_in_bits,
+				 kind);
+  }
   const symbolic_binding *
   get_symbolic_binding (const region *region,
 			enum binding_kind kind);

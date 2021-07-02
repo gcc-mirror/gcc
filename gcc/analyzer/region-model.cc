@@ -1357,7 +1357,18 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt)
       break;
 
     case BIT_FIELD_REF:
-      return m_mgr->get_or_create_unknown_svalue (TREE_TYPE (pv.m_tree));
+      {
+	tree expr = pv.m_tree;
+	tree op0 = TREE_OPERAND (expr, 0);
+	const region *reg = get_lvalue (op0, ctxt);
+	tree num_bits = TREE_OPERAND (expr, 1);
+	tree first_bit_offset = TREE_OPERAND (expr, 2);
+	gcc_assert (TREE_CODE (num_bits) == INTEGER_CST);
+	gcc_assert (TREE_CODE (first_bit_offset) == INTEGER_CST);
+	bit_range bits (TREE_INT_CST_LOW (first_bit_offset),
+			TREE_INT_CST_LOW (num_bits));
+	return get_rvalue_for_bits (TREE_TYPE (expr), reg, bits);
+      }
 
     case SSA_NAME:
     case VAR_DECL:
@@ -1684,6 +1695,58 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
     }
 
   return m_mgr->get_symbolic_region (ptr_sval);
+}
+
+/* Attempt to get BITS within any value of REG, as TYPE.
+   In particular, extract values from compound_svalues for the case
+   where there's a concrete binding at BITS.
+   Return an unknown svalue if we can't handle the given case.  */
+
+const svalue *
+region_model::get_rvalue_for_bits (tree type,
+				   const region *reg,
+				   const bit_range &bits)
+{
+  const svalue *sval = get_store_value (reg);
+  if (const compound_svalue *compound_sval = sval->dyn_cast_compound_svalue ())
+    {
+      const binding_map &map = compound_sval->get_map ();
+      binding_map result_map;
+      for (auto iter : map)
+	{
+	  const binding_key *key = iter.first;
+	  if (const concrete_binding *conc_key
+	      = key->dyn_cast_concrete_binding ())
+	    {
+	      /* Ignore concrete bindings outside BITS.  */
+	      if (!conc_key->get_bit_range ().intersects_p (bits))
+		continue;
+	      if ((conc_key->get_start_bit_offset ()
+		   < bits.get_start_bit_offset ())
+		  || (conc_key->get_next_bit_offset ()
+		      > bits.get_next_bit_offset ()))
+		{
+		  /* If we have any concrete keys that aren't fully within BITS,
+		     then bail out.  */
+		  return m_mgr->get_or_create_unknown_svalue (type);
+		}
+	      const concrete_binding *offset_conc_key
+		    = m_mgr->get_store_manager ()->get_concrete_binding
+			(conc_key->get_start_bit_offset ()
+			   - bits.get_start_bit_offset (),
+			 conc_key->get_size_in_bits (),
+			 conc_key->get_kind ());
+		  const svalue *sval = iter.second;
+		  result_map.put (offset_conc_key, sval);
+	    }
+	  else
+	    /* If we have any symbolic keys we can't get it as bits.  */
+	    return m_mgr->get_or_create_unknown_svalue (type);
+	}
+      return m_mgr->get_or_create_compound_svalue (type, result_map);
+    }
+
+  return m_mgr->get_or_create_unknown_svalue (type);
 }
 
 /* A subclass of pending_diagnostic for complaining about writes to
