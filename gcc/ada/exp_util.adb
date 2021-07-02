@@ -11656,6 +11656,7 @@ package body Exp_Util is
       is
          Temp_Id  : Entity_Id;
          Temp_Nam : Name_Id;
+         Should_Set_Related_Expression : Boolean := False;
 
       begin
          --  The context requires an external symbol : expression is
@@ -11675,6 +11676,12 @@ package body Exp_Util is
 
             else
                pragma Assert (Discr_Number > 0);
+
+               --  We don't have any intelligible way of printing T_DISCR in
+               --  CodePeer. Thus, set a related expression in this case.
+
+               Should_Set_Related_Expression := True;
+
                --  Use fully qualified name to avoid ambiguities.
 
                Temp_Nam :=
@@ -11683,6 +11690,10 @@ package body Exp_Util is
             end if;
 
             Temp_Id := Make_Defining_Identifier (Loc, Temp_Nam);
+
+            if Should_Set_Related_Expression then
+               Set_Related_Expression (Temp_Id, Related_Nod);
+            end if;
 
          --  Otherwise generate an internal temporary
 
