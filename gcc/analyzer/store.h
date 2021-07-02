@@ -275,6 +275,7 @@ struct bit_range
   {}
 
   void dump_to_pp (pretty_printer *pp) const;
+  void dump () const;
 
   bit_offset_t get_start_bit_offset () const
   {

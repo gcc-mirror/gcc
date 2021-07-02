@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/bar-chart.h"
 #include <zlib.h>
 #include "plugin.h"
+#include "target.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -4820,6 +4821,13 @@ void
 impl_run_checkers (logger *logger)
 {
   LOG_SCOPE (logger);
+
+  if (logger)
+    {
+      logger->log ("BITS_BIG_ENDIAN: %i", BITS_BIG_ENDIAN ? 1 : 0);
+      logger->log ("BYTES_BIG_ENDIAN: %i", BYTES_BIG_ENDIAN ? 1 : 0);
+      logger->log ("WORDS_BIG_ENDIAN: %i", WORDS_BIG_ENDIAN ? 1 : 0);
+    }
 
   /* If using LTO, ensure that the cgraph nodes have function bodies.  */
   cgraph_node *node;
