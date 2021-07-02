@@ -23,6 +23,10 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+// FIXME experimental
+// FIXME string_view vs. freestanding
+// FIXME remove on_contract_violation?
+
 /** @file contract
  *  This is a Standard C++ Library header.
  */
@@ -46,23 +50,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   class contract_violation {
-    int line_number_;
-    string_view file_name_;
-    string_view function_name_;
-    string_view comment_;
-    string_view assertion_level_;
-    string_view assertion_role_;
-    contract_violation_continuation_mode continuation_mode_;
+    int _M_line; // FIXME uint_least32_t
+    const char* _M_file;
+    const char* _M_function;
+    const char* _M_comment;
+    const char* _M_level;
+    const char* _M_role;
+    contract_violation_continuation_mode _M_continue;
   public:
-    contract_violation (int, string_view, string_view, string_view, string_view,
-                        string_view, contract_violation_continuation_mode);
-    int line_number() const noexcept;
-    string_view file_name() const noexcept;
-    string_view function_name() const noexcept;
-    string_view comment() const noexcept;
-    string_view assertion_level() const noexcept;
-    string_view assertion_role() const noexcept;
-    contract_violation_continuation_mode continuation_mode() const noexcept;
+    contract_violation (int __l, const char* __f, const char* __fn,
+			const char* __c, const char* __lv, const char *__r,
+                        contract_violation_continuation_mode __m)
+      : _M_line(__l), _M_file(__f), _M_function(__fn), _M_comment(__c),
+	_M_level(__lv), _M_role(__r), _M_continue(__m) { }
+    int line_number() const noexcept { return _M_line; }
+    string_view file_name() const noexcept { return _M_file; }
+    string_view function_name() const noexcept { return _M_function; }
+    string_view comment() const noexcept { return _M_comment; }
+    string_view assertion_level() const noexcept { return _M_level; }
+    string_view assertion_role() const noexcept { return _M_role; }
+    contract_violation_continuation_mode continuation_mode() const noexcept
+    { return _M_continue; }
   };
 
   //void handle_contract_violation (const contract_violation &);

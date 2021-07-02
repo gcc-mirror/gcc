@@ -23,75 +23,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <contract>
-#include <exception>
 #include <iostream>
 #include <cstdlib>
-#include <cstdio>
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-contract_violation::contract_violation (int line_number,
-  string_view file_name,
-  string_view function_name,
-  string_view comment,
-  string_view assertion_level,
-  string_view assertion_role,
-  contract_violation_continuation_mode continuation_mode)
-  : line_number_(line_number),
-    file_name_(file_name),
-    function_name_(function_name),
-    comment_(comment),
-    assertion_level_(assertion_level),
-    assertion_role_(assertion_role),
-    continuation_mode_(continuation_mode)
-  { }
-
-int
-contract_violation::line_number () const noexcept
-{
-  return this->line_number_;
-}
-
-string_view
-contract_violation::file_name () const noexcept
-{
-  return this->file_name_;
-}
-
-string_view
-contract_violation::function_name () const noexcept
-{
-  return this->function_name_;
-}
-
-string_view
-contract_violation::comment () const noexcept
-{
-  return this->comment_;
-}
-
-string_view
-contract_violation::assertion_level () const noexcept
-{
-  return this->assertion_level_;
-}
-
-string_view
-contract_violation::assertion_role () const noexcept
-{
-  return this->assertion_role_;
-}
-
-contract_violation_continuation_mode
-contract_violation::continuation_mode () const noexcept
-{
-  return this->continuation_mode_;
-}
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
-
 
 __attribute__ ((weak)) void
 handle_contract_violation (const std::contract_violation &violation)
@@ -133,4 +66,3 @@ __on_contract_violation (bool continue_,
 
   return 0;
 }
-
