@@ -3536,6 +3536,9 @@ A 5-bit unsigned immediate for CSR access instructions.
 @item A
 An address that is held in a general-purpose register.
 
+@item S
+A constraint that matches an absolute symbolic address.
+
 @end table
 
 @item RX---@file{config/rx/constraints.md}

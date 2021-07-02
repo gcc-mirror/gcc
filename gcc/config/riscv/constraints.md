@@ -67,8 +67,7 @@
        (match_test "GET_CODE(XEXP(op,0)) == REG")))
 
 (define_constraint "S"
-  "@internal
-   A constant call address."
+  "A constraint that matches an absolute symbolic address."
   (match_operand 0 "absolute_symbolic_operand"))
 
 (define_constraint "U"
