@@ -194,8 +194,14 @@ mem_ref_hasher::equal (const im_mem_ref *mem1, const ao_ref *obj2)
 {
   if (obj2->max_size_known_p ())
     return (mem1->ref_decomposed
-	    && operand_equal_p (mem1->mem.base, obj2->base, 0)
-	    && known_eq (mem1->mem.offset, obj2->offset)
+	    && ((TREE_CODE (mem1->mem.base) == MEM_REF
+		 && TREE_CODE (obj2->base) == MEM_REF
+		 && operand_equal_p (TREE_OPERAND (mem1->mem.base, 0),
+				     TREE_OPERAND (obj2->base, 0), 0)
+		 && known_eq (mem_ref_offset (mem1->mem.base) * BITS_PER_UNIT + mem1->mem.offset,
+			      mem_ref_offset (obj2->base) * BITS_PER_UNIT + obj2->offset))
+		|| (operand_equal_p (mem1->mem.base, obj2->base, 0)
+		    && known_eq (mem1->mem.offset, obj2->offset)))
 	    && known_eq (mem1->mem.size, obj2->size)
 	    && known_eq (mem1->mem.max_size, obj2->max_size)
 	    && mem1->mem.volatile_p == obj2->volatile_p
@@ -1500,8 +1506,21 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
 	  && (mem_base = get_addr_base_and_unit_offset (aor.ref, &mem_off)))
 	{
 	  ref_decomposed = true;
-	  hash = iterative_hash_expr (ao_ref_base (&aor), 0);
-	  hash = iterative_hash_host_wide_int (offset, hash);
+	  tree base = ao_ref_base (&aor);
+	  poly_int64 moffset;
+	  HOST_WIDE_INT mcoffset;
+	  if (TREE_CODE (base) == MEM_REF
+	      && (mem_ref_offset (base) * BITS_PER_UNIT + offset).to_shwi (&moffset)
+	      && moffset.is_constant (&mcoffset))
+	    {
+	      hash = iterative_hash_expr (TREE_OPERAND (base, 0), 0);
+	      hash = iterative_hash_host_wide_int (mcoffset, hash);
+	    }
+	  else
+	    {
+	      hash = iterative_hash_expr (base, 0);
+	      hash = iterative_hash_host_wide_int (offset, hash);
+	    }
 	  hash = iterative_hash_host_wide_int (size, hash);
 	}
       else
