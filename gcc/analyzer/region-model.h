@@ -506,17 +506,17 @@ class region_model
   int get_stack_depth () const;
   const frame_region *get_frame_at_index (int index) const;
 
-  const region *get_lvalue (path_var pv, region_model_context *ctxt);
-  const region *get_lvalue (tree expr, region_model_context *ctxt);
-  const svalue *get_rvalue (path_var pv, region_model_context *ctxt);
-  const svalue *get_rvalue (tree expr, region_model_context *ctxt);
+  const region *get_lvalue (path_var pv, region_model_context *ctxt) const;
+  const region *get_lvalue (tree expr, region_model_context *ctxt) const;
+  const svalue *get_rvalue (path_var pv, region_model_context *ctxt) const;
+  const svalue *get_rvalue (tree expr, region_model_context *ctxt) const;
 
   const region *deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
-			       region_model_context *ctxt);
+			       region_model_context *ctxt) const;
 
   const svalue *get_rvalue_for_bits (tree type,
 				     const region *reg,
-				     const bit_range &bits);
+				     const bit_range &bits) const;
 
   void set_value (const region *lhs_reg, const svalue *rhs_sval,
 		  region_model_context *ctxt);
@@ -590,8 +590,8 @@ class region_model
   void loop_replay_fixup (const region_model *dst_state);
 
  private:
-  const region *get_lvalue_1 (path_var pv, region_model_context *ctxt);
-  const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt);
+  const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
+  const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
 
   path_var
   get_representative_path_var_1 (const svalue *sval,
