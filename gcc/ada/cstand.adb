@@ -1159,10 +1159,8 @@ package body CStand is
       Mutate_Ekind (Standard_Debug_Renaming_Type, E_Signed_Integer_Subtype);
       Set_Scope (Standard_Debug_Renaming_Type, Standard_Standard);
       Set_Etype (Standard_Debug_Renaming_Type, Base_Type (Standard_Integer));
-      pragma Assert
-        (Field_Is_Initial_Zero (Standard_Debug_Renaming_Type, F_Esize));
-      pragma Assert
-        (Field_Is_Initial_Zero (Standard_Debug_Renaming_Type, F_RM_Size));
+      Set_Esize (Standard_Debug_Renaming_Type, Uint_0);
+      Set_RM_Size (Standard_Debug_Renaming_Type, Uint_0);
       Set_Size_Known_At_Compile_Time (Standard_Debug_Renaming_Type);
       Set_Integer_Bounds (Standard_Debug_Renaming_Type,
         Typ => Base_Type (Standard_Debug_Renaming_Type),
@@ -1511,7 +1509,7 @@ package body CStand is
          Set_Scope       (Standard_Exception_Type, Standard_Standard);
          Set_Stored_Constraint
                          (Standard_Exception_Type, No_Elist);
-         Reinit_Size_Align (Standard_Exception_Type);
+         Set_RM_Size (Standard_Exception_Type, Uint_0);
          Set_Size_Known_At_Compile_Time
                          (Standard_Exception_Type, True);
 

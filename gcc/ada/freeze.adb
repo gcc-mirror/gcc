@@ -3640,8 +3640,8 @@ package body Freeze is
                 (No (Ancestor_Subtype (Arr))
                   or else not Has_Size_Clause (Ancestor_Subtype (Arr)))
             then
-               Set_Esize     (Arr, Esize     (Packed_Array_Impl_Type (Arr)));
-               Set_RM_Size   (Arr, RM_Size   (Packed_Array_Impl_Type (Arr)));
+               Copy_Esize (To => Arr, From => Packed_Array_Impl_Type (Arr));
+               Copy_RM_Size (To => Arr, From => Packed_Array_Impl_Type (Arr));
             end if;
 
             if not Has_Alignment_Clause (Arr) then
@@ -4173,6 +4173,7 @@ package body Freeze is
                --  active.
 
                if Is_Access_Type (F_Type)
+                 and then Known_Esize (F_Type)
                  and then Esize (F_Type) > Ttypes.System_Address_Size
                  and then (not Unnest_Subprogram_Mode
                             or else not Is_Access_Subprogram_Type (F_Type))
@@ -4313,6 +4314,7 @@ package body Freeze is
                --  Check suspicious return of fat C pointer
 
                if Is_Access_Type (R_Type)
+                 and then Known_Esize (R_Type)
                  and then Esize (R_Type) > Ttypes.System_Address_Size
                  and then not Has_Warnings_Off (E)
                  and then not Has_Warnings_Off (R_Type)
@@ -6249,7 +6251,8 @@ package body Freeze is
             if Is_Array_Type (E) then
                declare
                   Ctyp : constant Entity_Id := Component_Type (E);
-                  Rsiz : constant Uint      := RM_Size (Ctyp);
+                  Rsiz : constant Uint :=
+                    (if Known_RM_Size (Ctyp) then RM_Size (Ctyp) else Uint_0);
                   SZ   : constant Node_Id   := Size_Clause (E);
                   Btyp : constant Entity_Id := Base_Type (E);
 
@@ -6695,7 +6698,7 @@ package body Freeze is
 
                if Is_Type (Full_View (E)) then
                   Set_Size_Info (E, Full_View (E));
-                  Set_RM_Size   (E, RM_Size (Full_View (E)));
+                  Copy_RM_Size (To => E, From => Full_View (E));
                end if;
 
                goto Leave;
@@ -8579,10 +8582,10 @@ package body Freeze is
       Orig_Hi : Ureal;
       --  Save original bounds (for shaving tests)
 
-      Actual_Size : Nat;
+      Actual_Size : Int;
       --  Actual size chosen
 
-      function Fsize (Lov, Hiv : Ureal) return Nat;
+      function Fsize (Lov, Hiv : Ureal) return Int;
       --  Returns size of type with given bounds. Also leaves these
       --  bounds set as the current bounds of the Typ.
 
@@ -8596,7 +8599,7 @@ package body Freeze is
       -- Fsize --
       -----------
 
-      function Fsize (Lov, Hiv : Ureal) return Nat is
+      function Fsize (Lov, Hiv : Ureal) return Int is
       begin
          Set_Realval (Lo, Lov);
          Set_Realval (Hi, Hiv);
@@ -8642,7 +8645,7 @@ package body Freeze is
          if Present (Atype) then
             Set_Esize (Typ, Esize (Atype));
          else
-            Set_Esize (Typ, Esize (Btyp));
+            Copy_Esize (To => Typ, From => Btyp);
          end if;
       end if;
 
@@ -8705,8 +8708,8 @@ package body Freeze is
             Loval_Excl_EP : Ureal;
             Hival_Excl_EP : Ureal;
 
-            Size_Incl_EP  : Nat;
-            Size_Excl_EP  : Nat;
+            Size_Incl_EP  : Int;
+            Size_Excl_EP  : Int;
 
             Model_Num     : Ureal;
             First_Subt    : Entity_Id;
@@ -9141,7 +9144,9 @@ package body Freeze is
          Minsiz : constant Uint := UI_From_Int (Minimum_Size (Typ));
 
       begin
-         if RM_Size (Typ) /= Uint_0 then
+         if Known_RM_Size (Typ)
+           and then RM_Size (Typ) /= Uint_0
+         then
             if RM_Size (Typ) < Minsiz then
                Error_Msg_Uint_1 := RM_Size (Typ);
                Error_Msg_Uint_2 := Minsiz;

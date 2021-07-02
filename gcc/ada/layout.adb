@@ -287,7 +287,7 @@ package body Layout is
 
          elsif Ekind (E) = E_Access_Subtype then
             Set_Size_Info (E, Base_Type (E));
-            Set_RM_Size   (E, RM_Size (Base_Type (E)));
+            Copy_RM_Size (To => E, From => Base_Type (E));
 
          --  For other access types, we use either address size, or, if a fat
          --  pointer is used (pointer-to-unconstrained array case), twice the
@@ -426,15 +426,15 @@ package body Layout is
 
             begin
                if not Known_Esize (E) then
-                  Set_Esize     (E, Esize     (PAT));
+                  Copy_Esize (To => E, From => PAT);
                end if;
 
                if not Known_RM_Size (E) then
-                  Set_RM_Size   (E, RM_Size   (PAT));
+                  Copy_RM_Size (To => E, From => PAT);
                end if;
 
-               if not Known_Alignment (E) and then Known_Alignment (PAT) then
-                  Set_Alignment (E, Alignment (PAT));
+               if not Known_Alignment (E) then
+                  Copy_Alignment (To => E, From => PAT);
                end if;
             end;
          end if;

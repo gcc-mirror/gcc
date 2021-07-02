@@ -2733,7 +2733,7 @@ package body Sem_Ch7 is
 
       begin
          Set_Size_Info               (Priv,                             Full);
-         Set_RM_Size                 (Priv, RM_Size                    (Full));
+         Copy_RM_Size                (To => Priv, From => Full);
          Set_Size_Known_At_Compile_Time
                                      (Priv, Size_Known_At_Compile_Time (Full));
          Set_Is_Volatile             (Priv, Is_Volatile                (Full));

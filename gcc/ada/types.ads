@@ -59,6 +59,8 @@ package Types is
    subtype Pos is Int range 1 .. Int'Last;
    --  Positive Int values
 
+   subtype Nonzero_Int is Int with Predicate => Nonzero_Int /= 0;
+
    type Word is mod 2 ** 32;
    --  Unsigned 32-bit integer
 

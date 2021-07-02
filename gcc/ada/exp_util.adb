@@ -10994,26 +10994,25 @@ package body Exp_Util is
    --  At the current time, the only types that we return False for (i.e. where
    --  we decide we know they cannot generate large temps) are ones where we
    --  know the size is 256 bits or less at compile time, and we are still not
-   --  doing a thorough job on arrays and records ???
+   --  doing a thorough job on arrays and records.
 
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean is
    begin
       if not Size_Known_At_Compile_Time (Typ) then
          return False;
+      end if;
 
-      elsif Esize (Typ) /= 0 and then Esize (Typ) <= 256 then
+      if Known_Esize (Typ) and then Esize (Typ) <= 256 then
          return False;
+      end if;
 
-      elsif Is_Array_Type (Typ)
+      if Is_Array_Type (Typ)
         and then Present (Packed_Array_Impl_Type (Typ))
       then
          return May_Generate_Large_Temp (Packed_Array_Impl_Type (Typ));
-
-      --  We could do more here to find other small types ???
-
-      else
-         return True;
       end if;
+
+      return True;
    end May_Generate_Large_Temp;
 
    --------------------------------------------

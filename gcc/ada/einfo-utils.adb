@@ -362,10 +362,9 @@ package body Einfo.Utils is
    -- Type Representation Attribute Fields --
    ------------------------------------------
 
-   function Known_Alignment                       (E : Entity_Id) return B is
-      Result : constant B := not Field_Is_Initial_Zero (E, F_Alignment);
+   function Known_Alignment (E : Entity_Id) return B is
    begin
-      return Result;
+      return not Field_Is_Initial_Zero (E, F_Alignment);
    end Known_Alignment;
 
    procedure Reinit_Alignment (Id : E) is
@@ -382,96 +381,133 @@ package body Einfo.Utils is
       end if;
    end Copy_Alignment;
 
-   function Known_Component_Bit_Offset            (E : Entity_Id) return B is
+   function Known_Component_Bit_Offset (E : Entity_Id) return B is
    begin
       return Present (Component_Bit_Offset (E));
    end Known_Component_Bit_Offset;
 
-   function Known_Static_Component_Bit_Offset     (E : Entity_Id) return B is
+   function Known_Static_Component_Bit_Offset (E : Entity_Id) return B is
    begin
       return Present (Component_Bit_Offset (E))
         and then Component_Bit_Offset (E) >= Uint_0;
    end Known_Static_Component_Bit_Offset;
 
-   function Known_Component_Size                  (E : Entity_Id) return B is
+   function Known_Component_Size (E : Entity_Id) return B is
    begin
       return Component_Size (E) /= Uint_0
         and then Present (Component_Size (E));
    end Known_Component_Size;
 
-   function Known_Static_Component_Size           (E : Entity_Id) return B is
+   function Known_Static_Component_Size (E : Entity_Id) return B is
    begin
       return Component_Size (E) > Uint_0;
    end Known_Static_Component_Size;
 
-   function Known_Esize                           (E : Entity_Id) return B is
+   Use_New_Unknown_Rep : constant Boolean := False;
+   --  If False, we represent "unknown" as Uint_0, which is wrong.
+   --  We intend to make it True (and remove it), and represent
+   --  "unknown" as Field_Is_Initial_Zero. We also need to change
+   --  the type of Esize and RM_Size from Uint to Valid_Uint.
+
+   function Known_Esize (E : Entity_Id) return B is
    begin
-      return Esize (E) /= Uint_0
-        and then Present (Esize (E));
+      if Use_New_Unknown_Rep then
+         return not Field_Is_Initial_Zero (E, F_Esize);
+      else
+         return Esize (E) /= Uint_0
+           and then Present (Esize (E));
+      end if;
    end Known_Esize;
 
-   function Known_Static_Esize                    (E : Entity_Id) return B is
+   function Known_Static_Esize (E : Entity_Id) return B is
    begin
-      return Esize (E) > Uint_0
+      return Known_Esize (E)
+        and then Esize (E) >= Uint_0
         and then not Is_Generic_Type (E);
    end Known_Static_Esize;
 
    procedure Reinit_Esize (Id : E) is
    begin
-      Set_Esize (Id, Uint_0);
+      if Use_New_Unknown_Rep then
+         Reinit_Field_To_Zero (Id, F_Esize);
+      else
+         Set_Esize (Id, Uint_0);
+      end if;
    end Reinit_Esize;
 
    procedure Copy_Esize (To, From : E) is
    begin
-      raise Program_Error with "Copy_Esize not yet implemented";
+      if Known_Esize (From) then
+         Set_Esize (To, Esize (From));
+      else
+         Reinit_Esize (To);
+      end if;
    end Copy_Esize;
 
-   function Known_Normalized_First_Bit            (E : Entity_Id) return B is
+   function Known_Normalized_First_Bit (E : Entity_Id) return B is
    begin
       return Present (Normalized_First_Bit (E));
    end Known_Normalized_First_Bit;
 
-   function Known_Static_Normalized_First_Bit     (E : Entity_Id) return B is
+   function Known_Static_Normalized_First_Bit (E : Entity_Id) return B is
    begin
       return Present (Normalized_First_Bit (E))
         and then Normalized_First_Bit (E) >= Uint_0;
    end Known_Static_Normalized_First_Bit;
 
-   function Known_Normalized_Position             (E : Entity_Id) return B is
+   function Known_Normalized_Position (E : Entity_Id) return B is
    begin
       return Present (Normalized_Position (E));
    end Known_Normalized_Position;
 
-   function Known_Static_Normalized_Position      (E : Entity_Id) return B is
+   function Known_Static_Normalized_Position (E : Entity_Id) return B is
    begin
       return Present (Normalized_Position (E))
         and then Normalized_Position (E) >= Uint_0;
    end Known_Static_Normalized_Position;
 
-   function Known_RM_Size                         (E : Entity_Id) return B is
+   function Known_RM_Size (E : Entity_Id) return B is
    begin
-      return Present (RM_Size (E))
-        and then (RM_Size (E) /= Uint_0
-                    or else Is_Discrete_Type (E)
-                    or else Is_Fixed_Point_Type (E));
+      if Use_New_Unknown_Rep then
+         return not Field_Is_Initial_Zero (E, F_RM_Size);
+      else
+         return Present (RM_Size (E))
+           and then (RM_Size (E) /= Uint_0
+                       or else Is_Discrete_Type (E)
+                       or else Is_Fixed_Point_Type (E));
+      end if;
    end Known_RM_Size;
 
-   function Known_Static_RM_Size                  (E : Entity_Id) return B is
+   function Known_Static_RM_Size (E : Entity_Id) return B is
    begin
-      return (RM_Size (E) > Uint_0
-                or else Is_Discrete_Type (E)
-                or else Is_Fixed_Point_Type (E))
-        and then not Is_Generic_Type (E);
+      if Use_New_Unknown_Rep then
+         return Known_RM_Size (E)
+           and then RM_Size (E) >= Uint_0
+           and then not Is_Generic_Type (E);
+      else
+         return (RM_Size (E) > Uint_0
+                   or else Is_Discrete_Type (E)
+                   or else Is_Fixed_Point_Type (E))
+           and then not Is_Generic_Type (E);
+      end if;
    end Known_Static_RM_Size;
 
    procedure Reinit_RM_Size (Id : E) is
    begin
-      Set_RM_Size (Id, Uint_0);
+      if Use_New_Unknown_Rep then
+         Reinit_Field_To_Zero (Id, F_RM_Size);
+      else
+         Set_RM_Size (Id, Uint_0);
+      end if;
    end Reinit_RM_Size;
 
    procedure Copy_RM_Size (To, From : E) is
    begin
-      raise Program_Error with "Copy_RM_Size not yet implemented";
+      if Known_RM_Size (From) then
+         Set_RM_Size (To, RM_Size (From));
+      else
+         Reinit_RM_Size (To);
+      end if;
    end Copy_RM_Size;
 
    -------------------------------
@@ -503,12 +539,10 @@ package body Einfo.Utils is
    procedure Init_Size (Id : E; V : Int) is
    begin
       pragma Assert (Is_Type (Id));
-      pragma Assert
-        (not Known_Esize (Id) or else Esize (Id) = V);
-      pragma Assert
-        (No (RM_Size (Id))
-           or else RM_Size (Id) = Uint_0
-           or else RM_Size (Id) = V);
+      pragma Assert (not Known_Esize (Id) or else Esize (Id) = V);
+      if Use_New_Unknown_Rep then
+         pragma Assert (not Known_RM_Size (Id) or else RM_Size (Id) = V);
+      end if;
       Set_Esize (Id, UI_From_Int (V));
       Set_RM_Size (Id, UI_From_Int (V));
    end Init_Size;

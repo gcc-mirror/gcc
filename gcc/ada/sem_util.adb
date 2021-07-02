@@ -28449,7 +28449,7 @@ package body Sem_Util is
       --  We copy Esize, but not RM_Size, since in general RM_Size is
       --  subtype specific and does not get inherited by all subtypes.
 
-      Set_Esize                     (T1, Esize                     (T2));
+      Copy_Esize (To => T1, From => T2);
       Set_Has_Biased_Representation (T1, Has_Biased_Representation (T2));
 
       if Is_Discrete_Or_Fixed_Point_Type (T1)

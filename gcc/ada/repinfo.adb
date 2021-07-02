@@ -1189,13 +1189,7 @@ package body Repinfo is
             Write_Str (" .. ");
          end if;
 
-         --  Allowing Uint_0 here is an annoying special case. Really this
-         --  should be a fine Esize value but currently it means unknown,
-         --  except that we know after gigi has back annotated that a size
-         --  of zero is real, since otherwise gigi back annotates using
-         --  No_Uint as the value to indicate unknown.
-
-         if (Esize (Ent) = Uint_0 or else Known_Static_Esize (Ent))
+         if Known_Static_Esize (Ent)
            and then Known_Static_Normalized_First_Bit (Ent)
          then
             Lbit := Sbit + Esiz - 1;
@@ -1210,14 +1204,7 @@ package body Repinfo is
                UI_Write (Lbit, Decimal);
             end if;
 
-         --  The test for Esize (Ent) not Uint_0 here is an annoying special
-         --  case. Officially a value of zero for Esize means unknown, but
-         --  here we use the fact that we know that gigi annotates Esize with
-         --  No_Uint, not Uint_0. Really everyone should use No_Uint???
-
-         elsif List_Representation_Info < 3
-           or else (Esize (Ent) /= Uint_0 and then not Known_Esize (Ent))
-         then
+         elsif List_Representation_Info < 3 or else not Known_Esize (Ent) then
             Write_Unknown_Val;
 
          --  List_Representation >= 3 and Known_Esize (Ent)

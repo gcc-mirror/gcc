@@ -493,7 +493,7 @@ package body Exp_Pakd is
 
       Ancest   : Entity_Id;
       PB_Type  : Entity_Id;
-      PASize   : Uint;
+      PASize   : Uint := No_Uint;
       Decl     : Node_Id;
       PAT      : Entity_Id;
       Len_Expr : Node_Id;
@@ -563,12 +563,14 @@ package body Exp_Pakd is
          --  Do not reset RM_Size if already set, as happens in the case of
          --  a modular type.
 
-         if not Known_Esize (PAT) then
-            Set_Esize (PAT, PASize);
-         end if;
+         if Present (PASize) then
+            if not Known_Esize (PAT) then
+               Set_Esize (PAT, PASize);
+            end if;
 
-         if not Known_RM_Size (PAT) then
-            Set_RM_Size (PAT, PASize);
+            if not Known_RM_Size (PAT) then
+               Set_RM_Size (PAT, PASize);
+            end if;
          end if;
 
          Adjust_Esize_Alignment (PAT);
@@ -680,7 +682,9 @@ package body Exp_Pakd is
       --  type, since this size clearly belongs to the packed array type. The
       --  size of the conceptual unpacked type is always set to unknown.
 
-      PASize := RM_Size (Typ);
+      if Known_RM_Size (Typ) then
+         PASize := RM_Size (Typ);
+      end if;
 
       --  Case of an array where at least one index is of an enumeration
       --  type with a non-standard representation, but the component size
@@ -943,7 +947,7 @@ package body Exp_Pakd is
                                    Make_Integer_Literal (Loc, 0),
                                  High_Bound => Lit))));
 
-               if PASize = Uint_0 then
+               if Present (PASize) then
                   PASize := Len_Bits;
                end if;
 
@@ -1973,6 +1977,7 @@ package body Exp_Pakd is
       Rtyp : Entity_Id;
       PAT  : Entity_Id;
       Lit  : Node_Id;
+      Size : Unat;
 
    begin
       Convert_To_Actual_Subtype (Opnd);
@@ -1994,9 +1999,11 @@ package body Exp_Pakd is
 
       --  where PAT is the packed array type, Mask is a mask of all 1 bits of
       --  length equal to the size of this packed type, and Rtyp is the actual
-      --  actual subtype of the operand.
+      --  actual subtype of the operand. Preserve old behavior in case size is
+      --  not set.
 
-      Lit := Make_Integer_Literal (Loc, 2 ** RM_Size (PAT) - 1);
+      Size := (if Known_RM_Size (PAT) then RM_Size (PAT) else Uint_0);
+      Lit := Make_Integer_Literal (Loc, 2 ** Size - 1);
       Set_Print_In_Hex (Lit);
 
       if not Is_Array_Type (PAT) then

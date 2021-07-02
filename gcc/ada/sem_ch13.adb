@@ -14010,7 +14010,7 @@ package body Sem_Ch13 is
 
    function Minimum_Size
      (T      : Entity_Id;
-      Biased : Boolean := False) return Nat
+      Biased : Boolean := False) return Int
    is
       Lo     : Uint    := No_Uint;
       Hi     : Uint    := No_Uint;
@@ -14024,17 +14024,17 @@ package body Sem_Ch13 is
       R_Typ  : constant Entity_Id := Root_Type (T);
 
    begin
-      --  If bad type, return 0
+      --  Bad type
 
       if T = Any_Type then
-         return 0;
+         return Unknown_Minimum_Size;
 
-      --  For generic types, just return zero. There cannot be any legitimate
-      --  need to know such a size, but this routine may be called with a
-      --  generic type as part of normal processing.
+      --  For generic types, just return unknown. There cannot be any
+      --  legitimate need to know such a size, but this routine may be
+      --  called with a generic type as part of normal processing.
 
       elsif Is_Generic_Type (R_Typ) or else R_Typ = Any_Type then
-         return 0;
+         return Unknown_Minimum_Size;
 
          --  Access types (cannot have size smaller than System.Address)
 
@@ -14057,7 +14057,7 @@ package body Sem_Ch13 is
          Ancest := T;
          loop
             if Ancest = Any_Type or else Etype (Ancest) = Any_Type then
-               return 0;
+               return Unknown_Minimum_Size;
             end if;
 
             if not LoSet then
@@ -14082,7 +14082,7 @@ package body Sem_Ch13 is
                Ancest := Base_Type (T);
 
                if Is_Generic_Type (Ancest) then
-                  return 0;
+                  return Unknown_Minimum_Size;
                end if;
             end if;
          end loop;
@@ -14103,7 +14103,7 @@ package body Sem_Ch13 is
          Ancest := T;
          loop
             if Ancest = Any_Type or else Etype (Ancest) = Any_Type then
-               return 0;
+               return Unknown_Minimum_Size;
             end if;
 
             --  Note: In the following two tests for LoSet and HiSet, it may
@@ -14143,7 +14143,7 @@ package body Sem_Ch13 is
                Ancest := Base_Type (T);
 
                if Is_Generic_Type (Ancest) then
-                  return 0;
+                  return Unknown_Minimum_Size;
                end if;
             end if;
          end loop;
@@ -14173,7 +14173,7 @@ package body Sem_Ch13 is
       --  type case, since that's the odd case that came up. Probably we should
       --  also do this in the fixed-point case, but doing so causes peculiar
       --  gigi failures, and it is not worth worrying about this incredibly
-      --  marginal case (explicit null-range fixed-point type declarations)???
+      --  marginal case (explicit null-range fixed-point type declarations).
 
       if Lo > Hi and then Is_Discrete_Type (T) then
          S := 0;
@@ -16353,7 +16353,8 @@ package body Sem_Ch13 is
 
                if Present (ACCR.Y) then
                   Y_Alignment := Alignment (ACCR.Y);
-                  Y_Size      := Esize (ACCR.Y);
+                  Y_Size :=
+                    (if Known_Esize (ACCR.Y) then Esize (ACCR.Y) else Uint_0);
                end if;
 
                if ACCR.Off

@@ -5508,7 +5508,7 @@ package body Sem_Ch3 is
                Set_Machine_Radix_10     (Id, Machine_Radix_10   (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Enumeration_Kind =>
                Mutate_Ekind             (Id, E_Enumeration_Subtype);
@@ -5517,7 +5517,7 @@ package body Sem_Ch3 is
                Set_Is_Character_Type    (Id, Is_Character_Type  (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Ordinary_Fixed_Point_Kind =>
                Mutate_Ekind          (Id, E_Ordinary_Fixed_Point_Subtype);
@@ -5526,7 +5526,7 @@ package body Sem_Ch3 is
                Set_Delta_Value          (Id, Delta_Value        (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Float_Kind =>
                Mutate_Ekind             (Id, E_Floating_Point_Subtype);
@@ -5542,14 +5542,14 @@ package body Sem_Ch3 is
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Modular_Integer_Kind =>
                Mutate_Ekind             (Id, E_Modular_Integer_Subtype);
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
-               Set_RM_Size              (Id, RM_Size            (T));
+               Copy_RM_Size             (To => Id, From => T);
 
             when Class_Wide_Kind =>
                Mutate_Ekind             (Id, E_Class_Wide_Subtype);
@@ -5576,7 +5576,7 @@ package body Sem_Ch3 is
                --  the type they rename.
 
                if Present (Generic_Parent_Type (N)) then
-                  Set_RM_Size           (Id, RM_Size (T));
+                  Copy_RM_Size (To => Id, From => T);
                end if;
 
                if Ekind (T) = E_Record_Subtype
@@ -6855,8 +6855,8 @@ package body Sem_Ch3 is
 
       Set_Is_Constrained     (Derived_Type, Is_Constrained (Subt));
       Set_Is_Access_Constant (Derived_Type, Is_Access_Constant (Parent_Type));
-      Set_Size_Info          (Derived_Type,                     Parent_Type);
-      Set_RM_Size            (Derived_Type, RM_Size            (Parent_Type));
+      Set_Size_Info          (Derived_Type, Parent_Type);
+      Copy_RM_Size           (To => Derived_Type, From => Parent_Type);
       Set_Depends_On_Private (Derived_Type,
                               Has_Private_Component (Derived_Type));
       Conditional_Delay      (Derived_Type, Subt);
@@ -9896,8 +9896,8 @@ package body Sem_Ch3 is
       Mutate_Ekind               (Derived_Type, Ekind (Parent_Base));
       Propagate_Concurrent_Flags (Derived_Type,        Parent_Base);
 
-      Set_Size_Info (Derived_Type,          Parent_Type);
-      Set_RM_Size   (Derived_Type, RM_Size (Parent_Type));
+      Set_Size_Info (Derived_Type, Parent_Type);
+      Copy_RM_Size (To => Derived_Type, From => Parent_Type);
 
       Set_Is_Controlled_Active
         (Derived_Type, Is_Controlled_Active (Parent_Type));
@@ -12768,7 +12768,7 @@ package body Sem_Ch3 is
       Set_Is_First_Subtype (Full, False);
       Set_Scope            (Full, Scope (Priv));
       Set_Size_Info        (Full, Full_Base);
-      Set_RM_Size          (Full, RM_Size (Full_Base));
+      Copy_RM_Size         (To => Full, From => Full_Base);
       Set_Is_Itype         (Full);
 
       --  A subtype of a private-type-without-discriminants, whose full-view
@@ -14595,7 +14595,7 @@ package body Sem_Ch3 is
       end if;
 
       Set_Size_Info      (Def_Id,                (T));
-      Set_RM_Size        (Def_Id, RM_Size        (T));
+      Copy_RM_Size       (To => Def_Id, From => T);
       Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
 
       --  If this is a range for a fixed-lower-bound subtype, then set the
@@ -15399,12 +15399,12 @@ package body Sem_Ch3 is
 
       Set_Fixed_Range (Implicit_Base, Loc, -Bound_Val, Bound_Val);
 
-      --  Note: We leave size as zero for now, size will be set at freeze
+      --  Note: We leave Esize unset for now, size will be set at freeze
       --  time. We have to do this for ordinary fixed-point, because the size
       --  depends on the specified small, and we might as well do the same for
       --  decimal fixed-point.
 
-      pragma Assert (Esize (Implicit_Base) = Uint_0);
+      pragma Assert (not Known_Esize (Implicit_Base));
 
       --  If there are bounds given in the declaration use them as the
       --  bounds of the first named subtype.
