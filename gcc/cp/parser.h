@@ -113,6 +113,10 @@ struct GTY (()) cp_lexer {
   /* True if we're in the context of parsing a pragma, and should not
      increment past the end-of-line marker.  */
   bool in_pragma;
+
+  /* True if we're in the context of OpenMP directives written as C++11
+     attributes turned into pragma.  */
+  bool in_omp_attribute_pragma;
 };
 
 
@@ -208,6 +212,8 @@ struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
   bool variant_p; /* Set for #pragma omp declare variant.  */
+  bool in_omp_attribute_pragma; /* True if declare simd/variant comes from
+				   C++11 attribute rather than pragma.  */
   vec<cp_token_cache_ptr> tokens;
   tree clauses;
 };
