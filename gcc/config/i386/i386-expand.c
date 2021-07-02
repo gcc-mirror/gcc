@@ -478,6 +478,9 @@ ix86_broadcast_from_integer_constant (machine_mode mode, rtx op)
   if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT)
     return nullptr;
 
+  if (GET_MODE_INNER (mode) == TImode)
+    return nullptr;
+
   rtx constant = get_pool_constant (XEXP (op, 0));
   if (GET_CODE (constant) != CONST_VECTOR)
     return nullptr;
@@ -11753,10 +11756,24 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (target == 0)
 	target = gen_reg_rtx (QImode);
 
-      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCZmode, FLAGS_REG),
-			const0_rtx);
-      emit_insn (gen_rtx_SET (target, pat));
+      /* NB: For aesenc/aesdec keylocker insn, ZF will be set when runtime
+	 error occurs. Then the output should be cleared for safety. */
+      rtx_code_label *ok_label;
+      rtx tmp;
 
+      tmp = gen_rtx_REG (CCZmode, FLAGS_REG);
+      pat = gen_rtx_EQ (QImode, tmp, const0_rtx);
+      ok_label = gen_label_rtx ();
+      emit_cmp_and_jump_insns (tmp, const0_rtx, NE, 0, GET_MODE (tmp),
+			       true, ok_label);
+      /* Usually the runtime error seldom occur, so predict OK path as
+	 hotspot to optimize it as fallthrough block. */
+      predict_jump (REG_BR_PROB_BASE * 90 / 100);
+
+      emit_insn (gen_rtx_SET (op1, const0_rtx));
+
+      emit_label (ok_label);
+      emit_insn (gen_rtx_SET (target, pat));
       emit_insn (gen_rtx_SET (op0, op1));
 
       return target;
@@ -11811,8 +11828,17 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (target == 0)
 	target = gen_reg_rtx (QImode);
 
-      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCZmode, FLAGS_REG),
-			const0_rtx);
+      tmp = gen_rtx_REG (CCZmode, FLAGS_REG);
+      pat = gen_rtx_EQ (QImode, tmp, const0_rtx);
+      ok_label = gen_label_rtx ();
+      emit_cmp_and_jump_insns (tmp, const0_rtx, NE, 0, GET_MODE (tmp),
+			       true, ok_label);
+      predict_jump (REG_BR_PROB_BASE * 90 / 100);
+
+      for (i = 0; i < 8; i++)
+	emit_insn (gen_rtx_SET (xmm_regs[i], const0_rtx));
+
+      emit_label (ok_label);
       emit_insn (gen_rtx_SET (target, pat));
 
       for (i = 0; i < 8; i++)

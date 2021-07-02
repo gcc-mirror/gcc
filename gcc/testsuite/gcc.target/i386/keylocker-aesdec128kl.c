@@ -2,8 +2,10 @@
 /* { dg-options "-mkl -O2" } */
 /* { dg-final { scan-assembler "movdqa\[ \\t\]+\[^\\n\\r\]*, %xmm0" } } */
 /* { dg-final { scan-assembler "aesdec128kl\[ \\t\]+\[^\\n\\r\]*, %xmm0" } } */
+/* { dg-final { scan-assembler "j\[ez\]" } } */
 /* { dg-final { scan-assembler "sete" } } */
 /* { dg-final { scan-assembler "(?:movdqu|movups)\[ \\t\]+\[^\\n\\r\]*%xmm0,\[^\\n\\r\]*" } } */
+/* { dg-final { scan-assembler "pxor\[ \t\]+%xmm0, %xmm0" } } */
 
 #include <immintrin.h>
 

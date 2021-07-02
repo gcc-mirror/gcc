@@ -12,11 +12,6 @@ struct deleter
     int& operator*() && noexcept(B);  // this is used by unique_ptr
     int& operator*() const& = delete; // this should not be
 
-    int& operator[](std::size_t) && noexcept(B); // this is used by unique_ptr
-    int& operator[](std::size_t) const& = delete; // should not be used
-    int& operator[](int) && = delete; // should not be used
-    int& operator[](double) && = delete; // should not be used
-
     int* operator->() noexcept(false); // noexcept here doesn't affect anything
 
     // Needed for NullablePointer requirements
@@ -40,16 +35,3 @@ static_assert( noexcept(std::declval<std::unique_ptr<long>>().operator->()),
 	       "operator-> is always noexcept" );
 static_assert( noexcept(std::declval<UPtr<int, false>&>().operator->()),
 	       "operator-> is always noexcept" );
-
-// This is not required by the standard, but we make it depend on the pointer.
-static_assert( noexcept(std::declval<std::unique_ptr<long[]>>()[0]), "QoI" );
-static_assert( noexcept(std::declval<UPtr<int[], true>&>()[0]), "QoI" );
-static_assert( ! noexcept(std::declval<UPtr<int[], false>&>()[0]), "QoI" );
-
-// This is forbidden by the standard ("T shall be a complete type")
-// but we try to support it anyway, see PR libstdc++/101236.
-struct Incomplete;
-static_assert( ! noexcept(std::declval<UPtr<Incomplete[], true>>()[0]),
-	       "this would be noexcept if the type was complete");
-static_assert( ! noexcept(std::declval<UPtr<Incomplete[], false>>()[0]),
-	       "this would still be noexcept(false) if the type was complete");

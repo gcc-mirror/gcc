@@ -124,6 +124,7 @@ get_btf_kind (uint32_t ctf_kind)
   switch (ctf_kind)
     {
     case CTF_K_INTEGER:  return BTF_KIND_INT;
+    case CTF_K_FLOAT:	 return BTF_KIND_FLOAT;
     case CTF_K_POINTER:  return BTF_KIND_PTR;
     case CTF_K_ARRAY:    return BTF_KIND_ARRAY;
     case CTF_K_FUNCTION: return BTF_KIND_FUNC_PROTO;
@@ -627,6 +628,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
   switch (btf_kind)
     {
     case BTF_KIND_INT:
+    case BTF_KIND_FLOAT:
     case BTF_KIND_STRUCT:
     case BTF_KIND_UNION:
     case BTF_KIND_ENUM:

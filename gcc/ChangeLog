@@ -1,3 +1,220 @@
+2021-07-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (diagnostic_context::m_file_cache): New field.
+	* input.c (class fcache): Rename to...
+	(class file_cache_slot): ...this, making most members private and
+	prefixing fields with "m_".
+	(file_cache_slot::get_file_path): New accessor.
+	(file_cache_slot::get_use_count): New accessor.
+	(file_cache_slot::missing_trailing_newline_p): New accessor.
+	(file_cache_slot::inc_use_count): New.
+	(fcache_buffer_size): Move to...
+	(file_cache_slot::buffer_size): ...here.
+	(fcache_line_record_size): Move to...
+	(file_cache_slot::line_record_size): ...here.
+	(fcache_tab): Delete, in favor of global_dc->m_file_cache.
+	(fcache_tab_size): Move to file_cache::num_file_slots.
+	(diagnostic_file_cache_init): Update for move of fcache_tab
+	to global_dc->m_file_cache.
+	(diagnostic_file_cache_fini): Likewise.
+	(lookup_file_in_cache_tab): Convert to...
+	(file_cache::lookup_file): ...this.
+	(diagnostics_file_cache_forcibly_evict_file): Update for move of
+	fcache_tab to global_dc->m_file_cache, moving most of
+	implementation to...
+	(file_cache::forcibly_evict_file): ...this new function and...
+	(file_cache_slot::evict): ...this new function.
+	(evicted_cache_tab_entry): Convert to...
+	(file_cache::evicted_cache_tab_entry): ...this.
+	(add_file_to_cache_tab): Convert to...
+	(file_cache::add_file): ...this, moving bulk of implementation
+	to...
+	(file_cache_slot::create): ..this new function.
+	(file_cache::file_cache): New.
+	(file_cache::~file_cache): New.
+	(lookup_or_add_file_to_cache_tab): Convert to...
+	(file_cache::lookup_or_add_file): ..this new function.
+	(fcache::fcache): Rename to...
+	(file_cache_slot::file_cache_slot): ...this, adding "m_" prefixes
+	to fields.
+	(fcache::~fcache): Rename to...
+	(file_cache_slot::~file_cache_slot): ...this, adding "m_" prefixes
+	to fields.
+	(needs_read): Convert to...
+	(file_cache_slot::needs_read_p): ...this.
+	(needs_grow): Convert to...
+	(file_cache_slot::needs_grow_p): ...this.
+	(maybe_grow): Convert to...
+	(file_cache_slot::maybe_grow): ...this.
+	(read_data): Convert to...
+	(file_cache_slot::read_data): ...this.
+	(maybe_read_data): Convert to...
+	(file_cache_slot::maybe_read_data): ...this.
+	(get_next_line): Convert to...
+	(file_cache_slot::get_next_line): ...this.
+	(goto_next_line): Convert to...
+	(file_cache_slot::goto_next_line): ...this.
+	(read_line_num): Convert to...
+	(file_cache_slot::read_line_num): ...this.
+	(location_get_source_line): Update for moving of globals to
+	global_dc->m_file_cache.
+	(location_missing_trailing_newline): Likewise.
+	* input.h (class file_cache_slot): New forward decl.
+	(class file_cache): New.
+
+2021-07-01  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_maybe_emit_fp_cmove): Add IEEE
+	128-bit floating point conditional move support.
+	(have_compare_and_set_mask): Add IEEE 128-bit floating point
+	types.
+	* config/rs6000/rs6000.md (mov<mode>cc, IEEE128 iterator): New insn.
+	(mov<mode>cc_p10, IEEE128 iterator): New insn.
+	(mov<mode>cc_invert_p10, IEEE128 iterator): New insn.
+	(fpmask<mode>, IEEE128 iterator): New insn.
+	(xxsel<mode>, IEEE128 iterator): New insn.
+
+2021-07-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR debug/101283
+	* config/darwin.h (CTF_INFO_SECTION_NAME): New.
+
+2021-07-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_vector_init_duplicate):
+	Make it global.
+	* config/i386/i386-protos.h (ix86_expand_vector_init_duplicate):
+	New prototype.
+	* config/i386/sse.md (INT_BROADCAST_MODE): New mode iterator.
+	(vec_duplicate<mode>): New expander.
+
+2021-07-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/100865
+	* config/i386/i386-expand.c (ix86_expand_vector_init_duplicate):
+	New prototype.
+	(ix86_byte_broadcast): New function.
+	(ix86_convert_const_wide_int_to_broadcast): Likewise.
+	(ix86_expand_move): Convert CONST_WIDE_INT to broadcast if mode
+	size is 16 bytes or bigger.
+	(ix86_broadcast_from_integer_constant): New function.
+	(ix86_expand_vector_move): Convert CONST_WIDE_INT and CONST_VECTOR
+	to broadcast if mode size is 16 bytes or bigger.
+	* config/i386/i386-protos.h (ix86_gen_scratch_sse_rtx): New
+	prototype.
+	* config/i386/i386.c (ix86_gen_scratch_sse_rtx): New function.
+
+2021-07-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (ix86_endbr_immediate_operand):
+	Return true/false instead of 1/0.
+	(movq_parallel): Ditto.
+
+2021-07-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* recog.c (general_operand): Return true/false instead of 1/0.
+	(register_operand): Ditto.
+	(immediate_operand): Ditto.
+	(const_int_operand): Ditto.
+	(const_scalar_int_operand): Ditto.
+	(const_double_operand): Ditto.
+	(push_operand): Ditto.
+	(pop_operand): Ditto.
+	(memory_operand): Ditto.
+	(indirect_operand): Ditto.
+
+2021-07-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* genpreds.c (write_predicate_subfunction):
+	Change the type of written subfunction to bool.
+	(write_one_predicate_function):
+	Change the type of written function to bool.
+	(write_tm_preds_h): Ditto.
+	* recog.h (*insn_operand_predicate_fn): Change the type to bool.
+	* recog.c (general_operand): Change the type to bool.
+	(address_operand): Ditto.
+	(register_operand): Ditto.
+	(pmode_register_operand): Ditto.
+	(scratch_operand): Ditto.
+	(immediate_operand): Ditto.
+	(const_int_operand): Ditto.
+	(const_scalar_int_operand): Ditto.
+	(const_double_operand): Ditto.
+	(nonimmediate_operand): Ditto.
+	(nonmemory_operand): Ditto.
+	(push_operand): Ditto.
+	(pop_operand): Ditto.
+	(memory_operand): Ditto.
+	(indirect_operand): Ditto.
+	(ordered_comparison_operator): Ditto.
+	(comparison_operator): Ditto.
+	* config/i386/i386-expand.c (ix86_expand_sse_cmp):
+	Change the type of indirect predicate function to bool.
+	* config/rs6000/rs6000.c (easy_vector_constant):
+	Change the type to bool.
+	* config/mips/mips-protos.h (m16_based_address_p):
+	Change the type of operand 3 to bool.
+
+2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101280
+	PR tree-optimization/101173
+	* gimple-loop-interchange.cc
+	(tree_loop_interchange::valid_data_dependences): Revert
+	previous change and instead correctly handle DDR_REVERSED_P
+	dependence.
+
+2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101278
+	* tree-ssa-dse.c (dse_classify_store): First check for
+	uses, then ignore stmt for chaining purposes.
+
+2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* tree-vect-slp.c (vect_schedule_slp_node): Do not place trapping
+	vectorized ops ahead of their scalar BB.
+
+2021-07-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101044
+	* config/i386/i386.md (*nabs<dwi>2_doubleword):
+	New insn_and_split pattern.
+	(*nabs<dwi>2_1): Ditto.
+	* config/i386/i386-features.c
+	(general_scalar_chain::compute_convert_gain):
+	Handle (NEG (ABS (...))) RTX.  Rewrite src code
+	scanner as switch statement.
+	(general_scalar_chain::convert_insn):
+	Handle (NEG (ABS (...))) RTX.
+	(general_scalar_to_vector_candidate_p):
+	Detect  (NEG (ABS (...))) RTX.  Reorder case statements
+	for (AND (NOT (...) ...)) fallthrough.
+
+2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101178
+	* tree-vect-slp.c (slpg_vertex::materialize): Remove.
+	(slpg::perm_in): Add.
+	(slpg::get_perm_in): Remove.
+	(slpg::get_perm_materialized): Add.
+	(vect_optimize_slp): Handle VEC_PERM nodes more optimally
+	during permute propagation and materialization.
+
+2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101266
+	* dwarf2out.c (loc_list_from_tree_1): Handle COMPOUND_LITERAL_EXPR.
+
+2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94366
+	* omp-low.c (lower_rec_input_clauses): Rename is_fp_and_or to
+	is_truth_op, set it for TRUTH_*IF_EXPR regardless of new_var's type,
+	use boolean_type_node instead of integer_type_node as NE_EXPR type.
+	(lower_reduction_clauses): Likewise.
+
 2021-06-30  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* config/gcn/gcn.c: Include dwarf2.h.

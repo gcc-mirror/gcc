@@ -62,8 +62,8 @@ struct btf_type
   uint32_t info;	/* Encoded kind, variant length, kind flag:
 			   - bits  0-15: vlen
 			   - bits 16-23: unused
-			   - bits 24-27: kind
-			   - bits 28-30: unused
+			   - bits 24-28: kind
+			   - bits 29-30: unused
 			   - bit     31: kind_flag
 			   See accessor macros below.  */
 
@@ -79,7 +79,7 @@ struct btf_type
 
 /* The folloing macros access the information encoded in btf_type.info.  */
 /* Type kind. See below.  */
-#define BTF_INFO_KIND(info)	(((info) >> 24) & 0x0f)
+#define BTF_INFO_KIND(info)	(((info) >> 24) & 0x1f)
 /* Number of entries of variable length data following certain type kinds.
    For example, number of structure members, number of function parameters.  */
 #define BTF_INFO_VLEN(info)	((info) & 0xffff)
@@ -108,7 +108,8 @@ struct btf_type
 #define BTF_KIND_FUNC_PROTO	13	/* Function Prototype.  */
 #define BTF_KIND_VAR		14	/* Variable.  */
 #define BTF_KIND_DATASEC	15	/* Section such as .bss or .data.  */
-#define BTF_KIND_MAX		BTF_KIND_DATASEC
+#define BTF_KIND_FLOAT		16	/* Floating point.  */
+#define BTF_KIND_MAX		BTF_KIND_FLOAT
 #define NR_BTF_KINDS		(BTF_KIND_MAX + 1)
 
 /* For some BTF_KINDs, struct btf_type is immediately followed by

@@ -1,3 +1,28 @@
+2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* constexpr.c (cxx_eval_array_reference): When the element type
+	is an empty type and the corresponding element is omitted, just
+	return an empty CONSTRUCTOR instead of attempting value
+	initialization.
+
+2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96204
+	* pt.c (finish_template_variable): Pass the partially
+	instantiated template and its args to instantiate_template.
+	(instantiate_class_template_1): No need to call
+	push_nested_class and pop_nested_class around the call to
+	most_specialized_partial_spec.
+	(instantiate_template_1): Pass the partially instantiated
+	template to lookup_template_variable.
+	(most_specialized_partial_spec):  Use push_access_scope_guard
+	to set the access scope appropriately.  Use
+	deferring_access_check_sentinel to force access to get checked
+	immediately.
+	(instantiate_decl): Just pass the VAR_DECL to
+	most_specialized_partial_spec.
+
 2021-06-30  Patrick Palka  <ppalka@redhat.com>
 
 	* constraint.cc (get_normalized_constraints_from_decl): Use
