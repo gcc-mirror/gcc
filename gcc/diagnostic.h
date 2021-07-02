@@ -87,6 +87,11 @@ enum diagnostics_extra_output_kind
    list in diagnostic.def.  */
 struct diagnostic_info
 {
+  diagnostic_info ()
+    : message (), richloc (), metadata (), x_data (), kind (), option_index (),
+      m_iinfo ()
+  { }
+
   /* Text to be formatted.  */
   text_info message;
 
@@ -103,6 +108,18 @@ struct diagnostic_info
   diagnostic_t kind;
   /* Which OPT_* directly controls this diagnostic.  */
   int option_index;
+
+  /* Inlining context containing locations for each call site along
+     the inlining stack.  */
+  struct inlining_info
+  {
+    /* Locations along the inlining stack.  */
+    auto_vec<location_t, 8> m_ilocs;
+    /* The abstract origin of the location.  */
+    void *m_ao;
+    /* Set if every M_ILOCS element is in a system header.  */
+    bool m_allsyslocs;
+  } m_iinfo;
 };
 
 /* Each time a diagnostic's classification is changed with a pragma,
@@ -346,6 +363,12 @@ struct diagnostic_context
 
   /* Callback for final cleanup.  */
   void (*final_cb) (diagnostic_context *context);
+
+  /* Callback to set the locations of call sites along the inlining
+     stack corresponding to a diagnostic location.  Needed to traverse
+     the BLOCK_SUPERCONTEXT() chain hanging off the LOCATION_BLOCK()
+     of a diagnostic's location.  */
+  void (*set_locations_cb)(diagnostic_context *, diagnostic_info *);
 };
 
 static inline void

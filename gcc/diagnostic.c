@@ -991,51 +991,88 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc,
   pp_set_prefix (pp, saved_prefix);
 }
 
-/* Update the diag_class of DIAGNOSTIC based on its location
-   relative to any
+/* Update the inlining info in CONTEXT for a DIAGNOSTIC.  */
+
+static void
+get_any_inlining_info (diagnostic_context *context,
+		       diagnostic_info *diagnostic)
+{
+  auto &ilocs = diagnostic->m_iinfo.m_ilocs;
+
+  if (context->set_locations_cb)
+    /* Retrieve the locations into which the expression about to be
+       diagnosed has been inlined, including those of all the callers
+       all the way down the inlining stack.  */
+    context->set_locations_cb (context, diagnostic);
+  else
+    {
+      /* When there's no callback use just the one location provided
+	 by the caller of the diagnostic function.  */
+      location_t loc = diagnostic_location (diagnostic);
+      ilocs.safe_push (loc);
+      diagnostic->m_iinfo.m_allsyslocs = in_system_header_at (loc);
+    }
+}
+
+/* Update the kind of DIAGNOSTIC based on its location(s), including
+   any of those in its inlining stack, relative to any
      #pragma GCC diagnostic
    directives recorded within CONTEXT.
 
-   Return the new diag_class of DIAGNOSTIC if it was updated, or
-   DK_UNSPECIFIED otherwise.  */
+   Return the new kind of DIAGNOSTIC if it was updated, or DK_UNSPECIFIED
+   otherwise.  */
 
 static diagnostic_t
 update_effective_level_from_pragmas (diagnostic_context *context,
 				     diagnostic_info *diagnostic)
 {
-  diagnostic_t diag_class = DK_UNSPECIFIED;
-
-  if (context->n_classification_history > 0)
+  if (diagnostic->m_iinfo.m_allsyslocs && !context->dc_warn_system_headers)
     {
-      location_t location = diagnostic_location (diagnostic);
+      /* Ignore the diagnostic if all the inlined locations are
+	 in system headers and -Wno-system-headers is in effect.  */
+      diagnostic->kind = DK_IGNORED;
+      return DK_IGNORED;
+    }
 
+  if (context->n_classification_history <= 0)
+    return DK_UNSPECIFIED;
+
+  /* Iterate over the locations, checking the diagnostic disposition
+     for the diagnostic at each.  If it's explicitly set as opposed
+     to unspecified, update the disposition for this instance of
+     the diagnostic and return it.  */
+  for (location_t loc: diagnostic->m_iinfo.m_ilocs)
+    {
       /* FIXME: Stupid search.  Optimize later. */
       for (int i = context->n_classification_history - 1; i >= 0; i --)
 	{
-	  if (linemap_location_before_p
-	      (line_table,
-	       context->classification_history[i].location,
-	       location))
+	  const diagnostic_classification_change_t &hist
+	    = context->classification_history[i];
+
+	  location_t pragloc = hist.location;
+	  if (!linemap_location_before_p (line_table, pragloc, loc))
+	    continue;
+
+	  if (hist.kind == (int) DK_POP)
 	    {
-	      if (context->classification_history[i].kind == (int) DK_POP)
-		{
-		  i = context->classification_history[i].option;
-		  continue;
-		}
-	      int option = context->classification_history[i].option;
-	      /* The option 0 is for all the diagnostics.  */
-	      if (option == 0 || option == diagnostic->option_index)
-		{
-		  diag_class = context->classification_history[i].kind;
-		  if (diag_class != DK_UNSPECIFIED)
-		    diagnostic->kind = diag_class;
-		  break;
-		}
+	      /* Move on to the next region.  */
+	      i = hist.option;
+	      continue;
+	    }
+
+	  int option = hist.option;
+	  /* The option 0 is for all the diagnostics.  */
+	  if (option == 0 || option == diagnostic->option_index)
+	    {
+	      diagnostic_t kind = hist.kind;
+	      if (kind != DK_UNSPECIFIED)
+		diagnostic->kind = kind;
+	      return kind;
 	    }
 	}
     }
 
-  return diag_class;
+  return DK_UNSPECIFIED;
 }
 
 /* Generate a URL string describing CWE.  The caller is responsible for
@@ -1129,6 +1166,9 @@ static bool
 diagnostic_enabled (diagnostic_context *context,
 		    diagnostic_info *diagnostic)
 {
+  /* Update the inlining stack for this diagnostic.  */
+  get_any_inlining_info (context, diagnostic);
+
   /* Diagnostics with no option or -fpermissive are always enabled.  */
   if (!diagnostic->option_index
       || diagnostic->option_index == permissive_error_option (context))
@@ -1194,9 +1234,17 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
-  if ((diagnostic->kind == DK_WARNING || diagnostic->kind == DK_PEDWARN)
-      && !diagnostic_report_warnings_p (context, location))
-    return false;
+  bool report_warning_p = true;
+  if (diagnostic->kind == DK_WARNING || diagnostic->kind == DK_PEDWARN)
+    {
+      if (context->dc_inhibit_warnings)
+	return false;
+      /* Remember the result of the overall system header warning setting
+	 but proceed to also check the inlining context.  */
+      report_warning_p = diagnostic_report_warnings_p (context, location);
+      if (!report_warning_p && diagnostic->kind == DK_PEDWARN)
+	return false;
+    }
 
   if (diagnostic->kind == DK_PEDWARN)
     {
@@ -1204,7 +1252,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       /* We do this to avoid giving the message for -pedantic-errors.  */
       orig_diag_kind = diagnostic->kind;
     }
- 
+
   if (diagnostic->kind == DK_NOTE && context->inhibit_notes_p)
     return false;
 
@@ -1228,7 +1276,17 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       && diagnostic->kind == DK_WARNING)
     diagnostic->kind = DK_ERROR;
 
+  diagnostic->message.x_data = &diagnostic->x_data;
+
+  /* Check to see if the diagnostic is enabled at the location and
+     not disabled by #pragma GCC diagnostic anywhere along the inlining
+     stack.  .  */
   if (!diagnostic_enabled (context, diagnostic))
+    return false;
+
+  if (!report_warning_p && diagnostic->m_iinfo.m_allsyslocs)
+    /* Bail if the warning is not to be reported because all locations
+       in the inlining stack (if there is one) are in system headers.  */
     return false;
 
   if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
@@ -1270,8 +1328,6 @@ diagnostic_report_diagnostic (diagnostic_context *context,
     }
   context->diagnostic_group_emission_count++;
 
-  diagnostic->message.x_data = &diagnostic->x_data;
-  diagnostic->x_data = NULL;
   pp_format (context->printer, &diagnostic->message);
   (*diagnostic_starter (context)) (context, diagnostic);
   pp_output_formatted_text (context->printer);
