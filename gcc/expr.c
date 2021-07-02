@@ -7078,7 +7078,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    && eltmode == GET_MODE_INNER (mode)
 	    && ((icode = optab_handler (vec_duplicate_optab, mode))
 		!= CODE_FOR_nothing)
-	    && (elt = uniform_vector_p (exp)))
+	    && (elt = uniform_vector_p (exp))
+	    && !VECTOR_TYPE_P (TREE_TYPE (elt)))
 	  {
 	    class expand_operand ops[2];
 	    create_output_operand (&ops[0], target, mode);
