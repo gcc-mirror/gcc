@@ -10733,24 +10733,11 @@ any_template_parm_r (tree t, void *data)
       {
 	/* If T is a member template that shares template parameters with
 	   ctx_parms, we need to mark all those parameters for mapping.  */
-	tree dparms = DECL_TEMPLATE_PARMS (t);
-	tree cparms = ftpi->ctx_parms;
-	while (TMPL_PARMS_DEPTH (dparms) > ftpi->max_depth)
-	  dparms = TREE_CHAIN (dparms);
-	while (TMPL_PARMS_DEPTH (cparms) > TMPL_PARMS_DEPTH (dparms))
-	  cparms = TREE_CHAIN (cparms);
-	while (dparms
-	       && (TREE_TYPE (TREE_VALUE (dparms))
-		   != TREE_TYPE (TREE_VALUE (cparms))))
-	  dparms = TREE_CHAIN (dparms),
-	    cparms = TREE_CHAIN (cparms);
-	if (dparms)
-	  {
-	    int ddepth = TMPL_PARMS_DEPTH (dparms);
-	    tree dargs = TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (t)));
-	    for (int i = 0; i < ddepth; ++i)
-	      WALK_SUBTREE (TMPL_ARGS_LEVEL (dargs, i+1));
-	  }
+	if (tree ctmpl = TREE_TYPE (INNERMOST_TEMPLATE_PARMS (ftpi->ctx_parms)))
+	  if (tree com = common_enclosing_class (DECL_CONTEXT (t),
+						 DECL_CONTEXT (ctmpl)))
+	    if (tree ti = CLASSTYPE_TEMPLATE_INFO (com))
+	      WALK_SUBTREE (TI_ARGS (ti));
       }
       break;
 
