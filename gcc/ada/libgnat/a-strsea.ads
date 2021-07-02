@@ -213,7 +213,7 @@ package Ada.Strings.Search with SPARK_Mode is
         =>
           Index'Result = 0,
 
-        --  Otherwise, a index in the range of Source is returned
+        --  Otherwise, an index in the range of Source is returned
 
         others =>
 
@@ -222,7 +222,7 @@ package Ada.Strings.Search with SPARK_Mode is
           Index'Result in Source'Range
 
             --  The character at the returned index satisfies the property
-            --  Test on Set
+            --  Test on Set.
 
             and then (Test = Inside)
               = Ada.Strings.Maps.Is_In (Source (Index'Result), Set)
@@ -377,7 +377,7 @@ package Ada.Strings.Search with SPARK_Mode is
         =>
           Index'Result = 0,
 
-        --  Otherwise, a index in the considered range of Source is returned
+        --  Otherwise, an index in the considered range of Source is returned
 
         others =>
 

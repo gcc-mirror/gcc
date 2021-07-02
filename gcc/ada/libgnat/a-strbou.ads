@@ -33,25 +33,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore.
-
-pragma Assertion_Policy (Pre => Ignore);
-
-with Ada.Strings.Maps;
+with Ada.Strings.Maps; use type Ada.Strings.Maps.Character_Mapping_Function;
 with Ada.Strings.Superbounded;
+with Ada.Strings.Search;
 
-package Ada.Strings.Bounded is
+package Ada.Strings.Bounded with SPARK_Mode is
    pragma Preelaborate;
 
    generic
       Max : Positive;
       --  Maximum length of a Bounded_String
 
-   package Generic_Bounded_Length with
-     Initial_Condition => Length (Null_Bounded_String) = 0
+   package Generic_Bounded_Length with SPARK_Mode,
+     Initializes       => (Null_Bounded_String => Max,
+                           Max_Length          => Max),
+     Initial_Condition => Length (Null_Bounded_String) = 0,
+     Abstract_State    => null
    is
+      --  Preconditions in this unit are meant for analysis only, not for
+      --  run-time checking, so that the expected exceptions are raised. This
+      --  is enforced by setting the corresponding assertion policy to Ignore.
+      --  Postconditions and contract cases should not be executed at runtime
+      --  as well, in order not to slow down the execution of these functions.
+
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Contract_Cases => Ignore,
+                               Ghost          => Ignore);
 
       Max_Length : constant Positive := Max;
 
@@ -73,14 +81,24 @@ package Ada.Strings.Bounded is
         (Source : String;
          Drop   : Truncation := Error) return Bounded_String
       with
-        Pre    => (if Source'Length > Max_Length then Drop /= Error),
-        Post   =>
-          Length (To_Bounded_String'Result)
-        = Natural'Min (Max_Length, Source'Length),
-        Global => null;
+        Pre            => (if Source'Length > Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Source'Length <= Max_Length
+           =>
+             To_String (To_Bounded_String'Result) = Source,
+
+           Source'Length > Max_Length and then Drop = Left
+           =>
+             To_String (To_Bounded_String'Result) =
+               Source (Source'Last - Max_Length + 1 .. Source'Last),
+
+           others  --  Drop = Right
+           =>
+             To_String (To_Bounded_String'Result) =
+               Source (Source'First .. Source'First - 1 + Max_Length)),
+        Global         => Max_Length;
 
       function To_String (Source : Bounded_String) return String with
-        Post   => To_String'Result'Length = Length (Source),
         Global => null;
 
       procedure Set_Bounded_String
@@ -88,9 +106,22 @@ package Ada.Strings.Bounded is
          Source : String;
          Drop   : Truncation := Error)
       with
-        Pre    => (if Source'Length > Max_Length then Drop /= Error),
-        Post   => Length (Target) = Natural'Min (Max_Length, Source'Length),
-        Global => null;
+        Pre            => (if Source'Length > Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Source'Length <= Max_Length
+           =>
+             To_String (Target) = Source,
+
+           Source'Length > Max_Length and then Drop = Left
+           =>
+             To_String (Target) =
+               Source (Source'Last - Max_Length + 1 .. Source'Last),
+
+           others  --  Drop = Right
+           =>
+             To_String (Target) =
+               Source (Source'First .. Source'First - 1 + Max_Length)),
+        Global         => (Proof_In => Max_Length);
       pragma Ada_05 (Set_Bounded_String);
 
       function Append
@@ -98,138 +129,404 @@ package Ada.Strings.Bounded is
          Right : Bounded_String;
          Drop  : Truncation  := Error) return Bounded_String
       with
-        Pre    =>
+        Pre            =>
           (if Length (Left) > Max_Length - Length (Right)
            then Drop /= Error),
-        Post   =>
-          Length (Append'Result)
-        = Natural'Min (Max_Length, Length (Left) + Length (Right)),
-        Global => null;
+        Contract_Cases =>
+          (Length (Left) <= Max_Length - Length (Right)
+           =>
+             Length (Append'Result) = Length (Left) + Length (Right)
+               and then
+                 Slice (Append'Result, 1, Length (Left)) = To_String (Left)
+               and then
+                 (if Length (Right) > 0 then
+                    Slice (Append'Result,
+                      Length (Left) + 1, Length (Append'Result)) =
+                        To_String (Right)),
+
+           Length (Left) > Max_Length - Length (Right)
+             and then Drop = Strings.Left
+           =>
+             Length (Append'Result) = Max_Length
+               and then
+                 (if Length (Right) < Max_Length then
+                    Slice (Append'Result, 1, Max_Length - Length (Right)) =
+                      Slice (Left,
+                        Length (Left) - Max_Length + Length (Right) + 1,
+                        Length (Left)))
+               and then
+                 Slice (Append'Result,
+                   Max_Length - Length (Right) + 1, Max_Length) =
+                     To_String (Right),
+
+           others  --  Drop = Right
+           =>
+             Length (Append'Result) = Max_Length
+               and then
+                 Slice (Append'Result, 1, Length (Left)) = To_String (Left)
+               and then
+                 (if Length (Left) < Max_Length then
+                    Slice (Append'Result, Length (Left) + 1, Max_Length) =
+                      Slice (Right, 1, Max_Length - Length (Left)))),
+        Global         => (Proof_In => Max_Length);
 
       function Append
         (Left  : Bounded_String;
          Right : String;
          Drop  : Truncation := Error) return Bounded_String
       with
-        Pre    =>
+        Pre            =>
           (if Right'Length > Max_Length - Length (Left)
            then Drop /= Error),
-        Post   =>
-          Length (Append'Result)
-        = Natural'Min (Max_Length, Length (Left) + Right'Length),
-        Global => null;
+        Contract_Cases =>
+          (Length (Left) <= Max_Length - Right'Length
+           =>
+             Length (Append'Result) = Length (Left) + Right'Length
+               and then
+                 Slice (Append'Result, 1, Length (Left)) = To_String (Left)
+               and then
+                 (if Right'Length > 0 then
+                    Slice (Append'Result,
+                      Length (Left) + 1, Length (Append'Result)) =
+                        Right),
+
+           Length (Left) > Max_Length - Right'Length
+             and then Drop = Strings.Left
+           =>
+             Length (Append'Result) = Max_Length
+               and then
+                 (if Right'Length < Max_Length then
+
+                    --  The result is the end of Left followed by Right
+
+                    Slice (Append'Result, 1, Max_Length - Right'Length) =
+                      Slice (Left,
+                        Length (Left) - Max_Length + Right'Length + 1,
+                        Length (Left))
+                      and then
+                        Slice (Append'Result,
+                          Max_Length - Right'Length + 1, Max_Length) =
+                            Right
+                  else
+                    --  The result is the last Max_Length characters of Right
+
+                    To_String (Append'Result) =
+                      Right (Right'Last - Max_Length + 1 .. Right'Last)),
+
+           others  --  Drop = Right
+           =>
+             Length (Append'Result) = Max_Length
+               and then
+                 Slice (Append'Result, 1, Length (Left)) = To_String (Left)
+               and then
+                 (if Length (Left) < Max_Length then
+                    Slice (Append'Result, Length (Left) + 1, Max_Length) =
+                      Right (Right'First
+                        .. Max_Length - Length (Left) - 1 + Right'First))),
+        Global         => (Proof_In => Max_Length);
 
       function Append
         (Left  : String;
          Right : Bounded_String;
          Drop  : Truncation := Error) return Bounded_String
       with
-        Pre    =>
+        Pre            =>
           (if Left'Length > Max_Length - Length (Right)
            then Drop /= Error),
-        Post   =>
-          Length (Append'Result)
-        = Natural'Min (Max_Length, Left'Length + Length (Right)),
-        Global => null;
+        Contract_Cases =>
+          (Left'Length <= Max_Length - Length (Right)
+           =>
+             Length (Append'Result) = Left'Length + Length (Right)
+               and then Slice (Append'Result, 1, Left'Length) = Left
+               and then
+                 (if Length (Right) > 0 then
+                    Slice (Append'Result,
+                      Left'Length + 1, Length (Append'Result)) =
+                        To_String (Right)),
+
+           Left'Length > Max_Length - Length (Right)
+             and then Drop = Strings.Left
+           =>
+             Length (Append'Result) = Max_Length
+               and then
+                 (if Length (Right) < Max_Length then
+                    Slice (Append'Result, 1, Max_Length - Length (Right)) =
+                      Left (Left'Last - Max_Length + Length (Right) + 1
+                            .. Left'Last))
+               and then
+                 Slice (Append'Result,
+                   Max_Length - Length (Right) + 1, Max_Length) =
+                     To_String (Right),
+
+           others  --  Drop = Right
+           =>
+             Length (Append'Result) = Max_Length
+               and then
+                 (if Left'Length < Max_Length then
+
+                    --  The result is Left followed by the beginning of Right
+
+                    Slice (Append'Result, 1, Left'Length) = Left
+                      and then
+                        Slice (Append'Result, Left'Length + 1, Max_Length) =
+                          Slice (Right, 1, Max_Length - Left'Length)
+                  else
+                    --  The result is the first Max_Length characters of Left
+
+                    To_String (Append'Result) =
+                      Left (Left'First .. Max_Length - 1 + Left'First))),
+        Global         => (Proof_In => Max_Length);
 
       function Append
         (Left  : Bounded_String;
          Right : Character;
          Drop  : Truncation := Error) return Bounded_String
       with
-        Pre    => (if Length (Left) = Max_Length then Drop /= Error),
-        Post   =>
-          Length (Append'Result)
-        = Natural'Min (Max_Length, Length (Left) + 1),
-        Global => null;
+        Pre            => (if Length (Left) = Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Length (Left) < Max_Length
+           =>
+             Length (Append'Result) = Length (Left) + 1
+               and then
+                 Slice (Append'Result, 1, Length (Left)) = To_String (Left)
+               and then Element (Append'Result, Length (Left) + 1) = Right,
+
+           Length (Left) = Max_Length and then Drop = Strings.Right
+           =>
+             Length (Append'Result) = Max_Length
+               and then To_String (Append'Result) = To_String (Left),
+
+           others  --  Drop = Left
+           =>
+             Length (Append'Result) = Max_Length
+               and then
+                 Slice (Append'Result, 1, Max_Length - 1) =
+                   Slice (Left, 2, Max_Length)
+               and then Element (Append'Result, Max_Length) = Right),
+        Global         => (Proof_In => Max_Length);
 
       function Append
         (Left  : Character;
          Right : Bounded_String;
          Drop  : Truncation := Error) return Bounded_String
       with
-        Pre    => (if Length (Right) = Max_Length then Drop /= Error),
-        Post   =>
-          Length (Append'Result)
-        = Natural'Min (Max_Length, 1 + Length (Right)),
-        Global => null;
+        Pre            => (if Length (Right) = Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Length (Right) < Max_Length
+           =>
+             Length (Append'Result) = Length (Right) + 1
+               and then
+                 Slice (Append'Result, 2, Length (Right) + 1) =
+                   To_String (Right)
+               and then Element (Append'Result, 1) = Left,
+
+           Length (Right) = Max_Length and then Drop = Strings.Left
+           =>
+             Length (Append'Result) = Max_Length
+               and then To_String (Append'Result) = To_String (Right),
+
+           others  --  Drop = Right
+           =>
+             Length (Append'Result) = Max_Length
+               and then
+                 Slice (Append'Result, 2, Max_Length) =
+                   Slice (Right, 1, Max_Length - 1)
+               and then Element (Append'Result, 1) = Left),
+        Global         => (Proof_In => Max_Length);
 
       procedure Append
         (Source   : in out Bounded_String;
          New_Item : Bounded_String;
          Drop     : Truncation  := Error)
       with
-        Pre    =>
+        Pre            =>
           (if Length (Source) > Max_Length - Length (New_Item)
            then Drop /= Error),
-        Post   =>
-          Length (Source)
-        = Natural'Min (Max_Length, Length (Source)'Old + Length (New_Item)),
-        Global => null;
+        Contract_Cases =>
+          (Length (Source) <= Max_Length - Length (New_Item)
+           =>
+             Length (Source) = Length (Source'Old) + Length (New_Item)
+               and then
+                 Slice (Source, 1, Length (Source'Old)) =
+                   To_String (Source'Old)
+               and then
+                 (if Length (New_Item) > 0 then
+                    Slice (Source, Length (Source'Old) + 1, Length (Source)) =
+                      To_String (New_Item)),
+
+           Length (Source) > Max_Length - Length (New_Item)
+             and then Drop = Left
+           =>
+             Length (Source) = Max_Length
+               and then
+                 (if Length (New_Item) < Max_Length then
+                    Slice (Source, 1, Max_Length - Length (New_Item)) =
+                      Slice (Source'Old,
+                        Length (Source'Old) - Max_Length + Length (New_Item)
+                          + 1,
+                        Length (Source'Old)))
+               and then
+                 Slice (Source, Max_Length - Length (New_Item) + 1, Max_Length)
+                   = To_String (New_Item),
+
+           others  --  Drop = Right
+           =>
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Length (Source'Old)) =
+                   To_String (Source'Old)
+               and then
+                 (if Length (Source'Old) < Max_Length then
+                    Slice (Source, Length (Source'Old) + 1, Max_Length) =
+                      Slice (New_Item, 1, Max_Length - Length (Source'Old)))),
+        Global         => (Proof_In => Max_Length);
 
       procedure Append
         (Source   : in out Bounded_String;
          New_Item : String;
          Drop     : Truncation  := Error)
       with
-        Pre    =>
+        Pre            =>
           (if New_Item'Length > Max_Length - Length (Source)
            then Drop /= Error),
-        Post   =>
-          Length (Source)
-        = Natural'Min (Max_Length, Length (Source)'Old + New_Item'Length),
-        Global => null;
+        Contract_Cases =>
+          (Length (Source) <= Max_Length - New_Item'Length
+           =>
+             Length (Source) = Length (Source'Old) + New_Item'Length
+               and then
+                 Slice (Source, 1, Length (Source'Old)) =
+                   To_String (Source'Old)
+               and then
+                 (if New_Item'Length > 0 then
+                    Slice (Source, Length (Source'Old) + 1, Length (Source)) =
+                      New_Item),
+
+           Length (Source) > Max_Length - New_Item'Length
+             and then Drop = Left
+           =>
+             Length (Source) = Max_Length
+               and then
+                 (if New_Item'Length < Max_Length then
+
+                    --  The result is the end of Source followed by New_Item
+
+                    Slice (Source, 1, Max_Length - New_Item'Length) =
+                      Slice (Source'Old,
+                        Length (Source'Old) - Max_Length + New_Item'Length + 1,
+                        Length (Source'Old))
+                    and then
+                      Slice (Source,
+                        Max_Length - New_Item'Length + 1, Max_Length) =
+                          New_Item
+                  else
+                    --  The result is the last Max_Length characters of
+                    --  New_Item.
+
+                    To_String (Source) = New_Item
+                      (New_Item'Last - Max_Length + 1 .. New_Item'Last)),
+
+           others  --  Drop = Right
+           =>
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Length (Source'Old)) =
+                   To_String (Source'Old)
+               and then
+                 (if Length (Source'Old) < Max_Length then
+                    Slice (Source, Length (Source'Old) + 1, Max_Length) =
+                      New_Item (New_Item'First
+                        .. Max_Length - Length (Source'Old) - 1
+                          + New_Item'First))),
+        Global         => (Proof_In => Max_Length);
 
       procedure Append
         (Source   : in out Bounded_String;
          New_Item : Character;
          Drop     : Truncation  := Error)
       with
-        Pre    => (if Length (Source) = Max_Length then Drop /= Error),
-        Post   =>
-          Length (Source)
-        = Natural'Min (Max_Length, Length (Source)'Old + 1),
-        Global => null;
+        Pre            => (if Length (Source) = Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Length (Source) < Max_Length
+           =>
+             Length (Source) = Length (Source'Old) + 1
+               and then
+                 Slice (Source, 1, Length (Source'Old)) =
+                   To_String (Source'Old)
+               and then Element (Source, Length (Source'Old) + 1) = New_Item,
+
+           Length (Source) = Max_Length and then Drop = Right
+           =>
+             Length (Source) = Max_Length
+               and then To_String (Source) = To_String (Source'Old),
+
+           others  --  Drop = Left
+           =>
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Max_Length - 1) =
+                   Slice (Source'Old, 2, Max_Length)
+               and then Element (Source, Max_Length) = New_Item),
+        Global         => (Proof_In => Max_Length);
 
       function "&"
         (Left  : Bounded_String;
          Right : Bounded_String) return Bounded_String
       with
         Pre    => Length (Left) <= Max_Length - Length (Right),
-        Post   => Length ("&"'Result) = Length (Left) + Length (Right),
-        Global => null;
+        Post   => Length ("&"'Result) = Length (Left) + Length (Right)
+          and then Slice ("&"'Result, 1, Length (Left)) = To_String (Left)
+          and then
+            (if Length (Right) > 0 then
+               Slice ("&"'Result, Length (Left) + 1, Length ("&"'Result)) =
+                 To_String (Right)),
+        Global => (Proof_In => Max_Length);
 
       function "&"
         (Left  : Bounded_String;
          Right : String) return Bounded_String
       with
         Pre    => Right'Length <= Max_Length - Length (Left),
-        Post   => Length ("&"'Result) = Length (Left) + Right'Length,
-        Global => null;
+        Post   => Length ("&"'Result) = Length (Left) + Right'Length
+          and then Slice ("&"'Result, 1, Length (Left)) = To_String (Left)
+          and then
+            (if Right'Length > 0 then
+               Slice ("&"'Result, Length (Left) + 1, Length ("&"'Result)) =
+                 Right),
+        Global => (Proof_In => Max_Length);
 
       function "&"
         (Left  : String;
          Right : Bounded_String) return Bounded_String
       with
         Pre    => Left'Length <= Max_Length - Length (Right),
-        Post   => Length ("&"'Result) = Left'Length + Length (Right),
-        Global => null;
+        Post   => Length ("&"'Result) = Left'Length + Length (Right)
+          and then Slice ("&"'Result, 1, Left'Length) = Left
+          and then
+            (if Length (Right) > 0 then
+               Slice ("&"'Result, Left'Length + 1, Length ("&"'Result)) =
+                 To_String (Right)),
+        Global => (Proof_In => Max_Length);
 
       function "&"
         (Left  : Bounded_String;
          Right : Character) return Bounded_String
       with
         Pre    => Length (Left) < Max_Length,
-        Post   => Length ("&"'Result) = Length (Left) + 1,
-        Global => null;
+        Post   => Length ("&"'Result) = Length (Left) + 1
+          and then Slice ("&"'Result, 1, Length (Left)) = To_String (Left)
+          and then Element ("&"'Result, Length (Left) + 1) = Right,
+        Global => (Proof_In => Max_Length);
 
       function "&"
         (Left  : Character;
          Right : Bounded_String) return Bounded_String
       with
         Pre    => Length (Right) < Max_Length,
-        Post   => Length ("&"'Result) = 1 + Length (Right),
-        Global => null;
+        Post   => Length ("&"'Result) = 1 + Length (Right)
+          and then Element ("&"'Result, 1) = Left
+          and then
+            Slice ("&"'Result, 2, Length ("&"'Result)) = To_String (Right),
+        Global => (Proof_In => Max_Length);
 
       function Element
         (Source : Bounded_String;
@@ -244,7 +541,10 @@ package Ada.Strings.Bounded is
          By     : Character)
       with
         Pre    => Index <= Length (Source),
-        Post   => Length (Source) = Length (Source)'Old,
+        Post   => Length (Source) = Length (Source'Old)
+          and then (for all K in 1 .. Length (Source) =>
+                      Element (Source, K) =
+                        (if K = Index then By else Element (Source'Old, K))),
         Global => null;
 
       function Slice
@@ -253,7 +553,6 @@ package Ada.Strings.Bounded is
          High   : Natural) return String
       with
         Pre    => Low - 1 <= Length (Source) and then High <= Length (Source),
-        Post   => Slice'Result'Length = Natural'Max (0, High - Low + 1),
         Global => null;
 
       function Bounded_Slice
@@ -262,8 +561,7 @@ package Ada.Strings.Bounded is
          High   : Natural) return Bounded_String
        with
         Pre    => Low - 1 <= Length (Source) and then High <= Length (Source),
-        Post   =>
-          Length (Bounded_Slice'Result) = Natural'Max (0, High - Low + 1),
+        Post   => To_String (Bounded_Slice'Result) = Slice (Source, Low, High),
         Global => null;
       pragma Ada_05 (Bounded_Slice);
 
@@ -274,7 +572,7 @@ package Ada.Strings.Bounded is
          High   : Natural)
       with
         Pre    => Low - 1 <= Length (Source) and then High <= Length (Source),
-        Post   => Length (Target) = Natural'Max (0, High - Low + 1),
+        Post   => To_String (Target) = Slice (Source, Low, High),
         Global => null;
       pragma Ada_05 (Bounded_Slice);
 
@@ -282,90 +580,105 @@ package Ada.Strings.Bounded is
         (Left  : Bounded_String;
          Right : Bounded_String) return Boolean
       with
+        Post   => "="'Result = (To_String (Left) = To_String (Right)),
         Global => null;
 
       function "="
         (Left  : Bounded_String;
          Right : String) return Boolean
       with
+        Post   => "="'Result = (To_String (Left) = Right),
         Global => null;
 
       function "="
         (Left  : String;
          Right : Bounded_String) return Boolean
       with
+        Post   => "="'Result = (Left = To_String (Right)),
         Global => null;
 
       function "<"
         (Left  : Bounded_String;
          Right : Bounded_String) return Boolean
       with
+        Post   => "<"'Result = (To_String (Left) < To_String (Right)),
         Global => null;
 
       function "<"
         (Left  : Bounded_String;
          Right : String) return Boolean
       with
+        Post   => "<"'Result = (To_String (Left) < Right),
         Global => null;
 
       function "<"
         (Left  : String;
          Right : Bounded_String) return Boolean
       with
+        Post   => "<"'Result = (Left < To_String (Right)),
         Global => null;
 
       function "<="
         (Left  : Bounded_String;
          Right : Bounded_String) return Boolean
       with
+        Post   => "<="'Result = (To_String (Left) <= To_String (Right)),
         Global => null;
 
       function "<="
         (Left  : Bounded_String;
          Right : String) return Boolean
       with
+        Post   => "<="'Result = (To_String (Left) <= Right),
         Global => null;
 
       function "<="
         (Left  : String;
          Right : Bounded_String) return Boolean
       with
+        Post   => "<="'Result = (Left <= To_String (Right)),
         Global => null;
 
       function ">"
         (Left  : Bounded_String;
          Right : Bounded_String) return Boolean
       with
+        Post   => ">"'Result = (To_String (Left) > To_String (Right)),
         Global => null;
 
       function ">"
         (Left  : Bounded_String;
          Right : String) return Boolean
       with
+        Post   => ">"'Result = (To_String (Left) > Right),
         Global => null;
 
       function ">"
         (Left  : String;
          Right : Bounded_String) return Boolean
       with
+        Post   => ">"'Result = (Left > To_String (Right)),
         Global => null;
 
       function ">="
         (Left  : Bounded_String;
          Right : Bounded_String) return Boolean
       with
+        Post   => ">="'Result = (To_String (Left) >= To_String (Right)),
         Global => null;
 
       function ">="
         (Left  : Bounded_String;
          Right : String) return Boolean
       with
+        Post   => ">="'Result = (To_String (Left) >= Right),
         Global => null;
 
       function ">="
         (Left  : String;
          Right : Bounded_String) return Boolean
       with
+        Post   => ">="'Result = (Left >= To_String (Right)),
         Global => null;
 
       ----------------------
@@ -378,8 +691,52 @@ package Ada.Strings.Bounded is
          Going   : Direction := Forward;
          Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
       with
-        Pre    => Pattern'Length /= 0,
-        Global => null;
+        Pre            => Pattern'Length > 0,
+        Post           => Index'Result <= Length (Source),
+        Contract_Cases =>
+
+          --  If Source is the empty string, then 0 is returned
+
+          (Length (Source) = 0
+           =>
+             Index'Result = 0,
+
+           --  If some slice of Source matches Pattern, then a valid index is
+           --  returned.
+
+           Length (Source) > 0
+             and then
+               (for some J in 1 .. Length (Source) - (Pattern'Length - 1) =>
+                  Search.Match (To_String (Source), Pattern, Mapping, J))
+           =>
+             --  The result is in the considered range of Source
+
+             Index'Result in 1 .. Length (Source) - (Pattern'Length - 1)
+
+               --  The slice beginning at the returned index matches Pattern
+
+               and then Search.Match
+                 (To_String (Source), Pattern, Mapping, Index'Result)
+
+               --  The result is the smallest or largest index which satisfies
+               --  the matching, respectively when Going = Forward and Going =
+               --  Backward.
+
+               and then
+                 (for all J in 1 .. Length (Source) =>
+                    (if (if Going = Forward
+                         then J <= Index'Result - 1
+                         else J - 1 in Index'Result
+                                       .. Length (Source) - Pattern'Length)
+                     then not (Search.Match
+                       (To_String (Source), Pattern, Mapping, J)))),
+
+           --  Otherwise, 0 is returned
+
+           others
+           =>
+             Index'Result = 0),
+        Global         => null;
 
       function Index
         (Source  : Bounded_String;
@@ -387,8 +744,52 @@ package Ada.Strings.Bounded is
          Going   : Direction := Forward;
          Mapping : Maps.Character_Mapping_Function) return Natural
       with
-        Pre    => Pattern'Length /= 0,
-        Global => null;
+        Pre            => Pattern'Length /= 0 and then Mapping /= null,
+        Post           => Index'Result <= Length (Source),
+        Contract_Cases =>
+
+          --  If Source is the empty string, then 0 is returned
+
+          (Length (Source) = 0
+           =>
+             Index'Result = 0,
+
+           --  If some slice of Source matches Pattern, then a valid index is
+           --  returned.
+
+           Length (Source) > 0
+             and then
+               (for some J in 1 .. Length (Source) - (Pattern'Length - 1) =>
+                  Search.Match (To_String (Source), Pattern, Mapping, J))
+           =>
+             --  The result is in the considered range of Source
+
+             Index'Result in 1 .. Length (Source) - (Pattern'Length - 1)
+
+               --  The slice beginning at the returned index matches Pattern
+
+               and then Search.Match
+                 (To_String (Source), Pattern, Mapping, Index'Result)
+
+               --  The result is the smallest or largest index which satisfies
+               --  the matching, respectively when Going = Forward and Going =
+               --  Backward.
+
+               and then
+                 (for all J in 1 .. Length (Source) =>
+                    (if (if Going = Forward
+                         then J <= Index'Result - 1
+                         else J - 1 in Index'Result
+                                       .. Length (Source) - Pattern'Length)
+                     then not (Search.Match
+                       (To_String (Source), Pattern, Mapping, J)))),
+
+           --  Otherwise, 0 is returned
+
+           others
+           =>
+             Index'Result = 0),
+        Global         => null;
 
       function Index
         (Source : Bounded_String;
@@ -396,7 +797,43 @@ package Ada.Strings.Bounded is
          Test   : Membership := Inside;
          Going  : Direction  := Forward) return Natural
       with
-        Global => null;
+        Post           => Index'Result <= Length (Source),
+        Contract_Cases =>
+
+           --  If no character of Source satisfies the property Test on Set,
+           --  then 0 is returned.
+
+          ((for all C of To_String (Source) =>
+              (Test = Inside) /= Maps.Is_In (C, Set))
+           =>
+             Index'Result = 0,
+
+           --  Otherwise, an index in the range of Source is returned
+
+           others
+           =>
+             --  The result is in the range of Source
+
+             Index'Result in 1 .. Length (Source)
+
+               --  The character at the returned index satisfies the property
+               --  Test on Set.
+
+               and then
+                 (Test = Inside) =
+                   Maps.Is_In (Element (Source, Index'Result), Set)
+
+               --  The result is the smallest or largest index which satisfies
+               --  the property, respectively when Going = Forward and Going =
+               --  Backward.
+
+               and then
+                 (for all J in 1 .. Length (Source) =>
+                    (if J /= Index'Result
+                          and then (J < Index'Result) = (Going = Forward)
+                     then (Test = Inside)
+                          /= Maps.Is_In (Element (Source, J), Set)))),
+        Global         => null;
 
       function Index
         (Source  : Bounded_String;
@@ -405,11 +842,60 @@ package Ada.Strings.Bounded is
          Going   : Direction := Forward;
          Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
       with
-        Pre    =>
-          (if Length (Source) /= 0
-           then From <= Length (Source))
-                  and then Pattern'Length /= 0,
-        Global => null;
+        Pre            =>
+          (if Length (Source) /= 0 then From <= Length (Source))
+            and then Pattern'Length /= 0,
+        Post           => Index'Result <= Length (Source),
+        Contract_Cases =>
+
+          --  If Source is the empty string, then 0 is returned
+
+          (Length (Source) = 0
+           =>
+             Index'Result = 0,
+
+           --  If some slice of Source matches Pattern, then a valid index is
+           --  returned.
+
+           Length (Source) > 0
+             and then
+               (for some J in
+                 (if Going = Forward then From else 1)
+                  .. (if Going = Forward then Length (Source) else From)
+                   - (Pattern'Length - 1) =>
+                 Search.Match (To_String (Source), Pattern, Mapping, J))
+           =>
+             --  The result is in the considered range of Source
+
+             Index'Result in
+               (if Going = Forward then From else 1)
+               .. (if Going = Forward then Length (Source) else From)
+                - (Pattern'Length - 1)
+
+               --  The slice beginning at the returned index matches Pattern
+
+               and then Search.Match
+                 (To_String (Source), Pattern, Mapping, Index'Result)
+
+               --  The result is the smallest or largest index which satisfies
+               --  the matching, respectively when Going = Forward and Going =
+               --  Backward.
+
+               and then
+                 (for all J in 1 .. Length (Source) =>
+                    (if (if Going = Forward
+                         then J in From .. Index'Result - 1
+                         else J - 1 in Index'Result
+                                       .. From - Pattern'Length)
+                     then not (Search.Match
+                       (To_String (Source), Pattern, Mapping, J)))),
+
+           --  Otherwise, 0 is returned
+
+           others
+           =>
+             Index'Result = 0),
+        Global         => null;
       pragma Ada_05 (Index);
 
       function Index
@@ -419,11 +905,61 @@ package Ada.Strings.Bounded is
          Going   : Direction := Forward;
          Mapping : Maps.Character_Mapping_Function) return Natural
       with
-        Pre    =>
-          (if Length (Source) /= 0
-           then From <= Length (Source))
-                  and then Pattern'Length /= 0,
-        Global => null;
+        Pre            =>
+          (if Length (Source) /= 0 then From <= Length (Source))
+            and then Pattern'Length /= 0
+            and then Mapping /= null,
+        Post           => Index'Result <= Length (Source),
+        Contract_Cases =>
+
+          --  If Source is the empty string, then 0 is returned
+
+          (Length (Source) = 0
+           =>
+             Index'Result = 0,
+
+           --  If some slice of Source matches Pattern, then a valid index is
+           --  returned.
+
+           Length (Source) > 0
+             and then
+               (for some J in
+                 (if Going = Forward then From else 1)
+                  .. (if Going = Forward then Length (Source) else From)
+                   - (Pattern'Length - 1) =>
+                 Search.Match (To_String (Source), Pattern, Mapping, J))
+           =>
+             --  The result is in the considered range of Source
+
+             Index'Result in
+               (if Going = Forward then From else 1)
+               .. (if Going = Forward then Length (Source) else From)
+                - (Pattern'Length - 1)
+
+               --  The slice beginning at the returned index matches Pattern
+
+               and then Search.Match
+                 (To_String (Source), Pattern, Mapping, Index'Result)
+
+               --  The result is the smallest or largest index which satisfies
+               --  the matching, respectively when Going = Forward and Going =
+               --  Backward.
+
+               and then
+                 (for all J in 1 .. Length (Source) =>
+                    (if (if Going = Forward
+                         then J in From .. Index'Result - 1
+                         else J - 1 in Index'Result
+                                       .. From - Pattern'Length)
+                     then not (Search.Match
+                       (To_String (Source), Pattern, Mapping, J)))),
+
+           --  Otherwise, 0 is returned
+
+           others
+           =>
+             Index'Result = 0),
+        Global         => null;
       pragma Ada_05 (Index);
 
       function Index
@@ -433,23 +969,147 @@ package Ada.Strings.Bounded is
          Test    : Membership := Inside;
          Going   : Direction := Forward) return Natural
       with
-        Pre    => (if Length (Source) /= 0 then From <= Length (Source)),
-        Global => null;
+        Pre            =>
+          (if Length (Source) /= 0 then From <= Length (Source)),
+        Post           => Index'Result <= Length (Source),
+        Contract_Cases =>
+
+           --  If Source is the empty string, or no character of the considered
+           --  slice of Source satisfies the property Test on Set, then 0 is
+           --  returned.
+
+          (Length (Source) = 0
+             or else
+               (for all J in 1 .. Length (Source) =>
+                  (if J = From or else (J > From) = (Going = Forward) then
+                     (Test = Inside) /= Maps.Is_In (Element (Source, J), Set)))
+           =>
+             Index'Result = 0,
+
+           --  Otherwise, an index in the considered range of Source is
+           --  returned.
+
+           others
+           =>
+             --  The result is in the considered range of Source
+
+             Index'Result in 1 .. Length (Source)
+               and then
+                 (Index'Result = From
+                    or else (Index'Result > From) = (Going = Forward))
+
+               --  The character at the returned index satisfies the property
+               --  Test on Set.
+
+               and then
+                 (Test = Inside) =
+                   Maps.Is_In (Element (Source, Index'Result), Set)
+
+               --  The result is the smallest or largest index which satisfies
+               --  the property, respectively when Going = Forward and Going =
+               --  Backward.
+
+               and then
+                 (for all J in 1 .. Length (Source) =>
+                    (if J /= Index'Result
+                       and then (J < Index'Result) = (Going = Forward)
+                       and then (J = From
+                                   or else (J > From) = (Going = Forward))
+                     then (Test = Inside)
+                          /= Maps.Is_In (Element (Source, J), Set)))),
+        Global         => null;
       pragma Ada_05 (Index);
 
       function Index_Non_Blank
         (Source : Bounded_String;
          Going  : Direction := Forward) return Natural
       with
-        Global => null;
+        Post           => Index_Non_Blank'Result <= Length (Source),
+        Contract_Cases =>
+
+           --  If all characters of Source are Space characters, then 0 is
+           --  returned.
+
+          ((for all C of To_String (Source) => C = ' ')
+           =>
+             Index_Non_Blank'Result = 0,
+
+           --  Otherwise, an index in the range of Source is returned
+
+           others
+           =>
+             --  The result is in the range of Source
+
+             Index_Non_Blank'Result in 1 .. Length (Source)
+
+               --  The character at the returned index is not a Space character
+
+               and then Element (Source, Index_Non_Blank'Result) /= ' '
+
+               --  The result is the smallest or largest index which is not a
+               --  Space character, respectively when Going = Forward and Going
+               --  = Backward.
+
+               and then
+                 (for all J in 1 .. Length (Source) =>
+                    (if J /= Index_Non_Blank'Result
+                          and then
+                            (J < Index_Non_Blank'Result) = (Going = Forward)
+                     then Element (Source, J) = ' '))),
+        Global         => null;
 
       function Index_Non_Blank
         (Source : Bounded_String;
          From   : Positive;
          Going  : Direction := Forward) return Natural
       with
-        Pre    => (if Length (Source) /= 0 then From <= Length (Source)),
-        Global => null;
+        Pre            =>
+          (if Length (Source) /= 0 then From <= Length (Source)),
+        Post           => Index_Non_Blank'Result <= Length (Source),
+        Contract_Cases =>
+
+           --  If Source is the empty string, or all characters of the
+           --  considered slice of Source are Space characters, then 0
+           --  is returned.
+
+          (Length (Source) = 0
+             or else
+               (for all J in 1 .. Length (Source) =>
+                  (if J = From or else (J > From) = (Going = Forward) then
+                     Element (Source, J) = ' '))
+           =>
+             Index_Non_Blank'Result = 0,
+
+           --  Otherwise, an index in the considered range of Source is
+           --  returned.
+
+           others
+           =>
+             --  The result is in the considered range of Source
+
+             Index_Non_Blank'Result in 1 .. Length (Source)
+               and then
+                 (Index_Non_Blank'Result = From
+                    or else
+                      (Index_Non_Blank'Result > From) = (Going = Forward))
+
+               --  The character at the returned index is not a Space character
+
+               and then Element (Source, Index_Non_Blank'Result) /= ' '
+
+               --  The result is the smallest or largest index which isn't a
+               --  Space character, respectively when Going = Forward and Going
+               --  = Backward.
+
+               and then
+                 (for all J in 1 .. Length (Source) =>
+                    (if J /= Index_Non_Blank'Result
+                       and then
+                         (J < Index_Non_Blank'Result) = (Going = Forward)
+                       and then (J = From
+                                   or else (J > From) = (Going = Forward))
+                     then Element (Source, J) = ' '))),
+        Global         => null;
       pragma Ada_05 (Index_Non_Blank);
 
       function Count
@@ -465,7 +1125,7 @@ package Ada.Strings.Bounded is
          Pattern : String;
          Mapping : Maps.Character_Mapping_Function) return Natural
       with
-        Pre    => Pattern'Length /= 0,
+        Pre    => Pattern'Length /= 0 and then Mapping /= null,
         Global => null;
 
       function Count
@@ -482,8 +1142,53 @@ package Ada.Strings.Bounded is
          First  : out Positive;
          Last   : out Natural)
       with
-        Pre    => (if Length (Source) /= 0 then From <= Length (Source)),
-        Global => null;
+        Pre            =>
+          (if Length (Source) /= 0 then From <= Length (Source)),
+        Contract_Cases =>
+
+           --  If Source is the empty string, or if no character of the
+           --  considered slice of Source satisfies the property Test on
+           --  Set, then First is set to From and Last is set to 0.
+
+          (Length (Source) = 0
+             or else
+               (for all J in From .. Length (Source) =>
+                  (Test = Inside) /= Maps.Is_In (Element (Source, J), Set))
+           =>
+             First = From and then Last = 0,
+
+           --  Otherwise, First and Last are set to valid indexes
+
+           others
+           =>
+             --  First and Last are in the considered range of Source
+
+             First in From .. Length (Source)
+               and then Last in First .. Length (Source)
+
+               --  No character between From and First satisfies the property
+               --  Test on Set.
+
+               and then
+                 (for all J in From .. First - 1 =>
+                    (Test = Inside) /= Maps.Is_In (Element (Source, J), Set))
+
+               --  All characters between First and Last satisfy the property
+               --  Test on Set.
+
+               and then
+                 (for all J in First .. Last =>
+                    (Test = Inside) = Maps.Is_In (Element (Source, J), Set))
+
+               --  If Last is not Source'Last, then the character at position
+               --  Last + 1 does not satify the property Test on Set.
+
+               and then
+                 (if Last < Length (Source)
+                  then
+                    (Test = Inside)
+                    /= Maps.Is_In (Element (Source, Last + 1), Set))),
+        Global         => null;
       pragma Ada_2012 (Find_Token);
 
       procedure Find_Token
@@ -493,7 +1198,51 @@ package Ada.Strings.Bounded is
          First  : out Positive;
          Last   : out Natural)
       with
-        Global => null;
+        Contract_Cases =>
+
+           --  If Source is the empty string, or if no character of the
+           --  considered slice of Source satisfies the property Test on
+           --  Set, then First is set to 1 and Last is set to 0.
+
+          (Length (Source) = 0
+             or else
+               (for all J in 1 .. Length (Source) =>
+                  (Test = Inside) /= Maps.Is_In (Element (Source, J), Set))
+           =>
+             First = 1 and then Last = 0,
+
+           --  Otherwise, First and Last are set to valid indexes
+
+           others
+           =>
+             --  First and Last are in the considered range of Source
+
+             First in 1 .. Length (Source)
+               and then Last in First .. Length (Source)
+
+               --  No character between 1 and First satisfies the property Test
+               --  on Set.
+
+               and then
+                 (for all J in 1 .. First - 1 =>
+                    (Test = Inside) /= Maps.Is_In (Element (Source, J), Set))
+
+               --  All characters between First and Last satisfy the property
+               --  Test on Set.
+
+               and then
+                 (for all J in First .. Last =>
+                    (Test = Inside) = Maps.Is_In (Element (Source, J), Set))
+
+               --  If Last is not Source'Last, then the character at position
+               --  Last + 1 does not satify the property Test on Set.
+
+               and then
+                 (if Last < Length (Source)
+                  then
+                    (Test = Inside)
+                    /= Maps.Is_In (Element (Source, Last + 1), Set))),
+        Global         => null;
 
       ------------------------------------
       -- String Translation Subprograms --
@@ -503,28 +1252,44 @@ package Ada.Strings.Bounded is
         (Source  : Bounded_String;
          Mapping : Maps.Character_Mapping) return Bounded_String
       with
-        Post   => Length (Translate'Result) = Length (Source),
+        Post   => Length (Translate'Result) = Length (Source)
+          and then
+            (for all K in 1 .. Length (Source) =>
+               Element (Translate'Result, K) =
+                 Ada.Strings.Maps.Value (Mapping, Element (Source, K))),
         Global => null;
 
       procedure Translate
         (Source   : in out Bounded_String;
          Mapping  : Maps.Character_Mapping)
       with
-        Post   => Length (Source) = Length (Source)'Old,
+        Post   => Length (Source) = Length (Source'Old)
+          and then
+            (for all K in 1 .. Length (Source) =>
+               Element (Source, K) =
+                 Ada.Strings.Maps.Value (Mapping, Element (Source'Old, K))),
         Global => null;
 
       function Translate
         (Source  : Bounded_String;
          Mapping : Maps.Character_Mapping_Function) return Bounded_String
       with
-        Post   => Length (Translate'Result) = Length (Source),
+        Pre    => Mapping /= null,
+        Post   => Length (Translate'Result) = Length (Source)
+          and then
+            (for all K in 1 .. Length (Source) =>
+               Element (Translate'Result, K) = Mapping (Element (Source, K))),
         Global => null;
 
       procedure Translate
         (Source  : in out Bounded_String;
          Mapping : Maps.Character_Mapping_Function)
       with
-        Post   => Length (Source) = Length (Source)'Old,
+        Pre    => Mapping /= null,
+        Post   => Length (Source) = Length (Source'Old)
+          and then
+            (for all K in 1 .. Length (Source) =>
+               Element (Source, K) = Mapping (Element (Source'Old, K))),
         Global => null;
 
       ---------------------------------------
@@ -541,23 +1306,128 @@ package Ada.Strings.Bounded is
         Pre            =>
           Low - 1 <= Length (Source)
             and then
-          (if Drop = Error
-           then (if High >= Low
-                 then Low - 1
-                   <= Max_Length - By'Length
-                    - Natural'Max (Length (Source) - High, 0)
-                 else Length (Source) <= Max_Length - By'Length)),
+              (if Drop = Error
+                 then (if High >= Low
+                         then Low - 1
+                           <= Max_Length - By'Length
+                            - Integer'Max (Length (Source) - High, 0)
+                         else Length (Source) <= Max_Length - By'Length)),
         Contract_Cases =>
-          (High >= Low =>
-             Length (Replace_Slice'Result)
-           = Natural'Min
-             (Max_Length,
-              Low - 1 + By'Length + Natural'Max (Length (Source) - High,
-                                                  0)),
-           others      =>
-             Length (Replace_Slice'Result)
-           = Natural'Min (Max_Length, Length (Source) + By'Length)),
-        Global         => null;
+          (Low - 1 <= Max_Length - By'Length
+             - Integer'Max (Length (Source) - Integer'Max (High, Low - 1), 0)
+           =>
+             --  Total length is lower than Max_Length: nothing is dropped
+
+             --  Note that if High < Low, the insertion is done before Low,
+             --  so in all cases the starting position of the slice of Source
+             --  remaining after the replaced Slice is Integer'Max (High + 1,
+             --  Low).
+
+             Length (Replace_Slice'Result) = Low - 1 + By'Length
+               + Integer'Max (Length (Source) - Integer'Max (High, Low - 1), 0)
+               and then
+                 Slice (Replace_Slice'Result, 1, Low - 1) =
+                   Slice (Source, 1, Low - 1)
+               and then
+                 Slice (Replace_Slice'Result, Low, Low - 1 + By'Length) = By
+               and then
+                 (if Integer'Max (High, Low - 1) < Length (Source) then
+                    Slice (Replace_Slice'Result,
+                      Low + By'Length, Length (Replace_Slice'Result)) =
+                        Slice (Source,
+                          Integer'Max (High + 1, Low), Length (Source))),
+
+           Low - 1 > Max_Length - By'Length
+             - Integer'Max (Length (Source) - Integer'Max (High, Low - 1), 0)
+             and then Drop = Left
+           =>
+             --  Final_Slice is the length of the slice of Source remaining
+             --  after the replaced part.
+             (declare
+                Final_Slice : constant Natural :=
+                  Integer'Max
+                    (Length (Source) - Integer'Max (High, Low - 1), 0);
+              begin
+                --  The result is of maximal length and ends by the last
+                --  Final_Slice characters of Source.
+
+                Length (Replace_Slice'Result) = Max_Length
+                  and then
+                    (if Final_Slice > 0 then
+                       Slice (Replace_Slice'Result,
+                         Max_Length - Final_Slice + 1, Max_Length) =
+                           Slice (Source,
+                             Integer'Max (High + 1, Low), Length (Source)))
+
+                  --  Depending on when we reach Max_Length, either the first
+                  --  part of Source is fully dropped and By is partly dropped,
+                  --  or By is fully added and the first part of Source is
+                  --  partly dropped.
+
+                  and then
+                   (if Max_Length - Final_Slice - By'Length <= 0 then
+
+                      --  The first (possibly zero) characters of By are
+                      --  dropped.
+
+                      (if Final_Slice < Max_Length then
+                         Slice (Replace_Slice'Result,
+                           1, Max_Length - Final_Slice) =
+                             By (By'Last - Max_Length + Final_Slice + 1
+                                 .. By'Last))
+
+                    else  --  By is added to the result
+
+                      Slice (Replace_Slice'Result,
+                        Max_Length - Final_Slice - By'Length + 1,
+                        Max_Length - Final_Slice) =
+                          By
+
+                        --  The first characters of Source (1 .. Low - 1) are
+                        --  dropped.
+
+                        and then Slice (Replace_Slice'Result, 1,
+                          Max_Length - Final_Slice - By'Length) =
+                            Slice (Source,
+                              Low - Max_Length + Final_Slice + By'Length,
+                              Low - 1))),
+
+           others  --  Drop = Right
+           =>
+             --  The result is of maximal length and starts by the first Low -
+             --  1 characters of Source.
+
+             Length (Replace_Slice'Result) = Max_Length
+               and then
+                 Slice (Replace_Slice'Result, 1, Low - 1) =
+                   Slice (Source, 1, Low - 1)
+
+               --  Depending on when we reach Max_Length, either the last part
+               --  of Source is fully dropped and By is partly dropped, or By
+               --  is fully added and the last part of Source is partly
+               --  dropped.
+
+               and then
+                 (if Low - 1 >= Max_Length - By'Length then
+
+                    --  The last characters of By are dropped
+
+                    Slice (Replace_Slice'Result, Low, Max_Length) =
+                      By (By'First .. Max_Length - Low + By'First)
+
+                  else  --  By is fully added
+
+                    Slice (Replace_Slice'Result, Low, Low + By'Length - 1) = By
+
+                      --  Then Source starting from Integer'Max (High + 1, Low)
+                      --  is added but the last characters are dropped.
+
+                      and then Slice (Replace_Slice'Result,
+                        Low + By'Length, Max_Length) =
+                          Slice (Source, Integer'Max (High + 1, Low),
+                            Integer'Max (High + 1, Low) +
+                              (Max_Length - Low - By'Length)))),
+        Global         => (Proof_In => Max_Length);
 
       procedure Replace_Slice
         (Source   : in out Bounded_String;
@@ -569,23 +1439,120 @@ package Ada.Strings.Bounded is
         Pre            =>
           Low - 1 <= Length (Source)
             and then
-          (if Drop = Error
-           then (if High >= Low
-                 then Low - 1
-                   <= Max_Length - By'Length
-                    - Natural'Max (Length (Source) - High, 0)
-                 else Length (Source) <= Max_Length - By'Length)),
+              (if Drop = Error
+                 then (if High >= Low
+                         then Low - 1
+                           <= Max_Length - By'Length
+                            - Natural'Max (Length (Source) - High, 0)
+                         else Length (Source) <= Max_Length - By'Length)),
         Contract_Cases =>
-          (High >= Low =>
-            Length (Source)
-          = Natural'Min
-              (Max_Length,
-               Low - 1 + By'Length + Natural'Max (Length (Source)'Old - High,
-                                                  0)),
-           others      =>
-             Length (Source)
-           = Natural'Min (Max_Length, Length (Source)'Old + By'Length)),
-        Global         => null;
+          (Low - 1 <= Max_Length - By'Length
+             - Integer'Max (Length (Source) - Integer'Max (High, Low - 1), 0)
+           =>
+             --  Total length is lower than Max_Length: nothing is dropped
+
+             --  Note that if High < Low, the insertion is done before Low,
+             --  so in all cases the starting position of the slice of Source
+             --  remaining after the replaced Slice is Integer'Max (High + 1,
+             --  Low).
+
+             Length (Source) = Low - 1 + By'Length + Integer'Max
+               (Length (Source'Old) - Integer'Max (High, Low - 1), 0)
+               and then
+                 Slice (Source, 1, Low - 1) = Slice (Source'Old, 1, Low - 1)
+               and then Slice (Source, Low, Low - 1 + By'Length) = By
+               and then
+                 (if Integer'Max (High, Low - 1) < Length (Source'Old) then
+                    Slice (Source, Low + By'Length, Length (Source)) =
+                      Slice (Source'Old,
+                        Integer'Max (High + 1, Low), Length (Source'Old))),
+
+           Low - 1 > Max_Length - By'Length
+             - Integer'Max (Length (Source) - Integer'Max (High, Low - 1), 0)
+             and then Drop = Left
+           =>
+             --  Final_Slice is the length of the slice of Source remaining
+             --  after the replaced part.
+             (declare
+                Final_Slice : constant Integer :=
+                  Integer'Max (0,
+                    Length (Source'Old) - Integer'Max (High, Low - 1));
+              begin
+                --  The result is of maximal length and ends by the last
+                --  Final_Slice characters of Source.
+
+                Length (Source) = Max_Length
+                  and then
+                    (if Final_Slice > 0 then
+                       Slice (Source,
+                         Max_Length - Final_Slice + 1, Max_Length) =
+                           Slice (Source'Old,
+                             Integer'Max (High + 1, Low), Length (Source'Old)))
+
+                  --  Depending on when we reach Max_Length, either the first
+                  --  part of Source is fully dropped and By is partly dropped,
+                  --  or By is fully added and the first part of Source is
+                  --  partly dropped.
+
+                  and then
+                    (if Max_Length - Final_Slice - By'Length <= 0 then
+
+                       --  The first characters of By are dropped
+
+                       (if Final_Slice < Max_Length then
+                          Slice (Source, 1, Max_Length - Final_Slice) =
+                            By (By'Last - Max_Length + Final_Slice + 1
+                                .. By'Last))
+
+                     else  --  By is added to the result
+
+                       Slice (Source,
+                         Max_Length - Final_Slice - By'Length + 1,
+                         Max_Length - Final_Slice) = By
+
+                         --  The first characters of Source (1 .. Low - 1) are
+                         --  dropped.
+
+                         and then Slice (Source, 1,
+                           Max_Length - Final_Slice - By'Length) =
+                             Slice (Source'Old,
+                               Low - Max_Length + Final_Slice + By'Length,
+                               Low - 1))),
+
+           others  --  Drop = Right
+           =>
+             --  The result is of maximal length and starts by the first Low -
+             --  1 characters of Source.
+
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Low - 1) = Slice (Source'Old, 1, Low - 1)
+
+               --  Depending on when we reach Max_Length, either the last part
+               --  of Source is fully dropped and By is partly dropped, or By
+               --  is fully added and the last part of Source is partly
+               --  dropped.
+
+               and then
+                 (if Low - 1 >= Max_Length - By'Length then
+
+                    --  The last characters of By are dropped
+
+                    Slice (Source, Low, Max_Length) =
+                      By (By'First .. Max_Length - Low + By'First)
+
+                  else  --  By is fully added
+
+                    Slice (Source, Low, Low + By'Length - 1) = By
+
+                      --  Then Source starting from Natural'Max (High + 1, Low)
+                      --  is added but the last characters are dropped.
+
+                      and then Slice (Source, Low + By'Length, Max_Length) =
+                        Slice (Source'Old, Integer'Max (High + 1, Low),
+                          Integer'Max (High + 1, Low) +
+                            (Max_Length - Low - By'Length)))),
+        Global         => (Proof_In => Max_Length);
 
       function Insert
         (Source   : Bounded_String;
@@ -593,14 +1560,114 @@ package Ada.Strings.Bounded is
          New_Item : String;
          Drop     : Truncation := Error) return Bounded_String
       with
-        Pre    =>
+        Pre            =>
           Before - 1 <= Length (Source)
             and then (if New_Item'Length > Max_Length - Length (Source)
                       then Drop /= Error),
-        Post   =>
-          Length (Insert'Result)
-        = Natural'Min (Max_Length, Length (Source) + New_Item'Length),
-        Global => null;
+        Contract_Cases =>
+          (Length (Source) <= Max_Length - New_Item'Length
+           =>
+             --  Total length is lower than Max_Length: nothing is dropped
+
+             Length (Insert'Result) = Length (Source) + New_Item'Length
+               and then
+                 Slice (Insert'Result, 1, Before - 1) =
+                   Slice (Source, 1, Before - 1)
+               and then
+                 Slice (Insert'Result, Before, Before - 1 + New_Item'Length) =
+                   New_Item
+               and then
+                 (if Before <= Length (Source) then
+                    Slice (Insert'Result,
+                      Before + New_Item'Length, Length (Insert'Result)) =
+                        Slice (Source, Before, Length (Source))),
+
+           Length (Source) > Max_Length - New_Item'Length and then Drop = Left
+           =>
+             --  The result is of maximal length and ends by the last
+             --  characters of Source.
+
+             Length (Insert'Result) = Max_Length
+               and then
+                 (if Before <= Length (Source) then
+                    Slice (Insert'Result,
+                      Max_Length - Length (Source) + Before, Max_Length) =
+                        Slice (Source, Before, Length (Source)))
+
+               --  Depending on when we reach Max_Length, either the first part
+               --  of Source is fully dropped and New_Item is partly dropped,
+               --  or New_Item is fully added and the first part of Source is
+               --  partly dropped.
+
+               and then
+                 (if Max_Length - Length (Source) - 1 + Before
+                   < New_Item'Length
+                  then
+                    --  The first characters of New_Item are dropped
+
+                    (if Length (Source) - Before + 1 < Max_Length then
+                       Slice (Insert'Result,
+                         1, Max_Length - Length (Source) - 1 + Before) =
+                           New_Item
+                             (New_Item'Last - Max_Length + Length (Source)
+                               - Before + 2
+                              .. New_Item'Last))
+
+                  else  --  New_Item is added to the result
+
+                    Slice (Insert'Result,
+                      Max_Length - Length (Source) - New_Item'Length + Before,
+                      Max_Length - Length (Source) - 1 + Before) = New_Item
+
+                      --  The first characters of Source (1 .. Before - 1) are
+                      --  dropped.
+
+                      and then Slice (Insert'Result,
+                        1, Max_Length - Length (Source) - New_Item'Length
+                          - 1 + Before) =
+                            Slice (Source,
+                              Length (Source) - Max_Length + New_Item'Length
+                                + 1,
+                              Before - 1)),
+
+           others  --  Drop = Right
+           =>
+             --  The result is of maximal length and starts by the first
+             --  characters of Source.
+
+             Length (Insert'Result) = Max_Length
+               and then
+                 Slice (Insert'Result, 1, Before - 1) =
+                   Slice (Source, 1, Before - 1)
+
+               --  Depending on when we reach Max_Length, either the last part
+               --  of Source is fully dropped and New_Item is partly dropped,
+               --  or New_Item is fully added and the last part of Source is
+               --  partly dropped.
+
+               and then
+                 (if Before - 1 >= Max_Length - New_Item'Length then
+
+                    --  The last characters of New_Item are dropped
+
+                    Slice (Insert'Result, Before, Max_Length) =
+                      New_Item (New_Item'First
+                        .. Max_Length - Before + New_Item'First)
+
+                  else  --  New_Item is fully added
+
+                    Slice (Insert'Result,
+                      Before, Before + New_Item'Length - 1) =
+                        New_Item
+
+                      --  Then Source starting from Before is added but the
+                      --  last characters are dropped.
+
+                      and then Slice (Insert'Result,
+                        Before + New_Item'Length, Max_Length) =
+                          Slice (Source,
+                            Before, Max_Length - New_Item'Length))),
+        Global         => (Proof_In => Max_Length);
 
       procedure Insert
         (Source   : in out Bounded_String;
@@ -608,14 +1675,113 @@ package Ada.Strings.Bounded is
          New_Item : String;
          Drop     : Truncation := Error)
       with
-        Pre    =>
+        Pre            =>
           Before - 1 <= Length (Source)
             and then (if New_Item'Length > Max_Length - Length (Source)
                       then Drop /= Error),
-        Post   =>
-          Length (Source)
-        = Natural'Min (Max_Length, Length (Source)'Old + New_Item'Length),
-        Global => null;
+        Contract_Cases =>
+          (Length (Source) <= Max_Length - New_Item'Length
+           =>
+             --  Total length is lower than Max_Length: nothing is dropped
+
+             Length (Source) = Length (Source'Old) + New_Item'Length
+               and then
+                 Slice (Source, 1, Before - 1) =
+                   Slice (Source'Old, 1, Before - 1)
+               and then
+                 Slice (Source, Before, Before - 1 + New_Item'Length) =
+                   New_Item
+               and then
+                 (if Before <= Length (Source'Old) then
+                    Slice (Source, Before + New_Item'Length, Length (Source)) =
+                      Slice (Source'Old, Before, Length (Source'Old))),
+
+           Length (Source) > Max_Length - New_Item'Length and then Drop = Left
+           =>
+             --  The result is of maximal length and ends by the last
+             --  characters of Source.
+
+             Length (Source) = Max_Length
+               and then
+                 (if Before <= Length (Source'Old) then
+                    Slice (Source,
+                      Max_Length - Length (Source'Old) + Before, Max_Length) =
+                        Slice (Source'Old, Before, Length (Source'Old)))
+
+               --  Depending on when we reach Max_Length, either the first part
+               --  of Source is fully dropped and New_Item is partly dropped,
+               --  or New_Item is fully added and the first part of Source is
+               --  partly dropped.
+
+               and then
+                 (if Max_Length - Length (Source'Old) - 1 + Before
+                   < New_Item'Length
+                  then
+                    --  The first characters of New_Item are dropped
+
+                    (if Length (Source'Old) - Before + 1 < Max_Length then
+                       Slice (Source,
+                         1, Max_Length - Length (Source'Old) - 1 + Before) =
+                           New_Item
+                             (New_Item'Last - Max_Length + Length (Source'Old)
+                               - Before + 2
+                              .. New_Item'Last))
+
+                  else  --  New_Item is added to the result
+
+                    Slice (Source,
+                      Max_Length - Length (Source'Old) - New_Item'Length
+                        + Before,
+                      Max_Length - Length (Source'Old) - 1 + Before) = New_Item
+
+                      --  The first characters of Source (1 .. Before - 1) are
+                      --  dropped.
+
+                      and then Slice (Source, 1,
+                        Max_Length - Length (Source'Old) - New_Item'Length
+                          - 1 + Before) =
+                            Slice (Source'Old,
+                              Length (Source'Old)
+                                - Max_Length + New_Item'Length + 1,
+                              Before - 1)),
+
+           others  --  Drop = Right
+           =>
+             --  The result is of maximal length and starts by the first
+             --  characters of Source.
+
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Before - 1) =
+                   Slice (Source'Old, 1, Before - 1)
+
+               --  Depending on when we reach Max_Length, either the last part
+               --  of Source is fully dropped and New_Item is partly dropped,
+               --  or New_Item is fully added and the last part of Source is
+               --  partly dropped.
+
+               and then
+                 (if Before - 1 >= Max_Length - New_Item'Length then
+
+                    --  The last characters of New_Item are dropped
+
+                    Slice (Source, Before, Max_Length) =
+                      New_Item (New_Item'First
+                        .. Max_Length - Before + New_Item'First)
+
+                  else  --  New_Item is fully added
+
+                    Slice (Source, Before, Before + New_Item'Length - 1) =
+                      New_Item
+
+                      --  Then Source starting from Before is added but the
+                      --  last characters are dropped.
+
+                      and then
+                        Slice (Source, Before + New_Item'Length, Max_Length) =
+                          Slice (Source'Old,
+                            Before, Max_Length - New_Item'Length))),
+        Global         => (Proof_In => Max_Length);
 
       function Overwrite
         (Source   : Bounded_String;
@@ -623,16 +1789,86 @@ package Ada.Strings.Bounded is
          New_Item : String;
          Drop     : Truncation := Error) return Bounded_String
       with
-        Pre    =>
+        Pre            =>
           Position - 1 <= Length (Source)
             and then (if New_Item'Length > Max_Length - (Position - 1)
                       then Drop /= Error),
-        Post   =>
-          Length (Overwrite'Result)
-        = Natural'Max
-            (Length (Source),
-             Natural'Min (Max_Length, Position - 1 + New_Item'Length)),
-        Global => null;
+        Contract_Cases =>
+          (Position - 1 <= Max_Length - New_Item'Length
+           =>
+             --  The length is unchanged, unless New_Item overwrites further
+             --  than the end of Source. In this contract case, we suppose
+             --  New_Item doesn't overwrite further than Max_Length.
+
+             Length (Overwrite'Result) =
+               Integer'Max (Length (Source), Position - 1 + New_Item'Length)
+               and then
+                 Slice (Overwrite'Result, 1, Position - 1) =
+                   Slice (Source, 1, Position - 1)
+               and then Slice (Overwrite'Result,
+                 Position, Position - 1 + New_Item'Length) =
+                   New_Item
+               and then
+                 (if Position - 1 + New_Item'Length < Length (Source) then
+
+                    --  There are some unchanged characters of Source remaining
+                    --  after New_Item.
+
+                    Slice (Overwrite'Result,
+                      Position + New_Item'Length, Length (Source)) =
+                        Slice (Source,
+                          Position + New_Item'Length, Length (Source))),
+
+           Position - 1 > Max_Length - New_Item'Length and then Drop = Left
+           =>
+             Length (Overwrite'Result) = Max_Length
+
+               --  If a part of the result has to be dropped, it means New_Item
+               --  is overwriting further than the end of Source. Thus the
+               --  result is necessarily ending by New_Item. However, we don't
+               --  know whether New_Item covers all Max_Length characters or
+               --  some characters of Source are remaining at the left.
+
+               and then
+                 (if New_Item'Length > Max_Length then
+
+                    --  New_Item covers all Max_Length characters
+
+                    To_String (Overwrite'Result) =
+                      New_Item
+                        (New_Item'Last - Max_Length + 1 .. New_Item'Last)
+                  else
+                    --  New_Item fully appears at the end
+
+                    Slice (Overwrite'Result,
+                      Max_Length - New_Item'Length + 1, Max_Length) =
+                        New_Item
+
+                      --  The left of Source is cut
+
+                      and then
+                        Slice (Overwrite'Result,
+                          1, Max_Length - New_Item'Length) =
+                            Slice (Source,
+                              Position - Max_Length + New_Item'Length,
+                              Position - 1)),
+
+           others  --  Drop = Right
+           =>
+             --  The result is of maximal length and starts by the first
+             --  characters of Source.
+
+             Length (Overwrite'Result) = Max_Length
+               and then
+                 Slice (Overwrite'Result, 1, Position - 1) =
+                   Slice (Source, 1, Position - 1)
+
+               --  Then New_Item is written until Max_Length
+
+               and then Slice (Overwrite'Result, Position, Max_Length) =
+                 New_Item
+                   (New_Item'First .. Max_Length - Position + New_Item'First)),
+        Global         => (Proof_In => Max_Length);
 
       procedure Overwrite
         (Source    : in out Bounded_String;
@@ -640,16 +1876,85 @@ package Ada.Strings.Bounded is
          New_Item  : String;
          Drop      : Truncation := Error)
       with
-        Pre    =>
+        Pre            =>
           Position - 1 <= Length (Source)
             and then (if New_Item'Length > Max_Length - (Position - 1)
                       then Drop /= Error),
-        Post   =>
-          Length (Source)
-        = Natural'Max
-            (Length (Source)'Old,
-             Natural'Min (Max_Length, Position - 1 + New_Item'Length)),
-        Global => null;
+        Contract_Cases =>
+          (Position - 1 <= Max_Length - New_Item'Length
+           =>
+             --  The length of Source is unchanged, unless New_Item overwrites
+             --  further than the end of Source. In this contract case, we
+             --  suppose New_Item doesn't overwrite further than Max_Length.
+
+             Length (Source) = Integer'Max
+               (Length (Source'Old), Position - 1 + New_Item'Length)
+               and then
+                 Slice (Source, 1, Position - 1) =
+                   Slice (Source'Old, 1, Position - 1)
+               and then Slice (Source,
+                 Position, Position - 1 + New_Item'Length) =
+                   New_Item
+               and then
+                 (if Position - 1 + New_Item'Length < Length (Source'Old) then
+
+                    --  There are some unchanged characters of Source remaining
+                    --  after New_Item.
+
+                    Slice (Source,
+                      Position + New_Item'Length, Length (Source'Old)) =
+                        Slice (Source'Old,
+                          Position + New_Item'Length, Length (Source'Old))),
+
+           Position - 1 > Max_Length - New_Item'Length and then Drop = Left
+           =>
+             Length (Source) = Max_Length
+
+               --  If a part of the result has to be dropped, it means New_Item
+               --  is overwriting further than the end of Source. Thus the
+               --  result is necessarily ending by New_Item. However, we don't
+               --  know whether New_Item covers all Max_Length characters or
+               --  some characters of Source are remaining at the left.
+
+               and then
+                 (if New_Item'Length > Max_Length then
+
+                    --  New_Item covers all Max_Length characters
+
+                    To_String (Source) =
+                      New_Item
+                        (New_Item'Last - Max_Length + 1 .. New_Item'Last)
+                  else
+                    --  New_Item fully appears at the end
+
+                    Slice (Source,
+                      Max_Length - New_Item'Length + 1, Max_Length) =
+                        New_Item
+
+                      --  The left of Source is cut
+
+                      and then
+                        Slice (Source, 1, Max_Length - New_Item'Length) =
+                          Slice (Source'Old,
+                            Position - Max_Length + New_Item'Length,
+                            Position - 1)),
+
+           others  --  Drop = Right
+           =>
+             --  The result is of maximal length and starts by the first
+             --  characters of Source.
+
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Position - 1) =
+                   Slice (Source'Old, 1, Position - 1)
+
+               --  New_Item is written until Max_Length
+
+               and then Slice (Source, Position, Max_Length) =
+                 New_Item
+                   (New_Item'First .. Max_Length - Position + New_Item'First)),
+        Global         => (Proof_In => Max_Length);
 
       function Delete
         (Source  : Bounded_String;
@@ -657,13 +1962,20 @@ package Ada.Strings.Bounded is
          Through : Natural) return Bounded_String
       with
         Pre            =>
-          (if Through <= From then From - 1 <= Length (Source)),
+          (if Through >= From then From - 1 <= Length (Source)),
         Contract_Cases =>
           (Through >= From =>
-             Length (Delete'Result) = Length (Source) - (Through - From + 1),
+             Length (Delete'Result) =
+               From - 1 + Natural'Max (Length (Source) - Through, 0)
+               and then
+                 Slice (Delete'Result, 1, From - 1) =
+                   Slice (Source, 1, From - 1)
+               and then
+                 (if Through < Length (Source) then
+                    Slice (Delete'Result, From, Length (Delete'Result)) =
+                      Slice (Source, Through + 1, Length (Source))),
            others          =>
-             Length (Delete'Result) = Length (Source)),
-
+             Delete'Result = Source),
         Global         => null;
 
       procedure Delete
@@ -672,12 +1984,19 @@ package Ada.Strings.Bounded is
          Through : Natural)
       with
         Pre            =>
-          (if Through <= From then From - 1 <= Length (Source)),
+          (if Through >= From then From - 1 <= Length (Source)),
         Contract_Cases =>
           (Through >= From =>
-             Length (Source) = Length (Source)'Old - (Through - From + 1),
+             Length (Source) =
+               From - 1 + Natural'Max (Length (Source'Old) - Through, 0)
+               and then
+                 Slice (Source, 1, From - 1) = Slice (Source'Old, 1, From - 1)
+               and then
+                 (if Through < Length (Source) then
+                    Slice (Source, From, Length (Source)) =
+                      Slice (Source'Old, Through + 1, Length (Source'Old))),
            others          =>
-             Length (Source) = Length (Source)'Old),
+             Source = Source'Old),
         Global         => null;
 
       ---------------------------------
@@ -688,31 +2007,111 @@ package Ada.Strings.Bounded is
         (Source : Bounded_String;
          Side   : Trim_End) return Bounded_String
       with
-        Post   => Length (Trim'Result) <= Length (Source),
-        Global => null;
+        Contract_Cases =>
+          --  If all characters in Source are Space, the returned string is
+          --  empty.
+
+          ((for all C of To_String (Source) => C = ' ')
+           =>
+             Length (Trim'Result) = 0,
+
+           --  Otherwise, the returned string is a slice of Source
+
+           others
+           =>
+             (declare
+                Low  : constant Positive :=
+                  (if Side = Right then 1
+                   else Index_Non_Blank (Source, Forward));
+                High : constant Positive :=
+                  (if Side = Left then Length (Source)
+                   else Index_Non_Blank (Source, Backward));
+              begin
+                To_String (Trim'Result) = Slice (Source, Low, High))),
+        Global         => null;
 
       procedure Trim
         (Source : in out Bounded_String;
          Side   : Trim_End)
       with
-        Post   => Length (Source) <= Length (Source)'Old,
-        Global => null;
+        Contract_Cases =>
+          --  If all characters in Source are Space, the returned string is
+          --  empty.
+
+          ((for all C of To_String (Source) => C = ' ')
+           =>
+             Length (Source) = 0,
+
+           --  Otherwise, the returned string is a slice of Source
+
+           others
+           =>
+             (declare
+                Low  : constant Positive :=
+                  (if Side = Right then 1
+                   else Index_Non_Blank (Source'Old, Forward));
+                High : constant Positive :=
+                  (if Side = Left then Length (Source'Old)
+                   else Index_Non_Blank (Source'Old, Backward));
+              begin
+                To_String (Source) = Slice (Source'Old, Low, High))),
+        Global         => null;
 
       function Trim
         (Source : Bounded_String;
          Left   : Maps.Character_Set;
          Right  : Maps.Character_Set) return Bounded_String
       with
-        Post   => Length (Trim'Result) <= Length (Source),
-        Global => null;
+        Contract_Cases =>
+          --  If all characters in Source are contained in one of the sets Left
+          --  or Right, then the returned string is empty.
+
+          ((for all C of To_String (Source) => Maps.Is_In (C, Left))
+             or else
+               (for all C of To_String (Source) => Maps.Is_In (C, Right))
+           =>
+             Length (Trim'Result) = 0,
+
+           --  Otherwise, the returned string is a slice of Source
+
+           others
+           =>
+             (declare
+                Low  : constant Positive :=
+                  Index (Source, Left, Outside, Forward);
+                High : constant Positive :=
+                  Index (Source, Right, Outside, Backward);
+              begin
+                To_String (Trim'Result) = Slice (Source, Low, High))),
+        Global         => null;
 
       procedure Trim
         (Source : in out Bounded_String;
          Left   : Maps.Character_Set;
          Right  : Maps.Character_Set)
       with
-        Post   => Length (Source) <= Length (Source)'Old,
-        Global => null;
+        Contract_Cases =>
+          --  If all characters in Source are contained in one of the sets Left
+          --  or Right, then the returned string is empty.
+
+          ((for all C of To_String (Source) => Maps.Is_In (C, Left))
+             or else
+               (for all C of To_String (Source) => Maps.Is_In (C, Right))
+           =>
+             Length (Source) = 0,
+
+           --  Otherwise, the returned string is a slice of Source
+
+           others
+           =>
+             (declare
+                Low  : constant Positive :=
+                  Index (Source'Old, Left, Outside, Forward);
+                High : constant Positive :=
+                  Index (Source'Old, Right, Outside, Backward);
+              begin
+                To_String (Source) = Slice (Source'Old, Low, High))),
+        Global         => null;
 
       function Head
         (Source : Bounded_String;
@@ -720,9 +2119,55 @@ package Ada.Strings.Bounded is
          Pad    : Character := Space;
          Drop   : Truncation := Error) return Bounded_String
       with
-        Pre    => (if Count > Max_Length then Drop /= Error),
-        Post   => Length (Head'Result) = Natural'Min (Max_Length, Count),
-        Global => null;
+        Pre            => (if Count > Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Count <= Length (Source)
+           =>
+             --  Source is cut
+
+             To_String (Head'Result) = Slice (Source, 1, Count),
+
+           Count > Length (Source) and then Count <= Max_Length
+           =>
+             --  Source is followed by Pad characters
+
+             Length (Head'Result) = Count
+               and then
+                 Slice (Head'Result, 1, Length (Source)) = To_String (Source)
+               and then
+                 Slice (Head'Result, Length (Source) + 1, Count) =
+                   (1 .. Count - Length (Source) => Pad),
+
+           Count > Max_Length and then Drop = Right
+           =>
+             --  Source is followed by Pad characters
+
+             Length (Head'Result) = Max_Length
+               and then
+                 Slice (Head'Result, 1, Length (Source)) = To_String (Source)
+               and then
+                 Slice (Head'Result, Length (Source) + 1, Max_Length) =
+                   (1 .. Max_Length - Length (Source) => Pad),
+
+           Count - Length (Source) > Max_Length and then Drop = Left
+           =>
+             --  Source is fully dropped at the left
+
+             To_String (Head'Result) = (1 .. Max_Length => Pad),
+
+           others
+           =>
+             --  Source is partly dropped at the left
+
+             Length (Head'Result) = Max_Length
+               and then
+                 Slice (Head'Result, 1, Max_Length - Count + Length (Source)) =
+                   Slice (Source, Count - Max_Length + 1, Length (Source))
+               and then
+                 Slice (Head'Result,
+                   Max_Length - Count + Length (Source) + 1, Max_Length) =
+                     (1 .. Count - Length (Source) => Pad)),
+        Global         => (Proof_In => Max_Length);
 
       procedure Head
         (Source : in out Bounded_String;
@@ -730,9 +2175,58 @@ package Ada.Strings.Bounded is
          Pad    : Character  := Space;
          Drop   : Truncation := Error)
       with
-        Pre    => (if Count > Max_Length then Drop /= Error),
-        Post   => Length (Source) = Natural'Min (Max_Length, Count),
-        Global => null;
+        Pre            => (if Count > Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Count <= Length (Source)
+           =>
+             --  Source is cut
+
+             To_String (Source) = Slice (Source'Old, 1, Count),
+
+           Count > Length (Source) and then Count <= Max_Length
+           =>
+             --  Source is followed by Pad characters
+
+             Length (Source) = Count
+               and then
+                 Slice (Source, 1, Length (Source'Old)) =
+                   To_String (Source'Old)
+               and then
+                 Slice (Source, Length (Source'Old) + 1, Count) =
+                   (1 .. Count - Length (Source'Old) => Pad),
+
+           Count > Max_Length and then Drop = Right
+           =>
+             --  Source is followed by Pad characters
+
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Length (Source'Old)) =
+                   To_String (Source'Old)
+               and then
+                 Slice (Source, Length (Source'Old) + 1, Max_Length) =
+                   (1 .. Max_Length - Length (Source'Old) => Pad),
+
+           Count - Length (Source) > Max_Length and then Drop = Left
+           =>
+             --  Source is fully dropped on the left
+
+             To_String (Source) = (1 .. Max_Length => Pad),
+
+           others
+           =>
+             --  Source is partly dropped on the left
+
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Max_Length - Count + Length (Source'Old)) =
+                   Slice (Source'Old,
+                     Count - Max_Length + 1, Length (Source'Old))
+               and then
+                 Slice (Source,
+                   Max_Length - Count + Length (Source'Old) + 1, Max_Length) =
+                     (1 .. Count - Length (Source'Old) => Pad)),
+        Global         => (Proof_In => Max_Length);
 
       function Tail
         (Source : Bounded_String;
@@ -740,9 +2234,61 @@ package Ada.Strings.Bounded is
          Pad    : Character  := Space;
          Drop   : Truncation := Error) return Bounded_String
       with
-        Pre    => (if Count > Max_Length then Drop /= Error),
-        Post   => Length (Tail'Result) = Natural'Min (Max_Length, Count),
-        Global => null;
+        Pre            => (if Count > Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Count < Length (Source)
+           =>
+             --  Source is cut
+
+             (if Count > 0 then
+                To_String (Tail'Result) =
+                  Slice (Source, Length (Source) - Count + 1, Length (Source))
+              else Length (Tail'Result) = 0),
+
+           Count >= Length (Source) and then Count < Max_Length
+           =>
+             --  Source is preceded by Pad characters
+
+             Length (Tail'Result) = Count
+               and then
+                 Slice (Tail'Result, 1, Count - Length (Source)) =
+                   (1 .. Count - Length (Source) => Pad)
+               and then
+                 Slice (Tail'Result, Count - Length (Source) + 1, Count) =
+                   To_String (Source),
+
+           Count >= Max_Length and then Drop = Left
+           =>
+             --  Source is preceded by Pad characters
+
+             Length (Tail'Result) = Max_Length
+               and then
+                 Slice (Tail'Result, 1, Max_Length - Length (Source)) =
+                   (1 .. Max_Length - Length (Source) => Pad)
+               and then
+                 (if Length (Source) > 0 then
+                    Slice (Tail'Result,
+                      Max_Length - Length (Source) + 1, Max_Length) =
+                        To_String (Source)),
+
+           Count - Length (Source) >= Max_Length and then Drop /= Left
+           =>
+             --  Source is fully dropped on the right
+
+             To_String (Tail'Result) = (1 .. Max_Length => Pad),
+
+           others
+           =>
+             --  Source is partly dropped on the right
+
+             Length (Tail'Result) = Max_Length
+               and then
+                 Slice (Tail'Result, 1, Count - Length (Source)) =
+                   (1 .. Count - Length (Source) => Pad)
+               and then
+                 Slice (Tail'Result, Count - Length (Source) + 1, Max_Length) =
+                   Slice (Source, 1, Max_Length - Count + Length (Source))),
+        Global         => (Proof_In => Max_Length);
 
       procedure Tail
         (Source : in out Bounded_String;
@@ -750,9 +2296,63 @@ package Ada.Strings.Bounded is
          Pad    : Character  := Space;
          Drop   : Truncation := Error)
       with
-        Pre    => (if Count > Max_Length then Drop /= Error),
-        Post   => Length (Source) = Natural'Min (Max_Length, Count),
-        Global => null;
+        Pre            => (if Count > Max_Length then Drop /= Error),
+        Contract_Cases =>
+          (Count < Length (Source)
+           =>
+             --  Source is cut
+
+             (if Count > 0 then
+                To_String (Source) =
+                  Slice (Source'Old,
+                    Length (Source'Old) - Count + 1, Length (Source'Old))
+              else Length (Source) = 0),
+
+           Count >= Length (Source) and then Count < Max_Length
+           =>
+             --  Source is preceded by Pad characters
+
+             Length (Source) = Count
+               and then
+                 Slice (Source, 1, Count - Length (Source'Old)) =
+                   (1 .. Count - Length (Source'Old) => Pad)
+               and then
+                 Slice (Source, Count - Length (Source'Old) + 1, Count) =
+                   To_String (Source'Old),
+
+           Count >= Max_Length and then Drop = Left
+           =>
+             --  Source is preceded by Pad characters
+
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Max_Length - Length (Source'Old)) =
+                   (1 .. Max_Length - Length (Source'Old) => Pad)
+               and then
+                 (if Length (Source'Old) > 0 then
+                    Slice (Source,
+                      Max_Length - Length (Source'Old) + 1, Max_Length) =
+                        To_String (Source'Old)),
+
+           Count - Length (Source) >= Max_Length and then Drop /= Left
+           =>
+             --  Source is fully dropped at the right
+
+             To_String (Source) = (1 .. Max_Length => Pad),
+
+           others
+           =>
+             --  Source is partly dropped at the right
+
+             Length (Source) = Max_Length
+               and then
+                 Slice (Source, 1, Count - Length (Source'Old)) =
+                   (1 .. Count - Length (Source'Old) => Pad)
+               and then
+                 Slice (Source, Count - Length (Source'Old) + 1, Max_Length) =
+                   Slice (Source'Old,
+                     1, Max_Length - Count + Length (Source'Old))),
+        Global         => (Proof_In => Max_Length);
 
       ------------------------------------
       -- String Constructor Subprograms --
@@ -763,24 +2363,36 @@ package Ada.Strings.Bounded is
          Right : Character) return Bounded_String
       with
         Pre    => Left <= Max_Length,
-        Post   => Length ("*"'Result) = Left,
-        Global => null;
+        Post   => To_String ("*"'Result) = (1 .. Left => Right),
+        Global => Max_Length;
 
       function "*"
         (Left  : Natural;
          Right : String) return Bounded_String
       with
         Pre    => (if Left /= 0 then Right'Length <= Max_Length / Left),
-        Post   => Length ("*"'Result) = Left * Right'Length,
-        Global => null;
+        Post   =>
+          Length ("*"'Result) = Left * Right'Length
+            and then
+              (if Right'Length > 0 then
+                 (for all K in 1 .. Left * Right'Length =>
+                    Element ("*"'Result, K) =
+                      Right (Right'First + (K - 1) mod Right'Length))),
+        Global => Max_Length;
 
       function "*"
         (Left  : Natural;
          Right : Bounded_String) return Bounded_String
       with
         Pre    => (if Left /= 0 then Length (Right) <= Max_Length / Left),
-        Post   => Length ("*"'Result) = Left * Length (Right),
-        Global => null;
+        Post   =>
+          Length ("*"'Result) = Left * Length (Right)
+            and then
+              (if Length (Right) > 0 then
+                 (for all K in 1 .. Left * Length (Right) =>
+                    Element ("*"'Result, K) =
+                      Element (Right, 1 + (K - 1) mod Length (Right)))),
+        Global => (Proof_In => Max_Length);
 
       function Replicate
         (Count : Natural;
@@ -789,37 +2401,80 @@ package Ada.Strings.Bounded is
       with
         Pre    => (if Count > Max_Length then Drop /= Error),
         Post   =>
-          Length (Replicate'Result)
-        = Natural'Min (Max_Length, Count),
-        Global => null;
+          To_String (Replicate'Result) =
+            (1 .. Natural'Min (Max_Length, Count) => Item),
+        Global => Max_Length;
 
       function Replicate
         (Count : Natural;
          Item  : String;
          Drop  : Truncation := Error) return Bounded_String
       with
-        Pre    =>
-          (if Item'Length /= 0
-             and then Count > Max_Length / Item'Length
+        Pre            =>
+          (if Count /= 0 and then Item'Length > Max_Length / Count
            then Drop /= Error),
-        Post   =>
-          Length (Replicate'Result)
-        = Natural'Min (Max_Length, Count * Item'Length),
-        Global => null;
+        Contract_Cases =>
+          (Count = 0 or else Item'Length <= Max_Length / Count
+           =>
+             Length (Replicate'Result) = Count * Item'Length
+               and then
+                 (if Item'Length > 0 then
+                    (for all K in 1 .. Count * Item'Length =>
+                       Element (Replicate'Result, K) =
+                         Item (Item'First + (K - 1) mod Item'Length))),
+           Count /= 0
+             and then Item'Length > Max_Length / Count
+             and then Drop = Right
+           =>
+             Length (Replicate'Result) = Max_Length
+               and then
+                 (for all K in 1 .. Max_Length =>
+                    Element (Replicate'Result, K) =
+                      Item (Item'First + (K - 1) mod Item'Length)),
+           others  --  Drop = Left
+           =>
+             Length (Replicate'Result) = Max_Length
+               and then
+                 (for all K in 1 .. Max_Length =>
+                    Element (Replicate'Result, K) =
+                      Item (Item'Last - (Max_Length - K) mod Item'Length))),
+        Global         => Max_Length;
 
       function Replicate
         (Count : Natural;
          Item  : Bounded_String;
          Drop  : Truncation := Error) return Bounded_String
       with
-        Pre    =>
-          (if Length (Item) /= 0
-             and then Count > Max_Length / Length (Item)
+        Pre            =>
+          (if Count /= 0 and then Length (Item) > Max_Length / Count
            then Drop /= Error),
-        Post   =>
-          Length (Replicate'Result)
-        = Natural'Min (Max_Length, Count * Length (Item)),
-        Global => null;
+        Contract_Cases =>
+          ((if Count /= 0 then Length (Item) <= Max_Length / Count)
+           =>
+             Length (Replicate'Result) = Count * Length (Item)
+               and then
+                 (if Length (Item) > 0 then
+                    (for all K in 1 .. Count * Length (Item) =>
+                       Element (Replicate'Result, K) =
+                         Element (Item, 1 + (K - 1) mod Length (Item)))),
+           Count /= 0
+             and then Length (Item) > Max_Length / Count
+             and then Drop = Right
+           =>
+             Length (Replicate'Result) = Max_Length
+               and then
+                 (for all K in 1 .. Max_Length =>
+                    Element (Replicate'Result, K) =
+                      Element (Item, 1 + (K - 1) mod Length (Item))),
+           others  --  Drop = Left
+           =>
+             Length (Replicate'Result) = Max_Length
+               and then
+                 (for all K in 1 .. Max_Length =>
+                    Element (Replicate'Result, K) =
+                      Element (Item,
+                        Length (Item) - (Max_Length - K) mod Length (Item)))),
+        Global         => (Proof_In => Max_Length);
 
    private
       --  Most of the implementation is in the separate non generic package
@@ -843,7 +2498,8 @@ package Ada.Strings.Bounded is
       --  the generic instantiation is compatible with the Super_String
       --  type declared in the Superbounded package.
 
-      function From_String (Source : String) return Bounded_String;
+      function From_String (Source : String) return Bounded_String
+      with Pre => Source'Length <= Max_Length;
       --  Private routine used only by Stream_Convert
 
       pragma Stream_Convert (Bounded_String, From_String, To_String);
