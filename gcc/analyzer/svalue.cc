@@ -735,9 +735,17 @@ void
 poisoned_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   if (simple)
-    pp_printf (pp, "POISONED(%s)", poison_kind_to_str (m_kind));
+    {
+      pp_string (pp, "POISONED(");
+      print_quoted_type (pp, get_type ());
+      pp_printf (pp, ", %s)", poison_kind_to_str (m_kind));
+    }
   else
-    pp_printf (pp, "poisoned_svalue(%s)", poison_kind_to_str (m_kind));
+    {
+      pp_string (pp, "poisoned_svalue(");
+      print_quoted_type (pp, get_type ());
+      pp_printf (pp, ", %s)", poison_kind_to_str (m_kind));
+    }
 }
 
 /* Implementation of svalue::accept vfunc for poisoned_svalue.  */
@@ -1228,17 +1236,26 @@ compound_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
   if (simple)
     {
       pp_string (pp, "COMPOUND(");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
+      pp_character (pp, '{');
       m_map.dump_to_pp (pp, simple, false);
-      pp_character (pp, ')');
+      pp_string (pp, "})");
     }
   else
     {
       pp_string (pp, "compound_svalue (");
-      pp_string (pp, ", ");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
       pp_character (pp, '{');
       m_map.dump_to_pp (pp, simple, false);
-      pp_string (pp, "}, ");
-      pp_character (pp, ')');
+      pp_string (pp, "})");
     }
 }
 
