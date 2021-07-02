@@ -21761,10 +21761,12 @@ ix86_stack_protect_fail (void)
    After all, the relocation needed is the same as for the call insn.
    Whether or not a particular assembler allows us to enter such, I
    guess we'll have to see.  */
+
 int
 asm_preferred_eh_data_format (int code, int global)
 {
-  if (flag_pic)
+  /* PE-COFF is effectively always -fPIC because of the .reloc section.  */
+  if (flag_pic || TARGET_PECOFF)
     {
       int type = DW_EH_PE_sdata8;
       if (!TARGET_64BIT
@@ -21773,9 +21775,11 @@ asm_preferred_eh_data_format (int code, int global)
 	type = DW_EH_PE_sdata4;
       return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
     }
+
   if (ix86_cmodel == CM_SMALL
       || (ix86_cmodel == CM_MEDIUM && code))
     return DW_EH_PE_udata4;
+
   return DW_EH_PE_absptr;
 }
 
