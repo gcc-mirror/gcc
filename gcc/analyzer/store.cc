@@ -236,6 +236,29 @@ binding_key::cmp (const binding_key *k1, const binding_key *k2)
     }
 }
 
+/* struct struct bit_range.  */
+
+void
+bit_range::dump_to_pp (pretty_printer *pp) const
+{
+  pp_string (pp, "start: ");
+  pp_wide_int (pp, m_start_bit_offset, SIGNED);
+  pp_string (pp, ", size: ");
+  pp_wide_int (pp, m_size_in_bits, SIGNED);
+  pp_string (pp, ", next: ");
+  pp_wide_int (pp, get_next_bit_offset (), SIGNED);
+}
+
+int
+bit_range::cmp (const bit_range &br1, const bit_range &br2)
+{
+  if (int start_cmp = wi::cmps (br1.m_start_bit_offset,
+				br2.m_start_bit_offset))
+    return start_cmp;
+
+  return wi::cmpu (br1.m_size_in_bits, br2.m_size_in_bits);
+}
+
 /* class concrete_binding : public binding_key.  */
 
 /* Implementation of binding_key::dump_to_pp vfunc for concrete_binding.  */
@@ -244,12 +267,8 @@ void
 concrete_binding::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   binding_key::dump_to_pp (pp, simple);
-  pp_string (pp, ", start: ");
-  pp_wide_int (pp, m_start_bit_offset, SIGNED);
-  pp_string (pp, ", size: ");
-  pp_wide_int (pp, m_size_in_bits, SIGNED);
-  pp_string (pp, ", next: ");
-  pp_wide_int (pp, get_next_bit_offset (), SIGNED);
+  pp_string (pp, ", ");
+  m_bit_range.dump_to_pp (pp);
 }
 
 /* Return true if this binding overlaps with OTHER.  */
@@ -257,7 +276,7 @@ concrete_binding::dump_to_pp (pretty_printer *pp, bool simple) const
 bool
 concrete_binding::overlaps_p (const concrete_binding &other) const
 {
-  if (m_start_bit_offset < other.get_next_bit_offset ()
+  if (get_start_bit_offset () < other.get_next_bit_offset ()
       && get_next_bit_offset () > other.get_start_bit_offset ())
     return true;
   return false;
@@ -274,10 +293,7 @@ concrete_binding::cmp_ptr_ptr (const void *p1, const void *p2)
   if (int kind_cmp = b1->get_kind () - b2->get_kind ())
     return kind_cmp;
 
-  if (int start_cmp = wi::cmps (b1->m_start_bit_offset, b2->m_start_bit_offset))
-    return start_cmp;
-
-  return wi::cmpu (b1->m_size_in_bits, b2->m_size_in_bits);
+  return bit_range::cmp (b1->m_bit_range, b2->m_bit_range);
 }
 
 /* class symbolic_binding : public binding_key.  */
