@@ -1344,6 +1344,13 @@ build_assign (tree_code code, tree lhs, tree rhs)
       d_mark_addressable (lhs);
       CALL_EXPR_RETURN_SLOT_OPT (rhs) = true;
     }
+  /* If modifying an LHS whose type is marked TREE_ADDRESSABLE.  */
+  else if (code == MODIFY_EXPR && TREE_ADDRESSABLE (TREE_TYPE (lhs))
+	   && TREE_SIDE_EFFECTS (rhs) && TREE_CODE (rhs) != TARGET_EXPR)
+    {
+      /* LHS may be referenced by the RHS expression, so force a temporary.  */
+      rhs = force_target_expr (rhs);
+    }
 
   /* The LHS assignment replaces the temporary in TARGET_EXPR_SLOT.  */
   if (TREE_CODE (rhs) == TARGET_EXPR)
