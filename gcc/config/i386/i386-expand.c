@@ -478,6 +478,9 @@ ix86_broadcast_from_integer_constant (machine_mode mode, rtx op)
   if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT)
     return nullptr;
 
+  if (GET_MODE_INNER (mode) == TImode)
+    return nullptr;
+
   rtx constant = get_pool_constant (XEXP (op, 0));
   if (GET_CODE (constant) != CONST_VECTOR)
     return nullptr;
