@@ -1,3 +1,19 @@
+2021-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/doxygroups.cc: Fix docs for std::literals.
+	* doc/doxygen/user.cfg.in: Exclude the Networking TS header.
+	Add some more predefined macros.
+	* include/bits/fs_fwd.h: Move @addtogroup commands inside
+	namespaces. Add better documentation.
+	* include/bits/fs_path.h: Likewise.
+	* include/experimental/bits/fs_fwd.h: Likewise.
+	* include/experimental/bits/fs_path.h: Likewise.
+	* include/ext/throw_allocator.h: Fix typo and improve docs.
+	* include/std/chrono: Move @addtogroup commands.
+	* include/std/system_error: Move @addtogroup commands.
+	* libsupc++/exception: Improve documentation.
+	* libsupc++/exception.h: Add @since documentation.
+
 2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101258

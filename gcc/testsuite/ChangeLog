@@ -1,3 +1,94 @@
+2021-07-01  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-cmove.c: New test.
+	* gcc.target/powerpc/float128-minmax-3.c: New test.
+
+2021-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/dump-ada-spec-14.c: Adjust dg-warning directive.
+
+2021-07-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/100865
+	* gcc.target/i386/avx512f-broadcast-pr87767-1.c: Expect integer
+	broadcast.
+	* gcc.target/i386/avx512f-broadcast-pr87767-5.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-1.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-5.c: Likewise.
+	* gcc.target/i386/avx512f_cond_move.c: Also pass
+	-mprefer-vector-width=512 and expect integer broadcast.
+	* gcc.target/i386/pr100865-1.c: New test.
+	* gcc.target/i386/pr100865-2.c: Likewise.
+	* gcc.target/i386/pr100865-3.c: Likewise.
+	* gcc.target/i386/pr100865-4a.c: Likewise.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-5a.c: Likewise.
+	* gcc.target/i386/pr100865-5b.c: Likewise.
+	* gcc.target/i386/pr100865-6a.c: Likewise.
+	* gcc.target/i386/pr100865-6b.c: Likewise.
+	* gcc.target/i386/pr100865-6c.c: Likewise.
+	* gcc.target/i386/pr100865-7a.c: Likewise.
+	* gcc.target/i386/pr100865-7b.c: Likewise.
+	* gcc.target/i386/pr100865-7c.c: Likewise.
+	* gcc.target/i386/pr100865-8a.c: Likewise.
+	* gcc.target/i386/pr100865-8b.c: Likewise.
+	* gcc.target/i386/pr100865-8c.c: Likewise.
+	* gcc.target/i386/pr100865-9a.c: Likewise.
+	* gcc.target/i386/pr100865-9b.c: Likewise.
+	* gcc.target/i386/pr100865-9c.c: Likewise.
+	* gcc.target/i386/pr100865-10a.c: Likewise.
+	* gcc.target/i386/pr100865-10b.c: Likewise.
+	* gcc.target/i386/pr100865-11a.c: Likewise.
+	* gcc.target/i386/pr100865-11b.c: Likewise.
+	* gcc.target/i386/pr100865-11c.c: Likewise.
+	* gcc.target/i386/pr100865-12a.c: Likewise.
+	* gcc.target/i386/pr100865-12b.c: Likewise.
+	* gcc.target/i386/pr100865-12c.c: Likewise.
+
+2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101280
+	PR tree-optimization/101173
+	* gcc.dg/tree-ssa/loop-interchange-16.c: New testcase.
+
+2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101278
+	* gcc.dg/torture/pr101278.c: New testcase.
+
+2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* gcc.dg/torture/pr100778.c: New testcase.
+
+2021-07-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101044
+	* gcc.target/i386/pr101044.c: New test.
+
+2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101178
+	* gcc.dg/vect/bb-slp-72.c: New testcase.
+	* gcc.dg/vect/bb-slp-73.c: Likewise.
+	* gcc.dg/vect/bb-slp-74.c: Likewise.
+
+2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101266
+	* gcc.dg/pr101266.c: New test.
+
+2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* g++.dg/cpp0x/constexpr-empty16.C: New test.
+
+2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96204
+	* g++.dg/template/access41.C: New test.
+	* g++.dg/template/access41a.C: New test.
+
 2021-06-30  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* gcc.dg/debug/ctf/ctf-skip-types-4.c: Add dg-add-options float64 and
