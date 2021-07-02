@@ -1884,6 +1884,11 @@ package body Sem_Ch13 is
             --  expression is allowed. Includes checking that the expression
             --  does not raise Constraint_Error.
 
+            function Directly_Specified
+              (Id : Entity_Id; A : Aspect_Id) return Boolean;
+            --  Returns True if the given aspect is directly (as opposed to
+            --  via any form of inheritance) specified for the given entity.
+
             function Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
                Pragma_Name                  : Name_Id) return Node_Id;
@@ -2777,6 +2782,18 @@ package body Sem_Ch13 is
                end if;
             end Check_Expr_Is_OK_Static_Expression;
 
+            ------------------------
+            -- Directly_Specified --
+            ------------------------
+
+            function Directly_Specified
+              (Id : Entity_Id; A : Aspect_Id) return Boolean
+            is
+               Aspect_Spec : constant Node_Id := Find_Aspect (Id, A);
+            begin
+               return Present (Aspect_Spec) and then Entity (Aspect_Spec) = Id;
+            end Directly_Specified;
+
             -----------------------
             -- Make_Aitem_Pragma --
             -----------------------
@@ -3341,6 +3358,15 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("Predicate_Failure requires previous predicate" &
                         " specification", Aspect);
+                     goto Continue;
+
+                  elsif not (Directly_Specified (E, Aspect_Dynamic_Predicate)
+                    or else Directly_Specified (E, Aspect_Static_Predicate)
+                    or else Directly_Specified (E, Aspect_Predicate))
+                  then
+                     Error_Msg_N
+                       ("Predicate_Failure requires accompanying" &
+                        " noninherited predicate specification", Aspect);
                      goto Continue;
                   end if;
 
