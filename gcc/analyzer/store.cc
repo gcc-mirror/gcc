@@ -1043,8 +1043,8 @@ binding_cluster::zero_fill_region (store_manager *mgr, const region *reg)
 
   /* Add a default binding to zero.  */
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  tree cst_zero = build_int_cst (integer_type_node, 0);
-  const svalue *cst_sval = sval_mgr->get_or_create_constant_svalue (cst_zero);
+  const svalue *cst_sval
+    = sval_mgr->get_or_create_int_cst (integer_type_node, 0);
   const svalue *bound_sval = cst_sval;
   if (reg->get_type ())
     bound_sval = sval_mgr->get_or_create_unaryop (reg->get_type (), NOP_EXPR,
