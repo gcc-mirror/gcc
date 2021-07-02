@@ -2084,6 +2084,10 @@ fmove-loop-invariants
 Common Var(flag_move_loop_invariants) Optimization
 Move loop invariant computations out of loops.
 
+fmove-loop-stores
+Common Var(flag_move_loop_stores) Optimization
+Move stores out of loops.
+
 fdce
 Common Var(flag_dce) Init(1) Optimization
 Use the RTL dead code elimination pass.
