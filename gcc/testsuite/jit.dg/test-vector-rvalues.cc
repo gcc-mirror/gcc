@@ -165,6 +165,14 @@ check_div (const V &a, const V &b, const V &c)
     CHECK_VALUE (c[i], a[i] / b[i]);
 }
 
+template <>
+void
+check_div<v4f> (const v4f &a, const v4f &b, const v4f &c)
+{
+  for (int i = 0; i < 4; i++)
+    CHECK_DOUBLE_VALUE (c[i], a[i] / b[i]);
+}
+
 template <typename V, typename E>
 void
 verify_vec_code (gcc_jit_context *ctxt, gcc_jit_result *result,
