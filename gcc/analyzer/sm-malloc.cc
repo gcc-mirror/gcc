@@ -1303,7 +1303,7 @@ public:
   {
     /* Attempt to reconstruct what kind of pointer it is.
        (It seems neater for this to be a part of the state, though).  */
-    if (TREE_CODE (change.m_expr) == SSA_NAME)
+    if (change.m_expr && TREE_CODE (change.m_expr) == SSA_NAME)
       {
 	gimple *def_stmt = SSA_NAME_DEF_STMT (change.m_expr);
 	if (gcall *call = dyn_cast <gcall *> (def_stmt))
