@@ -10289,12 +10289,6 @@ check_return_expr (tree retval, bool *no_warning)
       return retval;
     }
 
-  /* If there's a postcondition, rewrite the return expression with a
-     call to the postcondition function.  */
-  if (!processing_template_decl)
-    if (tree post = DECL_POST_FN (current_function_decl))
-      retval = apply_postcondition_to_return (post, retval);
-
   /* The fabled Named Return Value optimization, as per [class.copy]/15:
 
      [...]      For  a function with a class return type, if the expression
@@ -10418,10 +10412,21 @@ check_return_expr (tree retval, bool *no_warning)
 
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
-    retval = build2 (INIT_EXPR, TREE_TYPE (result), result, retval);
+    {
+      /* If there's a postcondition for a scalar return value, wrap
+	 retval in a call to the postcondition function.  */
+      if (tree post = apply_postcondition_to_return (retval))
+	retval = post;
+      retval = build2 (INIT_EXPR, TREE_TYPE (result), result, retval);
+    }
 
   if (tree set = maybe_set_retval_sentinel ())
     retval = build2 (COMPOUND_EXPR, void_type_node, retval, set);
+
+  /* If there's a postcondition for an aggregate return value, call the
+     postcondition function after the return object is initialized.  */
+  if (tree post = apply_postcondition_to_return (result))
+    retval = build2 (COMPOUND_EXPR, void_type_node, retval, post);
 
   return retval;
 }

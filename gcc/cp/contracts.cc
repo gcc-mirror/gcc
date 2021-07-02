@@ -96,12 +96,17 @@ along with GCC; see the file COPYING3.  If not see
      int fun.post(int v, int __r)
      {
        [[ assert: __r < 0 ]];
+       return __r;
      }
      int fun(int v)
      {
        fun.pre(v);
        return fun.post(v, -v);
      }
+
+   If fun returns in memory, the return value is not passed through the post
+   function; instead, the return object is initialized directly and then passed
+   to the post function by invisible reference.
 
    This sides steps a number of issues with having to rewrite the bodies or
    rewrite the parsed conditions as the parameters to the original function
@@ -1432,8 +1437,6 @@ build_contract_condition_function (tree fndecl, bool pre)
     *last = void_list_node;
   else
     {
-      /* FIXME do we need magic to perfectly forward this so we don't clobber
-	 RVO/NRVO etc?  */
       tree name = get_identifier ("__r");
       tree parm = build_lang_decl (PARM_DECL, name, value_type);
       DECL_CONTEXT (parm) = fn;
@@ -1441,6 +1444,11 @@ build_contract_condition_function (tree fndecl, bool pre)
 
       *last = build_tree_list (NULL_TREE, value_type);
       TREE_CHAIN (*last) = void_list_node;
+
+      if (aggregate_value_p (value_type, fndecl))
+	/* If FNDECL returns in memory, don't return the value from the
+	   postcondition.  */
+	value_type = void_type_node;
     }
 
   TREE_TYPE (fn) = build_function_type (value_type, arg_types);
@@ -1453,6 +1461,8 @@ build_contract_condition_function (tree fndecl, bool pre)
 
   IDENTIFIER_VIRTUAL_P (DECL_NAME (fn)) = false;
   DECL_VIRTUAL_P (fn) = false;
+
+  DECL_ARTIFICIAL (fn) = true;
 
   /* Update various inline related declaration properties.  */
   //DECL_DECLARED_INLINE_P (fn) = true;
@@ -1807,24 +1817,20 @@ diagnose_misapplied_contracts (tree attributes)
   return true;
 }
 
-/* Build and return an argument list using all the arguments passed to the
+/* Build and return an argument list containing all the parameters of the
    (presumably guarded) FUNCTION_DECL FN.  This can be used to forward all of
    FN's arguments to a function taking the same list of arguments -- namely
-   the unchecked form of FN. */
+   the unchecked form of FN.
+
+   We use CALL_FROM_THUNK_P instead of forward_parm for forwarding
+   semantics.  */
 
 static vec<tree, va_gc> *
 build_arg_list (tree fn)
 {
-  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
-
   vec<tree, va_gc> *args = make_tree_vector ();
-  for (tree t = DECL_ARGUMENTS (fn); t != NULL_TREE; t = TREE_CHAIN (t))
-    {
-      if (is_this_parameter (t))
-	continue; // skip already inserted `this` args
-
-      vec_safe_push (args, forward_parm (t));
-    }
+  for (tree t = DECL_ARGUMENTS (fn); t; t = DECL_CHAIN (t))
+    vec_safe_push (args, t);
   return args;
 }
 
@@ -1850,17 +1856,11 @@ start_function_contracts (tree decl1)
   if (DECL_PRE_FN (decl1)
       && DECL_PRE_FN (decl1) != error_mark_node)
     {
-      vec<tree, va_gc> *args = build_arg_list (decl1);
-
-      push_deferring_access_checks (dk_no_check);
-      tree call = finish_call_expr (DECL_PRE_FN (decl1), &args,
-				    /*disallow_virtual=*/true,
-				    /*koenig_p=*/false,
-				    /*complain=*/tf_warning_or_error);
-      gcc_assert (call != error_mark_node);
-      pop_deferring_access_checks ();
-
-      /* Just add the call expression.  */
+      releasing_vec args = build_arg_list (decl1);
+      tree call = build_call_a (DECL_PRE_FN (decl1),
+				args->length (),
+				args->address ());
+      CALL_FROM_THUNK_P (call) = true;
       finish_expr_stmt (call);
     }
 }
@@ -1928,9 +1928,9 @@ finish_function_contracts (tree fndecl)
 				flags);
       emit_postconditions (contracts);
 
-      tree res = get_postcondition_result_parameter (fndecl);
-      if (res)
-	finish_return_stmt (res);
+      if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))))
+	finish_return_stmt (get_postcondition_result_parameter (fndecl));
+
       finished_post = finish_function (false);
       expand_or_defer_fn (finished_post);
     }
@@ -1940,31 +1940,27 @@ finish_function_contracts (tree fndecl)
    postcondition function as needed.  */
 
 tree
-apply_postcondition_to_return (tree post, tree expr)
+apply_postcondition_to_return (tree expr)
 {
-  if (!expr || expr == error_mark_node)
-    return expr;
+  tree fn = current_function_decl;
+  tree post = DECL_POST_FN (fn);
+  if (!post)
+    return NULL_TREE;
 
-  vec<tree, va_gc> *args = build_arg_list (current_function_decl);
+  /* If FN returns in memory, POST has a void return type and we call it when
+     EXPR is DECL_RESULT (fn).  If FN returns a scalar, POST has the same
+     return type and we call it when EXPR is the value being returned.  */
+  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post)))
+      != (expr == DECL_RESULT (fn)))
+    return NULL_TREE;
 
-  // FIXME: do we need forward_parm or similar?
-  if (get_postcondition_result_parameter (current_function_decl))
+  releasing_vec args = build_arg_list (fn);
+  if (get_postcondition_result_parameter (fn))
     vec_safe_push (args, expr);
-
-  push_deferring_access_checks (dk_no_check);
-  tree call = finish_call_expr (post,
-				&args,
-				/*disallow_virtual=*/true,
-				/*koenig_p=*/false,
-				/*complain=*/tf_warning_or_error);
-  gcc_assert (call != error_mark_node);
-
-  /* We may not have actually built a CALL_EXPR; for instance if the
-     return type is large (contracts-large-return.C).  */
-  if (TREE_CODE (call) == CALL_EXPR)
-    CALL_FROM_THUNK_P (call) = 1;
-
-  pop_deferring_access_checks ();
+  tree call = build_call_a (post,
+			    args->length (),
+			    args->address ());
+  CALL_FROM_THUNK_P (call) = true;
 
   return call;
 }

@@ -7596,7 +7596,7 @@ extern void emit_postconditions			(tree);
 extern void maybe_update_postconditions		(tree);
 extern void start_function_contracts		(tree);
 extern void finish_function_contracts		(tree);
-extern tree apply_postcondition_to_return	(tree, tree);
+extern tree apply_postcondition_to_return	(tree);
 
 inline void
 set_decl_contracts (tree decl, tree contract_attrs)
