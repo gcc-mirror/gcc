@@ -208,6 +208,29 @@ region::get_byte_size (byte_size_t *out) const
   return true;
 }
 
+/* If the size of TYPE (in bits) is constant, write it to *OUT
+   and return true.
+   Otherwise return false.  */
+
+bool
+int_size_in_bits (const_tree type, bit_size_t *out)
+{
+  if (INTEGRAL_TYPE_P (type))
+    {
+      *out = TYPE_PRECISION (type);
+      return true;
+    }
+
+  tree sz = TYPE_SIZE (type);
+  if (sz && tree_fits_uhwi_p (sz))
+    {
+      *out = TREE_INT_CST_LOW (sz);
+      return true;
+    }
+  else
+    return false;
+}
+
 /* If the size of this region (in bits) is known statically, write it to *OUT
    and return true.
    Otherwise return false.  */
@@ -215,11 +238,13 @@ region::get_byte_size (byte_size_t *out) const
 bool
 region::get_bit_size (bit_size_t *out) const
 {
-  byte_size_t byte_size;
-  if (!get_byte_size (&byte_size))
+  tree type = get_type ();
+
+  /* Bail out e.g. for heap-allocated regions.  */
+  if (!type)
     return false;
-  *out = byte_size * BITS_PER_UNIT;
-  return true;
+
+  return int_size_in_bits (type, out);
 }
 
 /* Get the field within RECORD_TYPE at BIT_OFFSET.  */
