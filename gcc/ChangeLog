@@ -1,3 +1,8 @@
+2021-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (asm_preferred_eh_data_format): Always use the
+	PIC encodings for PE-COFF targets.
+
 2021-06-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
