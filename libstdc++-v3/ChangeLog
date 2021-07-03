@@ -1,3 +1,12 @@
+2021-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101271
+	* include/bits/unique_ptr.h (unique_ptr<T[],D>::operator[]):
+	Remove noexcept-specifier.
+	(unique_ptr<T[],D>::_S_nothrow_deref): Remove.
+	* testsuite/20_util/unique_ptr/lwg2762.cc: Remove checks for
+	operator[].
+
 2021-07-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/doxygen/doxygroups.cc: Fix docs for std::literals.

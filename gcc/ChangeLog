@@ -1,3 +1,173 @@
+2021-07-02  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98871
+	PR middle-end/98512
+	* diagnostic.c (get_any_inlining_info): New.
+	(update_effective_level_from_pragmas): Handle inlining context.
+	(diagnostic_enabled): Same.
+	(diagnostic_report_diagnostic): Same.
+	* diagnostic.h (struct diagnostic_info): Add ctor.
+	(struct diagnostic_context): Add new member.
+	* tree-diagnostic.c (set_inlining_locations): New.
+	(tree_diagnostics_defaults): Set new callback pointer.
+
+2021-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_MMA_PAIR_LD, BU_MMA_PAIR_ST):
+	New macros.
+	(__builtin_vsx_lxvp, __builtin_vsx_stxvp): New built-ins.
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Expand
+	lxvp and stxvp built-ins.
+	(mma_init_builtins): Handle lxvp and stxvp built-ins.
+	(builtin_function_type): Likewise.
+	* doc/extend.texi (__builtin_vsx_lxvp, __builtin_mma_stxvp): Document.
+
+2021-07-02  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300-protos.h (compute_a_shift_cc): Accept
+	additional argument for the code.
+	* config/h8300/h8300.c (compute_a_shift_cc): Accept additional
+	argument for the code.  Just return if the ZN bits are useful or
+	not rather than the old style CC_* enums.
+	* config/h8300/shiftrotate.md (shiftqi_noscratch): Move before
+	more generic shiftqi patterns.
+	(shifthi_noscratch, shiftsi_noscratch): Similarly.
+	(shiftqi_noscratch_set_flags): New pattern.
+	(shifthi_noscratch_set_flags, shiftsi_noscratch_set_flags): Likewise.
+
+2021-07-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101223
+	* range-op.cc (build_lt): Add -1 for signed values.
+	(built_gt): Subtract -1 for signed values.
+
+2021-07-02  David Faust  <david.faust@oracle.com>
+
+	* btfout.c (get_btf_kind): Support BTF_KIND_FLOAT.
+	(btf_asm_type): Likewise.
+
+2021-07-02  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300-protos.h (output_a_shift): Make first argument
+	an array of rtx rather than a pointer to rtx.  Add code argument.
+	(compute_a_shift_length): Similarly.
+	* config/h8300/h8300.c (h8300_shift_costs): Adjust now that the
+	shift itself isn't an operand.  Create dummy operand[0] to carry
+	a mode and pass a suitable rtx code to compute_a_shift_length.
+	(get_shift_alg): Adjust operand number of clobber in output templates.
+	(output_a_shift): Make first argument an array of rtx rather than
+	a pointer to rtx.  Add code argument for the type of shift.
+	Adjust now that the shift itself is no longer an operand.
+	(compute_a_shift_length): Similarly.
+	* config/h8300/shiftrotate.md (shiftqi, shifthi, shiftsi): Use an
+	iterator rather than nshift_operator.
+	(shiftqi_noscratch, shifthi_noscratch, shiftsi_noscratch): Likewise.
+	(shiftqi_clobber_flags): Adjust to API changes in output_a_shift
+	and compute_a_shift_length.
+	(shiftqi_noscratch_clobber_flags): Likewise.
+	(shifthi_noscratch_clobber_flags): Likewise.
+	(shiftsi_noscratch_clobber_flags): Likewise.
+
+2021-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR debug/101283
+	* config/darwin.h (DSYMUTIL_SPEC): Do not try to run
+	dsymutil for BTF/CTF.
+
+2021-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR debug/101283
+	* config/darwin.h (CTF_INFO_SECTION_NAME): Update the
+	segment to include BTF.
+	(BTF_INFO_SECTION_NAME): New.
+
+2021-07-02  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/m32r/m32r-protos.h (call_operand): Adjust return type.
+	(small_data_operand, memreg_operand, small_insn_p): Likewise.
+	* config/m32r/m32r.c (call_operand): Adjust return type.
+	(small_data_operand, memreg_operand): Likewise.
+
+2021-07-02  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/frv/frv-protos.h  (integer_register_operand): Adjust return
+	type.
+	(frv_load_operand, gpr_or_fpr_operand, gpr_no_subreg_operand): Likewise.
+	(fpr_or_int6_operand, gpr_or_int_operand); Likewise.
+	(gpr_or_int12_operand, gpr_or_int10_operand); Likewise.
+	(move_source_operand, move_destination_operand): Likewise.
+	(condexec_source_operand, condexec_dest_operand): Likewise.
+	(lr_operand, gpr_or_memory_operand, fpr_or_memory_operand): Likewise.
+	(reg_or_0_operand, fcc_operand, icc_operand, cc_operand): Likewise.
+	(fcr_operand, icr_operand, cr_operand, call_operand): Likewise.
+	(fpr_operand, even_reg_operand, odd_reg_operand): Likewise.
+	(even_gpr_operand, odd_gpr_operand, quad_fpr_operand): Likewise.
+	(even_fpr_operand, odd_fpr_operand): Likewise.
+	(dbl_memory_one_insn_operand, dbl_memory_two_insn_operand): Likewise.
+	(int12_operand, int6_operand, int5_operand, uint5_operand): Likewise.
+	(uint4_operand, uint1_operand, int_2word_operand): Likewise
+	(upper_int16_operand, uint16_operand, symbolic_operand): Likewise.
+	(relational_operator, float_relational_operator): Likewise.
+	(ccr_eqne_operator, minmax_operator): Likewise.
+	(condexec_si_binary_operator, condexec_si_media_operator): Likewise.
+	(condexec_si_divide_operator, condexec_si_unary_operator): Likewise.
+	(condexec_sf_conv_operator, condexec_sf_add_operator): Likewise.
+	(intop_compare_operator, acc_operand, even_acc_operand): Likewise.
+	(quad_acc_operand, accg_operand): Likewise.
+
+2021-07-02  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/stormy16/stormy16-protos.h (xstormy16_below_100_symbol): Change
+	return type to a bool.
+	(nonimmediate_nonstack_operand): Likewise.
+	(xstormy16_splittable_below100_operand): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_below_100_symbol): Fix
+	return type.
+	(xstormy16_splittable_below100_operand): Likewise.
+
+2021-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101293
+	* tree-ssa-loop-im.c (mem_ref_hasher::equal): Compare MEM_REF bases
+	with combined offsets.
+	(gather_mem_refs_stmt): Hash MEM_REFs as if their offset were
+	combined with the rest of the offset.
+
+2021-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (asm_preferred_eh_data_format): Always use the
+	PIC encodings for PE-COFF targets.
+
+2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101286
+	* config/i386/i386-expand.c (ix86_broadcast_from_integer_constant):
+	Return nullptr for TImode inner mode.
+
+2021-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101280
+	PR tree-optimization/101173
+	* gimple-loop-interchange.cc
+	(tree_loop_interchange::valid_data_dependences): Properly
+	guard all dependence checks with DDR_REVERSED_P or its
+	inverse.
+
+2021-07-02  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.c (ix86_expand_builtin):
+	Add branch to clear odata when ZF is set for asedecenc_expand
+	and wideaesdecenc_expand.
+
+2021-07-02  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* config/i386/gcc-auto-profile: regenerate
+
+2021-07-02  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (trunc<mode><pmov_dst_4>2): Refined to ..
+	(trunc<mode><pmov_dst_4_lower>2): this.
+
 2021-07-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic.h (diagnostic_context::m_file_cache): New field.
