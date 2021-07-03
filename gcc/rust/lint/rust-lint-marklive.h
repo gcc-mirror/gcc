@@ -182,6 +182,26 @@ public:
     expr.visit_rhs (*this);
   }
 
+  void visit (HIR::IfExpr &expr) override
+  {
+    expr.get_if_condition ()->accept_vis (*this);
+    expr.get_if_block ()->accept_vis (*this);
+  }
+
+  void visit (HIR::IfExprConseqElse &expr) override
+  {
+    expr.get_if_condition ()->accept_vis (*this);
+    expr.get_if_block ()->accept_vis (*this);
+    expr.get_else_block ()->accept_vis (*this);
+  }
+
+  void visit (HIR::IfExprConseqIf &expr) override
+  {
+    expr.get_if_condition ()->accept_vis (*this);
+    expr.get_if_block ()->accept_vis (*this);
+    expr.get_conseq_if_expr ()->accept_vis (*this);
+  }
+
   void visit (HIR::TraitItemFunc &item) override
   {
     item.get_block_expr ()->accept_vis (*this);
