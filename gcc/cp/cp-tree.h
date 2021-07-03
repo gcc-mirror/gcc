@@ -3733,7 +3733,7 @@ find_contract (tree attrs)
 /* For a FUNCTION_DECL of a pre/post function, this points back to the
    original guarded function.  */
 #define DECL_ORIGINAL_FN(NODE) \
-  (get_contracts_original_fn (NODE))
+  (DECL_ABSTRACT_ORIGIN (NODE))
 
 /* True iff the FUNCTION_DECL is the pre function for a guarded function.  */
 #define DECL_IS_PRE_FN_P(NODE) \
@@ -7581,7 +7581,6 @@ extern bool contract_any_deferred_p		(tree);
 extern bool all_attributes_are_contracts_p	(tree);
 extern void build_contract_function_decls	(tree);
 extern void set_contract_functions		(tree, tree, tree);
-extern void set_contracts_original_fn		(tree, tree);
 extern tree start_postcondition_statement	();
 extern void finish_postcondition_statement	(tree);
 extern tree build_contract_check		(tree);

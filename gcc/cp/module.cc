@@ -10023,10 +10023,6 @@ trees_in::fn_parms_init (tree fn)
   tree pre_fn = tree_node ();
   tree post_fn = tree_node ();
   set_contract_functions (fn, pre_fn, post_fn);
-  if (pre_fn)
-    set_contracts_original_fn (pre_fn, fn);
-  if (post_fn)
-    set_contracts_original_fn (post_fn, fn);
 
   return base_tag;
 }

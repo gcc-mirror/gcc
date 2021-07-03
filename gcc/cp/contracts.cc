@@ -1276,7 +1276,6 @@ match_deferred_contracts (tree decl)
    of the guarded function.  */
 static GTY(()) hash_map<tree, tree> *decl_pre_fn;
 static GTY(()) hash_map<tree, tree> *decl_post_fn;
-static GTY(()) hash_map<tree, tree> *decl_original_fn;
 
 /* Returns the precondition funtion for D, or null if not set.  */
 
@@ -1330,35 +1329,6 @@ set_contract_functions (tree d, tree pre, tree post)
     set_precondition_function (d, pre);
   if (post)
     set_postcondition_function (d, post);
-}
-
-/* Returns the original guarded function of a precondition or postcondition
-   function D, or null if it does not exist.  */
-
-tree
-get_contracts_original_fn (tree d)
-{
-  hash_map_maybe_create<hm_ggc> (decl_original_fn);
-  tree *result = decl_original_fn->get (d);
-  return result ? *result : NULL_TREE;
-}
-
-
-/* Set the original fn for a contract function D.  */
-
-void
-set_contracts_original_fn (tree d, tree orig)
-{
-  gcc_assert (orig);
-  hash_map_maybe_create<hm_ggc> (decl_original_fn);
-
-  /* FIXME: Why are we resetting the contract function? This is called
-     from finish_function, but seems to just re-assert that the original
-     function is the same.  */
-  if (tree p = get_contracts_original_fn (d))
-    gcc_assert (p == orig);
-
-  decl_original_fn->put (d, orig);
 }
 
 /* Return a copy of the FUNCTION_DECL IDECL with its own unshared
@@ -1457,7 +1427,7 @@ build_contract_condition_function (tree fndecl, bool pre)
 
   DECL_NAME (fn) = copy_node (DECL_NAME (fn));
   DECL_INITIAL (fn) = error_mark_node;
-  set_contracts_original_fn (fn, fndecl);
+  DECL_ABSTRACT_ORIGIN (fn) = fndecl;
 
   IDENTIFIER_VIRTUAL_P (DECL_NAME (fn)) = false;
   DECL_VIRTUAL_P (fn) = false;
