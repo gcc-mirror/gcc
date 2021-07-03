@@ -1,3 +1,14 @@
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (diagnostic_show_locus): Don't reject
+	printing the same location twice if there are fix-it hints,
+	multiple locations, or a label.
+
+2021-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (asm_preferred_eh_data_format): Always use the
+	PIC encodings for PE-COFF targets.
+
 2021-06-30  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	* config/rs6000/power10.md (power10-fused-load, power10-fused-store,

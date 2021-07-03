@@ -1,3 +1,52 @@
+2021-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101282
+	* gdc.dg/torture/pr101282.d: New test.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-vector-rvalues.cc (check_div): Add specialization
+	for v4f, to avoid relying on exact floating-point equality.
+	* jit.dg/test-vector-types.cc (check_div): Likewise.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-asm.c: Remove i?86-*-* from target specifier.
+	* jit.dg/test-asm.cc: Likewise.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/symbolic-7.c: New test.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/loop-0-up-to-n-by-1-with-iter-obj.c: Update
+	expected number of enodes after the loop.
+	* gcc.dg/analyzer/paths-8.c: New test.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99212
+	* gcc.dg/analyzer/bitfields-1.c: New test.
+	* gcc.dg/analyzer/data-model-1.c (struct sbits): Make bitfields
+	explicitly signed.
+	(test_44): Update test values assigned to the bits to ones that
+	fit in the range of the bitfield type.  Remove xfails.
+	(test_45): Remove xfails.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100615
+	* gcc.dg/analyzer/pr100615.c: New test.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100244
+	* g++.dg/analyzer/pr100244.C: New test.
+
 2021-06-29  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
