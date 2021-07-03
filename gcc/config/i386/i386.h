@@ -251,6 +251,15 @@ struct stringop_algs
 {
   const enum stringop_alg unknown_size;
   const struct stringop_strategy {
+    /* Several older compilers delete the default constructor because of the
+       const entries (see PR100246).  Manually specifying a CTOR works around
+       this issue.  Since this header is used by code compiled with the C
+       compiler we must guard the addition.  */
+#ifdef __cplusplus
+    stringop_strategy(int _max = -1, enum stringop_alg _alg = libcall,
+		      int _noalign = false)
+      : max (_max), alg (_alg), noalign (_noalign) {}
+#endif
     const int max;
     const enum stringop_alg alg;
     int noalign;
