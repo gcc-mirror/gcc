@@ -1,3 +1,22 @@
+2021-07-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/debug/btf/btf.exp: Skip on AIX.
+	* gcc.dg/debug/ctf/ctf.exp: Skip on AIX.
+	* lib/gcc-dg.exp (gcc-dg-target-supports-debug-format): AIX
+	doesn't support CTF.
+	(gcc-dg-debug-runtest): Move CTF support within
+	target support format test.
+
+2021-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/101294
+	* gcc.dg/pr101294.c: New test.
+
+2021-07-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101273
+	* gdc.dg/torture/pr101273.d: New test.
+
 2021-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/101282

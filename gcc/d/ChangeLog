@@ -1,3 +1,9 @@
+2021-07-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101273
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Detect returns that
+	use a temporary, and replace with return value.
+
 2021-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/101282

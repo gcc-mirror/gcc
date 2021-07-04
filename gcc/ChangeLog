@@ -1,3 +1,8 @@
+2021-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/101294
+	* expr.c (store_constructor): Don't use vec_duplicate on vector.
+
 2021-07-02  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/98871
