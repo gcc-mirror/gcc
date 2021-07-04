@@ -237,28 +237,63 @@ Lexer::build_token ()
       current_char = peek_input ();
       skip_input ();
 
-      // return end of file token if end of file
-      if (current_char == EOF)
-	return Token::make (END_OF_FILE, loc);
-
       // detect shebang
-      if (loc == 1 && current_line == 1 && current_char == '#')
+      // Must be the first thing on the first line, starting with #!
+      // But since an attribute can also start with an #! we don't count it as a
+      // shebang line when after any whitespace or comments there is a [. If it
+      // is a shebang line we simple drop the line. Otherwise we don't consume
+      // any characters and fall through to the real tokenizer.
+      if (current_line == 1 && current_column == 1 && current_char == '#'
+	  && peek_input () == '!')
 	{
-	  current_char = peek_input ();
-
-	  if (current_char == '!')
+	  int n = 1;
+	  while (true)
 	    {
-	      skip_input ();
-	      current_char = peek_input ();
-
-	      if (current_char == '/')
+	      int next_char = peek_input (n);
+	      if (is_whitespace (next_char))
+		n++;
+	      else if (next_char == '/' && peek_input (n + 1) == '/')
 		{
-		  // definitely shebang
-
-		  skip_input ();
-
-		  // ignore rest of line
-		  while (current_char != '\n')
+		  // A single line comment
+		  n += 2;
+		  next_char = peek_input (n);
+		  while (next_char != '\n' && next_char != EOF)
+		    {
+		      n++;
+		      next_char = peek_input (n);
+		    }
+		  if (next_char == '\n')
+		    n++;
+		}
+	      else if (next_char == '/' && peek_input (n + 1) == '*')
+		{
+		  // Start of a block comment
+		  n += 2;
+		  int level = 1;
+		  while (level > 0)
+		    {
+		      if (peek_input (n) == EOF)
+			break;
+		      else if (peek_input (n) == '/'
+			       && peek_input (n + 1) == '*')
+			{
+			  n += 2;
+			  level += 1;
+			}
+		      else if (peek_input (n) == '*'
+			       && peek_input (n + 1) == '/')
+			{
+			  n += 2;
+			  level -= 1;
+			}
+		      else
+			n++;
+		    }
+		}
+	      else if (next_char != '[')
+		{
+		  // definitely shebang, ignore the first line
+		  while (current_char != '\n' && current_char != EOF)
 		    {
 		      current_char = peek_input ();
 		      skip_input ();
@@ -269,10 +304,16 @@ Lexer::build_token ()
 		  current_column = 1;
 		  // tell line_table that new line starts
 		  line_map->start_line (current_line, max_column_hint);
-		  continue;
+		  break;
 		}
+	      else
+		break; /* Definitely not a shebang line. */
 	    }
 	}
+
+      // return end of file token if end of file
+      if (current_char == EOF)
+	return Token::make (END_OF_FILE, loc);
 
       // if not end of file, start tokenising
       switch (current_char)

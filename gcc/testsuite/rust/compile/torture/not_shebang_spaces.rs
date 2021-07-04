@@ -1,0 +1,6 @@
+#!   
+
+    [allow(unused)]   
+
+        fn main () { }
+    
