@@ -802,6 +802,7 @@ uninstall-am: uninstall-cc1libLTLIBRARIES uninstall-pluginLTLIBRARIES
 
 .PRECIOUS: Makefile
 
+override CXXFLAGS := $(subst -mdynamic-no-pic,-fPIC,$(CXXFLAGS))
 override CXXFLAGS := $(filter-out -fsanitize=address,$(CXXFLAGS))
 override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
 
