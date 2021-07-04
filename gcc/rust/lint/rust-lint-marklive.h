@@ -41,6 +41,7 @@ public:
   void visit (HIR::FieldAccessExpr &expr) override;
   void visit (HIR::TupleIndexExpr &expr) override;
   void visit (HIR::MethodCallExpr &expr) override;
+  void visit (HIR::TypeAlias &alias) override;
 
   void visit (HIR::BorrowExpr &expr) override
   {
@@ -240,6 +241,11 @@ public:
       {
 	stct.struct_base->base_struct.get ()->accept_vis (*this);
       }
+  }
+
+  virtual void visit (HIR::StructExprFieldIdentifierValue &field) override
+  {
+    field.get_value ()->accept_vis (*this);
   }
 
   void visit (HIR::StructExprStructBase &stct) override

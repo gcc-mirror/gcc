@@ -123,6 +123,7 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
 {
   NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
+
   if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
       Resolver::Definition def;
@@ -197,6 +198,18 @@ MarkLive::visit (HIR::IdentifierExpr &expr)
   node_id_to_hir_id (expr.get_mappings ().get_crate_num (), ref_node_id, ref,
 		     expr.get_locus ());
   mark_hir_id (ref);
+}
+
+void
+MarkLive::visit (HIR::TypeAlias &alias)
+{
+  NodeId ast_node_id;
+  resolver->lookup_resolved_type (
+    alias.get_type_aliased ()->get_mappings ().get_nodeid (), &ast_node_id);
+  HirId hir_id;
+  node_id_to_hir_id (alias.get_mappings ().get_crate_num (), ast_node_id,
+		     hir_id, alias.get_locus ());
+  mark_hir_id (hir_id);
 }
 
 void

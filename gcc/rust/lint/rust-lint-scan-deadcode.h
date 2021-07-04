@@ -79,6 +79,18 @@ public:
       }
   }
 
+  void visit (HIR::TupleStruct &stct) override
+  {
+    // only warn tuple struct unconstructed, and ignoring unused field
+    HirId hirId = stct.get_mappings ().get_hirid ();
+    if (should_warn (hirId))
+      {
+	rust_warning_at (stct.get_locus (), 0, "%s is never %s: %<%s%>",
+			 "struct", "constructed",
+			 stct.get_identifier ().c_str ());
+      }
+  }
+
 private:
   std::set<HirId> live_symbols;
   Resolver::Resolver *resolver;
