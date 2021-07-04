@@ -172,12 +172,9 @@ Crate::as_string () const
   rust_debug ("beginning crate recursive as-string");
 
   std::string str ("Crate: ");
-  // add utf8bom and shebang
+  // add utf8bom
   if (has_utf8bom)
     str += "\n has utf8bom";
-
-  if (has_shebang)
-    str += "\n has shebang";
 
   // inner attributes
   str += append_attributes (inner_attrs, INNER);

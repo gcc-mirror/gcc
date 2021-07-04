@@ -1551,7 +1551,6 @@ protected:
 struct Crate
 {
   bool has_utf8bom;
-  bool has_shebang;
 
   std::vector<Attribute> inner_attrs;
   // dodgy spacing required here
@@ -1564,17 +1563,16 @@ struct Crate
 public:
   // Constructor
   Crate (std::vector<std::unique_ptr<Item> > items,
-	 std::vector<Attribute> inner_attrs, bool has_utf8bom = false,
-	 bool has_shebang = false)
-    : has_utf8bom (has_utf8bom), has_shebang (has_shebang),
-      inner_attrs (std::move (inner_attrs)), items (std::move (items)),
+	 std::vector<Attribute> inner_attrs, bool has_utf8bom = false)
+    : has_utf8bom (has_utf8bom), inner_attrs (std::move (inner_attrs)),
+      items (std::move (items)),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor with vector clone
   Crate (Crate const &other)
-    : has_utf8bom (other.has_utf8bom), has_shebang (other.has_shebang),
-      inner_attrs (other.inner_attrs), node_id (other.node_id)
+    : has_utf8bom (other.has_utf8bom), inner_attrs (other.inner_attrs),
+      node_id (other.node_id)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1587,7 +1585,6 @@ public:
   Crate &operator= (Crate const &other)
   {
     inner_attrs = other.inner_attrs;
-    has_shebang = other.has_shebang;
     has_utf8bom = other.has_utf8bom;
     node_id = other.node_id;
 

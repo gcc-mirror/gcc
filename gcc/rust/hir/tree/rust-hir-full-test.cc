@@ -73,14 +73,10 @@ std::string
 Crate::as_string () const
 {
   std::string str ("HIR::Crate: ");
-  // add utf8bom and shebang
+  // add utf8bom
   if (has_utf8bom)
     {
       str += "\n has utf8bom";
-    }
-  if (has_shebang)
-    {
-      str += "\n has shebang";
     }
 
   // inner attributes
