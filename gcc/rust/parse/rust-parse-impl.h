@@ -393,12 +393,6 @@ template <typename ManagedTokenSource>
 AST::Crate
 Parser<ManagedTokenSource>::parse_crate ()
 {
-  /* TODO: determine if has utf8bom. Currently, is eliminated
-   * by the lexing phase. Not useful for the compiler anyway, so maybe a
-   * better idea would be to eliminate
-   * the has_utf8bom variable from the crate data structure. */
-  bool has_utf8bom = false;
-
   // parse inner attributes
   AST::AttrVec inner_attrs = parse_inner_attributes ();
 
@@ -429,7 +423,7 @@ Parser<ManagedTokenSource>::parse_crate ()
   for (const auto &error : error_table)
     error.emit_error ();
 
-  return AST::Crate (std::move (items), std::move (inner_attrs), has_utf8bom);
+  return AST::Crate (std::move (items), std::move (inner_attrs));
 }
 
 // Parse a contiguous block of inner attributes.

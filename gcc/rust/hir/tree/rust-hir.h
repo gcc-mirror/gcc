@@ -678,8 +678,6 @@ public:
 // A crate HIR object - holds all the data for a single compilation unit
 struct Crate
 {
-  bool has_utf8bom;
-
   AST::AttrVec inner_attrs;
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
@@ -691,15 +689,14 @@ struct Crate
 public:
   // Constructor
   Crate (std::vector<std::unique_ptr<Item> > items, AST::AttrVec inner_attrs,
-	 Analysis::NodeMapping mappings, bool has_utf8bom = false)
-    : has_utf8bom (has_utf8bom), inner_attrs (std::move (inner_attrs)),
-      items (std::move (items)), mappings (mappings)
+	 Analysis::NodeMapping mappings)
+    : inner_attrs (std::move (inner_attrs)), items (std::move (items)),
+      mappings (mappings)
   {}
 
   // Copy constructor with vector clone
   Crate (Crate const &other)
-    : has_utf8bom (other.has_utf8bom), inner_attrs (other.inner_attrs),
-      mappings (other.mappings)
+    : inner_attrs (other.inner_attrs), mappings (other.mappings)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -712,7 +709,6 @@ public:
   Crate &operator= (Crate const &other)
   {
     inner_attrs = other.inner_attrs;
-    has_utf8bom = other.has_utf8bom;
     mappings = other.mappings;
 
     items.reserve (other.items.size ());

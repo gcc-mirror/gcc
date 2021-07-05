@@ -1550,8 +1550,6 @@ protected:
 // A crate AST object - holds all the data for a single compilation unit
 struct Crate
 {
-  bool has_utf8bom;
-
   std::vector<Attribute> inner_attrs;
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
@@ -1563,16 +1561,14 @@ struct Crate
 public:
   // Constructor
   Crate (std::vector<std::unique_ptr<Item> > items,
-	 std::vector<Attribute> inner_attrs, bool has_utf8bom = false)
-    : has_utf8bom (has_utf8bom), inner_attrs (std::move (inner_attrs)),
-      items (std::move (items)),
+	 std::vector<Attribute> inner_attrs)
+    : inner_attrs (std::move (inner_attrs)), items (std::move (items)),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor with vector clone
   Crate (Crate const &other)
-    : has_utf8bom (other.has_utf8bom), inner_attrs (other.inner_attrs),
-      node_id (other.node_id)
+    : inner_attrs (other.inner_attrs), node_id (other.node_id)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1585,7 +1581,6 @@ public:
   Crate &operator= (Crate const &other)
   {
     inner_attrs = other.inner_attrs;
-    has_utf8bom = other.has_utf8bom;
     node_id = other.node_id;
 
     items.reserve (other.items.size ());
