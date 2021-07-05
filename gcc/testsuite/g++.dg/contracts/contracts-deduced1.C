@@ -1,7 +1,7 @@
 // Tests to ensure that deduced return types work with postconditions using
 // the return value on defining declarations.
 // { dg-do compile }
-// { dg-options "-std=c++2a -fcontracts" }
+// { dg-options "-std=c++2a -fcontracts --param ggc-min-heapsize=0 --param ggc-min-expand=0" }
 
 auto undeduced(int z)
 {

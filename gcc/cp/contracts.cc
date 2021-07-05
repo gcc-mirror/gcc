@@ -1671,19 +1671,26 @@ build_contract_check (tree contract)
   return do_poplevel (scope);
 }
 
-/* Generate the statement for the given contract attribute by adding the
-   statement to the current block. Returns the next contract in the chain.  */
+/* Add the contract statement CONTRACT to the current block if valid.  */
 
-static tree
-emit_contract_statement (tree attr)
+static void
+emit_contract_statement (tree contract)
 {
-  gcc_assert (TREE_CODE (attr) == TREE_LIST);
-  tree contract = CONTRACT_STATEMENT (attr);
-
   /* Only add valid contracts.  */
   if (get_contract_semantic (contract) != CCS_INVALID
       && CONTRACT_CONDITION (contract) != error_mark_node)
     add_stmt (contract);
+}
+
+/* Generate the statement for the given contract attribute by adding the
+   statement to the current block. Returns the next contract in the chain.  */
+
+static tree
+emit_contract_attr (tree attr)
+{
+  gcc_assert (TREE_CODE (attr) == TREE_LIST);
+
+  emit_contract_statement (CONTRACT_STATEMENT (attr));
 
   return CONTRACT_CHAIN (attr);
 }
@@ -1700,7 +1707,7 @@ emit_contract_conditions (tree attrs, tree_code code)
     {
       tree contract = CONTRACT_STATEMENT (attrs);
       if (TREE_CODE (contract) == code)
-	attrs = emit_contract_statement (attrs);
+	attrs = emit_contract_attr (attrs);
       else
 	attrs = CONTRACT_CHAIN (attrs);
     }
@@ -1711,7 +1718,7 @@ emit_contract_conditions (tree attrs, tree_code code)
 void
 emit_assertion (tree attr)
 {
-  emit_contract_statement (attr);
+  emit_contract_attr (attr);
 }
 
 /* Emit statements for precondition attributes.  */
@@ -1728,6 +1735,26 @@ void
 emit_postconditions (tree contracts)
 {
   return emit_contract_conditions (contracts, POSTCONDITION_STMT);
+}
+
+/* We're compiling the pre/postcondition function CONDFN; remap any FN
+   attributes that match CODE and emit them.  */
+
+static void
+remap_and_emit_conditions (tree fn, tree condfn, tree_code code)
+{
+  gcc_assert (code == PRECONDITION_STMT || code == POSTCONDITION_STMT);
+  for (tree attr = DECL_CONTRACTS (fn); attr;
+       attr = CONTRACT_CHAIN (attr))
+    {
+      tree contract = CONTRACT_STATEMENT (attr);
+      if (TREE_CODE (contract) == code)
+	{
+	  contract = copy_node (contract);
+	  remap_contract (fn, condfn, contract, /*duplicate_p=*/false);
+	  emit_contract_statement (contract);
+	}
+    }
 }
 
 /* Converts a contract condition to bool and ensures it has a locaiton.  */
@@ -1860,7 +1887,6 @@ finish_function_contracts (tree fndecl)
     }
 
   int flags = SF_DEFAULT | SF_PRE_PARSED;
-  tree finished_pre = NULL_TREE, finished_post = NULL_TREE;
 
   /* If either the pre or post functions are bad, don't bother emitting
      any contracts.  The program is already ill-formed.  */
@@ -1869,39 +1895,26 @@ finish_function_contracts (tree fndecl)
   if (pre == error_mark_node || post == error_mark_node)
     return;
 
-  /* Create a copy of the contracts with references to fndecl's args replaced
-     with references to either the args of pre or post function.  */
-  tree contracts = copy_list (DECL_CONTRACTS (fndecl));
-  for (tree attr = contracts; attr; attr = CONTRACT_CHAIN (attr))
-    {
-      tree contract = copy_node (CONTRACT_STATEMENT (attr));
-      if (TREE_CODE (contract) == PRECONDITION_STMT)
-	remap_contract (fndecl, pre, contract, /*duplicate_p=*/false);
-      else if (TREE_CODE (contract) == POSTCONDITION_STMT)
-	remap_contract (fndecl, post, contract, /*duplicate_p=*/false);
-      TREE_VALUE (attr) = build_tree_list (NULL_TREE, contract);
-    }
-
   if (pre && DECL_INITIAL (fndecl) != error_mark_node)
     {
       DECL_PENDING_INLINE_P (pre) = false;
       start_preparsed_function (pre, DECL_ATTRIBUTES (pre), flags);
-      emit_preconditions (contracts);
-      finished_pre = finish_function (false);
+      remap_and_emit_conditions (fndecl, pre, PRECONDITION_STMT);
+      tree finished_pre = finish_function (false);
       expand_or_defer_fn (finished_pre);
     }
+
   if (post && DECL_INITIAL (fndecl) != error_mark_node)
     {
       DECL_PENDING_INLINE_P (post) = false;
       start_preparsed_function (post,
 				DECL_ATTRIBUTES (post),
 				flags);
-      emit_postconditions (contracts);
-
+      remap_and_emit_conditions (fndecl, post, POSTCONDITION_STMT);
       if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))))
 	finish_return_stmt (get_postcondition_result_parameter (fndecl));
 
-      finished_post = finish_function (false);
+      tree finished_post = finish_function (false);
       expand_or_defer_fn (finished_post);
     }
 }
