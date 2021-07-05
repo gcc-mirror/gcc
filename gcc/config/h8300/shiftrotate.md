@@ -385,10 +385,15 @@
    (parallel
      [(set (match_dup 0)
 	   (match_op_dup 2 [(match_dup 0) (const_int 1)]))
-      (clobber (scratch:QI))])
-   (set (match_dup 1) (plus:QI (match_dup 1) (const_int -1)))
+      (clobber (reg:CC CC_REG))])
+   (parallel
+     [(set (reg:CCZN CC_REG)
+	   (compare:CCZN
+	     (plus:QI (match_dup 1) (const_int -1))
+	     (const_int 0)))
+      (set (match_dup 1) (plus:QI (match_dup 1) (const_int -1)))])
    (set (pc)
-        (if_then_else (ne (match_dup 1) (const_int 0))
+        (if_then_else (ne (reg:CCZN CC_REG) (const_int 0))
 		      (label_ref (match_dup 4))
 		      (pc)))
    (match_dup 5)]
@@ -416,10 +421,15 @@
    (parallel
      [(set (match_dup 0)
 	   (match_op_dup 2 [(match_dup 0) (const_int 1)]))
-      (clobber (scratch:QI))])
-   (set (match_dup 3) (plus:QI (match_dup 3) (const_int -1)))
+      (clobber (reg:CC CC_REG))])
+   (parallel
+     [(set (reg:CCZN CC_REG)
+	   (compare:CCZN
+	     (plus:QI (match_dup 3) (const_int -1))
+	     (const_int 0)))
+      (set (match_dup 3) (plus:QI (match_dup 3) (const_int -1)))])
    (set (pc)
-        (if_then_else (ne (match_dup 3) (const_int 0))
+        (if_then_else (ne (reg:CCZN CC_REG) (const_int 0))
 		      (label_ref (match_dup 4))
 		      (pc)))
    (match_dup 5)]
