@@ -619,5 +619,21 @@ ResolveType::visit (AST::ArrayType &type)
   ResolveExpr::go (type.get_size_expr ().get (), type.get_node_id ());
 }
 
+// rust-ast-resolve-item.h
+
+void
+ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
+				const CanonicalPath &self)
+{
+  ResolveImplItems::go (item, self);
+}
+
+void
+ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
+				const CanonicalPath &self)
+{
+  ResolveImplItems::go (item, self);
+}
+
 } // namespace Resolver
 } // namespace Rust
