@@ -3728,6 +3728,8 @@ vect_optimize_slp (vec_info *vinfo)
 		  case CFN_COMPLEX_MUL:
 		  case CFN_COMPLEX_MUL_CONJ:
 		  case CFN_VEC_ADDSUB:
+		  case CFN_VEC_FMADDSUB:
+		  case CFN_VEC_FMSUBADD:
 		    vertices[idx].perm_in = 0;
 		    vertices[idx].perm_out = 0;
 		  default:;
