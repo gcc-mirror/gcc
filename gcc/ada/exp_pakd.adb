@@ -2002,7 +2002,11 @@ package body Exp_Pakd is
       --  actual subtype of the operand. Preserve old behavior in case size is
       --  not set.
 
-      Size := (if Known_RM_Size (PAT) then RM_Size (PAT) else Uint_0);
+      if Known_RM_Size (PAT) then
+         Size := RM_Size (PAT);
+      else
+         Size := Uint_0;
+      end if;
       Lit := Make_Integer_Literal (Loc, 2 ** Size - 1);
       Set_Print_In_Hex (Lit);
 
