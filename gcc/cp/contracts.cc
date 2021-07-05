@@ -896,17 +896,20 @@ tree splice_out_contracts (tree attributes)
 
 /* Copy contract attributes from NEWDECL onto the attribute list of OLDDECL.  */
 
-void copy_contract_attributes (tree newdecl, tree olddecl)
+void copy_contract_attributes (tree olddecl, tree newdecl)
 {
   tree attrs = NULL_TREE;
-  for (tree c = DECL_CONTRACTS (olddecl); c; c = TREE_CHAIN (c))
+  for (tree c = DECL_CONTRACTS (newdecl); c; c = TREE_CHAIN (c))
     {
       if (!cxx_contract_attribute_p (c))
 	continue;
       attrs = tree_cons (TREE_PURPOSE (c), TREE_VALUE (c), attrs);
     }
-  attrs = chainon (DECL_ATTRIBUTES (newdecl), nreverse (attrs));
-  DECL_ATTRIBUTES (newdecl) = attrs;
+  attrs = chainon (DECL_ATTRIBUTES (olddecl), nreverse (attrs));
+  DECL_ATTRIBUTES (olddecl) = attrs;
+
+  /* And update DECL_CONTEXT of the postcondition result identifier.  */
+  rebuild_postconditions (olddecl);
 }
 
 /* Returns the parameter corresponding to the return value of a guarded
