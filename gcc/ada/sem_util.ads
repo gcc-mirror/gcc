@@ -2054,11 +2054,17 @@ package Sem_Util is
    --    3) An if expression with at least one EVF dependent_expression
    --    4) A case expression with at least one EVF dependent_expression
 
-   function Is_False (U : Uint) return Boolean;
+   function Is_False (U : Opt_Ubool) return Boolean;
    pragma Inline (Is_False);
-   --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
-   --  operand (i.e. is either 0 for False, or 1 for True). This function tests
-   --  if it is False (i.e. zero).
+   --  True if U is Boolean'Pos (False) (i.e. Uint_0)
+
+   function Is_True (U : Opt_Ubool) return Boolean;
+   pragma Inline (Is_True);
+   --  True if U is Boolean'Pos (True) (i.e. Uint_1). Also True if U is
+   --  No_Uint; we allow No_Uint because Static_Boolean returns that in
+   --  case of error. It doesn't really matter whether the error case is
+   --  considered True or False, but we don't want this to blow up in that
+   --  case.
 
    function Is_Fixed_Model_Number (U : Ureal; T : Entity_Id) return Boolean;
    --  Returns True iff the number U is a model number of the fixed-point type
@@ -2421,12 +2427,6 @@ package Sem_Util is
    --  Returns True if the node N is a statement which is known to cause an
    --  unconditional transfer of control at run time, i.e. the following
    --  statement definitely will not be executed.
-
-   function Is_True (U : Uint) return Boolean;
-   pragma Inline (Is_True);
-   --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
-   --  operand (i.e. is either 0 for False, or 1 for True). This function tests
-   --  if it is True (i.e. non-zero).
 
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean;
    --  Determine whether an arbitrary entity denotes an instance of function
@@ -3219,7 +3219,7 @@ package Sem_Util is
    --  predefined unit. The _Par version should be called only from the parser;
    --  the _Sem version should be called only during semantic analysis.
 
-   function Static_Boolean (N : Node_Id) return Uint;
+   function Static_Boolean (N : Node_Id) return Opt_Ubool;
    --  This function analyzes the given expression node and then resolves it
    --  as Standard.Boolean. If the result is static, then Uint_1 or Uint_0 is
    --  returned corresponding to the value, otherwise an error message is

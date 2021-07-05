@@ -4892,6 +4892,9 @@ package body Exp_Util is
       then
          return False;
 
+      elsif not Known_Normalized_First_Bit (Comp) then
+         return True;
+
       --  Otherwise if the component is not byte aligned, we know we have the
       --  nasty unaligned case.
 

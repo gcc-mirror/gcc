@@ -1268,9 +1268,13 @@ package body Freeze is
 
             if Present (Component_Clause (Comp)) then
                Comp_Byte_Aligned :=
-                 (Normalized_First_Bit (Comp) mod System_Storage_Unit = 0)
+                 Known_Normalized_First_Bit (Comp)
                    and then
-                 (Esize (Comp) mod System_Storage_Unit = 0);
+                 Known_Esize (Comp)
+                   and then
+                 Normalized_First_Bit (Comp) mod System_Storage_Unit = 0
+                   and then
+                 Esize (Comp) mod System_Storage_Unit = 0;
             else
                Comp_Byte_Aligned := not Is_Packed (Encl_Type);
             end if;

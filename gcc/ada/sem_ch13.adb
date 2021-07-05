@@ -7824,7 +7824,7 @@ package body Sem_Ch13 is
             if Duplicate_Clause then
                null;
 
-            elsif Is_Elementary_Type (U_Ent) then
+            elsif Is_Elementary_Type (U_Ent) and then Present (Size) then
                if Size /= System_Storage_Unit
                  and then Size /= System_Storage_Unit * 2
                  and then Size /= System_Storage_Unit * 3
@@ -11903,9 +11903,23 @@ package body Sem_Ch13 is
                --------
 
                function Lt (Op1, Op2 : Natural) return Boolean is
+                  K1 : constant Boolean :=
+                    Known_Component_Bit_Offset (Comps (Op1));
+                  K2 : constant Boolean :=
+                    Known_Component_Bit_Offset (Comps (Op2));
+                  --  Record representation clauses can be incomplete, so the
+                  --  Component_Bit_Offsets can be unknown.
                begin
-                  return Component_Bit_Offset (Comps (Op1))
-                       < Component_Bit_Offset (Comps (Op2));
+                  if K1 then
+                     if K2 then
+                        return Component_Bit_Offset (Comps (Op1))
+                             < Component_Bit_Offset (Comps (Op2));
+                     else
+                        return True;
+                     end if;
+                  else
+                     return K2;
+                  end if;
                end Lt;
 
                ----------
