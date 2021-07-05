@@ -2362,6 +2362,18 @@
   [(set_attr "type" "sse4arg")
    (set_attr "mode" "TI")])
 
+(define_insn "mmx_ppermv32"
+  [(set (match_operand:V4QI 0 "register_operand" "=x")
+	(unspec:V4QI
+	  [(match_operand:V4QI 1 "register_operand" "x")
+	   (match_operand:V4QI 2 "register_operand" "x")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "xm")]
+	  UNSPEC_XOP_PERMUTE))]
+  "TARGET_XOP"
+  "vpperm\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "sse4arg")
+   (set_attr "mode" "TI")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel integral logical operations
@@ -2550,6 +2562,23 @@
    (set_attr "type" "mmxcvt,sselog,sselog")
    (set_attr "mode" "DI,TI,TI")])
 
+(define_insn_and_split "mmx_punpckhbw_low"
+  [(set (match_operand:V4QI 0 "register_operand" "=x,Yw")
+	(vec_select:V4QI
+	  (vec_concat:V8QI
+	    (match_operand:V4QI 1 "register_operand" "0,Yw")
+	    (match_operand:V4QI 2 "register_operand" "x,Yw"))
+          (parallel [(const_int 2) (const_int 6)
+                     (const_int 3) (const_int 7)])))]
+  "TARGET_SSE2"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_punpck (operands, true); DONE;"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "mode" "TI")])
+
 (define_insn_and_split "mmx_punpcklbw"
   [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
 	(vec_select:V8QI
@@ -2572,6 +2601,23 @@
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
    (set_attr "type" "mmxcvt,sselog,sselog")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_insn_and_split "mmx_punpcklbw_low"
+  [(set (match_operand:V4QI 0 "register_operand" "=x,Yw")
+	(vec_select:V4QI
+	  (vec_concat:V8QI
+	    (match_operand:V4QI 1 "register_operand" "0,Yw")
+	    (match_operand:V4QI 2 "register_operand" "x,Yw"))
+          (parallel [(const_int 0) (const_int 4)
+                     (const_int 1) (const_int 5)])))]
+  "TARGET_SSE2"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  "ix86_split_mmx_punpck (operands, false); DONE;"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "mode" "TI")])
 
 (define_insn_and_split "mmx_punpckhwd"
   [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
@@ -2930,6 +2976,24 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "TI")])
 
+(define_insn "mmx_pshufbv4qi3"
+  [(set (match_operand:V4QI 0 "register_operand" "=x,Yw")
+	(unspec:V4QI
+	  [(match_operand:V4QI 1 "register_operand" "0,Yw")
+	   (match_operand:V16QI 2 "vector_operand" "xBm,Ywm")]
+	  UNSPEC_PSHUFB))]
+  "TARGET_SSSE3"
+  "@
+   pshufb\t{%2, %0|%0, %2}
+   vpshufb\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,maybe_evex")
+   (set_attr "btver2_decode" "vector")
+   (set_attr "mode" "TI")])
+
 (define_expand "mmx_pshufw"
   [(match_operand:V4HI 0 "register_operand")
    (match_operand:V4HI 1 "register_mmxmem_operand")
@@ -3002,13 +3066,31 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*mmx_pblendw"
+(define_insn "*mmx_pblendw64"
   [(set (match_operand:V4HI 0 "register_operand" "=Yr,*x,x")
 	(vec_merge:V4HI
 	  (match_operand:V4HI 2 "register_operand" "Yr,*x,x")
 	  (match_operand:V4HI 1 "register_operand" "0,0,x")
-	  (match_operand:SI 3 "const_0_to_63_operand" "n,n,n")))]
+	  (match_operand:SI 3 "const_0_to_15_operand" "n,n,n")))]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "@
+   pblendw\t{%3, %2, %0|%0, %2, %3}
+   pblendw\t{%3, %2, %0|%0, %2, %3}
+   vpblendw\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*mmx_pblendw32"
+  [(set (match_operand:V2HI 0 "register_operand" "=Yr,*x,x")
+	(vec_merge:V2HI
+	  (match_operand:V2HI 2 "register_operand" "Yr,*x,x")
+	  (match_operand:V2HI 1 "register_operand" "0,0,x")
+	  (match_operand:SI 3 "const_0_to_7_operand" "n,n,n")))]
+  "TARGET_SSE4_1"
   "@
    pblendw\t{%3, %2, %0|%0, %2, %3}
    pblendw\t{%3, %2, %0|%0, %2, %3}
