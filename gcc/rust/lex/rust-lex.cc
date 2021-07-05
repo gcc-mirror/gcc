@@ -237,6 +237,19 @@ Lexer::build_token ()
       current_char = peek_input ();
       skip_input ();
 
+      // detect UTF8 bom
+      //
+      // Must be the first thing on the first line.
+      // There might be an optional BOM (Byte Order Mark), which for UTF-8 is
+      // the three bytes 0xEF, 0xBB and 0xBF. These can simply be skipped.
+      if (current_line == 1 && current_column == 1 && current_char == 0xef
+	  && peek_input () == 0xbb && peek_input (1) == 0xbf)
+	{
+	  skip_input (1);
+	  current_char = peek_input ();
+	  skip_input ();
+	}
+
       // detect shebang
       // Must be the first thing on the first line, starting with #!
       // But since an attribute can also start with an #! we don't count it as a
