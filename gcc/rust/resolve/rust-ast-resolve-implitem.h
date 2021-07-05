@@ -43,6 +43,21 @@ public:
     item->accept_vis (resolver);
   }
 
+  void visit (AST::TypeAlias &type) override
+  {
+    auto path = prefix.append (CanonicalPath (type.get_new_type_name ()));
+    resolver->get_type_scope ().insert (
+      path, type.get_node_id (), type.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (type.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (type.get_node_id (),
+				     Definition{type.get_node_id (),
+						type.get_node_id ()});
+  }
+
   void visit (AST::ConstantItem &constant) override
   {
     auto path

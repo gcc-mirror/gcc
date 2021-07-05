@@ -433,10 +433,22 @@ public:
     resolver->get_label_scope ().pop ();
   }
 
-  // TODO
-  void visit (AST::TraitItemConst &) override { gcc_unreachable (); }
+  void visit (AST::TraitItemConst &constant) override
+  {
+    ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
+    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
 
-  void visit (AST::TraitItemType &) override { gcc_unreachable (); }
+    // the mutability checker needs to verify for immutable decls the number
+    // of assignments are <1. This marks an implicit assignment
+    resolver->mark_decl_mutability (constant.get_node_id (), false);
+    resolver->mark_assignment_to_decl (constant.get_node_id (),
+				       constant.get_node_id ());
+  }
+
+  void visit (AST::TraitItemType &alias) override
+  {
+    // nothing to do here until we start supporting Type Bounds
+  }
 
 private:
   ResolveItem () : ResolverBase (UNKNOWN_NODEID) {}
