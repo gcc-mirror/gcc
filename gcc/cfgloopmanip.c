@@ -1734,6 +1734,7 @@ loop_version (class loop *loop,
 		   then_scale, else_scale);
 
   copy_loop_info (loop, nloop);
+  set_loop_copy (loop, nloop);
 
   /* loopify redirected latch_edge. Update its PENDING_STMTS.  */
   lv_flush_pending_stmts (latch_edge);
