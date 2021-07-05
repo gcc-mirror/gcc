@@ -36,7 +36,6 @@ with Errout;         use Errout;
 with Expander;       use Expander;
 with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
-with Exp_Ch7;        use Exp_Ch7;
 with Exp_Ch9;        use Exp_Ch9;
 with Exp_Dbug;       use Exp_Dbug;
 with Exp_Tss;        use Exp_Tss;
@@ -6748,18 +6747,7 @@ package body Sem_Ch6 is
       --  may not be known yet (for private types).
 
       if not Has_Delayed_Freeze (Designator) and then Expander_Active then
-         declare
-            Typ  : constant Entity_Id := Etype (Designator);
-            Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-         begin
-            if Is_Limited_View (Typ) then
-               Set_Returns_By_Ref (Designator);
-
-            elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
-               Set_Returns_By_Ref (Designator);
-            end if;
-         end;
+         Compute_Returns_By_Ref (Designator);
       end if;
    end Check_Delayed_Subprogram;
 
@@ -7011,16 +6999,14 @@ package body Sem_Ch6 is
       --  A limited interface that is not immutably limited is OK
 
       if Is_Limited_Interface (R_Type)
-        and then
-          not (Is_Task_Interface (R_Type)
-                or else Is_Protected_Interface (R_Type)
-                or else Is_Synchronized_Interface (R_Type))
+        and then not Is_Concurrent_Interface (R_Type)
       then
          null;
 
       elsif Is_Limited_Type (R_Type)
         and then not Is_Interface (R_Type)
-        and then Comes_From_Source (N)
+        and then not (Nkind (N) = N_Simple_Return_Statement
+                      and then Comes_From_Extended_Return_Statement (N))
         and then not In_Instance_Body
         and then not OK_For_Limited_Init_In_05 (R_Type, Expr)
       then

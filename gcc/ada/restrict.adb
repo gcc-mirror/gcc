@@ -924,6 +924,21 @@ package body Restrict is
         or else Targparm.Restrictions_On_Target.Set (No_Tasking);
    end Global_No_Tasking;
 
+   ---------------------------------------------
+   -- No_Dynamic_Accessibility_Checks_Enabled --
+   ---------------------------------------------
+
+   function No_Dynamic_Accessibility_Checks_Enabled
+     (N : Node_Id) return Boolean
+   is
+      pragma Unreferenced (N);
+      --  N is currently unreferenced but present for debugging purposes and
+      --  potential future use.
+
+   begin
+      return Restrictions.Set (No_Dynamic_Accessibility_Checks);
+   end No_Dynamic_Accessibility_Checks_Enabled;
+
    -------------------------------
    -- No_Exception_Handlers_Set --
    -------------------------------

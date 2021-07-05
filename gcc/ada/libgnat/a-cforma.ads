@@ -400,6 +400,95 @@ is
                 Model (Container)'Old,
                 Key (Container, Position));
 
+   function At_End
+     (E : not null access constant Map) return not null access constant Map
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function At_End
+     (E : access constant Element_Type) return access constant Element_Type
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function Constant_Reference
+     (Container : aliased Map;
+      Position  : Cursor) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Position),
+     Post   =>
+       Constant_Reference'Result.all =
+           Element (Model (Container), Key (Container, Position));
+
+   function Reference
+     (Container : not null access Map;
+      Position  : Cursor) return not null access Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container.all, Position),
+     Post   =>
+
+       --  Order of keys and cursors is preserved
+
+       Keys (At_End (Container).all) = Keys (Container.all)
+         and Positions (At_End (Container).all) = Positions (Container.all)
+
+         --  The value designated by the result of Reference is now associated
+         --  with the key at position Position in Container.
+
+         and Element (At_End (Container).all, Position) =
+               At_End (Reference'Result).all
+
+         --  Elements associated with other keys are preserved
+
+         and M.Same_Keys
+               (Model (At_End (Container).all),
+                Model (Container.all))
+         and M.Elements_Equal_Except
+               (Model (At_End (Container).all),
+                Model (Container.all),
+                Key (At_End (Container).all, Position));
+
+   function Constant_Reference
+     (Container : aliased Map;
+      Key       : Key_Type) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Contains (Container, Key),
+     Post   =>
+       Constant_Reference'Result.all = Element (Model (Container), Key);
+
+   function Reference
+     (Container : not null access Map;
+      Key       : Key_Type) return not null access Element_Type
+   with
+     Global => null,
+     Pre    => Contains (Container.all, Key),
+     Post   =>
+
+       --  Order of keys and cursors is preserved
+
+       Keys (At_End (Container).all) = Keys (Container.all)
+         and Positions (At_End (Container).all) = Positions (Container.all)
+
+         --  The value designated by the result of Reference is now associated
+         --  with Key in Container.
+
+         and Element (Model (At_End (Container).all), Key) =
+               At_End (Reference'Result).all
+
+         --  Elements associated with other keys are preserved
+
+         and M.Same_Keys
+               (Model (At_End (Container).all),
+                Model (Container.all))
+         and M.Elements_Equal_Except
+               (Model (At_End (Container).all),
+                Model (Container.all),
+                Key);
+
    procedure Move (Target : in out Map; Source : in out Map) with
      Global => null,
      Pre    => Target.Capacity >= Length (Source),
@@ -1045,14 +1134,15 @@ private
       Right   : Node_Access := 0;
       Color   : Red_Black_Trees.Color_Type := Red;
       Key     : Key_Type;
-      Element : Element_Type;
+      Element : aliased Element_Type;
    end record;
 
    package Tree_Types is
      new Ada.Containers.Red_Black_Trees.Generic_Bounded_Tree_Types (Node_Type);
 
-   type Map (Capacity : Count_Type) is
-     new Tree_Types.Tree_Type (Capacity) with null record;
+   type Map (Capacity : Count_Type) is record
+     Content : Tree_Types.Tree_Type (Capacity);
+   end record;
 
    Empty_Map : constant Map := (Capacity => 0, others => <>);
 

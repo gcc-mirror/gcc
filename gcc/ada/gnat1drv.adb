@@ -67,7 +67,6 @@ with Sem_Type;
 with Set_Targ;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
-with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Sinput.L;       use Sinput.L;
 with Snames;         use Snames;
@@ -146,12 +145,6 @@ procedure Gnat1drv is
    --  Start of processing for Adjust_Global_Switches
 
    begin
-      --  Define pragma GNAT_Annotate as an alias of pragma Annotate, to be
-      --  able to work around bootstrap limitations with the old syntax of
-      --  pragma Annotate, and use pragma GNAT_Annotate in compiler sources
-      --  when needed.
-
-      Map_Pragma_Name (From => Name_Gnat_Annotate, To => Name_Annotate);
 
       --  -gnatd_U disables prepending error messages with "error:"
 

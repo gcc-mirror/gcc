@@ -5118,15 +5118,6 @@ package body Exp_Ch7 is
       end if;
    end Convert_View;
 
-   -------------------------------
-   -- CW_Or_Has_Controlled_Part --
-   -------------------------------
-
-   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean is
-   begin
-      return Is_Class_Wide_Type (T) or else Needs_Finalization (T);
-   end CW_Or_Has_Controlled_Part;
-
    ------------------------
    -- Enclosing_Function --
    ------------------------
@@ -6129,37 +6120,6 @@ package body Exp_Ch7 is
 
       return Empty;
    end Find_Transient_Context;
-
-   ----------------------------------
-   -- Has_New_Controlled_Component --
-   ----------------------------------
-
-   function Has_New_Controlled_Component (E : Entity_Id) return Boolean is
-      Comp : Entity_Id;
-
-   begin
-      if not Is_Tagged_Type (E) then
-         return Has_Controlled_Component (E);
-      elsif not Is_Derived_Type (E) then
-         return Has_Controlled_Component (E);
-      end if;
-
-      Comp := First_Component (E);
-      while Present (Comp) loop
-         if Chars (Comp) = Name_uParent then
-            null;
-
-         elsif Scope (Original_Record_Component (Comp)) = E
-           and then Needs_Finalization (Etype (Comp))
-         then
-            return True;
-         end if;
-
-         Next_Component (Comp);
-      end loop;
-
-      return False;
-   end Has_New_Controlled_Component;
 
    ---------------------------------
    -- Has_Simple_Protected_Object --

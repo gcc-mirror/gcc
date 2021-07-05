@@ -3493,9 +3493,7 @@ package body Sem_Ch3 is
 
       --  Check runtime support for synchronized interfaces
 
-      if (Is_Task_Interface (T)
-           or else Is_Protected_Interface (T)
-           or else Is_Synchronized_Interface (T))
+      if Is_Concurrent_Interface (T)
         and then not RTE_Available (RE_Select_Specific_Data)
       then
          Error_Msg_CRT ("synchronized interfaces", T);
@@ -9270,9 +9268,7 @@ package body Sem_Ch3 is
                   and then Is_Limited_Record (Full_View (Parent_Type)))
       then
          if not Is_Interface (Parent_Type)
-           or else Is_Synchronized_Interface (Parent_Type)
-           or else Is_Protected_Interface (Parent_Type)
-           or else Is_Task_Interface (Parent_Type)
+           or else Is_Concurrent_Interface (Parent_Type)
          then
             Set_Is_Limited_Record (Derived_Type);
          end if;
@@ -11149,12 +11145,29 @@ package body Sem_Ch3 is
 
          if Present (Overridden_Operation (Subp))
            and then No_Return (Overridden_Operation (Subp))
-           and then not No_Return (Subp)
          then
-            Error_Msg_N ("overriding subprogram & must be No_Return", Subp);
-            Error_Msg_N
-              ("\since overridden subprogram is No_Return (RM 6.5.1(6/2))",
-               Subp);
+
+            --  If the subprogram is a renaming, check that the renamed
+            --  subprogram is No_Return.
+
+            if Present (Renamed_Or_Alias (Subp)) then
+               if not No_Return (Renamed_Or_Alias (Subp)) then
+                  Error_Msg_NE ("subprogram & must be No_Return",
+                    Subp,
+                    Renamed_Or_Alias (Subp));
+                  Error_Msg_N ("\since renaming & overrides No_Return "
+                    & "subprogram (RM 6.5.1(6/2))",
+                    Subp);
+               end if;
+
+            --  Make sure that the subprogram itself is No_Return.
+
+            elsif not No_Return (Subp) then
+               Error_Msg_N ("overriding subprogram & must be No_Return", Subp);
+               Error_Msg_N
+                 ("\since overridden subprogram is No_Return (RM 6.5.1(6/2))",
+                  Subp);
+            end if;
          end if;
 
          --  If the operation is a wrapper for a synchronized primitive, it
@@ -18996,56 +19009,6 @@ package body Sem_Ch3 is
 
       return False;
    end Is_EVF_Procedure;
-
-   -----------------------
-   -- Is_Null_Extension --
-   -----------------------
-
-   function Is_Null_Extension (T : Entity_Id) return Boolean is
-      Type_Decl : constant Node_Id := Parent (Base_Type (T));
-      Comp_List : Node_Id;
-      Comp      : Node_Id;
-
-   begin
-      if Nkind (Type_Decl) /= N_Full_Type_Declaration
-        or else not Is_Tagged_Type (T)
-        or else Nkind (Type_Definition (Type_Decl)) /=
-                                              N_Derived_Type_Definition
-        or else No (Record_Extension_Part (Type_Definition (Type_Decl)))
-      then
-         return False;
-      end if;
-
-      Comp_List :=
-        Component_List (Record_Extension_Part (Type_Definition (Type_Decl)));
-
-      if Present (Discriminant_Specifications (Type_Decl)) then
-         return False;
-
-      elsif Present (Comp_List)
-        and then Is_Non_Empty_List (Component_Items (Comp_List))
-      then
-         Comp := First (Component_Items (Comp_List));
-
-         --  Only user-defined components are relevant. The component list
-         --  may also contain a parent component and internal components
-         --  corresponding to secondary tags, but these do not determine
-         --  whether this is a null extension.
-
-         while Present (Comp) loop
-            if Comes_From_Source (Comp) then
-               return False;
-            end if;
-
-            Next (Comp);
-         end loop;
-
-         return True;
-
-      else
-         return True;
-      end if;
-   end Is_Null_Extension;
 
    --------------------------
    -- Is_Private_Primitive --

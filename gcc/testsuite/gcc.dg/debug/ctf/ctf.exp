@@ -24,6 +24,11 @@ if { [istarget nvptx-*-*] } {
     return
 }
 
+if { [istarget "powerpc-ibm-aix*"] } {
+    set torture_execute_xfail "powerpc-ibm-aix*"
+    return
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

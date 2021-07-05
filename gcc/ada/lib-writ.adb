@@ -709,7 +709,7 @@ package body Lib.Writ is
                   Write_Info_Char (' ');
 
                   case Pragma_Name (N) is
-                     when Name_Annotate =>
+                     when Name_Annotate | Name_GNAT_Annotate =>
                         C := 'A';
                      when Name_Comment =>
                         C := 'C';

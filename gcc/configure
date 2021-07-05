@@ -723,6 +723,8 @@ thin_archive_support
 ld_soname_option
 ld_version_script_option
 libgcc_visibility
+ORIGINAL_DSYMUTIL_FOR_TARGET
+gcc_cv_dsymutil
 gcc_cv_otool
 gcc_cv_readelf
 gcc_cv_objdump
@@ -946,6 +948,7 @@ enable_generated_files_in_srcdir
 with_gnu_ld
 with_ld
 with_demangler_in_ld
+with_dsymutil
 with_gnu_as
 with_as
 enable_largefile
@@ -1813,6 +1816,8 @@ Optional Packages:
   --with-gnu-ld           arrange to work with GNU ld
   --with-ld               arrange to use the specified ld (full pathname)
   --with-demangler-in-ld  try to use demangler in GNU ld
+  --with-dsymutil         arrange to use the specified dsymutil (full
+                          pathname)
   --with-gnu-as           arrange to work with GNU as
   --with-as               arrange to use the specified as (full pathname)
   --with-stabs            arrange to use stabs instead of host debug format
@@ -3835,8 +3840,14 @@ fi
 
 
 case $target in
-    *darwin*) ld64_flag=yes;; # Darwin can only use a ld64-compatible linker.
-    *) ld64_flag=no;;
+    *darwin*)
+	ld64_flag=yes # Darwin can only use a ld64-compatible linker.
+	dsymutil_flag=yes # Darwin uses dsymutil to link debug.
+	;;
+    *)
+	ld64_flag=no
+	dsymutil_flag=no
+	;;
 esac
 
 # With pre-defined ld
@@ -3885,6 +3896,40 @@ else
   demangler_in_ld=yes
 fi
 
+
+# Allow the user to specify a dsymutil executable (used on Darwin only, so far)
+
+# Check whether --with-dsymutil was given.
+if test "${with_dsymutil+set}" = set; then :
+  withval=$with_dsymutil; DEFAULT_DSYMUTIL="$with_dsymutil"
+fi
+
+
+dsymutil_vers=
+if test x"${DEFAULT_DSYMUTIL+set}" = x"set"; then
+  if test ! -x "$DEFAULT_DSYMUTIL"; then
+    as_fn_error $? "cannot execute: $DEFAULT_DSYMUTIL: check --with-dsymutil or env. var. DEFAULT_DSYMUTIL" "$LINENO" 5
+  else
+    if dsymutil_vers=`$DEFAULT_DSYMUTIL -v /dev/null 2>&1`; then
+      dsymutil_flag=yes
+    fi
+  fi
+
+cat >>confdefs.h <<_ACEOF
+#define DEFAULT_DSYMUTIL "$DEFAULT_DSYMUTIL"
+_ACEOF
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether a default dsymutil was specified" >&5
+$as_echo_n "checking whether a default dsymutil was specified... " >&6; }
+if test x"${DEFAULT_DSYMUTIL+set}" = x"set"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes ($DEFAULT_DSYMUTIL)" >&5
+$as_echo "yes ($DEFAULT_DSYMUTIL)" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
 
 # ----------------------
 # Find default assembler
@@ -19437,7 +19482,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19438 "configure"
+#line 19483 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19543,7 +19588,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19544 "configure"
+#line 19589 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23440,6 +23485,71 @@ else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_otool" >&5
 $as_echo "$gcc_cv_otool" >&6; }
 fi
+
+# Figure out the dsymutil we will use.
+if ${gcc_cv_dsymutil+:} false; then :
+
+else
+
+if test -x "$DEFAULT_DSYMUTIL"; then
+    gcc_cv_dsymutil="$DEFAULT_DSYMUTIL"
+elif test -x dsymutil$build_exeext; then
+    gcc_cv_dsymutil=./dsymutil$build_exeext
+elif ( set dummy $DSYMUTIL_FOR_TARGET; test -x $2 ); then
+    gcc_cv_dsymutil=$DSYMUTIL_FOR_TARGET
+elif ( set dummy $DSYMUTIL; test -x $2 ); then
+    gcc_cv_dsymutil=$DSYMUTIL
+else
+    # Extract the first word of "$DSYMUTIL_FOR_TARGET", so it can be a program name with args.
+set dummy $DSYMUTIL_FOR_TARGET; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_gcc_cv_dsymutil+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $gcc_cv_dsymutil in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_gcc_cv_dsymutil="$gcc_cv_dsymutil" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_gcc_cv_dsymutil="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+gcc_cv_dsymutil=$ac_cv_path_gcc_cv_dsymutil
+if test -n "$gcc_cv_dsymutil"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_dsymutil" >&5
+$as_echo "$gcc_cv_dsymutil" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+fi
+
+ORIGINAL_DSYMUTIL_FOR_TARGET=$gcc_cv_dsymutil
+
+case "$ORIGINAL_DSYMUTIL_FOR_TARGET" in
+  ./dsymutil | ./dsymutil$build_exeext) ;;
+  *) ac_config_files="$ac_config_files dsymutil:exec-tool.in"
+ ;;
+esac
 
 # Figure out what assembler alignment features are present.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler flags" >&5
@@ -30305,6 +30415,52 @@ _ACEOF
 
 fi
 
+if test x"$dsymutil_flag" = x"yes"; then
+
+    # If the user specified a dsymutil path, then we will already have the
+    # version string, otherwise, pick it up.
+    if test x"$gcc_cv_dsymutil" = x; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: dsymutil is a required tool for this system, but not found" >&5
+$as_echo "$as_me: WARNING: dsymutil is a required tool for this system, but not found" >&2;}
+        dsymutil_vers="tool unspecified"
+    elif test x"$dsymutil_vers" = x; then
+	dsymutil_vers=`$gcc_cv_dsymutil -v /dev/null 2>&1`
+    fi
+
+    dsymutil_temp=`echo $dsymutil_vers | sed 1q`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking dsymutil version \"$dsymutil_temp\"" >&5
+$as_echo_n "checking dsymutil version \"$dsymutil_temp\"... " >&6; }
+    if echo $dsymutil_temp | grep dwarfutils- > /dev/null; then
+      dsymutil_kind=DWARFUTILS
+      dsymutil_vers=`echo $dsymutil_temp | sed 's/.*dwarfutils-\([0-9\.]*\).*/\1/'`
+    elif echo $dsymutil_temp | grep clang- > /dev/null; then
+      dsymutil_kind=CLANG
+      dsymutil_vers=`echo $dsymutil_temp | sed 's/.*clang-\([0-9\.]*\).*/\1/'`
+    elif echo $dsymutil_temp | grep 'LLVM version ' > /dev/null; then
+      dsymutil_kind=LLVM
+      dsymutil_vers=`echo $dsymutil_temp | sed 's/.*LLVM\ version\ \([0-9\.]*\).*/\1/'`
+    else
+      dsymutil_kind=UNKNOWN
+      dsymutil_vers="0.0"
+    fi
+    dsymutil_major=`expr "$dsymutil_vers" : '\([0-9]*\)'`
+    dsymutil_minor=`expr "$dsymutil_vers" : '[0-9]*\.\([0-9]*\)'`
+    dsymutil_tiny=`expr "$dsymutil_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
+    if test x"${dsymutil_minor}" = x; then
+      dsymutil_minor=0
+    fi
+    if test x"${dsymutil_tiny}" = x; then
+      dsymutil_tiny=0
+    fi
+
+cat >>confdefs.h <<_ACEOF
+#define DSYMUTIL_VERSION $dsymutil_kind,${dsymutil_major},${dsymutil_minor},${dsymutil_tiny}
+_ACEOF
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $dsymutil_vers : $dsymutil_kind ${dsymutil_major} ${dsymutil_minor} ${dsymutil_tiny} " >&5
+$as_echo "$dsymutil_vers : $dsymutil_kind ${dsymutil_major} ${dsymutil_minor} ${dsymutil_tiny} " >&6; }
+fi
+
 case $target_os in
   win32 | pe | cygwin* | mingw32*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking broken PE linker dwarf5 support" >&5
@@ -33016,6 +33172,7 @@ do
     "as") CONFIG_FILES="$CONFIG_FILES as:exec-tool.in" ;;
     "collect-ld") CONFIG_FILES="$CONFIG_FILES collect-ld:exec-tool.in" ;;
     "nm") CONFIG_FILES="$CONFIG_FILES nm:exec-tool.in" ;;
+    "dsymutil") CONFIG_FILES="$CONFIG_FILES dsymutil:exec-tool.in" ;;
     "clearcap.map") CONFIG_LINKS="$CONFIG_LINKS clearcap.map:${srcdir}/config/$clearcap_map" ;;
     "$all_outputs") CONFIG_FILES="$CONFIG_FILES $all_outputs" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
@@ -33650,6 +33807,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
     "as":F) chmod +x as ;;
     "collect-ld":F) chmod +x collect-ld ;;
     "nm":F) chmod +x nm ;;
+    "dsymutil":F) chmod +x dsymutil ;;
     "default":C)
 case ${CONFIG_HEADERS} in
   *auto-host.h:config.in*)

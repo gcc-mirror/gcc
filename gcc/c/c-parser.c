@@ -17533,7 +17533,9 @@ c_parser_omp_atomic (location_t loc, c_parser *parser, bool openacc)
 
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
-      if (!first && c_parser_next_token_is (parser, CPP_COMMA))
+      if (!first
+	  && c_parser_next_token_is (parser, CPP_COMMA)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
 	c_parser_consume_token (parser);
 
       first = false;

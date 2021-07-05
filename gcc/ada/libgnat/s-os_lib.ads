@@ -164,6 +164,14 @@ package System.OS_Lib is
    --  component parts to be interpreted in the local time zone, and returns
    --  an OS_Time. Returns Invalid_Time if the creation fails.
 
+   ------------------
+   -- Time_t Stuff --
+   ------------------
+
+   --  Note: Do not use time_t in the compiler and host based tools,
+   --  instead use OS_Time. These 3 declarations are indended for use only
+   --  by consumers of the GNAT.OS_Lib renaming of this package.
+
    subtype time_t is Long_Integer;
    --  C time_t type of the time representation
 
@@ -1098,24 +1106,18 @@ private
    pragma Import (C, Current_Process_Id, "__gnat_current_process_id");
 
    type OS_Time is
-     range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-           +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+     range -(2 ** 63) ..  +(2 ** 63 - 1);
    --  Type used for timestamps in the compiler. This type is used to hold
    --  time stamps, but may have a different representation than C's time_t.
    --  This type needs to match the declaration of OS_Time in adaint.h.
 
-   --  Add pragma Inline statements for comparison operations on OS_Time. It
-   --  would actually be nice to use pragma Import (Intrinsic) here, but this
-   --  was not properly supported till GNAT 3.15a, so that would cause
-   --  bootstrap path problems. To be changed later ???
-
    Invalid_Time : constant OS_Time := -1;
    --  This value should match the return value from __gnat_file_time_*
 
-   pragma Inline ("<");
-   pragma Inline (">");
-   pragma Inline ("<=");
-   pragma Inline (">=");
+   pragma Import (Intrinsic, "<");
+   pragma Import (Intrinsic, ">");
+   pragma Import (Intrinsic, "<=");
+   pragma Import (Intrinsic, ">=");
    pragma Inline (To_C);
    pragma Inline (To_Ada);
 

@@ -1926,6 +1926,7 @@ package body Exp_Ch3 is
       Proc_Id   : Entity_Id;
       Rec_Type  : Entity_Id;
       Set_Tag   : Entity_Id := Empty;
+      Has_Late_Init_Comp : Boolean := False; -- set in Build_Init_Statements
 
       function Build_Assignment
         (Id      : Entity_Id;
@@ -2021,35 +2022,27 @@ package body Exp_Ch3 is
              Selector_Name => New_Occurrence_Of (Id, Default_Loc));
          Set_Assignment_OK (Lhs);
 
-         --  Case of an access attribute applied to the current instance.
-         --  Replace the reference to the type by a reference to the actual
-         --  object. (Note that this handles the case of the top level of
-         --  the expression being given by such an attribute, but does not
-         --  cover uses nested within an initial value expression. Nested
-         --  uses are unlikely to occur in practice, but are theoretically
-         --  possible.) It is not clear how to handle them without fully
-         --  traversing the expression. ???
-
-         if Kind = N_Attribute_Reference
-           and then Attribute_Name (Default) in Name_Unchecked_Access
-                                              | Name_Unrestricted_Access
-           and then Is_Entity_Name (Prefix (Default))
-           and then Is_Type (Entity (Prefix (Default)))
-           and then Entity (Prefix (Default)) = Rec_Type
-         then
-            Exp :=
-              Make_Attribute_Reference (Default_Loc,
-                Prefix         =>
-                  Make_Identifier (Default_Loc, Name_uInit),
-                Attribute_Name => Name_Unrestricted_Access);
-         end if;
-
          --  Take a copy of Exp to ensure that later copies of this component
          --  declaration in derived types see the original tree, not a node
          --  rewritten during expansion of the init_proc. If the copy contains
          --  itypes, the scope of the new itypes is the init_proc being built.
 
-         Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id);
+         declare
+            Map : Elist_Id := No_Elist;
+         begin
+            if Has_Late_Init_Comp then
+               --  Map the type to the _Init parameter in order to
+               --  handle "current instance" references.
+
+               Map := New_Elmt_List
+                        (Elmt1 => Rec_Type,
+                         Elmt2 => Defining_Identifier (First
+                                   (Parameter_Specifications
+                                      (Parent (Proc_Id)))));
+            end if;
+
+            Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id, Map => Map);
+         end;
 
          Res := New_List (
            Make_Assignment_Statement (Loc,
@@ -2981,7 +2974,6 @@ package body Exp_Ch3 is
          Counter_Id         : Entity_Id        := Empty;
          Comp_Loc           : Source_Ptr;
          Decl               : Node_Id;
-         Has_Late_Init_Comp : Boolean;
          Id                 : Entity_Id;
          Parent_Stmts       : List_Id;
          Stmts              : List_Id;
@@ -3097,10 +3089,9 @@ package body Exp_Ch3 is
             function Find_Current_Instance
               (N : Node_Id) return Traverse_Result is
             begin
-               if Nkind (N) = N_Attribute_Reference
-                 and then Is_Access_Type (Etype (N))
-                 and then Is_Entity_Name (Prefix (N))
-                 and then Is_Type (Entity (Prefix (N)))
+               if Is_Entity_Name (N)
+                 and then Present (Entity (N))
+                 and then Is_Current_Instance (N)
                then
                   References_Current_Instance := True;
                   return Abandon;
@@ -3254,8 +3245,6 @@ package body Exp_Ch3 is
          --  Loop through components, skipping pragmas, in 2 steps. The first
          --  step deals with regular components. The second step deals with
          --  components that require late initialization.
-
-         Has_Late_Init_Comp := False;
 
          --  First pass : regular components
 
@@ -10345,9 +10334,7 @@ package body Exp_Ch3 is
 
       --  Spec of Put_Image
 
-      if Enable_Put_Image (Tag_Typ)
-        and then No (TSS (Tag_Typ, TSS_Put_Image))
-      then
+      if Enable_Put_Image (Tag_Typ) then
          Append_To (Res, Predef_Spec_Or_Body (Loc,
            Tag_Typ => Tag_Typ,
            Name    => Make_TSS_Name (Tag_Typ, TSS_Put_Image),
@@ -11253,12 +11240,7 @@ package body Exp_Ch3 is
             or else not Is_Abstract_Type (Typ)
             or else not Is_Derived_Type (Typ))
         and then not Has_Unknown_Discriminants (Typ)
-        and then not
-          (Is_Interface (Typ)
-            and then
-              (Is_Task_Interface (Typ)
-                or else Is_Protected_Interface (Typ)
-                or else Is_Synchronized_Interface (Typ)))
+        and then not Is_Concurrent_Interface (Typ)
         and then not Restriction_Active (No_Streams)
         and then not Restriction_Active (No_Dispatch)
         and then No (No_Tagged_Streams_Pragma (Typ))

@@ -81,6 +81,12 @@ package Ada.Containers.Bounded_Holders is
 
    procedure Set (Container : in out Holder; New_Item  : Element_Type);
 
+   function Constant_Reference
+     (Container : aliased Holder) return not null access constant Element_Type;
+
+   function Reference
+     (Container : not null access Holder) return not null access Element_Type;
+
 private
 
    --  The implementation uses low-level tricks (Address clauses and unchecked

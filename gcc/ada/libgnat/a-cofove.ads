@@ -290,6 +290,48 @@ is
                 Right    => Model (Container),
                 Position => Index);
 
+   function At_End (E : access constant Vector) return access constant Vector
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function At_End
+     (E : access constant Element_Type) return access constant Element_Type
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Index     : Index_Type) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Index in First_Index (Container) .. Last_Index (Container),
+     Post   =>
+         Constant_Reference'Result.all = Element (Model (Container), Index);
+
+   function Reference
+     (Container : not null access Vector;
+      Index     : Index_Type) return not null access Element_Type
+   with
+     Global => null,
+     Pre    =>
+      Index in First_Index (Container.all) .. Last_Index (Container.all),
+     Post   =>
+      Length (Container.all) = Length (At_End (Container).all)
+
+         --  Container will have Result.all at index Index
+
+         and At_End (Reference'Result).all =
+           Element (Model (At_End (Container).all), Index)
+
+         --  All other elements are preserved
+
+         and M.Equal_Except
+               (Left     => Model (Container.all),
+                Right    => Model (At_End (Container).all),
+                Position => Index);
+
    procedure Insert
      (Container : in out Vector;
       Before    : Extended_Index;
@@ -905,7 +947,7 @@ private
    pragma Inline (Contains);
 
    subtype Array_Index is Capacity_Range range 1 .. Capacity_Range'Last;
-   type Elements_Array is array (Array_Index range <>) of Element_Type;
+   type Elements_Array is array (Array_Index range <>) of aliased Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
    type Vector (Capacity : Capacity_Range) is record

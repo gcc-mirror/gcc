@@ -515,6 +515,16 @@ is
                  Position => Position)
           and Positions (Container) = Positions (Container)'Old;
 
+   function Constant_Reference
+     (Container : aliased Set;
+      Position  : Cursor) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Position),
+     Post   =>
+       Constant_Reference'Result.all =
+         E.Get (Elements (Container), P.Get (Positions (Container), Position));
+
    procedure Move (Target : in out Set; Source : in out Set) with
      Global => null,
      Pre    => Target.Capacity >= Length (Source),
@@ -1462,7 +1472,7 @@ private
 
    type Node_Type is
       record
-         Element     : Element_Type;
+         Element     : aliased Element_Type;
          Next        : Count_Type;
          Has_Element : Boolean := False;
       end record;
@@ -1470,8 +1480,9 @@ private
    package HT_Types is new
      Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
 
-   type Set (Capacity : Count_Type; Modulus : Hash_Type) is
-     new HT_Types.Hash_Table_Type (Capacity, Modulus) with null record;
+   type Set (Capacity : Count_Type; Modulus : Hash_Type) is record
+     Content : HT_Types.Hash_Table_Type (Capacity, Modulus);
+   end record;
 
    use HT_Types;
 

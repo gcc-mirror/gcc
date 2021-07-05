@@ -140,7 +140,7 @@ package body Debug is
    --  d.Z  Do not enable expansion in configurable run-time mode
 
    --  d_a  Stop elaboration checks on accept or select statement
-   --  d_b
+   --  d_b  Use compatibility model under No_Dynamic_Accessibility_Checks
    --  d_c  CUDA compilation : compile for the host
    --  d_d
    --  d_e  Ignore entry calls and requeue statements for elaboration
@@ -164,7 +164,7 @@ package body Debug is
    --  d_w
    --  d_x  Disable inline expansion of Image attribute for enumeration types
    --  d_y
-   --  d_z  Enable Put_Image on tagged types
+   --  d_z
 
    --  d_A  Stop generation of ALI file
    --  d_B  Warn on build-in-place function calls
@@ -992,9 +992,6 @@ package body Debug is
 
    --  d_x  The compiler does not expand in line the Image attribute for user-
    --       defined enumeration types and the standard boolean type.
-
-   --  d_z  Enable the default Put_Image on tagged types that are not
-   --       predefined.
 
    --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
 

@@ -1803,6 +1803,7 @@ package body Exp_Ch6 is
                  and then Is_Entity_Name (Lhs)
                  and then
                    Present (Effective_Extra_Accessibility (Entity (Lhs)))
+                 and then not No_Dynamic_Accessibility_Checks_Enabled (Lhs)
                then
                   --  Copyback target is an Ada 2012 stand-alone object of an
                   --  anonymous access type.
@@ -2929,7 +2930,9 @@ package body Exp_Ch6 is
                       Name       => New_Occurrence_Of (Lvl, Loc),
                       Expression =>
                         Accessibility_Level
-                          (Expression (Res_Assn), Dynamic_Level)));
+                          (Expr            => Expression (Res_Assn),
+                           Level           => Dynamic_Level,
+                           Allow_Alt_Model => False)));
                end if;
             end Expand_Branch;
 
@@ -3857,9 +3860,10 @@ package body Exp_Ch6 is
                   end if;
 
                   Add_Extra_Actual
-                    (Expr =>
-                       New_Occurrence_Of
-                         (Get_Dynamic_Accessibility (Parm_Ent), Loc),
+                    (Expr => Accessibility_Level
+                               (Expr            => Parm_Ent,
+                                Level           => Dynamic_Level,
+                                Allow_Alt_Model => False),
                      EF   => Extra_Accessibility (Formal));
                end;
 
@@ -3890,15 +3894,20 @@ package body Exp_Ch6 is
 
                Add_Extra_Actual
                  (Expr => Accessibility_Level
-                            (Expr  => Expression (Parent (Entity (Prev))),
-                             Level => Dynamic_Level),
+                            (Expr            => Expression
+                                                  (Parent (Entity (Prev))),
+                             Level           => Dynamic_Level,
+                             Allow_Alt_Model => False),
                   EF   => Extra_Accessibility (Formal));
 
             --  Normal case
 
             else
                Add_Extra_Actual
-                 (Expr => Accessibility_Level (Prev, Dynamic_Level),
+                 (Expr => Accessibility_Level
+                            (Expr            => Prev,
+                             Level           => Dynamic_Level,
+                             Allow_Alt_Model => False),
                   EF   => Extra_Accessibility (Formal));
             end if;
          end if;
@@ -4142,8 +4151,10 @@ package body Exp_Ch6 is
             --  Otherwise get the level normally based on the call node
 
             else
-               Level := Accessibility_Level (Call_Node, Dynamic_Level);
-
+               Level := Accessibility_Level
+                          (Expr            => Call_Node,
+                           Level           => Dynamic_Level,
+                           Allow_Alt_Model => False);
             end if;
 
             --  It may be possible that we are re-expanding an already
@@ -6431,18 +6442,7 @@ package body Exp_Ch6 is
       --  Returns_By_Ref flag is normally set when the subprogram is frozen but
       --  subprograms with no specs are not frozen.
 
-      declare
-         Typ  : constant Entity_Id := Etype (Spec_Id);
-         Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-      begin
-         if Is_Limited_View (Typ) then
-            Set_Returns_By_Ref (Spec_Id);
-
-         elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
-            Set_Returns_By_Ref (Spec_Id);
-         end if;
-      end;
+      Compute_Returns_By_Ref (Spec_Id);
 
       --  For a procedure, we add a return for all possible syntactic ends of
       --  the subprogram.
@@ -7851,18 +7851,7 @@ package body Exp_Ch6 is
       --  of the normal semantic analysis of the spec since the underlying
       --  returned type may not be known yet (for private types).
 
-      declare
-         Typ  : constant Entity_Id := Etype (Subp);
-         Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-      begin
-         if Is_Limited_View (Typ) then
-            Set_Returns_By_Ref (Subp);
-
-         elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
-            Set_Returns_By_Ref (Subp);
-         end if;
-      end;
+      Compute_Returns_By_Ref (Subp);
 
       --  Wnen freezing a null procedure, analyze its delayed aspects now
       --  because we may not have reached the end of the declarative list when

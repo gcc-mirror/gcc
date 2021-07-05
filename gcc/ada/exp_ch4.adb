@@ -615,6 +615,7 @@ package body Exp_Ch4 is
            and then Is_Class_Wide_Type (DesigT)
            and then Tagged_Type_Expansion
            and then not Scope_Suppress.Suppress (Accessibility_Check)
+           and then not No_Dynamic_Accessibility_Checks_Enabled (Ref)
            and then
              (Type_Access_Level (Etype (Exp)) > Type_Access_Level (PtrT)
                or else
@@ -5277,6 +5278,8 @@ package body Exp_Ch4 is
                         if Ada_Version >= Ada_2005
                           and then
                             Ekind (Etype (Nod)) = E_Anonymous_Access_Type
+                          and then not
+                            No_Dynamic_Accessibility_Checks_Enabled (Nod)
                         then
                            Apply_Accessibility_Check
                              (Nod, Typ, Insert_Node => Nod);
@@ -6865,6 +6868,7 @@ package body Exp_Ch4 is
             if Ada_Version >= Ada_2012
               and then Is_Acc
               and then Ekind (Ltyp) = E_Anonymous_Access_Type
+              and then not No_Dynamic_Accessibility_Checks_Enabled (Lop)
             then
                declare
                   Expr_Entity : Entity_Id := Empty;
@@ -10393,7 +10397,9 @@ package body Exp_Ch4 is
       --  types and this is really marginal). We will just assume that we need
       --  the test if the left operand can be negative at all.
 
-      if Lneg and Rneg then
+      if (Lneg and Rneg)
+         and then not CodePeer_Mode
+      then
          Rewrite (N,
            Make_If_Expression (Loc,
              Expressions => New_List (
@@ -12331,6 +12337,7 @@ package body Exp_Ch4 is
            and then Ekind (Etype (Operand_Acc)) = E_Anonymous_Access_Type
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
+           and then not No_Dynamic_Accessibility_Checks_Enabled (N)
          then
             if not Comes_From_Source (N)
               and then Nkind (Parent (N)) in N_Function_Call

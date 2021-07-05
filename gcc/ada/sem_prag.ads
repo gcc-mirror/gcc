@@ -63,6 +63,7 @@ package Sem_Prag is
       Pragma_Favor_Top_Level              => True,
       Pragma_Ghost                        => True,
       Pragma_Global                       => True,
+      Pragma_GNAT_Annotate                => True,
       Pragma_Import                       => True,
       Pragma_Independent                  => True,
       Pragma_Independent_Components       => True,

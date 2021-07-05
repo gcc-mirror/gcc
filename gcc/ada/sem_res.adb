@@ -654,9 +654,9 @@ package body Sem_Res is
       end if;
    end Check_For_Visible_Operator;
 
-   ----------------------------------
-   --  Check_Fully_Declared_Prefix --
-   ----------------------------------
+   ---------------------------------
+   -- Check_Fully_Declared_Prefix --
+   ---------------------------------
 
    procedure Check_Fully_Declared_Prefix
      (Typ  : Entity_Id;
@@ -2934,6 +2934,11 @@ package body Sem_Res is
                      else
                         UI_Image (Norm_Num (Expr_Value_R (Expr)), Decimal);
                         Start_String;
+
+                        if UR_Is_Negative (Expr_Value_R (Expr)) then
+                           Store_String_Chars ("-");
+                        end if;
+
                         Store_String_Chars
                           (UI_Image_Buffer (1 .. UI_Image_Length));
                         Param1 := Make_String_Literal (Loc, End_String);
@@ -3753,18 +3758,6 @@ package body Sem_Res is
 
          begin
             case Nkind (N) is
-               when N_Allocator =>
-                  if not Is_OK_Volatile_Context (Context       => Parent (N),
-                                                 Obj_Ref       => N,
-                                                 Check_Actuals => True)
-                  then
-                     Error_Msg_N
-                       ("allocator cannot appear in this context"
-                        & " (SPARK RM 7.1.3(10))", N);
-                  end if;
-
-                  return Skip;
-
                --  Do not consider nested function calls because they have
                --  already been processed during their own resolution.
 
@@ -13688,12 +13681,24 @@ package body Sem_Res is
             then
                if Is_Itype (Opnd_Type) then
 
+                  --  When applying restriction No_Dynamic_Accessibility_Check,
+                  --  implicit conversions are allowed when the operand type is
+                  --  not deeper than the target type.
+
+                  if No_Dynamic_Accessibility_Checks_Enabled (N) then
+                     if Type_Access_Level (Opnd_Type)
+                          > Deepest_Type_Access_Level (Target_Type)
+                     then
+                        Conversion_Error_N
+                          ("operand has deeper level than target", Operand);
+                     end if;
+
                   --  Implicit conversions aren't allowed for objects of an
                   --  anonymous access type, since such objects have nonstatic
                   --  levels in Ada 2012.
 
-                  if Nkind (Associated_Node_For_Itype (Opnd_Type)) =
-                       N_Object_Declaration
+                  elsif Nkind (Associated_Node_For_Itype (Opnd_Type))
+                          = N_Object_Declaration
                   then
                      Conversion_Error_N
                        ("implicit conversion of stand-alone anonymous "

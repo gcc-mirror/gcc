@@ -1570,7 +1570,7 @@ extern long long __gnat_file_time(char* name)
 /* Set the file time stamp.  */
 
 void
-__gnat_set_file_time_name (char *name, time_t time_stamp)
+__gnat_set_file_time_name (char *name, OS_Time time_stamp)
 {
 #if defined (__vxworks)
 
@@ -1606,7 +1606,7 @@ __gnat_set_file_time_name (char *name, time_t time_stamp)
   time_t t;
 
   /* Set modification time to requested time.  */
-  utimbuf.modtime = time_stamp;
+  utimbuf.modtime = (time_t) time_stamp;
 
   /* Set access time to now in local time.  */
   t = time (NULL);

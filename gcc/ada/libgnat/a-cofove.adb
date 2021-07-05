@@ -142,6 +142,22 @@ is
       Container.Last := No_Index;
    end Clear;
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Vector;
+      Index     : Index_Type) return not null access constant Element_Type
+   is
+   begin
+      if Index > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      return Container.Elements (To_Array_Index (Index))'Access;
+   end Constant_Reference;
+
    --------------
    -- Contains --
    --------------
@@ -1095,6 +1111,22 @@ is
          Container.Elements (I) := New_Item;
       end;
    end Replace_Element;
+
+   ---------------
+   -- Reference --
+   ---------------
+
+   function Reference
+     (Container : not null access Vector;
+      Index     : Index_Type) return not null access Element_Type
+   is
+   begin
+      if Index > Container.Last then
+         raise Constraint_Error with "Index is out of range";
+      end if;
+
+      return Container.Elements (To_Array_Index (Index))'Access;
+   end Reference;
 
    ----------------------
    -- Reserve_Capacity --

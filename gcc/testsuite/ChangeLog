@@ -1,3 +1,85 @@
+2021-07-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/debug/btf/btf.exp: Skip on AIX.
+	* gcc.dg/debug/ctf/ctf.exp: Skip on AIX.
+	* lib/gcc-dg.exp (gcc-dg-target-supports-debug-format): AIX
+	doesn't support CTF.
+	(gcc-dg-debug-runtest): Move CTF support within
+	target support format test.
+
+2021-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/101294
+	* gcc.dg/pr101294.c: New test.
+
+2021-07-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101273
+	* gdc.dg/torture/pr101273.d: New test.
+
+2021-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101282
+	* gdc.dg/torture/pr101282.d: New test.
+
+2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-1.C: New test.
+	* g++.dg/gomp/attrs-2.C: New test.
+	* g++.dg/gomp/attrs-3.C: New test.
+
+2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101297
+	* c-c++-common/gomp/atomic-24.c: New test.
+
+2021-07-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* g++.dg/cpp2a/concepts-memtmpl4.C: New test.
+
+2021-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-7.c: New test.
+	* gcc.target/powerpc/mma-builtin-8.c: New test.
+
+2021-07-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101223
+	* gcc.dg/pr101223.c: New.
+
+2021-07-02  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/debug/btf/btf-float-1.c: New test.
+	* gcc.dg/debug/btf/btf-function-3.c: Use different unrepresentable type.
+	* gcc.dg/debug/btf/btf-struct-2.c: Likewise.
+	* gcc.dg/debug/btf/btf-variables-2.c: Likewise.
+
+2021-07-02  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* lib/gcc-defs.exp: Add a comment.
+
+2021-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101293
+	* gcc.dg/tree-ssa/ssa-lim-15.c: New testcase.
+
+2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101286
+	* gcc.target/i386/avx2-pr101286.c: New test.
+
+2021-07-02  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/keylocker-aesdec128kl.c: Update test.
+	* gcc.target/i386/keylocker-aesdec256kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesdecwide128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesdecwide256kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesenc128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesenc256kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesencwide128kl.c: Likewise.
+	* gcc.target/i386/keylocker-aesencwide256kl.c: Likewise.
+
 2021-07-01  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.target/powerpc/float128-cmove.c: New test.

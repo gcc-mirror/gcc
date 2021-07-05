@@ -708,6 +708,7 @@ package Rtsfind is
      RE_TK_Tagged,                       -- Ada.Tags
      RE_TK_Task,                         -- Ada.Tags
      RE_Unregister_Tag,                  -- Ada.Tags
+     RE_Wide_Wide_Expanded_Name,         -- Ada.Tags
 
      RE_Set_Specific_Handler,            -- Ada.Task_Termination
      RE_Specific_Handler,                -- Ada.Task_Termination
@@ -2389,6 +2390,7 @@ package Rtsfind is
      RE_TK_Tagged                        => Ada_Tags,
      RE_TK_Task                          => Ada_Tags,
      RE_Unregister_Tag                   => Ada_Tags,
+     RE_Wide_Wide_Expanded_Name          => Ada_Tags,
 
      RE_Set_Specific_Handler             => Ada_Task_Termination,
      RE_Specific_Handler                 => Ada_Task_Termination,

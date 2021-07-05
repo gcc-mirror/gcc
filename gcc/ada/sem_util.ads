@@ -65,14 +65,18 @@ package Sem_Util is
    function Accessibility_Level
      (Expr              : Node_Id;
       Level             : Accessibility_Level_Kind;
-      In_Return_Context : Boolean := False) return Node_Id;
+      In_Return_Context : Boolean := False;
+      Allow_Alt_Model   : Boolean := True) return Node_Id;
    --  Centralized accessibility level calculation routine for finding the
    --  accessibility level of a given expression Expr.
 
-   --  In_Return_Context forcing the Accessibility_Level calculations to be
+   --  In_Return_Context forces the Accessibility_Level calculations to be
    --  carried out "as if" Expr existed in a return value. This is useful for
    --  calculating the accessibility levels for discriminant associations
    --  and return aggregates.
+
+   --  The Allow_Alt_Model parameter allows the alternative level calculation
+   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
 
    function Acquire_Warning_Match_String (Str_Lit : Node_Id) return String;
    --  Used by pragma Warnings (Off, string), and Warn_As_Error (string) to get
@@ -582,6 +586,9 @@ package Sem_Util is
    --  emitted immediately after the main message (and before output of any
    --  message indicating that Constraint_Error will be raised).
 
+   procedure Compute_Returns_By_Ref (Func : Entity_Id);
+   --  Set the Returns_By_Ref flag on Func if appropriate
+
    generic
       with function Predicate (Typ : Entity_Id) return Boolean;
    function Collect_Types_In_Hierarchy
@@ -653,7 +660,16 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
-   function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
+   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean;
+   --  True if T is a class-wide type, or if it has controlled parts ("part"
+   --  means T or any of its subcomponents). Same as Needs_Finalization, except
+   --  when pragma Restrictions (No_Finalization) applies, in which case we
+   --  know that class-wide objects do not contain controlled parts.
+
+   function Deepest_Type_Access_Level
+     (Typ             : Entity_Id;
+      Allow_Alt_Model : Boolean := True) return Uint;
+
    --  Same as Type_Access_Level, except that if the type is the type of an Ada
    --  2012 stand-alone object of an anonymous access type, then return the
    --  static accessibility level of the object. In that case, the dynamic
@@ -662,6 +678,9 @@ package Sem_Util is
    --  yields the high bound of that range. Also differs from Type_Access_Level
    --  in the case of a descendant of a generic formal type (returns Int'Last
    --  instead of 0).
+
+   --  The Allow_Alt_Model parameter allows the alternative level calculation
+   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
@@ -1168,11 +1187,11 @@ package Sem_Util is
    --  arise during normal compilation of semantically correct programs.
 
    type Range_Nodes is record
-      L, H : Node_Id; -- First and Last nodes of a discrete_range
+      First, Last : Node_Id; -- First and Last nodes of a discrete_range
    end record;
 
    type Range_Values is record
-      L, H : Uint; -- First and Last values of a discrete_range
+      First, Last : Uint; -- First and Last values of a discrete_range
    end record;
 
    function Get_Index_Bounds
@@ -2117,9 +2136,28 @@ package Sem_Util is
    --  assertion expression of pragma Default_Initial_Condition and if it does,
    --  the encapsulated expression is nontrivial.
 
-   function Is_Null_Record_Type (T : Entity_Id) return Boolean;
-   --  Determine whether T is declared with a null record definition or a
-   --  null component list.
+   function Is_Null_Extension
+    (T : Entity_Id; Ignore_Privacy : Boolean := False) return Boolean;
+   --  Given a tagged type, returns True if argument is a type extension
+   --  that introduces no new components (discriminant or nondiscriminant).
+   --  Ignore_Privacy should be True for use in implementing dynamic semantics.
+
+   function Is_Null_Extension_Of
+     (Descendant, Ancestor : Entity_Id) return Boolean;
+   --  Given two tagged types, the first a descendant of the second,
+   --  returns True if every component of Descendant is inherited
+   --  (directly or indirectly) from Ancestor. Privacy is ignored.
+
+   function Is_Null_Record_Definition (Record_Def : Node_Id) return Boolean;
+   --  Returns True for an N_Record_Definition node that has no user-defined
+   --  components (and no variant part).
+
+   function Is_Null_Record_Type
+     (T : Entity_Id; Ignore_Privacy : Boolean := False) return Boolean;
+   --  Determine whether T is declared with a null record definition, a
+   --  null component list, or as a type derived from a null record type
+   --  (with a null extension if tagged). Returns True for interface types,
+   --  False for discriminated types.
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean;
    --  Returns True if an 'Img, 'Image, 'Wide_Image, or 'Wide_Wide_Image
@@ -2556,8 +2594,7 @@ package Sem_Util is
    --  entity E. If no such instance exits, return Empty.
 
    function Needs_Finalization (Typ : Entity_Id) return Boolean;
-   --  Determine whether type Typ is controlled and thus requires finalization
-   --  actions.
+   --  True if Typ requires finalization actions
 
    function Needs_One_Actual (E : Entity_Id) return Boolean;
    --  Returns True if a function has defaults for all but its first formal,
@@ -3219,8 +3256,13 @@ package Sem_Util is
    --  returned, i.e. Traverse_More_Func is called and the result is simply
    --  discarded.
 
-   function Type_Access_Level (Typ : Entity_Id) return Uint;
+   function Type_Access_Level
+     (Typ             : Entity_Id;
+      Allow_Alt_Model : Boolean := True) return Uint;
    --  Return the accessibility level of Typ
+
+   --  The Allow_Alt_Model parameter allows the alternative level calculation
+   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
 
    function Type_Without_Stream_Operation
      (T  : Entity_Id;
@@ -3232,6 +3274,15 @@ package Sem_Util is
    --  subcomponent. If Op is TSS_Null, a type that lacks either Read or Write
    --  prevents the construction of a composite stream operation. If Op is
    --  specified we check only for the given stream operation.
+
+   function Ultimate_Overlaid_Entity (E : Entity_Id) return Entity_Id;
+   --  If entity E is overlaying some other entity via an Address clause (which
+   --  possibly overlays yet another entity via its own Address clause), then
+   --  return the ultimate overlaid entity. If entity E is not overlaying any
+   --  other entity (or the overlaid entity cannot be determined statically),
+   --  then return Empty.
+   --
+   --  Subsidiary to the analysis of object overlays in SPARK.
 
    function Ultimate_Prefix (N : Node_Id) return Node_Id;
    --  Obtain the "outermost" prefix of arbitrary node N. Return N if no such

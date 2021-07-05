@@ -1,3 +1,10 @@
+2021-07-02  David Faust  <david.faust@oracle.com>
+
+	* btf.h (struct btf_type): Update bit usage comment.
+	(BTF_INFO_KIND): Update bit mask.
+	(BTF_KIND_FLOAT): New define.
+	(BTF_KIND_MAX): Update.
+
 2021-06-28  Indu Bhagat  <indu.bhagat@oracle.com>
 	    David Faust  <david.faust@oracle.com>
 	    Jose E. Marchesi  <jose.marchesi@oracle.com>

@@ -867,11 +867,8 @@ package body Freeze is
       ----------------
 
       function Size_Known (T : Entity_Id) return Boolean is
-         Index : Entity_Id;
          Comp  : Entity_Id;
          Ctyp  : Entity_Id;
-         Low   : Node_Id;
-         High  : Node_Id;
 
       begin
          if Size_Known_At_Compile_Time (T) then
@@ -918,8 +915,11 @@ package body Freeze is
             --  thus may be packable).
 
             declare
-               Size : Uint := Component_Size (T);
-               Dim  : Uint;
+               Index : Entity_Id;
+               Low   : Node_Id;
+               High  : Node_Id;
+               Size  : Uint := Component_Size (T);
+               Dim   : Uint;
 
             begin
                Index := First_Index (T);
@@ -4141,9 +4141,10 @@ package body Freeze is
                elsif not After_Last_Declaration
                  and then not Freezing_Library_Level_Tagged_Type
                then
-                  Error_Msg_Node_1 := F_Type;
-                  Error_Msg_N
-                    ("type & must be fully defined before this point", N);
+                  Error_Msg_NE
+                    ("type & must be fully defined before this point",
+                     N,
+                     F_Type);
                end if;
             end if;
 
@@ -7590,6 +7591,7 @@ package body Freeze is
                          or else Is_TSS (Id, TSS_Stream_Output)
                          or else Is_TSS (Id, TSS_Stream_Read)
                          or else Is_TSS (Id, TSS_Stream_Write)
+                         or else Is_TSS (Id, TSS_Put_Image)
                          or else Nkind (Original_Node (P)) =
                                              N_Subprogram_Renaming_Declaration)
             then

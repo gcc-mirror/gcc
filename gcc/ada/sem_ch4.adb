@@ -889,16 +889,6 @@ package body Sem_Ch4 is
          Check_Restriction (No_Local_Allocators, N);
       end if;
 
-      if SPARK_Mode = On
-        and then Comes_From_Source (N)
-        and then not Is_OK_Volatile_Context (Context       => Parent (N),
-                                             Obj_Ref       => N,
-                                             Check_Actuals => False)
-      then
-         Error_Msg_N
-           ("allocator cannot appear in this context (SPARK RM 7.1.3(10))", N);
-      end if;
-
       if Serious_Errors_Detected > Sav_Errs then
          Set_Error_Posted (N);
          Set_Etype (N, Any_Type);

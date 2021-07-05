@@ -1500,12 +1500,13 @@ package body Exp_Ch5 is
         (if Nkind (Name (N)) = N_Slice
          then Get_Index_Bounds (Discrete_Range (Name (N)))
          else Larray_Bounds);
-      --  If the left-hand side is A (L..H), Larray_Bounds is A'Range, and
-      --  L_Bounds is L..H. If it's not a slice, we treat it like a slice
-      --  starting at A'First.
+      --  If the left-hand side is A (First..Last), Larray_Bounds is A'Range,
+      --  and L_Bounds is First..Last. If it's not a slice, we treat it like
+      --  a slice starting at A'First.
 
       L_Bit : constant Node_Id :=
-        Make_Integer_Literal (Loc, (L_Bounds.L - Larray_Bounds.L) * C_Size);
+        Make_Integer_Literal
+          (Loc, (L_Bounds.First - Larray_Bounds.First) * C_Size);
 
       Rarray_Bounds : constant Range_Values :=
         Get_Index_Bounds (First_Index (R_Typ));
@@ -1515,7 +1516,8 @@ package body Exp_Ch5 is
          else Rarray_Bounds);
 
       R_Bit : constant Node_Id :=
-        Make_Integer_Literal (Loc, (R_Bounds.L - Rarray_Bounds.L) * C_Size);
+        Make_Integer_Literal
+          (Loc, (R_Bounds.First - Rarray_Bounds.First) * C_Size);
 
       Size : constant Node_Id :=
         Make_Op_Multiply (Loc,
@@ -1594,17 +1596,21 @@ package body Exp_Ch5 is
       Rev    : Boolean) return Node_Id
    is
 
+      L : constant Node_Id := Name (N);
+      R : constant Node_Id := Expression (N);
+      --  Left- and right-hand sides of the assignment statement
+
       Slices : constant Boolean :=
-        Nkind (Name (N)) = N_Slice or else Nkind (Expression (N)) = N_Slice;
+        Nkind (L) = N_Slice or else Nkind (R) = N_Slice;
       L_Prefix_Comp : constant Boolean :=
         --  True if the left-hand side is a slice of a component or slice
-        Nkind (Name (N)) = N_Slice
-          and then Nkind (Prefix (Name (N))) in
+        Nkind (L) = N_Slice
+          and then Nkind (Prefix (L)) in
                      N_Selected_Component | N_Indexed_Component | N_Slice;
       R_Prefix_Comp : constant Boolean :=
         --  Likewise for the right-hand side
-        Nkind (Expression (N)) = N_Slice
-          and then Nkind (Prefix (Expression (N))) in
+        Nkind (R) = N_Slice
+          and then Nkind (Prefix (R)) in
                      N_Selected_Component | N_Indexed_Component | N_Slice;
 
    begin
@@ -1664,27 +1670,28 @@ package body Exp_Ch5 is
                  Get_Index_Bounds (Right_Base_Index);
 
                Known_Left_Slice_Low : constant Boolean :=
-                 (if Nkind (Name (N)) = N_Slice
+                 (if Nkind (L) = N_Slice
                     then Compile_Time_Known_Value
-                      (Get_Index_Bounds (Discrete_Range (Name (N))).L));
+                      (Get_Index_Bounds (Discrete_Range (L)).First));
                Known_Right_Slice_Low : constant Boolean :=
-                 (if Nkind (Expression (N)) = N_Slice
+                 (if Nkind (R) = N_Slice
                     then Compile_Time_Known_Value
-                      (Get_Index_Bounds (Discrete_Range (Expression (N))).H));
+                      (Get_Index_Bounds (Discrete_Range (R)).Last));
 
                Val_Bits : constant Pos := Standard_Long_Long_Integer_Size / 2;
 
             begin
-               if Left_Base_Range.H - Left_Base_Range.L < Val_Bits
-                 and then Right_Base_Range.H - Right_Base_Range.L < Val_Bits
+               if Left_Base_Range.Last - Left_Base_Range.First < Val_Bits
+                 and then Right_Base_Range.Last - Right_Base_Range.First <
+                            Val_Bits
                  and then Known_Esize (L_Type)
                  and then Known_Esize (R_Type)
                  and then Known_Left_Slice_Low
                  and then Known_Right_Slice_Low
                  and then Compile_Time_Known_Value
-                   (Get_Index_Bounds (First_Index (Etype (Larray))).L)
+                   (Get_Index_Bounds (First_Index (Etype (Larray))).First)
                  and then Compile_Time_Known_Value
-                   (Get_Index_Bounds (First_Index (Etype (Rarray))).L)
+                   (Get_Index_Bounds (First_Index (Etype (Rarray))).First)
                  and then
                    not (Is_Enumeration_Type (Etype (Left_Base_Index))
                           and then Has_Enumeration_Rep_Clause
@@ -2764,7 +2771,9 @@ package body Exp_Ch5 is
                                             (Entity (Lhs)), Loc),
                                      Expression =>
                                        Accessibility_Level
-                                         (Rhs, Dynamic_Level));
+                                         (Expr            => Rhs,
+                                          Level           => Dynamic_Level,
+                                          Allow_Alt_Model => False));
 
          begin
             if not Accessibility_Checks_Suppressed (Entity (Lhs)) then
