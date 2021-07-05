@@ -379,6 +379,7 @@ public:
 	HIR::ImplItem *lowered
 	  = ASTLowerImplItem::translate (impl_item.get (),
 					 mapping.get_hirid ());
+	rust_assert (lowered != nullptr);
 	impl_items.push_back (std::unique_ptr<HIR::ImplItem> (lowered));
 	impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
       }
@@ -521,6 +522,7 @@ public:
 	HIR::ImplItem *lowered
 	  = ASTLowerImplItem::translate (impl_item.get (),
 					 mapping.get_hirid ());
+	rust_assert (lowered != nullptr);
 	impl_items.push_back (std::unique_ptr<HIR::ImplItem> (lowered));
 	impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
       }
