@@ -1306,11 +1306,27 @@ Gcc_backend::named_type (const std::string &name, Btype *btype,
   if (type == error_mark_node)
     return this->error_type ();
 
-  tree decl = build_decl (location.gcc_location (), TYPE_DECL,
-			  get_identifier_from_string (name), type);
+  // The middle-end expects a basic type to have a name.  In Rust every
+  // basic type will have a name.  The first time we see a basic type,
+  // give it whatever Rust name we have at this point.
+  if (TYPE_NAME (type) == NULL_TREE
+      && location.gcc_location () == BUILTINS_LOCATION
+      && (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == REAL_TYPE
+	  || TREE_CODE (type) == COMPLEX_TYPE
+	  || TREE_CODE (type) == BOOLEAN_TYPE))
+    {
+      tree decl = build_decl (BUILTINS_LOCATION, TYPE_DECL,
+			      get_identifier_from_string (name), type);
+      TYPE_NAME (type) = decl;
+      return this->make_type (type);
+    }
 
-  TYPE_NAME (type) = decl;
-  return this->make_type (type);
+  tree copy = build_variant_type_copy (type);
+  tree decl = build_decl (location.gcc_location (), TYPE_DECL,
+			  get_identifier_from_string (name), copy);
+  DECL_ORIGINAL_TYPE (decl) = type;
+  TYPE_NAME (copy) = decl;
+  return this->make_type (copy);
 }
 
 // Return a pointer type used as a marker for a circular type.
