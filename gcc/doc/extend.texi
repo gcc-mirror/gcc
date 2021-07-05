@@ -1102,6 +1102,7 @@ typedef _Complex float __attribute__((mode(IC))) _Complex_ibm128;
 @section Half-Precision Floating Point
 @cindex half-precision floating point
 @cindex @code{__fp16} data type
+@cindex @code{__Float16} data type
 
 On ARM and AArch64 targets, GCC supports half-precision (16-bit) floating
 point via the @code{__fp16} type defined in the ARM C Language Extensions.
@@ -1149,6 +1150,18 @@ calls.
 
 It is recommended that portable code use the @code{_Float16} type defined
 by ISO/IEC TS 18661-3:2015.  @xref{Floating Types}.
+
+On x86 targets with @code{target("sse2")} and above, GCC supports half-precision
+(16-bit) floating point via the @code{_Float16} type which is defined by
+18661-3:2015. For C++, x86 provide a builtin type named @code{_Float16}
+which contains same data format as C.
+
+Without @option{-mavx512fp16}, @code{_Float16} type is storage only, all
+operations will be emulated by software emulation and the @code{float}
+instructions. The default behavior for @code{FLT_EVAL_METHOD} is to keep
+the intermediate result of the operation as 32-bit precision. This may lead
+to inconsistent behavior between software emulation and AVX512-FP16
+instructions.
 
 @node Decimal Float
 @section Decimal Floating Types

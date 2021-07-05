@@ -387,6 +387,7 @@ enum x86_64_reg_class
     X86_64_INTEGER_CLASS,
     X86_64_INTEGERSI_CLASS,
     X86_64_SSE_CLASS,
+    X86_64_SSEHF_CLASS,
     X86_64_SSESF_CLASS,
     X86_64_SSEDF_CLASS,
     X86_64_SSEUP_CLASS,
@@ -2027,8 +2028,10 @@ merge_classes (enum x86_64_reg_class class1, enum x86_64_reg_class class2)
     return X86_64_MEMORY_CLASS;
 
   /* Rule #4: If one of the classes is INTEGER, the result is INTEGER.  */
-  if ((class1 == X86_64_INTEGERSI_CLASS && class2 == X86_64_SSESF_CLASS)
-      || (class2 == X86_64_INTEGERSI_CLASS && class1 == X86_64_SSESF_CLASS))
+  if ((class1 == X86_64_INTEGERSI_CLASS
+       && (class2 == X86_64_SSESF_CLASS || class2 == X86_64_SSEHF_CLASS))
+      || (class2 == X86_64_INTEGERSI_CLASS
+	  && (class1 == X86_64_SSESF_CLASS || class1 == X86_64_SSEHF_CLASS)))
     return X86_64_INTEGERSI_CLASS;
   if (class1 == X86_64_INTEGER_CLASS || class1 == X86_64_INTEGERSI_CLASS
       || class2 == X86_64_INTEGER_CLASS || class2 == X86_64_INTEGERSI_CLASS)
@@ -2181,6 +2184,8 @@ classify_argument (machine_mode mode, const_tree type,
 
 	    /* The partial classes are now full classes.  */
 	    if (subclasses[0] == X86_64_SSESF_CLASS && bytes != 4)
+	      subclasses[0] = X86_64_SSE_CLASS;
+	    if (subclasses[0] == X86_64_SSEHF_CLASS && bytes != 2)
 	      subclasses[0] = X86_64_SSE_CLASS;
 	    if (subclasses[0] == X86_64_INTEGERSI_CLASS
 		&& !((bit_offset % 64) == 0 && bytes == 4))
@@ -2354,6 +2359,12 @@ classify_argument (machine_mode mode, const_tree type,
       gcc_unreachable ();
     case E_CTImode:
       return 0;
+    case E_HFmode:
+      if (!(bit_offset % 64))
+	classes[0] = X86_64_SSEHF_CLASS;
+      else
+	classes[0] = X86_64_SSE_CLASS;
+      return 1;
     case E_SFmode:
       if (!(bit_offset % 64))
 	classes[0] = X86_64_SSESF_CLASS;
@@ -2371,6 +2382,15 @@ classify_argument (machine_mode mode, const_tree type,
       classes[0] = X86_64_SSE_CLASS;
       classes[1] = X86_64_SSEUP_CLASS;
       return 2;
+    case E_HCmode:
+      classes[0] = X86_64_SSE_CLASS;
+      if (!(bit_offset % 64))
+	return 1;
+      else
+	{
+	  classes[1] = X86_64_SSEHF_CLASS;
+	  return 2;
+	}
     case E_SCmode:
       classes[0] = X86_64_SSE_CLASS;
       if (!(bit_offset % 64))
@@ -2485,6 +2505,7 @@ examine_argument (machine_mode mode, const_tree type, int in_return,
 	(*int_nregs)++;
 	break;
       case X86_64_SSE_CLASS:
+      case X86_64_SSEHF_CLASS:
       case X86_64_SSESF_CLASS:
       case X86_64_SSEDF_CLASS:
 	(*sse_nregs)++;
@@ -2584,13 +2605,14 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 
   /* First construct simple cases.  Avoid SCmode, since we want to use
      single register to pass this type.  */
-  if (n == 1 && mode != SCmode)
+  if (n == 1 && mode != SCmode && mode != HCmode)
     switch (regclass[0])
       {
       case X86_64_INTEGER_CLASS:
       case X86_64_INTEGERSI_CLASS:
 	return gen_rtx_REG (mode, intreg[0]);
       case X86_64_SSE_CLASS:
+      case X86_64_SSEHF_CLASS:
       case X86_64_SSESF_CLASS:
       case X86_64_SSEDF_CLASS:
 	if (mode != BLKmode)
@@ -2686,6 +2708,14 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 				   gen_rtx_REG (tmpmode, *intreg),
 				   GEN_INT (i*8));
 	    intreg++;
+	    break;
+	  case X86_64_SSEHF_CLASS:
+	    exp [nexps++]
+	      = gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (HFmode,
+						GET_SSE_REGNO (sse_regno)),
+				   GEN_INT (i*8));
+	    sse_regno++;
 	    break;
 	  case X86_64_SSESF_CLASS:
 	    exp [nexps++]
@@ -3907,6 +3937,19 @@ function_value_32 (machine_mode orig_mode, machine_mode mode,
     /* Most things go in %eax.  */
     regno = AX_REG;
 
+  /* Return _Float16/_Complex _Foat16 by sse register.  */
+  if (mode == HFmode)
+    regno = FIRST_SSE_REG;
+  if (mode == HCmode)
+    {
+      rtx ret = gen_rtx_PARALLEL (mode, rtvec_alloc(1));
+      XVECEXP (ret, 0, 0)
+	= gen_rtx_EXPR_LIST (VOIDmode,
+			     gen_rtx_REG (SImode, FIRST_SSE_REG),
+			     GEN_INT (0));
+      return ret;
+    }
+
   /* Override FP return register with %xmm0 for local functions when
      SSE math is enabled or for functions with sseregparm attribute.  */
   if ((fn || fntype) && (mode == SFmode || mode == DFmode))
@@ -3943,6 +3986,8 @@ function_value_64 (machine_mode orig_mode, machine_mode mode,
 
       switch (mode)
 	{
+	case E_HFmode:
+	case E_HCmode:
 	case E_SFmode:
 	case E_SCmode:
 	case E_DFmode:
@@ -13455,6 +13500,15 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  (file, addr, MEM_ADDR_SPACE (x), code == 'p' || code == 'P');
     }
 
+  else if (CONST_DOUBLE_P (x) && GET_MODE (x) == HFmode)
+    {
+      long l = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (x),
+			       REAL_MODE_FORMAT (HFmode));
+      if (ASSEMBLER_DIALECT == ASM_ATT)
+	putc ('$', file);
+      fprintf (file, "0x%04x", (unsigned int) l);
+    }
+
   else if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
     {
       long l;
@@ -19107,6 +19161,16 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
       return NO_REGS;
     }
 
+  /* Require movement to gpr, and then store to memory.  */
+  if (mode == HFmode
+      && !TARGET_SSE4_1
+      && SSE_CLASS_P (rclass)
+      && !in_p && MEM_P (x))
+    {
+      sri->extra_cost = 1;
+      return GENERAL_REGS;
+    }
+
   /* This condition handles corner case where an expression involving
      pointers gets vectorized.  We're trying to use the address of a
      stack slot as a vector initializer.
@@ -21781,8 +21845,25 @@ ix86_scalar_mode_supported_p (scalar_mode mode)
     return default_decimal_float_supported_p ();
   else if (mode == TFmode)
     return true;
+  else if (mode == HFmode && TARGET_SSE2)
+    return true;
   else
     return default_scalar_mode_supported_p (mode);
+}
+
+/* Implement TARGET_LIBGCC_FLOATING_POINT_MODE_SUPPORTED_P - return TRUE
+   if MODE is HFmode, and punt to the generic implementation otherwise.  */
+
+static bool
+ix86_libgcc_floating_mode_supported_p (scalar_float_mode mode)
+{
+  /* NB: Always return TRUE for HFmode so that the _Float16 type will
+     be defined by the C front-end for AVX512FP16 intrinsics.  We will
+     issue an error in ix86_expand_move for HFmode if AVX512FP16 isn't
+     enabled.  */
+  return ((mode == HFmode && TARGET_SSE2)
+	  ? true
+	  : default_libgcc_floating_mode_supported_p (mode));
 }
 
 /* Implements target hook vector_mode_supported_p.  */
@@ -24066,6 +24147,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P ix86_scalar_mode_supported_p
+
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P	\
+ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P ix86_vector_mode_supported_p
