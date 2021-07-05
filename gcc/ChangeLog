@@ -1,3 +1,19 @@
+2021-07-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/100269
+	* config.gcc: Ensure that Darwin biarch definitions are
+	added before i386.h.
+	* config/i386/darwin.h (TARGET_64BIT): Remove.
+	(PR80556_WORKAROUND): New.
+	(REAL_LIBGCC_SPEC): Amend to use PR80556_WORKAROUND.
+	(DARWIN_SUBARCH_SPEC): New.
+	* config/i386/darwin32-biarch.h (TARGET_64BIT_DEFAULT,
+	TARGET_BI_ARCH, PR80556_WORKAROUND): New.
+	(REAL_LIBGCC_SPEC): Remove.
+	* config/i386/darwin64-biarch.h (TARGET_64BIT_DEFAULT,
+	TARGET_BI_ARCH, PR80556_WORKAROUND): New.
+	(REAL_LIBGCC_SPEC): Remove.
+
 2021-07-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR middle-end/101294
