@@ -121,7 +121,8 @@ Resolver::insert_builtin_types (Rib *r)
   auto builtins = get_builtin_types ();
   for (auto &builtin : builtins)
     {
-      CanonicalPath builtin_path (builtin->as_string ());
+      CanonicalPath builtin_path
+	= CanonicalPath::new_seg (builtin->as_string ());
       r->insert_name (builtin_path, builtin->get_node_id (),
 		      Linemap::predeclared_location (), false,
 		      [] (const CanonicalPath &, NodeId, Location) -> void {});
@@ -401,7 +402,7 @@ ResolveTypeToCanonicalPath::canonicalize_generic_args (AST::GenericArgs &args)
       i++;
     }
 
-  return CanonicalPath ("<" + buf + ">");
+  return CanonicalPath::new_seg ("<" + buf + ">");
 }
 
 bool
@@ -430,7 +431,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
 
   // ident seg
   CanonicalPath ident_seg
-    = CanonicalPath (seg.get_ident_segment ().as_string ());
+    = CanonicalPath::new_seg (seg.get_ident_segment ().as_string ());
   result = result.append (ident_seg);
 
   // generic args
@@ -460,7 +461,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegment &seg)
     }
 
   CanonicalPath ident_seg
-    = CanonicalPath (seg.get_ident_segment ().as_string ());
+    = CanonicalPath::new_seg (seg.get_ident_segment ().as_string ());
   result = result.append (ident_seg);
 }
 
@@ -474,7 +475,8 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
   AST::PathIdentSegment &root_ident_seg = root_segment.get_ident_segment ();
 
   bool segment_is_type = false;
-  CanonicalPath root_seg_path (root_ident_seg.as_string ());
+  CanonicalPath root_seg_path
+    = CanonicalPath::new_seg (root_ident_seg.as_string ());
 
   // name scope first
   if (resolver->get_name_scope ().lookup (root_seg_path, &resolved_node))

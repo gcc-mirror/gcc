@@ -47,34 +47,73 @@ namespace Resolver {
 class CanonicalPath
 {
 public:
-  explicit CanonicalPath (std::string path) : path (path) {}
-
-  CanonicalPath (const CanonicalPath &other) : path (other.path) {}
+  CanonicalPath (const CanonicalPath &other) : segs (other.segs) {}
 
   CanonicalPath &operator= (const CanonicalPath &other)
   {
-    path = other.path;
+    segs = other.segs;
     return *this;
   }
 
-  std::string get () const { return path; }
-
-  static CanonicalPath get_big_self () { return CanonicalPath ("Self"); }
-
-  static CanonicalPath get_wee_self () { return CanonicalPath ("self"); }
-
-  static CanonicalPath create_empty ()
+  static CanonicalPath new_seg (const std::string &path)
   {
-    return CanonicalPath (std::string ());
+    rust_assert (!path.empty ());
+    return CanonicalPath ({path});
   }
 
-  bool is_error () const { return path.empty (); }
+  std::string get () const
+  {
+    std::string buf;
+    for (size_t i = 0; i < segs.size (); i++)
+      {
+	bool have_more = (i + 1) < segs.size ();
+	const std::string &seg = segs.at (i);
+	buf += seg + (have_more ? "::" : "");
+      }
+    return buf;
+  }
+
+  static CanonicalPath get_big_self ()
+  {
+    return CanonicalPath::new_seg ("Self");
+  }
+
+  static CanonicalPath get_wee_self ()
+  {
+    return CanonicalPath::new_seg ("self");
+  }
+
+  static CanonicalPath create_empty () { return CanonicalPath ({}); }
+
+  bool is_error () const { return segs.size () == 0; }
 
   CanonicalPath append (const CanonicalPath &other) const
   {
     rust_assert (!other.is_error ());
-    return is_error () ? CanonicalPath (other.get ())
-		       : CanonicalPath (append (other.get ()));
+    if (is_error ())
+      return CanonicalPath (other.segs);
+
+    std::vector<std::string> copy (segs);
+    for (auto &s : other.segs)
+      copy.push_back (s);
+
+    return CanonicalPath (copy);
+  }
+
+  // if we have the path A::B::C this will give a callback for each segment
+  // example:
+  //   A
+  //   A::B
+  //   A::B::C
+  void iterate_path (std::function<bool (const CanonicalPath &)> cb) const
+  {
+    std::vector<std::string> buf;
+    for (auto &seg : segs)
+      {
+	buf.push_back (seg);
+	if (!cb (CanonicalPath (buf)))
+	  return;
+      }
   }
 
   bool operator== (const CanonicalPath &b) const
@@ -85,9 +124,9 @@ public:
   bool operator< (const CanonicalPath &b) const { return get () < b.get (); }
 
 private:
-  std::string append (std::string elem) const { return path + "::" + elem; }
+  explicit CanonicalPath (std::vector<std::string> path) : segs (path) {}
 
-  std::string path;
+  std::vector<std::string> segs;
 };
 
 class Rib
