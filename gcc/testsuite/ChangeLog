@@ -1,3 +1,25 @@
+2021-07-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101039
+	* gcc.dg/tree-ssa/phi-opt-15.c: Update test to expect
+	ABSU and still not expect ABS_EXPR.
+	* gcc.dg/tree-ssa/phi-opt-23.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-24.c: New test.
+
+2021-07-05  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR debug/101321
+	* gcc.dg/debug/btf/btf-bitfields-3.c: Add -fno-short-enums.
+
+2021-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/101299
+	* gcc.dg/vect/bb-slp-74.c: Add vect_double requires.
+
+2021-07-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr92658-avx512vl.c: Refine testcase.
+
 2021-07-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/debug/btf/btf.exp: Skip on AIX.

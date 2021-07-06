@@ -2831,6 +2831,8 @@ ix86_option_override_internal (bool main_args_p,
   if (ix86_indirect_branch != indirect_branch_keep)
     SET_OPTION_IF_UNSET (opts, opts_set, flag_jump_tables, 0);
 
+  SET_OPTION_IF_UNSET (opts, opts_set, param_ira_consider_dup_in_all_alts, 0);
+
   return true;
 }
 

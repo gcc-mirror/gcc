@@ -130,11 +130,6 @@ is
       pragma Assert (Container.Last.Next = null);
       pragma Assert (Container.Length > 0);
 
-      Container.First := null;
-      Container.Last := null;
-      Container.Length := 0;
-      Zero_Counts (Container.TC);
-
       Container.First := new Node_Type'(Src.Element, null, null);
       Container.Last := Container.First;
       Container.Length := 1;
@@ -232,9 +227,7 @@ is
       Container.Last := null;
       Container.Length := 0;
 
-      pragma Warnings (Off);
       Free (X);
-      pragma Warnings (On);
    end Clear;
 
    ------------------------

@@ -38,7 +38,7 @@ package body Repinfo.Input is
    --  Value for Storage_Unit
 
    type JSON_Entity_Kind is (JE_Record_Type, JE_Array_Type, JE_Other);
-   --  Kind of an entiy
+   --  Kind of an entity
 
    type JSON_Entity_Node (Kind : JSON_Entity_Kind := JE_Other) is record
       Esize   : Node_Ref_Or_Val;
@@ -1219,7 +1219,7 @@ package body Repinfo.Input is
          Var         : JSON_Variant_Node;
 
       begin
-         --  Read a non-empty array of components
+         --  Read a nonempty array of components
 
          Read_Token_And_Error (J_ARRAY, Token_Start, Token_End);
 

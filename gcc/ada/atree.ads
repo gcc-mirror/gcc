@@ -130,7 +130,7 @@ package Atree is
    --  Current_Error_Node is also used for other purposes. See, for example,
    --  Rtsfind.
 
-   Current_Error_Node : Node_Id;
+   Current_Error_Node : Node_Id := Empty;
    --  Node to place compiler abort messages
 
    ------------------

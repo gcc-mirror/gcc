@@ -555,7 +555,7 @@ package body Ch10 is
                                   | N_Generic_Function_Renaming_Declaration
                                   | N_Generic_Package_Renaming_Declaration
                                   | N_Generic_Procedure_Renaming_Declaration
-          or else Nkind (Unit_Node) in N_Package_Body
+                                  | N_Package_Body
                                   | N_Package_Instantiation
                                   | N_Package_Renaming_Declaration
                                   | N_Package_Specification

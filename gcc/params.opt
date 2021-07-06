@@ -330,6 +330,10 @@ Max size of conflict table in MB.
 Common Joined UInteger Var(param_ira_max_loops_num) Init(100) Param Optimization
 Max loops number for regional RA.
 
+-param=ira-consider-dup-in-all-alts=
+Common Joined UInteger Var(param_ira_consider_dup_in_all_alts) Init(1) IntegerRange(0, 1) Param Optimization
+Control ira to consider matching constraint (duplicated operand number) heavily in all available alternatives for preferred register class.  If it is set as zero, it means ira only respects the matching constraint when it's in the only available alternative with an appropriate register class.  Otherwise, it means ira will check all available alternatives for preferred register class even if it has found some choice with an appropriate register class and respect the found qualified matching constraint.
+
 -param=iv-always-prune-cand-set-bound=
 Common Joined UInteger Var(param_iv_always_prune_cand_set_bound) Init(10) Param Optimization
 If number of candidates in the set is smaller, we always try to remove unused ivs during its optimization.

@@ -4644,6 +4644,25 @@
 ;;
 ;; But this doesn't seem useful in practice.
 
+(define_expand "vec_fmaddsub<mode>4"
+  [(set (match_operand:VF 0 "register_operand")
+	(unspec:VF
+	  [(match_operand:VF 1 "nonimmediate_operand")
+	   (match_operand:VF 2 "nonimmediate_operand")
+	   (match_operand:VF 3 "nonimmediate_operand")]
+	  UNSPEC_FMADDSUB))]
+  "TARGET_FMA || TARGET_FMA4 || (<MODE_SIZE> == 64 || TARGET_AVX512VL)")
+
+(define_expand "vec_fmsubadd<mode>4"
+  [(set (match_operand:VF 0 "register_operand")
+	(unspec:VF
+	  [(match_operand:VF 1 "nonimmediate_operand")
+	   (match_operand:VF 2 "nonimmediate_operand")
+	   (neg:VF
+	     (match_operand:VF 3 "nonimmediate_operand"))]
+	  UNSPEC_FMADDSUB))]
+  "TARGET_FMA || TARGET_FMA4 || (<MODE_SIZE> == 64 || TARGET_AVX512VL)")
+
 (define_expand "fmaddsub_<mode>"
   [(set (match_operand:VF 0 "register_operand")
 	(unspec:VF

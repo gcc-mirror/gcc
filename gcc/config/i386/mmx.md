@@ -3534,11 +3534,14 @@
 (define_expand "vec_setv2hi"
   [(match_operand:V2HI 0 "register_operand")
    (match_operand:HI 1 "register_operand")
-   (match_operand 2 "const_int_operand")]
+   (match_operand 2 "vec_setm_operand")]
   "TARGET_SSE2"
 {
-  ix86_expand_vector_set (false, operands[0], operands[1],
-			  INTVAL (operands[2]));
+  if (CONST_INT_P (operands[2]))
+    ix86_expand_vector_set (false, operands[0], operands[1],
+			    INTVAL (operands[2]));
+  else
+    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
   DONE;
 })
 
@@ -3556,11 +3559,14 @@
 (define_expand "vec_setv4qi"
   [(match_operand:V4QI 0 "register_operand")
    (match_operand:QI 1 "register_operand")
-   (match_operand 2 "const_int_operand")]
+   (match_operand 2 "vec_setm_mmx_operand")]
   "TARGET_SSE4_1"
 {
-  ix86_expand_vector_set (false, operands[0], operands[1],
-			  INTVAL (operands[2]));
+  if (CONST_INT_P (operands[2]))
+    ix86_expand_vector_set (false, operands[0], operands[1],
+			    INTVAL (operands[2]));
+  else
+    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
   DONE;
 })
 

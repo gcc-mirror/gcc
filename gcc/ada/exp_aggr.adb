@@ -4919,13 +4919,11 @@ package body Exp_Aggr is
       --  Just set the Delay flag in the cases where the transformation will be
       --  done top down from above.
 
-      if False
-
+      if
          --  Internal aggregate (transformed when expanding the parent)
 
-         or else Parent_Kind = N_Aggregate
-         or else Parent_Kind = N_Extension_Aggregate
-         or else Parent_Kind = N_Component_Association
+         Parent_Kind in
+           N_Aggregate | N_Extension_Aggregate | N_Component_Association
 
          --  Allocator (see Convert_Aggr_In_Allocator)
 
@@ -6601,8 +6599,8 @@ package body Exp_Aggr is
       --  For assignments we do the assignment in place if all the component
       --  associations have compile-time known values, or are default-
       --  initialized limited components, e.g. tasks. For other cases we
-      --  create a temporary. The analysis for safety of on-line assignment
-      --  is delicate, i.e. we don't know how to do it fully yet ???
+      --  create a temporary. A full analysis for safety of in-place assignment
+      --  is delicate.
 
       --  For allocators we assign to the designated object in place if the
       --  aggregate meets the same conditions as other in-place assignments.

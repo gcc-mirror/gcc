@@ -31,7 +31,8 @@ procedure Gen_IL.Gen.Gen_Nodes is
       renames Create_Abstract_Node_Type;
    procedure Cc -- Short for "ConCrete"
      (T : Concrete_Node; Parent : Abstract_Type;
-      Fields : Field_Sequence := No_Fields)
+      Fields : Field_Sequence := No_Fields;
+      Nmake_Assert : String := "")
       renames Create_Concrete_Node_Type;
 
    function Sy -- Short for "Syntactic"
@@ -390,7 +391,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Ab (N_Subprogram_Call, N_Subexpr,
        (Sm (Controlling_Argument, Node_Id),
-        Sm (Do_Tag_Check, Flag),
         Sm (First_Named_Actual, Node_Id),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
@@ -553,7 +553,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Do_Discriminant_Check, Flag),
         Sm (Do_Length_Check, Flag),
         Sm (Do_Overflow_Check, Flag),
-        Sm (Do_Tag_Check, Flag),
         Sm (Float_Truncate, Flag),
         Sm (Rounded_Result, Flag)));
 
@@ -564,7 +563,12 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Subtype_Mark, Node_Id, Default_Empty),
         Sy (Expression, Node_Id, Default_Empty),
         Sm (Kill_Range_Check, Flag),
-        Sm (No_Truncation, Flag)));
+        Sm (No_Truncation, Flag)),
+       Nmake_Assert => "True or else Nkind (Expression) /= N_Unchecked_Type_Conversion");
+--       Nmake_Assert => "Nkind (Expression) /= N_Unchecked_Type_Conversion");
+   --  Assert that we don't have unchecked conversions of unchecked
+   --  conversions; if Expression might be an unchecked conversion,
+   --  then Tbuild.Unchecked_Convert_To should be used.
 
    Cc (N_Subtype_Indication, N_Has_Etype,
        (Sy (Subtype_Mark, Node_Id, Default_Empty),
@@ -573,7 +577,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Ab (N_Declaration, Node_Kind);
    --  Note: this includes all constructs normally thought of as declarations
-   --  except those which are separately grouped as later declarations.
+   --  except those that are separately grouped in N_Later_Decl_Item.
 
    Cc (N_Component_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
@@ -949,7 +953,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Componentwise_Assignment, Flag),
         Sm (Do_Discriminant_Check, Flag),
         Sm (Do_Length_Check, Flag),
-        Sm (Do_Tag_Check, Flag),
         Sm (Forwards_OK, Flag),
         Sm (Has_Target_Names, Flag),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
@@ -1056,7 +1059,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Expression, Node_Id, Default_Empty),
         Sm (By_Ref, Flag),
         Sm (Comes_From_Extended_Return_Statement, Flag),
-        Sm (Do_Tag_Check, Flag),
         Sm (Procedure_To_Call, Node_Id),
         Sm (Return_Statement_Entity, Node_Id),
         Sm (Storage_Pool, Node_Id)));
@@ -1065,7 +1067,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Return_Object_Declarations, List_Id),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
         Sm (By_Ref, Flag),
-        Sm (Do_Tag_Check, Flag),
         Sm (Procedure_To_Call, Node_Id),
         Sm (Return_Statement_Entity, Node_Id),
         Sm (Storage_Pool, Node_Id)));
@@ -1342,7 +1343,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Defining_Identifier, Node_Id),
         Sy (Discrete_Subtype_Definition, Node_Id, Default_Empty)));
 
-   Cc (N_Exception_Declaration, Node_Kind,
+   Cc (N_Exception_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
         Sm (Expression, Node_Id),
         Sm (More_Ids, Flag),
@@ -1487,7 +1488,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Parameter_Type, Node_Id),
         Sy (Expression, Node_Id, Default_Empty),
         Sm (Default_Expression, Node_Id),
-        Sm (Do_Accessibility_Check, Flag),
         Sm (More_Ids, Flag),
         Sm (Prev_Ids, Flag)));
 

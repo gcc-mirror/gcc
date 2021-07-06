@@ -182,14 +182,8 @@ begin
       --  Check for predefined file case
 
       if Name_Len > 1
+        and then Name_Buffer (1) in 'a' | 's' | 'i' | 'g'
         and then Name_Buffer (2) = '-'
-        and then (Name_Buffer (1) = 'a'
-                    or else
-                  Name_Buffer (1) = 's'
-                    or else
-                  Name_Buffer (1) = 'i'
-                    or else
-                  Name_Buffer (1) = 'g')
       then
          declare
             Expect_Name : constant Unit_Name_Type := Expected_Unit (Cur_Unum);
@@ -240,17 +234,14 @@ begin
          Error_Msg ("\\found unit $!", Loc);
       end if;
 
-      --  In both cases, remove the unit if it is the last unit (which it
-      --  normally (always?) will be) so that it is out of the way later.
+      --  In both cases, remove the unit so that it is out of the way later
 
       Remove_Unit (Cur_Unum);
    end if;
 
    --  If current unit is a body, load its corresponding spec
 
-   if Nkind (Unit (Curunit)) = N_Package_Body
-     or else Nkind (Unit (Curunit)) = N_Subprogram_Body
-   then
+   if Nkind (Unit (Curunit)) in N_Package_Body | N_Subprogram_Body then
       Spec_Name := Get_Spec_Name (Unit_Name (Cur_Unum));
       Unum :=
         Load_Unit
@@ -304,11 +295,11 @@ begin
    --  If current unit is a child unit spec, load its parent. If the child unit
    --  is loaded through a limited with, the parent must be as well.
 
-   elsif     Nkind (Unit (Curunit)) =  N_Package_Declaration
-     or else Nkind (Unit (Curunit)) =  N_Subprogram_Declaration
-     or else Nkind (Unit (Curunit)) in N_Generic_Declaration
-     or else Nkind (Unit (Curunit)) in N_Generic_Instantiation
-     or else Nkind (Unit (Curunit)) in N_Renaming_Declaration
+   elsif Nkind (Unit (Curunit)) in N_Package_Declaration
+                                 | N_Subprogram_Declaration
+                                 | N_Generic_Declaration
+                                 | N_Generic_Instantiation
+                                 | N_Renaming_Declaration
    then
       --  Turn style checks off for parent unit
 

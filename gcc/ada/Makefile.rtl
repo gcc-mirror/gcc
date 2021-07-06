@@ -1088,7 +1088,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte__vxworks.ads \
   s-osinte.adb<libgnarl/s-osinte__vxworks.adb \
-  s-osprim.adb<libgnat/s-osprim__vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
   s-taprop.adb<libgnarl/s-taprop__vxworks.adb \
@@ -1339,7 +1339,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(targ
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
-  s-osprim.adb<libgnat/s-osprim__vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
   s-stchop.ads<libgnat/s-stchop__limit.ads \
@@ -1486,7 +1486,7 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
   s-osinte.adb<libgnarl/s-osinte__vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte__vxworks.ads \
-  s-osprim.adb<libgnat/s-osprim__vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
   s-stchop.ads<libgnat/s-stchop__limit.ads \

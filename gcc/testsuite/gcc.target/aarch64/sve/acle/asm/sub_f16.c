@@ -336,7 +336,7 @@ TEST_UNIFORM_ZD (sub_h4_f16_x_tied1, svfloat16_t, __fp16,
 		 z0 = svsub_x (p0, z0, d4))
 
 /*
-** sub_h4_f16_x_untied: { xfail *-*-* }
+** sub_h4_f16_x_untied:
 **	mov	z0\.h, h4
 **	fsubr	z0\.h, p0/m, z0\.h, z1\.h
 **	ret

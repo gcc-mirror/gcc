@@ -3087,7 +3087,6 @@ package body Sem_Util is
             when N_Type_Conversion =>
                if Do_Overflow_Check (Expr)
                  or else Do_Length_Check (Expr)
-                 or else Do_Tag_Check (Expr)
                then
                   return False;
                else
@@ -8038,11 +8037,7 @@ package body Sem_Util is
          Current_Node := Parent (Current_Node);
       end loop;
 
-      if Nkind (Current_Node) /= N_Compilation_Unit then
-         return Empty;
-      else
-         return Current_Node;
-      end if;
+      return Current_Node;
    end Enclosing_Comp_Unit_Node;
 
    --------------------------
@@ -18097,7 +18092,9 @@ package body Sem_Util is
             Ent : constant Entity_Id := Entity (Expr);
             Sub : constant Entity_Id := Enclosing_Subprogram (Ent);
          begin
-            if Ekind (Ent) not in E_Variable | E_In_Out_Parameter then
+            if Ekind (Ent)
+              not in E_Variable | E_In_Out_Parameter | E_Out_Parameter
+            then
                return False;
             else
                return Present (Sub) and then Sub = Current_Subprogram;
@@ -26956,6 +26953,8 @@ package body Sem_Util is
    --  generated before the next instruction.
 
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean is
+      pragma Assert (if Present (Id) then Ekind (Id) in E_Void | Type_Kind);
+
       function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean;
       --  This is called for untagged records and protected types, with
       --  nondefaulted discriminants. Returns True if the size of function
@@ -27036,8 +27035,7 @@ package body Sem_Util is
          --  Do not set Has_Controlled_Component on a class-wide equivalent
          --  type. See Make_CW_Equivalent_Type.
 
-         if Present (Typ)
-           and then not Is_Frozen (Typ)
+         if not Is_Frozen (Typ)
            and then Is_Base_Type (Typ)
            and then (Is_Record_Type (Typ)
                        or else Is_Concurrent_Type (Typ)
@@ -27154,19 +27152,20 @@ package body Sem_Util is
    --  Start of processing for Requires_Transient_Scope
 
    begin
-      Ensure_Minimum_Decoration (Id);
-
       --  This is a private type which is not completed yet. This can only
       --  happen in a default expression (of a formal parameter or of a
       --  record component). Do not expand transient scope in this case.
 
       if No (Typ) then
          return False;
+      end if;
+
+      Ensure_Minimum_Decoration (Id);
 
       --  Do not expand transient scope for non-existent procedure return or
       --  string literal types.
 
-      elsif Typ = Standard_Void_Type
+      if Typ = Standard_Void_Type
         or else Ekind (Typ) = E_String_Literal_Subtype
       then
          return False;

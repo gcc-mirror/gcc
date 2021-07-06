@@ -23,13 +23,32 @@
   ""
   "#"
   "&& reload_completed"
-  [(set (reg:H8cc CC_REG)
-	(compare:H8cc (match_dup 1) (match_dup 2)))
+  [(set (match_dup 4)
+	(match_dup 5))
    (set (pc)
 	(if_then_else (match_op_dup 0
-		       [(reg:H8cc CC_REG) (const_int 0)])
+		       [(match_dup 4) (const_int 0)])
 		      (label_ref (match_dup 3)) (pc)))]
-  "")
+  "
+{
+  machine_mode mode;
+
+  if (REG_P (operands[1])
+      && operands[2] == const0_rtx
+      && (GET_CODE (operands[0]) == EQ
+	  || GET_CODE (operands[0]) == NE
+	  || GET_CODE (operands[0]) == LT
+	  || GET_CODE (operands[0]) == GE
+	  /* Our tstxx insns will set ZN and clear V, so we can handle
+	     a couple additional cases.  */
+	  || GET_CODE (operands[0]) == LE
+	  || GET_CODE (operands[0]) == GT))
+    mode = E_CCZNmode;
+  else
+    mode = E_CCmode;
+  operands[4] = gen_rtx_REG (mode, CC_REG);
+  operands[5] = gen_rtx_COMPARE (mode, operands[1], operands[2]);
+}")
 
 (define_insn "*branch_1"
   [(set (pc)

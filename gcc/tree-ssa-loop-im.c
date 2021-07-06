@@ -3258,7 +3258,7 @@ pass_lim::execute (function *fun)
 
   if (number_of_loops (fun) <= 1)
     return 0;
-  unsigned int todo = loop_invariant_motion_in_fun (fun, true);
+  unsigned int todo = loop_invariant_motion_in_fun (fun, flag_move_loop_stores);
 
   if (!in_loop_pipeline)
     loop_optimizer_finalize ();

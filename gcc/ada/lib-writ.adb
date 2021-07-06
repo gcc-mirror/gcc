@@ -158,9 +158,7 @@ package body Lib.Writ is
       --  on system as a result of Targparm scanning the system.ads file to
       --  determine the target dependent parameters for the compilation.
 
-      Name_Len := 6;
-      Name_Buffer (1 .. 6) := "system";
-      System_Uname := Name_To_Unit_Name (Name_Enter);
+      System_Uname := Name_To_Unit_Name (Name_System);
       System_Fname := File_Name (System_Source_File_Index);
 
       Units.Increment_Last;

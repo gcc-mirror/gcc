@@ -5688,6 +5688,20 @@ Alternating subtract, add with even lanes doing subtract and odd
 lanes doing addition.  Operands 1 and 2 and the outout operand are vectors
 with mode @var{m}.
 
+@cindex @code{vec_fmaddsub@var{m}4} instruction pattern
+@item @samp{vec_fmaddsub@var{m}4}
+Alternating multiply subtract, add with even lanes doing subtract and odd
+lanes doing addition of the third operand to the multiplication result
+of the first two operands.  Operands 1, 2 and 3 and the outout operand are vectors
+with mode @var{m}.
+
+@cindex @code{vec_fmsubadd@var{m}4} instruction pattern
+@item @samp{vec_fmsubadd@var{m}4}
+Alternating multiply add, subtract with even lanes doing addition and odd
+lanes doing subtraction of the third operand to the multiplication result
+of the first two operands.  Operands 1, 2 and 3 and the outout operand are vectors
+with mode @var{m}.
+
 These instructions are not allowed to @code{FAIL}.
 
 @cindex @code{mulhisi3} instruction pattern

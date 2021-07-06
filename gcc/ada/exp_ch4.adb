@@ -12748,7 +12748,16 @@ package body Exp_Ch4 is
       --  guard is necessary to prevent infinite recursions when we generate
       --  internal conversions for the purpose of checking predicates.
 
-      if Predicate_Enabled (Target_Type)
+      --  A view conversion of a tagged object is an object and can appear
+      --  in an assignment context, in which case no predicate check applies
+      --  to the now-dead value.
+
+      if Nkind (Parent (N)) = N_Assignment_Statement
+        and then N = Name (Parent (N))
+      then
+         null;
+
+      elsif Predicate_Enabled (Target_Type)
         and then Target_Type /= Operand_Type
         and then Comes_From_Source (N)
       then
@@ -14943,7 +14952,17 @@ package body Exp_Ch4 is
       --       Hook := null;
       --    end if;
 
+      --  Note that the value returned by Find_Hook_Context may be an operator
+      --  node, which is not a list member. We must locate the proper node in
+      --  in the tree after which to insert the finalization code.
+
       else
+         while not Is_List_Member (Fin_Context) loop
+            Fin_Context := Parent (Fin_Context);
+         end loop;
+
+         pragma Assert (Present (Fin_Context));
+
          Insert_Action_After (Fin_Context,
            Make_Implicit_If_Statement (Obj_Decl,
              Condition =>

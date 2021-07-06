@@ -7588,10 +7588,16 @@ package body Sem_Ch8 is
             P_Type := Implicitly_Designated_Type (P_Type);
          end if;
 
-         --  First check for components of a record object (not the
-         --  result of a call, which is handled below).
+         --  First check for components of a record object (not the result of
+         --  a call, which is handled below). This also covers the case where
+         --  where the extension feature that supports the prefixed form of
+         --  calls for primitives of untagged types is enabled (excluding
+         --  concurrent cases, which are handled further below).
 
-         if Has_Components (P_Type)
+         if Is_Type (P_Type)
+           and then (Has_Components (P_Type)
+                      or else (Extensions_Allowed
+                                and then not Is_Concurrent_Type (P_Type)))
            and then not Is_Overloadable (P_Name)
            and then not Is_Type (P_Name)
          then
@@ -8989,6 +8995,28 @@ package body Sem_Ch8 is
    procedure Push_Scope (S : Entity_Id) is
       E : constant Entity_Id := Scope (S);
 
+      function Component_Alignment_Default return Component_Alignment_Kind;
+      --  Return Component_Alignment_Kind for the newly-pushed scope.
+
+      function Component_Alignment_Default return Component_Alignment_Kind is
+      begin
+         --  Each new scope pushed onto the scope stack inherits the component
+         --  alignment of the previous scope. This emulates the "visibility"
+         --  semantics of pragma Component_Alignment.
+
+         if Scope_Stack.Last > Scope_Stack.First then
+            return Scope_Stack.Table
+              (Scope_Stack.Last - 1).Component_Alignment_Default;
+
+         --  Otherwise, this is the first scope being pushed on the scope
+         --  stack. Inherit the component alignment from the configuration
+         --  form of pragma Component_Alignment (if any).
+
+         else
+            return Configuration_Component_Alignment;
+         end if;
+      end Component_Alignment_Default;
+
    begin
       if Ekind (S) = E_Void then
          null;
@@ -9017,49 +9045,27 @@ package body Sem_Ch8 is
 
       Scope_Stack.Increment_Last;
 
-      declare
-         SST : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
-
-      begin
-         SST.Entity                        := S;
-         SST.Save_Scope_Suppress           := Scope_Suppress;
-         SST.Save_Local_Suppress_Stack_Top := Local_Suppress_Stack_Top;
-         SST.Save_Check_Policy_List        := Check_Policy_List;
-         SST.Save_Default_Storage_Pool     := Default_Pool;
-         SST.Save_No_Tagged_Streams        := No_Tagged_Streams;
-         SST.Save_SPARK_Mode               := SPARK_Mode;
-         SST.Save_SPARK_Mode_Pragma        := SPARK_Mode_Pragma;
-         SST.Save_Default_SSO              := Default_SSO;
-         SST.Save_Uneval_Old               := Uneval_Old;
-
-         --  Each new scope pushed onto the scope stack inherits the component
-         --  alignment of the previous scope. This emulates the "visibility"
-         --  semantics of pragma Component_Alignment.
-
-         if Scope_Stack.Last > Scope_Stack.First then
-            SST.Component_Alignment_Default :=
-              Scope_Stack.Table
-                (Scope_Stack.Last - 1).Component_Alignment_Default;
-
-         --  Otherwise, this is the first scope being pushed on the scope
-         --  stack. Inherit the component alignment from the configuration
-         --  form of pragma Component_Alignment (if any).
-
-         else
-            SST.Component_Alignment_Default :=
-              Configuration_Component_Alignment;
-         end if;
-
-         SST.Last_Subprogram_Name           := null;
-         SST.Is_Transient                   := False;
-         SST.Node_To_Be_Wrapped             := Empty;
-         SST.Pending_Freeze_Actions         := No_List;
-         SST.Actions_To_Be_Wrapped          := (others => No_List);
-         SST.First_Use_Clause               := Empty;
-         SST.Is_Active_Stack_Base           := False;
-         SST.Previous_Visibility            := False;
-         SST.Locked_Shared_Objects          := No_Elist;
-      end;
+      Scope_Stack.Table (Scope_Stack.Last) :=
+        (Entity                        => S,
+         Save_Scope_Suppress           => Scope_Suppress,
+         Save_Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+         Save_Check_Policy_List        => Check_Policy_List,
+         Save_Default_Storage_Pool     => Default_Pool,
+         Save_No_Tagged_Streams        => No_Tagged_Streams,
+         Save_SPARK_Mode               => SPARK_Mode,
+         Save_SPARK_Mode_Pragma        => SPARK_Mode_Pragma,
+         Save_Default_SSO              => Default_SSO,
+         Save_Uneval_Old               => Uneval_Old,
+         Component_Alignment_Default   => Component_Alignment_Default,
+         Last_Subprogram_Name          => null,
+         Is_Transient                  => False,
+         Node_To_Be_Wrapped            => Empty,
+         Pending_Freeze_Actions        => No_List,
+         Actions_To_Be_Wrapped         => (others => No_List),
+         First_Use_Clause              => Empty,
+         Is_Active_Stack_Base          => False,
+         Previous_Visibility           => False,
+         Locked_Shared_Objects         => No_Elist);
 
       if Debug_Flag_W then
          Write_Str ("--> new scope: ");

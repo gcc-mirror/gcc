@@ -933,14 +933,15 @@ package Einfo is
 
 --    Direct_Primitive_Operations
 --       Defined in tagged types and subtypes (including synchronized types),
---       in tagged private types and in tagged incomplete types. Element list
---       of entities for primitive operations of the tagged type. Not defined
---       in untagged types. In order to follow the C++ ABI, entities of
---       primitives that come from source must be stored in this list in the
---       order of their occurrence in the sources. For incomplete types the
---       list is always empty.
---       When expansion is disabled the corresponding record type of a
---       synchronized type is not constructed. In that case, such types
+--       in tagged private types, and in tagged incomplete types. However, when
+--       Extensions_Allowed is True (-gnatX), also defined for untagged types
+--       (for support of the extension feature of prefixed calls for untagged
+--       types). This field is an element list of entities for primitive
+--       operations of the type. For incomplete types the list is always empty.
+--       In order to follow the C++ ABI, entities of primitives that come from
+--       source must be stored in this list in the order of their occurrence in
+--       the sources. When expansion is disabled, the corresponding record type
+--       of a synchronized type is not constructed. In that case, such types
 --       carry this attribute directly.
 
 --    Directly_Designated_Type
@@ -1929,8 +1930,6 @@ package Einfo is
 --       private entity and full entity if the pragma applies to either. Note
 --       that clients should generally not test this flag directly, but instead
 --       use function Has_Unreferenced.
-
---  ??? this real description was clobbered
 
 --    Has_Pragma_Unreferenced_Objects
 --       Defined in all entities. Set if a valid pragma Unused applies to an

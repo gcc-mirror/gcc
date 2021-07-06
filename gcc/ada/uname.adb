@@ -223,8 +223,6 @@ package body Uname is
       -------------------
 
       procedure Add_Node_Name (Node : Node_Id) is
-         Kind : constant Node_Kind := Nkind (Node);
-
       begin
          --  Just ignore an error node (someone else will give a message)
 
@@ -234,7 +232,7 @@ package body Uname is
          --  Otherwise see what kind of node we have
 
          else
-            case Kind is
+            case Nkind (Node) is
                when N_Defining_Identifier
                   | N_Defining_Operator_Symbol
                   | N_Identifier
@@ -367,8 +365,8 @@ package body Uname is
          Node := Declaration_Node (Entity (Node));
       end if;
 
-      if Nkind (Node) = N_Package_Specification
-        or else Nkind (Node) in N_Subprogram_Specification
+      if Nkind (Node) in N_Package_Specification
+                       | N_Subprogram_Specification
       then
          Node := Parent (Node);
       end if;

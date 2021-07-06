@@ -104,6 +104,8 @@ package Gen_IL.Internals is
             --  includes two or more types.
 
             Fields : Field_Vector;
+
+            Nmake_Assert : String_Access; -- only for concrete node types
       end case;
    end record;
 

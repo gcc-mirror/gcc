@@ -1023,7 +1023,7 @@
 ;; True for registers, or const_int_operand, used to vec_setm expander.
 (define_predicate "vec_setm_operand"
   (ior (and (match_operand 0 "register_operand")
-	    (match_test "TARGET_AVX2"))
+	    (match_test "TARGET_SSE4_1"))
        (match_code "const_int")))
 
 (define_predicate "vec_setm_mmx_operand"

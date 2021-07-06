@@ -128,12 +128,12 @@ package body Lib is
       return Units.Table (U).Is_Predefined_Renaming;
    end Is_Predefined_Renaming;
 
-   function Is_Internal_Unit       (U : Unit_Number_Type) return Boolean is
+   function Is_Internal_Unit (U : Unit_Number_Type) return Boolean is
    begin
       return Units.Table (U).Is_Internal_Unit;
    end Is_Internal_Unit;
 
-   function Is_Predefined_Unit     (U : Unit_Number_Type) return Boolean is
+   function Is_Predefined_Unit (U : Unit_Number_Type) return Boolean is
    begin
       return Units.Table (U).Is_Predefined_Unit;
    end Is_Predefined_Unit;
@@ -482,18 +482,12 @@ package body Lib is
          --  body of the same unit. The location in the spec is considered
          --  earlier.
 
-         if Nkind (Unit1) = N_Subprogram_Body
-              or else
-            Nkind (Unit1) = N_Package_Body
-         then
+         if Nkind (Unit1) in N_Subprogram_Body | N_Package_Body then
             if Library_Unit (Cunit (Unum1)) = Cunit (Unum2) then
                return Yes_After;
             end if;
 
-         elsif Nkind (Unit2) = N_Subprogram_Body
-                 or else
-               Nkind (Unit2) = N_Package_Body
-         then
+         elsif Nkind (Unit2) in N_Subprogram_Body | N_Package_Body then
             if Library_Unit (Cunit (Unum2)) = Cunit (Unum1) then
                return Yes_Before;
             end if;
@@ -1180,10 +1174,9 @@ package body Lib is
 
    procedure Remove_Unit (U : Unit_Number_Type) is
    begin
-      if U = Units.Last then
-         Unit_Names.Set (Unit_Name (U), No_Unit);
-         Units.Decrement_Last;
-      end if;
+      pragma Assert (U = Units.Last);
+      Unit_Names.Set (Unit_Name (U), No_Unit);
+      Units.Decrement_Last;
    end Remove_Unit;
 
    ----------------------------------

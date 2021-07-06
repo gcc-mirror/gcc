@@ -860,6 +860,7 @@ Implementation of Specific Ada Features
 * GNAT Implementation of Shared Passive Packages:: 
 * Code Generation for Array Aggregates:: 
 * The Size of Discriminated Records with Default Discriminants:: 
+* Image Values For Nonscalar Types:: 
 * Strict Conformance to the Ada Reference Manual:: 
 
 GNAT Implementation of Tasking
@@ -3792,6 +3793,24 @@ Use of this feature increases safety by simplifying code, and can also
 improve the efficiency of indexing operations, since the compiler statically
 knows the lower bound of unconstrained array formals when the formal’s
 subtype has index ranges with static fixed lower bounds.
+
+@item 
+Prefixed-view notation for calls to primitive subprograms of untagged types
+
+Since Ada 2005, calls to primitive subprograms of a tagged type that
+have a “prefixed view” (see RM 4.1.3(9.2)) have been allowed to be
+written using the form of a selected_component, with the first actual
+parameter given as the prefix and the name of the subprogram as a
+selector. This prefixed-view notation for calls is extended so as to
+also allow such syntax for calls to primitive subprograms of untagged
+types. The primitives of an untagged type T that have a prefixed view
+are those where the first formal parameter of the subprogram either
+is of type T or is an anonymous access parameter whose designated type
+is T. For a type that has a component that happens to have the same
+simple name as one of the type’s primitive subprograms, where the
+component is visible at the point of a selected_component using that
+name, preference is given to the component in a selected_component
+(as is currently the case for tagged types with such component names).
 @end itemize
 
 @node Pragma Extensions_Visible,Pragma External,Pragma Extensions_Allowed,Implementation Defined Pragmas
@@ -25601,6 +25620,7 @@ facilities.
 * GNAT Implementation of Shared Passive Packages:: 
 * Code Generation for Array Aggregates:: 
 * The Size of Discriminated Records with Default Discriminants:: 
+* Image Values For Nonscalar Types:: 
 * Strict Conformance to the Ada Reference Manual:: 
 
 @end menu
@@ -26215,7 +26235,7 @@ If any of these conditions are violated, the aggregate will be built in
 a temporary (created either by the front-end or the code generator) and then
 that temporary will be copied onto the target.
 
-@node The Size of Discriminated Records with Default Discriminants,Strict Conformance to the Ada Reference Manual,Code Generation for Array Aggregates,Implementation of Specific Ada Features
+@node The Size of Discriminated Records with Default Discriminants,Image Values For Nonscalar Types,Code Generation for Array Aggregates,Implementation of Specific Ada Features
 @anchor{gnat_rm/implementation_of_specific_ada_features id13}@anchor{431}@anchor{gnat_rm/implementation_of_specific_ada_features the-size-of-discriminated-records-with-default-discriminants}@anchor{432}
 @section The Size of Discriminated Records with Default Discriminants
 
@@ -26295,8 +26315,28 @@ aliasing all views of the object (which may be manipulated by different tasks,
 say) must be consistent, so it is imperative that the object, once created,
 remain invariant.
 
-@node Strict Conformance to the Ada Reference Manual,,The Size of Discriminated Records with Default Discriminants,Implementation of Specific Ada Features
-@anchor{gnat_rm/implementation_of_specific_ada_features id14}@anchor{433}@anchor{gnat_rm/implementation_of_specific_ada_features strict-conformance-to-the-ada-reference-manual}@anchor{434}
+@node Image Values For Nonscalar Types,Strict Conformance to the Ada Reference Manual,The Size of Discriminated Records with Default Discriminants,Implementation of Specific Ada Features
+@anchor{gnat_rm/implementation_of_specific_ada_features id14}@anchor{433}@anchor{gnat_rm/implementation_of_specific_ada_features image-values-for-nonscalar-types}@anchor{434}
+@section Image Values For Nonscalar Types
+
+
+Ada 2022 defines the Image, Wide_Image, and Wide_Wide image attributes
+for nonscalar types; earlier Ada versions defined these attributes only
+for scalar types. Ada RM 4.10 provides some general guidance regarding
+the default implementation of these attributes and the GNAT compiler
+follows that guidance. However, beyond that the precise details of the
+image text generated in these cases are deliberately not documented and are
+subject to change. In particular, users should not rely on formatting details
+(such as spaces or line breaking), record field order, image values for access
+types, image values for types that have ancestor or subcomponent types
+declared in non-Ada2022 code, image values for predefined types, or the
+compiler’s choices regarding the implementation permissions described in
+Ada RM 4.10. This list is not intended to be exhaustive. If more precise
+control of image text is required for some type T, then T’Put_Image should be
+explicitly specified.
+
+@node Strict Conformance to the Ada Reference Manual,,Image Values For Nonscalar Types,Implementation of Specific Ada Features
+@anchor{gnat_rm/implementation_of_specific_ada_features id15}@anchor{435}@anchor{gnat_rm/implementation_of_specific_ada_features strict-conformance-to-the-ada-reference-manual}@anchor{436}
 @section Strict Conformance to the Ada Reference Manual
 
 
@@ -26323,7 +26363,7 @@ behavior (although at the cost of a significant performance penalty), so
 infinite and NaN values are properly generated.
 
 @node Implementation of Ada 2012 Features,Obsolescent Features,Implementation of Specific Ada Features,Top
-@anchor{gnat_rm/implementation_of_ada_2012_features doc}@anchor{435}@anchor{gnat_rm/implementation_of_ada_2012_features id1}@anchor{436}@anchor{gnat_rm/implementation_of_ada_2012_features implementation-of-ada-2012-features}@anchor{14}
+@anchor{gnat_rm/implementation_of_ada_2012_features doc}@anchor{437}@anchor{gnat_rm/implementation_of_ada_2012_features id1}@anchor{438}@anchor{gnat_rm/implementation_of_ada_2012_features implementation-of-ada-2012-features}@anchor{14}
 @chapter Implementation of Ada 2012 Features
 
 
@@ -28489,7 +28529,7 @@ RM References:  H.04 (8/1)
 @end itemize
 
 @node Obsolescent Features,Compatibility and Porting Guide,Implementation of Ada 2012 Features,Top
-@anchor{gnat_rm/obsolescent_features doc}@anchor{437}@anchor{gnat_rm/obsolescent_features id1}@anchor{438}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{15}
+@anchor{gnat_rm/obsolescent_features doc}@anchor{439}@anchor{gnat_rm/obsolescent_features id1}@anchor{43a}@anchor{gnat_rm/obsolescent_features obsolescent-features}@anchor{15}
 @chapter Obsolescent Features
 
 
@@ -28508,7 +28548,7 @@ compatibility purposes.
 @end menu
 
 @node pragma No_Run_Time,pragma Ravenscar,,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id2}@anchor{439}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{43a}
+@anchor{gnat_rm/obsolescent_features id2}@anchor{43b}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{43c}
 @section pragma No_Run_Time
 
 
@@ -28521,7 +28561,7 @@ preferred usage is to use an appropriately configured run-time that
 includes just those features that are to be made accessible.
 
 @node pragma Ravenscar,pragma Restricted_Run_Time,pragma No_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id3}@anchor{43b}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{43c}
+@anchor{gnat_rm/obsolescent_features id3}@anchor{43d}@anchor{gnat_rm/obsolescent_features pragma-ravenscar}@anchor{43e}
 @section pragma Ravenscar
 
 
@@ -28530,7 +28570,7 @@ The pragma @code{Ravenscar} has exactly the same effect as pragma
 is part of the new Ada 2005 standard.
 
 @node pragma Restricted_Run_Time,pragma Task_Info,pragma Ravenscar,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id4}@anchor{43d}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{43e}
+@anchor{gnat_rm/obsolescent_features id4}@anchor{43f}@anchor{gnat_rm/obsolescent_features pragma-restricted-run-time}@anchor{440}
 @section pragma Restricted_Run_Time
 
 
@@ -28540,7 +28580,7 @@ preferred since the Ada 2005 pragma @code{Profile} is intended for
 this kind of implementation dependent addition.
 
 @node pragma Task_Info,package System Task_Info s-tasinf ads,pragma Restricted_Run_Time,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features id5}@anchor{43f}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{440}
+@anchor{gnat_rm/obsolescent_features id5}@anchor{441}@anchor{gnat_rm/obsolescent_features pragma-task-info}@anchor{442}
 @section pragma Task_Info
 
 
@@ -28566,7 +28606,7 @@ in the spec of package System.Task_Info in the runtime
 library.
 
 @node package System Task_Info s-tasinf ads,,pragma Task_Info,Obsolescent Features
-@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{441}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{442}
+@anchor{gnat_rm/obsolescent_features package-system-task-info}@anchor{443}@anchor{gnat_rm/obsolescent_features package-system-task-info-s-tasinf-ads}@anchor{444}
 @section package System.Task_Info (@code{s-tasinf.ads})
 
 
@@ -28576,7 +28616,7 @@ to support the @code{Task_Info} pragma. The predefined Ada package
 standard replacement for GNAT’s @code{Task_Info} functionality.
 
 @node Compatibility and Porting Guide,GNU Free Documentation License,Obsolescent Features,Top
-@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{443}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{16}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{444}
+@anchor{gnat_rm/compatibility_and_porting_guide doc}@anchor{445}@anchor{gnat_rm/compatibility_and_porting_guide compatibility-and-porting-guide}@anchor{16}@anchor{gnat_rm/compatibility_and_porting_guide id1}@anchor{446}
 @chapter Compatibility and Porting Guide
 
 
@@ -28598,7 +28638,7 @@ applications developed in other Ada environments.
 @end menu
 
 @node Writing Portable Fixed-Point Declarations,Compatibility with Ada 83,,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{445}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{446}
+@anchor{gnat_rm/compatibility_and_porting_guide id2}@anchor{447}@anchor{gnat_rm/compatibility_and_porting_guide writing-portable-fixed-point-declarations}@anchor{448}
 @section Writing Portable Fixed-Point Declarations
 
 
@@ -28720,7 +28760,7 @@ If you follow this scheme you will be guaranteed that your fixed-point
 types will be portable.
 
 @node Compatibility with Ada 83,Compatibility between Ada 95 and Ada 2005,Writing Portable Fixed-Point Declarations,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{447}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{448}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-ada-83}@anchor{449}@anchor{gnat_rm/compatibility_and_porting_guide id3}@anchor{44a}
 @section Compatibility with Ada 83
 
 
@@ -28748,7 +28788,7 @@ following subsections treat the most likely issues to be encountered.
 @end menu
 
 @node Legal Ada 83 programs that are illegal in Ada 95,More deterministic semantics,,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{449}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{44a}
+@anchor{gnat_rm/compatibility_and_porting_guide id4}@anchor{44b}@anchor{gnat_rm/compatibility_and_porting_guide legal-ada-83-programs-that-are-illegal-in-ada-95}@anchor{44c}
 @subsection Legal Ada 83 programs that are illegal in Ada 95
 
 
@@ -28848,7 +28888,7 @@ the fix is usually simply to add the @code{(<>)} to the generic declaration.
 @end itemize
 
 @node More deterministic semantics,Changed semantics,Legal Ada 83 programs that are illegal in Ada 95,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{44b}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{44c}
+@anchor{gnat_rm/compatibility_and_porting_guide id5}@anchor{44d}@anchor{gnat_rm/compatibility_and_porting_guide more-deterministic-semantics}@anchor{44e}
 @subsection More deterministic semantics
 
 
@@ -28876,7 +28916,7 @@ which open select branches are executed.
 @end itemize
 
 @node Changed semantics,Other language compatibility issues,More deterministic semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{44d}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{44e}
+@anchor{gnat_rm/compatibility_and_porting_guide changed-semantics}@anchor{44f}@anchor{gnat_rm/compatibility_and_porting_guide id6}@anchor{450}
 @subsection Changed semantics
 
 
@@ -28918,7 +28958,7 @@ covers only the restricted range.
 @end itemize
 
 @node Other language compatibility issues,,Changed semantics,Compatibility with Ada 83
-@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{44f}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{450}
+@anchor{gnat_rm/compatibility_and_porting_guide id7}@anchor{451}@anchor{gnat_rm/compatibility_and_porting_guide other-language-compatibility-issues}@anchor{452}
 @subsection Other language compatibility issues
 
 
@@ -28951,7 +28991,7 @@ include @code{pragma Interface} and the floating point type attributes
 @end itemize
 
 @node Compatibility between Ada 95 and Ada 2005,Implementation-dependent characteristics,Compatibility with Ada 83,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{451}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{452}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-between-ada-95-and-ada-2005}@anchor{453}@anchor{gnat_rm/compatibility_and_porting_guide id8}@anchor{454}
 @section Compatibility between Ada 95 and Ada 2005
 
 
@@ -29023,7 +29063,7 @@ can declare a function returning a value from an anonymous access type.
 @end itemize
 
 @node Implementation-dependent characteristics,Compatibility with Other Ada Systems,Compatibility between Ada 95 and Ada 2005,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{453}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{454}
+@anchor{gnat_rm/compatibility_and_porting_guide id9}@anchor{455}@anchor{gnat_rm/compatibility_and_porting_guide implementation-dependent-characteristics}@anchor{456}
 @section Implementation-dependent characteristics
 
 
@@ -29046,7 +29086,7 @@ transition from certain Ada 83 compilers.
 @end menu
 
 @node Implementation-defined pragmas,Implementation-defined attributes,,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{455}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{456}
+@anchor{gnat_rm/compatibility_and_porting_guide id10}@anchor{457}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-pragmas}@anchor{458}
 @subsection Implementation-defined pragmas
 
 
@@ -29068,7 +29108,7 @@ avoiding compiler rejection of units that contain such pragmas; they are not
 relevant in a GNAT context and hence are not otherwise implemented.
 
 @node Implementation-defined attributes,Libraries,Implementation-defined pragmas,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{457}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{458}
+@anchor{gnat_rm/compatibility_and_porting_guide id11}@anchor{459}@anchor{gnat_rm/compatibility_and_porting_guide implementation-defined-attributes}@anchor{45a}
 @subsection Implementation-defined attributes
 
 
@@ -29082,7 +29122,7 @@ Ada 83, GNAT supplies the attributes @code{Bit}, @code{Machine_Size} and
 @code{Type_Class}.
 
 @node Libraries,Elaboration order,Implementation-defined attributes,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{459}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{45a}
+@anchor{gnat_rm/compatibility_and_porting_guide id12}@anchor{45b}@anchor{gnat_rm/compatibility_and_porting_guide libraries}@anchor{45c}
 @subsection Libraries
 
 
@@ -29111,7 +29151,7 @@ be preferable to retrofit the application using modular types.
 @end itemize
 
 @node Elaboration order,Target-specific aspects,Libraries,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{45b}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{45c}
+@anchor{gnat_rm/compatibility_and_porting_guide elaboration-order}@anchor{45d}@anchor{gnat_rm/compatibility_and_porting_guide id13}@anchor{45e}
 @subsection Elaboration order
 
 
@@ -29147,7 +29187,7 @@ pragmas either globally (as an effect of the @emph{-gnatE} switch) or locally
 @end itemize
 
 @node Target-specific aspects,,Elaboration order,Implementation-dependent characteristics
-@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{45d}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{45e}
+@anchor{gnat_rm/compatibility_and_porting_guide id14}@anchor{45f}@anchor{gnat_rm/compatibility_and_porting_guide target-specific-aspects}@anchor{460}
 @subsection Target-specific aspects
 
 
@@ -29160,10 +29200,10 @@ on the robustness of the original design.  Moreover, Ada 95 (and thus
 Ada 2005 and Ada 2012) are sometimes
 incompatible with typical Ada 83 compiler practices regarding implicit
 packing, the meaning of the Size attribute, and the size of access values.
-GNAT’s approach to these issues is described in @ref{45f,,Representation Clauses}.
+GNAT’s approach to these issues is described in @ref{461,,Representation Clauses}.
 
 @node Compatibility with Other Ada Systems,Representation Clauses,Implementation-dependent characteristics,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{460}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{461}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-other-ada-systems}@anchor{462}@anchor{gnat_rm/compatibility_and_porting_guide id15}@anchor{463}
 @section Compatibility with Other Ada Systems
 
 
@@ -29206,7 +29246,7 @@ far beyond this minimal set, as described in the next section.
 @end itemize
 
 @node Representation Clauses,Compatibility with HP Ada 83,Compatibility with Other Ada Systems,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{462}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{45f}
+@anchor{gnat_rm/compatibility_and_porting_guide id16}@anchor{464}@anchor{gnat_rm/compatibility_and_porting_guide representation-clauses}@anchor{461}
 @section Representation Clauses
 
 
@@ -29299,7 +29339,7 @@ with thin pointers.
 @end itemize
 
 @node Compatibility with HP Ada 83,,Representation Clauses,Compatibility and Porting Guide
-@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{463}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{464}
+@anchor{gnat_rm/compatibility_and_porting_guide compatibility-with-hp-ada-83}@anchor{465}@anchor{gnat_rm/compatibility_and_porting_guide id17}@anchor{466}
 @section Compatibility with HP Ada 83
 
 
@@ -29329,7 +29369,7 @@ extension of package System.
 @end itemize
 
 @node GNU Free Documentation License,Index,Compatibility and Porting Guide,Top
-@anchor{share/gnu_free_documentation_license doc}@anchor{465}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{466}
+@anchor{share/gnu_free_documentation_license doc}@anchor{467}@anchor{share/gnu_free_documentation_license gnu-fdl}@anchor{1}@anchor{share/gnu_free_documentation_license gnu-free-documentation-license}@anchor{468}
 @chapter GNU Free Documentation License
 
 

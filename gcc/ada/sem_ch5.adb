@@ -33,6 +33,7 @@ with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
 with Expander;       use Expander;
 with Exp_Ch6;        use Exp_Ch6;
+with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Ghost;          use Ghost;
@@ -979,7 +980,92 @@ package body Sem_Ch5 is
       end if;
 
       if Is_Scalar_Type (T1) then
-         Apply_Scalar_Range_Check (Rhs, Etype (Lhs));
+         declare
+
+            function Omit_Range_Check_For_Streaming return Boolean;
+            --  Return True if this assignment statement is the expansion of
+            --  a Some_Scalar_Type'Read procedure call such that all conditions
+            --  of 13.3.2(35)'s "no check is made" rule are met.
+
+            ------------------------------------
+            -- Omit_Range_Check_For_Streaming --
+            ------------------------------------
+
+            function Omit_Range_Check_For_Streaming return Boolean is
+            begin
+               --  Have we got an implicitly generated assignment to a
+               --  component of a composite object? If not, return False.
+
+               if Comes_From_Source (N)
+                 or else Serious_Errors_Detected > 0
+                 or else Nkind (Lhs)
+                           not in N_Selected_Component | N_Indexed_Component
+               then
+                  return False;
+               end if;
+
+               declare
+                  Pref : constant Node_Id := Prefix (Lhs);
+               begin
+                  --  Are we in the implicitly-defined Read subprogram
+                  --  for a composite type, reading the value of a scalar
+                  --  component from the stream? If not, return False.
+
+                  if Nkind (Pref) /= N_Identifier
+                    or else not Is_TSS (Scope (Entity (Pref)), TSS_Stream_Read)
+                  then
+                     return False;
+                  end if;
+
+                  --  Return False if Default_Value or Default_Component_Value
+                  --  aspect applies.
+
+                  if Has_Default_Aspect (Etype (Lhs))
+                    or else Has_Default_Aspect (Etype (Pref))
+                  then
+                     return False;
+
+                  --  Are we assigning to a record component (as opposed to
+                  --  an array component)?
+
+                  elsif Nkind (Lhs) = N_Selected_Component then
+
+                     --  Are we assigning to a nondiscriminant component
+                     --  that lacks a default initial value expression?
+                     --  If so, return True.
+
+                     declare
+                        Comp_Id : constant Entity_Id :=
+                          Original_Record_Component
+                            (Entity (Selector_Name (Lhs)));
+                     begin
+                        if Ekind (Comp_Id) = E_Component
+                          and then Nkind (Parent (Comp_Id))
+                                     = N_Component_Declaration
+                          and then
+                            not Present (Expression (Parent (Comp_Id)))
+                        then
+                           return True;
+                        end if;
+                        return False;
+                     end;
+
+                  --  We are assigning to a component of an array
+                  --  (and we tested for both Default_Value and
+                  --  Default_Component_Value above), so return True.
+
+                  else
+                     pragma Assert (Nkind (Lhs) = N_Indexed_Component);
+                     return True;
+                  end if;
+               end;
+            end Omit_Range_Check_For_Streaming;
+
+         begin
+            if not Omit_Range_Check_For_Streaming then
+               Apply_Scalar_Range_Check (Rhs, Etype (Lhs));
+            end if;
+         end;
 
       --  For array types, verify that lengths match. If the right hand side
       --  is a function call that has been inlined, the assignment has been
@@ -3376,6 +3462,32 @@ package body Sem_Ch5 is
                      Error_Msg_N
                        ("\loop executes zero times or raises "
                         & "Constraint_Error??", Bad_Bound);
+                  end if;
+
+                  if Compile_Time_Compare (LLo, LHi, Assume_Valid => False)
+                    = GT
+                  then
+                     Error_Msg_N ("??constrained range is null",
+                       Constraint (DS));
+
+                     --  Additional constraints on modular types can be
+                     --  confusing, add more information.
+
+                     if Ekind (Etype (DS)) = E_Modular_Integer_Subtype then
+                        Error_Msg_Uint_1 := Intval (LLo);
+                        Error_Msg_Uint_2 := Intval (LHi);
+                        Error_Msg_NE ("\iterator has modular type &, " &
+                          "so the loop has bounds ^ ..^",
+                          Constraint (DS),
+                          Subtype_Mark (DS));
+                     end if;
+
+                     Set_Is_Null_Loop (Loop_Nod);
+                     Null_Range := True;
+
+                     --  Suppress other warnigns about the body of the loop, as
+                     --  it will never execute.
+                     Set_Suppress_Loop_Warnings (Loop_Nod);
                   end if;
                end;
             end if;
