@@ -276,15 +276,6 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       t = va_arg (*text->args_ptr, tree);
       break;
 
-    case 'G':
-      percent_G_format (text);
-      return true;
-
-    case 'K':
-      t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
-      return true;
-
     default:
       return false;
     }
