@@ -5063,12 +5063,20 @@ package body Sem_Eval is
                --  result is always positive, even if the original operand was
                --  negative.
 
-               Fold_Uint
-                 (N,
-                  (Expr_Value (Left) +
-                     (if Expr_Value (Left) >= Uint_0 then Uint_0 else Modulus))
-                  / (Uint_2 ** Expr_Value (Right)),
-                  Static => Static);
+               declare
+                  M : Unat;
+               begin
+                  if Expr_Value (Left) >= Uint_0 then
+                     M := Uint_0;
+                  else
+                     M := Modulus;
+                  end if;
+
+                  Fold_Uint
+                    (N,
+                     (Expr_Value (Left) + M) / (Uint_2 ** Expr_Value (Right)),
+                     Static => Static);
+               end;
             end if;
          elsif Op = N_Op_Shift_Right_Arithmetic then
             Check_Elab_Call;
