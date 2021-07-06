@@ -248,6 +248,22 @@ _mm_ceil_sd (__m128d __A, __m128d __B)
   return (__m128d) __r;
 }
 
+__inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_floor_pd (__m128d __A)
+{
+  return (__m128d) vec_floor ((__v2df) __A);
+}
+
+__inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_floor_sd (__m128d __A, __m128d __B)
+{
+  __v2df __r = vec_floor ((__v2df) __B);
+  __r[1] = ((__v2df) __A)[1];
+  return (__m128d) __r;
+}
+
 __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_ceil_ps (__m128 __A)
@@ -261,6 +277,22 @@ _mm_ceil_ss (__m128 __A, __m128 __B)
 {
   __v4sf __r = (__v4sf) __A;
   __r[0] = __builtin_ceil (((__v4sf) __B)[0]);
+  return __r;
+}
+
+__inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_floor_ps (__m128 __A)
+{
+  return (__m128) vec_floor ((__v4sf) __A);
+}
+
+__inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_floor_ss (__m128 __A, __m128 __B)
+{
+  __v4sf __r = (__v4sf) __A;
+  __r[0] = __builtin_floor (((__v4sf) __B)[0]);
   return __r;
 }
 
