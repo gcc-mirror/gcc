@@ -1432,6 +1432,23 @@ build_contract_condition_function (tree fndecl, bool pre)
   IDENTIFIER_VIRTUAL_P (DECL_NAME (fn)) = false;
   DECL_VIRTUAL_P (fn) = false;
 
+  /* Make these functions internal if we can, i.e. if the guarded function is
+     not vague linkage, or if we can put them in a comdat group with the
+     guarded function.  */
+  if (!DECL_WEAK (fndecl) || HAVE_COMDAT_GROUP)
+    {
+      TREE_PUBLIC (fn) = false;
+      DECL_EXTERNAL (fn) = false;
+      DECL_WEAK (fn) = false;
+      DECL_COMDAT (fn) = false;
+
+      /* We haven't set the comdat group on the guarded function yet, we'll add
+	 this to the same group in comdat_linkage later.  */
+      gcc_assert (!DECL_ONE_ONLY (fndecl));
+
+      DECL_INTERFACE_KNOWN (fn) = true;
+    }
+
   DECL_ARTIFICIAL (fn) = true;
 
   /* Update various inline related declaration properties.  */
