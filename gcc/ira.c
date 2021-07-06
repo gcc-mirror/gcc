@@ -1922,9 +1922,25 @@ ira_setup_alts (rtx_insn *insn)
 /* Return the number of the output non-early clobber operand which
    should be the same in any case as operand with number OP_NUM (or
    negative value if there is no such operand).  ALTS is the mask
-   of alternatives that we should consider.  */
+   of alternatives that we should consider.  SINGLE_INPUT_OP_HAS_CSTR_P
+   should be set in this function, it indicates whether there is only
+   a single input operand which has the matching constraint on the
+   output operand at the position specified in return value.  If the
+   pattern allows any one of several input operands holds the matching
+   constraint, it's set as false, one typical case is destructive FMA
+   instruction on target rs6000.  Note that for a non-NO_REG preferred
+   register class with no free register move copy, if the parameter
+   PARAM_IRA_CONSIDER_DUP_IN_ALL_ALTS is set to one, this function
+   will check all available alternatives for matching constraints,
+   even if it has found or will find one alternative with non-NO_REG
+   regclass, it can respect more cases with matching constraints.  If
+   PARAM_IRA_CONSIDER_DUP_IN_ALL_ALTS is set to zero,
+   SINGLE_INPUT_OP_HAS_CSTR_P is always true, it will stop to find
+   matching constraint relationship once it hits some alternative with
+   some non-NO_REG regclass.  */
 int
-ira_get_dup_out_num (int op_num, alternative_mask alts)
+ira_get_dup_out_num (int op_num, alternative_mask alts,
+		     bool &single_input_op_has_cstr_p)
 {
   int curr_alt, c, original;
   bool ignore_p, use_commut_op_p;
@@ -1937,10 +1953,42 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
     return -1;
   str = recog_data.constraints[op_num];
   use_commut_op_p = false;
+  single_input_op_has_cstr_p = true;
+
+  rtx op = recog_data.operand[op_num];
+  int op_regno = reg_or_subregno (op);
+  enum reg_class op_pref_cl = reg_preferred_class (op_regno);
+  machine_mode op_mode = GET_MODE (op);
+
+  ira_init_register_move_cost_if_necessary (op_mode);
+  /* If the preferred regclass isn't NO_REG, continue to find the matching
+     constraint in all available alternatives with preferred regclass, even
+     if we have found or will find one alternative whose constraint stands
+     for a REG (non-NO_REG) regclass.  Note that it would be fine not to
+     respect matching constraint if the register copy is free, so exclude
+     it.  */
+  bool respect_dup_despite_reg_cstr
+    = param_ira_consider_dup_in_all_alts
+      && op_pref_cl != NO_REGS
+      && ira_register_move_cost[op_mode][op_pref_cl][op_pref_cl] > 0;
+
+  /* Record the alternative whose constraint uses the same regclass as the
+     preferred regclass, later if we find one matching constraint for this
+     operand with preferred reclass, we will visit these recorded
+     alternatives to check whether if there is one alternative in which no
+     any INPUT operands have one matching constraint same as our candidate.
+     If yes, it means there is one alternative which is perfectly fine
+     without satisfying this matching constraint.  If no, it means in any
+     alternatives there is one other INPUT operand holding this matching
+     constraint, it's fine to respect this matching constraint and further
+     create this constraint copy since it would become harmless once some
+     other takes preference and it's interfered.  */
+  alternative_mask pref_cl_alts;
+
   for (;;)
     {
-      rtx op = recog_data.operand[op_num];
-      
+      pref_cl_alts = 0;
+
       for (curr_alt = 0, ignore_p = !TEST_BIT (alts, curr_alt),
 	   original = -1;;)
 	{
@@ -1963,9 +2011,25 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
 		{
 		  enum constraint_num cn = lookup_constraint (str);
 		  enum reg_class cl = reg_class_for_constraint (cn);
-		  if (cl != NO_REGS
-		      && !targetm.class_likely_spilled_p (cl))
-		    goto fail;
+		  if (cl != NO_REGS && !targetm.class_likely_spilled_p (cl))
+		    {
+		      if (respect_dup_despite_reg_cstr)
+			{
+			  /* If it's free to move from one preferred class to
+			     the one without matching constraint, it doesn't
+			     have to respect this constraint with costs.  */
+			  if (cl != op_pref_cl
+			      && (ira_reg_class_intersect[cl][op_pref_cl]
+				  != NO_REGS)
+			      && (ira_may_move_in_cost[op_mode][op_pref_cl][cl]
+				  == 0))
+			    goto fail;
+			  else if (cl == op_pref_cl)
+			    pref_cl_alts |= ALTERNATIVE_BIT (curr_alt);
+			}
+		      else
+			goto fail;
+		    }
 		  if (constraint_satisfied_p (op, cn))
 		    goto fail;
 		  break;
@@ -1979,7 +2043,21 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
 		  str = end;
 		  if (original != -1 && original != n)
 		    goto fail;
-		  original = n;
+		  gcc_assert (n < recog_data.n_operands);
+		  if (respect_dup_despite_reg_cstr)
+		    {
+		      const operand_alternative *op_alt
+			= &recog_op_alt[curr_alt * recog_data.n_operands];
+		      /* Only respect the one with preferred rclass, without
+			 respect_dup_despite_reg_cstr it's possible to get
+			 one whose regclass isn't preferred first before,
+			 but it would fail since there should be other
+			 alternatives with preferred regclass.  */
+		      if (op_alt[n].cl == op_pref_cl)
+			original = n;
+		    }
+		  else
+		    original = n;
 		  continue;
 		}
 	      }
@@ -1988,7 +2066,39 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
       if (original == -1)
 	goto fail;
       if (recog_data.operand_type[original] == OP_OUT)
-	return original;
+	{
+	  if (pref_cl_alts == 0)
+	    return original;
+	  /* Visit these recorded alternatives to check whether
+	     there is one alternative in which no any INPUT operands
+	     have one matching constraint same as our candidate.
+	     Give up this candidate if so.  */
+	  int nop, nalt;
+	  for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
+	    {
+	      if (!TEST_BIT (pref_cl_alts, nalt))
+		continue;
+	      const operand_alternative *op_alt
+		= &recog_op_alt[nalt * recog_data.n_operands];
+	      bool dup_in_other = false;
+	      for (nop = 0; nop < recog_data.n_operands; nop++)
+		{
+		  if (recog_data.operand_type[nop] != OP_IN)
+		    continue;
+		  if (nop == op_num)
+		    continue;
+		  if (op_alt[nop].matches == original)
+		    {
+		      dup_in_other = true;
+		      break;
+		    }
+		}
+	      if (!dup_in_other)
+		return -1;
+	    }
+	  single_input_op_has_cstr_p = false;
+	  return original;
+	}
     fail:
       if (use_commut_op_p)
 	break;

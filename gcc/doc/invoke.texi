@@ -13917,6 +13917,16 @@ of available registers reserved for some other purposes is given
 by this parameter.  Default of the parameter
 is the best found from numerous experiments.
 
+@item ira-consider-dup-in-all-alts
+Make IRA to consider matching constraint (duplicated operand number)
+heavily in all available alternatives for preferred register class.
+If it is set as zero, it means IRA only respects the matching
+constraint when it's in the only available alternative with an
+appropriate register class.  Otherwise, it means IRA will check all
+available alternatives for preferred register class even if it has
+found some choice with an appropriate register class and respect the
+found qualified matching constraint.
+
 @item lra-inheritance-ebb-probability-cutoff
 LRA tries to reuse values reloaded in registers in subsequent insns.
 This optimization is called inheritance.  EBB is used as a region to
