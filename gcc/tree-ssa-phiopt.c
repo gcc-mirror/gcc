@@ -812,11 +812,33 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
   return true;
 }
 
-/* Return TRUE if CODE should be allowed during early phiopt.
-   Currently this is to allow MIN/MAX and ABS/NEGATE.  */
+/* Return TRUE if SEQ/OP pair should be allowed during early phiopt.
+   Currently this is to allow MIN/MAX and ABS/NEGATE and constants.  */
 static bool
-phiopt_early_allow (enum tree_code code)
+phiopt_early_allow (gimple_seq &seq, gimple_match_op &op)
 {
+  /* Don't allow functions. */
+  if (!op.code.is_tree_code ())
+    return false;
+  tree_code code = (tree_code)op.code;
+
+  /* For non-empty sequence, only allow one statement.  */
+  if (!gimple_seq_empty_p (seq))
+    {
+      /* Check to make sure op was already a SSA_NAME.  */
+      if (code != SSA_NAME)
+	return false;
+      if (!gimple_seq_singleton_p (seq))
+	return false;
+      gimple *stmt = gimple_seq_first_stmt (seq);
+      /* Only allow assignments.  */
+      if (!is_gimple_assign (stmt))
+	return false;
+      if (gimple_assign_lhs (stmt) != op.ops[0])
+	return false;
+      code = gimple_assign_rhs_code (stmt);
+    }
+
   switch (code)
     {
       case MIN_EXPR:
@@ -825,6 +847,11 @@ phiopt_early_allow (enum tree_code code)
       case ABSU_EXPR:
       case NEGATE_EXPR:
       case SSA_NAME:
+	return true;
+      case INTEGER_CST:
+      case REAL_CST:
+      case VECTOR_CST:
+      case FIXED_CST:
 	return true;
       default:
 	return false;
@@ -844,6 +871,7 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
 			gimple_seq *seq)
 {
   tree result;
+  gimple_seq seq1 = NULL;
   enum tree_code comp_code = gimple_cond_code (comp_stmt);
   location_t loc = gimple_location (comp_stmt);
   tree cmp0 = gimple_cond_lhs (comp_stmt);
@@ -858,18 +886,23 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
   gimple_match_op op (gimple_match_cond::UNCOND,
 		      COND_EXPR, type, cond, arg0, arg1);
 
-  if (op.resimplify (early_p ? NULL : seq, follow_all_ssa_edges))
+  if (op.resimplify (&seq1, follow_all_ssa_edges))
     {
       /* Early we want only to allow some generated tree codes. */
       if (!early_p
-	  || op.code.is_tree_code ()
-	  || phiopt_early_allow ((tree_code)op.code))
+	  || phiopt_early_allow (seq1, op))
 	{
-	  result = maybe_push_res_to_seq (&op, seq);
+	  result = maybe_push_res_to_seq (&op, &seq1);
 	  if (result)
-	    return result;
+	    {
+	      gimple_seq_add_seq_without_update (seq, seq1);
+	      return result;
+	    }
 	}
     }
+  gimple_seq_discard (seq1);
+  seq1 = NULL;
+
   /* Try the inverted comparison, that is !COMP ? ARG1 : ARG0. */
   comp_code = invert_tree_comparison (comp_code, HONOR_NANS (cmp0));
 
@@ -882,18 +915,21 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
   gimple_match_op op1 (gimple_match_cond::UNCOND,
 		       COND_EXPR, type, cond, arg1, arg0);
 
-  if (op1.resimplify (early_p ? NULL : seq, follow_all_ssa_edges))
+  if (op1.resimplify (&seq1, follow_all_ssa_edges))
     {
       /* Early we want only to allow some generated tree codes. */
       if (!early_p
-	  || op1.code.is_tree_code ()
-	  || phiopt_early_allow ((tree_code)op1.code))
+	  || phiopt_early_allow (seq1, op1))
 	{
-	  result = maybe_push_res_to_seq (&op1, seq);
+	  result = maybe_push_res_to_seq (&op1, &seq1);
 	  if (result)
-	    return result;
+	    {
+	      gimple_seq_add_seq_without_update (seq, seq1);
+	      return result;
+	    }
 	}
     }
+  gimple_seq_discard (seq1);
 
   return NULL;
 }
