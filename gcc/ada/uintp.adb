@@ -1693,15 +1693,14 @@ package body Uintp is
    -- UI_Is_In_Int_Range --
    -------------------------
 
-   function UI_Is_In_Int_Range (Input : Uint) return Boolean is
+   function UI_Is_In_Int_Range (Input : Valid_Uint) return Boolean is
+      pragma Assert (Present (Input));
+      --  Assertion is here in case we're called from C++ code, which does
+      --  not check the predicates.
    begin
       --  Make sure we don't get called before Initialize
 
       pragma Assert (Uint_Int_First /= Uint_0);
-
-      if No (Input) then -- Preserve old behavior
-         return True;
-      end if;
 
       if Direct (Input) then
          return True;

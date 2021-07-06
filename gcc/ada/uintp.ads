@@ -90,6 +90,10 @@ package Uintp is
    Uint_Minus_127 : constant Uint;
    Uint_Minus_128 : constant Uint;
 
+   --  Functions for detecting No_Uint. Note that clients of this package
+   --  cannot use "=" and "/=" to compare with No_Uint; they must use No
+   --  and Present instead.
+
    function No (X : Uint) return Boolean is (X = No_Uint);
    --  Note that this is using the predefined "=", not the "=" declared below,
    --  which would blow up on No_Uint.
@@ -169,10 +173,9 @@ package Uintp is
    pragma Inline (UI_Gt);
    --  Compares integer values for greater than
 
-   function UI_Is_In_Int_Range (Input : Uint) return Boolean;
+   function UI_Is_In_Int_Range (Input : Valid_Uint) return Boolean;
    pragma Inline (UI_Is_In_Int_Range);
    --  Determines if universal integer is in Int range.
-   --  Input should probably be of type Valid_Uint.
 
    function UI_Le (Left : Valid_Uint; Right : Valid_Uint) return Boolean;
    function UI_Le (Left : Int;  Right : Valid_Uint) return Boolean;
