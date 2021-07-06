@@ -48,8 +48,8 @@ public:
     HirId hirId = function.get_mappings ().get_hirid ();
     if (should_warn (hirId))
       {
-	rust_warning_at (function.get_locus (), 0, "%s is never %s: %<%s%>",
-			 "function", "used",
+	rust_warning_at (function.get_locus (), 0,
+			 "function is never used: %<%s%>",
 			 function.get_function_name ().c_str ());
       }
   }
@@ -59,8 +59,8 @@ public:
     HirId hirId = stct.get_mappings ().get_hirid ();
     if (should_warn (hirId))
       {
-	rust_warning_at (stct.get_locus (), 0, "%s is never %s: %<%s%>",
-			 "struct", "constructed",
+	rust_warning_at (stct.get_locus (), 0,
+			 "struct is never constructed: %<%s%>",
 			 stct.get_identifier ().c_str ());
       }
     else
@@ -70,8 +70,8 @@ public:
 	  HirId field_hir_id = field.get_mappings ().get_hirid ();
 	  if (should_warn (field_hir_id))
 	    {
-	      rust_warning_at (field.get_locus (), 0, "%s is never %s: %<%s%>",
-			       "field", "read",
+	      rust_warning_at (field.get_locus (), 0,
+			       "field is never read: %<%s%>",
 			       field.get_field_name ().c_str ());
 	    }
 	  return true;
@@ -85,8 +85,8 @@ public:
     HirId hirId = stct.get_mappings ().get_hirid ();
     if (should_warn (hirId))
       {
-	rust_warning_at (stct.get_locus (), 0, "%s is never %s: %<%s%>",
-			 "struct", "constructed",
+	rust_warning_at (stct.get_locus (), 0,
+			 "struct is never constructed: %<%s%>",
 			 stct.get_identifier ().c_str ());
       }
   }
