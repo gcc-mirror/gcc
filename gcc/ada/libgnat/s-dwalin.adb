@@ -1114,8 +1114,6 @@ package body System.Dwarf_Lines is
       case Form is
          when DW_FORM_addr =>
             Skip := Offset (Ptr_Sz);
-         when DW_FORM_addrx =>
-            Skip := Offset (uint32'(Read_LEB128 (S)));
          when DW_FORM_block1 =>
             Skip := Offset (uint8'(Read (S)));
          when DW_FORM_block2 =>
@@ -1161,11 +1159,12 @@ package body System.Dwarf_Lines is
             begin
                return;
             end;
-         when DW_FORM_udata
-            | DW_FORM_ref_udata
+         when DW_FORM_addrx
             | DW_FORM_loclistx
+            | DW_FORM_ref_udata
             | DW_FORM_rnglistx
             | DW_FORM_strx
+            | DW_FORM_udata
            =>
             declare
                Val : constant uint32 := Read_LEB128 (S);
@@ -1173,7 +1172,7 @@ package body System.Dwarf_Lines is
             begin
                return;
             end;
-         when DW_FORM_flag_present =>
+         when DW_FORM_flag_present | DW_FORM_implicit_const =>
             return;
          when DW_FORM_ref_addr
             | DW_FORM_sec_offset
@@ -1187,10 +1186,10 @@ package body System.Dwarf_Lines is
                null;
             end loop;
             return;
-         when DW_FORM_implicit_const | DW_FORM_indirect =>
-            raise Constraint_Error;
+         when DW_FORM_indirect =>
+            raise Dwarf_Error with "DW_FORM_indirect not implemented";
          when others =>
-            raise Constraint_Error;
+            raise Dwarf_Error with "DWARF form not implemented";
       end case;
 
       Seek (S, Tell (S) + Skip);
