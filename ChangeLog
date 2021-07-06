@@ -1,3 +1,11 @@
+2021-07-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.def: Add dsymutil defs.
+	* Makefile.in: Regenerated.
+	* Makefile.tpl: Add dsymutil to flags.
+	* configure: Regenerated.
+	* configure.ac: Add dsymutil to target and build recipes.
+
 2021-07-01  Ankur Saini  <arsenic@sourceware.org>
 
 	* MAINTAINERS: Add myself for write after approval.

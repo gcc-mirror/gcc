@@ -1,3 +1,93 @@
+2021-07-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/shiftrotate.md (shift-by-variable patterns): Update to
+	generate condition code aware RTL directly.
+
+2021-07-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101039
+	* match.pd (A CMP 0 ? A : -A): New patterns.
+	* tree-ssa-phiopt.c (abs_replacement): Delete function.
+	(tree_ssa_phiopt_worker): Don't call abs_replacement.
+	Update comment about abs_replacement.
+
+2021-07-05  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (gimple_simplify_phiopt):
+	If "A ? B : C" fails to simplify, try "(!A) ? C : B".
+
+2021-07-05  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (match_simplify_replacement):
+	Add early_p argument. Call gimple_simplify_phiopt
+	instead of gimple_simplify.
+	(tree_ssa_phiopt_worker): Update call to
+	match_simplify_replacement and allow unconditionally.
+	(phiopt_early_allow): New function.
+	(gimple_simplify_phiopt): New function.
+
+2021-07-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/101237
+	* fold-const.c (negate_expr_p): Remove call to element_mode
+	and TREE_MODE/TREE_TYPE when calling HONOR_SIGNED_ZEROS,
+	HONOR_SIGN_DEPENDENT_ROUNDING, and HONOR_SNANS.
+	(fold_negate_expr_1): Likewise.
+	(const_unop): Likewise.
+	(fold_cond_expr_with_comparison): Likewise.
+	(fold_binary_loc): Likewise.
+	(fold_ternary_loc): Likewise.
+	(tree_call_nonnegative_warnv_p): Likewise.
+	* match.pd (-(A + B) -> (-B) - A): Likewise.
+
+2021-07-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.ac: Handle --with-dsymutil in the same way as we
+	do for the assembler and linker.  (DEFAULT_DSYMUTIL): New.
+	Extract the type and version for the dsymutil configured or
+	found by the default searches.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+	* collect2.c (do_dsymutil): Handle locating dsymutil in the
+	same way as for the assembler and  linker.
+	* config/darwin.h (DSYMUTIL): Delete.
+	* gcc.c: Report a configured dsymutil correctly.
+	* exec-tool.in: Allow for dsymutil.
+
+2021-07-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_split_mmx_punpck):
+	Handle V4QI and V2HI modes.
+	(expand_vec_perm_blend): Allow 4-byte vector modes with TARGET_SSE4_1.
+	Handle V4QI mode. Emit mmx_pblendvb32 for 4-byte modes.
+	(expand_vec_perm_pshufb): Rewrite to use switch statemets.
+	Handle 4-byte dual operands with TARGET_XOP and single operands
+	with TARGET_SSSE3.  Emit mmx_ppermv32 for TARGET_XOP and
+	mmx_pshufbv4qi3 for TARGET_SSSE3.
+	(expand_vec_perm_pblendv): Allow 4-byte vector modes with TARGET_SSE4_1.
+	(expand_vec_perm_interleave2): Allow 4-byte vector modes.
+	(expand_vec_perm_pshufb2): Allow 4-byte vector modes with TARGET_SSSE3.
+	(expand_vec_perm_even_odd_1): Handle V4QI mode.
+	(expand_vec_perm_broadcast_1): Handle V4QI mode.
+	(ix86_vectorize_vec_perm_const): Handle V4QI mode.
+	* config/i386/mmx.md (mmx_ppermv32): New insn pattern.
+	(mmx_pshufbv4qi3): Ditto.
+	(*mmx_pblendw32): Ditto.
+	(*mmx_pblendw64): Rename from *mmx_pblendw.
+	(mmx_punpckhbw_low): New insn_and_split pattern.
+	(mmx_punpcklbw_low): Ditto.
+
+2021-07-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (vect_loop_versioning): Do not
+	set LOOP_C_INFINITE on the vectorized loop.
+
+2021-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101291
+	* cfgloopmanip.c (loop_version): Set the loop copy of the
+	versioned loop to the new loop.
+
 2021-07-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/100269

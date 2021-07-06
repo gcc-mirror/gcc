@@ -1,3 +1,368 @@
+2021-07-05  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat-style.texi, gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2021-07-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Reject overlays
+	in Depends and Refined_Depends contracts.
+	(Analyze_Global_In_Decl_Part): Likewise for Global and
+	Refined_Global.
+	(Analyze_Initializes_In_Decl_Part): Likewise for Initializes
+	(when appearing both as a single item and as a initialization
+	clause).
+	* sem_util.ads (Ultimate_Overlaid_Entity): New routine.
+	* sem_util.adb (Report_Unused_Body_States): Ignore overlays.
+	(Ultimate_Overlaid_Entity): New routine.
+
+2021-07-05  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfdlli.ads, libgnat/a-cfdlli.adb
+	libgnat/a-cfinve.ads, libgnat/a-cfinve.adb,
+	libgnat/a-cofove.ads, libgnat/a-cofove.adb,
+	libgnat/a-coboho.ads, libgnat/a-coboho.adb (Constant_Reference):
+	Get a read-only access to an element of the container.
+	(At_End): Ghost functions used to express pledges in the
+	postcondition of Reference.
+	(Reference): Get a read-write access to an element of the
+	container.
+	* libgnat/a-cfhama.ads, libgnat/a-cfhama.adb,
+	libgnat/a-cforma.ads, libgnat/a-cforma.adb: The full view of the
+	Map type is no longer a tagged type, but a wrapper over this
+	tagged type. This is to avoid issues with dispatching result in
+	At_End functions.
+	(Constant_Reference): Get a read-only access to an element of
+	the container.
+	(At_End): Ghost functions used to express pledges in the
+	postcondition of Reference.
+	(Reference): Get a read-write access to an element of the
+	container.
+	* libgnat/a-cfhase.ads, libgnat/a-cfhase.adb,
+	libgnat/a-cforse.ads, libgnat/a-cforse.adb: The full view of the
+	Map type is no longer a tagged type, but a wrapper over this
+	tagged type.
+	(Constant_Reference): Get a read-only access to an element of
+	the container.
+	* libgnat/a-cofuse.ads, libgnat/a-cofuve.ads (Copy_Element):
+	Expression function used to cause SPARK to make sure
+	Element_Type is copiable.
+	* libgnat/a-cofuma.ads (Copy_Key): Expression function used to
+	cause SPARK to make sure Key_Type is copiable.
+	(Copy_Element): Expression function used to cause SPARK to make
+	sure Element_Type is copiable.
+
+2021-07-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item): Adapt to update SPARK RM
+	rule.
+
+2021-07-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* Make-generated.in: Add -f switch to ensure cp will never fail.
+
+2021-07-05  Steve Baird  <baird@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc.Build_Assignment): When
+	building the assignment statement corresponding to the default
+	expression for a component, we make a copy of the expression.
+	When making that copy (and if we have seen a component that
+	requires late initialization), pass a Map parameter into the
+	call to New_Copy_Tree to redirect references to the type to
+	instead refer to the _Init formal parameter of the init proc.
+	This includes hoisting the declaration of Has_Late_Init_Comp out
+	one level so that it becomes available to Build_Assignment.
+	(Find_Current_Instance): Return True for other kinds of current
+	instance references, instead of just access-valued attribute
+	references such as T'Access.
+	* sem_util.adb (Is_Aliased_View): Return True for the _Init
+	formal parameter of an init procedure. The changes in
+	exp_ch3.adb can have the effect of replacing a "T'Access"
+	attribute reference in an init procedure with an "_Init'Access"
+	attribute reference. We want such an attribute reference to be
+	legal. However, we do not simply mark the formal parameter as
+	being aliased because that might impact callers.
+	(Is_Object_Image): Return True if Is_Current_Instance returns
+	True for the prefix of an Image (or related attribute) attribute
+	reference.
+
+2021-07-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Stream_Operation_OK): Reuse
+	Is_Concurrent_Interface.
+	* sem_ch3.adb (Analyze_Interface_Declaration,
+	Build_Derived_Record_Type): Likewise.
+	* sem_ch6.adb (Check_Limited_Return): Likewise.
+	* sem_util.adb (Is_Concurrent_Interface): Don't call
+	Is_Interface because each of the Is_Protected_Interface,
+	Is_Synchronized_Interface and Is_Task_Interface calls it anyway.
+
+2021-07-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch6.adb (Check_Limited_Return): Replace Comes_From_Source
+	with Comes_From_Extended_Return_Statement.
+
+2021-07-05  Steve Baird  <baird@adacore.com>
+
+	* libgnat/a-stobbu.adb, libgnat/a-stobbu.ads,
+	libgnat/a-stobfi.adb, libgnat/a-stobfi.ads,
+	libgnat/a-stoubu.adb, libgnat/a-stoubu.ads,
+	libgnat/a-stoufi.adb, libgnat/a-stoufi.ads,
+	libgnat/a-stoufo.adb, libgnat/a-stoufo.ads,
+	libgnat/a-stouut.adb, libgnat/a-stouut.ads,
+	libgnat/a-stteou.ads: Delete files.
+	* Makefile.rtl, impunit.adb: Remove references to deleted files.
+
+2021-07-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Has_Compatible_Alignment_Internal): If the
+	prefix of the Address expression is an entire object with a
+	known alignment, then skip checks related to its size.
+
+2021-07-05  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/s-os_lib.ads: Import OS_Time comparison ops as
+	intrinsic.
+	* libgnat/s-os_lib.adb: Remove OS_TIme comparison ops
+	implementation.
+
+2021-07-05  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/s-os_lib.ads: Add some comments about time_t.
+	* libgnat/s-os_lib.adb (GM_Split/To_GM_Time): Rename formal to
+	P_OS_Time.
+	(GM_Time_Of/To_OS_Time): Likewise.
+
+2021-07-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_res.adb (Resolve): Insert minus sign if needed.
+
+2021-07-05  Steve Baird  <baird@adacore.com>
+
+	* exp_put_image.adb:
+	(Enable_Put_Image, Preload_Root_Buffer_Type): Revert to querying
+	the -gnatd_z switch, as opposed to testing whether Ada_Version >= Ada_2022.
+
+2021-07-05  Justin Squirek  <squirek@adacore.com>
+
+	* checks.adb (Accessibility_Checks_Suppressed): Add check
+	against restriction No_Dynamic_Accessibility_Checks.
+	(Apply_Accessibility_Check): Add assertion to check restriction
+	No_Dynamic_Accessibility_Checks is not active.
+	* debug.adb: Add documentation for new debugging switch to
+	control which accessibility model gets employed under
+	restriction No_Dynamic_Accessibility_Checks.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Disable dynamic
+	accessibility check generation when
+	No_Dynamic_Accessibility_Checks is active.
+	* exp_ch4.adb (Apply_Accessibility_Check): Skip check generation
+	when restriction No_Dynamic_Accessibility_Checks is active.
+	(Expand_N_Allocator): Disable dynamic accessibility checks when
+	No_Dynamic_Accessibility_Checks is active.
+	(Expand_N_In): Disable dynamic accessibility checks when
+	No_Dynamic_Accessibility_Checks is active.
+	(Expand_N_Type_Conversion): Disable dynamic accessibility checks
+	when No_Dynamic_Accessibility_Checks is active.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Disable
+	alternative accessibility model calculations when computing a
+	dynamic level for a SAOAAT.
+	* exp_ch6.adb (Add_Call_By_Copy_Code): Disable dynamic
+	accessibility check generation when
+	No_Dynamic_Accessibility_Checks is active.
+	(Expand_Branch): Disable alternative accessibility model
+	calculations.
+	(Expand_Call_Helper): Disable alternative accessibility model
+	calculations.
+	* restrict.adb, restrict.ads: Add new restriction
+	No_Dynamic_Accessibility_Checks.
+	(No_Dynamic_Accessibility_Checks_Enabled): Created to test when
+	experimental features (which are generally incompatible with
+	standard Ada) can be enabled.
+	* sem_attr.adb (Safe_Value_Conversions): Add handling of new
+	accessibility model under the restriction
+	No_Dynamic_Accessibility_Checks.
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Disallow new restriction No_Dynamic_Accessibility_Checks from
+	being exclusively specified within a body or subunit without
+	being present in a specification.
+	* sem_res.adb (Check_Fully_Declared_Prefix): Minor comment
+	fixup.
+	(Valid_Conversion): Omit implicit conversion checks on anonymous
+	access types and perform static checking instead when
+	No_Dynamic_Accessibility_Checks is active.
+	* sem_util.adb, sem_util.ads (Accessibility_Level): Add special
+	handling of anonymous access objects, formal parameters,
+	anonymous access components, and function return objects.
+	(Deepest_Type_Access_Level): When
+	No_Dynamic_Accessibility_Checks is active employ an alternative
+	model. Add paramter Allow_Alt_Model to override the new behavior
+	in certain cases.
+	(Type_Access_Level): When No_Dynamic_Accessibility_Checks is
+	active employ an alternative model. Add parameter
+	Allow_Alt_Model to override the new behavior in certain cases.
+	(Typ_Access_Level): Created within Accessibility_Level for
+	convenience.
+	* libgnat/s-rident.ads, snames.ads-tmpl: Add handing for
+	No_Dynamic_Accessibility_Checks.
+
+2021-07-05  Doug Rupp  <rupp@adacore.com>
+
+	* adaint.h (__gnat_set_file_time_name): Use OS_Time.
+	* adaint.c (__gnat_set_file_time_name): Likewise.
+
+2021-07-05  Doug Rupp  <rupp@adacore.com>
+
+	* adaint.h (OS_Time): typedef as long long.
+	* osint.adb (Underlying_OS_Time): Declare as 64-bit signed type.
+	* libgnat/s-os_lib.adb ("<"): Compare OS_Time as
+	Long_Long_Integer.
+	("<="): Likewise.
+	(">"): Likewise.
+	(">="): Likewise.
+	* libgnat/s-os_lib.ads (OS_Time): Declare as 64-bit signed type.
+
+2021-07-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): Post error message on
+	renaming node.
+
+2021-07-05  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-uncdea.ads: Add Depends/Post to
+	Ada.Unchecked_Deallocation.
+	* sem_ch4.adb (Analyze_Allocator): Remove checking of allocator
+	placement.
+	* sem_res.adb (Flag_Object): Same.
+
+2021-07-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* aspects.ads: Add GNAT_Annotate aspect.
+	* gnat1drv.adb (Adjust_Global_Switches): Stop defining
+	Name_Gnat_Annotate as an alias of Name_Annotate.
+	* snames.ads-tmpl: Define Gnat_Annotate.
+	* par-prag.adb, sem_prag.ads: Add Pragma_Gnat_Annotate to list
+	of pragmas.
+	* lib-writ.adb, sem_ch13.adb, sem_prag.adb: Handle Gnat_Annotate
+	like Aspect_Annotate.
+
+2021-07-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ttypes.ads (Target_Strict_Alignment): Fix comment.
+
+2021-07-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Has_Compatible_Alignment_Internal): Fix
+	indentation of ELSIF comments; remove explicit calls to
+	UI_To_Int; remove extra parens around the MOD operand.
+
+2021-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate, Step_5): Do not check
+	for the need to use an extension aggregate for a given component
+	when within an instance and the type of the component hss a
+	private ancestor: the instantiation is legal if the generic
+	compiles, and spurious errors may be generated otherwise.
+
+2021-07-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* errout.adb (Output_JSON_Message): Recursively call
+	Output_JSON_Message for continuation messages instead of
+	appending their content to the initial message.
+
+2021-07-05  Steve Baird  <baird@adacore.com>
+
+	* debug.adb: Remove comments about -gnatd_z switch.
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs): A one-line fix
+	for a subtle bug that took some effort to debug. Append a new
+	Put_Image procedure for a type extension even if it seems to
+	already have one, just as is done for (for example) the
+	streaming-related Read procedure.
+	* exp_put_image.adb:
+	(Build_Record_Put_Image_Procedure.Make_Component_Attributes): Do
+	not treat _Parent component like just another component, for two
+	reasons.  1. If the _parent component's type has a
+	user-specified Put_Image procedure, then we want to generate a
+	call to that procedure and then generate extension aggregate
+	syntax.  2. Otherwise, we still don't want to see any mention of
+	"_parent" in the generated image text.
+	(Build_Record_Put_Image_Procedure.Make_Component_Name): Add
+	assertion that we are not generating a reference to an "_parent"
+	component.
+	(Build_Record_Put_Image_Procedure): Add special treatment for
+	null records.  Add call to Duplicate_Subexpr for image attribute
+	prefix in order to help with expansion needed in the class-wide
+	case (where the prefix is also referenced in the call to
+	Wide_Wide_Expanded_Name) if evaluation of the prefix has side
+	effects. Add new local helper function, Put_String_Exp.  Add
+	support for case where prefix type is class-wide.
+	(Enable_Put_Image, Preload_Root_Buffer_Type): Query Ada_Version
+	> Ada_2022 instead of (indirectly) querying -gnatd_z switch.
+	* freeze.adb (In_Expanded_Body): A one-line change to add
+	TSS_Put_Image to the list of subprograms that have
+	expander-created bodies.
+	* rtsfind.ads: Add support for accessing
+	Ada.Tags.Wide_Wide_Expanded_Name.
+	* sem_ch3.ads, sem_ch3.adb: Delete Is_Null_Extension function,
+	as part of moving it to Sem_Util.
+	* sem_ch13.adb
+	(Analyze_Put_Image_TSS_Definition.Has_Good_Profile): Improve
+	diagnostic messages in cases where the result is going to be
+	False and the Report parameter is True. Relax overly-restrictive
+	checks in order to implement mode conformance.
+	(Analyze_Stream_TSS_Definition.Has_Good_Profile): Add similar
+	relaxation of parameter subtype checking for the Stream
+	parameter of user-defined streaming subprograms.
+	* sem_disp.adb (Check_Dispatching_Operation): A one-line
+	change (and an accompanying comment change) to add TSS_Put_Image
+	to the list of compiler-generated dispatching primitive
+	operations.
+	* sem_util.ads, sem_util.adb: Add Ignore_Privacy Boolean
+	parameter to Is_Null_Record_Type function (typically the
+	parameter will be False when the function is being used in the
+	implementation of static semantics and True for dynamic
+	semantics; the parameter might make a difference in the case of,
+	for example, a private type that is implemented as a null record
+	type).  Add related new routines Is_Null_Extension (formerly
+	declared in Sem_Ch3), Is_Null_Extension_Of, and
+	Is_Null_Record_Definition.
+
+2021-07-05  Justin Squirek  <squirek@adacore.com>
+
+	* freeze.adb (Freeze_Profile): Use N's Sloc, F_type's chars.
+
+2021-07-05  Bob Duff  <duff@adacore.com>
+
+	* checks.adb, exp_aggr.adb, exp_ch5.adb, freeze.adb,
+	sem_util.adb, sem_util.ads: Change L and H to be First and Last,
+	to match the attributes in the RM. Change calls from procedure
+	to function where appropriate.
+
+2021-07-05  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Compute_Returns_By_Ref): New
+	procedure to compute Returns_By_Ref, to avoid some code
+	duplication. This will likely change soon, so it's good to have
+	the code in one place.
+	(CW_Or_Has_Controlled_Part): Move here from Exp_Ch7, because
+	it's called by Compute_Returns_By_Ref, and this is a better
+	place for it anyway.
+	(Needs_Finalization): Fix comment to be vague instead of wrong.
+	* exp_ch6.adb (Expand_N_Subprogram_Body, Freeze_Subprogram):
+	Call Compute_Returns_By_Ref.
+	* sem_ch6.adb (Check_Delayed_Subprogram): Call
+	Compute_Returns_By_Ref.
+	* exp_ch7.ads, exp_ch7.adb (CW_Or_Has_Controlled_Part): Move to
+	Sem_Util.
+	(Has_New_Controlled_Component): Remove unused function.
+
+2021-07-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): Check for renamings.
+
+2021-07-05  Boris Yakobowski  <yakobowski@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Rem): Remove special case for rem -1
+	in CodePeer_Mode.
+
 2021-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/101094
