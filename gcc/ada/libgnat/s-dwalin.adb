@@ -957,8 +957,10 @@ package body System.Dwarf_Lines is
 
                      when DW_FORM_line_strp =>
                         Read_Section_Offset (C.Lines, Off, C.Header.Is64);
-                        Seek (C.Line_Str, Off);
-                        Read_C_String (C.Line_Str, Buf);
+                        if J = File then
+                           Seek (C.Line_Str, Off);
+                           Read_C_String (C.Line_Str, Buf);
+                        end if;
 
                      when others =>
                         raise Dwarf_Error with "DWARF form not implemented";
@@ -1674,8 +1676,10 @@ package body System.Dwarf_Lines is
 
                         when DW_FORM_line_strp =>
                            Read_Section_Offset (C.Lines, Off, C.Header.Is64);
-                           Seek (C.Line_Str, Off);
-                           File_Name := Read_C_String (C.Line_Str);
+                           if J = Match.File then
+                              Seek (C.Line_Str, Off);
+                              File_Name := Read_C_String (C.Line_Str);
+                           end if;
 
                         when others =>
                            raise Dwarf_Error with "DWARF form not implemented";
@@ -1718,8 +1722,10 @@ package body System.Dwarf_Lines is
 
                         when DW_FORM_line_strp =>
                            Read_Section_Offset (C.Lines, Off, C.Header.Is64);
-                           Seek (C.Line_Str, Off);
-                           Dir_Name := Read_C_String (C.Line_Str);
+                           if J = Dir_Idx then
+                              Seek (C.Line_Str, Off);
+                              Dir_Name := Read_C_String (C.Line_Str);
+                           end if;
 
                         when others =>
                            raise Dwarf_Error with "DWARF form not implemented";
