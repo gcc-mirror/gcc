@@ -444,7 +444,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
   if (wlims.always_executed)
     {
       if (warning_at (location, OPT_Wuninitialized,
-		      "%G%qE is used uninitialized", stmt, rhs))
+		      "%qE is used uninitialized", rhs))
 	{
 	  /* ???  This is only effective for decls as in
 	     gcc.dg/uninit-B-O0.c.  Avoid doing this for maybe-uninit
@@ -457,7 +457,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
     }
   else if (wlims.wmaybe_uninit)
     warned = warning_at (location, OPT_Wmaybe_uninitialized,
-			 "%G%qE may be used uninitialized", stmt, rhs);
+			 "%qE may be used uninitialized", rhs);
 
   return warned ? base : NULL_TREE;
 }

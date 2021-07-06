@@ -283,7 +283,7 @@ pass_walloca::execute (function *fun)
 	    }
 	  else if (warn_alloca)
 	    {
-	      warning_at (loc, OPT_Walloca, "%Guse of %<alloca%>", stmt);
+	      warning_at (loc, OPT_Walloca, "use of %<alloca%>");
 	      continue;
 	    }
 	  else if (warn_alloca_limit < 0)
@@ -322,11 +322,10 @@ pass_walloca::execute (function *fun)
 		auto_diagnostic_group d;
 		if (warning_at (loc, wcode,
 				(is_vla
-				 ? G_("%Gargument to variable-length "
+				 ? G_("argument to variable-length "
 				      "array may be too large")
-				 : G_("%Gargument to %<alloca%> may be too "
-				      "large")),
-				stmt)
+				 : G_("argument to %<alloca%> may be too "
+				      "large")))
 		    && t.limit != 0)
 		  {
 		    print_decu (t.limit, buff);
@@ -342,10 +341,9 @@ pass_walloca::execute (function *fun)
 		auto_diagnostic_group d;
 		if (warning_at (loc, wcode,
 				(is_vla
-				 ? G_("%Gargument to variable-length"
+				 ? G_("argument to variable-length"
 				      " array is too large")
-				 : G_("%Gargument to %<alloca%> is too large")),
-				stmt)
+				 : G_("argument to %<alloca%> is too large")))
 		    && t.limit != 0)
 		  {
 		    print_decu (t.limit, buff);
@@ -361,22 +359,20 @@ pass_walloca::execute (function *fun)
 
 	      warning_at (loc, wcode,
 			  (is_vla
-			   ? G_("%Gunbounded use of variable-length array")
-			   : G_("%Gunbounded use of %<alloca%>")),
-			  stmt);
+			   ? G_("unbounded use of variable-length array")
+			   : G_("unbounded use of %<alloca%>")));
 	      break;
 	    case ALLOCA_IN_LOOP:
 	      gcc_assert (!is_vla);
 	      warning_at (loc, wcode,
-			  "%Guse of %<alloca%> within a loop", stmt);
+			  "use of %<alloca%> within a loop");
 	      break;
 	    case ALLOCA_ARG_IS_ZERO:
 	      warning_at (loc, wcode,
 			  (is_vla
-			   ? G_("%Gargument to variable-length array "
+			   ? G_("argument to variable-length array "
 				"is zero")
-			   : G_("%Gargument to %<alloca%> is zero")),
-			  stmt);
+			   : G_("argument to %<alloca%> is zero")));
 	      break;
 	    default:
 	      gcc_unreachable ();

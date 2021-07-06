@@ -1126,30 +1126,30 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
 	{
 	  if (wi::ltu_p (maxsiz, bndrng[0]))
 	    warned = warning_at (loc, opt,
-				 "%K%qD specified bound %s exceeds "
+				 "%qD specified bound %s exceeds "
 				 "maximum object size %E",
-				 expr, func, bndstr, maxobjsize);
+				 func, bndstr, maxobjsize);
 	  else
 	    {
 	      bool maybe = wi::to_wide (size) == bndrng[0];
 	      warned = warning_at (loc, opt,
 				   exact
-				   ? G_("%K%qD specified bound %s exceeds "
+				   ? G_("%qD specified bound %s exceeds "
 					"the size %E of unterminated array")
 				   : (maybe
-				      ? G_("%K%qD specified bound %s may "
+				      ? G_("%qD specified bound %s may "
 					   "exceed the size of at most %E "
 					   "of unterminated array")
-				      : G_("%K%qD specified bound %s exceeds "
+				      : G_("%qD specified bound %s exceeds "
 					   "the size of at most %E "
 					   "of unterminated array")),
-				   expr, func, bndstr, size);
+				   func, bndstr, size);
 	    }
 	}
       else
 	warned = warning_at (loc, opt,
-			     "%K%qD argument missing terminating nul",
-			     expr, func);
+			     "%qD argument missing terminating nul",
+			     func);
     }
   else
     {
@@ -3969,35 +3969,34 @@ maybe_warn_for_bound (opt_code opt, location_t loc, tree exp, tree func,
 	    warned = (func
 		      ? warning_at (loc, opt,
 				    (maybe
-				     ? G_("%K%qD specified bound %E may "
+				     ? G_("%qD specified bound %E may "
 					  "exceed maximum object size %E")
-				     : G_("%K%qD specified bound %E "
+				     : G_("%qD specified bound %E "
 					  "exceeds maximum object size %E")),
-				    exp, func, bndrng[0], maxobjsize)
+				    func, bndrng[0], maxobjsize)
 		      : warning_at (loc, opt,
 				    (maybe
-				     ? G_("%Kspecified bound %E may "
+				     ? G_("specified bound %E may "
 					  "exceed maximum object size %E")
-				     : G_("%Kspecified bound %E "
+				     : G_("specified bound %E "
 					  "exceeds maximum object size %E")),
-				    exp, bndrng[0], maxobjsize));
+				    bndrng[0], maxobjsize));
 	  else
 	    warned = (func
 		      ? warning_at (loc, opt,
 				    (maybe
-				     ? G_("%K%qD specified bound [%E, %E] may "
+				     ? G_("%qD specified bound [%E, %E] may "
 					  "exceed maximum object size %E")
-				     : G_("%K%qD specified bound [%E, %E] "
+				     : G_("%qD specified bound [%E, %E] "
 					  "exceeds maximum object size %E")),
-				    exp, func,
-				    bndrng[0], bndrng[1], maxobjsize)
+				    func, bndrng[0], bndrng[1], maxobjsize)
 		      : warning_at (loc, opt,
 				    (maybe
-				     ? G_("%Kspecified bound [%E, %E] may "
+				     ? G_("specified bound [%E, %E] may "
 					  "exceed maximum object size %E")
-				     : G_("%Kspecified bound [%E, %E] "
+				     : G_("specified bound [%E, %E] "
 					  "exceeds maximum object size %E")),
-				    exp, bndrng[0], bndrng[1], maxobjsize));
+				    bndrng[0], bndrng[1], maxobjsize));
 	}
       else if (!size || tree_int_cst_le (bndrng[0], size))
 	return false;
@@ -4005,34 +4004,34 @@ maybe_warn_for_bound (opt_code opt, location_t loc, tree exp, tree func,
 	warned = (func
 		  ? warning_at (loc, opt,
 				(maybe
-				 ? G_("%K%qD specified bound %E may exceed "
+				 ? G_("%qD specified bound %E may exceed "
 				      "source size %E")
-				 : G_("%K%qD specified bound %E exceeds "
+				 : G_("%qD specified bound %E exceeds "
 				      "source size %E")),
-				exp, func, bndrng[0], size)
+				func, bndrng[0], size)
 		  : warning_at (loc, opt,
 				(maybe
-				 ? G_("%Kspecified bound %E may exceed "
+				 ? G_("specified bound %E may exceed "
 				      "source size %E")
-				 : G_("%Kspecified bound %E exceeds "
+				 : G_("specified bound %E exceeds "
 				      "source size %E")),
-				exp, bndrng[0], size));
+				bndrng[0], size));
       else
 	warned = (func
 		  ? warning_at (loc, opt,
 				(maybe
-				 ? G_("%K%qD specified bound [%E, %E] may "
+				 ? G_("%qD specified bound [%E, %E] may "
 				      "exceed source size %E")
-				 : G_("%K%qD specified bound [%E, %E] exceeds "
+				 : G_("%qD specified bound [%E, %E] exceeds "
 				      "source size %E")),
-				exp, func, bndrng[0], bndrng[1], size)
+				func, bndrng[0], bndrng[1], size)
 		  : warning_at (loc, opt,
 				(maybe
-				 ? G_("%Kspecified bound [%E, %E] may exceed "
+				 ? G_("specified bound [%E, %E] may exceed "
 				      "source size %E")
-				 : G_("%Kspecified bound [%E, %E] exceeds "
+				 : G_("specified bound [%E, %E] exceeds "
 				      "source size %E")),
-				exp, bndrng[0], bndrng[1], size));
+				bndrng[0], bndrng[1], size));
       if (warned)
 	{
 	  if (pad && pad->src.ref)
@@ -4057,35 +4056,34 @@ maybe_warn_for_bound (opt_code opt, location_t loc, tree exp, tree func,
 	warned = (func
 		  ? warning_at (loc, opt,
 				(maybe
-				 ? G_("%K%qD specified size %E may "
+				 ? G_("%qD specified size %E may "
 				      "exceed maximum object size %E")
-				 : G_("%K%qD specified size %E "
+				 : G_("%qD specified size %E "
 				      "exceeds maximum object size %E")),
-				exp, func, bndrng[0], maxobjsize)
+				func, bndrng[0], maxobjsize)
 		  : warning_at (loc, opt,
 				(maybe
-				 ? G_("%Kspecified size %E may exceed "
+				 ? G_("specified size %E may exceed "
 				      "maximum object size %E")
-				 : G_("%Kspecified size %E exceeds "
+				 : G_("specified size %E exceeds "
 				      "maximum object size %E")),
-				exp, bndrng[0], maxobjsize));
+				bndrng[0], maxobjsize));
       else
 	warned = (func
 		  ? warning_at (loc, opt,
 				(maybe
-				 ? G_("%K%qD specified size between %E and %E "
+				 ? G_("%qD specified size between %E and %E "
 				      "may exceed maximum object size %E")
-				 : G_("%K%qD specified size between %E and %E "
+				 : G_("%qD specified size between %E and %E "
 				      "exceeds maximum object size %E")),
-				exp, func,
-				bndrng[0], bndrng[1], maxobjsize)
+				func, bndrng[0], bndrng[1], maxobjsize)
 		  : warning_at (loc, opt,
 				(maybe
-				 ? G_("%Kspecified size between %E and %E "
+				 ? G_("specified size between %E and %E "
 				      "may exceed maximum object size %E")
-				 : G_("%Kspecified size between %E and %E "
+				 : G_("specified size between %E and %E "
 				      "exceeds maximum object size %E")),
-				exp, bndrng[0], bndrng[1], maxobjsize));
+				bndrng[0], bndrng[1], maxobjsize));
     }
   else if (!size || tree_int_cst_le (bndrng[0], size))
     return false;
@@ -4093,34 +4091,34 @@ maybe_warn_for_bound (opt_code opt, location_t loc, tree exp, tree func,
     warned = (func
 	      ? warning_at (loc, opt,
 			    (maybe
-			     ? G_("%K%qD specified bound %E may exceed "
+			     ? G_("%qD specified bound %E may exceed "
 				  "destination size %E")
-			     : G_("%K%qD specified bound %E exceeds "
+			     : G_("%qD specified bound %E exceeds "
 				  "destination size %E")),
-			    exp, func, bndrng[0], size)
+			    func, bndrng[0], size)
 	      : warning_at (loc, opt,
 			    (maybe
-			     ? G_("%Kspecified bound %E may exceed "
+			     ? G_("specified bound %E may exceed "
 				  "destination size %E")
-			     : G_("%Kspecified bound %E exceeds "
+			     : G_("specified bound %E exceeds "
 				  "destination size %E")),
-			    exp, bndrng[0], size));
+			    bndrng[0], size));
   else
     warned = (func
 	      ? warning_at (loc, opt,
 			    (maybe
-			     ? G_("%K%qD specified bound [%E, %E] may exceed "
+			     ? G_("%qD specified bound [%E, %E] may exceed "
 				  "destination size %E")
-			     : G_("%K%qD specified bound [%E, %E] exceeds "
+			     : G_("%qD specified bound [%E, %E] exceeds "
 				  "destination size %E")),
-			    exp, func, bndrng[0], bndrng[1], size)
+			    func, bndrng[0], bndrng[1], size)
 	      : warning_at (loc, opt,
 			    (maybe
-			     ? G_("%Kspecified bound [%E, %E] exceeds "
+			     ? G_("specified bound [%E, %E] exceeds "
 				  "destination size %E")
-			     : G_("%Kspecified bound [%E, %E] exceeds "
+			     : G_("specified bound [%E, %E] exceeds "
 				  "destination size %E")),
-			    exp, bndrng[0], bndrng[1], size));
+			    bndrng[0], bndrng[1], size));
 
   if (warned)
     {
@@ -4158,65 +4156,63 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 	warned = (func
 		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
 			       (maybe
-				? G_("%K%qD may access %E byte in a region "
+				? G_("%qD may access %E byte in a region "
 				     "of size %E")
-				: G_("%K%qD accessing %E byte in a region "
+				: G_("%qD accessing %E byte in a region "
 				     "of size %E")),
 				(maybe
-				 ? G_ ("%K%qD may access %E bytes in a region "
+				 ? G_ ("%qD may access %E bytes in a region "
 				       "of size %E")
-				 : G_ ("%K%qD accessing %E bytes in a region "
+				 : G_ ("%qD accessing %E bytes in a region "
 				       "of size %E")),
-			       exp, func, range[0], size)
+			       func, range[0], size)
 		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
 			       (maybe
-				? G_("%Kmay access %E byte in a region "
+				? G_("may access %E byte in a region "
 				     "of size %E")
-				: G_("%Kaccessing %E byte in a region "
+				: G_("accessing %E byte in a region "
 				     "of size %E")),
 			       (maybe
-				? G_("%Kmay access %E bytes in a region "
+				? G_("may access %E bytes in a region "
 				     "of size %E")
-				: G_("%Kaccessing %E bytes in a region "
+				: G_("accessing %E bytes in a region "
 				     "of size %E")),
-			       exp, range[0], size));
+			       range[0], size));
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
 	  warned = (func
 		    ? warning_at (loc, opt,
 				  (maybe
-				   ? G_("%K%qD may access %E or more bytes "
+				   ? G_("%qD may access %E or more bytes "
 					"in a region of size %E")
-				   : G_("%K%qD accessing %E or more bytes "
+				   : G_("%qD accessing %E or more bytes "
 					"in a region of size %E")),
-				  exp, func, range[0], size)
+				  func, range[0], size)
 		    : warning_at (loc, opt,
 				  (maybe
-				   ? G_("%Kmay access %E or more bytes "
+				   ? G_("may access %E or more bytes "
 					"in a region of size %E")
-				   : G_("%Kaccessing %E or more bytes "
+				   : G_("accessing %E or more bytes "
 					"in a region of size %E")),
-				  exp, range[0], size));
+				  range[0], size));
 	}
       else
 	warned = (func
 		  ? warning_at (loc, opt,
 				(maybe
-				 ? G_("%K%qD may access between %E and %E "
+				 ? G_("%qD may access between %E and %E "
 				      "bytes in a region of size %E")
-				 : G_("%K%qD accessing between %E and %E "
+				 : G_("%qD accessing between %E and %E "
 				      "bytes in a region of size %E")),
-				exp, func, range[0], range[1],
-				size)
+				func, range[0], range[1], size)
 		  : warning_at (loc, opt,
 				(maybe
-				 ? G_("%Kmay access between %E and %E bytes "
+				 ? G_("may access between %E and %E bytes "
 				      "in a region of size %E")
-				 : G_("%Kaccessing between %E and %E bytes "
+				 : G_("accessing between %E and %E bytes "
 				      "in a region of size %E")),
-				exp, range[0], range[1],
-				size));
+				range[0], range[1], size));
       return warned;
     }
 
@@ -4226,69 +4222,67 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 	warned = (func
 		  ? warning_n (loc, opt, tree_to_uhwi (range[0]),
 			       (maybe
-				? G_("%K%qD may write %E byte into a region "
+				? G_("%qD may write %E byte into a region "
 				     "of size %E")
-				: G_("%K%qD writing %E byte into a region "
+				: G_("%qD writing %E byte into a region "
 				     "of size %E overflows the destination")),
 			       (maybe
-				? G_("%K%qD may write %E bytes into a region "
+				? G_("%qD may write %E bytes into a region "
 				     "of size %E")
-				: G_("%K%qD writing %E bytes into a region "
+				: G_("%qD writing %E bytes into a region "
 				     "of size %E overflows the destination")),
-			       exp, func, range[0], size)
+			       func, range[0], size)
 		  : warning_n (loc, opt, tree_to_uhwi (range[0]),
 			       (maybe
-				? G_("%Kmay write %E byte into a region "
+				? G_("may write %E byte into a region "
 				     "of size %E")
-				: G_("%Kwriting %E byte into a region "
+				: G_("writing %E byte into a region "
 				     "of size %E overflows the destination")),
 			       (maybe
-				? G_("%Kmay write %E bytes into a region "
+				? G_("may write %E bytes into a region "
 				     "of size %E")
-				: G_("%Kwriting %E bytes into a region "
+				: G_("writing %E bytes into a region "
 				     "of size %E overflows the destination")),
-			       exp, range[0], size));
+			       range[0], size));
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
 	  warned = (func
 		    ? warning_at (loc, opt,
 				  (maybe
-				   ? G_("%K%qD may write %E or more bytes "
+				   ? G_("%qD may write %E or more bytes "
 					"into a region of size %E")
-				   : G_("%K%qD writing %E or more bytes "
+				   : G_("%qD writing %E or more bytes "
 					"into a region of size %E overflows "
 					"the destination")),
-				  exp, func, range[0], size)
+				  func, range[0], size)
 		    : warning_at (loc, opt,
 				  (maybe
-				   ? G_("%Kmay write %E or more bytes into "
+				   ? G_("may write %E or more bytes into "
 					"a region of size %E")
-				   : G_("%Kwriting %E or more bytes into "
+				   : G_("writing %E or more bytes into "
 					"a region of size %E overflows "
 					"the destination")),
-				  exp, range[0], size));
+				  range[0], size));
 	}
       else
 	warned = (func
 		  ? warning_at (loc, opt,
 				(maybe
-				 ? G_("%K%qD may write between %E and %E bytes "
+				 ? G_("%qD may write between %E and %E bytes "
 				      "into a region of size %E")
-				 : G_("%K%qD writing between %E and %E bytes "
+				 : G_("%qD writing between %E and %E bytes "
 				      "into a region of size %E overflows "
 				      "the destination")),
-				exp, func, range[0], range[1],
-				size)
+				func, range[0], range[1], size)
 		  : warning_at (loc, opt,
 				(maybe
-				 ? G_("%Kmay write between %E and %E bytes "
+				 ? G_("may write between %E and %E bytes "
 				      "into a region of size %E")
-				 : G_("%Kwriting between %E and %E bytes "
+				 : G_("writing between %E and %E bytes "
 				      "into a region of size %E overflows "
 				      "the destination")),
-				exp, range[0], range[1],
-				size));
+				range[0], range[1], size));
       return warned;
     }
 
@@ -4299,64 +4293,64 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 		  ? warning_n (loc, OPT_Wstringop_overread,
 			       tree_to_uhwi (range[0]),
 			       (maybe
-				? G_("%K%qD may read %E byte from a region "
+				? G_("%qD may read %E byte from a region "
 				     "of size %E")
-				: G_("%K%qD reading %E byte from a region "
+				: G_("%qD reading %E byte from a region "
 				     "of size %E")),
 			       (maybe
-				? G_("%K%qD may read %E bytes from a region "
+				? G_("%qD may read %E bytes from a region "
 				     "of size %E")
-				: G_("%K%qD reading %E bytes from a region "
+				: G_("%qD reading %E bytes from a region "
 				     "of size %E")),
-			       exp, func, range[0], size)
+			       func, range[0], size)
 		  : warning_n (loc, OPT_Wstringop_overread,
 			       tree_to_uhwi (range[0]),
 			       (maybe
-				? G_("%Kmay read %E byte from a region "
+				? G_("may read %E byte from a region "
 				     "of size %E")
-				: G_("%Kreading %E byte from a region "
+				: G_("reading %E byte from a region "
 				     "of size %E")),
 			       (maybe
-				? G_("%Kmay read %E bytes from a region "
+				? G_("may read %E bytes from a region "
 				     "of size %E")
-				: G_("%Kreading %E bytes from a region "
+				: G_("reading %E bytes from a region "
 				     "of size %E")),
-			       exp, range[0], size));
+			       range[0], size));
       else if (tree_int_cst_sign_bit (range[1]))
 	{
 	  /* Avoid printing the upper bound if it's invalid.  */
 	  warned = (func
 		    ? warning_at (loc, OPT_Wstringop_overread,
 				  (maybe
-				   ? G_("%K%qD may read %E or more bytes "
+				   ? G_("%qD may read %E or more bytes "
 					"from a region of size %E")
-				   : G_("%K%qD reading %E or more bytes "
+				   : G_("%qD reading %E or more bytes "
 					"from a region of size %E")),
-				  exp, func, range[0], size)
+				  func, range[0], size)
 		    : warning_at (loc, OPT_Wstringop_overread,
 				  (maybe
-				   ? G_("%Kmay read %E or more bytes "
+				   ? G_("may read %E or more bytes "
 					"from a region of size %E")
-				   : G_("%Kreading %E or more bytes "
+				   : G_("reading %E or more bytes "
 					"from a region of size %E")),
-				  exp, range[0], size));
+				  range[0], size));
 	}
       else
 	warned = (func
 		  ? warning_at (loc, OPT_Wstringop_overread,
 				(maybe
-				 ? G_("%K%qD may read between %E and %E bytes "
+				 ? G_("%qD may read between %E and %E bytes "
 				      "from a region of size %E")
-				 : G_("%K%qD reading between %E and %E bytes "
+				 : G_("%qD reading between %E and %E bytes "
 				      "from a region of size %E")),
-				exp, func, range[0], range[1], size)
+				func, range[0], range[1], size)
 		  : warning_at (loc, opt,
 				(maybe
-				 ? G_("%Kmay read between %E and %E bytes "
+				 ? G_("may read between %E and %E bytes "
 				      "from a region of size %E")
-				 : G_("%Kreading between %E and %E bytes "
+				 : G_("reading between %E and %E bytes "
 				      "from a region of size %E")),
-				exp, range[0], range[1], size));
+				range[0], range[1], size));
 
       if (warned)
 	suppress_warning (exp, OPT_Wstringop_overread);
@@ -4369,37 +4363,37 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
     warned = (func
 	      ? warning_n (loc, OPT_Wstringop_overread,
 			   tree_to_uhwi (range[0]),
-			   "%K%qD expecting %E byte in a region of size %E",
-			   "%K%qD expecting %E bytes in a region of size %E",
-			   exp, func, range[0], size)
+			   "%qD expecting %E byte in a region of size %E",
+			   "%qD expecting %E bytes in a region of size %E",
+			   func, range[0], size)
 	      : warning_n (loc, OPT_Wstringop_overread,
 			   tree_to_uhwi (range[0]),
-			   "%Kexpecting %E byte in a region of size %E",
-			   "%Kexpecting %E bytes in a region of size %E",
-			   exp, range[0], size));
+			   "expecting %E byte in a region of size %E",
+			   "expecting %E bytes in a region of size %E",
+			   range[0], size));
   else if (tree_int_cst_sign_bit (range[1]))
     {
       /* Avoid printing the upper bound if it's invalid.  */
       warned = (func
 		? warning_at (loc, OPT_Wstringop_overread,
-			      "%K%qD expecting %E or more bytes in a region "
+			      "%qD expecting %E or more bytes in a region "
 			      "of size %E",
-			      exp, func, range[0], size)
+			      func, range[0], size)
 		: warning_at (loc, OPT_Wstringop_overread,
-			      "%Kexpecting %E or more bytes in a region "
+			      "expecting %E or more bytes in a region "
 			      "of size %E",
-			      exp, range[0], size));
+			      range[0], size));
     }
   else
     warned = (func
 	      ? warning_at (loc, OPT_Wstringop_overread,
-			    "%K%qD expecting between %E and %E bytes in "
+			    "%qD expecting between %E and %E bytes in "
 			    "a region of size %E",
-			    exp, func, range[0], range[1], size)
+			    func, range[0], range[1], size)
 	      : warning_at (loc, OPT_Wstringop_overread,
-			    "%Kexpecting between %E and %E bytes in "
+			    "expecting between %E and %E bytes in "
 			    "a region of size %E",
-			    exp, range[0], range[1], size));
+			    range[0], range[1], size));
 
   if (warned)
     suppress_warning (exp, OPT_Wstringop_overread);
@@ -4759,7 +4753,7 @@ check_access (tree exp, tree dstwrite,
       && TREE_CODE (range[0]) == INTEGER_CST
       && tree_int_cst_lt (maxobjsize, range[0]))
     {
-      location_t loc = tree_inlined_location (exp);
+      location_t loc = EXPR_LOCATION (exp);
       maybe_warn_for_bound (OPT_Wstringop_overflow_, loc, exp, func, range,
 			    NULL_TREE, pad);
       return false;
@@ -4787,7 +4781,7 @@ check_access (tree exp, tree dstwrite,
 		  && warning_suppressed_p (pad->dst.ref, opt)))
 	    return false;
 
-	  location_t loc = tree_inlined_location (exp);
+	  location_t loc = EXPR_LOCATION (exp);
 	  bool warned = false;
 	  if (dstwrite == slen && at_least_one)
 	    {
@@ -4796,15 +4790,15 @@ check_access (tree exp, tree dstwrite,
 		 at least one byte past the end of the destination.  */
 	      warned = (func
 			? warning_at (loc, opt,
-				      "%K%qD writing %E or more bytes into "
+				      "%qD writing %E or more bytes into "
 				      "a region of size %E overflows "
 				      "the destination",
-				      exp, func, range[0], dstsize)
+				      func, range[0], dstsize)
 			: warning_at (loc, opt,
-				      "%Kwriting %E or more bytes into "
+				      "writing %E or more bytes into "
 				      "a region of size %E overflows "
 				      "the destination",
-				      exp, range[0], dstsize));
+				      range[0], dstsize));
 	    }
 	  else
 	    {
@@ -4840,7 +4834,7 @@ check_access (tree exp, tree dstwrite,
 	 PAD is nonnull and BNDRNG is valid.  */
       get_size_range (maxread, range, pad ? pad->src.bndrng : NULL);
 
-      location_t loc = tree_inlined_location (exp);
+      location_t loc = EXPR_LOCATION (exp);
       tree size = dstsize;
       if (pad && pad->mode == access_read_only)
 	size = wide_int_to_tree (sizetype, pad->src.sizrng[1]);
@@ -4901,7 +4895,7 @@ check_access (tree exp, tree dstwrite,
 	      && warning_suppressed_p (pad->src.ref, opt)))
 	return false;
 
-      location_t loc = tree_inlined_location (exp);
+      location_t loc = EXPR_LOCATION (exp);
       const bool read
 	= mode == access_read_only || mode == access_read_write;
       const bool maybe = pad && pad->dst.parmarray;
@@ -6481,10 +6475,10 @@ check_strncat_sizes (tree exp, tree objsize)
   if (tree_fits_uhwi_p (maxread) && tree_fits_uhwi_p (objsize)
       && tree_int_cst_equal (objsize, maxread))
     {
-      location_t loc = tree_inlined_location (exp);
+      location_t loc = EXPR_LOCATION (exp);
       warning_at (loc, OPT_Wstringop_overflow_,
-		  "%K%qD specified bound %E equals destination size",
-		  exp, get_callee_fndecl (exp), maxread);
+		  "%qD specified bound %E equals destination size",
+		  get_callee_fndecl (exp), maxread);
 
       return false;
     }
@@ -6554,10 +6548,10 @@ expand_builtin_strncat (tree exp, rtx)
   if (tree_fits_uhwi_p (maxread) && tree_fits_uhwi_p (destsize)
       && tree_int_cst_equal (destsize, maxread))
     {
-      location_t loc = tree_inlined_location (exp);
+      location_t loc = EXPR_LOCATION (exp);
       warning_at (loc, OPT_Wstringop_overflow_,
-		  "%K%qD specified bound %E equals destination size",
-		  exp, get_callee_fndecl (exp), maxread);
+		  "%qD specified bound %E equals destination size",
+		  get_callee_fndecl (exp), maxread);
 
       return NULL_RTX;
     }
@@ -7330,7 +7324,7 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
       || !check_nul_terminated_array (exp, arg2, arg3))
     return NULL_RTX;
 
-  location_t loc = tree_inlined_location (exp);
+  location_t loc = EXPR_LOCATION (exp);
   tree len1 = c_strlen (arg1, 1);
   tree len2 = c_strlen (arg2, 1);
 
@@ -10006,13 +10000,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
     case BUILT_IN_VA_ARG_PACK:
       /* All valid uses of __builtin_va_arg_pack () are removed during
 	 inlining.  */
-      error ("%Kinvalid use of %<__builtin_va_arg_pack ()%>", exp);
+      error ("invalid use of %<__builtin_va_arg_pack ()%>");
       return const0_rtx;
 
     case BUILT_IN_VA_ARG_PACK_LEN:
       /* All valid uses of __builtin_va_arg_pack_len () are removed during
 	 inlining.  */
-      error ("%Kinvalid use of %<__builtin_va_arg_pack_len ()%>", exp);
+      error ("invalid use of %<__builtin_va_arg_pack_len ()%>");
       return const0_rtx;
 
       /* Return the address of the first anonymous stack arg.  */
@@ -12961,8 +12955,8 @@ expand_builtin_object_size (tree exp)
 
   if (!validate_arglist (exp, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     {
-      error ("%Kfirst argument of %qD must be a pointer, second integer constant",
-	     exp, fndecl);
+      error ("first argument of %qD must be a pointer, second integer constant",
+	     fndecl);
       expand_builtin_trap ();
       return const0_rtx;
     }
@@ -12974,8 +12968,8 @@ expand_builtin_object_size (tree exp)
       || tree_int_cst_sgn (ost) < 0
       || compare_tree_int (ost, 3) > 0)
     {
-      error ("%Klast argument of %qD is not integer constant between 0 and 3",
-	     exp, fndecl);
+      error ("last argument of %qD is not integer constant between 0 and 3",
+	      fndecl);
       expand_builtin_trap ();
       return const0_rtx;
     }
@@ -13787,8 +13781,8 @@ warn_dealloc_offset (location_t loc, tree exp, const access_ref &aref)
     }
 
   if (!warning_at (loc, OPT_Wfree_nonheap_object,
-		   "%K%qD called on pointer %qE with nonzero offset%s",
-		   exp, dealloc_decl, aref.ref, offstr))
+		   "%qD called on pointer %qE with nonzero offset%s",
+		   dealloc_decl, aref.ref, offstr))
     return false;
 
   if (DECL_P (aref.ref))
@@ -13843,15 +13837,15 @@ maybe_emit_free_warning (tree exp)
     return;
 
   tree dealloc_decl = get_callee_fndecl (exp);
-  location_t loc = tree_inlined_location (exp);
+  location_t loc = EXPR_LOCATION (exp);
 
   if (DECL_P (ref) || EXPR_P (ref))
     {
       /* Diagnose freeing a declared object.  */
       if (aref.ref_declared ()
 	  && warning_at (loc, OPT_Wfree_nonheap_object,
-			 "%K%qD called on unallocated object %qD",
-			 exp, dealloc_decl, ref))
+			 "%qD called on unallocated object %qD",
+			 dealloc_decl, ref))
 	{
 	  loc = (DECL_P (ref)
 		 ? DECL_SOURCE_LOCATION (ref)
@@ -13870,8 +13864,8 @@ maybe_emit_free_warning (tree exp)
   else if (CONSTANT_CLASS_P (ref))
     {
       if (warning_at (loc, OPT_Wfree_nonheap_object,
-		      "%K%qD called on a pointer to an unallocated "
-		      "object %qE", exp, dealloc_decl, ref))
+		      "%qD called on a pointer to an unallocated "
+		      "object %qE", dealloc_decl, ref))
 	{
 	  if (TREE_CODE (ptr) == SSA_NAME)
 	    {
@@ -13909,18 +13903,18 @@ maybe_emit_free_warning (tree exp)
 		     ? OPT_Wmismatched_new_delete
 		     : OPT_Wmismatched_dealloc);
 		  warned = warning_at (loc, opt,
-				       "%K%qD called on pointer returned "
+				       "%qD called on pointer returned "
 				       "from a mismatched allocation "
-				       "function", exp, dealloc_decl);
+				       "function", dealloc_decl);
 		}
 	    }
 	  else if (gimple_call_builtin_p (def_stmt, BUILT_IN_ALLOCA)
 	    	   || gimple_call_builtin_p (def_stmt,
 	    				     BUILT_IN_ALLOCA_WITH_ALIGN))
 	    warned = warning_at (loc, OPT_Wfree_nonheap_object,
-				 "%K%qD called on pointer to "
+				 "%qD called on pointer to "
 				 "an unallocated object",
-				 exp, dealloc_decl);
+				 dealloc_decl);
 	  else if (warn_dealloc_offset (loc, exp, aref))
 	    return;
 
