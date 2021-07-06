@@ -58,8 +58,9 @@ public:
 	TyTy::BaseType *lookup;
 	rust_assert (tyctx->lookup_type (ref, &lookup));
 
-	auto compiled = TyTyCompile::compile (backend, lookup);
-	compiled_type_map[ref] = compiled;
+	Btype *compiled = TyTyCompile::compile (backend, lookup);
+	compiled_type_map.insert (std::pair<HirId, Btype *> (ref, compiled));
+	builtin_range.insert (ref);
       }
   }
 
@@ -94,7 +95,8 @@ public:
   void insert_compiled_type (HirId id, ::Btype *type,
 			     const TyTy::BaseType *ref = nullptr)
   {
-    compiled_type_map[id] = type;
+    rust_assert (builtin_range.find (id) == builtin_range.end ());
+    compiled_type_map.insert (std::pair<HirId, Btype *> (id, type));
     if (ref != nullptr)
       {
 	std::pair<HirId, ::Btype *> elem (id, type);
@@ -297,6 +299,7 @@ private:
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings *mappings;
   ConstFold::Context *const_ctx;
+  std::set<HirId> builtin_range;
 
   // state
   std::vector<fncontext> fn_stack;
