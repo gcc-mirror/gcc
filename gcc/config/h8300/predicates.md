@@ -506,6 +506,8 @@
 {
   if (GET_MODE (op) == mode
       && (GET_CODE (XEXP (op, 0)) != PRE_DEC
+	  && GET_CODE (XEXP (op, 0)) != PRE_INC
+	  && GET_CODE (XEXP (op, 0)) != POST_DEC
 	  && GET_CODE (XEXP (op, 0)) != POST_INC))
     return 1;
   return 0;
