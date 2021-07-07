@@ -14,7 +14,7 @@
    */
 
 /* { dg-do compile } */
-/* { dg-options "-O0 -gbtf -dA -fno-short-enums" } */
+/* { dg-options "-O0 -gbtf -dA" } */
 
 /* Enum with 4 members.  */
 /* { dg-final { scan-assembler-times "\[\t \]0x6000004\[\t \]+\[^\n\]*btt_info" 1 } } */
