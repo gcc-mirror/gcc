@@ -1,3 +1,20 @@
+2021-07-06  Clément Chigot  <clement.chigot@atos.net>
+
+	Backported from master:
+	2021-06-10  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/aix71.h (ASM_CPU_SPEC): Add Power10 directive.
+	* config/rs6000/aix72.h (ASM_CPU_SPEC): Likewise.
+
+2021-07-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from master:
+	2021-05-20  Clement Chigot  <clement.chigot@atos.net>
+		    David Edelsohn  <dje.gcc@gmail.com>
+
+	* collect2.c (scan_prog_file): Issue non-fatal warning for
+	non-COFF files.
+
 2021-07-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (diagnostic_show_locus): Don't reject
