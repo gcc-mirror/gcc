@@ -222,6 +222,9 @@ struct access_ref
      argument to the minimum.  */
   offset_int size_remaining (offset_int * = NULL) const;
 
+/* Return true if the offset and object size are in range for SIZE.  */
+  bool offset_in_range (const offset_int &) const;
+
   /* Return true if *THIS is an access to a declared object.  */
   bool ref_declared () const
   {
@@ -261,6 +264,8 @@ struct access_ref
   /* Range of byte offsets into and sizes of the object(s).  */
   offset_int offrng[2];
   offset_int sizrng[2];
+  /* The minimum and maximum offset computed.  */
+  offset_int offmax[2];
   /* Range of the bound of the access: denotes that the access
      is at least BNDRNG[0] bytes but no more than BNDRNG[1].
      For string functions the size of the actual access is
