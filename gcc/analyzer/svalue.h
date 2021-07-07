@@ -157,6 +157,8 @@ public:
 			  const bit_range &subrange,
 			  region_model_manager *mgr) const;
 
+  virtual bool all_zeroes_p () const;
+
  protected:
   svalue (complexity c, tree type)
   : m_complexity (c), m_type (type)
@@ -276,6 +278,8 @@ public:
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
 			  region_model_manager *mgr) const FINAL OVERRIDE;
+
+  bool all_zeroes_p () const FINAL OVERRIDE;
 
  private:
   tree m_cst_expr;
@@ -858,7 +862,7 @@ public:
   const svalue *get_outer_size () const { return m_outer_size; }
   const svalue *get_inner_svalue () const { return m_inner_svalue; }
 
-  bool all_zeroes_p () const;
+  bool all_zeroes_p () const FINAL OVERRIDE;
 
   const svalue *
   maybe_fold_bits_within (tree type,

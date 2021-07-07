@@ -1377,6 +1377,14 @@ struct null_assignment_sm_context : public sm_context
     return current;
   }
 
+  state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
+				    const svalue *sval) FINAL OVERRIDE
+  {
+    const sm_state_map *old_smap = m_old_state->m_checker_states[m_sm_idx];
+    state_machine::state_t current = old_smap->get_state (sval, m_ext_state);
+    return current;
+  }
+
   void set_next_state (const gimple *stmt,
 		       tree var,
 		       state_machine::state_t to,
@@ -1401,6 +1409,28 @@ struct null_assignment_sm_context : public sm_context
 							*m_new_state));
   }
 
+  void set_next_state (const gimple *stmt,
+		       const svalue *sval,
+		       state_machine::state_t to,
+		       tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
+  {
+    state_machine::state_t from = get_state (stmt, sval);
+    if (from != m_sm.get_start_state ())
+      return;
+
+    const supernode *supernode = m_point->get_supernode ();
+    int stack_depth = m_point->get_stack_depth ();
+
+    m_emission_path->add_event (new state_change_event (supernode,
+							m_stmt,
+							stack_depth,
+							m_sm,
+							sval,
+							from, to,
+							NULL,
+							*m_new_state));
+  }
+
   void warn (const supernode *, const gimple *,
 	     tree, pending_diagnostic *d) FINAL OVERRIDE
   {
@@ -1410,6 +1440,11 @@ struct null_assignment_sm_context : public sm_context
   tree get_diagnostic_tree (tree expr) FINAL OVERRIDE
   {
     return expr;
+  }
+
+  tree get_diagnostic_tree (const svalue *sval) FINAL OVERRIDE
+  {
+    return m_new_state->m_region_model->get_representative_tree (sval);
   }
 
   state_machine::state_t get_global_state () const FINAL OVERRIDE

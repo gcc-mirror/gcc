@@ -58,13 +58,6 @@ public:
 		const supernode *node,
 		const gimple *stmt) const FINAL OVERRIDE;
 
-  void on_condition (sm_context *sm_ctxt,
-		     const supernode *node,
-		     const gimple *stmt,
-		     tree lhs,
-		     enum tree_code op,
-		     tree rhs) const FINAL OVERRIDE;
-
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
 
   /* State for "sensitive" data, such as a password.  */
@@ -220,17 +213,6 @@ sensitive_state_machine::on_stmt (sm_context *sm_ctxt,
 	// TODO: ...etc.  This is just a proof-of-concept at this point.
       }
   return false;
-}
-
-void
-sensitive_state_machine::on_condition (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
-				       const supernode *node ATTRIBUTE_UNUSED,
-				       const gimple *stmt ATTRIBUTE_UNUSED,
-				       tree lhs ATTRIBUTE_UNUSED,
-				       enum tree_code op ATTRIBUTE_UNUSED,
-				       tree rhs ATTRIBUTE_UNUSED) const
-{
-  /* Empty.  */
 }
 
 bool

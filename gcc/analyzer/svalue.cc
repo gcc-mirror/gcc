@@ -557,6 +557,15 @@ svalue::maybe_fold_bits_within (tree,
   return NULL;
 }
 
+/* Base implementation of svalue::all_zeroes_p.
+   Return true if this value is known to be all zeroes.  */
+
+bool
+svalue::all_zeroes_p () const
+{
+  return false;
+}
+
 /* class region_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for region_svalue.  */
@@ -740,6 +749,14 @@ constant_svalue::maybe_fold_bits_within (tree type,
     }
   /* Otherwise, don't fold.  */
   return NULL;
+}
+
+/* Implementation of svalue::all_zeroes_p for constant_svalue.  */
+
+bool
+constant_svalue::all_zeroes_p () const
+{
+  return zerop (m_cst_expr);
 }
 
 /* class unknown_svalue : public svalue.  */
@@ -1154,15 +1171,12 @@ repeated_svalue::accept (visitor *v) const
   m_inner_svalue->accept (v);
 }
 
-/* Return true if this value is known to be all zeroes.  */
+/* Implementation of svalue::all_zeroes_p for repeated_svalue.  */
 
 bool
 repeated_svalue::all_zeroes_p () const
 {
-  if (tree cst = m_inner_svalue->maybe_get_constant ())
-    if (zerop (cst))
-      return true;
-  return false;
+  return m_inner_svalue->all_zeroes_p ();
 }
 
 /* Implementation of svalue::maybe_fold_bits_within vfunc

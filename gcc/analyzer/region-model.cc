@@ -881,12 +881,23 @@ bool
 region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 			   bool *out_terminate_path)
 {
+  call_details cd (call, this, ctxt);
+
   bool unknown_side_effects = false;
+
+  if (gimple_call_internal_p (call))
+    {
+      switch (gimple_call_internal_fn (call))
+       {
+       default:
+	 break;
+       case IFN_BUILTIN_EXPECT:
+	 return impl_call_builtin_expect (cd);
+       }
+    }
 
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
     {
-      call_details cd (call, this, ctxt);
-
       /* The various impl_call_* member functions are implemented
 	 in region-model-impl-calls.cc.
 	 Having them split out into separate functions makes it easier
@@ -957,16 +968,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       of scope for the analyzer: we only want to model the effects
 	       on the return value.  */
 	    break;
-	  }
-      else if (gimple_call_internal_p (call))
-	switch (gimple_call_internal_fn (call))
-	  {
-	  default:
-	    if (!DECL_PURE_P (callee_fndecl))
-	      unknown_side_effects = true;
-	    break;
-	  case IFN_BUILTIN_EXPECT:
-	    return impl_call_builtin_expect (cd);
 	  }
       else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
 	return impl_call_malloc (cd);
@@ -2251,6 +2252,123 @@ region_model::compare_initial_and_pointer (const initial_svalue *init,
   return tristate::TS_UNKNOWN;
 }
 
+/* Handle various constraints of the form:
+     LHS: ((bool)INNER_LHS INNER_OP INNER_RHS))
+     OP : == or !=
+     RHS: zero
+   and (with a cast):
+     LHS: CAST([long]int, ((bool)INNER_LHS INNER_OP INNER_RHS))
+     OP : == or !=
+     RHS: zero
+   by adding constraints for INNER_LHS INNEROP INNER_RHS.
+
+   Return true if this function can fully handle the constraint; if
+   so, add the implied constraint(s) and write true to *OUT if they
+   are consistent with existing constraints, or write false to *OUT
+   if they contradicts existing constraints.
+
+   Return false for cases that this function doeesn't know how to handle.
+
+   For example, if we're checking a stored conditional, we'll have
+   something like:
+     LHS: CAST(long int, (&HEAP_ALLOCATED_REGION(8)!=(int *)0B))
+     OP : NE_EXPR
+     RHS: zero
+   which this function can turn into an add_constraint of:
+     (&HEAP_ALLOCATED_REGION(8) != (int *)0B)
+
+   Similarly, optimized && and || conditionals lead to e.g.
+     if (p && q)
+   becoming gimple like this:
+     _1 = p_6 == 0B;
+     _2 = q_8 == 0B
+     _3 = _1 | _2
+   On the "_3 is false" branch we can have constraints of the form:
+     ((&HEAP_ALLOCATED_REGION(8)!=(int *)0B)
+      | (&HEAP_ALLOCATED_REGION(10)!=(int *)0B))
+     == 0
+   which implies that both _1 and _2 are false,
+   which this function can turn into a pair of add_constraints of
+     (&HEAP_ALLOCATED_REGION(8)!=(int *)0B)
+   and:
+     (&HEAP_ALLOCATED_REGION(10)!=(int *)0B).  */
+
+bool
+region_model::add_constraints_from_binop (const svalue *outer_lhs,
+					  enum tree_code outer_op,
+					  const svalue *outer_rhs,
+					  bool *out,
+					  region_model_context *ctxt)
+{
+  while (const svalue *cast = outer_lhs->maybe_undo_cast ())
+    outer_lhs = cast;
+  const binop_svalue *binop_sval = outer_lhs->dyn_cast_binop_svalue ();
+  if (!binop_sval)
+    return false;
+  if (!outer_rhs->all_zeroes_p ())
+    return false;
+
+  const svalue *inner_lhs = binop_sval->get_arg0 ();
+  enum tree_code inner_op = binop_sval->get_op ();
+  const svalue *inner_rhs = binop_sval->get_arg1 ();
+
+  if (outer_op != NE_EXPR && outer_op != EQ_EXPR)
+    return false;
+
+  /* We have either
+     - "OUTER_LHS != false" (i.e. OUTER is true), or
+     - "OUTER_LHS == false" (i.e. OUTER is false).  */
+  bool is_true = outer_op == NE_EXPR;
+
+  switch (inner_op)
+    {
+    default:
+      return false;
+
+    case EQ_EXPR:
+    case NE_EXPR:
+      {
+	/* ...and "(inner_lhs OP inner_rhs) == 0"
+	   then (inner_lhs OP inner_rhs) must have the same
+	   logical value as LHS.  */
+	if (!is_true)
+	  inner_op = invert_tree_comparison (inner_op, false /* honor_nans */);
+	*out = add_constraint (inner_lhs, inner_op, inner_rhs, ctxt);
+	return true;
+      }
+      break;
+
+    case BIT_AND_EXPR:
+      if (is_true)
+	{
+	  /* ...and "(inner_lhs & inner_rhs) != 0"
+	     then both inner_lhs and inner_rhs must be true.  */
+	  const svalue *false_sval
+	    = m_mgr->get_or_create_constant_svalue (boolean_false_node);
+	  bool sat1 = add_constraint (inner_lhs, NE_EXPR, false_sval, ctxt);
+	  bool sat2 = add_constraint (inner_rhs, NE_EXPR, false_sval, ctxt);
+	  *out = sat1 && sat2;
+	  return true;
+	}
+      return false;
+
+    case BIT_IOR_EXPR:
+      if (!is_true)
+	{
+	  /* ...and "(inner_lhs | inner_rhs) == 0"
+	     i.e. "(inner_lhs | inner_rhs)" is false
+	     then both inner_lhs and inner_rhs must be false.  */
+	  const svalue *false_sval
+	    = m_mgr->get_or_create_constant_svalue (boolean_false_node);
+	  bool sat1 = add_constraint (inner_lhs, EQ_EXPR, false_sval, ctxt);
+	  bool sat2 = add_constraint (inner_rhs, EQ_EXPR, false_sval, ctxt);
+	  *out = sat1 && sat2;
+	  return true;
+	}
+      return false;
+    }
+}
+
 /* Attempt to add the constraint "LHS OP RHS" to this region_model.
    If it is consistent with existing constraints, add it, and return true.
    Return false if it contradicts existing constraints.
@@ -2268,7 +2386,21 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   const svalue *lhs_sval = get_rvalue (lhs, ctxt);
   const svalue *rhs_sval = get_rvalue (rhs, ctxt);
 
-  tristate t_cond = eval_condition (lhs_sval, op, rhs_sval);
+  return add_constraint (lhs_sval, op, rhs_sval, ctxt);
+}
+
+/* Attempt to add the constraint "LHS OP RHS" to this region_model.
+   If it is consistent with existing constraints, add it, and return true.
+   Return false if it contradicts existing constraints.
+   Use CTXT for reporting any diagnostics associated with the accesses.  */
+
+bool
+region_model::add_constraint (const svalue *lhs,
+			      enum tree_code op,
+			      const svalue *rhs,
+			      region_model_context *ctxt)
+{
+  tristate t_cond = eval_condition (lhs, op, rhs);
 
   /* If we already have the condition, do nothing.  */
   if (t_cond.is_true ())
@@ -2279,10 +2411,12 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   if (t_cond.is_false ())
     return false;
 
-  /* Store the constraint.  */
-  m_constraints->add_constraint (lhs_sval, op, rhs_sval);
+  bool out;
+  if (add_constraints_from_binop (lhs, op, rhs, &out, ctxt))
+    return out;
 
-  add_any_constraints_from_ssa_def_stmt (lhs, op, rhs, ctxt);
+  /* Store the constraint.  */
+  m_constraints->add_constraint (lhs, op, rhs);
 
   /* Notify the context, if any.  This exists so that the state machines
      in a program_state can be notified about the condition, and so can
@@ -2293,9 +2427,10 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 
   /* If we have &REGION == NULL, then drop dynamic extents for REGION (for
      the case where REGION is heap-allocated and thus could be NULL).  */
-  if (op == EQ_EXPR && zerop (rhs))
-    if (const region_svalue *region_sval = lhs_sval->dyn_cast_region_svalue ())
-      unset_dynamic_extents (region_sval->get_pointee ());
+  if (tree rhs_cst = rhs->maybe_get_constant ())
+    if (op == EQ_EXPR && zerop (rhs_cst))
+      if (const region_svalue *region_sval = lhs->dyn_cast_region_svalue ())
+	unset_dynamic_extents (region_sval->get_pointee ());
 
   return true;
 }
@@ -2312,137 +2447,6 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   if (!sat && out)
     *out = new rejected_constraint (*this, lhs, op, rhs);
   return sat;
-}
-
-/* Subroutine of region_model::add_constraint for handling optimized
-   && and || conditionals.
-
-   If we have an SSA_NAME for a boolean compared against 0,
-   look at anything implied by the def stmt and call add_constraint
-   for it (which could recurse).
-
-   For example, if we have
-      _1 = p_6 == 0B;
-      _2 = p_8 == 0B
-      _3 = _1 | _2
-    and add the constraint
-      (_3 == 0),
-    then the def stmt for _3 implies that _1 and _2 are both false,
-    and hence we can add the constraints:
-      p_6 != 0B
-      p_8 != 0B.  */
-
-void
-region_model::add_any_constraints_from_ssa_def_stmt (tree lhs,
-						     enum tree_code op,
-						     tree rhs,
-						     region_model_context *ctxt)
-{
-  if (TREE_CODE (lhs) != SSA_NAME)
-    return;
-
-  if (!zerop (rhs))
-    return;
-
-  if (op != NE_EXPR && op != EQ_EXPR)
-    return;
-
-  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs);
-  if (const gassign *assign = dyn_cast<gassign *> (def_stmt))
-    add_any_constraints_from_gassign (op, rhs, assign, ctxt);
-  else if (gcall *call = dyn_cast<gcall *> (def_stmt))
-    add_any_constraints_from_gcall (op, rhs, call, ctxt);
-}
-
-/* Add any constraints for an SSA_NAME defined by ASSIGN
-   where the result OP RHS.  */
-
-void
-region_model::add_any_constraints_from_gassign (enum tree_code op,
-						tree rhs,
-						const gassign *assign,
-						region_model_context *ctxt)
-{
-  /* We have either
-     - "LHS != false" (i.e. LHS is true), or
-     - "LHS == false" (i.e. LHS is false).  */
-  bool is_true = op == NE_EXPR;
-
-  enum tree_code rhs_code = gimple_assign_rhs_code (assign);
-
-  switch (rhs_code)
-    {
-    default:
-      break;
-
-    case NOP_EXPR:
-    case VIEW_CONVERT_EXPR:
-      {
-	add_constraint (gimple_assign_rhs1 (assign), op, rhs, ctxt);
-      }
-      break;
-
-    case BIT_AND_EXPR:
-      {
-	if (is_true)
-	  {
-	    /* ...and "LHS == (rhs1 & rhs2) i.e. "(rhs1 & rhs2)" is true
-	       then both rhs1 and rhs2 must be true.  */
-	    tree rhs1 = gimple_assign_rhs1 (assign);
-	    tree rhs2 = gimple_assign_rhs2 (assign);
-	    add_constraint (rhs1, NE_EXPR, boolean_false_node, ctxt);
-	    add_constraint (rhs2, NE_EXPR, boolean_false_node, ctxt);
-	  }
-      }
-      break;
-
-    case BIT_IOR_EXPR:
-      {
-	if (!is_true)
-	  {
-	    /* ...and "LHS == (rhs1 | rhs2)
-	       i.e. "(rhs1 | rhs2)" is false
-	       then both rhs1 and rhs2 must be false.  */
-	    tree rhs1 = gimple_assign_rhs1 (assign);
-	    tree rhs2 = gimple_assign_rhs2 (assign);
-	    add_constraint (rhs1, EQ_EXPR, boolean_false_node, ctxt);
-	    add_constraint (rhs2, EQ_EXPR, boolean_false_node, ctxt);
-	  }
-      }
-      break;
-
-    case EQ_EXPR:
-    case NE_EXPR:
-      {
-	/* ...and "LHS == (rhs1 OP rhs2)"
-	   then rhs1 OP rhs2 must have the same logical value as LHS.  */
-	tree rhs1 = gimple_assign_rhs1 (assign);
-	tree rhs2 = gimple_assign_rhs2 (assign);
-	if (!is_true)
-	  rhs_code
-	    = invert_tree_comparison (rhs_code, false /* honor_nans */);
-	add_constraint (rhs1, rhs_code, rhs2, ctxt);
-      }
-      break;
-    }
-}
-
-/* Add any constraints for an SSA_NAME defined by CALL
-   where the result OP RHS.  */
-
-void
-region_model::add_any_constraints_from_gcall (enum tree_code op,
-					      tree rhs,
-					      const gcall *call,
-					      region_model_context *ctxt)
-{
-  if (gimple_call_builtin_p (call, BUILT_IN_EXPECT)
-      || gimple_call_builtin_p (call, BUILT_IN_EXPECT_WITH_PROBABILITY)
-      || gimple_call_internal_p (call, IFN_BUILTIN_EXPECT))
-    {
-      /* __builtin_expect's return value is its initial argument.  */
-      add_constraint (gimple_call_arg (call, 0), op, rhs, ctxt);
-    }
 }
 
 /* Determine what is known about the condition "LHS OP RHS" within
