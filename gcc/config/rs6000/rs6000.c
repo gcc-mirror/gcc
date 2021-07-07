@@ -15725,8 +15725,8 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   return 1;
 }
 
-/* Possibly emit the xsmaxcdp and xsmincdp instructions to emit a maximum or
-   minimum with "C" semantics.
+/* Possibly emit the xsmaxc{dp,qp} and xsminc{dp,qp} instructions to emit a
+   maximum or minimum with "C" semantics.
 
    Unless you use -ffast-math, you can't use these instructions to replace
    conditions that implicitly reverse the condition because the comparison
@@ -15802,6 +15802,7 @@ rs6000_maybe_emit_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   enum rtx_code code = GET_CODE (op);
   rtx op0 = XEXP (op, 0);
   rtx op1 = XEXP (op, 1);
+  machine_mode compare_mode = GET_MODE (op0);
   machine_mode result_mode = GET_MODE (dest);
   rtx compare_rtx;
   rtx cmove_rtx;
@@ -15809,6 +15810,29 @@ rs6000_maybe_emit_fp_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 
   if (!can_create_pseudo_p ())
     return 0;
+
+  /* We allow the comparison to be either SFmode/DFmode and the true/false
+     condition to be either SFmode/DFmode.  I.e. we allow:
+
+	float a, b;
+	double c, d, r;
+
+	r = (a == b) ? c : d;
+
+    and:
+
+	double a, b;
+	float c, d, r;
+
+	r = (a == b) ? c : d;
+
+    but we don't allow intermixing the IEEE 128-bit floating point types with
+    the 32/64-bit scalar types.  */
+
+  if (!(compare_mode == result_mode
+	|| (compare_mode == SFmode && result_mode == DFmode)
+	|| (compare_mode == DFmode && result_mode == SFmode)))
+    return false;
 
   switch (code)
     {
@@ -15861,6 +15885,10 @@ have_compare_and_set_mask (machine_mode mode)
     case E_SFmode:
     case E_DFmode:
       return TARGET_P9_MINMAX;
+
+    case E_KFmode:
+    case E_TFmode:
+      return TARGET_POWER10 && TARGET_FLOAT128_HW && FLOAT128_IEEE_P (mode);
 
     default:
       break;
