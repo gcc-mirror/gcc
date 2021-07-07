@@ -1495,6 +1495,38 @@ NeverType::clone ()
   return new NeverType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
+void
+PlaceholderType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+PlaceholderType::as_string () const
+{
+  return "<placeholder>";
+}
+
+BaseType *
+PlaceholderType::unify (BaseType *other)
+{
+  PlaceholderRules r (this);
+  return r.unify (other);
+}
+
+bool
+PlaceholderType::can_eq (BaseType *other)
+{
+  PlaceholderCmp r (this);
+  return r.can_eq (other);
+}
+
+BaseType *
+PlaceholderType::clone ()
+{
+  return new PlaceholderType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
 // rust-tyty-call.h
 
 void

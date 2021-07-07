@@ -54,6 +54,7 @@ public:
   void visit (ParamType &) override { gcc_unreachable (); }
   void visit (StrType &) override { gcc_unreachable (); }
   void visit (NeverType &) override { gcc_unreachable (); }
+  void visit (PlaceholderType &) override { gcc_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
@@ -102,6 +103,7 @@ public:
   void visit (ParamType &) override { gcc_unreachable (); }
   void visit (StrType &) override { gcc_unreachable (); }
   void visit (NeverType &) override { gcc_unreachable (); }
+  void visit (PlaceholderType &) override { gcc_unreachable (); }
 
   // FIXME
   void visit (FnPtr &type) override { gcc_unreachable (); }

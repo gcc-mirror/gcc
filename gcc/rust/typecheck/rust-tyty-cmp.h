@@ -86,6 +86,11 @@ public:
 
   virtual void visit (NeverType &) override { ok = false; }
 
+  virtual void visit (PlaceholderType &) override
+  { // it is ok for types to can eq to a placeholder
+    ok = true;
+  }
+
 protected:
   BaseCmp (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
@@ -830,6 +835,19 @@ private:
   BaseType *get_base () override { return base; }
 
   NeverType *base;
+};
+
+class PlaceholderCmp : public BaseCmp
+{
+  using Rust::TyTy::BaseCmp::visit;
+
+public:
+  PlaceholderCmp (PlaceholderType *base) : BaseCmp (base), base (base) {}
+
+private:
+  BaseType *get_base () override { return base; }
+
+  PlaceholderType *base;
 };
 
 } // namespace TyTy

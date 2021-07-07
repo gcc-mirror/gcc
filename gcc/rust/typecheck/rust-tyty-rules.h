@@ -299,7 +299,21 @@ public:
   virtual void visit (NeverType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
+  virtual void visit (PlaceholderType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -1163,6 +1177,19 @@ private:
   BaseType *get_base () override { return base; }
 
   NeverType *base;
+};
+
+class PlaceholderRules : public BaseRules
+{
+  using Rust::TyTy::BaseRules::visit;
+
+public:
+  PlaceholderRules (PlaceholderType *base) : BaseRules (base), base (base) {}
+
+private:
+  BaseType *get_base () override { return base; }
+
+  PlaceholderType *base;
 };
 
 } // namespace TyTy

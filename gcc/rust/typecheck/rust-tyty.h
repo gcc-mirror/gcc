@@ -48,6 +48,7 @@ enum TypeKind
   USIZE,
   ISIZE,
   NEVER,
+  PLACEHOLDER,
   // there are more to add...
   ERROR
 };
@@ -109,6 +110,9 @@ public:
 
       case TypeKind::NEVER:
 	return "Never";
+
+      case TypeKind::PLACEHOLDER:
+	return "Placeholder";
 
       case TypeKind::ERROR:
 	return "ERROR";
@@ -1458,6 +1462,34 @@ public:
 
   NeverType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::NEVER, refs)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
+
+  BaseType *clone () final override;
+
+  std::string get_name () const override final { return as_string (); }
+
+  bool is_unit () const override { return true; }
+};
+
+// used at the type in associated types in traits
+// see: https://doc.rust-lang.org/book/ch19-03-advanced-traits.html
+class PlaceholderType : public BaseType
+{
+public:
+  PlaceholderType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::PLACEHOLDER, refs)
+  {}
+
+  PlaceholderType (HirId ref, HirId ty_ref,
+		   std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER, refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
