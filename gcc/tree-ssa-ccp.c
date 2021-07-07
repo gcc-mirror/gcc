@@ -3563,7 +3563,7 @@ pass_post_ipa_warn::execute (function *fun)
 	      if (argno == 0)
 		{
 		  if (warning_at (loc, OPT_Wnonnull,
-				  "%G%qs pointer is null", stmt, "this")
+				  "%qs pointer is null", "this")
 		      && fndecl)
 		    inform (DECL_SOURCE_LOCATION (fndecl),
 			    "in a call to non-static member function %qD",
@@ -3572,8 +3572,8 @@ pass_post_ipa_warn::execute (function *fun)
 		}
 
 	      if (!warning_at (loc, OPT_Wnonnull,
-			       "%Gargument %u null where non-null "
-			       "expected", stmt, argno))
+			       "argument %u null where non-null "
+			       "expected", argno))
 		continue;
 
 	      tree fndecl = gimple_call_fndecl (stmt);

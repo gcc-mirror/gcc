@@ -1,3 +1,7 @@
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-objc-common.c (c_tree_printer): Remove support for %G and %K.
+
 2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/101297

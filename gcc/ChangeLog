@@ -1,3 +1,143 @@
+2021-07-06  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/101283
+	* dwarf2ctf.c (ctf_get_AT_data_member_location): Multiply by 8 to get
+	number of bits.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-pretty-print.c (percent_G_format): Remove.
+	* tree-diagnostic.c (default_tree_printer): Remove calls.
+	* tree-pretty-print.c (percent_K_format): Remove.
+	* tree-pretty-print.h (percent_K_format): Remove.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_builtin):
+	Remove %K and use error_at.
+	(aarch64_expand_fcmla_builtin): Same.
+	(aarch64_expand_builtin_tme): Same.
+	(aarch64_expand_builtin_memtag): Same.
+	* config/arm/arm-builtins.c (arm_expand_acle_builtin): Same.
+	(arm_expand_builtin): Same.
+	* config/arm/arm.c (bounds_check): Same.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (warn_string_no_nul): Remove %G.
+	(maybe_warn_for_bound): Same.
+	(warn_for_access): Same.
+	(check_access): Same.
+	(check_strncat_sizes): Same.
+	(expand_builtin_strncat): Same.
+	(expand_builtin_strncmp): Same.
+	(expand_builtin): Same.
+	(expand_builtin_object_size): Same.
+	(warn_dealloc_offset): Same.
+	(maybe_emit_free_warning): Same.
+	* calls.c (maybe_warn_alloc_args_overflow): Same.
+	(maybe_warn_nonstring_arg): Same.
+	(maybe_warn_rdwr_sizes): Same.
+	* expr.c (expand_expr_real_1): Remove %K.
+	* gimple-fold.c (gimple_fold_builtin_strncpy): Remove %G.
+	(gimple_fold_builtin_strncat): Same.
+	* gimple-ssa-sprintf.c (format_directive): Same.
+	(handle_printf_call): Same.
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Same.
+	* gimple-ssa-warn-restrict.c (maybe_diag_overlap): Same.
+	(maybe_diag_access_bounds): Same.  Call gimple_location.
+	(check_bounds_or_overlap): Same.
+	* trans-mem.c (ipa_tm_scan_irr_block): Remove %K.  Simplify.
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Remove %G.
+	* tree-ssa-strlen.c (maybe_warn_overflow): Same.
+	(maybe_diag_stxncpy_trunc): Same.
+	(handle_builtin_stxncpy_strncat): Same.
+	(maybe_warn_pointless_strcmp): Same.
+	* tree-ssa-uninit.c (maybe_warn_operand): Same.
+
+2021-07-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97194
+	* config/i386/predicates.md (vec_setm_operand): Enable
+	register_operand for TARGET_SSE4_1.
+	* config/i386/mmx.md (vec_setv2hi): Use vec_setm_operand
+	as operand 2 predicate.  Call ix86_expand_vector_set_var
+	for non-constant index operand.
+	(vec_setv4qi): Use vec_setm_mmx_operand as operand 2 predicate.
+	Call ix86_expand_vector_set_var for non-constant index operand.
+
+2021-07-06  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/jumpcall.md (*branch): When possible, generate
+	the comparison in CCZN mode.
+	* config/h8300/predicates.md (simple_memory_operand): Reject all
+	auto-increment addressing modes.
+
+2021-07-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/100246
+	* config/i386/i386.h (struct stringop_algs): Define a CTOR for
+	this type.
+
+2021-07-06  Richard Biener  <rguenther@suse.de>
+
+	* doc/md.texi (vec_fmaddsub<mode>4): Document.
+	(vec_fmsubadd<mode>4): Likewise.
+	* optabs.def (vec_fmaddsub$a4): Add.
+	(vec_fmsubadd$a4): Likewise.
+	* internal-fn.def (IFN_VEC_FMADDSUB): Add.
+	(IFN_VEC_FMSUBADD): Likewise.
+	* tree-vect-slp-patterns.c (addsub_pattern::recognize):
+	Refactor to handle IFN_VEC_FMADDSUB and IFN_VEC_FMSUBADD.
+	(addsub_pattern::build): Likewise.
+	* tree-vect-slp.c (vect_optimize_slp): CFN_VEC_FMADDSUB
+	and CFN_VEC_FMSUBADD are not transparent for permutes.
+	* config/i386/sse.md (vec_fmaddsub<mode>4): New expander.
+	(vec_fmsubadd<mode>4): Likewise.
+
+2021-07-06  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (fmove-loop-stores): Document.
+	* common.opt (fmove-loop-stores): New option.
+	* opts.c (default_options_table): Enable -fmove-loop-stores
+	at -O1 but not -Og.
+	* tree-ssa-loop-im.c (pass_lim::execute): Pass
+	flag_move_loop_stores instead of true to
+	loop_invariant_motion_in_fun.
+
+2021-07-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* doc/install.texi: Document --with-dsymutil.
+
+2021-07-06  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101256
+	* dbgcnt.def (phiopt_edge_range): New counter.
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable):
+	Check to make sure the new name is defined in the same
+	bb as the conditional before duplicating range info.
+	Also add debug counter.
+
+2021-07-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/100328
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Set param_ira_consider_dup_in_all_alts to 0.
+
+2021-07-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/100328
+	* doc/invoke.texi (ira-consider-dup-in-all-alts): Document new
+	parameter.
+	* ira.c (ira_get_dup_out_num): Adjust as parameter
+	param_ira_consider_dup_in_all_alts.
+	* params.opt (ira-consider-dup-in-all-alts): New.
+	* ira-conflicts.c (process_regs_for_copy): Add one parameter
+	single_input_op_has_cstr_p.
+	(get_freq_for_shuffle_copy): New function.
+	(add_insn_allocno_copies): Adjust as single_input_op_has_cstr_p.
+	* ira-int.h (ira_get_dup_out_num): Add one bool parameter.
+
 2021-07-05  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* config/h8300/shiftrotate.md (shift-by-variable patterns): Update to

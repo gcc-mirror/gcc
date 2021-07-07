@@ -1,3 +1,124 @@
+2021-07-06  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/101283
+	* gcc.dg/debug/btf/btf-bitfields-3.c: Remove the check on btm_type.
+
+2021-07-06  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/101283
+	* gcc.dg/debug/ctf/ctf-attr-mode-1.c: Remove the check for ctv_typeidx.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/55881
+	* g++.dg/warn/uninit-pr55881.C: New test.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* gcc.dg/Warray-bounds-76.c: New test.
+
+2021-07-06  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/101283
+	* gcc.dg/debug/ctf/ctf-struct-array-2.c: Adjust the value in the testcase.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/format/gcc_diag-10.c: Update expected warnings.
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.c: Remove %G.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wobjsize-1.c: Prune expected output.
+	* gcc.dg/Warray-bounds-71.c: New test.
+	* gcc.dg/Warray-bounds-71.h: New test header.
+	* gcc.dg/Warray-bounds-72.c: New test.
+	* gcc.dg/Warray-bounds-73.c: New test.
+	* gcc.dg/Warray-bounds-74.c: New test.
+	* gcc.dg/Warray-bounds-75.c: New test.
+	* gcc.dg/Wfree-nonheap-object-4.c: Adjust expected output.
+	* gcc.dg/Wfree-nonheap-object-5.c: New test.
+	* gcc.dg/Wfree-nonheap-object-6.c: New test.
+	* gcc.dg/pragma-diag-10.c: New test.
+	* gcc.dg/pragma-diag-9.c: New test.
+	* gcc.dg/uninit-suppress_3.c: New test.
+	* gcc.dg/pr79214.c: Xfail tests.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-27.c: New test.
+	* gcc.dg/format/c90-printf-1.c: Adjust expected output.
+
+2021-07-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/97194
+	* gcc.target/i386/sse4_1-vec-set-1a.c: New test.
+	* gcc.target/i386/sse4_1-vec-set-2a.c: Ditto.
+
+2021-07-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-fmaddsubXXXpd.c: New testcase.
+	* gcc.target/i386/vect-fmaddsubXXXps.c: Likewise.
+	* gcc.target/i386/vect-fmsubaddXXXpd.c: Likewise.
+	* gcc.target/i386/vect-fmsubaddXXXps.c: Likewise.
+
+2021-07-06  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101256
+	* g++.dg/torture/pr101256.C: New test.
+
+2021-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/100227
+	* gfortran.dg/implied_do_io_7.f90: New test.
+
+2021-07-06  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR rtl-optimization/100328
+	* gcc.target/aarch64/sve/acle/asm/div_f16.c: Remove one xfail.
+	* gcc.target/aarch64/sve/acle/asm/div_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulx_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulx_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulx_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmad_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmad_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmad_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmla_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmla_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmla_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmls_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmls_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmls_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmsb_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmsb_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmsb_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f64.c: Likewise.
+
+2021-07-06  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/101283
+	* gcc.dg/debug/btf/btf-cvr-quals-1.c: Use -gdwarf-4 on Darwin targets.
+	* gcc.dg/debug/ctf/ctf-cvr-quals-1.c: Likewise.
+
 2021-07-05  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/101039

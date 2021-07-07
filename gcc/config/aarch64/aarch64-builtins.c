@@ -1598,8 +1598,9 @@ constant_arg:
 	      if (!(*insn_data[icode].operand[opc].predicate)
 		  (op[opc], mode))
 	      {
-		error ("%Kargument %d must be a constant immediate",
-		       exp, opc + 1 - have_retval);
+		error_at (EXPR_LOCATION (exp),
+			  "argument %d must be a constant immediate",
+			  opc + 1 - have_retval);
 		return const0_rtx;
 	      }
 	      break;
@@ -1669,10 +1670,13 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 				       / UINTVAL (elementsize),
 				      exp);
           else
-	    error ("%Klane index must be a constant immediate", exp);
+	    error_at (EXPR_LOCATION (exp),
+		      "lane index must be a constant immediate");
 	}
       else
-	error ("%Ktotal size and element size must be a non-zero constant immediate", exp);
+	error_at (EXPR_LOCATION (exp),
+		  "total size and element size must be a non-zero "
+		  "constant immediate");
       /* Don't generate any RTL.  */
       return const0_rtx;
     }
@@ -1828,7 +1832,8 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
   /* Validate that the lane index is a constant.  */
   if (!CONST_INT_P (lane_idx))
     {
-      error ("%Kargument %d must be a constant immediate", exp, 4);
+      error_at (EXPR_LOCATION (exp),
+		"argument %d must be a constant immediate", 4);
       return const0_rtx;
     }
 
@@ -1917,7 +1922,8 @@ aarch64_expand_builtin_tme (int fcode, tree exp, rtx target)
 	  emit_insn (GEN_FCN (CODE_FOR_tcancel) (op0));
 	else
 	  {
-	    error ("%Kargument must be a 16-bit constant immediate", exp);
+	    error_at (EXPR_LOCATION (exp),
+		      "argument must be a 16-bit constant immediate");
 	    return const0_rtx;
 	  }
       }
@@ -2006,8 +2012,9 @@ aarch64_expand_builtin_memtag (int fcode, tree exp, rtx target)
 		  pat = GEN_FCN (icode) (target, op0, const0_rtx, op1);
 		  break;
 		}
-	      error ("%Kargument %d must be a constant immediate "
-		     "in range [0,15]", exp, 2);
+	      error_at (EXPR_LOCATION (exp),
+			"argument %d must be a constant immediate "
+			"in range [0,15]", 2);
 	      return const0_rtx;
 	    }
 	  else

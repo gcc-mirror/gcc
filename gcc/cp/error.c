@@ -4338,10 +4338,8 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
    %D   declaration.
    %E   expression.
    %F   function declaration.
-   %G   gcall *
    %H   type difference (from).
    %I   type difference (to).
-   %K   tree
    %L	language as used in extern "lang".
    %O	binary operator.
    %P   function parameter whose position is indicated by an integer.
@@ -4391,9 +4389,6 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
       break;
     case 'E': result = expr_to_string (next_tree);		break;
     case 'F': result = fndecl_to_string (next_tree, verbose);	break;
-    case 'G':
-      percent_G_format (text);
-      return true;
     case 'H':
       defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
 				  buffer_ptr, verbose, *quoted);
@@ -4401,10 +4396,6 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'I':
       defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
 				  buffer_ptr, verbose, *quoted);
-      return true;
-    case 'K':
-      t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
       return true;
     case 'L': result = language_to_string (next_lang);		break;
     case 'O': result = op_to_string (false, next_tcode);	break;

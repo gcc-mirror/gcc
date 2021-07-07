@@ -133,7 +133,7 @@ test_inlining (gimple *stmt)
       return;
     }
 
-  warning_at (call->location, 0, "%G%s", call,
+  warning_at (call->location, 0, "%s",
 	      TREE_STRING_POINTER (t_string));
 }
 

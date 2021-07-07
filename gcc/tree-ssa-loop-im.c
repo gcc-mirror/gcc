@@ -122,7 +122,9 @@ public:
   hashval_t hash;		/* Its hash value.  */
 
   /* The memory access itself and associated caching of alias-oracle
-     query meta-data.  */
+     query meta-data.  We are using mem.ref == error_mark_node for the
+     case the reference is represented by its single access stmt
+     in accesses_in_loop[0].  */
   ao_ref mem;
 
   bitmap stored;		/* The set of loops in that this memory location
@@ -130,8 +132,7 @@ public:
   bitmap loaded;		/* The set of loops in that this memory location
 				   is loaded from.  */
   vec<mem_ref_loc>		accesses_in_loop;
-				/* The locations of the accesses.  Vector
-				   indexed by the loop number.  */
+				/* The locations of the accesses.  */
 
   /* The following set is computed on demand.  */
   bitmap_head dep_loop;		/* The set of loops in that the memory
@@ -1465,7 +1466,22 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
     return;
 
   mem = simple_mem_ref_in_stmt (stmt, &is_stored);
-  if (!mem)
+  if (!mem && is_gimple_assign (stmt))
+    {
+      /* For aggregate copies record distinct references but use them
+	 only for disambiguation purposes.  */
+      id = memory_accesses.refs_list.length ();
+      ref = mem_ref_alloc (NULL, 0, id);
+      memory_accesses.refs_list.safe_push (ref);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Unhandled memory reference %u: ", id);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+      record_mem_ref_loc (ref, stmt, mem);
+      is_stored = gimple_vdef (stmt);
+    }
+  else if (!mem)
     {
       /* We use the shared mem_ref for all unanalyzable refs.  */
       id = UNANALYZABLE_MEM_ID;
@@ -1595,7 +1611,8 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
       mark_ref_stored (ref, loop);
     }
   /* A not simple memory op is also a read when it is a write.  */
-  if (!is_stored || id == UNANALYZABLE_MEM_ID)
+  if (!is_stored || id == UNANALYZABLE_MEM_ID
+      || ref->mem.ref == error_mark_node)
     {
       bitmap_set_bit (&memory_accesses.refs_loaded_in_loop[loop->num], ref->id);
       mark_ref_loaded (ref, loop);
@@ -1714,6 +1731,9 @@ mem_refs_may_alias_p (im_mem_ref *mem1, im_mem_ref *mem2,
 		      hash_map<tree, name_expansion *> **ttae_cache,
 		      bool tbaa_p)
 {
+  gcc_checking_assert (mem1->mem.ref != error_mark_node
+		       && mem2->mem.ref != error_mark_node);
+
   /* Perform BASE + OFFSET analysis -- if MEM1 and MEM2 are based on the same
      object and their offset differ in such a way that the locations cannot
      overlap, then they cannot alias.  */
@@ -2490,6 +2510,13 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
       gcc_assert (data);
       if (data->ref == UNANALYZABLE_MEM_ID)
 	return -1;
+      /* Stop at memory references which we can't move.  */
+      else if (memory_accesses.refs_list[data->ref]->mem.ref == error_mark_node)
+	{
+	  /* Mark refs_not_in_seq as unsupported.  */
+	  bitmap_ior_into (refs_not_supported, refs_not_in_seq);
+	  return 1;
+	}
       /* One of the stores we want to apply SM to and we've not yet seen.  */
       else if (bitmap_clear_bit (refs_not_in_seq, data->ref))
 	{
@@ -2798,7 +2825,8 @@ ref_indep_loop_p (class loop *loop, im_mem_ref *ref, dep_kind kind)
   else
     refs_to_check = &memory_accesses.refs_stored_in_loop[loop->num];
 
-  if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID))
+  if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID)
+      || ref->mem.ref == error_mark_node)
     indep_p = false;
   else
     {
@@ -2825,7 +2853,20 @@ ref_indep_loop_p (class loop *loop, im_mem_ref *ref, dep_kind kind)
 	  EXECUTE_IF_SET_IN_BITMAP (refs_to_check, 0, i, bi)
 	    {
 	      im_mem_ref *aref = memory_accesses.refs_list[i];
-	      if (!refs_independent_p (ref, aref, kind != sm_waw))
+	      if (aref->mem.ref == error_mark_node)
+		{
+		  gimple *stmt = aref->accesses_in_loop[0].stmt;
+		  if ((kind == sm_war
+		       && ref_maybe_used_by_stmt_p (stmt, &ref->mem,
+						    kind != sm_waw))
+		      || stmt_may_clobber_ref_p_1 (stmt, &ref->mem,
+						   kind != sm_waw))
+		    {
+		      indep_p = false;
+		      break;
+		    }
+		}
+	      else if (!refs_independent_p (ref, aref, kind != sm_waw))
 		{
 		  indep_p = false;
 		  break;
@@ -2856,6 +2897,10 @@ can_sm_ref_p (class loop *loop, im_mem_ref *ref)
 
   /* Can't hoist unanalyzable refs.  */
   if (!MEM_ANALYZABLE (ref))
+    return false;
+
+  /* Can't hoist/sink aggregate copies.  */
+  if (ref->mem.ref == error_mark_node)
     return false;
 
   /* It should be movable.  */
