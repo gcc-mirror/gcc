@@ -13228,7 +13228,8 @@ mma_init_builtins (void)
 	  /* Some MMA built-ins that are expanded into gimple are converted
 	     into internal MMA built-ins that are expanded into rtl.
 	     The internal built-in follows immediately after this built-in.  */
-	  if (d[1].icode != CODE_FOR_nothing)
+	  if (d->code != VSX_BUILTIN_LXVP
+	      && d->code != VSX_BUILTIN_STXVP)
 	    {
 	      op[nopnds++] = void_type_node;
 	      icode = d[1].icode;
