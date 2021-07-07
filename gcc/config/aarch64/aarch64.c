@@ -20128,7 +20128,8 @@ aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
   if (lane < low || lane >= high)
   {
     if (exp)
-      error ("%Klane %wd out of range %wd - %wd", exp, lane, low, high - 1);
+      error_at (EXPR_LOCATION (exp), "lane %wd out of range %wd - %wd",
+		lane, low, high - 1);
     else
       error ("lane %wd out of range %wd - %wd", lane, low, high - 1);
   }
