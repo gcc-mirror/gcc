@@ -266,10 +266,9 @@ private:
       tyctx (Resolver::TypeCheckContext::get ()){};
 
   void mark_hir_id (HirId);
-  bool visit_path_segment (HIR::PathExprSegment);
+  void visit_path_segment (HIR::PathExprSegment);
   void find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id,
 			 Location locus, const std::string &node_name);
-  void node_id_to_hir_id (CrateNum, NodeId, HirId &, Location);
 };
 
 } // namespace Analysis
