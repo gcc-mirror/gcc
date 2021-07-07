@@ -9555,8 +9555,11 @@ package body Exp_Ch7 is
 
       --  If initialization procedure for an array of controlled objects is
       --  trivial, do not generate a useless call to it.
+      --  The initialization procedure may be missing altogether in the case
+      --  of a derived container whose components have trivial initialization.
 
-      if (Is_Array_Type (Utyp) and then Is_Trivial_Subprogram (Proc))
+      if No (Proc)
+        or else (Is_Array_Type (Utyp) and then Is_Trivial_Subprogram (Proc))
         or else
           (not Comes_From_Source (Proc)
             and then Present (Alias (Proc))
