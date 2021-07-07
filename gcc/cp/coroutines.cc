@@ -215,7 +215,19 @@ static GTY(()) tree coro_await_ready_identifier;
 static GTY(()) tree coro_await_suspend_identifier;
 static GTY(()) tree coro_await_resume_identifier;
 
-/* Create the identifiers used by the coroutines library interfaces.  */
+/* Accessors for the coroutine frame state used by the implementation.  */
+
+static GTY(()) tree coro_resume_fn_id;
+static GTY(()) tree coro_destroy_fn_id;
+static GTY(()) tree coro_promise_id;
+static GTY(()) tree coro_frame_needs_free_id;
+static GTY(()) tree coro_resume_index_id;
+static GTY(()) tree coro_self_handle_id;
+static GTY(()) tree coro_actor_continue_id;
+static GTY(()) tree coro_frame_i_a_r_c_id;
+
+/* Create the identifiers used by the coroutines library interfaces and
+   the implementation frame state.  */
 
 static void
 coro_init_identifiers ()
@@ -241,6 +253,16 @@ coro_init_identifiers ()
   coro_await_ready_identifier = get_identifier ("await_ready");
   coro_await_suspend_identifier = get_identifier ("await_suspend");
   coro_await_resume_identifier = get_identifier ("await_resume");
+
+  /* Coroutine state frame field accessors.  */
+  coro_resume_fn_id = get_identifier ("_Coro_resume_fn");
+  coro_destroy_fn_id = get_identifier ("_Coro_destroy_fn");
+  coro_promise_id = get_identifier ("_Coro_promise");
+  coro_frame_needs_free_id = get_identifier ("_Coro_frame_needs_free");
+  coro_frame_i_a_r_c_id = get_identifier ("_Coro_initial_await_resume_called");
+  coro_resume_index_id = get_identifier ("_Coro_resume_index");
+  coro_self_handle_id = get_identifier ("_Coro_self_handle");
+  coro_actor_continue_id = get_identifier ("_Coro_actor_continue");
 }
 
 /* Trees we only need to set up once.  */
@@ -513,12 +535,12 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       /* Build a proxy for a handle to "self" as the param to
 	 await_suspend() calls.  */
       coro_info->self_h_proxy
-	= build_lang_decl (VAR_DECL, get_identifier ("self_h.proxy"),
+	= build_lang_decl (VAR_DECL, coro_self_handle_id,
 			   coro_info->handle_type);
 
       /* Build a proxy for the promise so that we can perform lookups.  */
       coro_info->promise_proxy
-	= build_lang_decl (VAR_DECL, get_identifier ("promise.proxy"),
+	= build_lang_decl (VAR_DECL, coro_promise_id,
 			   coro_info->promise_type);
 
       /* Note where we first saw a coroutine keyword.  */
@@ -1864,10 +1886,6 @@ struct await_xform_data
 {
   tree actor_fn;   /* Decl for context.  */
   tree actor_frame;
-  tree promise_proxy;
-  tree real_promise;
-  tree self_h_proxy;
-  tree real_self_h;
 };
 
 /* When we built the await expressions, we didn't know the coro frame
@@ -1888,7 +1906,6 @@ transform_await_expr (tree await_expr, await_xform_data *xform)
   /* So, on entry, we have:
      in : CO_AWAIT_EXPR (a, e_proxy, o, awr_call_vector, mode)
 	  We no longer need a [it had diagnostic value, maybe?]
-	  We need to replace the promise proxy in all elements
 	  We need to replace the e_proxy in the awr_call.  */
 
   tree coro_frame_type = TREE_TYPE (xform->actor_frame);
@@ -1913,16 +1930,6 @@ transform_await_expr (tree await_expr, await_xform_data *xform)
       /* .. and replace.  */
       TREE_OPERAND (await_expr, 1) = as;
     }
-
-  /* Now do the self_handle.  */
-  data.from = xform->self_h_proxy;
-  data.to = xform->real_self_h;
-  cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
-
-  /* Now do the promise.  */
-  data.from = xform->promise_proxy;
-  data.to = xform->real_promise;
-  cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
 
   return await_expr;
 }
@@ -2110,15 +2117,13 @@ coro_get_frame_dtor (tree coro_fp, tree orig, tree frame_size,
 
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
-		tree orig, hash_map<tree, param_info> *param_uses,
-		hash_map<tree, local_var_info> *local_var_uses,
-		vec<tree, va_gc> *param_dtor_list, tree resume_fn_field,
-		tree resume_idx_field, unsigned body_count, tree frame_size)
+		tree orig, hash_map<tree, local_var_info> *local_var_uses,
+		vec<tree, va_gc> *param_dtor_list,
+		tree resume_idx_var, unsigned body_count, tree frame_size)
 {
   verify_stmt_tree (fnbody);
   /* Some things we inherit from the original function.  */
   tree handle_type = get_coroutine_handle_type (orig);
-  tree self_h_proxy = get_coroutine_self_handle_proxy (orig);
   tree promise_type = get_coroutine_promise_type (orig);
   tree promise_proxy = get_coroutine_promise_proxy (orig);
 
@@ -2136,11 +2141,12 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree top_block = make_node (BLOCK);
   BIND_EXPR_BLOCK (actor_bind) = top_block;
 
-  tree continuation = coro_build_artificial_var (loc, "_Coro_actor_continue",
+  tree continuation = coro_build_artificial_var (loc, coro_actor_continue_id,
 						 void_coro_handle_type, actor,
 						 NULL_TREE);
 
   BIND_EXPR_VARS (actor_bind) = continuation;
+  BLOCK_VARS (top_block) = BIND_EXPR_VARS (actor_bind) ;
 
   /* Link in the block associated with the outer scope of the re-written
      function body.  */
@@ -2198,9 +2204,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
     = {actor, actor_frame, coro_frame_type, loc, local_var_uses};
   cp_walk_tree (&fnbody, transform_local_var_uses, &xform_vars_data, NULL);
 
-  tree resume_idx_name = get_identifier ("__resume_at");
-  tree rat_field = lookup_member (coro_frame_type, resume_idx_name, 1, 0,
-				  tf_warning_or_error);
+  tree rat_field = lookup_member (coro_frame_type, coro_resume_index_id,
+				  1, 0, tf_warning_or_error);
   tree rat = build3 (COMPONENT_REF, short_unsigned_type_node, actor_frame,
 		     rat_field, NULL_TREE);
 
@@ -2302,14 +2307,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree r = build_stmt (loc, LABEL_EXPR, actor_begin_label);
   add_stmt (r);
 
-  /* actor's version of the promise.  */
-  tree ap_m = lookup_member (coro_frame_type, get_identifier ("__p"), 1, 0,
-			     tf_warning_or_error);
-  tree ap = build_class_member_access_expr (actor_frame, ap_m, NULL_TREE, false,
-					    tf_warning_or_error);
-
   /* actor's coroutine 'self handle'.  */
-  tree ash_m = lookup_member (coro_frame_type, get_identifier ("__self_h"), 1,
+  tree ash_m = lookup_member (coro_frame_type, coro_self_handle_id, 1,
 			      0, tf_warning_or_error);
   tree ash = build_class_member_access_expr (actor_frame, ash_m, NULL_TREE,
 					     false, tf_warning_or_error);
@@ -2329,36 +2328,12 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Now we know the real promise, and enough about the frame layout to
      decide where to put things.  */
 
-  await_xform_data xform
-    = {actor, actor_frame, promise_proxy, ap, self_h_proxy, ash};
+  await_xform_data xform = {actor, actor_frame};
 
   /* Transform the await expressions in the function body.  Only do each
      await tree once!  */
   hash_set<tree> pset;
   cp_walk_tree (&fnbody, transform_await_wrapper, &xform, &pset);
-
-  /* Now replace the promise proxy with its real value.  */
-  proxy_replace p_data;
-  p_data.from = promise_proxy;
-  p_data.to = ap;
-  cp_walk_tree (&fnbody, replace_proxy, &p_data, NULL);
-
-  /* The rewrite of the function adds code to set the __resume field to
-     nullptr when the coroutine is done and also the index to zero when
-     calling an unhandled exception.  These are represented by two proxies
-     in the function, so rewrite them to the proper frame access.  */
-  tree resume_m
-    = lookup_member (coro_frame_type, get_identifier ("__resume"),
-		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
-  tree res_x = build_class_member_access_expr (actor_frame, resume_m, NULL_TREE,
-					       false, tf_warning_or_error);
-  p_data.from = resume_fn_field;
-  p_data.to = res_x;
-  cp_walk_tree (&fnbody, replace_proxy, &p_data, NULL);
-
-  p_data.from = resume_idx_field;
-  p_data.to = rat;
-  cp_walk_tree (&fnbody, replace_proxy, &p_data, NULL);
 
   /* Add in our function body with the co_returns rewritten to final form.  */
   add_stmt (fnbody);
@@ -2368,7 +2343,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   add_stmt (r);
 
   /* Destructors for the things we built explicitly.  */
-  r = build_special_member_call (ap, complete_dtor_identifier, NULL,
+  r = build_special_member_call (promise_proxy, complete_dtor_identifier, NULL,
 				 promise_type, LOOKUP_NORMAL,
 				 tf_warning_or_error);
   add_stmt (r);
@@ -2381,7 +2356,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* Here deallocate the frame (if we allocated it), which we will have at
      present.  */
   tree fnf_m
-    = lookup_member (coro_frame_type, get_identifier ("__frame_needs_free"), 1,
+    = lookup_member (coro_frame_type, coro_frame_needs_free_id, 1,
 		     0, tf_warning_or_error);
   tree fnf2_x = build_class_member_access_expr (actor_frame, fnf_m, NULL_TREE,
 						false, tf_warning_or_error);
@@ -2460,18 +2435,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   gcc_checking_assert (maybe_cleanup_point_expr_void (r) == r);
   add_stmt (r);
 
-  /* We will need to know which resume point number should be encoded.  */
-  tree res_idx_m
-    = lookup_member (coro_frame_type, resume_idx_name,
-		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
-  tree resume_pt_number
-    = build_class_member_access_expr (actor_frame, res_idx_m, NULL_TREE, false,
-				      tf_warning_or_error);
-
   /* We've now rewritten the tree and added the initial and final
      co_awaits.  Now pass over the tree and expand the co_awaits.  */
 
-  coro_aw_data data = {actor, actor_fp, resume_pt_number, NULL_TREE,
+  coro_aw_data data = {actor, actor_fp, resume_idx_var, NULL_TREE,
 		       ash, del_promise_label, ret_label,
 		       continue_label, continuation, 2};
   cp_walk_tree (&actor_body, await_statement_expander, &data, NULL);
@@ -2485,7 +2452,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 }
 
 /* The prototype 'destroy' function :
-   frame->__resume_at |= 1;
+   frame->__Coro_resume_index |= 1;
    actor (frame);  */
 
 static void
@@ -2504,11 +2471,10 @@ build_destroy_fn (location_t loc, tree coro_frame_type, tree destroy,
 
   tree destr_frame = build1 (INDIRECT_REF, coro_frame_type, destr_fp);
 
-  tree resume_idx_name = get_identifier ("__resume_at");
-  tree rat_field = lookup_member (coro_frame_type, resume_idx_name, 1, 0,
-				  tf_warning_or_error);
-  tree rat = build3 (COMPONENT_REF, short_unsigned_type_node, destr_frame,
-		     rat_field, NULL_TREE);
+  tree rat_field = lookup_member (coro_frame_type, coro_resume_index_id,
+				  1, 0, tf_warning_or_error);
+  tree rat = build3 (COMPONENT_REF, short_unsigned_type_node,
+			 destr_frame, rat_field, NULL_TREE);
 
   /* _resume_at |= 1 */
   tree dstr_idx = build2 (BIT_IOR_EXPR, short_unsigned_type_node, rat,
@@ -3927,6 +3893,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	     identify them in the coroutine frame.  */
 	  tree lvname = DECL_NAME (lvar);
 	  char *buf;
+
 	  /* The outermost bind scope contains the artificial variables that
 	     we inject to implement the coro state machine.  We want to be able
 	     to inspect these in debugging.  */
@@ -3936,7 +3903,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	    buf = xasprintf ("%s_%u_%u", IDENTIFIER_POINTER (lvname),
 			     lvd->nest_depth, lvd->bind_indx);
 	  else
-	    buf = xasprintf ("_D%u.%u.%u", DECL_UID (lvar), lvd->nest_depth,
+	    buf = xasprintf ("_D%u_%u_%u", DECL_UID (lvar), lvd->nest_depth,
 			     lvd->bind_indx);
 	  /* TODO: Figure out if we should build a local type that has any
 	     excess alignment or size from the original decl.  */
@@ -4023,8 +3990,8 @@ coro_build_actor_or_destroy_function (tree orig, tree fn_type,
 
 static tree
 coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
-			    tree resume_fn_ptr_type, tree& resume_fn_field,
-			    tree& resume_idx_field, tree& fs_label)
+			    tree resume_fn_ptr_type,
+			    tree& resume_idx_var, tree& fs_label)
 {
   /* This will be our new outer scope.  */
   tree update_body = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
@@ -4057,7 +4024,6 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
 
   /* Wrap the function body in a try {} catch (...) {} block, if exceptions
      are enabled.  */
-  tree promise = get_coroutine_promise_proxy (orig);
   tree var_list = NULL_TREE;
   tree initial_await = build_init_or_final_await (fn_start, false);
 
@@ -4068,24 +4034,61 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
   tree return_void
     = get_coroutine_return_void_expr (current_function_decl, fn_start, false);
 
+  /* The pointer to the resume function.  */
+  tree resume_fn_ptr
+    = coro_build_artificial_var (fn_start, coro_resume_fn_id,
+				 resume_fn_ptr_type, orig, NULL_TREE);
+  DECL_CHAIN (resume_fn_ptr) = var_list;
+  var_list = resume_fn_ptr;
+  add_decl_expr (resume_fn_ptr);
+
   /* We will need to be able to set the resume function pointer to nullptr
      to signal that the coroutine is 'done'.  */
-  resume_fn_field
-    = build_lang_decl (VAR_DECL, get_identifier ("resume.fn.ptr.proxy"),
-		       resume_fn_ptr_type);
-  DECL_ARTIFICIAL (resume_fn_field) = true;
   tree zero_resume
     = build1 (CONVERT_EXPR, resume_fn_ptr_type, integer_zero_node);
-  zero_resume
-    = build2 (INIT_EXPR, resume_fn_ptr_type, resume_fn_field, zero_resume);
-  /* Likewise, the resume index needs to be reset.  */
-  resume_idx_field
-    = build_lang_decl (VAR_DECL, get_identifier ("resume.index.proxy"),
-		       short_unsigned_type_node);
-  DECL_ARTIFICIAL (resume_idx_field) = true;
-  tree zero_resume_idx = build_int_cst (short_unsigned_type_node, 0);
-  zero_resume_idx = build2 (INIT_EXPR, short_unsigned_type_node,
-			    resume_idx_field, zero_resume_idx);
+
+  /* The pointer to the destroy function.  */
+  tree var = coro_build_artificial_var (fn_start, coro_destroy_fn_id,
+					resume_fn_ptr_type, orig, NULL_TREE);
+  DECL_CHAIN (var) = var_list;
+  var_list = var;
+  add_decl_expr (var);
+
+  /* The promise was created on demand when parsing we now link it into
+      our scope.  */
+  tree promise = get_coroutine_promise_proxy (orig);
+  DECL_CONTEXT (promise) = orig;
+  DECL_SOURCE_LOCATION (promise) = fn_start;
+  DECL_CHAIN (promise) = var_list;
+  var_list = promise;
+  add_decl_expr (promise);
+
+  /* We need a handle to this coroutine, which is passed to every
+     await_suspend().  This was created on demand when parsing we now link it
+     into our scope.  */
+  var = get_coroutine_self_handle_proxy (orig);
+  DECL_CONTEXT (var) = orig;
+  DECL_SOURCE_LOCATION (var) = fn_start;
+  DECL_CHAIN (var) = var_list;
+  var_list = var;
+  add_decl_expr (var);
+
+
+  /* We create a resume index, this is initialized in the ramp.  */
+  resume_idx_var
+    = coro_build_artificial_var (fn_start, coro_resume_index_id,
+				 short_unsigned_type_node, orig, NULL_TREE);
+  DECL_CHAIN (resume_idx_var) = var_list;
+  var_list = resume_idx_var;
+  add_decl_expr (resume_idx_var);
+
+  /* If the coroutine has a frame that needs to be freed, this will be set by
+     the ramp.  */
+  var = coro_build_artificial_var (fn_start, coro_frame_needs_free_id,
+				   boolean_type_node, orig, NULL_TREE);
+  DECL_CHAIN (var) = var_list;
+  var_list = var;
+  add_decl_expr (var);
 
   if (flag_exceptions)
     {
@@ -4097,8 +4100,7 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
       /* Create and initialize the initial-await-resume-called variable per
 	 [dcl.fct.def.coroutine] / 5.3.  */
       tree i_a_r_c
-	= coro_build_artificial_var (fn_start,
-				     "_Coro_initial_await_resume_called",
+	= coro_build_artificial_var (fn_start, coro_frame_i_a_r_c_id,
 				     boolean_type_node, orig,
 				     boolean_false_node);
       DECL_CHAIN (i_a_r_c) = var_list;
@@ -4151,10 +4153,14 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
 	 If the unhandled exception method returns, then we continue
 	 to the final await expression (which duplicates the clearing of
 	 the field). */
-      finish_expr_stmt (zero_resume);
-      finish_expr_stmt (zero_resume_idx);
-      ueh = maybe_cleanup_point_expr_void (ueh);
-      add_stmt (ueh);
+      tree r = build2 (MODIFY_EXPR, resume_fn_ptr_type, resume_fn_ptr,
+		       zero_resume);
+      finish_expr_stmt (r);
+      tree short_zero = build_int_cst (short_unsigned_type_node, 0);
+      r = build2 (MODIFY_EXPR, short_unsigned_type_node, resume_idx_var,
+		  short_zero);
+      finish_expr_stmt (r);
+      finish_expr_stmt (ueh);
       finish_handler (handler);
       TRY_HANDLERS (tcb) = pop_stmt_list (TRY_HANDLERS (tcb));
     }
@@ -4189,6 +4195,8 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
   /* Before entering the final suspend point, we signal that this point has
      been reached by setting the resume function pointer to zero (this is
      what the 'done()' builtin tests) as per the current ABI.  */
+  zero_resume = build2 (MODIFY_EXPR, resume_fn_ptr_type, resume_fn_ptr,
+			zero_resume);
   finish_expr_stmt (zero_resume);
   finish_expr_stmt (build_init_or_final_await (fn_start, true));
   BIND_EXPR_BODY (update_body) = pop_stmt_list (BIND_EXPR_BODY (update_body));
@@ -4216,15 +4224,15 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
  declare a dummy coro frame.
  struct _R_frame {
   using handle_type = coro::coroutine_handle<coro1::promise_type>;
-  void (*__resume)(_R_frame *);
-  void (*__destroy)(_R_frame *);
-  coro1::promise_type __p;
-  bool frame_needs_free; free the coro frame mem if set.
-  bool i_a_r_c; [dcl.fct.def.coroutine] / 5.3
-  short __resume_at;
-  handle_type self_handle;
-  (maybe) parameter copies.
-  (maybe) local variables saved (including awaitables)
+  void (*_Coro_resume_fn)(_R_frame *);
+  void (*_Coro_destroy_fn)(_R_frame *);
+  coro1::promise_type _Coro_promise;
+  bool _Coro_frame_needs_free; free the coro frame mem if set.
+  bool _Coro_i_a_r_c; [dcl.fct.def.coroutine] / 5.3
+  short _Coro_resume_index;
+  handle_type _Coro_self_handle;
+  parameter copies (were required).
+  local variables saved (including awaitables)
   (maybe) trailing space.
  };  */
 
@@ -4316,7 +4324,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* 2. Types we need to define or look up.  */
 
-  tree fr_name = get_fn_local_identifier (orig, "frame");
+  tree fr_name = get_fn_local_identifier (orig, "Frame");
   tree coro_frame_type = xref_tag (record_type, fr_name);
   DECL_CONTEXT (TYPE_NAME (coro_frame_type)) = current_scope ();
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);
@@ -4333,33 +4341,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Construct the wrapped function body; we will analyze this to determine
      the requirements for the coroutine frame.  */
 
-  tree resume_fn_field = NULL_TREE;
-  tree resume_idx_field = NULL_TREE;
+  tree resume_idx_var = NULL_TREE;
   tree fs_label = NULL_TREE;
   fnbody = coro_rewrite_function_body (fn_start, fnbody, orig,
-				       act_des_fn_ptr, resume_fn_field,
-				       resume_idx_field, fs_label);
+				       act_des_fn_ptr,
+				       resume_idx_var, fs_label);
   /* Build our dummy coro frame layout.  */
   coro_frame_type = begin_class_definition (coro_frame_type);
 
+  /* The fields for the coro frame.  */
   tree field_list = NULL_TREE;
-  tree resume_name
-    = coro_make_frame_entry (&field_list, "__resume",
-			     act_des_fn_ptr, fn_start);
-  tree destroy_name
-    = coro_make_frame_entry (&field_list, "__destroy",
-			     act_des_fn_ptr, fn_start);
-  tree promise_name
-    = coro_make_frame_entry (&field_list, "__p", promise_type, fn_start);
-  tree fnf_name = coro_make_frame_entry (&field_list, "__frame_needs_free",
-					 boolean_type_node, fn_start);
-  tree resume_idx_name
-    = coro_make_frame_entry (&field_list, "__resume_at",
-			     short_unsigned_type_node, fn_start);
-
-  /* We need a handle to this coroutine, which is passed to every
-     await_suspend().  There's no point in creating it over and over.  */
-  (void) coro_make_frame_entry (&field_list, "__self_h", handle_type, fn_start);
 
   /* Now add in fields for function params (if there are any).
      We do not attempt elision of copies at this stage, we do analyze the
@@ -4417,14 +4408,14 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  if (DECL_NAME (arg))
 	    {
 	      tree pname = DECL_NAME (arg);
-	      buf = xasprintf ("__parm.%s", IDENTIFIER_POINTER (pname));
+	      buf = xasprintf ("_P_%s", IDENTIFIER_POINTER (pname));
 	    }
 	  else
-	    buf = xasprintf ("__unnamed_parm.%d", no_name_parm++);
+	    buf = xasprintf ("_P_unnamed_%d", no_name_parm++);
 
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (parm.frame_type))
 	    {
-	      char *gbuf = xasprintf ("%s.live", buf);
+	      char *gbuf = xasprintf ("%s_live", buf);
 	      parm.guard_var
 		= build_lang_decl (VAR_DECL, get_identifier (gbuf),
 				   boolean_type_node);
@@ -4761,8 +4752,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* For now, once allocation has succeeded we always assume that this needs
      destruction, there's no impl. for frame allocation elision.  */
-  tree fnf_m
-    = lookup_member (coro_frame_type, fnf_name, 1, 0, tf_warning_or_error);
+  tree fnf_m = lookup_member (coro_frame_type, coro_frame_needs_free_id,
+			      1, 0,tf_warning_or_error);
   tree fnf_x = build_class_member_access_expr (deref_fp, fnf_m, NULL_TREE,
 					       false, tf_warning_or_error);
   r = build2 (INIT_EXPR, boolean_type_node, fnf_x, boolean_true_node);
@@ -4773,24 +4764,22 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree actor_addr = build1 (ADDR_EXPR, act_des_fn_ptr, actor);
   tree resume_m
-    = lookup_member (coro_frame_type, resume_name,
+    = lookup_member (coro_frame_type, coro_resume_fn_id,
 		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
   tree resume_x = build_class_member_access_expr (deref_fp, resume_m, NULL_TREE,
 						  false, tf_warning_or_error);
   r = build2_loc (fn_start, INIT_EXPR, act_des_fn_ptr, resume_x, actor_addr);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
+  finish_expr_stmt (r);
 
   tree destroy_addr = build1 (ADDR_EXPR, act_des_fn_ptr, destroy);
   tree destroy_m
-    = lookup_member (coro_frame_type, destroy_name,
+    = lookup_member (coro_frame_type, coro_destroy_fn_id,
 		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
   tree destroy_x
     = build_class_member_access_expr (deref_fp, destroy_m, NULL_TREE, false,
 				      tf_warning_or_error);
   r = build2_loc (fn_start, INIT_EXPR, act_des_fn_ptr, destroy_x, destroy_addr);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
+  finish_expr_stmt (r);
 
   /* [dcl.fct.def.coroutine] /13
      When a coroutine is invoked, a copy is created for each coroutine
@@ -4881,7 +4870,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Set up the promise.  */
   tree promise_m
-    = lookup_member (coro_frame_type, promise_name,
+    = lookup_member (coro_frame_type, coro_promise_id,
 		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
 
   tree p = build_class_member_access_expr (deref_fp, promise_m, NULL_TREE,
@@ -5027,9 +5016,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 			      boolean_type_node);
       finish_expr_stmt (r);
     }
-  /* Initialize the resume_idx_name to 0, meaning "not started".  */
+  /* Initialize the resume_idx_var to 0, meaning "not started".  */
   tree resume_idx_m
-    = lookup_member (coro_frame_type, resume_idx_name,
+    = lookup_member (coro_frame_type, coro_resume_index_id,
 		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
   tree resume_idx
     = build_class_member_access_expr (deref_fp, resume_idx_m, NULL_TREE, false,
@@ -5172,9 +5161,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   push_deferring_access_checks (dk_no_check);
 
   /* Build the actor...  */
-  build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig, param_uses,
-		  &local_var_uses, param_dtor_list, resume_fn_field,
-		  resume_idx_field, body_aw_points.await_number, frame_size);
+  build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig,
+		  &local_var_uses, param_dtor_list,
+		  resume_idx_var, body_aw_points.await_number, frame_size);
 
   /* Destroyer ... */
   build_destroy_fn (fn_start, coro_frame_type, destroy, actor);
