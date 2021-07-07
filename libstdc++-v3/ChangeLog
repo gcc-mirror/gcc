@@ -1,3 +1,12 @@
+2021-07-06  Avi Kivity  <avi@scylladb.com>
+
+	Backported from master:
+	2021-06-07  Avi Kivity  <avi@scylladb.com>
+
+	PR libstdc++/100900
+	* include/std/ranges (elements_view::__iter_cat::_S_iter_cat):
+	Add missing typename.
+
 2021-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
