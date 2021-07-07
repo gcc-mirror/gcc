@@ -2155,13 +2155,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* One param, the coro frame pointer.  */
   tree actor_fp = DECL_ARGUMENTS (actor);
 
-  /* A void return.  */
-  tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
-  DECL_ARTIFICIAL (resdecl) = 1;
-  DECL_IGNORED_P (resdecl) = 1;
-  DECL_RESULT (actor) = resdecl;
-  DECL_COROUTINE_P (actor) = 1;
-
   /* We have a definition here.  */
   TREE_STATIC (actor) = 1;
 
@@ -2532,15 +2525,8 @@ build_destroy_fn (location_t loc, tree coro_frame_type, tree destroy,
   /* One param, the coro frame pointer.  */
   tree destr_fp = DECL_ARGUMENTS (destroy);
 
-  /* A void return.  */
-  tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
-  DECL_ARTIFICIAL (resdecl) = 1;
-  DECL_IGNORED_P (resdecl) = 1;
-  DECL_RESULT (destroy) = resdecl;
-
   /* We have a definition here.  */
   TREE_STATIC (destroy) = 1;
-  DECL_COROUTINE_P (destroy) = 1;
 
   tree destr_outer = push_stmt_list ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 1;
@@ -4000,15 +3986,19 @@ static tree
 act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
 {
   tree fn_name = get_fn_local_identifier (orig, name);
+  location_t loc = DECL_SOURCE_LOCATION (orig);
   tree fn = build_lang_decl (FUNCTION_DECL, fn_name, fn_type);
   DECL_CONTEXT (fn) = DECL_CONTEXT (orig);
+  DECL_SOURCE_LOCATION (fn) = loc;
   DECL_ARTIFICIAL (fn) = true;
   DECL_INITIAL (fn) = error_mark_node;
+
   tree id = get_identifier ("frame_ptr");
   tree fp = build_lang_decl (PARM_DECL, id, coro_frame_ptr);
   DECL_CONTEXT (fp) = fn;
   DECL_ARG_TYPE (fp) = type_passed_as (coro_frame_ptr);
   DECL_ARGUMENTS (fn) = fp;
+
   /* Copy selected attributes from the original function.  */
   TREE_USED (fn) = TREE_USED (orig);
   if (DECL_SECTION_NAME (orig))
@@ -4020,6 +4010,17 @@ act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
   DECL_USER_ALIGN (fn) = DECL_USER_ALIGN (orig);
   /* Apply attributes from the original fn.  */
   DECL_ATTRIBUTES (fn) = copy_list (DECL_ATTRIBUTES (orig));
+
+  /* A void return.  */
+  tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
+  DECL_CONTEXT (resdecl) = fn;
+  DECL_ARTIFICIAL (resdecl) = 1;
+  DECL_IGNORED_P (resdecl) = 1;
+  DECL_RESULT (fn) = resdecl;
+
+  /* This is a coroutine component.  */
+  DECL_COROUTINE_P (fn) = 1;
+
   return fn;
 }
 
