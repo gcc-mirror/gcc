@@ -1474,6 +1474,29 @@ coro_build_cvt_void_expr_stmt (tree expr, location_t loc)
   return coro_build_expr_stmt (t, loc);
 }
 
+/* Helpers to build an artificial var, with location LOC, NAME and TYPE, in
+   CTX, and with initializer INIT.  */
+
+static tree
+coro_build_artificial_var (location_t loc, tree name, tree type, tree ctx,
+			   tree init)
+{
+  tree res = build_lang_decl (VAR_DECL, name, type);
+  DECL_SOURCE_LOCATION (res) = loc;
+  DECL_CONTEXT (res) = ctx;
+  DECL_ARTIFICIAL (res) = true;
+  DECL_INITIAL (res) = init;
+  return res;
+}
+
+static tree
+coro_build_artificial_var (location_t loc, const char *name, tree type,
+			   tree ctx, tree init)
+{
+  return coro_build_artificial_var (loc, get_identifier (name),
+				    type, ctx, init);
+}
+
 /* Helpers for label creation:
    1. Create a named label in the specified context.  */
 
@@ -2113,12 +2136,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree top_block = make_node (BLOCK);
   BIND_EXPR_BLOCK (actor_bind) = top_block;
 
-  tree continuation = build_lang_decl (VAR_DECL,
-				       get_identifier ("actor.continue"),
-				       void_coro_handle_type);
-  DECL_ARTIFICIAL (continuation) = 1;
-  DECL_IGNORED_P (continuation) = 1;
-  DECL_CONTEXT (continuation) = actor;
+  tree continuation = coro_build_artificial_var (loc, "_Coro_actor_continue",
+						 void_coro_handle_type, actor,
+						 NULL_TREE);
+
   BIND_EXPR_VARS (actor_bind) = continuation;
 
   /* Link in the block associated with the outer scope of the re-written
@@ -4069,12 +4090,13 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
 					 fn_start, NULL, /*musthave=*/true);
       /* Create and initialize the initial-await-resume-called variable per
 	 [dcl.fct.def.coroutine] / 5.3.  */
-      tree i_a_r_c = build_lang_decl (VAR_DECL, get_identifier ("i_a_r_c"),
-				      boolean_type_node);
-      DECL_ARTIFICIAL (i_a_r_c) = true;
+      tree i_a_r_c
+	= coro_build_artificial_var (fn_start,
+				     "_Coro_initial_await_resume_called",
+				     boolean_type_node, orig,
+				     boolean_false_node);
       DECL_CHAIN (i_a_r_c) = var_list;
       var_list = i_a_r_c;
-      DECL_INITIAL (i_a_r_c) = boolean_false_node;
       add_decl_expr (i_a_r_c);
       /* Start the try-catch.  */
       tree tcb = build_stmt (fn_start, TRY_BLOCK, NULL_TREE, NULL_TREE);
@@ -4459,8 +4481,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   add_stmt (ramp_bind);
   tree ramp_body = push_stmt_list ();
 
-  tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
-				  coro_frame_ptr);
+  tree zeroinit = build1_loc (fn_start, CONVERT_EXPR,
+			      coro_frame_ptr, integer_zero_node);
+  tree coro_fp = coro_build_artificial_var (fn_start, "_Coro_frameptr",
+					    coro_frame_ptr, orig, zeroinit);
   tree varlist = coro_fp;
 
   /* To signal that we need to cleanup copied function args.  */
@@ -4478,21 +4502,19 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Signal that we need to clean up the promise object on exception.  */
   tree coro_promise_live
-   = build_lang_decl (VAR_DECL, get_identifier ("coro.promise.live"),
-		      boolean_type_node);
-  DECL_ARTIFICIAL (coro_promise_live) = true;
+    = coro_build_artificial_var (fn_start, "_Coro_promise_live",
+				 boolean_type_node, orig, boolean_false_node);
   DECL_CHAIN (coro_promise_live) = varlist;
   varlist = coro_promise_live;
-  DECL_INITIAL (coro_promise_live) = boolean_false_node;
+
   /* When the get-return-object is in the RETURN slot, we need to arrange for
      cleanup on exception.  */
   tree coro_gro_live
-   = build_lang_decl (VAR_DECL, get_identifier ("coro.gro.live"),
-		      boolean_type_node);
-  DECL_ARTIFICIAL (coro_gro_live) = true;
+    = coro_build_artificial_var (fn_start, "_Coro_gro_live",
+				 boolean_type_node, orig, boolean_false_node);
+
   DECL_CHAIN (coro_gro_live) = varlist;
   varlist = coro_gro_live;
-  DECL_INITIAL (coro_gro_live) = boolean_false_node;
 
   /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
@@ -4508,8 +4530,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* The decl_expr for the coro frame pointer, initialize to zero so that we
      can pass it to the IFN_CO_FRAME (since there's no way to pass a type,
      directly apparently).  This avoids a "used uninitialized" warning.  */
-  tree zeroinit = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
-  DECL_INITIAL (coro_fp) = zeroinit;
+
   add_decl_expr (coro_fp);
   if (flag_exceptions && DECL_ARGUMENTS (orig))
     for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
@@ -4969,10 +4990,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     {
       /* ... or ... Construct an object that will be used as the single
 	param to the CTOR for the return object.  */
-      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"), gro_type);
-      DECL_CONTEXT (gro) = current_scope ();
-      DECL_ARTIFICIAL (gro) = true;
-      DECL_IGNORED_P (gro) = true;
+      gro = coro_build_artificial_var (fn_start, "_Coro_gro", gro_type, orig,
+				       NULL_TREE);
       add_decl_expr (gro);
       gro_bind_vars = gro;
       r = cp_build_modify_expr (input_location, gro, INIT_EXPR, get_ro,
