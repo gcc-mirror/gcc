@@ -1,0 +1,77 @@
+#   Copyright (C) 2021 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib gcc-dg.exp
+
+# Define gm2 callbacks for dg.exp.
+
+proc gm2-dg-test { prog do_what extra_tool_flags } {
+    verbose "begin:gm2-dg-test" 1
+    upvar dg-do-what dg-do-what
+
+    # For now demote link and run tests to compile-only.
+    switch $do_what {
+	link -
+	run {
+	    set do_what compile
+	    set dg-do-what compile
+	}
+    }
+
+    set result \
+	[gcc-dg-test-1 gm2_target_compile $prog $do_what $extra_tool_flags]
+
+    set comp_output [lindex $result 0]
+    set output_file [lindex $result 1]
+    verbose "end:gm2-dg-test" 1
+    return [list $comp_output $output_file]
+}
+
+proc gm2-dg-prune { system text } {
+    return [gcc-dg-prune $system $text]
+}
+
+# Utility routines.
+
+# Modified dg-runtest that can cycle through a list of optimization options
+# as c-torture does.
+proc gm2-dg-runtest { testcases flags default-extra-flags } {
+    global runtests
+    global TORTURE_OPTIONS
+
+    foreach test $testcases {
+	# If we're only testing specific files and this isn't one of
+	# them, skip it.
+	if ![runtest_file_p $runtests $test] {
+	    continue
+        }
+
+	# look if this is dg-do-run test, in which case
+	# we cycle through the option list, otherwise we don't
+	if [expr [search_for $test "dg-do run"]] {
+	    set option_list $TORTURE_OPTIONS
+	} else {
+	    set option_list [list { -O } ]
+	}
+
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	foreach flags_t $option_list {
+	    verbose "Testing $nshort, $flags $flags_t" 1
+	    dg-test $test "$flags $flags_t" ${default-extra-flags}
+	}
+    }
+}

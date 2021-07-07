@@ -1,0 +1,59 @@
+2002-12-20	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added __ATTRIBUTE__ __BUILTIN__ ((Ident))
+	  rules for obtaining target compiler constants
+	* fixed handling of recursive procedure type definitions
+	  bug reported by Iztok Kobal
+	* improved base types to aid gdb in displaying data types
+	* checked in some sketchy initial ISO library implementation
+	  modules
+
+2002-11-03	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 Release 0.33
+	* implemented large sets
+	* implemented ISO complient sets
+	* definition modules no longer have to explicitly export
+	  identifiers
+
+2002-06-20	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 Release 0.32
+	* now supports building a cross compiler (strong-arm) tested
+
+2002-06-09	Gaius Mulley <gaius@glam.ac.uk>
+
+	* brought gm2 up to date with gcc-3.2
+	* fixed the $(srcdir) in all Makefile.in's
+	* configuring and building gm2 is now recommended
+	  to occur outside the source tree.
+	* many changes to gccgm2.c to reflect gcc-3.2
+
+2002-05-04	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented DEFINITION MODULE FOR "C"
+	* implemented -Wmakeall
+	* implemented varargs in "C" modules
+	* added gm2/examples directory
+	* updated documentation
+	* gm2m and gm2l are now built from ebnf descriptions
+	  by ppg
+
+2002-04-15	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 Release 0.21
+	* brought gm2 up to date with gcc-3.0.4
+	* make paranoid works on Debian GNU/Linux (Athlon)
+	* finally finished rewrite of a number of key modules
+	* Strings.mod used instead of StrLib.mod allowing for
+	  dynamic arrays
+	* new flex built lexical analyser in use.
+	* cpp is run on all definition/implementation modules if
+	  -Wcpp is used.
+	* gm2m rewritten
+	* gm2 and its utilities now use -I for path specification
+	  rather than -M
+	* Makefiles much simplified, removed most recursive makes.
+	* all parsers are now mechanically generated using ppg.
+	* ppg built if required.
+

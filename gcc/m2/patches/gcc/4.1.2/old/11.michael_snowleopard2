@@ -1,0 +1,12 @@
+--- gcc-4.1.2/gcc/gm2/Make-lang.in.sav	2009-12-02 21:53:58.000000000 -0500
++++ gcc-4.1.2/gcc/gm2/Make-lang.in	2009-12-02 22:29:41.000000000 -0500
+@@ -723,7 +723,8 @@
+ 
+                   # the C implementation module bridging the Modula-2 -> GCC
+ GM2_OBJS          = gm2/gccgm2.o gm2/gm2builtins.o gm2/gm2-lang.o gm2/gm2except.o \
+-                    gm2/stor-layout.o gm2/m2pp.o
++                    gm2/m2pp.o
++                  #  gm2/stor-layout.o gm2/m2pp.o
+                   #  gm2/gm2-common.o
+ GM2_LIBS          = gm2/gm2-compiler/gm2.a gm2/gm2-libs/libgm2.a         # the final Modula-2 front end
+ GM2_LIBS_BOOT     = gm2/gm2-compiler-boot/gm2.a \

@@ -1,0 +1,12 @@
+--- gcc-versionno-orig/gcc/c-family/cppspec.c	2018-04-13 16:08:36.070820977 +0100
++++ gcc-versionno/gcc/c-family/cppspec.c	2018-04-14 01:29:42.469961191 +0100
+@@ -197,3 +197,9 @@
+ 
+ /* Number of extra output files that lang_specific_pre_link may generate.  */
+ int lang_specific_extra_outfiles = 0;  /* Not used for cpp.  */
++
++/* lang_register_spec_functions.  Not used for cpp.  */
++void
++lang_register_spec_functions (void)
++{
++}

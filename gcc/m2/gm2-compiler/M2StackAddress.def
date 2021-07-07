@@ -1,0 +1,99 @@
+(* M2StackAddress.def provides a generic stack for ADDRESS sized objects.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2StackAddress ;
+
+(*
+    Title      : M2StackAddress
+    Author     : Gaius Mulley
+    System     : UNIX (GNU Modula-2)
+    Date       : Fri Oct 12 17:26:50 2001
+    Revision   : $Version$
+    Description: provides a generic stack for ADDRESS sized objects.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT QUALIFIED StackOfAddress, InitStackAddress, KillStackAddress,
+                 PushAddress, PopAddress, PeepAddress,
+                 IsEmptyAddress, NoOfItemsInStackAddress ;
+
+TYPE
+   StackOfAddress ;
+
+
+(*
+   InitStackAddress - creates and returns a new stack.
+*)
+
+PROCEDURE InitStackAddress () : StackOfAddress ;
+
+
+(*
+   KillStackAddress - destroys a stack, returning NIL.
+*)
+
+PROCEDURE KillStackAddress (s: StackOfAddress) : StackOfAddress ;
+
+
+(*
+   PushAddress - pushes a word, w, onto, s.
+*)
+
+PROCEDURE PushAddress (s: StackOfAddress; w: ADDRESS) ;
+
+
+(*
+   PopAddress - pops an element from stack, s.
+*)
+
+PROCEDURE PopAddress (s: StackOfAddress) : ADDRESS ;
+
+
+(*
+   IsEmptyAddress - returns TRUE if stack, s, is empty.
+*)
+
+PROCEDURE IsEmptyAddress (s: StackOfAddress) : BOOLEAN ;
+
+
+(*
+   PeepAddress - returns the element at, n, items below in the stack.
+                 Top of stack can be seen via Peep(s, 1)
+*)
+
+PROCEDURE PeepAddress (s: StackOfAddress; n: CARDINAL) : ADDRESS ;
+
+
+(*
+   ReduceAddress - reduce the stack by n elements.
+*)
+
+PROCEDURE ReduceAddress (s: StackOfAddress; n: CARDINAL) ;
+
+
+(*
+   NoOfItemsInStack - returns the number of items held in the stack, s.
+*)
+
+PROCEDURE NoOfItemsInStackAddress (s: StackOfAddress) : CARDINAL ;
+
+
+END M2StackAddress.

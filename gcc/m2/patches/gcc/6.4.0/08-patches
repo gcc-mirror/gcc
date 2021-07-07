@@ -1,0 +1,95 @@
+--- gcc-6.4.0-orig/Makefile.def	2017-07-24 16:03:40.557367730 +0100
++++ gcc-6.4.0/Makefile.def	2017-07-24 16:24:18.063444640 +0100
+@@ -10,12 +10,12 @@
+ // it under the terms of the GNU General Public License as published by
+ // the Free Software Foundation; either version 3 of the License, or
+ // (at your option) any later version.
+-// 
++//
+ // This program is distributed in the hope that it will be useful,
+ // but WITHOUT ANY WARRANTY; without even the implied warranty of
+ // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ // GNU General Public License for more details.
+-// 
++//
+ // You should have received a copy of the GNU General Public License
+ // along with this program; see the file COPYING3.  If not see
+ // <http://www.gnu.org/licenses/>.
+@@ -45,7 +45,7 @@
+ 		missing= TAGS; };
+ host_modules= { module= flex; no_check_cross= true; };
+ host_modules= { module= gas; bootstrap=true; };
+-host_modules= { module= gcc; bootstrap=true; 
++host_modules= { module= gcc; bootstrap=true;
+ 		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
+ host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
+ 		// Work around in-tree gmp configure bug with missing flex.
+@@ -115,7 +115,7 @@
+ host_modules= { module= expect; };
+ host_modules= { module= guile; };
+ host_modules= { module= tk; };
+-host_modules= { module= libtermcap; no_check=true; 
++host_modules= { module= libtermcap; no_check=true;
+                 missing=mostlyclean;
+                 missing=clean;
+                 missing=distclean;
+@@ -170,6 +170,7 @@
+ target_modules = { module= boehm-gc; };
+ target_modules = { module= rda; };
+ target_modules = { module= libada; };
++target_modules = { module= libgm2; lib_path=.libs; };
+ target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
+ target_modules = { module= libitm; lib_path=.libs; };
+ target_modules = { module= libatomic; lib_path=.libs; };
+@@ -178,26 +179,26 @@
+ // Not all; these are the ones which don't have special options.
+ // "depend" indicates that a target depends on another target uniformly
+ // for each subdirectory.  There can be several such lines per target.
+-recursive_targets = { make_target= info; 
++recursive_targets = { make_target= info;
+                       depend=configure; };
+-recursive_targets = { make_target= dvi; 
++recursive_targets = { make_target= dvi;
+                       depend=configure; };
+-recursive_targets = { make_target= pdf; 
++recursive_targets = { make_target= pdf;
+                       depend=configure; };
+-recursive_targets = { make_target= html; 
++recursive_targets = { make_target= html;
+                       depend=configure; };
+-recursive_targets = { make_target= TAGS; 
++recursive_targets = { make_target= TAGS;
+                       depend=configure; };
+-recursive_targets = { make_target= install-info; 
++recursive_targets = { make_target= install-info;
+                       depend=configure;
+                       depend=info; };
+-recursive_targets = { make_target= install-pdf; 
++recursive_targets = { make_target= install-pdf;
+                       depend=configure;
+                       depend=pdf; };
+-recursive_targets = { make_target= install-html; 
++recursive_targets = { make_target= install-html;
+                       depend=configure;
+                       depend=html; };
+-recursive_targets = { make_target= installcheck; 
++recursive_targets = { make_target= installcheck;
+                       depend=configure; };
+ recursive_targets = { make_target= mostlyclean; };
+ recursive_targets = { make_target= clean; };
+@@ -285,6 +286,7 @@
+ flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
+ flags_to_pass = { flag= GOC_FOR_TARGET ; };
+ flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
++flags_to_pass = { flag= GM2_FOR_TARGET ; };
+ flags_to_pass = { flag= LD_FOR_TARGET ; };
+ flags_to_pass = { flag= LIPO_FOR_TARGET ; };
+ flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
+@@ -618,6 +620,7 @@
+ languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
+ languages = { language=go;	gcc-check-target=check-go;
+ 				lib-check-target=check-target-libgo; };
++languages = { language=gm2;	gcc-check-target=check-gm2; }
+ 
+ // Toplevel bootstrap
+ bootstrap_stage = { id=1 ; };

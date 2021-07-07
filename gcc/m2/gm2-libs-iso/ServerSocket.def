@@ -1,0 +1,84 @@
+(* ServerSocket.def provides the ability to open a socket as a Channel.
+
+Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE ServerSocket ;
+
+(*
+    Title      : ServerSocket
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Fri Oct  3 14:30:52 2008
+    Revision   : $Version$ 
+    Description: provides a mechanism to open a server socket
+                 as an ISO Modula-2 channel.
+*)
+
+FROM IOChan IMPORT ChanId ;
+FROM ChanConsts IMPORT FlagSet, OpenResults ;
+
+
+(*
+   OpenSocketBindListen - opens a TCP server socket.  The socket
+                          is bound to, port, and will allow, listen,
+                          pending connections.  The result of these
+                          combined operations is returned in, res.
+*)
+
+PROCEDURE OpenSocketBindListen (VAR socketid: ChanId;
+                                port: CARDINAL; listen: CARDINAL;
+                                VAR res: OpenResults) ;
+
+
+(*
+   OpenAccept - attempts to open a new channel whose
+                input/output capability is determined by,
+                flags.  The result of this attempt is returned
+                in res.
+*)
+
+PROCEDURE OpenAccept (VAR cid: ChanId; socketid: ChanId;
+                      flags: FlagSet; VAR res: OpenResults) ;
+
+
+(*
+   Close - if the channel identified by cid was not opened as
+           a server socket stream, the exception wrongDevice is
+           raised; otherwise closes the channel, and assigns
+           the value identifying the invalid channel to cid.
+*)
+
+PROCEDURE Close (VAR cid: ChanId) ;
+
+
+(*
+   IsSocket - tests if the channel identified by cid is open as
+              a server socket stream.
+*)
+
+PROCEDURE IsSocket (cid: ChanId) : BOOLEAN ;
+
+
+END ServerSocket.

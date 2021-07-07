@@ -1,0 +1,18 @@
+@c README.texi describes the pim libraries.
+@c Copyright @copyright{} 2000-2020 Free Software Foundation, Inc.
+@c
+@c This is part of the GM2 manual.
+@c For copying conditions, see the file gcc/doc/include/fdl.texi.
+
+These are the base libraries for the GNU Modula-2 compiler.  These
+modules originally came from the M2F compiler and have been cleaned up
+and extended.  They provide a basic interface to the underlying
+operating system via libc.  They also include a number of libraries to
+allow access to compiler built-ins. Perhaps the largest difference to
+PIM and ISO libraries is the @code{DynamicString} module which
+declares the type @code{String}.  The heavy use of this opaque data
+type results in a number of equivalent modules that can either handle
+@code{ARRAY OF CHAR} or @code{String}.
+
+These modules have been extensively tested and are used throughout
+building the GNU Modula-2 compiler.

@@ -1,0 +1,350 @@
+--- cvs-gcc-3.3.6/gcc/dwarf2out.c	2004-04-13 19:36:36.000000000 +0100
++++ gcc-3.3.6/gcc/dwarf2out.c	2005-11-15 16:47:58.161938789 +0000
+@@ -317,6 +317,7 @@
+ static void flush_queued_reg_saves	PARAMS ((void));
+ static bool clobbers_queued_reg_save	PARAMS ((rtx));
+ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, const char *));
++static bool is_subrange_type            PARAMS ((tree));
+ 
+ /* Support for complex CFA locations.  */
+ static void output_cfa_loc 		PARAMS ((dw_cfi_ref));
+@@ -2330,6 +2331,8 @@
+ static unsigned long size_of_locs	PARAMS ((dw_loc_descr_ref));
+ static void output_loc_operands		PARAMS ((dw_loc_descr_ref));
+ static void output_loc_sequence		PARAMS ((dw_loc_descr_ref));
++static void gen_set_subrange_die        PARAMS ((tree, dw_die_ref));
++static dw_die_ref subrange_type_die     PARAMS ((tree, dw_die_ref));
+ 
+ /* Convert a DWARF stack opcode into its string name.  */
+ 
+@@ -3583,6 +3586,8 @@
+ static int is_cxx			PARAMS ((void));
+ static int is_java			PARAMS ((void));
+ static int is_fortran			PARAMS ((void));
++static int is_modula2                   PARAMS ((void));
++
+ static void remove_AT			PARAMS ((dw_die_ref,
+ 						 enum dwarf_attribute));
+ static inline void free_die		PARAMS ((dw_die_ref));
+@@ -3719,7 +3724,7 @@
+ static void gen_inlined_enumeration_type_die PARAMS ((tree, dw_die_ref));
+ static void gen_inlined_structure_type_die PARAMS ((tree, dw_die_ref));
+ static void gen_inlined_union_type_die	PARAMS ((tree, dw_die_ref));
+-static void gen_enumeration_type_die	PARAMS ((tree, dw_die_ref));
++static dw_die_ref gen_enumeration_type_die PARAMS ((tree, dw_die_ref));
+ static dw_die_ref gen_formal_parameter_die PARAMS ((tree, dw_die_ref));
+ static void gen_unspecified_parameters_die PARAMS ((tree, dw_die_ref));
+ static void gen_formal_types_die	PARAMS ((tree, dw_die_ref));
+@@ -4993,6 +4998,14 @@
+   return (lang == DW_LANG_Java);
+ }
+ 
++static inline int
++is_modula2 ()
++{
++  unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
++
++  return (lang == DW_LANG_Modula2);
++}
++
+ /* Free up the memory used by A.  */
+ 
+ static inline void free_AT PARAMS ((dw_attr_ref));
+@@ -7874,6 +7887,112 @@
+   return 0;
+ }
+ 
++/* Return true if the debug information for the given type should be
++   emitted as a subrange type.  */
++
++static inline bool
++is_subrange_type (type)
++     tree type;
++{
++  tree subtype = TREE_TYPE (type);
++
++  /* Subrange types are identified by the fact that they are integer
++     types, and that they have a subtype which is either an integer type
++     or an enumeral type.  */
++
++  if (TREE_CODE (type) != INTEGER_TYPE
++      || subtype == NULL_TREE)
++    return false;
++
++  if (TREE_CODE (subtype) != INTEGER_TYPE
++      && TREE_CODE (subtype) != ENUMERAL_TYPE
++      && TREE_CODE (subtype) != CHAR_TYPE)
++    return false;
++
++  if (TREE_CODE (type) == TREE_CODE (subtype)
++      && int_size_in_bytes (type) == int_size_in_bytes (subtype)
++      && TYPE_MIN_VALUE (type) != NULL
++      && TYPE_MIN_VALUE (subtype) != NULL
++      && tree_int_cst_equal (TYPE_MIN_VALUE (type), TYPE_MIN_VALUE (subtype))
++      && TYPE_MAX_VALUE (type) != NULL
++      && TYPE_MAX_VALUE (subtype) != NULL
++      && tree_int_cst_equal (TYPE_MAX_VALUE (type), TYPE_MAX_VALUE (subtype)))
++    {
++      /* The type and its subtype have the same representation.  If in
++         addition the two types also have the same name, then the given
++         type is not a subrange type, but rather a plain base type.  */
++      /* FIXME: brobecker/2004-03-22:
++         Sizetype INTEGER_CSTs nodes are canonicalized.  It should
++         therefore be sufficient to check the TYPE_SIZE node pointers
++         rather than checking the actual size.  Unfortunately, we have
++         found some cases, such as in the Ada "integer" type, where
++         this is not the case.  Until this problem is solved, we need to
++         keep checking the actual size.  */
++      tree type_name = TYPE_NAME (type);
++      tree subtype_name = TYPE_NAME (subtype);
++
++      if (type_name != NULL && TREE_CODE (type_name) == TYPE_DECL)
++        type_name = DECL_NAME (type_name);
++
++      if (subtype_name != NULL && TREE_CODE (subtype_name) == TYPE_DECL)
++        subtype_name = DECL_NAME (subtype_name);
++
++      if (type_name == subtype_name)
++        return false;
++    }
++
++  return true;
++}
++
++/*  Given a pointer to a tree node for a subrange type, return a pointer
++    to a DIE that describes the given type.  */
++
++static dw_die_ref
++subrange_type_die (type, context_die)
++     tree type;
++     dw_die_ref context_die;
++{
++  dw_die_ref subtype_die;
++  dw_die_ref subrange_die;
++  tree name = TYPE_NAME (type);
++  const HOST_WIDE_INT size_in_bytes = int_size_in_bytes (type);
++  tree subtype = TREE_TYPE (type);
++
++  if (context_die == NULL)
++    context_die = comp_unit_die;
++
++  if (TREE_CODE (subtype) == ENUMERAL_TYPE)
++    subtype_die = gen_enumeration_type_die (subtype, context_die);
++  else
++    subtype_die = base_type_die (subtype);
++
++  subrange_die = new_die (DW_TAG_subrange_type, context_die, type);
++
++  if (name != NULL)
++    {
++      if (TREE_CODE (name) == TYPE_DECL)
++        name = DECL_NAME (name);
++      add_name_attribute (subrange_die, IDENTIFIER_POINTER (name));
++    }
++
++  if (int_size_in_bytes (subtype) != size_in_bytes)
++    {
++      /* The size of the subrange type and its base type do not match,
++         so we need to generate a size attribute for the subrange type.  */
++      add_AT_unsigned (subrange_die, DW_AT_byte_size, size_in_bytes);
++    }
++
++  if (TYPE_MIN_VALUE (type) != NULL)
++    add_bound_info (subrange_die, DW_AT_lower_bound,
++                    TYPE_MIN_VALUE (type));
++  if (TYPE_MAX_VALUE (type) != NULL)
++    add_bound_info (subrange_die, DW_AT_upper_bound,
++                    TYPE_MAX_VALUE (type));
++  add_AT_die_ref (subrange_die, DW_AT_type, subtype_die);
++
++  return subrange_die;
++}
++
+ /* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
+    entry that chains various modifiers in front of the given type.  */
+ 
+@@ -7966,6 +8085,8 @@
+ #endif
+ 	  item_type = TREE_TYPE (type);
+ 	}
++      else if (is_subrange_type (type))
++        mod_type_die = subrange_type_die (type, context_die);
+       else if (is_base_type (type))
+ 	mod_type_die = base_type_die (type);
+       else
+@@ -9637,7 +9758,7 @@
+ /* Generate an DW_AT_name attribute given some string value to be included as
+    the value of the attribute.  */
+ 
+-static inline void
++static void
+ add_name_attribute (die, name_string)
+      dw_die_ref die;
+      const char *name_string;
+@@ -9668,12 +9789,25 @@
+     /* All fixed-bounds are represented by INTEGER_CST nodes.  */
+     case INTEGER_CST:
+       if (! host_integerp (bound, 0)
+-	  || (bound_attr == DW_AT_lower_bound
+-	      && (((is_c_family () || is_java ()) &&  integer_zerop (bound))
+-		  || (is_fortran () && integer_onep (bound)))))
++		 || (bound_attr == DW_AT_lower_bound
++		     && (((is_c_family () || is_java ()) &&  integer_zerop (bound))
++			 || (is_fortran () && integer_onep (bound)))))
+ 	/* use the default */
+ 	;
+-      else
++      else if (is_modula2() && bound) {
++	if (bound_attr == DW_AT_lower_bound) {
++	  if (tree_int_cst_sgn (bound) < 0)
++	    add_AT_int (subrange_die, bound_attr, tree_low_cst (bound, tree_int_cst_sgn (bound) > 0));
++	  else
++	    add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
++	}
++	else if (bound_attr == DW_AT_upper_bound) {
++	  if (tree_int_cst_sgn (bound) < 0)
++	    add_AT_int (subrange_die, bound_attr, tree_low_cst (bound, tree_int_cst_sgn (bound) > 0));
++	  else
++	    add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
++	}
++      } else 
+ 	add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
+       break;
+ 
+@@ -9840,7 +9974,8 @@
+ 	      if (TREE_CODE (domain) == INTEGER_TYPE
+ 		  && TYPE_NAME (domain) == NULL_TREE
+ 		  && TREE_CODE (TREE_TYPE (domain)) == INTEGER_TYPE
+-		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE)
++		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE
++		  && (! is_modula2()))
+ 		;
+ 	      else
+ 		add_type_attribute (subrange_die, TREE_TYPE (domain), 0, 0,
+@@ -10234,8 +10369,16 @@
+      support for unnamed types in base_type_die.  This can happen if this is
+      an Ada subrange type.  Correct solution is emit a subrange type die.  */
+   if ((code == INTEGER_TYPE || code == REAL_TYPE)
+-      && TREE_TYPE (type) != 0 && TYPE_NAME (type) == 0)
+-    type = TREE_TYPE (type), code = TREE_CODE (type);
++      && TREE_TYPE (type) != 0 && TYPE_NAME (type) == 0) {
++    if (is_modula2 ()) {
++      type_die = subrange_type_die (type, context_die);
++      if (type_die != NULL)
++	add_AT_die_ref (object_die, DW_AT_type, type_die);
++      return;
++    }
++    else
++      type = TREE_TYPE (type), code = TREE_CODE (type);
++  }
+ 
+   if (code == ERROR_MARK
+       /* Handle a special case.  For functions whose return type is void, we
+@@ -10399,7 +10542,7 @@
+     = new_die (DW_TAG_set_type, scope_die_for (type, context_die), type);
+ 
+   equate_type_number_to_die (type, type_die);
+-  add_type_attribute (type_die, TREE_TYPE (type), 0, 0, context_die);
++  add_type_attribute (type_die, TYPE_DOMAIN (type), 0, 0, context_die);
+ }
+ 
+ #if 0
+@@ -10486,7 +10629,7 @@
+    enumerated type name/value is listed as a child of the enumerated type
+    DIE.  */
+ 
+-static void
++static dw_die_ref
+ gen_enumeration_type_die (type, context_die)
+      tree type;
+      dw_die_ref context_die;
+@@ -10501,7 +10644,7 @@
+       add_name_attribute (type_die, type_tag (type));
+     }
+   else if (! TYPE_SIZE (type))
+-    return;
++    return type_die;
+   else
+     remove_AT (type_die, DW_AT_declaration);
+ 
+@@ -10522,7 +10665,7 @@
+       if (type_die->die_parent == NULL)
+ 	add_child_die (scope_die_for (type, context_die), type_die);
+ 
+-      for (link = TYPE_FIELDS (type);
++      for (link = TYPE_VALUES (type);
+ 	   link != NULL; link = TREE_CHAIN (link))
+ 	{
+ 	  dw_die_ref enum_die = new_die (DW_TAG_enumerator, type_die, link);
+@@ -10544,6 +10687,8 @@
+     }
+   else
+     add_AT_flag (type_die, DW_AT_declaration, 1);
++
++  return type_die;
+ }
+ 
+ /* Generate a DIE to represent either a real live formal parameter decl or to
+@@ -11371,6 +11516,8 @@
+     language = DW_LANG_Fortran77;
+   else if (strcmp (language_string, "GNU Pascal") == 0)
+     language = DW_LANG_Pascal83;
++  else if (strcmp (language_string, "GNU Modula-2") == 0)
++    language = DW_LANG_Modula2;
+   else if (strcmp (language_string, "GNU Java") == 0)
+     language = DW_LANG_Java;
+   else
+@@ -11628,6 +11775,20 @@
+     equate_decl_number_to_die (decl, type_die);
+ }
+ 
++static void
++gen_set_subrange_die (domain, context_die)
++     tree domain;
++     dw_die_ref context_die;
++{
++  if (TREE_TYPE (domain) == 0)
++    gen_type_die (domain, context_die);
++  else
++    {
++      dw_die_ref subrange_die = subrange_type_die (domain, context_die);
++      equate_type_number_to_die (domain, subrange_die);
++    }
++}
++
+ /* Generate a type description DIE.  */
+ 
+ static void
+@@ -11699,7 +11860,7 @@
+       break;
+ 
+     case SET_TYPE:
+-      gen_type_die (TYPE_DOMAIN (type), context_die);
++      gen_set_subrange_die (TYPE_DOMAIN (type), context_die);
+       gen_set_type_die (type, context_die);
+       break;
+ 
+@@ -11774,8 +11935,8 @@
+ 	 when appropriate.  */
+       return;
+ 
+-    case VOID_TYPE:
+     case INTEGER_TYPE:
++    case VOID_TYPE:
+     case REAL_TYPE:
+     case COMPLEX_TYPE:
+     case BOOLEAN_TYPE:
+@@ -12126,9 +12287,10 @@
+ 
+     case FIELD_DECL:
+       /* Ignore the nameless fields that are used to skip bits but handle C++
+-	 anonymous unions.  */
+-      if (DECL_NAME (decl) != NULL_TREE
+-	  || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE)
++	 anonymous unions. Except for Modula-2.  */
++      if ((is_modula2()) ||
++	  (DECL_NAME (decl) != NULL_TREE
++	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE))
+ 	{
+ 	  gen_type_die (member_declared_type (decl), context_die);
+ 	  gen_field_die (decl, context_die);

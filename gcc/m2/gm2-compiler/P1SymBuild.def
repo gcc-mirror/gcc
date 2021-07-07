@@ -1,0 +1,530 @@
+(* P1SymBuild.def pass 1 symbol creation.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE P1SymBuild ;
+
+(*
+   Title      : P1SymBuild
+   Author     : Gaius Mulley
+   Date       : 24/6/87
+   LastEdit   : Sat Dec  9 11:34:34 EST 1989
+   System     : UNIX (GNU Modula-2)
+   Description: Builds symbol entities, types, constants, variables,
+                procedures, modules and scopes.
+                All procedures are only called during Pass 1.
+*)
+
+EXPORT QUALIFIED P1StartBuildDefinitionModule,
+                 P1EndBuildDefinitionModule,
+                 P1StartBuildImplementationModule,
+                 P1EndBuildImplementationModule,
+                 P1StartBuildProgramModule,
+                 P1EndBuildProgramModule,
+                 StartBuildInnerModule,
+                 EndBuildInnerModule,
+                 BuildImportOuterModule,
+                 BuildExportOuterModule,
+                 BuildImportInnerModule,
+                 BuildExportInnerModule,
+                 StartBuildEnumeration,
+                 EndBuildEnumeration,
+                 BuildHiddenType,
+                 StartBuildProcedure,
+                 EndBuildProcedure,
+                 BuildProcedureHeading,
+                 BuildNulName,
+                 BuildTypeEnd,
+                 CheckExplicitExported ;
+
+
+(*
+   StartBuildDefinitionModule - Creates a definition module and starts
+                                a new scope.
+
+                                The Stack is expected:
+
+                                Entry                 Exit
+
+                         Ptr ->
+                                +------------+
+                                | NameStart  |                       <- Ptr
+                                |------------|        +------------+
+                                | NulName/"C"|        | NameStart  |
+                                |------------|        |------------|
+*)
+
+PROCEDURE P1StartBuildDefinitionModule ;
+
+
+(*
+   EndBuildDefinitionModule - Destroys the definition module scope and
+                              checks for correct name.
+
+                              The Stack is expected:
+
+                              Entry                 Exit
+
+                       Ptr ->
+                              +------------+        +-----------+
+                              | NameEnd    |        |           |
+                              |------------|        |-----------|
+                              | NameStart  |        |           | <- Ptr
+                              |------------|        |-----------|
+*)
+
+PROCEDURE P1EndBuildDefinitionModule ;
+
+
+(*
+   StartBuildImplementationModule - Creates an implementation module and starts
+                                    a new scope.
+
+                                    The Stack is expected:
+
+                                    Entry                 Exit
+
+                             Ptr ->                                     <- Ptr
+                                    +------------+        +-----------+
+                                    | NameStart  |        | NameStart |
+                                    |------------|        |-----------|
+
+*)
+
+PROCEDURE P1StartBuildImplementationModule ;
+
+
+(*
+   EndBuildImplementationModule - Destroys the implementation module scope and
+                                  checks for correct name.
+
+                                  The Stack is expected:
+
+                                  Entry                 Exit
+
+                           Ptr ->
+                                  +------------+        +-----------+
+                                  | NameEnd    |        |           |
+                                  |------------|        |-----------|
+                                  | NameStart  |        |           | <- Ptr
+                                  |------------|        |-----------|
+*)
+
+PROCEDURE P1EndBuildImplementationModule ;
+
+
+(*
+   StartBuildProgramModule - Creates a program module and starts
+                             a new scope.
+
+                             The Stack is expected:
+
+                             Entry                 Exit
+
+                      Ptr ->                                     <- Ptr
+                             +------------+        +-----------+
+                             | NameStart  |        | NameStart |
+                             |------------|        |-----------|
+
+*)
+
+PROCEDURE P1StartBuildProgramModule ;
+
+
+(*
+   EndBuildProgramModule - Destroys the program module scope and
+                           checks for correct name.
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->
+                           +------------+        +-----------+
+                           | NameEnd    |        |           |
+                           |------------|        |-----------|
+                           | NameStart  |        |           | <- Ptr
+                           |------------|        |-----------|
+*)
+
+PROCEDURE P1EndBuildProgramModule ;
+
+
+(*
+   StartBuildInnerModule - Creates an Inner module and starts
+                           a new scope.
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->                                     <- Ptr
+                           +------------+        +-----------+
+                           | NameStart  |        | NameStart |
+                           |------------|        |-----------|
+
+*)
+
+PROCEDURE StartBuildInnerModule ;
+
+
+(*
+   EndBuildInnermModule - Destroys the Inner module scope and
+                          checks for correct name.
+
+                          The Stack is expected:
+
+                          Entry                 Exit
+
+                   Ptr ->
+                          +------------+        +-----------+
+                          | NameEnd    |        |           |
+                          |------------|        |-----------|
+                          | NameStart  |        |           | <- Ptr
+                          |------------|        |-----------|
+*)
+
+PROCEDURE EndBuildInnerModule ;
+
+
+(*
+   BuildImportOuterModule - Builds imported identifiers into an outer module
+                            from a definition module.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +-----------+
+                            | #          |        | #         |
+                            |------------|        |-----------|
+                            | Id1        |        | Id1       |
+                            |------------|        |-----------|
+                            .            .        .           .
+                            .            .        .           .
+                            .            .        .           .
+                            |------------|        |-----------|
+                            | Id#        |        | Id#       |
+                            |------------|        |-----------|
+                            | ImportTok  |        | Ident     |
+                            |------------|        |-----------|
+
+                            IMPORT Id1, .. Id# ;  FROM Ident IMPORT Id1 .. Id# ;
+
+
+                                                  Error Condition
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE BuildImportOuterModule (definition: BOOLEAN) ;
+
+
+(*
+   BuildExportOuterModule - Builds exported identifiers from an outer module
+                            to the outside world of library modules.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +--------------+
+                            | #          |        | #            |
+                            |------------|        |--------------|
+                            | Id1        |        | Id1          |
+                            |------------|        |--------------|
+                            .            .        .              .
+                            .            .        .              .
+                            .            .        .              .
+                            |------------|        |--------------|
+                            | Id#        |        | Id#          |
+                            |------------|        |--------------|
+                            | ExportTok  |        | QualifiedTok |
+                            |------------|        |--------------|
+
+                            EXPORT Id1, .. Id# ;  EXPORT QUALIFIED Id1 .. Id# ;
+
+                            Error Condition
+
+
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE BuildExportOuterModule ;
+
+
+(*
+   CheckExplicitExported - checks to see whether we are compiling
+                           a definition module and whether the ident
+                           is implicitly export qualified or unqualified.
+
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->                Ptr ->
+                           +------------+        +-----------+
+                           | Identname  |        | Identname |
+                           |------------|        |-----------|
+
+*)
+
+PROCEDURE CheckExplicitExported ;
+
+
+(*
+   BuildImportInnerModule - Builds imported identifiers into an inner module
+                            from the last level of module.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +-----------+
+                            | #          |        | #         |
+                            |------------|        |-----------|
+                            | Id1        |        | Id1       |
+                            |------------|        |-----------|
+                            .            .        .           .
+                            .            .        .           .
+                            .            .        .           .
+                            |------------|        |-----------|
+                            | Id#        |        | Id#       |
+                            |------------|        |-----------|
+                            | ImportTok  |        | Ident     |
+                            |------------|        |-----------|
+
+                            IMPORT Id1, .. Id# ;  FROM Ident IMPORT Id1 .. Id# ;
+
+
+                                                  Error Condition
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE BuildImportInnerModule ;
+
+
+(*
+   BuildExportInnerModule - Builds exported identifiers from an inner module
+                            to the next layer module.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +--------------+
+                            | #          |        | #            |
+                            |------------|        |--------------|
+                            | Id1        |        | Id1          |
+                            |------------|        |--------------|
+                            .            .        .              .
+                            .            .        .              .
+                            .            .        .              .
+                            |------------|        |--------------|
+                            | Id#        |        | Id#          |
+                            |------------|        |--------------|
+                            | ExportTok  |        | QualifiedTok |
+                            |------------|        |--------------|
+
+                            EXPORT Id1, .. Id# ;  EXPORT QUALIFIED Id1 .. Id# ;
+
+
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE BuildExportInnerModule ;
+
+
+(*
+   StartBuildEnumeration - Builds an Enumeration type Type.
+
+
+                           Stack
+
+                           Entry                 Exit
+
+                    Ptr ->
+                           +------------+
+                           | #          |
+                           |------------|
+                           | en 1       |
+                           |------------|
+                           | en 2       |
+                           |------------|
+                           .            .
+                           .            .
+                           .            .                       <- Ptr
+                           |------------|        +------------+
+                           | en #       |        | Type       |
+                           |------------|        |------------|
+                           | Name       |        | Name       |
+                           |------------|        |------------|
+*)
+
+PROCEDURE StartBuildEnumeration ;
+
+
+(*
+   EndBuildEnumeration - completes the construction of the enumeration type.
+
+
+                         Stack
+
+                         Entry                 Exit
+
+                  Ptr ->
+                         +------------+
+                         | Type       |                          <- Ptr
+                         |------------|        +---------------+
+                         | Name       |        | Type  | Name  |
+                         |------------|        |---------------|
+
+                                               Empty
+*)
+
+PROCEDURE EndBuildEnumeration ;
+
+
+(*
+   BuildHiddenType - Builds a Hidden Type.
+
+
+                     Stack
+
+                     Entry                 Exit
+
+              Ptr ->
+                     +------------+
+                     | Name       |                          <- Ptr
+                     |------------|        Empty
+*)
+
+PROCEDURE BuildHiddenType ;
+
+
+(*
+   StartBuildProcedure - Builds a Procedure.
+
+                         The Stack:
+
+                         Entry                 Exit
+
+                                                              <- Ptr
+                                               +------------+
+                  Ptr ->                       | ProcSym    |
+                         +------------+        |------------|
+                         | Name       |        | Name       |
+                         |------------|        |------------|
+*)
+
+PROCEDURE StartBuildProcedure ;
+
+
+(*
+   EndBuildProcedure - Ends building a Procedure.
+                       It checks the start procedure name matches the end
+                       procedure name.
+
+                       The Stack:
+
+
+                       Entry                 Exit
+
+                Ptr ->
+                       +------------+
+                       | NameEnd    |
+                       |------------|
+                       | ProcSym    |
+                       |------------|
+                       | NameStart  |
+                       |------------|
+                                             Empty
+*)
+
+PROCEDURE EndBuildProcedure ;
+
+
+(*
+   BuildProcedureHeading - Builds a procedure heading for the definition
+                           module procedures.
+
+                           Operation only performed if compiling a
+                           definition module.
+
+                           The Stack:
+
+                           Entry                       Exit
+
+                    Ptr ->
+                           +------------+
+                           | ProcSym    |              Empty
+                           |------------|
+
+*)
+
+PROCEDURE BuildProcedureHeading ;
+
+
+(*
+   BuildNulName - Pushes a NulKey onto the top of the stack.
+                  The Stack:
+
+
+                  Entry                    Exit
+
+                                                          <- Ptr
+                  Empty                    +------------+
+                                           | NulKey     |
+                                           |------------|
+*)
+
+PROCEDURE BuildNulName ;
+
+
+(*
+   BuildTypeEnd - Pops the type Type and Name.
+                  The Stack:
+
+
+                  Entry                    Exit
+
+
+           Ptr ->
+                  +-------------+
+                  | Type | Name |          Empty
+                  |-------------|
+*)
+
+PROCEDURE BuildTypeEnd ;
+
+
+END P1SymBuild.

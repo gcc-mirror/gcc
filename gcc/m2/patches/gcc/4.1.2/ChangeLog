@@ -1,0 +1,56 @@
+Notes
+
+	* make check-gcc check-g++ produces exactly the same
+	  results with and without these patches applied.
+	* the obvious strategy is to ensure that all new patches
+	  can only be invoked by the GNU Modula-2 front end.
+	  This is true for all patches except gcc/tree-flow-inline.h.
+	  However this patch cannot be applied to
+	  a gcc-4.6.0 tree as gcc/tree-flow-inline.h and tree-ssa-alias.c has
+	  been rewritten.  It does not effect C or C++ (according to the
+	  regression tests) - indeed the particular construct it detects
+	  cannot be created in C or C++.  It is possible that this patch
+	  might effect other front ends:  Java, Pascal, Ada.  But
+	  as this one patch will never make it to trunc, I think this
+	  is acceptable.
+
+ChangeLog
+
+	* dwarf2out.c (subrange_type_die):  Prototype added.
+	  (is_modula2): New function).
+	  (add_subscript_info):  Do not ignore TREE_TYPE (domain)
+	  for Modula-2 subscripts as they are subranges.
+          (add_type_attribute):  If the type is unnamed subrange type
+	  the emit a subrange type die for Modula-2 and return.
+          (gen_decl_die):  Do not ignore nameless fields in records
+	  or unions in Modula-2.
+          (gen_compile_unit_die):  Set language to DW_LANG_Modula2.
+        * config/i386/i386.c:  backport asm syntax change.
+	* gcc/gcc.c (force_no_linker):  Allow specs to suppress linking.
+	  (main):  Suppress call to linker if option is set.
+	  Ensure that error messages relating to linker not running was
+	  not due to this option.
+          (find_executable):  New function.
+	* gcc/gcc.h (find_executable):  Added prototype.
+	* gcc/tree.h (finish_build_array_type):  Added prototype.
+	  (canonicalize_array):  Added prototype.
+	* gcc/tree.c (finish_build_array_type):  New function.
+	  (build_array_type):  Reimplemented to use make_node and
+	  finish_build_array_type.
+	  (canonicalize_array):  New function.
+        * gcc/ipa-type-escape.c (type_to_consider):  include
+	  cyclic types such as: foo = ARRAY [ ] OF POINTER TO foo
+	  to the list of goofy types to skip.  This is safe for all
+	  front ends as this patch detects and avoids infinite loops.
+	* configure:  Altered regexp to allow later versions of
+	  texinfo to build the documentation.
+	* gcc-4.1.2/configure.in:  Altered regexp to allow later
+	  versions of texinfo to build the documentation.
+	* gcc-4.1.2/gcc/configure.ac:  Altered regexp to allow later
+	  versions of texinfo to build the documentation.
+	* gcc/tree-flow-inline.h (var_can_have_subvars):  returns false
+	  if the tree is a CONST_DECL whose type is RECORD_TYPE.
+	  This change is safe for C as C does not generate CONST_DECL RECORD_TYPES.
+	  It can occur in Modula-2 via CONST foo = type {field1, field2}.
+	  This patch is no longer relevant in gcc-4.6.0 and beyond as
+	  tree-ssa-alias.c has been completely rewritten.

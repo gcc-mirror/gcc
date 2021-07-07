@@ -1,0 +1,12 @@
+diff --git a/gcc/analyzer/sm.cc b/gcc/analyzer/sm.cc
+index 2d227dd1be0..4c8d89f1d51 100644
+--- a/gcc/analyzer/sm.cc
++++ b/gcc/analyzer/sm.cc
+@@ -159,6 +159,7 @@ make_checkers (auto_delete_vec <state_machine> &out, logger *logger)
+     out.safe_push (make_taint_state_machine (logger));
+   out.safe_push (make_sensitive_state_machine (logger));
+   out.safe_push (make_signal_state_machine (logger));
++  out.safe_push (make_m2rts_state_machine (logger));
+ 
+   /* We only attempt to run the pattern tests if it might have been manually
+      enabled (for DejaGnu purposes).  */

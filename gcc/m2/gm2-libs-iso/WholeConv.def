@@ -1,0 +1,73 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE WholeConv;
+
+  (* Low-level whole-number/string conversions *)
+
+IMPORT
+  ConvTypes;
+
+TYPE
+  ConvResults = ConvTypes.ConvResults;
+        (* strAllRight, strOutOfRange, strWrongFormat, strEmpty *)
+
+PROCEDURE ScanInt (inputCh: CHAR;
+                   VAR chClass: ConvTypes.ScanClass;
+                   VAR nextState: ConvTypes.ScanState) ;
+  (* Represents the start state of a finite state scanner for signed
+     whole numbers - assigns class of inputCh to chClass and a
+     procedure representing the next state to nextState.
+  *)
+
+PROCEDURE FormatInt (str: ARRAY OF CHAR): ConvResults;
+  (* Returns the format of the string value for conversion to INTEGER. *)
+
+PROCEDURE ValueInt (str: ARRAY OF CHAR): INTEGER;
+  (* Returns the value corresponding to the signed whole number string
+     value str if str is well-formed; otherwise raises the WholeConv
+     exception.
+   *)
+
+PROCEDURE LengthInt (int: INTEGER): CARDINAL;
+  (* Returns the number of characters in the string representation of
+     int.
+   *)
+
+PROCEDURE ScanCard (inputCh: CHAR; VAR chClass: ConvTypes.ScanClass;
+                    VAR nextState: ConvTypes.ScanState);
+  (* Represents the start state of a finite state scanner for unsigned
+     whole numbers - assigns class of inputCh to chClass and a procedure
+     representing the next state to nextState.
+   *)
+
+PROCEDURE FormatCard (str: ARRAY OF CHAR): ConvResults;
+  (* Returns the format of the string value for conversion to CARDINAL.
+   *)
+
+PROCEDURE ValueCard (str: ARRAY OF CHAR): CARDINAL;
+  (* Returns the value corresponding to the unsigned whole number string
+     value str if str is well-formed; otherwise raises the WholeConv
+     exception.
+   *)
+
+PROCEDURE LengthCard (card: CARDINAL): CARDINAL;
+  (* Returns the number of characters in the string representation of
+     card.
+   *)
+
+PROCEDURE IsWholeConvException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional execution
+     state because of the raising of an exception in a routine from this
+     module; otherwise returns FALSE.
+  *)
+
+END WholeConv.

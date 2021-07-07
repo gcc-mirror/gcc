@@ -1,0 +1,62 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE RealMath;
+
+  (* Mathematical functions for the type REAL *)
+
+CONST
+  pi   = 3.1415926535897932384626433832795028841972;
+  exp1 = 2.7182818284590452353602874713526624977572;
+
+PROCEDURE __BUILTIN__ sqrt (x: REAL): REAL;
+  (* Returns the positive square root of x *)
+
+PROCEDURE __BUILTIN__ exp (x: REAL): REAL;
+  (* Returns the exponential of x *)
+
+PROCEDURE __BUILTIN__ ln (x: REAL): REAL;
+  (* Returns the natural logarithm of x *)
+
+  (* The angle in all trigonometric functions is measured in radians *)
+
+PROCEDURE __BUILTIN__ sin (x: REAL): REAL;
+  (* Returns the sine of x *)
+
+PROCEDURE __BUILTIN__ cos (x: REAL): REAL;
+  (* Returns the cosine of x *)
+
+PROCEDURE tan (x: REAL): REAL;
+  (* Returns the tangent of x *)
+
+PROCEDURE arcsin (x: REAL): REAL;
+  (* Returns the arcsine of x *)
+
+PROCEDURE arccos (x: REAL): REAL;
+  (* Returns the arccosine of x *)
+
+PROCEDURE arctan (x: REAL): REAL;
+  (* Returns the arctangent of x *)
+
+PROCEDURE power (base, exponent: REAL) : REAL;
+  (* Returns the value of the number base raised to the power exponent *)
+
+PROCEDURE round (x: REAL) : INTEGER;
+  (* Returns the value of x rounded to the nearest integer *)
+
+PROCEDURE IsRMathException () : BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional execution state
+     because of the raising of an exception in a routine from this module; otherwise
+     returns FALSE.
+  *)
+
+END RealMath.
+

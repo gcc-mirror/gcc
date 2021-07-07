@@ -1,0 +1,112 @@
+(* alists.def address lists module.
+
+Copyright (C) 2015-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE alists ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   alist ;
+   performOperation = PROCEDURE (ADDRESS) ;
+
+
+(*
+   initList - creates a new alist, l.
+*)
+
+PROCEDURE initList () : alist ;
+
+
+(*
+   killList - deletes the complete alist, l.
+*)
+
+PROCEDURE killList (VAR l: alist) ;
+
+
+(*
+   putItemIntoList - places an ADDRESS, c, into alist, l.
+*)
+
+PROCEDURE putItemIntoList (l: alist; c: ADDRESS) ;
+
+
+(*
+   getItemFromList - retrieves the nth ADDRESS from alist, l.
+*)
+
+PROCEDURE getItemFromList (l: alist; n: CARDINAL) : ADDRESS ;
+
+
+(*
+   getIndexOfList - returns the index for ADDRESS, c, in alist, l.
+                    If more than one CARDINAL, c, exists the index
+                    for the first is returned.
+*)
+
+PROCEDURE getIndexOfList (l: alist; c: ADDRESS) : CARDINAL ;
+
+
+(*
+   noOfItemsInList - returns the number of items in alist, l.
+*)
+
+PROCEDURE noOfItemsInList (l: alist) : CARDINAL ;
+
+
+(*
+   includeItemIntoList - adds an ADDRESS, c, into a alist providing
+                         the value does not already exist.
+*)
+
+PROCEDURE includeItemIntoList (l: alist; c: ADDRESS) ;
+
+
+(*
+   removeItemFromList - removes an ADDRESS, c, from a alist.
+                        It assumes that this value only appears once.
+*)
+
+PROCEDURE removeItemFromList (l: alist; c: ADDRESS) ;
+
+
+(*
+   isItemInList - returns true if a ADDRESS, c, was found in alist, l.
+*)
+
+PROCEDURE isItemInList (l: alist; c: ADDRESS) : BOOLEAN ;
+
+
+(*
+   foreachItemInListDo - calls procedure, P, foreach item in alist, l.
+*)
+
+PROCEDURE foreachItemInListDo (l: alist; p: performOperation) ;
+
+
+(*
+   duplicateList - returns a duplicate alist derived from, l.
+*)
+
+PROCEDURE duplicateList (l: alist) : alist ;
+
+
+END alists.

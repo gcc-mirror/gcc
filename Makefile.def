@@ -140,6 +140,7 @@ host_modules= { module= lto-plugin; bootstrap=true;
 		extra_configure_flags='--enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
 		extra_make_flags='@extra_linker_plugin_flags@'; };
 host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
+host_modules= { module= gm2tools; };
 host_modules= { module= gotools; };
 host_modules= { module= libctf; bootstrap=true; };
 
@@ -179,6 +180,7 @@ target_modules = { module= libffi; no_install=true; };
 target_modules = { module= zlib; };
 target_modules = { module= rda; };
 target_modules = { module= libada; };
+target_modules = { module= libgm2; lib_path=.libs; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
 target_modules = { module= libitm; lib_path=.libs; };
 target_modules = { module= libatomic; lib_path=.libs; };
@@ -298,6 +300,8 @@ flags_to_pass = { flag= GOC_FOR_TARGET ; };
 flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GDC_FOR_TARGET ; };
 flags_to_pass = { flag= GDCFLAGS_FOR_TARGET ; };
+flags_to_pass = { flag= GM2_FOR_TARGET ; };
+flags_to_pass = { flag= GM2FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };
 flags_to_pass = { flag= LIPO_FOR_TARGET ; };
 flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
@@ -394,6 +398,8 @@ dependencies = { module=all-libcc1; on=all-gcc; };
 // we want version.o from gcc, and implicitly depend on libcody
 dependencies = { module=all-c++tools; on=all-gcc; };
 dependencies = { module=all-gotools; on=all-target-libgo; };
+dependencies = { module=all-gm2tools; on=all-target-libgm2; };
+dependencies = { module=all-gm2tools; on=all-target-libstdc++-v3; };
 
 dependencies = { module=all-utils; on=all-libiberty; };
 
@@ -594,6 +600,8 @@ dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=all-target-libgo; on=all-target-libatomic; };
+dependencies = { module=configure-target-libgm2; on=all-target-libstdc++-v3; };
+dependencies = { module=all-target-libgm2; on=all-target-libatomic; };
 dependencies = { module=configure-target-libphobos; on=configure-target-libbacktrace; };
 dependencies = { module=configure-target-libphobos; on=configure-target-zlib; };
 dependencies = { module=all-target-libphobos; on=all-target-libbacktrace; };
@@ -652,6 +660,9 @@ languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-target-libgo;
 				lib-check-target=check-gotools; };
+languages = { language=m2;	gcc-check-target=check-m2; 
+				lib-check-target=check-target-libgm2;
+				lib-check-target=check-gm2tools; };
 languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
 

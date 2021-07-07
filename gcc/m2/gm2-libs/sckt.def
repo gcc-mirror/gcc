@@ -1,0 +1,160 @@
+(* sckt.def provides a minimal interface to tcp sockets.
+
+Copyright (C) 2003-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE sckt ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT UNQUALIFIED tcpServerState,
+                   tcpServerEstablish, tcpServerEstablishPort,
+                   tcpServerAccept, getLocalIP,
+                   tcpServerPortNo, tcpServerIP, tcpServerSocketFd,
+                   tcpServerClientIP, tcpServerClientPortNo,
+                   tcpClientState,
+                   tcpClientSocket, tcpClientSocketIP, tcpClientConnect,
+                   tcpClientPortNo, tcpClientIP, tcpClientSocketFd ;
+
+TYPE
+   tcpServerState = ADDRESS ;
+   tcpClientState = ADDRESS ;
+
+
+(*
+   tcpServerEstablish - returns a tcpState containing the relevant
+                        information about a socket declared to receive
+                        tcp connections.
+*)
+
+PROCEDURE tcpServerEstablish () : tcpServerState ;
+
+
+(*
+   tcpServerEstablishPort - returns a tcpState containing the relevant
+                            information about a socket declared to recieve
+                            tcp connections. This method attempts to use
+                            the port specified by the parameter.
+*)
+
+PROCEDURE tcpServerEstablishPort (port: CARDINAL) : tcpServerState ;
+
+
+(*
+   tcpServerAccept - returns a file descriptor once a client has connected and
+                     been accepted.
+*)
+
+PROCEDURE tcpServerAccept (s: tcpServerState) : INTEGER ;
+
+
+(*
+   tcpServerPortNo - returns the portNo from structure, s.
+*)
+
+PROCEDURE tcpServerPortNo (s: tcpServerState) : CARDINAL ;
+
+
+(*
+   tcpSocketFd - returns the sockFd from structure, s.
+*)
+
+PROCEDURE tcpServerSocketFd (s: tcpServerState) : INTEGER ;
+
+
+(*
+   getLocalIP - returns the IP address of this machine.
+*)
+
+PROCEDURE getLocalIP (s: tcpServerState) : CARDINAL ;
+
+
+(*
+   tcpServerIP - returns the IP address from structure, s.
+*)
+
+PROCEDURE tcpServerIP (s: tcpServerState) : CARDINAL ;
+
+
+(*
+   tcpServerClientIP - returns the IP address of the client who
+                       has connected to server, s.
+*)
+
+PROCEDURE tcpServerClientIP (s: tcpServerState) : CARDINAL ;
+
+
+(*
+   tcpServerClientPortNo - returns the port number of the client who
+                           has connected to server, s.
+*)
+
+PROCEDURE tcpServerClientPortNo (s: tcpServerState) : CARDINAL ;
+
+
+(*
+   tcpClientSocket - returns a file descriptor (socket) which has
+                     connected to, serverName:portNo.
+*)
+
+PROCEDURE tcpClientSocket (serverName: ADDRESS; portNo: CARDINAL) : tcpClientState ;
+
+
+(*
+   tcpClientSocketIP - returns a file descriptor (socket) which has
+                       connected to, ip:portNo.
+*)
+
+PROCEDURE tcpClientSocketIP (ip: CARDINAL; portNo: CARDINAL) : tcpClientState ;
+
+
+(*
+   tcpClientConnect - returns the file descriptor associated with, s,
+                      once a connect has been performed.
+*)
+
+PROCEDURE tcpClientConnect (s: tcpClientState) : INTEGER ;
+
+
+(*
+   tcpClientPortNo - returns the portNo from structure, s.
+*)
+
+PROCEDURE tcpClientPortNo (s: tcpClientState) : INTEGER ;
+
+
+(*
+   tcpClientSocketFd - returns the sockFd from structure, s.
+*)
+
+PROCEDURE tcpClientSocketFd (s: tcpClientState) : INTEGER ;
+
+
+(*
+   tcpClientIP - returns the IP address from structure, s.
+*)
+
+PROCEDURE tcpClientIP (s: tcpClientState) : CARDINAL ;
+
+
+END sckt.

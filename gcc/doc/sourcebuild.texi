@@ -52,6 +52,9 @@ including optimizers, support for different target architectures,
 language front ends, and testsuites.  @xref{gcc Directory, , The
 @file{gcc} Subdirectory}, for details.
 
+@item gm2tools
+Support tools for Modula-2.
+
 @item gnattools
 Support tools for GNAT.
 
@@ -83,6 +86,9 @@ The GCC runtime library.
 
 @item libgfortran
 The Fortran runtime library.
+
+@item libgm2
+The Modula-2 runtime library.
 
 @item libgo
 The Go runtime library.  The bulk of this library is mirrored from the
@@ -163,13 +169,12 @@ The @file{gcc} directory contains the following subdirectories:
 @item @var{language}
 Subdirectories for various languages.  Directories containing a file
 @file{config-lang.in} are language subdirectories.  The contents of
-the subdirectories @file{c} (for C), @file{cp} (for C++),
-@file{objc} (for Objective-C), @file{objcp} (for Objective-C++),
-and @file{lto} (for LTO) are documented in this
-manual (@pxref{Passes, , Passes and Files of the Compiler});
-those for other languages are not.  @xref{Front End, ,
-Anatomy of a Language Front End}, for details of the files in these
-directories.
+the subdirectories @file{c} (for C), @file{cp} (for C++), @file{m2}
+(for Modula-2), @file{objc} (for Objective-C), @file{objcp} (for
+Objective-C++), and @file{lto} (for LTO) are documented in this manual
+(@pxref{Passes, , Passes and Files of the Compiler}); those for other
+languages are not.  @xref{Front End, , Anatomy of a Language Front
+End}, for details of the files in these directories.
 
 @item common
 Source files shared between the compiler drivers (such as

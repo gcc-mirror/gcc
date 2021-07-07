@@ -1,0 +1,143 @@
+(* BitWordOps.def provides a Logitech-3.0 compatible library.
+
+Copyright (C) 2007-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE BitWordOps ;
+
+FROM SYSTEM IMPORT WORD ;
+
+
+(*
+   GetBits - returns the bits firstBit..lastBit from source.
+             Bit 0 of word maps onto the firstBit of source.
+*)
+
+PROCEDURE GetBits (source: WORD; firstBit, lastBit: CARDINAL) : WORD ;
+
+
+(*
+   SetBits - sets bits in, word, starting at, firstBit, and ending at,
+             lastBit, with, pattern.  The bit zero of, pattern, will
+             be placed into, word, at position, firstBit.
+*)
+
+PROCEDURE SetBits (VAR word: WORD; firstBit, lastBit: CARDINAL;
+                   pattern: WORD) ;
+
+
+(*
+   WordAnd - returns a bitwise (left AND right)
+*)
+
+PROCEDURE WordAnd (left, right: WORD) : WORD ;
+
+
+(*
+   WordOr - returns a bitwise (left OR right)
+*)
+
+PROCEDURE WordOr (left, right: WORD) : WORD ;
+
+
+(*
+   WordXor - returns a bitwise (left XOR right)
+*)
+
+PROCEDURE WordXor (left, right: WORD) : WORD ;
+
+
+(*
+   WordNot - returns a word with all bits inverted.
+*)
+
+PROCEDURE WordNot (word: WORD) : WORD ;
+
+
+(*
+   WordShr - returns a, word, which has been shifted, count
+             bits to the right.
+*)
+
+PROCEDURE WordShr (word: WORD; count: CARDINAL) : WORD ;
+
+
+(*
+   WordShl - returns a, word, which has been shifted, count
+             bits to the left.
+*)
+
+PROCEDURE WordShl (word: WORD; count: CARDINAL) : WORD ;
+
+
+(*
+   WordSar - shift word arthemetic right.  Preserves the top
+             end bit and as the value is shifted right.
+*)
+
+PROCEDURE WordSar (word: WORD; count: CARDINAL) : WORD ;
+
+
+(*
+   WordRor - returns a, word, which has been rotated, count
+             bits to the right.
+*)
+
+PROCEDURE WordRor (word: WORD; count: CARDINAL) : WORD ;
+
+
+(*
+   WordRol - returns a, word, which has been rotated, count
+             bits to the left.
+*)
+
+PROCEDURE WordRol (word: WORD; count: CARDINAL) : WORD ;
+
+
+(*
+   HighByte - returns the top byte only from, word.
+              The byte is returned in the bottom byte
+              in the return value.
+*)
+
+PROCEDURE HighByte (word: WORD) : WORD ;
+
+
+(*
+   LowByte - returns the low byte only from, word.
+             The byte is returned in the bottom byte
+             in the return value.
+*)
+
+PROCEDURE LowByte (word: WORD) : WORD ;
+
+
+(*
+   Swap - byte flips the contents of word.
+*)
+
+PROCEDURE Swap (word: WORD) : WORD ;
+
+
+END BitWordOps.

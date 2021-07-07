@@ -1,0 +1,112 @@
+(* lists.def Provides an unordered list manipulation package.
+
+Copyright (C) 2015-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE lists ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM symbolKey IMPORT performOperation ;
+
+TYPE
+   list ;
+
+
+(*
+   initList - creates a new list, l.
+*)
+
+PROCEDURE initList () : list ;
+
+
+(*
+   killList - deletes the complete list, l.
+*)
+
+PROCEDURE killList (VAR l: list) ;
+
+
+(*
+   putItemIntoList - places an ADDRESS, c, into list, l.
+*)
+
+PROCEDURE putItemIntoList (l: list; c: ADDRESS) ;
+
+
+(*
+   getItemFromList - retrieves the nth ADDRESS from list, l.
+*)
+
+PROCEDURE getItemFromList (l: list; n: CARDINAL) : ADDRESS ;
+
+
+(*
+   getIndexOfList - returns the index for ADDRESS, c, in list, l.
+                    If more than one CARDINAL, c, exists the index
+                    for the first is returned.
+*)
+
+PROCEDURE getIndexOfList (l: list; c: ADDRESS) : CARDINAL ;
+
+
+(*
+   noOfItemsInList - returns the number of items in list, l.
+*)
+
+PROCEDURE noOfItemsInList (l: list) : CARDINAL ;
+
+
+(*
+   includeItemIntoList - adds an ADDRESS, c, into a list providing
+                         the value does not already exist.
+*)
+
+PROCEDURE includeItemIntoList (l: list; c: ADDRESS) ;
+
+
+(*
+   removeItemFromList - removes an ADDRESS, c, from a list.
+                        It assumes that this value only appears once.
+*)
+
+PROCEDURE removeItemFromList (l: list; c: ADDRESS) ;
+
+
+(*
+   isItemInList - returns true if a ADDRESS, c, was found in list, l.
+*)
+
+PROCEDURE isItemInList (l: list; c: ADDRESS) : BOOLEAN ;
+
+
+(*
+   foreachItemInListDo - calls procedure, P, foreach item in list, l.
+*)
+
+PROCEDURE foreachItemInListDo (l: list; p: performOperation) ;
+
+
+(*
+   duplicateList - returns a duplicate list derived from, l.
+*)
+
+PROCEDURE duplicateList (l: list) : list ;
+
+
+END lists.

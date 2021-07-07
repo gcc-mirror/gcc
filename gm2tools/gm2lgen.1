@@ -1,0 +1,58 @@
+.TH gm2lgen "1" "June 2021" "Modula-2" "User Commands"
+.SH NAME
+gm2lgen \- generates the main C function from a list of module names.
+.SH SYNOPSIS
+.B gm2lgen
+.RB [ --exit ]
+.RB [ -fcpp ]
+.RB [ -fshared ]
+.RB [ -h ]
+.RB [ --help ]
+.RB [ --main function ]
+.RB [ -o " outputfile" ]
+.RB [ --terminate ]
+.RB [ inputfile ]
+.SH DESCRIPTION
+.PP
+A tool for generating the main C or C++ function from a list of module
+names.  It generates a sequence of constrictor and deconstructor calls
+for each module specified.  See also the programs:
+.IR gm2l (1)
+.IR gm2lcc (1)
+.IR gm2lorder (1).
+The command line program
+.IR gm2
+can be instructed to automatically invoke
+.IR gm2lgen (1)
+and the above programs to construct a C++ scaffold for a Modula-2
+application.
+.SH OPTIONS
+.TP
+.B --exit
+do not call exit at the end of the main function.
+.TP
+.B -fcpp
+generate a C++ main program which will utilize a try exception
+statement for dispatching the sequence of module initialization calls.
+.TP
+.B -fshared
+generate a scaffold which can be compiled as a shared library.
+.TP
+.B -h
+issue a summary help.
+.TP
+.B --help
+equivalent to
+.B -h\fR.
+.TP
+.B --terminate
+do not call M2RTS_Terminate at the end of the main function.
+.TP
+.B -o
+output file.  Place scaffold into the output file.
+.SH "SEE ALSO"
+.IR gm2l (1),
+.IR gm2lcc (1),
+.IR gm2lorder (1)
+and
+.IR gm2 (1).

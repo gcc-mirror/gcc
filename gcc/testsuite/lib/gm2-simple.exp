@@ -1,0 +1,132 @@
+# Copyright (C) 2003-2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2
+
+load_lib file-format.exp
+load_lib gm2.exp
+
+#
+# gm2-simple-compile -- runs the compiler
+#
+# SRC is the full pathname of the testcase.
+# OPTION is the specific compiler flag we're testing (eg: -O2).
+#
+proc gm2-simple-compile { src option } {
+    global output
+    global srcdir tmpdir
+    global host_triplet
+
+    set output "$tmpdir/[file tail [file rootname $src]].o"
+
+    regsub "^$srcdir/?" $src "" testcase
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    verbose "Testing $testcase, $option" 1
+
+    # Run the compiler and analyze the results.
+    set options ""
+    lappend options "additional_flags=$option"
+
+    set comp_output [gm2_target_compile "$src" "$output" object $options];
+    gm2_check_compile $testcase $option $output $comp_output
+    remote_file build delete $output
+    verbose "$comp_output" 1
+}
+
+
+#
+# gm2-simple-execute -- utility to compile and execute a testcase
+#
+# SOURCES is a list of full pathnames to the test source files.
+# The first filename in this list forms the "testcase".
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc gm2-simple-execute { sources args option } {
+    global tmpdir tool srcdir output compiler_conditional_xfail_data;
+    global gm2_link_libraries;
+    global gm2_link_path;
+
+    # Use the first source filename given as the filename under test.
+    set src [lindex $sources 0];
+
+    if { [llength $args] > 0 } {
+	set additional_flags [lindex $args 0];
+    } else {
+	set additional_flags "";
+    }
+    # Check for alternate driver.
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0;
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+
+    set executable $tmpdir/[file tail [file rootname $src].x];
+    set objectfile $tmpdir/[file tail [file rootname $src].o];
+
+    regsub "^$srcdir/?" $src "" testcase
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    set execname "${executable}";
+
+    remote_file build delete $execname;
+    verbose "Testing $testcase, $option" 1
+
+    lappend option "libs=${gm2_link_libraries}";
+    lappend option "ldflags=${gm2_link_path}";
+
+    set comp_output [gm2_target_compile "${sources}" "${execname}" executable ${option}];
+
+    if ![gm2_check_compile "${testcase} compilation" ${option} ${execname} $comp_output] {
+	unresolved "${testcase} execution, ${option}"
+	remote_file build delete $objectfile
+	return 0
+    }
+
+    set result [gm2_load "$execname" "" ""]
+
+    set status [lindex $result 0];
+    set output [lindex $result 1];
+    if { $status == "fail" } {
+	${tool}_fail $testcase $option
+	send_log "executed $execname with result $status"
+    }
+    if { $status == "pass" } {
+	${tool}_pass $testcase $option
+	remote_file build delete $execname;
+    }
+    return 1
+}

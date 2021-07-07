@@ -1,0 +1,190 @@
+(* InOut.def provides a compatible PIM [234] InOut module.
+
+Copyright (C) 2004-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE InOut ;
+
+IMPORT ASCII ;
+FROM DynamicStrings IMPORT String ;
+EXPORT QUALIFIED EOL, Done, termCH, OpenInput, OpenOutput,
+                 CloseInput, CloseOutput,
+                 Read, ReadString, ReadInt, ReadCard,
+                 Write, WriteLn, WriteString, WriteInt, WriteCard,
+                 WriteOct, WriteHex,
+                 ReadS, WriteS ;
+
+CONST
+   EOL = ASCII.EOL ;
+
+VAR
+   Done  : BOOLEAN ;
+   termCH: CHAR ;
+
+
+(*
+   OpenInput - reads a string from stdin as the filename for reading.
+               If the filename ends with `.' then it appends the defext
+               extension. The global variable Done is set if all
+               was successful.
+*)
+
+PROCEDURE OpenInput (defext: ARRAY OF CHAR) ;
+
+
+(*
+   CloseInput - closes an opened input file and returns input back to
+                StdIn.
+*)
+
+PROCEDURE CloseInput ;
+
+
+(*
+   OpenOutput - reads a string from stdin as the filename for writing.
+                If the filename ends with `.' then it appends the defext
+                extension. The global variable Done is set if all
+                was successful.
+*)
+
+PROCEDURE OpenOutput (defext: ARRAY OF CHAR) ;
+
+
+(*
+   CloseOutput - closes an opened output file and returns output back to
+                 StdOut.
+*)
+
+PROCEDURE CloseOutput ;
+
+
+(*
+   Read - reads a single character from the current input file.
+          Done is set to FALSE if end of file is reached or an
+          error occurs.
+*)
+
+PROCEDURE Read (VAR ch: CHAR) ;
+
+
+(*
+   ReadString - reads a sequence of characters. Leading white space
+                is ignored and the string is terminated with a character
+                <= ' '
+*)
+
+PROCEDURE ReadString (VAR s: ARRAY OF CHAR) ;
+
+
+(*
+   WriteString - writes a string to the output file.
+*)
+
+PROCEDURE WriteString (s: ARRAY OF CHAR) ;
+
+
+(*
+   Write - writes out a single character, ch, to the current output file.
+*)
+
+PROCEDURE Write (ch: CHAR) ;
+
+
+(*
+   WriteLn - writes a newline to the output file.
+*)
+
+PROCEDURE WriteLn ;
+
+
+(*
+   ReadInt - reads a string and converts it into an INTEGER, x.
+             Done is set if an INTEGER is read.
+*)
+
+PROCEDURE ReadInt (VAR x: INTEGER) ;
+
+
+(*
+   ReadInt - reads a string and converts it into an INTEGER, x.
+             Done is set if an INTEGER is read.
+*)
+
+PROCEDURE ReadCard (VAR x: CARDINAL) ;
+
+
+(*
+   WriteCard - writes the CARDINAL, x, to the output file. It ensures
+               that the number occupies, n, characters. Leading spaces
+               are added if required.
+*)
+
+PROCEDURE WriteCard (x, n: CARDINAL) ;
+
+
+(*
+   WriteInt - writes the INTEGER, x, to the output file. It ensures
+              that the number occupies, n, characters. Leading spaces
+              are added if required.
+*)
+
+PROCEDURE WriteInt (x: INTEGER; n: CARDINAL) ;
+
+
+(*
+   WriteOct - writes the CARDINAL, x, to the output file in octal.
+              It ensures that the number occupies, n, characters.
+              Leading spaces are added if required.
+*)
+
+PROCEDURE WriteOct (x, n: CARDINAL) ;
+
+
+(*
+   WriteHex - writes the CARDINAL, x, to the output file in hexadecimal.
+              It ensures that the number occupies, n, characters.
+              Leading spaces are added if required.
+*)
+
+PROCEDURE WriteHex (x, n: CARDINAL) ;
+
+
+(*
+   ReadS - returns a string which has is a sequence of characters.
+           Leading white space is ignored and string is terminated
+           with a character <= ' '.
+*)
+
+PROCEDURE ReadS () : String ;
+
+
+(*
+   WriteS - writes a String to the output device.
+            It returns the string, s.
+*)
+
+PROCEDURE WriteS (s: String) : String ;
+
+
+END InOut.

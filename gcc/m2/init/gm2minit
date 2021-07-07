@@ -1,0 +1,63 @@
+# gm2minit list of Modula-2 modules used by gm2m.
+#
+# Copyright (C) 2000-2020 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+Debug
+DynamicStrings
+Assertion
+FormatStrings
+StringConvert
+RTExceptions
+M2EXCEPTION
+M2RTS
+SysExceptions
+Environment
+SEnvironment
+IO
+StrLib
+StdIO
+StrIO
+FIO
+SFIO
+SysStorage
+Storage
+M2Defaults
+Indexing
+NameKey
+NumberIO
+CmdArgs
+UnixArgs
+SymbolKey
+M2Search
+M2Printf
+Args
+SArgs
+Lists
+M2Debug
+M2Error
+M2DriverOptions
+M2Preprocess
+choosetemp
+M2Version
+M2FileName
+M2LexBuf
+dtoa
+ldtoa
+gm2m
+mod_init

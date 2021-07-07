@@ -1,0 +1,66 @@
+# gm2linit list of Modula-2 modules used by gm2l.
+#
+# Copyright (C) 2000-2020 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+m2flex
+RTExceptions
+M2EXCEPTION
+M2RTS
+SysExceptions
+DynamicStrings
+Assertion
+Debug
+Environment
+SEnvironment
+SysStorage
+Storage
+FIO
+SFIO
+UnixArgs
+CmdArgs
+IO
+M2LexBuf
+StrIO
+StrLib
+NumberIO
+Args
+SArgs
+Indexing
+NameKey
+M2Debug
+M2Printf
+M2Depth
+M2Search
+M2Defaults
+M2FileName
+M2Error
+M2Preprocess
+Lists
+choosetemp
+M2DriverOptions
+M2Version
+FormatStrings
+StringConvert
+StdIO
+dtoa
+ldtoa
+M2ColorString
+m2color
+gm2l
+mod_init

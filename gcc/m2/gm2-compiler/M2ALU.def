@@ -1,0 +1,989 @@
+(* M2ALU.def gcc implementation of the M2ALU module.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2ALU ;
+
+(*
+    Title      : M2ALU.def
+    Author     : Gaius Mulley
+    System     : UNIX (gm2)
+    Date       : Tue Jul 11 09:14:28 2000
+    Description: Handles all values in the Modula-2 compiler and all
+                 manipulations of values. All values are mapped onto
+                 gcc trees.
+*)
+
+FROM NameKey IMPORT Name ;
+FROM m2tree IMPORT Tree ;
+FROM M2GCCDeclare IMPORT WalkAction, IsAction ;
+
+EXPORT QUALIFIED PtrToValue,
+                 InitValue,
+                 IsValueTypeNone,
+                 IsValueTypeInteger,
+                 IsValueTypeReal,
+                 IsValueTypeComplex,
+                 IsValueTypeSet,
+                 IsValueTypeConstructor,
+                 IsValueTypeArray,
+                 IsValueTypeRecord,
+                 PopInto, PushFrom,
+                 PushIntegerTree, PopIntegerTree,
+                 PushSetTree, PopSetTree,
+                 PushRealTree, PopRealTree,
+                 PushComplexTree, PopComplexTree,
+                 PopConstructorTree,
+                 PushCard,
+                 PushInt,
+                 PushChar,
+                 PushString,
+                 PushTypeOfTree,
+                 CoerseLongRealToCard,
+                 ConvertRealToInt,
+                 ConvertToInt,
+                 ConvertToType,
+                 GetSetValueType,
+                 IsSolved, IsValueConst,
+                 PutConstructorSolved, EvaluateValue, TryEvaluateValue,
+
+                 IsNulSet, IsGenericNulSet, PushNulSet, AddBitRange, AddBit, SubBit,
+      	       	 SetOr, SetAnd, SetIn,
+                 SetDifference, SetSymmetricDifference,
+                 SetNegate, SetShift, SetRotate,
+
+                 Addn, Multn, Sub,
+                 DivFloor, ModFloor, DivTrunc, ModTrunc,
+                 Equ, NotEqu, Less, Gre, LessEqu, GreEqu,
+                 GetValue, GetRange,  ConstructSetConstant, BuildRange,
+                 IsConstructorDependants, WalkConstructorDependants,
+                 AddField, AddElements,
+
+                 PushEmptyConstructor, PushEmptyArray, PushEmptyRecord,
+                 ChangeToConstructor,
+
+                 IsValueAndTreeKnown, CheckOrResetOverflow ;
+
+TYPE
+   PtrToValue ;
+
+
+(*
+   InitValue - initializes and returns a value container.
+*)
+
+PROCEDURE InitValue () : PtrToValue ;
+
+
+(*
+   IsValueTypeNone - returns TRUE if the value on the top stack has no value.
+*)
+
+PROCEDURE IsValueTypeNone () : BOOLEAN ;
+
+
+(*
+   IsValueTypeInteger - returns TRUE if the value on the top stack is an integer.
+*)
+
+PROCEDURE IsValueTypeInteger () : BOOLEAN ;
+
+
+(*
+   IsValueTypeReal - returns TRUE if the value on the top stack is a real.
+*)
+
+PROCEDURE IsValueTypeReal () : BOOLEAN ;
+
+
+(*
+   IsValueTypeComplex - returns TRUE if the value on the top stack is a complex.
+*)
+
+PROCEDURE IsValueTypeComplex () : BOOLEAN ;
+
+
+(*
+   IsValueTypeSet - returns TRUE if the value on the top stack is a set.
+*)
+
+PROCEDURE IsValueTypeSet () : BOOLEAN ;
+
+
+(*
+   IsValueTypeConstructor - returns TRUE if the value on the top
+                            stack is a constructor.
+*)
+
+PROCEDURE IsValueTypeConstructor () : BOOLEAN ;
+
+
+(*
+   IsValueTypeArray - returns TRUE if the value on the top
+                      stack is an array.
+*)
+
+PROCEDURE IsValueTypeArray () : BOOLEAN ;
+
+
+(*
+   IsValueTypeRecord - returns TRUE if the value on the top
+                       stack is a record.
+*)
+
+PROCEDURE IsValueTypeRecord () : BOOLEAN ;
+
+
+(*
+   GetSetValueType - returns the set type on top of the ALU stack.
+*)
+
+PROCEDURE GetSetValueType () : CARDINAL ;
+
+
+(*
+   PushIntegerTree - pushes a gcc tree value onto the ALU stack.
+*)
+
+PROCEDURE PushIntegerTree (t: Tree) ;
+
+
+(*
+   PopIntegerTree - pops a gcc tree value from the ALU stack.
+*)
+
+PROCEDURE PopIntegerTree () : Tree ;
+
+
+(*
+   PushRealTree - pushes a gcc tree value onto the ALU stack.
+*)
+
+PROCEDURE PushRealTree (t: Tree) ;
+
+
+(*
+   PopRealTree - pops a gcc tree value from the ALU stack.
+*)
+
+PROCEDURE PopRealTree () : Tree ;
+
+
+(*
+   PushComplexTree - pushes a gcc tree value onto the ALU stack.
+*)
+
+PROCEDURE PushComplexTree (t: Tree) ;
+
+
+(*
+   PopComplexTree - pops a gcc tree value from the ALU stack.
+*)
+
+PROCEDURE PopComplexTree () : Tree ;
+
+
+(*
+   PushSetTree - pushes a gcc tree onto the ALU stack.
+                 The tree, t, is expected to contain a
+                 word value. It is converted into a set
+                 type (sym). Bit 0 maps onto MIN(sym).
+*)
+
+PROCEDURE PushSetTree (tokenno: CARDINAL;
+                       t: Tree; sym: CARDINAL) ;
+
+
+(*
+   PopSetTree - pops a gcc tree from the ALU stack.
+*)
+
+PROCEDURE PopSetTree (tokenno: CARDINAL) : Tree ;
+
+
+(*
+   PopConstructorTree - returns a tree containing the compound literal.
+*)
+
+PROCEDURE PopConstructorTree (tokenno: CARDINAL) : Tree ;
+
+
+(*
+   PushFrom - pushes a copy of the contents of, v, onto stack.
+*)
+
+PROCEDURE PushFrom (v: PtrToValue) ;
+
+
+(*
+   PopInto - pops the top element from the stack and places it into, v.
+*)
+
+PROCEDURE PopInto (v: PtrToValue) ;
+
+
+(*
+   PushCard - pushes a cardinal onto the stack.
+*)
+
+PROCEDURE PushCard (c: CARDINAL) ;
+
+
+(*
+   PushInt - pushes an integer onto the stack.
+*)
+
+PROCEDURE PushInt (i: INTEGER) ;
+
+
+(*
+   PushChar - pushes a char onto the stack.
+*)
+
+PROCEDURE PushChar (c: CHAR) ;
+
+
+(*
+   PushString - pushes the numerical value of the string onto the stack.
+*)
+
+PROCEDURE PushString (s: Name) ;
+
+
+(*
+   CoerseLongRealToCard - performs a coersion between a REAL to a CARDINAL
+*)
+
+PROCEDURE CoerseLongRealToCard ;
+
+
+(*
+   ConvertRealToInt - converts a REAL into an INTEGER
+*)
+
+PROCEDURE ConvertRealToInt ;
+
+
+(*
+   ConvertToInt - converts the value into an INTEGER. This should be used
+                  if we are computing the number of elements in a char set to
+                  avoid an overflow.
+*)
+
+PROCEDURE ConvertToInt ;
+
+
+(*
+   ConvertToType - converts the top of stack to type, t.
+*)
+
+PROCEDURE ConvertToType (t: CARDINAL) ;
+
+
+(*
+   IsSolved - returns true if the memory cell indicated by v
+              has a known value.
+*)
+
+PROCEDURE IsSolved (v: PtrToValue) : BOOLEAN ;
+
+
+(*
+   PutConstructorSolved - records that this constructor is solved.
+*)
+
+PROCEDURE PutConstructorSolved (sym: CARDINAL) ;
+
+
+(*
+   EvaluateValue - attempts to evaluate the symbol, sym, value.
+*)
+
+PROCEDURE EvaluateValue (sym: CARDINAL) ;
+
+
+(*
+   TryEvaluateValue - attempts to evaluate the symbol, sym, value.
+*)
+
+PROCEDURE TryEvaluateValue (sym: CARDINAL) ;
+
+
+(*
+   Add - adds the top two elements on the stack.
+
+         The Stack:
+
+         Entry             Exit
+
+  Ptr ->
+         +------------+
+         | Op1        |                   <- Ptr
+         |------------|    +------------+
+         | Op2        |    | Op2 + Op1  |
+         |------------|    |------------|
+*)
+
+PROCEDURE Addn ;
+
+
+(*
+   Sub - subtracts the top two elements on the stack.
+
+         The Stack:
+
+         Entry             Exit
+
+  Ptr ->
+         +------------+
+         | Op1        |                   <- Ptr
+         |------------|    +------------+
+         | Op2        |    | Op2 - Op1  |
+         |------------|    |------------|
+*)
+
+PROCEDURE Sub ;
+
+
+(*
+   Mult - multiplies the top two elements on the stack.
+
+          The Stack:
+
+          Entry             Exit
+
+   Ptr ->
+          +------------+
+          | Op1        |                   <- Ptr
+          |------------|    +------------+
+          | Op2        |    | Op2 * Op1  |
+          |------------|    |------------|
+*)
+
+PROCEDURE Multn ;
+
+
+(*
+   DivFloor - divides the top two elements on the stack.
+
+              The Stack:
+
+              Entry             Exit
+
+       Ptr ->
+              +------------+
+              | Op1        |                     <- Ptr
+              |------------|    +--------------+
+              | Op2        |    | Op2 DIV Op1  |
+              |------------|    |--------------|
+*)
+
+PROCEDURE DivFloor ;
+
+
+(*
+   ModFloor - modulus of the top two elements on the stack.
+
+              The Stack:
+
+              Entry             Exit
+
+       Ptr ->
+              +------------+
+              | Op1        |                     <- Ptr
+              |------------|    +--------------+
+              | Op2        |    | Op2 MOD Op1  |
+              |------------|    |--------------|
+*)
+
+PROCEDURE ModFloor ;
+
+
+(*
+   DivTrunc - divides the top two elements on the stack.
+
+              The Stack:
+
+              Entry             Exit
+
+       Ptr ->
+              +------------+
+              | Op1        |                     <- Ptr
+              |------------|    +--------------+
+              | Op2        |    | Op2 DIV Op1  |
+              |------------|    |--------------|
+*)
+
+PROCEDURE DivTrunc ;
+
+
+(*
+   ModTrunc - modulus of the top two elements on the stack.
+
+              The Stack:
+
+              Entry             Exit
+
+       Ptr ->
+              +------------+
+              | Op1        |                     <- Ptr
+              |------------|    +--------------+
+              | Op2        |    | Op2 MOD Op1  |
+              |------------|    |--------------|
+*)
+
+PROCEDURE ModTrunc ;
+
+
+(*
+   Equ - returns true if the top two elements on the stack
+         are identical.
+
+         The Stack:
+
+         Entry             Exit
+
+  Ptr ->
+         +------------+
+         | Op1        |
+         |------------|
+         | Op2        |
+         |------------|    Empty
+
+         RETURN( Op2 = Op1 )
+*)
+
+PROCEDURE Equ (tokenno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   NotEqu - returns true if the top two elements on the stack
+            are not identical.
+
+            The Stack:
+
+            Entry             Exit
+
+     Ptr ->
+            +------------+
+            | Op1        |
+            |------------|
+            | Op2        |
+            |------------|    Empty
+
+            RETURN( Op2 # Op1 )
+*)
+
+PROCEDURE NotEqu (tokenno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   Less - returns true if Op2 < Op1.
+
+          The Stack:
+
+          Entry             Exit
+
+   Ptr ->
+          +------------+
+          | Op1        |
+          |------------|
+          | Op2        |
+          |------------|    Empty
+
+          RETURN( Op2 < Op1 )
+*)
+
+PROCEDURE Less (tokenno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   Gre - returns true if Op2 > Op1
+
+         The Stack:
+
+         Entry             Exit
+
+  Ptr ->
+         +------------+
+         | Op1        |
+         |------------|
+         | Op2        |
+         |------------|    Empty
+
+         RETURN( Op2 > Op1 )
+*)
+
+PROCEDURE Gre (tokenno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   LessEqu - returns true if Op2 <= Op1
+
+            The Stack:
+
+            Entry             Exit
+
+     Ptr ->
+            +------------+
+            | Op1        |
+            |------------|
+            | Op2        |
+            |------------|    Empty
+
+            RETURN( Op2 <= Op1 )
+*)
+
+PROCEDURE LessEqu (tokenno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GreEqu - returns true if Op2 >= Op1
+            are not identical.
+
+            The Stack:
+
+            Entry             Exit
+
+     Ptr ->
+            +------------+
+            | Op1        |
+            |------------|
+            | Op2        |
+            |------------|    Empty
+
+            RETURN( Op2 >= Op1 )
+*)
+
+PROCEDURE GreEqu (tokenno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsNulSet - returns TRUE if the top element is the nul set constant, {}.
+*)
+
+PROCEDURE IsNulSet () : BOOLEAN ;
+
+
+(*
+   IsGenericNulSet - returns TRUE if the top element is the generic nul set constant, {}.
+*)
+
+PROCEDURE IsGenericNulSet () : BOOLEAN ;
+
+
+(*
+   PushNulSet - pushes an empty set {} onto the ALU stack. The subrange type used
+                to construct the set is defined by, type. If this is NulSym then
+                the set is generic and compatible with all sets.
+
+                The Stack:
+
+                Entry             Exit
+
+                                                 <- Ptr
+                                  +------------+
+                                  | {}         |
+                Ptr ->            |------------|
+
+*)
+
+PROCEDURE PushNulSet (settype: CARDINAL) ;
+
+
+(*
+   AddBitRange - adds the range op1..op2 to the underlying set.
+
+                 Ptr ->
+                                                           <- Ptr
+                        +------------+      +------------+
+                        | Set        |      | Set        |
+                        |------------|      |------------|
+*)
+
+PROCEDURE AddBitRange (tokenno: CARDINAL; op1, op2: CARDINAL) ;
+
+
+(*
+   AddBit - adds the bit op1 to the underlying set. INCL(Set, op1)
+
+            Ptr ->
+                                                      <- Ptr
+                   +------------+      +------------+
+                   | Set        |      | Set        |
+                   |------------|      |------------|
+*)
+
+PROCEDURE AddBit (tokenno: CARDINAL; op1: CARDINAL) ;
+
+
+(*
+   SubBit - removes a bit op1 from the underlying set. EXCL(Set, Op1)
+
+            Ptr ->
+                   +------------+
+                   | Op1        |                     <- Ptr
+                   |------------|      +------------+
+                   | Set        |      | Set        |
+                   |------------|      |------------|
+*)
+
+PROCEDURE SubBit (tokenno: CARDINAL; op1: CARDINAL) ;
+
+
+(*
+   SetIn - returns true if the Op1 IN Set
+
+           The Stack:
+
+           Entry             Exit
+
+    Ptr ->
+           +------------+
+           | Set        |
+           |------------|
+           | Op1        |
+           |------------|    Empty
+
+           RETURN( Op1 IN Set )
+*)
+
+PROCEDURE SetIn (tokenno: CARDINAL; Op1: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetOr -  performs an inclusive OR of the top two sets on the stack.
+
+            The Stack:
+
+            Entry             Exit
+
+     Ptr ->
+            +------------+
+            | Op1        |                   <- Ptr
+            |------------|    +------------+
+            | Op2        |    | Op2 + Op1  |
+            |------------|    |------------|
+
+*)
+
+PROCEDURE SetOr (tokenno: CARDINAL) ;
+
+
+(*
+   SetAnd - performs a set AND the top two sets on the stack.
+
+            The Stack:
+
+            Entry             Exit
+
+     Ptr ->
+            +------------+
+            | Op1        |                   <- Ptr
+            |------------|    +------------+
+            | Op2        |    | Op2 * Op1  |
+            |------------|    |------------|
+*)
+
+PROCEDURE SetAnd (tokenno: CARDINAL) ;
+
+
+(*
+   SetDifference - performs a set difference of the top two elements on the stack.
+                   For each member in the set
+                      if member in Op2 and not member in Op1
+
+                   The Stack:
+
+                   Entry             Exit
+
+            Ptr ->
+                   +------------+
+                   | Op1        |                   <- Ptr
+                   |------------|    +-------------------+
+                   | Op2        |    | Op2 and (not Op1) |
+                   |------------|    |-------------------|
+*)
+
+PROCEDURE SetDifference (tokenno: CARDINAL) ;
+
+
+(*
+   SetSymmetricDifference - performs a set difference of the top two sets on the stack.
+
+                            The Stack:
+
+                            Entry             Exit
+
+                     Ptr ->
+                            +------------+
+                            | Op1        |                   <- Ptr
+                            |------------|    +------------+
+                            | Op2        |    | Op2 - Op1  |
+                            |------------|    |------------|
+*)
+
+PROCEDURE SetSymmetricDifference (tokenno: CARDINAL) ;
+
+
+(*
+   SetNegate - negates the top set on the stack.
+
+               Ptr ->                                               <- Ptr
+                      +-----------+                  +------------+
+                      | Set       |                  | Set        |
+                      |-----------|                  |------------|
+*)
+
+PROCEDURE SetNegate (tokenno: CARDINAL) ;
+
+
+(*
+   SetShift - if op1 is positive
+              then
+                 result := op2 << op1
+              else
+                 result := op2 >> op1
+              fi
+
+
+              The Stack:
+
+                     Entry             Exit
+
+              Ptr ->
+                     +------------+
+                     | Op1        |                   <- Ptr
+                     |------------|    +------------+
+                     | Op2        |    | result     |
+                     |------------|    |------------|
+
+*)
+
+PROCEDURE SetShift (tokenno: CARDINAL) ;
+
+
+(*
+   SetRotate - if op1 is positive
+               then
+                  result := ROTATERIGHT(op2, op1)
+               else
+                  result := ROTATELEFT(op2, op1)
+               fi
+
+
+               The Stack:
+
+                      Entry             Exit
+
+               Ptr ->
+                      +------------+
+                      | Op1        |                   <- Ptr
+                      |------------|    +------------+
+                      | Op2        |    | result     |
+                      |------------|    |------------|
+*)
+
+PROCEDURE SetRotate (tokenno: CARDINAL) ;
+
+
+(*
+   GetValue - returns and pops the value from the top of stack.
+*)
+
+PROCEDURE GetValue (tokenno: CARDINAL) : PtrToValue ;
+
+
+(*
+   GetRange - returns TRUE if range number, n, exists in the value, v.
+              A non empty set is defined by having 1..N ranges
+*)
+
+PROCEDURE GetRange (v: PtrToValue; n: CARDINAL; VAR low, high: CARDINAL) : BOOLEAN ;
+
+
+(*
+   ConstructSetConstant - builds a struct of integers which represents the
+                          set const, sym.
+*)
+
+PROCEDURE ConstructSetConstant (tokenno: CARDINAL; v: PtrToValue) : Tree ;
+
+
+(*
+   BuildRange - returns a integer sized constant which represents the
+                value  {e1..e2}.
+*)
+
+PROCEDURE BuildRange (tokenno: CARDINAL; e1, e2: Tree) : Tree ;
+
+
+(*
+   IsConstructorDependants - return TRUE if returned if all
+                             q(dependants) of, sym, return TRUE.
+*)
+
+PROCEDURE IsConstructorDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
+
+
+(*
+   WalkConstructorDependants - walk the constructor, sym, calling
+                               p for each dependant.
+*)
+
+PROCEDURE WalkConstructorDependants (sym: CARDINAL; p: WalkAction) ;
+
+
+(*
+   IsValueAndTreeKnown - returns TRUE if the value is known and the gcc tree
+                         is defined.
+
+                         The Stack:
+
+                                Entry             Exit
+
+                         Ptr ->
+                                +------------+
+                                | Op1        |                   <- Ptr
+                                |------------|    +------------+
+*)
+
+PROCEDURE IsValueAndTreeKnown () : BOOLEAN ;
+
+
+(*
+   CheckOrResetOverflow - tests to see whether the tree, t, has caused
+                          an overflow error and if so it generates an
+                          error message.
+*)
+
+PROCEDURE CheckOrResetOverflow (tokenno: CARDINAL; t: Tree; check: BOOLEAN) ;
+
+
+(*
+   AddElements - adds the elements, el BY, n, to the array constant.
+
+                 Ptr ->
+                                                           <- Ptr
+                        +------------+      +------------+
+                        | Array      |      | Array      |
+                        |------------|      |------------|
+
+*)
+
+PROCEDURE AddElements (tokenno: CARDINAL; el, n: CARDINAL) ;
+
+
+(*
+   AddField - adds the field op1 to the underlying constructor.
+
+              Ptr ->
+                                                        <- Ptr
+                     +------------+      +------------+
+                     | const      |      | const      |
+                     |------------|      |------------|
+
+*)
+
+PROCEDURE AddField (tokenno: CARDINAL; op1: CARDINAL) ;
+
+
+(*
+   PushEmptyConstructor - pushes an empty constructor {} onto the ALU stack.
+                          This is expected to be filled in by subsequent
+                          calls to AddElements, AddRange or AddField.
+
+                          The Stack:
+
+                          Entry             Exit
+
+                                                       <- Ptr
+                                        +------------+
+                                        | {}         |
+                   Ptr ->               |------------|
+
+*)
+
+PROCEDURE PushEmptyConstructor (constype: CARDINAL) ;
+
+
+(*
+   PushEmptyArray - pushes an empty array {} onto the ALU stack.
+                    This is expected to be filled in by subsequent
+                    calls to AddElements.
+
+                    The Stack:
+
+                    Entry             Exit
+
+                                                     <- Ptr
+                                      +------------+
+                                      | {}         |
+             Ptr ->                   |------------|
+
+*)
+
+PROCEDURE PushEmptyArray (arraytype: CARDINAL) ;
+
+
+(*
+   PushEmptyRecord - pushes an empty record {} onto the ALU stack.
+                     This is expected to be filled in by subsequent
+                     calls to AddField.
+
+                     The Stack:
+
+                     Entry             Exit
+
+                                                      <- Ptr
+                                       +------------+
+                                       | {}         |
+              Ptr ->                   |------------|
+
+*)
+
+PROCEDURE PushEmptyRecord (recordtype: CARDINAL) ;
+
+
+(*
+   ChangeToConstructor - change the top of stack value to a constructor, type.
+*)
+
+PROCEDURE ChangeToConstructor (tokenno: CARDINAL; constype: CARDINAL) ;
+
+
+(*
+   IsValueConst - returns true if the memory cell indicated by v
+                  is only defined by constants.  For example
+                  no variables are used in the constructor.
+*)
+
+PROCEDURE IsValueConst (v: PtrToValue) : BOOLEAN ;
+
+
+(*
+   PushTypeOfTree - pushes tree, gcc, to the stack and records the
+                    front end type.
+*)
+
+PROCEDURE PushTypeOfTree (sym: CARDINAL; gcc: Tree) ;
+
+
+END M2ALU.

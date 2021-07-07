@@ -1,0 +1,244 @@
+(* mcLexBuf.def provides a buffer for the all the tokens created by m2.lex.
+
+Copyright (C) 2015-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcLexBuf ;
+
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM mcReserved IMPORT toktype ;
+FROM DynamicStrings IMPORT String ;
+FROM mcComment IMPORT commentDesc ;
+
+
+VAR
+   currenttoken  : toktype ;
+   currentstring : ADDRESS ;
+   currentcolumn : CARDINAL ;
+   currentinteger: INTEGER ;
+   lastcomment,
+   currentcomment: commentDesc ;
+
+
+(*
+   getProcedureComment - returns the procedure comment if it exists,
+                         or NIL otherwise.
+*)
+
+PROCEDURE getProcedureComment () : commentDesc ;
+
+
+(*
+   getBodyComment - returns the body comment if it exists,
+                    or NIL otherwise.
+*)
+
+PROCEDURE getBodyComment () : commentDesc ;
+
+
+(*
+   getAfterComment - returns the after comment if it exists,
+                     or NIL otherwise.
+*)
+
+PROCEDURE getAfterComment () : commentDesc ;
+
+
+(*
+   openSource - Attempts to open the source file, s.
+                The success of the operation is returned.
+*)
+
+PROCEDURE openSource (s: String) : BOOLEAN ;
+
+
+(*
+   closeSource - closes the current open file.
+*)
+
+PROCEDURE closeSource ;
+
+
+(*
+   reInitialize - re-initialize the all the data structures.
+*)
+
+PROCEDURE reInitialize ;
+
+
+(*
+   resetForNewPass - reset the buffer pointers to the beginning ready for
+                     a new pass
+*)
+
+PROCEDURE resetForNewPass ;
+
+
+(*
+   getToken - gets the next token into currenttoken.
+*)
+
+PROCEDURE getToken ;
+
+
+(*
+   insertToken - inserts a symbol, token, infront of the current token
+                 ready for the next pass.
+*)
+
+PROCEDURE insertToken (token: toktype) ;
+
+
+(*
+   insertTokenAndRewind - inserts a symbol, token, infront of the current token
+                          and then moves the token stream back onto the inserted token.
+*)
+
+PROCEDURE insertTokenAndRewind (token: toktype) ;
+
+
+(*
+   getPreviousTokenLineNo - returns the line number of the previous token.
+*)
+
+PROCEDURE getPreviousTokenLineNo () : CARDINAL ;
+
+
+(*
+   getLineNo - returns the current line number where the symbol occurs in
+               the source file.
+*)
+
+PROCEDURE getLineNo () : CARDINAL ;
+
+
+(*
+   getTokenNo - returns the current token number.
+*)
+
+PROCEDURE getTokenNo () : CARDINAL ;
+
+
+(*
+   tokenToLineNo - returns the line number of the current file for the
+                   TokenNo. The depth refers to the include depth.
+                   A depth of 0 is the current file, depth of 1 is the file
+                   which included the current file. Zero is returned if the
+                   depth exceeds the file nesting level.
+*)
+
+PROCEDURE tokenToLineNo (tokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+
+
+(*
+   getColumnNo - returns the current column where the symbol occurs in
+                 the source file.
+*)
+
+PROCEDURE getColumnNo () : CARDINAL ;
+
+
+(*
+   tokenToColumnNo - returns the column number of the current file for the
+                     TokenNo. The depth refers to the include depth.
+                     A depth of 0 is the current file, depth of 1 is the file
+                     which included the current file. Zero is returned if the
+                     depth exceeds the file nesting level.
+*)
+
+PROCEDURE tokenToColumnNo (tokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+
+
+(*
+   findFileNameFromToken - returns the complete FileName for the appropriate
+                           source file yields the token number, TokenNo.
+                           The, Depth, indicates the include level: 0..n
+                           Level 0 is the current. NIL is returned if n+1
+                           is requested.
+*)
+
+PROCEDURE findFileNameFromToken (tokenNo: CARDINAL; depth: CARDINAL) : String ;
+
+
+(*
+   getFileName - returns a String defining the current file.
+*)
+
+PROCEDURE getFileName () : String ;
+
+
+(* ***********************************************************************
+ *
+ * These functions allow m2.lex to deliver tokens into the buffer
+ *
+ ************************************************************************* *)
+
+(*
+   addTok - adds a token to the buffer.
+*)
+
+PROCEDURE addTok (t: toktype) ;
+
+
+(*
+   addTokCharStar - adds a token to the buffer and an additional string, s.
+                    A copy of string, s, is made.
+*)
+
+PROCEDURE addTokCharStar (t: toktype; s: ADDRESS) ;
+
+
+(*
+   addTokInteger - adds a token and an integer to the buffer.
+*)
+
+PROCEDURE addTokInteger (t: toktype; i: INTEGER) ;
+
+
+(*
+   addTokComment - adds a token to the buffer and a comment descriptor, com.
+*)
+
+PROCEDURE addTokComment (t: toktype; com: commentDesc) ;
+
+
+(*
+   setFile - sets the current filename to, filename.
+*)
+
+PROCEDURE setFile (filename: ADDRESS) ;
+
+
+(*
+   pushFile - indicates that, filename, has just been included.
+*)
+
+PROCEDURE pushFile (filename: ADDRESS) ;
+
+
+(*
+   popFile - indicates that we are returning to, filename, having finished
+             an include.
+*)
+
+PROCEDURE popFile (filename: ADDRESS) ;
+
+
+END mcLexBuf.

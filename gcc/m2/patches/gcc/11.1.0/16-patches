@@ -1,0 +1,221 @@
+diff --git a/gcc/analyzer/sm-malloc.cc b/gcc/analyzer/sm-malloc.cc
+index 1d5b8601b1f..95d6ee18431 100644
+--- a/gcc/analyzer/sm-malloc.cc
++++ b/gcc/analyzer/sm-malloc.cc
+@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
+ #include "system.h"
+ #include "coretypes.h"
+ #include "tree.h"
++#include "langhooks-def.h"
++#include "langhooks.h"
+ #include "function.h"
+ #include "basic-block.h"
+ #include "gimple.h"
+@@ -44,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
+ #include "analyzer/region-model.h"
+ #include "stringpool.h"
+ #include "attribs.h"
++#include "print-tree.h"
+ 
+ #if ENABLE_ANALYZER
+ 
+@@ -385,8 +388,14 @@ public:
+ 					  bool is_mutable) const FINAL OVERRIDE;
+ 
+   standard_deallocator_set m_free;
+-  standard_deallocator_set m_scalar_delete;
+-  standard_deallocator_set m_vector_delete;
++
++  /* C++ scalar delete and vector delete[].  */
++  standard_deallocator_set m_cp_scalar_delete;
++  standard_deallocator_set m_cp_vector_delete;
++
++  /* Modula 2 user and system heaps.  */
++  standard_deallocator_set m_m2_storage_deallocate;
++  standard_deallocator_set m_m2_sysstorage_deallocate;
+ 
+   standard_deallocator m_realloc;
+ 
+@@ -419,13 +428,18 @@ private:
+ 			    const supernode *node,
+ 			    const gcall *call,
+ 			    const deallocator *d,
+-			    unsigned argno) const;
++			     unsigned argno,
++			     bool pass_by_reference = false) const;
+   void on_realloc_call (sm_context *sm_ctxt,
+ 			const supernode *node,
+ 			const gcall *call) const;
+   void on_zero_assignment (sm_context *sm_ctxt,
+ 			   const gimple *stmt,
+ 			   tree lhs) const;
++  void on_allocator_call_pass_by_ref (sm_context *sm_ctxt,
++				      const gcall *call,
++				      const deallocator_set
++				      *deallocators) const;
+ 
+   /* A map for consolidating deallocators so that they are
+      unique per deallocator FUNCTION_DECL.  */
+@@ -1368,8 +1382,12 @@ allocation_state::get_nonnull () const
+ malloc_state_machine::malloc_state_machine (logger *logger)
+ : state_machine ("malloc", logger),
+   m_free (this, "free", WORDING_FREED),
+-  m_scalar_delete (this, "delete", WORDING_DELETED),
+-  m_vector_delete (this, "delete[]", WORDING_DELETED),
++  m_cp_scalar_delete (this, "delete", WORDING_DELETED),
++  m_cp_vector_delete (this, "delete[]", WORDING_DELETED),
++  m_m2_storage_deallocate (this, "DISPOSE via Storage.DEALLOCATE",
++			   WORDING_DEALLOCATED),
++  m_m2_sysstorage_deallocate (this, "DISPOSE via SysStorage.DEALLOCATE",
++			      WORDING_DEALLOCATED),
+   m_realloc (this, "realloc", WORDING_REALLOCATED)
+ {
+   gcc_assert (m_start->get_id () == 0);
+@@ -1526,21 +1544,36 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
+ 	    return true;
+ 	  }
+ 
++	if (lang_hooks.new_dispose_storage_substitution ())
++	  {
++	    /* m2 allocation.  */
++	    if (is_named_call_p (callee_fndecl, "Storage_ALLOCATE", call, 2))
++	      {
++		on_allocator_call_pass_by_ref (sm_ctxt, call, &m_m2_storage_deallocate);
++		return true;
++	      }
++	    else if (is_named_call_p (callee_fndecl, "SysStorage_ALLOCATE", call, 2))
++	      {
++		on_allocator_call_pass_by_ref (sm_ctxt, call, &m_m2_sysstorage_deallocate);
++		return true;
++	      }
++	  }
++
+ 	if (is_named_call_p (callee_fndecl, "operator new", call, 1))
+-	  on_allocator_call (sm_ctxt, call, &m_scalar_delete);
++	  on_allocator_call (sm_ctxt, call, &m_cp_scalar_delete);
+ 	else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
+-	  on_allocator_call (sm_ctxt, call, &m_vector_delete);
++	  on_allocator_call (sm_ctxt, call, &m_cp_vector_delete);
+ 	else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
+ 		 || is_named_call_p (callee_fndecl, "operator delete", call, 2))
+ 	  {
+ 	    on_deallocator_call (sm_ctxt, node, call,
+-				 &m_scalar_delete.m_deallocator, 0);
++				 &m_cp_scalar_delete.m_deallocator, 0);
+ 	    return true;
+ 	  }
+ 	else if (is_named_call_p (callee_fndecl, "operator delete []", call, 1))
+ 	  {
+ 	    on_deallocator_call (sm_ctxt, node, call,
+-				 &m_vector_delete.m_deallocator, 0);
++				 &m_cp_vector_delete.m_deallocator, 0);
+ 	    return true;
+ 	  }
+ 
+@@ -1562,6 +1595,23 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
+ 	    return true;
+ 	  }
+ 
++	if (lang_hooks.new_dispose_storage_substitution ())
++	  {
++	    /* m2 deallocation.	*/
++	    if (is_named_call_p (callee_fndecl, "Storage_DEALLOCATE", call, 2))
++	      {
++		on_deallocator_call (sm_ctxt, node, call,
++				     &m_m2_storage_deallocate.m_deallocator, 0, true);
++		return true;
++	      }
++	    else if (is_named_call_p (callee_fndecl, "SysStorage_DEALLOCATE", call, 2))
++	      {
++		on_deallocator_call (sm_ctxt, node, call,
++				     &m_m2_sysstorage_deallocate.m_deallocator, 0, true);
++		return true;
++	      }
++	  }
++
+ 	if (is_named_call_p (callee_fndecl, "realloc", call, 2)
+ 	    || is_named_call_p (callee_fndecl, "__builtin_realloc", call, 2))
+ 	  {
+@@ -1731,16 +1781,71 @@ malloc_state_machine::on_allocator_call (sm_context *sm_ctxt,
+     }
+ }
+ 
++/* Skips an ADDR_EXPR if seen.	 */
++
++static
++tree
++skip_reference (tree arg)
++{
++  if (TREE_CODE (arg) == ADDR_EXPR)
++      return TREE_OPERAND (arg, 0);
++  return NULL;
++}
++
++
++/* Handle allocators which return the value through a pass by reference parameter.  */
++
++void
++malloc_state_machine::on_allocator_call_pass_by_ref (sm_context *sm_ctxt,
++						     const gcall *call,
++						     const deallocator_set
++						     *deallocators) const
++{
++  if (gimple_call_num_args (call) == 0)
++    return;
++  tree arg = gimple_call_arg (call, 0);
++  if (arg)
++    {
++      /* in Modula-2 the heap allocator API is: ALLOCATE (VAR ADDRESS;
++	  CARDINAL).  So we need to skip the reference or pointer in
++	  the first parameter.	*/
++      tree diag_arg_lvalue = sm_ctxt->get_diagnostic_tree (arg);
++      tree diag_arg_rvalue = skip_reference (diag_arg_lvalue);
++      if ((diag_arg_rvalue != NULL)
++	  && (sm_ctxt->get_state (call, diag_arg_rvalue) == m_start))
++	sm_ctxt->set_next_state (call, diag_arg_rvalue,
++				 deallocators->m_unchecked);
++    }
++}
++
+ void
+ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
+ 					   const supernode *node,
+ 					   const gcall *call,
+ 					   const deallocator *d,
+-					   unsigned argno) const
++					   unsigned argno,
++					   bool pass_by_reference) const
+ {
+   if (argno >= gimple_call_num_args (call))
+     return;
+   tree arg = gimple_call_arg (call, argno);
++  if (pass_by_reference)
++    {
++      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
++      /* in Modula-2 the API is: DEALLOCATE (VAR a: ADDRESS; size:
++	  CARDINAL).  So we need to skip the pointer or reference in
++	  the first parameter.	We also know the pointer is assigned to
++	  NULL.	 In C this could be described as:
++
++	  DEALLOCATE (void **address, unsigned int size)
++	  {
++	     free (*address);
++	     *address = NULL;
++	  }.  */
++      arg = skip_reference (diag_arg);
++      if (arg == NULL)
++	return;
++    }
+ 
+   state_t state = sm_ctxt->get_state (call, arg);
+ 
+@@ -1783,6 +1888,9 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
+ 					   d->m_name));
+       sm_ctxt->set_next_state (call, arg, m_stop);
+     }
++  /* in Modula-2 the DEALLOCATE assigns the pointer to NULL.  However
++     we don't do this in the analyzer as it ignores NULL pointers
++     during deallocation.  */
+ }
+ 
+ /* Implementation of realloc(3):

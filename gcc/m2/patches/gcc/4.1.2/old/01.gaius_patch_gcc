@@ -1,0 +1,202 @@
+--- gcc-4.1.2-orig/gcc/dwarf2out.c	2006-12-27 22:23:55.000000000 +0000
++++ gcc-4.1.2/gcc/dwarf2out.c	2007-07-04 15:31:07.000000000 +0100
+@@ -2740,6 +2740,9 @@
+ static unsigned long size_of_locs (dw_loc_descr_ref);
+ static void output_loc_operands (dw_loc_descr_ref);
+ static void output_loc_sequence (dw_loc_descr_ref);
++static void gen_set_subrange_die (tree, dw_die_ref);
++static dw_die_ref subrange_type_die (tree, dw_die_ref);
++
+ 
+ /* Convert a DWARF stack opcode into its string name.  */
+ 
+@@ -4014,6 +4017,7 @@
+ static bool is_cxx (void);
+ static bool is_java (void);
+ static bool is_fortran (void);
++static bool is_modula2 (void);
+ static bool is_ada (void);
+ static void remove_AT (dw_die_ref, enum dwarf_attribute);
+ static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
+@@ -5366,6 +5370,16 @@
+   return lang == DW_LANG_Ada95 || lang == DW_LANG_Ada83;
+ }
+ 
++/* Return TRUE if the language is Modula-2.  */
++
++static inline bool
++is_modula2 (void)
++{
++  unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
++
++  return (lang == DW_LANG_Modula2);
++}
++
+ /* Free up the memory used by A.  */
+ 
+ static inline void free_AT (dw_attr_ref);
+@@ -8275,7 +8289,8 @@
+     return false;
+ 
+   if (TREE_CODE (subtype) != INTEGER_TYPE
+-      && TREE_CODE (subtype) != ENUMERAL_TYPE)
++      && TREE_CODE (subtype) != ENUMERAL_TYPE
++      && TREE_CODE (subtype) != CHAR_TYPE)
+     return false;
+ 
+   if (TREE_CODE (type) == TREE_CODE (subtype)
+@@ -10515,7 +10530,24 @@
+ 		  || (is_fortran () && integer_onep (bound)))))
+ 	/* Use the default.  */
+ 	;
+-      else
++      else if (is_modula2() && bound)
++	{
++	  if (bound_attr == DW_AT_lower_bound)
++	    {
++	      if (tree_int_cst_sgn (bound) < 0)
++		add_AT_int (subrange_die, bound_attr, tree_low_cst (bound, tree_int_cst_sgn (bound) > 0));
++	      else
++		add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
++	    }
++	  else if (bound_attr == DW_AT_upper_bound)
++	    {
++	      if (tree_int_cst_sgn (bound) < 0)
++		add_AT_int (subrange_die, bound_attr, tree_low_cst (bound, tree_int_cst_sgn (bound) > 0));
++	      else
++		add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
++	    }
++	}
++      else 
+ 	add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
+       break;
+ 
+@@ -10625,7 +10657,8 @@
+ 	      if (TREE_CODE (domain) == INTEGER_TYPE
+ 		  && TYPE_NAME (domain) == NULL_TREE
+ 		  && TREE_CODE (TREE_TYPE (domain)) == INTEGER_TYPE
+-		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE)
++		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE
++		  && (! is_modula2 ()))
+ 		;
+ 	      else
+ 		add_type_attribute (subrange_die, TREE_TYPE (domain), 0, 0,
+@@ -11003,8 +11036,20 @@
+      an Ada subrange type.  Correct solution is emit a subrange type die.  */
+   if ((code == INTEGER_TYPE || code == REAL_TYPE)
+       && TREE_TYPE (type) != 0 && TYPE_NAME (type) == 0)
+-    type = TREE_TYPE (type), code = TREE_CODE (type);
+-
++    {
++      if (is_modula2 ())
++	{
++	  type_die = subrange_type_die (type, context_die);
++	  if (type_die != NULL)
++	    add_AT_die_ref (object_die, DW_AT_type, type_die);
++	  return;
++	}
++      else
++	{
++	  type = TREE_TYPE (type);
++	  code = TREE_CODE (type);
++	}
++    }
+   if (code == ERROR_MARK
+       /* Handle a special case.  For functions whose return type is void, we
+ 	 generate *no* type attribute.  (Note that no object may have type
+@@ -12208,6 +12253,8 @@
+     language = DW_LANG_Fortran95;
+   else if (strcmp (language_string, "GNU Pascal") == 0)
+     language = DW_LANG_Pascal83;
++  else if (strcmp (language_string, "GNU Modula-2") == 0)
++    language = DW_LANG_Modula2;
+   else if (strcmp (language_string, "GNU Java") == 0)
+     language = DW_LANG_Java;
+   else
+@@ -12456,6 +12503,18 @@
+     equate_decl_number_to_die (decl, type_die);
+ }
+ 
++static void
++gen_set_subrange_die (tree domain, dw_die_ref context_die)
++{
++  if (TREE_TYPE (domain) == 0)
++    gen_type_die (domain, context_die);
++  else
++    {
++      dw_die_ref subrange_die = subrange_type_die (domain, context_die);
++      equate_type_number_to_die (domain, subrange_die);
++    }
++}
++
+ /* Generate a type description DIE.  */
+ 
+ static void
+@@ -13140,8 +13199,9 @@
+ 
+     case FIELD_DECL:
+       /* Ignore the nameless fields that are used to skip bits but handle C++
+-	 anonymous unions and structs.  */
+-      if (DECL_NAME (decl) != NULL_TREE
++	 anonymous unions and structs.  Except for Modula-2.  */
++      if ((is_modula2())
++	  || DECL_NAME (decl) != NULL_TREE
+ 	  || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+ 	  || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
+ 	{
+--- gcc-4.1.2-orig/gcc/ggc-page.c	2005-09-07 04:50:08.000000000 +0100
++++ gcc-4.1.2/gcc/ggc-page.c	2007-07-04 15:26:28.000000000 +0100
+@@ -1859,6 +1859,10 @@
+   if (G.allocated < allocated_last_gc + min_expand && !ggc_force_collect)
+     return;
+ 
++#if 1
++  return;  /* one gross hack (gaius) */
++#endif
++
+   timevar_push (TV_GC);
+   if (!quiet_flag)
+     fprintf (stderr, " {GC %luk -> ", (unsigned long) G.allocated / 1024);
+--- gcc-4.1.2-orig/gcc/gimple-low.c	2005-08-19 06:41:13.000000000 +0100
++++ gcc-4.1.2/gcc/gimple-low.c	2007-07-04 15:26:33.000000000 +0100
+@@ -246,6 +246,7 @@
+     }
+ 
+   record_vars (BIND_EXPR_VARS (stmt));
++  gcc_assert (TREE_CODE (BIND_EXPR_BODY (stmt)) == STATEMENT_LIST);
+   lower_stmt_body (BIND_EXPR_BODY (stmt), data);
+ 
+   if (new_block)
+--- gcc-4.1.2-orig/gcc/tree-ssa-dom.c	2006-11-17 09:01:31.000000000 +0000
++++ gcc-4.1.2/gcc/tree-ssa-dom.c	2007-07-09 17:35:04.000000000 +0100
+@@ -1976,6 +1976,9 @@
+   return NULL;
+ }
+ 
++static void stop (void) {}
++static int mycount = 0;
++
+ /* STMT is a COND_EXPR for which we could not trivially determine its
+    result.  This routine attempts to find equivalent forms of the
+    condition which we may be able to optimize better.  It also 
+@@ -1988,6 +1991,9 @@
+ {
+   tree cond = COND_EXPR_COND (stmt);
+ 
++  mycount++;
++  if (mycount == 140)
++    stop ();
+   if (COMPARISON_CLASS_P (cond))
+     {
+       tree op0 = TREE_OPERAND (cond, 0);
+--- gcc-4.1.2-orig/gcc/tree-ssa-forwprop.c	2005-06-25 03:02:01.000000000 +0100
++++ gcc-4.1.2/gcc/tree-ssa-forwprop.c	2007-07-04 14:45:54.000000000 +0100
+@@ -572,7 +572,7 @@
+       /* This should always succeed in creating gimple, so there is
+ 	 no need to save enough state to undo this propagation.  */
+       TREE_OPERAND (lhs, 0) = unshare_expr (TREE_OPERAND (stmt, 1));
+-      fold_stmt_inplace (use_stmt);
++      gcc_assert (fold_stmt_inplace (use_stmt));
+       tidy_after_forward_propagate_addr (use_stmt);
+       return true;
+     }

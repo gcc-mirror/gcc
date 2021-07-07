@@ -1,0 +1,1462 @@
+--- cvs-gdb-6.3/src-cvs/gdb/m2-lang.h	2005-11-15 19:44:35.000000000 +0000
++++ cvs-gdb-6.3/src-m2/gdb/m2-lang.h	2005-11-04 14:26:43.000000000 +0000
+@@ -26,6 +26,10 @@
+ extern void m2_print_type (struct type *, char *, struct ui_file *, int,
+ 			   int);
+ 
++extern int m2_is_long_set (struct type *type);
++
+ extern int m2_val_print (struct type *, char *, int, CORE_ADDR,
+ 			 struct ui_file *, int, int, int,
+ 			 enum val_prettyprint);
++extern int get_long_set_bounds (struct type *type, LONGEST *low,
++				LONGEST *high);
+--- cvs-gdb-6.3/src-cvs/gdb/m2-lang.c	2005-11-15 19:44:35.000000000 +0000
++++ cvs-gdb-6.3/src-m2/gdb/m2-lang.c	2005-11-15 16:33:14.000000000 +0000
+@@ -47,7 +47,6 @@
+ static void
+ m2_emit_char (int c, struct ui_file *stream, int quoter)
+ {
+-
+   c &= 0xFF;			/* Avoid sign bit follies */
+ 
+   if (PRINT_LITERAL_FORM (c))
+@@ -65,40 +64,41 @@
+ 	case '\n':
+ 	  fputs_filtered ("\\n", stream);
+ 	  break;
+-	case '\b':
+-	  fputs_filtered ("\\b", stream);
+-	  break;
+-	case '\t':
+-	  fputs_filtered ("\\t", stream);
+-	  break;
+-	case '\f':
+-	  fputs_filtered ("\\f", stream);
+-	  break;
+-	case '\r':
+-	  fputs_filtered ("\\r", stream);
+-	  break;
+-	case '\033':
+-	  fputs_filtered ("\\e", stream);
+-	  break;
+-	case '\007':
+-	  fputs_filtered ("\\a", stream);
+-	  break;
+ 	default:
+-	  fprintf_filtered (stream, "\\%.3o", (unsigned int) c);
++	  fprintf_filtered (stream, "%.oC", (unsigned int) c);
+ 	  break;
+ 	}
+     }
+ }
+ 
+-/* FIXME:  This is a copy of the same function from c-exp.y.  It should
+-   be replaced with a true Modula version. */
++/* A Modula version of printchar */
+ 
+ static void
+ m2_printchar (int c, struct ui_file *stream)
+ {
+-  fputs_filtered ("'", stream);
+-  LA_EMIT_CHAR (c, stream, '\'');
+-  fputs_filtered ("'", stream);
++  c &= 0xFF;			/* Avoid sign bit follies */
++
++  if (PRINT_LITERAL_FORM (c))
++    {
++      if (c == '\\')
++	{
++	  fputs_filtered ("'\\'", stream);
++	  return;
++	}
++      fprintf_filtered (stream, "'%c'", c);
++    }
++  else
++    {
++      switch (c)
++	{
++	case '\n':
++	  fputs_filtered ("'\\n'", stream);
++	  break;
++	default:
++	  fprintf_filtered (stream, "%.oC", (unsigned int) c);
++	  break;
++	}
++    }
+ }
+ 
+ /* Print the character string STRING, printing at most LENGTH characters.
+--- cvs-gdb-6.3/src-cvs/gdb/m2-typeprint.c	2005-11-15 19:44:35.000000000 +0000
++++ cvs-gdb-6.3/src-m2/gdb/m2-typeprint.c	2005-11-15 21:34:04.868118218 +0000
+@@ -20,22 +20,808 @@
+    Boston, MA 02110-1301, USA.  */
+ 
+ #include "defs.h"
++#include "gdb_obstack.h"
+ #include "bfd.h"		/* Binary File Description */
+ #include "symtab.h"
+ #include "gdbtypes.h"
+ #include "expression.h"
+ #include "value.h"
+ #include "gdbcore.h"
+-#include "target.h"
+ #include "m2-lang.h"
++#include "target.h"
++#include "language.h"
++#include "demangle.h"
++#include "c-lang.h"
++#include "typeprint.h"
++#include "cp-abi.h"
++
++#include "gdb_string.h"
+ #include <errno.h>
+ 
++static void m2_type_print_args (struct type *, struct ui_file *);
++
++void m2_type_print_varspec_prefix (struct type *, struct ui_file *, int,
++				   int);
++void m2_type_print_varspec_suffix (struct type *type, struct ui_file *stream,
++				   int show, int passed_a_ptr, int demangled_args);
++
++
++void m2_type_print_base (struct type *type, struct ui_file *stream, int show,
++			 int level);
++
++static void m2_print_bounds (struct type *type,
++			     struct ui_file *stream, int show, int level,
++			     int print_high);
++
++/* Print "const", "volatile", or address space modifiers. */
++static void m2_type_print_modifier (struct type *, struct ui_file *,
++				   int, int);
++
+ void
+ m2_print_type (struct type *type, char *varstring, struct ui_file *stream,
+-	       int show, int level)
++	      int show, int level)
++{
++  enum type_code code;
++  int demangled_args;
++
++  if (show > 0)
++    CHECK_TYPEDEF (type);
++
++  code = TYPE_CODE (type);
++
++  /*
++   *  is it a VAR parameter?
++   */
++  if (code == TYPE_CODE_REF)
++    fputs_filtered ("VAR", stream);
++
++  m2_type_print_varspec_prefix (type, stream, show, 0);
++  m2_type_print_varspec_suffix (type, stream, show, 0, 0);
++  m2_type_print_base (type, stream, show, level);
++}
++
++/* Print any asterisks or open-parentheses needed before the
++   variable name (to describe its type).
++
++   On outermost call, pass 0 for PASSED_A_PTR.
++   On outermost call, SHOW > 0 means should ignore
++   any typename for TYPE and show its details.
++   SHOW is always zero on recursive calls.  */
++
++void
++m2_type_print_varspec_prefix (struct type *type, struct ui_file *stream,
++			     int show, int passed_a_ptr)
++{
++  char *name;
++  if (type == 0)
++    return;
++
++  if (TYPE_NAME (type) && show <= 0)
++    return;
++
++  QUIT;
++
++  switch (TYPE_CODE (type))
++    {
++    case TYPE_CODE_PTR:
++      if (TYPE_CODE (TYPE_TARGET_TYPE (type)) != TYPE_CODE_FUNC) {
++	m2_type_print_modifier (type, stream, 1, 0);
++	fprintf_filtered (stream, "POINTER TO ");
++	m2_type_print_varspec_prefix (TYPE_TARGET_TYPE (type), stream, 0, 1);
++      }
++      break;
++
++    case TYPE_CODE_MEMBER:
++      if (passed_a_ptr)
++	fprintf_filtered (stream, "(");
++      m2_type_print_varspec_prefix (TYPE_TARGET_TYPE (type), stream, 0, 0);
++      fprintf_filtered (stream, " ");
++      name = type_name_no_tag (TYPE_DOMAIN_TYPE (type));
++      if (name)
++	fputs_filtered (name, stream);
++      else
++	m2_type_print_base (TYPE_DOMAIN_TYPE (type), stream, 0, passed_a_ptr);
++      fprintf_filtered (stream, "::");
++      break;
++
++    case TYPE_CODE_METHOD:
++      if (passed_a_ptr)
++	fprintf_filtered (stream, "(");
++      m2_type_print_varspec_prefix (TYPE_TARGET_TYPE (type), stream, 0, 0);
++      if (passed_a_ptr)
++	{
++	  fprintf_filtered (stream, " ");
++	  m2_type_print_base (TYPE_DOMAIN_TYPE (type), stream, 0, passed_a_ptr);
++	  fprintf_filtered (stream, "::");
++	}
++      break;
++
++    case TYPE_CODE_REF:
++      m2_type_print_varspec_prefix (TYPE_TARGET_TYPE (type), stream, 0, 1);
++      fprintf_filtered (stream, " ");
++      m2_type_print_modifier (type, stream, 1, 0);
++      break;
++
++    case TYPE_CODE_FUNC:
++#if 0
++      m2_type_print_varspec_prefix (TYPE_TARGET_TYPE (type), stream, 0, 0);
++      if (passed_a_ptr)
++	fprintf_filtered (stream, "(");
++#endif
++      break;
++
++    case TYPE_CODE_ARRAY:
++      m2_type_print_varspec_prefix (TYPE_TARGET_TYPE (type), stream, 0, 0);
++#if 0
++      if (passed_a_ptr)
++	fprintf_filtered (stream, "(");
++#endif
++      break;
++
++    case TYPE_CODE_UNDEF:
++    case TYPE_CODE_STRUCT:
++    case TYPE_CODE_UNION:
++    case TYPE_CODE_ENUM:
++    case TYPE_CODE_INT:
++    case TYPE_CODE_FLT:
++    case TYPE_CODE_VOID:
++    case TYPE_CODE_ERROR:
++    case TYPE_CODE_CHAR:
++    case TYPE_CODE_BOOL:
++    case TYPE_CODE_SET:
++    case TYPE_CODE_RANGE:
++    case TYPE_CODE_STRING:
++    case TYPE_CODE_BITSTRING:
++    case TYPE_CODE_COMPLEX:
++    case TYPE_CODE_TYPEDEF:
++    case TYPE_CODE_TEMPLATE:
++      /* These types need no prefix.  They are listed here so that
++         gcc -Wall will reveal any types that haven't been handled.  */
++      break;
++    default:
++      error ("type not handled in m2_type_print_varspec_prefix()");
++      break;
++    }
++}
++
++/* Print out "const" and "volatile" attributes.
++   TYPE is a pointer to the type being printed out.
++   STREAM is the output destination.
++   NEED_SPACE = 1 indicates an initial white space is needed */
++
++static void
++m2_type_print_modifier (struct type *type, struct ui_file *stream,
++		       int need_pre_space, int need_post_space)
++{
++  int did_print_modifier = 0;
++  const char *address_space_id;
++
++  /* We don't print `const' qualifiers for references --- since all
++     operators affect the thing referenced, not the reference itself,
++     every reference is `const'.  */
++  if (TYPE_CONST (type)
++      && TYPE_CODE (type) != TYPE_CODE_REF)
++    {
++      if (need_pre_space)
++	fprintf_filtered (stream, " ");
++      fprintf_filtered (stream, "const");
++      did_print_modifier = 1;
++    }
++
++  if (TYPE_VOLATILE (type))
++    {
++      if (did_print_modifier || need_pre_space)
++	fprintf_filtered (stream, " ");
++      fprintf_filtered (stream, "volatile");
++      did_print_modifier = 1;
++    }
++
++  address_space_id = address_space_int_to_name (TYPE_INSTANCE_FLAGS (type));
++  if (address_space_id)
++    {
++      if (did_print_modifier || need_pre_space)
++	fprintf_filtered (stream, " ");
++      fprintf_filtered (stream, "@%s", address_space_id);
++      did_print_modifier = 1;
++    }
++
++  if (did_print_modifier && need_post_space)
++    fprintf_filtered (stream, " ");
++}
++
++
++
++
++static void
++m2_type_print_args (struct type *type, struct ui_file *stream)
++{
++  int i;
++  struct field *args;
++
++  fprintf_filtered (stream, "(");
++  args = TYPE_FIELDS (type);
++  if (args != NULL)
++    {
++      int i;
++
++      /* FIXME drow/2002-05-31: Always skips the first argument,
++	 should we be checking for static members?  */
++
++      for (i = 1; i < TYPE_NFIELDS (type); i++)
++	{
++	  c_print_type (args[i].type, "", stream, -1, 0);
++	  if (i != TYPE_NFIELDS (type))
++	    {
++	      fprintf_filtered (stream, ",");
++	      wrap_here ("    ");
++	    }
++	}
++      if (TYPE_VARARGS (type))
++	fprintf_filtered (stream, "...");
++      else if (i == 1
++	       && (current_language->la_language == language_cplus))
++	fprintf_filtered (stream, "void");
++    }
++  else if (current_language->la_language == language_cplus)
++    {
++      fprintf_filtered (stream, "void");
++    }
++
++  fprintf_filtered (stream, ")");
++}
++
++
++
++
++/* Print any array sizes, function arguments or close parentheses
++   needed after the variable name (to describe its type).
++   Args work like m2_type_print_varspec_prefix.  */
++
++void
++m2_type_print_varspec_suffix (struct type *type, struct ui_file *stream,
++			      int show, int passed_a_ptr, int demangled_args)
++{
++  if (type == 0)
++    return;
++
++  if (TYPE_NAME (type) && show <= 0)
++    return;
++
++  QUIT;
++
++  switch (TYPE_CODE (type))
++    {
++    case TYPE_CODE_ARRAY:
++#if 0
++      if (passed_a_ptr)
++	fprintf_filtered (stream, ")");
++#endif
++
++      fprintf_filtered (stream, "ARRAY [");
++      if (TYPE_LENGTH (type) >= 0 && TYPE_LENGTH (TYPE_TARGET_TYPE (type)) > 0
++	  && TYPE_ARRAY_UPPER_BOUND_TYPE (type) != BOUND_CANNOT_BE_DETERMINED) {
++	if (TYPE_INDEX_TYPE (type) != 0) {
++	  m2_print_bounds (TYPE_INDEX_TYPE (type), stream, show, -1, 0);
++	  fprintf_filtered (stream, "..");
++	  m2_print_bounds (TYPE_INDEX_TYPE (type), stream, show, -1, 1);
++	}
++	else
++	  fprintf_filtered (stream, "%d",
++			    (TYPE_LENGTH (type)
++			     / TYPE_LENGTH (TYPE_TARGET_TYPE (type))));
++      }
++      fprintf_filtered (stream, "] OF ");
++
++      m2_type_print_varspec_suffix (TYPE_TARGET_TYPE (type), stream, 0, 0, 0);
++      break;
++
++    case TYPE_CODE_MEMBER:
++      if (passed_a_ptr)
++	fprintf_filtered (stream, ")");
++      m2_type_print_varspec_suffix (TYPE_TARGET_TYPE (type), stream, 0, 0, 0);
++      break;
++
++    case TYPE_CODE_METHOD:
++      if (passed_a_ptr)
++	fprintf_filtered (stream, ")");
++      m2_type_print_varspec_suffix (TYPE_TARGET_TYPE (type), stream, 0, 0, 0);
++      if (passed_a_ptr)	{
++	m2_type_print_args (type, stream);
++      }
++      break;
++
++    case TYPE_CODE_PTR:
++      if (TYPE_CODE (TYPE_TARGET_TYPE (type)) == TYPE_CODE_FUNC) {
++	fprintf_filtered (stream, "PROCEDURE");
++	break;
++      }
++      m2_type_print_varspec_suffix (TYPE_TARGET_TYPE (type), stream, 0, 1, 0);
++      break;
++
++    case TYPE_CODE_REF:
++      m2_type_print_varspec_suffix (TYPE_TARGET_TYPE (type), stream, 0, 1, 0);
++      break;
++
++    case TYPE_CODE_FUNC:
++      if (!demangled_args)
++	{
++	  int i, len = TYPE_NFIELDS (type);
++
++	  fprintf_filtered (stream, " (");
++	  for (i = 0; i < len; i++)
++	    {
++	      if (i > 0)
++		{
++		  fputs_filtered (", ", stream);
++		  wrap_here ("    ");
++		}
++	      m2_print_type (TYPE_FIELD_TYPE (type, i), "", stream, -1, 0);
++	    }
++	  fprintf_filtered (stream, ")");
++	}
++      if (TYPE_CODE (TYPE_TARGET_TYPE (type)) != TYPE_CODE_VOID) {
++	fprintf_filtered (stream, " : ");
++	m2_type_print_varspec_suffix (TYPE_TARGET_TYPE (type), stream, 0,
++				      passed_a_ptr, 0);
++      }
++      break;
++
++    case TYPE_CODE_UNDEF:
++    case TYPE_CODE_STRUCT:
++    case TYPE_CODE_UNION:
++    case TYPE_CODE_ENUM:
++    case TYPE_CODE_INT:
++    case TYPE_CODE_FLT:
++    case TYPE_CODE_VOID:
++    case TYPE_CODE_ERROR:
++    case TYPE_CODE_CHAR:
++    case TYPE_CODE_BOOL:
++    case TYPE_CODE_SET:
++    case TYPE_CODE_RANGE:
++    case TYPE_CODE_STRING:
++    case TYPE_CODE_BITSTRING:
++    case TYPE_CODE_COMPLEX:
++    case TYPE_CODE_TYPEDEF:
++    case TYPE_CODE_TEMPLATE:
++      /* These types do not need a suffix.  They are listed so that
++         gcc -Wall will report types that may not have been considered.  */
++      break;
++    default:
++      error ("type not handled in m2_type_print_varspec_suffix()");
++      break;
++    }
++}
++
++
++static void
++m2_print_bounds (struct type *type,
++		 struct ui_file *stream, int show, int level,
++		 int print_high)
++{
++  struct type *target = TYPE_TARGET_TYPE (type);
++
++  if (target == NULL)
++    target = builtin_type_int;
++
++  if (TYPE_NFIELDS(type) == 0)
++    return;
++
++  if (print_high)
++    print_type_scalar (target, TYPE_HIGH_BOUND (type), stream);
++  else
++    print_type_scalar (target, TYPE_LOW_BOUND (type), stream);
++}
++
++static void
++m2_short_set (struct type *type, struct ui_file *stream, int show, int level)
++{
++  fprintf_filtered(stream, "SET [");
++  m2_print_bounds (TYPE_INDEX_TYPE (type), stream,
++		   show - 1, level, 0);
++
++  fprintf_filtered(stream, "..");
++  m2_print_bounds (TYPE_INDEX_TYPE (type), stream,
++		   show - 1, level, 1);
++  fprintf_filtered(stream, "]");
++}
++
++int
++m2_is_long_set (struct type *type)
++{
++  LONGEST previous_high = 0;  /* unnecessary initialization keeps gcc -Wall happy */
++  int len, i;
++  struct type *range;
++
++  if (TYPE_CODE (type) == TYPE_CODE_STRUCT) {
++
++    /*
++     *  check if all fields of the RECORD are consecutive sets
++     */
++    len = TYPE_NFIELDS (type);
++    for (i = TYPE_N_BASECLASSES (type); i < len; i++) {
++      if (TYPE_FIELD_TYPE (type, i) == NULL)
++	return 0;
++      if (TYPE_CODE (TYPE_FIELD_TYPE (type, i)) != TYPE_CODE_SET)
++	return 0;
++      if (TYPE_FIELD_NAME (type, i) != NULL
++	  && (strcmp (TYPE_FIELD_NAME (type, i), "") != 0))
++	return 0;
++      range = TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, i));
++      if ((i > TYPE_N_BASECLASSES (type))
++	  && previous_high + 1 != TYPE_LOW_BOUND (range))
++	return 0;
++      previous_high = TYPE_HIGH_BOUND (range);
++    }
++    return len>0;
++  }
++  return 0;
++}
++
++/*
++ *  m2_get_discrete_bounds - a wrapper for get_discrete_bounds which
++ *                           understands that CHARs might be signed.
++ *                           This should be integrated into gdbtypes.c
++ *                           inside get_discrete_bounds.
++ */
++
++int
++m2_get_discrete_bounds (struct type *type, LONGEST *lowp, LONGEST *highp)
++{
++  CHECK_TYPEDEF (type);
++  switch (TYPE_CODE (type))
++    {
++    case TYPE_CODE_CHAR:
++      if (TYPE_LENGTH (type) < sizeof (LONGEST)) {
++	if (!TYPE_UNSIGNED (type))
++	  {
++	    *lowp = -(1 << (TYPE_LENGTH (type) * TARGET_CHAR_BIT - 1));
++	    *highp = -*lowp - 1;
++	    return 0;
++	  }
++      }
++      /* fall through */
++    default:
++      return get_discrete_bounds (type, lowp, highp);
++    }
++}
++
++/*
++ *  m2_is_long_set_of_type - returns TRUE if the long set was declared as SET OF <oftype>
++ *                           of_type is assigned to the subtype.
++ */
++
++int
++m2_is_long_set_of_type (struct type *type, struct type **of_type)
++{
++  int len, i;
++  struct type *range;
++  struct type *target;
++  LONGEST l1, l2;
++  LONGEST h1, h2;
++
++  if (TYPE_CODE (type) == TYPE_CODE_STRUCT) {
++    len = TYPE_NFIELDS (type);
++    i = TYPE_N_BASECLASSES (type);
++    if (len == 0)
++      return 0;
++    range = TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, i));
++    target = TYPE_TARGET_TYPE (range);
++    if (target == NULL)
++      target = builtin_type_int;
++
++    l1 = TYPE_LOW_BOUND (TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, i)));
++    h1 = TYPE_HIGH_BOUND (TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, len-1)));
++    *of_type = target;
++    if (m2_get_discrete_bounds (target, &l2, &h2) >= 0)
++      return (l1 == l2 && h1 == h2);
++    error ("long_set failed to find discrete bounds for its subtype");
++    return 0;
++  }
++  error ("expecting long_set");
++  return 0;
++}
++
++static int
++m2_long_set (struct type *type, struct ui_file *stream, int show, int level)
++{
++  struct type *index_type;
++  struct type *range_type;
++  struct type *of_type;
++  int i;
++  int len = TYPE_NFIELDS (type);
++  LONGEST low;
++  LONGEST high;
++
++  if (m2_is_long_set (type)) {
++    if (TYPE_TAG_NAME (type) != NULL) {
++      fputs_filtered (TYPE_TAG_NAME (type), stream);
++      if (show == 0)
++	return 1;
++    }
++    else if (TYPE_NAME (type) != NULL) {
++      fputs_filtered (TYPE_NAME (type), stream);
++      if (show == 0)
++	return 1;
++    }
++
++    if (TYPE_TAG_NAME (type) != NULL || TYPE_NAME (type) != NULL)
++      fputs_filtered (" = ", stream);
++
++    if (get_long_set_bounds (type, &low, &high)) {
++      fprintf_filtered(stream, "SET OF ");
++      i = TYPE_N_BASECLASSES (type);
++      if (m2_is_long_set_of_type (type, &of_type))
++	m2_print_type (of_type, "", stream, show - 1, level);
++      else {
++	fprintf_filtered(stream, "[");
++	m2_print_bounds (TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, i)),
++			 stream, show - 1, level, 0);
++
++	fprintf_filtered(stream, "..");
++
++	m2_print_bounds (TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, len-1)),
++			 stream, show - 1, level, 1);
++	fprintf_filtered(stream, "]");
++      }
++    }
++    else
++      fprintf_filtered(stream, "SET OF <unknown> ");
++
++    return 1;
++  }
++  return 0;
++}
++
++void
++m2_record_fields (struct type *type, struct ui_file *stream, int show,
++		  int level)
+ {
+-  extern void c_print_type (struct type *, char *, struct ui_file *, int,
+-			    int);
++  /* Print the tag if it exists. 
++   */
++  if (TYPE_TAG_NAME (type) != NULL) {
++    if (strncmp (TYPE_TAG_NAME (type), "$$", 2) != 0) {
++      fputs_filtered (TYPE_TAG_NAME (type), stream);
++      if (show > 0)
++	fprintf_filtered (stream, " = ");
++    }
++  }
++  wrap_here ("    ");
++  if (show < 0)
++    {
++      if (TYPE_CODE (type) == DECLARED_TYPE_STRUCT)
++	fprintf_filtered (stream, "RECORD ... END ");
++      else if (TYPE_DECLARED_TYPE (type) == DECLARED_TYPE_UNION)
++	fprintf_filtered (stream, "CASE ... END ");
++    }
++  else if (show > 0)
++    {
++      if (TYPE_CODE (type) == TYPE_CODE_STRUCT)
++	fprintf_filtered (stream, "RECORD\n");
++      else if (TYPE_CODE (type) == TYPE_CODE_UNION)
++	fprintf_filtered (stream, "CASE <variant> OF\n");
++      int i;
++      int len = TYPE_NFIELDS (type);
++
++      for (i = TYPE_N_BASECLASSES (type); i < len; i++)
++	{
++	  QUIT;
++
++	  print_spaces_filtered (level + 4, stream);
++	  fputs_filtered (TYPE_FIELD_NAME (type, i), stream);
++	  fputs_filtered (" : ", stream);
++	  m2_print_type (TYPE_FIELD_TYPE (type, i),
++			 "",
++			 stream, 0, level + 4);
++	  if (TYPE_FIELD_PACKED (type, i))
++	    {
++	      /* It is a bitfield.  This code does not attempt
++		 to look at the bitpos and reconstruct filler,
++		 unnamed fields.  This would lead to misleading
++		 results if the compiler does not put out fields
++		 for such things (I don't know what it does).  */
++	      fprintf_filtered (stream, " : %d",
++				TYPE_FIELD_BITSIZE (type, i));
++	    }
++	  fprintf_filtered (stream, ";\n");
++	}
++      
++      fprintfi_filtered (level, stream, "END ");
++    }
++}
++
++/* Print the name of the type (or the ultimate pointer target,
++   function value or array element), or the description of a
++   structure or union.
++
++   SHOW positive means print details about the type (e.g. enum values),
++   and print structure elements passing SHOW - 1 for show.
++   SHOW negative means just print the type name or struct tag if there is one.
++   If there is no name, print something sensible but concise like
++   "struct {...}".
++   SHOW zero means just print the type name or struct tag if there is one.
++   If there is no name, print something sensible but not as concise like
++   "struct {int x; int y;}".
++
++   LEVEL is the number of spaces to indent by.
++   We increase it for some recursive calls.  */
++
++void
++m2_type_print_base (struct type *type, struct ui_file *stream, int show,
++		    int level)
++{
++  int i;
++  int len, real_len;
++  int lastval;
++  char *mangled_name;
++  char *demangled_name;
++  char *demangled_no_static;
++  enum
++    {
++      s_none, s_public, s_private, s_protected
++    }
++  section_type;
++  int need_access_label = 0;
++  int j, len2;
++
++  QUIT;
++
++  wrap_here ("    ");
++  if (type == NULL)
++    {
++      fputs_filtered ("<type unknown>", stream);
++      return;
++    }
++
++  /* When SHOW is zero or less, and there is a valid type name, then always
++     just print the type name directly from the type.  */
++  /* If we have "typedef struct foo {. . .} bar;" do we want to print it
++     as "struct foo" or as "bar"?  Pick the latter, because C++ folk tend
++     to expect things like "class5 *foo" rather than "struct class5 *foo".  */
++
++  if (show <= 0
++      && TYPE_NAME (type) != NULL)
++    {
++      m2_type_print_modifier (type, stream, 0, 1);
++      fputs_filtered (TYPE_NAME (type), stream);
++      return;
++    }
++
++  CHECK_TYPEDEF (type);
++
++  switch (TYPE_CODE (type))
++    {
++    case TYPE_CODE_TYPEDEF:
++    case TYPE_CODE_ARRAY:
++    case TYPE_CODE_PTR:
++    case TYPE_CODE_MEMBER:
++    case TYPE_CODE_REF:
++    case TYPE_CODE_METHOD:
++      m2_type_print_base (TYPE_TARGET_TYPE (type), stream, show, level);
++      break;
++
++    case TYPE_CODE_FUNC:
++      break;
++
++    case TYPE_CODE_SET:
++      m2_short_set(type, stream, show, level);
++      break;
++
++    case TYPE_CODE_STRUCT:
++      if (m2_long_set (type, stream, show, level))
++	break;
++      m2_type_print_modifier (type, stream, 0, 1);
++      m2_record_fields(type, stream, show, level);
++      break;
++
++    case TYPE_CODE_UNION:
++      m2_type_print_modifier (type, stream, 0, 1);
++      m2_record_fields(type, stream, show, level);
++      break;
++
++    case TYPE_CODE_ENUM:
++      m2_type_print_modifier (type, stream, 0, 1);
++      /* HP C supports sized enums */
++      if (deprecated_hp_som_som_object_present)
++	switch (TYPE_LENGTH (type))
++	  {
++	  case 1:
++	    fputs_filtered ("char ", stream);
++	    break;
++	  case 2:
++	    fputs_filtered ("short ", stream);
++	    break;
++	  default:
++	    break;
++	  }
++      /* Print the tag name if it exists.
++         The aCC compiler emits a spurious 
++         "{unnamed struct}"/"{unnamed union}"/"{unnamed enum}"
++         tag for unnamed struct/union/enum's, which we don't
++         want to print. */
++      if (TYPE_TAG_NAME (type) != NULL &&
++	  strncmp (TYPE_TAG_NAME (type), "{unnamed", 8))
++	{
++	  fputs_filtered (TYPE_TAG_NAME (type), stream);
++	  if (show > 0)
++	    fputs_filtered (" ", stream);
++	}
++
++      wrap_here ("    ");
++      if (show < 0)
++	{
++	  /* If we just printed a tag name, no need to print anything else.  */
++	  if (TYPE_TAG_NAME (type) == NULL)
++	    fprintf_filtered (stream, "(...)");
++	}
++      else if (show > 0 || TYPE_TAG_NAME (type) == NULL)
++	{
++	  fprintf_filtered (stream, "(");
++	  len = TYPE_NFIELDS (type);
++	  lastval = 0;
++	  for (i = 0; i < len; i++)
++	    {
++	      QUIT;
++	      if (i)
++		fprintf_filtered (stream, ", ");
++	      wrap_here ("    ");
++	      fputs_filtered (TYPE_FIELD_NAME (type, i), stream);
++	      if (lastval != TYPE_FIELD_BITPOS (type, i))
++		{
++		  fprintf_filtered (stream, " = %d", TYPE_FIELD_BITPOS (type, i));
++		  lastval = TYPE_FIELD_BITPOS (type, i);
++		}
++	      lastval++;
++	    }
++	  fprintf_filtered (stream, ")");
++	}
++      break;
++
++    case TYPE_CODE_VOID:
++      fprintf_filtered (stream, "void");
++      break;
++
++    case TYPE_CODE_UNDEF:
++      fprintf_filtered (stream, "struct <unknown>");
++      break;
++
++    case TYPE_CODE_ERROR:
++      fprintf_filtered (stream, "<unknown type>");
++      break;
++
++    case TYPE_CODE_RANGE:
++      if (TYPE_HIGH_BOUND (type) == TYPE_LOW_BOUND (type))
++	m2_type_print_base (TYPE_DOMAIN_TYPE (type), stream, show, level);
++      else {
++	struct type *target = TYPE_TARGET_TYPE (type);
++
++	fprintf_filtered (stream, "[");
++	print_type_scalar (target, TYPE_LOW_BOUND (type), stream);
++	fprintf_filtered (stream, "..");
++	print_type_scalar (target, TYPE_HIGH_BOUND (type), stream);
++	fprintf_filtered (stream, "]");
++      }
++      break;
++
++    case TYPE_CODE_TEMPLATE:
++      break;
+ 
+-  c_print_type (type, varstring, stream, show, level);	/* FIXME */
++    default:
++      /* Handle types not explicitly handled by the other cases,
++         such as fundamental types.  For these, just print whatever
++         the type name is, as recorded in the type itself.  If there
++         is no type name, then complain. */
++      if (TYPE_NAME (type) != NULL)
++	{
++	  m2_type_print_modifier (type, stream, 0, 1);
++	  fputs_filtered (TYPE_NAME (type), stream);
++	}
++      else
++	{
++	  /* At least for dump_symtab, it is important that this not be
++	     an error ().  */
++	  fprintf_filtered (stream, "<invalid type code %d>",
++			    TYPE_CODE (type));
++	}
++      break;
++    }
+ }
+--- cvs-gdb-6.3/src-cvs/gdb/dwarf2read.c	2005-11-15 19:45:27.449869218 +0000
++++ cvs-gdb-6.3/src-m2/gdb/dwarf2read.c	2005-11-15 16:07:08.000000000 +0000
+@@ -4718,10 +4718,15 @@
+ 	  code = TYPE_CODE_FLT;
+ 	  break;
+ 	case DW_ATE_signed:
+-	case DW_ATE_signed_char:
+ 	  break;
+ 	case DW_ATE_unsigned:
++	  type_flags |= TYPE_FLAG_UNSIGNED;
++	  break;
++	case DW_ATE_signed_char:
++	  code = TYPE_CODE_CHAR;
++	  break;
+ 	case DW_ATE_unsigned_char:
++	  code = TYPE_CODE_CHAR;
+ 	  type_flags |= TYPE_FLAG_UNSIGNED;
+ 	  break;
+ 	default:
+@@ -6118,9 +6123,11 @@
+     case DW_LANG_Pascal83:
+       cu->language = language_pascal;
+       break;
++    case DW_LANG_Modula2:
++      cu->language = language_m2;
++      break;
+     case DW_LANG_Cobol74:
+     case DW_LANG_Cobol85:
+-    case DW_LANG_Modula2:
+     default:
+       cu->language = language_minimal;
+       break;
+--- cvs-gdb-6.3/src-cvs/gdb/m2-valprint.c	2005-11-15 19:44:35.000000000 +0000
++++ cvs-gdb-6.3/src-m2/gdb/m2-valprint.c	2005-11-15 13:40:08.000000000 +0000
+@@ -22,18 +22,516 @@
+ #include "defs.h"
+ #include "symtab.h"
+ #include "gdbtypes.h"
++#include "expression.h"
++#include "value.h"
++#include "valprint.h"
++#include "language.h"
++#include "typeprint.h"
++#include "c-lang.h"
+ #include "m2-lang.h"
++#include "target.h"
+ 
+-/* FIXME:  For now, just explicitly declare c_val_print and use it instead */
++
++/* Print function pointer with inferior address ADDRESS onto stdio
++   stream STREAM.  */
++
++static void
++print_function_pointer_address (CORE_ADDR address, struct ui_file *stream)
++{
++  CORE_ADDR func_addr = gdbarch_convert_from_func_ptr_addr (current_gdbarch,
++							    address,
++							    &current_target);
++
++  /* If the function pointer is represented by a description, print the
++     address of the description.  */
++  if (addressprint && func_addr != address)
++    {
++      fputs_filtered ("@", stream);
++      print_address_numeric (address, 1, stream);
++      fputs_filtered (": ", stream);
++    }
++  print_address_demangle (func_addr, stream, demangle);
++}
++
++/*
++ *  get_long_set_bounds - assigns the bounds of the long set to low and high.
++ */
++
++int
++get_long_set_bounds (struct type *type, LONGEST *low, LONGEST *high)
++{
++  int len, i;
++
++  if (TYPE_CODE (type) == TYPE_CODE_STRUCT) {
++    len = TYPE_NFIELDS (type);
++    i = TYPE_N_BASECLASSES (type);
++    if (len == 0)
++      return 0;
++    *low = TYPE_LOW_BOUND (TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, i)));
++    *high = TYPE_HIGH_BOUND (TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, len-1)));
++    return 1;
++  }
++  error ("expecting long_set");
++  return 0;
++}
++
++static void
++m2_print_long_set (struct type *type, char *valaddr, int embedded_offset,
++		   CORE_ADDR address, struct ui_file *stream, int format,
++		   enum val_prettyprint pretty)
++{
++  int empty_set        = 1;
++  int element_seen     = 0;
++  LONGEST previous_low = 0;
++  LONGEST previous_high= 0;
++  LONGEST i, low_bound, high_bound;
++  LONGEST field_low, field_high;
++  struct type *range;
++  int len, field;
++  struct type *target;
++  int bitval;
++
++  CHECK_TYPEDEF (type);
++
++  fprintf_filtered (stream, "{");
++  len = TYPE_NFIELDS (type);
++  if (get_long_set_bounds (type, &low_bound, &high_bound)) {
++    field = TYPE_N_BASECLASSES (type);
++    range = TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, field));
++  }
++  else {
++    fprintf_filtered (stream, " <unknown bounds of set> }");
++    return;
++  }
++
++  target = TYPE_TARGET_TYPE (range);
++  if (target == NULL)
++    target = builtin_type_int;
++
++  if (get_discrete_bounds (range, &field_low, &field_high) >= 0) {
++    for (i = low_bound; i <= high_bound; i++) {
++      bitval = value_bit_index (TYPE_FIELD_TYPE (type, field),
++				(TYPE_FIELD_BITPOS (type, field) / 8) +
++				valaddr + embedded_offset, i);
++      if (bitval < 0)
++	error ("bit test is out of range");
++      else if (bitval > 0) {
++	previous_high = i;
++	if (! element_seen) {
++	  if (! empty_set)
++	    fprintf_filtered (stream, ", ");
++	  print_type_scalar (target, i, stream);
++	  empty_set    = 0;
++	  element_seen = 1;
++	  previous_low = i;
++	}
++      }
++      else {
++	/* bit is not set */
++	if (element_seen) {
++	  if (previous_low+1 < previous_high)
++	    fprintf_filtered (stream, "..");
++	  if (previous_low+1 < previous_high)
++	    print_type_scalar (target, previous_high, stream);
++	  element_seen = 0;
++	}
++      }
++      if (i == field_high) {
++	field++;
++	if (field == len)
++	  break;
++	range = TYPE_INDEX_TYPE (TYPE_FIELD_TYPE (type, field));
++	if (get_discrete_bounds (range, &field_low, &field_high) < 0)
++	  break;
++	target = TYPE_TARGET_TYPE (range);
++	if (target == NULL)
++	  target = builtin_type_int;
++      }
++    }
++    if (element_seen) {
++      if (previous_low+1 < previous_high) {
++	fprintf_filtered (stream, "..");
++	print_type_scalar (target, previous_high, stream);
++      }
++      element_seen = 0;
++    }
++    fprintf_filtered (stream, "}");
++  }
++}
++
++/* Print data of type TYPE located at VALADDR (within GDB), which came from
++   the inferior at address ADDRESS, onto stdio stream STREAM according to
++   FORMAT (a letter or 0 for natural format).  The data at VALADDR is in
++   target byte order.
++
++   If the data are a string pointer, returns the number of string characters
++   printed.
++
++   If DEREF_REF is nonzero, then dereference references, otherwise just print
++   them like pointers.
++
++   The PRETTY parameter controls prettyprinting.  */
+ 
+ int
+ m2_val_print (struct type *type, char *valaddr, int embedded_offset,
+ 	      CORE_ADDR address, struct ui_file *stream, int format,
+ 	      int deref_ref, int recurse, enum val_prettyprint pretty)
+ {
+-  extern int c_val_print (struct type *, char *, int, CORE_ADDR,
+-			  struct ui_file *, int, int, int,
+-			  enum val_prettyprint);
+-  return (c_val_print (type, valaddr, 0, address, stream, format, deref_ref,
+-		       recurse, pretty));
++  unsigned int i = 0;	/* Number of characters printed */
++  unsigned len;
++  struct type *elttype;
++  unsigned eltlen;
++  int length_pos, length_size, string_pos;
++  int char_size;
++  LONGEST val;
++  CORE_ADDR addr;
++
++  CHECK_TYPEDEF (type);
++  switch (TYPE_CODE (type))
++    {
++    case TYPE_CODE_ARRAY:
++      if (TYPE_LENGTH (type) > 0 && TYPE_LENGTH (TYPE_TARGET_TYPE (type)) > 0)
++	{
++	  elttype = check_typedef (TYPE_TARGET_TYPE (type));
++	  eltlen = TYPE_LENGTH (elttype);
++	  len = TYPE_LENGTH (type) / eltlen;
++	  if (prettyprint_arrays)
++	    {
++	      print_spaces_filtered (2 + 2 * recurse, stream);
++	    }
++	  /* For an array of chars, print with string syntax.  */
++	  if (eltlen == 1 &&
++	      ((TYPE_CODE (elttype) == TYPE_CODE_INT)
++	       || ((current_language->la_language == language_m2)
++		   && (TYPE_CODE (elttype) == TYPE_CODE_CHAR)))
++	      && (format == 0 || format == 's'))
++	    {
++	      /* If requested, look for the first null char and only print
++	         elements up to it.  */
++	      if (stop_print_at_null)
++		{
++		  unsigned int temp_len;
++
++		  /* Look for a NULL char. */
++		  for (temp_len = 0;
++		       (valaddr + embedded_offset)[temp_len]
++		       && temp_len < len && temp_len < print_max;
++		       temp_len++);
++		  len = temp_len;
++		}
++
++	      LA_PRINT_STRING (stream, valaddr + embedded_offset, len, 1, 0);
++	      i = len;
++	    }
++	  else
++	    {
++	      fprintf_filtered (stream, "{");
++	      val_print_array_elements (type, valaddr + embedded_offset, address, stream,
++				     format, deref_ref, recurse, pretty, 0);
++	      fprintf_filtered (stream, "}");
++	    }
++	  break;
++	}
++      /* Array of unspecified length: treat like pointer to first elt.  */
++      addr = address;
++      goto print_unpacked_pointer;
++
++    case TYPE_CODE_PTR:
++      if (format && format != 's')
++	{
++	  print_scalar_formatted (valaddr + embedded_offset, type, format, 0, stream);
++	  break;
++	}
++      elttype = check_typedef (TYPE_TARGET_TYPE (type));
++      {
++	addr = unpack_pointer (type, valaddr + embedded_offset);
++	print_unpacked_pointer:
++	elttype = check_typedef (TYPE_TARGET_TYPE (type));
++
++	if (TYPE_CODE (elttype) == TYPE_CODE_FUNC)
++	  {
++	    /* Try to print what function it points to.  */
++	    print_function_pointer_address (addr, stream);
++	    /* Return value is irrelevant except for string pointers.  */
++	    return (0);
++	  }
++
++	if (addressprint && format != 's')
++	  {
++	    print_address_numeric (addr, 1, stream);
++	  }
++
++	/* For a pointer to char or unsigned char, also print the string
++	   pointed to, unless pointer is null.  */
++
++	if (TYPE_LENGTH (elttype) == 1
++	    && TYPE_CODE (elttype) == TYPE_CODE_INT
++	    && (format == 0 || format == 's')
++	    && addr != 0)
++	  {
++	    i = val_print_string (addr, -1, TYPE_LENGTH (elttype), stream);
++	  }
++
++	/* Return number of characters printed, including the terminating
++	   '\0' if we reached the end.  val_print_string takes care including
++	   the terminating '\0' if necessary.  */
++	return i;
++      }
++      break;
++
++    case TYPE_CODE_MEMBER:
++      error ("not implemented: member type in m2_val_print");
++      break;
++
++    case TYPE_CODE_REF:
++      elttype = check_typedef (TYPE_TARGET_TYPE (type));
++      if (addressprint)
++	{
++	  CORE_ADDR addr
++	    = extract_typed_address (valaddr + embedded_offset, type);
++	  fprintf_filtered (stream, "@");
++	  print_address_numeric (addr, 1, stream);
++	  if (deref_ref)
++	    fputs_filtered (": ", stream);
++	}
++      /* De-reference the reference.  */
++      if (deref_ref)
++	{
++	  if (TYPE_CODE (elttype) != TYPE_CODE_UNDEF)
++	    {
++	      struct value *deref_val =
++	      value_at
++	      (TYPE_TARGET_TYPE (type),
++	       unpack_pointer (lookup_pointer_type (builtin_type_void),
++			       valaddr + embedded_offset),
++	       NULL);
++	      val_print (VALUE_TYPE (deref_val),
++			 VALUE_CONTENTS (deref_val), 0,
++			 VALUE_ADDRESS (deref_val), stream, format,
++			 deref_ref, recurse + 1, pretty);
++	    }
++	  else
++	    fputs_filtered ("???", stream);
++	}
++      break;
++
++    case TYPE_CODE_UNION:
++      if (recurse && !unionprint)
++	{
++	  fprintf_filtered (stream, "{...}");
++	  break;
++	}
++      /* Fall through.  */
++    case TYPE_CODE_STRUCT:
++      if (m2_is_long_set (type))
++	m2_print_long_set (type, valaddr, embedded_offset, address, stream, format,
++			   pretty);
++      else
++	cp_print_value_fields (type, type, valaddr, embedded_offset, address, stream, format,
++			       recurse, pretty, NULL, 0);
++      break;
++
++    case TYPE_CODE_ENUM:
++      if (format)
++	{
++	  print_scalar_formatted (valaddr + embedded_offset, type, format, 0, stream);
++	  break;
++	}
++      len = TYPE_NFIELDS (type);
++      val = unpack_long (type, valaddr + embedded_offset);
++      for (i = 0; i < len; i++)
++	{
++	  QUIT;
++	  if (val == TYPE_FIELD_BITPOS (type, i))
++	    {
++	      break;
++	    }
++	}
++      if (i < len)
++	{
++	  fputs_filtered (TYPE_FIELD_NAME (type, i), stream);
++	}
++      else
++	{
++	  print_longest (stream, 'd', 0, val);
++	}
++      break;
++
++    case TYPE_CODE_FUNC:
++      if (format)
++	{
++	  print_scalar_formatted (valaddr + embedded_offset, type, format, 0, stream);
++	  break;
++	}
++      /* FIXME, we should consider, at least for ANSI C language, eliminating
++         the distinction made between FUNCs and POINTERs to FUNCs.  */
++      fprintf_filtered (stream, "{");
++      type_print (type, "", stream, -1);
++      fprintf_filtered (stream, "} ");
++      /* Try to print what function it points to, and its address.  */
++      print_address_demangle (address, stream, demangle);
++      break;
++
++    case TYPE_CODE_BOOL:
++      format = format ? format : output_format;
++      if (format)
++	print_scalar_formatted (valaddr + embedded_offset, type, format, 0, stream);
++      else
++	{
++	  val = unpack_long (type, valaddr + embedded_offset);
++	  if (val == 0)
++	    fputs_filtered ("FALSE", stream);
++	  else if (val == 1)
++	    fputs_filtered ("TRUE", stream);
++	  else
++	    fprintf_filtered (stream, "%ld)", (long int) val);
++	}
++      break;
++
++    case TYPE_CODE_RANGE:
++      if (TYPE_LENGTH (type) == TYPE_LENGTH (TYPE_TARGET_TYPE (type))) {
++	m2_val_print (TYPE_TARGET_TYPE (type), valaddr, embedded_offset,
++		      address, stream, format, deref_ref, recurse, pretty);
++	break;
++      }
++      /* FIXME: create_range_type does not set the unsigned bit in a
++         range type (I think it probably should copy it from the target
++         type), so we won't print values which are too large to
++         fit in a signed integer correctly.  */
++      /* FIXME: Doesn't handle ranges of enums correctly.  (Can't just
++         print with the target type, though, because the size of our type
++         and the target type might differ).  */
++      /* FALLTHROUGH */
++
++    case TYPE_CODE_INT:
++      format = format ? format : output_format;
++      if (format)
++	{
++	  print_scalar_formatted (valaddr + embedded_offset, type, format, 0, stream);
++	}
++      else
++	{
++	  val_print_type_code_int (type, valaddr + embedded_offset, stream);
++	}
++      break;
++
++    case TYPE_CODE_CHAR:
++      format = format ? format : output_format;
++      if (format)
++	{
++	  print_scalar_formatted (valaddr + embedded_offset, type, format, 0, stream);
++	}
++      else
++	{
++	  val = unpack_long (type, valaddr + embedded_offset);
++	  if (TYPE_UNSIGNED (type))
++	    fprintf_filtered (stream, "%u", (unsigned int) val);
++	  else
++	    fprintf_filtered (stream, "%d", (int) val);
++	  fputs_filtered (" ", stream);
++	  LA_PRINT_CHAR ((unsigned char) val, stream);
++	}
++      break;
++
++    case TYPE_CODE_FLT:
++      if (format)
++	{
++	  print_scalar_formatted (valaddr + embedded_offset, type, format, 0, stream);
++	}
++      else
++	{
++	  print_floating (valaddr + embedded_offset, type, stream);
++	}
++      break;
++
++    case TYPE_CODE_METHOD:
++      break;
++
++    case TYPE_CODE_BITSTRING:
++    case TYPE_CODE_SET:
++      elttype = TYPE_INDEX_TYPE (type);
++      CHECK_TYPEDEF (elttype);
++      if (TYPE_STUB (elttype))
++	{
++	  fprintf_filtered (stream, "<incomplete type>");
++	  gdb_flush (stream);
++	  break;
++	}
++      else
++	{
++	  struct type *range = elttype;
++	  LONGEST low_bound, high_bound;
++	  int i;
++	  int is_bitstring = TYPE_CODE (type) == TYPE_CODE_BITSTRING;
++	  int need_comma = 0;
++
++	  if (is_bitstring)
++	    fputs_filtered ("B'", stream);
++	  else
++	    fputs_filtered ("{", stream);
++
++	  i = get_discrete_bounds (range, &low_bound, &high_bound);
++	maybe_bad_bstring:
++	  if (i < 0)
++	    {
++	      fputs_filtered ("<error value>", stream);
++	      goto done;
++	    }
++
++	  for (i = low_bound; i <= high_bound; i++)
++	    {
++	      int element = value_bit_index (type, valaddr + embedded_offset, i);
++	      if (element < 0)
++		{
++		  i = element;
++		  goto maybe_bad_bstring;
++		}
++	      if (is_bitstring)
++		fprintf_filtered (stream, "%d", element);
++	      else if (element)
++		{
++		  if (need_comma)
++		    fputs_filtered (", ", stream);
++		  print_type_scalar (range, i, stream);
++		  need_comma = 1;
++
++		  if (i + 1 <= high_bound && value_bit_index (type, valaddr + embedded_offset, ++i))
++		    {
++		      int j = i;
++		      fputs_filtered ("..", stream);
++		      while (i + 1 <= high_bound
++			     && value_bit_index (type, valaddr + embedded_offset, ++i))
++			j = i;
++		      print_type_scalar (range, j, stream);
++		    }
++		}
++	    }
++	done:
++	  if (is_bitstring)
++	    fputs_filtered ("'", stream);
++	  else
++	    fputs_filtered ("}", stream);
++	}
++      break;
++
++    case TYPE_CODE_VOID:
++      fprintf_filtered (stream, "void");
++      break;
++
++    case TYPE_CODE_ERROR:
++      fprintf_filtered (stream, "<error type>");
++      break;
++
++    case TYPE_CODE_UNDEF:
++      /* This happens (without TYPE_FLAG_STUB set) on systems which don't use
++         dbx xrefs (NO_DBX_XREFS in gcc) if a file has a "struct foo *bar"
++         and no complete type for struct foo in that file.  */
++      fprintf_filtered (stream, "<incomplete type>");
++      break;
++
++    default:
++      error ("Invalid m2 type code %d in symbol table.", TYPE_CODE (type));
++    }
++  gdb_flush (stream);
++  return (0);
+ }

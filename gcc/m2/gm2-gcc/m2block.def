@@ -1,0 +1,225 @@
+(* m2block.def definition module for m2block.c.
+
+Copyright (C) 2011-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE m2block ;
+
+
+FROM m2tree IMPORT Tree ;
+FROM m2linemap IMPORT location_t ;
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+(*
+    init - initialise the data structures in this module.
+*)
+
+PROCEDURE init ;
+
+
+(*
+    toplevel - return TRUE if we are in the global scope.
+*)
+
+PROCEDURE toplevel () : BOOLEAN ;
+
+
+(*
+    global_constant - t is a constant, we keep a chain of all constants
+                      in the global binding level.
+*)
+
+PROCEDURE global_constant (t: Tree) : Tree ;
+
+
+(*
+    RememberInitModuleFunction - records tree, t, in the global binding level.
+                                 So that it will not be garbage collected.
+                                 In theory the inner modules could be placed
+                                 inside the current_binding_level I suspect.
+*)
+
+PROCEDURE RememberInitModuleFunction (t: Tree) : Tree ;
+
+
+(*
+    DumpGlobalConstants - displays all global constants and checks none are
+                          poisoned.
+*)
+
+PROCEDURE DumpGlobalConstants () : Tree ;
+
+
+(*
+    RememberConstant - adds a tree, t, onto the list of constants to be marked
+                       whenever the ggc re-marks all used storage.  Constants
+                       live throughout the whole compilation - and they
+                       can be used by many different functions if necessary.
+*)
+
+PROCEDURE RememberConstant (t: Tree) : Tree ;
+
+
+(*
+    RememberType - remember the type, t, in the ggc marked list.
+*)
+
+PROCEDURE RememberType (t: Tree) : Tree ;
+
+
+(*
+    pushDecl - pushes a declaration onto the current binding level.
+*)
+
+PROCEDURE pushDecl (decl: Tree) : Tree ;
+
+
+(*
+    popGlobalScope - pops the current binding level, it expects this binding level
+                     to be the global binding level.
+*)
+
+PROCEDURE popGlobalScope ;
+
+
+(*
+    pushGlobalScope - push the global scope onto the binding level stack.
+                      There can only ever be one instance of the global binding
+                      level on the stack.
+*)
+
+PROCEDURE pushGlobalScope ;
+
+
+(*
+    popFunctionScope - pops a binding level, returning the function associated with the
+                       binding level.
+*)
+
+PROCEDURE popFunctionScope () : Tree ;
+
+
+(*
+    pushFunctionScope - push a binding level.
+*)
+
+PROCEDURE pushFunctionScope (fndecl: Tree) ;
+
+
+(*
+   finishFunctionCode - adds cur_stmt_list to fndecl.  The current binding level
+                        is then able to be destroyed by a call to popFunctionScope.
+                        The cur_stmt_list is appended to the STATEMENT_LIST.
+*)
+
+PROCEDURE finishFunctionCode (fndecl: Tree) ;
+
+
+(*
+   finishFunctionDecl - removes declarations from the current binding level and places
+                        them inside fndecl.  The current binding level is then able to
+                        be destroyed by a call to popFunctionScope.
+
+                        The extra tree nodes associated with fndecl will be created
+                        such as BIND_EXPR, BLOCK and the initial STATEMENT_LIST
+                        containing the DECL_EXPR is also created.
+*)
+
+PROCEDURE finishFunctionDecl (location: location_t; fndecl: Tree) ;
+
+
+(*
+    getLabel - return the label, name, or create a label, name
+               in the current scope.
+*)
+
+PROCEDURE getLabel (location: location_t; name: ADDRESS) : Tree ;
+
+
+(*
+   GetErrorNode - returns the gcc error_mark_node.
+*)
+
+PROCEDURE GetErrorNode () : Tree ;
+
+
+(*
+   includeDecl - pushes a declaration onto the current binding level providing
+                 it is not already present.
+*)
+
+PROCEDURE includeDecl (decl: Tree) ;
+
+
+(*
+   GetGlobals - returns a list of global variables, functions, constants.
+*)
+
+PROCEDURE GetGlobals () : Tree ;
+
+
+(*
+   GetGlobalContext - returns the global context tree.
+*)
+
+PROCEDURE GetGlobalContext () : Tree ;
+
+
+(*
+   begin_statement_list - starts a tree statement.  It pushes the
+                          statement list and returns the list node.
+*)
+
+PROCEDURE begin_statement_list () : Tree ;
+
+
+(*
+   push_statement_list - pushes the statement list, t, onto the
+                         current binding level.
+*)
+
+PROCEDURE push_statement_list (t: Tree) : Tree ;
+
+
+(*
+   pop_statement_list - pops and returns a statement list from the
+                        current binding level.
+*)
+
+PROCEDURE pop_statement_list () : Tree ;
+
+
+(*
+   addStmtNote - remember this location represents the start of a Modula-2
+                 statement.  It is flushed if another different location is
+                 generated or another tree is given to add_stmt.
+*)
+
+PROCEDURE addStmtNote (location: location_t) ;
+
+
+(*
+   removeStmtNote - removes any pending stmt note.
+*)
+
+PROCEDURE removeStmtNote ;
+
+
+END m2block.

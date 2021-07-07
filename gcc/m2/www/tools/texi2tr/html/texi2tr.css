@@ -1,0 +1,271 @@
+/*
+ * Copyright (C) 2011-2021
+ * Free Software Foundation, Inc.
+ *
+ *  Gaius Mulley <gaius@gnu.org> constructed this file.
+ */
+
+/*
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING.  If not, write to the
+Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.
+*/
+
+h2, h3, h4, h5, h6 {
+  color: #3f3f3f;     /* grey headings */
+}
+
+h1 {
+  font-size: 1.4em;
+}
+
+h2 {
+  font-size: 1.2em;
+}
+
+h3 {
+  font-size: 1.0em;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    /* set the defaults for the page, ensure the body extends over all of the html area */
+    margin: 0px;
+    padding: 0px;
+    font-family: sans-serif;
+    background: white;
+    color: black;
+    height: 100%;
+}
+
+div {
+    margin: 0;
+}
+
+#page {
+    margin: 0px;
+    padding: 0px;
+}
+
+#page ul {
+    margin: 0;
+}
+
+div.body {
+    clear: both;
+}
+
+#overview {
+    list-style: none;
+    background: #2e3436 0 100% repeat-x;
+    text-align: right;
+    padding: 0 1ex;
+    margin: 0;
+    font-size: 70%;
+}
+
+#overview li {
+    display: inline;
+    background: 0 0 no-repeat;
+    padding-top: 10px;
+    padding-bottom: 8px;
+    margin-left: 0px;
+    margin-top: 0px;
+}
+
+#overview li a {
+    font-weight: bold;
+    color: #9f9f9f;
+    margin: 0 2ex;
+    text-decoration: none;
+    line-height: 30px;
+}
+
+#overview li a:hover {
+    color: white;
+    background: transparent;
+}
+
+#overview .home {
+    float: left;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+#overview .home a {
+    float: left;
+    margin-left: 0;
+    padding-left: 27px;
+}
+
+#overview .release {
+    float: left;
+    padding-top: 0;
+    padding-bottom: 0;
+    color: white;
+    font-weight: bold;
+}
+
+#header {
+    background: #729fcf;
+    float: left;
+    width: 100%;
+    font-size: 75%;
+}
+
+#header h1 {
+    margin: 0;
+    height: 250px;
+    margin-left: 85px;
+    padding-top: 25px;
+    font-size: 200%;
+    color: #eeeeec;
+}
+
+#heading {
+    background: #729fcf;
+    float: left;
+    width: 100%;
+    font-size: 75%;
+}
+
+#heading h1 {
+    margin: 0;
+    height: 100px;
+    margin-left: 85px;
+    padding-top: 55px;
+    font-size: 200%;
+    color: #eeeeec;
+}
+
+#tabmenu {
+    width: 100%;
+    float: left;
+    margin: 0;
+    padding: 0;
+}
+
+#tab {
+    float: right;
+    list-style: none;
+    margin: 0;
+    margin-right: 3ex;
+}
+
+#tab li {
+    float: left;
+    margin: 0;
+    margin-left: 0.2ex;
+    font-size: 2ex;
+}
+
+#tab li a:hover {
+    color: #111111;
+}
+
+#tab li a {
+    float: left;
+    text-decoration: none;
+    color: #555555;
+    background: url(menu-left-tab.png) no-repeat;
+    padding: 7px 0 7px 7px;
+    border-bottom: 2px solid #cccccc;
+}
+
+#tab li span {
+    background: url(menu-right-tab.png) 100% 0 no-repeat;
+    padding: 7px 28px 7px 19px;
+}
+
+#tab li.selected a {
+    color: #2e3436;
+    background: url(menu-selected-left-tab.png) no-repeat;
+    border-bottom: none;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+#tab li.selected a span {
+    background: url(menu-selected-right-tab.png) 100% 0 no-repeat;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+div.body {
+    background-color: transparent;
+    border: none;
+    padding: 1em;
+}
+
+a {
+    color: #3465a4;
+}
+
+div.navigation {
+    margin: 0 29ex 0 2ex;
+}
+
+div.footnote {
+    border: thin;
+    border-style: solid;
+    margin-left: 7%;
+    margin-right: 5%;
+}
+
+ul.footnote {
+    list-style: none;
+    margin-left: 50px;
+    background: url(note.png) no-repeat;
+}
+
+li.footnote {
+    margin-left: 60px;
+    background: transparent;
+}
+
+pre {
+    font-size: 95%;
+    border: thin;
+    border-style: solid;
+}
+
+h1.title {
+    font-size: 1.72em;
+    margin: 0;
+    padding: 0;
+    color: #3f3f3f;
+}
+
+h1.title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+div.plain {
+    margin-left: 7%;
+    width: 90%;
+}
+
+div.plain p {
+    padding-top: 1em;
+}
+
+div.itemize p {
+    padding-top: 0em;
+}

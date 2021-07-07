@@ -1,0 +1,16 @@
+--- gcc-git/gcc/langhooks.c	2021-04-12 00:27:11.634099346 +0100
++++ gm2-floppsie/gcc/langhooks.c	2021-04-12 17:44:00.563326216 +0100
+@@ -896,6 +896,13 @@
+     (*debug_hooks->early_global_decl) (cnode->decl);
+ }
+ 
++/* Should the analyzer check for NEW/DISPOSE Storage_ALLOCATE/Storage_DEALLOCATE?  */
++
++bool lhd_new_dispose_storage_substitution (void)
++{
++  return false;
++}
++
+ /* Returns true if the current lang_hooks represents the GNU C frontend.  */
+ 
+ bool

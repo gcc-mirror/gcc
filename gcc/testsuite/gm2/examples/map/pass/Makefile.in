@@ -1,0 +1,50 @@
+# Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+#               Free Software Foundation, Inc.
+# This file is part of GNU Modula-2.
+#
+# GNU Modula-2 is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+# 
+# GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with gm2; see the file COPYING.  If not, write to the Free Software
+# Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+srcdir = @srcdir@
+gm2dir = $(srcdir)/../..
+
+include ../../config-make
+LIBSTDCXX=../../../../$(TARGET_SUBDIR)/libstdc++-v3/src/.libs
+
+XGM2=../../../xgm2 -B../../.. -B../../../stage1/gm2
+GM2FLAGS=-O3
+
+SRC_PATH_PIM=../../../../$(TARGET_SUBDIR)/libgm2/libpim/.libs:$(gm2dir)/gm2-libs
+OBJ_PATH_PIM=.:../../../../$(TARGET_SUBDIR)/libgm2/libpim/.libs
+
+all: force
+	@echo "you need to use 'make pre-install' to build the examples using the locally built compiler"
+	@echo "or you can use 'make post-install' to build the examples after installing the compiler"
+
+pre-install: clean
+	$(XGM2) $(GM2FLAGS) -o map      -g -I$(SRC_PATH_PIM) -fmake-I=$(srcdir) -fobject-path=$(OBJ_PATH_PIM) -fmakeall $(srcdir)/Map.mod
+	$(XGM2) $(GM2FLAGS) -o semantic -g -I$(SRC_PATH_PIM) -fmake-I=$(srcdir) -fobject-path=$(OBJ_PATH_PIM) -fmakeall $(srcdir)/Semantic.mod
+
+post-install: clean
+	gm2 $(GM2FLAGS) -o map      -g -I$(srcdir) -fmake-I=$(srcdir) -fmakeall $(srcdir)/Map.mod
+	gm2 $(GM2FLAGS) -o semantic -g -I$(srcdir) -fmake-I=$(srcdir) -fmakeall $(srcdir)/Semantic.mod
+
+pre-install-whole: clean
+	$(XGM2) -fm2-whole-program -fextended-opaque $(GM2FLAGS) -o map-m2-whole-program  -g -I$(SRC_PATH_PIM):$(srcdir) $(srcdir)/Map.mod -L$(LIBSTDCXX)
+
+clean:
+	$(RM) *.o a.out map semantic
+
+force:
+

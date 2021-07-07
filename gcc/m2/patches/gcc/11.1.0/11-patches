@@ -1,0 +1,12 @@
+--- git-gcc/gcc/go/gospec.c	2021-01-27 10:18:12.670745966 +0000
++++ gm2-floppsie/gcc/go/gospec.c	2021-01-27 12:58:00.830865616 +0000
+@@ -440,3 +440,9 @@
+ 
+ /* Number of extra output files that lang_specific_pre_link may generate.  */
+ int lang_specific_extra_outfiles = 0;  /* Not used for Go.  */
++
++/* lang_register_spec_functions.  Not used for Go.  */
++void
++lang_register_spec_functions (void)
++{
++}

@@ -1,0 +1,1566 @@
+--
+-- mc-5.bnf grammar and associated actions for mcp5.
+--
+-- Copyright (C) 2016-2021 Free Software Foundation, Inc.
+-- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+--
+-- This file is part of GNU Modula-2.
+--
+-- GNU Modula-2 is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3, or (at your option)
+-- any later version.
+--
+-- GNU Modula-2 is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with GNU Modula-2; see the file COPYING3.  If not see
+-- <http://www.gnu.org/licenses/>.
+% module mcp5 begin
+
+(* output from mc-5.bnf, automatically generated do not edit.
+
+Copyright (C) 2016-2020 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING.  If not,
+see <https://www.gnu.org/licenses/>.  *)
+
+IMPLEMENTATION MODULE mcp5 ;
+
+FROM DynamicStrings IMPORT String, InitString, KillString, Mark,
+                           ConCat, ConCatChar ;
+
+FROM mcError IMPORT errorStringAt, flushErrors ;
+FROM nameKey IMPORT NulName, Name, makekey ;
+FROM mcPrintf IMPORT printf0, printf1 ;
+FROM mcDebug IMPORT assert ;
+FROM mcReserved IMPORT toktype ;
+FROM mcComment IMPORT setProcedureComment ;
+FROM mcMetaError IMPORT metaError1, metaError2 ;
+FROM mcStack IMPORT stack ;
+
+IMPORT mcStack ;
+
+FROM mcLexBuf IMPORT currentstring, currenttoken, getToken, insertToken,
+                     insertTokenAndRewind, getTokenNo, lastcomment,
+                     getBodyComment, getAfterComment ;
+
+FROM decl IMPORT node, lookupDef, lookupImp, lookupModule, getSymName,
+		 enterScope, leaveScope,
+		 makeEnum, makeEnumField, putType, lookupSym, isDef, makeSubrange,
+                 makeSet, makePointer,
+		 addParameter,
+		 makeVarargs, makeVarParameter, makeNonVarParameter,
+		 putSubrangeType, putConst, getType, skipType,
+		 makeArray, putUnbounded, getCardinal, makeBinaryTok, makeUnaryTok,
+		 makeRecord, isRecord, isRecordField, isVarientField, makeVarient,
+		 addFieldsToRecord, isVarient, buildVarientSelector,
+ 		 buildVarientFieldRecord, paramEnter, paramLeave,
+		 makeIdentList, putIdent, addVarParameters, addNonVarParameters,
+		 lookupInScope, import, lookupExported, isImp, isModule, isConst,
+		 makeLiteralInt, makeLiteralReal, makeString, getBuiltinConst,
+		 getNextEnum, makeComponentRef, makeArrayRef, makeDeRef,
+		 makePointerRef,
+		 makeExpList, putExpList, isExpList, isArray, isPointer, isVar,
+		 isConst, isParameter,
+		 makeStatementSequence, addStatement, putBegin, putFinally,
+		 makeReturn, putReturn, makeExit, makeComment,
+		 isStatementSequence, isWhile, makeWhile, putWhile,
+		 makeAssignment, makeFuncCall, isReturn,
+		 makeIf, makeElsif, putElse, isIf,
+		 makeFor, putFor, isFor,
+		 makeRepeat, putRepeat,
+		 resetConstExpPos, getNextConstExp,
+		 makeSetValue, putSetValue, includeSetValue,
+		 makeCase, putCaseExpression, putCaseElse,
+		 putCaseStatement, makeCaseList, putCaseRange,
+		 dupExpr, makeLoop, putLoop, isLoop,
+		 addCommentBody, addCommentAfter, addIfComments,
+		 addElseComments, addIfEndComments,
+		 addWhileDoComment, addWhileEndComment,
+                 addRepeatComment, addUntilComment,
+		 makeCommentS ;
+
+
+CONST
+   Pass1     = FALSE ;
+   Debugging = FALSE ;
+
+VAR
+   WasNoError : BOOLEAN ;
+   curstring,
+   curident   : Name ;
+   curproc,
+   frommodule,
+   qualid,
+   typeDes,
+   typeExp,
+   curmodule  : node ;
+   loopNo     : CARDINAL ;
+   loopStk,
+   stmtStk,
+   withStk,
+   stk        : stack ;
+
+
+(*
+   followNode -
+*)
+
+PROCEDURE followNode (n: node) ;
+BEGIN
+   IF isVar (n)
+   THEN
+      printf0 ("variable: ")
+   ELSIF isParameter (n)
+   THEN
+      printf0 ("parameter: ")
+   END ;
+   n := skipType (getType (n)) ;
+   IF isArray (n)
+   THEN
+      printf0 ("array\n")
+   ELSIF isPointer (n)
+   THEN
+      printf0 ("pointer\n")
+   ELSIF isRecord (n)
+   THEN
+      printf0 ("record\n")
+   ELSE
+      printf0 ("other\n")
+   END
+END followNode ;
+
+
+(*
+   push -
+*)
+
+PROCEDURE push (n: node) : node ;
+BEGIN
+   RETURN mcStack.push (stk, n)
+END push ;
+
+
+(*
+   pop -
+*)
+
+PROCEDURE pop () : node ;
+BEGIN
+   RETURN mcStack.pop (stk)
+END pop ;
+
+
+(*
+   replace -
+*)
+
+PROCEDURE replace (n: node) : node ;
+BEGIN
+   RETURN mcStack.replace (stk, n)
+END replace ;
+
+
+(*
+   peep - returns the top node on the stack without removing it.
+*)
+
+PROCEDURE peep () : node ;
+BEGIN
+   RETURN push (pop ())
+END peep ;
+
+
+(*
+   depth - returns the depth of the stack.
+*)
+
+PROCEDURE depth () : CARDINAL ;
+BEGIN
+   RETURN mcStack.depth (stk)
+END depth ;
+
+
+(*
+   checkDuplicate -
+*)
+
+PROCEDURE checkDuplicate (b: BOOLEAN) ;
+BEGIN
+
+END checkDuplicate ;
+
+
+(*
+   isQualident - returns TRUE if, n, is a qualident.
+*)
+
+PROCEDURE isQualident (n: node) : BOOLEAN ;
+VAR
+   type: node ;
+BEGIN
+   IF isDef (n)
+   THEN
+      RETURN TRUE
+   ELSE
+      type := skipType (getType (n)) ;
+      RETURN (type # NIL) AND isRecord (type)
+   END ;
+   RETURN FALSE
+END isQualident ;
+
+
+
+(*
+   startWith -
+*)
+
+PROCEDURE startWith (n: node) ;
+BEGIN
+   n := mcStack.push (withStk, n)
+END startWith ;
+
+
+(*
+   endWith -
+*)
+
+PROCEDURE endWith ;
+VAR
+   n: node ;
+BEGIN
+   n := mcStack.pop (withStk)
+END endWith ;
+
+
+(*
+   lookupWithSym -
+*)
+
+PROCEDURE lookupWithSym (i: Name) : node ;
+VAR
+   d      : CARDINAL ;
+   n, m, t: node ;
+BEGIN
+   d := mcStack.depth (withStk) ;
+   WHILE d # 0 DO
+      n := mcStack.access (withStk, d) ;
+      t := skipType (getType (n)) ;
+      m := lookupInScope (t, i) ;
+      IF m # NIL
+      THEN
+         n := dupExpr (n) ;
+         RETURN makeComponentRef (n, m)
+      END ;
+      DEC (d)
+   END ;
+   RETURN lookupSym (i)
+END lookupWithSym ;
+
+
+(*
+   pushStmt - push a node, n, to the statement stack and return node, n.
+*)
+
+PROCEDURE pushStmt (n: node) : node ;
+BEGIN
+   RETURN mcStack.push (stmtStk, n)
+END pushStmt ;
+
+
+(*
+   popStmt - pop the top node from the statement stack.
+*)
+
+PROCEDURE popStmt () : node ;
+BEGIN
+   RETURN mcStack.pop (stmtStk)
+END popStmt ;
+
+
+(*
+   peepStmt - return the top node from the statement stack,
+              but leave the stack unchanged.
+*)
+
+PROCEDURE peepStmt () : node ;
+BEGIN
+   RETURN pushStmt (popStmt ())
+END peepStmt ;
+
+
+(*
+   pushLoop - push a node, n, to the loop stack and return node, n.
+*)
+
+PROCEDURE pushLoop (n: node) : node ;
+BEGIN
+   RETURN mcStack.push (loopStk, n)
+END pushLoop ;
+
+
+(*
+   popLoop - pop the top node from the loop stack.
+*)
+
+PROCEDURE popLoop () : node ;
+BEGIN
+   RETURN mcStack.pop (loopStk)
+END popLoop ;
+
+
+(*
+   peepLoop - return the top node from the loop stack,
+              but leave the stack unchanged.
+*)
+
+PROCEDURE peepLoop () : node ;
+BEGIN
+   RETURN pushLoop (popLoop ())
+END peepLoop ;
+
+
+PROCEDURE ErrorString (s: String) ;
+BEGIN
+   errorStringAt (s, getTokenNo ()) ;
+   WasNoError := FALSE
+END ErrorString ;
+
+
+PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
+BEGIN
+   ErrorString (InitString (a))
+END ErrorArray ;
+
+
+(*
+   pushNunbounded -
+*)
+
+PROCEDURE pushNunbounded (c: CARDINAL) ;
+VAR
+   type,
+   array,
+   subrange: node ;
+BEGIN
+   WHILE c#0 DO
+      type := pop () ;
+      subrange := makeSubrange (NIL, NIL) ;
+      putSubrangeType (subrange, getCardinal ()) ;
+
+      array := makeArray (subrange, type) ;
+      putUnbounded (array) ;
+      type := push (array) ;
+      DEC (c)
+   END
+END pushNunbounded ;
+
+
+(*
+   makeIndexedArray - builds and returns an array of type, t, with, c, indices.
+*)
+
+PROCEDURE makeIndexedArray (c: CARDINAL; t: node) : node ;
+VAR
+   i: node ;
+BEGIN
+   WHILE c>0 DO
+      t := makeArray (pop (), t) ;
+      DEC (c)
+   END ;
+   RETURN t
+END makeIndexedArray ;
+
+
+(*
+   importInto - from, m, import, name, into module, current.
+                It checks to see if curident is an enumeration type
+                and if so automatically includes all enumeration fields
+                as well.
+*)
+
+PROCEDURE importInto (m: node; name: Name; current: node) ;
+VAR
+   s, o: node ;
+BEGIN
+   assert (isDef (m)) ;
+   assert (isDef (current) OR isModule (current) OR isImp (current)) ;
+   s := lookupExported (m, name) ;
+   IF s=NIL
+   THEN
+      metaError2 ('{%1k} was not exported from definition module {%2a}', name, m)
+   ELSE
+      o := import (current, s) ;
+      IF s#o
+      THEN
+         metaError2 ('{%1ad} cannot be imported into the current module as it causes a name clash with {%2ad}',
+                     s, o)
+      END
+   END
+END importInto ;
+
+
+(*
+   checkEndName - if module does not have, name, then issue an error containing, desc.
+*)
+
+PROCEDURE checkEndName (module: node; name: Name; desc: ARRAY OF CHAR) ;
+VAR
+   s: String ;
+BEGIN
+   IF getSymName (module)#name
+   THEN
+      s := InitString ('inconsistent module name found with this ') ;
+      s := ConCat (s, Mark (InitString (desc))) ;
+      ErrorString (s)
+   END
+END checkEndName ;
+
+% declaration mcp5 begin
+
+
+(*
+   SyntaxError - after a syntax error we skip all tokens up until we reach
+                 a stop symbol.
+*)
+
+PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   DescribeError(stopset0, stopset1, stopset2) ;
+   IF Debugging
+   THEN
+      printf0('\nskipping token *** ')
+   END ;
+   (*
+      yes the ORD(currenttoken) looks ugly, but it is *much* safer than
+      using currenttoken<sometok as a change to the ordering of the
+      token declarations below would cause this to break. Using ORD() we are
+      immune from such changes
+   *)
+   WHILE NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+              ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+              ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   DO
+      getToken
+   END ;
+   IF Debugging
+   THEN
+      printf0(' ***\n')
+   END
+END SyntaxError ;
+
+
+(*
+   SyntaxCheck -
+*)
+
+PROCEDURE SyntaxCheck (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	   ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+           ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   THEN
+      SyntaxError (stopset0, stopset1, stopset2)
+   END
+END SyntaxCheck ;
+
+
+(*
+   WarnMissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE WarnMissingToken (t: toktype) ;
+VAR
+   s0 : SetOfStop0 ;
+   s1 : SetOfStop1 ;
+   s2 : SetOfStop2 ;
+   str: String ;
+BEGIN
+   s0 := SetOfStop0{} ;
+   s1 := SetOfStop1{} ;
+   s2 := SetOfStop2{} ;
+   IF ORD(t)<32
+   THEN
+      s0 := SetOfStop0{t}
+   ELSIF ORD(t)<64
+   THEN
+      s1 := SetOfStop1{t}
+   ELSE
+      s2 := SetOfStop2{t}
+   END ;
+   str := DescribeStop (s0, s1, s2) ;
+
+   str := ConCat (InitString ('syntax error,'), Mark (str)) ;
+   errorStringAt (str, getTokenNo ())
+END WarnMissingToken ;
+
+
+(*
+   MissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE MissingToken (t: toktype) ;
+BEGIN
+   WarnMissingToken (t) ;
+   IF (t#identtok) AND (t#integertok) AND (t#realtok) AND (t#stringtok)
+   THEN
+      IF Debugging
+      THEN
+         printf0 ('inserting token\n')
+      END ;
+      insertToken (t)
+   END
+END MissingToken ;
+
+
+(*
+   CheckAndInsert -
+*)
+
+PROCEDURE CheckAndInsert (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      WarnMissingToken (t) ;
+      insertTokenAndRewind (t) ;
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END CheckAndInsert ;
+
+
+(*
+   InStopSet
+*)
+
+PROCEDURE InStopSet (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END InStopSet ;
+
+
+(*
+   PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
+               If it is not then it will insert a token providing the token
+               is one of ; ] ) } . OF END ,
+
+               if the stopset contains <identtok> then we do not insert a token
+*)
+
+PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF (NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	    ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+            ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))) AND
+      (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
+   THEN
+      (* SyntaxCheck would fail since currentoken is not part of the stopset
+         we check to see whether any of currenttoken might be a commonly omitted token *)
+      IF CheckAndInsert(semicolontok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rsbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rparatok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rcbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(periodtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(oftok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(endtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(commatok, stopset0, stopset1, stopset2)
+      THEN
+      END
+   END
+END PeepToken ;
+
+
+(*
+   Expect -
+*)
+
+PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF currenttoken=t
+   THEN
+      getToken ;
+      IF Pass1
+      THEN
+         PeepToken(stopset0, stopset1, stopset2)
+      END
+   ELSE
+      MissingToken(t)
+   END ;
+   SyntaxCheck(stopset0, stopset1, stopset2)
+END Expect ;
+
+
+(*
+   CompilationUnit - returns TRUE if the input was correct enough to parse
+                     in future passes.
+*)
+
+PROCEDURE CompilationUnit () : BOOLEAN ;
+BEGIN
+   stk := mcStack.init () ;
+   withStk := mcStack.init () ;
+   stmtStk := mcStack.init () ;
+   loopStk := mcStack.init () ;
+   loopNo := 0 ;
+   WasNoError := TRUE ;
+   FileUnit(SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
+   mcStack.kill (stk) ;
+   mcStack.kill (withStk) ;
+   mcStack.kill (stmtStk) ;
+   mcStack.kill (loopStk) ;
+   RETURN WasNoError
+END CompilationUnit ;
+
+
+(*
+   Ident - error checking varient of Ident
+*)
+
+PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   curident := makekey (currentstring) ;
+   Expect(identtok, stopset0, stopset1, stopset2)
+END Ident ;
+
+
+(*
+   string -
+*)
+
+PROCEDURE string (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   curstring := makekey (currentstring) ;
+   Expect(stringtok, stopset0, stopset1, stopset2)
+END string ;
+
+
+(*
+   Integer -
+*)
+
+PROCEDURE Integer (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+VAR
+   n: node ;
+BEGIN
+   n := push (makeLiteralInt (makekey (currentstring))) ;
+   Expect(integertok, stopset0, stopset1, stopset2)
+END Integer ;
+
+
+(*
+   Real -
+*)
+
+PROCEDURE Real (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+VAR
+   n: node ;
+BEGIN
+   n := push (makeLiteralReal (makekey (currentstring))) ;
+   Expect(realtok, stopset0, stopset1, stopset2)
+END Real ;
+
+% module mcp5 end
+END mcp5.
+% rules
+error       'ErrorArray' 'ErrorString'
+tokenfunc   'currenttoken'
+
+token   ''                eoftok      -- internal token
+token   '+'               plustok
+token   '-'               minustok
+token   '*'               timestok
+token   '/'               dividetok
+token   ':='              becomestok
+token   '&'               ambersandtok
+token   "."               periodtok
+token   ","               commatok
+token   ";"               semicolontok
+token   '('               lparatok
+token   ')'               rparatok
+token   '['               lsbratok   -- left  square brackets
+token   ']'               rsbratok   -- right square brackets
+token   '{'               lcbratok   -- left  curly brackets
+token   '}'               rcbratok   -- right curly brackets
+token   '^'               uparrowtok
+token   "'"               singlequotetok
+token   '='               equaltok
+token   '#'               hashtok
+token   '<'               lesstok
+token   '>'               greatertok
+token   '<>'              lessgreatertok
+token   '<='              lessequaltok
+token   '>='              greaterequaltok
+token   '<*'              ldirectivetok
+token   '*>'              rdirectivetok
+token   '..'              periodperiodtok
+token   ':'               colontok
+token   '"'               doublequotestok
+token   '|'               bartok
+token   'AND'             andtok
+token   'ARRAY'           arraytok
+token   'BEGIN'           begintok
+token   'BY'              bytok
+token   'CASE'            casetok
+token   'CONST'           consttok
+token   'DEFINITION'      definitiontok
+token   'DIV'             divtok
+token   'DO'              dotok
+token   'ELSE'            elsetok
+token   'ELSIF'           elsiftok
+token   'END'             endtok
+token   'EXCEPT'          excepttok
+token   'EXIT'            exittok
+token   'EXPORT'          exporttok
+token   'FINALLY'         finallytok
+token   'FOR'             fortok
+token   'FROM'            fromtok
+token   'IF'              iftok
+token   'IMPLEMENTATION'  implementationtok
+token   'IMPORT'          importtok
+token   'IN'              intok
+token   'LOOP'            looptok
+token   'MOD'             modtok
+token   'MODULE'          moduletok
+token   'NOT'             nottok
+token   'OF'              oftok
+token   'OR'              ortok
+token   'PACKEDSET'       packedsettok
+token   'POINTER'         pointertok
+token   'PROCEDURE'       proceduretok
+token   'QUALIFIED'       qualifiedtok
+token   'UNQUALIFIED'     unqualifiedtok
+token   'RECORD'          recordtok
+token   'REM'             remtok
+token   'REPEAT'          repeattok
+token   'RETRY'           retrytok
+token   'RETURN'          returntok
+token   'SET'             settok
+token   'THEN'            thentok
+token   'TO'              totok
+token   'TYPE'            typetok
+token   'UNTIL'           untiltok
+token   'VAR'             vartok
+token   'WHILE'           whiletok
+token   'WITH'            withtok
+token   'ASM'             asmtok
+token   'VOLATILE'        volatiletok
+token   '...'             periodperiodperiodtok
+token   '__DATE__'        datetok
+token   '__LINE__'        linetok
+token   '__FILE__'        filetok
+token   '__ATTRIBUTE__'   attributetok
+token   '__BUILTIN__'     builtintok
+token   '__INLINE__'      inlinetok
+token   'integer number'  integertok
+token   'identifier'      identtok
+token   'real number'     realtok
+token   'string'          stringtok
+
+special Ident             first { < identtok > } follow { }
+special Integer           first { < integertok > } follow { }
+special Real              first { < realtok > } follow { }
+special string            first { < stringtok > } follow { }
+
+BNF
+
+-- the following are provided by the module m2flex and also handbuild procedures below
+-- Ident := Letter { ( Letter | Digit ) } =:
+-- Integer := Digit { Digit } | OctalDigit { OctalDigit } ( " B " | " C " ) |
+--           Digit { HexDigit } " H " =:
+-- Real := Digit { Digit } " . " { Digit } [ ScaleFactor ] =:
+-- ScaleFactor := " E " [ ( " + " | " - " ) ] Digit { Digit } =:
+-- HexDigit := Digit | " A " | " B " | " C " | " D " | " E " | " F " =:
+-- Digit := OctalDigit | " 8 " | " 9 " =:
+-- OctalDigit := "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" =:
+-- String
+
+FileUnit := DefinitionModule | ImplementationOrProgramModule
+          =:
+
+ProgramModule := "MODULE"
+                  Ident                                                % curmodule := lookupModule (curident) %
+                                                                       % addCommentBody (curmodule) %
+		                                                       % enterScope (curmodule) %
+								       % resetConstExpPos (curmodule) %
+                  [ Priority ] ";"
+                  { Import }
+                  Block
+                  Ident                                                % checkEndName (curmodule, curident, 'program module') %
+		                                                       % leaveScope %
+
+                  "."
+                  =:
+
+ImplementationModule := "IMPLEMENTATION" "MODULE"
+                         Ident                                         % curmodule := lookupImp (curident) %
+                                                                       % addCommentBody (curmodule) %
+			                                               % enterScope (lookupDef (curident)) %
+                                                                       % enterScope (curmodule) %
+                                                                       % resetConstExpPos (curmodule) %
+                         [ Priority ] ";"
+                         { Import }
+                         Block
+                         Ident                                         % checkEndName (curmodule, curident, 'implementation module') %
+                                                                       % leaveScope ; leaveScope %
+                         "."
+                      =:
+
+ImplementationOrProgramModule := ImplementationModule | ProgramModule =:
+
+ConstInteger := Integer                                                % VAR i: node ; %
+                                                                       % i := pop () %
+	      =:
+
+ConstReal := Real                                                      % VAR r: node ; %
+                                                                       % r := pop () %
+	      =:
+
+ConstNumber := ConstInteger | ConstReal =:
+
+Number := Integer | Real =:
+
+Qualident := Ident { "." Ident } =:
+
+ConstantDeclaration := Ident "=" ConstExpressionNop =:
+
+ConstExpressionNop :=                                                  % VAR c: node ; %
+                                                                       % c := getNextConstExp () %
+                      SimpleConstExpr [ Relation SimpleConstExpr ] =:
+
+ConstExpression :=                                                     % VAR c: node ; %
+                                                                       % c := push (getNextConstExp ()) %
+                   SimpleConstExpr [ Relation SimpleConstExpr ] =:
+
+Relation := "="
+            | "#"
+            | "<>"
+            | "<"
+            | "<="
+            | ">"
+            | ">="
+            | "IN"
+         =:
+
+SimpleConstExpr := UnaryOrConstTerm { AddOperator ConstTerm } =:
+
+UnaryOrConstTerm :=
+                    "+"
+                    ConstTerm
+                    |
+                    "-"
+                    ConstTerm
+                    |
+                    ConstTerm
+		  =:
+
+AddOperator :=   "+"
+               | "-"
+               | "OR"
+             =:
+
+ConstTerm := ConstFactor { MulOperator ConstFactor } =:
+
+MulOperator := "*"
+               | "/"
+               | "DIV"
+               | "MOD"
+               | "REM"
+               | "AND"
+               | "&"
+            =:
+
+NotConstFactor := "NOT" ConstFactor                                     % VAR n: node ; %
+                                                                        % n := push (makeUnaryTok (nottok, pop ())) %
+                =:
+
+ConstFactor := ConstNumber | ConstString | ConstSetOrQualidentOrFunction |
+               "(" ConstExpressionNop ")" | NotConstFactor
+               | ConstAttribute =:
+
+-- to help satisfy LL1
+
+ConstString := string =:
+
+ConstComponentElement := ConstExpressionNop [ ".." ConstExpressionNop ]
+                  =:
+
+ConstComponentValue := ConstComponentElement [ 'BY' ConstExpressionNop ]
+                     =:
+
+ConstArraySetRecordValue := ConstComponentValue { ',' ConstComponentValue }
+                          =:
+
+ConstConstructor := '{'
+                       [ ConstArraySetRecordValue ]
+                    '}' =:
+
+ConstSetOrQualidentOrFunction := Qualident
+                                 [ ConstConstructor | ConstActualParameters ]
+                                   |
+                                     ConstConstructor =:
+
+ConstActualParameters := "(" [ ConstExpList ] ")" =:
+
+ConstExpList := ConstExpressionNop { "," ConstExpressionNop }
+              =:
+
+ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "("
+                  ConstAttributeExpression
+                  ")" ")" =:
+
+ConstAttributeExpression := Ident | "<" Qualident ',' Ident ">" =:
+
+ByteAlignment := '<*' AttributeExpression '*>'
+               =:
+
+OptAlignmentExpression := [ AlignmentExpression ] =:
+
+AlignmentExpression := "(" ConstExpressionNop ")" =:
+
+Alignment := [ ByteAlignment ] =:
+
+IdentList := Ident { "," Ident }
+           =:
+
+SubrangeType := "[" ConstExpressionNop ".." ConstExpressionNop "]" =:
+
+ArrayType := "ARRAY" SimpleType { "," SimpleType } "OF" Type =:
+
+RecordType := "RECORD" [ DefaultRecordAttributes ]
+		       FieldListSequence
+	      "END" =:
+
+DefaultRecordAttributes := '<*' AttributeExpression '*>' =:
+
+RecordFieldPragma := [ '<*' FieldPragmaExpression
+                            { ',' FieldPragmaExpression } '*>' ] =:
+
+FieldPragmaExpression := Ident PragmaConstExpression =:
+
+PragmaConstExpression := [ '(' ConstExpressionNop ')' ] =:
+
+AttributeExpression := Ident '(' ConstExpressionNop ')' =:
+
+FieldListSequence := FieldListStatement { ";" FieldListStatement } =:
+
+FieldListStatement := [ FieldList ] =:
+
+FieldList := IdentList ":" Type RecordFieldPragma
+             | "CASE" CaseTag "OF" Varient { "|" Varient }
+              [ "ELSE"
+                      FieldListSequence
+              ] "END"
+           =:
+
+TagIdent :=  Ident |                                                    % curident := NulName %
+          =:
+
+CaseTag := TagIdent [ ":" Qualident ]
+         =:
+
+Varient :=  [ VarientCaseLabelList ":" FieldListSequence ] =:
+
+VarientCaseLabelList := VarientCaseLabels { "," VarientCaseLabels } =:
+
+VarientCaseLabels := ConstExpressionNop [ ".." ConstExpressionNop ]
+                   =:
+
+SetType := ( "SET" | "PACKEDSET" ) "OF" SimpleType =:
+
+PointerType := "POINTER" "TO" Type =:
+
+ProcedureType := "PROCEDURE" [ FormalTypeList ] =:
+
+FormalTypeList := "(" ( ")" FormalReturn |
+                        ProcedureParameters ")" FormalReturn ) =:
+
+FormalReturn := [ ":" OptReturnType ] =:
+
+OptReturnType := "[" Qualident "]" | Qualident
+	       =:
+
+ProcedureParameters := ProcedureParameter
+                       { "," ProcedureParameter } =:
+
+ProcedureParameter := "..." | "VAR" FormalType | FormalType =:
+
+
+VarIdent := Ident [ "[" ConstExpressionNop "]" ]
+          =:
+
+VarIdentList := VarIdent { "," VarIdent }  =:
+
+VariableDeclaration :=  VarIdentList ":" Type Alignment
+                     =:
+
+Designator := PushQualident { SubDesignator } =:
+
+SubDesignator :=                                                        % VAR n, field, type: node ; %
+                                                                        % n := peep () %
+                                                                        % IF n = NIL
+                                                                          THEN
+									     ErrorArray ('no expression found') ;
+                                                                             flushErrors ;
+                                                                             RETURN
+                                                                          END %
+									% type := skipType (getType (n)) %
+                 ( "."
+                   Ident                                                % IF isRecord (type)
+                                                                          THEN
+                                                                             field := lookupInScope (type, curident) ;
+                                                                             IF field = NIL
+                                                                             THEN
+                                                                                metaError2 ('field {%1k} cannot be found in record {%2ad}', curident, type)
+                                                                             ELSE
+                                                                                n := replace (makeComponentRef (n, field))
+                                                                             END
+                                                                          ELSE
+                                                                             metaError2 ('attempting to access a field {%1k} from {%2ad} which does not have a record type', curident, type)
+                                                                          END %
+
+                   | "[" ArrayExpList                                   % IF isArray (type)
+                                                                          THEN
+                                                                             n := replace (makeArrayRef (n, pop ()))
+                                                                          ELSE
+                                                                             metaError1 ('attempting to access an array but the expression is not an array but a {%1d}', type)
+                                                                          END %
+                     "]"
+                   | SubPointer
+                 )
+               =:
+
+SubPointer :=                                                           % VAR n, field, type: node ; %
+                                                                        % n := peep () %
+									% type := skipType (getType (n)) %
+              "^" ( "." Ident                                           % IF isPointer (type)
+                                                                          THEN
+									     type := skipType (getType (type)) ;
+									     IF isRecord (type)
+                                                                             THEN
+                                                                                field := lookupInScope (type, curident) ;
+                                                                                IF field = NIL
+                                                                                THEN
+                                                                                   metaError2 ('field {%1k} cannot be found in record {%2ad}', curident, type)
+                                                                                ELSE
+                                                                                   n := replace (makePointerRef (n, field))
+                                                                                END
+                                                                             ELSE
+                                                                                metaError2 ('attempting to access a field {%1k} from {%2ad} which does not have a record type', curident, type)
+                                                                             END
+                                                                          ELSE
+                                                                             metaError2 ('trying to dereference {%1k} which was not declared as a pointer but a {%2tad}', n, n)
+                                                                          END %
+
+                                   |                                    % IF isPointer (type)
+                                                                          THEN
+                                                                             n := replace (makeDeRef (n))
+                                                                          ELSE
+                                                                             metaError1 ('attempting to dereference a pointer but the expression is not a pointer but a {%1d}', type)
+                                                                          END %
+                                      )
+            =:
+
+
+
+ArrayExpList :=                                                         % VAR l: node ; %
+                                                                        % l := push (makeExpList ()) %
+                Expression                                              % putExpList (l, pop ()) %
+                                                                        % assert (isExpList (peep ())) %
+                { ","
+                   Expression                                           % putExpList (l, pop ()) %
+                                                                        % assert (isExpList (peep ())) %
+                }
+              =:
+
+ExpList :=                                                              % VAR p, n: node ; %
+                                                                        % p := peep () %
+									% assert (isExpList (p)) %
+                Expression                                              % putExpList (p, pop ()) %
+                                                                        % assert (isExpList (peep ())) %
+                           { "," Expression                             % putExpList (p, pop ()) %
+                                                                        % assert (isExpList (peep ())) %
+			                    }
+         =:
+
+
+Expression :=                                                           % VAR c, l, r: node ; op: toktype ; %
+              SimpleExpression                                          % op := currenttoken %
+	                       [ Relation                               % l := pop () %
+			                  SimpleExpression              % r := pop () %
+					                                % r := push (makeBinaryTok (op, l, r)) %
+					                   ]
+           =:
+
+SimpleExpression :=                                                     % VAR op: toktype ; n: node ; %
+                    UnaryOrTerm {                                       % op := currenttoken %
+		                                                        % n := pop () %
+				  AddOperator Term                      % n := push (makeBinaryTok (op, n, pop ())) %
+					           }
+						     =:
+
+UnaryOrTerm :=                                                          % VAR n: node ; %
+               "+" Term                                                 % n := push (makeUnaryTok (plustok, pop ())) %
+               | "-" Term                                               % n := push (makeUnaryTok (minustok, pop ())) %
+               | Term
+	     =:
+
+Term :=                                                                 % VAR op: toktype ; n: node ; %
+        Factor {                                                        % op := currenttoken %
+	         MulOperator                                            % n := pop () %
+		             Factor                                     % n := push (makeBinaryTok (op, n, pop ())) %
+                                    } =:
+
+PushString := string                                                    % VAR n: node ; %
+                                                                        % n := push (makeString (curstring)) %
+            =:
+
+Factor := Number | PushString | SetOrDesignatorOrFunction |
+          "(" Expression ")" | "NOT" ( Factor                           % VAR n: node ; %
+                                                                        % n := push (makeUnaryTok (nottok, pop ())) %
+          | ConstAttribute
+                                                                        % n := push (makeUnaryTok (nottok, pop ())) %
+                                ) =:
+
+ComponentElement := Expression                                          % VAR l, h, n: node ; %
+                                                                        % l := pop () %
+									% h := NIL %
+                                         [ ".." Expression              % h := pop () %
+					                                % ErrorArray ('implementation restriction range is not allowed') %
+					                   ]            % n := push (includeSetValue (pop (), l, h)) %
+                       =:
+
+ComponentValue := ComponentElement [ 'BY'                               % ErrorArray ('implementation restriction BY not allowed') %
+                                          Expression ]
+                =:
+
+ArraySetRecordValue := ComponentValue { ',' ComponentValue }
+                     =:
+
+Constructor := '{'                                                      % VAR n: node ; %
+                                                                        % n := push (makeSetValue ()) %
+                        [ ArraySetRecordValue ]
+               '}' =:
+
+SetOrDesignatorOrFunction := PushQualident                               % VAR q, p, n: node ; %
+                              [ Constructor                              % p := pop () %
+				                                         % q := pop () %
+					                                 % n := push (putSetValue (p, q)) %
+                                            |
+                                SimpleDes
+				          [                              % q := pop () %
+					    ActualParameters             % p := pop () %
+					                                 % p := push (makeFuncCall (q, p)) %
+					                     ]
+                              ]                                |
+                              Constructor =:
+
+-- SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
+SimpleDes := { SubDesignator } =:
+
+ActualParameters := "("                                                  % VAR n: node ; %
+                                                                         % n := push (makeExpList ()) %
+                        [ ExpList ] ")"                                  % assert (isExpList (peep ())) %
+		  =:
+
+
+ExitStatement :=                                                         % VAR n: node ; %
+                 "EXIT"
+                                                                         % IF loopNo = 0
+                                                                           THEN
+                                                                              ErrorArray ('EXIT can only be used inside a LOOP statement')
+                                                                           ELSE
+                                                                              n := pushStmt (makeExit (peepLoop (), loopNo))
+                                                                           END %
+               =:
+
+ReturnStatement :=                                                       % VAR n: node ; %
+                                                                         % n := pushStmt (makeReturn ()) %
+                   "RETURN" [ Expression                                 % putReturn (n, pop ()) %
+		                         ]                               % addCommentBody (peepStmt ()) %
+                                                                         % addCommentAfter (peepStmt ()) %
+					                                 % assert (isReturn (peepStmt ())) %
+                 =:
+
+Statement := ( AssignmentOrProcedureCall | IfStatement | CaseStatement |
+               WhileStatement | RepeatStatement | LoopStatement |
+               ForStatement | WithStatement | AsmStatement |
+               ExitStatement | ReturnStatement | RetryStatement |        % VAR s: node ; %
+                                                                         % s := pushStmt (NIL) %
+             )
+           =:
+
+RetryStatement :=                                                        % VAR s: node ; %
+                                                                         % s := pushStmt (makeComment ("retry")) %
+                  "RETRY"
+                =:
+
+AssignmentOrProcedureCall :=                                             % VAR d, a, p: node ; %
+                             Designator                                  % d := pop () %
+                             ( ":=" Expression                           % a := pushStmt (makeAssignment (d, pop ())) %
+                                |
+                                  ActualParameters                       % a := pushStmt (makeFuncCall (d, pop ())) %
+				                   |                     % a := pushStmt (makeFuncCall (d, NIL)) %
+                             )
+                                                                         % addCommentBody (peepStmt ()) %
+                                                                         % addCommentAfter (peepStmt ()) %
+                           =:
+
+-- these two break LL1 as both start with a Designator
+-- ProcedureCall := Designator [ ActualParameters ] =:
+-- Assignment := Designator ":=" Expression =:
+
+StatementSequence :=                                                     % VAR s, t: node ; %
+                                                                         % s := pushStmt (makeStatementSequence ()) %
+		                                                         % assert (isStatementSequence (peepStmt ())) %
+                     Statement		                                 % addStatement (s, popStmt ()) %
+		                                                         % assert (isStatementSequence (peepStmt ())) %
+		               { ";" Statement		                 % addStatement (s, popStmt ()) %
+		                                                         % assert (isStatementSequence (peepStmt ())) %
+				               }
+                  =:
+
+IfStatement :=                                                           % VAR i, a, b: node ; %
+                "IF"                                                     % b := makeCommentS (getBodyComment ()) %
+                     Expression                                          % a := makeCommentS (getAfterComment ()) %
+                                "THEN" StatementSequence                 % i := pushStmt (makeIf (pop (), popStmt ())) %
+                                                                         % addIfComments (i, b, a) %
+              { "ELSIF"                                                  % b := makeCommentS (getBodyComment ()) %
+                        Expression                                       % a := makeCommentS (getAfterComment ()) %
+			           "THEN"                                % addElseComments (peepStmt (), b, a) %
+                                          StatementSequence              % i := makeElsif (i, pop (), popStmt ()) %
+              }
+              [ "ELSE"
+                      StatementSequence                                  % putElse (i, popStmt ()) %
+		                        ] "END"                          % b := makeCommentS (getBodyComment ()) %
+                                                                         % a := makeCommentS (getAfterComment ()) %
+					                                 % assert (isIf (peepStmt ())) %
+                                                                         % addIfEndComments (peepStmt (), b, a) %
+            =:
+
+CaseStatement :=                                                         % VAR s, e: node ; %
+                                                                         % s := pushStmt (makeCase ()) %
+                 "CASE"
+                        Expression                                       % s := putCaseExpression (s, pop ()) %
+                                   "OF" Case { "|" Case }
+                 CaseEndStatement
+               =:
+
+CaseEndStatement :=                                                      % VAR c: node ; %
+                    "END"
+                      | "ELSE"
+                                                                         % c := peepStmt () %
+                             StatementSequence                           % c := putCaseElse (c, popStmt ()) %
+                                               "END"
+                 =:
+
+Case := [ CaseLabelList ":"                                              % VAR l, c: node ; %
+                                                                         % l := pop () %
+									 % c := peepStmt () %
+                            StatementSequence                            % c := putCaseStatement (c, l, popStmt ()) %
+			                      ]
+      =:
+
+CaseLabelList :=                                                         % VAR l: node ; %
+                                                                         % l := push (makeCaseList ()) %
+                 CaseLabels { "," CaseLabels } =:
+
+CaseLabels :=                                                            % VAR lo, hi, l: node ; %
+                                                                         % lo := NIL ; hi := NIL %
+									 % l := peep () %
+              ConstExpression                                            % lo := pop () %
+	                      [ ".." ConstExpression                     % hi := pop () %
+			                             ]                   % l := putCaseRange (l, lo, hi) %
+            =:
+
+WhileStatement :=                                                        % VAR s, w, e, a, b: node ; %
+                                                                         % w := pushStmt (makeWhile ()) %
+                  "WHILE" Expression "DO"                                % b := makeCommentS (getBodyComment ()) %
+                                                                         % a := makeCommentS (getAfterComment ()) %
+									 % addWhileDoComment (w, b, a) %
+                                                                         % e := pop () %
+                      StatementSequence                                  % s := popStmt () %
+		  "END"                                                  % (* assert (isStatementSequence (peepStmt ())) *) %
+		                                                         % putWhile (w, e, s) %
+                                                                         % b := makeCommentS (getBodyComment ()) %
+                                                                         % a := makeCommentS (getAfterComment ()) %
+									 % addWhileEndComment (w, b, a) %
+                =:
+
+RepeatStatement :=                                                       % VAR r, s, a, b: node ; %
+                                                                         % r := pushStmt (makeRepeat ()) %
+                   "REPEAT"
+                                                                         % b := makeCommentS (getBodyComment ()) %
+                                                                         % a := makeCommentS (getAfterComment ()) %
+									 % addRepeatComment (r, b, a) %
+                       StatementSequence                                 % s := popStmt () %
+	           "UNTIL" Expression                                    % putRepeat (r, s, pop ()) %
+                                                                         % b := makeCommentS (getBodyComment ()) %
+                                                                         % a := makeCommentS (getAfterComment ()) %
+									 % addUntilComment (r, b, a) %
+                 =:
+
+ForStatement :=                                                          % VAR f, i, s, e, b: node ; %
+                                                                         % b := NIL %
+                                                                         % f := pushStmt (makeFor ()) %
+                "FOR" Ident                                              % i := lookupWithSym (curident) %
+		            ":=" Expression                              % s := pop () %
+			                    "TO" Expression              % e := pop () %
+		    [ "BY" ConstExpression                               % b := pop () %
+		                           ] "DO"
+                    StatementSequence                                    % putFor (f, i, s, e, b, popStmt ()) %
+                "END"
+              =:
+
+LoopStatement :=                                                         % VAR l, s: node ; %
+                 "LOOP"                                                  % l := pushStmt (pushLoop (makeLoop ())) %
+		                                                         % INC (loopNo) %
+                      StatementSequence                                  % s := popStmt () %
+		                                                         % putLoop (l, s) %
+		                                                         % DEC (loopNo) %
+                 "END"                                                   % l := popLoop () %
+		                                                         % assert (isLoop (peepStmt ())) %
+               =:
+
+WithStatement := "WITH" Designator "DO"                                  % startWith (pop ()) %
+                     StatementSequence
+                 "END"                                                   % endWith %
+               =:
+
+ProcedureDeclaration := ProcedureHeading ";" ProcedureBlock
+                        Ident                                            % leaveScope %
+                      =:
+
+ProcedureIdent := Ident                                                  % curproc := lookupSym (curident) %
+                                                                         % enterScope (curproc) %
+                                                                         % setProcedureComment (lastcomment, curident) %
+
+                =:
+
+DefProcedureIdent := Ident                                               % curproc := lookupSym (curident) %
+                   =:
+
+DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")" | "__INLINE__" ]
+                      =:
+
+ProcedureHeading := "PROCEDURE" DefineBuiltinProcedure ( ProcedureIdent
+                                                         [ FormalParameters ]
+                                                         AttributeNoReturn )
+                  =:
+
+Builtin := [ "__BUILTIN__" | "__INLINE__" ] =:
+
+DefProcedureHeading := "PROCEDURE" Builtin ( DefProcedureIdent
+                                             [ DefFormalParameters ]
+                                             AttributeNoReturn )
+                     =:
+
+-- introduced procedure block so we can produce more informative
+-- error messages
+
+ProcedureBlock := { Declaration } [ "BEGIN" ProcedureBlockBody ] "END"
+                =:
+
+Block := { Declaration } InitialBlock FinalBlock "END"
+       =:
+
+InitialBlock := [ "BEGIN" InitialBlockBody ] =:
+
+FinalBlock := [ "FINALLY" FinalBlockBody ] =:
+
+InitialBlockBody := NormalPart                                         % putBegin (curmodule, popStmt ()) %
+                               [ "EXCEPT" ExceptionalPart ] =:
+
+FinalBlockBody := NormalPart                                           % putFinally (curmodule, popStmt ()) %
+                             [ "EXCEPT" ExceptionalPart ] =:
+
+ProcedureBlockBody := ProcedureNormalPart
+                      [ "EXCEPT" ExceptionalPart ] =:
+
+ProcedureNormalPart := StatementSequence                               % putBegin (curproc, popStmt ()) %
+                     =:
+
+NormalPart := StatementSequence
+            =:
+
+ExceptionalPart := StatementSequence
+                 =:
+
+Declaration := "CONST" { ConstantDeclaration ";" } |
+               "TYPE" { TypeDeclaration } |
+               "VAR" { VariableDeclaration ";" } |
+               ProcedureDeclaration ";" |
+               ModuleDeclaration ";" =:
+
+DefFormalParameters := "("                                             % paramEnter (curproc) %
+                           [ DefMultiFPSection ] ")"                   % paramLeave (curproc) %
+			                             FormalReturn =:
+
+AttributeNoReturn := [ "<*" Ident "*>" ] =:
+
+DefMultiFPSection := DefExtendedFP | FPSection [ ";" DefMultiFPSection ] =:
+
+FormalParameters := "("                                                % paramEnter (curproc) %
+                        [ MultiFPSection ] ")"                         % paramLeave (curproc) %
+			                       FormalReturn =:
+
+MultiFPSection := ExtendedFP | FPSection [ ";" MultiFPSection ] =:
+
+FPSection := NonVarFPSection | VarFPSection =:
+
+DefExtendedFP := DefOptArg | "..." =:
+
+ExtendedFP := OptArg | "..." =:
+
+VarFPSection := "VAR" IdentList ":" FormalType
+              =:
+
+NonVarFPSection := IdentList ":" FormalType
+                 =:
+
+OptArg := "[" Ident ":" FormalType [ "=" ConstExpressionNop ] "]" =:
+
+DefOptArg := "[" Ident ":" FormalType "=" ConstExpressionNop "]" =:
+
+FormalType := { "ARRAY" "OF" } Qualident =:
+
+ModuleDeclaration := "MODULE" Ident [ Priority ] ";"
+                        { Import } [ Export ]
+                        Block Ident
+                   =:
+
+Priority := "[" ConstExpressionNop "]" =:
+
+Export := "EXPORT" ( "QUALIFIED"
+                                 IdentList |
+                     "UNQUALIFIED"
+                                 IdentList |
+                     IdentList ) ";" =:
+
+FromIdentList := Ident { "," Ident } =:
+
+FromImport := "FROM" Ident "IMPORT" FromIdentList ";"
+            =:
+
+ImportModuleList := Ident { "," Ident } =:
+
+WithoutFromImport := "IMPORT" ImportModuleList ";"
+                   =:
+
+Import := FromImport | WithoutFromImport =:
+
+DefinitionModule := "DEFINITION" "MODULE" [ "FOR" string ] Ident ";"    % curmodule := lookupDef (curident) %
+     		                                                        % enterScope (curmodule) %
+                      { Import } [ Export ]
+                      { Definition }
+                    "END" Ident "."                                     % checkEndName (curmodule, curident, 'definition module') %
+                                                                        % leaveScope %
+                  =:
+
+PushQualident :=                                                        % VAR type, field: node ; %
+                 Ident                                                  % qualid := push (lookupWithSym (curident)) %
+		                                                        % IF qualid = NIL
+                                                                          THEN
+                                                                             metaError1 ('the symbol {%1k} is not visible in this scope (or any other nested scope)', curident)
+                                                                          END %
+		      [ "."
+		                                                        % IF NOT isQualident (qualid)
+                                                                          THEN
+                                                                             ErrorArray ('the first component of this qualident must be a definition module or a parameter/variable/constant which has record type')
+                                                                          END %
+		            Ident                                       % IF isDef (qualid)
+                                                                          THEN
+                                                                             qualid := replace (lookupInScope (qualid, curident))
+                                                                          ELSE
+                                                                             type := skipType (getType (qualid)) ;
+                                                                             field := lookupInScope (type, curident) ;
+									     IF field = NIL
+                                                                             THEN
+                                                                                metaError2 ('field {%1k} cannot be found in {%2ad}', curident, qualid)
+                                                                             ELSE
+                                                                                qualid := replace (makeComponentRef (qualid, field))
+                                                                             END
+                                                                          END ;
+                                                                          IF qualid = NIL
+                                                                          THEN
+                                                                             metaError1 ('qualified component of the identifier {%1k} cannot be found', curident)
+                                                                          END %
+			          ]
+              =:
+
+OptSubrange := [ SubrangeType ]  =:
+
+TypeEquiv := Qualident OptSubrange =:
+
+EnumIdentList := Ident { "," Ident } =:
+
+Enumeration := "(" EnumIdentList ")" =:
+
+SimpleType := TypeEquiv | Enumeration | SubrangeType =:
+
+Type := SimpleType | ArrayType | RecordType | SetType |
+        PointerType | ProcedureType
+      =:
+
+TypeDeclaration := { Ident ( ";" | "=" Type    Alignment ";" ) }
+		    =:
+
+Definition := "CONST" { ConstantDeclaration ";" } |
+              "TYPE" { TypeDeclaration } |
+              "VAR" { VariableDeclaration ";" } |
+              DefProcedureHeading ";" =:
+
+AsmStatement :=                                                      % VAR s: node ; %
+                                                                     % s := pushStmt (makeComment ("asm")) %
+                'ASM' [ 'VOLATILE' ] '(' AsmOperands ')' =:
+
+AsmOperands := string [ AsmOperandSpec ]
+             =:
+
+AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
+                =:
+
+AsmList := [ AsmElement ] { ',' AsmElement } =:
+
+NamedOperand := '[' Ident ']' =:
+
+AsmOperandName := [ NamedOperand ]
+                =:
+
+AsmElement := AsmOperandName string '(' Expression ')'
+            =:
+
+TrashList := [ string ] { ',' string } =:
+
+FNB

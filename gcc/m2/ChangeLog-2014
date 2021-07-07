@@ -1,0 +1,936 @@
+2014-12-24      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/pge.py:  interim checkin.
+	* gm2/gm2-compiler/SymbolTable.mod:  corrected declaration of
+	  PutDeclaredModule as reported by Christoph Schlegel.
+	* gm2/gm2-libs-ch/sckt.c:  added conditional import of
+	  stdio.h as reported by Christoph Schlegel.
+
+2014-12-22      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/run:  changed name of python script.
+	* gm2/examples/swig/strlen/MyStrLib.i:  deleted.
+	* gm2/tools-src/createUlmSys:  added SYSTEM_UNIXFORK and
+	  SYSTEM_UNIXSIGNAL.
+
+2014-12-09      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/config-lang.in:  added new gm2/examples/shared,
+	  gm2/examples/full-strlib and gm2/examples/strio examples to the
+	  list of Makefiles to be generated via configure.
+	* gm2/examples/swig/exceptions/Makefile.in:  rewritten to use
+	  libtool.
+	* gm2/examples/swig/exceptions/stresstiny.py:  removed unnecessary
+	  qualification.
+	* gm2/examples/swig/exceptions/testtiny.py:  removed unnecessary
+	  qualification.
+	* gm2/examples/swig/exceptions/tiny.def:  renamed to libtiny.def.
+	* gm2/examples/swig/exceptions/tiny.mod:  renamed to libtiny.mod.
+	* gm2/examples/swig/strio/Makefile:  deleted.
+	* gm2/examples/swig/strlib/Makefile.in:  rewritten to use libtool.
+	* gm2/examples/swig/strlib/MyStrLib.def:  renamed as libStrLib.def.
+	* gm2/examples/swig/strlib/MyStrLib.mod:  renamed as libStrLib.mod.
+	* gm2/gm2.texi:  rewritten sections on building shared libraries
+	  and interface to python using swig given that gm2 now uses libtool.
+
+2014-12-06      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/swig/dual/Makefile.in:  removed unnecessary $(RM).
+	* gm2/examples/swig/tiny/Makefile.in:  removed unnecessary $(RM).
+	* gm2/lang-specs.h:  changed invocation of -fswig, -fmakelist, -fmakeinit which
+	  can only be issued with -c and none of them will generate a .s (or .o) file.
+	  The compiler is disabled from producing an output file using %V.
+
+2014-12-05      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/config-lang.in:  added entry for new test example dual.
+	* gm2/examples/hello/Makefile.in:  fixed example to build, added
+	  reference to stdc++.
+	* gm2/examples/pge/Makefile.in:  changed name of pge.py to pgepygame.py.
+	* gm2/examples/pge/pge.py:  first cut of a python interface to pge.
+	* gm2/examples/pge/twoDsim.def:  moved whereHit back to the definition
+	  module.
+	* gm2/examples/pge/twoDsim.mod:  moved whereHit back to the definition
+	  module.
+	* gm2/examples/swig/tiny/Makefile.in:  rewrote build rules as shared libraries
+	  are now built using libtool.
+	* gm2/examples/swig/tiny/libtiny.def:  rename tiny.def as libtiny.def to comply
+	  with libtool.
+	* gm2/examples/swig/tiny/libtiny.mod:  rename tiny.def as libtiny.def to comply
+	  with libtool.
+	* gm2/examples/swig/tiny/testtiny.py:  import libtiny instead of tiny.
+	* gm2/gm2-compiler/gm2lcc.mod:  shared libraries are built using libtool changes
+	  to allow this tool to deal with .lo, la files.  Separate -L from -l as ar
+	  does not understand -L.  Long options now require --.  (--main, --exec,
+	  --ignoremain, --startup).
+	* gm2/gm2-compiler/gm2lgen.mod:  Long options now require -- (--terminate,
+	  --initial, --exit, --main).
+	* gm2/gm2-libs/FIO.mod:  corrected dates.
+	* gm2/gm2-libs/libc.def:  corrected dates.
+	* gm2/gm2spec.c:  corrected formatting.  gen_link_path (New function).
+	  Use gen_link_path rather than add_include.
+	* gm2/lang-specs.h:  changed all gm2lcc and gm2lgen long options to comply
+	  with the new -- delimiter.
+
+2014-11-04      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2expr.c: (m2expr_BuildForeachWordInSetDoIfExpr) add additional
+	  parameter to m2expr_BuildForeachWordInSetDoIfExpr (is_lvalue).
+	* gm2/gm2-gcc/m2treelib.c:  (m2treelib_get_set_value) extra parameter,
+	  is_lvalue, which builds a component ref using an indirect value.
+	* gm2/gm2-gcc/m2treelib.h:  added new parameter to prototype.
+	* gm2/m2pp.c:  (m2pp_bit_ior_expr)  New function.
+
+2014-10-30      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/popWorld.def:  tidied up comment.
+	* gm2/examples/pge/popWorld.mod:  tidied up comment.
+	* gm2/examples/pge/twoDsim.def:  tidied up comment and moved a type definition
+	  into the implementation module.
+	* gm2/examples/pge/twoDsim.mod:  added type definition.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  (AlignProcedureWithSource) removed procedure.
+	  (DeclareProcedureToGccWholeProgram), (DeclareProcedureToGccSeparateProgram)
+	  call GetProcedureBeginEnd to obtain the position of the BEGIN END tokens for
+	  accurate debugging info.
+	* gm2/gm2-compiler/M2GenGCC.mod:  (CodeNewLocalVar) and (CodeKillLocalVar)
+	  also obtain the position of the BEGIN END tokens for accurate debugging info.
+	* gm2/gm2-compiler/M2Quads.mod:  (BuildProcedureBegin) call PutProcedureBegin to
+	  save the BEGIN location.  (BuildProcedureEnd) call PutProcedureEnd to
+	  save the END location.
+	* gm2/gm2-compiler/SymbolTable.def:  (PutProcedureBegin) define new procedure.
+	  (PutProcedureEnd) define new procedure.
+	* gm2/gm2-compiler/SymbolTable.mod:  (PutProcedureBegin) implement new procedure.
+	  (PutProcedureEnd) implement new procedure.
+	* gm2/gm2-libs-iso/IOChan.mod:  (Look) fix bug to ensure the result is set to the
+	  result of the look.
+	* gm2/gm2-libs-iso/RTfio.def:  changed specification of iseoln to avoid having to
+	  read ahead an extra character.
+	* gm2/gm2-libs-iso/RTfio.mod:  use FIO.WasEOLN rather than FIO.EOLN.
+	  (checkPostRead) corrected comment.  (setReadResult) changed order of
+	  if statements (check worst condition first).
+	* gm2/gm2-libs-iso/RTgen.mod:  (doLook) restore old result, but return newer
+	  result in r.
+	* gm2/gm2-libs/FIO.def:  (WasEOLN) new procedure function.
+	* gm2/gm2-libs/FIO.mod:  (WasEOLN) new procedure function implemented.  Introduced
+	  new state endofline which is set appropriately.
+
+2014-10-23      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  (BuildEndFunctionDeclaration) introduce
+	  begin, end locations.  (finishFunctionDecl) add location parameter.
+	* gm2/gm2-compiler/M2GenGCC.mod:  (finishFunctionDecl) extra parameter.
+	* gm2/gm2-compiler/M2Quads.mod:  (BuildProcedureBegin) and (BuildProcedureEnd)
+	  record the tokenno of the BEGIN or END respectively.
+	* gm2/gm2-gcc/m2block.c:  (finishFunctionDecl) sets location in the bind_expr.
+	* gm2/gm2-gcc/m2block.def:  (finishFunctionDecl) additional parameter.
+	* gm2/gm2-gcc/m2block.h:  (finishFunctionDecl) additional parameter.
+	* gm2/gm2-gcc/m2decl.c:  (BuildEndFunctionDeclaration) begin and end
+	  location parameters.
+	* gm2/gm2-gcc/m2decl.def:  (BuildEndFunctionDeclaration) begin and end
+	  location parameters.
+	* gm2/gm2-gcc/m2decl.h:  (BuildEndFunctionDeclaration) begin and end
+	  location parameters.
+	* gm2/gm2-gcc/m2except.c:  pass additional parameter for builtin functions.
+	* gm2/gm2-gcc/m2statement.c:  (SetBeginLocation), (SetEndLocation) New procedures.
+	* gm2/gm2-gcc/m2statement.def:  (SetBeginLocation), (SetEndLocation) New procedures.
+	* gm2/gm2-gcc/m2statement.h:  (SetBeginLocation), (SetEndLocation) New procedures.
+	* gm2/gm2-gcc/m2top.c:  tidied up spacing.
+	* gm2/gm2spec.c:  remember_link_arg extra parameter.
+	* gm2/m2pp.c:  added debugging stub.
+
+2014-10-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/RTgen.mod:  (setReadResult)  New procedure.
+	  Modified doLook to use setReadResult.
+	* gm2/gm2spec.c:  started refactoring.  Introduced and used AS and GM2CC
+	  macros.  Use cc1 or cc1plus rather than gm2cc.  gm2cc is no longer needed.
+	* gm2/Make-file.in:  removed all references to gm2cc.
+
+2014-10-10      Gaius Mulley <gaius@gnu.org>
+
+	* testsuite/gm2/pim/pass/gm2.exp:  added more paths.
+	* testsuite/lib/gm2.exp:  refactored gm2_init_pim and friends.
+
+2014-10-09      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2ALU.mod:  use GetDeclaredMod as a replacement for GetDeclared.
+	* gm2/gm2-compiler/M2Base.mod:  use GetDeclaredMod as a replacement for GetDeclared.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  use GetDeclaredMod as a replacement for GetDeclared.
+	* gm2/gm2-compiler/M2GenGCC.mod:  use GetDeclaredMod as a replacement for GetDeclared.
+	* gm2/gm2-compiler/M2MetaError.def:  provide %1M as a formatting specification.
+	* gm2/gm2-compiler/M2MetaError.mod:  implement %1M as a formatting specification.
+	* gm2/gm2-compiler/M2Optimize.mod:  use GetDeclaredMod as a replacement for GetDeclared.
+	* gm2/gm2-compiler/M2Quads.mod:  use GetDeclaredMod as a replacement for GetDeclared.
+	  Also use tokenno rather than line number in NewLocalVar and KillLocalVar.
+	* gm2/gm2-compiler/M2Students.mod:  use GetDeclaredMod as a replacement for GetDeclared.
+	* gm2/gm2-compiler/P1SymBuild.mod:  record location of implementation and definition module
+	  when declaring procedures.
+	* gm2/gm2-compiler/P2SymBuild.mod:  record location of implementation and definition module
+	  when declaring procedures.
+	* gm2/gm2-compiler/PCSymBuild.mod:  use GetDeclaredMod as a replacement for GetDeclared.
+	* gm2/gm2-compiler/SymbolTable.def:  export GetDeclaredMod and GetDeclaredDef.
+	* gm2/gm2-compiler/SymbolTable.mod:  implement GetDeclaredMod and GetDeclaredDef.
+	  (New procedure) GetDeclaredDefinition.  (New procedure) GetDeclaredModule.
+	* gm2/gm2-gcc/m2block.c:  removed debugging traps.
+	* gm2/gm2-gcc/m2expr.c:  tidied formatting.
+	* gm2/gm2-gcc/m2statement.c:  removed unnecessary code.
+	  (add_stmt) changed to record location.
+	* gm2/gm2-gcc/m2treelib.c:  allow component refs to be deferenced by pointers.
+	* gm2/gm2-libs-iso/RTgen.mod:  skip a character without pushing it back twice in
+	  succession.
+	* gm2/m2pp.c:  introduce line file numbers into the source code dump.
+	* testsuite/gm2/calling-c/datatypes/unbounded/run/pass/gm2.exp:  many changes to
+	  simplify the setting up of the chosen dialect and libraries.  All
+	  obvious invocations to gm2_init are replaced by gm2_init_pim, gm2_init_iso,
+	  gm2_init_ulm, gm2_init_log, gm2_init_cor.
+	* testsuite/gm2/case/pass/gm2.exp:  as above.
+	* testsuite/gm2/complex/pass/gm2.exp:  as above.
+	* testsuite/gm2/complex/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/coroutines/pim/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/cpp/pass/gm2.exp:  as above.
+	* testsuite/gm2/cse/fail/gm2.exp:  as above.
+	* testsuite/gm2/cse/pass/gm2.exp:  as above.
+	* testsuite/gm2/dynamic/pass/gm2.exp:  as above.
+	* testsuite/gm2/embedded/pass/gm2.exp:  as above.
+	* testsuite/gm2/errors/fail/gm2.exp:  as above.
+	* testsuite/gm2/examples/callingC/pass/gm2.exp:  as above.
+	* testsuite/gm2/examples/callingC/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/examples/cpp/pass/gm2.exp:  as above.
+	* testsuite/gm2/examples/cppDef/pass/gm2.exp:  as above.
+	* testsuite/gm2/examples/hello/pass/gm2.exp:  as above.
+	* testsuite/gm2/examples/map/pass/gm2.exp:  as above.
+	* testsuite/gm2/exceptions/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/extensions/pass/gm2.exp:  as above.
+	* testsuite/gm2/extensions/run/fail/gm2.exp:  as above.
+	* testsuite/gm2/extensions/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/imports/run/pass/gm2.exp:as above.
+	* testsuite/gm2/iso/fail/gm2.exp:  as above.
+	* testsuite/gm2/iso/pass/gm2.exp:  as above.
+	* testsuite/gm2/iso/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/isocoroutines/run/pass/gm2.exp: as above.
+	* testsuite/gm2/isolib/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/link/pim/fail/gm2.exp:  as above.
+	* testsuite/gm2/link/pim/fail/import.mod:  as above.
+	* testsuite/gm2/link/pim/pass/gm2.exp:  as above.
+	* testsuite/gm2/linking/libarchive/pass/gm2.exp: as above.
+	* testsuite/gm2/pim/fail/gm2.exp:  as above.
+	* testsuite/gm2/pim/options/bounds/fail/gm2.as above.exp:
+	* testsuite/gm2/pim/options/optimize/run/pass/gm2.expas above.:
+	* testsuite/gm2/pim/pass/gm2.exp:  as above.
+	* testsuite/gm2/pim/run/fail/gm2.exp:  as above.
+	* testsuite/gm2/pim/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/pimcoroutines/pass/gm2.exp:  as above.
+	* testsuite/gm2/pimlib/coroutines/pass/gm2.exp:  as above.
+	* testsuite/gm2/pimlib/logitech/pass/gm2.exp:  as above.
+	* testsuite/gm2/pimlib/logitech/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/pimlib/pass/gm2.exp:  as above.
+	* testsuite/gm2/pimlib/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/pimlib/ulm/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/quads/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/switches/check-all/run/fail/gm2.exas above.p:
+	* testsuite/gm2/switches/check-all/run/pass/gm2.exp:as above.
+	* testsuite/gm2/switches/extended-opaque/fail/gm2.exp:  as above.
+	* testsuite/gm2/switches/extended-opaque/pass/gm2.exp:  as above.
+	* testsuite/gm2/switches/iso/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/switches/makeall/fail/gm2.exp:  as above.
+	* testsuite/gm2/switches/optimization/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/switches/pedantic-params/fail/gm2.exp:  as above.
+	* testsuite/gm2/switches/pedantic-params/pass/gm2.exp:  as above.
+	* testsuite/gm2/switches/pic/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/switches/pim2/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/switches/pim3/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/switches/pim4/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/types/run/pass/gm2.exp:  as above.
+	* testsuite/gm2/ulmlib/pass/gm2.exp:  as above.
+	* testsuite/gm2/ulmlib/std/pass/gm2.exp:  as above.
+	* testsuite/gm2/ulmlib/sys/pass/gm2.exp:  as above.
+
+2014-10-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/FpuIO.mod:  ensure that the debugging preprocessing
+	  directives are only turned on by a specific flag.
+	* gm2/gm2spec.c:  remove GM2_ROOT environment variable and use
+	  GM2_PREFIX and GM2_LIBEXEC instead.  These override the --prefix
+	  and --libexec strings used at compile time and allow users to move
+	  the complete tree of binaries to a different directory hierarchy.
+
+2014-10-01      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Code.mod:  tidied up text in qprintf0
+	* gm2/gm2-compiler/M2Comp.mod:  tidied up text in qprintf0
+	* gm2/gm2-gcc/m2top.def:  removed non needed procedure.
+	* gm2/gm2-gcc/m2top.h:  removed non needed function.
+
+2014-09-30      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  removed sckt.c from being built.
+	* gm2/bnf/gm2l.bnf:  corrected import of procedures from Lists.
+	* gm2/bnf/gm2m.bnf:  added import of DEALLOCATE.
+	* gm2/gm2-compiler/M2Batch.def:  added export of LookupModule, LookupOuterModule.
+	* gm2/gm2-compiler/M2Batch.mod:  added import of GetSym.
+	* gm2/gm2-compiler/M2Comp.mod:  added descriptions for each pass.
+	* gm2/gm2-compiler/M2Error.def:  (New procedure declarations) WarnFormat0, WarnFormat1.
+	* gm2/gm2-compiler/M2Error.mod:  (New procedures) WarnFormat0, WarnFormat1.
+	* gm2/gm2-compiler/M2Pass.def:  added IsPassC to export list.
+	* gm2/gm2-compiler/M2Range.mod:  import BuildGreaterThanOrEqual.
+	* gm2/gm2-compiler/P1SymBuild.mod:  added import of procedures from List.
+	* gm2/gm2-libs-ch/dtoa.c:  corrected dates and tidied up spacing.
+	* gm2/gm2-libs-ch/wrapc.c:  corrected dates and tidied up spacing.
+	* m2/configure:  regenerated.
+	* m2/configure.ac:  removed verbose messages.
+	* make gm2.paranoid now works on Wheezy.
+
+2014-09-28      Gaius Mulley <gaius@gnu.org>
+
+	* libgm2/config.h.in:  removed HAVE_GETTIMEOFDAY, added HAVE_STRUCT_TIMEVAL,
+	  removed TIME_WITH_SYS_TIME.
+	* libgm2/configure:  rebuilt.
+	* libgm2/configure.ac:  removed AC_HEADER_TIME.  Check for struct timeval.
+	  Added GM2_UNDEF macro.  GM2_CHECK_LIB rewritten.
+	* libgm2/libpim/Selective.c:  use HAVE_STRUCT_TIMEVAL rather than HAVE_SELECT.
+
+2014-09-27      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/macroObjects.def:  fixed parameter names so that
+	  implementation and definition modules match.
+	* gm2/examples/pge/twoDsim.mod:  commented out include.
+	* gm2/gm2-compiler/M2Comp.mod:  only attempt to parse an implementation
+	  if the filename is found.  This avoids a bug when -fcpp -fm2-whole-program
+	  was used.
+	* gm2/gm2-compiler/M2Preprocess.mod:  corrected dates.
+	* gm2/gm2-compiler/M2Preprocess.mod:  tidied up formatting.
+	* gm2/gm2-libs/DynamicStrings.mod:  guard against the #defines from being
+	  invoked necessary as users may now use -fcpp and -fm2-whole-program and thus
+	  turn on internal debugging of gm2 libraries.
+	* gm2/gm2-libs/FormatStrings.mod:  as above.
+	* gm2/gm2-libs/FpuIO.mod:  as above.
+	* gm2/gm2-libs/SArgs.mod:  as above.
+	* gm2/gm2-libs/SEnvironment.mod:  as above.
+	* gm2/gm2-libs/SFIO.mod:  as above.
+	* gm2/gm2-libs/StringConvert.mod:  as above.
+	* gm2/lang-specs.h:  changed formatting.
+
+2014-09-23      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/config-lang.in:  added entry for gm2/examples/pge/Makefile.
+	* gm2/gm2-compiler/M2Range.mod:  rewritten CodeForLoopEnd.
+	  (SameTypesCodeForLoopEnd) New procedure.
+	  (DiffTypesSameForLoopEnd) New procedure.
+	  All regression tests pass under Debian Wheezy amd64.
+	* gm2/examples/pge/Makefile.in:  fixed post rules for world.
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-host.in:  1.0.9.
+	* gm2/gm2-libs/config-target:  rebuilt.
+	* gm2/gm2-libs/config-target.in:  1.0.9.
+	* gm2/gm2.texi:  updated release map.
+	* gm2/gm2spec.c:  removed C++ comment.
+	* gm2/version.c:  1.0.9.
+	* Released 1.0.9 Beta Release.
+
+2014-09-17      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Range.mod:  minor fixes which solve
+	  testsuite/gm2/pim/run/pass/For5.mod.
+	* gm2/gm2-libs-iso/RTgen.mod:  include guards to ensure that
+	  the do procedure functions are only called if >0 bytes are
+	  to be read/written.
+
+2014-09-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Quads.mod:  removed RangeCheck quadruples from
+	  changing the read/write lists.  Also removed PutWriteQuad
+	  from being called inside MarkAsRead.  More regression tests pass.
+	  (testsuite/gm2/errors/fail/testfio.mod)
+	  (testsuite/gm2/errors/fail/testinit.mod)
+	* gm2/gm2.texi:  changed the -fstatistics entry to -fm2-statistics.
+	  Added entry for -fm2-whole-program.
+	* gm2/examples/pge/Makefile:  corrected rules to whole and foo
+	  and introduced $(CHECK).
+	* examples/pge/history.mod:  hide debugging.
+	* gm2/examples/pge/twoDsim.mod:  hide debugging.
+	* gm2/gm2-compiler/M2Range.mod:  fixed bug in CodeEndForLoop.
+
+2014-09-15      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/foo.mod:  added comment.
+	* gm2/gm2-compiler/M2Code.mod:  removed references to StrIO and
+	  NumberIO and replaced them with printf0 and printf1.
+	  Re-introduced OptimizationAnalysis which also reports on
+	  total source lines compiled.
+	* gcc/gm2/gm2-compiler/M2Options.def:  SetStatistic (New procedure).
+	* gcc/gm2/gm2-compiler/M2Options.def:  SetStatistic (New procedure)
+	  implemented.
+	* gm2/gm2-gcc/m2options.h:  SetStatistic (New prototype).
+	* gm2/gm2-lang.c:  handle -fm2-statistics.
+	* gm2/lang-options.h:  enumerate -fm2-statistics.
+	* gm2/lang.opt:  enumerate -fm2-statistics.
+	* gm2/m2.flex:  include timevar.h.  Call timevar_push, timevar_pop
+	  inside m2flex_GetToken.
+
+2014-09-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/README:  corrected language (gm2) and removed enable-__cxa_atexit.
+	* gm2/README:  fixed source to sources.
+	* libgm2/libpim/Selective.c:  use HAVE_SELECT rather than HAVE_TIMEVAL.
+
+2014-09-13      Gaius Mulley <gaius@gnu.org>
+
+	* the majority of these changes fix a bug reported by John O Goyo
+	  (see testsuite/gm2/imports/run/pass/innermods.mod in cc1gm2.
+	* gm2/Make-lang.in:  added P0SymBuild.mod into list of modules.  Added
+	  build rule for m2-1.bnf and changed m2.bnf because of new file name.
+	  Changed calls to $(M2LINK) to include --name option.
+	* gm2/gm2-compiler/M2Batch.def:  (LookupModule) New procedure definition.
+          (LookupOuterModule) New procedure definition.
+	* gm2/gm2-compiler/M2Batch.mod:  (LookupOuterModule) New procedure function.
+          (LookupModule) New procedure function.
+	* gm2/gm2-compiler/M2Comp.mod:  introduced new Pass0.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  modified debugging.
+	* gm2/gm2-compiler/M2Inline.def:  Removed file.
+	* gm2/gm2-compiler/M2Inline.mod:  Removed file.
+	* gm2/gm2-compiler/M2Pass.def:  (IsPass0)  New procedure function.
+	* gm2/gm2-compiler/P0SymBuild.mod:  New file, generate a scope tree.
+	* gm2/gm2-compiler/P1SymBuild.mod:  changed to follow the scope tree
+	  generated during pass0.
+	* gm2/gm2-compiler/P1SyntaxCheck.def:  removed file.
+	* gm2/gm2-compiler/P2SymBuild.mod:  use LookupModule instead
+	  of MakeDefinitionSource.
+	* gm2/gm2-compiler/P3SymBuild.mod:  use LookupModule instead
+	  of MakeDefinitionSource.
+	* gm2/gm2-compiler/PCSymBuild.mod:  use LookupModule instead
+	  of MakeDefinitionSource.
+	* gm2/gm2-compiler/P0SymBuild.mod:
+	* gm2/gm2-compiler/SymbolTable.def:
+	  (PutModuleContainsBuiltin)  New procedure definition.
+	  (IsBuiltinInModule)  New procedure function definition.
+	  (PutHiddenTypeDeclared)  New procedure definition.
+	  (IsHiddenTypeDeclared)  New procedure function definition.
+	* gm2/gm2-compiler/SymbolTable.mod:
+	  (ContainsBuiltin) new field in DefImp.
+	  (PutModuleContainsBuiltin)  New procedure.
+	  (IsBuiltinInModule)  New procedure function.
+	  (PutExported) allow modules to be imported from.
+	* gm2/gm2-compiler/m2flex.def:  (GetTotalLines)
+	  New function definition.
+	* gm2/init/gm2-gccinit:  added P0SymBuild.
+	* gm2/m2.flex:  (m2flex_GetTotalLines) New function.
+	* gm2/tools-src/mklink.c:  honour CFLAGS and LDFLAGS
+	  (fixes a build problem on 64 bit Solaris, reported by
+	   John O Goyo).
+	* testsuite/gm2/errors/fail/gm2.exp:
+	* testsuite/gm2/errors/fail/testfio.mod:
+	* testsuite/gm2/imports/run/pass/c.def:
+	* testsuite/gm2/imports/run/pass/c.mod:
+	* testsuite/gm2/imports/run/pass/gm2.exp:
+	* testsuite/gm2/imports/run/pass/innermods3.mod:
+	* m2/libmin/Makefile.am:  build SYSTEM.def with -fno-exceptions
+	* m2/libmin/Makefile.in:  regenerated.
+	* gm2/bnf/m2-1.bnf:  new file (copied from m2.bnf with
+	  some name changes).
+	* gm2/bng/m2.bnf:  new contents (pass 0).
+	* gm2/gm2-compiler/P0SymBuild.def:  New file.
+	* gm2/gm2-compiler/P0SymBuild.mod:  New file.
+
+2014-09-04      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2builtins.c:  corrected spelling for huge_val, huge_valf,
+	  huge_vall.
+
+2014-09-03      Gaius Mulley <gaius@gnu.org>
+
+	* libgm2/config.h.in:  rebuilt.
+	* libgm2/configure:  rebuilt.
+	* libgm2/configure.ac:  fixes to the GM2_CHECK_LIB macro to correctly
+	  test for the existence of library functions.
+	* gm2/configure.in:  added test for whether the pth library exists
+	  and issue a warning if it does not.
+	* gm2/gm2-lang.c:  new option -fno-pth.  Do not link against -lpth.
+	* gm2/gm2.texi:  document new option.
+	* gm2/gm2spec.c:  implement the new option, by default -lpth is included
+	  into the link process.  Add the library before -lstdc++.
+	* gm2/lang-options.h:  entry for new option.
+	* gm2/lang.opt:  entry for new option.
+
+2014-09-02      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  removed unnecessary SO, SO_O2, O2 library build
+	  rules.
+	* gm2/gm2-compiler/SymbolTable.mod:  removed unnecessary Type, Size, Offset
+	  fields from Module, DefImp symbols.  Also removed their initialisation.
+
+2014-08-30      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/gm2m.bnf:  fixed bug so that nested local modules
+	  propagate their imported modules outwards.
+	  (see testsuite/gm2/imports/run/pass/innermods3.mod).
+	* gm2/bnf/m2.bnf:  corrected dates.
+	* gm2/bnf/gm2l.bnf:  commented out printfs.
+	* rebuild the all configure files changed by the gm2 front
+	  end.
+	* rebuilt all patch files.
+	  (gm2/patches/gcc/4.7.3/01-patches, gm2/patches/gcc/4.7.3/02-patches,
+           gm2/patches/gcc/4.7.3/03-patches, gm2/patches/gcc/4.7.3/04-patches,
+           gm2/patches/gcc/4.7.3/05-patches, gm2/patches/gcc/4.7.3/12-patches)
+
+2014-08-29      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/gm2m.bnf:  fixed bug reported by John O Goyo
+	  (see testsuite/gm2/imports/run/pass/innermods.mod and
+	   testsuite/gm2/imports/run/pass/innermods2.mod).
+	  Maintain a block of nested modules and allow inner modules
+	  to import objects via FROM x statements.  (BeginBlock)
+	  New procedure.  (EndBlock) New procedure.  (RegisterLocalModule)
+	  New procedure.  (RegisterImport) New procedure.  The ebnf
+	  rules were extended to nearly the complete language (with the exception
+	  of full parsing of definition modules).  Similar to gm2l except
+	  the block retains the module level.
+
+2014-08-28      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/gm2l.bnf:  fixed bug reported by John O Goyo
+	  (see testsuite/gm2/imports/run/pass/innermods.mod).
+	  Maintain a block of nested modules and allow inner modules
+	  to import objects via FROM x statements.  (BeginBlock)
+	  New procedure.  (EndBlock) New procedure.  (RegisterLocalModule)
+	  New procedure.  (RegisterImport) New procedure.  The ebnf
+	  rules were extended to nearly the complete language (with the exception
+	  of full parsing of definition modules).
+	* gm2/examples/hello/Makefile.in:  (pre-install-whole) New rule.
+	* gm2/examples/map/Makefile.in:  (pre-install-whole) New rule.
+	* gm2/examples/pge/Makefile:  (whole) New interim rule.
+	* gm2/gm2-compiler/M2AsmUtil.mod:  import IsDefinitionForC.
+
+2014-08-17      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/map/Makefile.in:  (pre-install-whole) corrected rule.
+	* gm2/examples/pge/Indexing.def:  removed file.
+	* gm2/examples/pge/Indexing.mod:  removed file.
+	* gm2/gm2-libs/FIO.mod:  modified so that it can be compiled under -fiso.
+	* gm2/gm2-libs/Indexing.mod:  modified so that it can be compiled under -fiso.
+
+2014-08-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  use new libgm2.a when building stage2.
+	* gm2/examples/map/Makefile.in:  (pre-install-whole) New rule.
+	* gm2/gm2-compiler/M2AsmUtil.mod:  (SymNeedsModulePrefix)
+	  New procedure function.  (GetModulePrefix) use SymNeedsModulePrefix.
+	* gm2/gm2-compiler/M2Batch.def:  (ForeachSourceModuleDo) new procedure.
+	  (IsSourceSeen) new procedure function.
+	* gm2/gm2-compiler/M2Batch.mod:  implement ForeachSourceModuleDo
+	  and IsSourceSeen.
+	* gm2/gm2-compiler/M2Code.mod:  import WholeProgram and modify (Code)
+	  and dependent procedures to behave differently if WholeProgram is
+	  set.
+	* gm2/gm2-compiler/M2Comp.mod:  (NeedToParseImplementation) New procedure
+	  function.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  import WholeProgram and modify
+	  declaration of procedure/module/types/variables to behave differently
+	  if WholeProgram is set.
+	* gm2/gm2-compiler/M2GenGCC.mod:  (IsExportedGcc) New procedure function.
+	  CodeStartModFile pushes the module scope and the global scope.
+	  CodeStartDefFile removed unnecessary code.  CodeEndFile call
+	  popGlobalScope.  CodeProcedureScope use IsExportedGcc instead of IsExported.
+	  Change CompilingMainModule to CompilingMainModule OR WholeProgram.
+	* gm2/gm2-compiler/M2Options.def:  (DebugTraceQuad, DebugTraceAPI) New
+	  internal options.  (SetDebugTraceQuad) New procedure definition.
+	  (SetDebugTraceAPI) New procedure definition.
+	* gm2/gm2-compiler/M2Options.mod:  (SetWholeProgram) remove return type.
+	  (SetDebugTraceQuad) implemented.  (SetDebugTraceAPI) implemented.
+	* gm2/gm2-compiler/M2Scope.def:  (DisplayScope) New procedure.
+	* gm2/gm2-gcc/m2options.h:  (SetDebugTraceQuad) exported.
+	  (SetDebugTraceAPI) exported.
+	* gm2/gm2-lang.c:  added case for OPT_fdebug_trace_quad and
+	  OPT_fdebug_trace_api.
+	* gm2/lang-options.h:  added entry for -fm2-whole-program.
+	* gm2/lang.opt:  added entry for -fdebug-trace-quad, -fdebug-trace-api
+	  and -fm2-whole-program.
+	* many testsuite scripts corrected to reflect the new library locations.
+
+2014-07-30      Gaius Mulley <gaius@gnu.org>'
+
+	* gm2/gm2-compiler/M2Comp.mod:  corrected logical expression in
+	  NeedToParseImplementation.
+
+2014-07-29      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/README:  updated preferred snapshot test release.  Use git rather
+	  than CVS.  Changed configuring advice as using 4.7.3 rather than 4.1.2.
+	* gm2/gm2-compiler/M2Comp.mod:  start of changes which allow -fwhole-program
+	  to be effective.
+	* gm2/gm2-compiler/M2Options.def:  (WholeProgram) new variable, define
+	  and export.  (SetWholeProgram) New procedure.
+	* gm2/gm2-compiler/M2Options.mod:  (SetWholeProgram) New procedure implemented.
+	  WholeProgram default to FALSE.
+	* gm2/gm2-compiler/M2System.mod:  allow user to import SIZE from ISO SYSTEM.
+	  Not strictly ISO but it is more flexible with -fwhole-program which will
+	  want to compile everything in a single dialect.
+	* gm2/gm2-gcc/m2options.h:  (M2Options_SetWholeProgram) New declaration.
+	* gm2/gm2-lang.c:  process -fwhole-option by calling M2Options_SetWholeProgram.
+	* gm2/gm2-libs-iso/SYSTEM.def:  add SIZE to export qualified list.
+	* gm2/lang.opt:  add -fwhole-option to list of legal Modula-2 options.
+	* testsuite/gm2/calling-c/datatypes/unbounded/run/pass/gm2.exp:  correct
+	  path to retieve path and libraries from the build area and avoid
+	  the install area.
+	* libgm2/config.h.in:  rebuilt.
+	* libgm2/configure:  rebuilt.
+	* libgm2/configure.ac:  define GM2_CHECK_LIB macro and use it to
+	  safely detect the presence of all used libc and libm functions
+	  used by the Modula-2 libraries.
+
+2014-07-23      Gaius Mulley <gaius@gnu.org>
+
+	* fixes to the regression testsuite gm2.exp files to pick up the
+	  libraries from the new build locations.
+	* libgm2/libiso/Makefile.am:  build correct iso version of SYSTEM.
+	* gm2/gm2.texi:  updated the status of the gcc-4.7 branch of gm2.
+	  Also removed an unnecessary --enable-libgm2 option from the
+	  documentation.
+
+2014-07-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/Makefile:  remove hack rule.
+	* libgm2/config.h.in:  rebuilt.
+	* libgm2/configure:  rebuilt.
+	* libgm2/configure.ac:  test for libc functions.
+	* libgm2/libpim/Selective.c:  provide dummy KillSet procedure
+	  function.
+
+2014-07-15      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Range.mod:  CodeWholeNonPos, CodeWholeZero
+	  assign location before it is used.
+
+2014-07-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  overhauled to ensure that target and host are
+	  distinct.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  IsExternal (New procedure function).
+	  FindContext replaces FindTreeScope.  IsGlobal (New procedure function).
+	  DeclareVariable uses IsGlobal, IsExternal and FindContext.
+	* gm2/gm2-gcc/init.c:  can now be compiled by a C or C++ compiler.
+	* gm2/gm2-gcc/m2block.c:  new fields to binding_level.  is_global and
+	  context.  The compiler now correctly uses a translation_unit tree
+	  node to contain the global variables.  Bug fixes to correct the
+	  context of local variables.  We also ensure that all locals
+	  are declared.  Added more self checking debugging code.
+	* gm2/gm2-gcc/m2block.def:  includeDecl (New procedure function).
+	  GetGlobalContext (New procedure function).
+	* gm2/gm2-gcc/m2block.h:  allow m2block.[ch] to be compiled by
+	  a C or C++ compiler, export GetGlobalContext, finishGlobals,
+	  and includeDecl.
+	* gm2/gm2-gcc/m2builtins.h:  allow m2block.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2convert.h:  allow m2block.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2decl.c:  simplified and corrected declaration of a
+	  variable.  BuildParameterDeclaration simplified as it only handles
+	  procedure/function parameters and not function/procedure types.
+	* gm2/gm2-gcc/m2decl.h:  allow m2decl.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2except.h:  allow m2except.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2expr.h:  allow m2expr.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2linemap.h:  allow m2linemap.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2misc.h:  allow m2misc.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2options.h:  allow m2options.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2statement.h:  allow m2statement.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2statement.c:  call cgraph_finalize_function whenever
+	  we finish a function.  Unit at a time change.
+	* gm2/gm2-gcc/m2top.h:  allow m2top.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-gcc/m2type.c:  specifically declares procedure types
+	  and parameter types.  Corrected a bug with procedure/function
+	  type declaration.
+	* gm2/gm2-gcc/m2type.def:  BuildProcTypeParameterDeclaration (New procedure
+	  function).  BuildEndFunctionType additional parameter.
+	* gm2/gm2-gcc/m2type.h:  allow m2type.[ch] to be compiled by
+	  a C or C++ compiler.
+	* gm2/gm2-lang.c:  m2_write_global_declarations (New function).
+	  gm2_langhook_write_globals for each translation unit write out globals.
+	* gm2/gm2-libs-pim/Break.c:  corrected #include syntax.  Reformatted to
+	  conform to GNU coding standards.
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-target:  rebuilt.
+	* gm2/gm2-libs/config-target.in:  use GCC_NO_EXECUTABLES.
+	* gm2/gm2spec.c:  removed style of libraries, added new location of
+	  libraries and new library names.
+	* gm2/m2pp.c:  pl (New function). m2pp_decl_list (New function).
+	  m2pp_decl_bool (New function).  remember (New function).
+	  m2pp_translation (New function).  m2pp_module_block (New function).
+	  m2pp_procedure_type modified to understand varargs.
+	* gm2/tools-src/createUlmSys:  fixed to test for presence of include
+	  files so that it can be run in a cross compiler for a minimal target.
+	* gm2/examples/pge/Makefile:  remove rule hack from objects.
+	* gm2/gm2-compiler/M2GenGCC.mod:  CodeDivTrunc, FoldDivTrunc,
+	  CodeDivFloor, FoldDivFloor check operand types and if REAL/COMPLEX
+	  family are used then call BuildRDiv instead.  Fixes a compiler error
+	  exposed by gm2/examples/pge/roots.mod.  BinaryOperandRealFamily
+	  (New procedure function).
+	* gm2/gm2-gcc/m2expr.c:  m2expr_BuildRDiv (New function).
+	* gm2/gm2-gcc/m2expr.def:  m2expr_BuildRDiv (New definition).
+	* gm2/gm2-gcc/m2expr.h:  m2expr_BuildRDiv (New prototype).
+
+2014-04-20      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  (CodeInitAddress) declare tokenno
+	  and location and set them correctly.
+	* gm2/gm2spec.c:  let the -B switch determine where the (preprocessor)
+	  cc1 is found.
+
+2014-04-05      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  (CodeInitAddress)  New procedure.
+	  (CodeStatement) added case clause for InitAddressOp which calls
+	  CodeInitAddress.
+	* gm2/gm2-compiler/M2Quads.def:  added InitAddressOp.
+	* gm2/gm2-compiler/M2Quads.mod:  (CheckVariableAt)  generate
+	  an InitAddressOp instead of CodeBecomesOp.  (WriteQuad)
+	  new case clause for InitAddressOp.  (WriteOperands) new case
+	  clause for InitAddressOp.
+	* fixes variable at address bugs (see
+	  testsuite/gm2/embedded/pass/varataddress2.mod)
+
+2014-03-19      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2except.c:  (do_call3) corrected number of parameters.
+	  (build_exc_ptr) add assertion.  (gm2_build_throw) add location.
+	* gm2/tools-src/createUlmSys:  improved error message.
+	* libgm2/Makefile.in:  build and install the Ulm libraries.
+	  Included $(GM2_OBJ)/gm2-libs/gm2-libs-target.h as a dependant
+	  to $(GM2_OBJ)/ulm-lib-gm2/sys/SYSTEM.c.
+
+2014-03-18      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2except.c:  do_call0 (New function).
+	  do_call1 (New function).  do_call3 (New function).
+	  build_exc_ptr (rewritten to use do_call1).
+	  do_free_exception (rewritten to use do_call1).
+	  do_throw (rewritten to use do_call3).
+	  do_rethrow (rewritten to use do_call0).
+          gm2_build_throw (removed unused local variables).
+	  do_begin_catch (rewritten to use do_call1).
+	  do_end_catch (rewritten to use do_call0).
+	* gm2/gm2-lang.c:  genericize_try_block (New function).
+	  genericize_catch_block (New function).
+	  gm2_langhook_gimplify_expr call genericize_try_block
+	  and genericize_catch_block.
+
+2014-03-12      Gaius Mulley <gaius@gnu.org>
+
+	* changed persmissions to most files to remove the execute
+          bit.
+
+2014-03-12      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  fixed verify flags for gm2.verifyparanoid
+	  and gm2.verifystage12.
+	* gm2/gm2-libs-iso/M2RTS.mod:  detect double HALT and exit with
+	  -1.
+	* gm2/gm2-libs/M2RTS.mod:  detect double HALT and exit with
+	  -1.
+	* gm2/gm2-libs/Indexing.mod:  use memmove rather than memcpy
+	  which fixes the regression testsuite/gm2/isolib/run/pass/termfile.mod.
+	* gm2/gm2-libs/libc.def:  provide definition for memmove.
+
+2014-02-19      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  include the search path  -I$(srcdir)/gm2/gm2-gcc
+	  when building stage2 from the compiler sources.
+	* gm2/bnf/gm2l.bnf:  import Dup from DynamicStrings.
+	* gm2/gm2-compiler/M2ALU.mod:  fixed many imports so that
+	  the module can be built during stage2, via xgm2.
+	* gm2/gm2-compiler/M2Base.mod:  fixed many imports so that
+	  the module can be built during stage2, via xgm2.
+	* gm2/gm2-compiler/M2Preprocess.mod:  corrected import of
+	  CppCommandLine from M2Options rather than M2DriverOptions.
+	* gm2/gm2-compiler/M2Range.mod:  fixed many imports so that
+	  the module can be built during stage2, via xgm2.
+	* gm2/gm2-compiler/M2System.mod:  fixed many imports so that
+	  the module can be built during stage2, via xgm2.
+	* gm2/gm2-compiler/SymbolConversion.mod:  fixed many imports so that
+	  the module can be built during stage2, via xgm2.
+	* gm2/gm2-compiler/m2flex.def:  fixed many imports so that
+	  the module can be built during stage2, via xgm2.
+	* gm2/Make-lang.in:  added attribs.o to link stage2/gm2/cc1gm2.
+	  Removed $(BACKENDLIBS) $(LIBSTDCXX) from the dependancies of
+	  stage2/gm2/cc1gm2.  Added -I$(srcdir)/gm2/gm2-gcc to
+	  all gm2/gm2-compiler-paranoid rules.
+	* gm2/gm2-compiler/M2Options.def:  added many procedures to the
+	  list of export qualified identifiers.
+	* gm2/gm2-compiler/SymbolTable.mod:  changed needsUnsigned
+	  and needsLong to BOOLEAN.
+
+2014-02-18      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  fixed many imports so that
+	  the module can be built during stage2, via xgm2.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  fixed many imports so that
+	  the module can be built during stage2, via xgm2.
+	* gm2/gm2-gcc/m2decl.def:  use BOOLEAN parameters rather than
+	  INTEGERs.
+	* gm2/p2c/p2c-src/src/decl.c:  tidied up formatting.
+
+2014-02-17      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/config-lang.in:  added m2block.c, m2builtins.c and m2decl.c
+	  to the list of gtfiles.
+	* gm2/gm2-gcc/m2block.c:  changed layout of the GTY binding level
+	  structure and use ggc_alloc_binding_level rather than xmalloc.
+	  Include gt-gm2-m2block.h.
+	* gm2/gm2-gcc/m2type.c:  include gt-gm2-m2decl.h.
+	* gm2/gm2-gcc/m2expr.c:  use ggc_alloc_atomic rather than xmalloc.
+	  Include gt-gm2-m2expr.h.
+	* gm2/gm2-gcc/m2statement.c:  include gt-gm2-m2statement.h.
+	* gm2/gm2-gcc/m2type.c:  layout GTY structure correctly and
+	  use ggc_alloc_array_desc and ggc_alloc_struct_constructor
+	  instead of xmalloc.  Include gt-gm2-m2type.h.
+
+2014-02-10      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added -I$(srcdir)/gm2/gm2-gcc to all
+	  the compiler build rules when building gm2/gm2-compiler via xgm2.
+	* gm2/gm2-compiler/M2ALU.mod:  fix imports so that this file can
+	  be built by xgm2.
+	* gm2/gm2-compiler/M2GenGCC.mod:  fixed many (but not all) of the
+	  imports so this file can be compiled by xgm2.
+	* gm2/gm2-compiler/M2LexBuf.def:  add TokenToLocation to export
+	  qualified list.
+	* gm2/gm2-compiler/M2Options.def:  remove IsAnOption,
+	  IsAndOptionAndArg and ParseOptions from the export list.
+	  (SetOptimizing) correct parameter to CARDINAL.
+	* gm2/gm2-compiler/M2Options.mod:  include Dup into export list.
+	* gm2/gm2-gcc/m2decl.def:  import ADDRESS from SYSTEM.
+	* gm2/gm2-gcc/m2expr.def:  import ADDRESS from SYSTEM.
+	  (BuildBinarySetDo) added missing ';'.
+	* gm2/gm2-gcc/m2statement.def:  import ADDRESS from SYSTEM.
+	* gm2/gm2-gcc/m2top.def:  (SetFlagUnitAtATime) alter parameter to
+	  BOOLEAN.
+
+2014-02-02      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/m2-2.bnf:  changed rule for ByteAlignment to use the ISO
+	  Modula-2 syntax <* *> extension.
+	* gm2/bnf/m2-3.bnf:  changed rule for ByteAlignment to use the ISO
+	  Modula-2 syntax <* *> extension.
+	* gm2/bnf/m2-c.bnf:  changed rule for ByteAlignment to use the ISO
+	  Modula-2 syntax <* *> extension.
+	* gm2/bnf/m2-h.bnf:  changed rule for ByteAlignment to use the ISO
+	  Modula-2 syntax <* *> extension.
+	* gm2/bnf/m2.bnf:  changed rule for ByteAlignment to use the ISO
+	  Modula-2 syntax <* *> extension.
+	* gm2/gm2-compiler/M2GenGCC.mod:  pass a location as the
+	  first parameter to BuildTryBegin, BuildCatchBegin,
+	  BuildCatchEnd.
+	* gm2/gm2-compiler/M2Quads.def:  changed comment to reflect
+	  new code (bytealignment) is used instead of (ALIGNED).
+	* gm2/gm2-compiler/M2Quads.mod:  change ALIGNED to bytealignment.
+	  BuildAlignment, changed error message to reflect bytealignment.
+	* gm2/gm2-compiler/P2SymBuild.def:  changed comment to reflect
+	  new code (bytealignment) is used instead of (ALIGNED).
+	* gm2/gm2-compiler/P2SymBuild.mod:  BuildAligned check for
+	  the alignment word (bytealignment).  BuildVarAlignment
+	* gm2/gm2-gcc/m2except.def:  (InitExceptions) corrected to
+	  include a parameter, location.  (BuildCatchBegin) corrected
+	  to include a parameter, location.  (BuildCatchEnd) corrected
+	  to include a parameter, location.
+	* gm2/gm2.texi:  changed documentation to reflect new syntax
+	  of alignment used in variable and type declaration.
+	* testsuite/gm2/extensions/pass/align.mod:  changed test code
+	  to reflect new syntax.
+	* testsuite/gm2/extensions/pass/align2.mod:  changed test code
+	  to reflect new syntax.
+	* testsuite/gm2/extensions/run/pass/align3.mod:  changed test code
+	  to reflect new syntax.
+	* testsuite/gm2/extensions/run/pass/align4.mod:  changed test code
+	  to reflect new syntax.
+	* testsuite/gm2/extensions/run/pass/align5.mod:  changed test code
+	  to reflect new syntax.
+	* testsuite/gm2/extensions/run/pass/align6.mod:  changed test code
+	  to reflect new syntax.
+	* testsuite/gm2/extensions/run/pass/align7.mod:  changed test code
+	  to reflect new syntax.
+	* testsuite/gm2/extensions/run/pass/card16p.mod:  corrected test.
+	* testsuite/gm2/extensions/run/pass/card32p.mod:  corrected test.
+	* testsuite/gm2/extensions/run/pass/card64p.mod:  corrected test.
+	* testsuite/gm2/extensions/run/pass/card8p.mod:  corrected test.
+
+2014-01-24      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/foo.mod:  changed demo.
+	* gm2/gm2-compiler/M2GenGCC.mod:  no longer pass
+	  the fifth parameter to BuildArray.
+	* gm2/gm2-gcc/m2expr.c:  removed the fifth parameter to
+	  BuildArray.  Pass NULL_TREE to build4 of a ARRAY_REF.
+	* gm2/gm2-gcc/m2expr.def:  removed the fifth parameter to
+          the definition of BuildArray.
+	* gm2/gm2-gcc/m2expr.h:  removed the fifth parameter to
+          the prototype of BuildArray.
+
+2014-01-18      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2expr.c:  CheckAddressToCardinal (New function).
+	  BuildAdd use CheckAddressToCardinal for both operands.
+	  BuildSub use CheckAddressToCardinal for both operands.
+	  BuildDivTrunc use CheckAddressToCardinal for both operands.
+	  BuildModTrunc use CheckAddressToCardinal for both operands.
+	  BuildDivFloor use CheckAddressToCardinal for both operands.
+          BuildModFloor use CheckAddressToCardinal for both operands.
+          BuildMult use CheckAddressToCardinal for both operands.
+	* gm2/gm2-gcc/m2type.c:  m2_cardinal_address_type_node new
+	  internal datatype.  GetCardinalAddressType (New function).
+	  build_m2_cardinal_address_type_node (New function).
+	* gm2/gm2-gcc/m2type.h:  m2type_GetCardinalAddressType
+	  (New function prototype).
+
+2014-01-15      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  use $(LINKER) rather than $(XGCC).
+	  use $(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS)
+	  to aid building gm2 as a cross compiler.
+	* gm2/gm2-gcc/m2expr.c:  check operand types for ADDRESS
+	  in multiply, divide, modulus and issue appropriate errors.
+	* gm2/gm2-gcc/m2type.c:  (IsAddress) New function.
+	* gm2/gm2-gcc/m2type.def:  (IsAddress) New function.
+	* gm2/gm2-gcc/m2type.h:  (IsAddress) New function prototype.
+	* gm2/gm2-lang.c:  removed duplicate declaration of gm2_gc_root.
+	  Added compiler directives to unused parameters in
+	  gm2_langhook_gimplify_expr.
+
+2014-01-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  substituted $(CC) for $(COMPILER) when
+	  building gm2/gm2-lang.o, gm2/stor-layout.o and gm2/m2pp.o.
+	* gm2/gm2-gcc/m2builtins.c:  added BT_FN_NONE to the
+	  builtin_prototype enum.  Changed fclass to enum built_in_class.
+	  Modified compound constant constructor to contain correct types
+	  in the terminating array element.
+	* gm2/gm2-gcc/m2convert.c:  remove stop function.
+	* gm2/gm2-gcc/m2decl.c:  remove stop function.
+	* gm2/gm2-gcc/m2expr.c:  remove stop function.  Comment out
+	  default_convert_binary_operands and build_nop.  Comment out
+	  unused part of m2expr_BuildNegate.
+	* gm2/gm2-gcc/m2misc.c:  corrected formatting.
+	* gm2/gm2-gcc/m2options.h:  added const to the second parameter
+	  in M2Options_CppArg.
+	* gm2/gm2-lang.c:  added const to the declaration of opt.
+	* gm2/gm2-lang.h:  added list of includes, added extern prototype
+	  for gm2_langhook_init_options.
+	* gm2/gm2spec.c:  removed prototype for get_B_or_prefix.  Added
+	  conditional compilation for printOption.  Added const to
+	  declaration of B_path.  (find_executable_path)  corrected
+	  local variable declaration to include const.
+	  (add_B_prefix) added ATTRIBUTE_UNUSED to the first parameter.
+	  (get_B_or_prefix) removed.  (add_exec_dir) corrected local
+	  variables to include const.
+	* gm2/gm2version.h:  added conditional compilation for the
+	  prototype for gm2version so that it can be accessed by C and C++.
+	* gm2/m2pp.c:  changed stack_t to m2stack_t to avoid type clash.
+	  (pet) New function prototype.  (m2pp_integer) New function
+	  prototype.  Build gm2 or C versions of m2pp_integer.
+	  Build gm2 or C versions of m2pp_complex.
+

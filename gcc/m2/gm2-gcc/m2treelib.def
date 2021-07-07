@@ -1,0 +1,109 @@
+(* m2treelib.def definition module for m2treelib.c.
+
+Copyright (C) 2011-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FOR "C" m2treelib ;
+
+FROM m2tree IMPORT Tree ;
+FROM m2linemap IMPORT location_t ;
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   tree_code = INTEGER ;
+
+
+(*
+    get_set_address_if_var - returns the address of, op, providing
+                             it is not a constant.
+                             NULL is returned if, op, is a constant.
+*)
+
+PROCEDURE get_set_address_if_var (location: location_t; op: Tree; is_lvalue: INTEGER; is_const: INTEGER) : Tree ;
+
+
+(*
+    get_set_field_rhs - returns the value of p->field.
+*)
+
+PROCEDURE get_set_field_rhs (location: location_t; p: Tree; field: Tree) : Tree ;
+
+
+(*
+    get_set_field_lhs - returns the address of p->field.
+*)
+
+PROCEDURE get_set_field_lhs (location: location_t; p: Tree; field: Tree) : Tree ;
+
+
+(*
+    get_set_address - returns the address of op1.
+*)
+
+PROCEDURE get_set_address (location: location_t; op1: Tree; is_lvalue: INTEGER) : Tree ;
+
+
+(*
+    get_set_value - returns the value indicated by, field, in the set.
+                    Either p->field or the constant(op.fieldNo) is returned.
+*)
+
+PROCEDURE get_set_value (location: location_t; p: Tree; field: Tree; is_const: INTEGER; op: Tree; fieldNo: CARDINAL) : Tree ;
+
+
+(*
+    get_field_no - returns the field no for, op.  The, op, is either
+                   a constructor or a variable of type record.
+                   If, op, is a constructor (a set constant in GNU Modula-2)
+                   then this function is essentially a no-op and it returns op.
+                   Else we iterate over the field list and return the
+                   appropriate field number.
+*)
+
+PROCEDURE get_field_no (type: Tree; op: Tree; is_const: INTEGER; fieldNo: CARDINAL) : Tree ;
+
+
+(*
+    get_rvalue - returns the rvalue of t. The, type, is the object type to be
+                 copied upon indirection.
+*)
+
+PROCEDURE get_rvalue (location: location_t; t: Tree; type: Tree; is_lvalue: INTEGER) : Tree ;
+
+
+(*
+    DoCall - build a call tree arranging the parameter list as a vector.
+*)
+
+PROCEDURE DoCall (location: location_t; rettype: Tree; funcptr: Tree; param_list: Tree) : Tree ;
+
+
+
+PROCEDURE build_modify_expr (location: location_t; des: Tree; modifycode: tree_code; copy: Tree) : Tree ;
+
+
+(*
+    do_jump_if_bit - tests bit in word against integer zero using operator, code.
+                     If the result is true then jump to label.
+*)
+
+PROCEDURE do_jump_if_bit (location: location_t; code: tree_code; word: Tree; bit: Tree; label: ADDRESS) ;
+
+
+END m2treelib.

@@ -1,0 +1,22 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE TERMINATION;
+
+(* Provides facilities for enquiries concerning the occurrence of termination events. *)
+
+PROCEDURE IsTerminating (): BOOLEAN ;
+  (* Returns true if any coroutine has started  program termination and false otherwise. *)
+
+PROCEDURE HasHalted (): BOOLEAN ;
+  (* Returns true if a call to HALT has been made and false otherwise. *)
+
+END TERMINATION.

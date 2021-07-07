@@ -1,0 +1,98 @@
+(* cflex.def provides a Modula-2 definition module for C lexical analysis.
+
+Copyright (C) 2003-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE cflex ;
+
+(*
+    Title      : clex
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Thu Jan 23 12:39:36 2003
+    Revision   : $Version$
+    Description: provides a Modula-2 definition module for C lexical analysis.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT QUALIFIED GetToken, CError, OpenSource, CloseSource, GetLineNo,
+                 ParsingOn, SetSearchPath, AddTypeDef ;
+
+
+(*
+   CloseSource - provided for semantic sugar
+*)
+
+PROCEDURE CloseSource ;
+
+
+(*
+   OpenSource - returns TRUE if file, s, can be opened and
+                all tokens are taken from this file.
+*)
+
+PROCEDURE OpenSource (s: ADDRESS) : BOOLEAN ;
+
+
+(*
+   GetToken - returns the ADDRESS of the next token.
+*)
+
+PROCEDURE GetToken () : ADDRESS ;
+
+
+(*
+   GetLineNo - returns the current line number.
+*)
+
+PROCEDURE GetLineNo () : CARDINAL ;
+
+
+(*
+   CError - displays the error message, s, after the code line and pointer
+            to the erroneous token.
+*)
+
+PROCEDURE CError (s: ADDRESS) ;
+
+
+(*
+   ParsingOn - if t is FALSE then the lexical analysis will
+               consume all lines except when a line is one of
+               '#endif' or '#else' or '#if' or '#ifdef'
+*)
+
+PROCEDURE ParsingOn (t: BOOLEAN) ;
+
+
+(*
+   SetSearchPath - reassigns the search path to newPath.
+*)
+
+PROCEDURE SetSearchPath (newPath: ADDRESS) ;
+
+
+(*
+   AddTypeDef - adds the string, a, to the list of typedefs.
+*)
+
+PROCEDURE AddTypeDef (a: ADDRESS) ;
+
+
+END cflex.

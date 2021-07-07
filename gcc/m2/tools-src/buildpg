@@ -1,0 +1,289 @@
+#!/bin/sh
+
+# Copyright (C) 2000-2021 Free Software Foundation, Inc.
+# This file is part of GNU Modula-2.
+#
+# GNU Modula-2 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GNU Modula-2 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU Modula-2; see the file COPYING.  If not, write to the
+# Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+#
+
+# builds the pg.bnf from ppg.mod
+# usage buildpg ppg.mod destination [-e]
+#    -e   build without error recovery
+#
+PPGSRC=$1
+PPGDST=$2
+
+includeNonErrorChecking () {
+   sed -e "1,/StartNonErrorChecking/d" < $PPGSRC |\
+   sed -e "1,/EndNonErrorChecking/!d"
+}
+
+includeErrorChecking () {
+   sed -e "1,/StartErrorChecking/d" < $PPGSRC |\
+   sed -e "1,/EndErrorChecking/!d"
+}
+
+
+echo "% module" $PPGDST "begin"
+sed -e "1,/% declaration/!d" < $PPGSRC | sed -e "s/ppg/${PPGDST}/g"
+
+echo "% declaration" $PPGDST "begin"
+
+sed -e "1,/% declaration/d" < $PPGSRC | sed -e "1,/% rules/!d" | sed -e "s/ppg/${PPGDST}/g"
+
+if [ "$3" = "-e" ] ; then
+   includeNonErrorChecking
+   echo "% module" $PPGDST "end"
+   sed -e "1,/% module pg end/d" < $PPGSRC | sed -e "s/ppg/${PPGDST}/g"
+else
+   includeErrorChecking
+   echo "% module" $PPGDST "end"
+   sed -e "1,/% module pg end/d" < $PPGSRC | sed -e "s/ppg/${PPGDST}/g" |\
+   sed -e "s/WasNoError := Main() ;/Main({eoftok}) ;/"
+fi
+
+echo "% rules"
+
+cat << EOFEOF  | sed -e "s/ppg/${PPGDST}/g"
+error       'WarnError' 'WarnString'
+tokenfunc   'GetCurrentTokenType()'
+
+token   'identifier'  identtok      -- internal token
+token   'literal'     literaltok
+token   '%'           codetok
+token   ':='          lbecomestok
+token   '=:'          rbecomestok
+token   '|'           bartok
+token   '['           lsparatok
+token   ']'           rsparatok
+token   '{'           lcparatok   -- left  curly para
+token   '}'           rcparatok   -- right curly para
+token   '('           lparatok
+token   ')'           rparatok
+token   "error"       errortok
+token   "tokenfunc"   tfunctok
+token   "symfunc"     symfunctok
+token   '"'           dquotetok
+token   "'"           squotetok
+token   "module"      moduletok
+token   "begin"       begintok
+token   "rules"       rulestok
+token   "end"         endtok
+token   '<'           lesstok
+token   '>'           gretok
+token   "token"       tokentok
+token   "special"     specialtok
+token   "first"       firsttok
+token   "follow"      followtok
+token   "BNF"         BNFtok
+token   "FNB"         FNBtok
+token   "declaration" declarationtok
+token   "epsilon"     epsilontok
+token   ''            eoftok      -- internal token
+
+special Ident          first { < identtok > }   follow { }
+special Modula2Code    first { }                follow { '%' }
+special StartModName   first { < identtok > }   follow { }
+special EndModName     first { < identtok > }   follow { }
+special DoDeclaration  first { < identtok > }   follow { }
+special CollectLiteral first { < literaltok > } follow { }
+special CollectTok     first { < identtok > }   follow { }
+special DefineToken    first { < identtok > }   follow { }
+
+BNF
+
+Rules      := "%" "rules" { Defs } ExtBNF =:
+
+Special    := Ident
+              % VAR p: ProductionDesc ; %
+              %     p                           := NewProduction() ;
+                    p^.statement                := NewStatement() ;
+                    p^.statement^.followinfo^.calcfollow := TRUE ;
+                    p^.statement^.followinfo^.epsilon    := false ;
+                    p^.statement^.followinfo^.reachend   := false ;
+                    p^.statement^.ident         := CurrentIdent ;
+                    p^.statement^.expr          := NIL ;
+                    p^.firstsolved              := TRUE ;
+                    p^.followinfo^.calcfollow   := TRUE ;
+                    p^.followinfo^.epsilon      := false ;
+                    p^.followinfo^.reachend     := false %
+              First Follow [ "epsilon" % p^.statement^.followinfo^.epsilon  := true ;  (* these are not used - but they are displayed when debugging *)
+                                         p^.statement^.followinfo^.reachend := true ;
+                                         p^.followinfo^.epsilon  := true ;
+                                         p^.followinfo^.reachend := true
+                                       % ]
+              [ Literal % p^.description := LastLiteral % ]
+              =:
+
+Factor     := "%" Modula2Code "%" |
+              Ident % WITH CurrentFactor^ DO
+                         type  := id ;
+                         ident := CurrentIdent
+                      END ; % |
+              Literal % WITH CurrentFactor^ DO
+                           type   := lit ;
+                           string := LastLiteral ;
+                           IF GetSymKey(Aliases, LastLiteral)=NulName
+                           THEN
+                              WarnError1('no token defined for literal %s', LastLiteral)
+                           END
+                        END ; % |
+              "{" % WITH CurrentFactor^ DO
+                       type := mult ;
+                       expr := NewExpression() ;
+                       CurrentExpression := expr ;
+                    END ; %
+                    Expression "}" |
+              "[" % WITH CurrentFactor^ DO
+                       type := opt ;
+                       expr := NewExpression() ;
+                       CurrentExpression := expr ;
+                    END ; %
+                    Expression "]" |
+              "(" % WITH CurrentFactor^ DO
+                       type := sub ;
+                       expr := NewExpression() ;
+                       CurrentExpression := expr ;
+                    END ; %
+                    Expression ")" =:
+
+Statement  := % VAR i: IdentDesc ; %
+              Ident
+              % VAR p: ProductionDesc ; %
+              % p := FindDefinition(CurrentIdent^.name) ;
+                IF p=NIL
+                THEN
+                   p := NewProduction()
+                ELSE
+                   IF NOT ((p^.statement=NIL) OR (p^.statement^.expr=NIL))
+                   THEN
+                      WarnError1('already declared rule %s', CurrentIdent^.name)
+                   END
+                END ;
+                i := CurrentIdent ; %
+              ":="
+              % VAR e: ExpressionDesc ; %
+              % e := NewExpression() ;
+                CurrentExpression := e ; %
+              % VAR s: StatementDesc ; %
+              % s := NewStatement() ;
+                WITH s^ DO
+                   ident := i ;
+                   expr  := e
+                END ; %
+              Expression
+              % p^.statement := s ; %
+              "=:" =:
+
+Defs       := "special" Special | "token" Token | "error" ErrorProcedures |
+              "tokenfunc" TokenProcedure | "symfunc" SymProcedure =:
+ExtBNF     := "BNF" { Production } "FNB" =:
+Main       := Header Decls Footer Rules =:
+Header     := "%" "module" StartModName =:
+Decls      := "%" "declaration" DoDeclaration =:
+Footer     := "%" "module" EndModName =:
+
+First      := "first"  "{" { LitOrTokenOrIdent
+                             % WITH CurrentSetDesc^ DO
+                                  next := TailProduction^.first ;
+                               END ;
+                               TailProduction^.first := CurrentSetDesc
+                             %
+                           } "}" =:
+Follow     := "follow" "{" { LitOrTokenOrIdent
+                             % WITH CurrentSetDesc^ DO
+                                  next := TailProduction^.followinfo^.follow ;
+                               END ;
+                               TailProduction^.followinfo^.follow := CurrentSetDesc
+                             %
+                           } "}" =:
+LitOrTokenOrIdent := Literal % CurrentSetDesc := NewSetDesc() ;
+                               WITH CurrentSetDesc^ DO
+                                  type   := litel ;
+                                  string := LastLiteral ;
+                               END ;
+                              % |
+                     '<' CollectTok '>' |
+                     Ident % CurrentSetDesc := NewSetDesc() ;
+                             WITH CurrentSetDesc^ DO
+                                type   := idel ;
+                                ident  := CurrentIdent ;
+                             END ;
+                           % =:
+
+Literal    := '"' CollectLiteral '"' |
+              "'" CollectLiteral "'" =:
+
+CollectTok := % CurrentSetDesc := NewSetDesc() ;
+                WITH CurrentSetDesc^ DO
+                   type   := tokel ;
+                   string := GetCurrentToken() ;
+                END ;
+                IF NOT ContainsSymKey(Values, GetCurrentToken())
+                THEN
+                   AddEntry(Values, GetCurrentToken(), LargestValue) ;
+                   AddEntry(ReverseValues, Name(LargestValue), GetCurrentToken()) ;
+                   AddEntry(Aliases, GetCurrentToken(), GetCurrentToken()) ;
+                   AddEntry(ReverseAliases, GetCurrentToken(), GetCurrentToken()) ;
+                   INC(LargestValue)
+                END ;
+                AdvanceToken() ; % =:
+
+CollectLiteral := % LastLiteral := GetCurrentToken() ;
+                    AdvanceToken ; % =:
+
+DefineToken := %  AddEntry(Aliases, LastLiteral, GetCurrentToken()) ;
+                  AddEntry(ReverseAliases, GetCurrentToken(), LastLiteral) ;
+                  AddEntry(Values, GetCurrentToken(), LargestValue) ;
+                  AddEntry(ReverseValues, Name(LargestValue), GetCurrentToken()) ;
+                  INC(LargestValue) ;
+                  AdvanceToken ; % =:
+
+Token      := Literal DefineToken =:
+
+ErrorProcedures  := Literal % ErrorProcArray := LastLiteral %
+                    Literal % ErrorProcString := LastLiteral % =:
+TokenProcedure := Literal % TokenTypeProc := LastLiteral % =:
+SymProcedure   := Literal % SymIsProc := LastLiteral % =:
+
+Production := Statement =:
+Expression := % VAR t1, t2: TermDesc ;
+                    e     : ExpressionDesc ; %
+              % e := CurrentExpression ;
+                t1 := NewTerm() ;
+                CurrentTerm := t1 ; %
+                Term % e^.term := t1 ; %
+                { "|" % t2 := NewTerm() ;
+                        CurrentTerm := t2 %
+                        Term % t1^.next := t2 ;
+                               t1 := t2 % } =:
+
+Term       := % VAR    t1: TermDesc ; f1, f2: FactorDesc ; %
+              % CurrentFactor := NewFactor() ;
+                f1 := CurrentFactor ;
+                t1 := CurrentTerm ; %
+              Factor % t1^.factor := f1 ;
+                       f2 := NewFactor() ;
+                       CurrentFactor := f2 %
+              { Factor % f1^.next := f2 ;
+                         f1 := f2 ;
+                         f2 := NewFactor() ;
+                         CurrentFactor := f2 ; % }
+           =:
+
+FNB
+
+EOFEOF

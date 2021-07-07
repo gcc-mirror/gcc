@@ -1,0 +1,135 @@
+# Copyright (C) 2006-2021 Free Software Foundation, Inc.
+
+# This file is part of GNU Modula-2.
+
+# GNU Modula-2 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GNU Modula-2 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GNU Modula-2; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+objdir = @objdir@
+srcdir = @srcdir@
+
+WWWDIR=../../../../../www/gm2
+
+TEXISRC = $(srcdir)/../../doc/gm2.texi
+RELEASE = 12
+
+#          $(objdir)/gm2/gm2-libs.texi \
+#          $(objdir)/gm2/gm2-ebnf.texi \
+#          $(objdir)/gm2/SYSTEM-pim.texi \
+#          $(objdir)/gm2/SYSTEM-iso.texi \
+#          $(objdir)/gm2/Builtins.texi \
+#          $(objdir)/gm2/version.texi
+
+TEXI2HTML  = python3 $(srcdir)/tools/texi2tr/src/texi2tr.py
+CREATEHTML = python3 $(srcdir)/tools/createhtml.py
+
+TOP_LEVEL_OUTPUTS = download.html homepage.html license.html platforms.html \
+        about.html release.html users.html texi2tr.css \
+        news.html development.html community.html index.html \
+        gm2-logo.png
+
+RELEASE_OUTPUTS = $(RELEASE)/download.html $(RELEASE)/homepage.html \
+        $(RELEASE)/license.html $(RELEASE)/platforms.html \
+        $(RELEASE)/about.html $(RELEASE)/release.html $(RELEASE)/users.html \
+        $(RELEASE)/texi2tr.css $(RELEASE)/news.html $(RELEASE)/development.html \
+        $(RELEASE)/community.html $(RELEASE)/index.html \
+        $(RELEASE)/gm2-logo.png $(RELEASE)/gm2.html
+
+OUTPUTS=$(TOP_LEVEL_OUTPUTS) $(RELEASE_OUTPUTS)
+
+PNGS=debian-swirl48x48.png develop.png install.png library.png menu-left-tab.png \
+     menu-right-tab.png menu-selected-left-tab.png menu-selected-right-tab.png \
+     next.png note.png prev.png release.png snapshot.png terminal.png users.png \
+     200px-Heckert_GNU_white.png
+
+RELEASE_PNGS=$(RELEASE)/debian-swirl48x48.png $(RELEASE)/develop.png $(RELEASE)/install.png \
+     $(RELEASE)/library.png $(RELEASE)/menu-left-tab.png \
+     $(RELEASE)/menu-right-tab.png $(RELEASE)/menu-selected-left-tab.png \
+     $(RELEASE)/menu-selected-right-tab.png \
+     $(RELEASE)/next.png note.png $(RELEASE)/prev.png $(RELEASE)/release.png \
+     $(RELEASE)/snapshot.png $(RELEASE)/terminal.png $(RELEASE)/users.png \
+     $(RELEASE)/200px-Heckert_GNU_white.png
+
+all: $(OUTPUTS) $(PNGS) $(RELEASE_PNGS)
+
+%.png: ${srcdir}/tools/texi2tr/png/%.png
+	cp $< $@
+
+%.pdf: %.ps
+	gs -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=$@ $<
+
+%.ps: %.ms
+	groff -s -e -t -Tps -ms -mwww $< > $@
+
+gm2-logo.png: gm2-logo.eps
+	pstopnm -nocrop -stdout $< | pnmcrop | pnmscale .4 | pnmrotate -90 | pnmtopng > $@
+
+gm2-logo.eps: $(srcdir)/gm2-logo.ms
+	groff -P-b16 $< > gm2-logo.ps
+	gs -dNOPAUSE -sDEVICE=bbox -- gm2-logo.ps 2> gm2-logo.bbox
+	cat gm2-logo.ps | sed -e '/%%Orientation/rgm2-logo.bbox' > gm2-logo.eps
+	rm gm2-logo.bbox
+
+%.html: $(srcdir)/tools/texi2tr/html/%.tpl
+	$(CREATEHTML) -o $@ $<
+
+index.html: $(srcdir)/tools/texi2tr/html/index.html
+	cp $< $@
+
+texi2tr.css: $(srcdir)/tools/texi2tr/html/texi2tr.css
+	cp $< $@
+
+$(RELEASE)/%.png: ${srcdir}/tools/texi2tr/png/%.png
+	cp $< $@
+
+$(RELEASE)/%.html: $(srcdir)/tools/texi2tr/html/%.tpl $(RELEASE)
+	$(CREATEHTML) -s $(RELEASE) -o $@ $<
+
+$(RELEASE)/%.ht: $(srcdir)/tools/texi2tr/html/%.ht
+	$(CREATEHTML) -w $(RELEASE) -s $(RELEASE) -o $@ $<
+
+$(RELEASE)/index.html: $(srcdir)/tools/texi2tr/html/index.html $(RELEASE)
+	cp $< $@
+
+$(RELEASE)/texi2tr.css: $(srcdir)/tools/texi2tr/html/texi2tr.css $(RELEASE)
+	cp $< $@
+
+$(RELEASE):
+	mkdir $(RELEASE)
+
+$(RELEASE)/gm2.html: $(TEXISRC) $(RELEASE) $(RELEASE)/title.ht
+	$(TEXI2HTML) -T$(RELEASE):$(srcdir)/tools/texi2tr/html -n -s $(RELEASE) -I../..:../../m2:$(srcdir)/../../m2:$(srcdir)/../../doc/include:$(srcdir)/../../doc -b $(RELEASE)/gm2-%d.html -r gm2.html gm2.texi
+
+$(RELEASE)/gm2-logo.png: gm2-logo.eps
+	pstopnm -nocrop -stdout $< | pnmcrop | pnmscale .4 | pnmrotate -90 | pnmtopng > $@
+
+install: all force
+	@if [ "$(WWWDIR)" = "" ] ; then \
+            echo "you must set WWWDIR" ; \
+            exit 1 ; \
+        fi
+	@if [ ! -d $(WWWDIR) ] ; then \
+            echo "you must set WWWDIR to point to a directory" ; \
+            exit 1 ; \
+        fi
+	cp -r $(RELEASE) $(WWWDIR)
+
+#	cp *.html *.png *.css $(WWWDIR)
+#	cp -r $(RELEASE) $(WWWDIR)
+
+clean: force
+	$(RM) *.eps *.ps *.html *.png *~
+
+force:

@@ -1,0 +1,38 @@
+# Copyright (C) 2014-2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# load support procs
+load_lib gm2-torture.exp
+
+gm2_init "-I${srcdir}/gm2/switches/makeall/pass" -fmakeall
+gm2_init_pim4 "${srcdir}/gm2/switches/makeall/pass"
+gm2_link_with "-lm2pim -lm2iso -lpthread"
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+
+    gm2-torture $testcase
+}

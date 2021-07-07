@@ -1,0 +1,101 @@
+(* nameKey.def provides a dynamic binary tree name to key.
+
+Copyright (C) 2015-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE nameKey ;
+
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+CONST
+   NulName = 0 ;  (* No legal name.                      *)
+                  (* NulName is not present in the Tree  *)
+
+TYPE
+   Name = CARDINAL ;
+
+
+(*
+   makeKey - returns the Key of the symbol, a. If a is not in the
+             name table then it is added, otherwise the Key of a is returned
+             directly. Note that the name table has no scope - it merely
+             presents a more convienient way of expressing strings. By a Key.
+             These keys last for the duration of compilation.
+*)
+
+PROCEDURE makeKey (a: ARRAY OF CHAR) : Name ;
+
+
+(*
+   makekey - returns the Key of the symbol, a. If a is not in the
+             name table then it is added, otherwise the Key of a is returned
+             directly. Note that the name table has no scope - it merely
+             presents a more convienient way of expressing strings. By a Key.
+             These keys last for the duration of compilation.
+*)
+
+PROCEDURE makekey (a: ADDRESS) : Name ;
+
+
+(*
+   getKey - returns the name, a, of the key, key.
+*)
+
+PROCEDURE getKey (key: Name; VAR a: ARRAY OF CHAR) ;
+
+
+(*
+   lengthKey - returns the length of a Key.
+*)
+
+PROCEDURE lengthKey (key: Name) : CARDINAL ;
+
+
+(*
+   isKey - returns TRUE if string, a, is currently a key.
+*)
+
+PROCEDURE isKey (a: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   writeKey - Display the symbol represented by Key.
+*)
+
+PROCEDURE writeKey (key: Name) ;
+
+
+(*
+   isSameExcludingCase - returns TRUE if key1 and key2 are
+                         the same. It is case insensitive.
+*)
+
+PROCEDURE isSameExcludingCase (key1, key2: Name) : BOOLEAN ;
+
+
+(*
+   keyToCharStar - returns the C char * string equivalent for, key.
+*)
+
+PROCEDURE keyToCharStar (key: Name) : ADDRESS ;
+
+
+END nameKey.

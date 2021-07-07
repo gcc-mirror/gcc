@@ -1,0 +1,395 @@
+(* P3SymBuild.def pass 3 symbol creation.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE P3SymBuild ;
+
+(*
+   Title      : P3SymBuild
+   Author     : Gaius Mulley
+   Date       : 24/6/87
+   LastEdit   : 1/9/89
+   System     : UNIX (GNU Modula-2)
+   Description: pass 3 symbol creation.
+*)
+
+(* StartBuildDefinitionModule, *)
+(* EndBuildDefinitionModule, *)
+(* StartBuildImplementationModule, *)
+(* EndBuildImplementationModule, *)
+(* StartBuildProgramModule, *)
+(* EndBuildProgramModule, *)
+
+EXPORT QUALIFIED P3StartBuildDefModule,
+                 P3EndBuildDefModule,
+                 P3StartBuildImpModule,
+                 P3EndBuildImpModule,
+                 P3StartBuildProgModule,
+                 P3EndBuildProgModule,
+                 StartBuildInnerModule,
+                 EndBuildInnerModule,
+                 CheckImportListOuterModule,
+                 CheckCanBeImported,
+                 BuildProcedureHeading,
+                 StartBuildProcedure,
+                 EndBuildProcedure,
+                 BuildSubrange,
+                 BuildNulName,
+                 BuildConst,
+                 BuildVarAtAddress,
+                 BuildOptArgInitializer ;
+
+
+(*
+   StartBuildDefinitionModule - Creates a definition module and starts
+                                a new scope.
+
+                                The Stack is expected:
+
+                                Entry                 Exit
+
+                         Ptr ->                                     <- Ptr
+                                +------------+        +-----------+
+                                | NameStart  |        | NameStart |
+                                |------------|        |-----------|
+
+*)
+
+PROCEDURE P3StartBuildDefModule ;
+
+
+(*
+   EndBuildDefinitionModule - Destroys the definition module scope and
+                              checks for correct name.
+
+                              The Stack is expected:
+
+                              Entry                 Exit
+
+                       Ptr ->
+                              +------------+        +-----------+
+                              | NameEnd    |        |           |
+                              |------------|        |-----------|
+                              | NameStart  |        |           | <- Ptr
+                              |------------|        |-----------|
+*)
+
+PROCEDURE P3EndBuildDefModule ;
+
+
+(*
+   StartBuildImplementationModule - Creates an implementation module and starts
+                                    a new scope.
+
+                                    The Stack is expected:
+
+                                    Entry                 Exit
+
+                             Ptr ->                                     <- Ptr
+                                    +------------+        +-----------+
+                                    | NameStart  |        | NameStart |
+                                    |------------|        |-----------|
+
+*)
+
+PROCEDURE P3StartBuildImpModule ;
+
+
+(*
+   EndBuildImplementationModule - Destroys the implementation module scope and
+                                  checks for correct name.
+
+                                  The Stack is expected:
+
+                                  Entry                 Exit
+
+                           Ptr ->
+                                  +------------+        +-----------+
+                                  | NameEnd    |        |           |
+                                  |------------|        |-----------|
+                                  | NameStart  |        |           | <- Ptr
+                                  |------------|        |-----------|
+*)
+
+PROCEDURE P3EndBuildImpModule ;
+
+
+(*
+   StartBuildProgramModule - Creates a program module and starts
+                             a new scope.
+
+                             The Stack is expected:
+
+                             Entry                 Exit
+
+                      Ptr ->                                     <- Ptr
+                             +------------+        +-----------+
+                             | NameStart  |        | NameStart |
+                             |------------|        |-----------|
+
+*)
+
+PROCEDURE P3StartBuildProgModule ;
+
+
+(*
+   EndBuildProgramModule - Destroys the program module scope and
+                           checks for correct name.
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->
+                           +------------+        +-----------+
+                           | NameEnd    |        |           |
+                           |------------|        |-----------|
+                           | NameStart  |        |           | <- Ptr
+                           |------------|        |-----------|
+*)
+
+PROCEDURE P3EndBuildProgModule ;
+
+
+(*
+   CheckCanBeImported - checks to see that it is legal to import, Sym, from, ModSym.
+*)
+
+PROCEDURE CheckCanBeImported (ModSym, Sym: CARDINAL) ;
+
+
+(*
+   StartBuildInnerModule - Creates an Inner module and starts
+                           a new scope.
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->                                     <- Ptr
+                           +------------+        +-----------+
+                           | NameStart  |        | NameStart |
+                           |------------|        |-----------|
+
+*)
+
+PROCEDURE StartBuildInnerModule ;
+
+
+(*
+   EndBuildInnerModule - Destroys the Inner module scope and
+                         checks for correct name.
+
+                         The Stack is expected:
+
+                         Entry                 Exit
+
+                  Ptr ->
+                         +------------+        +-----------+
+                         | NameEnd    |        |           |
+                         |------------|        |-----------|
+                         | NameStart  |        |           | <- Ptr
+                         |------------|        |-----------|
+*)
+
+PROCEDURE EndBuildInnerModule ;
+
+
+(*
+   CheckImportListOuterModule - checks to see that all identifiers are
+                                exported from the definition module.
+
+                                The Stack is expected:
+
+                                Entry           OR    Entry
+
+                         Ptr ->                Ptr ->
+                                +------------+        +-----------+
+                                | #          |        | #         |
+                                |------------|        |-----------|
+                                | Id1        |        | Id1       |
+                                |------------|        |-----------|
+                                .            .        .           .
+                                .            .        .           .
+                                .            .        .           .
+                                |------------|        |-----------|
+                                | Id#        |        | Id#       |
+                                |------------|        |-----------|
+                                | ImportTok  |        | Ident     |
+                                |------------|        |-----------|
+
+                                IMPORT Id1, .. Id# ;  FROM Ident IMPORT Id1 .. Id# ;
+
+
+                                                      Error Condition
+                                Exit
+
+                                All above stack discarded
+*)
+
+PROCEDURE CheckImportListOuterModule ;
+
+
+(*
+   BuildProcedureHeading - Builds a procedure heading for the definition
+                           module procedures.
+
+                           Operation only performed if compiling a
+                           definition module.
+
+                           The Stack:
+
+                           Entry                       Exit
+
+                    Ptr ->
+                           +------------+
+                           | ProcSym    |              Empty
+                           |------------|
+
+*)
+
+PROCEDURE BuildProcedureHeading ;
+
+
+(*
+   StartBuildProcedure - Builds a Procedure.
+
+                         The Stack:
+
+                         Entry                 Exit
+
+                                                              <- Ptr
+                                               +------------+
+                  Ptr ->                       | ProcSym    |
+                         +------------+        |------------|
+                         | Name       |        | Name       |
+                         |------------|        |------------|
+*)
+
+PROCEDURE StartBuildProcedure ;
+
+
+(*
+   EndBuildProcedure - Ends building a Procedure.
+                       It checks the start procedure name matches the end
+                       procedure name.
+
+                       The Stack:
+
+
+                       Entry                 Exit
+
+                Ptr ->
+                       +------------+
+                       | NameEnd    |
+                       |------------|
+                       | ProcSym    |
+                       |------------|
+                       | NameStart  |
+                       |------------|
+                                             Empty
+*)
+
+PROCEDURE EndBuildProcedure ;
+
+
+(*
+   BuildSubrange - Builds a Subrange type Symbol.
+
+                      Stack
+
+                      Entry                 Exit
+
+               Ptr ->
+                      +------------+
+                      | High       |
+                      |------------|
+                      | Low        |                       <- Ptr
+                      |------------|
+*)
+
+PROCEDURE BuildSubrange ;
+
+
+(*
+   BuildNulName - Pushes a NulKey onto the top of the stack.
+                  The Stack:
+
+
+                  Entry                    Exit
+
+                                                          <- Ptr
+                  Empty                    +------------+
+                                           | NulKey     |
+                                           |------------|
+*)
+
+PROCEDURE BuildNulName ;
+
+
+(*
+   BuildConst - builds a constant.
+                Stack
+
+                Entry                 Exit
+
+         Ptr ->                                      <- Ptr
+                +------------+        +------------+
+                | Name       |        | Sym        |
+                |------------+        |------------|
+*)
+
+PROCEDURE BuildConst ;
+
+
+(*
+   BuildVarAtAddress - updates the symbol table entry of, variable sym, to be declared
+                       at address, address.
+
+                       Stack
+
+                       Entry                 Exit
+
+                Ptr ->
+                       +--------------+
+                       | Expr | EType |                         <- Ptr
+                       |--------------+        +--------------+
+                       | name | SType |        | name | SType |
+                       |--------------+        |--------------|
+*)
+
+PROCEDURE BuildVarAtAddress ;
+
+
+(*
+   BuildOptArgInitializer - assigns the constant value symbol, const, to be the
+                            initial value of the optional parameter should it be
+                            absent.
+
+                            Ptr ->
+                                   +------------+
+                                   | const      |
+                                   |------------|                      <- Ptr
+*)
+
+PROCEDURE BuildOptArgInitializer ;
+
+
+END P3SymBuild.

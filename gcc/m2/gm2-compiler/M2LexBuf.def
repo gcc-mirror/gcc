@@ -1,0 +1,263 @@
+(* M2LexBuf.def provides a buffer for m2.lex.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2LexBuf ;
+
+(*
+    Title      : M2LexBuf
+    Author     : Gaius Mulley
+    System     : UNIX (GNU Modula-2)
+    Date       : Fri Jul 27 12:42:13 2001
+    Description: provides a buffer for the all the tokens created by m2.lex.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM M2Reserved IMPORT toktype ;
+FROM DynamicStrings IMPORT String ;
+FROM m2linemap IMPORT location_t ;
+FROM NameKey IMPORT Name ;
+
+EXPORT QUALIFIED OpenSource, CloseSource, ReInitialize, GetToken, InsertToken,
+                 InsertTokenAndRewind, GetPreviousTokenLineNo, GetLineNo,
+                 GetColumnNo, GetTokenNo, TokenToLineNo, TokenToColumnNo,
+                 TokenToLocation, GetTokenName,
+                 FindFileNameFromToken, GetFileName,
+                 ResetForNewPass,
+                 currenttoken, currentstring, currentinteger,
+                 AddTok, AddTokCharStar, AddTokInteger, MakeVirtualTok,
+                 SetFile, PushFile, PopFile,
+                 PrintTokenNo,
+                 BuiltinTokenNo, UnknownTokenNo ;
+
+CONST
+   UnknownTokenNo = 0 ;
+   BuiltinTokenNo = 1 ;
+
+VAR
+   currenttoken  : toktype ;
+   currentstring : ADDRESS ;
+   currentcolumn : CARDINAL ;
+   currentinteger: INTEGER ;
+
+
+(*
+   OpenSource - Attempts to open the source file, s.
+                The success of the operation is returned.
+*)
+
+PROCEDURE OpenSource (s: String) : BOOLEAN ;
+
+
+(*
+   CloseSource - closes the current open file.
+*)
+
+PROCEDURE CloseSource ;
+
+
+(*
+   ReInitialize - re-initialize the all the data structures.
+*)
+
+PROCEDURE ReInitialize ;
+
+
+(*
+   ResetForNewPass - reset the buffer pointers to the beginning ready for
+                     a new pass
+*)
+
+PROCEDURE ResetForNewPass ;
+
+
+(*
+   GetToken - gets the next token into currenttoken.
+*)
+
+PROCEDURE GetToken ;
+
+
+(*
+   InsertToken - inserts a symbol, token, infront of the current token
+                 ready for the next pass.
+*)
+
+PROCEDURE InsertToken (token: toktype) ;
+
+
+(*
+   InsertTokenAndRewind - inserts a symbol, token, infront of the current token
+                          and then moves the token stream back onto the inserted token.
+*)
+
+PROCEDURE InsertTokenAndRewind (token: toktype) ;
+
+
+(*
+   GetPreviousTokenLineNo - returns the line number of the previous token.
+*)
+
+PROCEDURE GetPreviousTokenLineNo () : CARDINAL ;
+
+
+(*
+   GetLineNo - returns the current line number where the symbol occurs in
+               the source file.
+*)
+
+PROCEDURE GetLineNo () : CARDINAL ;
+
+
+(*
+   GetTokenNo - returns the current token number.
+*)
+
+PROCEDURE GetTokenNo () : CARDINAL ;
+
+
+(*
+   GetTokenName - returns the token name given the tokenno.
+*)
+
+PROCEDURE GetTokenName (tokenno: CARDINAL) : Name ;
+
+
+(*
+   TokenToLineNo - returns the line number of the current file for the
+                   TokenNo. The depth refers to the include depth.
+                   A depth of 0 is the current file, depth of 1 is the file
+                   which included the current file. Zero is returned if the
+                   depth exceeds the file nesting level.
+*)
+
+PROCEDURE TokenToLineNo (TokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetColumnNo - returns the current column where the symbol occurs in
+                 the source file.
+*)
+
+PROCEDURE GetColumnNo () : CARDINAL ;
+
+
+(*
+   TokenToColumnNo - returns the column number of the current file for the
+                     TokenNo. The depth refers to the include depth.
+                     A depth of 0 is the current file, depth of 1 is the file
+                     which included the current file. Zero is returned if the
+                     depth exceeds the file nesting level.
+*)
+
+PROCEDURE TokenToColumnNo (TokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+
+
+(*
+   TokenToLocation - returns the location_t corresponding to, TokenNo.
+*)
+
+PROCEDURE TokenToLocation (TokenNo: CARDINAL) : location_t ;
+
+
+(*
+   FindFileNameFromToken - returns the complete FileName for the appropriate
+                           source file yields the token number, TokenNo.
+                           The, Depth, indicates the include level: 0..n
+                           Level 0 is the current. NIL is returned if n+1
+                           is requested.
+*)
+
+PROCEDURE FindFileNameFromToken (TokenNo: CARDINAL; depth: CARDINAL) : String ;
+
+
+(*
+   GetFileName - returns a String defining the current file.
+*)
+
+PROCEDURE GetFileName () : String ;
+
+
+(*
+   MakeVirtualTok - creates and return a new tokenno which is created from
+                    tokenno range1 and range2.
+*)
+
+PROCEDURE MakeVirtualTok (caret, left, right: CARDINAL) : CARDINAL ;
+
+
+(* ***********************************************************************
+ *
+ * These functions allow m2.lex to deliver tokens into the buffer
+ *
+ ************************************************************************* *)
+
+(*
+   AddTok - adds a token to the buffer.
+*)
+
+PROCEDURE AddTok (t: toktype) ;
+
+
+(*
+   AddTokCharStar - adds a token to the buffer and an additional string, s.
+                    A copy of string, s, is made.
+*)
+
+PROCEDURE AddTokCharStar (t: toktype; s: ADDRESS) ;
+
+
+(*
+   AddTokInteger - adds a token and an integer to the buffer.
+*)
+
+PROCEDURE AddTokInteger (t: toktype; i: INTEGER) ;
+
+
+(*
+   SetFile - sets the current filename to, filename.
+*)
+
+PROCEDURE SetFile (filename: ADDRESS) ;
+
+
+(*
+   PushFile - indicates that, filename, has just been included.
+*)
+
+PROCEDURE PushFile (filename: ADDRESS) ;
+
+
+(*
+   PopFile - indicates that we are returning to, filename, having finished
+             an include.
+*)
+
+PROCEDURE PopFile (filename: ADDRESS) ;
+
+
+(*
+   PrintTokenNo - displays token and the location of the token.
+*)
+
+PROCEDURE PrintTokenNo (tokenno: CARDINAL) ;
+
+
+END M2LexBuf.

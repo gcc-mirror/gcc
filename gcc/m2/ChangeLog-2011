@@ -1,0 +1,493 @@
+2011-12-01      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added ServerSocket.mod to be compiled and
+          installed in the iso library.
+        * gm2/gm2-libs-iso/ServerSocket.c:  added dummy return value so
+          that this incomplete module compiles.
+
+2011-11-30      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/SymbolTable.mod:  fixed a poor error message
+	  bug reported by <doug@dougtelford.com>.  Arrays are now checked
+	  for a correct subscript type before M2GCCDeclare is called.
+
+2011-11-18      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Range.mod:  removed calls to FlushErrors
+	  to allow the compiler to issue many more error messages before
+	  exiting.
+
+2011-11-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2CaseList.def:  add TypeCaseBounds to the
+	  definition module.
+	* gm2/gm2-compiler/M2CaseList.mod:  GetVariantTagType, checkTypes,
+	  inRange, TypeCaseBounds (New procedure functions).  Check to
+	  see that case bounds are of the correct type.
+	* gm2/gm2-compiler/M2MetaError.mod:  fix internal error message.
+	* gm2/gm2-compiler/M2Options.def:  new boolean VariantValueChecking
+	  which is set if -fiso is used.  FinaliseOptions new procedure.
+	* gm2/gm2-compiler/M2Quads.mod:  reverse PopT(r1) and PopT(r2)
+	  to correct range bug.
+	* gm2/gm2-compiler/M2Range.mod:  only check missing values
+	  in variant record case bounds if VariantValueChecking is enabled.
+	  We always check for overlapping bounds.
+	* testsuite/gm2/pim/fail/variant.mod:  new file.
+	* testsuite/gm2/pim/fail/variant2.mod:  new file.
+	* testsuite/gm2/pim/fail/variant3.mod:  new file.
+
+2011-11-08      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  altered bnf rules to depend upon
+	  gm2/pge$(exeext).
+	* gm2/bnf/m2-c.bnf:  reimplemented Qualident and PushQualident
+	  to fix a bug reported by Alexandr Simon:
+	  <http://lists.gnu.org/archive/html/gm2/2011-04/msg00002.html>
+
+2011-11-07      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  BuildCall2, BuildCall3 (New functions).
+	* gm2/gm2.texi:  document the new command line switch
+	  -fdebug-builtins.
+	* gm2/lang.opt:  define -fdebug-builtins.
+	* gm2/gm2-compiler/M2Base.mod:  InitBuiltins (New procedure).
+	* gm2/gm2-compiler/M2Batch.def:  Tidied up spacing.
+	* gm2/gm2-compiler/M2GenGCC.mod:  implemented MaybeDebugBuiltinAlloca,
+	  MaybeDebugBuiltinMemcpy and call then instead of BuiltinAlloca,
+	  BuiltinMemcpy.  Modified CanUseBuiltin to return FALSE if
+	  DebugBuiltins is TRUE.
+	* gm2/gm2-compiler/M2Options.def:  DebugBuiltins new boolean flag.
+	* gm2/gm2-compiler/M2Options.mod:  set DebugBuiltins if -fdebug-builtins
+	  is present.
+	* gm2/gm2-compiler/gccgm2.def:  define BuildCall2, BuildCall3.
+	* gm2/gm2-libs/Builtins.def:  alloca_trace (New procedure function).
+	* gm2/gm2-libs/Builtins.mod:  tidied up comment and implemented
+	  alloca_trace.
+	* gm2/gm2-compiler/M2GenGCC.mod:  fixed GetSizeOfHighFromUnbounded
+	  bug reported by John O Goyo
+	  <http://lists.gnu.org/archive/html/gm2/2011-11/msg00004.html>
+	  and Martin KalbfuÃ
+	  <http://lists.gnu.org/archive/html/gm2/2011-10/msg00023.html>.
+
+2011-10-29       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  gccgm2_BuildAddr call gm2_mark_addressable.
+	* gm2/gccgm2.c:  gccgm2_BuildComponentRef, convertToSizeT
+	  (New functions).
+	* gm2/gm2builtins.c:  gm2builtins_BuiltInAlloca call convertToSizeT.
+	* gm2/gm2-compiler/M2GenGCC.mod:  use gccgm2_BuildComponentRef
+	  to access high and address fields within unbounded records.
+	  This fixes a bug reported by Scott Iverson which has been
+	  expressed as testsuite/gm2/pim/run/pass/passparam.mod and
+          testsuite/gm2/pim/run/pass/passparam2.mod.  Manifested
+	  itself when attempting to take the address of a parameter.
+	  This does not work with -O2 as parameters are passed in
+	  registers on some architectures (x86_64).  These changes
+	  introduce no new regression test failures.
+
+2011-10-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added LMathLib0.def LegacyReal.def
+	  MemUtils.def to the list of GM2-LIBS-DEFS and
+          LMathLib0.mod LegacyReal.mod MemUtils.mod to
+          GM2-LIBS-MODS.  This corrects a bug reported by
+	  Steve Giess.
+
+2011-10-25       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  added debugging
+	  and also fixed a bug reported by Scott Iverson.
+	  (non-free/scott-iverson/test25/fail/WinShell.mod).
+	* gm2/gm2-compiler/M2Quads.mod:  added error checking
+	  to detect a nul typed constructor.
+	* gm2/gm2-compiler/Sets.mod:  added internal debugging.
+
+2011-10-04       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/version.c:  updated to 1.0.5
+	* gm2/gm2-libs/config-host.in:  updated to 1.0.5.
+	* gm2/gm2-libs/config-target.in:  updated to 1.0.5
+
+2011-10-02       Gaius Mulley <gaius@gnu.org>
+
+	* tagged GM2 gcc_4_1_2_gm2_1_0_4_0 post checkin.
+
+2011-09-30       Gaius Mulley <gaius@gnu.org>
+
+	* released GM2 1.0.4
+	* tagged with:  gcc_4_1_2_gm2_1_0_4 prior checkin.
+	* gm2/version.c:  updated to 1.0.4
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-host.in:  updated to 1.0.4.
+	* gm2/gm2-libs/config-target:  rebuilt.
+	* gm2/gm2-libs/config-target.in:  updated to 1.0.4
+
+2011-07-28       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  add dependencies for the constuction of
+	  gm2/gm2-libs.texi.
+
+2011-07-27       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Base.mod:  allow a dataType to be
+	  passed to ARRAY OF dataType.  Bug fix for:
+          testsuite/gm2/pim/pass/charstring.mod.
+	* gm2/version.c:  updated to 1.0.3
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-host.in:  updated to 1.0.3.
+	* gm2/gm2-libs/config-target:  rebuilt.
+	* gm2/gm2-libs/config-target.in:  updated to 1.0.3.
+
+2011-07-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2ALU.mod:  allow constant array strings
+	  to be created with const chars.  Bug fix for:
+	  testsuite/gm2/iso/pass/constchar.mod.
+	* gm2/gm2-compiler/M2ALU.mod:  fixed obvious bugs to previous
+	  patch.
+
+2011-07-25       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  corrected typo in the documentation.
+
+2011-07-15       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/StdChans.mod:  allow raw operators on
+	  stdin, stdout and stderr.  Bug fix to an error reported
+	  by Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2011-07/msg00003.html).
+
+2011-07-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  improved the Extended Asm section and changed
+	  the example for the x86_64 processor.
+
+2011-07-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  BuildAsm now has an extra parameter (isSimple).
+	  Also call resolve_asm_operand_names.
+	* gm2/bnf/m2-2.bnf:  parse full GNU asm syntax (including
+	  operand names).
+	* gm2/bnf/m2-3.bnf:  implement full GNU asm syntax (including
+	  operand names).  Record all asm operand names, specifiers
+	  and trash lists.  Also record whether it was a simple kind.
+	* gm2/bnf/m2-c.bnf:  parse full GNU asm syntax (including
+	  operand names).
+	* gm2/bnf/m2-h.bnf:  parse full GNU asm syntax (including
+	  operand names).
+	* gm2/bnf/m2.bnf:  parse full GNU asm syntax (including
+	  operand names).
+	* gm2/gm2-compiler/M2GenGCC.mod:  correct generation of
+	  input, output and trash values for the asm operands.
+	* gm2/gm2-compiler/SymbolTable.def:  New procedures
+	  (PutGnuAsmSimple) and (IsGnuAsmSimple).  Added extra
+	  parameter to (GetRegInterface).
+	* gm2/gm2-compiler/SymbolTable.mod:  Implemented new procedures
+	  (PutGnuAsmSimple) and (IsGnuAsmSimple).  Added extra
+	  parameter to (GetRegInterface) to correct a bug.
+	* gm2/gm2-compiler/gccgm2.def:  modified declaration of
+	  (BuildAsm) to include an extra parameter, IsSimple.
+	* These fixes allow GNU ASM syntax to behave in exactly
+	  the same way as the other GCC front ends.
+
+2011-07-01       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  modified gccgm2_ChainOnParamValue to contain a
+	  name, str and value.
+	* gm2/bnf/m2-3.bnf:  many fixes in AsmList, AsmOperands, TrashList
+	  with respect to interface sym and gnuasm sym.
+	* gm2/gm2-compiler/M2GenGCC.mod:  call BuildTreeFromInterface
+	  instead of BuildTrashTreeFromInterface.
+	* gm2/gm2-compiler/SymbolTable.def:  fix GetRegInterface so that
+	  NulSym are returned in string and object if i exceeds number of
+	  parameters.
+	* gm2/gm2-compiler/gccgm2.def:  changed definition of
+	  ChainOnParamValue.
+
+2011-06-29       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/m2-3.bnf:  maintain a count of the number of asm operands
+	  in both the AsmElement and TrashList.
+	* gm2/gm2-compiler/SymbolTable.def:  PutRegInterface, GetRegInterface
+	  now specify which parameter number they are manipulating.
+	* gm2/gm2-compiler/SymbolTable.def:  modified the implementation of
+	  PutRegInterface, GetRegInterface to use dynamic array Indexing rather
+	  than the List.
+
+2011-06-28       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2spec.c:  modified default libraries to iso,pim if -fiso is
+	  used.  Fixes a bug reported by Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2011-06/msg00026.html).
+
+2011-06-22       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  specify source and build directories to def2texi.py.
+	* gm2/gm2.texi:  modified to document the new behaviour of specifying
+	  library ordering.
+	* gm2/gm2spec.c:  default library is 'pim'.  Large number of changes
+	  which remove the implicit ordering of library search paths in favour
+	  of users specifying the explicit order via -flibs=pim,iso,ulm etc.
+	* gm2/lang.opt:  -flibs= takes a number of Joined arguments.
+	* gm2/examples/hello/Makefile.in:  removed -fno-exceptions from the
+	  command line build.
+	* fixes a bug reported by Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2011-06/msg00002.html).
+	* gm2/gm2-libs-iso/README.texi:  corrected status of copyright and
+	  implementation modules.  Removed all information about incomplete
+	  modules.
+	* gm2/tools-src/def2texi.py:  fixed bug in building the www pages
+	  by adding an option to specify the build and source directory.
+
+2011-06-15       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/PCSymBuild.mod:  fixed bug in deduceTypes
+	  so that binary constant expressions can correctly identify
+	  their types.  Fixes a bug report by Scott Iverson.
+
+2011-06-13       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  gccgm2_GetArrayNoOfElements (New function).
+	* gm2/gm2-compiler/M2GenGCC.mod:  checkArrayElements (New
+	  procedure function).  CodeBecomes modified to call
+	  checkArrayElements to test whether assigned arrays contain
+	  the same number of elements.
+	* gm2/gm2-compiler/M2Quads.mod:  CheckBecomesMeta tidied up
+	  error messages and added extra check to ensure that
+	  we are not assigning from an unbounded array.
+	* gm2/gccgm2.def:  export GetArrayNoOfElements.
+	  Fixes a bug reported by Scott Iverson.
+
+2011-06-11       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2ALU.mod:  added a limit check to SetNegate
+	  which fixes a bug reported by Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2011-06/msg00001.html).
+
+2011-06-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Quads.mod:  modified CheckNotConstAndVar
+	  to CheckBecomesMeta so that it also checks that we are
+	  not assigning to a unbounded array.  Fixes a bug reported
+	  by Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2011-06/msg00010.html).
+
+2011-05-04       Gaius Mulley <gaius@gnu.org>
+
+	* gm2:  tagged with gcc_4_1_2_0
+	* gm2:  created branch using "cvs tag -r gcc_4_1_2_0 -b gcc_4_1_2_gm2"
+	* testsuite:  tagged with gcc_4_1_2_0
+	* testsuite:  created branch using "cvs tag -r gcc_4_1_2_0 -b gcc_4_1_2_gm2"
+
+2011-04-27       Gaius Mulley <gaius@gnu.org>
+
+	* patches/gcc/4.1.2/01-patches:  corrected bug in patch.
+	* gm2/gm2-compiler/M2Quads.mod:  fixed bug reported by
+	  John O Goyo
+	  (http://lists.nongnu.org/archive/html/gm2/2011-04/msg00031.html).
+
+2011-04-22       Gaius Mulley <gaius@gnu.org>
+
+	* patches/gcc/4.1.2/ChangeLog:  New file.
+	* patches/gcc/4.1.2/01-patches:  New file.
+	  These patches have been regenerated and rationalised.  They
+	  have also been regression tested against the C and C++
+	  regression tests.  Both these sets of regression tests are
+	  unaffected by these patches.
+
+2011-04-09       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  modified to build O2 versions of gm2-libs-min.
+
+2011-04-06       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  modified to allow gm2 to coexist with
+	  gcc as the linker support rather than g++.  Useful for
+	  embedded targets which don't yet support g++.  Separated
+	  target from host when building libraries and use separate
+	  configure scripts for both.
+	* gm2/README:  removed warning about development code.
+	* gm2/config-lang.in:  added gm2lorder.
+	* gm2/gm2.texi:  updated documentation to reflect release 1.0.
+	  Corrected statements such as GNU Modula-2 is fully ISO
+	  compliant.
+	* gm2/gm2spec.c:  only include -lstdc++ if -fno-exceptions is
+	  not present.
+	* gm2/gm2-libs/README.texi:  tidied up dates.
+	* gm2/gm2-libs-iso/README.texi:  corrected status of modules
+	  given release of 1.0.
+	* gm2/gm2-libs-iso/Strings.mod:  fixed performance bug reported
+	  by Scott Iverson
+	  (http://lists.nongnu.org/archive/html/gm2/2011-03/msg00035.html).
+	* gm2/p2c/p2c.h:  test BUILD_GM2_LIBS_TARGET and include appropriate
+	  configure header.
+	* gm2/tools-src/makeversion:  added another consistency test.
+	* gm2/gm2-libs/config-host.in:  new file.
+	* gm2/gm2-libs/config-target.in:  new file.
+	* gm2/gm2-libs/configure:  removed.
+	* gm2/gm2-libs/configure.in:  removed.
+	* gm2/gm2-libs/config-host:  new file.
+	* gm2/gm2-libs/config-target:  new file.
+	* gm2/gm2-libs/gm2-libs-target.h.in:  new file.
+
+2011-02-24       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  changed lenny to squeeze in repository
+	  definitions.
+
+2011-02-23       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/www/tools/texi2tr/src/texi2tr.py:  implemented
+	  section alphabetically sorted index.  Also implemented
+	  @ifhtml.
+
+2011-02-22       Gaius Mulley <gaius@gnu.org>
+
+	* www/tools/texi2tr/src/outputdev.py:  added no_tag so
+	  table elements can easily be added - fixes a bug
+	  with enumerate.
+	* gm2/www/tools/texi2tr/src/texi2tr.py:  fixed pushSpecifier
+	  and fixed 'enum' with 'enumerate'.  Enumerations work
+	  for integer and alphabetical values.
+
+2011-02-19       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2spec.c:  ensure that the prev
+	  value is reset before each include path is added.
+	* gm2/examples/gravity/Makefile.in:  changed python version
+	  and fixed exec prefix.
+
+2011-02-18       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  changed node About to Overview.
+	* gm2/www/tools/texi2tr/src:  added function index.
+
+2011-02-17       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  many bug fixes to nodes.
+	* gm2/www/tools/texi2tr:  added html, png subdirs.
+	* gm2/www/tools/texi2tr/src:  many bug fixes applied.
+
+2011-02-15       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  incorporated the contents of the
+	  web page gm2/www/index.ms into gm2.texi.
+
+2011-02-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  modified gm2.html rule.
+	* gm2/gm2.texi:  changed Function Index to Indices.
+	* gm2/examples/texi2tr/src/outputdev.py:  added
+	  templatePath.
+	* gm2/examples/texi2tr/src/texi2tr.py:  added
+	  rootName, templatePath, baseName options.
+	* gm2/www/Makefile.in:  new building instructions
+	  for the web site now that texi2tr is useable.
+	* gm2/www/index.ms:  minor changes.
+
+2011-02-09       Gaius Mulley <gaius@gnu.org>
+
+	* texi2tr is now able to translate the gm2.texi
+	  into html.  First usable version.
+	* gm2/examples/texi2tr/src/config.py:  many changes.
+	* gm2/examples/texi2tr/src/outputdev.py:  many changes.
+	* gm2/examples/texi2tr/src/navigate.py:  many changes.
+	* gm2/examples/texi2tr/src/texi2tr.py:  many changes.
+
+2011-02-04       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/texi2tr:  new directory.
+	* gm2/examples/texi2tr/src:  new directory.
+	* gm2/examples/texi2tr/src/config.py:  new file.
+	* gm2/examples/texi2tr/src/outputdev.py:  new file.
+	* gm2/examples/texi2tr/src/navigate.py:  new file.
+	* gm2/examples/texi2tr/src/texi2tr.py:  new file.
+
+2011-01-30       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  fixed some typos and corrected the
+	  python version number.  Also foxed some texinfo variable
+	  references.
+	* gm2/gm2/gm2spec.c:  tided up code.  Also modified the
+	  driver to add easily maintainable ordered lists of
+	  object paths and library paths.
+	* gm2/el/g-mode.el:  updated the dates.
+	* gm2/gm2/Make-lang.in:  use the new tool texi2tr to
+	  generate the html documentation which is currently
+	  under development.
+
+2011-01-22       Gaius Mulley <gaius@gnu.org>
+
+	* fixed a bug reported by Steve Giess.
+	* testsuite/gm2/pim/pass/constcast.mod:  New file.
+	* testsuite/gm2/pim/pass/constmax.mod:  New file.
+	* gm2/gm2-compiler/PCSymBuild.mod:  WalkLeaf detect
+	  if the symbol is a type in which case copy the
+	  type rather than get the type of a type.
+
+2011-01-14       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  modified the stage2 and Modula-2
+	  library objects built from C sources to use XGCC.
+	  Define XGCC to the locally built ./xgcc -B./
+	  This allows gm2 to build under Darwin OS X
+	  Snow Leopard.
+
+2011-01-12       Gaius Mulley <gaius@gnu.org>
+
+	* released version 1.0.1 of gm2.
+	* gm2/version.c:  updated to version 1.0.1
+	* gm2/www/index.ms:  updated news of 1.0.1 release.
+	* gm2/gm2-libs/configure.in:  updated to 1.0.1
+	* gm2/gm2-libs/configure:  rebuilt.
+	* gm2/configure:  rebuilt.
+
+2011-01-11       Gaius Mulley <gaius@gnu.org>
+
+	* fixed many bug reported by
+          DragiÅ¡a DuriÄ (dragisa-duric/testcase20).
+	* gm2/gm2-compiler/SymbolTable.mod:  new procedure
+	  SanityCheckConstants which checks to see types
+	  are used in formal parameters.
+	* gm2/gm2-compiler/SymbolTable.def:  export new procedure
+	  SanityCheckConstants.
+	* gm2/gm2-compiler/M2Comp.mod:  call SanityCheckConstants
+	  after Pass C.
+	* gm2/gm2-compiler/M2Quads.mod:  skip types in CheckParameters
+	* gm2/gm2-compiler/M2MetaError.def:  add ebnf comments.
+
+2011-01-10       Gaius Mulley <gaius@gnu.org>
+
+	* fixed many constant type related bugs reported by
+          DragiÅ¡a DuriÄ (dragisa-duric/testcase18 and
+	  dragisa-duric/testcase19).
+	* gm2/Make-lang.in:  modified texi2html build rule.
+	* gm2/bnf/m2-c.bnf:  major number of changes to incorporate
+	  parsing const expressions to deduce their types.
+	* gm2/gm2-compiler/M2Base.mod:  added return types to the
+	  builtin procedure functions so that if they are used in
+	  constant expressions m2-c can determine their types.
+	* gm2/gm2-compiler/M2Comp.mod:  ResolveConstType is now
+	  exported from PCSymBuild rather than P2SymBuild.
+	* gm2/gm2-compiler/M2GenGCC.mod:  allow procedures to be
+	  assigned to constants.
+	* gm2/gm2-compiler/M2Quads.def:  export new procedure
+	  function Top.
+	* gm2/gm2-compiler/M2Quads.mod:  implement new procedure
+	  function Top.
+	* gm2/gm2-compiler/M2StackAddress.mod:  fixed bug in
+	  M2StackAddress.NoOfItemsInStackAddress.
+	* gm2/gm2-compiler/M2StackWord.mod:  fixed same bug in
+	  M2StackWord.NoOfItemsInStackAddress.
+	* gm2/gm2-compiler/P2SymBuild.def:  removed many of the
+	  constant type resolution procedures and moved them to
+	  PCSymBuild.
+	* gm2/gm2-compiler/PCSymBuild.def:  export many constant
+	  type related procedures.
+	* gm2/gm2-compiler/PCSymBuild.mod:  major reimplementation
+	  to allow constant expression trees to be built so that
+	  types can be deduced.
+	* gm2/init/gm2-gccinit:  added new M2Const.
+	* gm2/www/index.ms:  web page now contains info relating
+	  to release 1.0.
+

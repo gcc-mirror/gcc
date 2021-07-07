@@ -1,0 +1,54 @@
+(* ASCII.def Defines all ascii constants.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE ASCII ;
+
+EXPORT QUALIFIED
+     nul, soh, stx, etx, eot, enq, ack, bel,
+     bs , ht , nl , vt , np , cr , so , si ,
+     dle, dc1, dc2, dc3, dc4, nak, syn, etb,
+     can, em , sub, esc, fs , gs , rs , us ,
+     sp ,  (* All the above are in order *)
+     lf, ff, eof, del, tab, EOL ;
+
+(*
+   Note that lf, eof and EOL are added.
+*)
+
+CONST
+     nul=000C; soh=001C; stx=002C; etx=003C;
+     eot=004C; enq=005C; ack=006C; bel=007C;
+     bs =010C; ht =011C; nl =012C; vt =013C;
+     np =014C; cr =015C; so =016C; si =017C;
+     dle=020C; dc1=021C; dc2=022C; dc3=023C;
+     dc4=024C; nak=025C; syn=026C; etb=027C;
+     can=030C; em =031C; sub=032C; esc=033C;
+     fs =034C; gs =035C; rs =036C; us =037C;
+     sp =040C; (* All the above are in order *)
+     lf =nl  ; ff =np  ; eof=eot ; tab=ht  ;
+     del=177C; EOL=nl  ;
+
+END ASCII.

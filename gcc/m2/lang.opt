@@ -1,0 +1,357 @@
+; Options for the Modula-2 front end.
+;
+; Copyright (C) 2016-2021 Free Software Foundation, Inc.
+; Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+;
+; This file is part of GNU Modula-2.
+;
+; GNU Modula-2 is free software; you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 3, or (at your option)
+; any later version.
+;
+; GNU Modula-2 is distributed in the hope that it will be useful, but
+; WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+; General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GNU Modula-2; see the file COPYING.  If not,
+; see <https://www.gnu.org/licenses/>.  *)
+
+; See the GCC internals manual for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+Language
+Modula-2
+
+I
+Modula-2 Joined Separate
+; Documented in c.opt
+
+L
+Modula-2 Joined Separate
+; Not documented
+
+M
+Modula-2
+; Documented in c.opt
+
+O
+Modula-2
+; Documented in c.opt
+
+fiso
+Modula-2
+use ISO dialect of Modula-2
+
+fpim
+Modula-2
+use PIM [234] dialect of Modula-2
+
+fpim2
+Modula-2
+use PIM 2 dialect of Modula-2
+
+fpim3
+Modula-2
+use PIM 3 dialect of Modula-2
+
+fpim4
+Modula-2
+use PIM 4 dialect of Modula-2
+
+fpositive-mod-floor-div
+Modula-2
+force positive result from MOD and DIV result floor
+
+flibs=
+Modula-2 Joined
+specify the library order, currently legal entries include: log, min, pim, iso or their directory name equivalent m2log, m2min, m2pim, m2iso.
+
+fauto-init
+Modula-2
+automatically initializes all pointers to NIL
+
+flocation=
+Modula-2 Joined
+set all location values to a specific value (internal)
+
+fbounds
+Modula-2
+turns on runtime subrange, array index and indirection via NIL pointer checking
+
+freturn
+Modula-2
+turns on runtime checking for functions which finish without executing a RETURN statement
+
+fnil
+Modula-2
+turns on runtime checking to detect accessing data through a NIL value pointer
+
+fcase
+Modula-2
+turns on runtime checking to check whether a CASE statement requires an ELSE clause when on was not specified
+
+ffloatvalue
+Modula-2
+turns on runtime checking to check whether a floating point number is about to exceed range
+
+fwholevalue
+Modula-2
+turns on runtime checking to check whether a whole number is about to exceed range
+
+fsoft-check-all
+Modula-2
+turns on all software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholediv -ffloatvalue)
+
+frange
+Modula-2
+turns on all range checking for numerical values
+
+findex
+Modula-2
+turns on all range checking for numerical values
+
+fwholediv
+Modula-2
+turns on all division and modulus by zero checking for ordinal values
+
+fexceptions
+Modula-2
+; Documented in common.opt
+
+fextended-opaque
+Modula-2
+allows opaque types to be implemented as any type (a GNU Modula-2 extension)
+
+fuselist
+Modula-2
+use ordered list of modules when linking
+
+fmakelist
+Modula-2
+create a topologically ordered list of modules
+
+fmodules
+Modula-2
+display the list of modules and their location
+
+fno-pthread
+Modula-2
+do not link against the pthread library
+
+fm2-plugin
+Modula-2
+insert plugin to identify runtime errors at compiletime
+
+fno-m2-plugin
+Modula-2
+do not insert plugin to identify runtime errors at compiletime
+
+fonlylink
+Modula-2
+only link the module and do not compile module
+
+ftarget-ar=
+Modula-2 Joined
+full path to target archiver
+
+ftarget-ranlib=
+Modula-2 Joined
+full path to target ranlib
+
+fruntime-modules=
+Modula-2 Joined
+specify the list of runtime modules and their initialization order
+
+fcpp
+Modula-2
+use cpp to preprocess the module
+
+fq
+Modula-2
+internal compiler debugging information, dump the list of quadruples
+
+fsources
+Modula-2
+display the location of module source files as they are compiled
+
+funbounded-by-reference
+Modula-2
+optimize non var unbounded parameters by passing it by reference, providing it is not written to within the callee procedure.
+
+fdef=
+Modula-2 Joined
+recognise the specified suffix as a definition module filename
+
+fmod=
+Modula-2 Joined
+recognise the specified suffix as implementation and module filenames
+
+fxcode
+Modula-2
+issue all errors and warnings in the Xcode format
+
+fdebug-builtins
+Modula-2
+call a real function, rather than the builtin equivalent
+
+fdump-system-exports
+Modula-2
+display all inbuilt system items
+
+fd
+Modula-2
+turn on internal debugging of the compiler
+
+fdebug-trace-quad
+Modula-2
+turn on quadruple tracing (internal switch)
+
+fdebug-trace-api
+Modula-2
+turn on the Modula-2 api tracing (internal switch)
+
+fdebug-function-line-numbers
+Modula-2
+turn on the Modula-2 function line number generation (internal switch)
+
+fm2-statistics
+Modula-2
+display statistics about the amount of source lines compiled and symbols used
+
+fm2-g
+Modula-2
+generate extra nops to improve debugging, producing an instruction for every code related keyword
+
+fm2-lower-case
+Modula-2
+generate error messages which render keywords in lower case
+
+fm2-strict-type
+Modula-2
+experimental flag to turn on the new strict type checker
+
+fswig
+Modula-2
+create a swig interface file for the module
+
+fshared
+Modula-2
+generate a shared library from the module
+
+fmakeinit
+Modula-2
+generate the start up C code for the module, a file _m2_modulename.c is created
+
+fobject-path=
+Modula-2 Joined
+set the object path
+
+fm2-whole-program
+Modula-2
+compile all implementation modules and program module at once
+
+fversion
+Modula-2
+; Documented in common.opt
+
+fm2-version
+Modula-2
+display the GNU Modula-2 version
+
+Wstudents
+Modula-2
+extra compile time semantic checking, typically tries to catch bad style
+
+Wpedantic
+Modula-2
+; Documented in common.opt
+
+Wpedantic-param-names
+Modula-2
+compiler checks to force definition module procedure parameter names with their implementation module counterpart
+
+Wpedantic-cast
+Modula-2
+compiler warns if a cast is being used on types of differing sizes
+
+Wverbose-unbounded
+Modula-2
+inform user which parameters will be passed by reference
+
+Wall
+Modula-2
+; Documented in c.opt
+
+Wunused-variable
+Modula-2
+; Documented in c.opt
+
+Wunused-parameter
+Modula-2
+; Documented in c.opt
+
+version
+Modula-2
+; Documented in c.opt
+
+v
+Modula-2
+; Documented in c.opt
+
+lang-asm
+Modula-2
+; Documented in c.opt
+
+traditional-cpp
+Modula-2
+; Documented in c.opt
+
+iprefix
+Modula-2
+; Documented in c.opt
+
+isystem
+Modula-2
+; Documented in c.opt
+
+idirafter
+Modula-2
+; Documented in c.opt
+
+imultilib
+Modula-2
+; Documented in c.opt
+
+fobjc-std=objc1
+Modula-2
+; Documented in c.opt
+
+fcppend
+Modula-2
+passed to the preprocessor if -fcpp is used
+
+fcppbegin
+Modula-2
+passed to the preprocessor if -fcpp is used
+
+fcppprog=
+Modula-2 Joined
+passed to the preprocessor if -fcpp is used
+
+E
+Modula-2
+; Documented in c.opt (passed to the preprocessor if -fcpp is used)
+
+D
+Modula-2
+; Documented in c.opt
+
+x
+Modula-2 Joined
+specify the language from the compiler driver
+
+; This comment is to ensure we retain the blank line above.

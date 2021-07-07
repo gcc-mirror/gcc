@@ -1,0 +1,2620 @@
+(* M2Quads.def generates quadruples.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Quads ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2Quads
+   Date       : 3/6/87
+   Description:  generates quadruples.
+*)
+
+FROM SYSTEM IMPORT WORD ;
+FROM DynamicStrings IMPORT String ;
+
+EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
+                 BuildModuleStart,
+                 StartBuildInit, EndBuildInit,
+                 StartBuildFinally, EndBuildFinally,
+                 BuildExceptInitial, BuildExceptFinally,
+                 BuildExceptProcedure,
+                 BuildRetry,
+                 BuildReThrow,
+                 BuildBuiltinConst, BuildBuiltinTypeInfo,
+                 BuildAssignment, BuildAlignment,
+                 BuildDefaultFieldAlignment, BuildPragmaField,
+                 BuildRepeat, BuildUntil,
+                 BuildWhile, BuildDoWhile, BuildEndWhile,
+                 BuildLoop, BuildExit, BuildEndLoop,
+                 BuildThenIf, BuildElse, BuildEndIf,
+                 BuildElsif1, BuildElsif2,
+                 BuildForToByDo, BuildPseudoBy, BuildEndFor,
+                 BuildCaseStartStatementSequence,
+                 BuildCaseEndStatementSequence,
+                 BuildCaseList,
+                 BuildCaseStart,
+                 BuildCaseOr,
+                 BuildCaseElse, BuildCaseEnd, BuildCaseCheck,
+                 BuildCaseRange, BuildCaseEquality,
+                 BuildNulParam, BuildProcedureCall,
+                 CheckBuildFunction,
+                 BuildFunctionCall, BuildConstFunctionCall,
+                 BuildProcedureStart, BuildProcedureEnd,
+                 BuildProcedureBegin,
+                 BuildReturn,
+                 BuildModulePriority,
+                 BuildBooleanVariable,
+                 BuildSizeCheckStart,
+                 StartBuildWith, EndBuildWith, CheckWithReference,
+                 BuildDesignatorRecord,
+                 BuildDesignatorArray,
+                 BuildDesignatorPointer,
+      	       	 BuildSetStart, BuildSetEnd,
+                 BuildEmptySet,
+                 BuildInclRange, BuildInclBit,
+                 BuildNulExpression,
+                 BuildNot,
+                 BuildRelOp,
+                 BuildBinaryOp,
+                 BuildUnaryOp,
+                 RecordOp,
+                 Top,
+                 PopTF, PushTF, PopT, PushT, PopNothing, PopN, PushTFA,
+                 PushTtok, PushTFtok, PopTFtok, PopTtok, PushTFAtok,
+                 PushTFn, PopTFn,
+                 OperandT, OperandF, OperandA, OperandAnno, OperandTok,
+                 DisplayStack, WriteOperand, Annotate,
+
+                 BuildCodeOn, BuildCodeOff,
+                 BuildProfileOn, BuildProfileOff,
+                 BuildOptimizeOn, BuildOptimizeOff,
+                 BuildInline, BuildStmtNote, BuildLineNo, PushLineNo,
+                 BuildConstructor,
+                 BuildConstructorStart,
+                 BuildConstructorEnd,
+                 NextConstructorField, BuildTypeForConstructor,
+                 BuildComponentValue,
+                 SilentBuildConstructor, SilentBuildConstructorStart,
+
+                 SetOptionOptimizing, SetOptionCoding, SetOptionProfiling,
+
+                 QuadOperator,
+                 Opposite,
+
+                 IsReferenced,
+                 IsBackReference,
+                 IsUnConditional,
+                 IsConditional, IsBackReferenceConditional,
+                 IsCall,
+                 IsReturn,
+                 IsProcedureScope,
+                 IsNewLocalVar,
+                 IsKillLocalVar,
+                 IsCatchBegin,
+                 IsCatchEnd,
+                 IsInitStart,
+                 IsInitEnd,
+                 IsFinallyStart,
+                 IsFinallyEnd,
+                 IsCodeOn,          (* Compiler flag testing routines *)
+                 IsProfileOn,
+                 IsOptimizeOn,
+                 IsPseudoQuad,
+                 IsDefOrModFile,
+                 IsInitialisingConst,
+
+                 DisplayQuadList, DisplayQuadRange, DisplayQuad,
+                 WriteOperator, BackPatchSubrangesAndOptParam,
+
+                 GetQuad, GetFirstQuad, GetNextQuad, PutQuad,
+                 SubQuad, EraseQuad, GetRealQuad,
+                 GetQuadtok, GetQuadOtok,
+                 CountQuads,
+                 GetLastFileQuad,
+                 GetLastQuadNo,
+                 QuadToLineNo, QuadToTokenNo,
+                 VariableAnalysis, LoopAnalysis, ForLoopAnalysis,
+                 AddVarientFieldToList, AddRecordToList,
+                 AddVarientToList,
+                 AddVarientRange, AddVarientEquality,
+                 BeginVarient, EndVarient, ElseVarient,
+                 BeginVarientList, EndVarientList,
+                 IsAutoPushOn, PushAutoOn, PushAutoOff, PopAuto,
+                 PushInConstExpression, PopInConstExpression,
+                 IsInConstExpression,
+                 MustCheckOverflow ;
+
+
+TYPE
+   QuadOperator = (BecomesOp, IndrXOp, XIndrOp, ArrayOp, ElementSizeOp,
+                   RecordFieldOp,
+                   AddrOp, SizeOp, OffsetOp,
+                   IfEquOp, IfLessEquOp, IfGreEquOp, IfGreOp, IfLessOp,
+                   IfNotEquOp, IfInOp, IfNotInOp,
+                   CallOp, ParamOp, OptParamOp, ReturnOp, ReturnValueOp, FunctValueOp,
+                   NewLocalVarOp, KillLocalVarOp,
+                   ProcedureScopeOp, ModuleScopeOp,
+                   DummyOp,
+                   GotoOp, InitEndOp, InitStartOp,
+                   FinallyStartOp, FinallyEndOp,
+                   RetryOp, TryOp, CatchBeginOp, CatchEndOp, ThrowOp,
+                   NegateOp, AddOp, SubOp, MultOp,
+		   DivM2Op, ModM2Op,
+                   DivCeilOp, ModCeilOp,
+                   DivFloorOp, ModFloorOp, DivTruncOp, ModTruncOp,
+      	       	   LogicalOrOp, LogicalAndOp, LogicalXorOp, LogicalDiffOp,
+                   InclOp, ExclOp, LogicalShiftOp, LogicalRotateOp,
+                   UnboundedOp, HighOp,
+                   CoerceOp, ConvertOp, CastOp,
+                   InitAddressOp,
+                   StartDefFileOp, StartModFileOp, EndFileOp,
+                   CodeOnOp, CodeOffOp,
+                   ProfileOnOp, ProfileOffOp,
+                   OptimizeOnOp, OptimizeOffOp,
+                   InlineOp, LineNumberOp, StatementNoteOp,
+                   SubrangeLowOp, SubrangeHighOp,
+                   BuiltinConstOp, BuiltinTypeInfoOp, StandardFunctionOp,
+                   SavePriorityOp, RestorePriorityOp,
+                   SaveExceptionOp, RestoreExceptionOp,
+                   RangeCheckOp, ErrorOp) ;
+
+
+(*
+   SetOptionCoding - builds a code quadruple if the profiling
+                     option was given to the compiler.
+*)
+
+PROCEDURE SetOptionCoding (b: BOOLEAN) ;
+
+
+(*
+   SetOptionProfiling - builds a profile quadruple if the profiling
+                        option was given to the compiler.
+*)
+
+PROCEDURE SetOptionProfiling (b: BOOLEAN) ;
+
+
+(*
+   SetOptionOptimizing - builds a code quadruple if the profiling
+                         option was given to the compiler.
+*)
+
+PROCEDURE SetOptionOptimizing (b: BOOLEAN) ;
+
+
+(*
+   Opposite - returns the opposite comparison operator.
+*)
+
+PROCEDURE Opposite (Operator: QuadOperator) : QuadOperator ;
+
+
+(*
+   IsReferenced - returns true if QuadNo is referenced by another quadruple.
+*)
+
+PROCEDURE IsReferenced (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsBackReference - returns TRUE if quadruple, q, is referenced from a quad further on.
+*)
+
+PROCEDURE IsBackReference (q: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsUnConditional - returns true if QuadNo is an unconditional jump.
+*)
+
+PROCEDURE IsUnConditional (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConditional - returns true if QuadNo is a conditional jump.
+*)
+
+PROCEDURE IsConditional (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsBackReferenceConditional - returns TRUE if quadruple, q, is referenced from
+                                a conditional quad further on.
+*)
+
+PROCEDURE IsBackReferenceConditional (q: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsCall - returns true if QuadNo is a call operation.
+*)
+
+PROCEDURE IsCall (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsReturn - returns true if QuadNo is a return operation.
+*)
+
+PROCEDURE IsReturn (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsProcedureScope - returns true if QuadNo is a ProcedureScope operation.
+*)
+
+PROCEDURE IsProcedureScope (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsNewLocalVar - returns true if QuadNo is a NewLocalVar operation.
+*)
+
+PROCEDURE IsNewLocalVar (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsKillLocalVar - returns true if QuadNo is a KillLocalVar operation.
+*)
+
+PROCEDURE IsKillLocalVar (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsCatchBegin - returns true if QuadNo is a catch begin quad.
+*)
+
+PROCEDURE IsCatchBegin (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsCatchEnd - returns true if QuadNo is a catch end quad.
+*)
+
+PROCEDURE IsCatchEnd (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsInitStart - returns true if QuadNo is a init start quad.
+*)
+
+PROCEDURE IsInitStart (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsInitEnd - returns true if QuadNo is a init end quad.
+*)
+
+PROCEDURE IsInitEnd (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsFinallyStart - returns true if QuadNo is a finally start quad.
+*)
+
+PROCEDURE IsFinallyStart (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsFinallyEnd - returns true if QuadNo is a finally end quad.
+*)
+
+PROCEDURE IsFinallyEnd (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsInitialisingConst - returns TRUE if the quadruple is setting
+                         a const (op1) with a value.
+*)
+
+PROCEDURE IsInitialisingConst (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsOptimizeOn - returns true if the Optimize flag was true at QuadNo.
+*)
+
+PROCEDURE IsOptimizeOn (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsProfileOn - returns true if the Profile flag was true at QuadNo.
+*)
+
+PROCEDURE IsProfileOn (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsCodeOn - returns true if the Code flag was true at QuadNo.
+*)
+
+PROCEDURE IsCodeOn (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPseudoQuad - returns true if QuadNo is a compiler directive.
+                  ie code, profile and optimize.
+*)
+
+PROCEDURE IsPseudoQuad (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsDefOrModFile - returns TRUE if QuadNo is a start of Module or Def file
+                    directive.
+*)
+
+PROCEDURE IsDefOrModFile (QuadNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   DisplayQuadList - displays all quads.
+*)
+
+PROCEDURE DisplayQuadList ;
+
+
+(*
+   DisplayQuadRange - displays all quads in list range, start..end.
+*)
+
+PROCEDURE DisplayQuadRange (start, end: CARDINAL) ;
+
+
+(*
+   DisplayQuad - displays a quadruple, QuadNo.
+*)
+
+PROCEDURE DisplayQuad (QuadNo: CARDINAL) ;
+
+
+(*
+   GetLastFileQuad - returns the Quadruple number of the last StartDefFile or
+                     StartModFile quadruple.
+*)
+
+PROCEDURE GetLastFileQuad (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetLastQuadNo - returns the last quadruple number referenced
+                   by a GetQuad.
+*)
+
+PROCEDURE GetLastQuadNo () : CARDINAL ;
+
+
+(*
+   QuadToTokenNo - Converts a QuadNo into the approprate token number of the
+                   source file, the line number is returned.
+
+                   This may be used to yield an idea where abouts in the
+                   source file the code generetion is
+                   processing.
+*)
+
+PROCEDURE QuadToTokenNo (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   QuadToLineNo - Converts a QuadNo into the approprate line number of the
+                  source file, the line number is returned.
+
+                  This may be used to yield an idea where abouts in the
+                  source file the code generetion is
+                  processing.
+*)
+
+PROCEDURE QuadToLineNo (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetQuad - returns the Quadruple QuadNo.
+*)
+
+PROCEDURE GetQuad (QuadNo: CARDINAL;
+                   VAR Op: QuadOperator;
+                   VAR Oper1, Oper2, Oper3: CARDINAL) ;
+
+
+(*
+   GetQuadtok - returns the Quadruple QuadNo.
+*)
+
+PROCEDURE GetQuadtok (QuadNo: CARDINAL;
+                      VAR Op: QuadOperator;
+                      VAR Oper1, Oper2, Oper3: CARDINAL;
+                      VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+
+
+(*
+   GetQuadOtok - returns the Quadruple QuadNo.
+*)
+
+PROCEDURE GetQuadOtok (QuadNo: CARDINAL;
+                       VAR tok: CARDINAL;
+                       VAR Op: QuadOperator;
+                       VAR Oper1, Oper2, Oper3: CARDINAL;
+                       VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+
+
+(*
+   PutQuad - overwrites a quadruple QuadNo with Op, Oper1, Oper2, Oper3
+*)
+
+PROCEDURE PutQuad (QuadNo: CARDINAL;
+                   Op: QuadOperator;
+                   Oper1, Oper2, Oper3: CARDINAL) ;
+
+(*
+   GetFirstQuad - returns the first quadruple.
+*)
+
+PROCEDURE GetFirstQuad () : CARDINAL ;
+
+
+(*
+   GetNextQuad - returns the Quadruple number following QuadNo.
+*)
+
+PROCEDURE GetNextQuad (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetRealQuad - returns the Quadruple number of the real quadruple
+                 at QuadNo or beyond.
+*)
+
+PROCEDURE GetRealQuad (QuadNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   SubQuad - removes quadruple QuadNo.
+*)
+
+PROCEDURE SubQuad (QuadNo: CARDINAL) ;
+
+
+(*
+   EraseQuad - erases a quadruple QuadNo, the quaduple is still in the list
+               but wiped clean.
+*)
+
+PROCEDURE EraseQuad (QuadNo: CARDINAL) ;
+
+
+(*
+   CountQuads - returns the number of quadruples.
+*)
+
+PROCEDURE CountQuads () : CARDINAL ;
+
+
+(*
+   StartBuildDefFile - generates a StartFileOp quadruple indicating the file
+                       that has produced the subsequent quadruples.
+                       The code generator uses the StartDefFileOp quadruples
+                       to relate any error to the appropriate file.
+
+
+                       Entry                   Exit
+                       =====                   ====
+
+
+                Ptr ->                                        <- Ptr
+                       +------------+          +------------+
+                       | ModuleName |          | ModuleName |
+                       |------------|          |------------|
+
+
+                       Quadruples Produced
+
+                       q     StartDefFileOp  _  _  ModuleSym
+*)
+
+PROCEDURE StartBuildDefFile ;
+
+
+(*
+   StartBuildModFile - generates a StartModFileOp quadruple indicating the file
+                       that has produced the subsequent quadruples.
+                       The code generator uses the StartModFileOp quadruples
+                       to relate any error to the appropriate file.
+
+
+                       Entry                   Exit
+                       =====                   ====
+
+
+                Ptr ->                                        <- Ptr
+                       +------------+          +------------+
+                       | ModuleName |          | ModuleName |
+                       |------------|          |------------|
+
+
+                       Quadruples Produced
+
+                       q     StartModFileOp  _  _  ModuleSym
+*)
+
+PROCEDURE StartBuildModFile ;
+
+
+(*
+   EndBuildFile - generates an EndFileOp quadruple indicating the file
+                  that has produced the previous quadruples has ended.
+
+                  Entry                   Exit
+                  =====                   ====
+
+
+           Ptr ->                                        <- Ptr
+                  +------------+          +------------+
+                  | ModuleName |          | ModuleName |
+                  |------------|          |------------|
+
+
+                  Quadruples Produced
+
+                  q     EndFileOp  _  _  ModuleSym
+*)
+
+PROCEDURE EndBuildFile ;
+
+
+(*
+   StartBuildInit - Builds the start initialisation code of a module.
+*)
+
+PROCEDURE StartBuildInit ;
+
+
+(*
+   EndBuildInit - Builds the end initialisation code of a module.
+*)
+
+PROCEDURE EndBuildInit ;
+
+
+(*
+   StartBuildFinally - Builds the start finalisation code of a module.
+*)
+
+PROCEDURE StartBuildFinally ;
+
+
+(*
+   EndBuildFinally - Builds the end finalisation code of a module.
+*)
+
+PROCEDURE EndBuildFinally ;
+
+
+(*
+   BuildExceptInitial - adds an ExceptOp quadruple in a modules
+                        initial block.
+*)
+
+PROCEDURE BuildExceptInitial ;
+
+
+(*
+   BuildExceptFinally - adds an ExceptOp quadruple in a modules
+                        finally block.
+*)
+
+PROCEDURE BuildExceptFinally ;
+
+
+(*
+   BuildExceptProcedure - adds an ExceptOp quadruple in a procedure
+                          block.
+*)
+
+PROCEDURE BuildExceptProcedure ;
+
+
+(*
+   BuildRetry - adds an RetryOp quadruple.
+*)
+
+PROCEDURE BuildRetry ;
+
+
+(*
+   BuildReThrow - creates a ThrowOp _ _ NulSym, indicating that
+                  the exception needs to be rethrown.  The stack
+                  is unaltered.
+*)
+
+PROCEDURE BuildReThrow (tokenno: CARDINAL) ;
+
+
+(*
+   StartBuildInnerInit - Sets the start of initialization code of the
+                         inner module to the next quadruple.
+*)
+
+PROCEDURE StartBuildInnerInit ;
+
+
+(*
+   EndBuildInnerInit - Sets the end initialization code of a module.
+*)
+
+PROCEDURE EndBuildInnerInit ;
+
+
+(*
+   BuildBuiltinConst - makes reference to a builtin constant within gm2.
+
+                              Entry                 Exit
+
+                       Ptr ->
+                              +------------+        +------------+
+                              | Ident      |        | Sym        |
+                              |------------|        |------------|
+
+                       Quadruple produced:
+
+                       q    Sym  BuiltinConstOp  Ident
+*)
+
+PROCEDURE BuildBuiltinConst ;
+
+
+(*
+   BuildBuiltinTypeInfo - make reference to a builtin typeinfo function
+                          within gm2.
+
+                                 Entry                 Exit
+
+                          Ptr ->
+                                 +-------------+
+                                 | IdentType   |
+                                 |-------------|       +------------+
+                                 | ConstString |       | Sym        |
+                                 |-------------|       |------------|
+
+                          Quadruple produced:
+
+                          q    Sym  BuiltinTypeInfoOp  Ident ConstString
+*)
+
+PROCEDURE BuildBuiltinTypeInfo ;
+
+
+(*
+   BuildAssignment - Builds an assignment from the values given on the
+                     quad stack. Either an assignment to an
+                     arithmetic expression or an assignment to a
+                     boolean expression.
+                     The Stack is expected to contain:
+
+
+       Either
+
+                     Entry                   Exit
+                     =====                   ====
+
+              Ptr ->
+                     +------------+
+                     | Expression |
+                     |------------|
+                     | Designator |
+                     |------------|          +------------+
+                     |            |          |            |  <- Ptr
+                     |------------|          |------------|
+
+
+                     Quadruples Produced
+
+                     q     BecomesOp  Designator  _  Expression
+
+       OR
+
+                     Entry                   Exit
+                     =====                   ====
+
+              Ptr ->
+                     +------------+
+                     | True |False|
+                     |------------|
+                     | Designator |
+                     |------------|          +------------+
+                     |            |          |            |  <- Ptr
+                     |------------|          |------------|
+
+
+                     Quadruples Produced
+
+                     q     BecomesOp  Designator  _  TRUE
+                     q+1   GotoOp                    q+3
+                     q+2   BecomesOp  Designator  _  FALSE
+
+*)
+
+PROCEDURE BuildAssignment (becomesTokNo: CARDINAL) ;
+
+
+(*
+   BuildAlignment - builds an assignment to an alignment constant.
+
+                    The Stack is expected to contain:
+
+
+                            Entry                   Exit
+                            =====                   ====
+
+                    Ptr ->
+                            +---------------+
+                            | Expression    |
+                            |---------------|
+                            | bytealignment |
+                            |---------------|       empty
+*)
+
+PROCEDURE BuildAlignment ;
+
+
+(*
+   BuildBitLength - builds an assignment to a bit length constant.
+
+                    The Stack is expected to contain:
+
+
+                           Entry                   Exit
+                           =====                   ====
+
+                    Ptr ->
+                           +------------+
+                           | Expression |
+                           |------------|          empty
+*)
+
+PROCEDURE BuildBitLength ;
+
+
+(*
+   BuildPragmaField - builds an assignment to a pragma constant.
+
+                      The Stack is expected to contain:
+
+
+                                 Entry                   Exit
+                                 =====                   ====
+
+                         Ptr ->
+                                +------------+
+                                | Expression |
+                                |------------|          empty
+*)
+
+PROCEDURE BuildPragmaField ;
+
+
+(*
+   BuildDefaultFieldAlignment - builds an assignment to an alignment constant.
+
+                                The Stack is expected to contain:
+
+
+                                       Entry                   Exit
+                                       =====                   ====
+
+                                Ptr ->
+                                       +------------+
+                                       | Expression |
+                                       |------------|          empty
+*)
+
+PROCEDURE BuildDefaultFieldAlignment ;
+
+
+(*
+   BuildRepeat - Builds the repeat statement from the quad stack.
+                 The Stack is expected to contain:
+
+
+                 Entry                   Exit
+                 =====                   ====
+
+
+                 Empty
+                                                        <- Ptr
+                                         +------------+
+                                         | RepeatQuad |
+                                         |------------|
+
+*)
+
+PROCEDURE BuildRepeat ;
+
+
+(*
+   BuildUntil - Builds the until part of the repeat statement
+                from the quad stack.
+                The Stack is expected to contain:
+
+
+                Entry                   Exit
+                =====                   ====
+
+        Ptr ->
+                +------------+
+                | t   | f    |
+                |------------|
+                | RepeatQuad |          Empty
+                |------------|
+*)
+
+PROCEDURE BuildUntil ;
+
+
+(*
+   BuildWhile - Builds the While part of the While statement
+                from the quad stack.
+                The Stack is expected to contain:
+
+
+                Entry                   Exit
+                =====                   ====
+
+                                                       <- Ptr
+                                        |------------|
+                Empty                   | WhileQuad  |
+                                        |------------|
+*)
+
+PROCEDURE BuildWhile ;
+
+
+(*
+   BuildDoWhile - Builds the Do part of the while statement
+                  from the quad stack.
+                  The Stack is expected to contain:
+
+
+                  Entry                   Exit
+                  =====                   ====
+
+          Ptr ->
+                  +------------+          +------------+
+                  | t   | f    |          | 0    | f   |
+                  |------------|          |------------|
+                  | WhileQuad  |          | WhileQuad  |
+                  |------------|          |------------|
+
+                  Quadruples
+
+                  BackPatch t exit to the NextQuad
+*)
+
+PROCEDURE BuildDoWhile ;
+
+
+(*
+   BuildEndWhile - Builds the end part of the while statement
+                   from the quad stack.
+                   The Stack is expected to contain:
+
+
+                   Entry                   Exit
+                   =====                   ====
+
+           Ptr ->
+                   +------------+
+                   | t   | f    |
+                   |------------|
+                   | WhileQuad  |          Empty
+                   |------------|
+
+                   Quadruples
+
+                   q    GotoOp  WhileQuad
+                   False exit is backpatched with q+1
+*)
+
+PROCEDURE BuildEndWhile ;
+
+
+(*
+   BuildLoop - Builds the Loop part of the Loop statement
+               from the quad stack.
+               The Stack is expected to contain:
+
+
+               Entry                   Exit
+               =====                   ====
+
+                                                      <- Ptr
+               Empty                   +------------+
+                                       | LoopQuad   |
+                                       |------------|
+*)
+
+PROCEDURE BuildLoop ;
+
+
+(*
+   BuildExit - Builds the Exit part of the Loop statement.
+*)
+
+PROCEDURE BuildExit ;
+
+
+(*
+   BuildEndLoop - Builds the End part of the Loop statement
+                  from the quad stack.
+                  The Stack is expected to contain:
+
+
+                  Entry                   Exit
+                  =====                   ====
+
+          Ptr ->
+                  +------------+
+                  | LoopQuad   |          Empty
+                  |------------|
+
+                  Quadruples
+
+                  Goto  _  _  LoopQuad
+*)
+
+PROCEDURE BuildEndLoop ;
+
+
+(*
+   BuildThenIf - Builds the Then part of the If statement
+                 from the quad stack.
+                 The Stack is expected to contain:
+
+
+                 Entry                   Exit
+                 =====                   ====
+
+         Ptr ->                                          <- Ptr
+                 +------------+          +------------+
+                 | t   | f    |          | 0    | f   |
+                 |------------|          |------------|
+
+                 Quadruples
+
+                 The true exit is BackPatched to point to
+                 the NextQuad.
+*)
+
+PROCEDURE BuildThenIf ;
+
+
+(*
+   BuildElse - Builds the Else part of the If statement
+               from the quad stack.
+               The Stack is expected to contain:
+
+
+               Entry                   Exit
+               =====                   ====
+
+       Ptr ->
+               +------------+          +------------+
+               | t   | f    |          | t+q  | 0   |
+               |------------|          |------------|
+
+               Quadruples
+
+               q    GotoOp  _  _  0
+               q+1  <- BackPatched from f
+*)
+
+PROCEDURE BuildElse ;
+
+
+(*
+   BuildEndIf - Builds the End part of the If statement
+                from the quad stack.
+                The Stack is expected to contain:
+
+
+                Entry                   Exit
+                =====                   ====
+
+        Ptr ->
+                +------------+
+                | t   | f    |          Empty
+                |------------|
+
+                Quadruples
+
+                Both t and f are backpatched to point to the NextQuad
+*)
+
+PROCEDURE BuildEndIf ;
+
+
+(*
+   BuildElsif1 - Builds the Elsif part of the If statement
+                 from the quad stack.
+                 The Stack is expected to contain:
+
+
+                 Entry                   Exit
+                 =====                   ====
+
+         Ptr ->
+                 +------------+          +------------+
+                 | t   | f    |          | t+q  | 0   |
+                 |------------|          |------------|
+
+                 Quadruples
+
+                 q    GotoOp  _  _  0
+                 q+1  <- BackPatched from f
+*)
+
+PROCEDURE BuildElsif1 ;
+
+
+(*
+   BuildElsif2 - Builds the Elsif until part of the If statement
+                 from the quad stack.
+                 The Stack is expected to contain:
+
+
+                 Entry                   Exit
+                 =====                   ====
+
+          Ptr ->
+                 +--------------+
+                 | 0    | f1    |                            <- Ptr
+                 |--------------|          +---------------+
+                 | t2   | f2    |          | t2    | f1+f2 |
+                 |--------------|          |---------------|
+*)
+
+PROCEDURE BuildElsif2 ;
+
+
+(*
+   BuildForToByDo - Builds the For To By Do part of the For statement
+                    from the quad stack.
+                    The Stack is expected to contain:
+
+
+                    Entry                   Exit
+                    =====                   ====
+
+
+             Ptr ->                                        <- Ptr
+                    +------------+          +------------+
+                    | BySym      |          | t   | f    |
+                    |------------|          |------------|
+                    | e2         |          | ForQuad    |
+                    |------------|          |------------|
+                    | e1         |          | BySym      |
+                    |------------|          |------------|
+                    | Ident      |          | IdentSym   |
+                    |------------|          |------------|
+
+                    Quadruple
+
+                    q   BecomesOp  IdentSym  _  e1
+                    q+1 if <       by        0  q+5
+      	       	    q+2 GotoOp                  q+3
+                    q+3 If >       IdentSym  e2 _
+      	       	    q+4 GotoOp                  q+7
+                    q+5 If <=      IdentSym  e2 _
+      	       	    q+6 GotoOp                  q+7
+
+
+                    The For Loop is regarded:
+
+                    For ident := e1 To e2 By by Do
+
+                    End
+*)
+
+PROCEDURE BuildForToByDo ;
+
+
+(*
+   BuildPseudoBy - Builds the Non existant part of the By
+                   clause of the For statement
+                   from the quad stack.
+                   The Stack is expected to contain:
+
+
+                   Entry                   Exit
+                   =====                   ====
+
+                                                           <- Ptr
+                                           +------------+
+                   Empty                   | BySym      |
+                                           |------------|
+*)
+
+PROCEDURE BuildPseudoBy ;
+
+
+(*
+   BuildEndFor - Builds the End part of the For statement
+                 from the quad stack.
+                 The Stack is expected to contain:
+
+
+                 Entry                   Exit
+                 =====                   ====
+
+         Ptr ->
+                 +------------+
+                 | t   | f    |
+                 |------------|
+                 | ForQuad    |
+                 |------------|
+                 | BySym      |
+                 |------------|
+                 | IdSym      |          Empty
+                 |------------|
+*)
+
+PROCEDURE BuildEndFor (endpostok: CARDINAL) ;
+
+
+(*
+   BuildCaseStart - starts the case statement.
+                    It initializes a backpatch list on the compile
+                    time stack, the list is used to contain all
+                    case break points. The list is later backpatched
+                    and contains all positions of the case statement
+                    which jump to the end of the case statement.
+                    The stack also contains room for a boolean
+                    expression, this is needed to allow , operator
+                    in the CaseField alternatives.
+
+                    The Stack is expected to contain:
+
+
+                    Entry                   Exit
+                    =====                   ====
+
+                                                           <- Ptr
+                                            +------------+
+                    Empty                   | 0    | 0   |
+                                            |------------|
+                                            | 0    | 0   |
+                                            |------------|
+*)
+
+PROCEDURE BuildCaseStart ;
+
+
+(*
+   BuildCaseStartStatementSequence - starts the statement sequence
+                                     inside a case clause.
+                                     BackPatches the true exit to the
+                                     NextQuad.
+                                     The Stack:
+
+                                     Entry             Exit
+
+                              Ptr ->                                  <- Ptr
+                                     +-----------+     +------------+
+                                     | t   | f   |     | 0   | f    |
+                                     |-----------|     |------------|
+*)
+
+PROCEDURE BuildCaseStartStatementSequence ;
+
+
+(*
+   BuildCaseEndStatementSequence - ends the statement sequence
+                                   inside a case clause.
+                                   BackPatches the false exit f1 to the
+                                   NextQuad.
+                                   Asserts that t1 and f2 is 0
+                                   Pushes t2+q and 0
+
+                                   Quadruples:
+
+                                   q  GotoOp  _  _  0
+
+                                   The Stack:
+
+                                   Entry             Exit
+
+                            Ptr ->                                  <- Ptr
+                                   +-----------+     +------------+
+                                   | t1  | f1  |     | 0    | 0   |
+                                   |-----------|     |------------|
+                                   | t2  | f2  |     | t2+q | 0   |
+                                   |-----------|     |------------|
+*)
+
+PROCEDURE BuildCaseEndStatementSequence ;
+
+
+(*
+   BuildCaseRange - builds the range testing quaruples for
+                    a case clause.
+
+                    IF (e1>=ce1) AND (e1<=ce2)
+                    THEN
+
+                    ELS..
+
+                    The Stack:
+
+                    Entry             Exit
+
+             Ptr ->
+                    +-----------+
+                    | ce2       |                   <- Ptr
+                    |-----------|     +-----------+
+                    | ce1       |     | t   | f   |
+                    |-----------|     |-----------|
+                    | t1  | f1  |     | t1  | f1  |
+                    |-----------|     |-----------|
+                    | t2  | f2  |     | t2  | f2  |
+                    |-----------|     |-----------|
+                    | e1        |     | e1        |
+                    |-----------|     |-----------|
+*)
+
+PROCEDURE BuildCaseRange ;
+
+
+(*
+   BuildCaseEquality - builds the range testing quadruples for
+                       a case clause.
+
+                       IF e1=ce1
+                       THEN
+
+                       ELS..
+
+                       The Stack:
+
+                       Entry             Exit
+
+                Ptr ->
+                       +-----------+     +-----------+
+                       | ce1       |     | t   | f   |
+                       |-----------|     |-----------|
+                       | t1  | f1  |     | t1  | f1  |
+                       |-----------|     |-----------|
+                       | t2  | f2  |     | t2  | f2  |
+                       |-----------|     |-----------|
+                       | e1        |     | e1        |
+                       |-----------|     |-----------|
+*)
+
+PROCEDURE BuildCaseEquality ;
+
+
+(*
+   BuildCaseList - merges two case tests into one
+
+                   The Stack:
+
+                   Entry             Exit
+
+            Ptr ->
+                   +-----------+
+                   | t2  | f2  |
+                   |-----------|     +-------------+
+                   | t1  | f1  |     | t1+t2| f1+f2|
+                   |-----------|     |-------------|
+*)
+
+PROCEDURE BuildCaseList ;
+
+
+(*
+   BuildCaseOr - builds the , in the case clause.
+
+                 The Stack:
+
+                 Entry             Exit
+
+          Ptr ->                                  <- Ptr
+                 +-----------+     +------------+
+                 | t   | f   |     | t    | 0   |
+                 |-----------|     |------------|
+*)
+
+PROCEDURE BuildCaseOr ;
+
+
+(*
+   BuildCaseElse - builds the else of case clause.
+
+                  The Stack:
+
+                  Entry             Exit
+
+           Ptr ->                                  <- Ptr
+                  +-----------+     +------------+
+                  | t   | f   |     | t    | 0   |
+                  |-----------|     |------------|
+*)
+
+PROCEDURE BuildCaseElse ;
+
+
+(*
+   BuildCaseEnd - builds the end of case clause.
+
+                  The Stack:
+
+                  Entry             Exit
+
+           Ptr ->
+                  +-----------+
+                  | t1  | f1  |
+                  |-----------|
+                  | t2  | f2  |
+                  |-----------|
+                  | e1        |
+                  |-----------|     Empty
+*)
+
+PROCEDURE BuildCaseEnd ;
+
+
+(*
+   BuildCaseCheck - builds the case checking code to ensure that
+                    the program does not need an else clause at runtime.
+                    The stack is unaltered.
+*)
+
+PROCEDURE BuildCaseCheck ;
+
+
+(*
+   BuildNulParam - Builds a nul parameter on the stack.
+                   The Stack:
+
+                   Entry             Exit
+
+                                                    <- Ptr
+                   Empty             +------------+
+                                     | 0          |
+                                     |------------|
+*)
+
+PROCEDURE BuildNulParam ;
+
+
+(*
+   BuildProcedureCall - builds a procedure call.
+                        The Stack:
+
+
+                        Entry                      Exit
+
+                 Ptr ->
+                        +----------------+
+                        | NoOfParam      |
+                        |----------------|
+                        | Param 1        |
+                        |----------------|
+                        | Param 2        |
+                        |----------------|
+                        .                .
+                        .                .
+                        .                .
+                        |----------------|
+                        | Param #        |
+                        |----------------|
+                        | ProcSym | Type |         Empty
+                        |----------------|
+*)
+
+PROCEDURE BuildProcedureCall (tokno: CARDINAL) ;
+
+
+(*
+   CheckBuildFunction - checks to see whether ProcSym is a function
+                        and if so it adds a TempSym value which will
+                        hold the return value once the function finishes.
+                        This procedure also generates an error message
+                        if the user is calling a function and ignoring
+                        the return result.  The additional TempSym
+                        is not created if ProcSym is a procedure
+                        and the stack is unaltered.
+
+                        The Stack:
+
+
+                       Entry                      Exit
+
+                Ptr ->
+
+                                                  +----------------+
+                                                  | ProcSym | Type |
+                       +----------------+         |----------------|
+                       | ProcSym | Type |         | TempSym | Type |
+                       |----------------|         |----------------|
+*)
+
+PROCEDURE CheckBuildFunction () : BOOLEAN ;
+
+
+(*
+   BuildFunctionCall - builds a function call.
+                       The Stack:
+
+
+                       Entry                      Exit
+
+                Ptr ->
+                       +----------------+
+                       | NoOfParam      |
+                       |----------------|
+                       | Param 1        |
+                       |----------------|
+                       | Param 2        |
+                       |----------------|
+                       .                .
+                       .                .
+                       .                .
+                       |----------------|
+                       | Param #        |                        <- Ptr
+                       |----------------|         +------------+
+                       | ProcSym | Type |         | ReturnVar  |
+                       |----------------|         |------------|
+
+*)
+
+PROCEDURE BuildFunctionCall ;
+
+
+(*
+   BuildConstFunctionCall - builds a function call and checks that this function can be
+                            called inside a ConstExpression.
+
+                            The Stack:
+
+
+                            Entry                      Exit
+
+                     Ptr ->
+                            +----------------+
+                            | NoOfParam      |
+                            |----------------|
+                            | Param 1        |
+                            |----------------|
+                            | Param 2        |
+                            |----------------|
+                            .                .
+                            .                .
+                            .                .
+                            |----------------|
+                            | Param #        |                        <- Ptr
+                            |----------------|         +------------+
+                            | ProcSym | Type |         | ReturnVar  |
+                            |----------------|         |------------|
+
+*)
+
+PROCEDURE BuildConstFunctionCall ;
+
+
+(*
+   BuildBooleanVariable - tests to see whether top of stack is a boolean
+                          conditional and if so it converts it into a boolean
+                          variable.
+*)
+
+PROCEDURE BuildBooleanVariable ;
+
+
+(*
+   BuildModuleStart - starts current module scope.
+*)
+
+PROCEDURE BuildModuleStart ;
+
+
+(*
+   BuildProcedureStart - Builds start of the procedure. Creates space for
+                         the local variables.
+                         The Stack is expected to contain:
+
+
+                         Entry                   Exit
+                         =====                   ====
+
+                 Ptr ->                                       <- Ptr
+                        +------------+          +-----------+
+                        | ProcSym    |          | ProcSym   |
+                        |------------|          |-----------|
+                        | Name       |          | Name      |
+                        |------------|          |-----------|
+
+
+                        Quadruples:
+
+                        q   NewLocalVarOp  _  _  ProcSym
+*)
+
+PROCEDURE BuildProcedureStart ;
+
+
+(*
+   BuildProcedureBegin - determines the start of the BEGIN END block of
+                         the procedure.
+                         The Stack is expected to contain:
+
+
+                         Entry                   Exit
+                         =====                   ====
+
+                 Ptr ->                                       <- Ptr
+                        +------------+          +-----------+
+                        | ProcSym    |          | ProcSym   |
+                        |------------|          |-----------|
+                        | Name       |          | Name      |
+                        |------------|          |-----------|
+
+
+                        Quadruples:
+
+                        q   BeginOp  _  _  ProcSym
+*)
+
+PROCEDURE BuildProcedureBegin ;
+
+
+(*
+   BuildProcedureEnd - Builds end of the procedure. Destroys space for
+                       the local variables.
+                       The Stack is expected to contain:
+
+
+                       Entry                   Exit
+                       =====                   ====
+
+                Ptr ->                                       <- Ptr
+                       +------------+          +-----------+
+                       | ProcSym    |          | ProcSym   |
+                       |------------|          |-----------|
+                       | Name       |          | Name      |
+                       |------------|          |-----------|
+
+
+                       Quadruples:
+
+                       q   KillLocalVarOp  _  _  ProcSym
+*)
+
+PROCEDURE BuildProcedureEnd ;
+
+
+(*
+   BuildReturn - Builds the Return part of the procedure.
+                 The Stack is expected to contain:
+
+
+                 Entry                   Exit
+                 =====                   ====
+
+         Ptr ->
+                 +------------+
+                 | e1         |          Empty
+                 |------------|
+*)
+
+PROCEDURE BuildReturn (tokno: CARDINAL) ;
+
+
+(*
+   BuildModulePriority - assigns the current module with a priority
+                         from the top of stack.
+
+                         Entry                   Exit
+                         =====                   ====
+
+
+                  Ptr ->                         Empty
+                         +------------+
+                         | Priority   |
+                         |------------|
+*)
+
+PROCEDURE BuildModulePriority ;
+
+
+(*
+   StartBuildWith - performs the with statement.
+                    The Stack:
+
+                    Entry                    Exit
+
+                    +------------+
+                    | Sym | Type |           Empty
+                    |------------|
+*)
+
+PROCEDURE StartBuildWith ;
+
+
+(*
+   EndBuildWith - terminates the innermost with scope.
+*)
+
+PROCEDURE EndBuildWith ;
+
+
+(*
+   CheckWithReference - performs the with statement.
+                        The Stack:
+
+                        Entry                    Exit
+
+                        +------------+           +------------+
+                        | Sym | Type |           | Sym | Type |
+                        |------------|           |------------|
+*)
+
+PROCEDURE CheckWithReference ;
+
+
+(*
+   BuildDesignatorRecord - Builds the record referencing.
+                           The Stack is expected to contain:
+
+
+                           Entry                   Exit
+                           =====                   ====
+
+                   Ptr ->
+                           +--------------+
+                           | n            |
+                           |--------------|
+                           | fld1 | type1 |
+                           |--------------|
+                           .              .
+                           .              .
+                           .              .
+                           |--------------|
+                           | fldn | typen |                        <- Ptr
+                           |--------------|        +-------------+
+                           | Sym  | Type  |        | S    | type1|
+                           |--------------|        |-------------|
+*)
+
+PROCEDURE BuildDesignatorRecord (dottok: CARDINAL) ;
+
+
+(*
+   BuildDesignatorArray - Builds the array referencing.
+                          The Stack is expected to contain:
+
+
+                          Entry                   Exit
+                          =====                   ====
+
+                  Ptr ->
+                          +--------------+
+                          | n            |        Empty
+                          |--------------|
+                          | e1           |
+                          |--------------|
+                          .              .
+                          .              .
+                          .              .
+                          |--------------|
+                          | e2           |                      <- Ptr
+                          |--------------|       +------------+
+                          | Sym  | Type  |       | S    | T   |
+                          |--------------|       |------------|
+*)
+
+PROCEDURE BuildDesignatorArray ;
+
+
+(*
+   BuildDesignatorPointer - Builds the record referencing.
+                            The Stack is expected to contain:
+
+
+                            Entry                   Exit
+                            =====                   ====
+
+                    Ptr ->                                           <- Ptr
+                            +--------------+        +--------------+
+                            | Sym1  | Type1|        | Sym2  | Type2|
+                            |--------------|        |--------------|
+*)
+
+PROCEDURE BuildDesignatorPointer (ptrtok: CARDINAL) ;
+
+
+(*
+   BuildNulExpression - Builds a nul expression on the stack.
+                        The Stack:
+
+                        Entry             Exit
+
+                                                         <- Ptr
+                        Empty             +------------+
+                                          | NulSym     |
+                                          |------------|
+*)
+
+PROCEDURE BuildNulExpression ;
+
+
+(*
+   BuildSetStart - Pushes a Bitset type on the stack.
+
+                      The Stack:
+
+                      Entry             Exit
+
+               Ptr ->                                        <- Ptr
+
+                      Empty             +--------------+
+                                        | Bitset       |
+                                        |--------------|
+*)
+
+PROCEDURE BuildSetStart ;
+
+
+(*
+   BuildSetEnd - pops the set value and type from the stack
+                 and pushes the value,type pair.
+
+                        Entry                   Exit
+
+                 Ptr ->
+                        +--------------+
+                        | Set Value    |                         <- Ptr
+                        |--------------|        +--------------+
+                        | Set Type     |        | Value | Type |
+                        |--------------|        |--------------|
+*)
+
+PROCEDURE BuildSetEnd ;
+
+
+(*
+   BuildEmptySet - Builds an empty set on the stack.
+                   The Stack:
+
+                   Entry             Exit
+
+                                                     <- Ptr
+                                     +-------------+
+            Ptr ->                   | Value       |
+                   +-----------+     |-------------|
+      	       	   | SetType   |     | SetType     |
+                   |-----------|     |-------------|
+
+*)
+
+PROCEDURE BuildEmptySet ;
+
+
+(*
+   BuildInclRange - includes a set range with a set.
+
+
+                          Entry                   Exit
+                          =====                   ====
+
+
+                   Ptr ->
+                          +------------+
+                          | El2        |
+                          |------------|
+                          | El1        |                                 <- Ptr
+                          |------------|           +-------------------+
+                          | Set Value  |           | Value + {El1..El2}|
+                          |------------|           |-------------------|
+                          | Set Type   |           | Set Type          |
+                          |------------|           |-------------------|
+
+                   No quadruples produced as the range info is contained within
+                   the set value.
+*)
+
+PROCEDURE BuildInclRange ;
+
+
+(*
+   BuildInclBit - includes a bit into the set.
+
+                         Entry                   Exit
+                         =====                   ====
+
+
+                  Ptr ->
+                         +------------+
+                         | Element    |                         <- Ptr
+                         |------------|          +------------+
+                         | Value      |          | Value      |
+                         |------------|          |------------|
+                         | Type       |          | Type       |
+                         |------------|          |------------|
+
+                  No quadruples produced as this bit inclusion is contained within
+                  the set value.
+*)
+
+PROCEDURE BuildInclBit ;
+
+
+(*
+   SilentBuildConstructor - places NulSym into the constructor fifo queue.
+*)
+
+PROCEDURE SilentBuildConstructor ;
+
+
+(*
+   SilentBuildConstructorStart - removes an entry from the constructor fifo queue.
+*)
+
+PROCEDURE SilentBuildConstructorStart ;
+
+
+(*
+   BuildConstructor - builds a constructor.
+                      Stack
+
+                      Entry                 Exit
+
+               Ptr ->
+                      +------------+
+                      | Type       |                <- Ptr
+                      |------------+
+*)
+
+PROCEDURE BuildConstructor ;
+
+
+(*
+   BuildConstructorStart - builds a constructor.
+                           Stack
+
+                           Entry                 Exit
+
+                    Ptr ->                                      <- Ptr
+                           +------------+        +------------+
+                           | Name       |        | Sym        |
+                           |------------+        |------------|
+*)
+
+PROCEDURE BuildConstructorStart ;
+
+
+(*
+   BuildConstructorEnd - removes the current constructor frame from the
+                         constructor stack (it does not effect the quad
+                         stack)
+
+                         Stack
+
+                         Entry                 Exit
+
+                  Ptr ->                                      <- Ptr
+                         +------------+        +------------+
+                         | const      |        | const      |
+                         |------------+        |------------|
+*)
+
+PROCEDURE BuildConstructorEnd ;
+
+
+(*
+   NextConstructorField - increments the top of constructor stacks
+                          index by one.
+*)
+
+PROCEDURE NextConstructorField ;
+
+
+(*
+   BuildTypeForConstructor - pushes the type implied by the current constructor.
+                             If no constructor is currently being built then
+                             it Pushes a Bitset type.
+*)
+
+PROCEDURE BuildTypeForConstructor ;
+
+
+(*
+   BuildComponentValue -  builds a component value.
+
+                          Entry                 Exit
+
+                   Ptr ->                                      <- Ptr
+
+
+                          +------------+        +------------+
+                          | const      |        | const      |
+                          |------------|        |------------|
+
+                          (this is incomplete (fixme))
+*)
+
+PROCEDURE BuildComponentValue ;
+
+
+(*
+   BuildNot   - Builds a NOT operation from the quad stack.
+                The Stack is expected to contain:
+
+
+                  Entry                   Exit
+                  =====                   ====
+
+           Ptr ->                                        <- Ptr
+                  +------------+          +------------+
+                  | t    | f   |          | f    | t   |
+                  |------------|          |------------|
+*)
+
+PROCEDURE BuildNot ;
+
+
+(*
+   RecordOp - Records the operator passed on the stack.
+              Checks for AND operator or OR operator
+              if either of these operators are found then BackPatching
+              takes place.
+              The Expected Stack:
+
+              Entry                        Exit
+
+       Ptr ->                                               <- Ptr
+              +-------------+               +-------------+
+              | OperatorTok |               | OperatorTok |
+              |-------------|               |-------------|
+              | t    | f    |               | t    | f    |
+              |-------------|               |-------------|
+
+
+              If OperatorTok=AndTok
+              Then
+                 BackPatch(f, NextQuad)
+              Elsif OperatorTok=OrTok
+              Then
+                 BackPatch(t, NextQuad)
+              End
+*)
+
+PROCEDURE RecordOp ;
+
+
+(*
+   BuildRelOp   - Builds a relative operation from the quad stack.
+                  The Stack is expected to contain:
+
+
+                  Entry                   Exit
+                  =====                   ====
+
+           Ptr ->
+                  +------------+
+                  | e1         |
+                  |------------|                          <- Ptr
+                  | Operator   |
+                  |------------|          +------------+
+                  | e2         |          | t    | f   |
+                  |------------|          |------------|
+
+
+                    Quadruples Produced
+
+                    q     IFOperator  e1  e2  TrueExit
+                    q+1   GotoOp              FalseExit
+*)
+
+PROCEDURE BuildRelOp (optokpos: CARDINAL) ;
+
+
+(*
+   BuildBinaryOp   - Builds a binary operation from the quad stack.
+                     The Stack is expected to contain:
+
+
+                     Entry                   Exit
+                     =====                   ====
+
+              Ptr ->
+                     +------------+
+                     | Sym1       |
+                     |------------|
+                     | Operator   |                          <- Ptr
+                     |------------|          +------------+
+                     | Sym2       |          | Temporary  |
+                     |------------|          |------------|
+
+
+                     Quadruples Produced
+
+                     q     Operator  Temporary  Sym1  Sym2
+
+*)
+
+PROCEDURE BuildBinaryOp ;
+
+
+(*
+   BuildUnaryOp   - Builds a unary operation from the quad stack.
+                    The Stack is expected to contain:
+
+
+                    Entry                   Exit
+                    =====                   ====
+
+             Ptr ->
+                    +------------+
+                    | Sym1       |
+                    |------------|          +------------+
+                    | Operator   |          | Temporary  |  <- Ptr
+                    |------------|          |------------|
+
+
+                    Quadruples Produced
+
+                    q     Operator  Temporary  _ Sym1
+
+*)
+
+PROCEDURE BuildUnaryOp ;
+
+
+(*
+   OperandT - returns the ident operand stored in the true position on the boolean stack.
+*)
+
+PROCEDURE OperandT (pos: CARDINAL) : WORD ;
+
+
+(*
+   OperandF - returns the ident operand stored in the false position on the boolean stack.
+*)
+
+PROCEDURE OperandF (pos: CARDINAL) : WORD ;
+
+
+(*
+   PushTF - Push a True and a False exit quad numbers onto the
+            True/False stack.
+*)
+
+PROCEDURE PushTF (True, False: WORD) ;
+
+
+(*
+   PopTF - Pops a True and a False exit quad numbers from the
+           True/False stack.
+*)
+
+PROCEDURE PopTF (VAR True, False: WORD) ;
+
+
+(*
+   PushT - Push a True exit quad numbers onto the
+           True/False stack. The False exit will be zero.
+*)
+
+PROCEDURE PushT (True: WORD) ;
+
+
+(*
+   PopT - Pop a True exit quad number from the True/False
+          stack. The False exit is ignored.
+*)
+
+PROCEDURE PopT (VAR True: WORD) ;
+
+
+(*
+   PushTtok - Push an item onto the stack in the T (true) position,
+              it is assummed to be a token and its token location is recorded.
+*)
+
+PROCEDURE PushTtok (True: WORD; tokno: CARDINAL) ;
+
+
+(*
+   PushTFtok - Push an item onto the stack in the T (true) position,
+               it is assummed to be a token and its token location is recorded.
+*)
+
+PROCEDURE PushTFtok (True, False: WORD; tokno: CARDINAL) ;
+
+
+(*
+   PopTFtok - Pop T/F/tok from the stack.
+*)
+
+PROCEDURE PopTFtok (VAR True, False: WORD; VAR tokno: CARDINAL) ;
+
+
+(*
+   PushTFAtok - Push T/F/A/tok to the stack.
+*)
+
+PROCEDURE PushTFAtok (True, False, Array: WORD; tokno: CARDINAL) ;
+
+
+(*
+   PopTtok - Pops the T value from the stack and token position.
+*)
+
+PROCEDURE PopTtok (VAR True: WORD; VAR tok: CARDINAL) ;
+
+
+(*
+   PushTFn - Push a True and False numbers onto the True/False stack.
+             True and False are assumed to contain Symbols or Ident etc.
+*)
+
+PROCEDURE PushTFn (True, False, n: WORD) ;
+
+
+(*
+   PopTFn - Pop a True and False number from the True/False stack.
+            True and False are assumed to contain Symbols or Ident etc.
+*)
+
+PROCEDURE PopTFn (VAR True, False, n: WORD) ;
+
+
+(*
+   PopNothing - pops the top element on the stack.
+*)
+
+PROCEDURE PopNothing ;
+
+
+(*
+   PopN - pops multiple elements from the BoolStack.
+*)
+
+PROCEDURE PopN (n: CARDINAL) ;
+
+
+(*
+   PushTFA - Push True, False, Array, numbers onto the
+             True/False stack.  True and False are assumed to
+             contain Symbols or Ident etc.
+*)
+
+PROCEDURE PushTFA (True, False, Array: WORD) ;
+
+
+(*
+   OperandTok - returns the token associated with pos, on the stack.
+*)
+
+PROCEDURE OperandTok (pos: CARDINAL) : WORD ;
+
+
+(*
+   OperandA - returns possible array symbol associated with the ident
+              operand stored on the boolean stack.
+*)
+
+PROCEDURE OperandA (pos: CARDINAL) : WORD ;
+
+
+(*
+   OperandAnno - returns the annotation string associated with the
+                 position, n, on the stack.
+*)
+
+PROCEDURE OperandAnno (n: CARDINAL) : String ;
+
+
+(*
+   Annotate - annotate the top of stack.
+*)
+
+PROCEDURE Annotate (a: ARRAY OF CHAR) ;
+
+
+(*
+   DisplayStack - displays the compile time symbol stack.
+*)
+
+PROCEDURE DisplayStack ;
+
+
+(*
+   Top - returns the no of items held in the stack.
+*)
+
+PROCEDURE Top () : CARDINAL ;
+
+
+(*
+   WriteOperand - displays the operands name, symbol id and mode of addressing.
+*)
+
+PROCEDURE WriteOperand (Sym: CARDINAL) ;
+
+
+(*
+   BeginVarient - begin a varient record.
+*)
+
+PROCEDURE BeginVarient ;
+
+
+(*
+   EndVarient - end a varient record.
+*)
+
+PROCEDURE EndVarient ;
+
+
+(*
+   ElseVarient - associate an ELSE clause with a varient record.
+*)
+
+PROCEDURE ElseVarient ;
+
+
+(*
+   BeginVarientList - begin an ident list containing ranges belonging to a
+                      varient list.
+*)
+
+PROCEDURE BeginVarientList ;
+
+
+(*
+   EndVarientList - end a range list for a varient field.
+*)
+
+PROCEDURE EndVarientList ;
+
+
+(*
+   AddRecordToList - adds the record held on the top of stack to the
+                     list of records and varient fields.
+*)
+
+PROCEDURE AddRecordToList ;
+
+
+(*
+   AddVarientToList - adds varient held on the top of stack to the list.
+*)
+
+PROCEDURE AddVarientToList ;
+
+
+(*
+   AddVarientFieldToList - adds varient field, f, to the list of all varient
+                           fields created.
+*)
+
+PROCEDURE AddVarientFieldToList (f: CARDINAL) ;
+
+
+(*
+   AddVarientRange - creates a range from the top two contant expressions
+                     on the stack which are recorded with the current
+                     varient field.  The stack is unaltered.
+*)
+
+PROCEDURE AddVarientRange ;
+
+
+(*
+   AddVarientEquality - adds the contant expression on the top of the stack
+                        to the current varient field being recorded.
+                        The stack is unaltered.
+*)
+
+PROCEDURE AddVarientEquality ;
+
+
+(*
+   BuildCodeOn - generates a quadruple declaring that code should be
+                 emitted from henceforth.
+
+                 The Stack is unnaffected.
+*)
+
+PROCEDURE BuildCodeOn ;
+
+
+(*
+   BuildCodeOff - generates a quadruple declaring that code should not be
+                  emmitted from henceforth.
+
+                  The Stack is unnaffected.
+*)
+
+PROCEDURE BuildCodeOff ;
+
+
+(*
+   BuildProfileOn - generates a quadruple declaring that profile timings
+                    should be emmitted from henceforth.
+
+                    The Stack is unnaffected.
+*)
+
+PROCEDURE BuildProfileOn ;
+
+
+(*
+   BuildProfileOn - generates a quadruple declaring that profile timings
+                    should be emmitted from henceforth.
+
+                    The Stack is unnaffected.
+*)
+
+PROCEDURE BuildProfileOff ;
+
+
+(*
+   BuildOptimizeOn - generates a quadruple declaring that optimization
+                     should occur from henceforth.
+
+                     The Stack is unnaffected.
+*)
+
+PROCEDURE BuildOptimizeOn ;
+
+
+(*
+   BuildOptimizeOff - generates a quadruple declaring that optimization
+                      should not occur from henceforth.
+
+                      The Stack is unnaffected.
+*)
+
+PROCEDURE BuildOptimizeOff ;
+
+
+(*
+   BuildInline - builds an Inline pseudo quadruple operator.
+                 The inline interface, Sym, is stored as the operand
+                 to the operator InlineOp.
+
+                 The stack is expected to contain:
+
+
+                        Entry                   Exit
+                        =====                   ====
+
+                 Ptr ->
+                        +--------------+
+                        | Sym          |        Empty
+                        |--------------|
+*)
+
+PROCEDURE BuildInline ;
+
+
+(*
+   BuildLineNo - builds a LineNumberOp pseudo quadruple operator.
+                 This quadruple indicates which source line has been
+                 processed, these quadruples are only generated if we
+                 are producing runtime debugging information.
+
+                 The stack is not affected, read or altered in any way.
+
+
+                        Entry                   Exit
+                        =====                   ====
+
+                 Ptr ->                              <- Ptr
+*)
+
+PROCEDURE BuildLineNo ;
+
+
+(*
+   PushLineNo - pushes the current file and line number to the stack.
+*)
+
+PROCEDURE PushLineNo ;
+
+
+(*
+   BuildStmtNote - builds a StatementNoteOp pseudo quadruple operator.
+                   This quadruple indicates which source line has been
+                   processed and it represents the start of a statement
+                   sequence.
+                   It differs from LineNumberOp in that multiple successive
+                   LineNumberOps will be removed and the final one is attached to
+                   the next real GCC tree.  Whereas a StatementNoteOp is always left
+                   alone.  Depending upon the debugging level it will issue a nop
+                   instruction to ensure that the gdb single step will step into
+                   this line.  Practically it allows pedalogical debugging to
+                   occur when there is syntax sugar such as:
+
+
+                         END  (* step *)
+                      END  (* step *)
+                   END ; (* step *)
+		   a := 1 ; (* step *)
+
+                   REPEAT (* step *)
+		      i := 1  (* step *)
+
+                   The stack is not affected, read or altered in any way.
+
+
+                        Entry                   Exit
+                        =====                   ====
+
+                 Ptr ->                              <- Ptr
+*)
+
+PROCEDURE BuildStmtNote (offset: INTEGER) ;
+
+
+(*
+   VariableAnalysis - checks to see whether a variable is:
+
+                      read without being initialized or
+                      written over when it is a non var parameter
+*)
+
+PROCEDURE VariableAnalysis (Start, End: CARDINAL) ;
+
+
+(*
+   LoopAnalysis - checks whether an infinite loop exists.
+*)
+
+PROCEDURE LoopAnalysis (Current, End: CARDINAL) ;
+
+
+(*
+   ForLoopAnalysis - checks all the FOR loops for index variable manipulation
+                     and dangerous usage outside the loop.
+*)
+
+PROCEDURE ForLoopAnalysis ;
+
+
+(*
+   BuildSizeCheckStart - switches off all quadruple generation if the function SIZE
+                         is being "called". This should be done as SIZE only requires the
+                         actual type of the expression, not its value. Consider the problem of
+                         SIZE(UninitializedPointer^) quite legal and it must also be safe!
+
+
+                         The Stack is expected to contain:
+
+
+                         Entry                   Exit
+                         =====                   ====
+
+                 Ptr ->                                       <- Ptr
+                        +------------+          +-----------+
+                        | ProcSym    |          | ProcSym   |
+                        |------------|          |-----------|
+*)
+
+PROCEDURE BuildSizeCheckStart ;
+
+
+(*
+   BackPatchSubrangesAndOptParam - runs through all the quadruples and finds SubrangeLow or SubrangeHigh
+                                   quadruples and replaces it by an assignment to the Low or High component
+                                   of the subrange type.
+
+                                   Input:
+                                   SubrangeLow    op1     op3         (* op3 is a subrange *)
+
+                                   Output:
+                                   Becomes        op1     low
+
+                                   Input:
+                                   SubrangeHigh   op1     op3         (* op3 is a subrange *)
+
+                                   Output:
+                                   Becomes        op1     high
+
+                                   Input:
+                                   OptParam       op1     op2    op3
+
+                                   Output:
+                                   Param          op1     op2    GetOptArgInit(op3)
+*)
+
+PROCEDURE BackPatchSubrangesAndOptParam ;
+
+
+(*
+   WriteOperator - writes the name of the quadruple operator.
+*)
+
+PROCEDURE WriteOperator (Operator: QuadOperator) ;
+
+
+(*
+   PushAutoOn - push the auto flag and then set it to TRUE.
+                Any call to ident in the parser will result in the token being pushed.
+*)
+
+PROCEDURE PushAutoOn ;
+
+
+(*
+   PushAutoOff - push the auto flag and then set it to FALSE.
+*)
+
+PROCEDURE PushAutoOff ;
+
+
+(*
+   IsAutoPushOn - returns the value of the current Auto ident push flag.
+*)
+
+PROCEDURE IsAutoPushOn () : BOOLEAN ;
+
+
+(*
+   PopAuto - restores the previous value of the Auto flag.
+*)
+
+PROCEDURE PopAuto ;
+
+
+(*
+   MustCheckOverflow - returns TRUE if the quadruple should test for overflow.
+*)
+
+PROCEDURE MustCheckOverflow (q: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PushInConstExpression - push the InConstExpression flag and then set it to TRUE.
+*)
+
+PROCEDURE PushInConstExpression ;
+
+
+(*
+   PopInConstExpression - restores the previous value of the InConstExpression.
+*)
+
+PROCEDURE PopInConstExpression ;
+
+
+(*
+   IsInConstExpression - returns the value of the InConstExpression.
+*)
+
+PROCEDURE IsInConstExpression () : BOOLEAN ;
+
+
+END M2Quads.

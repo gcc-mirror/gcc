@@ -1,0 +1,115 @@
+(* M2Search.def provides a mechanism to search selected directories.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Search ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2Search
+   Date       : Tue Jan 30 11:59:41 GMT 1990
+   Last update: Tue Aug  7 19:45:46 BST 2001
+   Description: M2Search provides a mechanism to search selected directories
+                in an attempt to locate a given source file.
+*)
+
+FROM DynamicStrings IMPORT String ;
+EXPORT QUALIFIED InitSearchPath, PrependSearchPath, FindSourceFile,
+                 FindSourceDefFile, FindSourceModFile,
+                 SetDefExtension, SetModExtension ;
+
+
+(*
+   InitSearchPath - assigns the search path to Path.
+                    The string Path may take the form:
+
+                    Path           ::= IndividualPath { ":" IndividualPath }
+                    IndividualPath ::= "." | DirectoryPath
+                    DirectoryPath  ::= [ "/" ] Name { "/" Name }
+                    Name           ::= Letter { (Letter | Number) }
+                    Letter         ::= A..Z | a..z
+                    Number         ::= 0..9
+*)
+
+PROCEDURE InitSearchPath (Path: String) ;
+
+
+(*
+   PrependSearchPath - prepends a new path to the initial search path.
+*)
+
+PROCEDURE PrependSearchPath (path: String) ;
+
+
+(*
+   FindSourceFile - attempts to locate the source file FileName.
+                    If a file is found then TRUE is returned otherwise
+                    FALSE is returned.
+                    The parameter FullPath is set indicating the
+                    absolute location of source FileName.
+                    FullPath will be totally overwritten and should
+                    not be initialized by InitString before this function
+                    is called.
+                    FindSourceFile sets FullPath to a new string if successful.
+*)
+
+PROCEDURE FindSourceFile (FileName: String;
+                          VAR FullPath: String) : BOOLEAN ;
+
+
+(*
+   FindSourceDefFile - attempts to find the definition module for
+                       a module, Stem. If successful it returns
+                       the full path and returns TRUE. If unsuccessful
+                       then FALSE is returned and FullPath is set to NIL.
+*)
+
+PROCEDURE FindSourceDefFile (Stem: String; VAR FullPath: String) : BOOLEAN ;
+
+
+(*
+   FindSourceModFile - attempts to find the implementation module for
+                       a module, Stem. If successful it returns
+                       the full path and returns TRUE. If unsuccessful
+                       then FALSE is returned and FullPath is set to NIL.
+*)
+
+PROCEDURE FindSourceModFile (Stem: String; VAR FullPath: String) : BOOLEAN ;
+
+
+(*
+   SetDefExtension - sets the default extension for definition modules to, ext.
+                     The string, ext, should be deallocated by the caller at
+                     an appropriate time.
+*)
+
+PROCEDURE SetDefExtension (ext: String) ;
+
+
+(*
+   SetModExtension - sets the default extension for implementation and program
+                     modules to, ext. The string, ext, should be deallocated
+                     by the caller at an appropriate time.
+*)
+
+PROCEDURE SetModExtension (ext: String) ;
+
+
+END M2Search.

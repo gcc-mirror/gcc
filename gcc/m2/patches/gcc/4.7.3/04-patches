@@ -1,0 +1,26 @@
+--- gcc-4.7.3-orig/Makefile.def	2013-06-19 15:00:33.000000000 +0100
++++ gcc-4.7.3/Makefile.def	2014-06-23 15:43:47.000000000 +0100
+@@ -138,6 +138,7 @@
+ target_modules = { module= boehm-gc; };
+ target_modules = { module= rda; };
+ target_modules = { module= libada; };
++target_modules = { module= libgm2; lib_path=.libs; };
+ target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
+ target_modules = { module= libitm; lib_path=.libs; };
+ 
+@@ -252,6 +253,7 @@
+ flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
+ flags_to_pass = { flag= GOC_FOR_TARGET ; };
+ flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
++flags_to_pass = { flag= GM2_FOR_TARGET ; };
+ flags_to_pass = { flag= LD_FOR_TARGET ; };
+ flags_to_pass = { flag= LIPO_FOR_TARGET ; };
+ flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
+@@ -530,6 +532,7 @@
+ languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
+ languages = { language=go;	gcc-check-target=check-go;
+ 				lib-check-target=check-target-libgo; };
++languages = { language=gm2;	gcc-check-target=check-gm2; };
+ 
+ // Toplevel bootstrap
+ bootstrap_stage = { id=1 ; };

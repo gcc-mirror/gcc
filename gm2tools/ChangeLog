@@ -1,0 +1,50 @@
+2021-06-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* errors.c:  (New file).
+	* Makefile.am:  (m2color.o) rule added include paths for gcc
+	system headers.  (errors.o) rule added include paths for gcc
+	system headers.  Add errors.o to list of modules and add errors.o
+	to gm2l.
+	* Makefile.in:  (rebuilt).
+
+2021-06-12      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2tools/Makefile.in:  rebuilt.
+
+2021-06-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2tools/Makefile.am:  (man_MANS) set to gm2lgen.1
+	gm2l.1 gm2lcc.1 gm2lorder.1.  (%.o) includes changed to
+	find gm2-libiberty and the gcc system.h and config.h.
+	* gm2tools/Makefile.in:  (rebuilt).
+
+2021-06-09      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2l.1:  (New file).
+	* gm2lcc.1:  (New file).
+	* gm2lgen.1:  (New file).
+	* gm2lorder.1:  (New file).
+
+2021-06-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.am: (LIBM2PIMPATH) New definition.
+	(LIBM2CORPATH) New definition.  (LIBM2ISOPATH) New definition.
+	(gm2l) specify -flibs=pim,iso and pass link paths.
+	(gm2lcc) specify -flibs=pim,iso and pass link paths.
+	(gm2lgen) specify -flibs=pim,iso and pass link paths.
+	(gm2lorder) specify -flibs=pim,iso and pass link paths.
+	(gm2m) specify -flibs=pim,iso and pass link paths.
+
+2021-06-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* aclocal.m4: (New file).
+	* autogen.sh: (New file).
+	* configure: (New file).
+	* configure.ac: (New file).
+	* m2color.c: (New file).
+	* Makefile.am: (New file).
+	* Makefile.in: (New file).
+	* Makefile.am: (DEBUG_MODULE_LIST) used to display locations of
+	objects.  Added -B./gcc build directory to pick up link tools
+	generated in the compiler bootstrap process.
+	* Makefile.in: (Regenerated).

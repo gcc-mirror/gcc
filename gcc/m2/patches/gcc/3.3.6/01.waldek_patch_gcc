@@ -1,0 +1,35 @@
+*** cvs/gcc/config/i386/i386.c.orig	Tue May 18 07:07:52 2004
+--- modified/gcc/config/i386/i386.c	Sun Oct 24 11:26:55 2004
+***************
+*** 1879,1884 ****
+--- 1879,1909 ----
+  		}
+  	    }
+  	}
++       else if (TREE_CODE (type) == SET_TYPE)
++         {
++           if (bytes <= 4)
++             {
++               classes[0] = X86_64_INTEGERSI_CLASS;
++               return 1;
++             }
++           else if (bytes <= 8)
++             {
++ 	      classes[0] = X86_64_INTEGER_CLASS;
++ 	      return 1;
++             }
++           else if (bytes <= 12)
++             {
++ 	      classes[0] = X86_64_INTEGER_CLASS;
++ 	      classes[1] = X86_64_INTEGERSI_CLASS;
++ 	      return 2;
++             }
++           else
++             {
++ 	      classes[0] = X86_64_INTEGER_CLASS;
++ 	      classes[1] = X86_64_INTEGER_CLASS;
++ 	      return 2;
++             }
++ 	}
+        else
+  	abort ();

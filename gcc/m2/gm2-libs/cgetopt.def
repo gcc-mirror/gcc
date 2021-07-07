@@ -1,0 +1,107 @@
+(* getopt.def provides access to the getopt C library.
+
+Copyright (C) 2017-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE cgetopt ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+TYPE
+   Options = ADDRESS ;
+
+VAR
+   optarg                : ADDRESS ;
+   optind, opterr, optopt: INTEGER ;
+
+
+(*
+   getopt - the getopt() function parses the command-line arguments.
+            Its arguments argc and argv are the argument count and array as
+            passed to the main() function on program invocation.  An element of
+            argv that starts with '-' (and is not exactly "-" or "--") is an
+            option element.  The characters of this element (aside from the
+            initial '-') are option characters.  If getopt() is called
+            repeatedly, it returns successively each of the option characters
+            from each of the option elements.
+*)
+
+PROCEDURE getopt (argc: INTEGER; argv: ADDRESS; optstring: ADDRESS) : CHAR ;
+
+
+(*
+   getopt_long - works like getopt() except that it also accepts long options,
+                 started with two dashes.  (If the program accepts only long
+                 options, then optstring should be specified as an empty string (""),
+                 not NULL.)  Long option names may be abbreviated if the abbreviation
+                 is unique or is an exact match for some defined option.  A
+                 long option may take a parameter, of the form --arg=param or
+                 --arg param.
+*)
+
+PROCEDURE getopt_long (argc: INTEGER; argv: ADDRESS; optstring: ADDRESS;
+                       longopts: ADDRESS; VAR longindex: INTEGER) : INTEGER ;
+
+
+(*
+   getopt_long_only - a wrapper for the C getopt_long_only.
+*)
+
+PROCEDURE getopt_long_only (argc: INTEGER; argv: ADDRESS; optstring: ADDRESS;
+                            longopts: ADDRESS; VAR longindex: INTEGER) : INTEGER ;
+
+
+(*
+   InitOptions - constructor for empty Options.
+*)
+
+PROCEDURE InitOptions () : Options ;
+
+
+(*
+   KillOptions - deconstructor for empty Options.
+*)
+
+PROCEDURE KillOptions (o: Options) : Options ;
+
+
+(*
+   SetOption - set option[index] with {name, has_arg, flag, val}.
+*)
+
+PROCEDURE SetOption (o: Options; index: CARDINAL;
+                     name: ADDRESS; has_arg: BOOLEAN;
+                     VAR flag: INTEGER; val: INTEGER) ;
+
+
+(*
+   GetLongOptionArray - return a pointer to the C array containing all
+                        long options.
+*)
+
+PROCEDURE GetLongOptionArray (o: Options) : ADDRESS ;
+
+
+END cgetopt.

@@ -1,0 +1,74 @@
+#!/bin/sh
+
+# Copyright (C) 2005 Free Software Foundation, Inc.
+# This file is part of GNU Modula-2.
+#
+# GNU Modula-2 is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2, or (at your option) any later
+# version.
+# 
+# GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with gm2; see the file COPYING.  If not, write to the Free Software
+# Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+
+export PATH=$HOME/bin/bin:$PATH
+
+
+doStabs () {
+    echo "====================================================="
+    echo "Stabs $1"
+    gm2 -g -c -gstabs+ $1.mod
+    gm2 -g -gstabs+ -o a.stabs $1.mod
+    if ! gdb ./a.stabs ; then
+       echo "gdb crashed on $1.mod"
+    fi
+}
+
+
+doDwarf2 () {
+    echo "====================================================="
+    echo "Dwarf2 $1"
+    gm2 -g -c -gdwarf-2 $1.mod
+    gm2 -g -gdwarf-2 -o a.dwarf2 $1.mod
+    if ! gdb ./a.dwarf2 ; then
+       echo "gdb crashed on $1.mod"
+    fi
+}
+
+
+doTry () {
+   cat <<EOF > .gdbinit
+set lang modula-2
+break _M2_$1_init
+run
+next
+print s
+ptype s
+quit
+EOF
+   doStabs $1
+   doDwarf2 $1
+}
+
+doTry setchar3
+doTry subrange15
+doTry subrange16
+doTry subrange17
+doTry array4
+doTry array5
+doTry char
+doTry int
+doTry ptrarray
+doTry variant9
+doTry setenum
+doTry record7
+doTry setchar4
+
+type gdb

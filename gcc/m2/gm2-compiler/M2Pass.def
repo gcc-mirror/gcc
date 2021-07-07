@@ -1,0 +1,178 @@
+(* M2Pass.def provides setting and testing of the current pass.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Pass ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2Lexical
+   Date       : Thu Nov  2 12:58:18 GMT 1989
+   Description: Controls the setting and testing of the current pass.
+   Last update: Thu Nov  2 12:58:27 GMT 1989
+*)
+
+EXPORT QUALIFIED SetPassToNoPass,
+                 SetPassToPass0,
+                 SetPassToPass1,
+                 SetPassToPass2,
+                 SetPassToPassC,
+                 SetPassToPass3,
+                 SetPassToPassHidden,
+                 SetPassToCodeGeneration,
+                 SetPassToErrorPass,
+                 IsNoPass,
+                 IsPass0,
+                 IsPass1,
+                 IsPass2,
+                 IsPass3,
+                 IsPassC,
+                 IsPassHidden,
+                 IsPassCodeGeneration,
+                 IsErrorPass ;
+
+
+(*
+   SetPassToNoPass - sets the pass state to no Pass.
+*)
+
+PROCEDURE SetPassToNoPass ;
+
+
+(*
+   SetPassToPass0 - sets the pass state to Pass 0.
+*)
+
+PROCEDURE SetPassToPass0 ;
+
+
+(*
+   SetPassToPass1 - sets the pass state to Pass 1.
+*)
+
+PROCEDURE SetPassToPass1 ;
+
+
+(*
+   SetPassToPass2 - sets the pass state to Pass 2.
+*)
+
+PROCEDURE SetPassToPass2 ;
+
+
+(*
+   SetPassToPassC - sets the pass state to Pass C.
+*)
+
+PROCEDURE SetPassToPassC ;
+
+
+(*
+   SetPassToPass3 - sets the pass state to Pass 3.
+*)
+
+PROCEDURE SetPassToPass3 ;
+
+
+(*
+   SetPassToPassHidden - sets the pass state to the hidden type pass.
+*)
+
+PROCEDURE SetPassToPassHidden ;
+
+
+(*
+   SetPassToCodeGeneration - sets the pass state to CodeGeneration.
+*)
+
+PROCEDURE SetPassToCodeGeneration ;
+
+
+(*
+   SetPassToErrorPass - sets the pass state to no Error Pass.
+*)
+
+PROCEDURE SetPassToErrorPass ;
+
+
+(*
+   IsNoPass - returns true if currently in no Pass.
+*)
+
+PROCEDURE IsNoPass () : BOOLEAN ;
+
+
+(*
+   IsPass0 - returns true if currently in Pass 0.
+*)
+
+PROCEDURE IsPass0 () : BOOLEAN ;
+
+
+(*
+   IsPass1 - returns true if currently in Pass 1.
+*)
+
+PROCEDURE IsPass1 () : BOOLEAN ;
+
+
+(*
+   IsPass2 - returns true if currently in Pass 2.
+*)
+
+PROCEDURE IsPass2 () : BOOLEAN ;
+
+
+(*
+   IsPassC - returns true if currently in Pass C.
+*)
+
+PROCEDURE IsPassC () : BOOLEAN ;
+
+
+(*
+   IsPass3 - returns true if currently in Pass 3.
+*)
+
+PROCEDURE IsPass3 () : BOOLEAN ;
+
+
+(*
+   IsPassHidden - returns TRUE if currently parsing for hidden types.
+*)
+
+PROCEDURE IsPassHidden () : BOOLEAN ;
+
+
+(*
+   IsPassCodeGeneration - returns true if currently in the CodeGeneration Pass.
+*)
+
+PROCEDURE IsPassCodeGeneration () : BOOLEAN ;
+
+
+(*
+   IsErrorPass - returns true if currently in the Error Pass.
+*)
+
+PROCEDURE IsErrorPass () : BOOLEAN ;
+
+
+END M2Pass.

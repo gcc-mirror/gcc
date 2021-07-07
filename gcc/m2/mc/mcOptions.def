@@ -1,0 +1,123 @@
+(* mcOptions.def handles the options for mc.
+
+Copyright (C) 2015-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcOptions ;
+
+
+FROM DynamicStrings IMPORT String ;
+FROM FIO IMPORT File ;
+
+
+(*
+   handleOptions - iterates over all options setting appropriate
+                   values and returns the single source file
+                   if found at the end of the arguments.
+*)
+
+PROCEDURE handleOptions () : String ;
+
+
+(*
+   getQuiet - return the value of quiet.
+*)
+
+PROCEDURE getQuiet () : BOOLEAN ;
+
+
+(*
+   getVerbose - return the value of verbose.
+*)
+
+PROCEDURE getVerbose () : BOOLEAN ;
+
+
+(*
+   getInternalDebugging - return the value of internalDebugging.
+*)
+
+PROCEDURE getInternalDebugging () : BOOLEAN ;
+
+
+(*
+   CppCommandLine - returns the Cpp command line and all arguments.
+*)
+
+PROCEDURE getCppCommandLine () : String ;
+
+
+(*
+   getOutputFile - sets the output filename to output.
+*)
+
+PROCEDURE getOutputFile () : String ;
+
+
+(*
+   getExtendedOpaque - return the extendedOpaque value.
+*)
+
+PROCEDURE getExtendedOpaque () : BOOLEAN ;
+
+
+(*
+   setDebugTopological - sets the flag debugTopological to value.
+*)
+
+PROCEDURE setDebugTopological (value: BOOLEAN) ;
+
+
+(*
+   getDebugTopological - returns the flag value of the command
+                         line option --debug-top.
+*)
+
+PROCEDURE getDebugTopological () : BOOLEAN ;
+
+
+(*
+   getHPrefix - saves the H file prefix.
+*)
+
+PROCEDURE getHPrefix () : String ;
+
+
+(*
+   getIgnoreFQ - returns the ignorefq flag.
+*)
+
+PROCEDURE getIgnoreFQ () : BOOLEAN ;
+
+
+(*
+   getGccConfigSystem - return the value of the gccConfigSystem flag.
+*)
+
+PROCEDURE getGccConfigSystem () : BOOLEAN ;
+
+
+(*
+   writeGPLheader - writes out the GPL or the GLPL as a comment.
+*)
+
+PROCEDURE writeGPLheader (f: File) ;
+
+
+END mcOptions.

@@ -1,0 +1,366 @@
+--- gcc-4.1.2-orig/gcc/dwarf2out.c	2006-12-27 22:23:55.000000000 +0000
++++ gcc-4.1.2/gcc/dwarf2out.c	2011-04-22 11:27:18.000000000 +0100
+@@ -2740,6 +2740,7 @@
+ static unsigned long size_of_locs (dw_loc_descr_ref);
+ static void output_loc_operands (dw_loc_descr_ref);
+ static void output_loc_sequence (dw_loc_descr_ref);
++static dw_die_ref subrange_type_die (tree, dw_die_ref);
+ 
+ /* Convert a DWARF stack opcode into its string name.  */
+ 
+@@ -4014,6 +4015,7 @@
+ static bool is_cxx (void);
+ static bool is_java (void);
+ static bool is_fortran (void);
++static bool is_modula2 (void);
+ static bool is_ada (void);
+ static void remove_AT (dw_die_ref, enum dwarf_attribute);
+ static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
+@@ -5366,6 +5368,16 @@
+   return lang == DW_LANG_Ada95 || lang == DW_LANG_Ada83;
+ }
+ 
++/* Return TRUE if the language is Modula-2.  */
++
++static inline bool
++is_modula2 (void)
++{
++  unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
++
++  return (lang == DW_LANG_Modula2);
++}
++
+ /* Free up the memory used by A.  */
+ 
+ static inline void free_AT (dw_attr_ref);
+@@ -10515,7 +10527,7 @@
+ 		  || (is_fortran () && integer_onep (bound)))))
+ 	/* Use the default.  */
+ 	;
+-      else
++      else 
+ 	add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
+       break;
+ 
+@@ -10625,7 +10637,8 @@
+ 	      if (TREE_CODE (domain) == INTEGER_TYPE
+ 		  && TYPE_NAME (domain) == NULL_TREE
+ 		  && TREE_CODE (TREE_TYPE (domain)) == INTEGER_TYPE
+-		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE)
++		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE
++		  && (! is_modula2 ()))
+ 		;
+ 	      else
+ 		add_type_attribute (subrange_die, TREE_TYPE (domain), 0, 0,
+@@ -11003,8 +11016,20 @@
+      an Ada subrange type.  Correct solution is emit a subrange type die.  */
+   if ((code == INTEGER_TYPE || code == REAL_TYPE)
+       && TREE_TYPE (type) != 0 && TYPE_NAME (type) == 0)
+-    type = TREE_TYPE (type), code = TREE_CODE (type);
+-
++    {
++      if (is_modula2 ())
++	{
++	  type_die = subrange_type_die (type, context_die);
++	  if (type_die != NULL)
++	    add_AT_die_ref (object_die, DW_AT_type, type_die);
++	  return;
++	}
++      else
++	{
++	  type = TREE_TYPE (type);
++	  code = TREE_CODE (type);
++	}
++    }
+   if (code == ERROR_MARK
+       /* Handle a special case.  For functions whose return type is void, we
+ 	 generate *no* type attribute.  (Note that no object may have type
+@@ -12208,6 +12233,8 @@
+     language = DW_LANG_Fortran95;
+   else if (strcmp (language_string, "GNU Pascal") == 0)
+     language = DW_LANG_Pascal83;
++  else if (strcmp (language_string, "GNU Modula-2") == 0)
++    language = DW_LANG_Modula2;
+   else if (strcmp (language_string, "GNU Java") == 0)
+     language = DW_LANG_Java;
+   else
+@@ -13140,8 +13167,9 @@
+ 
+     case FIELD_DECL:
+       /* Ignore the nameless fields that are used to skip bits but handle C++
+-	 anonymous unions and structs.  */
+-      if (DECL_NAME (decl) != NULL_TREE
++	 anonymous unions and structs.  Except for Modula-2.  */
++      if ((is_modula2())
++	  || DECL_NAME (decl) != NULL_TREE
+ 	  || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+ 	  || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
+ 	{
+--- gcc-4.1.2-orig/gcc/ggc-page.c	2005-09-07 04:50:08.000000000 +0100
++++ gcc-4.1.2/gcc/ggc-page.c	2010-11-03 11:10:19.000000000 +0000
+@@ -1859,6 +1859,10 @@
+   if (G.allocated < allocated_last_gc + min_expand && !ggc_force_collect)
+     return;
+ 
++#if 1
++  return;  /* one gross hack (gaius) */
++#endif
++
+   timevar_push (TV_GC);
+   if (!quiet_flag)
+     fprintf (stderr, " {GC %luk -> ", (unsigned long) G.allocated / 1024);
+--- gcc-4.1.2-orig/gcc/config/i386/i386.c	2006-11-17 07:01:22.000000000 +0000
++++ gcc-4.1.2/gcc/config/i386/i386.c	2008-05-06 12:43:13.000000000 +0100
+@@ -16666,7 +16666,7 @@
+     {
+       fprintf (file, "\tcall LPC$%d\nLPC$%d:\tpopl %%eax\n", label, label);
+       fprintf (file, "\tmovl %s-LPC$%d(%%eax),%%edx\n", lazy_ptr_name, label);
+-      fprintf (file, "\tjmp %%edx\n");
++      fprintf (file, "\tjmp *%%edx\n");
+     }
+   else
+     fprintf (file, "\tjmp *%s\n", lazy_ptr_name);
+--- gcc-4.1.2-orig/gcc/gcc.c	2006-11-07 14:26:21.000000000 +0000
++++ gcc-4.1.2/gcc/gcc.c	2011-04-19 19:39:38.000000000 +0100
+@@ -262,6 +262,10 @@
+    run if this is nonzero.  */
+ static int error_count = 0;
+ 
++/* The lang specs might wish to override the default linker.
++ */
++int force_no_linker = 0;
++
+ /* Greatest exit code of sub-processes that has been encountered up to
+    now.  */
+ static int greatest_status = 1;
+@@ -6618,7 +6622,7 @@
+ 
+   /* Run ld to link all the compiler output files.  */
+ 
+-  if (num_linker_inputs > 0 && error_count == 0)
++  if (num_linker_inputs > 0 && error_count == 0 && (! force_no_linker))
+     {
+       int tmp = execution_count;
+ 
+@@ -6643,7 +6647,7 @@
+   /* If options said don't run linker,
+      complain about input files to be given to the linker.  */
+ 
+-  if (! linker_was_run && error_count == 0)
++  if (! linker_was_run && error_count == 0 && (! force_no_linker))
+     for (i = 0; (int) i < n_infiles; i++)
+       if (explicit_link_files[i])
+ 	error ("%s: linker input file unused because linking not done",
+@@ -7755,3 +7759,11 @@
+ 
+   return argv[nargs + 2];
+ }
++
++const char *find_executable (const char *prog_name)
++{
++#if defined(HAVE_TARGET_OBJECT_SUFFIX) || defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
++  prog_name = convert_filename (prog_name, TRUE, FALSE);
++#endif  
++  return find_a_file (&exec_prefixes, prog_name, X_OK, 0);
++}
+--- gcc-4.1.2-orig/gcc/gcc.h	2005-06-25 03:02:01.000000000 +0100
++++ gcc-4.1.2/gcc/gcc.h	2008-11-01 01:41:25.000000000 +0000
+@@ -61,6 +61,7 @@
+ extern void error (const char *, ...) ATTRIBUTE_PRINTF_1;
+ extern void pfatal_with_name (const char *) ATTRIBUTE_NORETURN;
+ extern void set_input (const char *);
++extern const char *find_executable (const char *prog_name);
+ 
+ /* Spec files linked with gcc.c must provide definitions for these.  */
+ 
+--- gcc-4.1.2-orig/gcc/tree.h	2007-02-09 02:52:53.000000000 +0000
++++ gcc-4.1.2/gcc/tree.h	2010-10-27 11:19:16.000000000 +0100
+@@ -3231,6 +3231,8 @@
+ extern tree build_index_type (tree);
+ extern tree build_index_2_type (tree, tree);
+ extern tree build_array_type (tree, tree);
++extern tree finish_build_array_type (tree, tree, tree);   /* gaius */
++extern tree canonicalize_array (tree array);   /* gaius */
+ extern tree build_function_type (tree, tree);
+ extern tree build_function_type_list (tree, ...);
+ extern tree build_method_type_directly (tree, tree, tree);
+--- gcc-4.1.2-orig/gcc/tree.c	2007-01-05 20:59:15.000000000 +0000
++++ gcc-4.1.2/gcc/tree.c	2011-03-18 13:44:12.000000000 +0000
+@@ -5025,6 +5025,73 @@
+   return build_range_type (sizetype, lowval, highval);
+ }
+ 
++#if 1
++/* (gaius) new patch here */
++
++/* Construct, lay out and return the type of arrays of elements with ELT_TYPE
++   and number of elements specified by the range of values of INDEX_TYPE.
++   If such a type has already been constructed, reuse it.  */
++
++tree
++finish_build_array_type (tree t, tree elt_type, tree index_type)
++{
++  if (TREE_CODE (elt_type) == FUNCTION_TYPE)
++    {
++      error ("arrays of functions are not meaningful");
++      elt_type = integer_type_node;
++    }
++
++  TREE_TYPE (t) = elt_type;
++  TYPE_DOMAIN (t) = index_type;
++  
++  if (index_type == 0)
++    {
++      tree save = t;
++      t = canonicalize_array (t);
++      if (save == t)
++	layout_type (t);
++      return t;
++    }
++
++  t = canonicalize_array (t);
++  if (!COMPLETE_TYPE_P (t))
++    layout_type (t);
++  return t;
++}
++
++/* Construct, lay out and return the type of arrays of elements with ELT_TYPE
++   and number of elements specified by the range of values of INDEX_TYPE.
++   If such a type has already been constructed, reuse it.  */
++
++tree
++build_array_type (tree elt_type, tree index_type)
++{
++  return finish_build_array_type (make_node (ARRAY_TYPE),
++				  elt_type, index_type);
++}
++
++/* canonicalize_array, given an ARRAY_TYPE node, array, lookup a
++   canonicalized version of this array.  If no canonicalized version exists
++   then register, array, as the canonical version.  Return the canonical
++   version of, array.   */
++
++tree canonicalize_array (tree array)
++{
++  hashval_t hashcode = 0;
++  tree elt_type = TREE_TYPE (array);
++  tree index_type = TYPE_DOMAIN (array);
++
++  if (index_type == 0)
++    {
++      hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
++      return type_hash_canon (hashcode, array);
++    }
++  hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
++  hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
++  return type_hash_canon (hashcode, array);
++}
++#else
++
+ /* Construct, lay out and return the type of arrays of elements with ELT_TYPE
+    and number of elements specified by the range of values of INDEX_TYPE.
+    If such a type has already been constructed, reuse it.  */
+@@ -5063,6 +5130,7 @@
+     layout_type (t);
+   return t;
+ }
++#endif
+ 
+ /* Return the TYPE of the elements comprising
+    the innermost dimension of ARRAY.  */
+--- gcc-4.1.2-orig/gcc/ipa-type-escape.c	2005-09-25 06:28:01.000000000 +0100
++++ gcc-4.1.2/gcc/ipa-type-escape.c	2009-07-20 10:36:11.000000000 +0100
+@@ -259,10 +259,33 @@
+ static bool
+ type_to_consider (tree type)
+ {
++  int stackSize = 1;
++  int stackUsed = 1;
++  int oldSize;
++  int i;
++  tree *oldStack;
++  tree *stack = (tree *) alloca (sizeof (tree) * stackSize);
++  stack[0] = type;
++
++  /* return false if we detect a cyclic declaration of "array of pointer to ..." */
++
+   /* Strip the *'s off.  */
+   type = TYPE_MAIN_VARIANT (type);
+-  while (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
++  while (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE) {
+     type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
++    for (i=0; i<stackUsed; i++)
++      if (stack[i] == type)
++	return false;
++    if (stackSize == stackUsed) {
++      oldSize = stackSize;
++      stackSize *= 2;
++      oldStack = stack;
++      stack = (tree *) alloca (sizeof (tree) * stackSize);
++      memcpy (stack, oldStack, oldSize);
++    }
++    stack[stackUsed] = type;
++    stackUsed++;
++  }
+ 
+   switch (TREE_CODE (type))
+     {
+--- gcc-4.1.2-orig/configure	2006-11-21 17:48:36.000000000 +0000
++++ gcc-4.1.2/configure	2009-11-06 21:44:06.000000000 +0000
+@@ -3549,7 +3549,9 @@
+     # For an installed makeinfo, we require it to be from texinfo 4.2 or
+     # higher, else we use the "missing" dummy.
+     if ${MAKEINFO} --version \
+-       | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])' >/dev/null 2>&1; then
++       | egrep 'texinfo[^0-9]*(4\.([7-9]|[1-9][0-9])|[5-9]|[1-9][0-9])' >/dev/null 2>&1; then
++#       | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])' >/dev/null 2>&1; then
++      ${MAKEINFO} --version
+       :
+     else
+       MAKEINFO="$MISSING makeinfo"
+--- gcc-4.1.2-orig/configure.in	2006-11-21 17:48:36.000000000 +0000
++++ gcc-4.1.2/configure.in	2009-11-06 21:44:16.000000000 +0000
+@@ -2134,7 +2134,9 @@
+     # For an installed makeinfo, we require it to be from texinfo 4.2 or
+     # higher, else we use the "missing" dummy.
+     if ${MAKEINFO} --version \
+-       | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])' >/dev/null 2>&1; then
++       | egrep 'texinfo[^0-9]*(4\.([7-9]|[1-9][0-9])|[5-9]|[1-9][0-9])' >/dev/null 2>&1; then
++#       | egrep 'texinfo[^0-9]*([1-3][0-9]|4\.[2-9]|[5-9])' >/dev/null 2>&1; then
++      ${MAKEINFO} --version
+       :
+     else
+       MAKEINFO="$MISSING makeinfo"
+--- gcc-4.1.2-orig/gcc/configure.ac	2006-11-13 22:09:55.000000000 +0000
++++ gcc-4.1.2/gcc/configure.ac	2009-11-06 21:44:46.000000000 +0000
+@@ -833,7 +833,9 @@
+ # that we can use it.
+ gcc_AC_CHECK_PROG_VER(MAKEINFO, makeinfo, --version,
+   [GNU texinfo.* \([0-9][0-9.]*\)],
+-  [4.[2-9]*])
++  [4.[7-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
++#  [GNU texinfo.* \([0-9][0-9.]*\)],
++#  [4.[2-9]*])
+ if test $gcc_cv_prog_makeinfo_modern = no; then
+   MAKEINFO="$MISSING makeinfo"
+   AC_MSG_WARN([
+--- gcc-4.1.2-orig/gcc/tree-flow-inline.h	2006-04-18 14:24:45.000000000 +0100
++++ gcc-4.1.2/gcc/tree-flow-inline.h	2011-04-22 11:19:06.000000000 +0100
+@@ -1469,8 +1469,17 @@
+   if (TREE_THIS_VOLATILE (v))
+     return false;
+ 
++#if 0
++  /* original gcc code below here (gaius) */
+   return (AGGREGATE_TYPE_P (TREE_TYPE (v)) &&
+ 	  TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE);
++#else
++  /* gaius' attempt at a solution */
++  return (AGGREGATE_TYPE_P (TREE_TYPE (v)) &&
++	  TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE &&
++	  (! ((TREE_CODE (v) == CONST_DECL) &&
++	      (TREE_CODE (TREE_TYPE (v)) == RECORD_TYPE))));
++#endif
+ }
+ 
+   

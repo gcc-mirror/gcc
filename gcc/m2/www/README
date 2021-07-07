@@ -1,0 +1,6 @@
+This directory contains the source files for the GNU Modula-2
+homepage.  This is done as there is a strong relationship between the
+information on the homepage and the GNU Modula-2 documentation
+gm2/gm2.texi, NEWS file gm2/NEWS). It also allows encourages
+collaborative web authoring. Nevertheless this directory does not
+contain documentation, this is held in texinfo format in gm2/gm2.texi.

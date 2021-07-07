@@ -1,0 +1,231 @@
+This file describes recent user-visible changes in gm2.  Bug fixes are
+not described.  There are more details in the man and info pages.
+
+gm2 is now in the GCC tree and therefore these version numbers are
+historical.
+
+VERSION 1.9.5
+=============
+
+* More subexpressions tokens are created and accuracy of error positions
+  within subexpressions has been improved.
+* the GCC switch -fanalyzer can be used with Modula-2.
+
+VERSION 1.9.4
+=============
+
+* More GCC error routines utilized for error messages, erroneous
+  subexpressions are more accurately reported.
+* Complete type checking now performed.
+
+VERSION 1.9.3
+=============
+
+* GCC error routines utilized for error messages.
+* complete whole number runtime range error detection finished.
+* improved m2-plugin which analyzes the call graph and will issue
+  warnings if the compiler detects a exported procedure will cause
+  a range error.  The plugin will issue an error if the range error
+  will be called from the module constructor/deconstructor.
+
+VERSION 1.2.0
+=============
+
+* New improved more accurate source/line correlation in debugging output.
+* -fm2-g generates nops to further improve debugging single stepping.
+* -fm2-whole-program whole program optimization available.
+* works with gcc-5.2.0 under x86_64, x86_32, arm 64 bit and arm 32 bit.
+
+VERSION 1.0.4
+=============
+
+* Bug fixes to release 1.0
+
+VERSION 1.0
+===========
+
+* All ISO libraries are complete.
+* All ISO language implemented.
+* All regression tests pass on both x86_64 and x86_32 Debian GNU/Linux
+  platforms.
+
+VERSION 0.68
+============
+
+* more ISO library modules are implemented.
+* many errors are much more informative and indicate what the
+  compiler has seen and what it expects.
+
+VERSION 0.63
+============
+
+* many ISO library modules are implemented.
+* Exception handling is complete and it can coexist with swig.
+* all errors now include column information.  Also added -fxcode
+  option which issues errors in Apple Xcode format.
+* shared libraries are now implemented, to link against the shared
+  libraries use the new option -fshared.  Likewise to generate a
+  shared library use the -fshared option.
+* the keyword FINALLY is now implemented and both the initialization
+  and finalization blocks map onto GNU/Linux shared library
+  constructor and deconstructors.
+* the PIM libraries are built with -O0, -O2, -O2 -fshared, -fshared.
+* a new option -fswig automatically generates a swig interface file
+  corresponding to the definition module being compiled.
+  This allows Python and other scripting languages to call Modula-2
+  modules.
+* new options, -fobject-path, allows users to specify the path for
+  all objects whereas -I specifies the path for the library sources.
+* -fmakeinit option introduced which will generate a file
+  _m2_modulename.c in the current directory.
+* introduced fixed sized types in the SYSTEM module.
+
+VERSION 0.62
+============
+
+* all language options changed to -f.  Warning options are
+  still -W.  Introduced memmove to Builtins.def.
+* Introduced gm2/gm2-libs-pim/BlockOps.{def,mod}
+* gm2/gm2-libs-pim/BitByteOps.{def,mod}:  added.
+* -O now works on compiler and passes make gm2.paranoid.
+
+VERSION 0.61
+============
+
+* builds when grafted onto gcc-4.1.2
+
+VERSION 0.52
+============
+
+* tagged ready for branch for gcc-3.3.6 so that the head
+  can be developed with gcc-4.1.0
+
+VERSION 0.51
+============
+
+* all regression tests pass on LP64 and i386 GNU/Linux
+
+* declaration of variables at particular addresses is now implemented.
+  Now gm2 is a full PIM Modula-2 compiler and hence the formal release.
+
+VERSION 0.50
+============
+
+* all regression tests pass on LP64 and i386 GNU/Linux, i386, Mac OS X.3 G5
+
+* gm2-harness 0.7 will download, patch and build gcc, gdb, gm2 with the
+  SET and TYPE enhancements below. gm2-harness-0.7 also honours the
+   --prefix= option.
+
+* Much better dwarf-2 debugging support and when used with
+  a patched gdb-6.3 the programmer can display RECORDs,
+  ARRAYs, SETs, subranges and constant char literals in
+  Modula-2 syntax.
+
+* it currently complies with Programming in Modula-2 Edition 2, 3 and 4.
+  Users can switch on specific mutually exclusive features by using
+  -Wpim or -Wpim2.
+
+* gm2 supports full PIM Modula-2 (except variables located at
+  particular addresses).
+
+* profiling (-p) option is now available.
+
+* module priorities now implemented.
+
+* Logitech compatible libraries: Break.def, CardinalIO.def,
+  Conversions.def, DebugPMD.def, DebugTrace.def, Delay.def, Display.def,
+  ErrorCode.def, FloatingUtilities.def, InOut.def, Keyboard.def,
+  LongIO.def, Random.def, RealConversions.def, RealInOut.def,
+  Strings.def, Termbase.def, Terminal.def, TimeDate.def have been implemented.
+
+* all Ulm libraries are available.
+
+VERSION 0.49
+============
+
+* supports sets of any ordinal size (memory permitting).
+
+* implements ISO Modula-2 SYSTEM which can be switched on via: -Wiso.
+
+* easy interface to C, and varargs can be passed to C routines.
+
+* University of Ulm libraries are installed together with the compiler
+  and can be accessed via: -Wlibs=ulm
+
+* some Logitech libraries have been implemented and can be accessed via:
+  -Wlibs=logitech
+
+* coroutines have been implemented in the PIM style and these are accessible
+  from SYSTEM. A number of supporting libraries (executive and file descriptor
+  mapping to interrupt vector libraries are available through the
+  -Wlibs=pim-coroutines switch).
+
+
+VERSION 0.42
+============
+
+* MinGW cross compilation port released.
+  Please see http://floppsie.comp.glam.ac.uk/Glamorgan/gaius/web/gm2-mingw.html
+  for building details.
+
+VERSION 0.41
+============
+
+* native sparc port passes make gm2.paranoid and make check-gm2
+
+* native i386  port passes make gm2.paranoid and make check-gm2
+
+* passes all 1350 regression tests
+
+* builds with gcc-3.3.2
+
+VERSION 0.40
+============
+
+* brought GM2 up to date with gcc-3.3.1
+
+* many, many bug fixes and no patch is now required in the garbage collection
+  of gcc-3.3.1
+
+* builds under Redhat 9.0 and Suse 9.0
+
+* added the LONGCARD data type.
+
+* LENGTH is now mapped onto M2RTS.Length if the parameter is not a constant
+  at compile time.
+
+* standard procedures can be called inside constant expressions.
+
+* introduced examples/pthread
+
+* introduced a tool, h2def, to aid production of DEFINITION MODULE FOR "C" modules
+  from C header files.
+
+* added MathLib0 module, added svga example.
+
+* added access to thirty one gcc built-in functions.
+
+
+VERSION 0.33
+============
+
+* implemented large sets.
+
+* implemented ISO compliant sets.
+
+* when gm2 is invoked with -gstabs a patched gdb will
+  display set contents. This also works well with SET OF CHAR.
+
+* definition modules no longer have to explicitly export
+  identifiers.
+
+VERSION 0.32
+============
+
+* gm2 can be built as a native or as a strongarm cross compiler.
+
+* the C preprocessor can be invoked and it processes both definition and
+  implementation modules.
+
+* error reporting understands preprocessed Modula-2 source.

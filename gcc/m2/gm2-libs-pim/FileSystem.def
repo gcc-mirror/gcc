@@ -1,0 +1,275 @@
+(* FileSystem.def provides a PIM [234] FileSystem module.
+
+Copyright (C) 2004-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FileSystem ;
+
+(*  Use this module sparingly, FIO or the ISO file modules have a
+    much cleaner interface.  *)
+
+FROM SYSTEM IMPORT WORD, BYTE, ADDRESS ;
+IMPORT FIO ;
+FROM DynamicStrings IMPORT String ;
+
+EXPORT QUALIFIED File, Response, Flag, FlagSet,
+
+                 Create, Close, Lookup, Rename, Delete,
+                 SetRead, SetWrite, SetModify, SetOpen,
+                 Doio, SetPos, GetPos, Length, Reset,
+
+                 ReadWord, ReadChar, ReadByte, ReadNBytes,
+                 WriteWord, WriteChar, WriteByte, WriteNBytes ;
+
+TYPE
+   File = RECORD
+             res     : Response ;
+             flags   : FlagSet ;
+             eof     : BOOLEAN ;
+             lastWord: WORD ;
+             lastByte: BYTE ;
+             fio     : FIO.File ;
+             highpos,
+             lowpos  : CARDINAL ;
+             name    : String ;
+          END ;
+
+   Flag = (
+           read,        (* read access mode *)
+           write,       (* write access mode *)
+           modify,
+           truncate,    (* truncate file when closed *)
+           again,       (* reread the last character *)
+           temporary,   (* file is temporary *)
+           opened       (* file has been opened *)
+          );
+
+   FlagSet = SET OF Flag;
+
+   Response = (done, notdone, notsupported, callerror,
+               unknownfile, paramerror, toomanyfiles,
+               userdeverror) ;
+
+   Command = (create, close, lookup, rename, delete,
+              setread, setwrite, setmodify, setopen,
+              doio, setpos, getpos, length) ;
+
+
+(*
+   Create - creates a temporary file. To make the file perminant
+            the file must be renamed.
+*)
+
+PROCEDURE Create (VAR f: File) ;
+
+
+(*
+   Close - closes an open file.
+*)
+
+PROCEDURE Close (f: File) ;
+
+
+(*
+   Lookup - looks for a file, filename. If the file is found
+            then, f, is opened. If it is not found and, newFile,
+            is TRUE then a new file is created and attached to, f.
+            If, newFile, is FALSE and no file was found then f.res
+            is set to notdone.
+*)
+
+PROCEDURE Lookup (VAR f: File; filename: ARRAY OF CHAR; newFile: BOOLEAN) ;
+
+
+(*
+   Rename - rename a file and change a temporary file to a permanent
+            file. f.res is set appropriately.
+*)
+
+PROCEDURE Rename (VAR f: File; newname: ARRAY OF CHAR) ;
+
+
+(*
+   Delete - deletes a file, name, and sets the f.res field.
+            f.res is set appropriately.
+*)
+
+PROCEDURE Delete (name: ARRAY OF CHAR; VAR f: File) ;
+
+
+(*
+   ReadWord - reads a WORD, w, from file, f.
+              f.res is set appropriately.
+*)
+
+PROCEDURE ReadWord (VAR f: File; VAR w: WORD) ;
+
+
+(*
+   WriteWord - writes one word to a file, f.
+               f.res is set appropriately.
+*)
+
+PROCEDURE WriteWord (VAR f: File; w: WORD) ;
+
+
+(*
+   ReadChar - reads one character from a file, f.
+*)
+
+PROCEDURE ReadChar (VAR f: File; VAR ch: CHAR) ;
+
+
+(*
+   WriteChar - writes a character, ch, to a file, f.
+               f.res is set appropriately.
+*)
+
+PROCEDURE WriteChar (VAR f: File; ch: CHAR) ;
+
+
+(*
+   ReadByte - reads a BYTE, b, from file, f.
+              f.res is set appropriately.
+*)
+
+PROCEDURE ReadByte (VAR f: File; VAR b: BYTE) ;
+
+
+(*
+   WriteByte - writes one BYTE, b, to a file, f.
+               f.res is set appropriately.
+*)
+
+PROCEDURE WriteByte (VAR f: File; b: BYTE) ;
+
+
+(*
+   ReadNBytes - reads a sequence of bytes from a file, f.
+*)
+
+PROCEDURE ReadNBytes (VAR f: File; a: ADDRESS; amount: CARDINAL;
+                      VAR actuallyRead: CARDINAL) ;
+
+
+(*
+   WriteNBytes - writes a sequence of bytes to file, f.
+*)
+
+PROCEDURE WriteNBytes (VAR f: File; a: ADDRESS; amount: CARDINAL;
+                       VAR actuallyWritten: CARDINAL) ;
+
+
+(*
+   Again - returns the last character read to the internal buffer
+           so that it can be read again.
+*)
+
+PROCEDURE Again (VAR f: File) ;
+
+
+(*
+   SetRead - puts the file, f, into the read state.
+             The file position is unchanged.
+*)
+
+PROCEDURE SetRead (VAR f: File) ;
+
+
+(*
+   SetWrite - puts the file, f, into the write state.
+              The file position is unchanged.
+*)
+
+PROCEDURE SetWrite (VAR f: File) ;
+
+
+(*
+   SetModify - puts the file, f, into the modify state.
+               The file position is unchanged but the file can be
+               read and written.
+*)
+
+PROCEDURE SetModify (VAR f: File) ;
+
+
+(*
+   SetOpen - places a file, f, into the open state. The file may
+             have been in the read/write/modify state before and
+             in which case the previous buffer contents are flushed
+             and the file state is reset to open. The position is
+             unaltered.
+*)
+
+PROCEDURE SetOpen (VAR f: File) ;
+
+
+(*
+   Reset - places a file, f, into the open state and reset the
+           position to the start of the file.
+*)
+
+PROCEDURE Reset (VAR f: File) ;
+
+
+(*
+   SetPos - lseek to a position within a file.
+*)
+
+PROCEDURE SetPos (VAR f: File; high, low: CARDINAL) ;
+
+
+(*
+   GetPos - return the position within a file.
+*)
+
+PROCEDURE GetPos (VAR f: File; VAR high, low: CARDINAL) ;
+
+
+(*
+   Length - returns the length of file, in, high, and, low.
+*)
+
+PROCEDURE Length (VAR f: File; VAR high, low: CARDINAL) ;
+
+
+(*
+   Doio - effectively flushes a file in write mode, rereads the
+          current buffer from disk if in read mode and writes
+          and rereads the buffer if in modify mode.
+*)
+
+PROCEDURE Doio (VAR f: File) ;
+
+
+(*
+   FileNameChar - checks to see whether the character, ch, is
+                  legal in a filename. nul is returned if the
+                  character was illegal.
+*)
+
+PROCEDURE FileNameChar (ch: CHAR) ;
+
+
+END FileSystem.

@@ -1,0 +1,11 @@
+--- gcc-4.1.2+gm2-20070808-orig/gcc/config/rs6000/rs6000.c	2007-08-14 11:16:46.000000000 +0100
++++ gcc-4.1.2+gm2-20070808/gcc/config/rs6000/rs6000.c	2007-08-14 11:31:08.000000000 +0100
+@@ -15314,6 +15314,8 @@
+ 	i = 2;
+       else if (! strcmp (language_string, "GNU Ada"))
+ 	i = 3;
++      else if (! strcmp (language_string, "GNU Modula-2"))
++	i = 8;
+       else if (! strcmp (language_string, "GNU C++"))
+ 	i = 9;
+       else if (! strcmp (language_string, "GNU Java"))

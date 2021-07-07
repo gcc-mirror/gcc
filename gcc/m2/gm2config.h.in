@@ -1,0 +1,67 @@
+/* gm2config.h.in template file for values required by gm2spec.c.
+
+Copyright (C) 2006-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Define to the full name of this package. */
+#ifndef AR_PATH
+/* the path to target archiver */
+#undef AR_PATH
+#endif
+
+#ifndef PACKAGE_BUGREPORT
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+#endif
+
+#ifndef PACKAGE_NAME
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+#endif
+
+#ifndef PACKAGE_STRING
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+#endif
+
+#ifndef RANLIB_PATH
+/* the path to target ranlib */
+#undef RANLIB_PATH
+#endif
+
+/* Define to 1 if you have the `stpcmp' function. */
+#undef HAVE_STPCMP
+
+/* Define to 1 if you have the dirent.h header. */
+#undef HAVE_DIRENT_H
+
+/* Define to 1 if you have the sys/ndir.h header. */
+#undef HAVE_SYS_NDIR_H
+
+/* Define to 1 if you have the sys/dir.h header. */
+#undef HAVE_SYS_DIR_H
+
+/* Define to 1 if you have the ndir.h header. */
+#undef HAVE_NDIR_H
+
+/* Define to 1 if you have the sys/types.h header. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the opendir function.  */
+#undef HAVE_OPENDIR

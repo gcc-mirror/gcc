@@ -1,0 +1,122 @@
+(* wlists.def word lists module.
+
+Copyright (C) 2015-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE wlists ;
+
+
+FROM SYSTEM IMPORT WORD ;
+
+TYPE
+   wlist ;
+   performOperation = PROCEDURE (WORD) ;
+
+
+(*
+   initList - creates a new wlist, l.
+*)
+
+PROCEDURE initList () : wlist ;
+
+
+(*
+   killList - deletes the complete wlist, l.
+*)
+
+PROCEDURE killList (VAR l: wlist) ;
+
+
+(*
+   putItemIntoList - places an WORD, c, into wlist, l.
+*)
+
+PROCEDURE putItemIntoList (l: wlist; c: WORD) ;
+
+
+(*
+   getItemFromList - retrieves the nth WORD from wlist, l.
+*)
+
+PROCEDURE getItemFromList (l: wlist; n: CARDINAL) : WORD ;
+
+
+(*
+   getIndexOfList - returns the index for WORD, c, in wlist, l.
+                    If more than one CARDINAL, c, exists the index
+                    for the first is returned.
+*)
+
+PROCEDURE getIndexOfList (l: wlist; c: WORD) : CARDINAL ;
+
+
+(*
+   noOfItemsInList - returns the number of items in wlist, l.
+*)
+
+PROCEDURE noOfItemsInList (l: wlist) : CARDINAL ;
+
+
+(*
+   includeItemIntoList - adds an WORD, c, into a wlist providing
+                         the value does not already exist.
+*)
+
+PROCEDURE includeItemIntoList (l: wlist; c: WORD) ;
+
+
+(*
+   removeItemFromList - removes an WORD, c, from a wlist.
+                        It assumes that this value only appears once.
+*)
+
+PROCEDURE removeItemFromList (l: wlist; c: WORD) ;
+
+
+(*
+   replaceItemInList - replace the nth WORD in wlist, l.
+                       The first item in a wlists is at index, 1.
+                       If the index, n, is out of range nothing is changed.
+*)
+
+PROCEDURE replaceItemInList (l: wlist; n: CARDINAL; w: WORD) ;
+
+
+(*
+   isItemInList - returns true if a WORD, c, was found in wlist, l.
+*)
+
+PROCEDURE isItemInList (l: wlist; c: WORD) : BOOLEAN ;
+
+
+(*
+   foreachItemInListDo - calls procedure, P, foreach item in wlist, l.
+*)
+
+PROCEDURE foreachItemInListDo (l: wlist; p: performOperation) ;
+
+
+(*
+   duplicateList - returns a duplicate wlist derived from, l.
+*)
+
+PROCEDURE duplicateList (l: wlist) : wlist ;
+
+
+END wlists.

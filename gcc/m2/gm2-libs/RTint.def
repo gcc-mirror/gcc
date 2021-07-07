@@ -1,0 +1,127 @@
+(* RTint.def provides users of the COROUTINES library with the.
+
+Copyright (C) 2009-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RTint ;
+
+(* Provides users of the COROUTINES library with the
+   ability to create interrupt sources based on
+   file descriptors and timeouts.  *)
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   DispatchVector = PROCEDURE (CARDINAL, CARDINAL, ADDRESS) ;
+
+
+(*
+   InitInputVector - returns an interrupt vector which is associated
+                     with the file descriptor, fd.
+*)
+
+PROCEDURE InitInputVector (fd: INTEGER; pri: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitOutputVector - returns an interrupt vector which is associated
+                      with the file descriptor, fd.
+*)
+
+PROCEDURE InitOutputVector (fd: INTEGER; pri: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitTimeVector - returns an interrupt vector associated with
+                    the relative time.
+*)
+
+PROCEDURE InitTimeVector (micro, secs: CARDINAL; pri: CARDINAL) : CARDINAL ;
+
+
+(*
+   ReArmTimeVector - reprimes the vector, vec, to deliver an interrupt
+                     at the new relative time.
+*)
+
+PROCEDURE ReArmTimeVector (vec: CARDINAL; micro, secs: CARDINAL) ;
+
+
+(*
+   GetTimeVector - assigns, micro, and, secs, with the remaining
+                   time before this interrupt will expire.
+                   This value is only updated when a Listen
+                   occurs.
+*)
+
+PROCEDURE GetTimeVector (vec: CARDINAL; VAR micro, secs: CARDINAL) ;
+
+
+(*
+   AttachVector - adds the pointer, p, to be associated with the interrupt
+                  vector. It returns the previous value attached to this
+                  vector.
+*)
+
+PROCEDURE AttachVector (vec: CARDINAL; p: ADDRESS) : ADDRESS ;
+
+
+(*
+   IncludeVector - includes, vec, into the dispatcher list of
+                   possible interrupt causes.
+*)
+
+PROCEDURE IncludeVector (vec: CARDINAL) ;
+
+
+(*
+   ExcludeVector - excludes, vec, from the dispatcher list of
+                   possible interrupt causes.
+*)
+
+PROCEDURE ExcludeVector (vec: CARDINAL) ;
+
+
+(*
+   Listen - will either block indefinitely (until an interrupt)
+            or alteratively will test to see whether any interrupts
+            are pending.
+            If a pending interrupt was found then, call, is called
+            and then this procedure returns.
+            It only listens for interrupts > pri.
+*)
+
+PROCEDURE Listen (untilInterrupt: BOOLEAN;
+                  call: DispatchVector;
+                  pri: CARDINAL) ;
+
+
+(*
+   Init - allows the user to force the initialize order.
+*)
+
+PROCEDURE Init ;
+
+
+END RTint.

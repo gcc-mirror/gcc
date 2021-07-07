@@ -1,0 +1,253 @@
+(* M2System.def defines the SYSTEM builtin types.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2System ;
+
+(*
+    Title      : M2System
+    Author     : Gaius Mulley
+    System     : UNIX (gm2)
+    Date       : Tue Jul 11 08:39:17 2000
+    Description: Implements the base types of the module SYSTEM
+                 for the GNU Modula-2 compiler. Note that the base types
+                 are mapped onto their equivalents in the gcc backend.
+*)
+
+FROM m2linemap IMPORT location_t ;
+
+EXPORT QUALIFIED
+                 System,           (* The SYSTEM module symbol.  *)
+                 Loc,              (* ISO specific System Type.  *)
+
+                 Word,             (* System Type *)
+                 Byte,             (* System Type *)
+                 Address,          (* System Type *)
+                 CSizeT,           (* System Type *)
+                 CSSizeT,          (* System Type *)
+
+                 Adr,              (* System Function *)
+                 TSize,            (* System Function *)
+
+                 AddAdr,           (* ISO specific System Function *)
+                 SubAdr,           (* ISO specific System Function *)
+                 DifAdr,           (* ISO specific System Function *)
+                 MakeAdr,          (* ISO specific System Function *)
+                 Rotate,           (* ISO specific System Function *)
+                 Shift,            (* ISO specific System Function *)
+                 Cast,             (* ISO specific System Function *)
+                 Throw,            (* GNU Modula-2 extension *)
+                 TBitSize,         (* GNU Modula-2 extension *)
+
+                 GetSystemTypeMinMax,
+                 IsPseudoSystemFunction, IsPseudoSystemProcedure,
+                 IsSystemType,
+                 IsPseudoSystemFunctionConstExpression,
+
+                 IntegerN, CardinalN, WordN, RealN, SetN, ComplexN,
+                 IsIntegerN, IsCardinalN, IsWordN,
+                 IsRealN, IsSetN, IsComplexN,
+                 IsGenericSystemType,
+                 IsSameSizePervasiveType, IsSameSize,
+                 InitSystem ;
+
+
+VAR
+   System,
+   Loc,
+   Word, Byte,
+   Address,
+   CSizeT, CSSizeT,
+
+   Adr,
+   TSize, TBitSize,
+   AddAdr, SubAdr,
+   DifAdr, MakeAdr,
+   Rotate, Shift,
+   Cast, Throw    : CARDINAL ;
+
+
+(*
+   InitSystem - initializes the base types Word and Byte in the module
+                SYSTEM.
+*)
+
+PROCEDURE InitSystem ;
+
+
+(*
+   GetSystemTypeMinMax - returns the minimum and maximum values for a given system type.
+*)
+
+PROCEDURE GetSystemTypeMinMax (type: CARDINAL; VAR min, max: CARDINAL) ;
+
+
+(*
+   IsPseudoSystemFunction - returns true if Sym is a SYSTEM pseudo function.
+*)
+
+PROCEDURE IsPseudoSystemFunction (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPseudoSystemProcedure - returns true if Sym is a SYSTEM pseudo procedure.
+*)
+
+PROCEDURE IsPseudoSystemProcedure (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPseudoSystemFunctionConstExpression - returns TRUE if this procedure
+                                           is legal in a constant expression.
+*)
+
+PROCEDURE IsPseudoSystemFunctionConstExpression (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSystemType - returns TRUE if Sym is a SYSTEM (inbuilt) type.
+                  It does not search your SYSTEM implementation module.
+*)
+
+PROCEDURE IsSystemType (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IntegerN - returns the symbol associated with INTEGER[N].
+              NulSym is returned if the type does not exist.
+*)
+
+PROCEDURE IntegerN (bitlength: CARDINAL) : CARDINAL ;
+
+
+(*
+   CardinalN - returns the symbol associated with CARDINAL[N].
+               NulSym is returned if the type does not exist.
+*)
+
+PROCEDURE CardinalN (bitlength: CARDINAL) : CARDINAL ;
+
+
+(*
+   WordN - returns the symbol associated with WORD[N].
+           NulSym is returned if the type does not exist.
+*)
+
+PROCEDURE WordN (bitlength: CARDINAL) : CARDINAL ;
+
+
+(*
+   SetN - returns the symbol associated with SET[N].
+          NulSym is returned if the type does not exist.
+*)
+
+PROCEDURE SetN (bitlength: CARDINAL) : CARDINAL ;
+
+
+(*
+   RealN - returns the symbol associated with REAL[N].
+           NulSym is returned if the type does not exist.
+*)
+
+PROCEDURE RealN (bitlength: CARDINAL) : CARDINAL ;
+
+
+(*
+   ComplexN - returns the symbol associated with COMPLEX[N].
+              NulSym is returned if the type does not exist.
+*)
+
+PROCEDURE ComplexN (bitlength: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsIntegerN - returns the TRUE if, sym, is one of the SYSTEM
+                INTEGER types (not the base INTEGER type).
+*)
+
+PROCEDURE IsIntegerN (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsCardinalN - returns the TRUE if, sym, is one of the SYSTEM
+                 CARDINAL types (not the base CARDINAL type).
+*)
+
+PROCEDURE IsCardinalN (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsWordN - returns the TRUE if, sym, is one of the SYSTEM
+             WORD[n] types (not the default SYSTEM WORD type).
+*)
+
+PROCEDURE IsWordN (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSetN - returns the TRUE if, sym, is one of the SYSTEM
+            SET[n] types (not the default SYSTEM BITSET type).
+*)
+
+PROCEDURE IsSetN (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsRealN - returns the TRUE if, sym, is one of the SYSTEM
+             REAL[n] types (not the default base REAL type).
+*)
+
+PROCEDURE IsRealN (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsComplexN - returns the TRUE if, sym, is one of the SYSTEM
+                COMPLEX[n] types (not the default base COMPLEX,
+                LONGCOMPLEX or SHORTCOMPLEX types).
+*)
+
+PROCEDURE IsComplexN (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsGenericSystemType - returns TRUE if, sym, is of type
+                         BYTE, WORD or any other length.
+*)
+
+PROCEDURE IsGenericSystemType (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSameSizePervasiveType - returns TRUE if a or b are CARDINAL, INTEGER, REAL,
+                             LONGREAL, SHORTREAL and the other type is the same
+                             size and of the same type.
+*)
+
+PROCEDURE IsSameSizePervasiveType (a, b: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSameSize - return TRUE if SIZE(a)=SIZE(b)
+*)
+
+PROCEDURE IsSameSize (a, b: CARDINAL) : BOOLEAN ;
+
+
+END M2System.

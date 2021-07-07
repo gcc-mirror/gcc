@@ -1,0 +1,12 @@
+--- gcc-6.4.0-orig/gcc/cp/g++spec.c	2017-07-24 16:03:41.669352539 +0100
++++ gcc-6.4.0/gcc/cp/g++spec.c	2017-07-24 16:23:05.637928450 +0100
+@@ -402,3 +402,9 @@
+ 
+ /* Number of extra output files that lang_specific_pre_link may generate.  */
+ int lang_specific_extra_outfiles = 0;  /* Not used for C++.  */
++
++/* lang_register_spec_functions.  Not used for C++.  */
++void
++lang_register_spec_functions (void)
++{
++}

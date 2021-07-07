@@ -1,0 +1,21 @@
+diff --git a/gcc/Makefile.in b/gcc/Makefile.in
+index 8a5fb3fd99c..73e550cb866 100644
+--- a/gcc/Makefile.in
++++ b/gcc/Makefile.in
+@@ -1266,6 +1266,7 @@ ANALYZER_OBJS = \
+ 	analyzer/region-model-reachability.o \
+ 	analyzer/sm.o \
+ 	analyzer/sm-file.o \
++	analyzer/sm-m2rts.o \
+ 	analyzer/sm-malloc.o \
+ 	analyzer/sm-pattern-test.o \
+ 	analyzer/sm-sensitive.o \
+@@ -2731,7 +2732,7 @@ ALL_GTFILES_H := $(sort $(GTFILES_H) $(GTFILES_LANG_H))
+ $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gtype.state: s-gtype ; @true
+ 
+ ### Common flags to gengtype [e.g. -v or -B backupdir]
+-GENGTYPE_FLAGS= 
++GENGTYPE_FLAGS=
+ 
+ gtyp-input.list: s-gtyp-input ; @true
+ s-gtyp-input: Makefile

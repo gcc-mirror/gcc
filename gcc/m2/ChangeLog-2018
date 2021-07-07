@@ -1,0 +1,607 @@
+2018-07-30      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2spec.c:  (fe_generate_option) do not duplicate the old
+          argument.  free up a string after use.  (build_include_path)
+          start the new string with a strcpy not strcat!
+          (insert_option) create a new vector with an extra entry.
+          (no_link) return a string which can be free'd.
+	  (add_exec_name) return a string which can be free'd.
+
+2018-07-18      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2spec.c: reformatted according to GNU coding standards.
+
+2018-07-17      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-compiler/ObjectFiles.mod:  import ALLOCATE
+          and DEALLOCATE from Storage.  Collect return results
+          from close and KillIndex.
+	* gm2/gm2spec.c:  reformatted and tidied up code.
+	* gm2/gm2-libs/GetOpt.mod:  remove declaration of PtrToInteger.
+	* gm2/gm2-libs/GetOpt.mod:  corrected record/pointer reference.
+
+2018-07-16      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/bnf/gm2l.bnf:  reformatted to gnu standards.
+	* gm2/el/gm2-mode.el:  minor formatting change.
+	* gm2/gm2-libs/DynamicStrings.mod:  reformatted to gnu standards.
+	* gm2/gm2-compiler/ObjectFiles.def:  (New file).
+
+2018-07-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/Make-lang.in:  remove the target configure scripts from
+	  gm2/gm2-libs.
+	* gm2/configure:  rebuilt.
+	* gm2/examples/callingC/Makefile.in:  use multiple -I flags.
+	* gm2/examples/hello/Makefile.in:  use multiple -I flags.
+	* gm2/gm2-compiler/gm2lcc.mod:  reformatted.  Archive
+	  all object files, all Modula-2 objects and check for duplication.
+	* gm2/gm2-libs-ch/wrapc.c:  remove unconfigured test for fileinode.
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-target:  removed.
+	* gm2/gm2-libs/gm2-libs-host.h.in:  rebuilt.
+	* gm2/gm2-libs/gm2-libs-target.h.in:  removed.
+	* gm2/gm2spec.c:  reformatted.  (add_env_option)  New function.
+	  (lang_specific_driver)  call add_env_option.
+	* gm2/lang-specs.h:  (lang_register_spec_functions) register
+	  no_objects.
+	* gm2/patches/gcc/trunc/01-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/02-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/03-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/04-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/05-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/06-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/07-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/08-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/09-patches:  rebuilt.
+	* gm2/patches/gcc/trunc/10-patches:  rebuilt.
+	* testsuite/gm2/pim/run/pass/testaddr2.mod:  reformatted.
+	* gm2/gm2spec.c:  removed unused variable and reformatted.
+	* gm2/tools-src/makeversion:  remove reference to config-target.in.
+
+2018-07-10      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-compiler/ObjectFiles.def:  New file.
+	* gm2/gm2-compiler/ObjectFiles.mod:  New file.
+	* gm2/Make-lang.in:  added ObjectFiles to be built and linked
+	into the compiler and tools.
+	* gm2/gm2-compiler/gm2lcc.mod:  use ObjectFiles to remember each
+	  object file so duplicates are not accidentally linked both in
+	the Modula-2 link and command line list of objects.  Much code
+	  was tidied up.
+	* gm2/gm2-libs-ch/wrapc.c:  (fileinode) New function.
+	* gm2/gm2-libs/libc.def:  corrected dates.
+	* gm2/gm2-libs/wrapc.def:  (fileinode) New procedure function.
+	* libgm2/libpim/wrapc.c:  (fileinode) New function.  Tidied up
+	  formatting.
+
+2018-07-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/bnf/gm2l.bnf:  import Verbose and use.  (RegisterImport)
+          reformatted.  (ScanSources) display the module name if Verbose.
+          (ScanArgs) handle long options and also concatenated arguments.
+	  (-I, --verbose, --M2RTS).
+	* gm2/gm2-compiler/M2DriverOptions.mod:  (CppArgument)  New procedure
+	  function.  (ScanCppArgs) reformatted and also call CppArgument.
+	* gm2/gm2-compiler/M2Options.mod:  updated dates.
+	* gm2/gm2-compiler/M2Preprocess.mod:  reformatted and changed some of the
+	  Verbose output.
+	* gm2/gm2-libs-ch/getopt.c:  implement long options.
+	* gm2/gm2-libs/GetOpt.def:  provide access to the long options in getopt.
+	* gm2/gm2-libs/GetOpt.mod:  implement long option procedures necessary for getopt.
+	* gm2/gm2-libs/Storage.def:  updated dates.
+	* gm2/gm2-libs/getopt.def:  provide access to the long options in getopt.
+	* gm2/gm2.texi:  corrected docuentation surrounding
+	* gm2/gm2spec.c:  removed GM2IPATH and GM2OPATH temporarily and changed
+          all include and object paths to avoid using the ":" separator.
+          (which does not exist for -I).  In turn this forces a reimplementation
+	  of the GM2IPATH and GM2OPATH.
+	* gm2/lang-specs.h:  changed all references to gm2l to use the GM2L macro.
+          Fixed many preprocessor invocation problems which occur when linking
+	  an application which uses the preprocessor.
+
+2018-07-02      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/Make-lang.in:  changes to build stage2/gm2/gm2l
+	* gm2/bnf/gm2l.bnf:  remove FORWARD references.
+	* gm2/gm2-compiler/M2GenGCC.mod:  (GetAddressOfUnbounded)
+          reformatted.  (BuildHighFromStaticArray) bug fixes
+          and reformatted.
+	* gm2/gm2-libs/GetOpt.def:  introduce long options.
+	* gm2/iso/run/pass/constructor2.mod:  reformatted.
+
+2018-06-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  (GetHighFromUnbounded)
+          check to see if the unbounded array has static array
+          data type and follow the dimension into the static array
+          to obtain the correct HIGH value.
+          (BuildHighFromStaticArray)  New procedure function.
+	* gm2/gm2-compiler/M2Range.mod:  add missing case clause.
+
+2018-06-23      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el: bug fixes to the m2-tag feature.
+	* gm2/el/g-mode.el: allow . before a type, keyword,
+	  function and const.
+
+2018-06-22      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el: generate types and builtin functions
+	  dependant upon the dialect chosen.
+
+2018-06-21      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el: fixed m2-tag (find declaration
+          understands the path and also works in algol keyword mode.
+	* gm2/el/g-mode.el: fixed visual parenthesis balancing.
+	* gm2/el/g-mode.el: removed some debugging statements.
+
+2018-06-20      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el:  fixed traditional mode.  Both algol
+	  mode and traditional are now usable and user selectable.
+
+2018-06-13      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el:  added ability to turn on/off
+          lowercase algol style keyword transformation.
+          Fixed compile-command.
+	* gm2/el/gm2-mode.el:  renamed from g-mode.el.
+	  Changed internal variables from g-mode- to m2-auto-.
+
+2018-06-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el:  added defcustom declarations
+          and fixed some regexp bugs.  Applied some defcustom
+          implementation features.
+	* gm2/el/g-mode.el:  fixed electric END, ELSE and THEN.
+          Added more defcustoms.
+	* gm2/el/g-mode.el:  added many more defcustoms.  Also
+          tidied up code and also tightened up types and introduced
+          radio buttons for language choice.  Use inbuilt booleans
+          for binary choices.  Fixed key binding for DEL and
+	  Backspace.
+
+2018-06-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el:  interim checkin, keyword editing
+          complete (minus delete key).
+
+2018-06-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el:  interim checkin.
+	* gm2/el/g-mode.el:  another interim checkin in
+	  the development of lowercase keywords.
+
+2018-05-24      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-gcc/m2expr.c:  (BuildNotEqualToZero)
+          new function.  (checkWholeNegateOverflow)
+          re-implemented and in the process fixed bug
+	  and the test
+          testsuite/gm2/switches/check-all/run/fail/intrange5.mod
+	  passes.
+          (m2expr_Build4LogicalAnd)  New function.
+	* gm2/gm2-gcc/m2expr.c:  renamed BuildLogicalAndIf
+          to BuildTruthAndIf and renamed BuildLogicalOrIf
+	  to BuildTruthOrIf.
+
+2018-05-23      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* implement range checks on whole number multiply.
+	* gm2/gm2-compiler/M2GenGCC.mod:  import BuildMultCheck.
+          Call CodeMultCheck in quadruple case statement.
+          (CodeMultChecked)  New procedure.  (CodeMultCheck)
+          New procedure.
+	* gm2/gm2-gcc/m2expr.c:  (checkWholeNegateOverflow)
+          interm checkin.  (checkWholeSubOverflow) corrected
+          comment.  (m2expr_Build3LogicalAnd)  New function.
+          (m2expr_Build4LogicalOr)  New function.
+          (checkWholeMultOverflow)  New function.
+          (checkWholeOverflow)  New function.
+          (m2expr_BuildMultCheck)  New function.
+	* gm2/gm2-gcc/m2expr.def:  BuildMultCheck exported.
+	* gm2/gm2-gcc/m2expr.h:  BuildMultCheck defined.
+	* gm2/gm2-gcc/m2expr.c:  added missing semicolon.
+
+2018-04-16      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/Make-lang.in:  changed the plugin directory to
+          plugin rather than gm2/plugin.  Corrected .so typeos.
+	* gm2/gm2.texi:  Semantic checking (New section).
+	* testsuite/gm2/iso/analysis/fail/gm2.exp:  New file.
+
+2018-04-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/Make-lang.in:  build plugin/m2rte.so and create
+	  gm2/plugin directory.
+	* gm2/gm2-compiler/CLexBuf.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2ALU.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2AsmUtil.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2BasicBlock.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2BasicBlock.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2Batch.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2Const.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2Const.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2Depth.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2Lex.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2LexBuf.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2LexBuf.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2MetaError.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2MetaError.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2Optimize.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/M2Swig.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/NameKey.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/PCSymBuild.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/SymbolKey.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/SymbolTable.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/gm2lcc.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-compiler/gm2lgen.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs-ch/libc.c:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs-coroutines/Debug.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs-coroutines/Debug.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs-min/libc.c:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/Args.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/Args.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/CmdArgs.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/Debug.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/DynamicStrings.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/DynamicStrings.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/FIO.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/NumberIO.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/PushBackInput.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/RTExceptions.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/Scan.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/StrIO.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/StrLib.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/gm2-libs/StringConvert.mod:  removed FORWARD prototype
+	  definitions.
+	* gm2/plugins/m2rte.c:  renamed to gm2/plugin/m2rte.c.
+	* gm2/ulm-lib-gm2/std/RTExceptions.mod:  removed FORWARD prototype
+	  definitions.
+
+2018-04-10      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/Make-lang.in:  build m2rte plugin, install m2rte plugin.
+	* gm2/gm2-compiler/M2Base.def:  define new exception ExceptionReturn.
+	* gm2/gm2-compiler/M2Base.mod:  implement new exception ExceptionReturn.
+	* gm2/gm2-compiler/M2Quads.mod:  new call to InitReturnRangeCheck.
+	* gm2/gm2-compiler/M2Range.def:  define InitReturnRangeCheck.
+	* gm2/gm2-compiler/M2Range.mod:  (InitReturnRangeCheck),
+	  (FoldReturn), (CodeReturn) New procedures.
+	* gm2/gm2-lang.c:  detect -fno-m2-plugin option.
+	* gm2/gm2-libs-iso/M2RTS.def:  ReturnException defined.
+	* gm2/gm2-libs-iso/M2RTS.mod:  ReturnException implemented.
+	* gm2/gm2-libs/M2RTS.def:  ReturnException defined.
+	* gm2/gm2-libs/M2RTS.mod:  ReturnException implemented.
+	* gm2/gm2spec.c:  detect -fno-m2-plugin and unset boolean if
+          present.  Later insert the -fplugin=m2rte switch if plugins are true.
+	* gm2/lang-options.h:  allow -fm2-plugin and -fno-m2-plugin.
+	* gm2/lang-specs.h:  update dates.
+	* gm2/lang.opt:  define -fm2-plugin and -fno-m2-plugin.
+	* gm2/m2pp.c:  update dates.
+	* gm2/tools-src/makeSystem:  use -fno-m2-plugin when creating system.
+	* gm2/ulm-lib-gm2/std/M2RTS.mod:  ReturnException implemented.
+	* plugins/m2rte.c:  New file.
+
+2018-03-28      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/bnf/m2-2.bnf:  updated dates and trimmed end of
+	  line spaces.
+	* gm2/bnf/m2-c.bnf:  updated dates and trimmed end of
+	  line spaces.
+	* gm2/gm2-compiler/M2Comp.mod:  removed p2c forward
+	  declarations.
+	* gm2/gm2-compiler/M2Quads.mod:  (BuildRealFuncProcCall)
+          corrected comment title.  Call SkipConst to skip over
+          a constant assigned to a procedure.  Fixes a bug reported
+          by Michael Riedl <udo-michael.riedl@t-online.de>.
+	* gm2/gm2-compiler/P2SymBuild.mod:  remove p2c
+	  forward declarations.
+	* testsuite/gm2/iso/run/pass/constprocedure.mod:
+          New regression test to stress the bug reported (above).
+	* testsuite/gm2/iso/fail/constprocedure.mod:  New
+          regression test to test standard functions are not
+          allowed to be referenced in a const expression.
+	  (But they can be called).
+
+2018-03-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/el/g-mode.el:  corrected dates and changed name
+          to help debugging.
+	* gm2/gm2-compiler/Indexing.mod:  removed p2c related
+	  comment.
+	* gm2/gm2-compiler/M2Error.mod:  removed intemediate
+          record type as we are no longer bootstrapping using
+          p2c.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  removed intemediate
+          record types as we are no longer bootstrapping using
+          p2c.
+	* gm2/gm2-compiler/M2Range.mod:  removed intemediate
+          record type as we are no longer bootstrapping using
+          p2c.
+	* gm2/gm2-compiler/ppg.mod:  removed intemediate
+          record types as we are no longer bootstrapping using
+          p2c.
+
+2018-03-26      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-lang.c:  (gm2_langhook_type_for_mode)  rewritten
+          (borrowed code from go-lang.c).
+	* gm2/gm2-compiler/M2Quads.mod:  (BuildAdrFunction)
+          handle address of unbounded array and check the dimension
+	  access.
+
+2018-03-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-compiler/SymbolTable.mod:  (PutUnbounded)
+          ensure that all dimensions prior to the requested dimension
+	  has an entry in the array.  (NulSym is added).
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  (WalkFamilyOfUnbounded)
+          check that unbounded is not NulSym before calling unboundedp.
+
+	* gm2/gm2-compiler/M2Quads.mod:  (UnboundedVarLinkToArray)
+          and (UnboundedNonVarLinkToArray) ensure that all
+          parameters to BuildAdrFunction propagate the array
+          and dimension operand stack.
+          Fixes bugs exposed in
+	  testsuite/gm2/iso/run/pass/adrunbounded3.mod
+
+2018-02-19      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-compiler/M2Quads.mod:  (AssignHighField)
+          check for ArraySym and use if actual parameter
+          has different number of dimensions to formal
+          parameter array.
+	* gm2/gm2-compiler/M2Quads.mod:  (BuildConstHighFromSym)
+          only access the single dimension when building high
+          as the array will be referencing the desired dimension.
+	  A temporary type will have been created.
+
+2018-02-15      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  check and use lvalue op3
+	  which points to the data for the unbounded quadruple.
+
+2018-02-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/gm2-compiler/M2Quads.mod:  check open array actual
+          parameter which is indexed and check the dimension against
+	  formal parameters.
+
+2018-02-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2/Make-lang.in:  added LDFLAGS to the link of mc.
+
+2018-01-28      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-5.bnf:  regenerated.
+	* gm2/mc-boot/GCmdArgs.c:  regenerated.
+	* gm2/mc-boot/GFIO.c:  regenerated.
+	* gm2/mc-boot/GStrIO.c:  regenerated.
+	* gm2/mc-boot/GStringConvert.c:  regenerated.
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+	* gm2/mc-boot/Gdecl.h:  regenerated.
+	* gm2/mc-boot/GmcComp.c:  regenerated.
+	* gm2/mc-boot/GmcLexBuf.c:  regenerated.
+	* gm2/mc-boot/Gmcp1.c:  regenerated.
+	* gm2/mc-boot/Gmcp2.c:  regenerated.
+	* gm2/mc-boot/Gmcp3.c:  regenerated.
+	* gm2/mc-boot/Gmcp4.c:  regenerated.
+	* gm2/mc-boot/Gmcp5.c:  regenerated.
+	* gm2/mc/decl.def:  (addElseComments), (addIfEndComments),
+          (addWhileDoComment), (addWhileEndComment), (addRepeatComment),
+	  (addUntilComment)  defined and exported.
+	* gm2/mc/decl.mod:  (commentPair)  New record.
+          Used in funccallT, returnT, whileT, repeatT, ifT, elsifT,
+          assignmentT.  (doAfterCommentC)  New procedure.
+          (doReturnC)  Use (doAfterCommentC).
+          (doAssignmentC) use (doAfterCommentC).  (doIfC)
+          use (doAfterCommentC).  (doRepeatC) use (doAfterCommentC).
+          (doWhileC) use (doAfterCommentC).  (doFuncCallC) use
+          (doAfterCommentC).  (addGenericBody) rewritten.
+          (addIfComments) rewritten.  (addElseComments)  New
+          procedure.  (addIfEndComments)  New procedure.
+          (addWhileDoComment) New procedure.  (addWhileEndComment)
+          New procedure.  (initPair)  New procedure.
+          (addRepeatComment)  New procedure.
+	  (addUntilComment)  New procedure.
+	* gm2/mc/mcLexBuf.mod:  fixed an infinite loop bug hunting
+	  for the next token on a buffer boundary case.
+
+2018-01-26      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added extra commented definition for
+	bootstrapping under trunc.
+	* gm2/bnf/mc-1.bnf:  changed comment interface.
+	* gm2/bnf/mc-2.bnf:  removed unnecessary import.
+	* gm2/bnf/mc-5.bnf:  rewritten the comment interface for
+	  after and body comments.
+	* gm2/mc-boot/GCmdArgs.c:  rebuilt.
+	* gm2/mc-boot/GDebug.c:  rebuilt.
+	* gm2/mc-boot/GDynamicStrings.c:  rebuilt.
+	* gm2/mc-boot/GFIO.c:  rebuilt.
+	* gm2/mc-boot/GFormatStrings.c:  rebuilt.
+	* gm2/mc-boot/GFpuIO.c:  rebuilt.
+	* gm2/mc-boot/GIO.c:  rebuilt.
+	* gm2/mc-boot/GIndexing.c:  rebuilt.
+	* gm2/mc-boot/GM2EXCEPTION.c:  rebuilt.
+	* gm2/mc-boot/GM2RTS.c:  rebuilt.
+	* gm2/mc-boot/GM2RTS.h:  rebuilt.
+	* gm2/mc-boot/GNumberIO.c:  rebuilt.
+	* gm2/mc-boot/GRTExceptions.c:  rebuilt.
+	* gm2/mc-boot/GRTint.c:  rebuilt.
+	* gm2/mc-boot/GSFIO.c:  rebuilt.
+	* gm2/mc-boot/GStorage.c:  rebuilt.
+	* gm2/mc-boot/GStrIO.c:  rebuilt.
+	* gm2/mc-boot/GStrLib.c:  rebuilt.
+	* gm2/mc-boot/GStringConvert.c:  rebuilt.
+	* gm2/mc-boot/GSysStorage.c:  rebuilt.
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc-boot/Gdecl.h:  rebuilt.
+	* gm2/mc-boot/Gkeyc.c:  rebuilt.
+	* gm2/mc-boot/Glibc.h:  rebuilt.
+	* gm2/mc-boot/GmcComment.c:  rebuilt.
+	* gm2/mc-boot/GmcComment.h:  rebuilt.
+	* gm2/mc-boot/GmcComp.c:  rebuilt.
+	* gm2/mc-boot/GmcComp.h:  rebuilt.
+	* gm2/mc-boot/GmcError.c:  rebuilt.
+	* gm2/mc-boot/GmcLexBuf.c:  rebuilt.
+	* gm2/mc-boot/GmcLexBuf.h:  rebuilt.
+	* gm2/mc-boot/GmcMetaError.c:  rebuilt.
+	* gm2/mc-boot/GmcOptions.c:  rebuilt.
+	* gm2/mc-boot/GmcPretty.c:  rebuilt.
+	* gm2/mc-boot/GmcPrintf.c:  rebuilt.
+	* gm2/mc-boot/GmcQuiet.c:  rebuilt.
+	* gm2/mc-boot/GmcSearch.c:  rebuilt.
+	* gm2/mc-boot/Gmcp1.c:  rebuilt.
+	* gm2/mc-boot/Gmcp2.c:  rebuilt.
+	* gm2/mc-boot/Gmcp3.c:  rebuilt.
+	* gm2/mc-boot/Gmcp4.c:  rebuilt.
+	* gm2/mc-boot/Gmcp5.c:  rebuilt.
+	* gm2/mc-boot/GnameKey.c:  rebuilt.
+	* gm2/mc-boot/GsymbolKey.c:  rebuilt.
+	* gm2/mc-boot/Gvarargs.c:  rebuilt.
+	* gm2/mc-boot/Gwrapc.h:  rebuilt.
+	* gm2/mc/decl.def:  (addCommentBody)  New procedure.
+          (addCommentAfter)  New procedure.  (addIfComments)
+          New procedure.  (makeCommentS)  New procedure.
+          (getCommentCharStar) New procedure function.
+          (getContent) New procedure function.
+	  (setProcedureComment) New procedure function.
+          (getProcedureComment) New procedure function.
+	  (getAfterStatementComment)  New procedure function.
+          (getInbodyStatementComment)  New procedure function.
+	  (isProcedureComment)  New procedure function.
+          (isBodyComment)  New procedure function.
+	  (isAfterComment)  New procedure function.
+	* gm2/mc/decl.mod:  many alterations to allow per node
+	  after and body comments.
+	* gm2/mc/keyc.mod:  add free and malloc to the list of
+	  names to avoid.
+	* gm2/mc/mc.flex:  many alterations to allow per node
+	  after and body comments.
+	* gm2/mc/mcComment.def:  (commentDesc)  New datatype.
+          (initComment)  New procedure function.  (addText)
+          New procedure.  (getContent)  New procedure function.
+	* gm2/mc/mcComment.h:  updated with new interface.
+	* gm2/mc/mcComment.mod:  (commentDesc)  New datatype
+	  implemented.
+          (initComment)  New procedure function.  (addText)
+          New procedure.  (getContent)  New procedure function.
+	* gm2/mc/mcComp.def:  export getPassNo.
+	* gm2/mc/mcComp.mod:  (getPassNo)  New procedure function.
+	* gm2/mc/mcLexBuf.def:  (getProcedureComment)  New procedure
+          function.  (getBodyComment)  New procedure function.
+	  (getAfterComment)  New procedure function.
+	* gm2/mc/mcLexBuf.h:  replicate .def functionality.
+	* gm2/mc/mcLexBuf.mod:  (getProcedureComment)  Implement new
+          procedure function.  (getBodyComment)  Implement new
+	  procedure function.
+
+2018-01-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  (BuildUnaryCheckProcedure)
+          imported.  (BuildNegateCheck) imported.  (CodeStatement)
+          use BuildNegateCheck.  (CodeUnaryCheck)  New procedure.
+          (CodeNegateChecked)  New procedure.
+	* gm2/gm2-gcc/m2expr.c:  (checkUnaryWholeOverflow)  New
+          function.  (m2expr_build_unary_op_check)  New function.
+          (BuildEqualToZero)  New function.
+          (checkWholeNegateOverflow)  New function.
+          (BuildNegateCheck)  New function.  (BuildNegate)
+          reimplemented.
+	* gm2/gm2-gcc/m2expr.def:  (BuildUnaryCheckProcedure)
+          Defined.  (BuildNegateCheck) defined.
+	* gm2/gm2-gcc/m2expr.h:  (BuildNegateCheck) added prototype.
+
+2018-01-02      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  (CodeStatement) call
+          CodeAddChecked and call CodeSubChecked.
+          (CodeAddChecked)  New procedure.  (CodeSubChecked)
+          New procedure.
+	* gm2/gm2-compiler/M2Quads.mod:  (BuildEndFor) suppress
+	  overflow checking in the addition
+          of the loop variable.  The explicit for loop check will
+          catch an overflow and this addition can overflow for
+          unsigned types counting down.
+	* gm2/gm2-gcc/m2expr.c:  (BuildAddCheck) corrected
+	  comments and strip results.  (BuildSubCheck) corrected
+          comments and strip results.
+	* gm2/gm2-gcc/m2range.h:  (New file).
+	* gm2/patches/gcc/trunc:  (Regenerated).
+
+2018-01-01      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  (CodeAddCheck) New procedure.
+          (CodeSubCheck) New procedure.  (CodeBinaryCheck) New procedure.
+          Use CodeAddCheck and CodeSubCheck.
+	* gm2/gm2-compiler/M2Range.def:  (GetMinMax) exported.
+	* gm2/gm2-gcc/m2expr.c:  (BuildAddCheck) New function.
+	  (BuildSubCheck) New function.  (checkWholeAddOverflow)
+          parameters changed.  (checkWholeSubOverflow)  New function.
+          (checkWholeOverflow) updated parameters to include subrange min
+	  and max.  (build_binary_op_check)  New function.  (build_binary_op)
+          call build_binary_op_check.
+	* gm2/gm2-gcc/m2expr.def:  (BuildBinCheckProcedure) New
+          definition.  (BuildSubCheck) New procedure function.
+	  (BuildAddCheck) New procedure function.
+	* gm2/gm2-gcc/m2expr.h:  (BuildAddCheck)  New prototype.
+          (BuildSubCheck)  New prototype.
+	* gm2/gm2-compiler/M2GenGCC.mod:  pass lowest into binop.
+	* gm2/gm2-gcc/m2expr.c:  (BuildAddCheck) extra parameter lowest.
+          (BuildSubCheck) extra parameter lowest.  Call build_binary_op
+          with extra parameter lowest.  (BuildLessThanZero) New function.
+          (BuildGreaterThanZero) New function.  (checkWholeAddOverflow)
+          extra parameter and use BuildLessThanZero and
+	  BuildGreaterThanZero.    (checkWholeSubOverflow)
+          extra parameter and use BuildLessThanZero and
+          BuildGreaterThanZero.  (checkWholeOverflow) call
+          checkWholeAddOverflow and checkWholeSubOverflow with an extra
+          parameter.
+	* gm2/gm2-gcc/m2expr.def:  (BuildBinCheckProcedure) extra
+          parameter.  (BuildSubCheck) extra parameter lowest.
+          (BuildAddCheck) extra parameter lowest.
+	* gm2/gm2-gcc/m2expr.h:  corrected prototype.
+

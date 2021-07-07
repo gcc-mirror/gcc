@@ -1,0 +1,165 @@
+diff -ru gcc-4.1.0/gcc/config/avr/avr.h ../../graft-4.1.0/gcc-4.1.0/gcc/config/avr/avr.h
+--- gcc-4.1.0/gcc/config/avr/avr.h	2005-06-25 02:22:41.000000000 +0100
++++ ../../graft-4.1.0/gcc-4.1.0/gcc/config/avr/avr.h	2006-08-03 15:56:02.000000000 +0100
+@@ -21,6 +21,9 @@
+ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+ Boston, MA 02110-1301, USA.  */
+ 
++/* Offset from the frame pointer register value to the top of the stack. */
++#define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
++
+ /* Names to predefine in the preprocessor for this target machine.  */
+ 
+ #define TARGET_CPU_CPP_BUILTINS()		\
+diff -ru gcc-4.1.0/gcc/dwarf2out.c ../../graft-4.1.0/gcc-4.1.0/gcc/dwarf2out.c
+--- gcc-4.1.0/gcc/dwarf2out.c	2006-02-04 22:13:20.000000000 +0000
++++ ../../graft-4.1.0/gcc-4.1.0/gcc/dwarf2out.c	2006-06-16 11:38:50.000000000 +0100
+@@ -387,6 +387,7 @@
+ static void flush_queued_reg_saves (void);
+ static bool clobbers_queued_reg_save (rtx);
+ static void dwarf2out_frame_debug_expr (rtx, const char *);
++static bool is_subrange_type (tree);
+ 
+ /* Support for complex CFA locations.  */
+ static void output_cfa_loc (dw_cfi_ref);
+@@ -2733,6 +2734,8 @@
+ static unsigned long size_of_locs (dw_loc_descr_ref);
+ static void output_loc_operands (dw_loc_descr_ref);
+ static void output_loc_sequence (dw_loc_descr_ref);
++static void gen_set_subrange_die (tree, dw_die_ref);
++static dw_die_ref subrange_type_die (tree, dw_die_ref);
+ 
+ /* Convert a DWARF stack opcode into its string name.  */
+ 
+@@ -4003,6 +4006,7 @@
+ static bool is_cxx (void);
+ static bool is_java (void);
+ static bool is_fortran (void);
++static bool is_modula2 (void);
+ static bool is_ada (void);
+ static void remove_AT (dw_die_ref, enum dwarf_attribute);
+ static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
+@@ -5355,6 +5359,14 @@
+   return lang == DW_LANG_Ada95 || lang == DW_LANG_Ada83;
+ }
+ 
++static inline bool
++is_modula2 (void)
++{
++  unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
++
++  return (lang == DW_LANG_Modula2);
++}
++
+ /* Free up the memory used by A.  */
+ 
+ static inline void free_AT (dw_attr_ref);
+@@ -8263,7 +8275,8 @@
+     return false;
+ 
+   if (TREE_CODE (subtype) != INTEGER_TYPE
+-      && TREE_CODE (subtype) != ENUMERAL_TYPE)
++      && TREE_CODE (subtype) != ENUMERAL_TYPE
++      && TREE_CODE (subtype) != CHAR_TYPE)
+     return false;
+ 
+   if (TREE_CODE (type) == TREE_CODE (subtype)
+@@ -10491,7 +10504,20 @@
+ 		  || (is_fortran () && integer_onep (bound)))))
+ 	/* Use the default.  */
+ 	;
+-      else
++      else if (is_modula2() && bound) {
++	if (bound_attr == DW_AT_lower_bound) {
++	  if (tree_int_cst_sgn (bound) < 0)
++	    add_AT_int (subrange_die, bound_attr, tree_low_cst (bound, tree_int_cst_sgn (bound) > 0));
++	  else
++	    add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
++	}
++	else if (bound_attr == DW_AT_upper_bound) {
++	  if (tree_int_cst_sgn (bound) < 0)
++	    add_AT_int (subrange_die, bound_attr, tree_low_cst (bound, tree_int_cst_sgn (bound) > 0));
++	  else
++	    add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
++	}
++      } else 
+ 	add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
+       break;
+ 
+@@ -10601,7 +10627,9 @@
+ 	      if (TREE_CODE (domain) == INTEGER_TYPE
+ 		  && TYPE_NAME (domain) == NULL_TREE
+ 		  && TREE_CODE (TREE_TYPE (domain)) == INTEGER_TYPE
+-		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE)
++		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE
++		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE
++		  && (! is_modula2()))
+ 		;
+ 	      else
+ 		add_type_attribute (subrange_die, TREE_TYPE (domain), 0, 0,
+@@ -10978,8 +11006,18 @@
+      support for unnamed types in base_type_die.  This can happen if this is
+      an Ada subrange type.  Correct solution is emit a subrange type die.  */
+   if ((code == INTEGER_TYPE || code == REAL_TYPE)
+-      && TREE_TYPE (type) != 0 && TYPE_NAME (type) == 0)
+-    type = TREE_TYPE (type), code = TREE_CODE (type);
++      && TREE_TYPE (type) != 0 && TYPE_NAME (type) == 0) {
++    if (is_modula2 ()) {
++      type_die = subrange_type_die (type, context_die);
++      if (type_die != NULL)
++	add_AT_die_ref (object_die, DW_AT_type, type_die);
++      return;
++    }
++    else {
++      type = TREE_TYPE (type);
++      code = TREE_CODE (type);
++    }
++  }
+ 
+   if (code == ERROR_MARK
+       /* Handle a special case.  For functions whose return type is void, we
+@@ -12184,6 +12222,8 @@
+     language = DW_LANG_Fortran95;
+   else if (strcmp (language_string, "GNU Pascal") == 0)
+     language = DW_LANG_Pascal83;
++  else if (strcmp (language_string, "GNU Modula-2") == 0)
++    language = DW_LANG_Modula2;
+   else if (strcmp (language_string, "GNU Java") == 0)
+     language = DW_LANG_Java;
+   else
+@@ -12432,6 +12472,20 @@
+     equate_decl_number_to_die (decl, type_die);
+ }
+ 
++static void
++gen_set_subrange_die (domain, context_die)
++     tree domain;
++     dw_die_ref context_die;
++{
++  if (TREE_TYPE (domain) == 0)
++    gen_type_die (domain, context_die);
++  else
++    {
++      dw_die_ref subrange_die = subrange_type_die (domain, context_die);
++      equate_type_number_to_die (domain, subrange_die);
++    }
++}
++
+ /* Generate a type description DIE.  */
+ 
+ static void
+@@ -13111,10 +13165,10 @@
+ 
+     case FIELD_DECL:
+       /* Ignore the nameless fields that are used to skip bits but handle C++
+-	 anonymous unions and structs.  */
+-      if (DECL_NAME (decl) != NULL_TREE
+-	  || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+-	  || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
++	 anonymous unions. Except for Modula-2.  */
++      if ((is_modula2()) ||
++	  (DECL_NAME (decl) != NULL_TREE
++	   || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE))
+ 	{
+ 	  gen_type_die (member_declared_type (decl), context_die);
+ 	  gen_field_die (decl, context_die);

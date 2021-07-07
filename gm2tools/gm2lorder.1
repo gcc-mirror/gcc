@@ -1,0 +1,119 @@
+.TH gm2lorder "1" "June 2021" "Modula-2" "User Commands"
+.SH NAME
+gm2lorder \- reorder the list of modules.
+.SH SYNOPSIS
+.B gm2lorder
+.RB [ -h ]
+.RB [ --help ]
+.RB [ -fruntime-modules=\f[I]modulelist\fP ]
+.RB [ -o " outputfile" ]
+\fIinputfile\fR
+.SH DESCRIPTION
+.PP
+A tool for reordering the list of modules used when creating a
+Modula-2 application.  The
+.I inputfile
+is a text list of module names which are to be linked and an
+appropriate constructor/deconstructor scaffold will be created.
+The order of the module list determines the initialization order of
+each module.
+.IR gm2lorder
+allows the user to specify the start order of the text list.
+For example if the user wanted to force the modules:
+.I a,b,c
+and the modulelist in the input file specified:
+.sp
+.nf
+\f[C]d
+e
+f
+a
+g
+b
+h
+c
+i\fP
+.fi
+.sp
+the user could invoke
+.I gm2lorder
+using:
+.sp
+\fCgm2lorder -fruntime-modules=a,b,c -o outputfile inputfile\fP
+.sp
+the
+.I outputfile
+would contain a reordered list containing:
+.sp
+.nf
+\f[C]a
+b
+c
+d
+e
+f
+g
+h
+i\fP
+.fi
+.sp
+.I gm2lorder
+checks to see whether any module specified in the comma separated
+runtime-module list is present in the input file.  If it is not found
+in the input file then this module is ignored.
+Any remainaing module specified by
+.I -fruntime-modules=
+is placed to the front of the list and any subsequent element in the
+list containing one of these runtime modules is removed.
+.PP
+The
+textual list of modules can be manipulated and used by the other
+Modula-2 link tools:
+.IR gm2lcc (1)
+.IR gm2lgen (1)
+.IR gm2lorder (1).
+The command line program
+.IR gm2
+can be instructed to automatically invoke
+.IR gm2l (1)
+and the above programs to construct a C++ scaffold for a Modula-2
+application.
+.SH OPTIONS
+.TP
+.B -fruntime-modules= listofmodules
+the
+.I listofmodules
+is a comma separated list of modules which the prepended to the list
+of modules in the
+.I inputfile .
+All subsequent occurances of this module in the
+.I inputfile
+will be removed.
+.TP
+.B -h
+issue a summary help.
+.TP
+.B --help
+equivalent to
+.B -h\fR.
+.TP
+.BI \-o " outputfile"
+place the archive into
+.I outputfile .
+.SH
+DEFAULTS
+.PP
+By default gm2lorder will force the following module order:
+.I Storage,SYSTEM,M2RTS,RTExceptions,IOLink .
+If any of the comma separated modules is not used by the application
+(and not in the
+.I inputfile )
+then the module is
+.I not
+included into the outputfile.
+.SH "SEE ALSO"
+.IR gm2l (1),
+.IR gm2lcc (1),
+.IR gm2lgen (1)
+and
+.IR gm2 (1).

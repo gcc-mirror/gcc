@@ -1,0 +1,1371 @@
+--
+-- gm2l.bnf grammar and associated actions for gm2l.
+--
+-- Copyright (C) 2001-2021 Free Software Foundation, Inc.
+-- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+--
+-- This file is part of GNU Modula-2.
+--
+-- GNU Modula-2 is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3, or (at your option)
+-- any later version.
+--
+-- GNU Modula-2 is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with GNU Modula-2; see the file COPYING3.  If not see
+-- <http://www.gnu.org/licenses/>.
+% module gm2l begin
+(* output from gm2l.bnf, automatically generated do not edit if these
+   are the top two lines in the file.
+
+Copyright (C) 2001-2020 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING.  If not,
+see <https://www.gnu.org/licenses/>.  *)
+
+MODULE gm2l ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : gm2l
+   Date       : Date: Sat 16-09-1989 Time: 17:49:34.18
+              : [$Date: 2013/07/20 12:33:01 $]
+   SYSTEM     : UNIX (GNU Modula-2)
+   Description: generates the list of initialization order for the modules.
+                The initialization module list is used for two purposes.
+                (i)  for linking all the objects or archives
+                (ii) for creating the initialization call sequence for each module.
+                If a definition module contains EXPORT UNQUALIFIED and there is no
+                implementation module found then we assume this definition module
+                will match a foreign language, therefore we do not create an
+                initialization call but we do link this object/archive.
+                This allows us to write definition modules for C libraries.
+*)
+
+IMPORT Break ;
+IMPORT M2Search ;
+IMPORT SArgs ;
+IMPORT M2RTS ;
+FROM libc IMPORT exit ;
+FROM M2LexBuf IMPORT OpenSource, CloseSource, GetToken, ReInitialize, InsertToken, InsertTokenAndRewind,
+                     currenttoken, currentstring ;
+FROM M2Reserved IMPORT toktype ;
+FROM M2Printf IMPORT printf0, printf1, printf2, printf3, printf4,
+                     fprintf0, fprintf1, fprintf2, fprintf3, fprintf4 ;
+FROM M2FileName IMPORT CalculateFileName, CalculateStemName ;
+FROM M2Search IMPORT InitSearchPath, FindSourceDefFile, FindSourceModFile,
+                     PrependSearchPath, SetDefExtension, SetModExtension ;
+FROM SArgs IMPORT Narg, GetArg ;
+FROM M2Defaults IMPORT GetOptions, GetSearchPath ;
+FROM NameKey IMPORT Name, KeyToCharStar, WriteKey, MakeKey, GetKey, makekey, NulName ;
+FROM M2Depth IMPORT MakeDependant, GetDepth ;
+FROM SFIO IMPORT OpenToWrite, Exists ;
+FROM FIO IMPORT File, WriteChar, IsNoError, Close, StdOut, StdErr ;
+FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
+FROM SYSTEM IMPORT WORD ;
+FROM M2Preprocess IMPORT PreprocessModule ;
+IMPORT m2flex ;
+FROM SYSTEM IMPORT ADDRESS ;
+FROM M2DriverOptions IMPORT ScanCppArgs ;
+FROM DynamicStrings IMPORT String, InitString, KillString, Slice, InitStringCharStar,
+                           Mark, EqualArray, string, ConCat, ConCatChar, Dup ;
+FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, GetItemFromList,
+                  RemoveItemFromList, NoOfItemsInList, IsItemInList ;
+FROM M2Options IMPORT SetVerbose, Verbose ;
+
+
+CONST
+   Comment      =  '#' ;  (* Comment identifier *)
+   Debugging    = FALSE ;
+
+TYPE
+   Source = POINTER TO source ;
+   source =            RECORD
+                          name       : Name ;
+                          fullpath   : String ;
+                          Depth      : CARDINAL ;
+                          OnlyDef    ,
+                          ForC       : BOOLEAN ;
+                          next       : Source ;
+                       END ;
+
+   BlockInfoPtr = POINTER TO RECORD
+                                LocalModules,                (* locally declared modules at the current level  *)
+                                ImportedModules: List ;      (* current list of imports for the scanned module *)
+                                Prev           : BlockInfoPtr ;
+                             END ;
+
+
+VAR
+   fo             : File ;
+   LastIdent,
+   MainSrc,
+   MainName       : Name ;
+   Head, Tail     : Source ;    (* head source list *)
+   IncludeM2RTS   : BOOLEAN ;   (* do we automatically include M2RTS into the top module? *)
+   pSource        : Source ;    (* current module being parsed *)
+   CommentChar    : CHAR ;
+   pBlock         : BlockInfoPtr ;
+
+
+(*
+   ExamineCompilationUnit - opens the source file to obtain the module name and kind of module.
+*)
+
+PROCEDURE ExamineCompilationUnit (VAR name: Name; VAR isdefimp: BOOLEAN) ;
+BEGIN
+   isdefimp := FALSE ;   (* default to program module *)
+   (* stop if we see eof, ';' or '[' *)
+   WHILE (currenttoken # eoftok) AND (currenttoken # semicolontok) AND (currenttoken # lsbratok) DO
+      IF (currenttoken = implementationtok) OR (currenttoken = definitiontok)
+      THEN
+         isdefimp := TRUE ;
+         GetToken
+      END ;
+      IF currenttoken = identtok
+      THEN
+         name := makekey (currentstring) ;
+         RETURN
+      END ;
+      GetToken
+   END ;
+   m2flex.M2Error (string (InitString('failed to find module name'))) ;
+   exit (1)
+END ExamineCompilationUnit ;
+
+
+(*
+   BeginBlock -
+*)
+
+PROCEDURE BeginBlock ;
+VAR
+   b: BlockInfoPtr ;
+BEGIN
+   NEW (b) ;
+   WITH b^ DO
+      InitList (LocalModules) ;
+      InitList (ImportedModules) ;
+      Prev := pBlock
+   END ;
+   pBlock := b
+END BeginBlock ;
+
+
+(*
+   EndBlock -
+*)
+
+PROCEDURE EndBlock ;
+VAR
+   b      : BlockInfoPtr ;
+   i, n   : CARDINAL ;
+   modname: Name ;
+BEGIN
+   b := pBlock^.Prev ;
+   WITH pBlock^ DO
+      i := 1 ;
+      n := NoOfItemsInList (ImportedModules) ;
+      WHILE i<=n DO
+         modname := GetItemFromList (ImportedModules, i) ;
+         MakeModule (modname) ;
+         MakeDependant (pSource^.name, modname) ;
+         INC (i)
+      END ;
+      KillList (LocalModules) ;
+      KillList (ImportedModules)
+   END ;
+   DISPOSE (pBlock) ;
+   pBlock := b
+END EndBlock ;
+
+
+(*
+   RegisterLocalModule - register, n, as a local module.
+*)
+
+PROCEDURE RegisterLocalModule (n: Name) ;
+BEGIN
+   (* printf1('seen local module %a\n', n) ; *)
+   WITH pBlock^ DO
+      IncludeItemIntoList (LocalModules, n) ;
+      RemoveItemFromList (ImportedModules, n)
+   END
+END RegisterLocalModule ;
+
+
+(*
+   RegisterImport - register, n, as a module imported from either a local scope or definition module.
+*)
+
+PROCEDURE RegisterImport (n: Name) ;
+BEGIN
+   (* printf1('register import from module %a\n', n) ; *)
+   WITH pBlock^ DO
+      IF NOT IsItemInList (LocalModules, n)
+      THEN
+         IncludeItemIntoList (ImportedModules, n)
+      END
+   END
+END RegisterImport ;
+
+
+(*
+   ScanSources - scans all the source files for IMPORTs and places all
+                 imports into the Sources array.
+*)
+
+PROCEDURE ScanSources (src: Name) ;
+VAR
+   isdefimp: BOOLEAN ;
+BEGIN
+   pBlock := NIL ;
+   Head := NIL ;
+   Tail := NIL ;
+   IF Verbose
+   THEN
+      printf1 ('gm2l >>> open source file: %a\n', src)
+   END ;
+   IF OpenSource (PreprocessModule (InitStringCharStar (KeyToCharStar (src))))
+   THEN
+      ExamineCompilationUnit (MainName, isdefimp) ;
+      CloseSource ;
+      ReInitialize ;
+      MakeModule (MainName) ;  (* Head now contains a reference to MainName.  *)
+      IF IncludeM2RTS
+      THEN
+         (*
+            we should include M2RTS as a dependant module otherwise it simply wont link
+         *)
+         MakeModule (MakeKey ('M2RTS')) ;  (* Tail now contains a reference to M2RTS.  *)
+         MakeDependant (MainName, MakeKey ('M2RTS'))
+      END ;
+      pSource := Head ;
+      WHILE pSource # NIL DO
+         ScanImport ;
+         pSource := pSource^.next
+      END
+   ELSE
+      fprintf1 (StdErr, 'cannot open source file: %a\n', src) ;
+      exit (1)
+   END
+END ScanSources ;
+
+
+(*
+   ScanImportsIn - scans source for imports and any imported file is added
+                   to the Sources list.
+                   It checks to see whether the definition module
+                   contains EXPORT UNQUALIFIED and/or is a DEFINITION MODULE FOR C.
+*)
+
+PROCEDURE ScanImportsIn (IsDefinition: BOOLEAN) : BOOLEAN ;
+BEGIN
+   IF Open (pSource^.name, IsDefinition)
+   THEN
+      IF Debugging
+      THEN
+         IF IsDefinition
+         THEN
+            printf1 ('opened definition module %a\n', pSource^.name)
+         ELSE
+            printf1 ('opened module %a\n', pSource^.name)
+         END
+      END ;
+      CompilationUnit ;
+      CloseSource ;
+      RETURN TRUE
+   ELSE
+      RETURN FALSE
+   END
+END ScanImportsIn ;
+
+
+(*
+   ScanImport - looks for .def and .mod source files and scans imports of these
+                sources.
+*)
+
+PROCEDURE ScanImport ;
+BEGIN
+   IF ScanImportsIn (TRUE)
+   THEN
+   END ;
+   (* set OnlyDef to TRUE if we dont see a .mod file *)
+   pSource^.OnlyDef := NOT ScanImportsIn (FALSE)
+END ScanImport ;
+
+% declaration gm2l begin
+
+
+(*
+   ErrorArray -
+*)
+
+PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
+BEGIN
+   ErrorString (InitString (a))
+END ErrorArray ;
+
+
+(*
+   ErrorString -
+*)
+
+PROCEDURE ErrorString (s: String) ;
+BEGIN
+   fprintf1 (StdErr, "%s\n", s)
+END ErrorString ;
+
+
+(*
+   SyntaxError - after a syntax error we skip all tokens up until we reach
+                 a stop symbol.
+*)
+
+PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   DescribeError (stopset0, stopset1, stopset2) ;
+   IF Debugging
+   THEN
+      printf0 ('\nskipping token *** ')
+   END ;
+   (* --fixme-- this assumes a 32 bit word size.  *)
+   WHILE NOT (((ORD (currenttoken) < 32)  AND (currenttoken IN stopset0)) OR
+              ((ORD (currenttoken) >= 32) AND (ORD (currenttoken) < 64) AND (currenttoken IN stopset1)) OR
+              ((ORD (currenttoken) >= 64) AND (currenttoken IN stopset2)))
+   DO
+      GetToken
+   END ;
+   IF Debugging
+   THEN
+      printf0 (' ***\n')
+   END
+END SyntaxError ;
+
+
+(*
+   SyntaxCheck -
+*)
+
+PROCEDURE SyntaxCheck (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* --fixme-- this assumes a 32 bit word size.  *)
+   IF NOT (((ORD (currenttoken) < 32)  AND (currenttoken IN stopset0)) OR
+     	   ((ORD (currenttoken) >= 32) AND (ORD (currenttoken) < 64) AND (currenttoken IN stopset1)) OR
+           ((ORD (currenttoken) >= 64) AND (currenttoken IN stopset2)))
+   THEN
+      SyntaxError (stopset0, stopset1, stopset2)
+   END
+END SyntaxCheck ;
+
+
+(*
+   WarnMissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE WarnMissingToken (t: toktype) ;
+VAR
+   s0 : SetOfStop0 ;
+   s1 : SetOfStop1 ;
+   s2 : SetOfStop2 ;
+   str: String ;
+BEGIN
+   s0 := SetOfStop0{} ;
+   s1 := SetOfStop1{} ;
+   s2 := SetOfStop2{} ;
+   IF ORD (t) < 32
+   THEN
+      s0 := SetOfStop0{t}
+   ELSIF ORD (t) <64
+   THEN
+      s1 := SetOfStop1{t}
+   ELSE
+      s2 := SetOfStop2{t}
+   END ;
+   str := DescribeStop (s0, s1, s2) ;
+
+   str := ConCat (InitString ('syntax error,'), Mark (str)) ;
+   ErrorString (str)
+END WarnMissingToken ;
+
+
+(*
+   MissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE MissingToken (t: toktype) ;
+BEGIN
+   WarnMissingToken (t) ;
+   IF (t # identtok) AND (t # integertok) AND (t # realtok) AND (t # stringtok)
+   THEN
+      IF Debugging
+      THEN
+         printf0 ('inserting token\n')
+      END ;
+      InsertToken (t)
+   END
+END MissingToken ;
+
+
+(*
+   CheckAndInsert -
+*)
+
+PROCEDURE CheckAndInsert (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD (t) < 32) AND (t IN stopset0)) OR
+      ((ORD (t) >= 32) AND (ORD (t) < 64) AND (t IN stopset1)) OR
+      ((ORD (t) >= 64) AND (t IN stopset2))
+   THEN
+      WarnMissingToken (t) ;
+      InsertTokenAndRewind (t) ;
+      RETURN TRUE
+   ELSE
+      RETURN FALSE
+   END
+END CheckAndInsert ;
+
+
+(*
+   InStopSet
+*)
+
+PROCEDURE InStopSet (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD (t) < 32) AND (t IN stopset0)) OR
+      ((ORD (t) >= 32) AND (ORD (t) < 64) AND (t IN stopset1)) OR
+      ((ORD (t) >= 64) AND (t IN stopset2))
+   THEN
+      RETURN TRUE
+   ELSE
+      RETURN FALSE
+   END
+END InStopSet ;
+
+
+(*
+   PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
+               If it is not then it will insert a token providing the token
+               is one of ; ] ) } . OF END ,
+
+               if the stopset contains <identtok> then we do not insert a token
+*)
+
+PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD).  *)
+   IF (NOT (((ORD (currenttoken) < 32)  AND (currenttoken IN stopset0)) OR
+     	    ((ORD (currenttoken) >= 32) AND (ORD (currenttoken) < 64) AND (currenttoken IN stopset1)) OR
+            ((ORD (currenttoken) >= 64) AND (currenttoken IN stopset2)))) AND
+      (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
+   THEN
+      (* SyntaxCheck would fail since currentoken is not part of the stopset
+         we check to see whether any of currenttoken might be a commonly omitted token.  *)
+      IF CheckAndInsert (semicolontok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert (rsbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert (rparatok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert (rcbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert (periodtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert (oftok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert (endtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert (commatok, stopset0, stopset1, stopset2)
+      THEN
+      END
+   END
+END PeepToken ;
+
+
+(*
+   Expect -
+*)
+
+PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF currenttoken = t
+   THEN
+      GetToken ;
+      PeepToken (stopset0, stopset1, stopset2)
+   ELSE
+      MissingToken (t)
+   END ;
+   SyntaxCheck (stopset0, stopset1, stopset2)
+END Expect ;
+
+
+(*
+   InitStopSet - initializes the stop set to include token, t.
+*)
+
+PROCEDURE InitStopSet (t: toktype; VAR stopset0: SetOfStop0; VAR stopset1: SetOfStop1; VAR stopset2: SetOfStop2) ;
+BEGIN
+   IF ORD (t) < 32
+   THEN
+      INCL (stopset0, t)
+   ELSIF ORD (t) < 64
+   THEN
+      INCL (stopset1, t)
+   ELSE
+      INCL (stopset2, t)
+   END
+END InitStopSet ;
+
+
+(*
+   CompilationUnit - parses the source file.
+*)
+
+PROCEDURE CompilationUnit ;
+VAR
+   s0: SetOfStop0 ;
+   s1: SetOfStop1 ;
+   s2: SetOfStop2 ;
+BEGIN
+   s0 := SetOfStop0{} ;
+   s1 := SetOfStop1{} ;
+   s2 := SetOfStop2{} ;
+   InitStopSet (eoftok, s0, s1, s2) ;
+   InitStopSet (consttok, s0, s1, s2) ;
+   InitStopSet (typetok, s0, s1, s2) ;
+   InitStopSet (vartok, s0, s1, s2) ;
+   InitStopSet (proceduretok, s0, s1, s2) ;
+   InitStopSet (begintok, s0, s1, s2) ;
+   InitStopSet (moduletok, s0, s1, s2) ;
+   InitStopSet (endtok, s0, s1, s2) ;
+   FileUnit (s0, s1, s2)
+END CompilationUnit ;
+
+
+(*
+   Ident - error checking varient of Ident
+*)
+
+PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   LastIdent := makekey (currentstring) ;
+   Expect (identtok, stopset0, stopset1, stopset2)
+END Ident ;
+
+
+(*
+   str -
+*)
+
+PROCEDURE str (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   Expect (stringtok, stopset0, stopset1, stopset2)
+END str ;
+
+
+(*
+   Integer -
+*)
+
+PROCEDURE Integer (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   Expect (integertok, stopset0, stopset1, stopset2)
+END Integer ;
+
+
+(*
+   Real -
+*)
+
+PROCEDURE Real (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   Expect (realtok, stopset0, stopset1, stopset2)
+END Real ;
+
+% module gm2l end
+(*
+   MakeModule - makes a module for ModuleName.
+*)
+
+PROCEDURE MakeModule (ModuleName: Name) ;
+VAR
+   s: Source ;
+BEGIN
+   s := Head ;
+   WHILE s # NIL DO
+      WITH s^ DO
+         IF name = ModuleName
+         THEN
+            RETURN
+         ELSE
+            s := s^.next
+         END
+      END
+   END ;
+   (* not found so create new entry *)
+   IF Head = NIL
+   THEN
+      NEW (Head) ;
+      Tail := Head
+   ELSE
+      NEW (Tail^.next) ;
+      Tail := Tail^.next
+   END ;
+   WITH Tail^ DO
+      name        := ModuleName ;
+      fullpath    := NIL ;
+      Depth       := 0 ;
+      ForC        := FALSE ;
+      OnlyDef     := FALSE ;
+      next        := NIL
+   END
+END MakeModule ;
+
+
+(*
+   Open - attempts to open a module, it will return TRUE if the module can be found.
+*)
+
+PROCEDURE Open (ModuleName: Name; IsDefinition: BOOLEAN) : BOOLEAN ;
+VAR
+   a, b: String ;
+BEGIN
+   IF (NOT IsDefinition) AND (ModuleName = MainName)
+   THEN
+      a := InitStringCharStar (KeyToCharStar (MainSrc)) ;
+      IF OpenSource (PreprocessModule (a))
+      THEN
+         pSource^.fullpath := Dup (a) ;
+         a := KillString (a) ;
+         RETURN TRUE
+      ELSE
+         a := KillString (a) ;
+         RETURN FALSE
+      END
+   ELSE
+      a := InitStringCharStar (KeyToCharStar (ModuleName)) ;
+      IF IsDefinition
+      THEN
+         IF FindSourceDefFile (a, b) AND OpenSource (PreprocessModule (b))
+         THEN
+            pSource^.fullpath := Dup (b) ;
+            a := KillString (a) ;
+            b := KillString (b) ;
+            RETURN TRUE
+         ELSE
+            a := KillString (a) ;
+            b := KillString (b) ;
+            RETURN FALSE
+         END
+      ELSE
+         IF FindSourceModFile (a, b) AND OpenSource (PreprocessModule (b))
+         THEN
+            pSource^.fullpath := Dup (b) ;
+            a := KillString (a) ;
+            b := KillString (b) ;
+            RETURN TRUE
+         ELSE
+            a := KillString (a) ;
+            b := KillString (b) ;
+            RETURN FALSE
+         END
+      END
+   END
+END Open ;
+
+
+(*
+   CalculateDepth - for each module in the list, calculate the dependancy depth.
+*)
+
+PROCEDURE CalculateDepth ;
+VAR
+   p: Source ;
+BEGIN
+   p := Head ;
+   WHILE p # NIL DO
+      WITH p^ DO
+         Depth := GetDepth (name)
+      END ;
+      p := p^.next
+   END
+END CalculateDepth ;
+
+
+(*
+   Swap - swaps the contents of, p, and, q. The next field remains the same.
+*)
+
+PROCEDURE Swap (p, q: Source) ;
+VAR
+   t: source ;
+   n: Source ;
+BEGIN
+   t := p^ ;
+   n := p^.next ;
+   p^ := q^ ;
+   p^.next := n ;  (* preserve the next field of p *)
+   n := q^.next ;
+   q^ := t ;
+   q^.next := n    (* preserve the next field of q *)
+END Swap ;
+
+
+(*
+   SortSources - sorts the module sources into the order of runtime
+                 initialization.
+*)
+
+PROCEDURE SortSources ;
+VAR
+   pi, pj: Source ;
+BEGIN
+   pi := Head ;
+   WHILE pi # NIL DO
+      pj := Head ;
+      WHILE pj # NIL DO
+         IF (pi # pj) AND (pi^.Depth > pj^.Depth)
+         THEN
+            Swap (pi, pj)
+         END ;
+         pj := pj^.next
+      END ;
+      pi := pi^.next
+   END
+END SortSources ;
+
+
+(*
+   DisplaySources - displays the source names 1..SourceNo.
+*)
+
+PROCEDURE DisplaySources ;
+VAR
+   p: Source ;
+BEGIN
+   CommentChar := Comment ;
+   p := Head ;
+   WHILE p # NIL DO
+      WITH p^ DO
+         fprintf3 (fo, '%c %a %4d ', CommentChar, name, Depth) ;
+         IF p^.fullpath = NIL
+         THEN
+            fprintf1 (fo, 'no source file found for module %a\n', p^.name) ;
+            fprintf1 (StdErr, 'no source file found for module %a\n', p^.name) ;
+            exit (1)
+         ELSE
+            fprintf1 (fo, '%s', p^.fullpath) ;
+            IF p^.ForC
+            THEN
+               fprintf0 (fo, " FOR 'C'\n")
+            ELSE
+               fprintf0 (fo, '\n')
+            END
+         END
+      END ;
+      p := p^.next
+   END ;
+   fprintf3 (fo, '%c\n%c Initialization order\n%c\n', CommentChar, CommentChar, CommentChar) ;
+   p := Head ;
+   WHILE p # NIL DO
+      WITH p^ DO
+         (*
+            do not automatically link ForC modules,
+	    the user must specify them either as -lmodule or module.o
+         *)
+         IF (NOT ForC) OR (name = MakeKey ('SYSTEM'))
+         THEN
+            fprintf1(fo, '%a\n', name)
+         END
+      END ;
+      p := p^.next
+   END
+END DisplaySources ;
+
+
+(*
+   OpenOutputFile - attempts to open an output file.
+*)
+
+PROCEDURE OpenOutputFile (s: String) ;
+BEGIN
+   IF EqualArray (s, '-')
+   THEN
+      fo := StdOut
+   ELSE
+      fo := OpenToWrite (s) ;
+      IF NOT IsNoError (fo)
+      THEN
+         fprintf1 (StdErr, 'cannot write to: %s\n', s) ;
+         exit (1)
+      END
+   END
+END OpenOutputFile ;
+
+
+PROCEDURE DisplayUsage ;
+BEGIN
+   printf0 ('Usage: gm2l [-fdef=extension][-fmod=extension][-h][--help]\n');
+   printf0 ('            [-Isearchpath][--M2RTS][-M2RTS][-v][--verbose]\n');
+   printf0 ('            [-o outputfile] modulefile\n');
+   exit (0)
+END DisplayUsage ;
+
+
+(*
+   ScanArgs - scans the argument list and returns TRUE if the main source
+              module is found.
+*)
+
+PROCEDURE ScanArgs () : BOOLEAN ;
+VAR
+   i, n: CARDINAL ;
+   s   : String ;
+BEGIN
+   IncludeM2RTS := TRUE ;
+   MainName := NulName ;
+   n := SArgs.Narg () ;
+   IF n=1
+   THEN
+      DisplayUsage
+   ELSE
+      i := 1 ;
+      REPEAT
+         IF SArgs.GetArg (s, i)
+         THEN
+            IF EqualArray (Mark (Slice (s, 0, 2)), '-v') OR EqualArray (s, '--verbose')
+            THEN
+               IF SetVerbose (TRUE)
+               THEN
+               END
+            ELSIF EqualArray (s, '-I')
+            THEN
+               INC (i) ;
+               IF SArgs.GetArg (s, i)
+               THEN
+                  PrependSearchPath (s)
+               END
+            ELSIF EqualArray (Mark (Slice (s, 0, 2)), '-I')
+            THEN
+               PrependSearchPath (Slice (s, 2, 0))
+            ELSIF EqualArray (Mark (Slice (s, 0, 6)), '-fdef=')
+            THEN
+               SetDefExtension (Slice (s, 6, 0))
+            ELSIF EqualArray(Mark (Slice (s, 0, 6)), '-fmod=')
+            THEN
+               SetModExtension (Slice (s, 6, 0))
+            ELSIF EqualArray (s, '-fcppbegin')
+            THEN
+               i := ScanCppArgs (i)
+            ELSIF EqualArray (s, '--M2RTS') OR EqualArray (s, '-M2RTS')
+            THEN
+               (* no M2RTS to be automatically linked imported from the main module *)
+               IncludeM2RTS := FALSE
+            ELSIF EqualArray (s, '-h') OR EqualArray (s, '--help')
+	    THEN
+	       DisplayUsage
+            ELSIF EqualArray (s, '-o')
+            THEN
+               INC (i) ;
+               IF GetArg (s, i)
+               THEN
+                  OpenOutputFile (s)
+               END
+            ELSE
+               MainSrc := makekey (string (s))
+            END
+         END ;
+         INC (i)
+      UNTIL i > n
+   END ;
+   RETURN MainSrc#NulName
+END ScanArgs ;
+
+
+BEGIN
+   fo := StdOut ;
+   IF ScanArgs ()
+   THEN
+      ScanSources (MainSrc) ;
+      CalculateDepth ;
+      SortSources ;
+      DisplaySources
+   END ;
+   Close (fo)
+END gm2l.
+% rules
+error       'ErrorArray' 'ErrorString'
+tokenfunc   'currenttoken'
+
+token   ''                eoftok      -- internal token
+token   '+'               plustok
+token   '-'               minustok
+token   '*'               timestok
+token   '/'               dividetok
+token   ':='              becomestok
+token   '&'               ambersandtok
+token   "."               periodtok
+token   ","               commatok
+token   ";"               semicolontok
+token   '('               lparatok
+token   ')'               rparatok
+token   '['               lsbratok   -- left  square brackets
+token   ']'               rsbratok   -- right square brackets
+token   '{'               lcbratok   -- left  curly brackets
+token   '}'               rcbratok   -- right curly brackets
+token   '^'               uparrowtok
+token   "'"               singlequotetok
+token   '='               equaltok
+token   '#'               hashtok
+token   '<'               lesstok
+token   '>'               greatertok
+token   '<>'              lessgreatertok
+token   '<='              lessequaltok
+token   '>='              greaterequaltok
+token   '<*'              ldirectivetok
+token   '*>'              rdirectivetok
+token   '..'              periodperiodtok
+token   ':'               colontok
+token   '"'               doublequotestok
+token   '|'               bartok
+token   'AND'             andtok
+token   'ARRAY'           arraytok
+token   'BEGIN'           begintok
+token   'BY'              bytok
+token   'CASE'            casetok
+token   'CONST'           consttok
+token   'DEFINITION'      definitiontok
+token   'DIV'             divtok
+token   'DO'              dotok
+token   'ELSE'            elsetok
+token   'ELSIF'           elsiftok
+token   'END'             endtok
+token   'EXCEPT'          excepttok
+token   'EXIT'            exittok
+token   'EXPORT'          exporttok
+token   'FINALLY'         finallytok
+token   'FOR'             fortok
+token   'FROM'            fromtok
+token   'IF'              iftok
+token   'IMPLEMENTATION'  implementationtok
+token   'IMPORT'          importtok
+token   'IN'              intok
+token   'LOOP'            looptok
+token   'MOD'             modtok
+token   'MODULE'          moduletok
+token   'NOT'             nottok
+token   'OF'              oftok
+token   'OR'              ortok
+token   'PACKEDSET'       packedsettok
+token   'POINTER'         pointertok
+token   'PROCEDURE'       proceduretok
+token   'QUALIFIED'       qualifiedtok
+token   'UNQUALIFIED'     unqualifiedtok
+token   'RECORD'          recordtok
+token   'REM'             remtok
+token   'REPEAT'          repeattok
+token   'RETRY'           retrytok
+token   'RETURN'          returntok
+token   'SET'             settok
+token   'THEN'            thentok
+token   'TO'              totok
+token   'TYPE'            typetok
+token   'UNTIL'           untiltok
+token   'VAR'             vartok
+token   'WHILE'           whiletok
+token   'WITH'            withtok
+token   'ASM'             asmtok
+token   'VOLATILE'        volatiletok
+token   '...'             periodperiodperiodtok
+token   '__DATE__'        datetok
+token   '__LINE__'        linetok
+token   '__FILE__'        filetok
+token   '__ATTRIBUTE__'   attributetok
+token   '__BUILTIN__'     builtintok
+token   '__INLINE__'      inlinetok
+token   'integer number'  integertok
+token   'identifier'      identtok
+token   'real number'     realtok
+token   'str'             stringtok
+
+special Ident                first { < identtok > } follow { }
+     '@i{is a builtin and checks for an identifier}'
+special Integer              first { < integertok > } follow { }
+     '@i{is a builtin and checks for an integer}'
+special Real                 first { < realtok > } follow { }
+     '@i{is a builtin and checks for an real constant}'
+special str                  first { < stringtok > } follow { }
+     '@i{is a builtin and checks for an string constant}'
+
+BNF
+
+-- the following are provided by the module m2flex and also handbuilt procedures below
+-- Ident := Letter { ( Letter | Digit ) } =:
+-- Integer := Digit { Digit } | OctalDigit { OctalDigit } ( " B " | " C " ) |
+--           Digit { HexDigit } " H " =:
+-- Real := Digit { Digit } " . " { Digit } [ ScaleFactor ] =:
+-- ScaleFactor := " E " [ ( " + " | " - " ) ] Digit { Digit } =:
+-- HexDigit := Digit | " A " | " B " | " C " | " D " | " E " | " F " =:
+-- Digit := OctalDigit | " 8 " | " 9 " =:
+-- OctalDigit := "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" =:
+-- String
+
+FileUnit :=                                                                  % BeginBlock %
+            ( DefinitionModule |
+              ImplementationOrProgramModule )                                % EndBlock %
+         =:
+
+ProgramModule := "MODULE"
+                  Ident
+
+                  [ Priority ] ";"
+
+                  { Import
+                  }
+                  Block Ident "."
+               =:
+
+ImplementationModule := "IMPLEMENTATION" "MODULE"
+                         Ident
+                         [ Priority ] ";"
+                         { Import
+                           }
+                         Block Ident "."
+                      =:
+
+ImplementationOrProgramModule := ImplementationModule | ProgramModule =:
+
+DefinitionModule := "DEFINITION" "MODULE" [ "FOR" str                       % pSource^.ForC := TRUE %
+                                          ]
+                    Ident
+                    ";"
+                    { Import
+                             } [ Export
+                                        ]
+                  =:
+
+Number := Integer | Real =:
+
+ConstantDeclaration := Ident "=" ConstExpression =:
+
+ConstExpression := SimpleConstExpr [ Relation SimpleConstExpr ] =:
+
+Relation := "=" | "#" | "<>" | "<" | "<=" | ">" | ">=" | "IN" =:
+
+SimpleConstExpr := UnaryOrConstTerm { AddOperator ConstTerm } =:
+
+UnaryOrConstTerm := "+" ConstTerm | "-" ConstTerm | ConstTerm =:
+
+AddOperator := "+" | "-" | "OR" =:
+
+ConstTerm := ConstFactor { MulOperator ConstFactor } =:
+
+MulOperator := "*" | "/" | "DIV" | "MOD" | "REM" | "AND" | "&" =:
+
+ConstFactor := Number | ConstString | ConstSetOrQualidentOrFunction |
+               "(" ConstExpression ")" | "NOT" ConstFactor |
+                                               ConstAttribute
+             =:
+
+-- to help satisfy LL1
+
+ConstString := str =:
+
+ComponentElement := ConstExpression [ ".." ConstExpression ] =:
+
+ComponentValue := ComponentElement [ 'BY' ConstExpression ] =:
+
+ArraySetRecordValue := ComponentValue { ',' ComponentValue } =:
+
+Constructor := '{' [ ArraySetRecordValue ] '}' =:
+
+ConstSetOrQualidentOrFunction := Constructor | Qualident
+                                 [ Constructor | ConstActualParameters ] =:
+
+ConstActualParameters := "(" [ ExpList ] ")" =:
+
+ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" ConstAttributeExpression ")" ")" =:
+
+ConstAttributeExpression := Ident | "<" Qualident ',' Ident ">" =:
+
+ByteAlignment := '<*' AttributeExpression '*>' =:
+
+OptAlignmentExpression := [ AlignmentExpression ] =:
+
+AlignmentExpression := "(" ConstExpression ")" =:
+
+Alignment := [ ByteAlignment ] =:
+
+TypeDeclaration := ( Ident "=" Type Alignment ) =:
+
+Type := ( SimpleType | ArrayType | RecordType | SetType |
+          PointerType | ProcedureType )
+        =:
+
+SimpleType := Qualident [ SubrangeType ] | Enumeration | SubrangeType =:
+
+Enumeration := "(" IdentList ")" =:
+
+SubrangeType := "[" ConstExpression ".." ConstExpression "]" =:
+
+ArrayType := "ARRAY" SimpleType { "," SimpleType } "OF" Type =:
+
+RecordType := "RECORD" [ DefaultRecordAttributes ] FieldListSequence "END" =:
+
+DefaultRecordAttributes := '<*' AttributeExpression '*>' =:
+
+RecordFieldPragma := [ '<*' FieldPragmaExpression
+                        { ',' FieldPragmaExpression } '*>' ] =:
+
+FieldPragmaExpression := Ident [ '(' ConstExpression ')' ] =:
+
+AttributeExpression := Ident '(' ConstExpression ')' =:
+
+FieldListSequence := FieldListStatement { ";" FieldListStatement } =:
+
+FieldListStatement := [ FieldList ] =:
+
+FieldList := IdentList ":" Type RecordFieldPragma
+                                |
+             "CASE" CaseTag "OF" Varient { "|" Varient }
+             [ "ELSE" FieldListSequence ] "END"
+           =:
+
+TagIdent := [ Ident ] =:
+
+CaseTag := TagIdent [ ":" Qualident ] =:
+
+Varient := [ VarientCaseLabelList ":" FieldListSequence ] =:
+
+VarientCaseLabelList := VarientCaseLabels { "," VarientCaseLabels } =:
+
+VarientCaseLabels := ConstExpression [ ".." ConstExpression ] =:
+
+CaseLabelList := CaseLabels { "," CaseLabels } =:
+
+CaseLabels := ConstExpression [ ".." ConstExpression ] =:
+
+SetType := ( "SET" | "PACKEDSET" ) "OF" SimpleType =:
+
+PointerType := "POINTER" "TO" Type =:
+
+ProcedureType := "PROCEDURE" [ FormalTypeList ] =:
+
+FormalTypeList := "(" ( ")" FormalReturn |
+                        ProcedureParameters ")" FormalReturn ) =:
+
+FormalReturn := [ ":" OptReturnType ] =:
+
+OptReturnType := "[" Qualident "]" | Qualident =:
+
+ProcedureParameters := ProcedureParameter
+                       { "," ProcedureParameter } =:
+
+ProcedureParameter := "..." | "VAR" FormalType | FormalType =:
+
+VarIdent := Ident [ "[" ConstExpression "]" ] =:
+
+VariableDeclaration := VarIdentList ":" Type Alignment =:
+
+VarIdentList := VarIdent { "," VarIdent } =:
+
+Designator := Qualident { SubDesignator } =:
+
+SubDesignator := "." Ident | "[" ExpList "]" | "^" =:
+
+ExpList := Expression { "," Expression } =:
+
+Expression := SimpleExpression [ Relation SimpleExpression ] =:
+
+SimpleExpression := [ "+" | "-" ] Term { AddOperator Term } =:
+
+Term := Factor { MulOperator Factor } =:
+
+Factor := Number | str | SetOrDesignatorOrFunction |
+          "(" Expression ")" | "NOT" Factor | ConstAttribute =:
+
+SetOrDesignatorOrFunction := ( Qualident [ Constructor |
+                                           SimpleDes [ ActualParameters ]
+                                         ] | Constructor
+                             )
+                           =:
+
+SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
+
+ActualParameters := "(" [ ExpList ] ")" =:
+
+Statement := [ AssignmentOrProcedureCall | IfStatement | CaseStatement |
+               WhileStatement | RepeatStatement | LoopStatement |
+               ForStatement | WithStatement | AsmStatement |
+               "EXIT" | "RETURN" [ Expression ] | RetryStatement ] =:
+
+RetryStatement := "RETRY" =:
+
+AssignmentOrProcedureCall := Designator ( ":=" Expression |
+                                           ActualParameters |              % (* epsilon *) %
+                                        ) =:
+
+-- these two break LL1 as both start with a Designator
+-- ProcedureCall := Designator [ ActualParameters ] =:
+-- Assignment := Designator ":=" Expression =:
+
+StatementSequence := Statement { ";" Statement } =:
+
+IfStatement := "IF" Expression "THEN" StatementSequence
+              { "ELSIF" Expression "THEN" StatementSequence }
+              [ "ELSE" StatementSequence ] "END" =:
+
+CaseStatement := "CASE" Expression "OF" Case { "|" Case }
+                 [ "ELSE" StatementSequence ] "END" =:
+
+Case := [ CaseLabelList ":" StatementSequence ] =:
+
+WhileStatement := "WHILE" Expression "DO" StatementSequence "END" =:
+
+RepeatStatement := "REPEAT" StatementSequence "UNTIL" Expression =:
+
+ForStatement := "FOR" Ident ":=" Expression "TO" Expression
+                [ "BY" ConstExpression ] "DO"
+                StatementSequence "END" =:
+
+LoopStatement := "LOOP" StatementSequence "END" =:
+
+WithStatement := "WITH" Designator "DO" StatementSequence "END" =:
+
+ProcedureDeclaration := ProcedureHeading ";" ( ProcedureBlock Ident ) =:
+
+DefineBuiltinProcedure := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")"
+                          | "__INLINE__"
+                          | % (* epsilon *) %
+                       =:
+
+ProcedureHeading := "PROCEDURE" DefineBuiltinProcedure
+                     ( Ident [ FormalParameters ] AttributeNoReturn ) =:
+
+AttributeNoReturn := [ "<*" Ident "*>" ] =:
+
+Builtin := "__BUILTIN__" | "__INLINE__" | % (* epsilon *) % =:
+
+DefProcedureHeading := "PROCEDURE" Builtin ( Ident
+                                             [ DefFormalParameters ] AttributeNoReturn ) =:
+
+-- introduced procedure block so we can produce more informative
+-- error messages
+
+ProcedureBlock :=                                             % BeginBlock %
+                  { Declaration } [ "BEGIN" BlockBody ] "END" % EndBlock %
+                =:
+
+Block :=
+          { Declaration } InitialBlock FinalBlock "END"
+       =:
+
+InitialBlock := [ "BEGIN" BlockBody ] =:
+
+FinalBlock := [ "FINALLY" BlockBody ] =:
+
+BlockBody := NormalPart [ "EXCEPT" ExceptionalPart ] =:
+
+NormalPart := StatementSequence =:
+
+ExceptionalPart := StatementSequence =:
+
+Declaration := "CONST" { ConstantDeclaration ";" } |
+               "TYPE" { TypeDeclaration ";" } |
+               "VAR" { VariableDeclaration ";" } |
+               ProcedureDeclaration ";" |
+               ModuleDeclaration ";" =:
+
+DefFormalParameters := "(" [ DefMultiFPSection ] ")" FormalReturn =:
+
+DefMultiFPSection := DefExtendedFP |
+                     FPSection [ ";" DefMultiFPSection ] =:
+
+FormalParameters := "(" [ MultiFPSection ] ")" FormalReturn =:
+
+MultiFPSection := ExtendedFP |
+                  FPSection [ ";" MultiFPSection ] =:
+
+FPSection := NonVarFPSection | VarFPSection =:
+
+DefExtendedFP := DefOptArg | "..." =:
+
+ExtendedFP := OptArg | "..." =:
+
+VarFPSection := "VAR" IdentList ":" FormalType =:
+
+NonVarFPSection := IdentList ":" FormalType =:
+
+OptArg := "[" Ident ":" FormalType [ "=" ConstExpression ] "]" =:
+
+DefOptArg := "[" Ident ":" FormalType "=" ConstExpression "]" =:
+
+FormalType := { "ARRAY" "OF" } Qualident =:
+
+-- local module, make sure this is not in the import list
+
+ModuleDeclaration := "MODULE"
+                     Ident                                                  % RegisterLocalModule(LastIdent) %
+                     [ Priority ] ";"
+                     { ImportInner
+                                   } [ Export
+                                              ]
+                                                                            % BeginBlock %
+                       Block
+                       Ident                                                % EndBlock %
+                     =:
+
+Priority := "[" ConstExpression "]" =:
+
+Qualident := Ident { "." Ident } =:
+
+Export := "EXPORT" ( "QUALIFIED"
+                                 IdentList |
+                     "UNQUALIFIED"
+                                 IdentList |
+                     IdentList ) ";" =:
+
+Import :=  "FROM" Ident                                                     % RegisterImport(LastIdent) %
+                 "IMPORT" IdentList ";" |
+           "IMPORT" ImportList ";" =:
+
+ImportInner := "FROM" Ident                                                 % RegisterImport(LastIdent) %
+                            "IMPORT" IdentList ";" |
+                                                     "IMPORT" IdentList ";" =:
+
+IdentList := Ident { "," Ident } =:
+
+ImportList := Ident                                                         % RegisterImport(LastIdent) %
+                    { "," Ident                                             % RegisterImport(LastIdent) %
+                                } =:
+
+AsmStatement := 'ASM' [ 'VOLATILE' ] '(' AsmOperands ')' =:
+
+NamedOperand := '[' Ident ']' =:
+
+AsmOperandName := [ NamedOperand ] =:
+
+AsmOperands  := str [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
+             =:
+
+AsmList      := [ AsmElement ] { ',' AsmElement } =:
+
+AsmElement   := AsmOperandName str '(' Expression ')'
+             =:
+
+TrashList    := [ str ] { ',' str } =:
+
+FNB

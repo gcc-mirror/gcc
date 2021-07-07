@@ -1,0 +1,79 @@
+(* m2except.def provides an interface to build exception trees.
+
+Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE m2except ;
+
+FROM m2tree IMPORT Tree ;
+FROM m2linemap IMPORT location_t ;
+
+
+(*
+   InitExceptions - initialize this module, it declares the
+                    external functions and assigns them to
+                    the appropriate global tree variables.
+*)
+
+PROCEDURE InitExceptions (location: location_t) ;
+
+
+(*
+   BuildThrow - builds a throw statement and return the tree.
+*)
+
+PROCEDURE BuildThrow (location: location_t; t: Tree) : Tree ;
+
+
+(*
+    BuildTryBegin - returns a tree representing the 'try' block.
+*)
+
+PROCEDURE BuildTryBegin (location: location_t) : Tree ;
+
+
+(*
+   BuildTryEnd - builds the end of the Try block and prepares
+                 for the catch handlers.
+*)
+
+PROCEDURE BuildTryEnd (tryBlock: Tree) ;
+
+
+(*
+   BuildCatchBegin - creates a handler tree for the C++
+                     statement 'catch (...) {'.
+                     It returns the handler tree.
+*)
+
+PROCEDURE BuildCatchBegin (location: location_t) : Tree ;
+
+
+(*
+   BuildCatchEnd - completes a try catch block.
+                   It returns the, try_block, tree.
+                   It creates the C++ statement
+
+                   '}' which matches the catch above.
+*)
+
+PROCEDURE BuildCatchEnd (location: location_t; handler, tryBlock: Tree) : Tree ;
+
+
+END m2except.

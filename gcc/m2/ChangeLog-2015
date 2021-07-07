@@ -1,0 +1,601 @@
+2015-11-30      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/twoDsim.mod:  fixed syntax error.
+	* gm2/examples/pge/bounce3.mod:  use groff device.
+	* gm2/examples/pge/bounce4.mod:  use groff device.
+	* gm2/examples/pge/slope.mod:  use groff device.
+	* gm2/examples/pge/stairs.mod:  use groff device and increase
+          simulated time.
+	* gm2/gm2-compiler/ppg.mod:  removed white space and fixed
+          bug with emitting source line preprocessor symbols.
+	* gm2/m2.flex:  fixed floating point constant bug reported
+          by Michael Riedl (to allow 1.E10 etc).
+	* testsuite/gm2/iso/constreal.mod:  new file.
+	* gm2/el/g-mode.el:  fixed comment spacing at end of sentance
+          in the automatically generated header and updated the dates.
+
+2015-10-07      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/twoDsim.mod:  tided up debugging.
+	* gm2/examples/pge/elc2.mod:  New file.
+	* gm2/examples/pge/rboxes.mod:  New file.
+
+2015-10-06      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/Makefile.in:  build rotating-circles.m.
+	* gm2/examples/pge/mxmparser.py:  formatting change.
+	* gm2/examples/pge/mxmtree.py:  add terms and call pent, hex,
+	  sept, oct for powers 5..8.
+	* gm2/examples/pge/roots.def:  findOctic new procedure function.
+	* gm2/examples/pge/roots.mod:  findOctic new procedure function
+	  wrapper implemented.
+	* gm2/examples/pge/rotating-circles.mxm:  corrected terms and
+	  renamed some of the variables.
+	* gm2/examples/pge/rotating-line.mxm:  tidied up comments.
+	* gm2/examples/pge/twoDsim.mod:  new procedure functions,
+	  pent, hex, sept, oct.  New procedure getObjectOrbitingValues.
+	  New procedure maximaCircleCollisionOrbiting.  New procedure
+	  function earlierCircleCollisionOrbiting.  New procedure
+	  findCollisionCircleLineOrbiting.  Removed
+	  findCollisionCircleRLine.  findCollisionCirclePolygon call
+	  appropriate routine depending upon whether the polygon is
+	  orbiting.  New procedure function, isOrbiting.
+	  findCollisionLineLine call appropriate routine depending
+	  upon whether polygon is orbiting.  New procedure
+	  findCollisionLineLineOrbiting.
+
+2015-10-05      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/Makefile.in:  added new rule for elc2.mod
+	* gm2/examples/pge/coord.mod:  tidied up formatting.
+	* gm2/examples/pge/twoDsim.mod:  added Elasticity constant,
+	  angularMomentum for objects.  New procedure function (reflect).
+          collidePolygonAgainstMovingPolygon (rewritten).
+	  Interim checkin.
+
+2015-09-28      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/Makefile.in:  new example circle added.
+	* gm2/examples/pge/coord.def:  new procedure function
+	  perpendicular.
+	* gm2/examples/pge/coord.mod:  implemented new procedure
+	  function perpendicular.
+	* gm2/examples/pge/polar.mod:  cosmetic spaces added.
+	* gm2/examples/pge/popWorld.mod:  cosmetic spaces added.
+	* gm2/examples/pge/twoDsim.mod:  many cosmetic changes
+	  and also more explicit parameters which determine if
+	  edge or corner was in collision.  First cut of the polygon
+	  collision reaction implemented.
+	* gm2/gm2.texi:  removed duplication switch.
+	* gm2/gm2-gcc/m2linemap.c:  use xstrdup to preserve filename
+	  from being garbage collected.  This fixes a critical bug
+	  in the debugging output of large source files when -fcpp
+	  was used.
+
+2015-09-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/Makefile.in:  add boxes.raw and removed
+	  dependancy output.raw from playback.
+	* gm2/examples/pge/bounce.mod:  remove rotate.
+	* gm2/examples/pge/boxes.mod:  changed output device.
+	* gm2/examples/pge/examples/exampleBoxes.py:  changed sound
+	  file examples.  Changed crate example.
+	* gm2/examples/pge/pge.py:  added poly3 method.
+	* gm2/examples/pge/pgeif.mod:  check_range attempts to prevent
+	  round off errors and changed to provide a better descriptive
+	  error message.
+	* gm2/examples/pge/pgeplayback.py:  changes to allow generation
+	  of a movie with appropriate sounds effects.
+	* gm2/examples/pge/polar.def:  new procedure function rotatePolar.
+	* gm2/examples/pge/polar.mod:  implement new procedure function
+	  rotatePolar.
+	* gm2/examples/pge/twoDsim.def:  define new procedure function
+	  rvel.
+	* gm2/examples/pge/twoDsim.mod:  major changes to the definition
+	  of the polygon data structures, now use a c of g and polar
+	  coordinates to describe polygon.  Removed rpolygon.
+
+2015-09-09      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/examples/exampleBoxes.py:  interim checkin.
+	* gm2/examples/pge/pge.py:  get_xvel, get_yvel, get_xaccel,
+	  get_yaccel, process_event new methods.
+	* gm2/examples/pge/pgeif.def:  get_xvel, get_yvel, get_xaccel,
+	  get_yaccel (New procedure functions).
+	* gm2/examples/pge/pgeif.i:  get_xvel, get_yvel, get_xaccel,
+	  get_yaccel (New functions).
+	* gm2/examples/pge/pgeif.mod:  get_xvel, get_yvel, get_xaccel,
+	  get_yaccel (Implement new procedure functions).
+	* gm2/examples/pge/pgeplayback.py:  added -V option, added -o
+	  option.  Added ability to create a movie with sound effects
+	  using sox and mencoder.
+	* gm2/examples/pge/twoDsim.def:  get_xvel, get_yvel, get_xaccel,
+	  get_yaccel (New procedure functions).
+	* gm2/examples/pge/twoDsim.mod:  get_xvel, get_yvel, get_xaccel,
+	  get_yaccel (Implement new procedure functions).
+
+2015-09-04      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/Makefile.in:  added -I to link rule.
+	* gm2/examples/pge/mxmmaxima.py:  corrected unary -, + handling.
+	* gm2/examples/pge/mxmtree.py:  corrected output and fixed bug
+	  with class field.
+	* gm2/examples/pge/rotating-circles.mxm:  removed quit command.
+	* gm2/examples/pge/rotating-line.mxm:  removed equality and quit
+	  command.
+	* gm2/examples/pge/twoDsim.mod:  introduced comment for
+	  getPolygonPoint.
+	* gm2/www/tools/texi2tr/html/download.html:  updated download version.
+	* gm2/www/tools/texi2tr/html/release.html:  updated stable release
+          version.
+
+2015-09-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  fixed dates and gcc version number (4.7.4).
+	* gm2/Makefile.in:  fixed dates.
+	* gm2/c.flex:  fixed dates.
+	* gm2/configure.in;  fixed dates and version number.
+	* gm2/examples/pge/Makefile.in:  fixed compile rule to include machine
+	  generated source.
+	* gm2/examples/pge/circles.mxm:  simplified equation.
+	* gm2/examples/pge/mxmmaxima.py:  many interim bug fixes.
+	* gm2/examples/pge/mxmparser.py:  many interim bug fixes.
+	* gm2/examples/pge/mxmtree.py:  many interim bug fixes.
+	* gm2/examples/pge/twoDsim.mod:  improved debugging asserts
+	  and include machine generated source, compare results of both.
+	* gm2/gm2-lang.c:  handle -I option inside cpp args.
+	* gm2/m2.flex:  corrected dates.
+	* gm2/gm2-compiler/M2Preprocess.mod:  removed unnecessary printf
+	  and corrected dates.
+	* released GM2 1.1.5
+	* gm2/gm2.texi:  updated release map.
+	* gm2/version.c:  1.1.5.
+	* gm2/configure.in;  1.1.5.
+	* gm2/gm2-libs/config-host.in:  1.1.5.
+	* gm2/gm2-libs/config-target.in:  1.1.5.
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-target:  rebuilt.
+
+2015-08-24      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/examples/exampleBoxes.py:  much more debugging
+	  added.
+	* gm2/examples/pge/pge.py:  more debugging added.  Also correct
+	  lack of initialiser bugs.  Many diagnostics added.
+	* gm2/examples/pge/pgeif.def:  added ValueOutOfRange exception.
+	* gm2/examples/pge/pgeif.i:  added skip_until procedure.
+	* gm2/examples/pge/pgeif.mod:  (check_range) New function
+	  procedure.  get_xpos, get_ypos, box, poly3, poly4, poly5
+	  and poly6 all use check_range to check parameter values.
+	* gm2/examples/pge/twoDsim.mod:  added more trace information
+	  and test for object deletion.
+	* gm2/gm2-compiler/M2Base.mod:  added two more metatypes, rec
+	  and array.  Check for these meta types and add their
+	  characteristics into the assignment and expression matrices.
+	  This allows ARRAY and RECORD of the correct size to be compatible
+	  with WORD, BYTE, LOC etc.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  use BuiltinsLocation during
+	  the construction of the base types.
+	* gm2/gm2-compiler/M2GenGCC.mod:  added internal debugging.
+	  (CodeIndirectCall) skip type aliases for the return type.
+	* gm2/gm2-compiler/M2Scope.mod:  added internal debugging.
+	* gm2/gm2-compiler/SymbolTable.mod:  added missing initialisation
+	  for ScopeQuad.  This allows cc1gm2 to be run without errors by
+	  valgrind.
+	* gm2/gm2-gcc/m2convert.c:  convert_char_to_array (New function).
+	  convert_string_to_array (New function).  BuildConvert changed
+	  to detect whether a const lit char or string is required to be
+	  converted into a fixed string length.  This fixes a bug reported.
+	* gm2/gm2-gcc/m2statement.c:  tidied up code and fixed bug in
+	  (BuildReturnValueCode).  This fixes a bug exposed by
+	  testsuite/gm2/pim/pass/typeequiv.mod.
+	* gm2/gm2-gcc/m2type.c:  (BuildArrayStringConstructor) now adds
+	  multiple nuls to the end of a string if length exceeds string.
+	* gm2/gm2-libs/MemUtils.def:  tidied up formatting.
+	* gm2/p2c/p2c-src/src/pexpr.c:  fixed bug so that constant strings
+	  have a LOW indice of 0 not 1.
+	* gm2/pim/pass/typeequiv.mod:  corrected date.
+	* gm2/pim/pass/typeequiv2.mod:  corrected date.
+	* gm2/pim/pass/typeequiv3.mod:  corrected date.
+
+2015-08-18      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/GC.mod:  (gdbif) imported to aid debugging.
+	  Initialised callbacks to NIL (bugfix).
+	* gm2/examples/pge/twoDsim.mod:  removed debugging hook.
+	* gm2/examples/shared/Makefile.in:  corrected dates.
+	* gm2/gm2-libs-iso/MemStream.mod:  assign res to opened (bugfix).
+	* gm2/gm2-libs/CmdArgs.def:  corrected dates.
+	* gm2/gm2-libs/CmdArgs.mod:  corrected dates.
+	* libgm2/libpim/Makefile.am:  added SCmdArgs.def to be installed.
+	* libgm2/libpim/Makefile.am:  added SCmdArgs.mod to be built and
+	  installed.
+
+2015-08-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  modified debugging hooks.
+	* gm2/gm2-compiler/M2Quads.mod:  (BuildConvert) allow record types
+	  to be converted as they might fit into a generic type.
+	* gm2/gm2-gcc/m2convert.c:  (same_size_types)  New function.
+	  (converting_ISO_generic) only convert using short hand generic
+	  types if they are the correct size.  (const_to_ISO_aggregate_type)
+	  New function.
+	* gm2/gm2-lang.c:  (convert) simplified.
+
+2015-08-11      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/README:  corrected README to reflect prefered method of obtaining
+	  tar.gz file.  Also improved the text.  Removed the build instructions
+	  and replaced it with a reference to the documentation.
+	* gm2/examples/pge/deviceIf.mod:  added DebugTrace feature.
+	* gm2/examples/pge/twoDsim.mod:  added DebugTrace feature.
+	* gm2/examples/pge/world.mod:  useGroff by default.
+	* gm2/gm2-compiler/M2Base.mod:  fixed bug to allow BYTE to be parameter
+	  compatible with any BYTE sized type (including packed RECORD).
+
+2015-08-05      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/Makefile.in:  new rule for playback and output.raw.
+	* the following changes fix bugs in packed enumeration types.  Test code
+	  is given in the regression testsuite.
+	* gm2/extensions/run/pass/packedrecord.mod:  new file.
+	* gm2/extensions/run/pass/packedrecord2.mod:  new file.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  change call to BuildEndEnumeration
+	  to pass three parameters.
+	* gm2/gm2-gcc/m2type.c:  noBitsRequired bug fixed for the case where
+	  values is a power of two.  gm2_finish_enum introduce extra parameter
+	  location so that we can generate a call to m2type_BuildSmallestTypeRange
+	  if the enumeration is packed.  m2type_BuildEndEnumeration change call
+	  to gm2_finish_enum to include extra parameter.
+	* gm2/gm2-gcc/m2type.def:  change definition of BuildEndEnumeration.
+	* gm2/gm2-gcc/m2type.h:  change prototype of BuildEndEnumeration.
+
+2015-07-01      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2convert.c:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	  converting_ISO_generic (New procedure function).
+	  const_to_ISO_type (New procedure function).
+	  ConvertConstantAndCheck call const_to_ISO_type.
+	  GenericToType (New procedure function).
+	  These changes allow for much improved location references inside
+	  type conversions and expressions.  They also implement ISO WORD
+	  assignment from a constant integer or constant cardinal.
+	* gm2/gm2-compiler/M2ALU.mod:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-compiler/M2GenGCC.mod:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-compiler/M2Range.mod:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2convert.def:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2convert.h:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2decl.def:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2decl.h:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2except.c:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2expr.c:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2expr.def:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2expr.h:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2statement.c:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2treelib.c:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2type.c:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2type.def:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-gcc/m2type.h:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+	* gm2/gm2-lang.c:  change all calls to BuildConvert,
+	  GetIntegerOne, GetIntegerZero, GetWordOne, GetWordZero, GetCardinalOne,
+	  GetCardinalZero to have an extra location parameter.
+
+2015-06-26      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  ConvertTo (New procedure function).
+	  ConvertRHS (New procedure function).  IsWord (New procedure function).
+	  CodeConvert changed names of pararmeters and introduced call to
+	  ConvertRHS.  CodeXIndr changed names of pararmeters and introduced
+	  call to ConvertRHS.  This allows ISO WORD (an array of bytes) to
+	  be converted into CARDINAL.
+	* gm2/gm2-gcc/m2block.c:  allow multiple calls to pushGlobalScope
+	  and multiple calls to popGlobalScope.
+	* gm2-gcc/m2convert.c:  check for FUNCTION_DECL in value and if so
+	  use its address.
+	* gm2/gm2.texi:  updated web pages in light of the unordered list
+	  now implemented correctly in the python translation tool.
+	  Removed many old news entries.
+	* gm2/www/tools/texi2tr/src/outputdev.py:  implement unordered list.
+	* gm2/www/tools/texi2tr/src/texi2tr.py:  check for 'itemize' and
+	  'enumerate'
+	* testsuite/lib/gm2.exp:  corrected LD_LIBRARY_PATH calculation
+	  by testing each library in turn.
+	* gm2/gm2-compiler/M2GenGCC.mod:  corrected type for rhs.
+
+2015-05-30      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added rule to detect HAVE_STPCPY in configure output.
+	* gm2/configure.in:  check for function stpcpy.
+	* gm2/gm2-libs/config-target:  rebuilt.
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-host.in:  added check for stpcpy.
+	* gm2/gm2config.h.in:  added check for stpcpy.
+	* testsuite/gm2/isolib/run/pass/testio2.mod:  added debugging printf.
+	* gm2/gm2-libs-iso/TextIO.mod:  fixed bug in ReadToken so that the token
+	  terminates with a white space or null.
+	* gm2/Make-lang.in:  added dynamic test to check for HAVE_STPCPY.
+	* gm2/gm2-libs/gm2-libs-host.h.in:  added check for stpcpy.
+
+2015-05-29      Gaius Mulley <gaius@gnu.org>
+
+	* Solaris build fixes.
+	* gm2/Make-lang.in:  added place holder for the stpcpy rule.
+	  Added --lib $(STPCPY) to $(M2LINK) so that the Solaris 10 build
+	  succeeds.
+  	* gm2/gm2-libs-ch/wrapc.c:  added #if defined()
+	  to check for the presence of SIGNBIT, SIGNBITL and SIGNBITF.
+  	* gm2/gm2-libs/config-host:  rebuilt.
+  	* gm2/gm2-libs/config-host.in:  added checks for SIGNBIT, SIGNBITL
+	  and SIGNBITF against libm.
+  	* gm2/gm2-libs/config-target:  rebuilt.
+  	* gm2/gm2-libs/config-target.in:  added checks for SIGNBIT, SIGNBITL
+	  and SIGNBITF against libm.
+  	* gm2/gm2spec.c:  fixed many const char issues so that it can be built
+	  with g++.
+	* gm2/config.h.in:  added #undefs for SIGNBIT, SIGNBITL and SIGNBITF.
+	* gm2/configure:  rebuilt.
+	* gm2/configure.ac:  added checks for SIGNBIT, SIGNBITL
+	  and SIGNBITF against libm.
+	* gm2/libpim/dtoa.c:  added conditional compilation tests for
+	  HAVE_ERRNO_H.
+	* gm2/libpim/ldtoa.c:  added conditional compilation tests for
+	  HAVE_ERRNO_H.
+	* gm2/libpim/wrapc.c:  added conditional compilation tests for
+	  SIGNBIT, SIGNBITL and SIGNBITF.
+
+2015-05-29      Gaius Mulley <gaius@gnu.org>
+
+	* Linking fixes (-v).
+	* This fixes a bug reported by Christoph Schlegel and many others.
+	* Linking would fail when -v was present on the command line.
+	* gm2/gm2-compiler/M2Options.def:  new parameter to DisplayVersion
+	  (mustExit).  Necessary to ensure the -v works in the linking phase.
+  	* gm2/gm2-compiler/M2Options.mod:  implement the new parameter
+	  to DisplayVersion (mustExit).
+  	* gm2/gm2-gcc/m2options.h:  update the prototype for DisplayVersion.
+	  This occurred because -v was rewritten to --version by gm2spec.c
+	  and --version called exit.
+  	* gm2/gm2-lang.c:  call DisplayVersion but request it does not
+	  exit.
+	* gm2/gm2spec.c:  pass TRUE when handling -fgm2-version (to force
+	  an exit).  Pass FALSE when handling --version to suppress the
+	  exit.
+  	* gm2/gm2version.h:  updated the prototype for gm2_version.
+
+2015-05-29      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/TextIO.mod:  new procedure SkipSpaces.
+	  ReadToken calls SkipSpaces, this fixes a bug reported by:
+  	  (D.E.Evans <sinuhe@gnu.org>).
+
+  	* gm2/lang-specs.h:  fixed dates and tidied up the spec code so
+	  that many rules are broken down into obvious stages with
+	  inputs and outputs.
+  	* gm2/tools-src/makeversion:  changed to reflect the new gm2_version
+	  which has a parameter, mustExit.
+
+2015-05-04      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge:  more interim checkins.
+	* gm2/gm2-compiler/M2Batch.def:  IsModuleSeen (New procedure
+	  function).
+	* gm2/gm2-compiler/M2Batch.mod:  IsModuleSeen (New procedure
+	  function) implemented.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  TryFindSymbol
+	  (New procedure function).  Used to aid internal debugging.
+	* gm2/gm2-libs-iso/IOLink.mod:  fixed bug between dids and cid
+	  checking.  Check did against dids and cid against did^.cids.
+	* gm2/gm2-libs-iso/ProgramArgs.mod:  fixed bug reported by
+	  (D.E.Evans <sinuhe@gnu.org>).
+
+2015-04-27      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/MemStream.mod:  removed debugging printf.
+	* gm2/examples/pge:  more changes.
+
+2015-04-23      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  add $(TIMEVAR_H) to all m2.flex
+	  dependant rules.
+	* gm2/examples/pge:  more changes.
+
+2015-04-21      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/examples:  another interim checkin.
+          (More debugging statements added and internal checking).
+	* gm2/gm2-libs-iso/RawIO.mod:  (Read) call FlushOutErr.
+	* gm2/gm2-libs-iso/TextIO.mod:  (Read) call FlushOutErr.
+	* gm2/gm2-libs/FIO.def:  export FlushOutErr.
+	* This fixes a bug reported by Steve Giess, which allows
+	  iso and pim libraries to be mixed.  It also fixes
+	  the interactive behaviour of the iso libraries so that
+	  output is flushed before data is read.
+
+2015-04-15      Gaius Mulley <gaius@gnu.org>
+
+	* released GM2 1.1.3
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-host.in:  1.1.3.
+	* gm2/gm2-libs/config-target:  rebuilt.
+	* gm2/gm2-libs/config-target.in:  1.1.3.
+	* gm2/gm2.texi:  updated release map.
+	* gm2/version.c:  1.1.3.
+	* gm2/examples/pge/examples:  improved debugging log messages.
+
+2015-04-09      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  changed path to gnu.eps to contain
+	  $(objdir).
+	* gm2/examples/pge/examples/exampleBoxes.py:  more intermin
+	  changes.
+	* gm2/examples/pge/pge.py:  more intermin changes.
+	* gm2/examples/pge/pgeplayback.py:  more intermin changes.
+	* gm2/examples/pge/twoDsim.mod:  more intermin changes.
+
+2015-04-02      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/ConvStringLong.mod:  check to see if the
+	  conversion generates a NAN and return accordingly.
+	* gm2/gm2-libs-iso/ConvStringReal.mod:  check to see if the
+	  conversion generates a NAN and return accordingly.
+	  This fixes a bug reported by:  Michael Riedl.
+
+2015-04-01      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge:  many bugfixes to the shared library example.
+	* gm2/gm2-compiler/M2GenGCC.mod:  FoldConvert use PopKindTree.
+          PopKindTree new procedure function.  This fixes a bug reported
+	  by:  Michael Riedl.  (see
+	  http://lists.nongnu.org/archive/html/gm2/2015-02/msg00006.html).
+
+2015-03-28      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge:  many bugfixes to the shared library example.
+
+2015-03-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge:  many more improvements to pgeplayback.py
+	  and twoDsim.mod.
+
+2015-03-15      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge:  more changes to the shared library example.
+	* gm2/gm2-libs/gdbif.mod:  New file.
+	* gm2/gm2-libs/gdbif.def:  New file.
+
+2015-02-25      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge:  huge amount of changes to expose the frame
+	  buffer to python/pygame.
+
+2015-02-19      Gaius Mulley <gaius@gnu.org>
+
+	* libgm2/libiso/Makefile.in:  added MemStream.def and MemStream.mod
+	  in list of modules to be built and installed.
+	* gm2/gm2-libs-iso/MemStream.def:  New file.
+	* gm2/gm2-libs-iso/MemStream.mod:  New file.
+
+2015-02-17      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/Storage.mod:  fixed bug reported by
+          reported by Michael Riedl <udo-michael.riedl@t-online.de>.
+	  DEALLOCATE should assign the pointer to NIL.
+
+2015-02-11      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/pge.py:  tidied up formatting.
+	* gm2/gm2-compiler/M2GenGCC.mod:  CanConvert (New procedure function).
+	  CodeCast checks to see if non same sized types can be converted
+	  and generates an error message if they cannot.
+	* gm2/gm2.texi:  corrected documentation to use libtool when building
+	  shared libraries.  Updated references to jessie, rather than wheezy.
+	  Updated gcc graft to 4.7.4.
+	* gm2/www/tools/texi2tr/html/download.html:  update to stable release
+	  gm2-1.1.1.
+	* gm2/www/tools/texi2tr/html/release.html:  update to stable release
+	  gm2-1.1.1.
+	* testsuite/gm2/iso/pass/realbitscast.mod:  simplified test code.
+
+2015-01-26      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Quads.mod:  MakeLengthConst new procedure
+	  function.   BuildLengthFunction use MakeLengthConst.
+	  AssignHighField check for conststring and call MakeLengthConst.
+	  This fixes a bug reported below.
+	* testsuite/gm2/pim/run/pass/bytearray.mod:  new test code to
+	  detect bug reported by Michael Riedl <udo-michael.riedl@t-online.de>.
+	* gm2/gm2-compiler/M2DriverOptions.mod:  add char to the import
+	  list.
+	* gm2/gm2-compiler/M2Options.mod:  add string to the import list.
+
+2015-01-13      Gaius Mulley <gaius@gnu.org>
+
+	* Fixed bug reported by Peter Fletcher.
+	* gm2/bnf/gm2l.bnf:  handle '-v' options and remember cpp options.
+	* gm2/gm2-compiler/M2DriverOptions.mod:  remember cpp options.
+	* gm2/gm2-compiler/M2Options.def:  SetVerbose new procedure function.
+	  CppRemember new procedure.
+	* gm2/gm2-compiler/M2Options.mod:  implement SetVerbose
+	  procedure function and CppRemember.
+	* gm2/www/tools/texi2tr/html/download.html:  updated to include
+	  download reference to 4.7.x series of gcc.
+	* gm2 now builds when grafted onto 4.7.4.
+
+2015-01-04      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/Fractions.mod:  removed unnecessary local
+	 variable.
+	* gm2/examples/pge/Makefile.in:  added extra sources and added
+	  libraries.  Added local directory to the PYTHONPATH.
+	* gm2/examples/pge/pge.py:  many bugfixes and self checking code
+	  added.
+	* gm2/examples/pge/pgeif.mod:  initialise deviceIf.
+	* gm2/gm2-libs-iso/LowLong.mod:  correct prototype for huge_val.
+	* gm2/gm2-libs-iso/LowReal.mod:  correct prototype for huge_val.
+	* gm2/gm2-libs-iso/LowShort.mod:  correct prototype for huge_valf.
+	* gm2/gm2-libs/Builtins.def:  correct prototype for huge_val,
+	  huge_valf, huge_vall.
+
+2015-01-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/gm2m.bnf:  added debugging and verbose flag.
+	  Also fixed bug so that it understands the -fmake-I option.
+	* gm2/examples/hello/Makefile.in:  use $(EXE) rather than .out
+	* gm2/examples/ncurses/Makefile.in:  corrected arguments to
+	  gm2 -fmakeall.
+	* gm2/examples/pge/Makefile.in:  improved clean target.
+	* gm2/gm2.texi:  corrected typo.
+	* gm2/lang-specs.h:   ensure that gm2m is invoked with the -B
+	  and -fmake-I options present outside the -fgm2begin
+	  -fgm2end delimiters.
+
+2015-01-02      Gaius Mulley <gaius@gnu.org>
+
+	* released GM2 1.1.0
+	* gm2/gm2-libs/config-host:  rebuilt.
+	* gm2/gm2-libs/config-host.in:  1.1.0.
+	* gm2/gm2-libs/config-target:  rebuilt.
+	* gm2/gm2-libs/config-target.in:  1.1.0.
+	* gm2/gm2.texi:  updated release map.
+	* gm2/gm2spec.c:  removed C++ comment.
+	* gm2/version.c:  1.1.0.
+	* gm2/examples/pge/Makefile.in:  interim checkin libpgeif uses
+	  libtool during construction.  Temporary files removed from git.
+

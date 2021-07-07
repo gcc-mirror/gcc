@@ -1,0 +1,479 @@
+--- /dev/null	2019-02-14 10:11:58.467999981 +0000
++++ gm2-floppsie.12/gcc/analyzer/sm-m2rts.cc	2021-04-24 12:53:26.390173287 +0100
+@@ -0,0 +1,476 @@
++/* An experimental state machine, for tracking bad calls from within
++   signal handlers.
++
++   Copyright (C) 2021 Free Software Foundation, Inc.
++   Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>
++   heavily derived from work written by
++   David Malcolm <dmalcolm@redhat.com>.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify it
++under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 3, or (at your option)
++any later version.
++
++GCC is distributed in the hope that it will be useful, but
++WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING3.  If not see
++<http://www.gnu.org/licenses/>.  */
++
++#include "config.h"
++#include "system.h"
++#include "coretypes.h"
++#include "tree.h"
++#include "function.h"
++#include "basic-block.h"
++#include "gimple.h"
++#include "options.h"
++#include "bitmap.h"
++#include "diagnostic-path.h"
++#include "diagnostic-metadata.h"
++#include "function.h"
++#include "json.h"
++#include "analyzer/analyzer.h"
++#include "diagnostic-event-id.h"
++#include "analyzer/analyzer-logging.h"
++#include "analyzer/sm.h"
++#include "analyzer/pending-diagnostic.h"
++#include "sbitmap.h"
++#include "tristate.h"
++#include "ordered-hash-map.h"
++#include "selftest.h"
++#include "analyzer/call-string.h"
++#include "analyzer/program-point.h"
++#include "analyzer/store.h"
++#include "analyzer/region-model.h"
++#include "analyzer/program-state.h"
++#include "analyzer/checker-path.h"
++#include "digraph.h"
++#include "cfg.h"
++#include "gimple-iterator.h"
++#include "cgraph.h"
++#include "analyzer/supergraph.h"
++#include "alloc-pool.h"
++#include "fibonacci_heap.h"
++#include "analyzer/diagnostic-manager.h"
++#include "shortest-paths.h"
++#include "analyzer/exploded-graph.h"
++#include "analyzer/function-set.h"
++#include "analyzer/analyzer-selftests.h"
++#include "print-tree.h"
++#include "gimple-iterator.h"
++#include "gimple-walk.h"
++#include "analyzer/call-string.h"
++#include "analyzer/program-point.h"
++#include "analyzer/store.h"
++#include "analyzer/region-model.h"
++#include "analyzer/program-state.h"
++#include "analyzer/checker-path.h"
++#include "gimple-iterator.h"
++#include "analyzer/supergraph.h"
++#include "analyzer/pending-diagnostic.h"
++#include "analyzer/diagnostic-manager.h"
++#include "analyzer/constraint-manager.h"
++#include "analyzer/diagnostic-manager.h"
++#include "analyzer/checker-path.h"
++#include "analyzer/exploded-graph.h"
++
++/* The Modula-2 front end will place calls to NoReturnException
++   calls at the end of every procedure function (if -fsoft-check-all)
++   is present.  The analyzer is run after enough optimization has been
++   done to remove any unreachable blocks - hence detecting the presense
++   of a remaining NoReturnException is a valid concern.  */
++
++/* This analyzer module effectively provides the stubs so that the following
++   algorithm is run:
++
++   for each function call; res = f (); do
++       check function f and see if NoReturnException is called.
++       if f calls NoReturnException
++         warn that f may return an indeterminant result.
++         warn that the lhs of the caller (res) will be indeterminant
++         when the call f completes.  */
++
++#if ENABLE_ANALYZER
++
++namespace ana {
++
++namespace {
++
++/* An experimental state machine, for tracking calls to M2RTS NoReturn
++   handlers from within procedures.  */
++
++class m2rts_state_machine : public state_machine
++{
++public:
++  m2rts_state_machine (logger *logger);
++
++  bool inherited_state_p () const FINAL OVERRIDE { return false; }
++
++  bool on_stmt (sm_context *sm_ctxt,
++		const supernode *node,
++		const gimple *stmt) const FINAL OVERRIDE;
++
++  void on_condition (sm_context *sm_ctxt,
++		     const supernode *node,
++		     const gimple *stmt,
++		     tree lhs,
++		     enum tree_code op,
++		     tree rhs) const FINAL OVERRIDE;
++
++  bool can_purge_p (state_t s) const FINAL OVERRIDE;
++
++#if 0
++  const gcall *last_call;
++  const gcall *current_call;
++#endif
++
++  /* These states are "global", rather than per-expression.  */
++
++  /* State for when we're exploring a function for a no return exception.  */
++  state_t m_in_function;
++
++  /* Stop state.  */
++  state_t m_stop;
++};
++
++/* Concrete subclass for describing call to a m2 procedure
++   from an unconditional statement.  */
++
++class m2_procedure_call
++  : public pending_diagnostic_subclass<m2_procedure_call>
++{
++public:
++  m2_procedure_call (const m2rts_state_machine &sm,
++			tree lhs,
++			const gcall *last_call,
++			const gcall *current_call)
++    : m_sm (sm),
++      m_lhs (lhs),
++      m_last_call (last_call),
++      m_current_call (current_call)
++  {
++  }
++
++  const char *get_kind () const FINAL OVERRIDE
++  {
++    return "call to the procedure function may not return a result";
++  }
++
++  bool operator== (const m2_procedure_call &other) const
++  {
++    return m_current_call == other.m_current_call;
++  }
++
++  bool emit (rich_location *rich_loc) FINAL OVERRIDE
++  {
++    auto_diagnostic_group d;
++    diagnostic_metadata m;
++
++    tree last_call = gimple_call_fndecl (m_last_call);
++    if (warning_meta (rich_loc, m,
++		      OPT_fanalyzer,
++		      "call to the procedure function %qE may not return a result"
++		      " and therefore the value of %qD maybe indeterminate",
++		      last_call, m_lhs))
++      return true;
++    return false;
++  }
++
++  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
++  {
++    tree last_call = gimple_call_fndecl (m_last_call);
++    return ev.formatted_print ("the procedure function might return an indeterminate value"
++			       " (procedure function %qD is missing a return statement)",
++			       last_call);
++  }
++
++  const m2rts_state_machine &m_sm;
++
++private:
++  tree m_lhs;
++  const gcall *m_last_call;
++  const gcall *m_current_call;
++};
++
++/* m2rts_state_machine's ctor.  */
++
++m2rts_state_machine::m2rts_state_machine (logger *logger)
++: state_machine ("m2rts", logger)
++{
++  m_in_function = add_state ("in_function");
++  m_stop = add_state ("stop");
++#if 0
++  last_call = NULL;
++  current_call = NULL;
++#endif
++}
++
++/* Custom exploded_edge info: entry into a m2rts-handler.  */
++
++class m2rts_delivery_edge_info_t : public exploded_edge::custom_info_t
++{
++public:
++  void print (pretty_printer *pp) FINAL OVERRIDE
++  {
++    pp_string (pp, "m2rts delivered");
++  }
++
++  json::object *to_json () const
++  {
++    json::object *custom_obj = new json::object ();
++    return custom_obj;
++  }
++
++  void update_model (region_model *model,
++		     const exploded_edge &eedge) FINAL OVERRIDE
++  {
++#if 0
++    fprintf (stderr, "depth of stack here is: %d\n",
++	     eedge.m_dest->get_stack_depth ());
++    function *f = eedge.m_dest->get_function ();
++    fprintf (stderr, "  eedge.m_dest: \n");
++    debug_tree (f->decl);
++    f = eedge.m_src->get_function ();
++    fprintf (stderr, "  eedge.m_src: \n");
++    debug_tree (f->decl);
++    const gimple *g = eedge.m_src->get_stmt ();
++    fprintf (stderr, "  eedge.m_src.lhs: \n");
++    debug_tree (gimple_get_lhs (g));
++#endif
++#if 0
++    update_model_for_m2rts_handler (model, eedge.m_src->get_function ());
++#endif
++    model->push_frame (eedge.m_src->get_function (), NULL, NULL);
++  }
++
++  void add_events_to_path (checker_path *emission_path,
++			   const exploded_edge &eedge)
++    FINAL OVERRIDE
++  {
++#if 0
++    fprintf (stderr, "add_events_to_path: depth of stack here is: %d\n",
++	     eedge.m_dest->get_stack_depth ());
++    function *f = eedge.m_dest->get_function ();
++    fprintf (stderr, "  add_events_to_path: eedge.m_dest: \n");
++    debug_tree (f->decl);
++#endif
++    function *f = eedge.m_src->get_function ();
++#if 0
++    fprintf (stderr, "  add_events_to_path: eedge.m_src: \n");
++    debug_tree (f->decl);
++#endif
++    tree fndecl = f->decl;
++    const gimple *g = eedge.m_src->get_stmt ();
++#if 0
++    fprintf (stderr, "  add_events_to_path: eedge.m_src.lhs: \n");
++    debug_tree (gimple_get_lhs (g));
++#endif
++    tree lhs = gimple_get_lhs (g);
++    if (lhs)
++      emission_path->add_event
++	(new custom_event (g->location, fndecl, eedge.m_dest->get_stack_depth (),
++			   "later on,"
++			   " when the indeterminate value is returned"));
++  }
++};
++
++/* Concrete subclass of custom_transition for modeling registration of a
++   m2rts handler and the m2rts handler later being called.  */
++
++class m2_procedure_function : public custom_transition
++{
++public:
++  m2_procedure_function (const m2rts_state_machine &sm,
++			  tree fndecl, tree lhs)
++  : m_sm (sm), m_fndecl (fndecl), m_lhs (lhs) {}
++
++  /* Model a signal-handler FNDECL being called at some later point
++     by injecting an edge to a new function-entry node with an empty
++     callstring, setting the 'in-signal-handler' global state
++     on the node.  */
++  void impl_transition (exploded_graph *eg,
++			exploded_node *src_enode,
++			int sm_idx) FINAL OVERRIDE
++  {
++    function *handler_fun = DECL_STRUCT_FUNCTION (m_fndecl);
++    if (!handler_fun)
++      return;
++
++    program_point entering_handler
++      = program_point::from_function_entry (eg->get_supergraph (),
++					    handler_fun);
++
++    program_state state_entering_handler (eg->get_ext_state ());
++    state_entering_handler.m_checker_states[sm_idx]->set_global_state
++      (m_sm.m_in_function);
++
++    state_entering_handler.m_region_model->push_frame (handler_fun, NULL, NULL);
++
++    exploded_node *dst_enode = eg->get_or_create_node (entering_handler,
++						       state_entering_handler,
++						       src_enode);
++    if (dst_enode)
++      eg->add_edge (src_enode, dst_enode, NULL, /*state_change (),*/
++		    new m2rts_delivery_edge_info_t ());
++  }
++
++  const m2rts_state_machine &m_sm;
++  tree m_fndecl;
++  tree m_lhs;
++};
++
++/* Get a set of m2rts exception functions which must be conditionally called.  */
++
++static function_set
++get_m2rts_exception_fns ()
++{
++  // TODO: populate this list more fully
++  static const char * const m2rts_exception_fns[] = {
++    /* This array must be kept sorted.  */
++    "M2RTS_NoReturnException",
++  };
++  const size_t count
++    = sizeof (m2rts_exception_fns) / sizeof (m2rts_exception_fns[0]);
++  function_set fs (m2rts_exception_fns, count);
++  return fs;
++}
++
++/*     "M2RTS_PointerNilException",
++    "M2RTS_ReturnException",
++    "M2RTS_AssignmentException"  */
++
++
++/* Return true if FNDECL is known to be a m2rts exception handler.  */
++
++static bool
++m2rts_exception_p (tree fndecl)
++{
++  function_set fs = get_m2rts_exception_fns ();
++  return fs.contains_decl_p (fndecl);
++}
++
++#if 1
++static const gcall *last_call;
++static const gcall *current_call;
++
++void
++update_procedure_function (const gcall *call)
++{
++  last_call = current_call;
++  current_call = call;
++}
++#endif
++
++
++/* Implementation of state_machine::on_stmt vfunc for m2rts_state_machine.  */
++
++bool
++m2rts_state_machine::on_stmt (sm_context *sm_ctxt,
++			      const supernode *node,
++			      const gimple *stmt) const
++{
++  const state_t global_state = sm_ctxt->get_global_state ();
++  if (global_state == m_start)
++    {
++      if (const gcall *call = dyn_cast <const gcall *> (stmt))
++	{
++	  tree fndecl = gimple_call_fndecl (call);
++	  if (fndecl != NULL)
++	    {
++	      if (m2rts_exception_p (fndecl))
++		// ignore lack of return statements from the start state.
++		return false;
++	      if (tree lhs = gimple_get_lhs (call))
++		{
++		  m2_procedure_function m2pf (*this, fndecl, lhs);
++#if 1
++		  update_procedure_function (call);
++#endif
++		  sm_ctxt->on_custom_transition (&m2pf);
++		}
++	    }
++	}
++    }
++  else if (global_state == m_in_function)
++    {
++      if (const gcall *call = dyn_cast <const gcall *> (stmt))
++	if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
++	  {
++	    if (m2rts_exception_p (callee_fndecl))
++	      {
++		const gcall *call_noreturn = node->get_final_call ();
++		tree lhs = gimple_get_lhs (current_call);
++		if (lhs != NULL)
++		  {
++		    tree diag_lhs = sm_ctxt->get_diagnostic_tree (lhs);
++		    pending_diagnostic *pd
++		      = new m2_procedure_call (*this,
++					       diag_lhs, current_call,
++					       call_noreturn);
++		    sm_ctxt->warn (node, current_call, lhs, pd);
++		    return true;
++		  }
++	      }
++	  }
++    }
++
++  return false;
++}
++
++/* Implementation of state_machine::on_condition vfunc for
++   m2rts_state_machine.  */
++
++void
++m2rts_state_machine::on_condition (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
++				   const supernode *node ATTRIBUTE_UNUSED,
++				   const gimple *stmt ATTRIBUTE_UNUSED,
++				   tree lhs ATTRIBUTE_UNUSED,
++				   enum tree_code op ATTRIBUTE_UNUSED,
++				   tree rhs ATTRIBUTE_UNUSED) const
++{
++  // Empty
++}
++
++bool
++m2rts_state_machine::can_purge_p (state_t s ATTRIBUTE_UNUSED) const
++{
++  return true;
++}
++
++} // anonymous namespace
++
++/* Internal interface to this file. */
++
++state_machine *
++make_m2rts_state_machine (logger *logger)
++{
++  return new m2rts_state_machine (logger);
++}
++
++#if CHECKING_P
++
++namespace selftest {
++
++/* Run all of the selftests within this file.  */
++
++void
++analyzer_sm_m2rts_cc_tests ()
++{
++  function_set fs = get_m2rts_exception_fns ();
++  fs.assert_sorted ();
++  fs.assert_sane ();
++}
++
++} // namespace selftest
++
++#endif /* CHECKING_P */
++
++} // namespace ana
++
++#endif /* #if ENABLE_ANALYZER */

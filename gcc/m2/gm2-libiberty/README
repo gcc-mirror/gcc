@@ -1,0 +1,2 @@
+This directory contains a minimal number of DEFINITION MODULEs
+to allow the cc1gm2 and tools to access some of the gcc modules.

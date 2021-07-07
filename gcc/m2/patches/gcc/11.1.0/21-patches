@@ -1,0 +1,12 @@
+diff --git a/gcc/analyzer/sm.h b/gcc/analyzer/sm.h
+index 8d4d030394a..ef4901842e6 100644
+--- a/gcc/analyzer/sm.h
++++ b/gcc/analyzer/sm.h
+@@ -248,6 +248,7 @@ protected:
+ extern void make_checkers (auto_delete_vec <state_machine> &out,
+ 			   logger *logger);
+ 
++extern state_machine *make_m2rts_state_machine (logger *logger);
+ extern state_machine *make_malloc_state_machine (logger *logger);
+ extern state_machine *make_fileptr_state_machine (logger *logger);
+ extern state_machine *make_taint_state_machine (logger *logger);

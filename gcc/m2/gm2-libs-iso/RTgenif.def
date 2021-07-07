@@ -1,0 +1,159 @@
+(* RTgenif.def provide a generic device interface mechanism used by RTgen.
+
+Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RTgenif ;
+
+(*
+    Title      : RTgenif
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Mon Sep 22 17:13:45 2008
+    Revision   : $Version$ 
+    Description: provides a generic interface mechanism used
+                 by RTgen.  This is not an ISO module but rather
+                 a runtime support module.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM IOLink IMPORT DeviceId, DeviceTablePtr ;
+
+TYPE
+   GenDevIF ;
+   readchar   = PROCEDURE (GenDevIF, DeviceTablePtr) : CHAR ;
+   unreadchar = PROCEDURE (GenDevIF, DeviceTablePtr, CHAR) : CHAR ;
+   geterrno   = PROCEDURE (GenDevIF, DeviceTablePtr) : INTEGER ;
+   readbytes  = PROCEDURE (GenDevIF, DeviceTablePtr, ADDRESS, CARDINAL, VAR CARDINAL) : BOOLEAN ;
+   writebytes = PROCEDURE (GenDevIF, DeviceTablePtr, ADDRESS, CARDINAL, VAR CARDINAL) : BOOLEAN ;
+   writeln    = PROCEDURE (GenDevIF, DeviceTablePtr) : BOOLEAN ;
+   iseof      = PROCEDURE (GenDevIF, DeviceTablePtr) : BOOLEAN ;
+   iseoln     = PROCEDURE (GenDevIF, DeviceTablePtr) : BOOLEAN ;
+   iserror    = PROCEDURE (GenDevIF, DeviceTablePtr) : BOOLEAN ;
+
+
+(*
+   InitGenDevIF - initializes a generic device.
+*)
+
+PROCEDURE InitGenDevIF (d     : DeviceId;
+                        rc    : readchar;
+                        urc   : unreadchar;
+                        geterr: geterrno;
+                        rbytes: readbytes;
+                        wbytes: writebytes;
+                        wl    : writeln;
+                        eof   : iseof;
+                        eoln  : iseoln;
+                        iserr : iserror) : GenDevIF ;
+
+
+(*
+   getDID - returns the device id this generic interface.
+*)
+
+PROCEDURE getDID (g: GenDevIF) : DeviceId ;
+
+
+(*
+   doReadChar - returns the next character from the generic
+                device.
+*)
+
+PROCEDURE doReadChar (g: GenDevIF; d: DeviceTablePtr) : CHAR ;
+
+
+(*
+   doUnReadChar - pushes back a character to the generic device.
+*)
+
+PROCEDURE doUnReadChar (g: GenDevIF; d: DeviceTablePtr; ch: CHAR) : CHAR ;
+
+
+(*
+   doGetErrno - returns the errno relating to the generic device.
+*)
+
+PROCEDURE doGetErrno (g: GenDevIF; d: DeviceTablePtr) : INTEGER ;
+
+
+(*
+   doRBytes - attempts to read, n, bytes from the generic device.
+              It set the actual amount read and returns a boolean
+              to determine whether an error occurred.
+*)
+
+PROCEDURE doRBytes (g: GenDevIF; d: DeviceTablePtr;
+                    to: ADDRESS; max: CARDINAL;
+                    VAR actual: CARDINAL) : BOOLEAN ;
+
+
+(*
+   doWBytes - attempts to write, n, bytes to the generic device.
+              It sets the actual amount written and returns a
+              boolean to determine whether an error occurred.
+*)
+
+PROCEDURE doWBytes (g: GenDevIF; d: DeviceTablePtr;
+                    from: ADDRESS; max: CARDINAL;
+                    VAR actual: CARDINAL) : BOOLEAN ;
+
+
+(*
+   doWrLn - writes an end of line marker and returns
+            TRUE if successful.
+*)
+
+PROCEDURE doWrLn (g: GenDevIF; d: DeviceTablePtr) : BOOLEAN ;
+
+
+(*
+   isEOF - returns true if the end of file was reached.
+*)
+
+PROCEDURE isEOF (g: GenDevIF; d: DeviceTablePtr) : BOOLEAN ;
+
+
+(*
+   isEOLN - returns true if the end of line was reached.
+*)
+
+PROCEDURE isEOLN (g: GenDevIF; d: DeviceTablePtr) : BOOLEAN ;
+
+
+(*
+   isError - returns true if an error was seen in the device.
+*)
+
+PROCEDURE isError (g: GenDevIF; d: DeviceTablePtr) : BOOLEAN ;
+
+
+(*
+   KillGenDevIF - deallocates a generic device.
+*)
+
+PROCEDURE KillGenDevIF (g: GenDevIF) : GenDevIF ;
+
+
+END RTgenif.

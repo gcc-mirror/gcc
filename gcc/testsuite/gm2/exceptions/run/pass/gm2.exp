@@ -1,0 +1,54 @@
+# Expect driver script for GCC Regression Tests
+# Copyright (C) 2008-2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# load support procs
+load_lib libgloss.exp
+load_lib prune.exp
+load_lib gm2-torture.exp
+
+
+set XGPP [lookfor_file $rootme xg++];
+
+set output [exec rm -f cpp.o mycpp.o]
+set output [exec ${XGPP} -B[file dirname $rootme]/gcc -g -c $srcdir/gm2/exceptions/run/pass/cpp.cpp]
+set output [exec ${XGPP} -B[file dirname $rootme]/gcc -g -c $srcdir/gm2/exceptions/run/pass/mycpp.cpp]
+
+#
+#  notice this uses PIM libraries with exceptions - this is a useful test.
+#  There are other exception tests which test exceptions with the ISO libraries.
+#
+
+set gm2src ${srcdir}/../m2
+
+gm2_init_pim "${srcdir}/gm2/exceptions/run/pass"
+gm2_link_with "-lm2pim -lm2iso -lpthread"
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+
+    gm2-torture-execute $testcase "" "pass"
+}

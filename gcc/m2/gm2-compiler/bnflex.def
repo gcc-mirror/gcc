@@ -1,0 +1,156 @@
+(* bnflex.def provides a simple lexical package for pg.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE bnflex ;
+
+(*
+    Title      : bnflex
+    Author     : Gaius Mulley
+    System     : UNIX (gm2)
+    Date       : Mon Sep 13 08:53:02 1999
+    Last edit  : Mon Sep 13 08:53:02 1999
+    Description: provides a simple lexical package for pg.
+*)
+
+FROM NameKey IMPORT Name ;
+EXPORT QUALIFIED IsSym, SymIs, TokenType, GetCurrentTokenType, GetCurrentToken,
+                 GetChar, PutChar, OpenSource, CloseSource,
+                 SkipUntilWhite, SkipWhite, SkipUntilEoln, AdvanceToken, IsReserved, PushBackToken,
+                 SetDebugging ;
+
+TYPE
+   TokenType = (identtok, literaltok, codetok, lbecomestok, rbecomestok, bartok, lsparatok, rsparatok,
+                lcparatok, rcparatok, lparatok, rparatok, errortok, tfunctok, symfunctok,
+                squotetok, dquotetok, moduletok, begintok, rulestok, endtok, lesstok, gretok,
+                tokentok, specialtok, firsttok, followtok, BNFtok, FNBtok, declarationtok,
+                epsilontok, eoftok) ;
+
+
+(*
+   OpenSource - Attempts to open the source file, a.
+                The success of the operation is returned.
+*)
+
+PROCEDURE OpenSource (a: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   CloseSource - Closes the current open file.
+*)
+
+PROCEDURE CloseSource ;
+
+
+(*
+   GetChar - returns the current character on the input stream.
+*)
+
+PROCEDURE GetChar () : CHAR ;
+
+
+(*
+   PutChar - pushes a character onto the push back stack, it also
+             returns the character which has been pushed.
+*)
+
+PROCEDURE PutChar (ch: CHAR) : CHAR ;
+
+
+(*
+   SymIs - if t is equal to the current token the next token is read
+           and true is returned, otherwise false is returned.
+*)
+
+PROCEDURE SymIs (t: TokenType) : BOOLEAN ;
+
+
+(*
+   IsSym - returns the result of the comparison between the current token
+           type and t.
+*)
+
+PROCEDURE IsSym (t: TokenType) : BOOLEAN ;
+
+
+(*
+   GetCurrentTokenType - returns the type of current token.
+*)
+
+PROCEDURE GetCurrentTokenType () : TokenType ;
+
+
+(*
+   GetCurrentToken - returns the NameKey of the current token.
+*)
+
+PROCEDURE GetCurrentToken () : Name ;
+
+
+(*
+   SkipUntilWhite - skips all characters until white space is seen.
+*)
+
+PROCEDURE SkipUntilWhite ;
+
+
+(*
+   SkipWhite - skips all white space.
+*)
+
+PROCEDURE SkipWhite ;
+
+
+(*
+   SkipUntilEoln - skips until a lf is seen. It consumes the lf.
+*)
+
+PROCEDURE SkipUntilEoln ;
+
+
+(*
+   AdvanceToken - advances to the next token.
+*)
+
+PROCEDURE AdvanceToken ;
+
+
+(*
+   IsReserved - returns TRUE if the name is a reserved word.
+*)
+
+PROCEDURE IsReserved (name: Name) : BOOLEAN ;
+
+
+(*
+   PushBackToken - pushes a token back onto input.
+*)
+
+PROCEDURE PushBackToken (t: Name) ;
+
+
+(*
+   SetDebugging - sets the debugging flag.
+*)
+
+PROCEDURE SetDebugging (flag: BOOLEAN) ;
+
+
+END bnflex.

@@ -1,0 +1,535 @@
+2005-12-29      Gaius Mulley <gaius@glam.ac.uk>
+
+	* corrections made to gm2/gm2.texi
+
+2005-12-24      Gaius Mulley <gaius@glam.ac.uk>
+
+	* joined lines in gm2/tools-src/createUlmSys as
+	  requested by Christoph <modula2@myrealbox.com>
+	  so that gm2 will build on netbsd 2.1.
+	* added time and tm to gm2/gm2-libs/libc.def.
+	* added partial implementation of
+	  gm2/gm2-libs-pim/TimeDate.def
+          gm2/gm2-libs-pim/TimeDate.mod
+
+2005-12-22      Gaius Mulley <gaius@glam.ac.uk>
+
+	* added gm2/gm2-libs-pim/Random.def and
+          gm2/gm2-libs-pim/Random.mod and
+	* modified gm2/Make-lang.in to install new module.
+	* remove Random from the TODO list.
+
+2005-12-21      Gaius Mulley <gaius@glam.ac.uk>
+
+	* added gm2/gm2-libs-pim/Strings.def and
+          gm2/gm2-libs-pim/Strings.mod
+ 	* modified gm2/Make-lang.in to install new module.
+
+2005-12-19      Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented logitech compatible library
+	  gm2/gm2-libs-pim/RealConversions.def and
+          gm2/gm2-libs-pim/RealConversions.mod
+	* added regression test for RealConversions
+	  testsuite/gm2/pimlib/logitech/run/pass/realconv.mod
+	* fixed regression test expect script to set the
+	  library path correctly.
+	* updated gm2/gm2-libs.texi to reflect addition of
+	  RealConversions.mods
+	* added gm2/gm2-libs-pim/FloatingUtilities.def
+	* added gm2/gm2-libs-pim/FloatingUtilities.mod
+	* increased number of builtin functions accessible to GNU Modula-2.
+
+2005-12-13      Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gccgm2.c:default_conversion now checks the base type.
+	* gm2/gm2-compiler/M2GCCDeclare.mod: add Subrange types onto the
+	  to do list, if they are not yet resolved.
+
+2005-12-10      Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed Copyright in gm2/gm2-libs-pim library modules
+	* gm2/gm2-compiler/M2Quads.mod:BuildForToByDo allowed Z type by value.
+	* gm2/gm2-compiler/M2Quads.mod:BuildPseudoBy converted by value if type
+	  is known.
+	* fixes a bug reported by: James V. Cox example given in
+	  testsuite/gm2/pim/run/pass/EnumTest.mod
+
+2005-12-10      Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed Copyright in gm2/gm2-libs-pim library modules
+
+2005-12-06      Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed Copyright in University of Ulm modules and also p2c.
+	* heavily tidied up the p2c source tree.
+
+2005-12-05      Peter P. Eiserloh <peter@eiserloh.org>
+
+	* contributed the gm2 manual page and associated Makefile
+	  in the new subdirectory: gm2/man.
+
+2005-11-29	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by John Wallace and Juan Reyes
+	  concerning FOR loops with negative step values.
+	* added new runtime regression tests gm2/pim/run/pass/For[78].mod
+	  to test these new changes.
+	* changes to gm2/gm2-compiler/M2Base.mod, gm2-compiler/M2Code.mod,
+          gm2/gm2-compiler/M2GenGCC.mod, gm2/gm2-compiler/M2Quads.mod
+	  to ensure that the Negate operator works on large data types
+	  LONGCARD contants are changed into LONGINT and overflow is
+	  checked.
+
+2005-11-22	Gaius Mulley <gaius@glam.ac.uk>
+
+	* modified ppg to take an extra parameter -f which emits the
+	  Free Documentation License header when producing texinfo
+	  ebnf rules.
+	* fixed many dates on source files.
+
+2005-11-21	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed many Copyright dates and GPL, LGPL and FDL license
+	  issues.
+	* replaced gm2/ulm-lib-gm2/std/Storage.mod with an implementation
+	  which uses malloc and free. This in turn fixes a runtime regression
+	  test (hello world) now works with the Ulm libraries.
+	* fixed gm2/gm2.texi to include FDL notice and also fixed all
+	  included texi files in the same way.
+	* added GPL, Modula-2 and Copyright notices to all gm2/tools-src
+	  files.
+
+2005-11-15	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added more regression tests and
+	* completed the printing of set types within gdb
+	* completed the printing of array and subrange types within gdb
+	* made gdb print Modula-2 style CHARs and improved type printing
+	  within gdb.
+	* rationalised the gdb and gcc patches within the gm2/patch
+	  subdirectories.
+	* modified gm2-harness-0.6 to apply patches in order.
+	* minor fixes to gm2/gccgm2.c to give better type information.
+	* improved gdb section within gm2/gm2.texi
+
+2005-11-11	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed minor node bugs in gm2/gm2.texi, gm2/gpl.texi, gm2/gnu.texi
+
+2005-11-10	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added gm2/COPYING.LGPL
+	* changed all references of the old FSF address to the new address.
+	* fixed bugs reported by John Wallace (MAX(INTEGER), MAX(LONGINT),
+	  MIN(INTEGER) and MIN(LONGINT)) were not correctly converted in
+	  gm2/gm2-libs-pim/InOut.mod, gm2/gm2-libs/FpuIO.mod,
+	  gm2/gm2-libs/NumberIO.mod.
+	* added new regression tests in
+	  gm2/switches/pim4/run/pass/InOutBug.mod and
+	  gm2/switches/pim4/run/pass/FpuIOBug.mod which perform regression
+	  runtime tests.
+
+2005-11-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added gm2/COPYING and included licence information
+	  inside gm2/gm2.texi
+	* added gm2/gnu.texi and gm2/gpl.texi and referenced
+	  them from gm2/gm2.texi
+
+2005-11-06	Gaius Mulley <gaius@glam.ac.uk>
+
+	* improved the gdb patches
+
+2005-11-03	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixes to set types and subranges which in turn
+	  when applied with the patches made to ../../gcc/dwarf2out.c
+	  and also gdb/gdb/dwarf2read.c allow subranges and
+	  set types to be debugged when using the dwarf2 format.
+	* included the patches to gcc-3.3.6 and gdb-6.3 under the
+	  new directory gm2/patches
+	* fixed patch for gdb-6.3
+	* updated gm2/gm2.texi
+	* released gm2-harness-0.6 which will automatically patch
+	  gcc-3.3.6 and gdb-6.3, build and install these components.
+	* fixed warnings from within the gcc patch
+
+2005-10-14	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed set type debugging information.
+	  Many changes to gm2/gccgm2.c and
+	  minor changes to gm2/gm2-compiler/M2GenGCC.mod.
+	  Debugging set types with gdb now works if -gstabs
+	  are used on the command line of gm2 and also the
+	  modified gdb-6.3 is used.
+
+2005-10-13	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed call to ranlib in gm2/gm2-compiler/gm2lcc.mod
+
+2005-10-10	Gaius Mulley <gaius@glam.ac.uk>
+
+	* introduced an invocation to ranlib after producing the
+	  archive to fix a linking bug on MacOS OS 10.3.9 reported
+	  by: Thomas Ahn <TAhnMaple@gmx.de>.
+	* propagated ranlib though the various subcomponents of
+	  gm2: gm2/gm2spec.c gm2/lang-specs.h gm2/Make-lang.in
+	  gm2/gm2-compiler/gm2lcc.mod gm2/gm2-compiler/M2Options.mod
+
+2005-10-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* replaced MathLib.mod onto the list of ULM modules
+          which prior to installation.
+	* fixed ggc bug so that types are remembered and marked.
+	  These types are declared in M2GCCDeclare.mod before
+	  code generation takes place and do not experience the
+	  `push_decl' function.
+
+2005-10-03	Michael H Lambert <lambert@psc.edu>
+
+	* removed $(LIBS) from the dependancies of cc1gm2 in
+	  stage1, stage2 and stage3.
+
+2005-09-30	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug in gm2/gm2-libs/FpuIO.mod so that the sign is
+	  not prepended to the string if the number is positive.
+	* fixed gm2/gm2-libs-pim/Break.c to use HAVE_STDLIB_H and
+	  HAVE_MALLOC_H as detected by the configure script.
+	* removed ulm-lib-gm2/std/MathLib.mod from the build
+	  process as a temporary work around to get gm2 working
+	  under opendarwin.
+
+2005-09-27	Gaius Mulley <gaius@glam.ac.uk>
+
+	* finally fixed _toupper porting problem in p2c as reported
+	  by Thomas Ahn <TAhnMaple@gmx.de>, Ed Smith-Rowland
+	  <3dw4rd@verizon.net>, John o goyo <jgoyo@ca.inter.net>,
+          Eduardo Abela <eabela@mac.com>, John Calley
+	  <calleys@iquest.net> and many others.
+	* finally fixed the linking problem when building under
+	  opendarwin. I suspect this will fix the same problems
+	  under MacOS.
+
+2005-09-16	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented -Wpositive-mod-floor-div option
+	* updated gm2/gm2.texi and added many switch testing
+	  regression tests.
+
+2005-09-13	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented REM
+	* implemented MOD, DIV, / as per ISO, PIM2, PIM3, PIM4
+	* updated gm2/gm2.texi documentation to reflect the rules
+
+2005-09-12	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by John B. Wallace, Jr <wallacjb@enter.net>
+	  testsuite/gm2/pim/options/bounds/fail/IdentifierBug.mod
+	* fixed bug reported by John B. Wallace, Jr <wallacjb@enter.net>
+	  testsuite/gm2/testsuite/gm2/pim/pass/ABSBug.mod
+	* fixed bug reported by John B. Wallace, Jr <wallacjb@enter.net>
+	  testsuite/gm2/pim/run/pass/FpuIOBug.mod
+
+2005-09-06	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by John B. Wallace, Jr <wallacjb@enter.net>
+          gm2-libs/StringConvert.mod incorrect assumption of negative valued
+	  modulus operator.
+	* added testsuite/gm2/pimlib/{logitech, ulm} with tests to check
+	  that programs can be linked against logitech and the ulm libraries.
+	* added testsuite/gm2/pim/run/pass/modulus.mod which tests for
+	  various division and modulus cases.
+
+2005-09-01	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented -Wdef=extension and -Wmod=extension switches
+	  into GNU Modula-2 compiler and subcomponents (gm2l and gm2m).
+	* documented the new switches in gm2/gm2.texi
+
+2005-08-09	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed nested WITH statement bug and added
+	* testsuite/gm2/pim/run/pass/nestedwith.mod to regressively
+	  check the fix.
+
+2005-08-08	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed many bugs in gm2/gm2-libs-coroutines/SysVec.mod
+	* minor updates to gm2/gm2-libs-coroutines/TimerHandler.mod
+
+2005-07-26	Gaius Mulley <gaius@glam.ac.uk>
+
+	* modified debian directory so that 0.49 can be built as
+	  a debian package
+
+2005-07-25	Michel Derosa <derosa@videotron.ca>
+
+	* fixed malloc.h include for BSD based systems in
+	  gm2/gm2-libs-pim/Break.c
+
+2005-07-21	Gaius Mulley <gaius@glam.ac.uk>
+
+	* moved gm2/examples/executive/Executive, TimerHandler, Debug,
+	  SysVec to gm2/gm2-libs-coroutines and
+	* made gm2/Make-lang.in install these modules
+	* removed the -Wulm option and replaced it with -Wlibs=ulm
+	* added -Wlibs=logitech, -Wlibs=pim, -Wlibs=iso,
+	  -Wlibs=pim-coroutine
+	* altered gm2/Make-lang.in so that the correct library modules
+	  are placed into the correct directories during install.
+
+2005-07-20	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug exposed by: testsuite/gm2/pim/pass/maxlongint.mod
+	* modified IsMathType in gm2/gm2-compiler/M2Base.mod accordingly.
+
+2005-07-18	Gaius Mulley <gaius@glam.ac.uk>
+
+	* updated gm2/gm2.texi and gm2/gm2-libs.texi
+	* introduced modules Delay, ErrorCode, DebugTrace
+	  and Break into gm2/gm2-libs-pim
+	* modified gm2/Make-file.in so that these modules
+	  are built and installed.
+
+2005-07-14	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 Release 0.49
+	* tagged CVS using gm2_0_49
+
+	* introduced SHORTCARD into p2c
+	* added gm2/gm2-libs-pim/CardinalIO.def and
+	  gm2/gm2-libs-pim/CardinalIO.mod
+	* added a number of procedures to implement CardinalIO.mod
+	  in gm2/gm2-libs/StringConvert.mod
+	* improved gm2/gm2.texi
+	* modified gm2/Make-file.in so that the library modules
+	  in gm2/gm2-libs-pim are also built and installed
+
+2005-07-10	Gaius Mulley <gaius@glam.ac.uk>
+
+	* constant literal string array assignment of smaller sizes to
+	  array variables and parameters.
+
+2005-07-09	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented MAX(ADDRESS) and MIN(ADDRESS)
+
+2005-07-08	Gaius Mulley <gaius@glam.ac.uk>
+
+	* finally all ulm modules compile under GM2
+	* fixed negative integer bug which was exposed in the 32 bit port
+	  of gm2 when compiling testsuite/gm2/pim/pass/setoverflow.mod
+	  and also gm2/ulm-lib-gm2/std/TimeIO.mod
+
+2005-07-06	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed a number of bugs relating to gm2 failuring to compile
+	  gm2/ulm-lib-gm2/std/TimeIO.mod. Nested modules within
+	  procedures exporting variables.
+	* alterations include correct type declaration ahead of
+	  variable creation.
+	* creating all variables in the outer most procedure scope
+	  if these variables are exported from inner modules.
+	* also fixed gm2/gccgm2.c so that pointer to sets are cast
+	  into a generic ptr
+	* also fixed offset into sets (which had assumed sets started
+	  with an element value zero).
+
+2005-06-22	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by John O Goyo <jgoyo@ca.inter.net>
+	  multiple indexed arrays were internally defined incorrectly
+	  and did not allow users to mix array indices by a[x,y,z] and
+	  a[x][y,z] etc as per PIM and ISO specification.
+	  see testsuite/gm2/pim/pass/index.mod and
+              testsuite/gm2/pim/pass/index2.mod and
+              testsuite/gm2/pim/run/pass/index3.mod
+
+2005-06-20	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added code to treat LOC as a system type in parameter
+	  passing.
+
+2005-06-17	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by John O Goyo <jgoyo@ca.inter.net>
+	  CAST of different sized variables would fail.
+	* added new switch -Wpedantic-cast which warns if a cast
+	  is converting a variable of a different size to the type.
+
+2005-06-08	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug which occurred if a constant set was created
+	  in a procedure through the CONST construct.
+	* fixed a number of -Wextended-opaque issues in gm2/bnf/m2-h.bnf
+	* modified gm2/Make-lang.in to use -Wextended-opaque (for testing)
+
+2005-06-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug which occurred if an enumerated type field
+	  was imported by another module.
+	  (See testsuite/gm2/pim/pass/set10.mod)
+        * fixed circular dependancy bug in record generation.
+
+2005-06-03	Gaius Mulley <gaius@glam.ac.uk>
+
+	* reverted some of the changes made to the ulm libraries
+	  in the light of fixing arrays with huge indices.
+	* mofified gm2/bnf/m2-h.bnf so that expressions within
+	  statement sequences are ignored.
+
+2005-06-02	Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gccgm2.c fixed BuildArrayIndexType so that gm2 can build
+	  arrays which have huge indices. This removes a failure from
+	  the regression tests on systems which have a 32 bit long.
+
+2005-06-01	Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/Make-file.in altered grep -e to aid portability under
+	  Solaris (as reported by john o goyo <jgoyo@ca.inter.net>).
+	* gm2/examples/server added example of a threaded server
+	  which uses the executive, transfer and iotransfer.
+	* gm2/examples/executive/Executive added KillProcess.
+	* gm2/gm2-libs-coroutines/SysVec.mod fixed vector selection
+	  bug.
+
+2005-05-27	Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gccgm2.c fixed to detect array indices which exceed
+          sizetype.
+        * gm2/lang-specs.h fixed to propagate the -Wcpp flags though
+	  to gm2 subcomponents.
+
+2005-05-25	Michel Derosa <derosa@videotron.ca>
+
+	* applied patches to gm2/gm2.texi which describe FreeBSD
+	  build instructions.
+
+2005-05-19	Gaius Mulley <gaius@glam.ac.uk>
+
+	* rebuilt gm2/gm2-libs/configure
+	* gm2/gm2.texi added section heading for advice on building
+	  GNU Modula-2 under FreeBSD 5.3
+
+2005-05-19	Michel Derosa <derosa@videotron.ca>
+
+	* applied patches to make gm2 build on FreeBSD 5.3
+	* gm2/gm2-libs/configure.in test for signal.h and direct.h
+	* gm2/gm2-libs/gm2-libs-host.h.in test for signal.h and direct.h
+	* gm2/tools-src/createUlmSys test for signal.h and direct.h
+
+2005-05-18	Gaius Mulley <gaius@glam.ac.uk>
+
+	* testsuite/gm2/types/run/pass/varient5.mod introduced to stress
+	  variant records (equivalent to a C union for casting BYTES
+	  into a CARDINAL). Based on an idea from Michel Derosa.
+
+2005-05-17	Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gm2-compiler/M2Quads.mod modified to accept zero length strings
+	  as compatible with type CHAR.
+	* gm2/gm2-compiler/M2GenGCC.mod many modifications/refactoring to enable
+	  strings of 1 or 0 characters to be type compatible with CHAR.
+	* these fixes allow Iztok's ISO library to compile cleanly.
+
+2005-05-16	Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gm2-compiler/M2GenGCC.mod fixed to allow HIGH(ch) where ch is
+	  of type CHAR.
+	* gm2/gm2-compiler/M2GenGCC.mod fixed to allow comparison of literals
+	  against subrange types.
+	* gm2/gm2-compiler/M2GenGCC.mod fixed to allow automatic conversion
+	  of strings of 1 or 0 characters to be passed to a parameter of
+	  type CHAR.
+	* these fixes allow more of the third party tests (from Iztok)
+	  to pass.
+
+2005-05-13	Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/Make-lang.in shell invocation to use $(SHELL) and also
+	  converted bashisms into pure sh as suggested by
+	  Michel Derosa <derosa@videotron.ca>
+
+2005-05-12	Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gm2-compiler/SymbolTable.mod and gm2/gm2-compiler/P2SymBuild.mod
+	  modified to detect double declaration on import and produce useful
+	  error messages.
+	* gm2/Make-lang.in fixes to the gm2.install rule.
+	* gm2/gm2-compiler/M2Quads.mod fixed BuildStaticArray to calculate
+	  indices using INTEGER data type.
+
+2005-05-11	Gaius Mulley <gaius@glam.ac.uk>
+
+	* P2SymBuild.mod added call to CheckForEnumerationInCurrentModule
+	  to fix 5 regression tests and allow enumeration types to be
+	  visible when aliased via TYPEs and later IMPORTed.
+	  (see testsuite/gm2/pim/pass/impf.mod)
+
+2005-05-10	Gaius Mulley <gaius@glam.ac.uk>
+
+	* major changes which now allow GM2 to compile nested varient records
+	  (such as found in gm2/ulm-lib-gm2/std/RTErrors.def)
+	* added runtime regression test in testsuite/types/run/pass
+	* gm2/Make-lang.in modified to include RTErrors.mod to be built with
+	  the ulm libraries. Grammer files are built without the -l option to pge.
+	* gm2/gccgm2.c new functions gccgm2_BuildOffset1 determinePenultimateField
+	  which implement modifications to record/varient field calculation.
+	* gm2/gm2.texi contains gm2 internal documentation on how the front end
+	  symbol table represents records, field and varient records.
+	* gm2/bnf/m2-2.bnf removed commented out code.
+	* gm2/examples/map/Makefile builds the utility semantic.
+	* gm2/gm2-compiler/M2Base.mod modifications to reflect change in PutFieldRecord
+	* gm2/gm2-compiler/M2GCCDeclare.mod added debugging procedures PrintVerbose
+	  and PrintSymbol, which can be called interactively from gdb. Also fixed
+	  varient record declaration.
+	* gm2/gm2-compiler/M2GenGCC.mod fixed varient record field calculation.
+	* gm2/gm2-compiler/M2Quads.mod changed operands to OffsetOp.
+	* gm2/gm2-compiler/M2SubExp.mod changes to reflect OffsetOp change.
+	* gm2/gm2-compiler/P2SymBuild.mod changed to allow nested varient records.
+	* gm2/gm2-compiler/SymbolTable.[def, mod] changes to varient record
+	  representation. Fixed memory leak.
+	* gm2/gm2-compiler/gccgm2.def changed BuildOffset and added BuildOffset1
+	* gm2/ulm-lib-gm2/std/RTErrors.def changed parameter name to match
+	  implementation module.
+	* gm2/ulm-lib-gm2/std/RTErrors.mod fixed pointer/integer constant type clash.
+
+2005-04-11	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed examples/executive
+
+2005-03-24	Gaius Mulley <gaius@glam.ac.uk>
+
+	* included the keyword MODULE as an stop set element
+	  in gm2m and gm2l.
+
+2005-03-15	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 Release 0.44
+	* tagged CVS using gm2_0_44
+
+2005-03-14	Gaius Mulley <gaius@glam.ac.uk>
+
+	* finished tools-src/createUlmSys which builds a SYSTEM.c
+	  (from ./configure results) ULM library compatible interface.
+	* modified Make-lang.in to install the ULM libraries.
+	* added new switch -Wulm which modifies the default search
+	  path so that the ULM libraries are included.
+
+2005-01-05	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by john o goyo <jgoyo@ca.inter.net>.
+	  (testsuite/gm2/pim/run/pass/Countdown.mod)
+	* for loops are now implemented as per ISO description.
+	  GNU Modula-2 now calculates the last iteration value
+	  before the start of a loop. It then initializes the
+	  iteration value and works towards the final value,
+	  rather than testing to see whether the iteration value
+	  exceeds or preceeds the limit value (this fails when using
+	  a CARDINAL iterator and stopping at 0).
+	* added a number of run tests to exercise these changes.
+

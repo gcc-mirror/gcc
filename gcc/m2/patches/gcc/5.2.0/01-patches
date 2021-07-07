@@ -1,0 +1,319 @@
+--- gcc-5.2.0-orig/configure	2015-05-03 18:29:57.000000000 +0100
++++ gcc-5.2.0/configure	2016-04-11 13:16:18.655000792 +0100
+@@ -581,6 +581,7 @@
+ DLLTOOL_FOR_TARGET
+ AS_FOR_TARGET
+ AR_FOR_TARGET
++GM2_FOR_TARGET
+ GOC_FOR_TARGET
+ GFORTRAN_FOR_TARGET
+ GCJ_FOR_TARGET
+@@ -614,6 +615,7 @@
+ NM_FOR_BUILD
+ LD_FOR_BUILD
+ LDFLAGS_FOR_BUILD
++GM2_FOR_BUILD
+ GOC_FOR_BUILD
+ GFORTRAN_FOR_BUILD
+ GCJ_FOR_BUILD
+@@ -754,6 +756,7 @@
+ enable_libquadmath
+ enable_libquadmath_support
+ enable_libada
++enable_libgm2
+ enable_libssp
+ enable_libstdcxx
+ enable_liboffloadmic
+@@ -828,6 +831,7 @@
+ GCJ_FOR_TARGET
+ GFORTRAN_FOR_TARGET
+ GOC_FOR_TARGET
++GM2_FOR_TARGET
+ AR_FOR_TARGET
+ AS_FOR_TARGET
+ DLLTOOL_FOR_TARGET
+@@ -1479,6 +1483,7 @@
+   --disable-libquadmath-support
+                           disable libquadmath support for Fortran
+   --enable-libada         build libada directory
++  --enable-libgm2         build libgm2 directory
+   --enable-libssp         build libssp directory
+   --disable-libstdcxx     do not build libstdc++-v3 directory
+   --enable-liboffloadmic=ARG
+@@ -1601,6 +1606,8 @@
+               GFORTRAN for the target
+   GOC_FOR_TARGET
+               GOC for the target
++  GM2_FOR_TARGET
++              GM2 for the target
+   AR_FOR_TARGET
+               AR for the target
+   AS_FOR_TARGET
+@@ -2759,6 +2766,7 @@
+ 		${libgcj} \
+ 		target-libobjc \
+ 		target-libada \
++		target-libgm2 \
+ 		target-libgo"
+ 
+ # these tools are built using the target libraries, and are intended to
+@@ -3065,6 +3073,15 @@
+   noconfigdirs="$noconfigdirs gnattools"
+ fi
+ 
++# Check whether --enable-libgm2 was given.
++if test "${enable_libgm2+set}" = set; then :
++  enableval=$enable_libgm2; ENABLE_LIBGM2=$enableval
++else
++  ENABLE_LIBGM2=yes
++fi
++
++
++
+ # Check whether --enable-libssp was given.
+ if test "${enable_libssp+set}" = set; then :
+   enableval=$enable_libssp; ENABLE_LIBSSP=$enableval
+@@ -4001,6 +4018,7 @@
+   GCJ_FOR_BUILD=${GCJ_FOR_BUILD-gcj}
+   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
+   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
++  GM2_FOR_BUILD=${GM2_FOR_BUILD-gm2}
+   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
+   LD_FOR_BUILD=${LD_FOR_BUILD-ld}
+   NM_FOR_BUILD=${NM_FOR_BUILD-nm}
+@@ -4015,6 +4033,7 @@
+   GCJ_FOR_BUILD="\$(GCJ)"
+   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
+   GOC_FOR_BUILD="\$(GOC)"
++  GM2_FOR_BUILD="\$(GM2)"
+   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
+   LD_FOR_BUILD="\$(LD)"
+   NM_FOR_BUILD="\$(NM)"
+@@ -7624,6 +7643,7 @@
+ 
+ 
+ 
++
+ # Generate default definitions for YACC, M4, LEX and other programs that run
+ # on the build machine.  These are used if the Makefile can't locate these
+ # programs in objdir.
+@@ -10839,6 +10859,167 @@
+ 
+ 
+ 
++if test -n "$GM2_FOR_TARGET"; then
++  ac_cv_prog_GM2_FOR_TARGET=$GM2_FOR_TARGET
++elif test -n "$ac_cv_prog_GM2_FOR_TARGET"; then
++  GM2_FOR_TARGET=$ac_cv_prog_GM2_FOR_TARGET
++fi
++
++if test -n "$ac_cv_prog_GM2_FOR_TARGET"; then
++  for ncn_progname in gm2; do
++    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
++set dummy ${ncn_progname}; ac_word=$2
++{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
++$as_echo_n "checking for $ac_word... " >&6; }
++if test "${ac_cv_prog_GM2_FOR_TARGET+set}" = set; then :
++  $as_echo_n "(cached) " >&6
++else
++  if test -n "$GM2_FOR_TARGET"; then
++  ac_cv_prog_GM2_FOR_TARGET="$GM2_FOR_TARGET" # Let the user override the test.
++else
++as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++    for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
++    ac_cv_prog_GM2_FOR_TARGET="${ncn_progname}"
++    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
++    break 2
++  fi
++done
++  done
++IFS=$as_save_IFS
++
++fi
++fi
++GM2_FOR_TARGET=$ac_cv_prog_GM2_FOR_TARGET
++if test -n "$GM2_FOR_TARGET"; then
++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GM2_FOR_TARGET" >&5
++$as_echo "$GM2_FOR_TARGET" >&6; }
++else
++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
++$as_echo "no" >&6; }
++fi
++
++
++  done
++fi
++
++if test -z "$ac_cv_prog_GM2_FOR_TARGET" && test -n "$with_build_time_tools"; then
++  for ncn_progname in gm2; do
++    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
++$as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
++    if test -x $with_build_time_tools/${ncn_progname}; then
++      ac_cv_prog_GM2_FOR_TARGET=$with_build_time_tools/${ncn_progname}
++      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
++$as_echo "yes" >&6; }
++      break
++    else
++      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
++$as_echo "no" >&6; }
++    fi
++  done
++fi
++
++if test -z "$ac_cv_prog_GM2_FOR_TARGET"; then
++  for ncn_progname in gm2; do
++    if test -n "$ncn_target_tool_prefix"; then
++      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
++set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
++{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
++$as_echo_n "checking for $ac_word... " >&6; }
++if test "${ac_cv_prog_GM2_FOR_TARGET+set}" = set; then :
++  $as_echo_n "(cached) " >&6
++else
++  if test -n "$GM2_FOR_TARGET"; then
++  ac_cv_prog_GM2_FOR_TARGET="$GM2_FOR_TARGET" # Let the user override the test.
++else
++as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++    for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
++    ac_cv_prog_GM2_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
++    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
++    break 2
++  fi
++done
++  done
++IFS=$as_save_IFS
++
++fi
++fi
++GM2_FOR_TARGET=$ac_cv_prog_GM2_FOR_TARGET
++if test -n "$GM2_FOR_TARGET"; then
++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GM2_FOR_TARGET" >&5
++$as_echo "$GM2_FOR_TARGET" >&6; }
++else
++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
++$as_echo "no" >&6; }
++fi
++
++
++    fi
++    if test -z "$ac_cv_prog_GM2_FOR_TARGET" && test $build = $target ; then
++      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
++set dummy ${ncn_progname}; ac_word=$2
++{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
++$as_echo_n "checking for $ac_word... " >&6; }
++if test "${ac_cv_prog_GM2_FOR_TARGET+set}" = set; then :
++  $as_echo_n "(cached) " >&6
++else
++  if test -n "$GM2_FOR_TARGET"; then
++  ac_cv_prog_GM2_FOR_TARGET="$GM2_FOR_TARGET" # Let the user override the test.
++else
++as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
++for as_dir in $PATH
++do
++  IFS=$as_save_IFS
++  test -z "$as_dir" && as_dir=.
++    for ac_exec_ext in '' $ac_executable_extensions; do
++  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
++    ac_cv_prog_GM2_FOR_TARGET="${ncn_progname}"
++    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
++    break 2
++  fi
++done
++  done
++IFS=$as_save_IFS
++
++fi
++fi
++GM2_FOR_TARGET=$ac_cv_prog_GM2_FOR_TARGET
++if test -n "$GM2_FOR_TARGET"; then
++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GM2_FOR_TARGET" >&5
++$as_echo "$GM2_FOR_TARGET" >&6; }
++else
++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
++$as_echo "no" >&6; }
++fi
++
++
++    fi
++    test -n "$ac_cv_prog_GM2_FOR_TARGET" && break
++  done
++fi
++
++if test -z "$ac_cv_prog_GM2_FOR_TARGET" ; then
++  set dummy gm2
++  if test $build = $target ; then
++    GM2_FOR_TARGET="$2"
++  else
++    GM2_FOR_TARGET="${ncn_target_tool_prefix}$2"
++  fi
++else
++  GM2_FOR_TARGET="$ac_cv_prog_GM2_FOR_TARGET"
++fi
++
++
++
+ cat > conftest.c << \EOF
+ #ifdef __GNUC__
+   gcc_yay;
+@@ -14055,6 +14236,51 @@
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
+ $as_echo "host tool" >&6; }
+   else
++    # We need a cross tool
++    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
++$as_echo "pre-installed" >&6; }
++  fi
++fi
++
++{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target gm2" >&5
++$as_echo_n "checking where to find the target gm2... " >&6; }
++if test "x${build}" != "x${host}" ; then
++  if expr "x$GM2_FOR_TARGET" : "x/" > /dev/null; then
++    # We already found the complete path
++    ac_dir=`dirname $GM2_FOR_TARGET`
++    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
++$as_echo "pre-installed in $ac_dir" >&6; }
++  else
++    # Canadian cross, just use what we found
++    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
++$as_echo "pre-installed" >&6; }
++  fi
++else
++  ok=yes
++  case " ${configdirs} " in
++    *" gcc "*) ;;
++    *) ok=no ;;
++  esac
++  case ,${enable_languages}, in
++    *,gm2,*) ;;
++    *) ok=no ;;
++  esac
++  if test $ok = yes; then
++    # An in-tree tool is available and we can use it
++    GM2_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/xgm2 -B$$r/$(HOST_SUBDIR)/gcc/'
++    { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
++$as_echo "just compiled" >&6; }
++  elif expr "x$GM2_FOR_TARGET" : "x/" > /dev/null; then
++    # We already found the complete path
++    ac_dir=`dirname $GM2_FOR_TARGET`
++    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
++$as_echo "pre-installed in $ac_dir" >&6; }
++  elif test "x$target" = "x$host"; then
++    # We can use an host tool
++    GM2_FOR_TARGET='$(GM2)'
++    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
++$as_echo "host tool" >&6; }
++  else
+     # We need a cross tool
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+ $as_echo "pre-installed" >&6; }

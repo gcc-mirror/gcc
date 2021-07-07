@@ -1,0 +1,11 @@
+--- gcc-4.7.3-orig/gcc/tree-ssa-loop-im.c	2013-06-19 14:58:47.000000000 +0100
++++ gcc-4.7.3/gcc/tree-ssa-loop-im.c	2014-07-12 07:13:15.000000000 +0100
+@@ -687,7 +687,7 @@
+   hash = iterative_hash_expr (*mem, 0);
+   ref = (mem_ref_p) htab_find_with_hash (memory_accesses.refs, *mem, hash);
+ 
+-  gcc_assert (ref != NULL);
++  // gcc_assert (ref != NULL);
+   return ref;
+ }
+ 

@@ -1,0 +1,12 @@
+--- gcc-git/gcc/langhooks.h	2021-04-12 00:27:11.634099346 +0100
++++ gm2-floppsie/gcc/langhooks.h	2021-04-12 17:50:27.915232631 +0100
+@@ -611,6 +611,9 @@
+   /* Invoked before the early_finish debug hook is invoked.  */
+   void (*finalize_early_debug) (void);
+ 
++  /* Does the language substitute NEW into ALLOCATE and DISPOSE into DEALLOCATE?  */
++  bool (*new_dispose_storage_substitution) (void);
++
+   /* Whenever you add entries here, make sure you adjust langhooks-def.h
+      and langhooks.c accordingly.  */
+ };

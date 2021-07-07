@@ -1,0 +1,284 @@
+2003-12-26	Gaius Mulley <gaius@glam.ac.uk>
+
+	* increased the number of regression tests to 1332
+	* gm2 passes 1317 and fails 15
+	* many bug fixes..
+	* improved documentation, gm2.texi. Now contains
+	  a ebnf description of GNU Modula-2 extracted from
+	  bnf/m2.bnf.
+	* completed the optional final parameter argument.
+	* reimplemented the CAP standard function so that it
+	  can be used within constant expressions.
+
+2003-11-27	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed a bug in the handling of the -Wcpp option so that it uses
+	  -traditional-cpp
+	* integrated the gm2 and m2f regression tests into the GNU GCC
+          dejagnu format - all the m2f tests are now used to test gm2.
+	* started work on a minor extension to GNU Modula-2 which allows
+	  the last parameter to be optional. In turn this allows a
+	  Modula-2 implementation of the ISO module COROUTINES which is
+	  in development.
+
+2003-11-13	Gaius Mulley <gaius@glam.ac.uk>
+
+	* modified the generated .h files to be prefixed with `G' to avoid
+	  name clashes which in turn allows gm2 to be built under a vfat
+	  file system.
+
+2003-11-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* changed the flag name -Wverbose to -Wsources
+
+2003-11-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* improved array index type debugging description in gccgm2.c
+	  which allows gdb to understand that arrays are declared ARRAY
+	  [low..high] rather than ARRAY [0..high-low]
+
+2003-11-04	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug in procedure type declaration.
+
+2003-11-03	Gaius Mulley <gaius@glam.ac.uk>
+
+	* modified ProcedureBlock rule in bnf/m2.bnf, bnf/m2-[23h].bnf
+	  to comply with ISO syntax. The 'BEGIN' statement sequence is
+	  optional.
+	* updated the gm2.texi to include a description about
+	  the -Wextended-opaque option.
+
+2003-10-23	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixes to opaque type (in)compatibility for expression and assignments.
+
+2003-10-09	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed gm2 build with ./configure --enable-checking
+
+2003-10-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* introduced -Wextended-opaque which enables the GM2 extension
+	  to opaque types. This allows opaque types to be non pointer
+	  types, but requires that GM2 parse the corresponding
+	  implementation module.
+	* modified GM2 to default to the standard opaque implementation
+	  of using SYSTEM.ADDRESS as the `opaque type' outside the
+	  module of its declaration.
+	* introduced -Wverbose to allow users see the source file names
+	  for modules as they are being compiled.
+
+2003-09-30	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug in ADDADR as reported by Iztok
+	* fixed bug in exported type name clashes as reported by Iztok
+	* fixed bug with multiple type references to a SET
+	* fixed Min`basetype' to contain the type `basetype'
+	* tidied up IsReallyPointer in M2Quads.mod
+
+2003-09-25	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed -Wmakeall option.
+	* fixed CARDINAL type to have range 0..max(unsigned int)
+	  rather than 0..max(integer) as reported by Iztok.
+	* fixed set type incomparability as reported by Iztok.
+	* fixed README note about make gm2.paranoid as reported by
+          Matthias Kurz.
+	* fixed many of the example programs which were broken during
+	  the migration to gcc-3.3.1.
+	* fixed lang-specs.h to invoke new cpp.
+	* removed the M2PATH environment variable usage.
+	* added more modules to make gm2.paranoid.
+	* fixed gm2->gcc declaration of arrays.
+	* fixed infinite loop in M2GenGCC.mod and M2Optimize.mod
+	* added more regression tests.
+	* fixed Make-file.in as suggested by Matthias Kurz.
+	* fixed tools-src/makeversion and tools-src/buildpg to be
+	  more portable as suggested by Matthias Kurz.
+	* fixed examples/pthread
+
+2003-09-19	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 release 0.40
+	* brought GM2 up to date with gcc-3.3.1
+	* introduced new files gm2-common.h, gm2-common.c,
+	  gm2-lang.h, gm2-tree.h to reflect the new garbage collection
+	  mechanism.
+	* major changes to gccgm2.c to reflect migration from gcc-3.2 to
+	  gcc-3.3.1
+	* introduced gm2-compiler/M2Scope.def, gm2-compiler/M2Scope.mod
+	  to manage the quadruples which represent a particular scope
+	* major recoding of M2Code and the order that quadruples are coded
+	  into GCC trees. This in turn fixes a very serious nested
+	  procedure bug. (gm2/m2/comp/autotest/gm2/localproc.mod and
+	  convert.mod).
+	* changes to M2GCCDeclare.mod, M2GenGCC.mod, M2BasicBlock.mod
+	  to allow quadruples to be translated via outer scope to inner
+	  scope ordering.
+	* M2Code.mod is much cleaner.
+	* fixed a number of uninitialised variable errors and bad pointer
+	  errors. All caught by the extremely useful x86 utility valgrind.
+	  In turn this fixes a Redhat 9.0 build problem.
+	* fixed bugs in DynamicStrings.mod, ppg.mod, SEnvironment.mod
+	* introduced the debian package files (gm2/debian) so that .deb
+	  package (gm2) can be built.
+	* fixes to gm2 so that it can compile the University of Ulm's
+	  system modules.
+
+2003-06-01	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added the LONGCARD data type.
+	* fixed subrange declarations so that they can be prefixed
+	  by a qualident.
+	* fixed variant record for ISO syntax
+	  (gm2/m2/comp/autotest/gm2/caseiso.mod).
+	* fixed importing of an enumerated element
+	  (gm2/m2/comp/autotest/gm2/impm.mod).
+
+2003-05-27	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by Iztok Kobal
+	  (gm2/m2/comp/autotest/gm2/realbitscast.mod).
+	  Fixed cast to copy data.
+	* enabled SIZE to be invoked from constant expressions.
+
+2003-05-20	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by Iztok Kobal
+	  (gm2/m2/comp/autotest/gm2/testlength3.mod)
+	  LENGTH is now mapped onto M2RTS.Length if the parameter is
+	  not a constant at compile time.
+
+2003-05-16	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by Iztok Kobal
+	  (gm2/m2/comp/autotest/gm2/longstrimp.mod)
+	  and also (gm2/m2/comp/autotest/gm2/imp[deghij].mod)
+
+2003-05-08	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented the standard function LENGTH
+	* allowed standard functions to be called from constant expressions
+	* improved cyclic data type dependancy error messages
+	* SIZE is now only exported from SYSTEM if the switch -Wiso is absent
+	  SIZE is declared as a standard procedure if -Wiso is present
+
+2003-05-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented ISO BITSET as a standard type which takes
+	  effect when -Wiso is present on the command line.
+	* backed out garbage collection change to m2.lex
+	* fixed bugs reported by Iztok Kobal
+	  (gm2/m2/comp/autotest/gm2/[testexit.mod, bitset3.mod bits32.mod])
+
+2003-05-06	Gaius Mulley <gaius@glam.ac.uk>
+
+	* modified Storage and SysStorage modules so that the procedure
+	  DEALLOCATE assigns the pointer to NIL
+	* fixed bug reported by Iztok Kobal
+	  (gm2/m2/comp/autotest/gm2/bitset2.mod)
+
+2003-05-05	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed two bugs reported by Iztok Kobal.
+	* fixed bug in M2GCCDeclare.mod (BITSET's subrange was undeclared).
+	* added BITNUM, the subrange from which BITSET is constructed,
+	  in SYSTEM.
+	* added regression test case for this bug.
+	* also modified c.lex to use xstrdup and not strdup.
+
+2003-05-01	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added pseudo functions, CAP, ODD, ABS
+	* removed gm2-libs/Math.def which defined ABS
+
+2003-04-29	Gaius Mulley <gaius@glam.ac.uk>
+
+	* examples/pthreads cleaned up
+	* introduced ISO SYSTEM. Limitations, TSIZE only takes one parameter,
+	  and SHIFT, ROTATE are not implemented yet
+	* renamed gm2-libs/Strings to gm2-libs/DynamicStrings to avoid name
+	  clash with gm2-iso/Strings
+	* p2c modified to understand DEFINITION MODULE FOR "C"
+	* gm2-libs/libc.def modified to use DEFINITION MODULE FOR "C"
+	* gm2-iso/libc.def removed
+	* linking references to libc (in gm2/init/*init) removed
+	* gm2/tools-src/def2texi finished
+	* gm2/gm2-libs.texi built via gm2/tools-src/def2texi
+	* gm2/gm2.texi now contains library definition modules and index
+	* added -Wiso switch to gm2 driver
+
+2003-04-12	Gaius Mulley <gaius@glam.ac.uk>
+
+	* first cut of h2def released
+	* examples/pthreads introduced
+	* examples/vga.def generated by h2def
+	* fixed bug in CodeBecomes
+	* fixed constant set bug in M2GenGCC.mod
+	* updated gm2.texi to reflect introduction of h2def
+	* build mechanism tidied up. p2c is now built from the top level
+	  makefile.
+	* some portability features of p2c fixed, so that it builds
+	  cleanly under Apple Darwin
+	* many internal changes made to ppg to handle recursive ebnf
+	  rules.
+	* fixed automatic export of unqualified identifiers from a
+	  DEFINITION MODULE FOR "C"
+
+2003-02-02	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by Iztok Kobal, the gm2-iso/ChanConsts module
+	  failed to compile. Added a regression test to catch this.
+
+2003-02-01	Gaius Mulley <gaius@glam.ac.uk>
+
+	* bug fixes in error handling. In particular duplicate symbols
+	  are better handled.
+	* development checkin of the h2def tool and subsidiary modules.
+
+2003-01-20	Gaius Mulley <gaius@glam.ac.uk>
+
+	* bug fixes for gm2m and link-specs.h which allow libraries
+	  to be added with the -Wmakeall option.
+	* fixed a number of built-in definitions in Builtin.def
+	* also added MathLib0.def and MathLib0.mod to the pim libraries.
+	* fixed svga example test
+	* added long double math built-ins
+
+2003-01-17	Gaius Mulley <gaius@glam.ac.uk>
+
+	* bug fixes to the line numbering debugging info
+	  which is passed to gcc. Resulting in better gdb support.
+
+2003-01-14	Gaius Mulley <gaius@glam.ac.uk>
+
+        * added the C `double' math built-ins
+	* fixed path in Make-lang.in which caused `file not found
+	  error' during build
+	* updated documentation to show correspondance between C and
+	  M2 data types.
+	* fixed bug in M2SubExp.mod shown by indirect procedure calls
+	* fixed bug in M2Constants.mod
+	* introduced SHORTREAL data type and removed the pseudo module
+	  MATH as built-ins are handled via gcc backend.
+	* removed corresponding gm2-compiler/M2Math module.
+
+2003-01-11	Gaius Mulley <gaius@glam.ac.uk>
+
+	* changed ebnf to allow empty variant clauses in a case
+	  statement. Now complies with ISO case statement syntax.
+          (Bug reported by Iztok Kobal)
+
+2003-01-09	Gaius Mulley <gaius@glam.ac.uk>
+
+	* initial checkin of complete built-in function support
+	  to obvious C functions.
+	* gm2-libs/libc.c, gm2-libs/libc.def:: modified reference
+	  to cfree to free as suggested by John Calley
+
+2003-01-02	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by Matthias Manhart
+	  (procedure type).
+

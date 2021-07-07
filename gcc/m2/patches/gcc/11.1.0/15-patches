@@ -1,0 +1,12 @@
+--- git-gcc/gcc/jit/jit-spec.c	2021-01-27 10:18:12.722746342 +0000
++++ gm2-floppsie/gcc/jit/jit-spec.c	2021-01-27 12:58:00.842865701 +0000
+@@ -39,3 +39,9 @@
+ 
+ /* Number of extra output files that lang_specific_pre_link may generate.  */
+ int lang_specific_extra_outfiles = 0;  /* Not used for jit.  */
++
++/* lang_register_spec_functions.  Not used for jit.  */
++void
++lang_register_spec_functions (void)
++{
++}

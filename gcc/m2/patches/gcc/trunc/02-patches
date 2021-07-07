@@ -1,0 +1,64 @@
+--- gcc-versionno-orig/configure.ac	2018-04-13 16:08:32.978838666 +0100
++++ gcc-versionno/configure.ac	2018-04-14 01:29:42.341961879 +0100
+@@ -164,6 +164,7 @@
+ 		target-libffi \
+ 		target-libobjc \
+ 		target-libada \
++		target-libgm2 \
+ 		target-libgo"
+ 
+ # these tools are built using the target libraries, and are intended to
+@@ -451,6 +452,12 @@
+   noconfigdirs="$noconfigdirs gnattools"
+ fi
+ 
++AC_ARG_ENABLE(libgm2,
++[AS_HELP_STRING([--enable-libgm2], [build libgm2 directory])],
++ENABLE_LIBGM2=$enableval,
++ENABLE_LIBGM2=yes)
++
++
+ AC_ARG_ENABLE(libssp,
+ [AS_HELP_STRING([--enable-libssp], [build libssp directory])],
+ ENABLE_LIBSSP=$enableval,
+@@ -1248,6 +1255,7 @@
+   CXX_FOR_BUILD=${CXX_FOR_BUILD-g++}
+   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
+   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
++  GM2_FOR_BUILD=${GM2_FOR_BUILD-gm2}
+   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
+   LD_FOR_BUILD=${LD_FOR_BUILD-ld}
+   NM_FOR_BUILD=${NM_FOR_BUILD-nm}
+@@ -1261,6 +1269,7 @@
+   CXX_FOR_BUILD="\$(CXX)"
+   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
+   GOC_FOR_BUILD="\$(GOC)"
++  GM2_FOR_BUILD="\$(GM2)"
+   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
+   LD_FOR_BUILD="\$(LD)"
+   NM_FOR_BUILD="\$(NM)"
+@@ -3248,6 +3257,7 @@
+ AC_SUBST(DLLTOOL_FOR_BUILD)
+ AC_SUBST(GFORTRAN_FOR_BUILD)
+ AC_SUBST(GOC_FOR_BUILD)
++AC_SUBST(GM2_FOR_BUILD)
+ AC_SUBST(LDFLAGS_FOR_BUILD)
+ AC_SUBST(LD_FOR_BUILD)
+ AC_SUBST(NM_FOR_BUILD)
+@@ -3357,6 +3367,7 @@
+ NCN_STRICT_CHECK_TARGET_TOOLS(GCC_FOR_TARGET, gcc, ${CC_FOR_TARGET})
+ NCN_STRICT_CHECK_TARGET_TOOLS(GFORTRAN_FOR_TARGET, gfortran)
+ NCN_STRICT_CHECK_TARGET_TOOLS(GOC_FOR_TARGET, gccgo)
++NCN_STRICT_CHECK_TARGET_TOOLS(GM2_FOR_TARGET, gm2)
+ 
+ ACX_CHECK_INSTALLED_TARGET_TOOL(AR_FOR_TARGET, ar)
+ ACX_CHECK_INSTALLED_TARGET_TOOL(AS_FOR_TARGET, as)
+@@ -3390,6 +3401,8 @@
+ 		[gcc/gfortran -B$$r/$(HOST_SUBDIR)/gcc/], fortran)
+ GCC_TARGET_TOOL(gccgo, GOC_FOR_TARGET, GOC,
+ 		[gcc/gccgo -B$$r/$(HOST_SUBDIR)/gcc/], go)
++GCC_TARGET_TOOL(gm2, GM2_FOR_TARGET, GM2,
++		[gcc/xgm2 -B$$r/$(HOST_SUBDIR)/gcc/], gm2)
+ GCC_TARGET_TOOL(ld, LD_FOR_TARGET, LD, [ld/ld-new])
+ GCC_TARGET_TOOL(lipo, LIPO_FOR_TARGET, LIPO)
+ GCC_TARGET_TOOL(nm, NM_FOR_TARGET, NM, [binutils/nm-new])

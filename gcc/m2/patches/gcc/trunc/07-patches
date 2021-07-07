@@ -1,0 +1,29 @@
+--- gcc-versionno-orig/gcc/gcc.h	2018-04-13 16:08:34.614829306 +0100
++++ gcc-versionno/gcc/gcc.h	2018-04-14 01:29:42.501961017 +0100
+@@ -75,9 +75,17 @@
+ extern void record_temp_file (const char *, int, int);
+ extern void pfatal_with_name (const char *) ATTRIBUTE_NORETURN;
+ extern void set_input (const char *);
++extern void fe_save_switch (const char *opt, size_t n_args,
++			    const char *const *args, bool validated);
++extern void fe_B_prefix (const char *arg);
++extern void fe_add_infile (const char *infile, const char *lang);
++extern void fe_add_linker_option (const char *option);
++extern void fe_add_spec_function (const char *name, const char *(*func) (int, const char **));
+ 
+ /* Spec files linked with gcc.c must provide definitions for these.  */
+ 
++extern void lang_register_spec_functions (void);
++
+ /* Called before processing to change/add/remove arguments.  */
+ extern void lang_specific_driver (struct cl_decoded_option **,
+ 				  unsigned int *, int *);
+@@ -99,4 +107,8 @@
+ 					      void *user_data),
+ 				   void *user_data);
+ 
++/* Default setting is true, but can be overridden by the language
++   front end to prohibit the linker from being invoked.  */
++extern int allow_linker;
++
+ #endif /* ! GCC_GCC_H */

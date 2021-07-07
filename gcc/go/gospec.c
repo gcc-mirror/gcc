@@ -464,3 +464,9 @@ int lang_specific_pre_link (void)  /* Not used for Go.  */
 
 /* Number of extra output files that lang_specific_pre_link may generate.  */
 int lang_specific_extra_outfiles = 0;  /* Not used for Go.  */
+
+/* lang_register_spec_functions.  Not used for Go.  */
+void
+lang_register_spec_functions (void)
+{
+}

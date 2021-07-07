@@ -1,0 +1,25 @@
+#!/bin/sh
+
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 151 16 17 18 19 20 ; do
+   echo -n map $i
+   ./map $i > mapdir/n$i
+   if [ -f n$i ] ; then
+      ed n$i << EOFEOF >& /dev/null
+/ROOM
+i
+  
+.
+.-1
+1,.d
+w
+q
+EOFEOF
+      if diff mapdir/n$i mapdir/m$i >& /dev/null ; then
+         echo " passed"
+         rm -f mapdir/n$i
+      else
+         echo " failed"
+      fi
+   fi
+done
+

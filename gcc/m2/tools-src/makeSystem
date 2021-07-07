@@ -1,0 +1,104 @@
+#!/bin/sh
+
+# makeSystem creates a target SYSTEM.def using the appropriate dialect template.
+
+# Copyright (C) 2008-2021 Free Software Foundation, Inc.
+# Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+#
+# This file is part of GNU Modula-2.
+#
+# GNU Modula-2 is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+#
+# GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with gm2; see the file COPYING.  If not, write to the Free Software
+# Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+
+
+Usage () {
+   echo "Usage: makesystem dialectflag SYSTEM.def SYSTEM.mod librarypath compiler"
+}
+
+if [ $# -lt 6 ] ; then
+   Usage
+   exit 1
+fi
+
+DIALECT=$1
+SYSTEMDEF=$2
+SYSTEMMOD=$3
+LIBRARY=$4
+COMPILER=$5
+OUTPUTFILE=$6
+
+if [ "$COMPILER" = "" ] ; then
+    echo "parameter 5 of makeSystem is incorrect, GM2_FOR_TARGET was unset"
+    exit 1
+fi
+
+if [ "$DIALECT" != "-fiso" -a "$DIALECT" != "-fpim" ] ; then
+   Usage
+   echo "dialect must be -fiso or -fpim"
+   exit 1
+fi
+
+displayExportedTypes () {
+   n=1
+   c=0
+   for i in ${types} ; do
+      if [ $n -eq 1 ] ; then
+          n=0
+          echo -n "                 " >> ${OUTPUTFILE}
+      fi
+      echo -n "$i, " >> ${OUTPUTFILE}
+      if [ $c -eq 4 ] ; then
+          echo " " >> ${OUTPUTFILE}
+          n=1
+          c=0
+      fi
+      c=`expr $c + 1`
+   done
+   echo " " >> ${OUTPUTFILE}
+}
+
+displayBuiltinTypes () {
+   for i in ${types} ; do
+      echo "   $i ; " >> ${OUTPUTFILE}
+   done
+}
+
+displayStart () {
+   sed -e "1,/@SYSTEM_DATATYPES@/!d" < ${SYSTEMDEF} | \
+   sed -e "/@SYSTEM_DATATYPES@/d" >> ${OUTPUTFILE}
+}
+
+displayMiddle () {
+   sed -e "1,/@SYSTEM_DATATYPES@/d" < ${SYSTEMDEF} | \
+   sed -e "1,/@SYSTEM_TYPES@/!d" | \
+   sed -e "/@SYSTEM_TYPES@/d" >> ${OUTPUTFILE}
+}
+
+displayEnd () {
+   sed -e "1,/@SYSTEM_TYPES@/d" < ${SYSTEMDEF} >> ${OUTPUTFILE}
+}
+
+rm -f ${OUTPUTFILE}
+if ${COMPILER} ${DIALECT} ${LIBRARY} -fno-m2-plugin -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null 2>&1 > /dev/null ; then
+    types=`${COMPILER} ${DIALECT} ${LIBRARY} -fno-m2-plugin -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null | cut -f5 -d' '`
+    touch ${OUTPUTFILE}
+    displayStart
+    displayExportedTypes
+    displayMiddle
+    displayBuiltinTypes
+    displayEnd
+else
+    ${COMPILER} ${DIALECT} ${LIBRARY} -fno-m2-plugin -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null
+    exit $?
+fi

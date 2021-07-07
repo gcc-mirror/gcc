@@ -1,0 +1,85 @@
+(* IO.def provides Read, Write, Errors procedures mapping onto 0, 1 and 2.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE IO ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : IO
+   Date       : 3/4/86  [$Date: 2010/10/03 19:01:10 $]
+   SYSTEM     : GNU Modula-2
+   Description: provides Read, Write, Errors procedures that map onto UNIX
+                file descriptors 0, 1 and 2. This is achieved by using
+                FIO if we are in buffered mode and using libc.write
+                if not.
+   Version    : $Revision: 1.6 $
+*)
+
+EXPORT QUALIFIED Read, Write, Error,
+                 UnBufferedMode, BufferedMode,
+                 EchoOn, EchoOff ;
+
+
+PROCEDURE Read (VAR ch: CHAR) ;
+PROCEDURE Write (ch: CHAR) ;
+PROCEDURE Error (ch: CHAR) ;
+
+
+(*
+   UnBufferedMode - places file descriptor, fd, into an unbuffered mode.
+*)
+
+PROCEDURE UnBufferedMode (fd: INTEGER; input: BOOLEAN) ;
+
+
+(*
+   BufferedMode - places file descriptor, fd, into a buffered mode.
+*)
+
+PROCEDURE BufferedMode (fd: INTEGER; input: BOOLEAN) ;
+
+
+(*
+   EchoOn - turns on echoing for file descriptor, fd.  This
+            only really makes sence for a file descriptor opened
+            for terminal input or maybe some specific file descriptor
+            which is attached to a particular piece of hardware.
+*)
+
+PROCEDURE EchoOn (fd: INTEGER; input: BOOLEAN) ;
+
+
+(*
+   EchoOff - turns off echoing for file descriptor, fd.  This
+             only really makes sence for a file descriptor opened
+             for terminal input or maybe some specific file descriptor
+             which is attached to a particular piece of hardware.
+*)
+
+PROCEDURE EchoOff (fd: INTEGER; input: BOOLEAN) ;
+
+
+END IO.

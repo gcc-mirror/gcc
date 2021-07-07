@@ -1,0 +1,87 @@
+(* SymbolConversion.def mapping between m2 symbols and gcc symbols.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE SymbolConversion ;
+
+(*
+    Title      : SymbolConversion
+    Author     : Gaius Mulley
+    System     : UNIX (gm2)
+    Date       : Mon Jul 26 09:49:36 1999
+    Description: mapping between m2 symbols and gcc symbols.
+*)
+
+FROM m2tree IMPORT Tree ;
+FROM SYSTEM IMPORT WORD ;
+EXPORT QUALIFIED Mod2Gcc, AddModGcc, GccKnowsAbout, AddTemporaryKnown,
+                 RemoveTemporaryKnown, Poison, RemoveMod2Gcc ;
+
+
+(*
+   Mod2Gcc - given a modula-2 symbol, sym, return the gcc equivalent.
+*)
+
+PROCEDURE Mod2Gcc (sym: CARDINAL) : Tree ;
+
+
+(*
+   AddModGcc - adds the tuple [ sym, gcc ] into the database.
+*)
+
+PROCEDURE AddModGcc (sym: CARDINAL; gcc: Tree) ;
+
+
+(*
+   RemoveMod2Gcc - removes the gcc symbol from the lookup table.
+*)
+
+PROCEDURE RemoveMod2Gcc (sym: CARDINAL) ;
+
+
+(*
+   GccKnowsAbout - returns TRUE if gcc knows about the symbol, sym.
+*)
+
+PROCEDURE GccKnowsAbout (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   AddTemporaryKnown - adds a temporary gcc symbol against the modula-2 sym.
+*)
+
+PROCEDURE AddTemporaryKnown (sym: CARDINAL) ;
+
+
+(*
+   RemoveTemporaryKnown - removes the temporary symbol.
+*)
+
+PROCEDURE RemoveTemporaryKnown (sym: CARDINAL) ;
+
+
+(*
+   Poison - poisons a symbol.
+*)
+
+PROCEDURE Poison (sym: WORD) ;
+
+
+END SymbolConversion.

@@ -1,0 +1,14 @@
+--- git-gcc/gcc/brig/brigspec.c	2021-01-27 10:18:11.922740565 +0000
++++ gm2-floppsie/gcc/brig/brigspec.c	2021-01-27 12:58:00.838865672 +0000
+@@ -134,3 +134,11 @@
+ /* Number of extra output files that lang_specific_pre_link may generate.  */
+ 
+ int lang_specific_extra_outfiles = 0; /* Not used for Brig.  */
++
++/* lang_register_spec_functions register the Brig associated spec
++   functions.  Not used for Brig.  */
++
++void
++lang_register_spec_functions (void)
++{
++}

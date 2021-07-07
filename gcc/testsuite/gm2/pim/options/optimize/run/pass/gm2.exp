@@ -1,0 +1,109 @@
+# Copyright (C) 2003-2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# load support procs
+load_lib gm2-torture.exp
+
+gm2_set_compile_method "options_optimize"
+
+#
+# gm2_target_compile_options_optimize -- (overload the library function with our local
+#                                         copy, compile a source file)
+#
+
+proc gm2_target_compile_options_optimize { source dest type options } {
+    global srcdir;
+    global subdir;
+    global tmpdir;
+    global gluefile wrap_flags;
+    global GCC_UNDER_TEST
+    global TOOL_OPTIONS
+
+    send_log "successfully overloaded gm2_target_compile source = $source dest = $dest type = $type options = $options\n"
+    if {[target_info needs_status_wrapper] != "" && \
+	    [target_info needs_status_wrapper] != "0" && \
+	    [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=$wrap_flags"
+    }
+
+    if [target_info exists gcc,stack_size] {
+	lappend options "additional_flags=-DSTACK_SIZE=[target_info gcc,stack_size]"
+    }
+    if [target_info exists gcc,no_trampolines] {
+	lappend options "additional_flags=-DNO_TRAMPOLINES"
+    }
+    if [target_info exists gcc,no_label_values] {
+	lappend options "additional_flags=-DNO_LABEL_VALUES"
+    }
+    if [info exists TOOL_OPTIONS] {
+	lappend options "additional_flags=$TOOL_OPTIONS"
+    }
+    if [target_info exists gcc,timeout] {
+	lappend options "timeout=[target_info gcc,timeout]"
+    }
+    lappend options "compiler=$GCC_UNDER_TEST"
+
+    # firstly we compile the library file
+    send_log "about to call target_compile with ${srcdir}/gm2/pim/options/optimize/run/pass/addition.mod dest = $dest type = object options = $options\n"
+
+    set comp_output [target_compile "${srcdir}/gm2/pim/options/optimize/run/pass/addition.mod" addition.o object "$options"]
+    gm2_check_compile "${srcdir}/gm2/pim/options/optimize/run/pass/addition.mod compilation" "$options" "addition.o" $comp_output
+    send_log "$comp_output\n"
+    set comp_output [exec file addition.o]
+    send_log "$comp_output\n"
+
+    # now compile the main source file
+
+    send_log "about to call target_compile with $source $dest $type $options\n"
+    return [target_compile $source $dest $type $options]
+}
+
+set gm2src ${srcdir}/../m2
+
+gm2_init_pim "${srcdir}/gm2/pim/options/optimize/run/pass"
+gm2_link_with "-lm2pim -lm2iso -lpthread"
+
+#
+#  compile library file
+#
+
+verbose "option=$option" 1
+
+
+#
+#  now compile test cases and link to library file
+#
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/testadd.mod]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+
+    set output [exec rm -f addition.o]
+    gm2-torture-execute $testcase "" "pass"
+    set output [exec rm -f addition.o]
+}
+
+gm2_set_compile_method "default"

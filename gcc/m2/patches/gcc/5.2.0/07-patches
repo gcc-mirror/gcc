@@ -1,0 +1,29 @@
+--- gcc-5.2.0-orig/gcc/gcc.h	2015-02-03 17:19:58.000000000 +0000
++++ gcc-5.2.0/gcc/gcc.h	2016-04-11 13:16:18.663000792 +0100
+@@ -69,9 +69,17 @@
+ extern void record_temp_file (const char *, int, int);
+ extern void pfatal_with_name (const char *) ATTRIBUTE_NORETURN;
+ extern void set_input (const char *);
++extern void fe_save_switch (const char *opt, size_t n_args,
++			    const char *const *args, bool validated);
++extern void fe_B_prefix (const char *arg);
++extern void fe_add_infile (const char *infile, const char *lang);
++extern void fe_add_linker_option (const char *option);
++extern void fe_add_spec_function (const char *name, const char *(*func) (int, const char **));
+ 
+ /* Spec files linked with gcc.c must provide definitions for these.  */
+ 
++extern void lang_register_spec_functions (void);
++
+ /* Called before processing to change/add/remove arguments.  */
+ extern void lang_specific_driver (struct cl_decoded_option **,
+ 				  unsigned int *, int *);
+@@ -93,4 +101,8 @@
+ 					      void *user_data),
+ 				   void *user_data);
+ 
++/* Default setting is true, but can be overridden by the language
++   front end to prohibit the linker from being invoked.  */
++extern int allow_linker;
++
+ #endif /* ! GCC_GCC_H */

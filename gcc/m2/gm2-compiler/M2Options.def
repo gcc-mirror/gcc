@@ -1,0 +1,666 @@
+(* M2Options.def initializes the user options.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Options ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2Options
+   Date       : 27/5/87  [$Date: 2013/08/14 20:39:40 $]
+   SYSTEM     : UNIX (GNU Modula-2)
+   Description: Initializes the user options in the Modula-2 compiler.
+   Version    : $Revision: 1.31 $
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM DynamicStrings IMPORT String ;
+FROM m2linemap IMPORT location_t ;
+
+EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
+                 SetCheckAll, SetVerboseUnbounded, SetQuiet, SetCpp, GetCpp,
+                 SetMakeall, SetMakeall0, SetIncludePath, SetAutoInit,
+                 SetUnboundedByReference,
+                 SetSearchPath, SetISO, SetPIM, SetPIM2, SetPIM3, SetPIM4,
+                 SetPositiveModFloor, SetCompilerDebugging, SetExceptions,
+                 SetStudents, SetPedantic, SetPedanticParamNames, SetPedanticCast,
+                 SetExtendedOpaque, SetXCode, SetQuadDebugging, SetSources,
+                 SetDumpSystemExports,
+                 SetSwig, DisplayVersion, SetOptimizing, SetForcedLocation,
+                 SetCC1Quiet, SetWholeProgram, SetDebugTraceQuad, SetDebugTraceAPI,
+                 SetVerbose, SetM2g, GetM2g,
+		 GetISO, GetPIM, GetPIM2, GetPIM3, GetPIM4,
+		 GetPositiveModFloor,
+		 SetFloatValueCheck, GetFloatValueCheck,
+		 SetWholeValueCheck, GetWholeValueCheck,
+                 SetLowerCaseKeywords,
+                 SetIndex, SetRange, SetWholeDiv, SetStrictTypeChecking,
+
+                 Iso, Pim, Pim2, Pim3, Pim4,
+                 PositiveModFloorDiv,
+                 Pedantic, Verbose, Statistics,
+                 UnboundedByReference, VerboseUnbounded,
+                 Profiling, Coding, Optimizing,
+                 OptimizeBasicBlock, OptimizeUncalledProcedures,
+                 OptimizeCommonSubExpressions,
+                 StudentChecking, WholeProgram,
+                 NilChecking,
+                 WholeDivChecking, WholeValueChecking,
+                 IndexChecking, RangeChecking,
+                 ReturnChecking, CaseElseChecking,
+                 AutoInit,
+                 VariantValueChecking,
+                 UnusedVariableChecking, UnusedParameterChecking,
+                 SetUnusedVariableChecking, SetUnusedParameterChecking,
+                 Quiet, LineDirectives, StrictTypeChecking,
+                 CPreProcessor, Xcode, ExtendedOpaque,
+                 LowerCaseKeywords,
+                 PedanticParamNames, PedanticCast,
+      	       	 DisplayQuadruples, DebugTraceQuad, DebugTraceAPI,
+                 CompilerDebugging, GenerateDebugging, GenerateLineDebug,
+                 DumpSystemExports, GenerateSwig, Exceptions,
+                 OverrideLocation, FinaliseOptions,
+                 DebugBuiltins, setdefextension, setmodextension,
+                 SetStatistics, SetWall,
+                 CppProg, CppArg, CppCommandLine, CppRemember,
+		 SetDebugFunctionLineNumbers, DebugFunctionLineNumbers,
+		 SetGenerateStatementNote, GenerateStatementNote ;
+
+
+VAR
+   Iso,                          (* -fiso use ISO SYSTEM.def                 *)
+   Pim,                          (* -fpim use PIM [234] SYSTEM.def           *)
+   Pim2,                         (* -fpim2 use strict rules.                 *)
+   Pim3,                         (* -fpim3 use strict rules.                 *)
+   Pim4,                         (* -fpim4 use strict rules.                 *)
+   PositiveModFloorDiv,          (* force PIM4 behaviour for DIV and MOD     *)
+   CompilerDebugging,            (* -fd internal debugging messages          *)
+   DebugTraceQuad,               (* -fdebug-trace-quad                       *)
+   DebugTraceAPI,                (* -fdebug-trace-api                        *)
+   GenerateDebugging,            (* -g option to generate info for gdb/dbx   *)
+   GenerateLineDebug,            (* -gline to generate line debugging.       *)
+   Verbose,                      (* -verbose produce verbose error messages. *)
+   Pedantic,                     (* -pedantic be pedantic on error checking. *)
+   PedanticParamNames,           (* -Wpedantic-param-names                   *)
+   PedanticCast,                 (* -Wpedantic-cast warns if sizes differ.   *)
+   Statistics,                   (* -fstatistics information about code      *)
+   StudentChecking,              (* -Wstudents checks for common student errs*)
+   DisplayQuadruples,            (* -Wq option will display quadruples.      *)
+   UnboundedByReference,         (* -funbounded-by-reference                 *)
+   VerboseUnbounded,             (* -Wverbose-unbounded                      *)
+   OptimizeUncalledProcedures,   (* -Ouncalled removes uncalled procedures   *)
+   OptimizeBasicBlock,           (* -Obb create basic blocks and optimize.   *)
+   OptimizeCommonSubExpressions, (* -Ocse optimize common subexpressions     *)
+   WholeProgram,                 (* -fwhole-program optimization.            *)
+   NilChecking,                  (* -fnil makes compiler test for pointer    *)
+                                 (* NIL                                      *)
+   WholeDivChecking,             (* -fwholediv produces code to raise an     *)
+                                 (* exception if a whole number divide by    *)
+                                 (* zero occurs.                             *)
+   WholeValueChecking,           (* -fwholevalue produces code to raise an   *)
+                                 (* exception if a whole value variable is   *)
+                                 (* about to exceed the type limits.         *)
+   FloatValueChecking,           (* -ffloatvalue produces code to raise an   *)
+                                 (* exception if a floating point variable   *)
+                                 (* is about to exceed the type limits.      *)
+   IndexChecking,                (* -findex array bounds checking.           *)
+   RangeChecking,                (* -frange assignment, set values,          *)
+                                 (* constructor values in range.             *)
+   ReturnChecking,               (* -freturn checks that functions always    *)
+                                 (* exit with a RETURN statement.            *)
+   CaseElseChecking,             (* -fcase checks program does not need an   *)
+                                 (* else statement within an case statement  *)
+                                 (* when the user omits one                  *)
+   VariantValueChecking,         (* should we check all values are present   *)
+                                 (* in a variant record?  True for ISO and   *)
+                                 (* false for PIM.                           *)
+   Quiet,                        (* -fquiet option specified.                *)
+   LineDirectives,               (* should compiler understand preprocessor  *)
+                                 (* # linenumber "filename" markers?         *)
+   StrictTypeChecking,           (* -fm2-strict-type experimental checker.   *)
+   CPreProcessor,                (* must we run the cpp on the source?       *)
+   Xcode,                        (* should errors follow Xcode format?       *)
+   ExtendedOpaque,               (* do we allow non pointer opaque types?    *)
+   DumpSystemExports,            (* print all inbuilt system items?          *)
+   GenerateSwig,                 (* should we generate a swig interface file?*)
+   Exceptions,                   (* should we generate exception code?       *)
+   UnusedVariableChecking,       (* should we warn about unused variables?   *)
+   UnusedParameterChecking,      (* should we warn about unused parameters?  *)
+   LowerCaseKeywords,            (* should keywords in errors be in lower?   *)
+   DebugBuiltins,                (* should we always call a real function?   *)
+   AutoInit,                     (* -fauto-init assigns pointers to NIL.     *)
+   ForcedLocation,
+   DebugFunctionLineNumbers,
+   GenerateStatementNote,
+   Optimizing,
+   Coding,
+   Profiling         : BOOLEAN ;
+
+
+(*
+   DisplayVersion - displays the version of the compiler.
+*)
+
+PROCEDURE DisplayVersion (mustExit: BOOLEAN) ;
+
+
+(*
+   SetWholeProgram - sets the WholeProgram flag (-fwhole-program).
+*)
+
+PROCEDURE SetWholeProgram (value: BOOLEAN) ;
+
+
+(*
+   SetAutoInit - set the auto initialization flag to value.  If the value
+                 is true then all pointers are automatically
+                 initialized to NIL.
+*)
+
+PROCEDURE SetAutoInit (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetReturnCheck - set return statement checking in procedure functions
+                    to value.
+*)
+
+PROCEDURE SetReturnCheck (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetNilCheck - set access through NIL violation runtime checking to value.
+*)
+
+PROCEDURE SetNilCheck (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetCaseCheck - set else case checking to, value.
+*)
+
+PROCEDURE SetCaseCheck (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetCheckAll - set all runtime checking to, value.
+*)
+
+PROCEDURE SetCheckAll (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetVerboseUnbounded - sets the VerboseUnbounded flag to, value.
+*)
+
+PROCEDURE SetVerboseUnbounded (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetQuiet - sets the quiet flag to, value.
+*)
+
+PROCEDURE SetQuiet (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetCC1Quiet - sets the cc1quiet flag to, value.
+*)
+
+PROCEDURE SetCC1Quiet (value: BOOLEAN) ;
+
+
+(*
+   SetCpp -
+*)
+
+PROCEDURE SetCpp (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   GetCpp - returns TRUE if the C preprocessor was used.
+*)
+
+PROCEDURE GetCpp () : BOOLEAN ;
+
+
+(*
+   SetM2g - set the -fm2-g flag.
+*)
+
+PROCEDURE SetM2g (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   GetM2g - returns TRUE if the -fm2-g flags was used.
+*)
+
+PROCEDURE GetM2g () : BOOLEAN ;
+
+
+(*
+   SetLowerCaseKeywords - set the lower case keyword flag and return the result.
+*)
+
+PROCEDURE SetLowerCaseKeywords (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetMakeall -
+*)
+
+PROCEDURE SetMakeall (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetMakeall0 -
+*)
+
+PROCEDURE SetMakeall0 (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetIncludePath -
+*)
+
+PROCEDURE SetIncludePath (arg: ADDRESS) : BOOLEAN ;
+
+
+(*
+   SetUnboundedByReference -
+*)
+
+PROCEDURE SetUnboundedByReference (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetSearchPath -
+*)
+
+PROCEDURE SetSearchPath (arg: ADDRESS) ;
+
+
+(*
+   SetISO -
+*)
+
+PROCEDURE SetISO (value: BOOLEAN) ;
+
+
+(*
+   SetPIM -
+*)
+
+PROCEDURE SetPIM (value: BOOLEAN) ;
+
+
+(*
+   SetPIM2 -
+*)
+
+PROCEDURE SetPIM2 (value: BOOLEAN) ;
+
+
+(*
+   SetPIM3 -
+*)
+
+PROCEDURE SetPIM3 (value: BOOLEAN) ;
+
+
+(*
+   SetPIM4 -
+*)
+
+PROCEDURE SetPIM4 (value: BOOLEAN) ;
+
+
+(*
+   SetPositiveModFloor -
+*)
+
+PROCEDURE SetPositiveModFloor (value: BOOLEAN) ;
+
+
+(*
+   SetWholeDiv - sets the whole division flag.
+*)
+
+PROCEDURE SetWholeDiv (value: BOOLEAN) ;
+
+
+(*
+   SetIndex - sets the runtime array index checking flag.
+*)
+
+PROCEDURE SetIndex (value: BOOLEAN) ;
+
+
+(*
+   SetRange -  sets the runtime range checking flag.
+*)
+
+PROCEDURE SetRange (value: BOOLEAN) ;
+
+
+(*
+   SetExceptions -
+*)
+
+PROCEDURE SetExceptions (value: BOOLEAN) ;
+
+
+(*
+   SetStudents -
+*)
+
+PROCEDURE SetStudents (value: BOOLEAN) ;
+
+
+(*
+   SetPedantic -
+*)
+
+PROCEDURE SetPedantic (value: BOOLEAN) ;
+
+
+(*
+   SetPedanticParamNames -
+*)
+
+PROCEDURE SetPedanticParamNames (value: BOOLEAN) ;
+
+
+(*
+   SetPedanticCast -
+*)
+
+PROCEDURE SetPedanticCast (value: BOOLEAN) ;
+
+
+(*
+   SetExtendedOpaque -
+*)
+
+PROCEDURE SetExtendedOpaque (value: BOOLEAN) ;
+
+
+(*
+   SetXCode -
+*)
+
+PROCEDURE SetXCode (value: BOOLEAN) ;
+
+
+(*
+   SetCompilerDebugging - turn on internal compiler debugging.
+*)
+
+PROCEDURE SetCompilerDebugging (value: BOOLEAN) ;
+
+
+(*
+   SetQuadDebugging - display the quadruples (internal debugging).
+*)
+
+PROCEDURE SetQuadDebugging (value: BOOLEAN) ;
+
+
+(*
+   SetDebugTraceQuad -
+*)
+
+PROCEDURE SetDebugTraceQuad (value: BOOLEAN) ;
+
+
+(*
+   SetDebugTraceAPI -
+*)
+
+PROCEDURE SetDebugTraceAPI (value: BOOLEAN) ;
+
+
+(*
+   SetDebugFunctionLineNumbers - turn DebugFunctionLineNumbers on/off
+                                 (used internally for debugging).
+*)
+
+PROCEDURE SetDebugFunctionLineNumbers (value: BOOLEAN) ;
+
+
+(*
+   SetGenerateStatementNote - turn on generation of nops if necessary
+                              to generate pedalogical single stepping.
+*)
+
+PROCEDURE SetGenerateStatementNote (value: BOOLEAN) ;
+
+
+(*
+   SetSources -
+*)
+
+PROCEDURE SetSources (value: BOOLEAN) ;
+
+
+(*
+   SetDumpSystemExports -
+*)
+
+PROCEDURE SetDumpSystemExports (value: BOOLEAN) ;
+
+
+(*
+   SetSwig -
+*)
+
+PROCEDURE SetSwig (value: BOOLEAN) ;
+
+
+(*
+   SetOptimizing -
+*)
+
+PROCEDURE SetOptimizing (value: CARDINAL) ;
+
+
+(*
+   OverrideLocation - possibly override the location value, depending upon
+                      whether the -flocation= option was used.
+*)
+
+PROCEDURE OverrideLocation (location: location_t) : location_t ;
+
+
+(*
+   SetForcedLocation - sets the location for the lifetime of this compile to, location.
+                       This is primarily an internal debugging switch.
+*)
+
+PROCEDURE SetForcedLocation (location: location_t) ;
+
+
+(*
+   SetUnusedVariableChecking - assigns the UnusedVariableChecking to value.
+*)
+
+PROCEDURE SetUnusedVariableChecking (value: BOOLEAN) ;
+
+
+(*
+   SetUnusedParameterChecking - assigns the UnusedParameterChecking to value.
+*)
+
+PROCEDURE SetUnusedParameterChecking (value: BOOLEAN) ;
+
+
+(*
+   SetStrictTypeChecking - assigns the StrictTypeChecking flag to value.
+*)
+
+PROCEDURE SetStrictTypeChecking (value: BOOLEAN) ;
+
+
+(*
+   setdefextension -
+*)
+
+PROCEDURE setdefextension (arg: ADDRESS) ;
+
+
+(*
+   setmodextension -
+*)
+
+PROCEDURE setmodextension (arg: ADDRESS) ;
+
+
+(*
+   SetStatistics - turn on/off generate of compile time statistics.
+*)
+
+PROCEDURE SetStatistics (on: BOOLEAN) ;
+
+
+(*
+   SetVerbose - set the Verbose flag to, value.  It returns TRUE.
+*)
+
+PROCEDURE SetVerbose (value: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   CppProg - sets the cpp program to be, program.
+*)
+
+PROCEDURE CppProg (program: ADDRESS) ;
+
+
+(*
+   CppArg - sets the option and arg in the cpp command line.
+*)
+
+PROCEDURE CppArg (opt, arg: ADDRESS; joined: BOOLEAN) ;
+
+
+(*
+   CppCommandLine - returns the Cpp command line and all arguments.
+*)
+
+PROCEDURE CppCommandLine () : String ;
+
+
+(*
+   CppRemember - remember a string, s, as a cpp related argument.
+                 The string, s, is not garbage collected.
+*)
+
+PROCEDURE CppRemember (s: String) ;
+
+
+(*
+   GetISO - return TRUE if -fiso was present on the command line.
+*)
+
+PROCEDURE GetISO () : BOOLEAN ;
+
+
+(*
+   GetPIM - return TRUE if -fpim was present on the command line.
+*)
+
+PROCEDURE GetPIM () : BOOLEAN ;
+
+
+(*
+   GetPIM2 - return TRUE if -fpim2 was present on the command line.
+*)
+
+PROCEDURE GetPIM2 () : BOOLEAN ;
+
+
+(*
+   GetPIM3 - return TRUE if -fpim3 was present on the command line.
+*)
+
+PROCEDURE GetPIM3 () : BOOLEAN ;
+
+
+(*
+   GetPIM4 - return TRUE if -fpim4 was present on the command line.
+*)
+
+PROCEDURE GetPIM4 () : BOOLEAN ;
+
+
+(*
+   GetPositiveModFloor - return TRUE if -fpositive-mod-floor was present
+                         on the command line.
+*)
+
+PROCEDURE GetPositiveModFloor () : BOOLEAN ;
+
+
+(*
+   GetFloatValueCheck - return TRUE if -ffloatvalue was present on the
+                        command line.
+*)
+
+PROCEDURE GetFloatValueCheck () : BOOLEAN ;
+
+
+(*
+   SetFloatValueCheck - set depending upon the -ffloatvalue.
+*)
+
+PROCEDURE SetFloatValueCheck (value: BOOLEAN) ;
+
+
+(*
+   GetWholeValueCheck - return TRUE if -fwholevalue was present on the
+                        command line.
+*)
+
+PROCEDURE GetWholeValueCheck () : BOOLEAN ;
+
+
+(*
+   SetWholeValueCheck - set depending upon the -fwholevalue.
+*)
+
+PROCEDURE SetWholeValueCheck (value: BOOLEAN) ;
+
+
+(*
+   SetWall - set all warnings to, value.
+*)
+
+PROCEDURE SetWall (value: BOOLEAN) ;
+
+
+(*
+   FinaliseOptions - once all options have been parsed we set any inferred
+                     values.
+*)
+
+PROCEDURE FinaliseOptions ;
+
+
+END M2Options.

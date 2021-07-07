@@ -1,0 +1,2 @@
+This directory contains the hand built C wrappers required to allow the
+libraries of mc to access the underlying host operating system.

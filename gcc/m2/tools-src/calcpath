@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# calcpath return a path which is $1/$2/$3 when $2 is relative and $2/$3 if absolute.
+
+# Copyright (C) 2021 Free Software Foundation, Inc.
+# Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+#
+# This file is part of GNU Modula-2.
+#
+# GNU Modula-2 is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any later
+# version.
+#
+# GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with gm2; see the file COPYING.  If not, write to the Free Software
+# Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+
+
+Usage () {
+   echo "Usage: calcpath pathcomponent1 pathcomponent2 subdir"
+   echo -n "  if pathcomponent1 is relative then pathcomponent1/pathcomponet2/subdir is"
+   echo " returned"
+   echo "  otherwise pathcomponet2/subdir is returned"
+   echo "  the path is checked for legality in subdir."
+}
+
+
+if [ $# -eq 3 ]; then
+   if [ "$(echo $2 | cut -b 1)" = "." ] ; then
+       # relative path
+       the_path=$1/$2/$3
+   else
+       the_path=$2/$3
+   fi
+   cd $3
+   if realpath -e ${the_path} > /dev/null ; then
+       echo ${the_path}
+   else
+       echo "calcpath: error ${the_path} is not a valid path in subdirectory $3" 1>&2
+       exit 1
+   fi
+else
+   Usage
+   exit 1
+fi

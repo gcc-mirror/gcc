@@ -1,0 +1,124 @@
+(* RealInOut.def provides a compatible RealInOut PIM 234 module.
+
+Copyright (C) 2004-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RealInOut ;
+
+EXPORT QUALIFIED SetNoOfDecimalPlaces,
+                 ReadReal, WriteReal, WriteRealOct,
+                 ReadLongReal, WriteLongReal, WriteLongRealOct,
+                 ReadShortReal, WriteShortReal, WriteShortRealOct,
+                 Done ;
+
+CONST
+   DefaultDecimalPlaces = 6 ;
+
+VAR
+   Done: BOOLEAN ;
+
+
+(*
+   SetNoOfDecimalPlaces - number of decimal places WriteReal and
+                          WriteLongReal should emit.  This procedure
+                          can be used to override the default
+                          DefaultDecimalPlaces constant.
+*)
+
+PROCEDURE SetNoOfDecimalPlaces (places: CARDINAL) ;
+
+
+(*
+   ReadReal - reads a real number, legal syntaxes include:
+              100, 100.0, 100e0, 100E0, 100E-1, E2, +1E+2, 1e+2
+*)
+
+PROCEDURE ReadReal (VAR x: REAL) ;
+
+
+(*
+   WriteReal - writes a real to the terminal. The real number
+               is right justified and, n, is the minimum field
+               width.
+*)
+
+PROCEDURE WriteReal (x: REAL; n: CARDINAL) ;
+
+
+(*
+   WriteRealOct - writes the real to terminal in octal words.
+*)
+
+PROCEDURE WriteRealOct (x: REAL) ;
+
+
+(*
+   ReadLongReal - reads a LONGREAL number, legal syntaxes include:
+                  100, 100.0, 100e0, 100E0, 100E-1, E2, +1E+2, 1e+2
+*)
+
+PROCEDURE ReadLongReal (VAR x: LONGREAL) ;
+
+
+(*
+   WriteLongReal - writes a LONGREAL to the terminal. The real number
+                   is right justified and, n, is the minimum field
+                   width.
+*)
+
+PROCEDURE WriteLongReal (x: LONGREAL; n: CARDINAL) ;
+
+
+(*
+   WriteLongRealOct - writes the LONGREAL to terminal in octal words.
+*)
+
+PROCEDURE WriteLongRealOct (x: LONGREAL) ;
+
+
+(*
+   ReadShortReal - reads a SHORTREAL number, legal syntaxes include:
+                   100, 100.0, 100e0, 100E0, 100E-1, E2, +1E+2, 1e+2
+*)
+
+PROCEDURE ReadShortReal (VAR x: SHORTREAL) ;
+
+
+(*
+   WriteShortReal - writes a SHORTREAL to the terminal. The real number
+                    is right justified and, n, is the minimum field
+                    width.
+*)
+
+PROCEDURE WriteShortReal (x: SHORTREAL; n: CARDINAL) ;
+
+
+(*
+   WriteShortRealOct - writes the SHORTREAL to terminal in octal words.
+*)
+
+PROCEDURE WriteShortRealOct (x: SHORTREAL) ;
+
+
+END RealInOut.

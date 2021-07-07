@@ -1,0 +1,11 @@
+--- gcc-4.1.2/gcc/config/i386/i386.c-was	2008-05-06 12:42:44.000000000 +0100
++++ gcc-4.1.2/gcc/config/i386/i386.c	2008-05-06 12:43:13.000000000 +0100
+@@ -16666,7 +16666,7 @@
+     {
+       fprintf (file, "\tcall LPC$%d\nLPC$%d:\tpopl %%eax\n", label, label);
+       fprintf (file, "\tmovl %s-LPC$%d(%%eax),%%edx\n", lazy_ptr_name, label);
+-      fprintf (file, "\tjmp %%edx\n");
++      fprintf (file, "\tjmp *%%edx\n");
+     }
+   else
+     fprintf (file, "\tjmp *%s\n", lazy_ptr_name);

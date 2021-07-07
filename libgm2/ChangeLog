@@ -1,0 +1,483 @@
+2021-06-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.am:  renamed getopt.c to cgetopt.c.
+
+2021-05-29      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.in:  (rebuilt).
+	* aclocal.m4:  (rebuilt).
+	* configure:  (rebuilt).
+	* configure.ac:  tidied up messages.  Removed android
+	from the list of supported hosts.  Corrected a comment
+	* libm2pim/Makefile.am:  conditionally build.
+	* libm2cor/Makefile.am:  conditionally build.
+	* libm2log/Makefile.am:  conditionally build.
+	* libm2iso/Makefile.am:  conditionally build.
+	* libm2cor/Makefile.in:  (rebuilt).
+	* libm2iso/Makefile.in:  (rebuilt).
+	* libm2log/Makefile.in:  (rebuilt).
+	* libm2min/Makefile.in:  (rebuilt).
+	* libm2pim/Makefile.in:  (rebuilt).
+
+2021-05-28      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.in:  (rebuilt).
+	* aclocal.m4:  (rebuilt).
+	* configure:  (rebuilt).
+	* configure.ac:  introduce checks for supported host
+	operating system and also known detect target architectures
+	which are currently restricted to minimal runtime libraries.
+	* libm2cor/Makefile.in:  (rebuilt).
+	* libm2iso/Makefile.in:  (rebuilt).
+	* libm2log/Makefile.in:  (rebuilt).
+	* libm2min/Makefile.in:  (rebuilt).
+	* libm2pim/Makefile.in:  (rebuilt).
+
+2021-02-12      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2iso/RTco.c:  (threadSem) new declaration
+        and implmentation of thread semaphores used internally by
+        the m2 runtime system.
+
+2021-01-13      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.am:  updated dates.
+	* aclocal.m4:  (rebuilt).
+	* autogen.sh:  updated dates.
+	* configure:  (rebuilt).
+	* configure.ac:  updated dates.
+	* libm2cor/KeyBoardLEDs.c:  updated dates.
+	* libm2cor/Makefile.am:  updated dates.
+	* libm2iso/ChanConsts.h:  updated dates.
+	* libm2iso/ErrnoCategory.c:  updated dates.
+	* libm2iso/Makefile.am:  updated dates.
+	* libm2iso/RTco.c:  updated dates.
+	* libm2iso/wrapsock.c:  updated dates.
+	* libm2iso/wraptime.c:  updated dates.
+	* libm2log/Break.c:  updated dates.
+	* libm2log/Makefile.am:  updated dates.
+	* libm2min/Makefile.am:  updated dates.
+	* libm2min/libc.c:  updated dates.
+	* libm2pim/Makefile.am:  updated dates.
+	* libm2pim/Selective.c:  updated dates.
+	* libm2pim/SysExceptions.c:  updated dates.
+	* libm2pim/UnixArgs.c:  updated dates.
+	* libm2pim/dtoa.c:  updated dates.
+	* libm2pim/errno.c:  updated dates.
+	* libm2pim/getopt.c:  updated dates.
+	* libm2pim/ldtoa.c:  updated dates.
+	* libm2pim/sckt.c:  updated dates.
+	* libm2pim/target.c:  updated dates.
+	* libm2pim/termios.c:  updated dates.
+	* libm2pim/wrapc.c:  updated dates.
+
+2020-11-20      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.in:  (rebuilt).
+	* aclocal.m4:  (rebuilt).
+	* configure:  (rebuilt).
+	* configure.ac:  (libtool_VERSION=17.0.0)
+
+2020-06-18      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.in:  (rebuilt).
+	* aclocal.m4:  (rebuilt).
+	* autogen.sh:  execute automake including dependencies.
+	* configure:  (rebuilt).
+	* libm2cor/Makefile.in:  (rebuilt).
+	* libm2iso/Makefile.in:  (rebuilt).
+	* libm2log/Makefile.am:  SYSTEM.def is a dependency using
+	  BUILT_SOURCES.
+	* libm2log/Makefile.in:  (rebuilt).
+	* libm2min/Makefile.in:  (rebuilt).
+	* libm2pim/Makefile.in:  (rebuilt).
+
+2020-06-15      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2pim/Makefile.am:  added SYSTEM.def as a dependency.
+	* libm2log/Makefile.am:  added SYSTEM.def as a dependency.
+
+2020-06-11      Matthias Klose <doko@ubuntu.com>
+
+	* Makefile.am:  reordered libraries.
+	* Makefile.in:  (rebuilt).
+	* libm2pim/Makefile.am:  (libm2pim_la_LIBADD) added
+          definition.
+	* libm2pim/Makefile.in:  (rebuilt).
+
+2020-05-01      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2cor/KeyBoardLEDs.c:  include sys/ioctl.h
+          and stdio.h to fix implicit declarations of ioctl and
+	  perror.
+	* libm2iso/RTco.c:   include <sys/select.h>.
+	* libm2pim/SysExceptions.c:  (HAVE_STDIO_H) checked
+	  and stdio.h included to fix perror implicit declaration.
+
+2020-04-29      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2pim/wrapc.c:  (HAVE_SYS_TYPES_H) checked to include
+          sys/types.h.  (HAVE_TIME_H) checked to include time.h.
+          Fixes missing prototype errors.  (HAVE_UNISTD_H) checked
+	  to include unistd.h to fix getuid missing prototype.
+
+2020-01-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2min/libc.c:  (exit) noreturn added.
+	  (abort) noreturn added.
+
+2019-12-10      Matthias Klose <doko@ubuntu.com>
+
+	* libm2cor/Makefile.am:  (libsubdir) corrected using
+	  target_alias.
+	* libm2iso/Makefile.am:  (libsubdir) corrected using
+	  target_alias.
+	* libm2log/Makefile.am:  (libsubdir) corrected using
+	  target_alias.
+	* libm2min/Makefile.am:  (libsubdir) corrected using
+	  target_alias.
+	* libm2pim/Makefile.am:  (libsubdir) corrected using
+	  target_alias.
+	* libm2cor/Makefile.in:  regenerated.
+	* libm2iso/Makefile.in:  regenerated.
+	* libm2log/Makefile.in:  regenerated.
+	* libm2min/Makefile.in:  regenerated.
+	* libm2pim/Makefile.in:  regenerated.
+
+2019-12-10      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2iso/RTco.c:  corrected include files
+          for target building.
+
+2019-12-09      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* configure.ac:  remove reference to config dir.
+          (ACX_NONCANONICAL_TARGET) removed.
+	* libm2cor/Makefile.in:  regenerated.
+	* libm2iso/Makefile.in:  regenerated.
+	* libm2log/Makefile.in:  regenerated.
+	* libm2min/Makefile.in:  regenerated.
+	* libm2pim/Makefile.in:  regenerated.
+	* configure.ac:  (LT_INIT) used instead of AM_PROG_LIBTOOL.
+	* libm2cor/Makefile.in:  regenerated.
+	* libm2iso/Makefile.in:  regenerated.
+	* libm2log/Makefile.in:  regenerated.
+	* libm2min/Makefile.in:  regenerated.
+	* libm2pim/Makefile.in:  regenerated.
+
+2019-12-04      Matthias Klose <doko@ubuntu.com>
+
+	* Makefile.in:  regenerated.
+	* aclocal.m4:  regenerated from automake-1.15.1.
+	* libm2cor/Makefile.am:  added -version-info.
+	* libm2cor/Makefile.in:  regenerated.
+	* libm2iso/Makefile.am:  added -version-info.
+	* libm2iso/Makefile.in:  regenerated.
+	* libm2log/Makefile.am:  added -version-info.
+	* libm2log/Makefile.in:  regenerated.
+	* libm2min/Makefile.am:  added -version-info.
+	* libm2min/Makefile.in:  regenerated.
+	* libm2pim/Makefile.am:  added -version-info.
+	* libm2pim/Makefile.in:  regenerated.
+
+2019-12-03      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2min/Makefile.am:  (M2LIBDIR) corrected
+          destination directory to m2/m2min.
+
+2019-11-19      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* multilib fixes
+	* Makefile.am:  (MULTIBUILDTOP) propagate.
+	* Makefile.in:  (regenerated).
+	* configure:  (regenerated).
+	* configure.ac:  (ACX_NONCANONICAL_TARGET) removed.
+	* libm2cor/Makefile.am:  (MULTIBUILDTOP) propagate.
+	* libm2cor/Makefile.in:  (regenerated).
+	* libm2iso/Makefile.am:  (MULTIBUILDTOP) propagate.
+	* libm2iso/Makefile.in:  (regenerated).
+	* libm2log/Makefile.am:  (MULTIBUILDTOP) propagate.
+	* libm2log/Makefile.in:  (regenerated).
+	* libm2min/Makefile.am:  (MULTIBUILDTOP) propagate.
+	* libm2min/Makefile.in:  (regenerated).
+	* libm2pim/Makefile.am:  (MULTIBUILDTOP) propagate.
+	* libm2pim/Makefile.in:  (regenerated).
+
+2019-11-18      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* configure:  (regenerated).
+	* configure.ac:  (libtool_VERSION=15.0.0).
+	  Place AM_ENABLE_MULTILIB above GCC_NO_EXECUTABLES.
+
+2019-11-13      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2pim/Selective.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/SysExceptions.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/UnixArgs.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/dtoa.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/errno.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/getopt.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/ldtoa.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/sckt.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/target.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/termios.c:  changed to GPL3+ and fixed
+	  formatting.
+	* libm2pim/wrapc.c:  changed to GPL3+ and fixed
+	  formatting.
+
+2019-11-12      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libm2cor/KeyBoardLEDs.c:  GPLv3 and reformatted.
+	* libm2iso/ChanConsts.h:  GPLv3 and reformatted.
+	* libm2iso/ErrnoCategory.c:  GPLv3 and reformatted.
+	* libm2iso/RTco.c:  GPLv3 and reformatted.
+	* libm2iso/wrapsock.c:  GPLv3 and reformatted.
+	* libm2iso/wraptime.c:  GPLv3 and reformatted.
+	* libm2cor/Makefile.am:  GPLv3.
+	* libm2iso/Makefile.am:  GPLv3.
+	* libm2log/Makefile.am:  GPLv3.
+	* libm2min/Makefile.am:  GPLv3.
+	* libm2pim/Makefile.am:  GPLv3.
+	* libm2log/Break.c:  GPLv3 and reformatted.
+	* libm2min/libc.c:  GPLv3 and reformatted.
+
+2019-11-04      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libcor/Makefile.am: (MULTIOSSUBDIR) quote test.
+	* libiso/Makefile.am: (MULTIOSSUBDIR) quote test.
+	* libpim/Makefile.am: (MULTIOSSUBDIR) quote test.
+	* liblog/Makefile.am: (MULTIOSSUBDIR) quote test.
+	* libmin/Makefile.am: (MULTIOSSUBDIR) quote test.
+	* libulm/Makefile.am: (MULTIOSSUBDIR) quote test.
+	* libpth/Makefile.am: (MULTIOSSUBDIR) quote test.
+	* libcor/Makefile.in: regenerated.
+	* libiso/Makefile.in: regenerated.
+	* libpim/Makefile.in: regenerated.
+	* liblog/Makefile.in: regenerated.
+	* libmin/Makefile.in: regenerated.
+	* libulm/Makefile.in: regenerated.
+	* libpth/Makefile.in: regenerated.
+
+2019-10-25      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libcor/Makefile.am:  added -fm2-g -g.
+	* libiso/Makefile.am:  added -fm2-g -g and include
+          path to include ../
+	* libiso/RTco.c:  call HALT if the thread fails to
+          find itself.  Place initialized inside critical region.
+	* libpim/Makefile.am:  added -fm2-g -g.
+
+2019-09-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libulm:  removed.
+	* Makefile.am:  removed Ulm libaraies.
+	* configure.ac:  removed Ulm libaraies.
+
+2019-08-01      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libpim/Makefile.am:  (M2MODS) added GetOpt.mod
+          and OptLib.mod.  (M2DEFS) added GetOpt.def,
+          OptLib.def and getopt.def.  (libgm2_la_SOURCES)
+          added wrapc.c and getopt.c.
+
+2019-07-10      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libpth/Makefile.am:  use $(MAKE) rather than make.
+	* libcor/KeyBoardLEDs.c:  reformatted to GNU coding
+          standards.  Also added/corrected empty functions for non
+	  linux targets.  Fixed the GPL comment.
+
+2019-07-09      Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am:   (multilib.am) included.
+
+2019-04-03      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.in:  regenerated.
+	* aclocal.m4:  regenerated.
+	* autogen.sh:  removed version numbers.
+	* config/libtool.m4:  new version of the file
+	  taken from libgo/config.
+	* configure:  regenerated.
+	* configure.ac:  updated version numbers.
+	* libcor/Makefile.in:  regenerated.
+	* libiso/Makefile.in:  regenerated.
+	* liblog/Makefile.in:  regenerated.
+	* libmin/Makefile.in:  regenerated.
+	* libpim/Makefile.in:  regenerated.
+	* libulm/Makefile.in:  regenerated.
+
+2019-03-29      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* configure:  regenerated.
+	* configure.ac:  implement --enable-libpth-m2
+	* libpth/Makefile.am:  pass FLAGS_TO_PASS to make.
+          move install rules into pth subdirectory.
+	* libpth/pth/Makefile.am:  added install rules.
+
+2018-11-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* libpim/wrapc.c:  reformatted according to GNU
+          coding standards.  Also defended against macro omissions.
+	* libiso/wraptime.c:  fixed function declaration
+	  and erroneous return value.
+
+2018-04-16      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.am:  specify the libtool location.
+	* Makefile.in:  regenerated.
+	* aclocal.m4:  regenerated.
+	* autogen.sh:  corrected script to regenerate
+          using the correct macros and versions of autoconf tools.
+	* configure:  regenerated.
+	* configure.ac:  regenerated.
+	* libcor/Makefile.in:  regenerated.
+	* libiso/Makefile.in:  regenerated.
+	* liblog/Makefile.in:  regenerated.
+	* libmin/Makefile.in:  regenerated.
+	* libpim/Makefile.in:  regenerated.
+	* libulm/Makefile.in:  regenerated.
+
+2018-04-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Makefile.am:  changed to reference the config directory.
+	* Makefile.in:  regenerated.
+	* aclocal.m4:  regenerated.
+	* autogen.sh:  added new script.
+	* config.h.in:  regenerated.
+	* configure:  regenerated.
+	* configure.ac:  minor corrections.
+	* libcor/Makefile.am:  use $(LIBTOOL).
+	* libcor/Makefile.in:  regenerated.
+	* libiso/Makefile.am:  use $(LIBTOOL).
+	* libiso/Makefile.in:  regenerated.
+	* liblog/Makefile.am:  use $(LIBTOOL).
+	* liblog/Makefile.in:  regenerated.
+	* libmin/Makefile.am:  use $(LIBTOOL).
+	* libmin/Makefile.in:  regenerated.
+	* libpim/Makefile.am:  use $(LIBTOOL).
+	* libpim/Makefile.in:  regenerated.
+	* libulm/Makefile.am:  use $(LIBTOOL).
+	* libulm/Makefile.in:  regenerated.
+
+2018-04-10      Gaius Mulley <gaius@gnu.org>
+
+	* configure.ac:  added test to AM_ENABLE_MULTILIB.
+	* Makefile.in:  regenerated.
+	* aclocal.m4:  regenerated.
+	* autogen.sh:  updated.
+	* config.h.in:  regenerated.
+	* configure:  regenerated.
+	* libcor/Makefile.in:  regenerated.
+	* libiso/Makefile.in:  regenerated.
+	* liblog/Makefile.in:  regenerated.
+	* libmin/Makefile.am:  added -fno-m2-plugin
+	* libmin/Makefile.in:  regenerated.
+	* libpim/Makefile.in:  regenerated.
+	* libulm/Makefile.in:  regenerated.
+
+2017-12-27      Gaius Mulley <gaius@gnu.org>
+
+	* libpim/wrapc.c:  (wrapc_isfinite)  New function.
+
+2016-06-09      Gaius Mulley <gaius@gnu.org>
+
+	* libpim/dtoa.c:  use memmove instead of memcpy.
+
+2016-03-14      Gaius Mulley <gaius@gnu.org>
+
+	* libpim/wrapc.c:  corrected spacing.
+
+2014-12-24      Gaius Mulley <gaius@gnu.org>
+
+	* sckt.c:  added conditional import of
+	  stdio.h as reported by Christoph Schlegel.
+
+2014-12-23      Gaius Mulley <gaius@gnu.org>
+
+	* libulm/Makefile.am:  added pim libs to the
+	  path on the createUlmSys command.
+
+2014-12-22      Gaius Mulley <gaius@gnu.org>
+
+	* libulm/Makefile.am:  added rule to build
+	  SYSTEM.def as a built source.
+
+2014-12-06      Gaius Mulley <gaius@gnu.org>
+
+	* libcor/Makefile.in:  add .la to list of SUFFIXES.
+	  install .la archive.
+	* libcor/Makefile.am:  install .la archive.
+	* libiso/Makefile.in:  install .la archive.
+	* libiso/Makefile.am:  install .la archive.
+	* liblog/Makefile.am:  install .la archive.
+	* liblog/Makefile.in:  install .la archive.
+	* libmin/Makefile.am:  install .la archive.
+	* libmin/Makefile.in:  install .la archive.
+	* libpim/Makefile.am:  install .la archive.
+	* libpim/Makefile.in:  install .la archive.
+	* libulm/Makefile.am:  install .la archive.
+	* libulm/Makefile.in:  install .la archive.
+
+2014-12-05      Gaius Mulley <gaius@gnu.org>
+
+	* libmin/Makefile.am:  add .la to the list of SUFFIXES.
+	* libulm/Makefile.am:  add .la to the list of SUFFIXES.
+	* libpim/Makefile.am:  add .la to the list of SUFFIXES.
+	* libcor/Makefile.am:  add .la to the list of SUFFIXES.
+	* liblog/Makefile.am:  add .la to the list of SUFFIXES.
+	* libiso/Makefile.am:  add .la to the list of SUFFIXES.
+
+2014-07-11      Gaius Mulley <gaius@gnu.org>
+
+	* complete rewrite and restructuring of libgm2.
+	* gcc-versionno/libgm2/aclocal.m4:  (rebuilt)
+	* gcc-versionno/libgm2/autogen.sh:  (rebuilt)
+	* gcc-versionno/libgm2/config.h.in:  (New file)
+	* gcc-versionno/libgm2/configure:  (rebuilt)
+	* gcc-versionno/libgm2/configure.ac:  (New file)
+	* gcc-versionno/libgm2/libcor:  (New directory)
+	* gcc-versionno/libgm2/libiso:  (New directory)
+	* gcc-versionno/libgm2/liblog:  (New directory)
+	* gcc-versionno/libgm2/libmin:  (New directory)
+	* gcc-versionno/libgm2/libpim:  (New directory)
+	* gcc-versionno/libgm2/libulm:  (New directory)
+	* gcc-versionno/libgm2/Makefile.am:  (New file)
+	* gcc-versionno/libgm2/Makefile.in:  (rebuilt)
+	* gcc-versionno/libgm2/p2c:  (New directory)
+
+2013-12-06      Gaius Mulley <gaius@gnu.org>
+
+	* gcc-versionno/gcc/gm2/Make-lang.in:  changed flag to -fpim
+	  and changed path appropriately.
+
+2013-12-05      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/libgm2/Makefile.in:  build coroutine version of SYSTEM.def.
+
+2013-10-17      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/libgm2/Makefile.in:  corrected install of iso SYSTEM.def.
+	  Ensure that we copy form the object directory and avoid the
+	  template version in the source directory.
+
+2013-09-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/libgm2/Makefile.in:  many changes to allow more libraries
+	  to build and also build SYSTEM.def for the pim, iso and min
+	  libraries.
+
+2013-07-08      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/ChangeLog:  (New file).
+	* gm2/libgm2/Makefile.in:  added install rules.  Many of which
+	  were adapted from gcc/gm2/Make-file.in.

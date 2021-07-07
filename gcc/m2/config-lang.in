@@ -1,0 +1,85 @@
+# Top level configure fragment for GNU Modula-2.
+# Copyright (C) 2000-2021 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Configure looks for the existence of this file to auto-config each language.
+# We define several parameters used by configure:
+#
+# language	- name of language as it would appear in $(LANGUAGES)
+# compilers	- value to add to $(COMPILERS)
+# stagestuff	- files to add to $(STAGESTUFF)
+
+language="m2"
+
+compilers="cc1gm2\$(exeext) gm2l\$(exeext) gm2lcc\$(exeext) \
+           gm2lgen\$(exeext) gm2lsub\$(exeext) gm2cc\$(exeext) \
+           gm2lorder\$(exeext)"
+
+stagestuff="gm2\$(exeext) cc1gm2\$(exeext) gm2l\$(exeext) \
+            gm2lcc\$(exeext) gm2lgen\$(exeext) gm2lsub\$(exeext) cc1gm2-cross\$(exeext)"
+
+target_libs="target-libstdc++-v3 target-libgm2"
+
+# The Modula-2 frontend needs C++ to compile the main, so we need to build the C++
+# compiler during stage 1.
+lang_requires_boot_languages=c++
+
+# Do not build by default.
+build_by_default="no"
+
+gtfiles="\$(srcdir)/m2/gm2-lang.c \
+         \$(srcdir)/m2/gm2-lang.h \
+         \$(srcdir)/m2/gm2-gcc/rtegraph.c \
+         \$(srcdir)/m2/gm2-gcc/m2block.c \
+         \$(srcdir)/m2/gm2-gcc/m2builtins.c \
+         \$(srcdir)/m2/gm2-gcc/m2decl.c \
+         \$(srcdir)/m2/gm2-gcc/m2except.c \
+         \$(srcdir)/m2/gm2-gcc/m2expr.c \
+         \$(srcdir)/m2/gm2-gcc/m2statement.c \
+         \$(srcdir)/m2/gm2-gcc/m2type.c"
+
+outputs=" \
+         m2/config-make \
+         m2/www/Makefile \
+        "
+
+mkdir -p m2/gm2-compiler-boot
+mkdir -p m2/gm2-libs-boot
+mkdir -p m2/gm2-ppg-boot
+mkdir -p m2/gm2-pge-boot
+mkdir -p m2/gm2-pg-boot
+mkdir -p m2/gm2-ici-boot
+mkdir -p m2/gm2-ici
+mkdir -p m2/gm2-libiberty
+mkdir -p m2/gm2-gcc
+mkdir -p m2/gm2-auto
+mkdir -p m2/gm2-compiler
+mkdir -p m2/gm2-libs
+mkdir -p m2/gm2-libs-iso
+mkdir -p m2/gm2-compiler-paranoid
+mkdir -p m2/gm2-libs-paranoid
+mkdir -p m2/gm2-compiler-verify
+mkdir -p m2/boot-bin
+mkdir -p m2/gm2-libs-pim
+mkdir -p m2/gm2-libs-coroutines
+mkdir -p m2/gm2-libs-min
+mkdir -p m2/mc-boot
+mkdir -p m2/mc-boot-ch
+mkdir -p m2/mc-boot-gen
+mkdir -p plugin
+mkdir -p stage1/m2 stage2/m2 stage3/m2 stage4/m2

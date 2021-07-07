@@ -1,0 +1,2402 @@
+--
+-- gm2m.bnf grammar for automatic Makefile generator.
+--
+-- Copyright (C) 2002-2021 Free Software Foundation, Inc.
+-- Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+--
+-- This file is part of GNU Modula-2.
+--
+-- GNU Modula-2 is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3, or (at your option)
+-- any later version.
+--
+-- GNU Modula-2 is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with GNU Modula-2; see the file COPYING3.  If not see
+-- <http://www.gnu.org/licenses/>.
+% module gm2m begin
+MODULE gm2m ;
+(* output from gm2m.bnf, automatically generated do not edit if these
+   are the top two lines in the file.
+
+Copyright (C) 2002-2020 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING.  If not, write to the
+Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.  *)
+
+FROM ASCII IMPORT nul, tab ;
+FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
+FROM FIO IMPORT File, IsNoError, StdOut, StdErr ;
+FROM M2LexBuf IMPORT OpenSource, CloseSource, GetToken, ReInitialize,
+                     InsertToken, InsertTokenAndRewind, GetLineNo, GetFileName,
+                     currenttoken, currentstring ;
+FROM M2Reserved IMPORT toktype ;
+FROM M2Printf IMPORT printf0, printf1, printf2, printf3, printf4,
+                     fprintf0, fprintf1, fprintf2, fprintf3, fprintf4 ;
+FROM M2FileName IMPORT CalculateFileName, CalculateStemName ;
+FROM M2Search IMPORT InitSearchPath, FindSourceFile, PrependSearchPath,
+                     FindSourceDefFile, FindSourceModFile, SetDefExtension,
+                     SetModExtension ;
+FROM SArgs IMPORT Narg, GetArg ;
+FROM M2Defaults IMPORT GetSearchPath, GetOptions ;
+FROM NameKey IMPORT Name, KeyToCharStar, WriteKey, MakeKey, GetKey, makekey,
+                    NulName ;
+FROM SymbolKey IMPORT SymbolTree, InitTree, GetSymKey, PutSymKey, NulKey ;
+FROM Lists IMPORT List, InitList, IncludeItemIntoList, NoOfItemsInList,
+                  GetItemFromList, IsItemInList, RemoveItemFromList, KillList,
+                  DuplicateList ;
+
+FROM Indexing IMPORT Index, InitIndex, PutIndice, IsIndiceInIndex,
+                     RemoveIndiceFromIndex, IncludeIndiceIntoIndex,
+                     GetIndice, HighIndice ;
+
+FROM DynamicStrings IMPORT String, InitString, InitStringCharStar, KillString,
+                           Add, Length, EqualArray, Mark, string, Dup, Equal,
+                           Slice, char, ConCatChar, ConCat ;
+FROM FormatStrings IMPORT Sprintf2 ;
+FROM StrLib IMPORT StrLen ;
+FROM SFIO IMPORT WriteS, OpenToWrite, Exists ;
+FROM M2Preprocess IMPORT PreprocessModule ;
+FROM M2Configure IMPORT UsingGCCBackend ;
+FROM M2DriverOptions IMPORT ScanCppArgs ;
+FROM libc IMPORT exit ;
+FROM SYSTEM IMPORT ADDRESS, WORD ;
+IMPORT m2flex ;
+
+CONST
+   MaxLineBreak =   70 ;     (* Any line whose columns is beyond this is    *)
+                             (* broken into multiple lines.                 *)
+   Debugging    = FALSE ;
+
+TYPE
+   PtrToNode = POINTER TO node ;
+
+   PtrToSource = POINTER TO source ;
+   source      =            RECORD
+                               ModName    : Name ;
+                               Ext        : Name ;
+                               FullPath   : Name ;
+                               Depth      : CARDINAL ;
+                               SourceNode : PtrToNode ;
+                               Next       : PtrToSource ;
+                            END ;
+
+   node      = RECORD
+                  Source: PtrToSource ;
+                  Sons  : Index ;       (* sons of this node (PtrToNode) *)
+                  Father: PtrToNode ;   (* Father of this node *)
+               END ;
+
+   BlockInfoPtr = POINTER TO BlockInfo ;
+   BlockInfo    = RECORD
+                     level          : CARDINAL ;
+                     ToDoModules,
+                     LocalModules,            (* locally declared modules at the current level.   *)
+                     ImportedModules: List ;  (* current list of imports for the scanned module.  *)
+                     Prev           : BlockInfoPtr ;
+                  END ;
+
+VAR
+   Verbose        : BOOLEAN ;
+   main           : PtrToNode ;
+   DefExistsTree  : SymbolTree ; (* Table of definition modules found or not   *)
+   ModExistsTree  : SymbolTree ; (* Table of imp/program modules found or not  *)
+   Files          : PtrToSource ;
+   LastIdent,
+   KeyFound,
+   KeyNotFound,
+   ExeExtn,
+   ObjExtn,
+   DefExtn,
+   ModExtn        : Name ;
+   CurrentArg     : CARDINAL ;
+   ProgName,
+   GM2Path,
+   M2MPath,
+   Compiler,
+   Options,
+   OutputFile,
+   DestDirectory  : String ;
+   NoLink,
+   DependOnly,
+   GM2PathFound,
+   M2MPathFound   : BOOLEAN ;
+   MainSrc,
+   MainName       : Name ;
+   op             : File ;
+   ExitValue      : INTEGER ;
+   pBlock         : BlockInfoPtr ;
+
+
+(*
+   BeginBlock -
+*)
+
+PROCEDURE BeginBlock (Level: CARDINAL) ;
+VAR
+   b: BlockInfoPtr ;
+BEGIN
+   NEW(b) ;
+   WITH b^ DO
+      IF (Level=0) AND (pBlock#NIL)
+      THEN
+         level := pBlock^.level
+      ELSE
+         level := Level
+      END ;
+      InitList(LocalModules) ;
+      InitList(ImportedModules) ;
+      InitList(ToDoModules) ;
+      Prev := pBlock
+   END ;
+   pBlock := b
+END BeginBlock ;
+
+
+(*
+   EndBlock -
+*)
+
+PROCEDURE EndBlock ;
+VAR
+   b   : BlockInfoPtr ;
+   i, n: CARDINAL ;
+BEGIN
+   b := pBlock^.Prev ;
+   WITH pBlock^ DO
+      (* now remember any non local modules *)
+      n := NoOfItemsInList(ImportedModules) ;
+      i := 1 ;
+      WHILE i<=n DO
+         IncludeItemIntoList(ToDoModules, GetItemFromList(ImportedModules, i)) ;
+         INC(i)
+      END ;
+      IF b#NIL
+      THEN
+         (* and propagate this list to the outer level *)
+         i := 1 ;
+         n := NoOfItemsInList(ToDoModules) ;
+         WHILE i<=n DO
+            IncludeItemIntoList(b^.ToDoModules, GetItemFromList(ToDoModules, i)) ;
+            INC(i)
+         END
+      END ;
+      KillList(LocalModules) ;
+      KillList(ImportedModules)
+   END ;
+   DISPOSE(pBlock) ;
+   pBlock := b
+END EndBlock ;
+
+
+(*
+   RegisterLocalModule - register, n, as a local module.
+*)
+
+PROCEDURE RegisterLocalModule (n: Name) ;
+BEGIN
+   (* printf1('seen local module %a\n', n) ; *)
+   WITH pBlock^ DO
+      IncludeItemIntoList(LocalModules, n) ;
+      RemoveItemFromList(ImportedModules, n)
+   END
+END RegisterLocalModule ;
+
+
+(*
+   RegisterImport - register, n, as a module imported from either a local scope or definition module.
+*)
+
+PROCEDURE RegisterImport (n: Name) ;
+BEGIN
+   IF Verbose
+   THEN
+      printf1('register import from module %a\n', n)
+   END ;
+   WITH pBlock^ DO
+      IF NOT IsItemInList(LocalModules, n)
+      THEN
+         IncludeItemIntoList(ImportedModules, n)
+      END
+   END
+END RegisterImport ;
+
+
+(*
+   NewNode - creates a new node, n, with zero sons.
+*)
+
+PROCEDURE NewNode () : PtrToNode ;
+VAR
+   n: PtrToNode ;
+BEGIN
+   NEW(n) ;
+   WITH n^ DO
+      Sons := InitIndex(1) ;
+      Source := NIL ;
+      Father := NIL ;
+   END ;
+   RETURN( n )
+END NewNode ;
+
+
+(*
+   NewSource - creates a new source file and returns it.
+*)
+
+PROCEDURE NewSource () : PtrToSource ;
+VAR
+   s: PtrToSource ;
+BEGIN
+   NEW(s) ;
+   WITH s^ DO
+      ModName    := NulName ;
+      Ext        := NulName ;
+      FullPath   := NulName ;
+      Depth      := 0 ;
+      SourceNode := NIL ;
+      Next       := NIL
+   END ;
+   RETURN( s )
+END NewSource ;
+
+
+(*
+   CreateSon - returns TRUE if we create a new son.
+*)
+
+PROCEDURE CreateSon (VAR son: PtrToNode;
+                     ModuleName, ExtName: Name;
+                     n: PtrToNode; Level: CARDINAL) : BOOLEAN ;
+VAR
+   name: String ;
+   file: PtrToSource ;
+BEGIN
+   name := CalculateFileName(InitStringCharStar(KeyToCharStar(ModuleName)),
+                             Mark(InitStringCharStar(KeyToCharStar(ExtName)))) ;
+   IF Debugging
+   THEN
+      fprintf1(StdErr, 'CreateSon %s ', name)
+   END ;
+   IF AlreadyParsed(ModuleName, ExtName, file)
+   THEN
+      IF file^.Depth<Level
+      THEN
+         (*
+            Move SubTree file^.SourceNode further down the Tree to
+            be a son of n. But since file^.SourceNode is higher up
+            the Tree we must make certain that n is not a SubNode of
+            file^.SourceNode. Otherwise we would be in serious
+            trouble if we attempted to move a SubTree under those
+            conditions.
+         *)
+         IF NOT SubNode(file^.SourceNode, n)
+         THEN
+            fprintf4(op, '# moving subtree %a.%a to be a SubTree of %a.%a\n',
+                     file^.ModName, file^.Ext,
+                     n^.Source^.ModName, n^.Source^.Ext) ;
+
+            (* Move file^.SourceNode SubTree to be a son of n.
+               Need to delete file^.SourceNode from its father.
+            *)
+            DeleteFromFather(file^.SourceNode) ;
+
+            (* Delete pseudo sons - only need proper son if available *)
+            DeleteSon(n, file^.SourceNode) ;
+
+            (* Now add file^.SourceNode to be a son of n. *)
+            AddSon(n, file^.SourceNode) ;
+            file^.SourceNode^.Father := n ;
+
+            (* Now increase the Depth of file^.SourceNode and children.
+               They all need to increased by Level-file^.Depth.
+            *)
+            IncreaseLevel( file^.SourceNode, Level-file^.Depth )
+         ELSE
+            fprintf1(op, '# found circular import: %s\n', name) ;
+         END
+      ELSE
+         (*
+            Pseudo son - son does not acknowledge his father in this case.
+            We need this because the father is still dependant upon son.
+            Remember that the son has another father deeper down the tree.
+         *)
+         IF NOT IsASon(n, file^.SourceNode)
+         THEN
+            son := file^.SourceNode ;
+            AddSon(n, file^.SourceNode)
+         END
+         (* Do not set the father field here for reason above. *)
+      END ;
+      name := KillString(name) ;
+      IF Debugging
+      THEN
+         fprintf0(StdErr, 'returning FALSE\n')
+      END ;
+
+      RETURN( FALSE )
+   ELSE
+      son := NewNode() ;
+      AddSon(n, son) ;
+      son^.Father := n ;
+      file := NewSource() ;
+      WITH file^ DO
+         ModName    := ModuleName ;
+         Ext        := ExtName ;
+         Depth      := Level ;
+         SourceNode := son ;
+         Next       := Files ;
+      END ;
+      Files := file ;
+      son^.Source := file ;
+
+      IF (ExtName=ModExtn) OR (ExtName=ObjExtn)
+      THEN
+         IF DefExists(ModuleName)
+         THEN
+            MakeDef(son^.Source^.ModName, son, Level+1)
+         END ;
+         IF ModExists(ModuleName)
+         THEN
+            ParseSource(ModuleName, FALSE, son, Level+1)
+         END
+      END ;
+      (*
+         We also now need to check that the object node is
+         also in the graph of dependency, since we can only *link* the
+         final main module when *all* implementation modules have been
+         compiled. Defs can be in the dependency without their Imps
+         using a tree strategy. We must ensure that the objects are
+         also included.
+      *)
+      MakeObject(son^.Source^.ModName, main, 1) ;   (* attach the object to the executable.  *)
+
+      name := KillString(name) ;
+      IF Debugging
+      THEN
+         fprintf0(StdErr, 'returning TRUE\n')
+      END ;
+      RETURN( TRUE )
+   END
+END CreateSon ;
+
+
+(*
+   MakeObject - makes an object level node.
+*)
+
+PROCEDURE MakeObject (ModuleName: Name; n: PtrToNode; Level: CARDINAL) ;
+VAR
+   son: PtrToNode ;
+BEGIN
+   IF CreateSon(son, ModuleName, ObjExtn, n, Level+1)
+   THEN
+      IF ModExists(ModuleName)
+      THEN
+         MakeMod(ModuleName, son, Level+1)
+      END
+   END
+END MakeObject ;
+
+
+(*
+   MakeExe - makes a top level node and attempts to import any
+             dependancies from this source file and it then increases
+             all dependancies by this top level.
+*)
+
+PROCEDURE MakeExe (ModuleName: Name; n: PtrToNode; Level: CARDINAL) ;
+BEGIN
+   MakeObject(ModuleName, n, Level+1) ;
+   ParseSource(ModuleName, FALSE, n, Level+1)
+END MakeExe ;
+
+
+(*
+   MakeMod - make a module level node.
+*)
+
+PROCEDURE MakeMod (ModuleName: Name; n: PtrToNode; Level: CARDINAL) ;
+VAR
+   son: PtrToNode ;
+BEGIN
+   IF CreateSon(son, ModuleName, ModExtn, n, Level+1)
+   THEN
+      IF ModExists(ModuleName)
+      THEN
+         IF DefExists(ModuleName)
+         THEN
+            MakeDef(ModuleName, n, Level)
+         END ;
+         ParseSource(ModuleName, FALSE, n, Level+1)
+      ELSE
+         fprintf1(op, 'warning no matching %a.mod\n', ModuleName)
+      END
+   END
+END MakeMod ;
+
+
+(*
+   MakeDef - make a definition module level node.
+*)
+
+PROCEDURE MakeDef (ModuleName: Name; n: PtrToNode; Level: CARDINAL) ;
+VAR
+   son: PtrToNode ;
+BEGIN
+   IF CreateSon(son, ModuleName, DefExtn, n, Level+1)
+   THEN
+      ParseSource(ModuleName, TRUE, n, Level)
+   END
+END MakeDef ;
+
+
+(*
+   ExamineCompilationUnit - opens the source file to obtain the module name and kind of module.
+*)
+
+PROCEDURE ExamineCompilationUnit (VAR name: Name; VAR isdefimp: BOOLEAN) ;
+BEGIN
+   isdefimp := FALSE ;   (* default to program module *)
+   (* stop if we see eof, ';' or '[' *)
+   WHILE (currenttoken#eoftok) AND (currenttoken#semicolontok) AND (currenttoken#lsbratok) DO
+      IF (currenttoken=implementationtok) OR (currenttoken=definitiontok)
+      THEN
+         isdefimp := TRUE ;
+         GetToken
+      END ;
+      IF currenttoken=identtok
+      THEN
+         name := makekey(currentstring) ;
+         RETURN
+      END ;
+      GetToken
+   END ;
+   m2flex.M2Error(string(InitString('failed to find module name'))) ;
+   exit(1)
+END ExamineCompilationUnit ;
+
+
+(*
+   Open - attempts to open a module, it will terminate if the module cannot be found.
+*)
+
+PROCEDURE Open (ModuleName: Name; IsDefinition: BOOLEAN) ;
+VAR
+   a, b: String ;
+BEGIN
+   b := NIL ;
+   IF Verbose
+   THEN
+      fprintf1(StdErr, 'opening module %a\n', ModuleName)
+   END ;
+   IF IsDefinition
+   THEN
+      IF DefExists(ModuleName)
+      THEN
+         IF Verbose
+         THEN
+            fprintf1(StdErr, 'found definition module for %a\n', ModuleName)
+         END
+      ELSE
+         fprintf1(StdErr, '# fatal error: definition module for %a does not exist\n', ModuleName)
+      END
+   ELSE
+      IF ModExists(ModuleName)
+      THEN
+         IF Verbose
+         THEN
+            fprintf1(StdErr, 'found implementation module for %a\n', ModuleName)
+         END
+      ELSE
+         fprintf1(StdErr, '# fatal error: implementation/program module %a does not exist\n',
+                  ModuleName)
+      END
+   END ;
+   IF (NOT IsDefinition) AND (ModuleName=MainName)
+   THEN
+      a := InitStringCharStar(KeyToCharStar(MainSrc)) ;
+      IF OpenSource(PreprocessModule(a))
+      THEN
+         a := KillString(a)
+      ELSE
+         fprintf1(StdErr, 'cannot find source file %s\n', a) ;
+         exit(1)
+      END
+   ELSE
+      a := InitStringCharStar(KeyToCharStar(ModuleName)) ;
+      IF IsDefinition
+      THEN
+         IF FindSourceDefFile(a, b)
+         THEN
+            IF Verbose
+            THEN
+               fprintf1(StdErr, 'source file: %s\n', b)
+            END ;
+            IF OpenSource(PreprocessModule(b))
+            THEN
+               (* nothing *)
+            ELSE
+               fprintf1(StdErr, 'cannot find source file for definition module %s\n', a) ;
+               exit(1)
+            END
+         ELSE
+            IF Verbose
+            THEN
+               fprintf1(StdErr, 'source file: %s definition not found\n', a)
+            END
+         END
+      ELSE
+         IF FindSourceModFile(a, b)
+         THEN
+            IF Verbose
+            THEN
+               fprintf1(StdErr, 'source file: %s\n', b)
+            END ;
+            IF OpenSource(PreprocessModule(b))
+            THEN
+               (* nothing *)
+            ELSE
+               fprintf1(StdErr, 'cannot find source file for implementation or program module %s\n', a) ;
+               exit(1)
+            END
+         ELSE
+            IF Verbose
+            THEN
+               fprintf1(StdErr, 'source file: %s implementation not found\n', a)
+            END
+         END
+      END ;
+      a := KillString(a) ;
+      b := KillString(b)
+   END
+END Open ;
+
+% declaration gm2m begin
+
+
+(*
+   ErrorArray -
+*)
+
+PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
+BEGIN
+   ErrorString(InitString(a))
+END ErrorArray ;
+
+
+(*
+   ErrorString -
+*)
+
+PROCEDURE ErrorString (s: String) ;
+VAR
+   f: String ;
+   l: CARDINAL ;
+BEGIN
+   f := GetFileName() ;
+   l := GetLineNo() ;
+   fprintf3(StdErr, "%s:%d:%s\n", f, l, s) ;
+   ExitValue := 1
+END ErrorString ;
+
+
+(*
+   SyntaxError - after a syntax error we skip all tokens up until we reach
+                 a stop symbol.
+*)
+
+PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   DescribeError(stopset0, stopset1, stopset2) ;
+   IF Debugging
+   THEN
+      printf0('\nskipping token *** ')
+   END ;
+   (*
+      yes the ORD(currenttoken) looks ugly, but it is *much* safer than
+      using currenttoken<sometok as a change to the ordering of the
+      token declarations below would cause this to break. Using ORD() we are
+      immune from such changes
+   *)
+   WHILE NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+              ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+              ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   DO
+      GetToken
+   END ;
+   IF Debugging
+   THEN
+      printf0(' ***\n')
+   END ;
+   ExitValue := 1
+END SyntaxError ;
+
+
+(*
+   SyntaxCheck -
+*)
+
+PROCEDURE SyntaxCheck (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	   ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+           ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   THEN
+      SyntaxError(stopset0, stopset1, stopset2)
+   END
+END SyntaxCheck ;
+
+
+(*
+   WarnMissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE WarnMissingToken (t: toktype) ;
+VAR
+   s0 : SetOfStop0 ;
+   s1 : SetOfStop1 ;
+   s2 : SetOfStop2 ;
+   str: String ;
+BEGIN
+   s0 := SetOfStop0{} ;
+   s1 := SetOfStop1{} ;
+   s2 := SetOfStop2{} ;
+   IF ORD(t)<32
+   THEN
+      s0 := SetOfStop0{VAL(stop0, t)}
+   ELSIF ORD(t)<64
+   THEN
+      s1 := SetOfStop1{VAL(stop1, t)}
+   ELSE
+      s2 := SetOfStop2{VAL(stop2, t)}
+   END ;
+   str := DescribeStop(s0, s1, s2) ;
+
+   str := ConCat(InitString('syntax error,'), Mark(str)) ;
+   ErrorString(str)
+END WarnMissingToken ;
+
+
+(*
+   MissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE MissingToken (t: toktype) ;
+BEGIN
+   WarnMissingToken(t) ;
+   IF (t#identtok) AND (t#integertok) AND (t#realtok) AND (t#stringtok)
+   THEN
+      IF Debugging
+      THEN
+         printf0('inserting token\n')
+      END ;
+      InsertToken(t)
+   END
+END MissingToken ;
+
+
+(*
+   CheckAndInsert -
+*)
+
+PROCEDURE CheckAndInsert (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      WarnMissingToken(t) ;
+      InsertTokenAndRewind(t) ;
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END CheckAndInsert ;
+
+
+(*
+   InStopSet
+*)
+
+PROCEDURE InStopSet (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END InStopSet ;
+
+
+(*
+   PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
+               If it is not then it will insert a token providing the token
+               is one of ; ] ) } . OF END ,
+
+               if the stopset contains <identtok> then we do not insert a token
+*)
+
+PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF (NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	    ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+            ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))) AND
+      (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
+   THEN
+      (* SyntaxCheck would fail since currentoken is not part of the stopset
+         we check to see whether any of currenttoken might be a commonly omitted token *)
+      IF CheckAndInsert(semicolontok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rsbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rparatok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rcbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(periodtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(oftok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(endtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(commatok, stopset0, stopset1, stopset2)
+      THEN
+      END
+   END
+END PeepToken ;
+
+
+(*
+   Expect -
+*)
+
+PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF currenttoken=t
+   THEN
+      GetToken ;
+      PeepToken(stopset0, stopset1, stopset2)
+   ELSE
+      MissingToken(t)
+   END ;
+   SyntaxCheck(stopset0, stopset1, stopset2)
+END Expect ;
+
+
+(*
+   InitStopSet - initializes the stop set to include token, t.
+*)
+
+PROCEDURE InitStopSet (t: toktype; VAR stopset0: SetOfStop0; VAR stopset1: SetOfStop1; VAR stopset2: SetOfStop2) ;
+BEGIN
+   IF ORD(t)<32
+   THEN
+      INCL(stopset0, t)
+   ELSIF ORD(t)<64
+   THEN
+      INCL(stopset1, t)
+   ELSE
+      INCL(stopset2, t)
+   END
+END InitStopSet ;
+
+
+(*
+   CompilationUnit - parses the source file.
+*)
+
+PROCEDURE CompilationUnit ;
+VAR
+   s0: SetOfStop0 ;
+   s1: SetOfStop1 ;
+   s2: SetOfStop2 ;
+BEGIN
+   s0 := SetOfStop0{} ;
+   s1 := SetOfStop1{} ;
+   s2 := SetOfStop2{} ;
+   InitStopSet(eoftok, s0, s1, s2) ;
+   InitStopSet(consttok, s0, s1, s2) ;
+   InitStopSet(typetok, s0, s1, s2) ;
+   InitStopSet(vartok, s0, s1, s2) ;
+   InitStopSet(proceduretok, s0, s1, s2) ;
+   InitStopSet(begintok, s0, s1, s2) ;
+   InitStopSet(moduletok, s0, s1, s2) ;
+   InitStopSet(endtok, s0, s1, s2) ;
+   FileUnit(s0, s1, s2)
+END CompilationUnit ;
+
+
+(*
+   Ident - error checking varient of Ident
+*)
+
+PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   LastIdent := makekey(currentstring) ;
+   Expect(identtok, stopset0, stopset1, stopset2)
+END Ident ;
+
+
+(*
+   str -
+*)
+
+PROCEDURE str (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   Expect(stringtok, stopset0, stopset1, stopset2)
+END str ;
+
+
+(*
+   Integer -
+*)
+
+PROCEDURE Integer (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   Expect(integertok, stopset0, stopset1, stopset2)
+END Integer ;
+
+
+(*
+   Real -
+*)
+
+PROCEDURE Real (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   Expect(realtok, stopset0, stopset1, stopset2)
+END Real ;
+
+
+% module gm2m end
+
+
+(*
+   DumpList -
+*)
+
+PROCEDURE DumpList (l: List; name: ARRAY OF CHAR) ;
+VAR
+   n: CARDINAL ;
+   s: String ;
+BEGIN
+   IF Verbose
+   THEN
+      n := NoOfItemsInList(l) ;
+      s := Mark(InitString(name)) ;
+      fprintf2(StdErr, 'list %s has %d items\n', s, n)
+   END
+END DumpList ;
+
+
+(*
+   DumpLists -
+*)
+
+PROCEDURE DumpLists ;
+BEGIN
+   IF pBlock#NIL
+   THEN
+      WITH pBlock^ DO
+         DumpList(ToDoModules, 'ToDoModules') ;
+         DumpList(LocalModules, 'LocalModules') ;
+         DumpList(ImportedModules, 'ImportedModules')
+      END
+   END
+END DumpLists ;
+
+
+(*
+   ParseSource - find all imports from a module.
+*)
+
+PROCEDURE ParseSource (ModuleName: Name; IsDefinition: BOOLEAN;
+                       n: PtrToNode; Level: CARDINAL) ;
+VAR
+   i      : CARDINAL ;
+   modname: Name ;
+   son    : PtrToNode ;
+BEGIN
+   BeginBlock(Level) ;
+   Open(ModuleName, IsDefinition) ;
+   CompilationUnit ;
+   CloseSource ;
+   DumpLists ;
+   WITH pBlock^ DO
+      i := 1 ;
+      WHILE i<=NoOfItemsInList(ToDoModules) DO
+         modname := GetItemFromList(ToDoModules, i) ;
+         IF CreateSon(son, modname, DefExtn, n, level+1)
+         THEN
+         END ;
+         INC(i)
+      END ;
+      i := 1 ;
+      WHILE i<=NoOfItemsInList(ImportedModules) DO
+         modname := GetItemFromList(ImportedModules, i) ;
+         IF CreateSon(son, modname, DefExtn, n, level+1)
+         THEN
+         END ;
+         INC(i)
+      END ;
+      KillList(ToDoModules) ;
+      InitList(ToDoModules) ;
+      KillList(ImportedModules) ;
+      InitList(ImportedModules)
+   END ;
+   EndBlock
+END ParseSource ;
+
+
+(*
+   Obj - creates an object level node if the module, ModuleName.mod,
+         exists.
+*)
+
+PROCEDURE Obj (ModuleName: Name; son: PtrToNode; Level: CARDINAL) ;
+BEGIN
+   IF ModExists(ModuleName)
+   THEN
+      MakeMod(ModuleName, son, Level+1)
+   ELSE
+      fprintf1(op, 'warning no matching %a.mod\n', ModuleName)
+   END
+END Obj ;
+
+
+(*
+   AlreadyParsed - returns TRUE if, Module, has already been parsed.
+*)
+
+PROCEDURE AlreadyParsed (modname, ext: Name;
+                         VAR s: PtrToSource) : BOOLEAN ;
+BEGIN
+   s := Files ;
+   WHILE s#NIL DO
+      IF (s^.ModName=modname) AND (s^.Ext=ext)
+      THEN
+         RETURN( TRUE )
+      ELSE
+         s := s^.Next
+      END
+   END ;
+   RETURN( FALSE )
+END AlreadyParsed ;
+
+
+(*
+   IsASon - returns TRUE if, son, is a son of, father.
+*)
+
+PROCEDURE IsASon (father, son: PtrToNode) : BOOLEAN ;
+BEGIN
+   RETURN( (son#NIL) AND IsIndiceInIndex(father^.Sons, son) )
+END IsASon ;
+
+
+(*
+   DeleteSon - deletes, son, from, father.
+*)
+
+PROCEDURE DeleteSon (father, son: PtrToNode) ;
+BEGIN
+   RemoveIndiceFromIndex(father^.Sons, son)
+END DeleteSon ;
+
+
+(*
+   DeleteFromFather - deletes all entries for son from its direct Father.
+*)
+
+PROCEDURE DeleteFromFather (son: PtrToNode) ;
+BEGIN
+   DeleteSon(son^.Father, son)
+END DeleteFromFather ;
+
+
+(*
+   SubNode - returns TRUE if son is a desendant of father, otherwise
+             FALSE is returned.
+*)
+
+PROCEDURE SubNode (father, son: PtrToNode) : BOOLEAN ;
+VAR
+   t   : PtrToNode ;
+   i, n: CARDINAL ;
+BEGIN
+   IF father=son
+   THEN
+      RETURN( TRUE )
+   ELSE
+      i := 1 ;
+      n := HighIndice(father^.Sons) ;
+      WHILE i<=n DO
+         t := GetIndice(father^.Sons, i) ;
+         IF (t#NIL) AND (t^.Father=father)
+         THEN
+            IF SubNode(t, son)
+            THEN
+               RETURN( TRUE )
+            END
+         END ;
+         INC(i)
+      END
+   END ;
+   RETURN( FALSE )
+END SubNode ;
+
+
+(*
+   IncreaseLevel - adds, l, to the Depth field for n and its SubTree
+*)
+
+PROCEDURE IncreaseLevel (n: PtrToNode ; l: CARDINAL) ;
+VAR
+   i, j: CARDINAL ;
+BEGIN
+   INC(n^.Source^.Depth, l) ;
+   i := 1 ;
+   j := HighIndice(n^.Sons) ;
+   WHILE i<=j DO
+      IF GetIndice(n^.Sons, i)#NIL
+      THEN
+         IncreaseLevel(GetIndice(n^.Sons, i), l)
+      END ;
+      INC(i)
+   END
+END IncreaseLevel ;
+
+
+(*
+   AddSon - adds, son, to be a son of father.
+*)
+
+PROCEDURE AddSon (father, son: PtrToNode) ;
+VAR
+   n1, n2: Name ;
+   n     : CARDINAL ;
+BEGIN
+   IF Verbose
+   THEN
+      n1 := father^.Source^.ModName ;
+      n2 := father^.Source^.Ext ;
+      n := HighIndice(father^.Sons) ;
+      fprintf3(StdErr,
+               'father %a.%a has %d sons\n',
+               n1, n2, n)
+   END ;
+   IncludeIndiceIntoIndex(father^.Sons, son) ;
+END AddSon ;
+
+
+(*
+   ModExists - returns TRUE if ModuleName.mod exists in a file.
+*)
+
+PROCEDURE ModExists (ModuleName: Name) : BOOLEAN ;
+VAR
+   a, b : String ;
+   Key  : CARDINAL ;
+BEGIN
+   a := InitStringCharStar(KeyToCharStar(ModuleName)) ;
+   b := NIL ;
+   Key := GetSymKey(ModExistsTree, ModuleName) ;
+   IF Key=WORD(KeyFound)
+   THEN
+      a := KillString(a) ;
+      RETURN( TRUE )
+   ELSIF Key=WORD(KeyNotFound)
+   THEN
+      a := KillString(a) ;
+      RETURN( FALSE )
+   ELSIF Key=NulKey
+   THEN
+      IF ModuleName=MainName
+      THEN
+         b := InitStringCharStar(KeyToCharStar(MainSrc)) ;
+         IF Exists(b)
+         THEN
+            b := KillString(b) ;
+            PutSymKey(ModExistsTree, ModuleName, KeyFound) ;
+            a := KillString(a) ;
+            RETURN( TRUE )
+         ELSE
+            b := KillString(b) ;
+            PutSymKey(ModExistsTree, ModuleName, KeyNotFound) ;
+            a := KillString(a) ;
+            RETURN( FALSE )
+         END
+      ELSE
+         IF FindSourceModFile(a, b)
+         THEN
+            IF Verbose
+            THEN
+               fprintf2(StdErr, 'module %s:  %s\n', a, b)
+            END ;
+            b := KillString(b) ;
+            PutSymKey(ModExistsTree, ModuleName, KeyFound) ;
+            a := KillString(a) ;
+            RETURN( TRUE )
+         ELSE
+            IF Verbose
+            THEN
+               fprintf1(StdErr, 'module %s:  implementation not found\n', a)
+            END ;
+            b := KillString(b) ;
+            PutSymKey(ModExistsTree, ModuleName, KeyNotFound) ;
+            a := KillString(a) ;
+            RETURN( FALSE )
+         END
+      END
+   END ;
+   HALT (* incorrect value of key *)
+END ModExists ;
+
+
+(*
+   DefExists - returns TRUE if ModuleName.def exists in a file.
+*)
+
+PROCEDURE DefExists (ModuleName: Name) : BOOLEAN ;
+VAR
+   a, b : String ;
+   Key  : CARDINAL ;
+BEGIN
+   a := InitStringCharStar(KeyToCharStar(ModuleName)) ;
+   b := NIL ;
+   Key := GetSymKey(DefExistsTree, ModuleName) ;
+   IF Key=WORD(KeyFound)
+   THEN
+      a := KillString(a) ;
+      RETURN( TRUE )
+   ELSIF Key=WORD(KeyNotFound)
+   THEN
+      a := KillString(a) ;
+      RETURN( FALSE )
+   ELSIF Key=NulKey
+   THEN
+      IF FindSourceDefFile(a, b)
+      THEN
+         IF Verbose
+         THEN
+            fprintf2(StdErr, 'module %s:  %s\n', a, b)
+         END ;
+         b := KillString(b) ;
+         PutSymKey(DefExistsTree, ModuleName, KeyFound) ;
+         a := KillString(a) ;
+         RETURN( TRUE )
+      ELSE
+         IF Verbose
+         THEN
+            fprintf1(StdErr, 'module %s:  definition module not found\n', a)
+         END ;
+         b := KillString(b) ;
+         PutSymKey(DefExistsTree, ModuleName, KeyNotFound) ;
+         a := KillString(a) ;
+         RETURN( FALSE )
+      END
+   END ;
+   HALT (* incorrect value of key *)
+END DefExists ;
+
+
+(*
+   DisplayTree - dumps the tree in english, used for debugging only.
+*)
+
+PROCEDURE DisplayTree (n: PtrToNode) ;
+VAR
+   i, j   : CARDINAL ;
+   t      : PtrToNode ;
+BEGIN
+   fprintf3(op, '%a.%a at depth (%d) has sons (',
+            n^.Source^.ModName, n^.Source^.Ext, n^.Source^.Depth) ;
+   i := 1 ;
+   j := HighIndice(n^.Sons) ;
+   WHILE i<=j DO
+      t := GetIndice(n^.Sons, i) ;
+      IF t#NIL
+      THEN
+         fprintf2(op, '%a.%a, ', t^.Source^.ModName, t^.Source^.Ext)
+      END ;
+      INC(i)
+   END ;
+   fprintf0(op, ')\n')
+END DisplayTree ;
+
+
+(*
+   DisplaySource - displays the source files.
+*)
+
+PROCEDURE DisplaySource ;
+VAR
+   f: PtrToSource ;
+BEGIN
+   f := Files ;
+   WHILE f#NIL DO
+      WITH f^ DO
+         IF (Ext=DefExtn) OR (Ext=ModExtn)
+         THEN
+            fprintf3(op, '%d   %a.%a\n', Depth, ModName, Ext)
+         END
+      END ;
+      f := f^.Next
+   END
+END DisplaySource ;
+
+
+(*
+   DisplayDeps - display all dependants of, n, in a space separated list suitable for a Makefile.
+*)
+
+PROCEDURE DisplayDeps (n: PtrToNode) ;
+VAR
+   i, j: CARDINAL ;
+   t   : PtrToNode ;
+   name,
+   ext,
+   s, p: String ;
+BEGIN
+   i := 1 ;
+   j := HighIndice(n^.Sons) ;
+   WHILE i<=j DO
+      t := GetIndice(n^.Sons, i) ;
+      IF t#NIL
+      THEN
+         WITH t^.Source^ DO
+            name := InitStringCharStar(KeyToCharStar(ModName)) ;
+            ext  := InitStringCharStar(KeyToCharStar(Ext)) ;
+            s := NIL ;
+            IF Ext=ObjExtn
+            THEN
+               s := CalculateFileName(name, Mark(InitStringCharStar(KeyToCharStar(ModExtn)))) ;
+               p := NIL ;
+               IF FindSourceModFile(name, p)
+               THEN
+                  p := KillString(p) ;
+                  (* good we can build the object from known source *)
+                  FormatString(' ') ;
+                  s := Add(DestDirectory, CalculateFileName(name, ext)) ;
+                  FormatS(s)
+               END
+            ELSIF Ext=DefExtn
+            THEN
+               p := NIL ;
+               IF FindSourceDefFile(name, p)
+               THEN
+                  FormatString(' ') ;
+                  FormatS(p)
+               END ;
+               p := KillString(p)
+            ELSIF Ext=ModExtn
+            THEN
+               p := NIL ;
+               IF FindSourceModFile(name, p)
+               THEN
+                  FormatString(' ') ;
+                  FormatS(p)
+               END ;
+               p := KillString(p)
+            ELSE
+               s := CalculateFileName(name, ext) ;
+               p := NIL ;
+               IF FindSourceFile(s, p)
+               THEN
+                  FormatString(' ') ;
+                  FormatS(p)
+               END ;
+               p := KillString(p)
+            END ;
+            s    := KillString(s) ;
+            name := KillString(name) ;
+            ext  := KillString(ext)
+         END
+      END ;
+      INC(i)
+   END ;
+   FormatLn
+END DisplayDeps ;
+
+
+(*
+   DisplayDependants - displays the dependants of node, n.
+*)
+
+PROCEDURE DisplayDependants (n: PtrToNode) ;
+VAR
+   name,
+   ext,
+   s, f: String ;
+BEGIN
+   s := NIL ;
+   name := InitStringCharStar(KeyToCharStar(n^.Source^.ModName)) ;
+   ext  := InitStringCharStar(KeyToCharStar(n^.Source^.Ext)) ;
+   IF n^.Source^.Ext=ObjExtn
+   THEN
+      s := Add(DestDirectory, CalculateFileName(name, ext))
+   ELSIF n^.Source^.Ext=ExeExtn
+   THEN
+      s := Dup(name)
+   ELSIF n^.Source^.Ext=DefExtn
+   THEN
+      IF FindSourceDefFile(name, s)
+      THEN
+      END
+   ELSIF n^.Source^.Ext=ModExtn
+   THEN
+      IF FindSourceModFile(name, s)
+      THEN
+      END
+   ELSE
+      f := CalculateFileName(name, ext) ;
+      IF FindSourceFile(f, s)
+      THEN
+         f := KillString(f)
+      ELSE
+         f    := KillString(f) ;
+         name := KillString(name) ;
+         ext  := KillString(ext) ;
+         RETURN
+      END
+   END ;
+   FormatS(s) ;
+   s    := KillString(s) ;
+   name := KillString(name) ;
+   ext  := KillString(ext) ;
+   FormatString(':') ;
+   DisplayDeps(n)
+END DisplayDependants;
+
+
+(*
+   DisplayBuild - displays the command to build node, n.
+*)
+
+PROCEDURE DisplayBuild (n: PtrToNode) ;
+VAR
+   a, s,
+   obj,
+   ext,
+   name: String ;
+BEGIN
+   IF NOT DependOnly
+   THEN
+      name := InitStringCharStar(KeyToCharStar(n^.Source^.ModName)) ;
+      ext  := InitStringCharStar(KeyToCharStar(n^.Source^.Ext)) ;
+      s    := NIL ;
+      IF (n^.Source^.Ext=ExeExtn) AND ModExists(n^.Source^.ModName)
+      THEN
+         IF NOT NoLink
+         THEN
+            FormatChar(tab) ;
+            FormatString('$(M2L) ') ;
+            IF n^.Source^.ModName=MainName
+            THEN
+               s := InitStringCharStar(KeyToCharStar(MainSrc)) ;
+               name := NIL
+            ELSE
+               name := InitStringCharStar(KeyToCharStar(n^.Source^.ModName)) ;
+               IF NOT FindSourceModFile(name, s)
+               THEN
+                  fprintf1(StdErr, 'cannot find source file %s\n', name) ;
+                  exit(1)
+               END ;
+               name := KillString(name)
+            END ;
+            FormatS(s) ;
+            FormatLn
+         END
+      ELSIF (n^.Source^.Ext=ObjExtn) AND ModExists(n^.Source^.ModName)
+      THEN
+         FormatChar(tab) ;
+         FormatString('$(M2C) ') ;
+         IF NOT EqualArray(DestDirectory, '')
+         THEN
+            obj := InitStringCharStar(KeyToCharStar(ObjExtn)) ;
+            a := CalculateFileName(name, obj);
+            s := Sprintf2(Mark(InitString(' -o %s%s ')), DestDirectory, a) ;
+            a := KillString(a) ;
+            FormatS(s) ;
+            s    := KillString(s) ;
+            obj  := KillString(obj) ;
+            name := KillString(name)
+         END ;
+         IF n^.Source^.ModName=MainName
+         THEN
+            s := InitStringCharStar(KeyToCharStar(MainSrc)) ;
+            name := NIL
+         ELSE
+            s := NIL ;
+            name := InitStringCharStar(KeyToCharStar(n^.Source^.ModName)) ;
+            IF NOT FindSourceModFile(name, s)
+            THEN
+               fprintf1(StdErr, 'cannot find source file %s\n', name) ;
+               exit(1)
+            END ;
+            name := KillString(name)
+         END ;
+         FormatS(s) ;
+         FormatLn
+      END ;
+      ext  := KillString(ext) ;
+      name := KillString(name) ;
+      s    := KillString(s)
+   END
+END DisplayBuild ;
+
+
+(*
+   Version for GNU make - gm2
+*)
+
+PROCEDURE DisplayDependency (n: PtrToNode) ;
+VAR
+   i, j: CARDINAL ;
+   t   : PtrToNode ;
+BEGIN
+   j := HighIndice(n^.Sons) ;
+   IF j>0
+   THEN
+      FormatLn ;
+      DisplayDependants(n) ;
+      DisplayBuild(n) ;
+      i := 1 ;
+      WHILE i<=j DO
+         t := GetIndice(n^.Sons, i) ;
+         IF (t#NIL) AND (t^.Father=n)
+         THEN
+            DisplayDependency(t)
+         END ;
+         INC(i)
+      END
+   END
+END DisplayDependency ;
+
+
+(*
+   DisplayClean -
+*)
+
+PROCEDURE DisplayClean (n: PtrToNode) ;
+BEGIN
+   FormatLn ;
+   FormatString('clean: force') ; FormatLn ;
+   FormatChar(tab) ; FormatString('$(RM) ') ;
+   DisplayObjects(n) ;
+   FormatLn ;
+   FormatString('force:') ; FormatLn
+END DisplayClean ;
+
+
+(*
+   DisplayObjects - displays all the objects which are created.
+*)
+
+PROCEDURE DisplayObjects (n: PtrToNode) ;
+VAR
+   i, j: CARDINAL ;
+   t   : PtrToNode ;
+   name,
+   ext,
+   s, p: String ;
+BEGIN
+   i := 1 ;
+   j := HighIndice(n^.Sons) ;
+   WHILE i<=j DO
+      t := GetIndice(n^.Sons, i) ;
+      IF t#NIL
+      THEN
+         WITH t^.Source^ DO
+            name := InitStringCharStar(KeyToCharStar(ModName)) ;
+            ext  := InitStringCharStar(KeyToCharStar(Ext)) ;
+            s := NIL ;
+            IF Ext=ObjExtn
+            THEN
+               s := CalculateFileName(name, Mark(InitStringCharStar(KeyToCharStar(ModExtn)))) ;
+               p := NIL ;
+               IF FindSourceModFile(name, p)
+               THEN
+                  p := KillString(p) ;
+                  (* good we can build the object from known source *)
+                  FormatString(' ') ;
+                  s := Add(DestDirectory, CalculateFileName(name, ext)) ;
+                  FormatS(s)
+               END
+            END ;
+            s    := KillString(s) ;
+            name := KillString(name) ;
+            ext  := KillString(ext)
+         END
+      END ;
+      INC(i)
+   END ;
+   FormatLn
+END DisplayObjects ;
+
+
+(*
+   GM2Make -
+*)
+
+PROCEDURE GM2Make ;
+BEGIN
+   FormatString('OPTIONS= ') ;
+   FormatS(Options) ;
+   FormatLn ;
+   FormatString('M2C= ') ;
+   FormatS(Compiler) ;
+   FormatString(' -c $(OPTIONS)') ;
+   FormatLn ;
+   IF EqualArray(DestDirectory, '')
+   THEN
+      FormatString('M2L= ') ;
+      FormatS(Compiler) ;
+      FormatString(' -fonlylink -I. $(OPTIONS) ')
+   ELSE
+      FormatString('M2L= ') ;
+      FormatS(Compiler) ;
+      FormatString(' -fonlylink ') ;
+      FormatS(DestDirectory) ; FormatString(' $(OPTIONS) ')
+   END ;
+   FormatLn
+END GM2Make ;
+
+
+(*
+   UnixMake - generates the makefile for UNIX gm2
+*)
+
+PROCEDURE UnixMake (main: PtrToNode) ;
+BEGIN
+   IF NOT DependOnly
+   THEN
+      GM2Make
+   END ;
+   DisplayDependency(main) ;
+   DisplayClean(main)
+END UnixMake ;
+
+
+VAR
+   CurrentLineBreak: CARDINAL ;
+
+(*
+   FormatChar - writes a character and wraps around MaxLineBreak.
+*)
+
+PROCEDURE FormatChar (ch: CHAR) ;
+BEGIN
+   IF ch=tab
+   THEN
+      INC(CurrentLineBreak, 8)
+   ELSE
+      INC(CurrentLineBreak)
+   END ;
+   fprintf1(op, '%c', ch)
+END FormatChar ;
+
+
+(*
+   FormatString - writes a string which wraps around MaxLineBreak.
+*)
+
+PROCEDURE FormatString (a: ARRAY OF CHAR) ;
+BEGIN
+   IF StrLen(a)+CurrentLineBreak>MaxLineBreak
+   THEN
+      fprintf0(op, ' \\') ;
+      FormatLn ;
+      FormatChar(tab)
+   END ;
+   fprintf0(op, a) ;
+   INC(CurrentLineBreak, StrLen(a))
+END FormatString ;
+
+
+(*
+   FormatS - writes a string, s, which wraps around MaxLineBreak.
+*)
+
+PROCEDURE FormatS (s: String) ;
+BEGIN
+   IF Length(s)+CurrentLineBreak>MaxLineBreak
+   THEN
+      fprintf0(op, ' \\') ;
+      FormatLn ;
+      FormatChar(tab)
+   END ;
+   INC(CurrentLineBreak, Length(WriteS(op, s)))
+END FormatS ;
+
+
+(*
+   FormatLn - writes a newline and sets CurrentLineBreak to zero.
+*)
+
+PROCEDURE FormatLn ;
+BEGIN
+   fprintf0(op, '\n') ;
+   CurrentLineBreak := 0
+END FormatLn ;
+
+
+(*
+   InitName - initializes the name of this program,
+              normally gm2m for GNU Modula-2 and m2m for m2f.
+*)
+
+PROCEDURE InitName ;
+BEGIN
+   IF GetArg(ProgName, 0)
+   THEN
+   END
+END InitName ;
+
+
+(*
+   OpenOutputFile - attempts to open an output file.
+*)
+
+PROCEDURE OpenOutputFile (s: String) ;
+BEGIN
+   IF EqualArray(s, '-')
+   THEN
+      op := StdOut
+   ELSE
+      op := OpenToWrite(s) ;
+      IF NOT IsNoError(op)
+      THEN
+         fprintf1(StdErr, 'cannot write to: %s\n', s) ;
+         exit(1)
+      END
+   END
+END OpenOutputFile ;
+
+
+(*
+   StripSlash - removes '/' from the end of the string, s.
+*)
+
+PROCEDURE StripSlash (s: String) : String ;
+BEGIN
+   WHILE Length(s)>0 DO
+      IF char(s, -1)='/'
+      THEN
+         s := Slice(Mark(s), 0, -1)
+      ELSE
+         RETURN( s )
+      END
+   END ;
+   RETURN( s )
+END StripSlash ;
+
+
+(*
+   TryPrefix -
+*)
+
+PROCEDURE TryPrefix (prefix, compiler: String) : String ;
+VAR
+   try: String ;
+BEGIN
+   prefix := StripSlash(prefix) ;
+   compiler := StripSlash(compiler) ;
+   try := ConCat(prefix, compiler) ;
+   IF Exists(try)
+   THEN
+      compiler := KillString(compiler) ;
+      RETURN( try )
+   ELSE
+      prefix := KillString(prefix) ;
+      RETURN( compiler )
+   END
+END TryPrefix ;
+
+
+(*
+   ScanGm2Args - scans the gm2 arguments and builds up the Options string.
+*)
+
+PROCEDURE ScanGm2Args (i: CARDINAL) : CARDINAL ;
+VAR
+   s: String ;
+BEGIN
+   IF GetArg(s, i) AND EqualArray(s, '-fgm2begin')
+   THEN
+      INC(i) ;
+      WHILE GetArg(s, i) DO
+         IF EqualArray(s, '-fgm2end')
+         THEN
+            RETURN( i )
+         ELSIF char(s, 0)='-'
+         THEN
+            IF NOT EqualArray(Options, '')
+            THEN
+               Options := ConCatChar(Options, ' ')
+            END ;
+            Options := ConCat(Options, s) ;
+(*
+            IF EqualArray(Mark(Slice(s, 0, 2)), '-B')
+            THEN
+               Compiler := TryPrefix(Slice(s, 2, 0), Compiler)
+            ELSIF EqualArray(Slice(s, 0, 9), '-fmake-I=')
+            THEN
+               IF GM2PathFound
+               THEN
+                  printf0('cannot specify -I and -fmake-I on the command line\n') ;
+                  exit(1)
+               END ;
+               M2MPathFound := TRUE ;
+               M2MPath := Slice(s, 9, 0) ;
+               InitSearchPath(M2MPath)
+*)
+            IF EqualArray(Mark(Slice(s, 0, 6)), '-fdef=')
+            THEN
+               SetDefExtension(Slice(s, 6, 0)) ;
+               DefExtn := makekey(string(Slice(s, 6, 0)))
+            ELSIF EqualArray(Mark(Slice(s, 0, 6)), '-fmod=')
+            THEN
+               SetModExtension(Slice(s, 6, 0)) ;
+               ModExtn := makekey(string(Slice(s, 6, 0)))
+            END
+         END ;
+         INC(i)
+      END
+   END ;
+   RETURN( i )
+END ScanGm2Args ;
+
+
+(*
+   ParseArgs - parses the arguments and then calls the main program.
+*)
+
+PROCEDURE ParseArgs ;
+VAR
+   s, e    : String ;
+   isdefimp: BOOLEAN ;
+BEGIN
+   CurrentArg := 1 ;
+   IF Narg()>1
+   THEN
+      WHILE GetArg(s, CurrentArg) DO
+         IF EqualArray(Mark(Slice(s, 0, 2)), '-B')
+         THEN
+            Compiler := TryPrefix(Slice(s, 2, 0), InitString('gm2'))
+         ELSIF EqualArray(Mark(Slice(s, 0, 2)), '-v')
+         THEN
+            Verbose := TRUE
+         ELSIF EqualArray(Slice(s, 0, 2), '-I')
+         THEN
+            IF M2MPathFound
+            THEN
+               printf0('cannot specify -I and -fmake-I on the command line\n') ;
+               exit(1)
+            END ;
+            GM2PathFound := TRUE ;
+            GM2Path := Slice(s, 2, 0) ;
+            PrependSearchPath(GM2Path)
+         ELSIF EqualArray(Slice(s, 0, 9), '-fmake-I=')
+         THEN
+            IF GM2PathFound
+            THEN
+               printf0('cannot specify -I and -fmake-I on the command line\n') ;
+               exit(1)
+            END ;
+            M2MPathFound := TRUE ;
+            M2MPath := Slice(s, 9, 0) ;
+            InitSearchPath(M2MPath)
+         ELSIF EqualArray(s, '-fcppbegin')
+         THEN
+            CurrentArg := ScanCppArgs(CurrentArg)
+         ELSIF EqualArray(s, '-fgm2begin')
+         THEN
+            CurrentArg := ScanGm2Args(CurrentArg)
+         ELSIF EqualArray(s, '-d')
+         THEN
+            INC(CurrentArg) ;
+            IF NOT GetArg(DestDirectory, CurrentArg)
+            THEN
+               printf0('-o expecting a destination directory\n') ;
+               exit(1)
+            END
+         ELSIF EqualArray(s, '-o')
+         THEN
+            INC(CurrentArg) ;
+            IF NOT GetArg(OutputFile, CurrentArg)
+            THEN
+               printf0('-o expecting an output file\n') ;
+               exit(1)
+            END ;
+            OpenOutputFile(OutputFile)
+         ELSIF EqualArray(s, '-e')
+         THEN
+            INC(CurrentArg) ;
+            IF NOT GetArg(e, CurrentArg)
+            THEN
+               printf0('-e expecting an extension argument\n') ;
+               exit(1)
+            END ;
+            ObjExtn := makekey(string(e)) ;
+            e := KillString(e)
+         ELSIF EqualArray(s, '-depend')
+         THEN
+            DependOnly := TRUE
+         ELSIF EqualArray(s, '-nolink')
+         THEN
+            NoLink := TRUE
+         ELSE
+            MainSrc := makekey(string(s)) ;
+            IF OpenSource(PreprocessModule(s))
+            THEN
+               ExamineCompilationUnit(MainName, isdefimp) ;
+               CloseSource ;
+               ReInitialize ;
+
+               main := NewNode() ;
+               main^.Father := NIL ;
+               main^.Source := NewSource() ;
+               Files := main^.Source ;
+               WITH main^.Source^ DO
+                  SourceNode := main ;
+                  ModName := MainName ;
+
+                  main^.Source^.Ext := ExeExtn ;
+                  (* .exe is never written out, it is just a unique extension
+                     representing not matching .o .mod or .def *)
+                  e := CalculateFileName(s, Mark(InitString('exe'))) ;
+                  MakeExe(ModName, main, 0) ;
+                  UnixMake(main) ;
+                  e := KillString(e)
+               END
+            ELSE
+               fprintf2(StdErr, '%s: cannot find %s\n', ProgName, s)
+            END
+         END ;
+         s := KillString(s) ;
+         INC(CurrentArg)
+      END
+   ELSE
+      printf1 ('Usage: %s [-e extension][-d destination directory][-nolink][-depend][-fmake-I=searchpath][-I compiler searchpath] [-o outputfile] modulefile [options] [compiler]\n', ProgName)
+   END ;
+   exit(ExitValue)
+END ParseArgs ;
+
+
+(*
+   Init - initializes the data structures and calls ParseArgs
+*)
+
+PROCEDURE Init ;
+BEGIN
+   InitName ;
+   ExeExtn     := MakeKey('exe') ;
+   ObjExtn     := MakeKey('o') ;
+   DefExtn     := MakeKey('def') ;
+   ModExtn     := MakeKey('mod') ;
+   KeyFound    := MakeKey('KeyFound') ;
+   KeyNotFound := MakeKey('KeyNotFound') ;
+
+   CurrentLineBreak := 0 ;
+   Files := NIL ;
+   InitTree(DefExistsTree) ;
+   InitTree(ModExistsTree) ;
+   DestDirectory := NIL ;
+   M2MPath := NIL ;
+   GM2Path := NIL ;
+   Options := InitString('') ;
+   Compiler := InitString('gm2') ;
+   M2MPathFound := FALSE ;
+   GM2PathFound := FALSE ;
+   DependOnly := FALSE ;
+   NoLink := FALSE ;
+   op := StdOut ;
+   ExitValue := 0 ;
+   Verbose := FALSE ;
+   ParseArgs
+END Init ;
+
+
+BEGIN
+   Init
+END gm2m.
+% rules
+error       'ErrorArray' 'ErrorString'
+tokenfunc   'currenttoken'
+
+token   ''                eoftok      -- internal token
+token   '+'               plustok
+token   '-'               minustok
+token   '*'               timestok
+token   '/'               dividetok
+token   ':='              becomestok
+token   '&'               ambersandtok
+token   "."               periodtok
+token   ","               commatok
+token   ";"               semicolontok
+token   '('               lparatok
+token   ')'               rparatok
+token   '['               lsbratok   -- left  square brackets
+token   ']'               rsbratok   -- right square brackets
+token   '{'               lcbratok   -- left  curly brackets
+token   '}'               rcbratok   -- right curly brackets
+token   '^'               uparrowtok
+token   "'"               singlequotetok
+token   '='               equaltok
+token   '#'               hashtok
+token   '<'               lesstok
+token   '>'               greatertok
+token   '<>'              lessgreatertok
+token   '<='              lessequaltok
+token   '>='              greaterequaltok
+token   '<*'              ldirectivetok
+token   '*>'              rdirectivetok
+token   '..'              periodperiodtok
+token   ':'               colontok
+token   '"'               doublequotestok
+token   '|'               bartok
+token   'AND'             andtok
+token   'ARRAY'           arraytok
+token   'BEGIN'           begintok
+token   'BY'              bytok
+token   'CASE'            casetok
+token   'CONST'           consttok
+token   'DEFINITION'      definitiontok
+token   'DIV'             divtok
+token   'DO'              dotok
+token   'ELSE'            elsetok
+token   'ELSIF'           elsiftok
+token   'END'             endtok
+token   'EXCEPT'          excepttok
+token   'EXIT'            exittok
+token   'EXPORT'          exporttok
+token   'FINALLY'         finallytok
+token   'FOR'             fortok
+token   'FROM'            fromtok
+token   'IF'              iftok
+token   'IMPLEMENTATION'  implementationtok
+token   'IMPORT'          importtok
+token   'IN'              intok
+token   'LOOP'            looptok
+token   'MOD'             modtok
+token   'MODULE'          moduletok
+token   'NOT'             nottok
+token   'OF'              oftok
+token   'OR'              ortok
+token   'PACKEDSET'       packedsettok
+token   'POINTER'         pointertok
+token   'PROCEDURE'       proceduretok
+token   'QUALIFIED'       qualifiedtok
+token   'UNQUALIFIED'     unqualifiedtok
+token   'RECORD'          recordtok
+token   'REM'             remtok
+token   'REPEAT'          repeattok
+token   'RETRY'           retrytok
+token   'RETURN'          returntok
+token   'SET'             settok
+token   'THEN'            thentok
+token   'TO'              totok
+token   'TYPE'            typetok
+token   'UNTIL'           untiltok
+token   'VAR'             vartok
+token   'WHILE'           whiletok
+token   'WITH'            withtok
+token   'ASM'             asmtok
+token   'VOLATILE'        volatiletok
+token   '...'             periodperiodperiodtok
+token   '__DATE__'        datetok
+token   '__LINE__'        linetok
+token   '__FILE__'        filetok
+token   '__ATTRIBUTE__'   attributetok
+token   '__BUILTIN__'     builtintok
+token   '__INLINE__'      inlinetok
+token   'integer number'  integertok
+token   'identifier'      identtok
+token   'real number'     realtok
+token   'str'             stringtok
+
+special Ident             first { < identtok > } follow { }
+special Integer           first { < integertok > } follow { }
+special Real              first { < realtok > } follow { }
+special str               first { < stringtok > } follow { }
+
+BNF
+
+-- the following are provided by the module m2flex and also handbuilt procedures below
+-- Ident := Letter { ( Letter | Digit ) } =:
+-- Integer := Digit { Digit } | OctalDigit { OctalDigit } ( " B " | " C " ) |
+--           Digit { HexDigit } " H " =:
+-- Real := Digit { Digit } " . " { Digit } [ ScaleFactor ] =:
+-- ScaleFactor := " E " [ ( " + " | " - " ) ] Digit { Digit } =:
+-- HexDigit := Digit | " A " | " B " | " C " | " D " | " E " | " F " =:
+-- Digit := OctalDigit | " 8 " | " 9 " =:
+-- OctalDigit := "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" =:
+-- String
+
+FileUnit :=
+            ( DefinitionModule |
+              ImplementationOrProgramModule )
+         =:
+
+ProgramModule := "MODULE"
+                  Ident
+
+                  [ Priority ] ";"
+
+                  { Import
+                  }
+                  Block Ident "."
+               =:
+
+ImplementationModule := "IMPLEMENTATION" "MODULE"
+                         Ident
+                         [ Priority ] ";"
+                         { Import
+                           }
+                         Block Ident "."
+                      =:
+
+ImplementationOrProgramModule := ImplementationModule | ProgramModule =:
+
+DefinitionModule := "DEFINITION" "MODULE" [ "FOR" str
+                                          ]
+                    Ident
+                    ";"
+                    { Import
+                             } [ Export
+                                        ]
+                  =:
+
+Number := Integer | Real =:
+
+ConstantDeclaration := Ident "=" ConstExpression =:
+
+ConstExpression := SimpleConstExpr [ Relation SimpleConstExpr ] =:
+
+Relation := "=" | "#" | "<>" | "<" | "<=" | ">" | ">=" | "IN" =:
+
+SimpleConstExpr := UnaryOrConstTerm { AddOperator ConstTerm } =:
+
+UnaryOrConstTerm := "+" ConstTerm | "-" ConstTerm | ConstTerm =:
+
+AddOperator := "+" | "-" | "OR" =:
+
+ConstTerm := ConstFactor { MulOperator ConstFactor } =:
+
+MulOperator := "*" | "/" | "DIV" | "MOD" | "REM" | "AND" | "&" =:
+
+ConstFactor := Number | ConstString | ConstSetOrQualidentOrFunction |
+               "(" ConstExpression ")" | "NOT" ConstFactor |
+                                               ConstAttribute
+             =:
+
+-- to help satisfy LL1
+
+ConstString := str =:
+
+ComponentElement := ConstExpression [ ".." ConstExpression ] =:
+
+ComponentValue := ComponentElement [ 'BY' ConstExpression ] =:
+
+ArraySetRecordValue := ComponentValue { ',' ComponentValue } =:
+
+Constructor := '{' [ ArraySetRecordValue ] '}' =:
+
+ConstSetOrQualidentOrFunction := Constructor | Qualident
+                                 [ Constructor | ConstActualParameters ] =:
+
+ConstActualParameters := "(" [ ExpList ] ")" =:
+
+ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" ConstAttributeExpression ")" ")" =:
+
+ConstAttributeExpression := Ident | "<" Qualident ',' Ident ">" =:
+
+ByteAlignment := '<*' AttributeExpression '*>' =:
+
+OptAlignmentExpression := [ AlignmentExpression ] =:
+
+AlignmentExpression := "(" ConstExpression ")" =:
+
+Alignment := [ ByteAlignment ] =:
+
+TypeDeclaration := ( Ident "=" Type Alignment ) =:
+
+Type := ( SimpleType | ArrayType | RecordType | SetType |
+          PointerType | ProcedureType )
+        =:
+
+SimpleType := Qualident [ SubrangeType ] | Enumeration | SubrangeType =:
+
+Enumeration := "(" IdentList ")" =:
+
+SubrangeType := "[" ConstExpression ".." ConstExpression "]" =:
+
+ArrayType := "ARRAY" SimpleType { "," SimpleType } "OF" Type =:
+
+RecordType := "RECORD" [ DefaultRecordAttributes ] FieldListSequence "END" =:
+
+DefaultRecordAttributes := '<*' AttributeExpression '*>' =:
+
+RecordFieldPragma := [ '<*' FieldPragmaExpression
+                        { ',' FieldPragmaExpression } '*>' ] =:
+
+FieldPragmaExpression := Ident [ '(' ConstExpression ')' ] =:
+
+AttributeExpression := Ident '(' ConstExpression ')' =:
+
+FieldListSequence := FieldListStatement { ";" FieldListStatement } =:
+
+FieldListStatement := [ FieldList ] =:
+
+FieldList := IdentList ":" Type RecordFieldPragma
+                                |
+             "CASE" CaseTag "OF" Varient { "|" Varient }
+             [ "ELSE" FieldListSequence ] "END"
+           =:
+
+TagIdent := [ Ident ] =:
+
+CaseTag := TagIdent [ ":" Qualident ] =:
+
+Varient := [ VarientCaseLabelList ":" FieldListSequence ] =:
+
+VarientCaseLabelList := VarientCaseLabels { "," VarientCaseLabels } =:
+
+VarientCaseLabels := ConstExpression [ ".." ConstExpression ] =:
+
+CaseLabelList := CaseLabels { "," CaseLabels } =:
+
+CaseLabels := ConstExpression [ ".." ConstExpression ] =:
+
+SetType := ( "SET" | "PACKEDSET" ) "OF" SimpleType =:
+
+PointerType := "POINTER" "TO" Type =:
+
+ProcedureType := "PROCEDURE" [ FormalTypeList ] =:
+
+FormalTypeList := "(" ( ")" FormalReturn |
+                        ProcedureParameters ")" FormalReturn ) =:
+
+FormalReturn := [ ":" OptReturnType ] =:
+
+OptReturnType := "[" Qualident "]" | Qualident =:
+
+ProcedureParameters := ProcedureParameter
+                       { "," ProcedureParameter } =:
+
+ProcedureParameter := "..." | "VAR" FormalType | FormalType =:
+
+VarIdent := Ident [ "[" ConstExpression "]" ] =:
+
+VariableDeclaration := VarIdentList ":" Type Alignment =:
+
+VarIdentList := VarIdent { "," VarIdent } =:
+
+Designator := Qualident { SubDesignator } =:
+
+SubDesignator := "." Ident | "[" ExpList "]" | "^" =:
+
+ExpList := Expression { "," Expression } =:
+
+Expression := SimpleExpression [ Relation SimpleExpression ] =:
+
+SimpleExpression := [ "+" | "-" ] Term { AddOperator Term } =:
+
+Term := Factor { MulOperator Factor } =:
+
+Factor := Number | str | SetOrDesignatorOrFunction |
+          "(" Expression ")" | "NOT" Factor | ConstAttribute =:
+
+SetOrDesignatorOrFunction := ( Qualident [ Constructor |
+                                           SimpleDes [ ActualParameters ]
+                                         ] | Constructor
+                             )
+                           =:
+
+SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
+
+ActualParameters := "(" [ ExpList ] ")" =:
+
+Statement := [ AssignmentOrProcedureCall | IfStatement | CaseStatement |
+               WhileStatement | RepeatStatement | LoopStatement |
+               ForStatement | WithStatement | AsmStatement |
+               "EXIT" | "RETURN" [ Expression ] | RetryStatement ] =:
+
+RetryStatement := "RETRY" =:
+
+AssignmentOrProcedureCall := Designator ( ":=" Expression |
+                                           ActualParameters |              % (* epsilon *) %
+                                        ) =:
+
+-- these two break LL1 as both start with a Designator
+-- ProcedureCall := Designator [ ActualParameters ] =:
+-- Assignment := Designator ":=" Expression =:
+
+StatementSequence := Statement { ";" Statement } =:
+
+IfStatement := "IF" Expression "THEN" StatementSequence
+              { "ELSIF" Expression "THEN" StatementSequence }
+              [ "ELSE" StatementSequence ] "END" =:
+
+CaseStatement := "CASE" Expression "OF" Case { "|" Case }
+                 [ "ELSE" StatementSequence ] "END" =:
+
+Case := [ CaseLabelList ":" StatementSequence ] =:
+
+WhileStatement := "WHILE" Expression "DO" StatementSequence "END" =:
+
+RepeatStatement := "REPEAT" StatementSequence "UNTIL" Expression =:
+
+ForStatement := "FOR" Ident ":=" Expression "TO" Expression
+                [ "BY" ConstExpression ] "DO"
+                StatementSequence "END" =:
+
+LoopStatement := "LOOP" StatementSequence "END" =:
+
+WithStatement := "WITH" Designator "DO" StatementSequence "END" =:
+
+ProcedureDeclaration := ProcedureHeading ";" ( ProcedureBlock Ident ) =:
+
+DefineBuiltinProcedure := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")"
+                          | "__INLINE__"
+                          | % (* epsilon *) %
+                       =:
+
+ProcedureHeading := "PROCEDURE" DefineBuiltinProcedure
+                     ( Ident [ FormalParameters ] AttributeNoReturn ) =:
+
+AttributeNoReturn := [ "<*" Ident "*>" ] =:
+
+Builtin := "__BUILTIN__" | "__INLINE__" | % (* epsilon *) % =:
+
+DefProcedureHeading := "PROCEDURE" Builtin ( Ident
+                                             [ DefFormalParameters ] AttributeNoReturn ) =:
+
+-- introduced procedure block so we can produce more informative
+-- error messages
+
+ProcedureBlock :=                                                        % BeginBlock(0) %
+                  { Declaration } [ "BEGIN" BlockBody ] "END"            % EndBlock %
+                =:
+
+Block :=
+          { Declaration } InitialBlock FinalBlock "END"
+       =:
+
+InitialBlock := [ "BEGIN" BlockBody ] =:
+
+FinalBlock := [ "FINALLY" BlockBody ] =:
+
+BlockBody := NormalPart [ "EXCEPT" ExceptionalPart ] =:
+
+NormalPart := StatementSequence =:
+
+ExceptionalPart := StatementSequence =:
+
+Declaration := "CONST" { ConstantDeclaration ";" } |
+               "TYPE" { TypeDeclaration ";" } |
+               "VAR" { VariableDeclaration ";" } |
+               ProcedureDeclaration ";" |
+               ModuleDeclaration ";" =:
+
+DefFormalParameters := "(" [ DefMultiFPSection ] ")" FormalReturn =:
+
+DefMultiFPSection := DefExtendedFP |
+                     FPSection [ ";" DefMultiFPSection ] =:
+
+FormalParameters := "(" [ MultiFPSection ] ")" FormalReturn =:
+
+MultiFPSection := ExtendedFP |
+                  FPSection [ ";" MultiFPSection ] =:
+
+FPSection := NonVarFPSection | VarFPSection =:
+
+DefExtendedFP := DefOptArg | "..." =:
+
+ExtendedFP := OptArg | "..." =:
+
+VarFPSection := "VAR" IdentList ":" FormalType =:
+
+NonVarFPSection := IdentList ":" FormalType =:
+
+OptArg := "[" Ident ":" FormalType [ "=" ConstExpression ] "]" =:
+
+DefOptArg := "[" Ident ":" FormalType "=" ConstExpression "]" =:
+
+FormalType := { "ARRAY" "OF" } Qualident =:
+
+-- local module, make sure this is not in the import list
+
+ModuleDeclaration := "MODULE"
+                     Ident                                                  % RegisterLocalModule(LastIdent) %
+                     [ Priority ] ";"
+                     { ImportInner
+                        } [ Export
+                            ]
+                                                                            % BeginBlock(0) %
+                       Block
+                       Ident                                                % EndBlock %
+                     =:
+
+Priority := "[" ConstExpression "]" =:
+
+Qualident := Ident { "." Ident } =:
+
+Export := "EXPORT" ( "QUALIFIED"
+                                 IdentList |
+                     "UNQUALIFIED"
+                                 IdentList |
+                     IdentList ) ";" =:
+
+Import :=  "FROM" Ident                                                     % RegisterImport(LastIdent) %
+                 "IMPORT" IdentList ";" |
+           "IMPORT" ImportList ";" =:
+
+ImportInner := "FROM" Ident                                                 % RegisterImport(LastIdent) %
+                            "IMPORT" IdentList ";" |
+                                                     "IMPORT" IdentList ";" =:
+
+IdentList := Ident { "," Ident } =:
+
+ImportList := Ident                                                         % RegisterImport(LastIdent) %
+                    { "," Ident                                             % RegisterImport(LastIdent) %
+                                } =:
+
+AsmStatement := 'ASM' [ 'VOLATILE' ] '(' AsmOperands ')' =:
+
+NamedOperand := '[' Ident ']' =:
+
+AsmOperandName := [ NamedOperand ] =:
+
+AsmOperands  := str [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
+             =:
+
+AsmList      := [ AsmElement ] { ',' AsmElement } =:
+
+AsmElement   := AsmOperandName str '(' Expression ')'
+             =:
+
+TrashList    := [ str ] { ',' str } =:
+
+FNB

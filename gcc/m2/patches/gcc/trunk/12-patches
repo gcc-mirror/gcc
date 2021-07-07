@@ -1,0 +1,16 @@
+--- gcc-git/gcc/fortran/gfortranspec.c	2021-06-10 11:58:18.450986807 +0100
++++ gm2-floppsie/gcc/fortran/gfortranspec.c	2021-06-17 10:20:53.219400521 +0100
+@@ -447,4 +447,12 @@
+ }
+ 
+ /* Number of extra output files that lang_specific_pre_link may generate.  */
+-int lang_specific_extra_outfiles = 0;	/* Not used for F77.  */
++int lang_specific_extra_outfiles = 0;	/* Not used for Fortran.  */
++
++/* lang_register_spec_functions register the Fortran associated spec
++   functions.  */
++
++void
++lang_register_spec_functions (void)
++{
++}

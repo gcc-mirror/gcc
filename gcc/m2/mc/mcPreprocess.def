@@ -1,0 +1,41 @@
+(* mcPreprocess.def provides a mechanism to invoke the C preprocessor.
+
+Copyright (C) 2015-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcPreprocess ;
+
+
+FROM DynamicStrings IMPORT String ;
+
+
+(*
+   preprocessModule - preprocess a file, filename, returning the new filename
+                      of the preprocessed file.
+                      Preprocessing will only occur if requested by the user.
+                      If no preprocessing was requested then filename is returned.
+                      If preprocessing occurs then a temporary file is created
+                      and its name is returned.
+                      All temporary files will be deleted when the compiler exits.
+*)
+
+PROCEDURE preprocessModule (filename: String) : String ;
+
+
+END mcPreprocess.

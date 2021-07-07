@@ -1,0 +1,2 @@
+# Target libraries are put under this directory:
+TARGET_SUBDIR = @target_subdir@

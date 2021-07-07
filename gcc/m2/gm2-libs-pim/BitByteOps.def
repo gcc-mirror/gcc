@@ -1,0 +1,143 @@
+(* BitByteOps.def provides a Logitech-3.0 compatible library.
+
+Copyright (C) 2007-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE BitByteOps ;
+
+FROM SYSTEM IMPORT BYTE ;
+
+
+(*
+   GetBits - returns the bits firstBit..lastBit from source.
+             Bit 0 of byte maps onto the firstBit of source.
+*)
+
+PROCEDURE GetBits (source: BYTE; firstBit, lastBit: CARDINAL) : BYTE ;
+
+
+(*
+   SetBits - sets bits in, byte, starting at, firstBit, and ending at,
+             lastBit, with, pattern.  The bit zero of, pattern, will
+             be placed into, byte, at position, firstBit.
+*)
+
+PROCEDURE SetBits (VAR byte: BYTE; firstBit, lastBit: CARDINAL;
+                   pattern: BYTE) ;
+
+
+(*
+   ByteAnd - returns a bitwise (left AND right)
+*)
+
+PROCEDURE ByteAnd (left, right: BYTE) : BYTE ;
+
+
+(*
+   ByteOr - returns a bitwise (left OR right)
+*)
+
+PROCEDURE ByteOr (left, right: BYTE) : BYTE ;
+
+
+(*
+   ByteXor - returns a bitwise (left XOR right)
+*)
+
+PROCEDURE ByteXor (left, right: BYTE) : BYTE ;
+
+
+(*
+   ByteNot - returns a byte with all bits inverted.
+*)
+
+PROCEDURE ByteNot (byte: BYTE) : BYTE ;
+
+
+(*
+   ByteShr - returns a, byte, which has been shifted, count
+             bits to the right.
+*)
+
+PROCEDURE ByteShr (byte: BYTE; count: CARDINAL) : BYTE ;
+
+
+(*
+   ByteShl - returns a, byte, which has been shifted, count
+             bits to the left.
+*)
+
+PROCEDURE ByteShl (byte: BYTE; count: CARDINAL) : BYTE ;
+
+
+(*
+   ByteSar - shift byte arthemetic right.  Preserves the top
+             end bit and as the value is shifted right.
+*)
+
+PROCEDURE ByteSar (byte: BYTE; count: CARDINAL) : BYTE ;
+
+
+(*
+   ByteRor - returns a, byte, which has been rotated, count
+             bits to the right.
+*)
+
+PROCEDURE ByteRor (byte: BYTE; count: CARDINAL) : BYTE ;
+
+
+(*
+   ByteRol - returns a, byte, which has been rotated, count
+             bits to the left.
+*)
+
+PROCEDURE ByteRol (byte: BYTE; count: CARDINAL) : BYTE ;
+
+
+(*
+   HighNibble - returns the top nibble only from, byte.
+                The top nibble of, byte, is extracted and
+                returned in the bottom nibble of the return
+                value.
+*)
+
+PROCEDURE HighNibble (byte: BYTE) : BYTE ;
+
+
+(*
+   LowNibble - returns the low nibble only from, byte.
+               The top nibble is replaced by zeros.
+*)
+
+PROCEDURE LowNibble (byte: BYTE) : BYTE ;
+
+
+(*
+   Swap - swaps the low and high nibbles in the, byte.
+*)
+
+PROCEDURE Swap (byte: BYTE) : BYTE ;
+
+
+END BitByteOps.

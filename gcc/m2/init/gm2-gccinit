@@ -1,0 +1,97 @@
+# gm2-gccinit list of Modula-2 modules used by cc1gm2.
+#
+# Copyright (C) 2000-2020 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+M2Bitset
+Debug
+M2Defaults
+Environment
+RTExceptions
+M2EXCEPTION
+M2RTS
+SysExceptions
+DynamicStrings
+Assertion
+FormatStrings
+FIO
+SFIO
+SArgs
+Lists
+UnixArgs
+Args
+wrapc
+TimeString
+IO
+StdIO
+CmdArgs
+M2Preprocess
+M2Error
+M2Search
+Indexing
+NameKey
+NumberIO
+FpuIO
+SysStorage
+Storage
+StrIO
+m2color
+M2Debug
+M2Batch
+StrLib
+M2ALU
+M2Options
+M2Comp
+M2LexBuf
+SymbolTable
+M2Base
+M2Quads
+SymbolKey
+FifoQueue
+M2Reserved
+M2Const
+P0SymBuild
+P1SymBuild
+P2SymBuild
+P3SymBuild
+M2System
+M2BasicBlock
+M2Pass
+M2Code
+M2AsmUtil
+M2FileName
+M2Version
+M2Students
+StrCase
+M2Entity
+SymbolConversion
+M2GCCDeclare
+M2GenGCC
+M2Range
+M2Swig
+M2MetaError
+M2CaseList
+PCSymBuild
+PCBuild
+M2Check
+M2SSA
+Sets
+dtoa
+ldtoa
+gm2
+mod_init

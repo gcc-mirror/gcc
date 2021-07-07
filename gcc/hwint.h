@@ -257,11 +257,14 @@ exact_log2 (unsigned HOST_WIDE_INT x)
   (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1))
 #define HOST_WIDE_INT_MAX (~(HOST_WIDE_INT_MIN))
 
+#ifndef __cplusplus
 extern HOST_WIDE_INT abs_hwi (HOST_WIDE_INT);
 extern unsigned HOST_WIDE_INT absu_hwi (HOST_WIDE_INT);
-extern HOST_WIDE_INT gcd (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT pos_mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
+#endif  /* !cplusplus.  */
+
+extern HOST_WIDE_INT gcd (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT least_common_multiple (HOST_WIDE_INT, HOST_WIDE_INT);
 
 /* Like ctz_hwi, except 0 when x == 0.  */
@@ -316,6 +319,7 @@ zext_hwi (unsigned HOST_WIDE_INT src, unsigned int prec)
     }
 }
 
+#ifdef __cplusplus
 /* Compute the absolute value of X.  */
 
 inline HOST_WIDE_INT
@@ -374,5 +378,6 @@ mul_hwi (HOST_WIDE_INT a, HOST_WIDE_INT b, bool *overflow)
   return result;
 #endif
 }
+#endif /* ! __cplusplus */
 
 #endif /* ! GCC_HWINT_H */

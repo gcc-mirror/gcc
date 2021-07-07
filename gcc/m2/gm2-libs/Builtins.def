@@ -1,0 +1,229 @@
+(* Builtins.def provides access to all built-in functions.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Builtins ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+(* floating point intrinsic procedure functions *)
+
+PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : BOOLEAN ;
+PROCEDURE __BUILTIN__ isfinite (x: REAL) : BOOLEAN ;
+PROCEDURE __BUILTIN__ isfinitel (x: LONGREAL) : BOOLEAN ;
+
+PROCEDURE __BUILTIN__ sinf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ sin (x: REAL) : REAL ;
+PROCEDURE __BUILTIN__ sinl (x: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ cosf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ cos (x: REAL) : REAL ;
+PROCEDURE __BUILTIN__ cosl (x: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ sqrtf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ sqrt (x: REAL) : REAL ;
+PROCEDURE __BUILTIN__ sqrtl (x: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ atan2f (x, y: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ atan2 (x, y: REAL) : REAL ;
+PROCEDURE __BUILTIN__ atan2l (x, y: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ fabsf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ fabs (x: REAL) : REAL ;
+PROCEDURE __BUILTIN__ fabsl (x: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ logf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ log (x: REAL) : REAL ;
+PROCEDURE __BUILTIN__ logl (x: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ expf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ exp (x: REAL) : REAL ;
+PROCEDURE __BUILTIN__ expl (x: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ log10f (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ log10 (x: REAL) : REAL ;
+PROCEDURE __BUILTIN__ log10l (x: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ exp10f (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ exp10 (x: REAL) : REAL ;
+PROCEDURE __BUILTIN__ exp10l (x: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ ilogbf (x: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ ilogb (x: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ ilogbl (x: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ huge_val () : REAL ;
+PROCEDURE __BUILTIN__ huge_valf () : SHORTREAL ;
+PROCEDURE __BUILTIN__ huge_vall () : LONGREAL ;
+
+PROCEDURE __BUILTIN__ significand (r: REAL) : REAL ;
+PROCEDURE __BUILTIN__ significandf (s: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ significandl (l: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ modf (x: REAL; VAR y: REAL) : REAL ;
+PROCEDURE __BUILTIN__ modff (x: SHORTREAL; VAR y: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ modfl (x: LONGREAL; VAR y: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ signbit (r: REAL) : INTEGER ;
+PROCEDURE __BUILTIN__ signbitf (s: SHORTREAL) : INTEGER ;
+PROCEDURE __BUILTIN__ signbitl (l: LONGREAL) : INTEGER ;
+
+PROCEDURE __BUILTIN__ nextafter (x, y: REAL) : REAL ;
+PROCEDURE __BUILTIN__ nextafterf (x, y: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ nextafterl (x, y: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ nexttoward (x, y: REAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttowardf (x, y: SHORTREAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttowardl (x, y: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ scalb (x, n: REAL) : REAL ;
+PROCEDURE __BUILTIN__ scalbf (x, n: SHORTREAL) : SHORTREAL ;
+PROCEDURE __BUILTIN__ scalbl (x, n: LONGREAL) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ scalbln (x: REAL; n: LONGINT) : REAL ;
+PROCEDURE __BUILTIN__ scalblnf (x: SHORTREAL; n: LONGINT) : SHORTREAL ;
+PROCEDURE __BUILTIN__ scalblnl (x: LONGREAL; n: LONGINT) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ scalbn (x: REAL; n: INTEGER) : REAL ;
+PROCEDURE __BUILTIN__ scalbnf (x: SHORTREAL; n: INTEGER) : SHORTREAL ;
+PROCEDURE __BUILTIN__ scalbnl (x: LONGREAL; n: INTEGER) : LONGREAL ;
+
+(* complex arithmetic intrincic procedure functions *)
+
+PROCEDURE __BUILTIN__ cabsf (z: SHORTCOMPLEX) : SHORTREAL ;
+PROCEDURE __BUILTIN__ cabs (z: COMPLEX) : REAL ;
+PROCEDURE __BUILTIN__ cabsl (z: LONGCOMPLEX) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ cargf (z: SHORTCOMPLEX) : SHORTREAL ;
+PROCEDURE __BUILTIN__ carg (z: COMPLEX) : REAL ;
+PROCEDURE __BUILTIN__ cargl (z: LONGCOMPLEX) : LONGREAL ;
+
+PROCEDURE __BUILTIN__ conjf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ conj (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ conjl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ cpowerf (base: SHORTCOMPLEX; exp: SHORTREAL) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ cpower (base: COMPLEX; exp: REAL) : COMPLEX ;
+PROCEDURE __BUILTIN__ cpowerl (base: LONGCOMPLEX; exp: LONGREAL) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ csqrtf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ csqrt (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ csqrtl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ cexpf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ cexp (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ cexpl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ clnf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ cln (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ clnl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ csinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ csin (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ csinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ ccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ ccos (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ ccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ ctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ ctan (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ ctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ carcsinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ carcsin (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ carcsinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ carccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ carccos (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ carccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE __BUILTIN__ carctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE __BUILTIN__ carctan (z: COMPLEX) : COMPLEX ;
+PROCEDURE __BUILTIN__ carctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+(* memory and string intrincic procedure functions *)
+
+PROCEDURE __BUILTIN__ alloca (i: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ memcpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ index (s: ADDRESS; c: INTEGER) : ADDRESS ;
+PROCEDURE __BUILTIN__ rindex (s: ADDRESS; c: INTEGER) : ADDRESS ;
+PROCEDURE __BUILTIN__ memcmp (s1, s2: ADDRESS; n: CARDINAL) : INTEGER ;
+PROCEDURE __BUILTIN__ memset (s: ADDRESS; c: INTEGER; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ memmove (s1, s2: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ strcat (dest, src: ADDRESS) : ADDRESS ;
+PROCEDURE __BUILTIN__ strncat (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ strcpy (dest, src: ADDRESS) : ADDRESS ;
+PROCEDURE __BUILTIN__ strncpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE __BUILTIN__ strcmp (s1, s2: ADDRESS) : INTEGER ;
+PROCEDURE __BUILTIN__ strncmp (s1, s2: ADDRESS; n: CARDINAL) : INTEGER ;
+PROCEDURE __BUILTIN__ strlen (s: ADDRESS) : INTEGER ;
+PROCEDURE __BUILTIN__ strstr (haystack, needle: ADDRESS) : ADDRESS ;
+PROCEDURE __BUILTIN__ strpbrk (s, accept: ADDRESS) : ADDRESS ;
+PROCEDURE __BUILTIN__ strspn (s, accept: ADDRESS) : CARDINAL ;
+PROCEDURE __BUILTIN__ strcspn (s, accept: ADDRESS) : CARDINAL ;
+PROCEDURE __BUILTIN__ strchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
+PROCEDURE __BUILTIN__ strrchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
+
+(*
+   longjmp - this GCC builtin restricts the val to always 1.
+*)
+(* do not use these two builtins, as gcc, only really
+   anticipates that the Ada front end should use them
+   and it only uses them in its runtime exception handling.
+   We leave them here in the hope that someday they will
+   behave more like their libc counterparts.  *)
+
+PROCEDURE __BUILTIN__ longjmp (env: ADDRESS; val: INTEGER) ;
+PROCEDURE __BUILTIN__ setjmp (env: ADDRESS) : INTEGER ;
+
+
+(*
+   frame_address - returns the address of the frame.
+                   The current frame is obtained if level is 0,
+                   the next level up if level is 1 etc.
+*)
+
+PROCEDURE __BUILTIN__ frame_address (level: CARDINAL) : ADDRESS ;
+
+
+(*
+   return_address - returns the return address of function.
+                    The current function return address is
+                    obtained if level is 0,
+                    the next level up if level is 1 etc.
+*)
+
+PROCEDURE __BUILTIN__ return_address (level: CARDINAL) : ADDRESS ;
+
+
+(*
+   alloca_trace - this is a no-op which is used for internal debugging.
+*)
+
+PROCEDURE alloca_trace (returned: ADDRESS; nBytes: CARDINAL) : ADDRESS ;
+
+
+END Builtins.

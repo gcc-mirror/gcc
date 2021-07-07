@@ -1,0 +1,235 @@
+(* M2GCCDeclare.def declares Modula-2 types to GCC.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2GCCDeclare ;
+
+(*
+    Title      : M2GCCDeclare
+    Author     : Gaius Mulley
+    System     : UNIX (gm2)
+    Date       : Sat Jul 17 10:28:43 1999
+    Last edit  : Sat Jul 17 10:28:43 1999
+    Description: declares Modula-2 types to GCC,
+                 only declares a type once all subcomponents are known.
+*)
+
+FROM SYSTEM IMPORT WORD ;
+FROM m2tree IMPORT Tree ;
+EXPORT QUALIFIED FoldConstants,
+                 DeclareConstant, TryDeclareConstant,
+                 DeclareConstructor, TryDeclareConstructor,
+                 DeclareLocalVariables, PromoteToString, DeclareLocalVariable,
+                 InitDeclarations, StartDeclareScope, EndDeclareScope,
+                 DeclareModuleVariables, IsProcedureGccNested,
+                 DeclareProcedure, PoisonSymbols, DeclareParameters,
+                 CompletelyResolved, MarkExported, PrintSym,
+                 ConstantKnownAndUsed,
+                 PutToBeSolvedByQuads,
+                 GetTypeMin, GetTypeMax,
+                 WalkAction, IsAction ;
+
+TYPE
+   WalkAction = PROCEDURE (WORD) ;
+   IsAction   = PROCEDURE (WORD) : BOOLEAN ;
+
+
+(*
+   FoldConstants - a wrapper for ResolveConstantExpressions.
+*)
+
+PROCEDURE FoldConstants (start, end: CARDINAL) ;
+
+
+(*
+   StartDeclareScope - declares types, variables associated with this scope.
+*)
+
+PROCEDURE StartDeclareScope (scope: CARDINAL) ;
+
+
+(*
+   EndDeclareScope -
+*)
+
+PROCEDURE EndDeclareScope ;
+
+
+(*
+   DeclareParameters -
+*)
+
+PROCEDURE DeclareParameters (sym: CARDINAL) ;
+
+
+(*
+   DeclareConstant - if, sym, is a constant then declare it.
+                     The constant must be solvable at this point.
+*)
+
+PROCEDURE DeclareConstant (tokenno: CARDINAL; sym: CARDINAL) ;
+
+
+(*
+   DeclareConstructor - if, sym, is a constructor then declare it.
+                        The constructor must be solvable at this point.
+*)
+
+PROCEDURE DeclareConstructor (tokenno: CARDINAL; quad: CARDINAL; sym: CARDINAL) ;
+
+
+(*
+   TryDeclareConstant - try and declare a constant.  If, sym, is a
+                        constant try and declare it, if we cannot
+                        then enter it into the to do list.
+*)
+
+PROCEDURE TryDeclareConstant (tokenno: CARDINAL; sym: CARDINAL) ;
+
+
+(*
+   TryDeclareConstructor - try and declare a constructor.  If, sym, is a
+                           constructor try and declare it, if we cannot
+                           then enter it into the to do list.
+*)
+
+PROCEDURE TryDeclareConstructor (tokenno: CARDINAL; sym: CARDINAL) ;
+
+
+(*
+   DeclareLocalVariables - lists the Local variables for procedure
+                           together with their offset.
+*)
+
+PROCEDURE DeclareLocalVariables (procedure: CARDINAL) ;
+
+
+(*
+   DeclareLocalVariable - declare a local variable var.
+*)
+
+PROCEDURE DeclareLocalVariable (var: CARDINAL) ;
+
+
+(*
+   DeclareProcedure - declares procedure, sym, or all procedures inside
+                      module sym.
+*)
+
+PROCEDURE DeclareProcedure (sym: WORD) ;
+
+
+(*
+   DeclareModuleVariables - declares Module variables for a module
+                            which inside a procedure.
+*)
+
+PROCEDURE DeclareModuleVariables (sym: CARDINAL) ;
+
+
+(*
+   IsProcedureGccNested - returns TRUE if procedure, sym, will be considered
+                          as nested by GCC.
+                          This will occur if either its outer defining scope
+                          is a procedure or is a module which is inside a
+                          procedure.
+*)
+
+PROCEDURE IsProcedureGccNested (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PoisonSymbols - poisons all gcc symbols from procedure, sym.
+                   A debugging aid.
+*)
+
+PROCEDURE PoisonSymbols (sym: CARDINAL) ;
+
+
+(*
+   PromoteToString - declare, sym, and then promote it to a string.
+                     Note that if sym is a single character we do
+                          *not* record it as a string
+                          but as a char however we always
+                          return a string constant.
+*)
+
+PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+
+
+(*
+   CompletelyResolved - returns TRUE if a symbol has been completely resolved
+                        and is not partially declared (such as a record,
+                        array or procedure type).
+*)
+
+PROCEDURE CompletelyResolved (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   ConstantKnownAndUsed -
+*)
+
+PROCEDURE ConstantKnownAndUsed (sym: CARDINAL; t: Tree) ;
+
+
+(*
+   PutToBeSolvedByQuads - places, sym, in this list.
+*)
+
+PROCEDURE PutToBeSolvedByQuads (sym: CARDINAL) ;
+
+
+(*
+   MarkExported - tell GCC to mark all exported procedures in module sym.
+*)
+
+PROCEDURE MarkExported (sym: CARDINAL) ;
+
+
+(*
+   GetTypeMin - returns a symbol corresponding to MIN(type)
+*)
+
+PROCEDURE GetTypeMin (type: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetTypeMax - returns a symbol corresponding to MAX(type)
+*)
+
+PROCEDURE GetTypeMax (type: CARDINAL) : CARDINAL ;
+
+
+(*
+   PrintSym - prints limited information about a symbol.
+*)
+
+PROCEDURE PrintSym (sym: CARDINAL) ;
+
+
+(*
+   InitDeclarations - initializes default types and the source filename.
+*)
+
+PROCEDURE InitDeclarations ;
+
+
+END M2GCCDeclare.

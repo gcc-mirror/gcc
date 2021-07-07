@@ -1,0 +1,3 @@
+This subdirectory contains modules which provide a dummy internal
+compatibility interface to enable m2 tools (gm2l, gm2lgen, gm2lcc,
+gm2lorder, gm2m) to share modules with the cc1gm2 compiler.

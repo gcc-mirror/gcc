@@ -1,0 +1,59 @@
+(* ldtoa.def provides routines to convert between a C long double.
+
+Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE ldtoa ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   Mode = (maxsignificant, decimaldigits) ;
+
+
+(*
+   strtold - returns a LONGREAL given a C string, s.  It will set
+             error to TRUE if the number is too large or badly formed.
+*)
+
+PROCEDURE strtold (s: ADDRESS; VAR error: BOOLEAN) : LONGREAL ;
+
+
+(*
+   ldtoa - converts a LONGREAL, d, into a string.  The address of the
+           string is returned.
+           mode       indicates the type of conversion required.
+           ndigits    determines the number of digits according to mode.
+           decpt      the position of the decimal point.
+           sign       does the string have a sign?
+*)
+
+PROCEDURE ldtoa (d        : LONGREAL;
+                 mode     : Mode;
+                 ndigits  : INTEGER;
+                 VAR decpt: INTEGER;
+                 VAR sign : BOOLEAN) : ADDRESS ;
+
+
+END ldtoa.

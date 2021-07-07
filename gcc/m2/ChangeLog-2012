@@ -1,0 +1,310 @@
+2012-12-10      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/Random.mod:  fixed bug in RandomLongReal
+	  report by Steve Giess.  Incorrect data type was used which
+	  caused a NaN to be generated.
+
+2012-12-08      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/twoDsim.mod:  (added semicolon).
+	* gm2/gm2-libs-pim/InOut.def:  improved comment to
+	  OpenOutput.
+	* gm2/gm2-libs-pim/InOut.mod:  fixed so that the file
+	  can only be written to if it does not already exist.
+
+2012-12-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/RandomNumber.def:  (added file).
+	* gm2/gm2-libs-iso/RandomNumber.mod:  (added file).
+
+2012-11-26      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/Random.def:  fixed declaration of
+          RandomBytes to use VAR parameter.
+	* gm2/gm2-libs-pim/Random.mod:  fixed declaration of
+          RandomBytes to use VAR parameter.  Also improved
+	  implementation of RandomReal and RandomLongReal.
+	* gm2/gm2-libs-iso/RandomNumber.def:  (New module).
+	* gm2/gm2-libs-iso/RandomNumber.mod:  (New module).
+	* gm2/Make-lang.in:  add RandomNumber.mod to the list
+	  of ISO modules.
+	* gm2/gm2-libs-iso/RandomNumber.def:  Fixed description.
+
+2012-11-21      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/Random.def:  export RandomLongReal and
+	  RandomBytes.  Fixes a bug reported by Steve Giess.
+
+2012-09-19      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/SymbolTable.mod:  bug fix to fix up all
+	  unbounded parameter types if they are produced via partial
+	  unbounded symbols.  Fixes a bug exposed by macroObjects.mod
+	  in a new example directory.
+
+2012-06-28      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  CodeAddr can now obtain the
+	  address of CHAR constants.  Fixes a bug reported by Scott
+	  Iverson.
+	* gm2/gm2-compiler/M2GenGCC.mod:  corrected CodeAddr to ensure
+	  that the address of a char is only converted into address of
+	  a string for constants.
+
+2012-05-04      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2spec.c:  detect -fonlylink.  Ensure that -fonlylink is
+	  present on the command line if -fmakeall is used.  Otherwise
+	  the driver will compile and link the main module object together
+	  with the main module compiled via the make.  Fixes a bug reported
+	  by Scott Iverson, linking a shared library.
+
+2012-05-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  (BinaryOperands) New procedure function.
+	  Used by FoldAdd, CodeAdd, FoldSub, CodeSub, FoldMult, CodeMult,
+	  FoldDivTrunc, CodeDivTrunc, FoldModFloor, CodeModFloor.
+
+2012-05-02      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  (convert_for_comparison) New function.
+	  gccgm2_BuildEqualTo, gccgm2_BuildNotEqualTo use
+	  convert_for_comparison.  This fixes comparison between a
+	  WORD operand.  Bug reported by Scott Iverson.
+	* gm2/gccgm2.c:  applied fix for all WORD sizes.
+
+2012-05-01      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  (CodeStandardFunction) implement
+	  TBITSIZE.  (FoldStandardFunction) implement TBITSIZE.
+	* gm2/gm2-compiler/M2Quads.mod:  (BuildTBitSizeFunction) New
+	  procedure function.
+	* gm2/gm2-compiler/M2System.def:  (TBitSize) define and export.
+	  Tidied up formatting (sym used instead of Sym).
+	* gm2/gm2-compiler/M2System.mod:  initialise TBitSize.
+	  Tidied up formatting (sym used instead of Sym).
+	  (IsPseudoSystemFunction) includes TBitSize.
+
+2012-04-30      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  (BuildRecord) fixed bit
+	  field calculation.
+
+2012-04-28      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Range.mod:  (firstmention) New field
+	  in Range.  (FirstMention) New procedure function.
+	  FoldTypeAssign, FoldTypeParam, FoldTypeExpr, CodeTypeAssign,
+          CodeTypeParam, CodeTypeExpr call FirstMention before
+	  emitting an error message.  Multiple related messages have
+	  been chained.  This fixes a bug report by Scott Iverson
+	  (duplicate error messages).
+	* gm2/Make-lang.in:  tidied up formatting and added a commented
+	  out short cut used during development.
+	* gm2/gccgm2.c:  tidied up formatting of gccgm2_GetSizeOf.
+	  gccgm2_GetSizeOf now detects COMPONENT_REF.
+	  gccgm2_GetSizeOfInBits now detects COMPONENT_REF.
+	* gm2/gm2.texi:  added new example of how bit field packing
+	  can be achieved.
+	* gm2/bnf/m2-3.bnf:  removed call to dummy
+	  CheckOuterScopeProcedureVariable procedure.
+	* gm2/bnf/m2-h.bnf:  removed import CheckOuterScopeProcedureVariable.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  (WalkComponentDependants)
+	  New procedure.  (IsValueDeendants) New procedure function.
+	* gm2/gm2-compiler/M2GenGCC.mod:  (FoldRecordField, CodeRecordField)
+	  New procedures.  CodeUnbounded simplified.
+	* gm2/gm2-compiler/M2Quads.def:  Removed
+	  CheckOuterScopeProcedureVariable.
+	* gm2/gm2-compiler/M2Quads.mod:  many changes to allow
+	  record accesses to be achieved via the GCC Tree
+	  COMPONENT_REF.  To this end we use a front end symbol
+	  component which mirrors the eventual GCC Tree.
+	  BuildAdrFunction altered to obtain the address of
+	  Components and the WITH statement has been rewritten.
+	  (CheckOuterScopeProcedureVariable) removed.
+	  New quadruple operator RecordFieldOp introduced to
+	  generate components.  All unbounded accesses use the
+	  new component record mechanism.
+	* gm2/gm2-compiler/SymbolTable.def:  (MakeComponentRecord),
+	  (MakeComponentRef), (IsComponent) New procedure functions.
+	* gm2/gm2-compiler/SymbolTable.mod:  (MakeComponentRecord),
+	  (MakeComponentRef), (IsComponent), (GetNthFromComponent),
+	  (buildTemporary).  MakeTemporary use buildTemporary.
+	  New procedure functions.
+
+2012-04-11      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  (DeclarePackedSet) New
+	  procedure.
+	* gm2/gm2-compiler/SymbolTable.mod:  (MakeSet) creates an
+	  equivalent packedInfo placeholder.  (MakeEquivalent)
+	  and (GetPackedEquivalent) modified to handle set type.
+
+2012-04-07      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:   (calcNbits) New function.
+	* gm2/m2pp.c:  (ptc), (m2pp_getaligned),
+	  (m2pp_recordfield_alignment) New functions.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  fixes to DeclarePackedType.
+	* gm2/gm2-compiler/P2SymBuild.mod:  fixes to HandleRecordFieldPragmas.
+	* gm2/gm2-compiler/SymbolTable.mod:  fixes to
+	  GetDefaultRecordFieldAlignment.
+
+2012-03-27      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  added missing RETURN
+	  statement.
+	* gm2/examples/gravity/twoDsim.mod:  added debugging procedure
+	  to display the definition of the polygon.
+
+2012-03-17      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/SymbolTable.mod:  record when an unknown
+	  symbol is reported and ensure that we only report unknown
+	  symbols once.  Fixes a bug reported by Scott Iverson.
+	  Procedure UnknownSymbolError uses IsUnreportedUnknown and
+	  populates ReportedUnknowns whenever an error message is
+	  generated.  New procedure function (IsUnreportedUnknown).
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  renamed MaybePackField
+	  by MakebeAlignField.
+	* gm2/gm2-compiler/SymbolTable.mod:  GetAlignment modified
+	  to return the alignment of Varient and VarientFields.
+
+2012-02-23      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  (gccgm2_BuildStartFieldVarient,
+	  gccgm2_BuildEndFieldVarient) New functions.
+	* gm2/m2pp.c:  detect FIELD_DECL in m2pp_type.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  use
+	  BuildStartFieldVarient rather than BuildStartVarient.
+	  Use BuildEndFieldVarient rather than BuildEndVarient.
+	  This fixes a number of regression test bugs including:
+	  testsuite/gm2/extensions/run/pass/align8.mod.
+	* gm2/gm2-compiler/gccgm2.def:  define BuildStartFieldVarient
+	  and BuildEndFieldVarient.
+
+2012-02-15      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  (gccgm2_BuildTBitSize) detect if TYPE_DECL is passed.
+
+2012-02-14      Gaius Mulley <gaius@gnu.org>
+
+	The following changes are a change to the type declaration system
+	which is necessary to implement bit alignment of record fields.
+
+	* gm2/gm2-compiler/M2DebugStack.def:  New file.
+	* gm2/gm2-compiler/M2DebugStack.mod:  New file.
+	* gm2/Make-lang.in:  tidied up the file and introduced a commented
+	  rule which allows stage2 to be built from a prebuilt stage1.  This
+	  is only ever used during heavy development and allows debugging in
+	  Modula-2 to occur rather than in the translated, C, files.
+	* gm2/gccgm2.c:  gccgm2_BuildStartEnumeration, gccgm2_BuildEndRecord,
+	  start_enum (new parameter ispacked).  New functions
+	  (gccgm2_SetTypePacked, gccgm2_SetDeclPacked,
+	   gccgm2_GetPackedBooleanType, gccgm2_SetRecordFieldOffset,
+	   gccgm2_GetTBitSize, noBitsRequired, gccgm2_BuildStartVarient,
+	   gccgm2_BuildEndVarient, gccgm2_BuildSmallestTypeRange,
+           gccgm2_BuildTBitSize).
+	* gm2/lang.opt:  introduce debugging option -fd.
+	* gm2/m2.flex:  introduce <* *> into the set of lexical tokens.
+	* gm2/m2pp.c:  pretty print union types and also whether records and their
+	  fields are aligned, packed, offset values and addressible.
+	* gm2/bnf/gm2l.bnf:  introduce <* *> into the set of lexical tokens.
+	* gm2/bnf/gm2m.bnf:  introduce <* *> into the set of lexical tokens.
+	* gm2/bnf/m2-2.bnf:  introduce <* *> into the set of lexical tokens.
+	  extended the ebnf to include a default record alignment using pragmas.
+	  Also extended the ebnf to include field alignment and packing using
+	  pragmas.
+	* gm2/bnf/m2-3.bnf:  introduce <* *> into the set of lexical tokens.
+	  extended the ebnf to include a default record alignment using pragmas.
+	  Also extended the ebnf to include field alignment and packing using
+	  pragmas.
+	* gm2/bnf/m2-c.bnf:  introduce <* *> into the set of lexical tokens.
+	  extended the ebnf to include a default record alignment using pragmas.
+	  Also extended the ebnf to include field alignment and packing using
+	  pragmas.
+	* gm2/bnf/m2-h.bnf:  introduce <* *> into the set of lexical tokens.
+	  extended the ebnf to include a default record alignment using pragmas.
+	  Also extended the ebnf to include field alignment and packing using
+	  pragmas.
+	* gm2/bnf/m2.bnf:  introduce <* *> into the set of lexical tokens.
+	  extended the ebnf to include a default record alignment using pragmas.
+	  Also extended the ebnf to include field alignment and packing using
+	  pragmas.
+	* gm2/el/g-mode.el:  removed PACKED as a keyword.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  huge number of changes and
+	  many aspects have been rewritten.  The main changes occur from
+	  delaying a records declaration into a GCC Tree until its alignment
+	  is known.  Varient records are also handled in this way.  Much
+	  debugging code added as well.  Simple types can also be declared
+	  as packed (Subranges, Boolean) and enumeration types.
+	* gm2/gm2-compiler/M2Quads.def:  new procedures BuildBitLength,
+	  BuildPragmaField, BuildDefaultFieldAlignment, OperandAnno,
+	  Annotate).
+	* gm2/gm2-compiler/M2Quads.mod:  implement all of the above.
+	  Provide a useful internal debugging procedure function 'ds'
+	  which display the quadruple stack.
+	* gm2/gm2-compiler/M2Reserved.def:  add LDirectiveTok and
+	  RDirectiveTok.
+	* gm2/gm2-compiler/M2Reserved.mod:  implement above.
+	* gm2/gm2-compiler/P2SymBuild.def:  new procedure functions
+	  P2BuildDefaultFieldAlignment, BuildPragmaConst.
+	* gm2/gm2-compiler/P2SymBuild.mod:  implement above.
+	* gm2/gm2-compiler/Sets.mod:  no longer import BITSET from SYSTEM.
+	* gm2/gm2-compiler/SymbolTable.def:  new procedures
+	  (GetDefaultRecordFieldAlignment, PutDeclaredPacked,
+	   IsDeclaredPacked, IsDeclaredPackedResolved,
+           GetPackedEquivalent, GetNonPackedEquivalent,
+           PutDefaultRecordFieldAlignment, PutUnused, IsUnused).
+	* gm2/gm2-compiler/SymbolTable.mod:  implement above.
+	* gm2/gm2-compiler/gccgm2.def:  remove procedure function
+          BuildStartVarientRecord and add procedure functions
+	  BuildStartVarient, BuildEndVarient, BuildSmallestTypeRange,
+	  GetPackedBooleanType, SetDeclPacked, SetTypePacked,
+	  SetRecordFieldOffset, BuildTBitSize.
+	* gm2/gm2-compiler/ppg.mod:  remove BITSET from SYSTEM
+	  import list.
+	* gm2/gm2-libs-iso/SYSTEM.def:  define new builtin procedure
+	  function TBITSIZE.
+
+2012-02-05      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  fixed bug reported by Scott Iverson.
+	  The bug occurred when a procedure was used in a constructor.
+	  The solution is to take the address of the FUNCTION_DECL.
+
+2012-01-13      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  declare procedures in
+	  topological order with constants and types.  This fixes a bug
+	  reported by Scott Iverson.
+
+2012-01-12      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/Indexing.mod:  removed import of BITSET from SYSTEM.
+	* gm2/gm2-compiler/M2Base.mod:  BITSET is now declared as a pervasive
+	  type.
+	* gm2/gm2-compiler/M2Error.mod:  removed import of BITSET from SYSTEM.
+	* gm2/gm2-compiler/M2Printf.mod:  removed import of BITSET from SYSTEM.
+	* gm2/gm2-compiler/M2System.mod:  removed BITSET from being declared.
+	* gm2/gm2-libs/SYSTEM.def:  removed BITSET from export list.
+	* gm2/gm2-libs-min/SYSTEM.def:  removed BITSET from export list.
+	* gm2/gm2-libs-coroutines/SYSTEM.def:  removed BITSET from export list.
+	* gm2/gm2-libs/Indexing.mod:  BITSET is now a pervasive type.
+	* gm2/gm2-libs/M2RTS.mod:  BITSET is now a pervasive type.
+	* gm2/gm2.texi:  added new section on packed records and also BITSET
+	  is no longer exported from SYSTEM but is a pervasive type.
+	* gm2/ulm-lib-gm2/std/M2RTS.mod:  no longer import BITSET.
+        * gm2/ulm-lib-gm2/std/MathLib.mod:  no longer import BITSET.
+	* gm2/ulm-lib-gm2/std/Plot.mod:  no longer import BITSET.
+	* gm2/ulm-lib-gm2/sys/SYSTEM.def:  no longer export BITSET.
+	* gm2/ulm-lib-gm2/sys/SysStat.def:  no longer import BITSET.
+	* gm2/ulm-lib-gm2/sys/SysStat.mod:  no longer import BITSET.
+	* gm2/ulm-lib-gm2/std/Archive.def:  no longer import BITSET.
+	* gm2/ulm-lib-gm2/sys/SysIoctl.def:  no longer import BITSET.
+	* gm2/gm2-libs-pim/BitBlockOps.mod:  no longer import BITSET.
+	* gm2/gm2-libs-pim/BitBlockOps.mod:  no longer import BITSET.
+	* gm2/gm2-libs-pim/BitByteOps.mod:  no longer import BITSET.
+	* gm2/gm2-libs-pim/BitWordOps.mod:  no longer import BITSET.
+	* gm2/gm2/examples/map/AdvMap.def:  no longer import BITSET.
+

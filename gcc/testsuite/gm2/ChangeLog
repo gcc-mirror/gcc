@@ -1,0 +1,31 @@
+2021-06-16  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* isolib/run/pass/termfile.mod:  commented out ReadString
+	to avoid hang during expect tests.
+	* isolib/run/pass/termfile.mod:  moved to termfile.mod-disabled.
+
+2021-05-27 Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* analyzer/fail/gm2-dg.exp:  call gm2_init_pim
+	to initialize local in build tree directory search paths.
+
+2021-05-10  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* complex/pass/arith3.mod:  added diagnostic
+	printfs.
+
+2021-05-26  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* errors/fail/badimport.mod: New file.
+	* errors/fail/badmodule.mod: New file.
+	* errors/fail/badqualident.mod: New file.
+	* errors/fail/cardchar.mod: New file.
+	* errors/fail/qualidentexpr.mod: New file.
+	* errors/fail/qualidentparam.mod: New file.
+
+2021-04-07  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
+
+	* analyzer/fail/badlistfree.mod: New file.
+	* analyzer/fail/disposenoalloc.mod: New file.
+	* analyzer/fail/testdoublefree.mod: New file.
+	* analyzer/fail/testdoubledispose.mod: New file.

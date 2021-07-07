@@ -1,0 +1,378 @@
+2007-12-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/NEWS:  updated.
+	* gm2/tools-src/def2texi.py:  modified so that references
+	  to types, variables and constants are added to the index
+	  at the end of the documentation.
+	* gm2-libs-pim/RealInOut.def:  all long procedures are also
+	  exported.
+
+2007-12-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/NEWS:  updated.
+	* gm2/gm2.texi:  documented new -fxcode option and minor
+	  fixes.
+	* gm2/lang-options.h:  added -fxcode to list of options.
+	* gm2/lang.opt:  added -fxcode to list of options.
+	* gm2/m2.flex:  added m2flex_GetColumnNo.
+	* gm2/gm2-compiler/M2Error.mod:  OutString modified to
+	  use column and produce GNU and Xcode format errors.
+	* gm2/gm2-compiler/M2LexBuf.def:  export column
+	  related procedures.
+	* gm2/gm2-compiler/M2LexBuf.mod:  introduced recording
+	  of the column position.  GetColumnNo, TokenToColumnNo
+	  new procedures.
+	* gm2/gm2-compiler/M2Options.def:  added Xcode.
+	* gm2/gm2-compiler/M2Options.mod:  set Xcode accordingly.
+	* gm2/gm2/gm2-compiler/M2Students.mod:  fixed spelling
+	  mistake.
+	* gm2/gm2-compiler/P1SymBuild.mod:  tidied up error
+	  message.
+	* gm2/gm2-compiler/SymbolTable.mod:  ditto.
+	* gm2/gm2-compiler/m2flex.def:  added GetColumnNo
+	  procedure.
+	* gm2/gm2-libs-pim/BitBlockOps.mod:  intemediate checkin.
+
+2007-12-06       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/tools-src/gensum.py:  new file.
+
+2007-11-14       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  corrected urls and last edit.
+	* gm2/gm2-libs.texi:  recreated.
+
+2007-11-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/m2.flex:  added explicit cast.
+	* gm2/Make-lang.in:  now build h2def during stage2.
+	* gm2/gm2/c.flex:  modified so that it ignores tabs.
+	* gm2/bnf/h2def.bnf:  many bugfixes, still broken though.
+	* gm2/gm2-compiler/CLexBuf.mod:  improved Debugging support.
+	* gm2/gm2-compiler/gm2lcc.mod:  refactored comment handling
+	  code to use the RemoveComment, RemoveWhiteSuffix and
+          RemoveWhitePrefix procedures in DynamicStrings module.
+	* gm2/gm2-compiler/gm2lgen.mod:  likewise handle comments.
+	* gm2/gm2-libs/DynamicStrings.def:  export
+          RemoveWhitePrefix, RemoveWhitePostfix, RemoveComment.
+	* gm2/gm2-libs/DynamicStrings.mod:  implement above.
+
+2007-11-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  updated version to 0.63
+	* gm2/gm2.texi:  updated version to 0.63 and updated
+	  unbounded-by-reference documentation.
+	* gm2/gm2-compiler/M2GenGCC.mod:  modified optimization
+	  of unbounded addresses to test the memory range of
+	  each unbounded parameter against a type compatible
+	  var parameter, any overlapping addresses results in
+	  a alloca and memcpy of the non var unbounded array.
+
+2007-11-02       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  completed the further
+	  optimization of unbounded addresses.  It checks to
+	  see if the contents of a type compatible unbounded
+	  ARRAY matches the contents of a VAR parameter.
+	  It checks against any VAR parameter (not just
+	  unbounded VAR parameters - consider ARRAY OF BYTE).
+	* gm2/gm2.texi:  documented the implementation of
+	  the -funbounded-by-reference optimization flag
+	  giving examples.
+
+2007-10-30       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  fixed @xref punctuation requirement.
+	* gm2/gm2-compiler/M2GenGCC.mod:  fixed unbounded-by-reference
+	  so that it works out whether two parameters might contain
+	  the same contents.  Further optimization is possible via
+	  runtime checking of unbounded addresses.
+	* gm2/gm2-compiler/SymbolTable.mod:  factored out some code.
+
+2007-10-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/sckt.def:  moved here from examples/server.
+	* gm2/gm2-libs-ch/sckt.c:  moved here from examples/server.
+	* gm2/examples/ncurses/Makefile:  changed switches from -W
+	  to -f
+	* gm2/gm2-libs-coroutines/Makefile:  changed switches from -W
+	  to -f
+	* gm2/gm2-libs-coroutines/SysVec.mod:  added many Asserts and
+          fixed some bugs relating to microseconds.
+	* gm2/gm2-libs-coroutines/TimerHandler.mod:  fixed bug relating
+	  to time vector.
+
+2007-10-25       Gaius Mulley <gaius@gnu.org>
+
+        * gm2/gccgm2.c:  CHAR is now declared as an unsigned char.
+	* testsuite/gm2/pimlib/logitech/run/pass/bbits.mod:  new file.
+	* testsuite/gm2/pimlib/logitech/run/pass/intb.mod:  new file.
+
+2007-10-23       Gaius Mulley <gaius@gnu.org>
+
+        * gm2/gm2.texi:  more building documentation fixes.
+	* gm2/www/index.ms:  updated documentation to reflect
+          changes to the gm2.texi building instructions.
+
+2007-10-22       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/BitBlockOps.{def,mod}:  added.
+	* gm2/Make-lang.in:  added BitBlockOps to the Logitech list
+          of modules.
+	* gm2/gm2.texi:  improved building documentation which now
+	  relates to the daily CVS snapshot held on
+	  http://floppsie.comp.glam.ac.uk/download/c
+
+2007-10-18       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/www/index.ms:  rationalised the building instructions
+	  between the web page and gm2/gm2.texi
+	* gm2/gm2.texi:  updated the building instructions.
+
+2007-10-14       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  fixed bug in gm2/gm2-libs/gm2-libs-host.h
+	  target so that configure uses the correct CC and CPP.
+
+2007-10-09       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/README:  updated to reflect new homepage and mailing
+	  list address.
+
+2007-10-07       Gaius Mulley <gaius@gnu.org>
+
+	* fixed bug reported by Dmitry Shatrov <shatrov@gmail.com>
+	* gm2/gm2-compiler/M2Quads.mod:  added CheckNotConstAndVar
+	  procedure.  BuildAssignment use CheckNotConstAndVar.
+	* gm2/testsuite/gm2/pim/fail/constvar.mod:  added new
+	  regression test.
+	* gm2/gm2.texi:  updated the last update field.
+
+2007-10-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  updated version to 0.62
+	* gm2/Make-lang.in:  altered all -W options to their new
+	  -f counterparts
+	* gm2/README:  modified the advised build command
+	* gm2/gccgm2.c:  removed all section of code inside #if 0
+	  blocks (which were not part of the orig gcc source).
+	* gm2/gccgm2.c:  modified OPT_W to OPT_f to reflect change
+	  of -W flags to -f flags.
+	* gm2/gccgm2.c:  reintroduced the -fcpp handling code.
+	* gm2/gm2.texi:  updated version number to 0.62
+	* gm2/gm2.texi:  altered all -W options to -f options
+	  for code generation options.  Left warning options
+	  to use -W to mirror the gcc paradigm.
+	* gm2/gm2/gm2builtins.c:  memmove introduced.
+	* gm2/gm2spec.c:  changed all -W options to -f.
+	* gm2/lang-specs.h:  changed all -W options to -f.
+	* gm2/lang.opt:  changed all -W options to -f.
+	* gm2/bnf/gm2l.bnf:  changed all -W options to -f.
+	* gm2/bnf/gm2m.bnf:  changed all -W options to -f.
+	* gm2/gm2-libs-pim/BlockOps.{def,mod}:  added to repository.
+	* gm2/examples/map/Makefile:  changed all -W options to -f and
+	  added -O3.
+	* gm2/gm2/gm2-compiler/M2Options.def:  changed comments.
+	* gm2/gm2-compiler/M2Options.mod:  changed all -W options to -f.
+	* gm2/gm2-compiler/M2Quads.mod:  changed all -W options to -f.
+	* gm2/gm2-compiler/SymbolTable.mod:  changed all -W options to -f.
+	* gm2/gm2-compiler/gm2.mod:  changed all -W options to -f.
+	* gm2/gm2-compiler/gm2lcc.mod:  changed all -W options to -f.
+	* gm2/gm2/gm2-compiler/ppg.mod:  modified compile-command.
+	* gm2/gm2-libs/Builtins.def:  added memmove to the list of
+	  builtins.
+	* gm2/gm2-libs/Builtins.mod:  implemented M2 wrapper for memmove.
+	* gm2/gm2-libs/cbuiltin.def:  added access to C memmove.
+	* gm2/man/gm2.man:  changed all -W options to -f.
+
+2007-09-27       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/SYSTEM.mod:  added SHIFT, ROTATE and their
+	  support counterparts.
+	* gm2/gm2-libs-pim/BitByteOps.{def,mod}:  added.
+	* gm2/gm2-libs-pim/BitWordOps.{def,mod}:  completed.
+	* gm2/gm2.texi:  updated to reflect the addition of SHIFT,
+	  ROTATE procedures in PIM SYSTEM.mod.
+	* gm2/gm2/Make-lang.in:
+	* gm2/gm2/README:
+	* gm2/gm2/gccgm2.c:
+	* gm2/gm2/gm2.texi:
+	* gm2/gm2/gm2spec.c:
+	* gm2/gm2/lang-options.h:
+	* gm2/gm2/lang-specs.h:
+	* gm2/gm2/lang.opt:
+	* gm2/gm2/bnf/gm2l.bnf:
+	* gm2/gm2/bnf/gm2m.bnf:
+	* gm2/gm2/gm2-compiler/M2Options.def:
+	* gm2/gm2/gm2-compiler/M2Options.mod:
+	* gm2/gm2/gm2-compiler/M2Quads.mod:
+	* gm2/gm2/gm2-compiler/SymbolTable.mod:
+	* gm2/gm2/gm2-compiler/gm2.mod:
+	* gm2/gm2/gm2-compiler/gm2lcc.mod:
+	* gm2/gm2/gm2-compiler/ppg.mod:  all changed to reflect moving
+	  -W switches to -f switches as per gcc.  Only using -W for
+	  compile time warnings, -f for language features including
+	  runtime checking.
+
+2007-09-14       Gaius Mulley <gaius@gnu.org>
+
+	* www/index.ms:  updated web pages to reflect 0.60 release
+	  and availability of debian packages.
+
+2007-08-14       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/patches/gcc/4.1.2/02.gaius_rs6000_lang:  new patch to
+	  enable gm2 to build on the PS3 (ppc) based machines.
+
+2007-08-08       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  fixes to enable avr cross compile to
+	  build (use cross gcc and add -B./ when building libraries).
+
+2007-07-23       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  gccgm2_BuildSubrangeType switched over to using
+	  the implementation of the subrange type as opposed to the base
+	  INTEGER type.
+	* gm2/gm2-compiler/M2Quads.mod:   CheckSubrange converts the
+	  Exp into an INTEGER type before generating the range checking
+	  quadruples.  This in turn allows M2SubExp.mod to be built with
+	  optimization.  make gm2.paranoid with -O works against gcc-4.1.2.
+
+2007-07-06       Gaius Mulley <gaius@gnu.org>
+
+	* added gm2/gm2-harness.
+	* gm2/Make-lang.in:  added interactive debugging module
+	  gm2/m2pp.o to link targets.
+	* gm2/gccgm2.c:  rewritten pushdecl and friends and vastly
+	  simplified and reduced the code.  Modified all parameters
+	  to use ANSI C rather than K&R C.  Rewritten create
+          gccgm2_BuildStartFunctionCode and gccgm2_BuildEndFunctionCode.
+          Also ensured that all variables are added to the statement list
+	  via DECL_EXPR and ensured that BIND_EXPR and BLOCKs are created
+	  in exactly the same way as their C counterparts.
+	  Fixed important bug in creating TREEs which represent parameters.
+	* gm2/m2pp.c:  new interactive debugging module will print a GCC
+	  tree using Modula-2 syntax.
+	* gm2/m2pp.h:  prototype for the above.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  unbounded types are now uniquely
+	  created from their basic type.  Improved debugging of unbounded type.
+	* gm2/gm2-compiler/M2GenGCC.mod:  DoCopyString new function which is
+	  used by CodeBecomes and CodeXIndr.  Simplified CodeIndrX and CodeXIndr
+	  in light of bugs fixed in gm2/gccgm2.c.
+	* gm2/gm2-compiler/M2Quads.mod:  made the type following more accurate
+	  during the construction of array arithmetic and indirection.  This
+	  in turn allows -O to be used in GCC's backend.
+	* gm2/gm2-compiler/SymbolTable.def:  modified interface to unbounded
+	  symbols.
+	* gm2/gm2-compiler/SymbolTable.def:  implemented above.
+	* GM2 now builds when -O is suppled to stage2 or stage3.
+	* GM2 now builds with (a patched) gcc-4.1.2
+
+2007-05-28       Gaius Mulley <gaius@gnu.org>
+
+	* gm2-compiler/M2Quads.mod:  replaced PutVarTypeAndSize with
+	  PutLeftValueFrontBackType.
+	* gm2-compiler/SymbolTable.mod:  implemented
+	  PutLeftValueFrontBackType and GetLeftValueFrontBackType.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  rationalised variable
+	  creation by introducing function:  DoVariableDeclaration.
+	  All variables are created via this function.
+	  Use GetLeftValueFrontBackType.
+
+2007-05-18       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  removed -O for paranoid
+
+2007-05-11       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added -O for paranoid
+	* gm2/gccgm2.c:
+	* gm2/gm2-compiler/M2Base.def:  removed generic Unbounded type
+	* gm2/gm2-compiler/M2Base.mod:  removed generic Unbounded type
+	  creation.
+	* gm2/gm2-compiler/M2Code.mod:  tidied up comments and semicolon.
+	* gm2/gm2-compiler/M2GCCDeclare.def:  export DeclareParameters.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  implement
+	  DeclareParameters and new unbounded type mechanism.
+	* gm2/gm2-compiler/M2GenGCC.mod:  modified references
+	  to unbounded fields.  Fixed two major optimization bugs
+	  in CodeXIndr and CodeIndrX pointer types
+	  now use generic pointer types when building indirect GCC
+	  trees.
+	* gm2/gm2-compiler/M2Quads:  now create a specific unbounded type
+	  rather than cast to a generic unbounded record.  Again this fixes
+	  bugs in Tree construction which were exposed by the back end
+	  when -O was enabled.
+	* gm2/gm2-compiler/SymbolTable.def:  declared Unbounded record and
+	  field operators.
+	* gm2/gm2-compiler/SymbolTable.mod:  implement Unbounded record and
+	  field operators.
+
+2007-04-25       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs:  regenerated configure
+
+2007-02-16       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/gm2m.bnf:  fixed string deallocation bug.
+	* gm2/gm2-libs-pim/FileSystem.{def,mod}:  exported Reset
+	  and fixed filename and string conversion.
+
+2007-02-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  added FindOuterModule
+	  to determine whether a symbol should be declared in the
+	  GCC global scope.
+	* fixes ulm library building problem introduced by the previous
+	  interim checkin.
+
+2007-02-06       Gaius Mulley <gaius@gnu.org>
+
+	* interim checkin, due to optimization fixes.
+	* gm2/gccgm2.c:  changes to the way variables are declared.
+	  Removed calls to expand_decl.
+	* gm2-compiler/M2GCCDeclare.mod:  passes boolean to
+	  DeclareKnownVariable indicating whether the variable was
+	  declared in the outer global scope.
+
+2007-01-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c: mark_function_addresses_referenced added.
+	* gm2/gccgm2.c: gccgm2_MarkFunctionReferenced added.
+	* gm2/gccgm2.c: gccgm2_SetFlagUnitAtATime added.
+	* gm2/gm2-compiler/M2Code.mod: MarkExported used.
+	* gm2-compiler/M2GCCDeclare.def: MakeExported defined.
+	* gm2-compiler/M2GCCDeclare.mod: MakeExported added.
+	* gm2/gm2-compiler/gccgm2.def:  SetFlagUnitAtATime,
+	  MarkFunctionReferenced, defined.
+
+2007-01-19       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/FileSystem.mod:  added.
+	* gm2/Make-lang.in:  introduced GM2_O_S3 variable so that
+	  optimization can be introduced into stage3 only.
+        * gm2/gccgm2.c:  added gccgm2_FinishBackend.
+	* gm2/gm2-compiler/M2Code.mod:  use gccgm2_FinishBackend.
+
+2007-01-18       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  use gm2_mark_addressable rather than
+	  the TREE_ADDRESSABLE macro for consistency.
+
+2007-01-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-file.in:  added FileSystem.mod to the gm2-libs-pim
+	  set of libraries.
+	* gm2/TODO:  removed FileSystem.mod from the list
+	* gm2/gm2-compiler/P1SymBuild.mod:  added error message
+	* gm2/gm2-libs/FIO.mod:  fixed copyright message
+	* gm2/gm2-libs/M2RTS.def:  fixed typo.
+	* gm2/gm2-libs/libc.def:  added rename function.
+	* gm2/gm2-libs/wrapc.def:  modified filesize so that it modifies
+	  two unsigned ints as the size, rather than return a long unsigned.
+	* gm2/gm2/gm2-libs-ch/libc.c:  added unlink function.
+	* gm2/gm2/gm2-libs-ch/wrapc.c:  implemented filesize.
+	* gm2/gm2/gm2-libs-pim/FileSystem.def:  improved comments and added
+	  more file state to the File record.
+

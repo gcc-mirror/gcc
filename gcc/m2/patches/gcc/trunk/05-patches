@@ -1,0 +1,12 @@
+--- gcc-git/gcc/cp/g++spec.c	2021-06-10 11:58:18.246985525 +0100
++++ gm2-floppsie/gcc/cp/g++spec.c	2021-06-17 10:20:53.195400499 +0100
+@@ -434,3 +434,9 @@
+ 
+ /* Number of extra output files that lang_specific_pre_link may generate.  */
+ int lang_specific_extra_outfiles = 0;  /* Not used for C++.  */
++
++/* lang_register_spec_functions.  Not used for C++.  */
++void
++lang_register_spec_functions (void)
++{
++}

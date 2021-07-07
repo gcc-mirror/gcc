@@ -1,0 +1,743 @@
+--- gcc-versionno-orig/Makefile.in	2018-04-13 16:08:27.934867511 +0100
++++ gcc-versionno/Makefile.in	2018-07-12 18:12:30.000000000 +0100
+@@ -156,6 +156,7 @@
+ 	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
+ 	GOC="$(GOC_FOR_BUILD)"; export GOC; \
+ 	GOCFLAGS="$(GOCFLAGS_FOR_BUILD)"; export GOCFLAGS; \
++	GM2="$(GM2_FOR_BUILD)"; export GM2; \
+ 	DLLTOOL="$(DLLTOOL_FOR_BUILD)"; export DLLTOOL; \
+ 	LD="$(LD_FOR_BUILD)"; export LD; \
+ 	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
+@@ -192,6 +193,7 @@
+ 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
+ 	GFORTRAN="$(GFORTRAN)"; export GFORTRAN; \
+ 	GOC="$(GOC)"; export GOC; \
++	GM2="$(GM2)"; export GM2; \
+ 	AR="$(AR)"; export AR; \
+ 	AS="$(AS)"; export AS; \
+ 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
+@@ -278,6 +280,7 @@
+ 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+ 	GFORTRAN="$(GFORTRAN_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GFORTRAN; \
+ 	GOC="$(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GOC; \
++	GM2="$(GM2_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GM2; \
+ 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
+ 	LD="$(COMPILER_LD_FOR_TARGET)"; export LD; \
+ 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
+@@ -342,6 +345,7 @@
+ DLLTOOL_FOR_BUILD = @DLLTOOL_FOR_BUILD@
+ GFORTRAN_FOR_BUILD = @GFORTRAN_FOR_BUILD@
+ GOC_FOR_BUILD = @GOC_FOR_BUILD@
++GM2_FOR_BUILD = @GM2_FOR_BUILD@
+ LDFLAGS_FOR_BUILD = @LDFLAGS_FOR_BUILD@
+ LD_FOR_BUILD = @LD_FOR_BUILD@
+ NM_FOR_BUILD = @NM_FOR_BUILD@
+@@ -564,6 +568,7 @@
+ RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@
+ GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@
+ GOC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GOC_FOR_TARGET@
++GM2_FOR_TARGET=$(STAGE_CC_WRAPPER) @GM2_FOR_TARGET@
+ DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
+ LD_FOR_TARGET=@LD_FOR_TARGET@
+ 
+@@ -612,7 +617,7 @@
+ 
+ # This is the list of directories that may be needed in RPATH_ENVVAR
+ # so that programs built for the target machine work.
+-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libmpx)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_liboffloadmic)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
++TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libmpx)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_liboffloadmic)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libgm2)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
+ 
+ @if target-libstdc++-v3
+ TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
+@@ -638,6 +643,10 @@
+ TARGET_LIB_PATH_libssp = $$r/$(TARGET_SUBDIR)/libssp/.libs:
+ @endif target-libssp
+ 
++@if target-libgm2
++TARGET_LIB_PATH_libgm2 = $$r/$(TARGET_SUBDIR)/libgm2/.libs:
++@endif target-libgm2
++
+ @if target-libgomp
+ TARGET_LIB_PATH_libgomp = $$r/$(TARGET_SUBDIR)/libgomp/.libs:
+ @endif target-libgomp
+@@ -783,6 +792,7 @@
+ 	"GFORTRAN_FOR_TARGET=$(GFORTRAN_FOR_TARGET)" \
+ 	"GOC_FOR_TARGET=$(GOC_FOR_TARGET)" \
+ 	"GOCFLAGS_FOR_TARGET=$(GOCFLAGS_FOR_TARGET)" \
++	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
+ 	"LD_FOR_TARGET=$(LD_FOR_TARGET)" \
+ 	"LIPO_FOR_TARGET=$(LIPO_FOR_TARGET)" \
+ 	"LDFLAGS_FOR_TARGET=$(LDFLAGS_FOR_TARGET)" \
+@@ -845,6 +855,7 @@
+ 	'DLLTOOL=$(DLLTOOL)' \
+ 	'GFORTRAN=$(GFORTRAN)' \
+ 	'GOC=$(GOC)' \
++	'GM2=$(GM2)' \
+ 	'LD=$(LD)' \
+ 	'LIPO=$(LIPO)' \
+ 	'NM=$(NM)' \
+@@ -901,6 +912,7 @@
+ 	'GFORTRAN=$$(GFORTRAN_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+ 	'GOC=$$(GOC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+ 	'GOCFLAGS=$$(GOCFLAGS_FOR_TARGET)' \
++	'GM2=$$(GM2_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+ 	'LD=$(COMPILER_LD_FOR_TARGET)' \
+ 	'LDFLAGS=$$(LDFLAGS_FOR_TARGET)' \
+ 	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
+@@ -1010,6 +1022,7 @@
+     maybe-configure-target-zlib \
+     maybe-configure-target-rda \
+     maybe-configure-target-libada \
++    maybe-configure-target-libgm2 \
+     maybe-configure-target-libgomp \
+     maybe-configure-target-libitm \
+     maybe-configure-target-libatomic
+@@ -1175,6 +1188,7 @@
+ all-target: maybe-all-target-zlib
+ all-target: maybe-all-target-rda
+ all-target: maybe-all-target-libada
++all-target: maybe-all-target-libgm2
+ @if target-libgomp-no-bootstrap
+ all-target: maybe-all-target-libgomp
+ @endif target-libgomp-no-bootstrap
+@@ -1267,6 +1281,7 @@
+ info-target: maybe-info-target-zlib
+ info-target: maybe-info-target-rda
+ info-target: maybe-info-target-libada
++info-target: maybe-info-target-libgm2
+ info-target: maybe-info-target-libgomp
+ info-target: maybe-info-target-libitm
+ info-target: maybe-info-target-libatomic
+@@ -1352,6 +1367,7 @@
+ dvi-target: maybe-dvi-target-zlib
+ dvi-target: maybe-dvi-target-rda
+ dvi-target: maybe-dvi-target-libada
++dvi-target: maybe-dvi-target-libgm2
+ dvi-target: maybe-dvi-target-libgomp
+ dvi-target: maybe-dvi-target-libitm
+ dvi-target: maybe-dvi-target-libatomic
+@@ -1437,6 +1453,7 @@
+ pdf-target: maybe-pdf-target-zlib
+ pdf-target: maybe-pdf-target-rda
+ pdf-target: maybe-pdf-target-libada
++pdf-target: maybe-pdf-target-libgm2
+ pdf-target: maybe-pdf-target-libgomp
+ pdf-target: maybe-pdf-target-libitm
+ pdf-target: maybe-pdf-target-libatomic
+@@ -1522,6 +1539,7 @@
+ html-target: maybe-html-target-zlib
+ html-target: maybe-html-target-rda
+ html-target: maybe-html-target-libada
++html-target: maybe-html-target-libgm2
+ html-target: maybe-html-target-libgomp
+ html-target: maybe-html-target-libitm
+ html-target: maybe-html-target-libatomic
+@@ -1607,6 +1625,7 @@
+ TAGS-target: maybe-TAGS-target-zlib
+ TAGS-target: maybe-TAGS-target-rda
+ TAGS-target: maybe-TAGS-target-libada
++TAGS-target: maybe-TAGS-target-libgm2
+ TAGS-target: maybe-TAGS-target-libgomp
+ TAGS-target: maybe-TAGS-target-libitm
+ TAGS-target: maybe-TAGS-target-libatomic
+@@ -1692,6 +1711,7 @@
+ install-info-target: maybe-install-info-target-zlib
+ install-info-target: maybe-install-info-target-rda
+ install-info-target: maybe-install-info-target-libada
++install-info-target: maybe-install-info-target-libgm2
+ install-info-target: maybe-install-info-target-libgomp
+ install-info-target: maybe-install-info-target-libitm
+ install-info-target: maybe-install-info-target-libatomic
+@@ -1777,6 +1797,7 @@
+ install-pdf-target: maybe-install-pdf-target-zlib
+ install-pdf-target: maybe-install-pdf-target-rda
+ install-pdf-target: maybe-install-pdf-target-libada
++install-pdf-target: maybe-install-pdf-target-libgm2
+ install-pdf-target: maybe-install-pdf-target-libgomp
+ install-pdf-target: maybe-install-pdf-target-libitm
+ install-pdf-target: maybe-install-pdf-target-libatomic
+@@ -1862,6 +1883,7 @@
+ install-html-target: maybe-install-html-target-zlib
+ install-html-target: maybe-install-html-target-rda
+ install-html-target: maybe-install-html-target-libada
++install-html-target: maybe-install-html-target-libgm2
+ install-html-target: maybe-install-html-target-libgomp
+ install-html-target: maybe-install-html-target-libitm
+ install-html-target: maybe-install-html-target-libatomic
+@@ -1947,6 +1969,7 @@
+ installcheck-target: maybe-installcheck-target-zlib
+ installcheck-target: maybe-installcheck-target-rda
+ installcheck-target: maybe-installcheck-target-libada
++installcheck-target: maybe-installcheck-target-libgm2
+ installcheck-target: maybe-installcheck-target-libgomp
+ installcheck-target: maybe-installcheck-target-libitm
+ installcheck-target: maybe-installcheck-target-libatomic
+@@ -2032,6 +2055,7 @@
+ mostlyclean-target: maybe-mostlyclean-target-zlib
+ mostlyclean-target: maybe-mostlyclean-target-rda
+ mostlyclean-target: maybe-mostlyclean-target-libada
++mostlyclean-target: maybe-mostlyclean-target-libgm2
+ mostlyclean-target: maybe-mostlyclean-target-libgomp
+ mostlyclean-target: maybe-mostlyclean-target-libitm
+ mostlyclean-target: maybe-mostlyclean-target-libatomic
+@@ -2117,6 +2141,7 @@
+ clean-target: maybe-clean-target-zlib
+ clean-target: maybe-clean-target-rda
+ clean-target: maybe-clean-target-libada
++clean-target: maybe-clean-target-libgm2
+ clean-target: maybe-clean-target-libgomp
+ clean-target: maybe-clean-target-libitm
+ clean-target: maybe-clean-target-libatomic
+@@ -2202,6 +2227,7 @@
+ distclean-target: maybe-distclean-target-zlib
+ distclean-target: maybe-distclean-target-rda
+ distclean-target: maybe-distclean-target-libada
++distclean-target: maybe-distclean-target-libgm2
+ distclean-target: maybe-distclean-target-libgomp
+ distclean-target: maybe-distclean-target-libitm
+ distclean-target: maybe-distclean-target-libatomic
+@@ -2287,6 +2313,7 @@
+ maintainer-clean-target: maybe-maintainer-clean-target-zlib
+ maintainer-clean-target: maybe-maintainer-clean-target-rda
+ maintainer-clean-target: maybe-maintainer-clean-target-libada
++maintainer-clean-target: maybe-maintainer-clean-target-libgm2
+ maintainer-clean-target: maybe-maintainer-clean-target-libgomp
+ maintainer-clean-target: maybe-maintainer-clean-target-libitm
+ maintainer-clean-target: maybe-maintainer-clean-target-libatomic
+@@ -2428,6 +2455,7 @@
+     maybe-check-target-zlib \
+     maybe-check-target-rda \
+     maybe-check-target-libada \
++    maybe-check-target-libgm2 \
+     maybe-check-target-libgomp \
+     maybe-check-target-libitm \
+     maybe-check-target-libatomic
+@@ -2609,6 +2637,7 @@
+     maybe-install-target-zlib \
+     maybe-install-target-rda \
+     maybe-install-target-libada \
++    maybe-install-target-libgm2 \
+     maybe-install-target-libgomp \
+     maybe-install-target-libitm \
+     maybe-install-target-libatomic
+@@ -2714,6 +2743,7 @@
+     maybe-install-strip-target-zlib \
+     maybe-install-strip-target-rda \
+     maybe-install-strip-target-libada \
++    maybe-install-strip-target-libgm2 \
+     maybe-install-strip-target-libgomp \
+     maybe-install-strip-target-libitm \
+     maybe-install-strip-target-libatomic
+@@ -51327,6 +51357,464 @@
+ 
+ 
+ 
++.PHONY: configure-target-libgm2 maybe-configure-target-libgm2
++maybe-configure-target-libgm2:
++@if gcc-bootstrap
++configure-target-libgm2: stage_current
++@endif gcc-bootstrap
++@if target-libgm2
++maybe-configure-target-libgm2: configure-target-libgm2
++configure-target-libgm2: 
++	@: $(MAKE); $(unstage)
++	@r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	echo "Checking multilib configuration for libgm2..."; \
++	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgm2; \
++	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgm2/multilib.tmp 2> /dev/null; \
++	if test -r $(TARGET_SUBDIR)/libgm2/multilib.out; then \
++	  if cmp -s $(TARGET_SUBDIR)/libgm2/multilib.tmp $(TARGET_SUBDIR)/libgm2/multilib.out; then \
++	    rm -f $(TARGET_SUBDIR)/libgm2/multilib.tmp; \
++	  else \
++	    rm -f $(TARGET_SUBDIR)/libgm2/Makefile; \
++	    mv $(TARGET_SUBDIR)/libgm2/multilib.tmp $(TARGET_SUBDIR)/libgm2/multilib.out; \
++	  fi; \
++	else \
++	  mv $(TARGET_SUBDIR)/libgm2/multilib.tmp $(TARGET_SUBDIR)/libgm2/multilib.out; \
++	fi; \
++	test ! -f $(TARGET_SUBDIR)/libgm2/Makefile || exit 0; \
++	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgm2; \
++	$(NORMAL_TARGET_EXPORTS)  \
++	echo Configuring in $(TARGET_SUBDIR)/libgm2; \
++	cd "$(TARGET_SUBDIR)/libgm2" || exit 1; \
++	case $(srcdir) in \
++	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
++	  *) topdir=`echo $(TARGET_SUBDIR)/libgm2/ | \
++		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
++	esac; \
++	module_srcdir=libgm2; \
++	rm -f no-such-file || : ; \
++	CONFIG_SITE=no-such-file $(SHELL) \
++	  $$s/$$module_srcdir/configure \
++	  --srcdir=$${topdir}/$$module_srcdir \
++	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
++	  --target=${target_alias}  \
++	  || exit 1
++@endif target-libgm2
++
++
++
++
++
++.PHONY: all-target-libgm2 maybe-all-target-libgm2
++maybe-all-target-libgm2:
++@if gcc-bootstrap
++all-target-libgm2: stage_current
++@endif gcc-bootstrap
++@if target-libgm2
++TARGET-target-libgm2=all
++maybe-all-target-libgm2: all-target-libgm2
++all-target-libgm2: configure-target-libgm2
++	@: $(MAKE); $(unstage)
++	@r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS)  \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
++		$(TARGET-target-libgm2))
++@endif target-libgm2
++
++
++
++
++
++.PHONY: check-target-libgm2 maybe-check-target-libgm2
++maybe-check-target-libgm2:
++@if target-libgm2
++maybe-check-target-libgm2: check-target-libgm2
++
++check-target-libgm2:
++	@: $(MAKE); $(unstage)
++	@r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
++
++@endif target-libgm2
++
++.PHONY: install-target-libgm2 maybe-install-target-libgm2
++maybe-install-target-libgm2:
++@if target-libgm2
++maybe-install-target-libgm2: install-target-libgm2
++
++install-target-libgm2: installdirs
++	@: $(MAKE); $(unstage)
++	@r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
++
++@endif target-libgm2
++
++.PHONY: install-strip-target-libgm2 maybe-install-strip-target-libgm2
++maybe-install-strip-target-libgm2:
++@if target-libgm2
++maybe-install-strip-target-libgm2: install-strip-target-libgm2
++
++install-strip-target-libgm2: installdirs
++	@: $(MAKE); $(unstage)
++	@r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
++
++@endif target-libgm2
++
++# Other targets (info, dvi, pdf, etc.)
++
++.PHONY: maybe-info-target-libgm2 info-target-libgm2
++maybe-info-target-libgm2:
++@if target-libgm2
++maybe-info-target-libgm2: info-target-libgm2
++
++info-target-libgm2: \
++    configure-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing info in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           info) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-dvi-target-libgm2 dvi-target-libgm2
++maybe-dvi-target-libgm2:
++@if target-libgm2
++maybe-dvi-target-libgm2: dvi-target-libgm2
++
++dvi-target-libgm2: \
++    configure-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing dvi in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           dvi) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-pdf-target-libgm2 pdf-target-libgm2
++maybe-pdf-target-libgm2:
++@if target-libgm2
++maybe-pdf-target-libgm2: pdf-target-libgm2
++
++pdf-target-libgm2: \
++    configure-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing pdf in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           pdf) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-html-target-libgm2 html-target-libgm2
++maybe-html-target-libgm2:
++@if target-libgm2
++maybe-html-target-libgm2: html-target-libgm2
++
++html-target-libgm2: \
++    configure-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing html in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           html) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-TAGS-target-libgm2 TAGS-target-libgm2
++maybe-TAGS-target-libgm2:
++@if target-libgm2
++maybe-TAGS-target-libgm2: TAGS-target-libgm2
++
++TAGS-target-libgm2: \
++    configure-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing TAGS in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           TAGS) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-install-info-target-libgm2 install-info-target-libgm2
++maybe-install-info-target-libgm2:
++@if target-libgm2
++maybe-install-info-target-libgm2: install-info-target-libgm2
++
++install-info-target-libgm2: \
++    configure-target-libgm2 \
++    info-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing install-info in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           install-info) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-install-pdf-target-libgm2 install-pdf-target-libgm2
++maybe-install-pdf-target-libgm2:
++@if target-libgm2
++maybe-install-pdf-target-libgm2: install-pdf-target-libgm2
++
++install-pdf-target-libgm2: \
++    configure-target-libgm2 \
++    pdf-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing install-pdf in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           install-pdf) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-install-html-target-libgm2 install-html-target-libgm2
++maybe-install-html-target-libgm2:
++@if target-libgm2
++maybe-install-html-target-libgm2: install-html-target-libgm2
++
++install-html-target-libgm2: \
++    configure-target-libgm2 \
++    html-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing install-html in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           install-html) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-installcheck-target-libgm2 installcheck-target-libgm2
++maybe-installcheck-target-libgm2:
++@if target-libgm2
++maybe-installcheck-target-libgm2: installcheck-target-libgm2
++
++installcheck-target-libgm2: \
++    configure-target-libgm2 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing installcheck in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           installcheck) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-mostlyclean-target-libgm2 mostlyclean-target-libgm2
++maybe-mostlyclean-target-libgm2:
++@if target-libgm2
++maybe-mostlyclean-target-libgm2: mostlyclean-target-libgm2
++
++mostlyclean-target-libgm2: 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           mostlyclean) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-clean-target-libgm2 clean-target-libgm2
++maybe-clean-target-libgm2:
++@if target-libgm2
++maybe-clean-target-libgm2: clean-target-libgm2
++
++clean-target-libgm2: 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing clean in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           clean) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-distclean-target-libgm2 distclean-target-libgm2
++maybe-distclean-target-libgm2:
++@if target-libgm2
++maybe-distclean-target-libgm2: distclean-target-libgm2
++
++distclean-target-libgm2: 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing distclean in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           distclean) \
++	  || exit 1
++
++@endif target-libgm2
++
++.PHONY: maybe-maintainer-clean-target-libgm2 maintainer-clean-target-libgm2
++maybe-maintainer-clean-target-libgm2:
++@if target-libgm2
++maybe-maintainer-clean-target-libgm2: maintainer-clean-target-libgm2
++
++maintainer-clean-target-libgm2: 
++	@: $(MAKE); $(unstage)
++	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(NORMAL_TARGET_EXPORTS) \
++	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libgm2"; \
++	for flag in $(EXTRA_TARGET_FLAGS); do \
++	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
++	done; \
++	(cd $(TARGET_SUBDIR)/libgm2 && \
++	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
++	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
++	          "RANLIB=$${RANLIB}" \
++	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
++	           maintainer-clean) \
++	  || exit 1
++
++@endif target-libgm2
++
++
++
++
++
+ .PHONY: configure-target-libgomp maybe-configure-target-libgomp
+ maybe-configure-target-libgomp:
+ @if gcc-bootstrap
+@@ -53574,6 +54062,14 @@
+ 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-go);
+ check-go: check-gcc-go check-target-libgo check-gotools
+ 
++.PHONY: check-gcc-gm2 check-gm2
++check-gcc-gm2:
++	r=`${PWD_COMMAND}`; export r; \
++	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
++	$(HOST_EXPORTS) \
++	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-gm2);
++check-gm2: check-gcc-gm2
++
+ .PHONY: check-gcc-brig check-brig
+ check-gcc-brig:
+ 	r=`${PWD_COMMAND}`; export r; \
+@@ -56790,6 +57286,7 @@
+ configure-target-zlib: stage_last
+ configure-target-rda: stage_last
+ configure-target-libada: stage_last
++configure-target-libgm2: stage_last
+ configure-stage1-target-libgomp: maybe-all-stage1-gcc
+ configure-stage2-target-libgomp: maybe-all-stage2-gcc
+ configure-stage3-target-libgomp: maybe-all-stage3-gcc
+@@ -56825,6 +57322,7 @@
+ configure-target-zlib: maybe-all-gcc
+ configure-target-rda: maybe-all-gcc
+ configure-target-libada: maybe-all-gcc
++configure-target-libgm2: maybe-all-gcc
+ configure-target-libgomp: maybe-all-gcc
+ configure-target-libitm: maybe-all-gcc
+ configure-target-libatomic: maybe-all-gcc
+@@ -58074,6 +58572,7 @@
+ configure-target-zlib: maybe-all-target-libgcc
+ configure-target-rda: maybe-all-target-libgcc
+ configure-target-libada: maybe-all-target-libgcc
++configure-target-libgm2: maybe-all-target-libgcc
+ configure-target-libgomp: maybe-all-target-libgcc
+ configure-target-libitm: maybe-all-target-libgcc
+ configure-target-libatomic: maybe-all-target-libgcc
+@@ -58121,6 +58620,8 @@
+ 
+ configure-target-libada: maybe-all-target-newlib maybe-all-target-libgloss
+ 
++configure-target-libgm2: maybe-all-target-newlib maybe-all-target-libgloss
++
+ configure-target-libgomp: maybe-all-target-newlib maybe-all-target-libgloss
+ 
+ configure-target-libitm: maybe-all-target-newlib maybe-all-target-libgloss

@@ -1,0 +1,102 @@
+(* TimerHandler.def provides a simple timer handler for the Executive.
+
+Copyright (C) 2002-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE TimerHandler ;
+
+(* It also provides the Executive with a basic round robin scheduler.  *)
+
+EXPORT QUALIFIED TicksPerSecond, GetTicks,
+                 EVENT,
+                 Sleep, ArmEvent, WaitOn, Cancel, ReArmEvent ;
+
+
+CONST
+   TicksPerSecond =   25 ;  (* Number of ticks per second.  *)
+
+TYPE
+   EVENT ;
+
+
+(*
+   GetTicks - returns the number of ticks since boottime.
+*)
+
+PROCEDURE GetTicks () : CARDINAL ;
+
+
+(*
+   Sleep - suspends the current process for a time, t.
+           The time is measured in ticks.
+*)
+
+PROCEDURE Sleep (t: CARDINAL) ;
+
+
+(*
+   ArmEvent - initializes an event, e, to occur at time, t.
+              The time, t, is measured in ticks.
+              The event is NOT placed onto the event queue.
+*)
+
+PROCEDURE ArmEvent (t: CARDINAL) : EVENT ;
+
+
+(*
+   WaitOn - places event, e, onto the event queue and then the calling
+            process suspends. It is resumed up by either the event
+            expiring or the event, e, being cancelled.
+            TRUE is returned if the event was cancelled
+            FALSE is returned if the event expires.
+            The event, e, is always assigned to NIL when the function
+            finishes.
+*)
+
+PROCEDURE WaitOn (VAR e: EVENT) : BOOLEAN ;
+
+
+(*
+   Cancel - cancels the event, e, on the event queue and makes
+            the appropriate process runnable again.
+            TRUE is returned if the event was cancelled and
+            FALSE is returned is the event was not found or
+                  no process was waiting on this event.
+*)
+
+PROCEDURE Cancel (e: EVENT) : BOOLEAN ;
+
+
+(*
+   ReArmEvent - removes an event, e, from the event queue. A new time
+                is given to this event and it is then re-inserted onto the
+                event queue in the correct place.
+                TRUE is returned if this occurred
+                FALSE is returned if the event was not found.
+*)
+
+PROCEDURE ReArmEvent (e: EVENT; t: CARDINAL) : BOOLEAN ;
+
+
+END TimerHandler.

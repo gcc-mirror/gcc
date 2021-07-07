@@ -1,0 +1,37 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE SIOResult;
+
+  (* Read results for the default input channel *)
+
+IMPORT IOConsts;
+
+TYPE
+  ReadResults = IOConsts.ReadResults;
+
+  (*
+    ReadResults =   (* This type is used to classify the result of an input operation *)
+    (
+      notKnown,     (* no read result is set *)
+      allRight,     (* data is as expected or as required *)
+      outOfRange,   (* data cannot be represented *)
+      wrongFormat,  (* data not in expected format *)
+      endOfLine,    (* end of line seen before expected data *)
+      endOfInput    (* end of input seen before expected data *)
+    );
+  *)
+
+PROCEDURE ReadResult (): ReadResults;
+  (* Returns the result for the last read operation on the default input channel. *)
+
+END SIOResult.
+

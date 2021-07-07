@@ -1,0 +1,91 @@
+#!/bin/sh
+
+# Copyright (C) 2000-2021 Free Software Foundation, Inc.
+# This file is part of GNU Modula-2.
+#
+# GNU Modula-2 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GNU Modula-2 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU Modula-2; see the file COPYING.  If not, write to the
+# Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+#
+
+TMPFILE=/tmp/t.$$
+
+buildpass1 () {
+    if [ -x ../bin3/pg ] ; then
+        if ../bin3/pg ../bnf/m2.bnf > $TMPFILE ; then
+           cat $TMPFILE | sed -e "s/WHICHPASS1/TRUE/" > P1SyntaxCheck.mod
+           rm -f $TMPFILE
+        else
+           echo "pg failed: trying to build parser for pass 1"
+        fi
+    else
+       echo "you need to build pg, I suggest you try make stage3"
+       exit 1
+    fi
+}
+
+buildpass2 () {
+    if [ -x ../bin3/pg ] ; then
+        if ../bin3/pg ../bnf/m2-2.bnf > $TMPFILE ; then
+           cat $TMPFILE | sed -e "s/WHICHPASS2/TRUE/" > P2Build.mod
+           rm -f $TMPFILE
+        else
+           echo "pg failed: trying to build parser for pass 2"
+        fi
+    else
+       echo "you need to build pg, I suggest you try make stage3"
+       exit 1
+    fi
+}
+
+buildpass3 () {
+    if [ -x ../bin3/pg ] ; then
+        if ../bin3/pg ../bnf/m2-3.bnf > $TMPFILE ; then
+           cat $TMPFILE | sed -e "s/WHICHPASS3/TRUE/" > P3Build.mod
+           rm -f $TMPFILE
+        else
+           echo "pg failed: trying to build parser for pass 3"
+        fi
+    else
+       echo "you need to build pg, I suggest you try make stage3"
+       exit 1
+    fi
+}
+
+buildpassH () {
+    if [ -x ../bin3/pg ] ; then
+        if ../bin3/pg ../bnf/m2-h.bnf > $TMPFILE ; then
+           cat $TMPFILE | sed -e "s/WHICHPASS3/TRUE/" > PHBuild.mod
+           rm -f $TMPFILE
+        else
+           echo "pg failed: trying to build parser for pass 3"
+        fi
+    else
+       echo "you need to build pg, I suggest you try make stage3"
+       exit 1
+    fi
+}
+
+#
+#  buildsyntax - build the pass 1 parser with error recovery
+#
+
+buildsyntax () {
+   buildpass1
+   buildpass2
+   buildpass3
+   buildpassH
+}
+
+buildsyntax

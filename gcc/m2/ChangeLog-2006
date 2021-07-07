@@ -1,0 +1,388 @@
+2006-12-25       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-file.in:  fixed conditional building of library files.
+          Bug reported by Michael Lambert <lambert@psc.edu>.
+
+2006-12-21       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  fixed manual page installation.
+	* gm2/lang-options.h:  include -Wlibs=min option.
+	* gm2/gm2-libs-min/libc.c:  added parameters to functions.
+	* gm2/gm2-libs-min/libc.def:  added.
+
+2006-12-20       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-min:  added
+	* gm2/gm2spec.c:  modified to relect introduction of -Wlibs=min
+	* gm2/gm2.texi:  document -Wlibs=min
+	* gm2/config-lang.in:   include gm2cc to be installed
+	* GNU Modula-2 can be built as a cross compiler for the avr
+	  microprocessor.
+
+2006-12-18       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/www/index.ms:  updated web page to reflect G5 successful
+	  make gm2.paranoid using gcc-3.3.6 and CVS
+	  tag D2006.06.23.04.00.00
+	* gm2/gccgm2.c:  use integer_type_node instead of boolean_type_node
+	  as the size of boolean_type_node can differ from the
+	  size of an integer_type_node.
+	* make gm2.paranoid works on LP64 opteron with a patched gcc-4.1.0
+
+2006-12-17       Gaius Mulley <gaius@gnu.org>
+
+	* fixed line number debugging information at the end of a
+	  function.
+
+2006-12-05       Gaius Mulley <gaius@gnu.org>
+
+        * gm2/gm2-compiler/M2Quads.mod:  BuildCastFunction allow arrays
+          to be cast.
+	* testsuite/gm2/iso/stringchar.mod:  fixed typos.
+	* gm2/gm2-compiler/M2Quads.mod:  BuildDynamicArray,
+	  BuildStaticArray, BuildDesignatorArray all SkipType to allow
+	  type equivalence between arrays.
+
+2006-11-02       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/lang-specs.h:  use gm2cc rather than the gcc driver.
+	* gm2/gm2-compiler/gm2lcc.mod:  also use gm2cc rather
+	  than gcc.
+	* gm2/gm2-compiler/gm2lcc.mod:  corrected extern
+	  declaration of exit.
+	* gm2/Make-lang.in:  generate gm2cc from xgcc and install
+          it correcly.
+        * testsuite/gm2/pim/options/optimize/run/pass/gm2.exp: fixed
+          library module build.
+
+2006-10-20       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  fixed building of constants strings.
+	  Constants are also placed into the global scope so
+	  that they are not garbage collected.
+	* gm2/M2GenGCC.mod:  CodeXIndr handle special case of
+	  null string.
+	* gm2/Make-lang.in:  add automatically generated modules
+	  to the verify12 rule.
+	* added a string assignment regression test.
+
+2006-10-19       Gaius Mulley <gaius@gnu.org>
+
+	* www/index.ms:  updated gm2-harness release to 0.96.
+	* gm2/gm2-compiler/SymbolConversion.mod:   Poison must
+	  not check for gcc poisoning as it is called after a
+	  function has been emitted and potentially poisoned.
+
+2006-10-18       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-config.in:  added.
+	* gm2/Make-lang.in:  include gm2/gm2-config.
+	* gm2/configure.in:  generate gm2/gm2-config.
+	* backed out above changes
+
+2006-10-17       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/aclocal.m4:  added.
+	* gm2/configure:  rebuilt.
+
+2006-10-14       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  minor fixes to build manual pages.
+
+2006-10-13       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  call gimplify_function on all
+          functions.
+	* gm2/Make-lang.in:  added ability to optionally build
+	  the ulm libraries which matches gm2-harness-0.94.
+
+2006-10-12       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/patches/gcc/4.1.1/01.gaius_patch_gcc: added.
+
+2006-10-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm.2c:  fixed conditional goto expressions.
+
+2006-10-04       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm.2c:  added debugging stub.
+
+2006-10-03       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  fixed BuildEnd
+	  to use IsProcedureGccNested in CodeKillLocalVar.
+	* gm2/gm2-compiler/M2GCCDeclare.def:
+	  export IsProcedureGccNested.
+
+2006-10-01       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  modified BuildEnd
+	  to taken an extra parameter, nested, and set it
+	  accordingly.
+
+2006-09-30       Waldek Hebisch <hebisch@math.uni.wroc.pl>
+
+	* gm2/gccgm2.c: (gccgm2_BuildEndFunctionCode) only
+	  call gimplify_function_tree and cgraph_finalize_function
+	  if the procedure is not nested.
+
+2006-09-29       Gaius Mulley <gaius@gnu.org>
+
+	* removed execute permissions for source files.
+	* gm2/patches/gcc/4.1.0/01.gaius_patch_gcc: improved.
+	* gm2/gccgm2.c:  fixed comment.
+
+2006-09-20       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/patches/4.1.0/01.gaius_patch_gcc: added.
+
+2006-09-19       Gaius Mulley <gaius@gnu.org>
+
+	* huge amount of changes to bring gm2 up to gcc-4.1.0 and
+	  also make it build with gcc-4.1.0.
+	* modified gm2/
+          Make-lang.in config-lang.in configure.in gccgm2.c
+          gm2-common.h gm2-lang.c gm2-lang.h gm2-tree.h gm2.texi
+          gm2builtins.c gm2spec.c lang-specs.h bnf/m2-3.bnf
+          examples/server/sckt.c examples/server/sckt.def
+          gm2-compiler/M2Comp.mod gm2-compiler/M2GCCDeclare.mod
+          gm2-compiler/M2GenGCC.mod gm2-compiler/M2Options.def
+          gm2-compiler/M2Options.mod gm2-compiler/M2Preprocess.mod
+          gm2-compiler/gccgm2.def gm2-compiler/gm2.mod
+          gm2-compiler/gm2lgen.mod gm2-libs/ASCII.def gm2-libs/ASCII.mod
+          gm2-libs/Args.def gm2-libs/Debug.def gm2-libs/IO.mod
+          gm2-libs/SYSTEM.mod gm2-libs/StdIO.mod gm2-libs/StrLib.mod
+          gm2-libs/StringConvert.def gm2-libs/libc.def
+          gm2-libs-coroutines/KeyBoardLEDs.c
+          gm2-libs-coroutines/Makefile gm2-libs-coroutines/SysVec.mod
+          gm2-libs-coroutines/TimerHandler.mod p2c/p2c.h
+          p2c/p2c-src/src/makeproto.c p2c/p2c-src/src/p2c-config.h
+          p2c/p2c-src/src/p2clib.c tools-src/mklink.c www/index.ms
+        * added files:
+          gm2/gm2-common.c gm2/gm2-tree.def gm2/lang.opt
+
+2006-08-31       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/ASCII.def: changed EOL to equal to nl rather
+	  than cr.
+
+2006-08-10       Gaius Mulley <gaius@gnu.org>
+
+	* fixed ASM statement.
+	* gm2/bnf/m2-3.bnf: fixed Pass3 and Pass2 const
+	* gm2/gccgm2.c: modified gccgm2_BuildAsm to use add_stmt
+	  rather than expand_asm_expr.
+
+2006-08-09       Gaius Mulley <gaius@gnu.org>
+
+	* GM2 Release 0.53
+	* changed release number in configure.in, gm2.texi, Make-lang.in
+	* builds with gcc-4.1.0
+
+2006-08-08       Gaius Mulley <gaius@gnu.org>
+
+	* GM2 Release 0.52
+	* tagged CVS using gm2_0_52
+	* gm2/NEWS updated
+	* changed release number in configure.in, gm2.texi, Make-lang.in
+	* rebuilt configure
+
+2006-08-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/www/index.ms: updated to reflect release of gm2-harness-0.9
+
+2006-06-23       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/www/index.ms: updated to reflect release of gdb-6.5 which
+	  contains enhanced Modula-2 language support.  It also
+          documents that gm2-harness-0.8 has been released.
+
+2006-05-22       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/www/index.ms: updated to reflect sparc build success from
+	  John O Goyo <jgoyo@ca.inter.net>
+
+2006-05-04       Gaius Mulley <gaius@gnu.org>
+
+	* implemented __INLINE__
+	* gm2/gccgm2.c:  modified to inline procedures if requested.
+	* gm2/m2.flex: added new keyword __INLINE__
+	* gm2/gm2-compiler/M2Reserved.def
+	* gm2/gm2-compiler/M2Reserved.mod: added new keyword __INLINE__
+	* gm2/gm2-compiler/P1SymBuild.mod: builds inlined procedure
+	* gm2/gm2-compiler/M2GenGCC.mod: passes front end inlined procedure
+	  to gccgm2.
+
+2006-04-24       Gaius Mulley <gaius@gnu.org>
+
+	* GM2 Release 0.51
+	* tagged CVS using gm2_0_51
+	* gm2/NEWS updated
+	* rebuilt configure
+	* finished implementing declaration of variables at addresses.
+	* modified gm2/bnf/m2-3.bnf, gm2/gm2-compiler/M2Quads,
+	  gm2/gm2-compiler/SymbolTable.mod, gm2-compiler/P3SymBuild.mod
+
+2006-04-22       Gaius Mulley <gaius@gnu.org>
+
+	* implemented the declaration of a variable at an address.
+	* modified gm2/bnf/m2-3.bnf, gm2/bnf/m2-2.bnf, gm2/gm2-compiler/M2Quads.mod
+
+2006-04-21       Gaius Mulley <gaius@gnu.org>
+
+	* added testsuite/gm2/pim/pass/varaddress.mod
+	* modified gm2/bnf/m2.bnf, gm2/bnf/m2-2.bnf, gm2/bnf/m2-3.bnf,
+	  gm2/bnf/m2-h.bnf to allow parsing of variables declared at addresses.
+
+2006-04-19       Gaius Mulley <gaius@gnu.org>
+
+	* added testsuite/gm2/pim/pass/sets5.mod
+	* fixed bug report by John O Goyo <jgoyo@ca.inter.net>
+	* (testsuite/gm2/pim/pass/sets5.mod and testsuite/gm2/pim/pass/sets4.mod)
+
+2006-04-19       Gaius Mulley <gaius@gnu.org>
+
+	* added testsuite/gm2/pim/pass/sets5.mod
+	* fixed bug report by John O Goyo <jgoyo@ca.inter.net>
+	* (testsuite/gm2/pim/pass/sets5.mod and testsuite/gm2/pim/pass/sets4.mod)
+
+2006-03-25       Gaius Mulley <gaius@gnu.org>
+
+	* added testsuite/gm2/pim/pass/sets4.mod
+	* gm2/gm2-compiler/P2SymBuild.mod: added more robust error detection
+	* gm2/gm2-compiler/M2GenGCC.mod: added more robust error detection
+
+2006-03-17       Gaius Mulley <gaius@gnu.org>
+
+	* added successful build reports to the web page
+
+2006-02-21       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi: fixed new urls and added missing escaped @
+	* gm2/gm2-libs.texi: rebuilt
+	* gm2/gm2-iso/README.texi: fixed typo
+
+2006-02-20       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/NEWS updated
+
+2006-02-13       Gaius Mulley <gaius@gnu.org>
+
+	* GM2 Release 0.50
+	* tagged CVS using gm2_0_50
+	* gm2/NEWS: added, which contains news of user visible changes.
+	* gm2/Make-lang.in: updated version number
+	* gm2/gm2.texi: updated gm2 release number to 0.50 and gm2-harness number to 0.7
+	  and improved install section.
+	* gm2/www: added homepage documents
+
+2006-02-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/ulm-lib-gm2/std/GetPass.mod: modified to work with:
+	* gm2/ulm-lib-gm2/sys/termios.def: new definition module for C
+	* gm2/ulm-lib-gm2/sys/termios.c: portable implmentation module for termios
+	  interface
+	* gm2/ulm-lib-gm2/sys/SysTermIO.def: Modula-2 interface to the underlying
+	  termios library.
+	* gm2/ulm-lib-gm2/sys/SysTermIO.mod: Modula-2 interface to termios.c.
+	* all regression tests pass on LP64
+
+2006-02-07	 Gaius Mulley <gaius@gnu.org>
+
+	* fixed copyright notices for all ISO definition modules in
+	  gm2/gm2-iso.
+
+2006-01-23	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gm2-compiler/M2Options.mod: allow -p option.
+	* gm2/gm2-compiler/M2Quads.mod: remove call to stress stack during
+	  Initialization
+
+2006-01-17	 Michael H Lambert <lambert@psc.edu>
+
+	* testsuite/gm2/iso/pass/realbitscast.mod: modified to detect whether
+	  it is being run under alpha and 64 bit architecture.
+	* testsuite/gm2/cpp/pass/subaddr.mod: modified to detect whether
+	  it is being run under alpha and 64 bit architecture.
+
+2006-01-17	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gm2-compiler/M2GenGCC.mod: coerse constants passed to parameter
+	  of SYSTEM types. Fixes the make gm2.paranoid on ppc architecture.
+	* testsuite/gm2/iso/pass/realbitscast.mod: modified to detect whether
+	  it is being run under ia64 architecture.
+	* testsuite/gm2/cpp/pass/subaddr.mod: modified to detect whether
+	  it is being run under ia64 architecture.
+
+2006-01-16	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/gccgm2.c: altered INCL, EXCL and bit tests so that they subtract the
+	  low value of the subrange before performing the bit operation.
+	* testsuite/gm2/pim/run/pass/setcritical.mod to test bugfix.
+	* gm2/gm2-compiler/gm2lcc.mod: added -B option
+	* gm2/lang-specs.h: pass -B option to gm2lcc
+
+2006-01-10	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed INTEGER, SHORTINT and LONGINT so that they all
+	  call upon gccgm2_GetM2<type> rather than their C counterparts.
+	* fixed constant overflow on 32 bit address architectures when
+	  compiling arrayhuge.mod and arrayhuge2.mod (as reported by
+	  Michael H Lambert <lambert@psc.edu>)
+	* M2Code.mod::Code: call FlushWarnings and FlushErrors after StartDeclareScope
+	  which flushes errors before code generation starts. This fixes
+	  a timeout bug in the regression tests reported by
+	  (John B Wallace Jr <wallacjb@enter.net>).
+	* M2GenGCC.mod::CodeSavePriority: introduced PriorityDebugging and turned
+	  off debugging messages
+	* M2GenGCC.mod::CodeRestorePriority: introduced PriorityDebugging and turned
+	  off debugging messages
+	* all regression tests now pass on GNU/Linux i386 (Debian Sarge)
+	* gm2/gm2-compiler/M2Quads.mod::LoopAnalysis:fixed bug in while loop
+	* corrected testsuite/gm2/errors/fail/testimport.mod to include a double import.
+
+2006-01-09	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed LONGINT/LONGCARD bugs so that
+	  testsuite/gm2/switches/pim4/run/pass/FpuIOBug.mod now passes.
+	  LONGINT and LONGCARD are declared as long long int and
+	  long long unsigned int respectively.
+	* updated gm2/gm2.texi to reflect changes in LONGINT and LONGCARD.
+
+2006-01-08	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* modified examples to utilize the module priority mechanism.
+
+2006-01-06	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* improved implementation of module priorities so that
+	  only externally accessible procedures save and restore
+	  interrupts.
+	* added testsuite/gm2/pimlib/coroutines/pass/priority3.mod and
+          testsuite/gm2/pimlib/coroutines/pass/priority3.def to test exporting
+	  of procedures which need to save and restore interrupt priorities.
+
+2006-01-05	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2/Make-lang.in: removed GM2_DIRS from the dependancies of
+	  various rules, which in turn removed a number of "build loops"
+	* gm2/config-lang.in: removed reference to gm2/p2c/p2c-src/examples/Makefile
+
+2006-01-04	 Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented module priorities.
+	* implemented gm2/gm2-libs-pim/TimeDate.mod
+	* added testsuite/gm2/pimlib/coroutines/pass/priority.mod,
+          testsuite/gm2/pimlib/coroutines/pass/priority2.mod and
+          testsuite/gm2/pimlib/logitech/run/pass/timedate.mod
+	* included TimeDate to be installed as part of the pim
+	  libraries.
+
+2006-01-03	 Michael H Lambert <lambert@psc.edu>
+
+	* fixed typo in gm2/gm2.texi
+	* added __ppc__ ifdefs into testsuite/gm2/iso/pass/realbitscast.mod
+          so that it ignores the REAL96 test on the G5
+	* added __ppc__ ifdefs into testsuite/gm2/switches/pim4/run/pass/FpuIOBug.mod
+

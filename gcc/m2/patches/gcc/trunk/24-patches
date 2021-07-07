@@ -1,0 +1,60 @@
+--- gcc-git/gcc/doc/install.texi	2021-06-10 11:58:18.366986279 +0100
++++ gm2-floppsie/gcc/doc/install.texi	2021-06-17 17:22:04.645530103 +0100
+@@ -1777,18 +1777,19 @@
+ @smallexample
+ grep ^language= */config-lang.in
+ @end smallexample
+-Currently, you can use any of the following:
+-@code{all}, @code{default}, @code{ada}, @code{c}, @code{c++}, @code{d},
+-@code{fortran}, @code{go}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
+-Building the Ada compiler has special requirements, see below.
+-If you do not pass this flag, or specify the option @code{default}, then the
+-default languages available in the @file{gcc} sub-tree will be configured.
+-Ada, D, Go, Jit, and Objective-C++ are not default languages.  LTO is not a
+-default language, but is built by default because @option{--enable-lto} is
+-enabled by default.  The other languages are default languages.  If
+-@code{all} is specified, then all available languages are built.  An
+-exception is @code{jit} language, which requires
+-@option{--enable-host-shared} to be included with @code{all}.
++Currently, you can use any of the following: @code{all},
++@code{default}, @code{ada}, @code{c}, @code{c++}, @code{d},
++@code{fortran}, @code{go}, @code{jit}, @code{lto}, @code{m2},
++@code{objc}, @code{obj-c++}.  Building the Ada compiler has special
++requirements, see below.  If you do not pass this flag, or specify the
++option @code{default}, then the default languages available in the
++@file{gcc} sub-tree will be configured.  Ada, D, Go, Jit,
++Objective-C++ and Modula-2 are not default languages.  LTO is not a
++default language, but is built by default because
++@option{--enable-lto} is enabled by default.  The other languages are
++default languages.  If @code{all} is specified, then all available
++languages are built.  An exception is @code{jit} language, which
++requires @option{--enable-host-shared} to be included with @code{all}.
+ 
+ @item --enable-stage1-languages=@var{lang1},@var{lang2},@dots{}
+ Specify that a particular subset of compilers and their runtime
+@@ -1811,6 +1812,10 @@
+ previous Ada build procedures, when it was required to explicitly
+ do a @samp{make -C gcc gnatlib_and_tools}.
+ 
++@item --disable-libgm2
++Specify that the run-time libraries and tools used by Modula-2 should not
++be built.  This can be useful for debugging.
++
+ @item --disable-libsanitizer
+ Specify that the run-time libraries for the various sanitizers should
+ not be built.
+@@ -3070,10 +3075,10 @@
+ In order to run sets of tests selectively, there are targets
+ @samp{make check-gcc} and language specific @samp{make check-c},
+ @samp{make check-c++}, @samp{make check-d} @samp{make check-fortran},
+-@samp{make check-ada}, @samp{make check-objc}, @samp{make check-obj-c++},
+-@samp{make check-lto}
+-in the @file{gcc} subdirectory of the object directory.  You can also
+-just run @samp{make check} in a subdirectory of the object directory.
++@samp{make check-ada}, @samp{make check-m2}, @samp{make check-objc},
++@samp{make check-obj-c++}, @samp{make check-lto} in the @file{gcc}
++subdirectory of the object directory.  You can also just run
++@samp{make check} in a subdirectory of the object directory.
+ 
+ 
+ A more selective way to just run all @command{gcc} execute tests in the

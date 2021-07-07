@@ -1,0 +1,68 @@
+2001-08-01	Gaius Mulley <gaius@glam.ac.uk>
+
+	* brought gm2 up to date with gcc-3.0
+	* fixed opaque handling in the new parser
+	* now using new parser by default
+	* rewritten NameKey.mod, removing any static limits on array
+	sizes by using dynamic data structures throughout.
+	* improved p2c so that it handles opaque types properly.
+	* modified Lists.def, SymbolKey.def to use opaque types.
+
+2001-03-09	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug in FpuIO.mod which failed to issue a '-' when emitting
+	  real numbers.
+	* added many new tests to the regression directory (autotest).
+	* fixed bugs in the bnf descriptions. Compiler is now using
+ 	  automatically generated parser for P1, P2 and P3. Just PH
+ 	  remains hand built.
+        * Introduced a number of small regression tests following
+ 	  Olivier's extensive bug report on (m2f). Fixed a number
+ 	  of bugs reported, see gm2/m2/comp/BUGS for details.
+	* Fixed bug in M2Lexical.mod causing mismatch between
+ 	  source line numbers and gdb information.
+        * Fixed + - / of constant sets.
+        * removed tests for the interim (they exist under
+ 	  bitset3.mod.breaks and string.mod.breaks respectively)
+        * modifications to stop overflow on max CARDINAL when converting
+ 	  numbers into strings (NumberIO.mod)
+
+2001-02-28	Gaius Mulley <gaius@glam.ac.uk>
+
+	* using new parser P1SyntaxCheck.mod and P2Build.mod
+	  P1SyntaxCheck.mod now inserts simple missing tokens.
+	* both automatically generated and provide better error
+	  recovery
+	* improved some error messages
+
+2001-01-23	Gaius Mulley <gaius@glam.ac.uk>
+
+	* brought gm2 up to date with gcc-20001204
+	* introduced configure and moved all makefiles to Makefile.in
+	* tidied up p2c a little, in an attempt to reduce the compile
+ 	  time warnings
+
+2000-12-02	Gaius Mulley <gaius@glam.ac.uk>
+
+	* brought gm2 up to date with gcc-20001120
+	* garbage collection now working in gm2
+	* introduced EXPORT UNQUALIFIED as a method for writing
+	  definition modules as interfaces for C libraries
+	* altered link tools to reflect EXPORT UNQUALIFIED
+	* started work on preprocessing source when -Wcpp is supplied
+	* tidied up gccgm2.c
+
+2000-09-25	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added error messages to lang-spec.h. Issued if wrong combination
+	  of -Wuselist -Wmodules -Wmakelist and -c are supplied.
+
+2000-09-14	Matthias Kurz <mk@baerlap.north.de>
+
+	* Many makefile portability corrections (tests for symbol links).
+	  Made makeversion more portable via guessing email address.
+	  Added setenv emulation in libc.c.
+	  Inserted missing Close(fo) to gm2lgen.mod.GenMain().
+	  Improved README,
+	  Added QUIAT to the makefiles.
+	  Cast EOF to (char) inside mkfor.c mklink.c.

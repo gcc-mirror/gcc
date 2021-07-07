@@ -1,0 +1,8 @@
+IMPLEMENTATION MODULE test ;
+
+PROCEDURE IsSomeThing (a: ARRAY OF CHAR) : BOOLEAN;
+BEGIN
+   RETURN TRUE
+END IsSomeThing ;
+
+END test.

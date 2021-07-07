@@ -1,0 +1,986 @@
+(* m2type.def definition module for m2type.c.
+
+Copyright (C) 2011-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE m2type ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM m2tree IMPORT Tree ;
+FROM m2linemap IMPORT location_t ;
+
+
+TYPE
+   Constructor = ADDRESS ;
+
+
+(*
+   ValueInTypeRange - returns TRUE if the constant, value, lies in the range
+                      of, type.
+*)
+
+PROCEDURE ValueInTypeRange (type: Tree; value: Tree) : BOOLEAN ;
+
+
+(*
+   ValueOutOfTypeRange - returns TRUE if the constant, value, exceed the range
+                         of, type.
+*)
+
+PROCEDURE ValueOutOfTypeRange (type: Tree; value: Tree) : BOOLEAN ;
+
+
+(*
+   ExceedsTypeRange - return TRUE if low or high exceed the range of, type.
+*)
+
+PROCEDURE ExceedsTypeRange (type: Tree; low, high: Tree) : BOOLEAN ;
+
+
+(*
+   WithinTypeRange - return TRUE if low and high are within the range of, type.
+*)
+
+PROCEDURE WithinTypeRange (type: Tree; low, high: Tree) : BOOLEAN ;
+
+
+(*
+    BuildSubrangeType - creates a subrange of, type, with, lowval, highval.
+*)
+
+PROCEDURE BuildSubrangeType (location: location_t; name: ADDRESS; type: Tree; lowval: Tree; highval: Tree) : Tree ;
+
+
+(*
+    BuildCharConstant - creates a character constant given a, string.
+*)
+
+PROCEDURE BuildCharConstant (location: location_t; string: ADDRESS) : Tree ;
+
+
+(*
+   BuildCharConstantChar - creates a character constant given a character, ch.
+*)
+
+PROCEDURE BuildCharConstantChar (location: location_t; ch: CHAR) : Tree ;
+
+
+(*
+    BuildArrayConstructorElement - adds, value, to the constructor_element_list.
+*)
+
+PROCEDURE BuildArrayConstructorElement (p: ADDRESS; value: Tree; indice: Tree) ;
+
+
+(*
+    BuildEndArrayConstructor - returns a tree containing the array
+                               compound literal.
+*)
+
+PROCEDURE BuildEndArrayConstructor (p: Constructor) : Tree ;
+
+
+(*
+   BuildEndArrayConstructor - returns a tree containing the array
+                              compound literal.
+*)
+
+PROCEDURE BuildStartArrayConstructor (type: Tree) : Constructor ;
+
+
+(*
+    BuildRecordConstructorElement - adds, value, to the constructor_element_list.
+*)
+
+PROCEDURE BuildRecordConstructorElement (p: Constructor; value: Tree) ;
+
+
+(*
+    BuildEndRecordConstructor - returns a tree containing the record compound literal.
+*)
+
+PROCEDURE BuildEndRecordConstructor (p: Constructor) : Tree ;
+
+
+(*
+   BuildStartRecordConstructor - initializes a record compound
+                                 constructor frame.
+*)
+
+PROCEDURE BuildStartRecordConstructor (type: Tree) : Constructor ;
+
+
+(*
+    BuildEndSetConstructor - finishes building a set constant.
+*)
+
+PROCEDURE BuildEndSetConstructor (p: Constructor) : Tree ;
+
+
+(*
+    BuildSetConstructorElement - adds, value, to the constructor_element_list.
+*)
+
+PROCEDURE BuildSetConstructorElement (p: Constructor; value: Tree) ;
+
+
+(*
+   BuildStartSetConstructor - starts to create a set constant.
+                              Remember that type is really a record type.
+*)
+
+PROCEDURE BuildStartSetConstructor (type: Tree) : Constructor ;
+
+
+(*
+    BuildSetType - creates a SET OF [lowval..highval]
+*)
+
+PROCEDURE BuildSetType (location: location_t; name: ADDRESS; type: Tree; lowval: Tree; highval: Tree; ispacked: BOOLEAN) : Tree ;
+
+
+(*
+    BuildConstPointerType - returns a type which is a const pointer to, totype.
+*)
+
+PROCEDURE BuildConstPointerType (totype: Tree) : Tree ;
+
+
+(*
+    BuildPointerType - returns a type which is a pointer to, totype.
+*)
+
+PROCEDURE BuildPointerType (totype: Tree) : Tree ;
+
+
+(*
+    BuildEnumerator - build an enumerator and add it to the, enumvalues, list.
+                      It returns a copy of the value.  --fixme-- why do this?
+*)
+
+PROCEDURE BuildEnumerator (location: location_t; name: ADDRESS; value: Tree;
+                           VAR enumvalues: Tree) : Tree ;
+
+
+(*
+    BuildEndEnumeration - finish building the enumeration, it uses the enum
+                          list, enumvalues, and returns a enumeration type tree.
+*)
+
+PROCEDURE BuildEndEnumeration (location: location_t; type: Tree; enumvalues: Tree) : Tree ;
+
+
+(*
+    BuildStartEnumeration - create an enumerated type in gcc.
+*)
+
+PROCEDURE BuildStartEnumeration (location: location_t; name: ADDRESS; ispacked: BOOLEAN) : Tree ;
+
+
+(*
+    BuildTypeDeclaration - adds the, type, to the current statement list.
+*)
+
+PROCEDURE BuildTypeDeclaration (location: location_t; type: Tree) ;
+
+
+(*
+    GetMaxFrom - given a, type, return a constant representing the maximum
+                 legal value.
+*)
+
+PROCEDURE GetMaxFrom (location: location_t; type: Tree) : Tree ;
+
+
+(*
+    GetMinFrom - given a, type, return a constant representing the minimum
+                 legal value.
+*)
+
+PROCEDURE GetMinFrom (location: location_t; type: Tree) : Tree ;
+
+
+(*
+    GetDefaultType - given a, type, with a, name, return a GCC declaration of this type.
+                     Checks to see whether the type name has already been declared as a
+                     default type and if so it returns this declaration. Otherwise it
+                     declares the type. In Modula-2 this is equivalent to:
+
+                     TYPE
+                        name = type ;
+
+                     We need this function as the initialization to gccgm2.c will
+                     declare C default types and _some_ M2 default types.
+*)
+
+PROCEDURE GetDefaultType (location: location_t; name: ADDRESS; type: Tree) : Tree ;
+
+
+(*
+    BuildEndType - finish declaring, type, and return, type.
+*)
+
+PROCEDURE BuildEndType (location: location_t; type: Tree) : Tree ;
+
+
+(*
+    BuildStartType - given a, type, with a, name, return a GCC declaration of this type.
+                     TYPE
+                        name = foo ;
+
+                     the type, foo, maybe a partially created type (which has
+                     yet to be 'gm2_finish_decl'ed.
+*)
+
+PROCEDURE BuildStartType (location: location_t; name: ADDRESS; type: Tree) : Tree ;
+
+
+(*
+   InitSystemTypes -
+*)
+
+PROCEDURE InitSystemTypes (location: location_t; loc: INTEGER) ;
+
+
+(*
+   InitBaseTypes -
+*)
+
+PROCEDURE InitBaseTypes (location: location_t) ;
+
+
+(*
+    BuildVariableArrayAndDeclare - creates a variable length array.
+                                   high is the maximum legal elements (which is a runtime variable).
+                                   This creates and array index, array type and local variable.
+*)
+
+PROCEDURE BuildVariableArrayAndDeclare (location: location_t; elementtype: Tree; high: Tree; name: ADDRESS; scope: Tree) : Tree ;
+
+
+(*
+    InitFunctionTypeParameters - resets the current function type parameter list.
+*)
+
+PROCEDURE InitFunctionTypeParameters ;
+
+
+(*
+   BuildProcTypeParameterDeclaration - creates and returns one parameter from, name, and, type.
+                                       It appends this parameter to the internal param_type_list.
+*)
+
+PROCEDURE BuildProcTypeParameterDeclaration (location: location_t; type: Tree; isreference: BOOLEAN) : Tree ;
+
+
+(*
+    BuildStartFunctionType - creates a pointer type, necessary to
+                             create a function type.
+*)
+
+PROCEDURE BuildStartFunctionType (location: location_t; name: ADDRESS) : Tree ;
+
+
+(*
+    BuildEndFunctionType - build a function type which would return a, value.
+                           The arguments have been created by BuildParameterDeclaration.
+*)
+
+PROCEDURE BuildEndFunctionType (func: Tree; type: Tree; usesvarags: BOOLEAN) : Tree ;
+
+
+(*
+    GetTreeType - returns TREE_TYPE (t).
+*)
+
+PROCEDURE GetTreeType (type: Tree) : Tree ;
+
+
+(*
+    DeclareKnownType - given a, type, with a, name, return a GCC declaration of this type.
+                       TYPE
+                          name = foo ;
+*)
+
+PROCEDURE DeclareKnownType (location: location_t; name: ADDRESS; type: Tree) : Tree ;
+
+
+(*
+    GetM2ZType - return the ISO Z data type, the longest int datatype.
+*)
+
+PROCEDURE GetM2ZType () : Tree ;
+
+
+(*
+    GetM2RType - return the ISO R data type, the longest real datatype.
+*)
+
+PROCEDURE GetM2RType () : Tree ;
+
+
+(*
+    BuildSetTypeFromSubrange - constructs a set type from a subrangeType.
+*)
+
+PROCEDURE BuildSetTypeFromSubrange (location: location_t; name: ADDRESS;
+                                    subrangeType: Tree;
+                                    lowval: Tree; highval: Tree;
+                                    ispacked: BOOLEAN) : Tree ;
+
+
+(*
+    BuildSmallestTypeRange - returns the smallest INTEGER_TYPE which is
+                             sufficient to contain values: low..high.
+*)
+
+PROCEDURE BuildSmallestTypeRange (location: location_t; low: Tree; high: Tree) : Tree ;
+
+
+(*
+    GetBooleanType -
+*)
+
+PROCEDURE GetBooleanType () : Tree ;
+
+
+(*
+    GetBooleanFalse -
+*)
+
+PROCEDURE GetBooleanFalse () : Tree ;
+
+
+(*
+    GetBooleanTrue -
+*)
+
+PROCEDURE GetBooleanTrue () : Tree ;
+
+
+(*
+    GetPackedBooleanType - return the packed boolean data type node.
+*)
+
+PROCEDURE GetPackedBooleanType () : Tree ;
+
+
+(*
+    GetCharType - return the char type node.
+*)
+
+PROCEDURE GetCharType () : Tree ;
+
+
+(*
+    GetByteType - return the byte type node.
+*)
+
+PROCEDURE GetByteType () : Tree ;
+
+
+(*
+    GetVoidType - return the C void type.
+*)
+
+PROCEDURE GetVoidType () : Tree ;
+
+
+(*
+    GetBitnumType - return the ISO bitnum type.
+*)
+
+PROCEDURE GetBitnumType () : Tree ;
+
+
+(*
+    GetRealType -
+*)
+
+PROCEDURE GetRealType () : Tree ;
+
+
+(*
+    GetLongRealType - return the C long double data type.
+*)
+
+PROCEDURE GetLongRealType () : Tree ;
+
+
+(*
+    GetShortRealType - return the C float data type.
+*)
+
+PROCEDURE GetShortRealType () : Tree ;
+
+
+(*
+    GetLongIntType - return the C long int data type.
+*)
+
+PROCEDURE GetLongIntType () : Tree ;
+
+
+(*
+    GetPointerType - return the GCC ptr type node.  Equivalent to (void * ).
+*)
+
+PROCEDURE GetPointerType () : Tree ;
+
+
+(*
+    GetCardinalType - return the cardinal type.
+*)
+
+PROCEDURE GetCardinalType () : Tree ;
+
+
+(*
+    GetIntegerType - return the integer type node.
+*)
+
+PROCEDURE GetIntegerType () : Tree ;
+
+
+(*
+    GetWordType - return the C unsigned data type.
+*)
+
+PROCEDURE GetWordType () : Tree ;
+
+
+(*
+    GetM2CardinalType - return the m2 cardinal data type.
+*)
+
+PROCEDURE GetM2CardinalType () : Tree ;
+
+
+(*
+    GetBitsetType - return the bitset type.
+*)
+
+PROCEDURE GetBitsetType () : Tree ;
+
+
+(*
+    GetM2CType - a test function.
+*)
+
+PROCEDURE GetM2CType () : Tree ;
+
+
+(*
+    GetProcType - return the m2 proc data type.
+*)
+
+PROCEDURE GetProcType () : Tree ;
+
+
+(*
+    GetM2ComplexType - return the complex type.
+*)
+
+PROCEDURE GetM2ComplexType () : Tree ;
+
+
+(*
+    GetM2LongComplexType - return the long complex type.
+*)
+
+PROCEDURE GetM2LongComplexType () : Tree ;
+
+
+(*
+    GetM2ShortComplexType - return the short complex type.
+*)
+
+PROCEDURE GetM2ShortComplexType () : Tree ;
+
+
+(*
+    GetM2Complex128Type - return the fixed size complex type.
+*)
+
+PROCEDURE GetM2Complex128 () : Tree ;
+
+
+(*
+    GetM2Complex96 - return the fixed size complex type.
+*)
+
+PROCEDURE GetM2Complex96 () : Tree ;
+
+
+(*
+    GetM2Complex64 - return the fixed size complex type.
+*)
+
+PROCEDURE GetM2Complex64 () : Tree ;
+
+
+(*
+    GetM2Complex32 - return the fixed size complex type.
+*)
+
+PROCEDURE GetM2Complex32 () : Tree ;
+
+
+(*
+    GetM2Real128 - return the real 128 bit type.
+*)
+
+PROCEDURE GetM2Real128 () : Tree ;
+
+
+(*
+    GetM2Real96 - return the real 96 bit type.
+*)
+
+PROCEDURE GetM2Real96 () : Tree ;
+
+
+(*
+    GetM2Real64 - return the real 64 bit type.
+*)
+
+PROCEDURE GetM2Real64 () : Tree ;
+
+
+(*
+    GetM2Real32 - return the real 32 bit type.
+*)
+
+PROCEDURE GetM2Real32 () : Tree ;
+
+
+(*
+    GetM2Bitset32 - return the bitset 32 bit type.
+*)
+
+PROCEDURE GetM2Bitset32 () : Tree ;
+
+
+(*
+    GetM2Bitset16 - return the bitset 16 bit type.
+*)
+
+PROCEDURE GetM2Bitset16 () : Tree ;
+
+
+(*
+    GetM2Bitset8 - return the bitset 8 bit type.
+*)
+
+PROCEDURE GetM2Bitset8 () : Tree ;
+
+
+(*
+    GetM2Word64 - return the word 64 bit type.
+*)
+
+PROCEDURE GetM2Word64 () : Tree ;
+
+
+(*
+    GetM2Word32 - return the word 32 bit type.
+*)
+
+PROCEDURE GetM2Word32 () : Tree ;
+
+
+(*
+    GetM2Word16 - return the word 16 bit type.
+*)
+
+PROCEDURE GetM2Word16 () : Tree ;
+
+
+(*
+    GetM2Cardinal64 - return the cardinal 64 bit type.
+*)
+
+PROCEDURE GetM2Cardinal64 () : Tree ;
+
+
+(*
+    GetM2Cardinal32 - return the cardinal 32 bit type.
+*)
+
+PROCEDURE GetM2Cardinal32 () : Tree ;
+
+
+(*
+    GetM2Cardinal16 - return the cardinal 16 bit type.
+*)
+
+PROCEDURE GetM2Cardinal16 () : Tree ;
+
+
+(*
+    GetM2Cardinal8 - return the cardinal 8 bit type.
+*)
+
+PROCEDURE GetM2Cardinal8 () : Tree ;
+
+
+(*
+    GetM2Integer64 - return the integer 64 bit type.
+*)
+
+PROCEDURE GetM2Integer64 () : Tree ;
+
+
+(*
+    GetM2Integer32 - return the integer 32 bit type.
+*)
+
+PROCEDURE GetM2Integer32 () : Tree ;
+
+
+(*
+    GetM2Integer16 - return the integer 16 bit type.
+*)
+
+PROCEDURE GetM2Integer16 () : Tree ;
+
+
+(*
+    GetM2Integer8 - return the integer 8 bit type.
+*)
+
+PROCEDURE GetM2Integer8 () : Tree ;
+
+
+(*
+    GetISOLocType - return the m2 loc word data type.
+*)
+
+PROCEDURE GetISOLocType () : Tree ;
+
+
+(*
+    GetISOByteType - return the m2 iso byte data type.
+*)
+
+PROCEDURE GetISOByteType () : Tree ;
+
+
+(*
+    GetISOWordType - return the m2 iso word data type.
+*)
+
+PROCEDURE GetISOWordType () : Tree ;
+
+
+(*
+    GetShortCardType - return the C short unsigned data type.
+*)
+
+PROCEDURE GetShortCardType () : Tree ;
+
+
+(*
+    GetM2ShortCardType - return the m2 short cardinal data type.
+*)
+
+PROCEDURE GetM2ShortCardType () : Tree ;
+
+
+(*
+    GetShortIntType - return the C short int data type.
+*)
+
+PROCEDURE GetShortIntType () : Tree ;
+
+
+(*
+    GetM2ShortIntType - return the m2 short integer data type.
+*)
+
+PROCEDURE GetM2ShortIntType () : Tree ;
+
+
+(*
+    GetM2LongCardType - return the m2 long cardinal data type.
+*)
+
+PROCEDURE GetM2LongCardType () : Tree ;
+
+
+(*
+    GetM2LongIntType - return the m2 long integer data type.
+*)
+
+PROCEDURE GetM2LongIntType () : Tree ;
+
+
+(*
+    GetM2LongRealType - return the m2 long real data type.
+*)
+
+PROCEDURE GetM2LongRealType () : Tree ;
+
+
+(*
+    GetM2RealType - return the m2 real data type.
+*)
+
+PROCEDURE GetM2RealType () : Tree ;
+
+
+(*
+    GetM2ShortRealType - return the m2 short real data type.
+*)
+
+PROCEDURE GetM2ShortRealType () : Tree ;
+
+
+(*
+    GetM2IntegerType - return the m2 integer data type.
+*)
+
+PROCEDURE GetM2IntegerType () : Tree ;
+
+
+(*
+    GetM2CharType - return the m2 char data type.
+*)
+
+PROCEDURE GetM2CharType () : Tree ;
+
+
+(*
+   GetCSizeTType - return a type representing, size_t on this system.
+*)
+
+PROCEDURE GetCSizeTType () : Tree ;
+
+
+(*
+   GetCSSizeTType - return a type representing, ssize_t on this system.
+*)
+
+PROCEDURE GetCSSizeTType () : Tree ;
+
+
+(*
+    BuildArrayStringConstructor - creates an array constructor for, arrayType,
+                                  consisting of the character elements
+                                  defined by, str, of, length, characters.
+*)
+
+PROCEDURE BuildArrayStringConstructor (location: location_t; arrayType: Tree; str: Tree; length: Tree) : Tree ;
+
+
+(*
+    RealToTree - convert a real number into a Tree.
+*)
+
+PROCEDURE RealToTree (name: ADDRESS) : Tree ;
+
+
+(*
+    BuildStartRecord - return a RECORD tree.
+*)
+
+PROCEDURE BuildStartRecord (location: location_t; name: ADDRESS) : Tree ;
+
+
+(*
+    BuildStartUnion - return a union tree.
+*)
+
+PROCEDURE BuildStartUnion (location: location_t; name: ADDRESS) : Tree ;
+
+
+
+PROCEDURE BuildStartVarient (location: location_t; name: ADDRESS) : Tree ;
+
+
+
+PROCEDURE BuildEndVarient (location: location_t; varientField: Tree; varientList: Tree; isPacked: BOOLEAN) : Tree ;
+
+
+
+PROCEDURE BuildStartFieldVarient (location: location_t; name: ADDRESS) : Tree ;
+
+
+
+PROCEDURE BuildEndFieldVarient (location: location_t; varientField: Tree; varientList: Tree; isPacked: BOOLEAN) : Tree ;
+
+
+
+PROCEDURE BuildStartFieldRecord (location: location_t; name: ADDRESS; type: Tree) : Tree ;
+
+
+
+PROCEDURE BuildFieldRecord (location: location_t; name: ADDRESS; type: Tree) : Tree ;
+
+
+(*
+    ChainOn - interface so that Modula-2 can also create chains of
+              declarations.
+*)
+
+PROCEDURE ChainOn (t1: Tree; t2: Tree) : Tree ;
+
+
+(*
+    ChainOnParamValue - adds a list node {{name, str}, value} into the tree list.
+*)
+
+PROCEDURE ChainOnParamValue (list: Tree; name: Tree; str: Tree; value: Tree) : Tree ;
+
+
+(*
+   AddStringToTreeList - adds, string, to list.
+*)
+
+PROCEDURE AddStringToTreeList (list: Tree; string: Tree) : Tree ;
+
+
+(*
+    BuildEndRecord - a heavily pruned finish_struct from c-decl.c.
+                     It sets the context for each field to, t,
+                     propagates isPacked throughout the fields in
+                     the structure.
+*)
+
+PROCEDURE BuildEndRecord (location: location_t; record: Tree; fieldlist: Tree; isPacked: BOOLEAN) : Tree ;
+
+
+(*
+    SetAlignment - sets the alignment of a, node, to, align.
+                   It duplicates the, node, and sets the alignment
+                   to prevent alignment effecting behaviour elsewhere.
+*)
+
+PROCEDURE SetAlignment (node: Tree; align: Tree) : Tree ;
+
+
+(*
+    SetDeclPacked - sets the packed bit in decl TREE, node.
+                    It returns the node.
+*)
+
+PROCEDURE SetDeclPacked (node: Tree) : Tree ;
+
+
+(*
+    SetTypePacked - sets the packed bit in type TREE, node.
+                    It returns the node.
+*)
+
+PROCEDURE SetTypePacked (node: Tree) : Tree ;
+
+
+(*
+    SetRecordFieldOffset - returns field after the byteOffset and bitOffset
+                           has been applied to it.
+*)
+
+PROCEDURE SetRecordFieldOffset (field: Tree; byteOffset: Tree; bitOffset: Tree; fieldtype: Tree; nbits: Tree) : Tree ;
+
+
+(*
+    BuildPackedFieldRecord - builds a packed field record of,
+                             name, and, fieldtype.
+*)
+
+PROCEDURE BuildPackedFieldRecord (location: location_t; name: ADDRESS; fieldtype: Tree) : Tree ;
+
+
+(*
+    BuildNumberOfArrayElements - returns the number of elements in an
+                                 arrayType.
+*)
+
+PROCEDURE BuildNumberOfArrayElements (location: location_t; arrayType: Tree) : Tree ;
+
+
+(*
+    AddStatement - maps onto add_stmt.
+*)
+
+PROCEDURE AddStatement (location: location_t; t: Tree) ;
+
+
+(*
+    MarkFunctionReferenced - marks a function as referenced.
+*)
+
+PROCEDURE MarkFunctionReferenced (f: Tree) ;
+
+
+(*
+    GarbageCollect - force gcc to garbage collect.
+*)
+
+PROCEDURE GarbageCollect ;
+
+
+(*
+   BuildArrayIndexType - creates an integer index which accesses an array.
+                         low and high are the min, max elements of the array.
+*)
+
+PROCEDURE BuildArrayIndexType (low: Tree; high: Tree) : Tree ;
+
+
+(*
+   GetArrayNoOfElements - returns the number of elements in, arraytype.
+*)
+
+PROCEDURE GetArrayNoOfElements (location: location_t; arraytype: Tree) : Tree ;
+
+
+(*
+   BuildEndArrayType - returns a type which is an array indexed by IndexType
+                       and which has ElementType elements.
+*)
+
+PROCEDURE BuildEndArrayType (arraytype: Tree; elementtype: Tree; indextype: Tree; type: INTEGER) : Tree ;
+
+
+(*
+    PutArrayType -
+*)
+
+PROCEDURE PutArrayType (array: Tree; type: Tree) ;
+
+
+(*
+    BuildStartArrayType - creates an array with an indextype and elttype.  The front end
+                          symbol, type, is also passed to allow the gccgm2 to return the
+                          canonical edition of the array type even if the GCC elttype is
+                          NULL_TREE.
+*)
+
+PROCEDURE BuildStartArrayType (index_type: Tree; elt_type: Tree; type: INTEGER) : Tree ;
+
+
+(*
+   IsAddress - return TRUE if the type is an ADDRESS.
+*)
+
+PROCEDURE IsAddress (type: Tree) : BOOLEAN ;
+
+
+END m2type.

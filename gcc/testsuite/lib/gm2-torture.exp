@@ -1,0 +1,505 @@
+# Copyright (C) 2003-2020 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Rob Savoye. (rob@cygnus.com)
+# and modified by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2
+
+load_lib file-format.exp
+load_lib target-libpath.exp
+
+# The default option list can be overridden by
+# TORTURE_OPTIONS="{ { list1 } ... { listN } }"
+
+if ![info exists TORTURE_OPTIONS] {
+    # It is theoretically beneficial to group all of the O2/O3 options together,
+    # as in many cases the compiler will generate identical executables for
+    # all of them--and the c-torture testsuite will skip testing identical
+    # executables multiple times.
+    # Also note that -finline-functions is explicitly included in one of the
+    # items below, even though -O3 is also specified, because some ports may
+    # choose to disable inlining functions by default, even when optimizing.
+    set TORTURE_OPTIONS [list \
+			     { -g } \
+                             { -O } \
+			     { -O -g } \
+			     { -Os } \
+			     { -O3 -fomit-frame-pointer } \
+			     { -O3 -fomit-frame-pointer -finline-functions } ]
+}
+
+
+#
+#  very costly options follow
+#
+#     set TORTURE_OPTIONS [list \
+\#			     { -g } \
+\#                             { -O } \
+\#			     { -O -g } \
+\#			     { -Os } \
+\#			     { -Os -g } \
+\#			     { -O0 } \
+\#			     { -O0 -g } \
+\#			     { -O1 } \
+\#			     { -O1 -g } \
+\#			     { -O2 } \
+\#			     { -O2 -g } \
+\#			     { -O3 } \
+\#			     { -O3 -g } \
+\#			     { -O3 -fomit-frame-pointer } \
+\#			     { -O3 -fomit-frame-pointer -finline-functions } ]
+#
+#
+#
+
+
+
+#
+# gm2-torture-compile -- runs the gm2-torture test
+#
+# SRC is the full pathname of the testcase.
+# OPTION is the specific compiler flag we're testing (eg: -O2).
+#
+proc gm2-torture-compile { src option } {
+    global output
+    global srcdir tmpdir
+    global host_triplet
+
+    set output "$tmpdir/[file tail [file rootname $src]].o"
+
+    regsub "^$srcdir/?" $src "" testcase
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    # puts stderr "gm2-torture-compiler src = $src, option = $option\n"
+
+    # Run the compiler and analyze the results.
+    set options ""
+    lappend options "additional_flags=${option}"
+
+    set comp_output [gm2_target_compile "$src" "$output" object $options];
+    # puts stderr "*** gm2 torture compile: $comp_output ${options} "
+    gm2_check_compile $testcase "$option" $output $comp_output
+    remote_file build delete $output
+    verbose "$comp_output" 1
+}
+
+
+#
+# gm2_check_compile_fail -- Reports and returns pass/fail for a compilation
+#
+
+proc gm2_check_compile_fail {testcase option objname gcc_output} {
+    global tool
+    set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
+
+    if [string match "$fatal_signal 6" $gcc_output] then {
+	${tool}_fail $testcase "Got Signal 6, $option"
+	return 0
+    }
+
+    if [string match "$fatal_signal 11" $gcc_output] then {
+	${tool}_fail $testcase "Got Signal 11, $option"
+	return 0
+    }
+
+#    # We shouldn't get these because of -w, but just in case.
+#   if [string match "*cc:*warning:*" $gcc_output] then {
+#	warning "$testcase: (with warnings) $option"
+#	send_log "$gcc_output\n"
+#	unresolved "$testcase, $option"
+#	return 0
+#    }
+
+    set gcc_output [prune_warnings $gcc_output]
+
+    set unsupported_message [${tool}_check_unsupported_p $gcc_output]
+    if { $unsupported_message != "" } {
+	unsupported "$testcase: $unsupported_message"
+	return 0
+    }
+
+    # remove any leftover LF/CR to make sure any output is legit
+    regsub -all -- "\[\r\n\]*" $gcc_output "" gcc_output
+
+    # check for any internal error
+    if { [string match "internal error" $gcc_output] ||
+	 [string match "internal compiler error" $gcc_output] } then {
+	${tool}_fail $testcase $option
+	return 0
+    }
+
+    # If any message remains, we pass, as it will be the error message
+    if ![string match "" $gcc_output] then {
+	${tool}_pass $testcase $option
+	return 1
+    }
+
+    # a clean compilation means this test has failed
+    ${tool}_fail $testcase $option
+    return 1
+}
+
+#
+# gm2-torture-compile-fail -- runs the gm2-torture test
+#
+# SRC is the full pathname of the testcase.
+# OPTION is the specific compiler flag we're testing (eg: -O2).
+#
+proc gm2-torture-compile-fail { src option } {
+    global output
+    global srcdir tmpdir
+    global host_triplet
+
+    # puts stderr "gm2-torture-compile-fail:  ${option}\n"
+    set output "$tmpdir/[file tail [file rootname $src]].o"
+
+    regsub "^$srcdir/?" $src "" testcase
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    verbose "Testing expected failure $testcase, $option" 1
+
+    # Run the compiler and analyze the results.
+    set options ""
+    set additional_flags ""
+    lappend options "additional_flags=$option"  # do not use -w for gm2
+    if { $additional_flags != "" } {
+	lappend options "additional_flags=$additional_flags"
+    }
+
+    set comp_output [gm2_target_compile "$src" "$output" object $options];
+    gm2_check_compile_fail $testcase $option $output $comp_output
+    remote_file build delete $output
+    verbose "$comp_output" 1
+}
+
+#
+# gm2-torture-execute -- utility to compile and execute a testcase
+#
+# SOURCES is a list of full pathnames to the test source files.
+# The first filename in this list forms the "testcase".
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc gm2-torture-execute { sources args success } {
+    global tmpdir tool srcdir output compiler_conditional_xfail_data;
+    global TORTURE_OPTIONS;
+    global gm2_link_libraries;
+    global gm2_link_path;
+
+    # Use the first source filename given as the filename under test.
+    set src [lindex $sources 0];
+
+    if { [llength $args] > 0 } {
+	set additional_flags [lindex $args 0];
+    } else {
+	set additional_flags "";
+    }
+    # Check for alternate driver.
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0;
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+
+    set executable $tmpdir/[file tail [file rootname $src].x];
+    set objectfile $tmpdir/[file tail [file rootname $src].o];
+
+    regsub "^$srcdir/?" $src "" testcase
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    set option_list $TORTURE_OPTIONS;
+
+    set count 0;
+    set oldstatus "foo";
+    foreach option $option_list {
+	if { $count > 0 } {
+	    set oldexec $execname;
+	}
+	set execname "${executable}${count}";
+	incr count;
+
+	# torture_{compile,execute}_xfail are set by the .x script
+	# (if present)
+	if [info exists torture_compile_xfail] {
+	    setup_xfail $torture_compile_xfail
+	}
+
+	# torture_execute_before_{compile,execute} can be set by the .x script
+	# (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	remote_file build delete $execname;
+	verbose "Testing $testcase, $option" 1
+
+	set options ""
+	lappend options "additional_flags=$option"
+	if { $additional_flags != "" } {
+	    lappend options "additional_flags=$additional_flags"
+	}
+	set comp_output [gm2_target_compile "$sources" "${objectfile}" object "$options"];
+
+	# puts stderr "torture gm2 case: $comp_output ${options} "
+
+	if ![gm2_check_compile "$testcase compilation" ${options} $objectfile $comp_output] {
+	    unresolved "$testcase execution, ${options}"
+	    remote_file build delete $objectfile
+	    continue
+	}
+
+	# now link the test
+	set options ${option};
+        lappend options "-fonlylink"
+
+	if { [llength ${args}] > 0 } {
+	    lappend options "additional_flags=[lindex ${args} 0]"
+	}
+
+	lappend options "libs=${gm2_link_libraries}";
+	lappend options "ldflags=${gm2_link_path}";
+	set comp_output [gm2_target_compile "${sources}" "${execname}" executable ${options}];
+	# puts "Link libraries are: ${gm2_link_libraries}"
+	# puts "Link path is      : ${gm2_link_path}"
+
+	if ![gm2_check_compile "${testcase} compilation" ${option} ${execname} ${comp_output}] {
+	    unresolved "${testcase} execution, ${option} (link failed)"
+            verbose "tried to link ${testcase} ${sources} ${execname} executable ${options}" 1
+	    verbose "Link libraries are: ${gm2_link_libraries}" 1
+	    verbose "Link path is      : ${gm2_link_path}" 1
+	    verbose "$comp_output" 1
+	    lappend options "additional_flags=-fsources"
+	    lappend options "additional_flags=-v"
+	    verbose "******  s t a r t *********" 1
+	    set comp_output [gm2_target_compile "$sources" "${objectfile}" object ${options}];
+	    verbose "$comp_output" 1
+	    set comp_output [gm2_target_compile "${sources}" "${execname}" executable ${options}];
+	    verbose "$comp_output" 1
+	    verbose "******    e n d   *********" 1
+	    remote_file build delete $execname
+	    remote_file build delete $objectfile
+	    continue
+	}
+
+	# See if this source file uses "long long" types, if it does, and
+	# no_long_long is set, skip execution of the test.
+	if [target_info exists no_long_long] then {
+	    if [expr [search_for $src "long long"]] then {
+		unsupported "$testcase execution, $option"
+		continue
+	    }
+	}
+
+	if [info exists torture_execute_xfail] {
+	    setup_xfail $torture_execute_xfail
+	}
+
+	if [info exists torture_eval_before_execute] {
+            set ignore_me [eval $torture_eval_before_execute]
+	}
+
+	# Sometimes we end up creating identical executables for two
+	# consecutive sets of different of compiler options.
+	#
+	# In such cases we know the result of this test will be identical
+	# to the result of the last test.
+	#
+	# So in cases where the time to load and run/simulate the test
+	# is relatively high, compare the two binaries and avoid rerunning
+	# tests if the executables are identical.
+	#
+	# Do not do this for native testing since the cost to load/execute
+	# the test is fairly small and the comparison step actually slows
+	# the entire process down because it usually does not "hit".
+	set skip 0;
+	if { ![isnative] && [info exists oldexec] } {
+	    if { [remote_file build cmp $oldexec $execname] == 0 } {
+		set skip 1;
+	    }
+	}
+	if { $skip == 0 } {
+	    set result [gm2_load "$execname" "" ""]
+	    set status [lindex $result 0];
+	    set output [lindex $result 1];
+	    if { $success == "fail" } {
+		# invert the result
+		if { $status == "pass" } {
+		    set status "fail"
+		} else {
+		    set status "pass"
+		}
+	    }
+	    send_log "executed $execname with result $status"
+	}
+        if { $oldstatus == "pass" } {
+	    remote_file build delete $oldexec;
+        }
+	$status "$testcase execution, $option"
+	set oldstatus $status;
+    }
+    if [info exists status] {
+	if { $status == "pass" } {
+	    remote_file build delete $execname;
+	    remote_file build delete $objectfile;
+	}
+    }
+}
+
+#
+# search_for -- looks for a string match in a file
+#
+proc search_for { file pattern } {
+    set fd [open $file r]
+    while { [gets $fd cur_line]>=0 } {
+	if [string match "*$pattern*" $cur_line] then {
+	    close $fd
+	    return 1
+	}
+    }
+    close $fd
+    return 0
+}
+
+#
+# gm2-torture -- the gm2-torture testcase source file processor
+#
+# This runs compilation only tests (no execute tests).
+# SRC is the full pathname of the testcase, or just a file name in which case
+# we prepend $srcdir/$subdir.
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc gm2-torture { args } {
+    global srcdir subdir compiler_conditional_xfail_data TORTURE_OPTIONS
+
+    set src [lindex $args 0];
+    if { [llength $args] > 1 } {
+	set options [lindex $args 1];
+    } else {
+	set options ""
+    }
+
+    # Prepend $srdir/$subdir if missing.
+    if ![string match "*/*" $src] {
+	set src "$srcdir/$subdir/$src"
+    }
+
+    # Check for alternate driver.
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+
+    set option_list $TORTURE_OPTIONS
+
+    # loop through all the options
+    foreach option $option_list {
+	# torture_compile_xfail is set by the .x script (if present)
+	if [info exists torture_compile_xfail] {
+	    setup_xfail $torture_compile_xfail
+	}
+
+	# torture_execute_before_compile is set by the .x script (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	gm2-torture-compile $src "$option $options"
+    }
+}
+
+#
+# gm2-torture -- the gm2-torture testcase source file processor
+#
+# This runs compilation only tests (no execute tests).
+# SRC is the full pathname of the testcase, or just a file name in which case
+# we prepend $srcdir/$subdir.
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc gm2-torture-fail { args } {
+    global srcdir subdir compiler_conditional_xfail_data TORTURE_OPTIONS
+
+    set src [lindex $args 0];
+    if { [llength $args] > 1 } {
+	set options [lindex $args 1];
+    } else {
+	set options ""
+    }
+
+    # Prepend $srdir/$subdir if missing.
+    if ![string match "*/*" $src] {
+	set src "$srcdir/$subdir/$src"
+    }
+
+    # Check for alternate driver.
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+
+    set option_list $TORTURE_OPTIONS
+
+    # loop through all the options
+    foreach option $option_list {
+	# torture_compile_xfail is set by the .x script (if present)
+	if [info exists torture_compile_xfail] {
+	    setup_xfail $torture_compile_xfail
+	}
+
+	# torture_execute_before_compile is set by the .x script (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	gm2-torture-compile-fail $src "$option $options"
+    }
+}

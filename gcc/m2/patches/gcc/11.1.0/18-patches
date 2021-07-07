@@ -1,0 +1,28 @@
+--- gcc-git/gcc/langhooks-def.h	2021-04-12 00:27:11.634099346 +0100
++++ gm2-floppsie/gcc/langhooks-def.h	2021-04-12 17:46:05.180533649 +0100
+@@ -95,6 +95,7 @@
+ extern int lhd_decl_dwarf_attribute (const_tree, int);
+ extern int lhd_type_dwarf_attribute (const_tree, int);
+ extern void lhd_finalize_early_debug (void);
++extern bool lhd_new_dispose_storage_substitution (void);
+
+ #define LANG_HOOKS_NAME			"GNU unknown"
+ #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
+@@ -147,6 +148,7 @@
+ #define LANG_HOOKS_RUN_LANG_SELFTESTS	 lhd_do_nothing
+ #define LANG_HOOKS_GET_SUBSTRING_LOCATION lhd_get_substring_location
+ #define LANG_HOOKS_FINALIZE_EARLY_DEBUG lhd_finalize_early_debug
++#define LANG_HOOKS_NEW_DISPOSE_STORAGE_SUBSTITUTION lhd_new_dispose_storage_substitution
+
+ /* Attribute hooks.  */
+ #define LANG_HOOKS_ATTRIBUTE_TABLE		NULL
+@@ -381,7 +383,8 @@
+   LANG_HOOKS_EMITS_BEGIN_STMT, \
+   LANG_HOOKS_RUN_LANG_SELFTESTS, \
+   LANG_HOOKS_GET_SUBSTRING_LOCATION, \
+-  LANG_HOOKS_FINALIZE_EARLY_DEBUG \
++  LANG_HOOKS_FINALIZE_EARLY_DEBUG, \
++  LANG_HOOKS_NEW_DISPOSE_STORAGE_SUBSTITUTION \
+ }
+
+ #endif /* GCC_LANG_HOOKS_DEF_H */

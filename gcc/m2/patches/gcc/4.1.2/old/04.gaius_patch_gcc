@@ -1,0 +1,31 @@
+--- gcc-4.1.2-orig/gcc/gcc.c	2006-11-07 14:26:21.000000000 +0000
++++ gcc-4.1.2/gcc/gcc.c	2008-05-27 10:19:47.000000000 +0100
+@@ -262,6 +262,10 @@
+    run if this is nonzero.  */
+ static int error_count = 0;
+ 
++/* The lang specs might wish to overrise the default linker.
++ */
++int force_no_linker = 0;
++
+ /* Greatest exit code of sub-processes that has been encountered up to
+    now.  */
+ static int greatest_status = 1;
+@@ -6618,7 +6622,7 @@
+ 
+   /* Run ld to link all the compiler output files.  */
+ 
+-  if (num_linker_inputs > 0 && error_count == 0)
++  if (num_linker_inputs > 0 && error_count == 0 && (! force_no_linker))
+     {
+       int tmp = execution_count;
+ 
+@@ -6643,7 +6647,7 @@
+   /* If options said don't run linker,
+      complain about input files to be given to the linker.  */
+ 
+-  if (! linker_was_run && error_count == 0)
++  if (! linker_was_run && error_count == 0 && (! force_no_linker))
+     for (i = 0; (int) i < n_infiles; i++)
+       if (explicit_link_files[i])
+ 	error ("%s: linker input file unused because linking not done",

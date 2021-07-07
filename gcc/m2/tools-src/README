@@ -1,0 +1,3 @@
+This directory contains miscellaneous scripts and programs (mklink.c)
+to allow for bootstrap linking and creating library documentation from
+sources.

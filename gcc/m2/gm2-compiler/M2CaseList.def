@@ -1,0 +1,123 @@
+(* M2CaseList.def implement ISO case label lists.
+
+Copyright (C) 2009-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2CaseList ;
+
+(*
+    Title      : M2CaseList
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Fri Jul 24 09:53:48 2009
+    Revision   : $Version$
+    Description:
+*)
+
+FROM DynamicStrings IMPORT String ;
+FROM Lists IMPORT List ;
+
+
+(*
+   PushCase - create a case entity and push it to an internal stack.
+              Return the case id.
+*)
+
+PROCEDURE PushCase (r: CARDINAL; v: CARDINAL) : CARDINAL ;
+
+
+(*
+   PopCase - pop the top element of the case entity from the internal
+             stack.
+*)
+
+PROCEDURE PopCase ;
+
+
+(*
+   ElseCase - indicates that this case varient does have an else clause.
+*)
+
+PROCEDURE ElseCase (f: CARDINAL) ;
+
+
+(*
+   BeginCaseList - create a new label list.
+*)
+
+PROCEDURE BeginCaseList (v: CARDINAL) ;
+
+
+(*
+   EndCaseList - terminate the current label list.
+*)
+
+PROCEDURE EndCaseList ;
+
+
+(*
+   AddRange - add a range to the current label list.
+*)
+
+PROCEDURE AddRange (r1, r2: CARDINAL; tok: CARDINAL) ;
+
+
+(*
+   CaseBoundsResolved - returns TRUE if all constants in the case list, c,
+                        are known to GCC.
+*)
+
+PROCEDURE CaseBoundsResolved (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+
+
+(*
+   TypeCaseBounds - returns TRUE if all bounds in case list, c, are
+                    compatible with the tagged type.
+*)
+
+PROCEDURE TypeCaseBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+
+
+(*
+   OverlappingCaseBounds - returns TRUE if there were any overlapping bounds
+                           in the case list, c.  It will generate an error
+                           messages for each overlapping bound found.
+*)
+
+PROCEDURE OverlappingCaseBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+
+
+(*
+   MissingCaseBounds - returns TRUE if there were any missing bounds
+                       in the varient record case list, c.  It will
+                       generate an error message for each missing
+                       bounds found.
+*)
+
+PROCEDURE MissingCaseBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+
+
+(*
+   WriteCase - displays the case list.
+*)
+
+PROCEDURE WriteCase (c: CARDINAL) ;
+
+
+END M2CaseList.

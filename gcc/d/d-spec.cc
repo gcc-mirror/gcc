@@ -490,3 +490,10 @@ lang_specific_pre_link (void)
 
 int lang_specific_extra_outfiles = 0;  /* Not used for D.  */
 
+/* lang_register_spec_functions register the D associated spec
+   functions.  Not used for D.  */
+
+void
+lang_register_spec_functions (void)
+{
+}

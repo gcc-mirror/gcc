@@ -1,0 +1,65 @@
+(* M2Scope.def derive the subset of quadruples for each scope.
+
+Copyright (C) 2003-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Scope ;
+
+(*
+    Title      : M2Scope
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Wed Aug 13 16:04:38 2003
+    Revision   : $Version$
+    Description: provides a set of methods to derive the subset of quadruples
+                 which were generated within a scope.
+*)
+
+EXPORT QUALIFIED ScopeBlock, ScopeProcedure,
+                 InitScopeBlock, KillScopeBlock,
+                 ForeachScopeBlockDo ;
+
+TYPE
+   ScopeBlock ;
+   ScopeProcedure = PROCEDURE (CARDINAL, CARDINAL) ;
+
+
+(*
+   InitScopeBlock - creates a scope block containing all quadruples for the outer, scope.
+*)
+
+PROCEDURE InitScopeBlock (scope: CARDINAL) : ScopeBlock ;
+
+
+(*
+   KillScopeBlock - destroys the ScopeBlock sb and assign sb to NIL.
+*)
+
+PROCEDURE KillScopeBlock (VAR sb: ScopeBlock) ;
+
+
+(*
+   ForeachScopeBlockDo - calls a procedure, p, for each block of contigeous quadruples
+                         defining an outer scope, sb.
+*)
+
+PROCEDURE ForeachScopeBlockDo (sb: ScopeBlock; p: ScopeProcedure) ;
+
+
+END M2Scope.

@@ -1,0 +1,403 @@
+(* M2Base.def provides a mechanism to check fundamental types.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Base ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2Base
+   Date       : 22/5/87
+   Description: Implements the default Base Types and Base
+                procedures in the Modula-2 compiler.
+*)
+
+FROM NameKey IMPORT Name ;
+FROM m2linemap IMPORT location_t ;
+
+EXPORT QUALIFIED Nil,                   (* Base constants          *)
+                 Cardinal,              (* Base types              *)
+                 Integer,
+                 Boolean,
+                 True, False,
+                 Char,
+                 Proc,
+                 LongInt, LongCard,
+                 ShortInt, ShortCard,
+                 ZType, RType, CType,
+                 Real,
+                 LongReal, ShortReal,
+                 Complex,
+                 LongComplex,
+                 ShortComplex,
+                 High, IsOrd,           (* Base functions          *)
+                 LengthS,
+                 Convert,
+                 Re, Im, Cmplx,
+                 Cap, Abs, Odd,
+                 Chr, Val,
+                 IsTrunc, IsFloat,
+                 IsInt,
+                 Min, Max,
+                 New, Dispose,          (* Base procedures         *)
+                 Inc, Dec,
+                 Incl, Excl,
+                 IsPseudoBaseFunction,  (* Manipulation procedures *)
+                 IsPseudoBaseProcedure, (* Manipulation procedures *)
+                 IsBaseType,
+                 GetBaseTypeMinMax,
+                 InitBase,
+                 CannotCheckTypeInPass3,
+                 CheckExpressionCompatible,
+                 CheckAssignmentCompatible,
+                 CheckParameterCompatible,
+                 IsAssignmentCompatible,
+                 IsExpressionCompatible,
+                 IsParameterCompatible,
+                 IsValidParameter,
+                 AssignmentRequiresWarning,
+                 IsMathType,
+                 IsRealType,
+                 IsOrdinalType,
+                 IsComplexType,
+                 GetCmplxReturnType,
+                 ComplexToScalar,
+                 ScalarToComplex,
+                 MixTypes, NegateType,
+                 TemplateProcedure,
+                 ActivationPointer,
+                 IsNeededAtRunTime,
+                 ExceptionAssign,
+                 ExceptionReturn,
+                 ExceptionInc,
+                 ExceptionDec,
+                 ExceptionIncl,
+                 ExceptionExcl,
+                 ExceptionShift,
+                 ExceptionRotate,
+                 ExceptionStaticArray,
+                 ExceptionDynamicArray,
+                 ExceptionForLoopBegin,
+                 ExceptionForLoopTo,
+                 ExceptionForLoopEnd,
+                 ExceptionPointerNil,
+                 ExceptionNoReturn,
+                 ExceptionCase,
+                 ExceptionNonPosDiv,
+                 ExceptionNonPosMod,
+                 ExceptionZeroDiv,
+                 ExceptionZeroRem,
+                 ExceptionWholeValue,
+                 ExceptionRealValue,
+                 ExceptionParameterBounds,
+                 ExceptionNo ;
+
+
+VAR
+   TemplateProcedure,
+   ActivationPointer,
+
+   Nil,
+   Cardinal, Integer,
+   Boolean, True, False,
+   Char, Proc,
+   LongInt, LongCard,
+   ShortInt, ShortCard,
+   ZType, RType, CType,
+   Real,
+   LongReal, ShortReal,
+   Complex, LongComplex,
+   ShortComplex,
+   Unbounded,
+   High, LengthS,
+   Cap, Abs, Odd,
+   Convert, Val,
+   Chr,
+   Re, Im, Cmplx,
+   Min, Max,
+   New, Dispose,
+   Inc, Dec,
+   Incl, Excl,
+   ExceptionAssign,
+   ExceptionReturn,
+   ExceptionInc,
+   ExceptionDec,
+   ExceptionIncl,
+   ExceptionExcl,
+   ExceptionShift,
+   ExceptionRotate,
+   ExceptionStaticArray,
+   ExceptionDynamicArray,
+   ExceptionForLoopBegin,
+   ExceptionForLoopTo,
+   ExceptionForLoopEnd,
+   ExceptionPointerNil,
+   ExceptionNoReturn,
+   ExceptionCase,
+   ExceptionNonPosDiv,
+   ExceptionNonPosMod,
+   ExceptionZeroDiv,
+   ExceptionZeroRem,
+   ExceptionWholeValue,
+   ExceptionRealValue,
+   ExceptionParameterBounds,
+   ExceptionNo             : CARDINAL ;
+
+
+(*
+   InitBase - initializes the base types and functions
+              used in the Modula-2 compiler.
+*)
+
+PROCEDURE InitBase (location: location_t; VAR sym: CARDINAL) ;
+
+
+(*
+   GetBaseTypeMinMax - returns the minimum and maximum values for a
+                       given base type.  This procedure should only
+                       be called if the type is NOT a subrange.
+*)
+
+PROCEDURE GetBaseTypeMinMax (type: CARDINAL; VAR min, max: CARDINAL) ;
+
+
+(*
+   IsPseudoBaseFunction - returns true if Sym is a Base function.
+*)
+
+PROCEDURE IsPseudoBaseFunction (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPseudoBaseProcedure - returns true if Sym is a Base procedure.
+*)
+
+PROCEDURE IsPseudoBaseProcedure (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsNeededAtRunTime - returns TRUE if procedure, sym, is a
+                       runtime procedure. Ie a procedure which is
+                       not a pseudo procedure and which is implemented
+                       in M2RTS or SYSTEM and also exported.
+*)
+
+PROCEDURE IsNeededAtRunTime (tok: CARDINAL; sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsBaseType - returns TRUE if Sym is a Base type.
+*)
+
+PROCEDURE IsBaseType (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsOrdinalType - returns TRUE if, sym, is an ordinal type.
+                   An ordinal type is defined as:
+                   a base type which contains whole numbers or
+                   a subrange type or an enumeration type.
+*)
+
+PROCEDURE IsOrdinalType (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsOrd - returns TRUE if, sym, is ORD or its typed counterparts
+           ORDL, ORDS.
+*)
+
+PROCEDURE IsOrd (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsTrunc - returns TRUE if, sym, is TRUNC or its typed counterparts
+             TRUNCL, TRUNCS.
+*)
+
+PROCEDURE IsTrunc (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsFloat - returns TRUE if, sym, is FLOAT or its typed counterparts
+             FLOATL, FLOATS.
+*)
+
+PROCEDURE IsFloat (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsInt - returns TRUE if, sym, is INT or its typed counterparts
+           INTL, INTS.
+*)
+
+PROCEDURE IsInt (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   AssignmentRequiresWarning - returns TRUE if t1 and t2 can be used during
+                               an assignment, but should generate a warning.
+                               For example in PIM we can assign ADDRESS
+                               and WORD providing they are both the
+                               same size.
+*)
+
+PROCEDURE AssignmentRequiresWarning (t1, t2: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsAssignmentCompatible - returns TRUE if t1 and t2 are assignment
+                            compatible.
+*)
+
+PROCEDURE IsAssignmentCompatible (t1, t2: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsExpressionCompatible - returns TRUE if t1 and t2 are expression
+                            compatible.
+*)
+
+PROCEDURE IsExpressionCompatible (t1, t2: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsParameterCompatible - returns TRUE if types t1 and t2 are parameter
+                           compatible.
+*)
+
+PROCEDURE IsParameterCompatible (t1, t2: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsValidParameter - returns TRUE if an, actual, parameter can be passed
+                      to the, formal, parameter.   This differs from
+                      IsParameterCompatible as this procedure includes checks
+                      for unbounded formal parameters, var parameters and
+                      constant actual parameters.
+*)
+
+PROCEDURE IsValidParameter (formal, actual: CARDINAL) : BOOLEAN ;
+
+
+(*
+   CheckExpressionCompatible - returns if t1 and t2 are compatible types for
+                               +, -, *, DIV, >, <, =, etc.
+                               If t1 and t2 are not compatible then an error
+                               message is displayed.
+*)
+
+PROCEDURE CheckExpressionCompatible (t1, t2: CARDINAL) ;
+
+
+(*
+   CheckAssignmentCompatible - returns if t1 and t2 are compatible types for
+                               :=, =, #.
+                               If t1 and t2 are not compatible then an error
+                               message is displayed.
+*)
+
+PROCEDURE CheckAssignmentCompatible (t1, t2: CARDINAL) ;
+
+
+(*
+   CheckParameterCompatible - checks to see if types, t1, and, t2, are
+                              compatible for parameter passing.
+*)
+
+PROCEDURE CheckParameterCompatible (t1, t2: CARDINAL) ;
+
+
+(*
+   CannotCheckTypeInPass3 - returns TRUE if we are unable to check the
+                            type of, e, in pass 3.
+*)
+
+PROCEDURE CannotCheckTypeInPass3 (e: CARDINAL) : BOOLEAN ;
+
+
+(*
+   MixTypes - returns the type symbol that corresponds to the types t1 and t2.
+              NearTok is used to identify the source position if a type
+              incompatability occurs.
+*)
+
+PROCEDURE MixTypes (t1, t2: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+
+
+(*
+   NegateType - if the type, t, is unsigned then returns the
+                signed equivalent. NearTok is used to identify the
+                source position if a type incompatability occurs.
+*)
+
+PROCEDURE NegateType (t: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsMathType - returns TRUE if the type is a mathematical type.
+                A mathematical type has a range larger than INTEGER.
+                (Typically REAL/LONGREAL/LONGINT)
+*)
+
+PROCEDURE IsMathType (type: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsRealType - returns TRUE if, t, is a real type.
+*)
+
+PROCEDURE IsRealType (t: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsComplexType - returns TRUE if, sym, is COMPLEX,
+                   LONGCOMPLEX or SHORTCOMPLEX.
+*)
+
+PROCEDURE IsComplexType (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   ComplexToScalar - returns the scalar (or base type) of the complex type, sym.
+*)
+
+PROCEDURE ComplexToScalar (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   ScalarToComplex - given a real type, t, return the equivalent complex type.
+*)
+
+PROCEDURE ScalarToComplex (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetCmplxReturnType - this code implements the table given in the
+                        ISO standard Page 293 with an addition for
+                        SHORTCOMPLEX and the fixed sized COMPLEX
+                        types found in the GNU Modula-2 SYSTEM
+                        Module.
+*)
+
+PROCEDURE GetCmplxReturnType (t1, t2: CARDINAL) : CARDINAL ;
+
+
+END M2Base.

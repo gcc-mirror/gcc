@@ -1,0 +1,21 @@
+--- gcc-4.1.2-at-04/gcc/gcc.c	2008-05-27 10:19:47.000000000 +0100
++++ gcc-4.1.2/gcc/gcc.c	2008-10-25 16:24:51.000000000 +0100
+@@ -7759,3 +7759,8 @@
+ 
+   return argv[nargs + 2];
+ }
++
++const char *find_executable (const char *prog_name)
++{
++  return find_a_file (&exec_prefixes, prog_name, X_OK, 0);
++}
+--- gcc-4.1.2-at-04/gcc/gcc.h	2005-06-25 03:02:01.000000000 +0100
++++ gcc-4.1.2/gcc/gcc.h	2008-10-25 16:25:26.000000000 +0100
+@@ -61,6 +61,7 @@
+ extern void error (const char *, ...) ATTRIBUTE_PRINTF_1;
+ extern void pfatal_with_name (const char *) ATTRIBUTE_NORETURN;
+ extern void set_input (const char *);
++extern const char *find_executable (const char *prog_name);
+ 
+ /* Spec files linked with gcc.c must provide definitions for these.  */
+ 

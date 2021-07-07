@@ -1,0 +1,142 @@
+.TH gm2lcc "1" "June 2021" "Modula-2" "User Commands"
+.SH NAME
+gm2lcc \- generate the link command from a list of modules.
+.SH SYNOPSIS
+.B gm2lcc
+.RB [ \-c ]
+.RB [ \-g ]
+.RB [ \-h ]
+.RB [ \-\-help ]
+.RB [ \-\-main " \f[I]mainmodule" ]
+.RB [ \-\-mainobject " \f[I]objectname" ]
+.RB [ \-B\f[I]directory\fP ]
+.RB [ \-p ]
+.RB [ \-\-exec ]
+.RB [ \-fshared ]
+.RB [ \-\-ignoremain ]
+.RB [ \-\-ar ]
+.RB [ \-fobject-path=path ]
+.RB [ \-ftarget-ar=arname ]
+.RB [ \-ftarget-ranlib=\f[I]ranlibname\fP ]
+.RB [ \-o " \f[I]outputfile\fP" ]
+.RB [ \-\-startup "\f[I] filename\fP" ]
+.RB [ \-f\f[I]option\fP ]
+.RB [ \-l\f[I]libname\fP ]
+.RB [ \-L\f[I]path\fP ]
+\fIfilename\fR
+.SH DESCRIPTION
+.PP
+A tool for generating a link or archive command from a text list of
+modules.  This program is used by
+.IR gm2 (1)
+and will create an archive from a list of modules which is later on
+linked against the C++ or C scaffold by the gcc linker.
+.PP
+The textual list of modules can be manipulated and used by the other
+Modula-2 link tools:
+.IR gm2lcc (1)
+.IR gm2lgen (1)
+.IR gm2lorder (1).
+The command line program
+.IR gm2 (1)
+can be instructed to automatically invoke
+.IR gm2l (1)
+and the above programs to construct a C++ scaffold for a Modula-2
+application.
+.SH OPTIONS
+.TP
+.B \-c
+check that all objects or archives can be found and display their file
+system location.
+.TP
+.B \-g
+debug flag, pass on the this flag to \f[I]libtool\fP.
+.TP
+.B \-h
+issue a summary help.
+.TP
+.B \-\-help
+equivalent to
+.B \-h\fR.
+.TP
+.B \-\-mainobject objectname
+allows the user to specify the \f[I]objectname\fP as the main program
+object which will not be included in the link command.  Typically gm2
+will invoke \f[I]gm2lcc\fP to generate an archive of modules and then
+link \f[I]objectname\fP with the archive created by \f[I]gm2lcc\fP.
+.TP
+.B \-B\f[I]directory\fP
+pass directory to \f[I]libtool\fP.
+.TP
+.B \-p
+add profile flags and the profiling library \f[I]-lgmon\fP to
+\f[I]libtool\fP.
+.TP
+.B \-\-exec
+execute the final link command.  Without this option the link command is
+written to stdout.
+.TP
+.B \-fshared
+add the option \f[I]-shared\fP to the \f[I]libtool\fP command.
+.TP
+.B \-\-ignoremain
+remove the main object from the list of modules to be linked.  (See
+the option \f[I]-\-main\fP).
+.TP
+.B \-\-ar
+use
+.IR ar
+and
+.IR ranlib
+tools rather than
+.IR libtool
+to create an archive.
+.TP
+.B \-fobject-path=\f[I]path\fP
+specify the \f[I]path\fP used for locating the objects.
+The \f[I]path\fP is a colon separated list of directories.
+.TP
+.B \-ftarget-ar=\f[I]arname\fP
+use the program \f[I]arname\fP to generate the archive
+(see
+.IR ar (1)).
+.TP
+.RB \-ftarget-ranlib=\f[I]ranlibname\fP
+use the program \f[I]ranlibname\fP to perform the
+.IR ranlib (1)
+function.
+.TP
+.BI \-o " outputfile"
+place the archive into
+.I outputfile .
+.TP
+.BI \-\-startup " filename"
+ensure that the scaffold \f[I]filename\fP is in the list of modules.
+If it is absent then the \f[I]filename\fP.o or \f[I]filename\fP.lo is
+added to the link archive.
+.TP
+.BI \-f\f[I]option\fP
+pass this option to
+.IR libtool .
+.TP
+.BI \-l libname
+add
+.I libname
+to the link command.
+.TP
+.BI \-L path
+use
+.I path
+as the path for
+.IR libtool (1)
+libraries.
+.TP
+.B
+filename
+is the text list of modules which require linking.
+.SH "SEE ALSO"
+.IR gm2l (1),
+.IR gm2lgen (1),
+.IR gm2lorder (1)
+and
+.IR gm2 (1).

@@ -1,0 +1,49 @@
+--- gcc-5.2.0-orig/gcc/tree-vrp.c	2015-04-27 13:21:17.000000000 +0100
++++ gcc-5.2.0/gcc/tree-vrp.c	2017-03-14 20:52:02.748592946 +0000
+@@ -474,6 +474,10 @@
+ 	gcc_assert (!vrp_val_is_min (min) || !vrp_val_is_max (max));
+ 
+       cmp = compare_values (min, max);
++#if 1
++      if (cmp == 1)
++	error ("overflow found");
++#endif
+       gcc_assert (cmp == 0 || cmp == -1 || cmp == -2);
+ 
+       if (needs_overflow_infinity (TREE_TYPE (min)))
+@@ -1221,7 +1225,7 @@
+ 	    && DECL_IS_OPERATOR_NEW (fndecl)
+ 	    && !TREE_NOTHROW (fndecl))
+ 	  return true;
+-	if (flag_delete_null_pointer_checks && 
++	if (flag_delete_null_pointer_checks &&
+ 	    lookup_attribute ("returns_nonnull",
+ 			      TYPE_ATTRIBUTES (gimple_call_fntype (stmt))))
+ 	  return true;
+@@ -1606,7 +1610,7 @@
+ value_range_nonnegative_p (value_range_t *vr)
+ {
+   /* Testing for VR_ANTI_RANGE is not useful here as any anti-range
+-     which would return a useful value should be encoded as a 
++     which would return a useful value should be encoded as a
+      VR_RANGE.  */
+   if (vr->type == VR_RANGE)
+     {
+@@ -5359,7 +5363,7 @@
+ 	    }
+ 	}
+     }
+- 
++
+   if (TREE_CODE_CLASS (comp_code) == tcc_comparison
+       && TREE_CODE (val) == INTEGER_CST)
+     {
+@@ -10186,7 +10190,7 @@
+       /* We're basically looking for a switch or any kind of conditional with
+ 	 integral or pointer type arguments.  Note the type of the second
+ 	 argument will be the same as the first argument, so no need to
+-	 check it explicitly. 
++	 check it explicitly.
+ 
+ 	 We also handle the case where there are no statements in the
+ 	 block.  This come up with forwarder blocks that are not

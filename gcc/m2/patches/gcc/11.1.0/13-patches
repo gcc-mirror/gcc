@@ -1,0 +1,13 @@
+--- git-gcc/gcc/d/d-spec.cc	2021-01-27 10:18:12.446744348 +0000
++++ gm2-floppsie/gcc/d/d-spec.cc	2021-01-27 12:58:00.838865672 +0000
+@@ -490,3 +490,10 @@
+ 
+ int lang_specific_extra_outfiles = 0;  /* Not used for D.  */
+ 
++/* lang_register_spec_functions register the D associated spec
++   functions.  Not used for D.  */
++
++void
++lang_register_spec_functions (void)
++{
++}

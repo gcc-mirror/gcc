@@ -1,0 +1,73 @@
+(* M2Configure.def exports configuration constants.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Configure ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2Configure
+   Date       : Thu May 17 17:45:37 BST 1990
+   Description: Exports configuration constants.
+   Last update: Thu May 17 17:46:57 BST 1990
+*)
+
+EXPORT QUALIFIED PushParametersLeftToRight,
+                 UseUnderscoreForC,
+                 UseDotForJumpLabels,
+                 UsingGCCBackend ;
+
+CONST
+
+(*
+   PushParametersLeftToRight - if TRUE indicates that the parameters
+                               are pushed in order from left to right.
+                               if FALSE indicates that the parameters
+                               are pushed in order from right to left.
+*)
+
+   PushParametersLeftToRight = TRUE ;
+
+
+(*
+   UseUnderscoreForC - if true then the C compiler uses _ in front of
+                       all declarations.
+*)
+
+   (* we let gcc add _ to all identifiers otherwise we get two _ *)
+   UseUnderscoreForC     = FALSE ;
+
+
+(*
+   UseDotForJumpLabels - if true then the C compiler produced .L2: for jump
+                         labels. If false then the C compiler produced L2
+*)
+
+   UseDotForJumpLabels = FALSE ;
+
+
+(*
+   UsingGCCBackend - is the compiler being built with the GCC code generator?
+*)
+
+   UsingGCCBackend = TRUE ;
+
+
+END M2Configure.

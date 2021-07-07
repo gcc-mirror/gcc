@@ -73,8 +73,27 @@ struct spec_function
 extern int do_spec (const char *);
 extern void record_temp_file (const char *, int, int);
 extern void set_input (const char *);
+extern void save_switch (const char *opt, size_t n_args,
+			 const char *const *args,
+			 bool validated, bool known);
+extern void handle_OPT_B (const char *arg);
+extern void fe_add_infile (const char *infile, const char *lang);
+extern void fe_add_linker_option (const char *option);
+extern void fe_add_spec_function (const char *name, const char *(*func) (int, const char **));
+extern void xputenv (const char *value);
+extern const char *xgetenv (const char *key);
+extern void print_options (const char *desc,
+			   unsigned int in_decoded_options_count,
+			   struct cl_decoded_option *in_decoded_options);
+extern void print_option (const char *desc, unsigned int i,
+			  struct cl_decoded_option *in_decoded_options);
+extern void dbg_options (unsigned int in_decoded_options_count,
+			 struct cl_decoded_option *in_decoded_options);
+
 
 /* Spec files linked with gcc.c must provide definitions for these.  */
+
+extern void lang_register_spec_functions (void);
 
 /* Called before processing to change/add/remove arguments.  */
 extern void lang_specific_driver (struct cl_decoded_option **,
@@ -96,5 +115,9 @@ extern void
 driver_get_configure_time_options (void (*cb)(const char *option,
 					      void *user_data),
 				   void *user_data);
+
+/* Default setting is true, but can be overridden by the language
+   front end to prohibit the linker from being invoked.  */
+extern int allow_linker;
 
 #endif /* ! GCC_GCC_H */

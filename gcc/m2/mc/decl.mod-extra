@@ -1,0 +1,64 @@
+
+
+(*
+   doLiteral -
+*)
+
+PROCEDURE doLiteral (n: node) ;
+VAR
+   s: String ;
+BEGIN
+   assert (isLiteral (n)) ;
+   s := keyToCharStar (getSymName (n)) ;
+   IF n^.literalF.type=charN
+   THEN
+      IF DynamicStrings.char (s, -1)='C'
+      THEN
+         s := DynamicStrings.Slice (DynamicStrings.Mark (s), 0, -1) ;
+	 IF DynamicStrings.char (s, 0)#'0'
+         THEN
+            s := DynamicStrings.ConCat (InitString('0'), DynamicStrings.Mark (s))
+         END
+      END ;
+      outText ("(char) ")
+   END ;
+   outTextS (s) ;
+   s := KillString (s)
+END doLiteral ;
+
+
+(*
+   isString - returns TRUE if node, n, is a string.
+*)
+
+PROCEDURE isString (n: node) : BOOLEAN ;
+BEGIN
+   assert (n#NIL) ;
+   RETURN n^.kind=string
+END isString ;
+
+
+(*
+   doString -
+*)
+
+PROCEDURE doString (n: node) ;
+VAR
+   s: String ;
+BEGIN
+   assert (isString (n)) ;
+   s := keyToCharStar (getSymName (n)) ;
+   IF DynamicStrings.Index (s, '"')=-1
+   THEN
+      outText ('"') ;
+      outTextS (s) ;
+      outText ('"')
+   ELSIF DynamicStrings.Index (s, "'")=-1
+   THEN
+      outText ('"') ;
+      outTextS (s) ;
+      outText ('"')
+   ELSE
+      metaError1 ('illegal string {%1k}', n)
+   END
+END doString ;

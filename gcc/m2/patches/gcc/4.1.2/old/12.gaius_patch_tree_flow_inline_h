@@ -1,0 +1,20 @@
+--- gcc-4.1.2-at-04/gcc/tree-flow-inline.h	2006-04-18 14:24:45.000000000 +0100
++++ gcc-4.1.2/gcc/tree-flow-inline.h	2010-06-16 17:24:46.000000000 +0100
+@@ -1469,8 +1469,17 @@
+   if (TREE_THIS_VOLATILE (v))
+     return false;
+ 
++#if 0
++  /* original gcc code (gaius) */
+   return (AGGREGATE_TYPE_P (TREE_TYPE (v)) &&
+ 	  TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE);
++#else
++  /* gaius' attempt at a solution */
++  return (AGGREGATE_TYPE_P (TREE_TYPE (v)) &&
++	  TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE &&
++	  (! ((TREE_CODE (v) == CONST_DECL) &&
++	      (TREE_CODE (TREE_TYPE (v)) == RECORD_TYPE))));
++#endif
+ }
+ 
+   

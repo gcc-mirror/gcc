@@ -1,0 +1,1352 @@
+2016-12-31      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2builtins.c:  removed trailing spaces.  define_builtin
+          (New procedure).  m2builtins_init use define_builtin to define
+          internal (gimple) builtin BUILT_IN_TRAP.
+	* gm2/gm2-gcc/m2except.c:  reformatted slightly.  Bugfix to do_throw
+          to ensure that gm2_eh_int_type which is declared globally is
+          unshared for each and every use.
+	* gm2/gm2-gcc/m2expr.c:  corrected dates and removed trailing space.
+	* gm2/gm2-gcc/m2statement.c:  Bugfix to allow nested functions to
+          compile.  If a nested function is complete create a cgraph_node
+	  (and it will be finalized later), else finalize_function now.
+	* gm2/gm2builtins.c:  file changed (it is unused and will be purged).
+	* gm2/gm2except.c:  file changed (it is unused and will be purged).
+
+2016-12-29      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Code.mod:  remove spaces and use StartGlobalContext
+          and EndGlobalContext instead of InitGlobalContext.
+	* gm2/gm2-gcc/m2top.c:  implement dummy procedures StartGlobalContext
+          and EndGlobalContext.
+	* gm2/gm2-gcc/m2top.def:  declare StartGlobalContext and
+	  EndGlobalContext.
+	* gm2/gm2-gcc/m2top.h:  declare StartGlobalContext and EndGlobalContext
+          in the header.
+	* gm2/gm2-lang.c:  (gm2_langhook_write_globals)  write all global
+	  declarations and call finalize_compilation_unit.
+
+2016-12-24      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.def:  GetHighFromUnbounded add location
+          as the first parameter.
+	* gm2/gm2-compiler/M2GenGCC.mod:  removed all forward declarations.
+          Changed AddStatement to include a location first parameter.
+          Change GetHighFromUnbounded to include a location first parameter.
+          Change GetParamAddress to include a location first parameter.
+          Change GetAddressOfUnbounded to include a location first parameter.
+          Change BuildComponentRef to include a location first parameter.
+          Removed commented code.
+	* gm2/gm2-compiler/M2Range.mod:  changed all calls to the above
+          to include the location parameter.
+	* gm2-gcc/m2type.def:  changed AddStatement to include a location
+	  first parameter.
+
+2016-12-23      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2statement.c:  remove make_decl_rtl and use
+          allocate_struct_function instead, assign DECL_SAVED_TREE (fndecl)
+          to NULL_TREE.  Fixes to allow functions to be declared.
+	* gm2/mc-boot/GStrIO.c:  rebuilt.
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc/decl.mod:  noIfElseChained (New procedure).  hasIfAndNoElse
+	  use noIfElseChained to detect another dangling else bug.
+
+2016-12-19      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  build and link gm2l, gm2lcc using g++.
+	* gm2/gm2-lang.c:  updated to reflect gcc-5.2.0 garbage collection
+          of trees.
+	* gm2/gm2-lang.h:  removed garbage collection info (moved into
+          gm2-lang.c).
+	* gm2/Make-lang.in:  add MC_LIBS to the library list when linking
+          gm2l, gm2lcc, gm2lgen, gm2lorder and gm2m.
+	* gm2/gm2-gcc/gcc-consolidation.h:  add conditional compilation
+          to stop inclusion of gcc compiler internals if we are building
+          a gm2tool program.
+	* gm2/Make-lang.in:  remove h2def from being built.
+
+2016-12-18      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  create MC_LIBS and use them during link of
+          cc1gm2.
+ 	* gm2/gm2-gcc/m2linemap.c:  use C style link symbols and correct
+          prototype for StartFile.  Cast to char *.
+	* gm2/gm2-gcc/m2linemap.h:  use __cplusplus rather than __GNUG__.
+          move #include before defining EXTERN.
+	* gm2/gm2-lang.c:  whitespace removal.
+	* gm2/gm2-libs-ch/ldtoa.c:  removed #if surrounding _M2_ldtoa_init
+          and _M2_ldtoa_finish.
+	* gm2/m2.flex:  fixed to ensure external symbols are using C style.
+          Use %option nounput to remove compiler warning.
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc/decl.mod:  bugfix, ensure that variables are declared as extern
+	  when we are using getExtendedOpaque and if the variable is external.
+
+2016-12-17      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc/decl.mod:  fixed bug regarding the expression type of an
+          indirect funccall.  mc now builds all gm2 modules.
+
+2016-12-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  M2GCCDeclare.o dedicated rule.  mc-clean,
+	  mc-maintainer mc-continue rules improved.
+	* gm2/bnf/h2def.bnf:  removed usused import.
+	* gm2/gm2-compiler/M2Base.mod:  remove unused global variables
+	  and fixed typo (FloatS not SFloat).
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  changed none to norule.
+	* gm2/gm2-compiler/P3SymBuild.mod:  remove unused local variables.
+	* gm2/gm2-compiler/bnflex.mod:  EatChar new procedure.  Remove many
+	  unused variables by using EatChar rather than ch := GetChar ().
+	* gm2/mc-boot/Gdecl.c:
+	* gm2/mc-boot/Gkeyc.c:
+	* gm2/mc/decl.def:
+	* gm2/mc/decl.mod:  write out subrange type, detect type address
+          when emitting casts.  Work out arrayref type when more than
+	  one dimension is used.
+	* gm2/mc/keyc.mod:  avoid C++ keywords operator and complex.
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc/decl.mod:  detect an variable of an enumeration
+          type in the INC/DEC.  Ensure that arrays can only be
+	  complete if the type of the array has been emitted.
+
+2016-12-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  build cflex.c using the same rules as the
+          m2flex.c.
+	* gm2/c.flex:  include gm2-gcc/gcc-consolidation.h and use
+          %option nounput to get a clean compilation with no warnings.
+	  Declare linelen as unsigned int to avoid warnings.
+
+2016-12-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  changed flags when compiling cflex.c and
+          M2Version.c
+	* gm2/bnf/gm2l.bnf:  removed unused variable.  (SyntaxCheck)
+          Removed unused variable.
+	* gm2/gm2-compiler/M2DebugStack.mod:  (doNameLength) remove
+          unused variable.  (doMaxInt) remove unused procedure function.
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc/decl.mod:  detect bitset in MAX/MIN and return ztype.
+	  Add bitnumN to the list of completed types.
+
+2016-12-12      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  changed scaffold building rules
+	  to use g++.
+	* gm2/gm2-libs-ch/SysExceptions.c:  regenerated.
+	* gm2/init/ppginit:  regenerated.
+	* gm2/mc-boot-ch/Gmcrts.c:  regenerated.
+	* gm2/mc-boot-ch/Gmcrts.h:  regenerated.
+	* gm2/mc-boot/GASCII.h:  regenerated.
+	* gm2/mc-boot/GArgs.h:  regenerated.
+	* gm2/mc-boot/GAssertion.h:  regenerated.
+	* gm2/mc-boot/GBreak.h:  regenerated.
+	* gm2/mc-boot/GCOROUTINES.h:  regenerated.
+	* gm2/mc-boot/GCmdArgs.h:  regenerated.
+	* gm2/mc-boot/GDebug.h:  regenerated.
+	* gm2/mc-boot/GDynamicStrings.c:  regenerated.
+	* gm2/mc-boot/GDynamicStrings.h:  regenerated.
+	* gm2/mc-boot/GEnvironment.h:  regenerated.
+	* gm2/mc-boot/GFIO.c:  regenerated.
+	* gm2/mc-boot/GFIO.h:  regenerated.
+	* gm2/mc-boot/GFormatStrings.c:  regenerated.
+	* gm2/mc-boot/GFormatStrings.h:  regenerated.
+	* gm2/mc-boot/GFpuIO.h:  regenerated.
+	* gm2/mc-boot/GIO.h:  regenerated.
+	* gm2/mc-boot/GIndexing.h:  regenerated.
+	* gm2/mc-boot/GM2EXCEPTION.c:  regenerated.
+	* gm2/mc-boot/GM2EXCEPTION.h:  regenerated.
+	* gm2/mc-boot/GM2RTS.c:  regenerated.
+	* gm2/mc-boot/GM2RTS.h:  regenerated.
+	* gm2/mc-boot/GMemUtils.h:  regenerated.
+	* gm2/mc-boot/GNumberIO.h:  regenerated.
+	* gm2/mc-boot/GPushBackInput.h:  regenerated.
+	* gm2/mc-boot/GRTExceptions.c:  regenerated.
+	* gm2/mc-boot/GRTExceptions.h:  regenerated.
+	* gm2/mc-boot/GRTint.c:  regenerated.
+	* gm2/mc-boot/GRTint.h:  regenerated.
+	* gm2/mc-boot/GSArgs.h:  regenerated.
+	* gm2/mc-boot/GSFIO.h:  regenerated.
+	* gm2/mc-boot/GSYSTEM.h:  regenerated.
+	* gm2/mc-boot/GSelective.h:  regenerated.
+	* gm2/mc-boot/GStdIO.h:  regenerated.
+	* gm2/mc-boot/GStorage.h:  regenerated.
+	* gm2/mc-boot/GStrCase.h:  regenerated.
+	* gm2/mc-boot/GStrIO.h:  regenerated.
+	* gm2/mc-boot/GStrLib.h:  regenerated.
+	* gm2/mc-boot/GStringConvert.c:  regenerated.
+	* gm2/mc-boot/GStringConvert.h:  regenerated.
+	* gm2/mc-boot/GSysExceptions.h:  regenerated.
+	* gm2/mc-boot/GSysStorage.h:  regenerated.
+	* gm2/mc-boot/GTimeString.h:  regenerated.
+	* gm2/mc-boot/GUnixArgs.h:  regenerated.
+	* gm2/mc-boot/Galists.h:  regenerated.
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+	* gm2/mc-boot/Gdecl.h:  regenerated.
+	* gm2/mc-boot/Gdtoa.h:  regenerated.
+	* gm2/mc-boot/Gerrno.h:  regenerated.
+	* gm2/mc-boot/Gkeyc.c:  regenerated.
+	* gm2/mc-boot/Gkeyc.h:  regenerated.
+	* gm2/mc-boot/Gldtoa.h:  regenerated.
+	* gm2/mc-boot/Glibc.h:  regenerated.
+	* gm2/mc-boot/Glibm.h:  regenerated.
+	* gm2/mc-boot/Glists.h:  regenerated.
+	* gm2/mc-boot/GmcComp.c:  regenerated.
+	* gm2/mc-boot/GmcComp.h:  regenerated.
+	* gm2/mc-boot/GmcDebug.h:  regenerated.
+	* gm2/mc-boot/GmcError.h:  regenerated.
+	* gm2/mc-boot/GmcFileName.c:  regenerated.
+	* gm2/mc-boot/GmcFileName.h:  regenerated.
+	* gm2/mc-boot/GmcLexBuf.h:  regenerated.
+	* gm2/mc-boot/GmcMetaError.c:  regenerated.
+	* gm2/mc-boot/GmcMetaError.h:  regenerated.
+	* gm2/mc-boot/GmcOptions.c:  regenerated.
+	* gm2/mc-boot/GmcOptions.h:  regenerated.
+	* gm2/mc-boot/GmcPreprocess.h:  regenerated.
+	* gm2/mc-boot/GmcPretty.c:  regenerated.
+	* gm2/mc-boot/GmcPretty.h:  regenerated.
+	* gm2/mc-boot/GmcPrintf.h:  regenerated.
+	* gm2/mc-boot/GmcQuiet.h:  regenerated.
+	* gm2/mc-boot/GmcReserved.h:  regenerated.
+	* gm2/mc-boot/GmcSearch.h:  regenerated.
+	* gm2/mc-boot/GmcStack.h:  regenerated.
+	* gm2/mc-boot/GmcStream.h:  regenerated.
+	* gm2/mc-boot/Gmcflex.h:  regenerated.
+	* gm2/mc-boot/Gmcp1.h:  regenerated.
+	* gm2/mc-boot/Gmcp2.h:  regenerated.
+	* gm2/mc-boot/Gmcp3.h:  regenerated.
+	* gm2/mc-boot/Gmcp4.h:  regenerated.
+	* gm2/mc-boot/Gmcp5.h:  regenerated.
+	* gm2/mc-boot/GnameKey.c:  regenerated.
+	* gm2/mc-boot/GnameKey.h:  regenerated.
+	* gm2/mc-boot/Gpth.h:  regenerated.
+	* gm2/mc-boot/GsymbolKey.h:  regenerated.
+	* gm2/mc-boot/Gtermios.h:  regenerated.
+	* gm2/mc-boot/Gvarargs.c:  regenerated.
+	* gm2/mc-boot/Gvarargs.h:  regenerated.
+	* gm2/mc-boot/Gwlists.h:  regenerated.
+	* gm2/mc-boot/Gwrapc.h:  regenerated.
+	* gm2/mc/decl.mod:  change all external declarations as being
+	  C declarations to provide linkage compatibility with C/M2.
+	* gm2/tools-src/mklink.c:  allow the scaffold to be compiled
+          with g++.
+	* gm2/Make-lang.in:  MC_ARGS no longer include gm2/mc.  Use
+          COMPILER rather than CC to compile gm2 related sources.
+	  m2link uses --g++ on compiler related scaffolds.
+	* gm2/c.flex:  remove reference to p2c.
+	* gm2/gm2-compiler/ppg.mod:  increase MaxCodeHunkLength.
+	* gm2/mc-boot-ch/GSYSTEM.c:  implement _finish function.
+	* gm2/mc-boot-ch/Gerrno.c:  implement _finish function.
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc-boot/Gkeyc.c:  rebuilt.
+	* gm2/mc/decl.mod:  detect and handle dangling else in an ELSIF.
+	* gm2/mc/keyc.mod:  add try, catch and operator to the list of
+	  unusable keywords.
+	* gm2/tools-src/mklink.c:  New procedure (GenerateInitCalls),
+          new procedure (GenerateFinishCalls) and new procedure
+	  (GeneratePrototypes).
+
+2016-12-06      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  regenerated.
+	* gm2/mc-boot/GCmdArgs.c:  regenerated.
+	* gm2/mc-boot/GDebug.c:  regenerated.
+	* gm2/mc-boot/GDynamicStrings.c:  regenerated.
+	* gm2/mc-boot/GFIO.c:  regenerated.
+	* gm2/mc-boot/GFormatStrings.c:  regenerated.
+	* gm2/mc-boot/GIO.c:  regenerated.
+	* gm2/mc-boot/GIndexing.c:  regenerated.
+	* gm2/mc-boot/GStringConvert.c:  regenerated.
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+	* gm2/mc-boot/Gkeyc.c:  regenerated.
+	* gm2/mc-boot/GmcComp.c:  regenerated.
+	* gm2/mc-boot/GmcOptions.c:  regenerated.
+	* gm2/mc-boot/Gmcp1.c:  regenerated.
+	* gm2/mc-boot/Gmcp2.c:  regenerated.
+	* gm2/mc-boot/Gmcp3.c:  regenerated.
+	* gm2/mc-boot/Gmcp4.c:  regenerated.
+	* gm2/mc-boot/Gmcp5.c:  regenerated.
+	* gm2/mc-boot/GnameKey.c:  regenerated.
+	* gm2/mc/decl.mod:  fix bug in dangling else.
+	* gm2/tools-src/mklink.c:  allow the link to occur with g++ and gcc.
+
+2016-12-06      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  improved verify rule.
+	* gm2/bnf/mc-2.bnf:  fixed bug declaring variables of an enumerated type.
+	* gm2/mc-boot/GArgs.c:  regenerated.
+	* gm2/mc-boot/GCmdArgs.c:  regenerated.
+	* gm2/mc-boot/GDynamicStrings.c:  regenerated.
+	* gm2/mc-boot/GEnvironment.c:  regenerated.
+	* gm2/mc-boot/GFIO.c:  regenerated.
+	* gm2/mc-boot/GFormatStrings.c:  regenerated.
+	* gm2/mc-boot/GIO.c:  regenerated.
+	* gm2/mc-boot/GIndexing.c:  regenerated.
+	* gm2/mc-boot/GM2EXCEPTION.c:  regenerated.
+	* gm2/mc-boot/GM2RTS.c:  regenerated.
+	* gm2/mc-boot/GPushBackInput.c:  regenerated.
+	* gm2/mc-boot/GRTExceptions.c:  regenerated.
+	* gm2/mc-boot/GRTint.c:  regenerated.
+	* gm2/mc-boot/GSArgs.c:  regenerated.
+	* gm2/mc-boot/GSFIO.c:  regenerated.
+	* gm2/mc-boot/GStdIO.c:  regenerated.
+	* gm2/mc-boot/GStorage.c:  regenerated.
+	* gm2/mc-boot/GStrCase.c:  regenerated.
+	* gm2/mc-boot/GStrIO.c:  regenerated.
+	* gm2/mc-boot/GStrLib.c:  regenerated.
+	* gm2/mc-boot/GStringConvert.c:  regenerated.
+	* gm2/mc-boot/GSysStorage.c:  regenerated.
+	* gm2/mc-boot/Galists.c:  regenerated.
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+	* gm2/mc-boot/Gkeyc.c:  regenerated.
+	* gm2/mc-boot/Glists.c:  regenerated.
+	* gm2/mc-boot/GmcComp.c:  regenerated.
+	* gm2/mc-boot/GmcError.c:  regenerated.
+	* gm2/mc-boot/GmcFileName.c:  regenerated.
+	* gm2/mc-boot/GmcLexBuf.c:  regenerated.
+	* gm2/mc-boot/GmcMetaError.c:  regenerated.
+	* gm2/mc-boot/GmcOptions.c:  regenerated.
+	* gm2/mc-boot/GmcPreprocess.c:  regenerated.
+	* gm2/mc-boot/GmcPretty.c:  regenerated.
+	* gm2/mc-boot/GmcPrintf.c:  regenerated.
+	* gm2/mc-boot/GmcSearch.c:  regenerated.
+	* gm2/mc-boot/GmcStack.c:  regenerated.
+	* gm2/mc-boot/GmcStream.c:  regenerated.
+	* gm2/mc-boot/Gmcp1.c:  regenerated.
+	* gm2/mc-boot/Gmcp2.c:  regenerated.
+	* gm2/mc-boot/Gmcp3.c:  regenerated.
+	* gm2/mc-boot/Gmcp4.c:  regenerated.
+	* gm2/mc-boot/Gmcp5.c:  regenerated.
+	* gm2/mc-boot/GnameKey.c:  regenerated.
+	* gm2/mc-boot/GsymbolKey.c:  regenerated.
+	* gm2/mc-boot/Gvarargs.c:  regenerated.
+	* gm2/mc-boot/Gwlists.c:  regenerated.
+	* gm2/mc/decl.mod:  fixed bugs in variables of enumerated type,
+          multi-dimensional arrays and introduced runtime case
+	  and return checking.
+
+2016-12-02      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  changed rules to include mc-boot-ch.
+	* gm2/mc-boot-ch/Gmcrts.c:  regenerated.
+	* gm2/mc-boot/GArgs.c:  regenerated.
+	* gm2/mc-boot/GCmdArgs.c:  regenerated.
+	* gm2/mc-boot/GDynamicStrings.c:  regenerated.
+	* gm2/mc-boot/GEnvironment.c:  regenerated.
+	* gm2/mc-boot/GFIO.c:  regenerated.
+	* gm2/mc-boot/GFormatStrings.c:  regenerated.
+	* gm2/mc-boot/GIO.c:  regenerated.
+	* gm2/mc-boot/GIndexing.c:  regenerated.
+	* gm2/mc-boot/GM2EXCEPTION.c:  regenerated.
+	* gm2/mc-boot/GM2RTS.c:  regenerated.
+	* gm2/mc-boot/GPushBackInput.c:  regenerated.
+	* gm2/mc-boot/GRTExceptions.c:  regenerated.
+	* gm2/mc-boot/GRTint.c:  regenerated.
+	* gm2/mc-boot/GSArgs.c:  regenerated.
+	* gm2/mc-boot/GSFIO.c:  regenerated.
+	* gm2/mc-boot/GStdIO.c:  regenerated.
+	* gm2/mc-boot/GStorage.c:  regenerated.
+	* gm2/mc-boot/GStrCase.c:  regenerated.
+	* gm2/mc-boot/GStrIO.c:  regenerated.
+	* gm2/mc-boot/GStrLib.c:  regenerated.
+	* gm2/mc-boot/GStringConvert.c:  regenerated.
+	* gm2/mc-boot/GSysStorage.c:  regenerated.
+	* gm2/mc-boot/Galists.c:  regenerated.
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+	* gm2/mc-boot/Gkeyc.c:  regenerated.
+	* gm2/mc-boot/Gkeyc.h:  regenerated.
+	* gm2/mc-boot/Glists.c:  regenerated.
+	* gm2/mc-boot/GmcComp.c:  regenerated.
+	* gm2/mc-boot/GmcError.c:  regenerated.
+	* gm2/mc-boot/GmcFileName.c:  regenerated.
+	* gm2/mc-boot/GmcLexBuf.c:  regenerated.
+	* gm2/mc-boot/GmcMetaError.c:  regenerated.
+	* gm2/mc-boot/GmcOptions.c:  regenerated.
+	* gm2/mc-boot/GmcPreprocess.c:  regenerated.
+	* gm2/mc-boot/GmcPretty.c:  regenerated.
+	* gm2/mc-boot/GmcPrintf.c:  regenerated.
+	* gm2/mc-boot/GmcSearch.c:  regenerated.
+	* gm2/mc-boot/GmcStack.c:  regenerated.
+	* gm2/mc-boot/GmcStream.c:  regenerated.
+	* gm2/mc-boot/Gmcp1.c:  regenerated.
+	* gm2/mc-boot/Gmcp2.c:  regenerated.
+	* gm2/mc-boot/Gmcp3.c:  regenerated.
+	* gm2/mc-boot/Gmcp4.c:  regenerated.
+	* gm2/mc-boot/Gmcp5.c:  regenerated.
+	* gm2/mc-boot/GnameKey.c:  regenerated.
+	* gm2/mc-boot/GsymbolKey.c:  regenerated.
+	* gm2/mc-boot/Gvarargs.c:  regenerated.
+	* gm2/mc-boot/Gwlists.c:  regenerated.
+	* gm2/mc/decl.mod:  introduced runtime checking
+	  for missing RETURN statements.
+	* gm2/mc/keyc.def:  allow "Gmcrts.h" to be included.
+	* gm2/mc/keyc.mod:  include "Gmcrts.h" if required.
+
+2016-11-30      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/mc-boot/GDynamicStrings.c:  regenerated.
+	* gm2/mc-boot/GFIO.c:  regenerated.
+	* gm2/mc-boot/GIO.c:  regenerated.
+	* gm2/mc-boot/GSFIO.c:  regenerated.
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+	* gm2/mc-boot/GmcError.c:  regenerated.
+	* gm2/mc-boot/GmcLexBuf.c:  regenerated.
+	* gm2/mc-boot/GmcPreprocess.c:  regenerated.
+	* gm2/mc-boot/GmcPrintf.c:  regenerated.
+	* gm2/mc-boot/GmcStream.c:  regenerated.
+	* gm2/mc-boot/Gmcp1.c:  regenerated.
+	* gm2/mc-boot/Gmcp2.c:  regenerated.
+	* gm2/mc-boot/Gmcp3.c:  regenerated.
+	* gm2/mc-boot/Gmcp4.c:  regenerated.
+	* gm2/mc-boot/Gmcp5.c:  regenerated.
+	* gm2/mc-boot/GnameKey.c:  regenerated.
+	* gm2/mc/decl.mod:  change empty statements from
+	; to {} to avoid gcc compiler warning.  Fix parameter
+	type cast for C++ parameter passing to type ADDRESS
+	and other system types.
+
+2016-11-29      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/mc-boot/GCmdArgs.c:  regenerated.
+	* gm2/mc-boot/GDebug.c:  regenerated.
+	* gm2/mc-boot/GDynamicStrings.c:  regenerated.
+	* gm2/mc-boot/GDynamicStrings.c:  regenerated.
+	* gm2/mc-boot/GFIO.c:  regenerated.
+	* gm2/mc-boot/GFormatStrings.c:  regenerated.
+	* gm2/mc-boot/GIndexing.c:  regenerated.
+	* gm2/mc-boot/GStringConvert.c:  regenerated.
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+	* gm2/mc-boot/GmcComp.c:  regenerated.
+	* gm2/mc-boot/GmcOptions.c:  regenerated.
+	* gm2/mc-boot/Gmcp1.c:  regenerated.
+	* gm2/mc-boot/Gmcp2.c:  regenerated.
+	* gm2/mc-boot/Gmcp3.c:  regenerated.
+	* gm2/mc-boot/Gmcp4.c:  regenerated.
+	* gm2/mc-boot/Gmcp5.c:  regenerated.
+	* gm2/mc-boot/GnameKey.c:  regenerated.
+	* gm2/mc/decl.mod:  (noIfElse)  New procedure function.  (hasIfElse)
+          New procedure function.  (doIfC)  changed to issue braces to avoid
+          a gcc warning.
+	* gm2/mc-boot-ch:  New directory and files containing handbuilt
+	  C and header files.
+
+2016-11-24      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  updated rules to build handbuilt modules to use
+	  new path.  Attempt to build compiler using mc.
+	* gm2/bnf/mc-3.bnf:  use putOptReturn rather than
+	  putProcTypeOptReturn.
+	* gm2/bnf/mc-4.bnf:  use putOptReturn rather than
+	  putProcTypeOptReturn.
+	* gm2/bnf/mc-5.bnf:  use putOptReturn rather than
+	  putProcTypeOptReturn.
+	* gm2/gm2-libs-ch/SysExceptions.c:  use header file gm2-libs-host.h.
+	* gm2/gm2-libs-ch/dtoa.c:  use header file gm2-libs-host.h.
+	* gm2/gm2-libs-ch/errno.c:  use header file gm2-libs-host.h.
+	* gm2/gm2-libs-ch/ldtoa.c:  use header file gm2-libs-host.h.
+	* gm2/gm2-libs-ch/termios.c:  use header file gm2-libs-host.h.
+	* gm2/gm2-libs-ch/wrapc.c:  use header file gm2-libs-host.h.
+	* gm2/gm2-libs/libc.def:  removed white space.
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc-boot/Gdecl.h:  rebuilt.
+	* gm2/mc-boot/Gkeyc.c:  rebuilt.
+	* gm2/mc-boot/Gkeyc.h:  rebuilt.
+	* gm2/mc-boot/Gmcp3.c:  rebuilt.
+	* gm2/mc-boot/GsymbolKey.c:  rebuilt.
+	* gm2/mc-boot/Gwlists.c:  rebuilt.
+	* gm2/mc-boot/Gwlists.h:  rebuilt.
+	* gm2/mc/decl.def:  replace putProcTypeOptReturn with putReturnType.
+	  New procedure putOptReturn.
+	* gm2/mc/decl.mod:  implement putReturnType and putOptReturn.
+          Fix bug in parameter declaration to use safe C names.
+	  Also ensure that all variables are also safe from C names.
+	* gm2/mc/keyc.def:  cnamen (New procedure function).  cp
+	  (New procedure).
+	* gm2/mc/keyc.mod:  implement cnamen (New procedure function).  cp
+	  (New procedure).
+	* gm2/mc/symbolKey.mod:  getSymKey returns NulKey if the tree is NIL.
+	* gm2/mc/wlists.def:  replaceItemInList (New procedure).
+	* gm2/mc/wlists.mod:  implement replaceItemInList.
+
+2016-11-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  New rules (mc-clean-libs) (mc-test)
+          and (mc-help).
+	* gm2/mc/decl.mod:  doInc, doDec, doIncDecCP (New procedures)
+          which fix the pointer arithmetic in INC/DEC for C++.
+	* gm2/mc-boot:  regenerated.
+
+2016-11-15      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  changes to mc rules so we use less
+	  aggresive warning options for g++.
+	* gm2/mc/decl.mod:  changes to the cpp backend to
+	  implement casts.
+	* gm2/mc-boot/GArgs.c:  regenerated.
+	* gm2/mc-boot/GFIO.c:  regenerated.
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+
+2016-11-11      Gaius Mulley <gaius@gnu.org>
+
+	* updates for the shared library example pge.
+	* gm2/examples/pge/Fractions.mod:  removed unnecessary spaces.
+	* gm2/examples/pge/history.def:  major changes to history of collision.
+	* gm2/examples/pge/history.mod:  major changes to history of collision.
+	* gm2/examples/pge/roots.def:  new procedure function nearCoord.
+	* gm2/examples/pge/roots.mod:  new procedure function nearCoord.
+	* gm2/examples/pge/twoDsim.mod:  huge changes to include interpenetration
+          testing.
+
+2016-11-02      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/mc-boot/Gdecl.c:  regenerated.
+	* gm2/mc/decl.mod:  generate a static_cast.  This fixes a
+	  bug in the translation of Args.mod.
+
+2016-11-01      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-gcc/m2linemap.h:  changed prototype of StartFile to
+          use void * rather than char *.
+	* gm2/m2.flex:  do not include p2c/p2c.h and m2linemap.h.
+
+2016-10-20      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/pge/MemStream.mod:  many changes and bug fixes to
+	  shared library example.
+	* gm2/examples/pge/MemStream.mod:  ditto.
+	* gm2/examples/pge/NetworkOrder.mod:  ditto.
+	* gm2/examples/pge/deviceIf.mod:  ditto.
+	* gm2/examples/pge/examples/triangle.py:  ditto.
+	* gm2/examples/pge/history.def:  ditto.
+	* gm2/examples/pge/history.mod:  ditto.
+	* gm2/examples/pge/pgeif.def:  ditto.
+	* gm2/examples/pge/pgeif.mod:  ditto.
+	* gm2/examples/pge/roots.def:  ditto.
+	* gm2/examples/pge/roots.mod:  ditto.
+	* gm2/examples/pge/twoDsim.def:  ditto.
+	* gm2/examples/pge/twoDsim.mod:  ditto.
+	* gm2/examples/pge/buffers.c:  ditto.
+	* gm2/examples/pge/max2code.py:  fixed options.
+	* gm2/examples/pge/mxmmaxima.py:  removed debugging trace.
+	* gm2/examples/pge/mxmparser.py:  removed debugging trace.
+	* gm2/examples/pge/mxmtree.py:  removed debugging trace.
+	* gm2/examples/pge/pge.py:  huge number of changes.
+	* gm2/examples/pge/pgeif.i:  changes to the python interface.
+	* gm2/examples/pge/pgeplayback.py:  many bug fixes to allow
+          single stepping.
+	* gm2/examples/pge/pgepygame.py:  minor changes and removal
+	  of spacing.
+
+2016-10-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  instruct mc to generate g++ compilient C code.
+	* gm2/gm2-gcc/m2treelib.def:  remove multiple definition of
+          get_set_field_rhs and import ADDRESS.
+	* gm2/gm2.texi:  trimmed spaces.
+	* gm2/m2.flex:  use __attribute__((unused)) in init/finish
+	functions.
+	* gm2/mc-boot:  rebuilt.
+	* gm2/mc/decl.mod:  handle C char.  Strings of 1 character
+          are encoded as C strings and also C chars.  (checkPtr)
+          New procedure function.  (doExprCastC)  New procedure
+          function.  init/finish functions all use __attribute__((unused)).
+          (outCP) removed.
+	* gm2/mc/mcOptions.mod:  fixed bug by rearranging order of option
+	  processing.
+
+2016-09-20      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  removed all references to p2c.
+          Use mc to build gm2 rather than p2c and replaced
+          rules.  Also modified the list of the library modules
+          required during bootstrapping gm2.  Many changes
+	to all bootstrap rules.
+	* gm2/gm2-libs-boot/SYSTEM.def:  removed file.
+	* gm2/mc-boot/GAssertion.c:  rebuilt.
+	* gm2/mc-boot/GDebug.c:  rebuilt.
+	* gm2/mc-boot/GDynamicStrings.c:  rebuilt.
+	* gm2/mc-boot/GDynamicStrings.c:  rebuilt.
+	* gm2/mc-boot/GFIO.c:  rebuilt.
+	* gm2/mc-boot/GFormatStrings.c:  rebuilt.
+	* gm2/mc-boot/GIndexing.c:  rebuilt.
+	* gm2/mc-boot/GNumberIO.c:  rebuilt.
+	* gm2/mc-boot/GStdIO.c:  rebuilt.
+	* gm2/mc-boot/Gdecl.c:  rebuilt.
+	* gm2/mc-boot/Gkeyc.c:  rebuilt.
+	* gm2/mc-boot/GmcComp.c:  rebuilt.
+	* gm2/mc-boot/GmcError.c:  rebuilt.
+	* gm2/mc-boot/GmcLexBuf.c:  rebuilt.
+	* gm2/mc-boot/GmcMetaError.c:  rebuilt.
+	* gm2/mc-boot/GmcPreprocess.c:  rebuilt.
+	* gm2/mc-boot/GmcPrintf.c:  rebuilt.
+	* gm2/mc-boot/GmcStack.c:  rebuilt.
+	* gm2/mc-boot/GmcStream.c:  rebuilt.
+	* gm2/mc-boot/Gmcp1.c:  rebuilt.
+	* gm2/mc-boot/Gmcp2.c:  rebuilt.
+	* gm2/mc-boot/Gmcp3.c:  rebuilt.
+	* gm2/mc-boot/Gmcp4.c:  rebuilt.
+	* gm2/mc-boot/Gmcp5.c:  rebuilt.
+	* gm2/mc-boot/GnameKey.c:  rebuilt.
+	* gm2/mc-boot/Gvarargs.c:  rebuilt.
+	* gm2/mc/Indexing.mod:  added assert.
+	* gm2/mc/decl.mod:  fixed bug to allow comparison
+	  of proctypes.
+	* gm2/mc/mcMetaError.mod:  fixed bug to allow nameless
+	  symbols to unalter the error string.
+
+2016-09-19      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  many new rules to deal with the
+          bootstrapping of mc.
+	* gm2/bnf/mc-3.bnf:  removed unnecessary imports.
+	* gm2/bnf/mc-4.bnf:  implement NOT.
+	* gm2/bnf/mc-5.bnf:  implement NOT and final body.
+
+2016-09-05      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  removal of Indexing.mod from
+          the list of library files as it is included in the
+          project files.  Many new rules to build the bootstrap
+          version of mc.
+	* gm2/gm2-libs-ch/Selective.c:  tidied up spacing.
+	* gm2/gm2-libs-ch/UnixArgs.c:  tidied up spacing.
+	* gm2/gm2-libs-ch/wrapc.c:  tidied up spacing.
+	* gm2/mc-boot/libc.c:  deleted file.
+	* gm2/mc-boot/Glibc.c:  new file.
+	* gm2/mc-boot/GSelective.c:  new file.
+	* gm2/mc-boot/Gmcrts.c:  new file.
+
+2016-09-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  tidied up spacing.
+	* gm2/bnf/mc-1.bnf:  handle DEFINITION FOR "C".
+	* gm2/mc/decl.def:  (putDefForC)  New procedure.
+	* gm2/mc/decl.mod:  (putDefForC)  New procedure
+          implemented.  (isDefForC)  New procedure function.
+          (doIncludeC)  include mc-<module>.h for DEFINITION
+          FOR "C".  Do not qualify names if they were defined
+          in DEFINITION FOR "C" modules.  Also disable high
+          parameter.  Disabled handling of DEFINITION FOR "C".
+	* gm2/mc/keyc.mod:  added write, read, exit, abs,
+	  optarg, div to the list of names to avoid.
+
+2016-09-02      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/mc/decl.mod:  (out1) use safe type conversion
+          from pointer into cardinal.  (gen) use safe type
+          conversion from pointer into cardinal.
+          (topologicallyOut) use populateTodo to ensure that
+          all enumeration and constants are declared prior to
+          the datatypes which depend upon them.  (dbgSubrange)
+	  New procedure.
+
+2016-08-31      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  extra space introduced.
+	* gm2/mc/decl.mod:  detect cyclic dependancy problem and
+          issue appropriate error message and abort translation.
+	* gm2/Make-lang.in:  specific rule to build
+          gm2/mc-boot/$(SRC_PREFIX)decl.c
+	* gm2/mc/decl.mod:  (doEnumerationField) use doFQDNameC
+          instead of doFQNameC.  (doRecordNameC) New procedure.
+          (doTypeNameC) use doRecordNameC.  (doPrototypeC) only
+	  generate the prototype if the	procedure is not exported.
+          (runIncludeDefConstType)  New procedure.
+          (foreachModuleDo)  New procedure.  (walkArray) also walk
+          the subr field.  (runSimplifyTypes)  New procedure.
+          (runPrototypeExported)  New procedure.  (runPrototypeDefC)
+          New procedure.  (outImpC) rewritten to fix bugs if
+	  getExtendedOpaque was used.
+
+2016-08-27      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/mc/decl.mod:  add cname field to enumerationfield.
+          (makeEnumerationField)  Initialise cname field.
+          (getFQDstring)  New procedure function.
+          (doEnumC) use doFQDNameC.  (doFQDNameC)  New procedure
+          function.  (topologicallyOut)  add debugging information.
+	  57 out of 58 mc modules translate.
+
+2016-08-25      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-3.bnf:  process enumeration types and fields
+          (as per pass 2).
+	* gm2/mc/decl.mod:  (getNextEnum) assert enumerationField
+          or enumeration type is returned.  (doLiteralC) detect
+          and handle octal integer literals.
+          (isStatementSequenceEmpty)  New procedure function.
+          (isSingleStatement) rewritten and bug fixed.
+          (containsStatement)  New procedure function.
+          (noElse)  handle dangling else.  Also ignore empty
+          else statements.  (doNewC)  use ALLOCATE rather than
+          malloc.  (doFreeC)  use DEALLOCATE rather than free.
+          (needsCast)  returns FALSE if C base types are the same.
+	* gm2/mc/keyc.def:  (useStorage)  New procedure function.
+	* gm2/mc/keyc.mod:  (useStorage)  Implement new procedure
+          function.  (checkStorage) New procedure.  (genDefs)
+	  call checkStorage.
+
+2016-08-23      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/el/g-mode.el:  updated dates and also introduced
+          dialect comment after the module name.  Currently
+          hard wired to (*!m2pim*).
+	* gm2/mc/decl.def:  added dialect comment.
+	* gm2/mc/decl.mod:  added dialect comment.  Fixed bug in
+          case statements which use ranges.
+          Self translation of 54 of the 58 modules occur.
+	* gm2/mc/decl.mod:  introduce cnameT for declarations
+          which might conflict with C keywords.  Currently only
+	  record fields use cnames.  55 of the 58 module translate.
+
+2016-08-19      Gaius Mulley <gaius@gnu.org>
+
+	* gcc/gm2/Make-lang.in:  included mcStream.def and
+          mcStream.mod to be compiled and linked to produce mc.
+	* gm2/init/mcinit:  updated link and init list to include
+          mcStream.
+	* gm2/mc/decl.mod:  many, many bug fixes which now allow
+	  self translation of 53 of the 58 modules.
+
+2016-08-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added mcStream.def and mcStream.mod
+	  to the build list for mc.
+
+2016-08-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added wrapc.def pth.def COROUTINES.def
+          Selective.def termios.def to be translated by mc as part
+          of mc-autogen.  Added rules to translate iso libraries
+	  from M2 to C using mc.
+	* gm2/mc/decl.mod:  added halt node.  (doEscape) New procedure
+          function.  (doStringC) add escape to the escape character if
+          inside a string literal.  (addExported) corrected test prior
+          to addToDo.  (includeDefVarProcedure)  include variables and
+          types symbols if they are defined in definition modules.
+          (doFuncUnbounded) include cast for parameter and use
+          doFQNameC for the parameter name rather than call doExprC
+          since doExprC will dereference a VAR paramater and we must
+          pass it as declared.  (doAdrExprC)  New procedure function
+          which is used to catch & (*p) and simply it to (p).  (doHalt)
+	  New procedure.
+
+2016-08-05      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  translate autogenerated modules without
+	  the --extended-opaque option.
+	* gm2/mc/decl.mod:  many changes which include the ability to
+          visit all nodes and their dependents calling a call back
+	  procedure.
+
+2016-08-01      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  introduce rules to build new module keyc.
+          New rules to attempt to build the C generated version of mc.
+	* gm2/init/mcinit:  added keyc to the list of modules to be
+          linked.
+	* gm2/mc/decl.mod:  changed skipType to detect an opaque type
+          and not skip to NIL if this is the case.  outNull, outTrue,
+          outFalse, (New procedures).  doArrayC fixed bug in declaring
+          static arrays.  doFuncUnbounded changed parameter names and
+          fixed a static array being passed to an unbounded parameter.
+          getNthParam (New procedure function).
+	* gm2/mc/keyc.def:  New file.
+	* gm2/mc/keyc.mod:  New file.
+
+2016-07-25      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  removed SYSTEM.mod from the list of
+	  modules to be converted by mc.
+	* gm2/bnf/mc-3.bnf:  ConstExpression pushes a makeConstExp.
+	* gm2/bnf/mc-4.bnf:  ConstExpression gets a constexp.
+	  Reset constexp index for every new file.
+          ConstSetOrQualidentOrFunction
+          many asserts added and production statement order bug fixed.
+          ConstActualParameters added assert.
+	* gm2/bnf/mc-5.bnf:  implement LOOP END.  Fix bugs in the
+	  construction of set values.
+	* gm2/mc/decl.def:  makeExit, isExit, makeLoop, isLoop
+	  (New procedure functions).
+	* gm2/mc/decl.mod:  generate accurate error messages based
+          on node declaration position.  Implement FLOAT and TRUNC.
+          Fix MAX (enum) and MIN (enum).  Allow + to join two strings.
+          Bugfix for pointer ref, deref combinations.  Fix type
+          in makeArrayRef.  THROW implemented.  Fix string escape
+          sequences.  Fix MAX/MIN (LONGINT/LONGCARD).  Fix ADR
+          to spot & * cancel each other.  doExceptionC generate
+	  line/file/column location from the node declaration.
+
+2016-07-18      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-5.bnf:  duplicate the with expression before
+          calling makeCompenentRef.  SubPointer (New production).
+          CaseStatement (New production).  Case (New production).
+          CaseLabelList (New production).  CaseLabels
+	  (New production).
+	* gm2/mc/decl.def:  makePointerRef (New procedure
+          function).  isPointerRef (New procedure function).
+          getLastOp (New procedure function).
+          makeCase (New procedure function).
+          isCase (New procedure function).
+          putCaseExpression (New procedure function).
+          makeCaseLabelList (New procedure function).
+          isCaseLabelList (New procedure function).
+          makeCaseList (New procedure function).
+          isCaseList (New procedure function).
+          putCaseRange (New procedure function).
+          makeRange (New procedure function).
+          isRange (New procedure function).
+          dupExpr (New procedure function).
+	* gm2/mc/decl.mod:  implement above.
+          Case statements implemented.  With statements bug fixed
+          by duplicating the with expression.  pointerref
+          introduced and componentref is replaced by pointerref
+          if it is preceeded by a deref.  Polymorphic + - / * binary
+	  operators are implemented.
+	* gm2/mc/mcOptions.mod:  added case, array, return
+	  option variables.
+
+2016-07-13      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-3.bnf:  ConstExpressionNop (New production).
+          ConstFactor (use ConstSetOrQualidentOrFunction).
+          ComponentElement (use ConstExpressionNop).
+          ConstActualParameters (use ConstExpList).
+          ConstExpList (use ConstExpressionNop).
+          AlignmentExpression (use ConstExpressionNop).
+          PragmaConstExpression (use ConstExpressionNop).
+          AttributeExpression (use ConstExpressionNop).
+          CaseLabels (use ConstExpressionNop).
+          ForStatement (use ConstExpressionNop).
+          Priority (use ConstExpressionNop).
+	* gm2/bnf/mc-4.bnf:  ConstComponentValue (New production).
+          ConstComponentElement (New production).
+          ConstComponentValue (New production).
+          ConstArraySetRecordValue (New production).
+          ConstConstructor (New production).
+          ConstActualParameters (New production).
+          ConstExpList (New production).
+          Constructor, ArraySetRecordValue, ComponentValue,
+          ComponentElement (Productions now do nothing).
+	* gm2/bnf/mc-5.bnf:  ConstExpressionNop (New production).
+          ConstantDeclaration (use ConstExpressionNop).
+          ConstExpression (use ConstExpressionNop).
+          ConstComponentElement (new production).
+          ConstArraySetRecordValue (new production).
+          ConstConstructor (new production).
+          ConstActualParameters (new production).
+          ConstExpList (new production).
+          AlignmentExpression (use ConstExpressionNop).
+          SubrangeType (use ConstExpressionNop).
+          AttributeExpression (use ConstExpressionNop).
+          VarientCaseLabels (use ConstExpressionNop).
+          VarIdent (use ConstExpressionNop).
+          ComponentElement (new production).
+          ComponentValue (new production).
+          ArraySetRecordValue (new production).
+          Constructor (new production).
+          OptArg (new production).
+          DefOptArg (new production).
+          Priority (new production).
+	* gm2/mc/decl.def:  makeSetValue (New procedure function).
+          isSetValue (new procedure function).
+          putSetValue (new procedure function).
+          includeSetValue (new procedure function).
+	* gm2/mc/decl.mod:  in (New node kind).
+          setvalue (New node kind).
+          makeSetValue (Implement procedure function).
+          isSetValue (Implement procedure function).
+          putSetValue (Implement procedure function).
+          includeSetValue (Implement procedure function).
+          isAnyType (New procedure function).
+          makeCast (New procedure function).
+          isUnary (New procedure function).
+          isDeref (New procedure function).
+          doSetExprType (New procedure function).
+          getMaxMinType (New procedure function).
+          doGetFuncType (New procedure function).
+          getExprType (New procedure function).
+          doGetLastOp (New procedure function).
+          getLastOp (New procedure function).
+          doComponentRefC (New procedure).
+          doSetValueC (New procedure).
+          doInC (New procedure).
+          doNewC (completed).
+          doDisposeC (completed).
+          doAbsC (New procedure).
+          doValC (New procedure).
+          doMinC (New procedure).
+          doMaxC (New procedure).
+
+2016-07-06      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-5.bnf:  ConstExpList introduce more asserts.
+          ArrayExpList introduce more asserts.  ExpList introduce more asserts.
+          Term, Factor generate an expression.  ExitStatement introduce
+          an assert.  Statement allow empty statements to be produced.
+	  StatementSequence introduce assert.
+	* gm2/mc/decl.mod:  introduce ABS intrinsic.  isVarDecl,
+          identListLen, isArrayRef, isZero, doArrayRef, doProcedure,
+          doStringC, outCard, doSubtractC, checkDeclareUnboundedParamCopyC,
+          checkUnboundedParamCopyC, doUnboundedParamCopyC,
+          addVariablesTodo, addTypesTodo, simplifyVar, doWhileC, doFuncHighC,
+          doMultiplyBySize, doTotype, doFuncUnbounded, doFuncParamC,
+          getNthParamType, doAdrC, doIncDecC, doInclC, doExclC, doNewC,
+          doDisposeC, isIntrinsic, doIntrinsicC, getFuncFromExpr,
+          doFuncExprC, doLocalVarC, addParamDone, includeParameters
+	  (New procedure).
+	* gm2/mc/mcPretty.def:  getseekpos, getcurline (New procedure functions).
+	* gm2/mc/mcPretty.mod:  getseekpos, getcurline (implemented).
+
+2016-06-22      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-3.bnf:  merged definition and module variable declaration
+	  rules.  Always pop the return result from ConstExpression.
+	* gm2/bnf/mc-4.bnf:  no longer declare variables in pass 4.
+	* gm2/bnf/mc-5.bnf:  major changes which include generation of if/then/else/elsif
+          for loops, while loops, repeat loops.  With statements handled.  Expressions are
+          built and constant expressions retieved from a previous pass.  Debugging
+	  aids also built.  Function/procedure call handled.  Return statement handled.
+	* gm2/mc/decl.def:  New procedures: addOptParameter, isOptarg, makeComponentRef, makeDeRef,
+          makeArrayRef, resetConstExpPos, makeStatementSequence, isStatementSequence,
+          addStatement, makeReturn, isReturn, putReturn, makeWhile, putWhile,
+          isWhile, makeAssignment, putBegin, makeExit, makeComment, makeIf,
+          isIf, makeElsif, isElsif, putElse, makeFor, isFor, putFor, makeRepeat,
+          isRepeat, putRepeat declared and exported.
+	* gm2/mc/decl.mod:  new node types, exit, return, stmtseq, comment, new
+          dispose, inc, dec, incl, excl, optarg, throw, deref added.
+          New procedures:  isLocal, addProcedureToScope, addParameter, isOptarg,
+          makeOptParameter, addOptParameter, makeFuncCall, isFuncCall, makeComponentRef,
+          makeArrayRef, makeDeRef, makeBinaryTok, getFQstring, needsParen, doUnary,
+          doUnary, doBinary, doBinary, doPreBinary, doPreBinary, doExprM2, doVar,
+          doOptargC, doPrototypeC, doProcedureHeadingC, doPrototypeC,
+          outDeclsDefC, outDeclsDefC, includeVar, joinProcedures, doStatementSequenceC,
+          isSingleStatement, doCommentC, doExitC, doReturnC, doAssignmentC,
+          doCompoundStmt, doElsifC, noElse, doIfC, doForC, doRepeatC,
+          doFuncArgsC, doFuncCallC, doStatementsC, doLocalDeclsC, doProcedureC,
+          outProceduresC, walkOptarg, outImpInitC, outModuleC, outModuleInitC,
+          outModuleC, outC, dbgVar, dbgArray, makeStatementSequence,
+          addStatement, isStatementSequence, makeReturn,
+          isReturn, putReturn, makeWhile, putWhile,
+          isWhile, makeAssignment, isAssignment, putBegin, makeExit,
+          isExit, makeComment, isComment, makeIf, isIf, makeElsif,
+          isElsif, putElse, makeFor, isFor, putFor, makeRepeat, isRepeat,
+          putRepeat and makeM2rts added.
+	* gm2/mc/mcComp.mod:  reintroduce pass 5.
+	* gm2/mc/mcStack.def:  new procedure access declared.
+	* gm2/mc/mcStack.mod:  new procedure access implemented.
+
+2016-05-24      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-3.bnf:  integer, real no longer push a value to the stack.
+          call setConstExpComplete at the end of the pass.  Remove result of the
+	  constexpression.   Add many asserts to aid debugging.
+	* gm2/bnf/mc-4.bnf:  remove calls to setEnumsComplete.  Call fixupConstExp
+	  in ConstExpression.  Call makeFuncCall in ConstSetOrQualident.
+          Remove all type generation building.  Remove import handling.
+	* gm2/bnf/mc-5.bnf:  remove all references to resetFuncFixup.
+	  Remove call to applyFuncFixup.
+	* gm2/gm2-libs/DynamicStrings.mod:  trip whitespace.
+	* gm2/mc/alists.mod:  correct indentation.
+	* gm2/mc/decl.def:  remove resetFuncFixup, replace it with makeExpList.
+          remove makeFuncFixup and replace with isExpList.  Remove isFuncFixup
+          and replace with putExpList.  Remove makeExpList and replace with
+          makeConstExp.  Remove isExpList and replace it with getNextConstExp.
+	  Remove putExpList and replace with setConstExpComplete.
+          fixupConstExp (new procedure function).  Remove applyFuncFixup
+	  and replace with makeFuncCall.
+	* gm2/mc/decl.mod:  added funccall, constexp and chr to nodeK.
+          Also modified all associated procedure functions.  Replaced
+          funcFixup with constFixup.  Added constsComplete to definition,
+          implementation and program modules.  Only generate #include
+          if the getExtendedOpaque switch is not set.  Initialise ord, chr
+	  and val as base procedure functions.
+	* gm2/mc/mcComp.mod:  always invoke pass4, temporarily short circuit
+	  pass 5.
+
+2016-05-23      Gaius Mulley <gaius@gnu.org>
+
+	* interim checkin:
+
+2016-05-21      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-2.bnf:  create enums for .mod files as well as .def files.
+	* gm2/bnf/mc-3.bnf:  fixed bug, make empty varient leave the stack alone.
+	* gm2/bnf/mc-4.bnf:  likewise applied to pass 4.  Create enums
+          for .mod files.  DefQualident, DefTypeEquiv, DefEnumIdentList,
+          DefEnumeration, DefSimpleType, new rules introduced and used.
+	* gm2/examples/pge/twoDsim.mod:  right hand white space removed.
+	* gm2/mc/decl.mod:  loc introduced.  Parameter building and
+	variable shadowing introduced.
+	* gm2/mc/mcComp.mod:  commented out p5.
+	* gm2/mc/wlists.mod:  renamed maxNoOfElements and noOfElements.
+
+2016-05-17      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-5.bnf:  introduce func fixups.  Removed all
+          constant expression procedures.  Removed all type
+          generation procedures.  Removed all import processing
+          as this should be done in previous passes.
+	* gm2/mc/decl.def:  (resetFuncFixup) new procedure.
+          (makeExpList) new procedure function.  (putExpList) new
+          procedure.  (applyFuncFixup) new procedure.
+	* gm2/mc/decl.mod:  (explist) new kind.  (resetFuncFixup)
+	  implemented new procedure.
+          (makeExpList) implemented new procedure function.
+          (putExpList) implemented new procedure.
+          (applyFuncFixup) implemented new procedure.
+
+2016-05-16      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added mcp5.mod to be built and linked into mc.
+          Removed SysExceptions from being built as part of the bootstrap
+          for mc.  mc does not need it as SysExceptions is a gm2 runtime
+          library.  Removed reference to m2flex.def in MC-DEFS.  Removed
+          mcflex.mod from MC-MODS.
+	* gm2/init/mcinit:  added mcp5 to be linked and initialised.
+	* gm2/mc/README:  corrected the pass description, now that pass 3
+          is used by .def and .mod files.  Thus there is no need for pass 6.
+          Pass 5 functionality now contains the old pass 6 description.
+	* gm2/mc/decl.mod:  new kind funcfixup to allow fixups to be applied
+          between constant functions and their parameters (possibly types).
+          (eg. MAX(typename)).  Created a fixupInfo record which is used by
+          enum fixups and constant function fixups.
+	* gm2/mc/mcComp.mod:  enable pass 5.
+	* At this point mc should handle constants, all data types and
+          generate a tree of nodes representing them.  All procedure prototypes
+          are known.  All that is left to do is build a tree of nodes
+          representing the code and then walk the tree generating
+	  C11 or C++ code.
+
+2016-05-11      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added rules to bootstrap mc mod files.
+	* gm2/bnf/mc-3.bnf:  use Expression rather than ConstExpression in
+          ComponentElement.
+	* gm2/mc/decl.mod:  added mult, throw nodes.  Fixed ord to be a unary
+          operator.  doSetC (New procedure).  includeSyms renamed includeConstType.
+          includeVarProcedure (New procedure).  includeDefConstType (New procedure).
+          Export size from SYSTEM.  Attempt to declare const/types before
+          var/procedures.
+
+2016-05-10      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/mc/decl.mod:  write and writeln call FlushBuffer
+	  as a debugging aid.  tempName returns a String.
+          makeIntermediateType new procedure function.
+          simplifyType call tempName and makeIntermediateType.
+          doSimplifyNode also simplifies pointer types.
+          outDeclsDefC outputs constants, types and then variables.
+          walkPointer returns completed if the type is partial or done.
+          walkVarientField returns partial if field type is on the partialQ.
+          tryPartial moves pointer types.
+          outputPartial moves over pointer types and issues '*' accordingly.
+
+2016-05-09      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/mc/decl.mod:  many changes and bug fixes.  Modula-2 output
+	  of data structures implemented and pretty printing of M2, C
+          data structures implemented.
+	* gm2/mc/mcOptions.mod:  corrected --olang= processing.
+	* gm2/mc/mcPretty.def:  pushPretty and popPretty
+          (New procedure functions) defined.
+	* gm2/mc/mcPretty.mod:  pushPretty and popPretty
+          (New procedure functions) implemented.
+
+2016-04-27      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  force the mc-boot rule.
+	* gm2/bnf/mc-3.bnf:  many bug fixes and finished implementing
+          record/varient record handling.
+	* gm2/mc/decl.def:  add second parameter to
+          buildVarientFieldRecord.
+	* gm2/mc/decl.mod:  min, max new nodes.  makeArray skip type.
+          buildVarientFieldRecord add second parameter and use it.
+          Many features added and code added.
+	* gm2/mc/mcOptions.mod:  new option --ignore-fq.
+	* gm2/mc/mcStack.def:  depth (New procedure function).
+	* gm2/mc/mcStack.mod:  implemented depth.
+
+2016-04-23      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  rewrite of mc-autogen which currently tests
+	  the translation of the library modules required by mc.
+	* gm2/bnf/mc-1.bnf:  bug fix to allow procedures to be declared
+	  in both definition and implementation modules.
+	* gm2/bnf/mc-3.bnf:  interim change prior to fixing a bug in
+          the varient record handling.
+
+2016-04-21      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-1.bnf:  distinguish between from module import and
+          import module.  Call putTypeHidden for a hidden type.
+	* gm2/bnf/mc-2.bnf:  distinguish between from module import and
+          import module.  Follow scopes during procedures.  No longer
+	  call registerImport.
+	* gm2/bnf/mc-3.bnf:  remove registerImport.  Ensure that the
+          definition module scope is visible below the implementation
+          module.  Use Qualident rather than PushQualident for non
+	  data structure based rules.
+	* gm2/mc/decl.def:  hasHidden, foreachModModuleDo, paramEnter,
+          paramLeave (new procedures).  addImportedModule changed to include
+          and extra parameter.
+	* gm2/mc/decl.mod:  added tsize node.  Many changes implementing
+	  the above and bug fixing topological sort algorithm.
+        * gm2/mc/mcComp.mod:  changes to allow --extended-opaque to take
+          effect.  The implementation module for each definition module which
+	  defines an opaque type will be parsed.
+        * gm2/mc/mcOptions.def:  introduce --extended-opaque option.
+	* gm2/mc/mcOptions.mod:  record --extended-opaque option.
+	* gm2/Make-lang.in:  alter MCOPTIONS to include runtime checking.
+	* gm2/gm2-libs/FormatStrings.mod:  implement %x as a format
+          specifier.
+	* gm2/gm2-libs/SFIO.mod:  WriteS check that s is not NIL.
+	* gm2/mc/decl.mod:  topological sort bugfix.  Implemented
+          data structure debugging which can be turned on via
+          --debug-top.  Many bug fixes and tidying up.
+	* gm2/mc/mcOptions.mod:  record --debug-top option.
+	* gm2/mc/mcOptions.def:  getDebugTopological (new
+          procedure function).
+	* gm2/mc/decl.mod:  bug fix to allow proctypes and
+	  parameters to be generated from partial declarations.a
+
+2016-04-18      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  new rule mc-autogen.
+	* gm2/bnf/mc-1.bnf:  fixed scope tracking for implementation module.
+	  Use makeTypeImp during type declaration in implementation module.
+	* gm2/bnf/mc-2.bnf:  fixed scope tracking for implementation module.
+	* gm2/bnf/mc-3.bnf:  corrected grammar during type declaration.
+	* gm2/mc/decl.def:   isVisited (new procedure function).  unsetVisited,
+	  setVisited (new procedure).  makeTypeImp (new procedure function).
+	* gm2/mc/decl.mod:  implement isVisited, unsetVisited, setVisited,
+	  makeTypeImp.  Many bug fixes to topological output of declarations.
+          All type declarations including recursive declarations are now
+          implemented.
+	* gm2/mc/mcComp.mod:  parse implementation module during pass 1
+	  and pass 2.
+
+2016-04-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  changed gm2-bootstrap test.
+	* gm2/bnf/mc-1.bnf:  changed variable creation so that both
+	def and mod declare variables.  Added epsilon instead of [].
+	Added scope handling to procedures.  Allowed implementation and
+	program modules to be passed.
+	* gm2/bnf/mc-2.bnf:  Added epsilon instead of [].  Tidied up.
+	* gm2/mc/decl.mod:  continued development and debugging.
+
+2016-04-12      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added mc-4.bnf to be built.
+	* gm2/bnf/mc-3.bnf:  bug fixes so that return results are recorded from procedure functions.
+	* gm2/init/mcinit:  added mcp4.
+	* gm2/mc/decl.mod:  more development.
+	* gm2/mc/mcComp.mod:  include pass 4.
+
+2016-04-11      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  new very simple rules for mc-devel and
+          initial attempt at gm2-bootstrap using mc.
+	* gm2/mc/decl.def:  implement variable declarations.
+	* gm2/mc/decl.mod:  many changes to implement pass 3 and
+	  the output of recursive data structures.
+	* gm2/mc/mcError.def:  fixed parameter declarations so that they
+	  match their implementation counterparts.
+	* gm2/mc/mcError.mod:  consistant parameter declarations.
+	* gm2/mc/mcLexBuf.def:  fixed parameter declarations so that they
+	  match their implementation counterparts.
+	* gm2/mc/mcMetaError.def:  fixed parameter declarations so that
+          they match their implementation counterparts.
+	* gm2/mc/mcPreprocess.mod:  use alists rather than lists.
+	* gm2/mc/mcSearch.def:  consistant parameter declarations.
+	* gm2/mc/mcSearch.mod:  consistant parameter declarations.
+	* gm2/mc/nameKey.def:  consistant parameter declarations.
+	* gm2/bnf/mc-3.bnf:  fix variable declarations in definition modules.
+	* gm2/mc/mc.flex:  correct prototype.
+
+2016-03-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/mc-1.bnf:  new file.
+	* gm2/bnf/mc-2.bnf:  new file.
+	* gm2/bnf/mc-3.bnf:  new file.
+	* gm2/gm2-gcc/gcc-consolidation.h:  new file.
+	* gm2/mc/Indexing.def:  new file.
+	* gm2/mc/Indexing.mod:  new file.
+	* gm2/mc/README:  new file.
+	* gm2/mc/alists.def:  new file.
+	* gm2/mc/alists.mod:  new file.
+	* gm2/mc/decl.def:  new file.
+	* gm2/mc/decl.mod:  new file.
+	* gm2/mc/decl.mod-extra:  new file.
+	* gm2/mc/lists.def:  new file.
+	* gm2/mc/lists.mod:  new file.
+	* gm2/mc/m2flex.def:  new file.
+	* gm2/mc/mc.flex:  new file.
+	* gm2/mc/mcComp.def:  new file.
+	* gm2/mc/mcComp.mod:  new file.
+	* gm2/mc/mcDebug.def:  new file.
+	* gm2/mc/mcDebug.mod:  new file.
+	* gm2/mc/mcError.def:  new file.
+	* gm2/mc/mcError.mod:  new file.
+	* gm2/mc/mcFileName.def:  new file.
+	* gm2/mc/mcFileName.mod:  new file.
+	* gm2/mc/mcLexBuf.def:  new file.
+	* gm2/mc/mcLexBuf.h:  new file.
+	* gm2/mc/mcLexBuf.mod:  new file.
+	* gm2/mc/mcMetaError.def:  new file.
+	* gm2/mc/mcMetaError.mod:  new file.
+	* gm2/mc/mcOptions.def:  new file.
+	* gm2/mc/mcOptions.mod:  new file.
+	* gm2/mc/mcPreprocess.def:  new file.
+	* gm2/mc/mcPreprocess.mod:  new file.
+	* gm2/mc/mcPrintf.def:  new file.
+	* gm2/mc/mcPrintf.mod:  new file.
+	* gm2/mc/mcQuiet.def:  new file.
+	* gm2/mc/mcQuiet.mod:  new file.
+	* gm2/mc/mcReserved.def:  new file.
+	* gm2/mc/mcReserved.h:  new file.
+	* gm2/mc/mcReserved.mod:  new file.
+	* gm2/mc/mcSearch.def:  new file.
+	* gm2/mc/mcSearch.mod:  new file.
+	* gm2/mc/mcStack.def:  new file.
+	* gm2/mc/mcStack.mod:  new file.
+	* gm2/mc/mcflex.def:  new file.
+	* gm2/mc/mcp1.def:  new file.
+	* gm2/mc/mcp2.def:  new file.
+	* gm2/mc/mcp3.def:  new file.
+	* gm2/mc/nameKey.def:  new file.
+	* gm2/mc/nameKey.mod:  new file.
+	* gm2/mc/symbolKey.def:  new file.
+	* gm2/mc/symbolKey.mod:  new file.
+	* gm2/mc/top.mod:  new file.
+	* gm2/mc/varargs.def:  new file.
+	* gm2/mc/varargs.mod:  new file.
+	* gm2/mc/wlists.def:  new file.
+	* gm2/mc/wlists.mod:  new file.
+	* gm2/Make-lang.in:  generate cpp version stub.  Use $(COMPILER)
+          rather than $(CC).  Removed all trailing whitespace.  Added
+          rules for building mc.
+	* gm2/configure.in:  corrected test (=) rather than (==).
+	* gm2/configure:  rebuilt.
+	* gm2/gm2-compiler/M2Comp.mod:  updated dates and removed trailing
+          white space.
+	* gm2/gm2-compiler/M2Error.mod:  updated dates and removed trailing
+          white space.
+	* gm2/gm2-compiler/M2LexBuf.mod:  corrected spacing at the end of
+          a comment.
+	* gm2/gm2-compiler/NameKey.mod:  corrected spacing at the end of
+          a comment.
+	* gm2/gm2-gcc/m2assert.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.
+	* gm2/gm2-gcc/m2block.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.  Change binding level code
+          from C to C++.
+	* gm2/gm2-gcc/m2builtins.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.
+	* gm2/gm2-gcc/m2convert.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.  Many changes to bring it
+          up to gcc-5.2.0.
+	* gm2/gm2-gcc/m2decl.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.
+	* gm2/gm2-gcc/m2except.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.  Minor changes to bring it into
+	  line with gcc-5.2.0.
+        * gm2/gm2-gcc/m2expr.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.  Minor changes to bring it into
+          line with gcc-5.2.0.
+	* gm2/gm2-gcc/m2linemap.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.
+	* gm2/gm2-gcc/m2misc.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.
+	* gm2/gm2-gcc/m2statement.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.  C++ changes in gimplifiation
+          of nested procedure functions.
+	* gm2/gm2-gcc/m2top.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.
+	* gm2/gm2-gcc/m2tree.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.
+	* gm2/gm2-gcc/m2treelib.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.  Many changes to convert C to C++
+          and statement related data structure and methods have changed.
+	* gm2/gm2-gcc/m2type.c:  use #include "gcc-consolidation.h" to
+          hold all gcc related header files.  Many changes to convert C to C++
+          and statement related data structure and methods have changed.
+	* gm2/gm2-lang.c:  Many changes to convert C to C++
+          and statement related data structure and methods have changed.
+          Many changes to bring code into gcc-5.2.0.
+	* gm2/gm2-lang.h:  changes to bring code into gcc-5.2.0.
+	* gm2/gm2-libs/DynamicStrings.def:  additional dates.
+	* gm2/gm2-libs/DynamicStrings.mod:  define desState and use it in
+          descriptor.
+	* gm2/gm2-libs/Indexing.def:  new procedure (DeleteIndice).
+	* gm2/gm2-libs/Indexing.mod:  new field Used.  New procedure
+          (DeleteIndice).
+	* gm2/gm2-libs/SYSTEM.def:  additional dates.
+	* gm2/gm2-libs/TimeString.def:  removed trailing white space.
+	* gm2/gm2spec.c:  extra parameter to fe_save_switch  (used).
+	* gm2/gm2version.h:  simplified conditional compilation.
+	* gm2/lang.opt:  made options complient with gcc-5.2.0.
+	* gm2/m2.flex:  use gm2-gcc/gcc-consolidation.h.  Fix int/unsigned int
+          and cast of strings so that g++ will compile flex
+	  generated output file.
+	* gm2/m2pp.c:  use gm2-gcc/gcc-consolidation.h rather than
+	  a list of include files.  Changed to make it gcc-5.2.0 complient.
+	* gm2/tools-src/makeversion:  generate C++ gm2_version function if
+	  the new option, -p, is used.  -p new option implemented.
+	* gm2/tools-src/mklink.c:  fix typo.
+	* testsuite/gm2/pim/pass/enum.mod:  new test code.
+
+2016-03-03      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  checkRecordTypes new procedure
+	function.  checkBecomes new procedure function.  CodeBecomes
+	use checkBecomes.  This fixes a bug reported by
+        <Georg.Lokowandt@t-online.de> (bug6.mod).
+
+2016-02-25      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/Makefile.in:  fixed linewrap in
+	  libtwoDsim.la.
+
+2016-02-22      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/configure:  rebuilt.
+	* gm2/configure.in:  version number change to 1.1.6.
+	* gm2/gm2-libs/config-host.in:  version number change to 1.1.6.
+	* gm2/gm2-libs/config-target.in:  version number change to 1.1.6.
+	* gm2/version.c:  version number change to 1.1.6.
+
+2016-02-19      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  CheckConvertCoerceParameter
+          checks to see if an actual parameter is a constant string
+          and if so calls BuildConvert.  This fixes a bug reported by
+	  <Georg.Lokowandt@t-online.de> (bug5.mod).
+
+2016-01-26      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/Makefile.in:  introduced LIBDIR which is
+	  set dynamically to reflect the host architecture.
+
+2016-01-19      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/Makefile.in:  rewritten to use libtool
+	  when generating the shared library.
+
+2016-01-14      Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/Makefile.in:  converting Makefile.in
+	to use libtool.
+	* gm2/examples/gravity/twoDsim.mod:  removed tabs.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  removed tabs.
+	* gm2/gm2-gcc/m2decl.c:  set DECL_ARTIFICIAL and
+          DECL_IGNORED_P for temporary variables.  (do_min_tree)
+          (do_max_tree) new functions which are called by GetMinFrom
+          and GetMaxFrom respectively.  This fixes a bug reported by
+	  Michael Riedl.
+

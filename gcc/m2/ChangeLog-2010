@@ -1,0 +1,3680 @@
+2010-12-10       Gaius Mulley <gaius@gnu.org>
+
+	* Release 1.0
+	* gm2/Make-lang.in:  added gm2/examples/iso/socket to the list
+	  of examples to be checked.
+	* gm2/NEWS:  updated.
+	* gm2/TODO:  updated.
+
+2010-12-09       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  detect an attempt to pass a
+	  type as a parameter and issue an error.  Fixes a bug
+	  reported by Scott Iverson.
+	* gm2/gm2-compiler/SymbolTable.mod:  tidied up comment.
+	* gm2/gm2-libs/RTExceptions.mod:  new procedure addFile
+	  and stripPath which extracts the filename from the
+	  complete path.  Bug reported by Christoph Schlegel.
+	* gm2/gm2-libs-iso/ClientSocket.mod:  modified exception
+	  message given the increased push back buffer.
+	* gm2/gm2-libs-iso/wrapsock.c:  modified the push back
+	  routines to work with multiple consecutive push back.
+	* gm2/config-lang.in:  added
+          gm2/examples/iso/socket/Makefile to be configured.
+	* gm2/examples/iso/socket/Makefile.in:  fixed compiler,
+	  include and link paths.
+
+2010-12-01       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added example checking rule,
+	  gm2-check-examples.
+	* gm2/config-lang.in:  create gm2/examples/callingC/Makefile.
+	* gm2/gm2spec.c:  fixed off by 1 error in strncmp, use strlen
+	  to calculate length of string to prevent this reoccuring.
+	* gm2/examples/callingC/Makefile.in:  modified to use correct
+	  path.
+	* gm2/examples/cplusplus/cppcatchm2/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/cplusplus/m2catchcpp/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/cpp/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/gravity/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/hello/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/map/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/ncurses/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/swig/exceptions/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/swig/strlib/Makefile.in:  modified to
+	  use correct path.
+	* gm2/examples/swig/tiny/Makefile.in:  modified to
+	  use correct path.
+	* gm2/gm2-compiler/PCSymBuild.mod:  detect error if
+	  trying to assign a constant from an unresolved symbol.
+	* gm2/gm2-libs-pim/NumberConversion.def:  fixed dates.
+	* gm2/gm2-libs-pim/NumberConversion.mod:  fixed dates.
+
+2010-11-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  changed documentation to use -fonlylink
+          where appropriate and remove the -c flag for the simple
+	  examples.
+	* gm2/examples/hello/Makefile.in:  removed compile without
+	  link stage.
+	* gm2/examples/ncurses/Makefile.in:  fixed pre-install build.
+
+2010-11-25       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  modified shared library examples
+	  to use -fonlylink.
+
+2010-11-24       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/lang-specs.h:  modified so that gm2 foo.mod will
+	  both compile and link file foo.mod.
+	* gm2/lang.opt:  modified description of -fonlylink
+	  (removed internal usage
+	* gm2/gm2.texi:  changed compile commands in the
+	  hello world example to start with the simpler
+	  gm2 -g hello.mod.
+	* gm2/gm2.texi:  replaced @filename with @file.
+	* gm2/bnf/gm2m.bnf:  modified M2L to use -fonlylink.
+	* gm2/examples/gravity/Makefile.in:  use -fonlylink.
+	* gm2/examples/swig/exceptions/Makefile.in:  use -fonlylink.
+	* gm2/examples/swig/strlib/Makefile.in:  use -fonlylink.
+	* gm2/examples/swig/tiny/Makefile.in: use -fonlylink.
+
+2010-11-22       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/gm2lgen.mod:  only invoke the call to
+          M2RTS_ExecuteInitialProcedures prior to the BEGIN END
+	  of the main module.
+	* gm2/gm2-libs/FIO.mod:  introduce new field, valid,
+	  to Buffer, so that the buffer can be declared invalid
+	  after a seek or when it is exhausted and a read is
+	  performed directly at an address.  Fixes a bug reported
+	  by James Cox.
+
+2010-11-21       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  bugfix, replaced 8 spaces by a tab.
+	  Bug reported by Steve Giess.
+
+2010-11-19       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  extended the section on using the C
+	  preprocessor by including another example.
+
+2010-11-17       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  compile static versions of
+	  DynamicStrings, FormatStrings, M2Quads, M2Options, M2Search
+	  with $(GM2_DEBUG_STRMEM) (-fcpp) flag to track down any
+	  memory leaks.
+	* gm2/gm2-compiler/M2Options.mod:  changes to allow debugging
+	  code to be included if -fcpp is used.
+	* gm2/gm2-compiler/M2Printf.mod:  changes to allow debugging
+	  code to be included if -fcpp is used.
+	* gm2/gm2-compiler/M2Quads.mod:  changes to allow debugging
+	  code to be included if -fcpp is used.
+	* gm2/gm2-compiler/M2Search.mod:  changes to allow debugging
+	  code to be included if -fcpp is used.
+	* gm2/gm2-libs/DynamicStrings.def:  added definition for
+	  PopAllocationExemption.
+	* gm2/gm2-libs/DynamicStrings.mod:  fixed memory leaks and
+	  bugs related to deallocating strings.
+	* gm2/gm2-libs/FormatStrings.mod:  changes to allow debugging
+	  code to be included if -fcpp is used.  Also fixed memory
+	  leaks, which occurred if strings were not Mark'ed.
+	* gm2/gm2-libs/FpuIO.mod:  tidied up header comment and added
+	  DynamicString debugging code.
+	* gm2/gm2-libs/SEnvironment.mod:  tidied up header comment and
+	  added DynamicString debugging code.
+	* gm2/gm2-libs/SFIO.mod:  tidied up header comment and
+	  added DynamicString debugging code.
+	* gm2/gm2-libs/StringConvert.mod:  changes to allow debugging
+	  code to be included if -fcpp is used.  Also fixed memory
+	  leaks, which occurred if strings were not Mark'ed.
+
+2010-11-12       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/FIO.mod:  removed unnecessary import of FIO.
+	* gm2/gm2-libs/FormatStrings.mod:  included cpp macros for
+	  debugging memory leaks within the module.
+	* gm2/gm2-libs/FpuIO.mod:  included cpp macros for
+	  debugging memory leaks within the module.
+	* gm2/gm2-libs/SArgs.mod:  included cpp macros for
+	  debugging memory leaks within the module.
+	* gm2/gm2-libs/SEnvironment.mod:  included cpp macros for
+	  debugging memory leaks within the module.
+	* gm2/gm2-libs/StringConvert.mod:  included cpp macros for
+	  debugging memory leaks within the module.
+	* gm2/gm2-libs-pim/RealConversions.mod:  included cpp macros for
+	  debugging memory leaks within the module.  Also fixed
+	  doPowerOfTen.
+
+2010-11-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/DynamicStrings.mod:  writeAddress (New procedure),
+	  writeLongcard (New procedure),
+	  DumpStringSynopsis (New procedure).
+	* gm2/gm2-libs-pim/RealConversions.mod:  import debugging
+	  versions of the DynamicString primitives and fix memory leak.
+	* gm2/gm2-libs-pim/RealInOut.mod:  import debugging
+	  versions of the DynamicString primitives and fix memory leak.
+
+2010-11-06       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/DynamicStrings.mod:  added forward declaration.
+	* gm2/gm2-libs/DynamicStrings.mod:  corrected typo.
+	* gm2/gm2-libs/DynamicStrings.mod:  fixed initialization order
+	  bug by using Init and a boolean.
+	* gm2/gm2-libs/DynamicStrings.mod:  implemented the debugging
+	  print statements with write.
+	* gm2/gm2-libs/StringConvert.mod:  fixed more memory leaks by
+	  Mark(ing) appropriate strings.
+	* gm2/gm2-libs/DynamicStrings.mod:  reimplemented the frame
+	  data structure some of the key list routines.
+	* gm2/gm2-libs/DynamicStrings.mod:  more minor fixes to aid
+	  p2c.
+	* gm2/gm2-libs/DynamicStrings.mod:  minor fix moving data type
+	  declarations to satisfy p2c.
+	* gm2/Make-lang.in:  added $(GM2_CPP) variable.
+	* gm2/gccgm2.c:  removed incorrect comment boilerplate.
+	* gm2/gm2-libs/DynamicStrings.def:  added debugging equivalents
+	  of InitString and family, Mult, Dup and Slice.  New procedures
+	  (PushAllocation) (PopAllocation).
+	* gm2/gm2-libs/DynamicStrings.mod:  PoisonedOn FALSE.  Implemented
+	  debugging equivalents of InitString and family, Mult, Dup and Slice.
+	  Also added memory leak verification PushAllocation/PopAllocation.
+	* gm2/gm2-libs/RTExceptions.mod:  New procedure (TidyUp) called during
+	  finalisation to deallocate memory.
+	* gm2/gm2-libs/StringConvert.mod:  fixed many memory leaks by
+	  Mark(ing) appropriate strings.
+	* gm2/gm2-libs-pim/RealConversions.mod:  fixed many memory leaks by
+	  Mark(ing) appropriate strings.
+
+2010-11-02       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/TODO:  updated.
+	* gm2/gccgm2.c:  removed dead code.
+	* gm2/gm2.texi:  changed Warning section to Caveat and modified
+	  text in light of the imminent release of 1.0 and complete ISO
+	  library support.
+	* gm2/gm2spec.c:  tidied up spacing.
+	* gm2/lang.opt:  added new internal option -fonlylink.
+	* gm2/examples/gravity/twoDsim.mod:  corrected dates.
+        * gm2/www/index.ms:  updated with the GCC lightening talk.
+
+2010-10-19       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2spec.c:  added fourth parameter to
+	  add_default_combinations which allows iso to be present at the
+	  end of the pimcoroutine library choice.  In turn this allows
+	  pth.def to be found.
+
+2010-10-18       Gaius Mulley <gaius@gnu.org>
+
+        * gm2/examples/gravity/testsim2.py:  (New file)
+        * gm2/examples/gravity/produce-avi:  restored remove command.
+
+2010-10-17       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  renamed gccgm2_BuildArrayType to
+	  gm2_build_array_type as it is no longer exported.
+	  gccgm2_BuildEndArrayType has an extra parameter, type.
+	  gccgm2_BuildStringConstant uses stricter parameter
+	  declaration.  build_m2_iso_byte_node,
+	  build_m2_iso_word_node, build_m2_word16_type_node,
+	  build_m2_word32_type_node, build_m2_word64_type_node
+	  all have a front end type parameter so that
+	  we can canonicalize array declarations.
+	  (New functions) gccgm2_InitSystemTypes.
+	  Use gm2_canonicalize_array instead of
+	  canonicalize_array and skip type declarations during
+	  construction of array types.
+	  This fixes a bug reported by John O Goyo.
+	* gm2/examples/gravity/Makefile.in:  run the more interesting
+	  test testsim2.py rather than testsim.py.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  pass the front end type
+	  to gccgm2 array building functions.
+	* gm2/gm2-compiler/M2System.mod:  only build GCC ISO types
+	  based on LOC once LOC is declared.
+	* gm2/gm2-compiler/gccgm2.def:  add the extra type parameter to
+	  the array building functions.  Also export the new function
+	  InitSystemTypes.
+	* gm2/www/index.ms:  update homepage with reference to the
+	  newly released 0.99.
+
+2010-10-11       Gaius Mulley <gaius@gnu.org>
+
+	* released version 0.99 of gm2.
+	* gm2/version.c:  updated to version 1.0.
+	* gm2/www/index.ms:  updated news of 0.99 release.
+	* gm2/gm2-libs/configure.in:  updated to 1.0.
+	* gm2/gm2-libs/configure:  rebuilt.
+
+2010-10-08       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/COPYING:  updated license to GPL 3.0
+	* gm2/gm2-harness/COPYING:  updated license to GPL 3.0
+	* gm2/tools-src/tidydates.py:  new file.
+	* gm2/gm2spec.c:  New function (add_B_prefix).  Add
+	  -B option to the command line if -fmakeall is present
+	  and no -B option exists.  Fixes a bug reported by
+	  Martin KalbfuÃ
+	  http://lists.gnu.org/archive/html/gm2/2010-09/msg00027.html.
+	* gm2/lang-specs.h:  pass the -B option through to subcomponents
+	  if -fmakeall is used.
+	* gm2/gm2spec.c:  New function (find_executable_path).
+
+2010-10-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Range.mod:  corrected the range test for
+	  the lower bounds at the end of a FOR loop.  Fixes a bug
+	  reported by James Cox.
+	* gm2/tools-src/tidydates.py:  new file.
+	* gm2/gpl-3.0.texi:  new file.
+
+2010-10-03       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  tidied up Copyright dates on
+	* gm2/Makefile.in:  the following files.
+	* gm2/config-lang.in:
+	* gm2/gccgm2.c:
+	* gm2/gm2-common.c:
+	* gm2/gm2-common.h:
+	* gm2/gm2-lang.c:
+	* gm2/gm2-lang.h:
+	* gm2/gm2-tree.def:
+	* gm2/gm2-tree.h:
+	* gm2/gm2builtins.c:
+	* gm2/gm2config.h.in:
+	* gm2/gm2except.c:
+	* gm2/gm2spec.c:
+	* gm2/gm2version.h:
+	* gm2/lang-options.h:
+	* gm2/lang-specs.h:
+	* gm2/m2pp.c:
+	* gm2/m2pp.h:
+	* gm2/examples/callingC/Makefile.in:
+	* gm2/examples/callingC/hello.mod:
+	* gm2/examples/callingC/libprintf.def:
+	* gm2/examples/cplusplus/cppcatchm2/Makefile.in:
+	* gm2/examples/cplusplus/cppcatchm2/cpp.def:
+	* gm2/examples/cplusplus/cppcatchm2/m2.def:
+	* gm2/examples/cplusplus/cppcatchm2/m2.mod:
+	* gm2/examples/cplusplus/m2catchcpp/Makefile.in:
+	* gm2/examples/cplusplus/m2catchcpp/cpp.def:
+	* gm2/examples/cplusplus/m2catchcpp/m2.mod:
+	* gm2/examples/cpp/Makefile.in:
+	* gm2/examples/cpp/hello.mod:
+	* gm2/examples/cppDef/a.def:
+	* gm2/examples/cppDef/b.mod:
+	* gm2/examples/executive/testexecutive.mod:
+	* gm2/examples/executive/testtime.mod:
+	* gm2/examples/executive/winexec.mod:
+	* gm2/examples/gravity/Makefile.in:
+	* gm2/examples/gravity/deviceGnuPic.def:
+	* gm2/examples/gravity/deviceGnuPic.mod:
+	* gm2/examples/gravity/gsl.def:
+	* gm2/examples/gravity/roots.def:
+	* gm2/examples/gravity/roots.mod:
+	* gm2/examples/gravity/test.mod:
+	* gm2/examples/gravity/testsim.py:
+	* gm2/examples/gravity/twoDsim.def:
+	* gm2/examples/gravity/twoDsim.mod:
+	* gm2/examples/hello/Makefile.in:
+	* gm2/examples/hello/hello.mod:
+	* gm2/examples/iso/files/rot13.mod:
+	* gm2/examples/iso/hello/hello.mod:
+	* gm2/examples/iso/socket/client.mod:
+	* gm2/examples/map/AdvMap.def:
+	* gm2/examples/map/AdvMap.mod:
+	* gm2/examples/map/BoxMap.def:
+	* gm2/examples/map/BoxMap.mod:
+	* gm2/examples/map/Chance.def:
+	* gm2/examples/map/Chance.mod:
+	* gm2/examples/map/Find.def:
+	* gm2/examples/map/Find.mod:
+	* gm2/examples/map/Geometry.def:
+	* gm2/examples/map/Geometry.mod:
+	* gm2/examples/map/MakeBoxes.def:
+	* gm2/examples/map/MakeBoxes.mod:
+	* gm2/examples/map/Makefile.in:
+	* gm2/examples/map/Map.mod:
+	* gm2/examples/map/RoomMap.def:
+	* gm2/examples/map/RoomMap.mod:
+	* gm2/examples/map/Semantic.mod:
+	* gm2/examples/map/StoreCoord.def:
+	* gm2/examples/map/StoreCoord.mod:
+	* gm2/examples/map/StoreCoords.def:
+	* gm2/examples/map/StoreCoords.mod:
+	* gm2/examples/map/WriteMap.def:
+	* gm2/examples/map/WriteMap.mod:
+	* gm2/examples/map/testch2.mod:
+	* gm2/examples/map/testchan.mod:
+	* gm2/examples/map/testcoor.mod:
+	* gm2/examples/map/old-src/GenMap.mod:
+	* gm2/examples/map/old-src/MakeMap.mod:
+	* gm2/examples/map/old-src/MonMap.def:
+	* gm2/examples/map/old-src/MonMap.mod:
+	* gm2/examples/map/old-src/testboxes.mod:
+	* gm2/examples/min/minhello.mod:
+	* gm2/examples/ncurses/ColorText.def:
+	* gm2/examples/ncurses/ColorText.mod:
+	* gm2/examples/ncurses/Makefile.in:
+	* gm2/examples/ncurses/WindowDevice.def:
+	* gm2/examples/ncurses/WindowDevice.mod:
+	* gm2/examples/ncurses/ncurses.def:
+	* gm2/examples/ncurses/shortc.c:
+	* gm2/examples/ncurses/shortc.def:
+	* gm2/examples/ncurses/test.c:
+	* gm2/examples/ncurses/test.mod:
+	* gm2/examples/ncurses/testcolor.mod:
+	* gm2/examples/ncurses/testmove.mod:
+	* gm2/examples/ncurses/testshort.mod:
+	* gm2/examples/ncurses/testwin.mod:
+	* gm2/examples/pthread/fullpth.def:
+	* gm2/examples/pthread/libcextra.def:
+	* gm2/examples/pthread/libcwrap.c:
+	* gm2/examples/pthread/libcwrap.def:
+	* gm2/examples/pthread/modified_pth.h:
+	* gm2/examples/pthread/testselect.mod:
+	* gm2/examples/server/server.mod:
+	* gm2/examples/svga/DisplayBuffer.def:
+	* gm2/examples/svga/DisplayBuffer.mod:
+	* gm2/examples/svga/Matrix3D.def:
+	* gm2/examples/svga/Matrix3D.mod:
+	* gm2/examples/svga/Transform.def:
+	* gm2/examples/svga/Transform.mod:
+	* gm2/examples/svga/testbox.mod:
+	* gm2/examples/svga/vga.def:
+	* gm2/examples/swig/exceptions/Makefile.in:
+	* gm2/examples/swig/exceptions/tiny.def:
+	* gm2/examples/swig/exceptions/tiny.mod:
+	* gm2/examples/swig/full-strlib/testequ.py:
+	* gm2/examples/swig/strlen/MyStrLib.def:
+	* gm2/examples/swig/strlen/MyStrLib.mod:
+	* gm2/examples/swig/strlib/Makefile.in:
+	* gm2/examples/swig/strlib/MyStrLib.def:
+	* gm2/examples/swig/strlib/MyStrLib.mod:
+	* gm2/examples/swig/tiny/Makefile.in:
+	* gm2/examples/swig/tiny/tiny.def:
+	* gm2/examples/swig/tiny/tiny.mod:
+	* gm2/gm2-compiler/CLexBuf.def:
+	* gm2/gm2-compiler/CLexBuf.mod:
+	* gm2/gm2-compiler/FifoQueue.def:
+	* gm2/gm2-compiler/FifoQueue.mod:
+	* gm2/gm2-compiler/Lists.def:
+	* gm2/gm2-compiler/Lists.mod:
+	* gm2/gm2-compiler/M2ALU.def:
+	* gm2/gm2-compiler/M2ALU.mod:
+	* gm2/gm2-compiler/M2AsmUtil.def:
+	* gm2/gm2-compiler/M2AsmUtil.mod:
+	* gm2/gm2-compiler/M2Base.def:
+	* gm2/gm2-compiler/M2Base.mod:
+	* gm2/gm2-compiler/M2BasicBlock.def:
+	* gm2/gm2-compiler/M2BasicBlock.mod:
+	* gm2/gm2-compiler/M2Batch.def:
+	* gm2/gm2-compiler/M2Batch.mod:
+	* gm2/gm2-compiler/M2Bitset.def:
+	* gm2/gm2-compiler/M2Bitset.mod:
+	* gm2/gm2-compiler/M2CaseList.def:
+	* gm2/gm2-compiler/M2CaseList.mod:
+	* gm2/gm2-compiler/M2Code.def:
+	* gm2/gm2-compiler/M2Code.mod:
+	* gm2/gm2-compiler/M2Comp.def:
+	* gm2/gm2-compiler/M2Comp.mod:
+	* gm2/gm2-compiler/M2Configure.def:
+	* gm2/gm2-compiler/M2Constants.def:
+	* gm2/gm2-compiler/M2Constants.mod:
+	* gm2/gm2-compiler/M2Debug.def:
+	* gm2/gm2-compiler/M2Debug.mod:
+	* gm2/gm2-compiler/M2Defaults.def:
+	* gm2/gm2-compiler/M2Defaults.mod:
+	* gm2/gm2-compiler/M2Depth.def:
+	* gm2/gm2-compiler/M2Depth.mod:
+	* gm2/gm2-compiler/M2Entity.def:
+	* gm2/gm2-compiler/M2Entity.mod:
+	* gm2/gm2-compiler/M2Error.def:
+	* gm2/gm2-compiler/M2Error.mod:
+	* gm2/gm2-compiler/M2EvalSym.def:
+	* gm2/gm2-compiler/M2FileName.def:
+	* gm2/gm2-compiler/M2FileName.mod:
+	* gm2/gm2-compiler/M2GCCDeclare.def:
+	* gm2/gm2-compiler/M2GCCDeclare.mod:
+	* gm2/gm2-compiler/M2GenGCC.def:
+	* gm2/gm2-compiler/M2GenGCC.mod:
+	* gm2/gm2-compiler/M2Inline.def:
+	* gm2/gm2-compiler/M2Inline.mod:
+	* gm2/gm2-compiler/M2Lex.def:
+	* gm2/gm2-compiler/M2Lex.mod:
+	* gm2/gm2-compiler/M2LexBuf.def:
+	* gm2/gm2-compiler/M2LexBuf.mod:
+	* gm2/gm2-compiler/M2MetaError.def:
+	* gm2/gm2-compiler/M2MetaError.mod:
+	* gm2/gm2-compiler/M2Optimize.def:
+	* gm2/gm2-compiler/M2Optimize.mod:
+	* gm2/gm2-compiler/M2Options.def:
+	* gm2/gm2-compiler/M2Options.mod:
+	* gm2/gm2-compiler/M2Pass.def:
+	* gm2/gm2-compiler/M2Pass.mod:
+	* gm2/gm2-compiler/M2Preprocess.def:
+	* gm2/gm2-compiler/M2Preprocess.mod:
+	* gm2/gm2-compiler/M2Printf.def:
+	* gm2/gm2-compiler/M2Printf.mod:
+	* gm2/gm2-compiler/M2Quads.def:
+	* gm2/gm2-compiler/M2Quads.mod:
+	* gm2/gm2-compiler/M2Quiet.def:
+	* gm2/gm2-compiler/M2Quiet.mod:
+	* gm2/gm2-compiler/M2Range.def:
+	* gm2/gm2-compiler/M2Range.mod:
+	* gm2/gm2-compiler/M2Reserved.def:
+	* gm2/gm2-compiler/M2Reserved.mod:
+	* gm2/gm2-compiler/M2Scope.def:
+	* gm2/gm2-compiler/M2Scope.mod:
+	* gm2/gm2-compiler/M2Search.def:
+	* gm2/gm2-compiler/M2Search.mod:
+	* gm2/gm2-compiler/M2Size.def:
+	* gm2/gm2-compiler/M2Size.mod:
+	* gm2/gm2-compiler/M2StackAddress.def:
+	* gm2/gm2-compiler/M2StackAddress.mod:
+	* gm2/gm2-compiler/M2StackWord.def:
+	* gm2/gm2-compiler/M2StackWord.mod:
+	* gm2/gm2-compiler/M2Students.def:
+	* gm2/gm2-compiler/M2Students.mod:
+	* gm2/gm2-compiler/M2SubExp.def:
+	* gm2/gm2-compiler/M2SubExp.mod:
+	* gm2/gm2-compiler/M2Swig.def:
+	* gm2/gm2-compiler/M2Swig.mod:
+	* gm2/gm2-compiler/M2System.def:
+	* gm2/gm2-compiler/M2System.mod:
+	* gm2/gm2-compiler/M2Version.def:
+	* gm2/gm2-compiler/NameKey.def:
+	* gm2/gm2-compiler/NameKey.mod:
+	* gm2/gm2-compiler/P1SymBuild.def:
+	* gm2/gm2-compiler/P1SymBuild.mod:
+	* gm2/gm2-compiler/P1SyntaxCheck.def:
+	* gm2/gm2-compiler/P2Build.def:
+	* gm2/gm2-compiler/P2SymBuild.def:
+	* gm2/gm2-compiler/P2SymBuild.mod:
+	* gm2/gm2-compiler/P3Build.def:
+	* gm2/gm2-compiler/P3SymBuild.def:
+	* gm2/gm2-compiler/P3SymBuild.mod:
+	* gm2/gm2-compiler/PCBuild.def:
+	* gm2/gm2-compiler/PCSymBuild.def:
+	* gm2/gm2-compiler/PCSymBuild.mod:
+	* gm2/gm2-compiler/PHBuild.def:
+	* gm2/gm2-compiler/Sets.def:
+	* gm2/gm2-compiler/Sets.mod:
+	* gm2/gm2-compiler/SymbolConversion.def:
+	* gm2/gm2-compiler/SymbolConversion.mod:
+	* gm2/gm2-compiler/SymbolKey.def:
+	* gm2/gm2-compiler/SymbolKey.mod:
+	* gm2/gm2-compiler/SymbolTable.def:
+	* gm2/gm2-compiler/SymbolTable.mod:
+	* gm2/gm2-compiler/bnflex.def:
+	* gm2/gm2-compiler/bnflex.mod:
+	* gm2/gm2-compiler/cflex.def:
+	* gm2/gm2-compiler/gccgm2.def:
+	* gm2/gm2-compiler/gm2.mod:
+	* gm2/gm2-compiler/gm2builtins.def:
+	* gm2/gm2-compiler/gm2except.def:
+	* gm2/gm2-compiler/gm2lcc.mod:
+	* gm2/gm2-compiler/gm2lgen.mod:
+	* gm2/gm2-compiler/gm2lorder.mod:
+	* gm2/gm2-compiler/m2flex.def:
+	* gm2/gm2-compiler/ppg.mod:
+	* gm2/gm2-harness/Makefile.in:
+	* gm2/gm2-libiberty/choosetemp.def:
+	* gm2/gm2-libiberty/pexecute.def:
+	* gm2/gm2-libs/ASCII.def:
+	* gm2/gm2-libs/Args.def:
+	* gm2/gm2-libs/Args.mod:
+	* gm2/gm2-libs/Assertion.def:
+	* gm2/gm2-libs/Assertion.mod:
+	* gm2/gm2-libs/Break.mod:
+	* gm2/gm2-libs/Builtins.def:
+	* gm2/gm2-libs/Builtins.mod:
+	* gm2/gm2-libs/COROUTINES.def:
+	* gm2/gm2-libs/COROUTINES.mod:
+	* gm2/gm2-libs/CmdArgs.def:
+	* gm2/gm2-libs/CmdArgs.mod:
+	* gm2/gm2-libs/Debug.def:
+	* gm2/gm2-libs/Debug.mod:
+	* gm2/gm2-libs/DynamicStrings.def:
+	* gm2/gm2-libs/DynamicStrings.mod:
+	* gm2/gm2-libs/Environment.def:
+	* gm2/gm2-libs/Environment.mod:
+	* gm2/gm2-libs/FIO.def:
+	* gm2/gm2-libs/FIO.mod:
+	* gm2/gm2-libs/FormatStrings.def:
+	* gm2/gm2-libs/FormatStrings.mod:
+	* gm2/gm2-libs/FpuIO.def:
+	* gm2/gm2-libs/FpuIO.mod:
+	* gm2/gm2-libs/IO.def:
+	* gm2/gm2-libs/IO.mod:
+	* gm2/gm2-libs/Indexing.def:
+	* gm2/gm2-libs/Indexing.mod:
+	* gm2/gm2-libs/LMathLib0.def:
+	* gm2/gm2-libs/LMathLib0.mod:
+	* gm2/gm2-libs/LegacyReal.def:
+	* gm2/gm2-libs/M2EXCEPTION.mod:
+	* gm2/gm2-libs/M2RTS.def:
+	* gm2/gm2-libs/M2RTS.mod:
+	* gm2/gm2-libs/MathLib0.def:
+	* gm2/gm2-libs/MathLib0.mod:
+	* gm2/gm2-libs/MemUtils.def:
+	* gm2/gm2-libs/MemUtils.mod:
+	* gm2/gm2-libs/NumberIO.def:
+	* gm2/gm2-libs/NumberIO.mod:
+	* gm2/gm2-libs/PushBackInput.def:
+	* gm2/gm2-libs/PushBackInput.mod:
+	* gm2/gm2-libs/RTExceptions.def:
+	* gm2/gm2-libs/RTExceptions.mod:
+	* gm2/gm2-libs/RTint.def:
+	* gm2/gm2-libs/RTint.mod:
+	* gm2/gm2-libs/SArgs.def:
+	* gm2/gm2-libs/SArgs.mod:
+	* gm2/gm2-libs/SEnvironment.def:
+	* gm2/gm2-libs/SEnvironment.mod:
+	* gm2/gm2-libs/SFIO.def:
+	* gm2/gm2-libs/SFIO.mod:
+	* gm2/gm2-libs/SMathLib0.def:
+	* gm2/gm2-libs/SMathLib0.mod:
+	* gm2/gm2-libs/SYSTEM.def:
+	* gm2/gm2-libs/SYSTEM.mod:
+	* gm2/gm2-libs/Scan.def:
+	* gm2/gm2-libs/Scan.mod:
+	* gm2/gm2-libs/Selective.def:
+	* gm2/gm2-libs/StdIO.def:
+	* gm2/gm2-libs/StdIO.mod:
+	* gm2/gm2-libs/Storage.def:
+	* gm2/gm2-libs/Storage.mod:
+	* gm2/gm2-libs/StrCase.def:
+	* gm2/gm2-libs/StrCase.mod:
+	* gm2/gm2-libs/StrIO.def:
+	* gm2/gm2-libs/StrIO.mod:
+	* gm2/gm2-libs/StrLib.def:
+	* gm2/gm2-libs/StrLib.mod:
+	* gm2/gm2-libs/StringConvert.def:
+	* gm2/gm2-libs/StringConvert.mod:
+	* gm2/gm2-libs/SysExceptions.def:
+	* gm2/gm2-libs/SysStorage.def:
+	* gm2/gm2-libs/SysStorage.mod:
+	* gm2/gm2-libs/TimeString.def:
+	* gm2/gm2-libs/TimeString.mod:
+	* gm2/gm2-libs/UnixArgs.def:
+	* gm2/gm2-libs/cbuiltin.def:
+	* gm2/gm2-libs/configure.in:
+	* gm2/gm2-libs/cxxabi.def:
+	* gm2/gm2-libs/dtoa.def:
+	* gm2/gm2-libs/errno.def:
+	* gm2/gm2-libs/gm2-libs-host.h.in:
+	* gm2/gm2-libs/ldtoa.def:
+	* gm2/gm2-libs/libc.def:
+	* gm2/gm2-libs/libm.def:
+	* gm2/gm2-libs/sckt.def:
+	* gm2/gm2-libs/termios.def:
+	* gm2/gm2-libs/wrapc.def:
+	* gm2/gm2-libs-boot/SYSTEM.def:
+	* gm2/gm2-libs-ch/Selective.c:
+	* gm2/gm2-libs-ch/StdIO.c:
+	* gm2/gm2-libs-ch/Storage.c:
+	* gm2/gm2-libs-ch/SysExceptions.c:
+	* gm2/gm2-libs-ch/UnixArgs.c:
+	* gm2/gm2-libs-ch/choosetemp.c:
+	* gm2/gm2-libs-ch/dtoa.c:
+	* gm2/gm2-libs-ch/errno.c:
+	* gm2/gm2-libs-ch/ldtoa.c:
+	* gm2/gm2-libs-ch/libc.c:
+	* gm2/gm2-libs-ch/sckt.c:
+	* gm2/gm2-libs-ch/target.c:
+	* gm2/gm2-libs-ch/termios.c:
+	* gm2/gm2-libs-ch/wrapc.c:
+	* gm2/gm2-libs-ch/xlibc.c:
+	* gm2/gm2-libs-coroutines/Debug.def:
+	* gm2/gm2-libs-coroutines/Debug.mod:
+	* gm2/gm2-libs-coroutines/Executive.def:
+	* gm2/gm2-libs-coroutines/Executive.mod:
+	* gm2/gm2-libs-coroutines/KeyBoardLEDs.c:
+	* gm2/gm2-libs-coroutines/KeyBoardLEDs.def:
+	* gm2/gm2-libs-coroutines/SYSTEM.def:
+	* gm2/gm2-libs-coroutines/SYSTEM.mod:
+	* gm2/gm2-libs-coroutines/TimerHandler.def:
+	* gm2/gm2-libs-coroutines/TimerHandler.mod:
+	* gm2/gm2-libs-iso/COROUTINES.mod:
+	* gm2/gm2-libs-iso/ChanConsts.h:
+	* gm2/gm2-libs-iso/ChanConsts.mod:
+	* gm2/gm2-libs-iso/CharClass.mod:
+	* gm2/gm2-libs-iso/ClientSocket.def:
+	* gm2/gm2-libs-iso/ClientSocket.mod:
+	* gm2/gm2-libs-iso/ComplexMath.mod:
+	* gm2/gm2-libs-iso/ConvStringLong.def:
+	* gm2/gm2-libs-iso/ConvStringLong.mod:
+	* gm2/gm2-libs-iso/ConvStringReal.def:
+	* gm2/gm2-libs-iso/ConvStringReal.mod:
+	* gm2/gm2-libs-iso/ConvTypes.mod:
+	* gm2/gm2-libs-iso/EXCEPTIONS.mod:
+	* gm2/gm2-libs-iso/ErrnoCategory.c:
+	* gm2/gm2-libs-iso/ErrnoCategory.def:
+	* gm2/gm2-libs-iso/GeneralUserExceptions.mod:
+	* gm2/gm2-libs-iso/IOChan.mod:
+	* gm2/gm2-libs-iso/IOLink.mod:
+	* gm2/gm2-libs-iso/IOResult.mod:
+	* gm2/gm2-libs-iso/LongComplexMath.mod:
+	* gm2/gm2-libs-iso/LongConv.mod:
+	* gm2/gm2-libs-iso/LongMath.mod:
+	* gm2/gm2-libs-iso/LongStr.mod:
+	* gm2/gm2-libs-iso/LowLong.mod:
+	* gm2/gm2-libs-iso/LowReal.mod:
+	* gm2/gm2-libs-iso/LowShort.def:
+	* gm2/gm2-libs-iso/LowShort.mod:
+	* gm2/gm2-libs-iso/M2EXCEPTION.mod:
+	* gm2/gm2-libs-iso/M2RTS.def:
+	* gm2/gm2-libs-iso/M2RTS.mod:
+	* gm2/gm2-libs-iso/Processes.mod:
+	* gm2/gm2-libs-iso/ProgramArgs.mod:
+	* gm2/gm2-libs-iso/RTdata.def:
+	* gm2/gm2-libs-iso/RTdata.mod:
+	* gm2/gm2-libs-iso/RTentity.def:
+	* gm2/gm2-libs-iso/RTentity.mod:
+	* gm2/gm2-libs-iso/RTfio.def:
+	* gm2/gm2-libs-iso/RTfio.mod:
+	* gm2/gm2-libs-iso/RTgen.def:
+	* gm2/gm2-libs-iso/RTgen.mod:
+	* gm2/gm2-libs-iso/RTgenif.def:
+	* gm2/gm2-libs-iso/RTgenif.mod:
+	* gm2/gm2-libs-iso/RTio.def:
+	* gm2/gm2-libs-iso/RTio.mod:
+	* gm2/gm2-libs-iso/RawIO.mod:
+	* gm2/gm2-libs-iso/RealConv.mod:
+	* gm2/gm2-libs-iso/RealMath.mod:
+	* gm2/gm2-libs-iso/RealStr.mod:
+	* gm2/gm2-libs-iso/RndFile.mod:
+	* gm2/gm2-libs-iso/SIOResult.mod:
+	* gm2/gm2-libs-iso/SLongIO.mod:
+	* gm2/gm2-libs-iso/SRawIO.mod:
+	* gm2/gm2-libs-iso/SRealIO.mod:
+	* gm2/gm2-libs-iso/STextIO.mod:
+	* gm2/gm2-libs-iso/SWholeIO.mod:
+	* gm2/gm2-libs-iso/SYSTEM.mod:
+	* gm2/gm2-libs-iso/Semaphores.mod:
+	* gm2/gm2-libs-iso/SeqFile.mod:
+	* gm2/gm2-libs-iso/ServerSocket.def:
+	* gm2/gm2-libs-iso/ServerSocket.mod:
+	* gm2/gm2-libs-iso/ShortComplexMath.def:
+	* gm2/gm2-libs-iso/ShortComplexMath.mod:
+	* gm2/gm2-libs-iso/SimpleCipher.def:
+	* gm2/gm2-libs-iso/SimpleCipher.mod:
+	* gm2/gm2-libs-iso/StdChans.mod:
+	* gm2/gm2-libs-iso/Storage.mod:
+	* gm2/gm2-libs-iso/StreamFile.mod:
+	* gm2/gm2-libs-iso/StringChan.def:
+	* gm2/gm2-libs-iso/StringChan.mod:
+	* gm2/gm2-libs-iso/Strings.mod:
+	* gm2/gm2-libs-iso/SysClock.mod:
+	* gm2/gm2-libs-iso/TERMINATION.mod:
+	* gm2/gm2-libs-iso/TermFile.mod:
+	* gm2/gm2-libs-iso/TextIO.mod:
+	* gm2/gm2-libs-iso/WholeConv.mod:
+	* gm2/gm2-libs-iso/WholeIO.mod:
+	* gm2/gm2-libs-iso/WholeStr.mod:
+	* gm2/gm2-libs-iso/pth.def:
+	* gm2/gm2-libs-iso/wrapsock.c:
+	* gm2/gm2-libs-iso/wrapsock.def:
+	* gm2/gm2-libs-iso/wraptime.c:
+	* gm2/gm2-libs-iso/wraptime.def:
+	* gm2/gm2-libs-min/M2RTS.def:
+	* gm2/gm2-libs-min/M2RTS.mod:
+	* gm2/gm2-libs-min/SYSTEM.def:
+	* gm2/gm2-libs-min/SYSTEM.mod:
+	* gm2/gm2-libs-min/libc.c:
+	* gm2/gm2-libs-min/libc.def:
+	* gm2/gm2-libs-pim/BitBlockOps.def:
+	* gm2/gm2-libs-pim/BitBlockOps.mod:
+	* gm2/gm2-libs-pim/BitByteOps.def:
+	* gm2/gm2-libs-pim/BitByteOps.mod:
+	* gm2/gm2-libs-pim/BitWordOps.def:
+	* gm2/gm2-libs-pim/BitWordOps.mod:
+	* gm2/gm2-libs-pim/BlockOps.def:
+	* gm2/gm2-libs-pim/BlockOps.mod:
+	* gm2/gm2-libs-pim/Break.c:
+	* gm2/gm2-libs-pim/Break.def:
+	* gm2/gm2-libs-pim/CardinalIO.def:
+	* gm2/gm2-libs-pim/CardinalIO.mod:
+	* gm2/gm2-libs-pim/Conversions.def:
+	* gm2/gm2-libs-pim/Conversions.mod:
+	* gm2/gm2-libs-pim/DebugTrace.def:
+	* gm2/gm2-libs-pim/Delay.def:
+	* gm2/gm2-libs-pim/Delay.mod:
+	* gm2/gm2-libs-pim/Display.def:
+	* gm2/gm2-libs-pim/Display.mod:
+	* gm2/gm2-libs-pim/ErrorCode.def:
+	* gm2/gm2-libs-pim/ErrorCode.mod:
+	* gm2/gm2-libs-pim/FileSystem.def:
+	* gm2/gm2-libs-pim/FileSystem.mod:
+	* gm2/gm2-libs-pim/FloatingUtilities.def:
+	* gm2/gm2-libs-pim/FloatingUtilities.mod:
+	* gm2/gm2-libs-pim/InOut.def:
+	* gm2/gm2-libs-pim/InOut.mod:
+	* gm2/gm2-libs-pim/Keyboard.def:
+	* gm2/gm2-libs-pim/Keyboard.mod:
+	* gm2/gm2-libs-pim/LongIO.def:
+	* gm2/gm2-libs-pim/LongIO.mod:
+	* gm2/gm2-libs-pim/Random.def:
+	* gm2/gm2-libs-pim/Random.mod:
+	* gm2/gm2-libs-pim/RealConversions.def:
+	* gm2/gm2-libs-pim/RealConversions.mod:
+	* gm2/gm2-libs-pim/RealInOut.def:
+	* gm2/gm2-libs-pim/RealInOut.mod:
+	* gm2/gm2-libs-pim/Strings.def:
+	* gm2/gm2-libs-pim/Strings.mod:
+	* gm2/gm2-libs-pim/Termbase.def:
+	* gm2/gm2-libs-pim/Termbase.mod:
+	* gm2/gm2-libs-pim/Terminal.def:
+	* gm2/gm2-libs-pim/Terminal.mod:
+	* gm2/gm2-libs-pim/TimeDate.def:
+	* gm2/gm2-libs-pim/TimeDate.mod:
+	* gm2/man/Makefile.in:
+	* gm2/p2c/Makefile.in:
+	* gm2/p2c/p2c.h:
+	* gm2/p2c/p2c-src/Makefile.in:
+	* gm2/p2c/p2c-src/auto-host.h.in:
+	* gm2/p2c/p2c-src/configure.in:
+	* gm2/p2c/p2c-src/include/ansidecl.h:
+	* gm2/p2c/p2c-src/include/config.h:
+	* gm2/p2c/p2c-src/include/system.h:
+	* gm2/p2c/p2c-src/src/Makefile.in:
+	* gm2/p2c/p2c-src/src/citmods.c:
+	* gm2/p2c/p2c-src/src/comment.c:
+	* gm2/p2c/p2c-src/src/decl.c:
+	* gm2/p2c/p2c-src/src/dir.c:
+	* gm2/p2c/p2c-src/src/expr.c:
+	* gm2/p2c/p2c-src/src/funcs.c:
+	* gm2/p2c/p2c-src/src/hpmods.c:
+	* gm2/p2c/p2c-src/src/lex.c:
+	* gm2/p2c/p2c-src/src/loc.p2clib.c:
+	* gm2/p2c/p2c-src/src/makeproto.c:
+	* gm2/p2c/p2c-src/src/out.c:
+	* gm2/p2c/p2c-src/src/p2c-config.h:
+	* gm2/p2c/p2c-src/src/p2c.h:
+	* gm2/p2c/p2c-src/src/p2clib.c:
+	* gm2/p2c/p2c-src/src/parse.c:
+	* gm2/p2c/p2c-src/src/pexpr.c:
+	* gm2/p2c/p2c-src/src/stuff.c:
+	* gm2/p2c/p2c-src/src/trans.c:
+	* gm2/p2c/p2c-src/src/trans.h:
+	* gm2/patches/gcc/4.1.2/08.gaius_ipa_type_escape.c:
+	* gm2/tools-src/array2index.py:
+	* gm2/tools-src/def2texi.py:
+	* gm2/tools-src/gensum.py:
+	* gm2/tools-src/mklink.c:
+	* gm2/ulm-lib-gm2/processes/CoExpressions.def:
+	* gm2/ulm-lib-gm2/processes/CoExpressions.mod:
+	* gm2/ulm-lib-gm2/processes/Processes.def:
+	* gm2/ulm-lib-gm2/processes/Processes.mod:
+	* gm2/ulm-lib-gm2/std/ASCII.def:
+	* gm2/ulm-lib-gm2/std/ASCII.mod:
+	* gm2/ulm-lib-gm2/std/Archive.def:
+	* gm2/ulm-lib-gm2/std/Archive.mod:
+	* gm2/ulm-lib-gm2/std/Arguments.def:
+	* gm2/ulm-lib-gm2/std/Arguments.mod:
+	* gm2/ulm-lib-gm2/std/Calendar.def:
+	* gm2/ulm-lib-gm2/std/Calendar.mod:
+	* gm2/ulm-lib-gm2/std/CallShell.def:
+	* gm2/ulm-lib-gm2/std/CallShell.mod:
+	* gm2/ulm-lib-gm2/std/Clock.def:
+	* gm2/ulm-lib-gm2/std/Clock.mod:
+	* gm2/ulm-lib-gm2/std/Conversions.def:
+	* gm2/ulm-lib-gm2/std/Conversions.mod:
+	* gm2/ulm-lib-gm2/std/Directories.def:
+	* gm2/ulm-lib-gm2/std/Directories.mod:
+	* gm2/ulm-lib-gm2/std/Environment.def:
+	* gm2/ulm-lib-gm2/std/Environment.mod:
+	* gm2/ulm-lib-gm2/std/EtcGroup.def:
+	* gm2/ulm-lib-gm2/std/EtcGroup.mod:
+	* gm2/ulm-lib-gm2/std/Files.def:
+	* gm2/ulm-lib-gm2/std/Files.mod:
+	* gm2/ulm-lib-gm2/std/FtdIO.def:
+	* gm2/ulm-lib-gm2/std/FtdIO.mod:
+	* gm2/ulm-lib-gm2/std/Functions.def:
+	* gm2/ulm-lib-gm2/std/Functions.mod:
+	* gm2/ulm-lib-gm2/std/GetPass.def:
+	* gm2/ulm-lib-gm2/std/GetPass.mod:
+	* gm2/ulm-lib-gm2/std/InOut.def:
+	* gm2/ulm-lib-gm2/std/InOut.mod:
+	* gm2/ulm-lib-gm2/std/M2EXCEPTION.mod:
+	* gm2/ulm-lib-gm2/std/M2RTS.mod:
+	* gm2/ulm-lib-gm2/std/MathLib.def:
+	* gm2/ulm-lib-gm2/std/MathLib.mod:
+	* gm2/ulm-lib-gm2/std/Passwd.def:
+	* gm2/ulm-lib-gm2/std/Passwd.mod:
+	* gm2/ulm-lib-gm2/std/PipeIO.def:
+	* gm2/ulm-lib-gm2/std/PipeIO.mod:
+	* gm2/ulm-lib-gm2/std/Plot.def:
+	* gm2/ulm-lib-gm2/std/Plot.mod:
+	* gm2/ulm-lib-gm2/std/RTErrors.def:
+	* gm2/ulm-lib-gm2/std/RTErrors.mod:
+	* gm2/ulm-lib-gm2/std/RTExceptions.mod:
+	* gm2/ulm-lib-gm2/std/RandomGenerator.def:
+	* gm2/ulm-lib-gm2/std/RandomGenerator.mod:
+	* gm2/ulm-lib-gm2/std/ReadIntCard.def:
+	* gm2/ulm-lib-gm2/std/ReadIntCard.mod:
+	* gm2/ulm-lib-gm2/std/RealConv.def:
+	* gm2/ulm-lib-gm2/std/RealConv.mod:
+	* gm2/ulm-lib-gm2/std/RealInOut.def:
+	* gm2/ulm-lib-gm2/std/RealInOut.mod:
+	* gm2/ulm-lib-gm2/std/ScanPwfile.def:
+	* gm2/ulm-lib-gm2/std/ScanPwfile.mod:
+	* gm2/ulm-lib-gm2/std/StdFuncs.def:
+	* gm2/ulm-lib-gm2/std/StdFuncs.mod:
+	* gm2/ulm-lib-gm2/std/StdIO.def:
+	* gm2/ulm-lib-gm2/std/StdIO.mod:
+	* gm2/ulm-lib-gm2/std/Storage.def:
+	* gm2/ulm-lib-gm2/std/Storage.mod:
+	* gm2/ulm-lib-gm2/std/StrSpec.def:
+	* gm2/ulm-lib-gm2/std/StrSpec.mod:
+	* gm2/ulm-lib-gm2/std/StrToNum.def:
+	* gm2/ulm-lib-gm2/std/StrToNum.mod:
+	* gm2/ulm-lib-gm2/std/StrToReal.def:
+	* gm2/ulm-lib-gm2/std/StrToReal.mod:
+	* gm2/ulm-lib-gm2/std/Strings.def:
+	* gm2/ulm-lib-gm2/std/Strings.mod:
+	* gm2/ulm-lib-gm2/std/SysConf.def:
+	* gm2/ulm-lib-gm2/std/SysConf.mod:
+	* gm2/ulm-lib-gm2/std/SysPerror.def:
+	* gm2/ulm-lib-gm2/std/SysPerror.mod:
+	* gm2/ulm-lib-gm2/std/Terminal.def:
+	* gm2/ulm-lib-gm2/std/Terminal.mod:
+	* gm2/ulm-lib-gm2/std/TimeIO.def:
+	* gm2/ulm-lib-gm2/std/TimeIO.mod:
+	* gm2/ulm-lib-gm2/sys/Errno.def:
+	* gm2/ulm-lib-gm2/sys/Errno.mod:
+	* gm2/ulm-lib-gm2/sys/SYSTEM.def:
+	* gm2/ulm-lib-gm2/sys/Sys.def:
+	* gm2/ulm-lib-gm2/sys/Sys.mod:
+	* gm2/ulm-lib-gm2/sys/SysAccess.def:
+	* gm2/ulm-lib-gm2/sys/SysAccess.mod:
+	* gm2/ulm-lib-gm2/sys/SysAlarm.def:
+	* gm2/ulm-lib-gm2/sys/SysAlarm.mod:
+	* gm2/ulm-lib-gm2/sys/SysBreak.def:
+	* gm2/ulm-lib-gm2/sys/SysBreak.mod:
+	* gm2/ulm-lib-gm2/sys/SysClose.def:
+	* gm2/ulm-lib-gm2/sys/SysClose.mod:
+	* gm2/ulm-lib-gm2/sys/SysCreat.def:
+	* gm2/ulm-lib-gm2/sys/SysCreat.mod:
+	* gm2/ulm-lib-gm2/sys/SysDup.def:
+	* gm2/ulm-lib-gm2/sys/SysDup.mod:
+	* gm2/ulm-lib-gm2/sys/SysExec.def:
+	* gm2/ulm-lib-gm2/sys/SysExec.mod:
+	* gm2/ulm-lib-gm2/sys/SysExit.def:
+	* gm2/ulm-lib-gm2/sys/SysExit.mod:
+	* gm2/ulm-lib-gm2/sys/SysFcntl.def:
+	* gm2/ulm-lib-gm2/sys/SysFcntl.mod:
+	* gm2/ulm-lib-gm2/sys/SysFork.def:
+	* gm2/ulm-lib-gm2/sys/SysFork.mod:
+	* gm2/ulm-lib-gm2/sys/SysGetpid.def:
+	* gm2/ulm-lib-gm2/sys/SysGetpid.mod:
+	* gm2/ulm-lib-gm2/sys/SysGetuid.def:
+	* gm2/ulm-lib-gm2/sys/SysGetuid.mod:
+	* gm2/ulm-lib-gm2/sys/SysIoctl.def:
+	* gm2/ulm-lib-gm2/sys/SysIoctl.mod:
+	* gm2/ulm-lib-gm2/sys/SysKill.def:
+	* gm2/ulm-lib-gm2/sys/SysKill.mod:
+	* gm2/ulm-lib-gm2/sys/SysLink.def:
+	* gm2/ulm-lib-gm2/sys/SysLink.mod:
+	* gm2/ulm-lib-gm2/sys/SysLocations.def:
+	* gm2/ulm-lib-gm2/sys/SysLocations.mod:
+	* gm2/ulm-lib-gm2/sys/SysLseek.def:
+	* gm2/ulm-lib-gm2/sys/SysLseek.mod:
+	* gm2/ulm-lib-gm2/sys/SysOpen.def:
+	* gm2/ulm-lib-gm2/sys/SysOpen.mod:
+	* gm2/ulm-lib-gm2/sys/SysPanic.def:
+	* gm2/ulm-lib-gm2/sys/SysPanic.mod:
+	* gm2/ulm-lib-gm2/sys/SysPause.def:
+	* gm2/ulm-lib-gm2/sys/SysPause.mod:
+	* gm2/ulm-lib-gm2/sys/SysPipe.def:
+	* gm2/ulm-lib-gm2/sys/SysPipe.mod:
+	* gm2/ulm-lib-gm2/sys/SysRead.def:
+	* gm2/ulm-lib-gm2/sys/SysRead.mod:
+	* gm2/ulm-lib-gm2/sys/SysSetuid.def:
+	* gm2/ulm-lib-gm2/sys/SysSetuid.mod:
+	* gm2/ulm-lib-gm2/sys/SysSignal.def:
+	* gm2/ulm-lib-gm2/sys/SysSignal.mod:
+	* gm2/ulm-lib-gm2/sys/SysStat.def:
+	* gm2/ulm-lib-gm2/sys/SysStat.mod:
+	* gm2/ulm-lib-gm2/sys/SysTermIO.def:
+	* gm2/ulm-lib-gm2/sys/SysTermIO.mod:
+	* gm2/ulm-lib-gm2/sys/SysTime.def:
+	* gm2/ulm-lib-gm2/sys/SysTime.mod:
+	* gm2/ulm-lib-gm2/sys/SysUnlink.def:
+	* gm2/ulm-lib-gm2/sys/SysUnlink.mod:
+	* gm2/ulm-lib-gm2/sys/SysWait.def:
+	* gm2/ulm-lib-gm2/sys/SysWait.mod:
+	* gm2/ulm-lib-gm2/sys/SysWrite.def:
+	* gm2/ulm-lib-gm2/sys/SysWrite.mod:
+	* gm2/ulm-lib-gm2/sys/SystemTypes.def:
+	* gm2/ulm-lib-gm2/sys/SystemTypes.mod:
+	* gm2/ulm-lib-gm2/sys/UnixString.def:
+	* gm2/ulm-lib-gm2/sys/UnixString.mod:
+	* gm2/ulm-lib-gm2/sys/test.mod:
+	* gm2/www/Makefile.in:
+
+	* gm2/examples/gravity/Makefile.in:  added missing GPL v3 notices
+	  and corrected dates for all the following files.
+	* gm2/examples/gravity/testsim.py:
+	* gm2/examples/pthread/modified_pth.h:
+	* gm2/examples/swig/full-strlib/testequ.py:
+	* gm2/gm2-harness/Makefile.in:
+	* gm2/gm2-libs/M2EXCEPTION.def:
+	* gm2/gm2-libs-ch/termios.c:
+	* gm2/gm2-libs-iso/COROUTINES.def:
+	* gm2/gm2-libs-iso/ChanConsts.def:
+	* gm2/gm2-libs-iso/CharClass.def:
+	* gm2/gm2-libs-iso/ComplexMath.def:
+	* gm2/gm2-libs-iso/ConvTypes.def:
+	* gm2/gm2-libs-iso/EXCEPTIONS.def:
+	* gm2/gm2-libs-iso/IOChan.def:
+	* gm2/gm2-libs-iso/IOConsts.def:
+	* gm2/gm2-libs-iso/IOLink.def:
+	* gm2/gm2-libs-iso/IOResult.def:
+	* gm2/gm2-libs-iso/LongComplexMath.def:
+	* gm2/gm2-libs-iso/LongConv.def:
+	* gm2/gm2-libs-iso/LongIO.def:
+	* gm2/gm2-libs-iso/LongIO.mod:
+	* gm2/gm2-libs-iso/LongMath.def:
+	* gm2/gm2-libs-iso/LongStr.def:
+	* gm2/gm2-libs-iso/M2EXCEPTION.def:
+	* gm2/gm2-libs-iso/Processes.def:
+	* gm2/gm2-libs-iso/ProgramArgs.def:
+	* gm2/gm2-libs-iso/RawIO.def:
+	* gm2/gm2-libs-iso/RealConv.def:
+	* gm2/gm2-libs-iso/RealIO.def:
+	* gm2/gm2-libs-iso/RealIO.mod:
+	* gm2/gm2-libs-iso/RealMath.def:
+	* gm2/gm2-libs-iso/RealStr.def:
+	* gm2/gm2-libs-iso/RndFile.def:
+	* gm2/gm2-libs-iso/SIOResult.def:
+	* gm2/gm2-libs-iso/SLongIO.def:
+	* gm2/gm2-libs-iso/SRawIO.def:
+	* gm2/gm2-libs-iso/SRealIO.def:
+	* gm2/gm2-libs-iso/STextIO.def:
+	* gm2/gm2-libs-iso/SWholeIO.def:
+	* gm2/gm2-libs-iso/SYSTEM.def:
+	* gm2/gm2-libs-iso/Semaphores.def:
+	* gm2/gm2-libs-iso/SeqFile.def:
+	* gm2/gm2-libs-iso/StdChans.def:
+	* gm2/gm2-libs-iso/Storage.def:
+	* gm2/gm2-libs-iso/StreamFile.def:
+	* gm2/gm2-libs-iso/Strings.def:
+	* gm2/gm2-libs-iso/SysClock.def:
+	* gm2/gm2-libs-iso/TermFile.def:
+	* gm2/gm2-libs-iso/TextIO.def:
+	* gm2/gm2-libs-iso/WholeConv.def:
+	* gm2/gm2-libs-iso/WholeIO.def:
+	* gm2/gm2-libs-iso/WholeStr.def:
+	* gm2/p2c/p2c-src/include/ansidecl.h:
+
+2010-09-21       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  changed license to v3 of GPL and LGPL for
+	  all the following files.
+	* gm2/Makefile.in:
+	* gm2/configure.in:
+	* gm2/gm2-common.c:
+	* gm2/gm2-common.h:
+	* gm2/gm2-lang.c:
+	* gm2/gm2-lang.h:
+	* gm2/gm2-tree.def:
+	* gm2/gm2-tree.h:
+	* gm2/gm2builtins.c:
+	* gm2/gm2config.h.in:
+	* gm2/gm2except.c:
+	* gm2/gm2spec.c:
+	* gm2/gm2version.h:
+	* gm2/lang-options.h:
+	* gm2/m2pp.c:
+	* gm2/m2pp.h:
+	* gm2/bnf/gm2l.bnf:
+	* gm2/bnf/gm2m.bnf:
+	* gm2/bnf/h2def.bnf:
+	* gm2/bnf/m2-2.bnf:
+	* gm2/bnf/m2-3.bnf:
+	* gm2/bnf/m2-h.bnf:
+	* gm2/bnf/m2.bnf:
+	* gm2/examples/callingC/Makefile.in:
+	* gm2/examples/callingC/hello.mod:
+	* gm2/examples/callingC/libprintf.def:
+	* gm2/examples/cplusplus/cppcatchm2/cpp.def:
+	* gm2/examples/cplusplus/cppcatchm2/m2.def:
+	* gm2/examples/cplusplus/cppcatchm2/m2.mod:
+	* gm2/examples/cplusplus/m2catchcpp/cpp.def:
+	* gm2/examples/cplusplus/m2catchcpp/m2.mod:
+	* gm2/examples/cpp/hello.mod:
+	* gm2/examples/cppDef/a.def:
+	* gm2/examples/cppDef/a.mod:
+	* gm2/examples/cppDef/b.mod:
+	* gm2/examples/executive/testexecutive.mod:
+	* gm2/examples/executive/testtime.mod:
+	* gm2/examples/executive/winexec.mod:
+	* gm2/examples/gravity/deviceGnuPic.def:
+	* gm2/examples/gravity/deviceGnuPic.mod:
+	* gm2/examples/gravity/gsl.def:
+	* gm2/examples/gravity/test.mod:
+	* gm2/examples/gravity/twoDsim.def:
+	* gm2/examples/hello/Makefile.in:
+	* gm2/examples/hello/hello.mod:
+	* gm2/examples/iso/files/rot13.mod:
+	* gm2/examples/iso/hello/hello.mod:
+	* gm2/examples/iso/socket/client.mod:
+	* gm2/examples/map/AdvMap.def:
+	* gm2/examples/map/AdvMap.mod:
+	* gm2/examples/map/BoxMap.def:
+	* gm2/examples/map/BoxMap.mod:
+	* gm2/examples/map/Chance.def:
+	* gm2/examples/map/Chance.mod:
+	* gm2/examples/map/Find.def:
+	* gm2/examples/map/Find.mod:
+	* gm2/examples/map/Geometry.def:
+	* gm2/examples/map/Geometry.mod:
+	* gm2/examples/map/MakeBoxes.def:
+	* gm2/examples/map/MakeBoxes.mod:
+	* gm2/examples/map/Makefile.in:
+	* gm2/examples/map/Map.mod:
+	* gm2/examples/map/RoomMap.def:
+	* gm2/examples/map/RoomMap.mod:
+	* gm2/examples/map/Semantic.mod:
+	* gm2/examples/map/StoreCoord.def:
+	* gm2/examples/map/StoreCoord.mod:
+	* gm2/examples/map/StoreCoords.def:
+	* gm2/examples/map/StoreCoords.mod:
+	* gm2/examples/map/WriteMap.def:
+	* gm2/examples/map/WriteMap.mod:
+	* gm2/examples/map/testch2.mod:
+	* gm2/examples/map/testchan.mod:
+	* gm2/examples/map/testcoor.mod:
+	* gm2/examples/map/old-src/GenMap.mod:
+	* gm2/examples/map/old-src/MakeMap.mod:
+	* gm2/examples/map/old-src/MonMap.def:
+	* gm2/examples/map/old-src/MonMap.mod:
+	* gm2/examples/map/old-src/testboxes.mod:
+	* gm2/examples/min/minhello.mod:
+	* gm2/examples/ncurses/ColorText.def:
+	* gm2/examples/ncurses/ColorText.mod:
+	* gm2/examples/ncurses/Makefile.in:
+	* gm2/examples/ncurses/WindowDevice.def:
+	* gm2/examples/ncurses/WindowDevice.mod:
+	* gm2/examples/ncurses/ncurses.def:
+	* gm2/examples/ncurses/shortc.c:
+	* gm2/examples/ncurses/shortc.def:
+	* gm2/examples/ncurses/test.c:
+	* gm2/examples/ncurses/test.mod:
+	* gm2/examples/ncurses/testcolor.mod:
+	* gm2/examples/ncurses/testmove.mod:
+	* gm2/examples/ncurses/testshort.mod:
+	* gm2/examples/ncurses/testwin.mod:
+	* gm2/examples/pthread/fullpth.def:
+	* gm2/examples/pthread/libcextra.def:
+	* gm2/examples/pthread/libcwrap.c:
+	* gm2/examples/pthread/libcwrap.def:
+	* gm2/examples/pthread/testselect.mod:
+	* gm2/examples/server/server.mod:
+	* gm2/examples/svga/DisplayBuffer.def:
+	* gm2/examples/svga/DisplayBuffer.mod:
+	* gm2/examples/svga/Matrix3D.def:
+	* gm2/examples/svga/Matrix3D.mod:
+	* gm2/examples/svga/Transform.def:
+	* gm2/examples/svga/Transform.mod:
+	* gm2/examples/svga/testbox.mod:
+	* gm2/examples/svga/vga.def:
+	* gm2/examples/swig/exceptions/tiny.def:
+	* gm2/examples/swig/exceptions/tiny.mod:
+	* gm2/examples/swig/strlen/MyStrLib.def:
+	* gm2/examples/swig/strlen/MyStrLib.mod:
+	* gm2/examples/swig/strlib/MyStrLib.def:
+	* gm2/examples/swig/strlib/MyStrLib.mod:
+	* gm2/examples/swig/tiny/tiny.def:
+	* gm2/examples/swig/tiny/tiny.mod:
+	* gm2/gm2-compiler/CLexBuf.def:
+	* gm2/gm2-compiler/CLexBuf.mod:
+	* gm2/gm2-compiler/FifoQueue.def:
+	* gm2/gm2-compiler/FifoQueue.mod:
+	* gm2/gm2-compiler/Lists.def:
+	* gm2/gm2-compiler/Lists.mod:
+	* gm2/gm2-compiler/M2ALU.def:
+	* gm2/gm2-compiler/M2ALU.mod:
+	* gm2/gm2-compiler/M2AsmUtil.def:
+	* gm2/gm2-compiler/M2AsmUtil.mod:
+	* gm2/gm2-compiler/M2Base.def:
+	* gm2/gm2-compiler/M2Base.mod:
+	* gm2/gm2-compiler/M2BasicBlock.def:
+	* gm2/gm2-compiler/M2BasicBlock.mod:
+	* gm2/gm2-compiler/M2Batch.def:
+	* gm2/gm2-compiler/M2Batch.mod:
+	* gm2/gm2-compiler/M2Bitset.def:
+	* gm2/gm2-compiler/M2Bitset.mod:
+	* gm2/gm2-compiler/M2CaseList.def:
+	* gm2/gm2-compiler/M2CaseList.mod:
+	* gm2/gm2-compiler/M2Code.def:
+	* gm2/gm2-compiler/M2Code.mod:
+	* gm2/gm2-compiler/M2Comp.def:
+	* gm2/gm2-compiler/M2Comp.mod:
+	* gm2/gm2-compiler/M2Configure.def:
+	* gm2/gm2-compiler/M2Configure.mod:
+	* gm2/gm2-compiler/M2Constants.def:
+	* gm2/gm2-compiler/M2Constants.mod:
+	* gm2/gm2-compiler/M2Debug.def:
+	* gm2/gm2-compiler/M2Debug.mod:
+	* gm2/gm2-compiler/M2Defaults.def:
+	* gm2/gm2-compiler/M2Defaults.mod:
+	* gm2/gm2-compiler/M2Depth.def:
+	* gm2/gm2-compiler/M2Depth.mod:
+	* gm2/gm2-compiler/M2Entity.def:
+	* gm2/gm2-compiler/M2Entity.mod:
+	* gm2/gm2-compiler/M2Error.def:
+	* gm2/gm2-compiler/M2Error.mod:
+	* gm2/gm2-compiler/M2EvalSym.def:
+	* gm2/gm2-compiler/M2FileName.def:
+	* gm2/gm2-compiler/M2FileName.mod:
+	* gm2/gm2-compiler/M2GCCDeclare.def:
+	* gm2/gm2-compiler/M2GCCDeclare.mod:
+	* gm2/gm2-compiler/M2GenGCC.def:
+	* gm2/gm2-compiler/M2Inline.def:
+	* gm2/gm2-compiler/M2Inline.mod:
+	* gm2/gm2-compiler/M2Lex.def:
+	* gm2/gm2-compiler/M2Lex.mod:
+	* gm2/gm2-compiler/M2LexBuf.def:
+	* gm2/gm2-compiler/M2LexBuf.mod:
+	* gm2/gm2-compiler/M2MetaError.def:
+	* gm2/gm2-compiler/M2MetaError.mod:
+	* gm2/gm2-compiler/M2Optimize.def:
+	* gm2/gm2-compiler/M2Optimize.mod:
+	* gm2/gm2-compiler/M2Options.def:
+	* gm2/gm2-compiler/M2Options.mod:
+	* gm2/gm2-compiler/M2Pass.mod:
+	* gm2/gm2-compiler/M2Preprocess.def:
+	* gm2/gm2-compiler/M2Preprocess.mod:
+	* gm2/gm2-compiler/M2Printf.def:
+	* gm2/gm2-compiler/M2Printf.mod:
+	* gm2/gm2-compiler/M2Quads.def:
+	* gm2/gm2-compiler/M2Quads.mod:
+	* gm2/gm2-compiler/M2Quiet.def:
+	* gm2/gm2-compiler/M2Quiet.mod:
+	* gm2/gm2-compiler/M2Range.def:
+	* gm2/gm2-compiler/M2Range.mod:
+	* gm2/gm2-compiler/M2Reserved.def:
+	* gm2/gm2-compiler/M2Reserved.mod:
+	* gm2/gm2-compiler/M2Scope.def:
+	* gm2/gm2-compiler/M2Scope.mod:
+	* gm2/gm2-compiler/M2Search.def:
+	* gm2/gm2-compiler/M2Search.mod:
+	* gm2/gm2-compiler/M2Size.def:
+	* gm2/gm2-compiler/M2Size.mod:
+	* gm2/gm2-compiler/M2StackAddress.def:
+	* gm2/gm2-compiler/M2StackAddress.mod:
+	* gm2/gm2-compiler/M2StackWord.def:
+	* gm2/gm2-compiler/M2StackWord.mod:
+	* gm2/gm2-compiler/M2Students.def:
+	* gm2/gm2-compiler/M2Students.mod:
+	* gm2/gm2-compiler/M2SubExp.def:
+	* gm2/gm2-compiler/M2SubExp.mod:
+	* gm2/gm2-compiler/M2Swig.def:
+	* gm2/gm2-compiler/M2Swig.mod:
+	* gm2/gm2-compiler/M2System.def:
+	* gm2/gm2-compiler/M2Version.def:
+	* gm2/gm2-compiler/NameKey.def:
+	* gm2/gm2-compiler/NameKey.mod:
+	* gm2/gm2-compiler/P1SymBuild.def:
+	* gm2/gm2-compiler/P1SymBuild.mod:
+	* gm2/gm2-compiler/P1SyntaxCheck.def:
+	* gm2/gm2-compiler/P2Build.def:
+	* gm2/gm2-compiler/P2SymBuild.def:
+	* gm2/gm2-compiler/P2SymBuild.mod:
+	* gm2/gm2-compiler/P3Build.def:
+	* gm2/gm2-compiler/P3SymBuild.def:
+	* gm2/gm2-compiler/P3SymBuild.mod:
+	* gm2/gm2-compiler/PCBuild.def:
+	* gm2/gm2-compiler/PCSymBuild.def:
+	* gm2/gm2-compiler/PCSymBuild.mod:
+	* gm2/gm2-compiler/PHBuild.def:
+	* gm2/gm2-compiler/Sets.def:
+	* gm2/gm2-compiler/Sets.mod:
+	* gm2/gm2-compiler/SymbolConversion.def:
+	* gm2/gm2-compiler/SymbolConversion.mod:
+	* gm2/gm2-compiler/SymbolKey.def:
+	* gm2/gm2-compiler/SymbolKey.mod:
+	* gm2/gm2-compiler/SymbolTable.def:
+	* gm2/gm2-compiler/SymbolTable.mod:
+	* gm2/gm2-compiler/bnflex.def:
+	* gm2/gm2-compiler/bnflex.mod:
+	* gm2/gm2-compiler/cflex.def:
+	* gm2/gm2-compiler/gccgm2.def:
+	* gm2/gm2-compiler/gm2.mod:
+	* gm2/gm2-compiler/gm2builtins.def:
+	* gm2/gm2-compiler/gm2except.def:
+	* gm2/gm2-compiler/gm2lcc.mod:
+	* gm2/gm2-compiler/gm2lgen.mod:
+	* gm2/gm2-compiler/gm2lorder.mod:
+	* gm2/gm2-compiler/m2flex.def:
+	* gm2/gm2-compiler/ppg.mod:
+	* gm2/gm2-libiberty/choosetemp.def:
+	* gm2/gm2-libiberty/pexecute.def:
+	* gm2/gm2-libs/ASCII.def:
+	* gm2/gm2-libs/ASCII.mod:
+	* gm2/gm2-libs/Args.def:
+	* gm2/gm2-libs/Args.mod:
+	* gm2/gm2-libs/Assertion.def:
+	* gm2/gm2-libs/Assertion.mod:
+	* gm2/gm2-libs/Break.def:
+	* gm2/gm2-libs/Break.mod:
+	* gm2/gm2-libs/Builtins.def:
+	* gm2/gm2-libs/COROUTINES.def:
+	* gm2/gm2-libs/COROUTINES.mod:
+	* gm2/gm2-libs/CmdArgs.def:
+	* gm2/gm2-libs/CmdArgs.mod:
+	* gm2/gm2-libs/Debug.def:
+	* gm2/gm2-libs/Debug.mod:
+	* gm2/gm2-libs/DynamicStrings.def:
+	* gm2/gm2-libs/DynamicStrings.mod:
+	* gm2/gm2-libs/Environment.def:
+	* gm2/gm2-libs/Environment.mod:
+	* gm2/gm2-libs/FIO.def:
+	* gm2/gm2-libs/FIO.mod:
+	* gm2/gm2-libs/FormatStrings.def:
+	* gm2/gm2-libs/FormatStrings.mod:
+	* gm2/gm2-libs/FpuIO.def:
+	* gm2/gm2-libs/FpuIO.mod:
+	* gm2/gm2-libs/Indexing.def:
+	* gm2/gm2-libs/Indexing.mod:
+	* gm2/gm2-libs/LMathLib0.def:
+	* gm2/gm2-libs/LMathLib0.mod:
+	* gm2/gm2-libs/LegacyReal.def:
+	* gm2/gm2-libs/LegacyReal.mod:
+	* gm2/gm2-libs/M2EXCEPTION.mod:
+	* gm2/gm2-libs/M2RTS.def:
+	* gm2/gm2-libs/M2RTS.mod:
+	* gm2/gm2-libs/MathLib0.def:
+	* gm2/gm2-libs/MathLib0.mod:
+	* gm2/gm2-libs/MemUtils.def:
+	* gm2/gm2-libs/MemUtils.mod:
+	* gm2/gm2-libs/NumberIO.def:
+	* gm2/gm2-libs/NumberIO.mod:
+	* gm2/gm2-libs/PushBackInput.def:
+	* gm2/gm2-libs/PushBackInput.mod:
+	* gm2/gm2-libs/RTExceptions.def:
+	* gm2/gm2-libs/RTExceptions.mod:
+	* gm2/gm2-libs/RTint.def:
+	* gm2/gm2-libs/RTint.mod:
+	* gm2/gm2-libs/SArgs.def:
+	* gm2/gm2-libs/SArgs.mod:
+	* gm2/gm2-libs/SEnvironment.def:
+	* gm2/gm2-libs/SEnvironment.mod:
+	* gm2/gm2-libs/SFIO.def:
+	* gm2/gm2-libs/SFIO.mod:
+	* gm2/gm2-libs/SMathLib0.def:
+	* gm2/gm2-libs/SMathLib0.mod:
+	* gm2/gm2-libs/SYSTEM.def:
+	* gm2/gm2-libs/SYSTEM.mod:
+	* gm2/gm2-libs/Scan.def:
+	* gm2/gm2-libs/Scan.mod:
+	* gm2/gm2-libs/Selective.def:
+	* gm2/gm2-libs/StdIO.def:
+	* gm2/gm2-libs/StdIO.mod:
+	* gm2/gm2-libs/Storage.def:
+	* gm2/gm2-libs/Storage.mod:
+	* gm2/gm2-libs/StrCase.def:
+	* gm2/gm2-libs/StrCase.mod:
+	* gm2/gm2-libs/StrIO.def:
+	* gm2/gm2-libs/StrIO.mod:
+	* gm2/gm2-libs/StrLib.def:
+	* gm2/gm2-libs/StrLib.mod:
+	* gm2/gm2-libs/SysExceptions.def:
+	* gm2/gm2-libs/SysStorage.def:
+	* gm2/gm2-libs/SysStorage.mod:
+	* gm2/gm2-libs/TimeString.def:
+	* gm2/gm2-libs/TimeString.mod:
+	* gm2/gm2-libs/UnixArgs.def:
+	* gm2/gm2-libs/cxxabi.def:
+	* gm2/gm2-libs/dtoa.def:
+	* gm2/gm2-libs/errno.def:
+	* gm2/gm2-libs/gm2-libs-host.h.in:
+	* gm2/gm2-libs/ldtoa.def:
+	* gm2/gm2-libs/libc.def:
+	* gm2/gm2-libs/libm.def:
+	* gm2/gm2-libs/sckt.def:
+	* gm2/gm2-libs/termios.def:
+	* gm2/gm2-libs/wrapc.def:
+	* gm2/gm2-libs-boot/SYSTEM.def:
+	* gm2/gm2-libs-ch/Selective.c:
+	* gm2/gm2-libs-ch/StdIO.c:
+	* gm2/gm2-libs-ch/Storage.c:
+	* gm2/gm2-libs-ch/SysExceptions.c:
+	* gm2/gm2-libs-ch/UnixArgs.c:
+	* gm2/gm2-libs-ch/choosetemp.c:
+	* gm2/gm2-libs-ch/dtoa.c:
+	* gm2/gm2-libs-ch/errno.c:
+	* gm2/gm2-libs-ch/ldtoa.c:
+	* gm2/gm2-libs-ch/libc.c:
+	* gm2/gm2-libs-ch/sckt.c:
+	* gm2/gm2-libs-ch/wrapc.c:
+	* gm2/gm2-libs-ch/xlibc.c:
+	* gm2/gm2-libs-coroutines/Debug.def:
+	* gm2/gm2-libs-coroutines/Debug.mod:
+	* gm2/gm2-libs-coroutines/Executive.def:
+	* gm2/gm2-libs-coroutines/Executive.mod:
+	* gm2/gm2-libs-coroutines/KeyBoardLEDs.c:
+	* gm2/gm2-libs-coroutines/KeyBoardLEDs.def:
+	* gm2/gm2-libs-coroutines/SYSTEM.def:
+	* gm2/gm2-libs-coroutines/SYSTEM.mod:
+	* gm2/gm2-libs-coroutines/TimerHandler.def:
+	* gm2/gm2-libs-coroutines/TimerHandler.mod:
+	* gm2/gm2-libs-iso/ChanConsts.h:
+	* gm2/gm2-libs-iso/ChanConsts.mod:
+	* gm2/gm2-libs-iso/CharClass.mod:
+	* gm2/gm2-libs-iso/ClientSocket.def:
+	* gm2/gm2-libs-iso/ClientSocket.mod:
+	* gm2/gm2-libs-iso/ComplexMath.mod:
+	* gm2/gm2-libs-iso/ConvStringLong.def:
+	* gm2/gm2-libs-iso/ConvStringLong.mod:
+	* gm2/gm2-libs-iso/ConvStringReal.def:
+	* gm2/gm2-libs-iso/ConvStringReal.mod:
+	* gm2/gm2-libs-iso/ConvTypes.mod:
+	* gm2/gm2-libs-iso/EXCEPTIONS.mod:
+	* gm2/gm2-libs-iso/ErrnoCategory.c:
+	* gm2/gm2-libs-iso/ErrnoCategory.def:
+	* gm2/gm2-libs-iso/IOChan.mod:
+	* gm2/gm2-libs-iso/IOConsts.mod:
+	* gm2/gm2-libs-iso/IOLink.mod:
+	* gm2/gm2-libs-iso/IOResult.mod:
+	* gm2/gm2-libs-iso/LongComplexMath.mod:
+	* gm2/gm2-libs-iso/LongConv.mod:
+	* gm2/gm2-libs-iso/LongMath.mod:
+	* gm2/gm2-libs-iso/LongStr.mod:
+	* gm2/gm2-libs-iso/M2RTS.def:
+	* gm2/gm2-libs-iso/M2RTS.mod:
+	* gm2/gm2-libs-iso/ProgramArgs.mod:
+	* gm2/gm2-libs-iso/RTdata.def:
+	* gm2/gm2-libs-iso/RTdata.mod:
+	* gm2/gm2-libs-iso/RTentity.def:
+	* gm2/gm2-libs-iso/RTentity.mod:
+	* gm2/gm2-libs-iso/RTfio.def:
+	* gm2/gm2-libs-iso/RTfio.mod:
+	* gm2/gm2-libs-iso/RTgen.def:
+	* gm2/gm2-libs-iso/RTgen.mod:
+	* gm2/gm2-libs-iso/RTgenif.def:
+	* gm2/gm2-libs-iso/RTgenif.mod:
+	* gm2/gm2-libs-iso/RTio.def:
+	* gm2/gm2-libs-iso/RTio.mod:
+	* gm2/gm2-libs-iso/RawIO.mod:
+	* gm2/gm2-libs-iso/RealConv.mod:
+	* gm2/gm2-libs-iso/RealMath.mod:
+	* gm2/gm2-libs-iso/RealStr.mod:
+	* gm2/gm2-libs-iso/RndFile.mod:
+	* gm2/gm2-libs-iso/SIOResult.mod:
+	* gm2/gm2-libs-iso/SLongIO.mod:
+	* gm2/gm2-libs-iso/SRawIO.mod:
+	* gm2/gm2-libs-iso/SRealIO.mod:
+	* gm2/gm2-libs-iso/STextIO.mod:
+	* gm2/gm2-libs-iso/SWholeIO.mod:
+	* gm2/gm2-libs-iso/SYSTEM.mod:
+	* gm2/gm2-libs-iso/SeqFile.mod:
+	* gm2/gm2-libs-iso/ServerSocket.def:
+	* gm2/gm2-libs-iso/ServerSocket.mod:
+	* gm2/gm2-libs-iso/ShortComplexMath.mod:
+	* gm2/gm2-libs-iso/SimpleCipher.def:
+	* gm2/gm2-libs-iso/SimpleCipher.mod:
+	* gm2/gm2-libs-iso/StdChans.mod:
+	* gm2/gm2-libs-iso/Storage.mod:
+	* gm2/gm2-libs-iso/StreamFile.mod:
+	* gm2/gm2-libs-iso/StringChan.def:
+	* gm2/gm2-libs-iso/StringChan.mod:
+	* gm2/gm2-libs-iso/Strings.mod:
+	* gm2/gm2-libs-iso/SysClock.mod:
+	* gm2/gm2-libs-iso/TERMINATION.mod:
+	* gm2/gm2-libs-iso/TermFile.mod:
+	* gm2/gm2-libs-iso/TextIO.mod:
+	* gm2/gm2-libs-iso/WholeConv.mod:
+	* gm2/gm2-libs-iso/WholeIO.mod:
+	* gm2/gm2-libs-iso/WholeStr.mod:
+	* gm2/gm2-libs-iso/wrapsock.c:
+	* gm2/gm2-libs-iso/wrapsock.def:
+	* gm2/gm2-libs-iso/wraptime.c:
+	* gm2/gm2-libs-iso/wraptime.def:
+	* gm2/gm2-libs-min/M2RTS.def:
+	* gm2/gm2-libs-min/M2RTS.mod:
+	* gm2/gm2-libs-min/SYSTEM.def:
+	* gm2/gm2-libs-min/SYSTEM.mod:
+	* gm2/gm2-libs-min/libc.def:
+	* gm2/gm2-libs-pim/BitBlockOps.def:
+	* gm2/gm2-libs-pim/BitBlockOps.mod:
+	* gm2/gm2-libs-pim/BitByteOps.def:
+	* gm2/gm2-libs-pim/BitByteOps.mod:
+	* gm2/gm2-libs-pim/BitWordOps.def:
+	* gm2/gm2-libs-pim/BitWordOps.mod:
+	* gm2/gm2-libs-pim/BlockOps.def:
+	* gm2/gm2-libs-pim/BlockOps.mod:
+	* gm2/gm2-libs-pim/Break.c:
+	* gm2/gm2-libs-pim/Break.def:
+	* gm2/gm2-libs-pim/CardinalIO.def:
+	* gm2/gm2-libs-pim/CardinalIO.mod:
+	* gm2/gm2-libs-pim/Conversions.def:
+	* gm2/gm2-libs-pim/Conversions.mod:
+	* gm2/gm2-libs-pim/DebugPMD.def:
+	* gm2/gm2-libs-pim/DebugPMD.mod:
+	* gm2/gm2-libs-pim/DebugTrace.def:
+	* gm2/gm2-libs-pim/DebugTrace.mod:
+	* gm2/gm2-libs-pim/Delay.def:
+	* gm2/gm2-libs-pim/Delay.mod:
+	* gm2/gm2-libs-pim/Display.def:
+	* gm2/gm2-libs-pim/Display.mod:
+	* gm2/gm2-libs-pim/ErrorCode.def:
+	* gm2/gm2-libs-pim/ErrorCode.mod:
+	* gm2/gm2-libs-pim/FileSystem.def:
+	* gm2/gm2-libs-pim/FileSystem.mod:
+	* gm2/gm2-libs-pim/FloatingUtilities.def:
+	* gm2/gm2-libs-pim/FloatingUtilities.mod:
+	* gm2/gm2-libs-pim/InOut.def:
+	* gm2/gm2-libs-pim/InOut.mod:
+	* gm2/gm2-libs-pim/Keyboard.def:
+	* gm2/gm2-libs-pim/Keyboard.mod:
+	* gm2/gm2-libs-pim/LongIO.def:
+	* gm2/gm2-libs-pim/LongIO.mod:
+	* gm2/gm2-libs-pim/Random.def:
+	* gm2/gm2-libs-pim/Random.mod:
+	* gm2/gm2-libs-pim/RealConversions.mod:
+	* gm2/gm2-libs-pim/RealInOut.def:
+	* gm2/gm2-libs-pim/RealInOut.mod:
+	* gm2/gm2-libs-pim/Strings.def:
+	* gm2/gm2-libs-pim/Strings.mod:
+	* gm2/gm2-libs-pim/Termbase.def:
+	* gm2/gm2-libs-pim/Termbase.mod:
+	* gm2/gm2-libs-pim/Terminal.def:
+	* gm2/gm2-libs-pim/Terminal.mod:
+	* gm2/gm2-libs-pim/TimeDate.def:
+	* gm2/gm2-libs-pim/TimeDate.mod:
+	* gm2/man/Makefile.in:
+	* gm2/p2c/Makefile.in:
+	* gm2/p2c/p2c.h:
+	* gm2/p2c/p2c-src/Makefile.in:
+	* gm2/p2c/p2c-src/auto-host.h.in:
+	* gm2/p2c/p2c-src/include/config.h:
+	* gm2/p2c/p2c-src/include/system.h:
+	* gm2/p2c/p2c-src/src/Makefile.in:
+	* gm2/p2c/p2c-src/src/citmods.c:
+	* gm2/p2c/p2c-src/src/comment.c:
+	* gm2/p2c/p2c-src/src/decl.c:
+	* gm2/p2c/p2c-src/src/dir.c:
+	* gm2/p2c/p2c-src/src/expr.c:
+	* gm2/p2c/p2c-src/src/funcs.c:
+	* gm2/p2c/p2c-src/src/hpmods.c:
+	* gm2/p2c/p2c-src/src/lex.c:
+	* gm2/p2c/p2c-src/src/loc.p2clib.c:
+	* gm2/p2c/p2c-src/src/makeproto.c:
+	* gm2/p2c/p2c-src/src/out.c:
+	* gm2/p2c/p2c-src/src/p2c-config.h:
+	* gm2/p2c/p2c-src/src/p2c.h:
+	* gm2/p2c/p2c-src/src/p2clib.c:
+	* gm2/p2c/p2c-src/src/parse.c:
+	* gm2/p2c/p2c-src/src/pexpr.c:
+	* gm2/p2c/p2c-src/src/stuff.c:
+	* gm2/p2c/p2c-src/src/trans.c:
+	* gm2/p2c/p2c-src/src/trans.h:
+	* gm2/tools-src/def2texi.py:
+	* gm2/tools-src/mklink.c:
+	* gm2/ulm-lib-gm2/processes/CoExpressions.def:
+	* gm2/ulm-lib-gm2/processes/CoExpressions.mod:
+	* gm2/ulm-lib-gm2/processes/Processes.def:
+	* gm2/ulm-lib-gm2/processes/Processes.mod:
+	* gm2/ulm-lib-gm2/std/ASCII.def:
+	* gm2/ulm-lib-gm2/std/ASCII.mod:
+	* gm2/ulm-lib-gm2/std/Archive.def:
+	* gm2/ulm-lib-gm2/std/Archive.mod:
+	* gm2/ulm-lib-gm2/std/Arguments.def:
+	* gm2/ulm-lib-gm2/std/Arguments.mod:
+	* gm2/ulm-lib-gm2/std/Calendar.def:
+	* gm2/ulm-lib-gm2/std/Calendar.mod:
+	* gm2/ulm-lib-gm2/std/CallShell.def:
+	* gm2/ulm-lib-gm2/std/CallShell.mod:
+	* gm2/ulm-lib-gm2/std/Clock.def:
+	* gm2/ulm-lib-gm2/std/Clock.mod:
+	* gm2/ulm-lib-gm2/std/Conversions.def:
+	* gm2/ulm-lib-gm2/std/Conversions.mod:
+	* gm2/ulm-lib-gm2/std/Directories.def:
+	* gm2/ulm-lib-gm2/std/Directories.mod:
+	* gm2/ulm-lib-gm2/std/Environment.def:
+	* gm2/ulm-lib-gm2/std/Environment.mod:
+	* gm2/ulm-lib-gm2/std/EtcGroup.def:
+	* gm2/ulm-lib-gm2/std/EtcGroup.mod:
+	* gm2/ulm-lib-gm2/std/Files.def:
+	* gm2/ulm-lib-gm2/std/Files.mod:
+	* gm2/ulm-lib-gm2/std/FtdIO.def:
+	* gm2/ulm-lib-gm2/std/FtdIO.mod:
+	* gm2/ulm-lib-gm2/std/Functions.def:
+	* gm2/ulm-lib-gm2/std/Functions.mod:
+	* gm2/ulm-lib-gm2/std/GetPass.def:
+	* gm2/ulm-lib-gm2/std/GetPass.mod:
+	* gm2/ulm-lib-gm2/std/InOut.def:
+	* gm2/ulm-lib-gm2/std/InOut.mod:
+	* gm2/ulm-lib-gm2/std/M2EXCEPTION.mod:
+	* gm2/ulm-lib-gm2/std/M2RTS.mod:
+	* gm2/ulm-lib-gm2/std/MathLib.def:
+	* gm2/ulm-lib-gm2/std/MathLib.mod:
+	* gm2/ulm-lib-gm2/std/Passwd.def:
+	* gm2/ulm-lib-gm2/std/Passwd.mod:
+	* gm2/ulm-lib-gm2/std/PipeIO.def:
+	* gm2/ulm-lib-gm2/std/PipeIO.mod:
+	* gm2/ulm-lib-gm2/std/Plot.def:
+	* gm2/ulm-lib-gm2/std/Plot.mod:
+	* gm2/ulm-lib-gm2/std/RTErrors.def:
+	* gm2/ulm-lib-gm2/std/RTErrors.mod:
+	* gm2/ulm-lib-gm2/std/RTExceptions.mod:
+	* gm2/ulm-lib-gm2/std/RandomGenerator.def:
+	* gm2/ulm-lib-gm2/std/RandomGenerator.mod:
+	* gm2/ulm-lib-gm2/std/ReadIntCard.def:
+	* gm2/ulm-lib-gm2/std/ReadIntCard.mod:
+	* gm2/ulm-lib-gm2/std/RealConv.def:
+	* gm2/ulm-lib-gm2/std/RealConv.mod:
+	* gm2/ulm-lib-gm2/std/RealInOut.def:
+	* gm2/ulm-lib-gm2/std/RealInOut.mod:
+	* gm2/ulm-lib-gm2/std/ScanPwfile.def:
+	* gm2/ulm-lib-gm2/std/ScanPwfile.mod:
+	* gm2/ulm-lib-gm2/std/StdFuncs.def:
+	* gm2/ulm-lib-gm2/std/StdFuncs.mod:
+	* gm2/ulm-lib-gm2/std/StdIO.def:
+	* gm2/ulm-lib-gm2/std/StdIO.mod:
+	* gm2/ulm-lib-gm2/std/Storage.def:
+	* gm2/ulm-lib-gm2/std/Storage.mod:
+	* gm2/ulm-lib-gm2/std/StrSpec.def:
+	* gm2/ulm-lib-gm2/std/StrSpec.mod:
+	* gm2/ulm-lib-gm2/std/StrToNum.def:
+	* gm2/ulm-lib-gm2/std/StrToNum.mod:
+	* gm2/ulm-lib-gm2/std/StrToReal.def:
+	* gm2/ulm-lib-gm2/std/StrToReal.mod:
+	* gm2/ulm-lib-gm2/std/Strings.def:
+	* gm2/ulm-lib-gm2/std/Strings.mod:
+	* gm2/ulm-lib-gm2/std/SysConf.def:
+	* gm2/ulm-lib-gm2/std/SysConf.mod:
+	* gm2/ulm-lib-gm2/std/SysPerror.def:
+	* gm2/ulm-lib-gm2/std/SysPerror.mod:
+	* gm2/ulm-lib-gm2/std/Terminal.def:
+	* gm2/ulm-lib-gm2/std/Terminal.mod:
+	* gm2/ulm-lib-gm2/std/TimeIO.def:
+	* gm2/ulm-lib-gm2/std/TimeIO.mod:
+	* gm2/ulm-lib-gm2/sys/Errno.def:
+	* gm2/ulm-lib-gm2/sys/Errno.mod:
+	* gm2/ulm-lib-gm2/sys/SYSTEM.def:
+	* gm2/ulm-lib-gm2/sys/Sys.def:
+	* gm2/ulm-lib-gm2/sys/Sys.mod:
+	* gm2/ulm-lib-gm2/sys/SysAccess.def:
+	* gm2/ulm-lib-gm2/sys/SysAccess.mod:
+	* gm2/ulm-lib-gm2/sys/SysAlarm.def:
+	* gm2/ulm-lib-gm2/sys/SysAlarm.mod:
+	* gm2/ulm-lib-gm2/sys/SysBreak.def:
+	* gm2/ulm-lib-gm2/sys/SysBreak.mod:
+	* gm2/ulm-lib-gm2/sys/SysClose.def:
+	* gm2/ulm-lib-gm2/sys/SysClose.mod:
+	* gm2/ulm-lib-gm2/sys/SysCreat.def:
+	* gm2/ulm-lib-gm2/sys/SysCreat.mod:
+	* gm2/ulm-lib-gm2/sys/SysDup.def:
+	* gm2/ulm-lib-gm2/sys/SysDup.mod:
+	* gm2/ulm-lib-gm2/sys/SysExec.def:
+	* gm2/ulm-lib-gm2/sys/SysExec.mod:
+	* gm2/ulm-lib-gm2/sys/SysExit.def:
+	* gm2/ulm-lib-gm2/sys/SysExit.mod:
+	* gm2/ulm-lib-gm2/sys/SysFcntl.def:
+	* gm2/ulm-lib-gm2/sys/SysFcntl.mod:
+	* gm2/ulm-lib-gm2/sys/SysFork.def:
+	* gm2/ulm-lib-gm2/sys/SysFork.mod:
+	* gm2/ulm-lib-gm2/sys/SysGetpid.def:
+	* gm2/ulm-lib-gm2/sys/SysGetpid.mod:
+	* gm2/ulm-lib-gm2/sys/SysGetuid.def:
+	* gm2/ulm-lib-gm2/sys/SysGetuid.mod:
+	* gm2/ulm-lib-gm2/sys/SysIoctl.def:
+	* gm2/ulm-lib-gm2/sys/SysIoctl.mod:
+	* gm2/ulm-lib-gm2/sys/SysKill.def:
+	* gm2/ulm-lib-gm2/sys/SysKill.mod:
+	* gm2/ulm-lib-gm2/sys/SysLink.def:
+	* gm2/ulm-lib-gm2/sys/SysLink.mod:
+	* gm2/ulm-lib-gm2/sys/SysLocations.def:
+	* gm2/ulm-lib-gm2/sys/SysLocations.mod:
+	* gm2/ulm-lib-gm2/sys/SysLseek.def:
+	* gm2/ulm-lib-gm2/sys/SysLseek.mod:
+	* gm2/ulm-lib-gm2/sys/SysOpen.def:
+	* gm2/ulm-lib-gm2/sys/SysOpen.mod:
+	* gm2/ulm-lib-gm2/sys/SysPanic.def:
+	* gm2/ulm-lib-gm2/sys/SysPanic.mod:
+	* gm2/ulm-lib-gm2/sys/SysPause.def:
+	* gm2/ulm-lib-gm2/sys/SysPause.mod:
+	* gm2/ulm-lib-gm2/sys/SysPipe.def:
+	* gm2/ulm-lib-gm2/sys/SysPipe.mod:
+	* gm2/ulm-lib-gm2/sys/SysRead.def:
+	* gm2/ulm-lib-gm2/sys/SysRead.mod:
+	* gm2/ulm-lib-gm2/sys/SysSetuid.def:
+	* gm2/ulm-lib-gm2/sys/SysSetuid.mod:
+	* gm2/ulm-lib-gm2/sys/SysSignal.def:
+	* gm2/ulm-lib-gm2/sys/SysSignal.mod:
+	* gm2/ulm-lib-gm2/sys/SysStat.def:
+	* gm2/ulm-lib-gm2/sys/SysStat.mod:
+	* gm2/ulm-lib-gm2/sys/SysTermIO.def:
+	* gm2/ulm-lib-gm2/sys/SysTermIO.mod:
+	* gm2/ulm-lib-gm2/sys/SysTime.def:
+	* gm2/ulm-lib-gm2/sys/SysTime.mod:
+	* gm2/ulm-lib-gm2/sys/SysUnlink.def:
+	* gm2/ulm-lib-gm2/sys/SysUnlink.mod:
+	* gm2/ulm-lib-gm2/sys/SysWait.def:
+	* gm2/ulm-lib-gm2/sys/SysWait.mod:
+	* gm2/ulm-lib-gm2/sys/SysWrite.def:
+	* gm2/ulm-lib-gm2/sys/SysWrite.mod:
+	* gm2/ulm-lib-gm2/sys/SystemTypes.def:
+	* gm2/ulm-lib-gm2/sys/SystemTypes.mod:
+	* gm2/ulm-lib-gm2/sys/UnixString.def:
+	* gm2/ulm-lib-gm2/sys/UnixString.mod:
+	* gm2/ulm-lib-gm2/sys/test.mod:
+	* gm2/www/Makefile.in:
+	* gm2/www/index.ms:
+
+2010-09-21       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/www/index.ms:  updated information for the 0.98 release.
+	* gm2/gm2-compiler/M2Quads.mod:  fixed bug reported by
+          DragiÅ¡a DuriÄ (dragisa-duric/testcase16/pass/TermIO.mod)
+	  and also DragiÅ¡a DuriÄ
+	  (dragisa-duric/testcase15/pass/testcase15.mod).
+	* gm2/gm2-compiler/P2SymBuild.def:  (New procedure) SkipConst.
+	* gm2/gm2-compiler/P2SymBuild.mod:  (New procedure) SkipConst
+	  implemented.
+	* gm2/gm2-compiler/PCSymBuild.mod:  call FixupConstExpr if a
+	  constant is assigned to a procedure.
+	* gm2/Make-lang.in:  fixed dates for the following files.
+	* gm2/Makefile.in:
+	* gm2/configure.in:
+	* gm2/gm2-common.c:
+	* gm2/gm2-common.h:
+	* gm2/gm2-lang.c:
+	* gm2/gm2-lang.h:
+	* gm2/gm2-tree.def:
+	* gm2/gm2-tree.h:
+	* gm2/gm2builtins.c:
+	* gm2/gm2config.h.in:
+	* gm2/gm2except.c:
+	* gm2/gm2spec.c:
+	* gm2/gm2version.h:
+	* gm2/lang-options.h:
+	* gm2/m2pp.c:
+	* gm2/m2pp.h:
+	* gm2/bnf/gm2l.bnf:
+	* gm2/bnf/gm2m.bnf:
+	* gm2/bnf/h2def.bnf:
+	* gm2/bnf/m2-2.bnf:
+	* gm2/bnf/m2-3.bnf:
+	* gm2/bnf/m2-h.bnf:
+	* gm2/bnf/m2.bnf:
+	* gm2/examples/callingC/Makefile.in:
+	* gm2/examples/callingC/hello.mod:
+	* gm2/examples/callingC/libprintf.def:
+	* gm2/examples/cplusplus/cppcatchm2/cpp.def:
+	* gm2/examples/cplusplus/cppcatchm2/m2.def:
+	* gm2/examples/cplusplus/cppcatchm2/m2.mod:
+	* gm2/examples/cplusplus/m2catchcpp/cpp.def:
+	* gm2/examples/cplusplus/m2catchcpp/m2.mod:
+	* gm2/examples/cpp/hello.mod:
+	* gm2/examples/cppDef/a.def:
+	* gm2/examples/cppDef/a.mod:
+	* gm2/examples/cppDef/b.mod:
+	* gm2/examples/executive/testexecutive.mod:
+	* gm2/examples/executive/testtime.mod:
+	* gm2/examples/executive/winexec.mod:
+	* gm2/examples/gravity/deviceGnuPic.def:
+	* gm2/examples/gravity/deviceGnuPic.mod:
+	* gm2/examples/gravity/gsl.def:
+	* gm2/examples/gravity/test.mod:
+	* gm2/examples/gravity/twoDsim.def:
+	* gm2/examples/hello/Makefile.in:
+	* gm2/examples/hello/hello.mod:
+	* gm2/examples/iso/files/rot13.mod:
+	* gm2/examples/iso/hello/hello.mod:
+	* gm2/examples/iso/socket/client.mod:
+	* gm2/examples/map/AdvMap.def:
+	* gm2/examples/map/AdvMap.mod:
+	* gm2/examples/map/BoxMap.def:
+	* gm2/examples/map/BoxMap.mod:
+	* gm2/examples/map/Chance.def:
+	* gm2/examples/map/Chance.mod:
+	* gm2/examples/map/Find.def:
+	* gm2/examples/map/Find.mod:
+	* gm2/examples/map/Geometry.def:
+	* gm2/examples/map/Geometry.mod:
+	* gm2/examples/map/MakeBoxes.def:
+	* gm2/examples/map/MakeBoxes.mod:
+	* gm2/examples/map/Makefile.in:
+	* gm2/examples/map/Map.mod:
+	* gm2/examples/map/RoomMap.def:
+	* gm2/examples/map/RoomMap.mod:
+	* gm2/examples/map/Semantic.mod:
+	* gm2/examples/map/StoreCoord.def:
+	* gm2/examples/map/StoreCoord.mod:
+	* gm2/examples/map/StoreCoords.def:
+	* gm2/examples/map/StoreCoords.mod:
+	* gm2/examples/map/WriteMap.def:
+	* gm2/examples/map/WriteMap.mod:
+	* gm2/examples/map/testch2.mod:
+	* gm2/examples/map/testchan.mod:
+	* gm2/examples/map/testcoor.mod:
+	* gm2/examples/map/old-src/GenMap.mod:
+	* gm2/examples/map/old-src/MakeMap.mod:
+	* gm2/examples/map/old-src/MonMap.def:
+	* gm2/examples/map/old-src/MonMap.mod:
+	* gm2/examples/map/old-src/testboxes.mod:
+	* gm2/examples/min/minhello.mod:
+	* gm2/examples/ncurses/ColorText.def:
+	* gm2/examples/ncurses/ColorText.mod:
+	* gm2/examples/ncurses/Makefile.in:
+	* gm2/examples/ncurses/WindowDevice.def:
+	* gm2/examples/ncurses/WindowDevice.mod:
+	* gm2/examples/ncurses/ncurses.def:
+	* gm2/examples/ncurses/shortc.c:
+	* gm2/examples/ncurses/shortc.def:
+	* gm2/examples/ncurses/test.c:
+	* gm2/examples/ncurses/test.mod:
+	* gm2/examples/ncurses/testcolor.mod:
+	* gm2/examples/ncurses/testmove.mod:
+	* gm2/examples/ncurses/testshort.mod:
+	* gm2/examples/ncurses/testwin.mod:
+	* gm2/examples/pthread/fullpth.def:
+	* gm2/examples/pthread/libcextra.def:
+	* gm2/examples/pthread/libcwrap.c:
+	* gm2/examples/pthread/libcwrap.def:
+	* gm2/examples/pthread/testselect.mod:
+	* gm2/examples/server/server.mod:
+	* gm2/examples/svga/DisplayBuffer.def:
+	* gm2/examples/svga/DisplayBuffer.mod:
+	* gm2/examples/svga/Matrix3D.def:
+	* gm2/examples/svga/Matrix3D.mod:
+	* gm2/examples/svga/Transform.def:
+	* gm2/examples/svga/Transform.mod:
+	* gm2/examples/svga/testbox.mod:
+	* gm2/examples/svga/vga.def:
+	* gm2/examples/swig/exceptions/tiny.def:
+	* gm2/examples/swig/exceptions/tiny.mod:
+	* gm2/examples/swig/strlen/MyStrLib.def:
+	* gm2/examples/swig/strlen/MyStrLib.mod:
+	* gm2/examples/swig/strlib/MyStrLib.def:
+	* gm2/examples/swig/strlib/MyStrLib.mod:
+	* gm2/examples/swig/tiny/tiny.def:
+	* gm2/examples/swig/tiny/tiny.mod:
+	* gm2/gm2-compiler/CLexBuf.def:
+	* gm2/gm2-compiler/CLexBuf.mod:
+	* gm2/gm2-compiler/FifoQueue.def:
+	* gm2/gm2-compiler/FifoQueue.mod:
+	* gm2/gm2-compiler/Lists.def:
+	* gm2/gm2-compiler/Lists.mod:
+	* gm2/gm2-compiler/M2ALU.def:
+	* gm2/gm2-compiler/M2ALU.mod:
+	* gm2/gm2-compiler/M2AsmUtil.def:
+	* gm2/gm2-compiler/M2AsmUtil.mod:
+	* gm2/gm2-compiler/M2Base.def:
+	* gm2/gm2-compiler/M2Base.mod:
+	* gm2/gm2-compiler/M2BasicBlock.def:
+	* gm2/gm2-compiler/M2BasicBlock.mod:
+	* gm2/gm2-compiler/M2Batch.def:
+	* gm2/gm2-compiler/M2Batch.mod:
+	* gm2/gm2-compiler/M2Bitset.def:
+	* gm2/gm2-compiler/M2Bitset.mod:
+	* gm2/gm2-compiler/M2CaseList.def:
+	* gm2/gm2-compiler/M2CaseList.mod:
+	* gm2/gm2-compiler/M2Code.def:
+	* gm2/gm2-compiler/M2Code.mod:
+	* gm2/gm2-compiler/M2Comp.def:
+	* gm2/gm2-compiler/M2Comp.mod:
+	* gm2/gm2-compiler/M2Configure.def:
+	* gm2/gm2-compiler/M2Configure.mod:
+	* gm2/gm2-compiler/M2Constants.def:
+	* gm2/gm2-compiler/M2Constants.mod:
+	* gm2/gm2-compiler/M2Debug.def:
+	* gm2/gm2-compiler/M2Debug.mod:
+	* gm2/gm2-compiler/M2Defaults.def:
+	* gm2/gm2-compiler/M2Defaults.mod:
+	* gm2/gm2-compiler/M2Depth.def:
+	* gm2/gm2-compiler/M2Depth.mod:
+	* gm2/gm2-compiler/M2Entity.def:
+	* gm2/gm2-compiler/M2Entity.mod:
+	* gm2/gm2-compiler/M2Error.def:
+	* gm2/gm2-compiler/M2Error.mod:
+	* gm2/gm2-compiler/M2EvalSym.def:
+	* gm2/gm2-compiler/M2FileName.def:
+	* gm2/gm2-compiler/M2FileName.mod:
+	* gm2/gm2-compiler/M2GCCDeclare.def:
+	* gm2/gm2-compiler/M2GCCDeclare.mod:
+	* gm2/gm2-compiler/M2GenGCC.def:
+	* gm2/gm2-compiler/M2Inline.def:
+	* gm2/gm2-compiler/M2Inline.mod:
+	* gm2/gm2-compiler/M2Lex.def:
+	* gm2/gm2-compiler/M2Lex.mod:
+	* gm2/gm2-compiler/M2LexBuf.def:
+	* gm2/gm2-compiler/M2LexBuf.mod:
+	* gm2/gm2-compiler/M2MetaError.def:
+	* gm2/gm2-compiler/M2MetaError.mod:
+	* gm2/gm2-compiler/M2Optimize.def:
+	* gm2/gm2-compiler/M2Optimize.mod:
+	* gm2/gm2-compiler/M2Options.def:
+	* gm2/gm2-compiler/M2Options.mod:
+	* gm2/gm2-compiler/M2Pass.mod:
+	* gm2/gm2-compiler/M2Preprocess.def:
+	* gm2/gm2-compiler/M2Preprocess.mod:
+	* gm2/gm2-compiler/M2Printf.def:
+	* gm2/gm2-compiler/M2Printf.mod:
+	* gm2/gm2-compiler/M2Quads.def:
+	* gm2/gm2-compiler/M2Quads.mod:
+	* gm2/gm2-compiler/M2Quiet.def:
+	* gm2/gm2-compiler/M2Quiet.mod:
+	* gm2/gm2-compiler/M2Range.def:
+	* gm2/gm2-compiler/M2Range.mod:
+	* gm2/gm2-compiler/M2Reserved.def:
+	* gm2/gm2-compiler/M2Reserved.mod:
+	* gm2/gm2-compiler/M2Scope.def:
+	* gm2/gm2-compiler/M2Scope.mod:
+	* gm2/gm2-compiler/M2Search.def:
+	* gm2/gm2-compiler/M2Search.mod:
+	* gm2/gm2-compiler/M2Size.def:
+	* gm2/gm2-compiler/M2Size.mod:
+	* gm2/gm2-compiler/M2StackAddress.def:
+	* gm2/gm2-compiler/M2StackAddress.mod:
+	* gm2/gm2-compiler/M2StackWord.def:
+	* gm2/gm2-compiler/M2StackWord.mod:
+	* gm2/gm2-compiler/M2Students.def:
+	* gm2/gm2-compiler/M2Students.mod:
+	* gm2/gm2-compiler/M2SubExp.def:
+	* gm2/gm2-compiler/M2SubExp.mod:
+	* gm2/gm2-compiler/M2Swig.def:
+	* gm2/gm2-compiler/M2Swig.mod:
+	* gm2/gm2-compiler/M2System.def:
+	* gm2/gm2-compiler/M2Version.def:
+	* gm2/gm2-compiler/NameKey.def:
+	* gm2/gm2-compiler/NameKey.mod:
+	* gm2/gm2-compiler/P1SymBuild.def:
+	* gm2/gm2-compiler/P1SymBuild.mod:
+	* gm2/gm2-compiler/P1SyntaxCheck.def:
+	* gm2/gm2-compiler/P2Build.def:
+	* gm2/gm2-compiler/P2SymBuild.def:
+	* gm2/gm2-compiler/P2SymBuild.mod:
+	* gm2/gm2-compiler/P3Build.def:
+	* gm2/gm2-compiler/P3SymBuild.def:
+	* gm2/gm2-compiler/P3SymBuild.mod:
+	* gm2/gm2-compiler/PCBuild.def:
+	* gm2/gm2-compiler/PCSymBuild.def:
+	* gm2/gm2-compiler/PCSymBuild.mod:
+	* gm2/gm2-compiler/PHBuild.def:
+	* gm2/gm2-compiler/Sets.def:
+	* gm2/gm2-compiler/Sets.mod:
+	* gm2/gm2-compiler/SymbolConversion.def:
+	* gm2/gm2-compiler/SymbolConversion.mod:
+	* gm2/gm2-compiler/SymbolKey.def:
+	* gm2/gm2-compiler/SymbolKey.mod:
+	* gm2/gm2-compiler/SymbolTable.def:
+	* gm2/gm2-compiler/SymbolTable.mod:
+	* gm2/gm2-compiler/bnflex.def:
+	* gm2/gm2-compiler/bnflex.mod:
+	* gm2/gm2-compiler/cflex.def:
+	* gm2/gm2-compiler/gccgm2.def:
+	* gm2/gm2-compiler/gm2.mod:
+	* gm2/gm2-compiler/gm2builtins.def:
+	* gm2/gm2-compiler/gm2except.def:
+	* gm2/gm2-compiler/gm2lcc.mod:
+	* gm2/gm2-compiler/gm2lgen.mod:
+	* gm2/gm2-compiler/gm2lorder.mod:
+	* gm2/gm2-compiler/m2flex.def:
+	* gm2/gm2-compiler/ppg.mod:
+	* gm2/gm2-libiberty/choosetemp.def:
+	* gm2/gm2-libiberty/pexecute.def:
+	* gm2/gm2-libs/ASCII.def:
+	* gm2/gm2-libs/ASCII.mod:
+	* gm2/gm2-libs/Args.def:
+	* gm2/gm2-libs/Args.mod:
+	* gm2/gm2-libs/Assertion.def:
+	* gm2/gm2-libs/Assertion.mod:
+	* gm2/gm2-libs/Break.def:
+	* gm2/gm2-libs/Break.mod:
+	* gm2/gm2-libs/Builtins.def:
+	* gm2/gm2-libs/COROUTINES.def:
+	* gm2/gm2-libs/COROUTINES.mod:
+	* gm2/gm2-libs/CmdArgs.def:
+	* gm2/gm2-libs/CmdArgs.mod:
+	* gm2/gm2-libs/Debug.def:
+	* gm2/gm2-libs/Debug.mod:
+	* gm2/gm2-libs/DynamicStrings.def:
+	* gm2/gm2-libs/DynamicStrings.mod:
+	* gm2/gm2-libs/Environment.def:
+	* gm2/gm2-libs/Environment.mod:
+	* gm2/gm2-libs/FIO.def:
+	* gm2/gm2-libs/FIO.mod:
+	* gm2/gm2-libs/FormatStrings.def:
+	* gm2/gm2-libs/FormatStrings.mod:
+	* gm2/gm2-libs/FpuIO.def:
+	* gm2/gm2-libs/FpuIO.mod:
+	* gm2/gm2-libs/Indexing.def:
+	* gm2/gm2-libs/Indexing.mod:
+	* gm2/gm2-libs/LMathLib0.def:
+	* gm2/gm2-libs/LMathLib0.mod:
+	* gm2/gm2-libs/LegacyReal.def:
+	* gm2/gm2-libs/LegacyReal.mod:
+	* gm2/gm2-libs/M2EXCEPTION.mod:
+	* gm2/gm2-libs/M2RTS.def:
+	* gm2/gm2-libs/M2RTS.mod:
+	* gm2/gm2-libs/MathLib0.def:
+	* gm2/gm2-libs/MathLib0.mod:
+	* gm2/gm2-libs/MemUtils.def:
+	* gm2/gm2-libs/MemUtils.mod:
+	* gm2/gm2-libs/NumberIO.def:
+	* gm2/gm2-libs/NumberIO.mod:
+	* gm2/gm2-libs/PushBackInput.def:
+	* gm2/gm2-libs/PushBackInput.mod:
+	* gm2/gm2-libs/RTExceptions.def:
+	* gm2/gm2-libs/RTExceptions.mod:
+	* gm2/gm2-libs/RTint.def:
+	* gm2/gm2-libs/RTint.mod:
+	* gm2/gm2-libs/SArgs.def:
+	* gm2/gm2-libs/SArgs.mod:
+	* gm2/gm2-libs/SEnvironment.def:
+	* gm2/gm2-libs/SEnvironment.mod:
+	* gm2/gm2-libs/SFIO.def:
+	* gm2/gm2-libs/SFIO.mod:
+	* gm2/gm2-libs/SMathLib0.def:
+	* gm2/gm2-libs/SMathLib0.mod:
+	* gm2/gm2-libs/SYSTEM.def:
+	* gm2/gm2-libs/SYSTEM.mod:
+	* gm2/gm2-libs/Scan.def:
+	* gm2/gm2-libs/Scan.mod:
+	* gm2/gm2-libs/Selective.def:
+	* gm2/gm2-libs/StdIO.def:
+	* gm2/gm2-libs/StdIO.mod:
+	* gm2/gm2-libs/Storage.def:
+	* gm2/gm2-libs/Storage.mod:
+	* gm2/gm2-libs/StrCase.def:
+	* gm2/gm2-libs/StrCase.mod:
+	* gm2/gm2-libs/StrIO.def:
+	* gm2/gm2-libs/StrIO.mod:
+	* gm2/gm2-libs/StrLib.def:
+	* gm2/gm2-libs/StrLib.mod:
+	* gm2/gm2-libs/SysExceptions.def:
+	* gm2/gm2-libs/SysStorage.def:
+	* gm2/gm2-libs/SysStorage.mod:
+	* gm2/gm2-libs/TimeString.def:
+	* gm2/gm2-libs/TimeString.mod:
+	* gm2/gm2-libs/UnixArgs.def:
+	* gm2/gm2-libs/cxxabi.def:
+	* gm2/gm2-libs/dtoa.def:
+	* gm2/gm2-libs/errno.def:
+	* gm2/gm2-libs/gm2-libs-host.h.in:
+	* gm2/gm2-libs/ldtoa.def:
+	* gm2/gm2-libs/libc.def:
+	* gm2/gm2-libs/libm.def:
+	* gm2/gm2-libs/sckt.def:
+	* gm2/gm2-libs/termios.def:
+	* gm2/gm2-libs/wrapc.def:
+	* gm2/gm2-libs-boot/SYSTEM.def:
+	* gm2/gm2-libs-ch/Selective.c:
+	* gm2/gm2-libs-ch/StdIO.c:
+	* gm2/gm2-libs-ch/Storage.c:
+	* gm2/gm2-libs-ch/SysExceptions.c:
+	* gm2/gm2-libs-ch/UnixArgs.c:
+	* gm2/gm2-libs-ch/choosetemp.c:
+	* gm2/gm2-libs-ch/dtoa.c:
+	* gm2/gm2-libs-ch/errno.c:
+	* gm2/gm2-libs-ch/ldtoa.c:
+	* gm2/gm2-libs-ch/libc.c:
+	* gm2/gm2-libs-ch/sckt.c:
+	* gm2/gm2-libs-ch/wrapc.c:
+	* gm2/gm2-libs-ch/xlibc.c:
+	* gm2/gm2-libs-coroutines/Debug.def:
+	* gm2/gm2-libs-coroutines/Debug.mod:
+	* gm2/gm2-libs-coroutines/Executive.def:
+	* gm2/gm2-libs-coroutines/Executive.mod:
+	* gm2/gm2-libs-coroutines/KeyBoardLEDs.c:
+	* gm2/gm2-libs-coroutines/KeyBoardLEDs.def:
+	* gm2/gm2-libs-coroutines/SYSTEM.def:
+	* gm2/gm2-libs-coroutines/SYSTEM.mod:
+	* gm2/gm2-libs-coroutines/TimerHandler.def:
+	* gm2/gm2-libs-coroutines/TimerHandler.mod:
+	* gm2/gm2-libs-iso/ChanConsts.h:
+	* gm2/gm2-libs-iso/ChanConsts.mod:
+	* gm2/gm2-libs-iso/CharClass.mod:
+	* gm2/gm2-libs-iso/ClientSocket.def:
+	* gm2/gm2-libs-iso/ClientSocket.mod:
+	* gm2/gm2-libs-iso/ComplexMath.mod:
+	* gm2/gm2-libs-iso/ConvStringLong.def:
+	* gm2/gm2-libs-iso/ConvStringLong.mod:
+	* gm2/gm2-libs-iso/ConvStringReal.def:
+	* gm2/gm2-libs-iso/ConvStringReal.mod:
+	* gm2/gm2-libs-iso/ConvTypes.mod:
+	* gm2/gm2-libs-iso/EXCEPTIONS.mod:
+	* gm2/gm2-libs-iso/ErrnoCategory.c:
+	* gm2/gm2-libs-iso/ErrnoCategory.def:
+	* gm2/gm2-libs-iso/IOChan.mod:
+	* gm2/gm2-libs-iso/IOConsts.mod:
+	* gm2/gm2-libs-iso/IOLink.mod:
+	* gm2/gm2-libs-iso/IOResult.mod:
+	* gm2/gm2-libs-iso/LongComplexMath.mod:
+	* gm2/gm2-libs-iso/LongConv.mod:
+	* gm2/gm2-libs-iso/LongMath.mod:
+	* gm2/gm2-libs-iso/LongStr.mod:
+	* gm2/gm2-libs-iso/M2RTS.def:
+	* gm2/gm2-libs-iso/M2RTS.mod:
+	* gm2/gm2-libs-iso/ProgramArgs.mod:
+	* gm2/gm2-libs-iso/RTdata.def:
+	* gm2/gm2-libs-iso/RTdata.mod:
+	* gm2/gm2-libs-iso/RTentity.def:
+	* gm2/gm2-libs-iso/RTentity.mod:
+	* gm2/gm2-libs-iso/RTfio.def:
+	* gm2/gm2-libs-iso/RTfio.mod:
+	* gm2/gm2-libs-iso/RTgen.def:
+	* gm2/gm2-libs-iso/RTgen.mod:
+	* gm2/gm2-libs-iso/RTgenif.def:
+	* gm2/gm2-libs-iso/RTgenif.mod:
+	* gm2/gm2-libs-iso/RTio.def:
+	* gm2/gm2-libs-iso/RTio.mod:
+	* gm2/gm2-libs-iso/RawIO.mod:
+	* gm2/gm2-libs-iso/RealConv.mod:
+	* gm2/gm2-libs-iso/RealMath.mod:
+	* gm2/gm2-libs-iso/RealStr.mod:
+	* gm2/gm2-libs-iso/RndFile.mod:
+	* gm2/gm2-libs-iso/SIOResult.mod:
+	* gm2/gm2-libs-iso/SLongIO.mod:
+	* gm2/gm2-libs-iso/SRawIO.mod:
+	* gm2/gm2-libs-iso/SRealIO.mod:
+	* gm2/gm2-libs-iso/STextIO.mod:
+	* gm2/gm2-libs-iso/SWholeIO.mod:
+	* gm2/gm2-libs-iso/SYSTEM.mod:
+	* gm2/gm2-libs-iso/SeqFile.mod:
+	* gm2/gm2-libs-iso/ServerSocket.def:
+	* gm2/gm2-libs-iso/ServerSocket.mod:
+	* gm2/gm2-libs-iso/ShortComplexMath.mod:
+	* gm2/gm2-libs-iso/SimpleCipher.def:
+	* gm2/gm2-libs-iso/SimpleCipher.mod:
+	* gm2/gm2-libs-iso/StdChans.mod:
+	* gm2/gm2-libs-iso/Storage.mod:
+	* gm2/gm2-libs-iso/StreamFile.mod:
+	* gm2/gm2-libs-iso/StringChan.def:
+	* gm2/gm2-libs-iso/StringChan.mod:
+	* gm2/gm2-libs-iso/Strings.mod:
+	* gm2/gm2-libs-iso/SysClock.mod:
+	* gm2/gm2-libs-iso/TERMINATION.mod:
+	* gm2/gm2-libs-iso/TermFile.mod:
+	* gm2/gm2-libs-iso/TextIO.mod:
+	* gm2/gm2-libs-iso/WholeConv.mod:
+	* gm2/gm2-libs-iso/WholeIO.mod:
+	* gm2/gm2-libs-iso/WholeStr.mod:
+	* gm2/gm2-libs-iso/wrapsock.c:
+	* gm2/gm2-libs-iso/wrapsock.def:
+	* gm2/gm2-libs-iso/wraptime.c:
+	* gm2/gm2-libs-iso/wraptime.def:
+	* gm2/gm2-libs-min/M2RTS.def:
+	* gm2/gm2-libs-min/M2RTS.mod:
+	* gm2/gm2-libs-min/SYSTEM.def:
+	* gm2/gm2-libs-min/SYSTEM.mod:
+	* gm2/gm2-libs-min/libc.def:
+	* gm2/gm2-libs-pim/BitBlockOps.def:
+	* gm2/gm2-libs-pim/BitBlockOps.mod:
+	* gm2/gm2-libs-pim/BitByteOps.def:
+	* gm2/gm2-libs-pim/BitByteOps.mod:
+	* gm2/gm2-libs-pim/BitWordOps.def:
+	* gm2/gm2-libs-pim/BitWordOps.mod:
+	* gm2/gm2-libs-pim/BlockOps.def:
+	* gm2/gm2-libs-pim/BlockOps.mod:
+	* gm2/gm2-libs-pim/Break.c:
+	* gm2/gm2-libs-pim/Break.def:
+	* gm2/gm2-libs-pim/CardinalIO.def:
+	* gm2/gm2-libs-pim/CardinalIO.mod:
+	* gm2/gm2-libs-pim/Conversions.def:
+	* gm2/gm2-libs-pim/Conversions.mod:
+	* gm2/gm2-libs-pim/DebugPMD.def:
+	* gm2/gm2-libs-pim/DebugPMD.mod:
+	* gm2/gm2-libs-pim/DebugTrace.def:
+	* gm2/gm2-libs-pim/DebugTrace.mod:
+	* gm2/gm2-libs-pim/Delay.def:
+	* gm2/gm2-libs-pim/Delay.mod:
+	* gm2/gm2-libs-pim/Display.def:
+	* gm2/gm2-libs-pim/Display.mod:
+	* gm2/gm2-libs-pim/ErrorCode.def:
+	* gm2/gm2-libs-pim/ErrorCode.mod:
+	* gm2/gm2-libs-pim/FileSystem.def:
+	* gm2/gm2-libs-pim/FileSystem.mod:
+	* gm2/gm2-libs-pim/FloatingUtilities.def:
+	* gm2/gm2-libs-pim/FloatingUtilities.mod:
+	* gm2/gm2-libs-pim/InOut.def:
+	* gm2/gm2-libs-pim/InOut.mod:
+	* gm2/gm2-libs-pim/Keyboard.def:
+	* gm2/gm2-libs-pim/Keyboard.mod:
+	* gm2/gm2-libs-pim/LongIO.def:
+	* gm2/gm2-libs-pim/LongIO.mod:
+	* gm2/gm2-libs-pim/Random.def:
+	* gm2/gm2-libs-pim/Random.mod:
+	* gm2/gm2-libs-pim/RealConversions.mod:
+	* gm2/gm2-libs-pim/RealInOut.def:
+	* gm2/gm2-libs-pim/RealInOut.mod:
+	* gm2/gm2-libs-pim/Strings.def:
+	* gm2/gm2-libs-pim/Strings.mod:
+	* gm2/gm2-libs-pim/Termbase.def:
+	* gm2/gm2-libs-pim/Termbase.mod:
+	* gm2/gm2-libs-pim/Terminal.def:
+	* gm2/gm2-libs-pim/Terminal.mod:
+	* gm2/gm2-libs-pim/TimeDate.def:
+	* gm2/gm2-libs-pim/TimeDate.mod:
+	* gm2/man/Makefile.in:
+	* gm2/p2c/Makefile.in:
+	* gm2/p2c/p2c.h:
+	* gm2/p2c/p2c-src/Makefile.in:
+	* gm2/p2c/p2c-src/auto-host.h.in:
+	* gm2/p2c/p2c-src/include/config.h:
+	* gm2/p2c/p2c-src/include/system.h:
+	* gm2/p2c/p2c-src/src/Makefile.in:
+	* gm2/p2c/p2c-src/src/citmods.c:
+	* gm2/p2c/p2c-src/src/comment.c:
+	* gm2/p2c/p2c-src/src/decl.c:
+	* gm2/p2c/p2c-src/src/dir.c:
+	* gm2/p2c/p2c-src/src/expr.c:
+	* gm2/p2c/p2c-src/src/funcs.c:
+	* gm2/p2c/p2c-src/src/hpmods.c:
+	* gm2/p2c/p2c-src/src/lex.c:
+	* gm2/p2c/p2c-src/src/loc.p2clib.c:
+	* gm2/p2c/p2c-src/src/makeproto.c:
+	* gm2/p2c/p2c-src/src/out.c:
+	* gm2/p2c/p2c-src/src/p2c-config.h:
+	* gm2/p2c/p2c-src/src/p2c.h:
+	* gm2/p2c/p2c-src/src/p2clib.c:
+	* gm2/p2c/p2c-src/src/parse.c:
+	* gm2/p2c/p2c-src/src/pexpr.c:
+	* gm2/p2c/p2c-src/src/stuff.c:
+	* gm2/p2c/p2c-src/src/trans.c:
+	* gm2/p2c/p2c-src/src/trans.h:
+	* gm2/tools-src/def2texi.py:
+	* gm2/tools-src/mklink.c:
+	* gm2/ulm-lib-gm2/processes/CoExpressions.def:
+	* gm2/ulm-lib-gm2/processes/CoExpressions.mod:
+	* gm2/ulm-lib-gm2/processes/Processes.def:
+	* gm2/ulm-lib-gm2/processes/Processes.mod:
+	* gm2/ulm-lib-gm2/std/ASCII.def:
+	* gm2/ulm-lib-gm2/std/ASCII.mod:
+	* gm2/ulm-lib-gm2/std/Archive.def:
+	* gm2/ulm-lib-gm2/std/Archive.mod:
+	* gm2/ulm-lib-gm2/std/Arguments.def:
+	* gm2/ulm-lib-gm2/std/Arguments.mod:
+	* gm2/ulm-lib-gm2/std/Calendar.def:
+	* gm2/ulm-lib-gm2/std/Calendar.mod:
+	* gm2/ulm-lib-gm2/std/CallShell.def:
+	* gm2/ulm-lib-gm2/std/CallShell.mod:
+	* gm2/ulm-lib-gm2/std/Clock.def:
+	* gm2/ulm-lib-gm2/std/Clock.mod:
+	* gm2/ulm-lib-gm2/std/Conversions.def:
+	* gm2/ulm-lib-gm2/std/Conversions.mod:
+	* gm2/ulm-lib-gm2/std/Directories.def:
+	* gm2/ulm-lib-gm2/std/Directories.mod:
+	* gm2/ulm-lib-gm2/std/Environment.def:
+	* gm2/ulm-lib-gm2/std/Environment.mod:
+	* gm2/ulm-lib-gm2/std/EtcGroup.def:
+	* gm2/ulm-lib-gm2/std/EtcGroup.mod:
+	* gm2/ulm-lib-gm2/std/Files.def:
+	* gm2/ulm-lib-gm2/std/Files.mod:
+	* gm2/ulm-lib-gm2/std/FtdIO.def:
+	* gm2/ulm-lib-gm2/std/FtdIO.mod:
+	* gm2/ulm-lib-gm2/std/Functions.def:
+	* gm2/ulm-lib-gm2/std/Functions.mod:
+	* gm2/ulm-lib-gm2/std/GetPass.def:
+	* gm2/ulm-lib-gm2/std/GetPass.mod:
+	* gm2/ulm-lib-gm2/std/InOut.def:
+	* gm2/ulm-lib-gm2/std/InOut.mod:
+	* gm2/ulm-lib-gm2/std/M2EXCEPTION.mod:
+	* gm2/ulm-lib-gm2/std/M2RTS.mod:
+	* gm2/ulm-lib-gm2/std/MathLib.def:
+	* gm2/ulm-lib-gm2/std/MathLib.mod:
+	* gm2/ulm-lib-gm2/std/Passwd.def:
+	* gm2/ulm-lib-gm2/std/Passwd.mod:
+	* gm2/ulm-lib-gm2/std/PipeIO.def:
+	* gm2/ulm-lib-gm2/std/PipeIO.mod:
+	* gm2/ulm-lib-gm2/std/Plot.def:
+	* gm2/ulm-lib-gm2/std/Plot.mod:
+	* gm2/ulm-lib-gm2/std/RTErrors.def:
+	* gm2/ulm-lib-gm2/std/RTErrors.mod:
+	* gm2/ulm-lib-gm2/std/RTExceptions.mod:
+	* gm2/ulm-lib-gm2/std/RandomGenerator.def:
+	* gm2/ulm-lib-gm2/std/RandomGenerator.mod:
+	* gm2/ulm-lib-gm2/std/ReadIntCard.def:
+	* gm2/ulm-lib-gm2/std/ReadIntCard.mod:
+	* gm2/ulm-lib-gm2/std/RealConv.def:
+	* gm2/ulm-lib-gm2/std/RealConv.mod:
+	* gm2/ulm-lib-gm2/std/RealInOut.def:
+	* gm2/ulm-lib-gm2/std/RealInOut.mod:
+	* gm2/ulm-lib-gm2/std/ScanPwfile.def:
+	* gm2/ulm-lib-gm2/std/ScanPwfile.mod:
+	* gm2/ulm-lib-gm2/std/StdFuncs.def:
+	* gm2/ulm-lib-gm2/std/StdFuncs.mod:
+	* gm2/ulm-lib-gm2/std/StdIO.def:
+	* gm2/ulm-lib-gm2/std/StdIO.mod:
+	* gm2/ulm-lib-gm2/std/Storage.def:
+	* gm2/ulm-lib-gm2/std/Storage.mod:
+	* gm2/ulm-lib-gm2/std/StrSpec.def:
+	* gm2/ulm-lib-gm2/std/StrSpec.mod:
+	* gm2/ulm-lib-gm2/std/StrToNum.def:
+	* gm2/ulm-lib-gm2/std/StrToNum.mod:
+	* gm2/ulm-lib-gm2/std/StrToReal.def:
+	* gm2/ulm-lib-gm2/std/StrToReal.mod:
+	* gm2/ulm-lib-gm2/std/Strings.def:
+	* gm2/ulm-lib-gm2/std/Strings.mod:
+	* gm2/ulm-lib-gm2/std/SysConf.def:
+	* gm2/ulm-lib-gm2/std/SysConf.mod:
+	* gm2/ulm-lib-gm2/std/SysPerror.def:
+	* gm2/ulm-lib-gm2/std/SysPerror.mod:
+	* gm2/ulm-lib-gm2/std/Terminal.def:
+	* gm2/ulm-lib-gm2/std/Terminal.mod:
+	* gm2/ulm-lib-gm2/std/TimeIO.def:
+	* gm2/ulm-lib-gm2/std/TimeIO.mod:
+	* gm2/ulm-lib-gm2/sys/Errno.def:
+	* gm2/ulm-lib-gm2/sys/Errno.mod:
+	* gm2/ulm-lib-gm2/sys/SYSTEM.def:
+	* gm2/ulm-lib-gm2/sys/Sys.def:
+	* gm2/ulm-lib-gm2/sys/Sys.mod:
+	* gm2/ulm-lib-gm2/sys/SysAccess.def:
+	* gm2/ulm-lib-gm2/sys/SysAccess.mod:
+	* gm2/ulm-lib-gm2/sys/SysAlarm.def:
+	* gm2/ulm-lib-gm2/sys/SysAlarm.mod:
+	* gm2/ulm-lib-gm2/sys/SysBreak.def:
+	* gm2/ulm-lib-gm2/sys/SysBreak.mod:
+	* gm2/ulm-lib-gm2/sys/SysClose.def:
+	* gm2/ulm-lib-gm2/sys/SysClose.mod:
+	* gm2/ulm-lib-gm2/sys/SysCreat.def:
+	* gm2/ulm-lib-gm2/sys/SysCreat.mod:
+	* gm2/ulm-lib-gm2/sys/SysDup.def:
+	* gm2/ulm-lib-gm2/sys/SysDup.mod:
+	* gm2/ulm-lib-gm2/sys/SysExec.def:
+	* gm2/ulm-lib-gm2/sys/SysExec.mod:
+	* gm2/ulm-lib-gm2/sys/SysExit.def:
+	* gm2/ulm-lib-gm2/sys/SysExit.mod:
+	* gm2/ulm-lib-gm2/sys/SysFcntl.def:
+	* gm2/ulm-lib-gm2/sys/SysFcntl.mod:
+	* gm2/ulm-lib-gm2/sys/SysFork.def:
+	* gm2/ulm-lib-gm2/sys/SysFork.mod:
+	* gm2/ulm-lib-gm2/sys/SysGetpid.def:
+	* gm2/ulm-lib-gm2/sys/SysGetpid.mod:
+	* gm2/ulm-lib-gm2/sys/SysGetuid.def:
+	* gm2/ulm-lib-gm2/sys/SysGetuid.mod:
+	* gm2/ulm-lib-gm2/sys/SysIoctl.def:
+	* gm2/ulm-lib-gm2/sys/SysIoctl.mod:
+	* gm2/ulm-lib-gm2/sys/SysKill.def:
+	* gm2/ulm-lib-gm2/sys/SysKill.mod:
+	* gm2/ulm-lib-gm2/sys/SysLink.def:
+	* gm2/ulm-lib-gm2/sys/SysLink.mod:
+	* gm2/ulm-lib-gm2/sys/SysLocations.def:
+	* gm2/ulm-lib-gm2/sys/SysLocations.mod:
+	* gm2/ulm-lib-gm2/sys/SysLseek.def:
+	* gm2/ulm-lib-gm2/sys/SysLseek.mod:
+	* gm2/ulm-lib-gm2/sys/SysOpen.def:
+	* gm2/ulm-lib-gm2/sys/SysOpen.mod:
+	* gm2/ulm-lib-gm2/sys/SysPanic.def:
+	* gm2/ulm-lib-gm2/sys/SysPanic.mod:
+	* gm2/ulm-lib-gm2/sys/SysPause.def:
+	* gm2/ulm-lib-gm2/sys/SysPause.mod:
+	* gm2/ulm-lib-gm2/sys/SysPipe.def:
+	* gm2/ulm-lib-gm2/sys/SysPipe.mod:
+	* gm2/ulm-lib-gm2/sys/SysRead.def:
+	* gm2/ulm-lib-gm2/sys/SysRead.mod:
+	* gm2/ulm-lib-gm2/sys/SysSetuid.def:
+	* gm2/ulm-lib-gm2/sys/SysSetuid.mod:
+	* gm2/ulm-lib-gm2/sys/SysSignal.def:
+	* gm2/ulm-lib-gm2/sys/SysSignal.mod:
+	* gm2/ulm-lib-gm2/sys/SysStat.def:
+	* gm2/ulm-lib-gm2/sys/SysStat.mod:
+	* gm2/ulm-lib-gm2/sys/SysTermIO.def:
+	* gm2/ulm-lib-gm2/sys/SysTermIO.mod:
+	* gm2/ulm-lib-gm2/sys/SysTime.def:
+	* gm2/ulm-lib-gm2/sys/SysTime.mod:
+	* gm2/ulm-lib-gm2/sys/SysUnlink.def:
+	* gm2/ulm-lib-gm2/sys/SysUnlink.mod:
+	* gm2/ulm-lib-gm2/sys/SysWait.def:
+	* gm2/ulm-lib-gm2/sys/SysWait.mod:
+	* gm2/ulm-lib-gm2/sys/SysWrite.def:
+	* gm2/ulm-lib-gm2/sys/SysWrite.mod:
+	* gm2/ulm-lib-gm2/sys/SystemTypes.def:
+	* gm2/ulm-lib-gm2/sys/SystemTypes.mod:
+	* gm2/ulm-lib-gm2/sys/UnixString.def:
+	* gm2/ulm-lib-gm2/sys/UnixString.mod:
+	* gm2/ulm-lib-gm2/sys/test.mod:
+	* gm2/www/Makefile.in:
+	* gm2/www/index.ms:
+
+2010-09-16       Gaius Mulley <gaius@gnu.org>
+
+	* Built and released debian package 0.98.
+	* gm2/version.c:  updated to 0.99 now that the debian
+	  package 0.98 has been produced.
+	* gm2/www/index.ms:  updated news of 0.98 release and
+	  updated information around latest bug fixes.
+	* gm2/gm2-libs/configure.in:  updated to 0.99.
+	* gm2/gm2-libs/configure:  rebuilt.
+	* gm2/examples/ncurses/Makefile:  removed.
+	* gm2/examples/ncurses/Makefile.in:  added.
+	* gm2/gm2.texi:  fixed documentation on building hello
+	  world after building gm2 (bug reported by Christoph
+	  Schlegel <modula2@gmx.net>)
+	* gm2/examples/ncurses/ColorText.mod:  changed call to
+	  InstallTerminationProcedure given it is now a procedure
+	  function.  (Example build failure reported by Christoph
+	  Schlegel <modula2@gmx.net>)
+
+2010-09-14       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  turn off canonicalize_array in
+	  gm2_finish_build_array_type.  This fixes a bug reported by
+	  James Cox (exposed by Truss2.mod).
+	* gm2/gm2-compiler/M2Quads.mod:  test for LessGreaterTok
+	  which fixes a bug reported by
+          DragiÅ¡a DuriÄ (dragisa-duric/testcase08/pass/testcase8.mod).
+	  Inequality as expressed by <> was not handled.
+
+2010-09-09       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/m2-3.bnf:  improved Qualident to include much stricter
+	  checking of imported idents.
+	* gm2/bnf/m2.bnf:  place imported modules into a separate list
+	  in definition modules.
+	* gm2/gm2-compiler/P1SymBuild.def:  introduce parameter to
+	  BuildImportOuterModule to indicate whether a definition
+	  module is being compiled.
+	* gm2/gm2-compiler/P1SymBuild.mod:  implement above.
+	* gm2/gm2-compiler/P3SymBuild.mod:  modified
+	  CheckImportListOuterModule to include a check for
+	  ImplicitlyExported symbols.
+	* gm2/gm2-compiler/SymbolTable.def:  (New procedures)
+	  PutIncludedByDefinition and IsIncludedByDefinition.
+	* gm2/gm2-compiler/SymbolTable.mod:  (New procedures
+	  implemented) PutIncludedByDefinition and IsIncludedByDefinition.
+
+2010-09-08       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/m2-3.bnf:  strict checking has been inforced on
+	  imported symbols both on FROM x IMPORT y and also on
+	  Qualidents.  Separated Import into FromImport and
+	  WithoutFromImport and use appropriate productions.
+	* gm2/gm2-compiler/P3SymBuild.def:  (New procedures)
+          CheckCanBeImported, CheckImportListOuterModule.
+	* gm2/gm2-compiler/P3SymBuild.def:  (New procedures)
+	  implemented CheckCanBeImported, CheckImportListOuterModule.
+	* gm2/gm2-compiler/SymbolTable.def:  (New procedure)
+          IsImplicityExported.
+	* gm2/gm2-compiler/SymbolTable.mod:  (New procedure)
+          implemented IsImplicityExported.
+
+2010-09-06       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2ALU.mod:  (New procedure) IsSolvedGCC.
+	  Used instead of IsValueSolved.  This fixes a bug reported by
+	  DragiÅ¡a DuriÄ (dragisa-duric/testcase12/pass/testcase12b.mod).
+	* gm2/gm2-compiler/M2GenGCC.mod:  skip the type of a
+	  procedure variable.
+	* gm2/gm2-compiler/M2Quads.mod:  skip the type of a
+	  procedure variable held in OperandF.  Ensure that
+	  assignment compatibility is only checked for procedure
+	  variables in pass 3.  Leaving fuller assignment checking
+	  to be done during tree conversion.  This fixes a bug reported by
+	  DragiÅ¡a DuriÄ (dragisa-duric/testcase05/pass/testcase5.mod).
+
+2010-09-03       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/libc.def:  added definition for ttyname.
+	* gm2/gm2-libs-iso/TermFile.mod:  reimplement getname to use
+	  ttyname instead of assigning /dev/tty.
+
+2010-08-27       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/testsuite/gm2/pim/pass/subrange7.mod:  corrected testcase
+	  in light of new changes.
+	* gm2/testsuite/gm2/pim/pass/wordconst.mod:  corrected testcase
+	  in light of new changes which make gm2 stricter.
+	* gm2/testsuite/gm2/pim/run/pass/str6.mod:  use HALT rather than
+	  Terminate, exit.
+	* The following changes are bug fixes to a series of bugs reported
+	  by DragiÅ¡a DuriÄ, many of which relate to constants, their
+	  types, agregates and qualidents in constants.
+        * gm2/gm2/bnf/m2-3.bnf:  introduce a production for
+	  SilentConstructor which removes a constructor from the fifo queue.
+	* gm2/gm2/bnf/m2-c.bnf:  create constant symbols and fill in aggregates
+	  with their associated types before pass 3.
+	* gm2/gm2/bnf/m2-h.bnf:  introduce a production for
+	  SilentConstructor which removes a constructor from the fifo queue.
+	* gm2/gm2/gm2-compiler/M2ALU.mod:  initialise aggregates and test for
+	  the special case of string.
+	* gm2/gm2/gm2-compiler/M2Code.mod:  make a call to ResolveConstTypes
+	  and ResolveConstructorTypes at the end of DoPassC.
+	* gm2/gm2/gm2-compiler/M2GenGCC.mod:  improve debugging of PrintVerbose.
+	* gm2/gm2/gm2-compiler/M2Quads.def:  (New procedures) SilentBuildConstructor,
+          SilentBuildConstructorStart, BuildConstructor.
+	* gm2/gm2/gm2-compiler/M2Quads.mod:  (implement new procedures)
+	  SilentBuildConstructor, SilentBuildConstructorStart, BuildConstructor.
+	  Change to BuildDesignator array now that the aggregate type will be known.
+	* gm2/gm2/gm2-compiler/P2SymBuild.def:  (New procedures) FixupConstAsString,
+          FixupConstType, FixupConstExpr.
+	* gm2/gm2/gm2-compiler/P2SymBuild.mod:  (New procedures) findConstMeta,
+	  findConstType, fixupConstCast, fixupConstMeta, addToConstList.
+	* gm2/gm2/gm2-compiler/P3SymBuild.mod:  remove import of
+	  GetConstructorFromFifoQueue.
+	* gm2/gm2/gm2-compiler/PCSymBuild.mod:  many changes.  New procedures
+	  StartCurrentConst, EndCurrentConst, SetCurrentConstToString,
+	  SetCurrentConstType, SetConstTypeOrExpr.
+
+2010-08-16       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  modified to include PCBuild.mod, PCBuild.def
+	  PCSymBuild.def and PCSymBuild.mod.
+	* gm2/README:  corrected and simplified the build, install and
+	  test instructions.
+        * gm2/bnf/m2-3.bnf:  removed BuildImportOuterModule
+	  BuildImportInnerModule from grammar file.  Also changed
+	  Import to silently parse the tokens.
+	* gm2/gm2-compiler/M2Comp.mod:  (New procedure) DoPassC,
+	  invoke the constructor, import/export pass.
+	* gm2/gm2-compiler/M2Pass.def:  (New procedures) SetPassToPassC,
+	  IsPassC.
+	* gm2/gm2-compiler/P3SymBuild.def:  removed BuildImportOuterModule
+	  and BuildImportInnerModule.
+	* gm2/gm2-compiler/P3SymBuild.mod:  removed BuildImportOuterModule
+	  and BuildImportInnerModule.
+	* gm2/init/gm2-gccinit:  added PCSymBuild and PCBuild to the list
+	  of modules.
+
+2010-08-12       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Base.mod:  added INT procedure functions
+	  to the list of functions in IsISOPseudoBaseFunction.  This
+	  fixes a bug reported by DragiÅ¡a DuriÄ
+	  <http://lists.gnu.org/archive/html/gm2/2010-07/msg00047.html>
+
+2010-08-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/TODO:  included note to implement LENGTH inline post
+ 	  gm2 1.0.
+	* gm2/gm2-compiler/SymbolTable.mod:  GetScopeSym has a second
+	  parameter, throughProcedure.  (New procedure) CanLookThroughScope.
+          Added second actual parameter to calls of GetScopeSym.
+          This fixes a bug reported by DragiÅ¡a DuriÄ
+          <http://lists.gnu.org/archive/html/gm2/2010-07/msg00030.html>
+	* gm2/gm2-compiler/M2Range.mod:  check to see if expr is a
+	  procedure before obtaining the type.  This fixes a bug reported
+	  by DragiÅ¡a DuriÄ
+          <http://lists.gnu.org/archive/html/gm2/2010-07/msg00029.html>
+
+2010-08-04       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/M2RTS.def:  (New procedure) Terminate.
+	* gm2/gm2-libs/M2RTS.mod:  (New procedure) Terminate.
+	* gm2/gm2-libs/StrLib.mod:  new faster implementation of
+	  StrEqual.
+	* gm2/gm2/gm2-libs-iso/Strings.mod:  fixed bug in Delete
+	  as reported by Scott Iverson.
+	* gm2/gm2-libs-min/M2RTS.mod:  added comment.
+	* gm2/gm2-libs-min/SYSTEM.mod:  tidied up GPL comment.
+	* gm2/ulm-lib-gm2/std/M2RTS.mod:  (New procedure) Terminate.
+	* gm2/TODO:  included note to implement LENGTH inline post
+	  gm2 1.0.
+
+2010-08-03       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/gm2.mod:  removed unnecessary import of
+	  Terminate from M2RTS.
+	* gm2/p2c/p2c-src/src/parse.c:  replaced call to M2RTS_Terminate
+	  with M2RTS_ExecuteTerminationProcedures.
+	* gm2/gm2-compiler/M2Preprocess.mod:  removed import of Terminate.
+	  Check the return value of the new procedure function
+	  InstallTerminationProcedure.
+	* gm2/gm2-libs-pim/FileSystem.mod:  check the return value of
+	  the new procedure function InstallTerminationProcedure.
+
+2010-08-02       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/TODO:  included note to add variadics post gm2 1.0.
+	* gm2/lang-specs.h:  updated dates.
+	* gm2/gm2-compiler/gm2lgen.mod:  added -initial switch which
+	  generates code to invoke M2RTS_ExecuteInitialProcedures.
+	  Renamed Terminate to ExecuteTerminationProcedures.
+	* gm2/gm2-libs/FIO.mod:  call ExecuteTerminationProcedures
+	  instead of Termination.
+	* gm2/gm2-libs/M2RTS.def:  (New procedures)
+	  ExecuteTerminationProcedures, InstallTerminationProcedure,
+	  ExecuteInitialProcedures, InstallInitialProcedure.
+	  Removed Terminate.
+	* gm2/gm2-libs/M2RTS.mod:  implement above.
+	* gm2/gm2-libs-iso/M2RTS.def:  (New procedures)
+	  ExecuteTerminationProcedures, InstallTerminationProcedure,
+	  ExecuteInitialProcedures, InstallInitialProcedure.
+	  Removed Terminate.
+	* gm2/gm2-libs-iso/M2RTS.mod:  implement above.
+	* gm2/gm2-libs-min/M2RTS.def:  (New dummy procedures)
+	  ExecuteTerminationProcedures, ExecuteInitialProcedures.
+	  Removed Terminate.
+	* gm2/gm2-libs-min/M2RTS.mod:  implement above.
+	* gm2/ulm-lib-gm2/std/M2RTS.mod:  implemented
+	  ExecuteTerminationProcedures, InstallTerminationProcedure,
+	  ExecuteInitialProcedures, InstallInitialProcedure.
+	  Removed Terminate.
+
+2010-07-31       Gaius Mulley <gaius@gnu.org>
+
+ 	* gm2/gccgm2.c:  replaced OPT_fcheck_all with
+	  OPT_fsoft_check_all.
+
+2010-07-30       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/lang-options.h:  added -fclean as a legal option.
+	* gm2/lang-specs.h:  modified so that -fclean -fmakeall will first
+	  clean all objects and secondly build the application.
+	* gm2/lang.opt:  added -fclean as a legal option.
+	* gm2/bnf/gm2m.bnf:  added new target clean which removes all
+	  objects.
+	* gm2/gm2-compiler/M2Options.mod:  added -fclean as a legal option.
+	* gm2/gm2.texi:  added documentation describing -fclean.
+
+2010-07-29       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  tidied up newfile.
+	* gm2/gm2/gm2.texi:  (New section) Exception implementation.
+	* gm2/gm2-libs/Builtins.def:  added space.
+	* gm2/Make-lang.in:  replaced -fcheck-all with -fsoft-check-all.
+	* gm2/gm2.texi:  replaced -fcheck-all with -fsoft-check-all.
+	* gm2/lang-options.h:  replaced -fcheck-all with -fsoft-check-all.
+	* gm2/lang.opt:  replaced -fcheck-all with -fsoft-check-all.
+	* gm2/gm2-compiler/M2Options.mod:  replaced -fcheck-all with
+	  -fsoft-check-all.
+	* gm2/gm2-libs/Builtins.def:  replaced -fcheck-all with -fsoft-check-all.
+	* gm2/man/gm2.man:  replaced -fcheck-all with -fsoft-check-all.
+
+2010-07-12       Gaius Mulley <gaius@gnu.org>
+
+	* All major arrays are now dynamic within gm2.
+	* gm2/gm2-libs/FIO.mod:  corrected spelling mistake.
+	* gm2/gm2-compiler/SymbolTable.mod:  large number of changes
+	  replacing static arrays, Symbol, and ScopeCallFrame
+	  with Indexing.Index dynamic arrays.  Also fixed a number
+	  of uninitialized fields in the symbol table.
+	* gm2/tools-src/array2index.py:  tool used to replace the
+	  static arrays with their dynamic equivalent.
+	* gm2/gm2-compiler/SymbolTable.mod:  fixed another
+	  uninitialised Scope field in MakeHiddenType.
+
+2010-07-08       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/www/index.ms:  updated news of 0.92 release.
+	* gm2/version.c:  updated to 0.93 now that the debian
+	  0.92 has been produced.
+	* gm2/gm2-libs/configure.in:  updated to 0.93.
+	* gm2/gm2-libs/configure:  rebuilt.
+	* gm2/gm2-compiler/M2Quads.mod:  pass ArraySym rather than
+	  Sym to InitDynamicArraySubscriptRangeCheck.  Fixes a bug
+	  while checking multidimensional unbounded array bounds
+	  for all dimensions > 1.
+
+2010-07-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/ConvStringReal.mod:  initialise offset to 0.
+	* gm2/gm2-libs-iso/ConvStringLong.mod:  initialise offset to 0.
+        * fixes a bug exposed by i386 bit port (and others).
+
+2010-07-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  gccgm2_BuildBinarySetDo convert parameters
+	  into their respective types.  Fixes bugs in the i386 port
+	  when manipulating large sets.
+
+2010-07-02       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  fixes for MakeAddr and CodeAddr.
+	  Incorrect definition of GetSizeOfInBits and incorrect type of
+	  max, bits now fixed.
+	* gm2/gm2-compiler/gccgm2.def:  corrected return type of
+	  GetSizeOfInBits.
+
+2010-07-01       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  added test for procedure type
+	  parameter which is coerced if it is not a procedure.
+	* Fixed bug reported by Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2010-06/msg00047.html)
+	* gm2/gm2-compiler/M2GenGCC.mod:  (New procedure)
+	  IsCoerceableParameter is now used to decide whether the
+	  parameter type can be coersed.
+	* gm2/gm2-compiler/M2System.mod:  removed SetN(64) from the
+	  list of possible fixed sized data types.
+
+2010-06-30       Gaius Mulley <gaius@gnu.org>
+
+	* Fixed bug reported by Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2010-06/msg00045.html)
+	* gm2/gm2-libs/FIO.def:  added new parameter to OpenForRandom.
+	* gm2/gm2-libs/FIO.mod:  made corresponding changes to
+	  implementation.  Allows a file to be opened in write mode
+	  without destroying earlier contents.
+	* gm2/gm2-libs-iso/RndFile.mod:  seek to previous location
+	  using SetPos.  Use toWrite rather than toRead.  Modify
+	  newCid accordingly and all callees.
+	* gm2/gm2-libs/SFIO.def:  added newfile parameter to
+	  OpenForRandom.
+	* gm2/gm2-libs/SFIO.mod:  added newfile parameter to
+	  OpenForRandom.
+
+2010-06-29       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2BasicBlock.mod:  do not throw away
+	  quadruples which are initialising a constant.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  added debug symbol
+	  comment.
+	* gm2/gm2-compiler/M2Quads.def:  export and declare
+	  IsInitialisingConst.
+	* gm2/gm2-compiler/M2Quads.mod:  (New procedure)
+	  IsInitialisingConst.
+	* Fixed bug reported by Scott Iverson.  An early
+	  return statement could prevent constants from being
+	  initialised.
+
+2010-06-28       Gaius Mulley <gaius@gnu.org>
+
+        * gm2/gm2/gccgm2.c:  corrected dates.  is_string_type
+	  and is_of_string_type are now static.  (New procedures)
+	  convert_to_string, gccgm2_BuildNumberOfArrayElements.
+	* gm2/gm2-compiler/M2ALU.mod:  (New procedures)
+	  IsString, StringFitsArray.  ConstructArrayConstant
+	  checks to see whether a string can fit into an array of
+	  char.
+	* gm2/gm2-compiler/gccgm2.def:  BuildNumberOfArrayElements
+	  declare new procedure for export.
+	* gm2/www/index.ms:  updated news of 0.91 release.
+
+2010-06-23       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/version.c:  updated to 0.92 now that the debian
+	  0.91 has been produced.
+	* gm2/gm2-libs/configure.in:  updated to 0.92.
+	* gm2/gm2-libs/configure:  rebuilt.
+	* gm2/gm2-compiler/M2Quads.mod:  (New procedure)
+	  PopTFD.  BuildDesignatorArray corrected to handle
+	  accessing elements of a constant array constructor.
+	  Fixed bug reported by Scott Iverson.
+
+2010-06-21       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/patches/gcc/4.1.2/12.gaius_patch_tree_flow_inline_h:
+	  (New file).  Fixes an optimization bug reported by
+	  Scott Iverson.
+	* gm2/gccgm2.c:  commented out INDIRECT_REF
+	  gimplification code which is unnecessary given the
+	  correct patch above.  Also fixes another optimization
+	  bug reported by Scott Iverson.
+
+2010-06-15       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/bnf/m2.bnf:  removed the Alignment non-terminal from
+	  ArrayType and PointerType.
+	* gm2/bnf/m2-3.bnf:  removed the Alignment non-terminal from
+	  ArrayType and PointerType.
+	* gm2/bnf/m2-h.bnf:  removed the Alignment non-terminal from
+	  ArrayType and PointerType.
+	* gm2/gccgm2.c:  new implementation of gccgm2_SetAlignment.
+	* gm2/gm2/gm2.texi:  more alignment examples.
+	* gm2/bnf/m2-2.bnf:  removed redundant grammar sentances around
+	  Alignment and fix production rules.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  SetAlignment now returns
+	  a Tree.
+	* gm2/gm2-compiler/P2SymBuild.def:  (New procedure)
+	  BuildVarAlignment.  Fixed comments for BuildTypeAlignment.
+	* gm2/gm2-compiler/P2SymBuild.def:  (New procedure)
+	  BuildVarAlignment.  Fixed BuildTypeAlignment.
+	* gm2/gm2-compiler/gccgm2.def:  SetAlignment now returns
+	  a Tree.
+
+2010-06-14       Gaius Mulley <gaius@gnu.org>
+
+	* testsuite/gm2/extensions/run/pass/align6.mod:  fixes
+	  below allow this test to pass.
+	* gm2/bnf/m2-2.bnf:  fixed comments and dates.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  (New function)
+	  PrintAlignment.
+	* gm2/gm2-compiler/P2SymBuild.mod:  create pseudonym
+	  for a type so that other instances of the type are
+	  not also aligned.
+	* gm2/gccgm2.c:  enable type copying code.
+
+2010-06-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Quads.mod:  bug fix so that it builds
+	  under MacOS X.  Compiling Executive.mod would cause it to
+	  fail.
+	* gm2/bnf/m2-2.bnf:  test bug fix for field alignment.
+	* gm2/gm2-compiler/M2Quads.mod:  import IsLegal and
+	  create asserts when OperandMergeRW is used.  An attempt
+	  at laying a trap to catch the bug exposed on the MacOS X
+	  platform.
+	* gm2/gm2-compiler/P2SymBuild.def:  add alignment to the
+	  BuildFieldRecord.
+	* gm2/gm2-compiler/SymbolTable.def:  define and export IsLegal.
+	* gm2/gm2-compiler/SymbolTable.mod:  implement IsLegal.
+
+2010-06-09       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/gccgm2.def:  renamed BuildAlignment to
+	  SetAlignment.
+	* gm2/gccgm2.c:  renamed BuildAlignment to SetAlignment.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  renamed BuildAlignment
+	  to SetAlignment.
+	* gm2/gm2.texi:  corrected prev field.
+	* gm2/gm2.texi:  corrected next field.
+	* gm2/gm2.texi:  data alignment content now has its own section.
+	* gm2/bnf/m2-h.bnf:  Alignment rule is the same as pass 3.
+	* gm2/gm2.texi:  fix bad next field.
+	* gm2/gccgm2.c:  BuildAlignment (New procedure).
+	* gm2/gm2.texi:  new section describing the how to use the
+	  alignment extension.
+	* gm2/bnf/m2-2.bnf:  add rules to build the alignment
+	  values into the data structures.  This is done by
+	  creating a temporary constant and associating it with
+	  the required data structure.
+	* gm2/bnf/m2-3.bnf:  during pass 3 the same constant is
+	  initialised with the constant expression.
+	* gm2/bnf/m2.bnf:  ensure that the constant expression
+	  inside the alignment statement does not effect the
+	  compile time stack.
+	* gm2/gm2-compiler/FifoQueue.def:  define and export
+	  two new procedures PutConstIntoFifoQueue,
+	  GetConstFromFifoQueue.
+	* gm2/gm2-compiler/FifoQueue.mod:  (New procedures)
+	  PutConstIntoFifoQueue, GetConstFromFifoQueue.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  (New procedure)
+	  CheckAlignment which is called when creating a record,
+	  pointer, array, type or variable.
+	* gm2/gm2-compiler/M2Quads.def:  (New procedure)
+	  BuildAlignment.
+	* gm2/gm2-compiler/M2Quads.mod:  (New procedure)
+	  BuildAlignment implemented.
+	* gm2/gm2-compiler/P2SymBuild.def:  (New procedures)
+	  BuildAligned and BuildTypeAlignment.
+	* gm2/gm2-compiler/P2SymBuild.mod:  implemented the
+	  two procedures BuildAligned and BuildTypeAlignment.
+	* gm2/gm2-compiler/SymbolTable.def:  (New procedures)
+	  PutAlignment, GetAlignment.
+	* gm2/gm2-compiler/SymbolTable.mod:  (New procedures)
+	  PutAlignment, GetAlignment implemented.  These
+	  only work with type, record, array, recordfield
+	  and pointer data types.
+	* gm2/gm2-compiler/gccgm2.def:  (New procedure)
+	  BuildAlignment.
+
+2010-06-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/Makefile.in:  post-install fixed
+	  paths.
+	* gm2/version.c:  updated to 0.91 now that the debian
+	  0.90 has been produced.
+	* gm2/gm2-libs/configure.in:  updated to 0.91.
+	* gm2/gm2-libs/configure:  rebuilt.
+	* gm2/www/index.ms:  updated to reflect new release number
+	  and latest changes.
+	* gm2/gm2.texi:  fixed a few bugs (cross references and
+	  section links).
+	* gm2/texi:  commented out gm2-internals.texi and
+	  introduced a new section "Producing a Python module".
+	* gm2/gm2-internals.texi:  new file.
+	* gm2/TODO:  updated to do list.
+	* gm2/version.c:  updated version to 0.90
+	* gm2/gm2-libs/FIO.def:  getFileName, getFileNameLength
+	  (New Procedures).
+	* gm2/gm2-libs/FIO.mod:  getFileName, getFileNameLength
+	  (New Procedures).
+	* gm2/gm2-libs/configure:  rebuilt.
+	* gm2/gm2-libs/configure.in:  updated to 0.90
+	* gm2/gm2-libs-iso/RndFile.mod:  fixed bug to allow a
+	  file to be written and read.  Reported by Scott Iverson.
+
+2010-06-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/IOLink.def:  corrected comment for
+	  DeviceTablePtrValue.
+	* gm2/gm2-libs-iso/IOLink.mod:  corrected comment for
+	  DeviceTablePtrValue.
+	* gm2/Make-lang.in:  added gm2-libs-iso to the end of the
+	  search path for gm2-libs so that gm2/gm2-libs-iso/pth.def
+	  can be found.
+	* fixed definition of DeviceTablePtrValue to comply with
+	  the ISO standard, bug reported by Martin KalbfuÃ.
+	* gm2/gm2-libs-iso/ClientSocket.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/IOChan.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/IOLink.def:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/IOLink.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/ProgramArgs.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/RTgen.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/RndFile.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/SeqFile.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/SimpleCipher.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/StreamFile.mod:  changed to comply with
+	  the correct ISO definition.
+	* gm2/gm2-libs-iso/TermFile.mod:  changed to comply with
+	  the correct ISO definition.
+
+2010-06-04       Gaius Mulley <gaius@gnu.org>
+
+	* removed multiple copies of pth.def, bug reported by
+	  John O Goyo.
+	* gm2/gm2-libs-coroutines/testtransfer.mod:  moved
+	  file into testsuite/gm2/coroutines/pim/run/pass.
+	* gm2/gm2-libs-coroutines/testiotransfer.mod:  moved
+	  file into testsuite/gm2/coroutines/pim/run/pass.
+	* gm2/gm2-libs-coroutines/Makefile:  removed file.
+	* gm2/gm2-libs/pth.def:  removed file.
+	* gm2/gm2-libs-coroutines/pth.def:  removed file.
+	* gm2/examples/pthread/pth.def:  removed file.
+	* gm2/examples/pthread/fullpth.def:  renamed pth.def to
+	  fullpth.def so as to avoid confusion with
+	  gm2/gm2-libs-iso/pth.def.
+
+2010-06-03       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/README:  New file.
+	* These changes fix a critical shared library bug which was exposed
+	  if an indirect procedure call was ever made.  It also changes
+	  (fixes) the method whereby procedures are declared to gcc.
+	* gm2/gm2/gccgm2.c:  function gccgm2_BuildEndFunctionDeclaration
+	  has an additional parameter, ispublic.  Changes to
+          gccgm2_BuildEndFunctionDeclaration to check consistency of
+	  the three boolean parameters.  New procedure
+	  (function_to_pointer_conversion)
+	* gm2/gm2/gm2except.c:  changed to reflect new
+          gccgm2_BuildEndFunctionDeclaration prototype.
+	* gm2/gm2/m2.flex:  fixed bug found using valgrind
+	  (uninitialised field in structure).
+	* gm2/m2pp.c:  m2pp_comment_header prints out the a header
+	  comment which contains the public, static, external tree
+	  booleans.
+	* gm2/bnf/m2-3.bnf:  completed the Alignment ebnf changes.
+	* gm2/bnf/m2-h.bnf:  completed the Alignment ebnf changes.
+	* gm2/bnf/m2.bnf:  completed the Alignment ebnf changes.
+	* gm2/el/g-mode.el:  close parenthesis detected.
+	* gm2/examples/gravity/Makefile.in:  fixed rules and allow
+	  example to be built using post-install or pre-installed gm2.
+	* gm2/examples/gravity/testsim.py:  fixed circle position.
+	* gm2/examples/gravity/twoDsim.mod:  tidied up comments.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  changes to reflect new
+	  gccgm2_BuildEndFunctionDeclaration prototype.  Also fixed a
+	  bug in IsEffectivelyImported which would attempt to declare
+	  a procedure if it were declared in another imported module.
+	* gm2/gm2-compiler/SymbolTable.def:  tidied up declaration.
+	* gm2/gm2-compiler/gccgm2.def:  new BuildEndFunctionDeclaration
+	  declaration.
+
+2010-05-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity:  more changes and fixes to the demo.
+
+2010-05-25       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/m2.flex:  fixed bug picked up by valgrind, uninitialized
+	  field (column) in currentLine.
+
+2010-05-22       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/StdChans.mod:  flush stdout, stderr
+	  buffers rather than close them.
+	* gm2/gm2-libs/FIO.mod:  flush stdout, stderr rather than
+	  close them.  This fixes the problem of a shared library
+	  shutting down file descriptors, 1, 2.  This is now
+          left to the underlying operating system.  Fixes a bug
+	  reported by Scott Iverson.
+	* gm2/gm2-libs/FIO.mod:  reintroduced the
+	  InstallTerminationProcedure to flush the stdout, stderr.
+
+2010-05-20       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/Builtins.def:  atan2, atan2f, atan2l (New
+	  procedures).
+	* gm2/gm2-libs/Builtins.mod:  atan2, atan2f, atan2l
+	  implemented new procedure functions.
+	* gm2/gm2-libs/cbuiltin.def:  declare atan2f, atan2l,
+	  atan2 procedure functions.
+	* gm2/gm2-libs/libm.def:  declare atan2f, atan2l,
+	  atan2 procedure functions.
+	* gm2/gm2builtins.c:  exposed new builtins
+	  atan2, atan2f, atan2l.
+	* gm2/bnf/m2-2.bnf:  changed grammar to include
+	  alignment of data types.
+	* gm2/examples/gravity/Makefile.in:  added test rule and fixed
+	  final rule to allow testing of python code.
+	* gm2/examples/gravity/test.mod:  changed x value of circle.
+	* gm2/examples/gravity/testsim.py:  added another circle.
+	* gm2/examples/gravity/twoDsim.mod:  added debugging and fixed
+	  collision prediction equations.  Now using roots.def rather than
+	  libgsl as a stress test for GNU Modula-2 complex numbers.
+	  Also added a hack to ignore multiple collisions over a tiny time.
+	* gm2/examples/gravity/roots.def:  New file.
+	* gm2/examples/gravity/roots.mod:  New file.
+
+2010-05-13       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  fixed bad next node and
+	  added a menu entry for the new section,
+	  how to build a Modula-2 shared library.
+	* gm2/gm2-compiler/M2Range.mod:  (InitDecRangeCheck)
+	  fixed typo inc should have been dec.  Fixes a bug
+	  reported by James Cox.
+	* gm2/gm2-compiler/M2Quads.mod:  new value of BreakAtQuad
+	  used for internal debugging.
+
+2010-05-12       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2spec.c:  fixed a xrealloc size bug in
+	  gm2_link_args.
+	* gm2/gm2.texi:  introduced a new section on how
+	  to build a Modula-2 shared library.
+
+2010-05-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2/gm2-libs-pim/FIO.mod:  IsNoError returns
+	  TRUE if the file state is successful or endoffile.
+	  ReadString checks IsNoError.
+	* gm2/gm2/gm2-libs-pim/InOut.mod:  set done to
+	  True if IsNoError and not end of file.
+	* gm2/gm2-libs-iso/RTfio.mod:  dorbytes returns
+	  IsNoError.
+
+2010-05-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-ch/wrapc.c:  changed signbitl, signbitf
+	  to signbit as signbit is a macro which tests its
+	  parameter type and calls the correct underlying function.
+	* gm2/gm2-compiler/M2Options.mod:  added -fno-check-all
+	  -fno-case, -fexceptions options.
+	* gm2/lang-options.h:  added -fno-nil, -fno-return,
+	  -fno-case, -fno-check-all, -fexceptions.
+	* gm2/gm2-libs/FIO.mod:  allow a character to be pushed
+	  back even if eof has been seen.
+	* gm2/gm2-libs-iso/RTgen.mod:  check for eof in doLook
+	  and set result accordingly.
+
+2010-05-04       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/FIO.mod:  more bugs fixes.  Removed
+	  used MaxNoOfFiles.  Set endoffile if read returns 0.
+	  Replaced f<MaxNoOfFiles by f#Error and only UnReadChar
+	  in EOLN if the previous read is successful.
+
+2010-05-03       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/FIO.mod:  forgot to copy osfd into unixfd.
+	  Which meant that the default files: stdin, stdout, stderr
+	  were assigned to 1, 2, 3, rather than 0, 1, 2.
+	* gm2/gm2-libs/FIO.mod:  reimplemented EOF using a new state
+	  which is detected upon a failed read.
+
+2010-05-01       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/FIO.mod:  huge number of changes so that it
+	  uses a dynamic array to allow an operating system specific
+	  number of files to be opened simultaneously.  Fixes a
+	  limitation reported by Scott Iverson.
+
+2010-04-30       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  ensure that we do attempt
+	  to fold an indirect procedure function call.
+	* gm2/gm2-compiler/M2Quads.mod:  ensure that the symbol is
+	  a procedure sym before checking if it has a builtin
+	  alternative.
+	* gm2/gm2-compiler/M2GenGCC.mod:  doParam (New procedure).
+	  FoldBuiltin (New procedure).  Changes allow gcc builtins
+	  to be called from constant expressions.
+	* gm2/gm2-compiler/M2Quads.mod:  modified
+	  BuildConstFunctionCall to allow gcc builtins to be called.
+	* gm2/gm2-compiler/gccgm2.def:  export SetLastFunction.
+	* This fixes a bug reported by Steve Giess.
+
+2010-04-30       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/Indexing.def:  moved to
+	* gm2/gm2-libs/Indexing.def:  new file.
+	* gm2/gm2-compiler/Indexing.mod:  moved to
+	* gm2/gm2-libs/Indexing.mod:  new file.
+	* gm2/gm2-compiler/M2Quads.def:  PushInConstExpression,
+	  PopInConstExpression, IsInConstExpression (New procedures).
+	* gm2/gm2-compiler/M2Quads.mod:  PushInConstExpression,
+	  PopInConstExpression, IsInConstExpression (implemented new
+	  procedures).
+	* gm2/bnf/m2-3.bnf:  test for calling procedure functions
+	  during a constant declaration and check the procedure is
+	  allowed.
+
+2010-04-27       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2builtins.c:  added definitions for signbit, signbitf,
+	  signbitl, significand, significandf, significandl, mod, modff,
+	  modfl, nextafter, nextafterf, nextafterl, nexttoward, nexttowardf,
+	  nexttowardl, scalb, scalbf, scalbl, scalbln, scalblnf, scalblnl,
+	  scalbln, scalblnf, scalblnl.
+	* gm2/gm2-libs/cbuiltin.def:  removed signbit, signbitl, signbitf
+	  as in C these are implemented as macros.  We use builtins if they
+	  are available and if not then use our wrapped versions in:
+	* gm2/gm2-libs/wrapc.def:  added signbit, signbitl, signbitf.
+	* gm2/gm2-libs-ch/wrapc.c:  wrapped signbit, signbitl, signbitf.
+
+2010-04-26       Gaius Mulley <gaius@gnu.org>
+
+	* ISO libraries are now completely implemented.
+	* gm2/Make-lang.in:  new entries to build ISO modules
+	  LowLong, LowShort and LowReal.
+	* gm2/gm2builtins.c:  many changes to implement obtaining
+	  float point type attributes.  New exported procedures
+	  GetBuiltinTypeInfoType and GetBuiltinTypeInfo.
+	  New functions:  doradix, doplaces, doexponentmin, doexponentmax,
+	  computeLarge, dolarge, computeSmall, dosmall, doiec559, dolia1,
+	  doiso, doieee, dorounds, dogUnderflow, doexception, doextend,
+	  donModes.
+	* gm2/bnf/m2-2.bnf:  modified ConstAttribute to allow
+	  __ATTRIBUTE__ __BUILTIN__ ((<QUALIDENT, Ident>))
+	* gm2/bnf/m2.bnf:  modified ConstAttribute to allow
+	  __ATTRIBUTE__ __BUILTIN__ ((<QUALIDENT, Ident>))
+	* gm2/bnf/m2-3.bnf:  modified ConstAttribute to allow
+	  __ATTRIBUTE__ __BUILTIN__ ((<QUALIDENT, Ident>))
+	* gm2/bnf/m2-h.bnf:  modified ConstAttribute to allow
+	  __ATTRIBUTE__ __BUILTIN__ ((<QUALIDENT, Ident>))
+	* gm2/bnf/gm2l.bnf:  modified ConstAttribute to allow
+	  __ATTRIBUTE__ __BUILTIN__ ((<QUALIDENT, Ident>))
+	* gm2/gm2-compiler/M2GenGCC.mod:  FoldBuiltinTypeInfo
+	  (New Procedure).
+	* gm2/gm2-compiler/M2Quads.def:  export BuildBuiltinTypeInfo
+	  and add new quadruple operator BuiltinTypeInfoOp.
+	* gm2/gm2-compiler/M2Quads.def:  implement BuildBuiltinTypeInfo.
+	* gm2/gm2-compiler/gm2builtins.def:  export and declare
+	  GetBuiltinTypeInfoType and GetBuiltinTypeInfo.
+	* gm2/gm2-libs/Builtins.def:  added more intrinsic procedure
+	  functions (significand, significandf, significandl, modf,
+	  modff, modfl, signbit, signbitf, signbitl, nextafter,
+	  nextafterf, nextafterl, nexttoward, nexttowardf,
+	  nexttowardl, scalb, scalbf, scalbl, scalbln, scalblnf,
+	  scalblnl, scalbn, scalbnf, scalbnl).
+	* gm2/gm2-libs/Builtins.mod:  implemented intrinsic procedure
+	  functions (significand, significandf, significandl, modf,
+	  modff, modfl, signbit, signbitf, signbitl, nextafter,
+	  nextafterf, nextafterl, nexttoward, nexttowardf,
+	  nexttowardl, scalb, scalbf, scalbl, scalbln, scalblnf,
+	  scalblnl, scalbn, scalbnf, scalbnl).
+	* gm2/gm2-libs/cbuiltin.def:  provided the libm alternatives
+	  to builtins just in case the target does not have the
+	  builtin.  Additional definitions for:
+	  significand, significandf, significandl, modf,
+	  modff, modfl, signbit, signbitf, signbitl, nextafter,
+	  nextafterf, nextafterl, nexttoward, nexttowardf,
+	  nexttowardl, scalb, scalbf, scalbl, scalbln, scalblnf,
+	  scalblnl, scalbn, scalbnf, scalbnl.
+	* gm2/gm2-libs-iso/LowLong.def:  to use __ATTRIBUTE__ __BUILTIN__
+	  method of obtaining properties of LONGREAL.
+	* gm2/gm2-libs-iso/LowReal.def:  to use __ATTRIBUTE__ __BUILTIN__
+	  method of obtaining properties of LONGREAL.
+	* gm2/gm2-libs-iso/LowShort.def:  new file.
+	* gm2/gm2-libs-iso/LowShort.mod:  new file.
+	* gm2/gm2-libs-iso/LowLong.mod:  new file.
+	* gm2/gm2-libs-iso/LowReal.mod:  new file.
+
+2010-04-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-iso/wraptime.c:  bug fix reported by Scott
+	  Iverson, return m->tm_sec.
+	* gm2/gm2-libs-iso/Strings.mod:  bug fix reported by Scott
+	  Iverson, i := startIndex.
+
+2010-04-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  fixed a bug reported by Scott Iverson
+	  http://lists.gnu.org/archive/html/gm2/2010-04/msg00002.html.
+	  Converted index and low to the pointer type before subtraction.
+
+2010-04-09       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/configure.in:  corrected dates and added
+	  test to detect presence of libpth.
+	* gm2/gm2-libs/configure.in:  corrected test.
+	* gm2/gm2-libs/configure:  rebuilt configure.
+	* gm2/configure.in:  corrected release number.
+	* gm2/configure:  rebuilt configure.
+	* gm2/Make-lang.in:  added target.c to list of C files
+	  to be built into the libgm2.a.  Added rules for all
+	  combinations of supported flags.
+	* gm2/configure:  rebuilt configure.
+	* gm2/gm2-libs/configure.in:  added tests for math.h,
+	  exp10, exp10f and exp10l.
+	* gm2/gm2-libs/gm2-libs-host.h.in:  added entries for
+	  HAVE_EXP10, HAVE_EXP10F and HAVE_EXP10L.
+
+2010-04-08       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Quads.mod:  doIndrX (New Procedure).
+	  Use doIndrX instead of GenQuad(IndrXOp..) to force conversion
+	  of operands as they are dereferenced.  Fixes a bug reported
+	  by Scott Iverson.
+	  http://lists.gnu.org/archive/html/gm2/2010-04/msg00007.html
+
+2010-04-07       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added GeneralUserExceptions.mod and
+	  Processes.mod.
+	* gm2/gm2.texi:  corrected startup filename.
+	* gm2/gm2-compiler/M2Quads.mod:  call SkipType when checking
+	  procedure parameters (CheckProcTypeAndProcedure).
+	* gm2/gm2-libs/Assertion.def:  added space.
+	* gm2/gm2-libs/Assertion.mod:  corrected copyright notice
+	  and altered halt message.
+	* gm2/gm2-libs/RTExceptions.def:  SetExceptionSource,
+	  GetExceptionSource (New Procedures).
+	* gm2/gm2-libs/RTExceptions.mod:  implement SetExceptionSource
+	  and GetExceptionSource.
+	* gm2/gm2-libs/SYSTEM.mod:  removed commented out redundant
+	  comment __INLINE__.
+	* gm2/gm2-libs-iso/COROUTINES.mod:  TRANSFER and initMain
+	  must save and restore the ExceptionBlock, ExceptionState
+	  and ExceptionSource.
+	* gm2/gm2-libs-iso/EXCEPTIONS.mod:  use RTExceptions to retrieve
+	  the ExceptionSource associated with the current COROUTINE to
+	  ensure that the exception mechanism is COROUTINE safe.
+	* gm2/gm2-libs-iso/Processes.mod:  first full implementation.
+	* gm2/ulm-lib-gm2/std/RTExceptions.mod:  SetExceptionSource
+	  GetExceptionSource (New procedures).
+	* gm2/www/index.ms:  removed URLs.
+	* gm2/examples/callingC/Makefile:  removed file.
+	* gm2/TODO:  removed Processes.mod and GeneralUserExceptions.mod
+	  from the list.
+	* gm2/TODO:  removed Semaphores.mod from the list.
+	* gm2/TODO:  added LowReal.mod, LowLong.mod, LowShort.mod to the list.
+	* gm2/gm2-libs-iso/Semaphores.mod:  (New file).
+
+2010-03-29       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2.texi:  corrected dates and revised release map
+	  in light of ISO language completion.
+	* gm2/version.c:  updated version number to 0.78.
+	* gm2/el/g-mode.el:  fixed copyright date.
+	* gm2/gm2-libs/configure.in:  updated version number to 0.78.
+	* gm2/gm2-libs-iso/COROUTINES.mod:  corrected bug.
+	* gm2/gm2-libs-iso/M2EXCEPTION.mod:  updated dates.
+	* gm2/www/index.ms:  updated homepage in light of the
+	  completed ISO dialect.
+	* gm2/gm2-libs-iso/pth.def:  (New file).
+	* gm2/gm2-libs-iso/Processes.mod:  (New file).
+	  (Intermediate checkin).
+	* gm2/examples/cplusplus/cppcatchm2/Makefile:  (Removed file).
+	* gm2/examples/cplusplus/cppcatchm2/Makefile.in:  (New file).
+	* gm2/examples/cpp/cppcatchm2/Makefile:  (Removed file).
+	* gm2/examples/cpp/Makefile.in:  (New file).
+
+2010-03-27       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/swig/tiny/Makefile:  (Removed file).
+	* gm2/examples/swig/tiny/Makefile.in:  (New file).
+	* gm2/examples/swig/exceptions/Makefile:  (Removed file).
+	* gm2/examples/swig/exceptions/Makefile.in:  (New file).
+	* gm2/examples/swig/strlib/Makefile:  (Removed file).
+	* gm2/examples/swig/strlib/Makefile.in:  (New file).
+
+2010-03-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/c:  removed broken example.
+	* cplusplus/m2catchcpp/Makefile.in:  new file.
+	* cplusplus/m2catchcpp/Makefile:  removed file.
+	* gm2/Make-lang.in:  added first completed version of
+	  COROUTINES.mod.
+	* gm2/TODO:  removed COROUTINES from the list.
+	* gm2/config-lang.in:  tidied up the list of Makefiles
+	  and added more examples to be built in the build
+	  directories.
+	* gm2/examples/cplusplus/m2catchcpp/Makefile.in:  (New file).
+	* gm2/gm2-libs-iso/COROUTINES.mod:  completed first
+	  implementation.
+
+2010-03-25       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added new rule to test specific
+	  dejagnu tests.
+	* gm2/gccgm2.c:  gm2_tree_inlining_walk_subtrees
+	  (New function).  gm2_gimplify_function_parameters
+	  (New function).  gm2_gimplify_function_node
+	  (New function) which correctly gimplifies
+	  nested functions.
+	* gm2/gm2-common.h:  gm2_tree_inlining_walk_subtrees
+	  new prototype.
+	* gm2/gm2-lang.c:  comment out gm2_tree_inlining_walk_subtrees.
+	* gm2/m2pp.c:  corrected GetVoidType.
+	* gm2/gm2-compiler/M2GenGCC.mod:  corrected
+	  CheckConvertCoerceParameter so that set parameters are not
+	  cast to constants.  Fixes a bug reported by
+	  Scott Iverson.
+	* gm2/gm2-libs-iso/COROUTINES.mod:  removed unused code.
+	  (Temporary checkin).
+	* gm2/gm2/config-lang.in:  added examples/map/Makefile
+	  examples/gravity/Makefile examples/hello/Makefile
+	  to the list of files to be built by configure.
+	* gm2/examples/hello/Makefile.in:  (New file).
+	* gm2/examples/gravity/Makefile.in:  (New file).
+	* gm2/examples/map/Makefile.in:  (New file).
+	* gm2/examples/callingC/Makefile.in:  (New file).
+
+2010-03-17       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2ALU.def:  CheckOrResetOverflow
+          (New procedure) replaces CheckOverflow.
+	* gm2/gm2-compiler/M2ALU.mod:  implement
+	  CheckOrResetOverflow.
+	* gm2/gm2-compiler/M2GenGCC.mod:  replace CheckOverflow
+	  with CheckOrResetOverflow.
+	* gm2/gm2-compiler/M2Quads.def:  export and declare
+	  MustCheckOverflow (New procedure).
+	* gm2/gm2-compiler/M2Quads.mod:  implement
+	  MustCheckOverflow.  Modify doBuildAssignment,
+	  doBuildBinaryOp to take an extra parameter, overflow.
+	  PutQuadO, GenQuadO (New procedures).
+	* gm2/gm2/gm2-libs/RTint.mod:  turn off debugging.
+	* gm2/gm2-libs-ch/sckt.c:  turn off debugging.
+	* above changes fix bug reported by Scott Iverson
+	  <http://lists.gnu.org/archive/html/gm2/2010-03/msg00016.html>
+	* gm2/gm2-compiler/M2ALU.mod:  corrected import (RemoveOverflow).
+
+2010-03-11       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  removed duplicate rules to build
+	  KeyBoardLEDs.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  fixed bug as reported
+	  by Scott Iverson
+	  <http://lists.gnu.org/archive/html/gm2/2010-03/msg00007.html>
+	* gm2/gm2-libs/libc.def:  added atexit.
+	* gm2/gm2-libs-ch/libc.c:  provided wrapper for atexit.
+	* gm2/gm2-libs-ch/sckt.c:  improved debugging for accept.
+	* gm2/gm2-libs-iso/WholeIO.mod:  fixed bug reported by
+	  Martin KalbfuÃ.
+	  <http://lists.gnu.org/archive/html/gm2/2010-03/msg00004.html>
+	* gm2/gm2-libs-iso/WholeIO.mod:  and also fixed same bug in
+	  ReadInt.
+
+2010-03-06       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2GenGCC.mod:  FindSize extended to find
+	  the size of a undeclared variables so long as its type is known.
+	* gm2/gm2-compiler/M2Quads.mod:  use MetaError2 instead of
+	  FailParameter when incorrect number of parameters are given.
+	* gm2/gm2-compiler/M2ALU.def:  PushTypeOfTree (New procedure).
+	* gm2/gm2/gm2-compiler/M2ALU.mod:  PushTypeOfTree,
+	  PushGCCArrayType, PushGCCSetTree, PushGCCRecordTree new
+	  procedures implemented which take a GCC tree and push it to
+	  the ALU stack and assign the front end type ALU tag.
+	* gm2/gm2-compiler/SymbolConversion.mod:  use PushTypeOfTree.
+	* gm2/gm2-compiler/SymbolTable.mod:  modified debugging hooks.
+	* gm2/gm2/gm2-compiler/M2ALU.mod:  PushTypeOfTree test whether
+	  symbols type is NulSym and if so call PushIntegerTree.
+
+2010-03-04       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  now build and install O2, SO, SO_O2
+	  versions of the coroutines libraries.
+	* gm2/TODO:  removed INT and added allocation of dynamic arrays
+	  using alloca.
+	* gm2/examples/swig/strlib/Makefile:  use PYTHON_VERSION.
+	* gm2/gm2-libs-pim/Strings.def:  corrected parameter names
+	  source and dest in Assign.
+	* gm2/gm2-libs-pim/Strings.mod:  corrected parameter names
+	  source and dest in Assign.
+
+2010-02-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/M2Base.mod:  IsArrayUnboundedCompatible
+	  (New procedure).  Use IsArrayUnboundedCompatible to
+	  check type equivalence during parameter passing.
+	* gm2/gm2-compiler/M2Quads.mod:  IsSameUnbounded
+	  (New procedure).  Use IsSameUnbounded to check
+	  type equivalence during parameter passing.
+	  These two procedures differ in their assumptions.
+	* gm2/gm2-libs-iso/RTgen.mod:  allow doReadText to
+	  be implemented with multiple calls to doRBytes.
+
+2010-02-25       Gaius Mulley <gaius@gnu.org>
+
+	* calling-c/datatypes/unbounded/run/pass/gm2.exp:
+	* complex/run/pass/gm2.exp:
+	* examples/callingC/run/pass/gm2.exp:
+	* exceptions/run/pass/gm2.exp:
+	* extensions/run/fail/gm2.exp:
+	* extensions/run/pass/gm2.exp:
+	* iso/run/pass/gm2.exp:
+	* isolib/run/pass/gm2.exp:
+	* linking/libarchive/pass/gm2.exp:
+	* pim/options/optimize/run/pass/gm2.exp:
+	* pim/run/fail/gm2.exp:
+	* pim/run/pass/gm2.exp:
+	* pimlib/base/run/pass/gm2.exp:
+	* pimlib/logitech/run/pass/gm2.exp:
+	* pimlib/run/pass/gm2.exp:
+	* pimlib/ulm/run/pass/gm2.exp:
+	* quads/run/pass/gm2.exp:
+	* switches/check-all/run/pass/gm2.exp:
+	* switches/iso/run/pass/gm2.exp:
+	* switches/pim2/run/pass/gm2.exp:
+	* switches/pim3/run/pass/gm2.exp:
+	* switches/pim4/run/pass/gm2.exp:
+	* types/run/pass/gm2.exp:  all have their link paths
+	  corrected.  Tests should now run on machines without
+	  a preinstalled gm2.
+	* gm2/gm2spec.c:  construct -Lpaths for the various libraries
+	  needed and use -llibname, rather than explicitly referencing
+	  the absolute library though a path.
+	* gm2/gm2-libs-iso/RTgen.mod:  added loop to detect if a short
+	  read occurs and use successive reads until an error or the
+	  required number of bytes are read.  Fixes a bug reported by
+	  Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2010-01/msg00030.html)
+	* gm2/gm2-compiler/M2GenGCC.mod:  skip type of the designator.
+	* gm2/gm2-compiler/M2Quads.mod:  skip type when testing
+	  for an unbounded array type.
+
+2010-02-24       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  corrected dates and removed unnecessary
+	  duplication of source code installation of libraries in
+	  O2, SO and SO_O2 directories.
+	* gm2/gm2/gm2spec.c:  add a default include path determining
+	  where the one copy of the library source files exists.
+	* gm2/gm2-compiler/M2Base.def:  define INT, INTS and INTL
+	  ISO functions.  Also provide FLOATL, FLOATS, TRUNCS, TRUNCL
+	  pervasive procedure functions.
+	* gm2/gm2-compiler/M2Base.mod:  implement INT, INTS and INTL
+	  ISO functions.
+	* gm2/gm2-compiler/M2Quads.mod:  BuildIntFunction new procedure.
+	  Fix error recovery bug reported by Scott Iverson which was
+	  exposed by foo(ADR(undefinedvar)).
+	* gm2/gm2-compiler/M2Range.mod:  convert High value to Integer
+	  type before index out of range comparison is performed.
+	* gm2/gm2.texi:  update documentation to include FLOATL, FLOATS,
+	  TRUNCS and TRUNCL pervasive procedure functions.
+
+2010-02-20       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  turn on optimization for the O2
+	  versions of the libraries.
+	* gm2/gm2/m2pp.c:  improved debugging of the integer type
+	  nodes.
+	* gm2/gm2-compiler/M2GenGCC.mod:  convert high calculation
+	  to an integer type.
+
+2010-02-18       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2spec.c:  corrected library name: libgm2iso.
+
+2010-02-18       Michael Lambert <lambert@psc.edu>
+
+	* gm2/patches/gcc/4.1.2/11.michael_snowleopard2
+	  removed patch to mklink.c
+	* gm2/tools-src/mklink.c:  applied patch to file.
+	  (CC environment variable will override gcc for the
+	   link command)
+
+2010-02-18       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added many new rules to build
+	  optimization versions of the logitech, ulm and
+	  iso libraries.  Also modified so that the libraries
+	  are archived and the archive installed rather than
+	  all the objects.
+	* gm2/TODO:  updated TODO, removed the linking request
+	  by Martin KalbfuÃ.  Added a missed intrinsic function.
+	* gm2/gm2/gm2.texi:  updated documentation to include
+	  FLOAT, LFLOAT, SFLOAT, TRUNC, STRUNC, LTRUNC, RE, IM,
+	  ODD.  Ordered all functions alphabetically.
+	* gm2/gm2spec.c:  modified so that the linker includes
+	  archives of the gm2 libraries at the end of the link
+	  command.
+	* gm2/gm2-compiler/M2Base.mod:  changed TRUNCS to STRUNC,
+          TRUNCL to LTRUNC, FLOATL to LFLOAT, FLOATS to SFLOAT
+	  to match the ISO naming scheme.
+
+2010-02-13       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/StringConvert.mod:  fixed bug reported by
+	  Carl Glassberg, number to string routines ignored, base,
+	  parameter and always used a constant, 10.
+
+2010-02-05       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/README:  tidied up spacing.
+	* gm2/gm2-compiler/M2Base.def:  declare and export
+	  ExceptionShift, ExceptionRotate.
+	* gm2/gm2-compiler/M2Base.mod:  assign ExceptionShift
+	  and ExceptionRotate.
+	* gm2/gm2-compiler/M2Quads.mod:  insert runtime checks
+	  to both SHIFT and ROTATE.
+	* gm2/gm2-compiler/M2Range.def:  declared and export
+	  InitRotateCheck, InitShiftCheck.
+	* gm2/gm2-compiler/M2Range.mod:  implement InitShiftCheck
+	  and InitRotateCheck.
+	* gm2/gm2-libs/M2RTS.def:  declare and export
+	  ShiftException and RotateException.
+	* gm2/gm2-libs/M2RTS.mod:  implement ShiftException
+	  and RotateException.
+	* gm2/gm2-libs-iso/M2RTS.def:  declare and export
+	  ShiftException and RotateException.
+	* gm2/gm2-libs-iso/M2RTS.mod:  implement ShiftException
+	  and RotateException.
+	* gm2/ulm-lib-gm2/std/M2RTS.mod:  implement ShiftException
+	  and RotateException.
+	* gm2/gm2-compiler/M2Range.mod:  fixed bugs in FoldShift
+	  FoldRotate, CodeShiftRotate so that the subrange of the
+	  set rather than the set type is range tested.
+	* gm2/TODO:  removed the SHIFT and ROTATE range checking
+	  entry.
+	* gm2/TODO:  removed the linking restriction entry.
+	* gm2/gm2-compiler/gm2lcc.mod:  allow object files not
+	  to be present when generating the link command.  This
+	  allows users to supply private libraries or objects
+	  which satisfy all gm2 module references.  A feature
+	  request by a number of users, Martin KalbfuÃ and
+          John O Goyo.
+
+2010-02-03       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/TODO:  updated.
+	* gm2/gm2builtins.c:  added many missing builtins necessary
+	  to complete ComplexMath, LongComplexMath and ShortComplexMath.
+	  carg, cargf, cargl, conj, conjf, conjl, cpow, cpowf, cpowl,
+	  csqrt, csqrtf, csqrtl, cexp, cexpf, cexpl, cln, clnf, clnl,
+	  csin, csinf, csinl, ccos, ccosf, ccosl, ctan, ctanf, ctanl,
+	  casin, casinf, casinl, cacos, cacosf, cacosl,
+	  catan, catanf, catanl.
+	* gm2/gm2-libs/Builtins.mod:   fixed cpow, cpowl, cpowf, clog
+	  clogf, clogl, casin, casinf, casinl, cacos, cacosf, cacosl,
+	  catan, catanf, catanl.
+	* gm2/gm2-libs/cbuiltin.def:  include procedure functions in
+	  the export list and also declare them in the definition
+	  module:  carg, cargf, cargl, conj, conjf, conjl,
+	  cpow, cpowf, cpowl, csqrt, csqrtf, csqrtl, cexp, cexpf,
+	  cexpl, cln, clnf, clnl, csin, csinf, csinl, ccos, ccosf,
+	  ccosl, ctan, ctanf, ctanl, casin, casinf, casinl, cacos,
+	  cacosf, cacosl, catan, catanf, catanl.
+	* gm2/gm2-libs-iso/ComplexMath.mod:  fixed calls to
+	  cpow, clog, casin, cacos, catan.
+	* gm2/gm2-libs-iso/ShortComplexMath.mod:  fixed calls to
+	  cpowf, clogf, casinf, cacosf, catanf.
+	* gm2/gm2-libs-iso/LongComplexMath.mod:  fixed calls to
+	  cpowl, clogl, casinl, cacosl, catanl.
+
+2010-01-29       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gccgm2.c:  bug fix applied to BuildRe and BuildIm.
+	* gm2/m2pp.c:  new functions (m2pp_complex),
+	  (m2pp_complex_expr), (m2pp_imagpart_expr),
+	  (m2pp_realpart_expr).
+	* gm2/m2pp.c:  added conditional compilation around
+	  gm2 COMPLEX data types referenced in gccgm2.
+	* gm2/gm2-libs/Builtins.def:  fixed parameters to
+	  cpower, cpowerf and cpowerl.
+	* gm2/gm2-libs/Builtins.mod:  added implementations
+	  for all new procedure functions.
+	* gm2/el/g-mode.el:  added COMPLEX, LONGCOMPLEX and
+	  SHORTCOMPLEX to the list of base Modula-2 data types.
+	* gm2/TODO:  removed implementation of ComplexMath,
+	  LongComplexMath and ShortComplexMath from the list
+	  of modules to complete.
+	* gm2/gm2-libs-iso/ShortComplexMath.def: new file.
+	* gm2/gm2-libs-iso/ShortComplexMath.mod: new file.
+	* gm2/gm2-libs-iso/SysClock.mod:  fixed Posix month to
+	  ISO Modula-2 conversion 1..12 rather than 0..11.
+
+2010-01-28       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/Make-lang.in:  added ComplexMath.mod
+	  LongComplexMath.mod and ShortComplexMath.mod to the
+	  iso library list.
+	* gm2/gm2-libs/Builtins.def:  new function procedures
+	  cargf, carg, cargl, conjf, conf, confl,
+	  cpowerf, cpower, cpowerl, csqrtf, csqrt, csqrtl,
+	  cexpf, cexp, cexpl, clnf, cln, clnl,
+	  csinf, csin, csinl, ccosf, ccos, ccosl,
+	  ctanf, ctan, ctanl, carcsinf, carcsin, carcsinl,
+	  carctanf, carctan, carctanl.
+	* gm2/gm2-libs-iso/ComplexMath.def:  tidied up comments.
+	* gm2/gm2-libs-iso/ComplexMath.mod:  fixed call to
+	  carg, corrected ccos and corrected the implementation
+	  of polarToComplex.
+	* gm2/gm2-libs-iso/LongComplex.def:  removed.
+	* gm2/gm2-libs-iso/LongComplexMath.def:  new file.
+	* gm2/gm2-libs-iso/LongComplexMath.mod:  new file.
+
+2010-01-26       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-compiler/gccgm2.c:  modified debugging
+	  handles.
+	* gm2/gm2builtins.c:  declared new COMPLEX prototypes
+	  for the complex builtins.  Introduced cabs, cabsf, cabsl.
+	* gm2/gm2-compiler/M2Base.mod:  removed the assignment of
+	  zero to pointer NIL via M2ALU, prefering to declare it
+	  explicitly in M2GCCDeclare.mod.
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  import GetPointerZero.
+	  Type cast constants at declaration time.
+	  DeclareDefaultConstants (New function).
+	* gm2/gm2-libs/Builtins.def:  new procedure function
+	  declarations, cabsf, cabs, cabsl.
+	* gm2/gm2-libs/Builtins.mod:  new procedure function
+	  implemented, cabsf, cabs, cabsl.
+	* gm2/gm2-libs/RTExceptions.mod:  corrected spelling for
+	  InitExceptionHandlers.
+	* gm2/gm2-libs/SysExceptions.def:  corrected spelling for
+	  InitExceptionHandlers.
+	* gm2/gm2-libs/cbuiltin.def:  new procedure functions:
+          cabsf, cabs, cabsl.
+	* gm2/gm2-libs-ch/SysExceptions.c:  corrected spelling for
+	  SysExceptions_InitExceptionHandlers.
+	* gm2/gm2-libs-iso/ComplexMath.def:  new procedure function
+	  definitions for abs, arg, conj, power, sqrt, exp, ln,
+	  sin, cos, tan, arcsin, arccos, arctan.
+	* gm2/gm2-libs-iso/ComplexMath.mod:  initial implementation.
+
+2010-01-16       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/RealConversions.mod:  intemediate
+	  checkin of catching nans and other non fpnormals.
+	* The following changes fix a bug reported by
+	  Scott Iverson
+	  (http://lists.gnu.org/archive/html/gm2/2010-01/msg00022.html)
+	* gm2/gm2-compiler/M2GCCDeclare.mod:  improved
+	  debugging for variant tags.  Only walk variant tags
+	  which are necessary in the final production of the
+	  equivalent C struct passed to the GCC backend.
+	  Ignore dummy ELSE END inside variant records during
+	  the construction of the equivalent C struct.
+	* gm2/gm2-compiler/SymbolTable.def:  new procedures
+	  (IsRecordFieldAVarientTag) and (IsEmptyFieldVarient).
+	* gm2/gm2-compiler/SymbolTable.mod:  implement
+	  new procedures (IsRecordFieldAVarientTag) and
+	  (IsEmptyFieldVarient).
+	* gm2/gm2-compiler/P2SymBuild.mod:  improved error
+	  messages if duplication record fields are declared.
+
+2010-01-15       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2builtins.c:  introduced __builtin_ilogbf,
+	  __builtin_ilogbl and __builtin_ilogbl.
+	* gm2/gm2-libs/Builtins.def:  introduced definitions
+	  for ilogb, ilobl and ilobf.
+	* gm2/gm2-libs/Builtins.mod:  implemented references
+	  for builtins.
+	* gm2/gm2-libs/cbuiltin.def:  introduced non builtin
+	  definitions for ilogb, ilobl and ilobf.
+	* gm2/gm2-libs-pim/RealConversions.mod:  doPowerOfTen
+	  reimplemented and added comment.  LongRealToString
+	  broken up into two procedures and it now tests for
+	  NaN.
+	* gm2/gm2-libs-pim/RealConversions.def:  updated
+          comment for LongRealToString.
+	* gm2/gm2-libs-pim/RealConversions.mod:  doPowerOfTen
+	  reimplemented.
+
+2010-01-14       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/RealConversions.mod:  fixed bug in
+	  exponent length and ensure that no white space is
+	  created.  Corrected name of procedure
+	  SetNoOfExponentDigits.
+
+2010-01-13       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/TODO:  updated
+
+2010-01-12       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/RealInOut.def:  defined
+	  DefaultDecimalPlaces to 6.
+	* gm2/gm2-libs-pim/RealInOut.mod:  implemented
+	  DefaultDecimalPlaces and integrated it into the
+	  WriteReal, WriteLongReal, WriteShortReal.
+
+2010-01-11       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs-pim/RealConversions.def:
+	  SetNoOfExponentialDigits (new procedure) to set the
+	  number of exponential digits.
+	* gm2/gm2-libs-pim/RealConversions.mod:  implement
+	  SetNoOfExponentialDigits (new procedure).
+        * gm2/gm2-libs-pim/RealInOut.mod:  tidied up comments.
+	* gm2/gm2-libs/M2RTS.def:  export ErrorMessage.
+	* gm2/gm2-libs/StringConvert.mod:  use ErrorMessage
+	  rather than printf and added a prototype for
+	  doDecimalPlaces.
+	* gm2/gm2-libs-iso/M2RTS.def:  export ErrorMessage.
+
+2010-01-10       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/gm2-libs/StringConvert.mod:  fixed parameters to
+	  printf.
+
+2010-01-09       Gaius Mulley <gaius@gnu.org>
+
+	* gm2/examples/gravity/test.mod:  gravitational constant
+	  with greater accuracy.
+	* gm2/gm2-libs/StringConvert.def:  corrected dates.
+	  ToDecimalPlaces (new procedure).
+	* gm2/gm2-libs/StringConvert.mod:  corrected dates.
+	  Assert, ToDecimalPlaces, doDecimalPlaces
+	  (new procedures).
+	* gm2/gm2-libs-pim/RealConversions.mod:  doPowerOfTen
+	  (new procedure).  Fixes a bug reported by James Cox
+	  <jvcox@sandia.gov>.
+	* gm2/gm2-libs-pim/RealInOut.mod:  SetNoOfDecimalPlaces
+	  (new procedure).
+

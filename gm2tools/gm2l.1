@@ -1,0 +1,77 @@
+.TH gm2l "1" "June 2021" "Modula-2" "User Commands"
+.SH NAME
+gm2l \- generate an initialization sequence by analyzing module imports.
+.SH SYNOPSIS
+.B gm2l
+.RB [ -fdef= extension ]
+.RB [ -fmod= extension ]
+.RB [ -h ]
+.RB [ --help ]
+.RB [ -I searchpath ]
+.RB [ --M2RTS ]
+.RB [ -M2RTS ]
+.RB [ -v ]
+.RB [ --verbose ]
+.RB [ -o " outputfile" ]
+\fImodulefile\fR
+.SH DESCRIPTION
+.PP
+A tool for generating a static initialization sequence by analyzing
+module imports.  This tool will generate a textual list of modules in
+an order which satisfies a topological order of an import graph.  The
+textual list of modules can be manipulated and used by the other
+Modula-2 link tools:
+.IR gm2lcc (1)
+.IR gm2lgen (1)
+.IR gm2lorder (1).
+The command line program
+.IR gm2
+can be instructed to automatically invoke
+.IR gm2l (1)
+and the above programs to construct a C++ scaffold for a Modula-2
+application.
+.SH OPTIONS
+.TP
+.B -fdef= extension
+assume that definition modules have the posfix \fIextension\fP.  If
+this option is not specified then an extension of
+.B .def
+is assumed.
+.TP
+.B -fmod= extension
+assume that program and implementation modules have the posfix
+\fIextension\fP.  If this option is not specified then an extension of
+.B .def
+is assumed.
+.TP
+.B -h
+issue a summary help.
+.TP
+.B --help
+equivalent to
+.B -h\fR.
+.TP
+.B -I searchpath
+specifies the search path used to find definition, implementation and
+program modules.
+.TP
+.B --M2RTS
+do not include the module M2RTS even if it is a dependant module.
+.TP
+.B -M2RTS
+equivalent to
+.B --M2RTS\fR.
+.TP
+.B -v
+turn on the verbose flag.  This will display the module name and
+associated filename.
+.TP
+.B --verbose
+equivalent to
+.B -v\fR.
+.SH "SEE ALSO"
+.IR gm2lcc (1),
+.IR gm2lgen (1),
+.IR gm2lorder (1)
+and
+.IR gm2 (1).

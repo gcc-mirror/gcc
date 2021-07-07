@@ -1,0 +1,44 @@
+(* LMathLib0.def provide access to the LONGREAL instrinics.
+
+Copyright (C) 2009-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE LMathLib0 ;
+
+CONST
+   pi   = 3.1415926535897932384626433832795028841972;
+   exp1 = 2.7182818284590452353602874713526624977572;
+
+
+PROCEDURE __BUILTIN__ sqrt (x: LONGREAL) : LONGREAL ;
+PROCEDURE exp (x: LONGREAL) : LONGREAL ;
+PROCEDURE ln (x: LONGREAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ sin (x: LONGREAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ cos (x: LONGREAL) : LONGREAL ;
+PROCEDURE tan (x: LONGREAL) : LONGREAL ;
+PROCEDURE arctan (x: LONGREAL) : LONGREAL ;
+PROCEDURE entier (x: LONGREAL) : INTEGER ;
+
+
+END LMathLib0.

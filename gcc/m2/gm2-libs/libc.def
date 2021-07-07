@@ -1,0 +1,461 @@
+(* libc.def provides an interface to the C library functions.
+
+Copyright (C) 2001-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FOR "C" libc ;
+
+FROM SYSTEM IMPORT ADDRESS, CSIZE_T, CSSIZE_T ;
+
+EXPORT UNQUALIFIED time_t, timeb, tm, ptrToTM,
+                   write, read,
+                   system, abort,
+                   malloc, free,
+                   exit, isatty,
+                   getenv, getpid,
+                   dup, close, open, lseek,
+                   readv, writev,
+                   perror, creat,
+                   getcwd, chown, strlen, strcpy, strncpy,
+                   unlink, setenv,
+                   memcpy, memset, memmove, printf, realloc,
+                   rand, srand,
+                   time, localtime, ftime,
+                   shutdown, rename, setjmp, longjmp, atexit,
+                   ttyname, sleep ;
+
+
+TYPE
+   time_t = LONGINT ;
+
+   ptrToTM = POINTER TO tm ;
+   tm = RECORD
+           tm_sec: INTEGER ;     (* Seconds.     [0-60] (1 leap second) *)
+           tm_min: INTEGER ;     (* Minutes.     [0-59]   *)
+           tm_hour: INTEGER ;    (* Hours.       [0-23]   *)
+           tm_mday: INTEGER ;    (* Day.         [1-31]   *)
+           tm_mon: INTEGER ;     (* Month.       [0-11]   *)
+           tm_year: INTEGER ;    (* Year - 1900.          *)
+           tm_wday: INTEGER ;    (* Day of week. [0-6]    *)
+           tm_yday: INTEGER ;    (* Days in year.[0-365]  *)
+           tm_isdst: INTEGER ;   (* DST.         [-1/0/1] *)
+           tm_gmtoff: LONGINT ;  (* Seconds east of UTC.  *)
+           tm_zone: ADDRESS ;    (* char * zone name      *)
+        END ;
+
+   timeb = RECORD
+              time    : time_t ;
+              millitm : SHORTCARD ;
+              timezone: SHORTCARD ;
+              dstflag : SHORTCARD ;
+           END ;
+
+   exitP = PROCEDURE () : INTEGER ;
+
+
+(*
+     ssize_t write (int d, void *buf, size_t nbytes)
+*)
+
+PROCEDURE write (d: INTEGER; buf: ADDRESS; nbytes: CSIZE_T) : CSSIZE_T ;
+
+
+(*
+     ssize_t read (int d, void *buf, size_t nbytes)
+*)
+
+PROCEDURE read (d: INTEGER; buf: ADDRESS; nbytes: CSIZE_T) : CSSIZE_T ;
+
+
+(*
+     int system(string)
+     char *string;
+*)
+
+PROCEDURE system (a: ADDRESS) : INTEGER ;
+
+
+(*
+     abort - generate a fault
+
+     abort() first closes all open files if possible, then sends
+     an IOT signal to the process.  This signal usually results
+     in termination with a core dump, which may be used for
+     debugging.
+
+     It is possible for abort() to return control if is caught or
+     ignored, in which case the value returned is that of the
+     kill(2V) system call.
+*)
+
+PROCEDURE abort <* noreturn *> ;
+
+
+(*
+     malloc - memory allocator.
+
+     void *malloc(size_t size);
+
+     malloc() returns a pointer to a block of at least size
+     bytes, which is appropriately aligned.  If size is zero,
+     malloc() returns a non-NULL pointer, but this pointer should
+     not be dereferenced.
+*)
+
+PROCEDURE malloc (size: CSIZE_T) : ADDRESS ;
+
+
+(*
+     free - memory deallocator.
+
+     free (void *ptr);
+
+     free() releases a previously allocated block.  Its argument
+     is a pointer to a block previously allocated by malloc,
+     calloc, realloc, malloc, or memalign.
+*)
+
+PROCEDURE free (ptr: ADDRESS) ;
+
+
+(*
+     void *realloc (void *ptr, size_t size);
+
+     realloc changes the size of the memory block pointed to
+     by ptr to size bytes. The contents will be  unchanged  to
+     the minimum of the old and new sizes; newly allocated memory
+     will be uninitialized. If ptr is NIL, the call is
+     equivalent  to malloc(size); if size is equal to zero, the
+     call is equivalent to free(ptr). Unless ptr is NIL, it
+     must have been returned by an earlier call to malloc(),
+     realloc.
+*)
+
+PROCEDURE realloc (ptr: ADDRESS; size: CSIZE_T) : ADDRESS ;
+
+
+(*
+   isatty - does this descriptor refer to a terminal.
+*)
+
+PROCEDURE isatty (fd: INTEGER) : INTEGER ;
+
+
+(*
+   exit - returns control to the invoking process. Result, r, is
+          returned.
+*)
+
+PROCEDURE exit (r: INTEGER) <* noreturn *> ;
+
+
+(*
+   getenv - returns the C string for the equivalent C environment
+            variable.
+*)
+
+PROCEDURE getenv (s: ADDRESS) : ADDRESS ;
+
+
+(*
+   getpid - returns the UNIX process identification number.
+*)
+
+PROCEDURE getpid () : INTEGER ;
+
+
+(*
+   dup - duplicates the file descriptor, d.
+*)
+
+PROCEDURE dup (d: INTEGER) : INTEGER ;
+
+
+(*
+   close - closes the file descriptor, d.
+*)
+
+PROCEDURE close (d: INTEGER) : INTEGER ;
+
+
+(*
+   open - open the file, filename with flag and mode.
+*)
+
+PROCEDURE open (filename: ADDRESS; oflag: INTEGER; ...) : INTEGER ;
+
+
+(*
+   creat - creates a new file
+*)
+
+PROCEDURE creat (filename: ADDRESS; mode: CARDINAL) : INTEGER;
+
+
+(*
+   lseek - calls unix lseek:
+
+           off_t lseek(int fildes, off_t offset, int whence);
+*)
+
+PROCEDURE lseek (fd: INTEGER; offset: LONGINT; whence: INTEGER) : LONGINT ;
+
+
+(*
+   perror - writes errno and string. (ARRAY OF CHAR is translated onto ADDRESS).
+*)
+
+PROCEDURE perror (string: ARRAY OF CHAR);
+
+
+(*
+   readv - reads an io vector of bytes.
+*)
+
+PROCEDURE readv (fd: INTEGER; v: ADDRESS; n: INTEGER) : INTEGER ;
+
+
+(*
+   writev - writes an io vector of bytes.
+*)
+
+PROCEDURE writev (fd: INTEGER; v: ADDRESS; n: INTEGER) : INTEGER ;
+
+
+(*
+   getcwd - copies the absolute pathname of the
+            current working directory to the array pointed to by buf,
+            which is of length size.
+
+            If the current absolute path name would require a buffer
+            longer than size elements, NULL is returned, and errno is
+            set to ERANGE; an application should check for this error,
+            and allocate a larger buffer if necessary.
+*)
+
+PROCEDURE getcwd (buf: ADDRESS; size: CSIZE_T) : ADDRESS ;
+
+
+(*
+   chown - The  owner  of  the  file  specified  by  path or by fd is
+           changed.  Only the super-user may change the  owner  of  a
+           file.   The  owner  of  a file may change the group of the
+           file to any group of which that owner is  a  member.   The
+           super-user may change the group arbitrarily.
+
+           If  the owner or group is specified as -1, then that ID is
+           not changed.
+
+           On success, zero is returned.  On error, -1  is  returned,
+           and errno is set appropriately.
+*)
+
+PROCEDURE chown (filename: ADDRESS; uid, gid: INTEGER) : INTEGER ;
+
+
+(*
+   strlen - returns the length of string, a.
+*)
+
+PROCEDURE strlen (a: ADDRESS) : CSIZE_T ;
+
+
+(*
+   strcpy - copies string, src, into, dest.
+            It returns dest.
+*)
+
+PROCEDURE strcpy (dest, src: ADDRESS) : ADDRESS ;
+
+
+(*
+   strncpy - copies string, src, into, dest, copying at most, n, bytes.
+             It returns dest.
+*)
+
+PROCEDURE strncpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+
+
+(*
+   unlink - removes file and returns 0 if successful.
+*)
+
+PROCEDURE unlink (file: ADDRESS) : INTEGER ;
+
+
+(*
+   memcpy - copy memory area
+
+   SYNOPSIS
+
+   #include <string.h>
+
+   void *memcpy(void *dest, const void *src, size_t n);
+   It returns dest.
+*)
+
+PROCEDURE memcpy (dest, src: ADDRESS; size: CSIZE_T) : ADDRESS ;
+
+
+(*
+   memset - fill memory with a constant byte
+
+   SYNOPSIS
+
+   #include <string.h>
+
+   void *memset(void *s, int c, size_t n);
+*)
+
+PROCEDURE memset (s: ADDRESS; c: INTEGER; size: CSIZE_T) : ADDRESS ;
+
+
+(*
+   memmove - copy memory areas which may overlap
+
+   SYNOPSIS
+
+   #include <string.h>
+
+   void *memmove(void *dest, const void *src, size_t n);
+   It returns dest.
+*)
+
+PROCEDURE memmove (dest, src: ADDRESS; size: CSIZE_T) : ADDRESS ;
+
+
+(*
+   int printf(const char *format, ...);
+*)
+
+PROCEDURE printf (format: ARRAY OF CHAR; ...) : [ INTEGER ] ;
+
+
+(*
+   setenv - sets environment variable, name, to value.
+            It will overwrite an existing value if, overwrite,
+            is true.  It returns 0 on success and -1 for an error.
+*)
+
+PROCEDURE setenv (name: ADDRESS; value: ADDRESS; overwrite: INTEGER) : INTEGER ;
+
+
+(*
+   srand - initialize the random number seed.
+*)
+
+PROCEDURE srand (seed: INTEGER) ;
+
+
+(*
+   rand - return a random integer.
+*)
+
+PROCEDURE rand () : INTEGER ;
+
+
+(*
+   time - returns a pointer to the time_t value. If, a,
+          is not NIL then the libc value is copied into
+          memory at address, a.
+*)
+
+PROCEDURE time (a: ADDRESS) : time_t ;
+
+
+(*
+   localtime - returns a pointer to the libc copy of the tm
+               structure.
+*)
+
+PROCEDURE localtime (VAR t: time_t) : ADDRESS ;
+
+
+(*
+   ftime - return date and time.
+*)
+
+PROCEDURE ftime (VAR t: timeb) : INTEGER ;
+
+
+(*
+   shutdown - shutdown a socket, s.
+              if how = 0, then no more reads are allowed.
+              if how = 1, then no more writes are allowed.
+              if how = 2, then mo more reads or writes are allowed.
+*)
+
+PROCEDURE shutdown (s: INTEGER; how: INTEGER) : INTEGER ;
+
+
+(*
+   rename - change the name or location of a file
+*)
+
+PROCEDURE rename (oldpath, newpath: ADDRESS) : INTEGER ;
+
+
+(*
+   setjmp - returns 0 if returning directly, and non-zero
+            when returning from longjmp using the saved
+            context.
+*)
+
+PROCEDURE setjmp (env: ADDRESS) : INTEGER ;
+
+
+(*
+   longjmp - restores the environment saved by the last call
+             of setjmp with the corresponding env argument.
+             After longjmp is completed, program execution
+             continues as if the corresponding call of setjmp
+             had just returned the value val.  The value of
+             val must not be zero.
+*)
+
+PROCEDURE longjmp (env: ADDRESS; val: INTEGER) ;
+
+
+(*
+   atexit - execute, proc, when the function exit is called.
+*)
+
+PROCEDURE atexit (proc: exitP) : INTEGER ;
+
+
+(*
+   ttyname - returns a pointer to a string determining the ttyname.
+*)
+
+PROCEDURE ttyname (filedes: INTEGER) : ADDRESS ;
+
+
+(*
+   sleep - calling thread sleeps for seconds.
+*)
+
+PROCEDURE sleep (seconds: CARDINAL) : [ CARDINAL ] ;
+
+
+END libc.

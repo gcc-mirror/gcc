@@ -1,0 +1,65 @@
+In this directory is the source to the bootstrap tool mc.  The tool
+converts PIM4 Modula-2 into C or C++ and it implements some of the GNU
+Modula-2 extensions.  It uses the same lexical and grammar as GNU
+Modula-2, but restricts some of the features.
+
+Local modules are not supported and constant aggregate types are not
+supported (with the exception of SET constant aggregate types).  It
+has the ability to translate Modula-2 into C/C++, it uses the same
+name space convension as GNU Modula-2 and it issues source file
+directives in the target language which match the original source.
+
+The tool mc uses multiple passes primarily to keep the implementation
+simple.  The function of each pass is defined here:
+
+Pass 1
+   define module symbols (def, imp, program, local) and find their source
+   files if appropriate.
+   parse definition modules and any extended opaque implementation module
+   and the implementation/program module.
+   define root decls for all CONST, TYPE, PROCEDURE, VAR, symbols
+   (the left hand side for all declarations).
+   push and pop scope symbols as the source is parsed.
+   populate the export lists for the def modules
+
+Pass 2
+   parse definition modules and any extended opaque implementation module
+   and the implementation/program module.
+     complete declaration of the right hand side of TYPE:
+       equivalence:  TYPE foo = bar ;
+       equivalence:  TYPE foo = bar.x ;
+       enumerations: TYPE foo = (a, b, c) ;
+     completely define enumeration types and place them into
+     a per module list of enumerations.
+
+Pass 3
+   parse definition modules and any extended opaque implementation module
+   and the implementation/program module.
+      process the import lists for the def
+      introducing the symbol from another modules export list.
+        remembering to populate the enum and all fields if they are imported.
+      mark any opaque type (in the definition module).
+      create placeholders for expression and constexpression
+        and put these into a list.
+      complete const/type/var/procedure declarations (using
+        expression placeholders).
+
+Pass 4
+   parse definition modules and any extended opaque implementation module
+   and the implementation/program module.
+     build expressions and constexpressions
+     and attach them to their placeholders.
+   at this point all definition module symbols are completely finished.
+   at this point const/types should be completely declared for the
+   implementation/program module
+
+Pass 5
+   only parse the implementation or program module
+   build a tree for all procedure and main init code.
+   build expressions and constexpressions
+   and attach them to their placeholders.
+
+for each exported symbol, s
+   topological sort and define s
+
+topological sort and define init code

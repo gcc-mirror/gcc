@@ -1,0 +1,104 @@
+(* Sets.def provides a dynamic set module.
+
+Copyright (C) 2009-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Sets ;
+
+(*
+    Title      : Sets
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Wed May  6 22:48:19 2009
+    Revision   : $Version$
+    Description: provides a dynamic set module which allows
+                 sets to contain the elements in the range:
+                 min..SymbolTable.FinalSymbol()
+*)
+
+FROM SymbolKey IMPORT PerformOperation ;
+
+EXPORT QUALIFIED Set,
+                 InitSet, KillSet,
+                 IncludeElementIntoSet, ExcludeElementFromSet,
+                 NoOfElementsInSet, IsElementInSet,
+                 ForeachElementInSetDo, DuplicateSet ;
+
+TYPE
+   Set ;
+
+
+(*
+   InitSet - initializes and returns a set.  The set will
+             never contain an element less than, low.
+*)
+
+PROCEDURE InitSet (low: CARDINAL) : Set ;
+
+
+(*
+   KillSet - deallocates Set, s.
+*)
+
+PROCEDURE KillSet (s: Set) : Set ;
+
+
+(*
+   DuplicateSet - returns a new duplicated set.
+*)
+
+PROCEDURE DuplicateSet (s: Set) : Set ;
+
+
+(*
+   ForeachElementInSetDo - for each element e in, s, call, p(e).
+*)
+
+PROCEDURE ForeachElementInSetDo (s: Set; p: PerformOperation) ;
+
+
+(*
+   IsElementInSet - returns TRUE if element, i, is in set, s.
+*)
+
+PROCEDURE IsElementInSet (s: Set; i: CARDINAL) : BOOLEAN ;
+
+
+(*
+   NoOfElementsInSet - returns the number of elements in a set, s.
+*)
+
+PROCEDURE NoOfElementsInSet (s: Set) : CARDINAL ;
+
+
+(*
+   ExcludeElementFromSet - excludes element, i, from set, s.
+*)
+
+PROCEDURE ExcludeElementFromSet (s: Set; i: CARDINAL) ;
+
+
+(*
+   IncludeElementIntoSet - includes element, i, into set, s.
+*)
+
+PROCEDURE IncludeElementIntoSet (s: Set; i: CARDINAL) ;
+
+
+END Sets.

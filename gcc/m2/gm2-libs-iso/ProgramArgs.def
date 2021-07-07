@@ -1,0 +1,39 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE ProgramArgs;
+ 
+  (* Access to program arguments *)
+ 
+IMPORT IOChan;
+ 
+TYPE
+  ChanId = IOChan.ChanId;
+ 
+PROCEDURE ArgChan (): ChanId;
+  (* Returns a value that identifies a channel for reading
+     program arguments *)
+ 
+PROCEDURE IsArgPresent (): BOOLEAN;
+  (* Tests if there is a current argument to read from.  If not,
+     read <= IOChan.CurrentFlags() will be FALSE, and attempting
+     to read from the argument channel will raise the exception
+     notAvailable.
+  *)
+ 
+PROCEDURE NextArg ();
+  (* If there is another argument, causes subsequent input from the
+     argument device to come from the start of the next argument.
+     Otherwise there is no argument to read from, and a call of
+     IsArgPresent will return FALSE.
+  *)
+ 
+END ProgramArgs.

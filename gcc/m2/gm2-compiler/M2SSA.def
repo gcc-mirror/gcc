@@ -1,0 +1,27 @@
+DEFINITION MODULE M2SSA ;
+
+(*
+    Title      : M2SSA
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Mon May 10 17:04:19 2021
+    Revision   : $Version$
+    Description:
+*)
+
+EXPORT QUALIFIED DiscoverSSA, EnableSSA ;
+
+
+CONST
+   EnableSSA = FALSE ;
+
+
+(*
+   DiscoverSSA - perform a very simple check to determine whether a
+                 temporary is a single use write.
+*)
+
+PROCEDURE DiscoverSSA (scope: CARDINAL) ;
+
+
+END M2SSA.

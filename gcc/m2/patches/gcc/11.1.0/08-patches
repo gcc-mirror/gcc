@@ -1,0 +1,27 @@
+--- git-gcc/Makefile.def	2021-01-27 10:18:11.138734904 +0000
++++ gm2-floppsie/Makefile.def	2021-01-27 12:58:00.810865474 +0000
+@@ -180,6 +180,7 @@
+ target_modules = { module= zlib; };
+ target_modules = { module= rda; };
+ target_modules = { module= libada; };
++target_modules = { module= libgm2; lib_path=.libs; };
+ target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
+ target_modules = { module= libitm; lib_path=.libs; };
+ target_modules = { module= libatomic; lib_path=.libs; };
+@@ -298,6 +299,8 @@
+ flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
+ flags_to_pass = { flag= GDC_FOR_TARGET ; };
+ flags_to_pass = { flag= GDCFLAGS_FOR_TARGET ; };
++flags_to_pass = { flag= GM2_FOR_TARGET ; };
++flags_to_pass = { flag= GM2FLAGS_FOR_TARGET ; };
+ flags_to_pass = { flag= LD_FOR_TARGET ; };
+ flags_to_pass = { flag= LIPO_FOR_TARGET ; };
+ flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
+@@ -652,6 +655,7 @@
+ languages = { language=go;	gcc-check-target=check-go;
+ 				lib-check-target=check-target-libgo;
+ 				lib-check-target=check-gotools; };
++languages = { language=m2;	gcc-check-target=check-m2; };
+ languages = { language=brig;	gcc-check-target=check-brig;
+ 				lib-check-target=check-target-libhsail-rt; };
+ languages = { language=d;	gcc-check-target=check-d;

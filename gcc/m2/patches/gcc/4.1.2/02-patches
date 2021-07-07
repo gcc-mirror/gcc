@@ -1,0 +1,83 @@
+--- gcc-4.1.2/libstdc++-v3/scripts/make_exports.pl	2006-04-26 20:59:05.000000000 +0100
++++ gcc-4.1.2+gm2-20090624/libstdc++-v3/scripts/make_exports.pl	2009-06-24 12:16:06.000000000 +0100
+@@ -92,7 +92,11 @@
+ print STDERR $nm.' -P '.(join ' ',@ARGV).'|';
+ open NM,$nm.' -P '.(join ' ',@ARGV).'|' or die $!;
+ # Talk to c++filt through a pair of file descriptors.
+-open2(*FILTIN, *FILTOUT, "c++filt --strip-underscores") or die $!;
++if ($^O eq "darwin") {
++    open2(*FILTIN, *FILTOUT, "c++filt --strip-underscore") or die $!;
++} else {
++    open2(*FILTIN, *FILTOUT, "c++filt --strip-underscores") or die $!;
++}
+ NAME: while (<NM>) {
+     my $i;
+     chomp;
+--- gcc-4.1.2/ltcf-c.sh.sav	2005-11-18 17:53:08.000000000 -0500
++++ gcc-4.1.2/ltcf-c.sh	2009-11-30 20:35:50.000000000 -0500
+@@ -402,10 +402,13 @@
+     esac
+     # Disable shared library build on OS-X older than 10.3.
+     case $host_os in
++	darwin10*)
++	    can_build_shared=yes
++	    ;;
+ 	darwin[1-6]*)
+ 	    can_build_shared=no
+ 	    ;;
+-	darwin7*)
++	darwin[7-9]*)
+ 	    can_build_shared=yes
+ 	    ;;
+     esac
+--- gcc-4.1.2/ltcf-cxx.sh.sav	2005-07-15 22:30:53.000000000 -0400
++++ gcc-4.1.2/ltcf-cxx.sh	2009-11-30 20:35:34.000000000 -0500
+@@ -247,10 +247,13 @@
+     esac
+     # Disable shared library build on OS-X older than 10.3.
+     case $host_os in
++	darwin10*)
++	    can_build_shared=yes
++	    ;;
+ 	darwin[1-6]*)
+ 	    can_build_shared=no
+ 	    ;;
+-	darwin7*)
++	darwin[7-9]*)
+ 	    can_build_shared=yes
+ 	    ;;
+     esac
+--- gcc-4.1.2/ltcf-gcj.sh.sav	2005-07-15 22:30:53.000000000 -0400
++++ gcc-4.1.2/ltcf-gcj.sh	2009-11-30 20:36:51.000000000 -0500
+@@ -401,10 +401,13 @@
+     esac
+     # Disable shared library build on OS-X older than 10.3.
+     case $host_os in
++	darwin10*)
++	    can_build_shared=yes
++	    ;;
+ 	darwin[1-6]*)
+ 	    can_build_shared=no
+ 	    ;;
+-	darwin7*)
++	darwin[7-9]*)
+ 	    can_build_shared=yes
+ 	    ;;
+     esac
+--- gcc-4.1.2/ltconfig.sav	2006-07-04 16:30:34.000000000 -0400
++++ gcc-4.1.2/ltconfig	2009-11-30 20:37:44.000000000 -0500
+@@ -1112,10 +1112,13 @@
+   need_version=no
+   # Disable shared library build on OS-X older than 10.3.
+   case $host_os in
++      darwin10*)
++	  can_build_shared=yes
++	  ;;
+       darwin[1-6]*)
+ 	  can_build_shared=no
+ 	  ;;
+-      darwin7*)
++      darwin[7-9]*)
+ 	  can_build_shared=yes
+ 	  ;;
+   esac

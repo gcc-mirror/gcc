@@ -1,0 +1,32 @@
+--- gcc-4.7.1-orig/gcc/gcc.c	2012-02-28 17:31:38.000000000 +0000
++++ gcc-4.7.1/gcc/gcc.c	2012-07-26 07:38:24.000000000 +0100
+@@ -167,6 +167,10 @@
+ static const char *cross_compile = "0";
+ #endif
+ 
++/* The lang specs might wish to override the default linker.
++ */
++int force_no_linker = 0;
++
+ /* Greatest exit code of sub-processes that has been encountered up to
+    now.  */
+ static int greatest_status = 1;
+@@ -6843,7 +6847,8 @@
+ 
+   /* Run ld to link all the compiler output files.  */
+ 
+-  if (num_linker_inputs > 0 && !seen_error () && print_subprocess_help < 2)
++  if (num_linker_inputs > 0 && !seen_error () && print_subprocess_help < 2
++      && (! force_no_linker))
+     {
+       int tmp = execution_count;
+ 
+@@ -6908,7 +6913,7 @@
+   /* If options said don't run linker,
+      complain about input files to be given to the linker.  */
+ 
+-  if (! linker_was_run && !seen_error ())
++  if (! linker_was_run && !seen_error () && (! force_no_linker))
+     for (i = 0; (int) i < n_infiles; i++)
+       if (explicit_link_files[i]
+ 	  && !(infiles[i].language && infiles[i].language[0] == '*'))

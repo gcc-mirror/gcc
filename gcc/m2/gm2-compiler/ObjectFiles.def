@@ -1,0 +1,71 @@
+(* ObjectFiles.def determines whether object files exist.
+
+Copyright (C) 2018-2021 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE ObjectFiles ;
+
+(*
+    Title      : ObjectFiles
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Mon Jul  9 14:09:20 2018
+    Revision   : $Version$
+    Description: provides a module to determine whether object files
+                 are already known.  An object file will be known by
+                 its name and ultimately its inode.
+*)
+
+FROM DynamicStrings IMPORT String ;
+
+TYPE
+   FileObjects ;
+
+
+(*
+   RegisterModuleObject - returns TRUE if location has not already been registered.
+*)
+
+PROCEDURE RegisterModuleObject (fo: FileObjects; location: String) : BOOLEAN ;
+
+
+(*
+   IsRegistered - returns TRUE if the object at, location, is already registered.
+                  It uses the physical location on the filesystem to determine the
+                  uniqueness of the object file.
+*)
+
+PROCEDURE IsRegistered (fo: FileObjects; location: String) : BOOLEAN ;
+
+
+(*
+   InitFileObject - returns a new file object container.
+*)
+
+PROCEDURE InitFileObject () : FileObjects ;
+
+
+(*
+   KillFileObject - destroys a file object container.
+*)
+
+PROCEDURE KillFileObject (fo: FileObjects) : FileObjects ;
+
+
+END ObjectFiles.

@@ -1,0 +1,396 @@
+2004-12-22	Gaius Mulley <gaius@glam.ac.uk>
+
+	* more fixes to enable to the Z type to work.
+	* introduced GetM2ZRealType which maps onto the largest
+	  real type tree.
+	* 24 regression test failures out of 2148 on the Opteron LP64
+	  9 fail within ulm libraries (Procedure/Module scope nesting).
+	  15 fail with ISO import/export of enumeration types.
+	* exactly the same regression test failures on 32 bit i386
+	  implementation.
+	* fixed regression test path, all tests are build and run
+	  using gm2-harness-0.3
+
+2004-11-29	Gaius Mulley <gaius@glam.ac.uk>
+
+	* internal changes to ordinal type which now use the Z
+	  type (long_long_int) for internal calculations before
+	  being converted into the actual ordinal type at assignment
+	  to a variable or procedure parameter or return value.
+	* works on a 32 bit i386 but fails on the Opteron LP64 model.
+
+2004-11-22	Gaius Mulley <gaius@glam.ac.uk>
+
+        * compiler now checks for overflow at compile time
+	  when constructing constant expressions.
+
+2004-11-17	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed ppg to generate a comment for in-built rules when
+	  producing the EBNF documentation within gm2.texi
+	* updated gm2/gm2.texi to reflect availability of the
+	  gm2-harness which will build and test gm2 automatically.
+
+2004-11-12	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by John B. Wallace, Jr <wallacjb@enter.net>
+	  concerning negating a LONGINT constant
+	  (see testsuite/gm2/pim/run/TestLong[34].mod).
+	* updated gm2/TODO list
+	* gm2/gccgm2.c added functions to determine the size necessary
+	  for a Modula-2 constant.
+	* gm2/gm2.texi modified documentation to reflect the ISO rules
+	  concerning importing enumerated types.
+	* gm2/gm2-compiler/SymbolTable.mod fixed possible buffer overflow
+	  and integrated MakeConstLit with the changes to gccgm2.c.
+	* minor modifications made to gm2/gm2-libs-pim/README.texi
+	* moved a number of regression tests into pass/fail directories
+	  to reflect the expected ISO enumeration behaviour. Note
+	  that many of these now fail.
+
+2004-11-05	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by John B. Wallace, Jr <wallacjb@enter.net>
+	  concerning assignment of a constant to a LONGINT
+	  (see testsuite/gm2/pim/run/TestLong.mod).
+	  Creation of LONGINT and LONGCARD constant literals
+	  was broken for values > MAX(INTEGER).
+
+2004-10-29      John B. Wallace, Jr <wallacjb@enter.net>
+
+	* fixed infinite loop when calling StrToLongInt.
+	* contributed test code testsuite/gm2/pim/run/TestLong.mod
+
+2004-10-26	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed -Wpedantic-param-names option.
+	* added runtime tests and also parameter switch tests
+	* added testsuite/gm2/switches/pedantic-params
+	* added testsuite/gm2/pim/run and a number of old m2f tests
+	* made compiler check to see that opaque types are really
+	  equivalent to a pointer type if -Wextended-opaque is absent.
+	* added testsuite/gm2/switches/extended-opaque/{pass,fail}
+	  to stress this check.
+
+2004-10-19	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added -Wpedantic-param-names option to check that
+	  parameters to procedures declared in definition modules
+	  have identical names to their implementation module
+	  procedure counterparts.
+	* fixed bug report by Iztok Kobal. The compiler would
+	  crash when a constant was assigned to a procedure.
+
+2004-10-18	Gaius Mulley <gaius@glam.ac.uk>
+
+	* modified gm2/lang-specs.h to make the front end run
+	  with only the -S option. No longer requires -S -c.
+	  Bug reported by john o goyo <jgoyo@ca.inter.net>.
+
+2004-10-12	Diego Rodr=EDguez Rodr=EDguez <dieymir@yahoo.es>
+
+	* gm2/Make-lang.in introduced gm2.install rule so that
+	  GNU Modula-2 can be installed without overwriting an
+	  existing installation of gcc.
+	* gm2/README updated to explain how to only install gm2.
+
+2004-10-12	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by John B. Wallace, Jr
+	  <wallacjb@enter.net>. See testsuite/gm2/pim/run/pass/str6.mod.
+
+2004-10-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug reported by Iztok Kobal,
+	  GNU Modula-2 now allows a RETURN statement in the
+	  initialization section of the module.
+	* fixed another bug reported by Iztok Kobal,
+	  binary and unary large set operators failed when
+	  handling constant set values.
+
+2004-09-20	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed varient record bug as reported by John B. Wallace, Jr
+	  <wallacjb@enter.net>. See testsuite/gm2/pim/pass/varient.mod.
+
+2004-09-16	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug in gm2/gm2-compiler/Indexing.mod which
+	  occurred after the p2c translation.
+	* in turn this fixed a gm2m problem. The bug resulted in
+	  touching memory which would not have been malloced so
+	  this fix may have cured a number of problems.
+
+2004-09-14	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed the ncurses definition module and WindowDevice module.
+	* fixed M2RTS:Termination to call termination procedures in
+	  reverse.
+
+2004-09-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* tidied up gm2-compiler/M2Base.mod and introduced
+	  compatability matrices which include all the base
+	  types.
+
+2004-09-03	Gaius Mulley <gaius@glam.ac.uk>
+
+	* introduced SHORTINT and SHORTCARD data types.
+	* added ncurses.def example in examples/ncurses
+
+2004-08-31	Gaius Mulley <gaius@glam.ac.uk>
+
+	* modified SIZE handling so that SIZE is only available
+	  from SYSTEM when -Wpim2 is present.
+	* fixed bug as reported by "John B. Wallace, Jr."
+	  <wallacjb@enter.net>. A variable which when implicitly
+	  imported via an IMPORT module; failed.
+	  The variable was not being declared correctly by the
+	  GNU Modula-2 front end to the GCC back end.
+
+2004-08-27	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added new switch -Wpim2 to stipulate the Modula-2 PIM-2
+	  dialect.
+	* Made SIZE pervasive for ISO Modula-2 and PIM-[34] Modula-2
+	  As reported by Diego RodrÃ­guez RodrÃ­guez <dieymir@yahoo.es>.
+	  SIZE can be imported from SYSTEM when -Wpim2 is present.
+	* removed the association with ".def" and "@modula-2"
+	  inside gm2/lang-specs.h as this conflicts with shared library
+	  file extension .def used by gcc. Bug reported by Gerrit P. Haase
+	  <gp@familiehaase.de>.
+
+2004-08-26	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented type PROCESS for SYSTEM in the pim library
+	  directory (gm2/gm2-libs-coroutines).
+	* SYSTEM implements NEWPROCESS, TRANSFER, IOTRANSFER.
+	  This is achieved by using the GNU pthread library context
+	  mechanism.
+	* provided an Executive and TimerHandler module in
+	  (gm2/examples/executive).
+	* many bug fixes and regression tests show that 3 ulm standard
+          library modules fail.
+	* implemented MAX(REAL), MIN(REAL) and also provided access to
+	  three more gcc builtin functions: huge_val, huge_vall, huge_valf
+	* started work on a Logitech 3.0 compatible library.
+
+2004-07-06	Gaius Mulley <gaius@glam.ac.uk>
+
+	* improved error handling of unknown objects in EXPORT lists.
+	* added regression test
+	* implemented a few procedures in the ISO libraries.
+
+2004-07-02	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed many IMPORT bugs in inner modules
+
+2004-06-30	Gerrit Haase <gp@familiehaase.de>
+
+	* cygwin patch for gm2/Make-lang.in
+
+2004-06-29	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed EXPORT of an object from an inner module into an
+	  implementation module which EXPORTs the same object.
+	* fixed EXPORT of a procedure from an inner module into an
+	  outer module which is not exported but is assigned to a
+	  variable.
+
+2004-06-28	Gaius Mulley <gaius@glam.ac.uk>
+
+	* made flex lexical analysers ignore carriage return
+	* fixed bug in M2Quads.mod checking parameter of
+	  a const var before value was known.
+	* fixed local MODULEs so that they can FROM mod IMPORT
+	* tidied up some ulm implementation modules in ulm-lib-gm2/std
+
+2004-06-22	Gaius Mulley <gaius@glam.ac.uk>
+
+	* allowed LONGCARD compatibility with INTEGER
+	* allowed LONGINT compatibility with CARDINAL
+	* allowed LONGCARD compatibility with CARDINAL
+	* allowed LONGINT compatibility with INTEGER
+
+2004-06-21	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug in constant set declaration
+	  (see ulm library ulm-lib-gm2/std/Calendar.mod and
+	   testsuite/gm2/pim/pass/setconst.mod and
+           testsuite/gm2/pim/pass/setconst2.mod)
+	* all regression tests pass on the Opteron port of gm2.
+
+2004-06-18	Gaius Mulley <gaius@glam.ac.uk>
+
+	* implemented nested module within procedures.
+	  This allows a few more ulm library modules to compile.
+
+2004-06-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* renamed the -Wunbounded-by-reference option to
+	  -funbounded-by-reference as suggested by Waldek Hebisch.
+	* finished ISO SYSTEM implementation.
+	* ROTATE, SHIFT now work with smaller than WORD sized sets,
+	  WORD sized sets and larger than WORD sized sets.
+	* gm2-iso/SYSTEM.mod is called by the back end if larger than
+	  WORD sized sets are ROTATEd or SHIFTed.
+	* updated gm2.texi to include new sections describing ISO and PIM
+	  versions of the SYSTEM module.
+	* renamed m2.lex as m2.flex, c.lex as c.flex to fix a bug
+	  reported by Gerrit Haase while attempting the cygwin port.
+        * renamed gm2-compiler/m2lex.def as gm2-compiler/m2flex.def
+	* modified gm2-compiler/M2Comp to use m2flex
+	* modified Make-lang.in to use m2.flex and c.flex
+	* modified init/h2definit, init/gm2linit to use m2flex
+
+2004-05-10	Gaius Mulley <gaius@glam.ac.uk>
+
+	* gm2 now builds on FreeBSD 5.2.1
+	* removed to_upper and to_lower in p2c
+	* made gm2/gm2-libs/configure and friends test for `strsignal'
+	* fixed initialization bug (missing memset)
+	  in gm2/gm2-compiler/Indexing.mod
+
+2004-05-06	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added SHIFT and ROTATE into ISO SYSTEM and
+	  made the compiler shift and rotate word and multi-word
+	  set types. Multi-word set rotate and shifts are implemented
+	  by calling ISO SYSTEM runtime procedures. Word sized sets or
+	  smaller are implemented inline using shift/rotate instructions.
+
+2004-05-05	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug report by Paul Whittington <pwhittington@nitrodata.com>
+          (see testsuite/gm2/link/pim/fail/import.mod).
+
+2004-04-30	Gaius Mulley <gaius@glam.ac.uk>
+
+	* updated gm2.texi to reflect new options and changes to the
+	  run-time system.
+
+2004-04-28	Gaius Mulley <gaius@glam.ac.uk>
+
+	* introduced -Wunbounded-by-reference option which will make a
+	  reference to non VAR unbounded data providing it is not written to
+	  within the callee procedure.
+        * introduced -Wverbose-unbounded option which displays names of
+	  unbounded parameters which the compiler will implement as
+	  references even though they were specified as non VAR parameters.
+
+2004-04-27	Gaius Mulley <gaius@glam.ac.uk>
+
+	* introduced -Wcase, -Wnil runtime checks
+	* introduced -Wcheck-all to enable all runtime flags
+	* updated documentation to refect new options
+
+2004-04-19	Gaius Mulley <gaius@glam.ac.uk>
+
+	* added more address regression tests
+	* fixed address arithmetic bugs as reported by Waldek Hebisch
+	* fixed record referencing bug as reported by Waldek Hebisch
+
+2004-04-08	Gaius Mulley <gaius@glam.ac.uk>
+
+	* tagged CVS using gm2_0_43
+
+2004-04-07	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 Release 0.43
+	* The opteron port is finally integrated into CVS
+	* fixed bug in vararg parameter declaration which in turn..
+	* fixed varargs within the opteron port
+	* checked in "work in progress" gm2/gm2-iso/COROUTINES.mod
+
+2004-04-06	Gaius Mulley <gaius@glam.ac.uk>
+
+	* removed gm2-compiler/M2Stack.def gm2-compiler/M2Stack.mod
+	* made bnf/h2def.bnf 64 bit clean, but not fixed any bugs in h2def.
+
+2004-04-05	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed gm2.paranoid and all regression tests for the Opteron port
+	* checked in the opteron port which includes many changes
+	* int/word based types are now separated from pointer based types.
+	* modified p2c to use int for INTEGER and unsigned int for
+	  CARDINAL rather than int and unsigned long.
+	* added gm2-compiler/M2StackWord and gm2-compiler/M2StackAddress
+	* added gm2-compiler/Indexing to handle arbitary sized arrays of
+	  pointers.
+	* removed many INTEGER/CARDINAL <-> ADDRESS coersions
+	* fixed compiler to use new modules above (many changes)
+	* have moved away from M2Printf using WORD parameters to ARRAY OF
+	BYTE as this was not 64 bit clean
+	* fixed p2c to handle ARRAY OF BYTE correctly
+	* fixed gm2 to handle ARRAY OF BYTE correctly
+
+2004-04-01	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed record parameter equivalence bug as reported by Waldek
+	  (see testsuite/gm2/pim/pass/record4.mod)
+
+2004-03-26	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed array type equivalence bug as reported by Waldek
+	  (see testsuite/gm2/pim/pass/array2.mod)
+
+2004-03-25	Gaius Mulley <gaius@glam.ac.uk>
+
+	* Implemented __FUNCTION__ keyword which is translated
+	  into a string containing the name of the current visible
+	  function.
+	* Retrofitted a function name into many of the runtime
+	  procedures within M2RTS and added a new
+	  procedure Halt to M2RTS.
+
+2004-03-18	Gaius Mulley <gaius@glam.ac.uk>
+
+	* Implemented MIN and MAX for types LONGINT and LONGCARD
+
+2004-03-17	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 Release 0.42
+	* MinGW cross compilation port entered into CVS
+	* added -Wtarget-ar to gm2lcc.mod, gm2specs.c lang-specs.h
+	* added gm2/configure and associated files to determine
+	  the whereabouts of target `ar'.
+	* added gm2/gm2-libs/configure and associated files to
+	  test for target libraries, header files and C functions.
+	  Required to implement the gm2-libs.
+
+2004-02-13	Gaius Mulley <gaius@glam.ac.uk>
+
+	* GM2 Release 0.41
+	* native sparc port passes make gm2.paranoid and make check-gm2
+	* native i386  port passes make gm2.paranoid and make check-gm2
+	* fixed bug in M2GenGCC.mod, coerced constant set parameter
+	  values to correct set type.
+	* fixed bug in M2GenGCC.mod when assigning constant to an ISO WORD
+
+2004-02-10	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug in gccgm2.c CompareTrees should be tested for <= 0
+	  when testing for small set sizes.
+	* fixed Make-lang.in so that we only link gm2-compiler-boot/clex.o
+	  during stage1. This build error showed up during cross building.
+
+2004-02-05	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bug as demonstrated in
+          testsuite/gm2/pim/pass/subrange4.mod
+	* all regression tests now pass on the *86 platform
+	  under Debian Woody.
+
+2004-02-05	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed more constant subrange bugs.
+	* added new quad to delimit the start of declaration
+	  scope of a procedure.
+	* regression test failures reduced from 9 to 3.
+
+2004-01-03	Gaius Mulley <gaius@glam.ac.uk>
+
+	* fixed bugs in forward and previous references within gm2.texi
+        * fixed more constant set conversion bugs which reduces
+	  the number of regression failures from 15 to 9.
+

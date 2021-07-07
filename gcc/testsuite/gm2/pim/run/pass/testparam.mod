@@ -1,0 +1,70 @@
+(* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc. *)
+(* This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+MODULE testparam ;
+
+
+FROM SYSTEM IMPORT SIZE ;
+FROM NumberIO IMPORT WriteCard ;
+FROM StrIO IMPORT WriteLn ;
+
+TYPE
+   r = RECORD
+          b: CHAR ;
+          c: CARDINAL ;
+       END ;
+
+   typeArray = ARRAY [1..20] OF r ;
+
+
+PROCEDURE arrayUb (a: ARRAY OF r) ;
+BEGIN
+   IF HIGH(a)#19
+   THEN
+      HALT
+   END
+END arrayUb ;
+
+
+PROCEDURE array (a: typeArray) ;
+BEGIN
+   IF a[5].b#'g'
+   THEN
+      HALT
+   END
+END array ;
+
+
+PROCEDURE char (ch: CHAR) ;
+BEGIN
+   IF ch#'g'
+   THEN
+      HALT
+   END
+END char ;
+
+VAR
+   ch    : CHAR ;
+   global: typeArray ;
+BEGIN
+   global[5].b := 'g' ;
+   WriteCard(SIZE(global[5]), 6) ; WriteLn ;
+   ch := 'g' ;
+   char(ch) ;
+   char('g') ;
+   arrayUb(global) ;
+   array(global)
+END testparam.

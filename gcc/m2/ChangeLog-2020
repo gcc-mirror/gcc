@@ -1,0 +1,1707 @@
+2020-11-10       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2Quads.mod:  improved comment and tidied up
+          formatting.
+	* m2/gm2-compiler/M2Range.def:  (GetMinMax) rename parameter.
+        * m2/gm2-compiler/M2Range.mod:  (OutOfRange) detect overflow of
+          constants.  (GetMinMax) add asserts against overflow.
+	* m2/gm2-gcc/m2type.c:  (BuildSubrangeType) detect overflow
+          and generate error.  (BuildSubrangeType) set TYPE_UNSIGNED using
+          base type.
+
+2020-11-03       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2GCCDeclare.mod:  (DeclareSubrange) reverted.
+	* m2/gm2-compiler/M2GenGCC.mod:  (CodeBecomes) revert to use
+	  a single BuildAssignmentTree if a non SYSTEM typed
+	  variable assignment is required.
+	* m2/gm2-gcc/m2type.c:  (BuildSubrangeType) revert and tidy up.
+          Implement using build_range_type as before.
+
+2020-11-01       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeBecomes) interim
+          checkin with debugging info enabled.
+	* gcc/m2/gm2-gcc/m2convert.c:  (ToSubrange) New procedure function.
+	* gcc/m2/gm2-gcc/m2convert.def:  (ToSubrange) New procedure function.
+	* gcc/m2/gm2-gcc/m2convert.h:  (ToSubrange) New procedure function.
+	* gcc/m2/gm2-gcc/m2statement.c:  (BuildAssignmentTree) added assert.
+	* gcc/m2/gm2-gcc/m2tree.c:  (debug_tree) added.
+	* gcc/m2/gm2-gcc/m2tree.def:  (debug_tree) added.
+	* gcc/m2/gm2-gcc/m2tree.h:  (debug_tree) added.
+	* gcc/m2/gm2-lang.c:  (convert_loc) added assert.
+	* gcc/m2/gm2-libs-iso/SysClock.mod:  (tidied up formatting).
+	* gcc/m2/gm2-libs/Args.def:  (tidied up formatting).
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeBecomes) disabled
+        debugging.
+
+2020-10-27       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-gcc/gcc-consolidation.h:  include tree-nested.h.
+	* m2/gm2-gcc/m2statement.c:  rewrite the nested function
+	iteration code using new methods.
+	* m2/gm2-lang.c:  rewrite the nested function
+	iteration code using new methods.
+
+2020-10-05       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2.texi:  corrected key commands for debian packages.
+	* m2/gm2-compiler/SymbolTable.def:  (MakeConstLit) additional
+	parameter which denotes token location of creation.
+	* m2/gm2-compiler/SymbolTable.mod:  (MakeConstLit) additional
+	parameter which denotes token location of creation.
+	* m2/gm2-compiler/MetaError.def:  New %A specifier for non
+	recoverable user errors.
+	* m2/gm2-compiler/MetaError.mod:  New %A specifier for non
+	recoverable user errors.  Implemented and wrappers applied to
+	exported procedures.  New error kind, abort.
+	* m2/gm2-compiler/M2Quads.mod:  all MakeConstLit references
+	changed to include extra location information.
+	* m2/gm2-compiler/M2Quads.mod:  many changes throughout
+	relating to MakeConstLit requiring an extra parameter.  All
+	builtin procedure functions now use virtual tokens where
+	sensible to convey subexpressions being created.  Many error
+	messages create subexpressions to give more precise locations.
+	* m2/gm2-compiler/M2ALU.mod:  (ToArrayValue) extra parameter to
+	denote token location of creation.
+	* m2/gm2-compiler/M2Bitset.mod:  (MakeBitset) change calls to
+	MakeConstLit to use BuiltinTokenNo.
+	* m2/bnf/m2-3.bnf:  (BuildReThrow) pass tokenno.
+	* m2/gm2-compiler/M2System.mod:  (AttemptToCreateSetType) changed
+	all calls to MakeConstLit to use BuiltinTokenNo.
+	* m2/gm2-compiler/M2GenGCC.mod:  (FoldStandardFunction) changed
+	calls to MakeConstLit.
+	* m2/gm2-compiler/M2Range.mod:  (MakeAndDeclareConstLit) pass
+	token location to MakeConstLit.
+	* m2/gm2-compiler/P2SymBuild.mod:  (BuildNumber) use token
+	location and pass it to MakeConstLit.
+
+2020-09-29       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2Quads.mod:  (BuildLengthFunction) use
+	MakeVirtualToken to convey the LENGTH expression as a
+	subexpression.  (MakeConstLitTok) New procedure function.
+	(BuildHighFunction) use MakeVirtualToken to convey the LENGTH
+	expression as a	subexpression.
+
+2020-09-28       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2Quads.mod:  (BuildAdrFunction) use
+	MakeVirtualToken to convey the ADR expression as a subexpression.
+
+2020-09-23       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2Configure.def:  tidied up comments.
+	* m2/gm2-compiler/M2Quads.mod:  (BuildRealFuncProcCall) tidied up
+	indentation.  (MakeLengthConst) tidied up indentation.
+	(BuildMakeAdrFunction) generate sub expression virtual token, made
+	use of the token position for each parameter.
+	(BuildShiftFunction) generate sub expression virtual token, made
+	use of the token position for each parameter.
+	(BuildRotateFunction) generate sub expression virtual token, made
+	use of the token position for each parameter.
+	* m2/gm2.texi:  changed key and also use buster repository (rather
+	than stretch).
+
+2020-09-16       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-libs/SysStorage.mod:  (enableDeallocation = TRUE),
+	(enableZero = FALSE), (enableTrace = FALSE).
+	* m2/mc-boot:  (regenerated).
+
+2020-09-15       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* major changes to ensure that four kinds of strings are
+        produced and remain separate.
+	* gcc/m2/Make-lang.in:  (m2/mc/decl.o) added debugging clause.
+	* gcc/m2/gm2-compiler/M2GCCDeclare.mod:  use IsConstStringM2nul
+        and IsConstStringCnul.
+	* gcc/m2/gm2-compiler/M2Quads.mod:  (ConvertStringToC) removed.
+        (ManipulateParameters) use MakeConstStringCnul and
+        MakeConstStringM2nul.
+	* gcc/m2/gm2-compiler/P2SymBuild.mod:  tidied up formatting.
+	* gcc/m2/gm2-compiler/SymbolTable.def:  export
+        MakeConstStringC, MakeConstStringCnul, MakeConstStringM2nul,
+        IsConstStringM2, IsConstStringC, IsConstStringM2nul, IsConstStringCnul,
+        GetConstStringM2, GetConstStringC, GetConstStringM2nul,
+	GetConstStringCnul.
+	* gcc/m2/gm2-compiler/SymbolTable.mod:  implemented
+        MakeConstStringC, MakeConstStringCnul, MakeConstStringM2nul,
+        IsConstStringM2, IsConstStringC, IsConstStringM2nul, IsConstStringCnul,
+	GetConstStringM2, GetConstStringC, GetConstStringM2nul, GetConstStringCnul.
+	* gcc/m2/gm2-libs/libc.def:  (atexit) corrected prototype to use procedure
+	type which returns an int and no arguments.
+	* gcc/m2/mc-boot/GFIO.c:  rebuilt.
+	* gcc/m2/mc-boot/Gdecl.c:  rebuilt.
+	* gcc/m2/mc-boot/Glibc.h:  rebuilt.
+
+2020-09-13       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gm2-compiler/M2StackAddress.mod:  changed tail to prev.
+	Improved formatting and removed redundant intermediate record
+	types.
+	* gm2-compiler/PCSymBuild.mod  improved formatting.
+	* gm2-libs/SysStorage.mod:  implement tracing switch,
+	memzero switch, deallocation switch.
+
+2020-09-12       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/Make-lang.in:  modify the link rule for mc to
+	include RTcodummy.o.
+	* gcc/m2/gm2-libs/SFIO.mod:  corrected typo in #ifdef.
+	* gcc/m2/mc-boot/Gdecl.c:  (rebuilt).
+	* gcc/m2/mc/decl.mod:  added many case clauses for length.
+
+2020-09-08       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/Make-lang.in:  use 11.0 for mc regen.
+	* gcc/m2/config-lang.in:  removed Ulm build directories.
+	* gcc/m2/gm2-compiler/M2Base.mod:  remove special case for
+	opaque types.  Ensure that different opaque types are incompatible.
+	* gcc/m2/gm2-compiler/M2Preprocess.mod:  (RemoveFiles) has a
+	return integer.
+	* gcc/m2/gm2-compiler/M2Quads.mod:  parameter checking allows
+	ADDRESS and opaque types to be passed.
+	* gcc/m2/gm2-libs/DynamicStrings.mod:  tidied up formatting.
+	(CheckOn) will enable checking thoughout the module.
+	* gcc/m2/mc-boot/GASCII.c:  (rebuilt).
+	* gcc/m2/mc-boot/GASCII.h:  (rebuilt).
+	* gcc/m2/mc-boot/GArgs.c:  (rebuilt).
+	* gcc/m2/mc-boot/GArgs.h:  (rebuilt).
+	* gcc/m2/mc-boot/GAssertion.c:  (rebuilt).
+	* gcc/m2/mc-boot/GAssertion.h:  (rebuilt).
+	* gcc/m2/mc-boot/GBreak.c:  (rebuilt).
+	* gcc/m2/mc-boot/GBreak.h:  (rebuilt).
+	* gcc/m2/mc-boot/GCOROUTINES.h:  (rebuilt).
+	* gcc/m2/mc-boot/GCmdArgs.c:  (rebuilt).
+	* gcc/m2/mc-boot/GCmdArgs.h:  (rebuilt).
+	* gcc/m2/mc-boot/GDebug.c:  (rebuilt).
+	* gcc/m2/mc-boot/GDebug.h:  (rebuilt).
+	* gcc/m2/mc-boot/GDynamicStrings.c:  (rebuilt).
+	* gcc/m2/mc-boot/GDynamicStrings.h:  (rebuilt).
+	* gcc/m2/mc-boot/GEnvironment.c:  (rebuilt).
+	* gcc/m2/mc-boot/GEnvironment.h:  (rebuilt).
+	* gcc/m2/mc-boot/GFIO.c:  (rebuilt).
+	* gcc/m2/mc-boot/GFIO.h:  (rebuilt).
+	* gcc/m2/mc-boot/GFormatStrings.c:  (rebuilt).
+	* gcc/m2/mc-boot/GFormatStrings.h:  (rebuilt).
+	* gcc/m2/mc-boot/GFpuIO.c:  (rebuilt).
+	* gcc/m2/mc-boot/GFpuIO.h:  (rebuilt).
+	* gcc/m2/mc-boot/GIO.c:  (rebuilt).
+	* gcc/m2/mc-boot/GIO.h:  (rebuilt).
+	* gcc/m2/mc-boot/GM2EXCEPTION.c:  (rebuilt).
+	* gcc/m2/mc-boot/GM2EXCEPTION.h:  (rebuilt).
+	* gcc/m2/mc-boot/GM2RTS.c:  (rebuilt).
+	* gcc/m2/mc-boot/GM2RTS.h:  (rebuilt).
+	* gcc/m2/mc-boot/GMemUtils.c:  (rebuilt).
+	* gcc/m2/mc-boot/GMemUtils.h:  (rebuilt).
+	* gcc/m2/mc-boot/GNumberIO.c:  (rebuilt).
+	* gcc/m2/mc-boot/GNumberIO.h:  (rebuilt).
+	* gcc/m2/mc-boot/GPushBackInput.c:  (rebuilt).
+	* gcc/m2/mc-boot/GPushBackInput.h:  (rebuilt).
+	* gcc/m2/mc-boot/GRTExceptions.c:  (rebuilt).
+	* gcc/m2/mc-boot/GRTExceptions.h:  (rebuilt).
+	* gcc/m2/mc-boot/GRTco.h:  (rebuilt).
+	* gcc/m2/mc-boot/GRTint.c:  (rebuilt).
+	* gcc/m2/mc-boot/GRTint.h:  (rebuilt).
+	* gcc/m2/mc-boot/GSArgs.c:  (rebuilt).
+	* gcc/m2/mc-boot/GSArgs.h:  (rebuilt).
+	* gcc/m2/mc-boot/GSFIO.c:  (rebuilt).
+	* gcc/m2/mc-boot/GSFIO.h:  (rebuilt).
+	* gcc/m2/mc-boot/GSYSTEM.h:  (rebuilt).
+	* gcc/m2/mc-boot/GSelective.h:  (rebuilt).
+	* gcc/m2/mc-boot/GStdIO.c:  (rebuilt).
+	* gcc/m2/mc-boot/GStdIO.h:  (rebuilt).
+	* gcc/m2/mc-boot/GStorage.c:  (rebuilt).
+	* gcc/m2/mc-boot/GStorage.h:  (rebuilt).
+	* gcc/m2/mc-boot/GStrCase.c:  (rebuilt).
+	* gcc/m2/mc-boot/GStrCase.h:  (rebuilt).
+	* gcc/m2/mc-boot/GStrIO.c:  (rebuilt).
+	* gcc/m2/mc-boot/GStrIO.h:  (rebuilt).
+	* gcc/m2/mc-boot/GStrLib.c:  (rebuilt).
+	* gcc/m2/mc-boot/GStrLib.h:  (rebuilt).
+	* gcc/m2/mc-boot/GStringConvert.c:  (rebuilt).
+	* gcc/m2/mc-boot/GStringConvert.h:  (rebuilt).
+	* gcc/m2/mc-boot/GSysExceptions.h:  (rebuilt).
+	* gcc/m2/mc-boot/GSysStorage.c:  (rebuilt).
+	* gcc/m2/mc-boot/GSysStorage.h:  (rebuilt).
+	* gcc/m2/mc-boot/GTimeString.c:  (rebuilt).
+	* gcc/m2/mc-boot/GTimeString.h:  (rebuilt).
+	* gcc/m2/mc-boot/GUnixArgs.h:  (rebuilt).
+	* gcc/m2/mc-boot/Gdecl.c:  (rebuilt).
+	* gcc/m2/mc-boot/Gdtoa.h:  (rebuilt).
+	* gcc/m2/mc-boot/Gerrno.h:  (rebuilt).
+	* gcc/m2/mc-boot/Gkeyc.c:  (rebuilt).
+	* gcc/m2/mc-boot/Gldtoa.h:  (rebuilt).
+	* gcc/m2/mc-boot/Glibc.h:  (rebuilt).
+	* gcc/m2/mc-boot/Glibm.h:  (rebuilt).
+	* gcc/m2/mc-boot/Gmcp1.c:  (rebuilt).
+	* gcc/m2/mc-boot/Gmcp2.c:  (rebuilt).
+	* gcc/m2/mc-boot/Gmcp3.c:  (rebuilt).
+	* gcc/m2/mc-boot/Gmcp4.c:  (rebuilt).
+	* gcc/m2/mc-boot/Gmcp5.c:  (rebuilt).
+	* gcc/m2/mc-boot/Gtermios.h:  (rebuilt).
+	* gcc/m2/mc-boot/Gvarargs.c:  (rebuilt).
+	* gcc/m2/mc-boot/Gwrapc.h:  (rebuilt).
+	* gcc/m2/mc/keyc.mod:  (initMacros) include EOF.
+	* (useSSize_t) New function.  (genDefs) call checkSysTypes.
+	* (checkSysTypes) New function.
+	* gcc/m2/mc/varargs.mod:  (varargs_copy) convert result of
+	* pointer subtraction into CARDINAL.
+	* libgm2/libm2iso/RTco.c:  (stdlib.h) included.
+
+2020-08-23       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-internals.texi:  (changed copyright).
+	* m2/gm2-libs-coroutines/README.texi:  (changed copyright).
+	* m2/gm2-libs-coroutines/SYSTEM.mod:  (reformatted).
+	* m2/gm2-libs-coroutines/TimerHandler.def:  (WaitOn)
+	parameter is changed to VAR.
+	* m2/gm2-libs-coroutines/TimerHandler.mod:  (Sleep)
+	use temporary variable now that WaitOn uses a VAR parameter.
+	(WaitOn) assign parameter to NIL when the wait completes.
+	* m2/gm2-libs-iso/README.texi:  (changed copyright).
+	* m2/gm2-libs-pim/README.texi:  (changed copyright).
+	* m2/gm2-libs/README.texi:  (changed copyright).
+	* m2/gm2-libs/RTint.mod:  Reformatted.  Call displayProcesses
+	when trace debugging.  Many bug fixes which allow for multiple
+	timer processes to be waiting.  (See
+	testsuite/gm2/pimcoroutines/run/pass/testtime.mod,
+	testsuite/gm2/iso/run/pass/tinytimer.mod,
+	testsuite/gm2/iso/run/pass/concurrentstore.mod,
+	testsuite/gm2/iso/run/pass/contimer.mod).
+	* m2/Makefile.in:  (regenerated).
+	* m2/aclocal.m4:  (regenerated).
+	* m2/configure:  (regenerated).
+	* m2/libm2cor/Makefile.in:  (regenerated).
+	* m2/libm2iso/Makefile.am:  (M2DEFS) added Preemptive.def.
+	(M2MODS) added Preemptive.mod.
+	* m2/libm2iso/Makefile.in:  (regenerated).
+	* m2/libm2iso/RTco.c:  tidied up and added more developer trace
+	debugging.
+	* m2/libm2log/Makefile.in:  (regenerated).
+	* m2/libm2min/Makefile.in:  (regenerated).
+	* m2/libm2pim/Makefile.in:  (regenerated).
+	* m2/gm2-libs-iso/Preemptive.def:  (New file).
+	* m2/gm2-libs-iso/Preemptive.mod:  (New file).
+
+2020-08-08       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-libs-iso:  update formatting.  Also fixed bugs
+	when processes are created, they should not be removed
+	from a queue they are not already on.  (Add) used instead
+	of OnReadyQueue or OnPassiveQueue.
+	* testsuite/gm2/iso/run/pass/concurrentstore.mod:  (New
+	test case)
+
+2020-07-21       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/Make-file.in:  build mc using HOSTCC allowing gm2 to be
+	built by a cross compiler.
+
+2020-07-09       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* These following fixes remove preprocessed sources from
+	/tmp after compilation.
+	* m2/gm2-compiler/M2Preprocess.mod:
+	(InstallTerminationProcedure) removed from import and
+	no longer used.  (atexit) imported and replaces
+	InstallTerminationProcedure.
+	* m2/gm2-libs/libc.def:  (atexit) add return result.
+	* m2/mc-boot-ch/Glibc.c:  (libc_atexit) added wrapper
+	for atexit.
+
+2020-07-07       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2GCCDeclare.def:  (PrintSym) exported.
+	* m2/Make-lang.in:  (m2.install-plugin) rewritten so that
+	it installs correctly when built as a cross compiler.
+
+2020-07-04       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/Make-lang.in:  (GM2_FLAGS) add -fauto-init.
+	(MCOPTIONS) include -fauto-init.
+	* m2/gm2-compiler/M2GCCDeclare.mod:  (PrintSym) New
+	exported debugging procedure.
+	* m2/gm2-compiler/M2GenGCC.mod:  (CodeNewLocalVar)
+	call AutoInitialize.  (AutoInitialize) New procedure.
+	(AutoInitVariable) New procedure.
+	* m2/gm2-compiler/M2Options.def:  (AutoInit) New global
+	variable.  (SetAutoInit) New procedure defined.
+	* m2/gm2-compiler/M2Options.mod:  (SetAutoInit) New procedure
+	which assigns AutoInit.  Tidied up formatting and added many
+	new comments for procedures.
+	* m2/gm2-compiler/SymbolTable.def:  (NoOfVariables)
+	New procedure function defined.
+	* m2/gm2-compiler/SymbolTable.mod:  (NoOfVariables)
+	New procedure function.
+	* m2/gm2-gcc/m2options.h:  add definition for SetAutoInit.
+	* m2/gm2-lang.c:  detect -fauto-init option and pass it
+	to M2Options.
+	* m2/gm2.texi:  added description about -fauto-init option.
+	* m2/lang-options.h:  added -fauto-init option description.
+	* m2/lang.opt:  added -fauto-init option.
+	* m2/mc/README:  corrected name.
+
+2020-06-31       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/examples/cppDef/Makefile:  improved clean.
+	* m2/gm2-compiler/gm2lcc.mod:  (ConCatStartupFile)
+	added comment and also check to see if the object file
+	has already been included.  (FindModulesInFileList)
+	check to see that mainobject will not be a duplicate object.
+	* m2/gm2spec.c:  (updated comment substiting xgm2 for gm2).
+	* m2/m2-link-support.h:  (SCAFFOLDNAME) New declaration.
+	(GM2CC) use SCAFFOLDNAME.  (GM2LCC) use SCAFFOLDNAME.
+	(GM2LGEN) renamed parameters SCAFFOLDSRC and MAINOBJECT.
+	(GM2L_COMBINE) renamed parameters SCAFFOLDSRC and MAINOBJECT.
+	(M2CPP) remove -quiet as this is now present in
+	cpp_unique_options.  (MAKEINIT) use SCAFFOLDNAME.  (MODULES)
+	always pass %i to GM2L.  (M2LINK) always use original src name.
+	call AS with a destination filename previxed by %w to preserve
+	object filename (immune from -dumpdir) necessary for the
+	gm2lcc module link.
+	(Fixes made so that -fcpp work during linking)
+	(see m2/examples/cppDef).
+
+2020-06-30       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* configure.ac:  (compare_exclusions) include M2Version
+	in list of objects to ignore.
+        * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/11-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+
+2020-06-30       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-gcc/m2expr.c:  tidied up comments and removed
+	Modula-2 code related --fixme--.
+
+2020-06-29       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-libs-iso/README.texi:  updated dates and use
+	free documentation license 1.3 as per GCC.
+	* m2/gm2-libs-pim/README.texi:  updated dates and use
+	free documentation license 1.3 as per GCC.
+	* m2/gm2-libs/README.texi:  updated dates and use
+	free documentation license 1.3 as per GCC.
+
+2020-06-28       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/man:  removed as it is automatically generated from gm2.texi.
+
+2020-06-27       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-gcc/rtegraph.c:  tidied up some comments.
+	* m2/el/gm2-mode.el:  fixed copyright date.
+	* m2/plugin/m2rte.c:  (execute) only check the first
+	basic block.  This fixes the constructor2.mod regression
+	test found in
+	(testsuite/gm2/iso/run/pass/constructor2.mod).
+	All regression tests pass on amd64.
+	* m2/config-lang.in:  corrected copyright dates.
+	* m2/configure.ac:  corrected copyright dates.
+	* m2/gm2-internals.texi:  added copyright header.
+	* m2/gm2-lang.c:  corrected copyright dates.
+	* m2/gm2-lang.h:  corrected copyright dates.
+	* m2/lang-options.h:  corrected copyright dates.
+	* m2/lang-specs.h:  corrected copyright dates.
+	* m2/lang.opt:  corrected copyright dates.
+	* m2/m2.flex:  corrected copyright dates.
+	* m2/images/LICENSE.IMG:  corrected copyright date.
+	* m2/examples/callingC/libprintf.def:  corrected copyright
+	dates.
+	* m2/examples/cplusplus/cppcatchm2/Makefile.in:  corrected
+	copyright dates.
+	* m2/examples/cplusplus/cppcatchm2/cpp.cc:  corrected
+	copyright dates.
+	* m2/examples/cplusplus/cppcatchm2/cpp.def:  corrected
+	copyright dates.
+	* m2/examples/cplusplus/cppcatchm2/m2.def:  corrected
+	copyright dates.
+	* m2/examples/cplusplus/cppcatchm2/m2.mod:  corrected
+	copyright dates.
+	* m2/examples/cplusplus/m2catchcpp/Makefile.in:  corrected
+	copyright dates.
+	* m2/examples/cplusplus/m2catchcpp/cpp.cpp:  corrected
+	copyright dates.
+	* m2/examples/cplusplus/m2catchcpp/cpp.def:  corrected
+	copyright dates.
+	* m2/examples/cplusplus/m2catchcpp/m2.mod:  corrected
+	copyright dates.
+	* m2/examples/cppDef/Makefile:  corrected dates.
+	* m2/examples/cppDef/a.def:  corrected dates.
+	* m2/examples/cppDef/a.mod:  corrected dates.
+	* m2/examples/cppDef/b.mod:    corrected dates.
+	* m2/examples/executive/Makefile:  rewrote the rules with
+	using -fmakeall.  Corrected dates.
+	* m2/examples/executive/testtime.mod:  changed the timer
+	delay values.  Corrected dates.
+	* m2/examples/executive/README:  updated instructions and
+	description after changing the test code.
+	* m2/examples/executive/testtime.mod:  improved the output
+	diagnostics of the example.
+	* m2/examples/executive/testexecutive.mod:  improved the
+	messages generated by the test processes.
+	* m2/examples/cppDef/Makefile:  (all) removed -fmakeall
+	and rewrote using separate compile and link commands.
+	* m2/init/gm2-gccinit:  use GPL3 and correct dates.
+	* m2/init/gm2lccinit:  use GPL3 and correct dates.
+	* m2/init/gm2lgeninit:  use GPL3 and correct dates.
+	* m2/init/gm2linit:  use GPL3 and correct dates.
+	* m2/init/gm2lorderinit:  use GPL3 and correct dates.
+	* m2/init/gm2minit:  use GPL3 and correct dates.
+	* m2/init/h2definit:  use GPL3 and correct dates.
+	* m2/init/mcinit:  use GPL3 and correct dates.
+	* m2/init/ppginit:  use GPL3 and correct dates.
+
+2020-06-26       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/m2-link-support.h:  added %{fcpp:%g.mod;:%i} as the
+	source component to GM2L.  Fixes a sigsegv bug reported by
+	DragiÅ¡a DuriÄ, when using gm2 -fmodules -c foo.mod.
+	* m2/gm2-compiler/M2Range.mod:  (FoldParameterAssign)
+	change warning to an error to prevent widening causing
+	runtime problems.
+	* m2/plugin/m2rte.c:  added comments to many of the
+	functions.
+	* m2/plugin/m2rte.c:  finished adding comments to all of the
+	functions.
+	* m2/gm2-gcc/rtegraph.c:  added comments to all of the
+	functions.
+	* m2/www/tools/texi2tr/html/license.html:  corrected license
+	summary of libraries.
+	* m2/gm2-gcc/rtegraph.c:  undef DEBUGGING.
+	* m2/gm2-gcc/rtegraph.c:  tidied up comments.
+	* m2/gm2.texi:  tidied up explanation of expression compatibility.
+
+2020-06-25       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Removed -fmakeall and friends.
+	* m2/gm2-lang.c:  case clauses (OPT_fclean), (OPT_fmakeall),
+	(OPT_fmakeall0), (OPT_fmake_I_)  removed from the driver.
+	* m2/gm2.texi:  removed references to -fmakeall, -fclean,
+        -fmakeall0, -fmake-I=.
+	* m2/m2-link-support.h:  removed support for (-fmakeall).
+        (GM2M) removed.  (MAKEALL) removed.  (MODULA_LINK_SUPPORT)
+        adjusted as MAKEALL is no longer used.  (GENERAL_OPTIONS)
+        include %{i*}.  (GM2CC_OPTIONS) include %{i*}.
+        Update copyright dates.
+	* m2/www/tools/texi2tr/src/texi2tr.py:  (doXref) New
+        function.  (populateFunctions) handle @command.
+	* m2/gm2.texi:  (Example compile and link) improved the example
+	description.
+	* m2/gm2.texi:  (Type compatibility) provide language
+	references for further details.  (Expression compatibility)
+	rewritten.  (Assignment compatibility) added language references
+	and reworded section.
+
+2020-06-24       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2.texi:  resumed the git browsing url.
+
+2020-06-23       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2.texi:  purged much of the older release information.
+	Updated git repository information.
+
+2020-06-22       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2.texi:  purged much of the older release information.
+	Updated git repository information.
+	* m2/www/tools/html:  rewritten hand build pages to reflect
+	new release structure.
+
+2020-06-18       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+        * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/11-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+	* gcc/m2/Make-lang.in:  use gm2 for driver name instead of
+        xgm2.
+	* testsuite/lib/gm2.exp:  look for gm2 rather than xgm2.
+
+2020-06-17       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* regenerated patches since the mechanism for
+	GM2_FOR_TARGET has changed.
+        * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/11-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+	* gcc/m2/Make-lang.in:  changed xgm2 to gm2.  Fixed
+        dates.
+	* m2/gm2-libs/config-lang.in:  version 1.9.4.
+
+2020-06-16       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2spec.c:  (LANGSPEC) removed unused define.
+        (MATHLIB) removed unused define.
+        (THREADLIB) removed unused define.
+	* m2/gm2.texi:  removed references to pth and
+        use Python3 for all examples.
+	* m2/version.c:  1.9.4.
+
+2020-06-15       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+        * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/11-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+	* gcc/m2/gm2-compiler/M2Check.mod:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/RTcodummy.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/RTintdummy.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/Selective.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/SysExceptions.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/UnixArgs.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/choosetemp.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/dtoa.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/errno.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/getopt.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/host.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/ldtoa.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/pthdummy.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/termios.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/tools.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/wrapc.c:  Corrected dates.
+	* gcc/m2/gm2-libs-ch/xlibc.c:  Corrected dates.
+	* gcc/m2/gm2-libs/ASCII.def:  Corrected dates.
+	* gcc/m2/gm2-libs/ASCII.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Args.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Args.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Assertion.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Assertion.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Break.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Break.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Builtins.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Builtins.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/COROUTINES.def:  Corrected dates.
+	* gcc/m2/gm2-libs/COROUTINES.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/CmdArgs.def:  Corrected dates.
+	* gcc/m2/gm2-libs/CmdArgs.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Debug.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Debug.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/DynamicStrings.def:  Corrected dates.
+	* gcc/m2/gm2-libs/DynamicStrings.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Environment.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Environment.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/FIO.def:  Corrected dates.
+	* gcc/m2/gm2-libs/FIO.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/FormatStrings.def:  Corrected dates.
+	* gcc/m2/gm2-libs/FormatStrings.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/FpuIO.def:  Corrected dates.
+	* gcc/m2/gm2-libs/FpuIO.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/GetOpt.def:  Corrected dates.
+	* gcc/m2/gm2-libs/GetOpt.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/IO.def:  Corrected dates.
+	* gcc/m2/gm2-libs/IO.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Indexing.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Indexing.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/LMathLib0.def:  Corrected dates.
+	* gcc/m2/gm2-libs/LMathLib0.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/LegacyReal.def:  Corrected dates.
+	* gcc/m2/gm2-libs/LegacyReal.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/M2EXCEPTION.def:  Corrected dates.
+	* gcc/m2/gm2-libs/M2EXCEPTION.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/M2RTS.def:  Corrected dates.
+	* gcc/m2/gm2-libs/M2RTS.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/MathLib0.def:  Corrected dates.
+	* gcc/m2/gm2-libs/MathLib0.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/MemUtils.def:  Corrected dates.
+	* gcc/m2/gm2-libs/MemUtils.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/NumberIO.def:  Corrected dates.
+	* gcc/m2/gm2-libs/NumberIO.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/OptLib.def:  Corrected dates.
+	* gcc/m2/gm2-libs/OptLib.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/PushBackInput.def:  Corrected dates.
+	* gcc/m2/gm2-libs/PushBackInput.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/RTExceptions.def:  Corrected dates.
+	* gcc/m2/gm2-libs/RTExceptions.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/RTint.def:  Corrected dates.
+	* gcc/m2/gm2-libs/RTint.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/SArgs.def:  Corrected dates.
+	* gcc/m2/gm2-libs/SArgs.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/SCmdArgs.def:  Corrected dates.
+	* gcc/m2/gm2-libs/SCmdArgs.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/SEnvironment.def:  Corrected dates.
+	* gcc/m2/gm2-libs/SEnvironment.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/SFIO.def:  Corrected dates.
+	* gcc/m2/gm2-libs/SFIO.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/SMathLib0.def:  Corrected dates.
+	* gcc/m2/gm2-libs/SMathLib0.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/SYSTEM.def:  Corrected dates.
+	* gcc/m2/gm2-libs/SYSTEM.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Scan.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Scan.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Selective.def:  Corrected dates.
+	* gcc/m2/gm2-libs/StdIO.def:  Corrected dates.
+	* gcc/m2/gm2-libs/StdIO.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/Storage.def:  Corrected dates.
+	* gcc/m2/gm2-libs/Storage.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/StrCase.def:  Corrected dates.
+	* gcc/m2/gm2-libs/StrCase.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/StrIO.def:  Corrected dates.
+	* gcc/m2/gm2-libs/StrIO.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/StrLib.def:  Corrected dates.
+	* gcc/m2/gm2-libs/StrLib.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/StringConvert.def:  Corrected dates.
+	* gcc/m2/gm2-libs/StringConvert.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/SysExceptions.def:  Corrected dates.
+	* gcc/m2/gm2-libs/SysStorage.def:  Corrected dates.
+	* gcc/m2/gm2-libs/SysStorage.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/TimeString.def:  Corrected dates.
+	* gcc/m2/gm2-libs/TimeString.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/UnixArgs.def:  Corrected dates.
+	* gcc/m2/gm2-libs/cbuiltin.def:  Corrected dates.
+	* gcc/m2/gm2-libs/config-host.in:  Corrected dates.
+	* gcc/m2/gm2-libs/cxxabi.def:  Corrected dates.
+	* gcc/m2/gm2-libs/dtoa.def:  Corrected dates.
+	* gcc/m2/gm2-libs/errno.def:  Corrected dates.
+	* gcc/m2/gm2-libs/gdbif.def:  Corrected dates.
+	* gcc/m2/gm2-libs/gdbif.mod:  Corrected dates.
+	* gcc/m2/gm2-libs/getopt.def:  Corrected dates.
+	* gcc/m2/gm2-libs/gm2-libs-host.h.in:  Corrected dates.
+	* gcc/m2/gm2-libs/ldtoa.def:  Corrected dates.
+	* gcc/m2/gm2-libs/libc.def:  Corrected dates.
+	* gcc/m2/gm2-libs/libm.def:  Corrected dates.
+	* gcc/m2/gm2-libs/sckt.def:  Corrected dates.
+	* gcc/m2/gm2-libs/termios.def:  Corrected dates.
+	* gcc/m2/gm2-libs/wrapc.def:  Corrected dates.
+	* gcc/m2/tools-src/boilerplate.py:  Allow for .h.in extension and
+        detect duplicate files when visiting file tree.
+	* m2/gm2-libs-iso/COROUTINES.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ChanConsts.h:  Corrected dates.
+	* m2/gm2-libs-iso/ChanConsts.mod:  Corrected dates.
+	* m2/gm2-libs-iso/CharClass.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ClientSocket.def:  Corrected dates.
+	* m2/gm2-libs-iso/ClientSocket.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ComplexMath.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ConvStringLong.def:  Corrected dates.
+	* m2/gm2-libs-iso/ConvStringLong.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ConvStringReal.def:  Corrected dates.
+	* m2/gm2-libs-iso/ConvStringReal.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ConvTypes.mod:  Corrected dates.
+	* m2/gm2-libs-iso/EXCEPTIONS.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ErrnoCategory.c:  Corrected dates.
+	* m2/gm2-libs-iso/ErrnoCategory.def:  Corrected dates.
+	* m2/gm2-libs-iso/GeneralUserExceptions.mod:  Corrected dates.
+	* m2/gm2-libs-iso/IOChan.mod:  Corrected dates.
+	* m2/gm2-libs-iso/IOConsts.mod:  Corrected dates.
+	* m2/gm2-libs-iso/IOLink.mod:  Corrected dates.
+	* m2/gm2-libs-iso/IOResult.mod:  Corrected dates.
+	* m2/gm2-libs-iso/LongComplexMath.mod:  Corrected dates.
+	* m2/gm2-libs-iso/LongConv.mod:  Corrected dates.
+	* m2/gm2-libs-iso/LongMath.mod:  Corrected dates.
+	* m2/gm2-libs-iso/LongStr.mod:  Corrected dates.
+	* m2/gm2-libs-iso/LongWholeIO.def:  Corrected dates.
+	* m2/gm2-libs-iso/LongWholeIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/LowLong.mod:  Corrected dates.
+	* m2/gm2-libs-iso/LowReal.mod:  Corrected dates.
+	* m2/gm2-libs-iso/LowShort.def:  Corrected dates.
+	* m2/gm2-libs-iso/LowShort.mod:  Corrected dates.
+	* m2/gm2-libs-iso/M2EXCEPTION.mod:  Corrected dates.
+	* m2/gm2-libs-iso/M2RTS.def:  Corrected dates.
+	* m2/gm2-libs-iso/M2RTS.mod:  Corrected dates.
+	* m2/gm2-libs-iso/MemStream.def:  Corrected dates.
+	* m2/gm2-libs-iso/MemStream.mod:  Corrected dates.
+	* m2/gm2-libs-iso/Processes.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ProgramArgs.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RTco.def:  Corrected dates.
+	* m2/gm2-libs-iso/RTdata.def:  Corrected dates.
+	* m2/gm2-libs-iso/RTdata.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RTentity.def:  Corrected dates.
+	* m2/gm2-libs-iso/RTentity.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RTfio.def:  Corrected dates.
+	* m2/gm2-libs-iso/RTfio.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RTgen.def:  Corrected dates.
+	* m2/gm2-libs-iso/RTgen.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RTgenif.def:  Corrected dates.
+	* m2/gm2-libs-iso/RTgenif.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RTio.def:  Corrected dates.
+	* m2/gm2-libs-iso/RTio.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RandomNumber.def:  Corrected dates.
+	* m2/gm2-libs-iso/RandomNumber.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RawIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RealConv.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RealMath.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RealStr.mod:  Corrected dates.
+	* m2/gm2-libs-iso/RndFile.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SIOResult.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SLongIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SLongWholeIO.def:  Corrected dates.
+	* m2/gm2-libs-iso/SLongWholeIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SRawIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SRealIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SShortIO.def:  Corrected dates.
+	* m2/gm2-libs-iso/SShortIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SShortWholeIO.def:  Corrected dates.
+	* m2/gm2-libs-iso/SShortWholeIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/STextIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SWholeIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SYSTEM.mod:  Corrected dates.
+	* m2/gm2-libs-iso/Semaphores.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SeqFile.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ServerSocket.def:  Corrected dates.
+	* m2/gm2-libs-iso/ServerSocket.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ShortComplexMath.def:  Corrected dates.
+	* m2/gm2-libs-iso/ShortComplexMath.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ShortIO.def:  Corrected dates.
+	* m2/gm2-libs-iso/ShortIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/ShortWholeIO.def:  Corrected dates.
+	* m2/gm2-libs-iso/ShortWholeIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SimpleCipher.def:  Corrected dates.
+	* m2/gm2-libs-iso/SimpleCipher.mod:  Corrected dates.
+	* m2/gm2-libs-iso/StdChans.mod:  Corrected dates.
+	* m2/gm2-libs-iso/Storage.mod:  Corrected dates.
+	* m2/gm2-libs-iso/StreamFile.mod:  Corrected dates.
+	* m2/gm2-libs-iso/StringChan.def:  Corrected dates.
+	* m2/gm2-libs-iso/StringChan.mod:  Corrected dates.
+	* m2/gm2-libs-iso/Strings.mod:  Corrected dates.
+	* m2/gm2-libs-iso/SysClock.mod:  Corrected dates.
+	* m2/gm2-libs-iso/TERMINATION.mod:  Corrected dates.
+	* m2/gm2-libs-iso/TermFile.mod:  Corrected dates.
+	* m2/gm2-libs-iso/TextIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/WholeConv.mod:  Corrected dates.
+	* m2/gm2-libs-iso/WholeIO.mod:  Corrected dates.
+	* m2/gm2-libs-iso/WholeStr.mod:  Corrected dates.
+	* m2/gm2-libs-iso/wrapsock.c:  Corrected dates.
+	* m2/gm2-libs-iso/wrapsock.def:  Corrected dates.
+	* m2/gm2-libs-iso/wraptime.c:  Corrected dates.
+	* m2/gm2-libs-iso/wraptime.def:  Corrected dates.
+	* m2/gm2-libs-coroutines/Debug.def:  Corrected dates.
+	* m2/gm2-libs-coroutines/Debug.mod:  Corrected dates.
+	* m2/gm2-libs-coroutines/Executive.def:  Corrected dates.
+	* m2/gm2-libs-coroutines/Executive.mod:  Corrected dates.
+	* m2/gm2-libs-coroutines/KeyBoardLEDs.def:  Corrected dates.
+	* m2/gm2-libs-coroutines/SYSTEM.def:  Corrected dates.
+	* m2/gm2-libs-coroutines/SYSTEM.mod:  Corrected dates.
+	* m2/gm2-libs-coroutines/TimerHandler.def:  Corrected dates.
+	* m2/gm2-libs-coroutines/TimerHandler.mod:  Corrected dates.
+	* m2/gm2-libs-min/M2RTS.def:  Corrected dates.
+	* m2/gm2-libs-min/M2RTS.mod:  Corrected dates.
+	* m2/gm2-libs-min/SYSTEM.def:  Corrected dates.
+	* m2/gm2-libs-min/SYSTEM.mod:  Corrected dates.
+	* m2/gm2-libs-min/libc.c:  Corrected dates.
+	* m2/gm2-libs-min/libc.def:  Corrected dates.
+	* m2/gm2-libs-pim/BitBlockOps.def:  Corrected dates.
+	* m2/gm2-libs-pim/BitBlockOps.mod:  Corrected dates.
+	* m2/gm2-libs-pim/BitByteOps.def:  Corrected dates.
+	* m2/gm2-libs-pim/BitByteOps.mod:  Corrected dates.
+	* m2/gm2-libs-pim/BitWordOps.def:  Corrected dates.
+	* m2/gm2-libs-pim/BitWordOps.mod:  Corrected dates.
+	* m2/gm2-libs-pim/BlockOps.def:  Corrected dates.
+	* m2/gm2-libs-pim/BlockOps.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Break.c:  Corrected dates.
+	* m2/gm2-libs-pim/Break.def:  Corrected dates.
+	* m2/gm2-libs-pim/CardinalIO.def:  Corrected dates.
+	* m2/gm2-libs-pim/CardinalIO.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Conversions.def:  Corrected dates.
+	* m2/gm2-libs-pim/Conversions.mod:  Corrected dates.
+	* m2/gm2-libs-pim/DebugPMD.def:  Corrected dates.
+	* m2/gm2-libs-pim/DebugPMD.mod:  Corrected dates.
+	* m2/gm2-libs-pim/DebugTrace.def:  Corrected dates.
+	* m2/gm2-libs-pim/DebugTrace.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Delay.def:  Corrected dates.
+	* m2/gm2-libs-pim/Delay.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Display.def:  Corrected dates.
+	* m2/gm2-libs-pim/Display.mod:  Corrected dates.
+	* m2/gm2-libs-pim/ErrorCode.def:  Corrected dates.
+	* m2/gm2-libs-pim/ErrorCode.mod:  Corrected dates.
+	* m2/gm2-libs-pim/FileSystem.def:  Corrected dates.
+	* m2/gm2-libs-pim/FileSystem.mod:  Corrected dates.
+	* m2/gm2-libs-pim/FloatingUtilities.def:  Corrected dates.
+	* m2/gm2-libs-pim/FloatingUtilities.mod:  Corrected dates.
+	* m2/gm2-libs-pim/InOut.def:  Corrected dates.
+	* m2/gm2-libs-pim/InOut.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Keyboard.def:  Corrected dates.
+	* m2/gm2-libs-pim/Keyboard.mod:  Corrected dates.
+	* m2/gm2-libs-pim/LongIO.def:  Corrected dates.
+	* m2/gm2-libs-pim/LongIO.mod:  Corrected dates.
+	* m2/gm2-libs-pim/NumberConversion.def:  Corrected dates.
+	* m2/gm2-libs-pim/NumberConversion.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Random.def:  Corrected dates.
+	* m2/gm2-libs-pim/Random.mod:  Corrected dates.
+	* m2/gm2-libs-pim/RealConversions.def:  Corrected dates.
+	* m2/gm2-libs-pim/RealConversions.mod:  Corrected dates.
+	* m2/gm2-libs-pim/RealInOut.def:  Corrected dates.
+	* m2/gm2-libs-pim/RealInOut.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Strings.def:  Corrected dates.
+	* m2/gm2-libs-pim/Strings.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Termbase.def:  Corrected dates.
+	* m2/gm2-libs-pim/Termbase.mod:  Corrected dates.
+	* m2/gm2-libs-pim/Terminal.def:  Corrected dates.
+	* m2/gm2-libs-pim/Terminal.mod:  Corrected dates.
+	* m2/gm2-libs-pim/TimeDate.def:  Corrected dates.
+	* m2/gm2-libs-pim/TimeDate.mod:  Corrected dates.
+	* bnf/gm2l.bnf:  Corrected dates.
+	* bnf/gm2m.bnf:  Corrected dates.
+	* bnf/m2-1.bnf:  Corrected dates.
+	* bnf/m2-2.bnf:  Corrected dates.
+	* bnf/m2-3.bnf:  Corrected dates.
+	* bnf/m2-c.bnf:  Corrected dates.
+	* bnf/m2-h.bnf:  Corrected dates.
+	* bnf/m2.bnf:  Corrected dates.
+	* bnf/mc-1.bnf:  Corrected dates.
+	* bnf/mc-2.bnf:  Corrected dates.
+	* bnf/mc-3.bnf:  Corrected dates.
+	* bnf/mc-4.bnf:  Corrected dates.
+	* bnf/mc-5.bnf:  Corrected dates.
+	* gm2-gcc/rtegraph.h:  Corrected dates.
+	* tools-src/boilerplate.py:  Corrected dates.
+	* gcc/m2/gm2version.h:  Corrected dates.
+	* m2/gm2config.h.in:  Corrected dates.
+
+2020-06-11       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2Check.def:  updated the comments
+        to state an empty string will result in no error
+	message being emitted.
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  CodeBecomes
+        check whether the assignment is legal and produce
+	a bespoke error message.
+
+2020-06-11       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2Quads.mod:  (BuildConstFunctionCall)
+        reformatted.
+
+2020-06-09       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* (11-patches):  removed zero byte file.
+        * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+
+2020-06-09       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeBinaryCheck)
+	quadpos removed.
+	* gcc/m2/gm2-compiler/M2Quads.def:  (GetQuadtok) exported.
+	(GetQuadOtok) exported.
+	* gcc/m2/gm2-compiler/M2Quads.mod:  (BuildRealFuncProcCall)
+        re-written to use MakeVirtualTok.  (BuildTypeCoercion)
+        re-written to use MakeVirtualTok.  (BuildRealFunctionCall)
+        re-written to use MakeVirtualTok.  (BuildValFunction)
+        re-written to use MakeVirtualTok.  (BuildConvertFunction)
+	re-written to use MakeVirtualTok.
+	* gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/11-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+	* gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+	* libgm2/Makefile.in:  (regenerated).
+	* libgm2/aclocal.m4:  (regenerated).
+	* libgm2/configure:  (regenerated).
+	* libgm2/libm2cor/Makefile.in:  (regenerated).
+	* libgm2/libm2iso/Makefile.in:  (regenerated).
+	* libgm2/libm2log/Makefile.in:  (regenerated).
+	* libgm2/libm2min/Makefile.in:  (regenerated).
+	* libgm2/libm2pim/Makefile.in:  (regenerated).
+
+2020-06-06       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+        * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+
+2020-06-06       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+        * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/15-patches:  (regenerated).
+
+2020-06-05       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+        * gcc/m2/patches/gcc/trunk/01-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/02-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/03-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/04-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/05-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/06-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/07-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/08-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/09-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/10-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/11-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/12-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/13-patches:  (regenerated).
+        * gcc/m2/patches/gcc/trunk/14-patches:  (regenerated).
+
+2020-06-02      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* 01-patches:  (regenerated).
+	* 02-patches:  (regenerated).
+	* 03-patches:  (regenerated).
+	* 04-patches:  (regenerated).
+	* 05-patches:  (regenerated).
+	* 06-patches:  (regenerated).
+	* 07-patches:  (regenerated).
+	* 08-patches:  (regenerated).
+	* 09-patches:  (regenerated).
+	* 10-patches:  (regenerated).
+	* 11-patches:  (regenerated).
+	* 12-patches:  (regenerated).
+	* 13-patches:  (regenerated).
+	* 14-patches:  (regenerated).
+
+2020-06-01      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/Make-lang.in:  use LINKER for linking executables.
+        (also ensure LDFLAGS is used for each LINKER invocation).
+
+2020-05-31      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-tools/m2linemap.c:  (New file).
+	* m2/gm2-libs/OptLib.mod:  cast return values from
+	SIZE into INTEGER.
+
+2020-05-30      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2ALU.mod:  (IsAComplexType)
+	renamed to IsComplexType.
+	* gcc/m2/gm2-compiler/M2Base.def:  (IsAComplexType)
+	renamed to IsComplexType.
+	* gcc/m2/gm2-compiler/M2Base.mod:  (IsAComplexType)
+	renamed to IsComplexType.
+	* gcc/m2/gm2-compiler/M2Check.def:  (ExpressionTypeCompatible)
+	New procedure function.
+	* gcc/m2/gm2-compiler/M2Check.mod:  (IsAComplexType)
+	renamed to IsComplexType.  (ExpressionTypeCompatible)
+	New procedure function implemented.
+	* gcc/m2/gm2-compiler/M2GCCDeclare.mod:  (IsAComplexType)
+	renamed to IsComplexType.
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeBecomes)
+        rewriten to use MakeVirtualTok of the des and exp operands.
+        (CodeBinaryCheck) rewriten to use MakeVirtualTok of the left
+        and right operands.  (CodeBinary) rewriten to use
+	MakeVirtualTok of the left and right operands.  (CodeAddCheck)
+	modified call to CodeBinary.  (CodeSubCheck)
+	modified call to CodeBinary.  (CodeMultCheck)
+	modified call to CodeBinary.  (CodeDivM2Check)
+	modified call to CodeBinary.  (CodeModM2Check)
+	modified call to CodeBinary.  (CodeModTruncCheck)
+	modified call to CodeBinary.  (CodeModCeil)
+	modified call to CodeBinary.  (CodeModFloor)
+	modified call to CodeBinary.
+	* gcc/m2/gm2-compiler/M2Quads.def:  (GetQuadTok)
+	New procedure.  (GetQuadOtok) New procedure.
+	* gcc/m2/gm2-compiler/M2Quads.mod:  (GetQuadtok)
+        New procedure.  (GetQuadOtok) New procedure.
+        (EraseQuad) initialize op1pos, op2pos, op3pos.
+        (MoveWithMode) use MoveWithMode.  (doBuildBinaryOp)
+        rewritten to use MakeVirtualTok and expression token
+	positions.  (GenQuadOtok)  New procedure.
+	* gcc/m2/gm2-compiler/M2Range.mod:  (Mentioned)  New procedure.
+	(PutRangeNoLow) corrected designator to tokenNo.
+        (PutRangePointer) corrected designator to tokenNo.
+	(FoldTypeExpr) rewritten to use IsExpressionCompatible and
+        Mentioned.  (CodeTypeExpr) rewritten to use
+        IsExpressionCompatible and Mentioned.
+	* gcc/m2/gm2-compiler/PCSymBuild.mod:  use IsComplexType.
+	* gcc/m2/gm2-compiler/SymbolConversion.mod:  removed unnecessary
+	import.
+	* gcc/m2/gm2-libs-coroutines/SYSTEM.mod:  (ShiftLeft) reformatted
+        and converted CARDINAL to INTEGER as appropriate.
+	* gcc/m2/gm2-libs-iso/SYSTEM.mod:(ShiftLeft)  converted CARDINAL
+        expressions to INTEGER as appropriate.
+	* gcc/m2/gm2-libs/SYSTEM.mod:  (ShiftLeft) converted CARDINAL
+        expressions to INTEGER as appropriate.
+	* gcc/testsuite/gm2/pim/fail/expression2.mod:  removed comment.
+	* gcc/testsuite/gm2/pim/pass/testsize.mod:  changed parameter
+	to CARDINAL as the type checking has been improved.
+
+2020-05-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2Quads.mod:  applied formatting
+	corrections.
+	* gcc/m2/gm2-compiler/M2Quads.mod:  (doBuildBinaryOp)
+	replaced many local variables with better names.
+
+2020-05-26      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/Make-lang.in:  (m2/gm2-tools-boot/m2linemap.o)
+        New rule.  (m2/gm2-tools/m2linemap.o)  New rule.
+        Add m2linemap.o to all tool and cc1gm2 binaries for
+	linking.
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeBecomes)
+	correct error message and detect temporary variable.
+	* gcc/m2/gm2-compiler/M2LexBuf.def:  (MakeVirtualTok)
+	New procedure function.
+	* gcc/m2/gm2-compiler/M2LexBuf.mod:  (isSrcToken)
+        New procedure function.  (MakeVirtualTok)
+	New procedure function.
+	* gcc/m2/gm2-compiler/M2MetaError.mod:  (symDesc)
+        detect a temporary variable and emit expression
+	string.
+	* gcc/m2/gm2-compiler/M2Quads.mod:
+        (CheckPointerThroughNil) new parameter tokpos.
+        (doBuildBinaryOp) create a virtual token for the expression
+	and temporary variable.  Change all calls to
+        CheckPointerThroughNil to pass the token number.
+        (doBuildUnaryOp) create a virtual token for the expression.
+	(PopTrwtok) New procedure.
+	* gcc/m2/gm2-compiler/M2Range.def:  (InitPointerRangeCheck)
+	new parameter tokno.
+	* gcc/m2/gm2-compiler/M2Range.mod:  (InitPointerRangeCheck)
+	new parameter tokno.  (PutRangePointer) new parameter tokenpos.
+	* gcc/m2/gm2-compiler/M2Reserved.def:  (virtualrangetok) new token.
+	* gcc/m2/gm2-compiler/SymbolTable.mod:  (buildTemporary) use tok
+	parameter.
+	* gcc/m2/gm2-gcc/m2linemap.c:  (isSrcLocation) New function.
+        (GetLocationBinary) New function.  (GetLineNoFromLocation)
+	use isSrcLocation.  (GetFilenameFromLocation) use isSrcLocation.
+	* gcc/m2/gm2-gcc/m2linemap.def:  (GetLocationBinary) New procedure
+        function.
+	* gcc/m2/gm2-gcc/m2linemap.h:  (GetLocationBinary) New function.
+
+2020-05-19      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-libs-iso/RTentity.mod:  external procedures
+        all protected by a mutex semaphore to ensure they
+	are all thread safe.  Reformatted.
+
+2020-05-14      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2ALU.mod:  (GetConstructorElement)
+        use tokenno for the location of the error and improve error
+        message to include the array name.
+
+2020-05-13      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/testsuite/gm2/pimlib/logitech/run/pass/realinput.mod:
+        (PutString), (PutCh) removed actual parameter 1 as per
+	PushBackInput specification change.
+	* gcc/testsuite/gm2/pimlib/logitech/run/pass/realinput2.mod
+        (PutString), (PutCh) removed actual parameter 1 as per
+	PushBackInput specification change.
+	* gcc/testsuite/gm2/pimlib/logitech/run/pass/realinput3.mod
+        (PutString), (PutCh) removed actual parameter 1 as per
+	PushBackInput specification change.
+
+2020-05-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/bnflex.mod:  (PutChar) and
+	(PutString) no longer pass the file first parameter.
+	* gcc/m2/gm2-libs/PushBackInput.def:  (PutCh) no longer
+	uses the first parameter.  (PutStr) New procedure.
+	* gcc/m2/gm2-libs/PushBackInput.mod:  (PutCh) no longer
+	uses the first parameter.  (PutStr) New procedure.
+
+2020-05-06      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeCast)
+        create warning if the sizes differ and -Wpedantic-cast
+        is set, otherwise use CodeConvert as per ISO standard.
+
+2020-05-05      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/bnf/gm2l.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/gm2m.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/m2-1.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/m2-2.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/m2-3.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/m2-c.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/m2-h.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/m2.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/mc-1.bnf:  removed redundant Element rule.
+	* gcc/m2/bnf/mc-2.bnf:  removed redundant Element rule.
+	* gcc/m2/mc-boot/Gmcp1.c:  rebuilt.
+	* gcc/m2/mc-boot/Gmcp2.c:  rebuilt.
+	* gcc/m2/gm2-compiler/M2GCCDeclare.mod:  (BuildIndex)
+	improve detail of the range exceeded error.
+	* gcc/m2/gm2-compiler/P2SymBuild.mod:  (BuildNulName)
+	include token number to be pushed onto the stack.
+
+2020-05-04      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/man:  (removed) as the manual page is now
+        generated automatically from the gm2.texi.
+	* gcc/m2/config-lang.in:  removed reference to man/Makefile.in.
+	* gcc/m2/m2pp.c:  use GM2_MAINTAINER to hide debugging functions.
+
+2020-05-01      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/mc-boot/GFormatStrings.c:  rebuilt
+	* gcc/m2/mc-boot/GFormatStrings.h:  rebuilt
+	* gcc/m2/mc-boot/GRTExceptions.c:  rebuilt
+	* gcc/m2/mc-boot/Gkeyc.c:  rebuilt
+	* gcc/m2/mc/keyc.mod:  (checkThrow) provide external
+	prototype for the m2 use of throw.
+	* gcc/m2/mc-boot/GRTExceptions.c:  rebuilt.
+	* gcc/m2/mc-boot/Gkeyc.c:  rebuilt.
+	* gcc/m2/mc/keyc.mod:  reverted throw prototype.
+
+2020-04-29      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-lang.c:  (convert_loc) added a default catch
+        all to stop any attempt to convert an aggregate type.
+
+2020-04-22      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-libs/FormatStrings.def:  (HandleEscape)
+	updated comment reflecting additional functionality.
+	* gcc/m2/gm2-libs/FormatStrings.mod:  (HandleEscape)
+	handle the \x escape in a C string.
+	* gcc/m2/gm2-libs/FormatStrings.def:  (HandleEscape)
+	updated comment reflecting additional functionality.
+	* gcc/m2/gm2-libs/FormatStrings.mod:  (HandleEscape)
+	handle the \a, \b, \e, \f, \n, \r, \[octal] into
+        their respective ascii codes.
+
+2020-04-20      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeConvert)
+        checks to see if a generic type is specified then the
+	src and destination operands must be of the same size.
+	* gcc/m2/gm2-compiler/M2MetaError.mod:  (symDesc) detect
+	unknown symbols during production of descriptive string.
+	* gcc/m2/gm2-compiler/M2Quads.mod:  (CheckParameter)
+        now detects and allows any generic system data type.
+	* gcc/testsuite/gm2/iso/fail/cast3.mod:  test moved into
+	failure category as the type checked has been tightened.
+	* gcc/testsuite/gm2/pimlib/logitech/run/pass/inta.mod:
+	(New test).
+	* gcc/testsuite/gm2/pimlib/logitech/run/pass/intb.mod:
+        Use PACKEDSET to allow BYTE and SET to be interchanged.
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (CodeConvert)
+	removed check for generics.
+	* gcc/m2/gm2-libs-pim/BitBlockOps.mod:  simplied the
+	code by using BITSET8 and friends.
+	* gcc/m2/gm2-libs-pim/BitByteOps.mod:  simplied the
+	code by using BITSET8 and friends.
+	* gcc/m2/gm2-libs-pim/BitWordOps.mod:  simplied the
+	code by using BITSET8 and friends.
+	* gcc/m2/gm2-libs-pim/Random.mod: tidied up formatting.
+
+2020-04-09      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2Check.def:
+	* gcc/m2/gm2-compiler/M2Check.mod:  create errors at
+        tokens and chain errors.  All errors are created
+	within the module if non empty format string is used.
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  (ParameterTypeCompatible)
+	introduce extra token parameter.
+	* gcc/m2/gm2-compiler/M2Range.mod:  (ParameterTypeCompatible)
+        introduce extra token parameter.
+	* m2/gm2-compiler/M2Check.mod:   (return) corrected first
+        parameter to FALSE.  (determineCompatible) always check
+	to see if an error should be emitted.
+
+2020-04-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2Check.mod:  (errorSig) New data
+        structure to prevent multiple errors occurring about the
+        same message at the same location.  (IsTyped) allow
+        IsConstructor to be detected.  (isZRC) detect RType,
+        ZType and CTypes.
+	* gcc/m2/gm2-compiler/M2Quads.mod:  (CheckProcTypeAndProcedure)
+        disable CheckParameter from being used during
+	proctype comparisons.
+	* gcc/m2/gm2-compiler/M2Range.mod:  use
+	(ParameterTypeCompatible) instead of (IsValidParameter).
+	* gcc/m2/gm2-gcc/init.c:  (init_PerCompilationInit)
+        initialize M2Check before each file is compiled.
+	* gcc/m2/gm2-compiler/M2Check.mod:  (checkBaseEquivalence)
+	use IsExpressionCompatible instead of IsParameterCompatible.
+
+2020-04-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2Check.mod:  (errorSig) New data
+        structure to prevent multiple errors occurring about the
+        same message at the same location.  (IsTyped) allow
+        IsConstructor to be detected.  (isZRC) detect RType,
+        ZType and CTypes.
+	* gcc/m2/gm2-compiler/M2Quads.mod:  (CheckProcTypeAndProcedure)
+        disable CheckParameter from being used during
+	proctype comparisons.
+	* gcc/m2/gm2-compiler/M2Range.mod:  use
+	(ParameterTypeCompatible) instead of (IsValidParameter).
+	* gcc/m2/gm2-gcc/init.c:  (init_PerCompilationInit)
+        initialize M2Check before each file is compiled.
+	* gcc/m2/gm2-compiler/M2Check.mod:  (checkBaseEquivalence)
+	use IsExpressionCompatible instead of IsParameterCompatible.
+
+2020-04-06      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2Check.mod:  completed
+        implementation of Array/subrange checking.
+	Many bugfixes applied.
+	* gcc/m2/gm2-compiler/M2System.def:  IsSameSize
+	exported.
+	* gcc/testsuite/gm2/switches/makeall/pass/gm2.exp:
+	corrected search path so regression test passes.
+
+2020-04-05      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2Check.def:
+        (AssignmentTypeCompatible) New procedure function.
+	* gcc/m2/gm2-compiler/M2Check.mod:  major rewrite.
+	* gcc/m2/gm2-compiler/M2GenGCC.mod:  call M2Check.
+	* gcc/m2/gm2-compiler/M2Options.def:  add new option.
+	* gcc/m2/gm2-compiler/M2Options.mod:  add new option.
+	* gcc/m2/gm2-gcc/m2options.h:  add new option.
+	* gcc/m2/gm2-lang.c:  add new option -fm2-strict-type.
+	* gcc/m2/gm2-libs-coroutines/SYSTEM.mod:  convert types.
+	* gcc/m2/lang.opt:  add new option -fm2-strict-type.
+
+2020-03-12      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* gcc/m2/gm2-compiler/M2Check.mod:  intermin checkin
+	clean compile for stage1 and stage2.
+	* gcc/m2/init/gm2-gccinit:  add M2Check to the list
+	of modules.
+	* gcc/m2/mc-boot/GDynamicStrings.c:  regenerated.
+	* gcc/m2/mc-boot/GFIO.c:  regenerated.
+	* gcc/m2/mc-boot/GIndexing.c:  regenerated.
+	* gcc/m2/mc-boot/GM2EXCEPTION.c:  regenerated.
+	* gcc/m2/mc-boot/GPushBackInput.c:  regenerated.
+	* gcc/m2/mc-boot/GRTExceptions.c:  regenerated.
+	* gcc/m2/mc-boot/GRTint.c:  regenerated.
+	* gcc/m2/mc-boot/GStdIO.c:  regenerated.
+	* gcc/m2/mc-boot/GStringConvert.c:  regenerated.
+	* gcc/m2/mc-boot/GSysStorage.c:  regenerated.
+	* gcc/m2/mc-boot/Gdecl.c:  regenerated.
+	* gcc/m2/mc-boot/Gkeyc.c:  regenerated.
+	* gcc/m2/mc-boot/GmcComment.c:  regenerated.
+	* gcc/m2/mc-boot/GmcComp.c:  regenerated.
+	* gcc/m2/mc-boot/GmcDebug.c:  regenerated.
+	* gcc/m2/mc-boot/GmcMetaError.c:  regenerated.
+	* gcc/m2/mc-boot/GmcStack.c:  regenerated.
+	* gcc/m2/mc-boot/GnameKey.c:  regenerated.
+	* gcc/m2/mc-boot/GsymbolKey.c:  regenerated.
+	* gcc/m2/mc/decl.mod:  correct proctype handling.
+	* gcc/m2/mc/keyc.mod:  add and, or, not to the list of keywords.
+
+2020-03-12      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2Check.mod:  interim checkin.
+
+2020-03-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2Check.def:  New file.
+	* m2/gm2-compiler/M2Check.mod:  New file.
+
+2020-03-06      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2.texi:  added more detail about the gm2 repository
+        and branches.
+
+2020-03-05      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/www/tools/texi2tr/src/navigation.py:  use __next__ rather
+        than next.
+	* m2/www/tools/texi2tr/src/outputdev.py:  defensively test for
+        None as the output file.
+	* m2/www/tools/texi2tr/src/texi2tr.py:  added many new texinfo
+        commands and conditionals.  Added support for macros.
+	(safeName) converted to Python3.
+
+2020-02-27      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2.texi:  updated obtaining source via git
+        given the merged repository at floppsie.
+	* m2/www/tools/texi2tr/src/texi2tr.py:  changes to include
+	many more texinfo commands.
+
+2020-01-22      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/el/gm2-mode.el:  corrected email address.
+	* testsuite/gm2/iso/run/pass/tinyconst4.mod:  corrected string
+        length.
+
+2020-01-20      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-compiler/M2ALU.mod:  (InitialiseArrayWith) reformatted.
+        (CheckGetCharFromString) New procedure function.
+        (InitialiseArrayOfCharWith) New procedure function.
+        (ConstructArrayConstant) Reformatted.
+	* m2/gm2-compiler/M2GCCDeclare.mod:  (IsConstDependants)
+        reformatted.
+	* m2/gm2-compiler/NameKey.def:  (CharKey) declared exported.
+	* m2/gm2-compiler/NameKey.mod:  (CharKey) New procedure function.
+	* m2/gm2-gcc/m2type.c:  (BuildCharConstantChar) New function.
+        (BuildCharConstant) use BuildCharConstantChar.
+	* m2/gm2-gcc/m2type.def:  (BuildCharConstantChar) declared.
+	* m2/gm2-gcc/m2type.h:  (BuildCharConstantChar) declared.
+	* Fixes bugs shown in testsuite/gm2/iso/run/pass/conststrarray.mod.
+
+2020-01-13      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/bnf/m2-2.bnf:  (SetType) detect whether the set
+        was described as PACKED and pass a boolean into
+	BuildSetType.
+	* m2/gm2-compiler/M2Bitset.mod:  PutSet extra parameter.
+	* m2/gm2-compiler/M2GCCDeclare.mod:  (DeclareLargeOrSmallSet)
+	pass packed to BuildSetType.
+	* m2/gm2-compiler/M2System.mod:  (AttemptToCreateSetType)
+	PutSet extra boolean (FALSE) parameter.
+	* m2/gm2-compiler/P2SymBuild.def:  (BuildSetType)
+	extra parameter ispacked.
+	* m2/gm2-compiler/P2SymBuild.mod:  (BuildSetType)
+	call PutSet with an extra boolean parameter.
+	* m2/gm2-compiler/SymbolTable.def:  (IsSetPacked)
+	New procedure function declaration.
+	* m2/gm2-compiler/SymbolTable.mod:  (IsSetPacked)
+        New procedure function implementation.  (PutSet)
+	add a third parameter which determines whether the set is packed.
+	* m2/gm2-gcc/m2assert.h:  remove ' from the format string.
+	* m2/gm2-gcc/m2type.c:  (build_set_type) use TYPE_PACKED.
+	(BuildSetTypeFromSubrange) re-implemented.
+	* m2/gm2-gcc/m2type.def:  (BuildSetType) extra boolean parameter.
+	* m2/gm2-gcc/m2type.h:  (BuildSetType) extra boolean parameter.
+	* testsuite/gm2/iso/run/pass/onebyte2.mod:  (New file).
+	* testsuite/gm2/iso/run/pass/onebyte.mod:  above changes allow
+	this test code to pass.
+
+2020-01-11      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-gcc/m2assert.h:  remove quotes in format specifiers.
+
+2020-01-10      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/gm2-gcc/m2assert.h:  (ASSERT) declare if not already set.
+        (ASSERT_BOOL) declare if not already set.  (ASSERT_CONDITION)
+        declare if not already set.
+	* m2/mc-boot-ch/GSelective.c:  include sys/time.h.
+	* m2/mc-boot-ch/Gwrapc.c:  include stdlib.h.
+	* m2/gm2-gcc/m2decl.c:  (stop) removed.
+	* m2/m2pp.c:  commented out unused debugging functions.
+	* m2/mc-boot/GArgs.c:  regenerated.
+	* m2/mc-boot/GCmdArgs.c:  regenerated.
+	* m2/mc-boot/GDynamicStrings.c:  regenerated.
+	* m2/mc-boot/GEnvironment.c:  regenerated.
+	* m2/mc-boot/GFIO.c:  regenerated.
+	* m2/mc-boot/GFormatStrings.c:  regenerated.
+	* m2/mc-boot/GIO.c:  regenerated.
+	* m2/mc-boot/GIndexing.c:  regenerated.
+	* m2/mc-boot/GM2EXCEPTION.c:  regenerated.
+	* m2/mc-boot/GM2RTS.c:  regenerated.
+	* m2/mc-boot/GPushBackInput.c:  regenerated.
+	* m2/mc-boot/GRTExceptions.c:  regenerated.
+	* m2/mc-boot/GRTint.c:  regenerated.
+	* m2/mc-boot/GSArgs.c:  regenerated.
+	* m2/mc-boot/GSFIO.c:  regenerated.
+	* m2/mc-boot/GStorage.c:  regenerated.
+	* m2/mc-boot/GStrCase.c:  regenerated.
+	* m2/mc-boot/GStrIO.c:  regenerated.
+	* m2/mc-boot/GStrLib.c:  regenerated.
+	* m2/mc-boot/GStringConvert.c:  regenerated.
+	* m2/mc-boot/GSysStorage.c:  regenerated.
+	* m2/mc-boot/Galists.c:  regenerated.
+	* m2/mc-boot/Gdecl.c:  regenerated.
+	* m2/mc-boot/Gkeyc.c:  regenerated.
+	* m2/mc-boot/Glists.c:  regenerated.
+	* m2/mc-boot/GmcComment.c:  regenerated.
+	* m2/mc-boot/GmcComp.c:  regenerated.
+	* m2/mc-boot/GmcError.c:  regenerated.
+	* m2/mc-boot/GmcFileName.c:  regenerated.
+	* m2/mc-boot/GmcLexBuf.c:  regenerated.
+	* m2/mc-boot/GmcMetaError.c:  regenerated.
+	* m2/mc-boot/GmcOptions.c:  regenerated.
+	* m2/mc-boot/GmcPreprocess.c:  regenerated.
+	* m2/mc-boot/GmcPretty.c:  regenerated.
+	* m2/mc-boot/GmcPrintf.c:  regenerated.
+	* m2/mc-boot/GmcSearch.c:  regenerated.
+	* m2/mc-boot/GmcStack.c:  regenerated.
+	* m2/mc-boot/GmcStream.c:  regenerated.
+	* m2/mc-boot/Gmcp1.c:  regenerated.
+	* m2/mc-boot/Gmcp2.c:  regenerated.
+	* m2/mc-boot/Gmcp3.c:  regenerated.
+	* m2/mc-boot/Gmcp4.c:  regenerated.
+	* m2/mc-boot/Gmcp5.c:  regenerated.
+	* m2/mc-boot/GnameKey.c:  regenerated.
+	* m2/mc-boot/GsymbolKey.c:  regenerated.
+	* m2/mc-boot/Gvarargs.c:  regenerated.
+	* m2/mc-boot/Gwlists.c:  regenerated.
+	* m2/mc/decl.mod:  (doProcedureC) emit __builtin_unreachable if
+	all last statements perform a RETURN.
+
+2020-01-09      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* m2/Make-lang.in:  (mc) add RTintdummy.o as a dependant
+	and link with RTintdummy.o.
+	* m2/mc-boot/GDynamicStrings.c:  regenerated.
+	* m2/mc-boot/GFIO.c:  regenerated.
+	* m2/mc-boot/GIO.c:  regenerated.
+	* m2/mc-boot/GM2RTS.c:  regenerated.
+	* m2/mc-boot/GRTExceptions.c:  regenerated.
+	* m2/mc-boot/Gdecl.c:  regenerated.
+	* m2/mc-boot/Gkeyc.c:  regenerated.
+	* m2/mc-boot/Gkeyc.h:  regenerated.
+	* m2/mc/decl.mod:  (checkInstrinsic) check whether throw is
+        called.  (checkCHeaders) New procedure.  (makeFuncCall)
+	call checkCHeaders.
+	* m2/mc/keyc.def:  (useUnistd) New procedure.  (useThrow) New
+	procedure.
+	* m2/mc/keyc.mod:  (seenUnistd) New boolean.  (seenThrow) New
+	boolean.  (useThrow) New procedure.  (checkThrow) New
+        procedure.  (useUnistd) New procedure.  (checkUnistd) New
+        procedure.  (genDefs) call checkUnistd, checkThrow.
+	(init) initialize seenUnistd, seenThrow.
+	* m2/tools-src/mklink.c:  added unistd.h include.
+        (main) added a issing return type.
+	* m2/mc/keyc.mod:  (checkThrow) use system header file for throw.
+	* m2/mc-boot/Gkeyc.c:  regenerated.
+	* m2/mc-boot/GAssertion.c:  regenerated.
+	* m2/mc-boot/GDebug.c:  regenerated.
+	* m2/mc-boot/GDynamicStrings.c:  regenerated.
+	* m2/mc-boot/GFIO.c:  regenerated.
+	* m2/mc-boot/GFormatStrings.c:  regenerated.
+	* m2/mc-boot/GIndexing.c:  regenerated.
+	* m2/mc-boot/GM2RTS.c:  regenerated.
+	* m2/mc-boot/GNumberIO.c:  regenerated.
+	* m2/mc-boot/GRTExceptions.c:  regenerated.
+	* m2/mc-boot/GStdIO.c:  regenerated.
+	* m2/mc-boot/GStringConvert.c:  regenerated.
+	* m2/mc-boot/Gdecl.c:  regenerated.
+	* m2/mc-boot/Gkeyc.c:  regenerated.
+	* m2/mc-boot/GmcError.c:  regenerated.
+	* m2/mc-boot/GmcLexBuf.c:  regenerated.
+	* m2/mc-boot/GmcPreprocess.c:  regenerated.
+	* m2/mc-boot/GmcPrintf.c:  regenerated.
+	* m2/mc-boot/GmcStack.c:  regenerated.
+	* m2/mc-boot/GmcStream.c:  regenerated.
+	* m2/mc-boot/GnameKey.c:  regenerated.
+	* m2/mc-boot/Gvarargs.c:  regenerated.
+	* m2/mc/decl.mod:  removed call enumerated field.
+	* m2/mc-boot/GAssertion.c:  regenerated.
+	* m2/mc-boot/GDebug.c:  regenerated.
+	* m2/mc-boot/GDynamicStrings.c:  regenerated.
+	* m2/mc-boot/GFIO.c:  regenerated.
+	* m2/mc-boot/GFormatStrings.c:  regenerated.
+	* m2/mc-boot/GIndexing.c:  regenerated.
+	* m2/mc-boot/GM2RTS.c:  regenerated.
+	* m2/mc-boot/GNumberIO.c:  regenerated.
+	* m2/mc-boot/GRTExceptions.c:  regenerated.
+	* m2/mc-boot/GStdIO.c:  regenerated.
+	* m2/mc-boot/GStringConvert.c:  regenerated.
+	* m2/mc-boot/Gdecl.c:  regenerated.
+	* m2/mc-boot/Gkeyc.c:  regenerated.
+	* m2/mc-boot/GmcError.c:  regenerated.
+	* m2/mc-boot/GmcLexBuf.c:  regenerated.
+	* m2/mc-boot/GmcPreprocess.c:  regenerated.
+	* m2/mc-boot/GmcPrintf.c:  regenerated.
+	* m2/mc-boot/GmcStack.c:  regenerated.
+	* m2/mc-boot/GmcStream.c:  regenerated.
+	* m2/mc-boot/GnameKey.c:  regenerated.
+	* m2/mc-boot/Gvarargs.c:  regenerated.
+	* m2/mc/decl.mod:  introduced unreachable intrinsic node
+	which is issued after HALT and an exception.
+
+2020-01-08      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* updated the copyright dates for 2020.
+	* mc/decl.mod:  added call to __builtin_unreachable
+        after every fatal exception.
+	* m2/gm2-gcc/m2assert.h:  (ASSERT), (ASSERT_BOOL),
+	(ASSERT_CONDITION) adjusted the fatal message
+        to avoid gcc warnings.
+	* m2/gm2-gcc/m2assert.h:  removed [] in the format
+	specifier.
+	* m2/gm2-gcc/m2block.c:  (flush_pending_note) use
+	build_empty_stmt instead of hardcoded "nop".
+	* m2/gm2-libs-ch/RTcodummy.c:  (_M2_RTco_init) removed.
+	(_M2_RTco_finish) removed.
+	* m2/gm2-libs-ch/RTintdummy.c:  (_M2_RTdummy_init) removed.
+	(_M2_RTdummy_finish) removed.
+	* m2/init/mcinit:  removed reference to RTco.
+	* m2/mc-boot/GASCII.c:  regenerated.
+	* m2/mc-boot/GASCII.h:  regenerated.
+	* m2/mc-boot/GArgs.c:  regenerated.
+	* m2/mc-boot/GArgs.h:  regenerated.
+	* m2/mc-boot/GAssertion.c:  regenerated.
+	* m2/mc-boot/GAssertion.h:  regenerated.
+	* m2/mc-boot/GBreak.c:  regenerated.
+	* m2/mc-boot/GBreak.h:  regenerated.
+	* m2/mc-boot/GCOROUTINES.h:  regenerated.
+	* m2/mc-boot/GCmdArgs.c:  regenerated.
+	* m2/mc-boot/GCmdArgs.h:  regenerated.
+	* m2/mc-boot/GDebug.c:  regenerated.
+	* m2/mc-boot/GDebug.h:  regenerated.
+	* m2/mc-boot/GDynamicStrings.h:  regenerated.
+	* m2/mc-boot/GEnvironment.c:  regenerated.
+	* m2/mc-boot/GEnvironment.h:  regenerated.
+	* m2/mc-boot/GFIO.c:  regenerated.
+	* m2/mc-boot/GFIO.h:  regenerated.
+	* m2/mc-boot/GFormatStrings.c:  regenerated.
+	* m2/mc-boot/GFormatStrings.h:  regenerated.
+	* m2/mc-boot/GFpuIO.c:  regenerated.
+	* m2/mc-boot/GFpuIO.h:  regenerated.
+	* m2/mc-boot/GIO.h:  regenerated.
+	* m2/mc-boot/GIndexing.h:  regenerated.
+	* m2/mc-boot/GM2EXCEPTION.c:  regenerated.
+	* m2/mc-boot/GM2EXCEPTION.h:  regenerated.
+	* m2/mc-boot/GM2RTS.c:  regenerated.
+	* m2/mc-boot/GM2RTS.h:  regenerated.
+	* m2/mc-boot/GMemUtils.c:  regenerated.
+	* m2/mc-boot/GMemUtils.h:  regenerated.
+	* m2/mc-boot/GNumberIO.c:  regenerated.
+	* m2/mc-boot/GNumberIO.h:  regenerated.
+	* m2/mc-boot/GPushBackInput.c:  regenerated.
+	* m2/mc-boot/GPushBackInput.h:  regenerated.
+	* m2/mc-boot/GRTExceptions.c:  regenerated.
+	* m2/mc-boot/GRTExceptions.h:  regenerated.
+	* m2/mc-boot/GRTco.h:  regenerated.
+	* m2/mc-boot/GRTint.c:  regenerated.
+	* m2/mc-boot/GRTint.h:  regenerated.
+	* m2/mc-boot/GSArgs.c:  regenerated.
+	* m2/mc-boot/GSArgs.h:  regenerated.
+	* m2/mc-boot/GSFIO.c:  regenerated.
+	* m2/mc-boot/GSFIO.h:  regenerated.
+	* m2/mc-boot/GSYSTEM.h:  regenerated.
+	* m2/mc-boot/GSelective.h:  regenerated.
+	* m2/mc-boot/GStdIO.c:  regenerated.
+	* m2/mc-boot/GStdIO.h:  regenerated.
+	* m2/mc-boot/GStorage.h:  regenerated.
+	* m2/mc-boot/GStrCase.h:  regenerated.
+	* m2/mc-boot/GStrIO.c:  regenerated.
+	* m2/mc-boot/GStrIO.h:  regenerated.
+	* m2/mc-boot/GStrLib.h:  regenerated.
+	* m2/mc-boot/GStringConvert.c:  regenerated.
+	* m2/mc-boot/GStringConvert.h:  regenerated.
+	* m2/mc-boot/GSysExceptions.h:  regenerated.
+	* m2/mc-boot/GSysStorage.h:  regenerated.
+	* m2/mc-boot/GTimeString.c:  regenerated.
+	* m2/mc-boot/GTimeString.h:  regenerated.
+	* m2/mc-boot/GUnixArgs.h:  regenerated.
+	* m2/mc-boot/Galists.c:  regenerated.
+	* m2/mc-boot/Galists.h:  regenerated.
+	* m2/mc-boot/Gdecl.c:  regenerated.
+	* m2/mc-boot/Gdecl.h:  regenerated.
+	* m2/mc-boot/Gdtoa.h:  regenerated.
+	* m2/mc-boot/Gerrno.h:  regenerated.
+	* m2/mc-boot/Gkeyc.c:  regenerated.
+	* m2/mc-boot/Gkeyc.h:  regenerated.
+	* m2/mc-boot/Gldtoa.h:  regenerated.
+	* m2/mc-boot/Glibc.h:  regenerated.
+	* m2/mc-boot/Glibm.h:  regenerated.
+	* m2/mc-boot/Glists.h:  regenerated.
+	* m2/mc-boot/GmcComment.c:  regenerated.
+	* m2/mc-boot/GmcComment.h:  regenerated.
+	* m2/mc-boot/GmcComp.c:  regenerated.
+	* m2/mc-boot/GmcComp.h:  regenerated.
+	* m2/mc-boot/GmcDebug.h:  regenerated.
+	* m2/mc-boot/GmcError.c:  regenerated.
+	* m2/mc-boot/GmcError.h:  regenerated.
+	* m2/mc-boot/GmcFileName.h:  regenerated.
+	* m2/mc-boot/GmcLexBuf.c:  regenerated.
+	* m2/mc-boot/GmcLexBuf.h:  regenerated.
+	* m2/mc-boot/GmcMetaError.h:  regenerated.
+	* m2/mc-boot/GmcOptions.h:  regenerated.
+	* m2/mc-boot/GmcPreprocess.h:  regenerated.
+	* m2/mc-boot/GmcPretty.h:  regenerated.
+	* m2/mc-boot/GmcPrintf.h:  regenerated.
+	* m2/mc-boot/GmcQuiet.h:  regenerated.
+	* m2/mc-boot/GmcReserved.h:  regenerated.
+	* m2/mc-boot/GmcSearch.h:  regenerated.
+	* m2/mc-boot/GmcStack.h:  regenerated.
+	* m2/mc-boot/GmcStream.c:  regenerated.
+	* m2/mc-boot/GmcStream.h:  regenerated.
+	* m2/mc-boot/Gmcflex.h:  regenerated.
+	* m2/mc-boot/Gmcp1.h:  regenerated.
+	* m2/mc-boot/Gmcp2.h:  regenerated.
+	* m2/mc-boot/Gmcp3.h:  regenerated.
+	* m2/mc-boot/Gmcp4.h:  regenerated.
+	* m2/mc-boot/Gmcp5.h:  regenerated.
+	* m2/mc-boot/GnameKey.c:  regenerated.
+	* m2/mc-boot/GnameKey.h:  regenerated.
+	* m2/mc-boot/GsymbolKey.c:  regenerated.
+	* m2/mc-boot/GsymbolKey.h:  regenerated.
+	* m2/mc-boot/Gtermios.h:  regenerated.
+	* m2/mc-boot/Gtop.c:  regenerated.
+	* m2/mc-boot/Gvarargs.c:  regenerated.
+	* m2/mc-boot/Gvarargs.h:  regenerated.
+	* m2/mc-boot/Gwlists.c:  regenerated.
+	* m2/mc-boot/Gwlists.h:  regenerated.
+	* m2/mc-boot/Gwrapc.h:  regenerated.
+	* m2/gm2-compiler/M2GCCDeclare.mod:  (BuildIndex) initialise
+        location.
+	* m2/gm2-compiler/SymbolTable.mod:  (doGetType) initialise type.
+	(PutParamName) initialise ParSym.
+
+2020-01-07      Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* testsuite/iso/run/pass/onebyte.mod:  New file.
+	* testsuite/iso/run/pass/conststrarray.mod:  New file.

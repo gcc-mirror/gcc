@@ -1,0 +1,61 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE SysClock;
+
+(* Facilities for accessing a system clock that records the date
+   and time of day *)
+
+CONST
+  maxSecondParts = 1000000 ;
+
+TYPE
+  Month    = [1 .. 12];
+  Day      = [1 .. 31];
+  Hour     = [0 .. 23];
+  Min      = [0 .. 59];
+  Sec      = [0 .. 59];
+  Fraction = [0 .. maxSecondParts];
+  UTCDiff  = [-780 .. 720];
+  DateTime =
+    RECORD
+      year:      CARDINAL;
+      month:     Month;
+      day:       Day;
+      hour:      Hour;
+      minute:    Min;
+      second:    Sec;
+      fractions: Fraction;      (* parts of a second *)
+      zone:      UTCDiff;       (* Time zone differential
+                                   factor which is the number
+                                   of minutes to add to local
+                                   time to obtain UTC. *)
+      summerTimeFlag: BOOLEAN;  (* Interpretation of flag
+                                   depends on local usage. *)
+    END;
+
+PROCEDURE CanGetClock(): BOOLEAN;
+(* Tests if the clock can be read *)
+
+PROCEDURE CanSetClock(): BOOLEAN;
+(* Tests if the clock can be set *)
+
+PROCEDURE IsValidDateTime(userData: DateTime): BOOLEAN;
+(* Tests if the value of userData is a valid *)
+
+PROCEDURE GetClock(VAR userData: DateTime);
+(* Assigns local date and time of the day to userData *)
+
+PROCEDURE SetClock(userData: DateTime);
+(* Sets the system time clock to the given local date and
+   time *)
+
+END SysClock.
