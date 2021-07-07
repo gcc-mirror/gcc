@@ -1,3 +1,9 @@
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-format.c (gcc_tdiag_char_table): Remove support for %G and %K.
+	 (gcc_cdiag_char_table): Same.
+	 (gcc_cxxdiag_char_table): Same.
+
 2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (enum c_omp_directive_kind): New enum.

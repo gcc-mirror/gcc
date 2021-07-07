@@ -1,3 +1,360 @@
+2021-07-06  Bob Duff  <duff@adacore.com>
+
+	* atree.ads (Current_Error_Node): Initialize to Empty.
+
+2021-07-06  Steve Baird  <baird@adacore.com>
+
+	* exp_put_image.adb: Eliminate references to
+	Debug_Flag_Underscore_Z.  Change the meaning of the function
+	Enable_Put_Image. Previously, a result of False for a tagged
+	type would mean that the type does not get a Put_Image (PI)
+	routine at all. Now, it means that the type gets a PI routine
+	with very abbreviated functionality (just a call to
+	Unknown_Put_Image). This resolves problems in mixing code
+	compiled with and without the -gnat2022 switch.
+	* exp_ch3.adb: Enable_Put_Image no longer participates in
+	determining whether a tagged type gets a Put_Image procedure.  A
+	tagged type does not get a Put_Image procedure if the type
+	Root_Buffer_Type is unavailable. This is needed to support cross
+	targets where tagged types are supported but the type
+	Root_Buffer_Type is not available.
+	* exp_dist.adb: Add workarounds for some problems that arise
+	when using the (obsolete?) Garlic implementation of the
+	distributed systems annex with Ada 2022 constructs.
+	* libgnat/a-sttebu.ads: Workaround a bootstrapping problem.
+	Older compilers do not support raise expressions, so revise the
+	the Pre'Class condition to meet this requirement without
+	changing the condition's behavior at run time.
+
+2021-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo-input.adb (JSON_Entity_Kind, Read_Variant_Part): Fix
+	typo in comment.
+
+2021-07-06  Steve Baird  <baird@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Add new nested function,
+	Omit_Range_Check_For_Streaming, and make call to
+	Apply_Scalar_Range_Check conditional on the result of this new
+	function.
+	* exp_attr.adb (Compile_Stream_Body_In_Scope): Eliminate Check
+	parameter, update callers.  The new
+	Omit_Range_Check_For_Streaming parameter takes the place of the
+	old use of calling Insert_Action with Suppress => All_Checks,
+	which was insufficiently precise (it did not allow suppressing
+	checks for one component but not for another).
+	(Expand_N_Attribute_Reference): Eliminate another "Suppress =>
+	All_Checks" from an Insert_Action call, this one in generating
+	the expansion of a T'Read attribute reference for a composite
+	type T.
+
+2021-07-06  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Check for
+	empty loops caused by constraints.
+
+2021-07-06  Nicolas Roche  <roche@adacore.com>
+
+	* rtinit.c (skip_quoted_string): Handle malformed command line
+	with no closing double quote.
+	(skip_argument): Handle case in which a null character is
+	encountered by skip_quote_string.
+
+2021-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* uname.adb (Add_Node_Name): Replace local constant whose
+	initial expression was evaluated even when unnecessary with just
+	that expression that is evaluated at most once and only when
+	needed.
+
+2021-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib.adb (Remove_Unit): Replace defensive code with an
+	assertion.
+	* par-load.adb (Load): Address a question mark in the comment.
+
+2021-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Enclosing_Comp_Unit_Node): When the loop exits
+	the Current_Node is either an N_Compilation_Unit node or Empty,
+	so simply return it without redundant checks.
+
+2021-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-load.adb (Load_Unit): Remove excessive whitespace.
+	* lib.adb (Is_Internal_Unit, Is_Predefined_Unit): Likewise.
+	* par-ch10.adb (P_Compilation_Unit): Simplify with membership
+	test.
+	* par-load.adb (Load): Likewise.
+	* uname.adb (Get_Unit_Name): Likewise.
+
+2021-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-writ.adb (Ensure_System_Dependency): Simplify by reusing a
+	constant name.
+
+2021-07-06  Steve Baird  <baird@adacore.com>
+
+	* exp_ch5.adb
+	(Expand_N_Case_Statement.Expand_General_Case_Statement.Pattern_Match):
+	When generating an equality test for a statically known discrete
+	value, only generate the numeric value if the discrete type is
+	not an enumeration type.  If it is an enumeration type, then
+	call Get_Enum_Lit_From_Pos instead.
+
+2021-07-06  Justin Squirek  <squirek@adacore.com>
+
+	* par-ch6.adb (Get_Return_Kind): Removed.
+	(Is_Extended): Created to identify simple and "when" return
+	statements from extended return statements.
+	(P_Return_Statement): Merged simple and "when" return statement
+	processing.
+
+2021-07-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Try_One_Prefix_Interpretation): Augment test of
+	"not Extensions_Allowed" with test for absence of Obj_Type's
+	primitive operations Elist, as an additional condition for early
+	return from this procedure.
+
+2021-07-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_In_Expression): In one comment,
+	fix two typos and reorder wording of one sentence, plus minor
+	reformatting.
+
+2021-07-06  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Element_Loop): Remove
+	legacy expansion of element iterators, and use expansion form
+	used by unconstrained element types in the general case.
+
+2021-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_In_Expression): Ensure that
+	Fin_Context, used to insert finalization code for the
+	expression, is a list member: the value returned by
+	Find_Hook_Context may be an expression node when the transient
+	is part of a larger expression and it has a non-boolean type.
+
+2021-07-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_case.adb: Fix error message.
+
+2021-07-06  Bob Duff  <duff@adacore.com>
+
+	* tbuild.adb (Convert_To): Add assert, along with a comment.
+	(Make_DT_Access): Remove this function, which is not used.  It
+	was incorrect anyway (the call to New_Occurrence_Of should not
+	be there).
+	(Unchecked_Convert_To): Add assert.  The previous version's test
+	for unchecked conversion to the same type was redundant and
+	could never be true, because the previous 'if' already checked
+	for ANY expression of the same type. Remove that, and replace
+	with a test for unchecked conversion to a related type.
+	Otherwise, we somethings get things like
+	"finalize(some_type!(some_type!(x)))" in the generated code,
+	where x is already of type some_type, but we're converting it to
+	the private type and then to the full type or vice versa (so the
+	types aren't equal, so the previous 'if' doesn't catch it).
+	Avoid updating the Parent. This is not necessary; the Parent
+	will be updated if/when the node is attached to the tree.
+	* tbuild.ads: Fix comments. No need to say "this is safe" when
+	we just explained that a few lines earlier.  Remove
+	Make_DT_Access.
+	* sinfo.ads: Add comments.
+	* exp_ch7.adb (Make_Finalize_Address_Stmts): Minor comment fix.
+	* gen_il-gen.adb, gen_il-gen.ads, gen_il-gen-gen_nodes.adb,
+	gen_il-internals.ads: Implement a feature where you can put:
+	Nmake_Assert => "expr" where expr is a boolean expression in a
+	call to Create_Concrete_Node_Type. It is added in a pragma
+	Assert in the Nmake.Make_... function for that type.
+
+2021-07-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb: Remove calls of Set_Do_Tag_Check (N, False).
+	* einfo.ads: Remove hanging unneeded ??? comment ("this real description
+	was clobbered").
+	* exp_util.ads (Insert_Actions_After): Remove ??? from spec comment.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove literals
+	Do_Accessibility_Check and Do_Tag_Check.
+	* gen_il-gen-gen_nodes.adb: Remove all calls to Sm for
+	Do_Accessibility_Check and Do_Tag_Check.
+	* sem_type.ads (Is_Subtype_Of): Remove obsolete ???
+	comment (function is not limited to scalar subtypes).
+	* sem_util.ads (Is_Local_Variable_Reference): Revise comment to
+	mention out-mode parameters as well, and remove ???.
+	(Propagate_Concurrent_Flags): Minor reformatting.
+	(Propagate_Invariant_Attributes): Typo fix.
+	(Propagate_Predicate_Attributes): Indicate what is propagated
+	and remove ??? comment.
+	* sem_util.adb (Cannot_Raise_Constraint_Error): Remove unneeded
+	test of Do_Tag_Check.
+	(Is_Local_Variable_Reference): Extend function to testing for
+	formals of mode out as well.
+	* sinfo.ads: Remove ??? comment about flag
+	Convert_To_Return_False indicating that the flag is obsolete (in
+	fact it's used). Remove references to Do_Accessibility_Check and
+	Do_Tag_Check (and the two associated ??? comments), as these
+	flags are unneeded.
+	* sinfo-cn.adb (Change_Conversion_To_Unchecked): Remove call of
+	Set_Do_Tag_Check (N, False).
+	* targparm.ads (Support_Atomic_Primitives_On_Target): Remove ???
+	comment, plus minor reformatting.
+
+2021-07-06  Justin Squirek  <squirek@adacore.com>
+
+	* par-ch6.adb (Get_Return_Kind): Properly handle the case of a
+	"return when" statement in the procedure case.
+
+2021-07-06  Bob Duff  <duff@adacore.com>
+
+	* sem.ads (Node_To_Be_Wrapped): Minor comment fix.
+	* exp_ch7.adb (Establish_Transient_Scope): Misc cleanups and
+	comment improvements.
+	(Set_Node_To_Be_Wrapped): Remove -- not worth putting this code
+	in a separate procedure, called only once.
+	* sem_util.adb (Requires_Transient_Scope): Assert that our
+	parameter has the right Kind. It probably shouldn't be E_Void,
+	but that is passed in in some cases.
+	(Ensure_Minimum_Decoration): Move the call later, so we know Typ
+	is Present, and remove "if Present (Typ)" from this procedure.
+	* exp_aggr.adb (Convert_To_Assignments): Use membership test,
+	and avoid the "if False" idiom.
+	(Expand_Array_Aggregate): Remove a ??? comment.
+	* sem_ch8.adb (Push_Scope): Take advantage of the full coverage
+	rules for aggregates.
+	* sem_res.adb (Resolve_Declare_Expression): Remove test for
+	Is_Type -- that's all it can be.  Use named notation in call to
+	Establish_Transient_Scope.
+	* libgnat/a-cdlili.adb (Adjust): Remove redundant code.
+	(Clear): Remove "pragma Warnings (Off);", which wasn't actually
+	suppressing any warnings.
+
+2021-07-06  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb: Change the parent of
+	N_Exception_Declaration to be N_Declaration.  Minor comment fix.
+
+2021-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): If the conversion is
+	the name of an assignment operation do not apply predicate check
+	to it prior to the assignment.
+
+2021-07-06  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-conhel.adb: Assert that tampering counts remain
+	between 0 and 2**31-1.  This makes debugging of
+	finalization-related bugs easier.
+
+2021-07-06  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS): Use s-osprim__posix.adb
+	vice s-osprim__vxworks.adb for all vxworks7r2 targets.
+
+2021-07-06  Richard Kenner  <kenner@adacore.com>
+
+	* gen_il-types.ads (Void_Or_Type_Kind,
+	Exception_Or_Object_Kind): Declare.
+	* gen_il-gen-gen_entities.adb: Likewise.
+
+2021-07-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Add a
+	description of the feature of prefixed-view calls for untagged
+	types to the section on pragma Extensions_Allowed.
+	* gnat_rm.texi: Regenerate.
+	* einfo.ads: Update specification for
+	Direct_Primitive_Operations to reflect its use for untagged
+	types when Extensions_Allowed is True.
+	* gen_il-gen-gen_entities.adb: Allow Direct_Primitive_Operations
+	as a field of untagged classes of types by removing the "Pre"
+	test of "Is_Tagged_Type (N)", and making that field generally
+	available for all types and subtypes by defining it for
+	Type_Kind and removing its specification for individual classes
+	of types.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Initialize the
+	Direct_Primitive_Operations list when not already set for the
+	new (sub)type and its base type (except when Ekind of the type
+	is E_Void, which can happen due to errors in cases where
+	Derived_Type_Declaration is called and perhaps in other
+	situations).
+	(Analyze_Subtype_Declaration): Inherit
+	Direct_Primitive_Operations list from the base type, for record
+	and private cases.
+	(Build_Derived_Record_Type): Initialize the
+	Direct_Primitive_Operations list for derived record and private
+	types.
+	(Build_Derived_Type): Initialize the Direct_Primitive_Operations
+	list for derived types (and also for their associated base types
+	when needed).
+	(Process_Full_View): For full types that are untagged record and
+	private types, copy the primitive operations of the partial view
+	to the primitives list of the full view.
+	* sem_ch4.adb (Analyze_Selected_Component): Allow prefixed
+	notation for subprogram calls in the case of untagged
+	types (when Extensions_Allowed is True). In the case where
+	Is_Private_Type (Prefix_Type) is True, call Try_Object_Operation
+	when a discriminant selector wasn't found. Also call
+	Try_Object_Operation in other type kind cases (when
+	Extensions_Allowed is True).
+	(Try_Object_Operation.Try_One_Prefixed_Interpretation): Prevent
+	early return in the untagged case (when Extensions_Allowed is
+	True). Condition main call to Try_Primitive_Operation on the
+	type having primitives, and after that, if Prim_Result is False,
+	test for case where the prefix type is a named access type with
+	primitive operations and in that case call
+	Try_Primitive_Operation after temporarily resetting Obj_Type to
+	denote the access type (and restore it to the designated type
+	after the call)
+	(Try_Object_Operation.Valid_First_Argument_Of): Do matching type
+	comparison by testing Base_Type (Obj_Type) against
+	Base_Type (Typ), rather than against just Typ, to properly
+	handle cases where the object prefix has a constrained
+	subtype.  (Fixes a bug discovered while working on this
+	feature.)
+	* sem_ch6.adb
+	(New_Overloaded_Entity.Check_For_Primitive_Subprogram): Add a
+	primitive of an untagged type to the type's list of primitive
+	operations, for both explicit and implicit (derived, so
+	Comes_From_Source is False) subprogram declarations. In the case
+	where the new primitive overrides an inherited subprogram,
+	locate the primitives Elist that references the overridden
+	subprogram, and replace that element of the list with the new
+	subprogram (done by calling the new procedure
+	Add_Or_Replace_Untagged_Primitive on the result type and each
+	formal atype).
+	(Check_For_Primitive_Subprogram.Add_Or_Replace_Untagged_Primitive):
+	New nested procedure to either add or replace an untagged
+	primitive subprogram in a given type's list of primitive
+	operations (replacement happens in case where the new subprogram
+	overrides a primitive of the type).
+	* sem_ch7.adb (New_Private_Type): When Extensions_Allowed is
+	True, initialize the Direct_Primitive_Operations list of a
+	private type to New_Elmt_List in the case of untagged types.
+	* sem_ch8.adb (Find_Selected_Component): In the case where the
+	prefix is an entity name, relax condition that tests
+	Has_Components so that Analyze_Selected_Component will also be
+	called when Extensions_Allowed is True and the prefix type is
+	any type.
+
+2021-07-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not perform
+	conformance check when the subprogram body has been created for
+	an expression function that is not a completion of a previous
+	specification, because the profile of the constructed body is
+	copied from the expression function itself.
+
+2021-07-06  Steve Baird  <baird@adacore.com>
+
+	* doc/gnat_rm/implementation_of_specific_ada_features.rst: Add a
+	warning indicating that the details of the default (i.e.,
+	selected by the compiler) implementation of T'Put_Image for a
+	nonscalar type T are subject to change.
+	* gnat_rm.texi: Regenerate.
+
 2021-07-05  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gnat-style.texi, gnat_rm.texi, gnat_ugn.texi: Regenerate.
