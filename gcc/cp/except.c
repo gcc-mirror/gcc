@@ -1103,12 +1103,15 @@ check_handlers (tree handlers)
      expression whose type is a polymorphic class type (10.3).  */
 
 static tree
-check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
+check_noexcept_r (tree *tp, int *walk_subtrees, void *)
 {
   tree t = *tp;
   enum tree_code code = TREE_CODE (t);
-  if ((code == CALL_EXPR && CALL_EXPR_FN (t))
-      || code == AGGR_INIT_EXPR)
+
+  if (unevaluated_p (code))
+    *walk_subtrees = false;
+  else if ((code == CALL_EXPR && CALL_EXPR_FN (t))
+	   || code == AGGR_INIT_EXPR)
     {
       /* We can only use the exception specification of the called function
 	 for determining the value of a noexcept expression; we can't use
