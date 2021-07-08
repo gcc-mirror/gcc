@@ -351,19 +351,22 @@ protected:
  * ident-only segment) */
 class TypePathSegment
 {
-  /* TODO: may have to unify TypePathSegment and PathExprSegment (which are
-   * mostly the same anyway) in order to resolve goddamn syntax ambiguities. One
-   * difference is that function on TypePathSegment is not allowed if
-   * GenericArgs are, so could disallow that in constructor, which won't give
-   * that much size overhead. */
-  PathIdentSegment ident_segment;
+public:
+  enum SegmentType
+  {
+    REG,
+    GENERIC,
+    FUNCTION
+  };
 
+private:
+  Analysis::NodeMapping mappings;
+  PathIdentSegment ident_segment;
   Location locus;
 
 protected:
-  /* This is protected because it is only really used by derived classes, not
-   * the base. */
   bool has_separating_scope_resolution;
+  SegmentType type;
 
   // Clone function implementation - not pure virtual as overrided by subclasses
   virtual TypePathSegment *clone_type_path_segment_impl () const
@@ -374,23 +377,30 @@ protected:
 public:
   virtual ~TypePathSegment () {}
 
+  virtual SegmentType get_type () const { return SegmentType::REG; }
+
   // Unique pointer custom clone function
   std::unique_ptr<TypePathSegment> clone_type_path_segment () const
   {
     return std::unique_ptr<TypePathSegment> (clone_type_path_segment_impl ());
   }
 
-  TypePathSegment (PathIdentSegment ident_segment,
+  TypePathSegment (Analysis::NodeMapping mappings,
+		   PathIdentSegment ident_segment,
 		   bool has_separating_scope_resolution, Location locus)
-    : ident_segment (std::move (ident_segment)), locus (locus),
-      has_separating_scope_resolution (has_separating_scope_resolution)
+    : mappings (std::move (mappings)),
+      ident_segment (std::move (ident_segment)), locus (locus),
+      has_separating_scope_resolution (has_separating_scope_resolution),
+      type (SegmentType::REG)
   {}
 
-  TypePathSegment (std::string segment_name,
+  TypePathSegment (Analysis::NodeMapping mappings, std::string segment_name,
 		   bool has_separating_scope_resolution, Location locus)
-    : ident_segment (PathIdentSegment (std::move (segment_name))),
+    : mappings (std::move (mappings)),
+      ident_segment (PathIdentSegment (std::move (segment_name))),
       locus (locus),
-      has_separating_scope_resolution (has_separating_scope_resolution)
+      has_separating_scope_resolution (has_separating_scope_resolution),
+      type (SegmentType::REG)
   {}
 
   virtual std::string as_string () const { return ident_segment.as_string (); }
@@ -407,6 +417,10 @@ public:
 
   // not pure virtual as class not abstract
   virtual void accept_vis (HIRVisitor &vis);
+
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
+
+  const PathIdentSegment &get_ident_segment () const { return ident_segment; }
 };
 
 // Segment used in type path with generic args
@@ -420,22 +434,24 @@ public:
   bool is_ident_only () const override { return false; }
 
   // Constructor with PathIdentSegment and GenericArgs
-  TypePathSegmentGeneric (PathIdentSegment ident_segment,
+  TypePathSegmentGeneric (Analysis::NodeMapping mappings,
+			  PathIdentSegment ident_segment,
 			  bool has_separating_scope_resolution,
 			  GenericArgs generic_args, Location locus)
-    : TypePathSegment (std::move (ident_segment),
+    : TypePathSegment (std::move (mappings), std::move (ident_segment),
 		       has_separating_scope_resolution, locus),
       generic_args (std::move (generic_args))
   {}
 
   // Constructor from segment name and all args
-  TypePathSegmentGeneric (std::string segment_name,
+  TypePathSegmentGeneric (Analysis::NodeMapping mappings,
+			  std::string segment_name,
 			  bool has_separating_scope_resolution,
 			  std::vector<Lifetime> lifetime_args,
 			  std::vector<std::unique_ptr<Type> > type_args,
 			  std::vector<GenericArgsBinding> binding_args,
 			  Location locus)
-    : TypePathSegment (std::move (segment_name),
+    : TypePathSegment (std::move (mappings), std::move (segment_name),
 		       has_separating_scope_resolution, locus),
       generic_args (GenericArgs (std::move (lifetime_args),
 				 std::move (type_args),
@@ -446,7 +462,12 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  GenericArgs get_generic_args () { return generic_args; }
+  GenericArgs &get_generic_args () { return generic_args; }
+
+  virtual SegmentType get_type () const override final
+  {
+    return SegmentType::GENERIC;
+  }
 
 protected:
   // Use covariance to override base class method
@@ -544,19 +565,21 @@ class TypePathSegmentFunction : public TypePathSegment
 
 public:
   // Constructor with PathIdentSegment and TypePathFn
-  TypePathSegmentFunction (PathIdentSegment ident_segment,
+  TypePathSegmentFunction (Analysis::NodeMapping mappings,
+			   PathIdentSegment ident_segment,
 			   bool has_separating_scope_resolution,
 			   TypePathFunction function_path, Location locus)
-    : TypePathSegment (std::move (ident_segment),
+    : TypePathSegment (std::move (mappings), std::move (ident_segment),
 		       has_separating_scope_resolution, locus),
       function_path (std::move (function_path))
   {}
 
   // Constructor with segment name and TypePathFn
-  TypePathSegmentFunction (std::string segment_name,
+  TypePathSegmentFunction (Analysis::NodeMapping mappings,
+			   std::string segment_name,
 			   bool has_separating_scope_resolution,
 			   TypePathFunction function_path, Location locus)
-    : TypePathSegment (std::move (segment_name),
+    : TypePathSegment (std::move (mappings), std::move (segment_name),
 		       has_separating_scope_resolution, locus),
       function_path (std::move (function_path))
   {}
@@ -566,6 +589,11 @@ public:
   bool is_ident_only () const override { return false; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  virtual SegmentType get_type () const override final
+  {
+    return SegmentType::FUNCTION;
+  }
 
 protected:
   // Use covariance to override base class method
@@ -667,16 +695,15 @@ public:
 
   size_t get_num_segments () const { return segments.size (); }
 
-  void iterate_segments (std::function<bool (TypePathSegment *)> cb)
+  std::vector<std::unique_ptr<TypePathSegment> > &get_segments ()
   {
-    for (auto &seg : segments)
-      {
-	if (!cb (seg.get ()))
-	  return;
-      }
+    return segments;
   }
 
-  TypePathSegment *get_final_segment () { return segments.back ().get (); }
+  std::unique_ptr<TypePathSegment> &get_final_segment ()
+  {
+    return segments.back ();
+  }
 };
 
 struct QualifiedPathType
