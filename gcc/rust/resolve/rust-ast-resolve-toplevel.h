@@ -183,7 +183,7 @@ public:
       });
 
     for (auto &item : trait.get_trait_items ())
-      ResolveTopLevelTraitItems::go (item.get ());
+      ResolveTopLevelTraitItems::go (item.get (), path);
   }
 
 private:
