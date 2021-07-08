@@ -584,10 +584,10 @@ package body System.Dwarf_Lines is
          Standard_Opcode_Lengths (J) := Read (C.Lines);
       end loop;
 
-      --  The directories table follows. Up to DWARF 4, this is a list of null
+      --  The Directories table follows. Up to DWARF 4, this is a list of null
       --  terminated strings terminated by a null byte. In DWARF 5, this is a
-      --  sequence of Directories_Count entries encoded as described by the
-      --  Directory_Entry_Format field. We store its offset for later decoding.
+      --  sequence of Directories_Count entries which are encoded as described
+      --  by the Directory_Entry_Format field. We store its offset for later.
 
       if Header.Version <= 4 then
          Tell (C.Lines, Header.Directories);
@@ -619,12 +619,12 @@ package body System.Dwarf_Lines is
          end loop;
       end if;
 
-      --  The file_names table is next. Up to DWARF 4, this is a list of record
+      --  The File_Names table is next. Up to DWARF 4, this is a list of record
       --  containing a null terminated string for the file name, an unsigned
       --  LEB128 directory index in the Directories table, an unsigned LEB128
       --  modification time, and an unsigned LEB128 for the file length; the
       --  table is terminated by a null byte. In DWARF 5, this is a sequence
-      --  of File_Names_Count entries encoded as described by the
+      --  of File_Names_Count entries which are encoded as described by the
       --  File_Name_Entry_Format field. We store its offset for later decoding.
 
       if Header.Version <= 4 then
@@ -1045,7 +1045,7 @@ package body System.Dwarf_Lines is
          case C_Type is
             when DW_LNCT_path .. DW_LNCT_MD5 =>
                if N not in A'Range then
-                  raise Dwarf_Error with "DWARF duplicate content type";
+                  raise Dwarf_Error with "duplicate DWARF content type";
                end if;
 
                A (N) := (C_Type, Form);
@@ -1698,7 +1698,8 @@ package body System.Dwarf_Lines is
                            Dir_Idx := Read_LEB128 (C.Lines);
 
                         when others =>
-                           raise Dwarf_Error with "invalid DWARF";
+                           raise Dwarf_Error with
+                             "invalid DWARF form for DW_LNCT_directory_index";
                      end case;
 
                   else
