@@ -55,10 +55,10 @@ public:
     return *this;
   }
 
-  static CanonicalPath new_seg (const std::string &path)
+  static CanonicalPath new_seg (NodeId id, const std::string &path)
   {
     rust_assert (!path.empty ());
-    return CanonicalPath ({path});
+    return CanonicalPath ({std::pair<NodeId, std::string> (id, path)});
   }
 
   std::string get () const
@@ -67,20 +67,15 @@ public:
     for (size_t i = 0; i < segs.size (); i++)
       {
 	bool have_more = (i + 1) < segs.size ();
-	const std::string &seg = segs.at (i);
+	const std::string &seg = segs.at (i).second;
 	buf += seg + (have_more ? "::" : "");
       }
     return buf;
   }
 
-  static CanonicalPath get_big_self ()
+  static CanonicalPath get_big_self (NodeId id)
   {
-    return CanonicalPath::new_seg ("Self");
-  }
-
-  static CanonicalPath get_wee_self ()
-  {
-    return CanonicalPath::new_seg ("self");
+    return CanonicalPath::new_seg (id, "Self");
   }
 
   static CanonicalPath create_empty () { return CanonicalPath ({}); }
@@ -93,7 +88,7 @@ public:
     if (is_error ())
       return CanonicalPath (other.segs);
 
-    std::vector<std::string> copy (segs);
+    std::vector<std::pair<NodeId, std::string>> copy (segs);
     for (auto &s : other.segs)
       copy.push_back (s);
 
@@ -105,15 +100,21 @@ public:
   //   A
   //   A::B
   //   A::B::C
-  void iterate_path (std::function<bool (const CanonicalPath &)> cb) const
+  void iterate (std::function<bool (const CanonicalPath &)> cb) const
   {
-    std::vector<std::string> buf;
+    std::vector<std::pair<NodeId, std::string>> buf;
     for (auto &seg : segs)
       {
 	buf.push_back (seg);
 	if (!cb (CanonicalPath (buf)))
 	  return;
       }
+  }
+
+  NodeId get_id () const
+  {
+    rust_assert (!segs.empty ());
+    return segs.back ().first;
   }
 
   bool operator== (const CanonicalPath &b) const
@@ -124,9 +125,11 @@ public:
   bool operator< (const CanonicalPath &b) const { return get () < b.get (); }
 
 private:
-  explicit CanonicalPath (std::vector<std::string> path) : segs (path) {}
+  explicit CanonicalPath (std::vector<std::pair<NodeId, std::string>> path)
+    : segs (path)
+  {}
 
-  std::vector<std::string> segs;
+  std::vector<std::pair<NodeId, std::string>> segs;
 };
 
 class Rib
@@ -255,8 +258,8 @@ private:
   NodeId node_id;
   std::map<CanonicalPath, NodeId> mappings;
   std::map<NodeId, CanonicalPath> reverse_mappings;
-  std::set<std::pair<NodeId, Location> > decls_within_rib;
-  std::map<NodeId, std::set<NodeId> > references;
+  std::set<std::pair<NodeId, Location>> decls_within_rib;
+  std::map<NodeId, std::set<NodeId>> references;
 };
 
 class Scope
@@ -494,7 +497,7 @@ private:
   // map of resolved names mutability flag
   std::map<NodeId, bool> decl_mutability;
   // map of resolved names and set of assignments to the decl
-  std::map<NodeId, std::set<NodeId> > assignment_to_decl;
+  std::map<NodeId, std::set<NodeId>> assignment_to_decl;
 };
 
 } // namespace Resolver

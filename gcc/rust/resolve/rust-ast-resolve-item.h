@@ -184,17 +184,23 @@ public:
 					    impl_block.get_node_id (),
 					    canonicalize_type_with_generics);
     if (resolved_node == UNKNOWN_NODEID)
-      return;
+      {
+	resolver->get_type_scope ().pop ();
+	return;
+      }
+
+    auto Self
+      = CanonicalPath::get_big_self (impl_block.get_type ()->get_node_id ());
 
     resolver->get_type_scope ().insert (
-      CanonicalPath::get_big_self (), impl_block.get_type ()->get_node_id (),
+      Self, impl_block.get_type ()->get_node_id (),
       impl_block.get_type ()->get_locus_slow ());
 
     for (auto &impl_item : impl_block.get_impl_items ())
       impl_item->accept_vis (*this);
 
     resolver->get_type_scope ().peek ()->clear_name (
-      CanonicalPath::get_big_self (), impl_block.get_type ()->get_node_id ());
+      Self, impl_block.get_type ()->get_node_id ());
     resolver->get_type_scope ().pop ();
   }
 
@@ -293,15 +299,18 @@ public:
 	return;
       }
 
+    auto Self
+      = CanonicalPath::get_big_self (impl_block.get_type ()->get_node_id ());
+
     resolver->get_type_scope ().insert (
-      CanonicalPath::get_big_self (), impl_block.get_type ()->get_node_id (),
+      Self, impl_block.get_type ()->get_node_id (),
       impl_block.get_type ()->get_locus_slow ());
 
     for (auto &impl_item : impl_block.get_impl_items ())
       impl_item->accept_vis (*this);
 
     resolver->get_type_scope ().peek ()->clear_name (
-      CanonicalPath::get_big_self (), impl_block.get_type ()->get_node_id ());
+      Self, impl_block.get_type ()->get_node_id ());
     resolver->get_type_scope ().pop ();
   }
 

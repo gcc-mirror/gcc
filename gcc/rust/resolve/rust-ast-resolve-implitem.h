@@ -45,8 +45,8 @@ public:
 
   void visit (AST::TypeAlias &type) override
   {
-    auto path
-      = prefix.append (CanonicalPath::new_seg (type.get_new_type_name ()));
+    auto path = prefix.append (
+      CanonicalPath::new_seg (type.get_node_id (), type.get_new_type_name ()));
     resolver->get_type_scope ().insert (
       path, type.get_node_id (), type.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
