@@ -4,7 +4,24 @@
    { dg-do compile }
    { dg-options "-O2 -Wall -Warray-bounds -ftrack-macro-expansion=0" } */
 
-#include <new>
+#if 0
+// Avoid including <new> to make cross-compiler testing easy.
+// #include <new>
+#else
+namespace std {
+
+typedef __SIZE_TYPE__ size_t;
+struct nothrow_t { };
+extern const nothrow_t nothrow;
+
+}
+
+void* operator new (std::size_t, const std::nothrow_t &) throw ()
+  __attribute__  ((__alloc_size__ (1), __malloc__));
+void* operator new[] (std::size_t, const std::nothrow_t &) throw ()
+    __attribute__  ((__alloc_size__ (1), __malloc__));
+
+#endif
 
 typedef __INT32_TYPE__ int32_t;
 
