@@ -7824,12 +7824,17 @@ package body Sem_Ch13 is
             if Duplicate_Clause then
                null;
 
-            elsif Is_Elementary_Type (U_Ent) and then Present (Size) then
-               if Size /= System_Storage_Unit
-                 and then Size /= System_Storage_Unit * 2
-                 and then Size /= System_Storage_Unit * 3
-                 and then Size /= System_Storage_Unit * 4
-                 and then Size /= System_Storage_Unit * 8
+            elsif Is_Elementary_Type (U_Ent) then
+               --  Size will be empty if we already detected an error
+               --  (e.g. Expr is of the wrong type); we might as well
+               --  give the useful hint below even in that case.
+
+               if No (Size) or else
+                 (Size /= System_Storage_Unit
+                  and then Size /= System_Storage_Unit * 2
+                  and then Size /= System_Storage_Unit * 3
+                  and then Size /= System_Storage_Unit * 4
+                  and then Size /= System_Storage_Unit * 8)
                then
                   Error_Msg_N
                     ("stream size for elementary type must be 8, 16, 24, " &
