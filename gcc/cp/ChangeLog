@@ -1,3 +1,19 @@
+2021-07-07  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (check_initializer): Also look through STMT_EXPR
+	and BIND_EXPR.
+
+2021-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101040
+	PR c++/97566
+	* class.c (is_empty_field): Handle null argument.
+	* constexpr.c (cxx_eval_bare_aggregate): Discard initializer
+	for empty field.
+
 2021-06-29  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

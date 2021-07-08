@@ -1,3 +1,104 @@
+2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (mma_init_builtins): Use VSX_BUILTIN_LXVP
+	and VSX_BUILTIN_STXVP.
+
+2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_MMA_PAIR_LD, BU_MMA_PAIR_ST):
+	New macros.
+	(__builtin_vsx_lxvp, __builtin_vsx_stxvp): New built-ins.
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Expand
+	lxvp and stxvp built-ins.
+	(mma_init_builtins): Handle lxvp and stxvp built-ins.
+	(builtin_function_type): Likewise.
+	* doc/extend.texi (__builtin_vsx_lxvp, __builtin_mma_stxvp): Document.
+
+2021-07-07  Michael Meissner  <meissner@linux.ibm.com>
+	    2021-07-01 Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_maybe_emit_fp_cmove): Add IEEE
+	128-bit floating point conditional move support.
+	(have_compare_and_set_mask): Add IEEE 128-bit floating point
+	types.
+	* config/rs6000/rs6000.md (mov<mode>cc, IEEE128 iterator): New insn.
+	(mov<mode>cc_p10, IEEE128 iterator): New insn.
+	(mov<mode>cc_invert_p10, IEEE128 iterator): New insn.
+	(fpmask<mode>, IEEE128 iterator): New insn.
+	(xxsel<mode>, IEEE128 iterator): New insn.
+	Backported from master:
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101229
+	* gimple-walk.c (gimple_walk_op): Handle PHIs.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101173
+	PR tree-optimization/101280
+	* gimple-loop-interchange.cc
+	(tree_loop_interchange::valid_data_dependences): Properly
+	guard all dependence checks with DDR_REVERSED_P or its
+	inverse.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101156
+	* gimplify.c (gimplify_expr): Remove premature incorrect
+	optimization.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100923
+	* tree-ssa-sccvn.c (valueize_refs_1): Take a pointer to
+	the operand vector to be valueized.
+	(valueize_refs): Likewise.
+	(valueize_shared_reference_ops_from_ref): Adjust.
+	(valueize_shared_reference_ops_from_call): Likewise.
+	(vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup_pieces): Likewise.  Re-valueize
+	with honoring availability when we are about to create
+	the ao_ref and valueized before.
+	(vn_reference_lookup): Likewise.
+	(vn_reference_insert_pieces): Adjust.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101088
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Only look for
+	supported refs on edges.  Do not assert same ref but
+	different kind stores are unsuported but mark them so.
+	(hoist_memory_references): Only look for supported refs
+	on exits.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101025
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Make sure to process
+	all refs that require dependence checking.
+
 2021-07-06  Clément Chigot  <clement.chigot@atos.net>
 
 	Backported from master:

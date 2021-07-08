@@ -1,3 +1,80 @@
+2021-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101040
+	PR c++/97566
+	* g++.dg/cpp2a/no_unique_address13.C: New test.
+
+2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-7.c: New test.
+	* gcc.target/powerpc/mma-builtin-8.c: New test.
+
+2021-07-07  Michael Meissner  <meissner@linux.ibm.com>
+	    2021-06-30 Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-minmax.c: Adjust expected code for
+	power10.
+	* lib/target-supports.exp (check_effective_target_has_arch_pwr10):
+	New.
+	Backported from master:
+
+2021-07-07  Michael Meissner  <meissner@linux.ibm.com>
+	    2021-07-01 Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-cmove.c: New test.
+	* gcc.target/powerpc/float128-minmax-3.c: New test.
+	Backported from master:
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101229
+	* gcc.dg/torture/pr101229.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101173
+	PR tree-optimization/101280
+	* gcc.dg/torture/pr101173.c: New testcase.
+	* gcc.dg/tree-ssa/loop-interchange-16.c: New file.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101156
+	* gcc.dg/pr101156.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100923
+	* gcc.dg/torture/pr100923.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101088
+	* gcc.dg/torture/pr101088.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101025
+	* gcc.dg/torture/pr101025.c: New testcase.
+
 2021-07-03  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
