@@ -1405,6 +1405,10 @@ package body Gen_IL.Gen is
          --  Print out a subtype (of type Node_Id or Entity_Id) for a given
          --  nonroot abstract type.
 
+         procedure Put_Opt_Subtype (T : Node_Or_Entity_Type);
+         --  Print out an "optional" subtype; that is, one that allows
+         --  Empty. Their names start with "Opt_".
+
          procedure Put_Enum_Type is
             procedure Put_Enum_Lit (T : Node_Or_Entity_Type);
             --  Print out one enumeration literal in the declaration of
@@ -1496,6 +1500,29 @@ package body Gen_IL.Gen is
             end if;
          end Put_Id_Subtype;
 
+         procedure Put_Opt_Subtype (T : Node_Or_Entity_Type) is
+         begin
+            if Type_Table (T).Parent /= No_Type then
+               Put (S, "subtype Opt_" & Image (T) & " is" & LF);
+               Increase_Indent (S, 2);
+               Put (S, Id_Image (Root));
+
+               --  Assert that the Opt_XXX subtype is empty or in the XXX
+               --  subtype.
+
+               if Enable_Assertions then
+                  Put (S, " with Predicate =>" & LF);
+                  Increase_Indent (S, 2);
+                  Put (S, "Opt_" & Image (T) & " = Empty or else" & LF);
+                  Put (S, "Opt_" & Image (T) & " in " & Id_Image (T));
+                  Decrease_Indent (S, 2);
+               end if;
+
+               Put (S, ";" & LF);
+               Decrease_Indent (S, 2);
+            end if;
+         end Put_Opt_Subtype;
+
       begin -- Put_Type_And_Subtypes
          Put_Enum_Type;
 
@@ -1544,7 +1571,20 @@ package body Gen_IL.Gen is
             end if;
          end loop;
 
-         Put (S, "subtype Flag is Boolean;" & LF & LF);
+         Put (S, LF & "--  Optional subtypes of " & Id_Image (Root) & "." &
+              " These allow Empty." & LF & LF);
+
+         Iterate_Types (Root, Pre => Put_Opt_Subtype'Access);
+
+         Put (S, LF & "--  Optional union types:" & LF & LF);
+
+         for T in First_Abstract (Root) .. Last_Abstract (Root) loop
+            if Type_Table (T) /= null and then Type_Table (T).Is_Union then
+               Put_Opt_Subtype (T);
+            end if;
+         end loop;
+
+         Put (S, LF & "subtype Flag is Boolean;" & LF & LF);
       end Put_Type_And_Subtypes;
 
       function Low_Level_Getter_Name (T : Type_Enum) return String is
