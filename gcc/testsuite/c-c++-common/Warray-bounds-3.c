@@ -178,7 +178,7 @@ void test_memcpy_bounds_memarray_range (void)
 
   TM (ma.a5, ma.a5 + i, ma.a5, 1);
   TM (ma.a5, ma.a5 + i, ma.a5, 3);
-  TM (ma.a5, ma.a5 + i, ma.a5, 5);     /* { dg-warning "\\\[-Warray-bounds" } */
+  TM (ma.a5, ma.a5 + i, ma.a5, 5);     /* { dg-warning "\\\[-Warray-bounds" "pr101374" { xfail *-*-* } } */
   TM (ma.a5, ma.a5 + i, ma.a5, 7);     /* diagnosed with -Warray-bounds=2 */
 }
 

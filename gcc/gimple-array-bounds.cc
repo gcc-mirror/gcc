@@ -427,7 +427,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	axssize = wi::to_offset (access_size);
 
   access_ref aref;
-  if (!compute_objsize (ref, 1, &aref, ranges))
+  if (!compute_objsize (ref, 0, &aref, ranges))
     return false;
 
   if (aref.offset_in_range (axssize))

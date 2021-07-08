@@ -52,7 +52,7 @@ void test_memcpy_bounds_memarray_range (void)
          = MEM <unsigned char[5]> [(char * {ref-all})&ma];
      and could be improved.  Just verify that one is issued but not its
      full text.  */
-  TM (ma.a5, ma.a5 + j, ma.a5, 5);        /* { dg-warning "\\\[-Warray-bounds" } */
+  TM (ma.a5, ma.a5 + j, ma.a5, 5);        /* { dg-warning "\\\[-Warray-bounds" "pr101374" { xfail *-*-* } } */
 
   TM (ma.a5, ma.a5 + j, ma.a5, 7);        /* { dg-warning "offset \\\[5, 7] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 0" } */
   TM (ma.a5, ma.a5 + j, ma.a5, 9);        /* { dg-warning "offset \\\[5, 9] from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 0" } */
