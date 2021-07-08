@@ -36,9 +36,9 @@ void
 diagnostic_report_current_function (diagnostic_context *context,
 				    diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_module (context, diagnostic_location (diagnostic));
-  lang_hooks.print_error_function (context, LOCATION_FILE (input_location),
-				   diagnostic);
+  location_t loc = diagnostic_location (diagnostic);
+  diagnostic_report_current_module (context, loc);
+  lang_hooks.print_error_function (context, LOCATION_FILE (loc), diagnostic);
 }
 
 static void
