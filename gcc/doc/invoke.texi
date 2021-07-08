@@ -18747,6 +18747,15 @@ Compile for GCN5 Vega 20 devices (gfx906).
 
 @end table
 
+@item -msram-ecc=on
+@itemx -msram-ecc=off
+@itemx -msram-ecc=any
+@opindex msram-ecc
+Compile binaries suitable for devices with the SRAM-ECC feature enabled,
+disabled, or either mode.  This feature can be enabled per-process on some
+devices.  The compiled code must match the device mode. The default is
+@samp{any}, for devices that support it.
+
 @item -mstack-size=@var{bytes}
 @opindex mstack-size
 Specify how many @var{bytes} of stack space will be requested for each GPU
@@ -18754,6 +18763,14 @@ thread (wave-front).  Beware that there may be many threads and limited memory
 available.  The size of the stack allocation may also have an impact on
 run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
 1MB otherwise.
+
+@item -mxnack
+@opindex mxnack
+Compile binaries suitable for devices with the XNACK feature enabled.  Some
+devices always require XNACK and some allow the user to configure XNACK.  The
+compiled code must match the device mode.  The default is @samp{-mno-xnack}.
+At present this option is a placeholder for support that is not yet
+implemented.
 
 @end table
 

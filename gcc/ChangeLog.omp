@@ -1,3 +1,24 @@
+2021-07-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from master:
+	PR target/100208
+	* config/gcn/gcn-hsa.h (DRIVER_SELF_SPECS): New.
+	(ASM_SPEC): Set -mattr for xnack and sram-ecc.
+	* config/gcn/gcn-opts.h (enum sram_ecc_type): New.
+	* config/gcn/gcn-valu.md: Add a warning comment.
+	* config/gcn/gcn.c (gcn_option_override): Add "sorry" for -mxnack.
+	(output_file_start): Add xnack and sram-ecc state to ".amdgcn_target".
+	* config/gcn/gcn.md: Add a warning comment.
+	* config/gcn/gcn.opt: Add -mxnack and -msram-ecc.
+	* config/gcn/mkoffload.c (EF_AMDGPU_MACH_AMDGCN_GFX908): Remove
+	SRAM-ECC flag.
+	(EF_AMDGPU_XNACK): New.
+	(EF_AMDGPU_SRAM_ECC): New.
+	(elf_flags): New.
+	(copy_early_debug_info): Use elf_flags.
+	(main): Handle -mxnack and -msram-ecc options.
+	* doc/invoke.texi: Document -mxnack and -msram-ecc.
+
 2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

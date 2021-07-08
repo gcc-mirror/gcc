@@ -1,3 +1,16 @@
+2021-07-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from master:
+	PR target/100208
+	* gcc.target/gcn/sram-ecc-1.c: New test.
+	* gcc.target/gcn/sram-ecc-2.c: New test.
+	* gcc.target/gcn/sram-ecc-3.c: New test.
+	* gcc.target/gcn/sram-ecc-4.c: New test.
+	* gcc.target/gcn/sram-ecc-5.c: New test.
+	* gcc.target/gcn/sram-ecc-6.c: New test.
+	* gcc.target/gcn/sram-ecc-7.c: New test.
+	* gcc.target/gcn/sram-ecc-8.c: New test.
+
 2021-07-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
