@@ -6175,7 +6175,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& (types_match (@1, @2)
 	    /* Or the second operand is const integer or converted const
 	       integer from valueize.  */
-	    || TREE_CODE (@2) == INTEGER_CST))
+	    || poly_int_tree_p (@4)))
      (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
        (op @1 (convert @2))
        (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
