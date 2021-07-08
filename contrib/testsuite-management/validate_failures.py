@@ -457,7 +457,7 @@ def CompareResults(manifest, actual):
   return actual_vs_manifest, manifest_vs_actual
 
 
-def GetManifestPath(srcdir, target, user_provided_must_exist):
+def GetManifestPath(user_provided_must_exist):
   """Return the full path to the manifest file."""
   manifest_path = _OPTIONS.manifest
   if manifest_path:
@@ -465,6 +465,7 @@ def GetManifestPath(srcdir, target, user_provided_must_exist):
       Error('Manifest does not exist: %s' % manifest_path)
     return manifest_path
   else:
+    (srcdir, target) = GetBuildData()
     if not srcdir:
       Error('Could not determine the location of GCC\'s source tree. '
             'The Makefile does not contain a definition for "srcdir".')
@@ -530,8 +531,7 @@ def PerformComparison(expected, actual, ignore_missing_failures):
 
 
 def CheckExpectedResults():
-  srcdir, target = GetBuildData()
-  manifest_path = GetManifestPath(srcdir, target, True)
+  manifest_path = GetManifestPath(True)
   print('Manifest:         %s' % manifest_path)
   manifest = GetManifest(manifest_path)
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
@@ -545,8 +545,7 @@ def CheckExpectedResults():
 
 
 def ProduceManifest():
-  (srcdir, target) = GetBuildData()
-  manifest_path = GetManifestPath(srcdir, target, False)
+  manifest_path = GetManifestPath(False)
   print('Manifest:         %s' % manifest_path)
   if os.path.exists(manifest_path) and not _OPTIONS.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
@@ -563,15 +562,13 @@ def ProduceManifest():
 
 
 def CompareBuilds():
-  (srcdir, target) = GetBuildData()
-
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
   clean = ResultSet()
 
   if _OPTIONS.manifest:
-    manifest_path = GetManifestPath(srcdir, target, True)
+    manifest_path = GetManifestPath(True)
     print('Manifest:         %s' % manifest_path)
     clean = GetManifest(manifest_path)
 
