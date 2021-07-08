@@ -145,7 +145,7 @@ public:
 	    if (query == candidate)
 	      continue;
 
-	    if (query->can_eq (candidate))
+	    if (query->can_eq (candidate, false))
 	      possible_collision (it->second, iy->second);
 	  }
       }

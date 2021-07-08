@@ -263,7 +263,7 @@ public:
       = trait_item_fntype->handle_substitions (implicit_self_substs);
 
     // check the types are compatible
-    if (!trait_item_fntype->can_eq (fntype))
+    if (!trait_item_fntype->can_eq (fntype, true))
       {
 	RichLocation r (function.get_locus ());
 	r.add_range (trait_item_ref.get_locus ());
