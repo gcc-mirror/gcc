@@ -206,6 +206,7 @@ access_ref::access_ref (tree bound /* = NULL_TREE */,
 {
   /* Set to valid.  */
   offrng[0] = offrng[1] = 0;
+  offmax[0] = offmax[1] = 0;
   /* Invalidate.   */
   sizrng[0] = sizrng[1] = -1;
 
@@ -457,6 +458,21 @@ access_ref::size_remaining (offset_int *pmin /* = NULL */) const
   return sizrng[1] - or0;
 }
 
+/* Return true if the offset and object size are in range for SIZE.  */
+
+bool
+access_ref::offset_in_range (const offset_int &size) const
+{
+  if (size_remaining () < size)
+    return false;
+
+  if (base0)
+    return offmax[0] >= 0 && offmax[1] <= sizrng[1];
+
+  offset_int maxoff = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+  return offmax[0] > -maxoff && offmax[1] < maxoff;
+}
+
 /* Add the range [MIN, MAX] to the offset range.  For known objects (with
    zero-based offsets) at least one of whose offset's bounds is in range,
    constrain the other (or both) to the bounds of the object (i.e., zero
@@ -493,6 +509,8 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
       if (max >= 0)
 	{
 	  offrng[0] = 0;
+	  if (offmax[0] > 0)
+	    offmax[0] = 0;
 	  return;
 	}
 
@@ -508,6 +526,12 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
       else
 	offrng[0] = 0;
     }
+
+  /* Set the minimum and maximmum computed so far. */
+  if (offrng[1] < 0 && offrng[1] < offmax[0])
+    offmax[0] = offrng[1];
+  if (offrng[0] > 0 && offrng[0] > offmax[1])
+    offmax[1] = offrng[0];
 
   if (!base0)
     return;
@@ -4571,23 +4595,46 @@ access_ref::inform_access (access_mode mode) const
       return;
     }
 
+  if (mode == access_read_only)
+    {
+      if (allocfn == NULL_TREE)
+	{
+	  if (*offstr)
+	    inform (loc, "at offset %s into source object %qE of size %s",
+		    offstr, ref, sizestr);
+	  else
+	    inform (loc, "source object %qE of size %s", ref, sizestr);
+
+	  return;
+	}
+
+      if (*offstr)
+	inform (loc,
+		"at offset %s into source object of size %s allocated by %qE",
+		offstr, sizestr, allocfn);
+      else
+	inform (loc, "source object of size %s allocated by %qE",
+		sizestr, allocfn);
+      return;
+    }
+
   if (allocfn == NULL_TREE)
     {
       if (*offstr)
-	inform (loc, "at offset %s into source object %qE of size %s",
+	inform (loc, "at offset %s into object %qE of size %s",
 		offstr, ref, sizestr);
       else
-	inform (loc, "source object %qE of size %s", ref, sizestr);
+	inform (loc, "object %qE of size %s", ref, sizestr);
 
       return;
     }
 
   if (*offstr)
     inform (loc,
-	    "at offset %s into source object of size %s allocated by %qE",
+	    "at offset %s into object of size %s allocated by %qE",
 	    offstr, sizestr, allocfn);
   else
-    inform (loc, "source object of size %s allocated by %qE",
+    inform (loc, "object of size %s allocated by %qE",
 	    sizestr, allocfn);
 }
 
@@ -5433,16 +5480,16 @@ handle_mem_ref (tree mref, int ostype, access_ref *pref,
 
   if (VECTOR_TYPE_P (TREE_TYPE (mref)))
     {
-      /* Hack: Give up for MEM_REFs of vector types; those may be
-	 synthesized from multiple assignments to consecutive data
-	 members (see PR 93200 and 96963).
+      /* Hack: Handle MEM_REFs of vector types as those to complete
+	 objects; those may be synthesized from multiple assignments
+	 to consecutive data members (see PR 93200 and 96963).
 	 FIXME: Vectorized assignments should only be present after
 	 vectorization so this hack is only necessary after it has
 	 run and could be avoided in calls from prior passes (e.g.,
 	 tree-ssa-strlen.c).
 	 FIXME: Deal with this more generally, e.g., by marking up
 	 such MEM_REFs at the time they're created.  */
-      return false;
+      ostype = 0;
     }
 
   tree mrefop = TREE_OPERAND (mref, 0);
@@ -5795,6 +5842,12 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 	}
 
       tree rhs = gimple_assign_rhs1 (stmt);
+
+      if (code == ASSERT_EXPR)
+	{
+	  rhs = TREE_OPERAND (rhs, 0);
+	  return compute_objsize_r (rhs, ostype, pref, snlim, qry);
+	}
 
       if (code == POINTER_PLUS_EXPR
 	  && TREE_CODE (TREE_TYPE (rhs)) == POINTER_TYPE)

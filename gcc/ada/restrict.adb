@@ -396,10 +396,9 @@ package body Restrict is
       N : Node_Id;
       V : Uint := Uint_Minus_1)
    is
-      Msg_Issued : Boolean;
-      pragma Unreferenced (Msg_Issued);
+      Ignore_Msg_Issued : Boolean;
    begin
-      Check_Restriction (Msg_Issued, R, N, V);
+      Check_Restriction (Ignore_Msg_Issued, R, N, V);
    end Check_Restriction;
 
    procedure Check_Restriction

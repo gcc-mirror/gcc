@@ -1287,29 +1287,6 @@ begin
          Exit_Program (E_Errors);
       end if;
 
-      --  Set Generate_Code on main unit and its spec. We do this even if are
-      --  not generating code, since Lib-Writ uses this to determine which
-      --  units get written in the ali file.
-
-      Set_Generate_Code (Main_Unit);
-
-      --  If we have a corresponding spec, and it comes from source or it is
-      --  not a generated spec for a child subprogram body, then we need object
-      --  code for the spec unit as well.
-
-      if Nkind (Unit (Main_Unit_Node)) in N_Unit_Body
-        and then not Acts_As_Spec (Main_Unit_Node)
-      then
-         if Nkind (Unit (Main_Unit_Node)) = N_Subprogram_Body
-           and then not Comes_From_Source (Library_Unit (Main_Unit_Node))
-         then
-            null;
-         else
-            Set_Generate_Code
-              (Get_Cunit_Unit_Number (Library_Unit (Main_Unit_Node)));
-         end if;
-      end if;
-
       --  Case of no code required to be generated, exit indicating no error
 
       if Original_Operating_Mode = Check_Syntax then

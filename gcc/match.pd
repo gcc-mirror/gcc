@@ -3610,7 +3610,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (complex (convert:itype @0) (negate (convert:itype @1)))))
 
 /* BSWAP simplifications, transforms checked by gcc.dg/builtin-bswap-8.c.  */
-(for bswap (BUILT_IN_BSWAP16 BUILT_IN_BSWAP32 BUILT_IN_BSWAP64)
+(for bswap (BUILT_IN_BSWAP16 BUILT_IN_BSWAP32
+	    BUILT_IN_BSWAP64 BUILT_IN_BSWAP128)
  (simplify
   (bswap (bswap @0))
   @0)
@@ -3620,7 +3621,70 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (for bitop (bit_xor bit_ior bit_and)
   (simplify
    (bswap (bitop:c (bswap @0) @1))
-   (bitop @0 (bswap @1)))))
+   (bitop @0 (bswap @1))))
+ /* (bswap(x) >> C1) & C2 can sometimes be simplified to (x >> C3) & C2.  */
+ (simplify
+  (bit_and (convert1? (rshift@0 (convert2? (bswap@4 @1)) INTEGER_CST@2))
+	   INTEGER_CST@3)
+   (if (BITS_PER_UNIT == 8
+	&& tree_fits_uhwi_p (@2)
+	&& tree_fits_uhwi_p (@3))
+    (with
+     {
+      unsigned HOST_WIDE_INT prec = TYPE_PRECISION (TREE_TYPE (@4));
+      unsigned HOST_WIDE_INT bits = tree_to_uhwi (@2);
+      unsigned HOST_WIDE_INT mask = tree_to_uhwi (@3);
+      unsigned HOST_WIDE_INT lo = bits & 7;
+      unsigned HOST_WIDE_INT hi = bits - lo;
+     }
+     (if (bits < prec
+	  && mask < (256u>>lo)
+	  && bits < TYPE_PRECISION (TREE_TYPE(@0)))
+      (with { unsigned HOST_WIDE_INT ns = (prec - (hi + 8)) + lo; }
+       (if (ns == 0)
+	(bit_and (convert @1) @3)
+	(with
+	 {
+	  tree utype = unsigned_type_for (TREE_TYPE (@1));
+	  tree nst = build_int_cst (integer_type_node, ns);
+	 }
+	 (bit_and (convert (rshift:utype (convert:utype @1) {nst;})) @3))))))))
+ /* bswap(x) >> C1 can sometimes be simplified to (T)x >> C2.  */
+ (simplify
+  (rshift (convert? (bswap@2 @0)) INTEGER_CST@1)
+   (if (BITS_PER_UNIT == 8
+	&& CHAR_TYPE_SIZE == 8
+	&& tree_fits_uhwi_p (@1))
+    (with
+     {
+      unsigned HOST_WIDE_INT prec = TYPE_PRECISION (TREE_TYPE (@2));
+      unsigned HOST_WIDE_INT bits = tree_to_uhwi (@1);
+     }
+     (if (bits + 8 == prec)
+      (if (TYPE_UNSIGNED (type))
+       (convert (convert:unsigned_char_type_node @0))
+       (convert (convert:signed_char_type_node @0)))
+      (if (bits < prec && bits + 8 > prec)
+       (with 
+	{
+	 tree nst = build_int_cst (integer_type_node, bits & 7);
+	 tree bt = TYPE_UNSIGNED (type) ? unsigned_char_type_node
+					: signed_char_type_node;
+	}
+	(convert (rshift:bt (convert:bt @0) {nst;}))))))))
+ /* bswap(x) & C1 can sometimes be simplified to (x >> C2) & C1.  */
+ (simplify
+  (bit_and (convert? (bswap@2 @0)) INTEGER_CST@1)
+   (if (BITS_PER_UNIT == 8
+	&& tree_fits_uhwi_p (@1)
+	&& tree_to_uhwi (@1) < 256)
+    (with
+     {
+      unsigned HOST_WIDE_INT prec = TYPE_PRECISION (TREE_TYPE (@2));
+      tree utype = unsigned_type_for (TREE_TYPE (@0));
+      tree nst = build_int_cst (integer_type_node, prec - 8);
+     }
+     (bit_and (convert (rshift:utype (convert:utype @0) {nst;})) @1)))))
 
 
 /* Combine COND_EXPRs and VEC_COND_EXPRs.  */
@@ -6111,7 +6175,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& (types_match (@1, @2)
 	    /* Or the second operand is const integer or converted const
 	       integer from valueize.  */
-	    || TREE_CODE (@2) == INTEGER_CST))
+	    || poly_int_tree_p (@4)))
      (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
        (op @1 (convert @2))
        (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }

@@ -59,7 +59,9 @@ class impl_region_model_context : public region_model_context
 		      const svalue *sval,
 		      state_machine::state_t state);
 
-  void on_condition (tree lhs, enum tree_code op, tree rhs) FINAL OVERRIDE;
+  void on_condition (const svalue *lhs,
+		     enum tree_code op,
+		     const svalue *rhs) FINAL OVERRIDE;
 
   void on_unknown_change (const svalue *sval, bool is_mutable) FINAL OVERRIDE;
 

@@ -691,18 +691,15 @@ class region_model
   get_representative_path_var_1 (const region *reg,
 				 svalue_set *visited) const;
 
-  void add_any_constraints_from_ssa_def_stmt (tree lhs,
-					      enum tree_code op,
-					      tree rhs,
-					      region_model_context *ctxt);
-  void add_any_constraints_from_gassign (enum tree_code op,
-					 tree rhs,
-					 const gassign *assign,
-					 region_model_context *ctxt);
-  void add_any_constraints_from_gcall (enum tree_code op,
-				       tree rhs,
-				       const gcall *call,
-				       region_model_context *ctxt);
+  bool add_constraint (const svalue *lhs,
+		       enum tree_code op,
+		       const svalue *rhs,
+		       region_model_context *ctxt);
+  bool add_constraints_from_binop (const svalue *outer_lhs,
+				   enum tree_code outer_op,
+				   const svalue *outer_rhs,
+				   bool *out,
+				   region_model_context *ctxt);
 
   void update_for_call_superedge (const call_superedge &call_edge,
 				  region_model_context *ctxt);
@@ -781,7 +778,9 @@ class region_model_context
      and use them to trigger sm-state transitions (e.g. transitions due
      to ptrs becoming known to be NULL or non-NULL, rather than just
      "unchecked") */
-  virtual void on_condition (tree lhs, enum tree_code op, tree rhs) = 0;
+  virtual void on_condition (const svalue *lhs,
+			     enum tree_code op,
+			     const svalue *rhs) = 0;
 
   /* Hooks for clients to be notified when an unknown change happens
      to SVAL (in response to a call to an unknown function).  */
@@ -812,9 +811,9 @@ public:
   void on_liveness_change (const svalue_set &,
 			   const region_model *) OVERRIDE {}
   logger *get_logger () OVERRIDE { return NULL; }
-  void on_condition (tree lhs ATTRIBUTE_UNUSED,
+  void on_condition (const svalue *lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
-		     tree rhs ATTRIBUTE_UNUSED) OVERRIDE
+		     const svalue *rhs ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
   void on_unknown_change (const svalue *sval ATTRIBUTE_UNUSED,

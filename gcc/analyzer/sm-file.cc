@@ -77,9 +77,9 @@ public:
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
-		     tree lhs,
+		     const svalue *lhs,
 		     enum tree_code op,
-		     tree rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
   pending_diagnostic *on_leak (tree var) const FINAL OVERRIDE;
@@ -381,19 +381,18 @@ void
 fileptr_state_machine::on_condition (sm_context *sm_ctxt,
 				     const supernode *node,
 				     const gimple *stmt,
-				     tree lhs,
+				     const svalue *lhs,
 				     enum tree_code op,
-				     tree rhs) const
+				     const svalue *rhs) const
 {
-  if (!zerop (rhs))
+  if (!rhs->all_zeroes_p ())
     return;
 
   // TODO: has to be a FILE *, specifically
-  if (TREE_CODE (TREE_TYPE (lhs)) != POINTER_TYPE)
+  if (!any_pointer_p (lhs))
     return;
-
   // TODO: has to be a FILE *, specifically
-  if (TREE_CODE (TREE_TYPE (rhs)) != POINTER_TYPE)
+  if (!any_pointer_p (rhs))
     return;
 
   if (op == NE_EXPR)

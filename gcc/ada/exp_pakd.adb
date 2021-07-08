@@ -563,11 +563,11 @@ package body Exp_Pakd is
          --  Do not reset RM_Size if already set, as happens in the case of
          --  a modular type.
 
-         if Unknown_Esize (PAT) then
+         if not Known_Esize (PAT) then
             Set_Esize (PAT, PASize);
          end if;
 
-         if Unknown_RM_Size (PAT) then
+         if not Known_RM_Size (PAT) then
             Set_RM_Size (PAT, PASize);
          end if;
 
@@ -828,8 +828,8 @@ package body Exp_Pakd is
 
       elsif not Is_Constrained (Typ) then
 
-         --  When generating standard DWARF (i.e when GNAT_Encodings is
-         --  DWARF_GNAT_Encodings_Minimal), the ___XP suffix will be stripped
+         --  When generating standard DWARF (i.e when GNAT_Encodings is not
+         --  DWARF_GNAT_Encodings_All), the ___XP suffix will be stripped
          --  by the back-end but generate it anyway to ease compiler debugging.
          --  This will help to distinguish implementation types from original
          --  packed arrays.

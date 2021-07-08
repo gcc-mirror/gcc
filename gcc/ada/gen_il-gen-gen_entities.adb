@@ -315,15 +315,14 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Entry_Formal, Node_Id),
         Sm (Esize, Uint),
         Sm (Interface_Name, Node_Id),
-        Sm (Linker_Section_Pragma, Node_Id),
         Sm (Normalized_First_Bit, Uint),
         Sm (Normalized_Position, Uint),
         Sm (Normalized_Position_Max, Uint),
         Sm (Original_Record_Component, Node_Id)));
 
    Cc (E_Component, Record_Field_Kind,
-       --  Components of a record declaration, private declarations of
-       --  protected objects.
+       --  Components (other than discriminants) of a record declaration,
+       --  private declarations of protected objects.
        (Sm (Discriminant_Checking_Func, Node_Id),
         Sm (DT_Entry_Count, Uint,
             Pre => "Is_Tag (N)"),

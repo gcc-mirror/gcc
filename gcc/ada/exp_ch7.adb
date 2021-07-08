@@ -480,7 +480,7 @@ package body Exp_Ch7 is
       Skip_Self : Boolean := False) return Node_Id;
    --  Subsidiary to Make_Adjust_Call and Make_Final_Call. Given the entity of
    --  routine [Deep_]Adjust or [Deep_]Finalize and an object parameter, create
-   --  an adjust or finalization call. Wnen flag Skip_Self is set, the related
+   --  an adjust or finalization call. When flag Skip_Self is set, the related
    --  action has an effect on the components only (if any).
 
    function Make_Deep_Proc
@@ -8126,7 +8126,7 @@ package body Exp_Ch7 is
          --       end if;
          --       ...
 
-         --  When Deep_Adjust is invokes for field _parent, a value of False is
+         --  When Deep_Adjust is invoked for field _parent, a value of False is
          --  provided for the flag:
 
          --    Deep_Adjust (Obj._parent, False);

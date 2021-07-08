@@ -32,10 +32,9 @@ with Types; use Types;
 
 package Layout is
 
-   --  The following procedures are called from Freeze, so all entities
-   --  for types and objects that get frozen (which should be all such
-   --  entities which are seen by the back end) will get laid out by one
-   --  of these two procedures.
+   --  The following procedures are called from Freeze, so all entities for
+   --  types and objects that get frozen (i.e. all types and objects seen by
+   --  the back end) will get laid out by one of these two procedures.
 
    procedure Layout_Type (E : Entity_Id);
    --  This procedure may set or adjust the fields Esize, RM_Size and

@@ -5471,7 +5471,9 @@ package body Sem_Ch4 is
                      Apply_Compile_Time_Constraint_Error
                        (N, "component not present in }??",
                         CE_Discriminant_Check_Failed,
-                        Ent => Prefix_Type);
+                        Ent          => Prefix_Type,
+                        Emit_Message =>
+                          SPARK_Mode = On or not In_Instance_Not_Visible);
                      return;
                   end if;
 

@@ -101,7 +101,6 @@ private
 
    type Atomic_Counter is record
       Value : aliased Atomic_Unsigned := 1;
-      pragma Atomic (Value);
    end record;
 
 end System.Atomic_Counters;

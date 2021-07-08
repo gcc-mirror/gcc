@@ -61,9 +61,9 @@ public:
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
-		     tree lhs,
+		     const svalue *lhs,
 		     enum tree_code op,
-		     tree rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const FINAL OVERRIDE;
 
   bool can_purge_p (state_t s) const FINAL OVERRIDE;
 
@@ -281,9 +281,9 @@ void
 taint_state_machine::on_condition (sm_context *sm_ctxt,
 				   const supernode *node,
 				   const gimple *stmt,
-				   tree lhs,
+				   const svalue *lhs,
 				   enum tree_code op,
-				   tree rhs ATTRIBUTE_UNUSED) const
+				   const svalue *rhs ATTRIBUTE_UNUSED) const
 {
   if (stmt == NULL)
     return;

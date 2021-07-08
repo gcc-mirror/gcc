@@ -7180,109 +7180,136 @@ package body Sem_Ch13 is
                Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
             end if;
 
-         ----------
-         -- Size --
-         ----------
+         ------------------------
+         -- Size or Value_Size --
+         ------------------------
 
-         --  Size attribute definition clause
+         --  Size or Value_Size attribute definition clause. These are treated
+         --  the same, except that Size is allowed on objects, and Value_Size
+         --  is allowed on nonfirst subtypes. First subtypes allow both Size
+         --  and Value_Size; the treatment is the same for both.
 
-         when Attribute_Size => Size : declare
+         when Attribute_Size | Attribute_Value_Size => Size : declare
             Size   : constant Uint := Static_Integer (Expr);
-            Etyp   : Entity_Id;
-            Biased : Boolean;
+
+            Attr_Name : constant String :=
+              (if Id = Attribute_Size then "size"
+               elsif Id = Attribute_Value_Size then "value size"
+               else ""); -- can't happen
+            --  Name of the attribute for printing in messages
+
+            OK_Prefix : constant Boolean :=
+              (if Id = Attribute_Size then
+                Ekind (U_Ent) in Type_Kind | Constant_Or_Variable_Kind
+               elsif Id = Attribute_Value_Size then
+                Ekind (U_Ent) in Type_Kind
+               else False); -- can't happen
+            --  For X'Size, X can be a type or object; for X'Value_Size,
+            --  X can be a type. Note that we already checked that 'Size
+            --  can be specified only for a first subytype.
 
          begin
             FOnly := True;
 
-            if Duplicate_Clause then
-               null;
+            if not OK_Prefix then
+               Error_Msg_N (Attr_Name & " cannot be given for &", Nam);
 
-            elsif not Is_Type (U_Ent)
-              and then Ekind (U_Ent) /= E_Variable
-              and then Ekind (U_Ent) /= E_Constant
-            then
-               Error_Msg_N ("size cannot be given for &", Nam);
+            elsif Duplicate_Clause then
+               null;
 
             elsif Is_Array_Type (U_Ent)
               and then not Is_Constrained (U_Ent)
             then
                Error_Msg_N
-                 ("size cannot be given for unconstrained array", Nam);
+                 (Attr_Name & " cannot be given for unconstrained array", Nam);
 
             elsif Size /= No_Uint then
-               if Is_Type (U_Ent) then
-                  Etyp := U_Ent;
-               else
-                  Etyp := Etype (U_Ent);
-               end if;
+               declare
+                  Etyp : constant Entity_Id :=
+                    (if Is_Type (U_Ent) then U_Ent else Etype (U_Ent));
 
-               --  Check size, note that Gigi is in charge of checking that the
-               --  size of an array or record type is OK. Also we do not check
-               --  the size in the ordinary fixed-point case, since it is too
-               --  early to do so (there may be subsequent small clause that
-               --  affects the size). We can check the size if a small clause
-               --  has already been given.
+               begin
+                  --  Check size, note that Gigi is in charge of checking that
+                  --  the size of an array or record type is OK. Also we do not
+                  --  check the size in the ordinary fixed-point case, since
+                  --  it is too early to do so (there may be subsequent small
+                  --  clause that affects the size). We can check the size if
+                  --  a small clause has already been given.
 
-               if not Is_Ordinary_Fixed_Point_Type (U_Ent)
-                 or else Has_Small_Clause (U_Ent)
-               then
-                  Check_Size (Expr, Etyp, Size, Biased);
-                  Set_Biased (U_Ent, N, "size clause", Biased);
-               end if;
+                  if not Is_Ordinary_Fixed_Point_Type (U_Ent)
+                    or else Has_Small_Clause (U_Ent)
+                  then
+                     declare
+                        Biased : Boolean;
+                     begin
+                        Check_Size (Expr, Etyp, Size, Biased);
+                        Set_Biased (U_Ent, N, Attr_Name & " clause", Biased);
+                     end;
+                  end if;
 
-               --  For types set RM_Size and Esize if possible
+                  --  For types, set RM_Size and Esize if appropriate
 
-               if Is_Type (U_Ent) then
-                  Set_RM_Size (U_Ent, Size);
+                  if Is_Type (U_Ent) then
+                     Set_RM_Size (U_Ent, Size);
 
-                  --  For elementary types, increase Object_Size to power of 2,
-                  --  but not less than a storage unit in any case (normally
-                  --  this means it will be byte addressable).
+                     --  If we are specifying the Size or Value_Size of a
+                     --  first subtype, then for elementary types, increase
+                     --  Object_Size to power of 2, but not less than a storage
+                     --  unit in any case (normally this means it will be byte
+                     --  addressable).
 
-                  --  For all other types, nothing else to do, we leave Esize
-                  --  (object size) unset, the back end will set it from the
-                  --  size and alignment in an appropriate manner.
+                     --  For all other types, nothing else to do, we leave
+                     --  Esize (object size) unset; the back end will set it
+                     --  from the size and alignment in an appropriate manner.
 
-                  --  In both cases, we check whether the alignment must be
-                  --  reset in the wake of the size change.
+                     --  In both cases, we check whether the alignment must be
+                     --  reset in the wake of the size change.
 
-                  if Is_Elementary_Type (U_Ent) then
-                     if Size <= System_Storage_Unit then
-                        Init_Esize (U_Ent, System_Storage_Unit);
-                     elsif Size <= 16 then
-                        Init_Esize (U_Ent, 16);
-                     elsif Size <= 32 then
-                        Init_Esize (U_Ent, 32);
-                     else
-                        Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
+                     --  For nonfirst subtypes ('Value_Size only), we do
+                     --  nothing here.
+
+                     if Is_First_Subtype (U_Ent) then
+                        if Is_Elementary_Type (U_Ent) then
+                           if Size <= System_Storage_Unit then
+                              Init_Esize (U_Ent, System_Storage_Unit);
+                           elsif Size <= 16 then
+                              Init_Esize (U_Ent, 16);
+                           elsif Size <= 32 then
+                              Init_Esize (U_Ent, 32);
+                           else
+                              Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
+                           end if;
+
+                           Alignment_Check_For_Size_Change
+                             (U_Ent, Esize (U_Ent));
+                        else
+                           Alignment_Check_For_Size_Change (U_Ent, Size);
+                        end if;
                      end if;
 
-                     Alignment_Check_For_Size_Change (U_Ent, Esize (U_Ent));
+                  --  For Object'Size, set Esize only
+
                   else
-                     Alignment_Check_For_Size_Change (U_Ent, Size);
+                     if Is_Elementary_Type (Etyp)
+                       and then Size /= System_Storage_Unit
+                       and then Size /= 16
+                       and then Size /= 32
+                       and then Size /= 64
+                       and then Size /= System_Max_Integer_Size
+                     then
+                        Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
+                        Error_Msg_Uint_2 :=
+                          UI_From_Int (System_Max_Integer_Size);
+                        Error_Msg_N
+                          ("size for primitive object must be a power of 2 in "
+                           & "the range ^-^", N);
+                     end if;
+
+                     Set_Esize (U_Ent, Size);
                   end if;
 
-               --  For objects, set Esize only
-
-               else
-                  if Is_Elementary_Type (Etyp)
-                    and then Size /= System_Storage_Unit
-                    and then Size /= 16
-                    and then Size /= 32
-                    and then Size /= 64
-                    and then Size /= System_Max_Integer_Size
-                  then
-                     Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
-                     Error_Msg_Uint_2 := UI_From_Int (System_Max_Integer_Size);
-                     Error_Msg_N
-                       ("size for primitive object must be a power of 2 in "
-                        & "the range ^-^", N);
-                  end if;
-
-                  Set_Esize (U_Ent, Size);
-               end if;
-
-               Set_Has_Size_Clause (U_Ent);
+                  Set_Has_Size_Clause (U_Ent);
+               end;
             end if;
          end Size;
 
@@ -7743,39 +7770,6 @@ package body Sem_Ch13 is
                Error_Msg_N ("Stream_Size cannot be given for &", Nam);
             end if;
          end Stream_Size;
-
-         ----------------
-         -- Value_Size --
-         ----------------
-
-         --  Value_Size attribute definition clause
-
-         when Attribute_Value_Size => Value_Size : declare
-            Size   : constant Uint := Static_Integer (Expr);
-            Biased : Boolean;
-
-         begin
-            if not Is_Type (U_Ent) then
-               Error_Msg_N ("Value_Size cannot be given for &", Nam);
-
-            elsif Duplicate_Clause then
-               null;
-
-            elsif Is_Array_Type (U_Ent)
-              and then not Is_Constrained (U_Ent)
-            then
-               Error_Msg_N
-                 ("Value_Size cannot be given for unconstrained array", Nam);
-
-            else
-               if Is_Elementary_Type (U_Ent) then
-                  Check_Size (Expr, U_Ent, Size, Biased);
-                  Set_Biased (U_Ent, N, "value size clause", Biased);
-               end if;
-
-               Set_RM_Size (U_Ent, Size);
-            end if;
-         end Value_Size;
 
          -----------------------
          -- Variable_Indexing --
@@ -12376,7 +12370,7 @@ package body Sem_Ch13 is
       --  length (it may for example be appropriate to round up the size
       --  to some convenient boundary, based on alignment considerations, etc).
 
-      if Unknown_RM_Size (Rectype)
+      if not Known_RM_Size (Rectype)
         and then Hbit + 1 <= 32
         and then not Strict_Alignment (Rectype)
       then

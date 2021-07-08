@@ -6516,33 +6516,31 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   stmt_vec_info orig_stmt_of_analysis = stmt_info;
   stmt_vec_info phi_info = stmt_info;
-  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
-      || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
+  if (!is_a <gphi *> (stmt_info->stmt))
     {
-      if (!is_a <gphi *> (stmt_info->stmt))
-	{
-	  STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
-	  return true;
-	}
-      if (slp_node)
-	{
-	  slp_node_instance->reduc_phis = slp_node;
-	  /* ???  We're leaving slp_node to point to the PHIs, we only
-	     need it to get at the number of vector stmts which wasn't
-	     yet initialized for the instance root.  */
-	}
-      if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
-	stmt_info = vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (stmt_info));
-      else /* STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def */
-	{
-	  use_operand_p use_p;
-	  gimple *use_stmt;
-	  bool res = single_imm_use (gimple_phi_result (stmt_info->stmt),
-				     &use_p, &use_stmt);
-	  gcc_assert (res);
-	  phi_info = loop_vinfo->lookup_stmt (use_stmt);
-	  stmt_info = vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (phi_info));
-	}
+      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
+      return true;
+    }
+  if (slp_node)
+    {
+      slp_node_instance->reduc_phis = slp_node;
+      /* ???  We're leaving slp_node to point to the PHIs, we only
+	 need it to get at the number of vector stmts which wasn't
+	 yet initialized for the instance root.  */
+    }
+  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
+    stmt_info = vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (stmt_info));
+  else
+    {
+      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info)
+		  == vect_double_reduction_def);
+      use_operand_p use_p;
+      gimple *use_stmt;
+      bool res = single_imm_use (gimple_phi_result (stmt_info->stmt),
+				 &use_p, &use_stmt);
+      gcc_assert (res);
+      phi_info = loop_vinfo->lookup_stmt (use_stmt);
+      stmt_info = vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (phi_info));
     }
 
   /* PHIs should not participate in patterns.  */

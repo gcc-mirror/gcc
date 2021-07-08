@@ -2082,7 +2082,7 @@ package Sinfo is
    --    that no elaboration check is needed on the call, because it appears in
    --    the context of a local Suppress pragma. This is used on calls within
    --    task bodies, where the actual elaboration checks are applied after
-   --    analysis, when the local scope stack is not present
+   --    analysis, when the local scope stack is not present.
 
    --  No_Entities_Ref_In_Spec
    --    Present in N_With_Clause nodes. Set if the with clause is on the
@@ -8422,7 +8422,7 @@ package Sinfo is
       --  It is generated as a result of actual use of Unchecked_Conversion
       --  and also by the expander.
 
-      --  Unchecked type conversion nodes should normally be created by calling
+      --  Unchecked type conversion nodes should be created by calling
       --  Tbuild.Unchecked_Convert_To, rather than by directly calling
       --  Nmake.Make_Unchecked_Type_Conversion.
 

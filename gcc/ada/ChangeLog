@@ -1,3 +1,249 @@
+2021-07-07  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* s-oscons-tmplt.c (MSG_WAITALL): Remove wrong #ifdef
+	__MINWGW32__.
+
+2021-07-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo-utils.adb (Primitive_Operations): Default to returning
+	Direct_Primitive_Operations in the case of concurrent types
+	(when Corresponding_Record_Type not present).
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Initialize
+	Direct_Primitive_Operations to an empty element list.
+	(Analyze_Task_Type_Declaration): Initialize
+	Direct_Primitive_Operations to an empty element list.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Set_Checking_Potentially_Static_Expression):
+	Stronger assertion.
+
+2021-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Mark Anon_Id
+	intrinsic before calling Analyze_Instance_And_Renamings because
+	this flag may be propagated to other nodes.
+
+2021-07-07  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* s-oscons-tmplt.c (TCP_KEEPCNT TCP_KEEPIDLE, TCP_KEEPINTVL):
+	Hardcode on Windows if undefined.
+
+2021-07-07  Bob Duff  <duff@adacore.com>
+
+	* checks.adb (Install_Primitive_Elaboration_Check): Do not
+	generate elaboration checks for primitives if pragma Pure or
+	Preelaborate is present.  Misc comment fixes, including
+	referring to the correct kind of check (elaboration, not
+	accessibility).
+	* checks.ads, restrict.adb, sem_cat.ads, sinfo.ads: Minor
+	reformatting and comment fixes.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Simplify processing of pragma
+	CPP_Constructor.
+
+2021-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/g-debpoo.adb (Code_Address_For_Allocate_End): Default
+	Initialize.
+
+2021-07-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-atocou.ads, libgnat/s-atocou__builtin.adb: Code
+	cleanups.
+
+2021-07-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* freeze.adb (Check_Inherited_Conditions): Setting of Ekind,
+	LSP_Subprogram, and Is_Wrapper needs to happen for null
+	procedures as well as other wrapper cases, so the code is moved
+	from the else part in front of the if statement.  (Fixes a
+	latent bug encountered while working on this set of changes.)
+	* sem_attr.adb (Resolve_Attribute): Report an error for the case
+	of an Access attribute applied to a primitive of an abstract
+	type when the primitive has any nonstatic Pre'Class or
+	Post'Class expressions.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Report an error for
+	the case of a actual subprogram associated with a nonabstract
+	formal subprogram when the actual is a primitive of an abstract
+	type and the primitive has any nonstatic Pre'Class or Post'Class
+	expressions.
+	* sem_disp.adb (Check_Dispatching_Context): Remove special
+	testing for null procedures, and replace it with a relaxed test
+	that avoids getting an error about illegal calls to abstract
+	subprograms in cases where RM 6.1.1(7/5) applies in
+	Pre/Post'Class aspects. Also, remove special test for
+	Postcondition, which seems to be unnecessary, update associated
+	comments, and fix a typo in one comment.
+	(Check_Dispatching_Call): Remove an unneeded return statement,
+	and report an error for the case of a nondispatching call to a
+	nonabstract subprogram of an abstract type where the subprogram
+	has nonstatic Pre/Post'Class aspects.
+	* sem_util.ads
+	(Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post): New function.
+	(In_Pre_Post_Condition): Add a flag formal Class_Wide_Only,
+	defaulted to False, for indicating whether the function should
+	only test for the node being within class-wide pre- and
+	postconditions.
+	* sem_util.adb
+	(Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post): New function
+	to determine whether a subprogram is a primitive of an abstract
+	type where the primitive has class-wide Pre/Post'Class aspects
+	specified with nonstatic expressions.
+	(In_Pre_Post_Condition): Extend testing to account for the new
+	formal Class_Wide_Only.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Check_Shared_Variable_Control_Aspects): Errors
+	emitted via Check_Volatility_Compatibility are now emitted at
+	Actual, just like other errors emitted by
+	Check_Shared_Variable_Control_Aspects.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* uname.adb (Get_Unit_Name): Simplify with a bounded string
+	buffer; also, this addresses a ??? comment about the max length
+	being exceeded.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* uname.adb (Get_Body_Name, Get_Parent_Body_Name,
+	Get_Parent_Spec_Name, Get_Spec_Name, Is_Child_Name,
+	Is_Body_Name, Is_Spec_Name, Name_To_Unit_Name): Use a local
+	instead of the global buffer.
+
+2021-07-07  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Combine
+	processing of Size and Value_Size clauses. Ensure that
+	Value_Size is treated the same as Size, in the cases where both
+	are allowed (i.e. the prefix denotes a first subtype).  Misc
+	cleanup.
+	* einfo-utils.adb (Init_Size): Add assertions.
+	(Size_Clause): Return a Value_Size clause if present, instead of
+	just looking for a Size clause.
+	* einfo.ads (Has_Size_Clause, Size_Clause): Change documentation
+	to include Value_Size.
+	* sem_ch13.ads, layout.ads, layout.adb: Comment modifications.
+
+2021-07-07  Steve Baird  <baird@adacore.com>
+
+	* exp_dist.adb (Add_RACW_Primitive_Declarations_And_Bodies): Add
+	TSS_Put_Image to list of predefined primitives that need special
+	treatment.
+	(Build_General_Calling_Stubs, Build_Subprogram_Receiving_Stubs):
+	Remove previous hack for dealing with TSS_Put_Image procedures.
+
+2021-07-07  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.adb (Get_Socket_Option): Add 500ms only when
+	Minus_500ms_Windows_Timeout is True.
+	(Set_Socket_Option): Use "* 1000" instead of "/ 0.001" to
+	convert to milliseconds.
+
+2021-07-07  Bob Duff  <duff@adacore.com>
+
+	* tbuild.adb (Unchecked_Convert_To): Set the Parent of the new
+	node to the Parent of the old node.
+	* tbuild.ads (Unchecked_Convert_To): Document differences
+	between Convert_To and Unchecked_Convert_To. The previous
+	documentation claimed they are identical except for the
+	uncheckedness of the conversion.
+
+2021-07-07  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Remove special case for
+	GNATprove mode.
+	* sem_res.adb (Resolve_Arithmetic_Op): Same.
+	* sem_util.adb (Apply_Compile_Time_Constraint_Error): Same.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Check_For_Primitive_Subprogram): Move
+	declarations of local variables after nested subprogram bodies.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_disp.adb (CPP_Num_Prims): Reuse List_Length.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb, exp_ch6.adb, sem_ch6.adb: Replace Ekind
+	membership test in Private_Kind with a call to Is_Private_Type.
+
+2021-07-07  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen-gen_entities.adb: Remove Linker_Section_Pragma
+	field from Record_Field_Kind.  Minor comment improvement.
+
+2021-07-07  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-ngelfu.ads (Cot): Fix precondition.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par.adb (Par): A local Name variable is now a renaming of a
+	constant slice.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Remove flagging of main unit and its
+	corresponding spec as requiring code generation; now the flags
+	are set much earlier.
+	* lib-load.adb (Load_Main_Source): Set Generate_Code flag on the
+	main unit source.
+	(Make_Instance_Unit): Copy Generate_Code flag from the main unit
+	to instance units.
+	* lib-writ.adb (Write_ALI): Remove redundant condition;
+	Generate_Code flag is always set for the main unit.
+	* par-load.adb (Load): Set Generate_Code flag on the main unit's
+	corresponding spec, if any.
+
+2021-07-07  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.ads (Option_Name): Add Keep_Alive_Count,
+	Keep_Alive_Idle, and Keep_Alive_Interval items to enumeration.
+	(Option_Type): Add Keep_Alive_Count, Keep_Alive_Idle, and
+	Keep_Alive_Interval alternatives to the case of discriminated
+	record.
+	* libgnat/g-socket.adb (Options): Add Keep_Alive_Count,
+	Keep_Alive_Idle, and Keep_Alive_Interval to items enumerator to
+	OS constant converter.
+	(Set_Socket_Option): Process Keep_Alive_Count, Keep_Alive_Idle,
+	and Keep_Alive_Interval socket options.
+	(Get_Socket_Option): Idem.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Exit from loop after seeing first
+	unit that violates No_Elaboration_Code restriction.
+
+2021-07-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Instantiate_Bodies): Fix white in declaration.
+	(Remove_Dead_Instance): Change iteration from WHILE to FOR.
+
+2021-07-07  Bob Duff  <duff@adacore.com>
+
+	* checks.adb, exp_attr.adb, exp_ch4.adb, exp_ch6.adb,
+	exp_ch9.adb, exp_disp.adb, exp_util.adb, inline.adb,
+	sem_res.adb: Change all calls to Make_Unchecked_Type_Conversion
+	to call Unchecked_Convert_To instead. This involves removing
+	New_Occurrence_Of on the first parameter, because
+	Unchecked_Convert_To expects a type entity, rather than the name
+	of one. Also, removed calls to Relocate_Node, because
+	Unchecked_Convert_To takes care of that.
+	* sinfo.ads: Change comment to be worded more firmly.
+
+2021-07-07  Steve Baird  <baird@adacore.com>
+
+	* libgnarl/s-tassta.adb (Free_Task): Acquire the Task_Lock
+	before, rather than after, querying the task's Terminated flag.
+	Add a corresponding Task_Unlock call.
+
 2021-07-06  Bob Duff  <duff@adacore.com>
 
 	* atree.ads (Current_Error_Node): Initialize to Empty.

@@ -549,7 +549,6 @@ package body Sem_Ch6 is
             else
                if Nkind (Par) = N_Package_Specification
                  and then Decls = Visible_Declarations (Par)
-                 and then Present (Private_Declarations (Par))
                  and then not Is_Empty_List (Private_Declarations (Par))
                then
                   Decls := Private_Declarations (Par);
@@ -8901,7 +8900,7 @@ package body Sem_Ch6 is
             end if;
 
             if not Has_Discriminants (Formal_Type)
-              and then Ekind (Formal_Type) in Private_Kind
+              and then Is_Private_Type (Formal_Type)
               and then Present (Underlying_Type (Formal_Type))
             then
                Formal_Type := Underlying_Type (Formal_Type);
@@ -11018,10 +11017,6 @@ package body Sem_Ch6 is
         (Is_Primitive  : out Boolean;
          Is_Overriding : Boolean := False)
       is
-         Formal : Entity_Id;
-         F_Typ  : Entity_Id;
-         B_Typ  : Entity_Id;
-
          procedure Add_Or_Replace_Untagged_Primitive (Typ : Entity_Id);
          --  Either add the new subprogram to the list of primitives for
          --  untagged type Typ, or if it overrides a primitive of Typ, then
@@ -11253,7 +11248,7 @@ package body Sem_Ch6 is
             --  If the entity is a private type, then it must be declared in a
             --  visible part.
 
-            if Ekind (T) in Private_Kind then
+            if Is_Private_Type (T) then
                return True;
 
             elsif Is_Type (T) and then Has_Private_Declaration (T) then
@@ -11269,6 +11264,12 @@ package body Sem_Ch6 is
                return False;
             end if;
          end Visible_Part_Type;
+
+         --  Local variables
+
+         Formal : Entity_Id;
+         F_Typ  : Entity_Id;
+         B_Typ  : Entity_Id;
 
       --  Start of processing for Check_For_Primitive_Subprogram
 

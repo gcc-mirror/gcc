@@ -444,7 +444,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
   /* The RM size must be specified for all discrete and fixed-point types.  */
   gcc_assert (!(Is_In_Discrete_Or_Fixed_Point_Kind (kind)
-		&& Unknown_RM_Size (gnat_entity)));
+		&& !Known_RM_Size (gnat_entity)));
 
   /* If we get here, it means we have not yet done anything with this entity.
      If we are not defining it, it must be a type or an entity that is defined
@@ -2324,7 +2324,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* If Component_Size is not already specified, annotate it with the
 	   size of the component.  */
-	if (Unknown_Component_Size (gnat_entity))
+	if (!Known_Component_Size (gnat_entity))
 	  Set_Component_Size (gnat_entity,
                               annotate_value (TYPE_SIZE (comp_type)));
 
@@ -4369,7 +4369,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       set_rm_size (RM_Size (gnat_entity), gnu_type, gnat_entity);
 
       /* Back-annotate the alignment of the type if not already set.  */
-      if (Unknown_Alignment (gnat_entity))
+      if (!Known_Alignment (gnat_entity))
 	{
 	  unsigned int double_align, align;
 	  bool is_capped_double, align_clause;
@@ -4395,7 +4395,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	}
 
       /* Likewise for the size, if any.  */
-      if (Unknown_Esize (gnat_entity) && TYPE_SIZE (gnu_type))
+      if (!Known_Esize (gnat_entity) && TYPE_SIZE (gnu_type))
 	{
 	  tree gnu_size = TYPE_SIZE (gnu_type);
 
@@ -4428,7 +4428,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	      /* If there is neither size clause nor representation clause, the
 		 sizes need to be adjusted.  */
-	      if (Unknown_RM_Size (gnat_entity)
+	      if (!Known_RM_Size (gnat_entity)
 		  && !VOID_TYPE_P (gnu_type)
 		  && (!TYPE_FIELDS (gnu_type)
 		      || integer_zerop (bit_position (TYPE_FIELDS (gnu_type)))))
@@ -4448,7 +4448,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      Set_Esize (gnat_entity, annotate_value (gnu_size));
 
 	      /* Tagged types are Strict_Alignment so RM_Size = Esize.  */
-	      if (Unknown_RM_Size (gnat_entity))
+	      if (!Known_RM_Size (gnat_entity))
 		Set_RM_Size (gnat_entity, Esize (gnat_entity));
 	    }
 
@@ -4458,7 +4458,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	}
 
       /* Likewise for the RM size, if any.  */
-      if (Unknown_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
+      if (!Known_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
 	Set_RM_Size (gnat_entity, annotate_value (rm_size (gnu_type)));
 
       /* If we are at global level, GCC applied variable_size to the size but
@@ -4723,11 +4723,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl))
 	   && Present (gnat_annotate_type))
     {
-      if (Unknown_Alignment (gnat_entity))
+      if (!Known_Alignment (gnat_entity))
 	Set_Alignment (gnat_entity, Alignment (gnat_annotate_type));
-      if (Unknown_Esize (gnat_entity))
+      if (!Known_Esize (gnat_entity))
 	Set_Esize (gnat_entity, Esize (gnat_annotate_type));
-      if (Unknown_RM_Size (gnat_entity))
+      if (!Known_RM_Size (gnat_entity))
 	Set_RM_Size (gnat_entity, RM_Size (gnat_annotate_type));
     }
 
@@ -8686,7 +8686,7 @@ annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
 	gnu_type = TREE_TYPE (gnu_type);
     }
 
-  if (Unknown_Esize (gnat_entity))
+  if (!Known_Esize (gnat_entity))
     {
       if (TREE_CODE (gnu_type) == RECORD_TYPE
 	  && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
@@ -8698,7 +8698,7 @@ annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
 	Set_Esize (gnat_entity, annotate_value (size));
     }
 
-  if (Unknown_Alignment (gnat_entity))
+  if (!Known_Alignment (gnat_entity))
     Set_Alignment (gnat_entity,
 		   UI_From_Int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT));
 }

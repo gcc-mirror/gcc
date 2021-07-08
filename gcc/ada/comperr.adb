@@ -404,6 +404,7 @@ package body Comperr is
          Set_Standard_Output;
 
          Tree_Dump;
+         Sinput.Unlock; -- so Source_Dump can modify it
          Source_Dump;
          raise Unrecoverable_Error;
       end if;

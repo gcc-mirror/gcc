@@ -3008,10 +3008,7 @@ package body Inline is
             if Nkind (A) = N_Type_Conversion
               and then Ekind (F) /= E_In_Parameter
             then
-               New_A :=
-                 Make_Unchecked_Type_Conversion (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Etype (F), Loc),
-                   Expression   => Relocate_Node (Expression (A)));
+               New_A := Unchecked_Convert_To (Etype (F), Expression (A));
 
             --  In GNATprove mode, keep the most precise type of the actual for
             --  the temporary variable, when the formal type is unconstrained.
@@ -4809,7 +4806,7 @@ package body Inline is
          end if;
       end Instantiate_Body;
 
-      J, K  : Nat;
+      J, K : Nat;
       Info : Pending_Body_Info;
 
    --  Start of processing for Instantiate_Bodies
@@ -5156,17 +5153,12 @@ package body Inline is
    --------------------------
 
    procedure Remove_Dead_Instance (N : Node_Id) is
-      J : Int;
-
    begin
-      J := 0;
-      while J <= Pending_Instantiations.Last loop
+      for J in 0 .. Pending_Instantiations.Last loop
          if Pending_Instantiations.Table (J).Inst_Node = N then
             Pending_Instantiations.Table (J).Inst_Node := Empty;
             return;
          end if;
-
-         J := J + 1;
       end loop;
    end Remove_Dead_Instance;
 
