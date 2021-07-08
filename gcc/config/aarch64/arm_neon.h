@@ -9682,11 +9682,9 @@ vtbl3_s8 (int8x8x3_t __tab, int8x8_t __idx)
   int8x16x2_t __temp;
   __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_s8 (__tab.val[0], __tab.val[1]);
-  __temp.val[1] = vcombine_s8 (__tab.val[2], vcreate_s8 (__AARCH64_UINT64_C (0x0)));
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[1], 1);
+  __temp.val[1] = vcombine_s8 (__tab.val[2],
+			       vcreate_s8 (__AARCH64_UINT64_C (0x0)));
+  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
   return __builtin_aarch64_qtbl2v8qi (__o, __idx);
 }
 
@@ -9697,11 +9695,9 @@ vtbl3_u8 (uint8x8x3_t __tab, uint8x8_t __idx)
   uint8x16x2_t __temp;
   __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_u8 (__tab.val[0], __tab.val[1]);
-  __temp.val[1] = vcombine_u8 (__tab.val[2], vcreate_u8 (__AARCH64_UINT64_C (0x0)));
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[1], 1);
+  __temp.val[1] = vcombine_u8 (__tab.val[2],
+			       vcreate_u8 (__AARCH64_UINT64_C (0x0)));
+  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
   return (uint8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
 }
 
@@ -9712,11 +9708,9 @@ vtbl3_p8 (poly8x8x3_t __tab, uint8x8_t __idx)
   poly8x16x2_t __temp;
   __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_p8 (__tab.val[0], __tab.val[1]);
-  __temp.val[1] = vcombine_p8 (__tab.val[2], vcreate_p8 (__AARCH64_UINT64_C (0x0)));
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[1], 1);
+  __temp.val[1] = vcombine_p8 (__tab.val[2],
+			       vcreate_p8 (__AARCH64_UINT64_C (0x0)));
+  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
   return (poly8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
 }
 
@@ -9728,10 +9722,7 @@ vtbl4_s8 (int8x8x4_t __tab, int8x8_t __idx)
   __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_s8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_s8 (__tab.val[2], __tab.val[3]);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[1], 1);
+  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
   return __builtin_aarch64_qtbl2v8qi (__o, __idx);
 }
 
@@ -9743,10 +9734,7 @@ vtbl4_u8 (uint8x8x4_t __tab, uint8x8_t __idx)
   __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_u8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_u8 (__tab.val[2], __tab.val[3]);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[1], 1);
+  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
   return (uint8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
 }
 
@@ -9758,10 +9746,7 @@ vtbl4_p8 (poly8x8x4_t __tab, uint8x8_t __idx)
   __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_p8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_p8 (__tab.val[2], __tab.val[3]);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o,
-					   (int8x16_t) __temp.val[1], 1);
+  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
   return(poly8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
 }
 
