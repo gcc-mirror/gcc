@@ -420,9 +420,10 @@ def CollectSumFiles(builddir):
   return sum_files
 
 
-def GetResults(sum_files):
+def GetResults(sum_files, build_results = None):
   """Collect all the test results from the given .sum files."""
-  build_results = ResultSet()
+  if build_results == None:
+    build_results = ResultSet()
   for sum_fname in sum_files:
     print('\t%s' % sum_fname)
     build_results |= ParseSummary(sum_fname)
@@ -567,8 +568,15 @@ def CompareBuilds():
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
+  clean = ResultSet()
+
+  if _OPTIONS.manifest:
+    manifest_path = GetManifestPath(srcdir, target, True)
+    print('Manifest:         %s' % manifest_path)
+    clean = GetManifest(manifest_path)
+
   clean_sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.clean_build)
-  clean = GetResults(clean_sum_files)
+  clean = GetResults(clean_sum_files, clean)
 
   return PerformComparison(clean, actual, _OPTIONS.ignore_missing_failures)
 
