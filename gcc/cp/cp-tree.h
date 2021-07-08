@@ -8429,6 +8429,19 @@ is_constrained_auto (const_tree t)
   return is_auto (t) && PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t);
 }
 
+/* True if CODE, a tree code, denotes a tree whose operand is not evaluated
+   as per [expr.context], i.e., an operand to sizeof, typeof, decltype, or
+   alignof.  */
+
+inline bool
+unevaluated_p (tree_code code)
+{
+  return (code == DECLTYPE_TYPE
+	  || code == ALIGNOF_EXPR
+	  || code == SIZEOF_EXPR
+	  || code == NOEXCEPT_EXPR);
+}
+
 /* RAII class to push/pop class scope T; if T is not a class, do nothing.  */
 
 struct push_nested_class_guard
