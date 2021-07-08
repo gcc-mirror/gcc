@@ -5355,6 +5355,12 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	  else
 	    unpack = gen_sse4_1_sign_extendv2hiv2si2;
 	  break;
+	case E_V4QImode:
+	  if (unsigned_p)
+	    unpack = gen_sse4_1_zero_extendv2qiv2hi2;
+	  else
+	    unpack = gen_sse4_1_sign_extendv2qiv2hi2;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -5379,6 +5385,12 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	      tmp = gen_reg_rtx (V1DImode);
 	      emit_insn (gen_mmx_lshrv1di3 (tmp, gen_lowpart (V1DImode, src),
 					    GEN_INT (32)));
+	      break;
+	    case 4:
+	      /* Shift higher 2 bytes to lower 2 bytes.  */
+	      tmp = gen_reg_rtx (V1SImode);
+	      emit_insn (gen_mmx_lshrv1si3 (tmp, gen_lowpart (V1SImode, src),
+					    GEN_INT (16)));
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -5426,6 +5438,12 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	    unpack = gen_mmx_punpckhwd;
 	  else
 	    unpack = gen_mmx_punpcklwd;
+	  break;
+	case E_V4QImode:
+	  if (high_p)
+	    unpack = gen_mmx_punpckhbw_low;
+	  else
+	    unpack = gen_mmx_punpcklbw_low;
 	  break;
 	default:
 	  gcc_unreachable ();
