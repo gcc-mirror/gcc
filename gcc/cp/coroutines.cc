@@ -82,11 +82,13 @@ static bool coro_promise_type_found_p (tree, location_t);
 struct GTY((for_user)) coroutine_info
 {
   tree function_decl; /* The original function decl.  */
-  tree promise_type; /* The cached promise type for this function.  */
-  tree handle_type;  /* The cached coroutine handle for this function.  */
-  tree self_h_proxy; /* A handle instance that is used as the proxy for the
-			one that will eventually be allocated in the coroutine
-			frame.  */
+  tree actor_decl;    /* The synthesized actor function.  */
+  tree destroy_decl;  /* The synthesized destroy function.  */
+  tree promise_type;  /* The cached promise type for this function.  */
+  tree handle_type;   /* The cached coroutine handle for this function.  */
+  tree self_h_proxy;  /* A handle instance that is used as the proxy for the
+			 one that will eventually be allocated in the coroutine
+			 frame.  */
   tree promise_proxy; /* Likewise, a proxy promise instance.  */
   tree return_void;   /* The expression for p.return_void() if it exists.  */
   location_t first_coro_keyword; /* The location of the keyword that made this
@@ -524,6 +526,46 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
     }
 
   return true;
+}
+
+/* Map from actor or destroyer to ramp.  */
+static GTY(()) hash_map<tree, tree> *to_ramp;
+
+/* Given a tree that is an actor or destroy, find the ramp function.  */
+
+tree
+coro_get_ramp_function (tree decl)
+{
+  if (!to_ramp)
+    return NULL_TREE;
+  tree *p = to_ramp->get (decl);
+  if (p)
+    return *p;
+  return NULL_TREE;
+}
+
+/* Given the DECL for a ramp function (the user's original declaration) return
+   the actor function if it has been defined.  */
+
+tree
+coro_get_actor_function (tree decl)
+{
+  if (coroutine_info *info = get_coroutine_info (decl))
+    return info->actor_decl;
+
+  return NULL_TREE;
+}
+
+/* Given the DECL for a ramp function (the user's original declaration) return
+   the destroy function if it has been defined.  */
+
+tree
+coro_get_destroy_function (tree decl)
+{
+  if (coroutine_info *info = get_coroutine_info (decl))
+    return info->destroy_decl;
+
+  return NULL_TREE;
 }
 
 /* These functions assumes that the caller has verified that the state for
@@ -3995,15 +4037,23 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
   return NULL_TREE;
 }
 
-/* Build, return FUNCTION_DECL node with its coroutine frame pointer argument
-   for either actor or destroy functions.  */
+/* Build, return FUNCTION_DECL node based on ORIG with a type FN_TYPE which has
+   a single argument of type CORO_FRAME_PTR.  Build the actor function if
+   ACTOR_P is true, otherwise the destroy. */
 
 static tree
-act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
+coro_build_actor_or_destroy_function (tree orig, tree fn_type,
+				      tree coro_frame_ptr, bool actor_p)
 {
-  tree fn_name = get_fn_local_identifier (orig, name);
   location_t loc = DECL_SOURCE_LOCATION (orig);
-  tree fn = build_lang_decl (FUNCTION_DECL, fn_name, fn_type);
+  tree fn
+    = build_lang_decl (FUNCTION_DECL, copy_node (DECL_NAME (orig)), fn_type);
+
+  /* Allow for locating the ramp (original) function from this one.  */
+  if (!to_ramp)
+    to_ramp = hash_map<tree, tree>::create_ggc (10);
+  to_ramp->put (fn, orig);
+
   DECL_CONTEXT (fn) = DECL_CONTEXT (orig);
   DECL_SOURCE_LOCATION (fn) = loc;
   DECL_ARTIFICIAL (fn) = true;
@@ -4037,6 +4087,17 @@ act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
   /* This is a coroutine component.  */
   DECL_COROUTINE_P (fn) = 1;
 
+  /* Set up a means to find out if a decl is one of the helpers and, if so,
+     which one.  */
+  if (coroutine_info *info = get_coroutine_info (orig))
+    {
+      gcc_checking_assert ((actor_p && info->actor_decl == NULL_TREE)
+			   || info->destroy_decl == NULL_TREE);
+      if (actor_p)
+	info->actor_decl = fn;
+      else
+	info->destroy_decl = fn;
+    }
   return fn;
 }
 
@@ -4345,8 +4406,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
 
   /* Declare the actor and destroyer function.  */
-  tree actor = act_des_fn (orig, act_des_fn_type, coro_frame_ptr, "actor");
-  tree destroy = act_des_fn (orig, act_des_fn_type, coro_frame_ptr, "destroy");
+  tree actor = coro_build_actor_or_destroy_function (orig, act_des_fn_type,
+						     coro_frame_ptr, true);
+  tree destroy = coro_build_actor_or_destroy_function (orig, act_des_fn_type,
+						       coro_frame_ptr, false);
 
   /* Construct the wrapped function body; we will analyze this to determine
      the requirements for the coroutine frame.  */
