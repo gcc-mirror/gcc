@@ -1,6 +1,6 @@
 /* Test F2008 18.5: ISO_Fortran_binding.h functions.  */
 
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include "ISO_Fortran_binding.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
