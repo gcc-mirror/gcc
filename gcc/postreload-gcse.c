@@ -779,7 +779,9 @@ record_opr_changes (rtx_insn *insn)
       EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, regno, hrsi)
 	record_last_reg_set_info_regno (insn, regno);
 
-      if (! RTL_CONST_OR_PURE_CALL_P (insn))
+      if (! RTL_CONST_OR_PURE_CALL_P (insn)
+	  || RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
+	  || can_throw_external (insn))
 	record_last_mem_set_info (insn);
     }
 }
