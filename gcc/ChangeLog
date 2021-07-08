@@ -1,3 +1,43 @@
+2021-07-07  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/100137
+	PR tree-optimization/99121
+	PR tree-optimization/97027
+	* builtins.c (access_ref::access_ref): Also set offmax.
+	(access_ref::offset_in_range): Define new function.
+	(access_ref::add_offset): Set offmax.
+	(access_ref::inform_access): Handle access_none.
+	(handle_mem_ref): Clear ostype.
+	(compute_objsize_r): Handle ASSERT_EXPR.
+	* builtins.h (struct access_ref): Add offmax member.
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref): Use
+	compute_objsize() and simplify.
+
+2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (mma_init_builtins): Use VSX_BUILTIN_LXVP
+	and VSX_BUILTIN_STXVP.
+
+2021-07-07  Martin Sebor  <msebor@redhat.com>
+
+	PR target/101363
+	* config/aarch64/aarch64.c (aarch64_simd_lane_bounds): Remove
+	a stray %K from error_at() missed in r12-2088.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99728
+	* tree-ssa-loop-im.c (gather_mem_refs_stmt): Record
+	aggregate copies.
+	(mem_refs_may_alias_p): Add assert we handled aggregate
+	copies elsewhere.
+	(sm_seq_valid_bb): Give up when running into aggregate copies.
+	(ref_indep_loop_p): Handle aggregate copies as never
+	being invariant themselves but allow other refs to be
+	disambiguated against them.
+	(can_sm_ref_p): Do not try to apply store-motion to aggregate
+	copies.
+
 2021-07-06  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	PR debug/101283

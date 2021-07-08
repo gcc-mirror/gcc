@@ -1,3 +1,65 @@
+2021-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/pattern-test-2.c: Update expected results.
+	* gcc.dg/plugin/analyzer_gil_plugin.c
+	(gil_state_machine::on_condition): Remove.
+
+2021-07-07  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/100137
+	PR tree-optimization/99121
+	PR tree-optimization/97027
+	* c-c++-common/Warray-bounds-3.c: Remove xfail
+	* c-c++-common/Warray-bounds-4.c: Add an expected warning.
+	* c-c++-common/Warray-bounds-9.c: New test.
+	* c-c++-common/Warray-bounds-10.c: New test.
+	* g++.dg/asan/asan_test.C: Suppress expected warnings.
+	* g++.dg/pr95768.C: Same.
+	* g++.dg/warn/Warray-bounds-10.C: Adjust text of expected messages.
+	* g++.dg/warn/Warray-bounds-11.C: Same.
+	* g++.dg/warn/Warray-bounds-12.C: Same.
+	* g++.dg/warn/Warray-bounds-13.C: Same.
+	* g++.dg/warn/Warray-bounds-17.C: Same.
+	* g++.dg/warn/Warray-bounds-20.C: Same.
+	* gcc.dg/Warray-bounds-29.c: Same.
+	* gcc.dg/Warray-bounds-30.c: Add xfail.
+	* gcc.dg/Warray-bounds-31.c: Adjust text of expected messages.
+	* gcc.dg/Warray-bounds-32.c: Same.
+	* gcc.dg/Warray-bounds-52.c: Same.
+	* gcc.dg/Warray-bounds-53.c: Same.
+	* gcc.dg/Warray-bounds-58.c: Remove xfail.
+	* gcc.dg/Warray-bounds-63.c: Adjust text of expected messages.
+	* gcc.dg/Warray-bounds-66.c: Same.
+	* gcc.dg/Warray-bounds-69.c: Same.
+	* gcc.dg/Wstringop-overflow-34.c: Same.
+	* gcc.dg/Wstringop-overflow-47.c: Same.
+	* gcc.dg/Wstringop-overflow-61.c: Same.
+	* gcc.dg/Warray-bounds-77.c: New test.
+	* gcc.dg/Warray-bounds-78.c: New test.
+	* gcc.dg/Warray-bounds-79.c: New test.
+
+2021-07-07  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR debug/101321
+	* gcc.dg/debug/btf/btf-bitfields-3.c: Remove -fno-short-enums.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/34195
+	* gcc.dg/vect/pr34195.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99728
+	* g++.dg/opt/pr99728.C: New testcase.
+
+2021-07-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-vect-fmaddsubXXXpd.c: New test.
+	* gcc.target/i386/avx512f-vect-fmaddsubXXXps.c: New test.
+	* gcc.target/i386/avx512f-vect-fmsubaddXXXpd.c: New test.
+	* gcc.target/i386/avx512f-vect-fmsubaddXXXps.c: New test.
+
 2021-07-06  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	PR debug/101283

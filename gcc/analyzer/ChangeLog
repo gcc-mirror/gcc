@@ -1,3 +1,64 @@
+2021-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (null_assignment_sm_context::get_state):
+	New overload.
+	(null_assignment_sm_context::set_next_state): New overload.
+	(null_assignment_sm_context::get_diagnostic_tree): New.
+	* engine.cc (impl_sm_context::get_state): New overload.
+	(impl_sm_context::set_next_state): New overload.
+	(impl_sm_context::get_diagnostic_tree): New overload.
+	(impl_region_model_context::on_condition): Convert params from
+	tree to const svalue *.
+	* exploded-graph.h (impl_region_model_context::on_condition):
+	Likewise.
+	* region-model.cc (region_model::on_call_pre): Move handling of
+	internal calls to before checking for get_fndecl_for_call.
+	(region_model::add_constraints_from_binop): New.
+	(region_model::add_constraint): Split out into a new overload
+	working on const svalue * rather than tree.  Call
+	add_constraints_from_binop.  Drop call to
+	add_any_constraints_from_ssa_def_stmt.
+	(region_model::add_any_constraints_from_ssa_def_stmt): Delete.
+	(region_model::add_any_constraints_from_gassign): Delete.
+	(region_model::add_any_constraints_from_gcall): Delete.
+	* region-model.h
+	(region_model::add_any_constraints_from_ssa_def_stmt): Delete.
+	(region_model::add_any_constraints_from_gassign): Delete.
+	(region_model::add_any_constraints_from_gcall): Delete.
+	(region_model::add_constraint): Add overload decl.
+	(region_model::add_constraints_from_binop): New decl.
+	(region_model_context::on_condition): Convert params from tree to
+	const svalue *.
+	(noop_region_model_context::on_condition): Likewise.
+	* sm-file.cc (fileptr_state_machine::condition): Likewise.
+	* sm-malloc.cc (malloc_state_machine::on_condition): Likewise.
+	* sm-pattern-test.cc: Include tristate.h, selftest.h,
+	analyzer/call-string.h, analyzer/program-point.h,
+	analyzer/store.h, and analyzer/region-model.h.
+	(pattern_test_state_machine::on_condition): Convert params from tree to
+	const svalue *.
+	* sm-sensitive.cc (sensitive_state_machine::on_condition): Delete.
+	* sm-signal.cc (signal_state_machine::on_condition): Delete.
+	* sm-taint.cc (taint_state_machine::on_condition): Convert params
+	from tree to const svalue *.
+	* sm.cc: Include tristate.h, selftest.h, analyzer/call-string.h,
+	analyzer/program-point.h, analyzer/store.h, and
+	analyzer/region-model.h.
+	(any_pointer_p): Add overload taking const svalue *sval.
+	* sm.h (any_pointer_p): Add overload taking const svalue *sval.
+	(state_machine::on_condition): Convert params from tree to
+	const svalue *.  Provide no-op default implementation.
+	(sm_context::get_state): Add overload taking const svalue *sval.
+	(sm_context::set_next_state): Likewise.
+	(sm_context::on_transition): Likewise.
+	(sm_context::get_diagnostic_tree): Likewise.
+	* svalue.cc (svalue::all_zeroes_p): New.
+	(constant_svalue::all_zeroes_p): New.
+	(repeated_svalue::all_zeroes_p): Convert to vfunc.
+	* svalue.h (svalue::all_zeroes_p): New decl.
+	(constant_svalue::all_zeroes_p): New decl.
+	(repeated_svalue::all_zeroes_p): Convert decl to vfunc.
+
 2021-06-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/95006
