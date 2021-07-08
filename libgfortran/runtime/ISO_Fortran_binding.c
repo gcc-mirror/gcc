@@ -380,9 +380,13 @@ int CFI_establish (CFI_cdesc_t *dv, void *base_addr, CFI_attribute_t attribute,
 
   dv->base_addr = base_addr;
 
-  if (type == CFI_type_char || type == CFI_type_ucs4_char ||
-      type == CFI_type_struct || type == CFI_type_other)
+  if (type == CFI_type_char || type == CFI_type_ucs4_char
+      || type == CFI_type_struct || type == CFI_type_other)
     dv->elem_len = elem_len;
+  else if (type == CFI_type_cptr)
+    dv->elem_len = sizeof (void *);
+  else if (type == CFI_type_cfunptr)
+    dv->elem_len = sizeof (void (*)(void));
   else
     {
       /* base_type describes the intrinsic type with kind parameter. */
@@ -390,16 +394,13 @@ int CFI_establish (CFI_cdesc_t *dv, void *base_addr, CFI_attribute_t attribute,
       /* base_type_size is the size in bytes of the variable as given by its
        * kind parameter. */
       size_t base_type_size = (type - base_type) >> CFI_type_kind_shift;
-      /* Kind types 10 have a size of 64 bytes. */
+      /* Kind type 10 maps onto the 80-bit long double encoding on x86.
+	 Note that this has different storage size for -m32 than -m64.  */
       if (base_type_size == 10)
-	{
-	  base_type_size = 64;
-	}
+	base_type_size = sizeof (long double);
       /* Complex numbers are twice the size of their real counterparts. */
       if (base_type == CFI_type_Complex)
-	{
-	  base_type_size *= 2;
-	}
+	base_type_size *= 2;
       dv->elem_len = base_type_size;
     }
 
