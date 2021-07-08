@@ -455,6 +455,8 @@ public:
   // Returns whether the attribute is considered an "empty" attribute.
   bool is_empty () const { return attr_input == nullptr && path.is_empty (); }
 
+  Location get_locus () const { return locus; }
+
   /* e.g.:
       #![crate_type = "lib"]
       #[test]
