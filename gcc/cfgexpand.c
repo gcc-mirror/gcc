@@ -2954,7 +2954,8 @@ check_operand_nalternatives (const vec<const char *> &constraints)
    variable definition for error, NULL_TREE for ok.  */
 
 static bool
-tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
+tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs,
+				location_t loc)
 {
   /* Conflicts between asm-declared register variables and the clobber
      list are not allowed.  */
@@ -2962,9 +2963,8 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
 
   if (overlap)
     {
-      error ("%<asm%> specifier for variable %qE conflicts with "
-	     "%<asm%> clobber list",
-	     DECL_NAME (overlap));
+      error_at (loc, "%<asm%> specifier for variable %qE conflicts with "
+		"%<asm%> clobber list", DECL_NAME (overlap));
 
       /* Reset registerness to stop multiple errors emitted for a single
 	 variable.  */
@@ -3087,7 +3087,7 @@ expand_asm_stmt (gasm *stmt)
   /* ??? Diagnose during gimplification?  */
   if (ninputs + noutputs + nlabels > MAX_RECOG_OPERANDS)
     {
-      error ("more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
+      error_at (locus, "more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
       return;
     }
 
@@ -3140,7 +3140,8 @@ expand_asm_stmt (gasm *stmt)
 	      if (j == -2)
 		{
 		  /* ??? Diagnose during gimplification?  */
-		  error ("unknown register name %qs in %<asm%>", regname);
+		  error_at (locus, "unknown register name %qs in %<asm%>",
+			    regname);
 		  error_seen = true;
 		}
 	      else if (j == -4)
@@ -3205,7 +3206,8 @@ expand_asm_stmt (gasm *stmt)
 		&& HARD_REGISTER_P (DECL_RTL (output_tvec[j]))
 		&& output_hregno == REGNO (DECL_RTL (output_tvec[j])))
 	      {
-		error ("invalid hard register usage between output operands");
+		error_at (locus, "invalid hard register usage between output "
+			  "operands");
 		error_seen = true;
 	      }
 
@@ -3231,16 +3233,16 @@ expand_asm_stmt (gasm *stmt)
 		if (i == match
 		    && output_hregno != input_hregno)
 		  {
-		    error ("invalid hard register usage between output "
-			   "operand and matching constraint operand");
+		    error_at (locus, "invalid hard register usage between "
+			      "output operand and matching constraint operand");
 		    error_seen = true;
 		  }
 		else if (early_clobber_p
 			 && i != match
 			 && output_hregno == input_hregno)
 		  {
-		    error ("invalid hard register usage between "
-			   "earlyclobber operand and input operand");
+		    error_at (locus, "invalid hard register usage between "
+			      "earlyclobber operand and input operand");
 		    error_seen = true;
 		  }
 	      }
@@ -3319,7 +3321,7 @@ expand_asm_stmt (gasm *stmt)
 
 	  if (! allows_reg && !MEM_P (op))
 	    {
-	      error ("output number %d not directly addressable", i);
+	      error_at (locus, "output number %d not directly addressable", i);
 	      error_seen = true;
 	    }
 	  if ((! allows_mem && MEM_P (op) && GET_MODE (op) != BLKmode)
@@ -3415,9 +3417,8 @@ expand_asm_stmt (gasm *stmt)
 	  if (allows_reg && TYPE_MODE (type) != BLKmode)
 	    op = force_reg (TYPE_MODE (type), op);
 	  else if (!allows_mem)
-	    warning (0, "%<asm%> operand %d probably does not match "
-		     "constraints",
-		     i + noutputs);
+	    warning_at (locus, 0, "%<asm%> operand %d probably does not match "
+			"constraints", i + noutputs);
 	  else if (MEM_P (op))
 	    {
 	      /* We won't recognize either volatile memory or memory
@@ -3471,10 +3472,10 @@ expand_asm_stmt (gasm *stmt)
 
   bool clobber_conflict_found = 0;
   for (i = 0; i < noutputs; ++i)
-    if (tree_conflicts_with_clobbers_p (output_tvec[i], &clobbered_regs))
+    if (tree_conflicts_with_clobbers_p (output_tvec[i], &clobbered_regs, locus))
 	clobber_conflict_found = 1;
   for (i = 0; i < ninputs - ninout; ++i)
-    if (tree_conflicts_with_clobbers_p (input_tvec[i], &clobbered_regs))
+    if (tree_conflicts_with_clobbers_p (input_tvec[i], &clobbered_regs, locus))
 	clobber_conflict_found = 1;
 
   /* Make vectors for the expression-rtx, constraint strings,
