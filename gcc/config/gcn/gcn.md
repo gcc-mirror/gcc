@@ -567,6 +567,7 @@
    (set_attr "length" "4,4,8,12,12,12,12,4,8,8,12,12,8,12,12,8,12,12")])
 
 ; 8/16bit move pattern
+; TODO: implement combined load and zero_extend, but *only* for -msram-ecc=on
 
 (define_insn "*mov<mode>_insn"
   [(set (match_operand:QIHI 0 "nonimmediate_operand"

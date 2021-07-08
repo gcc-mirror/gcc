@@ -75,9 +75,15 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    supported for gcn.  */
 #define GOMP_SELF_SPECS ""
 
+#define DRIVER_SELF_SPECS \
+  "%{march=fiji|march=gfx900|march=gfx906:%{!msram-ecc=*:-msram-ecc=off}}"
+
 /* Use LLVM assembler and linker options.  */
 #define ASM_SPEC  "-triple=amdgcn--amdhsa "  \
 		  "%:last_arg(%{march=*:-mcpu=%*}) " \
+		  "-mattr=%{mxnack:+xnack;:-xnack} " \
+		  /* FIXME: support "any" when we move to HSACOv4.  */ \
+		  "-mattr=%{!msram-ecc=off:+sram-ecc;:-sram-ecc} " \
 		  "-filetype=obj"
 #define LINK_SPEC "--pie --export-dynamic"
 #define LIB_SPEC  "-lc"
