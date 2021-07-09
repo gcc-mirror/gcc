@@ -3267,11 +3267,16 @@ package Sem_Util is
 
    function Type_Access_Level
      (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean := True) return Uint;
+      Allow_Alt_Model : Boolean   := True;
+      Assoc_Ent       : Entity_Id := Empty) return Uint;
    --  Return the accessibility level of Typ
 
    --  The Allow_Alt_Model parameter allows the alternative level calculation
    --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
+
+   --  Assoc_Ent allows for the optional specification of the entity associated
+   --  with Typ. This gets utilized mostly for anonymous access type
+   --  processing, where context matters in interpreting Typ's level.
 
    function Type_Without_Stream_Operation
      (T  : Entity_Id;

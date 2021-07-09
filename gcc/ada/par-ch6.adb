@@ -201,6 +201,28 @@ package body Ch6 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Subprogram (Pf_Flags : Pf_Rec) return Node_Id is
+
+      function Contains_Import_Aspect (Aspects : List_Id) return Boolean;
+      --  Return True if Aspects contains an Import aspect.
+
+      ----------------------------
+      -- Contains_Import_Aspect --
+      ----------------------------
+
+      function Contains_Import_Aspect (Aspects : List_Id) return Boolean is
+         Aspect : Node_Id := First (Aspects);
+      begin
+         while Present (Aspect) loop
+            if Chars (Identifier (Aspect)) = Name_Import then
+               return True;
+            end if;
+
+            Next (Aspect);
+         end loop;
+
+         return False;
+      end Contains_Import_Aspect;
+
       Specification_Node : Node_Id;
       Name_Node          : Node_Id;
       Aspects            : List_Id;
@@ -982,10 +1004,12 @@ package body Ch6 is
          if Pf_Flags.Pbod
 
            --  Disconnect this processing if we have scanned a null procedure
-           --  because in this case the spec is complete anyway with no body.
+           --  or an Import aspect because in this case the spec is complete
+           --  anyway with no body.
 
            and then (Nkind (Specification_Node) /= N_Procedure_Specification
                       or else not Null_Present (Specification_Node))
+           and then not Contains_Import_Aspect (Aspects)
          then
             SIS_Labl := Scopes (Scope.Last).Labl;
             SIS_Sloc := Scopes (Scope.Last).Sloc;

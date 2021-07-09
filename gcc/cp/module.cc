@@ -274,7 +274,14 @@ static inline cpp_hashnode *cpp_node (tree id)
 
 static inline tree identifier (const cpp_hashnode *node)
 {
+  /* HT_NODE() expands to node->ident that HT_IDENT_TO_GCC_IDENT()
+     then subtracts a nonzero constant, deriving a pointer to
+     a different member than ident.  That's strictly undefined
+     and detected by -Warray-bounds.  Suppress it.  See PR 101372.  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
   return HT_IDENT_TO_GCC_IDENT (HT_NODE (const_cast<cpp_hashnode *> (node)));
+#pragma GCC diagnostic pop
 }
 
 /* Id for dumping module information.  */
@@ -16301,18 +16308,11 @@ module_state::read_macro_maps ()
 	}
       if (count)
 	sec.set_overrun ();
-
-      /* FIXME: Re-enable or fix after root causing.  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-
       dump (dumper::LOCATION)
 	&& dump ("Macro:%u %I %u/%u*2 locations [%u,%u)",
 		 ix, identifier (node), runs, n_tokens,
 		 MAP_START_LOCATION (macro),
 		 MAP_START_LOCATION (macro) + n_tokens);
-
-#pragma GCC diagnostic pop
     }
   location_t lwm = sec.u ();
   macro_locs.first = lwm - slurp->loc_deltas.second;
@@ -16918,10 +16918,6 @@ module_state::install_macros ()
       macro_import::slot &slot = imp.append (mod, flags);
       slot.offset = sec.u ();
 
-      /* FIXME: Re-enable or fix after root causing.  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-
       dump (dumper::MACRO)
 	&& dump ("Read %s macro %s%s%s %I at %u",
 		 imp.length () > 1 ? "add" : "new",
@@ -16942,8 +16938,6 @@ module_state::install_macros ()
 	    exp.def = cur;
 	    dump (dumper::MACRO)
 	      && dump ("Saving current #define %I", identifier (node));
-
-#pragma GCC diagnostic pop
 	  }
     }
 

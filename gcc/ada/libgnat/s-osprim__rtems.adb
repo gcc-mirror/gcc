@@ -31,6 +31,7 @@
 
 --  This version is for POSIX-like operating systems
 
+with System.Parameters;
 package body System.OS_Primitives is
 
    --  ??? These definitions are duplicated from System.OS_Interface
@@ -38,7 +39,8 @@ package body System.OS_Primitives is
    --  these declarations in System.OS_Interface and move these ones in
    --  the spec.
 
-   type time_t is new Long_Long_Integer;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+      .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
 
    type timespec is record
       tv_sec  : time_t;

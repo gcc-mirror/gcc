@@ -10114,11 +10114,11 @@ package body Sem_Ch13 is
       then
          return;
 
-        --  Do not generate predicate bodies within a generic unit. The
-        --  expressions have been analyzed already, and the bodies play
-        --  no role if not within an executable unit. However, if a static
-        --  predicate is present it must be processed for legality checks
-        --  such as case coverage in an expression.
+      --  Do not generate predicate bodies within a generic unit. The
+      --  expressions have been analyzed already, and the bodies play no role
+      --  if not within an executable unit. However, if a static predicate is
+      --  present it must be processed for legality checks such as case
+      --  coverage in an expression.
 
       elsif Inside_A_Generic
         and then not Has_Static_Predicate_Aspect (Typ)
@@ -10782,7 +10782,9 @@ package body Sem_Ch13 is
          --  also make its potential components accessible.
 
          if not Analyzed (Freeze_Expr) and then Inside_A_Generic then
-            if A_Id in Aspect_Dynamic_Predicate | Aspect_Predicate then
+            if A_Id in Aspect_Dynamic_Predicate | Aspect_Predicate |
+                       Aspect_Static_Predicate
+            then
                Push_Type (Ent);
                Preanalyze_Spec_Expression (Freeze_Expr, Standard_Boolean);
                Pop_Type (Ent);
@@ -10813,6 +10815,7 @@ package body Sem_Ch13 is
             if A_Id in Aspect_Dynamic_Predicate
                      | Aspect_Predicate
                      | Aspect_Priority
+                     | Aspect_Static_Predicate
             then
                Push_Type (Ent);
                Check_Aspect_At_Freeze_Point (ASN);
@@ -10840,6 +10843,7 @@ package body Sem_Ch13 is
                      | Aspect_Dynamic_Predicate
                      | Aspect_Predicate
                      | Aspect_Priority
+                     | Aspect_Static_Predicate
          then
             Push_Type (Ent);
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
@@ -15042,9 +15046,15 @@ package body Sem_Ch13 is
                       or else N /= Selector_Name (Parent (N)))
          then
             Find_Direct_Name (N);
-            Set_Entity (N, Empty);
 
-         --  The name is component association needs no resolution
+            --  Reset the Entity if N is overloaded since the entity may not
+            --  be the correct one.
+
+            if Is_Overloaded (N) then
+               Set_Entity (N, Empty);
+            end if;
+
+         --  The name in a component association needs no resolution
 
          elsif Nkind (N) = N_Component_Association then
             Dummy := Resolve_Name (Expression (N));
@@ -15087,24 +15097,23 @@ package body Sem_Ch13 is
                   --  types. These will require special handling???.
 
                   when Aspect_Invariant
-                     | Aspect_Predicate
                      | Aspect_Predicate_Failure
                   =>
                      null;
 
                   when Aspect_Dynamic_Predicate
                      | Aspect_Static_Predicate
+                     | Aspect_Predicate
                   =>
-                     --  Build predicate function specification and preanalyze
-                     --  expression after type replacement. The function
-                     --  declaration must be analyzed in the scope of the type,
-                     --  but the expression can reference components and
-                     --  discriminants of the type.
+                     --  Preanalyze expression after type replacement to catch
+                     --  name resolution errors if the predicate function has
+                     --  not been built yet.
+                     --  Note that we cannot use Preanalyze_Spec_Expression
+                     --  because of the special handling required for
+                     --  quantifiers, see comments on Resolve_Aspect_Expression
+                     --  above.
 
                      if No (Predicate_Function (E)) then
-                        Discard_Node
-                          (Build_Predicate_Function_Declaration (E));
-
                         Push_Type (E);
                         Resolve_Aspect_Expression (Expr);
                         Pop_Type (E);

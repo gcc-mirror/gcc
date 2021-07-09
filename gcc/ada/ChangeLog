@@ -1,3 +1,204 @@
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Clear Current_Assignment at
+	exit.
+	(Analyze_Target_Name): Prevent AST climbing from going too far.
+
+2021-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Target_Name): Properly reject a
+	Target_Name when it appears outside of an assignment statement,
+	or within the left-hand side of one.
+
+2021-07-08  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.ads, einfo-utils.adb (Unknown_Alignment,
+	Unknown_Component_Bit_Offset, Unknown_Component_Size,
+	Unknown_Esize, Unknown_Normalized_First_Bit,
+	Unknown_Normalized_Position, Unknown_Normalized_Position_Max,
+	Unknown_RM_Size): Remove these functions.
+	* exp_pakd.adb, exp_util.adb, fe.h, freeze.adb, layout.adb,
+	repinfo.adb, sem_ch13.adb, sem_ch3.adb, sem_util.adb: Remove
+	calls to these functions; do "not Known_..." instead.
+	* gcc-interface/decl.c, gcc-interface/trans.c
+	(Unknown_Alignment, Unknown_Component_Size, Unknown_Esize,
+	Unknown_RM_Size): Remove calls to these functions; do
+	"!Known_..." instead.
+
+2021-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.adb (Get_Encoded_Name): Do not encode names of discrete
+	types with custom bounds, except with -fgnat-encodings=all.
+	* exp_pakd.adb (Create_Packed_Array_Impl_Type): Adjust comment.
+
+2021-07-08  Bob Duff  <duff@adacore.com>
+
+	* comperr.adb (Compiler_Abort): Call Sinput.Unlock, because if
+	this is called late, then Source_Dump would crash otherwise.
+	* debug.adb: Correct documentation of the -gnatd.9 switch.
+	* exp_ch4.adb (Expand_Allocator_Expression): Add a comment.
+	* exp_ch6.adb: Minor comment fixes.  Add assertion.
+	* exp_ch6.ads (Is_Build_In_Place_Result_Type): Correct comment.
+	* exp_ch7.adb, checks.ads: Minor comment fixes.
+
+2021-07-08  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks-target.inc: Rename to...
+	* sigtramp-vxworks-target.h: ... this.
+	* sigtramp-vxworks.c, Makefile.rtl: Likewise.
+
+2021-07-08  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* lib-writ.ads: Mention SCOs dependency as reason for duplicates.
+	* lib.ads (Units): Update documentation to mention duplicated
+	units.
+
+2021-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* style.adb (Missing_Overriding): Do not emit message when
+	parent of subprogram is a full type declaration.
+
+2021-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch5.adb (P_Iterator_Specification): Add support for access
+	definition in loop parameter.
+	* sem_ch5.adb (Check_Subtype_Indication): Renamed...
+	(Check_Subtype_Definition): ... into this and check for conformance
+	on access definitions, and improve error messages.
+	(Analyze_Iterator_Specification): Add support for access definition
+	in loop parameter.
+
+2021-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.ads, sem_util.adb
+	(Apply_Compile_Time_Constraint_Error): New parameter
+	Emit_Message.
+	* sem_ch4.adb (Analyze_Selected_Component): Disable warning
+	within an instance.
+
+2021-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_imgv.adb: Add with and use clause for Restrict and Rident.
+	(Build_Enumeration_Image_Tables): Do not generate the hash function
+	if the No_Implicit_Loops restriction is active.
+
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb, sem_ch6.adb, sem_ch9.adb, sprint.adb: Simplify
+	checks for non-empty lists.
+
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch10.adb (Unit_Display): Remove redundant condition; fix
+	whitespace.
+
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-load.adb (Load): Replace early return with goto to properly
+	restore context on failure.
+
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-writ.adb (Ensure_System_Dependency): Simplify condition.
+
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-load.adb (Load_Unit): Fix style in comment.
+	* par-load.adb (Load): Likewise.
+	* scng.adb (Initialize_Scanner): Fix whitespace.
+
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-load.adb (Load): Don't remove unit, but flag it as
+	erroneous and return.
+
+2021-07-08  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Inspection_Point): Fix error
+	message.
+
+2021-07-08  Yannick Moy  <moy@adacore.com>
+
+	* layout.adb (Layout_Type): Do not call Number_Dimensions if the
+	type does not have First_Index set.
+
+2021-07-08  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Inspection_Point): After expansion
+	of the Inspection_Point pragma, check if referenced entities
+	that have a freeze node are already frozen. If they aren't, emit
+	a warning and turn the pragma into a no-op.
+
+2021-07-08  Yannick Moy  <moy@adacore.com>
+
+	* layout.adb (Layout_Type): Add guard before calling Expr_Value.
+
+2021-07-08  Yannick Moy  <moy@adacore.com>
+
+	* layout.adb (Layout_Type): Special case when RM_Size and Esize
+	can be computed for packed arrays.
+
+2021-07-08  Steve Baird  <baird@adacore.com>
+
+	* rtsfind.ads, rtsfind.adb: Add support for finding the packages
+	System.Atomic_Operations and
+	System.Atomic_Operations.Test_And_Set and the declarations
+	within that latter package of the type Test_And_Set_Flag and the
+	function Atomic_Test_And_Set.
+	* exp_ch11.adb (Expand_N_Exception_Declaration): If an exception
+	is declared other than at library level, then we need to call
+	Register_Exception the first time (and only the first time) the
+	declaration is elaborated.  In order to decide whether to
+	perform this call for a given elaboration of the declaration, we
+	used to unconditionally use a (library-level) Boolean variable.
+	Now we instead use a variable of type
+	System.Atomic_Operations.Test_And_Set.Test_And_Set_Flag unless
+	either that type is unavailable or a No_Tasking restriction is
+	in effect (in which case we use a Boolean variable as before).
+
+2021-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/system.ads: Add No_Tasking restriction.
+
+2021-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* libgnat/a-cohama.ads: Introduce an equality operator over
+	cursors.
+	* libgnat/a-cohase.ads: Ditto.
+	* libgnat/a-cohama.adb: Add body for "=" over cursors.
+	(Insert): Do not set the Position component of the cursor that
+	denotes the inserted element.
+	* libgnat/a-cohase.adb: Ditto.
+
+2021-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-cbdlli.adb, libgnat/a-cbhama.adb,
+	libgnat/a-cbhase.adb, libgnat/a-cbmutr.adb,
+	libgnat/a-cborma.adb, libgnat/a-cborse.adb,
+	libgnat/a-cobove.adb, libgnat/a-textio.adb,
+	libgnat/a-witeio.adb, libgnat/a-ztexio.adb: Make code compatible
+	with No_Dynamic_Accessibility_Checks restriction.
+
+2021-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* debug.adb, sem_util.adb: Revert meaning of -gnatd_b.
+	* sem_res.adb: Minor reformatting.
+
+2021-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb, osint.adb: Make code compatible with
+	No_Dynamic_Accessibility_Checks restriction.
+
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-writ.adb (Ensure_System_Dependency): Replace search in
+	Lib.Units with a search in Lib.Unit_Names.
+
+2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sinput-l.adb (Load_File): Simplify foreword manipulation with
+	concatenation; similar for filename with preprocessed output.
+
 2021-07-07  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* s-oscons-tmplt.c (MSG_WAITALL): Remove wrong #ifdef

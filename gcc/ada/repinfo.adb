@@ -963,10 +963,15 @@ package body Repinfo is
 
       procedure List_Structural_Record_Layout
         (Ent       : Entity_Id;
-         Outer_Ent : Entity_Id;
+         Ext_Ent   : Entity_Id;
+         Ext_Level : Nat := 0;
          Variant   : Node_Id := Empty;
          Indent    : Natural := 0);
-      --  Internal recursive procedure to display the structural layout
+      --  Internal recursive procedure to display the structural layout.
+      --  If Ext_Ent is not equal to Ent, it is an extension of Ent and
+      --  Ext_Level is the number of successive extensions between them.
+      --  If Variant is present, it's for a variant in the variant part
+      --  instead of the common part of Ent. Indent is the indentation.
 
       Incomplete_Layout : exception;
       --  Exception raised if the layout is incomplete in -gnatc mode
@@ -1319,7 +1324,12 @@ package body Repinfo is
                   end if;
                end if;
 
-               List_Component_Layout (Comp,
+               --  The Parent_Subtype in an extension is not back-annotated
+
+               List_Component_Layout (
+                 (if Known_Normalized_Position (Comp)
+                  then Comp
+                  else Original_Record_Component (Comp)),
                  Starting_Position, Starting_First_Bit, Prefix);
             end;
 
@@ -1334,15 +1344,16 @@ package body Repinfo is
 
       procedure List_Structural_Record_Layout
         (Ent       : Entity_Id;
-         Outer_Ent : Entity_Id;
+         Ext_Ent   : Entity_Id;
+         Ext_Level : Nat := 0;
          Variant   : Node_Id := Empty;
          Indent    : Natural := 0)
       is
          function Derived_Discriminant (Disc : Entity_Id) return Entity_Id;
-         --  This function assumes that Outer_Ent is an extension of Ent.
+         --  This function assumes that Ext_Ent is an extension of Ent.
          --  Disc is a discriminant of Ent that does not itself constrain a
          --  discriminant of the parent type of Ent. Return the discriminant
-         --  of Outer_Ent that ultimately constrains Disc, if any.
+         --  of Ext_Ent that ultimately constrains Disc, if any.
 
          ----------------------------
          --  Derived_Discriminant  --
@@ -1353,7 +1364,7 @@ package body Repinfo is
             Derived_Disc : Entity_Id;
 
          begin
-            Derived_Disc := First_Discriminant (Outer_Ent);
+            Derived_Disc := First_Discriminant (Ext_Ent);
 
             --  Loop over the discriminants of the extension
 
@@ -1380,7 +1391,7 @@ package body Repinfo is
                Next_Discriminant (Derived_Disc);
             end loop;
 
-            --  Disc is not constrained by a discriminant of Outer_Ent
+            --  Disc is not constrained by a discriminant of Ext_Ent
 
             return Empty;
          end Derived_Discriminant;
@@ -1432,12 +1443,21 @@ package body Repinfo is
                      pragma Assert (Present (Parent_Type));
                   end if;
 
-                  Parent_Type := Base_Type (Parent_Type);
-                  if not In_Extended_Main_Source_Unit (Parent_Type) then
-                     raise Not_In_Extended_Main;
+                  --  Do not list variants if one of them has been selected
+
+                  if Has_Static_Discriminants (Parent_Type) then
+                     List_Record_Layout (Parent_Type);
+
+                  else
+                     Parent_Type := Base_Type (Parent_Type);
+                     if not In_Extended_Main_Source_Unit (Parent_Type) then
+                        raise Not_In_Extended_Main;
+                     end if;
+
+                     List_Structural_Record_Layout
+                       (Parent_Type, Ext_Ent, Ext_Level + 1);
                   end if;
 
-                  List_Structural_Record_Layout (Parent_Type, Outer_Ent);
                   First := False;
 
                   if Present (Record_Extension_Part (Definition)) then
@@ -1467,7 +1487,7 @@ package body Repinfo is
                      --  If this is the parent type of an extension, retrieve
                      --  the derived discriminant from the extension, if any.
 
-                     if Ent /= Outer_Ent then
+                     if Ent /= Ext_Ent then
                         Listed_Disc := Derived_Discriminant (Disc);
 
                         if No (Listed_Disc) then
@@ -1544,7 +1564,11 @@ package body Repinfo is
          Spaces (Indent);
          Write_Line ("  ],");
          Spaces (Indent);
-         Write_Str ("  ""variant"" : [");
+         Write_Str ("  """);
+         for J in 1 .. Ext_Level loop
+            Write_Str ("parent_");
+         end loop;
+         Write_Str ("variant"" : [");
 
          --  Otherwise we recurse on each variant
 
@@ -1567,7 +1591,8 @@ package body Repinfo is
             Spaces (Indent);
             Write_Str ("      ""record"": [");
 
-            List_Structural_Record_Layout (Ent, Outer_Ent, Var, Indent + 4);
+            List_Structural_Record_Layout
+              (Ent, Ext_Ent, Ext_Level, Var, Indent + 4);
 
             Write_Eol;
             Spaces (Indent);

@@ -1,3 +1,73 @@
+2021-07-08  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/shiftrotate.md (variable shifts): Expose condition
+	code handling for the test before the loop.
+
+2021-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/101066
+	* ipa-sra.c (class isra_call_summary): New member
+	m_before_any_store, initialize it in the constructor.
+	(isra_call_summary::dump): Dump the new field.
+	(ipa_sra_call_summaries::duplicate): Copy it.
+	(process_scan_results): Set it.
+	(isra_write_edge_summary): Stream it.
+	(isra_read_edge_summary): Likewise.
+	(param_splitting_across_edge): Only override
+	safe_to_import_accesses if m_before_any_store is set.
+
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/101374
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref):
+	Use Object Size Type 0 instead of 1.
+
+2021-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vectorizable_reduction): Remove always-true
+	if condition.
+
+2021-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Simplify an extend-operate-truncate sequence involving
+	a POLY_INT_CST.
+
+2021-07-08  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/40210
+	* match.pd (bswap optimizations): Simplify (bswap(x)>>C1)&C2 as
+	(x>>C3)&C2 when possible.  Simplify bswap(x)>>C1 as ((T)x)>>C2
+	when possible.  Simplify bswap(x)&C1 as (x>>C2)&C1 when 0<=C1<=255.
+
+2021-07-08  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/i386-expand.c (ix86_expand_sse_unpack):
+	Handle V4QI mode.
+	* config/i386/mmx.md (V_32): New mode iterator.
+	(mov<V_32:mode>): Use V_32 mode iterator.
+	(*mov<V_32:mode>_internal): Ditto.
+	(*push<V_32:mode>2_rex64): Ditto.
+	(*push<V_32:mode>2): Ditto.
+	(movmisalign<V_32:mode>): Ditto.
+	(mmx_<any_shiftrt:insn>v1si3): New insn pattern.
+	(sse4_1_<any_extend:code>v2qiv2hi2): Ditto.
+	(vec_unpacks_lo_v4qi): New expander.
+	(vec_unpacks_hi_v4qi): Ditto.
+	(vec_unpacku_lo_v4qi): Ditto.
+	(vec_unpacku_hi_v4qi): Ditto.
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): Add V1SImode.
+	(VALID_INT_MODE_P): Ditto.
+
+2021-07-08  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/100809
+	* config/rs6000/rs6000.md (udivti3): New insn.
+	(divti3): New insn.
+	(umodti3): New insn.
+	(modti3): New insn.
+
 2021-07-07  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/100137

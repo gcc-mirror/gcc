@@ -298,8 +298,9 @@ package body Sem_Ch6 is
       Asp      : Node_Id;
       New_Body : Node_Id;
       New_Spec : Node_Id;
-      Orig_N   : Node_Id;
+      Orig_N   : Node_Id := Empty;
       Ret      : Node_Id;
+      Typ      : Entity_Id := Empty;
 
       Def_Id : Entity_Id := Empty;
       Prev   : Entity_Id;
@@ -332,6 +333,8 @@ package body Sem_Ch6 is
       then
          Def_Id := Analyze_Subprogram_Specification (Spec);
          Prev   := Find_Corresponding_Spec (N);
+
+         Typ := Etype (Def_Id);
 
          --  The previous entity may be an expression function as well, in
          --  which case the redeclaration is illegal.
@@ -406,7 +409,7 @@ package body Sem_Ch6 is
          if not Inside_A_Generic then
             Freeze_Expr_Types
               (Def_Id => Def_Id,
-               Typ    => Etype (Def_Id),
+               Typ    => Typ,
                Expr   => Expr,
                N      => N);
          end if;
@@ -496,6 +499,8 @@ package body Sem_Ch6 is
          Def_Id := Defining_Entity (N);
          Set_Is_Inlined (Def_Id);
 
+         Typ := Etype (Def_Id);
+
          --  Establish the linkages between the spec and the body. These are
          --  used when the expression function acts as the prefix of attribute
          --  'Access in order to freeze the original expression which has been
@@ -517,36 +522,40 @@ package body Sem_Ch6 is
             Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Etype (Def_Id));
+            Preanalyze_Spec_Expression (Expr, Typ);
+            End_Scope;
+         else
+            Push_Scope (Def_Id);
+            Install_Formals (Def_Id);
+            Preanalyze_Formal_Expression (Expr, Typ);
+            Check_Limited_Return (Orig_N, Expr, Typ);
             End_Scope;
          end if;
+
+         --  If this is a wrapper created in an instance for a formal
+         --  subprogram, insert body after declaration, to be analyzed when the
+         --  enclosing instance is analyzed.
+
+         if GNATprove_Mode
+           and then Is_Generic_Actual_Subprogram (Def_Id)
+         then
+            Insert_After (N, New_Body);
 
          --  To prevent premature freeze action, insert the new body at the end
          --  of the current declarations, or at the end of the package spec.
          --  However, resolve usage names now, to prevent spurious visibility
          --  on later entities. Note that the function can now be called in
-         --  the current declarative part, which will appear to be prior to
-         --  the presence of the body in the code. There are nevertheless no
-         --  order of elaboration issues because all name resolution has taken
-         --  place at the point of declaration.
+         --  the current declarative part, which will appear to be prior to the
+         --  presence of the body in the code. There are nevertheless no order
+         --  of elaboration issues because all name resolution has taken place
+         --  at the point of declaration.
 
-         declare
-            Decls : List_Id            := List_Containing (N);
-            Expr  : constant Node_Id   := Expression (Ret);
-            Par   : constant Node_Id   := Parent (Decls);
-            Typ   : constant Entity_Id := Etype (Def_Id);
+         else
+            declare
+               Decls : List_Id          := List_Containing (N);
+               Par   : constant Node_Id := Parent (Decls);
 
-         begin
-            --  If this is a wrapper created for in an instance for a formal
-            --  subprogram, insert body after declaration, to be analyzed when
-            --  the enclosing instance is analyzed.
-
-            if GNATprove_Mode
-              and then Is_Generic_Actual_Subprogram (Def_Id)
-            then
-               Insert_After (N, New_Body);
-
-            else
+            begin
                if Nkind (Par) = N_Package_Specification
                  and then Decls = Visible_Declarations (Par)
                  and then not Is_Empty_List (Private_Declarations (Par))
@@ -555,68 +564,57 @@ package body Sem_Ch6 is
                end if;
 
                Insert_After (Last (Decls), New_Body);
+            end;
+         end if;
 
-               --  Preanalyze the expression if not already done above
+         --  In the case of an expression function marked with the aspect
+         --  Static, we need to check the requirement that the function's
+         --  expression is a potentially static expression. This is done
+         --  by making a full copy of the expression tree and performing
+         --  a special preanalysis on that tree with the global flag
+         --  Checking_Potentially_Static_Expression enabled. If the
+         --  resulting expression is static, then it's OK, but if not, that
+         --  means the expression violates the requirements of the Ada 2022
+         --  RM in 4.9(3.2/5-3.4/5) and we flag an error.
 
-               if not Inside_A_Generic then
-                  Push_Scope (Def_Id);
-                  Install_Formals (Def_Id);
-                  Preanalyze_Formal_Expression (Expr, Typ);
-                  Check_Limited_Return (Original_Node (N), Expr, Typ);
-                  End_Scope;
-               end if;
+         if Is_Static_Function (Def_Id) then
+            if not Is_Static_Expression (Expr) then
+               declare
+                  Exp_Copy : constant Node_Id := New_Copy_Tree (Expr);
+               begin
+                  Set_Checking_Potentially_Static_Expression (True);
 
-               --  In the case of an expression function marked with the
-               --  aspect Static, we need to check the requirement that the
-               --  function's expression is a potentially static expression.
-               --  This is done by making a full copy of the expression tree
-               --  and performing a special preanalysis on that tree with
-               --  the global flag Checking_Potentially_Static_Expression
-               --  enabled. If the resulting expression is static, then it's
-               --  OK, but if not, that means the expression violates the
-               --  requirements of the Ada 2022 RM in 4.9(3.2/5-3.4/5) and
-               --  we flag an error.
+                  Preanalyze_Formal_Expression (Exp_Copy, Typ);
 
-               if Is_Static_Function (Def_Id) then
-                  if not Is_Static_Expression (Expr) then
-                     declare
-                        Exp_Copy : constant Node_Id := New_Copy_Tree (Expr);
-                     begin
-                        Set_Checking_Potentially_Static_Expression (True);
-
-                        Preanalyze_Formal_Expression (Exp_Copy, Typ);
-
-                        if not Is_Static_Expression (Exp_Copy) then
-                           Error_Msg_N
-                             ("static expression function requires "
-                                & "potentially static expression", Expr);
-                        end if;
-
-                        Set_Checking_Potentially_Static_Expression (False);
-                     end;
+                  if not Is_Static_Expression (Exp_Copy) then
+                     Error_Msg_N
+                       ("static expression function requires "
+                          & "potentially static expression", Expr);
                   end if;
 
-                  --  We also make an additional copy of the expression and
-                  --  replace the expression of the expression function with
-                  --  this copy, because the currently present expression is
-                  --  now associated with the body created for the static
-                  --  expression function, which will later be analyzed and
-                  --  possibly rewritten, and we need to have the separate
-                  --  unanalyzed copy available for use with later static
-                  --  calls.
-
-                  Set_Expression
-                    (Original_Node (Subprogram_Spec (Def_Id)),
-                     New_Copy_Tree (Expr));
-
-                  --  Mark static expression functions as inlined, to ensure
-                  --  that even calls with nonstatic actuals will be inlined.
-
-                  Set_Has_Pragma_Inline (Def_Id);
-                  Set_Is_Inlined (Def_Id);
-               end if;
+                  Set_Checking_Potentially_Static_Expression (False);
+               end;
             end if;
-         end;
+
+            --  We also make an additional copy of the expression and
+            --  replace the expression of the expression function with
+            --  this copy, because the currently present expression is
+            --  now associated with the body created for the static
+            --  expression function, which will later be analyzed and
+            --  possibly rewritten, and we need to have the separate
+            --  unanalyzed copy available for use with later static
+            --  calls.
+
+            Set_Expression
+              (Original_Node (Subprogram_Spec (Def_Id)),
+               New_Copy_Tree (Expr));
+
+            --  Mark static expression functions as inlined, to ensure
+            --  that even calls with nonstatic actuals will be inlined.
+
+            Set_Has_Pragma_Inline (Def_Id);
+            Set_Is_Inlined (Def_Id);
+         end if;
       end if;
 
       --  Check incorrect use of dynamically tagged expression. This doesn't
@@ -625,13 +623,12 @@ package body Sem_Ch6 is
       --  nodes that don't come from source.
 
       if Present (Def_Id)
-        and then Nkind (Def_Id) in N_Has_Etype
-        and then Is_Tagged_Type (Etype (Def_Id))
+        and then Is_Tagged_Type (Typ)
       then
          Check_Dynamically_Tagged_Expression
            (Expr        => Expr,
-            Typ         => Etype (Def_Id),
-            Related_Nod => Original_Node (N));
+            Typ         => Typ,
+            Related_Nod => Orig_N);
       end if;
 
       --  We must enforce checks for unreferenced formals in our newly
@@ -641,9 +638,9 @@ package body Sem_Ch6 is
       if Present (Parameter_Specifications (New_Spec)) then
          declare
             Form_New_Def  : Entity_Id;
-            Form_New_Spec : Entity_Id;
+            Form_New_Spec : Node_Id;
             Form_Old_Def  : Entity_Id;
-            Form_Old_Spec : Entity_Id;
+            Form_Old_Spec : Node_Id;
 
          begin
             Form_New_Spec := First (Parameter_Specifications (New_Spec));
@@ -3457,7 +3454,12 @@ package body Sem_Ch6 is
                   --  Link the body and the generated spec
 
                   Set_Corresponding_Body (Decl, Body_Id);
-                  Set_Corresponding_Spec (N, Subp);
+
+                  if Nkind (N) = N_Subprogram_Body_Stub then
+                     Set_Corresponding_Spec_Of_Stub (N, Subp);
+                  else
+                     Set_Corresponding_Spec (N, Subp);
+                  end if;
 
                   Set_Defining_Unit_Name (Specification (Decl), Subp);
 

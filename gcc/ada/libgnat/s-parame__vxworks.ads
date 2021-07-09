@@ -100,6 +100,21 @@ package System.Parameters is
    --  Indicates if secondary stacks can grow and shrink at run-time. If False,
    --  the size of a secondary stack is fixed at the point of its creation.
 
+   ------------------------------------
+   -- Characteristics of time_t type --
+   ------------------------------------
+
+   --  IMPORTANT NOTE:
+   --  Select the appropriate time_t_bits for the VSB in use, then rebuild
+   --  the runtime using instructions in adainclude/libada.gpr.
+
+   time_t_bits : constant := Long_Integer'Size;
+   --  Number of bits in type time_t for SR0650 and before and SR0660 with
+   --  non-default configuration.
+
+   --  time_t_bits : constant := Long_Long_Integer'Size;
+   --  Number of bits in type time_t for SR0660 with default configuration.
+
    ----------------------------------------------
    -- Characteristics of types in Interfaces.C --
    ----------------------------------------------

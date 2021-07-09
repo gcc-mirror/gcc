@@ -1,3 +1,54 @@
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-43.c: Remove an xfail.
+
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/100451
+	* g++.dg/warn/Warray-bounds-20.C: Adjust expected output for LP32.
+
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	* g++.dg/warn/Warray-bounds-11.C: Avoid including <new>.
+	* g++.dg/warn/Warray-bounds-13.C: Same.
+
+2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101087
+	* g++.dg/cpp0x/noexcept70.C: New test.
+
+2021-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/101066
+	* gcc.dg/ipa/pr101066.c: New test.
+
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/101374
+	* c-c++-common/Warray-bounds-3.c: Xfail assertion.
+	* c-c++-common/Warray-bounds-4.c: Same.
+
+2021-07-08  Christophe Lyon  <christophe.lyon@foss.st.om>
+
+	* gcc.dg/debug/pr57351.c: Require arm_arch_v7a_ok
+	effective-target.
+
+2021-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cntb_1.c: New test.
+
+2021-07-08  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/40210
+	* gcc.dg/builtin-bswap-13.c: New test.
+	* gcc.dg/builtin-bswap-14.c: New test.
+
+2021-07-08  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/100809
+	* gcc.target/powerpc/p10-vdivq-vmodq.c: New test.
+
 2021-07-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/pattern-test-2.c: Update expected results.

@@ -215,6 +215,7 @@
 #if !(defined (VMS) || defined (__MINGW32__))
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/ioctl.h>

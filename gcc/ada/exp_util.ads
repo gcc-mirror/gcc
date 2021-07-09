@@ -915,7 +915,7 @@ package Exp_Util is
    --  Establish the following mapping between the attributes of tagged parent
    --  type Parent_Type and tagged derived type Derived_Type.
    --
-   --    * Map each discriminant of Parent_Type to ether the corresponding
+   --    * Map each discriminant of Parent_Type to either the corresponding
    --      discriminant of Derived_Type or come constraint.
 
    --    * Map each primitive operation of Parent_Type to the corresponding

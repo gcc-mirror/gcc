@@ -37,6 +37,8 @@
 
 with Interfaces.C;
 
+with System.Parameters;
+
 package System.QNX is
    pragma Preelaborate;
 
@@ -46,7 +48,8 @@ package System.QNX is
 
    subtype long        is Interfaces.C.long;
    subtype suseconds_t is Interfaces.C.long;
-   subtype time_t      is Interfaces.C.long;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
    subtype clockid_t   is Interfaces.C.int;
 
    type timespec is record

@@ -1886,9 +1886,9 @@ package body Sem_Res is
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
-      Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
 
       if not With_Freezing then
+         Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
          Inside_Preanalysis_Without_Freezing :=
            Inside_Preanalysis_Without_Freezing - 1;
       end if;
@@ -13734,11 +13734,16 @@ package body Sem_Res is
             --  the target type is anonymous access as well - see RM 3.10.2
             --  (10.3/3).
 
-            elsif Type_Access_Level (Opnd_Type) >
-                    Deepest_Type_Access_Level (Target_Type)
-              and then (Nkind (Associated_Node_For_Itype (Opnd_Type)) /=
-                         N_Function_Specification
-                        or else Ekind (Target_Type) in Anonymous_Access_Kind)
+            --  Note that when the restriction No_Dynamic_Accessibility_Checks
+            --  is in effect wei also want to proceed with the conversion check
+            --  described above.
+
+            elsif Type_Access_Level (Opnd_Type, Assoc_Ent => Operand)
+                    > Deepest_Type_Access_Level (Target_Type)
+              and then (Nkind (Associated_Node_For_Itype (Opnd_Type))
+                          /= N_Function_Specification
+                        or else Ekind (Target_Type) in Anonymous_Access_Kind
+                        or else No_Dynamic_Accessibility_Checks_Enabled (N))
 
               --  Check we are not in a return value ???
 

@@ -8455,8 +8455,6 @@ list of operands, such as this example:
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:SI 1 "register_operand" "")
    (match_operand:SI 2 "register_operand" "")]
-@end group
-@group
   ""
   "
 @{
@@ -8473,17 +8471,10 @@ Here is an example, the definition of left-shift for the SPUR chip:
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
         (ashift:SI
-@end group
-@group
           (match_operand:SI 1 "register_operand" "")
           (match_operand:SI 2 "nonmemory_operand" "")))]
   ""
   "
-@end group
-@end smallexample
-
-@smallexample
-@group
 @{
   if (GET_CODE (operands[2]) != CONST_INT
       || (unsigned) INTVAL (operands[2]) > 3)
@@ -9937,7 +9928,7 @@ Lengths are measured in addressable storage units (bytes).
 Note that it is possible to call functions via the @code{symbol_ref}
 mechanism to compute the length of an insn.  However, if you use this
 mechanism you must provide dummy clauses to express the maximum length
-without using the function call.  You can an example of this in the
+without using the function call.  You can see an example of this in the
 @code{pa} machine description for the @code{call_symref} pattern.
 
 The following macros can be used to refine the length computation:
