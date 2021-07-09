@@ -37,6 +37,12 @@ public:
     return resolver.ok;
   }
 
+  void visit (HIR::TypeAlias &alias) override
+  {
+    ok = true;
+    result.assign (alias.get_new_type_name ());
+  }
+
   void visit (HIR::Function &function) override
   {
     ok = true;

@@ -65,6 +65,21 @@ public:
     item->accept_vis (*this);
   }
 
+  void visit (HIR::TypeAlias &alias) override
+  {
+    Identifier name = alias.get_new_type_name ();
+    if (search.as_string ().compare (name) == 0)
+      {
+	HirId tyid = alias.get_mappings ().get_hirid ();
+	TyTy::BaseType *ty = nullptr;
+	bool ok = context->lookup_type (tyid, &ty);
+	rust_assert (ok);
+
+	PathProbeCandidate candidate{&alias, ty};
+	candidates.push_back (std::move (candidate));
+      }
+  }
+
   void visit (HIR::ConstantItem &constant) override
   {
     Identifier name = constant.get_identifier ();
@@ -120,6 +135,11 @@ public:
 
     rust_error_at (r, "multiple applicable items in scope for: %s",
 		   query.as_string ().c_str ());
+  }
+
+  void visit (HIR::TypeAlias &alias) override
+  {
+    r.add_range (alias.get_locus ());
   }
 
   void visit (HIR::ConstantItem &constant) override
