@@ -3885,8 +3885,6 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 
   if (TREE_CODE (*stmt) == BIND_EXPR)
     {
-      lvd->bind_indx++;
-      lvd->nest_depth++;
       tree lvar;
       for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
 	   lvar = DECL_CHAIN (lvar))
@@ -3925,11 +3923,17 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	    continue;
 
 	  /* Make names depth+index unique, so that we can support nested
-	     scopes with identically named locals.  */
+	     scopes with identically named locals and still be able to
+	     identify them in the coroutine frame.  */
 	  tree lvname = DECL_NAME (lvar);
 	  char *buf;
-	  if (lvname != NULL_TREE)
-	    buf = xasprintf ("__%s.%u.%u", IDENTIFIER_POINTER (lvname),
+	  /* The outermost bind scope contains the artificial variables that
+	     we inject to implement the coro state machine.  We want to be able
+	     to inspect these in debugging.  */
+	  if (lvname != NULL_TREE && lvd->nest_depth == 0)
+	    buf = xasprintf ("%s", IDENTIFIER_POINTER (lvname));
+	  else if (lvname != NULL_TREE)
+	    buf = xasprintf ("%s_%u_%u", IDENTIFIER_POINTER (lvname),
 			     lvd->nest_depth, lvd->bind_indx);
 	  else
 	    buf = xasprintf ("_D%u.%u.%u", DECL_UID (lvar), lvd->nest_depth,
@@ -3942,6 +3946,8 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  /* We don't walk any of the local var sub-trees, they won't contain
 	     any bind exprs.  */
 	}
+      lvd->bind_indx++;
+      lvd->nest_depth++;
       cp_walk_tree (&BIND_EXPR_BODY (*stmt), register_local_var_uses, d, NULL);
       *do_subtree = 0; /* We've done this.  */
       lvd->nest_depth--;
