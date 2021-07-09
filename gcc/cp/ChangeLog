@@ -1,3 +1,24 @@
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/101372
+	* module.cc (identifier): Suppress warning.
+	(module_state::read_macro_maps): Remove warning suppression.
+	(module_state::install_macros): Ditto.
+
+2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101087
+	* cp-tree.h (unevaluated_p): New.
+	* except.c (check_noexcept_r): Use it.  Don't walk into
+	unevaluated operands.
+
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/101374
+	* module.cc (module_state::read_macro_maps): Temporarily disable
+	-Warray-bounds.
+	(module_state::install_macros): Same.
+
 2021-07-06  Martin Sebor  <msebor@redhat.com>
 
 	* error.c (cp_printer):  Remove support for %G and %K.
