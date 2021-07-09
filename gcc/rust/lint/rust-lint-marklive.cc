@@ -113,8 +113,9 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
 
   // node back to HIR
   HirId ref;
-  node_id_to_hir_id (expr.get_mappings ().get_crate_num (), ref_node_id, ref,
-		     expr.get_locus ());
+  bool ok = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+					  ref_node_id, &ref);
+  rust_assert (ok);
   mark_hir_id (ref);
 }
 
@@ -127,12 +128,8 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
   if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
       Resolver::Definition def;
-      if (!resolver->lookup_definition (ref_node_id, &def))
-	{
-	  rust_error_at (seg.get_locus (),
-			 "unknown reference for resolved name");
-	  return false;
-	}
+      bool ok = resolver->lookup_definition (ref_node_id, &def);
+      rust_assert (ok);
       ref_node_id = def.parent;
     }
   else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
@@ -140,8 +137,9 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
       return false;
     }
   HirId ref;
-  node_id_to_hir_id (seg.get_mappings ().get_crate_num (), ref_node_id, ref,
-		     seg.get_locus ());
+  bool ok = mappings->lookup_node_to_hir (seg.get_mappings ().get_crate_num (),
+					  ref_node_id, &ref);
+  rust_assert (ok);
   mark_hir_id (ref);
   return true;
 }
@@ -160,7 +158,8 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
       rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
 		     "unresolved type for receiver");
     }
-  rust_assert (receiver->get_kind () == TyTy::TypeKind::ADT);
+  bool ok = receiver->get_kind () == TyTy::TypeKind::ADT;
+  rust_assert (ok);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
 
   // get the field index
@@ -195,8 +194,9 @@ MarkLive::visit (HIR::IdentifierExpr &expr)
 
   // node back to HIR
   HirId ref;
-  node_id_to_hir_id (expr.get_mappings ().get_crate_num (), ref_node_id, ref,
-		     expr.get_locus ());
+  bool ok = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+					  ref_node_id, &ref);
+  rust_assert (ok);
   mark_hir_id (ref);
 }
 
@@ -207,8 +207,10 @@ MarkLive::visit (HIR::TypeAlias &alias)
   resolver->lookup_resolved_type (
     alias.get_type_aliased ()->get_mappings ().get_nodeid (), &ast_node_id);
   HirId hir_id;
-  node_id_to_hir_id (alias.get_mappings ().get_crate_num (), ast_node_id,
-		     hir_id, alias.get_locus ());
+  bool ok
+    = mappings->lookup_node_to_hir (alias.get_mappings ().get_crate_num (),
+				    ast_node_id, &hir_id);
+  rust_assert (ok);
   mark_hir_id (hir_id);
 }
 
@@ -231,29 +233,14 @@ MarkLive::find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id,
       // these ref_node_ids will resolve to a pattern declaration but we are
       // interested in the definition that this refers to get the parent id
       Resolver::Definition def;
-      if (!resolver->lookup_definition (ref_node_id, &def))
-	{
-	  rust_error_at (locus, "unknown reference for resolved name");
-	  return;
-	}
+      bool ok = resolver->lookup_definition (ref_node_id, &def);
+      rust_assert (ok);
       ref_node_id = def.parent;
     }
-  else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+  else
     {
-      rust_error_at (locus, "Failed to lookup type reference for node: %s",
-		     node_name.c_str ());
-      return;
-    }
-}
-
-void
-MarkLive::node_id_to_hir_id (CrateNum crateNum, NodeId ref_node_id, HirId &ref,
-			     Location locus)
-{
-  if (!mappings->lookup_node_to_hir (crateNum, ref_node_id, &ref))
-    {
-      rust_error_at (locus, "reverse lookup failure");
-      return;
+      bool ok = resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
+      rust_assert (ok);
     }
 }
 
