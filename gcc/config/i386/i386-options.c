@@ -2368,7 +2368,8 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_PKU) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;
-	if (((processor_alias_table[i].flags & PTA_UINTR) != 0)
+	if (TARGET_64BIT
+	    && ((processor_alias_table[i].flags & PTA_UINTR) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_UINTR))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_UINTR;
 	if (((processor_alias_table[i].flags & PTA_HRESET) != 0)
