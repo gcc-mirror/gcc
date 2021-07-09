@@ -22047,11 +22047,11 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 	  /* Expand the argument to a V16QI mode by duplicating it.  */
 	  rtx pair = gen_reg_rtx (V16QImode);
 	  emit_insn (gen_aarch64_combinev8qi (pair, op0, op0));
-	  emit_insn (gen_aarch64_tbl1v8qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl1v8qi (target, pair, sel));
 	}
       else
 	{
-	  emit_insn (gen_aarch64_tbl1v16qi (target, op0, sel));
+	  emit_insn (gen_aarch64_qtbl1v16qi (target, op0, sel));
 	}
     }
   else
@@ -22062,13 +22062,13 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 	{
 	  pair = gen_reg_rtx (V16QImode);
 	  emit_insn (gen_aarch64_combinev8qi (pair, op0, op1));
-	  emit_insn (gen_aarch64_tbl1v8qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl1v8qi (target, pair, sel));
 	}
       else
 	{
 	  pair = gen_reg_rtx (OImode);
 	  emit_insn (gen_aarch64_combinev16qi (pair, op0, op1));
-	  emit_insn (gen_aarch64_tbl2v16qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl2v16qi (target, pair, sel));
 	}
     }
 }

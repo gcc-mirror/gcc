@@ -718,37 +718,31 @@
   VAR1 (BINOPP, crypto_pmull, 0, NONE, di)
   VAR1 (BINOPP, crypto_pmull, 0, NONE, v2di)
 
-  /* Implemented by aarch64_tbl3<mode>.  */
-  VAR1 (BINOP, tbl3, 0, NONE, v8qi)
-  VAR1 (BINOP, tbl3, 0, NONE, v16qi)
+  /* Implemented by aarch64_qtbl1<mode>.  */
+  VAR2 (BINOP, qtbl1, 0, NONE, v8qi, v16qi)
+  VAR2 (BINOPU, qtbl1, 0, NONE, v8qi, v16qi)
 
-  /* Implemented by aarch64_tbl1<mode>.  */
-  VAR2 (BINOP, tbl1, 0, NONE, v8qi, v16qi)
-  VAR2 (BINOPU, tbl1, 0, NONE, v8qi, v16qi)
+  /* Implemented by aarch64_qtbl2<mode>.  */
+  VAR2 (BINOP, qtbl2, 0, NONE, v8qi, v16qi)
 
   /* Implemented by aarch64_qtbl3<mode>.  */
-  VAR1 (BINOP, qtbl3, 0, NONE, v8qi)
-  VAR1 (BINOP, qtbl3, 0, NONE, v16qi)
+  VAR2 (BINOP, qtbl3, 0, NONE, v8qi, v16qi)
 
   /* Implemented by aarch64_qtbl4<mode>.  */
-  VAR1 (BINOP, qtbl4, 0, NONE, v8qi)
-  VAR1 (BINOP, qtbl4, 0, NONE, v16qi)
+  VAR2 (BINOP, qtbl4, 0, NONE, v8qi, v16qi)
 
-  /* Implemented by aarch64_tbx1<mode>.  */
-  VAR2 (TERNOP, tbx1, 0, NONE, v8qi, v16qi)
-  VAR2 (TERNOPU, tbx1, 0, NONE, v8qi, v16qi)
+  /* Implemented by aarch64_qtbx1<mode>.  */
+  VAR2 (TERNOP, qtbx1, 0, NONE, v8qi, v16qi)
+  VAR2 (TERNOPU, qtbx1, 0, NONE, v8qi, v16qi)
 
-  /* Implemented by aarch64_tbx4<mode>.  */
-  VAR1 (TERNOP, tbx4, 0, NONE, v8qi)
-  VAR1 (TERNOP, tbx4, 0, NONE, v16qi)
+  /* Implemented by aarch64_qtbx2<mode>.  */
+  VAR2 (TERNOP, qtbx2, 0, NONE, v8qi, v16qi)
 
   /* Implemented by aarch64_qtbx3<mode>.  */
-  VAR1 (TERNOP, qtbx3, 0, NONE, v8qi)
-  VAR1 (TERNOP, qtbx3, 0, NONE, v16qi)
+  VAR2 (TERNOP, qtbx3, 0, NONE, v8qi, v16qi)
 
   /* Implemented by aarch64_qtbx4<mode>.  */
-  VAR1 (TERNOP, qtbx4, 0, NONE, v8qi)
-  VAR1 (TERNOP, qtbx4, 0, NONE, v16qi)
+  VAR2 (TERNOP, qtbx4, 0, NONE, v8qi, v16qi)
 
   /* Builtins for ARMv8.1-A Adv.SIMD instructions.  */
 

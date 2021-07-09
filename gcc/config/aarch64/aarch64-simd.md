@@ -6948,7 +6948,7 @@
     {
       rtx op0 = gen_rtx_REG (V16QImode, REGNO (operands[0]) + i);
       rtx op1 = gen_rtx_REG (V16QImode, REGNO (operands[1]) + i);
-      emit_insn (gen_aarch64_tbl1v16qi (op0, op1, operands[2]));
+      emit_insn (gen_aarch64_qtbl1v16qi (op0, op1, operands[2]));
     }
   DONE;
 }
@@ -7425,7 +7425,7 @@
   DONE;
 })
 
-(define_insn "aarch64_tbl1<mode>"
+(define_insn "aarch64_qtbl1<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:V16QI 1 "register_operand" "w")
 		    (match_operand:VB 2 "register_operand" "w")]
@@ -7435,7 +7435,7 @@
   [(set_attr "type" "neon_tbl1<q>")]
 )
 
-(define_insn "aarch64_tbx1<mode>"
+(define_insn "aarch64_qtbx1<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
 		    (match_operand:V16QI 2 "register_operand" "w")
@@ -7448,27 +7448,17 @@
 
 ;; Two source registers.
 
-(define_insn "aarch64_tbl2v16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=w")
-	(unspec:V16QI [(match_operand:OI 1 "register_operand" "w")
-		       (match_operand:V16QI 2 "register_operand" "w")]
-		      UNSPEC_TBL))]
-  "TARGET_SIMD"
-  "tbl\\t%0.16b, {%S1.16b - %T1.16b}, %2.16b"
-  [(set_attr "type" "neon_tbl2_q")]
-)
-
-(define_insn "aarch64_tbl3<mode>"
+(define_insn "aarch64_qtbl2<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:OI 1 "register_operand" "w")
 		      (match_operand:VB 2 "register_operand" "w")]
 		      UNSPEC_TBL))]
   "TARGET_SIMD"
   "tbl\\t%S0.<Vbtype>, {%S1.16b - %T1.16b}, %S2.<Vbtype>"
-  [(set_attr "type" "neon_tbl3")]
+  [(set_attr "type" "neon_tbl2")]
 )
 
-(define_insn "aarch64_tbx4<mode>"
+(define_insn "aarch64_qtbx2<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
 		      (match_operand:OI 2 "register_operand" "w")
@@ -7476,7 +7466,7 @@
 		      UNSPEC_TBX))]
   "TARGET_SIMD"
   "tbx\\t%S0.<Vbtype>, {%S2.16b - %T2.16b}, %S3.<Vbtype>"
-  [(set_attr "type" "neon_tbl4")]
+  [(set_attr "type" "neon_tbl2")]
 )
 
 ;; Three source registers.
