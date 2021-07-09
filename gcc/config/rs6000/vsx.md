@@ -6333,7 +6333,7 @@
   [(set_attr "type" "vecdiv")
    (set_attr "size" "<bits>")])
 
-(define_insn "mods_<mode>"
+(define_insn "mod<mode>3"
   [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
 	(mod:VIlong (match_operand:VIlong 1 "vsx_register_operand" "v")
 		    (match_operand:VIlong 2 "vsx_register_operand" "v")))]
@@ -6342,7 +6342,7 @@
   [(set_attr "type" "vecdiv")
    (set_attr "size" "<bits>")])
 
-(define_insn "modu_<mode>"
+(define_insn "umod<mode>3"
   [(set (match_operand:VIlong 0 "vsx_register_operand" "=v")
 	(umod:VIlong (match_operand:VIlong 1 "vsx_register_operand" "v")
 		     (match_operand:VIlong 2 "vsx_register_operand" "v")))]
