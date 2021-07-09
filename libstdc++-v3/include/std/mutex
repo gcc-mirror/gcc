@@ -618,7 +618,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      return;
 		    }
 		}
-#ifdef _GLIBCXX_USE_SCHED_YIELD
+#if defined _GLIBCXX_HAS_GTHREADS && defined _GLIBCXX_USE_SCHED_YIELD
 		__gthread_yield();
 #endif
 		constexpr auto __n = 1 + sizeof...(_L1);
