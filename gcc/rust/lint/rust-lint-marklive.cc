@@ -128,8 +128,8 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
   if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
       Resolver::Definition def;
-      bool ret = resolver->lookup_definition (ref_node_id, &def);
-      rust_assert (ret);
+      bool ok = resolver->lookup_definition (ref_node_id, &def);
+      rust_assert (ok);
       ref_node_id = def.parent;
     }
   else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
@@ -158,8 +158,8 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
       rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
 		     "unresolved type for receiver");
     }
-  bool ret = receiver->get_kind () == TyTy::TypeKind::ADT;
-  rust_assert (ret);
+  bool ok = receiver->get_kind () == TyTy::TypeKind::ADT;
+  rust_assert (ok);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
 
   // get the field index
@@ -233,14 +233,14 @@ MarkLive::find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id,
       // these ref_node_ids will resolve to a pattern declaration but we are
       // interested in the definition that this refers to get the parent id
       Resolver::Definition def;
-      bool ret = resolver->lookup_definition (ref_node_id, &def);
-      rust_assert (ret);
+      bool ok = resolver->lookup_definition (ref_node_id, &def);
+      rust_assert (ok);
       ref_node_id = def.parent;
     }
   else
     {
-      bool ret = resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
-      rust_assert (ret);
+      bool ok = resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
+      rust_assert (ok);
     }
 }
 
