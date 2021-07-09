@@ -44,6 +44,7 @@ with Stand;          use Stand;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
+with Stringt;        use Stringt;
 with Table;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
@@ -105,25 +106,70 @@ package body Sem_Case is
 
    package Composite_Case_Ops is
 
+      function Choice_Count (Alternatives : List_Id) return Nat;
+      --  The sum of the number of choices for each alternative in the given
+      --  list.
+
       function Scalar_Part_Count (Subtyp : Entity_Id) return Nat;
       --  Given the composite type Subtyp of a case selector, returns the
       --  number of scalar parts in an object of this type. This is the
       --  dimensionality of the associated Cartesian product space.
 
-      function Choice_Count (Alternatives : List_Id) return Nat;
-      --  The sum of the number of choices for each alternative in the given
-      --  list.
+      package Array_Case_Ops is
+         function Array_Choice_Length (Choice : Node_Id) return Nat;
+         --  Given a choice expression of an array type, returns its length.
+
+         function Normalized_Case_Expr_Type
+           (Case_Statement : Node_Id) return Entity_Id;
+         --  Usually returns the Etype of the selector expression of the
+         --  case statement. However, in the case of a constrained array
+         --  subtype with a nonstatic constraint, returns the unconstrained
+         --  array base type.
+
+         function Unconstrained_Array_Effective_Length
+           (Array_Type : Entity_Id; Case_Statement : Node_Id) return Nat;
+         --  If the nominal subtype of the case selector is unconstrained,
+         --  then use the length of the longest choice of the case statement.
+         --  Components beyond that index value will not influence the case
+         --  selection decision.
+
+         function Unconstrained_Array_Scalar_Part_Count
+           (Array_Type : Entity_Id; Case_Statement : Node_Id) return Nat;
+         --  Same as Scalar_Part_Count except that the value used for the
+         --  "length" of the array subtype being cased on is determined by
+         --  calling Unconstrained_Array_Effective_Length.
+      end Array_Case_Ops;
 
       generic
          Case_Statement : Node_Id;
       package Choice_Analysis is
 
+         use Array_Case_Ops;
+
          type Alternative_Id is
            new Int range 1 .. List_Length (Alternatives (Case_Statement));
          type Choice_Id is
            new Int range 1 .. Choice_Count (Alternatives (Case_Statement));
+
+         Case_Expr_Type : constant Entity_Id :=
+           Normalized_Case_Expr_Type (Case_Statement);
+
+         Unconstrained_Array_Case : constant Boolean :=
+           Is_Array_Type (Case_Expr_Type)
+             and then not Is_Constrained (Case_Expr_Type);
+
+         --  If Unconstrained_Array_Case is True, choice lengths may differ:
+         --    when "Aaa" | "Bb" | "C" | "" =>
+         --
+         --  Strictly speaking, the name "Unconstrained_Array_Case" is
+         --  slightly imprecise; a subtype with a nonstatic constraint is
+         --  also treated as unconstrained (see Normalize_Case_Expr_Type).
+
          type Part_Id is new Int range
-           1 .. Scalar_Part_Count (Etype (Expression (Case_Statement)));
+           1 .. (if Unconstrained_Array_Case
+                 then Unconstrained_Array_Scalar_Part_Count
+                        (Case_Expr_Type, Case_Statement)
+                 else Scalar_Part_Count (Case_Expr_Type));
 
          type Discrete_Range_Info is
            record
@@ -1118,6 +1164,21 @@ package body Sem_Case is
          return UI_To_Int (Len);
       end Static_Array_Length;
 
+      ------------------
+      -- Choice_Count --
+      ------------------
+
+      function Choice_Count (Alternatives : List_Id) return Nat is
+         Result : Nat := 0;
+         Alt : Node_Id := First (Alternatives);
+      begin
+         while Present (Alt) loop
+            Result := Result + List_Length (Discrete_Choices (Alt));
+            Next (Alt);
+         end loop;
+         return Result;
+      end Choice_Count;
+
       -----------------------
       -- Scalar_Part_Count --
       -----------------------
@@ -1147,20 +1208,118 @@ package body Sem_Case is
          end if;
       end Scalar_Part_Count;
 
-      ------------------
-      -- Choice_Count --
-      ------------------
+      package body Array_Case_Ops is
 
-      function Choice_Count (Alternatives : List_Id) return Nat is
-         Result : Nat := 0;
-         Alt : Node_Id := First (Alternatives);
-      begin
-         while Present (Alt) loop
-            Result := Result + List_Length (Discrete_Choices (Alt));
-            Next (Alt);
-         end loop;
-         return Result;
-      end Choice_Count;
+         -------------------------
+         -- Array_Choice_Length --
+         -------------------------
+
+         function Array_Choice_Length (Choice : Node_Id) return Nat is
+         begin
+            case Nkind (Choice) is
+               when N_String_Literal =>
+                  return String_Length (Strval (Choice));
+               when N_Aggregate =>
+                  declare
+                     Bounds : constant Node_Id :=
+                       Aggregate_Bounds (Choice);
+                     pragma Assert (Is_OK_Static_Range (Bounds));
+                     Lo     : constant Uint :=
+                       Expr_Value (Low_Bound (Bounds));
+                     Hi     : constant Uint :=
+                       Expr_Value (High_Bound (Bounds));
+                     Len : constant Uint := (Hi - Lo) + 1;
+                  begin
+                     return UI_To_Int (Len);
+                  end;
+               when N_Has_Entity =>
+                  if Present (Entity (Choice))
+                    and then Ekind (Entity (Choice)) = E_Constant
+                  then
+                     return Array_Choice_Length
+                              (Expression (Parent (Entity (Choice))));
+                  end if;
+               when N_Others_Choice =>
+                  return 0;
+               when others =>
+                  null;
+            end case;
+
+            if Nkind (Original_Node (Choice))
+                 in N_String_Literal | N_Aggregate
+            then
+               return Array_Choice_Length (Original_Node (Choice));
+            end if;
+
+            Error_Msg_N ("Unsupported case choice", Choice);
+            return 0;
+         end Array_Choice_Length;
+
+         -------------------------------
+         -- Normalized_Case_Expr_Type --
+         -------------------------------
+
+         function Normalized_Case_Expr_Type
+           (Case_Statement : Node_Id) return Entity_Id
+         is
+            Unnormalized : constant Entity_Id :=
+              Etype (Expression (Case_Statement));
+         begin
+            if Is_Array_Type (Unnormalized)
+              and then Is_Constrained (Unnormalized)
+              and then not Has_Static_Array_Bounds (Unnormalized)
+            then
+               return Base_Type (Unnormalized);
+            else
+               return Unnormalized;
+            end if;
+         end Normalized_Case_Expr_Type;
+
+      ------------------------------------------
+         -- Unconstrained_Array_Effective_Length --
+      ------------------------------------------
+
+         function Unconstrained_Array_Effective_Length
+           (Array_Type : Entity_Id; Case_Statement : Node_Id) return Nat
+         is
+            pragma Assert (Is_Array_Type (Array_Type));
+            --  Array_Type is otherwise unreferenced for now.
+
+            Result : Nat := 0;
+            Alt : Node_Id := First (Alternatives (Case_Statement));
+         begin
+            while Present (Alt) loop
+               declare
+                  Choice : Node_Id := First (Discrete_Choices (Alt));
+               begin
+                  while Present (Choice) loop
+                     Result := Nat'Max (Result, Array_Choice_Length (Choice));
+                     Next (Choice);
+                  end loop;
+               end;
+               Next (Alt);
+            end loop;
+
+            return Result;
+         end Unconstrained_Array_Effective_Length;
+
+         -------------------------------------------
+         -- Unconstrained_Array_Scalar_Part_Count --
+         -------------------------------------------
+
+         function Unconstrained_Array_Scalar_Part_Count
+           (Array_Type : Entity_Id; Case_Statement : Node_Id) return Nat
+         is
+         begin
+            --  Add one for the length, which is treated like a discriminant
+
+            return 1 + (Unconstrained_Array_Effective_Length
+                          (Array_Type     => Array_Type,
+                           Case_Statement => Case_Statement)
+                        * Scalar_Part_Count (Component_Type (Array_Type)));
+         end Unconstrained_Array_Scalar_Part_Count;
+
+      end Array_Case_Ops;
 
       package body Choice_Analysis is
 
@@ -1220,9 +1379,32 @@ package body Sem_Case is
                     ((Low  => Expr_Value (Type_Low_Bound (Subtyp)),
                       High => Expr_Value (Type_High_Bound (Subtyp))));
                elsif Is_Array_Type (Subtyp) then
-                  for I in 1 .. Static_Array_Length (Subtyp) loop
-                     Traverse_Discrete_Parts (Component_Type (Subtyp));
-                  end loop;
+                  declare
+                     Len : Nat;
+                  begin
+                     if Is_Constrained (Subtyp) then
+                        Len := Static_Array_Length (Subtyp);
+                     else
+                        --  Length will be treated like a discriminant;
+                        --  We could compute High more precisely as
+                        --    1 + Index_Subtype'Last - Index_Subtype'First
+                        --  (we currently require that those bounds be
+                        --  static, so this is an option), but only downside of
+                        --  overshooting is if somebody wants to omit a
+                        --  "when others" choice and exhaustively cover all
+                        --  possibilities explicitly.
+                        Update_Result
+                          ((Low  => Uint_0,
+                            High => Uint_2 ** Uint_32));
+
+                        Len := Unconstrained_Array_Effective_Length
+                                 (Array_Type     => Subtyp,
+                                  Case_Statement => Case_Statement);
+                     end if;
+                     for I in 1 .. Len loop
+                        Traverse_Discrete_Parts (Component_Type (Subtyp));
+                     end loop;
+                  end;
                elsif Is_Record_Type (Subtyp) then
                   if Has_Static_Discriminant_Constraint (Subtyp) then
 
@@ -1274,7 +1456,7 @@ package body Sem_Case is
             end Traverse_Discrete_Parts;
 
          begin
-            Traverse_Discrete_Parts (Etype (Expression (Case_Statement)));
+            Traverse_Discrete_Parts (Case_Expr_Type);
             pragma Assert (Done or else Serious_Errors_Detected > 0);
             return Result;
          end Component_Bounds_Info;
@@ -1531,6 +1713,19 @@ package body Sem_Case is
                            & "choice not implemented", Expr);
                      end if;
 
+                     if not Unconstrained_Array_Case
+                        and then List_Length (Expressions (Expr))
+                           /= Nat (Part_Id'Last)
+                     then
+                        Error_Msg_N
+                          ("Array aggregate length"
+                            & List_Length (Expressions (Expr))'Image
+                            & " does not match length of"
+                            & " statically constrained case selector"
+                            & Part_Id'Last'Image, Expr);
+                        return;
+                     end if;
+
                      declare
                         Subexpr : Node_Id := First (Expressions (Expr));
                      begin
@@ -1542,9 +1737,50 @@ package body Sem_Case is
                   else
                      raise Program_Error;
                   end if;
+               elsif Nkind (Expr) = N_String_Literal then
+                  if not Is_Array_Type (Etype (Expr)) then
+                     Error_Msg_N
+                       ("User-defined string literal not allowed as/within"
+                        & "case choice", Expr);
+                  else
+                     declare
+                        Char_Type : constant Entity_Id :=
+                          Root_Type (Component_Type (Etype (Expr)));
+
+                        --  If the component type is not a standard character
+                        --  type then this string lit should have already been
+                        --  transformed into an aggregate in
+                        --  Resolve_String_Literal.
+                        --
+                        pragma Assert (Is_Standard_Character_Type (Char_Type));
+
+                        Str      : constant String_Id := Strval (Expr);
+                        Strlen   : constant Nat       := String_Length (Str);
+                        Char_Val : Uint;
+                     begin
+                        if not Unconstrained_Array_Case
+                           and then Strlen /= Nat (Part_Id'Last)
+                        then
+                           Error_Msg_N
+                             ("String literal length"
+                              & Strlen'Image
+                              & " does not match length of"
+                              & " statically constrained case selector"
+                              & Part_Id'Last'Image, Expr);
+                           return;
+                        end if;
+
+                        for Idx in 1 .. Strlen loop
+                           Char_Val :=
+                             UI_From_CC (Get_String_Char (Str, Idx));
+                           Update_Result ((Low | High => Char_Val));
+                        end loop;
+                     end;
+                  end if;
                elsif Is_Discrete_Type (Etype (Expr)) then
-                  if Nkind (Expr) in N_Has_Entity and then
-                    Is_Type (Entity (Expr))
+                  if Nkind (Expr) in N_Has_Entity
+                    and then Present (Entity (Expr))
+                    and then Is_Type (Entity (Expr))
                   then
                      declare
                         Low  : constant Node_Id :=
@@ -1559,10 +1795,20 @@ package body Sem_Case is
                      pragma Assert (Compile_Time_Known_Value (Expr));
                      Update_Result ((Low | High => Expr_Value (Expr)));
                   end if;
+               elsif Nkind (Expr) in N_Has_Entity
+                 and then Present (Entity (Expr))
+                 and then Ekind (Entity (Expr)) = E_Constant
+               then
+                  Traverse_Choice (Expression (Parent (Entity (Expr))));
+               elsif Nkind (Original_Node (Expr))
+                       in N_Aggregate | N_String_Literal
+               then
+                  Traverse_Choice (Original_Node (Expr));
                else
                   Error_Msg_N
-                    ("non-aggregate case choice subexpression which is not"
-                     & " of a discrete type not implemented", Expr);
+                    ("non-aggregate case choice (or subexpression thereof)"
+                     & " that is not of a discrete type not implemented",
+                     Expr);
                end if;
             end Traverse_Choice;
 
@@ -1572,7 +1818,25 @@ package body Sem_Case is
             if Nkind (Choice) = N_Others_Choice then
                return (Is_Others => True);
             end if;
+
+            if Unconstrained_Array_Case then
+               --  Treat length like a discriminant
+               Update_Result ((Low | High =>
+                                 UI_From_Int (Array_Choice_Length (Choice))));
+            end if;
+
             Traverse_Choice (Choice);
+
+            if Unconstrained_Array_Case then
+               --  This is somewhat tricky. Suppose we are casing on String,
+               --  the longest choice in the case statement is length 10, and
+               --  the choice we are looking at now is of length 6. We fill
+               --  in the trailing 4 slots here.
+               while Next_Part <= Part_Id'Last loop
+                  Update_Result_For_Full_Coverage
+                    (Comp_Type => Component_Type (Case_Expr_Type));
+               end loop;
+            end if;
 
             --  Avoid returning uninitialized garbage in error case
             if Next_Part /= Part_Id'Last + 1 then
@@ -2098,6 +2362,12 @@ package body Sem_Case is
                   Result := Result * Value_Index_Base (Uint_Sets.Size (Set));
                end loop;
                return Result;
+            exception
+               when Constraint_Error =>
+                  Error_Msg_N
+                    ("Capacity exceeded in compiling case statement with"
+                      & " composite selector type", Case_Statement);
+                  raise;
             end Value_Index_Count;
 
             Max_Value_Index : constant Value_Index_Base := Value_Index_Count;
@@ -3014,12 +3284,20 @@ package body Sem_Case is
                         "an enumeration representation clause", N);
                   end if;
                elsif Is_Array_Type (Subtyp) then
-                  pragma Assert (Is_Constrained (Subtyp));
-
                   if Number_Dimensions (Subtyp) /= 1 then
                      Error_Msg_N
                        ("dimensionality of array type of case selector (or " &
                         "subcomponent thereof) is greater than 1", N);
+
+                  elsif not Is_Constrained (Subtyp) then
+                     if not Is_Static_Subtype
+                              (Etype (First_Index (Subtyp)))
+                     then
+                        Error_Msg_N
+                          ("Unconstrained array subtype of case selector" &
+                           " has nonstatic index subtype", N);
+                     end if;
+
                   elsif not Is_OK_Static_Range (First_Index (Subtyp)) then
                      Error_Msg_N
                        ("array subtype of case selector (or " &
@@ -3076,10 +3354,6 @@ package body Sem_Case is
 
             elsif Needs_Finalization (Subtyp) then
                Error_Msg_N ("case selector type requires finalization", N);
-
-            elsif Is_Array_Type (Subtyp) and not Is_Constrained (Subtyp) then
-               Error_Msg_N
-                 ("case selector subtype is unconstrained array subtype", N);
 
             else
                Check_Component_Subtype (Subtyp);
