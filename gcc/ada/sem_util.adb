@@ -728,17 +728,6 @@ package body Sem_Util is
                return Make_Level_Literal
                         (Typ_Access_Level (Etype (E)));
 
-            --  When E is a component of the current instance of a
-            --  protected type, we assume the level to be deeper than that of
-            --  the type itself.
-
-            elsif not Is_Overloadable (E)
-              and then Ekind (Scope (E)) = E_Protected_Type
-              and then Comes_From_Source (Scope (E))
-            then
-               return Make_Level_Literal
-                        (Scope_Depth (Enclosing_Dynamic_Scope (E)) + 1);
-
             --  Check if E is an expansion-generated renaming of an iterator
             --  by examining Related_Expression. If so, determine the
             --  accessibility level based on the original expression.

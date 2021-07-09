@@ -767,8 +767,7 @@ package body Exp_Ch4 is
             Cond :=
               Make_Op_Gt (Loc,
                 Left_Opnd  => Cond,
-                Right_Opnd =>
-                  Make_Integer_Literal (Loc, Type_Access_Level (PtrT)));
+                Right_Opnd => Accessibility_Level (N, Dynamic_Level));
 
             --  Due to the complexity and side effects of the check, utilize an
             --  if statement instead of the regular Program_Error circuitry.
