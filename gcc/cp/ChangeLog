@@ -1,3 +1,13 @@
+2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101087
+	* cp-tree.h (unevaluated_p): New.
+	* except.c (check_noexcept_r): Use it.  Don't walk into
+	unevaluated operands.
+
 2021-07-07  Jason Merrill  <jason@redhat.com>
 
 	Revert:

@@ -1,3 +1,13 @@
+2021-07-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2021-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/100227
+	* frontend-passes.c (traverse_io_block): Adjust test for
+	when a variable is eligible for the transformation to
+	array slice.
+
 2021-06-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

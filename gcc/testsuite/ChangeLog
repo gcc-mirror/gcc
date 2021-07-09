@@ -1,3 +1,19 @@
+2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101087
+	* g++.dg/cpp0x/noexcept70.C: New test.
+
+2021-07-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2021-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/100227
+	* gfortran.dg/implied_do_io_7.f90: New test.
+
 2021-07-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101040
