@@ -12907,7 +12907,9 @@ extract_local_specs (tree pattern, tsubst_flags_t complain)
 tree
 build_extra_args (tree pattern, tree args, tsubst_flags_t complain)
 {
-  tree extra = args;
+  /* Make a copy of the extra arguments so that they won't get changed
+     out from under us.  */
+  tree extra = copy_template_args (args);
   if (local_specializations)
     if (tree locals = extract_local_specs (pattern, complain))
       extra = tree_cons (NULL_TREE, extra, locals);
@@ -12918,7 +12920,7 @@ build_extra_args (tree pattern, tree args, tsubst_flags_t complain)
    normal template args to ARGS.  */
 
 tree
-add_extra_args (tree extra, tree args)
+add_extra_args (tree extra, tree args, tsubst_flags_t complain, tree in_decl)
 {
   if (extra && TREE_CODE (extra) == TREE_LIST)
     {
@@ -12938,20 +12940,14 @@ add_extra_args (tree extra, tree args)
       gcc_assert (!TREE_PURPOSE (extra));
       extra = TREE_VALUE (extra);
     }
-#if 1
-  /* I think we should always be able to substitute dependent args into the
-     pattern.  If that turns out to be incorrect in some cases, enable the
-     alternate code (and add complain/in_decl parms to this function).  */
-  gcc_checking_assert (!uses_template_parms (extra));
-#else
-  if (!uses_template_parms (extra))
+  if (uses_template_parms (extra))
     {
-      gcc_unreachable ();
+      /* This can happen after dependent substitution into a
+	 requires-expr or a lambda that uses constexpr if.  */
       extra = tsubst_template_args (extra, args, complain, in_decl);
       args = add_outermost_template_args (args, extra);
     }
   else
-#endif
     args = add_to_template_args (extra, args);
   return args;
 }
@@ -12977,7 +12973,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   pattern = PACK_EXPANSION_PATTERN (t);
 
   /* Add in any args remembered from an earlier partial instantiation.  */
-  args = add_extra_args (PACK_EXPANSION_EXTRA_ARGS (t), args);
+  args = add_extra_args (PACK_EXPANSION_EXTRA_ARGS (t), args, complain, in_decl);
 
   levels = TMPL_ARGS_DEPTH (args);
 
@@ -13349,7 +13345,9 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       tree orig_arg = TREE_VEC_ELT (t, i);
       tree new_arg;
 
-      if (TREE_CODE (orig_arg) == TREE_VEC)
+      if (!orig_arg)
+	new_arg = NULL_TREE;
+      else if (TREE_CODE (orig_arg) == TREE_VEC)
 	new_arg = tsubst_template_args (orig_arg, args, complain, in_decl);
       else if (PACK_EXPANSION_P (orig_arg))
         {
@@ -13399,8 +13397,9 @@ tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     }
   for (i = 0, out = 0; i < len; i++)
     {
-      if ((PACK_EXPANSION_P (TREE_VEC_ELT (orig_t, i))
-           || ARGUMENT_PACK_P (TREE_VEC_ELT (orig_t, i)))
+      tree orig_arg = TREE_VEC_ELT (orig_t, i);
+      if (orig_arg
+	  && (PACK_EXPANSION_P (orig_arg) || ARGUMENT_PACK_P (orig_arg))
           && TREE_CODE (elts[i]) == TREE_VEC)
         {
           int idx;
@@ -18428,7 +18427,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       IF_STMT_CONSTEXPR_P (stmt) = IF_STMT_CONSTEXPR_P (t);
       IF_STMT_CONSTEVAL_P (stmt) = IF_STMT_CONSTEVAL_P (t);
       if (IF_STMT_CONSTEXPR_P (t))
-	args = add_extra_args (IF_STMT_EXTRA_ARGS (t), args);
+	args = add_extra_args (IF_STMT_EXTRA_ARGS (t), args, complain, in_decl);
       tmp = RECUR (IF_COND (t));
       tmp = finish_if_stmt_cond (tmp, stmt);
       if (IF_STMT_CONSTEXPR_P (t)
