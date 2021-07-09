@@ -3438,9 +3438,6 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
   DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (type);
   DECL_RESULT (decl) = result_decl;
 
-  /* Propagate the "const" property.  */
-  TREE_READONLY (decl) = TYPE_READONLY (type);
-
   /* Propagate the "pure" property.  */
   DECL_PURE_P (decl) = TYPE_RESTRICT (type);
 
