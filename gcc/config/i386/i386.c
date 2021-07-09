@@ -2422,6 +2422,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
+    case E_V16HFmode:
     case E_V16HImode:
     case E_V4DFmode:
     case E_V4DImode:
@@ -2432,6 +2433,7 @@ classify_argument (machine_mode mode, const_tree type,
       return 4;
     case E_V8DFmode:
     case E_V16SFmode:
+    case E_V32HFmode:
     case E_V8DImode:
     case E_V16SImode:
     case E_V32HImode:
@@ -2449,6 +2451,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V4SImode:
     case E_V16QImode:
     case E_V8HImode:
+    case E_V8HFmode:
     case E_V2DFmode:
     case E_V2DImode:
       classes[0] = X86_64_SSE_CLASS;
@@ -2862,12 +2865,14 @@ pass_in_reg:
 	break;
       /* FALLTHRU */
 
+    case E_V16HFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V64QImode:
     case E_V32HImode:
     case E_V16SImode:
     case E_V8DImode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V8DFmode:
     case E_V32QImode:
@@ -2879,6 +2884,7 @@ pass_in_reg:
     case E_V8HImode:
     case E_V4SImode:
     case E_V2DImode:
+    case E_V8HFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       if (!type || !AGGREGATE_TYPE_P (type))
@@ -2933,7 +2939,9 @@ function_arg_advance_64 (CUMULATIVE_ARGS *cum, machine_mode mode,
 
   /* Unnamed 512 and 256bit vector mode parameters are passed on stack.  */
   if (!named && (VALID_AVX512F_REG_MODE (mode)
-		 || VALID_AVX256_REG_MODE (mode)))
+		 || VALID_AVX256_REG_MODE (mode)
+		 || mode == V16HFmode
+		 || mode == V32HFmode))
     return 0;
 
   if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs)
@@ -3101,6 +3109,7 @@ pass_in_reg:
     case E_V8HImode:
     case E_V4SImode:
     case E_V2DImode:
+    case E_V8HFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       if (!type || !AGGREGATE_TYPE_P (type))
@@ -3120,8 +3129,10 @@ pass_in_reg:
     case E_V32HImode:
     case E_V16SImode:
     case E_V8DImode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V8DFmode:
+    case E_V16HFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
@@ -3180,12 +3191,14 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
     default:
       break;
 
+    case E_V16HFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
     case E_V16HImode:
     case E_V4DFmode:
     case E_V4DImode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V16SImode:
     case E_V64QImode:
@@ -4680,12 +4693,14 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   nat_mode = type_natural_mode (type, NULL, false);
   switch (nat_mode)
     {
+    case E_V16HFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
     case E_V16HImode:
     case E_V4DFmode:
     case E_V4DImode:
+    case E_V32HFmode:
     case E_V16SFmode:
     case E_V16SImode:
     case E_V64QImode:
@@ -5359,7 +5374,12 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (type)
 	{
 	case opcode_int:
-	  opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
+	  if (scalar_mode == E_HFmode)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW ? "vmovdqu16" : "vmovdqu64")
+		      : "vmovdqa64");
+	  else
+	    opcode = misaligned_p ? "vmovdqu32" : "vmovdqa32";
 	  break;
 	case opcode_float:
 	  opcode = misaligned_p ? "vmovups" : "vmovaps";
@@ -5373,6 +5393,11 @@ ix86_get_ssemov (rtx *operands, unsigned size,
     {
       switch (scalar_mode)
 	{
+	case E_HFmode:
+	  opcode = (misaligned_p
+		    ? (TARGET_AVX512BW ? "vmovdqu16" : "vmovdqu64")
+		    : "vmovdqa64");
+	  break;
 	case E_SFmode:
 	  opcode = misaligned_p ? "%vmovups" : "%vmovaps";
 	  break;
@@ -19479,7 +19504,6 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
       int index;
       switch (mode)
 	{
-	  case E_HFmode:
 	  case E_SFmode:
 	    index = 0;
 	    break;
@@ -19783,6 +19807,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	 between gpr and sse registser.  */
       if (TARGET_AVX512F
 	  && (mode == XImode
+	      || mode == V32HFmode
 	      || VALID_AVX512F_REG_MODE (mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
@@ -19797,9 +19822,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       /* TODO check for QI/HI scalars.  */
       /* AVX512VL allows sse regs16+ for 128/256 bit modes.  */
       if (TARGET_AVX512VL
-	  && (mode == OImode
-	      || mode == TImode
-	      || VALID_AVX256_REG_MODE (mode)
+	  && (VALID_AVX256_REG_OR_OI_VHF_MODE (mode)
 	      || VALID_AVX512VL_128_REG_MODE (mode)))
 	return true;
 
@@ -19809,9 +19832,9 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
       /* OImode and AVX modes are available only when AVX is enabled.  */
       return ((TARGET_AVX
-	       && VALID_AVX256_REG_OR_OI_MODE (mode))
+	       && VALID_AVX256_REG_OR_OI_VHF_MODE (mode))
 	      || VALID_SSE_REG_MODE (mode)
-	      || VALID_SSE2_REG_MODE (mode)
+	      || VALID_SSE2_REG_VHF_MODE (mode)
 	      || VALID_MMX_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE_3DNOW (mode));
     }
@@ -20022,7 +20045,8 @@ ix86_set_reg_reg_cost (machine_mode mode)
 
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
-      if ((TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
+      if ((TARGET_AVX512FP16 && VALID_AVX512FP16_REG_MODE (mode))
+	  || (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
 	  || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
 	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
@@ -21934,6 +21958,8 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if ((TARGET_MMX || TARGET_MMX_WITH_SSE)
       && VALID_MMX_REG_MODE (mode))
+    return true;
+  if (TARGET_AVX512FP16 && VALID_AVX512FP16_REG_MODE (mode))
     return true;
   if ((TARGET_3DNOW || TARGET_MMX_WITH_SSE)
       && VALID_MMX_REG_MODE_3DNOW (mode))
