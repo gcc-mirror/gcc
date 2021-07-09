@@ -266,7 +266,7 @@ private:
       tyctx (Resolver::TypeCheckContext::get ()){};
 
   void mark_hir_id (HirId);
-  void visit_path_segment (HIR::PathExprSegment);
+  bool visit_path_segment (HIR::PathExprSegment);
   void find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id,
 			 Location locus, const std::string &node_name);
 };

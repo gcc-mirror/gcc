@@ -92,8 +92,7 @@ void
 MarkLive::visit (HIR::PathInExpression &expr)
 {
   expr.iterate_path_segments ([&] (HIR::PathExprSegment &seg) -> bool {
-    visit_path_segment (seg);
-    return true;
+    return visit_path_segment (seg);
   });
 }
 
@@ -114,14 +113,13 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
 
   // node back to HIR
   HirId ref;
-  bool ret
-    = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				    ref_node_id, &ref);
-  rust_assert (ret);
+  bool ok = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+					  ref_node_id, &ref);
+  rust_assert (ok);
   mark_hir_id (ref);
 }
 
-void
+bool
 MarkLive::visit_path_segment (HIR::PathExprSegment seg)
 {
   NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
@@ -136,13 +134,14 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
     }
   else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
     {
-      return;
+      return false;
     }
   HirId ref;
-  bool ret = mappings->lookup_node_to_hir (seg.get_mappings ().get_crate_num (),
-					   ref_node_id, &ref);
-  rust_assert (ret);
+  bool ok = mappings->lookup_node_to_hir (seg.get_mappings ().get_crate_num (),
+					  ref_node_id, &ref);
+  rust_assert (ok);
   mark_hir_id (ref);
+  return true;
 }
 
 void
@@ -195,10 +194,9 @@ MarkLive::visit (HIR::IdentifierExpr &expr)
 
   // node back to HIR
   HirId ref;
-  bool ret
-    = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				    ref_node_id, &ref);
-  rust_assert (ret);
+  bool ok = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+					  ref_node_id, &ref);
+  rust_assert (ok);
   mark_hir_id (ref);
 }
 
@@ -209,10 +207,10 @@ MarkLive::visit (HIR::TypeAlias &alias)
   resolver->lookup_resolved_type (
     alias.get_type_aliased ()->get_mappings ().get_nodeid (), &ast_node_id);
   HirId hir_id;
-  bool ret
+  bool ok
     = mappings->lookup_node_to_hir (alias.get_mappings ().get_crate_num (),
 				    ast_node_id, &hir_id);
-  rust_assert (ret);
+  rust_assert (ok);
   mark_hir_id (hir_id);
 }
 
