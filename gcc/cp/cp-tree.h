@@ -7255,7 +7255,7 @@ extern void add_mergeable_specialization        (bool is_decl, bool is_alias,
 						 tree outer, unsigned);
 extern tree add_to_template_args		(tree, tree);
 extern tree add_outermost_template_args		(tree, tree);
-extern tree add_extra_args			(tree, tree);
+extern tree add_extra_args			(tree, tree, tsubst_flags_t, tree);
 extern tree build_extra_args			(tree, tree, tsubst_flags_t);
 
 /* in rtti.c */
