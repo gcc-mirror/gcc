@@ -10730,15 +10730,11 @@ any_template_parm_r (tree t, void *data)
       break;
 
     case TEMPLATE_DECL:
-      {
-	/* If T is a member template that shares template parameters with
-	   ctx_parms, we need to mark all those parameters for mapping.  */
-	if (tree ctmpl = TREE_TYPE (INNERMOST_TEMPLATE_PARMS (ftpi->ctx_parms)))
-	  if (tree com = common_enclosing_class (DECL_CONTEXT (t),
-						 DECL_CONTEXT (ctmpl)))
-	    if (tree ti = CLASSTYPE_TEMPLATE_INFO (com))
-	      WALK_SUBTREE (TI_ARGS (ti));
-      }
+      /* If T is a member template that shares template parameters with
+	 ctx_parms, we need to mark all those parameters for mapping.
+	 To that end, it should suffice to just walk the DECL_CONTEXT of
+	 the template (assuming the template is not overly general).  */
+      WALK_SUBTREE (DECL_CONTEXT (t));
       break;
 
     case LAMBDA_EXPR:
