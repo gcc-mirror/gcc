@@ -576,10 +576,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1
 #else
+#define ARCH_ARG "%{" OPT_ARCH64 ":64;:32}"
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1 \
-"%{march=native:%>march=native %:local_cpu_detect(arch) \
-  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune)}} \
-%{mtune=native:%>mtune=native %:local_cpu_detect(tune)}"
+"%{march=native:%>march=native %:local_cpu_detect(arch " ARCH_ARG ") \
+  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}} \
+%{mtune=native:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}"
 #endif
 #endif
 
