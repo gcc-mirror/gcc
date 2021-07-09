@@ -910,7 +910,7 @@ proper position among the other output files.  */
    than in ASM_DEBUG_SPEC, so that it applies to both .s and .c etc.
    compilations.  */
 #  define ASM_DEBUG_DWARF_OPTION ""
-# elif defined(HAVE_AS_GDWARF_5_DEBUG_FLAG)
+# elif defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && !defined(HAVE_LD_BROKEN_PE_DWARF5)
 #  define ASM_DEBUG_DWARF_OPTION "%{%:dwarf-version-gt(4):--gdwarf-5;" \
 	"%:dwarf-version-gt(3):--gdwarf-4;"				\
 	"%:dwarf-version-gt(2):--gdwarf-3;"				\
