@@ -1,3 +1,8 @@
+2021-07-09  Matheus Castanho  <msc@linux.ibm.com>
+
+	* include/std/mutex (__lock_impl): Check
+	_GLIBCXX_HAS_GTHREADS before using __gthread_yield.
+
 2021-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101271

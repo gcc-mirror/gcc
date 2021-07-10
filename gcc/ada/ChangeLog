@@ -1,3 +1,254 @@
+2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (finish_subprog_decl): Remove obsolete line.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_put_image.adb (Make_Put_Image_Name): Fix style.
+	(Image_Should_Call_Put_Image): Likewise.
+	(Build_Image_Call): Likewise.
+
+2021-07-09  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* par-ch6.adb (Contains_Import_Aspect): New function.
+	(P_Subprogram): Acknowledge `Import` aspects.
+
+2021-07-09  Bob Duff  <duff@adacore.com>
+
+	* exp_put_image.adb (Make_Component_Attributes): Use
+	Implementation_Base_Type to get the parent type. Otherwise,
+	Parent_Type_Decl is actually an internally generated subtype
+	declaration, so we blow up on
+	Type_Definition (Parent_Type_Decl).
+
+2021-07-09  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* gsocket.h: Include net/if.h to get IF_NAMESIZE constant.
+	* s-oscons-tmplt.c: Define IPV6_FLOWINFO for Linux.
+
+2021-07-09  Steve Baird  <baird@adacore.com>
+
+	* libgnat/a-cdlili.adb: Reimplement
+	Ada.Containers.Doubly_Linked_Lists.Generic_Sorting.Sort using
+	Mergesort instead of the previous Quicksort variant.
+
+2021-07-09  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Is_Build_In_Place_Function_Call): Add check to
+	verify the Selector_Name of Exp_Node has been analyzed before
+	obtaining its entity.
+
+2021-07-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* libgnarl/s-osinte__vxworks.ads: Fix typo ("release" =>
+	"releases") plus comment reformatting.
+	* libgnat/s-os_lib.ads: In a comment, fix typo ("indended" =>
+	"intended"), add a hyphen and semicolon, plus reformatting. In
+	comment for subtype time_t, fix typo ("effect" => "affect"), add
+	hyphens, plus reformatting.
+	* libgnat/s-parame.ads, libgnat/s-parame__ae653.ads,
+	libgnat/s-parame__hpux.ads: Remove period from one-line comment.
+
+2021-07-09  Steve Baird  <baird@adacore.com>
+
+	* exp_ch5.adb (Expand_General_Case_Statement): Add new function
+	Else_Statements to handle the case of invalid data analogously
+	to how it is handled when casing on a discrete value.
+	* sem_case.adb (Has_Static_Discriminant_Constraint): A new
+	Boolean-valued function.
+	(Composite_Case_Ops.Scalar_Part_Count): Include discriminants
+	when traversing components.
+	(Composite_Case_Ops.Choice_Analysis.Traverse_Discrete_Parts):
+	Include discriminants when traversing components; the component
+	range for a constrained discriminant is a single value.
+	(Composite_Case_Ops.Choice_Analysis.Parse_Choice): Eliminate
+	Done variable and modify how Next_Part is computed so that it is
+	always correct (as opposed to being incorrect when Done is
+	True).  This includes changes in Update_Result (a local
+	procedure).  Add new local procedure
+	Update_Result_For_Box_Component and call it not just for box
+	components but also for "missing" components (components
+	associated with an inactive variant).
+	(Check_Choices.Check_Composite_Case_Selector.Check_Component_Subtype):
+	Instead of disallowing all discriminated component types, allow
+	those that are unconstrained or statically constrained. Check
+	discriminant subtypes along with other component subtypes.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Update
+	documentation to reflect current implementation status.
+	* gnat_rm.texi: Regenerate.
+
+2021-07-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Pragma_Inline): Correctly use
+	Corresponding_Spec_Of_Stub when dealing subprogram body stubs.
+
+2021-07-09  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl: Add translations for s-parame__posix2008.ads
+	* libgnarl/s-linux.ads: Import System.Parameters.
+	(time_t): Declare using System.Parameters.time_t_bits.
+	* libgnarl/s-linux__alpha.ads: Likewise.
+	* libgnarl/s-linux__android.ads: Likewise.
+	* libgnarl/s-linux__hppa.ads: Likewise.
+	* libgnarl/s-linux__mips.ads: Likewise.
+	* libgnarl/s-linux__riscv.ads: Likewise.
+	* libgnarl/s-linux__sparc.ads: Likewise.
+	* libgnarl/s-linux__x32.ads: Likewise.
+	* libgnarl/s-qnx.ads: Likewise.
+	* libgnarl/s-osinte__aix.ads: Likewise.
+	* libgnarl/s-osinte__android.ads: Likewise.
+	* libgnarl/s-osinte__darwin.ads: Likewise.
+	* libgnarl/s-osinte__dragonfly.ads: Likewise.
+	* libgnarl/s-osinte__freebsd.ads: Likewise.
+	* libgnarl/s-osinte__gnu.ads: Likewise.
+	* libgnarl/s-osinte__hpux-dce.ads: Likewise.
+	* libgnarl/s-osinte__hpux.ads: Likewise.
+	* libgnarl/s-osinte__kfreebsd-gnu.ads: Likewise.
+	* libgnarl/s-osinte__lynxos178e.ads: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+	* libgnarl/s-osinte__rtems.ads: Likewise.
+	* libgnarl/s-osinte__solaris.ads: Likewise.
+	* libgnarl/s-osinte__vxworks.ads: Likewise.
+	* libgnat/g-sothco.ads: Likewise.
+	* libgnat/s-osprim__darwin.adb: Likewise.
+	* libgnat/s-osprim__posix.adb: Likewise.
+	* libgnat/s-osprim__posix2008.adb: Likewise.
+	* libgnat/s-osprim__rtems.adb: Likewise.
+	* libgnat/s-osprim__x32.adb: Likewise.
+	* libgnarl/s-osinte__linux.ads: use type System.Linux.time_t.
+	* libgnat/s-os_lib.ads (time_t): Declare as subtype of
+	Long_Long_Integer.
+	* libgnat/s-parame.ads (time_t_bits): New constant.
+	* libgnat/s-parame__ae653.ads (time_t_bits): Likewise.
+	* libgnat/s-parame__hpux.ads (time_t_bits): Likewise.
+	* libgnat/s-parame__vxworks.ads (time_t_bits): Likewise.
+	* libgnat/s-parame__posix2008.ads: New file for 64 bit time_t.
+
+2021-07-09  Bob Duff  <duff@adacore.com>
+
+	* comperr.adb (Compiler_Abort): Print source file name.
+
+2021-07-09  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-strunb.ads, libgnat/a-strunb__shared.ads: Fix layout
+	in contracts.
+
+2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads (JSON output format): Document adjusted key name.
+	* repinfo.adb (List_Record_Layout): Use Original_Record_Component
+	if the normalized position of the component is not known.
+	(List_Structural_Record_Layout): Rename Outer_Ent parameter into
+	Ext_End and add Ext_Level parameter. In an extension, if the parent
+	subtype has static discriminants, call List_Record_Layout on it.
+	Output "parent_" prefixes before "variant" according to Ext_Level.
+	Adjust recursive calls throughout the procedure.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.ads (Map_Types): Fix typo.
+
+2021-07-09  Fedor Rybin  <frybin@adacore.com>
+
+	* krunch.adb: Add safeguards against index range violations.
+
+2021-07-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-strfix.adb: Take advantage of extended returns.
+
+2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst
+	(Scalar_Storage_Order): Add paragraph about representation
+	changes.
+	* gnat_rm.texi: Regenerate.
+
+2021-07-09  Frederic Konrad  <konrad@adacore.com>
+
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) <aarch64*-*-rtems*>: Use
+	the wraplf variant of Aux_Long_Long_Float.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Initialize Orig_N
+	and Typ variables.
+
+2021-07-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Resolve_Aspect_Expressions): Use the same
+	processing for Predicate, Static_Predicate and
+	Dynamic_Predicate. Do not build the predicate function spec.
+	Update comments.
+	(Resolve_Name): Only reset Entity when necessary to avoid
+	spurious visibility errors.
+	(Check_Aspect_At_End_Of_Declarations): Handle consistently all
+	Predicate aspects.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Fix handling of
+	private types with predicates.
+
+2021-07-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.ads (Type_Access_Level): Add new optional parameter
+	Assoc_Ent.
+	* sem_util.adb (Accessibility_Level): Treat access discriminants
+	the same as components when the restriction
+	No_Dynamic_Accessibility_Checks is enabled.
+	(Deepest_Type_Access_Level): Remove exception for
+	Debug_Flag_Underscore_B when returning the result of
+	Type_Access_Level in the case where
+	No_Dynamic_Accessibility_Checks is active.
+	(Function_Call_Or_Allocator_Level): Correctly calculate the
+	level of Expr based on its containing subprogram instead of
+	using Current_Subprogram.
+	* sem_res.adb (Valid_Conversion): Add actual for new parameter
+	Assoc_Ent in call to Type_Access_Level, and add test of
+	No_Dynamic_Accessibility_Checks_Enabled to ensure that static
+	accessibility checks are performed for all anonymous access type
+	conversions.
+
+2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.ads: Update documentation of various items.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Reorder code.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Reorder code.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Add variable to
+	avoid repeated calls to Etype.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Fix comment.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Use Orig_N variable
+	instead of repeated calls to Original_Node.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Change types local
+	variables from Entity_Id to Node_Id.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): A local Expr
+	constant was shadowing a global constant with the same name and
+	the same value.
+
+2021-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Preanalyze_And_Resolve): Only call
+	Set_Must_Not_Freeze when it is necessary to restore the previous
+	value.
+
 2021-07-08  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_ch5.adb (Analyze_Assignment): Clear Current_Assignment at
