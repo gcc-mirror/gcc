@@ -1,3 +1,7 @@
+2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (finish_subprog_decl): Remove obsolete line.
+
 2021-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/101094

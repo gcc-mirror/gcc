@@ -1,3 +1,26 @@
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101098
+	* g++.dg/concepts/explicit-spec1.C: New test.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100838
+	* g++.dg/init/no-elide2.C: New test.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86355
+	* g++.dg/cpp0x/alias-decl-variadic2.C: New test.
+
+2021-07-09  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/101066
+	* gcc.dg/ipa/pr101066.c: New test.
+
 2021-07-08  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

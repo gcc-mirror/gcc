@@ -1,3 +1,26 @@
+2021-07-09  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/101066
+	* ipa-sra.c (class isra_call_summary): New member
+	m_before_any_store, initialize it in the constructor.
+	(isra_call_summary::dump): Dump the new field.
+	(ipa_sra_call_summaries::duplicate): Copy it.
+	(process_scan_results): Set it.
+	(isra_write_edge_summary): Stream it.
+	(isra_read_edge_summary): Likewise.
+	(param_splitting_across_edge): Only override
+	safe_to_import_accesses if m_before_any_store is set.
+
+2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/101377
+	* gcc.c (ASM_DEBUG_DWARF_OPTION): Set again to --gdwarf2 in
+	the case where HAVE_AS_WORKING_DWARF_N_FLAG is not defined
+	and HAVE_LD_BROKEN_PE_DWARF5 is defined.
+
 2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
