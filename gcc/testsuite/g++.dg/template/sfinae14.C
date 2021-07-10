@@ -76,4 +76,4 @@ STATIC_ASSERT(!(has_new_one_arg<X, int X::*>::value));
 
 STATIC_ASSERT((has_array_new<Y, int, 5>::value));
 STATIC_ASSERT(!(has_array_new<X, int Y::*, &Y::foo>::value));
-STATIC_ASSERT((has_array_new<X, int, 5>::value));
+STATIC_ASSERT(!(has_array_new<X, int, 5>::value));
