@@ -35,17 +35,22 @@ public:
   {
     ASTLowerTypePath resolver;
     type.accept_vis (resolver);
-
     rust_assert (resolver.translated != nullptr);
-
     return resolver.translated;
   }
 
+  void visit (AST::TypePathSegmentFunction &) override { gcc_unreachable (); }
+
   void visit (AST::TypePathSegment &segment) override
   {
+    auto crate_num = mappings->get_current_crate ();
+    auto hirid = mappings->get_next_hir_id (crate_num);
+    Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
+				   UNKNOWN_LOCAL_DEFID);
+
     HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
     translated_segment
-      = new HIR::TypePathSegment (ident,
+      = new HIR::TypePathSegment (std::move (mapping), ident,
 				  segment.get_separating_scope_resolution (),
 				  segment.get_locus ());
   }

@@ -30,7 +30,8 @@ class ResolveConstantItemToCanonicalPath
 public:
   static CanonicalPath resolve (AST::ConstantItem &constant)
   {
-    return CanonicalPath (constant.get_identifier ());
+    return CanonicalPath::new_seg (constant.get_node_id (),
+				   constant.get_identifier ());
   }
 };
 
@@ -39,7 +40,8 @@ class ResolveFunctionItemToCanonicalPath
 public:
   static CanonicalPath resolve (AST::Function &function)
   {
-    return CanonicalPath (function.get_function_name ());
+    return CanonicalPath::new_seg (function.get_node_id (),
+				   function.get_function_name ());
   }
 };
 
@@ -48,7 +50,8 @@ class ResolveMethodItemToCanonicalPath
 public:
   static CanonicalPath resolve (AST::Method &method)
   {
-    return CanonicalPath (method.get_method_name ());
+    return CanonicalPath::new_seg (method.get_node_id (),
+				   method.get_method_name ());
   }
 };
 
@@ -57,7 +60,8 @@ class ResolveTraitItemFunctionToCanonicalPath
 public:
   static CanonicalPath resolve (AST::TraitItemFunc &function)
   {
-    return CanonicalPath (
+    return CanonicalPath::new_seg (
+      function.get_node_id (),
       function.get_trait_function_decl ().get_identifier ());
   }
 };
@@ -67,7 +71,8 @@ class ResolveTraitItemMethodToCanonicalPath
 public:
   static CanonicalPath resolve (AST::TraitItemMethod &method)
   {
-    return CanonicalPath (method.get_trait_method_decl ().get_identifier ());
+    return CanonicalPath::new_seg (
+      method.get_node_id (), method.get_trait_method_decl ().get_identifier ());
   }
 };
 
@@ -76,7 +81,8 @@ class ResolveTraitItemConstToCanonicalPath
 public:
   static CanonicalPath resolve (AST::TraitItemConst &constant)
   {
-    return CanonicalPath (constant.get_identifier ());
+    return CanonicalPath::new_seg (constant.get_node_id (),
+				   constant.get_identifier ());
   }
 };
 
@@ -85,7 +91,7 @@ class ResolveTraitItemTypeToCanonicalPath
 public:
   static CanonicalPath resolve (AST::TraitItemType &type)
   {
-    return CanonicalPath (type.get_identifier ());
+    return CanonicalPath::new_seg (type.get_node_id (), type.get_identifier ());
   }
 };
 
@@ -118,7 +124,7 @@ public:
 
   void visit (AST::TypePathSegment &seg) override;
 
-  static CanonicalPath canonicalize_generic_args (AST::GenericArgs &args);
+  static std::string canonicalize_generic_args (AST::GenericArgs &args);
 
   static bool type_resolve_generic_args (AST::GenericArgs &args);
 
@@ -142,40 +148,40 @@ class ResolvePathSegmentToCanonicalPath
 public:
   static CanonicalPath resolve (AST::PathExprSegment &seg)
   {
-    CanonicalPath path = CanonicalPath (seg.get_ident_segment ().as_string ());
-    if (seg.has_generic_args ())
-      {
-	bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
-	  seg.get_generic_args ());
-	if (!ok)
-	  {
-	    rust_error_at (seg.get_locus (),
-			   "failed to resolve all generic arguments");
-	    return CanonicalPath::create_empty ();
-	  }
+    if (!seg.has_generic_args ())
+      return CanonicalPath::new_seg (seg.get_node_id (),
+				     seg.get_ident_segment ().as_string ());
 
-	path
-	  = path.append (ResolveTypeToCanonicalPath::canonicalize_generic_args (
-	    seg.get_generic_args ()));
+    bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
+      seg.get_generic_args ());
+    if (!ok)
+      {
+	rust_error_at (seg.get_locus (),
+		       "failed to resolve all generic arguments");
+	return CanonicalPath::create_empty ();
       }
-    return path;
+
+    std::string generics
+      = ResolveTypeToCanonicalPath::canonicalize_generic_args (
+	seg.get_generic_args ());
+
+    return CanonicalPath::new_seg (seg.get_node_id (),
+				   seg.get_ident_segment ().as_string ()
+				     + "::" + generics);
   }
 };
 
 class TraitImplProjection
 {
 public:
-  static CanonicalPath resolve (const CanonicalPath &trait_seg,
+  static CanonicalPath resolve (NodeId id, const CanonicalPath &trait_seg,
 				const CanonicalPath &impl_type_seg)
   {
-    return CanonicalPath ("<" + impl_type_seg.get () + " as " + trait_seg.get ()
-			  + ">");
+    return CanonicalPath::new_seg (id, "<" + impl_type_seg.get () + " as "
+					 + trait_seg.get () + ">");
   }
 };
 
-// FIXME: as part of imports and visibility we need to be able to keep a context
-// for handling PathInExpressions segments as they can be local to a particular
-// lexical scope requiring a context to be maintained for resolution
 class ResolveRelativeTypePath
 {
 public:
@@ -189,7 +195,8 @@ public:
 					     true);
     if (canonical_path.is_error ())
       {
-	rust_error_at (path.get_locus (), "Failed to resolve canonical path");
+	rust_error_at (path.get_locus (),
+		       "Failed to resolve canonical path for TypePath");
 	return UNKNOWN_NODEID;
       }
 
@@ -316,8 +323,9 @@ public:
 
     // for now lets focus on handling the basics: like struct<T> { a:T, ....}
     resolver->get_type_scope ().insert (
-      CanonicalPath (param.get_type_representation ()), param.get_node_id (),
-      param.get_locus (), false,
+      CanonicalPath::new_seg (param.get_node_id (),
+			      param.get_type_representation ()),
+      param.get_node_id (), param.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	rust_error_at (param.get_locus (),
 		       "generic param redefined multiple times");

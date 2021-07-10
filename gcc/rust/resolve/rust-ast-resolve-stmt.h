@@ -67,7 +67,8 @@ public:
 
   void visit (AST::TupleStruct &struct_decl) override
   {
-    auto path = CanonicalPath (struct_decl.get_identifier ());
+    auto path = CanonicalPath::new_seg (struct_decl.get_node_id (),
+					struct_decl.get_identifier ());
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -99,7 +100,8 @@ public:
 
   void visit (AST::StructStruct &struct_decl) override
   {
-    auto path = CanonicalPath (struct_decl.get_identifier ());
+    auto path = CanonicalPath::new_seg (struct_decl.get_node_id (),
+					struct_decl.get_identifier ());
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {

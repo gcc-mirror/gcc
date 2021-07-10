@@ -37,6 +37,12 @@ public:
     return resolver.ok;
   }
 
+  void visit (HIR::TypeAlias &alias) override
+  {
+    ok = true;
+    result.assign (alias.get_new_type_name ());
+  }
+
   void visit (HIR::Function &function) override
   {
     ok = true;
@@ -145,7 +151,7 @@ public:
 	    if (query == candidate)
 	      continue;
 
-	    if (query->can_eq (candidate))
+	    if (query->can_eq (candidate, false))
 	      possible_collision (it->second, iy->second);
 	  }
       }

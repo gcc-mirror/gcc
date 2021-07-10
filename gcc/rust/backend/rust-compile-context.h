@@ -336,6 +336,8 @@ public:
 
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
+
   void visit (TyTy::ParamType &param) override
   {
     param.resolve ()->accept_vis (*this);

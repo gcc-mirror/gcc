@@ -41,6 +41,14 @@ public:
     item->accept_vis (resolver);
   }
 
+  void visit (HIR::TypeAlias &alias) override
+  {
+    TyTy::BaseType *actual_type
+      = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
+
+    context->insert_type (alias.get_mappings (), actual_type);
+  }
+
   void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
@@ -204,9 +212,85 @@ public:
     return resolver.resolved_trait_item;
   }
 
-  void visit (HIR::ConstantItem &constant) override { gcc_unreachable (); }
+  void visit (HIR::ConstantItem &constant) override
+  {
+    TypeCheckImplItem::visit (constant);
 
-  void visit (HIR::TypeAlias &type) override { gcc_unreachable (); }
+    // we get the error checking from the base method here
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (constant.get_mappings ().get_hirid (), &lookup))
+      return;
+
+    const TraitItemReference &trait_item_ref
+      = trait_reference.lookup_trait_item (
+	constant.get_identifier (), TraitItemReference::TraitItemType::CONST);
+
+    // unknown trait item
+    if (trait_item_ref.is_error ())
+      {
+	RichLocation r (constant.get_locus ());
+	r.add_range (trait_reference.get_locus ());
+	rust_error_at (r, "constant %<%s%> is not a member of trait %<%s%>",
+		       constant.get_identifier ().c_str (),
+		       trait_reference.get_name ().c_str ());
+	return;
+      }
+
+    // check the types are compatible
+    if (!trait_item_ref.get_tyty ()->can_eq (lookup, true))
+      {
+	RichLocation r (constant.get_locus ());
+	r.add_range (trait_item_ref.get_locus ());
+
+	rust_error_at (
+	  r, "constant %<%s%> has an incompatible type for trait %<%s%>",
+	  constant.get_identifier ().c_str (),
+	  trait_reference.get_name ().c_str ());
+	return;
+      }
+
+    resolved_trait_item = trait_item_ref;
+  }
+
+  void visit (HIR::TypeAlias &type) override
+  {
+    TypeCheckImplItem::visit (type);
+
+    // we get the error checking from the base method here
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
+      return;
+
+    const TraitItemReference &trait_item_ref
+      = trait_reference.lookup_trait_item (
+	type.get_new_type_name (), TraitItemReference::TraitItemType::TYPE);
+
+    // unknown trait item
+    if (trait_item_ref.is_error ())
+      {
+	RichLocation r (type.get_locus ());
+	r.add_range (trait_reference.get_locus ());
+	rust_error_at (r, "type alias %<%s%> is not a member of trait %<%s%>",
+		       type.get_new_type_name ().c_str (),
+		       trait_reference.get_name ().c_str ());
+	return;
+      }
+
+    // check the types are compatible
+    if (!trait_item_ref.get_tyty ()->can_eq (lookup, true))
+      {
+	RichLocation r (type.get_locus ());
+	r.add_range (trait_item_ref.get_locus ());
+
+	rust_error_at (
+	  r, "type alias %<%s%> has an incompatible type for trait %<%s%>",
+	  type.get_new_type_name ().c_str (),
+	  trait_reference.get_name ().c_str ());
+	return;
+      }
+
+    resolved_trait_item = trait_item_ref;
+  }
 
   void visit (HIR::Function &function) override
   {
@@ -263,7 +347,7 @@ public:
       = trait_item_fntype->handle_substitions (implicit_self_substs);
 
     // check the types are compatible
-    if (!trait_item_fntype->can_eq (fntype))
+    if (!trait_item_fntype->can_eq (fntype, true))
       {
 	RichLocation r (function.get_locus ());
 	r.add_range (trait_item_ref.get_locus ());

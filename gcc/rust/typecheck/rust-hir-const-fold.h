@@ -51,6 +51,8 @@ public:
 
   void visit (TyTy::FnType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
+
   void visit (TyTy::TupleType &type) override
   {
     if (type.num_fields () == 0)

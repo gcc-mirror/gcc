@@ -98,9 +98,9 @@ InferType::unify (BaseType *other)
 }
 
 bool
-InferType::can_eq (BaseType *other)
+InferType::can_eq (BaseType *other, bool emit_errors)
 {
-  InferCmp r (this);
+  InferCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -155,7 +155,7 @@ ErrorType::unify (BaseType *other)
 }
 
 bool
-ErrorType::can_eq (BaseType *other)
+ErrorType::can_eq (BaseType *other, bool emit_errors)
 {
   return get_kind () == other->get_kind ();
 }
@@ -421,9 +421,9 @@ ADTType::unify (BaseType *other)
 }
 
 bool
-ADTType::can_eq (BaseType *other)
+ADTType::can_eq (BaseType *other, bool emit_errors)
 {
-  ADTCmp r (this);
+  ADTCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -582,9 +582,9 @@ TupleType::unify (BaseType *other)
 }
 
 bool
-TupleType::can_eq (BaseType *other)
+TupleType::can_eq (BaseType *other, bool emit_errors)
 {
-  TupleCmp r (this);
+  TupleCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -666,9 +666,9 @@ FnType::unify (BaseType *other)
 }
 
 bool
-FnType::can_eq (BaseType *other)
+FnType::can_eq (BaseType *other, bool emit_errors)
 {
-  FnCmp r (this);
+  FnCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -861,9 +861,9 @@ FnPtr::unify (BaseType *other)
 }
 
 bool
-FnPtr::can_eq (BaseType *other)
+FnPtr::can_eq (BaseType *other, bool emit_errors)
 {
-  FnptrCmp r (this);
+  FnptrCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -928,9 +928,9 @@ ArrayType::unify (BaseType *other)
 }
 
 bool
-ArrayType::can_eq (BaseType *other)
+ArrayType::can_eq (BaseType *other, bool emit_errors)
 {
-  ArrayCmp r (this);
+  ArrayCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -983,9 +983,9 @@ BoolType::unify (BaseType *other)
 }
 
 bool
-BoolType::can_eq (BaseType *other)
+BoolType::can_eq (BaseType *other, bool emit_errors)
 {
-  BoolCmp r (this);
+  BoolCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1029,9 +1029,9 @@ IntType::unify (BaseType *other)
 }
 
 bool
-IntType::can_eq (BaseType *other)
+IntType::can_eq (BaseType *other, bool emit_errors)
 {
-  IntCmp r (this);
+  IntCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1086,9 +1086,9 @@ UintType::unify (BaseType *other)
 }
 
 bool
-UintType::can_eq (BaseType *other)
+UintType::can_eq (BaseType *other, bool emit_errors)
 {
-  UintCmp r (this);
+  UintCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1137,9 +1137,9 @@ FloatType::unify (BaseType *other)
 }
 
 bool
-FloatType::can_eq (BaseType *other)
+FloatType::can_eq (BaseType *other, bool emit_errors)
 {
-  FloatCmp r (this);
+  FloatCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1180,9 +1180,9 @@ USizeType::unify (BaseType *other)
 }
 
 bool
-USizeType::can_eq (BaseType *other)
+USizeType::can_eq (BaseType *other, bool emit_errors)
 {
-  USizeCmp r (this);
+  USizeCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1212,9 +1212,9 @@ ISizeType::unify (BaseType *other)
 }
 
 bool
-ISizeType::can_eq (BaseType *other)
+ISizeType::can_eq (BaseType *other, bool emit_errors)
 {
-  ISizeCmp r (this);
+  ISizeCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1244,9 +1244,9 @@ CharType::unify (BaseType *other)
 }
 
 bool
-CharType::can_eq (BaseType *other)
+CharType::can_eq (BaseType *other, bool emit_errors)
 {
-  CharCmp r (this);
+  CharCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1276,9 +1276,9 @@ ReferenceType::unify (BaseType *other)
 }
 
 bool
-ReferenceType::can_eq (BaseType *other)
+ReferenceType::can_eq (BaseType *other, bool emit_errors)
 {
-  ReferenceCmp r (this);
+  ReferenceCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1351,9 +1351,9 @@ ParamType::unify (BaseType *other)
 }
 
 bool
-ParamType::can_eq (BaseType *other)
+ParamType::can_eq (BaseType *other, bool emit_errors)
 {
-  ParamCmp r (this);
+  ParamCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1407,7 +1407,7 @@ ParamType::is_equal (const BaseType &other) const
     return false;
 
   if (can_resolve ())
-    return resolve ()->can_eq (other2.resolve ());
+    return resolve ()->can_eq (other2.resolve (), false);
 
   return get_symbol ().compare (other2.get_symbol ()) == 0;
 }
@@ -1451,9 +1451,9 @@ StrType::unify (BaseType *other)
 }
 
 bool
-StrType::can_eq (BaseType *other)
+StrType::can_eq (BaseType *other, bool emit_errors)
 {
-  StrCmp r (this);
+  StrCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1483,9 +1483,9 @@ NeverType::unify (BaseType *other)
 }
 
 bool
-NeverType::can_eq (BaseType *other)
+NeverType::can_eq (BaseType *other, bool emit_errors)
 {
-  NeverCmp r (this);
+  NeverCmp r (this, emit_errors);
   return r.can_eq (other);
 }
 
@@ -1493,6 +1493,38 @@ BaseType *
 NeverType::clone ()
 {
   return new NeverType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+void
+PlaceholderType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+PlaceholderType::as_string () const
+{
+  return "<placeholder>";
+}
+
+BaseType *
+PlaceholderType::unify (BaseType *other)
+{
+  PlaceholderRules r (this);
+  return r.unify (other);
+}
+
+bool
+PlaceholderType::can_eq (BaseType *other, bool emit_errors)
+{
+  PlaceholderCmp r (this, emit_errors);
+  return r.can_eq (other);
+}
+
+BaseType *
+PlaceholderType::clone ()
+{
+  return new PlaceholderType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
 // rust-tyty-call.h

@@ -41,7 +41,9 @@ public:
 
   void visit (AST::TypeAlias &alias) override
   {
-    auto path = prefix.append (CanonicalPath (alias.get_new_type_name ()));
+    auto path
+      = prefix.append (CanonicalPath::new_seg (alias.get_node_id (),
+					       alias.get_new_type_name ()));
     resolver->get_type_scope ().insert (
       path, alias.get_node_id (), alias.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -53,7 +55,9 @@ public:
 
   void visit (AST::TupleStruct &struct_decl) override
   {
-    auto path = prefix.append (CanonicalPath (struct_decl.get_identifier ()));
+    auto path
+      = prefix.append (CanonicalPath::new_seg (struct_decl.get_node_id (),
+					       struct_decl.get_identifier ()));
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -65,7 +69,9 @@ public:
 
   void visit (AST::StructStruct &struct_decl) override
   {
-    auto path = prefix.append (CanonicalPath (struct_decl.get_identifier ()));
+    auto path
+      = prefix.append (CanonicalPath::new_seg (struct_decl.get_node_id (),
+					       struct_decl.get_identifier ()));
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -77,7 +83,8 @@ public:
 
   void visit (AST::StaticItem &var) override
   {
-    auto path = prefix.append (CanonicalPath (var.get_identifier ()));
+    auto path = prefix.append (
+      CanonicalPath::new_seg (var.get_node_id (), var.get_identifier ()));
     resolver->get_name_scope ().insert (
       path, var.get_node_id (), var.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -160,7 +167,8 @@ public:
 					     type_resolve_generic_args);
 
     CanonicalPath projection
-      = TraitImplProjection::resolve (trait_type_seg, impl_type_seg);
+      = TraitImplProjection::resolve (impl_block.get_node_id (), trait_type_seg,
+				      impl_type_seg);
     CanonicalPath impl_prefix = prefix.append (projection);
 
     for (auto &impl_item : impl_block.get_impl_items ())
@@ -169,8 +177,8 @@ public:
 
   void visit (AST::Trait &trait) override
   {
-    CanonicalPath path
-      = prefix.append (CanonicalPath (trait.get_identifier ()));
+    CanonicalPath path = prefix.append (
+      CanonicalPath::new_seg (trait.get_node_id (), trait.get_identifier ()));
     resolver->get_type_scope ().insert (
       path, trait.get_node_id (), trait.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -180,7 +188,7 @@ public:
       });
 
     for (auto &item : trait.get_trait_items ())
-      ResolveTopLevelTraitItems::go (item.get ());
+      ResolveTopLevelTraitItems::go (item.get (), path);
   }
 
 private:

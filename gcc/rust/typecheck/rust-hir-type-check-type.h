@@ -1,3 +1,4 @@
+
 // Copyright (C) 2020 Free Software Foundation, Inc.
 
 // This file is part of GCC.
@@ -22,6 +23,7 @@
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
 #include "rust-substitution-mapper.h"
+#include "rust-hir-path-probe.h"
 
 namespace Rust {
 namespace Resolver {
@@ -145,7 +147,7 @@ public:
     TyTy::BaseType *path_type = lookup->clone ();
     path_type->set_ref (path.get_mappings ().get_hirid ());
 
-    HIR::TypePathSegment *final_seg = path.get_final_segment ();
+    HIR::TypePathSegment *final_seg = path.get_final_segment ().get ();
     HIR::GenericArgs args
       = TypeCheckResolveGenericArguments::resolve (final_seg);
 

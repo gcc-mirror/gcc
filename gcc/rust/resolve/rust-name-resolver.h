@@ -47,34 +47,74 @@ namespace Resolver {
 class CanonicalPath
 {
 public:
-  explicit CanonicalPath (std::string path) : path (path) {}
-
-  CanonicalPath (const CanonicalPath &other) : path (other.path) {}
+  CanonicalPath (const CanonicalPath &other) : segs (other.segs) {}
 
   CanonicalPath &operator= (const CanonicalPath &other)
   {
-    path = other.path;
+    segs = other.segs;
     return *this;
   }
 
-  std::string get () const { return path; }
-
-  static CanonicalPath get_big_self () { return CanonicalPath ("Self"); }
-
-  static CanonicalPath get_wee_self () { return CanonicalPath ("self"); }
-
-  static CanonicalPath create_empty ()
+  static CanonicalPath new_seg (NodeId id, const std::string &path)
   {
-    return CanonicalPath (std::string ());
+    rust_assert (!path.empty ());
+    return CanonicalPath ({std::pair<NodeId, std::string> (id, path)});
   }
 
-  bool is_error () const { return path.empty (); }
+  std::string get () const
+  {
+    std::string buf;
+    for (size_t i = 0; i < segs.size (); i++)
+      {
+	bool have_more = (i + 1) < segs.size ();
+	const std::string &seg = segs.at (i).second;
+	buf += seg + (have_more ? "::" : "");
+      }
+    return buf;
+  }
+
+  static CanonicalPath get_big_self (NodeId id)
+  {
+    return CanonicalPath::new_seg (id, "Self");
+  }
+
+  static CanonicalPath create_empty () { return CanonicalPath ({}); }
+
+  bool is_error () const { return segs.size () == 0; }
 
   CanonicalPath append (const CanonicalPath &other) const
   {
     rust_assert (!other.is_error ());
-    return is_error () ? CanonicalPath (other.get ())
-		       : CanonicalPath (append (other.get ()));
+    if (is_error ())
+      return CanonicalPath (other.segs);
+
+    std::vector<std::pair<NodeId, std::string>> copy (segs);
+    for (auto &s : other.segs)
+      copy.push_back (s);
+
+    return CanonicalPath (copy);
+  }
+
+  // if we have the path A::B::C this will give a callback for each segment
+  // example:
+  //   A
+  //   A::B
+  //   A::B::C
+  void iterate (std::function<bool (const CanonicalPath &)> cb) const
+  {
+    std::vector<std::pair<NodeId, std::string>> buf;
+    for (auto &seg : segs)
+      {
+	buf.push_back (seg);
+	if (!cb (CanonicalPath (buf)))
+	  return;
+      }
+  }
+
+  NodeId get_id () const
+  {
+    rust_assert (!segs.empty ());
+    return segs.back ().first;
   }
 
   bool operator== (const CanonicalPath &b) const
@@ -85,9 +125,11 @@ public:
   bool operator< (const CanonicalPath &b) const { return get () < b.get (); }
 
 private:
-  std::string append (std::string elem) const { return path + "::" + elem; }
+  explicit CanonicalPath (std::vector<std::pair<NodeId, std::string>> path)
+    : segs (path)
+  {}
 
-  std::string path;
+  std::vector<std::pair<NodeId, std::string>> segs;
 };
 
 class Rib
@@ -216,8 +258,8 @@ private:
   NodeId node_id;
   std::map<CanonicalPath, NodeId> mappings;
   std::map<NodeId, CanonicalPath> reverse_mappings;
-  std::set<std::pair<NodeId, Location> > decls_within_rib;
-  std::map<NodeId, std::set<NodeId> > references;
+  std::set<std::pair<NodeId, Location>> decls_within_rib;
+  std::map<NodeId, std::set<NodeId>> references;
 };
 
 class Scope
@@ -284,7 +326,6 @@ public:
 	{
 	  ok = true;
 	  r->append_reference_for_def (defId, refId);
-	  return false;
 	}
       return true;
     });
@@ -455,7 +496,7 @@ private:
   // map of resolved names mutability flag
   std::map<NodeId, bool> decl_mutability;
   // map of resolved names and set of assignments to the decl
-  std::map<NodeId, std::set<NodeId> > assignment_to_decl;
+  std::map<NodeId, std::set<NodeId>> assignment_to_decl;
 };
 
 } // namespace Resolver

@@ -121,7 +121,9 @@ Resolver::insert_builtin_types (Rib *r)
   auto builtins = get_builtin_types ();
   for (auto &builtin : builtins)
     {
-      CanonicalPath builtin_path (builtin->as_string ());
+      CanonicalPath builtin_path
+	= CanonicalPath::new_seg (builtin->get_node_id (),
+				  builtin->as_string ());
       r->insert_name (builtin_path, builtin->get_node_id (),
 		      Linemap::predeclared_location (), false,
 		      [] (const CanonicalPath &, NodeId, Location) -> void {});
@@ -384,7 +386,7 @@ ResolveStructExprField::visit (AST::StructExprFieldIdentifier &field)
 
 // rust-ast-resolve-type.h
 
-CanonicalPath
+std::string
 ResolveTypeToCanonicalPath::canonicalize_generic_args (AST::GenericArgs &args)
 {
   std::string buf;
@@ -401,7 +403,7 @@ ResolveTypeToCanonicalPath::canonicalize_generic_args (AST::GenericArgs &args)
       i++;
     }
 
-  return CanonicalPath ("<" + buf + ">");
+  return "<" + buf + ">";
 }
 
 bool
@@ -428,24 +430,31 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
       return;
     }
 
-  // ident seg
-  CanonicalPath ident_seg
-    = CanonicalPath (seg.get_ident_segment ().as_string ());
-  result = result.append (ident_seg);
-
-  // generic args
-  if (seg.has_generic_args ())
+  if (!seg.has_generic_args ())
     {
-      if (include_generic_args_flag)
-	result
-	  = result.append (canonicalize_generic_args (seg.get_generic_args ()));
-
-      if (type_resolve_generic_args_flag)
-	{
-	  bool ok = type_resolve_generic_args (seg.get_generic_args ());
-	  failure_flag = !ok;
-	}
+      result = CanonicalPath::new_seg (seg.get_node_id (),
+				       seg.get_ident_segment ().as_string ());
+      return;
     }
+
+  if (type_resolve_generic_args_flag)
+    {
+      bool ok = type_resolve_generic_args (seg.get_generic_args ());
+      failure_flag = !ok;
+    }
+
+  if (include_generic_args_flag)
+    {
+      std::string generics
+	= canonicalize_generic_args (seg.get_generic_args ());
+      result = CanonicalPath::new_seg (seg.get_node_id (),
+				       seg.get_ident_segment ().as_string ()
+					 + "::" + generics);
+      return;
+    }
+
+  result = CanonicalPath::new_seg (seg.get_node_id (),
+				   seg.get_ident_segment ().as_string ());
 }
 
 void
@@ -460,7 +469,8 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegment &seg)
     }
 
   CanonicalPath ident_seg
-    = CanonicalPath (seg.get_ident_segment ().as_string ());
+    = CanonicalPath::new_seg (seg.get_node_id (),
+			      seg.get_ident_segment ().as_string ());
   result = result.append (ident_seg);
 }
 
@@ -474,7 +484,9 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
   AST::PathIdentSegment &root_ident_seg = root_segment.get_ident_segment ();
 
   bool segment_is_type = false;
-  CanonicalPath root_seg_path (root_ident_seg.as_string ());
+  CanonicalPath root_seg_path
+    = CanonicalPath::new_seg (expr->get_node_id (),
+			      root_ident_seg.as_string ());
 
   // name scope first
   if (resolver->get_name_scope ().lookup (root_seg_path, &resolved_node))
@@ -605,6 +617,22 @@ ResolveType::visit (AST::ArrayType &type)
 {
   type.get_elem_type ()->accept_vis (*this);
   ResolveExpr::go (type.get_size_expr ().get (), type.get_node_id ());
+}
+
+// rust-ast-resolve-item.h
+
+void
+ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
+				const CanonicalPath &self)
+{
+  ResolveImplItems::go (item, self);
+}
+
+void
+ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
+				const CanonicalPath &self)
+{
+  ResolveImplItems::go (item, self);
 }
 
 } // namespace Resolver

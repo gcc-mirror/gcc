@@ -46,56 +46,303 @@ public:
     return ok;
   }
 
-  virtual void visit (TupleType &) override { ok = false; }
+  virtual void visit (TupleType &type) override
+  {
+    ok = false;
 
-  virtual void visit (ADTType &) override { ok = false; }
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (InferType &) override { ok = false; }
+  virtual void visit (ADTType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (FnType &) override { ok = false; }
+  virtual void visit (InferType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (FnPtr &) override { ok = false; }
+  virtual void visit (FnType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (ArrayType &) override { ok = false; }
+  virtual void visit (FnPtr &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (BoolType &) override { ok = false; }
+  virtual void visit (ArrayType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (IntType &) override { ok = false; }
+  virtual void visit (BoolType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (UintType &) override { ok = false; }
+  virtual void visit (IntType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (USizeType &) override { ok = false; }
+  virtual void visit (UintType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (ISizeType &) override { ok = false; }
+  virtual void visit (USizeType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (FloatType &) override { ok = false; }
+  virtual void visit (ISizeType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (ErrorType &) override { ok = false; }
+  virtual void visit (FloatType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (CharType &) override { ok = false; }
+  virtual void visit (ErrorType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (ReferenceType &) override { ok = false; }
+  virtual void visit (CharType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
 
-  virtual void visit (ParamType &) override
+  virtual void visit (ReferenceType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
+
+  virtual void visit (StrType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
+
+  virtual void visit (NeverType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
+
+  virtual void visit (PlaceholderType &type) override
+  {
+    // it is ok for types to can eq to a placeholder
+    ok = true;
+  }
+
+  virtual void visit (ParamType &type) override
   {
     // it is ok for types to can eq to a ParamType
     ok = true;
   }
 
-  virtual void visit (StrType &) override { ok = false; }
-
-  virtual void visit (NeverType &) override { ok = false; }
-
 protected:
-  BaseCmp (BaseType *base)
+  BaseCmp (BaseType *base, bool emit_errors)
     : mappings (Analysis::Mappings::get ()),
-      context (Resolver::TypeCheckContext::get ()), ok (false)
+      context (Resolver::TypeCheckContext::get ()), ok (false),
+      emit_error_flag (emit_errors)
   {}
 
   Analysis::Mappings *mappings;
   Resolver::TypeCheckContext *context;
 
   bool ok;
+  bool emit_error_flag;
 
 private:
   /* Returns a pointer to the ty that created this rule. */
@@ -107,7 +354,9 @@ class InferCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  InferCmp (InferType *base) : BaseCmp (base), base (base) {}
+  InferCmp (InferType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (BoolType &type) override
   {
@@ -328,7 +577,9 @@ class FnCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FnCmp (FnType *base) : BaseCmp (base), base (base) {}
+  FnCmp (FnType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (InferType &type) override
   {
@@ -348,18 +599,18 @@ public:
 	auto a = base->param_at (i).second;
 	auto b = type.param_at (i).second;
 
-	auto unified_param = a->unify (b);
-	if (unified_param->get_kind () == TypeKind::ERROR)
+	if (!a->can_eq (b, emit_error_flag))
 	  {
+	    emit_error_flag = false;
 	    BaseCmp::visit (type);
 	    return;
 	  }
       }
 
-    auto unified_return
-      = base->get_return_type ()->unify (type.get_return_type ());
-    if (unified_return->get_kind () == TypeKind::ERROR)
+    if (!base->get_return_type ()->can_eq (type.get_return_type (),
+					   emit_error_flag))
       {
+	emit_error_flag = false;
 	BaseCmp::visit (type);
 	return;
       }
@@ -378,7 +629,9 @@ class FnptrCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FnptrCmp (FnPtr *base) : BaseCmp (base), base (base) {}
+  FnptrCmp (FnPtr *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (InferType &type) override
   {
@@ -393,17 +646,15 @@ public:
 
   void visit (FnPtr &type) override
   {
-    auto this_ret_type = base->get_return_type ();
-    auto other_ret_type = type.get_return_type ();
-    auto unified_result = this_ret_type->unify (other_ret_type);
-    if (unified_result == nullptr
-	|| unified_result->get_kind () == TypeKind::ERROR)
+    if (base->num_params () != type.num_params ())
       {
 	BaseCmp::visit (type);
 	return;
       }
 
-    if (base->num_params () != type.num_params ())
+    auto this_ret_type = base->get_return_type ();
+    auto other_ret_type = type.get_return_type ();
+    if (!this_ret_type->can_eq (other_ret_type, emit_error_flag))
       {
 	BaseCmp::visit (type);
 	return;
@@ -413,9 +664,7 @@ public:
       {
 	auto this_param = base->param_at (i);
 	auto other_param = type.param_at (i);
-	auto unified_param = this_param->unify (other_param);
-	if (unified_param == nullptr
-	    || unified_param->get_kind () == TypeKind::ERROR)
+	if (!this_param->can_eq (other_param, emit_error_flag))
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -427,17 +676,15 @@ public:
 
   void visit (FnType &type) override
   {
-    auto this_ret_type = base->get_return_type ();
-    auto other_ret_type = type.get_return_type ();
-    auto unified_result = this_ret_type->unify (other_ret_type);
-    if (unified_result == nullptr
-	|| unified_result->get_kind () == TypeKind::ERROR)
+    if (base->num_params () != type.num_params ())
       {
 	BaseCmp::visit (type);
 	return;
       }
 
-    if (base->num_params () != type.num_params ())
+    auto this_ret_type = base->get_return_type ();
+    auto other_ret_type = type.get_return_type ();
+    if (!this_ret_type->can_eq (other_ret_type, emit_error_flag))
       {
 	BaseCmp::visit (type);
 	return;
@@ -447,9 +694,7 @@ public:
       {
 	auto this_param = base->param_at (i);
 	auto other_param = type.param_at (i).second;
-	auto unified_param = this_param->unify (other_param);
-	if (unified_param == nullptr
-	    || unified_param->get_kind () == TypeKind::ERROR)
+	if (!this_param->can_eq (other_param, emit_error_flag))
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -470,7 +715,9 @@ class ArrayCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ArrayCmp (ArrayType *base) : BaseCmp (base), base (base) {}
+  ArrayCmp (ArrayType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (ArrayType &type) override
   {
@@ -506,7 +753,9 @@ class BoolCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  BoolCmp (BoolType *base) : BaseCmp (base), base (base) {}
+  BoolCmp (BoolType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (BoolType &type) override { ok = true; }
 
@@ -526,7 +775,9 @@ class IntCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  IntCmp (IntType *base) : BaseCmp (base), base (base) {}
+  IntCmp (IntType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (InferType &type) override
   {
@@ -549,7 +800,9 @@ class UintCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  UintCmp (UintType *base) : BaseCmp (base), base (base) {}
+  UintCmp (UintType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (InferType &type) override
   {
@@ -572,7 +825,9 @@ class FloatCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FloatCmp (FloatType *base) : BaseCmp (base), base (base) {}
+  FloatCmp (FloatType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (InferType &type) override
   {
@@ -595,7 +850,9 @@ class ADTCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ADTCmp (ADTType *base) : BaseCmp (base), base (base) {}
+  ADTCmp (ADTType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (ADTType &type) override
   {
@@ -619,7 +876,7 @@ public:
 	TyTy::BaseType *this_field_ty = base_field->get_field_type ();
 	TyTy::BaseType *other_field_ty = other_field->get_field_type ();
 
-	if (!this_field_ty->can_eq (other_field_ty))
+	if (!this_field_ty->can_eq (other_field_ty, emit_error_flag))
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -640,7 +897,9 @@ class TupleCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  TupleCmp (TupleType *base) : BaseCmp (base), base (base) {}
+  TupleCmp (TupleType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (TupleType &type) override
   {
@@ -655,7 +914,7 @@ public:
 	BaseType *bo = base->get_field (i);
 	BaseType *fo = type.get_field (i);
 
-	if (!bo->can_eq (fo))
+	if (!bo->can_eq (fo, emit_error_flag))
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -676,7 +935,9 @@ class USizeCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  USizeCmp (USizeType *base) : BaseCmp (base), base (base) {}
+  USizeCmp (USizeType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (InferType &type) override
   {
@@ -696,7 +957,9 @@ class ISizeCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ISizeCmp (ISizeType *base) : BaseCmp (base), base (base) {}
+  ISizeCmp (ISizeType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (InferType &type) override
   {
@@ -716,7 +979,9 @@ class CharCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  CharCmp (CharType *base) : BaseCmp (base), base (base) {}
+  CharCmp (CharType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (InferType &type) override
   {
@@ -736,14 +1001,16 @@ class ReferenceCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ReferenceCmp (ReferenceType *base) : BaseCmp (base), base (base) {}
+  ReferenceCmp (ReferenceType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (ReferenceType &type) override
   {
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
 
-    ok = base_type->can_eq (other_base_type);
+    ok = base_type->can_eq (other_base_type, emit_error_flag);
   }
 
 private:
@@ -757,7 +1024,9 @@ class ParamCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ParamCmp (ParamType *base) : BaseCmp (base), base (base) {}
+  ParamCmp (ParamType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   // param types are a placeholder we shouldn't have cases where we unify
   // against it. eg: struct foo<T> { a: T }; When we invoke it we can do either:
@@ -781,10 +1050,10 @@ public:
     if (lookup->get_kind () == TypeKind::PARAM)
       {
 	InferType infer (UNKNOWN_HIRID, InferType::InferTypeKind::GENERAL);
-	return infer.can_eq (other);
+	return infer.can_eq (other, emit_error_flag);
       }
 
-    return lookup->can_eq (other);
+    return lookup->can_eq (other, emit_error_flag);
   }
 
   // imagine the case where we have:
@@ -807,7 +1076,9 @@ class StrCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  StrCmp (StrType *base) : BaseCmp (base), base (base) {}
+  StrCmp (StrType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (StrType &type) override { ok = true; }
 
@@ -822,7 +1093,9 @@ class NeverCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  NeverCmp (NeverType *base) : BaseCmp (base), base (base) {}
+  NeverCmp (NeverType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
 
   void visit (NeverType &type) override { ok = true; }
 
@@ -830,6 +1103,59 @@ private:
   BaseType *get_base () override { return base; }
 
   NeverType *base;
+};
+
+class PlaceholderCmp : public BaseCmp
+{
+  using Rust::TyTy::BaseCmp::visit;
+
+public:
+  PlaceholderCmp (PlaceholderType *base, bool emit_errors)
+    : BaseCmp (base, emit_errors), base (base)
+  {}
+
+  virtual void visit (TupleType &) override { ok = true; }
+
+  virtual void visit (ADTType &) override { ok = true; }
+
+  virtual void visit (InferType &) override { ok = true; }
+
+  virtual void visit (FnType &) override { ok = true; }
+
+  virtual void visit (FnPtr &) override { ok = true; }
+
+  virtual void visit (ArrayType &) override { ok = true; }
+
+  virtual void visit (BoolType &) override { ok = true; }
+
+  virtual void visit (IntType &) override { ok = true; }
+
+  virtual void visit (UintType &) override { ok = true; }
+
+  virtual void visit (USizeType &) override { ok = true; }
+
+  virtual void visit (ISizeType &) override { ok = true; }
+
+  virtual void visit (FloatType &) override { ok = true; }
+
+  virtual void visit (ErrorType &) override { ok = true; }
+
+  virtual void visit (CharType &) override { ok = true; }
+
+  virtual void visit (ReferenceType &) override { ok = true; }
+
+  virtual void visit (ParamType &) override { ok = true; }
+
+  virtual void visit (StrType &) override { ok = true; }
+
+  virtual void visit (NeverType &) override { ok = true; }
+
+  virtual void visit (PlaceholderType &) override { ok = true; }
+
+private:
+  BaseType *get_base () override { return base; }
+
+  PlaceholderType *base;
 };
 
 } // namespace TyTy

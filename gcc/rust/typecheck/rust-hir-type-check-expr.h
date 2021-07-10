@@ -275,7 +275,7 @@ public:
 	    // always be at the end of the list
 
 	    auto s = fn->get_self_type ();
-	    rust_assert (s->can_eq (adt));
+	    rust_assert (s->can_eq (adt, false));
 	    rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
 	    TyTy::ADTType *self_adt = static_cast<TyTy::ADTType *> (s);
 

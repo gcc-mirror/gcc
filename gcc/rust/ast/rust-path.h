@@ -406,11 +406,6 @@ protected:
  * ident-only segment) */
 class TypePathSegment
 {
-  /* TODO: may have to unify TypePathSegment and PathExprSegment (which are
-   * mostly the same anyway) in order to resolve goddamn syntax ambiguities. One
-   * difference is that function on TypePathSegment is not allowed if
-   * GenericArgs are, so could disallow that in constructor, which won't give
-   * that much size overhead. */
   PathIdentSegment ident_segment;
   Location locus;
 
@@ -418,6 +413,7 @@ protected:
   /* This is protected because it is only really used by derived classes, not
    * the base. */
   bool has_separating_scope_resolution;
+  NodeId node_id;
 
   // Clone function implementation - not pure virtual as overrided by subclasses
   virtual TypePathSegment *clone_type_path_segment_impl () const
@@ -437,14 +433,16 @@ public:
   TypePathSegment (PathIdentSegment ident_segment,
 		   bool has_separating_scope_resolution, Location locus)
     : ident_segment (std::move (ident_segment)), locus (locus),
-      has_separating_scope_resolution (has_separating_scope_resolution)
+      has_separating_scope_resolution (has_separating_scope_resolution),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   TypePathSegment (std::string segment_name,
 		   bool has_separating_scope_resolution, Location locus)
     : ident_segment (PathIdentSegment (std::move (segment_name))),
       locus (locus),
-      has_separating_scope_resolution (has_separating_scope_resolution)
+      has_separating_scope_resolution (has_separating_scope_resolution),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   virtual std::string as_string () const { return ident_segment.as_string (); }
@@ -454,7 +452,7 @@ public:
   bool is_error () const { return ident_segment.is_error (); }
 
   /* Returns whether segment is identifier only (as opposed to generic args or
-   * function). Overriden in derived classes with other segments. */
+   * function). Overridden in derived classes with other segments. */
   virtual bool is_ident_only () const { return true; }
 
   Location get_locus () const { return locus; }
@@ -468,6 +466,8 @@ public:
   }
 
   PathIdentSegment get_ident_segment () { return ident_segment; };
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 // Segment used in type path with generic args

@@ -44,7 +44,8 @@ public:
   void visit (AST::IdentifierPattern &pattern) override
   {
     if (resolver->get_name_scope ().lookup (
-	  CanonicalPath (pattern.get_ident ()), &resolved_node))
+	  CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
+	  &resolved_node))
       {
 	resolver->insert_resolved_name (pattern.get_node_id (), resolved_node);
 	resolver->insert_new_definition (pattern.get_node_id (),
@@ -72,9 +73,9 @@ public:
   {
     // if we have a duplicate id this then allows for shadowing correctly
     // as new refs to this decl will match back here so it is ok to overwrite
-    resolver->get_name_scope ().insert (CanonicalPath (pattern.get_ident ()),
-					pattern.get_node_id (),
-					pattern.get_locus ());
+    resolver->get_name_scope ().insert (
+      CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
+      pattern.get_node_id (), pattern.get_locus ());
     resolver->insert_new_definition (pattern.get_node_id (),
 				     Definition{pattern.get_node_id (),
 						parent});

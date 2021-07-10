@@ -383,9 +383,15 @@ ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
       type_args.push_back (std::unique_ptr<HIR::Type> (t));
     }
 
+  auto crate_num = mappings->get_current_crate ();
+  auto hirid = mappings->get_next_hir_id (crate_num);
+  Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
+				 UNKNOWN_LOCAL_DEFID);
+
   translated_segment = new HIR::TypePathSegmentGeneric (
-    segment_name, has_separating_scope_resolution, std::move (lifetime_args),
-    std::move (type_args), std::move (binding_args), segment.get_locus ());
+    std::move (mapping), segment_name, has_separating_scope_resolution,
+    std::move (lifetime_args), std::move (type_args), std::move (binding_args),
+    segment.get_locus ());
 }
 
 } // namespace HIR

@@ -44,8 +44,9 @@ public:
 
   void visit (HIR::TraitItemType &type) override
   {
-    // associated types are not typed and only support bounds
-    TyTy::BaseType *ty = nullptr;
+    TyTy::BaseType *ty
+      = new TyTy::PlaceholderType (type.get_mappings ().get_hirid ());
+    context->insert_type (type.get_mappings (), ty);
 
     // create trait-item-ref
     Location locus = type.get_locus ();
