@@ -22,7 +22,7 @@
 #include <set>
 #include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
-#include "rust-lint-marklive-base.h"
+#include "rust-lint-marklive.h"
 #include "rust-name-resolver.h"
 #include "rust-diagnostics.h"
 
@@ -34,8 +34,9 @@ class ScanDeadcode : public MarkLiveBase
   using Rust::Analysis::MarkLiveBase::visit;
 
 public:
-  static void Scan (HIR::Crate &crate, std::set<HirId> live_symbols)
+  static void Scan (HIR::Crate &crate)
   {
+    std::set<HirId> live_symbols = Analysis::MarkLive::Analysis (crate);
     ScanDeadcode sdc (live_symbols);
     for (auto it = crate.items.begin (); it != crate.items.end (); it++)
       {

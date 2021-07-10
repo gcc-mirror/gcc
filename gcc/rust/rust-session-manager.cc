@@ -49,7 +49,6 @@
 #include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
-#include "rust-lint-marklive.h"
 #include "rust-lint-scan-deadcode.h"
 #include "rust-tycheck-dump.h"
 #include "rust-ast-resolve-unused.h"
@@ -575,14 +574,8 @@ Session::parse_file (const char *filename)
   if (saw_errors ())
     return;
 
-  // liveness analysis
-  std::set<HirId> live_symbols = Analysis::MarkLive::Analysis (hir);
-
-  if (saw_errors ())
-    return;
-
   // scan dead code
-  Analysis::ScanDeadcode::Scan (hir, live_symbols);
+  Analysis::ScanDeadcode::Scan (hir);
 
   if (saw_errors ())
     return;
