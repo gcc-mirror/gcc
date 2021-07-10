@@ -1964,6 +1964,7 @@ transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
 struct param_info
 {
   tree field_id;     /* The name of the copy in the coroutine frame.  */
+  tree copy_var;     /* The local var proxy for the frame copy.  */
   vec<tree *> *body_uses; /* Worklist of uses, void if there are none.  */
   tree frame_type;   /* The type used to represent this parm in the frame.  */
   tree orig_type;    /* The original type of the parm (not as passed).  */
@@ -2168,36 +2169,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* Declare the continuation handle.  */
   add_decl_expr (continuation);
-
-  /* Re-write param references in the body, no code should be generated
-     here.  */
-  if (DECL_ARGUMENTS (orig))
-    {
-      tree arg;
-      for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
-	{
-	  bool existed;
-	  param_info &parm = param_uses->get_or_insert (arg, &existed);
-	  if (!parm.body_uses)
-	    continue; /* Wasn't used in the original function body.  */
-
-	  tree fld_ref = lookup_member (coro_frame_type, parm.field_id,
-					/*protect=*/1, /*want_type=*/0,
-					tf_warning_or_error);
-	  tree fld_idx = build3_loc (loc, COMPONENT_REF, parm.frame_type,
-				     actor_frame, fld_ref, NULL_TREE);
-
-	  /* We keep these in the frame as a regular pointer, so convert that
-	   back to the type expected.  */
-	  if (parm.pt_ref)
-	    fld_idx = build1_loc (loc, CONVERT_EXPR, TREE_TYPE (arg), fld_idx);
-
-	  int i;
-	  tree *puse;
-	  FOR_EACH_VEC_ELT (*parm.body_uses, i, puse)
-	    *puse = fld_idx;
-	}
-    }
 
   /* Re-write local vars, similarly.  */
   local_vars_transform xform_vars_data
@@ -3771,11 +3742,11 @@ struct param_frame_data
   bool param_seen;
 };
 
-/* A tree-walk callback that records the use of parameters (to allow for
-   optimizations where handling unused parameters may be omitted).  */
+/* A tree walk callback that rewrites each parm use to the local variable
+   that represents its copy in the frame.  */
 
 static tree
-register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
+rewrite_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 {
   param_frame_data *data = (param_frame_data *) d;
 
@@ -3783,7 +3754,7 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   if (TREE_CODE (*stmt) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (*stmt))
     {
       tree t = DECL_VALUE_EXPR (*stmt);
-      return cp_walk_tree (&t, register_param_uses, d, NULL);
+      return cp_walk_tree (&t, rewrite_param_uses, d, NULL);
     }
 
   if (TREE_CODE (*stmt) != PARM_DECL)
@@ -3797,16 +3768,88 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   param_info &parm = data->param_uses->get_or_insert (*stmt, &existed);
   gcc_checking_assert (existed);
 
-  if (!parm.body_uses)
-    {
-      vec_alloc (parm.body_uses, 4);
-      parm.body_uses->quick_push (stmt);
-      data->param_seen = true;
-    }
-  else
-    parm.body_uses->safe_push (stmt);
-
+  *stmt = parm.copy_var;
   return NULL_TREE;
+}
+
+/* Build up a set of info that determines how each param copy will be
+   handled.  */
+
+static hash_map<tree, param_info> *
+analyze_fn_parms (tree orig)
+{
+  if (!DECL_ARGUMENTS (orig))
+    return NULL;
+
+  hash_map<tree, param_info> *param_uses = new hash_map<tree, param_info>;
+
+  /* Build a hash map with an entry for each param.
+     The key is the param tree.
+     Then we have an entry for the frame field name.
+     Then a cache for the field ref when we come to use it.
+     Then a tree list of the uses.
+     The second two entries start out empty - and only get populated
+     when we see uses.  */
+  bool lambda_p = LAMBDA_FUNCTION_P (orig);
+
+  unsigned no_name_parm = 0;
+  for (tree arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
+    {
+      bool existed;
+      param_info &parm = param_uses->get_or_insert (arg, &existed);
+      gcc_checking_assert (!existed);
+      parm.body_uses = NULL;
+      tree actual_type = TREE_TYPE (arg);
+      actual_type = complete_type_or_else (actual_type, orig);
+      if (actual_type == NULL_TREE)
+	actual_type = error_mark_node;
+      parm.orig_type = actual_type;
+      parm.by_ref = parm.pt_ref = parm.rv_ref =  false;
+      if (TREE_CODE (actual_type) == REFERENCE_TYPE)
+	{
+	  /* If the user passes by reference, then we will save the
+	     pointer to the original.  As noted in
+	     [dcl.fct.def.coroutine] / 13, if the lifetime of the
+	     referenced item ends and then the coroutine is resumed,
+	     we have UB; well, the user asked for it.  */
+	  if (TYPE_REF_IS_RVALUE (actual_type))
+		parm.rv_ref = true;
+	  else
+		parm.pt_ref = true;
+	}
+      else if (TYPE_REF_P (DECL_ARG_TYPE (arg)))
+	parm.by_ref = true;
+
+      parm.frame_type = actual_type;
+
+      parm.this_ptr = is_this_parameter (arg);
+      parm.lambda_cobj = lambda_p && DECL_NAME (arg) == closure_identifier;
+
+      tree name = DECL_NAME (arg);
+      if (!name)
+	{
+	  char *buf = xasprintf ("_Coro_unnamed_parm_%d", no_name_parm++);
+	  name = get_identifier (buf);
+	  free (buf);
+	}
+      parm.field_id = name;
+
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (parm.frame_type))
+	{
+	  char *buf = xasprintf ("_Coro_%s_live", IDENTIFIER_POINTER (name));
+	  parm.guard_var = build_lang_decl (VAR_DECL, get_identifier (buf),
+					    boolean_type_node);
+	  free (buf);
+	  DECL_ARTIFICIAL (parm.guard_var) = true;
+	  DECL_CONTEXT (parm.guard_var) = orig;
+	  DECL_INITIAL (parm.guard_var) = boolean_false_node;
+	  parm.trivial_dtor = false;
+	}
+      else
+	parm.trivial_dtor = true;
+    }
+
+  return param_uses;
 }
 
 /* Small helper for the repetitive task of adding a new field to the coro
@@ -3990,6 +4033,7 @@ coro_build_actor_or_destroy_function (tree orig, tree fn_type,
 
 static tree
 coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
+			    hash_map<tree, param_info> *param_uses,
 			    tree resume_fn_ptr_type,
 			    tree& resume_idx_var, tree& fs_label)
 {
@@ -4073,6 +4117,39 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
   var_list = var;
   add_decl_expr (var);
 
+  /* If we have function parms, then these will be copied to the coroutine
+     frame.  Create a local (proxy) variable for each parm, since the original
+     parms will be out of scope once the ramp has finished. The proxy vars will
+     get DECL_VALUE_EXPRs pointing to the frame copies, so that we can interact
+     with them in the debugger.  */
+  if (param_uses)
+    {
+      gcc_checking_assert (DECL_ARGUMENTS (orig));
+      /* Add a local var for each parm.  */
+      for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
+	   arg = DECL_CHAIN (arg))
+	{
+	  param_info *parm_i = param_uses->get (arg);
+	  gcc_checking_assert (parm_i);
+	  parm_i->copy_var
+	    = build_lang_decl (VAR_DECL, parm_i->field_id, TREE_TYPE (arg));
+	  DECL_SOURCE_LOCATION (parm_i->copy_var) = DECL_SOURCE_LOCATION (arg);
+	  DECL_CONTEXT (parm_i->copy_var) = orig;
+	  DECL_ARTIFICIAL (parm_i->copy_var) = true;
+	  DECL_CHAIN (parm_i->copy_var) = var_list;
+	  var_list = parm_i->copy_var;
+	  add_decl_expr (parm_i->copy_var);
+      	}
+
+      /* Now replace all uses of the parms in the function body with the proxy
+	 vars.  We want to this to apply to every instance of param's use, so
+	 don't include a 'visited' hash_set on the tree walk, however we will
+	 arrange to visit each containing expression only once.  */
+      hash_set<tree *> visited;
+      param_frame_data param_data = {NULL, param_uses,
+				     &visited, fn_start, false};
+      cp_walk_tree (&fnbody, rewrite_param_uses, &param_data, NULL);
+    }
 
   /* We create a resume index, this is initialized in the ramp.  */
   resume_idx_var
@@ -4343,7 +4420,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   tree resume_idx_var = NULL_TREE;
   tree fs_label = NULL_TREE;
-  fnbody = coro_rewrite_function_body (fn_start, fnbody, orig,
+  hash_map<tree, param_info> *param_uses = analyze_fn_parms (orig);
+
+  fnbody = coro_rewrite_function_body (fn_start, fnbody, orig, param_uses,
 				       act_des_fn_ptr,
 				       resume_idx_var, fs_label);
   /* Build our dummy coro frame layout.  */
@@ -4351,94 +4430,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* The fields for the coro frame.  */
   tree field_list = NULL_TREE;
-
-  /* Now add in fields for function params (if there are any).
-     We do not attempt elision of copies at this stage, we do analyze the
-     uses and build worklists to replace those when the state machine is
-     lowered.  */
-
-  hash_map<tree, param_info> *param_uses = NULL;
-  if (DECL_ARGUMENTS (orig))
-    {
-      /* Build a hash map with an entry for each param.
-	  The key is the param tree.
-	  Then we have an entry for the frame field name.
-	  Then a cache for the field ref when we come to use it.
-	  Then a tree list of the uses.
-	  The second two entries start out empty - and only get populated
-	  when we see uses.  */
-      param_uses = new hash_map<tree, param_info>;
-      bool lambda_p = LAMBDA_FUNCTION_P (orig);
-
-      unsigned no_name_parm = 0;
-      for (tree arg = DECL_ARGUMENTS (orig); arg != NULL;
-	   arg = DECL_CHAIN (arg))
-	{
-	  bool existed;
-	  param_info &parm = param_uses->get_or_insert (arg, &existed);
-	  gcc_checking_assert (!existed);
-	  parm.body_uses = NULL;
-	  tree actual_type = TREE_TYPE (arg);
-	  actual_type = complete_type_or_else (actual_type, orig);
-	  if (actual_type == NULL_TREE)
-	    actual_type = error_mark_node;
-	  parm.orig_type = actual_type;
-	  parm.by_ref = parm.pt_ref = parm.rv_ref =  false;
-	  if (TREE_CODE (actual_type) == REFERENCE_TYPE)
-	    {
-	      /* If the user passes by reference, then we will save the
-		 pointer to the original.  As noted in
-		 [dcl.fct.def.coroutine] / 13, if the lifetime of the
-		 referenced item ends and then the coroutine is resumed,
-		 we have UB; well, the user asked for it.  */
-	      if (TYPE_REF_IS_RVALUE (actual_type))
-		parm.rv_ref = true;
-	      else
-		parm.pt_ref = true;
-	    }
-	  else if (TYPE_REF_P (DECL_ARG_TYPE (arg)))
-	    parm.by_ref = true;
-
-	  parm.frame_type = actual_type;
-
-	  parm.this_ptr = is_this_parameter (arg);
-	  parm.lambda_cobj = lambda_p && DECL_NAME (arg) == closure_identifier;
-
-	  char *buf;
-	  if (DECL_NAME (arg))
-	    {
-	      tree pname = DECL_NAME (arg);
-	      buf = xasprintf ("_P_%s", IDENTIFIER_POINTER (pname));
-	    }
-	  else
-	    buf = xasprintf ("_P_unnamed_%d", no_name_parm++);
-
-	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (parm.frame_type))
-	    {
-	      char *gbuf = xasprintf ("%s_live", buf);
-	      parm.guard_var
-		= build_lang_decl (VAR_DECL, get_identifier (gbuf),
-				   boolean_type_node);
-	      free (gbuf);
-	      DECL_ARTIFICIAL (parm.guard_var) = true;
-	      DECL_INITIAL (parm.guard_var) = boolean_false_node;
-	      parm.trivial_dtor = false;
-	    }
-	  else
-	    parm.trivial_dtor = true;
-	  parm.field_id = coro_make_frame_entry
-	    (&field_list, buf, actual_type, DECL_SOURCE_LOCATION (arg));
-	  free (buf);
-	}
-
-      /* We want to record every instance of param's use, so don't include
-	 a 'visited' hash_set on the tree walk, but only record a containing
-	 expression once.  */
-      hash_set<tree *> visited;
-      param_frame_data param_data
-	= {&field_list, param_uses, &visited, fn_start, false};
-      cp_walk_tree (&fnbody, register_param_uses, &param_data, NULL);
-    }
 
   /* We need to know, and inspect, each suspend point in the function
      in several places.  It's convenient to place this map out of line
