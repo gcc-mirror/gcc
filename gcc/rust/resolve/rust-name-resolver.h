@@ -326,7 +326,6 @@ public:
 	{
 	  ok = true;
 	  r->append_reference_for_def (defId, refId);
-	  return false;
 	}
       return true;
     });
