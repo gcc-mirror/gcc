@@ -5650,9 +5650,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cnd (logical_inverted_value truth_valued_p@0) @1 @2)
   (cnd @0 @2 @1)))
 
-/* abs/negative simplifications moved from fold_cond_expr_with_comparison,
-   Need to handle (A - B) case as fold_cond_expr_with_comparison does.
-   Need to handle UN* comparisons.
+/* abs/negative simplifications moved from fold_cond_expr_with_comparison.
 
    None of these transformations work for modes with signed
    zeros.  If A is +/-0, the first two transformations will
@@ -5716,6 +5714,48 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        }
        (convert (negate (absu:utype @0))))
        (negate (abs @0)))))
+ )
+
+ /* (A - B) == 0 ? (A - B) : (B - A)    same as (B - A) */
+ (for cmp (eq uneq)
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) zerop) @0 (minus@3 @2 @1))
+   (if (!HONOR_SIGNED_ZEROS (type))
+    @3))
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) integer_zerop) integer_zerop (minus@3 @2 @1))
+   @3)
+ )
+ /* (A - B) != 0 ? (A - B) : (B - A)    same as (A - B) */
+ (for cmp (ne ltgt)
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) zerop) @0 (minus @2 @1))
+   (if (!HONOR_SIGNED_ZEROS (type))
+    @0))
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) integer_zerop) @0 integer_zerop)
+   @0)
+ )
+ /* (A - B) >=/> 0 ? (A - B) : (B - A)    same as abs (A - B) */
+ (for cmp (ge gt)
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) zerop) @0 (minus @2 @1))
+   (if (!HONOR_SIGNED_ZEROS (type)
+	&& !TYPE_UNSIGNED (type))
+    (abs @0))))
+ /* (A - B) <=/< 0 ? (A - B) : (B - A)    same as -abs (A - B) */
+ (for cmp (le lt)
+  (simplify
+   (cnd (cmp (minus@0 @1 @2) zerop) @0 (minus @2 @1))
+   (if (!HONOR_SIGNED_ZEROS (type)
+	&& !TYPE_UNSIGNED (type))
+    (if (ANY_INTEGRAL_TYPE_P (type)
+	 && !TYPE_OVERFLOW_WRAPS (type))
+     (with {
+        tree utype = unsigned_type_for (type);
+      }
+      (convert (negate (absu:utype @0))))
+      (negate (abs @0)))))
  )
 )
 
