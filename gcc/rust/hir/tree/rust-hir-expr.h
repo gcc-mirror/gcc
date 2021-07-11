@@ -3094,9 +3094,6 @@ protected:
   }
 };
 
-// Forward decl - defined in rust-macro.h
-class MacroInvocation;
-
 // An unsafe block HIR node
 class UnsafeBlockExpr : public ExprWithBlock
 {
