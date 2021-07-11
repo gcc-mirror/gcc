@@ -1,3 +1,16 @@
+2021-07-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/pr100329.c: Require target lra.
+	* gcc.dg/torture/pr100519.c: Likewise.
+
+2021-07-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/82110
+	* g++.dg/cpp0x/pr78765.C: Expect another conversion failure
+	diagnostic.
+	* g++.dg/template/sfinae14.C: Flip incorrect assertion.
+	* g++.dg/cpp2a/concepts-requires27.C: New test.
+
 2021-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101098

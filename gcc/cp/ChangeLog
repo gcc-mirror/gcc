@@ -1,3 +1,12 @@
+2021-07-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/82110
+	* init.c (build_aggr_init): Return error_mark_node if
+	expand_aggr_init_1 returns false.
+	(expand_default_init): Change return type to bool.  Return false
+	on error, true on success.
+	(expand_aggr_init_1): Likewise.
+
 2021-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101098
