@@ -16,6 +16,9 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// The idea is that all reachable symbols are live, codes called
+// from live codes are live, and everything else is dead.
+
 #include "rust-lint-marklive.h"
 #include "rust-hir-full.h"
 #include "rust-name-resolver.h"
@@ -23,6 +26,13 @@
 namespace Rust {
 namespace Analysis {
 
+// This class trys to find the live symbols which can be used as
+// seeds in MarkLive
+//
+// 1. TODO: explicit live
+//    - Attribute like #[allow(dead_code)]
+//    - Attribute like #[lang=".."], it's not a intra-crate item.
+// 2. TODO: foreign item
 class FindEntryPoint : public MarkLiveBase
 {
   using Rust::Analysis::MarkLiveBase::visit;
@@ -62,6 +72,11 @@ MarkLive::Analysis (HIR::Crate &crate)
   return marklive.liveSymbols;
 }
 
+// pop a live symbol from worklist every iteration,
+// if it's a function then walk the function body, and
+// 1. save all the live symbols in worklist which is
+//    visited first time
+// 2. save all the live symbols in liveSymbols
 void
 MarkLive::go (HIR::Crate &crate)
 {
