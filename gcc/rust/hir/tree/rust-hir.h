@@ -613,17 +613,6 @@ protected:
   }
 };
 
-// A macro item HIR node - potentially abstract base class
-class MacroItem : public Item
-{
-  /*public:
-  std::string as_string() const;*/
-protected:
-  MacroItem (Analysis::NodeMapping mappings, AST::AttrVec outer_attribs)
-    : Item (std::move (mappings), std::move (outer_attribs))
-  {}
-};
-
 // Item used in trait declarations - abstract base class
 class TraitItem
 {
