@@ -3659,19 +3659,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      {
       unsigned HOST_WIDE_INT prec = TYPE_PRECISION (TREE_TYPE (@2));
       unsigned HOST_WIDE_INT bits = tree_to_uhwi (@1);
+      /* If the bswap was extended before the original shift, this
+	 byte (shift) has the sign of the extension, not the sign of
+	 the original shift.  */
+      tree st = TYPE_PRECISION (type) > prec ? TREE_TYPE (@2) : type;
      }
-     (if (bits + 8 == prec)
-      (if (TYPE_UNSIGNED (type))
-       (convert (convert:unsigned_char_type_node @0))
-       (convert (convert:signed_char_type_node @0)))
-      (if (bits < prec && bits + 8 > prec)
-       (with 
-	{
-	 tree nst = build_int_cst (integer_type_node, bits & 7);
-	 tree bt = TYPE_UNSIGNED (type) ? unsigned_char_type_node
-					: signed_char_type_node;
-	}
-	(convert (rshift:bt (convert:bt @0) {nst;}))))))))
+     /* Special case: logical right shift of sign-extended bswap.
+	(unsigned)(short)bswap16(x)>>12 is (unsigned)((short)x<<8)>>12. */
+     (if (TYPE_PRECISION (type) > prec
+	  && !TYPE_UNSIGNED (TREE_TYPE (@2))
+	  && TYPE_UNSIGNED (type)
+	  && bits < prec && bits + 8 >= prec)
+      (with { tree nst = build_int_cst (integer_type_node, prec - 8); }
+       (rshift (convert (lshift:st (convert:st @0) {nst;})) @1))
+      (if (bits + 8 == prec)
+       (if (TYPE_UNSIGNED (st))
+	(convert (convert:unsigned_char_type_node @0))
+	(convert (convert:signed_char_type_node @0)))
+       (if (bits < prec && bits + 8 > prec)
+	(with 
+	 {
+	  tree nst = build_int_cst (integer_type_node, bits & 7);
+	  tree bt = TYPE_UNSIGNED (st) ? unsigned_char_type_node
+				       : signed_char_type_node;
+	 }
+	 (convert (rshift:bt (convert:bt @0) {nst;})))))))))
  /* bswap(x) & C1 can sometimes be simplified to (x >> C2) & C1.  */
  (simplify
   (bit_and (convert? (bswap@2 @0)) INTEGER_CST@1)
