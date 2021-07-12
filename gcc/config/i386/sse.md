@@ -8486,10 +8486,24 @@
    (set_attr "mode" "DF")])
 
 (define_expand "vec_set<mode>"
-  [(match_operand:V 0 "register_operand")
+  [(match_operand:V_128 0 "register_operand")
    (match_operand:<ssescalarmode> 1 "register_operand")
-   (match_operand 2 "vec_setm_operand")]
+   (match_operand 2 "vec_setm_sse41_operand")]
   "TARGET_SSE"
+{
+  if (CONST_INT_P (operands[2]))
+    ix86_expand_vector_set (false, operands[0], operands[1],
+			    INTVAL (operands[2]));
+  else
+    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "vec_set<mode>"
+  [(match_operand:V_256_512 0 "register_operand")
+   (match_operand:<ssescalarmode> 1 "register_operand")
+   (match_operand 2 "vec_setm_avx2_operand")]
+  "TARGET_AVX"
 {
   if (CONST_INT_P (operands[2]))
     ix86_expand_vector_set (false, operands[0], operands[1],
