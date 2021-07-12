@@ -347,6 +347,11 @@ procedure Gnatfind is
 --  Start of processing for Gnatfind
 
 begin
+   Put_Line
+     ("WARNING: gnatfind is obsolete and will be removed in the next release");
+   Put_Line
+     ("Consider using Libadalang or GNAT Studio python scripting instead");
+
    Parse_Cmd_Line;
 
    if not Have_Entity then
