@@ -35,6 +35,7 @@ pragma Partition_Elaboration_Policy (Concurrent);
 
 with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
+with Ada.Task_Initialization;
 
 with System.Interrupt_Management;
 with System.Tasking.Debug;
@@ -1176,6 +1177,14 @@ package body System.Tasking.Stages is
       if Global_Task_Debug_Event_Set then
          Debug.Signal_Debug_Event (Debug.Debug_Event_Run, Self_ID);
       end if;
+
+      declare
+         use Ada.Task_Initialization;
+
+         Global_Initialization_Handler : Initialization_Handler;
+         pragma Atomic (Global_Initialization_Handler);
+         pragma Import (Ada, Global_Initialization_Handler,
+                        "__gnat_global_initialization_handler");
 
       begin
          --  We are separating the following portion of the code in order to

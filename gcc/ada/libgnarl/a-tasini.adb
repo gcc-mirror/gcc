@@ -26,13 +26,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Conversion;
-with System.Tasking;
-
 package body Ada.Task_Initialization is
 
-   function To_STIH is new Ada.Unchecked_Conversion
-     (Initialization_Handler, System.Tasking.Initialization_Handler);
+   Global_Initialization_Handler : Initialization_Handler := null;
+   pragma Atomic (Global_Initialization_Handler);
+   pragma Export (Ada, Global_Initialization_Handler,
+                  "__gnat_global_initialization_handler");
+   --  Global handler called when each task initializes.
 
    --------------------------------
    -- Set_Initialization_Handler --
@@ -40,7 +40,7 @@ package body Ada.Task_Initialization is
 
    procedure Set_Initialization_Handler (Handler : Initialization_Handler) is
    begin
-      System.Tasking.Global_Initialization_Handler := To_STIH (Handler);
+      Global_Initialization_Handler := Handler;
    end Set_Initialization_Handler;
 
 end Ada.Task_Initialization;

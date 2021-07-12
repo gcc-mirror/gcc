@@ -30,7 +30,8 @@
 --  when tasks start.
 
 package Ada.Task_Initialization is
-   pragma Preelaborate (Task_Initialization);
+   pragma Preelaborate;
+   pragma No_Elaboration_Code_All;
 
    type Initialization_Handler is access procedure;
 
