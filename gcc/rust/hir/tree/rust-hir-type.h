@@ -907,9 +907,6 @@ protected:
   }
 };
 
-// Forward decl - defined in rust-macro.h
-class MacroInvocation;
-
 /* TODO: possible types
  * struct type?
  * "enum" (tagged union) type?

@@ -1152,8 +1152,6 @@ class PathPattern;
 class PathInExpression;
 class QualifiedPathInExpression;
 
-// Replaced with forward decl - defined in rust-macro.h
-class MacroInvocation;
 } // namespace HIR
 } // namespace Rust
 
