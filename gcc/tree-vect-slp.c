@@ -2552,6 +2552,44 @@ debug (slp_tree node)
 		       node);
 }
 
+/* Recursive helper for the dot producer below.  */
+
+static void
+dot_slp_tree (FILE *f, slp_tree node, hash_set<slp_tree> &visited)
+{
+  if (visited.add (node))
+    return;
+
+  fprintf (f, "\"%p\" [label=\"", (void *)node);
+  vect_print_slp_tree (MSG_NOTE,
+		       dump_location_t::from_location_t (UNKNOWN_LOCATION),
+		       node);
+  fprintf (f, "\"];\n");
+
+
+  for (slp_tree child : SLP_TREE_CHILDREN (node))
+    fprintf (f, "\"%p\" -> \"%p\";", (void *)node, (void *)child);
+
+  for (slp_tree child : SLP_TREE_CHILDREN (node))
+    dot_slp_tree (f, child, visited);
+}
+
+DEBUG_FUNCTION void
+dot_slp_tree (const char *fname, slp_tree node)
+{
+  FILE *f = fopen (fname, "w");
+  fprintf (f, "digraph {\n");
+  fflush (f);
+    {
+      debug_dump_context ctx (f);
+      hash_set<slp_tree> visited;
+      dot_slp_tree (f, node, visited);
+    }
+  fflush (f);
+  fprintf (f, "}\n");
+  fclose (f);
+}
+
 /* Dump a slp tree NODE using flags specified in DUMP_KIND.  */
 
 static void
