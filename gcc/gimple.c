@@ -2149,8 +2149,10 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
       return gimple_asm_volatile_p (as_a <gasm *> (s));
 
     case GIMPLE_CALL:
+      if (gimple_call_internal_p (s))
+	return false;
       t = gimple_call_fndecl (s);
-      /* Assume that calls to weak functions may trap.  */
+      /* Assume that indirect and calls to weak functions may trap.  */
       if (!t || !DECL_P (t) || DECL_WEAK (t))
 	return true;
       return false;
