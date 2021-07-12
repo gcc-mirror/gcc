@@ -45,6 +45,9 @@ package System.VxWorks.Ext is
    subtype int is Interfaces.C.int;
    subtype unsigned is Interfaces.C.unsigned;
 
+   type vx_freq_t is new unsigned;
+   --  Equivalent of the C type _Vx_freq_t
+
    type Interrupt_Handler is access procedure (parameter : System.Address);
    pragma Convention (C, Interrupt_Handler);
 

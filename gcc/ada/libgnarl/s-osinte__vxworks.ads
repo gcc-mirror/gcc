@@ -57,6 +57,8 @@ package System.OS_Interface is
    type unsigned_long_long is mod 2 ** long_long'Size;
    type size_t             is mod 2 ** Standard'Address_Size;
 
+   subtype vx_freq_t       is System.VxWorks.Ext.vx_freq_t;
+
    -----------
    -- Errno --
    -----------
@@ -312,7 +314,7 @@ package System.OS_Interface is
    function taskDelay (ticks : int) return int;
    pragma Import (C, taskDelay, "taskDelay");
 
-   function sysClkRateGet return int;
+   function sysClkRateGet return vx_freq_t;
    pragma Import (C, sysClkRateGet, "sysClkRateGet");
 
    --  VxWorks 5.x specific functions
