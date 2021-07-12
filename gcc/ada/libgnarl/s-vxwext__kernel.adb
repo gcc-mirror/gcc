@@ -49,10 +49,10 @@ package body System.VxWorks.Ext is
    -- Int_Unlock --
    ----------------
 
-   function intUnlock (Old : int) return int;
+   procedure intUnlock (Old : int);
    pragma Import (C, intUnlock, "intUnlock");
 
-   function Int_Unlock (Old : int) return int renames intUnlock;
+   procedure Int_Unlock (Old : int) renames intUnlock;
 
    ---------------
    -- semDelete --

@@ -48,10 +48,10 @@ package body System.VxWorks.Ext is
    -- Int_Unlock --
    ----------------
 
-   function Int_Unlock (Old : int) return int is
+   procedure Int_Unlock (Old : int) is
       pragma Unreferenced (Old);
    begin
-      return ERROR;
+      null;
    end Int_Unlock;
 
    -----------------------

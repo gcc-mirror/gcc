@@ -1268,7 +1268,7 @@ package body System.Task_Primitives.Operations is
          C := C.Common.All_Tasks_Link;
       end loop;
 
-      Dummy := Int_Unlock (Old);
+      Int_Unlock (Old);
    end Stop_All_Tasks;
 
    ---------------

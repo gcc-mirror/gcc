@@ -57,7 +57,7 @@ package System.VxWorks.Ext is
    function Int_Lock return int;
    pragma Import (C, Int_Lock, "intLock");
 
-   function Int_Unlock (Old : int) return int;
+   procedure Int_Unlock (Old : int);
    pragma Import (C, Int_Unlock, "intUnlock");
 
    function Interrupt_Connect
