@@ -8,7 +8,7 @@ struct ValueType {
   int field;
 };
 
-static constexpr ValueType var = 0; // { dg-error "conversion" }
+static constexpr ValueType var = 0; // { dg-error "conversion|convert" }
 
 template <int> class ValueTypeInfo;
 

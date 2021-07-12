@@ -204,7 +204,7 @@ private:
 class debug_dump_context
 {
  public:
-  debug_dump_context ();
+  debug_dump_context (FILE *f = stderr);
   ~debug_dump_context ();
 
  private:

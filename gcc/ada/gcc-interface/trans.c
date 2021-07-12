@@ -9274,7 +9274,7 @@ process_freeze_entity (Node_Id gnat_node)
 
       /* Propagate back-annotations from full view to partial view.  */
       if (!Known_Alignment (gnat_entity))
-	Set_Alignment (gnat_entity, Alignment (full_view));
+	Copy_Alignment (gnat_entity, full_view);
 
       if (!Known_Esize (gnat_entity))
 	Set_Esize (gnat_entity, Esize (full_view));

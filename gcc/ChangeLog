@@ -1,3 +1,67 @@
+2021-07-09  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*divmodsi4_const): Optimize SImode
+	divmod of a constant numerator with new define_insn_and_split.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/100152
+	* config/i386/i386-expand.c (ix86_expand_call): If a call is
+	to a non-local-binding, or local but to a public symbol, then
+	assume that it might be indirected via the lazy symbol binder.
+	Mark R10 and R10 as clobbered in that case.
+
+2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/101377
+	* gcc.c (ASM_DEBUG_DWARF_OPTION): Set again to --gdwarf2 in
+	the case where HAVE_AS_WORKING_DWARF_N_FLAG is not defined
+	and HAVE_LD_BROKEN_PE_DWARF5 is defined.
+
+2021-07-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*udivmodsi4_pow2_zext_1): Limit the
+	log2 range of operands[3] to [1,31].
+	(*udivmodsi4_pow2_zext_2): Ditto.  Correct insn RTX pattern.
+
+2021-07-09  Sergei Trofimovich  <siarheit@google.com>
+
+	* doc/md.texi: Don't split @smallexample in multiple @groups.
+
+2021-07-09  Sergei Trofimovich  <siarheit@google.com>
+
+	* doc/md.texi: Add missing 'see' word.
+
+2021-07-09  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (phiopt_early_allow): Change arguments
+	to take sequence and gimple_match_op.  Accept the case where
+	op is a SSA_NAME and one statement in the sequence.
+	Also allow constants.
+	(gimple_simplify_phiopt): Always pass a sequence to resimplify.
+	Update call to phiopt_early_allow.  Discard the sequence if not
+	used.
+
+2021-07-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/100760
+	PR target/100761
+	PR target/100762
+	* config/mips/mips.c (mips_const_insns): Use MSA_SUPPORTED_MODE_P
+	instead of ISA_HAS_MSA.
+	(mips_expand_vec_unpack): Likewise.
+	(mips_expand_vector_init): Likewise.
+
+2021-07-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/vsx.md (mods_<mode>): Rename to...
+	(mod<mode>3): ... this.
+	(modu_<mode>): Rename to...
+	(umod<mode>3): ... this.
+	* config/rs6000/rs6000-builtin.def (MODS_V2DI, MODS_V4SI, MODU_V2DI,
+	MODU_V4SI): Adjust.
+
 2021-07-08  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* config/h8300/shiftrotate.md (variable shifts): Expose condition

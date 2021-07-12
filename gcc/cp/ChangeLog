@@ -1,3 +1,54 @@
+2021-07-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/82110
+	* init.c (build_aggr_init): Return error_mark_node if
+	expand_aggr_init_1 returns false.
+	(expand_default_init): Change return type to bool.  Return false
+	on error, true on success.
+	(expand_aggr_init_1): Likewise.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101098
+	* decl.c (function_requirements_equivalent_p): Only compare
+	trailing requirements on a specialization.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Move common code to
+	act_des_fn.
+	(build_destroy_fn): Likewise.
+	(act_des_fn): Build the void return here.  Ensure that the
+	source location matches the original function.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc
+	(coro_rewrite_function_body): Connect the replacement
+	function block to the block nest correctly.
+
+2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101181
+	* constraint.cc (tsubst_requires_expr): Pass complain/in_decl to
+	add_extra_args.
+	* cp-tree.h (add_extra_args): Add complain/in_decl parameters.
+	* pt.c (build_extra_args): Make a copy of args.
+	(add_extra_args): Add complain/in_decl parameters.  Enable the
+	code for handling the case where the extra arguments are
+	dependent.
+	(tsubst_pack_expansion): Pass complain/in_decl to
+	add_extra_args.
+	(tsubst_template_args): Handle missing template arguments.
+	(tsubst_expr) <case IF_STMT>: Pass complain/in_decl to
+	add_extra_args.
+
+2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* pt.c (any_template_parm_r) <case TEMPLATE_DECL>: Just walk the
+	DECL_CONTEXT.
+
 2021-07-08  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/101372

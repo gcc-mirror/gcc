@@ -1,3 +1,74 @@
+2021-07-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/pr100329.c: Require target lra.
+	* gcc.dg/torture/pr100519.c: Likewise.
+
+2021-07-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/82110
+	* g++.dg/cpp0x/pr78765.C: Expect another conversion failure
+	diagnostic.
+	* g++.dg/template/sfinae14.C: Flip incorrect assertion.
+	* g++.dg/cpp2a/concepts-requires27.C: New test.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101098
+	* g++.dg/concepts/explicit-spec1.C: New test.
+
+2021-07-09  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/divmod-9.c: New test case.
+
+2021-07-09  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR testsuite/101269
+	* gcc.dg/debug/btf/btf-datasec-1.c: Force -msdata=none with ilp32 for
+	powerpc based targets.
+
+2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101181
+	* g++.dg/cpp2a/concepts-requires26.C: New test.
+	* g++.dg/cpp2a/lambda-uneval16.C: New test.
+
+2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* g++.dg/cpp2a/concepts-memtmpl4.C: Uncomment the commented out
+	example, which we now handle correctly.
+	* g++.dg/cpp2a/concepts-memtmpl5.C: New test.
+	* g++.dg/cpp2a/concepts-memtmpl5a.C: New test.
+
+2021-07-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.target/mips/cfgcleanup-jalr2.c: Remove -fno-inline and add
+	  __attribute__((noinline)).
+	* gcc.target/mips/cfgcleanup-jalr3.c: Likewise.
+
+2021-07-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/100760
+	PR target/100761
+	PR target/100762
+	* gcc.target/mips/pr100760.c: New test.
+	* gcc.target/mips/pr100761.c: New test.
+	* gcc.target/mips/pr100762.c: New test.
+
+2021-07-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/mod-vectorize.c: New test.
+
+2021-07-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/div-vectorize-1.c: New test.
+
+2021-07-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/mul-vectorize-1.c: New test.
+	* gcc.target/powerpc/mul-vectorize-2.c: New test.
+
 2021-07-08  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Wstringop-overflow-43.c: Remove an xfail.

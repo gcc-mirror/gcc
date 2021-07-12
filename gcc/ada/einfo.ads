@@ -4173,15 +4173,6 @@ package Einfo is
 --       within an accept statement. For all remaining cases (discriminants,
 --       loop parameters) the field is Empty.
 
---    Renaming_Map
---       Defined in generic subprograms, generic packages, and their
---       instances. Also defined in the instances of the corresponding
---       bodies. Denotes the renaming map (generic entities => instance
---       entities) used to construct the instance by giving an index into
---       the tables used to represent these maps. See Sem_Ch12 for further
---       details. The maps for package instances are also used when the
---       instance is the actual corresponding to a formal package.
-
 --    Requires_Overriding
 --       Defined in all subprograms and entries. Set for subprograms that
 --       require overriding as defined by RM-2005-3.9.3(6/2). Note that this
@@ -5474,7 +5465,6 @@ package Einfo is
    --  E_Function
    --  E_Generic_Function
    --    Mechanism                            (Mechanism_Type)
-   --    Renaming_Map
    --    Handler_Records                      (non-generic case only)
    --    Protected_Body_Subprogram
    --    Next_Inlined_Subprogram
@@ -5734,7 +5724,6 @@ package Einfo is
    --  E_Package
    --  E_Generic_Package
    --    Dependent_Instances                  (for an instance)
-   --    Renaming_Map
    --    Handler_Records                      (non-generic case only)
    --    Generic_Homonym                      (generic case only)
    --    Associated_Formal_Package
@@ -5832,7 +5821,6 @@ package Einfo is
    --  E_Procedure
    --  E_Generic_Procedure
    --    Associated_Node_For_Itype $$$ E_Procedure
-   --    Renaming_Map
    --    Handler_Records                      (non-generic case only)
    --    Protected_Body_Subprogram
    --    Next_Inlined_Subprogram

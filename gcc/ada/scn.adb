@@ -155,7 +155,14 @@ package body Scn is
 
          when Tok_Integer_Literal =>
             Token_Node := New_Node (N_Integer_Literal, Token_Ptr);
-            Set_Intval (Token_Node, Int_Literal_Value);
+
+            --  Int_Literal_Value can be No_Uint in some cases in syntax-only
+            --  mode (see Scng.Scan.Nlit).
+
+            if Int_Literal_Value /= No_Uint then
+               Set_Intval (Token_Node, Int_Literal_Value);
+            end if;
+
             Check_Obsolete_Base_Char;
 
          when Tok_String_Literal =>

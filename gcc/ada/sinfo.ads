@@ -2177,12 +2177,12 @@ package Sinfo is
    --    Present in an N_Variant node. This has a meaningful value only after
    --    Gigi has back annotated the tree with representation information. At
    --    this point, it contains a reference to a gcc expression that depends
-   --    on the values of one or more discriminants. Give a set of discriminant
-   --    values, this expression evaluates to False (zero) if variant is not
-   --    present, and True (non-zero) if it is present. See unit Repinfo for
-   --    further details on gigi back annotation. This field is used during
-   --    back-annotation processing (for -gnatR -gnatc) to determine if a field
-   --    is present or not.
+   --    on the values of one or more discriminants. Given a set of
+   --    discriminant values, this expression evaluates to False (zero) if
+   --    variant is not present, and True (non-zero) if it is present. See
+   --    unit Repinfo for further details on gigi back annotation. This field
+   --    is used during back-annotation processing (for -gnatR -gnatc) to
+   --    determine if a field is present or not.
 
    --  Prev_Use_Clause
    --    Present in both N_Use_Package_Clause and N_Use_Type_Clause. Used in

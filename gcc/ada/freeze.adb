@@ -3307,7 +3307,7 @@ package body Freeze is
                   --  cases of types whose alignment exceeds their size (the
                   --  padded type cases).
 
-                  if Csiz /= 0 then
+                  if Csiz /= 0 and then Known_Alignment (Ctyp) then
                      declare
                         A : constant Uint := Alignment_In_Bits (Ctyp);
                      begin
@@ -3478,9 +3478,12 @@ package body Freeze is
          --  Processing that is done only for subtypes
 
          else
-            --  Acquire alignment from base type
+            --  Acquire alignment from base type. Known_Alignment of the base
+            --  type is False for Wide_String, for example.
 
-            if not Known_Alignment (Arr) then
+            if not Known_Alignment (Arr)
+              and then Known_Alignment (Base_Type (Arr))
+            then
                Set_Alignment (Arr, Alignment (Base_Type (Arr)));
                Adjust_Esize_Alignment (Arr);
             end if;
@@ -3642,7 +3645,8 @@ package body Freeze is
             end if;
 
             if not Has_Alignment_Clause (Arr) then
-               Set_Alignment (Arr, Alignment (Packed_Array_Impl_Type (Arr)));
+               Copy_Alignment
+                 (To => Arr, From => Packed_Array_Impl_Type (Arr));
             end if;
          end if;
 

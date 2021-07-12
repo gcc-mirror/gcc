@@ -2071,6 +2071,13 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 			  && value_dies_in_block_x (expr, block))))
 		to_remove = i;
 	    }
+	  /* If the REFERENCE may trap make sure the block does not contain
+	     a possible exit point.
+	     ???  This is overly conservative if we translate AVAIL_OUT
+	     as the available expression might be after the exit point.  */
+	  if (BB_MAY_NOTRETURN (block)
+	      && vn_reference_may_trap (ref))
+	    to_remove = i;
 	}
       else if (expr->kind == NARY)
 	{
@@ -3412,7 +3419,11 @@ do_pre_regular_insertion (basic_block block, basic_block dom,
 	  /* If all edges produce the same value and that value is
 	     an invariant, then the PHI has the same value on all
 	     edges.  Note this.  */
-	  else if (!cant_insert && all_same)
+	  else if (!cant_insert
+		   && all_same
+		   && (edoubleprime->kind != NAME
+		       || !SSA_NAME_OCCURS_IN_ABNORMAL_PHI
+			     (PRE_EXPR_NAME (edoubleprime))))
 	    {
 	      gcc_assert (edoubleprime->kind == CONSTANT
 			  || edoubleprime->kind == NAME);
@@ -3856,7 +3867,7 @@ insert (void)
    AVAIL_OUT[BLOCK] = AVAIL_IN[BLOCK] U PHI_GEN[BLOCK] U TMP_GEN[BLOCK].  */
 
 static void
-compute_avail (void)
+compute_avail (function *fun)
 {
 
   basic_block block, son;
@@ -3867,7 +3878,7 @@ compute_avail (void)
 
   /* We pretend that default definitions are defined in the entry block.
      This includes function arguments and the static chain decl.  */
-  FOR_EACH_SSA_NAME (i, name, cfun)
+  FOR_EACH_SSA_NAME (i, name, fun)
     {
       pre_expr e;
       if (!SSA_NAME_IS_DEFAULT_DEF (name)
@@ -3877,31 +3888,31 @@ compute_avail (void)
 
       e = get_or_alloc_expr_for_name (name);
       add_to_value (get_expr_value_id (e), e);
-      bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (cfun)), e);
-      bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+      bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (fun)), e);
+      bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (fun)),
 				    e);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (fun)),
 			"tmp_gen", ENTRY_BLOCK);
-      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (fun)),
 			"avail_out", ENTRY_BLOCK);
     }
 
   /* Allocate the worklist.  */
-  worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+  worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
 
   /* Seed the algorithm by putting the dominator children of the entry
      block on the worklist.  */
-  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (fun));
        son;
        son = next_dom_son (CDI_DOMINATORS, son))
     worklist[sp++] = son;
 
-  BB_LIVE_VOP_ON_EXIT (ENTRY_BLOCK_PTR_FOR_FN (cfun))
-    = ssa_default_def (cfun, gimple_vop (cfun));
+  BB_LIVE_VOP_ON_EXIT (ENTRY_BLOCK_PTR_FOR_FN (fun))
+    = ssa_default_def (fun, gimple_vop (fun));
 
   /* Loop until the worklist is empty.  */
   while (sp)
@@ -3966,7 +3977,8 @@ compute_avail (void)
 		 before it.  */
 	      int flags = gimple_call_flags (stmt);
 	      if (!(flags & ECF_CONST)
-		  || (flags & ECF_LOOPING_CONST_OR_PURE))
+		  || (flags & ECF_LOOPING_CONST_OR_PURE)
+		  || stmt_can_throw_external (fun, stmt))
 		BB_MAY_NOTRETURN (block) = 1;
 	    }
 
@@ -3983,7 +3995,7 @@ compute_avail (void)
 	    BB_LIVE_VOP_ON_EXIT (block) = gimple_vdef (stmt);
 
 	  if (gimple_has_side_effects (stmt)
-	      || stmt_could_throw_p (cfun, stmt)
+	      || stmt_could_throw_p (fun, stmt)
 	      || is_gimple_debug (stmt))
 	    continue;
 
@@ -4380,7 +4392,7 @@ pass_pre::execute (function *fun)
      we require AVAIL.  */
   if (n_basic_blocks_for_fn (fun) < 4000)
     {
-      compute_avail ();
+      compute_avail (fun);
       compute_antic ();
       insert ();
     }

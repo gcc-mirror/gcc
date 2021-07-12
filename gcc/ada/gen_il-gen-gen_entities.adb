@@ -246,7 +246,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  dummy type for the return type of a procedure (the reason we create
        --  this type is to share the circuits for performing overload
        --  resolution on calls).
-       (Sm (Alignment, Uint),
+       (Sm (Alignment, Unat),
         Sm (Contract, Node_Id),
         Sm (Is_Elaboration_Warnings_OK_Id, Flag),
         Sm (Original_Record_Component, Node_Id),
@@ -272,7 +272,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Debug_Renaming_Link, Node_Id),
         Sm (Discriminal_Link, Node_Id),
         Sm (Discriminant_Default_Value, Node_Id),
-        Sm (Discriminant_Number, Uint),
+        Sm (Discriminant_Number, Upos),
         Sm (Enclosing_Scope, Node_Id),
         Sm (Entry_Bodies_Array, Node_Id,
             Pre => "Has_Entries (N)"),
@@ -293,7 +293,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Last_Entity, Node_Id),
         Sm (Next_Inlined_Subprogram, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id), -- See Einfo.Utils
-        Sm (Renaming_Map, Uint),
         Sm (Return_Applies_To, Node_Id),
         Sm (Scalar_Range, Node_Id),
         Sm (Scale_Value, Uint),
@@ -334,7 +333,7 @@ begin -- Gen_IL.Gen.Gen_Entities
 
    Ab (Allocatable_Kind, Object_Kind,
        (Sm (Activation_Record_Component, Node_Id),
-        Sm (Alignment, Uint),
+        Sm (Alignment, Unat),
         Sm (Esize, Uint),
         Sm (Interface_Name, Node_Id),
         Sm (Is_Finalized_Transient, Flag),
@@ -374,7 +373,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (CR_Discriminant, Node_Id),
         Sm (Discriminal, Node_Id),
         Sm (Discriminant_Default_Value, Node_Id),
-        Sm (Discriminant_Number, Uint),
+        Sm (Discriminant_Number, Upos),
         Sm (Is_Completely_Hidden, Flag)));
 
    Cc (E_Loop_Parameter, Allocatable_Kind);
@@ -400,7 +399,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  Formal parameters are also objects
        (Sm (Activation_Record_Component, Node_Id),
         Sm (Actual_Subtype, Node_Id),
-        Sm (Alignment, Uint),
+        Sm (Alignment, Unat),
         Sm (Default_Expr_Function, Node_Id),
         Sm (Default_Value, Node_Id),
         Sm (Entry_Component, Node_Id),
@@ -456,7 +455,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    --  Named numbers created by a number declaration with a real value
 
    Ab (Type_Kind, Void_Or_Type_Kind,
-       (Sm (Alignment, Uint),
+       (Sm (Alignment, Unat),
         Sm (Associated_Node_For_Itype, Node_Id),
         Sm (Can_Use_Internal_Rep, Flag, Base_Type_Only,
             Pre => "Ekind (Base_Type (N)) in Access_Subprogram_Kind"),
@@ -745,7 +744,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_String_Literal_Subtype, Array_Kind,
        --  A special string subtype, used only to describe the type of a string
        --  literal (will always be one dimensional, with literal bounds).
-       (Sm (String_Literal_Length, Uint),
+       (Sm (String_Literal_Length, Unat),
         Sm (String_Literal_Low_Bound, Node_Id)));
 
    Ab (Class_Wide_Kind, Aggregate_Kind,
@@ -970,11 +969,11 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Enumeration_Literal, Overloadable_Kind,
        --  An enumeration literal, created by the use of the literal in an
        --  enumeration type definition.
-       (Sm (Enumeration_Pos, Uint),
-        Sm (Enumeration_Rep, Uint),
+       (Sm (Enumeration_Pos, Unat),
+        Sm (Enumeration_Rep, Valid_Uint),
         Sm (Enumeration_Rep_Expr, Node_Id),
         Sm (Esize, Uint),
-        Sm (Alignment, Uint),
+        Sm (Alignment, Unat),
         Sm (Interface_Name, Node_Id)));
 
    Ab (Subprogram_Kind, Overloadable_Kind,
@@ -1039,7 +1038,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Protected_Subprogram, Node_Id),
         Sm (Protection_Object, Node_Id),
         Sm (Related_Expression, Node_Id),
-        Sm (Renaming_Map, Uint),
         Sm (Rewritten_For_C, Flag),
         Sm (Thunk_Entity, Node_Id,
             Pre => "Is_Thunk (N)"),
@@ -1089,7 +1087,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Protected_Subprogram, Node_Id),
         Sm (Protection_Object, Node_Id),
         Sm (Receiving_Entry, Node_Id),
-        Sm (Renaming_Map, Uint),
         Sm (Static_Initialization, Node_Id,
             Pre => "not Is_Dispatching_Operation (N)"),
         Sm (Thunk_Entity, Node_Id,
@@ -1184,7 +1181,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  An exception created by an exception declaration. The exception
        --  itself uses E_Exception for the Ekind, the implicit type that is
        --  created to represent its type uses the Ekind E_Exception_Type.
-       (Sm (Alignment, Uint),
+       (Sm (Alignment, Unat),
         Sm (Esize, Uint),
         Sm (Interface_Name, Node_Id),
         Sm (Is_Raised, Flag),
@@ -1204,7 +1201,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Elaboration_Warnings_OK_Id, Flag),
         Sm (Last_Entity, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id),
-        Sm (Renaming_Map, Uint),
         Sm (Scope_Depth_Value, Uint),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag)));
@@ -1299,7 +1295,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Related_Instance, Node_Id),
         Sm (Renamed_In_Spec, Flag),
         Sm (Renamed_Or_Alias, Node_Id),
-        Sm (Renaming_Map, Uint),
         Sm (Scope_Depth_Value, Uint),
         Sm (SPARK_Aux_Pragma, Node_Id),
         Sm (SPARK_Aux_Pragma_Inherited, Flag),

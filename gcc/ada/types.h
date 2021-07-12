@@ -261,6 +261,10 @@ typedef Int String_Id;
 
 /* Type used for representation of universal integers.  */
 typedef Int Uint;
+typedef Int Valid_Uint;
+typedef Int Unat;
+typedef Int Upos;
+typedef Int Nonzero_Uint;
 
 /* Used to indicate missing Uint value.  */
 #define No_Uint Uint_Low_Bound

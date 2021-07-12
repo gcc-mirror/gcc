@@ -1,3 +1,9 @@
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Adjust cases for which it is necessary to
+	include the Darwin host config fragment.
+
 2021-07-06  Gaius Mulley  <gaius.mulley@southwales.ac.uk>
 
 	* MAINTAINERS: Add myself for write after approval and DCO.

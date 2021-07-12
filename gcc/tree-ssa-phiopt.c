@@ -1020,7 +1020,16 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
     return false;
 
   gsi = gsi_last_bb (cond_bb);
-  if (stmt_to_move)
+  /* Insert the sequence generated from gimple_simplify_phiopt.  */
+  if (seq)
+    gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
+
+  /* If there was a statement to move and the result of the statement
+     is going to be used, move it to right before the original
+     conditional.  */
+  if (stmt_to_move
+      && (gimple_assign_lhs (stmt_to_move) == result
+	  || !has_single_use (gimple_assign_lhs (stmt_to_move))))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1032,8 +1041,6 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       gsi_move_before (&gsi1, &gsi);
       reset_flow_sensitive_info (gimple_assign_lhs (stmt_to_move));
     }
-  if (seq)
-    gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
 

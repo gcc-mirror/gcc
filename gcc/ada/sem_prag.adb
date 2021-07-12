@@ -7562,7 +7562,7 @@ package body Sem_Prag is
             end if;
 
             if not Has_Alignment_Clause (Ent) then
-               Set_Alignment (Ent, Uint_0);
+               Init_Alignment (Ent);
             end if;
          end Set_Atomic_VFA;
 

@@ -636,6 +636,9 @@ B Known_Static_Normalized_Position_Max  (Entity_Id E);
 #define Known_Static_RM_Size einfo__utils__known_static_rm_size
 B Known_Static_RM_Size                  (Entity_Id E);
 
+#define Copy_Alignment einfo__utils__copy_alignment
+B Copy_Alignment(Entity_Id To, Entity_Id From);
+
 #define Is_Discrete_Or_Fixed_Point_Type einfo__utils__is_discrete_or_fixed_point_type
 B Is_Discrete_Or_Fixed_Point_Type     (E Id);
 
