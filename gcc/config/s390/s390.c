@@ -16771,7 +16771,7 @@ static rtx_insn *
 s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 		    vec<machine_mode> &input_modes,
 		    vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
-		    HARD_REG_SET & /*clobbered_regs*/)
+		    HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
 {
   if (!TARGET_VXE)
     /* Long doubles are stored in FPR pairs - nothing to do.  */

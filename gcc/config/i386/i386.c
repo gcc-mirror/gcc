@@ -21596,7 +21596,7 @@ static rtx_insn *
 ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 		    vec<machine_mode> & /*input_modes*/,
 		    vec<const char *> &constraints, vec<rtx> &clobbers,
-		    HARD_REG_SET &clobbered_regs)
+		    HARD_REG_SET &clobbered_regs, location_t loc)
 {
   bool saw_asm_flag = false;
 
@@ -21609,7 +21609,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
       con += 4;
       if (strchr (con, ',') != NULL)
 	{
-	  error ("alternatives not allowed in %<asm%> flag output");
+	  error_at (loc, "alternatives not allowed in %<asm%> flag output");
 	  continue;
 	}
 
@@ -21673,7 +21673,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 	}
       if (code == UNKNOWN)
 	{
-	  error ("unknown %<asm%> flag output %qs", constraints[i]);
+	  error_at (loc, "unknown %<asm%> flag output %qs", constraints[i]);
 	  continue;
 	}
       if (invert)
@@ -21702,7 +21702,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
       machine_mode dest_mode = GET_MODE (dest);
       if (!SCALAR_INT_MODE_P (dest_mode))
 	{
-	  error ("invalid type for %<asm%> flag output");
+	  error_at (loc, "invalid type for %<asm%> flag output");
 	  continue;
 	}
 

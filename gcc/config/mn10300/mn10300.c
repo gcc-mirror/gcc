@@ -2850,7 +2850,7 @@ static rtx_insn *
 mn10300_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
 		       vec<machine_mode> & /*input_modes*/,
 		       vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
-		       HARD_REG_SET &clobbered_regs)
+		       HARD_REG_SET &clobbered_regs, location_t /*loc*/)
 {
   clobbers.safe_push (gen_rtx_REG (CCmode, CC_REG));
   SET_HARD_REG_BIT (clobbered_regs, CC_REG);

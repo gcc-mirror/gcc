@@ -2897,7 +2897,8 @@ expand_asm_loc (tree string, int vol, location_t locus)
 
       if (targetm.md_asm_adjust)
 	targetm.md_asm_adjust (output_rvec, input_rvec, input_mode,
-			       constraints, clobber_rvec, clobbered_regs);
+			       constraints, clobber_rvec, clobbered_regs,
+			       locus);
 
       asm_op = body;
       nclobbers = clobber_rvec.length ();
@@ -3074,8 +3075,7 @@ expand_asm_stmt (gasm *stmt)
       return;
     }
 
-  /* There are some legacy diagnostics in here, and also avoids an extra
-     parameter to targetm.md_asm_adjust.  */
+  /* There are some legacy diagnostics in here.  */
   save_input_location s_i_l(locus);
 
   unsigned noutputs = gimple_asm_noutputs (stmt);
@@ -3456,7 +3456,8 @@ expand_asm_stmt (gasm *stmt)
   if (targetm.md_asm_adjust)
     after_md_seq
 	= targetm.md_asm_adjust (output_rvec, input_rvec, input_mode,
-				 constraints, clobber_rvec, clobbered_regs);
+				 constraints, clobber_rvec, clobbered_regs,
+				 locus);
 
   /* Do not allow the hook to change the output and input count,
      lest it mess up the operand numbering.  */
