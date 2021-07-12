@@ -71,13 +71,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   using std::basic_string_view;
 #endif
 
+  /// @cond undocumented
+namespace __detail
+{
   /** @addtogroup filesystem-ts
    *  @{
    */
 
-  /// @cond undocumented
-namespace __detail
-{
   template<typename _CharT,
 	   typename _Ch = typename remove_const<_CharT>::type>
     using __is_encoded_char
@@ -188,10 +188,16 @@ namespace __detail
 #endif
       >::value, _UnqualVal>::type;
 
+  /// @} group filesystem-ts
 } // namespace __detail
   /// @endcond
 
+  /** @addtogroup filesystem-ts
+   *  @{
+   */
+
   /// A filesystem path.
+  /// @ingroup filesystem-ts
   class path
   {
   public:

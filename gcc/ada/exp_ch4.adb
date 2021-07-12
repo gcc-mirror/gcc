@@ -615,6 +615,7 @@ package body Exp_Ch4 is
            and then Is_Class_Wide_Type (DesigT)
            and then Tagged_Type_Expansion
            and then not Scope_Suppress.Suppress (Accessibility_Check)
+           and then not No_Dynamic_Accessibility_Checks_Enabled (Ref)
            and then
              (Type_Access_Level (Etype (Exp)) > Type_Access_Level (PtrT)
                or else
@@ -1165,6 +1166,9 @@ package body Exp_Ch4 is
          --  secondary stack). In that case, the object will be moved, so we do
          --  want to Adjust. However, if it's a nonlimited build-in-place
          --  function call, Adjust is not wanted.
+         --
+         --  Needs_Finalization (DesigT) can differ from Needs_Finalization (T)
+         --  if one of the two types is class-wide, and the other is not.
 
          if Needs_Finalization (DesigT)
            and then Needs_Finalization (T)
@@ -5277,6 +5281,8 @@ package body Exp_Ch4 is
                         if Ada_Version >= Ada_2005
                           and then
                             Ekind (Etype (Nod)) = E_Anonymous_Access_Type
+                          and then not
+                            No_Dynamic_Accessibility_Checks_Enabled (Nod)
                         then
                            Apply_Accessibility_Check
                              (Nod, Typ, Insert_Node => Nod);
@@ -6865,6 +6871,7 @@ package body Exp_Ch4 is
             if Ada_Version >= Ada_2012
               and then Is_Acc
               and then Ekind (Ltyp) = E_Anonymous_Access_Type
+              and then not No_Dynamic_Accessibility_Checks_Enabled (Lop)
             then
                declare
                   Expr_Entity : Entity_Id := Empty;
@@ -10393,7 +10400,9 @@ package body Exp_Ch4 is
       --  types and this is really marginal). We will just assume that we need
       --  the test if the left operand can be negative at all.
 
-      if Lneg and Rneg then
+      if (Lneg and Rneg)
+         and then not CodePeer_Mode
+      then
          Rewrite (N,
            Make_If_Expression (Loc,
              Expressions => New_List (
@@ -11986,9 +11995,8 @@ package body Exp_Ch4 is
                --  unchecked conversion to the target fixed-point type.
 
                Conv :=
-                 Make_Unchecked_Type_Conversion (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                   Expression   => New_Occurrence_Of (Expr_Id, Loc));
+                 Unchecked_Convert_To
+                   (Target_Type, New_Occurrence_Of (Expr_Id, Loc));
             end;
 
          --  All other conversions
@@ -12331,6 +12339,7 @@ package body Exp_Ch4 is
            and then Ekind (Etype (Operand_Acc)) = E_Anonymous_Access_Type
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
+           and then not No_Dynamic_Accessibility_Checks_Enabled (N)
          then
             if not Comes_From_Source (N)
               and then Nkind (Parent (N)) in N_Function_Call
@@ -12508,10 +12517,7 @@ package body Exp_Ch4 is
                   Conv : Node_Id;
                begin
                   Make_Tag_Check (Class_Wide_Type (Actual_Targ_Typ));
-                  Conv :=
-                    Make_Unchecked_Type_Conversion (Loc,
-                      Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                      Expression   => Relocate_Node (Expression (N)));
+                  Conv := Unchecked_Convert_To (Target_Type, Expression (N));
                   Rewrite (N, Conv);
                   Analyze_And_Resolve (N, Target_Type);
                end;
@@ -12741,7 +12747,16 @@ package body Exp_Ch4 is
       --  guard is necessary to prevent infinite recursions when we generate
       --  internal conversions for the purpose of checking predicates.
 
-      if Predicate_Enabled (Target_Type)
+      --  A view conversion of a tagged object is an object and can appear
+      --  in an assignment context, in which case no predicate check applies
+      --  to the now-dead value.
+
+      if Nkind (Parent (N)) = N_Assignment_Statement
+        and then N = Name (Parent (N))
+      then
+         null;
+
+      elsif Predicate_Enabled (Target_Type)
         and then Target_Type /= Operand_Type
         and then Comes_From_Source (N)
       then
@@ -14936,7 +14951,17 @@ package body Exp_Ch4 is
       --       Hook := null;
       --    end if;
 
+      --  Note that the value returned by Find_Hook_Context may be an operator
+      --  node, which is not a list member. We must locate the proper node in
+      --  in the tree after which to insert the finalization code.
+
       else
+         while not Is_List_Member (Fin_Context) loop
+            Fin_Context := Parent (Fin_Context);
+         end loop;
+
+         pragma Assert (Present (Fin_Context));
+
          Insert_Action_After (Fin_Context,
            Make_Implicit_If_Statement (Obj_Decl,
              Condition =>

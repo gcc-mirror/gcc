@@ -180,7 +180,7 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 }
 
 /* Include the target specific bits.  */
-#include "sigtramp-vxworks-target.inc"
+#include "sigtramp-vxworks-target.h"
 
 /* sigtramp stub for common registers.  */
 

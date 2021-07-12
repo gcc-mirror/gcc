@@ -23,13 +23,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;        use Aspects;
 with Atree;          use Atree;
+with Csets;          use Csets;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Exp_Tss;        use Exp_Tss;
-with Exp_Util;
-with Debug;          use Debug;
+with Exp_Util;       use Exp_Util;
 with Lib;            use Lib;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -43,14 +44,12 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;
+with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
 
 package body Exp_Put_Image is
-
-   Tagged_Put_Image_Enabled : Boolean renames Debug_Flag_Underscore_Z;
-   --  ???Set True to enable Put_Image for at least some tagged types
 
    -----------------------
    -- Local Subprograms --
@@ -529,6 +528,7 @@ package body Exp_Put_Image is
       Pnam : out Entity_Id)
    is
       Btyp : constant Entity_Id := Base_Type (Typ);
+      pragma Assert (not Is_Class_Wide_Type (Btyp));
       pragma Assert (not Is_Unchecked_Union (Btyp));
 
       First_Time : Boolean := True;
@@ -649,32 +649,90 @@ package body Exp_Put_Image is
             --  Loop through components, skipping all internal components,
             --  which are not part of the value (e.g. _Tag), except that we
             --  don't skip the _Parent, since we do want to process that
-            --  recursively. If _Parent is an interface type, being abstract
-            --  with no components there is no need to handle it.
+            --  recursively.
 
             while Present (Item) loop
                if Nkind (Item) in
                     N_Component_Declaration | N_Discriminant_Specification
-                 and then
-                   ((Chars (Defining_Identifier (Item)) = Name_uParent
-                       and then not Is_Interface
-                                      (Etype (Defining_Identifier (Item))))
-                     or else
-                    not Is_Internal_Name (Chars (Defining_Identifier (Item))))
                then
-                  if First_Time then
-                     First_Time := False;
-                  else
-                     Append_To (Result,
-                       Make_Procedure_Call_Statement (Loc,
-                         Name =>
-                           New_Occurrence_Of (RTE (RE_Record_Between), Loc),
-                         Parameter_Associations => New_List
-                           (Make_Identifier (Loc, Name_S))));
-                  end if;
+                  if Chars (Defining_Identifier (Item)) = Name_uParent then
+                     declare
+                        Parent_Type : constant Entity_Id :=
+                          Implementation_Base_Type
+                            (Etype (Defining_Identifier (Item)));
 
-                  Append_To (Result, Make_Component_Name (Item));
-                  Append_Component_Attr (Result, Defining_Identifier (Item));
+                        Parent_Aspect_Spec : constant Node_Id :=
+                          Find_Aspect (Parent_Type, Aspect_Put_Image);
+
+                        Parent_Type_Decl : constant Node_Id :=
+                          Declaration_Node (Parent_Type);
+
+                        Parent_Rdef : Node_Id :=
+                          Type_Definition (Parent_Type_Decl);
+                     begin
+                        --  If parent type has an noninherited
+                        --  explicitly-specified Put_Image aspect spec, then
+                        --  display parent part by calling specified procedure,
+                        --  and then use extension-aggregate syntax for the
+                        --  remaining components as per RM 4.10(15/5);
+                        --  otherwise, "look through" the parent component
+                        --  to its components - we don't want the image text
+                        --  to include mention of an "_parent" component.
+
+                        if Present (Parent_Aspect_Spec) and then
+                          Entity (Parent_Aspect_Spec) = Parent_Type
+                        then
+                           Append_Component_Attr
+                             (Result, Defining_Identifier (Item));
+
+                           --  Omit the " with " if no subsequent components.
+
+                           if not Is_Null_Extension_Of
+                                    (Descendant => Typ,
+                                     Ancestor => Parent_Type)
+                           then
+                              Append_To (Result,
+                                 Make_Procedure_Call_Statement (Loc,
+                                   Name =>
+                                     New_Occurrence_Of
+                                       (RTE (RE_Put_UTF_8), Loc),
+                                   Parameter_Associations => New_List
+                                     (Make_Identifier (Loc, Name_S),
+                                      Make_String_Literal (Loc, " with "))));
+                           end if;
+                        else
+                           if Nkind (Parent_Rdef) = N_Derived_Type_Definition
+                           then
+                              Parent_Rdef :=
+                                Record_Extension_Part (Parent_Rdef);
+                           end if;
+
+                           if Present (Component_List (Parent_Rdef)) then
+                              Append_List_To (Result,
+                                 Make_Component_List_Attributes
+                                   (Component_List (Parent_Rdef)));
+                           end if;
+                        end if;
+                     end;
+
+                  elsif not Is_Internal_Name
+                              (Chars (Defining_Identifier (Item)))
+                  then
+                     if First_Time then
+                        First_Time := False;
+                     else
+                        Append_To (Result,
+                          Make_Procedure_Call_Statement (Loc,
+                            Name =>
+                              New_Occurrence_Of (RTE (RE_Record_Between), Loc),
+                            Parameter_Associations => New_List
+                              (Make_Identifier (Loc, Name_S))));
+                     end if;
+
+                     Append_To (Result, Make_Component_Name (Item));
+                     Append_Component_Attr
+                       (Result, Defining_Identifier (Item));
+                  end if;
                end if;
 
                Next (Item);
@@ -690,13 +748,35 @@ package body Exp_Put_Image is
 
       function Make_Component_Name (C : Entity_Id) return Node_Id is
          Name : constant Name_Id := Chars (Defining_Identifier (C));
+         pragma Assert (Name /= Name_uParent);
+
+         function To_Upper (S : String) return String;
+         --  Same as Ada.Characters.Handling.To_Upper, but withing
+         --  Ada.Characters.Handling seems to cause mailserver problems.
+
+         --------------
+         -- To_Upper --
+         --------------
+
+         function To_Upper (S : String) return String is
+         begin
+            return Result : String := S do
+               for Char of Result loop
+                  Char := Fold_Upper (Char);
+               end loop;
+            end return;
+         end To_Upper;
+
+      --  Start of processing for Make_Component_Name
+
       begin
          return
            Make_Procedure_Call_Statement (Loc,
              Name => New_Occurrence_Of (RTE (RE_Put_UTF_8), Loc),
              Parameter_Associations => New_List
                (Make_Identifier (Loc, Name_S),
-                Make_String_Literal (Loc, Get_Name_String (Name) & " => ")));
+                Make_String_Literal (Loc,
+                  To_Upper (Get_Name_String (Name)) & " => ")));
       end Make_Component_Name;
 
       Stms : constant List_Id := New_List;
@@ -707,38 +787,71 @@ package body Exp_Put_Image is
    --  Start of processing for Build_Record_Put_Image_Procedure
 
    begin
-      Append_To (Stms,
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (RTE (RE_Record_Before), Loc),
-          Parameter_Associations => New_List
-            (Make_Identifier (Loc, Name_S))));
+      if (Ada_Version < Ada_2022)
+        or else not Enable_Put_Image (Btyp)
+      then
+         --  generate a very simple Put_Image implementation
 
-      --  Generate Put_Images for the discriminants of the type
+         if Is_RTE (Typ, RE_Root_Buffer_Type) then
+            --  Avoid introducing a cyclic dependency between
+            --  Ada.Strings.Text_Buffers and System.Put_Images.
 
-      Append_List_To (Stms,
-        Make_Component_Attributes (Discriminant_Specifications (Type_Decl)));
+            Append_To (Stms,
+              Make_Raise_Program_Error (Loc,
+              Reason => PE_Explicit_Raise));
+         else
+            Append_To (Stms,
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (RTE (RE_Put_Image_Unknown), Loc),
+                Parameter_Associations => New_List
+                  (Make_Identifier (Loc, Name_S),
+                   Make_String_Literal (Loc,
+                     To_String (Fully_Qualified_Name_String (Btyp))))));
+         end if;
+      elsif Is_Null_Record_Type (Btyp, Ignore_Privacy => True) then
 
-      Rdef := Type_Definition (Type_Decl);
+         --  Interface types take this path.
 
-      --  In the record extension case, the components we want, including the
-      --  _Parent component representing the parent type, are to be found in
-      --  the extension. We will process the _Parent component using the type
-      --  of the parent.
+         Append_To (Stms,
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Occurrence_Of (RTE (RE_Put_UTF_8), Loc),
+             Parameter_Associations => New_List
+               (Make_Identifier (Loc, Name_S),
+                Make_String_Literal (Loc, "(NULL RECORD)"))));
+      else
+         Append_To (Stms,
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Occurrence_Of (RTE (RE_Record_Before), Loc),
+             Parameter_Associations => New_List
+               (Make_Identifier (Loc, Name_S))));
 
-      if Nkind (Rdef) = N_Derived_Type_Definition then
-         Rdef := Record_Extension_Part (Rdef);
-      end if;
+         --  Generate Put_Images for the discriminants of the type
 
-      if Present (Component_List (Rdef)) then
          Append_List_To (Stms,
-           Make_Component_List_Attributes (Component_List (Rdef)));
-      end if;
+           Make_Component_Attributes
+             (Discriminant_Specifications (Type_Decl)));
 
-      Append_To (Stms,
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (RTE (RE_Record_After), Loc),
-          Parameter_Associations => New_List
-            (Make_Identifier (Loc, Name_S))));
+         Rdef := Type_Definition (Type_Decl);
+
+         --  In the record extension case, the components we want are to be
+         --  found in the extension (although we have to process the
+         --  _Parent component to find inherited components).
+
+         if Nkind (Rdef) = N_Derived_Type_Definition then
+            Rdef := Record_Extension_Part (Rdef);
+         end if;
+
+         if Present (Component_List (Rdef)) then
+            Append_List_To (Stms,
+              Make_Component_List_Attributes (Component_List (Rdef)));
+         end if;
+
+         Append_To (Stms,
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Occurrence_Of (RTE (RE_Record_After), Loc),
+             Parameter_Associations => New_List
+               (Make_Identifier (Loc, Name_S))));
+      end if;
 
       Pnam := Make_Put_Image_Name (Loc, Btyp);
       Build_Put_Image_Proc (Loc, Btyp, Decl, Pnam, Stms);
@@ -817,40 +930,28 @@ package body Exp_Put_Image is
 
    function Enable_Put_Image (Typ : Entity_Id) return Boolean is
    begin
+      --  If this function returns False for a non-scalar type Typ, then
+      --    a) calls to Typ'Image will result in calls to
+      --       System.Put_Images.Put_Image_Unknown to generate the image.
+      --    b) If Typ is a tagged type, then similarly the implementation
+      --       of Typ's Put_Image procedure will call Put_Image_Unknown
+      --       and will ignore its formal parameter of type Typ.
+      --       Note that Typ will still have a Put_Image procedure
+      --       in this case, albeit one with a simplified implementation.
+      --
       --  The name "Sink" here is a short nickname for
       --  "Ada.Strings.Text_Buffers.Root_Buffer_Type".
-
-      --  There's a bit of a chicken&egg problem. The compiler is likely to
-      --  have trouble if we refer to the Put_Image of Sink itself, because
-      --  Sink is part of the parameter profile:
-      --
-      --     function Sink'Put_Image (S : in out Sink'Class; V : T);
-      --
-      --  Likewise, the Ada.Strings.Buffer package, where Sink is
-      --  declared, depends on various other packages, so if we refer to
-      --  Put_Image of types declared in those other packages, we could create
-      --  cyclic dependencies. Therefore, we disable Put_Image for some
-      --  types. It's not clear exactly what types should be disabled. Scalar
-      --  types are OK, even if predefined, because calls to Put_Image of
-      --  scalar types are expanded inline. We certainly want to be able to use
-      --  Integer'Put_Image, for example.
-
-      --  ???Temporarily disable to work around bugs:
       --
       --  Put_Image does not work for Remote_Types. We check the containing
       --  package, rather than the type itself, because we want to include
       --  types in the private part of a Remote_Types package.
-      --
-      --  Put_Image on tagged types triggers some bugs.
 
       if Is_Remote_Types (Scope (Typ))
+        or else Is_Remote_Call_Interface (Typ)
         or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
-        or else (Is_Tagged_Type (Typ) and then not Tagged_Put_Image_Enabled)
       then
          return False;
       end if;
-
-      --  End of workarounds.
 
       --  No sense in generating code for Put_Image if there are errors. This
       --  avoids certain cascade errors.
@@ -904,9 +1005,9 @@ package body Exp_Put_Image is
       return True;
    end Enable_Put_Image;
 
-   ---------------------------------
+   -------------------------
    -- Make_Put_Image_Name --
-   ---------------------------------
+   -------------------------
 
    function Make_Put_Image_Name
      (Loc : Source_Ptr; Typ : Entity_Id) return Entity_Id
@@ -926,6 +1027,10 @@ package body Exp_Put_Image is
 
       return Make_Defining_Identifier (Loc, Sname);
    end Make_Put_Image_Name;
+
+   ---------------------------------
+   -- Image_Should_Call_Put_Image --
+   ---------------------------------
 
    function Image_Should_Call_Put_Image (N : Node_Id) return Boolean is
    begin
@@ -948,11 +1053,15 @@ package body Exp_Put_Image is
       end;
    end Image_Should_Call_Put_Image;
 
+   ----------------------
+   -- Build_Image_Call --
+   ----------------------
+
    function Build_Image_Call (N : Node_Id) return Node_Id is
       --  For T'Image (X) Generate an Expression_With_Actions node:
       --
       --     do
-      --        S : Buffer := New_Buffer;
+      --        S : Buffer;
       --        U_Type'Put_Image (S, X);
       --        Result : constant String := Get (S);
       --        Destroy (S);
@@ -970,13 +1079,16 @@ package body Exp_Put_Image is
           Object_Definition =>
             New_Occurrence_Of (RTE (RE_Buffer_Type), Loc));
 
+      Image_Prefix : constant Node_Id :=
+        Duplicate_Subexpr (First (Expressions (N)));
+
       Put_Im : constant Node_Id :=
         Make_Attribute_Reference (Loc,
           Prefix         => New_Occurrence_Of (U_Type, Loc),
           Attribute_Name => Name_Put_Image,
           Expressions    => New_List (
             New_Occurrence_Of (Sink_Entity, Loc),
-            New_Copy_Tree (First (Expressions (N)))));
+            Image_Prefix));
       Result_Entity : constant Entity_Id :=
         Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('R'));
       Result_Decl : constant Node_Id :=
@@ -989,12 +1101,86 @@ package body Exp_Put_Image is
               Name => New_Occurrence_Of (RTE (RE_Get), Loc),
               Parameter_Associations => New_List (
                 New_Occurrence_Of (Sink_Entity, Loc))));
-      Image : constant Node_Id :=
-        Make_Expression_With_Actions (Loc,
-          Actions => New_List (Sink_Decl, Put_Im, Result_Decl),
-          Expression => New_Occurrence_Of (Result_Entity, Loc));
+      Actions : List_Id;
+
+      function Put_String_Exp (String_Exp : Node_Id;
+                               Wide_Wide  : Boolean := False) return Node_Id;
+      --  Generate a call to evaluate a String (or Wide_Wide_String, depending
+      --  on the Wide_Wide Boolean parameter) expression and output it into
+      --  the buffer.
+
+      --------------------
+      -- Put_String_Exp --
+      --------------------
+
+      function Put_String_Exp (String_Exp : Node_Id;
+                               Wide_Wide  : Boolean := False) return Node_Id is
+         Put_Id : constant RE_Id :=
+           (if Wide_Wide then RE_Wide_Wide_Put else RE_Put_UTF_8);
+
+         --  We could build a nondispatching call here, but to make
+         --  that work we'd have to change Rtsfind spec to make available
+         --  corresponding callees out of Ada.Strings.Text_Buffers.Unbounded
+         --  (as opposed to from Ada.Strings.Text_Buffers). Seems simpler to
+         --  introduce a type conversion and leave it to the optimizer to
+         --  eliminate the dispatching. This does not *introduce* any problems
+         --  if a no-dispatching-allowed restriction is in effect, since we
+         --  are already in the middle of generating a call to T'Class'Image.
+
+         Sink_Exp : constant Node_Id :=
+           Make_Type_Conversion (Loc,
+             Subtype_Mark =>
+               New_Occurrence_Of
+                 (Class_Wide_Type (RTE (RE_Root_Buffer_Type)), Loc),
+             Expression   => New_Occurrence_Of (Sink_Entity, Loc));
+      begin
+         return
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Occurrence_Of (RTE (Put_Id), Loc),
+             Parameter_Associations => New_List (Sink_Exp, String_Exp));
+      end Put_String_Exp;
+
+   --  Start of processing for Build_Image_Call
+
    begin
-      return Image;
+      if Is_Class_Wide_Type (U_Type) then
+         --  Generate qualified-expression syntax; qualification name comes
+         --  from calling Ada.Tags.Wide_Wide_Expanded_Name.
+
+         declare
+            --  The copy of Image_Prefix will be evaluated before the
+            --  original, which is ok if no side effects are involved.
+
+            pragma Assert (Side_Effect_Free (Image_Prefix));
+
+            Specific_Type_Name : constant Node_Id :=
+              Put_String_Exp
+                (Make_Function_Call (Loc,
+                   Name => New_Occurrence_Of
+                             (RTE (RE_Wide_Wide_Expanded_Name), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => Duplicate_Subexpr (Image_Prefix),
+                       Attribute_Name => Name_Tag))),
+                 Wide_Wide => True);
+
+            Qualification : constant Node_Id :=
+              Put_String_Exp (Make_String_Literal (Loc, "'"));
+         begin
+            Actions := New_List
+                         (Sink_Decl,
+                          Specific_Type_Name,
+                          Qualification,
+                          Put_Im,
+                          Result_Decl);
+         end;
+      else
+         Actions := New_List (Sink_Decl, Put_Im, Result_Decl);
+      end if;
+
+      return Make_Expression_With_Actions (Loc,
+        Actions    => Actions,
+        Expression => New_Occurrence_Of (Result_Entity, Loc));
    end Build_Image_Call;
 
    ------------------------------
@@ -1023,7 +1209,6 @@ package body Exp_Put_Image is
       --  Don't do it if type Root_Buffer_Type is unavailable in the runtime.
 
       if not In_Predefined_Unit (Compilation_Unit)
-        and then Tagged_Put_Image_Enabled
         and then Tagged_Seen
         and then not No_Run_Time_Mode
         and then RTE_Available (RE_Root_Buffer_Type)

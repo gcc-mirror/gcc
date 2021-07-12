@@ -415,6 +415,27 @@ svalue::cmp_ptr (const svalue *sval1, const svalue *sval2)
 				sub_sval2->get_subregion ());
       }
       break;
+    case SK_REPEATED:
+      {
+	const repeated_svalue *repeated_sval1 = (const repeated_svalue *)sval1;
+	const repeated_svalue *repeated_sval2 = (const repeated_svalue *)sval2;
+	return svalue::cmp_ptr (repeated_sval1->get_inner_svalue (),
+				repeated_sval2->get_inner_svalue ());
+      }
+      break;
+    case SK_BITS_WITHIN:
+      {
+	const bits_within_svalue *bits_within_sval1
+	  = (const bits_within_svalue *)sval1;
+	const bits_within_svalue *bits_within_sval2
+	  = (const bits_within_svalue *)sval2;
+	if (int cmp = bit_range::cmp (bits_within_sval1->get_bits (),
+				       bits_within_sval2->get_bits ()))
+	  return cmp;
+	return svalue::cmp_ptr (bits_within_sval1->get_inner_svalue (),
+				bits_within_sval2->get_inner_svalue ());
+      }
+      break;
     case SK_UNMERGEABLE:
       {
 	const unmergeable_svalue *unmergeable_sval1
@@ -513,6 +534,36 @@ svalue::involves_p (const svalue *other) const
   involvement_visitor v (other);
   accept (&v);
   return v.found_p ();
+}
+
+/* Extract SUBRANGE from this value, of type TYPE.  */
+
+const svalue *
+svalue::extract_bit_range (tree type,
+			   const bit_range &subrange,
+			   region_model_manager *mgr) const
+{
+  return mgr->get_or_create_bits_within (type, subrange, this);
+}
+
+/* Base implementation of svalue::maybe_fold_bits_within vfunc.  */
+
+const svalue *
+svalue::maybe_fold_bits_within (tree,
+				const bit_range &,
+				region_model_manager *) const
+{
+  /* By default, don't fold.  */
+  return NULL;
+}
+
+/* Base implementation of svalue::all_zeroes_p.
+   Return true if this value is known to be all zeroes.  */
+
+bool
+svalue::all_zeroes_p () const
+{
+  return false;
 }
 
 /* class region_svalue : public svalue.  */
@@ -680,6 +731,34 @@ constant_svalue::eval_condition (const constant_svalue *lhs,
   return tristate::TS_UNKNOWN;
 }
 
+/* Implementation of svalue::maybe_fold_bits_within vfunc
+   for constant_svalue.  */
+
+const svalue *
+constant_svalue::maybe_fold_bits_within (tree type,
+					 const bit_range &,
+					 region_model_manager *mgr) const
+{
+  /* Bits within an all-zero value are also all zero.  */
+  if (zerop (m_cst_expr))
+    {
+      if (type)
+	return mgr->get_or_create_cast (type, this);
+      else
+	return this;
+    }
+  /* Otherwise, don't fold.  */
+  return NULL;
+}
+
+/* Implementation of svalue::all_zeroes_p for constant_svalue.  */
+
+bool
+constant_svalue::all_zeroes_p () const
+{
+  return zerop (m_cst_expr);
+}
+
 /* class unknown_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for unknown_svalue.  */
@@ -709,6 +788,18 @@ void
 unknown_svalue::accept (visitor *v) const
 {
   v->visit_unknown_svalue (this);
+}
+
+/* Implementation of svalue::maybe_fold_bits_within vfunc
+   for unknown_svalue.  */
+
+const svalue *
+unknown_svalue::maybe_fold_bits_within (tree type,
+					const bit_range &,
+					region_model_manager *mgr) const
+{
+  /* Bits within an unknown_svalue are themselves unknown.  */
+  return mgr->get_or_create_unknown_svalue (type);
 }
 
 /* Get a string for KIND for use in debug dumps.  */
@@ -892,6 +983,34 @@ unaryop_svalue::implicitly_live_p (const svalue_set *live_svalues,
   return get_arg ()->live_p (live_svalues, model);
 }
 
+/* Implementation of svalue::maybe_fold_bits_within vfunc
+   for unaryop_svalue.  */
+
+const svalue *
+unaryop_svalue::maybe_fold_bits_within (tree type,
+					const bit_range &,
+					region_model_manager *mgr) const
+{
+  switch (m_op)
+    {
+    default:
+      break;
+    case NOP_EXPR:
+      /* A cast of zero is zero.  */
+      if (tree cst = m_arg->maybe_get_constant ())
+	if (zerop (cst))
+	  {
+	    if (type)
+	      return mgr->get_or_create_cast (type, this);
+	    else
+	      return this;
+	  }
+      break;
+    }
+  /* Otherwise, don't fold.  */
+  return NULL;
+}
+
 /* class binop_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for binop_svalue.  */
@@ -993,6 +1112,213 @@ sub_svalue::implicitly_live_p (const svalue_set *live_svalues,
 			       const region_model *model) const
 {
   return get_parent ()->live_p (live_svalues, model);
+}
+
+/* class repeated_svalue : public svalue.  */
+
+/* repeated_svalue'c ctor.  */
+
+repeated_svalue::repeated_svalue (tree type,
+				  const svalue *outer_size,
+				  const svalue *inner_svalue)
+: svalue (complexity::from_pair (outer_size, inner_svalue), type),
+  m_outer_size (outer_size),
+  m_inner_svalue (inner_svalue)
+{
+}
+
+/* Implementation of svalue::dump_to_pp vfunc for repeated_svalue.  */
+
+void
+repeated_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    {
+      pp_string (pp, "REPEATED(");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
+      pp_string (pp, "outer_size: ");
+      m_outer_size->dump_to_pp (pp, simple);
+      pp_string (pp, ", inner_val: ");
+      m_inner_svalue->dump_to_pp (pp, simple);
+      pp_character (pp, ')');
+    }
+  else
+    {
+      pp_string (pp, "repeated_svalue (");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
+      pp_string (pp, "outer_size: ");
+      m_outer_size->dump_to_pp (pp, simple);
+      pp_string (pp, ", inner_val: ");
+      m_inner_svalue->dump_to_pp (pp, simple);
+      pp_character (pp, ')');
+    }
+}
+
+/* Implementation of svalue::accept vfunc for repeated_svalue.  */
+
+void
+repeated_svalue::accept (visitor *v) const
+{
+  v->visit_repeated_svalue (this);
+  m_inner_svalue->accept (v);
+}
+
+/* Implementation of svalue::all_zeroes_p for repeated_svalue.  */
+
+bool
+repeated_svalue::all_zeroes_p () const
+{
+  return m_inner_svalue->all_zeroes_p ();
+}
+
+/* Implementation of svalue::maybe_fold_bits_within vfunc
+   for repeated_svalue.  */
+
+const svalue *
+repeated_svalue::maybe_fold_bits_within (tree type,
+					 const bit_range &bits,
+					 region_model_manager *mgr) const
+{
+  const svalue *innermost_sval = m_inner_svalue;
+  /* Fold
+       BITS_WITHIN (range, REPEATED_SVALUE (ZERO))
+     to:
+       REPEATED_SVALUE (ZERO).  */
+  if (all_zeroes_p ())
+    {
+      byte_range bytes (0,0);
+      if (bits.as_byte_range (&bytes))
+	{
+	  const svalue *byte_size
+	    = mgr->get_or_create_int_cst (size_type_node,
+					  bytes.m_size_in_bytes.to_uhwi ());
+	  return mgr->get_or_create_repeated_svalue (type, byte_size,
+						     innermost_sval);
+	}
+    }
+
+  /* Fold:
+       BITS_WITHIN (range, REPEATED_SVALUE (INNERMOST_SVALUE))
+     to:
+       BITS_WITHIN (range - offset, INNERMOST_SVALUE)
+     if range is fully within one instance of INNERMOST_SVALUE.  */
+  if (tree innermost_type = innermost_sval->get_type ())
+    {
+      bit_size_t element_bit_size;
+      if (int_size_in_bits (innermost_type, &element_bit_size)
+	  && element_bit_size > 0)
+	{
+	  HOST_WIDE_INT start_idx
+	    = (bits.get_start_bit_offset ()
+	       / element_bit_size).to_shwi ();
+	  HOST_WIDE_INT last_idx
+	    = (bits.get_last_bit_offset ()
+	       / element_bit_size).to_shwi ();
+	  if (start_idx == last_idx)
+	    {
+	      bit_offset_t start_of_element
+		= start_idx * element_bit_size;
+	      bit_range range_within_element
+		(bits.m_start_bit_offset - start_of_element,
+		 bits.m_size_in_bits);
+	      return mgr->get_or_create_bits_within (type,
+						     range_within_element,
+						     innermost_sval);
+	    }
+	}
+    }
+
+  return NULL;
+}
+
+/* class bits_within_svalue : public svalue.  */
+
+/* bits_within_svalue'c ctor.  */
+
+bits_within_svalue::bits_within_svalue (tree type,
+					const bit_range &bits,
+					const svalue *inner_svalue)
+: svalue (complexity (inner_svalue), type),
+  m_bits (bits),
+  m_inner_svalue (inner_svalue)
+{
+}
+
+/* Implementation of svalue::dump_to_pp vfunc for bits_within_svalue.  */
+
+void
+bits_within_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    {
+      pp_string (pp, "BITS_WITHIN(");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
+      m_bits.dump_to_pp (pp);
+      pp_string (pp, ", inner_val: ");
+      m_inner_svalue->dump_to_pp (pp, simple);
+      pp_character (pp, ')');
+    }
+  else
+    {
+      pp_string (pp, "bits_within_svalue (");
+      if (get_type ())
+	{
+	  print_quoted_type (pp, get_type ());
+	  pp_string (pp, ", ");
+	}
+      m_bits.dump_to_pp (pp);
+      pp_string (pp, ", inner_val: ");
+      m_inner_svalue->dump_to_pp (pp, simple);
+      pp_character (pp, ')');
+    }
+}
+
+/* Implementation of svalue::maybe_fold_bits_within vfunc
+   for bits_within_svalue.  */
+
+const svalue *
+bits_within_svalue::maybe_fold_bits_within (tree type,
+					    const bit_range &bits,
+					    region_model_manager *mgr) const
+{
+  /* Fold:
+       BITS_WITHIN (range1, BITS_WITHIN (range2, VAL))
+     to:
+       BITS_WITHIN (range1 in range 2, VAL).  */
+  bit_range offset_bits (m_bits.get_start_bit_offset ()
+			 + bits.m_start_bit_offset,
+			 bits.m_size_in_bits);
+  return mgr->get_or_create_bits_within (type, offset_bits, m_inner_svalue);
+}
+
+/* Implementation of svalue::accept vfunc for bits_within_svalue.  */
+
+void
+bits_within_svalue::accept (visitor *v) const
+{
+  v->visit_bits_within_svalue (this);
+  m_inner_svalue->accept (v);
+}
+
+/* Implementation of svalue::implicitly_live_p vfunc for bits_within_svalue.  */
+
+bool
+bits_within_svalue::implicitly_live_p (const svalue_set *live_svalues,
+				       const region_model *model) const
+{
+  return m_inner_svalue->live_p (live_svalues, model);
 }
 
 /* class widening_svalue : public svalue.  */
@@ -1289,6 +1615,75 @@ compound_svalue::calc_complexity (const binding_map &map)
       max_child_depth = MAX (max_child_depth, sval_c.m_max_depth);
     }
   return complexity (num_child_nodes + 1, max_child_depth + 1);
+}
+
+/* Implementation of svalue::maybe_fold_bits_within vfunc
+   for compound_svalue.  */
+
+const svalue *
+compound_svalue::maybe_fold_bits_within (tree type,
+					 const bit_range &bits,
+					 region_model_manager *mgr) const
+{
+  binding_map result_map;
+  for (auto iter : m_map)
+    {
+      const binding_key *key = iter.first;
+      if (const concrete_binding *conc_key
+	  = key->dyn_cast_concrete_binding ())
+	{
+	  /* Ignore concrete bindings outside BITS.  */
+	  if (!conc_key->get_bit_range ().intersects_p (bits))
+	    continue;
+
+	  const svalue *sval = iter.second;
+	  /* Get the position of conc_key relative to BITS.  */
+	  bit_range result_location (conc_key->get_start_bit_offset ()
+				     - bits.get_start_bit_offset (),
+				     conc_key->get_size_in_bits ());
+	  /* If conc_key starts after BITS, trim off leading bits
+	     from the svalue and adjust binding location.  */
+	  if (result_location.m_start_bit_offset < 0)
+	    {
+	      bit_size_t leading_bits_to_drop
+		= -result_location.m_start_bit_offset;
+	      result_location = bit_range
+		(0, result_location.m_size_in_bits - leading_bits_to_drop);
+	      bit_range bits_within_sval (leading_bits_to_drop,
+					  result_location.m_size_in_bits);
+	      /* Trim off leading bits from iter_sval.  */
+	      sval = mgr->get_or_create_bits_within (NULL_TREE,
+						     bits_within_sval,
+						     sval);
+	    }
+	  /* If conc_key finishes after BITS, trim off trailing bits
+	     from the svalue and adjust binding location.  */
+	  if (conc_key->get_next_bit_offset ()
+	      > bits.get_next_bit_offset ())
+	    {
+	      bit_size_t trailing_bits_to_drop
+		= (conc_key->get_next_bit_offset ()
+		   - bits.get_next_bit_offset ());
+	      result_location = bit_range
+		(result_location.m_start_bit_offset,
+		 result_location.m_size_in_bits - trailing_bits_to_drop);
+	      bit_range bits_within_sval (0,
+					  result_location.m_size_in_bits);
+	      /* Trim off leading bits from iter_sval.  */
+	      sval = mgr->get_or_create_bits_within (NULL_TREE,
+						     bits_within_sval,
+						     sval);
+	    }
+	  const concrete_binding *offset_conc_key
+	    = mgr->get_store_manager ()->get_concrete_binding
+		(result_location);
+	  result_map.put (offset_conc_key, sval);
+	}
+      else
+	/* If we have any symbolic keys we can't get it as bits.  */
+	return NULL;
+    }
+  return mgr->get_or_create_compound_svalue (type, result_map);
 }
 
 /* class conjured_svalue : public svalue.  */

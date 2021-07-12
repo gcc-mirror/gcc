@@ -145,6 +145,13 @@ is
    -- "=" --
    ---------
 
+   function "=" (Left, Right : Cursor) return Boolean is
+   begin
+      return
+       Left.Container = Right.Container
+         and then Left.Node = Right.Node;
+   end "=";
+
    function "=" (Left, Right : Set) return Boolean is
    begin
       return Is_Equal (Left.HT, Right.HT);
@@ -763,11 +770,14 @@ is
       Position  : out Cursor;
       Inserted  : out Boolean)
    is
-      HT : Hash_Table_Type renames Container'Unrestricted_Access.HT;
    begin
       Insert (Container.HT, New_Item, Position.Node, Inserted);
       Position.Container := Container'Unchecked_Access;
-      Position.Position := HT_Ops.Index (HT, Position.Node);
+
+      --  Note that we do not set the Position component of the cursor,
+      --  because it may become incorrect on subsequent insertions/deletions
+      --  from the container. This will lose some optimizations but prevents
+      --  anomalies when the underlying hash-table is expanded or shrunk.
    end Insert;
 
    procedure Insert

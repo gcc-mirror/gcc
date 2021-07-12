@@ -65,6 +65,26 @@ package body Ada.Containers.Bounded_Holders is
       return Get (Left) = Get (Right);
    end "=";
 
+   ------------------------
+   -- Constant_Reference --
+   ------------------------
+
+   function Constant_Reference
+     (Container : aliased Holder) return not null access constant Element_Type
+   is
+   begin
+      return Cast (Container'Address);
+   end Constant_Reference;
+
+   ---------
+   -- Get --
+   ---------
+
+   function Get (Container : Holder) return Element_Type is
+   begin
+      return Cast (Container'Address).all;
+   end Get;
+
    ---------------
    -- Put_Image --
    ---------------
@@ -79,14 +99,16 @@ package body Ada.Containers.Bounded_Holders is
       Array_After (S);
    end Put_Image;
 
-   ---------
-   -- Get --
-   ---------
+   ---------------
+   -- Reference --
+   ---------------
 
-   function Get (Container : Holder) return Element_Type is
+   function Reference
+     (Container : not null access Holder) return not null access Element_Type
+   is
    begin
-      return Cast (Container'Address).all;
-   end Get;
+      return Cast (Container.all'Address);
+   end Reference;
 
    ---------
    -- Set --

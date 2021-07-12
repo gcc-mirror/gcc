@@ -491,7 +491,7 @@ Objective-C and Objective-C++ Dialects}.
 -floop-parallelize-all  -flra-remat  -flto  -flto-compression-level @gol
 -flto-partition=@var{alg}  -fmerge-all-constants @gol
 -fmerge-constants  -fmodulo-sched  -fmodulo-sched-allow-regmoves @gol
--fmove-loop-invariants  -fno-branch-count-reg @gol
+-fmove-loop-invariants  -fmove-loop-stores  -fno-branch-count-reg @gol
 -fno-defer-pop  -fno-fp-int-builtin-inexact  -fno-function-cse @gol
 -fno-guess-branch-probability  -fno-inline  -fno-math-errno  -fno-peephole @gol
 -fno-peephole2  -fno-printf-return-value  -fno-sched-interblock @gol
@@ -10223,6 +10223,7 @@ compilation time.
 -fipa-reference-addressable @gol
 -fmerge-constants @gol
 -fmove-loop-invariants @gol
+-fmove-loop-stores@gol
 -fomit-frame-pointer @gol
 -freorder-blocks @gol
 -fshrink-wrap @gol
@@ -10366,7 +10367,7 @@ optimization flags except for those that may interfere with debugging:
 @gccoptlist{-fbranch-count-reg  -fdelayed-branch @gol
 -fdse  -fif-conversion  -fif-conversion2  @gol
 -finline-functions-called-once @gol
--fmove-loop-invariants  -fssa-phiopt @gol
+-fmove-loop-invariants  -fmove-loop-stores  -fssa-phiopt @gol
 -ftree-bit-ccp  -ftree-dse  -ftree-pta  -ftree-sra}
 
 @end table
@@ -12974,6 +12975,15 @@ Enabled by @option{-O3}, @option{-fprofile-use}, and @option{-fauto-profile}.
 Enables the loop invariant motion pass in the RTL loop optimizer.  Enabled
 at level @option{-O1} and higher, except for @option{-Og}.
 
+@item -fmove-loop-stores
+@opindex fmove-loop-stores
+Enables the loop store motion pass in the GIMPLE loop optimizer.  This
+moves invariant stores to after the end of the loop in exchange for
+carrying the stored value in a register across the iteration.
+Note for this option to have an effect @option{-ftree-loop-im} has to
+be enabled as well.  Enabled at level @option{-O1} and higher, except
+for @option{-Og}.
+
 @item -fsplit-loops
 @opindex fsplit-loops
 Split a loop into two if it contains a condition that's always true
@@ -13879,6 +13889,16 @@ for decisions to move loop invariants (see @option{-O3}).  The number
 of available registers reserved for some other purposes is given
 by this parameter.  Default of the parameter
 is the best found from numerous experiments.
+
+@item ira-consider-dup-in-all-alts
+Make IRA to consider matching constraint (duplicated operand number)
+heavily in all available alternatives for preferred register class.
+If it is set as zero, it means IRA only respects the matching
+constraint when it's in the only available alternative with an
+appropriate register class.  Otherwise, it means IRA will check all
+available alternatives for preferred register class even if it has
+found some choice with an appropriate register class and respect the
+found qualified matching constraint.
 
 @item lra-inheritance-ebb-probability-cutoff
 LRA tries to reuse values reloaded in registers in subsequent insns.

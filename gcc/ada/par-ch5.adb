@@ -1741,7 +1741,15 @@ package body Ch5 is
 
       if Token = Tok_Colon then
          Scan;  --  past :
-         Set_Subtype_Indication (Node1, P_Subtype_Indication);
+
+         if Token = Tok_Access then
+            Error_Msg_Ada_2022_Feature
+              ("access definition in loop parameter", Token_Ptr);
+            Set_Subtype_Indication (Node1, P_Access_Definition (False));
+
+         else
+            Set_Subtype_Indication (Node1, P_Subtype_Indication);
+         end if;
       end if;
 
       if Token = Tok_Of then
@@ -1761,7 +1769,7 @@ package body Ch5 is
          Set_Of_Present (Node1);
          Error_Msg_N
            ("subtype indication is only legal on an element iterator",
-              Subtype_Indication (Node1));
+            Subtype_Indication (Node1));
 
       else
          return Error;

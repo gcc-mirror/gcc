@@ -484,6 +484,25 @@
 		     | RS6000_BTC_SENARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_MMA_PAIR_LD(ENUM, NAME, ATTR)				\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY				\
+		     | RS6000_BTC_GIMPLE),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_MMA_PAIR_ST(ENUM, NAME, ATTR)				\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY				\
+		     | RS6000_BTC_VOID					\
+		     | RS6000_BTC_GIMPLE),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 /* ISA 2.05 (power6) convenience macros. */
 /* For functions that depend on the CMPB instruction */
 #define BU_P6_2(ENUM, NAME, ATTR, ICODE)				\
@@ -3012,10 +3031,10 @@ BU_P10V_AV_2 (DIVS_V4SI, "vdivsw", CONST, divv4si3)
 BU_P10V_AV_2 (DIVS_V2DI, "vdivsd", CONST, divv2di3)
 BU_P10V_AV_2 (DIVU_V4SI, "vdivuw", CONST, udivv4si3)
 BU_P10V_AV_2 (DIVU_V2DI, "vdivud", CONST, udivv2di3)
-BU_P10V_AV_2 (MODS_V2DI, "vmodsd", CONST, mods_v2di)
-BU_P10V_AV_2 (MODS_V4SI, "vmodsw", CONST, mods_v4si)
-BU_P10V_AV_2 (MODU_V2DI, "vmodud", CONST, modu_v2di)
-BU_P10V_AV_2 (MODU_V4SI, "vmoduw", CONST, modu_v4si)
+BU_P10V_AV_2 (MODS_V2DI, "vmodsd", CONST, modv2di3)
+BU_P10V_AV_2 (MODS_V4SI, "vmodsw", CONST, modv4si3)
+BU_P10V_AV_2 (MODU_V2DI, "vmodud", CONST, umodv2di3)
+BU_P10V_AV_2 (MODU_V4SI, "vmoduw", CONST, umodv4si3)
 BU_P10V_AV_2 (MULHS_V2DI, "vmulhsd", CONST, mulhs_v2di)
 BU_P10V_AV_2 (MULHS_V4SI, "vmulhsw", CONST, mulhs_v4si)
 BU_P10V_AV_2 (MULHU_V2DI, "vmulhud", CONST, mulhu_v2di)
@@ -3252,6 +3271,9 @@ BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
 /* POWER10 MMA builtins.  */
 BU_P10V_VSX_1 (XVCVBF16SPN,	 "xvcvbf16spn",	MISC, vsx_xvcvbf16spn)
 BU_P10V_VSX_1 (XVCVSPBF16,	    "xvcvspbf16",	MISC, vsx_xvcvspbf16)
+
+BU_MMA_PAIR_LD (LXVP,	    "lxvp",		MISC)
+BU_MMA_PAIR_ST (STXVP,	    "stxvp",		PAIR)
 
 BU_MMA_1 (XXMFACC,	    "xxmfacc",		QUAD, mma_xxmfacc)
 BU_MMA_1 (XXMTACC,	    "xxmtacc",		QUAD, mma_xxmtacc)

@@ -46,6 +46,8 @@ class svalue;
   class unaryop_svalue;
   class binop_svalue;
   class sub_svalue;
+  class repeated_svalue;
+  class bits_within_svalue;
   class unmergeable_svalue;
   class placeholder_svalue;
   class widening_svalue;
@@ -60,6 +62,7 @@ class region;
   class symbolic_region;
   class element_region;
   class offset_region;
+  class sized_region;
   class cast_region;
   class field_region;
   class string_region;
@@ -146,6 +149,8 @@ typedef offset_int byte_offset_t;
 typedef offset_int byte_size_t;
 
 extern bool int_size_in_bits (const_tree type, bit_size_t *out);
+
+extern tree get_field_at_bit_offset (tree record_type, bit_offset_t bit_offset);
 
 /* The location of a region expressesd as an offset relative to a
    base region.  */

@@ -933,14 +933,15 @@ package Einfo is
 
 --    Direct_Primitive_Operations
 --       Defined in tagged types and subtypes (including synchronized types),
---       in tagged private types and in tagged incomplete types. Element list
---       of entities for primitive operations of the tagged type. Not defined
---       in untagged types. In order to follow the C++ ABI, entities of
---       primitives that come from source must be stored in this list in the
---       order of their occurrence in the sources. For incomplete types the
---       list is always empty.
---       When expansion is disabled the corresponding record type of a
---       synchronized type is not constructed. In that case, such types
+--       in tagged private types, and in tagged incomplete types. However, when
+--       Extensions_Allowed is True (-gnatX), also defined for untagged types
+--       (for support of the extension feature of prefixed calls for untagged
+--       types). This field is an element list of entities for primitive
+--       operations of the type. For incomplete types the list is always empty.
+--       In order to follow the C++ ABI, entities of primitives that come from
+--       source must be stored in this list in the order of their occurrence in
+--       the sources. When expansion is disabled, the corresponding record type
+--       of a synchronized type is not constructed. In that case, such types
 --       carry this attribute directly.
 
 --    Directly_Designated_Type
@@ -1930,8 +1931,6 @@ package Einfo is
 --       that clients should generally not test this flag directly, but instead
 --       use function Has_Unreferenced.
 
---  ??? this real description was clobbered
-
 --    Has_Pragma_Unreferenced_Objects
 --       Defined in all entities. Set if a valid pragma Unused applies to an
 --       entity, indicating that warnings should be given if the entity is
@@ -2016,11 +2015,11 @@ package Einfo is
 --       which at least one of the shift operators is defined.
 
 --    Has_Size_Clause
---       Defined in entities for types and objects. Set if a size clause is
---       defined for the entity. Used to prevent multiple Size clauses for a
---       given entity. Note that it is always initially cleared for a derived
---       type, even though the Size for such a type is inherited from a Size
---       clause given for the parent type.
+--       Defined in entities for types and objects. Set if a size or value size
+--       clause is defined for the entity. Used to prevent multiple clauses
+--       for a given entity. Note that it is always initially cleared for a
+--       derived type, even though the Size or Value_Size clause for such a
+--       type might be inherited from an ancestor type.
 
 --    Has_Small_Clause
 --       Defined in ordinary fixed point types (but not subtypes). Indicates
@@ -4322,13 +4321,12 @@ package Einfo is
 --       suppress this code if a subsequent address clause is encountered.
 
 --    Size_Clause (synthesized)
---       Applies to all entities. If a size clause is present in the rep
---       item chain for an entity then the attribute definition clause node
---       for the size clause is returned. Otherwise Size_Clause returns Empty
---       if no item is present. Usually this is only meaningful if the flag
---       Has_Size_Clause is set. This is because when the representation item
---       chain is copied for a derived type, it can inherit a size clause that
---       is not applicable to the entity.
+--       Applies to all entities. If a size or value size clause is present in
+--       the rep item chain for an entity then that attribute definition clause
+--       is returned. Otherwise Size_Clause returns Empty. Usually this is only
+--       meaningful if the flag Has_Size_Clause is set. This is because when
+--       the representation item chain is copied for a derived type, it can
+--       inherit a size clause that is not applicable to the entity.
 
 --    Size_Depends_On_Discriminant
 --       Defined in all entities for types and subtypes. Indicates that the

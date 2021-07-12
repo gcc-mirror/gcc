@@ -98,6 +98,7 @@ region::get_base_region () const
 	case RK_FIELD:
 	case RK_ELEMENT:
 	case RK_OFFSET:
+	case RK_SIZED:
 	  iter = iter->get_parent_region ();
 	  continue;
 	case RK_CAST:
@@ -121,6 +122,7 @@ region::base_region_p () const
     case RK_FIELD:
     case RK_ELEMENT:
     case RK_OFFSET:
+    case RK_SIZED:
     case RK_CAST:
       return false;
 
@@ -188,7 +190,8 @@ region::get_offset () const
   return *m_cached_offset;
 }
 
-/* If the size of this region (in bytes) is known statically, write it to *OUT
+/* Base class implementation of region::get_byte_size vfunc.
+   If the size of this region (in bytes) is known statically, write it to *OUT
    and return true.
    Otherwise return false.  */
 
@@ -208,8 +211,29 @@ region::get_byte_size (byte_size_t *out) const
   return true;
 }
 
-/* If the size of TYPE (in bits) is constant, write it to *OUT
-   and return true.
+/* Base implementation of region::get_byte_size_sval vfunc.  */
+
+const svalue *
+region::get_byte_size_sval (region_model_manager *mgr) const
+{
+  tree type = get_type ();
+
+  /* Bail out e.g. for heap-allocated regions.  */
+  if (!type)
+    return mgr->get_or_create_unknown_svalue (size_type_node);
+
+  HOST_WIDE_INT bytes = int_size_in_bytes (type);
+  if (bytes == -1)
+    return mgr->get_or_create_unknown_svalue (size_type_node);
+
+  tree byte_size = size_in_bytes (type);
+  if (TREE_TYPE (byte_size) != size_type_node)
+    byte_size = fold_build1 (NOP_EXPR, size_type_node, byte_size);
+  return mgr->get_or_create_constant_svalue (byte_size);
+}
+
+/* Attempt to get the size of TYPE in bits.
+   If successful, return true and write the size to *OUT.
    Otherwise return false.  */
 
 bool
@@ -249,7 +273,7 @@ region::get_bit_size (bit_size_t *out) const
 
 /* Get the field within RECORD_TYPE at BIT_OFFSET.  */
 
-static tree
+tree
 get_field_at_bit_offset (tree record_type, bit_offset_t bit_offset)
 {
   gcc_assert (TREE_CODE (record_type) == RECORD_TYPE);
@@ -375,18 +399,10 @@ region::calc_offset () const
 	      = (const field_region *)iter_region;
 	    iter_region = iter_region->get_parent_region ();
 
-	    /* Compare with e.g. gimple-fold.c's
-	       fold_nonarray_ctor_reference.  */
-	    tree field = field_reg->get_field ();
-	    tree byte_offset = DECL_FIELD_OFFSET (field);
-	    if (TREE_CODE (byte_offset) != INTEGER_CST)
+	    bit_offset_t rel_bit_offset;
+	    if (!field_reg->get_relative_concrete_offset (&rel_bit_offset))
 	      return region_offset::make_symbolic (iter_region);
-	    tree field_offset = DECL_FIELD_BIT_OFFSET (field);
-	    /* Compute bit offset of the field.  */
-	    offset_int bitoffset
-	      = (wi::to_offset (field_offset)
-		 + (wi::to_offset (byte_offset) << LOG2_BITS_PER_UNIT));
-	    accum_bit_offset += bitoffset;
+	    accum_bit_offset += rel_bit_offset;
 	  }
 	  continue;
 
@@ -396,28 +412,10 @@ region::calc_offset () const
 	      = (const element_region *)iter_region;
 	    iter_region = iter_region->get_parent_region ();
 
-	    if (tree idx_cst
-		  = element_reg->get_index ()->maybe_get_constant ())
-	      {
-		gcc_assert (TREE_CODE (idx_cst) == INTEGER_CST);
-
-		tree elem_type = element_reg->get_type ();
-		offset_int element_idx = wi::to_offset (idx_cst);
-
-		/* First, use int_size_in_bytes, to reject the case where we
-		   have an incomplete type, or a non-constant value.  */
-		HOST_WIDE_INT hwi_byte_size = int_size_in_bytes (elem_type);
-		if (hwi_byte_size > 0)
-		  {
-		    offset_int element_bit_size
-		      = hwi_byte_size << LOG2_BITS_PER_UNIT;
-		    offset_int element_bit_offset
-		      = element_idx * element_bit_size;
-		    accum_bit_offset += element_bit_offset;
-		    continue;
-		  }
-	      }
-	    return region_offset::make_symbolic (iter_region);
+	    bit_offset_t rel_bit_offset;
+	    if (!element_reg->get_relative_concrete_offset (&rel_bit_offset))
+	      return region_offset::make_symbolic (iter_region);
+	    accum_bit_offset += rel_bit_offset;
 	  }
 	  continue;
 
@@ -427,20 +425,15 @@ region::calc_offset () const
 	      = (const offset_region *)iter_region;
 	    iter_region = iter_region->get_parent_region ();
 
-	    if (tree byte_offset_cst
-		  = offset_reg->get_byte_offset ()->maybe_get_constant ())
-	      {
-		gcc_assert (TREE_CODE (byte_offset_cst) == INTEGER_CST);
-		/* Use a signed value for the byte offset, to handle
-		   negative offsets.  */
-		HOST_WIDE_INT byte_offset
-		  = wi::to_offset (byte_offset_cst).to_shwi ();
-		HOST_WIDE_INT bit_offset = byte_offset * BITS_PER_UNIT;
-		accum_bit_offset += bit_offset;
-	      }
-	    else
+	    bit_offset_t rel_bit_offset;
+	    if (!offset_reg->get_relative_concrete_offset (&rel_bit_offset))
 	      return region_offset::make_symbolic (iter_region);
+	    accum_bit_offset += rel_bit_offset;
 	  }
+	  continue;
+
+	case RK_SIZED:
+	  iter_region = iter_region->get_parent_region ();
 	  continue;
 
 	case RK_CAST:
@@ -456,6 +449,14 @@ region::calc_offset () const
 	}
     }
   return region_offset::make_concrete (iter_region, accum_bit_offset);
+}
+
+/* Base implementation of region::get_relative_concrete_offset vfunc.  */
+
+bool
+region::get_relative_concrete_offset (bit_offset_t *) const
+{
+  return false;
 }
 
 /* Copy from SRC_REG to DST_REG, using CTXT for any issues that occur.  */
@@ -984,7 +985,7 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
 	 which can fail if we have a region with unknown size
 	 (e.g. "extern const char arr[];").  */
       const binding_key *binding
-	= binding_key::make (mgr->get_store_manager (), this, BK_direct);
+	= binding_key::make (mgr->get_store_manager (), this);
       if (binding->symbolic_p ())
 	return NULL;
 
@@ -1030,6 +1031,26 @@ field_region::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of region::get_relative_concrete_offset vfunc
+   for field_region.  */
+
+bool
+field_region::get_relative_concrete_offset (bit_offset_t *out) const
+{
+  /* Compare with e.g. gimple-fold.c's
+     fold_nonarray_ctor_reference.  */
+  tree byte_offset = DECL_FIELD_OFFSET (m_field);
+  if (TREE_CODE (byte_offset) != INTEGER_CST)
+    return false;
+  tree field_offset = DECL_FIELD_BIT_OFFSET (m_field);
+  /* Compute bit offset of the field.  */
+  offset_int bitoffset
+    = (wi::to_offset (field_offset)
+       + (wi::to_offset (byte_offset) << LOG2_BITS_PER_UNIT));
+  *out = bitoffset;
+  return true;
+}
+
 /* class element_region : public region.  */
 
 /* Implementation of region::accept vfunc for element_region.  */
@@ -1067,6 +1088,35 @@ element_region::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of region::get_relative_concrete_offset vfunc
+   for element_region.  */
+
+bool
+element_region::get_relative_concrete_offset (bit_offset_t *out) const
+{
+  if (tree idx_cst = m_index->maybe_get_constant ())
+    {
+      gcc_assert (TREE_CODE (idx_cst) == INTEGER_CST);
+
+      tree elem_type = get_type ();
+      offset_int element_idx = wi::to_offset (idx_cst);
+
+      /* First, use int_size_in_bytes, to reject the case where we
+	 have an incomplete type, or a non-constant value.  */
+      HOST_WIDE_INT hwi_byte_size = int_size_in_bytes (elem_type);
+      if (hwi_byte_size > 0)
+	{
+	  offset_int element_bit_size
+	    = hwi_byte_size << LOG2_BITS_PER_UNIT;
+	  offset_int element_bit_offset
+	    = element_idx * element_bit_size;
+	  *out = element_bit_offset;
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* class offset_region : public region.  */
 
 /* Implementation of region::accept vfunc for offset_region.  */
@@ -1101,6 +1151,86 @@ offset_region::dump_to_pp (pretty_printer *pp, bool simple) const
       m_byte_offset->dump_to_pp (pp, simple);
       pp_printf (pp, ")");
     }
+}
+
+/* Implementation of region::get_relative_concrete_offset vfunc
+   for offset_region.  */
+
+bool
+offset_region::get_relative_concrete_offset (bit_offset_t *out) const
+{
+  if (tree byte_offset_cst = m_byte_offset->maybe_get_constant ())
+    {
+      gcc_assert (TREE_CODE (byte_offset_cst) == INTEGER_CST);
+      /* Use a signed value for the byte offset, to handle
+	 negative offsets.  */
+      HOST_WIDE_INT byte_offset
+	= wi::to_offset (byte_offset_cst).to_shwi ();
+      HOST_WIDE_INT bit_offset = byte_offset * BITS_PER_UNIT;
+      *out = bit_offset;
+      return true;
+    }
+  return false;
+}
+
+/* class sized_region : public region.  */
+
+/* Implementation of region::accept vfunc for sized_region.  */
+
+void
+sized_region::accept (visitor *v) const
+{
+  region::accept (v);
+  m_byte_size_sval->accept (v);
+}
+
+/* Implementation of region::dump_to_pp vfunc for sized_region.  */
+
+void
+sized_region::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    {
+      pp_string (pp, "SIZED_REG(");
+      get_parent_region ()->dump_to_pp (pp, simple);
+      pp_string (pp, ", ");
+      m_byte_size_sval->dump_to_pp (pp, simple);
+      pp_string (pp, ")");
+    }
+  else
+    {
+      pp_string (pp, "sized_region(");
+      get_parent_region ()->dump_to_pp (pp, simple);
+      pp_string (pp, ", ");
+      m_byte_size_sval->dump_to_pp (pp, simple);
+      pp_printf (pp, ")");
+    }
+}
+
+/* Implementation of region::get_byte_size vfunc for sized_region.  */
+
+bool
+sized_region::get_byte_size (byte_size_t *out) const
+{
+  if (tree cst = m_byte_size_sval->maybe_get_constant ())
+    {
+      gcc_assert (TREE_CODE (cst) == INTEGER_CST);
+      *out = tree_to_uhwi (cst);
+      return true;
+    }
+  return false;
+}
+
+/* Implementation of region::get_bit_size vfunc for sized_region.  */
+
+bool
+sized_region::get_bit_size (bit_size_t *out) const
+{
+  byte_size_t byte_size;
+  if (!get_byte_size (&byte_size))
+    return false;
+  *out = byte_size * BITS_PER_UNIT;
+  return true;
 }
 
 /* class cast_region : public region.  */

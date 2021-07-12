@@ -3040,15 +3040,49 @@ process_args (int *argcp, char **argv) {
 
 static void
 do_dsymutil (const char *output_file) {
-  const char *dsymutil = DSYMUTIL + 1;
+  const char *dsymutil = 0;
   struct pex_obj *pex;
-  char **real_argv = XCNEWVEC (char *, 3);
+  char **real_argv = XCNEWVEC (char *, verbose ? 4 : 3);
   const char ** argv = CONST_CAST2 (const char **, char **,
 				    real_argv);
+/* For cross-builds search the PATH using target-qualified name if we
+   have not already found a suitable dsymutil.  In practice, all modern
+   versions of dsymutil handle all supported archs, however the approach
+   here is consistent with the way other installations work (and one can
+   always symlink a multitarget dsymutil with a target-specific name).  */
+  const char *dsname = "dsymutil";
+#ifdef CROSS_DIRECTORY_STRUCTURE
+  const char *qname = concat (target_machine, "-", dsname, NULL);
+#else
+  const char *qname = dsname;
+#endif
+#ifdef DEFAULT_DSYMUTIL
+  /* Configured default takes priority.  */
+  if (dsymutil == 0 && access (DEFAULT_DSYMUTIL, X_OK) == 0)
+    dsymutil = DEFAULT_DSYMUTIL;
+  if (dsymutil == 0)
+#endif
+#ifdef DSYMUTIL
+  /* Followed by one supplied in the target header, somewhat like the
+     REAL_XX_NAME used elsewhere.  */
+    dsymutil = find_a_file (&cpath, DSYMUTIL, X_OK);
+  if (dsymutil == 0)
+    dsymutil = find_a_file (&path, DSYMUTIL, X_OK);
+  if (dsymutil == 0)
+#endif
+    dsymutil = find_a_file (&cpath, dsname, X_OK);
+  if (dsymutil == 0)
+    dsymutil = find_a_file (&path, qname, X_OK);
 
   argv[0] = dsymutil;
   argv[1] = output_file;
-  argv[2] = (char *) 0;
+  if (verbose)
+    {
+      argv[2] = "-v";
+      argv[3] = (char *) 0;
+    }
+  else
+    argv[2] = (char *) 0;
 
   pex = collect_execute (dsymutil, real_argv, NULL, NULL,
 			 PEX_LAST | PEX_SEARCH, false, NULL);

@@ -4199,7 +4199,7 @@ package body Sem_Ch13 is
 
                --  Case 2e: Annotate aspect
 
-               when Aspect_Annotate =>
+               when Aspect_Annotate | Aspect_GNAT_Annotate =>
                   declare
                      Args  : List_Id;
                      Pargs : List_Id;
@@ -5230,44 +5230,64 @@ package body Sem_Ch13 is
 
             F := First_Formal (Subp);
 
-            if No (F)
-              or else Etype (F) /= Class_Wide_Type (RTE (RE_Root_Buffer_Type))
+            if No (F) then
+               return False;
+            end if;
+
+            if Base_Type (Etype (F))
+              /= Class_Wide_Type (RTE (RE_Root_Buffer_Type))
             then
+               if Report then
+                  Error_Msg_N
+                    ("wrong type for Put_Image procedure''s first parameter",
+                     Parameter_Type (Parent (F)));
+               end if;
+
+               return False;
+            end if;
+
+            if Parameter_Mode (F) /= E_In_Out_Parameter then
+               if Report then
+                  Error_Msg_N
+                    ("wrong mode for Put_Image procedure''s first parameter",
+                     Parent (F));
+               end if;
+
                return False;
             end if;
 
             Next_Formal (F);
-
-            if Parameter_Mode (F) /= E_In_Parameter then
-               return False;
-            end if;
 
             Typ := Etype (F);
 
             --  Verify that the prefix of the attribute and the local name for
             --  the type of the formal match.
 
-            if Typ /= Ent then
+            if Base_Type (Typ) /= Base_Type (Ent) then
+               if Report then
+                  Error_Msg_N
+                    ("wrong type for Put_Image procedure''s second parameter",
+                     Parameter_Type (Parent (F)));
+               end if;
+
+               return False;
+            end if;
+
+            if Parameter_Mode (F) /= E_In_Parameter then
+               if Report then
+                  Error_Msg_N
+                    ("wrong mode for Put_Image procedure''s second parameter",
+                     Parent (F));
+               end if;
+
                return False;
             end if;
 
             if Present (Next_Formal (F)) then
                return False;
-
-            elsif not Is_Scalar_Type (Typ)
-              and then not Is_First_Subtype (Typ)
-            then
-               if Report and not Is_First_Subtype (Typ) then
-                  Error_Msg_N
-                    ("subtype of formal in Put_Image operation must be a "
-                     & "first subtype", Parameter_Type (Parent (F)));
-               end if;
-
-               return False;
-
-            else
-               return True;
             end if;
+
+            return True;
          end Has_Good_Profile;
 
       --  Start of processing for Analyze_Put_Image_TSS_Definition
@@ -5386,7 +5406,7 @@ package body Sem_Ch13 is
 
             if No (F)
               or else Ekind (Etype (F)) /= E_Anonymous_Access_Type
-              or else Designated_Type (Etype (F)) /=
+              or else Base_Type (Designated_Type (Etype (F))) /=
                         Class_Wide_Type (RTE (RE_Root_Stream_Type))
             then
                return False;
@@ -7160,109 +7180,136 @@ package body Sem_Ch13 is
                Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
             end if;
 
-         ----------
-         -- Size --
-         ----------
+         ------------------------
+         -- Size or Value_Size --
+         ------------------------
 
-         --  Size attribute definition clause
+         --  Size or Value_Size attribute definition clause. These are treated
+         --  the same, except that Size is allowed on objects, and Value_Size
+         --  is allowed on nonfirst subtypes. First subtypes allow both Size
+         --  and Value_Size; the treatment is the same for both.
 
-         when Attribute_Size => Size : declare
+         when Attribute_Size | Attribute_Value_Size => Size : declare
             Size   : constant Uint := Static_Integer (Expr);
-            Etyp   : Entity_Id;
-            Biased : Boolean;
+
+            Attr_Name : constant String :=
+              (if Id = Attribute_Size then "size"
+               elsif Id = Attribute_Value_Size then "value size"
+               else ""); -- can't happen
+            --  Name of the attribute for printing in messages
+
+            OK_Prefix : constant Boolean :=
+              (if Id = Attribute_Size then
+                Ekind (U_Ent) in Type_Kind | Constant_Or_Variable_Kind
+               elsif Id = Attribute_Value_Size then
+                Ekind (U_Ent) in Type_Kind
+               else False); -- can't happen
+            --  For X'Size, X can be a type or object; for X'Value_Size,
+            --  X can be a type. Note that we already checked that 'Size
+            --  can be specified only for a first subytype.
 
          begin
             FOnly := True;
 
-            if Duplicate_Clause then
-               null;
+            if not OK_Prefix then
+               Error_Msg_N (Attr_Name & " cannot be given for &", Nam);
 
-            elsif not Is_Type (U_Ent)
-              and then Ekind (U_Ent) /= E_Variable
-              and then Ekind (U_Ent) /= E_Constant
-            then
-               Error_Msg_N ("size cannot be given for &", Nam);
+            elsif Duplicate_Clause then
+               null;
 
             elsif Is_Array_Type (U_Ent)
               and then not Is_Constrained (U_Ent)
             then
                Error_Msg_N
-                 ("size cannot be given for unconstrained array", Nam);
+                 (Attr_Name & " cannot be given for unconstrained array", Nam);
 
             elsif Size /= No_Uint then
-               if Is_Type (U_Ent) then
-                  Etyp := U_Ent;
-               else
-                  Etyp := Etype (U_Ent);
-               end if;
+               declare
+                  Etyp : constant Entity_Id :=
+                    (if Is_Type (U_Ent) then U_Ent else Etype (U_Ent));
 
-               --  Check size, note that Gigi is in charge of checking that the
-               --  size of an array or record type is OK. Also we do not check
-               --  the size in the ordinary fixed-point case, since it is too
-               --  early to do so (there may be subsequent small clause that
-               --  affects the size). We can check the size if a small clause
-               --  has already been given.
+               begin
+                  --  Check size, note that Gigi is in charge of checking that
+                  --  the size of an array or record type is OK. Also we do not
+                  --  check the size in the ordinary fixed-point case, since
+                  --  it is too early to do so (there may be subsequent small
+                  --  clause that affects the size). We can check the size if
+                  --  a small clause has already been given.
 
-               if not Is_Ordinary_Fixed_Point_Type (U_Ent)
-                 or else Has_Small_Clause (U_Ent)
-               then
-                  Check_Size (Expr, Etyp, Size, Biased);
-                  Set_Biased (U_Ent, N, "size clause", Biased);
-               end if;
+                  if not Is_Ordinary_Fixed_Point_Type (U_Ent)
+                    or else Has_Small_Clause (U_Ent)
+                  then
+                     declare
+                        Biased : Boolean;
+                     begin
+                        Check_Size (Expr, Etyp, Size, Biased);
+                        Set_Biased (U_Ent, N, Attr_Name & " clause", Biased);
+                     end;
+                  end if;
 
-               --  For types set RM_Size and Esize if possible
+                  --  For types, set RM_Size and Esize if appropriate
 
-               if Is_Type (U_Ent) then
-                  Set_RM_Size (U_Ent, Size);
+                  if Is_Type (U_Ent) then
+                     Set_RM_Size (U_Ent, Size);
 
-                  --  For elementary types, increase Object_Size to power of 2,
-                  --  but not less than a storage unit in any case (normally
-                  --  this means it will be byte addressable).
+                     --  If we are specifying the Size or Value_Size of a
+                     --  first subtype, then for elementary types, increase
+                     --  Object_Size to power of 2, but not less than a storage
+                     --  unit in any case (normally this means it will be byte
+                     --  addressable).
 
-                  --  For all other types, nothing else to do, we leave Esize
-                  --  (object size) unset, the back end will set it from the
-                  --  size and alignment in an appropriate manner.
+                     --  For all other types, nothing else to do, we leave
+                     --  Esize (object size) unset; the back end will set it
+                     --  from the size and alignment in an appropriate manner.
 
-                  --  In both cases, we check whether the alignment must be
-                  --  reset in the wake of the size change.
+                     --  In both cases, we check whether the alignment must be
+                     --  reset in the wake of the size change.
 
-                  if Is_Elementary_Type (U_Ent) then
-                     if Size <= System_Storage_Unit then
-                        Init_Esize (U_Ent, System_Storage_Unit);
-                     elsif Size <= 16 then
-                        Init_Esize (U_Ent, 16);
-                     elsif Size <= 32 then
-                        Init_Esize (U_Ent, 32);
-                     else
-                        Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
+                     --  For nonfirst subtypes ('Value_Size only), we do
+                     --  nothing here.
+
+                     if Is_First_Subtype (U_Ent) then
+                        if Is_Elementary_Type (U_Ent) then
+                           if Size <= System_Storage_Unit then
+                              Init_Esize (U_Ent, System_Storage_Unit);
+                           elsif Size <= 16 then
+                              Init_Esize (U_Ent, 16);
+                           elsif Size <= 32 then
+                              Init_Esize (U_Ent, 32);
+                           else
+                              Set_Esize  (U_Ent, (Size + 63) / 64 * 64);
+                           end if;
+
+                           Alignment_Check_For_Size_Change
+                             (U_Ent, Esize (U_Ent));
+                        else
+                           Alignment_Check_For_Size_Change (U_Ent, Size);
+                        end if;
                      end if;
 
-                     Alignment_Check_For_Size_Change (U_Ent, Esize (U_Ent));
+                  --  For Object'Size, set Esize only
+
                   else
-                     Alignment_Check_For_Size_Change (U_Ent, Size);
+                     if Is_Elementary_Type (Etyp)
+                       and then Size /= System_Storage_Unit
+                       and then Size /= 16
+                       and then Size /= 32
+                       and then Size /= 64
+                       and then Size /= System_Max_Integer_Size
+                     then
+                        Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
+                        Error_Msg_Uint_2 :=
+                          UI_From_Int (System_Max_Integer_Size);
+                        Error_Msg_N
+                          ("size for primitive object must be a power of 2 in "
+                           & "the range ^-^", N);
+                     end if;
+
+                     Set_Esize (U_Ent, Size);
                   end if;
 
-               --  For objects, set Esize only
-
-               else
-                  if Is_Elementary_Type (Etyp)
-                    and then Size /= System_Storage_Unit
-                    and then Size /= 16
-                    and then Size /= 32
-                    and then Size /= 64
-                    and then Size /= System_Max_Integer_Size
-                  then
-                     Error_Msg_Uint_1 := UI_From_Int (System_Storage_Unit);
-                     Error_Msg_Uint_2 := UI_From_Int (System_Max_Integer_Size);
-                     Error_Msg_N
-                       ("size for primitive object must be a power of 2 in "
-                        & "the range ^-^", N);
-                  end if;
-
-                  Set_Esize (U_Ent, Size);
-               end if;
-
-               Set_Has_Size_Clause (U_Ent);
+                  Set_Has_Size_Clause (U_Ent);
+               end;
             end if;
          end Size;
 
@@ -7723,39 +7770,6 @@ package body Sem_Ch13 is
                Error_Msg_N ("Stream_Size cannot be given for &", Nam);
             end if;
          end Stream_Size;
-
-         ----------------
-         -- Value_Size --
-         ----------------
-
-         --  Value_Size attribute definition clause
-
-         when Attribute_Value_Size => Value_Size : declare
-            Size   : constant Uint := Static_Integer (Expr);
-            Biased : Boolean;
-
-         begin
-            if not Is_Type (U_Ent) then
-               Error_Msg_N ("Value_Size cannot be given for &", Nam);
-
-            elsif Duplicate_Clause then
-               null;
-
-            elsif Is_Array_Type (U_Ent)
-              and then not Is_Constrained (U_Ent)
-            then
-               Error_Msg_N
-                 ("Value_Size cannot be given for unconstrained array", Nam);
-
-            else
-               if Is_Elementary_Type (U_Ent) then
-                  Check_Size (Expr, U_Ent, Size, Biased);
-                  Set_Biased (U_Ent, N, "value size clause", Biased);
-               end if;
-
-               Set_RM_Size (U_Ent, Size);
-            end if;
-         end Value_Size;
 
          -----------------------
          -- Variable_Indexing --
@@ -10100,11 +10114,11 @@ package body Sem_Ch13 is
       then
          return;
 
-        --  Do not generate predicate bodies within a generic unit. The
-        --  expressions have been analyzed already, and the bodies play
-        --  no role if not within an executable unit. However, if a static
-        --  predicate is present it must be processed for legality checks
-        --  such as case coverage in an expression.
+      --  Do not generate predicate bodies within a generic unit. The
+      --  expressions have been analyzed already, and the bodies play no role
+      --  if not within an executable unit. However, if a static predicate is
+      --  present it must be processed for legality checks such as case
+      --  coverage in an expression.
 
       elsif Inside_A_Generic
         and then not Has_Static_Predicate_Aspect (Typ)
@@ -10768,7 +10782,9 @@ package body Sem_Ch13 is
          --  also make its potential components accessible.
 
          if not Analyzed (Freeze_Expr) and then Inside_A_Generic then
-            if A_Id in Aspect_Dynamic_Predicate | Aspect_Predicate then
+            if A_Id in Aspect_Dynamic_Predicate | Aspect_Predicate |
+                       Aspect_Static_Predicate
+            then
                Push_Type (Ent);
                Preanalyze_Spec_Expression (Freeze_Expr, Standard_Boolean);
                Pop_Type (Ent);
@@ -10799,6 +10815,7 @@ package body Sem_Ch13 is
             if A_Id in Aspect_Dynamic_Predicate
                      | Aspect_Predicate
                      | Aspect_Priority
+                     | Aspect_Static_Predicate
             then
                Push_Type (Ent);
                Check_Aspect_At_Freeze_Point (ASN);
@@ -10826,6 +10843,7 @@ package body Sem_Ch13 is
                      | Aspect_Dynamic_Predicate
                      | Aspect_Predicate
                      | Aspect_Priority
+                     | Aspect_Static_Predicate
          then
             Push_Type (Ent);
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
@@ -11097,6 +11115,7 @@ package body Sem_Ch13 is
             | Aspect_Extensions_Visible
             | Aspect_Ghost
             | Aspect_Global
+            | Aspect_GNAT_Annotate
             | Aspect_Implicit_Dereference
             | Aspect_Initial_Condition
             | Aspect_Initializes
@@ -12355,7 +12374,7 @@ package body Sem_Ch13 is
       --  length (it may for example be appropriate to round up the size
       --  to some convenient boundary, based on alignment considerations, etc).
 
-      if Unknown_RM_Size (Rectype)
+      if not Known_RM_Size (Rectype)
         and then Hbit + 1 <= 32
         and then not Strict_Alignment (Rectype)
       then
@@ -15027,9 +15046,15 @@ package body Sem_Ch13 is
                       or else N /= Selector_Name (Parent (N)))
          then
             Find_Direct_Name (N);
-            Set_Entity (N, Empty);
 
-         --  The name is component association needs no resolution
+            --  Reset the Entity if N is overloaded since the entity may not
+            --  be the correct one.
+
+            if Is_Overloaded (N) then
+               Set_Entity (N, Empty);
+            end if;
+
+         --  The name in a component association needs no resolution
 
          elsif Nkind (N) = N_Component_Association then
             Dummy := Resolve_Name (Expression (N));
@@ -15072,24 +15097,23 @@ package body Sem_Ch13 is
                   --  types. These will require special handling???.
 
                   when Aspect_Invariant
-                     | Aspect_Predicate
                      | Aspect_Predicate_Failure
                   =>
                      null;
 
                   when Aspect_Dynamic_Predicate
                      | Aspect_Static_Predicate
+                     | Aspect_Predicate
                   =>
-                     --  Build predicate function specification and preanalyze
-                     --  expression after type replacement. The function
-                     --  declaration must be analyzed in the scope of the type,
-                     --  but the expression can reference components and
-                     --  discriminants of the type.
+                     --  Preanalyze expression after type replacement to catch
+                     --  name resolution errors if the predicate function has
+                     --  not been built yet.
+                     --  Note that we cannot use Preanalyze_Spec_Expression
+                     --  because of the special handling required for
+                     --  quantifiers, see comments on Resolve_Aspect_Expression
+                     --  above.
 
                      if No (Predicate_Function (E)) then
-                        Discard_Node
-                          (Build_Predicate_Function_Declaration (E));
-
                         Push_Type (E);
                         Resolve_Aspect_Expression (Expr);
                         Pop_Type (E);

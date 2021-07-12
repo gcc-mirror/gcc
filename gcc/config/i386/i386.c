@@ -21930,10 +21930,12 @@ ix86_stack_protect_fail (void)
    After all, the relocation needed is the same as for the call insn.
    Whether or not a particular assembler allows us to enter such, I
    guess we'll have to see.  */
+
 int
 asm_preferred_eh_data_format (int code, int global)
 {
-  if (flag_pic)
+  /* PE-COFF is effectively always -fPIC because of the .reloc section.  */
+  if (flag_pic || TARGET_PECOFF)
     {
       int type = DW_EH_PE_sdata8;
       if (!TARGET_64BIT
@@ -21942,9 +21944,11 @@ asm_preferred_eh_data_format (int code, int global)
 	type = DW_EH_PE_sdata4;
       return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
     }
+
   if (ix86_cmodel == CM_SMALL
       || (ix86_cmodel == CM_MEDIUM && code))
     return DW_EH_PE_udata4;
+
   return DW_EH_PE_absptr;
 }
 
@@ -23161,6 +23165,19 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
     default:
       return true;
     }
+}
+
+/* Return a scratch register in MODE for vector load and store.  */
+
+rtx
+ix86_gen_scratch_sse_rtx (machine_mode mode)
+{
+  if (TARGET_SSE)
+    return gen_rtx_REG (mode, (TARGET_64BIT
+			       ? LAST_REX_SSE_REG
+			       : LAST_SSE_REG));
+  else
+    return gen_reg_rtx (mode);
 }
 
 /* Address space support.

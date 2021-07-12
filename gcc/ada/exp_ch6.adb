@@ -1803,6 +1803,7 @@ package body Exp_Ch6 is
                  and then Is_Entity_Name (Lhs)
                  and then
                    Present (Effective_Extra_Accessibility (Entity (Lhs)))
+                 and then not No_Dynamic_Accessibility_Checks_Enabled (Lhs)
                then
                   --  Copyback target is an Ada 2012 stand-alone object of an
                   --  anonymous access type.
@@ -2929,7 +2930,9 @@ package body Exp_Ch6 is
                       Name       => New_Occurrence_Of (Lvl, Loc),
                       Expression =>
                         Accessibility_Level
-                          (Expression (Res_Assn), Dynamic_Level)));
+                          (Expr            => Expression (Res_Assn),
+                           Level           => Dynamic_Level,
+                           Allow_Alt_Model => False)));
                end if;
             end Expand_Branch;
 
@@ -3758,7 +3761,7 @@ package body Exp_Ch6 is
          --  because the object has underlying discriminants with defaults.
 
          if Present (Extra_Constrained (Formal)) then
-            if Ekind (Etype (Prev)) in Private_Kind
+            if Is_Private_Type (Etype (Prev))
               and then not Has_Discriminants (Base_Type (Etype (Prev)))
             then
                Add_Extra_Actual
@@ -3857,9 +3860,10 @@ package body Exp_Ch6 is
                   end if;
 
                   Add_Extra_Actual
-                    (Expr =>
-                       New_Occurrence_Of
-                         (Get_Dynamic_Accessibility (Parm_Ent), Loc),
+                    (Expr => Accessibility_Level
+                               (Expr            => Parm_Ent,
+                                Level           => Dynamic_Level,
+                                Allow_Alt_Model => False),
                      EF   => Extra_Accessibility (Formal));
                end;
 
@@ -3890,15 +3894,20 @@ package body Exp_Ch6 is
 
                Add_Extra_Actual
                  (Expr => Accessibility_Level
-                            (Expr  => Expression (Parent (Entity (Prev))),
-                             Level => Dynamic_Level),
+                            (Expr            => Expression
+                                                  (Parent (Entity (Prev))),
+                             Level           => Dynamic_Level,
+                             Allow_Alt_Model => False),
                   EF   => Extra_Accessibility (Formal));
 
             --  Normal case
 
             else
                Add_Extra_Actual
-                 (Expr => Accessibility_Level (Prev, Dynamic_Level),
+                 (Expr => Accessibility_Level
+                            (Expr            => Prev,
+                             Level           => Dynamic_Level,
+                             Allow_Alt_Model => False),
                   EF   => Extra_Accessibility (Formal));
             end if;
          end if;
@@ -4142,8 +4151,10 @@ package body Exp_Ch6 is
             --  Otherwise get the level normally based on the call node
 
             else
-               Level := Accessibility_Level (Call_Node, Dynamic_Level);
-
+               Level := Accessibility_Level
+                          (Expr            => Call_Node,
+                           Level           => Dynamic_Level,
+                           Allow_Alt_Model => False);
             end if;
 
             --  It may be possible that we are re-expanding an already
@@ -4902,7 +4913,7 @@ package body Exp_Ch6 is
       --  Optimization, if the returned value (which is on the sec-stack) is
       --  returned again, no need to copy/readjust/finalize, we can just pass
       --  the value thru (see Expand_N_Simple_Return_Statement), and thus no
-      --  attachment is needed
+      --  attachment is needed.
 
       if Nkind (Parent (N)) = N_Simple_Return_Statement then
          return;
@@ -5841,11 +5852,9 @@ package body Exp_Ch6 is
                              Name       =>
                                New_Occurrence_Of (Alloc_Obj_Id, Loc),
                              Expression =>
-                               Make_Unchecked_Type_Conversion (Loc,
-                                 Subtype_Mark =>
-                                   New_Occurrence_Of (Ref_Type, Loc),
-                                 Expression   =>
-                                   New_Occurrence_Of (Obj_Acc_Formal, Loc)))),
+                               Unchecked_Convert_To
+                                 (Ref_Type,
+                                  New_Occurrence_Of (Obj_Acc_Formal, Loc)))),
 
                          Elsif_Parts => New_List (
                            Make_Elsif_Part (Loc,
@@ -5986,11 +5995,9 @@ package body Exp_Ch6 is
                          Object_Definition   =>
                            New_Occurrence_Of (Ref_Type, Loc),
                          Expression =>
-                           Make_Unchecked_Type_Conversion (Loc,
-                             Subtype_Mark =>
-                               New_Occurrence_Of (Ref_Type, Loc),
-                             Expression   =>
-                               New_Occurrence_Of (Obj_Acc_Formal, Loc)));
+                           Unchecked_Convert_To
+                             (Ref_Type,
+                              New_Occurrence_Of (Obj_Acc_Formal, Loc)));
 
                      Insert_Before (Ret_Obj_Decl, Alloc_Obj_Decl);
 
@@ -6431,18 +6438,7 @@ package body Exp_Ch6 is
       --  Returns_By_Ref flag is normally set when the subprogram is frozen but
       --  subprograms with no specs are not frozen.
 
-      declare
-         Typ  : constant Entity_Id := Etype (Spec_Id);
-         Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-      begin
-         if Is_Limited_View (Typ) then
-            Set_Returns_By_Ref (Spec_Id);
-
-         elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
-            Set_Returns_By_Ref (Spec_Id);
-         end if;
-      end;
+      Compute_Returns_By_Ref (Spec_Id);
 
       --  For a procedure, we add a return for all possible syntactic ends of
       --  the subprogram.
@@ -7314,15 +7310,16 @@ package body Exp_Ch6 is
 
          Set_Enclosing_Sec_Stack_Return (N);
 
-         --  Optimize the case where the result is a function call. In this
-         --  case the result is already on the secondary stack and no further
-         --  processing is required except to set the By_Ref flag to ensure
-         --  that gigi does not attempt an extra unnecessary copy. (Actually
-         --  not just unnecessary but wrong in the case of a controlled type,
-         --  where gigi does not know how to do a copy.)
+         --  Optimize the case where the result is a function call that also
+         --  returns on the secondary stack. In this case the result is already
+         --  on the secondary stack and no further processing is required
+         --  except to set the By_Ref flag to ensure that gigi does not attempt
+         --  an extra unnecessary copy. (Actually not just unnecessary but
+         --  wrong in the case of a controlled type, where gigi does not know
+         --  how to do a copy.)
 
-         if Requires_Transient_Scope (Exp_Typ)
-           and then Exp_Is_Function_Call
+         pragma Assert (Requires_Transient_Scope (R_Type));
+         if Exp_Is_Function_Call and then Requires_Transient_Scope (Exp_Typ)
          then
             Set_By_Ref (N);
 
@@ -7851,20 +7848,9 @@ package body Exp_Ch6 is
       --  of the normal semantic analysis of the spec since the underlying
       --  returned type may not be known yet (for private types).
 
-      declare
-         Typ  : constant Entity_Id := Etype (Subp);
-         Utyp : constant Entity_Id := Underlying_Type (Typ);
+      Compute_Returns_By_Ref (Subp);
 
-      begin
-         if Is_Limited_View (Typ) then
-            Set_Returns_By_Ref (Subp);
-
-         elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
-            Set_Returns_By_Ref (Subp);
-         end if;
-      end;
-
-      --  Wnen freezing a null procedure, analyze its delayed aspects now
+      --  When freezing a null procedure, analyze its delayed aspects now
       --  because we may not have reached the end of the declarative list when
       --  delayed aspects are normally analyzed. This ensures that dispatching
       --  calls are properly rewritten when the generated _Postcondition
@@ -8234,10 +8220,6 @@ package body Exp_Ch6 is
          return False;
       end if;
 
-      --  For now we test whether E denotes a function or access-to-function
-      --  type whose result subtype is inherently limited. Later this test
-      --  may be revised to allow composite nonlimited types.
-
       if Ekind (E) in E_Function | E_Generic_Function
         or else (Ekind (E) = E_Subprogram_Type
                   and then Etype (E) /= Standard_Void_Type)
@@ -8293,6 +8275,15 @@ package body Exp_Ch6 is
       --  This may be a call to a protected function.
 
       elsif Nkind (Name (Exp_Node)) = N_Selected_Component then
+         --  The selector in question might not have been analyzed due to a
+         --  previous error, so analyze it here to output the appropriate
+         --  error message instead of crashing when attempting to fetch its
+         --  entity.
+
+         if not Analyzed (Selector_Name (Name (Exp_Node))) then
+            Analyze (Selector_Name (Name (Exp_Node)));
+         end if;
+
          Function_Id := Etype (Entity (Selector_Name (Name (Exp_Node))));
 
       else
@@ -8525,12 +8516,10 @@ package body Exp_Ch6 is
 
          Alloc_Form := Caller_Allocation;
          Pool := Make_Null (No_Location);
-         Return_Obj_Actual :=
-           Make_Unchecked_Type_Conversion (Loc,
-             Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
-             Expression   =>
-               Make_Explicit_Dereference (Loc,
-                 Prefix => New_Occurrence_Of (Return_Obj_Access, Loc)));
+         Return_Obj_Actual := Unchecked_Convert_To
+           (Result_Subt,
+            Make_Explicit_Dereference (Loc,
+              Prefix => New_Occurrence_Of (Return_Obj_Access, Loc)));
 
       --  When the result subtype is unconstrained, the function itself must
       --  perform the allocation of the return object, so we pass parameters
@@ -8844,11 +8833,7 @@ package body Exp_Ch6 is
       --  the caller's return object.
 
       Add_Access_Actual_To_Build_In_Place_Call
-        (Func_Call,
-         Func_Id,
-         Make_Unchecked_Type_Conversion (Loc,
-           Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
-           Expression   => Relocate_Node (Lhs)));
+        (Func_Call, Func_Id, Unchecked_Convert_To (Result_Subt, Lhs));
 
       --  Create an access type designating the function's result subtype
 
@@ -8872,11 +8857,7 @@ package body Exp_Ch6 is
 
       --  Add a conversion if it's the wrong type
 
-      if Etype (New_Expr) /= Ptr_Typ then
-         New_Expr :=
-           Make_Unchecked_Type_Conversion (Loc,
-             New_Occurrence_Of (Ptr_Typ, Loc), New_Expr);
-      end if;
+      New_Expr := Unchecked_Convert_To (Ptr_Typ, New_Expr);
 
       Obj_Id := Make_Temporary (Loc, 'R', New_Expr);
       Set_Etype (Obj_Id, Ptr_Typ);
@@ -9135,16 +9116,10 @@ package body Exp_Ch6 is
          --  it to the access type of the callee's BIP_Object_Access formal.
 
          Caller_Object :=
-           Make_Unchecked_Type_Conversion (Loc,
-             Subtype_Mark =>
-               New_Occurrence_Of
-                 (Etype (Build_In_Place_Formal
-                    (Function_Id, BIP_Object_Access)),
-                  Loc),
-             Expression   =>
-               New_Occurrence_Of
-                 (Build_In_Place_Formal (Encl_Func, BIP_Object_Access),
-                  Loc));
+           Unchecked_Convert_To
+             (Etype (Build_In_Place_Formal (Function_Id, BIP_Object_Access)),
+              New_Occurrence_Of
+                (Build_In_Place_Formal (Encl_Func, BIP_Object_Access), Loc));
 
       --  In the definite case, add an implicit actual to the function call
       --  that provides access to the declared object. An unchecked conversion
@@ -9152,10 +9127,8 @@ package body Exp_Ch6 is
       --  the case where the object is declared with a class-wide type.
 
       elsif Definite then
-         Caller_Object :=
-            Make_Unchecked_Type_Conversion (Loc,
-              Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
-              Expression   => New_Occurrence_Of (Obj_Def_Id, Loc));
+         Caller_Object := Unchecked_Convert_To
+           (Result_Subt, New_Occurrence_Of (Obj_Def_Id, Loc));
 
          --  When the function has a controlling result, an allocation-form
          --  parameter must be passed indicating that the caller is allocating
@@ -9263,9 +9236,8 @@ package body Exp_Ch6 is
              Constant_Present    => True,
              Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
              Expression          =>
-               Make_Unchecked_Type_Conversion (Loc,
-                 New_Occurrence_Of (Ptr_Typ, Loc),
-                 Make_Reference (Loc, Relocate_Node (Func_Call))));
+               Unchecked_Convert_To
+                 (Ptr_Typ, Make_Reference (Loc, Relocate_Node (Func_Call))));
       else
          Res_Decl :=
            Make_Object_Declaration (Loc,

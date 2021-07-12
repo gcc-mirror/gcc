@@ -2912,3 +2912,154 @@ c_omp_adjust_map_clauses (tree clauses, bool is_target)
 	}
     }
 }
+
+static const struct c_omp_directive omp_directives[] = {
+  /* Keep this alphabetically sorted by the first word.  Non-null second/third
+     if any should precede null ones.  */
+  { "allocate", nullptr, nullptr, PRAGMA_OMP_ALLOCATE,
+    C_OMP_DIR_DECLARATIVE, false },
+  /* { "assume", nullptr, nullptr, PRAGMA_OMP_ASSUME,
+    C_OMP_DIR_INFORMATIONAL, false }, */
+  /* { "assumes", nullptr, nullptr, PRAGMA_OMP_ASSUMES,
+    C_OMP_DIR_INFORMATIONAL, false }, */
+  { "atomic", nullptr, nullptr, PRAGMA_OMP_ATOMIC,
+    C_OMP_DIR_CONSTRUCT, false },
+  { "barrier", nullptr, nullptr, PRAGMA_OMP_BARRIER,
+    C_OMP_DIR_STANDALONE, false },
+  /* { "begin", "assumes", nullptr, PRAGMA_OMP_BEGIN,
+    C_OMP_DIR_INFORMATIONAL, false }, */
+  /* { "begin", "declare", "target", PRAGMA_OMP_BEGIN,
+    C_OMP_DIR_DECLARATIVE, false }, */
+  /* { "begin", "declare", "variant", PRAGMA_OMP_BEGIN,
+    C_OMP_DIR_DECLARATIVE, false }, */
+  /* { "begin", "metadirective", nullptr, PRAGMA_OMP_BEGIN,
+    C_OMP_DIR_???, ??? },  */
+  { "cancel", nullptr, nullptr, PRAGMA_OMP_CANCEL,
+    C_OMP_DIR_STANDALONE, false },
+  { "cancellation", "point", nullptr, PRAGMA_OMP_CANCELLATION_POINT,
+    C_OMP_DIR_STANDALONE, false },
+  { "critical", nullptr, nullptr, PRAGMA_OMP_CRITICAL,
+    C_OMP_DIR_CONSTRUCT, false },
+  /* { "declare", "mapper", nullptr, PRAGMA_OMP_DECLARE,
+    C_OMP_DIR_DECLARATIVE, false },  */
+  { "declare", "reduction", nullptr, PRAGMA_OMP_DECLARE,
+    C_OMP_DIR_DECLARATIVE, true },
+  { "declare", "simd", nullptr, PRAGMA_OMP_DECLARE,
+    C_OMP_DIR_DECLARATIVE, true },
+  { "declare", "target", nullptr, PRAGMA_OMP_DECLARE,
+    C_OMP_DIR_DECLARATIVE, false },
+  { "declare", "variant", nullptr, PRAGMA_OMP_DECLARE,
+    C_OMP_DIR_DECLARATIVE, false },
+  { "depobj", nullptr, nullptr, PRAGMA_OMP_DEPOBJ,
+    C_OMP_DIR_STANDALONE, false },
+  /* { "dispatch", nullptr, nullptr, PRAGMA_OMP_DISPATCH,
+    C_OMP_DIR_CONSTRUCT, false },  */
+  { "distribute", nullptr, nullptr, PRAGMA_OMP_DISTRIBUTE,
+    C_OMP_DIR_CONSTRUCT, true },
+  /* { "end", "assumes", nullptr, PRAGMA_OMP_END,
+    C_OMP_DIR_INFORMATIONAL, false }, */
+  { "end", "declare", "target", PRAGMA_OMP_END_DECLARE_TARGET,
+    C_OMP_DIR_DECLARATIVE, false },
+  /* { "end", "declare", "variant", PRAGMA_OMP_END,
+    C_OMP_DIR_DECLARATIVE, false }, */
+  /* { "end", "metadirective", nullptr, PRAGMA_OMP_END,
+    C_OMP_DIR_???, ??? },  */
+  /* error with at(execution) is C_OMP_DIR_STANDALONE.  */
+  /* { "error", nullptr, nullptr, PRAGMA_OMP_ERROR,
+    C_OMP_DIR_UTILITY, false },  */
+  { "flush", nullptr, nullptr, PRAGMA_OMP_FLUSH,
+    C_OMP_DIR_STANDALONE, false },
+  { "for", nullptr, nullptr, PRAGMA_OMP_FOR,
+    C_OMP_DIR_CONSTRUCT, true },
+  /* { "interop", nullptr, nullptr, PRAGMA_OMP_INTEROP,
+    C_OMP_DIR_STANDALONE, false },  */
+  { "loop", nullptr, nullptr, PRAGMA_OMP_LOOP,
+    C_OMP_DIR_CONSTRUCT, true },
+  /* { "masked", nullptr, nullptr, PRAGMA_OMP_MASKED,
+    C_OMP_DIR_CONSTRUCT, true },  */
+  { "master", nullptr, nullptr, PRAGMA_OMP_MASTER,
+    C_OMP_DIR_CONSTRUCT, true },
+  /* { "metadirective", nullptr, nullptr, PRAGMA_OMP_METADIRECTIVE,
+    C_OMP_DIR_???, ??? },  */
+  /* { "nothing", nullptr, nullptr, PRAGMA_OMP_NOTHING,
+    C_OMP_DIR_UTILITY, false },  */
+  /* ordered with depend clause is C_OMP_DIR_STANDALONE.  */
+  { "ordered", nullptr, nullptr, PRAGMA_OMP_ORDERED,
+    C_OMP_DIR_CONSTRUCT, true },
+  { "parallel", nullptr, nullptr, PRAGMA_OMP_PARALLEL,
+    C_OMP_DIR_CONSTRUCT, true },
+  { "requires", nullptr, nullptr, PRAGMA_OMP_REQUIRES,
+    C_OMP_DIR_INFORMATIONAL, false },
+  { "scan", nullptr, nullptr, PRAGMA_OMP_SCAN,
+    C_OMP_DIR_CONSTRUCT, true },
+  /* { "scope", nullptr, nullptr, PRAGMA_OMP_SCOPE,
+    C_OMP_DIR_CONSTRUCT, false },  */
+  { "section", nullptr, nullptr, PRAGMA_OMP_SECTION,
+    C_OMP_DIR_CONSTRUCT, false },
+  { "sections", nullptr, nullptr, PRAGMA_OMP_SECTIONS,
+    C_OMP_DIR_CONSTRUCT, false },
+  { "simd", nullptr, nullptr, PRAGMA_OMP_SIMD,
+    C_OMP_DIR_CONSTRUCT, true },
+  { "single", nullptr, nullptr, PRAGMA_OMP_SINGLE,
+    C_OMP_DIR_CONSTRUCT, false },
+  { "target", "data", nullptr, PRAGMA_OMP_TARGET,
+    C_OMP_DIR_CONSTRUCT, false },
+  { "target", "enter", "data", PRAGMA_OMP_TARGET,
+    C_OMP_DIR_STANDALONE, false },
+  { "target", "exit", "data", PRAGMA_OMP_TARGET,
+    C_OMP_DIR_STANDALONE, false },
+  { "target", "update", nullptr, PRAGMA_OMP_TARGET,
+    C_OMP_DIR_STANDALONE, false },
+  { "target", nullptr, nullptr, PRAGMA_OMP_TARGET,
+    C_OMP_DIR_CONSTRUCT, true },
+  { "task", nullptr, nullptr, PRAGMA_OMP_TASK,
+    C_OMP_DIR_CONSTRUCT, false },
+  { "taskgroup", nullptr, nullptr, PRAGMA_OMP_TASKGROUP,
+    C_OMP_DIR_CONSTRUCT, false },
+  { "taskloop", nullptr, nullptr, PRAGMA_OMP_TASKLOOP,
+    C_OMP_DIR_CONSTRUCT, true },
+  { "taskwait", nullptr, nullptr, PRAGMA_OMP_TASKWAIT,
+    C_OMP_DIR_STANDALONE, false },
+  { "taskyield", nullptr, nullptr, PRAGMA_OMP_TASKYIELD,
+    C_OMP_DIR_STANDALONE, false },
+  /* { "tile", nullptr, nullptr, PRAGMA_OMP_TILE,
+    C_OMP_DIR_CONSTRUCT, false },  */
+  { "teams", nullptr, nullptr, PRAGMA_OMP_TEAMS,
+    C_OMP_DIR_CONSTRUCT, true },
+  { "threadprivate", nullptr, nullptr, PRAGMA_OMP_THREADPRIVATE,
+    C_OMP_DIR_DECLARATIVE, false }
+  /* { "unroll", nullptr, nullptr, PRAGMA_OMP_UNROLL,
+    C_OMP_DIR_CONSTRUCT, false },  */
+};
+
+/* Find (non-combined/composite) OpenMP directive (if any) which starts
+   with FIRST keyword and for multi-word directives has SECOND and
+   THIRD keyword after it.  */
+
+const struct c_omp_directive *
+c_omp_categorize_directive (const char *first, const char *second,
+			    const char *third)
+{
+  const size_t n_omp_directives = ARRAY_SIZE (omp_directives);
+  for (size_t i = 0; i < n_omp_directives; i++)
+    {
+      if ((unsigned char) omp_directives[i].first[0]
+	  < (unsigned char) first[0])
+	continue;
+      if ((unsigned char) omp_directives[i].first[0]
+	  > (unsigned char) first[0])
+	break;
+      if (strcmp (omp_directives[i].first, first))
+	continue;
+      if (!omp_directives[i].second)
+	return &omp_directives[i];
+      if (!second || strcmp (omp_directives[i].second, second))
+	continue;
+      if (!omp_directives[i].third)
+	return &omp_directives[i];
+      if (!third || strcmp (omp_directives[i].third, third))
+	continue;
+      return &omp_directives[i];
+    }
+  return NULL;
+}

@@ -1142,6 +1142,7 @@ program_state::validate (const extrinsic_state &ext_state) const
 #endif
 
   gcc_assert (m_checker_states.length () == ext_state.get_num_checkers ());
+  m_region_model->validate ();
 }
 
 static void

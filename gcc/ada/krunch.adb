@@ -92,15 +92,16 @@ begin
       Startloc := 3;
       Buffer (2 .. Len - 5) := Buffer (7 .. Len);
       Curlen := Len - 5;
-      if Buffer (Curlen - 2 .. Curlen) = "128"
-        or else Buffer (3 .. 9) = "exn_lll"
-        or else Buffer (3 .. 9) = "exp_lll"
-        or else Buffer (3 .. 9) = "img_lll"
-        or else Buffer (3 .. 9) = "val_lll"
-        or else Buffer (3 .. 9) = "wid_lll"
-        or else (Buffer (3 .. 6) = "pack" and then Curlen = 10)
+      if (Curlen >= 3 and then Buffer (Curlen - 2 .. Curlen) = "128")
+        or else (Len >= 9 and then
+                    (Buffer (3 .. 9) = "exn_lll"
+                      or else Buffer (3 .. 9) = "exp_lll"
+                      or else Buffer (3 .. 9) = "img_lll"
+                      or else Buffer (3 .. 9) = "val_lll"
+                      or else Buffer (3 .. 9) = "wid_lll"))
+           or else (Curlen = 10 and then Buffer (3 .. 6) = "pack")
       then
-         if Buffer (3 .. 15) = "compare_array" then
+         if Len >= 15 and then Buffer (3 .. 15) = "compare_array" then
             Buffer (3 .. 4) := "ca";
             Buffer (5 .. Curlen - 11) := Buffer (16 .. Curlen);
             Curlen := Curlen - 11;

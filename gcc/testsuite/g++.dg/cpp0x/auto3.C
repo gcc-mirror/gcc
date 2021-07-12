@@ -9,8 +9,8 @@ auto x;				// { dg-error "auto" }
 // deduction, the program is ill-formed.
 auto i = 42, j = 42.0;		// { dg-error "auto" }
 
-// New CWG issue
-auto a[2] = { 1, 2 };		// { dg-error "6:.a. declared as array of .auto" }
+// CWG issue 2397: [dcl.type.auto.deduct]/2: "T shall not be an array type".
+auto a[2] = { 1, 2 };		// { dg-error "20:unable to deduce" }
 
 template<class T>
 struct A { };

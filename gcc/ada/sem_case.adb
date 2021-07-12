@@ -27,6 +27,7 @@ with Atree;          use Atree;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
 with Errout;         use Errout;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -90,12 +91,17 @@ package body Sem_Case is
    --
    --  Bounds_Type is the type whose range must be covered by the alternatives
    --
-   --  Subtyp is the subtype of the expression. If its bounds are non-static
+   --  Subtyp is the subtype of the expression. If its bounds are nonstatic
    --  the alternatives must cover its base type.
 
    function Choice_Image (Value : Uint; Ctype : Entity_Id) return Name_Id;
    --  Given a Pos value of enumeration type Ctype, returns the name
    --  ID of an appropriate string to be used in error message output.
+
+   function Has_Static_Discriminant_Constraint
+     (Subtyp : Entity_Id) return Boolean;
+   --  Returns True if the given subtype is subject to a discriminant
+   --  constraint and at least one of the constraint values is nonstatic.
 
    package Composite_Case_Ops is
 
@@ -255,9 +261,9 @@ package body Sem_Case is
       --  is posted at location C. Caller sets Error_Msg_Sloc for xx.
 
       procedure Explain_Non_Static_Bound;
-      --  Called when we find a non-static bound, requiring the base type to
+      --  Called when we find a nonstatic bound, requiring the base type to
       --  be covered. Provides where possible a helpful explanation of why the
-      --  bounds are non-static, since this is not always obvious.
+      --  bounds are nonstatic, since this is not always obvious.
 
       function Lt_Choice (C1, C2 : Natural) return Boolean;
       --  Comparison routine for comparing Choice_Table entries. Use the lower
@@ -734,7 +740,7 @@ package body Sem_Case is
                  ("bounds of & are not static, "
                   & "alternatives must cover base type!", Expr, Expr);
 
-            --  If this is a case statement, the expression may be non-static
+            --  If this is a case statement, the expression may be nonstatic
             --  or else the subtype may be at fault.
 
             elsif Is_Entity_Name (Expr) then
@@ -1124,14 +1130,14 @@ package body Sem_Case is
             return Static_Array_Length (Subtyp)
               * Scalar_Part_Count (Component_Type (Subtyp));
          elsif Is_Record_Type (Subtyp) then
-            pragma Assert (not Has_Discriminants (Subtyp));
             declare
                Result : Nat := 0;
-               Comp : Entity_Id := First_Component (Subtyp);
+               Comp : Entity_Id := First_Component_Or_Discriminant
+                                     (Base_Type (Subtyp));
             begin
                while Present (Comp) loop
                   Result := Result + Scalar_Part_Count (Etype (Comp));
-                  Next_Component (Comp);
+                  Next_Component_Or_Discriminant (Comp);
                end loop;
                return Result;
             end;
@@ -1218,15 +1224,47 @@ package body Sem_Case is
                      Traverse_Discrete_Parts (Component_Type (Subtyp));
                   end loop;
                elsif Is_Record_Type (Subtyp) then
-                  pragma Assert (not Has_Discriminants (Subtyp));
-                  declare
-                     Comp : Entity_Id := First_Component (Subtyp);
-                  begin
-                     while Present (Comp) loop
-                        Traverse_Discrete_Parts (Etype (Comp));
-                        Next_Component (Comp);
-                     end loop;
-                  end;
+                  if Has_Static_Discriminant_Constraint (Subtyp) then
+
+                     --  The component range for a constrained discriminant
+                     --  is a single value.
+                     declare
+                        Dc_Elmt : Elmt_Id :=
+                          First_Elmt (Discriminant_Constraint (Subtyp));
+                        Dc_Value : Uint;
+                     begin
+                        while Present (Dc_Elmt) loop
+                           Dc_Value := Expr_Value (Node (Dc_Elmt));
+                           Update_Result ((Low  => Dc_Value,
+                                           High => Dc_Value));
+
+                           Next_Elmt (Dc_Elmt);
+                        end loop;
+                     end;
+
+                     --  Generate ranges for nondiscriminant components.
+                     declare
+                        Comp : Entity_Id := First_Component
+                                              (Base_Type (Subtyp));
+                     begin
+                        while Present (Comp) loop
+                           Traverse_Discrete_Parts (Etype (Comp));
+                           Next_Component (Comp);
+                        end loop;
+                     end;
+                  else
+                     --  Generate ranges for all components
+                     declare
+                        Comp : Entity_Id :=
+                          First_Component_Or_Discriminant
+                            (Base_Type (Subtyp));
+                     begin
+                        while Present (Comp) loop
+                           Traverse_Discrete_Parts (Etype (Comp));
+                           Next_Component_Or_Discriminant (Comp);
+                        end loop;
+                     end;
+                  end if;
                else
                   Error_Msg_N
                     ("case selector type having a non-discrete non-record"
@@ -1234,6 +1272,7 @@ package body Sem_Case is
                      Expression (Case_Statement));
                end if;
             end Traverse_Discrete_Parts;
+
          begin
             Traverse_Discrete_Parts (Etype (Expression (Case_Statement)));
             pragma Assert (Done or else Serious_Errors_Detected > 0);
@@ -1338,12 +1377,23 @@ package body Sem_Case is
          is
             Result    : Choice_Range_Info (Is_Others => False);
             Ranges    : Composite_Range_Info renames Result.Ranges;
-            Next_Part : Part_Id := 1;
-            Done      : Boolean := False;
+            Next_Part : Part_Id'Base range 1 .. Part_Id'Last + 1 := 1;
+
+            procedure Traverse_Choice (Expr : Node_Id);
+            --  Traverse a legal choice expression, looking for
+            --  values/ranges of discrete parts. Call Update_Result
+            --  for each.
 
             procedure Update_Result (Discrete_Range : Discrete_Range_Info);
             --  Initialize first remaining uninitialized element of Ranges.
-            --  Also set Next_Part and Done.
+            --  Also set Next_Part.
+
+            procedure Update_Result_For_Full_Coverage (Comp_Type  : Entity_Id);
+            --  For each scalar part of the given component type, call
+            --  Update_Result with the full range for that scalar part.
+            --  This is used for both box components in aggregates and
+            --  for any inactive-variant components that do not appear in
+            --  a given aggregate.
 
             -------------------
             -- Update_Result --
@@ -1351,19 +1401,21 @@ package body Sem_Case is
 
             procedure Update_Result (Discrete_Range : Discrete_Range_Info) is
             begin
-               pragma Assert (not Done);
                Ranges (Next_Part) := Discrete_Range;
-               if Next_Part = Part_Id'Last then
-                  Done := True;
-               else
-                  Next_Part := Next_Part + 1;
-               end if;
+               Next_Part := Next_Part + 1;
             end Update_Result;
 
-            procedure Traverse_Choice (Expr : Node_Id);
-            --  Traverse a legal choice expression, looking for
-            --  values/ranges of discrete parts. Call Update_Result
-            --  for each.
+            -------------------------------------
+            -- Update_Result_For_Full_Coverage --
+            -------------------------------------
+
+            procedure Update_Result_For_Full_Coverage (Comp_Type : Entity_Id)
+            is
+            begin
+               for Counter in 1 .. Scalar_Part_Count (Comp_Type) loop
+                  Update_Result (Component_Bounds (Next_Part));
+               end loop;
+            end Update_Result_For_Full_Coverage;
 
             ---------------------
             -- Traverse_Choice --
@@ -1388,52 +1440,89 @@ package body Sem_Case is
                      Refresh_Binding_Info (Aggr => Expr);
 
                      declare
-                        Comp : Node_Id :=
+                        Comp_Assoc : Node_Id :=
                           First (Component_Associations (Expr));
-                        --  Ok to assume that components are in order here?
-                     begin
-                        while Present (Comp) loop
-                           pragma Assert (List_Length (Choices (Comp)) = 1);
-                           if Box_Present (Comp) then
-                              declare
-                                 Comp_Type : constant Entity_Id :=
-                                   Etype (First (Choices (Comp)));
-                              begin
-                                 if Is_Discrete_Type (Comp_Type) then
-                                    declare
-                                       Low  : constant Node_Id :=
-                                         Type_Low_Bound (Comp_Type);
-                                       High : constant Node_Id :=
-                                         Type_High_Bound (Comp_Type);
-                                    begin
-                                       Update_Result
-                                         ((Low  => Expr_Value (Low),
-                                           High => Expr_Value (High)));
-                                    end;
-                                 else
-                                    --  Need to recursively traverse type
-                                    --  here, calling Update_Result for
-                                    --  each discrete subcomponent.
+                        --  Aggregate has been normalized (components in
+                        --  order, only one component per choice, etc.).
 
-                                    Error_Msg_N
-                                      ("box values for nondiscrete pattern "
-                                       & "subcomponents unimplemented", Comp);
+                        Comp_From_Type : Node_Id :=
+                          First_Component_Or_Discriminant
+                            (Base_Type (Etype (Expr)));
+
+                        Saved_Next_Part : constant Part_Id := Next_Part;
+                     begin
+                        while Present (Comp_Assoc) loop
+                           pragma Assert
+                             (List_Length (Choices (Comp_Assoc)) = 1);
+
+                           declare
+                              Comp : constant Node_Id :=
+                                Entity (First (Choices (Comp_Assoc)));
+                              Comp_Seen : Boolean := False;
+                           begin
+                              loop
+                                 if Original_Record_Component (Comp) =
+                                   Original_Record_Component (Comp_From_Type)
+                                 then
+                                    Comp_Seen := True;
+                                 else
+                                    --  We have an aggregate of a type that
+                                    --  has a variant part (or has a
+                                    --  subcomponent type that has a variant
+                                    --  part) and we have to deal with a
+                                    --  component that is present in the type
+                                    --  but not in the aggregate (because the
+                                    --  component is in an inactive variant).
+                                    --
+                                    Update_Result_For_Full_Coverage
+                                      (Comp_Type => Etype (Comp_From_Type));
                                  end if;
-                              end;
+
+                                 Comp_From_Type :=
+                                   Next_Component_Or_Discriminant
+                                     (Comp_From_Type);
+
+                                 exit when Comp_Seen;
+                              end loop;
+                           end;
+
+                           if Box_Present (Comp_Assoc) then
+                              --  Box matches all values
+                              Update_Result_For_Full_Coverage
+                                (Etype (First (Choices (Comp_Assoc))));
                            else
-                              Traverse_Choice (Expression (Comp));
+                              Traverse_Choice (Expression (Comp_Assoc));
                            end if;
 
-                           if Binding_Chars (Comp) /= No_Name
+                           if Binding_Chars (Comp_Assoc) /= No_Name
                            then
                               Case_Bindings.Note_Binding
-                                (Comp_Assoc => Comp,
+                                (Comp_Assoc => Comp_Assoc,
                                  Choice     => Choice,
                                  Alt        => Alt);
                            end if;
 
-                           Next (Comp);
+                           Next (Comp_Assoc);
                         end loop;
+
+                        while Present (Comp_From_Type) loop
+                           --  Deal with any trailing inactive-variant
+                           --  components.
+                           --
+                           --  See earlier commment about calling
+                           --  Update_Result_For_Full_Coverage for such
+                           --  components.
+
+                           Update_Result_For_Full_Coverage
+                             (Comp_Type => Etype (Comp_From_Type));
+
+                           Comp_From_Type :=
+                             Next_Component_Or_Discriminant (Comp_From_Type);
+                        end loop;
+
+                        pragma Assert
+                          (Nat (Next_Part - Saved_Next_Part)
+                           = Scalar_Part_Count (Etype (Expr)));
                      end;
                   elsif Is_Array_Type (Etype (Expr)) then
                      if Is_Non_Empty_List (Component_Associations (Expr)) then
@@ -1477,6 +1566,8 @@ package body Sem_Case is
                end if;
             end Traverse_Choice;
 
+         --  Start of processing for Parse_Choice
+
          begin
             if Nkind (Choice) = N_Others_Choice then
                return (Is_Others => True);
@@ -1484,7 +1575,7 @@ package body Sem_Case is
             Traverse_Choice (Choice);
 
             --  Avoid returning uninitialized garbage in error case
-            if not Done then
+            if Next_Part /= Part_Id'Last + 1 then
                pragma Assert (Serious_Errors_Detected > 0);
                Result.Ranges := (others => (Low => Uint_1, High => Uint_0));
             end if;
@@ -2908,7 +2999,7 @@ package body Sem_Case is
             begin
                if Has_Predicates (Subtyp) then
                   Error_Msg_N
-                     ("subtype of case selector (or subcomponent thereof)" &
+                     ("subtype of case selector (or subcomponent thereof) " &
                       "has predicate", N);
                elsif Is_Discrete_Type (Subtyp) then
                   if not Is_Static_Subtype (Subtyp) then
@@ -2936,20 +3027,34 @@ package body Sem_Case is
                   end if;
                   Check_Component_Subtype (Component_Type (Subtyp));
                elsif Is_Record_Type (Subtyp) then
-                  if Has_Discriminants (Subtyp) then
-                     Error_Msg_N
-                        ("type of case selector (or subcomponent thereof)" &
-                         "is discriminated", N);
-                  else
-                     declare
-                        Comp : Entity_Id := First_Component (Subtyp);
-                     begin
-                        while Present (Comp) loop
-                           Check_Component_Subtype (Etype (Comp));
-                           Next_Component (Comp);
-                        end loop;
-                     end;
+
+                  if Has_Discriminants (Subtyp)
+                    and then Is_Constrained (Subtyp)
+                    and then not Has_Static_Discriminant_Constraint (Subtyp)
+                  then
+                     --  We are only disallowing nonstatic constraints for
+                     --  subcomponent subtypes, not for the subtype of the
+                     --  expression we are casing on. This test could be
+                     --  implemented via an Is_Recursive_Call parameter if
+                     --  that seems preferable.
+
+                     if Subtyp /= Check_Choices.Subtyp then
+                        Error_Msg_N
+                          ("constrained discriminated subtype of case " &
+                           "selector subcomponent has nonstatic " &
+                           "constraint", N);
+                     end if;
                   end if;
+
+                  declare
+                     Comp : Entity_Id :=
+                       First_Component_Or_Discriminant (Base_Type (Subtyp));
+                  begin
+                     while Present (Comp) loop
+                        Check_Component_Subtype (Etype (Comp));
+                        Next_Component_Or_Discriminant (Comp);
+                     end loop;
+                  end;
                else
                   Error_Msg_N
                     ("type of case selector (or subcomponent thereof) is " &
@@ -3058,7 +3163,7 @@ package body Sem_Case is
          --  bounds of its base type to determine the values covered by the
          --  discrete choices.
 
-         --  In Ada 2012, if the subtype has a non-static predicate the full
+         --  In Ada 2012, if the subtype has a nonstatic predicate the full
          --  range of the base type must be covered as well.
 
          if Is_OK_Static_Subtype (Subtyp) then
@@ -3075,7 +3180,7 @@ package body Sem_Case is
          end if;
 
          --  Obtain static bounds of type, unless this is a generic formal
-         --  discrete type for which all choices will be non-static.
+         --  discrete type for which all choices will be nonstatic.
 
          if not Is_Generic_Type (Root_Type (Bounds_Type))
            or else Ekind (Bounds_Type) /= E_Enumeration_Type
@@ -3137,7 +3242,7 @@ package body Sem_Case is
 
                         if Has_Predicates (E) then
 
-                           --  Use of non-static predicate is an error
+                           --  Use of nonstatic predicate is an error
 
                            if not Is_Discrete_Type (E)
                              or else not Has_Static_Predicate (E)
@@ -3297,6 +3402,30 @@ package body Sem_Case is
       end Check_Choices;
 
    end Generic_Check_Choices;
+
+   -----------------------------------------
+   --  Has_Static_Discriminant_Constraint --
+   -----------------------------------------
+
+   function Has_Static_Discriminant_Constraint
+     (Subtyp : Entity_Id) return Boolean
+   is
+   begin
+      if Has_Discriminants (Subtyp) and then Is_Constrained (Subtyp) then
+         declare
+            DC_Elmt : Elmt_Id := First_Elmt (Discriminant_Constraint (Subtyp));
+         begin
+            while Present (DC_Elmt) loop
+               if not All_Composite_Constraints_Static (Node (DC_Elmt)) then
+                  return False;
+               end if;
+               Next_Elmt (DC_Elmt);
+            end loop;
+            return True;
+         end;
+      end if;
+      return False;
+   end Has_Static_Discriminant_Constraint;
 
    ----------------------------
    -- Is_Case_Choice_Pattern --

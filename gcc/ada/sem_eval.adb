@@ -6481,11 +6481,10 @@ package body Sem_Eval is
 
    procedure Set_Checking_Potentially_Static_Expression (Value : Boolean) is
    begin
-      --  Verify that we're not currently checking for a potentially static
-      --  expression unless we're disabling such checking.
+      --  Verify that we only start/stop checking for a potentially static
+      --  expression and do not start or stop it twice in a row.
 
-      pragma Assert
-        (not Checking_For_Potentially_Static_Expression or else not Value);
+      pragma Assert (Checking_For_Potentially_Static_Expression /= Value);
 
       Checking_For_Potentially_Static_Expression := Value;
    end Set_Checking_Potentially_Static_Expression;

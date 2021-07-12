@@ -1139,6 +1139,17 @@ package body Sem_Prag is
                              (State_Id => Item_Id,
                               Ref      => Item);
                         end if;
+
+                     elsif Ekind (Item_Id) in E_Constant | E_Variable
+                       and then Present (Ultimate_Overlaid_Entity (Item_Id))
+                     then
+                        SPARK_Msg_NE
+                          ("overlaying object & cannot appear in Depends",
+                           Item, Item_Id);
+                        SPARK_Msg_NE
+                          ("\use the overlaid object & instead",
+                           Item, Ultimate_Overlaid_Entity (Item_Id));
+                        return;
                      end if;
 
                      --  When the item renames an entire object, replace the
@@ -2387,6 +2398,17 @@ package body Sem_Prag is
                elsif Is_Formal_Object (Item_Id) then
                   null;
 
+               elsif Ekind (Item_Id) in E_Constant | E_Variable
+                 and then Present (Ultimate_Overlaid_Entity (Item_Id))
+               then
+                  SPARK_Msg_NE
+                    ("overlaying object & cannot appear in Global",
+                     Item, Item_Id);
+                  SPARK_Msg_NE
+                    ("\use the overlaid object & instead",
+                     Item, Ultimate_Overlaid_Entity (Item_Id));
+                  return;
+
                --  The only legal references are those to abstract states,
                --  objects and various kinds of constants (SPARK RM 6.1.4(4)).
 
@@ -2433,10 +2455,13 @@ package body Sem_Prag is
                      SPARK_Msg_N ("\use its constituents instead", Item);
                      return;
 
-                  --  An external state cannot appear as a global item of a
-                  --  nonvolatile function (SPARK RM 7.1.3(8)).
+                  --  An external state which has Async_Writers or
+                  --  Effective_Reads enabled cannot appear as a global item
+                  --  of a nonvolatile function (SPARK RM 7.1.3(8)).
 
                   elsif Is_External_State (Item_Id)
+                    and then (Async_Writers_Enabled (Item_Id)
+                               or else Effective_Reads_Enabled (Item_Id))
                     and then Ekind (Spec_Id) in E_Function | E_Generic_Function
                     and then not Is_Volatile_Function (Spec_Id)
                   then
@@ -2981,6 +3006,16 @@ package body Sem_Prag is
                if Item_Id = Any_Id then
                   null;
 
+               elsif Ekind (Item_Id) in E_Constant | E_Variable
+                 and then Present (Ultimate_Overlaid_Entity (Item_Id))
+               then
+                  SPARK_Msg_NE
+                    ("overlaying object & cannot appear in Initializes",
+                     Item, Item_Id);
+                  SPARK_Msg_NE
+                    ("\use the overlaid object & instead",
+                     Item, Ultimate_Overlaid_Entity (Item_Id));
+
                --  The state or variable must be declared in the visible
                --  declarations of the package (SPARK RM 7.1.5(7)).
 
@@ -3121,6 +3156,18 @@ package body Sem_Prag is
                               & "state of package %", Input, Input_Id);
                            return;
                         end if;
+                     end if;
+
+                     if Ekind (Input_Id) in E_Constant | E_Variable
+                       and then Present (Ultimate_Overlaid_Entity (Input_Id))
+                     then
+                        SPARK_Msg_NE
+                          ("overlaying object & cannot appear in Initializes",
+                           Input, Input_Id);
+                        SPARK_Msg_NE
+                          ("\use the overlaid object & instead",
+                           Input, Ultimate_Overlaid_Entity (Input_Id));
+                        return;
                      end if;
 
                      --  Detect a duplicate use of the same input item
@@ -10483,6 +10530,41 @@ package body Sem_Prag is
                      Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
                   end if;
 
+               --  Special processing for No_Dynamic_Accessibility_Checks to
+               --  disallow exclusive specification in a body or subunit.
+
+               elsif R_Id = No_Dynamic_Accessibility_Checks
+                 --  Check if the restriction is within configuration pragma
+                 --  in a similar way to No_Elaboration_Code.
+
+                 and then not (Current_Sem_Unit = Main_Unit
+                                or else In_Extended_Main_Source_Unit (N))
+
+                 and then Nkind (Unit (Parent (N))) = N_Compilation_Unit
+
+                 and then (Nkind (Unit (Parent (N))) = N_Package_Body
+                            or else Nkind (Unit (Parent (N))) = N_Subunit)
+
+                 and then not Restriction_Active
+                                (No_Dynamic_Accessibility_Checks)
+               then
+                  Error_Msg_N
+                    ("invalid specification of " &
+                     """No_Dynamic_Accessibility_Checks""", N);
+
+                  if Nkind (Unit (Parent (N))) = N_Package_Body then
+                     Error_Msg_N
+                       ("\restriction cannot be specified in a package " &
+                         "body", N);
+
+                  elsif Nkind (Unit (Parent (N))) = N_Subunit then
+                     Error_Msg_N
+                       ("\restriction cannot be specified in a subunit", N);
+                  end if;
+
+                  Error_Msg_N
+                    ("\unless also specified in spec", N);
+
                --  Special processing for No_Tasking restriction (not just a
                --  warning) when it appears as a configuration pragma.
 
@@ -12688,7 +12770,7 @@ package body Sem_Prag is
          --  external tool and a tool-specific function. These arguments are
          --  not analyzed.
 
-         when Pragma_Annotate => Annotate : declare
+         when Pragma_Annotate | Pragma_GNAT_Annotate => Annotate : declare
             Arg     : Node_Id;
             Expr    : Node_Id;
             Nam_Arg : Node_Id;
@@ -14656,7 +14738,6 @@ package body Sem_Prag is
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
          when Pragma_CPP_Constructor => CPP_Constructor : declare
-            Elmt    : Elmt_Id;
             Id      : Entity_Id;
             Def_Id  : Entity_Id;
             Tag_Typ : Entity_Id;
@@ -14723,12 +14804,7 @@ package body Sem_Prag is
                then
                   Tag_Typ := Etype (Def_Id);
 
-                  Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
-                  while Present (Elmt) and then Node (Elmt) /= Def_Id loop
-                     Next_Elmt (Elmt);
-                  end loop;
-
-                  Remove_Elmt (Primitive_Operations (Tag_Typ), Elmt);
+                  Remove (Primitive_Operations (Tag_Typ), Def_Id);
                   Set_Is_Dispatching_Operation (Def_Id, False);
                end if;
 
@@ -31246,6 +31322,7 @@ package body Sem_Prag is
       Pragma_Finalize_Storage_Only          =>  0,
       Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
+      Pragma_GNAT_Annotate                  => 93,
       Pragma_Ident                          => -1,
       Pragma_Ignore_Pragma                  =>  0,
       Pragma_Implementation_Defined         => -1,

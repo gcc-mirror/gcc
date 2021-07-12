@@ -2022,13 +2022,12 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
 
       warned = (writefn
 		? warning_at (loc, OPT_Wstringop_overflow_,
-			      "%G%qD writing one too many bytes into a region "
+			      "%qD writing one too many bytes into a region "
 			      "of a size that depends on %<strlen%>",
-			      stmt, writefn)
+			      writefn)
 		: warning_at (loc, OPT_Wstringop_overflow_,
-			      "%Gwriting one too many bytes into a region "
-			      "of a size that depends on %<strlen%>",
-			      stmt));
+			      "writing one too many bytes into a region "
+			      "of a size that depends on %<strlen%>"));
     }
   else if (lenrng[0] == lenrng[1])
     {
@@ -2036,65 +2035,65 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
 	warned = (writefn
 		  ? warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrng[0].to_uhwi (),
-			       "%G%qD writing %wu byte into a region "
+			       "%qD writing %wu byte into a region "
 			       "of size %wu",
-			       "%G%qD writing %wu bytes into a region "
+			       "%qD writing %wu bytes into a region "
 			       "of size %wu",
-			       stmt, writefn, lenrng[0].to_uhwi (),
+			       writefn, lenrng[0].to_uhwi (),
 			       spcrng[0].to_uhwi ())
 		  : warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrng[0].to_uhwi (),
-			       "%Gwriting %wu byte into a region "
+			       "writing %wu byte into a region "
 			       "of size %wu",
-			       "%Gwriting %wu bytes into a region "
+			       "writing %wu bytes into a region "
 			       "of size %wu",
-			       stmt, lenrng[0].to_uhwi (),
+			       lenrng[0].to_uhwi (),
 			       spcrng[0].to_uhwi ()));
       else
 	warned = (writefn
 		  ? warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrng[0].to_uhwi (),
-			       "%G%qD writing %wu byte into a region "
+			       "%qD writing %wu byte into a region "
 			       "of size between %wu and %wu",
-			       "%G%qD writing %wu bytes into a region "
+			       "%qD writing %wu bytes into a region "
 			       "of size between %wu and %wu",
-			       stmt, writefn, lenrng[0].to_uhwi (),
+			       writefn, lenrng[0].to_uhwi (),
 			       spcrng[0].to_uhwi (), spcrng[1].to_uhwi ())
 		  : warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrng[0].to_uhwi (),
-			       "%Gwriting %wu byte into a region "
+			       "writing %wu byte into a region "
 			       "of size between %wu and %wu",
-			       "%Gwriting %wu bytes into a region "
+			       "writing %wu bytes into a region "
 			       "of size between %wu and %wu",
-			       stmt, lenrng[0].to_uhwi (),
+			       lenrng[0].to_uhwi (),
 			       spcrng[0].to_uhwi (), spcrng[1].to_uhwi ()));
     }
   else if (spcrng[0] == spcrng[1])
     warned = (writefn
 	      ? warning_at (loc, OPT_Wstringop_overflow_,
-			    "%G%qD writing between %wu and %wu bytes "
+			    "%qD writing between %wu and %wu bytes "
 			    "into a region of size %wu",
-			    stmt, writefn, lenrng[0].to_uhwi (),
+			    writefn, lenrng[0].to_uhwi (),
 			    lenrng[1].to_uhwi (),
 			    spcrng[0].to_uhwi ())
 	      : warning_at (loc, OPT_Wstringop_overflow_,
-			    "%Gwriting between %wu and %wu bytes "
+			    "writing between %wu and %wu bytes "
 			    "into a region of size %wu",
-			    stmt, lenrng[0].to_uhwi (),
+			    lenrng[0].to_uhwi (),
 			    lenrng[1].to_uhwi (),
 			    spcrng[0].to_uhwi ()));
   else
     warned = (writefn
 	      ? warning_at (loc, OPT_Wstringop_overflow_,
-			    "%G%qD writing between %wu and %wu bytes "
+			    "%qD writing between %wu and %wu bytes "
 			    "into a region of size between %wu and %wu",
-			    stmt, writefn, lenrng[0].to_uhwi (),
+			    writefn, lenrng[0].to_uhwi (),
 			    lenrng[1].to_uhwi (),
 			    spcrng[0].to_uhwi (), spcrng[1].to_uhwi ())
 	      : warning_at (loc, OPT_Wstringop_overflow_,
-			    "%Gwriting between %wu and %wu bytes "
+			    "writing between %wu and %wu bytes "
 			    "into a region of size between %wu and %wu",
-			    stmt, lenrng[0].to_uhwi (),
+			    lenrng[0].to_uhwi (),
 			    lenrng[1].to_uhwi (),
 			    spcrng[0].to_uhwi (), spcrng[1].to_uhwi ()));
 
@@ -2985,13 +2984,13 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
       if (lenrange[0] == cntrange[1] && cntrange[0] == cntrange[1])
 	return warning_n (callloc, OPT_Wstringop_truncation,
 			  cntrange[0].to_uhwi (),
-			  "%G%qD output truncated before terminating "
+			  "%qD output truncated before terminating "
 			  "nul copying %E byte from a string of the "
 			  "same length",
-			  "%G%qD output truncated before terminating nul "
+			  "%qD output truncated before terminating nul "
 			  "copying %E bytes from a string of the same "
 			  "length",
-			  stmt, func, cnt);
+			  func, cnt);
       else if (!cat_dstlen_bounded)
 	{
 	  if (wi::geu_p (lenrange[0], cntrange[1]))
@@ -3001,16 +3000,16 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 	      if (cntrange[0] == cntrange[1])
 		return warning_n (callloc, OPT_Wstringop_truncation,
 				  cntrange[0].to_uhwi (),
-				  "%G%qD output truncated copying %E byte "
+				  "%qD output truncated copying %E byte "
 				  "from a string of length %wu",
-				  "%G%qD output truncated copying %E bytes "
+				  "%qD output truncated copying %E bytes "
 				  "from a string of length %wu",
-				  stmt, func, cnt, lenrange[0].to_uhwi ());
+				  func, cnt, lenrange[0].to_uhwi ());
 
 	      return warning_at (callloc, OPT_Wstringop_truncation,
-				 "%G%qD output truncated copying between %wu "
+				 "%qD output truncated copying between %wu "
 				 "and %wu bytes from a string of length %wu",
-				 stmt, func, cntrange[0].to_uhwi (),
+				 func, cntrange[0].to_uhwi (),
 				 cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
 	    }
 	  else if (wi::geu_p (lenrange[1], cntrange[1]))
@@ -3020,16 +3019,16 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 	      if (cntrange[0] == cntrange[1])
 		return warning_n (callloc, OPT_Wstringop_truncation,
 				  cntrange[0].to_uhwi (),
-				  "%G%qD output may be truncated copying %E "
+				  "%qD output may be truncated copying %E "
 				  "byte from a string of length %wu",
-				  "%G%qD output may be truncated copying %E "
+				  "%qD output may be truncated copying %E "
 				  "bytes from a string of length %wu",
-				  stmt, func, cnt, lenrange[1].to_uhwi ());
+				  func, cnt, lenrange[1].to_uhwi ());
 
 	      return warning_at (callloc, OPT_Wstringop_truncation,
-				 "%G%qD output may be truncated copying between "
+				 "%qD output may be truncated copying between "
 				 "%wu and %wu bytes from a string of length %wu",
-				 stmt, func, cntrange[0].to_uhwi (),
+				 func, cntrange[0].to_uhwi (),
 				 cntrange[1].to_uhwi (), lenrange[1].to_uhwi ());
 	    }
 	}
@@ -3043,9 +3042,9 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 	     the lower bound of the specified count but shorter than the
 	     upper bound the copy may (but need not) be truncated.  */
 	  return warning_at (callloc, OPT_Wstringop_truncation,
-			     "%G%qD output may be truncated copying between "
+			     "%qD output may be truncated copying between "
 			     "%wu and %wu bytes from a string of length %wu",
-			     stmt, func, cntrange[0].to_uhwi (),
+			     func, cntrange[0].to_uhwi (),
 			     cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
 	}
     }
@@ -3072,8 +3071,8 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 
       if (cntrange[0] == cntrange[1])
 	return warning_at (callloc, OPT_Wstringop_truncation,
-			   "%G%qD specified bound %E equals destination size",
-			   stmt, func, cnt);
+			   "%qD specified bound %E equals destination size",
+			   func, cnt);
     }
 
   return false;
@@ -3197,9 +3196,9 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
       && sisrc == silen
       && is_strlen_related_p (src, len)
       && warning_at (callloc, OPT_Wstringop_truncation,
-		     "%G%qD output truncated before terminating nul "
+		     "%qD output truncated before terminating nul "
 		     "copying as many bytes from a string as its length",
-		     stmt, func))
+		     func))
     warned = true;
   else if ((append_p || !dstsize || len == dstlenp1)
 	   && silen && is_strlen_related_p (src, silen->ptr))
@@ -3210,9 +3209,9 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
       opt_code opt = (append_p || dstsize
 		      ? OPT_Wstringop_overflow_ : OPT_Wstringop_truncation);
       warned = warning_at (callloc, opt,
-			   "%G%qD specified bound depends on the length "
+			   "%qD specified bound depends on the length "
 			   "of the source argument",
-			   stmt, func);
+			   func);
     }
   if (warned)
     {
@@ -4141,24 +4140,24 @@ maybe_warn_pointless_strcmp (gimple *stmt, HOST_WIDE_INT bound,
   if (siz <= minlen && bound == -1)
     warned = warning_at (stmt_loc, OPT_Wstring_compare,
 			 (at_least
-			  ? G_("%G%qD of a string of length %wu or more and "
+			  ? G_("%qD of a string of length %wu or more and "
 			       "an array of size %wu evaluates to nonzero")
-			  : G_("%G%qD of a string of length %wu and an array "
+			  : G_("%qD of a string of length %wu and an array "
 			       "of size %wu evaluates to nonzero")),
-			 stmt, callee, minlen, siz);
+			 callee, minlen, siz);
   else if (!at_least && siz <= HOST_WIDE_INT_MAX)
     {
       if (len[0] != HOST_WIDE_INT_MAX && len[1] != HOST_WIDE_INT_MAX)
 	warned = warning_at (stmt_loc, OPT_Wstring_compare,
-			     "%G%qD of strings of length %wu and %wu "
+			     "%qD of strings of length %wu and %wu "
 			     "and bound of %wu evaluates to nonzero",
-			     stmt, callee, len[0], len[1], bound);
+			     callee, len[0], len[1], bound);
       else
 	warned = warning_at (stmt_loc, OPT_Wstring_compare,
-			     "%G%qD of a string of length %wu, an array "
+			     "%qD of a string of length %wu, an array "
 			     "of size %wu and bound of %wu evaluates to "
 			     "nonzero",
-			     stmt, callee, minlen, siz, bound);
+			     callee, minlen, siz, bound);
     }
 
   if (!warned)

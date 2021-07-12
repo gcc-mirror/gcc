@@ -1,3 +1,173 @@
+2021-07-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/82110
+	* init.c (build_aggr_init): Return error_mark_node if
+	expand_aggr_init_1 returns false.
+	(expand_default_init): Change return type to bool.  Return false
+	on error, true on success.
+	(expand_aggr_init_1): Likewise.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101098
+	* decl.c (function_requirements_equivalent_p): Only compare
+	trailing requirements on a specialization.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Move common code to
+	act_des_fn.
+	(build_destroy_fn): Likewise.
+	(act_des_fn): Build the void return here.  Ensure that the
+	source location matches the original function.
+
+2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc
+	(coro_rewrite_function_body): Connect the replacement
+	function block to the block nest correctly.
+
+2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101181
+	* constraint.cc (tsubst_requires_expr): Pass complain/in_decl to
+	add_extra_args.
+	* cp-tree.h (add_extra_args): Add complain/in_decl parameters.
+	* pt.c (build_extra_args): Make a copy of args.
+	(add_extra_args): Add complain/in_decl parameters.  Enable the
+	code for handling the case where the extra arguments are
+	dependent.
+	(tsubst_pack_expansion): Pass complain/in_decl to
+	add_extra_args.
+	(tsubst_template_args): Handle missing template arguments.
+	(tsubst_expr) <case IF_STMT>: Pass complain/in_decl to
+	add_extra_args.
+
+2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* pt.c (any_template_parm_r) <case TEMPLATE_DECL>: Just walk the
+	DECL_CONTEXT.
+
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/101372
+	* module.cc (identifier): Suppress warning.
+	(module_state::read_macro_maps): Remove warning suppression.
+	(module_state::install_macros): Ditto.
+
+2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101087
+	* cp-tree.h (unevaluated_p): New.
+	* except.c (check_noexcept_r): Use it.  Don't walk into
+	unevaluated operands.
+
+2021-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/101374
+	* module.cc (module_state::read_macro_maps): Temporarily disable
+	-Warray-bounds.
+	(module_state::install_macros): Same.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* error.c (cp_printer):  Remove support for %G and %K.
+
+2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.h (struct cp_lexer): Add in_omp_attribute_pragma member.
+	(struct cp_omp_declare_simd_data): Likewise.
+	* cp-tree.h (enum cp_tree_index): Add CPTI_OMP_IDENTIFIER.
+	(omp_identifier): Define.
+	* parser.c (cp_parser_skip_to_pragma_eol): Handle
+	in_omp_attribute_pragma CPP_PRAGMA_EOL followed by CPP_EOF.
+	(cp_parser_require_pragma_eol): Likewise.
+	(struct cp_omp_attribute_data): New type.
+	(cp_parser_handle_statement_omp_attributes): New function.
+	(cp_parser_statement): Handle OpenMP directives in statement's
+	attribute-specifier-seq.
+	(cp_parser_omp_directive_args, cp_parser_omp_sequence_args): New
+	functions.
+	(cp_parser_std_attribute): Handle omp::directive and omp::sequence
+	attributes.
+	(cp_parser_omp_all_clauses): If in_omp_attribute_pragma, allow
+	a comma also before the first clause.
+	(cp_parser_omp_allocate): Likewise.
+	(cp_parser_omp_atomic): Likewise.
+	(cp_parser_omp_depobj): Likewise.
+	(cp_parser_omp_flush): Likewise.
+	(cp_parser_omp_ordered): Likewise.
+	(cp_parser_omp_declare_simd): Save in_omp_attribute_pragma
+	into struct cp_omp_declare_simd_data.
+	(cp_finish_omp_declare_variant): Add in_omp_attribute_pragma
+	argument.  If set, allow a comma also before match clause.
+	(cp_parser_late_parsing_omp_declare_simd): If in_omp_attribute_pragma,
+	allow a comma also before the first clause.  Adjust
+	cp_finish_omp_declare_variant caller.
+	(cp_parser_omp_declare_target): If in_omp_attribute_pragma, allow
+	a comma also before the first clause.
+	(cp_parser_omp_declare_reduction_exprs): Likewise.
+	(cp_parser_omp_requires): Likewise.
+	* decl.c (initialize_predefined_identifiers): Initialize
+	omp_identifier.
+	* decl2.c (cplus_decl_attributes): Reject omp::directive and
+	omp::sequence attributes.
+
+2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101297
+	* parser.c (cp_parser_omp_atomic): Consume comma only if it
+	appears before a CPP_NAME.
+
+2021-07-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* pt.c (any_template_parm_r) <case TEMPLATE_DECL>: Rewrite to
+	use common_enclosing_class and to not depend on the TREE_TYPE
+	of outer levels pointing to the corresponding primary template.
+
+2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* constexpr.c (cxx_eval_array_reference): When the element type
+	is an empty type and the corresponding element is omitted, just
+	return an empty CONSTRUCTOR instead of attempting value
+	initialization.
+
+2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96204
+	* pt.c (finish_template_variable): Pass the partially
+	instantiated template and its args to instantiate_template.
+	(instantiate_class_template_1): No need to call
+	push_nested_class and pop_nested_class around the call to
+	most_specialized_partial_spec.
+	(instantiate_template_1): Pass the partially instantiated
+	template to lookup_template_variable.
+	(most_specialized_partial_spec):  Use push_access_scope_guard
+	to set the access scope appropriately.  Use
+	deferring_access_check_sentinel to force access to get checked
+	immediately.
+	(instantiate_decl): Just pass the VAR_DECL to
+	most_specialized_partial_spec.
+
+2021-06-30  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (get_normalized_constraints_from_decl): Use
+	push_access_scope_guard instead of push_nested_class_guard.
+	* cp-tree.h (struct push_nested_class_guard): Replace with ...
+	(struct push_access_scope_guard): ... this.
+	* pt.c (push_access_scope): When the argument corresponds to
+	a class type, push the class instead of its context.
+	(pop_access_scope): Adjust accordingly.
+
+2021-06-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100975
+	DR 2397
+	* decl.c (create_array_type_for_decl): Allow array of auto.
+
 2021-06-29  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (instantiate_decl): Only consider partial specializations of

@@ -245,6 +245,16 @@ public:
       = m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ());
     return current;
   }
+  state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
+				    const svalue *sval)
+  {
+    logger * const logger = get_logger ();
+    LOG_FUNC (logger);
+    state_machine::state_t current
+      = m_old_smap->get_state (sval, m_eg.get_ext_state ());
+    return current;
+  }
+
 
   void set_next_state (const gimple *stmt,
 		       tree var,
@@ -277,6 +287,41 @@ public:
 		   current->get_name (),
 		   to->get_name ());
     m_new_smap->set_state (m_new_state->m_region_model, var_new_sval,
+			   to, origin_new_sval, m_eg.get_ext_state ());
+  }
+
+  void set_next_state (const gimple *stmt,
+		       const svalue *sval,
+		       state_machine::state_t to,
+		       tree origin)
+  {
+    logger * const logger = get_logger ();
+    LOG_FUNC (logger);
+    impl_region_model_context old_ctxt
+      (m_eg, m_enode_for_diag, NULL, NULL/*m_enode->get_state ()*/,
+       NULL, stmt);
+
+    impl_region_model_context new_ctxt (m_eg, m_enode_for_diag,
+					m_old_state, m_new_state,
+					NULL,
+					stmt);
+    const svalue *origin_new_sval
+      = m_new_state->m_region_model->get_rvalue (origin, &new_ctxt);
+
+    state_machine::state_t current
+      = m_old_smap->get_state (sval, m_eg.get_ext_state ());
+    if (logger)
+      {
+	logger->start_log_line ();
+	logger->log_partial ("%s: state transition of ",
+			     m_sm.get_name ());
+	sval->dump_to_pp (logger->get_printer (), true);
+	logger->log_partial (": %s -> %s",
+			     current->get_name (),
+			     to->get_name ());
+	logger->end_log_line ();
+      }
+    m_new_smap->set_state (m_new_state->m_region_model, sval,
 			   to, origin_new_sval, m_eg.get_ext_state ());
   }
 
@@ -321,6 +366,11 @@ public:
       return t;
     else
       return expr;
+  }
+
+  tree get_diagnostic_tree (const svalue *sval) FINAL OVERRIDE
+  {
+    return m_new_state->m_region_model->get_representative_tree (sval);
   }
 
   state_machine::state_t get_global_state () const FINAL OVERRIDE
@@ -654,7 +704,9 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
    state transitions.  */
 
 void
-impl_region_model_context::on_condition (tree lhs, enum tree_code op, tree rhs)
+impl_region_model_context::on_condition (const svalue *lhs,
+					 enum tree_code op,
+					 const svalue *rhs)
 {
   int sm_idx;
   sm_state_map *smap;
@@ -2275,6 +2327,7 @@ exploded_graph::get_or_create_node (const program_point &point,
 	  if (pruned_state.can_merge_with_p (existing_state, point,
 					     &merged_state))
 	    {
+	      merged_state.validate (m_ext_state);
 	      if (logger)
 		logger->log ("merging new state with that of EN: %i",
 			     existing_enode->m_index);
@@ -2794,6 +2847,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
       items.quick_push (it);
       const program_state &state = iter_enode->get_state ();
       program_state *next_state = &it->m_processed_state;
+      next_state->validate (m_ext_state);
       const program_point &iter_point = iter_enode->get_point ();
       if (const superedge *iter_sedge = iter_point.get_from_edge ())
 	{
@@ -2807,6 +2861,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
 	    next_state->m_region_model->update_for_phis
 	      (snode, last_cfg_superedge, &ctxt);
 	}
+      next_state->validate (m_ext_state);
     }
 
   /* Attempt to partition the items into a set of merged states.
@@ -2823,10 +2878,12 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
       unsigned iter_merger_idx;
       FOR_EACH_VEC_ELT (merged_states, iter_merger_idx, merged_state)
 	{
+	  merged_state->validate (m_ext_state);
 	  program_state merge (m_ext_state);
 	  if (it_state.can_merge_with_p (*merged_state, next_point, &merge))
 	    {
 	      *merged_state = merge;
+	      merged_state->validate (m_ext_state);
 	      it->m_merger_idx = iter_merger_idx;
 	      if (logger)
 		logger->log ("reusing merger state %i for item %i (EN: %i)",

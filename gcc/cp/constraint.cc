@@ -926,12 +926,7 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
   tree norm = NULL_TREE;
   if (tree ci = get_constraints (decl))
     {
-      push_nested_class_guard pncs (DECL_CONTEXT (d));
-
-      temp_override<tree> ovr (current_function_decl);
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	current_function_decl = decl;
-
+      push_access_scope_guard pas (decl);
       norm = get_normalized_constraints_from_info (ci, tmpl, diag);
     }
 
@@ -2271,7 +2266,8 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
   /* A requires-expression is an unevaluated context.  */
   cp_unevaluated u;
 
-  args = add_extra_args (REQUIRES_EXPR_EXTRA_ARGS (t), args);
+  args = add_extra_args (REQUIRES_EXPR_EXTRA_ARGS (t), args,
+			 info.complain, info.in_decl);
   if (processing_template_decl)
     {
       /* We're partially instantiating a generic lambda.  Substituting into

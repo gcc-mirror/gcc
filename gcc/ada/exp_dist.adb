@@ -1424,6 +1424,7 @@ package body Exp_Dist is
               and then Chars (Current_Primitive) /= Name_uAlignment
               and then not
                 (Is_TSS (Current_Primitive, TSS_Deep_Finalize) or else
+                 Is_TSS (Current_Primitive, TSS_Put_Image)     or else
                  Is_TSS (Current_Primitive, TSS_Stream_Input)  or else
                  Is_TSS (Current_Primitive, TSS_Stream_Output) or else
                  Is_TSS (Current_Primitive, TSS_Stream_Read)   or else

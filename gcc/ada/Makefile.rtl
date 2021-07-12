@@ -275,13 +275,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-stboha$(objext) \
   a-stfiha$(objext) \
   a-stmaco$(objext) \
-  a-stobbu$(objext) \
-  a-stobfi$(objext) \
   a-storio$(objext) \
-  a-stoubu$(objext) \
-  a-stoufi$(objext) \
-  a-stoufo$(objext) \
-  a-stouut$(objext) \
   a-strbou$(objext) \
   a-stream$(objext) \
   a-strsto$(objext) \
@@ -295,7 +289,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-strsup$(objext) \
   a-strunb$(objext) \
   a-ststio$(objext) \
-  a-stteou$(objext) \
   a-sttebu$(objext) \
   a-stbuun$(objext) \
   a-stbubo$(objext) \
@@ -1050,7 +1043,7 @@ EXTRA_GNATRTL_NONTASKING_OBJS=
 EXTRA_GNATRTL_TASKING_OBJS=
 
 # Subsets of extra libgnat sources that always go together
-VX_SIGTRAMP_EXTRA_SRCS=sigtramp.h sigtramp-vxworks-target.inc
+VX_SIGTRAMP_EXTRA_SRCS=sigtramp.h sigtramp-vxworks-target.h
 
 # Additional object files that should go in the same directory as libgnat,
 # aside the library itself. Typically useful for crtbegin/crtend kind of files.
@@ -1095,7 +1088,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte__vxworks.ads \
   s-osinte.adb<libgnarl/s-osinte__vxworks.adb \
-  s-osprim.adb<libgnat/s-osprim__vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
   s-taprop.adb<libgnarl/s-taprop__vxworks.adb \
@@ -1346,7 +1339,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(targ
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
-  s-osprim.adb<libgnat/s-osprim__vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
   s-stchop.ads<libgnat/s-stchop__limit.ads \
@@ -1493,7 +1486,7 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
   s-osinte.adb<libgnarl/s-osinte__vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte__vxworks.ads \
-  s-osprim.adb<libgnat/s-osprim__vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-parame.ads<libgnat/s-parame__vxworks.ads \
   s-parame.adb<libgnat/s-parame__vxworks.adb \
   s-stchop.ads<libgnat/s-stchop__limit.ads \
@@ -2169,6 +2162,7 @@ ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
 
   ifeq ($(strip $(filter-out lynxos178e,$(target_os))),)
     LIBGNAT_TARGET_PAIRS += \
+    s-parame.ads<libgnat/s-parame__posix2008.ads \
     s-osinte.ads<libgnarl/s-osinte__lynxos178e.ads \
     s-osprim.adb<libgnat/s-osprim__posix2008.adb \
     s-tracon.adb<hie/s-tracon__ppc-eabi.adb
@@ -2188,6 +2182,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-osinte.ads<libgnarl/s-osinte__rtems.ads \
   s-osprim.adb<libgnat/s-osprim__rtems.adb \
   s-parame.adb<libgnat/s-parame__rtems.adb \
+  s-parame.ads<libgnat/s-parame__posix2008.ads \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
@@ -2200,7 +2195,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
     EH_MECHANISM=-gcc
   endif
 
-  ifeq ($(strip $(filter-out riscv%,$(target_cpu))),)
+  ifeq ($(strip $(filter-out aarch64% riscv%,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += a-nallfl.ads<libgnat/a-nallfl__wraplf.ads
   endif
 endif
@@ -2767,6 +2762,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__x32.adb \
   s-osprim.adb<libgnat/s-osprim__x32.adb \
+  s-parame.ads<libgnat/s-parame__posix2008.ads \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \

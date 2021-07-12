@@ -5688,6 +5688,20 @@ Alternating subtract, add with even lanes doing subtract and odd
 lanes doing addition.  Operands 1 and 2 and the outout operand are vectors
 with mode @var{m}.
 
+@cindex @code{vec_fmaddsub@var{m}4} instruction pattern
+@item @samp{vec_fmaddsub@var{m}4}
+Alternating multiply subtract, add with even lanes doing subtract and odd
+lanes doing addition of the third operand to the multiplication result
+of the first two operands.  Operands 1, 2 and 3 and the outout operand are vectors
+with mode @var{m}.
+
+@cindex @code{vec_fmsubadd@var{m}4} instruction pattern
+@item @samp{vec_fmsubadd@var{m}4}
+Alternating multiply add, subtract with even lanes doing addition and odd
+lanes doing subtraction of the third operand to the multiplication result
+of the first two operands.  Operands 1, 2 and 3 and the outout operand are vectors
+with mode @var{m}.
+
 These instructions are not allowed to @code{FAIL}.
 
 @cindex @code{mulhisi3} instruction pattern
@@ -8441,8 +8455,6 @@ list of operands, such as this example:
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:SI 1 "register_operand" "")
    (match_operand:SI 2 "register_operand" "")]
-@end group
-@group
   ""
   "
 @{
@@ -8459,17 +8471,10 @@ Here is an example, the definition of left-shift for the SPUR chip:
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
         (ashift:SI
-@end group
-@group
           (match_operand:SI 1 "register_operand" "")
           (match_operand:SI 2 "nonmemory_operand" "")))]
   ""
   "
-@end group
-@end smallexample
-
-@smallexample
-@group
 @{
   if (GET_CODE (operands[2]) != CONST_INT
       || (unsigned) INTVAL (operands[2]) > 3)
@@ -9923,7 +9928,7 @@ Lengths are measured in addressable storage units (bytes).
 Note that it is possible to call functions via the @code{symbol_ref}
 mechanism to compute the length of an insn.  However, if you use this
 mechanism you must provide dummy clauses to express the maximum length
-without using the function call.  You can an example of this in the
+without using the function call.  You can see an example of this in the
 @code{pa} machine description for the @code{call_symref} pattern.
 
 The following macros can be used to refine the length computation:

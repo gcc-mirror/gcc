@@ -110,6 +110,14 @@ is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
+   function "=" (Left, Right : Cursor) return Boolean;
+   --  The representation of cursors includes a component used to optimize
+   --  iteration over maps. This component may become unreliable after
+   --  multiple map insertions, and must be excluded from cursor equality,
+   --  so we need to provide an explicit definition for it, instead of
+   --  using predefined equality (as implied by a questionable comment
+   --  in the RM).
+
    Empty_Map : constant Map;
    --  Map objects declared without an initialization expression are
    --  initialized to the value Empty_Map.

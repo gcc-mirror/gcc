@@ -25,11 +25,8 @@ void test_2 (void *p, void *q)
     return;
   foo(p);
 
-  /* { dg-warning "pattern match on 'tmp1 == 0'" "tmp1 == 0" { target *-*-* } cond_2 } */
-  /* { dg-warning "pattern match on 'tmp2 == 0'" "tmp2 == 0" { target *-*-* } cond_2 } */
-  /* { dg-warning "pattern match on '<unknown> == 0'" "<unknown> == 0" { target *-*-* } cond_2 } */
-  /* { dg-warning "pattern match on '<unknown> != 0'" "<unknown> != 0" { target *-*-* } cond_2 } */
   /* { dg-warning "pattern match on 'p != 0'" "p != 0" { target *-*-* } cond_2 } */
+  /* { dg-warning "pattern match on 'tmp1 | tmp2 != 0'" "tmp1 | tmp2 != 0" { target *-*-* } cond_2 } */
   /* { dg-warning "pattern match on 'q != 0'" "q != 0" { target *-*-* } cond_2 } */
 }
 
@@ -44,10 +41,7 @@ void test_3 (void *p, void *q)
     return;
   foo(p);
 
-  /* { dg-warning "pattern match on 'tmp1 != 0'" "tmp1 != 0" { target *-*-* } cond_3 } */
-  /* { dg-warning "pattern match on 'tmp2 != 0'" "tmp2 != 0" { target *-*-* } cond_3 } */
-  /* { dg-warning "pattern match on '<unknown> == 0'" "<unknown> == 0" { target *-*-* } cond_3 } */
-  /* { dg-warning "pattern match on '<unknown> != 0'" "<unknown> != 0" { target *-*-* } cond_3 } */
   /* { dg-warning "pattern match on 'p == 0'" "p == 0" { target *-*-* } cond_3 } */
+  /* { dg-warning "pattern match on 'tmp1 & tmp2 == 0'" "tmp1 & tmp2 == 0" { target *-*-* } cond_3 } */
   /* { dg-warning "pattern match on 'q == 0'" "q == 0" { target *-*-* } cond_3 } */
 }

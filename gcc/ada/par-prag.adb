@@ -1389,6 +1389,7 @@ begin
          | Pragma_Finalize_Storage_Only
          | Pragma_Ghost
          | Pragma_Global
+         | Pragma_GNAT_Annotate
          | Pragma_Ident
          | Pragma_Implementation_Defined
          | Pragma_Implemented

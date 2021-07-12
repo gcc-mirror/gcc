@@ -195,6 +195,7 @@ package Rtsfind is
       System_Arith_128,
       System_AST_Handling,
       System_Assertions,
+      System_Atomic_Operations,
       System_Atomic_Primitives,
       System_Aux_DEC,
       System_Bignums,
@@ -468,6 +469,10 @@ package Rtsfind is
       System_WWd_Enum,
       System_WWd_Wchar,
 
+      --  Children of System.Atomic_Operations
+
+       System_Atomic_Operations_Test_And_Set,
+
       --  Children of System.Dim
 
       System_Dim_Float_IO,
@@ -708,6 +713,7 @@ package Rtsfind is
      RE_TK_Tagged,                       -- Ada.Tags
      RE_TK_Task,                         -- Ada.Tags
      RE_Unregister_Tag,                  -- Ada.Tags
+     RE_Wide_Wide_Expanded_Name,         -- Ada.Tags
 
      RE_Set_Specific_Handler,            -- Ada.Task_Termination
      RE_Specific_Handler,                -- Ada.Task_Termination
@@ -798,6 +804,9 @@ package Rtsfind is
      RE_Uint16,                          -- System.Atomic_Primitives
      RE_Uint32,                          -- System.Atomic_Primitives
      RE_Uint64,                          -- System.Atomic_Primitives
+
+     RE_Test_And_Set_Flag,             -- System.Atomic_Operations.Test_And_Set
+     RE_Atomic_Test_And_Set,           -- System.Atomic_Operations.Test_And_Set
 
      RE_AST_Handler,                     -- System.Aux_DEC
      RE_Import_Address,                  -- System.Aux_DEC
@@ -2389,6 +2398,7 @@ package Rtsfind is
      RE_TK_Tagged                        => Ada_Tags,
      RE_TK_Task                          => Ada_Tags,
      RE_Unregister_Tag                   => Ada_Tags,
+     RE_Wide_Wide_Expanded_Name          => Ada_Tags,
 
      RE_Set_Specific_Handler             => Ada_Task_Termination,
      RE_Specific_Handler                 => Ada_Task_Termination,
@@ -2479,6 +2489,9 @@ package Rtsfind is
      RE_Uint16                           => System_Atomic_Primitives,
      RE_Uint32                           => System_Atomic_Primitives,
      RE_Uint64                           => System_Atomic_Primitives,
+
+     RE_Test_And_Set_Flag             => System_Atomic_Operations_Test_And_Set,
+     RE_Atomic_Test_And_Set           => System_Atomic_Operations_Test_And_Set,
 
      RE_AST_Handler                      => System_Aux_DEC,
      RE_Import_Address                   => System_Aux_DEC,

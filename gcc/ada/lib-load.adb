@@ -364,7 +364,7 @@ package body Lib.Load is
             Error_Location         => No_Location,
             Expected_Unit          => No_Unit_Name,
             Fatal_Error            => None,
-            Generate_Code          => False,
+            Generate_Code          => True,
             Has_RACW               => False,
             Filler                 => False,
             Ident_String           => Empty,
@@ -396,14 +396,14 @@ package body Lib.Load is
    ---------------
 
    function Load_Unit
-     (Load_Name         : Unit_Name_Type;
-      Required          : Boolean;
-      Error_Node        : Node_Id;
-      Subunit           : Boolean;
-      Corr_Body         : Unit_Number_Type := No_Unit;
-      Renamings         : Boolean          := False;
-      With_Node         : Node_Id          := Empty;
-      PMES              : Boolean          := False) return Unit_Number_Type
+     (Load_Name  : Unit_Name_Type;
+      Required   : Boolean;
+      Error_Node : Node_Id;
+      Subunit    : Boolean;
+      Corr_Body  : Unit_Number_Type := No_Unit;
+      Renamings  : Boolean          := False;
+      With_Node  : Node_Id          := Empty;
+      PMES       : Boolean          := False) return Unit_Number_Type
    is
       Calling_Unit : Unit_Number_Type;
       Uname_Actual : Unit_Name_Type;
@@ -451,8 +451,8 @@ package body Lib.Load is
               With_Node  => With_Node);
 
          if Unump = No_Unit then
-            Parsing_Main_Extended_Source := Save_PMES;
-            return No_Unit;
+            Unum := No_Unit;
+            goto Done;
          end if;
 
          --  If parent is a renaming, then we use the renamed package as
@@ -823,7 +823,7 @@ package body Lib.Load is
                      Units.Table (Calling_Unit).Fatal_Error := Error_Detected;
 
                   --  If with'ed unit had an ignored error, then propagate it
-                  --  but do not overide an existring setting.
+                  --  but do not overide an existing setting.
 
                   when Error_Ignored =>
                      if Units.Table (Calling_Unit).Fatal_Error = None then
@@ -900,7 +900,7 @@ package body Lib.Load is
                Remove_Unit (Unum);
 
             --  If unit not required, remove load stack entry and the junk
-            --  file table entry, and return No_Unit to indicate not found,
+            --  file table entry, and return No_Unit to indicate not found.
 
             else
                Load_Stack.Decrement_Last;
@@ -964,13 +964,12 @@ package body Lib.Load is
       Units.Increment_Last;
 
       if In_Main then
-         Units.Table (Units.Last)               := Units.Table (Main_Unit);
-         Units.Table (Units.Last).Cunit         := Library_Unit (N);
-         Units.Table (Units.Last).Generate_Code := True;
+         Units.Table (Units.Last)        := Units.Table (Main_Unit);
+         Units.Table (Units.Last).Cunit  := Library_Unit (N);
          Init_Unit_Name (Units.Last, Unit_Name (Main_Unit));
 
-         Units.Table (Main_Unit).Cunit          := N;
-         Units.Table (Main_Unit).Version        := Source_Checksum (Sind);
+         Units.Table (Main_Unit).Cunit   := N;
+         Units.Table (Main_Unit).Version := Source_Checksum (Sind);
          Init_Unit_Name (Main_Unit,
            Get_Body_Name
              (Unit_Name (Get_Cunit_Unit_Number (Library_Unit (N)))));

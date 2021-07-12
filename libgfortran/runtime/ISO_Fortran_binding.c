@@ -60,7 +60,7 @@ cfi_desc_to_gfc_desc (gfc_array_void *d, CFI_cdesc_t **s_ptr)
   else
     GFC_DESCRIPTOR_SIZE (d) = s->elem_len;
 
-  d->dtype.version = s->version;
+  d->dtype.version = 0;
   GFC_DESCRIPTOR_RANK (d) = (signed char)s->rank;
 
   d->dtype.attribute = (signed short)s->attribute;
@@ -104,7 +104,7 @@ gfc_desc_to_cfi_desc (CFI_cdesc_t **d_ptr, const gfc_array_void *s)
 
   d->base_addr = GFC_DESCRIPTOR_DATA (s);
   d->elem_len = GFC_DESCRIPTOR_SIZE (s);
-  d->version = s->dtype.version;
+  d->version = CFI_VERSION;
   d->rank = (CFI_rank_t)GFC_DESCRIPTOR_RANK (s);
   d->attribute = (CFI_attribute_t)s->dtype.attribute;
 

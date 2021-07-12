@@ -1915,7 +1915,8 @@ package body Osint is
       begin
          if Opt.Look_In_Primary_Dir then
             Locate_File
-              (N, Source, Primary_Directory, File_Name, File, Attr'Access);
+              (N, Source, Primary_Directory, File_Name, File,
+               Attr'Unchecked_Access);
 
             if File /= No_File and then T = File_Stamp (N) then
                return File;
@@ -1925,7 +1926,7 @@ package body Osint is
          Last_Dir := Src_Search_Directories.Last;
 
          for D in Primary_Directory + 1 .. Last_Dir loop
-            Locate_File (N, Source, D, File_Name, File, Attr'Access);
+            Locate_File (N, Source, D, File_Name, File, Attr'Unchecked_Access);
 
             if File /= No_File and then T = File_Stamp (File) then
                return File;
@@ -2191,8 +2192,7 @@ package body Osint is
       GNAT_Time : Time_Stamp_Type;
 
       type Underlying_OS_Time is
-        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+        range -(2 ** 63) ..  +(2 ** 63 - 1);
       --  Underlying_OS_Time is a redeclaration of OS_Time to allow integer
       --  manipulation. Remove this in favor of To_Ada/To_C once newer
       --  GNAT releases are available with these functions.

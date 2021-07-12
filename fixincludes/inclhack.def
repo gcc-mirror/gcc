@@ -554,13 +554,16 @@ fix = {
   mach      = "*-*-aix*";
   files     = "sys/socket.h";
   select    = "#ifndef _KERNEL\n"
-	      "#ifdef __cplusplus";
+	      "#ifdef __cplusplus\n"
+	      "extern \"C\" int naccept\\(int, struct sockaddr \\*, socklen_t \\*\\);";
   c_fix     = format;
   c_fix_arg = "#ifndef _KERNEL\n"
 	      "#ifdef __cplusplus\n"
-              "extern \"C++\" {";
+	      "extern \"C++\" {\n"
+	      "extern \"C\" int naccept(int, struct sockaddr *, socklen_t *);";
   test_text = "#ifndef _KERNEL\n"
-	      "#ifdef __cplusplus";
+	      "#ifdef __cplusplus\n"
+	      "extern \"C\" int naccept(int, struct sockaddr *, socklen_t *);";
 };
 
 fix = {

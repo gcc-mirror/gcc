@@ -47,9 +47,10 @@ package body Gen_IL.Gen is
    All_Entities : constant Type_Vector := To_Vector (Entity_Kind, Length => 1);
 
    procedure Create_Type
-     (T      : Node_Or_Entity_Type;
-      Parent : Opt_Abstract_Type;
-      Fields : Field_Sequence);
+     (T            : Node_Or_Entity_Type;
+      Parent       : Opt_Abstract_Type;
+      Fields       : Field_Sequence;
+      Nmake_Assert : String);
    --  Called by the Create_..._Type procedures exported by this package to
    --  create an entry in the Types_Table.
 
@@ -107,9 +108,10 @@ package body Gen_IL.Gen is
    -----------------
 
    procedure Create_Type
-     (T      : Node_Or_Entity_Type;
-      Parent : Opt_Abstract_Type;
-      Fields : Field_Sequence)
+     (T            : Node_Or_Entity_Type;
+      Parent       : Opt_Abstract_Type;
+      Fields       : Field_Sequence;
+      Nmake_Assert : String)
    is
    begin
       Check_Type (T);
@@ -132,7 +134,8 @@ package body Gen_IL.Gen is
         new Type_Info'
           (Is_Union => False, Parent => Parent,
            Children | Concrete_Descendants => Type_Vectors.Empty_Vector,
-           First | Last | Fields => <>); -- filled in later
+           First | Last | Fields => <>, -- filled in later
+           Nmake_Assert => new String'(Nmake_Assert));
 
       if Parent /= No_Type then
          Append (Type_Table (Parent).Children, T);
@@ -215,7 +218,7 @@ package body Gen_IL.Gen is
      (T      : Abstract_Node;
       Fields : Field_Sequence := No_Fields) is
    begin
-      Create_Type (T, Parent => No_Type, Fields => Fields);
+      Create_Type (T, Parent => No_Type, Fields => Fields, Nmake_Assert => "");
    end Create_Root_Node_Type;
 
    -------------------------------
@@ -227,7 +230,7 @@ package body Gen_IL.Gen is
       Fields : Field_Sequence := No_Fields)
    is
    begin
-      Create_Type (T, Parent, Fields);
+      Create_Type (T, Parent, Fields, Nmake_Assert => "");
    end Create_Abstract_Node_Type;
 
    -------------------------------
@@ -236,10 +239,11 @@ package body Gen_IL.Gen is
 
    procedure Create_Concrete_Node_Type
      (T      : Concrete_Node; Parent : Abstract_Type;
-      Fields : Field_Sequence := No_Fields)
+      Fields : Field_Sequence := No_Fields;
+      Nmake_Assert : String := "")
    is
    begin
-      Create_Type (T, Parent, Fields);
+      Create_Type (T, Parent, Fields, Nmake_Assert);
    end Create_Concrete_Node_Type;
 
    -----------------------------
@@ -250,7 +254,7 @@ package body Gen_IL.Gen is
      (T      : Abstract_Entity;
       Fields : Field_Sequence := No_Fields) is
    begin
-      Create_Type (T, Parent => No_Type, Fields => Fields);
+      Create_Type (T, Parent => No_Type, Fields => Fields, Nmake_Assert => "");
    end Create_Root_Entity_Type;
 
    ---------------------------------
@@ -262,7 +266,7 @@ package body Gen_IL.Gen is
       Fields : Field_Sequence := No_Fields)
    is
    begin
-      Create_Type (T, Parent, Fields);
+      Create_Type (T, Parent, Fields, Nmake_Assert => "");
    end Create_Abstract_Entity_Type;
 
    ---------------------------------
@@ -274,7 +278,7 @@ package body Gen_IL.Gen is
       Fields : Field_Sequence := No_Fields)
    is
    begin
-      Create_Type (T, Parent, Fields);
+      Create_Type (T, Parent, Fields, Nmake_Assert => "");
    end Create_Concrete_Entity_Type;
 
    ------------------
@@ -352,7 +356,7 @@ package body Gen_IL.Gen is
               Image (Field);
          end if;
 
-         if Pre /= Field_Table (Field).Pre.all then
+         if Pre_Set /= Field_Table (Field).Pre_Set.all then
             raise Illegal with
               "mismatched extra setter-only preconditions for " &
               Image (Field);
@@ -2561,6 +2565,11 @@ package body Gen_IL.Gen is
                   end;
                end if;
 
+               if Type_Table (T).Nmake_Assert.all /= "" then
+                  Put (S, "pragma Assert (" &
+                           Type_Table (T).Nmake_Assert.all & ");" & LF);
+               end if;
+
                Put (S, "return N;" & LF);
                Decrease_Indent (S, 3);
 
@@ -2628,6 +2637,7 @@ package body Gen_IL.Gen is
          Increase_Indent (B, 3);
 
          Put (B, "--  This package is automatically generated." & LF & LF);
+         Put (B, "pragma Style_Checks (""M200"");" & LF);
 
          Put_Make_Bodies (B, Node_Kind);
 

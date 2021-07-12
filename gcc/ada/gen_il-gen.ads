@@ -102,9 +102,12 @@ package Gen_IL.Gen is
 
    procedure Create_Concrete_Node_Type
      (T : Concrete_Node; Parent : Abstract_Type;
-      Fields : Field_Sequence := No_Fields);
+      Fields : Field_Sequence := No_Fields;
+      Nmake_Assert : String := "");
    --  Create a concrete node type. Every node is an instance of a concrete
-   --  node type.
+   --  node type. Nmake_Assert is an assertion to put in the Make_... function
+   --  in the generated Nmake package. It should be a String that represents a
+   --  Boolean expression.
 
    procedure Create_Root_Entity_Type
      (T : Abstract_Entity;
@@ -151,13 +154,14 @@ package Gen_IL.Gen is
    --  only for syntactic fields. Flag fields of syntactic nodes always have a
    --  default value, which is False unless specified as Default_True. Pre is
    --  an additional precondition for the field getter and setter, in addition
-   --  to the precondition that asserts that the type has that field. Pre_Get
-   --  and Pre_Set are similar to Pre, but for the getter or setter only,
-   --  respectively.
+   --  to the precondition that asserts that the type has that field. It should
+   --  be a String that represents a Boolean expression. Pre_Get and Pre_Set
+   --  are similar to Pre, but for the getter or setter only, respectively.
    --
    --  If multiple calls to these occur for the same Field but different types,
-   --  the Field_Type and Pre must match. Default_Value should match for
-   --  syntactic fields. See the declaration of Type_Only_Enum for Type_Only.
+   --  the Field_Type, Pre, Pre_Get, and Pre_Set must match. Default_Value
+   --  should match for syntactic fields. See the declaration of Type_Only_Enum
+   --  for Type_Only.
    --
    --  (The matching Default_Value requirement is a simplification from the
    --  earlier hand-written version.)

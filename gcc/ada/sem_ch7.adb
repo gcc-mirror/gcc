@@ -2612,6 +2612,15 @@ package body Sem_Ch7 is
 
       elsif Abstract_Present (Def) then
          Error_Msg_N ("only a tagged type can be abstract", N);
+
+      --  When extensions are enabled, we initialize the primitive operations
+      --  list of an untagged private type to an empty element list. (Note:
+      --  This could be done for all private types and shared with the tagged
+      --  case above, but for now we do it separately when the feature of
+      --  prefixed calls for untagged types is enabled.)
+
+      elsif Extensions_Allowed then
+         Set_Direct_Primitive_Operations (Id, New_Elmt_List);
       end if;
    end New_Private_Type;
 

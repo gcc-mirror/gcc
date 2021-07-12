@@ -190,6 +190,82 @@ ix86_expand_clear (rtx dest)
   emit_insn (tmp);
 }
 
+/* Return true if V can be broadcasted from an integer of WIDTH bits
+   which is returned in VAL_BROADCAST.  Otherwise, return false.  */
+
+static bool
+ix86_broadcast (HOST_WIDE_INT v, unsigned int width,
+		HOST_WIDE_INT &val_broadcast)
+{
+  wide_int val = wi::uhwi (v, HOST_BITS_PER_WIDE_INT);
+  val_broadcast = wi::extract_uhwi (val, 0, width);
+  for (unsigned int i = width; i < HOST_BITS_PER_WIDE_INT; i += width)
+    {
+      HOST_WIDE_INT each = wi::extract_uhwi (val, i, width);
+      if (val_broadcast != each)
+	return false;
+    }
+  val_broadcast = sext_hwi (val_broadcast, width);
+  return true;
+}
+
+/* Convert the CONST_WIDE_INT operand OP to broadcast in MODE.  */
+
+static rtx
+ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
+{
+  /* Don't use integer vector broadcast if we can't move from GPR to SSE
+     register directly.  */
+  if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+    return nullptr;
+
+  /* Convert CONST_WIDE_INT to a non-standard SSE constant integer
+     broadcast only if vector broadcast is available.  */
+  if (!TARGET_AVX
+      || !CONST_WIDE_INT_P (op)
+      || standard_sse_constant_p (op, mode))
+    return nullptr;
+
+  HOST_WIDE_INT val = CONST_WIDE_INT_ELT (op, 0);
+  HOST_WIDE_INT val_broadcast;
+  scalar_int_mode broadcast_mode;
+  if (TARGET_AVX2
+      && ix86_broadcast (val, GET_MODE_BITSIZE (QImode),
+			 val_broadcast))
+    broadcast_mode = QImode;
+  else if (TARGET_AVX2
+	   && ix86_broadcast (val, GET_MODE_BITSIZE (HImode),
+			      val_broadcast))
+    broadcast_mode = HImode;
+  else if (ix86_broadcast (val, GET_MODE_BITSIZE (SImode),
+			   val_broadcast))
+    broadcast_mode = SImode;
+  else if (TARGET_64BIT
+	   && ix86_broadcast (val, GET_MODE_BITSIZE (DImode),
+			      val_broadcast))
+    broadcast_mode = DImode;
+  else
+    return nullptr;
+
+  /* Check if OP can be broadcasted from VAL.  */
+  for (int i = 1; i < CONST_WIDE_INT_NUNITS (op); i++)
+    if (val != CONST_WIDE_INT_ELT (op, i))
+      return nullptr;
+
+  unsigned int nunits = (GET_MODE_SIZE (mode)
+			 / GET_MODE_SIZE (broadcast_mode));
+  machine_mode vector_mode;
+  if (!mode_for_vector (broadcast_mode, nunits).exists (&vector_mode))
+    gcc_unreachable ();
+  rtx target = ix86_gen_scratch_sse_rtx (vector_mode);
+  bool ok = ix86_expand_vector_init_duplicate (false, vector_mode,
+					       target,
+					       GEN_INT (val_broadcast));
+  gcc_assert (ok);
+  target = lowpart_subreg (mode, target, vector_mode);
+  return target;
+}
+
 void
 ix86_expand_move (machine_mode mode, rtx operands[])
 {
@@ -347,25 +423,90 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	  && optimize)
 	op1 = copy_to_mode_reg (mode, op1);
 
-      if (can_create_pseudo_p ()
-	  && CONST_DOUBLE_P (op1))
+      if (can_create_pseudo_p ())
 	{
-	  /* If we are loading a floating point constant to a register,
-	     force the value to memory now, since we'll get better code
-	     out the back end.  */
-
-	  op1 = validize_mem (force_const_mem (mode, op1));
-	  if (!register_operand (op0, mode))
+	  if (CONST_DOUBLE_P (op1))
 	    {
-	      rtx temp = gen_reg_rtx (mode);
-	      emit_insn (gen_rtx_SET (temp, op1));
-	      emit_move_insn (op0, temp);
-	      return;
+	      /* If we are loading a floating point constant to a
+		 register, force the value to memory now, since we'll
+		 get better code out the back end.  */
+
+	      op1 = validize_mem (force_const_mem (mode, op1));
+	      if (!register_operand (op0, mode))
+		{
+		  rtx temp = gen_reg_rtx (mode);
+		  emit_insn (gen_rtx_SET (temp, op1));
+		  emit_move_insn (op0, temp);
+		  return;
+		}
+	    }
+	  else if (GET_MODE_SIZE (mode) >= 16)
+	    {
+	      rtx tmp = ix86_convert_const_wide_int_to_broadcast
+		(GET_MODE (op0), op1);
+	      if (tmp != nullptr)
+		op1 = tmp;
 	    }
 	}
     }
 
   emit_insn (gen_rtx_SET (op0, op1));
+}
+
+static rtx
+ix86_broadcast_from_integer_constant (machine_mode mode, rtx op)
+{
+  int nunits = GET_MODE_NUNITS (mode);
+  if (nunits < 2)
+    return nullptr;
+
+  /* Don't use integer vector broadcast if we can't move from GPR to SSE
+     register directly.  */
+  if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+    return nullptr;
+
+  /* Convert CONST_VECTOR to a non-standard SSE constant integer
+     broadcast only if vector broadcast is available.  */
+  if (!(TARGET_AVX2
+	|| (TARGET_AVX
+	    && (GET_MODE_INNER (mode) == SImode
+		|| GET_MODE_INNER (mode) == DImode)))
+      || standard_sse_constant_p (op, mode))
+    return nullptr;
+
+  /* Don't broadcast from a 64-bit integer constant in 32-bit mode.  */
+  if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT)
+    return nullptr;
+
+  if (GET_MODE_INNER (mode) == TImode)
+    return nullptr;
+
+  rtx constant = get_pool_constant (XEXP (op, 0));
+  if (GET_CODE (constant) != CONST_VECTOR)
+    return nullptr;
+
+  /* There could be some rtx like
+     (mem/u/c:V16QI (symbol_ref/u:DI ("*.LC1")))
+     but with "*.LC1" refer to V2DI constant vector.  */
+  if (GET_MODE (constant) != mode)
+    {
+      constant = simplify_subreg (mode, constant, GET_MODE (constant),
+				  0);
+      if (constant == nullptr || GET_CODE (constant) != CONST_VECTOR)
+	return nullptr;
+    }
+
+  rtx first = XVECEXP (constant, 0, 0);
+
+  for (int i = 1; i < nunits; ++i)
+    {
+      rtx tmp = XVECEXP (constant, 0, i);
+      /* Vector duplicate value.  */
+      if (!rtx_equal_p (tmp, first))
+	return nullptr;
+    }
+
+  return first;
 }
 
 void
@@ -407,7 +548,36 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
 	  op1 = simplify_gen_subreg (mode, r, imode, SUBREG_BYTE (op1));
 	}
       else
-	op1 = validize_mem (force_const_mem (mode, op1));
+	{
+	  machine_mode mode = GET_MODE (op0);
+	  rtx tmp = ix86_convert_const_wide_int_to_broadcast
+	    (mode, op1);
+	  if (tmp == nullptr)
+	    op1 = validize_mem (force_const_mem (mode, op1));
+	  else
+	    op1 = tmp;
+	}
+    }
+
+  if (can_create_pseudo_p ()
+      && GET_MODE_SIZE (mode) >= 16
+      && GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      && (MEM_P (op1)
+	  && SYMBOL_REF_P (XEXP (op1, 0))
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (op1, 0))))
+    {
+      rtx first = ix86_broadcast_from_integer_constant (mode, op1);
+      if (first != nullptr)
+	{
+	  /* Broadcast to XMM/YMM/ZMM register from an integer
+	     constant.  */
+	  op1 = ix86_gen_scratch_sse_rtx (mode);
+	  bool ok = ix86_expand_vector_init_duplicate (false, mode,
+						       op1, first);
+	  gcc_assert (ok);
+	  emit_move_insn (op0, op1);
+	  return;
+	}
     }
 
   /* We need to check memory alignment for SSE mode since attribute
@@ -763,6 +933,7 @@ ix86_split_mmx_punpck (rtx operands[], bool high_p)
 
   switch (mode)
     {
+    case E_V4QImode:
     case E_V8QImode:
       sse_mode = V16QImode;
       double_sse_mode = V32QImode;
@@ -779,6 +950,7 @@ ix86_split_mmx_punpck (rtx operands[], bool high_p)
       break;
 
     case E_V4HImode:
+    case E_V2HImode:
       sse_mode = V8HImode;
       double_sse_mode = V16HImode;
       mask = gen_rtx_PARALLEL (VOIDmode,
@@ -821,7 +993,7 @@ ix86_split_mmx_punpck (rtx operands[], bool high_p)
   rtx insn = gen_rtx_SET (dest, op2);
   emit_insn (insn);
 
-  /* Move bits 64:127 to bits 0:63.  */
+  /* Move high bits to low bits.  */
   if (high_p)
     {
       if (sse_mode == V4SFmode)
@@ -834,9 +1006,19 @@ ix86_split_mmx_punpck (rtx operands[], bool high_p)
 	}
       else
 	{
-	  mask = gen_rtx_PARALLEL (VOIDmode,
-				   gen_rtvec (4, GEN_INT (2), GEN_INT (3),
-					      GEN_INT (0), GEN_INT (1)));
+	  int sz = GET_MODE_SIZE (mode);
+
+	  if (sz == 4)
+	    mask = gen_rtx_PARALLEL (VOIDmode,
+				     gen_rtvec (4, GEN_INT (1), GEN_INT (0),
+						GEN_INT (0), GEN_INT (1)));
+	  else if (sz == 8)
+	    mask = gen_rtx_PARALLEL (VOIDmode,
+				     gen_rtvec (4, GEN_INT (2), GEN_INT (3),
+						GEN_INT (0), GEN_INT (1)));
+	  else
+	    gcc_unreachable ();
+
 	  dest = lowpart_subreg (V4SImode, dest, GET_MODE (dest));
 	  op1 = gen_rtx_VEC_SELECT (V4SImode, dest, mask);
 	}
@@ -3571,7 +3753,7 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
 
   cmp_op0 = force_reg (cmp_ops_mode, cmp_op0);
 
-  int (*op1_predicate)(rtx, machine_mode)
+  bool (*op1_predicate)(rtx, machine_mode)
     = VECTOR_MODE_P (cmp_ops_mode) ? vector_operand : nonimmediate_operand;
 
   if (!op1_predicate (cmp_op1, cmp_ops_mode))
@@ -5173,6 +5355,12 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	  else
 	    unpack = gen_sse4_1_sign_extendv2hiv2si2;
 	  break;
+	case E_V4QImode:
+	  if (unsigned_p)
+	    unpack = gen_sse4_1_zero_extendv2qiv2hi2;
+	  else
+	    unpack = gen_sse4_1_sign_extendv2qiv2hi2;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -5197,6 +5385,12 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	      tmp = gen_reg_rtx (V1DImode);
 	      emit_insn (gen_mmx_lshrv1di3 (tmp, gen_lowpart (V1DImode, src),
 					    GEN_INT (32)));
+	      break;
+	    case 4:
+	      /* Shift higher 2 bytes to lower 2 bytes.  */
+	      tmp = gen_reg_rtx (V1SImode);
+	      emit_insn (gen_mmx_lshrv1si3 (tmp, gen_lowpart (V1SImode, src),
+					    GEN_INT (16)));
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -5244,6 +5438,12 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
 	    unpack = gen_mmx_punpckhwd;
 	  else
 	    unpack = gen_mmx_punpcklwd;
+	  break;
+	case E_V4QImode:
+	  if (high_p)
+	    unpack = gen_mmx_punpckhbw_low;
+	  else
+	    unpack = gen_mmx_punpcklbw_low;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -8210,6 +8410,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     pop = NULL;
   gcc_assert (!TARGET_64BIT || !pop);
 
+  rtx addr = XEXP (fnaddr, 0);
   if (TARGET_MACHO && !TARGET_64BIT)
     {
 #if TARGET_MACHO
@@ -8222,7 +8423,6 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       /* Static functions and indirect calls don't need the pic register.  Also,
 	 check if PLT was explicitly avoided via no-plt or "noplt" attribute, making
 	 it an indirect call.  */
-      rtx addr = XEXP (fnaddr, 0);
       if (flag_pic
 	  && GET_CODE (addr) == SYMBOL_REF
 	  && !SYMBOL_REF_LOCAL_P (addr))
@@ -8383,6 +8583,20 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	      cfun->machine->call_ms2sysv = true;
 	    }
 	}
+    }
+
+  if (TARGET_MACHO && TARGET_64BIT && !sibcall
+      && ((GET_CODE (addr) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (addr))
+	  || !fndecl || TREE_PUBLIC (fndecl)))
+    {
+      /* We allow public functions defined in a TU to bind locally for PIC
+	 code (the default) on 64bit Mach-O.
+	 If such functions are not inlined, we cannot tell at compile-time if
+	 they will be called via the lazy symbol resolver (this can depend on
+	 options given at link-time).  Therefore, we must assume that the lazy
+	 resolver could be used which clobbers R11 and R10.  */
+      clobber_reg (&use, gen_rtx_REG (DImode, R11_REG));
+      clobber_reg (&use, gen_rtx_REG (DImode, R10_REG));
     }
 
   if (vec_len > 1)
@@ -11586,10 +11800,24 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (target == 0)
 	target = gen_reg_rtx (QImode);
 
-      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCZmode, FLAGS_REG),
-			const0_rtx);
-      emit_insn (gen_rtx_SET (target, pat));
+      /* NB: For aesenc/aesdec keylocker insn, ZF will be set when runtime
+	 error occurs. Then the output should be cleared for safety. */
+      rtx_code_label *ok_label;
+      rtx tmp;
 
+      tmp = gen_rtx_REG (CCZmode, FLAGS_REG);
+      pat = gen_rtx_EQ (QImode, tmp, const0_rtx);
+      ok_label = gen_label_rtx ();
+      emit_cmp_and_jump_insns (tmp, const0_rtx, NE, 0, GET_MODE (tmp),
+			       true, ok_label);
+      /* Usually the runtime error seldom occur, so predict OK path as
+	 hotspot to optimize it as fallthrough block. */
+      predict_jump (REG_BR_PROB_BASE * 90 / 100);
+
+      emit_insn (gen_rtx_SET (op1, const0_rtx));
+
+      emit_label (ok_label);
+      emit_insn (gen_rtx_SET (target, pat));
       emit_insn (gen_rtx_SET (op0, op1));
 
       return target;
@@ -11644,8 +11872,17 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (target == 0)
 	target = gen_reg_rtx (QImode);
 
-      pat = gen_rtx_EQ (QImode, gen_rtx_REG (CCZmode, FLAGS_REG),
-			const0_rtx);
+      tmp = gen_rtx_REG (CCZmode, FLAGS_REG);
+      pat = gen_rtx_EQ (QImode, tmp, const0_rtx);
+      ok_label = gen_label_rtx ();
+      emit_cmp_and_jump_insns (tmp, const0_rtx, NE, 0, GET_MODE (tmp),
+			       true, ok_label);
+      predict_jump (REG_BR_PROB_BASE * 90 / 100);
+
+      for (i = 0; i < 8; i++)
+	emit_insn (gen_rtx_SET (xmm_regs[i], const0_rtx));
+
+      emit_label (ok_label);
       emit_insn (gen_rtx_SET (target, pat));
 
       for (i = 0; i < 8; i++)
@@ -13739,7 +13976,7 @@ static bool expand_vec_perm_1 (struct expand_vec_perm_d *d);
 /* A subroutine of ix86_expand_vector_init.  Store into TARGET a vector
    with all elements equal to VAR.  Return true if successful.  */
 
-static bool
+bool
 ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 				   rtx target, rtx val)
 {
@@ -17138,7 +17375,8 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
   else if (TARGET_SSE4_1 && (GET_MODE_SIZE (vmode) == 16
-			     || GET_MODE_SIZE (vmode) == 8))
+			     || GET_MODE_SIZE (vmode) == 8
+			     || GET_MODE_SIZE (vmode) == 4))
     ;
   else
     return false;
@@ -17215,7 +17453,9 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
 	    vperm = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rperm));
 	    vperm = force_reg (vmode, vperm);
 
-	    if (GET_MODE_SIZE (vmode) == 8)
+	    if (GET_MODE_SIZE (vmode) == 4)
+	      emit_insn (gen_mmx_pblendvb32 (target, op0, op1, vperm));
+	    else if (GET_MODE_SIZE (vmode) == 8)
 	      emit_insn (gen_mmx_pblendvb64 (target, op0, op1, vperm));
 	    else if (GET_MODE_SIZE (vmode) == 16)
 	      emit_insn (gen_sse4_1_pblendvb (target, op0, op1, vperm));
@@ -17245,6 +17485,16 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
       for (i = 0; i < 4; ++i)
 	mask |= (d->perm[i * 2] >= 8) << i;
       vmode = V4HImode;
+      goto do_subreg;
+
+    case E_V4QImode:
+      for (i = 0; i < 4; i += 2)
+	if (d->perm[i] + 1 != d->perm[i + 1])
+	  goto use_pblendvb;
+
+      for (i = 0; i < 2; ++i)
+	mask |= (d->perm[i * 2] >= 4) << i;
+      vmode = V2HImode;
       goto do_subreg;
 
     case E_V32QImode:
@@ -17504,163 +17754,176 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
   nelt = d->nelt;
 
   if (!d->one_operand_p)
-    {
-      if (GET_MODE_SIZE (d->vmode) == 8)
-	{
-	  if (!TARGET_XOP)
-	    return false;
-	  vmode = V8QImode;
-	}
-      else if (GET_MODE_SIZE (d->vmode) == 16)
-	{
-	  if (!TARGET_XOP)
-	    return false;
-	}
-      else if (GET_MODE_SIZE (d->vmode) == 32)
-	{
-	  if (!TARGET_AVX2)
-	    return false;
-
-	  if (valid_perm_using_mode_p (V2TImode, d))
-	    {
-	      if (d->testing_p)
-		return true;
-
-	      /* Use vperm2i128 insn.  The pattern uses
-		 V4DImode instead of V2TImode.  */
-	      target = d->target;
-	      if (d->vmode != V4DImode)
-		target = gen_reg_rtx (V4DImode);
-	      op0 = gen_lowpart (V4DImode, d->op0);
-	      op1 = gen_lowpart (V4DImode, d->op1);
-	      rperm[0]
-		= GEN_INT ((d->perm[0] / (nelt / 2))
-			   | ((d->perm[nelt / 2] / (nelt / 2)) * 16));
-	      emit_insn (gen_avx2_permv2ti (target, op0, op1, rperm[0]));
-	      if (target != d->target)
-		emit_move_insn (d->target, gen_lowpart (d->vmode, target));
-	      return true;
-	    }
+    switch (GET_MODE_SIZE (d->vmode))
+      {
+      case 4:
+	if (!TARGET_XOP)
 	  return false;
-	}
-      else
+	vmode = V4QImode;
+	break;
+
+      case 8:
+	if (!TARGET_XOP)
+	  return false;
+	vmode = V8QImode;
+	break;
+
+      case 16:
+	if (!TARGET_XOP)
+	  return false;
+	break;
+
+      case 32:
+	if (!TARGET_AVX2)
+	  return false;
+
+	if (valid_perm_using_mode_p (V2TImode, d))
+	  {
+	    if (d->testing_p)
+	      return true;
+
+	    /* Use vperm2i128 insn.  The pattern uses
+	       V4DImode instead of V2TImode.  */
+	    target = d->target;
+	    if (d->vmode != V4DImode)
+	      target = gen_reg_rtx (V4DImode);
+	    op0 = gen_lowpart (V4DImode, d->op0);
+	    op1 = gen_lowpart (V4DImode, d->op1);
+	    rperm[0]
+	      = GEN_INT ((d->perm[0] / (nelt / 2))
+			 | ((d->perm[nelt / 2] / (nelt / 2)) * 16));
+	    emit_insn (gen_avx2_permv2ti (target, op0, op1, rperm[0]));
+	    if (target != d->target)
+	      emit_move_insn (d->target, gen_lowpart (d->vmode, target));
+	    return true;
+	  }
+	/* FALLTHRU */
+
+      default:
 	return false;
-    }
+      }
   else
-    {
-      if (GET_MODE_SIZE (d->vmode) == 8)
-	{
-	  if (!TARGET_SSSE3)
-	    return false;
-	  vmode = V8QImode;
-	}
-      else if (GET_MODE_SIZE (d->vmode) == 16)
-	{
-	  if (!TARGET_SSSE3)
-	    return false;
-	}
-      else if (GET_MODE_SIZE (d->vmode) == 32)
-	{
-	  if (!TARGET_AVX2)
-	    return false;
+    switch (GET_MODE_SIZE (d->vmode))
+      {
+      case 4:
+	if (!TARGET_SSSE3)
+	  return false;
+	vmode = V4QImode;
+	break;
 
-	  /* V4DImode should be already handled through
-	     expand_vselect by vpermq instruction.  */
-	  gcc_assert (d->vmode != V4DImode);
+      case 8:
+	if (!TARGET_SSSE3)
+	  return false;
+	vmode = V8QImode;
+	break;
 
-	  vmode = V32QImode;
-	  if (d->vmode == V8SImode
-	      || d->vmode == V16HImode
-	      || d->vmode == V32QImode)
-	    {
-	      /* First see if vpermq can be used for
-		 V8SImode/V16HImode/V32QImode.  */
-	      if (valid_perm_using_mode_p (V4DImode, d))
-		{
-		  for (i = 0; i < 4; i++)
-		    perm[i] = (d->perm[i * nelt / 4] * 4 / nelt) & 3;
-		  if (d->testing_p)
+      case 16:
+	if (!TARGET_SSSE3)
+	  return false;
+	break;
+
+      case 32:
+	if (!TARGET_AVX2)
+	  return false;
+
+	/* V4DImode should be already handled through
+	   expand_vselect by vpermq instruction.  */
+	gcc_assert (d->vmode != V4DImode);
+
+	vmode = V32QImode;
+	if (d->vmode == V8SImode
+	    || d->vmode == V16HImode
+	    || d->vmode == V32QImode)
+	  {
+	    /* First see if vpermq can be used for
+	       V8SImode/V16HImode/V32QImode.  */
+	    if (valid_perm_using_mode_p (V4DImode, d))
+	      {
+		for (i = 0; i < 4; i++)
+		  perm[i] = (d->perm[i * nelt / 4] * 4 / nelt) & 3;
+		if (d->testing_p)
+		  return true;
+		target = gen_reg_rtx (V4DImode);
+		if (expand_vselect (target, gen_lowpart (V4DImode, d->op0),
+				    perm, 4, false))
+		  {
+		    emit_move_insn (d->target,
+				    gen_lowpart (d->vmode, target));
 		    return true;
-		  target = gen_reg_rtx (V4DImode);
-		  if (expand_vselect (target, gen_lowpart (V4DImode, d->op0),
-				      perm, 4, false))
-		    {
-		      emit_move_insn (d->target,
-				      gen_lowpart (d->vmode, target));
-		      return true;
-		    }
-		  return false;
-		}
+		  }
+		return false;
+	      }
 
-	      /* Next see if vpermd can be used.  */
-	      if (valid_perm_using_mode_p (V8SImode, d))
-		vmode = V8SImode;
-	    }
-	  /* Or if vpermps can be used.  */
-	  else if (d->vmode == V8SFmode)
-	    vmode = V8SImode;
+	    /* Next see if vpermd can be used.  */
+	    if (valid_perm_using_mode_p (V8SImode, d))
+	      vmode = V8SImode;
+	  }
+	/* Or if vpermps can be used.  */
+	else if (d->vmode == V8SFmode)
+	  vmode = V8SImode;
 
-	  if (vmode == V32QImode)
-	    {
-	      /* vpshufb only works intra lanes, it is not
-		 possible to shuffle bytes in between the lanes.  */
-	      for (i = 0; i < nelt; ++i)
-		if ((d->perm[i] ^ i) & (nelt / 2))
-		  return false;
-	    }
-	}
-      else if (GET_MODE_SIZE (d->vmode) == 64)
-	{
-	  if (!TARGET_AVX512BW)
-	    return false;
+	if (vmode == V32QImode)
+	  {
+	    /* vpshufb only works intra lanes, it is not
+	       possible to shuffle bytes in between the lanes.  */
+	    for (i = 0; i < nelt; ++i)
+	      if ((d->perm[i] ^ i) & (nelt / 2))
+		return false;
+	  }
+	break;
 
-	  /* If vpermq didn't work, vpshufb won't work either.  */
-	  if (d->vmode == V8DFmode || d->vmode == V8DImode)
-	    return false;
+      case 64:
+	if (!TARGET_AVX512BW)
+	  return false;
 
-	  vmode = V64QImode;
-	  if (d->vmode == V16SImode
-	      || d->vmode == V32HImode
-	      || d->vmode == V64QImode)
-	    {
-	      /* First see if vpermq can be used for
-		 V16SImode/V32HImode/V64QImode.  */
-	      if (valid_perm_using_mode_p (V8DImode, d))
-		{
-		  for (i = 0; i < 8; i++)
-		    perm[i] = (d->perm[i * nelt / 8] * 8 / nelt) & 7;
-		  if (d->testing_p)
+	/* If vpermq didn't work, vpshufb won't work either.  */
+	if (d->vmode == V8DFmode || d->vmode == V8DImode)
+	  return false;
+
+	vmode = V64QImode;
+	if (d->vmode == V16SImode
+	    || d->vmode == V32HImode
+	    || d->vmode == V64QImode)
+	  {
+	    /* First see if vpermq can be used for
+	       V16SImode/V32HImode/V64QImode.  */
+	    if (valid_perm_using_mode_p (V8DImode, d))
+	      {
+		for (i = 0; i < 8; i++)
+		  perm[i] = (d->perm[i * nelt / 8] * 8 / nelt) & 7;
+		if (d->testing_p)
+		  return true;
+		target = gen_reg_rtx (V8DImode);
+		if (expand_vselect (target, gen_lowpart (V8DImode, d->op0),
+				    perm, 8, false))
+		  {
+		    emit_move_insn (d->target,
+				    gen_lowpart (d->vmode, target));
 		    return true;
-		  target = gen_reg_rtx (V8DImode);
-		  if (expand_vselect (target, gen_lowpart (V8DImode, d->op0),
-				      perm, 8, false))
-		    {
-		      emit_move_insn (d->target,
-				      gen_lowpart (d->vmode, target));
-		      return true;
-		    }
-		  return false;
-		}
+		  }
+		return false;
+	      }
 
-	      /* Next see if vpermd can be used.  */
-	      if (valid_perm_using_mode_p (V16SImode, d))
-		vmode = V16SImode;
-	    }
-	  /* Or if vpermps can be used.  */
-	  else if (d->vmode == V16SFmode)
-	    vmode = V16SImode;
-	  if (vmode == V64QImode)
-	    {
-	      /* vpshufb only works intra lanes, it is not
-		 possible to shuffle bytes in between the lanes.  */
-	      for (i = 0; i < nelt; ++i)
-		if ((d->perm[i] ^ i) & (3 * nelt / 4))
-		  return false;
-	    }
-	}
-      else
+	    /* Next see if vpermd can be used.  */
+	    if (valid_perm_using_mode_p (V16SImode, d))
+	      vmode = V16SImode;
+	  }
+	/* Or if vpermps can be used.  */
+	else if (d->vmode == V16SFmode)
+	  vmode = V16SImode;
+	if (vmode == V64QImode)
+	  {
+	    /* vpshufb only works intra lanes, it is not
+	       possible to shuffle bytes in between the lanes.  */
+	    for (i = 0; i < nelt; ++i)
+	      if ((d->perm[i] ^ i) & (3 * nelt / 4))
+		return false;
+	  }
+	break;
+
+      default:
 	return false;
-    }
+      }
 
   if (d->testing_p)
     return true;
@@ -17700,23 +17963,28 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 
   machine_mode vpmode = vmode;
 
-  if (vmode == V8QImode)
+  if (vmode == V4QImode
+      || vmode == V8QImode)
     {
       rtx m128 = GEN_INT (-128);
 
       /* Remap elements from the second operand, as we have to
-	 account for inactive top 8 elements from the first operand.  */
+	 account for inactive top elements from the first operand.  */
       if (!d->one_operand_p)
-	for (i = 0; i < nelt; ++i)
-	  {
-	    int ival = INTVAL (rperm[i]);
-	    if (ival >= 8)
-	      ival += 8;
-	    rperm[i] = GEN_INT (ival);
-	  }
+	{
+	  int sz = GET_MODE_SIZE (vmode);
 
-      /* V8QI is emulated with V16QI instruction, fill inactive
-	 elements in the top 8 positions with zeros.  */
+	  for (i = 0; i < nelt; ++i)
+	    {
+	      int ival = INTVAL (rperm[i]);
+	      if (ival >= sz)
+		ival += 16-sz;
+	      rperm[i] = GEN_INT (ival);
+	    }
+	}
+
+      /* V4QI/V8QI is emulated with V16QI instruction, fill inactive
+	 elements in the top positions with zeros.  */
       for (i = nelt; i < 16; ++i)
 	rperm[i] = m128;
 
@@ -17738,7 +18006,9 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
     {
       rtx (*gen) (rtx, rtx, rtx);
 
-      if (vmode == V8QImode)
+      if (vmode == V4QImode)
+	gen = gen_mmx_pshufbv4qi3;
+      else if (vmode == V8QImode)
 	gen = gen_mmx_pshufbv8qi3;
       else if (vmode == V16QImode)
 	gen = gen_ssse3_pshufbv16qi3;
@@ -17765,7 +18035,9 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 
       op1 = gen_lowpart (vmode, d->op1);
 
-      if (vmode == V8QImode)
+      if (vmode == V4QImode)
+	gen = gen_mmx_ppermv32;
+      else if (vmode == V8QImode)
 	gen = gen_mmx_ppermv64;
       else if (vmode == V16QImode)
 	gen = gen_xop_pperm;
@@ -18212,7 +18484,8 @@ expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
     ;
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
-  else if (TARGET_SSE4_1 && (GET_MODE_SIZE (vmode) == 8
+  else if (TARGET_SSE4_1 && (GET_MODE_SIZE (vmode) == 4
+			     || GET_MODE_SIZE (vmode) == 8
 			     || GET_MODE_SIZE (vmode) == 16))
     ;
   else
@@ -18292,7 +18565,8 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
   rtx_insn *seq;
   bool ok, same_halves = false;
 
-  if (GET_MODE_SIZE (d->vmode) == 8
+  if (GET_MODE_SIZE (d->vmode) == 4
+      || GET_MODE_SIZE (d->vmode) == 8
       || GET_MODE_SIZE (d->vmode) == 16)
     {
       if (d->one_operand_p)
@@ -18328,7 +18602,8 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
   memset (remap, 0xff, sizeof (remap));
   dremap = *d;
 
-  if (GET_MODE_SIZE (d->vmode) == 8)
+  if (GET_MODE_SIZE (d->vmode) == 4
+      || GET_MODE_SIZE (d->vmode) == 8)
     {
       unsigned HOST_WIDE_INT h1, h2, h3, h4;
 
@@ -19076,7 +19351,8 @@ expand_vec_perm_2perm_pblendv (struct expand_vec_perm_d *d, bool two_insn)
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
   else if (TARGET_SSE4_1 && (GET_MODE_SIZE (vmode) == 16
-			     || GET_MODE_SIZE (vmode) == 8))
+			     || GET_MODE_SIZE (vmode) == 8
+			     || GET_MODE_SIZE (vmode) == 4))
     ;
   else
     return false;
@@ -19337,7 +19613,8 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
   rtx (*gen) (rtx, rtx, rtx);
 
   if (!TARGET_SSSE3 || (GET_MODE_SIZE (d->vmode) != 16
-			&& GET_MODE_SIZE (d->vmode) != 8))
+			&& GET_MODE_SIZE (d->vmode) != 8
+			&& GET_MODE_SIZE (d->vmode) != 4))
     return false;
   gcc_assert (!d->one_operand_p);
 
@@ -19346,6 +19623,10 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
 
   switch (GET_MODE_SIZE (d->vmode))
     {
+    case 4:
+      mode = V4QImode;
+      gen = gen_mmx_pshufbv4qi3;
+      break;
     case 8:
       mode = V8QImode;
       gen = gen_mmx_pshufbv8qi3;
@@ -19832,6 +20113,26 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	return false;
       break;
 
+    case E_V4QImode:
+      if (TARGET_SSSE3 && !TARGET_SLOW_PSHUFB)
+	return expand_vec_perm_pshufb2 (d);
+      else
+	{
+	  if (d->testing_p)
+	    break;
+	  /* We need 2*log2(N)-1 operations to achieve odd/even
+	     with interleave. */
+	  t1 = gen_reg_rtx (V4QImode);
+	  emit_insn (gen_mmx_punpckhbw_low (t1, d->op0, d->op1));
+	  emit_insn (gen_mmx_punpcklbw_low (d->target, d->op0, d->op1));
+	  if (odd)
+	    t2 = gen_mmx_punpckhbw_low (d->target, d->target, t1);
+	  else
+	    t2 = gen_mmx_punpcklbw_low (d->target, d->target, t1);
+	  emit_insn (t2);
+	}
+      break;
+
     case E_V4HImode:
       if (TARGET_SSE4_1)
 	return expand_vec_perm_even_odd_pack (d);
@@ -20021,6 +20322,7 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
 {
   unsigned elt = d->perm[0], nelt2 = d->nelt / 2;
   machine_mode vmode = d->vmode;
+  rtx (*gen) (rtx, rtx, rtx);
   unsigned char perm2[4];
   rtx op0 = d->op0, dest;
   bool ok;
@@ -20045,24 +20347,48 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       /* These are always implementable using standard shuffle patterns.  */
       gcc_unreachable ();
 
+    case E_V4QImode:
+      /* This can be implemented via interleave and pshuflw.  */
+      if (d->testing_p)
+	return true;
+
+      if (elt >= nelt2)
+	{
+	  gen = gen_mmx_punpckhbw_low;
+	  elt -= nelt2;
+	}
+      else
+	gen = gen_mmx_punpcklbw_low;
+
+      dest = gen_reg_rtx (vmode);
+      emit_insn (gen (dest, op0, op0));
+      vmode = get_mode_wider_vector (vmode);
+      op0 = gen_lowpart (vmode, dest);
+
+      memset (perm2, elt, 2);
+      dest = gen_reg_rtx (vmode);
+      ok = expand_vselect (dest, op0, perm2, 2, d->testing_p);
+      gcc_assert (ok);
+
+      emit_move_insn (d->target, gen_lowpart (d->vmode, dest));
+      return true;
+
     case E_V8QImode:
-      /* These can be implemented via interleave.  We save one insn by
+      /* This can be implemented via interleave.  We save one insn by
 	 stopping once we have promoted to V2SImode and then use pshufd.  */
       if (d->testing_p)
 	return true;
       do
 	{
-	  rtx dest;
-	  rtx (*gen) (rtx, rtx, rtx)
-	    = vmode == V8QImode ? gen_mmx_punpcklbw
-				: gen_mmx_punpcklwd;
-
 	  if (elt >= nelt2)
 	    {
 	      gen = vmode == V8QImode ? gen_mmx_punpckhbw
 				      : gen_mmx_punpckhwd;
 	      elt -= nelt2;
 	    }
+	  else
+	    gen = vmode == V8QImode ? gen_mmx_punpcklbw
+				    : gen_mmx_punpcklwd;
 	  nelt2 /= 2;
 
 	  dest = gen_reg_rtx (vmode);
@@ -20073,11 +20399,11 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       while (vmode != V2SImode);
 
       memset (perm2, elt, 2);
-      dest = gen_reg_rtx (V2SImode);
+      dest = gen_reg_rtx (vmode);
       ok = expand_vselect (dest, op0, perm2, 2, d->testing_p);
       gcc_assert (ok);
-      if (!d->testing_p)
-	emit_move_insn (d->target, gen_lowpart (d->vmode, dest));
+
+      emit_move_insn (d->target, gen_lowpart (d->vmode, dest));
       return true;
 
     case E_V8HImode:
@@ -20088,17 +20414,15 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
 	return true;
       do
 	{
-	  rtx dest;
-	  rtx (*gen) (rtx, rtx, rtx)
-	    = vmode == V16QImode ? gen_vec_interleave_lowv16qi
-				 : gen_vec_interleave_lowv8hi;
-
 	  if (elt >= nelt2)
 	    {
 	      gen = vmode == V16QImode ? gen_vec_interleave_highv16qi
 				       : gen_vec_interleave_highv8hi;
 	      elt -= nelt2;
 	    }
+	  else
+	    gen = vmode == V16QImode ? gen_vec_interleave_lowv16qi
+				     : gen_vec_interleave_lowv8hi;
 	  nelt2 /= 2;
 
 	  dest = gen_reg_rtx (vmode);
@@ -20109,11 +20433,11 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       while (vmode != V4SImode);
 
       memset (perm2, elt, 4);
-      dest = gen_reg_rtx (V4SImode);
+      dest = gen_reg_rtx (vmode);
       ok = expand_vselect (dest, op0, perm2, 4, d->testing_p);
       gcc_assert (ok);
-      if (!d->testing_p)
-	emit_move_insn (d->target, gen_lowpart (d->vmode, dest));
+
+      emit_move_insn (d->target, gen_lowpart (d->vmode, dest));
       return true;
 
     case E_V64QImode:
@@ -20593,6 +20917,10 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
       /* All implementable with *punpckwd.  */
       if (d.testing_p)
 	return true;
+      break;
+    case E_V4QImode:
+      if (!TARGET_SSE2)
+	return false;
       break;
     case E_V2DImode:
     case E_V2DFmode:

@@ -176,6 +176,7 @@ enum cp_tree_index
     CPTI_HEAP_DELETED_IDENTIFIER,
     CPTI_HEAP_VEC_UNINIT_IDENTIFIER,
     CPTI_HEAP_VEC_IDENTIFIER,
+    CPTI_OMP_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -337,6 +338,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define heap_deleted_identifier		cp_global_trees[CPTI_HEAP_DELETED_IDENTIFIER]
 #define heap_vec_uninit_identifier	cp_global_trees[CPTI_HEAP_VEC_UNINIT_IDENTIFIER]
 #define heap_vec_identifier		cp_global_trees[CPTI_HEAP_VEC_IDENTIFIER]
+#define omp_identifier			cp_global_trees[CPTI_OMP_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
@@ -7289,7 +7291,7 @@ extern void add_mergeable_specialization        (bool is_decl, bool is_alias,
 						 tree outer, unsigned);
 extern tree add_to_template_args		(tree, tree);
 extern tree add_outermost_template_args		(tree, tree);
-extern tree add_extra_args			(tree, tree);
+extern tree add_extra_args			(tree, tree, tsubst_flags_t, tree);
 extern tree build_extra_args			(tree, tree, tsubst_flags_t);
 
 /* in rtti.c */
@@ -8463,21 +8465,37 @@ is_constrained_auto (const_tree t)
   return is_auto (t) && PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t);
 }
 
-/* RAII class to push/pop class scope T; if T is not a class, do nothing.  */
+/* True if CODE, a tree code, denotes a tree whose operand is not evaluated
+   as per [expr.context], i.e., an operand to sizeof, typeof, decltype, or
+   alignof.  */
 
-struct push_nested_class_guard
+inline bool
+unevaluated_p (tree_code code)
 {
-  bool push;
-  push_nested_class_guard (tree t)
-    : push (t && CLASS_TYPE_P (t))
+  return (code == DECLTYPE_TYPE
+	  || code == ALIGNOF_EXPR
+	  || code == SIZEOF_EXPR
+	  || code == NOEXCEPT_EXPR);
+}
+
+/* RAII class to push/pop the access scope for T.  */
+
+struct push_access_scope_guard
+{
+  tree decl;
+  push_access_scope_guard (tree t)
+    : decl (t)
   {
-    if (push)
-      push_nested_class (t);
+    if (VAR_OR_FUNCTION_DECL_P (decl)
+	|| TREE_CODE (decl) == TYPE_DECL)
+      push_access_scope (decl);
+    else
+      decl = NULL_TREE;
   }
-  ~push_nested_class_guard ()
+  ~push_access_scope_guard ()
   {
-    if (push)
-      pop_nested_class ();
+    if (decl)
+      pop_access_scope (decl);
   }
 };
 

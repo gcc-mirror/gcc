@@ -408,6 +408,8 @@ OPTAB_D (vec_widen_usubl_lo_optab, "vec_widen_usubl_lo_$a")
 OPTAB_D (vec_widen_uaddl_hi_optab, "vec_widen_uaddl_hi_$a")
 OPTAB_D (vec_widen_uaddl_lo_optab, "vec_widen_uaddl_lo_$a")
 OPTAB_D (vec_addsub_optab, "vec_addsub$a3")
+OPTAB_D (vec_fmaddsub_optab, "vec_fmaddsub$a4")
+OPTAB_D (vec_fmsubadd_optab, "vec_fmsubadd$a4")
 
 OPTAB_D (sync_add_optab, "sync_add$I$a")
 OPTAB_D (sync_and_optab, "sync_and$I$a")

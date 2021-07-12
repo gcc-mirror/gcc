@@ -116,7 +116,7 @@ runtime_signalstack(byte *p, uintptr n)
 	if(p == nil)
 		st.ss_flags = SS_DISABLE;
 	if(sigaltstack(&st, nil) < 0)
-		*(int *)0xf1 = 0xf1;
+		abort();
 }
 
 int32 go_open(char *, int32, int32)

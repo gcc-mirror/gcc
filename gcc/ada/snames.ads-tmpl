@@ -439,6 +439,7 @@ package Snames is
    --  correctly recognize and process Fast_Math.
 
    Name_Favor_Top_Level                : constant Name_Id := N + $; -- GNAT
+   Name_GNAT_Annotate                  : constant Name_Id := N + $; -- GNAT
    Name_Ignore_Pragma                  : constant Name_Id := N + $; -- GNAT
    Name_Implicit_Packing               : constant Name_Id := N + $; -- GNAT
    Name_Initialize_Scalars             : constant Name_Id := N + $; -- GNAT
@@ -796,7 +797,6 @@ package Snames is
    Name_Gcc                            : constant Name_Id := N + $;
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
-   Name_Gnat_Annotate                  : constant Name_Id := N + $;
    Name_Gnat_Extended_Ravenscar        : constant Name_Id := N + $;
    Name_Gnat_Ravenscar_EDF             : constant Name_Id := N + $;
    Name_Gnatprove                      : constant Name_Id := N + $;
@@ -827,6 +827,7 @@ package Snames is
    Name_No_Access_Parameter_Allocators : constant Name_Id := N + $;
    Name_No_Coextensions                : constant Name_Id := N + $;
    Name_No_Dependence                  : constant Name_Id := N + $;
+   Name_No_Dynamic_Accessibility_Checks : constant Name_Id := N + $;
    Name_No_Dynamic_Attachment          : constant Name_Id := N + $;
    Name_No_Dynamic_Interrupts          : constant Name_Id := N + $;
    Name_No_Elaboration_Code            : constant Name_Id := N + $;
@@ -1767,6 +1768,7 @@ package Snames is
       Pragma_Extensions_Allowed,
       Pragma_External_Name_Casing,
       Pragma_Favor_Top_Level,
+      Pragma_GNAT_Annotate,
       Pragma_Ignore_Pragma,
       Pragma_Implicit_Packing,
       Pragma_Initialize_Scalars,

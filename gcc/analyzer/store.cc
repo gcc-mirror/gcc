@@ -118,50 +118,23 @@ uncertainty_t::dump (bool simple) const
   pp_flush (&pp);
 }
 
-/* Get a human-readable string for KIND for dumps.  */
-
-const char *binding_kind_to_string (enum binding_kind kind)
-{
-  switch (kind)
-    {
-    default:
-    case BK_empty:
-    case BK_deleted:
-      /* We shouldn't be attempting to print the hash kinds.  */
-      gcc_unreachable ();
-    case BK_direct:
-      return "direct";
-    case BK_default:
-      return "default";
-    }
-}
-
 /* class binding_key.  */
 
 const binding_key *
-binding_key::make (store_manager *mgr, const region *r,
-		   enum binding_kind kind)
+binding_key::make (store_manager *mgr, const region *r)
 {
   region_offset offset = r->get_offset ();
   if (offset.symbolic_p ())
-    return mgr->get_symbolic_binding (r, kind);
+    return mgr->get_symbolic_binding (r);
   else
     {
       bit_size_t bit_size;
       if (r->get_bit_size (&bit_size))
 	return mgr->get_concrete_binding (offset.get_bit_offset (),
-					  bit_size, kind);
+					  bit_size);
       else
-	return mgr->get_symbolic_binding (r, kind);
+	return mgr->get_symbolic_binding (r);
     }
-}
-
-/* Base class implementation of binding_key::dump_to_pp vfunc.  */
-
-void
-binding_key::dump_to_pp (pretty_printer *pp, bool /*simple*/) const
-{
-  pp_printf (pp, "kind: %s", binding_kind_to_string (m_kind));
 }
 
 /* Dump this binding_key to stderr.  */
@@ -204,11 +177,6 @@ binding_key::cmp_ptrs (const void *p1, const void *p2)
 int
 binding_key::cmp (const binding_key *k1, const binding_key *k2)
 {
-  enum binding_kind kind1 = k1->get_kind ();
-  enum binding_kind kind2 = k2->get_kind ();
-  if (kind1 != kind2)
-    return (int)kind1 - (int)kind2;
-
   int concrete1 = k1->concrete_p ();
   int concrete2 = k2->concrete_p ();
   if (int concrete_cmp = concrete1 - concrete2)
@@ -236,7 +204,7 @@ binding_key::cmp (const binding_key *k1, const binding_key *k2)
     }
 }
 
-/* struct struct bit_range.  */
+/* struct bit_range.  */
 
 void
 bit_range::dump_to_pp (pretty_printer *pp) const
@@ -265,6 +233,24 @@ bit_range::dump () const
   dump_to_pp (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
+}
+
+/* If OTHER is a subset of this, return true and write
+   to *OUT the relative range of OTHER within this.
+   Otherwise return false.  */
+
+bool
+bit_range::contains_p (const bit_range &other, bit_range *out) const
+{
+  if (contains_p (other.get_start_bit_offset ())
+      && contains_p (other.get_last_bit_offset ()))
+    {
+      out->m_start_bit_offset = other.m_start_bit_offset - m_start_bit_offset;
+      out->m_size_in_bits = other.m_size_in_bits;
+      return true;
+    }
+  else
+    return false;
 }
 
 int
@@ -371,15 +357,57 @@ byte_range::dump_to_pp (pretty_printer *pp) const
     }
 }
 
+/* Dump this object to stderr.  */
+
+DEBUG_FUNCTION void
+byte_range::dump () const
+{
+  pretty_printer pp;
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
+/* If OTHER is a subset of this, return true and write
+   to *OUT the relative range of OTHER within this.
+   Otherwise return false.  */
+
+bool
+byte_range::contains_p (const byte_range &other, byte_range *out) const
+{
+  if (contains_p (other.get_start_byte_offset ())
+      && contains_p (other.get_last_byte_offset ()))
+    {
+      out->m_start_byte_offset = other.m_start_byte_offset - m_start_byte_offset;
+      out->m_size_in_bytes = other.m_size_in_bytes;
+      return true;
+    }
+  else
+    return false;
+}
+
+/* qsort comparator for byte ranges.  */
+
+int
+byte_range::cmp (const byte_range &br1, const byte_range &br2)
+{
+  /* Order first by offset.  */
+  if (int start_cmp = wi::cmps (br1.m_start_byte_offset,
+				br2.m_start_byte_offset))
+    return start_cmp;
+
+  /* ...then by size.  */
+  return wi::cmpu (br1.m_size_in_bytes, br2.m_size_in_bytes);
+}
+
 /* class concrete_binding : public binding_key.  */
 
 /* Implementation of binding_key::dump_to_pp vfunc for concrete_binding.  */
 
 void
-concrete_binding::dump_to_pp (pretty_printer *pp, bool simple) const
+concrete_binding::dump_to_pp (pretty_printer *pp, bool) const
 {
-  binding_key::dump_to_pp (pp, simple);
-  pp_string (pp, ", ");
   m_bit_range.dump_to_pp (pp);
 }
 
@@ -402,9 +430,6 @@ concrete_binding::cmp_ptr_ptr (const void *p1, const void *p2)
   const concrete_binding *b1 = *(const concrete_binding * const *)p1;
   const concrete_binding *b2 = *(const concrete_binding * const *)p2;
 
-  if (int kind_cmp = b1->get_kind () - b2->get_kind ())
-    return kind_cmp;
-
   return bit_range::cmp (b1->m_bit_range, b2->m_bit_range);
 }
 
@@ -413,8 +438,8 @@ concrete_binding::cmp_ptr_ptr (const void *p1, const void *p2)
 void
 symbolic_binding::dump_to_pp (pretty_printer *pp, bool simple) const
 {
-  binding_key::dump_to_pp (pp, simple);
-  pp_string (pp, ", region: ");
+  //binding_key::dump_to_pp (pp, simple);
+  pp_string (pp, "region: ");
   m_region->dump_to_pp (pp, simple);
 }
 
@@ -425,9 +450,6 @@ symbolic_binding::cmp_ptr_ptr (const void *p1, const void *p2)
 {
   const symbolic_binding *b1 = *(const symbolic_binding * const *)p1;
   const symbolic_binding *b2 = *(const symbolic_binding * const *)p2;
-
-  if (int kind_cmp = b1->get_kind () - b2->get_kind ())
-    return kind_cmp;
 
   return region::cmp_ids (b1->get_region (), b2->get_region ());
 }
@@ -777,8 +799,7 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
     return false;
   bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
   store_manager *smgr = mgr->get_store_manager ();
-  const binding_key *max_element_key
-    = binding_key::make (smgr, max_element, BK_direct);
+  const binding_key *max_element_key = binding_key::make (smgr, max_element);
   if (max_element_key->symbolic_p ())
     return false;
   const concrete_binding *max_element_ckey
@@ -786,8 +807,7 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
   bit_size_t range_size_in_bits
     = max_element_ckey->get_next_bit_offset () - start_bit_offset;
   const concrete_binding *range_key
-    = smgr->get_concrete_binding (start_bit_offset, range_size_in_bits,
-				  BK_direct);
+    = smgr->get_concrete_binding (start_bit_offset, range_size_in_bits);
   if (range_key->symbolic_p ())
     return false;
 
@@ -819,8 +839,7 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
     {
       const svalue *sval = get_svalue_for_ctor_val (val, mgr);
       const binding_key *k
-	= binding_key::make (mgr->get_store_manager (), child_reg,
-			     BK_direct);
+	= binding_key::make (mgr->get_store_manager (), child_reg);
       /* Handle the case where we have an unknown size for child_reg
 	 (e.g. due to it being a trailing field with incomplete array
 	 type.  */
@@ -844,11 +863,171 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 	       - parent_base_offset.get_bit_offset ());
 	  /* Create a concrete key for the child within the parent.  */
 	  k = mgr->get_store_manager ()->get_concrete_binding
-	    (child_parent_offset, sval_bit_size, BK_direct);
+	    (child_parent_offset, sval_bit_size);
 	}
       gcc_assert (k->concrete_p ());
       put (k, sval);
       return true;
+    }
+}
+
+/* Populate OUT with all bindings within this map that overlap KEY.  */
+
+void
+binding_map::get_overlapping_bindings (const binding_key *key,
+				       auto_vec<const binding_key *> *out)
+{
+  for (auto iter : *this)
+    {
+      const binding_key *iter_key = iter.first;
+      if (const concrete_binding *ckey
+	    = key->dyn_cast_concrete_binding ())
+	{
+	  if (const concrete_binding *iter_ckey
+	      = iter_key->dyn_cast_concrete_binding ())
+	    {
+	      if (ckey->overlaps_p (*iter_ckey))
+		out->safe_push (iter_key);
+	    }
+	  else
+	    {
+	      /* Assume overlap.  */
+	      out->safe_push (iter_key);
+	    }
+	}
+      else
+	{
+	  /* Assume overlap.  */
+	  out->safe_push (iter_key);
+	}
+    }
+}
+
+/* Remove, truncate, and/or split any bindings within this map that
+   overlap DROP_KEY.
+
+   For example, if we have:
+
+     +------------------------------------+
+     |             old binding            |
+     +------------------------------------+
+
+   which is to be overwritten with:
+
+     .......+----------------------+.......
+     .......|      new binding     |.......
+     .......+----------------------+.......
+
+   this function "cuts a hole" out of the old binding:
+
+     +------+......................+------+
+     |prefix| hole for new binding |suffix|
+     +------+......................+------+
+
+   into which the new binding can be added without
+   overlapping the prefix or suffix.
+
+   The prefix and suffix (if added) will be bound to the pertinent
+   parts of the value of the old binding.
+
+   For example, given:
+     struct s5
+     {
+       char arr[8];
+     };
+     void test_5 (struct s5 *p)
+     {
+       struct s5 f = *p;
+       f.arr[3] = 42;
+     }
+   then after the "f = *p;" we have:
+     cluster for: f: INIT_VAL((*INIT_VAL(p_33(D))))
+   and at the "f.arr[3] = 42;" we remove the bindings overlapping
+   "f.arr[3]", replacing it with a prefix (bytes 0-2) and suffix (bytes 4-7)
+   giving:
+     cluster for: f
+       key:   {bytes 0-2}
+       value:  {BITS_WITHIN(bytes 0-2, inner_val: INIT_VAL((*INIT_VAL(p_33(D))).arr))}
+       key:   {bytes 4-7}
+       value:  {BITS_WITHIN(bytes 4-7, inner_val: INIT_VAL((*INIT_VAL(p_33(D))).arr))}
+   punching a hole into which the new value can be written at byte 3:
+     cluster for: f
+       key:   {bytes 0-2}
+       value:  {BITS_WITHIN(bytes 0-2, inner_val: INIT_VAL((*INIT_VAL(p_33(D))).arr))}
+       key:   {byte 3}
+       value: 'char' {(char)42}
+       key:   {bytes 4-7}
+       value:  {BITS_WITHIN(bytes 4-7, inner_val: INIT_VAL((*INIT_VAL(p_33(D))).arr))}
+
+   If UNCERTAINTY is non-NULL, use it to record any svalues that
+   were removed, as being maybe-bound.  */
+
+void
+binding_map::remove_overlapping_bindings (store_manager *mgr,
+					  const binding_key *drop_key,
+					  uncertainty_t *uncertainty)
+{
+  auto_vec<const binding_key *> bindings;
+  get_overlapping_bindings (drop_key, &bindings);
+
+  unsigned i;
+  const binding_key *iter_binding;
+  FOR_EACH_VEC_ELT (bindings, i, iter_binding)
+    {
+      const svalue *old_sval = get (iter_binding);
+      if (uncertainty)
+	uncertainty->on_maybe_bound_sval (old_sval);
+
+      /* Begin by removing the old binding. */
+      m_map.remove (iter_binding);
+
+      /* Now potentially add the prefix and suffix.  */
+      if (const concrete_binding *drop_ckey
+	  = drop_key->dyn_cast_concrete_binding ())
+	if (const concrete_binding *iter_ckey
+	      = iter_binding->dyn_cast_concrete_binding ())
+	  {
+	    gcc_assert (drop_ckey->overlaps_p (*iter_ckey));
+
+	    const bit_range &drop_bits = drop_ckey->get_bit_range ();
+	    const bit_range &iter_bits = iter_ckey->get_bit_range ();
+
+	    if (iter_bits.get_start_bit_offset ()
+		  < drop_bits.get_start_bit_offset ())
+	      {
+		/* We have a truncated prefix.  */
+		bit_range prefix_bits (iter_bits.get_start_bit_offset (),
+				       (drop_bits.get_start_bit_offset ()
+					- iter_bits.get_start_bit_offset ()));
+		const concrete_binding *prefix_key
+		  = mgr->get_concrete_binding (prefix_bits);
+		bit_range rel_prefix (0, prefix_bits.m_size_in_bits);
+		const svalue *prefix_sval
+		  = old_sval->extract_bit_range (NULL_TREE,
+						 rel_prefix,
+						 mgr->get_svalue_manager ());
+		m_map.put (prefix_key, prefix_sval);
+	      }
+
+	    if (iter_bits.get_next_bit_offset ()
+		  > drop_bits.get_next_bit_offset ())
+	      {
+		/* We have a truncated suffix.  */
+		bit_range suffix_bits (drop_bits.get_next_bit_offset (),
+				       (iter_bits.get_next_bit_offset ()
+					- drop_bits.get_next_bit_offset ()));
+		const concrete_binding *suffix_key
+		  = mgr->get_concrete_binding (suffix_bits);
+		bit_range rel_suffix (drop_bits.get_next_bit_offset ()
+					- iter_bits.get_start_bit_offset (),
+				      suffix_bits.m_size_in_bits);
+		const svalue *suffix_sval
+		  = old_sval->extract_bit_range (NULL_TREE,
+						 rel_suffix,
+						 mgr->get_svalue_manager ());
+		m_map.put (suffix_key, suffix_sval);
+	      }
+	  }
     }
 }
 
@@ -964,6 +1143,27 @@ binding_cluster::dump (bool simple) const
   pp_flush (&pp);
 }
 
+/* Assert that this object is valid.  */
+
+void
+binding_cluster::validate () const
+{
+  int num_symbolic = 0;
+  int num_concrete = 0;
+  for (auto iter : m_map)
+    {
+      if (iter.first->symbolic_p ())
+	num_symbolic++;
+      else
+	num_concrete++;
+    }
+  /* We shouldn't have more than one symbolic key per cluster
+     (or one would have clobbered the other).  */
+  gcc_assert (num_symbolic < 2);
+  /* We can't have both concrete and symbolic keys.  */
+  gcc_assert (num_concrete == 0 || num_symbolic == 0);
+}
+
 /* Return a new json::object of the form
    {"escaped": true/false,
     "touched": true/false,
@@ -986,8 +1186,7 @@ binding_cluster::to_json () const
 
 void
 binding_cluster::bind (store_manager *mgr,
-		       const region *reg, const svalue *sval,
-		       binding_kind kind)
+		       const region *reg, const svalue *sval)
 {
   if (const compound_svalue *compound_sval
 	= sval->dyn_cast_compound_svalue ())
@@ -996,7 +1195,7 @@ binding_cluster::bind (store_manager *mgr,
       return;
     }
 
-  const binding_key *binding = binding_key::make (mgr, reg, kind);
+  const binding_key *binding = binding_key::make (mgr, reg);
   bind_key (binding, sval);
 }
 
@@ -1045,8 +1244,7 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
 	       + reg_offset.get_bit_offset ());
 	  const concrete_binding *effective_concrete_key
 	    = mgr->get_concrete_binding (effective_start,
-					 concrete_key->get_size_in_bits (),
-					 iter_key->get_kind ());
+					 concrete_key->get_size_in_bits ());
 	  bind_key (effective_concrete_key, iter_sval);
 	}
       else
@@ -1069,31 +1267,35 @@ binding_cluster::purge_region (store_manager *mgr, const region *reg)
 {
   gcc_assert (reg->get_kind () == RK_DECL);
   const binding_key *binding
-    = binding_key::make (mgr, const_cast<region *> (reg),
-			 BK_direct);
+    = binding_key::make (mgr, const_cast<region *> (reg));
   m_map.remove (binding);
 }
 
-/* Mark REG within this cluster as being filled with zeroes.
-   Remove all bindings, add a default binding to zero, and clear the
-   TOUCHED flag.  */
+/* Clobber REG and fill it with repeated copies of SVAL.  */
+
+void
+binding_cluster::fill_region (store_manager *mgr,
+			      const region *reg,
+			      const svalue *sval)
+{
+  clobber_region (mgr, reg);
+
+  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
+  const svalue *byte_size_sval = reg->get_byte_size_sval (sval_mgr);
+  const svalue *fill_sval
+    = sval_mgr->get_or_create_repeated_svalue (reg->get_type (),
+					       byte_size_sval, sval);
+  bind (mgr, reg, fill_sval);
+}
+
+/* Clobber REG within this cluster and fill it with zeroes.  */
 
 void
 binding_cluster::zero_fill_region (store_manager *mgr, const region *reg)
 {
-  clobber_region (mgr, reg);
-
-  /* Add a default binding to zero.  */
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  const svalue *cst_sval
-    = sval_mgr->get_or_create_int_cst (integer_type_node, 0);
-  const svalue *bound_sval = cst_sval;
-  if (reg->get_type ())
-    bound_sval = sval_mgr->get_or_create_unaryop (reg->get_type (), NOP_EXPR,
-						  cst_sval);
-  bind (mgr, reg, bound_sval, BK_default);
-
-  m_touched = false;
+  const svalue *zero_sval = sval_mgr->get_or_create_int_cst (char_type_node, 0);
+  fill_region (mgr, reg, zero_sval);
 }
 
 /* Mark REG within this cluster as being unknown.
@@ -1111,7 +1313,7 @@ binding_cluster::mark_region_as_unknown (store_manager *mgr,
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
   const svalue *sval
     = sval_mgr->get_or_create_unknown_svalue (reg->get_type ());
-  bind (mgr, reg, sval, BK_default);
+  bind (mgr, reg, sval);
 }
 
 /* Get any SVAL bound to REG within this cluster via kind KIND,
@@ -1119,10 +1321,9 @@ binding_cluster::mark_region_as_unknown (store_manager *mgr,
 
 const svalue *
 binding_cluster::get_binding (store_manager *mgr,
-			      const region *reg,
-			      binding_kind kind) const
+			      const region *reg) const
 {
-  const binding_key *reg_binding = binding_key::make (mgr, reg, kind);
+  const binding_key *reg_binding = binding_key::make (mgr, reg);
   const svalue *sval = m_map.get (reg_binding);
   if (sval)
     {
@@ -1140,7 +1341,7 @@ binding_cluster::get_binding (store_manager *mgr,
       while (const region *parent_reg = reg->get_parent_region ())
 	{
 	  const binding_key *parent_reg_binding
-	    = binding_key::make (mgr, parent_reg, kind);
+	    = binding_key::make (mgr, parent_reg);
 	  if (parent_reg_binding == reg_binding
 	      && sval->get_type ()
 	      && reg->get_type ()
@@ -1161,7 +1362,7 @@ binding_cluster::get_binding (store_manager *mgr,
 	  FOR_EACH_VEC_ELT_REVERSE (regions, i, iter_reg)
 	    {
 	      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
-	      sval = rmm_mgr->get_or_create_sub_svalue (reg->get_type (),
+	      sval = rmm_mgr->get_or_create_sub_svalue (iter_reg->get_type (),
 							sval, iter_reg);
 	    }
 	}
@@ -1169,21 +1370,20 @@ binding_cluster::get_binding (store_manager *mgr,
   return sval;
 }
 
-/* Get any SVAL bound to REG within this cluster via kind KIND,
+/* Get any SVAL bound to REG within this cluster,
    either directly for REG, or recursively checking for bindings within
    parent regions and extracting subvalues if need be.  */
 
 const svalue *
 binding_cluster::get_binding_recursive (store_manager *mgr,
-					const region *reg,
-					enum binding_kind kind) const
+					const region *reg) const
 {
-  if (const svalue *sval = get_binding (mgr, reg, kind))
+  if (const svalue *sval = get_binding (mgr, reg))
     return sval;
   if (reg != m_base_region)
     if (const region *parent_reg = reg->get_parent_region ())
       if (const svalue *parent_sval
-	  = get_binding_recursive (mgr, parent_reg, kind))
+	  = get_binding_recursive (mgr, parent_reg))
 	{
 	  /* Extract child svalue from parent svalue.  */
 	  region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
@@ -1199,17 +1399,10 @@ const svalue *
 binding_cluster::get_any_binding (store_manager *mgr,
 				  const region *reg) const
 {
-  /* Look for a "direct" binding.  */
+  /* Look for a direct binding.  */
   if (const svalue *direct_sval
-      = get_binding_recursive (mgr, reg, BK_direct))
+      = get_binding_recursive (mgr, reg))
     return direct_sval;
-
-  /* Look for a "default" binding, but not if there's been a symbolic
-     write.  */
-  if (!m_touched)
-    if (const svalue *default_sval
-	= get_binding_recursive (mgr, reg, BK_default))
-      return default_sval;
 
   /* If this cluster has been touched by a symbolic write, then the content
      of any subregion not currently specifically bound is "UNKNOWN".  */
@@ -1251,14 +1444,42 @@ const svalue *
 binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 					     const region *reg) const
 {
-  binding_map map;
-
   region_offset cluster_offset = m_base_region->get_offset ();
   if (cluster_offset.symbolic_p ())
     return NULL;
   region_offset reg_offset = reg->get_offset ();
   if (reg_offset.symbolic_p ())
     return NULL;
+
+  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
+
+  /* We will a build the result map in two parts:
+     (a) result_map, holding the concrete keys from this cluster,
+
+     (b) default_map, holding the initial values for the region
+     (e.g. uninitialized, initializer values, or zero), unless this
+     cluster has been touched.
+
+     We will populate (a), and as we do, clobber (b), trimming and
+     splitting its bindings as necessary.
+     Finally, we will merge (b) into (a), giving a concrete map
+     that merges both the initial values and the bound values from
+     the binding_cluster.
+     Doing it this way reduces N for the O(N^2) intersection-finding,
+     perhaps we should have a spatial-organized data structure for
+     concrete keys, though.  */
+
+  binding_map result_map;
+  binding_map default_map;
+
+  /* Set up default values in default_map.  */
+  const svalue *default_sval;
+  if (m_touched)
+    default_sval = sval_mgr->get_or_create_unknown_svalue (reg->get_type ());
+  else
+    default_sval = sval_mgr->get_or_create_initial_value (reg);
+  const binding_key *default_key = binding_key::make (mgr, reg);
+  default_map.put (default_key, default_sval);
 
   for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
     {
@@ -1268,78 +1489,77 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
       if (const concrete_binding *concrete_key
 	  = key->dyn_cast_concrete_binding ())
 	{
-	  /* Skip bindings that are outside the bit range of REG.  */
-	  if (concrete_key->get_start_bit_offset ()
-	      < reg_offset.get_bit_offset ())
-	    continue;
+	  const bit_range &bound_range = concrete_key->get_bit_range ();
+
 	  bit_size_t reg_bit_size;
-	  if (reg->get_bit_size (&reg_bit_size))
-	    if (concrete_key->get_start_bit_offset ()
-	      >= reg_offset.get_bit_offset () + reg_bit_size)
+	  if (!reg->get_bit_size (&reg_bit_size))
+	    return NULL;
+
+	  bit_range reg_range (reg_offset.get_bit_offset (),
+			       reg_bit_size);
+
+	  /* Skip bindings that are outside the bit range of REG.  */
+	  if (!bound_range.intersects_p (reg_range))
 	    continue;
 
-	  /* Get offset of KEY relative to REG, rather than to
-	     the cluster.  */
-	  bit_offset_t relative_start
-	    = (concrete_key->get_start_bit_offset ()
-	       - reg_offset.get_bit_offset ());
-	  const concrete_binding *offset_concrete_key
-	    = mgr->get_concrete_binding (relative_start,
-					 concrete_key->get_size_in_bits (),
-					 key->get_kind ());
-	  map.put (offset_concrete_key, sval);
-	}
-      else
-	return NULL;
-    }
+	  /* We shouldn't have an exact match; that should have been
+	     handled already.  */
+	  gcc_assert (!(reg_range == bound_range));
 
-  if (map.elements () == 0)
-    return NULL;
-
-  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  return sval_mgr->get_or_create_compound_svalue (reg->get_type (), map);
-}
-
-
-/* Populate OUT with all bindings within this cluster that overlap REG.  */
-
-void
-binding_cluster::get_overlapping_bindings (store_manager *mgr,
-					   const region *reg,
-					   auto_vec<const binding_key *> *out)
-{
-  const binding_key *binding
-    = binding_key::make (mgr, reg, BK_direct);
-  for (map_t::iterator iter = m_map.begin ();
-       iter != m_map.end (); ++iter)
-    {
-      const binding_key *iter_key = (*iter).first;
-      if (const concrete_binding *ckey
-	    = binding->dyn_cast_concrete_binding ())
-	{
-	  if (const concrete_binding *iter_ckey
-	      = iter_key->dyn_cast_concrete_binding ())
+	  bit_range subrange (0, 0);
+	  if (reg_range.contains_p (bound_range, &subrange))
 	    {
-	      if (ckey->overlaps_p (*iter_ckey))
-		out->safe_push (iter_key);
+	      /* We have a bound range fully within REG.
+		 Add it to map, offsetting accordingly.  */
+
+	      /* Get offset of KEY relative to REG, rather than to
+		 the cluster.  */
+	      const concrete_binding *offset_concrete_key
+		= mgr->get_concrete_binding (subrange);
+	      result_map.put (offset_concrete_key, sval);
+
+	      /* Clobber default_map, removing/trimming/spliting where
+		 it overlaps with offset_concrete_key.  */
+	      default_map.remove_overlapping_bindings (mgr,
+						       offset_concrete_key,
+						       NULL);
+	    }
+	  else if (bound_range.contains_p (reg_range, &subrange))
+	    {
+	      /* REG is fully within the bound range, but
+		 is not equal to it; we're extracting a subvalue.  */
+	      return sval->extract_bit_range (reg->get_type (),
+					      subrange,
+					      mgr->get_svalue_manager ());
 	    }
 	  else
 	    {
-	      /* Assume overlap.  */
-	      out->safe_push (iter_key);
+	      /* REG and the bound range partially overlap.
+		 We don't handle this case yet.  */
+	      return NULL;
 	    }
 	}
       else
-	{
-	  /* Assume overlap.  */
-	  out->safe_push (iter_key);
-	}
+	/* Can't handle symbolic bindings.  */
+	return NULL;
     }
+
+  if (result_map.elements () == 0)
+    return NULL;
+
+  /* Merge any bindings from default_map into result_map.  */
+  for (auto iter : default_map)
+    {
+      const binding_key *key = iter.first;
+      const svalue *sval = iter.second;
+      result_map.put (key, sval);
+    }
+
+  return sval_mgr->get_or_create_compound_svalue (reg->get_type (), result_map);
 }
 
-/* Remove any bindings within this cluster that overlap REG,
-   but retain default bindings that overlap but aren't fully covered
-   by REG.
+/* Remove, truncate, and/or split any bindings within this map that
+   overlap REG.
    If UNCERTAINTY is non-NULL, use it to record any svalues that
    were removed, as being maybe-bound.  */
 
@@ -1348,26 +1568,9 @@ binding_cluster::remove_overlapping_bindings (store_manager *mgr,
 					      const region *reg,
 					      uncertainty_t *uncertainty)
 {
-  auto_vec<const binding_key *> bindings;
-  get_overlapping_bindings (mgr, reg, &bindings);
+  const binding_key *reg_binding = binding_key::make (mgr, reg);
 
-  unsigned i;
-  const binding_key *iter_binding;
-  FOR_EACH_VEC_ELT (bindings, i, iter_binding)
-    {
-      /* Don't remove default bindings, unless the default binding
-	 is fully covered by REG.  */
-      if (iter_binding->get_kind () == BK_default)
-	{
-	  const binding_key *reg_binding
-	    = binding_key::make (mgr, reg, BK_default);
-	  if (reg_binding != iter_binding)
-	    continue;
-	}
-      if (uncertainty)
-	uncertainty->on_maybe_bound_sval (m_map.get (iter_binding));
-      m_map.remove (iter_binding);
-    }
+  m_map.remove_overlapping_bindings (mgr, reg_binding, uncertainty);
 }
 
 /* Attempt to merge CLUSTER_A and CLUSTER_B into OUT_CLUSTER, using
@@ -1428,12 +1631,19 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
       const binding_key *key_b = (*iter_b).first;
       keys.add (key_b);
     }
+  int num_symbolic_keys = 0;
+  int num_concrete_keys = 0;
   for (hash_set<const binding_key *>::iterator iter = keys.begin ();
        iter != keys.end (); ++iter)
     {
       const binding_key *key = *iter;
       const svalue *sval_a = cluster_a->get_any_value (key);
       const svalue *sval_b = cluster_b->get_any_value (key);
+
+      if (key->symbolic_p ())
+	num_symbolic_keys++;
+      else
+	num_concrete_keys++;
 
       if (sval_a == sval_b)
 	{
@@ -1463,29 +1673,15 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
       out_cluster->m_map.put (key, unknown_sval);
     }
 
-  /* Handle the case where we get a default binding from one and a direct
-     binding from the other.  */
-  auto_vec<const concrete_binding *> duplicate_keys;
-  for (map_t::iterator iter = out_cluster->m_map.begin ();
-       iter != out_cluster->m_map.end (); ++iter)
+  /* We can only have at most one symbolic key per cluster,
+     and if we do, we can't have any concrete keys.
+     If this happens, mark the cluster as touched, with no keys.  */
+  if (num_symbolic_keys >= 2
+      || (num_concrete_keys > 0 && num_symbolic_keys > 0))
     {
-      const concrete_binding *ckey
-	= (*iter).first->dyn_cast_concrete_binding ();
-      if (!ckey)
-	continue;
-      if (ckey->get_kind () != BK_direct)
-	continue;
-      const concrete_binding *def_ckey
-	= mgr->get_concrete_binding (ckey->get_start_bit_offset (),
-				     ckey->get_size_in_bits (),
-				     BK_default);
-      if (out_cluster->m_map.get (def_ckey))
-	duplicate_keys.safe_push (def_ckey);
+      out_cluster->m_touched = true;
+      out_cluster->m_map.empty ();
     }
-  unsigned i;
-  const concrete_binding *key;
-  FOR_EACH_VEC_ELT (duplicate_keys, i, key)
-    out_cluster->m_map.remove (key);
 
   /* We don't handle other kinds of overlaps yet.  */
 
@@ -1558,7 +1754,7 @@ binding_cluster::on_unknown_fncall (const gcall *call,
       const svalue *sval
 	= mgr->get_svalue_manager ()->get_or_create_conjured_svalue
 	    (m_base_region->get_type (), call, m_base_region);
-      bind (mgr, m_base_region, sval, BK_direct);
+      bind (mgr, m_base_region, sval);
 
       m_touched = true;
     }
@@ -1665,7 +1861,7 @@ binding_cluster::maybe_get_simple_value (store_manager *mgr) const
   if (m_map.elements () != 1)
     return NULL;
 
-  const binding_key *key = binding_key::make (mgr, m_base_region, BK_direct);
+  const binding_key *key = binding_key::make (mgr, m_base_region);
   return get_any_value (key);
 }
 
@@ -1675,10 +1871,9 @@ binding_cluster::maybe_get_simple_value (store_manager *mgr) const
 
 const concrete_binding *
 store_manager::get_concrete_binding (bit_offset_t start_bit_offset,
-				     bit_offset_t size_in_bits,
-				     enum binding_kind kind)
+				     bit_offset_t size_in_bits)
 {
-  concrete_binding b (start_bit_offset, size_in_bits, kind);
+  concrete_binding b (start_bit_offset, size_in_bits);
   if (concrete_binding *existing = m_concrete_binding_key_mgr.get (b))
     return existing;
 
@@ -1688,10 +1883,9 @@ store_manager::get_concrete_binding (bit_offset_t start_bit_offset,
 }
 
 const symbolic_binding *
-store_manager::get_symbolic_binding (const region *reg,
-				     enum binding_kind kind)
+store_manager::get_symbolic_binding (const region *reg)
 {
-  symbolic_binding b (reg, kind);
+  symbolic_binding b (reg);
   if (symbolic_binding *existing = m_symbolic_binding_key_mgr.get (b))
     return existing;
 
@@ -1952,6 +2146,15 @@ store::dump (bool simple) const
   pp_flush (&pp);
 }
 
+/* Assert that this object is valid.  */
+
+void
+store::validate () const
+{
+  for (auto iter : m_cluster_map)
+    iter.second->validate ();
+}
+
 /* Return a new json::object of the form
    {PARENT_REGION_DESC: {BASE_REGION_DESC: object for binding_map,
 			 ... for each cluster within parent region},
@@ -2027,7 +2230,7 @@ store::get_any_binding (store_manager *mgr, const region *reg) const
 
 void
 store::set_value (store_manager *mgr, const region *lhs_reg,
-		  const svalue *rhs_sval, enum binding_kind kind,
+		  const svalue *rhs_sval,
 		  uncertainty_t *uncertainty)
 {
   remove_overlapping_bindings (mgr, lhs_reg);
@@ -2054,7 +2257,7 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
   else
     {
       lhs_cluster = get_or_create_cluster (lhs_base_reg);
-      lhs_cluster->bind (mgr, lhs_reg, rhs_sval, kind);
+      lhs_cluster->bind (mgr, lhs_reg, rhs_sval);
     }
 
   /* Bindings to a cluster can affect other clusters if a symbolic
@@ -2209,16 +2412,26 @@ store::purge_region (store_manager *mgr, const region *reg)
     }
 }
 
-/* Zero-fill REG.  */
+/* Fill REG with SVAL.  */
 
 void
-store::zero_fill_region (store_manager *mgr, const region *reg)
+store::fill_region (store_manager *mgr, const region *reg, const svalue *sval)
 {
   const region *base_reg = reg->get_base_region ();
   if (base_reg->symbolic_for_unknown_ptr_p ())
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
-  cluster->zero_fill_region (mgr, reg);
+  cluster->fill_region (mgr, reg, sval);
+}
+
+/* Zero-fill REG.  */
+
+void
+store::zero_fill_region (store_manager *mgr, const region *reg)
+{
+  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
+  const svalue *zero_sval = sval_mgr->get_or_create_int_cst (char_type_node, 0);
+  fill_region (mgr, reg, zero_sval);
 }
 
 /* Mark REG as having unknown content.  */
@@ -2740,26 +2953,18 @@ test_binding_key_overlap ()
   store_manager mgr (NULL);
 
   /* Various 8-bit bindings.  */
-  const concrete_binding *cb_0_7
-    = mgr.get_concrete_binding (0, 8, BK_direct);
-  const concrete_binding *cb_8_15
-    = mgr.get_concrete_binding (8, 8, BK_direct);
-  const concrete_binding *cb_16_23
-    = mgr.get_concrete_binding (16, 8, BK_direct);
-  const concrete_binding *cb_24_31
-    = mgr.get_concrete_binding (24, 8, BK_direct);
+  const concrete_binding *cb_0_7 = mgr.get_concrete_binding (0, 8);
+  const concrete_binding *cb_8_15 = mgr.get_concrete_binding (8, 8);
+  const concrete_binding *cb_16_23 = mgr.get_concrete_binding (16, 8);
+  const concrete_binding *cb_24_31 = mgr.get_concrete_binding (24, 8);
 
   /* 16-bit bindings.  */
-  const concrete_binding *cb_0_15
-    = mgr.get_concrete_binding (0, 16, BK_direct);
-  const concrete_binding *cb_8_23
-    = mgr.get_concrete_binding (8, 16, BK_direct);
-  const concrete_binding *cb_16_31
-    = mgr.get_concrete_binding (16, 16, BK_direct);
+  const concrete_binding *cb_0_15 = mgr.get_concrete_binding (0, 16);
+  const concrete_binding *cb_8_23 = mgr.get_concrete_binding (8, 16);
+  const concrete_binding *cb_16_31 = mgr.get_concrete_binding (16, 16);
 
   /* 32-bit binding.  */
-  const concrete_binding *cb_0_31
-    = mgr.get_concrete_binding (0, 32, BK_direct);
+  const concrete_binding *cb_0_31 = mgr.get_concrete_binding (0, 32);
 
   /* Everything should self-overlap.  */
   ASSERT_OVERLAP (cb_0_7, cb_0_7);

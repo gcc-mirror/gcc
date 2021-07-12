@@ -2079,6 +2079,9 @@ package body Errout is
 
    procedure Output_JSON_Message (Error_Id : Error_Msg_Id) is
 
+      function Is_Continuation (E : Error_Msg_Id) return Boolean;
+      --  Return True if E is a continuation message.
+
       procedure Write_JSON_Escaped_String (Str : String_Ptr);
       --  Write each character of Str, taking care of preceding each quote and
       --  backslash with a backslash. Note that this escaping differs from what
@@ -2098,6 +2101,15 @@ package body Errout is
       --  whose value is the JSON location of Span.Ptr. If Span.First and
       --  Span.Last are different from Span.Ptr, they will be printed as JSON
       --  locations under the names "start" and "finish".
+
+      -----------------------
+      --  Is_Continuation  --
+      -----------------------
+
+      function Is_Continuation (E : Error_Msg_Id) return Boolean is
+      begin
+         return E <= Last_Error_Msg and then Errors.Table (E).Msg_Cont;
+      end Is_Continuation;
 
       -------------------------------
       -- Write_JSON_Escaped_String --
@@ -2155,6 +2167,10 @@ package body Errout is
 
       E : Error_Msg_Id := Error_Id;
 
+      Print_Continuations : constant Boolean := not Is_Continuation (E);
+      --  Do not print continuations messages as children of the current
+      --  message if the current message is a continuation message.
+
    --  Start of processing for Output_JSON_Message
 
    begin
@@ -2186,18 +2202,27 @@ package body Errout is
 
       Write_Str ("],""message"":""");
       Write_JSON_Escaped_String (Errors.Table (E).Text);
-
-      --  Print message continuations if present
+      Write_Str ("""");
 
       E := E + 1;
 
-      while E <= Last_Error_Msg and then Errors.Table (E).Msg_Cont loop
-         Write_Str (", ");
-         Write_JSON_Escaped_String (Errors.Table (E).Text);
-         E := E + 1;
-      end loop;
+      if Print_Continuations and then Is_Continuation (E) then
 
-      Write_Str ("""}");
+         Write_Str (",""children"": [");
+         Output_JSON_Message (E);
+         E := E + 1;
+
+         while Is_Continuation (E) loop
+            Write_Str (", ");
+            Output_JSON_Message (E);
+            E := E + 1;
+         end loop;
+
+         Write_Str ("]");
+
+      end if;
+
+      Write_Str ("}");
    end Output_JSON_Message;
 
    ---------------------

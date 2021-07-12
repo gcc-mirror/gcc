@@ -56,7 +56,6 @@ package body Sinfo.CN is
    procedure Change_Conversion_To_Unchecked (N : Node_Id) is
    begin
       Set_Do_Overflow_Check (N, False);
-      Set_Do_Tag_Check (N, False);
       Set_Do_Length_Check (N, False);
       Mutate_Nkind (N, N_Unchecked_Type_Conversion);
    end Change_Conversion_To_Unchecked;

@@ -2,8 +2,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512f -mavx512dq" } */
 /* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } }
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 5 } }  */
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to16\\\}" 5 } }  */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 2 { target { ! ia32 } } } }  */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 5 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to16\\\}" 2 } }  */
+/* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %zmm\[0-9\]+" 3 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastq\[\\t \]+%r\[^\n\]*, %zmm\[0-9\]+" 3 { target { ! ia32 } } } } */
 
 typedef int v16si  __attribute__ ((vector_size (64)));
 typedef long long v8di  __attribute__ ((vector_size (64)));

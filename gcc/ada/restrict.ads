@@ -114,6 +114,7 @@ package Restrict is
       No_Default_Initialization          => True,
       No_Direct_Boolean_Operators        => True,
       No_Dispatching_Calls               => True,
+      No_Dynamic_Accessibility_Checks    => True,
       No_Dynamic_Attachment              => True,
       No_Elaboration_Code                => True,
       No_Enumeration_Maps                => True,
@@ -376,6 +377,15 @@ package Restrict is
    --  Used in checking No_Use_Of_Entity argument of pragma Restrictions or
    --  pragma Restrictions_Warning, or attribute Restriction_Set. Returns
    --  True if N has the proper form for an entity name, False otherwise.
+
+   function No_Dynamic_Accessibility_Checks_Enabled
+     (N : Node_Id) return Boolean;
+   --  Test to see if the current restrictions settings specify that
+   --  No_Dynamic_Accessibility_Checks is activated.
+
+   --  N is currently unused, but is reserved for future use and debugging
+   --  purposes to provide more context on a node for which an accessibility
+   --  check is being performed or generated (e.g. is N in a predefined unit).
 
    function No_Exception_Handlers_Set return Boolean;
    --  Test to see if current restrictions settings specify that no exception

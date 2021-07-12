@@ -27,7 +27,7 @@
 --  the semantic restrictions required for the categorization pragmas:
 --
 --    Preelaborate
---    Pure,
+--    Pure
 --    Remote_Call_Interface
 --    Remote_Types
 --    Shared_Passive

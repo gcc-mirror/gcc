@@ -1108,18 +1108,17 @@ h8300_and_costs (rtx x)
 static int
 h8300_shift_costs (rtx x)
 {
-  rtx operands[4];
+  rtx operands[3];
 
   if (GET_MODE (x) != QImode
       && GET_MODE (x) != HImode
       && GET_MODE (x) != SImode)
     return 100;
 
-  operands[0] = NULL;
+  operands[0] = gen_rtx_REG (GET_MODE (x), 0);
   operands[1] = NULL;
   operands[2] = XEXP (x, 1);
-  operands[3] = x;
-  return compute_a_shift_length (operands) / 2;
+  return compute_a_shift_length (operands, GET_CODE (x)) / 2;
 }
 
 /* Worker function for TARGET_RTX_COSTS.  */
@@ -3759,13 +3758,13 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
-	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%s4,%t4\n\tmov.b\t%t0,%s4\n\tmov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f4,%e0";
+	      info->special = "mov.w\t%e0,%f3\n\tmov.b\t%s3,%t3\n\tmov.b\t%t0,%s3\n\tmov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f3,%e0";
 	      goto end;
 	    case SHIFT_LSHIFTRT:
-	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\textu.w\t%f4\n\tmov.w\t%f4,%e0";
+	      info->special = "mov.w\t%e0,%f3\n\tmov.b\t%t0,%s0\n\tmov.b\t%s3,%t0\n\tmov.b\t%t3,%s3\n\textu.w\t%f3\n\tmov.w\t%f3,%e0";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      info->special = "mov.w\t%e0,%f4\n\tmov.b\t%t0,%s0\n\tmov.b\t%s4,%t0\n\tmov.b\t%t4,%s4\n\texts.w\t%f4\n\tmov.w\t%f4,%e0";
+	      info->special = "mov.w\t%e0,%f3\n\tmov.b\t%t0,%s0\n\tmov.b\t%s3,%t0\n\tmov.b\t%t3,%s3\n\texts.w\t%f3\n\tmov.w\t%f3,%e0";
 	      goto end;
 	    }
 	}
@@ -3985,12 +3984,10 @@ h8300_shift_needs_scratch_p (int count, machine_mode mode, enum rtx_code type)
 /* Output the assembler code for doing shifts.  */
 
 const char *
-output_a_shift (rtx *operands)
+output_a_shift (rtx operands[4], rtx_code code)
 {
   static int loopend_lab;
-  rtx shift = operands[3];
-  machine_mode mode = GET_MODE (shift);
-  enum rtx_code code = GET_CODE (shift);
+  machine_mode mode = GET_MODE (operands[0]);
   enum shift_type shift_type;
   enum shift_mode shift_mode;
   struct shift_info info;
@@ -4114,10 +4111,10 @@ output_a_shift (rtx *operands)
       if (info.shift2 != NULL)
 	{
 	  fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n / 2,
-		   names_big[REGNO (operands[4])]);
+		   names_big[REGNO (operands[3])]);
 	  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
 	  output_asm_insn (info.shift2, operands);
-	  output_asm_insn ("add	#0xff,%X4", operands);
+	  output_asm_insn ("add	#0xff,%X3", operands);
 	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
 	  if (n % 2)
 	    output_asm_insn (info.shift1, operands);
@@ -4125,10 +4122,10 @@ output_a_shift (rtx *operands)
       else
 	{
 	  fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n,
-		   names_big[REGNO (operands[4])]);
+		   names_big[REGNO (operands[3])]);
 	  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
 	  output_asm_insn (info.shift1, operands);
-	  output_asm_insn ("add	#0xff,%X4", operands);
+	  output_asm_insn ("add	#0xff,%X3", operands);
 	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
 	}
       return "";
@@ -4155,11 +4152,9 @@ h8300_asm_insn_count (const char *templ)
 /* Compute the length of a shift insn.  */
 
 unsigned int
-compute_a_shift_length (rtx *operands)
+compute_a_shift_length (rtx operands[3], rtx_code code)
 {
-  rtx shift = operands[3];
-  machine_mode mode = GET_MODE (shift);
-  enum rtx_code code = GET_CODE (shift);
+  enum machine_mode mode = GET_MODE (operands[0]);
   enum shift_type shift_type;
   enum shift_mode shift_mode;
   struct shift_info info;
@@ -4302,11 +4297,9 @@ compute_a_shift_length (rtx *operands)
 /* Compute which flag bits are valid after a shift insn.  */
 
 int
-compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
+compute_a_shift_cc (rtx operands[3], rtx_code code)
 {
-  rtx shift = operands[3];
-  machine_mode mode = GET_MODE (shift);
-  enum rtx_code code = GET_CODE (shift);
+  machine_mode mode = GET_MODE (operands[0]);
   enum shift_type shift_type;
   enum shift_mode shift_mode;
   struct shift_info info;
@@ -4363,16 +4356,18 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
     {
     case SHIFT_SPECIAL:
       if (info.remainder == 0)
-	return info.cc_special;
+	return (info.cc_special == OLD_CC_SET_ZN
+		|| info.cc_special == OLD_CC_SET_ZNV);
 
       /* Fall through.  */
 
     case SHIFT_INLINE:
-      return info.cc_inline;
+      return (info.cc_inline == OLD_CC_SET_ZN
+	      || info.cc_inline == OLD_CC_SET_ZNV);
       
     case SHIFT_ROT_AND:
       /* This case always ends with an and instruction.  */
-      return OLD_CC_SET_ZNV;
+      return true;
       
     case SHIFT_LOOP:
       /* A loop to shift by a "large" constant value.
@@ -4380,9 +4375,11 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
       if (info.shift2 != NULL)
 	{
 	  if (n % 2)
-	    return info.cc_inline;
+	    return (info.cc_inline == OLD_CC_SET_ZN
+		    || info.cc_inline == OLD_CC_SET_ZNV);
+		
 	}
-      return OLD_CC_CLOBBER;
+      return false;
       
     default:
       gcc_unreachable ();

@@ -131,11 +131,6 @@ package body Exp_Ch7 is
    -- Transient Blocks and Finalization Management --
    --------------------------------------------------
 
-   function Find_Transient_Context (N : Node_Id) return Node_Id;
-   --  Locate a suitable context for arbitrary node N which may need to be
-   --  serviced by a transient scope. Return Empty if no suitable context is
-   --  available.
-
    procedure Insert_Actions_In_Scope_Around
      (N         : Node_Id;
       Clean     : Boolean;
@@ -154,9 +149,6 @@ package body Exp_Ch7 is
    --  the current scope and the only handled statement is Action. If Action
    --  involves controlled objects or secondary stack usage, the corresponding
    --  cleanup actions are performed at the end of the block.
-
-   procedure Set_Node_To_Be_Wrapped (N : Node_Id);
-   --  Set the field Node_To_Be_Wrapped of the current scope
 
    procedure Store_Actions_In_Scope (AK : Scope_Action_Kind; L : List_Id);
    --  Shared processing for Store_xxx_Actions_In_Scope
@@ -488,7 +480,7 @@ package body Exp_Ch7 is
       Skip_Self : Boolean := False) return Node_Id;
    --  Subsidiary to Make_Adjust_Call and Make_Final_Call. Given the entity of
    --  routine [Deep_]Adjust or [Deep_]Finalize and an object parameter, create
-   --  an adjust or finalization call. Wnen flag Skip_Self is set, the related
+   --  an adjust or finalization call. When flag Skip_Self is set, the related
    --  action has an effect on the components only (if any).
 
    function Make_Deep_Proc
@@ -5118,15 +5110,6 @@ package body Exp_Ch7 is
       end if;
    end Convert_View;
 
-   -------------------------------
-   -- CW_Or_Has_Controlled_Part --
-   -------------------------------
-
-   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean is
-   begin
-      return Is_Class_Wide_Type (T) or else Needs_Finalization (T);
-   end CW_Or_Has_Controlled_Part;
-
    ------------------------
    -- Enclosing_Function --
    ------------------------
@@ -5160,37 +5143,47 @@ package body Exp_Ch7 is
      (N                : Node_Id;
       Manage_Sec_Stack : Boolean)
    is
-      procedure Create_Transient_Scope (Constr : Node_Id);
-      --  Place a new scope on the scope stack in order to service construct
-      --  Constr. The new scope may also manage the secondary stack.
+      function Is_Package_Or_Subprogram (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary Id denotes a package or subprogram [body]
+
+      function Find_Enclosing_Transient_Scope return Entity_Id;
+      --  Examine the scope stack looking for the nearest enclosing transient
+      --  scope within the innermost enclosing package or subprogram. Return
+      --  Empty if no such scope exists.
+
+      function Find_Transient_Context (N : Node_Id) return Node_Id;
+      --  Locate a suitable context for arbitrary node N which may need to be
+      --  serviced by a transient scope. Return Empty if no suitable context
+      --  is available.
 
       procedure Delegate_Sec_Stack_Management;
       --  Move the management of the secondary stack to the nearest enclosing
       --  suitable scope.
 
-      function Find_Enclosing_Transient_Scope return Entity_Id;
-      --  Examine the scope stack looking for the nearest enclosing transient
-      --  scope. Return Empty if no such scope exists.
-
-      function Is_Package_Or_Subprogram (Id : Entity_Id) return Boolean;
-      --  Determine whether arbitrary Id denotes a package or subprogram [body]
+      procedure Create_Transient_Scope (Context : Node_Id);
+      --  Place a new scope on the scope stack in order to service construct
+      --  Context. Context is the node found by Find_Transient_Context. The
+      --  new scope may also manage the secondary stack.
 
       ----------------------------
       -- Create_Transient_Scope --
       ----------------------------
 
-      procedure Create_Transient_Scope (Constr : Node_Id) is
+      procedure Create_Transient_Scope (Context : Node_Id) is
          Loc : constant Source_Ptr := Sloc (N);
 
          Iter_Loop  : Entity_Id;
-         Trans_Scop : Entity_Id;
+         Trans_Scop : constant Entity_Id :=
+           New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
 
       begin
-         Trans_Scop := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
          Set_Etype (Trans_Scop, Standard_Void_Type);
 
+         --  Push a new scope, and set its Node_To_Be_Wrapped and Is_Transient
+         --  fields.
+
          Push_Scope (Trans_Scop);
-         Set_Node_To_Be_Wrapped (Constr);
+         Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped := Context;
          Set_Scope_Is_Transient;
 
          --  The transient scope must also manage the secondary stack
@@ -5241,37 +5234,34 @@ package body Exp_Ch7 is
       -----------------------------------
 
       procedure Delegate_Sec_Stack_Management is
-         Scop_Id  : Entity_Id;
-         Scop_Rec : Scope_Stack_Entry;
-
       begin
          for Index in reverse Scope_Stack.First .. Scope_Stack.Last loop
-            Scop_Rec := Scope_Stack.Table (Index);
-            Scop_Id  := Scop_Rec.Entity;
+            declare
+               Scope : Scope_Stack_Entry renames Scope_Stack.Table (Index);
+            begin
+               --  Prevent the search from going too far or within the scope
+               --  space of another unit.
 
-            --  Prevent the search from going too far or within the scope space
-            --  of another unit.
+               if Scope.Entity = Standard_Standard then
+                  return;
 
-            if Scop_Id = Standard_Standard then
-               return;
+               --  No transient scope should be encountered during the
+               --  traversal because Establish_Transient_Scope should have
+               --  already handled this case.
 
-            --  No transient scope should be encountered during the traversal
-            --  because Establish_Transient_Scope should have already handled
-            --  this case.
+               elsif Scope.Is_Transient then
+                  raise Program_Error;
 
-            elsif Scop_Rec.Is_Transient then
-               pragma Assert (False);
-               return;
+               --  The construct that requires secondary stack management is
+               --  always enclosed by a package or subprogram scope.
 
-            --  The construct which requires secondary stack management is
-            --  always enclosed by a package or subprogram scope.
+               elsif Is_Package_Or_Subprogram (Scope.Entity) then
+                  Set_Uses_Sec_Stack (Scope.Entity);
+                  Check_Restriction (No_Secondary_Stack, N);
 
-            elsif Is_Package_Or_Subprogram (Scop_Id) then
-               Set_Uses_Sec_Stack (Scop_Id);
-               Check_Restriction (No_Secondary_Stack, N);
-
-               return;
-            end if;
+                  return;
+               end if;
+            end;
          end loop;
 
          --  At this point no suitable scope was found. This should never occur
@@ -5286,29 +5276,197 @@ package body Exp_Ch7 is
       ------------------------------------
 
       function Find_Enclosing_Transient_Scope return Entity_Id is
-         Scop_Id   : Entity_Id;
-         Scop_Rec  : Scope_Stack_Entry;
-
       begin
          for Index in reverse Scope_Stack.First .. Scope_Stack.Last loop
-            Scop_Rec := Scope_Stack.Table (Index);
-            Scop_Id  := Scop_Rec.Entity;
+            declare
+               Scope : Scope_Stack_Entry renames Scope_Stack.Table (Index);
+            begin
+               --  Prevent the search from going too far or within the scope
+               --  space of another unit.
 
-            --  Prevent the search from going too far or within the scope space
-            --  of another unit.
+               if Scope.Entity = Standard_Standard
+                 or else Is_Package_Or_Subprogram (Scope.Entity)
+               then
+                  exit;
 
-            if Scop_Id = Standard_Standard
-              or else Is_Package_Or_Subprogram (Scop_Id)
-            then
-               exit;
-
-            elsif Scop_Rec.Is_Transient then
-               return Scop_Id;
-            end if;
+               elsif Scope.Is_Transient then
+                  return Scope.Entity;
+               end if;
+            end;
          end loop;
 
          return Empty;
       end Find_Enclosing_Transient_Scope;
+
+      ----------------------------
+      -- Find_Transient_Context --
+      ----------------------------
+
+      function Find_Transient_Context (N : Node_Id) return Node_Id is
+         Curr : Node_Id := N;
+         Prev : Node_Id := Empty;
+
+      begin
+         while Present (Curr) loop
+            case Nkind (Curr) is
+
+               --  Declarations
+
+               --  Declarations act as a boundary for a transient scope even if
+               --  they are not wrapped, see Wrap_Transient_Declaration.
+
+               when N_Object_Declaration
+                  | N_Object_Renaming_Declaration
+                  | N_Subtype_Declaration
+               =>
+                  return Curr;
+
+               --  Statements
+
+               --  Statements and statement-like constructs act as a boundary
+               --  for a transient scope.
+
+               when N_Accept_Alternative
+                  | N_Attribute_Definition_Clause
+                  | N_Case_Statement
+                  | N_Case_Statement_Alternative
+                  | N_Code_Statement
+                  | N_Delay_Alternative
+                  | N_Delay_Until_Statement
+                  | N_Delay_Relative_Statement
+                  | N_Discriminant_Association
+                  | N_Elsif_Part
+                  | N_Entry_Body_Formal_Part
+                  | N_Exit_Statement
+                  | N_If_Statement
+                  | N_Iteration_Scheme
+                  | N_Terminate_Alternative
+               =>
+                  pragma Assert (Present (Prev));
+                  return Prev;
+
+               when N_Assignment_Statement =>
+                  return Curr;
+
+               when N_Entry_Call_Statement
+                  | N_Procedure_Call_Statement
+               =>
+                  --  When an entry or procedure call acts as the alternative
+                  --  of a conditional or timed entry call, the proper context
+                  --  is that of the alternative.
+
+                  if Nkind (Parent (Curr)) = N_Entry_Call_Alternative
+                    and then Nkind (Parent (Parent (Curr))) in
+                               N_Conditional_Entry_Call | N_Timed_Entry_Call
+                  then
+                     return Parent (Parent (Curr));
+
+                  --  General case for entry or procedure calls
+
+                  else
+                     return Curr;
+                  end if;
+
+               when N_Pragma =>
+
+                  --  Pragma Check is not a valid transient context in
+                  --  GNATprove mode because the pragma must remain unchanged.
+
+                  if GNATprove_Mode
+                    and then Get_Pragma_Id (Curr) = Pragma_Check
+                  then
+                     return Empty;
+
+                  --  General case for pragmas
+
+                  else
+                     return Curr;
+                  end if;
+
+               when N_Raise_Statement =>
+                  return Curr;
+
+               when N_Simple_Return_Statement =>
+
+                  --  A return statement is not a valid transient context when
+                  --  the function itself requires transient scope management
+                  --  because the result will be reclaimed too early.
+
+                  if Requires_Transient_Scope (Etype
+                       (Return_Applies_To (Return_Statement_Entity (Curr))))
+                  then
+                     return Empty;
+
+                  --  General case for return statements
+
+                  else
+                     return Curr;
+                  end if;
+
+               --  Special
+
+               when N_Attribute_Reference =>
+                  if Is_Procedure_Attribute_Name (Attribute_Name (Curr)) then
+                     return Curr;
+                  end if;
+
+               --  An Ada 2012 iterator specification is not a valid context
+               --  because Analyze_Iterator_Specification already employs
+               --  special processing for it.
+
+               when N_Iterator_Specification =>
+                  return Empty;
+
+               when N_Loop_Parameter_Specification =>
+
+                  --  An iteration scheme is not a valid context because
+                  --  routine Analyze_Iteration_Scheme already employs
+                  --  special processing.
+
+                  if Nkind (Parent (Curr)) = N_Iteration_Scheme then
+                     return Empty;
+                  else
+                     return Parent (Curr);
+                  end if;
+
+               --  Termination
+
+               --  The following nodes represent "dummy contexts" which do not
+               --  need to be wrapped.
+
+               when N_Component_Declaration
+                  | N_Discriminant_Specification
+                  | N_Parameter_Specification
+               =>
+                  return Empty;
+
+               --  If the traversal leaves a scope without having been able to
+               --  find a construct to wrap, something is going wrong, but this
+               --  can happen in error situations that are not detected yet
+               --  (such as a dynamic string in a pragma Export).
+
+               when N_Block_Statement
+                  | N_Entry_Body
+                  | N_Package_Body
+                  | N_Package_Declaration
+                  | N_Protected_Body
+                  | N_Subprogram_Body
+                  | N_Task_Body
+               =>
+                  return Empty;
+
+               --  Default
+
+               when others =>
+                  null;
+            end case;
+
+            Prev := Curr;
+            Curr := Parent (Curr);
+         end loop;
+
+         return Empty;
+      end Find_Transient_Context;
 
       ------------------------------
       -- Is_Package_Or_Subprogram --
@@ -5332,8 +5490,8 @@ package body Exp_Ch7 is
    --  Start of processing for Establish_Transient_Scope
 
    begin
-      --  Do not create a new transient scope if there is an existing transient
-      --  scope on the stack.
+      --  Do not create a new transient scope if there is already an enclosing
+      --  transient scope within the innermost enclosing package or subprogram.
 
       if Present (Trans_Id) then
 
@@ -5347,9 +5505,8 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      --  At this point it is known that the scope stack is free of transient
-      --  scopes. Locate the proper construct which must be serviced by a new
-      --  transient scope.
+      --  Find the construct that must be serviced by a new transient scope, if
+      --  it exists.
 
       Context := Find_Transient_Context (N);
 
@@ -5958,208 +6115,6 @@ package body Exp_Ch7 is
          Check_Unnesting_In_Decls_Or_Stmts (Private_Declarations (Spec));
       end if;
    end Expand_N_Package_Declaration;
-
-   ----------------------------
-   -- Find_Transient_Context --
-   ----------------------------
-
-   function Find_Transient_Context (N : Node_Id) return Node_Id is
-      Curr : Node_Id;
-      Prev : Node_Id;
-
-   begin
-      Curr := N;
-      Prev := Empty;
-      while Present (Curr) loop
-         case Nkind (Curr) is
-
-            --  Declarations
-
-            --  Declarations act as a boundary for a transient scope even if
-            --  they are not wrapped, see Wrap_Transient_Declaration.
-
-            when N_Object_Declaration
-               | N_Object_Renaming_Declaration
-               | N_Subtype_Declaration
-            =>
-               return Curr;
-
-            --  Statements
-
-            --  Statements and statement-like constructs act as a boundary for
-            --  a transient scope.
-
-            when N_Accept_Alternative
-               | N_Attribute_Definition_Clause
-               | N_Case_Statement
-               | N_Case_Statement_Alternative
-               | N_Code_Statement
-               | N_Delay_Alternative
-               | N_Delay_Until_Statement
-               | N_Delay_Relative_Statement
-               | N_Discriminant_Association
-               | N_Elsif_Part
-               | N_Entry_Body_Formal_Part
-               | N_Exit_Statement
-               | N_If_Statement
-               | N_Iteration_Scheme
-               | N_Terminate_Alternative
-            =>
-               pragma Assert (Present (Prev));
-               return Prev;
-
-            when N_Assignment_Statement =>
-               return Curr;
-
-            when N_Entry_Call_Statement
-               | N_Procedure_Call_Statement
-            =>
-               --  When an entry or procedure call acts as the alternative of a
-               --  conditional or timed entry call, the proper context is that
-               --  of the alternative.
-
-               if Nkind (Parent (Curr)) = N_Entry_Call_Alternative
-                 and then Nkind (Parent (Parent (Curr))) in
-                            N_Conditional_Entry_Call | N_Timed_Entry_Call
-               then
-                  return Parent (Parent (Curr));
-
-               --  General case for entry or procedure calls
-
-               else
-                  return Curr;
-               end if;
-
-            when N_Pragma =>
-
-               --  Pragma Check is not a valid transient context in GNATprove
-               --  mode because the pragma must remain unchanged.
-
-               if GNATprove_Mode
-                 and then Get_Pragma_Id (Curr) = Pragma_Check
-               then
-                  return Empty;
-
-               --  General case for pragmas
-
-               else
-                  return Curr;
-               end if;
-
-            when N_Raise_Statement =>
-               return Curr;
-
-            when N_Simple_Return_Statement =>
-
-               --  A return statement is not a valid transient context when the
-               --  function itself requires transient scope management because
-               --  the result will be reclaimed too early.
-
-               if Requires_Transient_Scope (Etype
-                    (Return_Applies_To (Return_Statement_Entity (Curr))))
-               then
-                  return Empty;
-
-               --  General case for return statements
-
-               else
-                  return Curr;
-               end if;
-
-            --  Special
-
-            when N_Attribute_Reference =>
-               if Is_Procedure_Attribute_Name (Attribute_Name (Curr)) then
-                  return Curr;
-               end if;
-
-            --  An Ada 2012 iterator specification is not a valid context
-            --  because Analyze_Iterator_Specification already employs special
-            --  processing for it.
-
-            when N_Iterator_Specification =>
-               return Empty;
-
-            when N_Loop_Parameter_Specification =>
-
-               --  An iteration scheme is not a valid context because routine
-               --  Analyze_Iteration_Scheme already employs special processing.
-
-               if Nkind (Parent (Curr)) = N_Iteration_Scheme then
-                  return Empty;
-               else
-                  return Parent (Curr);
-               end if;
-
-            --  Termination
-
-            --  The following nodes represent "dummy contexts" which do not
-            --  need to be wrapped.
-
-            when N_Component_Declaration
-               | N_Discriminant_Specification
-               | N_Parameter_Specification
-            =>
-               return Empty;
-
-            --  If the traversal leaves a scope without having been able to
-            --  find a construct to wrap, something is going wrong, but this
-            --  can happen in error situations that are not detected yet (such
-            --  as a dynamic string in a pragma Export).
-
-            when N_Block_Statement
-               | N_Entry_Body
-               | N_Package_Body
-               | N_Package_Declaration
-               | N_Protected_Body
-               | N_Subprogram_Body
-               | N_Task_Body
-            =>
-               return Empty;
-
-            --  Default
-
-            when others =>
-               null;
-         end case;
-
-         Prev := Curr;
-         Curr := Parent (Curr);
-      end loop;
-
-      return Empty;
-   end Find_Transient_Context;
-
-   ----------------------------------
-   -- Has_New_Controlled_Component --
-   ----------------------------------
-
-   function Has_New_Controlled_Component (E : Entity_Id) return Boolean is
-      Comp : Entity_Id;
-
-   begin
-      if not Is_Tagged_Type (E) then
-         return Has_Controlled_Component (E);
-      elsif not Is_Derived_Type (E) then
-         return Has_Controlled_Component (E);
-      end if;
-
-      Comp := First_Component (E);
-      while Present (Comp) loop
-         if Chars (Comp) = Name_uParent then
-            null;
-
-         elsif Scope (Original_Record_Component (Comp)) = E
-           and then Needs_Finalization (Etype (Comp))
-         then
-            return True;
-         end if;
-
-         Next_Component (Comp);
-      end loop;
-
-      return False;
-   end Has_New_Controlled_Component;
 
    ---------------------------------
    -- Has_Simple_Protected_Object --
@@ -8171,7 +8126,7 @@ package body Exp_Ch7 is
          --       end if;
          --       ...
 
-         --  When Deep_Adjust is invokes for field _parent, a value of False is
+         --  When Deep_Adjust is invoked for field _parent, a value of False is
          --  provided for the flag:
 
          --    Deep_Adjust (Obj._parent, False);
@@ -9389,7 +9344,7 @@ package body Exp_Ch7 is
             Dope_Id : Entity_Id;
 
          begin
-            --  Ensure that Ptr_Typ a thin pointer, generate:
+            --  Ensure that Ptr_Typ is a thin pointer; generate:
             --    for Ptr_Typ'Size use System.Address'Size;
 
             Append_To (Decls,
@@ -9929,15 +9884,6 @@ package body Exp_Ch7 is
    begin
       return Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped;
    end Node_To_Be_Wrapped;
-
-   ----------------------------
-   -- Set_Node_To_Be_Wrapped --
-   ----------------------------
-
-   procedure Set_Node_To_Be_Wrapped (N : Node_Id) is
-   begin
-      Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped := N;
-   end Set_Node_To_Be_Wrapped;
 
    ----------------------------
    -- Store_Actions_In_Scope --

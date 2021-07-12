@@ -2115,13 +2115,13 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
 	  tree slen = get_maxval_strlen (src, SRK_STRLEN);
 	  if (slen && !integer_zerop (slen))
 	    warning_at (loc, OPT_Wstringop_truncation,
-			"%G%qD destination unchanged after copying no bytes "
+			"%qD destination unchanged after copying no bytes "
 			"from a string of length %E",
-			stmt, fndecl, slen);
+			fndecl, slen);
 	  else
 	    warning_at (loc, OPT_Wstringop_truncation,
-			"%G%qD destination unchanged after copying no bytes",
-			stmt, fndecl);
+			"%qD destination unchanged after copying no bytes",
+			fndecl);
 	}
 
       replace_call_with_value (gsi, dest);
@@ -2498,11 +2498,11 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 	  location_t loc = gimple_location (stmt);
 	  nowarn = warning_at (loc, OPT_Wstringop_overflow_,
 			       cmpdst == 0
-			       ? G_("%G%qD specified bound %E equals "
+			       ? G_("%qD specified bound %E equals "
 				    "destination size")
-			       : G_("%G%qD specified bound %E exceeds "
+			       : G_("%qD specified bound %E exceeds "
 				    "destination size %wu"),
-			       stmt, fndecl, len, dstsize);
+			       fndecl, len, dstsize);
 	  if (nowarn)
 	    suppress_warning (stmt, OPT_Wstringop_overflow_);
 	}
@@ -2518,8 +2518,8 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 	 of the destination is unknown (it's not an uncommon mistake
 	 to specify as the bound to strncpy the length of the source).  */
       if (warning_at (loc, OPT_Wstringop_overflow_,
-		      "%G%qD specified bound %E equals source length",
-		      stmt, fndecl, len))
+		      "%qD specified bound %E equals source length",
+		      fndecl, len))
 	suppress_warning (stmt, OPT_Wstringop_overflow_);
     }
 

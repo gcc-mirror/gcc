@@ -52,6 +52,7 @@
 
 with Interfaces.C;
 with System.OS_Constants;
+with System.Parameters;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -617,7 +618,8 @@ private
 
    type pid_t is new int;
 
-   type time_t is new Long_Long_Integer;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
 
    type timespec is record
       tv_sec  : time_t;

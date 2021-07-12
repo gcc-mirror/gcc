@@ -39,8 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 static bool begin_init_stmts (tree *, tree *);
 static tree finish_init_stmts (bool, tree, tree);
 static void construct_virtual_base (tree, tree);
-static void expand_aggr_init_1 (tree, tree, tree, tree, int, tsubst_flags_t);
-static void expand_default_init (tree, tree, tree, tree, int, tsubst_flags_t);
+static bool expand_aggr_init_1 (tree, tree, tree, tree, int, tsubst_flags_t);
+static bool expand_default_init (tree, tree, tree, tree, int, tsubst_flags_t);
 static void perform_member_init (tree, tree);
 static int member_init_ok_or_else (tree, tree, tree);
 static void expand_virtual_init (tree, tree);
@@ -1838,12 +1838,14 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   is_global = begin_init_stmts (&stmt_expr, &compound_stmt);
   destroy_temps = stmts_are_full_exprs_p ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
-  expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
-		      init, LOOKUP_NORMAL|flags, complain);
+  bool ok = expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
+				init, LOOKUP_NORMAL|flags, complain);
   stmt_expr = finish_init_stmts (is_global, stmt_expr, compound_stmt);
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
   TREE_READONLY (exp) = was_const;
   TREE_THIS_VOLATILE (exp) = was_volatile;
+  if (!ok)
+    return error_mark_node;
 
   if ((VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
       && TREE_SIDE_EFFECTS (stmt_expr)
@@ -1854,7 +1856,7 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   return stmt_expr;
 }
 
-static void
+static bool
 expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
                      tsubst_flags_t complain)
 {
@@ -1889,6 +1891,9 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
        happen for direct-initialization, too.  */
     init = digest_init (type, init, complain);
 
+  if (init == error_mark_node)
+    return false;
+
   /* A CONSTRUCTOR of the target's type is a previously digested
      initializer, whether that happened just above or in
      cp_parser_late_parsing_nsdmi.
@@ -1910,7 +1915,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       init = build2 (INIT_EXPR, TREE_TYPE (exp), exp, init);
       TREE_SIDE_EFFECTS (init) = 1;
       finish_expr_stmt (init);
-      return;
+      return true;
     }
 
   if (init && TREE_CODE (init) != TREE_LIST
@@ -1927,8 +1932,12 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	   have already built up the constructor call so we could wrap it
 	   in an exception region.  */;
       else
-	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP,
-			    flags, complain | tf_no_cleanup);
+	{
+	  init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP,
+			      flags, complain | tf_no_cleanup);
+	  if (init == error_mark_node)
+	    return false;
+	}
 
       if (TREE_CODE (init) == MUST_NOT_THROW_EXPR)
 	/* We need to protect the initialization of a catch parm with a
@@ -1944,7 +1953,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	init = build2 (INIT_EXPR, TREE_TYPE (exp), exp, init);
       TREE_SIDE_EFFECTS (init) = 1;
       finish_expr_stmt (init);
-      return;
+      return true;
     }
 
   if (init == NULL_TREE)
@@ -1982,6 +1991,8 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 					&parms, binfo, flags,
 					complain);
       base = fold_build_cleanup_point_expr (void_type_node, base);
+      if (complete == error_mark_node || base == error_mark_node)
+	return false;
       rval = build_if_in_charge (complete, base);
     }
    else
@@ -1991,6 +2002,8 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 
       rval = build_special_member_call (exp, ctor_name, &parms, binfo, flags,
 					complain);
+      if (rval == error_mark_node)
+	return false;
     }
 
   if (parms != NULL)
@@ -2010,10 +2023,12 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
   /* FIXME put back convert_to_void?  */
   if (TREE_SIDE_EFFECTS (rval))
     finish_expr_stmt (rval);
+
+  return true;
 }
 
 /* This function is responsible for initializing EXP with INIT
-   (if any).
+   (if any).  Returns true on success, false on failure.
 
    BINFO is the binfo of the type for who we are performing the
    initialization.  For example, if W is a virtual base class of A and B,
@@ -2032,7 +2047,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
    FLAGS is just passed to `build_new_method_call'.  See that function
    for its description.  */
 
-static void
+static bool
 expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
                     tsubst_flags_t complain)
 {
@@ -2058,7 +2073,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
       if (init)
 	finish_expr_stmt (init);
       gcc_assert (!cleanups);
-      return;
+      return true;
     }
 
   /* List-initialization from {} becomes value-initialization for non-aggregate
@@ -2096,7 +2111,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
       /* If we don't need to mess with the constructor at all,
 	 then we're done.  */
       if (! type_build_ctor_call (type))
-	return;
+	return true;
 
       /* Otherwise fall through and call the constructor.  */
       init = NULL_TREE;
@@ -2104,7 +2119,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
 
   /* We know that expand_default_init can handle everything we want
      at this point.  */
-  expand_default_init (binfo, true_exp, exp, init, flags, complain);
+  return expand_default_init (binfo, true_exp, exp, init, flags, complain);
 }
 
 /* Report an error if TYPE is not a user-defined, class type.  If

@@ -1500,12 +1500,13 @@ package body Exp_Ch5 is
         (if Nkind (Name (N)) = N_Slice
          then Get_Index_Bounds (Discrete_Range (Name (N)))
          else Larray_Bounds);
-      --  If the left-hand side is A (L..H), Larray_Bounds is A'Range, and
-      --  L_Bounds is L..H. If it's not a slice, we treat it like a slice
-      --  starting at A'First.
+      --  If the left-hand side is A (First..Last), Larray_Bounds is A'Range,
+      --  and L_Bounds is First..Last. If it's not a slice, we treat it like
+      --  a slice starting at A'First.
 
       L_Bit : constant Node_Id :=
-        Make_Integer_Literal (Loc, (L_Bounds.L - Larray_Bounds.L) * C_Size);
+        Make_Integer_Literal
+          (Loc, (L_Bounds.First - Larray_Bounds.First) * C_Size);
 
       Rarray_Bounds : constant Range_Values :=
         Get_Index_Bounds (First_Index (R_Typ));
@@ -1515,7 +1516,8 @@ package body Exp_Ch5 is
          else Rarray_Bounds);
 
       R_Bit : constant Node_Id :=
-        Make_Integer_Literal (Loc, (R_Bounds.L - Rarray_Bounds.L) * C_Size);
+        Make_Integer_Literal
+          (Loc, (R_Bounds.First - Rarray_Bounds.First) * C_Size);
 
       Size : constant Node_Id :=
         Make_Op_Multiply (Loc,
@@ -1594,17 +1596,21 @@ package body Exp_Ch5 is
       Rev    : Boolean) return Node_Id
    is
 
+      L : constant Node_Id := Name (N);
+      R : constant Node_Id := Expression (N);
+      --  Left- and right-hand sides of the assignment statement
+
       Slices : constant Boolean :=
-        Nkind (Name (N)) = N_Slice or else Nkind (Expression (N)) = N_Slice;
+        Nkind (L) = N_Slice or else Nkind (R) = N_Slice;
       L_Prefix_Comp : constant Boolean :=
         --  True if the left-hand side is a slice of a component or slice
-        Nkind (Name (N)) = N_Slice
-          and then Nkind (Prefix (Name (N))) in
+        Nkind (L) = N_Slice
+          and then Nkind (Prefix (L)) in
                      N_Selected_Component | N_Indexed_Component | N_Slice;
       R_Prefix_Comp : constant Boolean :=
         --  Likewise for the right-hand side
-        Nkind (Expression (N)) = N_Slice
-          and then Nkind (Prefix (Expression (N))) in
+        Nkind (R) = N_Slice
+          and then Nkind (Prefix (R)) in
                      N_Selected_Component | N_Indexed_Component | N_Slice;
 
    begin
@@ -1664,27 +1670,28 @@ package body Exp_Ch5 is
                  Get_Index_Bounds (Right_Base_Index);
 
                Known_Left_Slice_Low : constant Boolean :=
-                 (if Nkind (Name (N)) = N_Slice
+                 (if Nkind (L) = N_Slice
                     then Compile_Time_Known_Value
-                      (Get_Index_Bounds (Discrete_Range (Name (N))).L));
+                      (Get_Index_Bounds (Discrete_Range (L)).First));
                Known_Right_Slice_Low : constant Boolean :=
-                 (if Nkind (Expression (N)) = N_Slice
+                 (if Nkind (R) = N_Slice
                     then Compile_Time_Known_Value
-                      (Get_Index_Bounds (Discrete_Range (Expression (N))).H));
+                      (Get_Index_Bounds (Discrete_Range (R)).Last));
 
                Val_Bits : constant Pos := Standard_Long_Long_Integer_Size / 2;
 
             begin
-               if Left_Base_Range.H - Left_Base_Range.L < Val_Bits
-                 and then Right_Base_Range.H - Right_Base_Range.L < Val_Bits
+               if Left_Base_Range.Last - Left_Base_Range.First < Val_Bits
+                 and then Right_Base_Range.Last - Right_Base_Range.First <
+                            Val_Bits
                  and then Known_Esize (L_Type)
                  and then Known_Esize (R_Type)
                  and then Known_Left_Slice_Low
                  and then Known_Right_Slice_Low
                  and then Compile_Time_Known_Value
-                   (Get_Index_Bounds (First_Index (Etype (Larray))).L)
+                   (Get_Index_Bounds (First_Index (Etype (Larray))).First)
                  and then Compile_Time_Known_Value
-                   (Get_Index_Bounds (First_Index (Etype (Rarray))).L)
+                   (Get_Index_Bounds (First_Index (Etype (Rarray))).First)
                  and then
                    not (Is_Enumeration_Type (Etype (Left_Base_Index))
                           and then Has_Enumeration_Rep_Clause
@@ -2764,7 +2771,9 @@ package body Exp_Ch5 is
                                             (Entity (Lhs)), Loc),
                                      Expression =>
                                        Accessibility_Level
-                                         (Rhs, Dynamic_Level));
+                                         (Expr            => Rhs,
+                                          Level           => Dynamic_Level,
+                                          Allow_Alt_Model => False));
 
          begin
             if not Accessibility_Checks_Suppressed (Entity (Lhs)) then
@@ -3375,9 +3384,17 @@ package body Exp_Ch5 is
               and then Is_Discrete_Type (Etype (Pattern))
               and then Compile_Time_Known_Value (Pattern)
             then
-               return Make_Op_Eq (Loc,
-                        Object,
-                        Make_Integer_Literal (Loc, Expr_Value (Pattern)));
+               declare
+                  Val : Node_Id;
+               begin
+                  if Is_Enumeration_Type (Etype (Pattern)) then
+                     Val := Get_Enum_Lit_From_Pos
+                              (Etype (Pattern), Expr_Value (Pattern), Loc);
+                  else
+                     Val := Make_Integer_Literal (Loc, Expr_Value (Pattern));
+                  end if;
+                  return Make_Op_Eq (Loc, Object, Val);
+               end;
             end if;
 
             case Nkind (Pattern) is
@@ -3624,15 +3641,36 @@ package body Exp_Ch5 is
             return Result;
          end Elsif_Parts;
 
+         function Else_Statements return List_Id;
+         --  Returns a "raise Constraint_Error" statement if
+         --  exception propagate is permitted and No_List otherwise.
+
+         ---------------------
+         -- Else_Statements --
+         ---------------------
+
+         function Else_Statements return List_Id is
+         begin
+            if Restriction_Active (No_Exception_Propagation) then
+               return No_List;
+            else
+               return New_List (Make_Raise_Constraint_Error (Loc,
+                                  Reason => CE_Invalid_Data));
+            end if;
+         end Else_Statements;
+
+         --  Local constants
+
          If_Stmt : constant Node_Id :=
            Make_If_Statement (Loc,
               Condition       => Top_Level_Pattern_Match_Condition (First_Alt),
               Then_Statements => Statements (First_Alt),
-              Elsif_Parts     => Elsif_Parts);
-         --  Do we want an implicit "else raise Program_Error" here???
-         --  Perhaps only if Exception-related restrictions are not in effect.
+              Elsif_Parts     => Elsif_Parts,
+              Else_Statements => Else_Statements);
 
          Declarations : constant List_Id := New_List (Selector_Decl);
+
+      --  Start of processing for Expand_General_Case_Statment
 
       begin
          if Present (Choice_Index_Decl) then
@@ -4068,7 +4106,6 @@ package body Exp_Ch5 is
                     Make_Defining_Identifier (Loc,
                       Chars => New_External_Name (Chars (Element), 'C'));
       Elmt_Decl : Node_Id;
-      Elmt_Ref  : Node_Id;
 
       Element_Op : constant Entity_Id :=
                      Get_Iterable_Type_Primitive (Container_Typ, Name_Element);
@@ -4079,19 +4116,10 @@ package body Exp_Ch5 is
 
    begin
       --  For an element iterator, the Element aspect must be present,
-      --  (this is checked during analysis) and the expansion takes the form:
+      --  (this is checked during analysis).
 
-      --    Cursor : Cursor_Type := First (Container);
-      --    Elmt : Element_Type;
-      --    while Has_Element (Cursor, Container) loop
-      --       Elmt := Element (Container, Cursor);
-      --          <original loop statements>
-      --       Cursor := Next (Container, Cursor);
-      --    end loop;
-
-      --   However this expansion is not legal if the element is indefinite.
-      --   In that case we create a block to hold a variable declaration
-      --   initialized with a call to Element, and generate:
+      --  We create a block to hold a variable declaration initialized with
+      --  a call to Element, and generate:
 
       --    Cursor : Cursor_Type := First (Container);
       --    while Has_Element (Cursor, Container) loop
@@ -4123,48 +4151,20 @@ package body Exp_Ch5 is
           Defining_Identifier => Element,
           Object_Definition   => New_Occurrence_Of (Etype (Element_Op), Loc));
 
-      if not Is_Constrained (Etype (Element_Op)) then
-         Set_Expression (Elmt_Decl,
-           Make_Function_Call (Loc,
-             Name                   => New_Occurrence_Of (Element_Op, Loc),
-             Parameter_Associations => New_List (
-               Convert_To_Iterable_Type (Container, Loc),
-               New_Occurrence_Of (Cursor, Loc))));
+      Set_Expression (Elmt_Decl,
+        Make_Function_Call (Loc,
+          Name                   => New_Occurrence_Of (Element_Op, Loc),
+          Parameter_Associations => New_List (
+            Convert_To_Iterable_Type (Container, Loc),
+            New_Occurrence_Of (Cursor, Loc))));
 
-         Set_Statements (New_Loop,
-           New_List
-             (Make_Block_Statement (Loc,
-                Declarations => New_List (Elmt_Decl),
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => Stats))));
-
-      else
-         Elmt_Ref :=
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (Element, Loc),
-             Expression =>
-               Make_Function_Call (Loc,
-                 Name                   => New_Occurrence_Of (Element_Op, Loc),
-                 Parameter_Associations => New_List (
-                   Convert_To_Iterable_Type (Container, Loc),
-                   New_Occurrence_Of (Cursor, Loc))));
-
-         Prepend (Elmt_Ref, Stats);
-
-         --  The element is assignable in the expanded code
-
-         Set_Assignment_OK (Name (Elmt_Ref));
-
-         --  The loop is rewritten as a block, to hold the element declaration
-
-         New_Loop :=
-           Make_Block_Statement (Loc,
-             Declarations               => New_List (Elmt_Decl),
+      Set_Statements (New_Loop,
+        New_List
+          (Make_Block_Statement (Loc,
+             Declarations => New_List (Elmt_Decl),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (New_Loop)));
-      end if;
+                 Statements => Stats))));
 
       --  The element is only modified in expanded code, so it appears as
       --  unassigned to the warning machinery. We must suppress this spurious

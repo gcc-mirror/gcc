@@ -1,3 +1,75 @@
+2021-07-09  Matheus Castanho  <msc@linux.ibm.com>
+
+	* include/std/mutex (__lock_impl): Check
+	_GLIBCXX_HAS_GTHREADS before using __gthread_yield.
+
+2021-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101271
+	* include/bits/unique_ptr.h (unique_ptr<T[],D>::operator[]):
+	Remove noexcept-specifier.
+	(unique_ptr<T[],D>::_S_nothrow_deref): Remove.
+	* testsuite/20_util/unique_ptr/lwg2762.cc: Remove checks for
+	operator[].
+
+2021-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/doxygroups.cc: Fix docs for std::literals.
+	* doc/doxygen/user.cfg.in: Exclude the Networking TS header.
+	Add some more predefined macros.
+	* include/bits/fs_fwd.h: Move @addtogroup commands inside
+	namespaces. Add better documentation.
+	* include/bits/fs_path.h: Likewise.
+	* include/experimental/bits/fs_fwd.h: Likewise.
+	* include/experimental/bits/fs_path.h: Likewise.
+	* include/ext/throw_allocator.h: Fix typo and improve docs.
+	* include/std/chrono: Move @addtogroup commands.
+	* include/std/system_error: Move @addtogroup commands.
+	* libsupc++/exception: Improve documentation.
+	* libsupc++/exception.h: Add @since documentation.
+
+2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101258
+	* doc/doxygen/user.cfg.in (INPUT): Add <experimental/simd>.
+	(COLS_IN_ALPHA_INDEX): Remove obsolete tag.
+	(PREDEFINED): Add/fix some more macros that need to be expanded.
+	* include/bits/random.h: Stop Doxygen from documenting internal
+	implementation details.
+	* include/bits/random.tcc: Likewise.
+	* include/bits/this_thread_sleep.h: Fix @file name.
+	* include/experimental/bits/simd.h: Add to Doxygen group. Do not
+	document internal implementation details.
+	* include/experimental/bits/simd_detail.h: Do not document
+	internal implementation details.
+	* include/experimental/simd: Define Doxygen groups.
+	* include/experimental/type_traits: Improve documentation for
+	the header file. Define groups. Use @since commands.
+	* include/std/scoped_allocator (scoped_allocator_adaptor): Move
+	declaration before undocumented region.
+	* include/std/type_traits (true_type, false_type): Use using
+	declaration instead of typedef.
+	(is_invocable_v, is_nothrow_invocable_v, is_invocable_r_v)
+	(is_nothrow_invocable_r_v): Move definitions next to other C++17
+	variable templates.
+	Do not document internal implementation details. Move misplaced
+	group-end command. Define group for variable templates.
+	* include/std/variant: Do not document internal implementation
+	details.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/simd: Do not define anything pre-C++17.
+
+2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc [__cpp_inline_variables]: Remove
+	redundant definitions of static constexpr member variables.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
 2021-06-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/streambuf.tcc (__copy_streambufs_eof): Remove

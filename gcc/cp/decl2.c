@@ -1584,6 +1584,31 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 
   cp_check_const_attributes (attributes);
 
+  if ((flag_openmp || flag_openmp_simd) && attributes != error_mark_node)
+    {
+      bool diagnosed = false;
+      for (tree *pa = &attributes; *pa; )
+	{
+	  if (get_attribute_namespace (*pa) == omp_identifier)
+	    {
+	      tree name = get_attribute_name (*pa);
+	      if (is_attribute_p ("directive", name)
+		  || is_attribute_p ("sequence", name))
+		{
+		  if (!diagnosed)
+		    {
+		      error ("%<omp::%E%> not allowed to be specified in this "
+			     "context", name);
+		      diagnosed = true;
+		    }
+		  *pa = TREE_CHAIN (*pa);
+		  continue;
+		}
+	    }
+	  pa = &TREE_CHAIN (*pa);
+	}
+    }
+
   if (TREE_CODE (*decl) == TEMPLATE_DECL)
     decl = &DECL_TEMPLATE_RESULT (*decl);
 

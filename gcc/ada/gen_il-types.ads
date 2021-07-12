@@ -140,6 +140,7 @@ package Gen_IL.Types is
       Elementary_Kind,
       Enumeration_Kind,
       Entry_Kind,
+      Exception_Or_Object_Kind,
       Fixed_Point_Kind,
       Float_Kind,
       Formal_Kind,
@@ -166,6 +167,7 @@ package Gen_IL.Types is
       Signed_Integer_Kind,
       Task_Kind,
       Type_Kind,
+      Void_Or_Type_Kind,
 
       --  End of abstract entity types.
 

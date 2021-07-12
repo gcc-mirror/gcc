@@ -3115,9 +3115,8 @@ format_directive (const call_info &info,
   if (fmtres.nullp)
     {
       fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-	       "%G%<%.*s%> directive argument is null",
-	       info.callstmt, dirlen,
-	       target_to_host (hostdir, sizeof hostdir, dir.beg));
+	       "%<%.*s%> directive argument is null",
+	       dirlen, target_to_host (hostdir, sizeof hostdir, dir.beg));
 
       /* Don't bother processing the rest of the format string.  */
       res->warned = true;
@@ -4620,8 +4619,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
 	     is not constant.  */
 	  location_t loc = gimple_location (info.callstmt);
 	  warning_at (EXPR_LOC_OR_LOC (dstptr, loc),
-		      info.warnopt (), "%Gnull destination pointer",
-		      info.callstmt);
+		      info.warnopt (), "null destination pointer");
 	  return false;
 	}
 
@@ -4650,8 +4648,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
     {
       location_t loc = gimple_location (info.callstmt);
       warning_at (EXPR_LOC_OR_LOC (info.format, loc),
-		  info.warnopt (), "%Gnull format string",
-		  info.callstmt);
+		  info.warnopt (), "null format string");
       return false;
     }
 

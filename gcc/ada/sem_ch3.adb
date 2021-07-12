@@ -3261,6 +3261,40 @@ package body Sem_Ch3 is
          return;
       end if;
 
+      --  Set the primitives list of the full type and its base type when
+      --  needed. T may be E_Void in cases of earlier errors, and in that
+      --  case we bypass this.
+
+      if Ekind (T) /= E_Void
+        and then not Present (Direct_Primitive_Operations (T))
+      then
+         if Etype (T) = T then
+            Set_Direct_Primitive_Operations (T, New_Elmt_List);
+
+         --  If Etype of T is the base type (as opposed to a parent type) and
+         --  already has an associated list of primitive operations, then set
+         --  T's primitive list to the base type's list. Otherwise, create a
+         --  new empty primitives list and share the list between T and its
+         --  base type. The lists need to be shared in common between the two.
+
+         elsif Etype (T) = Base_Type (T) then
+
+            if not Present (Direct_Primitive_Operations (Base_Type (T))) then
+               Set_Direct_Primitive_Operations
+                 (Base_Type (T), New_Elmt_List);
+            end if;
+
+            Set_Direct_Primitive_Operations
+              (T, Direct_Primitive_Operations (Base_Type (T)));
+
+         --  Case where the Etype is a parent type, so we need a new primitives
+         --  list for T.
+
+         else
+            Set_Direct_Primitive_Operations (T, New_Elmt_List);
+         end if;
+      end if;
+
       --  Some common processing for all types
 
       Set_Depends_On_Private (T, Has_Private_Component (T));
@@ -3493,9 +3527,7 @@ package body Sem_Ch3 is
 
       --  Check runtime support for synchronized interfaces
 
-      if (Is_Task_Interface (T)
-           or else Is_Protected_Interface (T)
-           or else Is_Synchronized_Interface (T))
+      if Is_Concurrent_Interface (T)
         and then not RTE_Available (RE_Select_Specific_Data)
       then
          Error_Msg_CRT ("synchronized interfaces", T);
@@ -5708,6 +5740,14 @@ package body Sem_Ch3 is
          Inherit_Predicate_Flags (Id, T);
       end if;
 
+      --  When prefixed calls are enabled for untagged types, the subtype
+      --  shares the primitive operations of its base type.
+
+      if Extensions_Allowed then
+         Set_Direct_Primitive_Operations
+           (Id, Direct_Primitive_Operations (Base_Type (T)));
+      end if;
+
       if Etype (Id) = Any_Type then
          goto Leave;
       end if;
@@ -5739,7 +5779,16 @@ package body Sem_Ch3 is
           ((In_Instance and then not Comes_From_Source (N))
              or else No (Aspect_Specifications (N)))
       then
-         Set_Subprograms_For_Type (Id, Subprograms_For_Type (T));
+         --  Inherit Subprograms_For_Type from the full view, if present
+
+         if Present (Full_View (T))
+           and then Subprograms_For_Type (Full_View (T)) /= No_Elist
+         then
+            Set_Subprograms_For_Type
+              (Id, Subprograms_For_Type (Full_View (T)));
+         else
+            Set_Subprograms_For_Type (Id, Subprograms_For_Type (T));
+         end if;
 
          --  If the current declaration created both a private and a full view,
          --  then propagate Predicate_Function to the latter as well.
@@ -9270,9 +9319,7 @@ package body Sem_Ch3 is
                   and then Is_Limited_Record (Full_View (Parent_Type)))
       then
          if not Is_Interface (Parent_Type)
-           or else Is_Synchronized_Interface (Parent_Type)
-           or else Is_Protected_Interface (Parent_Type)
-           or else Is_Task_Interface (Parent_Type)
+           or else Is_Concurrent_Interface (Parent_Type)
          then
             Set_Is_Limited_Record (Derived_Type);
          end if;
@@ -9509,6 +9556,13 @@ package body Sem_Ch3 is
                Set_No_Reordering (Derived_Type, No_Reordering (Parent_Full));
             end if;
          end;
+      end if;
+
+      --  When prefixed-call syntax is allowed for untagged types, initialize
+      --  the list of primitive operations to an empty list.
+
+      if Extensions_Allowed and then not Is_Tagged then
+         Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
       end if;
 
       --  Set fields for tagged types
@@ -9987,6 +10041,28 @@ package body Sem_Ch3 is
 
       if Etype (Derived_Type) = Any_Type then
          return;
+      end if;
+
+      --  If not already set, initialize the derived type's list of primitive
+      --  operations to an empty element list.
+
+      if not Present (Direct_Primitive_Operations (Derived_Type)) then
+         Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
+
+         --  If Etype of the derived type is the base type (as opposed to
+         --  a parent type) and doesn't have an associated list of primitive
+         --  operations, then set the base type's primitive list to the
+         --  derived type's list. The lists need to be shared in common
+         --  between the two.
+
+         if Etype (Derived_Type) = Base_Type (Derived_Type)
+           and then
+             not Present (Direct_Primitive_Operations (Etype (Derived_Type)))
+         then
+            Set_Direct_Primitive_Operations
+              (Etype (Derived_Type),
+               Direct_Primitive_Operations (Derived_Type));
+         end if;
       end if;
 
       --  Set delayed freeze and then derive subprograms, we need to do this
@@ -11149,12 +11225,29 @@ package body Sem_Ch3 is
 
          if Present (Overridden_Operation (Subp))
            and then No_Return (Overridden_Operation (Subp))
-           and then not No_Return (Subp)
          then
-            Error_Msg_N ("overriding subprogram & must be No_Return", Subp);
-            Error_Msg_N
-              ("\since overridden subprogram is No_Return (RM 6.5.1(6/2))",
-               Subp);
+
+            --  If the subprogram is a renaming, check that the renamed
+            --  subprogram is No_Return.
+
+            if Present (Renamed_Or_Alias (Subp)) then
+               if not No_Return (Renamed_Or_Alias (Subp)) then
+                  Error_Msg_NE ("subprogram & must be No_Return",
+                    Subp,
+                    Renamed_Or_Alias (Subp));
+                  Error_Msg_N ("\since renaming & overrides No_Return "
+                    & "subprogram (RM 6.5.1(6/2))",
+                    Subp);
+               end if;
+
+            --  Make sure that the subprogram itself is No_Return.
+
+            elsif not No_Return (Subp) then
+               Error_Msg_N ("overriding subprogram & must be No_Return", Subp);
+               Error_Msg_N
+                 ("\since overridden subprogram is No_Return (RM 6.5.1(6/2))",
+                  Subp);
+            end if;
          end if;
 
          --  If the operation is a wrapper for a synchronized primitive, it
@@ -16740,7 +16833,7 @@ package body Sem_Ch3 is
       Set_Etype (Derived_Type, Implicit_Base);
       Set_Size_Info         (Derived_Type, Parent_Type);
 
-      if Unknown_RM_Size (Derived_Type) then
+      if not Known_RM_Size (Derived_Type) then
          Set_RM_Size (Derived_Type, RM_Size (Parent_Type));
       end if;
 
@@ -18997,56 +19090,6 @@ package body Sem_Ch3 is
       return False;
    end Is_EVF_Procedure;
 
-   -----------------------
-   -- Is_Null_Extension --
-   -----------------------
-
-   function Is_Null_Extension (T : Entity_Id) return Boolean is
-      Type_Decl : constant Node_Id := Parent (Base_Type (T));
-      Comp_List : Node_Id;
-      Comp      : Node_Id;
-
-   begin
-      if Nkind (Type_Decl) /= N_Full_Type_Declaration
-        or else not Is_Tagged_Type (T)
-        or else Nkind (Type_Definition (Type_Decl)) /=
-                                              N_Derived_Type_Definition
-        or else No (Record_Extension_Part (Type_Definition (Type_Decl)))
-      then
-         return False;
-      end if;
-
-      Comp_List :=
-        Component_List (Record_Extension_Part (Type_Definition (Type_Decl)));
-
-      if Present (Discriminant_Specifications (Type_Decl)) then
-         return False;
-
-      elsif Present (Comp_List)
-        and then Is_Non_Empty_List (Component_Items (Comp_List))
-      then
-         Comp := First (Component_Items (Comp_List));
-
-         --  Only user-defined components are relevant. The component list
-         --  may also contain a parent component and internal components
-         --  corresponding to secondary tags, but these do not determine
-         --  whether this is a null extension.
-
-         while Present (Comp) loop
-            if Comes_From_Source (Comp) then
-               return False;
-            end if;
-
-            Next (Comp);
-         end loop;
-
-         return True;
-
-      else
-         return True;
-      end if;
-   end Is_Null_Extension;
-
    --------------------------
    -- Is_Private_Primitive --
    --------------------------
@@ -21048,48 +21091,48 @@ package body Sem_Ch3 is
          end loop;
       end;
 
-      --  If the private view was tagged, copy the new primitive operations
-      --  from the private view to the full view.
+      declare
+         Disp_Typ  : Entity_Id;
+         Full_List : Elist_Id;
+         Prim      : Entity_Id;
+         Prim_Elmt : Elmt_Id;
+         Priv_List : Elist_Id;
 
-      if Is_Tagged_Type (Full_T) then
-         declare
-            Disp_Typ  : Entity_Id;
-            Full_List : Elist_Id;
-            Prim      : Entity_Id;
-            Prim_Elmt : Elmt_Id;
-            Priv_List : Elist_Id;
+         function Contains
+           (E : Entity_Id;
+            L : Elist_Id) return Boolean;
+         --  Determine whether list L contains element E
 
-            function Contains
-              (E : Entity_Id;
-               L : Elist_Id) return Boolean;
-            --  Determine whether list L contains element E
+         --------------
+         -- Contains --
+         --------------
 
-            --------------
-            -- Contains --
-            --------------
-
-            function Contains
-              (E : Entity_Id;
-               L : Elist_Id) return Boolean
-            is
-               List_Elmt : Elmt_Id;
-
-            begin
-               List_Elmt := First_Elmt (L);
-               while Present (List_Elmt) loop
-                  if Node (List_Elmt) = E then
-                     return True;
-                  end if;
-
-                  Next_Elmt (List_Elmt);
-               end loop;
-
-               return False;
-            end Contains;
-
-         --  Start of processing
+         function Contains
+           (E : Entity_Id;
+            L : Elist_Id) return Boolean
+         is
+            List_Elmt : Elmt_Id;
 
          begin
+            List_Elmt := First_Elmt (L);
+            while Present (List_Elmt) loop
+               if Node (List_Elmt) = E then
+                  return True;
+               end if;
+
+               Next_Elmt (List_Elmt);
+            end loop;
+
+            return False;
+         end Contains;
+
+      --  Start of processing
+
+      begin
+         --  If the private view was tagged, copy the new primitive operations
+         --  from the private view to the full view.
+
+         if Is_Tagged_Type (Full_T) then
             if Is_Tagged_Type (Priv_T) then
                Priv_List := Primitive_Operations (Priv_T);
                Prim_Elmt := First_Elmt (Priv_List);
@@ -21223,8 +21266,23 @@ package body Sem_Ch3 is
 
                Propagate_Concurrent_Flags (Class_Wide_Type (Priv_T), Full_T);
             end if;
-         end;
-      end if;
+
+         --  For untagged types, copy the primitives across from the private
+         --  view to the full view (when extensions are allowed), for support
+         --  of prefixed calls (when extensions are enabled).
+
+         elsif Extensions_Allowed then
+            Priv_List := Primitive_Operations (Priv_T);
+            Prim_Elmt := First_Elmt (Priv_List);
+
+            Full_List := Primitive_Operations (Full_T);
+            while Present (Prim_Elmt) loop
+               Prim := Node (Prim_Elmt);
+               Append_Elmt (Prim, Full_List);
+               Next_Elmt (Prim_Elmt);
+            end loop;
+         end if;
+      end;
 
       --  Ada 2005 AI 161: Check preelaborable initialization consistency
 

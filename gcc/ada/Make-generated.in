@@ -83,4 +83,4 @@ ada/stamp-sdefault : $(srcdir)/ada/version.c Makefile
 	touch ada/stamp-sdefault
 
 ada/%: $(srcdir)/ada/libgnat/%
-	$(CP) $< $@
+	$(CP) -f $< $@

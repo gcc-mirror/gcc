@@ -36,7 +36,7 @@ extern struct Ax ax;
 
 void fax_extern (void)
 {
-  sink (strlen (ax.a - 2));     // { dg-warning "\\\[-Warray-bounds" "pr93514" { xfail *-*-* } }
+  sink (strlen (ax.a - 2));     // { dg-warning "\\\[-Warray-bounds" "pr93514" }
   sink (strlen (ax.a - 1));     // { dg-warning "\\\[-Warray-bounds" "pr93514" { xfail *-*-* } }
   sink (strlen (ax.a));
   sink (strlen (ax.a + 123));

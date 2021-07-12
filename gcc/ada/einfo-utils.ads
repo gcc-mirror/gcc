@@ -314,12 +314,11 @@ package Einfo.Utils is
    -- Type Representation Attribute Predicates --
    ----------------------------------------------
 
-   --  These predicates test the setting of the indicated attribute. If the
-   --  value has been set, then Known is True, and Unknown is False. If no
-   --  value is set, then Known is False and Unknown is True. The Known_Static
-   --  predicate is true only if the value is set (Known) and is set to a
-   --  compile time known value. Note that in the case of Alignment and
-   --  Normalized_First_Bit, dynamic values are not possible, so we do not
+   --  These predicates test the setting of the indicated attribute. The
+   --  Known predicate is True if and only if the value has been set. The
+   --  Known_Static predicate is True only if the value is set (Known) and is
+   --  set to a compile time known value. Note that in the case of Alignment
+   --  and Normalized_First_Bit, dynamic values are not possible, so we do not
    --  need a separate Known_Static calls in these cases. The not set (unknown)
    --  values are as follows:
 
@@ -364,15 +363,6 @@ package Einfo.Utils is
    function Known_Static_Normalized_Position_Max  (E : Entity_Id) return B;
    function Known_Static_RM_Size                  (E : Entity_Id) return B;
 
-   function Unknown_Alignment                     (E : Entity_Id) return B;
-   function Unknown_Component_Bit_Offset          (E : Entity_Id) return B;
-   function Unknown_Component_Size                (E : Entity_Id) return B;
-   function Unknown_Esize                         (E : Entity_Id) return B;
-   function Unknown_Normalized_First_Bit          (E : Entity_Id) return B;
-   function Unknown_Normalized_Position           (E : Entity_Id) return B;
-   function Unknown_Normalized_Position_Max       (E : Entity_Id) return B;
-   function Unknown_RM_Size                       (E : Entity_Id) return B;
-
    pragma Inline (Known_Alignment);
    pragma Inline (Known_Component_Bit_Offset);
    pragma Inline (Known_Component_Size);
@@ -389,15 +379,6 @@ package Einfo.Utils is
    pragma Inline (Known_Static_Normalized_Position);
    pragma Inline (Known_Static_Normalized_Position_Max);
    pragma Inline (Known_Static_RM_Size);
-
-   pragma Inline (Unknown_Alignment);
-   pragma Inline (Unknown_Component_Bit_Offset);
-   pragma Inline (Unknown_Component_Size);
-   pragma Inline (Unknown_Esize);
-   pragma Inline (Unknown_Normalized_First_Bit);
-   pragma Inline (Unknown_Normalized_Position);
-   pragma Inline (Unknown_Normalized_Position_Max);
-   pragma Inline (Unknown_RM_Size);
 
    ---------------------------------------------------
    -- Access to Subprograms in Subprograms_For_Type --

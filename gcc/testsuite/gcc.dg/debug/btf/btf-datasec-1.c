@@ -11,6 +11,7 @@
 
 /* { dg-do compile )  */
 /* { dg-options "-O0 -gbtf -dA" } */
+/* { dg-options "-O0 -gbtf -dA -msdata=none" { target { { powerpc*-*-* } && ilp32 } } } */
 
 /* Check for two DATASEC entries with vlen 3, and one with vlen 1.  */
 /* { dg-final { scan-assembler-times "0xf000003\[\t \]+\[^\n\]*btt_info" 2 } } */

@@ -51,6 +51,8 @@ package System.OS_Interface is
 
    pragma Linker_Options ("-lpthread");
 
+   use type System.Linux.time_t;
+
    subtype int            is Interfaces.C.int;
    subtype char           is Interfaces.C.char;
    subtype short          is Interfaces.C.short;

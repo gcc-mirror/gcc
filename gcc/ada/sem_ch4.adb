@@ -889,16 +889,6 @@ package body Sem_Ch4 is
          Check_Restriction (No_Local_Allocators, N);
       end if;
 
-      if SPARK_Mode = On
-        and then Comes_From_Source (N)
-        and then not Is_OK_Volatile_Context (Context       => Parent (N),
-                                             Obj_Ref       => N,
-                                             Check_Actuals => False)
-      then
-         Error_Msg_N
-           ("allocator cannot appear in this context (SPARK RM 7.1.3(10))", N);
-      end if;
-
       if Serious_Errors_Detected > Sav_Errs then
          Set_Error_Posted (N);
          Set_Etype (N, Any_Type);
@@ -5012,8 +5002,11 @@ package body Sem_Ch4 is
          --  Ada 2005 (AI05-0030): In the case of dispatching requeue, the
          --  selected component should resolve to a name.
 
+         --  Extension feature: Also support calls with prefixed views for
+         --  untagged record types.
+
          if Ada_Version >= Ada_2005
-           and then Is_Tagged_Type (Prefix_Type)
+           and then (Is_Tagged_Type (Prefix_Type) or else Extensions_Allowed)
            and then not Is_Concurrent_Type (Prefix_Type)
          then
             if Nkind (Parent (N)) = N_Generic_Association
@@ -5085,6 +5078,15 @@ package body Sem_Ch4 is
 
             Next_Entity (Comp);
          end loop;
+
+         --  Extension feature: Also support calls with prefixed views for
+         --  untagged private types.
+
+         if Extensions_Allowed then
+            if Try_Object_Operation (N) then
+               return;
+            end if;
+         end if;
 
       elsif Is_Concurrent_Type (Prefix_Type) then
 
@@ -5338,6 +5340,14 @@ package body Sem_Ch4 is
 
          Set_Is_Overloaded (N, Is_Overloaded (Sel));
 
+      --  Extension feature: Also support calls with prefixed views for
+      --  untagged types.
+
+      elsif Extensions_Allowed
+        and then Try_Object_Operation (N)
+      then
+         return;
+
       else
          --  Invalid prefix
 
@@ -5461,7 +5471,9 @@ package body Sem_Ch4 is
                      Apply_Compile_Time_Constraint_Error
                        (N, "component not present in }??",
                         CE_Discriminant_Check_Failed,
-                        Ent => Prefix_Type);
+                        Ent          => Prefix_Type,
+                        Emit_Message =>
+                          SPARK_Mode = On or not In_Instance_Not_Visible);
                      return;
                   end if;
 
@@ -9546,7 +9558,15 @@ package body Sem_Ch4 is
          --  type, this is not a prefixed call. Restore the previous type as
          --  the current one is not a legal candidate.
 
-         if not Is_Tagged_Type (Obj_Type)
+         --  Extension feature: Calls with prefixed views are also supported
+         --  for untagged types, so skip the early return when extensions are
+         --  enabled, unless the type doesn't have a primitive operations list
+         --  (such as in the case of predefined types).
+
+         if (not Is_Tagged_Type (Obj_Type)
+              and then
+                (not Extensions_Allowed
+                  or else not Present (Primitive_Operations (Obj_Type))))
            or else Is_Incomplete_Type (Obj_Type)
          then
             Obj_Type := Prev_Obj_Type;
@@ -9564,6 +9584,36 @@ package body Sem_Ch4 is
                   Try_Primitive_Operation
                    (Call_Node       => New_Call_Node,
                     Node_To_Replace => Node_To_Replace);
+
+               --  Extension feature: In the case where the prefix is of an
+               --  access type, and a primitive wasn't found for the designated
+               --  type, then if the access type has primitives we attempt a
+               --  prefixed call using one of its primitives. (It seems that
+               --  this isn't quite right to give preference to the designated
+               --  type in the case where both the access and designated types
+               --  have homographic prefixed-view operations that could result
+               --  in an ambiguity, but handling properly may be tricky. ???)
+
+               if Extensions_Allowed
+                 and then not Prim_Result
+                 and then Is_Named_Access_Type (Prev_Obj_Type)
+                 and then Present (Direct_Primitive_Operations (Prev_Obj_Type))
+               then
+                  --  Temporarily reset Obj_Type to the original access type
+
+                  Obj_Type := Prev_Obj_Type;
+
+                  Prim_Result :=
+                     Try_Primitive_Operation
+                      (Call_Node       => New_Call_Node,
+                       Node_To_Replace => Node_To_Replace);
+
+                  --  Restore Obj_Type to the designated type (is this really
+                  --  necessary, or should it only be done when Prim_Result is
+                  --  still False?).
+
+                  Obj_Type := Designated_Type (Obj_Type);
+               end if;
             end if;
 
             --  Check if there is a class-wide subprogram covering the
@@ -9903,7 +9953,7 @@ package body Sem_Ch4 is
             --  be the corresponding record of a synchronized type.
 
             return Obj_Type = Typ
-              or else Base_Type (Obj_Type) = Typ
+              or else Base_Type (Obj_Type) = Base_Type (Typ)
               or else Corr_Type = Typ
 
               --  Object may be of a derived type whose parent has unknown

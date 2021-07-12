@@ -100,6 +100,7 @@ package Aspects is
       Aspect_External_Tag,
       Aspect_Ghost,                         -- GNAT
       Aspect_Global,                        -- GNAT
+      Aspect_GNAT_Annotate,                 -- GNAT
       Aspect_Implicit_Dereference,
       Aspect_Initial_Condition,             -- GNAT
       Aspect_Initializes,                   -- GNAT
@@ -269,6 +270,7 @@ package Aspects is
       Aspect_Favor_Top_Level            => True,
       Aspect_Ghost                      => True,
       Aspect_Global                     => True,
+      Aspect_GNAT_Annotate              => True,
       Aspect_Inline_Always              => True,
       Aspect_Invariant                  => True,
       Aspect_Lock_Free                  => True,
@@ -318,9 +320,10 @@ package Aspects is
    --  the same aspect attached to the same declaration are allowed.
 
    No_Duplicates_Allowed : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Annotate  => False,
-      Aspect_Test_Case => False,
-      others           => True);
+     (Aspect_Annotate      => False,
+      Aspect_GNAT_Annotate => False,
+      Aspect_Test_Case     => False,
+      others               => True);
 
    --  The following subtype defines aspects corresponding to library unit
    --  pragmas, these can only validly appear as aspects for library units,
@@ -387,6 +390,7 @@ package Aspects is
       Aspect_External_Tag               => Expression,
       Aspect_Ghost                      => Optional_Expression,
       Aspect_Global                     => Expression,
+      Aspect_GNAT_Annotate              => Expression,
       Aspect_Implicit_Dereference       => Name,
       Aspect_Initial_Condition          => Expression,
       Aspect_Initializes                => Expression,
@@ -491,6 +495,7 @@ package Aspects is
       Aspect_External_Tag                 => False,
       Aspect_Ghost                        => False,
       Aspect_Global                       => False,
+      Aspect_GNAT_Annotate               => False,
       Aspect_Implicit_Dereference         => False,
       Aspect_Initial_Condition            => False,
       Aspect_Initializes                  => False,
@@ -647,6 +652,7 @@ package Aspects is
       Aspect_Full_Access_Only             => Name_Full_Access_Only,
       Aspect_Ghost                        => Name_Ghost,
       Aspect_Global                       => Name_Global,
+      Aspect_GNAT_Annotate                => Name_GNAT_Annotate,
       Aspect_Implicit_Dereference         => Name_Implicit_Dereference,
       Aspect_Import                       => Name_Import,
       Aspect_Independent                  => Name_Independent,
@@ -957,6 +963,7 @@ package Aspects is
       Aspect_Extensions_Visible           => Never_Delay,
       Aspect_Ghost                        => Never_Delay,
       Aspect_Global                       => Never_Delay,
+      Aspect_GNAT_Annotate                => Never_Delay,
       Aspect_Import                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Initializes                  => Never_Delay,

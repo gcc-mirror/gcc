@@ -654,9 +654,9 @@ package body Sem_Res is
       end if;
    end Check_For_Visible_Operator;
 
-   ----------------------------------
-   --  Check_Fully_Declared_Prefix --
-   ----------------------------------
+   ---------------------------------
+   -- Check_Fully_Declared_Prefix --
+   ---------------------------------
 
    procedure Check_Fully_Declared_Prefix
      (Typ  : Entity_Id;
@@ -1886,9 +1886,9 @@ package body Sem_Res is
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
-      Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
 
       if not With_Freezing then
+         Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
          Inside_Preanalysis_Without_Freezing :=
            Inside_Preanalysis_Without_Freezing - 1;
       end if;
@@ -2934,6 +2934,11 @@ package body Sem_Res is
                      else
                         UI_Image (Norm_Num (Expr_Value_R (Expr)), Decimal);
                         Start_String;
+
+                        if UR_Is_Negative (Expr_Value_R (Expr)) then
+                           Store_String_Chars ("-");
+                        end if;
+
                         Store_String_Chars
                           (UI_Image_Buffer (1 .. UI_Image_Length));
                         Param1 := Make_String_Literal (Loc, End_String);
@@ -3753,18 +3758,6 @@ package body Sem_Res is
 
          begin
             case Nkind (N) is
-               when N_Allocator =>
-                  if not Is_OK_Volatile_Context (Context       => Parent (N),
-                                                 Obj_Ref       => N,
-                                                 Check_Actuals => True)
-                  then
-                     Error_Msg_N
-                       ("allocator cannot appear in this context"
-                        & " (SPARK RM 7.1.3(10))", N);
-                  end if;
-
-                  return Skip;
-
                --  Do not consider nested function calls because they have
                --  already been processed during their own resolution.
 
@@ -6158,13 +6151,6 @@ package body Sem_Res is
                      raise Program_Error;
                end case;
 
-               --  In GNATprove mode, we enable the division check so that
-               --  GNATprove will issue a message if it cannot be proved.
-
-               if GNATprove_Mode then
-                  Activate_Division_Check (N);
-               end if;
-
             --  Otherwise just set the flag to check at run time
 
             else
@@ -7528,7 +7514,6 @@ package body Sem_Res is
             Node := First (Actions (N));
             while Present (Node) loop
                if Nkind (Node) = N_Object_Declaration
-                 and then Is_Type (Etype (Defining_Identifier (Node)))
                  and then Requires_Transient_Scope
                             (Etype (Defining_Identifier (Node)))
                then
@@ -7541,7 +7526,7 @@ package body Sem_Res is
          end;
 
          if Need_Transient_Scope then
-            Establish_Transient_Scope (Decl, True);
+            Establish_Transient_Scope (Decl, Manage_Sec_Stack => True);
          else
             Push_Scope (Scope (Defining_Identifier (Decl)));
          end if;
@@ -8833,18 +8818,12 @@ package body Sem_Res is
                or else Is_Private_Type (T))
          then
             if Etype (L) /= T then
-               Rewrite (L,
-                 Make_Unchecked_Type_Conversion (Sloc (L),
-                   Subtype_Mark => New_Occurrence_Of (T, Sloc (L)),
-                   Expression   => Relocate_Node (L)));
+               Rewrite (L, Unchecked_Convert_To (T, L));
                Analyze_And_Resolve (L, T);
             end if;
 
             if (Etype (R)) /= T then
-               Rewrite (R,
-                  Make_Unchecked_Type_Conversion (Sloc (R),
-                    Subtype_Mark => New_Occurrence_Of (Etype (L), Sloc (R)),
-                    Expression   => Relocate_Node (R)));
+               Rewrite (R, Unchecked_Convert_To (Etype (L), R));
                Analyze_And_Resolve (R, T);
             end if;
          end if;
@@ -12748,10 +12727,7 @@ package body Sem_Res is
             Set_Etype          (Array_Subtype, Base_Type (Typ));
             Set_Is_Constrained (Array_Subtype, True);
 
-            Rewrite (N,
-              Make_Unchecked_Type_Conversion (Loc,
-                Subtype_Mark => New_Occurrence_Of (Array_Subtype, Loc),
-                Expression   => Relocate_Node (N)));
+            Rewrite (N, Unchecked_Convert_To (Array_Subtype, N));
             Set_Etype (N, Array_Subtype);
          end;
       end if;
@@ -13688,12 +13664,24 @@ package body Sem_Res is
             then
                if Is_Itype (Opnd_Type) then
 
+                  --  When applying restriction No_Dynamic_Accessibility_Check,
+                  --  implicit conversions are allowed when the operand type is
+                  --  not deeper than the target type.
+
+                  if No_Dynamic_Accessibility_Checks_Enabled (N) then
+                     if Type_Access_Level (Opnd_Type)
+                          > Deepest_Type_Access_Level (Target_Type)
+                     then
+                        Conversion_Error_N
+                          ("operand has deeper level than target", Operand);
+                     end if;
+
                   --  Implicit conversions aren't allowed for objects of an
                   --  anonymous access type, since such objects have nonstatic
                   --  levels in Ada 2012.
 
-                  if Nkind (Associated_Node_For_Itype (Opnd_Type)) =
-                       N_Object_Declaration
+                  elsif Nkind (Associated_Node_For_Itype (Opnd_Type))
+                          = N_Object_Declaration
                   then
                      Conversion_Error_N
                        ("implicit conversion of stand-alone anonymous "
@@ -13746,12 +13734,16 @@ package body Sem_Res is
             --  the target type is anonymous access as well - see RM 3.10.2
             --  (10.3/3).
 
-            elsif Type_Access_Level (Opnd_Type) >
-                    Deepest_Type_Access_Level (Target_Type)
-              and then (Nkind (Associated_Node_For_Itype (Opnd_Type)) /=
-                         N_Function_Specification
-                        or else Ekind (Target_Type) in
-                                  Anonymous_Access_Kind)
+            --  Note that when the restriction No_Dynamic_Accessibility_Checks
+            --  is in effect wei also want to proceed with the conversion check
+            --  described above.
+
+            elsif Type_Access_Level (Opnd_Type, Assoc_Ent => Operand)
+                    > Deepest_Type_Access_Level (Target_Type)
+              and then (Nkind (Associated_Node_For_Itype (Opnd_Type))
+                          /= N_Function_Specification
+                        or else Ekind (Target_Type) in Anonymous_Access_Kind
+                        or else No_Dynamic_Accessibility_Checks_Enabled (N))
 
               --  Check we are not in a return value ???
 

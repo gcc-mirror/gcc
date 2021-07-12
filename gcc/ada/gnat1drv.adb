@@ -67,7 +67,6 @@ with Sem_Type;
 with Set_Targ;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
-with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Sinput.L;       use Sinput.L;
 with Snames;         use Snames;
@@ -146,12 +145,6 @@ procedure Gnat1drv is
    --  Start of processing for Adjust_Global_Switches
 
    begin
-      --  Define pragma GNAT_Annotate as an alias of pragma Annotate, to be
-      --  able to work around bootstrap limitations with the old syntax of
-      --  pragma Annotate, and use pragma GNAT_Annotate in compiler sources
-      --  when needed.
-
-      Map_Pragma_Name (From => Name_Gnat_Annotate, To => Name_Annotate);
 
       --  -gnatd_U disables prepending error messages with "error:"
 
@@ -1292,29 +1285,6 @@ begin
          end if;
 
          Exit_Program (E_Errors);
-      end if;
-
-      --  Set Generate_Code on main unit and its spec. We do this even if are
-      --  not generating code, since Lib-Writ uses this to determine which
-      --  units get written in the ali file.
-
-      Set_Generate_Code (Main_Unit);
-
-      --  If we have a corresponding spec, and it comes from source or it is
-      --  not a generated spec for a child subprogram body, then we need object
-      --  code for the spec unit as well.
-
-      if Nkind (Unit (Main_Unit_Node)) in N_Unit_Body
-        and then not Acts_As_Spec (Main_Unit_Node)
-      then
-         if Nkind (Unit (Main_Unit_Node)) = N_Subprogram_Body
-           and then not Comes_From_Source (Library_Unit (Main_Unit_Node))
-         then
-            null;
-         else
-            Set_Generate_Code
-              (Get_Cunit_Unit_Number (Library_Unit (Main_Unit_Node)));
-         end if;
       end if;
 
       --  Case of no code required to be generated, exit indicating no error

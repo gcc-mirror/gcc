@@ -212,6 +212,8 @@ public:
   virtual void visit_unaryop_svalue (const unaryop_svalue *) {}
   virtual void visit_binop_svalue (const binop_svalue *) {}
   virtual void visit_sub_svalue (const sub_svalue *) {}
+  virtual void visit_repeated_svalue (const repeated_svalue *) {}
+  virtual void visit_bits_within_svalue (const bits_within_svalue *) {}
   virtual void visit_unmergeable_svalue (const unmergeable_svalue *) {}
   virtual void visit_placeholder_svalue (const placeholder_svalue *) {}
   virtual void visit_widening_svalue (const widening_svalue *) {}
@@ -255,6 +257,12 @@ public:
   const svalue *get_or_create_sub_svalue (tree type,
 					  const svalue *parent_svalue,
 					  const region *subregion);
+  const svalue *get_or_create_repeated_svalue (tree type,
+					       const svalue *outer_size,
+					       const svalue *inner_svalue);
+  const svalue *get_or_create_bits_within (tree type,
+					   const bit_range &bits,
+					   const svalue *inner_svalue);
   const svalue *get_or_create_unmergeable (const svalue *arg);
   const svalue *get_or_create_widening_svalue (tree type,
 					       const program_point &point,
@@ -286,6 +294,9 @@ public:
   const region *get_offset_region (const region *parent,
 				   tree type,
 				   const svalue *byte_offset);
+  const region *get_sized_region (const region *parent,
+				  tree type,
+				  const svalue *byte_size_sval);
   const region *get_cast_region (const region *original_region,
 				 tree type);
   const frame_region *get_frame_region (const frame_region *calling_frame,
@@ -321,6 +332,12 @@ private:
   const svalue *maybe_fold_sub_svalue (tree type,
 				       const svalue *parent_svalue,
 				       const region *subregion);
+  const svalue *maybe_fold_repeated_svalue (tree type,
+					    const svalue *outer_size,
+					    const svalue *inner_svalue);
+  const svalue *maybe_fold_bits_within_svalue (tree type,
+					       const bit_range &bits,
+					       const svalue *inner_svalue);
   const svalue *maybe_undo_optimize_bit_field_compare (tree type,
 						       const compound_svalue *compound_sval,
 						       tree cst, const svalue *arg1);
@@ -362,6 +379,14 @@ private:
   typedef hash_map<sub_svalue::key_t, sub_svalue *> sub_values_map_t;
   sub_values_map_t m_sub_values_map;
 
+  typedef hash_map<repeated_svalue::key_t,
+		   repeated_svalue *> repeated_values_map_t;
+  repeated_values_map_t m_repeated_values_map;
+
+  typedef hash_map<bits_within_svalue::key_t,
+		   bits_within_svalue *> bits_within_values_map_t;
+  bits_within_values_map_t m_bits_within_values_map;
+
   typedef hash_map<const svalue *,
 		   unmergeable_svalue *> unmergeable_values_map_t;
   unmergeable_values_map_t m_unmergeable_values_map;
@@ -402,6 +427,7 @@ private:
   consolidation_map<field_region> m_field_regions;
   consolidation_map<element_region> m_element_regions;
   consolidation_map<offset_region> m_offset_regions;
+  consolidation_map<sized_region> m_sized_regions;
   consolidation_map<cast_region> m_cast_regions;
   consolidation_map<frame_region> m_frame_regions;
   consolidation_map<symbolic_region> m_symbolic_regions;
@@ -575,6 +601,7 @@ class region_model
   void set_value (tree lhs, tree rhs, region_model_context *ctxt);
   void clobber_region (const region *reg);
   void purge_region (const region *reg);
+  void fill_region (const region *reg, const svalue *sval);
   void zero_fill_region (const region *reg);
   void mark_region_as_unknown (const region *reg, uncertainty_t *uncertainty);
 
@@ -664,18 +691,15 @@ class region_model
   get_representative_path_var_1 (const region *reg,
 				 svalue_set *visited) const;
 
-  void add_any_constraints_from_ssa_def_stmt (tree lhs,
-					      enum tree_code op,
-					      tree rhs,
-					      region_model_context *ctxt);
-  void add_any_constraints_from_gassign (enum tree_code op,
-					 tree rhs,
-					 const gassign *assign,
-					 region_model_context *ctxt);
-  void add_any_constraints_from_gcall (enum tree_code op,
-				       tree rhs,
-				       const gcall *call,
-				       region_model_context *ctxt);
+  bool add_constraint (const svalue *lhs,
+		       enum tree_code op,
+		       const svalue *rhs,
+		       region_model_context *ctxt);
+  bool add_constraints_from_binop (const svalue *outer_lhs,
+				   enum tree_code outer_op,
+				   const svalue *outer_rhs,
+				   bool *out,
+				   region_model_context *ctxt);
 
   void update_for_call_superedge (const call_superedge &call_edge,
 				  region_model_context *ctxt);
@@ -754,7 +778,9 @@ class region_model_context
      and use them to trigger sm-state transitions (e.g. transitions due
      to ptrs becoming known to be NULL or non-NULL, rather than just
      "unchecked") */
-  virtual void on_condition (tree lhs, enum tree_code op, tree rhs) = 0;
+  virtual void on_condition (const svalue *lhs,
+			     enum tree_code op,
+			     const svalue *rhs) = 0;
 
   /* Hooks for clients to be notified when an unknown change happens
      to SVAL (in response to a call to an unknown function).  */
@@ -785,9 +811,9 @@ public:
   void on_liveness_change (const svalue_set &,
 			   const region_model *) OVERRIDE {}
   logger *get_logger () OVERRIDE { return NULL; }
-  void on_condition (tree lhs ATTRIBUTE_UNUSED,
+  void on_condition (const svalue *lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
-		     tree rhs ATTRIBUTE_UNUSED) OVERRIDE
+		     const svalue *rhs ATTRIBUTE_UNUSED) OVERRIDE
   {
   }
   void on_unknown_change (const svalue *sval ATTRIBUTE_UNUSED,

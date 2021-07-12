@@ -1,3 +1,8 @@
+2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94366
+	* testsuite/libgomp.c-c++-common/pr94366.c: New test.
+
 2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR other/67300

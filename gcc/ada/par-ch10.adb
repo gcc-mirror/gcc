@@ -555,7 +555,7 @@ package body Ch10 is
                                   | N_Generic_Function_Renaming_Declaration
                                   | N_Generic_Package_Renaming_Declaration
                                   | N_Generic_Procedure_Renaming_Declaration
-          or else Nkind (Unit_Node) in N_Package_Body
+                                  | N_Package_Body
                                   | N_Package_Instantiation
                                   | N_Package_Renaming_Declaration
                                   | N_Package_Specification
@@ -1162,24 +1162,22 @@ package body Ch10 is
       Loc        : Source_Ptr;
       SR_Present : Boolean)
    is
-      Unum : constant Unit_Number_Type    := Get_Cunit_Unit_Number (Cunit);
-      Sind : constant Source_File_Index   := Source_Index (Unum);
-      Unam : constant Unit_Name_Type      := Unit_Name (Unum);
+      Unum : constant Unit_Number_Type  := Get_Cunit_Unit_Number (Cunit);
+      Sind : constant Source_File_Index := Source_Index (Unum);
+      Unam : constant Unit_Name_Type    := Unit_Name (Unum);
 
    begin
-      if List_Units then
-         Write_Str ("Unit ");
-         Write_Unit_Name (Unit_Name (Unum));
-         Unit_Location (Sind, Loc);
+      Write_Str ("Unit ");
+      Write_Unit_Name (Unit_Name (Unum));
+      Unit_Location (Sind, Loc);
 
-         if SR_Present then
-            Write_Str (", SR");
-         end if;
-
-         Write_Str (", file name ");
-         Write_Name (Get_File_Name (Unam, Nkind (Unit (Cunit)) = N_Subunit));
-         Write_Eol;
+      if SR_Present then
+         Write_Str (", SR");
       end if;
+
+      Write_Str (", file name ");
+      Write_Name (Get_File_Name (Unam, Nkind (Unit (Cunit)) = N_Subunit));
+      Write_Eol;
    end Unit_Display;
 
    -------------------

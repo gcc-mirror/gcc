@@ -537,6 +537,7 @@ James A. Morrison				<phython@gcc.gnu.org>
 Brooks Moses					<bmoses@google.com>
 Dirk Mueller					<dmueller@suse.de>
 Phil Muldoon					<pmuldoon@redhat.com>
+Gaius Mulley					<gaius.mulley@southwales.ac.uk>
 Steven Munroe					<munroesj52@gmail.com>
 Jun Ma						<junma@linux.alibaba.com>
 Szabolcs Nagy					<szabolcs.nagy@arm.com>
@@ -590,6 +591,7 @@ Eugene Rozenfeld				<erozen@microsoft.com>
 Maciej W. Rozycki				<macro@orcam.me.uk>
 Silvius Rus					<rus@google.com>
 Matthew Sachs					<msachs@apple.com>
+Ankur Saini					<arsenic@sourceware.org>
 Hariharan Sandanagobalane			<hariharan.gcc@gmail.com>
 Duncan Sands					<baldrick@gcc.gnu.org>
 Sujoy Saraswati					<sujoy.saraswati@hpe.com>
@@ -702,3 +704,4 @@ information.
  Matthias Kretz					<m.kretz@gsi.de>
  Jeff Law					<jeffreyalaw@gmail.com>
  Jeff Law					<jlaw@tachyum.com>
+ Gaius Mulley					<gaius.mulley@southwales.ac.uk>

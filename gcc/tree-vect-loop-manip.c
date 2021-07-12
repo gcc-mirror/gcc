@@ -3597,8 +3597,6 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 	 niter information which is copied from the original loop.  */
       gcc_assert (loop_constraint_set_p (loop, LOOP_C_FINITE));
       vect_free_loop_info_assumptions (nloop);
-      /* And set constraint LOOP_C_INFINITE for niter analyzer.  */
-      loop_constraint_set (loop, LOOP_C_INFINITE);
     }
 
   if (LOCATION_LOCUS (vect_location.get_location_t ()) != UNKNOWN_LOCATION

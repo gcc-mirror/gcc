@@ -9273,13 +9273,13 @@ process_freeze_entity (Node_Id gnat_node)
       gnu_new = gnat_to_gnu_entity (full_view, NULL_TREE, true);
 
       /* Propagate back-annotations from full view to partial view.  */
-      if (Unknown_Alignment (gnat_entity))
+      if (!Known_Alignment (gnat_entity))
 	Set_Alignment (gnat_entity, Alignment (full_view));
 
-      if (Unknown_Esize (gnat_entity))
+      if (!Known_Esize (gnat_entity))
 	Set_Esize (gnat_entity, Esize (full_view));
 
-      if (Unknown_RM_Size (gnat_entity))
+      if (!Known_RM_Size (gnat_entity))
 	Set_RM_Size (gnat_entity, RM_Size (full_view));
 
       /* The above call may have defined this entity (the simplest example

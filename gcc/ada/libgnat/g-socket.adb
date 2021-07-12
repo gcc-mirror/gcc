@@ -96,6 +96,9 @@ package body GNAT.Sockets is
 
    Options : constant array (Specific_Option_Name) of C.int :=
                (Keep_Alive          => SOSC.SO_KEEPALIVE,
+                Keep_Alive_Count    => SOSC.TCP_KEEPCNT,
+                Keep_Alive_Idle     => SOSC.TCP_KEEPIDLE,
+                Keep_Alive_Interval => SOSC.TCP_KEEPINTVL,
                 Reuse_Address       => SOSC.SO_REUSEADDR,
                 Broadcast           => SOSC.SO_BROADCAST,
                 Send_Buffer         => SOSC.SO_SNDBUF,
@@ -1442,6 +1445,9 @@ package body GNAT.Sockets is
             | Error
             | Generic_Option
             | Keep_Alive
+            | Keep_Alive_Count
+            | Keep_Alive_Idle
+            | Keep_Alive_Interval
             | Multicast_If_V4
             | Multicast_If_V6
             | Multicast_Loop_V4
@@ -1511,6 +1517,15 @@ package body GNAT.Sockets is
          =>
             Opt.Enabled := (V4 /= 0);
 
+         when Keep_Alive_Count =>
+            Opt.Count := Natural (V4);
+
+         when Keep_Alive_Idle =>
+            Opt.Idle_Seconds := Natural (V4);
+
+         when Keep_Alive_Interval =>
+            Opt.Interval_Seconds := Natural (V4);
+
          when Busy_Polling =>
             Opt.Microseconds := Natural (V4);
 
@@ -1555,14 +1570,18 @@ package body GNAT.Sockets is
             | Send_Timeout
          =>
             if Is_Windows then
-
-               --  Timeout is in milliseconds, actual value is 500 ms +
-               --  returned value (unless it is 0).
-
                if U4 = 0 then
                   Opt.Timeout := 0.0;
+
                else
-                  Opt.Timeout :=  Duration (U4) / 1000 + 0.500;
+                  if Minus_500ms_Windows_Timeout then
+                     --  Timeout is in milliseconds, actual value is 500 ms +
+                     --  returned value (unless it is 0).
+
+                     U4 := U4 + 500;
+                  end if;
+
+                  Opt.Timeout := Duration (U4) / 1000;
                end if;
 
             else
@@ -2620,6 +2639,21 @@ package body GNAT.Sockets is
             Len := V4'Size / 8;
             Add := V4'Address;
 
+         when Keep_Alive_Count =>
+            V4  := C.int (Option.Count);
+            Len := V4'Size / 8;
+            Add := V4'Address;
+
+         when Keep_Alive_Idle =>
+            V4  := C.int (Option.Idle_Seconds);
+            Len := V4'Size / 8;
+            Add := V4'Address;
+
+         when Keep_Alive_Interval =>
+            V4  := C.int (Option.Interval_Seconds);
+            Len := V4'Size / 8;
+            Add := V4'Address;
+
          when Busy_Polling =>
             V4  := C.int (Option.Microseconds);
             Len := V4'Size / 8;
@@ -2694,7 +2728,7 @@ package body GNAT.Sockets is
                Len := U4'Size / 8;
                Add := U4'Address;
 
-               U4 := C.unsigned (Option.Timeout / 0.001);
+               U4 := C.unsigned (Option.Timeout * 1000);
 
                if Option.Timeout > 0.0 and then U4 = 0 then
                   --  Avoid round to zero. Zero timeout mean unlimited

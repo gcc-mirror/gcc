@@ -73,6 +73,15 @@ struct stringop_algs
 {
   const enum stringop_alg unknown_size;
   const struct stringop_strategy {
+    /* Several older compilers delete the default constructor because of the
+       const entries (see PR100246).  Manually specifying a CTOR works around
+       this issue.  Since this header is used by code compiled with the C
+       compiler we must guard the addition.  */
+#ifdef __cplusplus
+    stringop_strategy(int _max = -1, enum stringop_alg _alg = libcall,
+		      int _noalign = false)
+      : max (_max), alg (_alg), noalign (_noalign) {}
+#endif
     const int max;
     const enum stringop_alg alg;
     int noalign;
@@ -1007,7 +1016,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
-   || (MODE) == V4QImode || (MODE) == V2HImode				\
+   || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (MODE) == V2DImode || (MODE) == DFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
@@ -1039,7 +1048,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == SImode || (MODE) == DImode				\
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
-   || (MODE) == V4QImode || (MODE) == V2HImode				\
+   || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\
 	   || (MODE) == TFmode || (MODE) == TCmode			\

@@ -458,15 +458,6 @@
   [(set_attr "type" "neon_store1_one_lane_q,neon_to_gp_q")]
 )
 
-(define_expand "vec_init<mode><V_elem_l>"
-  [(match_operand:VDQ 0 "s_register_operand")
-   (match_operand 1 "" "")]
-  "TARGET_NEON || TARGET_HAVE_MVE"
-{
-  neon_expand_vector_init (operands[0], operands[1]);
-  DONE;
-})
-
 ;; Doubleword and quadword arithmetic.
 
 ;; NOTE: some other instructions also support 64-bit integer

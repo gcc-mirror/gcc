@@ -31,6 +31,7 @@
 
 /* { dg-do compile )  */
 /* { dg-options "-O0 -gctf -dA" } */
+/* { dg-options "-O0 -gctf -gdwarf-4 -dA" { target { *-*-darwin* } } } */
 
 /* { dg-final { scan-assembler-times "ascii \"int.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*ctt_name" 7 } } */

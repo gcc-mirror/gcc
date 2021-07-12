@@ -162,7 +162,7 @@ package Exp_Util is
    --
    --  Implementation limitation: Assoc_Node must be a statement. We can
    --  generalize to expressions if there is a need but this is tricky to
-   --  implement because of short-circuits (among other things).???
+   --  implement because of short-circuits (among other things).
 
    procedure Insert_Declaration (N : Node_Id; Decl : Node_Id);
    --  N must be a subexpression (Nkind in N_Subexpr). This is similar to
@@ -915,7 +915,7 @@ package Exp_Util is
    --  Establish the following mapping between the attributes of tagged parent
    --  type Parent_Type and tagged derived type Derived_Type.
    --
-   --    * Map each discriminant of Parent_Type to ether the corresponding
+   --    * Map each discriminant of Parent_Type to either the corresponding
    --      discriminant of Derived_Type or come constraint.
 
    --    * Map each primitive operation of Parent_Type to the corresponding

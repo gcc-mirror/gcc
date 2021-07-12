@@ -33,6 +33,7 @@ with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
 with Expander;       use Expander;
 with Exp_Ch6;        use Exp_Ch6;
+with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Ghost;          use Ghost;
@@ -479,12 +480,11 @@ package body Sem_Ch5 is
       Mark_And_Set_Ghost_Assignment (N);
 
       if Has_Target_Names (N) then
+         pragma Assert (No (Current_Assignment));
          Current_Assignment := N;
          Expander_Mode_Save_And_Set (False);
          Save_Full_Analysis := Full_Analysis;
          Full_Analysis      := False;
-      else
-         Current_Assignment := Empty;
       end if;
 
       Analyze (Lhs);
@@ -979,7 +979,92 @@ package body Sem_Ch5 is
       end if;
 
       if Is_Scalar_Type (T1) then
-         Apply_Scalar_Range_Check (Rhs, Etype (Lhs));
+         declare
+
+            function Omit_Range_Check_For_Streaming return Boolean;
+            --  Return True if this assignment statement is the expansion of
+            --  a Some_Scalar_Type'Read procedure call such that all conditions
+            --  of 13.3.2(35)'s "no check is made" rule are met.
+
+            ------------------------------------
+            -- Omit_Range_Check_For_Streaming --
+            ------------------------------------
+
+            function Omit_Range_Check_For_Streaming return Boolean is
+            begin
+               --  Have we got an implicitly generated assignment to a
+               --  component of a composite object? If not, return False.
+
+               if Comes_From_Source (N)
+                 or else Serious_Errors_Detected > 0
+                 or else Nkind (Lhs)
+                           not in N_Selected_Component | N_Indexed_Component
+               then
+                  return False;
+               end if;
+
+               declare
+                  Pref : constant Node_Id := Prefix (Lhs);
+               begin
+                  --  Are we in the implicitly-defined Read subprogram
+                  --  for a composite type, reading the value of a scalar
+                  --  component from the stream? If not, return False.
+
+                  if Nkind (Pref) /= N_Identifier
+                    or else not Is_TSS (Scope (Entity (Pref)), TSS_Stream_Read)
+                  then
+                     return False;
+                  end if;
+
+                  --  Return False if Default_Value or Default_Component_Value
+                  --  aspect applies.
+
+                  if Has_Default_Aspect (Etype (Lhs))
+                    or else Has_Default_Aspect (Etype (Pref))
+                  then
+                     return False;
+
+                  --  Are we assigning to a record component (as opposed to
+                  --  an array component)?
+
+                  elsif Nkind (Lhs) = N_Selected_Component then
+
+                     --  Are we assigning to a nondiscriminant component
+                     --  that lacks a default initial value expression?
+                     --  If so, return True.
+
+                     declare
+                        Comp_Id : constant Entity_Id :=
+                          Original_Record_Component
+                            (Entity (Selector_Name (Lhs)));
+                     begin
+                        if Ekind (Comp_Id) = E_Component
+                          and then Nkind (Parent (Comp_Id))
+                                     = N_Component_Declaration
+                          and then
+                            not Present (Expression (Parent (Comp_Id)))
+                        then
+                           return True;
+                        end if;
+                        return False;
+                     end;
+
+                  --  We are assigning to a component of an array
+                  --  (and we tested for both Default_Value and
+                  --  Default_Component_Value above), so return True.
+
+                  else
+                     pragma Assert (Nkind (Lhs) = N_Indexed_Component);
+                     return True;
+                  end if;
+               end;
+            end Omit_Range_Check_For_Streaming;
+
+         begin
+            if not Omit_Range_Check_For_Streaming then
+               Apply_Scalar_Range_Check (Rhs, Etype (Lhs));
+            end if;
+         end;
 
       --  For array types, verify that lengths match. If the right hand side
       --  is a function call that has been inlined, the assignment has been
@@ -1216,6 +1301,7 @@ package body Sem_Ch5 is
          if Has_Target_Names (N) then
             Expander_Mode_Restore;
             Full_Analysis := Save_Full_Analysis;
+            Current_Assignment := Empty;
          end if;
 
          pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
@@ -2090,9 +2176,11 @@ package body Sem_Ch5 is
       --  indicator, verify that the container type has an Iterate aspect that
       --  implements the reversible iterator interface.
 
-      procedure Check_Subtype_Indication (Comp_Type : Entity_Id);
+      procedure Check_Subtype_Definition (Comp_Type : Entity_Id);
       --  If a subtype indication is present, verify that it is consistent
       --  with the component type of the array or container name.
+      --  In Ada 2022, the subtype indication may be an access definition,
+      --  if the array or container has elements of an anonymous access type.
 
       function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id;
       --  For containers with Iterator and related aspects, the cursor is
@@ -2123,24 +2211,46 @@ package body Sem_Ch5 is
       end Check_Reverse_Iteration;
 
       -------------------------------
-      --  Check_Subtype_Indication --
+      --  Check_Subtype_Definition --
       -------------------------------
 
-      procedure Check_Subtype_Indication (Comp_Type : Entity_Id) is
+      procedure Check_Subtype_Definition (Comp_Type : Entity_Id) is
       begin
-         if Present (Subt)
-           and then (not Covers (Base_Type ((Bas)), Comp_Type)
+         if not Present (Subt) then
+            return;
+         end if;
+
+         if Is_Anonymous_Access_Type (Entity (Subt)) then
+            if not Is_Anonymous_Access_Type (Comp_Type) then
+               Error_Msg_NE
+                 ("component type& is not an anonymous access",
+                  Subt, Comp_Type);
+
+            elsif not Conforming_Types
+                (Designated_Type (Entity (Subt)),
+                 Designated_Type (Comp_Type),
+                 Fully_Conformant)
+            then
+               Error_Msg_NE
+                 ("subtype indication does not match component type&",
+                  Subt, Comp_Type);
+            end if;
+
+         elsif Present (Subt)
+           and then (not Covers (Base_Type (Bas), Comp_Type)
                       or else not Subtypes_Statically_Match (Bas, Comp_Type))
          then
             if Is_Array_Type (Typ) then
-               Error_Msg_N
-                 ("subtype indication does not match component type", Subt);
+               Error_Msg_NE
+                 ("subtype indication does not match component type&",
+                  Subt, Comp_Type);
             else
-               Error_Msg_N
-                 ("subtype indication does not match element type", Subt);
+               Error_Msg_NE
+                 ("subtype indication does not match element type&",
+                  Subt, Comp_Type);
             end if;
          end if;
-      end Check_Subtype_Indication;
+      end Check_Subtype_Definition;
 
       ---------------------
       -- Get_Cursor_Type --
@@ -2200,6 +2310,39 @@ package body Sem_Ch5 is
             begin
                Insert_Before (Parent (Parent (N)), Decl);
                Analyze (Decl);
+               Rewrite (Subt, New_Occurrence_Of (S, Sloc (Subt)));
+            end;
+
+         --  Ada 2022: the subtype definition may be for an anonymous
+         --  access type.
+
+         elsif Nkind (Subt) = N_Access_Definition then
+            declare
+               S    : constant Entity_Id := Make_Temporary (Sloc (Subt), 'S');
+               Decl : Node_Id;
+            begin
+               if Present (Subtype_Mark (Subt)) then
+                  Decl :=
+                    Make_Full_Type_Declaration (Loc,
+                      Defining_Identifier => S,
+                      Type_Definition     =>
+                        Make_Access_To_Object_Definition (Loc,
+                          All_Present        => True,
+                          Subtype_Indication =>
+                            New_Copy_Tree (Subtype_Mark (Subt))));
+
+               else
+                  Decl :=
+                    Make_Full_Type_Declaration (Loc,
+                      Defining_Identifier => S,
+                      Type_Definition  =>
+                        New_Copy_Tree
+                          (Access_To_Subprogram_Definition (Subt)));
+               end if;
+
+               Insert_Before (Parent (Parent (N)), Decl);
+               Analyze (Decl);
+               Freeze_Before (First (Statements (Parent (Parent (N)))), S);
                Rewrite (Subt, New_Occurrence_Of (S, Sloc (Subt)));
             end;
          else
@@ -2479,7 +2622,7 @@ package body Sem_Ch5 is
                   & "component of a mutable object", N);
             end if;
 
-            Check_Subtype_Indication (Component_Type (Typ));
+            Check_Subtype_Definition (Component_Type (Typ));
 
          --  Here we have a missing Range attribute
 
@@ -2529,7 +2672,7 @@ package body Sem_Ch5 is
                   end if;
                end;
 
-               Check_Subtype_Indication (Etype (Def_Id));
+               Check_Subtype_Definition (Etype (Def_Id));
 
             --  For a predefined container, the type of the loop variable is
             --  the Iterator_Element aspect of the container type.
@@ -2556,7 +2699,7 @@ package body Sem_Ch5 is
                      Cursor_Type := Get_Cursor_Type (Typ);
                      pragma Assert (Present (Cursor_Type));
 
-                     Check_Subtype_Indication (Etype (Def_Id));
+                     Check_Subtype_Definition (Etype (Def_Id));
 
                      --  If the container has a variable indexing aspect, the
                      --  element is a variable and is modifiable in the loop.
@@ -3377,6 +3520,32 @@ package body Sem_Ch5 is
                        ("\loop executes zero times or raises "
                         & "Constraint_Error??", Bad_Bound);
                   end if;
+
+                  if Compile_Time_Compare (LLo, LHi, Assume_Valid => False)
+                    = GT
+                  then
+                     Error_Msg_N ("??constrained range is null",
+                       Constraint (DS));
+
+                     --  Additional constraints on modular types can be
+                     --  confusing, add more information.
+
+                     if Ekind (Etype (DS)) = E_Modular_Integer_Subtype then
+                        Error_Msg_Uint_1 := Intval (LLo);
+                        Error_Msg_Uint_2 := Intval (LHi);
+                        Error_Msg_NE ("\iterator has modular type &, " &
+                          "so the loop has bounds ^ ..^",
+                          Constraint (DS),
+                          Subtype_Mark (DS));
+                     end if;
+
+                     Set_Is_Null_Loop (Loop_Nod);
+                     Null_Range := True;
+
+                     --  Suppress other warnigns about the body of the loop, as
+                     --  it will never execute.
+                     Set_Suppress_Loop_Warnings (Loop_Nod);
+                  end if;
                end;
             end if;
 
@@ -4064,11 +4233,67 @@ package body Sem_Ch5 is
    -------------------------
 
    procedure Analyze_Target_Name (N : Node_Id) is
+      procedure Report_Error;
+      --  Complain about illegal use of target_name and rewrite it into unknown
+      --  identifier.
+
+      ------------------
+      -- Report_Error --
+      ------------------
+
+      procedure Report_Error is
+      begin
+         Error_Msg_N
+           ("must appear in the right-hand side of an assignment statement",
+             N);
+         Rewrite (N, New_Occurrence_Of (Any_Id, Sloc (N)));
+      end Report_Error;
+
+   --  Start of processing for Analyze_Target_Name
+
    begin
       --  A target name has the type of the left-hand side of the enclosing
       --  assignment.
 
-      Set_Etype (N, Etype (Name (Current_Assignment)));
+      --  First, verify that the context is the right-hand side of an
+      --  assignment statement.
+
+      if No (Current_Assignment) then
+         Report_Error;
+         return;
+      end if;
+
+      declare
+         Current : Node_Id := N;
+         Context : Node_Id := Parent (N);
+      begin
+         while Present (Context) loop
+
+            --  Check if target_name appears in the expression of the enclosing
+            --  assignment.
+
+            if Nkind (Context) = N_Assignment_Statement then
+               if Current = Expression (Context) then
+                  pragma Assert (Context = Current_Assignment);
+                  Set_Etype (N, Etype (Name (Current_Assignment)));
+               else
+                  Report_Error;
+               end if;
+               return;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Context) then
+               Report_Error;
+               return;
+            end if;
+
+            Current := Context;
+            Context := Parent (Context);
+         end loop;
+
+         Report_Error;
+      end;
    end Analyze_Target_Name;
 
    ------------------------

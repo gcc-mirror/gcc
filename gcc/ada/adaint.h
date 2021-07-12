@@ -101,11 +101,7 @@ extern "C" {
 #endif
 
 /* Type corresponding to GNAT.OS_Lib.OS_Time */
-#if defined (_WIN64)
 typedef long long OS_Time;
-#else
-typedef long OS_Time;
-#endif
 
 #define __int64 long long
 GNAT_STRUCT_STAT;
@@ -205,7 +201,7 @@ extern OS_Time __gnat_file_time_name                (char *);
 extern OS_Time __gnat_file_time_fd                  (int);
 /* return -1 in case of error */
 
-extern void   __gnat_set_file_time_name		   (char *, time_t);
+extern void   __gnat_set_file_time_name		   (char *, OS_Time);
 
 extern int    __gnat_dup			            (int);
 extern int    __gnat_dup2			            (int, int);

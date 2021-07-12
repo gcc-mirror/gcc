@@ -1,3 +1,32 @@
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-format.c (gcc_tdiag_char_table): Remove support for %G and %K.
+	 (gcc_cdiag_char_table): Same.
+	 (gcc_cxxdiag_char_table): Same.
+
+2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum c_omp_directive_kind): New enum.
+	(struct c_omp_directive): New type.
+	(c_omp_categorize_directive): Declare.
+	* c-omp.c (omp_directives): New variable.
+	(c_omp_categorize_directive): New function.
+
+2021-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (packed_layout): New global variable.
+	(dump_ada_declaration): Set it upon seeing a packed record type.
+	Do not put the "aliased" keyword if it is set.
+	(dump_ada_structure): Add Pack aspect if it is set and clear it.
+
+2021-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (check_name): Rename into...
+	(check_type_name_conflict): ...this.  Minor tweak.
+	(dump_ada_function_declaration): Adjust to above renaming.
+	(dump_ada_array_domains): Fix oversight.
+	(dump_ada_declaration): Call check_type_name_conflict for variables.
+
 2021-06-25  Martin Sebor  <msebor@redhat.com>
 
 	* c-common.c (c_wrap_maybe_const): Remove TREE_NO_WARNING.

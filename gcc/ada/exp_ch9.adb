@@ -6510,14 +6510,12 @@ package body Exp_Ch9 is
 
                   --  Task_Id (Tasknm._disp_get_task_id)
 
-                  Make_Unchecked_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                    Expression   =>
-                      Make_Selected_Component (Loc,
-                        Prefix        => New_Copy_Tree (Tasknm),
-                        Selector_Name =>
-                          Make_Identifier (Loc, Name_uDisp_Get_Task_Id)))));
+                  Unchecked_Convert_To
+                    (RTE (RO_ST_Task_Id),
+                     Make_Selected_Component (Loc,
+                       Prefix        => New_Copy_Tree (Tasknm),
+                       Selector_Name =>
+                         Make_Identifier (Loc, Name_uDisp_Get_Task_Id)))));
 
          else
             Append_To (Component_Associations (Aggr),
@@ -7242,10 +7240,9 @@ package body Exp_Ch9 is
               Make_Assignment_Statement (Loc,
                 Name       => New_Occurrence_Of (Bnn, Loc),
                 Expression =>
-                  Make_Unchecked_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RE_Communication_Block), Loc),
-                    Expression   => Make_Identifier (Loc, Name_uD))));
+                  Unchecked_Convert_To
+                    (RTE (RE_Communication_Block),
+                     Make_Identifier (Loc, Name_uD))));
 
             --  Generate:
             --    _Disp_Asynchronous_Select (<object>, S, P'Address, D, B);
@@ -7361,10 +7358,9 @@ package body Exp_Ch9 is
                 Name =>
                   New_Occurrence_Of (Bnn, Loc),
                 Expression =>
-                  Make_Unchecked_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RE_Communication_Block), Loc),
-                    Expression   => Make_Identifier (Loc, Name_uD))));
+                  Unchecked_Convert_To
+                    (RTE (RE_Communication_Block),
+                     Make_Identifier (Loc, Name_uD))));
 
             --  Generate:
             --    _Disp_Asynchronous_Select (<object>, S, P'Address, D, B);

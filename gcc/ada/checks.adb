@@ -48,6 +48,7 @@ with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch8;        use Sem_Ch8;
+with Sem_Cat;        use Sem_Cat;
 with Sem_Disp;       use Sem_Disp;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
@@ -84,7 +85,7 @@ package body Checks is
    --  such as Apply_Scalar_Range_Check that do not insert any code can be
    --  safely called even when the Expander is inactive (but Errors_Detected
    --  is 0). The benefit of executing this code when expansion is off, is
-   --  the ability to emit constraint error warning for static expressions
+   --  the ability to emit constraint error warnings for static expressions
    --  even when we are not generating code.
 
    --  The above is modified in gnatprove mode to ensure that proper check
@@ -379,8 +380,12 @@ package body Checks is
 
    function Accessibility_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      if Present (E) and then Checks_May_Be_Suppressed (E) then
+      if No_Dynamic_Accessibility_Checks_Enabled (E) then
+         return True;
+
+      elsif Present (E) and then Checks_May_Be_Suppressed (E) then
          return Is_Check_Suppressed (E, Accessibility_Check);
+
       else
          return Scope_Suppress.Suppress (Accessibility_Check);
       end if;
@@ -582,6 +587,11 @@ package body Checks is
       Type_Level  : Node_Id;
 
    begin
+      --  Verify we haven't tried to add a dynamic accessibility check when we
+      --  shouldn't.
+
+      pragma Assert (not No_Dynamic_Accessibility_Checks_Enabled (N));
+
       if Ada_Version >= Ada_2012
          and then not Present (Param_Ent)
          and then Is_Entity_Name (N)
@@ -3313,13 +3323,6 @@ package body Checks is
                      --  to deactivated code.
 
                      Bad_Value (Warn => SPARK_Mode = On);
-
-                     --  In GNATprove mode, we enable the range check so that
-                     --  GNATprove will issue a message if it cannot be proved.
-
-                     if GNATprove_Mode then
-                        Enable_Range_Check (Expr);
-                     end if;
 
                      return;
                   end if;
@@ -7822,10 +7825,8 @@ package body Checks is
                      New_Occurrence_Of (Target_Base_Type, Loc),
                    Constant_Present    => True,
                    Expression          =>
-                     Make_Unchecked_Type_Conversion (Loc,
-                       Subtype_Mark =>
-                         New_Occurrence_Of (Target_Base_Type, Loc),
-                       Expression   => Duplicate_Subexpr (N))),
+                     Unchecked_Convert_To
+                       (Target_Base_Type, Duplicate_Subexpr (N))),
 
                  Make_Raise_Constraint_Error (Loc,
                    Condition =>
@@ -8634,7 +8635,7 @@ package body Checks is
          return;
 
       --  Do not generate an elaboration check if the related subprogram is
-      --  not subjected to accessibility checks.
+      --  not subject to elaboration checks.
 
       elsif Elaboration_Checks_Suppressed (Subp_Id) then
          return;
@@ -8644,14 +8645,20 @@ package body Checks is
       elsif Restriction_Active (No_Elaboration_Code) then
          return;
 
+      --  If pragma Pure or Preelaborate applies, then these elaboration checks
+      --  cannot fail, so do not generate them.
+
+      elsif In_Preelaborated_Unit then
+         return;
+
       --  Do not generate an elaboration check if exceptions cannot be used,
       --  caught, or propagated.
 
       elsif not Exceptions_OK then
          return;
 
-      --  Do not consider subprograms which act as compilation units, because
-      --  they cannot be the target of a dispatching call.
+      --  Do not consider subprograms that are compilation units, because they
+      --  cannot be the target of a dispatching call.
 
       elsif Nkind (Context) = N_Compilation_Unit then
          return;
@@ -8681,10 +8688,10 @@ package body Checks is
       elsif Analyzed (Subp_Body) then
          return;
 
-      --  Do not consider primitives which occur within an instance that acts
-      --  as a compilation unit. Such an instance defines its spec and body out
-      --  of order (body is first) within the tree, which causes the reference
-      --  to the elaboration flag to appear as an undefined symbol.
+      --  Do not consider primitives that occur within an instance that is a
+      --  compilation unit. Such an instance defines its spec and body out of
+      --  order (body is first) within the tree, which causes the reference to
+      --  the elaboration flag to appear as an undefined symbol.
 
       elsif Within_Compilation_Unit_Instance (Subp_Id) then
          return;
@@ -9757,9 +9764,6 @@ package body Checks is
             when N_Attribute_Reference =>
                Set_Do_Overflow_Check (N, False);
 
-            when N_Function_Call =>
-               Set_Do_Tag_Check (N, False);
-
             when N_Op =>
                Set_Do_Overflow_Check (N, False);
 
@@ -9795,7 +9799,6 @@ package body Checks is
 
             when N_Type_Conversion =>
                Set_Do_Length_Check   (N, False);
-               Set_Do_Tag_Check      (N, False);
                Set_Do_Overflow_Check (N, False);
 
             when others =>
@@ -9931,8 +9934,7 @@ package body Checks is
 
             declare
                Indx_Type : Node_Id;
-               Lo        : Node_Id;
-               Hi        : Node_Id;
+               Bounds    : Range_Nodes;
                Do_Expand : Boolean := False;
 
             begin
@@ -9942,37 +9944,38 @@ package body Checks is
                   Next_Index (Indx_Type);
                end loop;
 
-               Get_Index_Bounds (Indx_Type, Lo, Hi);
+               Bounds := Get_Index_Bounds (Indx_Type);
 
-               if Nkind (Lo) = N_Identifier
-                 and then Ekind (Entity (Lo)) = E_In_Parameter
+               if Nkind (Bounds.First) = N_Identifier
+                 and then Ekind (Entity (Bounds.First)) = E_In_Parameter
                then
-                  Lo := Get_Discriminal (E, Lo);
+                  Bounds.First := Get_Discriminal (E, Bounds.First);
                   Do_Expand := True;
                end if;
 
-               if Nkind (Hi) = N_Identifier
-                 and then Ekind (Entity (Hi)) = E_In_Parameter
+               if Nkind (Bounds.Last) = N_Identifier
+                 and then Ekind (Entity (Bounds.Last)) = E_In_Parameter
                then
-                  Hi := Get_Discriminal (E, Hi);
+                  Bounds.Last := Get_Discriminal (E, Bounds.Last);
                   Do_Expand := True;
                end if;
 
                if Do_Expand then
-                  if not Is_Entity_Name (Lo) then
-                     Lo := Duplicate_Subexpr_No_Checks (Lo);
+                  if not Is_Entity_Name (Bounds.First) then
+                     Bounds.First :=
+                       Duplicate_Subexpr_No_Checks (Bounds.First);
                   end if;
 
-                  if not Is_Entity_Name (Hi) then
-                     Lo := Duplicate_Subexpr_No_Checks (Hi);
+                  if not Is_Entity_Name (Bounds.Last) then
+                     Bounds.First := Duplicate_Subexpr_No_Checks (Bounds.Last);
                   end if;
 
                   N :=
                     Make_Op_Add (Loc,
                       Left_Opnd =>
                         Make_Op_Subtract (Loc,
-                          Left_Opnd  => Hi,
-                          Right_Opnd => Lo),
+                          Left_Opnd  => Bounds.Last,
+                          Right_Opnd => Bounds.First),
 
                       Right_Opnd => Make_Integer_Literal (Loc, 1));
                   return N;
@@ -10215,10 +10218,8 @@ package body Checks is
 
                   L_Index  : Node_Id;
                   R_Index  : Node_Id;
-                  L_Low    : Node_Id;
-                  L_High   : Node_Id;
-                  R_Low    : Node_Id;
-                  R_High   : Node_Id;
+                  L_Bounds : Range_Nodes;
+                  R_Bounds : Range_Nodes;
                   L_Length : Uint;
                   R_Length : Uint;
                   Ref_Node : Node_Id;
@@ -10250,29 +10251,33 @@ package body Checks is
                                or else
                              Nkind (R_Index) = N_Raise_Constraint_Error)
                      then
-                        Get_Index_Bounds (L_Index, L_Low, L_High);
-                        Get_Index_Bounds (R_Index, R_Low, R_High);
+                        L_Bounds := Get_Index_Bounds (L_Index);
+                        R_Bounds := Get_Index_Bounds (R_Index);
 
                         --  Deal with compile time length check. Note that we
                         --  skip this in the access case, because the access
                         --  value may be null, so we cannot know statically.
 
                         if not Do_Access
-                          and then Compile_Time_Known_Value (L_Low)
-                          and then Compile_Time_Known_Value (L_High)
-                          and then Compile_Time_Known_Value (R_Low)
-                          and then Compile_Time_Known_Value (R_High)
+                          and then Compile_Time_Known_Value (L_Bounds.First)
+                          and then Compile_Time_Known_Value (L_Bounds.Last)
+                          and then Compile_Time_Known_Value (R_Bounds.First)
+                          and then Compile_Time_Known_Value (R_Bounds.Last)
                         then
-                           if Expr_Value (L_High) >= Expr_Value (L_Low) then
-                              L_Length := Expr_Value (L_High) -
-                                          Expr_Value (L_Low) + 1;
+                           if Expr_Value (L_Bounds.Last) >=
+                              Expr_Value (L_Bounds.First)
+                           then
+                              L_Length := Expr_Value (L_Bounds.Last) -
+                                          Expr_Value (L_Bounds.First) + 1;
                            else
                               L_Length := UI_From_Int (0);
                            end if;
 
-                           if Expr_Value (R_High) >= Expr_Value (R_Low) then
-                              R_Length := Expr_Value (R_High) -
-                                          Expr_Value (R_Low) + 1;
+                           if Expr_Value (R_Bounds.Last) >=
+                              Expr_Value (R_Bounds.First)
+                           then
+                              R_Length := Expr_Value (R_Bounds.Last) -
+                                          Expr_Value (R_Bounds.First) + 1;
                            else
                               R_Length := UI_From_Int (0);
                            end if;
@@ -10304,8 +10309,9 @@ package body Checks is
                             (Etype (L_Index), Etype (R_Index))
 
                           and then not
-                            (Same_Bounds (L_Low, R_Low)
-                              and then Same_Bounds (L_High, R_High))
+                            (Same_Bounds (L_Bounds.First, R_Bounds.First)
+                              and then
+                             Same_Bounds (L_Bounds.Last, R_Bounds.Last))
                         then
                            Evolve_Or_Else
                              (Cond, Length_E_Cond (Exptyp, T_Typ, Indx));

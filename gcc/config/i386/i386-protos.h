@@ -50,6 +50,8 @@ extern void ix86_reset_previous_fndecl (void);
 
 extern bool ix86_using_red_zone (void);
 
+extern rtx ix86_gen_scratch_sse_rtx (machine_mode);
+
 extern unsigned int ix86_regmode_natural_size (machine_mode);
 #ifdef RTX_CODE
 extern int standard_80387_constant_p (rtx);
@@ -256,6 +258,8 @@ extern void ix86_expand_mul_widen_hilo (rtx, rtx, rtx, bool, bool);
 extern void ix86_expand_sse2_mulv4si3 (rtx, rtx, rtx);
 extern void ix86_expand_sse2_mulvxdi3 (rtx, rtx, rtx);
 extern void ix86_expand_sse2_abs (rtx, rtx);
+extern bool ix86_expand_vector_init_duplicate (bool, machine_mode, rtx,
+					       rtx);
 
 /* In i386-c.c  */
 extern void ix86_target_macros (void);

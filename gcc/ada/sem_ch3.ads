@@ -176,11 +176,6 @@ package Sem_Ch3 is
    --  corresponding to that discriminant in the constraint that specifies its
    --  value.
 
-   function Is_Null_Extension (T : Entity_Id) return Boolean;
-   --  Returns True if the tagged type T has an N_Full_Type_Declaration that
-   --  is a null extension, meaning that it has an extension part without any
-   --  components and does not have a known discriminant part.
-
    function Is_Visible_Component
      (C : Entity_Id;
       N : Node_Id := Empty) return Boolean;

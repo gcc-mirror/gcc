@@ -147,6 +147,19 @@ static void skip_quoted_string (const WCHAR **current_in,
 	}
       ci++;
     }
+
+  /* Handle the case in which a nul character was found instead of a closing
+     double quote. In that case consider all the backslashes as literal
+     characters. */
+  if (*ci == '\0')
+    {
+      for (int i=0; i<qbs_count; i++)
+        {
+          *co='\\';
+          co++;
+        }
+    }
+
   *current_in = ci;
   *current_out = co;
 }
@@ -205,7 +218,10 @@ static void skip_argument (const WCHAR **current_in,
 	  bs_count = 0;
 	  *co = *ci; co++;
 	}
-      ci++;
+      if (*ci != '\0')
+        {
+          ci++;
+        }
     }
 
   for (int i=0; i<bs_count; i++)
