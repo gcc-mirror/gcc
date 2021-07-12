@@ -107,6 +107,7 @@ private:
   AST::Attribute parse_outer_attribute ();
   AST::Attribute parse_attribute_body ();
   std::unique_ptr<AST::AttrInput> parse_attr_input ();
+  AST::Attribute parse_doc_comment ();
 
   // Path-related
   AST::SimplePath parse_simple_path ();

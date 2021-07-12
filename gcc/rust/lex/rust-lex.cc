@@ -265,9 +265,16 @@ Lexer::build_token ()
 	      int next_char = peek_input (n);
 	      if (is_whitespace (next_char))
 		n++;
-	      else if (next_char == '/' && peek_input (n + 1) == '/')
+	      else if ((next_char == '/' && peek_input (n + 1) == '/'
+			&& peek_input (n + 2) != '!'
+			&& peek_input (n + 2) != '/')
+		       || (next_char == '/' && peek_input (n + 1) == '/'
+			   && peek_input (n + 2) == '/'
+			   && peek_input (n + 3) == '/'))
 		{
+		  // two // or four ////
 		  // A single line comment
+		  // (but not an inner or outer doc comment)
 		  n += 2;
 		  next_char = peek_input (n);
 		  while (next_char != '\n' && next_char != EOF)
@@ -278,9 +285,30 @@ Lexer::build_token ()
 		  if (next_char == '\n')
 		    n++;
 		}
-	      else if (next_char == '/' && peek_input (n + 1) == '*')
+	      else if (next_char == '/' && peek_input (n + 1) == '*'
+		       && peek_input (n + 2) == '*'
+		       && peek_input (n + 3) == '/')
 		{
+		  /**/
+		  n += 4;
+		}
+	      else if (next_char == '/' && peek_input (n + 1) == '*'
+		       && peek_input (n + 2) == '*' && peek_input (n + 3) == '*'
+		       && peek_input (n + 4) == '/')
+		{
+		  /***/
+		  n += 5;
+		}
+	      else if ((next_char == '/' && peek_input (n + 1) == '*'
+			&& peek_input (n + 2) != '*'
+			&& peek_input (n + 2) != '!')
+		       || (next_char == '/' && peek_input (n + 1) == '*'
+			   && peek_input (n + 2) == '*'
+			   && peek_input (n + 3) == '*'))
+		{
+		  // one /* or three /***
 		  // Start of a block comment
+		  // (but not an inner or outer doc comment)
 		  n += 2;
 		  int level = 1;
 		  while (level > 0)
@@ -338,6 +366,9 @@ Lexer::build_token ()
 	  current_column = 1;
 	  // tell line_table that new line starts
 	  line_map->start_line (current_line, max_column_hint);
+	  continue;
+	case '\r': // cr
+	  // Ignore, we expect a newline (lf) soon.
 	  continue;
 	case ' ': // space
 	  current_column++;
@@ -445,11 +476,14 @@ Lexer::build_token ()
 
 	      return Token::make (DIV_EQ, loc);
 	    }
-	  else if (peek_input () == '/')
+	  else if ((peek_input () == '/' && peek_input (1) != '!'
+		    && peek_input (1) != '/')
+		   || (peek_input () == '/' && peek_input (1) == '/'
+		       && peek_input (2) == '/'))
 	    {
-	      // TODO: single-line doc comments
-
+	      // two // or four ////
 	      // single line comment
+	      // (but not an inner or outer doc comment)
 	      skip_input ();
 	      current_column += 2;
 
@@ -461,23 +495,85 @@ Lexer::build_token ()
 		  current_char = peek_input ();
 		}
 	      continue;
-	      break;
 	    }
-	  else if (peek_input () == '*')
+	  else if (peek_input () == '/'
+		   && (peek_input (1) == '!' || peek_input (1) == '/'))
 	    {
+	      /* single line doc comment, inner or outer.  */
+	      bool is_inner = peek_input (1) == '!';
+	      skip_input (1);
+	      current_column += 3;
+
+	      std::string str;
+	      str.reserve (32);
+	      current_char = peek_input ();
+	      while (current_char != '\n')
+		{
+		  skip_input ();
+		  if (current_char == '\r')
+		    {
+		      char next_char = peek_input ();
+		      if (next_char == '\n')
+			{
+			  current_char = '\n';
+			  break;
+			}
+		      rust_error_at (
+			loc, "Isolated CR %<\\r%> not allowed in doc comment");
+		      current_char = next_char;
+		      continue;
+		    }
+		  if (current_char == EOF)
+		    {
+		      rust_error_at (
+			loc, "unexpected EOF while looking for end of comment");
+		      break;
+		    }
+		  str += current_char;
+		  current_char = peek_input ();
+		}
+	      skip_input ();
+	      current_line++;
+	      current_column = 1;
+	      // tell line_table that new line starts
+	      line_map->start_line (current_line, max_column_hint);
+
+	      str.shrink_to_fit ();
+	      if (is_inner)
+		return Token::make_inner_doc_comment (loc, std::move (str));
+	      else
+		return Token::make_outer_doc_comment (loc, std::move (str));
+	    }
+	  else if (peek_input () == '*' && peek_input (1) == '*'
+		   && peek_input (2) == '/')
+	    {
+	      /**/
+	      skip_input (2);
+	      current_column += 4;
+	      continue;
+	    }
+	  else if (peek_input () == '*' && peek_input (1) == '*'
+		   && peek_input (2) == '*' && peek_input (3) == '/')
+	    {
+	      /***/
+	      skip_input (3);
+	      current_column += 5;
+	      continue;
+	    }
+	  else if ((peek_input () == '*' && peek_input (1) != '!'
+		    && peek_input (1) != '*')
+		   || (peek_input () == '*' && peek_input (1) == '*'
+		       && peek_input (2) == '*'))
+	    {
+	      // one /* or three /***
 	      // block comment
+	      // (but not an inner or outer doc comment)
 	      skip_input ();
 	      current_column += 2;
-
-	      // TODO: block doc comments
-
-	      current_char = peek_input ();
 
 	      int level = 1;
 	      while (level > 0)
 		{
-		  skip_input ();
-		  current_column++; // for error-handling
 		  current_char = peek_input ();
 
 		  if (current_char == EOF)
@@ -496,6 +592,7 @@ Lexer::build_token ()
 		      current_column += 2;
 
 		      level += 1;
+		      continue;
 		    }
 
 		  // ignore until */ is found
@@ -505,16 +602,101 @@ Lexer::build_token ()
 		      skip_input (1);
 
 		      current_column += 2;
-		      // should only break inner loop here - seems to do so
-		      // break;
 
 		      level -= 1;
+		      continue;
 		    }
+
+		  if (current_char == '\n')
+		    {
+		      skip_input ();
+		      current_line++;
+		      current_column = 1;
+		      // tell line_table that new line starts
+		      line_map->start_line (current_line, max_column_hint);
+		      continue;
+		    }
+
+		  skip_input ();
+		  current_column++;
 		}
 
 	      // refresh new token
 	      continue;
-	      break;
+	    }
+	  else if (peek_input () == '*'
+		   && (peek_input (1) == '!' || peek_input (1) == '*'))
+	    {
+	      // block doc comment, inner /*! or outer /**
+	      bool is_inner = peek_input (1) == '!';
+	      skip_input (1);
+	      current_column += 3;
+
+	      std::string str;
+	      str.reserve (96);
+
+	      int level = 1;
+	      while (level > 0)
+		{
+		  current_char = peek_input ();
+
+		  if (current_char == EOF)
+		    {
+		      rust_error_at (
+			loc, "unexpected EOF while looking for end of comment");
+		      break;
+		    }
+
+		  // if /* found
+		  if (current_char == '/' && peek_input (1) == '*')
+		    {
+		      // skip /* characters
+		      skip_input (1);
+		      current_column += 2;
+
+		      level += 1;
+		      str += "/*";
+		      continue;
+		    }
+
+		  // ignore until */ is found
+		  if (current_char == '*' && peek_input (1) == '/')
+		    {
+		      // skip */ characters
+		      skip_input (1);
+		      current_column += 2;
+
+		      level -= 1;
+		      if (level > 0)
+			str += "*/";
+		      continue;
+		    }
+
+		  if (current_char == '\r' && peek_input (1) != '\n')
+		    rust_error_at (
+		      loc, "Isolated CR %<\\r%> not allowed in doc comment");
+
+		  if (current_char == '\n')
+		    {
+		      skip_input ();
+		      current_line++;
+		      current_column = 1;
+		      // tell line_table that new line starts
+		      line_map->start_line (current_line, max_column_hint);
+		      str += '\n';
+		      continue;
+		    }
+
+		  str += current_char;
+		  skip_input ();
+		  current_column++;
+		}
+
+	      str.shrink_to_fit ();
+	      if (is_inner)
+		return Token::make_inner_doc_comment (loc, std::move (str));
+	      else
+		return Token::make_outer_doc_comment (loc, std::move (str));
 	    }
 	  else
 	    {

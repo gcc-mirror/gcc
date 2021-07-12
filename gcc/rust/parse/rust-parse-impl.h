@@ -434,8 +434,9 @@ Parser<ManagedTokenSource>::parse_inner_attributes ()
   AST::AttrVec inner_attributes;
 
   // only try to parse it if it starts with "#!" not only "#"
-  while (lexer.peek_token ()->get_id () == HASH
-	 && lexer.peek_token (1)->get_id () == EXCLAM)
+  while ((lexer.peek_token ()->get_id () == HASH
+	  && lexer.peek_token (1)->get_id () == EXCLAM)
+	 || lexer.peek_token ()->get_id () == INNER_DOC_COMMENT)
     {
       AST::Attribute inner_attr = parse_inner_attribute ();
 
@@ -457,11 +458,33 @@ Parser<ManagedTokenSource>::parse_inner_attributes ()
   return inner_attributes;
 }
 
+// Parse a inner or outer doc comment into an doc attribute
+template <typename ManagedTokenSource>
+AST::Attribute
+Parser<ManagedTokenSource>::parse_doc_comment ()
+{
+  const_TokenPtr token = lexer.peek_token ();
+  Location locus = token->get_locus ();
+  AST::SimplePathSegment segment ("doc", locus);
+  std::vector<AST::SimplePathSegment> segments;
+  segments.push_back (std::move (segment));
+  AST::SimplePath attr_path (std::move (segments), false, locus);
+  AST::LiteralExpr lit_expr (token->get_str (), AST::Literal::STRING,
+			     PrimitiveCoreType::CORETYPE_STR, {}, locus);
+  std::unique_ptr<AST::AttrInput> attr_input (
+    new AST::AttrInputLiteral (std::move (lit_expr)));
+  lexer.skip_token ();
+  return AST::Attribute (std::move (attr_path), std::move (attr_input), locus);
+}
+
 // Parse a single inner attribute.
 template <typename ManagedTokenSource>
 AST::Attribute
 Parser<ManagedTokenSource>::parse_inner_attribute ()
 {
+  if (lexer.peek_token ()->get_id () == INNER_DOC_COMMENT)
+    return parse_doc_comment ();
+
   if (lexer.peek_token ()->get_id () != HASH)
     {
       Error error (lexer.peek_token ()->get_locus (),
@@ -1019,7 +1042,15 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
   switch (t->get_id ())
     {
     case END_OF_FILE:
-      // not necessarily an error
+      // not necessarily an error, unless we just read outer
+      // attributes which needs to be attached
+      if (!outer_attrs.empty ())
+	{
+	  Rust::AST::Attribute attr = outer_attrs.back ();
+	  Error error (attr.get_locus (),
+		       "expected item after outer attribute or doc comment");
+	  add_error (std::move (error));
+	}
       return nullptr;
     case PUB:
     case MOD:
@@ -1091,7 +1122,11 @@ Parser<ManagedTokenSource>::parse_outer_attributes ()
 {
   AST::AttrVec outer_attributes;
 
-  while (lexer.peek_token ()->get_id () == HASH)
+  while (lexer.peek_token ()->get_id ()
+	   == HASH /* Can also be #!, which catches errors.  */
+	 || lexer.peek_token ()->get_id () == OUTER_DOC_COMMENT
+	 || lexer.peek_token ()->get_id ()
+	      == INNER_DOC_COMMENT) /* For error handling.  */
     {
       AST::Attribute outer_attr = parse_outer_attribute ();
 
@@ -1121,6 +1156,20 @@ template <typename ManagedTokenSource>
 AST::Attribute
 Parser<ManagedTokenSource>::parse_outer_attribute ()
 {
+  if (lexer.peek_token ()->get_id () == OUTER_DOC_COMMENT)
+    return parse_doc_comment ();
+
+  if (lexer.peek_token ()->get_id () == INNER_DOC_COMMENT)
+    {
+      Error error (
+	lexer.peek_token ()->get_locus (),
+	"inner doc (%<//!%> or %</*!%>) only allowed at start of item "
+	"and before any outer attribute or doc (%<#[%>, %<///%> or %</**%>)");
+      add_error (std::move (error));
+      lexer.skip_token ();
+      return AST::Attribute::create_empty ();
+    }
+
   /* OuterAttribute -> '#' '[' Attr ']' */
 
   if (lexer.peek_token ()->get_id () != HASH)
@@ -1134,12 +1183,13 @@ Parser<ManagedTokenSource>::parse_outer_attribute ()
       if (id == EXCLAM)
 	{
 	  // this is inner attribute syntax, so throw error
+	  // inner attributes were either already parsed or not allowed here.
 	  Error error (
 	    lexer.peek_token ()->get_locus (),
 	    "token %<!%> found, indicating inner attribute definition. Inner "
 	    "attributes are not possible at this location");
 	  add_error (std::move (error));
-	} // TODO: are there any cases where this wouldn't be an error?
+	}
       return AST::Attribute::create_empty ();
     }
 

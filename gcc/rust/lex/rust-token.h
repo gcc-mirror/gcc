@@ -151,15 +151,10 @@ enum PrimitiveCoreType
   RS_TOKEN (RIGHT_SQUARE, "]")                                                 \
   /* Macros */                                                                 \
   RS_TOKEN (DOLLAR_SIGN, "$")                                                  \
-  /* Comments */                                                               \
-  RS_TOKEN (LINE_COMMENT, "//")                                                \
-  RS_TOKEN (INNER_LINE_DOC, "//!")                                             \
-  RS_TOKEN (OUTER_LINE_DOC, "///")                                             \
-  RS_TOKEN (BLOCK_COMMENT_START, "/*")                                         \
-  RS_TOKEN (BLOCK_COMMENT_END, "*/")                                           \
-  RS_TOKEN (INNER_BLOCK_DOC_START, "/*!")                                      \
-  RS_TOKEN (OUTER_BLOCK_DOC_START,                                             \
-	    "/**") /* have "weak" union and 'static keywords? */               \
+  /* Doc Comments */                                                           \
+  RS_TOKEN (INNER_DOC_COMMENT, "#![doc]")                                      \
+  RS_TOKEN (OUTER_DOC_COMMENT, "#[doc]")                                       \
+  /* have "weak" union and 'static keywords? */                                \
                                                                                \
   RS_TOKEN_KEYWORD (ABSTRACT, "abstract") /* unused */                         \
   RS_TOKEN_KEYWORD (AS, "as")                                                  \
@@ -366,6 +361,18 @@ public:
   {
     // return std::make_shared<Token> (BYTE_STRING_LITERAL, locus, str);
     return TokenPtr (new Token (BYTE_STRING_LITERAL, locus, std::move (str)));
+  }
+
+  // Makes and returns a new TokenPtr of type INNER_DOC_COMMENT.
+  static TokenPtr make_inner_doc_comment (Location locus, std::string &&str)
+  {
+    return TokenPtr (new Token (INNER_DOC_COMMENT, locus, std::move (str)));
+  }
+
+  // Makes and returns a new TokenPtr of type OUTER_DOC_COMMENT.
+  static TokenPtr make_outer_doc_comment (Location locus, std::string &&str)
+  {
+    return TokenPtr (new Token (OUTER_DOC_COMMENT, locus, std::move (str)));
   }
 
   // Makes and returns a new TokenPtr of type LIFETIME.
