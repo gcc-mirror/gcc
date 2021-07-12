@@ -3312,7 +3312,11 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
 	  /* If all edges produce the same value and that value is
 	     an invariant, then the PHI has the same value on all
 	     edges.  Note this.  */
-	  else if (!cant_insert && all_same)
+	  else if (!cant_insert
+		   && all_same
+		   && (edoubleprime->kind != NAME
+		       || !SSA_NAME_OCCURS_IN_ABNORMAL_PHI
+			     (PRE_EXPR_NAME (edoubleprime))))
 	    {
 	      gcc_assert (edoubleprime->kind == CONSTANT
 			  || edoubleprime->kind == NAME);
