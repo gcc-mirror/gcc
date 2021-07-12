@@ -1,6 +1,13 @@
 2021-07-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
+	2021-07-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/101425
+	* gcc.c (check_offload_target_name): Call
+	  candidates_list_and_hint only if we have a candidate.
+
+	Backported from master:
 	2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* common.opt (foffload): Remove help as Driver only.

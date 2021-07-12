@@ -3990,7 +3990,6 @@ check_offload_target_name (const char *target, ptrdiff_t len)
     }
   if (!c)
     {
-      char *s;
       auto_vec<const char*> candidates;
       size_t olen = strlen (OFFLOAD_TARGETS) + 1;
       char *cand = XALLOCAVEC (char, olen);
@@ -4004,15 +4003,19 @@ check_offload_target_name (const char *target, ptrdiff_t len)
 
       error ("GCC is not configured to support %qs as offload target", target2);
 
-      const char *hint = candidates_list_and_hint (target2, s, candidates);
       if (candidates.is_empty ())
 	inform (UNKNOWN_LOCATION, "no offloading targets configured");
-      else if (hint)
-	inform (UNKNOWN_LOCATION,
-		"valid offload targets are: %s; did you mean %qs?", s, hint);
       else
-	inform (UNKNOWN_LOCATION, "valid offload targets are: %s", s);
-      XDELETEVEC (s);
+	{
+	  char *s;
+	  const char *hint = candidates_list_and_hint (target2, s, candidates);
+	  if (hint)
+	    inform (UNKNOWN_LOCATION,
+		    "valid offload targets are: %s; did you mean %qs?", s, hint);
+	  else
+	    inform (UNKNOWN_LOCATION, "valid offload targets are: %s", s);
+	  XDELETEVEC (s);
+	}
       return false;
     }
   return true;
