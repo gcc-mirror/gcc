@@ -72,7 +72,7 @@ package body System.VxWorks.Ext is
    -- Interrupt_Context --
    -----------------------
 
-   function Interrupt_Context return int is
+   function Interrupt_Context return BOOL is
    begin
       --  For RTPs, never in an interrupt context
 

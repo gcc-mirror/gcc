@@ -203,7 +203,7 @@ package body System.OS_Interface is
    -- Interrupt_Context --
    -----------------------
 
-   function Interrupt_Context return int is
+   function Interrupt_Context return BOOL is
    begin
       return System.VxWorks.Ext.Interrupt_Context;
    end Interrupt_Context;

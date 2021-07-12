@@ -57,6 +57,7 @@ package System.OS_Interface is
    type unsigned_long_long is mod 2 ** long_long'Size;
    type size_t             is mod 2 ** Standard'Address_Size;
 
+   subtype BOOL            is System.VxWorks.Ext.BOOL;
    subtype vx_freq_t       is System.VxWorks.Ext.vx_freq_t;
 
    -----------
@@ -307,7 +308,7 @@ package System.OS_Interface is
    function taskResume (tid : t_id) return int;
    pragma Import (C, taskResume, "taskResume");
 
-   function taskIsSuspended (tid : t_id) return int;
+   function taskIsSuspended (tid : t_id) return BOOL;
    pragma Import (C, taskIsSuspended, "taskIsSuspended");
 
    function taskDelay (ticks : int) return int;
@@ -489,10 +490,10 @@ package System.OS_Interface is
    --  which is invoked after the OS has saved enough context for a high-level
    --  language routine to be safely invoked.
 
-   function Interrupt_Context return int;
+   function Interrupt_Context return BOOL;
    pragma Inline (Interrupt_Context);
-   --  Return 1 if executing in an interrupt context; return 0 if executing in
-   --  a task context.
+   --  Return 1 (TRUE) if executing in an interrupt context;
+   --  return 0 (FALSE) if executing in a task context.
 
    function Interrupt_Number_To_Vector (intNum : int) return Interrupt_Vector;
    pragma Inline (Interrupt_Number_To_Vector);

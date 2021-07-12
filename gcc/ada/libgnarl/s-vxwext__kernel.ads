@@ -45,6 +45,9 @@ package System.VxWorks.Ext is
    subtype int is Interfaces.C.int;
    subtype unsigned is Interfaces.C.unsigned;
 
+   type BOOL is new int;
+   --  Equivalent of the C type BOOL
+
    type vx_freq_t is new unsigned;
    --  Equivalent of the C type _Vx_freq_t
 
@@ -65,7 +68,7 @@ package System.VxWorks.Ext is
       Parameter : System.Address := System.Null_Address) return int;
    pragma Import (C, Interrupt_Connect, "intConnect");
 
-   function Interrupt_Context return int;
+   function Interrupt_Context return BOOL;
    pragma Import (C, Interrupt_Context, "intContext");
 
    function Interrupt_Number_To_Vector

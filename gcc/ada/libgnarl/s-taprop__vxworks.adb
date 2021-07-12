@@ -62,9 +62,10 @@ package body System.Task_Primitives.Operations is
    use System.Tasking;
    use System.OS_Interface;
    use System.Parameters;
-   use type System.VxWorks.Ext.t_id;
    use type Interfaces.C.int;
    use type System.OS_Interface.unsigned;
+   use type System.VxWorks.Ext.t_id;
+   use type System.VxWorks.Ext.BOOL;
 
    subtype int is System.OS_Interface.int;
    subtype unsigned is System.OS_Interface.unsigned;
@@ -1304,7 +1305,7 @@ package body System.Task_Primitives.Operations is
 
    function Is_Task_Context return Boolean is
    begin
-      return System.OS_Interface.Interrupt_Context /= 1;
+      return System.OS_Interface.Interrupt_Context = 0;
    end Is_Task_Context;
 
    ----------------
