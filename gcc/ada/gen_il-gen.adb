@@ -1503,7 +1503,7 @@ package body Gen_IL.Gen is
          procedure Put_Opt_Subtype (T : Node_Or_Entity_Type) is
          begin
             if Type_Table (T).Parent /= No_Type then
-               Put (S, "subtype Opt_" & Image (T) & " is" & LF);
+               Put (S, "subtype Opt_" & Id_Image (T) & " is" & LF);
                Increase_Indent (S, 2);
                Put (S, Id_Image (Root));
 
@@ -1513,8 +1513,8 @@ package body Gen_IL.Gen is
                if Enable_Assertions then
                   Put (S, " with Predicate =>" & LF);
                   Increase_Indent (S, 2);
-                  Put (S, "Opt_" & Image (T) & " = Empty or else" & LF);
-                  Put (S, "Opt_" & Image (T) & " in " & Id_Image (T));
+                  Put (S, "Opt_" & Id_Image (T) & " = Empty or else" & LF);
+                  Put (S, "Opt_" & Id_Image (T) & " in " & Id_Image (T));
                   Decrease_Indent (S, 2);
                end if;
 
