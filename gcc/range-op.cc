@@ -2159,10 +2159,6 @@ public:
 			  const irange &lhs,
 			  const irange &op2,
 			  relation_kind rel = VREL_NONE) const;
-  virtual enum tree_code lhs_op1_relation (const irange &lhs,
-					   const irange &op1,
-					   const irange &op2) const;
-
 private:
   bool truncating_cast_p (const irange &inner, const irange &outer) const;
   bool inside_domain_p (const wide_int &min, const wide_int &max,
@@ -2170,27 +2166,6 @@ private:
   void fold_pair (irange &r, unsigned index, const irange &inner,
 			   const irange &outer) const;
 } op_convert;
-
-// Determine if there is a relationship between LHS and OP1.
-
-enum tree_code
-operator_cast::lhs_op1_relation (const irange &lhs,
-				 const irange &op1,
-				 const irange &op2 ATTRIBUTE_UNUSED) const
-{
-  if (op1.undefined_p ())
-    return VREL_NONE;
-  // We can't make larger types equivalent to smaller types because we can
-  // miss sign extensions in a chain of casts.
-  // u32 = 0xfffff
-  // s32 = (s32) u32
-  // s64 = (s64) s32
-  // we cant simply "convert" s64 = (s64)u32  or we get positive 0xffff
-  // value instead of sign extended negative value.
-  if (TYPE_PRECISION (lhs.type ()) == TYPE_PRECISION (op1.type ()))
-    return EQ_EXPR;
-  return VREL_NONE;
-}
 
 // Return TRUE if casting from INNER to OUTER is a truncating cast.
 
