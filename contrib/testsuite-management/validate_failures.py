@@ -324,7 +324,7 @@ def GetNegativeResult(line):
 
 def ParseManifestWorker(result_set, manifest_path):
   """Read manifest_path, adding the contents to result_set."""
-  if _OPTIONS.verbosity >= 1:
+  if _OPTIONS.verbosity >= 5:
     print('Parsing manifest file %s.' % manifest_path)
   manifest_file = open(manifest_path, encoding='latin-1', mode='r')
   for orig_line in manifest_file:
@@ -380,7 +380,8 @@ def ParseSummary(sum_fname):
         # Tests that have expired are not added to the set of expected
         # results. If they are still present in the set of actual results,
         # they will cause an error to be reported.
-        print('WARNING: Expected failure "%s" has expired.' % line.strip())
+        if _OPTIONS.verbosity >= 4:
+          print('WARNING: Expected failure "%s" has expired.' % line.strip())
         continue
       result_set.add(result)
     elif IsExpLine(line):
@@ -425,7 +426,8 @@ def GetResults(sum_files, build_results = None):
   if build_results == None:
     build_results = ResultSet()
   for sum_fname in sum_files:
-    print('\t%s' % sum_fname)
+    if _OPTIONS.verbosity >= 3:
+      print('\t%s' % sum_fname)
     build_results |= ParseSummary(sum_fname)
   return build_results
 
@@ -489,42 +491,46 @@ def GetBuildData():
       return None, None
   srcdir = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'srcdir =')
   target = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'target_alias=')
-  print('Source directory: %s' % srcdir)
-  print('Build target:     %s' % target)
+  if _OPTIONS.verbosity >= 3:
+    print('Source directory: %s' % srcdir)
+    print('Build target:     %s' % target)
   return srcdir, target
 
 
-def PrintSummary(msg, summary):
-  print('\n\n%s' % msg)
+def PrintSummary(summary):
   summary.Print()
 
 def GetSumFiles(results, build_dir):
   if not results:
-    print('Getting actual results from build directory %s' % build_dir)
+    if _OPTIONS.verbosity >= 3:
+      print('Getting actual results from build directory %s' % build_dir)
     sum_files = CollectSumFiles(build_dir)
   else:
-    print('Getting actual results from user-provided results')
+    if _OPTIONS.verbosity >= 3:
+      print('Getting actual results from user-provided results')
     sum_files = results.split()
   return sum_files
 
 
-def PerformComparison(expected, actual, ignore_missing_failures):
+def PerformComparison(expected, actual):
   actual_vs_expected, expected_vs_actual = CompareResults(expected, actual)
 
   tests_ok = True
   if len(actual_vs_expected) > 0:
-    PrintSummary('Unexpected results in this build (new failures)',
-                 actual_vs_expected)
+    if _OPTIONS.verbosity >= 3:
+      print('\n\nUnexpected results in this build (new failures)')
+    if _OPTIONS.verbosity >= 1:
+      PrintSummary(actual_vs_expected)
     tests_ok = False
 
-  if not ignore_missing_failures and len(expected_vs_actual) > 0:
-    PrintSummary('Expected results not present in this build (fixed tests)'
-                 '\n\nNOTE: This is not a failure.  It just means that these '
-                 'tests were expected\nto fail, but either they worked in '
-                 'this configuration or they were not\npresent at all.\n',
-                 expected_vs_actual)
+  if _OPTIONS.verbosity >= 2 and len(expected_vs_actual) > 0:
+    print('\n\nExpected results not present in this build (fixed tests)'
+          '\n\nNOTE: This is not a failure.  It just means that these '
+          'tests were expected\nto fail, but either they worked in '
+          'this configuration or they were not\npresent at all.\n')
+    PrintSummary(expected_vs_actual)
 
-  if tests_ok:
+  if tests_ok and _OPTIONS.verbosity >= 3:
     print('\nSUCCESS: No unexpected failures.')
 
   return tests_ok
@@ -532,21 +538,25 @@ def PerformComparison(expected, actual, ignore_missing_failures):
 
 def CheckExpectedResults():
   manifest_path = GetManifestPath(True)
-  print('Manifest:         %s' % manifest_path)
+  if _OPTIONS.verbosity >= 3:
+    print('Manifest:         %s' % manifest_path)
   manifest = GetManifest(manifest_path)
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
-  if _OPTIONS.verbosity >= 1:
-    PrintSummary('Tests expected to fail', manifest)
-    PrintSummary('\nActual test results', actual)
+  if _OPTIONS.verbosity >= 5:
+    print('\n\nTests expected to fail')
+    PrintSummary(manifest)
+    print('\n\nActual test results')
+    PrintSummary(actual)
 
-  return PerformComparison(manifest, actual, _OPTIONS.ignore_missing_failures)
+  return PerformComparison(manifest, actual)
 
 
 def ProduceManifest():
   manifest_path = GetManifestPath(False)
-  print('Manifest:         %s' % manifest_path)
+  if _OPTIONS.verbosity >= 3:
+    print('Manifest:         %s' % manifest_path)
   if os.path.exists(manifest_path) and not _OPTIONS.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
           manifest_path)
@@ -569,13 +579,14 @@ def CompareBuilds():
 
   if _OPTIONS.manifest:
     manifest_path = GetManifestPath(True)
-    print('Manifest:         %s' % manifest_path)
+    if _OPTIONS.verbosity >= 3:
+      print('Manifest:         %s' % manifest_path)
     clean = GetManifest(manifest_path)
 
   clean_sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.clean_build)
   clean = GetResults(clean_sum_files, clean)
 
-  return PerformComparison(clean, actual, _OPTIONS.ignore_missing_failures)
+  return PerformComparison(clean, actual)
 
 
 def Main(argv):
@@ -597,14 +608,6 @@ def Main(argv):
                     default=False, help='When used with --produce_manifest, '
                     'it will overwrite an existing manifest file '
                     '(default = False)')
-  parser.add_option('--ignore_missing_failures', action='store_true',
-                    dest='ignore_missing_failures', default=False,
-                    help='When a failure is expected in the manifest but '
-                    'it is not found in the actual results, the script '
-                    'produces a note alerting to this fact. This means '
-                    'that the expected failure has been fixed, or '
-                    'it did not run, or it may simply be flaky '
-                    '(default = False)')
   parser.add_option('--manifest', action='store', type='string',
                     dest='manifest', default=None,
                     help='Name of the manifest file to use (default = '
@@ -621,7 +624,14 @@ def Main(argv):
                     'starting with FAIL, XPASS or UNRESOLVED (default = '
                     '.sum files collected from the build directory).')
   parser.add_option('--verbosity', action='store', dest='verbosity',
-                    type='int', default=0, help='Verbosity level (default = 0)')
+                    type='int', default=3, help='Verbosity level '
+                    '(default = 3). Level 0: only error output, this is '
+                    'useful in scripting when only the exit code is used. '
+                    'Level 1: output unexpected failures. '
+                    'Level 2: output unexpected passes. '
+                    'Level 3: output helpful information. '
+                    'Level 4: output notification on expired entries. '
+                    'Level 5: output debug information.')
   global _OPTIONS
   (_OPTIONS, _) = parser.parse_args(argv[1:])
 
