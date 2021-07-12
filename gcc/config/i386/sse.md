@@ -6006,6 +6006,12 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_expand "float<floatunssuffix><mode><ssePHmodelower>2"
+  [(set (match_operand:<ssePHmode> 0 "register_operand")
+	(any_float:<ssePHmode>
+	  (match_operand:VI2H_AVX512VL 1 "nonimmediate_operand")))]
+  "TARGET_AVX512FP16")
+
 (define_insn "avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode><mask_name><round_name>"
   [(set (match_operand:<ssePHmode> 0 "register_operand" "=v")
 	(any_float:<ssePHmode>
@@ -6016,11 +6022,23 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx512fp16_vcvt<floatsuffix><sseintconvert>2ph_<mode>"
-  [(set (match_operand:V8HF 0 "register_operand" "=v")
+(define_expand "float<floatunssuffix><mode>v4hf2"
+  [(set (match_operand:V4HF 0 "register_operand")
+	(any_float:V4HF
+	  (match_operand:VI4_128_8_256 1 "vector_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  operands[0] = lowpart_subreg (V8HFmode, operands[0], V4HFmode);
+  emit_insn (gen_avx512fp16_float<floatunssuffix><mode>v4hf2 (operands[0],
+							      operands[1]));
+  DONE;
+})
+
+(define_expand "avx512fp16_float<floatunssuffix><mode>v4hf2"
+  [(set (match_operand:V8HF 0 "register_operand")
 	(vec_concat:V8HF
-	    (any_float:V4HF (match_operand:VI4_128_8_256 1 "vector_operand" "vm"))
-	    (match_dup 2)))]
+	  (any_float:V4HF (match_operand:VI4_128_8_256 1 "vector_operand"))
+	  (match_dup 2)))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
   "operands[2] = CONST0_RTX (V4HFmode);")
 
@@ -6079,11 +6097,23 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx512fp16_vcvt<floatsuffix>qq2ph_v2di"
-  [(set (match_operand:V8HF 0 "register_operand" "=v")
+(define_expand "float<floatunssuffix>v2div2hf2"
+  [(set (match_operand:V2HF 0 "register_operand")
+	(any_float:V2HF
+	  (match_operand:V2DI 1 "vector_operand")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+{
+  operands[0] = lowpart_subreg (V8HFmode, operands[0], V2HFmode);
+  emit_insn (gen_avx512fp16_float<floatunssuffix>v2div2hf2 (operands[0],
+							    operands[1]));
+  DONE;
+})
+
+(define_expand "avx512fp16_float<floatunssuffix>v2div2hf2"
+  [(set (match_operand:V8HF 0 "register_operand")
 	(vec_concat:V8HF
-	    (any_float:V2HF (match_operand:V2DI 1 "vector_operand" "vm"))
-	    (match_dup 2)))]
+	  (any_float:V2HF (match_operand:V2DI 1 "vector_operand"))
+	  (match_dup 2)))]
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
   "operands[2] = CONST0_RTX (V6HFmode);")
 
