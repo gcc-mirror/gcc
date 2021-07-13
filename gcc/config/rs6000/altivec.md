@@ -863,7 +863,7 @@
 		     UNSPEC_XXSPLTIW))]
  "TARGET_POWER10"
 {
-  long long value = rs6000_const_f32_to_i32 (operands[1]);
+  long value = rs6000_const_f32_to_i32 (operands[1]);
   emit_insn (gen_xxspltiw_v4sf_inst (operands[0], GEN_INT (value)));
   DONE;
 })
