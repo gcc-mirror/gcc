@@ -5865,16 +5865,12 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 		  if (GET_MODE_SIZE
 			(bb_vinfo->vector_mode).is_constant (&bytes))
 		    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-				     "basic block part with %u components "
-				     "vectorized using %wu byte vectors\n",
-				     instance->subgraph_entries.length (),
-				     bytes);
+				     "basic block part vectorized using %wu "
+				     "byte vectors\n", bytes);
 		  else
 		    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-				     "basic block part with %u components "
-				     "vectorized using variable length "
-				     "vectors\n",
-				     instance->subgraph_entries.length ());
+				     "basic block part vectorized using "
+				     "variable length vectors\n");
 		}
 	    }
 	}
