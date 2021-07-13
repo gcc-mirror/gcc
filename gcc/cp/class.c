@@ -2391,7 +2391,7 @@ struct find_final_overrider_data {
   /* The candidate overriders.  */
   tree candidates;
   /* Path to most derived.  */
-  vec<tree> path;
+  auto_vec<tree> path;
 };
 
 /* Add the overrider along the current path to FFOD->CANDIDATES.
@@ -2503,8 +2503,6 @@ find_final_overrider (tree derived, tree binfo, tree fn)
 
   dfs_walk_all (derived, dfs_find_final_overrider_pre,
 		dfs_find_final_overrider_post, &ffod);
-
-  ffod.path.release ();
 
   /* If there was no winner, issue an error message.  */
   if (!ffod.candidates || TREE_CHAIN (ffod.candidates))

@@ -5774,7 +5774,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 
   if (!id && CLASS_TYPE_P (type) && TYPE_BINFO (type))
     {
-      vec<tree> ambiguous = vNULL;
+      auto_vec<tree> ambiguous;
       tree binfo = TYPE_BINFO (type), base_binfo, ret = NULL_TREE;
       unsigned int ix;
       if (ambiguousp == NULL)
@@ -5811,7 +5811,6 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 	      if (idx == 0)
 		str = get_spaces (str);
 	    }
-	  ambiguous.release ();
 	  ret = error_mark_node;
 	  baselink = NULL_TREE;
 	}

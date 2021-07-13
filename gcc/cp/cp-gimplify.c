@@ -807,7 +807,7 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 struct cp_genericize_data
 {
   hash_set<tree> *p_set;
-  vec<tree> bind_expr_stack;
+  auto_vec<tree> bind_expr_stack;
   struct cp_genericize_omp_taskreg *omp_ctx;
   tree try_block;
   bool no_sanitize_p;
@@ -1582,7 +1582,6 @@ cp_genericize_tree (tree* t_p, bool handle_invisiref_parm_p)
   wtd.handle_invisiref_parm_p = handle_invisiref_parm_p;
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
   delete wtd.p_set;
-  wtd.bind_expr_stack.release ();
   if (sanitize_flags_p (SANITIZE_VPTR))
     cp_ubsan_instrument_member_accesses (t_p);
 }
