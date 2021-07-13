@@ -1352,9 +1352,15 @@ package body Freeze is
             elsif Is_Record_Type (Encl_Base)
               and then not Comp_Byte_Aligned
             then
-               Error_Msg_N
-                 ("type of non-byte-aligned component must have same scalar "
-                  & "storage order as enclosing composite", Err_Node);
+               if Present (Component_Clause (Comp)) then
+                  Error_Msg_N
+                    ("type of non-byte-aligned component must have same scalar"
+                     & " storage order as enclosing record", Err_Node);
+               else
+                  Error_Msg_N
+                    ("type of packed component must have same scalar"
+                     & " storage order as enclosing record", Err_Node);
+               end if;
 
             --  Warn if specified only for the outer composite
 
