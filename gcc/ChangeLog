@@ -1,3 +1,124 @@
+2021-07-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_builtin_ubsan_call):
+	Query relation between the 2 operands and use it.
+
+2021-07-12  Sergei Trofimovich  <siarheit@google.com>
+
+	* doc/cfg.texi: Fix s/ei_safe_safe/ei_safe_edge/ typo.
+
+2021-07-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101424
+	* config/i386/predicates.md (vec_setm_sse41_operand):
+	Rename from vec_setm_operand.
+	(vec_setm_avx2_operand): New predicate.
+	* config/i386/sse.md (vec_set<V_128:mode>): Use V_128 mode iterator.
+	Use vec_setm_sse41_operand as operand 2 predicate.
+	(vec_set<V_256_512:mode): New expander.
+	* config/i386/mmx.md (vec_setv2hi): Use vec_setm_sse41_operand
+	as operand 2 predicate.
+
+2021-07-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101335
+	* range-op.cc (operator_cast::lhs_op1_relation): Delete.
+
+2021-07-12  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (match_simplify_replacement): Move
+	insert of the sequence before the movement of the
+	statement. Check if to see if the statement is used
+	outside of the original phi to see if we should move it.
+
+2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	* dump-context.h (debug_dump_context::debug_dump_context):
+	Add FILE * parameter defaulted to stderr.
+	* dumpfile.c (debug_dump_context::debug_dump_context): Adjust.
+	* tree-vect-slp.c (dot_slp_tree): New functions.
+
+2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101373
+	* tree-ssa-pre.c (prune_clobbered_mems): Also prune trapping
+	references when the BB may not return.
+	(compute_avail): Pass in the function we're working on and
+	replace cfun references with it.  Externally throwing
+	const calls also possibly terminate the function.
+	(pass_pre::execute): Pass down the function we're working on.
+	* gcse.c (compute_hash_table_work): Externally throwing
+	const/pure calls also need record_last_mem_set_info.
+	* postreload-gcse.c (record_opr_changes): Looping or externally
+	throwing const/pure calls also need record_last_mem_set_info.
+
+2021-07-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* recog.c (memory_address_addr_space_p): Change the type to bool.
+	Return true/false instead of 1/0.
+	(offsettable_memref_p): Ditto.
+	(offsettable_nonstrict_memref_p): Ditto.
+	(offsettable_address_addr_space_p): Ditto.
+	Change the type of addressp indirect function to bool.
+	* recog.h (memory_address_addr_space_p): Change the type to bool.
+	(strict_memory_address_addr_space_p): Ditto.
+	(offsettable_memref_p): Ditto.
+	(offsettable_nonstrict_memref_p): Ditto.
+	(offsettable_address_addr_space_p): Ditto.
+	* reload.c (maybe_memory_address_addr_space_p): Ditto.
+	(strict_memory_address_addr_space_p): Change the type to bool.
+	Return true/false instead of 1/0.
+	(maybe_memory_address_addr_space_p): Change the type to bool.
+
+2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_region): Show the number of
+	SLP graph entries in the optimization message.
+
+2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101394
+	* tree-ssa-pre.c (do_pre_regular_insertion): Avoid inserting
+	copies from abnormals for a full redundancy.
+
+2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101423
+	* gimple.c (gimple_could_trap_p_1): Internal function calls
+	do not trap.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+
+2021-07-12  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h (vmul_n_u32): Replace call to builtin with
+	__a * __b.
+	(vmulq_n_u32): Likewise.
+	(vmul_n_f32): Gate __a * __b on __FAST_MATH__.
+	(vmulq_n_f32): Likewise.
+	(vmul_n_f16): Likewise.
+	(vmulq_n_f16): Likewise.
+
+2021-07-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/101425
+	* gcc.c (check_offload_target_name): Call
+	  candidates_list_and_hint only if we have a candidate.
+
+2021-07-12  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/98435
+	* config/arm/neon.md (vec_init): Move to ...
+	* config/arm/vec-common.md (vec_init): ... here.
+	Change the pattern's mode to VDQX and gate it on VALID_MVE_MODE.
+
+2021-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/101403
+	* match.pd ((T)bswap(X)>>C): Correctly handle cases where
+	signedness of the shift is not the same as the signedness of
+	the type extension.
+
 2021-07-09  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

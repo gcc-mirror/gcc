@@ -1,3 +1,62 @@
+2021-07-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79501
+	PR c++/100983
+	* g++.dg/cpp1z/class-deduction92.C: New test.
+	* g++.dg/cpp1z/class-deduction93.C: New test.
+	* g++.dg/cpp1z/class-deduction94.C: New test.
+	* g++.dg/cpp1z/class-deduction95.C: New test.
+
+2021-07-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101424
+	* gcc.target/i386/pr101424.c: New test.
+
+2021-07-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/pr101335.c: New.
+
+2021-07-12  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/pr96928-1.c: Update to similar as pr96928.c.
+
+2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101373
+	* g++.dg/torture/pr101373.C: New testcase, XFAILed.
+	* gnat.dg/opt95.adb: Likewise.
+
+2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/slp-pr87105.cc: Adjust.
+	* gcc.dg/vect/bb-slp-pr54400.c: Likewise.
+
+2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101394
+	* gcc.dg/torture/pr101394.c: New testcase.
+
+2021-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/101403
+	* gcc.dg/pr101403.c: Avoid (unimportant) uninitialized variable.
+
+2021-07-12  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* gcc.target/arm/armv8_2-fp16-neon-2.c: Adjust.
+
+2021-07-12  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/98435
+	* gcc.target/arm/simd/pr98435.c: New test.
+
+2021-07-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/101403
+	* gcc.dg/pr101403.c: New test case.
+
 2021-07-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/torture/pr100329.c: Require target lra.
