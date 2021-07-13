@@ -3288,8 +3288,7 @@ neutral_op_for_slp_reduction (slp_tree slp_node, tree vector_type,
 	 has only a single initial value, so that value is neutral for
 	 all statements.  */
       if (reduc_chain)
-	return PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt,
-				      loop_preheader_edge (loop));
+	return vect_phi_initial_value (stmt_vinfo);
       return NULL_TREE;
 
     default:
@@ -4829,13 +4828,13 @@ get_initial_defs_for_reduction (vec_info *vinfo,
       /* Get the def before the loop.  In reduction chain we have only
 	 one initial value.  Else we have as many as PHIs in the group.  */
       if (reduc_chain)
-	op = j != 0 ? neutral_op : PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt, pe);
+	op = j != 0 ? neutral_op : vect_phi_initial_value (stmt_vinfo);
       else if (((vec_oprnds->length () + 1) * nunits
 		- number_of_places_left_in_vector >= group_size)
 	       && neutral_op)
 	op = neutral_op;
       else
-	op = PHI_ARG_DEF_FROM_EDGE (stmt_vinfo->stmt, pe);
+	op = vect_phi_initial_value (stmt_vinfo);
 
       /* Create 'vect_ = {op0,op1,...,opn}'.  */
       number_of_places_left_in_vector--;
@@ -4906,9 +4905,7 @@ info_for_reduction (vec_info *vinfo, stmt_vec_info stmt_info)
     }
   else if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
     {
-      edge pe = loop_preheader_edge (gimple_bb (phi)->loop_father);
-      stmt_vec_info info
-	  = vinfo->lookup_def (PHI_ARG_DEF_FROM_EDGE (phi, pe));
+      stmt_vec_info info = vinfo->lookup_def (vect_phi_initial_value (phi));
       if (info && STMT_VINFO_DEF_TYPE (info) == vect_double_reduction_def)
 	stmt_info = info;
     }
@@ -5042,8 +5039,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     {
       /* Get at the scalar def before the loop, that defines the initial value
 	 of the reduction variable.  */
-      initial_def = PHI_ARG_DEF_FROM_EDGE (reduc_def_stmt,
-					   loop_preheader_edge (loop));
+      initial_def = vect_phi_initial_value (reduc_def_stmt);
       /* Optimize: for induction condition reduction, if we can't use zero
          for induc_val, use initial_def.  */
       if (STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
@@ -5558,9 +5554,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	     for MIN and MAX reduction, for example.  */
 	  if (!neutral_op)
 	    {
-	      tree scalar_value
-		= PHI_ARG_DEF_FROM_EDGE (orig_phis[i]->stmt,
-					 loop_preheader_edge (loop));
+	      tree scalar_value = vect_phi_initial_value (orig_phis[i]);
 	      scalar_value = gimple_convert (&seq, TREE_TYPE (vectype),
 					     scalar_value);
 	      vector_identity = gimple_build_vector_from_val (&seq, vectype,
@@ -6752,10 +6746,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       else if (cond_reduc_dt == vect_constant_def)
 	{
 	  enum vect_def_type cond_initial_dt;
-	  tree cond_initial_val
-	    = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi, loop_preheader_edge (loop));
-
-	  gcc_assert (cond_reduc_val != NULL_TREE);
+	  tree cond_initial_val = vect_phi_initial_value (reduc_def_phi);
 	  vect_is_simple_use (cond_initial_val, loop_vinfo, &cond_initial_dt);
 	  if (cond_initial_dt == vect_constant_def
 	      && types_compatible_p (TREE_TYPE (cond_initial_val),
@@ -7528,8 +7519,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
     {
       /* Get at the scalar def before the loop, that defines the initial
 	 value of the reduction variable.  */
-      tree initial_def = PHI_ARG_DEF_FROM_EDGE (phi,
-						loop_preheader_edge (loop));
+      tree initial_def = vect_phi_initial_value (phi);
       /* Optimize: if initial_def is for REDUC_MAX smaller than the base
 	 and we can't use zero for induc_val, use initial_def.  Similarly
 	 for REDUC_MIN and initial_def larger than the base.  */
@@ -8175,8 +8165,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       return true;
     }
 
-  init_expr = PHI_ARG_DEF_FROM_EDGE (phi,
-				     loop_preheader_edge (iv_loop));
+  init_expr = vect_phi_initial_value (phi);
 
   gimple_seq stmts = NULL;
   if (!nested_in_vect_loop)

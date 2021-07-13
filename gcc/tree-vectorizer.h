@@ -27,7 +27,7 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-hash-traits.h"
 #include "target.h"
 #include "internal-fn.h"
-
+#include "tree-ssa-operands.h"
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
@@ -1367,6 +1367,25 @@ nested_in_vect_loop_p (class loop *loop, stmt_vec_info stmt_info)
 {
   return (loop->inner
 	  && (loop->inner == (gimple_bb (stmt_info->stmt))->loop_father));
+}
+
+/* PHI is either a scalar reduction phi or a scalar induction phi.
+   Return the initial value of the variable on entry to the containing
+   loop.  */
+
+static inline tree
+vect_phi_initial_value (gphi *phi)
+{
+  basic_block bb = gimple_bb (phi);
+  edge pe = loop_preheader_edge (bb->loop_father);
+  gcc_assert (pe->dest == bb);
+  return PHI_ARG_DEF_FROM_EDGE (phi, pe);
+}
+
+static inline tree
+vect_phi_initial_value (stmt_vec_info stmt_info)
+{
+  return vect_phi_initial_value (as_a <gphi *> (stmt_info->stmt));
 }
 
 /* Return true if STMT_INFO should produce a vector mask type rather than
