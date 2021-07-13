@@ -5214,9 +5214,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   if (double_reduc)
     loop = outer_loop;
   exit_bb = single_exit (loop)->dest;
+  exit_gsi = gsi_after_labels (exit_bb);
   reduc_inputs.create (slp_node ? vec_num : ncopies);
   for (unsigned i = 0; i < vec_num; i++)
     {
+      gimple_seq stmts = NULL;
       if (slp_node)
 	def = vect_get_slp_vect_def (slp_node, i);
       else
@@ -5228,11 +5230,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  if (j)
 	    def = gimple_get_lhs (STMT_VINFO_VEC_STMTS (rdef_info)[j]);
 	  SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, def);
+	  new_def = gimple_convert (&stmts, vectype, new_def);
 	  reduc_inputs.quick_push (new_def);
 	}
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
     }
-
-  exit_gsi = gsi_after_labels (exit_bb);
 
   /* 2.2 Get the relevant tree-code to use in the epilog for schemes 2,3
          (i.e. when reduc_fn is not available) and in the final adjustment
@@ -5277,17 +5279,14 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       || ncopies > 1)
     {
       gimple_seq stmts = NULL;
-      tree first_vect = gimple_convert (&stmts, vectype, reduc_inputs[0]);
+      tree single_input = reduc_inputs[0];
       for (k = 1; k < reduc_inputs.length (); k++)
-        {
-	  tree second_vect = gimple_convert (&stmts, vectype, reduc_inputs[k]);
-          first_vect = gimple_build (&stmts, code, vectype,
-				     first_vect, second_vect);
-        }
+	single_input = gimple_build (&stmts, code, vectype,
+				     single_input, reduc_inputs[k]);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
       reduc_inputs.truncate (0);
-      reduc_inputs.safe_push (first_vect);
+      reduc_inputs.safe_push (single_input);
     }
 
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION
@@ -5322,10 +5321,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
       /* Vector of {0, 0, 0,...}.  */
       tree zero_vec = build_zero_cst (vectype);
-
-      gimple_seq stmts = NULL;
-      reduc_inputs[0] = gimple_convert (&stmts, vectype, reduc_inputs[0]);
-      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
       /* Find maximum value from the vector of found indexes.  */
       tree max_index = make_ssa_name (index_scalar_type);
@@ -5394,7 +5389,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
       /* Convert the reduced value back to the result type and set as the
 	 result.  */
-      stmts = NULL;
+      gimple_seq stmts = NULL;
       new_temp = gimple_build (&stmts, VIEW_CONVERT_EXPR, scalar_type,
 			       data_reduc);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
@@ -5412,7 +5407,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	     val = data_reduc[i], idx_val = induction_index[i];
 	 return val;  */
 
-      tree data_eltype = TREE_TYPE (TREE_TYPE (reduc_inputs[0]));
+      tree data_eltype = TREE_TYPE (vectype);
       tree idx_eltype = TREE_TYPE (TREE_TYPE (induction_index));
       unsigned HOST_WIDE_INT el_size = tree_to_uhwi (TYPE_SIZE (idx_eltype));
       poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (TREE_TYPE (induction_index));
@@ -5488,8 +5483,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 			 "Reduce using direct vector reduction.\n");
 
       gimple_seq stmts = NULL;
-      reduc_inputs[0] = gimple_convert (&stmts, vectype, reduc_inputs[0]);
-      vec_elem_type = TREE_TYPE (TREE_TYPE (reduc_inputs[0]));
+      vec_elem_type = TREE_TYPE (vectype);
       new_temp = gimple_build (&stmts, as_combined_fn (reduc_fn),
 			       vec_elem_type, reduc_inputs[0]);
       new_temp = gimple_convert (&stmts, scalar_type, new_temp);
