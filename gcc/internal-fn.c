@@ -4109,16 +4109,32 @@ expand_internal_call (gcall *stmt)
 bool
 vectorized_internal_fn_supported_p (internal_fn ifn, tree type)
 {
+  if (VECTOR_MODE_P (TYPE_MODE (type)))
+    return direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED);
+
   scalar_mode smode;
-  if (!VECTOR_TYPE_P (type) && is_a <scalar_mode> (TYPE_MODE (type), &smode))
+  if (!is_a <scalar_mode> (TYPE_MODE (type), &smode))
+    return false;
+
+  machine_mode vmode = targetm.vectorize.preferred_simd_mode (smode);
+  if (VECTOR_MODE_P (vmode))
     {
-      machine_mode vmode = targetm.vectorize.preferred_simd_mode (smode);
-      if (VECTOR_MODE_P (vmode))
-	type = build_vector_type_for_mode (type, vmode);
+      tree vectype = build_vector_type_for_mode (type, vmode);
+      if (direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_SPEED))
+	return true;
     }
 
-  return (VECTOR_MODE_P (TYPE_MODE (type))
-	  && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED));
+  auto_vector_modes vector_modes;
+  targetm.vectorize.autovectorize_vector_modes (&vector_modes, true);
+  for (machine_mode base_mode : vector_modes)
+    if (related_vector_mode (base_mode, smode).exists (&vmode))
+      {
+	tree vectype = build_vector_type_for_mode (type, vmode);
+	if (direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_SPEED))
+	  return true;
+      }
+
+  return false;
 }
 
 void
