@@ -4625,7 +4625,7 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 /* Function get_initial_def_for_reduction
 
    Input:
-   STMT_VINFO - a stmt that performs a reduction operation in the loop.
+   REDUC_INFO - the info_for_reduction
    INIT_VAL - the initial value of the reduction variable
 
    Output:
@@ -4667,7 +4667,7 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 
 static tree
 get_initial_def_for_reduction (loop_vec_info loop_vinfo,
-			       stmt_vec_info stmt_vinfo,
+			       stmt_vec_info reduc_info,
 			       enum tree_code code, tree init_val,
                                tree *adjustment_def)
 {
@@ -4685,8 +4685,8 @@ get_initial_def_for_reduction (loop_vec_info loop_vinfo,
   gcc_assert (POINTER_TYPE_P (scalar_type) || INTEGRAL_TYPE_P (scalar_type)
 	      || SCALAR_FLOAT_TYPE_P (scalar_type));
 
-  gcc_assert (nested_in_vect_loop_p (loop, stmt_vinfo)
-	      || loop == (gimple_bb (stmt_vinfo->stmt))->loop_father);
+  gcc_assert (nested_in_vect_loop_p (loop, reduc_info)
+	      || loop == (gimple_bb (reduc_info->stmt))->loop_father);
 
   /* ADJUSTMENT_DEF is NULL when called from
      vect_create_epilog_for_reduction to vectorize double reduction.  */
@@ -7556,7 +7556,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
 	    adjustment_defp = NULL;
 	  vec_initial_def
-	    = get_initial_def_for_reduction (loop_vinfo, reduc_stmt_info, code,
+	    = get_initial_def_for_reduction (loop_vinfo, reduc_info, code,
 					     initial_def, adjustment_defp);
 	  STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT (reduc_info) = adjustment_def;
 	  vec_initial_defs.create (ncopies);
