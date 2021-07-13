@@ -5005,7 +5005,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   imm_use_iterator imm_iter, phi_imm_iter;
   use_operand_p use_p, phi_use_p;
   gimple *use_stmt;
-  bool nested_in_vect_loop = false;
   auto_vec<gimple *> new_phis;
   int j, i;
   auto_vec<tree> scalar_results;
@@ -5023,10 +5022,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     {
       outer_loop = loop;
       loop = loop->inner;
-      nested_in_vect_loop = true;
-      gcc_assert (!slp_node);
+      gcc_assert (!slp_node && double_reduc);
     }
-  gcc_assert (!nested_in_vect_loop || double_reduc);
 
   vectype = STMT_VINFO_REDUC_VECTYPE (reduc_info);
   gcc_assert (vectype);
@@ -5048,8 +5045,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       if (STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
 	induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info);
       else if (double_reduc)
-	;
-      else if (nested_in_vect_loop)
 	;
       else
 	adjustment_def = STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT (reduc_info);
@@ -5923,7 +5918,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     {
       gcc_assert (!slp_reduc);
       gimple_seq stmts = NULL;
-      if (nested_in_vect_loop)
+      if (double_reduc)
 	{
           new_phi = new_phis[0];
 	  gcc_assert (VECTOR_TYPE_P (TREE_TYPE (adjustment_def)));
@@ -5942,21 +5937,12 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
       epilog_stmt = gimple_seq_last_stmt (stmts);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
-      if (nested_in_vect_loop)
-        {
-          if (!double_reduc)
-            scalar_results.quick_push (new_temp);
-          else
-            scalar_results[0] = new_temp;
-        }
-      else
-        scalar_results[0] = new_temp;
-
+      scalar_results[0] = new_temp;
       new_phis[0] = epilog_stmt;
     }
 
   if (double_reduc)
-    loop = loop->inner;
+    loop = outer_loop;
 
   /* 2.6  Handle the loop-exit phis.  Replace the uses of scalar loop-exit
           phis with new adjusted scalar results, i.e., replace use <s_out0>
@@ -6015,14 +6001,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  /* SLP statements can't participate in patterns.  */
 	  gcc_assert (!orig_stmt_info);
 	  scalar_dest = gimple_assign_lhs (scalar_stmt_info->stmt);
-        }
-
-      if (nested_in_vect_loop)
-        {
-          if (double_reduc)
-            loop = outer_loop;
-          else
-	    gcc_unreachable ();
         }
 
       phis.create (3);
