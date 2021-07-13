@@ -375,5 +375,128 @@ TypeCheckType::visit (HIR::ArrayType &type)
 				    TyTy::TyVar (base->get_ref ()));
 }
 
+// rust-hir-trait-ref.h
+
+TraitItemReference::TraitItemReference (
+  std::string identifier, bool optional, TraitItemType type,
+  HIR::TraitItem *hir_trait_item, TyTy::BaseType *self,
+  std::vector<TyTy::SubstitutionParamMapping> substitutions, Location locus)
+  : identifier (identifier), optional_flag (optional), type (type),
+    hir_trait_item (hir_trait_item), inherited_substitutions (substitutions),
+    locus (locus), self (self), context (TypeCheckContext::get ())
+{}
+
+TraitItemReference::TraitItemReference (TraitItemReference const &other)
+  : identifier (other.identifier), optional_flag (other.optional_flag),
+    type (other.type), hir_trait_item (other.hir_trait_item),
+    locus (other.locus), self (other.self), context (TypeCheckContext::get ())
+{
+  inherited_substitutions.reserve (other.inherited_substitutions.size ());
+  for (size_t i = 0; i < other.inherited_substitutions.size (); i++)
+    inherited_substitutions.push_back (other.inherited_substitutions.at (i));
+}
+
+TyTy::BaseType *
+TraitItemReference::get_type_from_typealias (/*const*/
+					     HIR::TraitItemType &type) const
+{
+  TyTy::TyVar var (get_mappings ().get_hirid ());
+  return var.get_tyty ();
+}
+
+TyTy::BaseType *
+TraitItemReference::get_type_from_constant (
+  /*const*/ HIR::TraitItemConst &constant) const
+{
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ().get ());
+  TyTy::BaseType *expr
+    = TypeCheckExpr::Resolve (constant.get_expr ().get (), false);
+
+  return type->unify (expr);
+}
+
+TyTy::BaseType *
+TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
+{
+  std::vector<TyTy::SubstitutionParamMapping> substitutions
+    = inherited_substitutions;
+
+  HIR::TraitFunctionDecl &function = fn.get_decl ();
+  if (function.has_generics ())
+    {
+      for (auto &generic_param : function.get_generic_params ())
+	{
+	  switch (generic_param.get ()->get_kind ())
+	    {
+	    case HIR::GenericParam::GenericKind::LIFETIME:
+	      // Skipping Lifetime completely until better handling.
+	      break;
+
+	      case HIR::GenericParam::GenericKind::TYPE: {
+		auto param_type
+		  = TypeResolveGenericParam::Resolve (generic_param.get ());
+		context->insert_type (generic_param->get_mappings (),
+				      param_type);
+
+		substitutions.push_back (TyTy::SubstitutionParamMapping (
+		  static_cast<HIR::TypeParam &> (*generic_param), param_type));
+	      }
+	      break;
+	    }
+	}
+    }
+
+  TyTy::BaseType *ret_type = nullptr;
+  if (!function.has_return_type ())
+    ret_type = new TyTy::TupleType (fn.get_mappings ().get_hirid ());
+  else
+    {
+      auto resolved
+	= TypeCheckType::Resolve (function.get_return_type ().get ());
+      if (resolved->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (fn.get_locus (), "failed to resolve return type");
+	  return get_error ();
+	}
+
+      ret_type = resolved->clone ();
+      ret_type->set_ref (
+	function.get_return_type ()->get_mappings ().get_hirid ());
+    }
+
+  std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
+  if (function.is_method ())
+    {
+      // add the synthetic self param at the front, this is a placeholder
+      // for compilation to know parameter names. The types are ignored
+      // but we reuse the HIR identifier pattern which requires it
+      HIR::SelfParam &self_param = function.get_self ();
+      HIR::IdentifierPattern *self_pattern
+	= new HIR::IdentifierPattern ("self", self_param.get_locus (),
+				      self_param.is_ref (),
+				      self_param.is_mut (),
+				      std::unique_ptr<HIR::Pattern> (nullptr));
+      context->insert_type (self_param.get_mappings (), self->clone ());
+      params.push_back (
+	std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern,
+						     self->clone ()));
+    }
+
+  for (auto &param : function.get_function_params ())
+    {
+      // get the name as well required for later on
+      auto param_tyty = TypeCheckType::Resolve (param.get_type ());
+      params.push_back (
+	std::pair<HIR::Pattern *, TyTy::BaseType *> (param.get_param_name (),
+						     param_tyty));
+
+      context->insert_type (param.get_mappings (), param_tyty);
+    }
+
+  return new TyTy::FnType (fn.get_mappings ().get_hirid (),
+			   function.get_function_name (), function.is_method (),
+			   std::move (params), ret_type, substitutions);
+}
+
 } // namespace Resolver
 } // namespace Rust

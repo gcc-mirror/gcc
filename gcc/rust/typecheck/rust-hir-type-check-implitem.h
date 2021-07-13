@@ -289,6 +289,7 @@ public:
 	return;
       }
 
+    context->insert_type (trait_item_ref.get_mappings (), lookup->clone ());
     resolved_trait_item = trait_item_ref;
   }
 
