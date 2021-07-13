@@ -33,10 +33,8 @@
 #ifndef GOMP_SEM_H
 #define GOMP_SEM_H 1
 
-#include <limits.h> /* For INT_MIN */
-
 typedef int gomp_sem_t;
-#define SEM_WAIT INT_MIN
+#define SEM_WAIT (-__INT_MAX__ - 1)
 #define SEM_INC 1
 
 extern void gomp_sem_wait_slow (gomp_sem_t *, int);
