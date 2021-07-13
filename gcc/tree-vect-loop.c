@@ -4764,32 +4764,28 @@ get_initial_def_for_reduction (loop_vec_info loop_vinfo,
   return init_def;
 }
 
-/* Get at the initial defs for the reduction PHIs in SLP_NODE.
-   NUMBER_OF_VECTORS is the number of vector defs to create.
-   If NEUTRAL_OP is nonnull, introducing extra elements of that
-   value will not change the result.  */
+/* Get at the initial defs for the reduction PHIs for REDUC_INFO, whose
+   associated SLP node is SLP_NODE.  NUMBER_OF_VECTORS is the number of vector
+   defs to create.  If NEUTRAL_OP is nonnull, introducing extra elements of
+   that value will not change the result.  */
 
 static void
 get_initial_defs_for_reduction (vec_info *vinfo,
+				stmt_vec_info reduc_info,
 				slp_tree slp_node,
 				vec<tree> *vec_oprnds,
 				unsigned int number_of_vectors,
 				bool reduc_chain, tree neutral_op)
 {
   vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
-  stmt_vec_info stmt_vinfo = stmts[0];
   unsigned HOST_WIDE_INT nunits;
   unsigned j, number_of_places_left_in_vector;
-  tree vector_type;
+  tree vector_type = STMT_VINFO_VECTYPE (reduc_info);
   unsigned int group_size = stmts.length ();
   unsigned int i;
   class loop *loop;
 
-  vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
-
-  gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def);
-
-  loop = (gimple_bb (stmt_vinfo->stmt))->loop_father;
+  loop = (gimple_bb (reduc_info->stmt))->loop_father;
   gcc_assert (loop);
   edge pe = loop_preheader_edge (loop);
 
@@ -4823,7 +4819,7 @@ get_initial_defs_for_reduction (vec_info *vinfo,
     {
       tree op;
       i = j % group_size;
-      stmt_vinfo = stmts[i];
+      stmt_vec_info stmt_vinfo = stmts[i];
 
       /* Get the def before the loop.  In reduction chain we have only
 	 one initial value.  Else we have as many as PHIs in the group.  */
@@ -7510,7 +7506,8 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 	      = neutral_op_for_slp_reduction (slp_node, vectype_out,
 					      STMT_VINFO_REDUC_CODE (reduc_info),
 					      first != NULL);
-	  get_initial_defs_for_reduction (loop_vinfo, slp_node_instance->reduc_phis,
+	  get_initial_defs_for_reduction (loop_vinfo, reduc_info,
+					  slp_node_instance->reduc_phis,
 					  &vec_initial_defs, vec_num,
 					  first != NULL, neutral_op);
 	}
