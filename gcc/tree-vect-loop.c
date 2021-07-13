@@ -4896,12 +4896,11 @@ vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
 		      accumulator->reduc_info->reduc_scalar_results.begin ()))
     return false;
 
-  /* For now, only handle the case in which both loops are operating on the
-     same vector types.  In future we could reduce wider vectors to narrower
-     ones as well.  */
+  /* Handle the case where we can reduce wider vectors to narrower ones.  */
   tree vectype = STMT_VINFO_VECTYPE (reduc_info);
   tree old_vectype = TREE_TYPE (accumulator->reduc_input);
-  if (!useless_type_conversion_p (old_vectype, vectype))
+  if (!constant_multiple_p (TYPE_VECTOR_SUBPARTS (old_vectype),
+			    TYPE_VECTOR_SUBPARTS (vectype)))
     return false;
 
   /* Non-SLP reductions might apply an adjustment after the reduction
@@ -4933,6 +4932,101 @@ vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
   reduc_info->reduc_initial_values.splice (initial_values);
   reduc_info->reused_accumulator = accumulator;
   return true;
+}
+
+/* Reduce the vector VEC_DEF down to VECTYPE with reduction operation
+   CODE emitting stmts before GSI.  Returns a vector def of VECTYPE.  */
+
+static tree
+vect_create_partial_epilog (tree vec_def, tree vectype, enum tree_code code,
+			    gimple_seq *seq)
+{
+  unsigned nunits = TYPE_VECTOR_SUBPARTS (TREE_TYPE (vec_def)).to_constant ();
+  unsigned nunits1 = TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
+  tree stype = TREE_TYPE (vectype);
+  tree new_temp = vec_def;
+  while (nunits > nunits1)
+    {
+      nunits /= 2;
+      tree vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
+							   stype, nunits);
+      unsigned int bitsize = tree_to_uhwi (TYPE_SIZE (vectype1));
+
+      /* The target has to make sure we support lowpart/highpart
+	 extraction, either via direct vector extract or through
+	 an integer mode punning.  */
+      tree dst1, dst2;
+      gimple *epilog_stmt;
+      if (convert_optab_handler (vec_extract_optab,
+				 TYPE_MODE (TREE_TYPE (new_temp)),
+				 TYPE_MODE (vectype1))
+	  != CODE_FOR_nothing)
+	{
+	  /* Extract sub-vectors directly once vec_extract becomes
+	     a conversion optab.  */
+	  dst1 = make_ssa_name (vectype1);
+	  epilog_stmt
+	      = gimple_build_assign (dst1, BIT_FIELD_REF,
+				     build3 (BIT_FIELD_REF, vectype1,
+					     new_temp, TYPE_SIZE (vectype1),
+					     bitsize_int (0)));
+	  gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+	  dst2 =  make_ssa_name (vectype1);
+	  epilog_stmt
+	      = gimple_build_assign (dst2, BIT_FIELD_REF,
+				     build3 (BIT_FIELD_REF, vectype1,
+					     new_temp, TYPE_SIZE (vectype1),
+					     bitsize_int (bitsize)));
+	  gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+	}
+      else
+	{
+	  /* Extract via punning to appropriately sized integer mode
+	     vector.  */
+	  tree eltype = build_nonstandard_integer_type (bitsize, 1);
+	  tree etype = build_vector_type (eltype, 2);
+	  gcc_assert (convert_optab_handler (vec_extract_optab,
+					     TYPE_MODE (etype),
+					     TYPE_MODE (eltype))
+		      != CODE_FOR_nothing);
+	  tree tem = make_ssa_name (etype);
+	  epilog_stmt = gimple_build_assign (tem, VIEW_CONVERT_EXPR,
+					     build1 (VIEW_CONVERT_EXPR,
+						     etype, new_temp));
+	  gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+	  new_temp = tem;
+	  tem = make_ssa_name (eltype);
+	  epilog_stmt
+	      = gimple_build_assign (tem, BIT_FIELD_REF,
+				     build3 (BIT_FIELD_REF, eltype,
+					     new_temp, TYPE_SIZE (eltype),
+					     bitsize_int (0)));
+	  gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+	  dst1 = make_ssa_name (vectype1);
+	  epilog_stmt = gimple_build_assign (dst1, VIEW_CONVERT_EXPR,
+					     build1 (VIEW_CONVERT_EXPR,
+						     vectype1, tem));
+	  gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+	  tem = make_ssa_name (eltype);
+	  epilog_stmt
+	      = gimple_build_assign (tem, BIT_FIELD_REF,
+				     build3 (BIT_FIELD_REF, eltype,
+					     new_temp, TYPE_SIZE (eltype),
+					     bitsize_int (bitsize)));
+	  gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+	  dst2 =  make_ssa_name (vectype1);
+	  epilog_stmt = gimple_build_assign (dst2, VIEW_CONVERT_EXPR,
+					     build1 (VIEW_CONVERT_EXPR,
+						     vectype1, tem));
+	  gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+	}
+
+      new_temp = make_ssa_name (vectype1);
+      epilog_stmt = gimple_build_assign (new_temp, code, dst1, dst2);
+      gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+    }
+
+  return new_temp;
 }
 
 /* Function vect_create_epilog_for_reduction
@@ -5684,87 +5778,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
       /* First reduce the vector to the desired vector size we should
 	 do shift reduction on by combining upper and lower halves.  */
-      new_temp = reduc_inputs[0];
-      while (nunits > nunits1)
-	{
-	  nunits /= 2;
-	  vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
-							  stype, nunits);
-	  unsigned int bitsize = tree_to_uhwi (TYPE_SIZE (vectype1));
-
-	  /* The target has to make sure we support lowpart/highpart
-	     extraction, either via direct vector extract or through
-	     an integer mode punning.  */
-	  tree dst1, dst2;
-	  if (convert_optab_handler (vec_extract_optab,
-				     TYPE_MODE (TREE_TYPE (new_temp)),
-				     TYPE_MODE (vectype1))
-	      != CODE_FOR_nothing)
-	    {
-	      /* Extract sub-vectors directly once vec_extract becomes
-		 a conversion optab.  */
-	      dst1 = make_ssa_name (vectype1);
-	      epilog_stmt
-		  = gimple_build_assign (dst1, BIT_FIELD_REF,
-					 build3 (BIT_FIELD_REF, vectype1,
-						 new_temp, TYPE_SIZE (vectype1),
-						 bitsize_int (0)));
-	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	      dst2 =  make_ssa_name (vectype1);
-	      epilog_stmt
-		  = gimple_build_assign (dst2, BIT_FIELD_REF,
-					 build3 (BIT_FIELD_REF, vectype1,
-						 new_temp, TYPE_SIZE (vectype1),
-						 bitsize_int (bitsize)));
-	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	    }
-	  else
-	    {
-	      /* Extract via punning to appropriately sized integer mode
-		 vector.  */
-	      tree eltype = build_nonstandard_integer_type (bitsize, 1);
-	      tree etype = build_vector_type (eltype, 2);
-	      gcc_assert (convert_optab_handler (vec_extract_optab,
-						 TYPE_MODE (etype),
-						 TYPE_MODE (eltype))
-			  != CODE_FOR_nothing);
-	      tree tem = make_ssa_name (etype);
-	      epilog_stmt = gimple_build_assign (tem, VIEW_CONVERT_EXPR,
-						 build1 (VIEW_CONVERT_EXPR,
-							 etype, new_temp));
-	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	      new_temp = tem;
-	      tem = make_ssa_name (eltype);
-	      epilog_stmt
-		  = gimple_build_assign (tem, BIT_FIELD_REF,
-					 build3 (BIT_FIELD_REF, eltype,
-						 new_temp, TYPE_SIZE (eltype),
-						 bitsize_int (0)));
-	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	      dst1 = make_ssa_name (vectype1);
-	      epilog_stmt = gimple_build_assign (dst1, VIEW_CONVERT_EXPR,
-						 build1 (VIEW_CONVERT_EXPR,
-							 vectype1, tem));
-	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	      tem = make_ssa_name (eltype);
-	      epilog_stmt
-		  = gimple_build_assign (tem, BIT_FIELD_REF,
-					 build3 (BIT_FIELD_REF, eltype,
-						 new_temp, TYPE_SIZE (eltype),
-						 bitsize_int (bitsize)));
-	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	      dst2 =  make_ssa_name (vectype1);
-	      epilog_stmt = gimple_build_assign (dst2, VIEW_CONVERT_EXPR,
-						 build1 (VIEW_CONVERT_EXPR,
-							 vectype1, tem));
-	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	    }
-
-	  new_temp = make_ssa_name (vectype1);
-	  epilog_stmt = gimple_build_assign (new_temp, code, dst1, dst2);
-	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	  reduc_inputs[0] = new_temp;
-	}
+      gimple_seq stmts = NULL;
+      new_temp = vect_create_partial_epilog (reduc_inputs[0], vectype1,
+					     code, &stmts);
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
+      reduc_inputs[0] = new_temp;
 
       if (reduce_with_shift && !slp_reduc)
 	{
@@ -7681,13 +7699,46 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 
   if (auto *accumulator = reduc_info->reused_accumulator)
     {
+      tree def = accumulator->reduc_input;
+      unsigned int nreduc;
+      bool res = constant_multiple_p (TYPE_VECTOR_SUBPARTS (TREE_TYPE (def)),
+				      TYPE_VECTOR_SUBPARTS (vectype_out),
+				      &nreduc);
+      gcc_assert (res);
+      if (nreduc != 1)
+	{
+	  /* Reduce the single vector to a smaller one.  */
+	  gimple_seq stmts = NULL;
+	  def = vect_create_partial_epilog (def, vectype_out,
+					    STMT_VINFO_REDUC_CODE (reduc_info),
+					    &stmts);
+	  /* Adjust the input so we pick up the partially reduced value
+	     for the skip edge in vect_create_epilog_for_reduction.  */
+	  accumulator->reduc_input = def;
+	  if (loop_vinfo->main_loop_edge)
+	    {
+	      /* While we'd like to insert on the edge this will split
+		 blocks and disturb bookkeeping, we also will eventually
+		 need this on the skip edge.  Rely on sinking to
+		 fixup optimal placement and insert in the pred.  */
+	      gimple_stmt_iterator gsi
+		= gsi_last_bb (loop_vinfo->main_loop_edge->src);
+	      /* Insert before a cond that eventually skips the
+		 epilogue.  */
+	      if (!gsi_end_p (gsi) && stmt_ends_bb_p (gsi_stmt (gsi)))
+		gsi_prev (&gsi);
+	      gsi_insert_seq_after (&gsi, stmts, GSI_CONTINUE_LINKING);
+	    }
+	  else
+	    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop),
+					      stmts);
+	}
       if (loop_vinfo->main_loop_edge)
 	vec_initial_defs[0]
-	  = vect_get_main_loop_result (loop_vinfo, accumulator->reduc_input,
+	  = vect_get_main_loop_result (loop_vinfo, def,
 				       vec_initial_defs[0]);
       else
-	vec_initial_defs.safe_push (accumulator->reduc_input);
-      gcc_assert (vec_initial_defs.length () == 1);
+	vec_initial_defs.safe_push (def);
     }
 
   /* Generate the reduction PHIs upfront.  */
