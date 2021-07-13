@@ -5010,7 +5010,12 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   auto_vec<tree> scalar_results;
   unsigned int group_size = 1, k;
   auto_vec<gimple *> phis;
-  bool slp_reduc = false;
+  /* SLP reduction without reduction chain, e.g.,
+     # a1 = phi <a2, a0>
+     # b1 = phi <b2, b0>
+     a2 = operation (a1)
+     b2 = operation (b1)  */
+  bool slp_reduc = (slp_node && !REDUC_GROUP_FIRST_ELEMENT (stmt_info));
   bool direct_slp_reduc;
   tree new_phi_result;
   tree induction_index = NULL_TREE;
@@ -5049,6 +5054,16 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       else
 	adjustment_def = STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT (reduc_info);
     }
+
+  stmt_vec_info single_live_out_stmt[] = { stmt_info };
+  array_slice<const stmt_vec_info> live_out_stmts = single_live_out_stmt;
+  if (slp_reduc)
+    /* All statements produce live-out values.  */
+    live_out_stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+  else if (slp_node)
+    /* The last statement in the reduction chain produces the live-out
+       value.  */
+    single_live_out_stmt[0] = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
 
   unsigned vec_num;
   int ncopies;
@@ -5247,13 +5262,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   scalar_results.create (group_size); 
   new_scalar_dest = vect_create_destination_var (scalar_dest, NULL);
   bitsize = TYPE_SIZE (scalar_type);
-
-  /* SLP reduction without reduction chain, e.g.,
-     # a1 = phi <a2, a0>
-     # b1 = phi <b2, b0>
-     a2 = operation (a1)
-     b2 = operation (b1)  */
-  slp_reduc = (slp_node && !REDUC_GROUP_FIRST_ELEMENT (stmt_info));
 
   /* True if we should implement SLP_REDUC using native reduction operations
      instead of scalar operations.  */
@@ -5877,6 +5885,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 					  first_res, res);
                   scalar_results[j % group_size] = new_res;
                 }
+	      scalar_results.truncate (group_size);
 	      for (k = 0; k < group_size; k++)
 		scalar_results[k] = gimple_convert (&stmts, scalar_type,
 						    scalar_results[k]);
@@ -5969,39 +5978,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
           use <s_out4>  
           use <s_out4> */
 
-
-  /* In SLP reduction chain we reduce vector results into one vector if
-     necessary, hence we set here REDUC_GROUP_SIZE to 1.  SCALAR_DEST is the
-     LHS of the last stmt in the reduction chain, since we are looking for
-     the loop exit phi node.  */
-  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+  gcc_assert (live_out_stmts.size () == scalar_results.length ());
+  for (k = 0; k < live_out_stmts.size (); k++)
     {
-      stmt_vec_info dest_stmt_info
-	= vect_orig_stmt (SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1]);
-      scalar_dest = gimple_assign_lhs (dest_stmt_info->stmt);
-      group_size = 1;
-    }
-
-  /* In SLP we may have several statements in NEW_PHIS and REDUCTION_PHIS (in
-     case that REDUC_GROUP_SIZE is greater than vectorization factor).
-     Therefore, we need to match SCALAR_RESULTS with corresponding statements.
-     The first (REDUC_GROUP_SIZE / number of new vector stmts) scalar results
-     correspond to the first vector stmt, etc.
-     (RATIO is equal to (REDUC_GROUP_SIZE / number of new vector stmts)).  */
-  if (group_size > new_phis.length ())
-    gcc_assert (!(group_size % new_phis.length ()));
-
-  for (k = 0; k < group_size; k++)
-    {
-      if (slp_reduc)
-        {
-	  stmt_vec_info scalar_stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[k];
-
-	  orig_stmt_info = STMT_VINFO_RELATED_STMT (scalar_stmt_info);
-	  /* SLP statements can't participate in patterns.  */
-	  gcc_assert (!orig_stmt_info);
-	  scalar_dest = gimple_assign_lhs (scalar_stmt_info->stmt);
-        }
+      stmt_vec_info scalar_stmt_info = vect_orig_stmt (live_out_stmts[k]);
+      scalar_dest = gimple_assign_lhs (scalar_stmt_info->stmt);
 
       phis.create (3);
       /* Find the loop-closed-use at the loop exit of the original scalar
