@@ -4614,57 +4614,26 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
    Input:
    REDUC_INFO - the info_for_reduction
    INIT_VAL - the initial value of the reduction variable
+   NEUTRAL_OP - a value that has no effect on the reduction, as per
+		neutral_op_for_reduction
 
    Output:
-   ADJUSTMENT_DEF - a tree that holds a value to be added to the final result
-        of the reduction (used for adjusting the epilog - see below).
    Return a vector variable, initialized according to the operation that
 	STMT_VINFO performs. This vector will be used as the initial value
 	of the vector of partial results.
 
-   Option1 (adjust in epilog): Initialize the vector as follows:
-     add/bit or/xor:    [0,0,...,0,0]
-     mult/bit and:      [1,1,...,1,1]
-     min/max/cond_expr: [init_val,init_val,..,init_val,init_val]
-   and when necessary (e.g. add/mult case) let the caller know
-   that it needs to adjust the result by init_val.
-
-   Option2: Initialize the vector as follows:
-     add/bit or/xor:    [init_val,0,0,...,0]
-     mult/bit and:      [init_val,1,1,...,1]
-     min/max/cond_expr: [init_val,init_val,...,init_val]
-   and no adjustments are needed.
-
-   For example, for the following code:
-
-   s = init_val;
-   for (i=0;i<n;i++)
-     s = s + a[i];
-
-   STMT_VINFO is 's = s + a[i]', and the reduction variable is 's'.
-   For a vector of 4 units, we want to return either [0,0,0,init_val],
-   or [0,0,0,0] and let the caller know that it needs to adjust
-   the result at the end by 'init_val'.
-
-   FORNOW, we are using the 'adjust in epilog' scheme, because this way the
-   initialization vector is simpler (same element in all entries), if
-   ADJUSTMENT_DEF is not NULL, and Option2 otherwise.
-
-   A cost model should help decide between these two schemes.  */
+   The value we need is a vector in which element 0 has value INIT_VAL
+   and every other element has value NEUTRAL_OP.  */
 
 static tree
 get_initial_def_for_reduction (loop_vec_info loop_vinfo,
 			       stmt_vec_info reduc_info,
-			       enum tree_code code, tree init_val,
-                               tree *adjustment_def)
+			       tree init_val, tree neutral_op)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (init_val);
   tree vectype = get_vectype_for_scalar_type (loop_vinfo, scalar_type);
-  tree def_for_init;
   tree init_def;
-  REAL_VALUE_TYPE real_init_val = dconst0;
-  int int_init_val = 0;
   gimple_seq stmts = NULL;
 
   gcc_assert (vectype);
@@ -4675,75 +4644,34 @@ get_initial_def_for_reduction (loop_vec_info loop_vinfo,
   gcc_assert (nested_in_vect_loop_p (loop, reduc_info)
 	      || loop == (gimple_bb (reduc_info->stmt))->loop_father);
 
-  /* ADJUSTMENT_DEF is NULL when called from
-     vect_create_epilog_for_reduction to vectorize double reduction.  */
-  if (adjustment_def)
-    *adjustment_def = NULL;
-
-  switch (code)
+  if (operand_equal_p (init_val, neutral_op))
     {
-    case WIDEN_SUM_EXPR:
-    case DOT_PROD_EXPR:
-    case SAD_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-    case MULT_EXPR:
-    case BIT_AND_EXPR:
-      {
-        if (code == MULT_EXPR)
-          {
-            real_init_val = dconst1;
-            int_init_val = 1;
-          }
-
-        if (code == BIT_AND_EXPR)
-          int_init_val = -1;
-
-        if (SCALAR_FLOAT_TYPE_P (scalar_type))
-          def_for_init = build_real (scalar_type, real_init_val);
-        else
-          def_for_init = build_int_cst (scalar_type, int_init_val);
-
-	if (adjustment_def || operand_equal_p (def_for_init, init_val, 0))
-	  {
-	    /* Option1: the first element is '0' or '1' as well.  */
-	    if (!operand_equal_p (def_for_init, init_val, 0))
-	      *adjustment_def = init_val;
-	    init_def = gimple_build_vector_from_val (&stmts, vectype,
-						     def_for_init);
-	  }
-	else if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ())
-	  {
-	    /* Option2 (variable length): the first element is INIT_VAL.  */
-	    init_def = gimple_build_vector_from_val (&stmts, vectype,
-						     def_for_init);
-	    init_def = gimple_build (&stmts, CFN_VEC_SHL_INSERT,
-				     vectype, init_def, init_val);
-	  }
-	else
-	  {
-	    /* Option2: the first element is INIT_VAL.  */
-	    tree_vector_builder elts (vectype, 1, 2);
-	    elts.quick_push (init_val);
-	    elts.quick_push (def_for_init);
-	    init_def = gimple_build_vector (&stmts, &elts);
-	  }
-      }
-      break;
-
-    case MIN_EXPR:
-    case MAX_EXPR:
-    case COND_EXPR:
-      {
-	init_val = gimple_convert (&stmts, TREE_TYPE (vectype), init_val);
-	init_def = gimple_build_vector_from_val (&stmts, vectype, init_val);
-      }
-      break;
-
-    default:
-      gcc_unreachable ();
+      /* If both elements are equal then the vector described above is
+	 just a splat.  */
+      neutral_op = gimple_convert (&stmts, TREE_TYPE (vectype), neutral_op);
+      init_def = gimple_build_vector_from_val (&stmts, vectype, neutral_op);
+    }
+  else
+    {
+      neutral_op = gimple_convert (&stmts, TREE_TYPE (vectype), neutral_op);
+      init_val = gimple_convert (&stmts, TREE_TYPE (vectype), init_val);
+      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ())
+	{
+	  /* Construct a splat of NEUTRAL_OP and insert INIT_VAL into
+	     element 0.  */
+	  init_def = gimple_build_vector_from_val (&stmts, vectype,
+						   neutral_op);
+	  init_def = gimple_build (&stmts, CFN_VEC_SHL_INSERT,
+				   vectype, init_def, init_val);
+	}
+      else
+	{
+	  /* Build {INIT_VAL, NEUTRAL_OP, NEUTRAL_OP, ...}.  */
+	  tree_vector_builder elts (vectype, 1, 2);
+	  elts.quick_push (init_val);
+	  elts.quick_push (neutral_op);
+	  init_def = gimple_build_vector (&stmts, &elts);
+	}
     }
 
   if (stmts)
@@ -7479,7 +7407,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 					       vectype_out);
 
   /* Get the loop-entry arguments.  */
-  tree vec_initial_def;
+  tree vec_initial_def = NULL_TREE;
   auto_vec<tree> vec_initial_defs;
   if (slp_node)
     {
@@ -7529,9 +7457,6 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 	      STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info) = NULL_TREE;
 	    }
 	  vec_initial_def = build_vector_from_val (vectype_out, induc_val);
-	  vec_initial_defs.create (ncopies);
-	  for (i = 0; i < ncopies; ++i)
-	    vec_initial_defs.quick_push (vec_initial_def);
 	}
       else if (nested_cycle)
 	{
@@ -7541,21 +7466,37 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 					 ncopies, initial_def,
 					 &vec_initial_defs);
 	}
+      else if (STMT_VINFO_REDUC_TYPE (reduc_info) == CONST_COND_REDUCTION
+	       || STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION)
+	/* Fill the initial vector with the initial scalar value.  */
+	vec_initial_def
+	  = get_initial_def_for_reduction (loop_vinfo, reduc_stmt_info,
+					   initial_def, initial_def);
       else
 	{
-	  tree adjustment_def = NULL_TREE;
-	  tree *adjustment_defp = &adjustment_def;
 	  enum tree_code code = STMT_VINFO_REDUC_CODE (reduc_info);
-	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
-	    adjustment_defp = NULL;
+	  tree neutral_op = neutral_op_for_reduction (TREE_TYPE (initial_def),
+						      code, initial_def);
+	  gcc_assert (neutral_op);
+	  /* Try to simplify the vector initialization by applying an
+	     adjustment after the reduction has been performed.  */
+	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
+	      && !operand_equal_p (neutral_op, initial_def))
+	    {
+	      STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT (reduc_info) = initial_def;
+	      initial_def = neutral_op;
+	    }
 	  vec_initial_def
-	    = get_initial_def_for_reduction (loop_vinfo, reduc_info, code,
-					     initial_def, adjustment_defp);
-	  STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT (reduc_info) = adjustment_def;
-	  vec_initial_defs.create (ncopies);
-	  for (i = 0; i < ncopies; ++i)
-	    vec_initial_defs.quick_push (vec_initial_def);
+	    = get_initial_def_for_reduction (loop_vinfo, reduc_info,
+					     initial_def, neutral_op);
 	}
+    }
+
+  if (vec_initial_def)
+    {
+      vec_initial_defs.create (ncopies);
+      for (i = 0; i < ncopies; ++i)
+	vec_initial_defs.quick_push (vec_initial_def);
     }
 
   /* Generate the reduction PHIs upfront.  */
