@@ -5005,7 +5005,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   imm_use_iterator imm_iter, phi_imm_iter;
   use_operand_p use_p, phi_use_p;
   gimple *use_stmt;
-  auto_vec<gimple *> new_phis;
+  auto_vec<tree> reduc_inputs;
   int j, i;
   auto_vec<tree> scalar_results;
   unsigned int group_size = 1, k;
@@ -5017,7 +5017,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      b2 = operation (b1)  */
   bool slp_reduc = (slp_node && !REDUC_GROUP_FIRST_ELEMENT (stmt_info));
   bool direct_slp_reduc;
-  tree new_phi_result;
   tree induction_index = NULL_TREE;
 
   if (slp_node)
@@ -5215,7 +5214,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   if (double_reduc)
     loop = outer_loop;
   exit_bb = single_exit (loop)->dest;
-  new_phis.create (slp_node ? vec_num : ncopies);
+  reduc_inputs.create (slp_node ? vec_num : ncopies);
   for (unsigned i = 0; i < vec_num; i++)
     {
       if (slp_node)
@@ -5223,19 +5222,14 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       else
 	def = gimple_get_lhs (STMT_VINFO_VEC_STMTS (rdef_info)[0]);
       for (j = 0; j < ncopies; j++)
-        {
+	{
 	  tree new_def = copy_ssa_name (def);
-          phi = create_phi_node (new_def, exit_bb);
-          if (j == 0)
-            new_phis.quick_push (phi);
-          else
-	    {
-	      def = gimple_get_lhs (STMT_VINFO_VEC_STMTS (rdef_info)[j]);
-	      new_phis.quick_push (phi);
-	    }
-
-          SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, def);
-        }
+	  phi = create_phi_node (new_def, exit_bb);
+	  if (j)
+	    def = gimple_get_lhs (STMT_VINFO_VEC_STMTS (rdef_info)[j]);
+	  SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, def);
+	  reduc_inputs.quick_push (new_def);
+	}
     }
 
   exit_gsi = gsi_after_labels (exit_bb);
@@ -5274,52 +5268,32 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      a2 = operation (a1)
      a3 = operation (a2),
 
-     we may end up with more than one vector result.  Here we reduce them to
-     one vector.  */
-  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info) || direct_slp_reduc)
+     we may end up with more than one vector result.  Here we reduce them
+     to one vector.
+
+     The same is true if we couldn't use a single defuse cycle.  */
+  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+      || direct_slp_reduc
+      || ncopies > 1)
     {
       gimple_seq stmts = NULL;
-      tree first_vect = PHI_RESULT (new_phis[0]);
-      first_vect = gimple_convert (&stmts, vectype, first_vect);
-      for (k = 1; k < new_phis.length (); k++)
+      tree first_vect = gimple_convert (&stmts, vectype, reduc_inputs[0]);
+      for (k = 1; k < reduc_inputs.length (); k++)
         {
-	  gimple *next_phi = new_phis[k];
-          tree second_vect = PHI_RESULT (next_phi);
-	  second_vect = gimple_convert (&stmts, vectype, second_vect);
+	  tree second_vect = gimple_convert (&stmts, vectype, reduc_inputs[k]);
           first_vect = gimple_build (&stmts, code, vectype,
 				     first_vect, second_vect);
         }
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
-      new_phi_result = first_vect;
-      new_phis.truncate (0);
-      new_phis.safe_push (SSA_NAME_DEF_STMT (first_vect));
+      reduc_inputs.truncate (0);
+      reduc_inputs.safe_push (first_vect);
     }
-  /* Likewise if we couldn't use a single defuse cycle.  */
-  else if (ncopies > 1)
-    {
-      gimple_seq stmts = NULL;
-      tree first_vect = PHI_RESULT (new_phis[0]);
-      first_vect = gimple_convert (&stmts, vectype, first_vect);
-      for (int k = 1; k < ncopies; ++k)
-	{
-	  tree second_vect = PHI_RESULT (new_phis[k]);
-	  second_vect = gimple_convert (&stmts, vectype, second_vect);
-	  first_vect = gimple_build (&stmts, code, vectype,
-				     first_vect, second_vect);
-	}
-      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
-      new_phi_result = first_vect;
-      new_phis.truncate (0);
-      new_phis.safe_push (SSA_NAME_DEF_STMT (first_vect));
-    }
-  else
-    new_phi_result = PHI_RESULT (new_phis[0]);
 
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION
       && reduc_fn != IFN_LAST)
     {
-      /* For condition reductions, we have a vector (NEW_PHI_RESULT) containing
+      /* For condition reductions, we have a vector (REDUC_INPUTS 0) containing
 	 various data values where the condition matched and another vector
 	 (INDUCTION_INDEX) containing all the indexes of those matches.  We
 	 need to extract the last matching index (which will be the index with
@@ -5350,7 +5324,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       tree zero_vec = build_zero_cst (vectype);
 
       gimple_seq stmts = NULL;
-      new_phi_result = gimple_convert (&stmts, vectype, new_phi_result);
+      reduc_inputs[0] = gimple_convert (&stmts, vectype, reduc_inputs[0]);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
       /* Find maximum value from the vector of found indexes.  */
@@ -5370,7 +5344,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
       /* Next we compare the new vector (MAX_INDEX_VEC) full of max indexes
 	 with the vector (INDUCTION_INDEX) of found indexes, choosing values
-	 from the data vector (NEW_PHI_RESULT) for matches, 0 (ZERO_VEC)
+	 from the data vector (REDUC_INPUTS 0) for matches, 0 (ZERO_VEC)
 	 otherwise.  Only one value should match, resulting in a vector
 	 (VEC_COND) with one data value and the rest zeros.
 	 In the case where the loop never made any matches, every index will
@@ -5389,7 +5363,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	 zero.  */
       tree vec_cond = make_ssa_name (vectype);
       gimple *vec_cond_stmt = gimple_build_assign (vec_cond, VEC_COND_EXPR,
-						   vec_compare, new_phi_result,
+						   vec_compare,
+						   reduc_inputs[0],
 						   zero_vec);
       gsi_insert_before (&exit_gsi, vec_cond_stmt, GSI_SAME_STMT);
 
@@ -5437,7 +5412,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	     val = data_reduc[i], idx_val = induction_index[i];
 	 return val;  */
 
-      tree data_eltype = TREE_TYPE (TREE_TYPE (new_phi_result));
+      tree data_eltype = TREE_TYPE (TREE_TYPE (reduc_inputs[0]));
       tree idx_eltype = TREE_TYPE (TREE_TYPE (induction_index));
       unsigned HOST_WIDE_INT el_size = tree_to_uhwi (TYPE_SIZE (idx_eltype));
       poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (TREE_TYPE (induction_index));
@@ -5461,7 +5436,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  epilog_stmt = gimple_build_assign (val, BIT_FIELD_REF,
 					     build3 (BIT_FIELD_REF,
 						     data_eltype,
-						     new_phi_result,
+						     reduc_inputs[0],
 						     bitsize_int (el_size),
 						     bitsize_int (off)));
 	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
@@ -5513,10 +5488,10 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 			 "Reduce using direct vector reduction.\n");
 
       gimple_seq stmts = NULL;
-      new_phi_result = gimple_convert (&stmts, vectype, new_phi_result);
-      vec_elem_type = TREE_TYPE (TREE_TYPE (new_phi_result));
+      reduc_inputs[0] = gimple_convert (&stmts, vectype, reduc_inputs[0]);
+      vec_elem_type = TREE_TYPE (TREE_TYPE (reduc_inputs[0]));
       new_temp = gimple_build (&stmts, as_combined_fn (reduc_fn),
-			       vec_elem_type, new_phi_result);
+			       vec_elem_type, reduc_inputs[0]);
       new_temp = gimple_convert (&stmts, scalar_type, new_temp);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
@@ -5546,7 +5521,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	 neutral value.  We can then do a normal reduction on each vector.  */
 
       /* Enforced by vectorizable_reduction.  */
-      gcc_assert (new_phis.length () == 1);
+      gcc_assert (reduc_inputs.length () == 1);
       gcc_assert (pow2p_hwi (group_size));
 
       slp_tree orig_phis_slp_node = slp_node_instance->reduc_phis;
@@ -5602,7 +5577,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
 	     sel[j] = (index[j] == i);
 
-	     which selects the elements of NEW_PHI_RESULT that should
+	     which selects the elements of REDUC_INPUTS[0] that should
 	     be included in the result.  */
 	  tree compare_val = build_int_cst (index_elt_type, i);
 	  compare_val = build_vector_from_val (index_type, compare_val);
@@ -5611,11 +5586,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
 	  /* Calculate the equivalent of:
 
-	     vec = seq ? new_phi_result : vector_identity;
+	     vec = seq ? reduc_inputs[0] : vector_identity;
 
 	     VEC is now suitable for a full vector reduction.  */
 	  tree vec = gimple_build (&seq, VEC_COND_EXPR, vectype,
-				   sel, new_phi_result, vector_identity);
+				   sel, reduc_inputs[0], vector_identity);
 
 	  /* Do the reduction and convert it to the appropriate type.  */
 	  tree scalar = gimple_build (&seq, as_combined_fn (reduc_fn),
@@ -5630,7 +5605,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       bool reduce_with_shift;
       tree vec_temp;
 
-      gcc_assert (slp_reduc || new_phis.length () == 1);
+      gcc_assert (slp_reduc || reduc_inputs.length () == 1);
 
       /* See if the target wants to do the final (shift) reduction
 	 in a vector mode of smaller size and first reduce upper/lower
@@ -5640,7 +5615,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
       unsigned nunits1 = nunits;
       if ((mode1 = targetm.vectorize.split_reduction (mode)) != mode
-	  && new_phis.length () == 1)
+	  && reduc_inputs.length () == 1)
 	{
 	  nunits1 = GET_MODE_NUNITS (mode1).to_constant ();
 	  /* For SLP reductions we have to make sure lanes match up, but
@@ -5672,7 +5647,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
       /* First reduce the vector to the desired vector size we should
 	 do shift reduction on by combining upper and lower halves.  */
-      new_temp = new_phi_result;
+      new_temp = reduc_inputs[0];
       while (nunits > nunits1)
 	{
 	  nunits /= 2;
@@ -5751,7 +5726,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  new_temp = make_ssa_name (vectype1);
 	  epilog_stmt = gimple_build_assign (new_temp, code, dst1, dst2);
 	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	  new_phis[0] = epilog_stmt;
+	  reduc_inputs[0] = new_temp;
 	}
 
       if (reduce_with_shift && !slp_reduc)
@@ -5832,13 +5807,9 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  int element_bitsize = tree_to_uhwi (bitsize);
 	  tree compute_type = TREE_TYPE (vectype);
 	  gimple_seq stmts = NULL;
-          FOR_EACH_VEC_ELT (new_phis, i, new_phi)
+	  FOR_EACH_VEC_ELT (reduc_inputs, i, vec_temp)
             {
               int bit_offset;
-              if (gimple_code (new_phi) == GIMPLE_PHI)
-                vec_temp = PHI_RESULT (new_phi);
-              else
-                vec_temp = gimple_assign_lhs (new_phi);
 	      new_temp = gimple_build (&stmts, BIT_FIELD_REF, compute_type,
 				       vec_temp, bitsize, bitsize_zero_node);
 
@@ -5929,11 +5900,10 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       gimple_seq stmts = NULL;
       if (double_reduc)
 	{
-          new_phi = new_phis[0];
 	  gcc_assert (VECTOR_TYPE_P (TREE_TYPE (adjustment_def)));
 	  adjustment_def = gimple_convert (&stmts, vectype, adjustment_def);
 	  new_temp = gimple_build (&stmts, code, vectype,
-				   PHI_RESULT (new_phi), adjustment_def);
+				   reduc_inputs[0], adjustment_def);
 	}
       else
 	{
@@ -5947,7 +5917,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       epilog_stmt = gimple_seq_last_stmt (stmts);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
       scalar_results[0] = new_temp;
-      new_phis[0] = epilog_stmt;
     }
 
   if (double_reduc)
