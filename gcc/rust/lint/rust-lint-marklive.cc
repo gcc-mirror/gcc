@@ -106,6 +106,8 @@ MarkLive::go (HIR::Crate &crate)
 void
 MarkLive::visit (HIR::PathInExpression &expr)
 {
+  // We should iterate every path segment in order to mark the function which is
+  // called in the expression
   expr.iterate_path_segments ([&] (HIR::PathExprSegment &seg) -> bool {
     return visit_path_segment (seg);
   });
@@ -121,6 +123,7 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
     return true;
   });
 
+  // Trying to find the method definition and mark it alive.
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
   find_ref_node_id (ast_node_id, ref_node_id, expr.get_locus (),
@@ -140,6 +143,14 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
   NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
 
+  // There are two different kinds of segment for us.
+  // 1. function segment
+  //      like the symbol "foo" in expression `foo()`.
+  // 2. type segment
+  //      like the symbol "Foo" in expression `Foo{a: 1, b: 2}`
+  //
+  // We should mark them alive all and ignoring other kind of segments.
+  // If the segment we dont care then just return false is fine
   if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
       Resolver::Definition def;
