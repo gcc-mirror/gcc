@@ -825,12 +825,14 @@ fold_using_range::range_of_builtin_ubsan_call (irange &r, gcall *call,
   tree arg1 = gimple_call_arg (call, 1);
   src.get_operand (ir0, arg0);
   src.get_operand (ir1, arg1);
+  // Check for any relation between arg0 and arg1.
+  relation_kind relation = src.query_relation (arg0, arg1);
 
   bool saved_flag_wrapv = flag_wrapv;
   // Pretend the arithmetic is wrapping.  If there is any overflow,
   // we'll complain, but will actually do wrapping operation.
   flag_wrapv = 1;
-  op->fold_range (r, type, ir0, ir1);
+  op->fold_range (r, type, ir0, ir1, relation);
   flag_wrapv = saved_flag_wrapv;
 
   // If for both arguments vrp_valueize returned non-NULL, this should

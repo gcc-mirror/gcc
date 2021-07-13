@@ -1,3 +1,141 @@
+2021-07-12  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* adaint.c (__gnat_number_of_cpus): Replace "#ifdef" by "#if
+	defined".
+
+2021-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <discrete_type>: Add a
+	parallel type only when -fgnat-encodings=all is specified.
+	<E_Array_Type>: Use the PAT name and special suffixes only when
+	-fgnat-encodings=all is specified.
+	<E_Array_Subtype>: Build a special type for debugging purposes only
+	when -fgnat-encodings=all is specified.  Add a parallel type or use
+	the PAT name only when -fgnat-encodings=all is specified.
+	<E_Record_Type>: Generate debug info for the inner record types only
+	when -fgnat-encodings=all is specified.
+	<E_Record_Subtype>: Use a debug type for an artificial subtype only
+	except when -fgnat-encodings=all is specified.
+	(elaborate_expression_1): Reset need_for_debug when possible only
+	except when -fgnat-encodings=all is specified.
+	(components_to_record): Use XV encodings for variable size only
+	when -fgnat-encodings=all is specified.
+	(associate_original_type_to_packed_array): Add a parallel type only
+	when -fgnat-encodings=all is specified.
+	* gcc-interface/misc.c (gnat_get_array_descr_info): Do not return
+	full information only when -fgnat-encodings=all is specified.
+	* gcc-interface/utils.c (make_packable_type): Add a parallel type
+	only when -fgnat-encodings=all is specified.
+	(maybe_pad_type): Make the inner type a debug type only except when
+	-fgnat-encodings=all is specified.  Create an XVS type for variable
+	size only when -fgnat-encodings=all is specified.
+	(rest_of_record_type_compilation): Add a parallel type only when
+	-fgnat-encodings=all is specified.
+
+2021-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Use a
+	fixed lower bound if the index subtype is marked so, as well as a
+	more efficient formula for the upper bound if the array cannot be
+	superflat.
+	(flb_cannot_be_superflat): New predicate.
+	(cannot_be_superflat): Rename into...
+	(range_cannot_be_superfla): ...this.  Minor tweak.
+
+2021-07-12  Bob Duff  <duff@adacore.com>
+
+	* uintp.ads, types.h: New subtypes of Uint: Valid_Uint, Unat,
+	Upos, Nonzero_Uint with predicates. These correspond to new
+	field types in Gen_IL.
+	* gen_il-types.ads (Valid_Uint, Unat, Upos, Nonzero_Uint): New
+	field types.
+	* einfo-utils.ads, einfo-utils.adb, fe.h (Known_Alignment,
+	Init_Alignment): Use the initial zero value to represent
+	"unknown". This will ensure that if Alignment is called before
+	Set_Alignment, the compiler will blow up (if assertions are
+	enabled).
+	* atree.ads, atree.adb, atree.h, gen_il-gen.adb
+	(Get_Valid_32_Bit_Field): New generic low-level getter for
+	subtypes of Uint.
+	(Copy_Alignment): New procedure to copy Alignment field even
+	when Unknown.
+	(Init_Object_Size_Align, Init_Size_Align): Do not bypass the
+	Init_ procedures.
+	* exp_pakd.adb, freeze.adb, layout.adb, repinfo.adb,
+	sem_util.adb: Protect calls to Alignment with Known_Alignment.
+	Use Copy_Alignment when it might be unknown.
+	* gen_il-gen-gen_entities.adb (Alignment,
+	String_Literal_Length): Use type Unat instead of Uint, to ensure
+	that the field is always Set_ before we get it, and that it is
+	set to a nonnegative value.
+	(Enumeration_Pos): Unat.
+	(Enumeration_Rep): Valid_Uint. Can be negative, but must be
+	valid before fetching.
+	(Discriminant_Number): Upos.
+	(Renaming_Map): Remove.
+	* gen_il-gen-gen_nodes.adb (Char_Literal_Value, Reason): Unat.
+	(Intval, Corresponding_Integer_Value): Valid_Uint.
+	* gen_il-internals.ads: New functions for dealing with special
+	defaults and new subtypes of Uint.
+	* scans.ads: Correct comments.
+	* scn.adb (Post_Scan): Do not set Intval to No_Uint; that is no
+	longer allowed.
+	* sem_ch13.adb (Analyze_Enumeration_Representation_Clause): Do
+	not set Enumeration_Rep to No_Uint; that is no longer allowed.
+	(Offset_Value): Protect calls to Alignment with Known_Alignment.
+	* sem_prag.adb (Set_Atomic_VFA): Do not use Uint_0 to mean
+	"unknown"; call Init_Alignment instead.
+	* sinfo.ads: Minor comment fix.
+	* treepr.adb: Deal with printing of new field types.
+	* einfo.ads, gen_il-fields.ads (Renaming_Map): Remove.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use Known_Alignment
+	before calling Alignment. This preserve some probably buggy
+	behavior: if the alignment is not set, it previously defaulted
+	to Uint_0; we now make that explicit.  Use Copy_Alignment,
+	because "Set_Alignment (Y, Alignment (X));" no longer works when
+	the Alignment of X has not yet been set.
+	* gcc-interface/trans.c (process_freeze_entity): Use
+	Copy_Alignment.
+
+2021-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dwalin.ads: Adjust a few comments left and right.
+	(Line_Info_Register): Comment out unused components.
+	(Line_Info_Header): Add DWARF 5 support.
+	(Dwarf_Context): Likewise.  Rename "prologue" into "header".
+	* libgnat/s-dwalin.adb: Alphabetize "with" clauses.
+	(DWARF constants): Add DWARF 5 support and reorder.
+	(For_Each_Row): Adjust.
+	(Initialize_Pass): Likewise.
+	(Initialize_State_Machine): Likewise and fix typo.
+	(Open): Add DWARF 5 support.
+	(Parse_Prologue): Rename into...
+	(Parse_Header): ...this and add DWARF 5 support.
+	(Read_And_Execute_Isn): Rename into...
+	(Read_And_Execute_Insn): ...this and adjust.
+	(To_File_Name): Change parameter name and add DWARF 5 support.
+	(Read_Entry_Format_Array): New procedure.
+	(Skip_Form): Add DWARF 5 support and reorder.
+	(Seek_Abbrev): Do not count entries and add DWARF 5 support.
+	(Debug_Info_Lookup): Add DWARF 5 support.
+	(Symbolic_Address.Set_Result): Likewise.
+	(Symbolic_Address): Adjust.
+
+2021-07-12  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Duplicate_Clause): Add a helper routine
+	Check_One_Attr, with a parameter for the attribute_designator we
+	are looking for, and one for the attribute_designator of the
+	current node (which are usually the same). For Size and
+	Value_Size, call it twice, once for each.
+	* errout.ads: Fix a typo.
+
+2021-07-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute): Move rewriting to
+	attribute Put_Image to the beginning of expansion of attribute
+	Image.
+
 2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (finish_subprog_decl): Remove obsolete line.

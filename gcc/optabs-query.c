@@ -582,27 +582,18 @@ can_vec_mask_load_store_p (machine_mode mode,
     return false;
 
   vmode = targetm.vectorize.preferred_simd_mode (smode);
-  if (!VECTOR_MODE_P (vmode))
-    return false;
-
-  if (targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
+  if (VECTOR_MODE_P (vmode)
+      && targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
       && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
   auto_vector_modes vector_modes;
   targetm.vectorize.autovectorize_vector_modes (&vector_modes, true);
-  for (unsigned int i = 0; i < vector_modes.length (); ++i)
-    {
-      poly_uint64 cur = GET_MODE_SIZE (vector_modes[i]);
-      poly_uint64 nunits;
-      if (!multiple_p (cur, GET_MODE_SIZE (smode), &nunits))
-	continue;
-      if (mode_for_vector (smode, nunits).exists (&vmode)
-	  && VECTOR_MODE_P (vmode)
-	  && targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
-	  && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
-	return true;
-    }
+  for (machine_mode base_mode : vector_modes)
+    if (related_vector_mode (base_mode, smode).exists (&vmode)
+	&& targetm.vectorize.get_mask_mode (vmode).exists (&mask_mode)
+	&& convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
+      return true;
   return false;
 }
 

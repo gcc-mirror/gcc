@@ -2457,6 +2457,28 @@ vect_update_epilogue_niters (loop_vec_info epilogue_vinfo,
   return vect_determine_partial_vectors_and_peeling (epilogue_vinfo, true);
 }
 
+/* LOOP_VINFO is an epilogue loop whose corresponding main loop can be skipped.
+   Return a value that equals:
+
+   - MAIN_LOOP_VALUE when LOOP_VINFO is entered from the main loop and
+   - SKIP_VALUE when the main loop is skipped.  */
+
+tree
+vect_get_main_loop_result (loop_vec_info loop_vinfo, tree main_loop_value,
+			   tree skip_value)
+{
+  gcc_assert (loop_vinfo->main_loop_edge);
+
+  tree phi_result = make_ssa_name (TREE_TYPE (main_loop_value));
+  basic_block bb = loop_vinfo->main_loop_edge->dest;
+  gphi *new_phi = create_phi_node (phi_result, bb);
+  add_phi_arg (new_phi, main_loop_value, loop_vinfo->main_loop_edge,
+	       UNKNOWN_LOCATION);
+  add_phi_arg (new_phi, skip_value,
+	       loop_vinfo->skip_main_loop_edge, UNKNOWN_LOCATION);
+  return phi_result;
+}
+
 /* Function vect_do_peeling.
 
    Input:
@@ -2986,6 +3008,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 					   skip_vector ? anchor : guard_bb,
 					   prob_epilog.invert (),
 					   irred_flag);
+	  if (vect_epilogues)
+	    epilogue_vinfo->skip_this_loop_edge = guard_e;
 	  slpeel_update_phi_nodes_for_guard2 (loop, epilog, guard_e,
 					      single_exit (epilog));
 	  /* Only need to handle basic block before epilog loop if it's not
@@ -3057,6 +3081,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  add_phi_arg (new_phi, build_zero_cst (TREE_TYPE (niters)), skip_e,
 		       UNKNOWN_LOCATION);
 	  niters = PHI_RESULT (new_phi);
+	  epilogue_vinfo->main_loop_edge = update_e;
+	  epilogue_vinfo->skip_main_loop_edge = skip_e;
 	}
 
       /* Set ADVANCE to the number of iterations performed by the previous

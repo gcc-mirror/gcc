@@ -1,3 +1,9 @@
+2021-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101411
+	* include/std/span (as_writable_bytes): Add requires-clause.
+	* testsuite/23_containers/span/101411.cc: New test.
+
 2021-07-09  Matheus Castanho  <msc@linux.ibm.com>
 
 	* include/std/mutex (__lock_impl): Check

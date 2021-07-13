@@ -1,3 +1,14 @@
+2021-07-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79501
+	PR c++/100983
+	* decl.c (grokfndecl): Don't require that deduction guides are
+	declared at namespace scope.  Check that class-scope deduction
+	guides have the same access as the member class template.
+	(grokdeclarator): Pretend class-scope deduction guides are static.
+	* search.c (lookup_member): Don't use a BASELINK for (class-scope)
+	deduction guides.
+
 2021-07-10  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/82110

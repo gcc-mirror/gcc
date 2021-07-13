@@ -27,7 +27,7 @@ typedef class _stmt_vec_info *stmt_vec_info;
 #include "tree-hash-traits.h"
 #include "target.h"
 #include "internal-fn.h"
-
+#include "tree-ssa-operands.h"
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
@@ -551,6 +551,18 @@ typedef auto_vec<rgroup_controls> vec_loop_lens;
 
 typedef auto_vec<std::pair<data_reference*, tree> > drs_init_vec;
 
+/* Information about a reduction accumulator from the main loop that could
+   conceivably be reused as the input to a reduction in an epilogue loop.  */
+struct vect_reusable_accumulator {
+  /* The final value of the accumulator, which forms the input to the
+     reduction operation.  */
+  tree reduc_input;
+
+  /* The stmt_vec_info that describes the reduction (i.e. the one for
+     which is_reduc_info is true).  */
+  stmt_vec_info reduc_info;
+};
+
 /*-----------------------------------------------------------------*/
 /* Info on vectorized loops.                                       */
 /*-----------------------------------------------------------------*/
@@ -587,6 +599,26 @@ public:
 
   /* Unrolling factor  */
   poly_uint64 vectorization_factor;
+
+  /* If this loop is an epilogue loop whose main loop can be skipped,
+     MAIN_LOOP_EDGE is the edge from the main loop to this loop's
+     preheader.  SKIP_MAIN_LOOP_EDGE is then the edge that skips the
+     main loop and goes straight to this loop's preheader.
+
+     Both fields are null otherwise.  */
+  edge main_loop_edge;
+  edge skip_main_loop_edge;
+
+  /* If this loop is an epilogue loop that might be skipped after executing
+     the main loop, this edge is the one that skips the epilogue.  */
+  edge skip_this_loop_edge;
+
+  /* The vectorized form of a standard reduction replaces the original
+     scalar code's final result (a loop-closed SSA PHI) with the result
+     of a vector-to-scalar reduction operation.  After vectorization,
+     this variable maps these vector-to-scalar results to information
+     about the reductions that generated them.  */
+  hash_map<tree, vect_reusable_accumulator> reusable_accumulators;
 
   /* Maximum runtime vectorization factor, or MAX_VECTORIZATION_FACTOR
      if there is no particular limit.  */
@@ -1186,6 +1218,23 @@ public:
   /* The vector type for performing the actual reduction.  */
   tree reduc_vectype;
 
+  /* If IS_REDUC_INFO is true and if the vector code is performing
+     N scalar reductions in parallel, this variable gives the initial
+     scalar values of those N reductions.  */
+  vec<tree> reduc_initial_values;
+
+  /* If IS_REDUC_INFO is true and if the vector code is performing
+     N scalar reductions in parallel, this variable gives the vectorized code's
+     final (scalar) result for each of those N reductions.  In other words,
+     REDUC_SCALAR_RESULTS[I] replaces the original scalar code's loop-closed
+     SSA PHI for reduction number I.  */
+  vec<tree> reduc_scalar_results;
+
+  /* Only meaningful if IS_REDUC_INFO.  If non-null, the reduction is
+     being performed by an epilogue loop and we have decided to reuse
+     this accumulator from the main loop.  */
+  vect_reusable_accumulator *reused_accumulator;
+
   /* Whether we force a single cycle PHI during reduction vectorization.  */
   bool force_single_cycle;
 
@@ -1367,6 +1416,19 @@ nested_in_vect_loop_p (class loop *loop, stmt_vec_info stmt_info)
 {
   return (loop->inner
 	  && (loop->inner == (gimple_bb (stmt_info->stmt))->loop_father));
+}
+
+/* PHI is either a scalar reduction phi or a scalar induction phi.
+   Return the initial value of the variable on entry to the containing
+   loop.  */
+
+static inline tree
+vect_phi_initial_value (gphi *phi)
+{
+  basic_block bb = gimple_bb (phi);
+  edge pe = loop_preheader_edge (bb->loop_father);
+  gcc_assert (pe->dest == bb);
+  return PHI_ARG_DEF_FROM_EDGE (phi, pe);
 }
 
 /* Return true if STMT_INFO should produce a vector mask type rather than
@@ -1799,6 +1861,7 @@ class loop *vect_loop_versioning (loop_vec_info, gimple *);
 extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
 				    tree *, tree *, tree *, int, bool, bool,
 				    tree *);
+extern tree vect_get_main_loop_result (loop_vec_info, tree, tree);
 extern void vect_prepare_for_masked_peels (loop_vec_info);
 extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);

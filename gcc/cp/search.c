@@ -1226,7 +1226,10 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       rval = error_mark_node;
     }
 
-  if (rval && is_overloaded_fn (rval))
+  if (rval && is_overloaded_fn (rval)
+      /* Don't use a BASELINK for class-scope deduction guides since
+	 they're not actually member functions.  */
+      && !dguide_name_p (name))
     rval = build_baselink (rval_binfo, basetype_path, rval,
 			   (IDENTIFIER_CONV_OP_P (name)
 			   ? TREE_TYPE (name): NULL_TREE));

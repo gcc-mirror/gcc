@@ -3604,7 +3604,7 @@
 (define_expand "vec_setv2hi"
   [(match_operand:V2HI 0 "register_operand")
    (match_operand:HI 1 "register_operand")
-   (match_operand 2 "vec_setm_operand")]
+   (match_operand 2 "vec_setm_sse41_operand")]
   "TARGET_SSE2"
 {
   if (CONST_INT_P (operands[2]))

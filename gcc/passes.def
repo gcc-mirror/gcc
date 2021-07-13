@@ -74,7 +74,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_all_early_optimizations);
       PUSH_INSERT_PASSES_WITHIN (pass_all_early_optimizations)
 	  NEXT_PASS (pass_remove_cgraph_callee_edges);
-	  NEXT_PASS (pass_object_sizes, true /* insert_min_max_p */);
+	  NEXT_PASS (pass_early_object_sizes);
 	  /* Don't record nonzero bits before IPA to avoid
 	     using too much memory.  */
 	  NEXT_PASS (pass_ccp, false /* nonzero_p */);
@@ -194,14 +194,14 @@ along with GCC; see the file COPYING3.  If not see
 	 They ensure memory accesses are not indirect wherever possible.  */
       NEXT_PASS (pass_strip_predict_hints, false /* early_p */);
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
-      NEXT_PASS (pass_post_ipa_warn);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
+      NEXT_PASS (pass_object_sizes);
+      NEXT_PASS (pass_post_ipa_warn);
       NEXT_PASS (pass_complete_unrolli);
       NEXT_PASS (pass_backprop);
       NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_forwprop);
-      NEXT_PASS (pass_object_sizes, false /* insert_min_max_p */);
       /* pass_build_alias is a dummy pass that ensures that we
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);

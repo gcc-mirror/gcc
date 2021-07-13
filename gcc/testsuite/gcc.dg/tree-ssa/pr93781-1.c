@@ -12,7 +12,9 @@ void foo (unsigned int arg)
   if (a < 0)
     b = x;
 
-  /* In the fullness of time, we will delete this call.  */
   if (b >=  5)
     kill ();;
 }
+
+/* { dg-final { scan-tree-dump-not "kill" "evrp" } }  */
+
