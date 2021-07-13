@@ -2129,7 +2129,7 @@ gimple_has_side_effects (const gimple *s)
    S is a GIMPLE_ASSIGN, the LHS of the assignment is also checked.  */
 
 bool
-gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
+gimple_could_trap_p_1 (const gimple *s, bool include_mem, bool include_stores)
 {
   tree t, div = NULL_TREE;
   enum tree_code op;
@@ -2146,7 +2146,7 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
   switch (gimple_code (s))
     {
     case GIMPLE_ASM:
-      return gimple_asm_volatile_p (as_a <gasm *> (s));
+      return gimple_asm_volatile_p (as_a <const gasm *> (s));
 
     case GIMPLE_CALL:
       if (gimple_call_internal_p (s))
@@ -2194,7 +2194,7 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
 /* Return true if statement S can trap.  */
 
 bool
-gimple_could_trap_p (gimple *s)
+gimple_could_trap_p (const gimple *s)
 {
   return gimple_could_trap_p_1 (s, true, true);
 }
