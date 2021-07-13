@@ -361,8 +361,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool
       ends_with(basic_string_view __x) const noexcept
       {
-	return this->size() >= __x.size()
-	    && this->compare(this->size() - __x.size(), npos, __x) == 0;
+	const auto __len = this->size();
+	const auto __xlen = __x.size();
+	return __len >= __xlen
+	  && traits_type::compare(end() - __xlen, __x.data(), __xlen) == 0;
       }
 
       constexpr bool
