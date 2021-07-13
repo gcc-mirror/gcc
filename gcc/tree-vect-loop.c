@@ -3248,23 +3248,15 @@ reduction_fn_for_scalar_code (enum tree_code code, internal_fn *reduc_fn)
     }
 }
 
-/* If there is a neutral value X such that SLP reduction NODE would not
-   be affected by the introduction of additional X elements, return that X,
-   otherwise return null.  CODE is the code of the reduction and VECTOR_TYPE
-   is the vector type that would hold element X.  REDUC_CHAIN is true if
-   the SLP statements perform a single reduction, false if each statement
-   performs an independent reduction.  */
+/* If there is a neutral value X such that a reduction would not be affected
+   by the introduction of additional X elements, return that X, otherwise
+   return null.  CODE is the code of the reduction and SCALAR_TYPE is type
+   of the scalar elements.  If the reduction has just a single initial value
+   then INITIAL_VALUE is that value, otherwise it is null.  */
 
 static tree
-neutral_op_for_slp_reduction (slp_tree slp_node, tree vector_type,
-			      tree_code code, bool reduc_chain)
+neutral_op_for_reduction (tree scalar_type, tree_code code, tree initial_value)
 {
-  vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
-  stmt_vec_info stmt_vinfo = stmts[0];
-  tree scalar_type = TREE_TYPE (vector_type);
-  class loop *loop = gimple_bb (stmt_vinfo->stmt)->loop_father;
-  gcc_assert (loop);
-
   switch (code)
     {
     case WIDEN_SUM_EXPR:
@@ -3284,12 +3276,7 @@ neutral_op_for_slp_reduction (slp_tree slp_node, tree vector_type,
 
     case MAX_EXPR:
     case MIN_EXPR:
-      /* For MIN/MAX the initial values are neutral.  A reduction chain
-	 has only a single initial value, so that value is neutral for
-	 all statements.  */
-      if (reduc_chain)
-	return vect_phi_initial_value (stmt_vinfo);
-      return NULL_TREE;
+      return initial_value;
 
     default:
       return NULL_TREE;
@@ -5535,10 +5522,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       tree neutral_op = NULL_TREE;
       if (slp_node)
 	{
-	  stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (stmt_info);
-	  neutral_op
-	    = neutral_op_for_slp_reduction (slp_node_instance->reduc_phis,
-					    vectype, code, first != NULL);
+	  tree initial_value = NULL_TREE;
+	  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+	    initial_value = vect_phi_initial_value (orig_phis[0]);
+	  neutral_op = neutral_op_for_reduction (TREE_TYPE (vectype), code,
+						 initial_value);
 	}
       if (neutral_op)
 	vector_identity = gimple_build_vector_from_val (&seq, vectype,
@@ -6935,9 +6923,13 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* For SLP reductions, see if there is a neutral value we can use.  */
   tree neutral_op = NULL_TREE;
   if (slp_node)
-    neutral_op = neutral_op_for_slp_reduction
-      (slp_node_instance->reduc_phis, vectype_out, orig_code,
-       REDUC_GROUP_FIRST_ELEMENT (stmt_info) != NULL);
+    {
+      tree initial_value = NULL_TREE;
+      if (REDUC_GROUP_FIRST_ELEMENT (stmt_info) != NULL)
+	initial_value = vect_phi_initial_value (reduc_def_phi);
+      neutral_op = neutral_op_for_reduction (TREE_TYPE (vectype_out),
+					     orig_code, initial_value);
+    }
 
   if (double_reduc && reduction_type == FOLD_LEFT_REDUCTION)
     {
@@ -7501,15 +7493,16 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
       else
 	{
 	  gcc_assert (slp_node == slp_node_instance->reduc_phis);
-	  stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (reduc_stmt_info);
-	  tree neutral_op
-	      = neutral_op_for_slp_reduction (slp_node, vectype_out,
-					      STMT_VINFO_REDUC_CODE (reduc_info),
-					      first != NULL);
+	  tree initial_value = NULL_TREE;
+	  if (REDUC_GROUP_FIRST_ELEMENT (reduc_stmt_info))
+	    initial_value = vect_phi_initial_value (phi);
+	  tree_code code = STMT_VINFO_REDUC_CODE (reduc_info);
+	  tree neutral_op = neutral_op_for_reduction (TREE_TYPE (vectype_out),
+						      code, initial_value);
 	  get_initial_defs_for_reduction (loop_vinfo, reduc_info,
 					  slp_node_instance->reduc_phis,
 					  &vec_initial_defs, vec_num,
-					  first != NULL, neutral_op);
+					  initial_value != NULL, neutral_op);
 	}
     }
   else
