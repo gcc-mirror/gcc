@@ -925,12 +925,10 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 			 + (wi::to_offset (bit_offset) >> LOG2_BITS_PER_UNIT));
 		    /* Probibit value-numbering zero offset components
 		       of addresses the same before the pass folding
-		       __builtin_object_size had a chance to run
-		       (checking cfun->after_inlining does the
-		       trick here).  */
+		       __builtin_object_size had a chance to run.  */
 		    if (TREE_CODE (orig) != ADDR_EXPR
 			|| maybe_ne (off, 0)
-			|| cfun->after_inlining)
+			|| (cfun->curr_properties & PROP_objsz))
 		      off.to_shwi (&temp.off);
 		  }
 	      }
