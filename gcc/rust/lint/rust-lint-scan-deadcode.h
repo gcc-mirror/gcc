@@ -29,6 +29,13 @@
 namespace Rust {
 namespace Analysis {
 
+// Scan item symbols and warn the symbol if it is not in the live_symbols set.
+// There are three kinds of item we should handle in this pass.
+// 1. Function item
+// 2. TODO: The function item in the impl block without trait
+// 3. StructStruct, e.g., `Struct Foo{one: 1, two: 2}`. Furthermore, the unused
+//    struct fields will be warned too.
+// 4. TupleStruct, e.g., `Struct Foo(i32, i32)`
 class ScanDeadcode : public MarkLiveBase
 {
   using Rust::Analysis::MarkLiveBase::visit;
