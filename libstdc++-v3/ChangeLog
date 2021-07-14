@@ -1,3 +1,14 @@
+2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/101361
+	* include/std/string_view (ends_with): Use traits_type::compare
+	directly.
+
+2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view: Only include <bits/ranges_base.h>
+	once, and only for C++20 and later.
+
 2021-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101411

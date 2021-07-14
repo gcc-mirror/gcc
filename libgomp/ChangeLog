@@ -1,3 +1,10 @@
+2021-07-13  Jakub Jelinek  <jakub@redhat.com>
+	    Florian Weimer  <fweimer@redhat.com>
+
+	* config/linux/sem.h: Don't include limits.h.
+	(SEM_WAIT): Define to -__INT_MAX__ - 1 instead of INT_MIN.
+	* config/linux/affinity.c: Include limits.h.
+
 2021-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/94366

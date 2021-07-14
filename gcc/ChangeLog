@@ -1,3 +1,189 @@
+2021-07-13  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* combine.c (combine_simplify_rtx): Add vec_select -> subreg
+	simplification.
+	* config/aarch64/aarch64.md (*zero_extend<SHORT:mode><GPI:mode>2_aarch64):
+	Add Neon to general purpose register case for zero-extend
+	pattern.
+	* config/arm/vfp.md (*arm_movsi_vfp): Remove "*" from *t -> r
+	case to prevent some cases opting to go through memory.
+	* cse.c (fold_rtx): Add vec_select -> subreg simplification.
+	* rtl.c (rtvec_series_p): Define predicate to determine
+	whether a vector contains a linear series of integers.
+	* rtl.h (rtvec_series_p): Define.
+	* rtlanal.c (vec_series_lowpart_p): Define predicate to
+	determine if a vector selection is equivalent to the low part
+	of the vector.
+	* rtlanal.h (vec_series_lowpart_p): Define.
+	* simplify-rtx.c (simplify_context::simplify_binary_operation_1):
+	Add vec_select -> subreg simplification.
+
+2021-07-13  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_testz_si128, _mm_testc_si128,
+	_mm_testnzc_si128, _mm_test_all_ones, _mm_test_all_zeros,
+	_mm_test_mix_ones_zeros): New.
+
+2021-07-13  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gimple.c (gimple_could_trap_p_1):  Make S argument a
+	"const gimple*".  Preserve constness in call to
+	gimple_asm_volatile_p.
+	(gimple_could_trap_p): Make S argument a "const gimple*".
+	* gimple.h (gimple_could_trap_p_1, gimple_could_trap_p):
+	Update function prototypes.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_reusable_accumulator): New structure.
+	(_loop_vec_info::main_loop_edge): New field.
+	(_loop_vec_info::skip_main_loop_edge): Likewise.
+	(_loop_vec_info::skip_this_loop_edge): Likewise.
+	(_loop_vec_info::reusable_accumulators): Likewise.
+	(_stmt_vec_info::reduc_scalar_results): Likewise.
+	(_stmt_vec_info::reused_accumulator): Likewise.
+	(vect_get_main_loop_result): Declare.
+	* tree-vectorizer.c (vec_info::new_stmt_vec_info): Initialize
+	reduc_scalar_inputs.
+	(vec_info::free_stmt_vec_info): Free reduc_scalar_inputs.
+	* tree-vect-loop-manip.c (vect_get_main_loop_result): New function.
+	(vect_do_peeling): Fill an epilogue loop's main_loop_edge,
+	skip_main_loop_edge and skip_this_loop_edge fields.
+	* tree-vect-loop.c (INCLUDE_ALGORITHM): Define.
+	(vect_emit_reduction_init_stmts): New function.
+	(get_initial_def_for_reduction): Use it.
+	(get_initial_defs_for_reduction): Likewise.  Change the vinfo
+	parameter to a loop_vec_info.
+	(vect_create_epilog_for_reduction): Store the scalar results
+	in the reduc_info.  If an epilogue loop is reusing an accumulator
+	from the main loop, and if the epilogue loop can also be skipped,
+	try to place the reduction code in the join block.  Record
+	accumulators that could potentially be reused by epilogue loops.
+	(vect_transform_cycle_phi): When vectorizing epilogue loops,
+	try to reuse accumulators from the main loop.  Record the initial
+	value in reduc_info for non-SLP reductions too.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (get_initial_def_for_reduction): Remove
+	adjustment handling.  Take the neutral value as an argument,
+	in place of the code argument.
+	(vect_transform_cycle_phi): Update accordingly.  Handle the
+	initial values of cond reductions separately from code reductions.
+	Choose the adjustment here rather than in
+	get_initial_def_for_reduction.  Sink the splat of vec_initial_def.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (neutral_op_for_slp_reduction): Replace with...
+	(neutral_op_for_reduction): ...this, providing a more general
+	interface.
+	(vect_create_epilog_for_reduction): Update accordingly.
+	(vectorizable_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (get_initial_def_for_reduction): Take the
+	reduc_info instead of the original stmt_vec_info.
+	(vect_transform_cycle_phi): Update accordingly.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (get_initial_defs_for_reduction): Take the
+	reduc_info as an additional parameter.
+	(vect_transform_cycle_phi): Update accordingly.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h: Include tree-ssa-operands.h.
+	(vect_phi_initial_value): New function.
+	* tree-vect-loop.c (neutral_op_for_slp_reduction): Use it.
+	(get_initial_defs_for_reduction, info_for_reduction): Likewise.
+	(vect_create_epilog_for_reduction, vectorizable_reduction): Likewise.
+	(vect_transform_cycle_phi, vectorizable_induction): Likewise.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Convert
+	the phi results to vectype after creating them.  Remove later
+	conversion code that thus becomes redundant.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Replace
+	the new_phis vector with a reduc_inputs vector.  Combine handling
+	of reduction chains and ncopies > 1.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Truncate
+	scalar_results to group_size elements after reducing down from
+	N*group_size elements.  Construct an array_slice of the live-out
+	stmts and assert that there is one stmt per scalar result.
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Remove
+	nested_in_vect_loop and use double_reduc everywhere.  Remove dead
+	assignment to "loop".
+
+2021-07-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* internal-fn.c (vectorized_internal_fn_supported_p): Handle
+	vector types first.  For scalar types, consider both the preferred
+	vector mode and the alternative vector modes.
+	* optabs-query.c (can_vec_mask_load_store_p): Use the same
+	structure as above, in particular using related_vector_mode
+	for modes provided by autovectorize_vector_modes.
+
+2021-07-13  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101419
+	* tree-pass.h (PROP_objsz): Define.
+	(make_pass_early_object_sizes): Declare.
+	* passes.def (pass_all_early_optimizations): Rename pass_object_sizes
+	there to pass_early_object_sizes, drop parameter.
+	(pass_all_optimizations): Move pass_object_sizes right after pass_ccp,
+	drop parameter, move pass_post_ipa_warn right after that.
+	* tree-object-size.c (pass_object_sizes::execute): Rename to...
+	(object_sizes_execute): ... this.  Add insert_min_max_p argument.
+	(pass_data_object_sizes): Move after object_sizes_execute.
+	(pass_object_sizes): Likewise.  In execute method call
+	object_sizes_execute, drop set_pass_param method and insert_min_max_p
+	non-static data member and its initializer in the ctor.
+	(pass_data_early_object_sizes, pass_early_object_sizes,
+	make_pass_early_object_sizes): New.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Use
+	(cfun->curr_properties & PROP_objsz) instead of cfun->after_inlining.
+
+2021-07-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/101275
+	* config/riscv/constraints.md ("S"): Update description and remove
+	@internal.
+	* doc/md.texi (Machine Constraints): Document the 'S' constraints
+	for RISC-V.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_region): Show the number of
+	SLP graph entries in the optimization message.
+
+2021-07-13  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/altivec.md (xxspltiw_v4sf): Change local variable
+	value to to long.
+	* config/rs6000/rs6000-protos.h (rs6000_const_f32_to_i32): Change
+	return type to long.
+	* config/rs6000/rs6000.c (rs6000_const_f32_to_i32): Change return
+	type to long.
+
 2021-07-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-fold.cc (fold_using_range::range_of_builtin_ubsan_call):
