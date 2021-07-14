@@ -191,9 +191,9 @@ vect_get_external_def_edge (vec_info *vinfo, tree var)
 }
 
 /* Return true if the target supports a vector version of CODE,
-   where CODE is known to map to a direct optab.  ITYPE specifies
-   the type of (some of) the scalar inputs and OTYPE specifies the
-   type of the scalar result.
+   where CODE is known to map to a direct optab with the given SUBTYPE.
+   ITYPE specifies the type of (some of) the scalar inputs and OTYPE
+   specifies the type of the scalar result.
 
    If CODE allows the inputs and outputs to have different type
    (such as for WIDEN_SUM_EXPR), it is the input mode rather
@@ -208,7 +208,8 @@ vect_get_external_def_edge (vec_info *vinfo, tree var)
 static bool
 vect_supportable_direct_optab_p (vec_info *vinfo, tree otype, tree_code code,
 				 tree itype, tree *vecotype_out,
-				 tree *vecitype_out = NULL)
+				 tree *vecitype_out = NULL,
+				 enum optab_subtype subtype = optab_default)
 {
   tree vecitype = get_vectype_for_scalar_type (vinfo, itype);
   if (!vecitype)
@@ -218,7 +219,7 @@ vect_supportable_direct_optab_p (vec_info *vinfo, tree otype, tree_code code,
   if (!vecotype)
     return false;
 
-  optab optab = optab_for_tree_code (code, vecitype, optab_default);
+  optab optab = optab_for_tree_code (code, vecitype, subtype);
   if (!optab)
     return false;
 
@@ -521,6 +522,7 @@ vect_joust_widened_type (tree type, tree new_type, tree *common_type)
   unsigned int precision = MAX (TYPE_PRECISION (*common_type),
 				TYPE_PRECISION (new_type));
   precision *= 2;
+
   if (precision * 2 > TYPE_PRECISION (type))
     return false;
 
@@ -539,6 +541,10 @@ vect_joust_widened_type (tree type, tree new_type, tree *common_type)
    to a type that (a) is narrower than the result of STMT_INFO and
    (b) can hold all leaf operand values.
 
+   If SUBTYPE then allow that the signs of the operands
+   may differ in signs but not in precision.  SUBTYPE is updated to reflect
+   this.
+
    Return 0 if STMT_INFO isn't such a tree, or if no such COMMON_TYPE
    exists.  */
 
@@ -546,7 +552,8 @@ static unsigned int
 vect_widened_op_tree (vec_info *vinfo, stmt_vec_info stmt_info, tree_code code,
 		      tree_code widened_code, bool shift_p,
 		      unsigned int max_nops,
-		      vect_unpromoted_value *unprom, tree *common_type)
+		      vect_unpromoted_value *unprom, tree *common_type,
+		      enum optab_subtype *subtype = NULL)
 {
   /* Check for an integer operation with the right code.  */
   gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
@@ -607,7 +614,8 @@ vect_widened_op_tree (vec_info *vinfo, stmt_vec_info stmt_info, tree_code code,
 		= vinfo->lookup_def (this_unprom->op);
 	      nops = vect_widened_op_tree (vinfo, def_stmt_info, code,
 					   widened_code, shift_p, max_nops,
-					   this_unprom, common_type);
+					   this_unprom, common_type,
+					   subtype);
 	      if (nops == 0)
 		return 0;
 
@@ -625,7 +633,18 @@ vect_widened_op_tree (vec_info *vinfo, stmt_vec_info stmt_info, tree_code code,
 		*common_type = this_unprom->type;
 	      else if (!vect_joust_widened_type (type, this_unprom->type,
 						 common_type))
-		return 0;
+		{
+		  if (subtype)
+		    {
+		      /* See if we can sign extend the smaller type.  */
+		      if (TYPE_PRECISION (this_unprom->type)
+			  > TYPE_PRECISION (*common_type))
+			*common_type = this_unprom->type;
+		      *subtype = optab_vector_mixed_sign;
+		    }
+		  else
+		    return 0;
+		}
 	    }
 	}
       next_op += nops;
@@ -725,12 +744,22 @@ vect_split_statement (vec_info *vinfo, stmt_vec_info stmt2_info, tree new_rhs,
 
 /* Convert UNPROM to TYPE and return the result, adding new statements
    to STMT_INFO's pattern definition statements if no better way is
-   available.  VECTYPE is the vector form of TYPE.  */
+   available.  VECTYPE is the vector form of TYPE.
+
+   If SUBTYPE then convert the type based on the subtype.  */
 
 static tree
 vect_convert_input (vec_info *vinfo, stmt_vec_info stmt_info, tree type,
-		    vect_unpromoted_value *unprom, tree vectype)
+		    vect_unpromoted_value *unprom, tree vectype,
+		    enum optab_subtype subtype = optab_default)
 {
+
+  /* Update the type if the signs differ.  */
+  if (subtype == optab_vector_mixed_sign
+      && TYPE_SIGN (type) != TYPE_SIGN (TREE_TYPE (unprom->op)))
+    type = build_nonstandard_integer_type (TYPE_PRECISION (type),
+					   TYPE_SIGN (unprom->type));
+
   /* Check for a no-op conversion.  */
   if (types_compatible_p (type, TREE_TYPE (unprom->op)))
     return unprom->op;
@@ -806,12 +835,14 @@ vect_convert_input (vec_info *vinfo, stmt_vec_info stmt_info, tree type,
 }
 
 /* Invoke vect_convert_input for N elements of UNPROM and store the
-   result in the corresponding elements of RESULT.  */
+   result in the corresponding elements of RESULT.
+
+   If SUBTYPE then convert the type based on the subtype.  */
 
 static void
 vect_convert_inputs (vec_info *vinfo, stmt_vec_info stmt_info, unsigned int n,
 		     tree *result, tree type, vect_unpromoted_value *unprom,
-		     tree vectype)
+		     tree vectype, enum optab_subtype subtype = optab_default)
 {
   for (unsigned int i = 0; i < n; ++i)
     {
@@ -819,11 +850,12 @@ vect_convert_inputs (vec_info *vinfo, stmt_vec_info stmt_info, unsigned int n,
       for (j = 0; j < i; ++j)
 	if (unprom[j].op == unprom[i].op)
 	  break;
+
       if (j < i)
 	result[i] = result[j];
       else
 	result[i] = vect_convert_input (vinfo, stmt_info,
-					type, &unprom[i], vectype);
+					type, &unprom[i], vectype, subtype);
     }
 }
 
@@ -895,7 +927,8 @@ vect_reassociating_reduction_p (vec_info *vinfo,
 
    Try to find the following pattern:
 
-     type x_t, y_t;
+     type1a x_t
+     type1b y_t;
      TYPE1 prod;
      TYPE2 sum = init;
    loop:
@@ -908,9 +941,9 @@ vect_reassociating_reduction_p (vec_info *vinfo,
      [S6  prod = (TYPE2) prod;  #optional]
      S7  sum_1 = prod + sum_0;
 
-   where 'TYPE1' is exactly double the size of type 'type', and 'TYPE2' is the
-   same size of 'TYPE1' or bigger. This is a special case of a reduction
-   computation.
+   where 'TYPE1' is exactly double the size of type 'type1a' and 'type1b',
+   the sign of 'TYPE1' must be one of 'type1a' or 'type1b' but the sign of
+   'type1a' and 'type1b' can differ.
 
    Input:
 
@@ -953,7 +986,8 @@ vect_recog_dot_prod_pattern (vec_info *vinfo,
      In which
      - DX is double the size of X
      - DY is double the size of Y
-     - DX, DY, DPROD all have the same type
+     - DX, DY, DPROD all have the same type but the sign
+       between X, Y and DPROD can differ.
      - sum is the same size of DPROD or bigger
      - sum has been recognized as a reduction variable.
 
@@ -991,8 +1025,18 @@ vect_recog_dot_prod_pattern (vec_info *vinfo,
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
   vect_unpromoted_value unprom0[2];
+  enum optab_subtype subtype = optab_vector;
   if (!vect_widened_op_tree (vinfo, mult_vinfo, MULT_EXPR, WIDEN_MULT_EXPR,
-			     false, 2, unprom0, &half_type))
+			     false, 2, unprom0, &half_type, &subtype))
+    return NULL;
+
+  /* If there are two widening operations, make sure they agree on the sign
+     of the extension.  The result of an optab_vector_mixed_sign operation
+     is signed; otherwise, the result has the same sign as the operands.  */
+  if (TYPE_PRECISION (unprom_mult.type) != TYPE_PRECISION (type)
+      && (subtype == optab_vector_mixed_sign
+	? TYPE_UNSIGNED (unprom_mult.type)
+	: TYPE_SIGN (unprom_mult.type) != TYPE_SIGN (half_type)))
     return NULL;
 
   /* If there are two widening operations, make sure they agree on
@@ -1005,13 +1049,13 @@ vect_recog_dot_prod_pattern (vec_info *vinfo,
 
   tree half_vectype;
   if (!vect_supportable_direct_optab_p (vinfo, type, DOT_PROD_EXPR, half_type,
-					type_out, &half_vectype))
+					type_out, &half_vectype, subtype))
     return NULL;
 
   /* Get the inputs in the appropriate types.  */
   tree mult_oprnd[2];
   vect_convert_inputs (vinfo, stmt_vinfo, 2, mult_oprnd, half_type,
-		       unprom0, half_vectype);
+		       unprom0, half_vectype, subtype);
 
   var = vect_recog_temp_ssa_var (type, NULL);
   pattern_stmt = gimple_build_assign (var, DOT_PROD_EXPR,

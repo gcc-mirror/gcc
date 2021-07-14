@@ -6661,6 +6661,12 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   bool lane_reduc_code_p
     = (code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR);
   int op_type = TREE_CODE_LENGTH (code);
+  enum optab_subtype optab_query_kind = optab_vector;
+  if (code == DOT_PROD_EXPR
+      && TYPE_SIGN (TREE_TYPE (gimple_assign_rhs1 (stmt)))
+	   != TYPE_SIGN (TREE_TYPE (gimple_assign_rhs2 (stmt))))
+    optab_query_kind = optab_vector_mixed_sign;
+
 
   scalar_dest = gimple_assign_lhs (stmt);
   scalar_type = TREE_TYPE (scalar_dest);
@@ -7189,7 +7195,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       bool ok = true;
 
       /* 4.1. check support for the operation in the loop  */
-      optab optab = optab_for_tree_code (code, vectype_in, optab_vector);
+      optab optab = optab_for_tree_code (code, vectype_in, optab_query_kind);
       if (!optab)
 	{
 	  if (dump_enabled_p ())

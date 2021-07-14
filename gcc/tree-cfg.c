@@ -4438,7 +4438,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 		  && !SCALAR_FLOAT_TYPE_P (rhs1_type))
 		 || (!INTEGRAL_TYPE_P (lhs_type)
 		     && !SCALAR_FLOAT_TYPE_P (lhs_type))))
-	    || !types_compatible_p (rhs1_type, rhs2_type)
+	    /* rhs1_type and rhs2_type may differ in sign.  */
+	    || !tree_nop_conversion_p (rhs1_type, rhs2_type)
 	    || !useless_type_conversion_p (lhs_type, rhs3_type)
 	    || maybe_lt (GET_MODE_SIZE (element_mode (rhs3_type)),
 			 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
