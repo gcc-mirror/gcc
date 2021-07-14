@@ -56,6 +56,8 @@ static FILE *go_dump_file;
 
 static GTY(()) vec<tree, va_gc> *queue;
 
+struct godump_str_hash : string_hash, ggc_remove <const char *> {};
+
 /* A hash table of macros we have seen.  */
 
 static htab_t macro_hash;
@@ -543,7 +545,7 @@ public:
 
   /* Types which may potentially have to be defined as dummy
      types.  */
-  hash_set<const char *> pot_dummy_types;
+  hash_set<const char *, false, godump_str_hash> pot_dummy_types;
 
   /* Go keywords.  */
   htab_t keyword_hash;
