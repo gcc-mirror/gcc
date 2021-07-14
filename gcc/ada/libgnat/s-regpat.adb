@@ -3463,18 +3463,58 @@ package body System.Regpat is
          end;
 
       elsif Self.First /= ASCII.NUL then
-         --  We know what char it must start with
+         --  We know what char (modulo casing) it must start with
 
-         declare
-            Next_Try : Natural := Index (First_In_Data, Self.First);
+         if (Self.Flags and Case_Insensitive) = 0
+           or else Self.First not in 'a' .. 'z'
+         then
+            declare
+               Next_Try : Natural := Index (First_In_Data, Self.First);
+            begin
+               while Next_Try /= 0 loop
+                  Matched := Try (Next_Try);
+                  exit when Matched;
+                  Next_Try := Index (Next_Try + 1, Self.First);
+               end loop;
+            end;
+         else
+            declare
+               Uc_First : constant Character := To_Upper (Self.First);
 
-         begin
-            while Next_Try /= 0 loop
-               Matched := Try (Next_Try);
-               exit when Matched;
-               Next_Try := Index (Next_Try + 1, Self.First);
-            end loop;
-         end;
+               function Case_Insensitive_Index
+                 (Start : Positive) return Natural;
+               --  Search for both Self.First and To_Upper (Self.First).
+               --  If both are nonzero, return the smaller one; if exactly
+               --  one is nonzero, return it; if both are zero, return zero.
+
+               ---------------------------
+               -- Case_Insenstive_Index --
+               ---------------------------
+
+               function Case_Insensitive_Index
+                 (Start : Positive) return Natural
+               is
+                  Lc_Index : constant Natural := Index (Start, Self.First);
+                  Uc_Index : constant Natural := Index (Start, Uc_First);
+               begin
+                  if Lc_Index = 0 then
+                     return Uc_Index;
+                  elsif Uc_Index = 0 then
+                     return Lc_Index;
+                  else
+                     return Natural'Min (Lc_Index, Uc_Index);
+                  end if;
+               end Case_Insensitive_Index;
+
+               Next_Try : Natural := Case_Insensitive_Index (First_In_Data);
+            begin
+               while Next_Try /= 0 loop
+                  Matched := Try (Next_Try);
+                  exit when Matched;
+                  Next_Try := Case_Insensitive_Index (Next_Try + 1);
+               end loop;
+            end;
+         end if;
 
       else
          --  Messy cases: try all locations (including for the empty string)
@@ -3633,6 +3673,9 @@ package body System.Regpat is
 
       if Program (Scan) = EXACT then
          Self.First := Program (String_Operand (Scan));
+
+      elsif Program (Scan) = EXACTF then
+         Self.First := To_Lower (Program (String_Operand (Scan)));
 
       elsif Program (Scan) = BOL
         or else Program (Scan) = SBOL
