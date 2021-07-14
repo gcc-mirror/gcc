@@ -1,3 +1,18 @@
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100387
+	* include/bits/ranges_algo.h (__minmax_fn::operator()): Rewrite
+	to limit comparison complexity to 3*N/2.
+	(__minmax_element_fn::operator()): Likewise.
+	(shift_right): Avoid premature std::move of __result.
+	* testsuite/25_algorithms/minmax/constrained.cc (test04, test05):
+	New tests.
+	* testsuite/25_algorithms/minmax_element/constrained.cc (test02):
+	Likewise.
+
 2021-06-22  Thomas Rodgers  <rodgert@appliantology.com>
 
 	Backported from master:

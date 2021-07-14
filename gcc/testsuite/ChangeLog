@@ -1,3 +1,95 @@
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101181
+	* g++.dg/cpp2a/concepts-requires26.C: New test.
+	* g++.dg/cpp2a/lambda-uneval16.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* g++.dg/cpp2a/concepts-memtmpl4.C: Uncomment the commented out
+	example, which we now handle correctly.
+	* g++.dg/cpp2a/concepts-memtmpl5.C: New test.
+	* g++.dg/cpp2a/concepts-memtmpl5a.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* g++.dg/cpp2a/concepts-memtmpl4.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* g++.dg/cpp0x/constexpr-empty16.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98832
+	* g++.dg/cpp2a/class-deduction-alias9.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101182
+	* g++.dg/cpp2a/concepts-requires25.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100918
+	* g++.dg/template/access38.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97420
+	* g++.dg/cpp0x/noexcept68.C: New test.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101394
+	* gcc.dg/torture/pr101394.c: New testcase.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* gcc.dg/torture/pr100778.c: New testcase.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* gcc.dg/vect/bb-slp-pr100778-1.c: New testcase.
+
 2021-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101098

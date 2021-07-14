@@ -1,3 +1,49 @@
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101291
+	* cfgloopmanip.c (loop_version): Set the loop copy of the
+	versioned loop to the new loop.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101394
+	* tree-ssa-pre.c (do_pre_regular_insertion): Avoid inserting
+	copies from abnormals for a full redundancy.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101423
+	* gimple.c (gimple_could_trap_p_1): Internal function calls
+	do not trap.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* tree-vect-slp.c (vect_schedule_slp_node): Do not place trapping
+	vectorized ops ahead of their scalar BB.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* tree-vect-slp.c (vect_build_slp_tree_1): Prevent possibly
+	trapping ops in different BBs.
+
 2021-07-09  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

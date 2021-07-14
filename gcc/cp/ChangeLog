@@ -1,3 +1,92 @@
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101181
+	* constraint.cc (tsubst_requires_expr): Pass complain/in_decl to
+	add_extra_args.
+	* cp-tree.h (add_extra_args): Add complain/in_decl parameters.
+	* pt.c (build_extra_args): Make a copy of args.
+	(add_extra_args): Add complain/in_decl parameters.  Enable the
+	code for handling the case where the extra arguments are
+	dependent.
+	(tsubst_pack_expansion): Pass complain/in_decl to
+	add_extra_args.
+	(tsubst_template_args): Handle missing template arguments.
+	(tsubst_expr) <case IF_STMT>: Pass complain/in_decl to
+	add_extra_args.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* pt.c (any_template_parm_r) <case TEMPLATE_DECL>: Just walk the
+	DECL_CONTEXT.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* pt.c (any_template_parm_r) <case TEMPLATE_DECL>: Rewrite to
+	use common_enclosing_class and to not depend on the TREE_TYPE
+	of outer levels pointing to the corresponding primary template.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* constexpr.c (cxx_eval_array_reference): When the element type
+	is an empty type and the corresponding element is omitted, just
+	return an empty CONSTRUCTOR instead of attempting value
+	initialization.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98832
+	* pt.c (maybe_aggr_guide): Handle alias templates appropriately.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101182
+	* constraint.cc (evaluate_requires_expr): Adjust function comment.
+	* cp-gimplify.c (cp_genericize_r) <case REQUIRES_EXPR>: Move to ...
+	(cp_fold) <case REQUIRES_EXPR>: ... here.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100918
+	* parser.c (cp_parser_lookup_name): Check access of the lookup
+	result before we potentially adjust an injected-class-name to
+	its TEMPLATE_DECL.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97420
+	* cvt.c (noexcept_conv_p): Remove redundant checks and simplify.
+	(fnptr_conv_p): Don't call non_reference.  Use INDIRECT_TYPE_P
+	instead of TYPE_PTR_P.
+	* pt.c (convert_nontype_argument_function): Look through
+	implicit INDIRECT_REFs before calling strip_fnptr_conv.
+
 2021-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101098
