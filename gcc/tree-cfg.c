@@ -1481,6 +1481,7 @@ cleanup_dead_labels_eh (label_record *label_for_bb)
 	if (lab != lp->post_landing_pad)
 	  {
 	    EH_LANDING_PAD_NR (lp->post_landing_pad) = 0;
+	    lp->post_landing_pad = lab;
 	    EH_LANDING_PAD_NR (lab) = lp->index;
 	  }
       }
@@ -1707,7 +1708,10 @@ cleanup_dead_labels (void)
 	      || FORCED_LABEL (label))
 	    gsi_next (&i);
 	  else
-	    gsi_remove (&i, true);
+	    {
+	      gcc_checking_assert (EH_LANDING_PAD_NR (label) == 0);
+	      gsi_remove (&i, true);
+	    }
 	}
     }
 
