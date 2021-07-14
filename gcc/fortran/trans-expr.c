@@ -1648,8 +1648,9 @@ gfc_trans_class_init_assign (gfc_code *code)
 	}
     }
 
-  if (code->expr1->symtree->n.sym->attr.optional
-      || code->expr1->symtree->n.sym->ns->proc_name->attr.entry_master)
+  if (code->expr1->symtree->n.sym->attr.dummy
+      && (code->expr1->symtree->n.sym->attr.optional
+	  || code->expr1->symtree->n.sym->ns->proc_name->attr.entry_master))
     {
       tree present = gfc_conv_expr_present (code->expr1->symtree->n.sym);
       tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp),
