@@ -601,7 +601,7 @@
 
 ;; These instructions map to the __builtins for the armv8.6a I8MM usdot
 ;; (vector) Dot Product operation.
-(define_insn "aarch64_usdot<vsi2qi>"
+(define_insn "usdot_prod<vsi2qi>"
   [(set (match_operand:VS 0 "register_operand" "=w")
 	(plus:VS
 	  (unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")

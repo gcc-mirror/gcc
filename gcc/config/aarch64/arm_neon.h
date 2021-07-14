@@ -34039,14 +34039,14 @@ __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vusdot_s32 (int32x2_t __r, uint8x8_t __a, int8x8_t __b)
 {
-  return __builtin_aarch64_usdotv8qi_ssus (__r, __a, __b);
+  return __builtin_aarch64_usdot_prodv8qi_ssus (__r, __a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vusdotq_s32 (int32x4_t __r, uint8x16_t __a, int8x16_t __b)
 {
-  return __builtin_aarch64_usdotv16qi_ssus (__r, __a, __b);
+  return __builtin_aarch64_usdot_prodv16qi_ssus (__r, __a, __b);
 }
 
 __extension__ extern __inline int32x2_t
