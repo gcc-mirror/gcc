@@ -144,6 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && (!convertible_to<_End, size_type>)
 	constexpr
 	basic_string_view(_It __first, _End __last)
+	noexcept(noexcept(__last - __first))
 	: _M_len(__last - __first), _M_str(std::to_address(__first))
 	{ }
 
