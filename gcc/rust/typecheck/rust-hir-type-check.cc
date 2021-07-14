@@ -409,10 +409,14 @@ TraitItemReference::get_type_from_constant (
   /*const*/ HIR::TraitItemConst &constant) const
 {
   TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ().get ());
-  TyTy::BaseType *expr
-    = TypeCheckExpr::Resolve (constant.get_expr ().get (), false);
+  if (constant.has_expr ())
+    {
+      TyTy::BaseType *expr
+	= TypeCheckExpr::Resolve (constant.get_expr ().get (), false);
 
-  return type->unify (expr);
+      return type->unify (expr);
+    }
+  return type;
 }
 
 TyTy::BaseType *
