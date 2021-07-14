@@ -3851,16 +3851,23 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
     {
       tree empty_ctor = build_constructor (init_list_type_node, NULL);
       val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
-      new_ctx = *ctx;
-      new_ctx.object = t;
-      new_ctx.ctor = build_constructor (elem_type, NULL);
-      ctx = &new_ctx;
     }
   else
     val = build_value_init (elem_type, tf_warning_or_error);
+
+  if (!SCALAR_TYPE_P (elem_type))
+    {
+      new_ctx = *ctx;
+      if (ctx->object)
+	/* If there was no object, don't add one: it could confuse us
+	   into thinking we're modifying a const object.  */
+	new_ctx.object = t;
+      new_ctx.ctor = build_constructor (elem_type, NULL);
+      ctx = &new_ctx;
+    }
   t = cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
 				    overflow_p);
-  if (CP_AGGREGATE_TYPE_P (elem_type) && t != ctx->ctor)
+  if (!SCALAR_TYPE_P (elem_type) && t != ctx->ctor)
     free_constructor (ctx->ctor);
   return t;
 }

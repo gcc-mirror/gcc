@@ -31767,28 +31767,28 @@ __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vdot_u32 (uint32x2_t __r, uint8x8_t __a, uint8x8_t __b)
 {
-  return __builtin_aarch64_udotv8qi_uuuu (__r, __a, __b);
+  return __builtin_aarch64_udot_prodv8qi_uuuu (__r, __a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vdotq_u32 (uint32x4_t __r, uint8x16_t __a, uint8x16_t __b)
 {
-  return __builtin_aarch64_udotv16qi_uuuu (__r, __a, __b);
+  return __builtin_aarch64_udot_prodv16qi_uuuu (__r, __a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vdot_s32 (int32x2_t __r, int8x8_t __a, int8x8_t __b)
 {
-  return __builtin_aarch64_sdotv8qi (__r, __a, __b);
+  return __builtin_aarch64_sdot_prodv8qi (__r, __a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vdotq_s32 (int32x4_t __r, int8x16_t __a, int8x16_t __b)
 {
-  return __builtin_aarch64_sdotv16qi (__r, __a, __b);
+  return __builtin_aarch64_sdot_prodv16qi (__r, __a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
@@ -34039,14 +34039,14 @@ __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vusdot_s32 (int32x2_t __r, uint8x8_t __a, int8x8_t __b)
 {
-  return __builtin_aarch64_usdotv8qi_ssus (__r, __a, __b);
+  return __builtin_aarch64_usdot_prodv8qi_ssus (__r, __a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vusdotq_s32 (int32x4_t __r, uint8x16_t __a, int8x16_t __b)
 {
-  return __builtin_aarch64_usdotv16qi_ssus (__r, __a, __b);
+  return __builtin_aarch64_usdot_prodv16qi_ssus (__r, __a, __b);
 }
 
 __extension__ extern __inline int32x2_t

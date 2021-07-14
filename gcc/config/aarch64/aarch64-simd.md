@@ -587,33 +587,8 @@
   DONE;
 })
 
-;; These instructions map to the __builtins for the Dot Product operations.
-(define_insn "aarch64_<sur>dot<vsi2qi>"
-  [(set (match_operand:VS 0 "register_operand" "=w")
-	(plus:VS (match_operand:VS 1 "register_operand" "0")
-		(unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
-			    (match_operand:<VSI2QI> 3 "register_operand" "w")]
-		DOTPROD)))]
-  "TARGET_DOTPROD"
-  "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
-  [(set_attr "type" "neon_dot<q>")]
-)
-
-;; These instructions map to the __builtins for the armv8.6a I8MM usdot
-;; (vector) Dot Product operation.
-(define_insn "aarch64_usdot<vsi2qi>"
-  [(set (match_operand:VS 0 "register_operand" "=w")
-	(plus:VS
-	  (unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
-		      (match_operand:<VSI2QI> 3 "register_operand" "w")]
-	  UNSPEC_USDOT)
-	  (match_operand:VS 1 "register_operand" "0")))]
-  "TARGET_I8MM"
-  "usdot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
-  [(set_attr "type" "neon_dot<q>")]
-)
-
-;; These expands map to the Dot Product optab the vectorizer checks for.
+;; These expands map to the Dot Product optab the vectorizer checks for
+;; and to the intrinsics patttern.
 ;; The auto-vectorizer expects a dot product builtin that also does an
 ;; accumulation into the provided register.
 ;; Given the following pattern
@@ -633,20 +608,30 @@
 ;; ...
 ;;
 ;; and so the vectorizer provides r, in which the result has to be accumulated.
-(define_expand "<sur>dot_prod<vsi2qi>"
-  [(set (match_operand:VS 0 "register_operand")
-	(plus:VS (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand")
-			    (match_operand:<VSI2QI> 2 "register_operand")]
-		 DOTPROD)
-		(match_operand:VS 3 "register_operand")))]
+(define_insn "<sur>dot_prod<vsi2qi>"
+  [(set (match_operand:VS 0 "register_operand" "=w")
+	(plus:VS (match_operand:VS 1 "register_operand" "0")
+		(unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
+			    (match_operand:<VSI2QI> 3 "register_operand" "w")]
+		DOTPROD)))]
   "TARGET_DOTPROD"
-{
-  emit_insn (
-    gen_aarch64_<sur>dot<vsi2qi> (operands[3], operands[3], operands[1],
-				    operands[2]));
-  emit_insn (gen_rtx_SET (operands[0], operands[3]));
-  DONE;
-})
+  "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+;; These instructions map to the __builtins for the armv8.6a I8MM usdot
+;; (vector) Dot Product operation.
+(define_insn "usdot_prod<vsi2qi>"
+  [(set (match_operand:VS 0 "register_operand" "=w")
+	(plus:VS
+	  (unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
+		      (match_operand:<VSI2QI> 3 "register_operand" "w")]
+	  UNSPEC_USDOT)
+	  (match_operand:VS 1 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "usdot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
 
 ;; These instructions map to the __builtins for the Dot Product
 ;; indexed operations.
@@ -944,8 +929,7 @@
 	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
 	rtx abd = gen_reg_rtx (V16QImode);
 	emit_insn (gen_aarch64_<sur>abdv16qi (abd, operands[1], operands[2]));
-	emit_insn (gen_aarch64_udotv16qi (operands[0], operands[3],
-					  abd, ones));
+	emit_insn (gen_udot_prodv16qi (operands[0], operands[3], abd, ones));
 	DONE;
       }
     rtx reduc = gen_reg_rtx (V8HImode);

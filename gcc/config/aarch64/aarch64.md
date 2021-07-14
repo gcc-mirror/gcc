@@ -1884,15 +1884,16 @@
 )
 
 (define_insn "*zero_extend<SHORT:mode><GPI:mode>2_aarch64"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r,w")
-        (zero_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand" "r,m,m")))]
+  [(set (match_operand:GPI 0 "register_operand" "=r,r,w,r")
+        (zero_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand" "r,m,m,w")))]
   ""
   "@
    and\t%<GPI:w>0, %<GPI:w>1, <SHORT:short_mask>
    ldr<SHORT:size>\t%w0, %1
-   ldr\t%<SHORT:size>0, %1"
-  [(set_attr "type" "logic_imm,load_4,f_loads")
-   (set_attr "arch" "*,*,fp")]
+   ldr\t%<SHORT:size>0, %1
+   umov\t%w0, %1.<SHORT:size>[0]"
+  [(set_attr "type" "logic_imm,load_4,f_loads,neon_to_gp")
+   (set_attr "arch" "*,*,fp,fp")]
 )
 
 (define_expand "<optab>qihi2"

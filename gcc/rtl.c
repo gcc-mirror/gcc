@@ -736,6 +736,21 @@ rtvec_all_equal_p (const_rtvec vec)
     }
 }
 
+/* Return true if VEC contains a linear series of integers
+   { START, START+1, START+2, ... }.  */
+
+bool
+rtvec_series_p (rtvec vec, int start)
+{
+  for (int i = 0; i < GET_NUM_ELEM (vec); i++)
+    {
+      rtx x = RTVEC_ELT (vec, i);
+      if (!CONST_INT_P (x) || INTVAL (x) != i + start)
+	return false;
+    }
+  return true;
+}
+
 /* Return an indication of which type of insn should have X as a body.
    In generator files, this can be UNKNOWN if the answer is only known
    at (GCC) runtime.  Otherwise the value is CODE_LABEL, INSN, CALL_INSN

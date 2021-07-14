@@ -131,7 +131,7 @@ Common Joined UInteger Var(param_evrp_sparse_threshold) Init(800) Optimization P
 Maximum number of basic blocks before EVRP uses a sparse cache.
 
 -param=evrp-mode=
-Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_EVRP_FIRST) Param Optimization
+Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
 --param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in.
 
 Enum

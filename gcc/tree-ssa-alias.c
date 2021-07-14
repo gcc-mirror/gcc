@@ -3895,7 +3895,7 @@ attr_fnspec::verify ()
 		    && str[idx] != 'w' && str[idx] != 'W'
 		    && str[idx] != 'o' && str[idx] != 'O')
 		  err = true;
-		if (str[idx] != 't'
+		if (str[idx + 1] != 't'
 		    /* Size specified is scalar, so it should be described
 		       by ". " if specified at all.  */
 		    && (arg_specified_p (str[idx + 1] - '1')
