@@ -1039,12 +1039,6 @@ vect_recog_dot_prod_pattern (vec_info *vinfo,
 	: TYPE_SIGN (unprom_mult.type) != TYPE_SIGN (half_type)))
     return NULL;
 
-  /* If there are two widening operations, make sure they agree on
-     the sign of the extension.  */
-  if (TYPE_PRECISION (unprom_mult.type) != TYPE_PRECISION (type)
-      && TYPE_SIGN (unprom_mult.type) != TYPE_SIGN (half_type))
-    return NULL;
-
   vect_pattern_detected ("vect_recog_dot_prod_pattern", last_stmt);
 
   tree half_vectype;

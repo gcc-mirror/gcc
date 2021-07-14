@@ -9,5 +9,5 @@
 
 #include "vect-reduc-dot-9.c"
 
-/* { dg-final { scan-tree-dump-not "vect_recog_dot_prod_pattern: detected" "vect" } } */
+/* { dg-final { scan-tree-dump "vect_recog_dot_prod_pattern: detected" "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loop" 1 "vect" { target vect_usdot_qi } } } */

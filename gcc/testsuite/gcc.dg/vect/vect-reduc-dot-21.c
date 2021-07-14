@@ -49,4 +49,4 @@ main (void)
     __builtin_abort ();
 }
 
-/* { dg-final { scan-tree-dump-not "vect_recog_dot_prod_pattern: detected" "vect" } } */
+/* { dg-final { scan-tree-dump "vect_recog_dot_prod_pattern: detected" "vect" } } */
