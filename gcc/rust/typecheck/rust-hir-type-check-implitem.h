@@ -214,116 +214,109 @@ public:
 
   void visit (HIR::ConstantItem &constant) override
   {
-    TypeCheckImplItem::visit (constant);
-
-    // we get the error checking from the base method here
-    TyTy::BaseType *lookup;
-    if (!context->lookup_type (constant.get_mappings ().get_hirid (), &lookup))
-      return;
-
-    const TraitItemReference &trait_item_ref
-      = trait_reference.lookup_trait_item (
-	constant.get_identifier (), TraitItemReference::TraitItemType::CONST);
+    resolved_trait_item = trait_reference.lookup_trait_item (
+      constant.get_identifier (), TraitItemReference::TraitItemType::CONST);
 
     // unknown trait item
-    if (trait_item_ref.is_error ())
+    if (resolved_trait_item.is_error ())
       {
 	RichLocation r (constant.get_locus ());
 	r.add_range (trait_reference.get_locus ());
 	rust_error_at (r, "constant %<%s%> is not a member of trait %<%s%>",
 		       constant.get_identifier ().c_str (),
 		       trait_reference.get_name ().c_str ());
-	return;
       }
 
+    // normal resolution of the item
+    TypeCheckImplItem::visit (constant);
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (constant.get_mappings ().get_hirid (), &lookup))
+      return;
+    if (resolved_trait_item.is_error ())
+      return;
+
     // check the types are compatible
-    if (!trait_item_ref.get_tyty ()->can_eq (lookup, true))
+    if (!resolved_trait_item.get_tyty ()->can_eq (lookup, true))
       {
 	RichLocation r (constant.get_locus ());
-	r.add_range (trait_item_ref.get_locus ());
+	r.add_range (resolved_trait_item.get_locus ());
 
 	rust_error_at (
 	  r, "constant %<%s%> has an incompatible type for trait %<%s%>",
 	  constant.get_identifier ().c_str (),
 	  trait_reference.get_name ().c_str ());
-	return;
       }
-
-    resolved_trait_item = trait_item_ref;
   }
 
   void visit (HIR::TypeAlias &type) override
   {
-    TypeCheckImplItem::visit (type);
-
-    // we get the error checking from the base method here
-    TyTy::BaseType *lookup;
-    if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
-      return;
-
-    const TraitItemReference &trait_item_ref
-      = trait_reference.lookup_trait_item (
-	type.get_new_type_name (), TraitItemReference::TraitItemType::TYPE);
+    resolved_trait_item = trait_reference.lookup_trait_item (
+      type.get_new_type_name (), TraitItemReference::TraitItemType::TYPE);
 
     // unknown trait item
-    if (trait_item_ref.is_error ())
+    if (resolved_trait_item.is_error ())
       {
 	RichLocation r (type.get_locus ());
 	r.add_range (trait_reference.get_locus ());
 	rust_error_at (r, "type alias %<%s%> is not a member of trait %<%s%>",
 		       type.get_new_type_name ().c_str (),
 		       trait_reference.get_name ().c_str ());
-	return;
       }
 
+    // normal resolution of the item
+    TypeCheckImplItem::visit (type);
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
+      return;
+    if (resolved_trait_item.is_error ())
+      return;
+
     // check the types are compatible
-    if (!trait_item_ref.get_tyty ()->can_eq (lookup, true))
+    if (!resolved_trait_item.get_tyty ()->can_eq (lookup, true))
       {
 	RichLocation r (type.get_locus ());
-	r.add_range (trait_item_ref.get_locus ());
+	r.add_range (resolved_trait_item.get_locus ());
 
 	rust_error_at (
 	  r, "type alias %<%s%> has an incompatible type for trait %<%s%>",
 	  type.get_new_type_name ().c_str (),
 	  trait_reference.get_name ().c_str ());
-	return;
       }
 
-    resolved_trait_item = trait_item_ref;
+    context->insert_type (resolved_trait_item.get_mappings (),
+			  lookup->clone ());
   }
 
   void visit (HIR::Function &function) override
   {
-    TypeCheckImplItem::visit (function);
-
-    // we get the error checking from the base method here
-    TyTy::BaseType *lookup;
-    if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
-      return;
-
-    if (lookup->get_kind () != TyTy::TypeKind::FNDEF)
-      return;
-
-    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
-    const TraitItemReference &trait_item_ref
-      = trait_reference.lookup_trait_item (
-	fntype->get_identifier (), TraitItemReference::TraitItemType::FN);
+    resolved_trait_item = trait_reference.lookup_trait_item (
+      function.get_function_name (), TraitItemReference::TraitItemType::FN);
 
     // unknown trait item
-    if (trait_item_ref.is_error ())
+    if (resolved_trait_item.is_error ())
       {
 	RichLocation r (function.get_locus ());
 	r.add_range (trait_reference.get_locus ());
 	rust_error_at (r, "method %<%s%> is not a member of trait %<%s%>",
-		       fntype->get_identifier ().c_str (),
+		       function.get_function_name ().c_str (),
 		       trait_reference.get_name ().c_str ());
-	return;
       }
 
-    rust_assert (trait_item_ref.get_tyty ()->get_kind ()
+    // we get the error checking from the base method here
+    TypeCheckImplItem::visit (function);
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
+      return;
+    if (resolved_trait_item.is_error ())
+      return;
+
+    rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
+    rust_assert (resolved_trait_item.get_tyty ()->get_kind ()
 		 == TyTy::TypeKind::FNDEF);
+
+    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
     TyTy::FnType *trait_item_fntype
-      = static_cast<TyTy::FnType *> (trait_item_ref.get_tyty ());
+      = static_cast<TyTy::FnType *> (resolved_trait_item.get_tyty ());
 
     // sets substitute self into the trait_item_ref->tyty
     TyTy::SubstitutionParamMapping *self_mapping = nullptr;
@@ -350,16 +343,13 @@ public:
     if (!trait_item_fntype->can_eq (fntype, true))
       {
 	RichLocation r (function.get_locus ());
-	r.add_range (trait_item_ref.get_locus ());
+	r.add_range (resolved_trait_item.get_locus ());
 
 	rust_error_at (
 	  r, "method %<%s%> has an incompatible type for trait %<%s%>",
 	  fntype->get_identifier ().c_str (),
 	  trait_reference.get_name ().c_str ());
-	return;
       }
-
-    resolved_trait_item = trait_item_ref;
   }
 
 private:

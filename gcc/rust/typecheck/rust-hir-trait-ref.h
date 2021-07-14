@@ -27,6 +27,7 @@ namespace Resolver {
 
 // Data Objects for the associated trait items in a structure we can work with
 // https://doc.rust-lang.org/edition-guide/rust-2018/trait-system/associated-constants.html
+class TypeCheckContext;
 class TraitItemReference
 {
 public:
@@ -39,17 +40,11 @@ public:
   };
 
   TraitItemReference (std::string identifier, bool optional, TraitItemType type,
-		      const HIR::TraitItem *hir_trait_item, TyTy::BaseType *ty,
-		      Location locus)
-    : identifier (identifier), optional_flag (optional), type (type),
-      hir_trait_item (hir_trait_item), ty (ty), locus (locus)
-  {}
+		      HIR::TraitItem *hir_trait_item, TyTy::BaseType *self,
+		      std::vector<TyTy::SubstitutionParamMapping> substitutions,
+		      Location locus);
 
-  TraitItemReference (TraitItemReference const &other)
-    : identifier (other.identifier), optional_flag (other.optional_flag),
-      type (other.type), hir_trait_item (other.hir_trait_item), ty (other.ty),
-      locus (other.locus)
-  {}
+  TraitItemReference (TraitItemReference const &other);
 
   TraitItemReference &operator= (TraitItemReference const &other)
   {
@@ -57,8 +52,13 @@ public:
     optional_flag = other.optional_flag;
     type = other.type;
     hir_trait_item = other.hir_trait_item;
-    ty = other.ty;
+    self = other.self;
     locus = other.locus;
+    context = other.context;
+
+    inherited_substitutions.reserve (other.inherited_substitutions.size ());
+    for (size_t i = 0; i < other.inherited_substitutions.size (); i++)
+      inherited_substitutions.push_back (other.inherited_substitutions.at (i));
 
     return *this;
   }
@@ -68,7 +68,8 @@ public:
 
   static TraitItemReference error ()
   {
-    return TraitItemReference ("", false, ERROR, nullptr, nullptr, Location ());
+    return TraitItemReference ("", false, ERROR, nullptr, nullptr, {},
+			       Location ());
   }
 
   static TraitItemReference &error_node ()
@@ -82,7 +83,7 @@ public:
   std::string as_string () const
   {
     return "(" + trait_item_type_as_string (type) + " " + identifier + " "
-	   + ty->as_string () + ")";
+	   + ")";
   }
 
   static std::string trait_item_type_as_string (TraitItemType ty)
@@ -109,17 +110,65 @@ public:
 
   const HIR::TraitItem *get_hir_trait_item () const { return hir_trait_item; }
 
-  TyTy::BaseType *get_tyty () const { return ty; }
-
   Location get_locus () const { return locus; }
 
+  const Analysis::NodeMapping &get_mappings () const
+  {
+    return hir_trait_item->get_mappings ();
+  }
+
+  TyTy::BaseType *get_tyty () const
+  {
+    rust_assert (hir_trait_item != nullptr);
+
+    switch (type)
+      {
+      case CONST:
+	return get_type_from_constant (
+	  static_cast</*const*/ HIR::TraitItemConst &> (*hir_trait_item));
+	break;
+
+      case TYPE:
+	return get_type_from_typealias (
+	  static_cast</*const*/ HIR::TraitItemType &> (*hir_trait_item));
+
+      case FN:
+	return get_type_from_fn (
+	  static_cast</*const*/ HIR::TraitItemFunc &> (*hir_trait_item));
+	break;
+
+      default:
+	return get_error ();
+      }
+
+    gcc_unreachable ();
+    return get_error ();
+  }
+
 private:
+  TyTy::ErrorType *get_error () const
+  {
+    return new TyTy::ErrorType (get_mappings ().get_hirid ());
+  }
+
+  TyTy::BaseType *get_type_from_typealias (/*const*/
+					   HIR::TraitItemType &type) const;
+
+  TyTy::BaseType *
+  get_type_from_constant (/*const*/ HIR::TraitItemConst &constant) const;
+
+  TyTy::BaseType *get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const;
+
   std::string identifier;
   bool optional_flag;
   TraitItemType type;
-  const HIR::TraitItem *hir_trait_item;
-  TyTy::BaseType *ty;
+  HIR::TraitItem *hir_trait_item;
+  std::vector<TyTy::SubstitutionParamMapping> inherited_substitutions;
   Location locus;
+
+  TyTy::BaseType
+    *self; // this is the implict Self TypeParam required for methods
+  Resolver::TypeCheckContext *context;
 };
 
 class TraitReference
@@ -185,6 +234,13 @@ public:
 	  return item;
       }
     return TraitItemReference::error_node ();
+  }
+
+  size_t size () const { return item_refs.size (); }
+
+  const std::vector<TraitItemReference> &get_trait_items () const
+  {
+    return item_refs;
   }
 
 private:

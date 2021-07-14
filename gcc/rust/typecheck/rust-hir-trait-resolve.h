@@ -55,24 +55,11 @@ public:
 
     resolved = TraitItemReference (identifier, is_optional,
 				   TraitItemReference::TraitItemType::TYPE,
-				   &type, ty, locus);
+				   &type, self, substitutions, locus);
   }
 
   void visit (HIR::TraitItemConst &cst) override
   {
-    // attempt to lookup the type of the trait item function
-    TyTy::BaseType *ty = nullptr;
-    if (!context->lookup_type (cst.get_mappings ().get_hirid (), &ty))
-      {
-	auto resolved = TypeCheckType::Resolve (cst.get_type ().get ());
-	if (resolved->get_kind () == TyTy::TypeKind::ERROR)
-	  {
-	    rust_error_at (cst.get_locus (),
-			   "failed to resolve trait constant type");
-	    return;
-	  }
-      }
-
     // create trait-item-ref
     Location locus = cst.get_locus ();
     bool is_optional = cst.has_expr ();
@@ -80,95 +67,11 @@ public:
 
     resolved = TraitItemReference (identifier, is_optional,
 				   TraitItemReference::TraitItemType::CONST,
-				   &cst, ty, locus);
+				   &cst, self, substitutions, locus);
   }
 
   void visit (HIR::TraitItemFunc &fn) override
   {
-    // FIXME this is duplicated in a few places and could be refactored
-
-    // attempt to lookup the type of the trait item function
-    TyTy::BaseType *ty = nullptr;
-    if (!context->lookup_type (fn.get_mappings ().get_hirid (), &ty))
-      {
-	HIR::TraitFunctionDecl &function = fn.get_decl ();
-	if (function.has_generics ())
-	  {
-	    for (auto &generic_param : function.get_generic_params ())
-	      {
-		switch (generic_param.get ()->get_kind ())
-		  {
-		  case HIR::GenericParam::GenericKind::LIFETIME:
-		    // Skipping Lifetime completely until better handling.
-		    break;
-
-		    case HIR::GenericParam::GenericKind::TYPE: {
-		      auto param_type = TypeResolveGenericParam::Resolve (
-			generic_param.get ());
-		      context->insert_type (generic_param->get_mappings (),
-					    param_type);
-
-		      substitutions.push_back (TyTy::SubstitutionParamMapping (
-			static_cast<HIR::TypeParam &> (*generic_param),
-			param_type));
-		    }
-		    break;
-		  }
-	      }
-	  }
-
-	TyTy::BaseType *ret_type = nullptr;
-	if (!function.has_return_type ())
-	  ret_type = new TyTy::TupleType (fn.get_mappings ().get_hirid ());
-	else
-	  {
-	    auto resolved
-	      = TypeCheckType::Resolve (function.get_return_type ().get ());
-	    if (resolved->get_kind () == TyTy::TypeKind::ERROR)
-	      {
-		rust_error_at (fn.get_locus (),
-			       "failed to resolve return type");
-		return;
-	      }
-
-	    ret_type = resolved->clone ();
-	    ret_type->set_ref (
-	      function.get_return_type ()->get_mappings ().get_hirid ());
-	  }
-
-	std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
-	if (function.is_method ())
-	  {
-	    // add the synthetic self param at the front, this is a placeholder
-	    // for compilation to know parameter names. The types are ignored
-	    // but we reuse the HIR identifier pattern which requires it
-	    HIR::SelfParam &self_param = function.get_self ();
-	    HIR::IdentifierPattern *self_pattern = new HIR::IdentifierPattern (
-	      "self", self_param.get_locus (), self_param.is_ref (),
-	      self_param.is_mut (), std::unique_ptr<HIR::Pattern> (nullptr));
-	    context->insert_type (self_param.get_mappings (), self->clone ());
-	    params.push_back (
-	      std::pair<HIR::Pattern *, TyTy::BaseType *> (self_pattern,
-							   self->clone ()));
-	  }
-
-	for (auto &param : function.get_function_params ())
-	  {
-	    // get the name as well required for later on
-	    auto param_tyty = TypeCheckType::Resolve (param.get_type ());
-	    params.push_back (std::pair<HIR::Pattern *, TyTy::BaseType *> (
-	      param.get_param_name (), param_tyty));
-
-	    context->insert_type (param.get_mappings (), param_tyty);
-	  }
-
-	ty = new TyTy::FnType (fn.get_mappings ().get_hirid (),
-			       function.get_function_name (),
-			       function.is_method (), std::move (params),
-			       ret_type, std::move (substitutions));
-	context->insert_type (fn.get_mappings (), ty);
-      }
-
     // create trait-item-ref
     Location locus = fn.get_locus ();
     bool is_optional = fn.has_block_defined ();
@@ -176,7 +79,7 @@ public:
 
     resolved = TraitItemReference (identifier, is_optional,
 				   TraitItemReference::TraitItemType::FN, &fn,
-				   ty, locus);
+				   self, substitutions, locus);
   }
 
 private:

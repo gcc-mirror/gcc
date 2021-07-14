@@ -3265,10 +3265,12 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
+  bool has_expr () const { return expr != nullptr; }
+
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Expr> &get_expr ()
   {
-    rust_assert (expr != nullptr);
+    rust_assert (has_expr ());
     return expr;
   }
 
