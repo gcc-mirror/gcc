@@ -18077,23 +18077,29 @@ get_memref_parts (rtx mem, rtx *base, HOST_WIDE_INT *offset,
   return true;
 }
 
-/* The function returns true if the target storage location of
-   mem1 is adjacent to the target storage location of mem2 */
-/* Return 1 if memory locations are adjacent.  */
+/* If the target storage locations of arguments MEM1 and MEM2 are
+   adjacent, then return the argument that has the lower address.
+   Otherwise, return NULL_RTX.  */
 
-static bool
+static rtx
 adjacent_mem_locations (rtx mem1, rtx mem2)
 {
   rtx reg1, reg2;
   HOST_WIDE_INT off1, size1, off2, size2;
 
-  if (get_memref_parts (mem1, &reg1, &off1, &size1)
-      && get_memref_parts (mem2, &reg2, &off2, &size2))
-    return ((REGNO (reg1) == REGNO (reg2))
-	    && ((off1 + size1 == off2)
-		|| (off2 + size2 == off1)));
+  if (MEM_P (mem1)
+      && MEM_P (mem2)
+      && get_memref_parts (mem1, &reg1, &off1, &size1)
+      && get_memref_parts (mem2, &reg2, &off2, &size2)
+      && REGNO (reg1) == REGNO (reg2))
+    {
+      if (off1 + size1 == off2)
+	return mem1;
+      else if (off2 + size2 == off1)
+	return mem2;
+    }
 
-  return false;
+  return NULL_RTX;
 }
 
 /* This function returns true if it can be determined that the two MEM
@@ -26655,8 +26661,8 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 
 	  for (int i = 0; i < nregs; i += reg_mode_nregs)
 	    {
-	      unsigned subreg =
-		(WORDS_BIG_ENDIAN) ? i : (nregs - reg_mode_nregs - i);
+	      unsigned subreg
+		= WORDS_BIG_ENDIAN ? i : (nregs - reg_mode_nregs - i);
 	      rtx dst2 = adjust_address (dst, reg_mode, offset);
 	      rtx src2 = gen_rtx_REG (reg_mode, reg + subreg);
 	      offset += size;
@@ -26673,8 +26679,8 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 
 	  for (int i = 0; i < nregs; i += reg_mode_nregs)
 	    {
-	      unsigned subreg =
-		(WORDS_BIG_ENDIAN) ? i : (nregs - reg_mode_nregs - i);
+	      unsigned subreg
+		= WORDS_BIG_ENDIAN ? i : (nregs - reg_mode_nregs - i);
 	      rtx dst2 = gen_rtx_REG (reg_mode, reg + subreg);
 	      rtx src2 = adjust_address (src, reg_mode, offset);
 	      offset += size;
@@ -26699,13 +26705,53 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	  if (GET_MODE (src) == OOmode)
 	    gcc_assert (VSX_REGNO_P (REGNO (dst)));
 
-	  reg_mode = GET_MODE (XVECEXP (src, 0, 0));
 	  int nvecs = XVECLEN (src, 0);
 	  for (int i = 0; i < nvecs; i++)
 	    {
-	      int index = WORDS_BIG_ENDIAN ? i : nvecs - 1 - i;
-	      rtx dst_i = gen_rtx_REG (reg_mode, reg + index);
-	      emit_insn (gen_rtx_SET (dst_i, XVECEXP (src, 0, i)));
+	      rtx op;
+	      int regno = reg + i;
+
+	      if (WORDS_BIG_ENDIAN)
+		{
+		  op = XVECEXP (src, 0, i);
+
+		  /* If we are loading an even VSX register and the memory location
+		     is adjacent to the next register's memory location (if any),
+		     then we can load them both with one LXVP instruction.  */
+		  if ((regno & 1) == 0)
+		    {
+		      rtx op2 = XVECEXP (src, 0, i + 1);
+		      if (adjacent_mem_locations (op, op2) == op)
+			{
+			  op = adjust_address (op, OOmode, 0);
+			  /* Skip the next register, since we're going to
+			     load it together with this register.  */
+			  i++;
+			}
+		    }
+		}
+	      else
+		{
+		  op = XVECEXP (src, 0, nvecs - i - 1);
+
+		  /* If we are loading an even VSX register and the memory location
+		     is adjacent to the next register's memory location (if any),
+		     then we can load them both with one LXVP instruction.  */
+		  if ((regno & 1) == 0)
+		    {
+			  rtx op2 = XVECEXP (src, 0, nvecs - i - 2);
+			  if (adjacent_mem_locations (op2, op) == op2)
+			    {
+			      op = adjust_address (op2, OOmode, 0);
+			      /* Skip the next register, since we're going to
+				 load it together with this register.  */
+			      i++;
+			    }
+		    }
+		}
+
+	      rtx dst_i = gen_rtx_REG (GET_MODE (op), regno);
+	      emit_insn (gen_rtx_SET (dst_i, op));
 	    }
 
 	  /* We are writing an accumulator register, so we have to
