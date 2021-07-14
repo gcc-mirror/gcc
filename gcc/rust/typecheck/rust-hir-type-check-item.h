@@ -60,13 +60,65 @@ public:
 	return;
       }
 
+    bool is_trait_impl_block = !trait_reference.is_error ();
+
+    std::vector<std::reference_wrapper<const TraitItemReference>>
+      trait_item_refs;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
-	if (trait_reference.is_error ())
+	if (!is_trait_impl_block)
 	  TypeCheckImplItem::Resolve (impl_item.get (), self);
 	else
-	  TypeCheckImplItemWithTrait::Resolve (impl_item.get (), self,
-					       trait_reference);
+	  {
+	    auto &trait_item_ref
+	      = TypeCheckImplItemWithTrait::Resolve (impl_item.get (), self,
+						     trait_reference);
+	    trait_item_refs.push_back (trait_item_ref);
+	  }
+      }
+
+    bool impl_block_missing_trait_items
+      = is_trait_impl_block
+	&& trait_reference.size () != trait_item_refs.size ();
+    if (impl_block_missing_trait_items)
+      {
+	// filter the missing impl_items
+	std::vector<std::reference_wrapper<const TraitItemReference>>
+	  missing_trait_items;
+	for (auto &trait_item_ref : trait_reference.get_trait_items ())
+	  {
+	    bool found = false;
+	    for (const TraitItemReference &implemented_trait_item :
+		 trait_item_refs)
+	      {
+		std::string trait_item_name = trait_item_ref.get_identifier ();
+		std::string impl_item_name
+		  = implemented_trait_item.get_identifier ();
+		found = trait_item_name.compare (impl_item_name) == 0;
+		if (found)
+		  break;
+	      }
+
+	    bool is_required_trait_item = !trait_item_ref.is_optional ();
+	    if (!found && is_required_trait_item)
+	      missing_trait_items.push_back (trait_item_ref);
+	  }
+
+	std::string missing_items_buf;
+	RichLocation r (impl_block.get_locus ());
+	for (size_t i = 0; i < missing_trait_items.size (); i++)
+	  {
+	    bool has_more = (i + 1) < missing_trait_items.size ();
+	    const TraitItemReference &missing_trait_item
+	      = missing_trait_items.at (i);
+	    missing_items_buf
+	      += missing_trait_item.get_identifier () + (has_more ? ", " : "");
+	    r.add_range (missing_trait_item.get_locus ());
+	  }
+
+	rust_error_at (r, "missing %s in implementation of trait %<%s%>",
+		       missing_items_buf.c_str (),
+		       trait_reference.get_name ().c_str ());
       }
   }
 

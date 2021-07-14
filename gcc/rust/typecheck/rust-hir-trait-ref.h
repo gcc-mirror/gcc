@@ -236,6 +236,13 @@ public:
     return TraitItemReference::error_node ();
   }
 
+  size_t size () const { return item_refs.size (); }
+
+  const std::vector<TraitItemReference> &get_trait_items () const
+  {
+    return item_refs;
+  }
+
 private:
   const HIR::Trait *hir_trait_ref;
   std::vector<TraitItemReference> item_refs;
