@@ -332,7 +332,22 @@ case $vcs_type in
             exit 1
 	fi
 
-	revision=`$GCC_GIT log -n1 --pretty=tformat:%p:%t:%H`
+	# Open-coded version of "git gcc-descr" from contrib/gcc-git-customization.sh
+	revision=`$GCC_GIT log -n1 --pretty=tformat:%h`
+	r=`$GCC_GIT describe --all --match 'basepoints/gcc-[0-9]*' HEAD \
+	   | sed -n 's,^\(tags/\)\?basepoints/gcc-\([0-9]\+\)-\([0-9]\+\)-g[0-9a-f]*$,r\2-\3,p;s,^\(tags/\)\?basepoints/gcc-\([0-9]\+\)$,r\2-0,p'`;
+	if test -n $r; then
+		o=`$GCC_GIT config --get gcc-config.upstream`;
+		rr=`echo $r | sed -n 's,^r\([0-9]\+\)-[0-9]\+\(-g[0-9a-f]\+\)\?$,\1,p'`;
+		if $GCC_GIT rev-parse --verify --quiet ${o:-origin}/releases/gcc-$rr >/dev/null; then
+			m=releases/gcc-$rr;
+		else
+			m=master;
+		fi;
+		if $GCC_GIT merge-base --is-ancestor HEAD ${o:-origin}/$m; then
+			revision=${r}-g${revision};
+		fi
+	fi
 	branch=`$GCC_GIT name-rev --name-only HEAD || :`
 	;;    
 
@@ -414,6 +429,6 @@ rm -f LAST_UPDATED gcc/REVISION
     date
     echo "`TZ=UTC date` (revision $revision)"
 } > LAST_UPDATED
-echo "[$branch revision $revision]" > gcc/REVISION
+echo "[$branch $revision]" > gcc/REVISION
 
 touch_files_reexec
