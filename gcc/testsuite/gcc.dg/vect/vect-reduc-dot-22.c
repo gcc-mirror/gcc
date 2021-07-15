@@ -37,7 +37,7 @@ main (void)
 
   SIGNEDNESS_3 char a[N];
   SIGNEDNESS_4 short b[N];
-  int expected = 0x12345;
+  SIGNEDNESS_1 long expected = 0x12345;
   for (int i = 0; i < N; ++i)
     {
       a[i] = BASE + i * 5;
