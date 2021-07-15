@@ -527,9 +527,22 @@ readability (const_tree expr)
     case SSA_NAME:
       {
 	if (tree var = SSA_NAME_VAR (expr))
-	  /* Slightly favor the underlying var over the SSA name to
-	     avoid having them compare equal.  */
-	  return readability (var) - 1;
+	  {
+	    if (DECL_ARTIFICIAL (var))
+	      {
+		/* If we have an SSA name for an artificial var,
+		   only use it if it has a debug expr associated with
+		   it that fixup_tree_for_diagnostic can use.  */
+		if (VAR_P (var) && DECL_HAS_DEBUG_EXPR_P (var))
+		  return readability (DECL_DEBUG_EXPR (var)) - 1;
+	      }
+	    else
+	      {
+		/* Slightly favor the underlying var over the SSA name to
+		   avoid having them compare equal.  */
+		return readability (var) - 1;
+	      }
+	  }
 	/* Avoid printing '<unknown>' for SSA names for temporaries.  */
 	return -1;
       }

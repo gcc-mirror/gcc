@@ -165,8 +165,13 @@ fixup_tree_for_diagnostic_1 (tree expr, hash_set<tree> *visited)
       && TREE_CODE (expr) == SSA_NAME
       && (SSA_NAME_VAR (expr) == NULL_TREE
 	  || DECL_ARTIFICIAL (SSA_NAME_VAR (expr))))
-    if (tree expr2 = maybe_reconstruct_from_def_stmt (expr, visited))
-      return expr2;
+    {
+      if (tree var = SSA_NAME_VAR (expr))
+	if (VAR_P (var) && DECL_HAS_DEBUG_EXPR_P (var))
+	  return DECL_DEBUG_EXPR (var);
+      if (tree expr2 = maybe_reconstruct_from_def_stmt (expr, visited))
+	return expr2;
+    }
   return expr;
 }
 
