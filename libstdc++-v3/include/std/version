@@ -140,6 +140,9 @@
 #define __cpp_lib_filesystem 201703
 #define __cpp_lib_gcd 201606
 #define __cpp_lib_gcd_lcm 201606
+#ifdef __GCC_DESTRUCTIVE_SIZE
+# define __cpp_lib_hardware_interference_size 201703L
+#endif
 #define __cpp_lib_hypot 201603
 #define __cpp_lib_invoke 201411L
 #define __cpp_lib_lcm 201606

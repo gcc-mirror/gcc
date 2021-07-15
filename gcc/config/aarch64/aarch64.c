@@ -16540,6 +16540,28 @@ aarch64_override_options_internal (struct gcc_options *opts)
     SET_OPTION_IF_UNSET (opts, &global_options_set,
 			 param_l1_cache_line_size,
 			 aarch64_tune_params.prefetch->l1_cache_line_size);
+
+  if (aarch64_tune_params.prefetch->l1_cache_line_size >= 0)
+    {
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_destruct_interfere_size,
+			   aarch64_tune_params.prefetch->l1_cache_line_size);
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_construct_interfere_size,
+			   aarch64_tune_params.prefetch->l1_cache_line_size);
+    }
+  else
+    {
+      /* For a generic AArch64 target, cover the current range of cache line
+	 sizes.  */
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_destruct_interfere_size,
+			   256);
+      SET_OPTION_IF_UNSET (opts, &global_options_set,
+			   param_construct_interfere_size,
+			   64);
+    }
+
   if (aarch64_tune_params.prefetch->l2_cache_size >= 0)
     SET_OPTION_IF_UNSET (opts, &global_options_set,
 			 param_l2_cache_size,

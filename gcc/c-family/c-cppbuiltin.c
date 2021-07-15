@@ -741,6 +741,20 @@ cpp_atomic_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("__GCC_ATOMIC_TEST_AND_SET_TRUEVAL",
 				 targetm.atomic_test_and_set_trueval);
 
+  /* Macros for C++17 hardware interference size constants.  Either both or
+     neither should be set.  */
+  gcc_assert (!param_destruct_interfere_size
+	      == !param_construct_interfere_size);
+  if (param_destruct_interfere_size)
+    {
+      /* FIXME The way of communicating these values to the library should be
+	 part of the C++ ABI, whether macro or builtin.  */
+      builtin_define_with_int_value ("__GCC_DESTRUCTIVE_SIZE",
+				     param_destruct_interfere_size);
+      builtin_define_with_int_value ("__GCC_CONSTRUCTIVE_SIZE",
+				     param_construct_interfere_size);
+    }
+
   /* ptr_type_node can't be used here since ptr_mode is only set when
      toplev calls backend_init which is not done with -E  or pch.  */
   psize = POINTER_SIZE_UNITS;

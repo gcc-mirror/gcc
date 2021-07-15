@@ -9018,6 +9018,43 @@ that has already been done in the current function.  Therefore,
 seemingly insignificant changes in the source program can cause the
 warnings produced by @option{-Winline} to appear or disappear.
 
+@item -Winterference-size
+@opindex Winterference-size
+Warn about use of C++17 @code{std::hardware_destructive_interference_size}
+without specifying its value with @option{--param destructive-interference-size}.
+Also warn about questionable values for that option.
+
+This variable is intended to be used for controlling class layout, to
+avoid false sharing in concurrent code:
+
+@smallexample
+struct independent_fields @{
+  alignas(std::hardware_destructive_interference_size) std::atomic<int> one;
+  alignas(std::hardware_destructive_interference_size) std::atomic<int> two;
+@};
+@end smallexample
+
+Here @samp{one} and @samp{two} are intended to be far enough apart
+that stores to one won't require accesses to the other to reload the
+cache line.
+
+By default, @option{--param destructive-interference-size} and
+@option{--param constructive-interference-size} are set based on the
+current @option{-mtune} option, typically to the L1 cache line size
+for the particular target CPU, sometimes to a range if tuning for a
+generic target.  So all translation units that depend on ABI
+compatibility for the use of these variables must be compiled with
+the same @option{-mtune} (or @option{-mcpu}).
+
+If ABI stability is important, such as if the use is in a header for a
+library, you should probably not use the hardware interference size
+variables at all.  Alternatively, you can force a particular value
+with @option{--param}.
+
+If you are confident that your use of the variable does not affect ABI
+outside a single build of your project, you can turn off the warning
+with @option{-Wno-interference-size}.
+
 @item -Wint-in-bool-context
 @opindex Wint-in-bool-context
 @opindex Wno-int-in-bool-context
@@ -13937,6 +13974,34 @@ A value of -1 means we don't have a threshold and therefore
 prefetch hints can be issued for any constant stride.
 
 This setting is only useful for strides that are known and constant.
+
+@item destructive-interference-size
+@item constructive-interference-size
+The values for the C++17 variables
+@code{std::hardware_destructive_interference_size} and
+@code{std::hardware_constructive_interference_size}.  The destructive
+interference size is the minimum recommended offset between two
+independent concurrently-accessed objects; the constructive
+interference size is the maximum recommended size of contiguous memory
+accessed together.  Typically both will be the size of an L1 cache
+line for the target, in bytes.  For a generic target covering a range of L1
+cache line sizes, typically the constructive interference size will be
+the small end of the range and the destructive size will be the large
+end.
+
+The destructive interference size is intended to be used for layout,
+and thus has ABI impact.  The default value is not expected to be
+stable, and on some targets varies with @option{-mtune}, so use of
+this variable in a context where ABI stability is important, such as
+the public interface of a library, is strongly discouraged; if it is
+used in that context, users can stabilize the value using this
+option.
+
+The constructive interference size is less sensitive, as it is
+typically only used in a @samp{static_assert} to make sure that a type
+fits within a cache line.
+
+See also @option{-Winterference-size}.
 
 @item loop-interchange-max-num-stmts
 The maximum number of stmts in a loop to be interchanged.

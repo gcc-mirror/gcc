@@ -2579,6 +2579,12 @@ ix86_option_override_internal (bool main_args_p,
   SET_OPTION_IF_UNSET (opts, opts_set, param_l2_cache_size,
 		       ix86_tune_cost->l2_cache_size);
 
+  /* 64B is the accepted value for these for all x86.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_destruct_interfere_size, 64);
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_construct_interfere_size, 64);
+
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (opts->x_flag_prefetch_loop_arrays < 0
       && HAVE_prefetch

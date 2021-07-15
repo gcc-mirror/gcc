@@ -183,9 +183,9 @@ inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 } // extern "C++"
 
 #if __cplusplus >= 201703L
-#ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 namespace std
 {
+#ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 #define __cpp_lib_launder 201606
   /// Pointer optimization barrier [ptr.launder]
   template<typename _Tp>
@@ -205,8 +205,14 @@ namespace std
   void launder(const void*) = delete;
   void launder(volatile void*) = delete;
   void launder(const volatile void*) = delete;
-}
 #endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
+
+#ifdef __GCC_DESTRUCTIVE_SIZE
+# define __cpp_lib_hardware_interference_size 201703L
+  inline constexpr size_t hardware_destructive_interference_size = __GCC_DESTRUCTIVE_SIZE;
+  inline constexpr size_t hardware_constructive_interference_size = __GCC_CONSTRUCTIVE_SIZE;
+#endif // __GCC_DESTRUCTIVE_SIZE
+}
 #endif // C++17
 
 #if __cplusplus > 201703L

@@ -6075,6 +6075,37 @@ inline_asm_in_constexpr_error (location_t loc)
 	  "%<constexpr%> function in C++20");
 }
 
+/* We're getting the constant value of DECL in a manifestly constant-evaluated
+   context; maybe complain about that.  */
+
+static void
+maybe_warn_about_constant_value (location_t loc, tree decl)
+{
+  static bool explained = false;
+  if (cxx_dialect >= cxx17
+      && warn_interference_size
+      && !global_options_set.x_param_destruct_interfere_size
+      && DECL_CONTEXT (decl) == std_node
+      && id_equal (DECL_NAME (decl), "hardware_destructive_interference_size")
+      && (LOCATION_FILE (input_location) != main_input_filename
+	  || module_exporting_p ())
+      && warning_at (loc, OPT_Winterference_size, "use of %qD", decl)
+      && !explained)
+    {
+      explained = true;
+      inform (loc, "its value can vary between compiler versions or "
+	      "with different %<-mtune%> or %<-mcpu%> flags");
+      inform (loc, "if this use is part of a public ABI, change it to "
+	      "instead use a constant variable you define");
+      inform (loc, "the default value for the current CPU tuning "
+	      "is %d bytes", param_destruct_interfere_size);
+      inform (loc, "you can stabilize this value with %<--param "
+	      "hardware_destructive_interference_size=%d%>, or disable "
+	      "this warning with %<-Wno-interference-size%>",
+	      param_destruct_interfere_size);
+    }
+}
+
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -6219,6 +6250,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	      r = *p;
 	      break;
 	    }
+      if (ctx->manifestly_const_eval)
+	maybe_warn_about_constant_value (loc, t);
       if (COMPLETE_TYPE_P (TREE_TYPE (t))
 	  && is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/false))
 	{
