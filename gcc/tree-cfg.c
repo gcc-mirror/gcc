@@ -8086,7 +8086,7 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	{
 	  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 	  if (bb->count.initialized_p ())
-	    fprintf (file, ",%s(%d)",
+	    fprintf (file, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
 		     bb->count.value ());
 	  fprintf (file, ")\n%s (", function_name (fun));

@@ -2831,7 +2831,7 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	  if (bb->loop_father->header == bb)
 	    fprintf (outf, ",loop_header(%d)", bb->loop_father->num);
 	  if (bb->count.initialized_p ())
-	    fprintf (outf, ",%s(%d)",
+	    fprintf (outf, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
 		     bb->count.value ());
 	  fprintf (outf, "):\n");
