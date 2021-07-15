@@ -2418,6 +2418,32 @@ cp_fold (tree x)
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
       op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
 
+      /* decltype(nullptr) has only one value, so optimize away all comparisons
+	 with that type right away, keeping them in the IL causes troubles for
+	 various optimizations.  */
+      if (COMPARISON_CLASS_P (org_x)
+	  && TREE_CODE (TREE_TYPE (op0)) == NULLPTR_TYPE
+	  && TREE_CODE (TREE_TYPE (op1)) == NULLPTR_TYPE)
+	{
+	  switch (code)
+	    {
+	    case EQ_EXPR:
+	    case LE_EXPR:
+	    case GE_EXPR:
+	      x = constant_boolean_node (true, TREE_TYPE (x));
+	      break;
+	    case NE_EXPR:
+	    case LT_EXPR:
+	    case GT_EXPR:
+	      x = constant_boolean_node (false, TREE_TYPE (x));
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  return omit_two_operands_loc (loc, TREE_TYPE (x), x,
+					op0, op1);
+	}
+
       if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
 	{
 	  if (op0 == error_mark_node || op1 == error_mark_node)
