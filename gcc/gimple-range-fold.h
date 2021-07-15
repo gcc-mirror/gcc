@@ -56,6 +56,36 @@ gimple_range_handler (const gimple *s)
   return NULL;
 }
 
+// Return the type of range which statement S calculates.  If the type is
+// unsupported or no type can be determined, return NULL_TREE.
+
+static inline tree
+gimple_range_type (const gimple *s)
+{
+  tree lhs = gimple_get_lhs (s);
+  tree type = NULL_TREE;
+  if (lhs)
+    type = TREE_TYPE (lhs);
+  else
+    {
+      enum gimple_code code = gimple_code (s);
+      if (code == GIMPLE_COND)
+	type = boolean_type_node;
+      else if (code == GIMPLE_PHI)
+	type = TREE_TYPE (gimple_phi_result (s));
+      else if (code == GIMPLE_CALL)
+	{
+	  type = gimple_call_fntype (s);
+	  // If it has a type, get the return type.
+	  if (type)
+	    type = TREE_TYPE (type);
+	}
+    }
+  if (irange::supports_type_p (type))
+    return type;
+  return NULL_TREE;
+}
+
 // Return EXP if it is an SSA_NAME with a type supported by gimple ranges.
 
 static inline tree
