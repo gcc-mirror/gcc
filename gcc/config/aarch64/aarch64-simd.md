@@ -587,28 +587,8 @@
   DONE;
 })
 
-;; These expands map to the Dot Product optab the vectorizer checks for
-;; and to the intrinsics patttern.
-;; The auto-vectorizer expects a dot product builtin that also does an
-;; accumulation into the provided register.
-;; Given the following pattern
-;;
-;; for (i=0; i<len; i++) {
-;;     c = a[i] * b[i];
-;;     r += c;
-;; }
-;; return result;
-;;
-;; This can be auto-vectorized to
-;; r  = a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];
-;;
-;; given enough iterations.  However the vectorizer can keep unrolling the loop
-;; r += a[4]*b[4] + a[5]*b[5] + a[6]*b[6] + a[7]*b[7];
-;; r += a[8]*b[8] + a[9]*b[9] + a[10]*b[10] + a[11]*b[11];
-;; ...
-;;
-;; and so the vectorizer provides r, in which the result has to be accumulated.
-(define_insn "<sur>dot_prod<vsi2qi>"
+;; These instructions map to the __builtins for the Dot Product operations.
+(define_insn "aarch64_<sur>dot<vsi2qi>"
   [(set (match_operand:VS 0 "register_operand" "=w")
 	(plus:VS (match_operand:VS 1 "register_operand" "0")
 		(unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
@@ -632,6 +612,41 @@
   "usdot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
   [(set_attr "type" "neon_dot<q>")]
 )
+
+;; These expands map to the Dot Product optab the vectorizer checks for.
+;; The auto-vectorizer expects a dot product builtin that also does an
+;; accumulation into the provided register.
+;; Given the following pattern
+;;
+;; for (i=0; i<len; i++) {
+;;     c = a[i] * b[i];
+;;     r += c;
+;; }
+;; return result;
+;;
+;; This can be auto-vectorized to
+;; r  = a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];
+;;
+;; given enough iterations.  However the vectorizer can keep unrolling the loop
+;; r += a[4]*b[4] + a[5]*b[5] + a[6]*b[6] + a[7]*b[7];
+;; r += a[8]*b[8] + a[9]*b[9] + a[10]*b[10] + a[11]*b[11];
+;; ...
+;;
+;; and so the vectorizer provides r, in which the result has to be accumulated.
+(define_expand "<sur>dot_prod<vsi2qi>"
+  [(set (match_operand:VS 0 "register_operand")
+	(plus:VS (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand")
+			    (match_operand:<VSI2QI> 2 "register_operand")]
+		 DOTPROD)
+		(match_operand:VS 3 "register_operand")))]
+  "TARGET_DOTPROD"
+{
+  emit_insn (
+    gen_aarch64_<sur>dot<vsi2qi> (operands[3], operands[3], operands[1],
+				    operands[2]));
+  emit_insn (gen_rtx_SET (operands[0], operands[3]));
+  DONE;
+})
 
 ;; These instructions map to the __builtins for the Dot Product
 ;; indexed operations.
@@ -929,7 +944,8 @@
 	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
 	rtx abd = gen_reg_rtx (V16QImode);
 	emit_insn (gen_aarch64_<sur>abdv16qi (abd, operands[1], operands[2]));
-	emit_insn (gen_udot_prodv16qi (operands[0], operands[3], abd, ones));
+	emit_insn (gen_aarch64_udotv16qi (operands[0], operands[3],
+					  abd, ones));
 	DONE;
       }
     rtx reduc = gen_reg_rtx (V8HImode);

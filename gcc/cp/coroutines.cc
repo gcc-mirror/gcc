@@ -3081,7 +3081,7 @@ process_conditional (var_nest_node *n, tree& vlist)
 {
   tree init = n->init;
   hash_map<tree, tree> var_flags;
-  vec<tree> var_list = vNULL;
+  auto_vec<tree> var_list;
   tree new_then = push_stmt_list ();
   handle_nested_conditionals (n->then_cl, var_list, var_flags);
   new_then = pop_stmt_list (new_then);

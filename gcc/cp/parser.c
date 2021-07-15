@@ -35247,7 +35247,7 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
   /* Parse the optional attribute list.
 
      A list of parsed, but not verified, attributes.  */
-  vec<property_attribute_info *> prop_attr_list = vNULL;
+  auto_delete_vec<property_attribute_info> prop_attr_list;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
   cp_lexer_consume_token (parser->lexer);  /* Eat '@property'.  */
@@ -35423,10 +35423,6 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
     }
 
   cp_parser_consume_semicolon_at_end_of_statement (parser);
-
-  while (!prop_attr_list.is_empty())
-    delete prop_attr_list.pop ();
-  prop_attr_list.release ();
 }
 
 /* Parse an Objective-C++ @synthesize declaration.  The syntax is:

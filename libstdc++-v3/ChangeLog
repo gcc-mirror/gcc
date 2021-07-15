@@ -1,3 +1,10 @@
+2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view(It, End)): Add
+	noexcept-specifier.
+	* testsuite/21_strings/basic_string_view/cons/char/range.cc:
+	Check noexcept-specifier. Also check construction without CTAD.
+
 2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/101361

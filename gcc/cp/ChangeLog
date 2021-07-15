@@ -1,3 +1,38 @@
+2021-07-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88252
+	* cp-tree.h (TEMPLATE_TYPE_PARM_FOR_CLASS): Remove.
+	* pt.c (push_template_decl): Remove TEMPLATE_TYPE_PARM_FOR_CLASS
+	handling.
+	(redeclare_class_template): Likewise.
+	(forwarding_reference_p): Define.
+	(maybe_adjust_types_for_deduction): Use it instead.  Add 'tparms'
+	parameter.
+	(unify_one_argument): Pass tparms to
+	maybe_adjust_types_for_deduction.
+	(try_one_overload): Likewise.
+	(unify): Likewise.
+	(rewrite_template_parm): Remove TEMPLATE_TYPE_PARM_FOR_CLASS
+	handling.
+
+2021-07-14  Jason Merrill  <jason@redhat.com>
+
+	* class.c (struct find_final_overrider_data): Use auto_vec.
+	(find_final_overrider): Remove explicit release.
+	* coroutines.cc (process_conditional): Use auto_vec.
+	* cp-gimplify.c (struct cp_genericize_data): Use auto_vec.
+	(cp_genericize_tree): Remove explicit release.
+	* parser.c (cp_parser_objc_at_property_declaration): Use
+	auto_delete_vec.
+	* semantics.c (omp_reduction_lookup): Use auto_vec.
+
+2021-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101371
+	* constexpr.c (cxx_eval_array_reference): Create a new .object
+	and .ctor for the non-aggregate non-scalar case too when
+	value-initializing.
+
 2021-07-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/79501

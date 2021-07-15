@@ -1,3 +1,84 @@
+2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-9.c: New test.
+
+2021-07-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88252
+	* g++.dg/cpp1z/class-deduction96.C: New test.
+
+2021-07-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/torture/pr100382.C: Pass -fno-delete-dead-exceptions.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-reduc-dot-11.c: Expect pass.
+	* gcc.dg/vect/vect-reduc-dot-15.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-19.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-21.c: Likewise.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr80776-1.c: Remove xfail.
+
+2021-07-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101371
+	* g++.dg/cpp1y/constexpr-101371-2.C: New test.
+	* g++.dg/cpp1y/constexpr-101371.C: New test.
+
+2021-07-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100949
+	* gfortran.dg/pr100949.f90: New test.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_2a_imm8_neon_ok_nocache,
+	check_effective_target_arm_v8_2a_i8mm_neon_hw,
+	check_effective_target_vect_usdot_qi): New.
+	* gcc.dg/vect/vect-reduc-dot-9.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-10.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-11.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-12.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-13.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-14.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-15.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-16.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-17.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-18.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-19.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-20.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-21.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-22.c: New test.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vusdot-autovec.c: New test.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/simd/vusdot-autovec.c: New test.
+	* gcc.target/aarch64/sve/vusdot-autovec.c: New test.
+
+2021-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101395
+	* gcc.target/i386/pr101395-1.c: New test.
+	* gcc.target/i386/pr101395-2.c: Likewise.
+	* gcc.target/i386/pr101395-3.c: Likewise.
+
+2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101445
+	* gcc.dg/vect/pr101445.c: New testcase.
+
+2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-reduc-1.c: New testcase.
+
 2021-07-13  Jonathan Wright  <jonathan.wright@arm.com>
 
 	* gcc.target/aarch64/extract_zero_extend.c: Remove dump scan

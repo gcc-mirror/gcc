@@ -1,3 +1,133 @@
+2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (adjacent_mem_locations): Return the lower
+	addressed memory rtx, if any.
+	(rs6000_split_multireg_move): Fix code formatting.
+	Handle MMA build built-ins with operands in adjacent memory locations.
+
+2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Move to later
+	in the file.
+
+2021-07-14  Jason Merrill  <jason@redhat.com>
+
+	* sel-sched-ir.h (get_all_loop_exits): Use auto_vec.
+
+2021-07-14  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: -fdelete-dead-exceptions is on by default for
+	C++.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern):
+	Remove erroneous line.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* params.opt (param_evrp_mode): Change default.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (udot, sdot): Rename to...
+	(sdot_prod, udot_prod): ...These.
+	* config/aarch64/aarch64-simd.md (<sur>dot_prod<vsi2qi>): Remove.
+	(aarch64_<sur>dot<vsi2qi>): Rename to...
+	(<sur>dot_prod<vsi2qi>): ...This.
+	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32, vdotq_s32):
+	Update builtins.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/neon.md (<sup>dot_prod<vsi2qi>): Drop statements.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/sourcebuild.texi (arm_v8_2a_i8mm_neon_hw): Document.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/neon.md (usdot_prod<vsi2qi>): New.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_usdot<vsi2qi>): Rename to...
+	(usdot_prod<vsi2qi>): ... This.
+	* config/aarch64/aarch64-simd-builtins.def (usdot): Rename to...
+	(usdot_prod): ...This.
+	* config/aarch64/arm_neon.h (vusdot_s32, vusdotq_s32): Likewise.
+	* config/aarch64/aarch64-sve.md (@aarch64_<sur>dot_prod<vsi2qi>):
+	Rename to...
+	(@<sur>dot_prod<vsi2qi>): ...This.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svusdot_impl::expand): Use it.
+
+2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* optabs.def (usdot_prod_optab): New.
+	* doc/md.texi: Document it and clarify other dot prod optabs.
+	* optabs-tree.h (enum optab_subtype): Add optab_vector_mixed_sign.
+	* optabs-tree.c (optab_for_tree_code): Support usdot_prod_optab.
+	* optabs.c (expand_widen_pattern_expr): Likewise.
+	* tree-cfg.c (verify_gimple_assign_ternary): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Query dot-product kind.
+	* tree-vect-patterns.c (vect_supportable_direct_optab_p): Take optional
+	optab subtype.
+	(vect_widened_op_tree): Optionally ignore
+	mismatch types.
+	(vect_recog_dot_prod_pattern): Support usdot_prod_optab.
+
+2021-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101395
+	* config/i386/driver-i386.c (host_detect_local_cpu): Check
+	"arch [32|64]" and "tune [32|64]" for 32-bit and 64-bit codegen.
+	Enable UINTR only for 64-bit codegen.
+	* config/i386/i386-options.c
+	(ix86_option_override_internal::DEF_PTA): Skip PTA_UINTR if not
+	in 64-bit mode.
+	* config/i386/i386.h (ARCH_ARG): New.
+	(CC1_CPU_SPEC): Pass "[arch|tune] 32" for 32-bit codegen and
+	"[arch|tune] 64" for 64-bit codegen.
+
+2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101445
+	* tree-vect-stmts.c (vectorizable_load): Do the gap adjustment
+	of the IV in the correct direction for negative stride
+	accesses.
+
+2021-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR go/101407
+	* godump.c (godump_str_hash): New type.
+	(godump_container::pot_dummy_types): Use string_hash instead of
+	ptr_hash in the hash_set.
+
+2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_find_reusable_accumulator): Handle
+	vector types where the old vector type has a multiple of
+	the new vector type elements.
+	(vect_create_partial_epilog): New function, split out from...
+	(vect_create_epilog_for_reduction): ... here.
+	(vect_transform_cycle_phi): Reduce the re-used accumulator
+	to the new vector type.
+
+2021-07-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-alias.c (attr_fnspec::verify): Fix index in
+	non-'t'-sized arg check.
+
+2021-07-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-cfg.c (cleanup_dead_labels_eh): Update
+	post_landing_pad label upon change of landing pad block's
+	primary label.
+	(cleanup_dead_labels): Check that a removed label is not that
+	of a landing pad.
+
 2021-07-13  Jonathan Wright  <jonathan.wright@arm.com>
 
 	* combine.c (combine_simplify_rtx): Add vec_select -> subreg

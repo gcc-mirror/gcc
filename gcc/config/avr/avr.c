@@ -14498,7 +14498,8 @@ static rtx_insn *
 avr_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
                    vec<machine_mode> & /*input_modes*/,
                    vec<const char *> &/*constraints*/,
-                   vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+                   vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
+		   location_t /*loc*/)
 {
   clobbers.safe_push (cc_reg_rtx);
   SET_HARD_REG_BIT (clobbered_regs, REG_CC);

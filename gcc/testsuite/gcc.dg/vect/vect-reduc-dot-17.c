@@ -35,8 +35,9 @@ main (void)
 {
   check_vect ();
 
-  SIGNEDNESS_3 char a[N], b[N];
-  int expected = 0x12345;
+  SIGNEDNESS_3 char a[N];
+  SIGNEDNESS_4 char b[N];
+  SIGNEDNESS_1 int expected = 0x12345;
   for (int i = 0; i < N; ++i)
     {
       a[i] = BASE + i * 5;
