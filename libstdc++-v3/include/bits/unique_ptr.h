@@ -724,7 +724,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unique_ptr& operator=(const unique_ptr&) = delete;
     };
 
-  /// @relates unique_ptr @{
+  /// @{
+  /// @relates unique_ptr
 
   /// Swap overload for unique_ptr
   template<typename _Tp, typename _Dp>
@@ -936,7 +937,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 #if __cplusplus >= 201402L
-  /// @relates unique_ptr @{
 #define __cpp_lib_make_unique 201304
 
   /// @cond undocumented
@@ -954,6 +954,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { struct __invalid_type { }; };
 
   /// @endcond
+
+  /// @{
+  /// @relates unique_ptr
 
   /// std::make_unique for single objects
   template<typename _Tp, typename... _Args>
