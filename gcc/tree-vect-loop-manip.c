@@ -609,11 +609,8 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 	    }
 
 	  if (use_masks_p)
-	    {
-	      init_ctrl = make_temp_ssa_name (ctrl_type, NULL, "max_mask");
-	      gimple *tmp_stmt = vect_gen_while (init_ctrl, start, end);
-	      gimple_seq_add_stmt (preheader_seq, tmp_stmt);
-	    }
+	    init_ctrl = vect_gen_while (preheader_seq, ctrl_type,
+					start, end, "max_mask");
 	  else
 	    {
 	      init_ctrl = make_temp_ssa_name (compare_type, NULL, "max_len");
@@ -652,9 +649,10 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
       /* Get the control value for the next iteration of the loop.  */
       if (use_masks_p)
 	{
-	  next_ctrl = make_temp_ssa_name (ctrl_type, NULL, "next_mask");
-	  gcall *call = vect_gen_while (next_ctrl, test_index, this_test_limit);
-	  gsi_insert_before (test_gsi, call, GSI_SAME_STMT);
+	  gimple_seq stmts = NULL;
+	  next_ctrl = vect_gen_while (&stmts, ctrl_type, test_index,
+				      this_test_limit, "next_mask");
+	  gsi_insert_seq_before (test_gsi, stmts, GSI_SAME_STMT);
 	}
       else
 	{

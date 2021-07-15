@@ -11984,22 +11984,25 @@ supportable_narrowing_operation (enum tree_code code,
   return false;
 }
 
-/* Generate and return a statement that sets vector mask MASK such that
-   MASK[I] is true iff J + START_INDEX < END_INDEX for all J <= I.  */
+/* Generate and return a vector mask of MASK_TYPE such that
+   mask[I] is true iff J + START_INDEX < END_INDEX for all J <= I.
+   Add the statements to SEQ.  */
 
-gcall *
-vect_gen_while (tree mask, tree start_index, tree end_index)
+tree
+vect_gen_while (gimple_seq *seq, tree mask_type, tree start_index,
+		tree end_index, const char *name)
 {
   tree cmp_type = TREE_TYPE (start_index);
-  tree mask_type = TREE_TYPE (mask);
   gcc_checking_assert (direct_internal_fn_supported_p (IFN_WHILE_ULT,
 						       cmp_type, mask_type,
 						       OPTIMIZE_FOR_SPEED));
   gcall *call = gimple_build_call_internal (IFN_WHILE_ULT, 3,
 					    start_index, end_index,
 					    build_zero_cst (mask_type));
-  gimple_call_set_lhs (call, mask);
-  return call;
+  tree tmp = make_temp_ssa_name (mask_type, NULL, name);
+  gimple_call_set_lhs (call, tmp);
+  gimple_seq_add_stmt (seq, call);
+  return tmp;
 }
 
 /* Generate a vector mask of type MASK_TYPE for which index I is false iff
@@ -12009,9 +12012,7 @@ tree
 vect_gen_while_not (gimple_seq *seq, tree mask_type, tree start_index,
 		    tree end_index)
 {
-  tree tmp = make_ssa_name (mask_type);
-  gcall *call = vect_gen_while (tmp, start_index, end_index);
-  gimple_seq_add_stmt (seq, call);
+  tree tmp = vect_gen_while (seq, mask_type, start_index, end_index);
   return gimple_build (seq, BIT_NOT_EXPR, mask_type, tmp);
 }
 
