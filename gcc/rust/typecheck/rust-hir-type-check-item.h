@@ -104,21 +104,24 @@ public:
 	      missing_trait_items.push_back (trait_item_ref);
 	  }
 
-	std::string missing_items_buf;
-	RichLocation r (impl_block.get_locus ());
-	for (size_t i = 0; i < missing_trait_items.size (); i++)
+	if (missing_trait_items.size () > 0)
 	  {
-	    bool has_more = (i + 1) < missing_trait_items.size ();
-	    const TraitItemReference &missing_trait_item
-	      = missing_trait_items.at (i);
-	    missing_items_buf
-	      += missing_trait_item.get_identifier () + (has_more ? ", " : "");
-	    r.add_range (missing_trait_item.get_locus ());
-	  }
+	    std::string missing_items_buf;
+	    RichLocation r (impl_block.get_locus ());
+	    for (size_t i = 0; i < missing_trait_items.size (); i++)
+	      {
+		bool has_more = (i + 1) < missing_trait_items.size ();
+		const TraitItemReference &missing_trait_item
+		  = missing_trait_items.at (i);
+		missing_items_buf += missing_trait_item.get_identifier ()
+				     + (has_more ? ", " : "");
+		r.add_range (missing_trait_item.get_locus ());
+	      }
 
-	rust_error_at (r, "missing %s in implementation of trait %<%s%>",
-		       missing_items_buf.c_str (),
-		       trait_reference.get_name ().c_str ());
+	    rust_error_at (r, "missing %s in implementation of trait %<%s%>",
+			   missing_items_buf.c_str (),
+			   trait_reference.get_name ().c_str ());
+	  }
       }
   }
 
