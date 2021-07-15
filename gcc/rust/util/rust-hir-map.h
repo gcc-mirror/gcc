@@ -194,6 +194,13 @@ public:
   void iterate_impl_items (
     std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb);
 
+  bool is_impl_item (HirId id)
+  {
+    HirId parent_impl_block_id = UNKNOWN_HIRID;
+    return lookup_hir_implitem (get_current_crate (), id, &parent_impl_block_id)
+	   != nullptr;
+  }
+
 private:
   Mappings ();
 

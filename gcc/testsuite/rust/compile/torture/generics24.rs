@@ -10,7 +10,8 @@ impl Foo<isize> {
 
 impl Foo<char> {
     fn bar(self) -> char {
-        // { dg-warning "unused name" "" { target *-*-* } .-1 }
+        // { dg-warning "associated function is never used" "" { target *-*-* } .-1 }
+        // { dg-warning "unused name" "" { target *-*-* } .-2 }
         self.a
     }
 }

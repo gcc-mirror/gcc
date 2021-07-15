@@ -106,11 +106,42 @@ MarkLive::go (HIR::Crate &crate)
 void
 MarkLive::visit (HIR::PathInExpression &expr)
 {
-  // We should iterate every path segment in order to mark the function which is
-  // called in the expression
+  // We should iterate every path segment in order to mark the struct which
+  // is used in expression like Foo::bar(), we should mark the Foo alive.
   expr.iterate_path_segments ([&] (HIR::PathExprSegment &seg) -> bool {
     return visit_path_segment (seg);
   });
+
+  // after iterate the path segments, we should mark functions and associated
+  // functions alive.
+  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  find_ref_node_id (ast_node_id, ref_node_id);
+
+  // node back to HIR
+  HirId ref;
+  bool ok = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+					  ref_node_id, &ref);
+  rust_assert (ok);
+
+  // it must resolve to some kind of HIR::Item or HIR::InheritImplItem
+  HIR::Item *resolved_item
+    = mappings->lookup_hir_item (expr.get_mappings ().get_crate_num (), ref);
+  if (resolved_item != nullptr)
+    {
+      mark_hir_id (resolved_item->get_mappings ().get_hirid ());
+    }
+  else
+    {
+      HirId parent_impl_id = UNKNOWN_HIRID;
+      HIR::ImplItem *resolved_item
+	= mappings->lookup_hir_implitem (expr.get_mappings ().get_crate_num (),
+					 ref, &parent_impl_id);
+      if (resolved_item != nullptr)
+	{
+	  mark_hir_id (resolved_item->get_impl_mappings ().get_hirid ());
+	}
+    }
 }
 
 void
@@ -126,8 +157,7 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
   // Trying to find the method definition and mark it alive.
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
-  find_ref_node_id (ast_node_id, ref_node_id, expr.get_locus (),
-		    expr.as_string ());
+  find_ref_node_id (ast_node_id, ref_node_id);
 
   // node back to HIR
   HirId ref;
@@ -215,8 +245,7 @@ MarkLive::visit (HIR::IdentifierExpr &expr)
 {
   NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
-  find_ref_node_id (ast_node_id, ref_node_id, expr.get_locus (),
-		    expr.as_string ());
+  find_ref_node_id (ast_node_id, ref_node_id);
 
   // node back to HIR
   HirId ref;
@@ -251,8 +280,7 @@ MarkLive::mark_hir_id (HirId id)
 }
 
 void
-MarkLive::find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id,
-			    Location locus, const std::string &node_name)
+MarkLive::find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id)
 {
   if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
     {
