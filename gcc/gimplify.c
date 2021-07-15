@@ -15060,7 +15060,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  *expr_p = NULL;
 	}
       else if (COMPLETE_TYPE_P (TREE_TYPE (*expr_p))
-	       && TYPE_MODE (TREE_TYPE (*expr_p)) != BLKmode)
+	       && TYPE_MODE (TREE_TYPE (*expr_p)) != BLKmode
+	       && !is_empty_type (TREE_TYPE (*expr_p)))
 	{
 	  /* Historically, the compiler has treated a bare reference
 	     to a non-BLKmode volatile lvalue as forcing a load.  */
