@@ -9532,7 +9532,11 @@ package body Sem_Prag is
 
             Process_Import_Predefined_Type;
 
-         else
+         --  Emit an error unless Relaxed_RM_Semantics since some legacy Ada
+         --  compilers may accept more cases, e.g. JGNAT allowed importing
+         --  a Java package.
+
+         elsif not Relaxed_RM_Semantics then
             if From_Aspect_Specification (N) then
                Error_Pragma_Arg
                   ("entity for aspect% must be object, subprogram "
