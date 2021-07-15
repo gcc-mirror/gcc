@@ -696,8 +696,8 @@ package body Sem_Ch3 is
    --  copy will leave the references to the ancestor discriminants unchanged
    --  in the declaration tree and they need to be fixed up. If the derived
    --  type has a known discriminant part, then the remapping done during the
-   --  copy will only create references to the girder discriminants and they
-   --  need to be replaced with references to the non-girder discriminants.
+   --  copy will only create references to the stored discriminants and they
+   --  need to be replaced with references to the non-stored discriminants.
 
    procedure Set_Fixed_Range
      (E   : Entity_Id;
@@ -8475,11 +8475,11 @@ package body Sem_Ch3 is
    --  discriminants in R and T1 through T4:
 
    --   Type      Discrim     Stored Discrim  Comment
-   --    R      (D1, D2, D3)   (D1, D2, D3)   Girder discrims implicit in R
-   --    T1     (D1, D2, D3)   (D1, D2, D3)   Girder discrims implicit in T1
-   --    T2     (X1, X2)       (D1, D2, D3)   Girder discrims EXPLICIT in T2
-   --    T3     (X1, X2)       (D1, D2, D3)   Girder discrims EXPLICIT in T3
-   --    T4     (Y)            (D1, D2, D3)   Girder discrims EXPLICIT in T4
+   --    R      (D1, D2, D3)   (D1, D2, D3)   Stored discrims implicit in R
+   --    T1     (D1, D2, D3)   (D1, D2, D3)   Stored discrims implicit in T1
+   --    T2     (X1, X2)       (D1, D2, D3)   Stored discrims EXPLICIT in T2
+   --    T3     (X1, X2)       (D1, D2, D3)   Stored discrims EXPLICIT in T3
+   --    T4     (Y)            (D1, D2, D3)   Stored discrims EXPLICIT in T4
 
    --  Field Corresponding_Discriminant (abbreviated CD below) allows us to
    --  find the corresponding discriminant in the parent type, while
@@ -15133,7 +15133,7 @@ package body Sem_Ch3 is
 
       Add_Discriminants : declare
          Num_Disc : Nat;
-         Num_Gird : Nat;
+         Num_Stor : Nat;
 
       begin
          Num_Disc := 0;
@@ -15154,7 +15154,7 @@ package body Sem_Ch3 is
          --  the GCC 4.x back-end decides to break apart assignments between
          --  objects using the parent view into member-wise assignments.
 
-         Num_Gird := 0;
+         Num_Stor := 0;
 
          if Is_Derived_Type (Typ)
            and then not Is_Tagged_Type (Typ)
@@ -15162,12 +15162,12 @@ package body Sem_Ch3 is
             Old_C := First_Stored_Discriminant (Typ);
 
             while Present (Old_C) loop
-               Num_Gird := Num_Gird + 1;
+               Num_Stor := Num_Stor + 1;
                Next_Stored_Discriminant (Old_C);
             end loop;
          end if;
 
-         if Num_Gird > Num_Disc then
+         if Num_Stor > Num_Disc then
 
             --  Find out multiple uses of new discriminants, and add hidden
             --  components for the extra renamed discriminants. We recognize

@@ -12361,8 +12361,8 @@ package body Sem_Ch13 is
                   end if;
 
                   --  Outer level of record definition, check discriminants
-                  --  but be careful not to flag a non-girder discriminant
-                  --  and the girder discriminant it renames as overlapping.
+                  --  but be careful not to flag a non-stored discriminant
+                  --  and the stored discriminant it renames as overlapping.
 
                   if Nkind (Clist) in N_Full_Type_Declaration
                                     | N_Private_Type_Declaration

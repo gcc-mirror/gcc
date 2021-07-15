@@ -8046,7 +8046,7 @@ package body Exp_Aggr is
                Discr    : Entity_Id;
                Decl     : Node_Id;
                Num_Disc : Nat := 0;
-               Num_Gird : Nat := 0;
+               Num_Stor : Nat := 0;
 
             --  Start of processing for Generate_Aggregate_For_Derived_Type
 
@@ -8082,13 +8082,13 @@ package body Exp_Aggr is
 
                Discr := First_Stored_Discriminant (Base_Type (Typ));
                while Present (Discr) loop
-                  Num_Gird := Num_Gird + 1;
+                  Num_Stor := Num_Stor + 1;
                   Next_Stored_Discriminant (Discr);
                end loop;
 
                --  Case of more stored discriminants than new discriminants
 
-               if Num_Gird > Num_Disc then
+               if Num_Stor > Num_Disc then
 
                   --  Create a proper subtype of the parent type, which is the
                   --  proper implementation type for the aggregate, and convert

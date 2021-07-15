@@ -746,9 +746,9 @@ package Einfo is
 
 --    Corresponding_Record_Component
 --       Defined in components of a derived untagged record type, including
---       discriminants. For a regular component or a girder discriminant,
+--       discriminants. For a regular component or a stored discriminant,
 --       points to the corresponding component in the parent type. Set to
---       Empty for a non-girder discriminant. It is used by the back end to
+--       Empty for a non-stored discriminant. It is used by the back end to
 --       ensure the layout of the derived type matches that of the parent
 --       type when there is no representation clause on the derived type.
 
@@ -2400,11 +2400,11 @@ package Einfo is
 --       parent, we do not consider them to be separate units for this flag).
 
 --    Is_Completely_Hidden
---       Defined on discriminants. Only set on girder discriminants of
---       untagged types. When set, the entity is a girder discriminant of a
+--       Defined on discriminants. Only set on stored discriminants of
+--       untagged types. When set, the entity is a stored discriminant of a
 --       derived untagged type which is not directly visible in the derived
 --       type because the derived type or one of its ancestors have renamed the
---       discriminants in the root type. Note: there are girder discriminants
+--       discriminants in the root type. Note: there are stored discriminants
 --       which are not Completely_Hidden (e.g. discriminants of a root type).
 
 --    Is_Composite_Type (synthesized)
@@ -3652,7 +3652,7 @@ package Einfo is
 
 --    Next_Discriminant (synthesized)
 --       Applies to discriminants returned by First/Next_Discriminant. Returns
---       the next language-defined (i.e. perhaps non-girder) discriminant by
+--       the next language-defined (i.e. perhaps non-stored) discriminant by
 --       following the chain of declared entities as long as the kind of the
 --       entity corresponds to a discriminant. Note that the discriminants
 --       might be the only components of the record. Returns Empty if there
@@ -3842,8 +3842,8 @@ package Einfo is
 --            Rec_Ext.Comp -> Rec_Ext.Parent. ... .Parent.Comp
 --
 --       In base untagged types:
---         Always points to itself except for non-girder discriminants, where
---         it points to the girder discriminant it renames.
+--         Always points to itself except for non-stored discriminants, where
+--         it points to the stored discriminant it renames.
 --
 --       In subtypes (tagged and untagged):
 --         Points to the component in the base type.

@@ -10645,7 +10645,7 @@ package body Exp_Util is
                   end if;
 
                --  Otherwise the constraint denotes a reference to some name
-               --  which results in a Girder discriminant:
+               --  which results in a Stored discriminant:
 
                --    vvvv
                --    Name : ...;
@@ -10666,7 +10666,7 @@ package body Exp_Util is
                return Find_Constraint_Value (Entity (Constr));
 
             --  Otherwise the current constraint is an expression which yields
-            --  a Girder discriminant:
+            --  a Stored discriminant:
 
             --    type Typ (D1 : ...; DN : ...) is
             --      new Anc (Discr => <expression>) with ...
@@ -10741,7 +10741,7 @@ package body Exp_Util is
          --    that D_2 constrains D_1, therefore if the algorithm finds the
          --    value of D_2, then this would also be the value for D_1.
 
-         --    2.2) The constraint is a name (aka Girder):
+         --    2.2) The constraint is a name (aka Stored):
 
          --      Name : ...
          --      type Ancestor_1 (D_1 : ...) is tagged ...
@@ -10750,7 +10750,7 @@ package body Exp_Util is
          --    In this case the name is the final value of D_1 because the
          --    discriminant cannot be further constrained.
 
-         --    2.3) The constraint is an expression (aka Girder):
+         --    2.3) The constraint is an expression (aka Stored):
 
          --      type Ancestor_1 (D_1 : ...) is tagged ...
          --      type Ancestor_2 is new Ancestor_1 (D_1 => 1 + 2) ...
