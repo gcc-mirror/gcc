@@ -10191,6 +10191,9 @@ package body Sem_Ch13 is
         or else
           (Is_Itype (Typ)
            and then not Comes_From_Source (Typ)
+           and then Ekind (Typ) in E_Array_Subtype
+                                 | E_Record_Subtype
+                                 | E_Record_Subtype_With_Private
            and then Present (Predicated_Parent (Typ)))
       then
          return;
