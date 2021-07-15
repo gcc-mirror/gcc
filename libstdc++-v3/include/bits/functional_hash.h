@@ -171,6 +171,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Explicit specialization for unsigned long long.
   _Cxx_hashtable_define_trivial_hash(unsigned long long)
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 #ifdef __GLIBCXX_TYPE_INT_N_0
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0)
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_0 unsigned)
@@ -187,6 +190,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3)
   _Cxx_hashtable_define_trivial_hash(__GLIBCXX_TYPE_INT_N_3 unsigned)
 #endif
+
+#pragma GCC diagnostic pop
 
 #undef _Cxx_hashtable_define_trivial_hash
 

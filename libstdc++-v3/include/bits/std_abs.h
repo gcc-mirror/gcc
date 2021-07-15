@@ -80,6 +80,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __builtin_fabsl(__x); }
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_0
   abs(__GLIBCXX_TYPE_INT_N_0 __x) { return __x >= 0 ? __x : -__x; }
@@ -103,6 +106,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   abs(__float128 __x)
   { return __x < 0 ? -__x : __x; }
 #endif
+
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

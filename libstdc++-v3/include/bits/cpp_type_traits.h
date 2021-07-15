@@ -266,6 +266,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __true_type __type;	\
     };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 #ifdef __GLIBCXX_TYPE_INT_N_0
 __INT_N(__GLIBCXX_TYPE_INT_N_0)
 #endif
@@ -278,6 +281,8 @@ __INT_N(__GLIBCXX_TYPE_INT_N_2)
 #ifdef __GLIBCXX_TYPE_INT_N_3
 __INT_N(__GLIBCXX_TYPE_INT_N_3)
 #endif
+
+#pragma GCC diagnostic pop
 
 #undef __INT_N
 

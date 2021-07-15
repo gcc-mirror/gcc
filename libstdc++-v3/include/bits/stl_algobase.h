@@ -1013,6 +1013,9 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   inline _GLIBCXX_CONSTEXPR unsigned long long
   __size_to_integer(unsigned long long __n) { return __n; }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_0
   __size_to_integer(__GLIBCXX_TYPE_INT_N_0 __n) { return __n; }
@@ -1037,6 +1040,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_3
   __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_3 __n) { return __n; }
 #endif
+
+#pragma GCC diagnostic pop
 
   inline _GLIBCXX_CONSTEXPR long long
   __size_to_integer(float __n) { return (long long)__n; }

@@ -347,6 +347,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_integral_helper<unsigned long long>
     : public true_type { };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
   // Conditionalizing on __STRICT_ANSI__ here will break any port that
   // uses one of these types for size_t.
 #if defined(__GLIBCXX_TYPE_INT_N_0)
@@ -385,6 +388,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_3>
     : public true_type { };
 #endif
+#pragma GCC diagnostic pop
   /// @endcond
 
   /// is_integral
@@ -617,6 +621,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename... _Types>
     using __is_one_of = __or_<is_same<_Tp, _Types>...>;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
   // Check if a type is one of the signed integer types.
   template<typename _Tp>
     using __is_signed_integer = __is_one_of<__remove_cv_t<_Tp>,
@@ -654,6 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  , unsigned __GLIBCXX_TYPE_INT_N_3
 #endif
 	  >;
+#pragma GCC diagnostic pop
 
   // Check if a type is one of the signed or unsigned integer types.
   template<typename _Tp>
@@ -1717,6 +1725,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_unsigned<long long>
     { typedef unsigned long long __type; };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_0>
@@ -1737,6 +1748,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_3>
     { typedef unsigned __GLIBCXX_TYPE_INT_N_3 __type; };
 #endif
+
+#pragma GCC diagnostic pop
 
   // Select between integral and enum: not possible to be both.
   template<typename _Tp,
@@ -1873,6 +1886,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_signed<unsigned long long>
     { typedef signed long long __type; };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 #if defined(__GLIBCXX_TYPE_INT_N_0)
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_0>
@@ -1893,6 +1909,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_3>
     { typedef __GLIBCXX_TYPE_INT_N_3 __type; };
 #endif
+
+#pragma GCC diagnostic pop
 
   // Select between integral and enum: not possible to be both.
   template<typename _Tp,

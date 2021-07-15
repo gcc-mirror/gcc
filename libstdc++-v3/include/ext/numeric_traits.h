@@ -123,9 +123,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
   // In strict modes __is_integer<__int128> is false,
   // but we still want to define __numeric_traits_integer<__int128>.
   _GLIBCXX_INT_N_TRAITS(__int128, 128)
+#pragma GCC diagnostic pop
 #endif
 
 #undef _GLIBCXX_INT_N_TRAITS

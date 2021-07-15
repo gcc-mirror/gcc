@@ -417,7 +417,10 @@ namespace ranges
 #endif
 
 #if __SIZEOF_INT128__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
       using __rep = unsigned __int128;
+#pragma GCC diagnostic pop
 #else
       using __rep = unsigned long long;
 #endif
@@ -771,7 +774,10 @@ namespace ranges
       static constexpr bool is_integer = true;
       static constexpr bool is_exact = true;
 #if __SIZEOF_INT128__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
       static_assert(same_as<_Sp::__rep, unsigned __int128>);
+#pragma GCC diagnostic pop
       static constexpr int digits = 129;
 #else
       static_assert(same_as<_Sp::__rep, unsigned long long>);
