@@ -19535,11 +19535,8 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       return !can_create_pseudo_p ();
     }
   /* We handle both integer and floats in the general purpose registers.  */
-  else if (VALID_INT_MODE_P (mode))
-    return true;
-  else if (VALID_FP_MODE_P (mode))
-    return true;
-  else if (VALID_DFP_MODE_P (mode))
+  else if (VALID_INT_MODE_P (mode)
+	   || VALID_FP_MODE_P (mode))
     return true;
   /* Lots of MMX code casts 8 byte vector modes to DImode.  If we then go
      on to use that value in smaller contexts, this can easily force a
