@@ -70,13 +70,14 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated = new HIR::TypeAlias (mapping, alias.get_new_type_name (),
-				     std::move (generic_params),
-				     std::move (where_clause),
-				     std::unique_ptr<HIR::Type> (existing_type),
-				     std::move (vis), alias.get_outer_attrs (),
-				     alias.get_locus ());
+    auto type_alias = new HIR::TypeAlias (
+      mapping, alias.get_new_type_name (), std::move (generic_params),
+      std::move (where_clause), std::unique_ptr<HIR::Type> (existing_type),
+      std::move (vis), alias.get_outer_attrs (), alias.get_locus ());
 
+    translated = type_alias;
+
+    mappings->insert_defid_mapping (mapping.get_defid (), type_alias);
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id,
 				   translated);
@@ -104,6 +105,7 @@ public:
 			       constant.get_locus ());
     translated = translated_constant;
 
+    mappings->insert_defid_mapping (mapping.get_defid (), translated_constant);
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id,
 				   translated);
@@ -177,6 +179,7 @@ public:
 			   std::move (vis), function.get_outer_attrs (),
 			   HIR::SelfParam::error (), locus);
 
+    mappings->insert_defid_mapping (mapping.get_defid (), fn);
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id, fn);
     mappings->insert_location (crate_num, mapping.get_hirid (),
@@ -257,6 +260,7 @@ public:
 			   std::move (vis), method.get_outer_attrs (),
 			   std::move (self_param), locus);
 
+    mappings->insert_defid_mapping (mapping.get_defid (), mth);
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id, mth);
     mappings->insert_location (crate_num, mapping.get_hirid (),
@@ -358,7 +362,7 @@ public:
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, func.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
+				   mappings->get_next_localdef_id (crate_num));
 
     translated
       = new HIR::TraitItemFunc (mapping, std::move (decl),
@@ -422,7 +426,7 @@ public:
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, method.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
+				   mappings->get_next_localdef_id (crate_num));
 
     translated
       = new HIR::TraitItemFunc (mapping, std::move (decl),
@@ -441,7 +445,7 @@ public:
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
+				   mappings->get_next_localdef_id (crate_num));
 
     translated = new HIR::TraitItemConst (mapping, constant.get_identifier (),
 					  std::unique_ptr<HIR::Type> (type),
@@ -457,7 +461,7 @@ public:
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
+				   mappings->get_next_localdef_id (crate_num));
 
     translated
       = new HIR::TraitItemType (mapping, type.get_identifier (),

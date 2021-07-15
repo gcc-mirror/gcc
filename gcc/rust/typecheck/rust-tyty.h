@@ -929,7 +929,7 @@ private:
 class FnType : public BaseType, public SubstitutionRef
 {
 public:
-  FnType (HirId ref, std::string identifier, bool is_method,
+  FnType (HirId ref, DefId id, std::string identifier, bool is_method,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
@@ -937,10 +937,14 @@ public:
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
       params (std::move (params)), type (type), is_method_flag (is_method),
-      identifier (identifier)
-  {}
+      identifier (identifier), id (id)
+  {
+    LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
+    rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
+  }
 
-  FnType (HirId ref, HirId ty_ref, std::string identifier, bool is_method,
+  FnType (HirId ref, HirId ty_ref, DefId id, std::string identifier,
+	  bool is_method,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
@@ -948,8 +952,11 @@ public:
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
       params (params), type (type), is_method_flag (is_method),
-      identifier (identifier)
-  {}
+      identifier (identifier), id (id)
+  {
+    LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
+    rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
+  }
 
   void accept_vis (TyVisitor &vis) override;
 
@@ -973,6 +980,8 @@ public:
 
     return is_method_flag;
   }
+
+  DefId get_id () const { return id; }
 
   // get the Self type for the method
   BaseType *get_self_type () const
@@ -1026,6 +1035,7 @@ private:
   BaseType *type;
   bool is_method_flag;
   std::string identifier;
+  DefId id;
 };
 
 class FnPtr : public BaseType
