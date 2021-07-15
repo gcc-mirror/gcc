@@ -1,3 +1,39 @@
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-07-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101223
+	* gcc.dg/pr101223.c: New.
+
+2021-07-14  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/100809
+	* gcc.target/powerpc/p10-vdivq-vmodq.c: New test.
+
+2021-07-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101185
+	* gcc.target/i386/bitwise_mask_op-3.c: Add xfail to
+	temporarily avoid regression, eventually xfail should be
+	removed.
+
+2021-07-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101142
+	* gcc.target/i386/spill_to_mask-1.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-2.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-3.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-4.c: Adjust testcase.
+
+2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101445
+	* gcc.dg/vect/pr101445.c: New testcase.
+
 2021-07-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

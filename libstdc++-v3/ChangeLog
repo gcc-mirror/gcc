@@ -1,3 +1,29 @@
+2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/101361
+	* include/std/string_view (ends_with): Use traits_type::compare
+	directly.
+
+2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view: Only include <bits/ranges_base.h>
+	once, and only for C++20 and later.
+
+2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101411
+	* include/std/span (as_writable_bytes): Add requires-clause.
+	* testsuite/23_containers/span/101411.cc: New test.
+
 2021-07-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

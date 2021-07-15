@@ -1,3 +1,142 @@
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-07-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101223
+	* range-op.cc (build_lt): Add -1 for signed values.
+	(built_gt): Subtract -1 for signed values.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101148
+	PR tree-optimization/101014
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Adjust.
+	(ranger_cache::~ranger_cache): Adjust.
+	(ranger_cache::block_range): Check if propagation disallowed.
+	(ranger_cache::propagate_cache): Disallow propagation if new value
+	can't be stored properly.
+	* gimple-range-cache.h (ranger_cache::m_propfail): New member.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (class ssa_block_ranges): Adjust prototype.
+	(sbr_vector::set_bb_range): Return true.
+	(class sbr_sparse_bitmap): Adjust.
+	(sbr_sparse_bitmap::set_bb_range): Return value.
+	(block_range_cache::set_bb_range): Return value.
+	(ranger_cache::propagate_cache): Use return value to print msg.
+	* gimple-range-cache.h (class block_range_cache): Adjust.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::push_poor_value): Disable
+	poor value processing.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::range_of_expr): Treat debug statments
+	as contextless queries to avoid additional lookups.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-06-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/100299
+	* gimple-range-cache.cc (class sbr_sparse_bitmap): New.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): New.
+	(sbr_sparse_bitmap::bitmap_set_quad): New.
+	(sbr_sparse_bitmap::bitmap_get_quad): New.
+	(sbr_sparse_bitmap::set_bb_range): New.
+	(sbr_sparse_bitmap::get_bb_range): New.
+	(sbr_sparse_bitmap::bb_range_p): New.
+	(block_range_cache::block_range_cache): initialize bitmap obstack.
+	(block_range_cache::~block_range_cache): Destruct obstack.
+	(block_range_cache::set_bb_range): Decide when to utilze the
+	sparse on entry cache.
+	* gimple-range-cache.h (block_range_cache): Add bitmap obstack.
+	* params.opt (-param=evrp-sparse-threshold): New.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-06-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* bitmap.c (bitmap_set_aligned_chunk): New.
+	(bitmap_get_aligned_chunk): New.
+	(test_aligned_chunk): New.
+	(bitmap_c_tests): Call test_aligned_chunk.
+	* bitmap.h (bitmap_set_aligned_chunk, bitmap_get_aligned_chunk): New.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_block_ranges): Virtualize.
+	(sbr_vector): Renamed from ssa_block_cache.
+	(sbr_vector::sbr_vector): Allocate from obstack abd initialize.
+	(ssa_block_ranges::~ssa_block_ranges): Remove.
+	(sbr_vector::set_bb_range): Use varying and undefined cached values.
+	(ssa_block_ranges::set_bb_varying): Remove.
+	(sbr_vector::get_bb_range): Adjust assert.
+	(sbr_vector::bb_range_p): Adjust assert.
+	(~block_range_cache): No freeing loop required.
+	(block_range_cache::get_block_ranges): Remove.
+	(block_range_cache::set_bb_range): Inline get_block_ranges.
+	(block_range_cache::set_bb_varying): Remove.
+	* gimple-range-cache.h (set_bb_varying): Remove prototype.
+	* value-range.h (irange_allocator::get_memory): New.
+
+2021-07-14  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/100809
+	* config/rs6000/rs6000.md (udivti3): New insn.
+	(divti3): New insn.
+	(umodti3): New insn.
+	(modti3): New insn.
+
+2021-07-14  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2021-07-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-alias.c (attr_fnspec::verify): Fix index in
+	non-'t'-sized arg check.
+
+2021-07-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101185
+	* config/i386/i386.c (x86_order_regs_for_local_alloc):
+	Revert r12-1669.
+
+2021-07-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101142
+	* config/i386/i386.md: (*anddi_1): Disparage slightly the mask
+	register alternative.
+	(*and<mode>_1): Ditto.
+	(*andqi_1): Ditto.
+	(*andn<mode>_1): Ditto.
+	(*<code><mode>_1): Ditto.
+	(*<code>qi_1): Ditto.
+	(*one_cmpl<mode>2_1): Ditto.
+	(*one_cmplsi2_1_zext): Ditto.
+	(*one_cmplqi2_1): Ditto.
+	* config/i386/i386.c (x86_order_regs_for_local_alloc): Change
+	the order of mask registers to be before general registers.
+
+2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101445
+	* tree-vect-stmts.c (vectorizable_load): Do the gap adjustment
+	of the IV in the correct direction for negative stride
+	accesses.
+
 2021-07-13  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
