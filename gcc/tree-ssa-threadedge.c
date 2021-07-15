@@ -61,10 +61,8 @@ set_ssa_name_value (tree name, tree value)
   ssa_name_values[SSA_NAME_VERSION (name)] = value;
 }
 
-jump_threader::jump_threader (const_and_copies *copies,
-			      avail_exprs_stack *avails,
-			      jump_threader_simplifier *simplifier,
-			      evrp_range_analyzer *analyzer)
+jump_threader::jump_threader (jump_threader_simplifier *simplifier,
+			      jt_state *state)
 {
   /* Initialize the per SSA_NAME value-handles array.  */
   gcc_assert (!ssa_name_values.exists ());
@@ -73,11 +71,9 @@ jump_threader::jump_threader (const_and_copies *copies,
   dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
 				  integer_zero_node, NULL, NULL);
 
-  m_const_and_copies = copies;
-  m_avail_exprs_stack = avails;
   m_registry = new jump_thread_path_registry ();
   m_simplifier = simplifier;
-  m_evrp_range_analyzer = analyzer;
+  m_state = state;
 }
 
 jump_threader::~jump_threader (void)
@@ -168,41 +164,7 @@ jump_threader::record_temporary_equivalences_from_phis (edge e)
       if (!virtual_operand_p (dst))
 	stmt_count++;
 
-      m_const_and_copies->record_const_or_copy (dst, src);
-
-      /* Also update the value range associated with DST, using
-	 the range from SRC.
-
-	 Note that even if SRC is a constant we need to set a suitable
-	 output range so that VR_UNDEFINED ranges do not leak through.  */
-      if (m_evrp_range_analyzer)
-	{
-	  /* Get an empty new VR we can pass to update_value_range and save
-	     away in the VR stack.  */
-	  value_range_equiv *new_vr
-	    = m_evrp_range_analyzer->allocate_value_range_equiv ();
-	  new (new_vr) value_range_equiv ();
-
-	  /* There are three cases to consider:
-
-	       First if SRC is an SSA_NAME, then we can copy the value
-	       range from SRC into NEW_VR.
-
-	       Second if SRC is an INTEGER_CST, then we can just wet
-	       NEW_VR to a singleton range.
-
-	       Otherwise set NEW_VR to varying.  This may be overly
-	       conservative.  */
-	  if (TREE_CODE (src) == SSA_NAME)
-	    new_vr->deep_copy (m_evrp_range_analyzer->get_value_range (src));
-	  else if (TREE_CODE (src) == INTEGER_CST)
-	    new_vr->set (src);
-	  else
-	    new_vr->set_varying (TREE_TYPE (src));
-
-	  /* This is a temporary range for DST, so push it.  */
-	  m_evrp_range_analyzer->push_value_range (dst, new_vr);
-	}
+      m_state->register_equiv (dst, src, /*update_range=*/true);
     }
   return true;
 }
@@ -304,10 +266,7 @@ jump_threader::record_temporary_equivalences_from_stmts_at_dest (edge e)
 	    return NULL;
 	}
 
-      /* These are temporary ranges, do nto reflect them back into
-	 the global range data.  */
-      if (m_evrp_range_analyzer)
-	m_evrp_range_analyzer->record_ranges_from_stmt (stmt, true);
+      m_state->record_ranges_from_stmt (stmt, true);
 
       /* If this is not a statement that sets an SSA_NAME to a new
 	 value, then do not try to simplify this statement as it will
@@ -408,7 +367,7 @@ jump_threader::record_temporary_equivalences_from_stmts_at_dest (edge e)
 		    SET_USE (use_p, tmp);
 		}
 
-	      cached_lhs = m_simplifier->simplify (stmt, stmt, e->src);
+	      cached_lhs = m_simplifier->simplify (stmt, stmt, e->src, m_state);
 
 	      /* Restore the statement's original uses/defs.  */
 	      i = 0;
@@ -422,8 +381,7 @@ jump_threader::record_temporary_equivalences_from_stmts_at_dest (edge e)
       if (cached_lhs
 	  && (TREE_CODE (cached_lhs) == SSA_NAME
 	      || is_gimple_min_invariant (cached_lhs)))
-	m_const_and_copies->record_const_or_copy (gimple_get_lhs (stmt),
-						  cached_lhs);
+	m_state->register_equiv (gimple_get_lhs (stmt), cached_lhs);
     }
   return stmt;
 }
@@ -552,11 +510,12 @@ jump_threader::simplify_control_stmt_condition (edge e, gimple *stmt)
 		 the label that is proven to be taken.  */
 	      gswitch *dummy_switch = as_a<gswitch *> (gimple_copy (stmt));
 	      gimple_switch_set_index (dummy_switch, cached_lhs);
-	      cached_lhs = m_simplifier->simplify (dummy_switch, stmt, e->src);
+	      cached_lhs = m_simplifier->simplify (dummy_switch, stmt, e->src,
+						   m_state);
 	      ggc_free (dummy_switch);
 	    }
 	  else
-	    cached_lhs = m_simplifier->simplify (stmt, stmt, e->src);
+	    cached_lhs = m_simplifier->simplify (stmt, stmt, e->src, m_state);
 	}
 
       /* We couldn't find an invariant.  But, callers of this
@@ -733,7 +692,7 @@ jump_threader::simplify_control_stmt_condition_1
      then use the pass specific callback to simplify the condition.  */
   if (!res
       || !is_gimple_min_invariant (res))
-    res = m_simplifier->simplify (dummy_cond, stmt, e->src);
+    res = m_simplifier->simplify (dummy_cond, stmt, e->src, m_state);
 
   return res;
 }
@@ -880,9 +839,7 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 
    If it is threadable, add it to PATH and VISITED and recurse, ultimately
    returning TRUE from the toplevel call.   Otherwise do nothing and
-   return false.
-
-   The available expression table is referenced via AVAIL_EXPRS_STACK.  */
+   return false.  */
 
 bool
 jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
@@ -997,12 +954,6 @@ jump_threader::thread_around_empty_blocks (vec<jump_thread_edge *> *path,
    limited in that case to avoid short-circuiting the loop
    incorrectly.
 
-   STACK is used to undo temporary equivalences created during the walk of
-   E->dest.
-
-   Our caller is responsible for restoring the state of the expression
-   and const_and_copies stacks.
-
    Positive return value is success.  Zero return value is failure, but
    the block can still be duplicated as a joiner in a jump thread path,
    negative indicates the block should not be duplicated and thus is not
@@ -1012,8 +963,7 @@ int
 jump_threader::thread_through_normal_block (vec<jump_thread_edge *> *path,
 					    edge e, bitmap visited)
 {
-  /* We want to record any equivalences created by traversing E.  */
-  record_temporary_equivalences (e, m_const_and_copies, m_avail_exprs_stack);
+  m_state->register_equivs_on_edge (e);
 
   /* PHIs create temporary equivalences.
      Note that if we found a PHI that made the block non-threadable, then
@@ -1186,10 +1136,7 @@ jump_threader::thread_across_edge (edge e)
 {
   bitmap visited = BITMAP_ALLOC (NULL);
 
-  m_const_and_copies->push_marker ();
-  m_avail_exprs_stack->push_marker ();
-  if (m_evrp_range_analyzer)
-    m_evrp_range_analyzer->push_marker ();
+  m_state->push (e);
 
   stmt_count = 0;
 
@@ -1208,10 +1155,7 @@ jump_threader::thread_across_edge (edge e)
     {
       propagate_threaded_block_debug_into (path->last ()->e->dest,
 					   e->dest);
-      m_const_and_copies->pop_to_marker ();
-      m_avail_exprs_stack->pop_to_marker ();
-      if (m_evrp_range_analyzer)
-	m_evrp_range_analyzer->pop_to_marker ();
+      m_state->pop ();
       BITMAP_FREE (visited);
       m_registry->register_jump_thread (path);
       return;
@@ -1234,10 +1178,7 @@ jump_threader::thread_across_edge (edge e)
       if (threaded < 0)
 	{
 	  BITMAP_FREE (visited);
-	  m_const_and_copies->pop_to_marker ();
-	  m_avail_exprs_stack->pop_to_marker ();
-	  if (m_evrp_range_analyzer)
-	    m_evrp_range_analyzer->pop_to_marker ();
+	  m_state->pop ();
 	  return;
 	}
     }
@@ -1263,10 +1204,7 @@ jump_threader::thread_across_edge (edge e)
     FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
       if (taken_edge->flags & EDGE_COMPLEX)
 	{
-	  m_const_and_copies->pop_to_marker ();
-	  m_avail_exprs_stack->pop_to_marker ();
-	  if (m_evrp_range_analyzer)
-	    m_evrp_range_analyzer->pop_to_marker ();
+	  m_state->pop ();
 	  BITMAP_FREE (visited);
 	  return;
 	}
@@ -1278,12 +1216,7 @@ jump_threader::thread_across_edge (edge e)
 	    || (taken_edge->flags & EDGE_DFS_BACK) != 0)
 	  continue;
 
-	/* Push a fresh marker so we can unwind the equivalences created
-	   for each of E->dest's successors.  */
-	m_const_and_copies->push_marker ();
-	m_avail_exprs_stack->push_marker ();
-	if (m_evrp_range_analyzer)
-	  m_evrp_range_analyzer->push_marker ();
+	m_state->push (taken_edge);
 
 	/* Avoid threading to any block we have already visited.  */
 	bitmap_clear (visited);
@@ -1320,19 +1253,12 @@ jump_threader::thread_across_edge (edge e)
 	else
 	  path->release ();
 
-	/* And unwind the equivalence table.  */
-	if (m_evrp_range_analyzer)
-	  m_evrp_range_analyzer->pop_to_marker ();
-	m_avail_exprs_stack->pop_to_marker ();
-	m_const_and_copies->pop_to_marker ();
+	m_state->pop ();
       }
     BITMAP_FREE (visited);
   }
 
-  if (m_evrp_range_analyzer)
-    m_evrp_range_analyzer->pop_to_marker ();
-  m_const_and_copies->pop_to_marker ();
-  m_avail_exprs_stack->pop_to_marker ();
+  m_state->pop ();
 }
 
 /* Examine the outgoing edges from BB and conditionally
@@ -1375,10 +1301,113 @@ jump_threader::thread_outgoing_edges (basic_block bb)
     }
 }
 
+jt_state::jt_state (const_and_copies *copies,
+		    avail_exprs_stack *exprs,
+		    evrp_range_analyzer *evrp)
+{
+  m_copies = copies;
+  m_exprs = exprs;
+  m_evrp = evrp;
+}
+
+// Record that E is being crossed.
+
+void
+jt_state::push (edge)
+{
+  m_copies->push_marker ();
+  m_exprs->push_marker ();
+  if (m_evrp)
+    m_evrp->push_marker ();
+}
+
+// Pop to the last pushed state.
+
+void
+jt_state::pop ()
+{
+  m_copies->pop_to_marker ();
+  m_exprs->pop_to_marker ();
+  if (m_evrp)
+    m_evrp->pop_to_marker ();
+}
+
+// Record an equivalence from DST to SRC.  If UPDATE_RANGE is TRUE,
+// update the value range associated with DST.
+
+void
+jt_state::register_equiv (tree dst, tree src, bool update_range)
+{
+  m_copies->record_const_or_copy (dst, src);
+
+  /* If requested, update the value range associated with DST, using
+     the range from SRC.  */
+  if (m_evrp && update_range)
+    {
+      /* Get new VR we can pass to push_value_range.  */
+      value_range_equiv *new_vr = m_evrp->allocate_value_range_equiv ();
+      new (new_vr) value_range_equiv ();
+
+      /* There are three cases to consider:
+
+	 First if SRC is an SSA_NAME, then we can copy the value range
+	 from SRC into NEW_VR.
+
+	 Second if SRC is an INTEGER_CST, then we can just set NEW_VR
+	 to a singleton range.  Note that even if SRC is a constant we
+	 need to set a suitable output range so that VR_UNDEFINED
+	 ranges do not leak through.
+
+	 Otherwise set NEW_VR to varying.  This may be overly
+	 conservative.  */
+      if (TREE_CODE (src) == SSA_NAME)
+	new_vr->deep_copy (m_evrp->get_value_range (src));
+      else if (TREE_CODE (src) == INTEGER_CST)
+	new_vr->set (src);
+      else
+	new_vr->set_varying (TREE_TYPE (src));
+
+      /* This is a temporary range for DST, so push it.  */
+      m_evrp->push_value_range (dst, new_vr);
+    }
+}
+
+// Record any ranges calculated in STMT.  If TEMPORARY is TRUE, then
+// this is a temporary equivalence and should be recorded into the
+// unwind table, instead of the global table.
+
+void
+jt_state::record_ranges_from_stmt (gimple *stmt, bool temporary)
+{
+  if (m_evrp)
+    m_evrp->record_ranges_from_stmt (stmt, temporary);
+}
+
+// Record any equivalences created by traversing E.
+
+void
+jt_state::register_equivs_on_edge (edge e)
+{
+  record_temporary_equivalences (e, m_copies, m_exprs);
+}
+
+jump_threader_simplifier::jump_threader_simplifier (vr_values *v)
+{
+  m_vr_values = v;
+}
+
+// Return the singleton that resolves STMT, if it is possible to
+// simplify it.
+//
+// STMT may be a dummy statement, not necessarily in the CFG, in which
+// case WITHIN_STMT can be used to determine the position in the CFG
+// where STMT should be evaluated as being in.
+
 tree
 jump_threader_simplifier::simplify (gimple *stmt,
 				    gimple *within_stmt,
-				    basic_block)
+				    basic_block,
+				    jt_state *)
 {
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
