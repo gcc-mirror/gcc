@@ -210,6 +210,10 @@ fdump-analyzer-exploded-nodes-3
 Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_3)
 Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
 
+fdump-analyzer-exploded-paths
+Common RejectNegative Var(flag_dump_analyzer_exploded_paths)
+Dump a textual representation of each diagnostic's exploded path to SRCFILE.IDX.KIND.epath.txt.
+
 fdump-analyzer-feasibility
 Common RejectNegative Var(flag_dump_analyzer_feasibility)
 Dump various analyzer internals to SRCFILE.*.fg.dot and SRCFILE.*.tg.dot.

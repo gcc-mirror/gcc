@@ -1164,6 +1164,17 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
 	inform_n (loc, num_dupes,
 		  "%i duplicate", "%i duplicates",
 		  num_dupes);
+      if (flag_dump_analyzer_exploded_paths)
+	{
+	  auto_timevar tv (TV_ANALYZER_DUMP);
+	  pretty_printer pp;
+	  pp_printf (&pp, "%s.%i.%s.epath.txt",
+		     dump_base_name, sd.get_index (), sd.m_d->get_kind ());
+	  char *filename = xstrdup (pp_formatted_text (&pp));
+	  epath->dump_to_file (filename, eg.get_ext_state ());
+	  inform (loc, "exploded path written to %qs", filename);
+	  free (filename);
+	}
     }
   delete pp;
 }

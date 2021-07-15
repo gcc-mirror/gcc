@@ -895,9 +895,12 @@ public:
 
   exploded_node *get_final_enode () const;
 
-  void dump_to_pp (pretty_printer *pp) const;
-  void dump (FILE *fp) const;
-  void dump () const;
+  void dump_to_pp (pretty_printer *pp,
+		   const extrinsic_state *ext_state) const;
+  void dump (FILE *fp, const extrinsic_state *ext_state) const;
+  void dump (const extrinsic_state *ext_state = NULL) const;
+  void dump_to_file (const char *filename,
+		     const extrinsic_state &ext_state) const;
 
   bool feasible_p (logger *logger, feasibility_problem **out,
 		    engine *eng, const exploded_graph *eg) const;

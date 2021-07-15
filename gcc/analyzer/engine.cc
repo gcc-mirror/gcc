@@ -3630,10 +3630,12 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
   return true;
 }
 
-/* Dump this path in multiline form to PP.  */
+/* Dump this path in multiline form to PP.
+   If EXT_STATE is non-NULL, then show the nodes.  */
 
 void
-exploded_path::dump_to_pp (pretty_printer *pp) const
+exploded_path::dump_to_pp (pretty_printer *pp,
+			   const extrinsic_state *ext_state) const
 {
   for (unsigned i = 0; i < m_edges.length (); i++)
     {
@@ -3643,28 +3645,48 @@ exploded_path::dump_to_pp (pretty_printer *pp) const
 		 eedge->m_src->m_index,
 		 eedge->m_dest->m_index);
       pp_newline (pp);
+
+      if (ext_state)
+	eedge->m_dest->dump_to_pp (pp, *ext_state);
     }
 }
 
 /* Dump this path in multiline form to FP.  */
 
 void
-exploded_path::dump (FILE *fp) const
+exploded_path::dump (FILE *fp, const extrinsic_state *ext_state) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
   pp.buffer->stream = fp;
-  dump_to_pp (&pp);
+  dump_to_pp (&pp, ext_state);
   pp_flush (&pp);
 }
 
 /* Dump this path in multiline form to stderr.  */
 
 DEBUG_FUNCTION void
-exploded_path::dump () const
+exploded_path::dump (const extrinsic_state *ext_state) const
 {
-  dump (stderr);
+  dump (stderr, ext_state);
+}
+
+/* Dump this path verbosely to FILENAME.  */
+
+void
+exploded_path::dump_to_file (const char *filename,
+			     const extrinsic_state &ext_state) const
+{
+  FILE *fp = fopen (filename, "w");
+  if (!fp)
+    return;
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp.buffer->stream = fp;
+  dump_to_pp (&pp, &ext_state);
+  pp_flush (&pp);
+  fclose (fp);
 }
 
 /* class feasibility_problem.  */
