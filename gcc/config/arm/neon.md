@@ -2961,7 +2961,13 @@
 		     DOTPROD)
 		    (match_operand:VCVTI 3 "register_operand")))]
   "TARGET_DOTPROD"
-)
+{
+  emit_insn (
+    gen_neon_<sup>dot<vsi2qi> (operands[3], operands[3], operands[1],
+				 operands[2]));
+  emit_insn (gen_rtx_SET (operands[0], operands[3]));
+  DONE;
+})
 
 ;; Auto-vectorizer pattern for usdot
 (define_expand "usdot_prod<vsi2qi>"
