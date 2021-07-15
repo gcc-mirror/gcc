@@ -3096,17 +3096,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201703L
 # define __cpp_lib_type_trait_variable_templates 201510L
   /**
-   * @defgroup variable_templates Variable templates for type traits.
+   * @defgroup variable_templates Variable templates for type traits
    * @ingroup metaprogramming
    *
-   * The variable `is_foo_v<T>` is a boolean constant with the same value
-   * as the type trait `is_foo<T>::value`.
+   * Each variable `is_xxx_v<T>` is a boolean constant with the same value
+   * as the `value` member of the corresponding type trait `is_xxx<T>`.
    *
    * @since C++17
    */
 
-  /** @ingroup variable_templates
+  /**
    * @{
+   * @ingroup variable_templates
    */
 template <typename _Tp>
   inline constexpr bool is_void_v = is_void<_Tp>::value;
