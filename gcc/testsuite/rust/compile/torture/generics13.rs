@@ -14,7 +14,8 @@ impl Foo<isize> {
     }
 
     fn bar(self) -> isize {
-        // { dg-warning "unused name" "" { target *-*-* } .-1 }
+        // { dg-warning "associated function is never used" "" { target *-*-* } .-1 }
+        // { dg-warning "unused name" "" { target *-*-* } .-2 }
         self.a
     }
 }

@@ -32,7 +32,7 @@ namespace Analysis {
 // Scan item symbols and warn the symbol if it is not in the live_symbols set.
 // There are three kinds of item we should handle in this pass.
 // 1. Function item
-// 2. TODO: The function item in the impl block without trait
+// 2. The function item in the impl block without trait
 // 3. StructStruct, e.g., `Struct Foo{one: 1, two: 2}`. Furthermore, the unused
 //    struct fields will be warned too.
 // 4. TupleStruct, e.g., `Struct Foo(i32, i32)`
@@ -56,9 +56,23 @@ public:
     HirId hirId = function.get_mappings ().get_hirid ();
     if (should_warn (hirId))
       {
-	rust_warning_at (function.get_locus (), 0,
-			 "function is never used: %<%s%>",
-			 function.get_function_name ().c_str ());
+	if (mappings->is_impl_item (hirId))
+	  {
+	    HIR::ImplBlock *implBlock
+	      = mappings->lookup_associated_impl (hirId);
+	    if (!implBlock->has_trait_ref ())
+	      {
+		rust_warning_at (function.get_locus (), 0,
+				 "associated function is never used: %<%s%>",
+				 function.get_function_name ().c_str ());
+	      }
+	  }
+	else
+	  {
+	    rust_warning_at (function.get_locus (), 0,
+			     "function is never used: %<%s%>",
+			     function.get_function_name ().c_str ());
+	  }
       }
   }
 
@@ -99,12 +113,25 @@ public:
       }
   }
 
+  void visit (HIR::ImplBlock &blc) override
+  {
+    if (blc.has_impl_items ())
+      {
+	for (auto &implItem : blc.get_impl_items ())
+	  {
+	    implItem->accept_vis (*this);
+	  }
+      }
+  }
+
 private:
   std::set<HirId> live_symbols;
   Resolver::Resolver *resolver;
+  Analysis::Mappings *mappings;
 
   ScanDeadcode (std::set<HirId> &live_symbols)
-    : live_symbols (live_symbols), resolver (Resolver::Resolver::get ()){};
+    : live_symbols (live_symbols), resolver (Resolver::Resolver::get ()),
+      mappings (Analysis::Mappings::get ()){};
 
   bool should_warn (HirId hirId)
   {
