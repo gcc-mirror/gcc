@@ -29,8 +29,17 @@ namespace Resolver {
 
 struct PathProbeCandidate
 {
+  enum CandidateType
+  {
+    IMPL_CONST,
+    IMPL_TYPE_ALIAS,
+    IMPL_FUNC,
+  };
+
+  CandidateType type;
   HIR::ImplItem *impl_item;
   TyTy::BaseType *ty;
+  HIR::ImplBlock *parent;
 };
 
 class PathProbeType : public TypeCheckBase
@@ -48,11 +57,13 @@ public:
 	probe.process_candidate (id, item, impl);
 	return true;
       });
+
     return probe.candidates;
   }
 
   void process_candidate (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl)
   {
+    current_impl = impl;
     HirId impl_ty_id = impl->get_type ()->get_mappings ().get_hirid ();
     TyTy::BaseType *impl_block_ty = nullptr;
     bool ok = context->lookup_type (impl_ty_id, &impl_block_ty);
@@ -75,7 +86,9 @@ public:
 	bool ok = context->lookup_type (tyid, &ty);
 	rust_assert (ok);
 
-	PathProbeCandidate candidate{&alias, ty};
+	PathProbeCandidate candidate{
+	  PathProbeCandidate::CandidateType::IMPL_TYPE_ALIAS, &alias, ty,
+	  current_impl};
 	candidates.push_back (std::move (candidate));
       }
   }
@@ -90,7 +103,9 @@ public:
 	bool ok = context->lookup_type (tyid, &ty);
 	rust_assert (ok);
 
-	PathProbeCandidate candidate{&constant, ty};
+	PathProbeCandidate candidate{
+	  PathProbeCandidate::CandidateType::IMPL_CONST, &constant, ty,
+	  current_impl};
 	candidates.push_back (std::move (candidate));
       }
   }
@@ -105,19 +120,23 @@ public:
 	bool ok = context->lookup_type (tyid, &ty);
 	rust_assert (ok);
 
-	PathProbeCandidate candidate{&function, ty};
+	PathProbeCandidate candidate{
+	  PathProbeCandidate::CandidateType::IMPL_FUNC, &function, ty,
+	  current_impl};
 	candidates.push_back (std::move (candidate));
       }
   }
 
 private:
   PathProbeType (TyTy::BaseType *receiver, const HIR::PathIdentSegment &query)
-    : TypeCheckBase (), receiver (receiver), search (query)
+    : TypeCheckBase (), receiver (receiver), search (query),
+      current_impl (nullptr)
   {}
 
   TyTy::BaseType *receiver;
   const HIR::PathIdentSegment &search;
   std::vector<PathProbeCandidate> candidates;
+  HIR::ImplBlock *current_impl;
 };
 
 class ReportMultipleCandidateError : private TypeCheckBase
