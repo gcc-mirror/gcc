@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=armv8.2-a+i8mm" } */
+/* { dg-require-effective-target arm_v8_2a_i8mm_ok } */
+/* { dg-options "-O3" } */
+/* { dg-add-options arm_v8_2a_i8mm } */
 
 #define N 480
 #define SIGNEDNESS_1 unsigned
