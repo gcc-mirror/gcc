@@ -276,6 +276,7 @@ public:
       }
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
+				    function.get_mappings ().get_defid (),
 				    function.get_function_name (), false,
 				    std::move (params), ret_type,
 				    std::move (substitutions));

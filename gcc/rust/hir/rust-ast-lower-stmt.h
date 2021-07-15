@@ -283,7 +283,7 @@ public:
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
+				   mappings->get_next_localdef_id (crate_num));
 
     mappings->insert_location (crate_num,
 			       function_body->get_mappings ().get_hirid (),
