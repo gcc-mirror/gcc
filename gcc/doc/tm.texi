@@ -12011,6 +12011,15 @@ By default, the RTL loop optimizer does not use a present doloop pattern for
 loops containing function calls or branch on table instructions.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_PREFERRED_DOLOOP_MODE (machine_mode @var{mode})
+This hook takes a @var{mode} for a doloop IV, where @code{mode} is the
+original mode for the operation.  If the target prefers an alternate
+@code{mode} for the operation, then this hook should return that mode;
+otherwise the original @code{mode} should be returned.  For example, on a
+64-bit target, @code{DImode} might be preferred over @code{SImode}.  Both the
+original and the returned modes should be @code{MODE_INT}.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx_insn *@var{insn})
 Take an instruction in @var{insn} and return @code{false} if the instruction
 is not appropriate as a combination of two or more instructions.  The
