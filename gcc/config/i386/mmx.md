@@ -48,7 +48,7 @@
 (define_mode_iterator MMXMODEI8 [V8QI V4HI V2SI (V1DI "TARGET_SSE2")])
 
 ;; All 8-byte vector modes handled by MMX
-(define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF])
+(define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF V4HF])
 (define_mode_iterator MMXMODE124 [V8QI V4HI V2SI V2SF])
 
 ;; Mix-n-match
@@ -57,14 +57,17 @@
 (define_mode_iterator MMXMODE24 [V4HI V2SI])
 (define_mode_iterator MMXMODE248 [V4HI V2SI V1DI])
 
-;; All 4-byte integer vector modes
-(define_mode_iterator V_32 [V4QI V2HI V1SI])
+;; All 4-byte integer/float16 vector modes
+(define_mode_iterator V_32 [V4QI V2HI V1SI V2HF])
 
 ;; 4-byte integer vector modes
 (define_mode_iterator VI_32 [V4QI V2HI])
 
 ;; V2S* modes
 (define_mode_iterator V2FI [V2SF V2SI])
+
+;; 4-byte and 8-byte float16 vector modes
+(define_mode_iterator VHF_32_64 [V4HF V2HF])
 
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize
@@ -191,6 +194,8 @@
 	    (eq_attr "alternative" "11,12")
 	      (cond [(match_test "<MODE>mode == V2SFmode")
 		       (const_string "V4SF")
+		     (match_test "<MODE>mode == V4HFmode")
+		       (const_string "V4SF")
 		     (ior (not (match_test "TARGET_SSE2"))
 			  (match_test "optimize_function_for_size_p (cfun)"))
 		       (const_string "V4SF")
@@ -198,14 +203,16 @@
 		    (const_string "TI"))
 
 	    (and (eq_attr "alternative" "13")
-		 (ior (and (match_test "<MODE>mode == V2SFmode")
-			   (not (match_test "TARGET_MMX_WITH_SSE")))
-		      (not (match_test "TARGET_SSE2"))))
+		 (ior (ior (and (match_test "<MODE>mode == V2SFmode")
+				(not (match_test "TARGET_MMX_WITH_SSE")))
+			   (not (match_test "TARGET_SSE2")))
+		      (match_test "<MODE>mode == V4HFmode")))
 	      (const_string "V2SF")
 
 	    (and (eq_attr "alternative" "14")
-	    	 (ior (match_test "<MODE>mode == V2SFmode")
-		      (not (match_test "TARGET_SSE2"))))
+		 (ior (ior (match_test "<MODE>mode == V2SFmode")
+			   (not (match_test "TARGET_SSE2")))
+		      (match_test "<MODE>mode == V4HFmode")))
 	      (const_string "V2SF")
 	   ]
 	   (const_string "DI")))
@@ -289,12 +296,17 @@
        (const_string "*")))
    (set (attr "mode")
      (cond [(eq_attr "alternative" "2,3")
-	      (cond [(match_test "TARGET_AVX")
+	      (cond [(match_test "<MODE>mode == V2HFmode")
+		       (const_string "V4SF")
+		     (match_test "TARGET_AVX")
 		       (const_string "TI")
 		     (match_test "optimize_function_for_size_p (cfun)")
 		       (const_string "V4SF")
 		    ]
 		    (const_string "TI"))
+	    (and (eq_attr "alternative" "4,5")
+		 (match_test "<MODE>mode == V2HFmode"))
+	      (const_string "SF")
 	   ]
 	   (const_string "SI")))
    (set (attr "preferred_for_speed")
@@ -1390,6 +1402,28 @@
 			   operands[1]);
   DONE;
 })
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel half-precision floating point arithmetic
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_insn "<insn><mode>3"
+  [(set (match_operand:VHF_32_64 0 "register_operand" "=v")
+	(plusminusmultdiv:VHF_32_64
+	  (match_operand:VHF_32_64 1 "register_operand" "<comm>v")
+	  (match_operand:VHF_32_64 2 "register_operand" "v")))]
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "v<insn>ph\t{%2, %1, %0|%0, %1, %2}"
+  [(set (attr "type")
+      (cond [(match_test "<CODE> == MULT")
+		(const_string "ssemul")
+	     (match_test "<CODE> == DIV")
+		(const_string "ssediv")]
+	     (const_string "sseadd")))
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "V8HF")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

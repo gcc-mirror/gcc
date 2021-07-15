@@ -43,16 +43,16 @@ FIX_TRUNCHFVV(2, udi)
 
 /* { dg-final { scan-assembler-times "vcvttph2qq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttph2uqq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvttph2qq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vcvttph2uqq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vcvttph2qq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vcvttph2uqq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vcvttph2qq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvttph2uqq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvttph2qq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvttph2uqq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttph2dq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttph2udq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttph2dq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttph2udq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
-/* { dg-final { scan-assembler-times "vcvttph2dq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times "vcvttph2udq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vcvttph2dq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vcvttph2udq\[ \\t\]+\[^\{\n\]*\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttph2w\[ \\t\]+\[^\{\n\]*\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttph2uw\[ \\t\]+\[^\{\n\]*\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvttph2w\[ \\t\]+\[^\{\n\]*\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
