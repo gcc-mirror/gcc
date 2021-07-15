@@ -1063,7 +1063,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <placeholder_svalue *>::test (svalue *sval)
+is_a_helper <const placeholder_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_PLACEHOLDER;
 }
@@ -1165,7 +1165,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <widening_svalue *>::test (svalue *sval)
+is_a_helper <const widening_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_WIDENING;
 }
@@ -1266,7 +1266,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <compound_svalue *>::test (svalue *sval)
+is_a_helper <const compound_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_COMPOUND;
 }
@@ -1366,7 +1366,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <conjured_svalue *>::test (svalue *sval)
+is_a_helper <const conjured_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_CONJURED;
 }
