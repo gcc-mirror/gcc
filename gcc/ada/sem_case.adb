@@ -1717,12 +1717,12 @@ package body Sem_Case is
                         and then List_Length (Expressions (Expr))
                            /= Nat (Part_Id'Last)
                      then
+                        Error_Msg_Uint_1 := UI_From_Int
+                          (List_Length (Expressions (Expr)));
+                        Error_Msg_Uint_2 := UI_From_Int (Int (Part_Id'Last));
                         Error_Msg_N
-                          ("Array aggregate length"
-                            & List_Length (Expressions (Expr))'Image
-                            & " does not match length of"
-                            & " statically constrained case selector"
-                            & Part_Id'Last'Image, Expr);
+                          ("array aggregate length ^ does not match length " &
+                           "of statically constrained case selector ^", Expr);
                         return;
                      end if;
 
@@ -1761,12 +1761,13 @@ package body Sem_Case is
                         if not Unconstrained_Array_Case
                            and then Strlen /= Nat (Part_Id'Last)
                         then
+                           Error_Msg_Uint_1 := UI_From_Int (Strlen);
+                           Error_Msg_Uint_2 := UI_From_Int
+                             (Int (Part_Id'Last));
                            Error_Msg_N
-                             ("String literal length"
-                              & Strlen'Image
-                              & " does not match length of"
-                              & " statically constrained case selector"
-                              & Part_Id'Last'Image, Expr);
+                             ("String literal length ^ does not match length" &
+                              " of statically constrained case selector ^",
+                              Expr);
                            return;
                         end if;
 
