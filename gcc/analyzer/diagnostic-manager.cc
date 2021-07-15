@@ -722,6 +722,18 @@ saved_diagnostic::add_duplicate (saved_diagnostic *other)
   m_duplicates.safe_push (other);
 }
 
+/* Return true if this diagnostic supercedes OTHER, and that OTHER should
+   therefore not be emitted.  */
+
+bool
+saved_diagnostic::supercedes_p (const saved_diagnostic &other) const
+{
+  /* They should be at the same stmt.  */
+  if (m_stmt != other.m_stmt)
+    return false;
+  return m_d->supercedes_p (*other.m_d);
+}
+
 /* State for building a checker_path from a particular exploded_path.
    In particular, this precomputes reachability information: the set of
    source enodes for which a path be found to the diagnostic enode.  */
@@ -1021,6 +1033,38 @@ public:
       }
   }
 
+  /* Handle interactions between the dedupe winners, so that some
+     diagnostics can supercede others (of different kinds).
+
+     We want use-after-free to supercede use-of-unitialized-value,
+     so that if we have these at the same stmt, we don't emit
+     a use-of-uninitialized, just the use-after-free.  */
+
+  void handle_interactions (diagnostic_manager *dm)
+  {
+    LOG_SCOPE (dm->get_logger ());
+    auto_vec<const dedupe_key *> superceded;
+    for (auto outer : m_map)
+      {
+	const saved_diagnostic *outer_sd = outer.second;
+	for (auto inner : m_map)
+	  {
+	    const saved_diagnostic *inner_sd = inner.second;
+	    if (inner_sd->supercedes_p (*outer_sd))
+	      {
+		superceded.safe_push (outer.first);
+		if (dm->get_logger ())
+		  dm->log ("sd[%i] \"%s\" superceded by sd[%i] \"%s\"",
+			   outer_sd->get_index (), outer_sd->m_d->get_kind (),
+			   inner_sd->get_index (), inner_sd->m_d->get_kind ());
+		break;
+	      }
+	  }
+      }
+    for (auto iter : superceded)
+      m_map.remove (iter);
+  }
+
  /* Emit the simplest diagnostic within each set.  */
 
   void emit_best (diagnostic_manager *dm,
@@ -1094,6 +1138,8 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   saved_diagnostic *sd;
   FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
     best_candidates.add (get_logger (), &pf, sd);
+
+  best_candidates.handle_interactions (this);
 
   /* For each dedupe-key, call emit_saved_diagnostic on the "best"
      saved_diagnostic.  */

@@ -267,7 +267,6 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
 void
 reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
 {
-  gcc_assert (ctxt);
   auto_vec<const function_region *> escaped_fn_regs
     (m_mutable_base_regs.elements ());
   for (hash_set<const region *>::iterator iter = m_mutable_base_regs.begin ();
@@ -281,12 +280,15 @@ reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
       if (const function_region *fn_reg = base_reg->dyn_cast_function_region ())
 	escaped_fn_regs.quick_push (fn_reg);
     }
-  /* Sort to ensure deterministic results.  */
-  escaped_fn_regs.qsort (region::cmp_ptr_ptr);
-  unsigned i;
-  const function_region *fn_reg;
-  FOR_EACH_VEC_ELT (escaped_fn_regs, i, fn_reg)
-    ctxt->on_escaped_function (fn_reg->get_fndecl ());
+  if (ctxt)
+    {
+      /* Sort to ensure deterministic results.  */
+      escaped_fn_regs.qsort (region::cmp_ptr_ptr);
+      unsigned i;
+      const function_region *fn_reg;
+      FOR_EACH_VEC_ELT (escaped_fn_regs, i, fn_reg)
+	ctxt->on_escaped_function (fn_reg->get_fndecl ());
+    }
 }
 
 /* Dump SET to PP, sorting it to avoid churn when comparing dumps.  */

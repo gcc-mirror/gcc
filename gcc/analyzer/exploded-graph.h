@@ -46,7 +46,7 @@ class impl_region_model_context : public region_model_context
 			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
-  void warn (pending_diagnostic *d) FINAL OVERRIDE;
+  bool warn (pending_diagnostic *d) FINAL OVERRIDE;
   void on_svalue_leak (const svalue *) OVERRIDE;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) FINAL OVERRIDE;
@@ -73,6 +73,8 @@ class impl_region_model_context : public region_model_context
   void on_escaped_function (tree fndecl) FINAL OVERRIDE;
 
   uncertainty_t *get_uncertainty () FINAL OVERRIDE;
+
+  void purge_state_involving (const svalue *sval) FINAL OVERRIDE;
 
   exploded_graph *m_eg;
   log_user m_logger;
@@ -223,6 +225,17 @@ class exploded_node : public dnode<eg_traits>
 			 const gimple *stmt,
 			 program_state *state,
 			 uncertainty_t *uncertainty);
+  void on_stmt_pre (exploded_graph &eg,
+		    const gimple *stmt,
+		    program_state *state,
+		    bool *out_terminate_path,
+		    bool *out_unknown_side_effects,
+		    region_model_context *ctxt);
+  void on_stmt_post (const gimple *stmt,
+		     program_state *state,
+		     bool unknown_side_effects,
+		     region_model_context *ctxt);
+
   bool on_edge (exploded_graph &eg,
 		const superedge *succ,
 		program_point *next_point,

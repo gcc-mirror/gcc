@@ -1653,6 +1653,29 @@ on_liveness_change (const svalue_set &live_svalues,
   purge (p, NULL);
 }
 
+class svalue_purger
+{
+public:
+  svalue_purger (const svalue *sval) : m_sval (sval) {}
+
+  bool should_purge_p (const svalue *sval) const
+  {
+    return sval->involves_p (m_sval);
+  }
+
+private:
+  const svalue *m_sval;
+};
+
+/* Purge any state involving SVAL.  */
+
+void
+constraint_manager::purge_state_involving (const svalue *sval)
+{
+  svalue_purger p (sval);
+  purge (p, NULL);
+}
+
 /* Comparator for use by constraint_manager::canonicalize.
    Sort a pair of equiv_class instances, using the representative
    svalue as a sort key.  */

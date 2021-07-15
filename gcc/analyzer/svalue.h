@@ -324,6 +324,9 @@ public:
 
 enum poison_kind
 {
+  /* For use to describe uninitialized memory.  */
+  POISON_KIND_UNINIT,
+
   /* For use to describe freed memory.  */
   POISON_KIND_FREED,
 
@@ -377,6 +380,11 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
+
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
 
   enum poison_kind get_poison_kind () const { return m_kind; }
 

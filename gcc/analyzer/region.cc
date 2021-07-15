@@ -168,6 +168,109 @@ region::maybe_get_frame_region () const
   return NULL;
 }
 
+/* Get the memory space of this region.  */
+
+enum memory_space
+region::get_memory_space () const
+{
+  const region *iter = this;
+  while (iter)
+    {
+      switch (iter->get_kind ())
+	{
+	default:
+	  break;
+	case RK_GLOBALS:
+	  return MEMSPACE_GLOBALS;
+	case RK_CODE:
+	case RK_FUNCTION:
+	case RK_LABEL:
+	  return MEMSPACE_CODE;
+	case RK_FRAME:
+	case RK_STACK:
+	case RK_ALLOCA:
+	  return MEMSPACE_STACK;
+	case RK_HEAP:
+	case RK_HEAP_ALLOCATED:
+	  return MEMSPACE_HEAP;
+	case RK_STRING:
+	  return MEMSPACE_READONLY_DATA;
+	}
+      if (iter->get_kind () == RK_CAST)
+	iter = iter->dyn_cast_cast_region ()->get_original_region ();
+      else
+	iter = iter->get_parent_region ();
+    }
+  return MEMSPACE_UNKNOWN;
+}
+
+/* Subroutine for use by region_model_manager::get_or_create_initial_value.
+   Return true if this region has an initial_svalue.
+   Return false if attempting to use INIT_VAL(this_region) should give
+   the "UNINITIALIZED" poison value.  */
+
+bool
+region::can_have_initial_svalue_p () const
+{
+  const region *base_reg = get_base_region ();
+
+  /* Check for memory spaces that are uninitialized by default.  */
+  enum memory_space mem_space = base_reg->get_memory_space ();
+  switch (mem_space)
+    {
+    default:
+      gcc_unreachable ();
+    case MEMSPACE_UNKNOWN:
+    case MEMSPACE_CODE:
+    case MEMSPACE_GLOBALS:
+    case MEMSPACE_READONLY_DATA:
+      /* Such regions have initial_svalues.  */
+      return true;
+
+    case MEMSPACE_HEAP:
+      /* Heap allocations are uninitialized by default.  */
+      return false;
+
+    case MEMSPACE_STACK:
+      if (tree decl = base_reg->maybe_get_decl ())
+	{
+	  /* See the assertion in frame_region::get_region_for_local for the
+	     tree codes we need to handle here.  */
+	  switch (TREE_CODE (decl))
+	    {
+	    default:
+	      gcc_unreachable ();
+
+	    case PARM_DECL:
+	      /* Parameters have initial values.  */
+	      return true;
+
+	    case VAR_DECL:
+	    case RESULT_DECL:
+	      /* Function locals don't have initial values.  */
+	      return false;
+
+	    case SSA_NAME:
+	      {
+		tree ssa_name = decl;
+		/* SSA names that are the default defn of a PARM_DECL
+		   have initial_svalues; other SSA names don't.  */
+		if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
+		    && SSA_NAME_VAR (ssa_name)
+		    && TREE_CODE (SSA_NAME_VAR (ssa_name)) == PARM_DECL)
+		  return true;
+		else
+		  return false;
+	      }
+	    }
+	}
+
+      /* If we have an on-stack region that isn't associated with a decl
+	 or SSA name, then we have VLA/alloca, which is uninitialized.  */
+      return false;
+    }
+}
+
 /* If this region is a decl_region, return the decl.
    Otherwise return NULL.  */
 
@@ -582,6 +685,20 @@ region::non_null_p () const
     case RK_HEAP_ALLOCATED:
       return false;
     }
+}
+
+/* Return true iff this region is defined in terms of SVAL.  */
+
+bool
+region::involves_p (const svalue *sval) const
+{
+  if (const symbolic_region *symbolic_reg = dyn_cast_symbolic_region ())
+    {
+      if (symbolic_reg->get_pointer ()->involves_p (sval))
+	return true;
+    }
+
+  return false;
 }
 
 /* Comparator for trees to impose a deterministic ordering on

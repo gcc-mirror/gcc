@@ -252,6 +252,10 @@ region_model_manager::get_or_create_unknown_svalue (tree type)
 const svalue *
 region_model_manager::get_or_create_initial_value (const region *reg)
 {
+  if (!reg->can_have_initial_svalue_p ())
+    return get_or_create_poisoned_svalue (POISON_KIND_UNINIT,
+					  reg->get_type ());
+
   /* The initial value of a cast is a cast of the initial value.  */
   if (const cast_region *cast_reg = reg->dyn_cast_cast_region ())
     {
