@@ -69,9 +69,7 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
   if (def_stmt && gimple_bb (def_stmt) == bb)
     {
       range_of_stmt (r, def_stmt, expr);
-      if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
-	  m_cache.m_non_null.non_null_deref_p (expr, bb))
-	r = range_nonzero (TREE_TYPE (expr));
+      m_cache.m_non_null.adjust_range (r, expr, bb, true);
     }
   else
     // Otherwise OP comes from outside this block, use range on entry.
@@ -95,9 +93,7 @@ gimple_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   if (m_cache.block_range (entry_range, bb, name))
     r.intersect (entry_range);
 
-  if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
-      m_cache.m_non_null.non_null_deref_p (name, bb))
-    r = range_nonzero (TREE_TYPE (name));
+  m_cache.m_non_null.adjust_range (r, name, bb, true);
 }
 
 // Calculate the range for NAME at the end of block BB and return it in R.
