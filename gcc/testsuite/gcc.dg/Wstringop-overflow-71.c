@@ -12,7 +12,15 @@ extern int abs (int);
 extern void* alloca (size_t);
 
 extern double nan (const char *);
-_Decimal32 nand32 (const char *);
+
+#ifdef __DEC32_MAX__
+  _Decimal32 nand32 (const char *);
+#else
+/* _Decimal32 is supported only conditionally and not available on all
+   targets.  */
+#  define _Decimal32  double
+#  define nand32(s)   nan (s)
+#endif
 
 extern size_t strlen (const char *);
 extern char* strcpy (char *, const char *);
@@ -56,23 +64,23 @@ void warn_complex (double x, double i)
 }
 
 
-void nowarn_nan (const char *s)
+__attribute__ ((noipa)) void nowarn_nan (const char *s)
 {
   *(double *)ax = nan (s);
 }
 
-void warn_nan (const char *s)
+__attribute__ ((noipa)) void warn_nan (const char *s)
 {
   *(double *)a1 = nan (s);      // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
 
-void nowarn_nand32 (const char *s)
+__attribute__ ((noipa)) void nowarn_nand32 (const char *s)
 {
   *(_Decimal32 *)ax = nand32 (s);
 }
 
-void warn_nand32 (const char *s)
+__attribute__ ((noipa)) void warn_nand32 (const char *s)
 {
   *(_Decimal32 *)a1 = nand32 (s); // { dg-warning "\\\[-Wstringop-overflow" }
 }
@@ -88,7 +96,7 @@ void nowarn_strlen (const char *s1, const char *s2, const char *s3)
 void warn_strlen (const char *s1, const char *s2)
 {
   *(int16_t *)a1 = strlen (s1); // { dg-warning "\\\[-Wstringop-overflow" }
-  *(size_t *)a2 = strlen (s2);  // { dg-warning "\\\[-Wstringop-overflow" }
+  *(size_t *)a2 = strlen (s2);  // { dg-warning "\\\[-Wstringop-overflow" "!ptr_eq_short" { target { ! ptr_eq_short } } }
 }
 
 
@@ -101,5 +109,5 @@ void nowarn_strcpy (char *s1, char *s2, const char *s3)
 void warn_strcpy (char *s1, char *s2, const char *s3)
 {
   *(char **)a1 = strcpy (s1, s2);   // { dg-warning "\\\[-Wstringop-overflow" }
-  *(char **)a2 = strcpy (s2, s3);   // { dg-warning "\\\[-Wstringop-overflow" }
+  *(char **)a2 = strcpy (s2, s3);   // { dg-warning "\\\[-Wstringop-overflow" "!ptr_eq_short" { target { ! ptr_eq_short } } }
 }

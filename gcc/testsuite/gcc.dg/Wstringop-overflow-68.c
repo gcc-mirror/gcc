@@ -57,12 +57,12 @@ void warn_comp_lit_zero (void)
 
 void warn_comp_lit (void)
 {
-  *(AC2*)a1 = Ac2;      // { dg-warning "writing 2 bytes into a region of size 1" "pr??????" { xfail *-*-* } }
-  *(AC4*)a2 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 2" "pr??????" { xfail *-*-* } }
-  *(AC4*)a3 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 3" "pr??????" { xfail *-*-* } }
-  *(AC8*)a4 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 4" "pr??????" { xfail *-*-* } }
-  *(AC8*)a7 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 7" "pr??????" { xfail *-*-* } }
-  *(AC16*)a15 = Ac16;   // { dg-warning "writing 16 bytes into a region of size 15" "pr??????" { xfail *-*-* } }
+  *(AC2*)a1 = Ac2;      // { dg-warning "writing 2 bytes into a region of size 1" "pr101475" { xfail *-*-* } }
+  *(AC4*)a2 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 2" "pr101475" { xfail *-*-* } }
+  *(AC4*)a3 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 3" "pr101475" { xfail *-*-* } }
+  *(AC8*)a4 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 4" "pr101475" { xfail *-*-* } }
+  *(AC8*)a7 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 7" "pr101475" { xfail *-*-* } }
+  *(AC16*)a15 = Ac16;   // { dg-warning "writing 16 bytes into a region of size 15" "pr101475" { xfail *-*-* } }
 }
 
 void warn_aggr_decl (void)

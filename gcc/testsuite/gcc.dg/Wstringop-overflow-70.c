@@ -16,6 +16,9 @@ void* warn_loop (void)
 {
   char *p = __builtin_malloc (15);
   for (int i = 0; i != 16; ++i)
-    p[i] = i;       // { dg-warning "writing 16 bytes into a region of size 15" }
+    /* The size of the write below depends on the target.  When vectorized
+       the vector size may be 4 or 16, otherwise it may be a series of byte
+       assignments.  */
+    p[i] = i;       // { dg-warning "writing (1|2|4|16) bytes? into a region of size (0|1|3|15)" }
   return p;
 }
