@@ -3306,7 +3306,7 @@ namespace views::__adaptor
 	&& constructible_from<_Pattern, single_view<range_value_t<_Range>>>
     constexpr
     split_view(_Range&& __r, range_value_t<_Range> __e)
-      : _M_pattern(views::single(__e)),
+      : _M_pattern(views::single(std::move(__e))),
 	_M_base(views::all(std::forward<_Range>(__r)))
     { }
 
@@ -3364,7 +3364,7 @@ namespace views::__adaptor
       using value_type = subrange<iterator_t<_Vp>>;
       using difference_type = range_difference_t<_Vp>;
 
-      _Iterator() requires default_initializable<iterator_t<_Vp>> = default;
+      _Iterator() = default;
 
       constexpr
       _Iterator(split_view* __parent,
@@ -3429,6 +3429,8 @@ namespace views::__adaptor
       { return __x._M_cur == _M_end && !__x._M_trailing_empty; }
 
     public:
+      _Sentinel() = default;
+
       constexpr explicit
       _Sentinel(split_view* __parent)
 	: _M_end(ranges::end(__parent->_M_base))
