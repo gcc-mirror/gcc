@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "tree-ssanames.h"
 
+
 namespace {
 
 /* We record fnspec specifiers for call edges since they depends on actual
@@ -135,7 +136,7 @@ struct escape_entry
   /* Argument it escapes to.  */
   unsigned int arg;
   /* Minimal flags known about the argument.  */
-  char min_flags;
+  eaf_flags_t min_flags;
   /* Does it escape directly or indirectly?  */
   bool direct;
 };
@@ -155,6 +156,8 @@ dump_eaf_flags (FILE *out, int flags, bool newline = true)
     fprintf (out, " nodirectescape");
   if (flags & EAF_UNUSED)
     fprintf (out, " unused");
+  if (flags & EAF_NOT_RETURNED)
+    fprintf (out, " not_returned");
   if (newline)
   fprintf (out, "\n");
 }
@@ -278,12 +281,17 @@ modref_summary::~modref_summary ()
 /* Return true if FLAGS holds some useful information.  */
 
 static bool
-eaf_flags_useful_p (vec <unsigned char> &flags, int ecf_flags)
+eaf_flags_useful_p (vec <eaf_flags_t> &flags, int ecf_flags)
 {
   for (unsigned i = 0; i < flags.length (); i++)
-    if (ecf_flags & ECF_PURE)
+    if (ecf_flags & ECF_CONST)
       {
-	if (flags[i] & (EAF_UNUSED | EAF_DIRECT))
+	if (flags[i] & (EAF_UNUSED | EAF_NOT_RETURNED))
+	  return true;
+      }
+    else if (ecf_flags & ECF_PURE)
+      {
+	if (flags[i] & (EAF_UNUSED | EAF_DIRECT | EAF_NOT_RETURNED))
 	  return true;
       }
     else
@@ -300,13 +308,15 @@ eaf_flags_useful_p (vec <unsigned char> &flags, int ecf_flags)
 bool
 modref_summary::useful_p (int ecf_flags, bool check_flags)
 {
-  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+  if (ecf_flags & ECF_NOVOPS)
     return false;
   if (arg_flags.length () && !check_flags)
     return true;
   if (check_flags && eaf_flags_useful_p (arg_flags, ecf_flags))
     return true;
   arg_flags.release ();
+  if (ecf_flags & ECF_CONST)
+    return false;
   if (loads && !loads->every_base)
     return true;
   if (ecf_flags & ECF_PURE)
@@ -325,7 +335,7 @@ struct GTY(()) modref_summary_lto
      more verbose and thus more likely to hit the limits.  */
   modref_records_lto *loads;
   modref_records_lto *stores;
-  auto_vec<unsigned char> GTY((skip)) arg_flags;
+  auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
   bool writes_errno;
 
   modref_summary_lto ();
@@ -356,13 +366,15 @@ modref_summary_lto::~modref_summary_lto ()
 bool
 modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
 {
-  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+  if (ecf_flags & ECF_NOVOPS)
     return false;
   if (arg_flags.length () && !check_flags)
     return true;
   if (check_flags && eaf_flags_useful_p (arg_flags, ecf_flags))
     return true;
   arg_flags.release ();
+  if (ecf_flags & ECF_CONST)
+    return false;
   if (loads && !loads->every_base)
     return true;
   if (ecf_flags & ECF_PURE)
@@ -1317,6 +1329,8 @@ deref_flags (int flags, bool ignore_stores)
       if ((flags & EAF_NOESCAPE) || ignore_stores)
 	ret |= EAF_NOESCAPE;
     }
+  if (flags & EAF_NOT_RETURNED)
+    ret |= EAF_NOT_RETURNED;
   return ret;
 }
 
@@ -1332,7 +1346,7 @@ struct escape_point
   int arg;
   /* Flags already known about the argument (this can save us from recording
      esape points if local analysis did good job already).  */
-  char min_flags;
+  eaf_flags_t min_flags;
   /* Does value escape directly or indiretly?  */
   bool direct;
 };
@@ -1366,7 +1380,7 @@ void
 modref_lattice::init ()
 {
   flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED
-	  | EAF_NODIRECTESCAPE;
+	  | EAF_NODIRECTESCAPE | EAF_NOT_RETURNED;
   open = true;
   known = false;
 }
@@ -1539,6 +1553,9 @@ merge_call_lhs_flags (gcall *call, int arg, int index, bool deref,
       && (flags & ERF_RETURN_ARG_MASK) != arg)
     return;
 
+  if (gimple_call_arg_flags (call, arg) & (EAF_NOT_RETURNED | EAF_UNUSED))
+    return;
+
   /* If return value is SSA name determine its flags.  */
   if (TREE_CODE (gimple_call_lhs (call)) == SSA_NAME)
     {
@@ -1613,9 +1630,12 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
       if (greturn *ret = dyn_cast <greturn *> (use_stmt))
 	{
 	  if (gimple_return_retval (ret) == name)
-	    lattice[index].merge (~EAF_UNUSED);
+	    lattice[index].merge (~(EAF_UNUSED | EAF_NOT_RETURNED));
 	  else if (memory_access_to (gimple_return_retval (ret), name))
-	    lattice[index].merge_direct_load ();
+	    {
+	      lattice[index].merge_direct_load ();
+	      lattice[index].merge (~EAF_NOT_RETURNED);
+	    }
 	}
       /* Account for LHS store, arg loads and flags from callee function.  */
       else if (gcall *call = dyn_cast <gcall *> (use_stmt))
@@ -1666,7 +1686,8 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		  {
 		    if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS)))
 		      {
-			int call_flags = gimple_call_arg_flags (call, i);
+			int call_flags = gimple_call_arg_flags (call, i)
+					 | EAF_NOT_RETURNED;
 			if (ignore_stores)
 			  call_flags |= EAF_NOCLOBBER | EAF_NOESCAPE
 					| EAF_NODIRECTESCAPE;
@@ -1689,7 +1710,8 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		    else
 		      {
 			int call_flags = deref_flags
-			   (gimple_call_arg_flags (call, i), ignore_stores);
+			   (gimple_call_arg_flags (call, i)
+			    | EAF_NOT_RETURNED, ignore_stores);
 			if (!record_ipa)
 			  lattice[index].merge (call_flags);
 			else
@@ -1819,8 +1841,8 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
   unsigned int count = 0;
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
 
-  /* For const functions we have nothing to gain by EAF flags.  */
-  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+  /* For novops functions we have nothing to gain by EAF flags.  */
+  if (ecf_flags & ECF_NOVOPS)
     return;
 
   for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
@@ -1863,7 +1885,11 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
       /* For pure functions we have implicit NOCLOBBER
 	 and NOESCAPE.  */
       if (ecf_flags & ECF_PURE)
-	flags &= ~(EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NODIRECTESCAPE);
+	flags &= (EAF_UNUSED | EAF_DIRECT | EAF_NOT_RETURNED);
+      /* Only useful flags for const function are EAF_NOT_RETURNED and
+	 EAF_UNUSED.  */
+      if (ecf_flags & ECF_CONST)
+	flags &= (EAF_UNUSED | EAF_NOT_RETURNED);
 
       if (flags)
 	{
@@ -2518,7 +2544,7 @@ modref_write ()
 
 	  streamer_write_uhwi (ob, r->arg_flags.length ());
 	  for (unsigned int i = 0; i < r->arg_flags.length (); i++)
-	    streamer_write_char_stream (ob->main_stream, r->arg_flags[i]);
+	    streamer_write_uhwi (ob, r->arg_flags[i]);
 
 	  write_modref_records (r->loads, ob);
 	  write_modref_records (r->stores, ob);
@@ -2609,7 +2635,7 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	modref_sum_lto->arg_flags.reserve_exact (args);
       for (unsigned int i = 0; i < args; i++)
 	{
-	  unsigned char flags = streamer_read_uchar (&ib);
+	  eaf_flags_t flags = streamer_read_uhwi (&ib);
 	  if (modref_sum)
 	    modref_sum->arg_flags.quick_push (flags);
 	  if (modref_sum_lto)
@@ -2713,9 +2739,9 @@ modref_read (void)
 /* Recompute arg_flags for param adjustments in INFO.  */
 
 static void
-remap_arg_flags (auto_vec <unsigned char> &arg_flags, clone_info *info)
+remap_arg_flags (auto_vec <eaf_flags_t> &arg_flags, clone_info *info)
 {
-  auto_vec<unsigned char> old = arg_flags.copy ();
+  auto_vec<eaf_flags_t> old = arg_flags.copy ();
   int max = -1;
   size_t i;
   ipa_adjusted_param *p;
@@ -3665,8 +3691,9 @@ modref_merge_call_site_flags (escape_summary *sum,
 	  flags |= EAF_NOESCAPE | EAF_NOCLOBBER | EAF_NODIRECTESCAPE;
 	  flags_lto |= EAF_NOESCAPE | EAF_NOCLOBBER | EAF_NODIRECTESCAPE;
 	}
-      flags |= ee->min_flags;
-      flags_lto |= ee->min_flags;
+      /* Returning the value is already accounted to at local propagation.  */
+      flags |= ee->min_flags | EAF_NOT_RETURNED;
+      flags_lto |= ee->min_flags | EAF_NOT_RETURNED;
       if (!(flags & EAF_UNUSED)
 	  && cur_summary && ee->parm_index < cur_summary->arg_flags.length ())
 	{
