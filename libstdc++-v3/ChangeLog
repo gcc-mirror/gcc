@@ -17,7 +17,7 @@
 
 	PR libstdc++/101429
 	* include/bits/c++config (__replacement_assert): Add noexcept.
-	[!_GLIBCXX_VERBOSE] (__glibcxx_assert_impl): Use __builtin_trap
+	[!_GLIBCXX_VERBOSE] (__glibcxx_assert_impl): Use __builtin_abort
 	instead of __replacement_assert.
 
 2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
