@@ -636,13 +636,26 @@ package body Freeze is
          Next (Param_Spec);
       end loop;
 
-      Body_Node :=
-        Make_Subprogram_Body (Loc,
-          Specification => Spec,
-          Declarations => New_List,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (Call_Node)));
+      --  In GNATprove, prefer to generate an expression function whenever
+      --  possible, to benefit from the more precise analysis in that case
+      --  (as if an implicit postcondition had been generated).
+
+      if GNATprove_Mode
+        and then Nkind (Call_Node) = N_Simple_Return_Statement
+      then
+         Body_Node :=
+           Make_Expression_Function (Loc,
+             Specification => Spec,
+             Expression    => Expression (Call_Node));
+      else
+         Body_Node :=
+           Make_Subprogram_Body (Loc,
+             Specification              => Spec,
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Call_Node)));
+      end if;
 
       if Nkind (Decl) /= N_Subprogram_Declaration then
          Rewrite (N,
