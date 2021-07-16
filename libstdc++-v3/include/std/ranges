@@ -1232,7 +1232,7 @@ namespace views::__adaptor
 	_M_get(const _Range&) const
 	{
 	  __glibcxx_assert(false);
-	  return {};
+	  __builtin_unreachable();
 	}
 
 	constexpr void
