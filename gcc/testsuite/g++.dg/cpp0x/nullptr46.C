@@ -7,5 +7,6 @@ decltype(nullptr) foo ();
 bool
 bar ()
 {
-  return foo () > nullptr || foo () < nullptr;
+  return foo () > nullptr // { dg-error "ordered comparison" }
+    || foo () < nullptr; // { dg-error "ordered comparison" }
 }

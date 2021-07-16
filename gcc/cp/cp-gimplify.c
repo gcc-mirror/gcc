@@ -2433,13 +2433,9 @@ cp_fold (tree x)
 	  switch (code)
 	    {
 	    case EQ_EXPR:
-	    case LE_EXPR:
-	    case GE_EXPR:
 	      x = constant_boolean_node (true, TREE_TYPE (x));
 	      break;
 	    case NE_EXPR:
-	    case LT_EXPR:
-	    case GT_EXPR:
 	      x = constant_boolean_node (false, TREE_TYPE (x));
 	      break;
 	    default:
