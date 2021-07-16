@@ -140,6 +140,24 @@ call_details::get_arg_svalue (unsigned idx) const
   return m_model->get_rvalue (arg, m_ctxt);
 }
 
+/* Attempt to get the string literal for argument IDX, or return NULL
+   otherwise.
+   For use when implementing "__analyzer_*" functions that take
+   string literals.  */
+
+const char *
+call_details::get_arg_string_literal (unsigned idx) const
+{
+  const svalue *str_arg = get_arg_svalue (idx);
+  if (const region *pointee = str_arg->maybe_get_region ())
+    if (const string_region *string_reg = pointee->dyn_cast_string_region ())
+      {
+	tree string_cst = string_reg->get_string_cst ();
+	return TREE_STRING_POINTER (string_cst);
+      }
+  return NULL;
+}
+
 /* Dump a multiline representation of this call to PP.  */
 
 void

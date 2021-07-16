@@ -1270,6 +1270,9 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
 	  state->dump (eg.get_ext_state (), true);
 	  return;
 	}
+      else if (is_special_named_call_p (call, "__analyzer_dump_state", 2))
+	state->impl_call_analyzer_dump_state (call, eg.get_ext_state (),
+					      ctxt);
       else if (is_setjmp_call_p (call))
 	{
 	  state->m_region_model->on_setjmp (call, this, ctxt);

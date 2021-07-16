@@ -58,6 +58,8 @@ public:
   engine *get_engine () const { return m_engine; }
   region_model_manager *get_model_manager () const;
 
+  bool get_sm_idx_by_name (const char *name, unsigned *out) const;
+
 private:
   /* The state machines.  */
   auto_delete_vec <state_machine> &m_checkers;
@@ -255,6 +257,10 @@ public:
 			    const svalue *extra_sval,
 			    const extrinsic_state &ext_state,
 			    region_model_context *ctxt);
+
+  void impl_call_analyzer_dump_state (const gcall *call,
+				      const extrinsic_state &ext_state,
+				      region_model_context *ctxt);
 
   /* TODO: lose the pointer here (const-correctness issues?).  */
   region_model *m_region_model;

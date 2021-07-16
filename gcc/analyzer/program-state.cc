@@ -131,6 +131,27 @@ extrinsic_state::get_model_manager () const
     return NULL; /* for selftests.  */
 }
 
+/* Try to find a state machine named NAME.
+   If found, return true and write its index to *OUT.
+   Otherwise return false.  */
+
+bool
+extrinsic_state::get_sm_idx_by_name (const char *name, unsigned *out) const
+{
+  unsigned i;
+  state_machine *sm;
+  FOR_EACH_VEC_ELT (m_checkers, i, sm)
+    if (0 == strcmp (name, sm->get_name ()))
+      {
+	/* Found NAME.  */
+	*out = i;
+	return true;
+      }
+
+  /* NAME not found.  */
+  return false;
+}
+
 /* struct sm_state_map::entry_t.  */
 
 int
@@ -1288,6 +1309,34 @@ program_state::detect_leaks (const program_state &src_state,
     if (const region *reg = sval->maybe_get_region ())
       if (reg->get_kind () == RK_HEAP_ALLOCATED)
 	dest_state.m_region_model->unset_dynamic_extents (reg);
+}
+
+/* Handle calls to "__analyzer_dump_state".  */
+
+void
+program_state::impl_call_analyzer_dump_state (const gcall *call,
+					      const extrinsic_state &ext_state,
+					      region_model_context *ctxt)
+{
+  call_details cd (call, m_region_model, ctxt);
+  const char *sm_name = cd.get_arg_string_literal (0);
+  if (!sm_name)
+    {
+      error_at (call->location, "cannot determine state machine");
+      return;
+    }
+  unsigned sm_idx;
+  if (!ext_state.get_sm_idx_by_name (sm_name, &sm_idx))
+    {
+      error_at (call->location, "unrecognized state machine %qs", sm_name);
+      return;
+    }
+  const sm_state_map *smap = m_checker_states[sm_idx];
+
+  const svalue *sval = cd.get_arg_svalue (1);
+
+  state_machine::state_t state = smap->get_state (sval, ext_state);
+  warning_at (call->location, 0, "state: %qs", state->get_name ());
 }
 
 #if CHECKING_P

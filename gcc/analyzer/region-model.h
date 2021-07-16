@@ -468,6 +468,7 @@ public:
   tree get_arg_tree (unsigned idx) const;
   tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
+  const char *get_arg_string_literal (unsigned idx) const;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;
   void dump (bool simple) const;
