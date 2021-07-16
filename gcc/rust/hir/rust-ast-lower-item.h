@@ -396,6 +396,8 @@ public:
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
 			       translated);
+    mappings->insert_hir_impl_block (mapping.get_crate_num (),
+				     mapping.get_hirid (), hir_impl_block);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       impl_block.get_locus ());
 
@@ -540,6 +542,8 @@ public:
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
 			       translated);
+    mappings->insert_hir_impl_block (mapping.get_crate_num (),
+				     mapping.get_hirid (), hir_impl_block);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       impl_block.get_locus ());
 
