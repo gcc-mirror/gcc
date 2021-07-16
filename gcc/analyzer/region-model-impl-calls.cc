@@ -325,10 +325,8 @@ region_model::impl_call_fgets (const call_details &cd)
   /* Ideally we would bifurcate state here between the
      error vs no error cases.  */
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region_svalue *ptr_to_region_sval
-      = ptr_sval->dyn_cast_region_svalue ())
+  if (const region *reg = ptr_sval->maybe_get_region ())
     {
-      const region *reg = ptr_to_region_sval->get_pointee ();
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
       purge_state_involving (new_sval, cd.get_ctxt ());
@@ -342,10 +340,8 @@ void
 region_model::impl_call_fread (const call_details &cd)
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region_svalue *ptr_to_region_sval
-      = ptr_sval->dyn_cast_region_svalue ())
+  if (const region *reg = ptr_sval->maybe_get_region ())
     {
-      const region *reg = ptr_to_region_sval->get_pointee ();
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
       purge_state_involving (new_sval, cd.get_ctxt ());
@@ -372,12 +368,10 @@ void
 region_model::impl_call_free (const call_details &cd)
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region_svalue *ptr_to_region_sval
-      = ptr_sval->dyn_cast_region_svalue ())
+  if (const region *freed_reg = ptr_sval->maybe_get_region ())
     {
       /* If the ptr points to an underlying heap region, delete it,
 	 poisoning pointers.  */
-      const region *freed_reg = ptr_to_region_sval->get_pointee ();
       unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
       m_dynamic_extents.remove (freed_reg);
     }
@@ -472,12 +466,10 @@ bool
 region_model::impl_call_operator_delete (const call_details &cd)
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region_svalue *ptr_to_region_sval
-      = ptr_sval->dyn_cast_region_svalue ())
+  if (const region *freed_reg = ptr_sval->maybe_get_region ())
     {
       /* If the ptr points to an underlying heap region, delete it,
 	 poisoning pointers.  */
-      const region *freed_reg = ptr_to_region_sval->get_pointee ();
       unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
     }
   return false;

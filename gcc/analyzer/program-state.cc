@@ -1285,12 +1285,9 @@ program_state::detect_leaks (const program_state &src_state,
 
   /* Purge dead heap-allocated regions from dynamic extents.  */
   for (const svalue *sval : dead_svals)
-    if (const region_svalue *region_sval = sval->dyn_cast_region_svalue ())
-      {
-	const region *reg = region_sval->get_pointee ();
-	if (reg->get_kind () == RK_HEAP_ALLOCATED)
-	  dest_state.m_region_model->unset_dynamic_extents (reg);
-      }
+    if (const region *reg = sval->maybe_get_region ())
+      if (reg->get_kind () == RK_HEAP_ALLOCATED)
+	dest_state.m_region_model->unset_dynamic_extents (reg);
 }
 
 #if CHECKING_P

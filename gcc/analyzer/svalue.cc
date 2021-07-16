@@ -111,6 +111,18 @@ svalue::maybe_get_constant () const
     return NULL_TREE;
 }
 
+/* If this svalue is a region_svalue, return the region it points to.
+   Otherwise return NULL.  */
+
+const region *
+svalue::maybe_get_region () const
+{
+  if (const region_svalue *region_sval = dyn_cast_region_svalue ())
+    return region_sval->get_pointee ();
+  else
+    return NULL;
+}
+
 /* If this svalue is a cast (i.e a unaryop NOP_EXPR or VIEW_CONVERT_EXPR),
    return the underlying svalue.
    Otherwise return NULL.  */

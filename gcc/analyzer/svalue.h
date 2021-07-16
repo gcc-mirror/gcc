@@ -126,6 +126,7 @@ public:
   dyn_cast_conjured_svalue () const { return NULL; }
 
   tree maybe_get_constant () const;
+  const region *maybe_get_region () const;
   const svalue *maybe_undo_cast () const;
   const svalue *unwrap_any_unmergeable () const;
 

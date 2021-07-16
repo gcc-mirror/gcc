@@ -4541,7 +4541,7 @@ test_stack_frames ()
      renumbering.  */
   const svalue *new_q_sval = model.get_rvalue (q, &ctxt);
   ASSERT_EQ (new_q_sval->get_kind (), SK_REGION);
-  ASSERT_EQ (new_q_sval->dyn_cast_region_svalue ()->get_pointee (),
+  ASSERT_EQ (new_q_sval->maybe_get_region (),
 	     model.get_lvalue (p, &ctxt));
 
   /* Verify that top of stack has been updated.  */
@@ -5070,8 +5070,7 @@ test_state_merging ()
     model0.set_value (q_in_first_frame, sval_ptr, NULL);
 
     /* Verify that it's pointing at the newer frame.  */
-    const region *reg_pointee
-      = sval_ptr->dyn_cast_region_svalue ()->get_pointee ();
+    const region *reg_pointee = sval_ptr->maybe_get_region ();
     ASSERT_EQ (reg_pointee->get_parent_region (), reg_2nd_frame);
 
     model0.canonicalize ();
