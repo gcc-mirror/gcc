@@ -1484,13 +1484,13 @@ register_edge_assert_for_2 (tree name, edge e,
 	}
 
       /* Extract NAME2 from the (optional) sign-changing cast.  */
-      if (gimple_assign_cast_p (def_stmt))
+      if (gassign *ass = dyn_cast <gassign *> (def_stmt))
 	{
-	  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))
-	      && ! TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
-	      && (TYPE_PRECISION (gimple_expr_type (def_stmt))
-		  == TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))))
-	    name3 = gimple_assign_rhs1 (def_stmt);
+	  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (ass))
+	      && ! TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (ass)))
+	      && (TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (ass)))
+		  == TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (ass)))))
+	    name3 = gimple_assign_rhs1 (ass);
 	}
 
       /* If name3 is used later, create an ASSERT_EXPR for it.  */
@@ -4119,7 +4119,7 @@ vrp_folder::fold_predicate_in (gimple_stmt_iterator *si)
   if (val)
     {
       if (assignment_p)
-        val = fold_convert (gimple_expr_type (stmt), val);
+	val = fold_convert (TREE_TYPE (gimple_assign_lhs (stmt)), val);
 
       if (dump_file)
 	{
