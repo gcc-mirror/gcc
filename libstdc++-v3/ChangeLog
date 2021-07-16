@@ -1,3 +1,25 @@
+2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101427
+	* include/std/tuple (tuple_element): Improve static_assert text.
+	(__get_helper): Add deleted overload.
+	(get<i>(tuple<T...>&&), get<i>(const tuple<T...>&&)): Use
+	__get_helper directly.
+	(__get_helper2): Remove.
+	(__find_uniq_type_in_pack): New constexpr helper function.
+	(get<T>): Use __find_uniq_type_in_pack and __get_helper instead
+	of __get_helper2.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust
+	expected errors.
+	* testsuite/20_util/tuple/element_access/101427.cc: New test.
+
+2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101429
+	* include/bits/c++config (__replacement_assert): Add noexcept.
+	[!_GLIBCXX_VERBOSE] (__glibcxx_assert_impl): Use __builtin_trap
+	instead of __replacement_assert.
+
 2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/string_view (basic_string_view(It, End)): Add

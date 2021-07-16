@@ -1,3 +1,151 @@
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.h (is_a_helper <placeholder_svalue *>::test): Make
+	param and template param const.
+	(is_a_helper <widening_svalue *>::test): Likewise.
+	(is_a_helper <compound_svalue *>::test): Likewise.
+	(is_a_helper <conjured_svalue *>::test): Likewise.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95006
+	PR analyzer/94713
+	PR analyzer/94714
+	* analyzer.cc (maybe_reconstruct_from_def_stmt): Split out
+	GIMPLE_ASSIGN case into...
+	(get_diagnostic_tree_for_gassign_1): New.
+	(get_diagnostic_tree_for_gassign): New.
+	* analyzer.h (get_diagnostic_tree_for_gassign): New decl.
+	* analyzer.opt (Wanalyzer-write-to-string-literal): New.
+	* constraint-manager.cc (class svalue_purger): New.
+	(constraint_manager::purge_state_involving): New.
+	* constraint-manager.h
+	(constraint_manager::purge_state_involving): New.
+	* diagnostic-manager.cc (saved_diagnostic::supercedes_p): New.
+	(dedupe_winners::handle_interactions): New.
+	(diagnostic_manager::emit_saved_diagnostics): Call it.
+	* diagnostic-manager.h (saved_diagnostic::supercedes_p): New decl.
+	* engine.cc (impl_region_model_context::warn): Convert return type
+	to bool.  Return false if the diagnostic isn't saved.
+	(impl_region_model_context::purge_state_involving): New.
+	(impl_sm_context::get_state): Use NULL ctxt when querying old
+	rvalue.
+	(impl_sm_context::set_next_state): Use new sval when querying old
+	state.
+	(class dump_path_diagnostic): Move to region-model.cc
+	(exploded_node::on_stmt): Move to on_stmt_pre and on_stmt_post.
+	Remove call to purge_state_involving.
+	(exploded_node::on_stmt_pre): New, based on the above.  Move most
+	of it to region_model::on_stmt_pre.
+	(exploded_node::on_stmt_post): Likewise, moving to
+	region_model::on_stmt_post.
+	(class stale_jmp_buf): Fix parent class to use curiously recurring
+	template pattern.
+	(feasibility_state::maybe_update_for_edge): Call on_call_pre and
+	on_call_post on gcalls.
+	* exploded-graph.h (impl_region_model_context::warn): Return bool.
+	(impl_region_model_context::purge_state_involving): New decl.
+	(exploded_node::on_stmt_pre): New decl.
+	(exploded_node::on_stmt_post): New decl.
+	* pending-diagnostic.h (pending_diagnostic::use_of_uninit_p): New.
+	(pending_diagnostic::supercedes_p): New.
+	* program-state.cc (sm_state_map::get_state): Inherit state for
+	conjured_svalue as well as initial_svalue.
+	(sm_state_map::purge_state_involving): Also support SK_CONJURED.
+	* region-model-impl-calls.cc (call_details::get_uncertainty):
+	Handle m_ctxt being NULL.
+	(call_details::get_or_create_conjured_svalue): New.
+	(region_model::impl_call_fgets): New.
+	(region_model::impl_call_fread): New.
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_initial_value): Return an
+	uninitialized poisoned value for regions that can't have initial
+	values.
+	* region-model-reachability.cc
+	(reachable_regions::mark_escaped_clusters): Handle ctxt being
+	NULL.
+	* region-model.cc (region_to_value_map::purge_state_involving): New.
+	(poisoned_value_diagnostic::use_of_uninit_p): New.
+	(poisoned_value_diagnostic::emit): Handle POISON_KIND_UNINIT.
+	(poisoned_value_diagnostic::describe_final_event): Likewise.
+	(region_model::check_for_poison): New.
+	(region_model::on_assignment): Call it.
+	(class dump_path_diagnostic): Move here from engine.cc.
+	(region_model::on_stmt_pre): New, based on exploded_node::on_stmt.
+	(region_model::on_call_pre): Move the setting of the LHS to a
+	conjured svalue to before the checks for specific functions.
+	Handle "fgets", "fgets_unlocked", and "fread".
+	(region_model::purge_state_involving): New.
+	(region_model::handle_unrecognized_call): Handle ctxt being NULL.
+	(region_model::get_rvalue): Call check_for_poison.
+	(selftest::test_stack_frames): Use NULL for context when getting
+	uninitialized rvalue.
+	(selftest::test_alloca): Likewise.
+	* region-model.h (region_to_value_map::purge_state_involving): New
+	decl.
+	(call_details::get_or_create_conjured_svalue): New decl.
+	(region_model::on_stmt_pre): New decl.
+	(region_model::purge_state_involving): New decl.
+	(region_model::impl_call_fgets): New decl.
+	(region_model::impl_call_fread): New decl.
+	(region_model::check_for_poison): New decl.
+	(region_model_context::warn): Return bool.
+	(region_model_context::purge_state_involving): New.
+	(noop_region_model_context::warn): Return bool.
+	(noop_region_model_context::purge_state_involving): New.
+	(test_region_model_context:: warn): Return bool.
+	* region.cc (region::get_memory_space): New.
+	(region::can_have_initial_svalue_p): New.
+	(region::involves_p): New.
+	* region.h (enum memory_space): New.
+	(region::get_memory_space): New decl.
+	(region::can_have_initial_svalue_p): New decl.
+	(region::involves_p): New decl.
+	* sm-malloc.cc (use_after_free::supercedes_p): New.
+	* store.cc (binding_cluster::purge_state_involving): New.
+	(store::purge_state_involving): New.
+	* store.h (class symbolic_binding): New forward decl.
+	(binding_key::dyn_cast_symbolic_binding): New.
+	(symbolic_binding::dyn_cast_symbolic_binding): New.
+	(binding_cluster::purge_state_involving): New.
+	(store::purge_state_involving): New.
+	* svalue.cc (svalue::can_merge_p): Reject attempts to merge
+	poisoned svalues with other svalues, so that we identify
+	paths in which a variable is conditionally uninitialized.
+	(involvement_visitor::visit_conjured_svalue): New.
+	(svalue::involves_p): Also handle SK_CONJURED.
+	(poison_kind_to_str): Handle POISON_KIND_UNINIT.
+	(poisoned_svalue::maybe_fold_bits_within): New.
+	* svalue.h (enum poison_kind): Add POISON_KIND_UNINIT.
+	(poisoned_svalue::maybe_fold_bits_within): New decl.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (fdump-analyzer-exploded-paths): New.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Implement it.
+	* engine.cc (exploded_path::dump_to_pp): Add ext_state param and
+	use it to dump states if non-NULL.
+	(exploded_path::dump): Likewise.
+	(exploded_path::dump_to_file): New.
+	* exploded-graph.h (exploded_path::dump_to_pp): Add ext_state
+	param.
+	(exploded_path::dump): Likewise.
+	(exploded_path::dump): Likewise.
+	(exploded_path::dump_to_file): New.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc (fixup_tree_for_diagnostic_1): Use DECL_DEBUG_EXPR
+	if it's available.
+	* engine.cc (readability): Likewise.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* state-purge.cc (self_referential_phi_p): New.
+	(state_purge_per_ssa_name::process_point): Don't purge an SSA name
+	at its def-stmt if the def-stmt is self-referential.
+
 2021-07-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-manager.cc (null_assignment_sm_context::get_state):

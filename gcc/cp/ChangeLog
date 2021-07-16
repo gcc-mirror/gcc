@@ -1,3 +1,15 @@
+2021-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101443
+	* cp-gimplify.c (cp_fold): For comparisons with NULLPTR_TYPE
+	operands, fold them right away to true or false.
+
+2021-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101095
+	* cp-objcp-common.c (cp_common_init_ts): Mark types as types.
+	(cp_tree_size): Remove redundant entries.
+
 2021-07-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/88252
