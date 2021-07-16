@@ -93,12 +93,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Enable __numeric_traits_integer for types where the __is_integer_nonstrict
   // primary template doesn't give the right answer.
 #define _GLIBCXX_INT_N_TRAITS(T, WIDTH)			\
+  __extension__						\
   template<> struct __is_integer_nonstrict<T>		\
   {							\
     enum { __value = 1 };				\
     typedef std::__true_type __type;			\
     enum { __width = WIDTH };				\
   };							\
+  __extension__						\
   template<> struct __is_integer_nonstrict<unsigned T>	\
   {							\
     enum { __value = 1 };				\
@@ -123,12 +125,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
   // In strict modes __is_integer<__int128> is false,
   // but we still want to define __numeric_traits_integer<__int128>.
   _GLIBCXX_INT_N_TRAITS(__int128, 128)
-#pragma GCC diagnostic pop
 #endif
 
 #undef _GLIBCXX_INT_N_TRAITS

@@ -299,17 +299,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if defined __UINT64_TYPE__ && defined __UINT32_TYPE__
 #if __SIZEOF_INT128__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 	    if _GLIBCXX17_CONSTEXPR (__urngrange == __UINT64_MAX__)
 	      {
 		// __urng produces values that use exactly 64-bits,
 		// so use 128-bit integers to downscale to desired range.
 		__UINT64_TYPE__ __u64erange = __uerange;
-		__ret = _S_nd<unsigned __int128>(__urng, __u64erange);
+		__ret = __extension__ _S_nd<unsigned __int128>(__urng,
+							       __u64erange);
 	      }
 	    else
-#pragma GCC diagnostic pop
 #endif
 	    if _GLIBCXX17_CONSTEXPR (__urngrange == __UINT32_MAX__)
 	      {

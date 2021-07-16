@@ -553,9 +553,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __max_diff_type;
     class __max_size_type;
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-
+    __extension__
     template<typename _Tp>
       concept __is_signed_int128
 #if __SIZEOF_INT128__
@@ -564,6 +562,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= false;
 #endif
 
+    __extension__
     template<typename _Tp>
       concept __is_unsigned_int128
 #if __SIZEOF_INT128__
@@ -571,8 +570,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
 	= false;
 #endif
-
-#pragma GCC diagnostic pop
 
     template<typename _Tp>
       concept __cv_bool = same_as<const volatile _Tp, const volatile bool>;

@@ -101,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
     template<int __s>
       struct _Select_uint_least_t<__s, 1>
-      { typedef unsigned __int128 type; };
+      { __extension__ typedef unsigned __int128 type; };
 #endif
 
     // Assume a != 0, a < m, c < m, x < m.
@@ -1663,7 +1663,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     void _M_init(const char*, size_t); // not exported from the shared library
 
-    union
+    __extension__ union
     {
       struct
       {
