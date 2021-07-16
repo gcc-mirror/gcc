@@ -84,6 +84,17 @@ test04()
 }
 
 void
+test05()
+{
+  // PR libstdc++/101231
+  auto words = std::istringstream{"42"};
+  auto is = ranges::istream_view<int>(words);
+  auto r = is | views::filter([](auto) { return true; });
+  for (auto x : r)
+    ;
+}
+
+void
 test06()
 {
   // Default template argument
@@ -99,5 +110,6 @@ main()
   test02();
   test03();
   test04();
+  test05();
   test06();
 }
