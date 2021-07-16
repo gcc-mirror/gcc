@@ -5798,7 +5798,7 @@ parse_optimize_options (tree args, bool attr_p)
 
       if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  char buffer[20];
+	  char buffer[HOST_BITS_PER_LONG / 3 + 4];
 	  sprintf (buffer, "-O%ld", (long) TREE_INT_CST_LOW (value));
 	  vec_safe_push (optimize_args, ggc_strdup (buffer));
 	}
