@@ -68,11 +68,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>
       struct _Shift
-      { static const _UIntType __value = 0; };
+      { static constexpr _UIntType __value = 0; };
 
     template<typename _UIntType, size_t __w>
       struct _Shift<_UIntType, __w, true>
-      { static const _UIntType __value = _UIntType(1) << __w; };
+      { static constexpr _UIntType __value = _UIntType(1) << __w; };
 
     template<int __s,
 	     int __which = ((__s <= __CHAR_BIT__ * sizeof (int))
@@ -88,20 +88,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<int __s>
       struct _Select_uint_least_t<__s, 4>
-      { typedef unsigned int type; };
+      { using type = unsigned int; };
 
     template<int __s>
       struct _Select_uint_least_t<__s, 3>
-      { typedef unsigned long type; };
+      { using type = unsigned long; };
 
     template<int __s>
       struct _Select_uint_least_t<__s, 2>
-      { typedef unsigned long long type; };
+      { using type = unsigned long long; };
 
 #if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
     template<int __s>
       struct _Select_uint_least_t<__s, 1>
-      { __extension__ typedef unsigned __int128 type; };
+      { __extension__ using type = unsigned __int128; };
 #endif
 
     // Assume a != 0, a < m, c < m, x < m.
@@ -111,11 +111,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              bool __schrage_ok = __m % __a < __m / __a>
       struct _Mod
       {
-	typedef typename _Select_uint_least_t<std::__lg(__a)
-					      + std::__lg(__m) + 2>::type _Tp2;
 	static _Tp
 	__calc(_Tp __x)
-	{ return static_cast<_Tp>((_Tp2(__a) * __x + __c) % __m); }
+	{
+	  using _Tp2
+	    = typename _Select_uint_least_t<std::__lg(__a)
+					    + std::__lg(__m) + 2>::type;
+	  return static_cast<_Tp>((_Tp2(__a) * __x + __c) % __m);
+	}
       };
 
     // Schrage.
