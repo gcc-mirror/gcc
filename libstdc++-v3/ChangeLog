@@ -1,3 +1,20 @@
+2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::empty): Check whether
+	conversion to bool can throw.
+	* testsuite/std/ranges/access/empty.cc: Check for correct
+	noexcept-specifier.
+
+2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/simd: Do not define anything pre-C++17.
+
 2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

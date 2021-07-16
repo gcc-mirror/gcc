@@ -1,3 +1,44 @@
+2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-06-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101023
+	* config/i386/i386.c (ix86_expand_prologue): Set red_zone_used
+	to true if red zone is used.
+	(ix86_output_indirect_jmp): Replace ix86_red_zone_size with
+	ix86_red_zone_used.
+	* config/i386/i386.h (machine_function): Add red_zone_used.
+	(ix86_red_zone_size): Removed.
+	(ix86_red_zone_used): New.
+	* config/i386/i386.md (peephole2 patterns): Replace
+	ix86_red_zone_size with ix86_red_zone_used.
+
+2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101395
+	* config/i386/driver-i386.c (host_detect_local_cpu): Check
+	"arch [32|64]" and "tune [32|64]" for 32-bit and 64-bit codegen.
+	Enable UINTR only for 64-bit codegen.
+	* config/i386/i386-options.c
+	(ix86_option_override_internal::DEF_PTA): Skip PTA_UINTR if not
+	in 64-bit mode.
+	* config/i386/i386.h (ARCH_ARG): New.
+	(CC1_CPU_SPEC): Pass "[arch|tune] 32" for 32-bit codegen and
+	"[arch|tune] 64" for 64-bit codegen.
+
+2021-07-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR driver/101383
+	* gcc.c (process_command): Process -gtoggle like process_options
+	would after parsing options.
+
 2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2021-07-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-07-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100949
+	* trans-expr.c (gfc_trans_class_init_assign): Call
+	gfc_conv_expr_present only for dummy variables.
+
 2021-07-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backported from master:

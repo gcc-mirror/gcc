@@ -1,3 +1,30 @@
+2021-07-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-07-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100949
+	* gfortran.dg/pr100949.f90: New test.
+
+2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-06-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101023
+	* g++.target/i386/pr101023a.C: New test.
+	* g++.target/i386/pr101023b.C: Likewise.
+
+2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101395
+	* gcc.target/i386/pr101395-1.c: New test.
+	* gcc.target/i386/pr101395-2.c: Likewise.
+	* gcc.target/i386/pr101395-3.c: Likewise.
+
 2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	Backported from master:
