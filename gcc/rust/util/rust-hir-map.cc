@@ -567,5 +567,21 @@ Mappings::iterate_impl_items (
     }
 }
 
+void
+Mappings::iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb)
+{
+  for (auto it = hirImplBlockMappings.begin ();
+       it != hirImplBlockMappings.end (); it++)
+    {
+      for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
+	{
+	  HirId id = iy->first;
+	  HIR::ImplBlock *impl_block = iy->second;
+	  if (!cb (id, impl_block))
+	    return;
+	}
+    }
+}
+
 } // namespace Analysis
 } // namespace Rust
