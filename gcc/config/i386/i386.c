@@ -23335,9 +23335,21 @@ rtx
 ix86_gen_scratch_sse_rtx (machine_mode mode)
 {
   if (TARGET_SSE && !lra_in_progress)
-    return gen_rtx_REG (mode, (TARGET_64BIT
-			       ? LAST_REX_SSE_REG
-			       : LAST_SSE_REG));
+    {
+      unsigned int regno;
+      if (TARGET_64BIT)
+	{
+	  /* In 64-bit mode, use XMM31 to avoid vzeroupper and always
+	     use XMM31 for CSE.  */
+	  if (ix86_hard_regno_mode_ok (LAST_EXT_REX_SSE_REG, mode))
+	    regno = LAST_EXT_REX_SSE_REG;
+	  else
+	    regno = LAST_REX_SSE_REG;
+	}
+      else
+	regno = LAST_SSE_REG;
+      return gen_rtx_REG (mode, regno);
+    }
   else
     return gen_reg_rtx (mode);
 }

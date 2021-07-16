@@ -5,3 +5,4 @@
 
 /* { dg-final { scan-assembler-times "vpbroadcastb\[\\t \]+%(?:r|e)\[^\n\]*, %ymm\[0-9\]+" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqu8\[\\t \]%ymm\[0-9\]+, " 8 } } */
+/* { dg-final { scan-assembler-not "vzeroupper" } } */
