@@ -210,3 +210,113 @@ ovld_diag (const char * fmt, ...)
   vfprintf (stderr, fmt, args);
   va_end (args);
 }
+
+/* Pass over whitespace (other than a newline, which terminates the scan).  */
+static void
+consume_whitespace (void)
+{
+  while (pos < LINELEN && isspace(linebuf[pos]) && linebuf[pos] != '\n')
+    pos++;
+  return;
+}
+
+/* Get the next nonblank, noncomment line, returning 0 on EOF, 1 otherwise.  */
+static int
+advance_line (FILE *file)
+{
+  while (1)
+    {
+      /* Read ahead one line and check for EOF.  */
+      if (!fgets (linebuf, sizeof linebuf, file))
+	return 0;
+      line++;
+      size_t len = strlen (linebuf);
+      if (linebuf[len - 1] != '\n')
+	(*diag) ("line doesn't terminate with newline\n");
+      pos = 0;
+      consume_whitespace ();
+      if (linebuf[pos] != '\n' && linebuf[pos] != ';')
+	return 1;
+    }
+}
+
+static inline void
+safe_inc_pos (void)
+{
+  if (pos++ >= LINELEN)
+    {
+      (*diag) ("line length overrun.\n");
+      exit (1);
+    }
+}
+
+/* Match an identifier, returning NULL on failure, else a pointer to a
+   buffer containing the identifier.  */
+static char *
+match_identifier (void)
+{
+  int lastpos = pos - 1;
+  while (isalnum (linebuf[lastpos + 1]) || linebuf[lastpos + 1] == '_')
+    ++lastpos;
+
+  if (lastpos < pos)
+    return 0;
+
+  char *buf = (char *) malloc (lastpos - pos + 2);
+  memcpy (buf, &linebuf[pos], lastpos - pos + 1);
+  buf[lastpos - pos + 1] = '\0';
+
+  pos = lastpos + 1;
+  return buf;
+}
+
+/* Match an integer and return the string representing its value,
+   or a null string on failure.  */
+static char *
+match_integer (void)
+{
+  int startpos = pos;
+  if (linebuf[pos] == '-')
+    safe_inc_pos ();
+
+  int lastpos = pos - 1;
+  while (isdigit (linebuf[lastpos + 1]))
+    ++lastpos;
+
+  if (lastpos < pos)
+    return NULL;
+
+  pos = lastpos + 1;
+  char *buf = (char *) malloc (lastpos - startpos + 2);
+  memcpy (buf, &linebuf[startpos], lastpos - startpos + 1);
+  buf[lastpos - startpos + 1] = '\0';
+  return buf;
+}
+
+/* Match a string up to but not including a ']', and return its value,
+   or zero if there is nothing before the ']'.  Error if we don't find
+   such a character.  */
+static const char *
+match_to_right_bracket (void)
+{
+  int lastpos = pos - 1;
+  while (linebuf[lastpos + 1] != ']')
+    {
+      if (linebuf[lastpos + 1] == '\n')
+	{
+	  (*diag) ("no ']' found before end of line.\n");
+	  exit (1);
+	}
+      ++lastpos;
+    }
+
+  if (lastpos < pos)
+    return 0;
+
+  char *buf = (char *) malloc (lastpos - pos + 2);
+  memcpy (buf, &linebuf[pos], lastpos - pos + 1);
+  buf[lastpos - pos + 1] = '\0';
+
+  pos = lastpos + 1;
+  return buf;
+}
