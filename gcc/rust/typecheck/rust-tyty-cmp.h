@@ -28,17 +28,19 @@
 namespace Rust {
 namespace TyTy {
 
-class BaseCmp : public TyVisitor
+class BaseCmp : public TyConstVisitor
 {
 public:
-  virtual bool can_eq (BaseType *other)
+  virtual bool can_eq (const BaseType *other)
   {
     if (other->get_kind () == TypeKind::PARAM)
       {
-	ParamType *p = static_cast<ParamType *> (other);
+	const ParamType *p = static_cast<const ParamType *> (other);
 	if (p->can_resolve ())
 	  {
-	    other = p->resolve ();
+	    const BaseType *resolved = p->resolve ();
+	    resolved->accept_vis (*this);
+	    return ok;
 	  }
       }
 
@@ -46,7 +48,7 @@ public:
     return ok;
   }
 
-  virtual void visit (TupleType &type) override
+  virtual void visit (const TupleType &type) override
   {
     ok = false;
 
@@ -63,7 +65,7 @@ public:
       }
   }
 
-  virtual void visit (ADTType &type) override
+  virtual void visit (const ADTType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -79,7 +81,7 @@ public:
       }
   }
 
-  virtual void visit (InferType &type) override
+  virtual void visit (const InferType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -95,7 +97,7 @@ public:
       }
   }
 
-  virtual void visit (FnType &type) override
+  virtual void visit (const FnType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -111,7 +113,7 @@ public:
       }
   }
 
-  virtual void visit (FnPtr &type) override
+  virtual void visit (const FnPtr &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -127,7 +129,7 @@ public:
       }
   }
 
-  virtual void visit (ArrayType &type) override
+  virtual void visit (const ArrayType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -143,7 +145,7 @@ public:
       }
   }
 
-  virtual void visit (BoolType &type) override
+  virtual void visit (const BoolType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -159,7 +161,7 @@ public:
       }
   }
 
-  virtual void visit (IntType &type) override
+  virtual void visit (const IntType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -175,7 +177,7 @@ public:
       }
   }
 
-  virtual void visit (UintType &type) override
+  virtual void visit (const UintType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -191,7 +193,7 @@ public:
       }
   }
 
-  virtual void visit (USizeType &type) override
+  virtual void visit (const USizeType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -207,7 +209,7 @@ public:
       }
   }
 
-  virtual void visit (ISizeType &type) override
+  virtual void visit (const ISizeType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -223,7 +225,7 @@ public:
       }
   }
 
-  virtual void visit (FloatType &type) override
+  virtual void visit (const FloatType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -239,7 +241,7 @@ public:
       }
   }
 
-  virtual void visit (ErrorType &type) override
+  virtual void visit (const ErrorType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -255,7 +257,7 @@ public:
       }
   }
 
-  virtual void visit (CharType &type) override
+  virtual void visit (const CharType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -271,7 +273,7 @@ public:
       }
   }
 
-  virtual void visit (ReferenceType &type) override
+  virtual void visit (const ReferenceType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -287,7 +289,7 @@ public:
       }
   }
 
-  virtual void visit (StrType &type) override
+  virtual void visit (const StrType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -303,7 +305,7 @@ public:
       }
   }
 
-  virtual void visit (NeverType &type) override
+  virtual void visit (const NeverType &type) override
   {
     ok = false;
     if (emit_error_flag)
@@ -319,20 +321,20 @@ public:
       }
   }
 
-  virtual void visit (PlaceholderType &type) override
+  virtual void visit (const PlaceholderType &type) override
   {
     // it is ok for types to can eq to a placeholder
     ok = true;
   }
 
-  virtual void visit (ParamType &type) override
+  virtual void visit (const ParamType &type) override
   {
     // it is ok for types to can eq to a ParamType
     ok = true;
   }
 
 protected:
-  BaseCmp (BaseType *base, bool emit_errors)
+  BaseCmp (const BaseType *base, bool emit_errors)
     : mappings (Analysis::Mappings::get ()),
       context (Resolver::TypeCheckContext::get ()), ok (false),
       emit_error_flag (emit_errors)
@@ -346,7 +348,7 @@ protected:
 
 private:
   /* Returns a pointer to the ty that created this rule. */
-  virtual BaseType *get_base () = 0;
+  virtual const BaseType *get_base () const = 0;
 };
 
 class InferCmp : public BaseCmp
@@ -354,11 +356,11 @@ class InferCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  InferCmp (InferType *base, bool emit_errors)
+  InferCmp (const InferType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (BoolType &type) override
+  void visit (const BoolType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -371,7 +373,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (IntType &type) override
+  void visit (const IntType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
@@ -386,7 +388,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (UintType &type) override
+  void visit (const UintType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
@@ -401,7 +403,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (USizeType &type) override
+  void visit (const USizeType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
@@ -416,7 +418,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (ISizeType &type) override
+  void visit (const ISizeType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
@@ -431,7 +433,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (FloatType &type) override
+  void visit (const FloatType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
@@ -445,7 +447,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (ArrayType &type) override
+  void visit (const ArrayType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -458,7 +460,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (ADTType &type) override
+  void visit (const ADTType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -471,7 +473,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (TupleType &type) override
+  void visit (const TupleType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -484,7 +486,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     switch (base->get_infer_kind ())
       {
@@ -524,7 +526,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (CharType &type) override
+  void visit (const CharType &type) override
   {
     {
       bool is_valid
@@ -539,7 +541,7 @@ public:
     }
   }
 
-  void visit (ReferenceType &type) override
+  void visit (const ReferenceType &type) override
 
   {
     bool is_valid
@@ -553,7 +555,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (ParamType &type) override
+  void visit (const ParamType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -567,9 +569,8 @@ public:
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  InferType *base;
+  const BaseType *get_base () const override { return base; }
+  const InferType *base;
 };
 
 class FnCmp : public BaseCmp
@@ -577,16 +578,16 @@ class FnCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FnCmp (FnType *base, bool emit_errors)
+  FnCmp (const FnType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     ok = type.get_infer_kind () == InferType::InferTypeKind::GENERAL;
   }
 
-  void visit (FnType &type) override
+  void visit (const FnType &type) override
   {
     if (base->num_params () != type.num_params ())
       {
@@ -619,9 +620,8 @@ public:
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  FnType *base;
+  const BaseType *get_base () const override { return base; }
+  const FnType *base;
 };
 
 class FnptrCmp : public BaseCmp
@@ -629,11 +629,11 @@ class FnptrCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FnptrCmp (FnPtr *base, bool emit_errors)
+  FnptrCmp (const FnPtr *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
       {
@@ -644,7 +644,7 @@ public:
     ok = true;
   }
 
-  void visit (FnPtr &type) override
+  void visit (const FnPtr &type) override
   {
     if (base->num_params () != type.num_params ())
       {
@@ -674,7 +674,7 @@ public:
     ok = true;
   }
 
-  void visit (FnType &type) override
+  void visit (const FnType &type) override
   {
     if (base->num_params () != type.num_params ())
       {
@@ -705,9 +705,8 @@ public:
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  FnPtr *base;
+  const BaseType *get_base () const override { return base; }
+  const FnPtr *base;
 };
 
 class ArrayCmp : public BaseCmp
@@ -715,26 +714,24 @@ class ArrayCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ArrayCmp (ArrayType *base, bool emit_errors)
+  ArrayCmp (const ArrayType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (ArrayType &type) override
+  void visit (const ArrayType &type) override
   {
-    // check base type
-    auto base_resolved
-      = base->get_element_type ()->unify (type.get_element_type ());
-    if (base_resolved->get_kind () == TypeKind::ERROR)
+    // need to check the base types and capacity
+    if (type.get_capacity () != base->get_capacity ())
       {
 	BaseCmp::visit (type);
 	return;
       }
 
-    // need to check the base types and capacity
-    if (type.get_capacity () != base->get_capacity ())
+    // check base type
+    const BaseType *base_element = base->get_element_type ();
+    const BaseType *other_element = type.get_element_type ();
+    if (!base_element->can_eq (other_element, emit_error_flag))
       {
-	Location locus = mappings->lookup_location (type.get_ref ());
-	rust_error_at (locus, "mismatch in array capacity");
 	BaseCmp::visit (type);
 	return;
       }
@@ -743,9 +740,8 @@ public:
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  ArrayType *base;
+  const BaseType *get_base () const override { return base; }
+  const ArrayType *base;
 };
 
 class BoolCmp : public BaseCmp
@@ -753,21 +749,20 @@ class BoolCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  BoolCmp (BoolType *base, bool emit_errors)
+  BoolCmp (const BoolType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (BoolType &type) override { ok = true; }
+  void visit (const BoolType &type) override { ok = true; }
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     ok = type.get_infer_kind () == InferType::InferTypeKind::GENERAL;
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  BoolType *base;
+  const BaseType *get_base () const override { return base; }
+  const BoolType *base;
 };
 
 class IntCmp : public BaseCmp
@@ -775,24 +770,23 @@ class IntCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  IntCmp (IntType *base, bool emit_errors)
+  IntCmp (const IntType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     ok = type.get_infer_kind () != InferType::InferTypeKind::FLOAT;
   }
 
-  void visit (IntType &type) override
+  void visit (const IntType &type) override
   {
     ok = type.get_int_kind () == base->get_int_kind ();
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  IntType *base;
+  const BaseType *get_base () const override { return base; }
+  const IntType *base;
 };
 
 class UintCmp : public BaseCmp
@@ -800,24 +794,23 @@ class UintCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  UintCmp (UintType *base, bool emit_errors)
+  UintCmp (const UintType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     ok = type.get_infer_kind () != InferType::InferTypeKind::FLOAT;
   }
 
-  void visit (UintType &type) override
+  void visit (const UintType &type) override
   {
     ok = type.get_uint_kind () == base->get_uint_kind ();
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  UintType *base;
+  const BaseType *get_base () const override { return base; }
+  const UintType *base;
 };
 
 class FloatCmp : public BaseCmp
@@ -825,24 +818,23 @@ class FloatCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FloatCmp (FloatType *base, bool emit_errors)
+  FloatCmp (const FloatType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     ok = type.get_infer_kind () != InferType::InferTypeKind::INTEGRAL;
   }
 
-  void visit (FloatType &type) override
+  void visit (const FloatType &type) override
   {
     ok = type.get_float_kind () == base->get_float_kind ();
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  FloatType *base;
+  const BaseType *get_base () const override { return base; }
+  const FloatType *base;
 };
 
 class ADTCmp : public BaseCmp
@@ -850,11 +842,11 @@ class ADTCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ADTCmp (ADTType *base, bool emit_errors)
+  ADTCmp (const ADTType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (ADTType &type) override
+  void visit (const ADTType &type) override
   {
     if (base->get_identifier ().compare (type.get_identifier ()) != 0)
       {
@@ -870,8 +862,8 @@ public:
 
     for (size_t i = 0; i < type.num_fields (); ++i)
       {
-	TyTy::StructFieldType *base_field = base->get_field (i);
-	TyTy::StructFieldType *other_field = type.get_field (i);
+	const TyTy::StructFieldType *base_field = base->get_imm_field (i);
+	const TyTy::StructFieldType *other_field = type.get_imm_field (i);
 
 	TyTy::BaseType *this_field_ty = base_field->get_field_type ();
 	TyTy::BaseType *other_field_ty = other_field->get_field_type ();
@@ -887,9 +879,8 @@ public:
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  ADTType *base;
+  const BaseType *get_base () const override { return base; }
+  const ADTType *base;
 };
 
 class TupleCmp : public BaseCmp
@@ -897,11 +888,11 @@ class TupleCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  TupleCmp (TupleType *base, bool emit_errors)
+  TupleCmp (const TupleType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (TupleType &type) override
+  void visit (const TupleType &type) override
   {
     if (base->num_fields () != type.num_fields ())
       {
@@ -925,9 +916,8 @@ public:
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  TupleType *base;
+  const BaseType *get_base () const override { return base; }
+  const TupleType *base;
 };
 
 class USizeCmp : public BaseCmp
@@ -935,21 +925,20 @@ class USizeCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  USizeCmp (USizeType *base, bool emit_errors)
+  USizeCmp (const USizeType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     ok = type.get_infer_kind () != InferType::InferTypeKind::FLOAT;
   }
 
-  void visit (USizeType &type) override { ok = true; }
+  void visit (const USizeType &type) override { ok = true; }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  USizeType *base;
+  const BaseType *get_base () const override { return base; }
+  const USizeType *base;
 };
 
 class ISizeCmp : public BaseCmp
@@ -957,21 +946,20 @@ class ISizeCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ISizeCmp (ISizeType *base, bool emit_errors)
+  ISizeCmp (const ISizeType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     ok = type.get_infer_kind () != InferType::InferTypeKind::FLOAT;
   }
 
-  void visit (ISizeType &type) override { ok = true; }
+  void visit (const ISizeType &type) override { ok = true; }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  ISizeType *base;
+  const BaseType *get_base () const override { return base; }
+  const ISizeType *base;
 };
 
 class CharCmp : public BaseCmp
@@ -979,21 +967,20 @@ class CharCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  CharCmp (CharType *base, bool emit_errors)
+  CharCmp (const CharType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (InferType &type) override
+  void visit (const InferType &type) override
   {
     ok = type.get_infer_kind () == InferType::InferTypeKind::GENERAL;
   }
 
-  void visit (CharType &type) override { ok = true; }
+  void visit (const CharType &type) override { ok = true; }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  CharType *base;
+  const BaseType *get_base () const override { return base; }
+  const CharType *base;
 };
 
 class ReferenceCmp : public BaseCmp
@@ -1001,11 +988,11 @@ class ReferenceCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ReferenceCmp (ReferenceType *base, bool emit_errors)
+  ReferenceCmp (const ReferenceType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (ReferenceType &type) override
+  void visit (const ReferenceType &type) override
   {
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
@@ -1014,9 +1001,8 @@ public:
   }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  ReferenceType *base;
+  const BaseType *get_base () const override { return base; }
+  const ReferenceType *base;
 };
 
 class ParamCmp : public BaseCmp
@@ -1024,7 +1010,7 @@ class ParamCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ParamCmp (ParamType *base, bool emit_errors)
+  ParamCmp (const ParamType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
@@ -1037,7 +1023,7 @@ public:
   //
   // rust also allows for a = foo{a:123}; Where we can use an Inference Variable
   // to handle the typing of the struct
-  bool can_eq (BaseType *other) override final
+  bool can_eq (const BaseType *other) override
   {
     if (base->get_ref () == base->get_ty_ref ())
       return BaseCmp::can_eq (other);
@@ -1062,12 +1048,11 @@ public:
   // impl <X>Foo<X> { ... }
   // both of these types are compatible so we mostly care about the number of
   // generic arguments
-  void visit (ParamType &type) override { ok = true; }
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  ParamType *base;
+  const BaseType *get_base () const override { return base; }
+  const ParamType *base;
 };
 
 class StrCmp : public BaseCmp
@@ -1076,16 +1061,15 @@ class StrCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  StrCmp (StrType *base, bool emit_errors)
+  StrCmp (const StrType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (StrType &type) override { ok = true; }
+  void visit (const StrType &type) override { ok = true; }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  StrType *base;
+  const BaseType *get_base () const override { return base; }
+  const StrType *base;
 };
 
 class NeverCmp : public BaseCmp
@@ -1093,16 +1077,15 @@ class NeverCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  NeverCmp (NeverType *base, bool emit_errors)
+  NeverCmp (const NeverType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  void visit (NeverType &type) override { ok = true; }
+  void visit (const NeverType &type) override { ok = true; }
 
 private:
-  BaseType *get_base () override { return base; }
-
-  NeverType *base;
+  const BaseType *get_base () const override { return base; }
+  const NeverType *base;
 };
 
 class PlaceholderCmp : public BaseCmp
@@ -1110,52 +1093,52 @@ class PlaceholderCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  PlaceholderCmp (PlaceholderType *base, bool emit_errors)
+  PlaceholderCmp (const PlaceholderType *base, bool emit_errors)
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  virtual void visit (TupleType &) override { ok = true; }
+  virtual void visit (const TupleType &) override { ok = true; }
 
-  virtual void visit (ADTType &) override { ok = true; }
+  virtual void visit (const ADTType &) override { ok = true; }
 
-  virtual void visit (InferType &) override { ok = true; }
+  virtual void visit (const InferType &) override { ok = true; }
 
-  virtual void visit (FnType &) override { ok = true; }
+  virtual void visit (const FnType &) override { ok = true; }
 
-  virtual void visit (FnPtr &) override { ok = true; }
+  virtual void visit (const FnPtr &) override { ok = true; }
 
-  virtual void visit (ArrayType &) override { ok = true; }
+  virtual void visit (const ArrayType &) override { ok = true; }
 
-  virtual void visit (BoolType &) override { ok = true; }
+  virtual void visit (const BoolType &) override { ok = true; }
 
-  virtual void visit (IntType &) override { ok = true; }
+  virtual void visit (const IntType &) override { ok = true; }
 
-  virtual void visit (UintType &) override { ok = true; }
+  virtual void visit (const UintType &) override { ok = true; }
 
-  virtual void visit (USizeType &) override { ok = true; }
+  virtual void visit (const USizeType &) override { ok = true; }
 
-  virtual void visit (ISizeType &) override { ok = true; }
+  virtual void visit (const ISizeType &) override { ok = true; }
 
-  virtual void visit (FloatType &) override { ok = true; }
+  virtual void visit (const FloatType &) override { ok = true; }
 
-  virtual void visit (ErrorType &) override { ok = true; }
+  virtual void visit (const ErrorType &) override { ok = true; }
 
-  virtual void visit (CharType &) override { ok = true; }
+  virtual void visit (const CharType &) override { ok = true; }
 
-  virtual void visit (ReferenceType &) override { ok = true; }
+  virtual void visit (const ReferenceType &) override { ok = true; }
 
-  virtual void visit (ParamType &) override { ok = true; }
+  virtual void visit (const ParamType &) override { ok = true; }
 
-  virtual void visit (StrType &) override { ok = true; }
+  virtual void visit (const StrType &) override { ok = true; }
 
-  virtual void visit (NeverType &) override { ok = true; }
+  virtual void visit (const NeverType &) override { ok = true; }
 
-  virtual void visit (PlaceholderType &) override { ok = true; }
+  virtual void visit (const PlaceholderType &) override { ok = true; }
 
 private:
-  BaseType *get_base () override { return base; }
+  const BaseType *get_base () const override { return base; }
 
-  PlaceholderType *base;
+  const PlaceholderType *base;
 };
 
 } // namespace TyTy

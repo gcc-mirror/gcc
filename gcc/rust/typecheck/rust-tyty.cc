@@ -75,6 +75,12 @@ InferType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+InferType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 InferType::as_string () const
 {
@@ -98,7 +104,7 @@ InferType::unify (BaseType *other)
 }
 
 bool
-InferType::can_eq (BaseType *other, bool emit_errors)
+InferType::can_eq (const BaseType *other, bool emit_errors) const
 {
   InferCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -142,6 +148,12 @@ ErrorType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+ErrorType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 ErrorType::as_string () const
 {
@@ -155,7 +167,7 @@ ErrorType::unify (BaseType *other)
 }
 
 bool
-ErrorType::can_eq (BaseType *other, bool emit_errors)
+ErrorType::can_eq (const BaseType *other, bool emit_errors) const
 {
   return get_kind () == other->get_kind ();
 }
@@ -379,6 +391,12 @@ ADTType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+ADTType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 ADTType::as_string () const
 {
@@ -421,7 +439,7 @@ ADTType::unify (BaseType *other)
 }
 
 bool
-ADTType::can_eq (BaseType *other, bool emit_errors)
+ADTType::can_eq (const BaseType *other, bool emit_errors) const
 {
   ADTCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -556,6 +574,12 @@ TupleType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+TupleType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 TupleType::as_string () const
 {
@@ -582,7 +606,7 @@ TupleType::unify (BaseType *other)
 }
 
 bool
-TupleType::can_eq (BaseType *other, bool emit_errors)
+TupleType::can_eq (const BaseType *other, bool emit_errors) const
 {
   TupleCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -642,6 +666,12 @@ FnType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+FnType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 FnType::as_string () const
 {
@@ -666,7 +696,7 @@ FnType::unify (BaseType *other)
 }
 
 bool
-FnType::can_eq (BaseType *other, bool emit_errors)
+FnType::can_eq (const BaseType *other, bool emit_errors) const
 {
   FnCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -842,6 +872,12 @@ FnPtr::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+FnPtr::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 FnPtr::as_string () const
 {
@@ -861,7 +897,7 @@ FnPtr::unify (BaseType *other)
 }
 
 bool
-FnPtr::can_eq (BaseType *other, bool emit_errors)
+FnPtr::can_eq (const BaseType *other, bool emit_errors) const
 {
   FnptrCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -907,6 +943,12 @@ ArrayType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+ArrayType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 ArrayType::as_string () const
 {
@@ -928,7 +970,7 @@ ArrayType::unify (BaseType *other)
 }
 
 bool
-ArrayType::can_eq (BaseType *other, bool emit_errors)
+ArrayType::can_eq (const BaseType *other, bool emit_errors) const
 {
   ArrayCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -969,6 +1011,12 @@ BoolType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+BoolType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 BoolType::as_string () const
 {
@@ -983,7 +1031,7 @@ BoolType::unify (BaseType *other)
 }
 
 bool
-BoolType::can_eq (BaseType *other, bool emit_errors)
+BoolType::can_eq (const BaseType *other, bool emit_errors) const
 {
   BoolCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -997,6 +1045,12 @@ BoolType::clone ()
 
 void
 IntType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+IntType::accept_vis (TyConstVisitor &vis) const
 {
   vis.visit (*this);
 }
@@ -1029,7 +1083,7 @@ IntType::unify (BaseType *other)
 }
 
 bool
-IntType::can_eq (BaseType *other, bool emit_errors)
+IntType::can_eq (const BaseType *other, bool emit_errors) const
 {
   IntCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1054,6 +1108,12 @@ IntType::is_equal (const BaseType &other) const
 
 void
 UintType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+UintType::accept_vis (TyConstVisitor &vis) const
 {
   vis.visit (*this);
 }
@@ -1086,7 +1146,7 @@ UintType::unify (BaseType *other)
 }
 
 bool
-UintType::can_eq (BaseType *other, bool emit_errors)
+UintType::can_eq (const BaseType *other, bool emit_errors) const
 {
   UintCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1115,6 +1175,12 @@ FloatType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+FloatType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 FloatType::as_string () const
 {
@@ -1137,7 +1203,7 @@ FloatType::unify (BaseType *other)
 }
 
 bool
-FloatType::can_eq (BaseType *other, bool emit_errors)
+FloatType::can_eq (const BaseType *other, bool emit_errors) const
 {
   FloatCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1166,6 +1232,12 @@ USizeType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+USizeType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 USizeType::as_string () const
 {
@@ -1180,7 +1252,7 @@ USizeType::unify (BaseType *other)
 }
 
 bool
-USizeType::can_eq (BaseType *other, bool emit_errors)
+USizeType::can_eq (const BaseType *other, bool emit_errors) const
 {
   USizeCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1194,6 +1266,12 @@ USizeType::clone ()
 
 void
 ISizeType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ISizeType::accept_vis (TyConstVisitor &vis) const
 {
   vis.visit (*this);
 }
@@ -1212,7 +1290,7 @@ ISizeType::unify (BaseType *other)
 }
 
 bool
-ISizeType::can_eq (BaseType *other, bool emit_errors)
+ISizeType::can_eq (const BaseType *other, bool emit_errors) const
 {
   ISizeCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1226,6 +1304,12 @@ ISizeType::clone ()
 
 void
 CharType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+CharType::accept_vis (TyConstVisitor &vis) const
 {
   vis.visit (*this);
 }
@@ -1244,7 +1328,7 @@ CharType::unify (BaseType *other)
 }
 
 bool
-CharType::can_eq (BaseType *other, bool emit_errors)
+CharType::can_eq (const BaseType *other, bool emit_errors) const
 {
   CharCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1258,6 +1342,12 @@ CharType::clone ()
 
 void
 ReferenceType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ReferenceType::accept_vis (TyConstVisitor &vis) const
 {
   vis.visit (*this);
 }
@@ -1276,7 +1366,7 @@ ReferenceType::unify (BaseType *other)
 }
 
 bool
-ReferenceType::can_eq (BaseType *other, bool emit_errors)
+ReferenceType::can_eq (const BaseType *other, bool emit_errors) const
 {
   ReferenceCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1327,6 +1417,12 @@ ParamType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+ParamType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 ParamType::as_string () const
 {
@@ -1351,7 +1447,7 @@ ParamType::unify (BaseType *other)
 }
 
 bool
-ParamType::can_eq (BaseType *other, bool emit_errors)
+ParamType::can_eq (const BaseType *other, bool emit_errors) const
 {
   ParamCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1437,6 +1533,12 @@ StrType::accept_vis (TyVisitor &vis)
   vis.visit (*this);
 }
 
+void
+StrType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
 std::string
 StrType::as_string () const
 {
@@ -1451,7 +1553,7 @@ StrType::unify (BaseType *other)
 }
 
 bool
-StrType::can_eq (BaseType *other, bool emit_errors)
+StrType::can_eq (const BaseType *other, bool emit_errors) const
 {
   StrCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1465,6 +1567,12 @@ StrType::is_equal (const BaseType &other) const
 
 void
 NeverType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+NeverType::accept_vis (TyConstVisitor &vis) const
 {
   vis.visit (*this);
 }
@@ -1483,7 +1591,7 @@ NeverType::unify (BaseType *other)
 }
 
 bool
-NeverType::can_eq (BaseType *other, bool emit_errors)
+NeverType::can_eq (const BaseType *other, bool emit_errors) const
 {
   NeverCmp r (this, emit_errors);
   return r.can_eq (other);
@@ -1497,6 +1605,12 @@ NeverType::clone ()
 
 void
 PlaceholderType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+PlaceholderType::accept_vis (TyConstVisitor &vis) const
 {
   vis.visit (*this);
 }
@@ -1515,7 +1629,7 @@ PlaceholderType::unify (BaseType *other)
 }
 
 bool
-PlaceholderType::can_eq (BaseType *other, bool emit_errors)
+PlaceholderType::can_eq (const BaseType *other, bool emit_errors) const
 {
   PlaceholderCmp r (this, emit_errors);
   return r.can_eq (other);

@@ -48,6 +48,30 @@ public:
   virtual void visit (PlaceholderType &type) = 0;
 };
 
+class TyConstVisitor
+{
+public:
+  virtual void visit (const InferType &type) = 0;
+  virtual void visit (const ADTType &type) = 0;
+  virtual void visit (const TupleType &type) = 0;
+  virtual void visit (const FnType &type) = 0;
+  virtual void visit (const FnPtr &type) = 0;
+  virtual void visit (const ArrayType &type) = 0;
+  virtual void visit (const BoolType &type) = 0;
+  virtual void visit (const IntType &type) = 0;
+  virtual void visit (const UintType &type) = 0;
+  virtual void visit (const FloatType &type) = 0;
+  virtual void visit (const USizeType &type) = 0;
+  virtual void visit (const ISizeType &type) = 0;
+  virtual void visit (const ErrorType &type) = 0;
+  virtual void visit (const CharType &type) = 0;
+  virtual void visit (const ReferenceType &type) = 0;
+  virtual void visit (const ParamType &type) = 0;
+  virtual void visit (const StrType &type) = 0;
+  virtual void visit (const NeverType &type) = 0;
+  virtual void visit (const PlaceholderType &type) = 0;
+};
+
 } // namespace TyTy
 } // namespace Rust
 
