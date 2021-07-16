@@ -936,7 +936,7 @@ initial_svalue::implicitly_live_p (const svalue_set *,
      a popped stack frame.  */
   if (model->region_exists_p (m_reg))
     {
-      const svalue *reg_sval = model->get_store_value (m_reg);
+      const svalue *reg_sval = model->get_store_value (m_reg, NULL);
       if (reg_sval == this)
 	return true;
     }

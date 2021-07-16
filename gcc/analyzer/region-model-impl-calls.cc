@@ -431,7 +431,7 @@ region_model::impl_call_memcpy (const call_details &cd)
 	return;
     }
 
-  check_for_writable_region (dest_reg, cd.get_ctxt ());
+  check_region_for_write (dest_reg, cd.get_ctxt ());
 
   /* Otherwise, mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
@@ -455,7 +455,7 @@ region_model::impl_call_memset (const call_details &cd)
   const region *sized_dest_reg = m_mgr->get_sized_region (dest_reg,
 							  NULL_TREE,
 							  num_bytes_sval);
-  check_for_writable_region (sized_dest_reg, cd.get_ctxt ());
+  check_region_for_write (sized_dest_reg, cd.get_ctxt ());
   fill_region (sized_dest_reg, fill_value_u8);
   return true;
 }
@@ -515,7 +515,7 @@ region_model::impl_call_strcpy (const call_details &cd)
 
   cd.maybe_set_lhs (dest_sval);
 
-  check_for_writable_region (dest_reg, cd.get_ctxt ());
+  check_region_for_write (dest_reg, cd.get_ctxt ());
 
   /* For now, just mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg, cd.get_uncertainty ());

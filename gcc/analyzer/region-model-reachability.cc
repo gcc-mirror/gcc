@@ -154,7 +154,7 @@ reachable_regions::add (const region *reg, bool is_mutable)
   if (binding_cluster *bind_cluster = m_store->get_cluster (base_reg))
     bind_cluster->for_each_value (handle_sval_cb, this);
   else
-    handle_sval (m_model->get_store_value (reg));
+    handle_sval (m_model->get_store_value (reg, NULL));
 }
 
 void

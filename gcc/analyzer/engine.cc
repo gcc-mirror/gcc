@@ -1468,7 +1468,8 @@ exploded_node::on_longjmp (exploded_graph &eg,
   const region *buf = new_region_model->deref_rvalue (buf_ptr_sval, buf_ptr,
 						       ctxt);
 
-  const svalue *buf_content_sval = new_region_model->get_store_value (buf);
+  const svalue *buf_content_sval
+    = new_region_model->get_store_value (buf, ctxt);
   const setjmp_svalue *setjmp_sval
     = buf_content_sval->dyn_cast_setjmp_svalue ();
   if (!setjmp_sval)

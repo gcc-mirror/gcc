@@ -1082,7 +1082,7 @@ program_state::prune_for_point (exploded_graph &eg,
 		 temporaries keep the value reachable until the frame is
 		 popped.  */
 	      const svalue *sval
-		= new_state.m_region_model->get_store_value (reg);
+		= new_state.m_region_model->get_store_value (reg, NULL);
 	      if (!new_state.can_purge_p (eg.get_ext_state (), sval)
 		  && SSA_NAME_VAR (ssa_name))
 		{

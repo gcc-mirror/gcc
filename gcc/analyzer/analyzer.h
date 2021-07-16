@@ -208,6 +208,14 @@ public:
   virtual logger *get_logger () const = 0;
 };
 
+/* An enum for describing the direction of an access to memory.  */
+
+enum access_direction
+{
+  DIR_READ,
+  DIR_WRITE
+};
+
 } // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,
