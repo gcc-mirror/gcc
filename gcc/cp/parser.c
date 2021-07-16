@@ -7354,6 +7354,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
     case RID_BUILTIN_SHUFFLE:
     case RID_BUILTIN_SHUFFLEVECTOR:
     case RID_BUILTIN_LAUNDER:
+    case RID_BUILTIN_ASSOC_BARRIER:
       {
 	vec<tree, va_gc> *vec;
 
@@ -7392,6 +7393,19 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      {
 		error_at (loc, "wrong number of arguments to "
 			       "%<__builtin_launder%>");
+		postfix_expression = error_mark_node;
+	      }
+	    break;
+
+	  case RID_BUILTIN_ASSOC_BARRIER:
+	    if (vec->length () == 1)
+	      postfix_expression = build1_loc (loc, PAREN_EXPR,
+					       TREE_TYPE ((*vec)[0]),
+					       (*vec)[0]);
+	    else
+	      {
+		error_at (loc, "wrong number of arguments to "
+			       "%<__builtin_assoc_barrier%>");
 		postfix_expression = error_mark_node;
 	      }
 	    break;

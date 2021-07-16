@@ -2048,24 +2048,17 @@ force_paren_expr (tree expr, bool even_uneval)
   if (cp_unevaluated_operand && !even_uneval)
     return expr;
 
-  if (!DECL_P (tree_strip_any_location_wrapper (expr))
-      && TREE_CODE (expr) != COMPONENT_REF
-      && TREE_CODE (expr) != SCOPE_REF)
-    return expr;
-
-  location_t loc = cp_expr_location (expr);
-
   if (TREE_CODE (expr) == COMPONENT_REF
       || TREE_CODE (expr) == SCOPE_REF)
     REF_PARENTHESIZED_P (expr) = true;
-  else if (processing_template_decl)
-    expr = build1_loc (loc, PAREN_EXPR, TREE_TYPE (expr), expr);
-  else
+  else if (DECL_P (tree_strip_any_location_wrapper (expr)))
     {
-      expr = build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (expr), expr);
+      location_t loc = cp_expr_location (expr);
+      const tree_code code = processing_template_decl ? PAREN_EXPR
+						      : VIEW_CONVERT_EXPR;
+      expr = build1_loc (loc, code, TREE_TYPE (expr), expr);
       REF_PARENTHESIZED_P (expr) = true;
     }
-
   return expr;
 }
 
@@ -2090,10 +2083,8 @@ maybe_undo_parenthesized_ref (tree t)
 		  || TREE_CODE (t) == STATIC_CAST_EXPR);
       t = TREE_OPERAND (t, 0);
     }
-  else if (TREE_CODE (t) == PAREN_EXPR)
-    t = TREE_OPERAND (t, 0);
-  else if (TREE_CODE (t) == VIEW_CONVERT_EXPR
-	   && REF_PARENTHESIZED_P (t))
+  else if ((TREE_CODE (t) == PAREN_EXPR || TREE_CODE (t) == VIEW_CONVERT_EXPR)
+	     && REF_PARENTHESIZED_P (t))
     t = TREE_OPERAND (t, 0);
 
   return t;

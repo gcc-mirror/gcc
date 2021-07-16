@@ -21010,7 +21010,15 @@ tsubst_copy_and_build (tree t,
 	     integral_constant_expression_p));
 
     case PAREN_EXPR:
-      RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
+      if (REF_PARENTHESIZED_P (t))
+	RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
+      else
+	/* Recreate the PAREN_EXPR from __builtin_assoc_barrier.  */
+	{
+	  tree op0 = RECUR (TREE_OPERAND (t, 0));
+	  RETURN (build1_loc (input_location, PAREN_EXPR,
+			      TREE_TYPE (op0), op0));
+	}
 
     case VEC_PERM_EXPR:
       {
