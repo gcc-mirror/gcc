@@ -989,9 +989,9 @@
    (V16HF "OI") (V8HF "TI")])
 
 (define_mode_attr sseintvecmodelower
-  [(V16SF "v16si") (V8DF "v8di")
-   (V8SF "v8si") (V4DF "v4di")
-   (V4SF "v4si") (V2DF "v2di")
+  [(V32HF "v32hi") (V16SF "v16si") (V8DF "v8di")
+   (V16HF "v16hi") (V8SF "v8si") (V4DF "v4di")
+   (V8HF "v8hi") (V4SF "v4si") (V2DF "v2di")
    (V8SI "v8si") (V4DI "v4di")
    (V4SI "v4si") (V2DI "v2di")
    (V16HI "v16hi") (V8HI "v8hi")
@@ -1568,9 +1568,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx512>_store<mode>_mask"
-  [(set (match_operand:VI12_AVX512VL 0 "memory_operand" "=m")
-	(vec_merge:VI12_AVX512VL
-	  (match_operand:VI12_AVX512VL 1 "register_operand" "v")
+  [(set (match_operand:VI12HF_AVX512VL 0 "memory_operand" "=m")
+	(vec_merge:VI12HF_AVX512VL
+	  (match_operand:VI12HF_AVX512VL 1 "register_operand" "v")
 	  (match_dup 0)
 	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))]
   "TARGET_AVX512BW"
@@ -3810,8 +3810,8 @@
 (define_expand "vec_cmp<mode><avx512fmaskmodelower>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
 	(match_operator:<avx512fmaskmode> 1 ""
-	  [(match_operand:V48_AVX512VL 2 "register_operand")
-	   (match_operand:V48_AVX512VL 3 "nonimmediate_operand")]))]
+	  [(match_operand:V48H_AVX512VL 2 "register_operand")
+	   (match_operand:V48H_AVX512VL 3 "nonimmediate_operand")]))]
   "TARGET_AVX512F"
 {
   bool ok = ix86_expand_mask_vec_cmp (operands[0], GET_CODE (operands[1]),
@@ -4018,6 +4018,51 @@
   DONE;
 })
 
+(define_expand "vcond<mode><mode>"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
+	(if_then_else:VF_AVX512FP16VL
+	  (match_operator 3 ""
+	    [(match_operand:VF_AVX512FP16VL 4 "vector_operand")
+	     (match_operand:VF_AVX512FP16VL 5 "vector_operand")])
+	  (match_operand:VF_AVX512FP16VL 1 "general_operand")
+	  (match_operand:VF_AVX512FP16VL 2 "general_operand")))]
+  "TARGET_AVX512FP16"
+{
+  bool ok = ix86_expand_fp_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcond<mode><sseintvecmodelower>"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
+	(if_then_else:VF_AVX512FP16VL
+	  (match_operator 3 ""
+	    [(match_operand:<sseintvecmode> 4 "vector_operand")
+	     (match_operand:<sseintvecmode> 5 "vector_operand")])
+	  (match_operand:VF_AVX512FP16VL 1 "general_operand")
+	  (match_operand:VF_AVX512FP16VL 2 "general_operand")))]
+  "TARGET_AVX512FP16"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcond<sseintvecmodelower><mode>"
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	(if_then_else:<sseintvecmode>
+	  (match_operator 3 ""
+	    [(match_operand:VF_AVX512FP16VL 4 "vector_operand")
+	     (match_operand:VF_AVX512FP16VL 5 "vector_operand")])
+	  (match_operand:<sseintvecmode> 1 "general_operand")
+	  (match_operand:<sseintvecmode> 2 "general_operand")))]
+  "TARGET_AVX512FP16"
+{
+  bool ok = ix86_expand_fp_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
 (define_expand "vcond_mask_<mode><avx512fmaskmodelower>"
   [(set (match_operand:V48_AVX512VL 0 "register_operand")
 	(vec_merge:V48_AVX512VL
@@ -4027,10 +4072,10 @@
   "TARGET_AVX512F")
 
 (define_expand "vcond_mask_<mode><avx512fmaskmodelower>"
-  [(set (match_operand:VI12_AVX512VL 0 "register_operand")
-	(vec_merge:VI12_AVX512VL
-	  (match_operand:VI12_AVX512VL 1 "nonimmediate_operand")
-	  (match_operand:VI12_AVX512VL 2 "nonimm_or_0_operand")
+  [(set (match_operand:VI12HF_AVX512VL 0 "register_operand")
+	(vec_merge:VI12HF_AVX512VL
+	  (match_operand:VI12HF_AVX512VL 1 "nonimmediate_operand")
+	  (match_operand:VI12HF_AVX512VL 2 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 3 "register_operand")))]
   "TARGET_AVX512BW")
 
@@ -15532,6 +15577,21 @@
 	  (match_operand:VI8F_128 1 "general_operand")
 	  (match_operand:VI8F_128 2 "general_operand")))]
   "TARGET_SSE4_2"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcondu<mode><sseintvecmodelower>"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
+	(if_then_else:VF_AVX512FP16VL
+	  (match_operator 3 ""
+	    [(match_operand:<sseintvecmode> 4 "vector_operand")
+	     (match_operand:<sseintvecmode> 5 "vector_operand")])
+	  (match_operand:VF_AVX512FP16VL 1 "general_operand")
+	  (match_operand:VF_AVX512FP16VL 2 "general_operand")))]
+  "TARGET_AVX512FP16"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
