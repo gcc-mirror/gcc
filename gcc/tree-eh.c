@@ -2856,7 +2856,7 @@ stmt_could_throw_1_p (gassign *stmt)
       if (TREE_CODE_CLASS (code) == tcc_comparison)
 	t = TREE_TYPE (gimple_assign_rhs1 (stmt));
       else
-	t = gimple_expr_type (stmt);
+	t = TREE_TYPE (gimple_assign_lhs (stmt));
       fp_operation = FLOAT_TYPE_P (t);
       if (fp_operation)
 	{

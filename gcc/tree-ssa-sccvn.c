@@ -423,7 +423,7 @@ static unsigned int vn_nary_length_from_stmt (gimple *);
 static vn_nary_op_t alloc_vn_nary_op_noinit (unsigned int, obstack *);
 static vn_nary_op_t vn_nary_op_insert_into (vn_nary_op_t,
 					    vn_nary_op_table_type *, bool);
-static void init_vn_nary_op_from_stmt (vn_nary_op_t, gimple *);
+static void init_vn_nary_op_from_stmt (vn_nary_op_t, gassign *);
 static void init_vn_nary_op_from_pieces (vn_nary_op_t, unsigned int,
 					 enum tree_code, tree, tree *);
 static tree vn_lookup_simplify_result (gimple_match_op *);
@@ -2377,7 +2377,7 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
 	  vno1->length = length;
 	  vno1->predicated_values = 0;
 	  vno1->u.result = result;
-	  init_vn_nary_op_from_stmt (vno1, new_stmt);
+	  init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (new_stmt));
 	  vn_nary_op_insert_into (vno1, valid_info->nary, true);
 	  /* Also do not link it into the undo chain.  */
 	  last_inserted_nary = vno1->next;
@@ -3882,12 +3882,12 @@ vn_nary_length_from_stmt (gimple *stmt)
 /* Initialize VNO from STMT.  */
 
 static void
-init_vn_nary_op_from_stmt (vn_nary_op_t vno, gimple *stmt)
+init_vn_nary_op_from_stmt (vn_nary_op_t vno, gassign *stmt)
 {
   unsigned i;
 
   vno->opcode = gimple_assign_rhs_code (stmt);
-  vno->type = gimple_expr_type (stmt);
+  vno->type = TREE_TYPE (gimple_assign_lhs (stmt));
   switch (vno->opcode)
     {
     case REALPART_EXPR:
@@ -3968,7 +3968,7 @@ vn_nary_op_lookup_stmt (gimple *stmt, vn_nary_op_t *vnresult)
   vn_nary_op_t vno1
     = XALLOCAVAR (struct vn_nary_op_s,
 		  sizeof_vn_nary_op (vn_nary_length_from_stmt (stmt)));
-  init_vn_nary_op_from_stmt (vno1, stmt);
+  init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (stmt));
   return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
@@ -4221,7 +4221,7 @@ vn_nary_op_insert_stmt (gimple *stmt, tree result)
   vn_nary_op_t vno1
     = alloc_vn_nary_op (vn_nary_length_from_stmt (stmt),
 			result, VN_INFO (result)->value_id);
-  init_vn_nary_op_from_stmt (vno1, stmt);
+  init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (stmt));
   return vn_nary_op_insert_into (vno1, valid_info->nary, true);
 }
 
