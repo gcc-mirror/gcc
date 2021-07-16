@@ -372,21 +372,31 @@ sm_state_map::get_state (const svalue *sval,
      INIT_VAL(foo).  */
   if (m_sm.inherited_state_p ())
     if (region_model_manager *mgr = ext_state.get_model_manager ())
-      if (const initial_svalue *init_sval = sval->dyn_cast_initial_svalue ())
-	{
-	  const region *reg = init_sval->get_region ();
-	  /* Try recursing upwards (up to the base region for the cluster).  */
-	  if (!reg->base_region_p ())
-	    if (const region *parent_reg = reg->get_parent_region ())
-	      {
-		const svalue *parent_init_sval
-		  = mgr->get_or_create_initial_value (parent_reg);
-		state_machine::state_t parent_state
-		  = get_state (parent_init_sval, ext_state);
-		if (parent_state)
-		  return parent_state;
-	      }
-	}
+      {
+	if (const initial_svalue *init_sval = sval->dyn_cast_initial_svalue ())
+	  {
+	    const region *reg = init_sval->get_region ();
+	    /* Try recursing upwards (up to the base region for the
+	       cluster).  */
+	    if (!reg->base_region_p ())
+	      if (const region *parent_reg = reg->get_parent_region ())
+		{
+		  const svalue *parent_init_sval
+		    = mgr->get_or_create_initial_value (parent_reg);
+		  state_machine::state_t parent_state
+		    = get_state (parent_init_sval, ext_state);
+		  if (parent_state)
+		    return parent_state;
+		}
+	  }
+	else if (const sub_svalue *sub_sval = sval->dyn_cast_sub_svalue ())
+	  {
+	    const svalue *parent_sval = sub_sval->get_parent ();
+	    if (state_machine::state_t parent_state
+		  = get_state (parent_sval, ext_state))
+	      return parent_state;
+	  }
+      }
 
   return m_sm.get_default_state (sval);
 }
@@ -596,7 +606,8 @@ sm_state_map::purge_state_involving (const svalue *sval,
 				     const extrinsic_state &ext_state)
 {
   /* Currently svalue::involves_p requires this.  */
-  if (sval->get_kind () != SK_INITIAL)
+  if (!(sval->get_kind () == SK_INITIAL
+	|| sval->get_kind () == SK_CONJURED))
     return;
 
   svalue_set svals_to_unset;

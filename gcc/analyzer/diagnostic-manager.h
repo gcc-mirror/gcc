@@ -58,6 +58,8 @@ public:
 
   unsigned get_index () const { return m_idx; }
 
+  bool supercedes_p (const saved_diagnostic &other) const;
+
   //private:
   const state_machine *m_sm;
   const exploded_node *m_enode;

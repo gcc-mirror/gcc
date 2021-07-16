@@ -114,6 +114,9 @@ struct die_struct;
    referenced by it can escape.  */
 #define EAF_NODIRECTESCAPE	(1 << 4)
 
+/* Nonzero if the argument does not escape to return value.  */
+#define EAF_NOT_RETURNED	(1 << 8)
+
 /* Call return flags.  */
 /* Mask for the argument number that is returned.  Lower two bits of
    the return flags, encodes argument slots zero to three.  */

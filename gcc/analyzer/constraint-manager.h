@@ -269,6 +269,7 @@ public:
 
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model);
+  void purge_state_involving (const svalue *sval);
 
   void canonicalize ();
 

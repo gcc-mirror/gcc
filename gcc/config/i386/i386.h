@@ -1023,7 +1023,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
    || (MODE) == V4SFmode || (MODE) == V4SImode				\
-   || (MODE) == SFmode || (MODE) == TFmode)
+   || (MODE) == SFmode || (MODE) == TFmode || (MODE) == TDmode)
 
 #define VALID_MMX_REG_MODE_3DNOW(MODE) \
   ((MODE) == V2SFmode || (MODE) == SFmode)
@@ -1037,9 +1037,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
-#define VALID_DFP_MODE_P(MODE) \
-  ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
-
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
    || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)		\
@@ -1049,12 +1046,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == SImode || (MODE) == DImode				\
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
+   || (MODE) == SDmode || (MODE) == DDmode				\
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\
 	   || (MODE) == TFmode || (MODE) == TCmode			\
 	   || (MODE) == V8QImode || (MODE) == V4HImode			\
-	   || (MODE) == V2SImode)))
+	   || (MODE) == V2SImode || (MODE) == TDmode)))
 
 /* Return true for modes passed in SSE registers.  */
 #define SSE_REG_MODE_P(MODE)						\

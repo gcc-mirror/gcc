@@ -1316,6 +1316,38 @@ binding_cluster::mark_region_as_unknown (store_manager *mgr,
   bind (mgr, reg, sval);
 }
 
+/* Purge state involving SVAL.  */
+
+void
+binding_cluster::purge_state_involving (const svalue *sval,
+					region_model_manager *sval_mgr)
+{
+  auto_vec<const binding_key *> to_remove;
+  for (auto iter : m_map)
+    {
+      const binding_key *iter_key = iter.first;
+      if (const symbolic_binding *symbolic_key
+	    = iter_key->dyn_cast_symbolic_binding ())
+	{
+	  const region *reg = symbolic_key->get_region ();
+	  if (reg->involves_p (sval))
+	    to_remove.safe_push (iter_key);
+	}
+      const svalue *iter_sval = iter.second;
+      if (iter_sval->involves_p (sval))
+	{
+	  const svalue *new_sval
+	    = sval_mgr->get_or_create_unknown_svalue (iter_sval->get_type ());
+	  m_map.put (iter_key, new_sval);
+	}
+    }
+  for (auto iter : to_remove)
+    {
+      m_map.remove (iter);
+      m_touched = true;
+    }
+}
+
 /* Get any SVAL bound to REG within this cluster via kind KIND,
    without checking parent regions of REG.  */
 
@@ -2445,6 +2477,29 @@ store::mark_region_as_unknown (store_manager *mgr, const region *reg,
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
   cluster->mark_region_as_unknown (mgr, reg, uncertainty);
+}
+
+/* Purge state involving SVAL.  */
+
+void
+store::purge_state_involving (const svalue *sval,
+			      region_model_manager *sval_mgr)
+{
+  auto_vec <const region *> base_regs_to_purge;
+  for (auto iter : m_cluster_map)
+    {
+      const region *base_reg = iter.first;
+      if (base_reg->involves_p (sval))
+	base_regs_to_purge.safe_push (base_reg);
+      else
+	{
+	  binding_cluster *cluster = iter.second;
+	  cluster->purge_state_involving (sval, sval_mgr);
+	}
+    }
+
+  for (auto iter : base_regs_to_purge)
+    purge_cluster (iter);
 }
 
 /* Get the cluster for BASE_REG, or NULL (const version).  */

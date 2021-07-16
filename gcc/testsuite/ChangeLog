@@ -1,3 +1,128 @@
+2021-07-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101346
+	* gcc.target/i386/pr101346.c: New test.
+
+2021-07-15  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97027
+	* gcc.dg/Wstringop-overflow-15.c: Remove an xfail.
+	* gcc.dg/Wstringop-overflow-47.c: Adjust xfails.
+	* gcc.dg/torture/pr69170.c: Avoid valid warnings.
+	* gcc.dg/torture/pr70025.c: Prune out a false positive.
+	* gcc.dg/vect/pr97769.c: Initialize a loop control variable.
+	* gcc.target/i386/pr92658-avx512bw-trunc.c: Increase buffer size
+	to avoid overflow.
+	* gcc.target/i386/pr92658-avx512f.c: Same.
+	* gcc.dg/Wstringop-overflow-68.c: New test.
+	* gcc.dg/Wstringop-overflow-69.c: New test.
+	* gcc.dg/Wstringop-overflow-70.c: New test.
+	* gcc.dg/Wstringop-overflow-71.c: New test.
+	* gcc.dg/strlenopt-95.c: New test.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95006
+	PR analyzer/94713
+	PR analyzer/94714
+	* g++.dg/analyzer/pr93212.C: Update location of warning.
+	* g++.dg/analyzer/pr94011.C: Add
+	-Wno-analyzer-use-of-uninitialized-value.
+	* g++.dg/analyzer/pr94503.C: Likewise.
+	* gcc.dg/analyzer/clobbers-1.c: Convert "f" from a local to a
+	param to avoid uninitialized warning.
+	* gcc.dg/analyzer/data-model-1.c (test_12): Add test for
+	uninitialized value on result of alloca.
+	(test_12a): Add expected warning.
+	(test_12c): Likewise.
+	(test_19): Likewise.
+	(test_29b): Likewise.
+	(test_29c): Likewise.
+	(test_37): Remove xfail.
+	(test_37a): Likewise.
+	* gcc.dg/analyzer/data-model-20.c: Add warning about leak.
+	* gcc.dg/analyzer/explode-2.c: Remove params; add
+	-Wno-analyzer-too-complex, -Wno-analyzer-malloc-leak, and xfails.
+	Initialize the locals.
+	* gcc.dg/analyzer/explode-2a.c: Initialize the locals.  Add
+	expected leak.
+	* gcc.dg/analyzer/fgets-1.c: New test.
+	* gcc.dg/analyzer/fread-1.c: New test.
+	* gcc.dg/analyzer/malloc-1.c (test_16): Add expected warning.
+	(test_40): Likewise.
+	* gcc.dg/analyzer/memset-CVE-2017-18549-1.c: Check for
+	uninitialized padding.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility.c (fread): New
+	decl.
+	(read_alias_file): Call it.
+	* gcc.dg/analyzer/pr94047.c: Add expected warnings.
+	* gcc.dg/analyzer/pr94851-2.c: Likewise.
+	* gcc.dg/analyzer/pr96841.c: Convert local to a param.
+	* gcc.dg/analyzer/pr98628.c: Likewise.
+	* gcc.dg/analyzer/pr99042.c: Updated expected location of leak
+	diagnostics.
+	* gcc.dg/analyzer/symbolic-1.c: Add expected warnings.
+	* gcc.dg/analyzer/symbolic-7.c: Likewise.
+	* gcc.dg/analyzer/torture/pr93649.c: Add expected warning.  Skip
+	with -fno-fat-lto-objects.
+	* gcc.dg/analyzer/uninit-1.c: New test.
+	* gcc.dg/analyzer/uninit-2.c: New test.
+	* gcc.dg/analyzer/uninit-3.c: New test.
+	* gcc.dg/analyzer/uninit-4.c: New test.
+	* gcc.dg/analyzer/uninit-pr94713.c: New test.
+	* gcc.dg/analyzer/uninit-pr94714.c: New test.
+	* gcc.dg/analyzer/use-after-free-2.c: New test.
+	* gcc.dg/analyzer/use-after-free-3.c: New test.
+	* gcc.dg/analyzer/zlib-3.c: Add expected warning.
+	* gcc.dg/analyzer/zlib-6.c: Convert locals to params to avoid
+	uninitialized warnings.  Remove xfail.
+	* gcc.dg/analyzer/zlib-6a.c: New test, based on the old version
+	of the above.
+	* gfortran.dg/analyzer/pr97668.f: Add
+	-Wno-analyzer-use-of-uninitialized-value and
+	-Wno-analyzer-too-complex.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/phi-1.c: New test.
+
+2021-07-15  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* lib/target-supports.exp (arm_v8_2a_imm8_neon_ok_nocache):
+	Delete.
+
+2021-07-15  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* gcc.target/arm/simd/vusdot-autovec.c: Use arm_v8_2a_i8mm_ok
+	effective-target.
+
+2021-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101443
+	* g++.dg/cpp0x/nullptr46.C: New test.
+
+2021-07-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/101457
+	* gcc.dg/vect/vect-reduc-dot-17.c: Fix signs of scalar code.
+	* gcc.dg/vect/vect-reduc-dot-18.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-22.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-9.c: Likewise.
+
+2021-07-15  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wvla-parameter-12.c: New test.
+
+2021-07-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101129
+	* gcc.target/powerpc/pr101129.c: New.
+
+2021-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101437
+	* gcc.c-torture/compile/pr101437.c: New test.
+
 2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
 
 	* gcc.target/powerpc/mma-builtin-9.c: New test.

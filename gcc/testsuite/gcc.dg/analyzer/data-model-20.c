@@ -17,7 +17,7 @@ test (int n) {
       for (; i >= 0; i++) {
 	free(arr[i]); /* { dg-bogus "double-'free'" } */
       }
-      free(arr);
+      free(arr); /* { dg-warning "leak" } */
       return NULL;
     }
   }

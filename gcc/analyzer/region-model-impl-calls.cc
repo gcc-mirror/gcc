@@ -84,7 +84,10 @@ call_details::call_details (const gcall *call, region_model *model,
 uncertainty_t *
 call_details::get_uncertainty () const
 {
-  return m_ctxt->get_uncertainty ();
+  if (m_ctxt)
+    return m_ctxt->get_uncertainty ();
+  else
+    return NULL;
 }
 
 /* If the callsite has a left-hand-side region, set it to RESULT
@@ -171,6 +174,15 @@ call_details::dump (bool simple) const
   pp.buffer->stream = stderr;
   dump_to_pp (&pp, simple);
   pp_flush (&pp);
+}
+
+/* Get a conjured_svalue for this call for REG.  */
+
+const svalue *
+call_details::get_or_create_conjured_svalue (const region *reg) const
+{
+  region_model_manager *mgr = m_model->get_manager ();
+  return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg);
 }
 
 /* Implementations of specific functions.  */
@@ -303,6 +315,42 @@ region_model::impl_call_error (const call_details &cd, unsigned min_args,
     *out_terminate_path = true;
 
   return true;
+}
+
+/* Handle the on_call_pre part of "fgets" and "fgets_unlocked".  */
+
+void
+region_model::impl_call_fgets (const call_details &cd)
+{
+  /* Ideally we would bifurcate state here between the
+     error vs no error cases.  */
+  const svalue *ptr_sval = cd.get_arg_svalue (0);
+  if (const region_svalue *ptr_to_region_sval
+      = ptr_sval->dyn_cast_region_svalue ())
+    {
+      const region *reg = ptr_to_region_sval->get_pointee ();
+      const region *base_reg = reg->get_base_region ();
+      const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
+      purge_state_involving (new_sval, cd.get_ctxt ());
+      set_value (base_reg, new_sval, cd.get_ctxt ());
+    }
+}
+
+/* Handle the on_call_pre part of "fread".  */
+
+void
+region_model::impl_call_fread (const call_details &cd)
+{
+  const svalue *ptr_sval = cd.get_arg_svalue (0);
+  if (const region_svalue *ptr_to_region_sval
+      = ptr_sval->dyn_cast_region_svalue ())
+    {
+      const region *reg = ptr_to_region_sval->get_pointee ();
+      const region *base_reg = reg->get_base_region ();
+      const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
+      purge_state_involving (new_sval, cd.get_ctxt ());
+      set_value (base_reg, new_sval, cd.get_ctxt ());
+    }
 }
 
 /* Handle the on_call_post part of "free", after sm-handling.

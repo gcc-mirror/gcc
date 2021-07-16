@@ -350,37 +350,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Conditionalizing on __STRICT_ANSI__ here will break any port that
   // uses one of these types for size_t.
 #if defined(__GLIBCXX_TYPE_INT_N_0)
+  __extension__
   template<>
     struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_0>
     : public true_type { };
 
+  __extension__
   template<>
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_0>
     : public true_type { };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_1)
+  __extension__
   template<>
     struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_1>
     : public true_type { };
 
+  __extension__
   template<>
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_1>
     : public true_type { };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_2)
+  __extension__
   template<>
     struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_2>
     : public true_type { };
 
+  __extension__
   template<>
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_2>
     : public true_type { };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
+  __extension__
   template<>
     struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_3>
     : public true_type { };
 
+  __extension__
   template<>
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_3>
     : public true_type { };
@@ -618,6 +626,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __is_one_of = __or_<is_same<_Tp, _Types>...>;
 
   // Check if a type is one of the signed integer types.
+  __extension__
   template<typename _Tp>
     using __is_signed_integer = __is_one_of<__remove_cv_t<_Tp>,
 	  signed char, signed short, signed int, signed long,
@@ -637,6 +646,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  >;
 
   // Check if a type is one of the unsigned integer types.
+  __extension__
   template<typename _Tp>
     using __is_unsigned_integer = __is_one_of<__remove_cv_t<_Tp>,
 	  unsigned char, unsigned short, unsigned int, unsigned long,
@@ -1718,21 +1728,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef unsigned long long __type; };
 
 #if defined(__GLIBCXX_TYPE_INT_N_0)
+  __extension__
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_0>
     { typedef unsigned __GLIBCXX_TYPE_INT_N_0 __type; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_1)
+  __extension__
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_1>
     { typedef unsigned __GLIBCXX_TYPE_INT_N_1 __type; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_2)
+  __extension__
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_2>
     { typedef unsigned __GLIBCXX_TYPE_INT_N_2 __type; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
+  __extension__
   template<>
     struct __make_unsigned<__GLIBCXX_TYPE_INT_N_3>
     { typedef unsigned __GLIBCXX_TYPE_INT_N_3 __type; };
@@ -1874,21 +1888,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef signed long long __type; };
 
 #if defined(__GLIBCXX_TYPE_INT_N_0)
+  __extension__
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_0>
     { typedef __GLIBCXX_TYPE_INT_N_0 __type; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_1)
+  __extension__
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_1>
     { typedef __GLIBCXX_TYPE_INT_N_1 __type; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_2)
+  __extension__
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_2>
     { typedef __GLIBCXX_TYPE_INT_N_2 __type; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
+  __extension__
   template<>
     struct __make_signed<unsigned __GLIBCXX_TYPE_INT_N_3>
     { typedef __GLIBCXX_TYPE_INT_N_3 __type; };
@@ -3078,17 +3096,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201703L
 # define __cpp_lib_type_trait_variable_templates 201510L
   /**
-   * @defgroup variable_templates Variable templates for type traits.
+   * @defgroup variable_templates Variable templates for type traits
    * @ingroup metaprogramming
    *
-   * The variable `is_foo_v<T>` is a boolean constant with the same value
-   * as the type trait `is_foo<T>::value`.
+   * Each variable `is_xxx_v<T>` is a boolean constant with the same value
+   * as the `value` member of the corresponding type trait `is_xxx<T>`.
    *
    * @since C++17
    */
 
-  /** @ingroup variable_templates
+  /**
    * @{
+   * @ingroup variable_templates
    */
 template <typename _Tp>
   inline constexpr bool is_void_v = is_void<_Tp>::value;

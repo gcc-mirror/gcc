@@ -253,12 +253,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #define __INT_N(TYPE) 			\
+  __extension__				\
   template<>				\
     struct __is_integer<TYPE>		\
     {					\
       enum { __value = 1 };		\
       typedef __true_type __type;	\
     };					\
+  __extension__				\
   template<>				\
     struct __is_integer<unsigned TYPE>	\
     {					\

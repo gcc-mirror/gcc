@@ -1198,6 +1198,25 @@ public:
 				 funcname, ev.m_expr);
   }
 
+  /* Implementation of pending_diagnostic::supercedes_p for
+     use_after_free.
+
+     We want use-after-free to supercede use-of-unitialized-value,
+     so that if we have these at the same stmt, we don't emit
+     a use-of-uninitialized, just the use-after-free.
+     (this is because we fully purge information about freed
+     buffers when we free them to avoid state explosions, so
+     that if they are accessed after the free, it looks like
+     they are uninitialized).  */
+
+  bool supercedes_p (const pending_diagnostic &other) const FINAL OVERRIDE
+  {
+    if (other.use_of_uninit_p ())
+      return true;
+
+    return false;
+  }
+
 private:
   diagnostic_event_id_t m_free_event;
   const deallocator *m_deallocator;

@@ -288,6 +288,20 @@ state_purge_per_ssa_name::add_to_worklist (const function_point &point,
     }
 }
 
+/* Does this phi depend on itself?
+   e.g. in:
+     added_2 = PHI <added_6(2), added_2(3), added_11(4)>
+   the middle defn (from edge 3) requires added_2 itself.  */
+
+static bool
+self_referential_phi_p (const gphi *phi)
+{
+  for (unsigned i = 0; i < gimple_phi_num_args (phi); i++)
+    if (gimple_phi_arg_def (phi, i) == gimple_phi_result (phi))
+      return true;
+  return false;
+}
+
 /* Process POINT, popped from WORKLIST.
    Iterate over predecessors of POINT, adding to WORKLIST.  */
 
@@ -326,11 +340,28 @@ state_purge_per_ssa_name::process_point (const function_point &point,
 	     !gsi_end_p (gpi); gsi_next (&gpi))
 	  {
 	    gphi *phi = gpi.phi ();
+	    /* Are we at the def-stmt for m_name?  */
 	    if (phi == def_stmt)
 	      {
-		if (logger)
-		  logger->log ("def stmt within phis; terminating");
-		return;
+		/* Does this phi depend on itself?
+		   e.g. in:
+		     added_2 = PHI <added_6(2), added_2(3), added_11(4)>
+		   the middle defn (from edge 3) requires added_2 itself
+		   so we can't purge it here.  */
+		if (self_referential_phi_p (phi))
+		  {
+		    if (logger)
+		      logger->log ("self-referential def stmt within phis;"
+				   " continuing");
+		  }
+		else
+		  {
+		    /* Otherwise, we can stop here, so that m_name
+		       can be purged.  */
+		    if (logger)
+		      logger->log ("def stmt within phis; terminating");
+		    return;
+		  }
 	      }
 	  }
 

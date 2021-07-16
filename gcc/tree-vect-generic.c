@@ -1017,7 +1017,7 @@ static bool
 expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
 {
   gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
-  tree type = gimple_expr_type (stmt);
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   tree a = gimple_assign_rhs1 (stmt);
   tree a1 = a;
   tree a2 = NULL_TREE;
@@ -1745,11 +1745,11 @@ static void
 expand_vector_scalar_condition (gimple_stmt_iterator *gsi)
 {
   gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
-  tree type = gimple_expr_type (stmt);
+  tree lhs = gimple_assign_lhs (stmt);
+  tree type = TREE_TYPE (lhs);
   tree compute_type = get_compute_type (COND_EXPR, mov_optab, type);
   machine_mode compute_mode = TYPE_MODE (compute_type);
   gcc_assert (compute_mode != BLKmode);
-  tree lhs = gimple_assign_lhs (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
   tree rhs3 = gimple_assign_rhs3 (stmt);
   tree new_rhs;
@@ -2129,10 +2129,10 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi,
     return;
 
   rhs1 = gimple_assign_rhs1 (stmt);
-  type = gimple_expr_type (stmt);
   if (rhs_class == GIMPLE_BINARY_RHS)
     rhs2 = gimple_assign_rhs2 (stmt);
 
+  type = TREE_TYPE (lhs);
   if (!VECTOR_TYPE_P (type)
       || !VECTOR_TYPE_P (TREE_TYPE (rhs1)))
     return;

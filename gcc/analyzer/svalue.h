@@ -324,6 +324,9 @@ public:
 
 enum poison_kind
 {
+  /* For use to describe uninitialized memory.  */
+  POISON_KIND_UNINIT,
+
   /* For use to describe freed memory.  */
   POISON_KIND_FREED,
 
@@ -377,6 +380,11 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
+
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
 
   enum poison_kind get_poison_kind () const { return m_kind; }
 
@@ -1055,7 +1063,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <placeholder_svalue *>::test (svalue *sval)
+is_a_helper <const placeholder_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_PLACEHOLDER;
 }
@@ -1157,7 +1165,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <widening_svalue *>::test (svalue *sval)
+is_a_helper <const widening_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_WIDENING;
 }
@@ -1258,7 +1266,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <compound_svalue *>::test (svalue *sval)
+is_a_helper <const compound_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_COMPOUND;
 }
@@ -1358,7 +1366,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <conjured_svalue *>::test (svalue *sval)
+is_a_helper <const conjured_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_CONJURED;
 }

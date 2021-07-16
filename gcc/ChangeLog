@@ -1,3 +1,155 @@
+2021-07-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101346
+	* config/i386/i386.h (VALID_SSE_REG_MODE): Add TDmode.
+	(VALID_INT_MODE_P): Add SDmode and DDmode.
+	Add TDmode for TARGET_64BIT.
+	(VALID_DFP_MODE_P): Remove.
+	* config/i386/i386.c (ix86_hard_regno_mode_ok):
+	Do not use VALID_DFP_MODE_P.
+
+2021-07-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (adjust_pointer_diff_expr): Use
+	gimple_range_type.
+	(fold_using_range::fold_stmt): Ditto.
+	(fold_using_range::range_of_range_op): Ditto.
+	(fold_using_range::range_of_phi): Ditto.
+	(fold_using_range::range_of_call): Ditto.
+	(fold_using_range::range_of_builtin_ubsan_call): Ditto.
+	(fold_using_range::range_of_builtin_call): Ditto.
+	(fold_using_range::range_of_cond_expr): Ditto.
+	* gimple-range-fold.h (gimple_range_type): New.
+
+2021-07-15  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97027
+	* tree-ssa-strlen.c (handle_assign): New function.
+	(maybe_warn_overflow): Add argument.
+	(nonzero_bytes_for_type): New function.
+	(count_nonzero_bytes): Handle more tree types.  Call
+	nonzero_bytes_for_tye.
+	(count_nonzero_bytes): Handle types.
+	(handle_store): Handle stores from function calls.
+	(strlen_check_and_optimize_call): Move code to handle_assign.  Call
+	it for assignments from function calls.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95006
+	PR analyzer/94713
+	PR analyzer/94714
+	* doc/invoke.texi: Add -Wanalyzer-use-of-uninitialized-value.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdump-analyzer-exploded-paths): New.
+
+2021-07-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101289
+	PR c/97548
+	* fold-const.c (operand_compare::operand_equal_p): Handle OEP_DECL_NAME.
+	(operand_compare::verify_hash_value): Same.
+	* tree-core.h (OEP_DECL_NAME): New.
+
+2021-07-15  Martin Jambor  <mjambor@suse.cz>
+
+	* profile-count.h (profile_count::value): Change the return type to
+	uint64_t.
+	* gimple-pretty-print.c (dump_gimple_bb_header): Adjust print
+	statement.
+	* tree-cfg.c (dump_function_to_file): Likewise.
+
+2021-07-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101129
+	* config/rs6000/rs6000-p8swap.c (has_part_mult): New.
+	(rs6000_analyze_swaps): Insns containing a subreg of a mult are
+	not swappable.
+
+2021-07-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_gen_while): Match up with
+	vect_gen_while_not.
+	* tree-vect-stmts.c (vect_gen_while): Adjust API to that
+	of vect_gen_while_not.
+	(vect_gen_while_not): Adjust.
+	* tree-vect-loop-manip.c (vect_set_loop_controls_directly): Likewise.
+
+2021-07-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (non_null_ref::adjust_range): New.
+	(ranger_cache::range_of_def): Call adjust_range.
+	(ranger_cache::entry_range): Same.
+	* gimple-range-cache.h (non_null_ref::adjust_range): New.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Call
+	adjust_range.
+	(gimple_ranger::range_on_entry): Same.
+
+2021-07-15  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/neon.md (<sup>dot_prod<vsi2qi>): Drop statements.
+
+2021-07-15  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2021-07-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (udot, sdot): Rename to...
+	(sdot_prod, udot_prod): ...These.
+	* config/aarch64/aarch64-simd.md (<sur>dot_prod<vsi2qi>): Remove.
+	(aarch64_<sur>dot<vsi2qi>): Rename to...
+	(<sur>dot_prod<vsi2qi>): ...This.
+	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32, vdotq_s32):
+	Update builtins.
+
+2021-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101437
+	* gimplify.c (gimplify_expr): Throw away volatile reads from empty
+	types even if they have non-BLKmode TYPE_MODE.
+
+2021-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR driver/101383
+	* gcc.c (process_command): Process -gtoggle like process_options
+	would after parsing options.
+
+2021-07-15  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgexpand.c (expand_asm_loc): Adjust.
+	(expand_asm_stmt): Likewise.
+	* config/arm/aarch-common-protos.h (arm_md_asm_adjust): Likewise.
+	* config/arm/aarch-common.c (arm_md_asm_adjust): Likewise.
+	* config/arm/arm.c (thumb1_md_asm_adjust): Likewise.
+	* config/avr/avr.c (avr_md_asm_adjust): Likewise.
+	* config/cris/cris.c (cris_md_asm_adjust): Likewise.
+	* config/i386/i386.c (ix86_md_asm_adjust): Likewise.
+	* config/mn10300/mn10300.c (mn10300_md_asm_adjust): Likewise.
+	* config/nds32/nds32.c (nds32_md_asm_adjust): Likewise.
+	* config/pdp11/pdp11.c (pdp11_md_asm_adjust): Likewise.
+	* config/rs6000/rs6000.c (rs6000_md_asm_adjust): Likewise.
+	* config/s390/s390.c (s390_md_asm_adjust): Likewise.
+	* config/vax/vax.c (vax_md_asm_adjust): Likewise.
+	* config/visium/visium.c (visium_md_asm_adjust): Likewise.
+	* doc/tm.texi: Regenerate.
+	* target.def: Add location argument to md_asm_adjust.
+
+2021-07-15  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* tree-diagnostic.c (diagnostic_report_current_function): Use the
+	diagnostic's location, not input_location.
+
+2021-07-15  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgexpand.c (tree_conflicts_with_clobbers_p): Pass location to
+	diagnostics.
+	(expand_asm_stmt): Likewise.
+
 2021-07-14  Peter Bergner  <bergner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (adjacent_mem_locations): Return the lower

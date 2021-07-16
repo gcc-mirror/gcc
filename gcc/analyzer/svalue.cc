@@ -158,6 +158,13 @@ svalue::can_merge_p (const svalue *other,
       || (other->get_kind () == SK_UNMERGEABLE))
     return NULL;
 
+  /* Reject attempts to merge poisoned svalues with other svalues
+     (either non-poisoned, or other kinds of poison), so that e.g.
+     we identify paths in which a variable is conditionally uninitialized.  */
+  if (get_kind () == SK_POISONED
+      || other->get_kind () == SK_POISONED)
+    return NULL;
+
   /* Reject attempts to merge NULL pointers with not-NULL-pointers.  */
   if (POINTER_TYPE_P (get_type ()))
     {
@@ -516,6 +523,12 @@ public:
       m_found = true;
   }
 
+  void visit_conjured_svalue (const conjured_svalue *candidate)
+  {
+    if (candidate == m_needle)
+      m_found = true;
+  }
+
   bool found_p () const { return m_found; }
 
 private:
@@ -528,8 +541,9 @@ private:
 bool
 svalue::involves_p (const svalue *other) const
 {
-  /* Currently only implemented for initial_svalue.  */
-  gcc_assert (other->get_kind () == SK_INITIAL);
+  /* Currently only implemented for these kinds.  */
+  gcc_assert (other->get_kind () == SK_INITIAL
+	      || other->get_kind () == SK_CONJURED);
 
   involvement_visitor v (other);
   accept (&v);
@@ -811,6 +825,8 @@ poison_kind_to_str (enum poison_kind kind)
     {
     default:
       gcc_unreachable ();
+    case POISON_KIND_UNINIT:
+      return "uninit";
     case POISON_KIND_FREED:
       return "freed";
     case POISON_KIND_POPPED_STACK:
@@ -845,6 +861,18 @@ void
 poisoned_svalue::accept (visitor *v) const
 {
   v->visit_poisoned_svalue (this);
+}
+
+/* Implementation of svalue::maybe_fold_bits_within vfunc
+   for poisoned_svalue.  */
+
+const svalue *
+poisoned_svalue::maybe_fold_bits_within (tree type,
+					 const bit_range &,
+					 region_model_manager *mgr) const
+{
+  /* Bits within a poisoned value are also poisoned.  */
+  return mgr->get_or_create_poisoned_svalue (m_kind, type);
 }
 
 /* class setjmp_svalue's implementation is in engine.cc, so that it can use

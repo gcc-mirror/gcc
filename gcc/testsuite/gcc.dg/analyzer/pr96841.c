@@ -10,10 +10,8 @@ void
 th (int *);
 
 void
-bv (__SIZE_TYPE__ ny)
+bv (__SIZE_TYPE__ ny, int ***mf)
 {
-  int ***mf;
-
   while (l8 ())
     {
       *mf = 0;

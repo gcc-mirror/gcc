@@ -87,7 +87,7 @@ ssa_is_replaceable_p (gimple *stmt)
 
   /* Float expressions must go through memory if float-store is on.  */
   if (flag_float_store
-      && FLOAT_TYPE_P (gimple_expr_type (stmt)))
+      && FLOAT_TYPE_P (TREE_TYPE (def)))
     return false;
 
   /* An assignment with a register variable on the RHS is not

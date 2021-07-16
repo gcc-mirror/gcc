@@ -10802,8 +10802,6 @@ vect_analyze_stmt (vec_info *vinfo,
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
-      tree type = gimple_expr_type (stmt_info->stmt);
-      gcc_assert (!VECTOR_MODE_P (TYPE_MODE (type)));
       gcall *call = dyn_cast <gcall *> (stmt_info->stmt);
       gcc_assert (STMT_VINFO_VECTYPE (stmt_info)
 		  || (call && gimple_call_lhs (call) == NULL_TREE));
@@ -11999,7 +11997,11 @@ vect_gen_while (gimple_seq *seq, tree mask_type, tree start_index,
   gcall *call = gimple_build_call_internal (IFN_WHILE_ULT, 3,
 					    start_index, end_index,
 					    build_zero_cst (mask_type));
-  tree tmp = make_temp_ssa_name (mask_type, NULL, name);
+  tree tmp;
+  if (name)
+    tmp = make_temp_ssa_name (mask_type, NULL, name);
+  else
+    tmp = make_ssa_name (mask_type);
   gimple_call_set_lhs (call, tmp);
   gimple_seq_add_stmt (seq, call);
   return tmp;
@@ -12072,11 +12074,6 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
 				     "not vectorized: irregular stmt.%G", stmt);
     }
 
-  if (VECTOR_MODE_P (TYPE_MODE (gimple_expr_type (stmt))))
-    return opt_result::failure_at (stmt,
-				   "not vectorized: vector stmt in loop:%G",
-				   stmt);
-
   tree vectype;
   tree scalar_type = NULL_TREE;
   if (group_size == 0 && STMT_VINFO_VECTYPE (stmt_info))
@@ -12126,6 +12123,12 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location, "vectype: %T\n", vectype);
     }
+
+  if (scalar_type && VECTOR_MODE_P (TYPE_MODE (scalar_type)))
+    return opt_result::failure_at (stmt,
+				   "not vectorized: vector stmt in loop:%G",
+				   stmt);
+
   *stmt_vectype_out = vectype;
 
   /* Don't try to compute scalar types if the stmt produces a boolean
@@ -12136,8 +12139,8 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
       /* The number of units is set according to the smallest scalar
 	 type (or the largest vector size, but we only support one
 	 vector size per vectorization).  */
-      HOST_WIDE_INT dummy;
-      scalar_type = vect_get_smallest_scalar_type (stmt_info, &dummy, &dummy);
+      scalar_type = vect_get_smallest_scalar_type (stmt_info,
+						   TREE_TYPE (vectype));
       if (scalar_type != TREE_TYPE (vectype))
 	{
 	  if (dump_enabled_p ())
