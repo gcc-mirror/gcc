@@ -11999,7 +11999,11 @@ vect_gen_while (gimple_seq *seq, tree mask_type, tree start_index,
   gcall *call = gimple_build_call_internal (IFN_WHILE_ULT, 3,
 					    start_index, end_index,
 					    build_zero_cst (mask_type));
-  tree tmp = make_temp_ssa_name (mask_type, NULL, name);
+  tree tmp;
+  if (name)
+    tmp = make_temp_ssa_name (mask_type, NULL, name);
+  else
+    tmp = make_ssa_name (mask_type);
   gimple_call_set_lhs (call, tmp);
   gimple_seq_add_stmt (seq, call);
   return tmp;
