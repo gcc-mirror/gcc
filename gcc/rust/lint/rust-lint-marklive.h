@@ -45,17 +45,17 @@ public:
 
   void visit (HIR::BorrowExpr &expr) override
   {
-    expr.get_expr ().get ()->accept_vis (*this);
+    expr.get_expr ()->accept_vis (*this);
   }
 
   void visit (HIR::DereferenceExpr &expr) override
   {
-    expr.get_expr ().get ()->accept_vis (*this);
+    expr.get_expr ()->accept_vis (*this);
   }
 
   void visit (HIR::NegationExpr &expr) override
   {
-    expr.get_expr ().get ()->accept_vis (*this);
+    expr.get_expr ()->accept_vis (*this);
   }
 
   void visit (HIR::LazyBooleanExpr &expr) override
@@ -66,7 +66,7 @@ public:
 
   void visit (HIR::TypeCastExpr &expr) override
   {
-    expr.get_expr ().get ()->accept_vis (*this);
+    expr.get_expr ()->accept_vis (*this);
   }
 
   void visit (HIR::GroupedExpr &expr) override
@@ -103,7 +103,7 @@ public:
     });
     if (expr.has_expr ())
       {
-	expr.get_final_expr ().get ()->accept_vis (*this);
+	expr.get_final_expr ()->accept_vis (*this);
       }
   }
 
@@ -126,7 +126,7 @@ public:
 
   void visit (HIR::Function &function) override
   {
-    function.get_definition ().get ()->accept_vis (*this);
+    function.get_definition ()->accept_vis (*this);
   }
 
   void visit (HIR::ReturnExpr &expr) override
@@ -212,7 +212,7 @@ public:
   {
     for (auto &&item : impl.get_impl_items ())
       {
-	item.get ()->accept_vis (*this);
+	item->accept_vis (*this);
       }
   }
 
@@ -239,7 +239,7 @@ public:
     stct.get_struct_name ().accept_vis (*this);
     if (stct.has_struct_base ())
       {
-	stct.struct_base->base_struct.get ()->accept_vis (*this);
+	stct.struct_base->base_struct->accept_vis (*this);
       }
   }
 
@@ -250,7 +250,7 @@ public:
 
   void visit (HIR::StructExprStructBase &stct) override
   {
-    stct.get_struct_base ()->base_struct.get ()->accept_vis (*this);
+    stct.get_struct_base ()->base_struct->accept_vis (*this);
   }
 
 private:
