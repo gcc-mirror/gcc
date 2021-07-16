@@ -6608,48 +6608,6 @@ is_gimple_resx (const gimple *gs)
   return gimple_code (gs) == GIMPLE_RESX;
 }
 
-/* Return the type of the main expression computed by STMT.  Return
-   void_type_node if the statement computes nothing.  */
-
-static inline tree
-gimple_expr_type (const gimple *stmt)
-{
-  enum gimple_code code = gimple_code (stmt);
-  /* In general we want to pass out a type that can be substituted
-     for both the RHS and the LHS types if there is a possibly
-     useless conversion involved.  That means returning the
-     original RHS type as far as we can reconstruct it.  */
-  if (code == GIMPLE_CALL)
-    {
-      const gcall *call_stmt = as_a <const gcall *> (stmt);
-      if (gimple_call_internal_p (call_stmt))
-	switch (gimple_call_internal_fn (call_stmt))
-	  {
-	  case IFN_MASK_STORE:
-	  case IFN_SCATTER_STORE:
-	    return TREE_TYPE (gimple_call_arg (call_stmt, 3));
-	  case IFN_MASK_SCATTER_STORE:
-	    return TREE_TYPE (gimple_call_arg (call_stmt, 4));
-	  default:
-	    break;
-	  }
-      return gimple_call_return_type (call_stmt);
-    }
-  else if (code == GIMPLE_ASSIGN)
-    {
-      if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
-        return TREE_TYPE (gimple_assign_rhs1 (stmt));
-      else
-        /* As fallback use the type of the LHS.  */
-        return TREE_TYPE (gimple_get_lhs (stmt));
-    }
-  else if (code == GIMPLE_COND)
-    return boolean_type_node;
-  else if (code == GIMPLE_PHI)
-    return TREE_TYPE (gimple_phi_result (stmt));
-  else
-    return void_type_node;
-}
 
 /* Enum and arrays used for allocation stats.  Keep in sync with
    gimple.c:gimple_alloc_kind_names.  */
