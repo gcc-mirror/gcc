@@ -13,8 +13,8 @@
 #define SIGNEDNESS_4 unsigned
 #endif
 
-SIGNEDNESS_1 long __attribute__ ((noipa))
-f (SIGNEDNESS_1 long res, SIGNEDNESS_3 char *restrict a,
+SIGNEDNESS_1 long long __attribute__ ((noipa))
+f (SIGNEDNESS_1 long long res, SIGNEDNESS_3 char *restrict a,
    SIGNEDNESS_4 short *restrict b)
 {
   for (__INTPTR_TYPE__ i = 0; i < N; ++i)
@@ -37,7 +37,7 @@ main (void)
 
   SIGNEDNESS_3 char a[N];
   SIGNEDNESS_4 short b[N];
-  int expected = 0x12345;
+  SIGNEDNESS_1 long long expected = 0x12345;
   for (int i = 0; i < N; ++i)
     {
       a[i] = BASE + i * 5;
