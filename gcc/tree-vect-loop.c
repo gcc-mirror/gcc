@@ -7706,21 +7706,35 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
   if (auto *accumulator = reduc_info->reused_accumulator)
     {
       tree def = accumulator->reduc_input;
-      unsigned int nreduc;
-      bool res = constant_multiple_p (TYPE_VECTOR_SUBPARTS (TREE_TYPE (def)),
-				      TYPE_VECTOR_SUBPARTS (vectype_out),
-				      &nreduc);
-      gcc_assert (res);
-      if (nreduc != 1)
+      if (!useless_type_conversion_p (vectype_out, TREE_TYPE (def)))
 	{
-	  /* Reduce the single vector to a smaller one.  */
+	  unsigned int nreduc;
+	  bool res = constant_multiple_p (TYPE_VECTOR_SUBPARTS
+					    (TREE_TYPE (def)),
+					  TYPE_VECTOR_SUBPARTS (vectype_out),
+					  &nreduc);
+	  gcc_assert (res);
 	  gimple_seq stmts = NULL;
-	  def = vect_create_partial_epilog (def, vectype_out,
-					    STMT_VINFO_REDUC_CODE (reduc_info),
-					    &stmts);
+	  /* Reduce the single vector to a smaller one.  */
+	  if (nreduc != 1)
+	    {
+	      /* Perform the reduction in the appropriate type.  */
+	      tree rvectype = vectype_out;
+	      if (!useless_type_conversion_p (TREE_TYPE (vectype_out),
+					      TREE_TYPE (TREE_TYPE (def))))
+		rvectype = build_vector_type (TREE_TYPE (TREE_TYPE (def)),
+					      TYPE_VECTOR_SUBPARTS
+						(vectype_out));
+	      def = vect_create_partial_epilog (def, rvectype,
+						STMT_VINFO_REDUC_CODE
+						  (reduc_info),
+						&stmts);
+	    }
 	  /* Adjust the input so we pick up the partially reduced value
 	     for the skip edge in vect_create_epilog_for_reduction.  */
 	  accumulator->reduc_input = def;
+	  if (!useless_type_conversion_p (vectype_out, TREE_TYPE (def)))
+	    def = gimple_convert (&stmts, vectype_out, def);
 	  if (loop_vinfo->main_loop_edge)
 	    {
 	      /* While we'd like to insert on the edge this will split
