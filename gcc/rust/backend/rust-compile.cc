@@ -20,6 +20,8 @@
 #include "rust-compile-item.h"
 #include "rust-compile-expr.h"
 #include "rust-compile-struct-field-expr.h"
+#include "rust-hir-trait-resolve.h"
+#include "rust-hir-path-probe.h"
 #include "fnv-hash.h"
 
 namespace Rust {
@@ -141,31 +143,105 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	expr.get_mappings ().get_crate_num (), ref, nullptr);
       if (resolved_item == nullptr)
 	{
-	  rust_error_at (expr.get_locus (),
-			 "failed to lookup forward declaration");
-	  return;
-	}
+	  // it might be resolved to a trait item
+	  HIR::TraitItem *trait_item
+	    = ctx->get_mappings ()->lookup_hir_trait_item (
+	      expr.get_mappings ().get_crate_num (), ref);
+	  HIR::Trait *trait = ctx->get_mappings ()->lookup_trait_item_mapping (
+	    trait_item->get_mappings ().get_hirid ());
 
-      TyTy::BaseType *self_type = nullptr;
-      if (!ctx->get_tyctx ()->lookup_type (
-	    expr.get_receiver ()->get_mappings ().get_hirid (), &self_type))
-	{
-	  rust_error_at (expr.get_locus (),
-			 "failed to resolve type for self param");
-	  return;
-	}
+	  Resolver::TraitReference &trait_ref
+	    = Resolver::TraitResolver::error_node ();
+	  bool ok = ctx->get_tyctx ()->lookup_trait_reference (
+	    trait->get_mappings ().get_defid (), trait_ref);
+	  rust_assert (ok);
 
-      if (!fntype->has_subsititions_defined ())
-	CompileInherentImplItem::Compile (self_type, resolved_item, ctx, true);
+	  TyTy::BaseType *receiver = nullptr;
+	  ok = ctx->get_tyctx ()->lookup_receiver (
+	    expr.get_mappings ().get_hirid (), &receiver);
+	  rust_assert (ok);
+
+	  if (receiver->get_kind () == TyTy::TypeKind::PARAM)
+	    {
+	      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
+	      receiver = p->resolve ();
+	    }
+
+	  // the type resolver can only resolve type bounds to their trait
+	  // item so its up to us to figure out if this path should resolve
+	  // to an trait-impl-block-item or if it can be defaulted to the
+	  // trait-impl-item's definition
+	  std::vector<Resolver::PathProbeCandidate> candidates
+	    = Resolver::PathProbeType::Probe (
+	      receiver, expr.get_method_name ().get_segment (), true, false,
+	      true);
+
+	  if (candidates.size () == 0)
+	    {
+	      // this means we are defaulting back to the trait_item if
+	      // possible
+	      // TODO
+	      gcc_unreachable ();
+	    }
+	  else
+	    {
+	      Resolver::PathProbeCandidate &candidate = candidates.at (0);
+	      rust_assert (candidate.is_impl_candidate ());
+
+	      HIR::ImplItem *impl_item = candidate.item.impl.impl_item;
+
+	      TyTy::BaseType *self_type = nullptr;
+	      if (!ctx->get_tyctx ()->lookup_type (
+		    expr.get_receiver ()->get_mappings ().get_hirid (),
+		    &self_type))
+		{
+		  rust_error_at (expr.get_locus (),
+				 "failed to resolve type for self param");
+		  return;
+		}
+
+	      if (!fntype->has_subsititions_defined ())
+		CompileInherentImplItem::Compile (self_type, impl_item, ctx,
+						  true);
+	      else
+		CompileInherentImplItem::Compile (self_type, impl_item, ctx,
+						  true, fntype);
+
+	      if (!ctx->lookup_function_decl (
+		    impl_item->get_impl_mappings ().get_hirid (), &fn))
+		{
+		  translated = ctx->get_backend ()->error_expression ();
+		  rust_error_at (expr.get_locus (),
+				 "forward declaration was not compiled");
+		  return;
+		}
+	    }
+	}
       else
-	CompileInherentImplItem::Compile (self_type, resolved_item, ctx, true,
-					  fntype);
-
-      if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
-	  rust_error_at (expr.get_locus (),
-			 "forward declaration was not compiled");
-	  return;
+	  TyTy::BaseType *self_type = nullptr;
+	  if (!ctx->get_tyctx ()->lookup_type (
+		expr.get_receiver ()->get_mappings ().get_hirid (), &self_type))
+	    {
+	      rust_error_at (expr.get_locus (),
+			     "failed to resolve type for self param");
+	      return;
+	    }
+
+	  if (!fntype->has_subsititions_defined ())
+	    CompileInherentImplItem::Compile (self_type, resolved_item, ctx,
+					      true);
+	  else
+	    CompileInherentImplItem::Compile (self_type, resolved_item, ctx,
+					      true, fntype);
+
+	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
+	    {
+	      translated = ctx->get_backend ()->error_expression ();
+	      rust_error_at (expr.get_locus (),
+			     "forward declaration was not compiled");
+	      return;
+	    }
 	}
     }
 

@@ -67,6 +67,10 @@ public:
 
   BoundType get_bound_type () const final override { return TRAITBOUND; }
 
+  TypePath &get_path () { return type_path; }
+
+  const TypePath &get_path () const { return type_path; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

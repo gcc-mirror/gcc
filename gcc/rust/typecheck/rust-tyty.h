@@ -25,6 +25,10 @@
 #include "rust-diagnostics.h"
 
 namespace Rust {
+namespace Resolver {
+class TraitReference;
+}
+
 namespace TyTy {
 
 // https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
@@ -125,9 +129,56 @@ public:
   }
 };
 
+class TypeBoundPredicate
+{
+public:
+  TypeBoundPredicate (Resolver::TraitReference *reference)
+    : reference (reference)
+  {}
+
+  TypeBoundPredicate (const TypeBoundPredicate &other)
+    : reference (other.reference)
+  {}
+
+  TypeBoundPredicate &operator= (const TypeBoundPredicate &other)
+  {
+    reference = other.reference;
+    return *this;
+  }
+
+  std::string as_string () const;
+
+  const Resolver::TraitReference *get () const { return reference; }
+
+private:
+  Resolver::TraitReference *reference;
+};
+
+class TypeBoundsMappings
+{
+protected:
+  TypeBoundsMappings (std::vector<TypeBoundPredicate> specified_bounds)
+    : specified_bounds (specified_bounds)
+  {}
+
+public:
+  std::vector<TypeBoundPredicate> &get_specified_bounds ()
+  {
+    return specified_bounds;
+  }
+
+  const std::vector<TypeBoundPredicate> &get_specified_bounds () const
+  {
+    return specified_bounds;
+  }
+
+protected:
+  std::vector<TypeBoundPredicate> specified_bounds;
+};
+
 class TyVisitor;
 class TyConstVisitor;
-class BaseType
+class BaseType : public TypeBoundsMappings
 {
 public:
   virtual ~BaseType () {}
@@ -240,8 +291,15 @@ public:
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,
 	    std::set<HirId> refs = std::set<HirId> ())
-    : kind (kind), ref (ref), ty_ref (ty_ref), combined (refs),
-      mappings (Analysis::Mappings::get ())
+    : TypeBoundsMappings ({}), kind (kind), ref (ref), ty_ref (ty_ref),
+      combined (refs), mappings (Analysis::Mappings::get ())
+  {}
+
+  BaseType (HirId ref, HirId ty_ref, TypeKind kind,
+	    std::vector<TypeBoundPredicate> specified_bounds,
+	    std::set<HirId> refs = std::set<HirId> ())
+    : TypeBoundsMappings (specified_bounds), kind (kind), ref (ref),
+      ty_ref (ty_ref), combined (refs), mappings (Analysis::Mappings::get ())
   {}
 
   TypeKind kind;
@@ -347,15 +405,18 @@ class ParamType : public BaseType
 {
 public:
   ParamType (std::string symbol, HirId ref, HIR::GenericParam &param,
+	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::PARAM, refs), symbol (symbol), param (param)
+    : BaseType (ref, ref, TypeKind::PARAM, specified_bounds, refs),
+      symbol (symbol), param (param)
   {}
 
   ParamType (std::string symbol, HirId ref, HirId ty_ref,
 	     HIR::GenericParam &param,
+	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::PARAM, refs), symbol (symbol),
-      param (param)
+    : BaseType (ref, ty_ref, TypeKind::PARAM, specified_bounds, refs),
+      symbol (symbol), param (param)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -986,7 +1047,7 @@ public:
 #define FNTYPE_IS_VARADIC_FLAG 0X04
 
   FnType (HirId ref, DefId id, std::string identifier, uint8_t flags,
-	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
+	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNDEF, refs),
@@ -1001,7 +1062,7 @@ public:
 
   FnType (HirId ref, HirId ty_ref, DefId id, std::string identifier,
 	  uint8_t flags,
-	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
+	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNDEF, refs),
@@ -1054,12 +1115,12 @@ public:
     return get_params ().at (0).second;
   }
 
-  std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params ()
+  std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params ()
   {
     return params;
   }
 
-  const std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params () const
+  const std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params () const
   {
     return params;
   }
@@ -1094,7 +1155,7 @@ public:
   handle_substitions (SubstitutionArgumentMappings mappings) override final;
 
 private:
-  std::vector<std::pair<HIR::Pattern *, BaseType *> > params;
+  std::vector<std::pair<HIR::Pattern *, BaseType *>> params;
   BaseType *type;
   uint8_t flags;
   std::string identifier;

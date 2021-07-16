@@ -243,6 +243,7 @@ SubstitutionParamMapping::override_context ()
 
   auto mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
+
   context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
 					       UNKNOWN_NODEID,
 					       param->get_ref (),
@@ -1768,7 +1769,7 @@ BaseType *
 ParamType::clone () const
 {
   return new ParamType (get_symbol (), get_ref (), get_ty_ref (), param,
-			get_combined_refs ());
+			get_specified_bounds (), get_combined_refs ());
 }
 
 std::string
@@ -1780,8 +1781,6 @@ ParamType::get_symbol () const
 BaseType *
 ParamType::resolve () const
 {
-  rust_assert (can_resolve ());
-
   TyVar var (get_ty_ref ());
   BaseType *r = var.get_tyty ();
 
@@ -1795,7 +1794,10 @@ ParamType::resolve () const
       r = v.get_tyty ();
     }
 
-  return TyVar (r->get_ty_ref ()).get_tyty ();
+  if (r->get_kind () == TypeKind::PARAM && (r->get_ref () == r->get_ty_ref ()))
+    return TyVar (r->get_ty_ref ()).get_tyty ();
+
+  return r;
 }
 
 bool

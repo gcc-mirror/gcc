@@ -280,24 +280,24 @@ public:
     args = type.get_substitution_arguments ();
   }
 
-  void visit (TyTy::InferType &) override { gcc_unreachable (); }
-  void visit (TyTy::TupleType &) override { gcc_unreachable (); }
-  void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
-  void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
-  void visit (TyTy::BoolType &) override { gcc_unreachable (); }
-  void visit (TyTy::IntType &) override { gcc_unreachable (); }
-  void visit (TyTy::UintType &) override { gcc_unreachable (); }
-  void visit (TyTy::FloatType &) override { gcc_unreachable (); }
-  void visit (TyTy::USizeType &) override { gcc_unreachable (); }
-  void visit (TyTy::ISizeType &) override { gcc_unreachable (); }
-  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
-  void visit (TyTy::CharType &) override { gcc_unreachable (); }
-  void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
-  void visit (TyTy::PointerType &) override { gcc_unreachable (); }
-  void visit (TyTy::ParamType &) override { gcc_unreachable (); }
-  void visit (TyTy::StrType &) override { gcc_unreachable (); }
-  void visit (TyTy::NeverType &) override { gcc_unreachable (); }
-  void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
+  void visit (TyTy::InferType &) override {}
+  void visit (TyTy::TupleType &) override {}
+  void visit (TyTy::FnPtr &) override {}
+  void visit (TyTy::ArrayType &) override {}
+  void visit (TyTy::BoolType &) override {}
+  void visit (TyTy::IntType &) override {}
+  void visit (TyTy::UintType &) override {}
+  void visit (TyTy::FloatType &) override {}
+  void visit (TyTy::USizeType &) override {}
+  void visit (TyTy::ISizeType &) override {}
+  void visit (TyTy::ErrorType &) override {}
+  void visit (TyTy::CharType &) override {}
+  void visit (TyTy::ReferenceType &) override {}
+  void visit (TyTy::PointerType &) override {}
+  void visit (TyTy::ParamType &) override {}
+  void visit (TyTy::StrType &) override {}
+  void visit (TyTy::NeverType &) override {}
+  void visit (TyTy::PlaceholderType &) override {}
 
 private:
   GetUsedSubstArgs () : args (TyTy::SubstitutionArgumentMappings::error ()) {}
