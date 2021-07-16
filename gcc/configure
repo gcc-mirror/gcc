@@ -22842,8 +22842,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 # If build != host, and we aren't building gas in-tree, we identify a
 # build->target assembler and hope that it will have the same features
 # as the host->target assembler we'll be using.
-gcc_cv_gas_major_version=
-gcc_cv_gas_minor_version=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
 
 if ${gcc_cv_as+:} false; then :
@@ -22912,52 +22910,6 @@ case "$ORIGINAL_AS_FOR_TARGET" in
   *) ac_config_files="$ac_config_files as:exec-tool.in"
  ;;
 esac
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking what assembler to use" >&5
-$as_echo_n "checking what assembler to use... " >&6; }
-if test "$gcc_cv_as" = ../gas/as-new$build_exeext; then
-  # Single tree build which includes gas.  We want to prefer it
-  # over whatever linker top-level may have detected, since
-  # we'll use what we're building after installation anyway.
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: newly built gas" >&5
-$as_echo "newly built gas" >&6; }
-  in_tree_gas=yes
-  gcc_cv_as_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
-for f in $gcc_cv_as_bfd_srcdir/configure \
-         $gcc_cv_as_gas_srcdir/configure \
-         $gcc_cv_as_gas_srcdir/configure.ac \
-         $gcc_cv_as_gas_srcdir/Makefile.in ; do
-  gcc_cv_gas_version=`sed -n -e 's/^[ 	]*VERSION=[^0-9A-Za-z_]*\([0-9]*\.[0-9]*.*\)/VERSION=\1/p' < $f`
-  if test x$gcc_cv_gas_version != x; then
-    break
-  fi
-done
-case $gcc_cv_gas_version in
-  VERSION=[0-9]*) ;;
-  *) as_fn_error $? "cannot find version of in-tree assembler" "$LINENO" 5;;
-esac
-gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([0-9]*\)"`
-gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
-gcc_cv_gas_patch_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.[0-9]*\.\([0-9]*\)"`
-case $gcc_cv_gas_patch_version in
-  "") gcc_cv_gas_patch_version="0" ;;
-esac
-gcc_cv_gas_vers=`expr \( \( $gcc_cv_gas_major_version \* 1000 \) \
-			    + $gcc_cv_gas_minor_version \) \* 1000 \
-			    + $gcc_cv_gas_patch_version`
-
-  in_tree_gas_is_elf=no
-  if grep 'obj_format = elf' ../gas/Makefile > /dev/null \
-     || (grep 'obj_format = multi' ../gas/Makefile \
-         && grep 'extra_objects =.* obj-elf' ../gas/Makefile) > /dev/null
-  then
-    in_tree_gas_is_elf=yes
-  fi
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as" >&5
-$as_echo "$gcc_cv_as" >&6; }
-  in_tree_gas=no
-fi
 
 default_ld=
 # Check whether --enable-ld was given.
@@ -23582,11 +23534,7 @@ if ${gcc_cv_as_balign_and_p2align+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_balign_and_p2align=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 6 \) \* 1000 + 0`
-  then gcc_cv_as_balign_and_p2align=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.balign 4
 .p2align 2' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
@@ -23619,11 +23567,7 @@ if ${gcc_cv_as_max_skip_p2align+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_max_skip_p2align=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 8 \) \* 1000 + 0`
-  then gcc_cv_as_max_skip_p2align=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.p2align 4,,7' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -23655,11 +23599,7 @@ if ${gcc_cv_as_literal16+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_literal16=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 8 \) \* 1000 + 0`
-  then gcc_cv_as_literal16=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.literal16' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -23691,12 +23631,7 @@ if ${gcc_cv_as_subsection_m1+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_subsection_m1=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 9 \) \* 1000 + 0`
-  then gcc_cv_as_subsection_m1=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo 'conftest_label1: .word 0
 .subsection -1
 conftest_label2: .word 0
@@ -23739,11 +23674,7 @@ if ${gcc_cv_as_weak+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_weak=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 2 \) \* 1000 + 0`
-  then gcc_cv_as_weak=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.weak foobar' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -23775,11 +23706,7 @@ if ${gcc_cv_as_weakref+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_weakref=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
-  then gcc_cv_as_weakref=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.weakref foobar, barfnot' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -23811,11 +23738,7 @@ if ${gcc_cv_as_nsubspa_comdat+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_nsubspa_comdat=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 15 \) \* 1000 + 91`
-  then gcc_cv_as_nsubspa_comdat=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.SPACE $TEXT$
 	.NSUBSPA $CODE$,COMDAT' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
@@ -23864,12 +23787,7 @@ if ${gcc_cv_as_hidden+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_hidden=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 13 \) \* 1000 + 0`
-  then gcc_cv_as_hidden=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -24322,12 +24240,7 @@ if ${gcc_cv_as_leb128+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_leb128=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
-  then gcc_cv_as_leb128=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.data
 	.uleb128 L2 - L1
 L1:
@@ -24612,12 +24525,7 @@ if ${gcc_cv_as_eh_frame+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_eh_frame=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 12 \) \* 1000 + 0`
-  then gcc_cv_as_eh_frame=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.text
 .LFB1:
 	.4byte	0
@@ -24716,11 +24624,7 @@ if ${gcc_cv_as_section_exclude_e+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_section_exclude_e=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 22 \) \* 1000 + 51`
-  then gcc_cv_as_section_exclude_e=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section foo1,"e"
   .byte 0,0,0,0' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
@@ -24807,12 +24711,7 @@ if ${gcc_cv_as_shf_gnu_retain+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_shf_gnu_retain=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
-  then gcc_cv_as_shf_gnu_retain=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section .foo,"awR",%progbits
 .byte 0' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
@@ -24858,11 +24757,7 @@ if ${gcc_cv_as_section_link_order+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_section_link_order=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 35 \) \* 1000 + 0`
-  then gcc_cv_as_section_link_order=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section .foo,"a"
 .byte 0
 .section __patchable_function_entries,"awo",%progbits,.foo
@@ -24900,12 +24795,7 @@ if ${gcc_cv_as_shf_merge+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_shf_merge=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 12 \) \* 1000 + 0`
-  then gcc_cv_as_shf_merge=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section .rodata.str, "aMS", @progbits, 1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -24933,12 +24823,7 @@ if ${gcc_cv_as_shf_merge+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_shf_merge=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 12 \) \* 1000 + 0`
-  then gcc_cv_as_shf_merge=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section .rodata.str, "aMS", %progbits, 1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -25021,12 +24906,7 @@ if ${gcc_cv_as_comdat_group+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_comdat_group=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 16 \) \* 1000 + 0`
-  then gcc_cv_as_comdat_group=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section .text,"axG",@progbits,.foo,comdat' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -25057,12 +24937,7 @@ if ${gcc_cv_as_comdat_group_percent+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_comdat_group_percent=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 16 \) \* 1000 + 0`
-  then gcc_cv_as_comdat_group_percent=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section .text,"axG",%progbits,.foo,comdat' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -25239,11 +25114,7 @@ if ${gcc_cv_as_is_stmt+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_is_stmt=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 16 \) \* 1000 + 92`
-  then gcc_cv_as_is_stmt=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.text
 	.file 1 "conf.c"
 	.loc 1 1 0 is_stmt 1' > conftest.s
@@ -25277,11 +25148,7 @@ if ${gcc_cv_as_discriminator+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_discriminator=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 51`
-  then gcc_cv_as_discriminator=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.text
 	.file 1 "conf.c"
 	.loc 1 1 0 discriminator 1' > conftest.s
@@ -25821,11 +25688,7 @@ if ${gcc_cv_as_tls+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_tls=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( $tls_first_major \* 1000 \) + $tls_first_minor \) \* 1000 + 0`
-  then gcc_cv_as_tls=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags $tls_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -26237,11 +26100,7 @@ if ${gcc_cv_as_alpha_explicit_relocs+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_alpha_explicit_relocs=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 12 \) \* 1000 + 0`
-  then gcc_cv_as_alpha_explicit_relocs=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.set nomacro
 	.text
 	extbl	$3, $2, $3	!lituse_bytoff!1
@@ -26284,11 +26143,7 @@ if ${gcc_cv_as_alpha_jsrdirect_relocs+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_alpha_jsrdirect_relocs=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 16 \) \* 1000 + 90`
-  then gcc_cv_as_alpha_jsrdirect_relocs=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.set nomacro
 	.text
 	ldq	$27, a($29)	!literal!1
@@ -26485,11 +26340,7 @@ if ${gcc_cv_as_cris_no_mul_bug+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_cris_no_mul_bug=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 15 \) \* 1000 + 91`
-  then gcc_cv_as_cris_no_mul_bug=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.text' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -no-mul-bug-abort -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -26964,11 +26815,7 @@ if ${gcc_cv_as_comm_has_align+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_comm_has_align=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 52`
-  then gcc_cv_as_comm_has_align=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.comm foo,1,32' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -27001,11 +26848,7 @@ if ${gcc_cv_as_ix86_pe_secrel32+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_ix86_pe_secrel32=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 15 \) \* 1000 + 91`
-  then gcc_cv_as_ix86_pe_secrel32=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.text
 foo:	nop
 .data
@@ -27047,11 +26890,7 @@ if ${gcc_cv_as_section_has_align+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_section_has_align=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 20 \) \* 1000 + 1`
-  then gcc_cv_as_section_has_align=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section lto_test,"dr0"' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -27752,11 +27591,7 @@ if ${gcc_cv_as_ix86_gotoff_in_data+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_ix86_gotoff_in_data=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
-  then gcc_cv_as_ix86_gotoff_in_data=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.text
 .L0:
 	nop
@@ -27850,11 +27685,7 @@ if ${gcc_cv_as_ia64_ltoffx_ldxmov_relocs+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_ia64_ltoffx_ldxmov_relocs=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 14 \) \* 1000 + 0`
-  then gcc_cv_as_ia64_ltoffx_ldxmov_relocs=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.text
 	addl r15 = @ltoffx(x#), gp
 	;;
@@ -27942,11 +27773,7 @@ if ${gcc_cv_as_powerpc_mfcrf+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_powerpc_mfcrf=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 14 \) \* 1000 + 0`
-  then gcc_cv_as_powerpc_mfcrf=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -27991,11 +27818,7 @@ if ${gcc_cv_as_powerpc_rel16+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_powerpc_rel16=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
-  then gcc_cv_as_powerpc_rel16=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28036,11 +27859,7 @@ if ${gcc_cv_as_powerpc_vsx+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_powerpc_vsx=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
-  then gcc_cv_as_powerpc_vsx=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28072,11 +27891,7 @@ if ${gcc_cv_as_powerpc_gnu_attribute+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_powerpc_gnu_attribute=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 18 \) \* 1000 + 0`
-  then gcc_cv_as_powerpc_gnu_attribute=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.gnu_attribute 4,1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28108,11 +27923,7 @@ if ${gcc_cv_as_powerpc_entry_markers+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_powerpc_entry_markers=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 26 \) \* 1000 + 0`
-  then gcc_cv_as_powerpc_entry_markers=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo ' .reloc .,R_PPC64_ENTRY; nop' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a64 --fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28144,11 +27955,7 @@ if ${gcc_cv_as_powerpc_pltseq_markers+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_powerpc_pltseq_markers=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 31 \) \* 1000 + 0`
-  then gcc_cv_as_powerpc_pltseq_markers=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo ' .reloc .,R_PPC_PLTSEQ; nop' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 --fatal-warnings -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28182,11 +27989,7 @@ if ${gcc_cv_as_aix_ref+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_aix_ref=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 21 \) \* 1000 + 0`
-  then gcc_cv_as_aix_ref=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.csect stuff[rw]
 	     stuff:
 		.long 1
@@ -28223,11 +28026,7 @@ if ${gcc_cv_as_aix_dwloc+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_aix_dwloc=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 21 \) \* 1000 + 0`
-  then gcc_cv_as_aix_dwloc=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.dwsect 0xA0000
 	Lframe..0:
 		.vbyte 4,Lframe..0
@@ -28266,11 +28065,7 @@ if ${gcc_cv_as_mips_explicit_relocs+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_mips_explicit_relocs=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 14 \) \* 1000 + 0`
-  then gcc_cv_as_mips_explicit_relocs=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	lw $4,%gp_rel(foo)($4)' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28303,11 +28098,7 @@ if ${gcc_cv_as_mips_no_shared+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_mips_no_shared=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 16 \) \* 1000 + 0`
-  then gcc_cv_as_mips_no_shared=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo 'nop' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mno-shared -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28339,11 +28130,7 @@ if ${gcc_cv_as_mips_gnu_attribute+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_mips_gnu_attribute=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 18 \) \* 1000 + 0`
-  then gcc_cv_as_mips_gnu_attribute=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.gnu_attribute 4,1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28444,11 +28231,7 @@ if ${gcc_cv_as_mips_dtprelword+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_mips_dtprelword=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 18 \) \* 1000 + 0`
-  then gcc_cv_as_mips_dtprelword=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.section .tdata,"awT",@progbits
 x:
 	.word 2
@@ -28652,11 +28435,7 @@ if ${gcc_cv_as_msp430_gnu_attribute+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_msp430_gnu_attribute=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 33 \) \* 1000 + 50`
-  then gcc_cv_as_msp430_gnu_attribute=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.gnu_attribute 4,1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28687,11 +28466,7 @@ if ${gcc_cv_as_msp430_mspabi_attribute+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_msp430_mspabi_attribute=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 33 \) \* 1000 + 50`
-  then gcc_cv_as_msp430_mspabi_attribute=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.mspabi_attribute 4,2' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28766,11 +28541,7 @@ if ${gcc_cv_as_riscv_attribute+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_riscv_attribute=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 32 \) \* 1000 + 0`
-  then gcc_cv_as_riscv_attribute=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.attribute stack_align,4' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28865,11 +28636,7 @@ if ${gcc_cv_as_s390_gnu_attribute+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_s390_gnu_attribute=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 18 \) \* 1000 + 0`
-  then gcc_cv_as_s390_gnu_attribute=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.gnu_attribute 8,1' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28900,11 +28667,7 @@ if ${gcc_cv_as_s390_machine_machinemode+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_s390_machine_machinemode=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 24 \) \* 1000 + 0`
-  then gcc_cv_as_s390_machine_machinemode=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.machinemode push
 	.machinemode pop
 	.machine push
@@ -28938,11 +28701,7 @@ if ${gcc_cv_as_s390_architecture_modifiers+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_s390_architecture_modifiers=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 26 \) \* 1000 + 0`
-  then gcc_cv_as_s390_architecture_modifiers=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	.machine z13+vx ' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -28973,11 +28732,7 @@ if ${gcc_cv_as_s390_vector_loadstore_alignment_hints+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_s390_vector_loadstore_alignment_hints=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 31 \) \* 1000 + 0`
-  then gcc_cv_as_s390_vector_loadstore_alignment_hints=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '	vl %v24,0(%r15),3 ' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29240,12 +28995,7 @@ if ${gcc_cv_as_dwarf2_debug_line+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_dwarf2_debug_line=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
-  then gcc_cv_as_dwarf2_debug_line=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29329,12 +29079,7 @@ if ${gcc_cv_as_dwarf2_debug_view+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_dwarf2_debug_view=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 27 \) \* 1000 + 0`
-  then gcc_cv_as_dwarf2_debug_view=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29368,12 +29113,7 @@ if ${gcc_cv_as_gdwarf2_flag+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_gdwarf2_flag=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
-  then gcc_cv_as_gdwarf2_flag=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$insn" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gdwarf2 -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29405,12 +29145,7 @@ if ${gcc_cv_as_gdwarf_5_flag+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_gdwarf_5_flag=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
-  then gcc_cv_as_gdwarf_5_flag=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$insn" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gdwarf-5 -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29614,12 +29349,7 @@ if ${gcc_cv_as_debug_line_32_flag+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_debug_line_32_flag=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
-  then gcc_cv_as_debug_line_32_flag=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29649,12 +29379,7 @@ if ${gcc_cv_as_debug_line_64_flag+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_debug_line_64_flag=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
-  then gcc_cv_as_debug_line_64_flag=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29686,12 +29411,7 @@ if ${gcc_cv_as_dwarf_4_debug_line_flag+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_dwarf_4_debug_line_flag=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 36 \) \* 1000 + 0`
-  then gcc_cv_as_dwarf_4_debug_line_flag=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$conftest_s" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gdwarf-4 -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29827,12 +29547,7 @@ if ${gcc_cv_as_gstabs_flag+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_gstabs_flag=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
-  then gcc_cv_as_gstabs_flag=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$insn" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --gstabs -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -29864,11 +29579,7 @@ if ${gcc_cv_as_debug_prefix_map_flag+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_debug_prefix_map_flag=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 18 \) \* 1000 + 0`
-  then gcc_cv_as_debug_prefix_map_flag=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo "$insn" > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags --debug-prefix-map /a=/b -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -30053,12 +29764,7 @@ if ${gcc_cv_as_gnu_unique_object+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_gnu_unique_object=no
-    if test $in_tree_gas = yes; then
-    if test $in_tree_gas_is_elf = yes \
-  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 52`
-  then gcc_cv_as_gnu_unique_object=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  if test x$gcc_cv_as != x; then
     $as_echo '.type foo, '$target_type_format_char'gnu_unique_object' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
@@ -30102,11 +29808,7 @@ if ${gcc_cv_as_line_zero+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   gcc_cv_as_line_zero=no
-  if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 16 \) \* 1000 + 91`
-  then gcc_cv_as_line_zero=yes
-fi
-  elif test "x$gcc_cv_as" != x; then
+  if test "x$gcc_cv_as" != x; then
     { echo '# 1 "test.s" 1'; echo '# 0 "" 2'; } > conftest.s
     if { ac_try='$gcc_cv_as -o conftest.o conftest.s >&5 2>conftest.out'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
