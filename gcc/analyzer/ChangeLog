@@ -1,3 +1,62 @@
+2021-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (enum access_direction): New.
+	* engine.cc (exploded_node::on_longjmp): Update for new param of
+	get_store_value.
+	* program-state.cc (program_state::prune_for_point): Likewise.
+	* region-model-impl-calls.cc (region_model::impl_call_memcpy):
+	Replace call to check_for_writable_region with call to
+	check_region_for_write.
+	(region_model::impl_call_memset): Likewise.
+	(region_model::impl_call_strcpy): Likewise.
+	* region-model-reachability.cc (reachable_regions::add): Update
+	for new param of get_store_value.
+	* region-model.cc (region_model::get_rvalue_1): Likewise, also for
+	get_rvalue_for_bits.
+	(region_model::get_store_value): Add ctxt param and use it to call
+	check_region_for_read.
+	(region_model::get_rvalue_for_bits): Add ctxt param and use it to
+	call get_store_value.
+	(region_model::check_region_access): New.
+	(region_model::check_region_for_write): New.
+	(region_model::check_region_for_read): New.
+	(region_model::set_value): Update comment.  Replace call to
+	check_for_writable_region with call to check_region_for_write.
+	* region-model.h (region_model::get_rvalue_for_bits): Add ctxt
+	param.
+	(region_model::get_store_value): Add ctxt param.
+	(region_model::check_region_access): New decl.
+	(region_model::check_region_for_write): New decl.
+	(region_model::check_region_for_read): New decl.
+	* region.cc (region_model::copy_region): Update call to
+	get_store_value.
+	* svalue.cc (initial_svalue::implicitly_live_p): Likewise.
+
+2021-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::on_stmt_pre): Handle
+	__analyzer_dump_state.
+	* program-state.cc (extrinsic_state::get_sm_idx_by_name): New.
+	(program_state::impl_call_analyzer_dump_state): New.
+	* program-state.h (extrinsic_state::get_sm_idx_by_name): New decl.
+	(program_state::impl_call_analyzer_dump_state): New decl.
+	* region-model-impl-calls.cc
+	(call_details::get_arg_string_literal): New.
+	* region-model.h (call_details::get_arg_string_literal): New decl.
+
+2021-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (program_state::detect_leaks): Simplify using
+	svalue::maybe_get_region.
+	* region-model-impl-calls.cc (region_model::impl_call_fgets): Likewise.
+	(region_model::impl_call_fread): Likewise.
+	(region_model::impl_call_free): Likewise.
+	(region_model::impl_call_operator_delete): Likewise.
+	* region-model.cc (selftest::test_stack_frames): Likewise.
+	(selftest::test_state_merging): Likewise.
+	* svalue.cc (svalue::maybe_get_region): New.
+	* svalue.h (svalue::maybe_get_region): New decl.
+
 2021-07-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* svalue.h (is_a_helper <placeholder_svalue *>::test): Make
