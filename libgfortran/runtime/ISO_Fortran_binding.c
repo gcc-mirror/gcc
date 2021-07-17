@@ -689,28 +689,21 @@ int CFI_section (CFI_cdesc_t *result, const CFI_cdesc_t *source,
 	}
     }
 
+  /* Set the base address.  We have to compute this first in the case
+     where source == result, before we overwrite the dimension data.  */
+  result->base_addr = CFI_address (source, lower);
+
   /* Set the appropriate dimension information that gives us access to the
    * data. */
-  int aux = 0;
-  for (int i = 0; i < source->rank; i++)
+  for (int i = 0, o = 0; i < source->rank; i++)
     {
       if (stride[i] == 0)
-	{
-	  aux++;
-	  /* Adjust 'lower' for the base address offset.  */
-	  lower[i] = lower[i] - source->dim[i].lower_bound;
-	  continue;
-	}
-      int idx = i - aux;
-      result->dim[idx].lower_bound = lower[i];
-      result->dim[idx].extent = 1 + (upper[i] - lower[i])/stride[i];
-      result->dim[idx].sm = stride[i] * source->dim[i].sm;
-      /* Adjust 'lower' for the base address offset.  */
-      lower[idx] = lower[idx] - source->dim[i].lower_bound;
+	continue;
+      result->dim[o].lower_bound = 0;
+      result->dim[o].extent = 1 + (upper[i] - lower[i])/stride[i];
+      result->dim[o].sm = stride[i] * source->dim[i].sm;
+      o++;
     }
-
-  /* Set the base address. */
-  result->base_addr = CFI_address (source, lower);
 
   return CFI_SUCCESS;
 }
