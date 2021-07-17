@@ -354,16 +354,42 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mgeneral_regs_only:
       if (value)
 	{
+	  HOST_WIDE_INT general_regs_only_flags = 0;
+	  HOST_WIDE_INT general_regs_only_flags2 = 0;
+
+	  /* NB: Enable the GPR only instructions which are enabled
+	     implicitly by SSE ISAs unless they have been disabled
+	     explicitly.  */
+	  if (TARGET_SSE4_2_P (opts->x_ix86_isa_flags))
+	    {
+	      if ((opts->x_ix86_isa_flags_explicit
+		   & OPTION_MASK_ISA_CRC32) == 0)
+		general_regs_only_flags |= OPTION_MASK_ISA_CRC32;
+	      if ((opts->x_ix86_isa_flags_explicit
+		   & OPTION_MASK_ISA_POPCNT) == 0)
+		general_regs_only_flags |= OPTION_MASK_ISA_POPCNT;
+	    }
+	  if (TARGET_SSE3_P (opts->x_ix86_isa_flags))
+	    {
+	      if ((opts->x_ix86_isa_flags2_explicit
+		   & OPTION_MASK_ISA2_MWAIT) == 0)
+		general_regs_only_flags2 |= OPTION_MASK_ISA2_MWAIT;
+	    }
+
 	  /* Disable MMX, SSE and x87 instructions if only
 	     general registers are allowed.  */
 	  opts->x_ix86_isa_flags
 	    &= ~OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
 	  opts->x_ix86_isa_flags2
 	    &= ~OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET;
+	  opts->x_ix86_isa_flags |= general_regs_only_flags;
+	  opts->x_ix86_isa_flags2 |= general_regs_only_flags2;
 	  opts->x_ix86_isa_flags_explicit
-	    |= OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET;
+	    |= (OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET
+		| general_regs_only_flags);
 	  opts->x_ix86_isa_flags2_explicit
-	    |= OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET;
+	    |= (OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET
+		| general_regs_only_flags2);
 
 	  opts->x_target_flags &= ~MASK_80387;
 	}
