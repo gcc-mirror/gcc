@@ -1,3 +1,18 @@
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__cust_access::__decay_copy):
+	Replace with function object.
+	(__cust_access::__member_begin, ___cust_access::_adl_begin): Use
+	__decay_copy unqualified.
+	* include/bits/ranges_base.h (__member_end, __adl_end):
+	Likewise. Use __range_iter_t for type of ranges::begin.
+	(__member_rend): Use correct value category for rbegin argument.
+	(__member_data): Use __decay_copy unqualified.
+	(__begin_data): Use __range_iter_t for type of ranges::begin.
+
 2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

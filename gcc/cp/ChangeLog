@@ -1,3 +1,25 @@
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101233
+	* pt.c (alias_ctad_tweaks): Clear cp_unevaluated_operand for
+	substituting DECL_ARGUMENTS.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100138
+	* constraint.cc (tsubst_constraint): Set up cp_unevaluated.
+	(satisfy_atom): Set up iloc_sentinel before calling
+	cxx_constant_value.
+	* pt.c (tsubst_pack_expansion): When returning a rebuilt pack
+	expansion, carry over PACK_EXPANSION_LOCAL_P and
+	PACK_EXPANSION_SIZEOF_P from the original pack expansion.
+
 2021-07-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
