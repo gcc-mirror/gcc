@@ -667,10 +667,17 @@ mmix_function_arg_1 (const cumulative_args_t argsp_v,
 {
   CUMULATIVE_ARGS *argsp = get_cumulative_args (argsp_v);
 
+  /* The mode of the argument will be VOIDmode for the "end_marker".  Make sure
+     we don't ever generate a VOIDmode register; later passes will barf on that.
+     We may want to use the register number, so return something nominally
+     useful.  Thus, for VOIDmode, use DImode, being the natural mode for the
+     register.  */
+  machine_mode mode = arg.mode == VOIDmode ? DImode : arg.mode;
+
   /* Last-argument marker.  */
   if (arg.end_marker_p ())
     return (argsp->regs < MMIX_MAX_ARGS_IN_REGS)
-      ? gen_rtx_REG (arg.mode,
+      ? gen_rtx_REG (mode,
 		     (incoming
 		      ? MMIX_FIRST_INCOMING_ARG_REGNUM
 		      : MMIX_FIRST_ARG_REGNUM) + argsp->regs)
@@ -678,10 +685,10 @@ mmix_function_arg_1 (const cumulative_args_t argsp_v,
 
   return (argsp->regs < MMIX_MAX_ARGS_IN_REGS
 	  && !targetm.calls.must_pass_in_stack (arg)
-	  && (GET_MODE_BITSIZE (arg.mode) <= 64
+	  && (GET_MODE_BITSIZE (mode) <= 64
 	      || argsp->lib
 	      || TARGET_LIBFUNC))
-    ? gen_rtx_REG (arg.mode,
+    ? gen_rtx_REG (mode,
 		   (incoming
 		    ? MMIX_FIRST_INCOMING_ARG_REGNUM
 		    : MMIX_FIRST_ARG_REGNUM)
