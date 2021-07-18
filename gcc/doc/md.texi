@@ -7048,8 +7048,12 @@ machines.
 @item @samp{call}
 Subroutine call instruction returning no value.  Operand 0 is the
 function to call; operand 1 is the number of bytes of arguments pushed
-as a @code{const_int}; operand 2 is the number of registers used as
-operands.
+as a @code{const_int}.  Operand 2 is the result of calling the target
+hook @code{TARGET_FUNCTION_ARG} with the second argument @code{arg}
+yielding true for @code{arg.end_marker_p ()}, in a call after all
+parameters have been passed to that hook.  By default this is the first
+register beyond those used for arguments in the call, or @code{NULL} if
+all the argument-registers are used in the call.
 
 On most machines, operand 2 is not actually stored into the RTL
 pattern.  It is supplied for the sake of some RISC machines which need

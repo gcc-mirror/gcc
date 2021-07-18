@@ -999,10 +999,8 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
     = mmix_get_hard_reg_initial_val (Pmode,
 				     MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
 
-  /* FIXME: There's a bug in gcc which causes NULL to be passed as
-     operand[2] when we get out of registers, which later confuses gcc.
-     Work around it by replacing it with const_int 0.  Possibly documentation
-     error too.  */
+  /* NULL gets passed as operand[2] when we get out of registers,
+     which later confuses gcc.  Replace it with const_int 0.  */
   if (operands[2] == NULL_RTX)
     operands[2] = const0_rtx;
 
@@ -1036,13 +1034,9 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
     = mmix_get_hard_reg_initial_val (Pmode,
 				     MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
 
-  /* FIXME: See 'call'.  */
+  /* See 'call'.  */
   if (operands[3] == NULL_RTX)
     operands[3] = const0_rtx;
-
-  /* FIXME: Documentation bug: operands[3] (operands[2] for 'call') is the
-     *next* argument register, not the number of arguments in registers.
-     (There used to be code here where that mattered.)  */
 
   operands[5] = gen_rtx_REG (DImode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
 }")
