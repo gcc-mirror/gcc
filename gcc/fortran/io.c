@@ -1763,7 +1763,7 @@ resolve_tag_format (gfc_expr *e)
   if (e->ts.type != BT_CHARACTER)
     {
       if (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS
-	  || e->ts.type == BT_VOID)
+	  || e->ts.type == BT_VOID || e->ts.type == BT_UNKNOWN)
 	{
 	  gfc_error ("Non-character non-Hollerith in FORMAT tag at %L",
 		     &e->where);
