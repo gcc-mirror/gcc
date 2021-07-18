@@ -1,3 +1,11 @@
+2021-07-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-6.c: New test.
+
+2021-07-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr96542.c: New.
+
 2021-07-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101233

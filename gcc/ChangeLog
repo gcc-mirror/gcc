@@ -1,3 +1,17 @@
+2021-07-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-structalias.c (handle_rhs_call): Support EAF_NOT_RETURNED.
+	(handle_const_call): Liekise
+	(handle_pure_call): Liekise
+
+2021-07-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/96542
+	* range-op.cc (range_operator::wi_fold_in_parts): New.
+	(range_operator::fold_range): Call wi_fold_in_parts.
+	(operator_lshift::wi_fold): Fix broken lshift by [0,0].
+	* range-op.h (wi_fold_in_parts): Add prototype.
+
 2021-07-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/analyzer.texi: Add __analyzer_dump_state.
