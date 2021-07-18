@@ -14093,6 +14093,18 @@ ix86_check_avx_upper_register (const_rtx exp)
 	  && GET_MODE_BITSIZE (GET_MODE (exp)) > 128);
 }
 
+/* Check if a 256bit or 512bit AVX register is referenced in stores.   */
+
+static void
+ix86_check_avx_upper_stores (rtx dest, const_rtx, void *data)
+ {
+   if (ix86_check_avx_upper_register (dest))
+    {
+      bool *used = (bool *) data;
+      *used = true;
+    }
+ }
+
 /* Return needed mode for entity in optimize_mode_switching pass.  */
 
 static int
@@ -14116,6 +14128,14 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 		return AVX_U128_DIRTY;
 	    }
 	}
+
+      /* Needed mode is set to AVX_U128_CLEAN if there are no 256bit
+	 nor 512bit registers used in the function return register.  */
+      bool avx_upper_reg_found = false;
+      note_stores (insn, ix86_check_avx_upper_stores,
+		   &avx_upper_reg_found);
+      if (avx_upper_reg_found)
+	return AVX_U128_DIRTY;
 
       /* If the function is known to preserve some SSE registers,
 	 RA and previous passes can legitimately rely on that for
@@ -14216,18 +14236,6 @@ ix86_mode_needed (int entity, rtx_insn *insn)
     }
   return 0;
 }
-
-/* Check if a 256bit or 512bit AVX register is referenced in stores.   */
- 
-static void
-ix86_check_avx_upper_stores (rtx dest, const_rtx, void *data)
- {
-   if (ix86_check_avx_upper_register (dest))
-    {
-      bool *used = (bool *) data;
-      *used = true;
-    }
- } 
 
 /* Calculate mode of upper 128bit AVX registers after the insn.  */
 
