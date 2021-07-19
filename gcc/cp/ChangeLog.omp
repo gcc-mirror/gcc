@@ -1,3 +1,12 @@
+2021-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101297
+	* parser.c (cp_parser_omp_atomic): Consume comma only if it
+	appears before a CPP_NAME.
+
 2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
