@@ -1,3 +1,14 @@
+2021-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum c_omp_directive_kind): New enum.
+	(struct c_omp_directive): New type.
+	(c_omp_categorize_directive): Declare.
+	* c-omp.c (omp_directives): New variable.
+	(c_omp_categorize_directive): New function.
+
 2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

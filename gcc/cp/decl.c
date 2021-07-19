@@ -4358,6 +4358,7 @@ initialize_predefined_identifiers (void)
     {"heap deleted", &heap_deleted_identifier, cik_normal},
     {"heap [] uninit", &heap_vec_uninit_identifier, cik_normal},
     {"heap []", &heap_vec_identifier, cik_normal},
+    {"omp", &omp_identifier, cik_normal},
     {NULL, NULL, cik_normal}
   };
 

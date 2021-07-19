@@ -3,6 +3,49 @@
 	Backported from master:
 	2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.h (struct cp_lexer): Add in_omp_attribute_pragma member.
+	(struct cp_omp_declare_simd_data): Likewise.
+	* cp-tree.h (enum cp_tree_index): Add CPTI_OMP_IDENTIFIER.
+	(omp_identifier): Define.
+	* parser.c (cp_parser_skip_to_pragma_eol): Handle
+	in_omp_attribute_pragma CPP_PRAGMA_EOL followed by CPP_EOF.
+	(cp_parser_require_pragma_eol): Likewise.
+	(struct cp_omp_attribute_data): New type.
+	(cp_parser_handle_statement_omp_attributes): New function.
+	(cp_parser_statement): Handle OpenMP directives in statement's
+	attribute-specifier-seq.
+	(cp_parser_omp_directive_args, cp_parser_omp_sequence_args): New
+	functions.
+	(cp_parser_std_attribute): Handle omp::directive and omp::sequence
+	attributes.
+	(cp_parser_omp_all_clauses): If in_omp_attribute_pragma, allow
+	a comma also before the first clause.
+	(cp_parser_omp_allocate): Likewise.
+	(cp_parser_omp_atomic): Likewise.
+	(cp_parser_omp_depobj): Likewise.
+	(cp_parser_omp_flush): Likewise.
+	(cp_parser_omp_ordered): Likewise.
+	(cp_parser_omp_declare_simd): Save in_omp_attribute_pragma
+	into struct cp_omp_declare_simd_data.
+	(cp_finish_omp_declare_variant): Add in_omp_attribute_pragma
+	argument.  If set, allow a comma also before match clause.
+	(cp_parser_late_parsing_omp_declare_simd): If in_omp_attribute_pragma,
+	allow a comma also before the first clause.  Adjust
+	cp_finish_omp_declare_variant caller.
+	(cp_parser_omp_declare_target): If in_omp_attribute_pragma, allow
+	a comma also before the first clause.
+	(cp_parser_omp_declare_reduction_exprs): Likewise.
+	(cp_parser_omp_requires): Likewise.
+	* decl.c (initialize_predefined_identifiers): Initialize
+	omp_identifier.
+	* decl2.c (cplus_decl_attributes): Reject omp::directive and
+	omp::sequence attributes.
+
+2021-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/101297
 	* parser.c (cp_parser_omp_atomic): Consume comma only if it
 	appears before a CPP_NAME.

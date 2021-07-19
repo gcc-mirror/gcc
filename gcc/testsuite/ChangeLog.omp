@@ -3,6 +3,15 @@
 	Backported from master:
 	2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/gomp/attrs-1.C: New test.
+	* g++.dg/gomp/attrs-2.C: New test.
+	* g++.dg/gomp/attrs-3.C: New test.
+
+2021-07-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-02  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/101297
 	* c-c++-common/gomp/atomic-24.c: New test.
 
