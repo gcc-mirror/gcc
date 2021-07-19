@@ -1501,6 +1501,22 @@ replace_swap_with_copy (swap_web_entry *insn_entry, unsigned i)
   insn->set_deleted ();
 }
 
+/* INSN is known to contain a SUBREG, which we can normally handle,
+   but if the SUBREG itself contains a MULT then we need to leave it alone
+   to avoid turning a mult_hipart into a mult_lopart, for example.  */
+static bool
+has_part_mult (rtx_insn *insn)
+{
+  rtx body = PATTERN (insn);
+  if (GET_CODE (body) != SET)
+    return false;
+  rtx src = SET_SRC (body);
+  if (GET_CODE (src) != SUBREG)
+    return false;
+  rtx inner = XEXP (src, 0);
+  return (GET_CODE (inner) == MULT);
+}
+
 /* Make NEW_MEM_EXP's attributes and flags resemble those of
    ORIGINAL_MEM_EXP.  */
 static void
@@ -2437,6 +2453,9 @@ rs6000_analyze_swaps (function *fun)
 		    insn_entry[uid].is_swappable = 0;
 		  else if (special != SH_NONE)
 		    insn_entry[uid].special_handling = special;
+		  else if (insn_entry[uid].contains_subreg
+			   && has_part_mult (insn))
+		    insn_entry[uid].is_swappable = 0;
 		  else if (insn_entry[uid].contains_subreg)
 		    insn_entry[uid].special_handling = SH_SUBREG;
 		}
