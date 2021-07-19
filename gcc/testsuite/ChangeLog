@@ -1,3 +1,27 @@
+2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101492
+	* gcc.target/i386/pr101492-1.c: New test.
+	* gcc.target/i386/pr101492-2.c: Likewise.
+	* gcc.target/i386/pr101492-3.c: Likewise.
+	* gcc.target/i386/pr101492-4.c: Likewise.
+
+2021-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101084
+	* gfortran.dg/fmt_nonchar_3.f90: New test.
+
+2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101495
+	* gcc.target/i386/avx-vzeroupper-28.c: New test.
+
+2021-07-18  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95498
+	* jit.dg/all-non-failing-tests.h: New test.
+	* jit.dg/test-cast.c: New test.
+
 2021-07-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/modref-6.c: New test.

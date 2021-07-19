@@ -1,3 +1,19 @@
+2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101492
+	* common/config/i386/i386-common.c (ix86_handle_option): For
+	-mgeneral-regs-only, enable the GPR only instructions which are
+	enabled implicitly by SSE ISAs unless they have been disabled
+	explicitly.
+
+2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101495
+	* config/i386/i386.c (ix86_check_avx_upper_stores): Moved before
+	ix86_avx_u128_mode_needed.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_DIRTY if callee
+	returns AVX register.
+
 2021-07-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-structalias.c (handle_rhs_call): Support EAF_NOT_RETURNED.
