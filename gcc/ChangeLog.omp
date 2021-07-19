@@ -3,6 +3,14 @@
 	Backported from master:
 	2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gcc.c (check_offload_target_name): Cast len argument to
+	%q.*s to 'int'; avoid -Wstringop-truncation warning.
+
+2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR other/67300
 	* common.opt (-foffload=): Update description.
 	(-foffload-options=): New.
