@@ -1081,8 +1081,15 @@ public:
 	return;
       }
 
+    if (base->is_mutable () != type.is_mutable ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
     resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
-				  TyVar (base_resolved->get_ref ()));
+				  TyVar (base_resolved->get_ref ()),
+				  base->is_mutable ());
   }
 
 private:

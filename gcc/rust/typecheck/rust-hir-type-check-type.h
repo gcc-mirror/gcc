@@ -190,7 +190,8 @@ public:
     TyTy::BaseType *base
       = TypeCheckType::Resolve (type.get_base_type ().get ());
     translated = new TyTy::ReferenceType (type.get_mappings ().get_hirid (),
-					  TyTy::TyVar (base->get_ref ()));
+					  TyTy::TyVar (base->get_ref ()),
+					  type.get_has_mut ());
   }
 
   void visit (HIR::InferredType &type) override

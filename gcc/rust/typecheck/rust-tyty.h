@@ -1364,14 +1364,14 @@ public:
 class ReferenceType : public BaseType
 {
 public:
-  ReferenceType (HirId ref, TyVar base,
+  ReferenceType (HirId ref, TyVar base, bool is_mut,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::REF, refs), base (base)
+    : BaseType (ref, ref, TypeKind::REF, refs), base (base), is_mut (is_mut)
   {}
 
-  ReferenceType (HirId ref, HirId ty_ref, TyVar base,
+  ReferenceType (HirId ref, HirId ty_ref, TyVar base, bool is_mut,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::REF, refs), base (base)
+    : BaseType (ref, ty_ref, TypeKind::REF, refs), base (base), is_mut (is_mut)
   {}
 
   BaseType *get_base () const;
@@ -1397,8 +1397,11 @@ public:
 
   ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
 
+  bool is_mutable () const { return is_mut; }
+
 private:
   TyVar base;
+  bool is_mut;
 };
 
 class StrType : public BaseType

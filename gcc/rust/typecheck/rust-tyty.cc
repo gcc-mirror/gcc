@@ -1355,7 +1355,8 @@ ReferenceType::accept_vis (TyConstVisitor &vis) const
 std::string
 ReferenceType::as_string () const
 {
-  return "&" + get_base ()->as_string ();
+  return std::string ("&") + (is_mutable () ? "mut" : "") + " "
+	 + get_base ()->as_string ();
 }
 
 BaseType *
@@ -1391,7 +1392,7 @@ ReferenceType::get_base () const
 BaseType *
 ReferenceType::clone ()
 {
-  return new ReferenceType (get_ref (), get_ty_ref (), base,
+  return new ReferenceType (get_ref (), get_ty_ref (), base, is_mutable (),
 			    get_combined_refs ());
 }
 

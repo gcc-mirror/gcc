@@ -547,8 +547,9 @@ public:
 	  auto ok = context->lookup_builtin ("str", &base);
 	  rust_assert (ok);
 
-	  infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
-					     TyTy::TyVar (base->get_ref ()));
+	  infered
+	    = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
+				       TyTy::TyVar (base->get_ref ()), false);
 	}
 	break;
 
@@ -1088,7 +1089,8 @@ public:
     // FIXME double_reference
 
     infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
-				       TyTy::TyVar (resolved_base->get_ref ()));
+				       TyTy::TyVar (resolved_base->get_ref ()),
+				       expr.get_is_mut ());
   }
 
   void visit (HIR::DereferenceExpr &expr) override
