@@ -1111,7 +1111,8 @@ fold_using_range::range_of_cond_expr  (irange &r, gassign *s, fur_source &src)
       r = range1;
       r.union_ (range2);
     }
-  gcc_checking_assert (range_compatible_p (r.type (), type));
+  gcc_checking_assert (r.undefined_p ()
+		       || range_compatible_p (r.type (), type));
   return true;
 }
 
