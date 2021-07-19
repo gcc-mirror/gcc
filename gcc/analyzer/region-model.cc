@@ -1304,6 +1304,8 @@ void
 region_model::purge_state_involving (const svalue *sval,
 				     region_model_context *ctxt)
 {
+  if (!sval->can_have_associated_state_p ())
+    return;
   m_store.purge_state_involving (sval, m_mgr);
   m_constraints->purge_state_involving (sval);
   m_dynamic_extents.purge_state_involving (sval);

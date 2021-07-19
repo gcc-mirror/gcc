@@ -1109,6 +1109,7 @@ sub_svalue::sub_svalue (tree type, const svalue *parent_svalue,
 	  type),
   m_parent_svalue (parent_svalue), m_subregion (subregion)
 {
+  gcc_assert (parent_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for sub_svalue.  */
@@ -1165,6 +1166,8 @@ repeated_svalue::repeated_svalue (tree type,
   m_outer_size (outer_size),
   m_inner_svalue (inner_svalue)
 {
+  gcc_assert (outer_size->can_have_associated_state_p ());
+  gcc_assert (inner_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for repeated_svalue.  */
@@ -1290,6 +1293,7 @@ bits_within_svalue::bits_within_svalue (tree type,
   m_bits (bits),
   m_inner_svalue (inner_svalue)
 {
+  gcc_assert (inner_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for bits_within_svalue.  */

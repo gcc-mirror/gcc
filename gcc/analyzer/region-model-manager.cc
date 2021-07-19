@@ -340,6 +340,13 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
   /* Ops on "unknown" are also unknown.  */
   if (arg->get_kind () == SK_UNKNOWN)
     return get_or_create_unknown_svalue (type);
+  /* Likewise for "poisoned".  */
+  else if (const poisoned_svalue *poisoned_sval
+	     = arg->dyn_cast_poisoned_svalue ())
+    return get_or_create_poisoned_svalue (poisoned_sval->get_poison_kind (),
+					  type);
+
+  gcc_assert (arg->can_have_associated_state_p ());
 
   switch (op)
     {
@@ -615,12 +622,6 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
 	     get_or_create_binop (size_type_node, op,
 				  binop->get_arg1 (), arg1));
 
-  /* Ops on "unknown" are also unknown (unless we can use one of the
-     identities above).  */
-  if (arg0->get_kind () == SK_UNKNOWN
-      || arg1->get_kind () == SK_UNKNOWN)
-    return get_or_create_unknown_svalue (type);
-
   /* etc.  */
 
   return NULL;
@@ -641,6 +642,12 @@ region_model_manager::get_or_create_binop (tree type, enum tree_code op,
   if (const svalue *folded = maybe_fold_binop (type, op, arg0, arg1))
     return folded;
 
+  /* Ops on "unknown"/"poisoned" are unknown (unless we were able to fold
+     it via an identity in maybe_fold_binop).  */
+  if (!arg0->can_have_associated_state_p ()
+      || !arg1->can_have_associated_state_p ())
+    return get_or_create_unknown_svalue (type);
+
   binop_svalue::key_t key (type, op, arg0, arg1);
   if (binop_svalue **slot = m_binop_values_map.get (key))
     return *slot;
@@ -658,8 +665,8 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
 					     const svalue *parent_svalue,
 					     const region *subregion)
 {
-  /* Subvalues of "unknown" are unknown.  */
-  if (parent_svalue->get_kind () == SK_UNKNOWN)
+  /* Subvalues of "unknown"/"poisoned" are unknown.  */
+  if (!parent_svalue->can_have_associated_state_p ())
     return get_or_create_unknown_svalue (type);
 
   /* If we have a subregion of a zero-fill, it's zero.  */
@@ -755,6 +762,11 @@ region_model_manager::maybe_fold_repeated_svalue (tree type,
 						  const svalue *outer_size,
 						  const svalue *inner_svalue)
 {
+  /* Repeated "unknown"/"poisoned" is unknown.  */
+  if (!outer_size->can_have_associated_state_p ()
+      || !inner_svalue->can_have_associated_state_p ())
+    return get_or_create_unknown_svalue (type);
+
   /* If INNER_SVALUE is the same size as OUTER_SIZE,
      turn into simply a cast.  */
   if (tree cst_outer_num_bytes = outer_size->maybe_get_constant ())

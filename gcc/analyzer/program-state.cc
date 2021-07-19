@@ -453,8 +453,8 @@ sm_state_map::set_state (region_model *model,
   if (model == NULL)
     return;
 
-  /* Reject attempts to set state on UNKNOWN.  */
-  if (sval->get_kind () == SK_UNKNOWN)
+  /* Reject attempts to set state on UNKNOWN/POISONED.  */
+  if (!sval->can_have_associated_state_p ())
     return;
 
   equiv_class &ec = model->get_constraints ()->get_equiv_class (sval);
@@ -491,6 +491,8 @@ sm_state_map::impl_set_state (const svalue *sval,
 
   if (get_state (sval, ext_state) == state)
     return false;
+
+  gcc_assert (sval->can_have_associated_state_p ());
 
   /* Special-case state 0 as the default value.  */
   if (state == 0)
