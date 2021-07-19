@@ -78,6 +78,7 @@
 #include "gimple-pretty-print.h"
 #include "tree-ssa-loop-niter.h"
 #include "fractional-cost.h"
+#include "rtlanal.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -12046,6 +12047,22 @@ aarch64_strip_extend (rtx x, bool strip_shift)
   return x;
 }
 
+/* Helper function for rtx cost calculation. Strip extension as well as any
+   inner VEC_SELECT high-half from X. Returns the inner vector operand if
+   successful, or the original expression on failure.  */
+static rtx
+aarch64_strip_extend_vec_half (rtx x)
+{
+  if (GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
+    {
+      x = XEXP (x, 0);
+      if (GET_CODE (x) == VEC_SELECT
+	  && vec_series_highpart_p (GET_MODE (x), GET_MODE (XEXP (x, 0)),
+				    XEXP (x, 1)))
+	x = XEXP (x, 0);
+    }
+  return x;
+}
 
 /* Helper function for rtx cost calculation. Strip VEC_DUPLICATE as well as
    any subsequent extend and VEC_SELECT from X. Returns the inner scalar
@@ -12133,6 +12150,11 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
       unsigned int vec_flags = aarch64_classify_vector_mode (mode);
       if (vec_flags & VEC_ADVSIMD)
 	{
+	  /* The select-operand-high-half versions of the instruction have the
+	     same cost as the three vector version - don't add the costs of the
+	     extension or selection into the costs of the multiply.  */
+	  op0 = aarch64_strip_extend_vec_half (op0);
+	  op1 = aarch64_strip_extend_vec_half (op1);
 	  /* The by-element versions of the instruction have the same costs as
 	     the normal 3-vector version.  We make an assumption that the input
 	     to the VEC_DUPLICATE is already on the FP & SIMD side.  This means
