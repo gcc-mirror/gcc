@@ -24,11 +24,6 @@ if { [istarget nvptx-*-*] } {
     return
 }
 
-if { [istarget "powerpc-ibm-aix*"] } {
-    set torture_execute_xfail "powerpc-ibm-aix*"
-    return
-}
-
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
@@ -39,8 +34,15 @@ if ![info exists DEFAULT_CFLAGS] then {
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\] ]] \
-	"" $DEFAULT_CFLAGS
+set comp_output [gcc_target_compile \
+    "$srcdir/$subdir/../trivial.c" "trivial.S" assembly \
+    "additional_flags=-gctf"]
+if { ! [string match "*: target system does not support the * debug format*" \
+    $comp_output] } {
+    remove-build-file "trivial.S"
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\] ]] \
+	    "" $DEFAULT_CFLAGS
+}
 
 # All done.
 dg-finish
