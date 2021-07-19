@@ -12046,6 +12046,26 @@ aarch64_strip_extend (rtx x, bool strip_shift)
   return x;
 }
 
+
+/* Helper function for rtx cost calculation. Strip VEC_DUPLICATE as well as
+   any subsequent extend and VEC_SELECT from X. Returns the inner scalar
+   operand if successful, or the original expression on failure.  */
+static rtx
+aarch64_strip_duplicate_vec_elt (rtx x)
+{
+  if (GET_CODE (x) == VEC_DUPLICATE
+      && is_a<scalar_mode> (GET_MODE (XEXP (x, 0))))
+    {
+      x = XEXP (x, 0);
+      if (GET_CODE (x) == VEC_SELECT)
+	x = XEXP (x, 0);
+      else if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
+	       && GET_CODE (XEXP (x, 0)) == VEC_SELECT)
+	x = XEXP (XEXP (x, 0), 0);
+    }
+  return x;
+}
+
 /* Return true iff CODE is a shift supported in combination
    with arithmetic instructions.  */
 
@@ -12114,15 +12134,11 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
       if (vec_flags & VEC_ADVSIMD)
 	{
 	  /* The by-element versions of the instruction have the same costs as
-	     the normal 3-vector version.  So don't add the costs of the
-	     duplicate into the costs of the multiply.  We make an assumption
-	     that the input to the VEC_DUPLICATE is already on the FP & SIMD
-	     side.  This means costing of a MUL by element pre RA is a bit
-	     optimistic.  */
-	  if (GET_CODE (op0) == VEC_DUPLICATE)
-	    op0 = XEXP (op0, 0);
-	  else if (GET_CODE (op1) == VEC_DUPLICATE)
-	    op1 = XEXP (op1, 0);
+	     the normal 3-vector version.  We make an assumption that the input
+	     to the VEC_DUPLICATE is already on the FP & SIMD side.  This means
+	     costing of a MUL by element pre RA is a bit optimistic.  */
+	  op0 = aarch64_strip_duplicate_vec_elt (op0);
+	  op1 = aarch64_strip_duplicate_vec_elt (op1);
 	}
       cost += rtx_cost (op0, mode, MULT, 0, speed);
       cost += rtx_cost (op1, mode, MULT, 1, speed);
