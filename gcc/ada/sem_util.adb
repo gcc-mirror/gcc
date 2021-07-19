@@ -16868,6 +16868,15 @@ package body Sem_Util is
             end if;
 
             if Is_Entity_Name (P) then
+               --  The Etype may not be set on P (which is wrong) in certain
+               --  corner cases involving the deprecated front-end inlining of
+               --  subprograms (via -gnatN), so use the Etype set on the
+               --  the entity for these instances since we know it is present.
+
+               if No (Prefix_Type) then
+                  Prefix_Type := Etype (Entity (P));
+               end if;
+
                if Ekind (Entity (P)) = E_Generic_In_Out_Parameter then
                   Prefix_Type := Base_Type (Prefix_Type);
                end if;
@@ -21145,6 +21154,9 @@ package body Sem_Util is
    -- Is_Variable --
    -----------------
 
+   --  Should Is_Variable be refactored to better handle dereferences and
+   --  technical debt ???
+
    function Is_Variable
      (N                 : Node_Id;
       Use_Original_Node : Boolean := True) return Boolean
@@ -21313,6 +21325,10 @@ package body Sem_Util is
                         and then Nkind (Parent (E)) /= N_Exception_Handler)
               or else (K = E_Component
                         and then not In_Protected_Function (E))
+              or else (Present (Etype (E))
+                        and then Is_Access_Object_Type (Etype (E))
+                        and then Is_Access_Variable (Etype (E))
+                        and then Is_Dereferenced (N))
               or else K = E_Out_Parameter
               or else K = E_In_Out_Parameter
               or else K = E_Generic_In_Out_Parameter
