@@ -348,7 +348,7 @@ public:
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
 
-    auto result = lhs->unify (rhs);
+    auto result = lhs->coerce (rhs);
     if (result->get_kind () == TyTy::TypeKind::ERROR)
       return;
 

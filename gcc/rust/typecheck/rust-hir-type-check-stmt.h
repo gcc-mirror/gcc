@@ -80,7 +80,7 @@ public:
     // let x:i32 = 123;
     if (specified_ty != nullptr && init_expr_ty != nullptr)
       {
-	auto unified_ty = specified_ty->unify (init_expr_ty);
+	auto unified_ty = specified_ty->coerce (init_expr_ty);
 	if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
 	  return;
 

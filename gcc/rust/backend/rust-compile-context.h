@@ -537,6 +537,10 @@ public:
     Btype *base_compiled_type
       = TyTyResolveCompile::compile (ctx, type.get_base ());
     translated = ctx->get_backend ()->reference_type (base_compiled_type);
+    if (!type.is_mutable ())
+      {
+	translated = ctx->get_backend ()->immutable_type (translated);
+      }
   }
 
   void visit (TyTy::StrType &type) override
