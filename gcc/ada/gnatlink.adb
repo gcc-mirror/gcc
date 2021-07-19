@@ -1531,7 +1531,6 @@ begin
          A := Scan_ALI
                (F,
                 T,
-                Ignore_ED     => False,
                 Err           => False,
                 Ignore_Errors => True);
 

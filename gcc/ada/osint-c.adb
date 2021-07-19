@@ -520,10 +520,6 @@ package body Osint.C is
 begin
    Adjust_OS_Resource_Limits;
 
-   Opt.Create_Repinfo_File_Access := Create_Repinfo_File'Access;
-   Opt.Write_Repinfo_Line_Access  := Write_Repinfo_Line'Access;
-   Opt.Close_Repinfo_File_Access  := Close_Repinfo_File'Access;
-
    Opt.Create_List_File_Access := Create_List_File'Access;
    Opt.Write_List_Info_Access  := Write_List_Info'Access;
    Opt.Close_List_File_Access  := Close_List_File'Access;

@@ -16264,12 +16264,14 @@ package body Sem_Util is
                  Names_Match (Assign_Indexed_1, Assign_Indexed_2);
             end;
 
+         --  Checking for this aspect is performed elsewhere during freezing
+         when Aspect_No_Controlled_Parts =>
+            return True;
+
          --  scalar-valued aspects; compare (static) values.
-         when Aspect_Max_Entry_Queue_Length --  | Aspect_No_Controlled_Parts
-              =>
-            --  This should be unreachable. No_Controlled_Parts is
-            --  not yet supported at all in GNAT and Max_Entry_Queue_Length
-            --  is supported only for protected entries, not for types.
+         when Aspect_Max_Entry_Queue_Length =>
+            --  This should be unreachable. Max_Entry_Queue_Length is
+            --  supported only for protected entries, not for types.
             pragma Assert (Serious_Errors_Detected /= 0);
             return True;
 

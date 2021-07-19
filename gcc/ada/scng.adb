@@ -1743,13 +1743,13 @@ package body Scng is
                      Code := Character'Pos (' ');
 
                   --  In Ada 95 mode we allow any wide character in a character
-                  --  literal, but in Ada 2005, the set of characters allowed
-                  --  is restricted to graphic characters.
+                  --  literal, but in later versions, the set of characters
+                  --  allowed is restricted to graphic characters.
 
                   elsif Ada_Version >= Ada_2005
                     and then Is_UTF_32_Non_Graphic (UTF_32 (Code))
                   then
-                     Error_Msg -- CODEFIX????
+                     Error_Msg -- CODEFIX
                        ("(Ada 2005) non-graphic character not permitted " &
                         "in character literal", Wptr);
                   end if;

@@ -2373,14 +2373,12 @@ package body Osint is
       Nb_Relative_Dir := 0;
       for J in 1 .. Len loop
 
-         --  Treat any control character as a path separator. Note that we do
+         --  Treat any EOL character as a path separator. Note that we do
          --  not treat space as a path separator (we used to treat space as a
          --  path separator in an earlier version). That way space can appear
          --  as a legitimate character in a path name.
 
-         --  Why do we treat all control characters as path separators???
-
-         if S (J) in ASCII.NUL .. ASCII.US then
+         if S (J) = ASCII.LF or else S (J) = ASCII.CR then
             S (J) := Path_Separator;
          end if;
 

@@ -9480,13 +9480,12 @@ package body Sem_Ch6 is
          end if;
 
       --  Here if type is not frozen yet. It is illegal to have a primitive
-      --  equality declared in the private part if the type is visible.
+      --  equality declared in the private part if the type is visible
+      --  (RM 4.5.2(9.8)).
 
       elsif not In_Same_List (Parent (Typ), Decl)
         and then not Is_Limited_Type (Typ)
       then
-         --  Shouldn't we give an RM reference here???
-
          if Ada_Version >= Ada_2012 then
             Error_Msg_N
               ("equality operator appears too late<<", Eq_Op);
@@ -9817,7 +9816,8 @@ package body Sem_Ch6 is
       --  conform when they do not, e.g. by converting 1+2 into 3.
 
       function FCE (Given_E1 : Node_Id; Given_E2 : Node_Id) return Boolean;
-      --  ???
+      --  Convenience function to abbreviate recursive calls to
+      --  Fully_Conformant_Expressions without having to pass Report.
 
       function FCL (L1 : List_Id; L2 : List_Id) return Boolean;
       --  Compare elements of two lists for conformance. Elements have to be
@@ -10778,7 +10778,7 @@ package body Sem_Ch6 is
                   Error_Msg_Node_2 := F_Typ;
                   Error_Msg_NE
                     ("private operation& in generic unit does not override "
-                     & "any primitive operation of& (RM 12.3 (18))??",
+                     & "any primitive operation of& (RM 12.3(18))??",
                      New_E, New_E);
                end if;
 

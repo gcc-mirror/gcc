@@ -892,7 +892,6 @@ package body ALI is
    function Scan_ALI
      (F                : File_Name_Type;
       T                : Text_Buffer_Ptr;
-      Ignore_ED        : Boolean;
       Err              : Boolean;
       Ignore_Lines     : String  := "X";
       Ignore_Errors    : Boolean := False;
@@ -1319,8 +1318,7 @@ package body ALI is
                      exit when Nextc = ',';
 
                      --  Terminate if left bracket not part of wide char
-                     --  sequence Note that we only recognize brackets
-                     --  notation so far ???
+                     --  sequence.
 
                      exit when Nextc = '[' and then T (P + 1) /= '"';
 
@@ -2938,9 +2936,7 @@ package body ALI is
 
                         --  Store AD indication unless ignore required
 
-                        if not Ignore_ED then
-                           Withs.Table (Withs.Last).Elab_All_Desirable := True;
-                        end if;
+                        Withs.Table (Withs.Last).Elab_All_Desirable := True;
 
                      elsif Nextc = 'E' then
                         P := P + 1;
@@ -2957,12 +2953,9 @@ package body ALI is
                            Checkc ('D');
                            Check_At_End_Of_Field;
 
-                           --  Store ED indication unless ignore required
+                           --  Store ED indication
 
-                           if not Ignore_ED then
-                              Withs.Table (Withs.Last).Elab_Desirable :=
-                                True;
-                           end if;
+                           Withs.Table (Withs.Last).Elab_Desirable := True;
                         end if;
 
                      else
@@ -3213,13 +3206,10 @@ package body ALI is
             Skip_Space;
             Sdep.Increment_Last;
 
-            --  In the following call, Lower is not set to True, this is either
-            --  a bug, or it deserves a special comment as to why this is so???
-
             --  The file/path name may be quoted
 
             Sdep.Table (Sdep.Last).Sfile :=
-              Get_File_Name (May_Be_Quoted => True);
+              Get_File_Name (Lower => True, May_Be_Quoted => True);
 
             Sdep.Table (Sdep.Last).Stamp := Get_Stamp;
             Sdep.Table (Sdep.Last).Dummy_Entry :=

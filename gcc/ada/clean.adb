@@ -217,7 +217,7 @@ package body Clean is
 
                if Text /= null then
                   The_ALI :=
-                    Scan_ALI (Lib_File, Text, Ignore_ED => False, Err => True);
+                    Scan_ALI (Lib_File, Text, Err => True);
                   Free (Text);
 
                   --  If no error was produced while loading this ALI file,
