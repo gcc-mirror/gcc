@@ -1406,6 +1406,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::forward<const __element_type>(std::__get_helper<__i>(__t));
     }
 
+  /// @cond undocumented
+  // Deleted overload chosen for invalid indices.
+  template<size_t __i, typename... _Elements>
+    constexpr __enable_if_t<(__i >= sizeof...(_Elements))>
+    get(const tuple<_Elements...>&) = delete;
+  /// @endcond
+
 #if __cplusplus >= 201402L
 
 #define __cpp_lib_tuples_by_type 201304

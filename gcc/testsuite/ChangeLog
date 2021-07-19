@@ -1,3 +1,104 @@
+2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101492
+	* gcc.target/i386/pr101492-1.c: New test.
+	* gcc.target/i386/pr101492-2.c: Likewise.
+	* gcc.target/i386/pr101492-3.c: Likewise.
+	* gcc.target/i386/pr101492-4.c: Likewise.
+
+2021-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101084
+	* gfortran.dg/fmt_nonchar_3.f90: New test.
+
+2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101495
+	* gcc.target/i386/avx-vzeroupper-28.c: New test.
+
+2021-07-18  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95498
+	* jit.dg/all-non-failing-tests.h: New test.
+	* jit.dg/test-cast.c: New test.
+
+2021-07-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-6.c: New test.
+
+2021-07-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr96542.c: New.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101233
+	* g++.dg/cpp2a/class-deduction-alias10.C: New test.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	DR 960
+	PR c++/99664
+	* g++.dg/inherit/covariant23.C: New test.
+
+2021-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_dump_state): New.
+	* gcc.dg/analyzer/dump-state.c: New test.
+
+2021-07-16  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/101468
+	* gcc.dg/Wstringop-overflow-41.c: Adjust to avoid target-specific
+	failures.
+	* gcc.dg/Wstringop-overflow-42.c: Same.
+	* gcc.dg/Wstringop-overflow-68.c: Same.
+	* gcc.dg/Wstringop-overflow-70.c: Same.
+	* gcc.dg/Wstringop-overflow-71.c: Same.
+	* gcc.dg/strlenopt-95.c: Fix typos.
+
+2021-07-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/101457
+	* gcc.dg/vect/vect-reduc-dot-19.c: Use long long.
+	* gcc.dg/vect/vect-reduc-dot-20.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-21.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-22.c: Likewise.
+
+2021-07-16  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp1y/Wnarrowing2.C: New test.
+	* g++.dg/cpp1y/Wnarrowing2.h: New test.
+
+2021-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* g++.dg/ext/visibility/noPLT.C: Skip on s390x.
+	* g++.target/s390/mi-thunk.C: New test.
+	* gcc.target/s390/nodatarel-1.c: Move foostatic to the new
+	tests.
+	* gcc.target/s390/pr80080-4.c: Allow @PLT suffix.
+	* gcc.target/s390/risbg-ll-3.c: Likewise.
+	* gcc.target/s390/call.h: Common code for the new tests.
+	* gcc.target/s390/call-z10-pic-nodatarel.c: New test.
+	* gcc.target/s390/call-z10-pic.c: New test.
+	* gcc.target/s390/call-z10.c: New test.
+	* gcc.target/s390/call-z9-pic-nodatarel.c: New test.
+	* gcc.target/s390/call-z9-pic.c: New test.
+	* gcc.target/s390/call-z9.c: New test.
+	* gcc.target/s390/mfentry-m64-pic.c: New test.
+	* gcc.target/s390/tls.h: Common code for the new TLS tests.
+	* gcc.target/s390/tls-pic.c: New test.
+	* gcc.target/s390/tls.c: New test.
+
+2021-07-16  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/sve/extract_1.c: Split expected results
+	by big/little endian targets, restoring the old expected
+	result for big endian.
+	* gcc.target/aarch64/sve/extract_2.c: Likewise.
+	* gcc.target/aarch64/sve/extract_3.c: Likewise.
+	* gcc.target/aarch64/sve/extract_4.c: Likewise.
+
 2021-07-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/101346

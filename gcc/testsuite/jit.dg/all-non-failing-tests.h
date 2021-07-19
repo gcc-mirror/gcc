@@ -98,6 +98,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-cast.c */
+#define create_code create_code_cast
+#define verify_code verify_code_cast
+#include "test-cast.c"
+#undef create_code
+#undef verify_code
+
 /* test-compound-assignment.c */
 #define create_code create_code_compound_assignment
 #define verify_code verify_code_compound_assignment
@@ -361,6 +368,9 @@ const struct testcase testcases[] = {
   {"calling_internal_function",
    create_code_calling_internal_function,
    verify_code_calling_internal_function},
+  {"cast",
+   create_code_cast,
+   verify_code_cast},
   {"compound_assignment",
    create_code_compound_assignment,
    verify_code_compound_assignment},

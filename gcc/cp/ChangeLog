@@ -1,3 +1,21 @@
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101233
+	* pt.c (alias_ctad_tweaks): Clear cp_unevaluated_operand for
+	substituting DECL_ARGUMENTS.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	DR 960
+	PR c++/99664
+	* search.c (check_final_overrider): Compare TYPE_REF_IS_RVALUE
+	when the return types are references.
+
+2021-07-16  Marek Polacek  <polacek@redhat.com>
+
+	* typeck2.c (check_narrowing): Don't suppress the pedantic error
+	in system headers.
+
 2021-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101443

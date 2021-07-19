@@ -62,22 +62,32 @@ along with GCC; see the file COPYING3.  If not see
 
 /* gcc::jit::playback::context::build_cast uses the convert.h API,
    which in turn requires the frontend to provide a "convert"
-   function, apparently as a fallback.
-
-   Hence we provide this dummy one, with the requirement that any casts
-   are handled before reaching this.  */
+   function, apparently as a fallback for casts that can be simplified
+   (truncation, extension). */
 extern tree convert (tree type, tree expr);
 
 tree
 convert (tree dst_type, tree expr)
 {
-  gcc_assert (gcc::jit::active_playback_ctxt);
-  gcc::jit::active_playback_ctxt->add_error (NULL, "unhandled conversion");
-  fprintf (stderr, "input expression:\n");
-  debug_tree (expr);
-  fprintf (stderr, "requested type:\n");
-  debug_tree (dst_type);
-  return error_mark_node;
+  tree t_ret = NULL;
+  t_ret = targetm.convert_to_type (dst_type, expr);
+  if (t_ret)
+      return t_ret;
+  switch (TREE_CODE (dst_type))
+    {
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+      return fold (convert_to_integer (dst_type, expr));
+
+    default:
+      gcc_assert (gcc::jit::active_playback_ctxt);
+      gcc::jit::active_playback_ctxt->add_error (NULL, "unhandled conversion");
+      fprintf (stderr, "input expression:\n");
+      debug_tree (expr);
+      fprintf (stderr, "requested type:\n");
+      debug_tree (dst_type);
+      return error_mark_node;
+    }
 }
 
 namespace gcc {

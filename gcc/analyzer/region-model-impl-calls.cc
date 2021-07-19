@@ -140,6 +140,24 @@ call_details::get_arg_svalue (unsigned idx) const
   return m_model->get_rvalue (arg, m_ctxt);
 }
 
+/* Attempt to get the string literal for argument IDX, or return NULL
+   otherwise.
+   For use when implementing "__analyzer_*" functions that take
+   string literals.  */
+
+const char *
+call_details::get_arg_string_literal (unsigned idx) const
+{
+  const svalue *str_arg = get_arg_svalue (idx);
+  if (const region *pointee = str_arg->maybe_get_region ())
+    if (const string_region *string_reg = pointee->dyn_cast_string_region ())
+      {
+	tree string_cst = string_reg->get_string_cst ();
+	return TREE_STRING_POINTER (string_cst);
+      }
+  return NULL;
+}
+
 /* Dump a multiline representation of this call to PP.  */
 
 void
@@ -325,10 +343,8 @@ region_model::impl_call_fgets (const call_details &cd)
   /* Ideally we would bifurcate state here between the
      error vs no error cases.  */
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region_svalue *ptr_to_region_sval
-      = ptr_sval->dyn_cast_region_svalue ())
+  if (const region *reg = ptr_sval->maybe_get_region ())
     {
-      const region *reg = ptr_to_region_sval->get_pointee ();
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
       purge_state_involving (new_sval, cd.get_ctxt ());
@@ -342,10 +358,8 @@ void
 region_model::impl_call_fread (const call_details &cd)
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region_svalue *ptr_to_region_sval
-      = ptr_sval->dyn_cast_region_svalue ())
+  if (const region *reg = ptr_sval->maybe_get_region ())
     {
-      const region *reg = ptr_to_region_sval->get_pointee ();
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
       purge_state_involving (new_sval, cd.get_ctxt ());
@@ -372,12 +386,10 @@ void
 region_model::impl_call_free (const call_details &cd)
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region_svalue *ptr_to_region_sval
-      = ptr_sval->dyn_cast_region_svalue ())
+  if (const region *freed_reg = ptr_sval->maybe_get_region ())
     {
       /* If the ptr points to an underlying heap region, delete it,
 	 poisoning pointers.  */
-      const region *freed_reg = ptr_to_region_sval->get_pointee ();
       unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
       m_dynamic_extents.remove (freed_reg);
     }
@@ -419,7 +431,7 @@ region_model::impl_call_memcpy (const call_details &cd)
 	return;
     }
 
-  check_for_writable_region (dest_reg, cd.get_ctxt ());
+  check_region_for_write (dest_reg, cd.get_ctxt ());
 
   /* Otherwise, mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
@@ -443,7 +455,7 @@ region_model::impl_call_memset (const call_details &cd)
   const region *sized_dest_reg = m_mgr->get_sized_region (dest_reg,
 							  NULL_TREE,
 							  num_bytes_sval);
-  check_for_writable_region (sized_dest_reg, cd.get_ctxt ());
+  check_region_for_write (sized_dest_reg, cd.get_ctxt ());
   fill_region (sized_dest_reg, fill_value_u8);
   return true;
 }
@@ -472,12 +484,10 @@ bool
 region_model::impl_call_operator_delete (const call_details &cd)
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region_svalue *ptr_to_region_sval
-      = ptr_sval->dyn_cast_region_svalue ())
+  if (const region *freed_reg = ptr_sval->maybe_get_region ())
     {
       /* If the ptr points to an underlying heap region, delete it,
 	 poisoning pointers.  */
-      const region *freed_reg = ptr_to_region_sval->get_pointee ();
       unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
     }
   return false;
@@ -505,7 +515,7 @@ region_model::impl_call_strcpy (const call_details &cd)
 
   cd.maybe_set_lhs (dest_sval);
 
-  check_for_writable_region (dest_reg, cd.get_ctxt ());
+  check_region_for_write (dest_reg, cd.get_ctxt ());
 
   /* For now, just mark region's contents as unknown.  */
   mark_region_as_unknown (dest_reg, cd.get_uncertainty ());

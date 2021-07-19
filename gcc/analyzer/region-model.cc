@@ -1304,6 +1304,8 @@ void
 region_model::purge_state_involving (const svalue *sval,
 				     region_model_context *ctxt)
 {
+  if (!sval->can_have_associated_state_p ())
+    return;
   m_store.purge_state_involving (sval, m_mgr);
   m_constraints->purge_state_involving (sval);
   m_dynamic_extents.purge_state_involving (sval);
@@ -1743,7 +1745,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
 	gcc_assert (TREE_CODE (first_bit_offset) == INTEGER_CST);
 	bit_range bits (TREE_INT_CST_LOW (first_bit_offset),
 			TREE_INT_CST_LOW (num_bits));
-	return get_rvalue_for_bits (TREE_TYPE (expr), reg, bits);
+	return get_rvalue_for_bits (TREE_TYPE (expr), reg, bits, ctxt);
       }
 
     case SSA_NAME:
@@ -1753,7 +1755,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
     case ARRAY_REF:
       {
 	const region *reg = get_lvalue (pv, ctxt);
-	return get_store_value (reg);
+	return get_store_value (reg, ctxt);
       }
 
     case REALPART_EXPR:
@@ -1808,7 +1810,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
     case MEM_REF:
       {
 	const region *ref_reg = get_lvalue (pv, ctxt);
-	return get_store_value (ref_reg);
+	return get_store_value (ref_reg, ctxt);
       }
     }
 }
@@ -1913,11 +1915,15 @@ region_model::get_initial_value_for_global (const region *reg) const
 }
 
 /* Get a value for REG, looking it up in the store, or otherwise falling
-   back to "initial" or "unknown" values.  */
+   back to "initial" or "unknown" values.
+   Use CTXT to report any warnings associated with reading from REG. */
 
 const svalue *
-region_model::get_store_value (const region *reg) const
+region_model::get_store_value (const region *reg,
+			       region_model_context *ctxt) const
 {
+  check_region_for_read (reg, ctxt);
+
   /* Special-case: handle var_decls in the constant pool.  */
   if (const decl_region *decl_reg = reg->dyn_cast_decl_region ())
     if (const svalue *sval = decl_reg->maybe_get_constant_value (m_mgr))
@@ -2077,14 +2083,16 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 /* Attempt to get BITS within any value of REG, as TYPE.
    In particular, extract values from compound_svalues for the case
    where there's a concrete binding at BITS.
-   Return an unknown svalue if we can't handle the given case.  */
+   Return an unknown svalue if we can't handle the given case.
+   Use CTXT to report any warnings associated with reading from REG.  */
 
 const svalue *
 region_model::get_rvalue_for_bits (tree type,
 				   const region *reg,
-				   const bit_range &bits) const
+				   const bit_range &bits,
+				   region_model_context *ctxt) const
 {
-  const svalue *sval = get_store_value (reg);
+  const svalue *sval = get_store_value (reg, ctxt);
   return m_mgr->get_or_create_bits_within (type, bits, sval);
 }
 
@@ -2240,8 +2248,52 @@ region_model::get_capacity (const region *reg) const
   return m_mgr->get_or_create_unknown_svalue (sizetype);
 }
 
+/* If CTXT is non-NULL, use it to warn about any problems accessing REG,
+   using DIR to determine if this access is a read or write.  */
+
+void
+region_model::check_region_access (const region *reg,
+				   enum access_direction dir,
+				   region_model_context *ctxt) const
+{
+  /* Fail gracefully if CTXT is NULL.  */
+  if (!ctxt)
+    return;
+
+  switch (dir)
+    {
+    default:
+      gcc_unreachable ();
+    case DIR_READ:
+      /* Currently a no-op.  */
+      break;
+    case DIR_WRITE:
+      check_for_writable_region (reg, ctxt);
+      break;
+    }
+}
+
+/* If CTXT is non-NULL, use it to warn about any problems writing to REG.  */
+
+void
+region_model::check_region_for_write (const region *dest_reg,
+				      region_model_context *ctxt) const
+{
+  check_region_access (dest_reg, DIR_WRITE, ctxt);
+}
+
+/* If CTXT is non-NULL, use it to warn about any problems reading from REG.  */
+
+void
+region_model::check_region_for_read (const region *src_reg,
+				     region_model_context *ctxt) const
+{
+  check_region_access (src_reg, DIR_READ, ctxt);
+}
+
 /* Set the value of the region given by LHS_REG to the value given
-   by RHS_SVAL.  */
+   by RHS_SVAL.
+   Use CTXT to report any warnings associated with writing to LHS_REG.  */
 
 void
 region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
@@ -2250,7 +2302,7 @@ region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
   gcc_assert (lhs_reg);
   gcc_assert (rhs_sval);
 
-  check_for_writable_region (lhs_reg, ctxt);
+  check_region_for_write (lhs_reg, ctxt);
 
   m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
 		     ctxt ? ctxt->get_uncertainty () : NULL);
@@ -4541,7 +4593,7 @@ test_stack_frames ()
      renumbering.  */
   const svalue *new_q_sval = model.get_rvalue (q, &ctxt);
   ASSERT_EQ (new_q_sval->get_kind (), SK_REGION);
-  ASSERT_EQ (new_q_sval->dyn_cast_region_svalue ()->get_pointee (),
+  ASSERT_EQ (new_q_sval->maybe_get_region (),
 	     model.get_lvalue (p, &ctxt));
 
   /* Verify that top of stack has been updated.  */
@@ -5070,8 +5122,7 @@ test_state_merging ()
     model0.set_value (q_in_first_frame, sval_ptr, NULL);
 
     /* Verify that it's pointing at the newer frame.  */
-    const region *reg_pointee
-      = sval_ptr->dyn_cast_region_svalue ()->get_pointee ();
+    const region *reg_pointee = sval_ptr->maybe_get_region ();
     ASSERT_EQ (reg_pointee->get_parent_region (), reg_2nd_frame);
 
     model0.canonicalize ();

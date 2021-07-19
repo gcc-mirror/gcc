@@ -133,6 +133,65 @@ range_operator::wi_fold (irange &r, tree type,
   r.set_varying (type);
 }
 
+// Call wi_fold, except further split small subranges into constants.
+// This can provide better precision. For something   8 >> [0,1]
+// Instead of [8, 16], we will produce [8,8][16,16]
+
+void
+range_operator::wi_fold_in_parts (irange &r, tree type,
+				  const wide_int &lh_lb,
+				  const wide_int &lh_ub,
+				  const wide_int &rh_lb,
+				  const wide_int &rh_ub) const
+{
+  wi::overflow_type ov_rh, ov_lh;
+  int_range_max tmp;
+  wide_int rh_range = wi::sub (rh_ub, rh_lb, TYPE_SIGN (type), &ov_rh);
+  wide_int lh_range = wi::sub (lh_ub, lh_lb, TYPE_SIGN (type), &ov_lh);
+  signop sign = TYPE_SIGN (type);;
+  // If there are 2, 3, or 4 values in the RH range, do them separately.
+  // Call wi_fold_in_parts to check the RH side.
+  if (wi::gt_p (rh_range, 0, sign) && wi::lt_p (rh_range, 4, sign)
+      && ov_rh == wi::OVF_NONE)
+    {
+      wi_fold_in_parts (r, type, lh_lb, lh_ub, rh_lb, rh_lb);
+      if (wi::gt_p (rh_range, 1, sign))
+	{
+	  wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_lb + 1, rh_lb + 1);
+	  r.union_ (tmp);
+	  if (wi::eq_p (rh_range, 3))
+	    {
+	      wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_lb + 2, rh_lb + 2);
+	      r.union_ (tmp);
+	    }
+	}
+      wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_ub, rh_ub);
+      r.union_ (tmp);
+    }
+  // Otherise check for 2, 3, or 4 values in the LH range and split them up.
+  // The RH side has been checked, so no recursion needed.
+  else if (wi::gt_p (lh_range, 0, sign) && wi::lt_p (lh_range, 4, sign)
+	   && ov_lh == wi::OVF_NONE)
+    {
+      wi_fold (r, type, lh_lb, lh_lb, rh_lb, rh_ub);
+      if (wi::gt_p (lh_range, 1, sign))
+	{
+	  wi_fold (tmp, type, lh_lb + 1, lh_lb + 1, rh_lb, rh_ub);
+	  r.union_ (tmp);
+	  if (wi::eq_p (lh_range, 3))
+	    {
+	      wi_fold (tmp, type, lh_lb + 2, lh_lb + 2, rh_lb, rh_ub);
+	      r.union_ (tmp);
+	    }
+	}
+      wi_fold (tmp, type, lh_ub, lh_ub, rh_lb, rh_ub);
+      r.union_ (tmp);
+    }
+  // Otherwise just call wi_fold.
+  else
+    wi_fold (r, type, lh_lb, lh_ub, rh_lb, rh_ub);
+}
+
 // The default for fold is to break all ranges into sub-ranges and
 // invoke the wi_fold method on each sub-range pair.
 
@@ -152,8 +211,8 @@ range_operator::fold_range (irange &r, tree type,
   // If both ranges are single pairs, fold directly into the result range.
   if (num_lh == 1 && num_rh == 1)
     {
-      wi_fold (r, type, lh.lower_bound (0), lh.upper_bound (0),
-	       rh.lower_bound (0), rh.upper_bound (0));
+      wi_fold_in_parts (r, type, lh.lower_bound (0), lh.upper_bound (0),
+			rh.lower_bound (0), rh.upper_bound (0));
       op1_op2_relation_effect (r, type, lh, rh, rel);
       return true;
     }
@@ -167,7 +226,7 @@ range_operator::fold_range (irange &r, tree type,
 	wide_int lh_ub = lh.upper_bound (x);
 	wide_int rh_lb = rh.lower_bound (y);
 	wide_int rh_ub = rh.upper_bound (y);
-	wi_fold (tmp, type, lh_lb, lh_ub, rh_lb, rh_ub);
+	wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_lb, rh_ub);
 	r.union_ (tmp);
 	if (r.varying_p ())
 	  {
@@ -1915,8 +1974,14 @@ operator_lshift::wi_fold (irange &r, tree type,
   int bound_shift = overflow_pos - rh_ub.to_shwi ();
   // If bound_shift == HOST_BITS_PER_WIDE_INT, the llshift can
   // overflow.  However, for that to happen, rh.max needs to be zero,
-  // which means rh is a singleton range of zero, which means it
-  // should be handled by the lshift fold_range above.
+  // which means rh is a singleton range of zero, which means we simply return
+  // [lh_lb, lh_ub] as the range.
+  if (wi::eq_p (rh_ub, rh_lb) && wi::eq_p (rh_ub, 0))
+    {
+      r = int_range<2> (type, lh_lb, lh_ub);
+      return;
+    }
+
   wide_int bound = wi::set_bit_in_zero (bound_shift, prec);
   wide_int complement = ~(bound - 1);
   wide_int low_bound, high_bound;

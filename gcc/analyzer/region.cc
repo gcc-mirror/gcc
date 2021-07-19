@@ -573,7 +573,7 @@ region_model::copy_region (const region *dst_reg, const region *src_reg,
   if (dst_reg == src_reg)
     return;
 
-  const svalue *sval = get_store_value (src_reg);
+  const svalue *sval = get_store_value (src_reg, ctxt);
   set_value (dst_reg, sval, ctxt);
 }
 

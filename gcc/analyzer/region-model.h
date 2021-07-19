@@ -468,6 +468,7 @@ public:
   tree get_arg_tree (unsigned idx) const;
   tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
+  const char *get_arg_string_literal (unsigned idx) const;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;
   void dump (bool simple) const;
@@ -608,7 +609,8 @@ class region_model
 
   const svalue *get_rvalue_for_bits (tree type,
 				     const region *reg,
-				     const bit_range &bits) const;
+				     const bit_range &bits,
+				     region_model_context *ctxt) const;
 
   void set_value (const region *lhs_reg, const svalue *rhs_sval,
 		  region_model_context *ctxt);
@@ -686,7 +688,8 @@ class region_model
   static void append_ssa_names_cb (const region *base_reg,
 				   struct append_ssa_names_cb_data *data);
 
-  const svalue *get_store_value (const region *reg) const;
+  const svalue *get_store_value (const region *reg,
+				 region_model_context *ctxt) const;
 
   bool region_exists_p (const region *reg) const;
 
@@ -747,6 +750,13 @@ class region_model
 
   void check_for_writable_region (const region* dest_reg,
 				  region_model_context *ctxt) const;
+  void check_region_access (const region *reg,
+			    enum access_direction dir,
+			    region_model_context *ctxt) const;
+  void check_region_for_write (const region *dest_reg,
+			       region_model_context *ctxt) const;
+  void check_region_for_read (const region *src_reg,
+			      region_model_context *ctxt) const;
 
   /* Storing this here to avoid passing it around everywhere.  */
   region_model_manager *const m_mgr;

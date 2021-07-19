@@ -1,3 +1,9 @@
+2021-07-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/101453
+	* c-common.c (parse_optimize_options): Use the correct
+	size for buffer.
+
 2021-07-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/101289

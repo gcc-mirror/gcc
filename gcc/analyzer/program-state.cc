@@ -131,6 +131,27 @@ extrinsic_state::get_model_manager () const
     return NULL; /* for selftests.  */
 }
 
+/* Try to find a state machine named NAME.
+   If found, return true and write its index to *OUT.
+   Otherwise return false.  */
+
+bool
+extrinsic_state::get_sm_idx_by_name (const char *name, unsigned *out) const
+{
+  unsigned i;
+  state_machine *sm;
+  FOR_EACH_VEC_ELT (m_checkers, i, sm)
+    if (0 == strcmp (name, sm->get_name ()))
+      {
+	/* Found NAME.  */
+	*out = i;
+	return true;
+      }
+
+  /* NAME not found.  */
+  return false;
+}
+
 /* struct sm_state_map::entry_t.  */
 
 int
@@ -432,8 +453,8 @@ sm_state_map::set_state (region_model *model,
   if (model == NULL)
     return;
 
-  /* Reject attempts to set state on UNKNOWN.  */
-  if (sval->get_kind () == SK_UNKNOWN)
+  /* Reject attempts to set state on UNKNOWN/POISONED.  */
+  if (!sval->can_have_associated_state_p ())
     return;
 
   equiv_class &ec = model->get_constraints ()->get_equiv_class (sval);
@@ -470,6 +491,8 @@ sm_state_map::impl_set_state (const svalue *sval,
 
   if (get_state (sval, ext_state) == state)
     return false;
+
+  gcc_assert (sval->can_have_associated_state_p ());
 
   /* Special-case state 0 as the default value.  */
   if (state == 0)
@@ -1061,7 +1084,7 @@ program_state::prune_for_point (exploded_graph &eg,
 		 temporaries keep the value reachable until the frame is
 		 popped.  */
 	      const svalue *sval
-		= new_state.m_region_model->get_store_value (reg);
+		= new_state.m_region_model->get_store_value (reg, NULL);
 	      if (!new_state.can_purge_p (eg.get_ext_state (), sval)
 		  && SSA_NAME_VAR (ssa_name))
 		{
@@ -1285,12 +1308,37 @@ program_state::detect_leaks (const program_state &src_state,
 
   /* Purge dead heap-allocated regions from dynamic extents.  */
   for (const svalue *sval : dead_svals)
-    if (const region_svalue *region_sval = sval->dyn_cast_region_svalue ())
-      {
-	const region *reg = region_sval->get_pointee ();
-	if (reg->get_kind () == RK_HEAP_ALLOCATED)
-	  dest_state.m_region_model->unset_dynamic_extents (reg);
-      }
+    if (const region *reg = sval->maybe_get_region ())
+      if (reg->get_kind () == RK_HEAP_ALLOCATED)
+	dest_state.m_region_model->unset_dynamic_extents (reg);
+}
+
+/* Handle calls to "__analyzer_dump_state".  */
+
+void
+program_state::impl_call_analyzer_dump_state (const gcall *call,
+					      const extrinsic_state &ext_state,
+					      region_model_context *ctxt)
+{
+  call_details cd (call, m_region_model, ctxt);
+  const char *sm_name = cd.get_arg_string_literal (0);
+  if (!sm_name)
+    {
+      error_at (call->location, "cannot determine state machine");
+      return;
+    }
+  unsigned sm_idx;
+  if (!ext_state.get_sm_idx_by_name (sm_name, &sm_idx))
+    {
+      error_at (call->location, "unrecognized state machine %qs", sm_name);
+      return;
+    }
+  const sm_state_map *smap = m_checker_states[sm_idx];
+
+  const svalue *sval = cd.get_arg_svalue (1);
+
+  state_machine::state_t state = smap->get_state (sval, ext_state);
+  warning_at (call->location, 0, "state: %qs", state->get_name ());
 }
 
 #if CHECKING_P

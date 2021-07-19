@@ -1,3 +1,248 @@
+2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101492
+	* common/config/i386/i386-common.c (ix86_handle_option): For
+	-mgeneral-regs-only, enable the GPR only instructions which are
+	enabled implicitly by SSE ISAs unless they have been disabled
+	explicitly.
+
+2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101495
+	* config/i386/i386.c (ix86_check_avx_upper_stores): Moved before
+	ix86_avx_u128_mode_needed.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_DIRTY if callee
+	returns AVX register.
+
+2021-07-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-structalias.c (handle_rhs_call): Support EAF_NOT_RETURNED.
+	(handle_const_call): Liekise
+	(handle_pure_call): Liekise
+
+2021-07-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/96542
+	* range-op.cc (range_operator::wi_fold_in_parts): New.
+	(range_operator::fold_range): Call wi_fold_in_parts.
+	(operator_lshift::wi_fold): Fix broken lshift by [0,0].
+	* range-op.h (wi_fold_in_parts): Add prototype.
+
+2021-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi: Add __analyzer_dump_state.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rbtree.c: New file.
+	* config/rs6000/rbtree.h: New file.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (restriction): New enum.
+	(typeinfo): Add restr field.
+	(match_bracketed_pair): New function.
+	(match_const_restriction): Implement.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (match_basetype): Implement.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (void_status): New enum.
+	(basetype): Likewise.
+	(typeinfo): Likewise.
+	(handle_pointer): New function.
+	(match_basetype): New stub function.
+	(match_const_restriction): Likewise.
+	(match_type): New function.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (consume_whitespace): New
+	function.
+	(advance_line): Likewise.
+	(safe_inc_pos): Likewise.
+	(match_identifier): Likewise.
+	(match_integer): Likewise.
+	(match_to_right_bracket): Likewise.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (bif_file): New variable.
+	(ovld_file): Likewise.
+	(header_file): Likewise.
+	(init_file): Likewise.
+	(defines_file): Likewise.
+	(pgm_path): Likewise.
+	(bif_path): Likewise.
+	(ovld_path): Likewise.
+	(header_path): Likewise.
+	(init_path): Likewise.
+	(defines_path): Likewise.
+	(LINELEN): New macro.
+	(linebuf): New variable.
+	(line): Likewise.
+	(pos): Likewise.
+	(diag): Likewise.
+	(bif_diag): New function.
+	(ovld_diag): Likewise.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: New.
+	* config/rs6000/rs6000-overload.def: New.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c: New.
+
+2021-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* Makefile.in (EXTRA_GTYPE_DEPS): New variable.
+	(s-gtype): Depend on EXTRA_GTYPE_DEPS.
+	* gengtype-state.c (state_writer::write_state_file_list): Add a
+	parameter to the fileslist expression for the number of build
+	headers to scan.
+	(read_state_files_list): Detect build headers and strip the
+	initial "./" or ".\" from their names.
+	* gengtype.c (build_headers): New global variable.
+	(num_build_headers): Likewise.
+	(open_base_files): Emit #include for each build header.
+	(main): Detect and count build headers.
+	* gengtype.h (build_headers): New extern variable.
+	(num_build_headers): Likewise.
+
+2021-07-16  Richard Biener   <rguenther@suse.de>
+
+	* gimple-ssa-store-merging.c (verify_symbolic_number_p): Use
+	the type of the LHS.
+	(find_bswap_or_nop_1): Likewise.
+	(find_bswap_or_nop): Likewise.
+	* tree-vectorizer.h (vect_get_smallest_scalar_type): Adjust
+	prototype.
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type):
+	Remove unused parameters, pass in the scalar type.  Fix
+	internal store function handling.
+	* tree-vect-stmts.c (vect_analyze_stmt): Remove assert.
+	(vect_get_vector_types_for_stmt): Move down check for
+	existing vector stmt after we've determined a scalar type.
+	Pass down the used scalar type to vect_get_smallest_scalar_type.
+	* tree-vect-generic.c (expand_vector_condition): Use
+	the type of the LHS.
+	(expand_vector_scalar_condition): Likewise.
+	(expand_vector_operations_1): Likewise.
+	* tree-vect-patterns.c (vect_widened_op_tree): Likewise.
+	(vect_recog_dot_prod_pattern): Likewise.
+	(vect_recog_sad_pattern): Likewise.
+	(vect_recog_widen_op_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Likewise.
+	(vect_recog_mixed_size_cond_pattern): Likewise.
+
+2021-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (struct escape_entry): Use eaf_fleags_t.
+	(dump_eaf_flags): Dump EAF_NOT_RETURNED
+	(eaf_flags_useful_p): Use eaf_fleags_t; handle const functions
+	and EAF_NOT_RETURNED.
+	(modref_summary::useful_p): Likewise.
+	(modref_summary_lto::useful_p): Likewise.
+	(struct) modref_summary_lto: Use eaf_fleags_t.
+	(deref_flags): Handle EAF_NOT_RETURNED.
+	(struct escape_point): Use min_flags.
+	(modref_lattice::init): Add EAF_NOT_RETURNED.
+	(merge_call_lhs_flags): Ignore EAF_NOT_RETURNED functions
+	(analyze_ssa_name_flags): Clear EAF_NOT_RETURNED on return;
+	handle call flags.
+	(analyze_parms): Also analyze const functions; update conition on
+	flags usefulness.
+	(modref_write): Update streaming.
+	(read_section): Update streaming.
+	(remap_arg_flags): Use eaf_flags_t.
+	(modref_merge_call_site_flags): Hanlde EAF_NOT_RETURNED.
+	* ipa-modref.h: (eaf_flags_t): New typedef.
+	(struct modref_summary): Use eaf_flags_t.
+	* tree-core.h (EAF_NOT_RETURNED): New constant.
+
+2021-07-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Use
+	the type of the LHS.
+	(gimple_assign_nonnegative_warnv_p): Likewise.
+	(gimple_call_nonnegative_warnv_p): Likewise.  Return false
+	if the call has no LHS.
+	* gimple.c (gimple_could_trap_p_1): Use the type of the LHS.
+	* tree-eh.c (stmt_could_throw_1_p): Likewise.
+	* tree-inline.c (insert_init_stmt): Likewise.
+	* tree-ssa-loop-niter.c (get_val_for): Likewise.
+	* tree-outof-ssa.c (ssa_is_replaceable_p): Use the type of
+	the def.
+	* tree-ssa-sccvn.c (init_vn_nary_op_from_stmt): Take a
+	gassign *.  Use the type of the lhs.
+	(vn_nary_op_lookup_stmt): Adjust.
+	(vn_nary_op_insert_stmt): Likewise.
+
+2021-07-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/predicates.md (bras_sym_operand): Accept all
+	functions in 64-bit mode, use UNSPEC_PLT31.
+	(larl_operand): Use UNSPEC_PLT31.
+	* config/s390/s390.c (s390_loadrelative_operand_p): Likewise.
+	(legitimize_pic_address): Likewise.
+	(s390_emit_tls_call_insn): Mark __tls_get_offset as function,
+	use UNSPEC_PLT31.
+	(s390_delegitimize_address): Use UNSPEC_PLT31.
+	(s390_output_addr_const_extra): Likewise.
+	(print_operand): Add @PLT to TLS calls, handle %K.
+	(s390_function_profiler): Mark __fentry__/_mcount as function,
+	use %K, use UNSPEC_PLT31.
+	(s390_output_mi_thunk): Use only UNSPEC_GOT, use %K.
+	(s390_emit_call): Use UNSPEC_PLT31.
+	(s390_emit_tpf_eh_return): Mark __tpf_eh_return as function.
+	* config/s390/s390.md (UNSPEC_PLT31): Rename from UNSPEC_PLT.
+	(*movdi_64): Use %K.
+	(reload_base_64): Likewise.
+	(*sibcall_brc): Likewise.
+	(*sibcall_brcl): Likewise.
+	(*sibcall_value_brc): Likewise.
+	(*sibcall_value_brcl): Likewise.
+	(*bras): Likewise.
+	(*brasl): Likewise.
+	(*bras_r): Likewise.
+	(*brasl_r): Likewise.
+	(*bras_tls): Likewise.
+	(*brasl_tls): Likewise.
+	(main_base_64): Likewise.
+	(reload_base_64): Likewise.
+	(@split_stack_call<mode>): Likewise.
+
+2021-07-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101467
+	* tree-vect-stmts.c (vect_gen_while): Properly guard
+	make_temp_ssa_name usage.
+
+2021-07-16  Cooper Qu  <cooper.qu@linux.alibaba.com>
+
+	* config.gcc: Don't use forked print-sysroot-suffix.sh and
+	t-sysroot-suffix for C-SKY.
+	* config/csky/print-sysroot-suffix.sh: Delete.
+	* config/csky/t-csky-linux: Delete.
+	* config/csky/t-sysroot-suffix: Define MULTILIB_DIRNAMES
+	instead of CSKY_MULTILIB_DIRNAMES.
+
+2021-07-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_transform_cycle_phi): Correct sign
+	conversion issues with the partial reduction of the reused
+	vector accumulator.
+
+2021-07-16  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-options.c (ix86_option_override_internal): Set
+	param_vect_partial_vector_usage to zero if not set.
+
 2021-07-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/101346

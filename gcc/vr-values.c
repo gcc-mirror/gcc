@@ -338,16 +338,17 @@ gimple_assign_nonzero_p (gimple *stmt)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
   bool strict_overflow_p;
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   switch (get_gimple_rhs_class (code))
     {
     case GIMPLE_UNARY_RHS:
       return tree_unary_nonzero_warnv_p (gimple_assign_rhs_code (stmt),
-					 gimple_expr_type (stmt),
+					 type,
 					 gimple_assign_rhs1 (stmt),
 					 &strict_overflow_p);
     case GIMPLE_BINARY_RHS:
       return tree_binary_nonzero_warnv_p (gimple_assign_rhs_code (stmt),
-					  gimple_expr_type (stmt),
+					  type,
 					  gimple_assign_rhs1 (stmt),
 					  gimple_assign_rhs2 (stmt),
 					  &strict_overflow_p);
@@ -1025,7 +1026,7 @@ vr_values::extract_range_from_comparison (value_range_equiv *vr,
 					  gimple *stmt)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
-  tree type = gimple_expr_type (stmt);
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
   bool sop;
@@ -1164,7 +1165,6 @@ bool
 vr_values::extract_range_from_ubsan_builtin (value_range_equiv *vr, gimple *stmt)
 {
   gcc_assert (is_gimple_call (stmt));
-  tree type = gimple_expr_type (stmt);
   enum tree_code subcode = ERROR_MARK;
   combined_fn cfn = gimple_call_combined_fn (stmt);
   scalar_int_mode mode;
@@ -1190,7 +1190,8 @@ vr_values::extract_range_from_ubsan_builtin (value_range_equiv *vr, gimple *stmt
 	 any overflow, we'll complain, but will actually do
 	 wrapping operation.  */
       flag_wrapv = 1;
-      extract_range_from_binary_expr (vr, subcode, type,
+      extract_range_from_binary_expr (vr, subcode,
+				      TREE_TYPE (gimple_call_arg (stmt, 0)),
 				      gimple_call_arg (stmt, 0),
 				      gimple_call_arg (stmt, 1));
       flag_wrapv = saved_flag_wrapv;
@@ -1217,7 +1218,6 @@ void
 vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 {
   bool sop;
-  tree type = gimple_expr_type (stmt);
 
   if (is_gimple_call (stmt))
     {
@@ -1244,13 +1244,14 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
   /* Handle extraction of the two results (result of arithmetics and
      a flag whether arithmetics overflowed) from {ADD,SUB,MUL}_OVERFLOW
      internal function.  Similarly from ATOMIC_COMPARE_EXCHANGE.  */
-  else if (is_gimple_assign (stmt)
-	   && (gimple_assign_rhs_code (stmt) == REALPART_EXPR
-	       || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR)
-	   && INTEGRAL_TYPE_P (type))
+  if (is_gimple_assign (stmt)
+      && (gimple_assign_rhs_code (stmt) == REALPART_EXPR
+	  || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR)
+      && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt))))
     {
       enum tree_code code = gimple_assign_rhs_code (stmt);
       tree op = gimple_assign_rhs1 (stmt);
+      tree type = TREE_TYPE (gimple_assign_lhs (stmt));
       if (TREE_CODE (op) == code && TREE_CODE (TREE_OPERAND (op, 0)) == SSA_NAME)
 	{
 	  gimple *g = SSA_NAME_DEF_STMT (TREE_OPERAND (op, 0));
@@ -1328,6 +1329,9 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	    }
 	}
     }
+  /* None of the below should need a 'type', but we are only called
+     for assignments and calls with a LHS.  */
+  tree type = TREE_TYPE (gimple_get_lhs (stmt));
   if (INTEGRAL_TYPE_P (type)
       && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
     set_value_range_to_nonnegative (vr, type);
@@ -1355,12 +1359,12 @@ vr_values::extract_range_from_assignment (value_range_equiv *vr, gassign *stmt)
     extract_range_from_ssa_name (vr, gimple_assign_rhs1 (stmt));
   else if (TREE_CODE_CLASS (code) == tcc_binary)
     extract_range_from_binary_expr (vr, gimple_assign_rhs_code (stmt),
-				    gimple_expr_type (stmt),
+				    TREE_TYPE (gimple_assign_lhs (stmt)),
 				    gimple_assign_rhs1 (stmt),
 				    gimple_assign_rhs2 (stmt));
   else if (TREE_CODE_CLASS (code) == tcc_unary)
     extract_range_from_unary_expr (vr, gimple_assign_rhs_code (stmt),
-				   gimple_expr_type (stmt),
+				   TREE_TYPE (gimple_assign_lhs (stmt)),
 				   gimple_assign_rhs1 (stmt));
   else if (code == COND_EXPR)
     extract_range_from_cond_expr (vr, stmt);

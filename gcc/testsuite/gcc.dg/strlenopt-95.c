@@ -1,6 +1,6 @@
 /* Verify strlen results of vector assignments.
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -fdump-tree-optimized" } */
 
 #include "strlenopt.h"
 
@@ -52,7 +52,7 @@ void test_fold (int i)
   *(VC8*)a = (VC8){ 1, 2, 3, 0, 5, 6 };
   A (strlen (a) == 3);
 
-  *(VC8*)a = (VC8){ 1, 2, 3, 0, 5, 6, 7 };
+  *(VC8*)a = (VC8){ 1, 2, 3, 0, 5, 6, 7, 8 };
   A (strlen (a) == 3);
   A (strlen (a + 1) == 2);
   A (strlen (a + 2) == 1);
@@ -61,5 +61,5 @@ void test_fold (int i)
   A (a[4] == 5 && a[5] == 6 && a[6] == 7 && a[7] == 8);
 }
 
-/* { dg-final { scan-tree-dump-not "abort \\(" "strlen1" } }
-   { dg-final { scan-tree-dump-not "strlen \\(" "strlen1" } } */
+/* { dg-final { scan-tree-dump-not "abort \\(" "optimized" } }
+   { dg-final { scan-tree-dump-not "strlen \\(" "optimized" } } */

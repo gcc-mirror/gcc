@@ -1,0 +1,82 @@
+; Overloaded built-in functions for PowerPC.
+; Copyright (C) 2020-21 Free Software Foundation, Inc.
+; Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+
+; Overloaded built-in functions in this file are organized into "stanzas",
+; where all built-ins in a given stanza have the same overloaded function
+; name:
+;
+;   [<overload-id>, <abi-name>, <builtin-name>[[, <ifdef>]] ]
+;
+; Here the single square brackets are part of the syntax; <overload-id>
+; is a unique internal identifier for the overload that will be used as
+; part of an enumeration of all overloaded functions; <abi-name> is the
+; name that will appear as a #define in rs6000-vecdefines.h;
+; <builtin-name> is the name that is overloaded in the back end; and
+; <ifdef> is an optional token used to guard the #define with an #ifdef
+; in rs6000-vecdefines.h.  If no #define is desired, the <abi-name> should
+; be replaced with the token SKIP.
+;
+; Each function entry has two lines.  The first line is a prototype line.
+; See rs6000-builtin-new.def for a description of the prototype line.
+; A prototype line in this file differs in that it doesn't have an
+; optional [kind] token:
+;
+;   <return-type> <internal-name> (<argument-list>);
+;
+; The second line contains the <bif-id> that this particular instance of
+; the overloaded function maps to.  It must match a token that appears in
+; rs6000-builtin-new.def.  Optionally, a second token may appear.  If only
+; one token is on the line, it is also used to build the unique identifier
+; for the overloaded function.  If a second token is present, the second
+; token is used instead for this purpose.  This is necessary in cases
+; where a built-in function accepts more than one type signature.  It is
+; common to have a built-in function that, for example, specifies a
+; "vector signed char" argument, but accepts "vector unsigned char" and
+; "vector bool char" as well because only the mode matters.  Note that
+; the overload resolution mechanism has always handled these cases by
+; performing fold_convert on vector arguments to hide type mismatches,
+; and it will continue to do so.
+;
+; As a concrete example, __builtin_altivec_mtvscr uses an opaque argument
+; type for the source operand.  Its built-in function id is MTVSCR.  The
+; overloaded function __builtin_vec_mtvscr takes a variety of specific
+; types, but not all vector types.  Each of these maps to the same
+; __builtin_altivec_mtvscr built-in function, but the overload ID must
+; be unique, so we must specify the second token as shown here.
+;
+;[VEC_MTVSCR, vec_mtvscr, __builtin_vec_mtvscr]
+;  void __builtin_vec_mtvscr (vbc);
+;    MTVSCR  MTVSCR_VBC
+;  void __builtin_vec_mtvscr (vsc);
+;    MTVSCR  MTVSCR_VSC
+;  ...
+;
+; Blank lines may be used as desired in this file between the lines as
+; defined above; that is, you can introduce as many extra newlines as you
+; like after a required newline, but nowhere else.  Lines beginning with
+; a semicolon are also treated as blank lines.
+
+
+[VEC_ABS, vec_abs, __builtin_vec_abs]
+  vsc __builtin_vec_abs (vsc);
+    ABS_V16QI
+  vss __builtin_vec_abs (vss);
+    ABS_V8HI

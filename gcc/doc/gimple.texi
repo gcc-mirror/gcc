@@ -868,14 +868,6 @@ Return the basic block to which statement @code{G} belongs to.
 Return the lexical scope block holding statement @code{G}.
 @end deftypefn
 
-@deftypefn {GIMPLE function} tree gimple_expr_type (gimple stmt)
-Return the type of the main expression computed by @code{STMT}. Return
-@code{void_type_node} if @code{STMT} computes nothing. This will only return
-something meaningful for @code{GIMPLE_ASSIGN}, @code{GIMPLE_COND} and
-@code{GIMPLE_CALL}.  For all other tuple codes, it will return
-@code{void_type_node}.
-@end deftypefn
-
 @deftypefn {GIMPLE function} {enum tree_code} gimple_expr_code (gimple stmt)
 Return the tree code for the expression computed by @code{STMT}.  This
 is only meaningful for @code{GIMPLE_CALL}, @code{GIMPLE_ASSIGN} and

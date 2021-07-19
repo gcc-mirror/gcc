@@ -641,7 +641,6 @@ proc gcc-dg-frontend-supports-ctf { target_compile trivial } {
 proc gcc-dg-target-supports-debug-format { target_compile trivial type } {
     global srcdir subdir
 
-    if {$type == "-gctf" && [istarget *-*-aix*]} { return 0 }
     set comp_output [$target_compile \
 	    "$srcdir/$subdir/$trivial" "trivial.S" assembly \
 	    "additional_flags=$type"]

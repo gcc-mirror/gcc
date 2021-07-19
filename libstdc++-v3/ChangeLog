@@ -1,3 +1,88 @@
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (get<I>): Add deleted overload for bad
+	index.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust
+	expected errors.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/max_size_type.h (numeric_limits<__max_size_type>):
+	Use __int_traits unconditionally.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (_Shift::__value): Use constexpr.
+	(_Select_uint_least_t::type): Use using-declaration.
+	(_Mod): Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__INT_N): Use __extension__
+	instead of diagnostic pragmas.
+	* include/bits/functional_hash.h: Likewise.
+	* include/bits/iterator_concepts.h (__is_signed_int128)
+	(__is_unsigned_int128): Likewise.
+	* include/bits/max_size_type.h (__max_size_type): Likewise.
+	(numeric_limits<__max_size_type>): Likewise.
+	* include/bits/std_abs.h (abs): Likewise.
+	* include/bits/stl_algobase.h (__size_to_integer): Likewise.
+	* include/bits/uniform_int_dist.h (uniform_int_distribution):
+	Likewise.
+	* include/ext/numeric_traits.h (_GLIBCXX_INT_N_TRAITS):
+	Likewise.
+	* include/std/type_traits (__is_integral_helper<INT_N>)
+	(__is_signed_integer, __is_unsigned_integer)
+	(__make_unsigned<INT_N>, __make_signed<INT_N>): Likewise.
+	* include/std/limits (__INT_N): Add __extension__ keyword.
+	* include/bits/random.h (_Select_uint_least_t)
+	(random_device): Likewise.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/101231
+	* include/std/ranges (_CachedPosition::_M_get): For non-forward
+	ranges, just call __builtin_unreachable.
+	* testsuite/std/ranges/istream_view.cc (test05): New test.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/101214
+	* include/std/ranges (split_view::split_view): Use std::move.
+	(split_view::_Iterator::_Iterator): Remove redundant
+	default_initializable constraint.
+	(split_view::_Sentinel::_Sentinel): Declare.
+	* testsuite/std/ranges/adaptors/split.cc (test02): New test.
+
+2021-07-16  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Add
+	dg-error.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h: Adjust doxygen markup.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101307
+	* include/std/type_traits: Adjust doxygen markup.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h: Add diagnostic pragmas around
+	uses of non-standard integer types.
+	* include/bits/functional_hash.h: Likewise.
+	* include/bits/iterator_concepts.h: Likewise.
+	* include/bits/max_size_type.h: Likewise.
+	* include/bits/std_abs.h: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/uniform_int_dist.h: Likewise.
+	* include/ext/numeric_traits.h: Likewise.
+	* include/std/type_traits: Likewise.
+
 2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101427

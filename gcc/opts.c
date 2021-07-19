@@ -135,6 +135,14 @@ btf_debuginfo_p ()
   return (write_symbols & BTF_DEBUG);
 }
 
+/* Return TRUE iff CTF debug info is enabled.  */
+
+bool
+ctf_debuginfo_p ()
+{
+  return (write_symbols & CTF_DEBUG);
+}
+
 /* Return TRUE iff dwarf2 debug info is enabled.  */
 
 bool

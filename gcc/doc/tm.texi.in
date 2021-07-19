@@ -6613,6 +6613,8 @@ This describes how to specify debugging information.
 * File Names and DBX:: Macros controlling output of file names in DBX format.
 * DWARF::              Macros for DWARF format.
 * VMS Debug::          Macros for VMS debug format.
+* CTF Debug::          Macros for CTF debug format.
+* BTF Debug::          Macros for BTF debug format.
 @end menu
 
 @node All Debuggers
@@ -6992,6 +6994,30 @@ is to generate minimal debug info for a traceback in the absence of
 @option{-g} unless explicitly overridden with @option{-g0}.  This
 behavior is controlled by @code{TARGET_OPTION_OPTIMIZATION} and
 @code{TARGET_OPTION_OVERRIDE}.
+@end defmac
+
+@need 2000
+@node CTF Debug
+@subsection Macros for CTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for CTF debug format.
+
+@defmac CTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in CTF debug
+format in response to the @option{-gctf} option.
+@end defmac
+
+@need 2000
+@node BTF Debug
+@subsection Macros for BTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for BTF debug format.
+
+@defmac BTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in BTF debug
+format in response to the @option{-gbtf} option.
 @end defmac
 
 @node Floating Point

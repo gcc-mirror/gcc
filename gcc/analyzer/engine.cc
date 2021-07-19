@@ -1270,6 +1270,9 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
 	  state->dump (eg.get_ext_state (), true);
 	  return;
 	}
+      else if (is_special_named_call_p (call, "__analyzer_dump_state", 2))
+	state->impl_call_analyzer_dump_state (call, eg.get_ext_state (),
+					      ctxt);
       else if (is_setjmp_call_p (call))
 	{
 	  state->m_region_model->on_setjmp (call, this, ctxt);
@@ -1465,7 +1468,8 @@ exploded_node::on_longjmp (exploded_graph &eg,
   const region *buf = new_region_model->deref_rvalue (buf_ptr_sval, buf_ptr,
 						       ctxt);
 
-  const svalue *buf_content_sval = new_region_model->get_store_value (buf);
+  const svalue *buf_content_sval
+    = new_region_model->get_store_value (buf, ctxt);
   const setjmp_svalue *setjmp_sval
     = buf_content_sval->dyn_cast_setjmp_svalue ();
   if (!setjmp_sval)

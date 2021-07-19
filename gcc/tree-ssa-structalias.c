@@ -4082,9 +4082,12 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  if (!(flags & EAF_DIRECT))
 	    make_transitive_closure_constraints (tem);
 	  make_copy_constraint (uses, tem->id);
+	  /* TODO: This is overly conservative when some parameters are
+	     returned while others are not.  */
+	  if (!(flags & EAF_NOT_RETURNED))
+	    returns_uses = true;
 	  if (!(flags & (EAF_NOESCAPE | EAF_DIRECT)))
 	    make_indirect_escape_constraint (tem);
-	  returns_uses = true;
 	}
       else if (flags & (EAF_NOESCAPE | EAF_NODIRECTESCAPE))
 	{
@@ -4098,6 +4101,8 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  if (!(flags & EAF_DIRECT))
 	    make_transitive_closure_constraints (tem);
 	  make_copy_constraint (uses, tem->id);
+	  if (!(flags & EAF_NOT_RETURNED))
+	    returns_uses = true;
 	  make_copy_constraint (clobbers, tem->id);
 	  /* Add *tem = nonlocal, do not add *tem = callused as
 	     EAF_NOESCAPE parameters do not escape to other parameters
@@ -4111,7 +4116,6 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
 	  process_constraint (new_constraint (lhs, rhs));
 	  if (!(flags & (EAF_NOESCAPE | EAF_DIRECT)))
 	    make_indirect_escape_constraint (tem);
-	  returns_uses = true;
 	}
       else
 	make_escape_constraint (arg);
@@ -4261,13 +4265,18 @@ handle_const_call (gcall *stmt, vec<ce_s> *results)
 
   /* May return offsetted arguments.  */
   varinfo_t tem = NULL;
-  if (gimple_call_num_args (stmt) != 0)
-    {
-      tem = new_var_info (NULL_TREE, "callarg", true);
-      tem->is_reg_var = true;
-    }
   for (k = 0; k < gimple_call_num_args (stmt); ++k)
     {
+      int flags = gimple_call_arg_flags (stmt, k);
+
+      /* If the argument is not used or not returned we can ignore it.  */
+      if (flags & (EAF_UNUSED | EAF_NOT_RETURNED))
+	continue;
+      if (!tem)
+	{
+	  tem = new_var_info (NULL_TREE, "callarg", true);
+	  tem->is_reg_var = true;
+	}
       tree arg = gimple_call_arg (stmt, k);
       auto_vec<ce_s> argc;
       get_constraint_for_rhs (arg, &argc);
@@ -4298,6 +4307,7 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
   struct constraint_expr rhsc;
   unsigned i;
   varinfo_t uses = NULL;
+  bool record_uses = false;
 
   /* Memory reached from pointer arguments is call-used.  */
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
@@ -4315,6 +4325,8 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, arg);
+      if (!(flags & EAF_NOT_RETURNED))
+	record_uses = true;
     }
 
   /* The static chain is used as well.  */
@@ -4327,6 +4339,7 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
 	  make_transitive_closure_constraints (uses);
 	}
       make_constraint_to (uses->id, gimple_call_chain (stmt));
+      record_uses = true;
     }
 
   /* And if we applied NRV the address of the return slot.  */
@@ -4343,10 +4356,11 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
       auto_vec<ce_s> tmpc;
       get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
       make_constraints_to (uses->id, tmpc);
+      record_uses = true;
     }
 
   /* Pure functions may return call-used and nonlocal memory.  */
-  if (uses)
+  if (record_uses)
     {
       rhsc.var = uses->id;
       rhsc.offset = 0;

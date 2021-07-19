@@ -111,6 +111,18 @@ svalue::maybe_get_constant () const
     return NULL_TREE;
 }
 
+/* If this svalue is a region_svalue, return the region it points to.
+   Otherwise return NULL.  */
+
+const region *
+svalue::maybe_get_region () const
+{
+  if (const region_svalue *region_sval = dyn_cast_region_svalue ())
+    return region_sval->get_pointee ();
+  else
+    return NULL;
+}
+
 /* If this svalue is a cast (i.e a unaryop NOP_EXPR or VIEW_CONVERT_EXPR),
    return the underlying svalue.
    Otherwise return NULL.  */
@@ -924,7 +936,7 @@ initial_svalue::implicitly_live_p (const svalue_set *,
      a popped stack frame.  */
   if (model->region_exists_p (m_reg))
     {
-      const svalue *reg_sval = model->get_store_value (m_reg);
+      const svalue *reg_sval = model->get_store_value (m_reg, NULL);
       if (reg_sval == this)
 	return true;
     }
@@ -1097,6 +1109,7 @@ sub_svalue::sub_svalue (tree type, const svalue *parent_svalue,
 	  type),
   m_parent_svalue (parent_svalue), m_subregion (subregion)
 {
+  gcc_assert (parent_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for sub_svalue.  */
@@ -1153,6 +1166,8 @@ repeated_svalue::repeated_svalue (tree type,
   m_outer_size (outer_size),
   m_inner_svalue (inner_svalue)
 {
+  gcc_assert (outer_size->can_have_associated_state_p ());
+  gcc_assert (inner_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for repeated_svalue.  */
@@ -1278,6 +1293,7 @@ bits_within_svalue::bits_within_svalue (tree type,
   m_bits (bits),
   m_inner_svalue (inner_svalue)
 {
+  gcc_assert (inner_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for bits_within_svalue.  */

@@ -4203,15 +4203,15 @@
   [(set_attr "type" "csel")]
 )
 
-(define_insn "csneg3_uxtw_insn"
+(define_insn "*cs<neg_not_cs>3_uxtw_insn4"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
 	  (if_then_else:SI
 	    (match_operand 1 "aarch64_comparison_operation" "")
-	    (neg:SI (match_operand:SI 2 "register_operand" "r"))
+	    (NEG_NOT:SI (match_operand:SI 2 "register_operand" "r"))
 	    (match_operand:SI 3 "aarch64_reg_or_zero" "rZ"))))]
   ""
-  "csneg\\t%w0, %w3, %w2, %M1"
+  "cs<neg_not_cs>\\t%w0, %w3, %w2, %M1"
   [(set_attr "type" "csel")]
 )
 

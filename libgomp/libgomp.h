@@ -128,7 +128,10 @@ team_malloc (size_t size)
        : "=v"(result) : "v"(TEAM_ARENA_FREE), "v"(size), "e"(1L) : "memory");
 
   /* Handle OOM.  */
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Warray-bounds" /*TODO PR101484 */
   if (result + size > *(void * __lds *)TEAM_ARENA_END)
+# pragma GCC diagnostic pop
     {
       /* While this is experimental, let's make sure we know when OOM
 	 happens.  */
@@ -159,8 +162,11 @@ team_free (void *ptr)
      However, if we fell back to using heap then we should free it.
      It would be better if this function could be a no-op, but at least
      LDS loads are cheap.  */
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Warray-bounds" /*TODO PR101484 */
   if (ptr < *(void * __lds *)TEAM_ARENA_START
       || ptr >= *(void * __lds *)TEAM_ARENA_END)
+# pragma GCC diagnostic pop
     free (ptr);
 }
 #else
@@ -789,13 +795,19 @@ static inline struct gomp_thread *gcn_thrs (void)
 {
   /* The value is at the bottom of LDS.  */
   struct gomp_thread * __lds *thrs = (struct gomp_thread * __lds *)4;
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Warray-bounds" /*TODO PR101484 */
   return *thrs;
+# pragma GCC diagnostic pop
 }
 static inline void set_gcn_thrs (struct gomp_thread *val)
 {
   /* The value is at the bottom of LDS.  */
   struct gomp_thread * __lds *thrs = (struct gomp_thread * __lds *)4;
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Warray-bounds" /*TODO PR101484 */
   *thrs = val;
+# pragma GCC diagnostic pop
 }
 static inline struct gomp_thread *gomp_thread (void)
 {

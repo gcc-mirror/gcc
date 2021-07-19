@@ -1948,7 +1948,13 @@ check_final_overrider (tree overrider, tree basefn)
       fail = !INDIRECT_TYPE_P (base_return);
       if (!fail)
 	{
-	  fail = cp_type_quals (base_return) != cp_type_quals (over_return);
+	  if (cp_type_quals (base_return) != cp_type_quals (over_return))
+	    fail = 1;
+
+	  if (TYPE_REF_P (base_return)
+	      && (TYPE_REF_IS_RVALUE (base_return)
+		  != TYPE_REF_IS_RVALUE (over_return)))
+	    fail = 1;
 
 	  base_return = TREE_TYPE (base_return);
 	  over_return = TREE_TYPE (over_return);

@@ -97,6 +97,12 @@ protected:
 					const irange &op1_range,
 					const irange &op2_range,
 					relation_kind rel) const;
+  // Called by fold range to split small subranges into parts.
+  void wi_fold_in_parts (irange &r, tree type,
+			 const wide_int &lh_lb,
+			 const wide_int &lh_ub,
+			 const wide_int &rh_lb,
+			 const wide_int &rh_ub) const;
 };
 
 extern range_operator *range_op_handler (enum tree_code code, tree type);

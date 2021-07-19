@@ -833,9 +833,9 @@ constraint_manager::add_constraint (const svalue *lhs,
   lhs = lhs->unwrap_any_unmergeable ();
   rhs = rhs->unwrap_any_unmergeable ();
 
-  /* Nothing can be known about unknown values.  */
-  if (lhs->get_kind () == SK_UNKNOWN
-      || rhs->get_kind () == SK_UNKNOWN)
+  /* Nothing can be known about unknown/poisoned values.  */
+  if (!lhs->can_have_associated_state_p ()
+      || !rhs->can_have_associated_state_p ())
     /* Not a contradiction.  */
     return true;
 
@@ -1175,7 +1175,7 @@ constraint_manager::get_or_add_equiv_class (const svalue *sval)
 {
   equiv_class_id result (-1);
 
-  gcc_assert (sval->get_kind () != SK_UNKNOWN);
+  gcc_assert (sval->can_have_associated_state_p ());
 
   /* Convert all NULL pointers to (void *) to avoid state explosions
      involving all of the various (foo *)NULL vs (bar *)NULL.  */
