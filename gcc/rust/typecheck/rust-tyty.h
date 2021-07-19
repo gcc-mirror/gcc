@@ -156,7 +156,15 @@ public:
   virtual BaseType *unify (BaseType *other) = 0;
 
   // similar to unify but does not actually perform type unification but
-  // determines whether they are compatible
+  // determines whether they are compatible. Consider the following
+  //
+  // fn foo<T>() -> T { ... }
+  // fn foo() -> i32 { ... }
+  //
+  // when the function has been substituted they can be considered equal.
+  //
+  // It can also be used to optional emit errors for trait item compatibility
+  // checks
   virtual bool can_eq (const BaseType *other, bool emit_errors) const = 0;
 
   // Check value equality between two ty. Type inference rules are ignored. Two
