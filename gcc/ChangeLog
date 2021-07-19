@@ -1,3 +1,59 @@
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94366
+	* omp-low.c (lower_rec_input_clauses): Rename is_fp_and_or to
+	is_truth_op, set it for TRUTH_*IF_EXPR regardless of new_var's type,
+	use boolean_type_node instead of integer_type_node as NE_EXPR type.
+	(lower_reduction_clauses): Likewise.
+
+2021-07-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (lower_rec_input_clauses, lower_reduction_clauses): Handle
+	&& and || with floating-point and complex arguments.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR go/101407
+	* godump.c (godump_str_hash): New type.
+	(godump_container::pot_dummy_types): Use string_hash instead of
+	ptr_hash in the hash_set.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101266
+	* dwarf2out.c (loc_list_from_tree_1): Handle COMPOUND_LITERAL_EXPR.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101210
+	* match.pd ((intptr_t)x eq/ne CST to x eq/ne (typeof x) CST): Don't
+	perform the optimization in GENERIC when sanitizing and x has a
+	reference type.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101172
+	* stor-layout.c (finish_bitfield_representative): If nextf has
+	error_mark_node type, set repr type to error_mark_node too.
+
 2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

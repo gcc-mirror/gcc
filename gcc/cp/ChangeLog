@@ -1,3 +1,20 @@
+2021-07-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* semantics.c (finish_omp_reduction_clause): Accept float + complex
+	for || and && reductions.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101443
+	* cp-gimplify.c (cp_fold): For comparisons with NULLPTR_TYPE
+	operands, fold them right away to true or false.
+
 2021-07-16  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
