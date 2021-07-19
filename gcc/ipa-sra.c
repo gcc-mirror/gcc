@@ -340,7 +340,7 @@ class isra_call_summary
 public:
   isra_call_summary ()
     : m_arg_flow (), m_return_ignored (false), m_return_returned (false),
-      m_bit_aligned_arg (false)
+      m_bit_aligned_arg (false), m_before_any_store (false)
   {}
 
   void init_inputs (unsigned arg_count);
@@ -359,6 +359,10 @@ public:
 
   /* Set when any of the call arguments are not byte-aligned.  */
   unsigned m_bit_aligned_arg : 1;
+
+  /* Set to true if the call happend before any (other) store to memory in the
+     caller.  */
+  unsigned m_before_any_store : 1;
 };
 
 /* Class to manage function summaries.  */
@@ -472,6 +476,8 @@ isra_call_summary::dump (FILE *f)
     fprintf (f, "    return value ignored\n");
   if (m_return_returned)
     fprintf (f, "    return value used only to compute caller return value\n");
+  if (m_before_any_store)
+    fprintf (f, "    happens before any store to memory\n");
   for (unsigned i = 0; i < m_arg_flow.length (); i++)
     {
       fprintf (f, "    Parameter %u:\n", i);
@@ -516,6 +522,7 @@ ipa_sra_call_summaries::duplicate (cgraph_edge *, cgraph_edge *,
   new_sum->m_return_ignored = old_sum->m_return_ignored;
   new_sum->m_return_returned = old_sum->m_return_returned;
   new_sum->m_bit_aligned_arg = old_sum->m_bit_aligned_arg;
+  new_sum->m_before_any_store = old_sum->m_before_any_store;
 }
 
 
@@ -2355,6 +2362,7 @@ process_scan_results (cgraph_node *node, struct function *fun,
 	unsigned count = gimple_call_num_args (call_stmt);
 	isra_call_summary *csum = call_sums->get_create (cs);
 	csum->init_inputs (count);
+	csum->m_before_any_store = uses_memory_as_obtained;
 	for (unsigned argidx = 0; argidx < count; argidx++)
 	  {
 	    if (!csum->m_arg_flow[argidx].pointer_pass_through)
@@ -2601,6 +2609,7 @@ isra_write_edge_summary (output_block *ob, cgraph_edge *e)
   bp_pack_value (&bp, csum->m_return_ignored, 1);
   bp_pack_value (&bp, csum->m_return_returned, 1);
   bp_pack_value (&bp, csum->m_bit_aligned_arg, 1);
+  bp_pack_value (&bp, csum->m_before_any_store, 1);
   streamer_write_bitpack (&bp);
 }
 
@@ -2719,6 +2728,7 @@ isra_read_edge_summary (struct lto_input_block *ib, cgraph_edge *cs)
   csum->m_return_ignored = bp_unpack_value (&bp, 1);
   csum->m_return_returned = bp_unpack_value (&bp, 1);
   csum->m_bit_aligned_arg = bp_unpack_value (&bp, 1);
+  csum->m_before_any_store = bp_unpack_value (&bp, 1);
 }
 
 /* Read intraprocedural analysis information about NODE and all of its outgoing
@@ -3475,7 +3485,8 @@ param_splitting_across_edge (cgraph_edge *cs)
 	    }
 	  else if (!ipf->safe_to_import_accesses)
 	    {
-	      if (!all_callee_accesses_present_p (param_desc, arg_desc))
+	      if (!csum->m_before_any_store
+		  || !all_callee_accesses_present_p (param_desc, arg_desc))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "  %u->%u: cannot import accesses.\n",
