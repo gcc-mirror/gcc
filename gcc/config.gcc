@@ -4730,9 +4730,10 @@ case "${target}" in
 				echo "--with-multilib-list= can't used with --with-multilib-generator= at same time" 1>&2
 				exit 1
 			fi
+			PYTHON=`which python || which python3 || which python2`
 			case "${target}" in
 			riscv*-*-elf*)
-				if ${srcdir}/config/riscv/multilib-generator \
+				if ${PYTHON} ${srcdir}/config/riscv/multilib-generator \
 					`echo ${with_multilib_generator} | sed 's/;/ /g'`\
 					> t-multilib-config;
 				then
