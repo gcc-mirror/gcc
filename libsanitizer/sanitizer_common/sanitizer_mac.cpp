@@ -37,7 +37,7 @@
 extern char **environ;
 #endif
 
-#if defined(__has_include) && __has_include(<os/trace.h>) && defined(__BLOCKS__)
+#if defined(__has_include) && __has_include(<os/trace.h>)
 #define SANITIZER_OS_TRACE 1
 #include <os/trace.h>
 #else
@@ -70,15 +70,7 @@ extern "C" {
 #include <mach/mach_time.h>
 #include <mach/vm_statistics.h>
 #include <malloc/malloc.h>
-#if defined(__has_builtin) && __has_builtin(__builtin_os_log_format)
-# include <os/log.h>
-#else
-   /* Without support for __builtin_os_log_format, fall back to the older
-      method.  */
-# define OS_LOG_DEFAULT 0
-# define os_log_error(A,B,C) \
-  asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "%s", (C));
-#endif
+#include <os/log.h>
 #include <pthread.h>
 #include <sched.h>
 #include <signal.h>
@@ -227,9 +219,7 @@ void internal__exit(int exitcode) {
   _exit(exitcode);
 }
 
-unsigned int internal_sleep(unsigned int seconds) {
-  return sleep(seconds);
-}
+void internal_usleep(u64 useconds) { usleep(useconds); }
 
 uptr internal_getpid() {
   return getpid();
@@ -519,6 +509,13 @@ void MprotectMallocZones(void *addr, int prot) {
   }
 }
 
+void FutexWait(atomic_uint32_t *p, u32 cmp) {
+  // FIXME: implement actual blocking.
+  sched_yield();
+}
+
+void FutexWake(atomic_uint32_t *p, u32 count) {}
+
 BlockingMutex::BlockingMutex() {
   internal_memset(this, 0, sizeof(*this));
 }
@@ -534,7 +531,7 @@ void BlockingMutex::Unlock() {
   OSSpinLockUnlock((OSSpinLock*)&opaque_storage_);
 }
 
-void BlockingMutex::CheckLocked() {
+void BlockingMutex::CheckLocked() const {
   CHECK_NE(*(OSSpinLock*)&opaque_storage_, 0);
 }
 

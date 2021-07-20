@@ -83,7 +83,7 @@ const unsigned struct_kernel_stat64_sz = 104;
 #elif defined(__mips__)
 const unsigned struct_kernel_stat_sz = SANITIZER_ANDROID
                                            ? FIRST_32_SECOND_64(104, 128)
-                                           : FIRST_32_SECOND_64(144, 216);
+                                           : FIRST_32_SECOND_64(160, 216);
 const unsigned struct_kernel_stat64_sz = 104;
 #elif defined(__s390__) && !defined(__s390x__)
 const unsigned struct_kernel_stat_sz = 64;
@@ -650,14 +650,14 @@ struct __sanitizer_sigaction {
 #endif // !SANITIZER_ANDROID
 
 #if defined(__mips__)
-struct __sanitizer_kernel_sigset_t {
-  uptr sig[2];
-};
+#define __SANITIZER_KERNEL_NSIG 128
 #else
-struct __sanitizer_kernel_sigset_t {
-  u8 sig[8];
-};
+#define __SANITIZER_KERNEL_NSIG 64
 #endif
+
+struct __sanitizer_kernel_sigset_t {
+  uptr sig[__SANITIZER_KERNEL_NSIG / (sizeof(uptr) * 8)];
+};
 
 // Linux system headers define the 'sa_handler' and 'sa_sigaction' macros.
 #if SANITIZER_MIPS
