@@ -2883,28 +2883,24 @@ case "$ORIGINAL_DSYMUTIL_FOR_TARGET" in
 esac 
 
 # Figure out what assembler alignment features are present.
-gcc_GAS_CHECK_FEATURE([.balign and .p2align], gcc_cv_as_balign_and_p2align,
- ,
+gcc_GAS_CHECK_FEATURE([.balign and .p2align], gcc_cv_as_balign_and_p2align,,
 [.balign 4
 .p2align 2],,
 [AC_DEFINE(HAVE_GAS_BALIGN_AND_P2ALIGN, 1,
   [Define if your assembler supports .balign and .p2align.])])
 
-gcc_GAS_CHECK_FEATURE([.p2align with maximum skip], gcc_cv_as_max_skip_p2align,
- ,
+gcc_GAS_CHECK_FEATURE([.p2align with maximum skip], gcc_cv_as_max_skip_p2align,,
  [.p2align 4,,7],,
 [AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN, 1,
   [Define if your assembler supports specifying the maximum number
    of bytes to skip when using the GAS .p2align command.])])
 
-gcc_GAS_CHECK_FEATURE([.literal16], gcc_cv_as_literal16,
- ,
+gcc_GAS_CHECK_FEATURE([.literal16], gcc_cv_as_literal16,,
  [.literal16],,
 [AC_DEFINE(HAVE_GAS_LITERAL16, 1,
   [Define if your assembler supports .literal16.])])
 
-gcc_GAS_CHECK_FEATURE([working .subsection -1], gcc_cv_as_subsection_m1,
- ,
+gcc_GAS_CHECK_FEATURE([working .subsection -1], gcc_cv_as_subsection_m1,,
  [conftest_label1: .word 0
 .subsection -1
 conftest_label2: .word 0
@@ -2922,18 +2918,15 @@ conftest_label2: .word 0
   [Define if your assembler supports .subsection and .subsection -1 starts
    emitting at the beginning of your section.])])
 
-gcc_GAS_CHECK_FEATURE([.weak], gcc_cv_as_weak,
- ,
+gcc_GAS_CHECK_FEATURE([.weak], gcc_cv_as_weak,,
  [	.weak foobar],,
 [AC_DEFINE(HAVE_GAS_WEAK, 1, [Define if your assembler supports .weak.])])
 
-gcc_GAS_CHECK_FEATURE([.weakref], gcc_cv_as_weakref,
- ,
+gcc_GAS_CHECK_FEATURE([.weakref], gcc_cv_as_weakref,,
  [	.weakref foobar, barfnot],,
 [AC_DEFINE(HAVE_GAS_WEAKREF, 1, [Define if your assembler supports .weakref.])])
 
-gcc_GAS_CHECK_FEATURE([.nsubspa comdat], gcc_cv_as_nsubspa_comdat,
- ,
+gcc_GAS_CHECK_FEATURE([.nsubspa comdat], gcc_cv_as_nsubspa_comdat,,
  [	.SPACE $TEXT$
 	.NSUBSPA $CODE$,COMDAT],,
 [AC_DEFINE(HAVE_GAS_NSUBSPA_COMDAT, 1, [Define if your assembler supports .nsubspa comdat option.])])
@@ -2954,8 +2947,7 @@ case "${target}" in
 foobar:'
     ;;
 esac
-gcc_GAS_CHECK_FEATURE([.hidden], gcc_cv_as_hidden,
- , [$conftest_s])
+gcc_GAS_CHECK_FEATURE([.hidden], gcc_cv_as_hidden,, [$conftest_s])
 case "${target}" in
   *-*-darwin*)
     # Darwin as has some visibility support, though with a different syntax.
@@ -3173,8 +3165,7 @@ gcc_AC_INITFINI_ARRAY
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
 # Older versions of GAS and some non-GNU assemblers, have a bugs handling
 # these directives, even when they appear to accept them.
-gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
- ,
+gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,,
 [	.data
 	.uleb128 L2 - L1
 L1:
@@ -3212,8 +3203,7 @@ gcc_fn_eh_frame_ro () {
 }
 
 # Check if we have assembler support for unwind directives.
-gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
-  ,
+gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,,
 [	.text
 	.cfi_startproc
 	.cfi_offset 0, 0
@@ -3268,8 +3258,7 @@ gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
     ;;
 esac])
 if test $gcc_cv_as_cfi_directive = yes && test x$gcc_cv_objdump != x; then
-gcc_GAS_CHECK_FEATURE([working cfi advance], gcc_cv_as_cfi_advance_working,
-  ,
+gcc_GAS_CHECK_FEATURE([working cfi advance], gcc_cv_as_cfi_advance_working,,
 [	.text
 	.cfi_startproc
 	.cfi_adjust_cfa_offset 64
@@ -3332,8 +3321,7 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_SECTIONS_DIRECTIVE,
 
 # GAS versions up to and including 2.11.0 may mis-optimize
 # .eh_frame data.
-gcc_GAS_CHECK_FEATURE(eh_frame optimization, gcc_cv_as_eh_frame,
-  ,
+gcc_GAS_CHECK_FEATURE(eh_frame optimization, gcc_cv_as_eh_frame,,
 [	.text
 .LFB1:
 	.4byte	0
@@ -3636,8 +3624,7 @@ case "${target}" in
 esac
 
 gcc_GAS_CHECK_FEATURE([line table is_stmt support],
- gcc_cv_as_is_stmt,
- ,
+ gcc_cv_as_is_stmt,,
 [	.text
 	.file 1 "conf.c"
 	.loc 1 1 0 is_stmt 1],,
@@ -3645,8 +3632,7 @@ gcc_GAS_CHECK_FEATURE([line table is_stmt support],
   [Define if your assembler supports the .loc is_stmt sub-directive.])])
 
 gcc_GAS_CHECK_FEATURE([line table discriminator support],
- gcc_cv_as_discriminator,
- ,
+ gcc_cv_as_discriminator,,
 [	.text
 	.file 1 "conf.c"
 	.loc 1 1 0 discriminator 1],,
@@ -4741,16 +4727,15 @@ changequote([,])dnl
 	# Recent binutils allows the three-operand form of ".comm" on PE.  This
 	# definition is used unconditionally to initialise the default state of
 	# the target option variable that governs usage of the feature.
-	gcc_GAS_CHECK_FEATURE([.comm with alignment], gcc_cv_as_comm_has_align,
-	 ,[.comm foo,1,32])
+	gcc_GAS_CHECK_FEATURE([.comm with alignment], gcc_cv_as_comm_has_align,,
+	  [.comm foo,1,32])
 	AC_DEFINE_UNQUOTED(HAVE_GAS_ALIGNED_COMM,
 	  [`if test $gcc_cv_as_comm_has_align = yes; then echo 1; else echo 0; fi`],
 	  [Define if your assembler supports specifying the alignment
 	   of objects allocated using the GAS .comm command.])
 	# Used for DWARF 2 in PE
 	gcc_GAS_CHECK_FEATURE([.secrel32 relocs],
-	  gcc_cv_as_ix86_pe_secrel32,
-	  ,
+	  gcc_cv_as_ix86_pe_secrel32,,
 [.text
 foo:	nop
 .data
@@ -5472,8 +5457,8 @@ if test x"$insn" != x; then
 	.loc 1 3 0
 	$insn"
  gcc_GAS_CHECK_FEATURE([dwarf2 debug_line support],
-  gcc_cv_as_dwarf2_debug_line,
-  , [$conftest_s],
+  gcc_cv_as_dwarf2_debug_line,,
+  [$conftest_s],
   [if test x$gcc_cv_objdump != x \
    && $gcc_cv_objdump -h conftest.o 2> /dev/null \
       | grep debug_line > /dev/null 2>&1; then
@@ -5509,8 +5494,8 @@ if test x"$insn" != x; then
 	.uleb128 .LVU1
 "
 	gcc_GAS_CHECK_FEATURE([dwarf2 debug_view support],
-	  gcc_cv_as_dwarf2_debug_view,
-	  ,[$conftest_s],,
+	  gcc_cv_as_dwarf2_debug_view,,
+	  [$conftest_s],,
 	  [AC_DEFINE(HAVE_AS_DWARF2_DEBUG_VIEW, 1,
   [Define if your assembler supports views in dwarf2 .loc directives.])])
     fi
@@ -5701,13 +5686,13 @@ foo:
    dwarf4_success=no
    if test $dwarf4_addr_size = 4; then
      gcc_GAS_CHECK_FEATURE([assembly of compiler generated 32-bit .debug_line],
-      gcc_cv_as_debug_line_32_flag,
-      [], [$conftest_s],,
+      gcc_cv_as_debug_line_32_flag,,
+      [$conftest_s],,
       [dwarf4_success=yes])
    else
      gcc_GAS_CHECK_FEATURE([assembly of compiler generated 64-bit .debug_line],
-      gcc_cv_as_debug_line_64_flag,
-      [], [$conftest_s],,
+      gcc_cv_as_debug_line_64_flag,,
+      [$conftest_s],,
       [dwarf4_success=yes])
    fi
    if test $dwarf4_success = yes; then
@@ -5821,8 +5806,7 @@ AC_DEFINE_UNQUOTED(AS_COMPRESS_DEBUG_OPTION, "$gcc_cv_as_compress_debug_option",
 AC_DEFINE_UNQUOTED(AS_NO_COMPRESS_DEBUG_OPTION, "$gcc_cv_as_no_compress_debug_option",
 [Define to the assembler option to disable compressed debug sections.])
 
-gcc_GAS_CHECK_FEATURE([.lcomm with alignment], gcc_cv_as_lcomm_with_alignment,
- ,
+gcc_GAS_CHECK_FEATURE([.lcomm with alignment], gcc_cv_as_lcomm_with_alignment,,
 [.lcomm bar,4,16],,
 [AC_DEFINE(HAVE_GAS_LCOMM_WITH_ALIGNMENT, 1,
   [Define if your assembler supports .lcomm with an alignment field.])])
@@ -5867,8 +5851,7 @@ AC_ARG_ENABLE(gnu-unique-object,
     *) AC_MSG_ERROR(['$enable_gnu_unique_object' is an invalid value for --enable-gnu-unique-object.
 Valid choices are 'yes' and 'no'.]) ;;
   esac],
- [gcc_GAS_CHECK_FEATURE([gnu_unique_object], gcc_cv_as_gnu_unique_object,
-   ,
+ [gcc_GAS_CHECK_FEATURE([gnu_unique_object], gcc_cv_as_gnu_unique_object,,
    [.type foo, '$target_type_format_char'gnu_unique_object],,
 # We need to unquote above to to use the definition from config.gcc.
 # Also check for ld.so support, i.e. glibc 2.11 or higher.
