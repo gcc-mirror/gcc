@@ -54,6 +54,33 @@ test01()
   b = create_directory(p);
   VERIFY( !b );
 
+  auto f = p/"file";
+  std::ofstream{f} << "create file";
+  b = create_directory(f, ec);
+  VERIFY( ec == std::errc::file_exists );
+  VERIFY( !b );
+  try
+  {
+    create_directory(f);
+    VERIFY( false );
+  }
+  catch (const fs::filesystem_error& e)
+  {
+    VERIFY( e.code() == std::errc::file_exists );
+    VERIFY( e.path1() == f );
+  }
+
+  // PR libstdc++/101510 create_directory on an existing symlink to a directory
+  fs::create_directory(p/"dir");
+  auto link = p/"link";
+  fs::create_directory_symlink("dir", link);
+  ec = bad_ec;
+  b = fs::create_directory(link, ec);
+  VERIFY( !b );
+  VERIFY( !ec );
+  b = fs::create_directory(link);
+  VERIFY( !b );
+
   remove_all(p, ec);
 }
 
