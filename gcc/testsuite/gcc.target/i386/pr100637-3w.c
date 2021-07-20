@@ -1,6 +1,6 @@
 /* PR target/100637 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -msse4" } */
+/* { dg-options "-O2 -ftree-vectorize -msse4 -fno-vect-cost-model" } */
 
 short r[2], a[2], b[2];
 unsigned short ur[2], ua[2], ub[2];
@@ -13,7 +13,7 @@ void mulh (void)
     r[i] = ((int) a[i] * b[i]) >> 16;
 }
 
-/* { dg-final { scan-assembler "pmulhw" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "pmulhw" } } */
 
 void mulhu (void)
 {
@@ -23,7 +23,7 @@ void mulhu (void)
     ur[i] = ((unsigned int) ua[i] * ub[i]) >> 16;
 }
 
-/* { dg-final { scan-assembler "pmulhuw" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "pmulhuw" } } */
 
 void mulhrs (void)
 {
