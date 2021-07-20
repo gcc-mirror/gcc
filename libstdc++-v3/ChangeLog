@@ -1,3 +1,45 @@
+2021-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc:
+	Increase dg-timeout-factor to 4. Fix -Wunused-parameter
+	warnings. Replace bitwise AND with logical AND in loop
+	condition.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc:
+	Replace bitwise AND with logical AND in loop condition.
+	* testsuite/util/pstl/test_utils.h: Remove unused parameter
+	names.
+
+2021-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (subrange): Add __size_type typedef
+	and use it to simplify declarations.
+	(subrange(i, s, n)): Remove assertion.
+	* testsuite/std/ranges/subrange/constexpr.cc: New test.
+
+2021-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101427
+	* include/std/tuple (tuple_element): Improve static_assert text.
+	(__get_helper): Add deleted overload.
+	(get<i>(tuple<T...>&&), get<i>(const tuple<T...>&&)): Use
+	__get_helper directly.
+	(__get_helper2): Remove.
+	(__find_uniq_type_in_pack): New constexpr helper function.
+	(get<T>): Use __find_uniq_type_in_pack and __get_helper instead
+	of __get_helper2.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust
+	expected errors.
+	* testsuite/20_util/tuple/element_access/101427.cc: New test.
+
 2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

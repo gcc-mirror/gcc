@@ -1,3 +1,10 @@
+2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101129
+	* config/rs6000/rs6000-p8swap.c (has_part_mult): New.
+	(rs6000_analyze_swaps): Insns containing a subreg of a mult are
+	not swappable.
+
 2021-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
