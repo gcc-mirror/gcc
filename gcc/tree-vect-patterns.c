@@ -1934,8 +1934,15 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
 
    1) Multiply high with scaling
      TYPE res = ((TYPE) a * (TYPE) b) >> c;
+     Here, c is bitsize (TYPE) / 2 - 1.
+
    2) ... or also with rounding
      TYPE res = (((TYPE) a * (TYPE) b) >> d + 1) >> 1;
+     Here, d is bitsize (TYPE) / 2 - 2.
+
+   3) Normal multiply high
+     TYPE res = ((TYPE) a * (TYPE) b) >> e;
+     Here, e is bitsize (TYPE) / 2.
 
    where only the bottom half of res is used.  */
 
@@ -1980,7 +1987,6 @@ vect_recog_mulhs_pattern (vec_info *vinfo,
   stmt_vec_info mulh_stmt_info;
   tree scale_term;
   internal_fn ifn;
-  unsigned int expect_offset;
 
   /* Check for the presence of the rounding term.  */
   if (gimple_assign_rhs_code (rshift_input_stmt) == PLUS_EXPR)
@@ -2029,24 +2035,36 @@ vect_recog_mulhs_pattern (vec_info *vinfo,
 
       /* Get the scaling term.  */
       scale_term = gimple_assign_rhs2 (plus_input_stmt);
+      /* Check that the scaling factor is correct.  */
+      if (TREE_CODE (scale_term) != INTEGER_CST)
+	return NULL;
 
-      expect_offset = target_precision + 2;
+      /* Check pattern 2).  */
+      if (wi::to_widest (scale_term) + target_precision + 2
+	  != TYPE_PRECISION (lhs_type))
+	return NULL;
+
       ifn = IFN_MULHRS;
     }
   else
     {
       mulh_stmt_info = rshift_input_stmt_info;
       scale_term = gimple_assign_rhs2 (last_stmt);
+      /* Check that the scaling factor is correct.  */
+      if (TREE_CODE (scale_term) != INTEGER_CST)
+	return NULL;
 
-      expect_offset = target_precision + 1;
-      ifn = IFN_MULHS;
+      /* Check for pattern 1).  */
+      if (wi::to_widest (scale_term) + target_precision + 1
+	  == TYPE_PRECISION (lhs_type))
+	ifn = IFN_MULHS;
+      /* Check for pattern 3).  */
+      else if (wi::to_widest (scale_term) + target_precision
+	       == TYPE_PRECISION (lhs_type))
+	ifn = IFN_MULH;
+      else
+	return NULL;
     }
-
-  /* Check that the scaling factor is correct.  */
-  if (TREE_CODE (scale_term) != INTEGER_CST
-      || wi::to_widest (scale_term) + expect_offset
-	   != TYPE_PRECISION (lhs_type))
-    return NULL;
 
   /* Check whether the scaling input term can be seen as two widened
      inputs multiplied together.  */

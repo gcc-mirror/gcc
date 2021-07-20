@@ -5763,6 +5763,26 @@ Function::check_labels() const
     }
 }
 
+// Set the receiver type.  This is used to remove aliases.
+
+void
+Function::set_receiver_type(Type* rtype)
+{
+  Function_type* oft = this->type_;
+  Typed_identifier* rec = new Typed_identifier(oft->receiver()->name(),
+					       rtype,
+					       oft->receiver()->location());
+  Typed_identifier_list* parameters = NULL;
+  if (oft->parameters() != NULL)
+    parameters = oft->parameters()->copy();
+  Typed_identifier_list* results = NULL;
+  if (oft->results() != NULL)
+    results = oft->results()->copy();
+  Function_type* nft = Type::make_function_type(rec, parameters, results,
+						oft->location());
+  this->type_ = nft;
+}
+
 // Swap one function with another.  This is used when building the
 // thunk we use to call a function which calls recover.  It may not
 // work for any other case.
@@ -7283,6 +7303,26 @@ void
 Function_declaration::set_nointerface()
 {
   this->pragmas_ |= GOPRAGMA_NOINTERFACE;
+}
+
+// Set the receiver type.  This is used to remove aliases.
+
+void
+Function_declaration::set_receiver_type(Type* rtype)
+{
+  Function_type* oft = this->fntype_;
+  Typed_identifier* rec = new Typed_identifier(oft->receiver()->name(),
+					       rtype,
+					       oft->receiver()->location());
+  Typed_identifier_list* parameters = NULL;
+  if (oft->parameters() != NULL)
+    parameters = oft->parameters()->copy();
+  Typed_identifier_list* results = NULL;
+  if (oft->results() != NULL)
+    results = oft->results()->copy();
+  Function_type* nft = Type::make_function_type(rec, parameters, results,
+						oft->location());
+  this->fntype_ = nft;
 }
 
 // Import an inlinable function.  This is used for an inlinable

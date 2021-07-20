@@ -173,6 +173,9 @@ case "${target}" in
 
   amdgcn*-*-*)
 	config_path="gcn accel"
+
+	#TODO PR101484
+	XCFLAGS="$XCFLAGS -Wno-error=array-bounds"
 	;;
 
   *)

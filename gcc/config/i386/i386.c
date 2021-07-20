@@ -22568,6 +22568,9 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 				   mode == SFmode ? ix86_cost->fmass
 				   : ix86_cost->fmasd);
 	break;
+      case CFN_MULH:
+	stmt_cost = ix86_multiplication_cost (ix86_cost, mode);
+	break;
       default:
 	break;
       }

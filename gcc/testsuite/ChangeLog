@@ -1,3 +1,52 @@
+2021-07-19  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.target/powerpc/pr93658.c: Suppress valid warnings.
+
+2021-07-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95520
+	* g++.dg/coroutines/pr95520.C: New test.
+
+2021-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101503
+	* gcc.dg/analyzer/pr101503.c: New test.
+
+2021-07-19  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* gcc.dg/debug/btf/btf.exp: Do not run BTF testsuite if target does not
+	support BTF format. Remove redundant check for AIX.
+	* gcc.dg/debug/ctf/ctf.exp: Do not run CTF testsuite if target does not
+	support CTF format. Remove redundant check for AIX.
+	* lib/gcc-dg.exp: Remove redundant check for AIX.
+
+2021-07-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/100208
+	* gcc.target/gcn/sram-ecc-1.c: New test.
+	* gcc.target/gcn/sram-ecc-2.c: New test.
+	* gcc.target/gcn/sram-ecc-3.c: New test.
+	* gcc.target/gcn/sram-ecc-4.c: New test.
+	* gcc.target/gcn/sram-ecc-5.c: New test.
+	* gcc.target/gcn/sram-ecc-6.c: New test.
+	* gcc.target/gcn/sram-ecc-7.c: New test.
+	* gcc.target/gcn/sram-ecc-8.c: New test.
+
+2021-07-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101205
+	* gcc.target/aarch64/csinv-neg-1.c: New test.
+
+2021-07-19  Marek Polacek  <polacek@redhat.com>
+
+	DR 2126
+	* g++.dg/cpp0x/constexpr-temp2.C: New test.
+
+2021-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101505
+	* gcc.dg/vect/pr101505.c: New testcase.
+
 2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/101492

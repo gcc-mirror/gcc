@@ -577,8 +577,7 @@ namespace
   {
     bool created = false;
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
-    posix::mode_t mode
-      = static_cast<std::underlying_type_t<fs::perms>>(perm);
+    posix::mode_t mode = static_cast<std::underlying_type_t<fs::perms>>(perm);
     if (posix::mkdir(p.c_str(), mode))
       {
 	const int err = errno;

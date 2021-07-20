@@ -65,12 +65,9 @@ gomp_gcn_enter_kernel (void)
       void * __lds *arena_start = (void * __lds *)TEAM_ARENA_START;
       void * __lds *arena_free = (void * __lds *)TEAM_ARENA_FREE;
       void * __lds *arena_end = (void * __lds *)TEAM_ARENA_END;
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Warray-bounds" /*TODO PR101484 */
       *arena_start = team_arena;
       *arena_free = team_arena;
       *arena_end = team_arena + TEAM_ARENA_SIZE;
-# pragma GCC diagnostic pop
 
       /* Allocate and initialize the team-local-storage data.  */
       struct gomp_thread *thrs = team_malloc_cleared (sizeof (*thrs)
