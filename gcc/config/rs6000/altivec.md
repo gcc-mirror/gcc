@@ -317,22 +317,33 @@
   [(const_int 0)]
 {
   rtx dest = operands[0];
-  machine_mode mode = GET_MODE (operands[0]);
+  machine_mode mode;
   rtvec v;
   int i, num_elements;
 
-  if (mode == V4SFmode)
+  switch (easy_altivec_constant (operands[1], <MODE>mode))
     {
+    case 1:
+      mode = V16QImode;
+      break;
+    case 2:
+      mode = V8HImode;
+      break;
+    case 4:
       mode = V4SImode;
-      dest = gen_lowpart (V4SImode, dest);
+      break;
+    default:
+      gcc_unreachable ();
     }
+  if (mode != <MODE>mode)
+    dest = gen_lowpart (mode, dest);
 
   num_elements = GET_MODE_NUNITS (mode);
   v = rtvec_alloc (num_elements);
   for (i = 0; i < num_elements; i++)
     RTVEC_ELT (v, i) = constm1_rtx;
 
-  emit_insn (gen_vec_initv4sisi (dest, gen_rtx_PARALLEL (mode, v)));
+  rs6000_expand_vector_init (dest, gen_rtx_PARALLEL (mode, v));
   emit_insn (gen_rtx_SET (dest, gen_rtx_ASHIFT (mode, dest, dest)));
   DONE;
 })
