@@ -6144,7 +6144,7 @@ vspltis_constant (rtx op, unsigned step, unsigned copies)
 
   /* Also check if are loading up the most significant bit which can be done by
      loading up -1 and shifting the value left by -1.  */
-  else if (EASY_VECTOR_MSB (splat_val, inner))
+  else if (EASY_VECTOR_MSB (splat_val, inner) && step == 1 && copies == 1)
     ;
 
   else
