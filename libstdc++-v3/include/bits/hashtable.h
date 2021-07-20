@@ -33,6 +33,7 @@
 #pragma GCC system_header
 
 #include <bits/hashtable_policy.h>
+#include <bits/enable_special_members.h>
 #if __cplusplus > 201402L
 # include <bits/node_handle.h>
 #endif
@@ -47,6 +48,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       __is_fast_hash<_Hash>,
 		       // Mandatory to have erase not throwing.
 		       __is_nothrow_invocable<const _Hash&, const _Tp&>>>;
+
+  // Helper to conditionally delete the default constructor.
+  // The _Hash_node_base type is used to distinguish this specialization
+  // from any other potentially-overlapping subobjects of the hashtable.
+  template<typename _Equal, typename _Hash, typename _Allocator>
+    using _Hashtable_enable_default_ctor
+      = _Enable_special_members<__and_<is_default_constructible<_Equal>,
+				       is_default_constructible<_Hash>,
+				       is_default_constructible<_Allocator>>{},
+				true, true, true, true, true,
+				__detail::_Hash_node_base>;
 
   /**
    *  Primary class template _Hashtable.
@@ -183,7 +195,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private __detail::_Hashtable_alloc<
 	__alloc_rebind<_Alloc,
 		       __detail::_Hash_node<_Value,
-					    _Traits::__hash_cached::value>>>
+					    _Traits::__hash_cached::value>>>,
+      private _Hashtable_enable_default_ctor<_Equal, _Hash, _Alloc>
     {
       static_assert(is_same<typename remove_cv<_Value>::type, _Value>::value,
 	  "unordered container must have a non-const, non-volatile value_type");
