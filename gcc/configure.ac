@@ -3653,8 +3653,6 @@ esac], [])
 
 # Thread-local storage - the check is heavily parameterized.
 conftest_s=
-tls_first_major=
-tls_first_minor=
 tls_as_opt=
 case "$target" in
 changequote(,)dnl
@@ -3677,15 +3675,11 @@ foo:	.long	25
 	ldah	$2,foo($29)			!tprelhi
 	lda	$3,foo($2)			!tprello
 	lda	$4,foo($29)			!tprel'
-	tls_first_major=2
-	tls_first_minor=13
 	tls_as_opt=--fatal-warnings
 	;;
   arc*-*-*)
     conftest_s='
 	add_s r0,r0, @foo@tpoff'
-	tls_first_major=2
-	tls_first_minor=23
 	;;
   cris-*-*|crisv32-*-*)
     conftest_s='
@@ -3694,8 +3688,6 @@ x:      .long   25
         .text
 	move.d x:IE,$r10
 	nop'
-	tls_first_major=2
-	tls_first_minor=20
 	tls_as_opt=--fatal-warnings
 	;;
   frv*-*-*)
@@ -3704,8 +3696,6 @@ x:      .long   25
 x:      .long   25
         .text
         call    #gettlsoff(x)'
-	tls_first_major=2
-	tls_first_minor=14
 	;;
   hppa*-*-linux*)
     conftest_s='
@@ -3732,8 +3722,6 @@ foo:	.long	25
 	mfctl %cr27,%t1 		
 	addil LR%foo-$tls_leoff$,%t1
 	ldo RR%foo-$tls_leoff$(%r1),%t2'
-	tls_first_major=2
-	tls_first_minor=15
 	tls_as_opt=--fatal-warnings
 	;;
   arm*-*-*)
@@ -3746,8 +3734,6 @@ foo:	.long	25
 .word foo(tlsgd)
 .word foo(tlsldm)
 .word foo(tlsldo)'
-	tls_first_major=2
-	tls_first_minor=17
 	;;
   i[34567]86-*-* | x86_64-*-*)
     case "$target" in
@@ -3761,8 +3747,6 @@ foo:	.long	25
     if test x$on_solaris = xyes && test x$gas_flag = xno; then
       conftest_s='
 	.section .tdata,"awt",@progbits'
-      tls_first_major=0
-      tls_first_minor=0
       tls_section_flag=t
 changequote([,])dnl
       AC_DEFINE(TLS_SECTION_ASM_FLAG, 't',
@@ -3771,8 +3755,6 @@ changequote(,)dnl
     else
       conftest_s='
 	.section ".tdata","awT",@progbits'
-      tls_first_major=2
-      tls_first_minor=14
       tls_section_flag=T
       tls_as_opt="--fatal-warnings"
     fi
@@ -3831,8 +3813,6 @@ foo:	data8	25
 	addl	r20 = @tprel(foo#), gp
 	adds	r22 = @tprel(foo#), r13
 	movl	r24 = @tprel(foo#)'
-	tls_first_major=2
-	tls_first_minor=13
 	tls_as_opt=--fatal-warnings
 	;;
   microblaze*-*-*)
@@ -3843,8 +3823,6 @@ x:
 	.text
 	addik r5,r20,x@TLSGD
 	addik r5,r20,x@TLSLDM'
-	tls_first_major=2
-	tls_first_minor=20
 	tls_as_opt='--fatal-warnings'
 	;;
   mips*-*-*)
@@ -3860,8 +3838,6 @@ x:
 	lw $4, %gottprel(x)($28)
 	lui $4, %tprel_hi(x)
 	addiu $4, $4, %tprel_lo(x)'
-	tls_first_major=2
-	tls_first_minor=16
 	tls_as_opt='-32 --fatal-warnings'
 	;;
   m68k-*-*)
@@ -3876,15 +3852,11 @@ foo:
 	move.l x@TLSLDO(%a5),%a0
 	move.l x@TLSIE(%a5),%a0
 	move.l x@TLSLE(%a5),%a0'
-	tls_first_major=2
-	tls_first_minor=19
 	tls_as_opt='--fatal-warnings'
 	;;
   nios2-*-*)
       conftest_s='
 	.section ".tdata","awT",@progbits'
-	tls_first_major=2
-	tls_first_minor=23
 	tls_as_opt="--fatal-warnings"
 	;;
   aarch64*-*-*)
@@ -3896,8 +3868,6 @@ foo:	.long	25
 	add   x0, x0, #:tlsgd_lo12:x
         bl    __tls_get_addr
 	nop'
-	tls_first_major=2
-	tls_first_minor=20
 	tls_as_opt='--fatal-warnings'
 	;;
   or1k*-*-*)
@@ -3908,8 +3878,6 @@ foo:	.long	25
 	l.movhi	r3, tpoffha(foo)
 	l.add	r3, r3, r10
 	l.lwz	r4, tpofflo(foo)(r3)'
-    tls_first_major=2
-    tls_first_minor=30
     tls_as_opt=--fatal-warnings
     ;;
   powerpc-ibm-aix*)
@@ -3927,8 +3895,6 @@ LC..1:
 	.csect a[TL],4
 a:
 	.space 4'
-	tls_first_major=0
-	tls_first_minor=0
 	;;
   powerpc64*-*-*)
     conftest_s='
@@ -3960,8 +3926,6 @@ x3:	.space 8
 	add 9,9,3
 	bl .__tls_get_addr
 	nop'
-	tls_first_major=2
-	tls_first_minor=14
 	tls_as_opt="-a64 --fatal-warnings"
 	;;
   powerpc*-*-*)
@@ -3986,8 +3950,6 @@ x3:	.space 4
 	addi 9,2,x1@tprel
 	addis 9,2,x2@tprel@ha
 	addi 9,9,x2@tprel@l'
-	tls_first_major=2
-	tls_first_minor=14
 	tls_as_opt="-a32 --fatal-warnings"
 	;;
   riscv*-*-*)
@@ -3997,8 +3959,6 @@ x:	.word 2
 	.text
 	la.tls.gd a0,x
         call __tls_get_addr'
-	tls_first_major=2
-	tls_first_minor=21
 	tls_as_opt='--fatal-warnings'
 	;;
   s390-*-*)
@@ -4016,8 +3976,6 @@ foo:	.long	25
 	l	%r1,0(%r1):tls_load:foo
 	bas	%r14,0(%r1,%r13):tls_gdcall:foo
 	bas	%r14,0(%r1,%r13):tls_ldcall:foo'
-	tls_first_major=2
-	tls_first_minor=14
 	tls_as_opt="-m31 --fatal-warnings"
 	;;
   s390x-*-*)
@@ -4034,8 +3992,6 @@ foo:	.long	25
 	larl	%r1,foo@INDNTPOFF
 	brasl	%r14,__tls_get_offset@PLT:tls_gdcall:foo
 	brasl	%r14,__tls_get_offset@PLT:tls_ldcall:foo'
-	tls_first_major=2
-	tls_first_minor=14
 	tls_as_opt="-m64 -Aesame --fatal-warnings"
 	;;
   sh-*-* | sh[123456789lbe]*-*-*)
@@ -4048,8 +4004,6 @@ foo:	.long	25
 	.long	foo@DTPOFF
 	.long	foo@GOTTPOFF
 	.long	foo@TPOFF'
-	tls_first_major=2
-	tls_first_minor=13
 	tls_as_opt=--fatal-warnings
 	;;
   sparc*-*-*)
@@ -4064,13 +4018,9 @@ foo:	.long	25
     if test x$on_solaris = xyes && test x$gas_flag = xno; then
       conftest_s='
 	.section ".tdata",#alloc,#write,#tls'
-	tls_first_major=0
-	tls_first_minor=0
     else
       conftest_s='
 	.section ".tdata","awT",@progbits'
-	tls_first_major=2
-	tls_first_minor=14
 	tls_as_opt="-32 --fatal-warnings"
     fi
     conftest_s="$conftest_s
@@ -4107,8 +4057,6 @@ foo:	.long	25
 	addli	r0, zero, tls_ie(foo)
 	auli	r0, r0, tls_ie_ha16(foo)
 	addli	r0, r0, tls_ie_lo16(foo)'
-	tls_first_major=2
-	tls_first_minor=22
 	tls_as_opt="--fatal-warnings"
 	;;
   tilegx*-*-*)
@@ -4122,8 +4070,6 @@ foo:	.long	25
 	jal	   __tls_get_addr
 	shl16insli r0, zero, hw1_last_tls_ie(foo)
 	shl16insli r0, r0,   hw0_tls_ie(foo)'
-	tls_first_major=2
-	tls_first_minor=22
 	tls_as_opt="--fatal-warnings"
 	;;
   xtensa*-*-*)
@@ -4134,8 +4080,6 @@ foo:	.long	25
 	movi	a8, foo@TLSFUNC
 	movi	a10, foo@TLSARG
 	callx8.tls a8, foo@TLSCALL'
-	tls_first_major=2
-	tls_first_minor=19
 	;;
 changequote([,])dnl
 esac
@@ -4144,7 +4088,7 @@ if test "x$enable_tls" = xno ; then
   : # TLS explicitly disabled.
 elif test "x$enable_tls" = xyes ; then
   set_have_as_tls=yes # TLS explicitly enabled.
-elif test -z "$tls_first_major"; then
+elif test -z "$conftest_s"; then
   : # If we don't have a check, assume no support.
 else
   gcc_GAS_CHECK_FEATURE(thread-local storage support, gcc_cv_as_tls,
