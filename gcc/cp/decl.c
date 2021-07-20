@@ -944,7 +944,9 @@ static bool
 function_requirements_equivalent_p (tree newfn, tree oldfn)
 {
   /* In the concepts TS, the combined constraints are compared.  */
-  if (cxx_dialect < cxx20)
+  if (cxx_dialect < cxx20
+      && (DECL_TEMPLATE_SPECIALIZATION (newfn)
+	  <= DECL_TEMPLATE_SPECIALIZATION (oldfn)))
     {
       tree ci1 = get_constraints (oldfn);
       tree ci2 = get_constraints (newfn);
@@ -7053,17 +7055,9 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	     have returned an INIT_EXPR rather than a CALL_EXPR.  In that
 	     case, pull the initializer back out and pass it down into
 	     store_init_value.  */
-	  while (true)
-	    {
-	      if (TREE_CODE (init_code) == EXPR_STMT
-		  || TREE_CODE (init_code) == STMT_EXPR
-		  || TREE_CODE (init_code) == CONVERT_EXPR)
-		init_code = TREE_OPERAND (init_code, 0);
-	      else if (TREE_CODE (init_code) == BIND_EXPR)
-		init_code = BIND_EXPR_BODY (init_code);
-	      else
-		break;
-	    }
+	  while (TREE_CODE (init_code) == EXPR_STMT
+		 || TREE_CODE (init_code) == CONVERT_EXPR)
+	    init_code = TREE_OPERAND (init_code, 0);
 	  if (TREE_CODE (init_code) == INIT_EXPR)
 	    {
 	      /* In C++20, the call to build_aggr_init could have created

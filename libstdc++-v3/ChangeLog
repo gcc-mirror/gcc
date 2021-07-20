@@ -1,3 +1,118 @@
+2021-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc:
+	Increase dg-timeout-factor to 4. Fix -Wunused-parameter
+	warnings. Replace bitwise AND with logical AND in loop
+	condition.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc:
+	Replace bitwise AND with logical AND in loop condition.
+	* testsuite/util/pstl/test_utils.h: Remove unused parameter
+	names.
+
+2021-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (subrange): Add __size_type typedef
+	and use it to simplify declarations.
+	(subrange(i, s, n)): Remove assertion.
+	* testsuite/std/ranges/subrange/constexpr.cc: New test.
+
+2021-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101427
+	* include/std/tuple (tuple_element): Improve static_assert text.
+	(__get_helper): Add deleted overload.
+	(get<i>(tuple<T...>&&), get<i>(const tuple<T...>&&)): Use
+	__get_helper directly.
+	(__get_helper2): Remove.
+	(__find_uniq_type_in_pack): New constexpr helper function.
+	(get<T>): Use __find_uniq_type_in_pack and __get_helper instead
+	of __get_helper2.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust
+	expected errors.
+	* testsuite/20_util/tuple/element_access/101427.cc: New test.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (__cust_access::__decay_copy):
+	Replace with function object.
+	(__cust_access::__member_begin, ___cust_access::_adl_begin): Use
+	__decay_copy unqualified.
+	* include/bits/ranges_base.h (__member_end, __adl_end):
+	Likewise. Use __range_iter_t for type of ranges::begin.
+	(__member_rend): Use correct value category for rbegin argument.
+	(__member_data): Use __decay_copy unqualified.
+	(__begin_data): Use __range_iter_t for type of ranges::begin.
+
+2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::empty): Check whether
+	conversion to bool can throw.
+	* testsuite/std/ranges/access/empty.cc: Check for correct
+	noexcept-specifier.
+
+2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/simd: Do not define anything pre-C++17.
+
+2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/101361
+	* include/std/string_view (ends_with): Use traits_type::compare
+	directly.
+
+2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view: Only include <bits/ranges_base.h>
+	once, and only for C++20 and later.
+
+2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101411
+	* include/std/span (as_writable_bytes): Add requires-clause.
+	* testsuite/23_containers/span/101411.cc: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100387
+	* include/bits/ranges_algo.h (__minmax_fn::operator()): Rewrite
+	to limit comparison complexity to 3*N/2.
+	(__minmax_element_fn::operator()): Likewise.
+	(shift_right): Avoid premature std::move of __result.
+	* testsuite/25_algorithms/minmax/constrained.cc (test04, test05):
+	New tests.
+	* testsuite/25_algorithms/minmax_element/constrained.cc (test02):
+	Likewise.
+
 2021-06-22  Thomas Rodgers  <rodgert@appliantology.com>
 
 	Backported from master:

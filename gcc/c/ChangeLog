@@ -1,3 +1,29 @@
+2021-07-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Accept float + complex
+	for || and && reductions.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101176
+	* c-parser.c (c_parser_has_attribute_expression): Set source range for
+	the result.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101171
+	* c-typeck.c (build_c_cast): Don't call note_integer_operands on
+	error_mark_node.
+
 2021-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

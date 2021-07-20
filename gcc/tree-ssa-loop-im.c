@@ -2169,6 +2169,7 @@ execute_sm (class loop *loop, im_mem_ref *ref,
 enum sm_kind { sm_ord, sm_unord, sm_other };
 struct seq_entry
 {
+  seq_entry () {}
   seq_entry (unsigned f, sm_kind k, tree fr = NULL)
     : first (f), second (k), from (fr) {}
   unsigned first;
@@ -2339,7 +2340,13 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	      tree vuse = gimple_phi_arg_def (phi, i);
 	      edge e = gimple_phi_arg_edge (phi, i);
 	      auto_vec<seq_entry> edge_seq;
-	      bitmap_copy (tem_refs_not_in_seq, refs_not_in_seq);
+	      bitmap_and_compl (tem_refs_not_in_seq,
+				refs_not_in_seq, refs_not_supported);
+	      /* If we've marked all refs we search for as unsupported
+		 we can stop processing and use the sequence as before
+		 the PHI.  */
+	      if (bitmap_empty_p (tem_refs_not_in_seq))
+		return 1;
 	      eret = sm_seq_valid_bb (loop, e->src, vuse, edge_seq,
 				      tem_refs_not_in_seq, refs_not_supported,
 				      true, fully_visited);
@@ -2352,6 +2359,8 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 	      unsigned min_len = MIN(first_edge_seq.length (),
 				     edge_seq.length ());
 	      /* Incrementally merge seqs into first_edge_seq.  */
+	      int first_uneq = -1;
+	      auto_vec<seq_entry, 2> extra_refs;
 	      for (unsigned int i = 0; i < min_len; ++i)
 		{
 		  /* ???  We can more intelligently merge when we face different
@@ -2367,13 +2376,18 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 			bitmap_set_bit (refs_not_supported, edge_seq[i].first);
 		      first_edge_seq[i].second = sm_other;
 		      first_edge_seq[i].from = NULL_TREE;
+		      /* Record the dropped refs for later processing.  */
+		      if (first_uneq == -1)
+			first_uneq = i;
+		      extra_refs.safe_push (seq_entry (edge_seq[i].first,
+						       sm_other, NULL_TREE));
 		    }
 		  /* sm_other prevails.  */
 		  else if (first_edge_seq[i].second != edge_seq[i].second)
 		    {
-		      /* This is just an optimization.  */
-		      gcc_assert (bitmap_bit_p (refs_not_supported,
-						first_edge_seq[i].first));
+		      /* Make sure the ref is marked as not supported.  */
+		      bitmap_set_bit (refs_not_supported,
+				      first_edge_seq[i].first);
 		      first_edge_seq[i].second = sm_other;
 		      first_edge_seq[i].from = NULL_TREE;
 		    }
@@ -2399,10 +2413,36 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 		}
 	      else if (edge_seq.length () > first_edge_seq.length ())
 		{
+		  if (first_uneq == -1)
+		    first_uneq = first_edge_seq.length ();
 		  for (unsigned i = first_edge_seq.length ();
 		       i < edge_seq.length (); ++i)
-		    if (edge_seq[i].second == sm_ord)
-		      bitmap_set_bit (refs_not_supported, edge_seq[i].first);
+		    {
+		      if (edge_seq[i].second == sm_ord)
+			bitmap_set_bit (refs_not_supported, edge_seq[i].first);
+		      extra_refs.safe_push (seq_entry (edge_seq[i].first,
+						       sm_other, NULL_TREE));
+		    }
+		}
+	      /* Put unmerged refs at first_uneq to force dependence checking
+		 on them.  */
+	      if (first_uneq != -1)
+		{
+		  /* Missing ordered_splice_at.  */
+		  if ((unsigned)first_uneq == first_edge_seq.length ())
+		    first_edge_seq.safe_splice (extra_refs);
+		  else
+		    {
+		      unsigned fes_length = first_edge_seq.length ();
+		      first_edge_seq.safe_grow (fes_length
+						+ extra_refs.length ());
+		      memmove (&first_edge_seq[first_uneq + extra_refs.length ()],
+			       &first_edge_seq[first_uneq],
+			       (fes_length - first_uneq) * sizeof (seq_entry));
+		      memcpy (&first_edge_seq[first_uneq],
+			      extra_refs.address (),
+			      extra_refs.length () * sizeof (seq_entry));
+		    }
 		}
 	    }
 	  /* Use the sequence from the first edge and push SMs down.  */
@@ -2499,7 +2539,12 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
       vec<seq_entry> seq;
       seq.create (4);
       auto_bitmap refs_not_in_seq (&lim_bitmap_obstack);
-      bitmap_copy (refs_not_in_seq, mem_refs);
+      bitmap_and_compl (refs_not_in_seq, mem_refs, refs_not_supported);
+      if (bitmap_empty_p (refs_not_in_seq))
+	{
+	  seq.release ();
+	  break;
+	}
       auto_bitmap fully_visited;
       int res = sm_seq_valid_bb (loop, e->src, NULL_TREE,
 				 seq, refs_not_in_seq,

@@ -1,3 +1,186 @@
+2021-07-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* semantics.c (finish_omp_reduction_clause): Accept float + complex
+	for || and && reductions.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101443
+	* cp-gimplify.c (cp_fold): For comparisons with NULLPTR_TYPE
+	operands, fold them right away to true or false.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101233
+	* pt.c (alias_ctad_tweaks): Clear cp_unevaluated_operand for
+	substituting DECL_ARGUMENTS.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100138
+	* constraint.cc (tsubst_constraint): Set up cp_unevaluated.
+	(satisfy_atom): Set up iloc_sentinel before calling
+	cxx_constant_value.
+	* pt.c (tsubst_pack_expansion): When returning a rebuilt pack
+	expansion, carry over PACK_EXPANSION_LOCAL_P and
+	PACK_EXPANSION_SIZEOF_P from the original pack expansion.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101181
+	* constraint.cc (tsubst_requires_expr): Pass complain/in_decl to
+	add_extra_args.
+	* cp-tree.h (add_extra_args): Add complain/in_decl parameters.
+	* pt.c (build_extra_args): Make a copy of args.
+	(add_extra_args): Add complain/in_decl parameters.  Enable the
+	code for handling the case where the extra arguments are
+	dependent.
+	(tsubst_pack_expansion): Pass complain/in_decl to
+	add_extra_args.
+	(tsubst_template_args): Handle missing template arguments.
+	(tsubst_expr) <case IF_STMT>: Pass complain/in_decl to
+	add_extra_args.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* pt.c (any_template_parm_r) <case TEMPLATE_DECL>: Just walk the
+	DECL_CONTEXT.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* pt.c (any_template_parm_r) <case TEMPLATE_DECL>: Rewrite to
+	use common_enclosing_class and to not depend on the TREE_TYPE
+	of outer levels pointing to the corresponding primary template.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* constexpr.c (cxx_eval_array_reference): When the element type
+	is an empty type and the corresponding element is omitted, just
+	return an empty CONSTRUCTOR instead of attempting value
+	initialization.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98832
+	* pt.c (maybe_aggr_guide): Handle alias templates appropriately.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101182
+	* constraint.cc (evaluate_requires_expr): Adjust function comment.
+	* cp-gimplify.c (cp_genericize_r) <case REQUIRES_EXPR>: Move to ...
+	(cp_fold) <case REQUIRES_EXPR>: ... here.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100918
+	* parser.c (cp_parser_lookup_name): Check access of the lookup
+	result before we potentially adjust an injected-class-name to
+	its TEMPLATE_DECL.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97420
+	* cvt.c (noexcept_conv_p): Remove redundant checks and simplify.
+	(fnptr_conv_p): Don't call non_reference.  Use INDIRECT_TYPE_P
+	instead of TYPE_PTR_P.
+	* pt.c (convert_nontype_argument_function): Look through
+	implicit INDIRECT_REFs before calling strip_fnptr_conv.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101098
+	* decl.c (function_requirements_equivalent_p): Only compare
+	trailing requirements on a specialization.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100838
+	* call.c (convert_like_internal): Clear tf_no_cleanup when
+	recursing.
+	(build_user_type_conversion_1): Only add ck_rvalue if
+	LOOKUP_ONLYCONVERTING.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86355
+	* pt.c (use_pack_expansion_extra_args_p): Don't compare
+	args from the same argument pack.
+
+2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101087
+	* cp-tree.h (unevaluated_p): New.
+	* except.c (check_noexcept_r): Use it.  Don't walk into
+	unevaluated operands.
+
+2021-07-07  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (check_initializer): Also look through STMT_EXPR
+	and BIND_EXPR.
+
+2021-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101040
+	PR c++/97566
+	* class.c (is_empty_field): Handle null argument.
+	* constexpr.c (cxx_eval_bare_aggregate): Discard initializer
+	for empty field.
+
+2021-06-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100752
+	* parser.c (cp_parser_declarator): Pass flags down to
+	cp_parser_declarator.  Also pass static_p/member_p.
+
 2021-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -2723,8 +2723,11 @@ tree_could_trap_p (tree expr)
       return TREE_THIS_VOLATILE (expr);
 
     case CALL_EXPR:
+      /* Internal function calls do not trap.  */
+      if (CALL_EXPR_FN (expr) == NULL_TREE)
+	return false;
       t = get_callee_fndecl (expr);
-      /* Assume that calls to weak functions may trap.  */
+      /* Assume that indirect and calls to weak functions may trap.  */
       if (!t || !DECL_P (t))
 	return true;
       if (DECL_WEAK (t))

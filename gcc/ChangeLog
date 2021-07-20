@@ -1,3 +1,449 @@
+2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101129
+	* config/rs6000/rs6000-p8swap.c (has_part_mult): New.
+	(rs6000_analyze_swaps): Insns containing a subreg of a mult are
+	not swappable.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/94366
+	* omp-low.c (lower_rec_input_clauses): Rename is_fp_and_or to
+	is_truth_op, set it for TRUTH_*IF_EXPR regardless of new_var's type,
+	use boolean_type_node instead of integer_type_node as NE_EXPR type.
+	(lower_reduction_clauses): Likewise.
+
+2021-07-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (lower_rec_input_clauses, lower_reduction_clauses): Handle
+	&& and || with floating-point and complex arguments.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR go/101407
+	* godump.c (godump_str_hash): New type.
+	(godump_container::pot_dummy_types): Use string_hash instead of
+	ptr_hash in the hash_set.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101266
+	* dwarf2out.c (loc_list_from_tree_1): Handle COMPOUND_LITERAL_EXPR.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101210
+	* match.pd ((intptr_t)x eq/ne CST to x eq/ne (typeof x) CST): Don't
+	perform the optimization in GENERIC when sanitizing and x has a
+	reference type.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101172
+	* stor-layout.c (finish_bitfield_representative): If nextf has
+	error_mark_node type, set repr type to error_mark_node too.
+
+2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-06-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101023
+	* config/i386/i386.c (ix86_expand_prologue): Set red_zone_used
+	to true if red zone is used.
+	(ix86_output_indirect_jmp): Replace ix86_red_zone_size with
+	ix86_red_zone_used.
+	* config/i386/i386.h (machine_function): Add red_zone_used.
+	(ix86_red_zone_size): Removed.
+	(ix86_red_zone_used): New.
+	* config/i386/i386.md (peephole2 patterns): Replace
+	ix86_red_zone_size with ix86_red_zone_used.
+
+2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101395
+	* config/i386/driver-i386.c (host_detect_local_cpu): Check
+	"arch [32|64]" and "tune [32|64]" for 32-bit and 64-bit codegen.
+	Enable UINTR only for 64-bit codegen.
+	* config/i386/i386-options.c
+	(ix86_option_override_internal::DEF_PTA): Skip PTA_UINTR if not
+	in 64-bit mode.
+	* config/i386/i386.h (ARCH_ARG): New.
+	(CC1_CPU_SPEC): Pass "[arch|tune] 32" for 32-bit codegen and
+	"[arch|tune] 64" for 64-bit codegen.
+
+2021-07-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR driver/101383
+	* gcc.c (process_command): Process -gtoggle like process_options
+	would after parsing options.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-07-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101223
+	* range-op.cc (build_lt): Add -1 for signed values.
+	(built_gt): Subtract -1 for signed values.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101148
+	PR tree-optimization/101014
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Adjust.
+	(ranger_cache::~ranger_cache): Adjust.
+	(ranger_cache::block_range): Check if propagation disallowed.
+	(ranger_cache::propagate_cache): Disallow propagation if new value
+	can't be stored properly.
+	* gimple-range-cache.h (ranger_cache::m_propfail): New member.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (class ssa_block_ranges): Adjust prototype.
+	(sbr_vector::set_bb_range): Return true.
+	(class sbr_sparse_bitmap): Adjust.
+	(sbr_sparse_bitmap::set_bb_range): Return value.
+	(block_range_cache::set_bb_range): Return value.
+	(ranger_cache::propagate_cache): Use return value to print msg.
+	* gimple-range-cache.h (class block_range_cache): Adjust.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::push_poor_value): Disable
+	poor value processing.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::range_of_expr): Treat debug statments
+	as contextless queries to avoid additional lookups.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-06-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/100299
+	* gimple-range-cache.cc (class sbr_sparse_bitmap): New.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): New.
+	(sbr_sparse_bitmap::bitmap_set_quad): New.
+	(sbr_sparse_bitmap::bitmap_get_quad): New.
+	(sbr_sparse_bitmap::set_bb_range): New.
+	(sbr_sparse_bitmap::get_bb_range): New.
+	(sbr_sparse_bitmap::bb_range_p): New.
+	(block_range_cache::block_range_cache): initialize bitmap obstack.
+	(block_range_cache::~block_range_cache): Destruct obstack.
+	(block_range_cache::set_bb_range): Decide when to utilze the
+	sparse on entry cache.
+	* gimple-range-cache.h (block_range_cache): Add bitmap obstack.
+	* params.opt (-param=evrp-sparse-threshold): New.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-06-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* bitmap.c (bitmap_set_aligned_chunk): New.
+	(bitmap_get_aligned_chunk): New.
+	(test_aligned_chunk): New.
+	(bitmap_c_tests): Call test_aligned_chunk.
+	* bitmap.h (bitmap_set_aligned_chunk, bitmap_get_aligned_chunk): New.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_block_ranges): Virtualize.
+	(sbr_vector): Renamed from ssa_block_cache.
+	(sbr_vector::sbr_vector): Allocate from obstack abd initialize.
+	(ssa_block_ranges::~ssa_block_ranges): Remove.
+	(sbr_vector::set_bb_range): Use varying and undefined cached values.
+	(ssa_block_ranges::set_bb_varying): Remove.
+	(sbr_vector::get_bb_range): Adjust assert.
+	(sbr_vector::bb_range_p): Adjust assert.
+	(~block_range_cache): No freeing loop required.
+	(block_range_cache::get_block_ranges): Remove.
+	(block_range_cache::set_bb_range): Inline get_block_ranges.
+	(block_range_cache::set_bb_varying): Remove.
+	* gimple-range-cache.h (set_bb_varying): Remove prototype.
+	* value-range.h (irange_allocator::get_memory): New.
+
+2021-07-14  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/100809
+	* config/rs6000/rs6000.md (udivti3): New insn.
+	(divti3): New insn.
+	(umodti3): New insn.
+	(modti3): New insn.
+
+2021-07-14  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2021-07-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-alias.c (attr_fnspec::verify): Fix index in
+	non-'t'-sized arg check.
+
+2021-07-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101185
+	* config/i386/i386.c (x86_order_regs_for_local_alloc):
+	Revert r12-1669.
+
+2021-07-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101142
+	* config/i386/i386.md: (*anddi_1): Disparage slightly the mask
+	register alternative.
+	(*and<mode>_1): Ditto.
+	(*andqi_1): Ditto.
+	(*andn<mode>_1): Ditto.
+	(*<code><mode>_1): Ditto.
+	(*<code>qi_1): Ditto.
+	(*one_cmpl<mode>2_1): Ditto.
+	(*one_cmplsi2_1_zext): Ditto.
+	(*one_cmplqi2_1): Ditto.
+	* config/i386/i386.c (x86_order_regs_for_local_alloc): Change
+	the order of mask registers to be before general registers.
+
+2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101445
+	* tree-vect-stmts.c (vectorizable_load): Do the gap adjustment
+	of the IV in the correct direction for negative stride
+	accesses.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101291
+	* cfgloopmanip.c (loop_version): Set the loop copy of the
+	versioned loop to the new loop.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101394
+	* tree-ssa-pre.c (do_pre_regular_insertion): Avoid inserting
+	copies from abnormals for a full redundancy.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101423
+	* gimple.c (gimple_could_trap_p_1): Internal function calls
+	do not trap.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* tree-vect-slp.c (vect_schedule_slp_node): Do not place trapping
+	vectorized ops ahead of their scalar BB.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* tree-vect-slp.c (vect_build_slp_tree_1): Prevent possibly
+	trapping ops in different BBs.
+
+2021-07-09  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/101066
+	* ipa-sra.c (class isra_call_summary): New member
+	m_before_any_store, initialize it in the constructor.
+	(isra_call_summary::dump): Dump the new field.
+	(ipa_sra_call_summaries::duplicate): Copy it.
+	(process_scan_results): Set it.
+	(isra_write_edge_summary): Stream it.
+	(isra_read_edge_summary): Likewise.
+	(param_splitting_across_edge): Only override
+	safe_to_import_accesses if m_before_any_store is set.
+
+2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/101377
+	* gcc.c (ASM_DEBUG_DWARF_OPTION): Set again to --gdwarf2 in
+	the case where HAVE_AS_WORKING_DWARF_N_FLAG is not defined
+	and HAVE_LD_BROKEN_PE_DWARF5 is defined.
+
+2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (mma_init_builtins): Use VSX_BUILTIN_LXVP
+	and VSX_BUILTIN_STXVP.
+
+2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_MMA_PAIR_LD, BU_MMA_PAIR_ST):
+	New macros.
+	(__builtin_vsx_lxvp, __builtin_vsx_stxvp): New built-ins.
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Expand
+	lxvp and stxvp built-ins.
+	(mma_init_builtins): Handle lxvp and stxvp built-ins.
+	(builtin_function_type): Likewise.
+	* doc/extend.texi (__builtin_vsx_lxvp, __builtin_mma_stxvp): Document.
+
+2021-07-07  Michael Meissner  <meissner@linux.ibm.com>
+	    2021-07-01 Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_maybe_emit_fp_cmove): Add IEEE
+	128-bit floating point conditional move support.
+	(have_compare_and_set_mask): Add IEEE 128-bit floating point
+	types.
+	* config/rs6000/rs6000.md (mov<mode>cc, IEEE128 iterator): New insn.
+	(mov<mode>cc_p10, IEEE128 iterator): New insn.
+	(mov<mode>cc_invert_p10, IEEE128 iterator): New insn.
+	(fpmask<mode>, IEEE128 iterator): New insn.
+	(xxsel<mode>, IEEE128 iterator): New insn.
+	Backported from master:
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101229
+	* gimple-walk.c (gimple_walk_op): Handle PHIs.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101173
+	PR tree-optimization/101280
+	* gimple-loop-interchange.cc
+	(tree_loop_interchange::valid_data_dependences): Properly
+	guard all dependence checks with DDR_REVERSED_P or its
+	inverse.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101156
+	* gimplify.c (gimplify_expr): Remove premature incorrect
+	optimization.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100923
+	* tree-ssa-sccvn.c (valueize_refs_1): Take a pointer to
+	the operand vector to be valueized.
+	(valueize_refs): Likewise.
+	(valueize_shared_reference_ops_from_ref): Adjust.
+	(valueize_shared_reference_ops_from_call): Likewise.
+	(vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup_pieces): Likewise.  Re-valueize
+	with honoring availability when we are about to create
+	the ao_ref and valueized before.
+	(vn_reference_lookup): Likewise.
+	(vn_reference_insert_pieces): Adjust.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101088
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Only look for
+	supported refs on edges.  Do not assert same ref but
+	different kind stores are unsuported but mark them so.
+	(hoist_memory_references): Only look for supported refs
+	on exits.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101025
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Make sure to process
+	all refs that require dependence checking.
+
+2021-07-06  Clément Chigot  <clement.chigot@atos.net>
+
+	Backported from master:
+	2021-06-10  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/aix71.h (ASM_CPU_SPEC): Add Power10 directive.
+	* config/rs6000/aix72.h (ASM_CPU_SPEC): Likewise.
+
+2021-07-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from master:
+	2021-05-20  Clement Chigot  <clement.chigot@atos.net>
+		    David Edelsohn  <dje.gcc@gmail.com>
+
+	* collect2.c (scan_prog_file): Issue non-fatal warning for
+	non-COFF files.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (diagnostic_show_locus): Don't reject
+	printing the same location twice if there are fix-it hints,
+	multiple locations, or a label.
+
+2021-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (asm_preferred_eh_data_format): Always use the
+	PIC encodings for PE-COFF targets.
+
+2021-06-30  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/power10.md (power10-fused-load, power10-fused-store,
+	power10-fused_alu, power10-fused-vec, power10-fused-branch): New.
+
 2021-06-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_optimize_slp): Do not propagate

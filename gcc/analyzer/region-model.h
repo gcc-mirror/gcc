@@ -191,6 +191,7 @@ public:
 
   /* svalue consolidation.  */
   const svalue *get_or_create_constant_svalue (tree cst_expr);
+  const svalue *get_or_create_int_cst (tree type, poly_int64);
   const svalue *get_or_create_unknown_svalue (tree type);
   const svalue *get_or_create_setjmp_svalue (const setjmp_record &r,
 					     tree type);
@@ -273,6 +274,9 @@ private:
   const svalue *maybe_fold_sub_svalue (tree type,
 				       const svalue *parent_svalue,
 				       const region *subregion);
+  const svalue *maybe_undo_optimize_bit_field_compare (tree type,
+						       const compound_svalue *compound_sval,
+						       tree cst, const svalue *arg1);
 
   unsigned m_next_region_id;
   root_region m_root_region;
@@ -506,13 +510,17 @@ class region_model
   int get_stack_depth () const;
   const frame_region *get_frame_at_index (int index) const;
 
-  const region *get_lvalue (path_var pv, region_model_context *ctxt);
-  const region *get_lvalue (tree expr, region_model_context *ctxt);
-  const svalue *get_rvalue (path_var pv, region_model_context *ctxt);
-  const svalue *get_rvalue (tree expr, region_model_context *ctxt);
+  const region *get_lvalue (path_var pv, region_model_context *ctxt) const;
+  const region *get_lvalue (tree expr, region_model_context *ctxt) const;
+  const svalue *get_rvalue (path_var pv, region_model_context *ctxt) const;
+  const svalue *get_rvalue (tree expr, region_model_context *ctxt) const;
 
   const region *deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
-			       region_model_context *ctxt);
+			       region_model_context *ctxt) const;
+
+  const svalue *get_rvalue_for_bits (tree type,
+				     const region *reg,
+				     const bit_range &bits) const;
 
   void set_value (const region *lhs_reg, const svalue *rhs_sval,
 		  region_model_context *ctxt);
@@ -586,8 +594,8 @@ class region_model
   void loop_replay_fixup (const region_model *dst_state);
 
  private:
-  const region *get_lvalue_1 (path_var pv, region_model_context *ctxt);
-  const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt);
+  const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
+  const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
 
   path_var
   get_representative_path_var_1 (const svalue *sval,

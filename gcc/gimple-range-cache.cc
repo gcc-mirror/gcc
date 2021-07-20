@@ -107,103 +107,18 @@ non_null_ref::process_name (tree name)
 
 // -------------------------------------------------------------------------
 
-// This class implements a cache of ranges indexed by basic block.  It
-// represents all that is known about an SSA_NAME on entry to each
-// block.  It caches a range-for-type varying range so it doesn't need
-// to be reformed all the time.  If a range is ever always associated
-// with a type, we can use that instead.  Whenever varying is being
-// set for a block, the cache simply points to this cached one rather
-// than create a new one each time.
+// This class represents the API into a cache of ranges for an SSA_NAME.
+// Routines must be implemented to set, get, and query if a value is set.
 
 class ssa_block_ranges
 {
 public:
-  ssa_block_ranges (tree t, irange_allocator *allocator);
-  ~ssa_block_ranges ();
-
-  void set_bb_range (const basic_block bb, const irange &r);
-  void set_bb_varying (const basic_block bb);
-  bool get_bb_range (irange &r, const basic_block bb);
-  bool bb_range_p (const basic_block bb);
+  virtual bool set_bb_range (const basic_block bb, const irange &r) = 0;
+  virtual bool get_bb_range (irange &r, const basic_block bb) = 0;
+  virtual bool bb_range_p (const basic_block bb) = 0;
 
   void dump(FILE *f);
-private:
-  vec<irange *> m_tab;
-  irange *m_type_range;
-  tree m_type;
-  irange_allocator *m_irange_allocator;
 };
-
-
-// Initialize a block cache for an ssa_name of type T.
-
-ssa_block_ranges::ssa_block_ranges (tree t, irange_allocator *allocator)
-{
-  gcc_checking_assert (TYPE_P (t));
-  m_type = t;
-  m_irange_allocator = allocator;
-
-  m_tab.create (0);
-  m_tab.safe_grow_cleared (last_basic_block_for_fn (cfun));
-
-  // Create the cached type range.
-  m_type_range = m_irange_allocator->allocate (2);
-  m_type_range->set_varying (t);
-
-  m_tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = m_type_range;
-}
-
-// Destruct block range.
-
-ssa_block_ranges::~ssa_block_ranges ()
-{
-  m_tab.release ();
-}
-
-// Set the range for block BB to be R.
-
-void
-ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  irange *m = m_irange_allocator->allocate (r);
-  m_tab[bb->index] = m;
-}
-
-// Set the range for block BB to the range for the type.
-
-void
-ssa_block_ranges::set_bb_varying (const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  m_tab[bb->index] = m_type_range;
-}
-
-// Return the range associated with block BB in R.  Return false if
-// there is no range.
-
-bool
-ssa_block_ranges::get_bb_range (irange &r, const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  irange *m = m_tab[bb->index];
-  if (m)
-    {
-      r = *m;
-      return true;
-    }
-  return false;
-}
-
-// Return true if a range is present.
-
-bool
-ssa_block_ranges::bb_range_p (const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  return m_tab[bb->index] != NULL;
-}
-
 
 // Print the list of known ranges for file F in a nice format.
 
@@ -222,12 +137,220 @@ ssa_block_ranges::dump (FILE *f)
       }
 }
 
+// This class implements the range cache as a linear vector, indexed by BB.
+// It caches a varying and undefined range which are used instead of
+// allocating new ones each time.
+
+class sbr_vector : public ssa_block_ranges
+{
+public:
+  sbr_vector (tree t, irange_allocator *allocator);
+
+  virtual bool set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const basic_block bb) OVERRIDE;
+protected:
+  irange **m_tab;	// Non growing vector.
+  int m_tab_size;
+  int_range<2> m_varying;
+  int_range<2> m_undefined;
+  tree m_type;
+  irange_allocator *m_irange_allocator;
+};
+
+
+// Initialize a block cache for an ssa_name of type T.
+
+sbr_vector::sbr_vector (tree t, irange_allocator *allocator)
+{
+  gcc_checking_assert (TYPE_P (t));
+  m_type = t;
+  m_irange_allocator = allocator;
+  m_tab_size = last_basic_block_for_fn (cfun) + 1;
+  m_tab = (irange **)allocator->get_memory (m_tab_size * sizeof (irange *));
+  memset (m_tab, 0, m_tab_size * sizeof (irange *));
+
+  // Create the cached type range.
+  m_varying.set_varying (t);
+  m_undefined.set_undefined ();
+}
+
+// Set the range for block BB to be R.
+
+bool
+sbr_vector::set_bb_range (const basic_block bb, const irange &r)
+{
+  irange *m;
+  gcc_checking_assert (bb->index < m_tab_size);
+  if (r.varying_p ())
+    m = &m_varying;
+  else if (r.undefined_p ())
+    m = &m_undefined;
+  else
+    m = m_irange_allocator->allocate (r);
+  m_tab[bb->index] = m;
+  return true;
+}
+
+// Return the range associated with block BB in R.  Return false if
+// there is no range.
+
+bool
+sbr_vector::get_bb_range (irange &r, const basic_block bb)
+{
+  gcc_checking_assert (bb->index < m_tab_size);
+  irange *m = m_tab[bb->index];
+  if (m)
+    {
+      r = *m;
+      return true;
+    }
+  return false;
+}
+
+// Return true if a range is present.
+
+bool
+sbr_vector::bb_range_p (const basic_block bb)
+{
+  gcc_checking_assert (bb->index < m_tab_size);
+  return m_tab[bb->index] != NULL;
+}
+
+// This class implements the on entry cache via a sparse bitmap.
+// It uses the quad bit routines to access 4 bits at a time.
+// A value of 0 (the default) means there is no entry, and a value of
+// 1 thru SBR_NUM represents an element in the m_range vector.
+// Varying is given the first value (1) and pre-cached.
+// SBR_NUM + 1 represents the value of UNDEFINED, and is never stored.
+// SBR_NUM is the number of values that can be cached.
+// Indexes are 1..SBR_NUM and are stored locally at m_range[0..SBR_NUM-1]
+
+#define SBR_NUM		14
+#define SBR_UNDEF	SBR_NUM + 1
+#define SBR_VARYING	1
+
+class sbr_sparse_bitmap : public ssa_block_ranges
+{
+public:
+  sbr_sparse_bitmap (tree t, irange_allocator *allocator, bitmap_obstack *bm);
+  virtual bool set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const basic_block bb) OVERRIDE;
+private:
+  void bitmap_set_quad (bitmap head, int quad, int quad_value);
+  int bitmap_get_quad (const_bitmap head, int quad);
+  irange_allocator *m_irange_allocator;
+  irange *m_range[SBR_NUM];
+  bitmap bitvec;
+  tree m_type;
+};
+
+// Initialize a block cache for an ssa_name of type T.
+
+sbr_sparse_bitmap::sbr_sparse_bitmap (tree t, irange_allocator *allocator,
+				bitmap_obstack *bm)
+{
+  gcc_checking_assert (TYPE_P (t));
+  m_type = t;
+  bitvec = BITMAP_ALLOC (bm);
+  m_irange_allocator = allocator;
+  // Pre-cache varying.
+  m_range[0] = m_irange_allocator->allocate (2);
+  m_range[0]->set_varying (t);
+  // Pre-cache zero and non-zero values for pointers.
+  if (POINTER_TYPE_P (t))
+    {
+      m_range[1] = m_irange_allocator->allocate (2);
+      m_range[1]->set_nonzero (t);
+      m_range[2] = m_irange_allocator->allocate (2);
+      m_range[2]->set_zero (t);
+    }
+  else
+    m_range[1] = m_range[2] = NULL;
+  // Clear SBR_NUM entries.
+  for (int x = 3; x < SBR_NUM; x++)
+    m_range[x] = 0;
+}
+
+// Set 4 bit values in a sparse bitmap. This allows a bitmap to
+// function as a sparse array of 4 bit values.
+// QUAD is the index, QUAD_VALUE is the 4 bit value to set.
+
+inline void
+sbr_sparse_bitmap::bitmap_set_quad (bitmap head, int quad, int quad_value)
+{
+  bitmap_set_aligned_chunk (head, quad, 4, (BITMAP_WORD) quad_value);
+}
+
+// Get a 4 bit value from a sparse bitmap. This allows a bitmap to
+// function as a sparse array of 4 bit values.
+// QUAD is the index.
+inline int
+sbr_sparse_bitmap::bitmap_get_quad (const_bitmap head, int quad)
+{
+  return (int) bitmap_get_aligned_chunk (head, quad, 4);
+}
+
+// Set the range on entry to basic block BB to R.
+
+bool
+sbr_sparse_bitmap::set_bb_range (const basic_block bb, const irange &r)
+{
+  if (r.undefined_p ())
+    {
+      bitmap_set_quad (bitvec, bb->index, SBR_UNDEF);
+      return true;
+    }
+
+  // Loop thru the values to see if R is already present.
+  for (int x = 0; x < SBR_NUM; x++)
+    if (!m_range[x] || r == *(m_range[x]))
+      {
+	if (!m_range[x])
+	  m_range[x] = m_irange_allocator->allocate (r);
+	bitmap_set_quad (bitvec, bb->index, x + 1);
+	return true;
+      }
+  // All values are taken, default to VARYING.
+  bitmap_set_quad (bitvec, bb->index, SBR_VARYING);
+  return false;
+}
+
+// Return the range associated with block BB in R.  Return false if
+// there is no range.
+
+bool
+sbr_sparse_bitmap::get_bb_range (irange &r, const basic_block bb)
+{
+  int value = bitmap_get_quad (bitvec, bb->index);
+
+  if (!value)
+    return false;
+
+  gcc_checking_assert (value <= SBR_UNDEF);
+  if (value == SBR_UNDEF)
+    r.set_undefined ();
+  else
+    r = *(m_range[value - 1]);
+  return true;
+}
+
+// Return true if a range is present.
+
+bool
+sbr_sparse_bitmap::bb_range_p (const basic_block bb)
+{
+  return (bitmap_get_quad (bitvec, bb->index) != 0);
+}
+
 // -------------------------------------------------------------------------
 
 // Initialize the block cache.
 
 block_range_cache::block_range_cache ()
 {
+  bitmap_obstack_initialize (&m_bitmaps);
   m_ssa_ranges.create (0);
   m_ssa_ranges.safe_grow_cleared (num_ssa_names);
   m_irange_allocator = new irange_allocator;
@@ -237,38 +360,49 @@ block_range_cache::block_range_cache ()
 
 block_range_cache::~block_range_cache ()
 {
-  unsigned x;
-  for (x = 0; x < m_ssa_ranges.length (); ++x)
-    {
-      if (m_ssa_ranges[x])
-	delete m_ssa_ranges[x];
-    }
   delete m_irange_allocator;
   // Release the vector itself.
   m_ssa_ranges.release ();
+  bitmap_obstack_release (&m_bitmaps);
 }
 
-// Return a reference to the ssa_block_cache for NAME.  If it has not been
-// accessed yet, allocate it first.
+// Set the range for NAME on entry to block BB to R.
+// If it has not been // accessed yet, allocate it first.
 
-ssa_block_ranges &
-block_range_cache::get_block_ranges (tree name)
+bool
+block_range_cache::set_bb_range (tree name, const basic_block bb,
+				 const irange &r)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_ssa_ranges.length ())
     m_ssa_ranges.safe_grow_cleared (num_ssa_names + 1);
 
   if (!m_ssa_ranges[v])
-    m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name),
-					    m_irange_allocator);
-  return *(m_ssa_ranges[v]);
+    {
+      // Use sparse representation if there are too many basic blocks.
+      if (last_basic_block_for_fn (cfun) > param_evrp_sparse_threshold)
+	{
+	  void *r = m_irange_allocator->get_memory (sizeof (sbr_sparse_bitmap));
+	  m_ssa_ranges[v] = new (r) sbr_sparse_bitmap (TREE_TYPE (name),
+						       m_irange_allocator,
+						       &m_bitmaps);
+	}
+      else
+	{
+	  // Otherwise use the default vector implemntation.
+	  void *r = m_irange_allocator->get_memory (sizeof (sbr_vector));
+	  m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
+						m_irange_allocator);
+	}
+    }
+  return m_ssa_ranges[v]->set_bb_range (bb, r);
 }
 
 
 // Return a pointer to the ssa_block_cache for NAME.  If it has not been
 // accessed yet, return NULL.
 
-ssa_block_ranges *
+inline ssa_block_ranges *
 block_range_cache::query_block_ranges (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
@@ -277,22 +411,7 @@ block_range_cache::query_block_ranges (tree name)
   return m_ssa_ranges[v];
 }
 
-// Set the range for NAME on entry to block BB to R.
 
-void
-block_range_cache::set_bb_range (tree name, const basic_block bb,
-				 const irange &r)
-{
-  return get_block_ranges (name).set_bb_range (bb, r);
-}
-
-// Set the range for NAME on entry to block BB to varying.
-
-void
-block_range_cache::set_bb_varying (tree name, const basic_block bb)
-{
-  return get_block_ranges (name).set_bb_varying (bb);
-}
 
 // Return the range for NAME on entry to BB in R.  Return true if there
 // is one.
@@ -623,10 +742,12 @@ ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
   m_poor_value_list.safe_grow_cleared (20);
   m_poor_value_list.truncate (0);
   m_temporal = new temporal_cache;
+  m_propfail = BITMAP_ALLOC (NULL);
 }
 
 ranger_cache::~ranger_cache ()
 {
+  BITMAP_FREE (m_propfail);
   delete m_temporal;
   m_poor_value_list.release ();
   m_workback.release ();
@@ -728,20 +849,9 @@ ranger_cache::register_dependency (tree name, tree dep)
 bool
 ranger_cache::push_poor_value (basic_block bb, tree name)
 {
-  if (m_poor_value_list.length ())
-    {
-      // Don't push anything else to the same block.  If there are multiple 
-      // things required, another request will come during a later evaluation
-      // and this prevents oscillation building uneccessary depth.
-      if ((m_poor_value_list.last ()).bb == bb)
-	return false;
-    }
-
-  struct update_record rec;
-  rec.bb = bb;
-  rec.calc = name;
-  m_poor_value_list.safe_push (rec);
-  return true;
+  // Disable poor value processing for GCC 11.  It has been disabled in GCC 12
+  // as adding too much churn/compile time for too little benefit.
+  return false;
 }
 
 //  Provide lookup for the gori-computes class to access the best known range
@@ -850,7 +960,9 @@ ranger_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
 void
 ranger_cache::add_to_update (basic_block bb)
 {
-  if (!m_update_list.contains (bb))
+  // If propagation has failed for BB, or its already in the list, don't
+  // add it again.
+  if (!bitmap_bit_p (m_propfail, bb->index) &&  !m_update_list.contains (bb))
     m_update_list.quick_push (bb);
 }
 
@@ -867,6 +979,7 @@ ranger_cache::propagate_cache (tree name)
   int_range_max current_range;
   int_range_max e_range;
 
+  gcc_checking_assert (bitmap_empty_p (m_propfail));
   // Process each block by seeing if its calculated range on entry is
   // the same as its cached value. If there is a difference, update
   // the cache to reflect the new value, and check to see if any
@@ -922,13 +1035,21 @@ ranger_cache::propagate_cache (tree name)
       // If the range on entry has changed, update it.
       if (new_range != current_range)
 	{
+	  bool ok_p = m_on_entry.set_bb_range (name, bb, new_range);
+	  // If the cache couldn't set the value, mark it as failed.
+	  if (!ok_p)
+	    bitmap_set_bit (m_propfail, bb->index);
 	  if (DEBUG_RANGE_CACHE) 
 	    {
-	      fprintf (dump_file, "      Updating range to ");
-	      new_range.dump (dump_file);
+	      if (!ok_p)
+		fprintf (dump_file, "     Cache failure to store value.");
+	      else
+		{
+		  fprintf (dump_file, "      Updating range to ");
+		  new_range.dump (dump_file);
+		}
 	      fprintf (dump_file, "\n      Updating blocks :");
 	    }
-	  m_on_entry.set_bb_range (name, bb, new_range);
 	  // Mark each successor that has a range to re-check its range
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (m_on_entry.bb_range_p (name, e->dest))
@@ -941,12 +1062,13 @@ ranger_cache::propagate_cache (tree name)
 	    fprintf (dump_file, "\n");
 	}
     }
-    if (DEBUG_RANGE_CACHE)
-      {
-	fprintf (dump_file, "DONE visiting blocks for ");
-	print_generic_expr (dump_file, name, TDF_SLIM);
-	fprintf (dump_file, "\n");
-      }
+  if (DEBUG_RANGE_CACHE)
+    {
+      fprintf (dump_file, "DONE visiting blocks for ");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+  bitmap_clear (m_propfail);
 }
 
 // Check to see if an update to the value for NAME in BB has any effect

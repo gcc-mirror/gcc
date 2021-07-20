@@ -1,3 +1,417 @@
+2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101129
+	* gcc.target/powerpc/pr101129.c: New.
+
+2021-07-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR testsuite/100422
+	* g++.dg/gomp/clause-3.C: Use 'reduction(&:..)' instead of '...(&&:..)'.
+
+2021-07-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.dg/gomp/clause-1.c: Use 'reduction(&:..)' instead of '...(&&:..)'.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101443
+	* g++.dg/cpp0x/nullptr46.C: New test.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101266
+	* gcc.dg/pr101266.c: New test.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101210
+	* g++.dg/ubsan/pr101210.C: New test.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101171
+	* gcc.dg/pr101171.c: New test.
+
+2021-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101172
+	* gcc.dg/pr101172.c: New test.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101233
+	* g++.dg/cpp2a/class-deduction-alias10.C: New test.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100138
+	* g++.dg/cpp2a/concepts-ctad4.C: New test.
+
+2021-07-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-07-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100949
+	* gfortran.dg/pr100949.f90: New test.
+
+2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-06-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101023
+	* g++.target/i386/pr101023a.C: New test.
+	* g++.target/i386/pr101023b.C: Likewise.
+
+2021-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101395
+	* gcc.target/i386/pr101395-1.c: New test.
+	* gcc.target/i386/pr101395-2.c: Likewise.
+	* gcc.target/i386/pr101395-3.c: Likewise.
+
+2021-07-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2021-07-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101223
+	* gcc.dg/pr101223.c: New.
+
+2021-07-14  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/100809
+	* gcc.target/powerpc/p10-vdivq-vmodq.c: New test.
+
+2021-07-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101185
+	* gcc.target/i386/bitwise_mask_op-3.c: Add xfail to
+	temporarily avoid regression, eventually xfail should be
+	removed.
+
+2021-07-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101142
+	* gcc.target/i386/spill_to_mask-1.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-2.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-3.c: Adjust testcase.
+	* gcc.target/i386/spill_to_mask-4.c: Adjust testcase.
+
+2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101445
+	* gcc.dg/vect/pr101445.c: New testcase.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101181
+	* g++.dg/cpp2a/concepts-requires26.C: New test.
+	* g++.dg/cpp2a/lambda-uneval16.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* g++.dg/cpp2a/concepts-memtmpl4.C: Uncomment the commented out
+	example, which we now handle correctly.
+	* g++.dg/cpp2a/concepts-memtmpl5.C: New test.
+	* g++.dg/cpp2a/concepts-memtmpl5a.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101247
+	* g++.dg/cpp2a/concepts-memtmpl4.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101194
+	* g++.dg/cpp0x/constexpr-empty16.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98832
+	* g++.dg/cpp2a/class-deduction-alias9.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101182
+	* g++.dg/cpp2a/concepts-requires25.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100918
+	* g++.dg/template/access38.C: New test.
+
+2021-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97420
+	* g++.dg/cpp0x/noexcept68.C: New test.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101394
+	* gcc.dg/torture/pr101394.c: New testcase.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* gcc.dg/torture/pr100778.c: New testcase.
+
+2021-07-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* gcc.dg/vect/bb-slp-pr100778-1.c: New testcase.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101098
+	* g++.dg/concepts/explicit-spec1.C: New test.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100838
+	* g++.dg/init/no-elide2.C: New test.
+
+2021-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86355
+	* g++.dg/cpp0x/alias-decl-variadic2.C: New test.
+
+2021-07-09  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/101066
+	* gcc.dg/ipa/pr101066.c: New test.
+
+2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-07-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101087
+	* g++.dg/cpp0x/noexcept70.C: New test.
+
+2021-07-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2021-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/100227
+	* gfortran.dg/implied_do_io_7.f90: New test.
+
+2021-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101040
+	PR c++/97566
+	* g++.dg/cpp2a/no_unique_address13.C: New test.
+
+2021-07-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-07-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-7.c: New test.
+	* gcc.target/powerpc/mma-builtin-8.c: New test.
+
+2021-07-07  Michael Meissner  <meissner@linux.ibm.com>
+	    2021-06-30 Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-minmax.c: Adjust expected code for
+	power10.
+	* lib/target-supports.exp (check_effective_target_has_arch_pwr10):
+	New.
+	Backported from master:
+
+2021-07-07  Michael Meissner  <meissner@linux.ibm.com>
+	    2021-07-01 Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-cmove.c: New test.
+	* gcc.target/powerpc/float128-minmax-3.c: New test.
+	Backported from master:
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101229
+	* gcc.dg/torture/pr101229.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101173
+	PR tree-optimization/101280
+	* gcc.dg/torture/pr101173.c: New testcase.
+	* gcc.dg/tree-ssa/loop-interchange-16.c: New file.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101156
+	* gcc.dg/pr101156.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100923
+	* gcc.dg/torture/pr100923.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101088
+	* gcc.dg/torture/pr101088.c: New testcase.
+
+2021-07-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101025
+	* gcc.dg/torture/pr101025.c: New testcase.
+
+2021-07-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-07-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101273
+	* gdc.dg/torture/pr101273.d: New test.
+
+2021-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-07-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101282
+	* gdc.dg/torture/pr101282.d: New test.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-vector-rvalues.cc (check_div): Add specialization
+	for v4f, to avoid relying on exact floating-point equality.
+	* jit.dg/test-vector-types.cc (check_div): Likewise.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-asm.c: Remove i?86-*-* from target specifier.
+	* jit.dg/test-asm.cc: Likewise.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/symbolic-7.c: New test.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/loop-0-up-to-n-by-1-with-iter-obj.c: Update
+	expected number of enodes after the loop.
+	* gcc.dg/analyzer/paths-8.c: New test.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99212
+	* gcc.dg/analyzer/bitfields-1.c: New test.
+	* gcc.dg/analyzer/data-model-1.c (struct sbits): Make bitfields
+	explicitly signed.
+	(test_44): Update test values assigned to the bits to ones that
+	fit in the range of the bitfield type.  Remove xfails.
+	(test_45): Remove xfails.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100615
+	* gcc.dg/analyzer/pr100615.c: New test.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100244
+	* g++.dg/analyzer/pr100244.C: New test.
+
+2021-06-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-06-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100752
+	* g++.dg/cpp0x/noexcept69.C: New test.
+	* g++.dg/parse/saved1.C: Adjust dg-error.
+	* g++.dg/template/crash50.C: Likewise.
+
 2021-06-25  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

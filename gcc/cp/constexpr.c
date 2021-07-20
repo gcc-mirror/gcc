@@ -3834,7 +3834,9 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
      directly for non-aggregates to avoid creating a garbage CONSTRUCTOR.  */
   tree val;
   constexpr_ctx new_ctx;
-  if (CP_AGGREGATE_TYPE_P (elem_type))
+  if (is_really_empty_class (elem_type, /*ignore_vptr*/false))
+    return build_constructor (elem_type, NULL);
+  else if (CP_AGGREGATE_TYPE_P (elem_type))
     {
       tree empty_ctor = build_constructor (init_list_type_node, NULL);
       val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
@@ -4438,7 +4440,12 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
   FOR_EACH_CONSTRUCTOR_ELT (v, i, index, value)
     {
       tree orig_value = value;
-      init_subob_ctx (ctx, new_ctx, index, value);
+      /* Like in cxx_eval_store_expression, omit entries for empty fields.  */
+      bool no_slot = TREE_CODE (type) == RECORD_TYPE && is_empty_field (index);
+      if (no_slot)
+	new_ctx = *ctx;
+      else
+	init_subob_ctx (ctx, new_ctx, index, value);
       int pos_hint = -1;
       if (new_ctx.ctor != ctx->ctor)
 	{
@@ -4484,6 +4491,8 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
 	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (index))));
 	  changed = true;
 	}
+      else if (no_slot)
+	changed = true;
       else
 	{
 	  if (TREE_CODE (type) == UNION_TYPE

@@ -1,3 +1,133 @@
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (binding_cluster::get_any_binding): Make symbolic reads
+	from a cluster with concrete bindings return unknown.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_int_cst): New.
+	(region_model_manager::maybe_undo_optimize_bit_field_compare): Use
+	it to simplify away a local tree.
+	* region-model.cc (region_model::on_setjmp): Likewise.
+	(region_model::on_longjmp): Likewise.
+	* region-model.h (region_model_manager::get_or_create_int_cst):
+	New decl.
+	* store.cc (binding_cluster::zero_fill_region): Use it to simplify
+	away a local tree.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99212
+	PR analyzer/101082
+	* engine.cc: Include "target.h".
+	(impl_run_checkers): Log BITS_BIG_ENDIAN, BYTES_BIG_ENDIAN, and
+	WORDS_BIG_ENDIAN.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Move support for masking
+	via ARG0 & CST into...
+	(region_model_manager::maybe_undo_optimize_bit_field_compare):
+	...this new function.  Flatten by converting from nested
+	conditionals to a series of early return statements to reject
+	failures.  Reject if type is not unsigned_char_type_node.
+	Handle BYTES_BIG_ENDIAN when determining which bits are bound
+	in the binding_map.
+	* region-model.h
+	(region_model_manager::maybe_undo_optimize_bit_field_compare):
+	New decl.
+	* store.cc (bit_range::dump): New function.
+	* store.h (bit_range::dump): New decl.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (worklist::key_t::cmp): Move sort by call_string to
+	before SCC.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::get_lvalue_1): Make const.
+	(region_model::get_lvalue): Likewise.
+	(region_model::get_rvalue_1): Likewise.
+	(region_model::get_rvalue): Likewise.
+	(region_model::deref_rvalue): Likewise.
+	(region_model::get_rvalue_for_bits): Likewise.
+	* region-model.h (region_model::get_lvalue): Likewise.
+	(region_model::get_rvalue): Likewise.
+	(region_model::deref_rvalue): Likewise.
+	(region_model::get_rvalue_for_bits): Likewise.
+	(region_model::get_lvalue_1): Likewise.
+	(region_model::get_rvalue_1): Likewise.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99212
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Add support for folding
+	BIT_AND_EXPR of compound_svalue and a mask constant.
+	* region-model.cc (region_model::get_rvalue_1): Implement
+	BIT_FIELD_REF in terms of...
+	(region_model::get_rvalue_for_bits): New function.
+	* region-model.h (region_model::get_rvalue_for_bits): New decl.
+	* store.cc (bit_range::from_mask): New function.
+	(selftest::test_bit_range_intersects_p): New selftest.
+	(selftest::assert_bit_range_from_mask_eq): New.
+	(ASSERT_BIT_RANGE_FROM_MASK_EQ): New macro.
+	(selftest::assert_no_bit_range_from_mask_eq): New.
+	(ASSERT_NO_BIT_RANGE_FROM_MASK): New macro.
+	(selftest::test_bit_range_from_mask): New selftest.
+	(selftest::analyzer_store_cc_tests): Call the new selftests.
+	* store.h (bit_range::intersects_p): New.
+	(bit_range::from_mask): New decl.
+	(concrete_binding::get_bit_range): New accessor.
+	(store_manager::get_concrete_binding): New overload taking
+	const bit_range &.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (int_size_in_bits): New decl.
+	* region.cc (int_size_in_bits): New function.
+	(region::get_bit_size): Reimplement in terms of the above.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (concrete_binding::dump_to_pp): Move bulk of
+	implementation to...
+	(bit_range::dump_to_pp): ...this new function.
+	(bit_range::cmp): New.
+	(concrete_binding::overlaps_p): Update for use of bit_range.
+	(concrete_binding::cmp_ptr_ptr): Likewise.
+	* store.h (struct bit_range): New.
+	(class concrete_binding): Replace fields m_start_bit_offset and
+	m_size_in_bits with new field m_bit_range.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.h (conjured_svalue::iterator_t): Delete.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.h (store::get_direct_binding): Remove unused decl.
+	(store::get_default_binding): Likewise.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.cc (poisoned_svalue::dump_to_pp): Dump type.
+	(compound_svalue::dump_to_pp): Dump any type.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100615
+	* sm-malloc.cc: Include "analyzer/function-set.h".
+	(malloc_state_machine::on_stmt): Call unaffected_by_call_p and
+	bail on the functions it recognizes.
+	(malloc_state_machine::unaffected_by_call_p): New.
+
+2021-07-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100244
+	* sm-malloc.cc (free_of_non_heap::describe_state_change):
+	Bulletproof against change.m_expr being NULL.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.

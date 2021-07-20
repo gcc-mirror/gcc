@@ -484,6 +484,25 @@
 		     | RS6000_BTC_SENARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_MMA_PAIR_LD(ENUM, NAME, ATTR)				\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY				\
+		     | RS6000_BTC_GIMPLE),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_MMA_PAIR_ST(ENUM, NAME, ATTR)				\
+  RS6000_BUILTIN_M (VSX_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_MMA,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY				\
+		     | RS6000_BTC_VOID					\
+		     | RS6000_BTC_GIMPLE),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
 /* ISA 2.05 (power6) convenience macros. */
 /* For functions that depend on the CMPB instruction */
 #define BU_P6_2(ENUM, NAME, ATTR, ICODE)				\
@@ -3252,6 +3271,9 @@ BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
 /* POWER10 MMA builtins.  */
 BU_P10V_VSX_1 (XVCVBF16SPN,	 "xvcvbf16spn",	MISC, vsx_xvcvbf16spn)
 BU_P10V_VSX_1 (XVCVSPBF16,	    "xvcvspbf16",	MISC, vsx_xvcvspbf16)
+
+BU_MMA_PAIR_LD (LXVP,	    "lxvp",		MISC)
+BU_MMA_PAIR_ST (STXVP,	    "stxvp",		PAIR)
 
 BU_MMA_1 (XXMFACC,	    "xxmfacc",		QUAD, mma_xxmfacc)
 BU_MMA_1 (XXMTACC,	    "xxmtacc",		QUAD, mma_xxmtacc)

@@ -19251,6 +19251,10 @@ loc_list_from_tree_1 (tree loc, int want_address,
     case FIX_TRUNC_EXPR:
       return 0;
 
+    case COMPOUND_LITERAL_EXPR:
+      return loc_list_from_tree_1 (COMPOUND_LITERAL_EXPR_DECL (loc),
+				   0, context);
+
     default:
       /* Leave front-end specific codes as simply unknown.  This comes
 	 up, for instance, with the C STMT_EXPR.  */

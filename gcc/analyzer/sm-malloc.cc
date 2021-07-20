@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region-model.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "analyzer/function-set.h"
 
 #if ENABLE_ANALYZER
 
@@ -383,6 +384,8 @@ public:
 
   bool reset_when_passed_to_unknown_fn_p (state_t s,
 					  bool is_mutable) const FINAL OVERRIDE;
+
+  static bool unaffected_by_call_p (tree fndecl);
 
   standard_deallocator_set m_free;
   standard_deallocator_set m_scalar_delete;
@@ -1303,7 +1306,7 @@ public:
   {
     /* Attempt to reconstruct what kind of pointer it is.
        (It seems neater for this to be a part of the state, though).  */
-    if (TREE_CODE (change.m_expr) == SSA_NAME)
+    if (change.m_expr && TREE_CODE (change.m_expr) == SSA_NAME)
       {
 	gimple *def_stmt = SSA_NAME_DEF_STMT (change.m_expr);
 	if (gcall *call = dyn_cast <gcall *> (def_stmt))
@@ -1568,6 +1571,9 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    on_realloc_call (sm_ctxt, node, call);
 	    return true;
 	  }
+
+	if (unaffected_by_call_p (callee_fndecl))
+	  return true;
 
 	/* Cast away const-ness for cache-like operations.  */
 	malloc_state_machine *mutable_this
@@ -1923,6 +1929,28 @@ malloc_state_machine::reset_when_passed_to_unknown_fn_p (state_t s,
 
   /* Otherwise, pointers passed as non-const can be freed.  */
   return is_mutable;
+}
+
+/* Return true if calls to FNDECL are known to not affect this sm-state.  */
+
+bool
+malloc_state_machine::unaffected_by_call_p (tree fndecl)
+{
+  /* A set of functions that are known to not affect allocation
+     status, even if we haven't fully modelled the rest of their
+     behavior yet.  */
+  static const char * const funcnames[] = {
+    /* This array must be kept sorted.  */
+    "strsep",
+  };
+  const size_t count
+    = sizeof(funcnames) / sizeof (funcnames[0]);
+  function_set fs (funcnames, count);
+
+  if (fs.contains_decl_p (fndecl))
+    return true;
+
+  return false;
 }
 
 /* Shared logic for handling GIMPLE_ASSIGNs and GIMPLE_PHIs that

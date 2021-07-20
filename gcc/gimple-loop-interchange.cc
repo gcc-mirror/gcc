@@ -1044,7 +1044,10 @@ tree_loop_interchange::valid_data_dependences (unsigned i_idx, unsigned o_idx,
 
 	  /* Be conservative, skip case if either direction at i_idx/o_idx
 	     levels is not '=' or '<'.  */
-	  if (dist_vect[i_idx] < 0 || dist_vect[o_idx] < 0)
+	  if ((!DDR_REVERSED_P (ddr) && dist_vect[i_idx] < 0)
+	      || (DDR_REVERSED_P (ddr) && dist_vect[i_idx] > 0)
+	      || (!DDR_REVERSED_P (ddr) && dist_vect[o_idx] < 0)
+	      || (DDR_REVERSED_P (ddr) && dist_vect[o_idx] > 0))
 	    return false;
 	}
     }

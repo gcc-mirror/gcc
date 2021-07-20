@@ -89,10 +89,41 @@ test03()
   static_assert( std::ranges::empty(R2{}) );
 }
 
+void
+test04()
+{
+  struct E1
+  {
+    bool empty() const noexcept { return {}; }
+  };
+
+  static_assert( noexcept(std::ranges::empty(E1{})) );
+
+  struct E2
+  {
+    bool empty() const noexcept(false) { return {}; }
+  };
+
+  static_assert( ! noexcept(std::ranges::empty(E2{})) );
+
+  struct E3
+  {
+    struct B
+    {
+      explicit operator bool() const noexcept(false) { return true; }
+    };
+
+    B empty() const noexcept { return {}; }
+  };
+
+  static_assert( ! noexcept(std::ranges::empty(E3{})) );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

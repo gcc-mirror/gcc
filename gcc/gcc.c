@@ -910,7 +910,7 @@ proper position among the other output files.  */
    than in ASM_DEBUG_SPEC, so that it applies to both .s and .c etc.
    compilations.  */
 #  define ASM_DEBUG_DWARF_OPTION ""
-# elif defined(HAVE_AS_GDWARF_5_DEBUG_FLAG)
+# elif defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && !defined(HAVE_LD_BROKEN_PE_DWARF5)
 #  define ASM_DEBUG_DWARF_OPTION "%{%:dwarf-version-gt(4):--gdwarf-5;" \
 	"%:dwarf-version-gt(3):--gdwarf-4;"				\
 	"%:dwarf-version-gt(2):--gdwarf-3;"				\
@@ -4908,6 +4908,16 @@ process_command (unsigned int decoded_options_count,
      targets.  */
   if (ENABLE_OFFLOADING && offload_targets == NULL)
     handle_foffload_option (OFFLOAD_TARGETS);
+
+  /* Handle -gtoggle as it would later in toplev.c:process_options to
+     make the debug-level-gt spec function work as expected.  */
+  if (flag_gtoggle)
+    {
+      if (debug_info_level == DINFO_LEVEL_NONE)
+	debug_info_level = DINFO_LEVEL_NORMAL;
+      else
+	debug_info_level = DINFO_LEVEL_NONE;
+    }
 
   if (output_file
       && strcmp (output_file, "-") != 0

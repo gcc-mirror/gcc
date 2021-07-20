@@ -1199,14 +1199,14 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		}
 	    }
 
-	  if (phi_p
+	  if ((phi_p || gimple_could_trap_p (stmt_info->stmt))
 	      && (gimple_bb (first_stmt_info->stmt)
 		  != gimple_bb (stmt_info->stmt)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: different BB for PHI "
-				 "in %G", stmt);
+				 "or possibly trapping operation in %G", stmt);
 	      /* Mismatch.  */
 	      continue;
 	    }
@@ -6287,6 +6287,21 @@ vect_schedule_slp_node (vec_info *vinfo,
 	{
 	  gcc_assert (seen_vector_def);
 	  si = gsi_after_labels (as_a <bb_vec_info> (vinfo)->bbs[0]);
+	}
+      else if (is_a <bb_vec_info> (vinfo)
+	       && gimple_bb (last_stmt) != gimple_bb (stmt_info->stmt)
+	       && gimple_could_trap_p (stmt_info->stmt))
+	{
+	  /* We've constrained possibly trapping operations to all come
+	     from the same basic-block, if vectorized defs would allow earlier
+	     scheduling still force vectorized stmts to the original block.
+	     This is only necessary for BB vectorization since for loop vect
+	     all operations are in a single BB and scalar stmt based
+	     placement doesn't play well with epilogue vectorization.  */
+	  gcc_assert (dominated_by_p (CDI_DOMINATORS,
+				      gimple_bb (stmt_info->stmt),
+				      gimple_bb (last_stmt)));
+	  si = gsi_after_labels (gimple_bb (stmt_info->stmt));
 	}
       else if (is_a <gphi *> (last_stmt))
 	si = gsi_after_labels (gimple_bb (last_stmt));

@@ -1847,14 +1847,13 @@ package body Exp_Attr is
       ----------------------
 
       function Get_Integer_Type (Typ : Entity_Id) return Entity_Id is
-         Siz     : constant Uint := Esize (Base_Type (Typ));
+         Siz : constant Uint := Esize (Base_Type (Typ));
 
       begin
          --  We need to accommodate invalid values of the base type since we
-         --  accept them for Enum_Rep and Pos, so we reason on the Esize. And
-         --  we use an unsigned type since the enumeration type is unsigned.
+         --  accept them for Enum_Rep and Pos, so we reason on the Esize.
 
-         return Small_Integer_Type_For (Siz, Uns => True);
+         return Small_Integer_Type_For (Siz, Uns => Is_Unsigned_Type (Typ));
       end Get_Integer_Type;
 
       ---------------------------------

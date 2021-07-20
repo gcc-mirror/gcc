@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/bar-chart.h"
 #include <zlib.h>
 #include "plugin.h"
+#include "target.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -2004,7 +2005,25 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 	return cmp;
     }
 
-  /* First, order by SCC.  */
+  /* Sort by callstring, so that nodes with deeper call strings are processed
+     before those with shallower call strings.
+     If we have
+         splitting BB
+             /  \
+            /    \
+       fn call   no fn call
+            \    /
+             \  /
+            join BB
+     then we want the path inside the function call to be fully explored up
+     to the return to the join BB before we explore on the "no fn call" path,
+     so that both enodes at the join BB reach the front of the worklist at
+     the same time and thus have a chance of being merged.  */
+  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
+  if (cs_cmp)
+    return cs_cmp;
+
+  /* Order by SCC.  */
   int scc_id_a = ka.get_scc_id (ka.m_enode);
   int scc_id_b = kb.get_scc_id (kb.m_enode);
   if (scc_id_a != scc_id_b)
@@ -2032,11 +2051,6 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
     return snode_a->m_index - snode_b->m_index;
 
   gcc_assert (snode_a == snode_b);
-
-  /* The points might vary by callstring; try sorting by callstring.  */
-  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
-  if (cs_cmp)
-    return cs_cmp;
 
   /* Order within supernode via program point.  */
   int within_snode_cmp
@@ -4807,6 +4821,13 @@ void
 impl_run_checkers (logger *logger)
 {
   LOG_SCOPE (logger);
+
+  if (logger)
+    {
+      logger->log ("BITS_BIG_ENDIAN: %i", BITS_BIG_ENDIAN ? 1 : 0);
+      logger->log ("BYTES_BIG_ENDIAN: %i", BYTES_BIG_ENDIAN ? 1 : 0);
+      logger->log ("WORDS_BIG_ENDIAN: %i", WORDS_BIG_ENDIAN ? 1 : 0);
+    }
 
   /* If using LTO, ensure that the cgraph nodes have function bodies.  */
   cgraph_node *node;

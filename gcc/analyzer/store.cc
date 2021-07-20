@@ -236,6 +236,99 @@ binding_key::cmp (const binding_key *k1, const binding_key *k2)
     }
 }
 
+/* struct struct bit_range.  */
+
+void
+bit_range::dump_to_pp (pretty_printer *pp) const
+{
+  pp_string (pp, "start: ");
+  pp_wide_int (pp, m_start_bit_offset, SIGNED);
+  pp_string (pp, ", size: ");
+  pp_wide_int (pp, m_size_in_bits, SIGNED);
+  pp_string (pp, ", next: ");
+  pp_wide_int (pp, get_next_bit_offset (), SIGNED);
+}
+
+/* Dump this object to stderr.  */
+
+DEBUG_FUNCTION void
+bit_range::dump () const
+{
+  pretty_printer pp;
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
+int
+bit_range::cmp (const bit_range &br1, const bit_range &br2)
+{
+  if (int start_cmp = wi::cmps (br1.m_start_bit_offset,
+				br2.m_start_bit_offset))
+    return start_cmp;
+
+  return wi::cmpu (br1.m_size_in_bits, br2.m_size_in_bits);
+}
+
+/* If MASK is a contiguous range of set bits, write them
+   to *OUT and return true.
+   Otherwise return false.  */
+
+bool
+bit_range::from_mask (unsigned HOST_WIDE_INT mask, bit_range *out)
+{
+  unsigned iter_bit_idx = 0;
+  unsigned HOST_WIDE_INT iter_bit_mask = 1;
+
+  /* Find the first contiguous run of set bits in MASK.  */
+
+  /* Find first set bit in MASK.  */
+  while (iter_bit_idx < HOST_BITS_PER_WIDE_INT)
+    {
+      if (mask & iter_bit_mask)
+	break;
+      iter_bit_idx++;
+      iter_bit_mask <<= 1;
+    }
+  if (iter_bit_idx == HOST_BITS_PER_WIDE_INT)
+    /* MASK is zero.  */
+    return false;
+
+  unsigned first_set_iter_bit_idx = iter_bit_idx;
+  unsigned num_set_bits = 1;
+  iter_bit_idx++;
+  iter_bit_mask <<= 1;
+
+  /* Find next unset bit in MASK.  */
+  while (iter_bit_idx < HOST_BITS_PER_WIDE_INT)
+    {
+      if (!(mask & iter_bit_mask))
+	break;
+      num_set_bits++;
+      iter_bit_idx++;
+      iter_bit_mask <<= 1;
+    }
+  if (iter_bit_idx == HOST_BITS_PER_WIDE_INT)
+    {
+      *out = bit_range (first_set_iter_bit_idx, num_set_bits);
+      return true;
+    }
+
+  /* We now have the first contiguous run of set bits in MASK.
+     Fail if any other bits are set.  */
+  while (iter_bit_idx < HOST_BITS_PER_WIDE_INT)
+    {
+      if (mask & iter_bit_mask)
+	return false;
+      iter_bit_idx++;
+      iter_bit_mask <<= 1;
+    }
+
+  *out = bit_range (first_set_iter_bit_idx, num_set_bits);
+  return true;
+}
+
 /* class concrete_binding : public binding_key.  */
 
 /* Implementation of binding_key::dump_to_pp vfunc for concrete_binding.  */
@@ -244,12 +337,8 @@ void
 concrete_binding::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   binding_key::dump_to_pp (pp, simple);
-  pp_string (pp, ", start: ");
-  pp_wide_int (pp, m_start_bit_offset, SIGNED);
-  pp_string (pp, ", size: ");
-  pp_wide_int (pp, m_size_in_bits, SIGNED);
-  pp_string (pp, ", next: ");
-  pp_wide_int (pp, get_next_bit_offset (), SIGNED);
+  pp_string (pp, ", ");
+  m_bit_range.dump_to_pp (pp);
 }
 
 /* Return true if this binding overlaps with OTHER.  */
@@ -257,7 +346,7 @@ concrete_binding::dump_to_pp (pretty_printer *pp, bool simple) const
 bool
 concrete_binding::overlaps_p (const concrete_binding &other) const
 {
-  if (m_start_bit_offset < other.get_next_bit_offset ()
+  if (get_start_bit_offset () < other.get_next_bit_offset ()
       && get_next_bit_offset () > other.get_start_bit_offset ())
     return true;
   return false;
@@ -274,10 +363,7 @@ concrete_binding::cmp_ptr_ptr (const void *p1, const void *p2)
   if (int kind_cmp = b1->get_kind () - b2->get_kind ())
     return kind_cmp;
 
-  if (int start_cmp = wi::cmps (b1->m_start_bit_offset, b2->m_start_bit_offset))
-    return start_cmp;
-
-  return wi::cmpu (b1->m_size_in_bits, b2->m_size_in_bits);
+  return bit_range::cmp (b1->m_bit_range, b2->m_bit_range);
 }
 
 /* class symbolic_binding : public binding_key.  */
@@ -957,8 +1043,8 @@ binding_cluster::zero_fill_region (store_manager *mgr, const region *reg)
 
   /* Add a default binding to zero.  */
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  tree cst_zero = build_int_cst (integer_type_node, 0);
-  const svalue *cst_sval = sval_mgr->get_or_create_constant_svalue (cst_zero);
+  const svalue *cst_sval
+    = sval_mgr->get_or_create_int_cst (integer_type_node, 0);
   const svalue *bound_sval = cst_sval;
   if (reg->get_type ())
     bound_sval = sval_mgr->get_or_create_unaryop (reg->get_type (), NOP_EXPR,
@@ -1086,6 +1172,16 @@ binding_cluster::get_any_binding (store_manager *mgr,
   /* If this cluster has been touched by a symbolic write, then the content
      of any subregion not currently specifically bound is "UNKNOWN".  */
   if (m_touched)
+    {
+      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
+      return rmm_mgr->get_or_create_unknown_svalue (reg->get_type ());
+    }
+
+  /* Alternatively, if this is a symbolic read and the cluster has any bindings,
+     then we don't know if we're reading those values or not, so the result
+     is also "UNKNOWN".  */
+  if (reg->get_offset ().symbolic_p ()
+      && m_map.elements () > 0)
     {
       region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
       return rmm_mgr->get_or_create_unknown_svalue (reg->get_type ());
@@ -2432,6 +2528,132 @@ store::loop_replay_fixup (const store *other_store,
 
 namespace selftest {
 
+/* Verify that bit_range::intersects_p works as expected.  */
+
+static void
+test_bit_range_intersects_p ()
+{
+  bit_range b0 (0, 1);
+  bit_range b1 (1, 1);
+  bit_range b2 (2, 1);
+  bit_range b3 (3, 1);
+  bit_range b4 (4, 1);
+  bit_range b5 (5, 1);
+  bit_range b6 (6, 1);
+  bit_range b7 (7, 1);
+  bit_range b1_to_6 (1, 6);
+  bit_range b0_to_7 (0, 8);
+  bit_range b3_to_5 (3, 3);
+  bit_range b6_to_7 (6, 2);
+
+  /* self-intersection is true.  */
+  ASSERT_TRUE (b0.intersects_p (b0));
+  ASSERT_TRUE (b7.intersects_p (b7));
+  ASSERT_TRUE (b1_to_6.intersects_p (b1_to_6));
+  ASSERT_TRUE (b0_to_7.intersects_p (b0_to_7));
+
+  ASSERT_FALSE (b0.intersects_p (b1));
+  ASSERT_FALSE (b1.intersects_p (b0));
+  ASSERT_FALSE (b0.intersects_p (b7));
+  ASSERT_FALSE (b7.intersects_p (b0));
+
+  ASSERT_TRUE (b0_to_7.intersects_p (b0));
+  ASSERT_TRUE (b0_to_7.intersects_p (b7));
+  ASSERT_TRUE (b0.intersects_p (b0_to_7));
+  ASSERT_TRUE (b7.intersects_p (b0_to_7));
+
+  ASSERT_FALSE (b0.intersects_p (b1_to_6));
+  ASSERT_FALSE (b1_to_6.intersects_p (b0));
+  ASSERT_TRUE (b1.intersects_p (b1_to_6));
+  ASSERT_TRUE (b1_to_6.intersects_p (b1));
+  ASSERT_TRUE (b1_to_6.intersects_p (b6));
+  ASSERT_FALSE (b1_to_6.intersects_p (b7));
+
+  ASSERT_TRUE (b1_to_6.intersects_p (b0_to_7));
+  ASSERT_TRUE (b0_to_7.intersects_p (b1_to_6));
+
+  ASSERT_FALSE (b3_to_5.intersects_p (b6_to_7));
+  ASSERT_FALSE (b6_to_7.intersects_p (b3_to_5));
+}
+
+/* Implementation detail of ASSERT_BIT_RANGE_FROM_MASK_EQ.  */
+
+static void
+assert_bit_range_from_mask_eq (const location &loc,
+			       unsigned HOST_WIDE_INT mask,
+			       const bit_range &expected)
+{
+  bit_range actual (0, 0);
+  bool ok = bit_range::from_mask (mask, &actual);
+  ASSERT_TRUE_AT (loc, ok);
+  ASSERT_EQ_AT (loc, actual, expected);
+}
+
+/* Assert that bit_range::from_mask (MASK) returns true, and writes
+   out EXPECTED_BIT_RANGE.  */
+
+#define ASSERT_BIT_RANGE_FROM_MASK_EQ(MASK, EXPECTED_BIT_RANGE) \
+  SELFTEST_BEGIN_STMT							\
+  assert_bit_range_from_mask_eq (SELFTEST_LOCATION, MASK,		\
+				 EXPECTED_BIT_RANGE);			\
+  SELFTEST_END_STMT
+
+/* Implementation detail of ASSERT_NO_BIT_RANGE_FROM_MASK.  */
+
+static void
+assert_no_bit_range_from_mask_eq (const location &loc,
+				  unsigned HOST_WIDE_INT mask)
+{
+  bit_range actual (0, 0);
+  bool ok = bit_range::from_mask (mask, &actual);
+  ASSERT_FALSE_AT (loc, ok);
+}
+
+/* Assert that bit_range::from_mask (MASK) returns false.  */
+
+#define ASSERT_NO_BIT_RANGE_FROM_MASK(MASK) \
+  SELFTEST_BEGIN_STMT							\
+  assert_no_bit_range_from_mask_eq (SELFTEST_LOCATION, MASK);		\
+  SELFTEST_END_STMT
+
+/* Verify that bit_range::from_mask works as expected.  */
+
+static void
+test_bit_range_from_mask ()
+{
+  /* Should fail on zero.  */
+  ASSERT_NO_BIT_RANGE_FROM_MASK (0);
+
+  /* Verify 1-bit masks.  */
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (1, bit_range (0, 1));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (2, bit_range (1, 1));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (4, bit_range (2, 1));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (8, bit_range (3, 1));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (16, bit_range (4, 1));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (32, bit_range (5, 1));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (64, bit_range (6, 1));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (128, bit_range (7, 1));
+
+  /* Verify N-bit masks starting at bit 0.  */
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (3, bit_range (0, 2));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (7, bit_range (0, 3));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (15, bit_range (0, 4));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (31, bit_range (0, 5));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (63, bit_range (0, 6));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (127, bit_range (0, 7));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (255, bit_range (0, 8));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (0xffff, bit_range (0, 16));
+
+  /* Various other tests. */
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (0x30, bit_range (4, 2));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (0x700, bit_range (8, 3));
+  ASSERT_BIT_RANGE_FROM_MASK_EQ (0x600, bit_range (9, 2));
+
+  /* Multiple ranges of set bits should fail.  */
+  ASSERT_NO_BIT_RANGE_FROM_MASK (0x101);
+  ASSERT_NO_BIT_RANGE_FROM_MASK (0xf0f0f0f0);
+}
+
 /* Implementation detail of ASSERT_OVERLAP.  */
 
 static void
@@ -2530,6 +2752,8 @@ test_binding_key_overlap ()
 void
 analyzer_store_cc_tests ()
 {
+  test_bit_range_intersects_p ();
+  test_bit_range_from_mask ();
   test_binding_key_overlap ();
 }
 

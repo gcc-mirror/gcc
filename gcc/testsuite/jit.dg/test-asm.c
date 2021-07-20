@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile { target x86_64-*-* } } */
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -50,8 +50,7 @@ public:
   block_range_cache ();
   ~block_range_cache ();
 
-  void set_bb_range (tree name, const basic_block bb, const irange &r);
-  void set_bb_varying (tree name, const basic_block bb);
+  bool set_bb_range (tree name, const basic_block bb, const irange &r);
   bool get_bb_range (irange &r, tree name, const basic_block bb);
   bool bb_range_p (tree name, const basic_block bb);
 
@@ -62,6 +61,7 @@ private:
   ssa_block_ranges &get_block_ranges (tree name);
   ssa_block_ranges *query_block_ranges (tree name);
   irange_allocator *m_irange_allocator;
+  bitmap_obstack m_bitmaps;
 };
 
 // This global cache is used with the range engine as markers for what
@@ -115,6 +115,7 @@ private:
 
   void propagate_updated_value (tree name, basic_block bb);
 
+  bitmap m_propfail;
   vec<basic_block> m_workback;
   vec<basic_block> m_update_list;
 

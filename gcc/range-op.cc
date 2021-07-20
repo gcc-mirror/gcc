@@ -562,7 +562,14 @@ static void
 build_lt (irange &r, tree type, const wide_int &val)
 {
   wi::overflow_type ov;
-  wide_int lim = wi::sub (val, 1, TYPE_SIGN (type), &ov);
+  wide_int lim;
+  signop sgn = TYPE_SIGN (type);
+
+  // Signed 1 bit cannot represent 1 for subtraction.
+  if (sgn == SIGNED)
+    lim = wi::add (val, -1, sgn, &ov);
+  else
+    lim = wi::sub (val, 1, sgn, &ov);
 
   // If val - 1 underflows, check if X < MIN, which is an empty range.
   if (ov)
@@ -585,7 +592,14 @@ static void
 build_gt (irange &r, tree type, const wide_int &val)
 {
   wi::overflow_type ov;
-  wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
+  wide_int lim;
+  signop sgn = TYPE_SIGN (type);
+
+  // Signed 1 bit cannot represent 1 for addition.
+  if (sgn == SIGNED)
+    lim = wi::sub (val, -1, sgn, &ov);
+  else
+    lim = wi::add (val, 1, sgn, &ov);
   // If val + 1 overflows, check is for X > MAX, which is an empty range.
   if (ov)
     r.set_undefined ();

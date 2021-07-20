@@ -1724,6 +1724,10 @@ class Function
   set_is_referenced_by_inline()
   { this->is_referenced_by_inline_ = true; }
 
+  // Set the receiver type.  This is used to remove aliases.
+  void
+  set_receiver_type(Type* rtype);
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1989,6 +1993,10 @@ class Function_declaration
   void
   set_is_on_inlinable_list()
   { this->is_on_inlinable_list_ = true; }
+
+  // Set the receiver type.  This is used to remove aliases.
+  void
+  set_receiver_type(Type* rtype);
 
   // Import the function body, creating a function.
   void

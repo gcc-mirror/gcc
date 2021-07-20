@@ -9742,6 +9742,9 @@ vectorizable_load (vec_info *vinfo,
 		  poly_wide_int bump_val
 		    = (wi::to_wide (TYPE_SIZE_UNIT (elem_type))
 		       * group_gap_adj);
+		  if (tree_int_cst_sgn
+			(vect_dr_behavior (vinfo, dr_info)->step) == -1)
+		    bump_val = -bump_val;
 		  tree bump = wide_int_to_tree (sizetype, bump_val);
 		  dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr,
 						 gsi, stmt_info, bump);
@@ -9755,6 +9758,9 @@ vectorizable_load (vec_info *vinfo,
 	      poly_wide_int bump_val
 		= (wi::to_wide (TYPE_SIZE_UNIT (elem_type))
 		   * group_gap_adj);
+	      if (tree_int_cst_sgn
+		    (vect_dr_behavior (vinfo, dr_info)->step) == -1)
+		bump_val = -bump_val;
 	      tree bump = wide_int_to_tree (sizetype, bump_val);
 	      dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr, gsi,
 					     stmt_info, bump);

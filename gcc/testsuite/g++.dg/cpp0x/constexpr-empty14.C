@@ -1,5 +1,6 @@
 // PR c++/91953
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fno-elide-constructors { target c++14_down } }
 
 struct S {};
 

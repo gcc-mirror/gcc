@@ -100,6 +100,11 @@
        (eq_attr "cpu" "power10"))
   "DU_any_power10,LU_power10")
 
+(define_insn_reservation "power10-fused-load" 4
+  (and (eq_attr "type" "fused_load_cmpi,fused_addis_load,fused_load_load")
+       (eq_attr "cpu" "power10"))
+  "DU_even_power10,LU_power10")
+
 (define_insn_reservation "power10-prefixed-load" 4
   (and (eq_attr "type" "load")
        (eq_attr "update" "no")
@@ -176,6 +181,11 @@
        (eq_attr "cpu" "power10"))
   "DU_any_power10,STU_power10")
 
+(define_insn_reservation "power10-fused-store" 0
+  (and (eq_attr "type" "fused_store_store")
+       (eq_attr "cpu" "power10"))
+  "DU_even_power10,STU_power10")
+
 (define_insn_reservation "power10-prefixed-store" 0
   (and (eq_attr "type" "store,fpstore,vecstore")
        (eq_attr "prefixed" "yes")
@@ -243,6 +253,11 @@
 ; 4 cycle CR latency
 (define_bypass 4 "power10-alu"
 		 "power10-crlogical,power10-mfcr,power10-mfcrf")
+
+(define_insn_reservation "power10-fused_alu" 2
+  (and (eq_attr "type" "fused_arith_logical,fused_cmp_isel,fused_carry")
+       (eq_attr "cpu" "power10"))
+  "DU_even_power10,EXU_power10")
 
 ; paddi
 (define_insn_reservation "power10-paddi" 2
@@ -403,6 +418,11 @@
        (eq_attr "cpu" "power10"))
   "DU_any_power10,EXU_power10")
 
+(define_insn_reservation "power10-fused-vec" 2
+  (and (eq_attr "type" "fused_vector")
+       (eq_attr "cpu" "power10"))
+  "DU_even_power10,EXU_power10")
+
 (define_insn_reservation "power10-veccmp" 3
   (and (eq_attr "type" "veccmp")
        (eq_attr "cpu" "power10"))
@@ -489,6 +509,11 @@
   (and (eq_attr "type" "jmpreg,branch")
        (eq_attr "cpu" "power10"))
   "DU_any_power10,STU_power10")
+
+(define_insn_reservation "power10-fused-branch" 3
+  (and (eq_attr "type" "fused_mtbc")
+       (eq_attr "cpu" "power10"))
+  "DU_even_power10,STU_power10")
 
 
 ; Crypto

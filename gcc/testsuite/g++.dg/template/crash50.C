@@ -3,5 +3,5 @@
 
 struct A
 {
-  template<int> void* foo(; // { dg-error "primary-expression|initialization|static|template" }
+  template<int> void* foo(; // { dg-error "expected|initialization|static|template" }
 };

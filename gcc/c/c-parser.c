@@ -8412,6 +8412,7 @@ c_parser_has_attribute_expression (c_parser *parser)
 {
   gcc_assert (c_parser_next_token_is_keyword (parser,
 					      RID_BUILTIN_HAS_ATTRIBUTE));
+  location_t start = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
 
   c_inhibit_evaluation_warnings++;
@@ -8490,6 +8491,7 @@ c_parser_has_attribute_expression (c_parser *parser)
 
   parser->translate_strings_p = save_translate_strings_p;
 
+  location_t finish = c_parser_peek_token (parser)->location;
   if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
     c_parser_consume_token (parser);
   else
@@ -8518,6 +8520,7 @@ c_parser_has_attribute_expression (c_parser *parser)
   else
     result.value =  boolean_false_node;
 
+  set_c_expr_source_range (&result, start, finish);
   return result;
 }
 

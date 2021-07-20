@@ -2783,7 +2783,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
       if ((ldptr = ldopen (CONST_CAST (char *, prog_name), ldptr)) != NULL)
 	{
 	  if (! MY_ISCOFF (HEADER (ldptr).f_magic))
-	    fatal_error (input_location, "%s: not a COFF file", prog_name);
+	    {
+	      warning (0, "%s: not a COFF file", prog_name);
+	      continue;
+	    }
 
 	  if (GCC_CHECK_HDR (ldptr))
 	    {

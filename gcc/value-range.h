@@ -639,6 +639,7 @@ public:
   // Return a copy of SRC with the minimum amount of sub-ranges needed
   // to represent it.
   irange *allocate (const irange &src);
+  void *get_memory (unsigned num_bytes);
 private:
   DISABLE_COPY_AND_ASSIGN (irange_allocator);
   struct obstack m_obstack;
@@ -654,6 +655,14 @@ inline
 irange_allocator::~irange_allocator ()
 {
   obstack_free (&m_obstack, NULL);
+}
+
+// Provide a hunk of memory from the obstack
+inline void *
+irange_allocator::get_memory (unsigned num_bytes)
+{
+  void *r = obstack_alloc (&m_obstack, num_bytes);
+  return r;
 }
 
 // Return a new range with NUM_PAIRS.

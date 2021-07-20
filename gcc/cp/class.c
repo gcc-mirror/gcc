@@ -4249,7 +4249,7 @@ field_poverlapping_p (tree decl)
 bool
 is_empty_field (tree decl)
 {
-  if (TREE_CODE (decl) != FIELD_DECL)
+  if (!decl || TREE_CODE (decl) != FIELD_DECL)
     return false;
 
   bool r = (is_empty_class (TREE_TYPE (decl))

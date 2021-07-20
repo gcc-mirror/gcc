@@ -267,6 +267,51 @@ private:
   enum binding_kind m_kind;
 };
 
+struct bit_range
+{
+  bit_range (bit_offset_t start_bit_offset, bit_size_t size_in_bits)
+  : m_start_bit_offset (start_bit_offset),
+    m_size_in_bits (size_in_bits)
+  {}
+
+  void dump_to_pp (pretty_printer *pp) const;
+  void dump () const;
+
+  bit_offset_t get_start_bit_offset () const
+  {
+    return m_start_bit_offset;
+  }
+  bit_offset_t get_next_bit_offset () const
+  {
+    return m_start_bit_offset + m_size_in_bits;
+  }
+
+  bool contains_p (bit_offset_t offset) const
+  {
+    return (offset >= get_start_bit_offset ()
+	    && offset < get_next_bit_offset ());
+  }
+
+  bool operator== (const bit_range &other) const
+  {
+    return (m_start_bit_offset == other.m_start_bit_offset
+	    && m_size_in_bits == other.m_size_in_bits);
+  }
+
+  bool intersects_p (const bit_range &other) const
+  {
+    return (get_start_bit_offset () < other.get_next_bit_offset ()
+	    && other.get_start_bit_offset () < get_next_bit_offset ());
+  }
+
+  static int cmp (const bit_range &br1, const bit_range &br2);
+
+  static bool from_mask (unsigned HOST_WIDE_INT mask, bit_range *out);
+
+  bit_offset_t m_start_bit_offset;
+  bit_size_t m_size_in_bits;
+};
+
 /* Concrete subclass of binding_key, for describing a concrete range of
    bits within the binding_map (e.g. "bits 8-15").  */
 
@@ -279,24 +324,22 @@ public:
   concrete_binding (bit_offset_t start_bit_offset, bit_size_t size_in_bits,
 		    enum binding_kind kind)
   : binding_key (kind),
-    m_start_bit_offset (start_bit_offset),
-    m_size_in_bits (size_in_bits)
+    m_bit_range (start_bit_offset, size_in_bits)
   {}
   bool concrete_p () const FINAL OVERRIDE { return true; }
 
   hashval_t hash () const
   {
     inchash::hash hstate;
-    hstate.add_wide_int (m_start_bit_offset);
-    hstate.add_wide_int (m_size_in_bits);
+    hstate.add_wide_int (m_bit_range.m_start_bit_offset);
+    hstate.add_wide_int (m_bit_range.m_size_in_bits);
     return hstate.end () ^ binding_key::impl_hash ();
   }
   bool operator== (const concrete_binding &other) const
   {
     if (!binding_key::impl_eq (other))
       return false;
-    return (m_start_bit_offset == other.m_start_bit_offset
-	    && m_size_in_bits == other.m_size_in_bits);
+    return m_bit_range == other.m_bit_range;
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
@@ -304,12 +347,20 @@ public:
   const concrete_binding *dyn_cast_concrete_binding () const FINAL OVERRIDE
   { return this; }
 
-  bit_offset_t get_start_bit_offset () const { return m_start_bit_offset; }
-  bit_size_t get_size_in_bits () const { return m_size_in_bits; }
+  const bit_range &get_bit_range () const { return m_bit_range; }
+
+  bit_offset_t get_start_bit_offset () const
+  {
+    return m_bit_range.m_start_bit_offset;
+  }
+  bit_size_t get_size_in_bits () const
+  {
+    return m_bit_range.m_size_in_bits;
+  }
   /* Return the next bit offset after the end of this binding.  */
   bit_offset_t get_next_bit_offset () const
   {
-    return m_start_bit_offset + m_size_in_bits;
+    return m_bit_range.get_next_bit_offset ();
   }
 
   bool overlaps_p (const concrete_binding &other) const;
@@ -317,8 +368,7 @@ public:
   static int cmp_ptr_ptr (const void *, const void *);
 
 private:
-  bit_offset_t m_start_bit_offset;
-  bit_size_t m_size_in_bits;
+  bit_range m_bit_range;
 };
 
 } // namespace ana
@@ -611,8 +661,6 @@ public:
 
   json::object *to_json () const;
 
-  const svalue *get_direct_binding (store_manager *mgr, const region *reg);
-  const svalue *get_default_binding (store_manager *mgr, const region *reg);
   const svalue *get_any_binding (store_manager *mgr, const region *reg) const;
 
   bool called_unknown_fn_p () const { return m_called_unknown_fn; }
@@ -702,6 +750,14 @@ public:
   get_concrete_binding (bit_offset_t start_bit_offset,
 			bit_offset_t size_in_bits,
 			enum binding_kind kind);
+  const concrete_binding *
+  get_concrete_binding (const bit_range &bits,
+			enum binding_kind kind)
+  {
+    return get_concrete_binding (bits.get_start_bit_offset (),
+				 bits.m_size_in_bits,
+				 kind);
+  }
   const symbolic_binding *
   get_symbolic_binding (const region *region,
 			enum binding_kind kind);
