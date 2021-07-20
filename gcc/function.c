@@ -3036,7 +3036,15 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 		  reg = gen_rtx_REG (word_mode, REGNO (entry_parm));
 		  reg = convert_to_mode (mode, copy_to_reg (reg), 1);
 		}
-	      emit_move_insn (change_address (mem, mode, 0), reg);
+
+	      /* We use adjust_address to get a new MEM with the mode
+		 changed.  adjust_address is better than change_address
+		 for this purpose because adjust_address does not lose
+		 the MEM_EXPR associated with the MEM.
+
+		 If the MEM_EXPR is lost, then optimizations like DSE
+		 assume the MEM escapes and thus is not subject to DSE.  */
+	      emit_move_insn (adjust_address (mem, mode, 0), reg);
 	    }
 
 #ifdef BLOCK_REG_PADDING
