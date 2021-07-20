@@ -1,3 +1,37 @@
+2021-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101503
+	* constraint-manager.cc (constraint_manager::add_constraint): Use
+	can_have_associated_state_p rather than testing for unknown.
+	(constraint_manager::get_or_add_equiv_class): Likewise.
+	* program-state.cc (sm_state_map::set_state): Likewise.
+	(sm_state_map::impl_set_state): Add assertion.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Handle poisoned
+	values.
+	(region_model_manager::maybe_fold_binop): Move handling of unknown
+	values...
+	(region_model_manager::get_or_create_binop): ...to here, and
+	generalize to use can_have_associated_state_p.
+	(region_model_manager::maybe_fold_sub_svalue): Use
+	can_have_associated_state_p rather than testing for unknown.
+	(region_model_manager::maybe_fold_repeated_svalue): Use unknown
+	when the size or repeated value is "unknown"/"poisoned".
+	* region-model.cc (region_model::purge_state_involving): Reject
+	attempts to purge unknown/poisoned svalues, as these svalues
+	should not have state associated with them.
+	* svalue.cc (sub_svalue::sub_svalue): Assert that we're building
+	on top of an svalue with can_have_associated_state_p.
+	(repeated_svalue::repeated_svalue): Likewise.
+	(bits_within_svalue::bits_within_svalue): Likewise.
+	* svalue.h (svalue::can_have_associated_state_p): New.
+	(unknown_svalue::can_have_associated_state_p): New.
+	(poisoned_svalue::can_have_associated_state_p): New.
+	(unaryop_svalue::unaryop_svalue): Assert that we're building on
+	top of an svalue with can_have_associated_state_p.
+	(binop_svalue::binop_svalue): Likewise.
+	(widening_svalue::widening_svalue): Likewise.
+
 2021-07-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (enum access_direction): New.

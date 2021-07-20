@@ -1,3 +1,85 @@
+2021-07-19  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* config/elfos.h (CTF_DEBUGGING_INFO): New definition.
+	(BTF_DEBUGGING_INFO): Likewise.
+	* doc/tm.texi.in: Document the new macros.
+	* doc/tm.texi: Regenerated.
+	* toplev.c: Guard initialization of debug hooks.
+
+2021-07-19  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* flags.h (ctf_debuginfo_p): New function declaration.
+	* opts.c (ctf_debuginfo_p): New function definition.
+
+2021-07-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/100208
+	* config/gcn/gcn-hsa.h (DRIVER_SELF_SPECS): New.
+	(ASM_SPEC): Set -mattr for xnack and sram-ecc.
+	* config/gcn/gcn-opts.h (enum sram_ecc_type): New.
+	* config/gcn/gcn-valu.md: Add a warning comment.
+	* config/gcn/gcn.c (gcn_option_override): Add "sorry" for -mxnack.
+	(output_file_start): Add xnack and sram-ecc state to ".amdgcn_target".
+	* config/gcn/gcn.md: Add a warning comment.
+	* config/gcn/gcn.opt: Add -mxnack and -msram-ecc.
+	* config/gcn/mkoffload.c (EF_AMDGPU_MACH_AMDGCN_GFX908): Remove
+	SRAM-ECC flag.
+	(EF_AMDGPU_XNACK): New.
+	(EF_AMDGPU_SRAM_ECC): New.
+	(elf_flags): New.
+	(copy_early_debug_info): Use elf_flags.
+	(main): Handle -mxnack and -msram-ecc options.
+	* doc/invoke.texi: Document -mxnack and -msram-ecc.
+
+2021-07-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101205
+	* config/aarch64/aarch64.md (csneg3_uxtw_insn): Rename to ...
+	(*cs<neg_not_cs>3_uxtw_insn4): and extend to NEG_NOT.
+
+2021-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101505
+	* tree-vect-patterns.c (vect_determine_precisions): Walk
+	PHIs also for loop vectorization.
+
+2021-07-19  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gimple_expr_type): Remove.
+	* doc/gimple.texi: Remove gimple_expr_type documentation.
+
+2021-07-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_eq): Handle NULL vr->type.
+	(ao_ref_init_from_vn_reference): Likewise.
+	(fully_constant_reference): Likewise.
+	(vn_reference_lookup_call): Do not set vr->type to random
+	values.
+	* tree-ssa-pre.c (compute_avail): Do not try to PRE calls
+	without a value.
+	* tree-vect-generic.c (expand_vector_piecewise): Pass in
+	whether we expanded parallel.
+	(expand_vector_parallel): Adjust.
+	(expand_vector_addition): Likewise.
+	(expand_vector_comparison): Likewise.
+	(expand_vector_operation): Likewise.
+	(expand_vector_scalar_condition): Likewise.
+	(expand_vector_conversion): Likewise.
+
+2021-07-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (register_edge_assert_for_2): Use the
+	type from the LHS.
+	(vrp_folder::fold_predicate_in): Likewise.
+	* vr-values.c (gimple_assign_nonzero_p): Likewise.
+	(vr_values::extract_range_from_comparison): Likewise.
+	(vr_values::extract_range_from_ubsan_builtin): Use the
+	type of the first operand.
+	(vr_values::extract_range_basic): Push down type
+	computation, use the appropriate LHS.
+	(vr_values::extract_range_from_assignment): Use the
+	type of the LHS.
+
 2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/101492
