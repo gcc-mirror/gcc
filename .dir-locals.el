@@ -20,4 +20,4 @@
  (nil . ((bug-reference-url-format . "http://gcc.gnu.org/PR%s")))
  (c-mode . ((c-file-style . "GNU")
 	    (indent-tabs-mode . t)
-	    (fill-column . 80))))
+	    (fill-column . 79))))
