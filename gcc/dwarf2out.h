@@ -424,6 +424,7 @@ extern enum dwarf_tag dw_get_die_tag (dw_die_ref);
 
 /* Data about a single source file.  */
 struct GTY((for_user)) dwarf_file_data {
+  const char * key;
   const char * filename;
   int emitted_number;
 };
