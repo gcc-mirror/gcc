@@ -1,3 +1,8 @@
+2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101129
+	* gcc.target/powerpc/pr101129.c: New.
+
 2021-07-16  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

@@ -1,3 +1,16 @@
+2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101129
+	* config/rs6000/rs6000-p8swap.c (has_part_mult): New.
+	(rs6000_analyze_swaps): Insns containing a subreg of a mult are
+	not swappable.
+
+2021-07-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/99927
+	* combine.c (distribute_notes) [REG_UNUSED]: If the register already
+	is dead, just drop it.
+
 2021-07-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (asm_preferred_eh_data_format): Always use the
