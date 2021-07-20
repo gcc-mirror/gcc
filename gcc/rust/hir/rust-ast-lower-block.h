@@ -46,7 +46,31 @@ public:
     return resolver.translated;
   }
 
-  ~ASTLoweringBlock () {}
+  static HIR::UnsafeBlockExpr *translate (AST::UnsafeBlockExpr *expr,
+					  bool *terminated)
+  {
+    ASTLoweringBlock resolver;
+
+    HIR::BlockExpr *block
+      = ASTLoweringBlock::translate (expr->get_block_expr ().get (),
+				     terminated);
+    auto crate_num = resolver.mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr->get_node_id (),
+				   resolver.mappings->get_next_hir_id (
+				     crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    HIR::UnsafeBlockExpr *translated
+      = new HIR::UnsafeBlockExpr (mapping,
+				  std::unique_ptr<HIR::BlockExpr> (block),
+				  expr->get_outer_attrs (), expr->get_locus ());
+
+    resolver.mappings->insert_hir_expr (
+      translated->get_mappings ().get_crate_num (),
+      translated->get_mappings ().get_hirid (), translated);
+
+    return translated;
+  }
 
   void visit (AST::BlockExpr &expr) override;
 
@@ -136,6 +160,11 @@ public:
   }
 
   void visit (AST::BlockExpr &expr) override
+  {
+    translated = ASTLoweringBlock::translate (&expr, &terminated);
+  }
+
+  void visit (AST::UnsafeBlockExpr &expr) override
   {
     translated = ASTLoweringBlock::translate (&expr, &terminated);
   }

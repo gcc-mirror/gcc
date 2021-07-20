@@ -527,6 +527,11 @@ public:
       }
   }
 
+  void visit (HIR::UnsafeBlockExpr &expr) override
+  {
+    expr.get_block_expr ()->accept_vis (*this);
+  }
+
   void visit (HIR::StructExprStruct &struct_expr) override
   {
     TyTy::BaseType *tyty = nullptr;

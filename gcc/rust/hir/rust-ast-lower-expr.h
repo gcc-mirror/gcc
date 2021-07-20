@@ -135,6 +135,11 @@ public:
     translated = ASTLoweringBlock::translate (&expr, &terminated);
   }
 
+  void visit (AST::UnsafeBlockExpr &expr) override
+  {
+    translated = ASTLoweringBlock::translate (&expr, &terminated);
+  }
+
   void visit (AST::PathInExpression &expr) override
   {
     translated = ASTLowerPathInExpression::translate (&expr);

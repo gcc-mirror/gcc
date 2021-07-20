@@ -3138,6 +3138,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::unique_ptr<BlockExpr> &get_block_expr () { return expr; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
