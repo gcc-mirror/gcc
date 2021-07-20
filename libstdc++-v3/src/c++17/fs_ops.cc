@@ -496,7 +496,7 @@ fs::create_directories(const path& p, error_code& ec)
       return false;
     }
 
-  file_status st = symlink_status(p, ec);
+  file_status st = status(p, ec);
   if (is_directory(st))
     return false;
   else if (ec && !status_known(st))
