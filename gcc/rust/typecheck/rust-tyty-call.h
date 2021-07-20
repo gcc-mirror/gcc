@@ -51,6 +51,7 @@ public:
   void visit (ErrorType &type) override { gcc_unreachable (); }
   void visit (CharType &type) override { gcc_unreachable (); }
   void visit (ReferenceType &type) override { gcc_unreachable (); }
+  void visit (PointerType &type) override { gcc_unreachable (); }
   void visit (ParamType &) override { gcc_unreachable (); }
   void visit (StrType &) override { gcc_unreachable (); }
   void visit (NeverType &) override { gcc_unreachable (); }
@@ -100,6 +101,7 @@ public:
   void visit (ADTType &type) override { gcc_unreachable (); };
   void visit (CharType &type) override { gcc_unreachable (); }
   void visit (ReferenceType &type) override { gcc_unreachable (); }
+  void visit (PointerType &type) override { gcc_unreachable (); }
   void visit (ParamType &) override { gcc_unreachable (); }
   void visit (StrType &) override { gcc_unreachable (); }
   void visit (NeverType &) override { gcc_unreachable (); }

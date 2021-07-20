@@ -229,6 +229,27 @@ public:
 			       translated);
   }
 
+  void visit (AST::RawPointerType &type) override
+  {
+    HIR::Type *base_type
+      = ASTLoweringType::translate (type.get_type_pointed_to ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated
+      = new HIR::RawPointerType (mapping,
+				 type.get_pointer_type ()
+				   == AST::RawPointerType::PointerType::MUT,
+				 std::unique_ptr<HIR::Type> (base_type),
+				 type.get_locus ());
+
+    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+  }
+
   void visit (AST::InferredType &type) override
   {
     auto crate_num = mappings->get_current_crate ();

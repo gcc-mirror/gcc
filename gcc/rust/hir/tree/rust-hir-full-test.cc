@@ -2806,23 +2806,8 @@ ReferenceType::as_string () const
 std::string
 RawPointerType::as_string () const
 {
-  std::string str ("*");
-
-  switch (pointer_type)
-    {
-    case MUT:
-      str += "mut ";
-      break;
-    case CONST:
-      str += "const ";
-      break;
-    default:
-      return "ERROR_MARK_STRING - unknown pointer type in raw pointer type";
-    }
-
-  str += type->as_string ();
-
-  return str;
+  return std::string ("*") + (is_mut () ? "mut " : "const ")
+	 + type->as_string ();
 }
 
 std::string

@@ -35,6 +35,7 @@ enum TypeKind
   ADT,
   STR,
   REF,
+  POINTER,
   PARAM,
   ARRAY,
   FNDEF,
@@ -71,6 +72,9 @@ public:
 
       case TypeKind::REF:
 	return "REF";
+
+      case TypeKind::POINTER:
+	return "POINTER";
 
       case TypeKind::PARAM:
 	return "PARAM";
@@ -1426,6 +1430,53 @@ public:
   ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
 
   bool is_mutable () const { return is_mut; }
+
+private:
+  TyVar base;
+  bool is_mut;
+};
+
+class PointerType : public BaseType
+{
+public:
+  PointerType (HirId ref, TyVar base, bool is_mut,
+	       std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::POINTER, refs), base (base), is_mut (is_mut)
+  {}
+
+  PointerType (HirId ref, HirId ty_ref, TyVar base, bool is_mut,
+	       std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::POINTER, refs), base (base),
+      is_mut (is_mut)
+  {}
+
+  BaseType *get_base () const;
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  std::string get_name () const override final { return as_string (); }
+
+  BaseType *unify (BaseType *other) override;
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *clone () final override;
+
+  bool contains_type_parameters () const override final
+  {
+    return get_base ()->contains_type_parameters ();
+  }
+
+  PointerType *handle_substitions (SubstitutionArgumentMappings mappings);
+
+  bool is_mutable () const { return is_mut; }
+
+  bool is_const () const { return !is_mut; }
 
 private:
   TyVar base;

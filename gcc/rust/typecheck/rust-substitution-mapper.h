@@ -103,6 +103,7 @@ public:
   void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
   void visit (TyTy::CharType &) override { gcc_unreachable (); }
   void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
+  void visit (TyTy::PointerType &) override { gcc_unreachable (); }
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
@@ -161,6 +162,11 @@ public:
   }
 
   void visit (TyTy::ReferenceType &type) override
+  {
+    resolved = type.handle_substitions (mappings);
+  }
+
+  void visit (TyTy::PointerType &type) override
   {
     resolved = type.handle_substitions (mappings);
   }
@@ -237,6 +243,7 @@ public:
   void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
   void visit (TyTy::CharType &) override { gcc_unreachable (); }
   void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
+  void visit (TyTy::PointerType &) override { gcc_unreachable (); }
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
@@ -286,6 +293,7 @@ public:
   void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
   void visit (TyTy::CharType &) override { gcc_unreachable (); }
   void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
+  void visit (TyTy::PointerType &) override { gcc_unreachable (); }
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
