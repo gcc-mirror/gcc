@@ -3562,7 +3562,7 @@ ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset, bool by_ref)
    initializer of a constant.  */
 
 tree
-ipa_find_agg_cst_for_param (struct ipa_agg_value_set *agg, tree scalar,
+ipa_find_agg_cst_for_param (const ipa_agg_value_set *agg, tree scalar,
 			    HOST_WIDE_INT offset, bool by_ref,
 			    bool *from_global_constant)
 {

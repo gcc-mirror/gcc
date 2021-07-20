@@ -3192,7 +3192,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
                                    tree *cond_expr,
 				   gimple_seq *cond_expr_stmt_list)
 {
-  vec<stmt_vec_info> may_misalign_stmts
+  const vec<stmt_vec_info> &may_misalign_stmts
     = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
   stmt_vec_info stmt_info;
   int mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
@@ -3283,7 +3283,8 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 static void
 vect_create_cond_for_unequal_addrs (loop_vec_info loop_vinfo, tree *cond_expr)
 {
-  vec<vec_object_pair> pairs = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
+  const vec<vec_object_pair> &pairs
+    = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
   unsigned int i;
   vec_object_pair *pair;
   FOR_EACH_VEC_ELT (pairs, i, pair)
@@ -3302,7 +3303,8 @@ vect_create_cond_for_unequal_addrs (loop_vec_info loop_vinfo, tree *cond_expr)
 static void
 vect_create_cond_for_lower_bounds (loop_vec_info loop_vinfo, tree *cond_expr)
 {
-  vec<vec_lower_bound> lower_bounds = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
+  const vec<vec_lower_bound> &lower_bounds
+    = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
   for (unsigned int i = 0; i < lower_bounds.length (); ++i)
     {
       tree expr = lower_bounds[i].expr;
@@ -3344,7 +3346,7 @@ vect_create_cond_for_lower_bounds (loop_vec_info loop_vinfo, tree *cond_expr)
 void
 vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 {
-  vec<dr_with_seg_len_pair_t> comp_alias_ddrs =
+  const vec<dr_with_seg_len_pair_t> &comp_alias_ddrs =
     LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
 
   if (comp_alias_ddrs.is_empty ())

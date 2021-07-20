@@ -3713,8 +3713,8 @@ get_constraint_for_rhs (tree t, vec<ce_s> *results)
    entries in *LHSC.  */
 
 static void
-process_all_all_constraints (vec<ce_s> lhsc,
-			     vec<ce_s> rhsc)
+process_all_all_constraints (const vec<ce_s> &lhsc,
+			     const vec<ce_s> &rhsc)
 {
   struct constraint_expr *lhsp, *rhsp;
   unsigned i, j;
@@ -3814,7 +3814,7 @@ do_structure_copy (tree lhsop, tree rhsop)
 /* Create constraints ID = { rhsc }.  */
 
 static void
-make_constraints_to (unsigned id, vec<ce_s> rhsc)
+make_constraints_to (unsigned id, const vec<ce_s> &rhsc)
 {
   struct constraint_expr *c;
   struct constraint_expr includes;
@@ -4162,7 +4162,7 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
    the LHS point to global and escaped variables.  */
 
 static void
-handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> rhsc,
+handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> &rhsc,
 		 tree fndecl)
 {
   auto_vec<ce_s> lhsc;
@@ -4623,9 +4623,10 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
       case BUILT_IN_REALLOC:
 	if (gimple_call_lhs (t))
 	  {
+	    auto_vec<ce_s> rhsc;
 	    handle_lhs_call (t, gimple_call_lhs (t),
 			     gimple_call_return_flags (t) | ERF_NOALIAS,
-			     vNULL, fndecl);
+			     rhsc, fndecl);
 	    get_constraint_for_ptr_offset (gimple_call_lhs (t),
 					   NULL_TREE, &lhsc);
 	    get_constraint_for_ptr_offset (gimple_call_arg (t, 0),
@@ -5696,7 +5697,7 @@ fieldoff_compare (const void *pa, const void *pb)
 
 /* Sort a fieldstack according to the field offset and sizes.  */
 static void
-sort_fieldstack (vec<fieldoff_s> fieldstack)
+sort_fieldstack (vec<fieldoff_s> &fieldstack)
 {
   fieldstack.qsort (fieldoff_compare);
 }
@@ -6106,7 +6107,7 @@ create_function_info_for (tree decl, const char *name, bool add_id,
    FIELDSTACK is assumed to be sorted by offset.  */
 
 static bool
-check_for_overlaps (vec<fieldoff_s> fieldstack)
+check_for_overlaps (const vec<fieldoff_s> &fieldstack)
 {
   fieldoff_s *fo = NULL;
   unsigned int i;

@@ -3240,7 +3240,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 /* Like build_function_call_vec, but call also resolve_overloaded_builtin.  */
 
 tree
-c_build_function_call_vec (location_t loc, vec<location_t> arg_loc,
+c_build_function_call_vec (location_t loc, const vec<location_t> &arg_loc,
 			   tree function, vec<tree, va_gc> *params,
 			   vec<tree, va_gc> *origtypes)
 {

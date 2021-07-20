@@ -241,7 +241,7 @@ gimple_build_call_1 (tree fn, unsigned nargs)
    specified in vector ARGS.  */
 
 gcall *
-gimple_build_call_vec (tree fn, vec<tree> args)
+gimple_build_call_vec (tree fn, const vec<tree> &args)
 {
   unsigned i;
   unsigned nargs = args.length ();
@@ -338,7 +338,7 @@ gimple_build_call_internal (enum internal_fn fn, unsigned nargs, ...)
    specified in vector ARGS.  */
 
 gcall *
-gimple_build_call_internal_vec (enum internal_fn fn, vec<tree> args)
+gimple_build_call_internal_vec (enum internal_fn fn, const vec<tree> &args)
 {
   unsigned i, nargs;
   gcall *call;
@@ -802,7 +802,7 @@ gimple_build_switch_nlabels (unsigned nlabels, tree index, tree default_label)
    ARGS is a vector of labels excluding the default.  */
 
 gswitch *
-gimple_build_switch (tree index, tree default_label, vec<tree> args)
+gimple_build_switch (tree index, tree default_label, const vec<tree> &args)
 {
   unsigned i, nlabels = args.length ();
 
@@ -3051,7 +3051,7 @@ compare_case_labels (const void *p1, const void *p2)
 /* Sort the case labels in LABEL_VEC in place in ascending order.  */
 
 void
-sort_case_labels (vec<tree> label_vec)
+sort_case_labels (vec<tree> &label_vec)
 {
   label_vec.qsort (compare_case_labels);
 }
@@ -3076,7 +3076,7 @@ sort_case_labels (vec<tree> label_vec)
    found or not.  */
 
 void
-preprocess_case_label_vec_for_gimple (vec<tree> labels,
+preprocess_case_label_vec_for_gimple (vec<tree> &labels,
 				      tree index_type,
 				      tree *default_casep)
 {

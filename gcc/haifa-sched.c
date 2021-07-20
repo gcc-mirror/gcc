@@ -891,7 +891,7 @@ static void move_block_after_check (rtx_insn *);
 static void move_succs (vec<edge, va_gc> **, basic_block);
 static void sched_remove_insn (rtx_insn *);
 static void clear_priorities (rtx_insn *, rtx_vec_t *);
-static void calc_priorities (rtx_vec_t);
+static void calc_priorities (const rtx_vec_t &);
 static void add_jump_dependencies (rtx_insn *, rtx_insn *);
 
 #endif /* INSN_SCHEDULING */
@@ -8923,7 +8923,7 @@ clear_priorities (rtx_insn *insn, rtx_vec_t *roots_ptr)
    changed.  ROOTS is a vector of instructions whose priority computation will
    trigger initialization of all cleared priorities.  */
 static void
-calc_priorities (rtx_vec_t roots)
+calc_priorities (const rtx_vec_t &roots)
 {
   int i;
   rtx_insn *insn;
@@ -8988,7 +8988,7 @@ sched_init_insn_luid (rtx_insn *insn)
    The hook common_sched_info->luid_for_non_insn () is used to determine
    if notes, labels, etc. need luids.  */
 void
-sched_init_luids (bb_vec_t bbs)
+sched_init_luids (const bb_vec_t &bbs)
 {
   int i;
   basic_block bb;
@@ -9062,7 +9062,7 @@ init_h_i_d (rtx_insn *insn)
 
 /* Initialize haifa_insn_data for BBS.  */
 void
-haifa_init_h_i_d (bb_vec_t bbs)
+haifa_init_h_i_d (const bb_vec_t &bbs)
 {
   int i;
   basic_block bb;

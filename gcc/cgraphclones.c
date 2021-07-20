@@ -564,7 +564,7 @@ clone_function_name (tree decl, const char *suffix)
    bitmap interface.
    */
 cgraph_node *
-cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
+cgraph_node::create_virtual_clone (const vec<cgraph_edge *> &redirect_callers,
 				   vec<ipa_replace_map *, va_gc> *tree_map,
 				   ipa_param_adjustments *param_adjustments,
 				   const char * suffix, unsigned num_suffix)

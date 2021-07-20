@@ -527,7 +527,8 @@ class loop_distribution
 
   /* Build the vertices of the reduced dependence graph RDG.  Return false
      if that failed.  */
-  bool create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts, loop_p loop);
+  bool create_rdg_vertices (struct graph *rdg, const vec<gimple *> &stmts,
+			    loop_p loop);
 
   /* Initialize STMTS with all the statements of LOOP.  We use topological
      order to discover all statements.  The order is important because
@@ -646,7 +647,7 @@ class loop_distribution
      statements from STMTS into separate loops.  Returns the number of
      distributed loops.  Set NB_CALLS to number of generated builtin calls.
      Set *DESTROY_P to whether LOOP needs to be destroyed.  */
-  int distribute_loop (class loop *loop, vec<gimple *> stmts,
+  int distribute_loop (class loop *loop, const vec<gimple *> &stmts,
 		       control_dependences *cd, int *nb_calls, bool *destroy_p,
 		       bool only_patterns_p);
 
@@ -699,7 +700,8 @@ bb_top_order_cmp_r (const void *x, const void *y, void *loop)
 }
 
 bool
-loop_distribution::create_rdg_vertices (struct graph *rdg, vec<gimple *> stmts,
+loop_distribution::create_rdg_vertices (struct graph *rdg,
+					const vec<gimple *> &stmts,
 					loop_p loop)
 {
   int i;
@@ -1953,7 +1955,7 @@ loop_distribution::rdg_build_partitions (struct graph *rdg,
 /* Dump to FILE the PARTITIONS.  */
 
 static void
-dump_rdg_partitions (FILE *file, vec<partition *> partitions)
+dump_rdg_partitions (FILE *file, const vec<partition *> &partitions)
 {
   int i;
   partition *partition;
@@ -1963,10 +1965,10 @@ dump_rdg_partitions (FILE *file, vec<partition *> partitions)
 }
 
 /* Debug PARTITIONS.  */
-extern void debug_rdg_partitions (vec<partition *> );
+extern void debug_rdg_partitions (const vec<partition *> &);
 
 DEBUG_FUNCTION void
-debug_rdg_partitions (vec<partition *> partitions)
+debug_rdg_partitions (const vec<partition *> &partitions)
 {
   dump_rdg_partitions (stderr, partitions);
 }
@@ -2017,7 +2019,7 @@ number_of_rw_in_partition (struct graph *rdg, partition *partition)
 
 static bool
 partition_contains_all_rw (struct graph *rdg,
-			   vec<partition *> partitions)
+			   const vec<partition *> &partitions)
 {
   int i;
   partition *partition;
@@ -2921,7 +2923,8 @@ loop_distribution::finalize_partitions (class loop *loop,
    Set *DESTROY_P to whether LOOP needs to be destroyed.  */
 
 int
-loop_distribution::distribute_loop (class loop *loop, vec<gimple *> stmts,
+loop_distribution::distribute_loop (class loop *loop,
+		 const vec<gimple *> &stmts,
 		 control_dependences *cd, int *nb_calls, bool *destroy_p,
 		 bool only_patterns_p)
 {

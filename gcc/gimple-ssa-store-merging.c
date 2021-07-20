@@ -2654,7 +2654,8 @@ gather_bswap_load_refs (vec<tree> *refs, tree val)
    go after the = _5 store and thus change behavior.  */
 
 static bool
-check_no_overlap (vec<store_immediate_info *> m_store_info, unsigned int i,
+check_no_overlap (const vec<store_immediate_info *> &m_store_info,
+		  unsigned int i,
 		  bool all_integer_cst_p, unsigned int first_order,
 		  unsigned int last_order, unsigned HOST_WIDE_INT start,
 		  unsigned HOST_WIDE_INT end, unsigned int first_earlier,

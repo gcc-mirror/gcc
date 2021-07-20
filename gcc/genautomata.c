@@ -6137,7 +6137,7 @@ evaluate_equiv_classes (automaton_t automaton, vec<state_t> *equiv_classes)
 
 /* The function merges equivalent states of AUTOMATON.  */
 static void
-merge_states (automaton_t automaton, vec<state_t> equiv_classes)
+merge_states (automaton_t automaton, const vec<state_t> &equiv_classes)
 {
   state_t curr_state;
   state_t new_state;

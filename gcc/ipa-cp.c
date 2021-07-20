@@ -2946,9 +2946,9 @@ propagate_constants_across_call (struct cgraph_edge *cs)
 
 static tree
 ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
-				vec<tree> known_csts,
-				vec<ipa_polymorphic_call_context> known_contexts,
-				vec<ipa_agg_value_set> known_aggs,
+				const vec<tree> &known_csts,
+				const vec<ipa_polymorphic_call_context> &known_contexts,
+				const vec<ipa_agg_value_set> &known_aggs,
 				struct ipa_agg_replacement_value *agg_reps,
 				bool *speculative)
 {
@@ -2985,7 +2985,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	    }
 	  if (!t)
 	    {
-	      struct ipa_agg_value_set *agg;
+	      const ipa_agg_value_set *agg;
 	      if (known_aggs.length () > (unsigned int) param_index)
 		agg = &known_aggs[param_index];
 	      else
@@ -3045,7 +3045,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   if (!t && known_aggs.length () > (unsigned int) param_index
       && !ie->indirect_info->by_ref)
     {
-      struct ipa_agg_value_set *agg = &known_aggs[param_index];
+      const ipa_agg_value_set *agg = &known_aggs[param_index];
       t = ipa_find_agg_cst_for_param (agg,
 				      (unsigned) param_index
 					 < known_csts.length ()
@@ -4267,7 +4267,7 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
    this kind of adjustment is possible.  */
 
 static bool
-adjust_callers_for_value_intersection (vec<cgraph_edge *> callers,
+adjust_callers_for_value_intersection (vec<cgraph_edge *> &callers,
 				       cgraph_node *node)
 {
   for (unsigned i = 0; i < callers.length (); i++)
@@ -4725,8 +4725,8 @@ self_recursive_agg_pass_through_p (cgraph_edge *cs, ipa_agg_jf_item *jfunc,
 
 static void
 find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
-					    vec<tree> known_csts,
-					    vec<cgraph_edge *> callers)
+					    vec<tree> &known_csts,
+					    const vec<cgraph_edge *> &callers)
 {
   ipa_node_params *info = ipa_node_params_sum->get (node);
   int i, count = ipa_get_param_count (info);
@@ -4818,7 +4818,7 @@ static void
 find_more_contexts_for_caller_subset (cgraph_node *node,
 				      vec<ipa_polymorphic_call_context>
 				      *known_contexts,
-				      vec<cgraph_edge *> callers)
+				      const vec<cgraph_edge *> &callers)
 {
   ipa_node_params *info = ipa_node_params_sum->get (node);
   int i, count = ipa_get_param_count (info);
@@ -5179,7 +5179,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
 
 static struct ipa_agg_replacement_value *
 find_aggregate_values_for_callers_subset (struct cgraph_node *node,
-					  vec<cgraph_edge *> callers)
+					  const vec<cgraph_edge *> &callers)
 {
   ipa_node_params *dest_info = ipa_node_params_sum->get (node);
   struct ipa_agg_replacement_value *res;
@@ -5413,7 +5413,7 @@ known_contexts_useful_p (vec<ipa_polymorphic_call_context> known_contexts)
 /* Return a copy of KNOWN_CSTS if it is not empty, otherwise return vNULL.  */
 
 static vec<ipa_polymorphic_call_context>
-copy_useful_known_contexts (vec<ipa_polymorphic_call_context> known_contexts)
+copy_useful_known_contexts (const vec<ipa_polymorphic_call_context> &known_contexts)
 {
   if (known_contexts_useful_p (known_contexts))
     return known_contexts.copy ();
