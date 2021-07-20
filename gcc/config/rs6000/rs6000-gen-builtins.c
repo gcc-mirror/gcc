@@ -163,6 +163,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#include "rbtree.h"
 
 /* Input and output file descriptors and pathnames.  */
 static FILE *bif_file;
@@ -248,6 +249,29 @@ struct typeinfo
   char *val1;
   char *val2;
 };
+
+static int num_bifs;
+static int num_ovld_stanzas;
+static int num_ovlds;
+
+/* Return codes for parsing routines.  */
+enum parse_codes
+{
+  PC_OK,
+  PC_EOFILE,
+  PC_EOSTANZA,
+  PC_PARSEFAIL
+};
+
+/* The red-black trees for built-in function identifiers, built-in
+   overload identifiers, and function type descriptors.  */
+static rbt_strings bif_rbt;
+static rbt_strings ovld_rbt;
+static rbt_strings fntype_rbt;
+
+/* Another red-black tree containing a mapping from built-in function
+   identifiers to the order in which they were encountered.  */
+static rbt_strings bifo_rbt;
 
 /* Pointer to a diagnostic function.  */
 static void (*diag) (const char *, ...)
@@ -863,4 +887,195 @@ match_type (typeinfo *typedata, int voidok)
     }
 
   return 1;
+}
+
+/* Parse the built-in file.  */
+static parse_codes
+parse_bif (void)
+{
+  return PC_OK;
+}
+
+/* Create a mapping from function IDs in their final order to the order
+   they appear in the built-in function file.  */
+static void
+create_bif_order (void)
+{
+}
+
+/* Parse the overload file.  */
+static parse_codes
+parse_ovld (void)
+{
+  return PC_OK;
+}
+
+/* Write everything to the header file (rs6000-builtins.h).  Return
+   1 if successful, 0 otherwise.  */
+static int
+write_header_file (void)
+{
+  return 1;
+}
+
+/* Write everything to the initialization file (rs6000-builtins.c).
+   Return 1 if successful, 0 otherwise.  */
+static int
+write_init_file (void)
+{
+  return 1;
+}
+
+/* Write everything to the include file (rs6000-vecdefines.h).
+   Return 1 if successful, 0 otherwise.  */
+static int
+write_defines_file (void)
+{
+  return 1;
+}
+
+/* Close and delete output files after any failure, so that subsequent
+   build dependencies will fail.  */
+static void
+delete_output_files (void)
+{
+  /* Depending on whence we're called, some of these may already be
+     closed.  Don't check for errors.  */
+  fclose (header_file);
+  fclose (init_file);
+  fclose (defines_file);
+
+  remove (header_path);
+  remove (init_path);
+  remove (defines_path);
+}
+
+/* Main program to convert flat files into built-in initialization code.  */
+int
+main (int argc, const char **argv)
+{
+  if (argc != 6)
+    {
+      fprintf (stderr,
+	       "Five arguments required: two input files and three output "
+	       "files.\n");
+      exit (1);
+    }
+
+  pgm_path = argv[0];
+  bif_path = argv[1];
+  ovld_path = argv[2];
+  header_path = argv[3];
+  init_path = argv[4];
+  defines_path = argv[5];
+
+  bif_file = fopen (bif_path, "r");
+  if (!bif_file)
+    {
+      fprintf (stderr, "Cannot open input built-in file '%s'.\n", bif_path);
+      exit (1);
+    }
+  ovld_file = fopen (ovld_path, "r");
+  if (!ovld_file)
+    {
+      fprintf (stderr, "Cannot open input overload file '%s'.\n", ovld_path);
+      exit (1);
+    }
+  header_file = fopen (header_path, "w");
+  if (!header_file)
+    {
+      fprintf (stderr, "Cannot open header file '%s' for output.\n",
+	       header_path);
+      exit (1);
+    }
+  init_file = fopen (init_path, "w");
+  if (!init_file)
+    {
+      fprintf (stderr, "Cannot open init file '%s' for output.\n", init_path);
+      exit (1);
+    }
+  defines_file = fopen (defines_path, "w");
+  if (!defines_file)
+    {
+      fprintf (stderr, "Cannot open defines file '%s' for output.\n",
+	       defines_path);
+      exit (1);
+    }
+
+  /* Initialize the balanced trees containing built-in function ids,
+     overload function ids, and function type declaration ids.  */
+  rbt_new (&bif_rbt);
+  rbt_new (&ovld_rbt);
+  rbt_new (&fntype_rbt);
+
+  /* Initialize another balanced tree that contains a map from built-in
+     function ids to the order in which they were encountered.  */
+  rbt_new (&bifo_rbt);
+
+  /* Parse the built-in function file.  */
+  num_bifs = 0;
+  line = 0;
+  if (parse_bif () == PC_PARSEFAIL)
+    {
+      fprintf (stderr, "Parsing of '%s' failed, aborting.\n", bif_path);
+      delete_output_files ();
+      exit (1);
+    }
+  fclose (bif_file);
+
+  /* Create a mapping from function IDs in their final order to
+     the order they appear in the built-in function file.  */
+  create_bif_order ();
+
+#ifdef DEBUG
+  fprintf (stderr, "\nFunction ID list:\n");
+  rbt_dump (&bif_rbt, bif_rbt.rbt_root);
+  fprintf (stderr, "\n");
+#endif
+
+  /* Parse the overload file.  */
+  num_ovld_stanzas = 0;
+  num_ovlds = 0;
+  line = 0;
+  if (parse_ovld () == PC_PARSEFAIL)
+    {
+      fprintf (stderr, "Parsing of '%s' failed, aborting.\n", ovld_path);
+      delete_output_files ();
+      exit (1);
+    }
+  fclose (ovld_file);
+
+#ifdef DEBUG
+  fprintf (stderr, "\nFunction type decl list:\n");
+  rbt_dump (&fntype_rbt, fntype_rbt.rbt_root);
+  fprintf (stderr, "\n");
+#endif
+
+  /* Write the header file and the file containing initialization code.  */
+  if (!write_header_file ())
+    {
+      fprintf (stderr, "Output to '%s' failed, aborting.\n", header_path);
+      delete_output_files ();
+      exit (1);
+    }
+  if (!write_init_file ())
+    {
+      fprintf (stderr, "Output to '%s' failed, aborting.\n", init_path);
+      delete_output_files ();
+      exit (1);
+    }
+
+  /* Write the defines file to be included into altivec.h.  */
+  if (!write_defines_file ())
+    {
+      fprintf (stderr, "Output to '%s' failed, aborting.\n", defines_path);
+      delete_output_files ();
+      exit (1);
+    }
+
+  fclose (header_file);
+  fclose (init_file);
+  fclose (defines_file);
+
+  return 0;
 }
