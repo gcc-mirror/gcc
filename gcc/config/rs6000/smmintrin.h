@@ -296,6 +296,62 @@ _mm_floor_ss (__m128 __A, __m128 __B)
   return __r;
 }
 
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_epi8 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_min ((__v16qi)__X, (__v16qi)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_epu16 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_min ((__v8hu)__X, (__v8hu)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_min ((__v4si)__X, (__v4si)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_min_epu32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_min ((__v4su)__X, (__v4su)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_epi8 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_max ((__v16qi)__X, (__v16qi)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_epu16 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_max ((__v8hu)__X, (__v8hu)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_max ((__v4si)__X, (__v4si)__Y);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_max_epu32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_max ((__v4su)__X, (__v4su)__Y);
+}
+
 /* Return horizontal packed word minimum and its index in bits [15:0]
    and bits [18:16] respectively.  */
 __inline __m128i
