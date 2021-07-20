@@ -281,6 +281,11 @@ public:
 
   void visit (AST::InferredType &type) override { ok = true; }
 
+  void visit (AST::RawPointerType &type) override
+  {
+    type.get_type_pointed_to ()->accept_vis (*this);
+  }
+
 private:
   ResolveType (NodeId parent, bool canonicalize_type_with_generics)
     : ResolverBase (parent),

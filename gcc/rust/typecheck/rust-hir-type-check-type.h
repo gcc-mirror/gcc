@@ -194,6 +194,15 @@ public:
 					  type.get_has_mut ());
   }
 
+  void visit (HIR::RawPointerType &type) override
+  {
+    TyTy::BaseType *base
+      = TypeCheckType::Resolve (type.get_base_type ().get ());
+    translated
+      = new TyTy::PointerType (type.get_mappings ().get_hirid (),
+			       TyTy::TyVar (base->get_ref ()), type.is_mut ());
+  }
+
   void visit (HIR::InferredType &type) override
   {
     translated = new TyTy::InferType (type.get_mappings ().get_hirid (),

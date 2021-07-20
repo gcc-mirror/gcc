@@ -1518,6 +1518,85 @@ ReferenceType::handle_substitions (SubstitutionArgumentMappings mappings)
 }
 
 void
+PointerType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+PointerType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
+std::string
+PointerType::as_string () const
+{
+  return std::string ("* ") + (is_mutable () ? "mut" : "const") + " "
+	 + get_base ()->as_string ();
+}
+
+BaseType *
+PointerType::unify (BaseType *other)
+{
+  PointerRules r (this);
+  return r.unify (other);
+}
+
+BaseType *
+PointerType::coerce (BaseType *other)
+{
+  PointerCoercionRules r (this);
+  return r.coerce (other);
+}
+
+bool
+PointerType::can_eq (const BaseType *other, bool emit_errors) const
+{
+  PointerCmp r (this, emit_errors);
+  return r.can_eq (other);
+}
+
+bool
+PointerType::is_equal (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    return false;
+
+  auto other2 = static_cast<const PointerType &> (other);
+  return get_base ()->is_equal (*other2.get_base ());
+}
+
+BaseType *
+PointerType::get_base () const
+{
+  return base.get_tyty ();
+}
+
+BaseType *
+PointerType::clone ()
+{
+  return new PointerType (get_ref (), get_ty_ref (), base, is_mutable (),
+			  get_combined_refs ());
+}
+
+PointerType *
+PointerType::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  auto mappings_table = Analysis::Mappings::get ();
+
+  PointerType *ref = static_cast<PointerType *> (clone ());
+  ref->set_ty_ref (mappings_table->get_next_hir_id ());
+
+  // might be &T or &ADT so this needs to be recursive
+  auto base = ref->get_base ();
+  BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
+  ref->base = TyVar (concrete->get_ty_ref ());
+
+  return ref;
+}
+
+void
 ParamType::accept_vis (TyVisitor &vis)
 {
   vis.visit (*this);

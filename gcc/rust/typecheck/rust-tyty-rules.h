@@ -274,6 +274,17 @@ public:
 		   type.as_string ().c_str ());
   }
 
+  virtual void visit (PointerType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
   virtual void visit (ParamType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
@@ -528,7 +539,19 @@ public:
   }
 
   void visit (ReferenceType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    if (is_valid)
+      {
+	resolved = type.clone ();
+	return;
+      }
 
+    BaseRules::visit (type);
+  }
+
+  void visit (PointerType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -1096,6 +1119,43 @@ private:
   BaseType *get_base () override { return base; }
 
   ReferenceType *base;
+};
+
+class PointerRules : public BaseRules
+{
+  using Rust::TyTy::BaseRules::visit;
+
+public:
+  PointerRules (PointerType *base) : BaseRules (base), base (base) {}
+
+  void visit (PointerType &type) override
+  {
+    auto base_type = base->get_base ();
+    auto other_base_type = type.get_base ();
+
+    TyTy::BaseType *base_resolved = base_type->unify (other_base_type);
+    if (base_resolved == nullptr
+	|| base_resolved->get_kind () == TypeKind::ERROR)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    if (base->is_mutable () != type.is_mutable ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = new PointerType (base->get_ref (), base->get_ty_ref (),
+				TyVar (base_resolved->get_ref ()),
+				base->is_mutable ());
+  }
+
+private:
+  BaseType *get_base () override { return base; }
+
+  PointerType *base;
 };
 
 class ParamRules : public BaseRules
