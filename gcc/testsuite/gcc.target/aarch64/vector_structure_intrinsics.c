@@ -82,7 +82,29 @@ TEST_TBX4 (vqtbx4q, int8x16_t, int8x16x4_t, uint8x16_t, s8)
 TEST_TBX4 (vqtbx4q, uint8x16_t, uint8x16x4_t, uint8x16_t, u8)
 TEST_TBX4 (vqtbx4q, poly8x16_t, poly8x16x4_t, uint8x16_t, p8)
 
+#define TEST_STX(name, tbltype, ptrtype, ts) \
+  void test_ ## name ## _ ## ts (ptrtype a, tbltype b) \
+	{ \
+		name ## _ ## ts (a, b); \
+	}
+
+TEST_STX (vst4q, int8x16x4_t, int8_t*, s8);
+TEST_STX (vst4q, uint8x16x4_t, uint8_t*, u8);
+TEST_STX (vst4q, poly8x16x4_t, poly8_t*, p8);
+TEST_STX (vst4q, int16x8x4_t, int16_t*, s16);
+TEST_STX (vst4q, uint16x8x4_t, uint16_t*, u16);
+TEST_STX (vst4q, poly16x8x4_t, poly16_t*, p16);
+TEST_STX (vst4q, float16x8x4_t, float16_t*, f16);
+TEST_STX (vst4q, int32x4x4_t, int32_t*, s32);
+TEST_STX (vst4q, uint32x4x4_t, uint32_t*, u32);
+TEST_STX (vst4q, float32x4x4_t, float32_t*, f32);
+TEST_STX (vst4q, int64x2x4_t, int64_t*, s64);
+TEST_STX (vst4q, uint64x2x4_t, uint64_t*, u64);
+TEST_STX (vst4q, float64x2x4_t, float64_t*, f64);
+TEST_STX (vst4q, poly64x2x4_t, poly64_t*, p64);
+
 /* { dg-final { scan-assembler-not "mov\\t" } } */
 
 /* { dg-final { scan-assembler-times "tbl\\t" 18} }  */
 /* { dg-final { scan-assembler-times "tbx\\t" 18} }  */
+/* { dg-final { scan-assembler-times "st4\\t" 14} }  */
