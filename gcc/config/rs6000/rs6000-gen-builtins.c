@@ -194,6 +194,101 @@ enum void_status
  VOID_OK
 };
 
+/* Stanzas are groupings of built-in functions and overloads by some
+   common feature/attribute.  These definitions are for built-in function
+   stanzas.  */
+enum bif_stanza
+{
+ BSTZ_ALWAYS,
+ BSTZ_P5,
+ BSTZ_P6,
+ BSTZ_ALTIVEC,
+ BSTZ_CELL,
+ BSTZ_VSX,
+ BSTZ_P7,
+ BSTZ_P7_64,
+ BSTZ_P8,
+ BSTZ_P8V,
+ BSTZ_P9,
+ BSTZ_P9_64,
+ BSTZ_P9V,
+ BSTZ_IEEE128_HW,
+ BSTZ_DFP,
+ BSTZ_CRYPTO,
+ BSTZ_HTM,
+ BSTZ_P10,
+ BSTZ_P10_64,
+ BSTZ_MMA,
+ NUMBIFSTANZAS
+};
+
+static bif_stanza curr_bif_stanza;
+
+struct stanza_entry
+{
+  const char *stanza_name;
+  bif_stanza stanza;
+};
+
+static stanza_entry stanza_map[NUMBIFSTANZAS] =
+  {
+    { "always",		BSTZ_ALWAYS	},
+    { "power5",		BSTZ_P5		},
+    { "power6",		BSTZ_P6		},
+    { "altivec",	BSTZ_ALTIVEC	},
+    { "cell",		BSTZ_CELL	},
+    { "vsx",		BSTZ_VSX	},
+    { "power7",		BSTZ_P7		},
+    { "power7-64",	BSTZ_P7_64	},
+    { "power8",		BSTZ_P8		},
+    { "power8-vector",	BSTZ_P8V	},
+    { "power9",		BSTZ_P9		},
+    { "power9-64",	BSTZ_P9_64	},
+    { "power9-vector",	BSTZ_P9V	},
+    { "ieee128-hw",	BSTZ_IEEE128_HW	},
+    { "dfp",		BSTZ_DFP	},
+    { "crypto",		BSTZ_CRYPTO	},
+    { "htm",		BSTZ_HTM	},
+    { "power10",	BSTZ_P10	},
+    { "power10-64",	BSTZ_P10_64	},
+    { "mma",		BSTZ_MMA	}
+  };
+
+static const char *enable_string[NUMBIFSTANZAS] =
+  {
+    "ENB_ALWAYS",
+    "ENB_P5",
+    "ENB_P6",
+    "ENB_ALTIVEC",
+    "ENB_CELL",
+    "ENB_VSX",
+    "ENB_P7",
+    "ENB_P7_64",
+    "ENB_P8",
+    "ENB_P8V",
+    "ENB_P9",
+    "ENB_P9_64",
+    "ENB_P9V",
+    "ENB_IEEE128_HW",
+    "ENB_DFP",
+    "ENB_CRYPTO",
+    "ENB_HTM",
+    "ENB_P10",
+    "ENB_P10_64",
+    "ENB_MMA"
+  };
+
+/* Function modifiers provide special handling for const, pure, and fpmath
+   functions.  These are mutually exclusive, and therefore kept separate
+   from other bif attributes.  */
+enum fnkinds
+{
+  FNK_NONE,
+  FNK_CONST,
+  FNK_PURE,
+  FNK_FPMATH
+};
+
 /* Legal base types for an argument or return type.  */
 enum basetype
 {
@@ -250,7 +345,76 @@ struct typeinfo
   char *val2;
 };
 
+/* A list of argument types.  */
+struct typelist
+{
+  typeinfo info;
+  typelist *next;
+};
+
+/* Attributes of a builtin function.  */
+struct attrinfo
+{
+  bool isinit;
+  bool isset;
+  bool isextract;
+  bool isnosoft;
+  bool isldvec;
+  bool isstvec;
+  bool isreve;
+  bool ispred;
+  bool ishtm;
+  bool ishtmspr;
+  bool ishtmcr;
+  bool ismma;
+  bool isquad;
+  bool ispair;
+  bool isno32bit;
+  bool is32bit;
+  bool iscpu;
+  bool isldstmask;
+  bool islxvrse;
+  bool islxvrze;
+  bool isendian;
+};
+
+/* Fields associated with a function prototype (bif or overload).  */
+#define MAXRESTROPNDS 3
+struct prototype
+{
+  typeinfo rettype;
+  char *bifname;
+  int nargs;
+  typelist *args;
+  int restr_opnd[MAXRESTROPNDS];
+  restriction restr[MAXRESTROPNDS];
+  char *restr_val1[MAXRESTROPNDS];
+  char *restr_val2[MAXRESTROPNDS];
+};
+
+/* Data associated with a builtin function, and a table of such data.  */
+#define MAXBIFS 16384
+struct bifdata
+{
+  int stanza;
+  fnkinds kind;
+  prototype proto;
+  char *idname;
+  char *patname;
+  attrinfo attrs;
+  char *fndecl;
+};
+
+static bifdata bifs[MAXBIFS];
 static int num_bifs;
+static int curr_bif;
+
+/* Array used to track the order in which built-ins appeared in the
+   built-in file.  We reorder them alphabetically but sometimes need
+   this information.  */
+static int *bif_order;
+static int bif_index = 0;
+
 static int num_ovld_stanzas;
 static int num_ovlds;
 
@@ -417,6 +581,25 @@ handle_pointer (typeinfo *typedata)
       typedata->ispointer = 1;
       safe_inc_pos ();
     }
+}
+
+/* Produce a fatal error message.  */
+static void
+fatal (const char *msg)
+{
+  fprintf (stderr, "FATAL: %s\n", msg);
+  abort ();
+}
+
+static bif_stanza
+stanza_name_to_stanza (const char *stanza_name)
+{
+  for (int i = 0; i < NUMBIFSTANZAS; i++)
+    if (!strcmp (stanza_name, stanza_map[i].stanza_name))
+      return stanza_map[i].stanza;
+  fatal ("Stanza mapping is inconsistent.");
+  /* Unreachable.  */
+  return BSTZ_ALWAYS;
 }
 
 /* Match one of the allowable base types.  Consumes one token unless the
@@ -889,11 +1072,203 @@ match_type (typeinfo *typedata, int voidok)
   return 1;
 }
 
+/* Parse the attribute list.  */
+static parse_codes
+parse_bif_attrs (attrinfo *attrptr)
+{
+  return PC_OK;
+}
+
+/* Parse a function prototype.  This code is shared by the bif and overload
+   file processing.  */
+static parse_codes
+parse_prototype (prototype *protoptr)
+{
+  return PC_OK;
+}
+
+/* Parse a two-line entry for a built-in function.  */
+static parse_codes
+parse_bif_entry (void)
+{
+  /* Check for end of stanza.  */
+  pos = 0;
+  consume_whitespace ();
+  if (linebuf[pos] == '[')
+    return PC_EOSTANZA;
+
+  /* Allocate an entry in the bif table.  */
+  if (num_bifs >= MAXBIFS - 1)
+    {
+      (*diag) ("too many built-in functions.\n");
+      return PC_PARSEFAIL;
+    }
+
+  curr_bif = num_bifs++;
+  bifs[curr_bif].stanza = curr_bif_stanza;
+
+  /* Read the first token and see if it is a function modifier.  */
+  consume_whitespace ();
+  int oldpos = pos;
+  char *token = match_identifier ();
+  if (!token)
+    {
+      (*diag) ("malformed entry at column %d\n", oldpos + 1);
+      return PC_PARSEFAIL;
+    }
+
+  if (!strcmp (token, "const"))
+    bifs[curr_bif].kind = FNK_CONST;
+  else if (!strcmp (token, "pure"))
+    bifs[curr_bif].kind = FNK_PURE;
+  else if (!strcmp (token, "fpmath"))
+    bifs[curr_bif].kind = FNK_FPMATH;
+  else
+    {
+      /* No function modifier, so push the token back.  */
+      pos = oldpos;
+      bifs[curr_bif].kind = FNK_NONE;
+    }
+
+  if (parse_prototype (&bifs[curr_bif].proto) == PC_PARSEFAIL)
+    return PC_PARSEFAIL;
+
+  /* Now process line 2.  First up is the builtin id.  */
+  if (!advance_line (bif_file))
+    {
+      (*diag) ("unexpected EOF.\n");
+      return PC_PARSEFAIL;
+    }
+
+  pos = 0;
+  consume_whitespace ();
+  oldpos = pos;
+  bifs[curr_bif].idname = match_identifier ();
+  if (!bifs[curr_bif].idname)
+    {
+      (*diag) ("missing builtin id at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+
+#ifdef DEBUG
+  (*diag) ("ID name is '%s'.\n", bifs[curr_bif].idname);
+#endif
+
+  /* Save the ID in a lookup structure.  */
+  if (!rbt_insert (&bif_rbt, bifs[curr_bif].idname))
+    {
+      (*diag) ("duplicate function ID '%s' at column %d.\n",
+	       bifs[curr_bif].idname, oldpos + 1);
+      return PC_PARSEFAIL;
+    }
+
+  /* Append a number representing the order in which this function
+     was encountered to its name, and save in another lookup
+     structure.  */
+  char *buf;
+  asprintf (&buf, "%s:%05d", bifs[curr_bif].idname, curr_bif);
+
+  if (!rbt_insert (&bifo_rbt, buf))
+    {
+      (*diag) ("internal error inserting '%s' in bifo_rbt\n", buf);
+      return PC_PARSEFAIL;
+    }
+
+  /* Now the pattern name.  */
+  consume_whitespace ();
+  bifs[curr_bif].patname = match_identifier ();
+  if (!bifs[curr_bif].patname)
+    {
+      (*diag) ("missing pattern name at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+
+#ifdef DEBUG
+  (*diag) ("pattern name is '%s'.\n", bifs[curr_bif].patname);
+#endif
+
+  /* Process attributes.  */
+  return parse_bif_attrs (&bifs[curr_bif].attrs);
+}
+
+/* Parse one stanza of the input BIF file.  linebuf already contains the
+   first line to parse.  */
+static parse_codes
+parse_bif_stanza (void)
+{
+  /* Parse the stanza header.  */
+  pos = 0;
+  consume_whitespace ();
+
+  if (linebuf[pos] != '[')
+    {
+      (*diag) ("ill-formed stanza header at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  safe_inc_pos ();
+
+  const char *stanza_name = match_to_right_bracket ();
+  if (!stanza_name)
+    {
+      (*diag) ("no expression found in stanza header.\n");
+      return PC_PARSEFAIL;
+    }
+
+  curr_bif_stanza = stanza_name_to_stanza (stanza_name);
+
+  if (linebuf[pos] != ']')
+    {
+      (*diag) ("ill-formed stanza header at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  safe_inc_pos ();
+
+  consume_whitespace ();
+  if (linebuf[pos] != '\n' && pos != LINELEN - 1)
+    {
+      (*diag) ("garbage after stanza header.\n");
+      return PC_PARSEFAIL;
+    }
+
+  parse_codes result = PC_OK;
+
+  while (result != PC_EOSTANZA)
+    {
+      if (!advance_line (bif_file))
+	return PC_EOFILE;
+      result = parse_bif_entry ();
+      if (result == PC_PARSEFAIL)
+	return PC_PARSEFAIL;
+    }
+
+  return PC_OK;
+}
+
 /* Parse the built-in file.  */
 static parse_codes
 parse_bif (void)
 {
-  return PC_OK;
+  parse_codes result;
+  diag = &bif_diag;
+  if (!advance_line (bif_file))
+    return PC_OK;
+
+  do
+    result = parse_bif_stanza ();
+  while (result == PC_OK);
+
+  if (result == PC_EOFILE)
+    return PC_OK;
+  return result;
+}
+
+/* Callback function for create_bif_order.  */
+void set_bif_order (char *str)
+{
+  int num = 0;
+  char *colon = strchr (str, ':');
+  sscanf (++colon, "%d", &num);
+  bif_order[bif_index++] = num;
 }
 
 /* Create a mapping from function IDs in their final order to the order
@@ -901,6 +1276,8 @@ parse_bif (void)
 static void
 create_bif_order (void)
 {
+  bif_order = (int *) malloc ((curr_bif + 1)  * sizeof (int));
+  rbt_inorder_callback (&bifo_rbt, bifo_rbt.rbt_root, set_bif_order);
 }
 
 /* Parse the overload file.  */
