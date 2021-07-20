@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define if you want assertions enabled. This is a cheap check. */
+#undef ENABLE_ASSERT_CHECKING
+
 /* Define if accept4 provided. */
 #undef HAVE_ACCEPT4
 
