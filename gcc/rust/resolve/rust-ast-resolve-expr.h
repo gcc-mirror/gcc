@@ -196,6 +196,11 @@ public:
 
   void visit (AST::BlockExpr &expr) override;
 
+  void visit (AST::UnsafeBlockExpr &expr) override
+  {
+    expr.get_block_expr ()->accept_vis (*this);
+  }
+
   void visit (AST::ArrayElemsValues &elems) override
   {
     elems.iterate ([&] (AST::Expr *elem) mutable -> bool {

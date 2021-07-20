@@ -711,6 +711,12 @@ public:
 
   void visit (HIR::BlockExpr &expr) override;
 
+  void visit (HIR::UnsafeBlockExpr &expr) override
+  {
+    infered
+      = TypeCheckExpr::Resolve (expr.get_block_expr ().get (), inside_loop);
+  }
+
   void visit (HIR::ArrayIndexExpr &expr) override
   {
     TyTy::BaseType *size_ty;
