@@ -23,6 +23,7 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-tyty-rules.h"
 #include "rust-tyty-cmp.h"
+#include "rust-tyty-coercion.h"
 #include "rust-hir-map.h"
 #include "rust-substitution-mapper.h"
 
@@ -111,6 +112,13 @@ InferType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
+InferType::coerce (BaseType *other)
+{
+  InferCoercionRules r (this);
+  return r.coerce (other);
+}
+
+BaseType *
 InferType::clone ()
 {
   return new InferType (get_ref (), get_ty_ref (), get_infer_kind (),
@@ -170,6 +178,12 @@ bool
 ErrorType::can_eq (const BaseType *other, bool emit_errors) const
 {
   return get_kind () == other->get_kind ();
+}
+
+BaseType *
+ErrorType::coerce (BaseType *other)
+{
+  return this;
 }
 
 BaseType *
@@ -438,6 +452,13 @@ ADTType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+ADTType::coerce (BaseType *other)
+{
+  ADTCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 ADTType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -605,6 +626,13 @@ TupleType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+TupleType::coerce (BaseType *other)
+{
+  TupleCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 TupleType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -693,6 +721,13 @@ FnType::unify (BaseType *other)
 {
   FnRules r (this);
   return r.unify (other);
+}
+
+BaseType *
+FnType::coerce (BaseType *other)
+{
+  FnCoercionRules r (this);
+  return r.coerce (other);
 }
 
 bool
@@ -896,6 +931,13 @@ FnPtr::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+FnPtr::coerce (BaseType *other)
+{
+  FnptrCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 FnPtr::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -969,6 +1011,13 @@ ArrayType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+ArrayType::coerce (BaseType *other)
+{
+  ArrayCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 ArrayType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1030,6 +1079,13 @@ BoolType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+BoolType::coerce (BaseType *other)
+{
+  BoolCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 BoolType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1080,6 +1136,13 @@ IntType::unify (BaseType *other)
 {
   IntRules r (this);
   return r.unify (other);
+}
+
+BaseType *
+IntType::coerce (BaseType *other)
+{
+  IntCoercionRules r (this);
+  return r.coerce (other);
 }
 
 bool
@@ -1145,6 +1208,13 @@ UintType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+UintType::coerce (BaseType *other)
+{
+  UintCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 UintType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1202,6 +1272,13 @@ FloatType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+FloatType::coerce (BaseType *other)
+{
+  FloatCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 FloatType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1251,6 +1328,13 @@ USizeType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+USizeType::coerce (BaseType *other)
+{
+  USizeCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 USizeType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1287,6 +1371,13 @@ ISizeType::unify (BaseType *other)
 {
   ISizeRules r (this);
   return r.unify (other);
+}
+
+BaseType *
+ISizeType::coerce (BaseType *other)
+{
+  ISizeCoercionRules r (this);
+  return r.coerce (other);
 }
 
 bool
@@ -1327,6 +1418,13 @@ CharType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+CharType::coerce (BaseType *other)
+{
+  CharCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 CharType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1355,7 +1453,8 @@ ReferenceType::accept_vis (TyConstVisitor &vis) const
 std::string
 ReferenceType::as_string () const
 {
-  return "&" + get_base ()->as_string ();
+  return std::string ("&") + (is_mutable () ? "mut" : "") + " "
+	 + get_base ()->as_string ();
 }
 
 BaseType *
@@ -1363,6 +1462,13 @@ ReferenceType::unify (BaseType *other)
 {
   ReferenceRules r (this);
   return r.unify (other);
+}
+
+BaseType *
+ReferenceType::coerce (BaseType *other)
+{
+  ReferenceCoercionRules r (this);
+  return r.coerce (other);
 }
 
 bool
@@ -1391,7 +1497,7 @@ ReferenceType::get_base () const
 BaseType *
 ReferenceType::clone ()
 {
-  return new ReferenceType (get_ref (), get_ty_ref (), base,
+  return new ReferenceType (get_ref (), get_ty_ref (), base, is_mutable (),
 			    get_combined_refs ());
 }
 
@@ -1444,6 +1550,13 @@ ParamType::unify (BaseType *other)
 {
   ParamRules r (this);
   return r.unify (other);
+}
+
+BaseType *
+ParamType::coerce (BaseType *other)
+{
+  ParamCoercionRules r (this);
+  return r.coerce (other);
 }
 
 bool
@@ -1552,6 +1665,13 @@ StrType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+StrType::coerce (BaseType *other)
+{
+  StrCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 StrType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1590,6 +1710,13 @@ NeverType::unify (BaseType *other)
   return r.unify (other);
 }
 
+BaseType *
+NeverType::coerce (BaseType *other)
+{
+  NeverCoercionRules r (this);
+  return r.coerce (other);
+}
+
 bool
 NeverType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1626,6 +1753,13 @@ PlaceholderType::unify (BaseType *other)
 {
   PlaceholderRules r (this);
   return r.unify (other);
+}
+
+BaseType *
+PlaceholderType::coerce (BaseType *other)
+{
+  PlaceholderCoercionRules r (this);
+  return r.coerce (other);
 }
 
 bool

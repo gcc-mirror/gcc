@@ -156,8 +156,19 @@ public:
   virtual BaseType *unify (BaseType *other) = 0;
 
   // similar to unify but does not actually perform type unification but
-  // determines whether they are compatible
+  // determines whether they are compatible. Consider the following
+  //
+  // fn foo<T>() -> T { ... }
+  // fn foo() -> i32 { ... }
+  //
+  // when the function has been substituted they can be considered equal.
+  //
+  // It can also be used to optional emit errors for trait item compatibility
+  // checks
   virtual bool can_eq (const BaseType *other, bool emit_errors) const = 0;
+
+  // this is the base coercion interface for types
+  virtual BaseType *coerce (BaseType *other) = 0;
 
   // Check value equality between two ty. Type inference rules are ignored. Two
   //   ty are considered equal if they're of the same kind, and
@@ -279,6 +290,8 @@ public:
 
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
+  BaseType *coerce (BaseType *other) override;
+
   BaseType *clone () final override;
 
   InferTypeKind get_infer_kind () const { return infer_kind; }
@@ -313,6 +326,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   BaseType *clone () final override;
 
@@ -342,6 +356,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   BaseType *clone () final override;
 
@@ -428,6 +443,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -861,6 +877,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -981,6 +998,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1081,6 +1099,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1124,6 +1143,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1164,6 +1184,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -1198,6 +1219,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   IntKind get_int_kind () const { return int_kind; }
 
@@ -1239,6 +1261,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   UintKind get_uint_kind () const { return uint_kind; }
 
@@ -1278,6 +1301,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   FloatKind get_float_kind () const { return float_kind; }
 
@@ -1293,22 +1317,12 @@ class USizeType : public BaseType
 {
 public:
   USizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::USIZE)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ref, TypeKind::USIZE, refs)
+  {}
 
   USizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::USIZE)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ty_ref, TypeKind::USIZE, refs)
+  {}
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -1319,6 +1333,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -1327,22 +1342,12 @@ class ISizeType : public BaseType
 {
 public:
   ISizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ISIZE)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ref, TypeKind::ISIZE, refs)
+  {}
 
   ISizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ISIZE)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ty_ref, TypeKind::ISIZE, refs)
+  {}
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -1353,6 +1358,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -1361,22 +1367,12 @@ class CharType : public BaseType
 {
 public:
   CharType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::CHAR)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ref, TypeKind::CHAR, refs)
+  {}
 
   CharType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::CHAR)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ty_ref, TypeKind::CHAR, refs)
+  {}
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -1387,6 +1383,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -1394,25 +1391,15 @@ public:
 class ReferenceType : public BaseType
 {
 public:
-  ReferenceType (HirId ref, TyVar base,
+  ReferenceType (HirId ref, TyVar base, bool is_mut,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::REF), base (base)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ref, TypeKind::REF, refs), base (base), is_mut (is_mut)
+  {}
 
-  ReferenceType (HirId ref, HirId ty_ref, TyVar base,
+  ReferenceType (HirId ref, HirId ty_ref, TyVar base, bool is_mut,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::REF), base (base)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ty_ref, TypeKind::REF, refs), base (base), is_mut (is_mut)
+  {}
 
   BaseType *get_base () const;
 
@@ -1425,6 +1412,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1437,30 +1425,23 @@ public:
 
   ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
 
+  bool is_mutable () const { return is_mut; }
+
 private:
   TyVar base;
+  bool is_mut;
 };
 
 class StrType : public BaseType
 {
 public:
   StrType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::STR)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ref, TypeKind::STR, refs)
+  {}
 
   StrType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::STR)
-  {
-    // TODO unused; should 'refs' be passed as the last argument to the
-    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
-    // provided by caller)?
-    (void) refs;
-  }
+    : BaseType (ref, ty_ref, TypeKind::STR, refs)
+  {}
 
   std::string get_name () const override final { return as_string (); }
 
@@ -1471,6 +1452,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1505,6 +1487,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   BaseType *clone () final override;
 
@@ -1534,6 +1517,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
 
   BaseType *clone () final override;
 

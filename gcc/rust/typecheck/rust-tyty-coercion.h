@@ -16,8 +16,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_TYTY_RULES
-#define RUST_TYTY_RULES
+#ifndef RUST_TYTY_COERCION_RULES
+#define RUST_TYTY_COERCION_RULES
 
 #include "rust-diagnostics.h"
 #include "rust-tyty.h"
@@ -31,34 +31,12 @@ rust_get_backend ();
 namespace Rust {
 namespace TyTy {
 
-/* Rules specify how to unify two Ty. For example, the result of unifying the
-   two tuples (u64, A) and (B, i64) would be (u64, i64).
-
-   Performing a unification requires a double dispatch. To illustrate, suppose
-   we want to unify `ty1` and `ty2`. Here's what it looks like:
-     1. The caller calls `ty1.unify(ty2)`. This is the first dispatch.
-     2. `ty1` creates a rule specific to its type(e.g. TupleRules).
-     3. The rule calls `ty2.accept_vis(rule)`. This is the second dispatch.
-     4. `ty2` calls `rule.visit(*this)`, which will method-overload to the
-	      correct implementation at compile time.
-
-   The nice thing about Rules is that they seperate unification logic from the
-   representation of Ty. To support unifying a new Ty, implement its
-   `accept_vis` and `unify` method to pass the unification request to Rules.
-   Then, create a new `XXXRules` class and implement one `visit` method for
-   every Ty it can unify with. */
-class BaseRules : public TyVisitor
+class BaseCoercionRules : public TyVisitor
 {
 public:
-  virtual ~BaseRules () {}
+  virtual ~BaseCoercionRules () {}
 
-  /* Unify two ty. Returns a pointer to the newly-created unified ty, or nullptr
-     if the two types cannot be unified. The caller is responsible for releasing
-     the memory of the returned ty.
-
-     This method is meant to be used internally by Ty. If you're trying to unify
-     two ty, you can simply call `unify` on ty themselves. */
-  virtual BaseType *unify (BaseType *other)
+  virtual BaseType *coerce (BaseType *other)
   {
     if (other->get_kind () == TypeKind::PARAM)
       {
@@ -319,7 +297,7 @@ public:
   }
 
 protected:
-  BaseRules (BaseType *base)
+  BaseCoercionRules (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
       context (Resolver::TypeCheckContext::get ()),
       resolved (new ErrorType (base->get_ref (), base->get_ref ()))
@@ -339,12 +317,13 @@ private:
   virtual BaseType *get_base () = 0;
 };
 
-class InferRules : public BaseRules
+class InferCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  InferRules (InferType *base) : BaseRules (base), base (base) {}
+  InferCoercionRules (InferType *base) : BaseCoercionRules (base), base (base)
+  {}
 
   void visit (BoolType &type) override
   {
@@ -356,7 +335,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (IntType &type) override
@@ -371,7 +350,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (UintType &type) override
@@ -386,7 +365,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (USizeType &type) override
@@ -401,7 +380,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (ISizeType &type) override
@@ -416,7 +395,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (FloatType &type) override
@@ -430,7 +409,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (ArrayType &type) override
@@ -443,7 +422,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (ADTType &type) override
@@ -456,7 +435,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (TupleType &type) override
@@ -469,7 +448,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (InferType &type) override
@@ -509,7 +488,7 @@ public:
 	break;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (CharType &type) override
@@ -523,7 +502,7 @@ public:
 	  return;
 	}
 
-      BaseRules::visit (type);
+      BaseCoercionRules::visit (type);
     }
   }
 
@@ -538,7 +517,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
   void visit (ParamType &type) override
@@ -551,7 +530,7 @@ public:
 	return;
       }
 
-    BaseRules::visit (type);
+    BaseCoercionRules::visit (type);
   }
 
 private:
@@ -560,18 +539,18 @@ private:
   InferType *base;
 };
 
-class FnRules : public BaseRules
+class FnCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  FnRules (FnType *base) : BaseRules (base), base (base) {}
+  FnCoercionRules (FnType *base) : BaseCoercionRules (base), base (base) {}
 
   void visit (InferType &type) override
   {
     if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -583,7 +562,7 @@ public:
   {
     if (base->num_params () != type.num_params ())
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -595,7 +574,7 @@ public:
 	auto unified_param = a->unify (b);
 	if (unified_param == nullptr)
 	  {
-	    BaseRules::visit (type);
+	    BaseCoercionRules::visit (type);
 	    return;
 	  }
       }
@@ -604,7 +583,7 @@ public:
       = base->get_return_type ()->unify (type.get_return_type ());
     if (unified_return == nullptr)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -618,18 +597,18 @@ private:
   FnType *base;
 };
 
-class FnptrRules : public BaseRules
+class FnptrCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  FnptrRules (FnPtr *base) : BaseRules (base), base (base) {}
+  FnptrCoercionRules (FnPtr *base) : BaseCoercionRules (base), base (base) {}
 
   void visit (InferType &type) override
   {
     if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -645,13 +624,13 @@ public:
     if (unified_result == nullptr
 	|| unified_result->get_kind () == TypeKind::ERROR)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
     if (base->num_params () != type.num_params ())
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -663,7 +642,7 @@ public:
 	if (unified_param == nullptr
 	    || unified_param->get_kind () == TypeKind::ERROR)
 	  {
-	    BaseRules::visit (type);
+	    BaseCoercionRules::visit (type);
 	    return;
 	  }
       }
@@ -680,13 +659,13 @@ public:
     if (unified_result == nullptr
 	|| unified_result->get_kind () == TypeKind::ERROR)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
     if (base->num_params () != type.num_params ())
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -698,7 +677,7 @@ public:
 	if (unified_param == nullptr
 	    || unified_param->get_kind () == TypeKind::ERROR)
 	  {
-	    BaseRules::visit (type);
+	    BaseCoercionRules::visit (type);
 	    return;
 	  }
       }
@@ -713,12 +692,13 @@ private:
   FnPtr *base;
 };
 
-class ArrayRules : public BaseRules
+class ArrayCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  ArrayRules (ArrayType *base) : BaseRules (base), base (base) {}
+  ArrayCoercionRules (ArrayType *base) : BaseCoercionRules (base), base (base)
+  {}
 
   void visit (ArrayType &type) override
   {
@@ -727,7 +707,7 @@ public:
       = base->get_element_type ()->unify (type.get_element_type ());
     if (base_resolved == nullptr)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -737,7 +717,7 @@ public:
     if (!backend->const_values_equal (type.get_capacity (),
 				      base->get_capacity ()))
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -752,12 +732,12 @@ private:
   ArrayType *base;
 };
 
-class BoolRules : public BaseRules
+class BoolCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  BoolRules (BoolType *base) : BaseRules (base), base (base) {}
+  BoolCoercionRules (BoolType *base) : BaseCoercionRules (base), base (base) {}
 
   void visit (BoolType &type) override
   {
@@ -773,7 +753,7 @@ public:
 	break;
 
       default:
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	break;
       }
   }
@@ -784,19 +764,19 @@ private:
   BoolType *base;
 };
 
-class IntRules : public BaseRules
+class IntCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  IntRules (IntType *base) : BaseRules (base), base (base) {}
+  IntCoercionRules (IntType *base) : BaseCoercionRules (base), base (base) {}
 
   void visit (InferType &type) override
   {
     // cant assign a float inference variable
     if (type.get_infer_kind () == InferType::InferTypeKind::FLOAT)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -808,7 +788,7 @@ public:
   {
     if (type.get_int_kind () != base->get_int_kind ())
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -822,19 +802,19 @@ private:
   IntType *base;
 };
 
-class UintRules : public BaseRules
+class UintCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  UintRules (UintType *base) : BaseRules (base), base (base) {}
+  UintCoercionRules (UintType *base) : BaseCoercionRules (base), base (base) {}
 
   void visit (InferType &type) override
   {
     // cant assign a float inference variable
     if (type.get_infer_kind () == InferType::InferTypeKind::FLOAT)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -846,7 +826,7 @@ public:
   {
     if (type.get_uint_kind () != base->get_uint_kind ())
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -860,18 +840,19 @@ private:
   UintType *base;
 };
 
-class FloatRules : public BaseRules
+class FloatCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  FloatRules (FloatType *base) : BaseRules (base), base (base) {}
+  FloatCoercionRules (FloatType *base) : BaseCoercionRules (base), base (base)
+  {}
 
   void visit (InferType &type) override
   {
     if (type.get_infer_kind () == InferType::InferTypeKind::INTEGRAL)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -883,7 +864,7 @@ public:
   {
     if (type.get_float_kind () != base->get_float_kind ())
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -897,24 +878,24 @@ private:
   FloatType *base;
 };
 
-class ADTRules : public BaseRules
+class ADTCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  ADTRules (ADTType *base) : BaseRules (base), base (base) {}
+  ADTCoercionRules (ADTType *base) : BaseCoercionRules (base), base (base) {}
 
   void visit (ADTType &type) override
   {
     if (base->get_identifier ().compare (type.get_identifier ()) != 0)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
     if (base->num_fields () != type.num_fields ())
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -940,18 +921,19 @@ private:
   ADTType *base;
 };
 
-class TupleRules : public BaseRules
+class TupleCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  TupleRules (TupleType *base) : BaseRules (base), base (base) {}
+  TupleCoercionRules (TupleType *base) : BaseCoercionRules (base), base (base)
+  {}
 
   void visit (TupleType &type) override
   {
     if (base->num_fields () != type.num_fields ())
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -978,19 +960,20 @@ private:
   TupleType *base;
 };
 
-class USizeRules : public BaseRules
+class USizeCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  USizeRules (USizeType *base) : BaseRules (base), base (base) {}
+  USizeCoercionRules (USizeType *base) : BaseCoercionRules (base), base (base)
+  {}
 
   void visit (InferType &type) override
   {
     // cant assign a float inference variable
     if (type.get_infer_kind () == InferType::InferTypeKind::FLOAT)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -1006,19 +989,20 @@ private:
   USizeType *base;
 };
 
-class ISizeRules : public BaseRules
+class ISizeCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  ISizeRules (ISizeType *base) : BaseRules (base), base (base) {}
+  ISizeCoercionRules (ISizeType *base) : BaseCoercionRules (base), base (base)
+  {}
 
   void visit (InferType &type) override
   {
     // cant assign a float inference variable
     if (type.get_infer_kind () == InferType::InferTypeKind::FLOAT)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -1034,18 +1018,18 @@ private:
   ISizeType *base;
 };
 
-class CharRules : public BaseRules
+class CharCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  CharRules (CharType *base) : BaseRules (base), base (base) {}
+  CharCoercionRules (CharType *base) : BaseCoercionRules (base), base (base) {}
 
   void visit (InferType &type) override
   {
     if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -1061,12 +1045,14 @@ private:
   CharType *base;
 };
 
-class ReferenceRules : public BaseRules
+class ReferenceCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  ReferenceRules (ReferenceType *base) : BaseRules (base), base (base) {}
+  ReferenceCoercionRules (ReferenceType *base)
+    : BaseCoercionRules (base), base (base)
+  {}
 
   void visit (ReferenceType &type) override
   {
@@ -1077,19 +1063,22 @@ public:
     if (base_resolved == nullptr
 	|| base_resolved->get_kind () == TypeKind::ERROR)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
-    if (base->is_mutable () != type.is_mutable ())
+    // we can allow for mutability changes here by casting down from mutability
+    // eg:  mut vs const, we cant take a mutable reference from a const
+    // eg:  const vs mut we can take a const reference from a mutable one
+    if (!base->is_mutable () || (base->is_mutable () == type.is_mutable ()))
       {
-	BaseRules::visit (type);
+	resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
+				      TyVar (base_resolved->get_ref ()),
+				      base->is_mutable ());
 	return;
       }
 
-    resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
-				  TyVar (base_resolved->get_ref ()),
-				  base->is_mutable ());
+    BaseCoercionRules::visit (type);
   }
 
 private:
@@ -1098,12 +1087,13 @@ private:
   ReferenceType *base;
 };
 
-class ParamRules : public BaseRules
+class ParamCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  ParamRules (ParamType *base) : BaseRules (base), base (base) {}
+  ParamCoercionRules (ParamType *base) : BaseCoercionRules (base), base (base)
+  {}
 
   // param types are a placeholder we shouldn't have cases where we unify
   // against it. eg: struct foo<T> { a: T }; When we invoke it we can do either:
@@ -1114,10 +1104,10 @@ public:
   //
   // rust also allows for a = foo{a:123}; Where we can use an Inference Variable
   // to handle the typing of the struct
-  BaseType *unify (BaseType *other) override final
+  BaseType *coerce (BaseType *other) override final
   {
     if (base->get_ref () == base->get_ty_ref ())
-      return BaseRules::unify (other);
+      return BaseCoercionRules::coerce (other);
 
     auto context = Resolver::TypeCheckContext::get ();
     BaseType *lookup = nullptr;
@@ -1131,7 +1121,7 @@ public:
   {
     if (base->get_symbol ().compare (type.get_symbol ()) != 0)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -1142,7 +1132,7 @@ public:
   {
     if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
       {
-	BaseRules::visit (type);
+	BaseCoercionRules::visit (type);
 	return;
       }
 
@@ -1155,13 +1145,13 @@ private:
   ParamType *base;
 };
 
-class StrRules : public BaseRules
+class StrCoercionRules : public BaseCoercionRules
 {
   // FIXME we will need a enum for the StrType like ByteBuf etc..
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  StrRules (StrType *base) : BaseRules (base), base (base) {}
+  StrCoercionRules (StrType *base) : BaseCoercionRules (base), base (base) {}
 
   void visit (StrType &type) override { resolved = type.clone (); }
 
@@ -1171,12 +1161,13 @@ private:
   StrType *base;
 };
 
-class NeverRules : public BaseRules
+class NeverCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  NeverRules (NeverType *base) : BaseRules (base), base (base) {}
+  NeverCoercionRules (NeverType *base) : BaseCoercionRules (base), base (base)
+  {}
 
   virtual void visit (NeverType &type) override { resolved = type.clone (); }
 
@@ -1186,12 +1177,14 @@ private:
   NeverType *base;
 };
 
-class PlaceholderRules : public BaseRules
+class PlaceholderCoercionRules : public BaseCoercionRules
 {
-  using Rust::TyTy::BaseRules::visit;
+  using Rust::TyTy::BaseCoercionRules::visit;
 
 public:
-  PlaceholderRules (PlaceholderType *base) : BaseRules (base), base (base) {}
+  PlaceholderCoercionRules (PlaceholderType *base)
+    : BaseCoercionRules (base), base (base)
+  {}
 
 private:
   BaseType *get_base () override { return base; }
@@ -1202,4 +1195,4 @@ private:
 } // namespace TyTy
 } // namespace Rust
 
-#endif // RUST_TYTY_RULES
+#endif // RUST_TYTY_COERCION_RULES
