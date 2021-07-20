@@ -470,7 +470,7 @@ AC_DEFUN([gcc_GAS_FLAGS],
   esac])
 ])
 
-dnl gcc_GAS_CHECK_FEATURE(description, cv, [[elf,]major,minor,patchlevel],
+dnl gcc_GAS_CHECK_FEATURE(description, cv,
 dnl [extra switches to as], [assembler input],
 dnl [extra testing logic], [command if feature available])
 dnl
@@ -484,23 +484,23 @@ AC_DEFUN([gcc_GAS_CHECK_FEATURE],
 AC_CACHE_CHECK([assembler for $1], [$2],
  [[$2]=no
   if test x$gcc_cv_as != x; then
-    AS_ECHO([ifelse(m4_substr([$5],0,1),[$], "[$5]", '[$5]')]) > conftest.s
-    if AC_TRY_COMMAND([$gcc_cv_as $gcc_cv_as_flags $4 -o conftest.o conftest.s >&AS_MESSAGE_LOG_FD])
+    AS_ECHO([ifelse(m4_substr([$4],0,1),[$], "[$4]", '[$4]')]) > conftest.s
+    if AC_TRY_COMMAND([$gcc_cv_as $gcc_cv_as_flags $3 -o conftest.o conftest.s >&AS_MESSAGE_LOG_FD])
     then
-	ifelse([$6],, [$2]=yes, [$6])
+	ifelse([$5],, [$2]=yes, [$5])
     else
       echo "configure: failed program was" >&AS_MESSAGE_LOG_FD
       cat conftest.s >&AS_MESSAGE_LOG_FD
     fi
     rm -f conftest.o conftest.s
   fi])
-ifelse([$7],,,[dnl
+ifelse([$6],,,[dnl
 if test $[$2] = yes; then
-  $7
+  $6
 fi])
-ifelse([$8],,,[dnl
+ifelse([$7],,,[dnl
 if test $[$2] != yes; then
-  $8
+  $7
 fi])])
 
 dnl GCC_TARGET_TEMPLATE(KEY)
