@@ -69,6 +69,9 @@ test01()
     VERIFY( e.path1() == f );
   }
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  // no symlinks
+#else
   // PR libstdc++/101510 create_directory on an existing symlink to a directory
   fs::create_directory(p/"dir");
   auto link = p/"link";
@@ -79,6 +82,7 @@ test01()
   VERIFY( !ec );
   b = fs::create_directory(link);
   VERIFY( !b );
+#endif
 
   remove_all(p, ec);
 }
