@@ -414,8 +414,7 @@ package body Einfo.Utils is
       if Use_New_Unknown_Rep then
          return not Field_Is_Initial_Zero (E, F_Esize);
       else
-         return Esize (E) /= Uint_0
-           and then Present (Esize (E));
+         return Present (Esize (E)) and then Esize (E) /= Uint_0;
       end if;
    end Known_Esize;
 

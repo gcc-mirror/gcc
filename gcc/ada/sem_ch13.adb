@@ -860,6 +860,7 @@ package body Sem_Ch13 is
 
       if Known_Alignment (Typ)
         and then not Has_Alignment_Clause (Typ)
+        and then Present (Size)
         and then Size mod (Alignment (Typ) * SSU) /= 0
       then
          Reinit_Alignment (Typ);
@@ -7125,7 +7126,7 @@ package body Sem_Ch13 is
             else
                Check_Size (Expr, U_Ent, Size, Biased);
 
-               if Size <= 0 then
+               if No (Size) or else Size <= 0 then
                   Error_Msg_N ("Object_Size must be positive", Expr);
 
                elsif Is_Scalar_Type (U_Ent) then
