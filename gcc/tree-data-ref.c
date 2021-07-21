@@ -6208,7 +6208,7 @@ free_dependence_relation (struct data_dependence_relation *ddr)
    DEPENDENCE_RELATIONS.  */
 
 void
-free_dependence_relations (vec<ddr_p> dependence_relations)
+free_dependence_relations (vec<ddr_p>& dependence_relations)
 {
   for (data_dependence_relation *ddr : dependence_relations)
     if (ddr)
@@ -6220,7 +6220,7 @@ free_dependence_relations (vec<ddr_p> dependence_relations)
 /* Free the memory used by the data references from DATAREFS.  */
 
 void
-free_data_refs (vec<data_reference_p> datarefs)
+free_data_refs (vec<data_reference_p>& datarefs)
 {
   for (data_reference *dr : datarefs)
     free_data_ref (dr);

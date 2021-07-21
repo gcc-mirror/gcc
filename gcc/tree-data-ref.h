@@ -534,9 +534,9 @@ extern void debug (vec<ddr_p> &ref);
 extern void debug (vec<ddr_p> *ptr);
 extern void debug_data_dependence_relations (vec<ddr_p> );
 extern void free_dependence_relation (struct data_dependence_relation *);
-extern void free_dependence_relations (vec<ddr_p> );
+extern void free_dependence_relations (vec<ddr_p>& );
 extern void free_data_ref (data_reference_p);
-extern void free_data_refs (vec<data_reference_p> );
+extern void free_data_refs (vec<data_reference_p>& );
 extern opt_result find_data_references_in_stmt (class loop *, gimple *,
 						vec<data_reference_p> *);
 extern bool graphite_find_data_references_in_stmt (edge, loop_p, gimple *,
