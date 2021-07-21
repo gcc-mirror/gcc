@@ -477,23 +477,20 @@ state_purge_annotator::add_node_annotations (graphviz_out *gv,
 	      "lightblue");
    pp_write_text_to_stream (pp);
 
-   // FIXME: passing in a NULL in-edge means we get no hits
-   function_point before_supernode
-     (function_point::before_supernode (&n, NULL));
+   /* Different in-edges mean different names need purging.
+      Determine which points to dump.  */
+   auto_vec<function_point> points;
+   if (n.entry_p ())
+     points.safe_push (function_point::before_supernode (&n, NULL));
+   else
+     for (auto inedge : n.m_preds)
+       points.safe_push (function_point::before_supernode (&n, inedge));
 
-   for (state_purge_map::iterator iter = m_map->begin ();
-	iter != m_map->end ();
-	++iter)
+   for (auto & point : points)
      {
-       tree name = (*iter).first;
-       state_purge_per_ssa_name *per_name_data = (*iter).second;
-       if (per_name_data->get_function () == n.m_fun)
-	 {
-	   if (per_name_data->needed_at_point_p (before_supernode))
-	     pp_printf (pp, "%qE needed here", name);
-	   else
-	     pp_printf (pp, "%qE not needed here", name);
-	 }
+       point.print (pp, format (true));
+       pp_newline (pp);
+       print_needed (gv, point, false);
        pp_newline (pp);
      }
 
@@ -502,19 +499,20 @@ state_purge_annotator::add_node_annotations (graphviz_out *gv,
    return false;
 }
 
-/* Print V to GV as a comma-separated list in braces within a <TR>,
-   titling it with TITLE.
+/* Print V to GV as a comma-separated list in braces, titling it with TITLE.
+   If WITHIN_TABLE is true, print it within a <TR>
 
-   Subroutine of state_purge_annotator::add_stmt_annotations.  */
+   Subroutine of state_purge_annotator::print_needed.  */
 
 static void
 print_vec_of_names (graphviz_out *gv, const char *title,
-		    const auto_vec<tree> &v)
+		    const auto_vec<tree> &v, bool within_table)
 {
   pretty_printer *pp = gv->get_pp ();
   tree name;
   unsigned i;
-  gv->begin_trtd ();
+  if (within_table)
+    gv->begin_trtd ();
   pp_printf (pp, "%s: {", title);
   FOR_EACH_VEC_ELT (v, i, name)
     {
@@ -523,8 +521,11 @@ print_vec_of_names (graphviz_out *gv, const char *title,
       pp_printf (pp, "%qE", name);
     }
   pp_printf (pp, "}");
-  pp_write_text_as_html_like_dot_to_stream (pp);
-  gv->end_tdtr ();
+  if (within_table)
+    {
+      pp_write_text_as_html_like_dot_to_stream (pp);
+      gv->end_tdtr ();
+    }
   pp_newline (pp);
 }
 
@@ -556,6 +557,17 @@ state_purge_annotator::add_stmt_annotations (graphviz_out *gv,
   function_point before_stmt
     (function_point::before_stmt (supernode, stmt_idx));
 
+  print_needed (gv, before_stmt, true);
+}
+
+/* Get the ssa names needed and not-needed at POINT, and print them to GV.
+   If WITHIN_TABLE is true, print them within <TR> elements.  */
+
+void
+state_purge_annotator::print_needed (graphviz_out *gv,
+				     const function_point &point,
+				     bool within_table) const
+{
   auto_vec<tree> needed;
   auto_vec<tree> not_needed;
   for (state_purge_map::iterator iter = m_map->begin ();
@@ -564,17 +576,17 @@ state_purge_annotator::add_stmt_annotations (graphviz_out *gv,
     {
       tree name = (*iter).first;
       state_purge_per_ssa_name *per_name_data = (*iter).second;
-      if (per_name_data->get_function () == supernode->m_fun)
+      if (per_name_data->get_function () == point.get_function ())
 	{
-	  if (per_name_data->needed_at_point_p (before_stmt))
+	  if (per_name_data->needed_at_point_p (point))
 	    needed.safe_push (name);
 	  else
 	    not_needed.safe_push (name);
 	}
     }
 
-  print_vec_of_names (gv, "needed here", needed);
-  print_vec_of_names (gv, "not needed here", not_needed);
+  print_vec_of_names (gv, "needed here", needed, within_table);
+  print_vec_of_names (gv, "not needed here", not_needed, within_table);
 }
 
 #endif /* #if ENABLE_ANALYZER */
