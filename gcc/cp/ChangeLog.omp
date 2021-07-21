@@ -3,6 +3,16 @@
 	Backported from master:
 	2021-07-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/101535
+	* gimplify.c (omp_check_private): Properly skip ORT_TARGET_DATA
+	contexts in which decl isn't privatized and for ORT_TARGET return
+	false if decl is mapped.
+
+2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/101516
 	* semantics.c (finish_omp_reduction_clause): Also call
 	complete_type_or_else and return true if it fails.
