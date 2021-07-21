@@ -1323,6 +1323,7 @@ binding_cluster::purge_state_involving (const svalue *sval,
 					region_model_manager *sval_mgr)
 {
   auto_vec<const binding_key *> to_remove;
+  auto_vec<std::pair<const binding_key *, tree> > to_make_unknown;
   for (auto iter : m_map)
     {
       const binding_key *iter_key = iter.first;
@@ -1335,16 +1336,19 @@ binding_cluster::purge_state_involving (const svalue *sval,
 	}
       const svalue *iter_sval = iter.second;
       if (iter_sval->involves_p (sval))
-	{
-	  const svalue *new_sval
-	    = sval_mgr->get_or_create_unknown_svalue (iter_sval->get_type ());
-	  m_map.put (iter_key, new_sval);
-	}
+	to_make_unknown.safe_push (std::make_pair(iter_key,
+						  iter_sval->get_type ()));
     }
   for (auto iter : to_remove)
     {
       m_map.remove (iter);
       m_touched = true;
+    }
+  for (auto iter : to_make_unknown)
+    {
+      const svalue *new_sval
+	= sval_mgr->get_or_create_unknown_svalue (iter.second);
+      m_map.put (iter.first, new_sval);
     }
 }
 
