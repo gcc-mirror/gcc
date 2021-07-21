@@ -1072,6 +1072,93 @@ match_type (typeinfo *typedata, int voidok)
   return 1;
 }
 
+/* Parse the argument list.  */
+static parse_codes
+parse_args (prototype *protoptr)
+{
+  typelist **argptr = &protoptr->args;
+  int *nargs = &protoptr->nargs;
+  int *restr_opnd = protoptr->restr_opnd;
+  restriction *restr = protoptr->restr;
+  char **val1 = protoptr->restr_val1;
+  char **val2 = protoptr->restr_val2;
+  int restr_cnt = 0;
+
+  int success;
+  *nargs = 0;
+
+  /* Start the argument list.  */
+  consume_whitespace ();
+  if (linebuf[pos] != '(')
+    {
+      (*diag) ("missing '(' at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  safe_inc_pos ();
+
+  do {
+    consume_whitespace ();
+    int oldpos = pos;
+    typelist *argentry = (typelist *) malloc (sizeof (typelist));
+    memset (argentry, 0, sizeof *argentry);
+    typeinfo *argtype = &argentry->info;
+    success = match_type (argtype, VOID_NOTOK);
+    if (success)
+      {
+	if (argtype->restr)
+	  {
+	    if (restr_cnt >= MAXRESTROPNDS)
+	      {
+		(*diag) ("More than two %d operands\n", MAXRESTROPNDS);
+		return PC_PARSEFAIL;
+	      }
+	    restr_opnd[restr_cnt] = *nargs + 1;
+	    restr[restr_cnt] = argtype->restr;
+	    val1[restr_cnt] = argtype->val1;
+	    val2[restr_cnt] = argtype->val2;
+	    restr_cnt++;
+	  }
+	(*nargs)++;
+	*argptr = argentry;
+	argptr = &argentry->next;
+	consume_whitespace ();
+	if (linebuf[pos] == ',')
+	  safe_inc_pos ();
+	else if (linebuf[pos] != ')')
+	  {
+	    (*diag) ("arg not followed by ',' or ')' at column %d.\n",
+		     pos + 1);
+	    return PC_PARSEFAIL;
+	  }
+
+#ifdef DEBUG
+	(*diag) ("argument type: isvoid = %d, isconst = %d, isvector = %d, "
+		 "issigned = %d, isunsigned = %d, isbool = %d, ispixel = %d, "
+		 "ispointer = %d, base = %d, restr = %d, val1 = \"%s\", "
+		 "val2 = \"%s\", pos = %d.\n",
+		 argtype->isvoid, argtype->isconst, argtype->isvector,
+		 argtype->issigned, argtype->isunsigned, argtype->isbool,
+		 argtype->ispixel, argtype->ispointer, argtype->base,
+		 argtype->restr, argtype->val1, argtype->val2, pos + 1);
+#endif
+      }
+    else
+      {
+	free (argentry);
+	*argptr = NULL;
+	pos = oldpos;
+	if (linebuf[pos] != ')')
+	  {
+	    (*diag) ("badly terminated arg list at column %d.\n", pos + 1);
+	    return PC_PARSEFAIL;
+	  }
+	safe_inc_pos ();
+      }
+  } while (success);
+
+  return PC_OK;
+}
+
 /* Parse the attribute list.  */
 static parse_codes
 parse_bif_attrs (attrinfo *attrptr)
@@ -1084,6 +1171,64 @@ parse_bif_attrs (attrinfo *attrptr)
 static parse_codes
 parse_prototype (prototype *protoptr)
 {
+  typeinfo *ret_type = &protoptr->rettype;
+  char **bifname = &protoptr->bifname;
+
+  /* Get the return type.  */
+  consume_whitespace ();
+  int oldpos = pos;
+  int success = match_type (ret_type, VOID_OK);
+  if (!success)
+    {
+      (*diag) ("missing or badly formed return type at column %d.\n",
+	       oldpos + 1);
+      return PC_PARSEFAIL;
+    }
+
+#ifdef DEBUG
+  (*diag) ("return type: isvoid = %d, isconst = %d, isvector = %d, "
+	   "issigned = %d, isunsigned = %d, isbool = %d, ispixel = %d, "
+	   "ispointer = %d, base = %d, restr = %d, val1 = \"%s\", "
+	   "val2 = \"%s\", pos = %d.\n",
+	   ret_type->isvoid, ret_type->isconst, ret_type->isvector,
+	   ret_type->issigned, ret_type->isunsigned, ret_type->isbool,
+	   ret_type->ispixel, ret_type->ispointer, ret_type->base,
+	   ret_type->restr, ret_type->val1, ret_type->val2, pos + 1);
+#endif
+
+  /* Get the bif name.  */
+  consume_whitespace ();
+  oldpos = pos;
+  *bifname = match_identifier ();
+  if (!*bifname)
+    {
+      (*diag) ("missing function name at column %d.\n", oldpos + 1);
+      return PC_PARSEFAIL;
+    }
+
+#ifdef DEBUG
+  (*diag) ("function name is '%s'.\n", *bifname);
+#endif
+
+  /* Process arguments.  */
+  if (parse_args (protoptr) == PC_PARSEFAIL)
+    return PC_PARSEFAIL;
+
+  /* Process terminating semicolon.  */
+  consume_whitespace ();
+  if (linebuf[pos] != ';')
+    {
+      (*diag) ("missing semicolon at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  safe_inc_pos ();
+  consume_whitespace ();
+  if (linebuf[pos] != '\n')
+    {
+      (*diag) ("garbage at end of line at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+
   return PC_OK;
 }
 
