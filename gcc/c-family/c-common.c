@@ -6759,10 +6759,13 @@ complete_flexible_array_elts (tree init)
 void 
 c_common_mark_addressable_vec (tree t)
 {   
-  if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
-    t = C_MAYBE_CONST_EXPR_EXPR (t);
-  while (handled_component_p (t))
-    t = TREE_OPERAND (t, 0);
+  while (handled_component_p (t) || TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+    {
+      if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+	t = C_MAYBE_CONST_EXPR_EXPR (t);
+      else
+	t = TREE_OPERAND (t, 0);
+    }
   if (!VAR_P (t)
       && TREE_CODE (t) != PARM_DECL
       && TREE_CODE (t) != COMPOUND_LITERAL_EXPR)
