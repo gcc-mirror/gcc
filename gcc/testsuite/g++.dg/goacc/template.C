@@ -55,7 +55,7 @@ oacc_parallel_copy (T a)
 #pragma acc atomic capture
       c = b++;
 
-#pragma atomic update
+#pragma acc atomic update
       c++;
 
 #pragma acc atomic read
