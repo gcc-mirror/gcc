@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target p8vector_hw } */
+/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power8 -O " } */
 
 /* PR101129: The swaps pass was turning a mult-lopart into a mult-hipart.
