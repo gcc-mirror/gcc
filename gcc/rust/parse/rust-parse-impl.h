@@ -8704,10 +8704,17 @@ Parser<ManagedTokenSource>::parse_async_block_expr (AST::AttrVec outer_attrs)
 // Parses an unsafe block expression.
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::UnsafeBlockExpr>
-Parser<ManagedTokenSource>::parse_unsafe_block_expr (AST::AttrVec outer_attrs)
+Parser<ManagedTokenSource>::parse_unsafe_block_expr (AST::AttrVec outer_attrs,
+						     bool pratt_parse)
 {
-  Location locus = lexer.peek_token ()->get_locus ();
-  skip_token (UNSAFE);
+  Location locus;
+  if (!pratt_parse)
+    {
+      locus = lexer.peek_token ()->get_locus ();
+      skip_token (UNSAFE);
+    }
+  else
+    locus = lexer.peek_token ()->get_locus () - 1;
 
   // parse block expression (required)
   std::unique_ptr<AST::BlockExpr> block_expr = parse_block_expr ();
@@ -12823,6 +12830,8 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
     case LEFT_SQUARE:
       // array definition expr (not indexing)
       return parse_array_expr (std::move (outer_attrs), true);
+    case UNSAFE:
+      return parse_unsafe_block_expr (std::move (outer_attrs), true);
     default:
       if (!restrictions.expr_can_be_null)
 	add_error (Error (tok->get_locus (),

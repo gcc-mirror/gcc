@@ -504,8 +504,6 @@ private:
   AST::LoopLabel parse_loop_label ();
   std::unique_ptr<AST::AsyncBlockExpr>
   parse_async_block_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
-  std::unique_ptr<AST::UnsafeBlockExpr>
-  parse_unsafe_block_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
   std::unique_ptr<AST::GroupedExpr> parse_grouped_expr (AST::AttrVec outer_attrs
 							= AST::AttrVec ());
   std::unique_ptr<AST::ClosureExpr> parse_closure_expr (AST::AttrVec outer_attrs
@@ -522,6 +520,9 @@ private:
   std::unique_ptr<AST::ContinueExpr>
   parse_continue_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		       bool pratt_parse = false);
+  std::unique_ptr<AST::UnsafeBlockExpr>
+  parse_unsafe_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+			   bool pratt_parse = false);
   std::unique_ptr<AST::ArrayExpr> parse_array_expr (AST::AttrVec outer_attrs
 						    = AST::AttrVec (),
 						    bool pratt_parse = false);
