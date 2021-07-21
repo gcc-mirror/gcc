@@ -2250,6 +2250,87 @@ write_header_file (void)
 static void
 write_init_bif_table (void)
 {
+  for (int i = 0; i <= curr_bif; i++)
+    {
+      fprintf (init_file,
+	       "  rs6000_builtin_info_x[RS6000_BIF_%s].fntype"
+	       "\n    = %s;\n",
+	       bifs[i].idname, bifs[i].fndecl);
+
+      /* Check whether we have a "tf" token in this string, representing
+	 a float128_type_node.  It's possible that float128_type_node is
+	 undefined (occurs for -maltivec -mno-vsx, for example), so we
+	 must guard against that.  */
+      int tf_found = strstr (bifs[i].fndecl, "tf") != NULL;
+
+      /* Similarly, look for decimal float tokens.  */
+      int dfp_found = (strstr (bifs[i].fndecl, "sd") != NULL
+		       || strstr (bifs[i].fndecl, "dd") != NULL
+		       || strstr (bifs[i].fndecl, "td") != NULL);
+
+      fprintf (init_file,
+	       "  if (new_builtins_are_live)\n");
+      fprintf (init_file, "    {\n");
+
+      if (tf_found)
+	{
+	  fprintf (init_file, "      if (float128_type_node)\n");
+	  fprintf (init_file, "        {\n");
+	}
+      else if (dfp_found)
+	{
+	  fprintf (init_file, "      if (dfloat64_type_node)\n");
+	  fprintf (init_file, "        {\n");
+	}
+
+      fprintf (init_file,
+	       "      rs6000_builtin_decls_x[(int)RS6000_BIF_%s] = t\n",
+	       bifs[i].idname);
+      fprintf (init_file,
+	       "        = add_builtin_function (\"%s\",\n",
+	       bifs[i].proto.bifname);
+      fprintf (init_file,
+	       "                                %s,\n",
+	       bifs[i].fndecl);
+      fprintf (init_file,
+	       "                                (int)RS6000_BIF_%s,"
+	       " BUILT_IN_MD,\n",
+	       bifs[i].idname);
+      fprintf (init_file,
+	       "                                NULL, NULL_TREE);\n");
+      if (bifs[i].kind == FNK_CONST)
+	{
+	  fprintf (init_file, "      TREE_READONLY (t) = 1;\n");
+	  fprintf (init_file, "      TREE_NOTHROW (t) = 1;\n");
+	}
+      else if (bifs[i].kind == FNK_PURE)
+	{
+	  fprintf (init_file, "      DECL_PURE_P (t) = 1;\n");
+	  fprintf (init_file, "      TREE_NOTHROW (t) = 1;\n");
+	}
+      else if (bifs[i].kind == FNK_FPMATH)
+	{
+	  fprintf (init_file, "      TREE_NOTHROW (t) = 1;\n");
+	  fprintf (init_file, "      if (flag_rounding_math)\n");
+	  fprintf (init_file, "        {\n");
+	  fprintf (init_file, "          DECL_PURE_P (t) = 1;\n");
+	  fprintf (init_file, "          DECL_IS_NOVOPS (t) = 1;\n");
+	  fprintf (init_file, "        }\n");
+	  fprintf (init_file, "      else\n");
+	  fprintf (init_file, "        TREE_READONLY (t) = 1;\n");
+	}
+
+      if (tf_found || dfp_found)
+	{
+	  fprintf (init_file, "        }\n");
+	  fprintf (init_file, "      else\n");
+	  fprintf (init_file, "        {\n");
+	  fprintf (init_file, "          rs6000_builtin_decls_x"
+		   "[(int)RS6000_BIF_%s] = NULL_TREE;\n", bifs[i].idname);
+	  fprintf (init_file, "        }\n");
+	}
+      fprintf (init_file, "    }\n\n");
+    }
 }
 
 /* Write code to initialize the overload table.  */
