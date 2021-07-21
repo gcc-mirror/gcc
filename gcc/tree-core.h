@@ -508,7 +508,10 @@ enum omp_clause_code {
   OMP_CLAUSE_IF_PRESENT,
 
   /* OpenACC clause: finalize.  */
-  OMP_CLAUSE_FINALIZE
+  OMP_CLAUSE_FINALIZE,
+
+  /* OpenACC clause: nohost.  */
+  OMP_CLAUSE_NOHOST,
 };
 
 #undef DEFTREESTRUCT

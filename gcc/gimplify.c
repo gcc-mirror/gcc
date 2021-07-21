@@ -10310,6 +10310,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  }
 	  break;
 
+	case OMP_CLAUSE_NOHOST:
 	default:
 	  gcc_unreachable ();
 	}
@@ -11247,6 +11248,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_EXCLUSIVE:
 	  break;
 
+	case OMP_CLAUSE_NOHOST:
 	default:
 	  gcc_unreachable ();
 	}

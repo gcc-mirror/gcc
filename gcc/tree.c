@@ -361,6 +361,7 @@ unsigned const char omp_clause_num_ops[] =
   3, /* OMP_CLAUSE_TILE  */
   0, /* OMP_CLAUSE_IF_PRESENT */
   0, /* OMP_CLAUSE_FINALIZE */
+  0, /* OMP_CLAUSE_NOHOST */
 };
 
 const char * const omp_clause_code_name[] =
@@ -448,6 +449,7 @@ const char * const omp_clause_code_name[] =
   "tile",
   "if_present",
   "finalize",
+  "nohost",
 };
 
 
@@ -11165,6 +11167,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE__SIMT_:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_NOHOST:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:
