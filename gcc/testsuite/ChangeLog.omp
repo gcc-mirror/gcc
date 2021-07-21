@@ -1,6 +1,14 @@
 2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101516
+	* g++.dg/gomp/pr101516.C: New test.
+
+2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/iso_c_binding_char_1.f90: Update dg-error.
