@@ -1,3 +1,34 @@
+2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101510
+	* src/c++17/fs_ops.cc (fs::create_directories): Use status
+	instead of symlink_status.
+	* src/filesystem/ops.cc (fs::create_directories): Likewise.
+	* testsuite/27_io/filesystem/operations/create_directories.cc:
+	* testsuite/27_io/filesystem/operations/create_directory.cc: Do
+	not test with symlinks on Windows.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Do not test with symlinks on Windows.
+
+2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100863
+	* include/bits/hashtable.h (_Hashtable): Conditionally delete
+	default constructor by deriving from _Enable_special_members.
+	* testsuite/23_containers/unordered_map/cons/default.cc: New test.
+	* testsuite/23_containers/unordered_set/cons/default.cc: New test.
+
+2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101510
+	* src/c++17/fs_ops.cc (create_dir): Adjust whitespace.
+	* testsuite/27_io/filesystem/operations/create_directory.cc:
+	Test creating directory with name of existing symlink to
+	directory.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Likewise.
+
 2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/tuple (get<I>): Add deleted overload for bad

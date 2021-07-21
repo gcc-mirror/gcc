@@ -1,3 +1,57 @@
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101397
+	* gcc.dg/Warray-bounds-80.c: New test.
+	* gcc.dg/Warray-bounds-81.c: New test.
+	* gcc.dg/Warray-bounds-82.c: New test.
+	* gcc.dg/Warray-bounds-83.c: New test.
+	* gcc.dg/Warray-bounds-84.c: New test.
+	* gcc.dg/Wstringop-overflow-46.c: Adjust expected output.
+
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101300
+	* gcc.dg/uninit-pr101300.c: New test.
+
+2021-07-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR testsuite/100167
+	* gcc.target/powerpc/fold-vec-div-longlong.c: Fix expected code
+	generation on power10.
+	* gcc.target/powerpc/fold-vec-mult-longlong.c: Likewise.
+
+2021-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101384
+	* gcc.dg/pr101384.c: New test.
+	* gcc.target/powerpc/pr101384-1.c: New test.
+	* gcc.target/powerpc/pr101384-2.c: New test.
+
+2021-07-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/101506
+	* gcc.target/aarch64/vect-vmaxv.c: Use an asm to hide the
+	true initial value of the reduction from the vectorizer.
+	* gcc.target/aarch64/vect-vaddv.c: Likewise.  Make the vector
+	loop operate on exactly LANES (rather than LANES-1) iterations.
+	* gcc.target/aarch64/vect-fmaxv-fminv.x: Likewise.
+
+2021-07-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* gcc.target/i386/pr71245-1.c: Remove.
+	* gcc.target/i386/pr71245-2.c: Ditto.
+
+2021-07-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/mul-vectorize-3.c: New test.
+	* gcc.target/powerpc/mul-vectorize-4.c: New test.
+
+2021-07-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/100696
+	* gcc.target/i386/pr100637-3w.c: Adjust for mul_highpart recog.
+
 2021-07-19  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.target/powerpc/pr93658.c: Suppress valid warnings.

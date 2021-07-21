@@ -1,3 +1,11 @@
+2021-07-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/101484
+	* configure.tgt [amdgcn*-*-*] (XCFLAGS): Add
+	'-Wno-error=array-bounds'.
+	* config/gcn/team.c: Remove '-Werror=array-bounds' work-around.
+	* libgomp.h [__AMDGCN__]: Likewise.
+
 2021-07-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/101484

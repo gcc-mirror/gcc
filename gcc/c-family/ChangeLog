@@ -1,3 +1,9 @@
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-common.c (c_build_shufflevector): Adjust by-value argument to
+	by-const-reference.
+	* c-common.h (c_build_shufflevector): Same.
+
 2021-07-16  Andrew Pinski  <apinski@marvell.com>
 
 	PR c/101453
