@@ -2019,6 +2019,23 @@ write_init_file (void)
 static int
 write_defines_file (void)
 {
+  fprintf (defines_file, "#ifndef _RS6000_VECDEFINES_H\n");
+  fprintf (defines_file, "#define _RS6000_VECDEFINES_H 1\n\n");
+  fprintf (defines_file, "#if defined(_ARCH_PPC64) && defined (_ARCH_PWR9)\n");
+  fprintf (defines_file, "  #define _ARCH_PPC64_PWR9 1\n");
+  fprintf (defines_file, "#endif\n\n");
+  for (int i = 0; i < num_ovld_stanzas; i++)
+    if (strcmp (ovld_stanzas[i].extern_name, "SKIP"))
+      {
+	if (ovld_stanzas[i].ifdef)
+	  fprintf (defines_file, "#ifdef %s\n", ovld_stanzas[i].ifdef);
+	fprintf (defines_file, "#define %s %s\n",
+		 ovld_stanzas[i].extern_name,
+		 ovld_stanzas[i].intern_name);
+	if (ovld_stanzas[i].ifdef)
+	  fprintf (defines_file, "#endif\n");
+      }
+  fprintf (defines_file, "\n#endif\n");
   return 1;
 }
 
