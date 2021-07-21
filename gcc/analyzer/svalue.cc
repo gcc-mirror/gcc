@@ -1053,6 +1053,21 @@ unaryop_svalue::maybe_fold_bits_within (tree type,
 
 /* class binop_svalue : public svalue.  */
 
+/* Return whether OP be printed as an infix operator.  */
+
+static bool
+infix_p (enum tree_code op)
+{
+  switch (op)
+    {
+    default:
+      return true;
+    case MAX_EXPR:
+    case MIN_EXPR:
+      return false;
+    }
+}
+
 /* Implementation of svalue::dump_to_pp vfunc for binop_svalue.  */
 
 void
@@ -1060,11 +1075,25 @@ binop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   if (simple)
     {
-      pp_character (pp, '(');
-      m_arg0->dump_to_pp (pp, simple);
-      pp_string (pp, op_symbol_code (m_op));
-      m_arg1->dump_to_pp (pp, simple);
-      pp_character (pp, ')');
+      if (infix_p (m_op))
+	{
+	  /* Print "(A OP B)".  */
+	  pp_character (pp, '(');
+	  m_arg0->dump_to_pp (pp, simple);
+	  pp_string (pp, op_symbol_code (m_op));
+	  m_arg1->dump_to_pp (pp, simple);
+	  pp_character (pp, ')');
+	}
+      else
+	{
+	  /* Print "OP(A, B)".  */
+	  pp_string (pp, op_symbol_code (m_op));
+	  pp_character (pp, '(');
+	  m_arg0->dump_to_pp (pp, simple);
+	  pp_string (pp, ", ");
+	  m_arg1->dump_to_pp (pp, simple);
+	  pp_character (pp, ')');
+	}
     }
   else
     {
