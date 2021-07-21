@@ -1,3 +1,9 @@
+2021-07-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* gcc.target/i386/pr71245-1.c: Remove.
+	* gcc.target/i386/pr71245-2.c: Ditto.
+
 2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/101129

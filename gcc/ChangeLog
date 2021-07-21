@@ -1,3 +1,10 @@
+2021-07-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* config/i386/sync.md (define_peephole2 atomic_storedi_fpu):
+	Remove.
+	(define_peephole2 atomic_loaddi_fpu): Ditto.
+
 2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/101129
