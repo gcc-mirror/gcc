@@ -1,3 +1,13 @@
+2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* decl.c (gfc_verify_c_interop_param): Update for F2008 + F2018
+	changes; reject unsupported bits with 'Error: Sorry,'.
+	* trans-expr.c (gfc_conv_procedure_call): Fix condition to
+	For using CFI descriptor with characters.
+
 2021-06-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

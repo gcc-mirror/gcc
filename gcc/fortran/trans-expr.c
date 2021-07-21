@@ -5716,18 +5716,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
        arg = arg->next, formal = formal ? formal->next : NULL, ++argc)
     {
       bool finalized = false;
-      bool non_unity_length_string = false;
+      bool assumed_length_string = false;
       tree derived_array = NULL_TREE;
 
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
       parm_kind = MISSING;
 
-      if (fsym && fsym->ts.type == BT_CHARACTER && fsym->ts.u.cl
-	  && (!fsym->ts.u.cl->length
-	      || fsym->ts.u.cl->length->expr_type != EXPR_CONSTANT
-	      || mpz_cmp_si (fsym->ts.u.cl->length->value.integer, 1) != 0))
-	non_unity_length_string = true;
+      if (fsym && fsym->ts.type == BT_CHARACTER
+	  && (!fsym->ts.u.cl || !fsym->ts.u.cl->length))
+	assumed_length_string = true;
 
       /* If the procedure requires an explicit interface, the actual
 	 argument is passed according to the corresponding formal
@@ -5961,8 +5959,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      else if (sym->attr.is_bind_c && e
 		       && (is_CFI_desc (fsym, NULL)
-			   || non_unity_length_string))
-		/* Implement F2018, C.12.6.1: paragraph (2).  */
+			   || assumed_length_string))
+		/* Implement F2018, 18.3.6, list item (5), bullet point 2.  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
 
 	      else if (fsym && fsym->attr.value)
@@ -6406,8 +6404,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 
 	      if (sym->attr.is_bind_c && e
-		  && (is_CFI_desc (fsym, NULL) || non_unity_length_string))
-		/* Implement F2018, C.12.6.1: paragraph (2).  */
+		  && (is_CFI_desc (fsym, NULL) || assumed_length_string))
+		/* Implement F2018, 18.3.6, list item (5), bullet point 2.  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
 
 	      else if (e->expr_type == EXPR_VARIABLE

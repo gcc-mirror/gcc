@@ -1,3 +1,16 @@
+2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/iso_c_binding_char_1.f90: Update dg-error.
+	* gfortran.dg/pr32599.f03: Use -std=-f2003 + update comment.
+	* gfortran.dg/bind_c_char_10.f90: New test.
+	* gfortran.dg/bind_c_char_6.f90: New test.
+	* gfortran.dg/bind_c_char_7.f90: New test.
+	* gfortran.dg/bind_c_char_8.f90: New test.
+	* gfortran.dg/bind_c_char_9.f90: New test.
+
 2021-07-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from master:
