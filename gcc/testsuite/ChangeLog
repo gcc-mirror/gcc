@@ -1,3 +1,22 @@
+2021-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101384
+	* gcc.dg/pr101384.c: New test.
+
+2021-07-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95520
+	* g++.dg/coroutines/pr95520.C: New test.
+
+2021-07-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* gcc.target/i386/pr71245-1.c: Remove.
+	* gcc.target/i386/pr71245-2.c: Ditto.
+
 2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/101129

@@ -1,3 +1,36 @@
+2021-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101384
+	* config/rs6000/rs6000.c (vspltis_constant): Accept EASY_VECTOR_MSB
+	only if step and copies are equal to 1.
+
+2021-07-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/100246
+	* config/i386/i386.h (struct stringop_algs): Define a CTOR for
+	this type.
+
+2021-07-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/100152
+	* config/i386/i386-expand.c (ix86_expand_call): If a call is
+	to a non-local-binding, or local but to a public symbol, then
+	assume that it might be indirected via the lazy symbol binder.
+	Mark R10 and R10 as clobbered in that case.
+
+2021-07-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* config/i386/sync.md (define_peephole2 atomic_storedi_fpu):
+	Remove.
+	(define_peephole2 atomic_loaddi_fpu): Ditto.
+
 2021-07-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/101129

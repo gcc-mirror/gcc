@@ -1,3 +1,44 @@
+2021-07-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95520
+	* coroutines.cc (struct coroutine_info): Add fields for
+	actor and destroy function decls.
+	(to_ramp): New.
+	(coro_get_ramp_function): New.
+	(coro_get_actor_function): New.
+	(coro_get_destroy_function): New.
+	(act_des_fn): Set up mapping between ramp, actor and
+	destroy functions.
+	(morph_fn_to_coro): Adjust interface to the builder for
+	helper function decls.
+	* cp-tree.h (DECL_ACTOR_FN, DECL_DESTROY_FN, DECL_RAMP_FN,
+	JOIN_STR): New.
+	* mangle.c (write_encoding): Handle coroutine helpers.
+	(write_unqualified_name): Handle lambda coroutine helpers.
+
+2021-07-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (build_actor_fn): Move common code to
+	act_des_fn.
+	(build_destroy_fn): Likewise.
+	(act_des_fn): Build the void return here.  Ensure that the
+	source location matches the original function.
+
+2021-07-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc
+	(coro_rewrite_function_body): Connect the replacement
+	function block to the block nest correctly.
+
 2021-07-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
