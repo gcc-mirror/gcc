@@ -288,17 +288,23 @@ state_purge_per_ssa_name::add_to_worklist (const function_point &point,
     }
 }
 
-/* Does this phi depend on itself?
-   e.g. in:
-     added_2 = PHI <added_6(2), added_2(3), added_11(4)>
-   the middle defn (from edge 3) requires added_2 itself.  */
+/* Return true iff NAME is used by any of the phi nodes in SNODE
+   when processing the in-edge with PHI_ARG_IDX.  */
 
 static bool
-self_referential_phi_p (const gphi *phi)
+name_used_by_phis_p (tree name, const supernode *snode,
+		     size_t phi_arg_idx)
 {
-  for (unsigned i = 0; i < gimple_phi_num_args (phi); i++)
-    if (gimple_phi_arg_def (phi, i) == gimple_phi_result (phi))
-      return true;
+  gcc_assert (TREE_CODE (name) == SSA_NAME);
+
+  for (gphi_iterator gpi
+	 = const_cast<supernode *> (snode)->start_phis ();
+       !gsi_end_p (gpi); gsi_next (&gpi))
+    {
+      gphi *phi = gpi.phi ();
+      if (gimple_phi_arg_def (phi, phi_arg_idx) == name)
+	return true;
+    }
   return false;
 }
 
@@ -339,27 +345,27 @@ state_purge_per_ssa_name::process_point (const function_point &point,
 	       = const_cast<supernode *> (snode)->start_phis ();
 	     !gsi_end_p (gpi); gsi_next (&gpi))
 	  {
+	    gcc_assert (point.get_from_edge ());
+	    const cfg_superedge *cfg_sedge
+	      = point.get_from_edge ()->dyn_cast_cfg_superedge ();
+	    gcc_assert (cfg_sedge);
+
 	    gphi *phi = gpi.phi ();
 	    /* Are we at the def-stmt for m_name?  */
 	    if (phi == def_stmt)
 	      {
-		/* Does this phi depend on itself?
-		   e.g. in:
-		     added_2 = PHI <added_6(2), added_2(3), added_11(4)>
-		   the middle defn (from edge 3) requires added_2 itself
-		   so we can't purge it here.  */
-		if (self_referential_phi_p (phi))
+		if (name_used_by_phis_p (m_name, snode,
+					 cfg_sedge->get_phi_arg_idx ()))
 		  {
 		    if (logger)
-		      logger->log ("self-referential def stmt within phis;"
+		      logger->log ("name in def stmt used within phis;"
 				   " continuing");
 		  }
 		else
 		  {
-		    /* Otherwise, we can stop here, so that m_name
-		       can be purged.  */
 		    if (logger)
-		      logger->log ("def stmt within phis; terminating");
+		      logger->log ("name in def stmt not used within phis;"
+				   " terminating");
 		    return;
 		  }
 	      }

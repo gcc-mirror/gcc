@@ -582,6 +582,7 @@ class region_model
 			region_model_context *ctxt);
 
   void handle_phi (const gphi *phi, tree lhs, tree rhs,
+		   const region_model &old_state,
 		   region_model_context *ctxt);
 
   bool maybe_update_for_edge (const superedge &edge,

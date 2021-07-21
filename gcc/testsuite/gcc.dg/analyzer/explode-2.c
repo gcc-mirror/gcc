@@ -24,7 +24,7 @@ void test (void)
 	  p0 = malloc (16); /* { dg-warning "leak" "" { xfail *-*-* } } */
 	  break;
 	case 1:
-	  free (p0); /* { dg-warning "double-'free' of 'p0'" "" { xfail *-*-* } } */
+	  free (p0); /* { dg-warning "double-'free' of 'p0'" } */
 	  break;
 
 	case 2:
