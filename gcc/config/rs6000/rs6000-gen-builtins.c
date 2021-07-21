@@ -415,8 +415,35 @@ static int curr_bif;
 static int *bif_order;
 static int bif_index = 0;
 
+/* Stanzas are groupings of built-in functions and overloads by some
+   common feature/attribute.  These definitions are for overload stanzas.  */
+struct ovld_stanza
+{
+  char *stanza_id;
+  char *extern_name;
+  char *intern_name;
+  char *ifdef;
+};
+
+#define MAXOVLDSTANZAS 512
+static ovld_stanza ovld_stanzas[MAXOVLDSTANZAS];
 static int num_ovld_stanzas;
+static int curr_ovld_stanza;
+
+#define MAXOVLDS 16384
+struct ovlddata
+{
+  int stanza;
+  prototype proto;
+  char *bif_id_name;
+  char *ovld_id_name;
+  char *fndecl;
+};
+
+static ovlddata ovlds[MAXOVLDS];
 static int num_ovlds;
+static int curr_ovld;
+static int max_ovld_args = 0;
 
 /* Return codes for parsing routines.  */
 enum parse_codes
@@ -1527,11 +1554,217 @@ create_bif_order (void)
   rbt_inorder_callback (&bifo_rbt, bifo_rbt.rbt_root, set_bif_order);
 }
 
+/* Parse one two-line entry in the overload file.  */
+static parse_codes
+parse_ovld_entry (void)
+{
+  /* Check for end of stanza.  */
+  pos = 0;
+  consume_whitespace ();
+  if (linebuf[pos] == '[')
+    return PC_EOSTANZA;
+
+  /* Allocate an entry in the overload table.  */
+  if (num_ovlds >= MAXOVLDS - 1)
+    {
+      (*diag) ("too many overloads.\n");
+      return PC_PARSEFAIL;
+    }
+
+  curr_ovld = num_ovlds++;
+  ovlds[curr_ovld].stanza = curr_ovld_stanza;
+
+  if (parse_prototype (&ovlds[curr_ovld].proto) == PC_PARSEFAIL)
+    return PC_PARSEFAIL;
+
+  if (ovlds[curr_ovld].proto.nargs > max_ovld_args)
+    max_ovld_args = ovlds[curr_ovld].proto.nargs;
+
+  /* Now process line 2, which just contains the builtin id and an
+     optional overload id.  */
+  if (!advance_line (ovld_file))
+    {
+      (*diag) ("unexpected EOF.\n");
+      return PC_EOFILE;
+    }
+
+  pos = 0;
+  consume_whitespace ();
+  int oldpos = pos;
+  char *id = match_identifier ();
+  ovlds[curr_ovld].bif_id_name = id;
+  ovlds[curr_ovld].ovld_id_name = id;
+  if (!id)
+    {
+      (*diag) ("missing overload id at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+
+#ifdef DEBUG
+  (*diag) ("ID name is '%s'.\n", id);
+#endif
+
+  /* The builtin id has to match one from the bif file.  */
+  if (!rbt_find (&bif_rbt, id))
+    {
+      (*diag) ("builtin ID '%s' not found in bif file.\n", id);
+      return PC_PARSEFAIL;
+    }
+
+  /* Check for an optional overload id.  Usually we use the builtin
+     function id for that purpose, but sometimes we need multiple
+     overload entries for the same builtin id, and it needs to be unique.  */
+  consume_whitespace ();
+  if (linebuf[pos] != '\n')
+    {
+      id = match_identifier ();
+      ovlds[curr_ovld].ovld_id_name = id;
+      consume_whitespace ();
+    }
+
+ /* Save the overload ID in a lookup structure.  */
+  if (!rbt_insert (&ovld_rbt, id))
+    {
+      (*diag) ("duplicate overload ID '%s' at column %d.\n", id, oldpos + 1);
+      return PC_PARSEFAIL;
+    }
+
+  if (linebuf[pos] != '\n')
+    {
+      (*diag) ("garbage at end of line at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  return PC_OK;
+}
+
+/* Parse one stanza of the input overload file.  linebuf already contains the
+   first line to parse.  */
+static parse_codes
+parse_ovld_stanza (void)
+{
+  /* Parse the stanza header.  */
+  pos = 0;
+  consume_whitespace ();
+
+  if (linebuf[pos] != '[')
+    {
+      (*diag) ("ill-formed stanza header at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  safe_inc_pos ();
+
+  char *stanza_name = match_identifier ();
+  if (!stanza_name)
+    {
+      (*diag) ("no identifier found in stanza header.\n");
+      return PC_PARSEFAIL;
+    }
+
+  /* Add the identifier to a table and set the number to be recorded
+     with subsequent overload entries.  */
+  if (num_ovld_stanzas >= MAXOVLDSTANZAS)
+    {
+      (*diag) ("too many stanza headers.\n");
+      return PC_PARSEFAIL;
+    }
+
+  curr_ovld_stanza = num_ovld_stanzas++;
+  ovld_stanza *stanza = &ovld_stanzas[curr_ovld_stanza];
+  stanza->stanza_id = stanza_name;
+
+  consume_whitespace ();
+  if (linebuf[pos] != ',')
+    {
+      (*diag) ("missing comma at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  safe_inc_pos ();
+
+  consume_whitespace ();
+  stanza->extern_name = match_identifier ();
+  if (!stanza->extern_name)
+    {
+      (*diag) ("missing external name at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+
+  consume_whitespace ();
+  if (linebuf[pos] != ',')
+    {
+      (*diag) ("missing comma at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  safe_inc_pos ();
+
+  consume_whitespace ();
+  stanza->intern_name = match_identifier ();
+  if (!stanza->intern_name)
+    {
+      (*diag) ("missing internal name at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+
+  consume_whitespace ();
+  if (linebuf[pos] == ',')
+    {
+      safe_inc_pos ();
+      consume_whitespace ();
+      stanza->ifdef = match_identifier ();
+      if (!stanza->ifdef)
+	{
+	  (*diag) ("missing ifdef token at column %d.\n", pos + 1);
+	  return PC_PARSEFAIL;
+	}
+      consume_whitespace ();
+    }
+  else
+    stanza->ifdef = 0;
+
+  if (linebuf[pos] != ']')
+    {
+      (*diag) ("ill-formed stanza header at column %d.\n", pos + 1);
+      return PC_PARSEFAIL;
+    }
+  safe_inc_pos ();
+
+  consume_whitespace ();
+  if (linebuf[pos] != '\n' && pos != LINELEN - 1)
+    {
+      (*diag) ("garbage after stanza header.\n");
+      return PC_PARSEFAIL;
+    }
+
+  parse_codes result = PC_OK;
+
+  while (result != PC_EOSTANZA)
+    {
+      if (!advance_line (ovld_file))
+	return PC_EOFILE;
+
+      result = parse_ovld_entry ();
+      if (result == PC_EOFILE || result == PC_PARSEFAIL)
+	return result;
+    }
+
+  return PC_OK;
+}
+
 /* Parse the overload file.  */
 static parse_codes
 parse_ovld (void)
 {
-  return PC_OK;
+  parse_codes result = PC_OK;
+  diag = &ovld_diag;
+
+  if (!advance_line (ovld_file))
+    return PC_OK;
+
+  while (result == PC_OK)
+    result = parse_ovld_stanza ();
+
+  if (result == PC_EOFILE)
+    return PC_OK;
+  return result;
 }
 
 /* Write everything to the header file (rs6000-builtins.h).  Return
