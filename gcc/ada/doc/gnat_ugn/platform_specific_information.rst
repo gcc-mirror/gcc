@@ -217,7 +217,10 @@ this in a library package body in your application:
        (if geteuid = 0 then True else raise Program_Error with "must be root");
 
 It gets the effective user id, and if it's not 0 (i.e. root), it raises
-Program_Error.
+Program_Error. Note that if you re running the code in a container, this may
+not be sufficient, as you may have sufficient priviledge on the container,
+but not on the host machine running the container, so check that you also
+have sufficient priviledge for running the container image.
 
 .. index:: Linux
 .. index:: GNU/Linux
