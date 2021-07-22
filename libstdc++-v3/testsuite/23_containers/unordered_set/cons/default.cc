@@ -31,3 +31,17 @@ static_assert( ! std::is_default_constructible<Set2>{}, "PR libstdc++/100863" );
 struct Equal : std::equal_to<int> { Equal(int) { } };
 using Set3 = std::unordered_set<int, std::hash<int>, Equal>;
 static_assert( ! std::is_default_constructible<Set3>{}, "PR libstdc++/100863" );
+
+// PR libstdc++/101583
+// verify non-default ctors can still be used
+using Set4 = std::unordered_set<int, Hash, Equal, NoDefaultConsAlloc<int>>;
+Hash h(1);
+Equal eq(1);
+Set4::allocator_type a(1);
+Set4 s{1, h, eq, a};
+Set4 s2{s.begin(), s.end(), s.size(), h, eq, a};
+Set4 s3{{1, 2, 3}, 3, h, eq, a};
+Set4 s4{s};
+Set4 s5{s, a};
+Set4 s6{std::move(s)};
+Set4 s7{std::move(s6), a};

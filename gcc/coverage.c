@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "auto-profile.h"
 #include "profile.h"
 #include "diagnostic.h"
+#include "varasm.h"
 
 #include "gcov-io.c"
 
@@ -1121,6 +1122,7 @@ build_gcov_info_var_registration (tree gcov_info_type)
   DECL_NAME (var) = get_identifier (name_buf);
   get_section (profile_info_section, SECTION_UNNAMED, NULL);
   set_decl_section_name (var, profile_info_section);
+  mark_decl_referenced (var);
   DECL_INITIAL (var) = build_fold_addr_expr (gcov_info_var);
   varpool_node::finalize_decl (var);
 }

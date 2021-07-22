@@ -2072,12 +2072,12 @@ extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 extern void vect_slp_init (void);
 extern void vect_slp_fini (void);
 extern void vect_free_slp_instance (slp_instance);
-extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, vec<tree>,
+extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, const vec<tree> &,
 					  gimple_stmt_iterator *, poly_uint64,
 					  bool, unsigned *,
 					  unsigned * = nullptr, bool = false);
 extern bool vect_slp_analyze_operations (vec_info *);
-extern void vect_schedule_slp (vec_info *, vec<slp_instance>);
+extern void vect_schedule_slp (vec_info *, const vec<slp_instance> &);
 extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
@@ -2095,7 +2095,7 @@ extern bool can_duplicate_and_interleave_p (vec_info *, unsigned int, tree,
 					    unsigned int * = NULL,
 					    tree * = NULL, tree * = NULL);
 extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
-				      vec<tree>, unsigned int, vec<tree> &);
+				      const vec<tree> &, unsigned int, vec<tree> &);
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 extern bool vect_update_shared_vectype (stmt_vec_info, tree);
 extern slp_tree vect_create_new_slp_node (unsigned, tree_code);

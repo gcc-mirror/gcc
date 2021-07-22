@@ -1,3 +1,7 @@
+2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* vimrc (textwidth): Change non-gitcommit length to 79.
+
 2021-07-02  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* gen_autofdo_event.py: handle stepping, non-working PEBS

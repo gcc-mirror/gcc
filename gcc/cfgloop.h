@@ -385,7 +385,7 @@ extern basic_block *get_loop_body_in_custom_order (const class loop *, void *,
 
 extern auto_vec<edge> get_loop_exit_edges (const class loop *, basic_block * = NULL);
 extern edge single_exit (const class loop *);
-extern edge single_likely_exit (class loop *loop, vec<edge>);
+extern edge single_likely_exit (class loop *loop, const vec<edge> &);
 extern unsigned num_loop_branches (const class loop *);
 
 extern edge loop_preheader_edge (const class loop *);

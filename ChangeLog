@@ -1,3 +1,11 @@
+2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .dir-locals.el (bug-reference-url-format): Use https.
+
+2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .dir-locals.el (c-mode): Change fill-column to 79.
+
 2021-07-15  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* MAINTAINERS: Add myself to DCO section.

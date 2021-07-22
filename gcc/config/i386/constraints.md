@@ -222,6 +222,16 @@
 	    (match_operand 0 "vector_all_ones_operand"))))
 
 ;; Integer constant constraints.
+(define_constraint "Wb"
+  "Integer constant in the range 0 @dots{} 7, for 8-bit shifts."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 7)")))
+
+(define_constraint "Ww"
+  "Integer constant in the range 0 @dots{} 15, for 16-bit shifts."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 15)")))
+
 (define_constraint "I"
   "Integer constant in the range 0 @dots{} 31, for 32-bit shifts."
   (and (match_code "const_int")

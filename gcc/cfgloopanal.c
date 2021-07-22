@@ -470,7 +470,7 @@ mark_loop_exit_edges (void)
    to noreturn call.  */
 
 edge
-single_likely_exit (class loop *loop, vec<edge> exits)
+single_likely_exit (class loop *loop, const vec<edge> &exits)
 {
   edge found = single_exit (loop);
   unsigned i;

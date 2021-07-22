@@ -926,6 +926,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" ALWAYS-EXPLICIT", dumpfile);
   if (attr->is_main_program)
     fputs (" IS-MAIN-PROGRAM", dumpfile);
+  if (attr->oacc_routine_nohost)
+    fputs (" OACC-ROUTINE-NOHOST", dumpfile);
 
   /* FIXME: Still missing are oacc_routine_lop and ext_attr.  */
   fputc (')', dumpfile);

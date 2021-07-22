@@ -1,3 +1,144 @@
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101547
+	* gcc.dg/analyzer/pr101547.c: New test.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101522
+	* g++.dg/analyzer/pr101522.C: New test.
+
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/classify-routine-nohost.c: New file.
+	* c-c++-common/goacc/classify-routine.c: Update.
+	* c-c++-common/goacc/routine-2.c: Likewise.
+	* c-c++-common/goacc/routine-nohost-1.c: New file.
+	* c-c++-common/goacc/routine-nohost-2.c: Likewise.
+	* g++.dg/goacc/template.C: Update.
+	* gfortran.dg/goacc/classify-routine-nohost.f95: New file.
+	* gfortran.dg/goacc/classify-routine.f95: Update.
+	* gfortran.dg/goacc/pure-elemental-procedures-2.f90: Likewise.
+	* gfortran.dg/goacc/routine-6.f90: Likewise.
+	* gfortran.dg/goacc/routine-intrinsic-2.f: Likewise.
+	* gfortran.dg/goacc/routine-module-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-2.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-3.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-multiple-directives-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-multiple-directives-2.f90: Likewise.
+
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/goacc/template.C: Fix '#pragma atomic update' typo.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/explode-2.c: Remove xfail.
+	* gcc.dg/analyzer/explode-2a.c: Remove expected leak warning on
+	while stmt.
+	* gcc.dg/analyzer/phi-2.c: New test.
+
+2021-07-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101531
+	* gcc.target/powerpc/pr101129.c: Adjust.
+
+2021-07-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101549
+	* gcc.target/i386/crc32-6.c: New test.
+
+2021-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101514
+	* gfortran.dg/pr101514.f90: New test.
+
+2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101535
+	* c-c++-common/gomp/pr101535-1.c: New test.
+	* c-c++-common/gomp/pr101535-2.c: New test.
+
+2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101516
+	* g++.dg/gomp/pr101516.C: New test.
+
+2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/iso_c_binding_char_1.f90: Update dg-error.
+	* gfortran.dg/pr32599.f03: Use -std=-f2003 + update comment.
+	* gfortran.dg/bind_c_char_10.f90: New test.
+	* gfortran.dg/bind_c_char_6.f90: New test.
+	* gfortran.dg/bind_c_char_7.f90: New test.
+	* gfortran.dg/bind_c_char_8.f90: New test.
+	* gfortran.dg/bind_c_char_9.f90: New test.
+
+2021-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/unroll-10.c: New test.
+
+2021-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/unroll-9.c: New test/
+
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101397
+	* gcc.dg/Warray-bounds-80.c: New test.
+	* gcc.dg/Warray-bounds-81.c: New test.
+	* gcc.dg/Warray-bounds-82.c: New test.
+	* gcc.dg/Warray-bounds-83.c: New test.
+	* gcc.dg/Warray-bounds-84.c: New test.
+	* gcc.dg/Wstringop-overflow-46.c: Adjust expected output.
+
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101300
+	* gcc.dg/uninit-pr101300.c: New test.
+
+2021-07-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR testsuite/100167
+	* gcc.target/powerpc/fold-vec-div-longlong.c: Fix expected code
+	generation on power10.
+	* gcc.target/powerpc/fold-vec-mult-longlong.c: Likewise.
+
+2021-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101384
+	* gcc.dg/pr101384.c: New test.
+	* gcc.target/powerpc/pr101384-1.c: New test.
+	* gcc.target/powerpc/pr101384-2.c: New test.
+
+2021-07-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/101506
+	* gcc.target/aarch64/vect-vmaxv.c: Use an asm to hide the
+	true initial value of the reduction from the vectorizer.
+	* gcc.target/aarch64/vect-vaddv.c: Likewise.  Make the vector
+	loop operate on exactly LANES (rather than LANES-1) iterations.
+	* gcc.target/aarch64/vect-fmaxv-fminv.x: Likewise.
+
+2021-07-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* gcc.target/i386/pr71245-1.c: Remove.
+	* gcc.target/i386/pr71245-2.c: Ditto.
+
+2021-07-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/mul-vectorize-3.c: New test.
+	* gcc.target/powerpc/mul-vectorize-4.c: New test.
+
+2021-07-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/100696
+	* gcc.target/i386/pr100637-3w.c: Adjust for mul_highpart recog.
+
 2021-07-19  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.target/powerpc/pr93658.c: Suppress valid warnings.

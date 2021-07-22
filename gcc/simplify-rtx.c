@@ -6752,7 +6752,7 @@ native_encode_rtx (machine_mode mode, rtx x, vec<target_unit> &bytes,
    Return the vector on success, otherwise return NULL_RTX.  */
 
 rtx
-native_decode_vector_rtx (machine_mode mode, vec<target_unit> bytes,
+native_decode_vector_rtx (machine_mode mode, const vec<target_unit> &bytes,
 			  unsigned int first_byte, unsigned int npatterns,
 			  unsigned int nelts_per_pattern)
 {
@@ -6797,7 +6797,7 @@ native_decode_vector_rtx (machine_mode mode, vec<target_unit> bytes,
    Return the rtx on success, otherwise return NULL_RTX.  */
 
 rtx
-native_decode_rtx (machine_mode mode, vec<target_unit> bytes,
+native_decode_rtx (machine_mode mode, const vec<target_unit> &bytes,
 		   unsigned int first_byte)
 {
   if (VECTOR_MODE_P (mode))

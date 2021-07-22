@@ -119,8 +119,15 @@ function_point::print (pretty_printer *pp, const format &f) const
     case PK_BEFORE_SUPERNODE:
       {
 	if (m_from_edge)
-	  pp_printf (pp, "before SN: %i (from SN: %i)",
-		     m_supernode->m_index, m_from_edge->m_src->m_index);
+	  {
+	    if (basic_block bb = m_from_edge->m_src->m_bb)
+	      pp_printf (pp, "before SN: %i (from SN: %i (bb: %i))",
+			 m_supernode->m_index, m_from_edge->m_src->m_index,
+			 bb->index);
+	    else
+	      pp_printf (pp, "before SN: %i (from SN: %i)",
+			 m_supernode->m_index, m_from_edge->m_src->m_index);
+	  }
 	else
 	  pp_printf (pp, "before SN: %i (NULL from-edge)",
 		     m_supernode->m_index);

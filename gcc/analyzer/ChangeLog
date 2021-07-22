@@ -1,3 +1,58 @@
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101547
+	* sm-file.cc (file_leak::emit): Handle m_arg being NULL.
+	(file_leak::describe_final_event): Handle ev.m_expr being NULL.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101522
+	* store.cc (binding_cluster::purge_state_involving): Don't change
+	m_map whilst iterating through it.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::handle_phi): Add "old_state"
+	param and use it.
+	(region_model::update_for_phis): Update so that all of the phi
+	stmts are effectively handled simultaneously, rather than in
+	order.
+	* region-model.h (region_model::handle_phi): Add "old_state"
+	param.
+	* state-purge.cc (self_referential_phi_p): Replace with...
+	(name_used_by_phis_p): ...this new function.
+	(state_purge_per_ssa_name::process_point): Update to use the
+	above, so that all phi stmts at a basic block are effectively
+	considered simultaneously, and only consider the phi arguments for
+	the pertinent in-edge.
+	* supergraph.cc (cfg_superedge::get_phi_arg_idx): New.
+	(cfg_superedge::get_phi_arg): Use the above.
+	* supergraph.h (cfg_superedge::get_phi_arg_idx): New decl.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* state-purge.cc (state_purge_annotator::add_node_annotations):
+	Rather than erroneously always using the NULL in-edge, determine
+	each relevant in-edge, and print the appropriate data for each
+	in-edge.  Use print_needed to print the data as comma-separated
+	lists of SSA names.
+	(print_vec_of_names): Add "within_table" param and use it.
+	(state_purge_annotator::add_stmt_annotations): Factor out
+	collation and printing code into...
+	(state_purge_annotator::print_needed): ...this new function.
+	* state-purge.h (state_purge_annotator::print_needed): New decl.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-point.cc (function_point::print): Show src BB index at
+	BEFORE_SUPERNODE.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.cc (infix_p): New.
+	(binop_svalue::dump_to_pp): Use it to print MIN_EXPR and MAX_EXPR
+	in prefix form, rather than infix.
+
 2021-07-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101503

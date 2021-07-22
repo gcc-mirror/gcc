@@ -395,4 +395,3 @@ extern rtl_opt_pass *make_pass_insert_endbr_and_patchable_area
   (gcc::context *);
 extern rtl_opt_pass *make_pass_remove_partial_avx_dependency
   (gcc::context *);
-extern rtl_opt_pass *make_pass_constant_pool_broadcast (gcc::context *);

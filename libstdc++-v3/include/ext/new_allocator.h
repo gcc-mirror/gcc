@@ -97,6 +97,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::__addressof(__x); }
 #endif
 
+#if __has_builtin(__builtin_operator_new) >= 201802L
+# define _GLIBCXX_OPERATOR_NEW __builtin_operator_new
+# define _GLIBCXX_OPERATOR_DELETE __builtin_operator_delete
+#else
+# define _GLIBCXX_OPERATOR_NEW ::operator new
+# define _GLIBCXX_OPERATOR_DELETE ::operator delete
+#endif
+
       // NB: __n is permitted to be 0.  The C++ standard says nothing
       // about what the return value is when __n == 0.
       _GLIBCXX_NODISCARD _Tp*
@@ -121,33 +129,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
 	    std::align_val_t __al = std::align_val_t(alignof(_Tp));
-	    return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp), __al));
+	    return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp),
+							   __al));
 	  }
 #endif
-	return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
+	return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp)));
       }
 
       // __p is not permitted to be a null pointer.
       void
-      deallocate(_Tp* __p, size_type __t __attribute__ ((__unused__)))
+      deallocate(_Tp* __p, size_type __n __attribute__ ((__unused__)))
       {
+#if __cpp_sized_deallocation
+# define _GLIBCXX_SIZED_DEALLOC(p, n) (p), (n) * sizeof(_Tp)
+#else
+# define _GLIBCXX_SIZED_DEALLOC(p, n) (p)
+#endif
+
 #if __cpp_aligned_new
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
-	    ::operator delete(__p,
-# if __cpp_sized_deallocation
-			      __t * sizeof(_Tp),
-# endif
-			      std::align_val_t(alignof(_Tp)));
+	    _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n),
+				     std::align_val_t(alignof(_Tp)));
 	    return;
 	  }
 #endif
-	::operator delete(__p
-#if __cpp_sized_deallocation
-			  , __t * sizeof(_Tp)
-#endif
-			 );
+	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
       }
+
+#undef _GLIBCXX_SIZED_DEALLOC
+#undef _GLIBCXX_OPERATOR_DELETE
+#undef _GLIBCXX_OPERATOR_NEW
 
 #if __cplusplus <= 201703L
       size_type

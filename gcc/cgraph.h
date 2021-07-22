@@ -949,7 +949,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Create callgraph node clone with new declaration.  The actual body will be
      copied later at compilation stage.  The name of the new clone will be
      constructed from the name of the original node, SUFFIX and NUM_SUFFIX.  */
-  cgraph_node *create_virtual_clone (vec<cgraph_edge *> redirect_callers,
+  cgraph_node *create_virtual_clone (const vec<cgraph_edge *> &redirect_callers,
 				     vec<ipa_replace_map *, va_gc> *tree_map,
 				     ipa_param_adjustments *param_adjustments,
 				     const char * suffix, unsigned num_suffix);

@@ -3929,7 +3929,7 @@ wide_int_cmp (const void *p1, const void *p2)
    Lookup by binary search.  */
 
 static int
-bound_index (vec<widest_int> bounds, const widest_int &bound)
+bound_index (const vec<widest_int> &bounds, const widest_int &bound)
 {
   unsigned int end = bounds.length ();
   unsigned int begin = 0;

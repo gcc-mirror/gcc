@@ -3240,7 +3240,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 /* Like build_function_call_vec, but call also resolve_overloaded_builtin.  */
 
 tree
-c_build_function_call_vec (location_t loc, vec<location_t> arg_loc,
+c_build_function_call_vec (location_t loc, const vec<location_t> &arg_loc,
 			   tree function, vec<tree, va_gc> *params,
 			   vec<tree, va_gc> *origtypes)
 {
@@ -15168,6 +15168,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_NOHOST:
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 

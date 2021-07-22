@@ -873,11 +873,15 @@ relation_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   if (kind != VREL_NONE)
     return kind;
 
-  // If one is not found, see if there is a relationship between equivalences.
   // If v2 isn't in v1s equiv set, then v1 shouldn't be in v2's set either.
+  // It is possible for out-of-order dominator processing to have an out of
+  // sync set of equivalences..  Down the road, when we do full updates,
+  // change this to an assert to ensure everything is in sync.
   const_bitmap equiv2 = equiv_set (ssa2, bb);
-  gcc_checking_assert (!equiv2 || !bitmap_bit_p (equiv2, v1));
+  if (equiv2 && bitmap_bit_p (equiv2, v1))
+    return EQ_EXPR;
 
+  // If not equal, see if there is a relationship between equivalences.
   if (!equiv1 && !equiv2)
     kind = VREL_NONE;
   else if (!equiv1)

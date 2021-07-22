@@ -1049,7 +1049,7 @@ extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree, bool = true);
 extern tree c_build_shufflevector (location_t, tree, tree,
-				   vec<tree>, bool = true);
+				   const vec<tree> &, bool = true);
 extern tree c_build_vec_convert (location_t, tree, location_t, tree, bool = true);
 
 extern void init_c_lex (void);

@@ -453,8 +453,10 @@ ix86_expand_move (machine_mode mode, rtx operands[])
   emit_insn (gen_rtx_SET (op0, op1));
 }
 
+/* OP is a memref of CONST_VECTOR, return scalar constant mem
+   if CONST_VECTOR is a vec_duplicate, else return NULL.  */
 static rtx
-ix86_broadcast_from_integer_constant (machine_mode mode, rtx op)
+ix86_broadcast_from_constant (machine_mode mode, rtx op)
 {
   int nunits = GET_MODE_NUNITS (mode);
   if (nunits < 2)
@@ -462,7 +464,8 @@ ix86_broadcast_from_integer_constant (machine_mode mode, rtx op)
 
   /* Don't use integer vector broadcast if we can't move from GPR to SSE
      register directly.  */
-  if (!TARGET_INTER_UNIT_MOVES_TO_VEC)
+  if (!TARGET_INTER_UNIT_MOVES_TO_VEC
+      && INTEGRAL_MODE_P (mode))
     return nullptr;
 
   /* Convert CONST_VECTOR to a non-standard SSE constant integer
@@ -470,12 +473,17 @@ ix86_broadcast_from_integer_constant (machine_mode mode, rtx op)
   if (!(TARGET_AVX2
 	|| (TARGET_AVX
 	    && (GET_MODE_INNER (mode) == SImode
-		|| GET_MODE_INNER (mode) == DImode)))
+		|| GET_MODE_INNER (mode) == DImode))
+	|| FLOAT_MODE_P (mode))
       || standard_sse_constant_p (op, mode))
     return nullptr;
 
-  /* Don't broadcast from a 64-bit integer constant in 32-bit mode.  */
-  if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT)
+  /* Don't broadcast from a 64-bit integer constant in 32-bit mode.
+     We can still put 64-bit integer constant in memory when
+     avx512 embed broadcast is available.  */
+  if (GET_MODE_INNER (mode) == DImode && !TARGET_64BIT
+      && (!TARGET_AVX512F
+	  || (GET_MODE_SIZE (mode) < 64 && !TARGET_AVX512VL)))
     return nullptr;
 
   if (GET_MODE_INNER (mode) == TImode)
@@ -561,17 +569,29 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
 
   if (can_create_pseudo_p ()
       && GET_MODE_SIZE (mode) >= 16
-      && GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      && VECTOR_MODE_P (mode)
       && (MEM_P (op1)
 	  && SYMBOL_REF_P (XEXP (op1, 0))
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (op1, 0))))
     {
-      rtx first = ix86_broadcast_from_integer_constant (mode, op1);
+      rtx first = ix86_broadcast_from_constant (mode, op1);
       if (first != nullptr)
 	{
 	  /* Broadcast to XMM/YMM/ZMM register from an integer
-	     constant.  */
+	     constant or scalar mem.  */
+	  /* Hard registers are used for 2 purposes:
+	     1. Prevent stack realignment when the original code
+	     doesn't use vector registers, which is the same for
+	     memcpy and memset.
+	     2. Prevent combine to convert constant broadcast to
+	     load from constant pool.  */
 	  op1 = ix86_gen_scratch_sse_rtx (mode);
+	  if (FLOAT_MODE_P (mode)
+	      || (!TARGET_64BIT && GET_MODE_INNER (mode) == DImode))
+	    {
+	      first = force_const_mem (GET_MODE_INNER (mode), first);
+	      op1 = gen_reg_rtx (mode);
+	    }
 	  bool ok = ix86_expand_vector_init_duplicate (false, mode,
 						       op1, first);
 	  gcc_assert (ok);

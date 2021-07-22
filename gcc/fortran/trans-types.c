@@ -1644,7 +1644,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
       GFC_TYPE_ARRAY_STRIDE (type, n) = tmp;
 
       expr = as->lower[n];
-      if (expr->expr_type == EXPR_CONSTANT)
+      if (expr && expr->expr_type == EXPR_CONSTANT)
         {
           tmp = gfc_conv_mpz_to_tree (expr->value.integer,
 				      gfc_index_integer_kind);
@@ -1694,7 +1694,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   for (n = as->rank; n < as->rank + as->corank; n++)
     {
       expr = as->lower[n];
-      if (expr->expr_type == EXPR_CONSTANT)
+      if (expr && expr->expr_type == EXPR_CONSTANT)
 	tmp = gfc_conv_mpz_to_tree (expr->value.integer,
 				    gfc_index_integer_kind);
       else

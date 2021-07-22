@@ -1473,6 +1473,14 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
       tree dims = oacc_build_routine_dims (clauses);
       list = oacc_replace_fn_attrib_attr (list, dims);
     }
+
+  if (sym_attr.oacc_routine_nohost)
+    {
+      tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_NOHOST);
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
+    }
+
   if (sym_attr.omp_device_type != OMP_DEVICE_TYPE_UNSET)
     {
       tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEVICE_TYPE);

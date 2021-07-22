@@ -5200,12 +5200,19 @@ get_offset_range (tree x, gimple *stmt, offset_int r[2], range_query *rvals)
 /* Return the argument that the call STMT to a built-in function returns
    or null if it doesn't.  On success, set OFFRNG[] to the range of offsets
    from the argument reflected in the value returned by the built-in if it
-   can be determined, otherwise to 0 and HWI_M1U respectively.  */
+   can be determined, otherwise to 0 and HWI_M1U respectively.  Set
+   *PAST_END for functions like mempcpy that might return a past the end
+   pointer (most functions return a dereferenceable pointer to an existing
+   element of an array).  */
 
 static tree
-gimple_call_return_array (gimple *stmt, offset_int offrng[2],
+gimple_call_return_array (gimple *stmt, offset_int offrng[2], bool *past_end,
 			  range_query *rvals)
 {
+  /* Clear and set below for the rare function(s) that might return
+     a past-the-end pointer.  */
+  *past_end = false;
+
   {
     /* Check for attribute fn spec to see if the function returns one
        of its arguments.  */
@@ -5213,6 +5220,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
     unsigned int argno;
     if (fnspec.returns_arg (&argno))
       {
+	/* Functions return the first argument (not a range).  */
 	offrng[0] = offrng[1] = 0;
 	return gimple_call_arg (stmt, argno);
       }
@@ -5242,6 +5250,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
       if (gimple_call_num_args (stmt) != 2)
 	return NULL_TREE;
 
+      /* Allocation functions return a pointer to the beginning.  */
       offrng[0] = offrng[1] = 0;
       return gimple_call_arg (stmt, 1);
     }
@@ -5253,10 +5262,6 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
     case BUILT_IN_MEMMOVE:
     case BUILT_IN_MEMMOVE_CHK:
     case BUILT_IN_MEMSET:
-    case BUILT_IN_STPCPY:
-    case BUILT_IN_STPCPY_CHK:
-    case BUILT_IN_STPNCPY:
-    case BUILT_IN_STPNCPY_CHK:
     case BUILT_IN_STRCAT:
     case BUILT_IN_STRCAT_CHK:
     case BUILT_IN_STRCPY:
@@ -5265,18 +5270,34 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
     case BUILT_IN_STRNCAT_CHK:
     case BUILT_IN_STRNCPY:
     case BUILT_IN_STRNCPY_CHK:
+      /* Functions return the first argument (not a range).  */
       offrng[0] = offrng[1] = 0;
       return gimple_call_arg (stmt, 0);
 
     case BUILT_IN_MEMPCPY:
     case BUILT_IN_MEMPCPY_CHK:
       {
+	/* The returned pointer is in a range constrained by the smaller
+	   of the upper bound of the size argument and the source object
+	   size.  */
+	offrng[0] = 0;
+	offrng[1] = HOST_WIDE_INT_M1U;
 	tree off = gimple_call_arg (stmt, 2);
-	if (!get_offset_range (off, stmt, offrng, rvals))
+	bool off_valid = get_offset_range (off, stmt, offrng, rvals);
+	if (!off_valid || offrng[0] != offrng[1])
 	  {
-	    offrng[0] = 0;
-	    offrng[1] = HOST_WIDE_INT_M1U;
+	    /* If the offset is either indeterminate or in some range,
+	       try to constrain its upper bound to at most the size
+	       of the source object.  */
+	    access_ref aref;
+	    tree src = gimple_call_arg (stmt, 1);
+	    if (compute_objsize (src, 1, &aref, rvals)
+		&& aref.sizrng[1] < offrng[1])
+	      offrng[1] = aref.sizrng[1];
 	  }
+
+	/* Mempcpy may return a past-the-end pointer.  */
+	*past_end = true;
 	return gimple_call_arg (stmt, 0);
       }
 
@@ -5284,23 +5305,63 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
       {
 	tree off = gimple_call_arg (stmt, 2);
 	if (get_offset_range (off, stmt, offrng, rvals))
-	  offrng[0] = 0;
+	  offrng[1] -= 1;
 	else
-	  {
-	    offrng[0] = 0;
-	    offrng[1] = HOST_WIDE_INT_M1U;
-	  }
+	  offrng[1] = HOST_WIDE_INT_M1U;
+
+	offrng[0] = 0;
 	return gimple_call_arg (stmt, 0);
       }
 
     case BUILT_IN_STRCHR:
     case BUILT_IN_STRRCHR:
     case BUILT_IN_STRSTR:
-      {
-	offrng[0] = 0;
-	offrng[1] = HOST_WIDE_INT_M1U;
-      }
+      offrng[0] = 0;
+      offrng[1] = HOST_WIDE_INT_M1U;
       return gimple_call_arg (stmt, 0);
+
+    case BUILT_IN_STPCPY:
+    case BUILT_IN_STPCPY_CHK:
+      {
+	access_ref aref;
+	tree src = gimple_call_arg (stmt, 1);
+	if (compute_objsize (src, 1, &aref, rvals))
+	  offrng[1] = aref.sizrng[1] - 1;
+	else
+	  offrng[1] = HOST_WIDE_INT_M1U;
+	
+	offrng[0] = 0;
+	return gimple_call_arg (stmt, 0);
+      }
+
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STPNCPY_CHK:
+      {
+	/* The returned pointer is in a range between the first argument
+	   and it plus the smaller of the upper bound of the size argument
+	   and the source object size.  */
+	offrng[1] = HOST_WIDE_INT_M1U;
+	tree off = gimple_call_arg (stmt, 2);
+	if (!get_offset_range (off, stmt, offrng, rvals)
+	    || offrng[0] != offrng[1])
+	  {
+	    /* If the offset is either indeterminate or in some range,
+	       try to constrain its upper bound to at most the size
+	       of the source object.  */
+	    access_ref aref;
+	    tree src = gimple_call_arg (stmt, 1);
+	    if (compute_objsize (src, 1, &aref, rvals)
+		&& aref.sizrng[1] < offrng[1])
+	      offrng[1] = aref.sizrng[1];
+	  }
+
+	/* When the source is the empty string the returned pointer is
+	   a copy of the argument.  Otherwise stpcpy can also return
+	   a past-the-end pointer.  */
+	offrng[0] = 0;
+	*past_end = true;
+	return gimple_call_arg (stmt, 0);
+      }
 
     default:
       break;
@@ -5753,9 +5814,12 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 	      /* For functions known to return one of their pointer arguments
 		 try to determine what the returned pointer points to, and on
 		 success add OFFRNG which was set to the offset added by
-		 the function (e.g., memchr) to the overall offset.  */
+		 the function (e.g., memchr or stpcpy) to the overall offset.
+	      */
+	      bool past_end;
 	      offset_int offrng[2];
-	      if (tree ret = gimple_call_return_array (stmt, offrng, rvals))
+	      if (tree ret = gimple_call_return_array (stmt, offrng,
+						       &past_end, rvals))
 		{
 		  if (!compute_objsize_r (ret, ostype, pref, snlim, qry))
 		    return false;
@@ -5764,6 +5828,11 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 		     the object.  */
 		  offset_int remrng[2];
 		  remrng[1] = pref->size_remaining (remrng);
+		  if (remrng[1] != 0 && !past_end)
+		    /* Decrement the size for functions that never return
+		       a past-the-end pointer.  */
+		    remrng[1] -= 1;
+
 		  if (remrng[1] < offrng[1])
 		    offrng[1] = remrng[1];
 		  pref->add_offset (offrng[0], offrng[1]);

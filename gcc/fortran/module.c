@@ -2088,6 +2088,7 @@ enum ab_attribute
   AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
   AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
   AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ,
+  AB_OACC_ROUTINE_NOHOST,
   AB_OMP_REQ_REVERSE_OFFLOAD, AB_OMP_REQ_UNIFIED_ADDRESS,
   AB_OMP_REQ_UNIFIED_SHARED_MEMORY, AB_OMP_REQ_DYNAMIC_ALLOCATORS,
   AB_OMP_REQ_MEM_ORDER_SEQ_CST, AB_OMP_REQ_MEM_ORDER_ACQ_REL,
@@ -2166,6 +2167,7 @@ static const mstring attr_bits[] =
     minit ("OACC_ROUTINE_LOP_WORKER", AB_OACC_ROUTINE_LOP_WORKER),
     minit ("OACC_ROUTINE_LOP_VECTOR", AB_OACC_ROUTINE_LOP_VECTOR),
     minit ("OACC_ROUTINE_LOP_SEQ", AB_OACC_ROUTINE_LOP_SEQ),
+    minit ("OACC_ROUTINE_NOHOST", AB_OACC_ROUTINE_NOHOST),
     minit ("OMP_REQ_REVERSE_OFFLOAD", AB_OMP_REQ_REVERSE_OFFLOAD),
     minit ("OMP_REQ_UNIFIED_ADDRESS", AB_OMP_REQ_UNIFIED_ADDRESS),
     minit ("OMP_REQ_UNIFIED_SHARED_MEMORY", AB_OMP_REQ_UNIFIED_SHARED_MEMORY),
@@ -2420,6 +2422,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	default:
 	  gcc_unreachable ();
 	}
+      if (attr->oacc_routine_nohost)
+	MIO_NAME (ab_attribute) (AB_OACC_ROUTINE_NOHOST, attr_bits);
 
       if (attr->flavor == FL_MODULE && gfc_current_ns->omp_requires)
 	{
@@ -2681,6 +2685,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    case AB_OACC_ROUTINE_LOP_SEQ:
 	      verify_OACC_ROUTINE_LOP_NONE (attr->oacc_routine_lop);
 	      attr->oacc_routine_lop = OACC_ROUTINE_LOP_SEQ;
+	      break;
+	    case AB_OACC_ROUTINE_NOHOST:
+	      attr->oacc_routine_nohost = 1;
 	      break;
 	    case AB_OMP_REQ_REVERSE_OFFLOAD:
 	      gfc_omp_requires_add_clause (OMP_REQ_REVERSE_OFFLOAD,

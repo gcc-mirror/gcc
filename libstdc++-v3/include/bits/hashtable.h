@@ -54,11 +54,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // from any other potentially-overlapping subobjects of the hashtable.
   template<typename _Equal, typename _Hash, typename _Allocator>
     using _Hashtable_enable_default_ctor
-      = _Enable_special_members<__and_<is_default_constructible<_Equal>,
+      = _Enable_default_constructor<__and_<is_default_constructible<_Equal>,
 				       is_default_constructible<_Hash>,
 				       is_default_constructible<_Allocator>>{},
-				true, true, true, true, true,
-				__detail::_Hash_node_base>;
+				    __detail::_Hash_node_base>;
 
   /**
    *  Primary class template _Hashtable.
@@ -228,6 +227,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					      _Equal, _Hash,
 					      _RangeHash, _Unused,
 					      _RehashPolicy, _Traits>;
+      using __enable_default_ctor
+	= _Hashtable_enable_default_ctor<_Equal, _Hash, _Alloc>;
 
     public:
       typedef _Key						key_type;
@@ -484,7 +485,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable(const _Hash& __h, const _Equal& __eq,
 		 const allocator_type& __a)
       : __hashtable_base(__h, __eq),
-	__hashtable_alloc(__node_alloc_type(__a))
+	__hashtable_alloc(__node_alloc_type(__a)),
+	__enable_default_ctor(_Enable_default_constructor_tag{})
       { }
 
       template<bool _No_realloc = true>
@@ -551,7 +553,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       _Hashtable(const allocator_type& __a)
-      : __hashtable_alloc(__node_alloc_type(__a))
+      : __hashtable_alloc(__node_alloc_type(__a)),
+	__enable_default_ctor(_Enable_default_constructor_tag{})
       { }
 
       template<typename _InputIterator>
@@ -1435,6 +1438,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __rehash_base(__ht),
       __hashtable_alloc(
 	__node_alloc_traits::_S_select_on_copy(__ht._M_node_allocator())),
+      __enable_default_ctor(__ht),
       _M_buckets(nullptr),
       _M_bucket_count(__ht._M_bucket_count),
       _M_element_count(__ht._M_element_count),
@@ -1457,6 +1461,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __map_base(__ht),
       __rehash_base(__ht),
       __hashtable_alloc(std::move(__a)),
+      __enable_default_ctor(__ht),
       _M_buckets(__ht._M_buckets),
       _M_bucket_count(__ht._M_bucket_count),
       _M_before_begin(__ht._M_before_begin._M_nxt),
@@ -1487,6 +1492,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __map_base(__ht),
       __rehash_base(__ht),
       __hashtable_alloc(__node_alloc_type(__a)),
+      __enable_default_ctor(__ht),
       _M_buckets(),
       _M_bucket_count(__ht._M_bucket_count),
       _M_element_count(__ht._M_element_count),
@@ -1508,6 +1514,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __map_base(__ht),
       __rehash_base(__ht),
       __hashtable_alloc(std::move(__a)),
+      __enable_default_ctor(__ht),
       _M_buckets(nullptr),
       _M_bucket_count(__ht._M_bucket_count),
       _M_element_count(__ht._M_element_count),

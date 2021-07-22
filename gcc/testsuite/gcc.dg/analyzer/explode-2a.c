@@ -14,7 +14,7 @@ void test (void)
      explode-2.c as this code.  */
   int a = get ();
   int b = get ();
-  while (a) /* { dg-warning "leak" } */
+  while (a)
     {
       switch (b)
 	{

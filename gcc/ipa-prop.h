@@ -1092,7 +1092,7 @@ ipa_bits *ipa_get_ipa_bits_for_value (const widest_int &value,
 void ipa_analyze_node (struct cgraph_node *);
 
 /* Aggregate jump function related functions.  */
-tree ipa_find_agg_cst_for_param (struct ipa_agg_value_set *agg, tree scalar,
+tree ipa_find_agg_cst_for_param (const ipa_agg_value_set *agg, tree scalar,
 				 HOST_WIDE_INT offset, bool by_ref,
 				 bool *from_global_constant = NULL);
 bool ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,

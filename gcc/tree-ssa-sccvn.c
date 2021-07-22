@@ -1042,9 +1042,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 bool
 ao_ref_init_from_vn_reference (ao_ref *ref,
 			       alias_set_type set, alias_set_type base_set,
-			       tree type, vec<vn_reference_op_s> ops)
+			       tree type, const vec<vn_reference_op_s> &ops)
 {
-  vn_reference_op_t op;
   unsigned i;
   tree base = NULL_TREE;
   tree *op0_p = &base;
@@ -1067,7 +1066,10 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
     size = wi::to_poly_offset (size_tree);
 
   /* Lower the final access size from the outermost expression.  */
-  op = &ops[0];
+  const_vn_reference_op_t cst_op = &ops[0];
+  /* Cast away constness for the sake of the const-unsafe
+     FOR_EACH_VEC_ELT().  */
+  vn_reference_op_t op = const_cast<vn_reference_op_t>(cst_op);
   size_tree = NULL_TREE;
   if (op->opcode == COMPONENT_REF)
     size_tree = DECL_SIZE (op->op0);
@@ -1098,7 +1100,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      && op->op0
 	      && DECL_P (TREE_OPERAND (op->op0, 0)))
 	    {
-	      vn_reference_op_t pop = &ops[i-1];
+	      const_vn_reference_op_t pop = &ops[i-1];
 	      base = TREE_OPERAND (op->op0, 0);
 	      if (known_eq (pop->off, -1))
 		{

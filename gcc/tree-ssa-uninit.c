@@ -228,9 +228,26 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
   gimple *def_stmt = SSA_NAME_DEF_STMT (vdef);
 
   /* The ASAN_MARK intrinsic doesn't modify the variable.  */
-  if (is_gimple_call (def_stmt)
-      && gimple_call_internal_p (def_stmt, IFN_ASAN_MARK))
-    return false;
+  if (is_gimple_call (def_stmt))
+    {
+      if (gimple_call_internal_p (def_stmt)
+	  && gimple_call_internal_fn (def_stmt) == IFN_ASAN_MARK)
+       return false;
+
+      if (tree fndecl = gimple_call_fndecl (def_stmt))
+       {
+	 /* Some sanitizer calls pass integer arguments to built-ins
+	    that expect pointers.  Avoid using gimple_call_builtin_p()
+	    which fails for such calls.  */
+	 if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	   {
+	     built_in_function fncode = DECL_FUNCTION_CODE (fndecl);
+	     if (fncode > BEGIN_SANITIZER_BUILTINS
+		 && fncode < END_SANITIZER_BUILTINS)
+	       return false;
+	   }
+       }
+    }
 
   /* End of VLA scope is not a kill.  */
   if (gimple_call_builtin_p (def_stmt, BUILT_IN_STACK_RESTORE))

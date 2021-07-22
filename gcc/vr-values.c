@@ -3460,11 +3460,6 @@ range_fits_type_p (const value_range *vr,
 bool
 simplify_using_ranges::fold_cond (gcond *cond)
 {
-  /* ?? vrp_folder::fold_predicate_in() is a superset of this.  At
-     some point we should merge all variants of this code.  */
-  edge taken_edge;
-  vrp_visit_cond_stmt (cond, &taken_edge);
-
   int_range_max r;
   if (query->range_of_stmt (r, cond) && r.singleton_p ())
     {
@@ -3475,17 +3470,13 @@ simplify_using_ranges::fold_cond (gcond *cond)
 
       if (r.zero_p ())
 	{
-	  gcc_checking_assert (!taken_edge
-			       || taken_edge->flags & EDGE_FALSE_VALUE);
-	  if (dump_file && (dump_flags & TDF_DETAILS) && !taken_edge)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "\nPredicate evaluates to: 0\n");
 	  gimple_cond_make_false (cond);
 	}
       else
 	{
-	  gcc_checking_assert (!taken_edge
-			       || taken_edge->flags & EDGE_TRUE_VALUE);
-	  if (dump_file && (dump_flags & TDF_DETAILS) && !taken_edge)
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "\nPredicate evaluates to: 1\n");
 	  gimple_cond_make_true (cond);
 	}
@@ -3493,12 +3484,25 @@ simplify_using_ranges::fold_cond (gcond *cond)
       return true;
     }
 
+  /* ?? vrp_folder::fold_predicate_in() is a superset of this.  At
+     some point we should merge all variants of this code.  */
+  edge taken_edge;
+  vrp_visit_cond_stmt (cond, &taken_edge);
+
   if (taken_edge)
     {
       if (taken_edge->flags & EDGE_TRUE_VALUE)
-       gimple_cond_make_true (cond);
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\nVRP Predicate evaluates to: 1\n");
+	  gimple_cond_make_true (cond);
+	}
       else if (taken_edge->flags & EDGE_FALSE_VALUE)
-       gimple_cond_make_false (cond);
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\nVRP Predicate evaluates to: 0\n");
+	  gimple_cond_make_false (cond);
+	}
       else
        gcc_unreachable ();
       update_stmt (cond);

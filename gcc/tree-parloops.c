@@ -3713,7 +3713,7 @@ ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
    reduction results in REDUCTION_STORES.  */
 
 static bool
-oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
+oacc_entry_exit_ok_1 (bitmap in_loop_bbs, const vec<basic_block> &region_bbs,
 		      reduction_info_table_type *reduction_list,
 		      bitmap reduction_stores)
 {
@@ -3828,7 +3828,8 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
    if any changes were made.  */
 
 static bool
-oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
+oacc_entry_exit_single_gang (bitmap in_loop_bbs,
+			     const vec<basic_block> &region_bbs,
 			     bitmap reduction_stores)
 {
   tree gang_pos = NULL_TREE;

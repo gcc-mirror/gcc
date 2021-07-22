@@ -1553,11 +1553,14 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
 
 /* Update this region_model for a phi stmt of the form
      LHS = PHI <...RHS...>.
-   where RHS is for the appropriate edge.  */
+   where RHS is for the appropriate edge.
+   Get state from OLD_STATE so that all of the phi stmts for a basic block
+   are effectively handled simultaneously.  */
 
 void
 region_model::handle_phi (const gphi *phi,
 			  tree lhs, tree rhs,
+			  const region_model &old_state,
 			  region_model_context *ctxt)
 {
   /* For now, don't bother tracking the .MEM SSA names.  */
@@ -1566,9 +1569,10 @@ region_model::handle_phi (const gphi *phi,
       if (VAR_DECL_IS_VIRTUAL_OPERAND (var))
 	return;
 
-  const svalue *rhs_sval = get_rvalue (rhs, ctxt);
+  const svalue *src_sval = old_state.get_rvalue (rhs, ctxt);
+  const region *dst_reg = old_state.get_lvalue (lhs, ctxt);
 
-  set_value (get_lvalue (lhs, ctxt), rhs_sval, ctxt);
+  set_value (dst_reg, src_sval, ctxt);
 
   if (ctxt)
     ctxt->on_phi (phi, rhs);
@@ -3036,6 +3040,10 @@ region_model::update_for_phis (const supernode *snode,
 {
   gcc_assert (last_cfg_superedge);
 
+  /* Copy this state and pass it to handle_phi so that all of the phi stmts
+     are effectively handled simultaneously.  */
+  const region_model old_state (*this);
+
   for (gphi_iterator gpi = const_cast<supernode *>(snode)->start_phis ();
        !gsi_end_p (gpi); gsi_next (&gpi))
     {
@@ -3044,8 +3052,8 @@ region_model::update_for_phis (const supernode *snode,
       tree src = last_cfg_superedge->get_phi_arg (phi);
       tree lhs = gimple_phi_result (phi);
 
-      /* Update next_state based on phi.  */
-      handle_phi (phi, lhs, src, ctxt);
+      /* Update next_state based on phi and old_state.  */
+      handle_phi (phi, lhs, src, old_state, ctxt);
     }
 }
 

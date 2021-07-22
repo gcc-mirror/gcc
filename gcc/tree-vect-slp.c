@@ -3354,7 +3354,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
   else if (kind == slp_inst_kind_reduc_group)
     {
       /* Collect reduction statements.  */
-      vec<stmt_vec_info> reductions = as_a <loop_vec_info> (vinfo)->reductions;
+      const vec<stmt_vec_info> &reductions
+	= as_a <loop_vec_info> (vinfo)->reductions;
       scalar_stmts.create (reductions.length ());
       for (i = 0; reductions.iterate (i, &next_info); i++)
 	if (STMT_VINFO_RELEVANT_P (next_info)
@@ -4172,7 +4173,8 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
 {
   unsigned int i;
   poly_uint64 unrolling_factor = 1;
-  vec<slp_instance> slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
+  const vec<slp_instance> &slp_instances
+    = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
   slp_instance instance;
   int decided_to_slp = 0;
 
@@ -5939,7 +5941,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
    true if anything in the basic-block was vectorized.  */
 
 static bool
-vect_slp_bbs (vec<basic_block> bbs)
+vect_slp_bbs (const vec<basic_block> &bbs)
 {
   vec<data_reference_p> datarefs = vNULL;
   auto_vec<int> dataref_groups;
@@ -6084,7 +6086,7 @@ vect_slp_function (function *fun)
 
 void
 duplicate_and_interleave (vec_info *vinfo, gimple_seq *seq, tree vector_type,
-			  vec<tree> elts, unsigned int nresults,
+			  const vec<tree> &elts, unsigned int nresults,
 			  vec<tree> &results)
 {
   unsigned int nelts = elts.length ();
@@ -6440,7 +6442,7 @@ vect_get_slp_defs (vec_info *,
 
 bool
 vect_transform_slp_perm_load (vec_info *vinfo,
-			      slp_tree node, vec<tree> dr_chain,
+			      slp_tree node, const vec<tree> &dr_chain,
 			      gimple_stmt_iterator *gsi, poly_uint64 vf,
 			      bool analyze_only, unsigned *n_perms,
 			      unsigned int *n_loads, bool dce_chain)
@@ -7469,7 +7471,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 /* Generate vector code for SLP_INSTANCES in the loop/basic block.  */
 
 void
-vect_schedule_slp (vec_info *vinfo, vec<slp_instance> slp_instances)
+vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances)
 {
   slp_instance instance;
   unsigned int i;

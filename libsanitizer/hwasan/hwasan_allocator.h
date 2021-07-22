@@ -15,6 +15,7 @@
 
 #include "hwasan.h"
 #include "hwasan_interface_internal.h"
+#include "hwasan_mapping.h"
 #include "hwasan_poisoning.h"
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_allocator_checks.h"
@@ -58,7 +59,7 @@ static const uptr kMaxAllowedMallocSize = 1UL << 40;  // 1T
 struct AP64 {
   static const uptr kSpaceBeg = ~0ULL;
 
-#if defined(__x86_64__)
+#if defined(HWASAN_ALIASING_MODE)
   static const uptr kSpaceSize = 1ULL << kAddressTagShift;
 #else
   static const uptr kSpaceSize = 0x2000000000ULL;
@@ -110,11 +111,11 @@ typedef RingBuffer<HeapAllocationRecord> HeapAllocationsRingBuffer;
 void GetAllocatorStats(AllocatorStatCounters s);
 
 inline bool InTaggableRegion(uptr addr) {
-#if defined(__x86_64__)
+#if defined(HWASAN_ALIASING_MODE)
   // Aliases are mapped next to shadow so that the upper bits match the shadow
   // base.
   return (addr >> kTaggableRegionCheckShift) ==
-         (__hwasan_shadow_memory_dynamic_address >> kTaggableRegionCheckShift);
+         (GetShadowOffset() >> kTaggableRegionCheckShift);
 #endif
   return true;
 }

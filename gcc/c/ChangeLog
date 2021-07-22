@@ -1,3 +1,18 @@
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle 'nohost'.
+	(c_parser_oacc_all_clauses): Handle 'PRAGMA_OACC_CLAUSE_NOHOST'.
+	(OACC_ROUTINE_CLAUSE_MASK): Add 'PRAGMA_OACC_CLAUSE_NOHOST'.
+	* c-typeck.c (c_finish_omp_clauses): Handle 'OMP_CLAUSE_NOHOST'.
+
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-tree.h (c_build_function_call_vec): Adjust by-value argument to
+	by-const-reference.
+	* c-typeck.c (c_build_function_call_vec): Same.
+
 2021-07-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/101289
