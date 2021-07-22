@@ -330,6 +330,144 @@ _mm_max_epu32 (__m128i __X, __m128i __Y)
   return (__m128i) vec_max ((__v4su)__X, (__v4su)__Y);
 }
 
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi8_epi16 (__m128i __A)
+{
+  return (__m128i) vec_unpackh ((__v16qi) __A);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi8_epi32 (__m128i __A)
+{
+  __A = (__m128i) vec_unpackh ((__v16qi) __A);
+  return (__m128i) vec_unpackh ((__v8hi) __A);
+}
+
+#ifdef _ARCH_PWR8
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi8_epi64 (__m128i __A)
+{
+  __A = (__m128i) vec_unpackh ((__v16qi) __A);
+  __A = (__m128i) vec_unpackh ((__v8hi) __A);
+  return (__m128i) vec_unpackh ((__v4si) __A);
+}
+#endif
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi16_epi32 (__m128i __A)
+{
+  return (__m128i) vec_unpackh ((__v8hi) __A);
+}
+
+#ifdef _ARCH_PWR8
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi16_epi64 (__m128i __A)
+{
+  __A = (__m128i) vec_unpackh ((__v8hi) __A);
+  return (__m128i) vec_unpackh ((__v4si) __A);
+}
+#endif
+
+#ifdef _ARCH_PWR8
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepi32_epi64 (__m128i __A)
+{
+  return (__m128i) vec_unpackh ((__v4si) __A);
+}
+#endif
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu8_epi16 (__m128i __A)
+{
+  const __v16qu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v16qu) __A, __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v16qu) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu8_epi32 (__m128i __A)
+{
+  const __v16qu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v16qu) __A, __zero);
+  __A = (__m128i) vec_mergeh ((__v8hu) __A, (__v8hu) __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v16qu) __A);
+  __A = (__m128i) vec_mergeh ((__v8hu) __zero, (__v8hu) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu8_epi64 (__m128i __A)
+{
+  const __v16qu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v16qu) __A, __zero);
+  __A = (__m128i) vec_mergeh ((__v8hu) __A, (__v8hu) __zero);
+  __A = (__m128i) vec_mergeh ((__v4su) __A, (__v4su) __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v16qu) __A);
+  __A = (__m128i) vec_mergeh ((__v8hu) __zero, (__v8hu) __A);
+  __A = (__m128i) vec_mergeh ((__v4su) __zero, (__v4su) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu16_epi32 (__m128i __A)
+{
+  const __v8hu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v8hu) __A, __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v8hu) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu16_epi64 (__m128i __A)
+{
+  const __v8hu __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v8hu) __A, __zero);
+  __A = (__m128i) vec_mergeh ((__v4su) __A, (__v4su) __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v8hu) __A);
+  __A = (__m128i) vec_mergeh ((__v4su) __zero, (__v4su) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtepu32_epi64 (__m128i __A)
+{
+  const __v4su __zero = {0};
+#ifdef __LITTLE_ENDIAN__
+  __A = (__m128i) vec_mergeh ((__v4su) __A, __zero);
+#else /* __BIG_ENDIAN__.  */
+  __A = (__m128i) vec_mergeh (__zero, (__v4su) __A);
+#endif /* __BIG_ENDIAN__.  */
+  return __A;
+}
+
 /* Return horizontal packed word minimum and its index in bits [15:0]
    and bits [18:16] respectively.  */
 __inline __m128i
