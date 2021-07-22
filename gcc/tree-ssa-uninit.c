@@ -638,6 +638,76 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
   wlims.always_executed = save_always_executed;
 }
 
+/* Warn about an uninitialized PHI argument on the fallthru path to
+   an always executed block BB.  */
+
+static void
+warn_uninit_phi_uses (basic_block bb)
+{
+  edge_iterator ei;
+  edge e, found = NULL, found_back = NULL;
+  /* Look for a fallthru and possibly a single backedge.  */
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      /* Ignore backedges.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
+	{
+	  if (found_back)
+	    {
+	      found = NULL;
+	      break;
+	    }
+	  found_back = e;
+	  continue;
+	}
+      if (found)
+	{
+	  found = NULL;
+	  break;
+	}
+      found = e;
+    }
+  if (!found)
+    return;
+
+  basic_block succ = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+       gsi_next (&si))
+    {
+      gphi *phi = si.phi ();
+      tree def = PHI_ARG_DEF_FROM_EDGE (phi, found);
+      if (TREE_CODE (def) != SSA_NAME
+	  || !SSA_NAME_IS_DEFAULT_DEF (def)
+	  || virtual_operand_p (def))
+	continue;
+      /* If there's a default def on the fallthru edge PHI
+	 value and there's a use that post-dominates entry
+	 then that use is uninitialized and we can warn.  */
+      imm_use_iterator iter;
+      use_operand_p use_p;
+      gimple *use_stmt = NULL;
+      FOR_EACH_IMM_USE_FAST (use_p, iter, gimple_phi_result (phi))
+	{
+	  use_stmt = USE_STMT (use_p);
+	  if (gimple_location (use_stmt) != UNKNOWN_LOCATION
+	      && dominated_by_p (CDI_POST_DOMINATORS, succ,
+				 gimple_bb (use_stmt))
+	      /* If we found a non-fallthru edge make sure the
+		 use is inside the loop, otherwise the backedge
+		 can serve as initialization.  */
+	      && (!found_back
+		  || dominated_by_p (CDI_DOMINATORS, found_back->src,
+				     gimple_bb (use_stmt))))
+	    break;
+	  use_stmt = NULL;
+	}
+      if (use_stmt)
+	warn_uninit (OPT_Wuninitialized, def, SSA_NAME_VAR (def),
+		     SSA_NAME_VAR (def),
+		     "%qD is used uninitialized", use_stmt,
+		     UNKNOWN_LOCATION);
+    }
+}
 
 static unsigned int
 warn_uninitialized_vars (bool wmaybe_uninit)
@@ -652,6 +722,10 @@ warn_uninitialized_vars (bool wmaybe_uninit)
     {
       basic_block succ = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
       wlims.always_executed = dominated_by_p (CDI_POST_DOMINATORS, succ, bb);
+
+      if (wlims.always_executed)
+	warn_uninit_phi_uses (bb);
+
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -3135,6 +3209,7 @@ execute_early_warn_uninitialized (void)
      optimization we want to warn about possible uninitialized as late
      as possible, thus don't do it here.  However, without
      optimization we need to warn here about "may be uninitialized".  */
+  calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
   warn_uninitialized_vars (/*warn_maybe_uninitialized=*/!optimize);
