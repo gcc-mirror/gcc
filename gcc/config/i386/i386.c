@@ -23180,7 +23180,7 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
 rtx
 ix86_gen_scratch_sse_rtx (machine_mode mode)
 {
-  if (TARGET_SSE)
+  if (TARGET_SSE && !lra_in_progress)
     return gen_rtx_REG (mode, (TARGET_64BIT
 			       ? LAST_REX_SSE_REG
 			       : LAST_SSE_REG));
