@@ -106,8 +106,8 @@ namespace ranges
 
       public:
 	explicit
-	_DestroyGuard(const _Iter* __iter)
-	  : _M_first(*__iter), _M_cur(__iter)
+	_DestroyGuard(const _Iter& __iter)
+	  : _M_first(__iter), _M_cur(std::__addressof(__iter))
 	{ }
 
 	void
@@ -127,7 +127,7 @@ namespace ranges
       struct _DestroyGuard<_Iter>
       {
 	explicit
-	_DestroyGuard(const _Iter*)
+	_DestroyGuard(const _Iter&)
 	{ }
 
 	void
@@ -149,7 +149,7 @@ namespace ranges
 	  return ranges::next(__first, __last);
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__first);
+	    auto __guard = __detail::_DestroyGuard(__first);
 	    for (; __first != __last; ++__first)
 	      ::new (__detail::__voidify(*__first)) _ValueType;
 	    __guard.release();
@@ -181,7 +181,7 @@ namespace ranges
 	  return ranges::next(__first, __n);
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__first);
+	    auto __guard = __detail::_DestroyGuard(__first);
 	    for (; __n > 0; ++__first, (void) --__n)
 	      ::new (__detail::__voidify(*__first)) _ValueType;
 	    __guard.release();
@@ -207,7 +207,7 @@ namespace ranges
 	  return ranges::fill(__first, __last, _ValueType());
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__first);
+	    auto __guard = __detail::_DestroyGuard(__first);
 	    for (; __first != __last; ++__first)
 	      ::new (__detail::__voidify(*__first)) _ValueType();
 	    __guard.release();
@@ -240,7 +240,7 @@ namespace ranges
 	  return ranges::fill_n(__first, __n, _ValueType());
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__first);
+	    auto __guard = __detail::_DestroyGuard(__first);
 	    for (; __n > 0; ++__first, (void) --__n)
 	      ::new (__detail::__voidify(*__first)) _ValueType();
 	    __guard.release();
@@ -279,7 +279,7 @@ namespace ranges
 	  }
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__ofirst);
+	    auto __guard = __detail::_DestroyGuard(__ofirst);
 	    for (; __ifirst != __ilast && __ofirst != __olast;
 		 ++__ofirst, (void)++__ifirst)
 	      ::new (__detail::__voidify(*__ofirst)) _OutType(*__ifirst);
@@ -326,7 +326,7 @@ namespace ranges
 	  }
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__ofirst);
+	    auto __guard = __detail::_DestroyGuard(__ofirst);
 	    for (; __n > 0 && __ofirst != __olast;
 		 ++__ofirst, (void)++__ifirst, (void)--__n)
 	      ::new (__detail::__voidify(*__ofirst)) _OutType(*__ifirst);
@@ -368,7 +368,7 @@ namespace ranges
 	  }
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__ofirst);
+	    auto __guard = __detail::_DestroyGuard(__ofirst);
 	    for (; __ifirst != __ilast && __ofirst != __olast;
 		 ++__ofirst, (void)++__ifirst)
 	      ::new (__detail::__voidify(*__ofirst))
@@ -419,7 +419,7 @@ namespace ranges
 	  }
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__ofirst);
+	    auto __guard = __detail::_DestroyGuard(__ofirst);
 	    for (; __n > 0 && __ofirst != __olast;
 		 ++__ofirst, (void)++__ifirst, (void)--__n)
 	      ::new (__detail::__voidify(*__ofirst))
@@ -446,7 +446,7 @@ namespace ranges
 	  return ranges::fill(__first, __last, __x);
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__first);
+	    auto __guard = __detail::_DestroyGuard(__first);
 	    for (; __first != __last; ++__first)
 	      ::new (__detail::__voidify(*__first)) _ValueType(__x);
 	    __guard.release();
@@ -479,7 +479,7 @@ namespace ranges
 	  return ranges::fill_n(__first, __n, __x);
 	else
 	  {
-	    auto __guard = __detail::_DestroyGuard(&__first);
+	    auto __guard = __detail::_DestroyGuard(__first);
 	    for (; __n > 0; ++__first, (void)--__n)
 	      ::new (__detail::__voidify(*__first)) _ValueType(__x);
 	    __guard.release();
