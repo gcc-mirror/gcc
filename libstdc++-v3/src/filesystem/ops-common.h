@@ -26,6 +26,7 @@
 #define _GLIBCXX_OPS_COMMON_H 1
 
 #include <chrono>
+#include <bits/move.h> // std::__exchange
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
@@ -407,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 
     struct CloseFD {
       ~CloseFD() { if (fd != -1) posix::close(fd); }
-      bool close() { return posix::close(std::exchange(fd, -1)) == 0; }
+      bool close() { return posix::close(std::__exchange(fd, -1)) == 0; }
       int fd;
     };
 
