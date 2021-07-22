@@ -364,10 +364,15 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated
+    HIR::TraitItemFunc *trait_item
       = new HIR::TraitItemFunc (mapping, std::move (decl),
 				std::unique_ptr<HIR::Expr> (block_expr),
 				func.get_outer_attrs (), func.get_locus ());
+    translated = trait_item;
+    mappings->insert_hir_trait_item (mapping.get_crate_num (),
+				     mapping.get_hirid (), translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       trait_item->get_locus ());
   }
 
   void visit (AST::TraitItemMethod &method) override
@@ -428,10 +433,15 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated
+    HIR::TraitItemFunc *trait_item
       = new HIR::TraitItemFunc (mapping, std::move (decl),
 				std::unique_ptr<HIR::Expr> (block_expr),
 				method.get_outer_attrs (), method.get_locus ());
+    translated = trait_item;
+    mappings->insert_hir_trait_item (mapping.get_crate_num (),
+				     mapping.get_hirid (), translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       trait_item->get_locus ());
   }
 
   void visit (AST::TraitItemConst &constant) override
@@ -447,11 +457,17 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated = new HIR::TraitItemConst (mapping, constant.get_identifier (),
-					  std::unique_ptr<HIR::Type> (type),
-					  std::unique_ptr<HIR::Expr> (expr),
-					  constant.get_outer_attrs (),
-					  constant.get_locus ());
+    HIR::TraitItemConst *trait_item
+      = new HIR::TraitItemConst (mapping, constant.get_identifier (),
+				 std::unique_ptr<HIR::Type> (type),
+				 std::unique_ptr<HIR::Expr> (expr),
+				 constant.get_outer_attrs (),
+				 constant.get_locus ());
+    translated = trait_item;
+    mappings->insert_hir_trait_item (mapping.get_crate_num (),
+				     mapping.get_hirid (), translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       trait_item->get_locus ());
   }
 
   void visit (AST::TraitItemType &type) override
@@ -463,10 +479,15 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated
+    HIR::TraitItemType *trait_item
       = new HIR::TraitItemType (mapping, type.get_identifier (),
 				std::move (type_param_bounds),
 				type.get_outer_attrs (), type.get_locus ());
+    translated = trait_item;
+    mappings->insert_hir_trait_item (mapping.get_crate_num (),
+				     mapping.get_hirid (), translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       trait_item->get_locus ());
   }
 
 private:
