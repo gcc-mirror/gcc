@@ -1,3 +1,9 @@
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add 'PRAGMA_OACC_CLAUSE_NOHOST'.
+
 2021-07-20  Martin Sebor  <msebor@redhat.com>
 
 	* c-common.c (c_build_shufflevector): Adjust by-value argument to

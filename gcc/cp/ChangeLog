@@ -1,3 +1,19 @@
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_name): Handle 'nohost'.
+	(cp_parser_oacc_all_clauses): Handle 'PRAGMA_OACC_CLAUSE_NOHOST'.
+	(OACC_ROUTINE_CLAUSE_MASK): Add 'PRAGMA_OACC_CLAUSE_NOHOST'.
+	* pt.c (tsubst_omp_clauses): Handle 'OMP_CLAUSE_NOHOST'.
+	* semantics.c (finish_omp_clauses): Likewise.
+
+2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101516
+	* semantics.c (finish_omp_reduction_clause): Also call
+	complete_type_or_else and return true if it fails.
+
 2021-07-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/95520

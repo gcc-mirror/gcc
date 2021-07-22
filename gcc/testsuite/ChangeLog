@@ -1,3 +1,90 @@
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101547
+	* gcc.dg/analyzer/pr101547.c: New test.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101522
+	* g++.dg/analyzer/pr101522.C: New test.
+
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/classify-routine-nohost.c: New file.
+	* c-c++-common/goacc/classify-routine.c: Update.
+	* c-c++-common/goacc/routine-2.c: Likewise.
+	* c-c++-common/goacc/routine-nohost-1.c: New file.
+	* c-c++-common/goacc/routine-nohost-2.c: Likewise.
+	* g++.dg/goacc/template.C: Update.
+	* gfortran.dg/goacc/classify-routine-nohost.f95: New file.
+	* gfortran.dg/goacc/classify-routine.f95: Update.
+	* gfortran.dg/goacc/pure-elemental-procedures-2.f90: Likewise.
+	* gfortran.dg/goacc/routine-6.f90: Likewise.
+	* gfortran.dg/goacc/routine-intrinsic-2.f: Likewise.
+	* gfortran.dg/goacc/routine-module-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-2.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-3.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-multiple-directives-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-multiple-directives-2.f90: Likewise.
+
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/goacc/template.C: Fix '#pragma atomic update' typo.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/explode-2.c: Remove xfail.
+	* gcc.dg/analyzer/explode-2a.c: Remove expected leak warning on
+	while stmt.
+	* gcc.dg/analyzer/phi-2.c: New test.
+
+2021-07-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101531
+	* gcc.target/powerpc/pr101129.c: Adjust.
+
+2021-07-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101549
+	* gcc.target/i386/crc32-6.c: New test.
+
+2021-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101514
+	* gfortran.dg/pr101514.f90: New test.
+
+2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101535
+	* c-c++-common/gomp/pr101535-1.c: New test.
+	* c-c++-common/gomp/pr101535-2.c: New test.
+
+2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101516
+	* g++.dg/gomp/pr101516.C: New test.
+
+2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/iso_c_binding_char_1.f90: Update dg-error.
+	* gfortran.dg/pr32599.f03: Use -std=-f2003 + update comment.
+	* gfortran.dg/bind_c_char_10.f90: New test.
+	* gfortran.dg/bind_c_char_6.f90: New test.
+	* gfortran.dg/bind_c_char_7.f90: New test.
+	* gfortran.dg/bind_c_char_8.f90: New test.
+	* gfortran.dg/bind_c_char_9.f90: New test.
+
+2021-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/unroll-10.c: New test.
+
+2021-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/unroll-9.c: New test/
+
 2021-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/101397

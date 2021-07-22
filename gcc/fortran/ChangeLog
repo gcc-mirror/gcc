@@ -1,3 +1,34 @@
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* dump-parse-tree.c (show_attr): Update.
+	* gfortran.h (symbol_attribute): Add 'oacc_routine_nohost' member.
+	(gfc_omp_clauses): Add 'nohost' member.
+	* module.c (ab_attribute): Add 'AB_OACC_ROUTINE_NOHOST'.
+	(attr_bits, mio_symbol_attribute): Update.
+	* openmp.c (omp_mask2): Add 'OMP_CLAUSE_NOHOST'.
+	(gfc_match_omp_clauses): Handle 'OMP_CLAUSE_NOHOST'.
+	(OACC_ROUTINE_CLAUSES): Add 'OMP_CLAUSE_NOHOST'.
+	(gfc_match_oacc_routine): Update.
+	* trans-decl.c (add_attributes_to_decl): Update.
+	* trans-openmp.c (gfc_trans_omp_clauses): Likewise.
+
+2021-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101514
+	* target-memory.c (gfc_interpret_derived): Size of array component
+	of derived type can only be computed here for explicit shape.
+	* trans-types.c (gfc_get_nodesc_array_type): Do not dereference
+	NULL pointers.
+
+2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* decl.c (gfc_verify_c_interop_param): Update for F2008 + F2018
+	changes; reject unsupported bits with 'Error: Sorry,'.
+	* trans-expr.c (gfc_conv_procedure_call): Fix condition to
+	For using CFI descriptor with characters.
+
 2021-07-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101084

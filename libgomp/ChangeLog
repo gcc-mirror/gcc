@@ -1,3 +1,15 @@
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-1.c: New
+	file.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-2_2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-nohost-1.f90: Likewise.
+
 2021-07-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/101484
