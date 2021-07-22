@@ -1,3 +1,13 @@
+2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101535
+	* gimplify.c (omp_check_private): Properly skip ORT_TARGET_DATA
+	contexts in which decl isn't privatized and for ORT_TARGET return
+	false if decl is mapped.
+
 2021-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/101384
