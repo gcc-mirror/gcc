@@ -31,3 +31,6 @@
 // { dg-prune-output "tuple:993" }
 // PMR alias templates cause ambiguities between debug and profile containers:
 // { dg-prune-output "is ambiguous" }
+// C++20 uniform container erasure causes more errors
+// { dg-prune-output "expected nested-name-specifier before" }
+// { dg-prune-output "expected initializer before" }
