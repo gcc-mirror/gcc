@@ -237,7 +237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ __functor._M_access<_Functor*>() = new _Functor(std::move(__f)); }
       };
 
-    _Function_base() : _M_manager(nullptr) { }
+    _Function_base() = default;
 
     ~_Function_base()
     {
@@ -247,11 +247,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     bool _M_empty() const { return !_M_manager; }
 
-    typedef bool (*_Manager_type)(_Any_data&, const _Any_data&,
-				  _Manager_operation);
+    using _Manager_type
+      = bool (*)(_Any_data&, const _Any_data&, _Manager_operation);
 
-    _Any_data     _M_functor;
-    _Manager_type _M_manager;
+    _Any_data     _M_functor{};
+    _Manager_type _M_manager{};
   };
 
   template<typename _Signature, typename _Functor>
@@ -261,7 +261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class _Function_handler<_Res(_ArgTypes...), _Functor>
     : public _Function_base::_Base_manager<_Functor>
     {
-      typedef _Function_base::_Base_manager<_Functor> _Base;
+      using _Base = _Function_base::_Base_manager<_Functor>;
 
     public:
       static bool
@@ -414,7 +414,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	function(_Functor __f)
 	: _Function_base()
 	{
-	  typedef _Function_handler<_Res(_ArgTypes...), _Functor> _My_handler;
+	  using _My_handler = _Function_handler<_Res(_ArgTypes...), _Functor>;
 
 	  if (_My_handler::_M_not_empty_function(__f))
 	    {
@@ -634,8 +634,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       using _Invoker_type = _Res (*)(const _Any_data&, _ArgTypes&&...);
-      _Invoker_type _M_invoker;
-  };
+      _Invoker_type _M_invoker = nullptr;
+    };
 
 #if __cpp_deduction_guides >= 201606
   template<typename>
