@@ -89,12 +89,17 @@ bool
 non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
 			    bool search_dom)
 {
-  // Check if pointers have any non-null dereferences.  Non-call
-  // exceptions mean we could throw in the middle of the block, so just
-  // punt for now on those.
-  if (!cfun->can_throw_non_call_exceptions
-      && r.varying_p ()
-      && non_null_deref_p (name, bb, search_dom))
+  // Non-call exceptions mean we could throw in the middle of the
+  // block, so just punt on those for now.
+  if (cfun->can_throw_non_call_exceptions)
+    return false;
+
+  // We only care about the null / non-null property of pointers.
+  if (!POINTER_TYPE_P (TREE_TYPE (name)) || r.zero_p () || r.nonzero_p ())
+    return false;
+
+  // Check if pointers have any non-null dereferences.
+  if (non_null_deref_p (name, bb, search_dom))
     {
       int_range<2> nz;
       nz.set_nonzero (TREE_TYPE (name));
