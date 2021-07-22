@@ -583,6 +583,7 @@ bits_headers = \
 	${bits_srcdir}/unordered_set.h \
 	${bits_srcdir}/uses_allocator.h \
 	${bits_srcdir}/uses_allocator_args.h \
+	${bits_srcdir}/utility.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \

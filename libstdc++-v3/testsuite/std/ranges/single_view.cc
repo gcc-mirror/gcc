@@ -19,6 +19,7 @@
 // { dg-do run { target c++2a } }
 
 #include <ranges>
+#include <utility> // as_const
 #include <testsuite_hooks.h>
 
 void
