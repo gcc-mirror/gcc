@@ -128,6 +128,10 @@ public:
   void insert_hir_item (CrateNum crateNum, HirId id, HIR::Item *item);
   HIR::Item *lookup_hir_item (CrateNum crateNum, HirId id);
 
+  void insert_hir_trait_item (CrateNum crateNum, HirId id,
+			      HIR::TraitItem *item);
+  HIR::TraitItem *lookup_hir_trait_item (CrateNum crateNum, HirId id);
+
   void insert_hir_impl_block (CrateNum crateNum, HirId id,
 			      HIR::ImplBlock *item);
   HIR::ImplBlock *lookup_hir_impl_block (CrateNum crateNum, HirId id);
@@ -198,6 +202,8 @@ public:
   void iterate_impl_items (
     std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb);
 
+  void iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb);
+
   bool is_impl_item (HirId id)
   {
     HirId parent_impl_block_id = UNKNOWN_HIRID;
@@ -232,6 +238,7 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::SelfParam *> > hirSelfParamMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplItemsToImplMappings;
   std::map<CrateNum, std::map<HirId, HIR::ImplBlock *> > hirImplBlockMappings;
+  std::map<CrateNum, std::map<HirId, HIR::TraitItem *> > hirTraitItemMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;
