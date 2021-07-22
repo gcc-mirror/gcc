@@ -1103,15 +1103,29 @@ public:
   {
     TyTy::BaseType *resolved_base
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
-    if (resolved_base->get_kind () != TyTy::TypeKind::REF)
+
+    bool is_valid_type
+      = resolved_base->get_kind () == TyTy::TypeKind::REF
+	|| resolved_base->get_kind () == TyTy::TypeKind::POINTER;
+    if (!is_valid_type)
       {
 	rust_error_at (expr.get_locus (), "expected reference type got %s",
 		       resolved_base->as_string ().c_str ());
 	return;
       }
 
-    TyTy::ReferenceType *ref_base = (TyTy::ReferenceType *) resolved_base;
-    infered = ref_base->get_base ()->clone ();
+    if (resolved_base->get_kind () == TyTy::TypeKind::REF)
+      {
+	TyTy::ReferenceType *ref_base
+	  = static_cast<TyTy::ReferenceType *> (resolved_base);
+	infered = ref_base->get_base ()->clone ();
+      }
+    else
+      {
+	TyTy::PointerType *ref_base
+	  = static_cast<TyTy::PointerType *> (resolved_base);
+	infered = ref_base->get_base ()->clone ();
+      }
   }
 
 private:
