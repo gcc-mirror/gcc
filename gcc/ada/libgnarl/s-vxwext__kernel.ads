@@ -45,6 +45,12 @@ package System.VxWorks.Ext is
    subtype int is Interfaces.C.int;
    subtype unsigned is Interfaces.C.unsigned;
 
+   type STATUS is new int;
+   --  Equivalent of the C type STATUS
+
+   OK    : constant STATUS := 0;
+   ERROR : constant STATUS := -1;
+
    type BOOL is new int;
    --  Equivalent of the C type BOOL
 
@@ -65,7 +71,7 @@ package System.VxWorks.Ext is
    function Interrupt_Connect
      (Vector    : Interrupt_Vector;
       Handler   : Interrupt_Handler;
-      Parameter : System.Address := System.Null_Address) return int;
+      Parameter : System.Address := System.Null_Address) return STATUS;
    pragma Import (C, Interrupt_Connect, "intConnect");
 
    function Interrupt_Context return BOOL;
@@ -75,13 +81,13 @@ package System.VxWorks.Ext is
      (intNum : int) return Interrupt_Vector;
    pragma Import (C, Interrupt_Number_To_Vector, "__gnat_inum_to_ivec");
 
-   function semDelete (Sem : SEM_ID) return int;
+   function semDelete (Sem : SEM_ID) return STATUS;
    pragma Convention (C, semDelete);
 
-   function Task_Cont (tid : t_id) return int;
+   function Task_Cont (tid : t_id) return STATUS;
    pragma Convention (C, Task_Cont);
 
-   function Task_Stop (tid : t_id) return int;
+   function Task_Stop (tid : t_id) return STATUS;
    pragma Convention (C, Task_Stop);
 
    function kill (pid : t_id; sig : int) return int;
@@ -90,7 +96,7 @@ package System.VxWorks.Ext is
    function getpid return t_id;
    pragma Import (C, getpid, "taskIdSelf");
 
-   function Set_Time_Slice (ticks : int) return int;
+   function Set_Time_Slice (ticks : int) return STATUS;
    pragma Import (C, Set_Time_Slice, "kernelTimeSlice");
 
    type UINT64 is mod 2 ** Long_Long_Integer'Size;

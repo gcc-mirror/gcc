@@ -46,6 +46,12 @@ package System.VxWorks.Ext is
    subtype int is Interfaces.C.int;
    subtype unsigned is Interfaces.C.unsigned;
 
+   type STATUS is new int;
+   --  Equivalent of the C type STATUS
+
+   OK    : constant STATUS := 0;
+   ERROR : constant STATUS := -1;
+
    type BOOL is new int;
    --  Equivalent of the C type BOOL
 

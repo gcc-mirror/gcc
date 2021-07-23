@@ -33,7 +33,7 @@
 
 package body System.VxWorks.Ext is
 
-   ERROR : constant := -1;
+   IERR : constant := -1;
 
    --------------
    -- Int_Lock --
@@ -41,7 +41,7 @@ package body System.VxWorks.Ext is
 
    function Int_Lock return int is
    begin
-      return ERROR;
+      return IERR;
    end Int_Lock;
 
    ----------------
@@ -61,7 +61,7 @@ package body System.VxWorks.Ext is
    function Interrupt_Connect
      (Vector    : Interrupt_Vector;
       Handler   : Interrupt_Handler;
-      Parameter : System.Address := System.Null_Address) return int
+      Parameter : System.Address := System.Null_Address) return STATUS
    is
       pragma Unreferenced (Vector, Handler, Parameter);
    begin
@@ -95,8 +95,8 @@ package body System.VxWorks.Ext is
    -- semDelete --
    ---------------
 
-   function semDelete (Sem : SEM_ID) return int is
-      function OS_semDelete (Sem : SEM_ID) return int;
+   function semDelete (Sem : SEM_ID) return STATUS is
+      function OS_semDelete (Sem : SEM_ID) return STATUS;
       pragma Import (C, OS_semDelete, "semDelete");
    begin
       return OS_semDelete (Sem);
@@ -106,7 +106,7 @@ package body System.VxWorks.Ext is
    -- Set_Time_Slice --
    --------------------
 
-   function Set_Time_Slice (ticks : int) return int is
+   function Set_Time_Slice (ticks : int) return STATUS is
       pragma Unreferenced (ticks);
    begin
       return ERROR;

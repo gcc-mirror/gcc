@@ -33,7 +33,7 @@
 
 package body System.VxWorks.Ext is
 
-   ERROR : constant := -1;
+   IERR : constant := -1;
 
    --------------
    -- Int_Lock --
@@ -41,7 +41,7 @@ package body System.VxWorks.Ext is
 
    function Int_Lock return int is
    begin
-      return ERROR;
+      return IERR;
    end Int_Lock;
 
    ----------------
@@ -58,8 +58,8 @@ package body System.VxWorks.Ext is
    -- semDelete --
    ---------------
 
-   function semDelete (Sem : SEM_ID) return int is
-      function Os_Sem_Delete (Sem : SEM_ID) return int;
+   function semDelete (Sem : SEM_ID) return STATUS is
+      function Os_Sem_Delete (Sem : SEM_ID) return STATUS;
       pragma Import (C, Os_Sem_Delete, "semDelete");
    begin
       return Os_Sem_Delete (Sem);
@@ -92,8 +92,8 @@ package body System.VxWorks.Ext is
    -- Task_Cont --
    ---------------
 
-   function Task_Cont (tid : t_id) return int is
-      function taskCont (tid : t_id) return int;
+   function Task_Cont (tid : t_id) return STATUS is
+      function taskCont (tid : t_id) return STATUS;
       pragma Import (C, taskCont, "taskCont");
    begin
       return taskCont (tid);
@@ -103,8 +103,8 @@ package body System.VxWorks.Ext is
    -- Task_Stop --
    ---------------
 
-   function Task_Stop (tid : t_id) return int is
-      function taskStop (tid : t_id) return int;
+   function Task_Stop (tid : t_id) return STATUS is
+      function taskStop (tid : t_id) return STATUS;
       pragma Import (C, taskStop, "taskStop");
    begin
       return taskStop (tid);
