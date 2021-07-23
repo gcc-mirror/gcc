@@ -3,6 +3,15 @@
 	Backported from master:
 	2021-07-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/attrs-1.c: New test.
+	* c-c++-common/gomp/attrs-2.c: New test.
+	* c-c++-common/gomp/attrs-3.c: New test.
+
+2021-07-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
 	* g++.dg/gomp/attrs-4.C: New test.
 	* g++.dg/gomp/attrs-5.C: New test.
 

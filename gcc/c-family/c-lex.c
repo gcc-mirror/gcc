@@ -338,7 +338,20 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 	      tree attr_id
 		= get_identifier ((const char *)
 				  cpp_token_as_text (pfile, nxt_token));
-	      attr_name = build_tree_list (attr_ns, attr_id);
+	      attr_id = canonicalize_attr_name (attr_id);
+	      if (c_dialect_cxx ())
+		{
+		  /* OpenMP attributes need special handling.  */
+		  if ((flag_openmp || flag_openmp_simd)
+		      && is_attribute_p ("omp", attr_ns)
+		      && (is_attribute_p ("directive", attr_id)
+			  || is_attribute_p ("sequence", attr_id)))
+		    result = 1;
+		}
+	      if (result)
+		attr_name = NULL_TREE;
+	      else
+		attr_name = build_tree_list (attr_ns, attr_id);
 	    }
 	  else
 	    {
