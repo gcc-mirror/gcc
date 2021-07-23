@@ -1,3 +1,11 @@
+2021-07-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP__START_ and
+	PRAGMA_OMP__LAST_ enumerators.
+
 2021-07-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
