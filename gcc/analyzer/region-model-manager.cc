@@ -71,6 +71,7 @@ region_model_manager::region_model_manager ()
   m_stack_region (alloc_region_id (), &m_root_region),
   m_heap_region (alloc_region_id (), &m_root_region),
   m_unknown_NULL (NULL),
+  m_check_complexity (true),
   m_max_complexity (0, 0),
   m_code_region (alloc_region_id (), &m_root_region),
   m_fndecls_map (), m_labels_map (),
@@ -160,6 +161,9 @@ region_model_manager::too_complex_p (const complexity &c) const
 bool
 region_model_manager::reject_if_too_complex (svalue *sval)
 {
+  if (!m_check_complexity)
+    return false;
+
   const complexity &c = sval->get_complexity ();
   if (!too_complex_p (c))
     {

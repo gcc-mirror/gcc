@@ -323,6 +323,9 @@ public:
 
   void log_stats (logger *logger, bool show_objs) const;
 
+  void enable_complexity_check (void) { m_check_complexity = true; }
+  void disable_complexity_check (void) { m_check_complexity = false; }
+
 private:
   bool too_complex_p (const complexity &c) const;
   bool reject_if_too_complex (svalue *sval);
@@ -406,6 +409,8 @@ private:
   typedef hash_map<conjured_svalue::key_t,
 		   conjured_svalue *> conjured_values_map_t;
   conjured_values_map_t m_conjured_values_map;
+
+  bool m_check_complexity;
 
   /* Maximum complexity of svalues that weren't rejected.  */
   complexity m_max_complexity;
