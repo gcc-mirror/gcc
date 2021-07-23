@@ -917,7 +917,10 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	}
 
       subreg_off = bitnum / BITS_PER_UNIT;
-      if (validate_subreg (fieldmode, GET_MODE (arg0), arg0, subreg_off))
+      if (validate_subreg (fieldmode, GET_MODE (arg0), arg0, subreg_off)
+	  /* STRICT_LOW_PART must have a non-paradoxical subreg as
+	     operand.  */
+	  && !paradoxical_subreg_p (fieldmode, GET_MODE (arg0)))
 	{
 	  arg0 = gen_rtx_SUBREG (fieldmode, arg0, subreg_off);
 
