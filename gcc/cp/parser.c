@@ -11665,6 +11665,7 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
   auto_vec<cp_omp_attribute_data, 16> vec;
   int cnt = 0;
   int tokens = 0;
+  bool bad = false;
   for (tree *pa = &attrs; *pa; )
     if (get_attribute_namespace (*pa) == omp_identifier
 	&& is_attribute_p ("directive", get_attribute_name (*pa)))
@@ -11676,6 +11677,14 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
 	    gcc_assert (TREE_CODE (d) == DEFERRED_PARSE);
 	    cp_token *first = DEFPARSE_TOKENS (d)->first;
 	    cp_token *last = DEFPARSE_TOKENS (d)->last;
+	    if (parser->omp_attrs_forbidden_p)
+	      {
+		error_at (first->location,
+			  "mixing OpenMP directives with attribute and pragma "
+			  "syntax on the same statement");
+		parser->omp_attrs_forbidden_p = false;
+		bad = true;
+	      }
 	    const char *directive[3] = {};
 	    for (int i = 0; i < 3; i++)
 	      {
@@ -11731,6 +11740,9 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
     else
       pa = &TREE_CHAIN (*pa);
 
+  if (bad)
+    return attrs;
+
   unsigned int i;
   cp_omp_attribute_data *v;
   cp_omp_attribute_data *construct_seen = nullptr;
@@ -11779,6 +11791,18 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
 		"standalone OpenMP directives in %<omp::directive%> attribute"
 		" can only appear on an empty statement");
       return attrs;
+    }
+  if (cnt && cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA))
+    {
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      enum pragma_kind kind = cp_parser_pragma_kind (token);
+      if (kind >= PRAGMA_OMP__START_ && kind <= PRAGMA_OMP__LAST_)
+	{
+	  error_at (token->location,
+		    "mixing OpenMP directives with attribute and pragma "
+		    "syntax on the same statement");
+	  return attrs;
+	}
     }
 
   if (!tokens)
@@ -11904,6 +11928,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
   if (std_attrs && (flag_openmp || flag_openmp_simd))
     std_attrs = cp_parser_handle_statement_omp_attributes (parser, std_attrs);
+  parser->omp_attrs_forbidden_p = false;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -39391,11 +39416,14 @@ cp_parser_end_omp_structured_block (cp_parser *parser, unsigned save)
 }
 
 static tree
-cp_parser_omp_structured_block (cp_parser *parser, bool *if_p)
+cp_parser_omp_structured_block (cp_parser *parser, bool *if_p,
+				bool disallow_omp_attrs = true)
 {
   tree stmt = begin_omp_structured_block ();
   unsigned int save = cp_parser_begin_omp_structured_block (parser);
 
+  if (disallow_omp_attrs)
+    parser->omp_attrs_forbidden_p = true;
   cp_parser_statement (parser, NULL_TREE, false, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
@@ -40761,7 +40789,7 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
   if (!braces.require_open (parser))
     return;
 
-  substmt = cp_parser_omp_structured_block (parser, NULL);
+  substmt = cp_parser_omp_structured_block (parser, NULL, false);
   substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
   add_stmt (substmt);
 
@@ -40796,7 +40824,7 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
     error ("expected %<#pragma omp scan%>");
 
   clauses = finish_omp_clauses (clauses, C_ORT_OMP);
-  substmt = cp_parser_omp_structured_block (parser, NULL);
+  substmt = cp_parser_omp_structured_block (parser, NULL, false);
   substmt = build2_loc (tok->location, OMP_SCAN, void_type_node, substmt,
 			clauses);
   add_stmt (substmt);
@@ -41597,7 +41625,7 @@ cp_parser_omp_sections_scope (cp_parser *parser)
   if (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
       != PRAGMA_OMP_SECTION)
     {
-      substmt = cp_parser_omp_structured_block (parser, NULL);
+      substmt = cp_parser_omp_structured_block (parser, NULL, false);
       substmt = build1 (OMP_SECTION, void_type_node, substmt);
       add_stmt (substmt);
     }
@@ -41622,7 +41650,7 @@ cp_parser_omp_sections_scope (cp_parser *parser)
 	  error_suppress = true;
 	}
 
-      substmt = cp_parser_omp_structured_block (parser, NULL);
+      substmt = cp_parser_omp_structured_block (parser, NULL, false);
       substmt = build1 (OMP_SECTION, void_type_node, substmt);
       add_stmt (substmt);
     }
@@ -41842,6 +41870,7 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 
   block = begin_omp_parallel ();
   save = cp_parser_begin_omp_structured_block (parser);
+  parser->omp_attrs_forbidden_p = true;
   cp_parser_statement (parser, NULL_TREE, false, if_p);
   cp_parser_end_omp_structured_block (parser, save);
   stmt = finish_omp_parallel (clauses, block);
@@ -41904,6 +41933,7 @@ cp_parser_omp_task (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 				       "#pragma omp task", pragma_tok);
   block = begin_omp_task ();
   save = cp_parser_begin_omp_structured_block (parser);
+  parser->omp_attrs_forbidden_p = true;
   cp_parser_statement (parser, NULL_TREE, false, if_p);
   cp_parser_end_omp_structured_block (parser, save);
   return finish_omp_task (clauses, block);
