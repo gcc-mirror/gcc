@@ -275,7 +275,14 @@ struct gomp_coalesce_buf
    host to device (e.g. map(alloc:), map(from:) etc.).  */
 #define MAX_COALESCE_BUF_GAP	(4 * 1024)
 
-/* Add region with device tgt_start relative offset and length to CBUF.  */
+/* Add region with device tgt_start relative offset and length to CBUF.
+
+   This must not be used for asynchronous copies, because the host data might
+   not be computed yet (by an earlier asynchronous compute region, for
+   example).
+   TODO ... but we could allow CBUF usage for EPHEMERAL data?  (Open question:
+   is it more performant to use libgomp CBUF buffering or individual device
+   asyncronous copying?)  */
 
 static inline void
 gomp_coalesce_buf_add (struct gomp_coalesce_buf *cbuf, size_t start, size_t len)
@@ -339,6 +346,30 @@ gomp_copy_host2dev (struct gomp_device_descr *devicep,
 		    void *d, const void *h, size_t sz,
 		    bool ephemeral, struct gomp_coalesce_buf *cbuf)
 {
+  if (__builtin_expect (aq != NULL, 0))
+    {
+      /* See 'gomp_coalesce_buf_add'.  */
+      assert (!cbuf);
+
+      void *h_buf = (void *) h;
+      if (ephemeral)
+	{
+	  /* We're queueing up an asynchronous copy from data that may
+	     disappear before the transfer takes place (i.e. because it is a
+	     stack local in a function that is no longer executing).  Make a
+	     copy of the data into a temporary buffer in those cases.  */
+	  h_buf = gomp_malloc (sz);
+	  memcpy (h_buf, h, sz);
+	}
+      goacc_device_copy_async (devicep, devicep->openacc.async.host2dev_func,
+			       "dev", d, "host", h_buf, h, sz, aq);
+      if (ephemeral)
+	/* Free temporary buffer once the transfer has completed.  */
+	devicep->openacc.async.queue_callback_func (aq, free, h_buf);
+
+      return;
+    }
+
   if (cbuf)
     {
       uintptr_t doff = (uintptr_t) d - cbuf->tgt->tgt_start;
@@ -364,26 +395,8 @@ gomp_copy_host2dev (struct gomp_device_descr *devicep,
 	    }
 	}
     }
-  if (__builtin_expect (aq != NULL, 0))
-    {
-      void *h_buf = (void *) h;
-      if (ephemeral)
-	{
-	  /* We're queueing up an asynchronous copy from data that may
-	     disappear before the transfer takes place (i.e. because it is a
-	     stack local in a function that is no longer executing).  Make a
-	     copy of the data into a temporary buffer in those cases.  */
-	  h_buf = gomp_malloc (sz);
-	  memcpy (h_buf, h, sz);
-	}
-      goacc_device_copy_async (devicep, devicep->openacc.async.host2dev_func,
-			       "dev", d, "host", h_buf, h, sz, aq);
-      if (ephemeral)
-	/* Free temporary buffer once the transfer has completed.  */
-	devicep->openacc.async.queue_callback_func (aq, free, h_buf);
-    }
-  else
-    gomp_device_copy (devicep, devicep->host2dev_func, "dev", d, "host", h, sz);
+
+  gomp_device_copy (devicep, devicep->host2dev_func, "dev", d, "host", h, sz);
 }
 
 attribute_hidden void
@@ -959,8 +972,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      for (i = first; i <= last; i++)
 		{
 		  tgt->list[i].key = NULL;
-		  if (gomp_to_device_kind_p (get_kind (short_mapkind, kinds, i)
-					     & typemask))
+		  if (!aq
+		      && gomp_to_device_kind_p (get_kind (short_mapkind, kinds, i)
+						& typemask))
 		    gomp_coalesce_buf_add (&cbuf,
 					   tgt_size - cur_node.host_end
 					   + (uintptr_t) hostaddrs[i],
@@ -1001,8 +1015,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  if (tgt_align < align)
 	    tgt_align = align;
 	  tgt_size = (tgt_size + align - 1) & ~(align - 1);
-	  gomp_coalesce_buf_add (&cbuf, tgt_size,
-				 cur_node.host_end - cur_node.host_start);
+	  if (!aq)
+	    gomp_coalesce_buf_add (&cbuf, tgt_size,
+				   cur_node.host_end - cur_node.host_start);
 	  tgt_size += cur_node.host_end - cur_node.host_start;
 	  has_firstprivate = true;
 	  continue;
@@ -1095,7 +1110,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  if (tgt_align < align)
 	    tgt_align = align;
 	  tgt_size = (tgt_size + align - 1) & ~(align - 1);
-	  if (gomp_to_device_kind_p (kind & typemask))
+	  if (!aq
+	      && gomp_to_device_kind_p (kind & typemask))
 	    gomp_coalesce_buf_add (&cbuf, tgt_size,
 				   cur_node.host_end - cur_node.host_start);
 	  tgt_size += cur_node.host_end - cur_node.host_start;
@@ -1596,6 +1612,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 
   if (cbufp)
     {
+      /* See 'gomp_coalesce_buf_add'.  */
+      assert (!aq);
+
       long c = 0;
       for (c = 0; c < cbuf.chunk_cnt; ++c)
 	gomp_copy_host2dev (devicep, aq,

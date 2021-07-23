@@ -1,9 +1,8 @@
 /* Verify back to back 'async' operations, two data mappings.
 
-   Due to two data mappings, this is using the libgomp 'cbuf' buffering.
+   Make sure that despite two data mappings, this isn't using the libgomp
+   'cbuf' buffering.
 */
-
-/* { dg-xfail-run-if "TODO" { openacc_radeon_accel_selected } } */
 
 
 #include <stdlib.h>
