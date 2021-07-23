@@ -10104,7 +10104,10 @@ package body Sem_Ch13 is
          --  If the type is private, check whether full view has inherited
          --  predicates.
 
-         if Is_Private_Type (Typ) and then No (Ritem) then
+         if Is_Private_Type (Typ)
+           and then No (Ritem)
+           and then Present (Full_View (Typ))
+         then
             Ritem := First_Rep_Item (Full_View (Typ));
          end if;
 
