@@ -10003,13 +10003,6 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
 				       std::move (tok_tree)),
 		  {}, locus));
 	    }
-	  case PLUS:
-	    // type param bounds - not allowed, here for error message
-	    add_error (Error (t->get_locus (),
-			      "type param bounds (in TraitObjectType) are not "
-			      "allowed as TypeNoBounds"));
-
-	    return nullptr;
 	  default:
 	    // assume that this is a type path and not an error
 	    return std::unique_ptr<AST::TypePath> (
