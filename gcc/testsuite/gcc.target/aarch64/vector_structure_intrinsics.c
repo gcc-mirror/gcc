@@ -160,6 +160,28 @@ TEST_ST1xN (vst1q, uint64x2x4_t, uint64_t*, u64, x4);
 TEST_ST1xN (vst1q, poly64x2x4_t, poly64_t*, p64, x4);
 TEST_ST1xN (vst1q, float64x2x4_t, float64_t*, f64, x4);
 
+#define TEST_ST1x3(name, tbltype, ptrtype, ts, xn) \
+  void test_ ## name ## _ ## ts ## _ ## xn (ptrtype a, int8x8_t dummy, \
+					    tbltype b) \
+	{ \
+		name ## _ ## ts ## _ ## xn (a, b); \
+	}
+
+TEST_ST1x3 (vst1q, int8x16x3_t, int8_t*, s8, x3);
+TEST_ST1x3 (vst1q, uint8x16x3_t, uint8_t*, u8, x3);
+TEST_ST1x3 (vst1q, poly8x16x3_t, poly8_t*, p8, x3);
+TEST_ST1x3 (vst1q, int16x8x3_t, int16_t*, s16, x3);
+TEST_ST1x3 (vst1q, uint16x8x3_t, uint16_t*, u16, x3);
+TEST_ST1x3 (vst1q, poly16x8x3_t, poly16_t*, p16, x3);
+TEST_ST1x3 (vst1q, float16x8x3_t, float16_t*, f16, x3);
+TEST_ST1x3 (vst1q, int32x4x3_t, int32_t*, s32, x3);
+TEST_ST1x3 (vst1q, uint32x4x3_t, uint32_t*, u32, x3);
+TEST_ST1x3 (vst1q, float32x4x3_t, float32_t*, f32, x3);
+TEST_ST1x3 (vst1q, int64x2x3_t, int64_t*, s64, x3);
+TEST_ST1x3 (vst1q, uint64x2x3_t, uint64_t*, u64, x3);
+TEST_ST1x3 (vst1q, poly64x2x3_t, poly64_t*, p64, x3);
+TEST_ST1x3 (vst1q, float64x2x3_t, float64_t*, f64, x3);
+
 /* { dg-final { scan-assembler-not "mov\\t" } } */
 
 /* { dg-final { scan-assembler-times "tbl\\t" 18} }  */
@@ -167,4 +189,4 @@ TEST_ST1xN (vst1q, float64x2x4_t, float64_t*, f64, x4);
 /* { dg-final { scan-assembler-times "st4\\t" 14} }  */
 /* { dg-final { scan-assembler-times "st3\\t" 14} }  */
 /* { dg-final { scan-assembler-times "st2\\t" 14} }  */
-/* { dg-final { scan-assembler-times "st1\\t" 14} }  */
+/* { dg-final { scan-assembler-times "st1\\t" 28} }  */
