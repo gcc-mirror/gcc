@@ -1,3 +1,47 @@
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101583
+	* include/bits/hashtable.h (_Hashtable): Replace mixin with
+	_Enable_default_ctor. Construct it explicitly in all
+	non-forwarding, non-defaulted constructors.
+	* testsuite/23_containers/unordered_map/cons/default.cc: Check
+	non-default constructors can be used.
+	* testsuite/23_containers/unordered_set/cons/default.cc:
+	Likewise.
+
+2021-07-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/os/aix/os_defines.h (__LIBC_NO_CPP_MATH_OVERLOADS__): Define.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94295
+	* include/ext/new_allocator.h (_GLIBCXX_OPERATOR_NEW)
+	(_GLIBCXX_OPERATOR_DELETE, _GLIBCXX_SIZED_DEALLOC): Define.
+	(allocator::allocate, allocator::deallocate): Use new macros.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101571
+	* include/bits/ranges_uninitialized.h (_DestroyGuard): Change
+	constructor parameter to reference and use addressof.
+	* testsuite/util/testsuite_iterators.h: Define deleted operator&
+	overloads for test iterators.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_Function_base): Add
+	default member initializers and define constructor as defaulted.
+	(function::_M_invoker): Add default member initializer.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100682
+	* doc/xml/manual/debug_mode.xml: Update documentation about
+	debug capability of std::array.
+	* doc/html/*: Regenerate.
+	* include/debug/array: New file.
+
 2021-07-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101542

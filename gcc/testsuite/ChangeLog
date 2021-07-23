@@ -1,3 +1,39 @@
+2021-07-22  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/65178
+	* gcc.dg/uninit-pr65178.c: New test.
+
+2021-07-22  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/101568
+	* g++.dg/ipa/pr82352.C
+
+2021-07-22  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/10153
+	* gcc.c-torture/compile/pr10153-1.c: New test.
+	* gcc.c-torture/compile/pr10153-2.c: New test.
+
+2021-07-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/pr101511.C: New.
+
+2021-07-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr101497.c: New.
+
+2021-07-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr101496.c: New.
+
+2021-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/fuse-caller-save-xmm.c: Adjust testcase.
+
+2021-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/mask-shift.c: New test.
+
 2021-07-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101547
