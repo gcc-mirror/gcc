@@ -174,6 +174,12 @@ public:
     ResolveExpr::go (expr.get_negated_expr ().get (), expr.get_node_id ());
   }
 
+  void visit (AST::TypeCastExpr &expr) override
+  {
+    ResolveType::go (expr.get_type_to_cast_to ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_casted_expr ().get (), expr.get_node_id ());
+  }
+
   void visit (AST::IfExpr &expr) override
   {
     ResolveExpr::go (expr.get_condition_expr ().get (), expr.get_node_id ());
