@@ -1,3 +1,12 @@
+2021-07-22  Alan Modra  <amodra@gmail.com>
+
+	Backported from master:
+	2021-07-15  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S (R2_SAVE): Define.
+	(__morestack): Save and restore r2.  Set up r2 for called
+	functions.
+
 2021-06-29  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
