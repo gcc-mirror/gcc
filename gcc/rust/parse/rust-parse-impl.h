@@ -1083,7 +1083,8 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
     // crappy hack to do union "keyword"
     case IDENTIFIER:
       // TODO: ensure std::string and literal comparison works
-      if (t->get_str () == "union")
+      if (t->get_str () == "union"
+	  && lexer.peek_token (1)->get_id () == IDENTIFIER)
 	{
 	  return parse_vis_item (std::move (outer_attrs));
 	  // or should this go straight to parsing union?
@@ -1274,8 +1275,8 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
     // TODO: implement union keyword but not really because of
     // context-dependence case UNION: crappy hack to do union "keyword"
     case IDENTIFIER:
-      // TODO: ensure std::string and literal comparison works
-      if (t->get_str () == "union")
+      if (t->get_str () == "union"
+	  && lexer.peek_token (1)->get_id () == IDENTIFIER)
 	{
 	  return parse_union (std::move (vis), std::move (outer_attrs));
 	  // or should item switch go straight to parsing union?
@@ -4524,7 +4525,6 @@ Parser<ManagedTokenSource>::parse_union (AST::Visibility vis,
   const_TokenPtr union_keyword = expect_token (IDENTIFIER);
   rust_assert (union_keyword->get_str () == "union");
   Location locus = union_keyword->get_locus ();
-  lexer.skip_token ();
 
   // parse actual union name
   const_TokenPtr union_name_tok = expect_token (IDENTIFIER);
@@ -6054,8 +6054,8 @@ Parser<ManagedTokenSource>::parse_stmt ()
       break;
     // crappy hack to do union "keyword"
     case IDENTIFIER:
-      // TODO: ensure std::string and literal comparison works
-      if (t->get_str () == "union")
+      if (t->get_str () == "union"
+	  && lexer.peek_token (1)->get_id () == IDENTIFIER)
 	{
 	  return parse_vis_item (std::move (outer_attrs));
 	  // or should this go straight to parsing union?
@@ -11674,8 +11674,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
       }
     // crappy hack to do union "keyword"
     case IDENTIFIER:
-      // TODO: ensure std::string and literal comparison works
-      if (t->get_str () == "union")
+      if (t->get_str () == "union"
+	  && lexer.peek_token (1)->get_id () == IDENTIFIER)
 	{
 	  std::unique_ptr<AST::VisItem> item (
 	    parse_vis_item (std::move (outer_attrs)));
