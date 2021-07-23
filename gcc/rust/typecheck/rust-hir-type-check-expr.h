@@ -1147,6 +1147,16 @@ public:
       }
   }
 
+  void visit (HIR::TypeCastExpr &expr) override
+  {
+    TyTy::BaseType *expr_to_convert
+      = TypeCheckExpr::Resolve (expr.get_casted_expr ().get (), false);
+    TyTy::BaseType *tyty_to_convert_to
+      = TypeCheckType::Resolve (expr.get_type_to_convert_to ().get ());
+
+    infered = expr_to_convert->cast (tyty_to_convert_to);
+  }
+
 private:
   TypeCheckExpr (bool inside_loop)
     : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),

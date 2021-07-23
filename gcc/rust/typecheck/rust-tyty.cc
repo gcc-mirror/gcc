@@ -24,6 +24,7 @@
 #include "rust-tyty-rules.h"
 #include "rust-tyty-cmp.h"
 #include "rust-tyty-coercion.h"
+#include "rust-tyty-cast.h"
 #include "rust-hir-map.h"
 #include "rust-substitution-mapper.h"
 
@@ -119,6 +120,13 @@ InferType::coerce (BaseType *other)
 }
 
 BaseType *
+InferType::cast (BaseType *other)
+{
+  InferCastRules r (this);
+  return r.cast (other);
+}
+
+BaseType *
 InferType::clone ()
 {
   return new InferType (get_ref (), get_ty_ref (), get_infer_kind (),
@@ -182,6 +190,12 @@ ErrorType::can_eq (const BaseType *other, bool emit_errors) const
 
 BaseType *
 ErrorType::coerce (BaseType *other)
+{
+  return this;
+}
+
+BaseType *
+ErrorType::cast (BaseType *other)
 {
   return this;
 }
@@ -459,6 +473,13 @@ ADTType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+ADTType::cast (BaseType *other)
+{
+  ADTCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 ADTType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -633,6 +654,13 @@ TupleType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+TupleType::cast (BaseType *other)
+{
+  TupleCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 TupleType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -728,6 +756,13 @@ FnType::coerce (BaseType *other)
 {
   FnCoercionRules r (this);
   return r.coerce (other);
+}
+
+BaseType *
+FnType::cast (BaseType *other)
+{
+  FnCastRules r (this);
+  return r.cast (other);
 }
 
 bool
@@ -938,6 +973,13 @@ FnPtr::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+FnPtr::cast (BaseType *other)
+{
+  FnptrCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 FnPtr::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1018,6 +1060,13 @@ ArrayType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+ArrayType::cast (BaseType *other)
+{
+  ArrayCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 ArrayType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1086,6 +1135,13 @@ BoolType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+BoolType::cast (BaseType *other)
+{
+  BoolCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 BoolType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1143,6 +1199,13 @@ IntType::coerce (BaseType *other)
 {
   IntCoercionRules r (this);
   return r.coerce (other);
+}
+
+BaseType *
+IntType::cast (BaseType *other)
+{
+  IntCastRules r (this);
+  return r.cast (other);
 }
 
 bool
@@ -1215,6 +1278,13 @@ UintType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+UintType::cast (BaseType *other)
+{
+  UintCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 UintType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1279,6 +1349,13 @@ FloatType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+FloatType::cast (BaseType *other)
+{
+  FloatCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 FloatType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1335,6 +1412,13 @@ USizeType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+USizeType::cast (BaseType *other)
+{
+  USizeCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 USizeType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1378,6 +1462,13 @@ ISizeType::coerce (BaseType *other)
 {
   ISizeCoercionRules r (this);
   return r.coerce (other);
+}
+
+BaseType *
+ISizeType::cast (BaseType *other)
+{
+  ISizeCastRules r (this);
+  return r.cast (other);
 }
 
 bool
@@ -1425,6 +1516,13 @@ CharType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+CharType::cast (BaseType *other)
+{
+  CharCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 CharType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1469,6 +1567,13 @@ ReferenceType::coerce (BaseType *other)
 {
   ReferenceCoercionRules r (this);
   return r.coerce (other);
+}
+
+BaseType *
+ReferenceType::cast (BaseType *other)
+{
+  ReferenceCastRules r (this);
+  return r.cast (other);
 }
 
 bool
@@ -1548,6 +1653,13 @@ PointerType::coerce (BaseType *other)
 {
   PointerCoercionRules r (this);
   return r.coerce (other);
+}
+
+BaseType *
+PointerType::cast (BaseType *other)
+{
+  PointerCastRules r (this);
+  return r.cast (other);
 }
 
 bool
@@ -1636,6 +1748,13 @@ ParamType::coerce (BaseType *other)
 {
   ParamCoercionRules r (this);
   return r.coerce (other);
+}
+
+BaseType *
+ParamType::cast (BaseType *other)
+{
+  ParamCastRules r (this);
+  return r.cast (other);
 }
 
 bool
@@ -1751,6 +1870,13 @@ StrType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+StrType::cast (BaseType *other)
+{
+  StrCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 StrType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1796,6 +1922,13 @@ NeverType::coerce (BaseType *other)
   return r.coerce (other);
 }
 
+BaseType *
+NeverType::cast (BaseType *other)
+{
+  NeverCastRules r (this);
+  return r.cast (other);
+}
+
 bool
 NeverType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1839,6 +1972,13 @@ PlaceholderType::coerce (BaseType *other)
 {
   PlaceholderCoercionRules r (this);
   return r.coerce (other);
+}
+
+BaseType *
+PlaceholderType::cast (BaseType *other)
+{
+  PlaceholderCastRules r (this);
+  return r.cast (other);
 }
 
 bool
