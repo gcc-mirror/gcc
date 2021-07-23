@@ -731,12 +731,11 @@ logical_array_check (gfc_expr *array, int n)
 static bool
 array_check (gfc_expr *e, int n)
 {
-  if (e->ts.type == BT_CLASS && gfc_expr_attr (e).class_ok
+  if (e->rank != 0 && e->ts.type == BT_CLASS && gfc_expr_attr (e).class_ok
 	&& CLASS_DATA (e)->attr.dimension
 	&& CLASS_DATA (e)->as->rank)
     {
       gfc_add_class_array_ref (e);
-      return true;
     }
 
   if (e->rank != 0 && e->ts.type != BT_PROCEDURE)
