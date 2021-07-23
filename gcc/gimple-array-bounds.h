@@ -25,7 +25,7 @@ class array_bounds_checker
   friend class check_array_bounds_dom_walker;
 
 public:
-  array_bounds_checker (struct function *fun, class vr_values *v)
+  array_bounds_checker (struct function *fun, range_query *v)
     : fun (fun), ranges (v) { }
   void check ();
 
@@ -37,7 +37,7 @@ private:
   const value_range *get_value_range (const_tree op);
 
   struct function *fun;
-  class vr_values *ranges;
+  range_query *ranges;
 };
 
 #endif // GCC_GIMPLE_ARRAY_BOUNDS_H
