@@ -1,3 +1,72 @@
+2021-07-22  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/10153
+	* tree-tailcall.c (create_tailcall_accumulator):
+	Don't call fold_convert as the type should be correct already.
+	(tree_optimize_tail_calls_1): Use build_{one,zero}_cst instead
+	of integer_{one,zero}_node for the call of create_tailcall_accumulator.
+
+2021-07-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (non_null_ref::adjust_range): Replace
+	varying_p check for null/non-null check.
+
+2021-07-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101511
+	* value-relation.cc (relation_oracle::query_relation): Check if ssa1
+	is in ssa2's equiv set, and don't trap if so.
+
+2021-07-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101497
+	* gimple-range-fold.cc (fold_using_range::range_of_cond_expr): Check
+	for undefined.
+
+2021-07-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101496
+	* vr-values.c (simplify_using_ranges::fold_cond): Call range_of_stmt
+	first, then vrp_visit_cond_Stmt.
+
+2021-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.c
+	(ix86_broadcast_from_integer_constant): Rename to ..
+	(ix86_broadcast_from_constant): .. this, and extend it to
+	handle float mode.
+	(ix86_expand_vector_move): Extend to float mode.
+	* config/i386/i386-features.c
+	(replace_constant_pool_with_broadcast): Remove.
+	(remove_partial_avx_dependency_gate): Ditto.
+	(constant_pool_broadcast): Ditto.
+	(class pass_constant_pool_broadcast): Ditto.
+	(make_pass_constant_pool_broadcast): Ditto.
+	(remove_partial_avx_dependency): Adjust gate.
+	* config/i386/i386-passes.def: Remove pass_constant_pool_broadcast.
+	* config/i386/i386-protos.h
+	(make_pass_constant_pool_broadcast): Remove.
+
+2021-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/constraints.md (Wb): New constraint.
+	(Ww): Ditto.
+	* config/i386/i386.md (*ashlhi3_1): Extend to avx512 mask
+	shift.
+	(*ashlqi3_1): Ditto.
+	(*<insn><mode>3_1): Split to ..
+	(*ashr<mode>3_1): this, ...
+	(*lshr<mode>3_1): and this, also extend this pattern to avx512
+	mask registers.
+	(*<insn><mode>3_1): Split to ..
+	(*ashr<mode>3_1): this, ...
+	(*lshrqi3_1): and this, also extend this pattern to avx512
+	mask registers.
+	(*lshrhi3_1): And this, also extend this pattern to avx512
+	mask registers.
+	* config/i386/sse.md (k<code><mode>): New define_split after
+	it to convert generic shift pattern to mask shift ones.
+
 2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>

@@ -292,6 +292,34 @@ private:
   const shortest_paths<eg_traits, exploded_path> &m_sep;
 };
 
+/* When we're building the exploded graph we want to simplify
+   overly-complicated symbolic values down to "UNKNOWN" to try to avoid
+   state explosions and unbounded chains of exploration.
+
+   However, when we're building the feasibility graph for a diagnostic
+   (actually a tree), we don't want UNKNOWN values, as conditions on them
+   are also unknown: we don't want to have a contradiction such as a path
+   where (VAL != 0) and then (VAL == 0) along the same path.
+
+   Hence this is an RAII class for temporarily disabling complexity-checking
+   in the region_model_manager, for use within
+   epath_finder::explore_feasible_paths.  */
+
+class auto_disable_complexity_checks
+{
+public:
+  auto_disable_complexity_checks (region_model_manager *mgr) : m_mgr (mgr)
+  {
+    m_mgr->disable_complexity_check ();
+  }
+  ~auto_disable_complexity_checks ()
+  {
+    m_mgr->enable_complexity_check ();
+  }
+private:
+  region_model_manager *m_mgr;
+};
+
 /* Attempt to find the shortest feasible path from the origin to
    TARGET_ENODE by iteratively building a feasible_graph, in which
    every path to a feasible_node is feasible by construction.
@@ -344,6 +372,8 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
   logger *logger = get_logger ();
   LOG_SCOPE (logger);
 
+  region_model_manager *mgr = m_eg.get_engine ()->get_model_manager ();
+
   /* Determine the shortest path to TARGET_ENODE from each node in
      the exploded graph.  */
   shortest_paths<eg_traits, exploded_path> sep
@@ -363,8 +393,7 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
 
   /* Populate the worklist with the origin node.  */
   {
-    feasibility_state init_state (m_eg.get_engine ()->get_model_manager (),
-				  m_eg.get_supergraph ());
+    feasibility_state init_state (mgr, m_eg.get_supergraph ());
     feasible_node *origin = fg.add_node (m_eg.get_origin (), init_state, 0);
     worklist.add_node (origin);
   }
@@ -376,11 +405,15 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
   /* Set this if we find a feasible path to TARGET_ENODE.  */
   exploded_path *best_path = NULL;
 
-  while (process_worklist_item (&worklist, tg, &fg, target_enode, diag_idx,
-				&best_path))
-    {
-      /* Empty; the work is done within process_worklist_item.  */
-    }
+  {
+    auto_disable_complexity_checks sentinel (mgr);
+
+    while (process_worklist_item (&worklist, tg, &fg, target_enode, diag_idx,
+				  &best_path))
+      {
+	/* Empty; the work is done within process_worklist_item.  */
+      }
+  }
 
   if (logger)
     {
