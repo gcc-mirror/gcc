@@ -1,3 +1,85 @@
+2021-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101536
+	* gfortran.dg/pr101536.f90: New test.
+
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101562
+	* gcc.c-torture/compile/pr101562.c: New test.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-07-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101504
+	* gcc.target/i386/pr101504.c: New test.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: New tests.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: New test.
+
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/attrs-1.c: New test.
+	* c-c++-common/gomp/attrs-2.c: New test.
+	* c-c++-common/gomp/attrs-3.c: New test.
+
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-4.C: New test.
+	* g++.dg/gomp/attrs-5.C: New test.
+
+2021-07-23  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.target/mips/mips.exp (mips_option_groups): add
+	  -finline and -fno-inline.
+
+2021-07-23  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	Revert:
+	2021-07-09  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.target/mips/cfgcleanup-jalr2.c: Remove -fno-inline and add
+	  __attribute__((noinline)).
+	* gcc.target/mips/cfgcleanup-jalr3.c: Likewise.
+
+2021-07-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/feasibility-3.c: New test.
+
 2021-07-22  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/65178
