@@ -2880,7 +2880,7 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 		  gimple_set_location (stmt, UNKNOWN_LOCATION);
 		}
 	      gsi_remove (&si, false);
-	      gsi_insert_before (&dsi, stmt, GSI_SAME_STMT);
+	      gsi_insert_before (&dsi, stmt, GSI_NEW_STMT);
 	      continue;
 	    }
 
@@ -2906,7 +2906,7 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 	    new_stmt = as_a <gdebug *> (gimple_copy (stmt));
 	  else
 	    gcc_unreachable ();
-	  gsi_insert_before (&dsi, new_stmt, GSI_SAME_STMT);
+	  gsi_insert_before (&dsi, new_stmt, GSI_NEW_STMT);
 	  id->debug_stmts.safe_push (new_stmt);
 	  gsi_prev (&ssi);
 	}
