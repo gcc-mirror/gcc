@@ -542,7 +542,26 @@ public:
 	}
 	break;
 
+	case HIR::Literal::LitType::BYTE: {
+	  auto ok = context->lookup_builtin ("u8", &infered);
+	  rust_assert (ok);
+	}
+	break;
+
 	case HIR::Literal::LitType::STRING: {
+	  TyTy::BaseType *base = nullptr;
+	  auto ok = context->lookup_builtin ("str", &base);
+	  rust_assert (ok);
+
+	  infered
+	    = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
+				       TyTy::TyVar (base->get_ref ()), false);
+	}
+	break;
+
+	case HIR::Literal::LitType::BYTE_STRING: {
+	  /* We just treat this as a string, but it really is an arraytype of
+	     u8. It isn't in UTF-8, but really just a byte array.  */
 	  TyTy::BaseType *base = nullptr;
 	  auto ok = context->lookup_builtin ("str", &base);
 	  rust_assert (ok);

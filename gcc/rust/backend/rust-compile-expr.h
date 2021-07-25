@@ -278,7 +278,14 @@ public:
 	}
 	return;
 
-	case HIR::Literal::STRING: {
+	case HIR::Literal::BYTE: {
+	  char c = literal_value->as_string ().c_str ()[0];
+	  translated = ctx->get_backend ()->char_constant_expression (c);
+	}
+	return;
+
+      case HIR::Literal::STRING:
+	case HIR::Literal::BYTE_STRING: {
 	  auto base = ctx->get_backend ()->string_constant_expression (
 	    literal_value->as_string ());
 	  translated

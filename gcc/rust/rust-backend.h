@@ -332,6 +332,9 @@ public:
   virtual Bexpression *string_constant_expression (const std::string &val) = 0;
 
   // Get a char literal
+  virtual Bexpression *char_constant_expression (char c) = 0;
+
+  // Get a char literal
   virtual Bexpression *wchar_constant_expression (wchar_t c) = 0;
 
   // Return an expression for the boolean value VAL.
