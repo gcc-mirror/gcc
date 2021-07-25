@@ -333,6 +333,8 @@ public:
 
   Bexpression *wchar_constant_expression (wchar_t c);
 
+  Bexpression *char_constant_expression (char c);
+
   Bexpression *boolean_constant_expression (bool val);
 
   Bexpression *real_part_expression (Bexpression *bcomplex, Location);
@@ -1554,6 +1556,13 @@ Bexpression *
 Gcc_backend::wchar_constant_expression (wchar_t c)
 {
   tree ret = build_int_cst (this->wchar_type ()->get_tree (), c);
+  return this->make_expression (ret);
+}
+
+Bexpression *
+Gcc_backend::char_constant_expression (char c)
+{
+  tree ret = build_int_cst (this->char_type ()->get_tree (), c);
   return this->make_expression (ret);
 }
 
