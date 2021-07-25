@@ -350,7 +350,7 @@ program_point::get_function_at_depth (unsigned depth) const
   if (depth == m_call_string.length ())
     return m_function_point.get_function ();
   else
-    return m_call_string[depth]->get_caller_function ();
+    return m_call_string[depth].get_caller_function ();
 }
 
 /* Assert that this object is sane.  */
@@ -367,7 +367,7 @@ program_point::validate () const
   /* The "callee" of the final entry in the callstring should be the
      function of the m_function_point.  */
   if (m_call_string.length () > 0)
-    gcc_assert (m_call_string[m_call_string.length () - 1]->get_callee_function ()
+    gcc_assert (m_call_string[m_call_string.length () - 1].get_callee_function ()
 		== get_function ());
 }
 
@@ -438,8 +438,10 @@ program_point::on_edge (exploded_graph &eg,
 	      logger->log ("rejecting return edge: empty call string");
 	    return false;
 	  }
-	const return_superedge *top_of_stack = m_call_string.pop ();
-	if (top_of_stack != succ)
+	const call_string::element_t top_of_stack = m_call_string.pop ();
+	call_string::element_t current_call_string_element (succ->m_dest,
+							    succ->m_src);
+	if (top_of_stack != current_call_string_element)
 	  {
 	    if (logger)
 	      logger->log ("rejecting return edge: return to wrong callsite");
