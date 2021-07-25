@@ -1825,6 +1825,7 @@ d_build_eh_runtime_type (tree type)
 #undef LANG_HOOKS_GET_ALIAS_SET
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #undef LANG_HOOKS_BUILTIN_FUNCTION
+#undef LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE
 #undef LANG_HOOKS_REGISTER_BUILTIN_TYPE
 #undef LANG_HOOKS_FINISH_INCOMPLETE_DECL
 #undef LANG_HOOKS_GIMPLIFY_EXPR
@@ -1855,6 +1856,7 @@ d_build_eh_runtime_type (tree type)
 #define LANG_HOOKS_GET_ALIAS_SET	    d_get_alias_set
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	    d_types_compatible_p
 #define LANG_HOOKS_BUILTIN_FUNCTION	    d_builtin_function
+#define LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE d_builtin_function_ext_scope
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE    d_register_builtin_type
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL   d_finish_incomplete_decl
 #define LANG_HOOKS_GIMPLIFY_EXPR	    d_gimplify_expr
