@@ -12348,6 +12348,18 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
 					ParseRestrictions restrictions)
 {
   const_TokenPtr current_token = lexer.peek_token ();
+  // Special hack because we are allowed to return nullptr, in that case we
+  // don't want to skip the token, since we don't actually parse it. But if
+  // null isn't allowed it indicates an error, and we want to skip past that.
+  // So return early if it is one of the tokens that ends an expression
+  // (or at least cannot start a new expression).
+  if (restrictions.expr_can_be_null)
+    {
+      TokenId id = current_token->get_id ();
+      if (id == SEMICOLON || id == RIGHT_PAREN || id == RIGHT_CURLY
+	  || id == RIGHT_SQUARE)
+	return nullptr;
+    }
   lexer.skip_token ();
 
   // parse null denotation (unary part of expression)
@@ -14028,6 +14040,9 @@ Parser<ManagedTokenSource>::parse_led_range_exclusive_expr (
 {
   // FIXME: this probably parses expressions accidently or whatever
   // try parsing RHS (as tok has already been consumed in parse_expression)
+  // Can be nullptr, in which case it is a RangeFromExpr, otherwise a
+  // RangeFromToExpr.
+  restrictions.expr_can_be_null = true;
   std::unique_ptr<AST::Expr> right
     = parse_expr (LBP_DOT_DOT, AST::AttrVec (), restrictions);
 
