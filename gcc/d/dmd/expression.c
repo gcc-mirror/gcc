@@ -4200,6 +4200,18 @@ DotTemplateExp::DotTemplateExp(Loc loc, Expression *e, TemplateDeclaration *td)
     this->td = td;
 }
 
+bool DotTemplateExp::checkType()
+{
+    error("%s %s has no type", td->kind(), toChars());
+    return true;
+}
+
+bool DotTemplateExp::checkValue()
+{
+    error("%s %s has no value", td->kind(), toChars());
+    return true;
+}
+
 /************************************************************/
 
 DotVarExp::DotVarExp(Loc loc, Expression *e, Declaration *var, bool hasOverloads)
