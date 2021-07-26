@@ -230,9 +230,9 @@ public:
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
 				    function.get_mappings ().get_defid (),
-				    function.get_function_name (), false,
-				    std::move (params), ret_type,
-				    std::move (substitutions));
+				    function.get_function_name (),
+				    FNTYPE_DEFAULT_FLAGS, std::move (params),
+				    ret_type, std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
 
@@ -272,6 +272,14 @@ public:
     for (auto &impl_item : impl_block.get_impl_items ())
       TypeCheckTopLevelImplItem::Resolve (impl_item.get (), self,
 					  substitutions);
+  }
+
+  void visit (HIR::ExternBlock &extern_block) override
+  {
+    for (auto &item : extern_block.get_extern_items ())
+      {
+	TypeCheckTopLevelExternItem::Resolve (item.get ());
+      }
   }
 
 private:
