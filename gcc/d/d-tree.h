@@ -582,6 +582,7 @@ extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree d_truthvalue_conversion (tree);
 extern tree d_convert (tree, tree);
 extern tree convert_expr (tree, Type *, Type *);
+extern tree convert_for_rvalue (tree, Type *, Type *);
 extern tree convert_for_assignment (tree, Type *, Type *);
 extern tree convert_for_argument (tree, Parameter *);
 extern tree convert_for_condition (tree, Type *);

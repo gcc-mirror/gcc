@@ -600,6 +600,42 @@ convert_expr (tree exp, Type *etype, Type *totype)
   return result ? result : convert (build_ctype (totype), exp);
 }
 
+/* Return a TREE represenwation of EXPR, whose type has been converted from
+ * ETYPE to TOTYPE, and is being used in an rvalue context.  */
+
+tree
+convert_for_rvalue (tree expr, Type *etype, Type *totype)
+{
+  tree result = NULL_TREE;
+
+  Type *ebtype = etype->toBasetype ();
+  Type *tbtype = totype->toBasetype ();
+
+  switch (ebtype->ty)
+    {
+    case Tbool:
+      /* If casting from bool, the result is either 0 or 1, any other value
+	 violates @safe code, so enforce that it is never invalid.  */
+      if (CONSTANT_CLASS_P (expr))
+	result = d_truthvalue_conversion (expr);
+      else
+	{
+	  /* Reinterpret the boolean as an integer and test the first bit.
+	     The generated code should end up being equivalent to:
+		*cast(ubyte *)&expr & 1;  */
+	  machine_mode bool_mode = TYPE_MODE (TREE_TYPE (expr));
+	  tree mtype = lang_hooks.types.type_for_mode (bool_mode, 1);
+	  result = fold_build2 (BIT_AND_EXPR, mtype,
+				build_vconvert (mtype, expr),
+				build_one_cst (mtype));
+	}
+
+      result = convert (build_ctype (tbtype), result);
+      break;
+    }
+
+  return result ? result : convert_expr (expr, etype, totype);
+}
 
 /* Apply semantics of assignment to a value of type TOTYPE to EXPR
    (e.g., pointer = array -> pointer = &array[0])
