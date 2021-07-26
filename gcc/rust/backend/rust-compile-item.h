@@ -26,6 +26,7 @@
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
 #include "rust-compile-fnparam.h"
+#include "rust-compile-extern.h"
 
 namespace Rust {
 namespace Compile {
@@ -272,6 +273,14 @@ public:
     for (auto &impl_item : impl_block.get_impl_items ())
       CompileInherentImplItem::Compile (self_lookup, impl_item.get (), ctx,
 					compile_fns);
+  }
+
+  void visit (HIR::ExternBlock &extern_block) override
+  {
+    for (auto &item : extern_block.get_extern_items ())
+      {
+	CompileExternItem::compile (item.get (), ctx, compile_fns, concrete);
+      }
   }
 
 private:
