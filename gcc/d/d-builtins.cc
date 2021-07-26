@@ -80,7 +80,8 @@ build_frontend_type (tree type)
     mod |= MODshared;
 
   /* If we've seen the type before, re-use the converted decl.  */
-  for (size_t i = 0; i < builtin_converted_decls.length (); ++i)
+  unsigned saved_builtin_decls_length = builtin_converted_decls.length ();
+  for (size_t i = 0; i < saved_builtin_decls_length; ++i)
     {
       tree t = builtin_converted_decls[i].ctype;
       if (TYPE_MAIN_VARIANT (t) == TYPE_MAIN_VARIANT (type))
@@ -249,6 +250,9 @@ build_frontend_type (tree type)
 	  Type *ftype = build_frontend_type (TREE_TYPE (field));
 	  if (!ftype)
 	    {
+	      /* Drop any field types that got cached before the conversion
+		 of this record type failed.  */
+	      builtin_converted_decls.truncate (saved_builtin_decls_length);
 	      delete sdecl->members;
 	      return NULL;
 	    }
@@ -307,6 +311,9 @@ build_frontend_type (tree type)
 	      Type *targ = build_frontend_type (argtype);
 	      if (!targ)
 		{
+		  /* Drop any parameter types that got cached before the
+		     conversion of this function type failed.  */
+		  builtin_converted_decls.truncate (saved_builtin_decls_length);
 		  delete args;
 		  return NULL;
 		}
