@@ -2085,15 +2085,9 @@ public:
       }
     else
       {
-	/* Assert contracts are turned off, if the contract condition has no
-	   side effects can still use it as a predicate for the optimizer.  */
-	if (TREE_SIDE_EFFECTS (arg))
-	  {
-	    this->result_ = void_node;
-	    return;
-	  }
-
-	assert_fail = build_predict_expr (PRED_NORETURN, NOT_TAKEN);
+	/* Assert contracts are turned off.  */
+	this->result_ = void_node;
+	return;
       }
 
     /* Build condition that we are asserting in this contract.  */
