@@ -146,17 +146,17 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) copyin(t) reduction(+:r) num_threads (nth) proc_bind(spread)
     lastprivate (l) allocate (f))]]
   {
-    #pragma omp section
+    [[omp::directive (section)]]
     {}
-    #pragma omp section
+    [[omp::sequence (omp::directive (section))]]
     {}
   }
   [[omp::directive (sections private (p) firstprivate (f) reduction(+:r) lastprivate (l) allocate (f) nowait)]]
   {
     ;
-    #pragma omp section
+    [[omp::sequence (sequence (directive (section)))]]
     ;
-    #pragma omp section
+    [[omp::directive (section)]]
     {}
   }
   [[omp::directive (barrier)]];
@@ -539,14 +539,14 @@ garply (int a, int *c, int *d, int *e, int *f)
   for (i = 0; i < 64; i++)
     {
       d[i] = a;
-      #pragma omp scan exclusive (a)
+      [[omp::directive (scan exclusive (a))]]
       a += c[i];
     }
   [[omp::directive (simd reduction (inscan, +: a))]]
   for (i = 0; i < 64; i++)
     {
       a += c[i];
-      #pragma omp scan inclusive (a)
+      [[omp::sequence (omp::sequence (omp::directive (scan inclusive (a))))]]
       d[i] = a;
     }
   return a;

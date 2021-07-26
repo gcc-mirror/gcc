@@ -1,3 +1,291 @@
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101562
+	* expmed.c (store_integral_bit_field): Only use movstrict_optab
+	if the operand isn't paradoxical.
+
+2021-07-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-array-bounds.h (class array_bounds_checker): Change
+	ranges type to range_query.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vst1_s64_x2): Use
+	__builtin_memcpy instead of constructing
+	__builtin_aarch64_simd_oi one vector at a time.
+	(vst1_u64_x2): Likewise.
+	(vst1_f64_x2): Likewise.
+	(vst1_s8_x2): Likewise.
+	(vst1_p8_x2): Likewise.
+	(vst1_s16_x2): Likewise.
+	(vst1_p16_x2): Likewise.
+	(vst1_s32_x2): Likewise.
+	(vst1_u8_x2): Likewise.
+	(vst1_u16_x2): Likewise.
+	(vst1_u32_x2): Likewise.
+	(vst1_f16_x2): Likewise.
+	(vst1_f32_x2): Likewise.
+	(vst1_p64_x2): Likewise.
+	(vst1q_s8_x2): Likewise.
+	(vst1q_p8_x2): Likewise.
+	(vst1q_s16_x2): Likewise.
+	(vst1q_p16_x2): Likewise.
+	(vst1q_s32_x2): Likewise.
+	(vst1q_s64_x2): Likewise.
+	(vst1q_u8_x2): Likewise.
+	(vst1q_u16_x2): Likewise.
+	(vst1q_u32_x2): Likewise.
+	(vst1q_u64_x2): Likewise.
+	(vst1q_f16_x2): Likewise.
+	(vst1q_f32_x2): Likewise.
+	(vst1q_f64_x2): Likewise.
+	(vst1q_p64_x2): Likewise.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vst1_s64_x3): Use
+	__builtin_memcpy instead of constructing
+	__builtin_aarch64_simd_ci one vector at a time.
+	(vst1_u64_x3): Likewise.
+	(vst1_f64_x3): Likewise.
+	(vst1_s8_x3): Likewise.
+	(vst1_p8_x3): Likewise.
+	(vst1_s16_x3): Likewise.
+	(vst1_p16_x3): Likewise.
+	(vst1_s32_x3): Likewise.
+	(vst1_u8_x3): Likewise.
+	(vst1_u16_x3): Likewise.
+	(vst1_u32_x3): Likewise.
+	(vst1_f16_x3): Likewise.
+	(vst1_f32_x3): Likewise.
+	(vst1_p64_x3): Likewise.
+	(vst1q_s8_x3): Likewise.
+	(vst1q_p8_x3): Likewise.
+	(vst1q_s16_x3): Likewise.
+	(vst1q_p16_x3): Likewise.
+	(vst1q_s32_x3): Likewise.
+	(vst1q_s64_x3): Likewise.
+	(vst1q_u8_x3): Likewise.
+	(vst1q_u16_x3): Likewise.
+	(vst1q_u32_x3): Likewise.
+	(vst1q_u64_x3): Likewise.
+	(vst1q_f16_x3): Likewise.
+	(vst1q_f32_x3): Likewise.
+	(vst1q_f64_x3): Likewise.
+	(vst1q_p64_x3): Likewise.
+
+2021-07-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101504
+	* config/i386/i386.c (ix86_gen_scratch_sse_rtx): Don't return
+	hard register when LRA is in progress.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vst1_s8_x4): Use
+	__builtin_memcpy instead of using a union.
+	(vst1q_s8_x4): Likewise.
+	(vst1_s16_x4): Likewise.
+	(vst1q_s16_x4): Likewise.
+	(vst1_s32_x4): Likewise.
+	(vst1q_s32_x4): Likewise.
+	(vst1_u8_x4): Likewise.
+	(vst1q_u8_x4): Likewise.
+	(vst1_u16_x4): Likewise.
+	(vst1q_u16_x4): Likewise.
+	(vst1_u32_x4): Likewise.
+	(vst1q_u32_x4): Likewise.
+	(vst1_f16_x4): Likewise.
+	(vst1q_f16_x4): Likewise.
+	(vst1_f32_x4): Likewise.
+	(vst1q_f32_x4): Likewise.
+	(vst1_p8_x4): Likewise.
+	(vst1q_p8_x4): Likewise.
+	(vst1_p16_x4): Likewise.
+	(vst1q_p16_x4): Likewise.
+	(vst1_s64_x4): Likewise.
+	(vst1_u64_x4): Likewise.
+	(vst1_p64_x4): Likewise.
+	(vst1q_s64_x4): Likewise.
+	(vst1q_u64_x4): Likewise.
+	(vst1q_p64_x4): Likewise.
+	(vst1_f64_x4): Likewise.
+	(vst1q_f64_x4): Likewise.
+
+2021-07-23  Jonathan Wrightt  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vst2_s64): Use __builtin_memcpy
+	instead of constructing __builtin_aarch64_simd_oi one vector
+	at a time.
+	(vst2_u64): Likewise.
+	(vst2_f64): Likewise.
+	(vst2_s8): Likewise.
+	(vst2_p8): Likewise.
+	(vst2_s16): Likewise.
+	(vst2_p16): Likewise.
+	(vst2_s32): Likewise.
+	(vst2_u8): Likewise.
+	(vst2_u16): Likewise.
+	(vst2_u32): Likewise.
+	(vst2_f16): Likewise.
+	(vst2_f32): Likewise.
+	(vst2_p64): Likewise.
+	(vst2q_s8): Likewise.
+	(vst2q_p8): Likewise.
+	(vst2q_s16): Likewise.
+	(vst2q_p16): Likewise.
+	(vst2q_s32): Likewise.
+	(vst2q_s64): Likewise.
+	(vst2q_u8): Likewise.
+	(vst2q_u16): Likewise.
+	(vst2q_u32): Likewise.
+	(vst2q_u64): Likewise.
+	(vst2q_f16): Likewise.
+	(vst2q_f32): Likewise.
+	(vst2q_f64): Likewise.
+	(vst2q_p64): Likewise.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vst3_s64): Use __builtin_memcpy
+	instead of constructing __builtin_aarch64_simd_ci one vector
+	at a time.
+	(vst3_u64): Likewise.
+	(vst3_f64): Likewise.
+	(vst3_s8): Likewise.
+	(vst3_p8): Likewise.
+	(vst3_s16): Likewise.
+	(vst3_p16): Likewise.
+	(vst3_s32): Likewise.
+	(vst3_u8): Likewise.
+	(vst3_u16): Likewise.
+	(vst3_u32): Likewise.
+	(vst3_f16): Likewise.
+	(vst3_f32): Likewise.
+	(vst3_p64): Likewise.
+	(vst3q_s8): Likewise.
+	(vst3q_p8): Likewise.
+	(vst3q_s16): Likewise.
+	(vst3q_p16): Likewise.
+	(vst3q_s32): Likewise.
+	(vst3q_s64): Likewise.
+	(vst3q_u8): Likewise.
+	(vst3q_u16): Likewise.
+	(vst3q_u32): Likewise.
+	(vst3q_u64): Likewise.
+	(vst3q_f16): Likewise.
+	(vst3q_f32): Likewise.
+	(vst3q_f64): Likewise.
+	(vst3q_p64): Likewise.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vst4_s64): Use __builtin_memcpy
+	instead of constructing __builtin_aarch64_simd_xi one vector
+	at a time.
+	(vst4_u64): Likewise.
+	(vst4_f64): Likewise.
+	(vst4_s8): Likewise.
+	(vst4_p8): Likewise.
+	(vst4_s16): Likewise.
+	(vst4_p16): Likewise.
+	(vst4_s32): Likewise.
+	(vst4_u8): Likewise.
+	(vst4_u16): Likewise.
+	(vst4_u32): Likewise.
+	(vst4_f16): Likewise.
+	(vst4_f32): Likewise.
+	(vst4_p64): Likewise.
+	(vst4q_s8): Likewise.
+	(vst4q_p8): Likewise.
+	(vst4q_s16): Likewise.
+	(vst4q_p16): Likewise.
+	(vst4q_s32): Likewise.
+	(vst4q_s64): Likewise.
+	(vst4q_u8): Likewise.
+	(vst4q_u16): Likewise.
+	(vst4q_u32): Likewise.
+	(vst4q_u64): Likewise.
+	(vst4q_f16): Likewise.
+	(vst4q_f32): Likewise.
+	(vst4q_f64): Likewise.
+	(vst4q_p64): Likewise.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vtbx4_s8): Use __builtin_memcpy
+	instead of constructing __builtin_aarch64_simd_oi one vector
+	at a time.
+	(vtbx4_u8): Likewise.
+	(vtbx4_p8): Likewise.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vtbl3_s8): Use __builtin_memcpy
+	instead of constructing __builtin_aarch64_simd_oi one vector
+	at a time.
+	(vtbl3_u8): Likewise.
+	(vtbl3_p8): Likewise.
+	(vtbl4_s8): Likewise.
+	(vtbl4_u8): Likewise.
+	(vtbl4_p8): Likewise.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vqtbx2_s8): Use __builtin_memcpy
+	instead of constructing __builtin_aarch64_simd_oi one vector
+	at a time.
+	(vqtbx2_u8): Likewise.
+	(vqtbx2_p8): Likewise.
+	(vqtbx2q_s8): Likewise.
+	(vqtbx2q_u8): Likewise.
+	(vqtbx2q_p8): Likewise.
+	(vqtbx3_s8): Use __builtin_memcpy instead of constructing
+	__builtin_aarch64_simd_ci one vector at a time.
+	(vqtbx3_u8): Likewise.
+	(vqtbx3_p8): Likewise.
+	(vqtbx3q_s8): Likewise.
+	(vqtbx3q_u8): Likewise.
+	(vqtbx3q_p8): Likewise.
+	(vqtbx4_s8): Use __builtin_memcpy instead of constructing
+	__builtin_aarch64_simd_xi one vector at a time.
+	(vqtbx4_u8): Likewise.
+	(vqtbx4_p8): Likewise.
+	(vqtbx4q_s8): Likewise.
+	(vqtbx4q_u8): Likewise.
+	(vqtbx4q_p8): Likewise.
+
+2021-07-23  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vqtbl2_s8): Use __builtin_memcpy
+	instead of constructing __builtin_aarch64_simd_oi one vector
+	at a time.
+	(vqtbl2_u8): Likewise.
+	(vqtbl2_p8): Likewise.
+	(vqtbl2q_s8): Likewise.
+	(vqtbl2q_u8): Likewise.
+	(vqtbl2q_p8): Likewise.
+	(vqtbl3_s8): Use __builtin_memcpy instead of constructing
+	__builtin_aarch64_simd_ci one vector at a time.
+	(vqtbl3_u8): Likewise.
+	(vqtbl3_p8): Likewise.
+	(vqtbl3q_s8): Likewise.
+	(vqtbl3q_u8): Likewise.
+	(vqtbl3q_p8): Likewise.
+	(vqtbl4_s8): Use __builtin_memcpy instead of constructing
+	__builtin_aarch64_simd_xi one vector at a time.
+	(vqtbl4_u8): Likewise.
+	(vqtbl4_p8): Likewise.
+	(vqtbl4q_s8): Likewise.
+	(vqtbl4q_u8): Likewise.
+	(vqtbl4q_p8): Likewise.
+
+2021-07-23  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100952
+	* config/rs6000/rs6000.md (cstore<mode>4): Fix wrong fall through.
+
 2021-07-22  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/10153

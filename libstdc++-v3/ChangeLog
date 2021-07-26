@@ -1,3 +1,12 @@
+2021-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future: Include <bits/atomic_base.h> instead of
+	<atomic>.
+
+2021-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_relops.h: Update documentation comments.
+
 2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101583

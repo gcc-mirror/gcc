@@ -1,3 +1,7 @@
+2021-07-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-osprim__x32.adb: Add missing with clause.
+
 2021-07-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* adaint.c (__gnat_number_of_cpus): Replace "#ifdef" by "#if

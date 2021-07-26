@@ -1929,7 +1929,7 @@ bool
 operator_lshift::fold_range (irange &r, tree type,
 			     const irange &op1,
 			     const irange &op2,
-			     relation_kind rel ATTRIBUTE_UNUSED) const
+			     relation_kind rel) const
 {
   int_range_max shift_range;
   if (!get_shift_range (shift_range, type, op2))
@@ -1960,7 +1960,7 @@ operator_lshift::fold_range (irange &r, tree type,
     }
   else
     // Otherwise, invoke the generic fold routine.
-    return range_operator::fold_range (r, type, op1, shift_range);
+    return range_operator::fold_range (r, type, op1, shift_range, rel);
 }
 
 void
@@ -2189,7 +2189,7 @@ bool
 operator_rshift::fold_range (irange &r, tree type,
 			     const irange &op1,
 			     const irange &op2,
-			     relation_kind rel ATTRIBUTE_UNUSED) const
+			     relation_kind rel) const
 {
   int_range_max shift;
   if (!get_shift_range (shift, type, op2))
@@ -2201,7 +2201,7 @@ operator_rshift::fold_range (irange &r, tree type,
       return true;
     }
 
-  return range_operator::fold_range (r, type, op1, shift);
+  return range_operator::fold_range (r, type, op1, shift, rel);
 }
 
 void
@@ -3101,6 +3101,11 @@ public:
 			  const irange &lhs,
 			  const irange &op1,
 			  relation_kind rel = VREL_NONE) const;
+  virtual bool op1_op2_relation_effect (irange &lhs_range,
+					tree type,
+					const irange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const;
 } op_bitwise_xor;
 
 void
@@ -3132,6 +3137,34 @@ operator_bitwise_xor::wi_fold (irange &r, tree type,
     value_range_with_overflow (r, type, new_lb, new_ub);
   else
     r.set_varying (type);
+}
+
+bool
+operator_bitwise_xor::op1_op2_relation_effect (irange &lhs_range,
+					       tree type,
+					       const irange &,
+					       const irange &,
+					       relation_kind rel) const
+{
+  if (rel == VREL_NONE)
+    return false;
+
+  int_range<2> rel_range;
+
+  switch (rel)
+    {
+    case EQ_EXPR:
+      rel_range.set_zero (type);
+      break;
+    case NE_EXPR:
+      rel_range.set_nonzero (type);
+      break;
+    default:
+      return false;
+    }
+
+  lhs_range.intersect (rel_range);
+  return true;
 }
 
 bool

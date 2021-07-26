@@ -117,6 +117,10 @@ struct GTY (()) cp_lexer {
   /* True if we're in the context of OpenMP directives written as C++11
      attributes turned into pragma.  */
   bool in_omp_attribute_pragma;
+
+  /* True for in_omp_attribute_pragma lexer that should be destroyed
+     when it is no longer in use.  */
+  bool orphan_p;
 };
 
 

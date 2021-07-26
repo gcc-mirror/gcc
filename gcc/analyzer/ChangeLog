@@ -1,3 +1,19 @@
+2021-07-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc
+	(class auto_disable_complexity_checks): New.
+	(epath_finder::explore_feasible_paths): Use it to disable
+	complexity checks whilst processing the worklist.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Initialize
+	m_check_complexity.
+	(region_model_manager::reject_if_too_complex): Bail if
+	m_check_complexity is false.
+	* region-model.h
+	(region_model_manager::enable_complexity_check): New.
+	(region_model_manager::disable_complexity_check): New.
+	(region_model_manager::m_check_complexity): New.
+
 2021-07-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101547

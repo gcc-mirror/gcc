@@ -3312,6 +3312,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      { tree rotate_type = TREE_TYPE (@0); }
       (convert (rotate (convert:rotate_type @1) @2))))))
 
+(for cmp (eq ne)
+ (for rotate (lrotate rrotate)
+      invrot (rrotate lrotate)
+  /* (X >>r Y) cmp (Z >>r Y) may simplify to X cmp Y. */
+  (simplify
+   (cmp (rotate @1 @0) (rotate @2 @0))
+   (cmp @1 @2))
+  /* (X >>r C1) cmp C2 may simplify to X cmp C3. */
+  (simplify
+   (cmp (rotate @0 INTEGER_CST@1) INTEGER_CST@2)
+   (cmp @0 { const_binop (invrot, TREE_TYPE (@0), @2, @1); }))
+  /* (X >>r Y) cmp C where C is 0 or ~0, may simplify to X cmp C.  */
+  (simplify
+   (cmp (rotate @0 @1) INTEGER_CST@2)
+    (if (integer_zerop (@2) || integer_all_onesp (@2))
+     (cmp @0 @2)))))
+
 /* Simplifications of conversions.  */
 
 /* Basic strip-useless-type-conversions / strip_nops.  */
@@ -3622,6 +3639,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (bswap (bitop:c (bswap @0) @1))
    (bitop @0 (bswap @1))))
+ (for cmp (eq ne)
+  (simplify
+   (cmp (bswap @0) (bswap @1))
+   (cmp @0 @1))
+  (simplify
+   (cmp (bswap @0) INTEGER_CST@1)
+   (cmp @0 (bswap @1))))
  /* (bswap(x) >> C1) & C2 can sometimes be simplified to (x >> C3) & C2.  */
  (simplify
   (bit_and (convert1? (rshift@0 (convert2? (bswap@4 @1)) INTEGER_CST@2))

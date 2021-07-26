@@ -31,6 +31,8 @@
 
 --  This version is for Linux/x32
 
+with System.Parameters;
+
 package body System.OS_Primitives is
 
    --  ??? These definitions are duplicated from System.OS_Interface

@@ -1,3 +1,19 @@
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.h (struct cp_parser): Add omp_attrs_forbidden_p member.
+	* parser.c (cp_parser_handle_statement_omp_attributes): Diagnose
+	mixing of attribute and pragma syntax directives when seeing
+	omp::directive if parser->omp_attrs_forbidden_p or if attribute syntax
+	directives are followed by OpenMP pragma.
+	(cp_parser_statement): Clear parser->omp_attrs_forbidden_p after
+	the cp_parser_handle_statement_omp_attributes call.
+	(cp_parser_omp_structured_block): Add disallow_omp_attrs argument,
+	if true, set parser->omp_attrs_forbidden_p.
+	(cp_parser_omp_scan_loop_body, cp_parser_omp_sections_scope): Pass
+	false as disallow_omp_attrs to cp_parser_omp_structured_block.
+	(cp_parser_omp_parallel, cp_parser_omp_task): Set
+	parser->omp_attrs_forbidden_p.
+
 2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>

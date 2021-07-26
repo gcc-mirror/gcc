@@ -4359,7 +4359,7 @@ vrp_jump_threader::after_dom_children (basic_block bb)
    subsequent passes.  */
 
 static void
-vrp_simplify_cond_using_ranges (vr_values *query, gcond *stmt)
+vrp_simplify_cond_using_ranges (range_query *query, gcond *stmt)
 {
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
@@ -4420,6 +4420,27 @@ vrp_simplify_cond_using_ranges (vr_values *query, gcond *stmt)
 		}
 	    }
 	}
+    }
+}
+
+/* A comparison of an SSA_NAME against a constant where the SSA_NAME
+   was set by a type conversion can often be rewritten to use the RHS
+   of the type conversion.  Do this optimization for all conditionals
+   in FUN.
+
+   However, doing so inhibits jump threading through the comparison.
+   So that transformation is not performed until after jump threading
+   is complete.  */
+
+static void
+simplify_casted_conds (function *fun, range_query *query)
+{
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      gimple *last = last_stmt (bb);
+      if (last && gimple_code (last) == GIMPLE_COND)
+	vrp_simplify_cond_using_ranges (query, as_a <gcond *> (last));
     }
 }
 
@@ -4519,21 +4540,7 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
   vrp_jump_threader threader (fun, &vrp_vr_values);
   threader.thread_jumps ();
 
-  /* A comparison of an SSA_NAME against a constant where the SSA_NAME
-     was set by a type conversion can often be rewritten to use the
-     RHS of the type conversion.
-
-     However, doing so inhibits jump threading through the comparison.
-     So that transformation is not performed until after jump threading
-     is complete.  */
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      gimple *last = last_stmt (bb);
-      if (last && gimple_code (last) == GIMPLE_COND)
-	vrp_simplify_cond_using_ranges (&vrp_vr_values,
-					as_a <gcond *> (last));
-    }
+  simplify_casted_conds (fun, &vrp_vr_values);
 
   free_numbers_of_iterations_estimates (fun);
 

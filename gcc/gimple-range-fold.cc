@@ -868,6 +868,38 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
 	}
       break;
 
+    case CFN_BUILT_IN_TOUPPER:
+      {
+	arg = gimple_call_arg (call, 0);
+	if (!src.get_operand (r, arg))
+	  return false;
+	// Return the range passed in without any lower case characters,
+	// but including all the upper case ones.
+	int_range<2> exclude (build_int_cst (type, 'a'),
+			      build_int_cst (type, 'z'), VR_ANTI_RANGE);
+	r.intersect (exclude);
+	int_range<2> uppers (build_int_cst (type, 'A'),
+			      build_int_cst (type, 'Z'));
+	r.union_ (uppers);
+	return true;
+      }
+
+     case CFN_BUILT_IN_TOLOWER:
+      {
+	arg = gimple_call_arg (call, 0);
+	if (!src.get_operand (r, arg))
+	  return false;
+	// Return the range passed in without any upper case characters,
+	// but including all the lower case ones.
+	int_range<2> exclude (build_int_cst (type, 'A'),
+			      build_int_cst (type, 'Z'), VR_ANTI_RANGE);
+	r.intersect (exclude);
+	int_range<2> lowers (build_int_cst (type, 'a'),
+			      build_int_cst (type, 'z'));
+	r.union_ (lowers);
+	return true;
+      }
+
     CASE_CFN_FFS:
     CASE_CFN_POPCOUNT:
       // __builtin_ffs* and __builtin_popcount* return [0, prec].
