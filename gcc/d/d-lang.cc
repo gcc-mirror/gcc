@@ -108,7 +108,7 @@ deps_add_target (const char *target, bool quoted)
 
   if (!quoted)
     {
-      obstack_grow (&buffer, target, strlen (target));
+      obstack_grow0 (&buffer, target, strlen (target));
       d_option.deps_target.safe_push ((const char *) obstack_finish (&buffer));
       return;
     }
@@ -149,6 +149,7 @@ deps_add_target (const char *target, bool quoted)
       obstack_1grow (&buffer, *p);
     }
 
+  obstack_1grow (&buffer, '\0');
   d_option.deps_target.safe_push ((const char *) obstack_finish (&buffer));
 }
 
@@ -278,6 +279,8 @@ deps_write (Module *module, obstack *buffer)
       obstack_grow (buffer, str, strlen (str));
       obstack_grow (buffer, ":\n", 2);
     }
+
+  obstack_1grow (buffer, '\0');
 }
 
 /* Implements the lang_hooks.init_options routine for language D.
@@ -884,6 +887,7 @@ d_parse_file (void)
 	      obstack_grow (&buffer, str, strlen (str));
 	    }
 
+	  obstack_1grow (&buffer, '\0');
 	  message ("%s", (char *) obstack_finish (&buffer));
 	}
     }
