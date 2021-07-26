@@ -1929,7 +1929,7 @@ bool
 operator_lshift::fold_range (irange &r, tree type,
 			     const irange &op1,
 			     const irange &op2,
-			     relation_kind rel ATTRIBUTE_UNUSED) const
+			     relation_kind rel) const
 {
   int_range_max shift_range;
   if (!get_shift_range (shift_range, type, op2))
@@ -1960,7 +1960,7 @@ operator_lshift::fold_range (irange &r, tree type,
     }
   else
     // Otherwise, invoke the generic fold routine.
-    return range_operator::fold_range (r, type, op1, shift_range);
+    return range_operator::fold_range (r, type, op1, shift_range, rel);
 }
 
 void
@@ -2189,7 +2189,7 @@ bool
 operator_rshift::fold_range (irange &r, tree type,
 			     const irange &op1,
 			     const irange &op2,
-			     relation_kind rel ATTRIBUTE_UNUSED) const
+			     relation_kind rel) const
 {
   int_range_max shift;
   if (!get_shift_range (shift, type, op2))
@@ -2201,7 +2201,7 @@ operator_rshift::fold_range (irange &r, tree type,
       return true;
     }
 
-  return range_operator::fold_range (r, type, op1, shift);
+  return range_operator::fold_range (r, type, op1, shift, rel);
 }
 
 void
