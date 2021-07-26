@@ -538,7 +538,7 @@ protected:
 // Binary infix "as" chir expression.
 class TypeCastExpr : public OperatorExpr
 {
-  std::unique_ptr<TypeNoBounds> type_to_convert_to;
+  std::unique_ptr<Type> type_to_convert_to;
 
   // Note: only certain type casts allowed, outlined in reference
 public:
@@ -547,7 +547,7 @@ public:
   // Constructor requires calling protected constructor of OperatorExpr
   TypeCastExpr (Analysis::NodeMapping mappings,
 		std::unique_ptr<Expr> expr_to_cast,
-		std::unique_ptr<TypeNoBounds> type_to_cast_to, Location locus)
+		std::unique_ptr<Type> type_to_cast_to, Location locus)
     : OperatorExpr (std::move (mappings), std::move (expr_to_cast),
 		    AST::AttrVec (), locus),
       type_to_convert_to (std::move (type_to_cast_to))
@@ -557,7 +557,7 @@ public:
   // Copy constructor also requires calling protected constructor
   TypeCastExpr (TypeCastExpr const &other)
     : OperatorExpr (other),
-      type_to_convert_to (other.type_to_convert_to->clone_type_no_bounds ())
+      type_to_convert_to (other.type_to_convert_to->clone_type ())
   {}
 
   // Overload assignment operator to deep copy
@@ -565,7 +565,7 @@ public:
   {
     OperatorExpr::operator= (other);
     // main_or_left_expr = other.main_or_left_expr->clone_expr();
-    type_to_convert_to = other.type_to_convert_to->clone_type_no_bounds ();
+    type_to_convert_to = other.type_to_convert_to->clone_type ();
 
     return *this;
   }
@@ -575,6 +575,18 @@ public:
   TypeCastExpr &operator= (TypeCastExpr &&other) = default;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_casted_expr ()
+  {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
+  std::unique_ptr<Type> &get_type_to_convert_to ()
+  {
+    rust_assert (type_to_convert_to != nullptr);
+    return type_to_convert_to;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

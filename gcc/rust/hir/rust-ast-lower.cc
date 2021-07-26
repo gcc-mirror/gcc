@@ -21,6 +21,7 @@
 #include "rust-ast-lower-implitem.h"
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-block.h"
+#include "rust-ast-lower-type.h"
 
 namespace Rust {
 namespace HIR {
@@ -392,6 +393,14 @@ ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
     std::move (mapping), segment_name, has_separating_scope_resolution,
     std::move (lifetime_args), std::move (type_args), std::move (binding_args),
     segment.get_locus ());
+}
+
+// rust-ast-lower-base
+
+HIR::Type *
+ASTLoweringBase::lower_type_no_bounds (AST::TypeNoBounds *type)
+{
+  return ASTLoweringType::translate (type);
 }
 
 } // namespace HIR
