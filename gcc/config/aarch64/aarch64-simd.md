@@ -599,20 +599,6 @@
   [(set_attr "type" "neon_dot<q>")]
 )
 
-;; These instructions map to the __builtins for the armv8.6a I8MM usdot
-;; (vector) Dot Product operation.
-(define_insn "usdot_prod<vsi2qi>"
-  [(set (match_operand:VS 0 "register_operand" "=w")
-	(plus:VS
-	  (unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
-		      (match_operand:<VSI2QI> 3 "register_operand" "w")]
-	  UNSPEC_USDOT)
-	  (match_operand:VS 1 "register_operand" "0")))]
-  "TARGET_I8MM"
-  "usdot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
-  [(set_attr "type" "neon_dot<q>")]
-)
-
 ;; These expands map to the Dot Product optab the vectorizer checks for.
 ;; The auto-vectorizer expects a dot product builtin that also does an
 ;; accumulation into the provided register.
@@ -647,6 +633,20 @@
   emit_insn (gen_rtx_SET (operands[0], operands[3]));
   DONE;
 })
+
+;; These instructions map to the __builtins for the Armv8.6-a I8MM usdot
+;; (vector) Dot Product operation and the vectorized optab.
+(define_insn "usdot_prod<vsi2qi>"
+  [(set (match_operand:VS 0 "register_operand" "=w")
+	(plus:VS
+	  (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand" "w")
+		      (match_operand:<VSI2QI> 2 "register_operand" "w")]
+	  UNSPEC_USDOT)
+	  (match_operand:VS 3 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "usdot\\t%0.<Vtype>, %1.<Vdottype>, %2.<Vdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
 
 ;; These instructions map to the __builtins for the Dot Product
 ;; indexed operations.

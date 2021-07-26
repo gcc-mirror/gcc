@@ -209,6 +209,10 @@ static enum aarch64_type_qualifiers
 aarch64_types_ternop_ssus_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_unsigned, qualifier_none };
 #define TYPES_TERNOP_SSUS (aarch64_types_ternop_ssus_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_ternop_suss_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned, qualifier_none, qualifier_none };
+#define TYPES_TERNOP_SUSS (aarch64_types_ternop_suss_qualifiers)
 
 
 static enum aarch64_type_qualifiers
