@@ -1163,9 +1163,9 @@ public:
 	bool destructor = needs_dtor (etype);
 	bool lvalue = lvalue_p (e->e2);
 
-	/* Even if the elements in rhs are all rvalues and don't have
-	   to call postblits, this assignment should call dtors on old
-	   assigned elements.  */
+	/* Optimize static array assignment with array literal.  Even if the
+	   elements in rhs are all rvalues and don't have to call postblits,
+	   this assignment should call dtors on old assigned elements.  */
 	if ((!postblit && !destructor)
 	    || (e->op == TOKconstruct && e->e2->op == TOKarrayliteral)
 	    || (e->op == TOKconstruct && !lvalue && postblit)
