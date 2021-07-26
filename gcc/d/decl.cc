@@ -2218,13 +2218,10 @@ enum_initializer_decl (EnumDeclaration *decl)
   if (decl->sinit)
     return decl->sinit;
 
-  tree type = build_ctype (decl->type);
+  gcc_assert (decl->ident);
 
-  Identifier *ident_save = decl->ident;
-  if (!decl->ident)
-    decl->ident = Identifier::generateId ("__enum");
+  tree type = build_ctype (decl->type);
   tree ident = mangle_internal_decl (decl, "__init", "Z");
-  decl->ident = ident_save;
 
   decl->sinit = declare_extern_var (ident, type);
   DECL_LANG_SPECIFIC (decl->sinit) = build_lang_decl (NULL);
