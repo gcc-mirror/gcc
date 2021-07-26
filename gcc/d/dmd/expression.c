@@ -6717,7 +6717,7 @@ Expression *FuncInitExp::resolveLoc(Loc loc, Scope *sc)
         s = "";
     Expression *e = new StringExp(loc, const_cast<char *>(s));
     e = semantic(e, sc);
-    e = e->castTo(sc, type);
+    e->type = Type::tstring;
     return e;
 }
 
@@ -6751,7 +6751,7 @@ Expression *PrettyFuncInitExp::resolveLoc(Loc loc, Scope *sc)
 
     Expression *e = new StringExp(loc, const_cast<char *>(s));
     e = semantic(e, sc);
-    e = e->castTo(sc, type);
+    e->type = Type::tstring;
     return e;
 }
 
