@@ -1525,9 +1525,7 @@ package body Exp_Prag is
          begin
             --  Attribute 'Old
 
-            if Nkind (N) = N_Attribute_Reference
-              and then Attribute_Name (N) = Name_Old
-            then
+            if Is_Attribute_Old (N) then
                Pref := Prefix (N);
 
                Indirect := Indirect_Temp_Needed (Etype (Pref));

@@ -8609,8 +8609,7 @@ package body Exp_Ch4 is
       --  f'Machine (expr) to eliminate surprise from extra precision.
 
       if Is_Floating_Point_Type (Typl)
-        and then Nkind (Original_Node (Lhs)) = N_Attribute_Reference
-        and then Attribute_Name (Original_Node (Lhs)) = Name_Result
+        and then Is_Attribute_Result (Original_Node (Lhs))
       then
          --  Stick in the Typ'Machine call if not already there
 
