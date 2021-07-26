@@ -1751,6 +1751,7 @@ public:
     tree callee = NULL_TREE;
     tree object = NULL_TREE;
     tree cleanup = NULL_TREE;
+    tree returnvalue = NULL_TREE;
     TypeFunction *tf = NULL;
 
     /* Calls to delegates can sometimes look like this.  */
@@ -1819,6 +1820,15 @@ public:
 		else
 		  fndecl = build_address (fndecl);
 
+		/* C++ constructors return void, even though front-end semantic
+		   treats them as implicitly returning `this'.  Set returnvalue
+		   to override the result of this expression.  */
+		if (fd->isCtorDeclaration () && fd->linkage == LINKcpp)
+		  {
+		    thisexp = d_save_expr (thisexp);
+		    returnvalue = thisexp;
+		  }
+
 		callee = build_method_call (fndecl, thisexp, fd->type);
 	      }
 	  }
@@ -1884,6 +1894,9 @@ public:
     /* Now we have the type, callee and maybe object reference,
        build the call expression.  */
     tree exp = d_build_call (tf, callee, object, e->arguments);
+
+    if (returnvalue != NULL_TREE)
+      exp = compound_expr (exp, returnvalue);
 
     if (tf->isref)
       exp = build_deref (exp);
