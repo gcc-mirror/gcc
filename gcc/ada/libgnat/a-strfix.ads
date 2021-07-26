@@ -904,7 +904,15 @@ package Ada.Strings.Fixed with SPARK_Mode is
       Justify : Alignment  := Left;
       Pad     : Character  := Space)
    with
-     Pre    => Low - 1 <= Source'Last,
+     Pre    =>
+       Low - 1 <= Source'Last
+         and then High >= Source'First - 1
+         and then (if High >= Low
+                   then Natural'Max (0, Low - Source'First)
+                        <= Natural'Last
+                           - By'Length
+                           - Natural'Max (Source'Last - High, 0)
+                   else Source'Length <= Natural'Last - By'Length),
 
    --  Incomplete contract
 
@@ -966,7 +974,9 @@ package Ada.Strings.Fixed with SPARK_Mode is
       New_Item : String;
       Drop     : Truncation := Error)
    with
-     Pre    => Before - 1 in Source'First - 1 .. Source'Last,
+     Pre    =>
+       Before - 1 in Source'First - 1 .. Source'Last
+         and then Source'Length <= Natural'Last - New_Item'Length,
 
      --  Incomplete contract
 
@@ -1033,7 +1043,11 @@ package Ada.Strings.Fixed with SPARK_Mode is
       New_Item : String;
       Drop     : Truncation := Right)
    with
-     Pre    => Position - 1 in Source'First - 1 .. Source'Last,
+     Pre    =>
+       Position - 1 in Source'First - 1 .. Source'Last
+         and then
+           (if Position - Source'First >= Source'Length - New_Item'Length
+            then Position - Source'First <= Natural'Last - New_Item'Length),
 
      --  Incomplete contract
 
