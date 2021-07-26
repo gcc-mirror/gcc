@@ -31,10 +31,10 @@ public:
 
 private:
   static tree check_array_bounds (tree *tp, int *walk_subtree, void *data);
-  bool check_array_ref (location_t, tree, bool ignore_off_by_one);
+  bool check_array_ref (location_t, tree, gimple *, bool ignore_off_by_one);
   bool check_mem_ref (location_t, tree, bool ignore_off_by_one);
-  void check_addr_expr (location_t, tree);
-  const value_range *get_value_range (const_tree op);
+  void check_addr_expr (location_t, tree, gimple *);
+  const value_range *get_value_range (const_tree op, gimple *);
 
   struct function *fun;
   range_query *ranges;
