@@ -3430,6 +3430,8 @@ arm_configure_build_target (struct arm_build_target *target,
   const cpu_tune *tune_data = &all_tunes[arm_selected_tune - all_cores];
 
   /* Finish initializing the target structure.  */
+  if (!target->arch_name)
+    target->arch_name = arm_selected_arch->common.name;
   target->arch_pp_name = arm_selected_arch->arch;
   target->base_arch = arm_selected_arch->base_arch;
   target->profile = arm_selected_arch->profile;
