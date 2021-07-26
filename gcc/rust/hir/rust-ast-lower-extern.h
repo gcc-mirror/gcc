@@ -47,8 +47,6 @@ public:
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       item.get_locus ());
 
     HIR::ExternalStaticItem *static_item
       = new HIR::ExternalStaticItem (mapping, item.get_identifier (),
@@ -58,6 +56,11 @@ public:
 				     item.get_locus ());
 
     translated = static_item;
+
+    mappings->insert_hir_extern_item (crate_num, mapping.get_hirid (),
+				      translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       item.get_locus ());
   }
 
   void visit (AST::ExternalFunctionItem &function) override
@@ -97,8 +100,6 @@ public:
     Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       function.get_locus ());
 
     HIR::ExternalFunctionItem *function_item = new HIR::ExternalFunctionItem (
       mapping, function.get_identifier (), std::move (generic_params),
@@ -107,6 +108,11 @@ public:
       function.get_outer_attrs (), function.get_locus ());
 
     translated = function_item;
+
+    mappings->insert_hir_extern_item (crate_num, mapping.get_hirid (),
+				      translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       function.get_locus ());
   }
 
 private:

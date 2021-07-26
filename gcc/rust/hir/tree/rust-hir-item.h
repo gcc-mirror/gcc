@@ -2713,6 +2713,8 @@ public:
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
+  Identifier get_item_name () const { return item_name; }
+
 protected:
   ExternalItem (Analysis::NodeMapping mappings, Identifier item_name,
 		Visibility vis, AST::AttrVec outer_attrs, Location locus)
@@ -2746,9 +2748,6 @@ protected:
 
   // Clone function implementation as pure virtual method
   virtual ExternalItem *clone_external_item_impl () const = 0;
-
-  // possibly make this public if required
-  std::string get_item_name () const { return item_name; }
 };
 
 // A static item used in an extern block
@@ -2789,6 +2788,8 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::unique_ptr<Type> &get_item_type () { return item_type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2840,6 +2841,12 @@ public:
   NamedFunctionParam &operator= (NamedFunctionParam &&other) = default;
 
   std::string as_string () const;
+
+  Identifier get_param_name () const { return name; }
+
+  std::unique_ptr<Type> &get_type () { return param_type; }
+
+  Analysis::NodeMapping get_mappings () const { return mappings; }
 };
 
 // A function item used in an extern block
@@ -2920,6 +2927,20 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
+
+  std::vector<NamedFunctionParam> &get_function_params ()
+  {
+    return function_params;
+  }
+
+  bool is_variadic () const { return has_variadics; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2998,6 +3019,11 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<std::unique_ptr<ExternalItem> > &get_extern_items ()
+  {
+    return extern_items;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

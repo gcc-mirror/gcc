@@ -132,6 +132,10 @@ public:
 			      HIR::TraitItem *item);
   HIR::TraitItem *lookup_hir_trait_item (CrateNum crateNum, HirId id);
 
+  void insert_hir_extern_item (CrateNum crateNum, HirId id,
+			       HIR::ExternalItem *item);
+  HIR::ExternalItem *lookup_hir_extern_item (CrateNum crateNum, HirId id);
+
   void insert_hir_impl_block (CrateNum crateNum, HirId id,
 			      HIR::ImplBlock *item);
   HIR::ImplBlock *lookup_hir_impl_block (CrateNum crateNum, HirId id);
@@ -239,6 +243,8 @@ private:
   std::map<HirId, HIR::ImplBlock *> hirImplItemsToImplMappings;
   std::map<CrateNum, std::map<HirId, HIR::ImplBlock *> > hirImplBlockMappings;
   std::map<CrateNum, std::map<HirId, HIR::TraitItem *> > hirTraitItemMappings;
+  std::map<CrateNum, std::map<HirId, HIR::ExternalItem *> >
+    hirExternItemMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;
