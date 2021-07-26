@@ -191,6 +191,14 @@ public:
       ResolveTopLevelTraitItems::go (item.get (), path);
   }
 
+  void visit (AST::ExternBlock &extern_block) override
+  {
+    for (auto &item : extern_block.get_extern_items ())
+      {
+	ResolveToplevelExternItem::go (item.get (), prefix);
+      }
+  }
+
 private:
   ResolveTopLevel (const CanonicalPath &prefix)
     : ResolverBase (UNKNOWN_NODEID), prefix (prefix)

@@ -1364,6 +1364,8 @@ public:
 class ExternalItem
 {
 public:
+  ExternalItem () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+
   virtual ~ExternalItem () {}
 
   // Unique pointer custom clone function
@@ -1379,9 +1381,13 @@ public:
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
 
+  NodeId get_node_id () const { return node_id; }
+
 protected:
   // Clone function implementation as pure virtual method
   virtual ExternalItem *clone_external_item_impl () const = 0;
+
+  NodeId node_id;
 };
 
 /* Data structure to store the data used in macro invocations and macro
@@ -1513,36 +1519,36 @@ protected:
     return new MacroInvocationSemi (*this);
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   MacroInvocationSemi *clone_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   MacroInvocationSemi *clone_inherent_impl_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   MacroInvocationSemi *clone_trait_impl_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   MacroInvocationSemi *clone_trait_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   MacroInvocationSemi *clone_external_item_impl () const final override
   {
     return clone_macro_invocation_semi_impl ();
