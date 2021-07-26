@@ -637,7 +637,9 @@ ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
 
 void
 ResolveItem::resolve_extern_item (AST::ExternalItem *item)
-{}
+{
+  ResolveExternItem::go (item);
+}
 
 } // namespace Resolver
 } // namespace Rust
