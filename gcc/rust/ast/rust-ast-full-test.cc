@@ -3595,7 +3595,8 @@ ExternalFunctionItem::as_string () const
     }
 
   // add type on new line
-  str += "\n (return) Type: " + return_type->as_string ();
+  str += "\n (return) Type: "
+	 + (has_return_type () ? return_type->as_string () : "()");
 
   // where clause
   str += "\n Where clause: ";
