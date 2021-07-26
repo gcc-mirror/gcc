@@ -1491,7 +1491,7 @@ public:
     if (tbtype->ty == Tvoid)
       this->result_ = build_nop (build_ctype (tbtype), result);
     else
-      this->result_ = convert_expr (result, ebtype, tbtype);
+      this->result_ = convert_for_rvalue (result, ebtype, tbtype);
   }
 
   /* Build a delete expression.  */
@@ -3169,11 +3169,14 @@ build_return_dtor (Expression *e, Type *type, TypeFunction *tf)
   tree result = build_expr (e);
 
   /* Convert for initializing the DECL_RESULT.  */
-  result = convert_expr (result, e->type, type);
-
-  /* If we are returning a reference, take the address.  */
   if (tf->isref)
-    result = build_address (result);
+    {
+      /* If we are returning a reference, take the address.  */
+      result = convert_expr (result, e->type, type);
+      result = build_address (result);
+    }
+  else
+    result = convert_for_rvalue (result, e->type, type);
 
   /* The decl to store the return expression.  */
   tree decl = DECL_RESULT (cfun->decl);
