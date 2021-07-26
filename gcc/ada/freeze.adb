@@ -284,11 +284,11 @@ package body Freeze is
    --  Full_View or Corresponding_Record_Type.
 
    procedure Warn_Overlay (Expr : Node_Id; Typ : Entity_Id; Nam : Node_Id);
-   --  Expr is the expression for an address clause for entity Nam whose type
-   --  is Typ. If Typ has a default initialization, and there is no explicit
-   --  initialization in the source declaration, check whether the address
-   --  clause might cause overlaying of an entity, and emit a warning on the
-   --  side effect that the initialization will cause.
+   --  Expr is the expression for an address clause for the entity denoted by
+   --  Nam whose type is Typ. If Typ has a default initialization, and there is
+   --  no explicit initialization in the source declaration, check whether the
+   --  address clause might cause overlaying of an entity, and emit a warning
+   --  on the side effect that the initialization will cause.
 
    -------------------------------
    -- Adjust_Esize_For_Alignment --
@@ -10081,7 +10081,7 @@ package body Freeze is
    -- Warn_Overlay --
    ------------------
 
-   procedure Warn_Overlay (Expr : Node_Id; Typ : Entity_Id; Nam : Entity_Id) is
+   procedure Warn_Overlay (Expr : Node_Id; Typ : Entity_Id; Nam : Node_Id) is
       Ent : constant Entity_Id := Entity (Nam);
       --  The object to which the address clause applies
 

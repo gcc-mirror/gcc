@@ -4914,7 +4914,7 @@ package body Exp_Util is
    -- Convert_To_Actual_Subtype --
    -------------------------------
 
-   procedure Convert_To_Actual_Subtype (Exp : Entity_Id) is
+   procedure Convert_To_Actual_Subtype (Exp : Node_Id) is
       Act_ST : Entity_Id;
 
    begin
@@ -7048,7 +7048,7 @@ package body Exp_Util is
    -- Get_Index_Subtype --
    -----------------------
 
-   function Get_Index_Subtype (N : Node_Id) return Node_Id is
+   function Get_Index_Subtype (N : Node_Id) return Entity_Id is
       P_Type : Entity_Id := Etype (Prefix (N));
       Indx   : Node_Id;
       J      : Int;

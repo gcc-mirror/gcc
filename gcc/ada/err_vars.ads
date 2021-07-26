@@ -105,12 +105,15 @@ package Err_Vars is
    --  of the following global variables to appropriate values before making a
    --  call to one of the error message routines with a string containing the
    --  insertion character to get the value inserted in an appropriate format.
+   --
+   --  Some of these are initialized below, because they are read before being
+   --  set by clients.
 
    Error_Msg_Col : Column_Number;
    --  Column for @ insertion character in message
 
    Error_Msg_Uint_1 : Uint;
-   Error_Msg_Uint_2 : Uint;
+   Error_Msg_Uint_2 : Uint := No_Uint;
    --  Uint values for ^ insertion characters in message
 
    --  WARNING: There is a matching C declaration of these variables in fe.h
@@ -119,21 +122,21 @@ package Err_Vars is
    --  Source location for # insertion character in message
 
    Error_Msg_Name_1 : Name_Id;
-   Error_Msg_Name_2 : Name_Id;
-   Error_Msg_Name_3 : Name_Id;
+   Error_Msg_Name_2 : Name_Id := No_Name;
+   Error_Msg_Name_3 : Name_Id := No_Name;
    --  Name_Id values for % insertion characters in message
 
    Error_Msg_File_1 : File_Name_Type;
-   Error_Msg_File_2 : File_Name_Type;
-   Error_Msg_File_3 : File_Name_Type;
+   Error_Msg_File_2 : File_Name_Type := No_File;
+   Error_Msg_File_3 : File_Name_Type := No_File;
    --  File_Name_Type values for { insertion characters in message
 
    Error_Msg_Unit_1 : Unit_Name_Type;
-   Error_Msg_Unit_2 : Unit_Name_Type;
+   Error_Msg_Unit_2 : Unit_Name_Type := No_Unit_Name;
    --  Unit_Name_Type values for $ insertion characters in message
 
    Error_Msg_Node_1 : Node_Id;
-   Error_Msg_Node_2 : Node_Id;
+   Error_Msg_Node_2 : Node_Id := Empty;
    --  Node_Id values for & insertion characters in message
 
    Error_Msg_Warn : Boolean;

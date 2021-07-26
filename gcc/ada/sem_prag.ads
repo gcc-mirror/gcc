@@ -429,7 +429,7 @@ package Sem_Prag is
 
    function Get_Argument
      (Prag       : Node_Id;
-      Context_Id : Node_Id := Empty) return Node_Id;
+      Context_Id : Entity_Id := Empty) return Node_Id;
    --  Obtain the argument of pragma Prag depending on context and the nature
    --  of the pragma. The argument is extracted in the following manner:
    --

@@ -701,7 +701,7 @@ package body Einfo.Utils is
    -- Entry_Index_Type --
    ----------------------
 
-   function Entry_Index_Type (Id : E) return N is
+   function Entry_Index_Type (Id : E) return E is
    begin
       pragma Assert (Ekind (Id) = E_Entry_Family);
       return Etype (Discrete_Subtype_Definition (Parent (Id)));
@@ -1745,7 +1745,7 @@ package body Einfo.Utils is
    -- Link_Entities --
    -------------------
 
-   procedure Link_Entities (First : Entity_Id; Second : Node_Id) is
+   procedure Link_Entities (First, Second : Entity_Id) is
    begin
       if Present (Second) then
          Set_Prev_Entity (Second, First);  --  First <-- Second

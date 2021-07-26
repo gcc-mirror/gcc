@@ -24709,7 +24709,7 @@ package body Sem_Util is
       -- Visit_Node --
       ----------------
 
-      procedure Visit_Node (N : Node_Or_Entity_Id) is
+      procedure Visit_Node (N : Node_Id) is
       begin
          pragma Assert (Nkind (N) not in N_Entity);
 

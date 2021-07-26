@@ -348,7 +348,7 @@ package body Exp_Disp is
    -- Build_Static_Dispatch_Tables --
    ----------------------------------
 
-   procedure Build_Static_Dispatch_Tables (N : Entity_Id) is
+   procedure Build_Static_Dispatch_Tables (N : Node_Id) is
       Target_List : List_Id;
 
       procedure Build_Dispatch_Tables (List : List_Id);
