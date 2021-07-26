@@ -386,9 +386,9 @@ public:
       create_typeinfo (d->type, NULL);
 
     /* Generate static initializer.  */
-    d->sinit = aggregate_initializer_decl (d);
-    DECL_INITIAL (d->sinit) = layout_struct_initializer (d);
-    d_finish_decl (d->sinit);
+    tree sinit = aggregate_initializer_decl (d);
+    DECL_INITIAL (sinit) = layout_struct_initializer (d);
+    d_finish_decl (sinit);
 
     /* Put out the members.  There might be static constructors in the members
        list, and they cannot be put in separate object files.  */
@@ -496,11 +496,11 @@ public:
     /* Generate C symbols.  */
     d->csym = get_classinfo_decl (d);
     d->vtblsym = get_vtable_decl (d);
-    d->sinit = aggregate_initializer_decl (d);
+    tree sinit = aggregate_initializer_decl (d);
 
     /* Generate static initializer.  */
-    DECL_INITIAL (d->sinit) = layout_class_initializer (d);
-    d_finish_decl (d->sinit);
+    DECL_INITIAL (sinit) = layout_class_initializer (d);
+    d_finish_decl (sinit);
 
     /* Put out the TypeInfo.  */
     if (have_typeinfo_p (Type::dtypeinfo))
@@ -2151,7 +2151,7 @@ tree
 aggregate_initializer_decl (AggregateDeclaration *decl)
 {
   if (decl->sinit)
-    return decl->sinit;
+    return (tree) decl->sinit;
 
   /* Class is a reference, want the record type.  */
   tree type = build_ctype (decl->type);
@@ -2161,20 +2161,21 @@ aggregate_initializer_decl (AggregateDeclaration *decl)
 
   tree ident = mangle_internal_decl (decl, "__init", "Z");
 
-  decl->sinit = declare_extern_var (ident, type);
-  DECL_LANG_SPECIFIC (decl->sinit) = build_lang_decl (NULL);
+  tree sinit = declare_extern_var (ident, type);
+  DECL_LANG_SPECIFIC (sinit) = build_lang_decl (NULL);
 
-  DECL_CONTEXT (decl->sinit) = type;
-  TREE_READONLY (decl->sinit) = 1;
+  DECL_CONTEXT (sinit) = type;
+  TREE_READONLY (sinit) = 1;
 
   /* Honor struct alignment set by user.  */
   if (sd && sd->alignment != STRUCTALIGN_DEFAULT)
     {
-      SET_DECL_ALIGN (decl->sinit, sd->alignment * BITS_PER_UNIT);
-      DECL_USER_ALIGN (decl->sinit) = true;
+      SET_DECL_ALIGN (sinit, sd->alignment * BITS_PER_UNIT);
+      DECL_USER_ALIGN (sinit) = true;
     }
 
-  return decl->sinit;
+  decl->sinit = sinit;
+  return sinit;
 }
 
 /* Generate the data for the static initializer.  */
