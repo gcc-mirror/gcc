@@ -205,12 +205,30 @@ make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
   if (!object_module->_scope)
     object_module->importAll (NULL);
 
+  /* Object class doesn't exist, create a stub one that will cause an error if
+     used.  */
+  Loc loc = (object_module->md) ? object_module->md->loc : object_module->loc;
+  if (!base)
+    {
+      if (!ClassDeclaration::object)
+	{
+	  ClassDeclaration *object
+	    = ClassDeclaration::create (loc, Identifier::idPool ("Object"),
+					NULL, NULL, true);
+	  object->parent = object_module;
+	  object->members = new Dsymbols;
+	  object->storage_class |= STCtemp;
+	}
+
+      base = ClassDeclaration::object;
+    }
+
   /* Assignment of global typeinfo variables is managed by the ClassDeclaration
      constructor, so only need to new the declaration here.  */
-  Loc loc = (object_module->md) ? object_module->md->loc : object_module->loc;
   ClassDeclaration *tinfo = ClassDeclaration::create (loc, ident, NULL, NULL,
 						      true);
   tinfo->parent = object_module;
+  tinfo->members = new Dsymbols;
   dsymbolSemantic (tinfo, object_module->_scope);
   tinfo->baseClass = base;
   /* This is a compiler generated class, and shouldn't be mistaken for being
@@ -1316,6 +1334,7 @@ public:
     tree type = tinfo_types[get_typeinfo_kind (tid->tinfo)];
     gcc_assert (type != NULL_TREE);
 
+    /* Built-in typeinfo will be referenced as one-only.  */
     tid->csym = declare_extern_var (ident, type);
     DECL_LANG_SPECIFIC (tid->csym) = build_lang_decl (tid);
 
@@ -1400,7 +1419,7 @@ check_typeinfo_type (const Loc &loc, Scope *sc)
       /* If TypeInfo has not been declared, warn about each location once.  */
       static Loc warnloc;
 
-      if (!warnloc.equals (loc))
+      if (loc.filename && !warnloc.equals (loc))
 	{
 	  error_at (make_location_t (loc),
 		    "%<object.TypeInfo%> could not be found, "
