@@ -473,13 +473,18 @@ convert_expr (tree exp, Type *etype, Type *totype)
 
 	  tree ptrtype = build_ctype (tbtype->nextOf ()->pointerTo ());
 
-	  if ((dim * esize) % tsize != 0)
+	  if (esize != tsize)
 	    {
-	      error ("cannot cast %qs to %qs since sizes do not line up",
-		     etype->toChars (), totype->toChars ());
-	      return error_mark_node;
+	      /* Array element sizes do not match, so we must adjust the
+		 dimensions.  */
+	      if (tsize == 0 || (dim * esize) % tsize != 0)
+		{
+		  error ("cannot cast %qs to %qs since sizes do not line up",
+			 etype->toChars (), totype->toChars ());
+		  return error_mark_node;
+		}
+	      dim = (dim * esize) / tsize;
 	    }
-	  dim = (dim * esize) / tsize;
 
 	  /* Assumes casting to dynamic array of same type or void.  */
 	  return d_array_value (build_ctype (totype), size_int (dim),
