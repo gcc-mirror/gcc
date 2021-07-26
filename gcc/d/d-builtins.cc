@@ -241,8 +241,8 @@ build_frontend_type (tree type)
       sdecl->type->merge2 ();
 
       /* Add both named and anonymous fields as members of the struct.
-	 Anonymous fields still need a name in D, so call them "__pad%d".  */
-      int anonfield_id = 0;
+	 Anonymous fields still need a name in D, so call them "__pad%u".  */
+      unsigned anonfield_id = 0;
       sdecl->members = new Dsymbols;
 
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -259,7 +259,11 @@ build_frontend_type (tree type)
 
 	  Identifier *fident;
 	  if (DECL_NAME (field) == NULL_TREE)
-	    fident = Identifier::generateId ("__pad", anonfield_id++);
+	    {
+	      char name[16];
+	      snprintf (name, sizeof (name), "__pad%u", anonfield_id++);
+	      fident = Identifier::idPool (name);
+	    }
 	  else
 	    {
 	      const char *name = IDENTIFIER_POINTER (DECL_NAME (field));
