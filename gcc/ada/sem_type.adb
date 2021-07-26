@@ -444,6 +444,12 @@ package body Sem_Type is
                    Find_Dispatching_Type (E))
          then
             Add_One_Interp (N, Interface_Alias (E), T);
+
+         --  Otherwise this is the first interpretation, N has type Any_Type
+         --  and we must place the new type on the node.
+
+         else
+            Set_Etype (N, T);
          end if;
 
          return;

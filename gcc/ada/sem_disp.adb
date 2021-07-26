@@ -1018,12 +1018,31 @@ package body Sem_Disp is
    ---------------------------------
 
    procedure Check_Dispatching_Operation (Subp, Old_Subp : Entity_Id) is
+      function Is_Access_To_Subprogram_Wrapper (E : Entity_Id) return Boolean;
+      --  Return True if E is an access to subprogram wrapper
+
       procedure Warn_On_Late_Primitive_After_Private_Extension
         (Typ  : Entity_Id;
          Prim : Entity_Id);
       --  Prim is a dispatching primitive of the tagged type Typ. Warn on Prim
       --  if it is a public primitive defined after some private extension of
       --  the tagged type.
+
+      -------------------------------------
+      -- Is_Access_To_Subprogram_Wrapper --
+      -------------------------------------
+
+      function Is_Access_To_Subprogram_Wrapper (E : Entity_Id) return Boolean
+      is
+         Decl_N : constant Node_Id := Unit_Declaration_Node (E);
+         Par_N  : constant Node_Id := Parent (List_Containing (Decl_N));
+
+      begin
+         --  Access to subprogram wrappers are declared in the freezing actions
+
+         return Nkind (Par_N) = N_Freeze_Entity
+           and then Ekind (Entity (Par_N)) = E_Access_Subprogram_Type;
+      end Is_Access_To_Subprogram_Wrapper;
 
       ----------------------------------------------------
       -- Warn_On_Late_Primitive_After_Private_Extension --
@@ -1093,6 +1112,13 @@ package body Sem_Disp is
 
       elsif Is_Invariant_Procedure (Subp)
         or else Is_Partial_Invariant_Procedure (Subp)
+      then
+         return;
+
+      --  Wrappers of access to subprograms are not primitive subprograms.
+
+      elsif Is_Wrapper (Subp)
+        and then Is_Access_To_Subprogram_Wrapper (Subp)
       then
          return;
       end if;
@@ -1407,6 +1433,35 @@ package body Sem_Disp is
                            Generate_Reference (Tagged_Type, Subp, 'P', False);
                            Override_Dispatching_Operation
                              (Tagged_Type, Old_Subp, Subp);
+                           Set_Is_Dispatching_Operation (Subp);
+
+                           --  Inherit decoration of controlling formals and
+                           --  controlling result.
+
+                           if Ekind (Old_Subp) = E_Function
+                             and then Has_Controlling_Result (Old_Subp)
+                           then
+                              Set_Has_Controlling_Result (Subp);
+                           end if;
+
+                           if Present (First_Formal (Old_Subp)) then
+                              declare
+                                 Old_Formal : Entity_Id;
+                                 Formal     : Entity_Id;
+
+                              begin
+                                 Formal     := First_Formal (Subp);
+                                 Old_Formal := First_Formal (Old_Subp);
+
+                                 while Present (Old_Formal) loop
+                                    Set_Is_Controlling_Formal (Formal,
+                                      Is_Controlling_Formal (Old_Formal));
+
+                                    Next_Formal (Formal);
+                                    Next_Formal (Old_Formal);
+                                 end loop;
+                              end;
+                           end if;
                         end if;
                      end if;
                   end if;
@@ -2420,10 +2475,25 @@ package body Sem_Disp is
 
                   if No (Tag_Typ) then
                      return Result (1 .. 0);
+
+                  --  Prevent cascaded errors
+
+                  elsif Is_Concurrent_Type (Tag_Typ)
+                     and then No (Corresponding_Record_Type (Tag_Typ))
+                     and then Serious_Errors_Detected > 0
+                  then
+                     return Result (1 .. 0);
                   end if;
 
                   if Is_Concurrent_Type (Tag_Typ) then
                      Tag_Typ := Corresponding_Record_Type (Tag_Typ);
+                  end if;
+
+                  if Present (Tag_Typ)
+                    and then Is_Private_Type (Tag_Typ)
+                    and then Present (Full_View (Tag_Typ))
+                  then
+                     Tag_Typ := Full_View (Tag_Typ);
                   end if;
 
                   --  Search primitive operations of dispatching type
