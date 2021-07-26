@@ -1781,9 +1781,12 @@ make_thunk (FuncDeclaration *decl, int offset)
   DECL_ARTIFICIAL (thunk) = 1;
   DECL_DECLARED_INLINE_P (thunk) = 0;
 
-  DECL_VISIBILITY (thunk) = DECL_VISIBILITY (function);
-  DECL_COMDAT (thunk) = DECL_COMDAT (function);
-  DECL_WEAK (thunk) = DECL_WEAK (function);
+  if (TREE_PUBLIC (thunk))
+    {
+      DECL_VISIBILITY (thunk) = DECL_VISIBILITY (function);
+      DECL_COMDAT (thunk) = DECL_COMDAT (function);
+      DECL_WEAK (thunk) = DECL_WEAK (function);
+    }
 
   /* When the thunk is for an extern C++ function, let C++ do the thunk
      generation and just reference the symbol as extern, instead of
