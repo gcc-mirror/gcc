@@ -28,6 +28,7 @@
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"
+#include "rust-ast-lower-extern.h"
 
 namespace Rust {
 namespace HIR {
@@ -551,6 +552,37 @@ public:
       {
 	mappings->insert_impl_item_mapping (impl_item_id, hir_impl_block);
       }
+  }
+
+  void visit (AST::ExternBlock &extern_block) override
+  {
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    std::vector<std::unique_ptr<HIR::ExternalItem> > extern_items;
+    for (auto &item : extern_block.get_extern_items ())
+      {
+	HIR::ExternalItem *lowered
+	  = ASTLoweringExternItem::translate (item.get ());
+	extern_items.push_back (std::unique_ptr<HIR::ExternalItem> (lowered));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, extern_block.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       extern_block.get_locus ());
+
+    HIR::ExternBlock *hir_extern_block
+      = new HIR::ExternBlock (mapping, extern_block.get_abi (),
+			      std::move (extern_items), std::move (vis),
+			      extern_block.get_inner_attrs (),
+			      extern_block.get_outer_attrs (),
+			      extern_block.get_locus ());
+
+    translated = hir_extern_block;
   }
 
 private:

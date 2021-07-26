@@ -521,10 +521,19 @@ public:
     resolver->get_name_scope ().pop ();
   }
 
+  void visit (AST::ExternBlock &extern_block) override
+  {
+    for (auto &item : extern_block.get_extern_items ())
+      {
+	resolve_extern_item (item.get ());
+      }
+  }
+
 protected:
   void resolve_impl_item (AST::TraitImplItem *item, const CanonicalPath &self);
   void resolve_impl_item (AST::InherentImplItem *item,
 			  const CanonicalPath &self);
+  void resolve_extern_item (AST::ExternalItem *item);
 
   ResolveItem () : ResolverBase (UNKNOWN_NODEID) {}
 };
@@ -571,6 +580,46 @@ private:
 
   const CanonicalPath &self;
 };
+
+class ResolveExternItem : public ResolverBase
+{
+  using Rust::Resolver::ResolverBase::visit;
+
+public:
+  static void go (AST::ExternalItem *item)
+  {
+    ResolveExternItem resolver;
+    item->accept_vis (resolver);
+  };
+
+  void visit (AST::ExternalFunctionItem &function) override
+  {
+    if (function.has_generics ())
+      {
+	for (auto &generic : function.get_generic_params ())
+	  ResolveGenericParam::go (generic.get (), function.get_node_id ());
+      }
+
+    if (function.has_return_type ())
+      ResolveType::go (function.get_return_type ().get (),
+		       function.get_node_id ());
+
+    // we make a new scope so the names of parameters are resolved and shadowed
+    // correctly
+    for (auto &param : function.get_function_params ())
+      {
+	ResolveType::go (param.get_type ().get (), param.get_node_id ());
+      }
+  }
+
+  void visit (AST::ExternalStaticItem &item) override
+  {
+    ResolveType::go (item.get_type ().get (), item.get_node_id ());
+  }
+
+private:
+  ResolveExternItem () : ResolverBase (UNKNOWN_NODEID) {}
+}; // namespace Resolver
 
 } // namespace Resolver
 } // namespace Rust

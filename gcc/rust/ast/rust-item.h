@@ -3910,9 +3910,9 @@ public:
   ExternalStaticItem (Identifier item_name, std::unique_ptr<Type> item_type,
 		      bool is_mut, Visibility vis,
 		      std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      item_name (std::move (item_name)), locus (locus), has_mut (is_mut),
-      item_type (std::move (item_type))
+    : ExternalItem (), outer_attrs (std::move (outer_attrs)),
+      visibility (std::move (vis)), item_name (std::move (item_name)),
+      locus (locus), has_mut (is_mut), item_type (std::move (item_type))
   {}
 
   // Copy constructor
@@ -3920,6 +3920,7 @@ public:
     : outer_attrs (other.outer_attrs), visibility (other.visibility),
       item_name (other.item_name), locus (other.locus), has_mut (other.has_mut)
   {
+    node_id = other.node_id;
     // guard to prevent null dereference (only required if error state)
     if (other.item_type != nullptr)
       item_type = other.item_type->clone_type ();
@@ -3928,6 +3929,7 @@ public:
   // Overloaded assignment operator to clone
   ExternalStaticItem &operator= (ExternalStaticItem const &other)
   {
+    node_id = other.node_id;
     outer_attrs = other.outer_attrs;
     visibility = other.visibility;
     item_name = other.item_name;
@@ -3974,6 +3976,10 @@ public:
     return item_type;
   }
 
+  Identifier get_identifier () const { return item_name; }
+
+  bool is_mut () const { return has_mut; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -3997,6 +4003,8 @@ private:
   // seemingly new since writing this node
   std::vector<Attribute> outer_attrs;
 
+  NodeId node_id;
+
 public:
   /* Returns whether the named function parameter has a name (i.e. name is not
    * '_'). */
@@ -4011,6 +4019,8 @@ public:
     return param_type == nullptr;
   }
 
+  std::string get_name () const { return name; }
+
   // Creates an error state named function parameter.
   static NamedFunctionParam create_error ()
   {
@@ -4020,13 +4030,15 @@ public:
   NamedFunctionParam (std::string name, std::unique_ptr<Type> param_type,
 		      std::vector<Attribute> outer_attrs)
     : name (std::move (name)), param_type (std::move (param_type)),
-      outer_attrs (std::move (outer_attrs))
+      outer_attrs (std::move (outer_attrs)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor
   NamedFunctionParam (NamedFunctionParam const &other)
     : name (other.name), outer_attrs (other.outer_attrs)
   {
+    node_id = other.node_id;
     // guard to prevent null dereference (only required if error state)
     if (other.param_type != nullptr)
       param_type = other.param_type->clone_type ();
@@ -4037,6 +4049,7 @@ public:
   // Overloaded assignment operator to clone
   NamedFunctionParam &operator= (NamedFunctionParam const &other)
   {
+    node_id = other.node_id;
     name = other.name;
     // has_name = other.has_name;
     outer_attrs = other.outer_attrs;
@@ -4070,6 +4083,8 @@ public:
     rust_assert (param_type != nullptr);
     return param_type;
   }
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 // A function item used in an extern block
@@ -4133,9 +4148,9 @@ public:
     std::vector<NamedFunctionParam> function_params, bool has_variadics,
     std::vector<Attribute> variadic_outer_attrs, Visibility vis,
     std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      item_name (std::move (item_name)), locus (locus),
-      generic_params (std::move (generic_params)),
+    : ExternalItem (), outer_attrs (std::move (outer_attrs)),
+      visibility (std::move (vis)), item_name (std::move (item_name)),
+      locus (locus), generic_params (std::move (generic_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
       function_params (std::move (function_params)),
@@ -4155,6 +4170,7 @@ public:
       has_variadics (other.has_variadics),
       variadic_outer_attrs (other.variadic_outer_attrs)
   {
+    node_id = other.node_id;
     // guard to prevent null pointer dereference
     if (other.return_type != nullptr)
       return_type = other.return_type->clone_type ();
@@ -4175,6 +4191,7 @@ public:
     function_params = other.function_params;
     has_variadics = other.has_variadics;
     variadic_outer_attrs = other.variadic_outer_attrs;
+    node_id = other.node_id;
 
     // guard to prevent null pointer dereference
     if (other.return_type != nullptr)
@@ -4237,6 +4254,8 @@ public:
     return return_type;
   }
 
+  Identifier get_identifier () const { return item_name; };
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -4274,6 +4293,8 @@ public:
 
   // Returns whether extern block has ABI name.
   bool has_abi () const { return !abi.empty (); }
+
+  std::string get_abi () const { return abi; }
 
   ExternBlock (std::string abi,
 	       std::vector<std::unique_ptr<ExternalItem> > extern_items,

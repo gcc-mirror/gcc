@@ -2684,6 +2684,7 @@ protected:
 // Abstract base class for an item used inside an extern block
 class ExternalItem
 {
+  Analysis::NodeMapping mappings;
   AST::AttrVec outer_attrs;
   Visibility visibility;
   Identifier item_name;
@@ -2710,22 +2711,27 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
+  Analysis::NodeMapping get_mappings () const { return mappings; }
+
 protected:
-  ExternalItem (Identifier item_name, Visibility vis, AST::AttrVec outer_attrs,
-		Location locus)
-    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      item_name (std::move (item_name)), locus (locus)
+  ExternalItem (Analysis::NodeMapping mappings, Identifier item_name,
+		Visibility vis, AST::AttrVec outer_attrs, Location locus)
+    : mappings (mappings), outer_attrs (std::move (outer_attrs)),
+      visibility (std::move (vis)), item_name (std::move (item_name)),
+      locus (locus)
   {}
 
   // Copy constructor
   ExternalItem (ExternalItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      item_name (other.item_name), locus (other.locus)
+    : mappings (other.mappings), outer_attrs (other.outer_attrs),
+      visibility (other.visibility), item_name (other.item_name),
+      locus (other.locus)
   {}
 
   // Overloaded assignment operator to clone
   ExternalItem &operator= (ExternalItem const &other)
   {
+    mappings = other.mappings;
     item_name = other.item_name;
     visibility = other.visibility;
     outer_attrs = other.outer_attrs;
@@ -2752,11 +2758,11 @@ class ExternalStaticItem : public ExternalItem
   std::unique_ptr<Type> item_type;
 
 public:
-  ExternalStaticItem (Identifier item_name, std::unique_ptr<Type> item_type,
-		      bool is_mut, Visibility vis, AST::AttrVec outer_attrs,
-		      Location locus)
-    : ExternalItem (std::move (item_name), std::move (vis),
-		    std::move (outer_attrs), locus),
+  ExternalStaticItem (Analysis::NodeMapping mappings, Identifier item_name,
+		      std::unique_ptr<Type> item_type, bool is_mut,
+		      Visibility vis, AST::AttrVec outer_attrs, Location locus)
+    : ExternalItem (std::move (mappings), std::move (item_name),
+		    std::move (vis), std::move (outer_attrs), locus),
       has_mut (is_mut), item_type (std::move (item_type))
   {}
 
@@ -2797,38 +2803,23 @@ protected:
 struct NamedFunctionParam
 {
 private:
-  // bool has_name;   // otherwise is _
-  Identifier name; // TODO: handle wildcard in identifier?
-
+  Identifier name;
   std::unique_ptr<Type> param_type;
-
-  // TODO: should this store location data?
+  Analysis::NodeMapping mappings;
 
 public:
-  // Returns whether the named function parameter has a name (i.e. name is not
-  // '_').
   bool has_name () const { return name != "_"; }
 
-  // Returns whether the named function parameter is in an error state.
-  bool is_error () const
-  {
-    // also if identifier is "" but that is probably more costly to compute
-    return param_type == nullptr;
-  }
-
-  // Creates an error state named function parameter.
-  static NamedFunctionParam create_error ()
-  {
-    return NamedFunctionParam ("", nullptr);
-  }
-
-  NamedFunctionParam (Identifier name, std::unique_ptr<Type> param_type)
-    : name (std::move (name)), param_type (std::move (param_type))
+  NamedFunctionParam (Analysis::NodeMapping mappings, Identifier name,
+		      std::unique_ptr<Type> param_type)
+    : name (std::move (name)), param_type (std::move (param_type)),
+      mappings (std::move (mappings))
   {}
 
   // Copy constructor
   NamedFunctionParam (NamedFunctionParam const &other)
-    : name (other.name), param_type (other.param_type->clone_type ())
+    : name (other.name), param_type (other.param_type->clone_type ()),
+      mappings (other.mappings)
   {}
 
   ~NamedFunctionParam () = default;
@@ -2836,6 +2827,7 @@ public:
   // Overloaded assignment operator to clone
   NamedFunctionParam &operator= (NamedFunctionParam const &other)
   {
+    mappings = other.mappings;
     name = other.name;
     param_type = other.param_type->clone_type ();
     // has_name = other.has_name;
@@ -2878,13 +2870,13 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   ExternalFunctionItem (
-    Identifier item_name,
+    Analysis::NodeMapping mappings, Identifier item_name,
     std::vector<std::unique_ptr<GenericParam> > generic_params,
     std::unique_ptr<Type> return_type, WhereClause where_clause,
     std::vector<NamedFunctionParam> function_params, bool has_variadics,
     Visibility vis, AST::AttrVec outer_attrs, Location locus)
-    : ExternalItem (std::move (item_name), std::move (vis),
-		    std::move (outer_attrs), locus),
+    : ExternalItem (std::move (mappings), std::move (item_name),
+		    std::move (vis), std::move (outer_attrs), locus),
       generic_params (std::move (generic_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
@@ -2962,6 +2954,8 @@ public:
 
   // Returns whether extern block has ABI name.
   bool has_abi () const { return !abi.empty (); }
+
+  std::string get_abi () const { return abi; }
 
   ExternBlock (Analysis::NodeMapping mappings, std::string abi,
 	       std::vector<std::unique_ptr<ExternalItem> > extern_items,

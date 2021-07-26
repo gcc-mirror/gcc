@@ -201,6 +201,59 @@ private:
   const CanonicalPath &prefix;
 };
 
+class ResolveToplevelExternItem : public ResolverBase
+{
+  using Rust::Resolver::ResolverBase::visit;
+
+public:
+  static void go (AST::ExternalItem *item,
+		  const CanonicalPath &prefix = CanonicalPath::create_empty ())
+  {
+    ResolveToplevelExternItem resolver (prefix);
+    item->accept_vis (resolver);
+  };
+
+  void visit (AST::ExternalFunctionItem &function) override
+  {
+    auto path
+      = prefix.append (CanonicalPath::new_seg (function.get_node_id (),
+					       function.get_identifier ()));
+    resolver->get_name_scope ().insert (
+      path, function.get_node_id (), function.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (function.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (function.get_node_id (),
+				     Definition{function.get_node_id (),
+						function.get_node_id ()});
+  }
+
+  void visit (AST::ExternalStaticItem &item) override
+  {
+    auto path = prefix.append (
+      CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    resolver->get_name_scope ().insert (
+      path, item.get_node_id (), item.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (item.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (item.get_node_id (),
+				     Definition{item.get_node_id (),
+						item.get_node_id ()});
+  }
+
+private:
+  ResolveToplevelExternItem (const CanonicalPath &prefix)
+    : ResolverBase (UNKNOWN_NODEID), prefix (prefix)
+  {}
+
+  const CanonicalPath &prefix;
+};
+
 } // namespace Resolver
 } // namespace Rust
 
