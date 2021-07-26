@@ -1,3 +1,15 @@
+2021-07-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-1.C: Use attribute syntax even for section
+	and scan directives.
+	* g++.dg/gomp/attrs-2.C: Likewise.
+	* g++.dg/gomp/attrs-6.C: New test.
+	* g++.dg/gomp/attrs-7.C: New test.
+	* g++.dg/gomp/attrs-8.C: New test.
+
 2021-07-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
