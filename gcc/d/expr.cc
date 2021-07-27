@@ -101,8 +101,6 @@ binary_op (tree_code code, tree type, tree arg0, tree arg1)
   tree t1 = TREE_TYPE (arg1);
   tree ret = NULL_TREE;
 
-  bool unsignedp = TYPE_UNSIGNED (t0) || TYPE_UNSIGNED (t1);
-
   /* Deal with float mod expressions immediately.  */
   if (code == FLOAT_MOD_EXPR)
     return build_float_modulus (type, arg0, arg1);
@@ -129,12 +127,6 @@ binary_op (tree_code code, tree type, tree arg0, tree arg1)
 			   d_convert (ptrtype, arg1));
       else
 	ret = fold_build2 (POINTER_DIFF_EXPR, ptrtype, arg0, arg1);
-    }
-  else if (INTEGRAL_TYPE_P (type) && (TYPE_UNSIGNED (type) != unsignedp))
-    {
-      tree inttype = (unsignedp)
-	? d_unsigned_type (type) : d_signed_type (type);
-      ret = fold_build2 (code, inttype, arg0, arg1);
     }
   else
     {
