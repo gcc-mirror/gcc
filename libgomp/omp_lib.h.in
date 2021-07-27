@@ -264,3 +264,5 @@
       external omp_set_default_allocator
       external omp_get_default_allocator
       integer (omp_allocator_handle_kind) omp_get_default_allocator
+
+      external omp_display_env
