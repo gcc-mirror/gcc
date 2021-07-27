@@ -1,3 +1,16 @@
+2021-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.h (struct cp_lexer): Add orphan_p member.
+	* parser.c (cp_parser_statement): Don't change in_omp_attribute_pragma
+	upon restart from CPP_PRAGMA handling.  Fix up condition when a lexer
+	should be destroyed and adjust saved_tokens if it records tokens from
+	the to be destroyed lexer.
+	(cp_parser_omp_section_scan): New function.
+	(cp_parser_omp_scan_loop_body): Use it.  If
+	parser->lexer->in_omp_attribute_pragma, allow optional comma
+	after scan.
+	(cp_parser_omp_sections_scope): Use cp_parser_omp_section_scan.
+
 2021-07-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.h (struct cp_parser): Add omp_attrs_forbidden_p member.

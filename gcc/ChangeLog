@@ -1,3 +1,79 @@
+2021-07-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/78888
+	* gimple-range-fold.cc (get_letter_range): New.
+	(fold_using_range::range_of_builtin_call): Call get_letter_range.
+
+2021-07-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/78888
+	* gimple-range-fold.cc (fold_using_range::range_of_builtin_call): Add cases
+	for CFN_BUILT_IN_TOUPPER and CFN_BUILT_IN_TOLOWER.
+
+2021-07-26  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (rotate): Simplify equality/inequality of rotations.
+	(bswap): Simplify equality/inequality tests of byte swapping.
+
+2021-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_bitwise_xor::op1_op2_relation_effect):
+	New.
+
+2021-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_lshift::fold_range): Pass rel to
+	base class fold_range.
+	(operator_rshift::fold_range): Same.
+
+2021-07-26  Ashimida  <ashimida@linux.alibaba.com>
+
+	PR driver/101447
+	* toplev.h (min_align_loops_log): Remove declaration.
+	(min_align_jumps_log, min_align_labels_log): Likewise.
+	(min_align_functions_log): Likewise.
+
+2021-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (vrp_simplify_cond_using_ranges): Rename vr_values
+	with range_query.
+	(execute_vrp): Abstract out simplification of conditionals...
+	(simplify_casted_conds): ...here.
+
+2021-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-array-bounds.cc (array_bounds_checker::get_value_range):
+	Add gimple argument.
+	(array_bounds_checker::check_array_ref): Same.
+	(array_bounds_checker::check_addr_expr): Same.
+	(array_bounds_checker::check_array_bounds): Pass statement to
+	check_array_bounds and check_addr_expr.
+	* gimple-array-bounds.h (check_array_bounds): Add gimple argument.
+	(check_addr_expr): Same.
+	(get_value_range): Same.
+
+2021-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sdot, udot): Rename to..
+	(sdot_prod, udot_prod): ... This.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>dot<vsi2qi>): Merged
+	into...
+	(<sur>dot_prod<vsi2qi>): ... this.
+	(aarch64_<sur>dot_lane<vsi2qi>, aarch64_<sur>dot_laneq<vsi2qi>):
+	Change operands order.
+	(<sur>sadv16qi): Use new operands order.
+	* config/aarch64/arm_neon.h (vdot_u32, vdotq_u32, vdot_s32,
+	vdotq_s32): Use new RTL ordering.
+
+2021-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (TYPES_TERNOP_SUSS,
+	aarch64_types_ternop_suss_qualifiers): New.
+	* config/aarch64/aarch64-simd-builtins.def (usdot_prod): Use it.
+	* config/aarch64/aarch64-simd.md (usdot_prod<vsi2qi>): Re-organize RTL.
+	* config/aarch64/arm_neon.h (vusdot_s32, vusdotq_s32): Use it.
+
 2021-07-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/101562

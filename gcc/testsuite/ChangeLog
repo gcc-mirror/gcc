@@ -1,3 +1,47 @@
+2021-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/sock-1.c: New test.
+	* gcc.dg/analyzer/sock-2.c: New test.
+
+2021-07-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr78888.c: New.
+
+2021-07-26  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-eqrotate-1.c: New test case.
+	* gcc.dg/fold-eqbswap-1.c: New test case.
+
+2021-07-26  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93308
+	PR fortran/93963
+	PR fortran/94327
+	PR fortran/94331
+	PR fortran/97046
+	* gfortran.dg/ISO_Fortran_binding_1.f90: Add pointer attribute,
+	this test is still erroneous but now it compiles.
+	* gfortran.dg/bind_c_array_params_2.f90: Update regex to match
+	code changes.
+	* gfortran.dg/PR93308.f90: New test.
+	* gfortran.dg/PR93963.f90: New test.
+	* gfortran.dg/PR94327.c: New test.
+	* gfortran.dg/PR94327.f90: New test.
+	* gfortran.dg/PR94331.c: New test.
+	* gfortran.dg/PR94331.f90: New test.
+	* gfortran.dg/PR97046.f90: New test.
+
+2021-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-1.C: Use attribute syntax even for section
+	and scan directives.
+	* g++.dg/gomp/attrs-2.C: Likewise.
+	* g++.dg/gomp/attrs-6.C: New test.
+	* g++.dg/gomp/attrs-7.C: New test.
+	* g++.dg/gomp/attrs-8.C: New test.
+
 2021-07-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101536
