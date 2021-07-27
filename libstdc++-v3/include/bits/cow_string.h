@@ -133,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _CharT_alloc_traits::const_pointer   const_pointer;
       typedef __gnu_cxx::__normal_iterator<pointer, basic_string>  iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, basic_string>
-                                                            const_iterator;
+							    const_iterator;
       typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
       typedef std::reverse_iterator<iterator>		    reverse_iterator;
 
@@ -186,12 +186,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static const _CharT	_S_terminal;
 
 	// The following storage is init'd to 0 by the linker, resulting
-        // (carefully) in an empty string with one reference.
-        static size_type _S_empty_rep_storage[];
+	// (carefully) in an empty string with one reference.
+	static size_type _S_empty_rep_storage[];
 
-        static _Rep&
-        _S_empty_rep() _GLIBCXX_NOEXCEPT
-        {
+	static _Rep&
+	_S_empty_rep() _GLIBCXX_NOEXCEPT
+	{
 	  // NB: Mild hack to avoid strict-aliasing warnings.  Note that
 	  // _S_empty_rep_storage is never modified and the punning should
 	  // be reasonably safe in this case.
@@ -199,42 +199,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *reinterpret_cast<_Rep*>(__p);
 	}
 
-        bool
+	bool
 	_M_is_leaked() const _GLIBCXX_NOEXCEPT
-        {
+	{
 #if defined(__GTHREADS)
-          // _M_refcount is mutated concurrently by _M_refcopy/_M_dispose,
-          // so we need to use an atomic load. However, _M_is_leaked
-          // predicate does not change concurrently (i.e. the string is either
-          // leaked or not), so a relaxed load is enough.
-          return __atomic_load_n(&this->_M_refcount, __ATOMIC_RELAXED) < 0;
+	  // _M_refcount is mutated concurrently by _M_refcopy/_M_dispose,
+	  // so we need to use an atomic load. However, _M_is_leaked
+	  // predicate does not change concurrently (i.e. the string is either
+	  // leaked or not), so a relaxed load is enough.
+	  return __atomic_load_n(&this->_M_refcount, __ATOMIC_RELAXED) < 0;
 #else
-          return this->_M_refcount < 0;
+	  return this->_M_refcount < 0;
 #endif
-        }
+	}
 
-        bool
+	bool
 	_M_is_shared() const _GLIBCXX_NOEXCEPT
 	{
 #if defined(__GTHREADS)
-          // _M_refcount is mutated concurrently by _M_refcopy/_M_dispose,
-          // so we need to use an atomic load. Another thread can drop last
-          // but one reference concurrently with this check, so we need this
-          // load to be acquire to synchronize with release fetch_and_add in
-          // _M_dispose.
-          return __atomic_load_n(&this->_M_refcount, __ATOMIC_ACQUIRE) > 0;
+	  // _M_refcount is mutated concurrently by _M_refcopy/_M_dispose,
+	  // so we need to use an atomic load. Another thread can drop last
+	  // but one reference concurrently with this check, so we need this
+	  // load to be acquire to synchronize with release fetch_and_add in
+	  // _M_dispose.
+	  return __atomic_load_n(&this->_M_refcount, __ATOMIC_ACQUIRE) > 0;
 #else
-          return this->_M_refcount > 0;
+	  return this->_M_refcount > 0;
 #endif
-        }
+	}
 
-        void
+	void
 	_M_set_leaked() _GLIBCXX_NOEXCEPT
-        { this->_M_refcount = -1; }
+	{ this->_M_refcount = -1; }
 
-        void
+	void
 	_M_set_sharable() _GLIBCXX_NOEXCEPT
-        { this->_M_refcount = 0; }
+	{ this->_M_refcount = 0; }
 
 	void
 	_M_set_length_and_sharable(size_type __n) _GLIBCXX_NOEXCEPT
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_grab(const _Alloc& __alloc1, const _Alloc& __alloc2)
 	{
 	  return (!_M_is_leaked() && __alloc1 == __alloc2)
-	          ? _M_refcopy() : _M_clone(__alloc1);
+		  ? _M_refcopy() : _M_clone(__alloc1);
 	}
 
 	// Create & Destroy
@@ -275,14 +275,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      // Be race-detector-friendly.  For more info see bits/c++config.
 	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&this->_M_refcount);
-              // Decrement of _M_refcount is acq_rel, because:
-              // - all but last decrements need to release to synchronize with
-              //   the last decrement that will delete the object.
-              // - the last decrement needs to acquire to synchronize with
-              //   all the previous decrements.
-              // - last but one decrement needs to release to synchronize with
-              //   the acquire load in _M_is_shared that will conclude that
-              //   the object is not shared anymore.
+	      // Decrement of _M_refcount is acq_rel, because:
+	      // - all but last decrements need to release to synchronize with
+	      //   the last decrement that will delete the object.
+	      // - the last decrement needs to acquire to synchronize with
+	      //   all the previous decrements.
+	      // - last but one decrement needs to release to synchronize with
+	      //   the acquire load in _M_is_shared that will conclude that
+	      //   the object is not shared anymore.
 	      if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount,
 							 -1) <= 0)
 		{
@@ -301,7 +301,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
 #endif
-            __gnu_cxx::__atomic_add_dispatch(&this->_M_refcount, 1);
+	    __gnu_cxx::__atomic_add_dispatch(&this->_M_refcount, 1);
 	  return _M_refdata();
 	}  // XXX MT
 
@@ -423,9 +423,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _S_copy_chars is a separate template to permit specialization
       // to optimize for the common case of pointers as iterators.
       template<class _Iterator>
-        static void
-        _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
-        {
+	static void
+	_S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
+	{
 	  for (; __k1 != __k2; ++__k1, (void)++__p)
 	    traits_type::assign(*__p, *__k1); // These types are off.
 	}
@@ -669,7 +669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __a  Allocator to use (default is default allocator).
        */
       template<class _InputIterator>
-        basic_string(_InputIterator __beg, _InputIterator __end,
+	basic_string(_InputIterator __beg, _InputIterator __end,
 		     const _Alloc& __a = _Alloc())
 	: _M_dataplus(_S_construct(__beg, __end, __a), __a)
 	{ }
@@ -1044,10 +1044,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       reference
       operator[](size_type __pos)
       {
-        // Allow pos == size() both in C++98 mode, as v3 extension,
+	// Allow pos == size() both in C++98 mode, as v3 extension,
 	// and in C++11 mode.
 	__glibcxx_assert(__pos <= size());
-        // In pedantic mode be strict in C++98 mode.
+	// In pedantic mode be strict in C++98 mode.
 	_GLIBCXX_DEBUG_PEDASSERT(__cplusplus >= 201103L || __pos < size());
 	_M_leak();
 	return _M_data()[__pos];
@@ -1273,9 +1273,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Appends characters in the range [__first,__last) to this string.
        */
       template<class _InputIterator>
-        basic_string&
-        append(_InputIterator __first, _InputIterator __last)
-        { return this->replace(_M_iend(), _M_iend(), __first, __last); }
+	basic_string&
+	append(_InputIterator __first, _InputIterator __last)
+	{ return this->replace(_M_iend(), _M_iend(), __first, __last); }
 
 #if __cplusplus >= 201703L
       /**
@@ -1300,7 +1300,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return  Reference to this string.
        */
       template<typename _Tp>
-        _If_sv<_Tp, basic_string&>
+	_If_sv<_Tp, basic_string&>
 	append(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -1420,9 +1420,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Sets value of string to characters in the range [__first,__last).
       */
       template<class _InputIterator>
-        basic_string&
-        assign(_InputIterator __first, _InputIterator __last)
-        { return this->replace(_M_ibegin(), _M_iend(), __first, __last); }
+	basic_string&
+	assign(_InputIterator __first, _InputIterator __last)
+	{ return this->replace(_M_ibegin(), _M_iend(), __first, __last); }
 
 #if __cplusplus >= 201103L
       /**
@@ -1457,8 +1457,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return  Reference to this string.
        */
       template<typename _Tp>
-        _If_sv<_Tp, basic_string&>
-        assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
+	_If_sv<_Tp, basic_string&>
+	assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
 	  return assign(__sv.data()
@@ -1497,9 +1497,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  change if an error is thrown.
       */
       template<class _InputIterator>
-        void
-        insert(iterator __p, _InputIterator __beg, _InputIterator __end)
-        { this->replace(__p, __p, __beg, __end); }
+	void
+	insert(iterator __p, _InputIterator __beg, _InputIterator __end)
+	{ this->replace(__p, __p, __beg, __end); }
 
 #if __cplusplus >= 201103L
       /**
@@ -1666,8 +1666,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return  Reference to this string.
       */
       template<typename _Tp>
-        _If_sv<_Tp, basic_string&>
-        insert(size_type __pos1, const _Tp& __svt,
+	_If_sv<_Tp, basic_string&>
+	insert(size_type __pos1, const _Tp& __svt,
 	       size_type __pos2, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -1956,10 +1956,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  thrown.
       */
       template<class _InputIterator>
-        basic_string&
-        replace(iterator __i1, iterator __i2,
+	basic_string&
+	replace(iterator __i1, iterator __i2,
 		_InputIterator __k1, _InputIterator __k2)
-        {
+	{
 	  _GLIBCXX_DEBUG_PEDASSERT(_M_ibegin() <= __i1 && __i1 <= __i2
 				   && __i2 <= _M_iend());
 	  __glibcxx_requires_valid_range(__k1, __k2);
@@ -2057,8 +2057,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @return  Reference to this string.
       */
       template<typename _Tp>
-        _If_sv<_Tp, basic_string&>
-        replace(size_type __pos1, size_type __n1, const _Tp& __svt,
+	_If_sv<_Tp, basic_string&>
+	replace(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -2071,9 +2071,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __i1    An iterator referencing the start position
-          to replace at.
+       *  to replace at.
        *  @param __i2    An iterator referencing the end position
-          for the replace.
+       *  for the replace.
        *  @param __svt   The object convertible to string_view to insert from.
        *  @return  Reference to this string.
       */
@@ -2091,7 +2091,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	basic_string&
 	_M_replace_dispatch(iterator __i1, iterator __i2, _Integer __n,
 			    _Integer __val, __true_type)
-        { return _M_replace_aux(__i1 - _M_ibegin(), __i2 - __i1, __n, __val); }
+	{ return _M_replace_aux(__i1 - _M_ibegin(), __i2 - __i1, __n, __val); }
 
       template<class _InputIterator>
 	basic_string&
@@ -2109,21 +2109,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _S_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIter is an integral type
       template<class _InIterator>
-        static _CharT*
-        _S_construct_aux(_InIterator __beg, _InIterator __end,
+	static _CharT*
+	_S_construct_aux(_InIterator __beg, _InIterator __end,
 			 const _Alloc& __a, __false_type)
 	{
-          typedef typename iterator_traits<_InIterator>::iterator_category _Tag;
-          return _S_construct(__beg, __end, __a, _Tag());
+	  typedef typename iterator_traits<_InIterator>::iterator_category _Tag;
+	  return _S_construct(__beg, __end, __a, _Tag());
 	}
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 438. Ambiguity in the "do the right thing" clause
       template<class _Integer>
-        static _CharT*
-        _S_construct_aux(_Integer __beg, _Integer __end,
+	static _CharT*
+	_S_construct_aux(_Integer __beg, _Integer __end,
 			 const _Alloc& __a, __true_type)
-        { return _S_construct_aux_2(static_cast<size_type>(__beg),
+	{ return _S_construct_aux_2(static_cast<size_type>(__beg),
 				    __end, __a); }
 
       static _CharT*
@@ -2131,24 +2131,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _S_construct(__req, __c, __a); }
 
       template<class _InIterator>
-        static _CharT*
-        _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a)
+	static _CharT*
+	_S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a)
 	{
 	  typedef typename std::__is_integer<_InIterator>::__type _Integral;
 	  return _S_construct_aux(__beg, __end, __a, _Integral());
-        }
+	}
 
       // For Input Iterators, used in istreambuf_iterators, etc.
       template<class _InIterator>
-        static _CharT*
-         _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
+	static _CharT*
+	 _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		      input_iterator_tag);
 
       // For forward_iterators up to random_access_iterators, used for
       // string::iterator, _CharT*, etc.
       template<class _FwdIterator>
-        static _CharT*
-        _S_construct(_FwdIterator __beg, _FwdIterator __end, const _Alloc& __a,
+	static _CharT*
+	_S_construct(_FwdIterator __beg, _FwdIterator __end, const _Alloc& __a,
 		     forward_iterator_tag);
 
       static _CharT*
@@ -3268,26 +3268,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        _M_check(__pos, "basic_string::insert");
        _M_check_length(size_type(0), __n, "basic_string::insert");
        if (_M_disjunct(__s) || _M_rep()->_M_is_shared())
-         return _M_replace_safe(__pos, size_type(0), __s, __n);
+	 return _M_replace_safe(__pos, size_type(0), __s, __n);
        else
-         {
-           // Work in-place.
-           const size_type __off = __s - _M_data();
-           _M_mutate(__pos, 0, __n);
-           __s = _M_data() + __off;
-           _CharT* __p = _M_data() + __pos;
-           if (__s  + __n <= __p)
-             _M_copy(__p, __s, __n);
-           else if (__s >= __p)
-             _M_copy(__p, __s + __n, __n);
-           else
-             {
+	 {
+	   // Work in-place.
+	   const size_type __off = __s - _M_data();
+	   _M_mutate(__pos, 0, __n);
+	   __s = _M_data() + __off;
+	   _CharT* __p = _M_data() + __pos;
+	   if (__s  + __n <= __p)
+	     _M_copy(__p, __s, __n);
+	   else if (__s >= __p)
+	     _M_copy(__p, __s + __n, __n);
+	   else
+	     {
 	       const size_type __nleft = __p - __s;
-               _M_copy(__p, __s, __nleft);
-               _M_copy(__p + __nleft, __p + __n, __n - __nleft);
-             }
-           return *this;
-         }
+	       _M_copy(__p, __s, __nleft);
+	       _M_copy(__p + __nleft, __p + __n, __n - __nleft);
+	     }
+	   return *this;
+	 }
      }
 
    template<typename _CharT, typename _Traits, typename _Alloc>
@@ -3325,7 +3325,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        _M_check_length(__n1, __n2, "basic_string::replace");
        bool __left;
        if (_M_disjunct(__s) || _M_rep()->_M_is_shared())
-         return _M_replace_safe(__pos, __n1, __s, __n2);
+	 return _M_replace_safe(__pos, __n1, __s, __n2);
        else if ((__left = __s + __n2 <= _M_data() + __pos)
 		|| _M_data() + __pos + __n1 <= __s)
 	 {
@@ -3349,8 +3349,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _M_destroy(const _Alloc& __a) throw ()
     {
-      const size_type __size = sizeof(_Rep_base) +
-	                       (this->_M_capacity + 1) * sizeof(_CharT);
+      const size_type __size = sizeof(_Rep_base)
+			       + (this->_M_capacity + 1) * sizeof(_CharT);
       _Raw_bytes_alloc(__a).deallocate(reinterpret_cast<char*>(this), __size);
     }
 
