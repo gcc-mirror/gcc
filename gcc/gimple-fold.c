@@ -4697,6 +4697,8 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 		if (fldsz == 0)
 		  continue;
 		HOST_WIDE_INT pos = int_byte_position (field);
+		if (pos >= sz)
+		  continue;
 		HOST_WIDE_INT bpos
 		  = tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field));
 		bpos %= BITS_PER_UNIT;
@@ -4772,6 +4774,8 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 	    else
 	      {
 		HOST_WIDE_INT pos = int_byte_position (field);
+		if (pos >= sz)
+		  continue;
 		HOST_WIDE_INT fldsz = tree_to_shwi (DECL_SIZE_UNIT (field));
 		gcc_assert (pos >= 0 && fldsz >= 0 && pos >= cur_pos);
 		clear_padding_add_padding (buf, pos - cur_pos);
