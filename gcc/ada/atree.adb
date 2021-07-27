@@ -1962,6 +1962,22 @@ package body Atree is
          Set_Original_Node (New_Node, Original_Node (Source));
       end if;
 
+      --  If we're relocating a subprogram call and we're doing
+      --  unnesting, be sure we make a new copy of any parameter associations
+      --  so that we don't share them.
+
+      if Nkind (Source) in N_Subprogram_Call
+        and then Opt.Unnest_Subprogram_Mode
+        and then Present (Parameter_Associations (Source))
+      then
+         declare
+            New_Assoc : constant List_Id := Parameter_Associations (Source);
+         begin
+            Set_Parent (New_Assoc, New_Node);
+            Set_Parameter_Associations (New_Node, New_Assoc);
+         end;
+      end if;
+
       return New_Node;
    end Relocate_Node;
 
