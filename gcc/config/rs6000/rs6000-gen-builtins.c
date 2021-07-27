@@ -464,6 +464,108 @@ static rbt_strings fntype_rbt;
    identifiers to the order in which they were encountered.  */
 static rbt_strings bifo_rbt;
 
+/* Mapping from type tokens to type node names.  */
+struct typemap
+{
+  const char *key;
+  const char *value;
+};
+
+/* This table must be kept in alphabetical order, as we use binary
+   search for table lookups in map_token_to_type_node.  The table
+   maps tokens from a fntype string to a tree type.  For example,
+   in "si_ftype_hi" we would map "si" to "intSI_type_node" and
+   map "hi" to "intHI_type_node".  */
+#define TYPE_MAP_SIZE 86
+static typemap type_map[TYPE_MAP_SIZE] =
+  {
+    { "bi",		"bool_int" },
+    { "bv16qi",		"bool_V16QI" },
+    { "bv1ti",		"bool_V1TI" },
+    { "bv2di",		"bool_V2DI" },
+    { "bv4si",		"bool_V4SI" },
+    { "bv8hi",		"bool_V8HI" },
+    { "ci",		"integer" },
+    { "dd",		"dfloat64" },
+    { "df",		"double" },
+    { "di",		"long_long_integer" },
+    { "hi",		"intHI" },
+    { "if",		"ibm128_float" },
+    { "ld",		"long_double" },
+    { "lg",		"long_integer" },
+    { "pbv16qi",	"ptr_bool_V16QI" },
+    { "pbv1ti",		"ptr_bool_V1TI" },
+    { "pbv2di",		"ptr_bool_V2DI" },
+    { "pbv4si",		"ptr_bool_V4SI" },
+    { "pbv8hi",		"ptr_bool_V8HI" },
+    { "pcvoid",		"pcvoid" },
+    { "pdd",		"ptr_dfloat64" },
+    { "pdf",		"ptr_double" },
+    { "pdi",		"ptr_long_long_integer" },
+    { "phi",		"ptr_intHI" },
+    { "pif",		"ptr_ibm128_float" },
+    { "pld",		"ptr_long_double" },
+    { "plg",		"ptr_long_integer" },
+    { "pqi",		"ptr_intQI" },
+    { "psf",		"ptr_float" },
+    { "psi",		"ptr_intSI" },
+    { "ptd",		"ptr_dfloat128" },
+    { "ptf",		"ptr_float128" },
+    { "pti",		"ptr_intTI" },
+    { "pudi",		"ptr_long_long_unsigned" },
+    { "puhi",		"ptr_uintHI" },
+    { "pulg",		"ptr_long_unsigned" },
+    { "puqi",		"ptr_uintQI" },
+    { "pusi",		"ptr_uintSI" },
+    { "puti",		"ptr_uintTI" },
+    { "puv16qi",	"ptr_unsigned_V16QI" },
+    { "puv1ti",		"ptr_unsigned_V1TI" },
+    { "puv2di",		"ptr_unsigned_V2DI" },
+    { "puv4si",		"ptr_unsigned_V4SI" },
+    { "puv8hi",		"ptr_unsigned_V8HI" },
+    { "pv",		"ptr" },
+    { "pv16qi",		"ptr_V16QI" },
+    { "pv1poi",		"ptr_vector_pair" },
+    { "pv1pxi",		"ptr_vector_quad" },
+    { "pv1ti",		"ptr_V1TI" },
+    { "pv2df",		"ptr_V2DF" },
+    { "pv2di",		"ptr_V2DI" },
+    { "pv4sf",		"ptr_V4SF" },
+    { "pv4si",		"ptr_V4SI" },
+    { "pv8hi",		"ptr_V8HI" },
+    { "pvp8hi",		"ptr_pixel_V8HI" },
+    { "qi",		"intQI" },
+    { "sd",		"dfloat32" },
+    { "sf",		"float" },
+    { "si",		"intSI" },
+    { "st",		"const_str" },
+    { "td",		"dfloat128" },
+    { "tf",		"float128" },
+    { "ti",		"intTI" },
+    { "udi",		"long_long_unsigned" },
+    { "uhi",		"unsigned_intHI" },
+    { "ulg",		"long_unsigned" },
+    { "uqi",		"unsigned_intQI" },
+    { "usi",		"unsigned_intSI" },
+    { "uti",		"unsigned_intTI" },
+    { "uv16qi",		"unsigned_V16QI" },
+    { "uv1ti",		"unsigned_V1TI" },
+    { "uv2di",		"unsigned_V2DI" },
+    { "uv4si",		"unsigned_V4SI" },
+    { "uv8hi",		"unsigned_V8HI" },
+    { "v",		"void" },
+    { "v16qi",		"V16QI" },
+    { "v1poi",		"vector_pair" },
+    { "v1pxi",		"vector_quad" },
+    { "v1ti",		"V1TI" },
+    { "v2df",		"V2DF" },
+    { "v2di",		"V2DI" },
+    { "v4sf",		"V4SF" },
+    { "v4si",		"V4SI" },
+    { "v8hi",		"V8HI" },
+    { "vp8hi",		"pixel_V8HI" },
+  };
+
 /* Pointer to a diagnostic function.  */
 static void (*diag) (const char *, ...)
   __attribute__ ((format (printf, 1, 2)));
@@ -2219,10 +2321,71 @@ write_fntype (char *str)
   fprintf (init_file, "tree %s;\n", str);
 }
 
+/* Comparator for bsearch on the type map.  */
+int
+typemap_cmp (const void *key, const void *entry)
+{
+  return strcmp ((const char *)key, ((const typemap *)entry)->key);
+}
+
+/* Write the type node corresponding to TOK.  */
+static void
+write_type_node (char *tok, bool indent)
+{
+  if (indent)
+    fprintf (init_file, "  ");
+  typemap *entry = (typemap *) bsearch (tok, type_map, TYPE_MAP_SIZE,
+					sizeof (typemap), typemap_cmp);
+  if (!entry)
+    fatal ("Type map is inconsistent.");
+  fprintf (init_file, "%s_type_node", entry->value);
+}
+
 /* Write an initializer for a function type identified by STR.  */
 void
 write_fntype_init (char *str)
 {
+  char *tok;
+
+  /* Check whether we have a "tf" token in this string, representing
+     a float128_type_node.  It's possible that float128_type_node is
+     undefined (occurs for -maltivec -mno-vsx, for example), so we
+     must guard against that.  */
+  int tf_found = strstr (str, "tf") != NULL;
+
+  /* Similarly, look for decimal float tokens.  */
+  int dfp_found = (strstr (str, "dd") != NULL
+		   || strstr (str, "td") != NULL
+		   || strstr (str, "sd") != NULL);
+
+  /* Avoid side effects of strtok on the original string by using a copy.  */
+  char *buf = strdup (str);
+
+  if (tf_found)
+    fprintf (init_file, "  if (float128_type_node)\n  ");
+  else if (dfp_found)
+    fprintf (init_file, "  if (dfloat64_type_node)\n  ");
+
+  fprintf (init_file, "  %s\n    = build_function_type_list (", buf);
+  tok = strtok (buf, "_");
+  write_type_node (tok, tf_found || dfp_found);
+  tok = strtok (0, "_");
+  assert (tok);
+  assert (!strcmp (tok, "ftype"));
+
+  tok = strtok (0, "_");
+  if (tok)
+    fprintf (init_file, ",\n\t\t\t\t");
+
+  /* Note:  A function with no arguments ends with '_ftype_v'.  */
+  while (tok && strcmp (tok, "v"))
+    {
+      write_type_node (tok, tf_found || dfp_found);
+      tok = strtok (0, "_");
+      fprintf (init_file, ",\n\t\t\t\t");
+    }
+  fprintf (init_file, "NULL_TREE);\n");
+  free (buf);
 }
 
 /* Write everything to the header file (rs6000-builtins.h).  Return
