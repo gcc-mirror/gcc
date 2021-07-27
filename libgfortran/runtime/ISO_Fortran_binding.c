@@ -43,6 +43,24 @@ cfi_desc_to_gfc_desc (gfc_array_void *d, CFI_cdesc_t **s_ptr)
   if (!s)
     return;
 
+  /* Verify descriptor.  */
+  switch(s->attribute)
+    {
+    case CFI_attribute_pointer:
+    case CFI_attribute_allocatable:
+      break;
+    case CFI_attribute_other:
+      if (s->base_addr)
+	break;
+      runtime_error ("Nonallocatable, nonpointer actual argument to BIND(C) "
+		     "dummy argument where the effective argument is either "
+		     "not allocated or not associated");
+      break;
+    default:
+      runtime_error ("Invalid attribute type %d in CFI_cdesc_t descriptor",
+		     (int) s->attribute);
+      break;
+    }
   GFC_DESCRIPTOR_DATA (d) = s->base_addr;
   GFC_DESCRIPTOR_TYPE (d) = (signed char)(s->type & CFI_type_mask);
   kind = (index_type)((s->type - (s->type & CFI_type_mask)) >> CFI_type_kind_shift);
@@ -74,14 +92,19 @@ cfi_desc_to_gfc_desc (gfc_array_void *d, CFI_cdesc_t **s_ptr)
     }
 
   d->offset = 0;
-  for (n = 0; n < GFC_DESCRIPTOR_RANK (d); n++)
-    {
-      GFC_DESCRIPTOR_LBOUND(d, n) = (index_type)s->dim[n].lower_bound;
-      GFC_DESCRIPTOR_UBOUND(d, n) = (index_type)(s->dim[n].extent
-						+ s->dim[n].lower_bound - 1);
-      GFC_DESCRIPTOR_STRIDE(d, n) = (index_type)(s->dim[n].sm / s->elem_len);
-      d->offset -= GFC_DESCRIPTOR_STRIDE(d, n) * GFC_DESCRIPTOR_LBOUND(d, n);
-    }
+  if (GFC_DESCRIPTOR_DATA (d))
+    for (n = 0; n < GFC_DESCRIPTOR_RANK (d); n++)
+      {
+	CFI_index_t lb = 1;
+
+	if (s->attribute != CFI_attribute_other)
+	  lb = s->dim[n].lower_bound;
+
+	GFC_DESCRIPTOR_LBOUND(d, n) = (index_type)lb;
+	GFC_DESCRIPTOR_UBOUND(d, n) = (index_type)(s->dim[n].extent + lb - 1);
+	GFC_DESCRIPTOR_STRIDE(d, n) = (index_type)(s->dim[n].sm / s->elem_len);
+	d->offset -= GFC_DESCRIPTOR_STRIDE(d, n) * GFC_DESCRIPTOR_LBOUND(d, n);
+      }
 }
 
 extern void gfc_desc_to_cfi_desc (CFI_cdesc_t **, const gfc_array_void *);
@@ -102,6 +125,23 @@ gfc_desc_to_cfi_desc (CFI_cdesc_t **d_ptr, const gfc_array_void *s)
   else
     d = *d_ptr;
 
+  /* Verify descriptor.  */
+  switch (s->dtype.attribute)
+    {
+    case CFI_attribute_pointer:
+    case CFI_attribute_allocatable:
+      break;
+    case CFI_attribute_other:
+      if (s->base_addr)
+	break;
+      runtime_error ("Nonallocatable, nonpointer actual argument to BIND(C) "
+		     "dummy argument where the effective argument is either "
+		     "not allocated or not associated");
+      break;
+    default:
+      internal_error (NULL, "Invalid attribute in gfc_array descriptor");
+      break;
+    }
   d->base_addr = GFC_DESCRIPTOR_DATA (s);
   d->elem_len = GFC_DESCRIPTOR_SIZE (s);
   d->version = CFI_VERSION;

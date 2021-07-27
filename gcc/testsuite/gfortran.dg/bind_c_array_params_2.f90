@@ -21,4 +21,4 @@ end
 ! { dg-final { scan-assembler-times "call\tmyBindC" 1 { target { *-*-cygwin* } } } }
 ! { dg-final { scan-assembler-times "brasl\t%r\[0-9\]*,myBindC" 1 { target { s390*-*-* } } } }
 ! { dg-final { scan-assembler-times "add_u32\t\[sv\]\[0-9\]*, \[sv\]\[0-9\]*, myBindC@rel32@lo" 1 { target { amdgcn*-*-* } } } }
-! { dg-final { scan-tree-dump-times "cfi_desc_to_gfc_desc \\\(&parm\\." 1 "original" } }
+! { dg-final { scan-tree-dump-times "gfc_desc_to_cfi_desc \\\(&cfi\\." 1 "original" } }

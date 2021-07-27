@@ -5461,13 +5461,12 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	attribute = 1;
     }
 
-  /* If the formal argument is assumed shape and neither a pointer nor
-     allocatable, it is unconditionally CFI_attribute_other.  */
-  if (fsym->as->type == AS_ASSUMED_SHAPE
-      && !fsym->attr.pointer && !fsym->attr.allocatable)
-   cfi_attribute = 2;
+  if (fsym->attr.pointer)
+    cfi_attribute = 0;
+  else if (fsym->attr.allocatable)
+    cfi_attribute = 1;
   else
-   cfi_attribute = attribute;
+    cfi_attribute = 2;
 
   if (e->rank != 0)
     {
@@ -5575,10 +5574,15 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   gfc_prepend_expr_to_block (&parmse->post, tmp);
 
   /* Transfer values back to gfc descriptor.  */
-  tmp = gfc_build_addr_expr (NULL_TREE, parmse->expr);
-  tmp = build_call_expr_loc (input_location,
-			     gfor_fndecl_cfi_to_gfc, 2, gfc_desc_ptr, tmp);
-  gfc_prepend_expr_to_block (&parmse->post, tmp);
+  if (cfi_attribute != 2  /* CFI_attribute_other.  */
+      && !fsym->attr.value
+      && fsym->attr.intent != INTENT_IN)
+    {
+      tmp = gfc_build_addr_expr (NULL_TREE, parmse->expr);
+      tmp = build_call_expr_loc (input_location,
+				 gfor_fndecl_cfi_to_gfc, 2, gfc_desc_ptr, tmp);
+      gfc_prepend_expr_to_block (&parmse->post, tmp);
+    }
 
   /* Deal with an optional dummy being passed to an optional formal arg
      by finishing the pre and post blocks and making their execution

@@ -39,7 +39,7 @@
       USE, INTRINSIC :: ISO_C_BINDING
       import
       INTEGER(C_INT) :: err
-      type (T), DIMENSION(..), intent(out) :: a
+      type (T), pointer, DIMENSION(..), intent(out) :: a
     END FUNCTION c_establish
 
     FUNCTION c_contiguous(a) BIND(C, NAME="contiguous_c") RESULT(err)
