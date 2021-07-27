@@ -3005,9 +3005,11 @@ main (int argc, const char **argv)
       exit (1);
     }
 
+  /* Always close init_file last.  This avoids race conditions in the
+     build machinery.  See comments in t-rs6000.  */
   fclose (header_file);
-  fclose (init_file);
   fclose (defines_file);
+  fclose (init_file);
 
   return 0;
 }

@@ -27,10 +27,6 @@ rs6000-pcrel-opt.o: $(srcdir)/config/rs6000/rs6000-pcrel-opt.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c
-	$(COMPILE) $<
-	$(POSTCOMPILE)
-
 rs6000-string.o: $(srcdir)/config/rs6000/rs6000-string.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
@@ -47,7 +43,47 @@ rs6000-logue.o: $(srcdir)/config/rs6000/rs6000-logue.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-call.o: $(srcdir)/config/rs6000/rs6000-call.c
+rs6000-gen-builtins.o: $(srcdir)/config/rs6000/rs6000-gen-builtins.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+rbtree.o: $(srcdir)/config/rs6000/rbtree.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+rs6000-gen-builtins: rs6000-gen-builtins.o rbtree.o
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
+
+# TODO: Whenever GNU make 4.3 is the minimum required, we should use
+# grouped targets on this:
+#    rs6000-builtins.c rs6000-builtins.h rs6000-vecdefines.h &: <deps>
+#       <recipe>
+# For now, the header files depend on rs6000-builtins.c, which avoids
+# races because the .c file is closed last in rs6000-gen-builtins.c.
+rs6000-builtins.c: rs6000-gen-builtins \
+		   $(srcdir)/config/rs6000/rs6000-builtin-new.def \
+		   $(srcdir)/config/rs6000/rs6000-overload.def
+	./rs6000-gen-builtins $(srcdir)/config/rs6000/rs6000-builtin-new.def \
+		$(srcdir)/config/rs6000/rs6000-overload.def rs6000-builtins.h \
+		rs6000-builtins.c rs6000-vecdefines.h
+
+rs6000-builtins.h: rs6000-builtins.c
+
+rs6000.o: rs6000-builtins.h
+
+EXTRA_HEADERS += rs6000-vecdefines.h
+rs6000-vecdefines.h: rs6000-builtins.c
+
+rs6000-builtins.o: rs6000-builtins.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+rs6000-call.o: $(srcdir)/config/rs6000/rs6000-call.c rs6000-builtins.h
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
+rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c rs6000-builtins.h
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
