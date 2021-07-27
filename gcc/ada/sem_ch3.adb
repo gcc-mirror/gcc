@@ -4505,7 +4505,7 @@ package body Sem_Ch3 is
       --  default initial value (including via a Default_Value or
       --  Default_Component_Value aspect, see AI12-0301) and then this is not
       --  an internal declaration whose initialization comes later (as for an
-      --  aggregate expansion).
+      --  aggregate expansion) or a deferred constant.
       --  If expression is an aggregate it may be expanded into assignments
       --  and the declaration itself is marked with No_Initialization, but
       --  the predicate still applies.
@@ -4519,6 +4519,7 @@ package body Sem_Ch3 is
           (Present (E)
             or else
               Is_Partially_Initialized_Type (T, Include_Implicit => False))
+        and then not (Constant_Present (N) and then No (E))
       then
          --  If the type has a static predicate and the expression is known at
          --  compile time, see if the expression satisfies the predicate.
