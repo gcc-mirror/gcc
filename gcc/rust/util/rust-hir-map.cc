@@ -284,6 +284,30 @@ Mappings::lookup_hir_trait_item (CrateNum crateNum, HirId id)
 }
 
 void
+Mappings::insert_hir_extern_item (CrateNum crateNum, HirId id,
+				  HIR::ExternalItem *item)
+{
+  rust_assert (lookup_hir_extern_item (crateNum, id) == nullptr);
+
+  hirExternItemMappings[crateNum][id] = item;
+  nodeIdToHirMappings[crateNum][item->get_mappings ().get_nodeid ()] = id;
+}
+
+HIR::ExternalItem *
+Mappings::lookup_hir_extern_item (CrateNum crateNum, HirId id)
+{
+  auto it = hirExternItemMappings.find (crateNum);
+  if (it == hirExternItemMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
 Mappings::insert_hir_impl_block (CrateNum crateNum, HirId id,
 				 HIR::ImplBlock *item)
 {

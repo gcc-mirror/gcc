@@ -970,14 +970,19 @@ private:
 class FnType : public BaseType, public SubstitutionRef
 {
 public:
-  FnType (HirId ref, DefId id, std::string identifier, bool is_method,
+#define FNTYPE_DEFAULT_FLAGS 0x00
+#define FNTYPE_IS_METHOD_FLAG 0x01
+#define FNTYPE_IS_EXTERN_FLAG 0x02
+#define FNTYPE_IS_VARADIC_FLAG 0X04
+
+  FnType (HirId ref, DefId id, std::string identifier, uint8_t flags,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNDEF, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      params (std::move (params)), type (type), is_method_flag (is_method),
+      params (std::move (params)), type (type), flags (flags),
       identifier (identifier), id (id)
   {
     LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
@@ -985,15 +990,15 @@ public:
   }
 
   FnType (HirId ref, HirId ty_ref, DefId id, std::string identifier,
-	  bool is_method,
+	  uint8_t flags,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNDEF, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      params (params), type (type), is_method_flag (is_method),
-      identifier (identifier), id (id)
+      params (params), type (type), flags (flags), identifier (identifier),
+      id (id)
   {
     LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
@@ -1022,8 +1027,12 @@ public:
     if (num_params () == 0)
       return false;
 
-    return is_method_flag;
+    return (flags & FNTYPE_IS_METHOD_FLAG) != 0;
   }
+
+  bool is_extern () const { return (flags & FNTYPE_IS_EXTERN_FLAG) != 0; }
+
+  bool is_varadic () const { return (flags & FNTYPE_IS_VARADIC_FLAG) != 0; }
 
   DefId get_id () const { return id; }
 
@@ -1077,7 +1086,7 @@ public:
 private:
   std::vector<std::pair<HIR::Pattern *, BaseType *> > params;
   BaseType *type;
-  bool is_method_flag;
+  uint8_t flags;
   std::string identifier;
   DefId id;
 };

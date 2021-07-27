@@ -28,6 +28,105 @@
 namespace Rust {
 namespace Resolver {
 
+class TypeCheckTopLevelExternItem : public TypeCheckBase
+{
+  using Rust::Resolver::TypeCheckBase::visit;
+
+public:
+  static void Resolve (HIR::ExternalItem *item)
+  {
+    TypeCheckTopLevelExternItem resolver;
+    item->accept_vis (resolver);
+  }
+
+  void visit (HIR::ExternalStaticItem &item) override
+  {
+    TyTy::BaseType *actual_type
+      = TypeCheckType::Resolve (item.get_item_type ().get ());
+
+    context->insert_type (item.get_mappings (), actual_type);
+  }
+
+  void visit (HIR::ExternalFunctionItem &function) override
+  {
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
+    if (function.has_generics ())
+      {
+	for (auto &generic_param : function.get_generic_params ())
+	  {
+	    switch (generic_param.get ()->get_kind ())
+	      {
+	      case HIR::GenericParam::GenericKind::LIFETIME:
+		// Skipping Lifetime completely until better handling.
+		break;
+
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  auto param_type
+		    = TypeResolveGenericParam::Resolve (generic_param.get ());
+		  context->insert_type (generic_param->get_mappings (),
+					param_type);
+
+		  substitutions.push_back (TyTy::SubstitutionParamMapping (
+		    static_cast<HIR::TypeParam &> (*generic_param),
+		    param_type));
+		}
+		break;
+	      }
+	  }
+      }
+
+    TyTy::BaseType *ret_type = nullptr;
+    if (!function.has_return_type ())
+      ret_type = new TyTy::TupleType (function.get_mappings ().get_hirid ());
+    else
+      {
+	auto resolved
+	  = TypeCheckType::Resolve (function.get_return_type ().get ());
+	if (resolved == nullptr)
+	  {
+	    rust_error_at (function.get_locus (),
+			   "failed to resolve return type");
+	    return;
+	  }
+
+	ret_type = resolved->clone ();
+	ret_type->set_ref (
+	  function.get_return_type ()->get_mappings ().get_hirid ());
+      }
+
+    std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
+    for (auto &param : function.get_function_params ())
+      {
+	// get the name as well required for later on
+	auto param_tyty = TypeCheckType::Resolve (param.get_type ().get ());
+
+	HIR::IdentifierPattern *param_pattern = new HIR::IdentifierPattern (
+	  param.get_param_name (), Location (), false, false,
+	  std::unique_ptr<HIR::Pattern> (nullptr));
+
+	params.push_back (
+	  std::pair<HIR::Pattern *, TyTy::BaseType *> (param_pattern,
+						       param_tyty));
+
+	context->insert_type (param.get_mappings (), param_tyty);
+      }
+
+    uint8_t flags = FNTYPE_IS_EXTERN_FLAG;
+    if (function.is_variadic ())
+      flags |= FNTYPE_IS_VARADIC_FLAG;
+
+    auto fnType
+      = new TyTy::FnType (function.get_mappings ().get_hirid (),
+			  function.get_mappings ().get_defid (),
+			  function.get_item_name (), flags, std::move (params),
+			  ret_type, std::move (substitutions));
+    context->insert_type (function.get_mappings (), fnType);
+  }
+
+private:
+  TypeCheckTopLevelExternItem () : TypeCheckBase () {}
+};
+
 class TypeCheckTopLevelImplItem : public TypeCheckBase
 {
   using Rust::Resolver::TypeCheckBase::visit;
@@ -134,11 +233,11 @@ public:
 	context->insert_type (param.get_mappings (), param_tyty);
       }
 
-    auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
-				    function.get_mappings ().get_defid (),
-				    function.get_function_name (),
-				    function.is_method (), std::move (params),
-				    ret_type, std::move (substitutions));
+    auto fnType = new TyTy::FnType (
+      function.get_mappings ().get_hirid (),
+      function.get_mappings ().get_defid (), function.get_function_name (),
+      function.is_method () ? FNTYPE_IS_METHOD_FLAG : FNTYPE_DEFAULT_FLAGS,
+      std::move (params), ret_type, std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
 

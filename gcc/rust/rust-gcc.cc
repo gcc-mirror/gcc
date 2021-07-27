@@ -256,6 +256,11 @@ public:
 			const std::vector<Btyped_identifier> &, Btype *,
 			const Location);
 
+  Btype *function_type_varadic (const Btyped_identifier &,
+				const std::vector<Btyped_identifier> &,
+				const std::vector<Btyped_identifier> &, Btype *,
+				const Location);
+
   Btype *function_ptr_type (Btype *, const std::vector<Btype *> &, Location);
 
   Btype *struct_type (const std::vector<Btyped_identifier> &);
@@ -1042,6 +1047,62 @@ Gcc_backend::function_type (const Btyped_identifier &receiver,
     result = void_type_node;
 
   tree fntype = build_function_type (result, args);
+  if (fntype == error_mark_node)
+    return this->error_type ();
+
+  return this->make_type (build_pointer_type (fntype));
+}
+
+Btype *
+Gcc_backend::function_type_varadic (
+  const Btyped_identifier &receiver,
+  const std::vector<Btyped_identifier> &parameters,
+  const std::vector<Btyped_identifier> &results, Btype *result_struct, Location)
+{
+  size_t n = parameters.size () + (receiver.btype != NULL ? 1 : 0);
+  tree *args = XALLOCAVEC (tree, n);
+  size_t offs = 0;
+
+  if (receiver.btype != NULL)
+    {
+      tree t = receiver.btype->get_tree ();
+      if (t == error_mark_node)
+	return this->error_type ();
+
+      args[offs++] = t;
+    }
+
+  for (std::vector<Btyped_identifier>::const_iterator p = parameters.begin ();
+       p != parameters.end (); ++p)
+    {
+      tree t = p->btype->get_tree ();
+      if (t == error_mark_node)
+	return this->error_type ();
+      args[offs++] = t;
+    }
+
+  tree result;
+  if (results.empty ())
+    result = void_type_node;
+  else if (results.size () == 1)
+    result = results.front ().btype->get_tree ();
+  else
+    {
+      gcc_assert (result_struct != NULL);
+      result = result_struct->get_tree ();
+    }
+  if (result == error_mark_node)
+    return this->error_type ();
+
+  // The libffi library cannot represent a zero-sized object.  To
+  // avoid causing confusion on 32-bit SPARC, we treat a function that
+  // returns a zero-sized value as returning void.  That should do no
+  // harm since there is no actual value to be returned.  See
+  // https://gcc.gnu.org/PR72814 for details.
+  if (result != void_type_node && int_size_in_bytes (result) == 0)
+    result = void_type_node;
+
+  tree fntype = build_varargs_function_type_array (result, n, args);
   if (fntype == error_mark_node)
     return this->error_type ();
 

@@ -571,10 +571,6 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    mappings->insert_defid_mapping (mapping.get_defid (), translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       extern_block.get_locus ());
-
     HIR::ExternBlock *hir_extern_block
       = new HIR::ExternBlock (mapping, extern_block.get_abi (),
 			      std::move (extern_items), std::move (vis),
@@ -583,6 +579,12 @@ public:
 			      extern_block.get_locus ());
 
     translated = hir_extern_block;
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       extern_block.get_locus ());
   }
 
 private:

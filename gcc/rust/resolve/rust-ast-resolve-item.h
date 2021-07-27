@@ -619,7 +619,7 @@ public:
 
 private:
   ResolveExternItem () : ResolverBase (UNKNOWN_NODEID) {}
-}; // namespace Resolver
+};
 
 } // namespace Resolver
 } // namespace Rust

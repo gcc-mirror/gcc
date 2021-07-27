@@ -371,9 +371,14 @@ public:
 	parameters.push_back (compiled_param);
       }
 
-    translated = ctx->get_backend ()->function_type (
-      receiver, parameters, results, NULL,
-      ctx->get_mappings ()->lookup_location (type.get_ref ()));
+    if (!type.is_varadic ())
+      translated = ctx->get_backend ()->function_type (
+	receiver, parameters, results, NULL,
+	ctx->get_mappings ()->lookup_location (type.get_ref ()));
+    else
+      translated = ctx->get_backend ()->function_type_varadic (
+	receiver, parameters, results, NULL,
+	ctx->get_mappings ()->lookup_location (type.get_ref ()));
   }
 
   void visit (TyTy::FnPtr &type) override

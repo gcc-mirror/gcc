@@ -95,9 +95,15 @@ public:
 	parameters.push_back (compiled_param);
       }
 
-    translated
-      = backend->function_type (receiver, parameters, results, NULL,
-				mappings->lookup_location (type.get_ref ()));
+    if (!type.is_varadic ())
+      translated
+	= backend->function_type (receiver, parameters, results, NULL,
+				  mappings->lookup_location (type.get_ref ()));
+    else
+      translated
+	= backend->function_type_varadic (receiver, parameters, results, NULL,
+					  mappings->lookup_location (
+					    type.get_ref ()));
   }
 
   void visit (TyTy::BoolType &) override

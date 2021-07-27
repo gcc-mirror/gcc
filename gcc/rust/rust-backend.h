@@ -163,6 +163,13 @@ public:
 		 Btype *result_struct, Location location)
     = 0;
 
+  virtual Btype *
+  function_type_varadic (const Btyped_identifier &receiver,
+			 const std::vector<Btyped_identifier> &parameters,
+			 const std::vector<Btyped_identifier> &results,
+			 Btype *result_struct, Location location)
+    = 0;
+
   virtual Btype *function_ptr_type (Btype *result,
 				    const std::vector<Btype *> &praameters,
 				    Location location)
