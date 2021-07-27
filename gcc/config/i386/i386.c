@@ -14149,6 +14149,94 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
       return AVX_U128_CLEAN;
     }
 
+  rtx set = single_set (insn);
+  if (set)
+    {
+      rtx dest = SET_DEST (set);
+      rtx src = SET_SRC (set);
+      if (ix86_check_avx_upper_register (dest))
+	{
+	  /* This is an YMM/ZMM load.  Return AVX_U128_DIRTY if the
+	     source isn't zero.  */
+	  if (standard_sse_constant_p (src, GET_MODE (dest)) != 1)
+	    return AVX_U128_DIRTY;
+	  else
+	    return AVX_U128_ANY;
+	}
+      else if (ix86_check_avx_upper_register (src))
+	{
+	  /* This is an YMM/ZMM store.  Check for the source operand
+	     of SRC DEFs in the same basic block before INSN.  */
+	  basic_block bb = BLOCK_FOR_INSN (insn);
+	  rtx_insn *end = BB_END (bb);
+
+	  /* Return AVX_U128_DIRTY if there is no DEF in the same basic
+	     block.  */
+	  int status = AVX_U128_DIRTY;
+
+	  for (df_ref def = DF_REG_DEF_CHAIN (REGNO (src));
+	       def; def = DF_REF_NEXT_REG (def))
+	    if (DF_REF_BB (def) == bb)
+	      {
+		/* Ignore DEF from different basic blocks.  */
+		rtx_insn *def_insn = DF_REF_INSN (def);
+
+		/* Check if DEF_INSN is before INSN.  */
+		rtx_insn *next;
+		for (next = NEXT_INSN (def_insn);
+		     next != nullptr && next != end && next != insn;
+		     next = NEXT_INSN (next))
+		  ;
+
+		/* Skip if DEF_INSN isn't before INSN.  */
+		if (next != insn)
+		  continue;
+
+		/* Return AVX_U128_DIRTY if the source operand of
+		   DEF_INSN isn't constant zero.  */
+
+		if (CALL_P (def_insn))
+		  {
+		    bool avx_upper_reg_found = false;
+		    note_stores (def_insn, ix86_check_avx_upper_stores,
+				 &avx_upper_reg_found);
+
+		    /* Return AVX_U128_DIRTY if call returns AVX.  */
+		    if (avx_upper_reg_found)
+		      return AVX_U128_DIRTY;
+
+		    continue;
+		  }
+
+		set = single_set (def_insn);
+		if (!set)
+		  return AVX_U128_DIRTY;
+
+		dest = SET_DEST (set);
+
+		/* Skip if DEF_INSN is not an AVX load.  */
+		if (ix86_check_avx_upper_register (dest))
+		  {
+		    src = SET_SRC (set);
+		    /* Return AVX_U128_DIRTY if the source operand isn't
+		       constant zero.  */
+		    if (standard_sse_constant_p (src, GET_MODE (dest))
+			!= 1)
+		      return AVX_U128_DIRTY;
+		  }
+
+		/* We get here only if all AVX loads are from constant
+		   zero.  */
+		status = AVX_U128_ANY;
+	      }
+
+	  return status;
+	}
+
+      /* This isn't YMM/ZMM load/store.  */
+      return AVX_U128_ANY;
+    }
+
   /* Require DIRTY mode if a 256bit or 512bit AVX register is referenced.
      Hardware changes state only when a 256bit register is written to,
      but we need to prevent the compiler from moving optimal insertion
