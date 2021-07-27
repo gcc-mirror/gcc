@@ -1891,6 +1891,24 @@
 }
   [(set_attr "isa" "noavx,noavx,avx,avx")])
 
+(define_expand "cond_<insn><mode>"
+  [(set (match_operand:VF 0 "register_operand")
+	(vec_merge:VF
+	  (plusminus:VF
+	    (match_operand:VF 2 "vector_operand")
+	    (match_operand:VF 3 "vector_operand"))
+	  (match_operand:VF 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "<MODE_SIZE> == 64 || TARGET_AVX512VL"
+{
+  emit_insn (gen_<insn><mode>3_mask (operands[0],
+				     operands[2],
+				     operands[3],
+				     operands[4],
+				     operands[1]));
+  DONE;
+})
+
 (define_expand "<insn><mode>3<mask_name><round_name>"
   [(set (match_operand:VF 0 "register_operand")
 	(plusminus:VF
@@ -1952,6 +1970,24 @@
    (set_attr "type" "sseadd")
    (set_attr "prefix" "<round_scalar_prefix>")
    (set_attr "mode" "<ssescalarmode>")])
+
+(define_expand "cond_mul<mode>"
+  [(set (match_operand:VF 0 "register_operand")
+	(vec_merge:VF
+	  (mult:VF
+	    (match_operand:VF 2 "vector_operand")
+	    (match_operand:VF 3 "vector_operand"))
+	  (match_operand:VF 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "<MODE_SIZE> == 64 || TARGET_AVX512VL"
+{
+  emit_insn (gen_mul<mode>3_mask (operands[0],
+				     operands[2],
+				     operands[3],
+				     operands[4],
+				     operands[1]));
+  DONE;
+})
 
 (define_expand "mul<mode>3<mask_name><round_name>"
   [(set (match_operand:VF 0 "register_operand")
@@ -2039,6 +2075,24 @@
       ix86_emit_swdivsf (operands[0], operands[1], operands[2], <MODE>mode);
       DONE;
     }
+})
+
+(define_expand "cond_div<mode>"
+  [(set (match_operand:VF 0 "register_operand")
+	(vec_merge:VF
+	  (div:VF
+	    (match_operand:VF 2 "register_operand")
+	    (match_operand:VF 3 "vector_operand"))
+	  (match_operand:VF 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "<MODE_SIZE> == 64 || TARGET_AVX512VL"
+{
+  emit_insn (gen_<sse>_div<mode>3_mask (operands[0],
+					operands[2],
+					operands[3],
+					operands[4],
+					operands[1]));
+  DONE;
 })
 
 (define_insn "<sse>_div<mode>3<mask_name><round_name>"
