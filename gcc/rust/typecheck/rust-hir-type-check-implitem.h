@@ -111,11 +111,15 @@ public:
 	context->insert_type (param.get_mappings (), param_tyty);
       }
 
-    auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
-				    function.get_mappings ().get_defid (),
-				    function.get_item_name (),
-				    FNTYPE_IS_EXTERN_FLAG, std::move (params),
-				    ret_type, std::move (substitutions));
+    uint8_t flags = FNTYPE_IS_EXTERN_FLAG;
+    if (function.is_variadic ())
+      flags |= FNTYPE_IS_VARADIC_FLAG;
+
+    auto fnType
+      = new TyTy::FnType (function.get_mappings ().get_hirid (),
+			  function.get_mappings ().get_defid (),
+			  function.get_item_name (), flags, std::move (params),
+			  ret_type, std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
 

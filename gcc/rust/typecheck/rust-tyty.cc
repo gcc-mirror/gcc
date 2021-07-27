@@ -2055,15 +2055,27 @@ TypeCheckCallExpr::visit (FnType &type)
 {
   if (call.num_params () != type.num_params ())
     {
-      rust_error_at (call.get_locus (),
-		     "unexpected number of arguments %lu expected %lu",
-		     call.num_params (), type.num_params ());
-      return;
+      if (type.is_varadic ())
+	{
+	  if (call.num_params () < type.num_params ())
+	    {
+	      rust_error_at (call.get_locus (),
+			     "unexpected number of arguments %lu expected %lu",
+			     call.num_params (), type.num_params ());
+	      return;
+	    }
+	}
+      else
+	{
+	  rust_error_at (call.get_locus (),
+			 "unexpected number of arguments %lu expected %lu",
+			 call.num_params (), type.num_params ());
+	  return;
+	}
     }
 
   size_t i = 0;
   call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
-    auto fnparam = type.param_at (i);
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
     if (argument_expr_tyty == nullptr)
       {
@@ -2072,12 +2084,19 @@ TypeCheckCallExpr::visit (FnType &type)
 	return false;
       }
 
-    auto resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
-    if (resolved_argument_type == nullptr)
+    auto resolved_argument_type = argument_expr_tyty;
+
+    // it might be a varadic function
+    if (i < type.num_params ())
       {
-	rust_error_at (param->get_locus_slow (),
-		       "Type Resolution failure on parameter");
-	return false;
+	auto fnparam = type.param_at (i);
+	resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
+	if (resolved_argument_type == nullptr)
+	  {
+	    rust_error_at (param->get_locus_slow (),
+			   "Type Resolution failure on parameter");
+	    return false;
+	  }
       }
 
     context->insert_type (param->get_mappings (), resolved_argument_type);
@@ -2086,7 +2105,7 @@ TypeCheckCallExpr::visit (FnType &type)
     return true;
   });
 
-  if (i != call.num_params ())
+  if (i < call.num_params ())
     {
       rust_error_at (call.get_locus (),
 		     "unexpected number of arguments %lu expected %lu", i,

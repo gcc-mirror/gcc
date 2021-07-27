@@ -51,10 +51,8 @@ public:
     rust_assert (ok);
 
     std::string name = item.get_item_name ();
-
-    // FIXME
-    // this is assuming C ABI
-    std::string asm_name = "_" + name;
+    // FIXME this is assuming C ABI
+    std::string asm_name = name;
 
     Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
     bool is_external = true;
