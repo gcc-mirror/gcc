@@ -3056,6 +3056,7 @@ arm_option_restore (struct gcc_options */* opts */,
 		    struct cl_target_option *ptr)
 {
   arm_configure_build_target (&arm_active_target, ptr, false);
+  arm_option_reconfigure_globals ();
 }
 
 /* Reset options between modes that the user has specified.  */
@@ -3439,7 +3440,6 @@ arm_configure_build_target (struct arm_build_target *target,
   target->tune_flags = tune_data->tune_flags;
   target->tune = tune_data->tune;
   target->tune_core = tune_data->scheduler;
-  arm_option_reconfigure_globals ();
 }
 
 /* Fix up any incompatible options that the user has specified.  */
