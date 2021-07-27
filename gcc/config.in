@@ -1437,6 +1437,30 @@
 #endif
 
 
+/* Define if your assembler allows -mattr=+sram-ecc for fiji. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GCN_SRAM_ECC_FIJI
+#endif
+
+
+/* Define if your assembler allows -mattr=+sram-ecc for gfx900. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GCN_SRAM_ECC_GFX900
+#endif
+
+
+/* Define if your assembler allows -mattr=+sram-ecc for gfx906. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GCN_SRAM_ECC_GFX906
+#endif
+
+
+/* Define if your assembler allows -mattr=+sram-ecc for gfx908. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GCN_SRAM_ECC_GFX908
+#endif
+
+
 /* Define to 1 if you have the `getchar_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GETCHAR_UNLOCKED
