@@ -219,6 +219,70 @@ struct check_defs_data
   bool found_may_defs;
 };
 
+/* Return true if STMT is a call to built-in function all of whose
+   by-reference arguments are const-qualified (i.e., the function can
+   be assumed not to modify them).  */
+
+static bool
+builtin_call_nomodifying_p (gimple *stmt)
+{
+  if (!gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    return false;
+
+  tree fndecl = gimple_call_fndecl (stmt);
+  if (!fndecl)
+    return false;
+
+  tree fntype = TREE_TYPE (fndecl);
+  if (!fntype)
+    return false;
+
+  /* Check the called function's signature for non-constc pointers.
+     If one is found, return false.  */
+  unsigned argno = 0;
+  tree argtype;
+  function_args_iterator it;
+  FOREACH_FUNCTION_ARGS (fntype, argtype, it)
+    {
+      if (VOID_TYPE_P (argtype))
+	return true;
+
+      ++argno;
+
+      if (!POINTER_TYPE_P (argtype))
+	continue;
+
+      if (TYPE_READONLY (TREE_TYPE (argtype)))
+	continue;
+
+      return false;
+    }
+
+  /* If the number of actual arguments to the call is less than or
+     equal to the number of parameters, return false.  */
+  unsigned nargs = gimple_call_num_args (stmt);
+  if (nargs <= argno)
+    return false;
+
+  /* Check arguments passed through the ellipsis in calls to variadic
+     functions for pointers.  If one is found that's a non-constant
+     pointer, return false.  */
+  for (; argno < nargs; ++argno)
+    {
+      tree arg = gimple_call_arg (stmt, argno);
+      argtype = TREE_TYPE (arg);
+      if (!POINTER_TYPE_P (argtype))
+	continue;
+
+      if (TYPE_READONLY (TREE_TYPE (argtype)))
+	continue;
+
+      return false;
+    }
+
+  return true;
+}
+
 /* Callback for walk_aliased_vdefs.  */
 
 static bool
@@ -260,6 +324,9 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
 	return true;
       return false;
     }
+
+  if (builtin_call_nomodifying_p (def_stmt))
+    return false;
 
   /* Found a may-def on this path.  */
   data->found_may_defs = true;
