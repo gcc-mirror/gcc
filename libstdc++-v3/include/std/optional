@@ -91,12 +91,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return "bad optional access"; }
   };
 
-  void
-  __throw_bad_optional_access()
-  __attribute__((__noreturn__));
-
   // XXX Does not belong here.
-  inline void
+  [[__noreturn__]] inline void
   __throw_bad_optional_access()
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access()); }
 
@@ -943,33 +939,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const _Tp&
       value() const&
       {
-	return this->_M_is_engaged()
-	  ? this->_M_get()
-	  : (__throw_bad_optional_access(), this->_M_get());
+	if (this->_M_is_engaged())
+	  return this->_M_get();
+	__throw_bad_optional_access();
       }
 
       constexpr _Tp&
       value()&
       {
-	return this->_M_is_engaged()
-	  ? this->_M_get()
-	  : (__throw_bad_optional_access(), this->_M_get());
+	if (this->_M_is_engaged())
+	  return this->_M_get();
+	__throw_bad_optional_access();
       }
 
       constexpr _Tp&&
       value()&&
       {
-	return this->_M_is_engaged()
-	  ? std::move(this->_M_get())
-	  : (__throw_bad_optional_access(), std::move(this->_M_get()));
+	if (this->_M_is_engaged())
+	  return std::move(this->_M_get());
+	__throw_bad_optional_access();
       }
 
       constexpr const _Tp&&
       value() const&&
       {
-	return this->_M_is_engaged()
-	  ? std::move(this->_M_get())
-	  : (__throw_bad_optional_access(), std::move(this->_M_get()));
+	if (this->_M_is_engaged())
+	  return std::move(this->_M_get());
+	__throw_bad_optional_access();
       }
 
       template<typename _Up>
@@ -979,8 +975,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(is_copy_constructible_v<_Tp>);
 	  static_assert(is_convertible_v<_Up&&, _Tp>);
 
-	  return this->_M_is_engaged()
-	    ? this->_M_get() : static_cast<_Tp>(std::forward<_Up>(__u));
+	  if (this->_M_is_engaged())
+	    return this->_M_get();
+	  else
+	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
       template<typename _Up>
@@ -990,9 +988,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(is_move_constructible_v<_Tp>);
 	  static_assert(is_convertible_v<_Up&&, _Tp>);
 
-	  return this->_M_is_engaged()
-	    ? std::move(this->_M_get())
-	    : static_cast<_Tp>(std::forward<_Up>(__u));
+	  if (this->_M_is_engaged())
+	    return std::move(this->_M_get());
+	  else
+	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
       void reset() noexcept { this->_M_reset(); }

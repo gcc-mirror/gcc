@@ -114,12 +114,8 @@ inline namespace fundamentals_v1
 
   /// @cond undocumented
 
-  void
-  __throw_bad_optional_access(const char*)
-  __attribute__((__noreturn__));
-
   // XXX Does not belong here.
-  inline void
+  [[noreturn]] inline void
   __throw_bad_optional_access(const char* __s)
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access(__s)); }
 
@@ -674,41 +670,37 @@ inline namespace fundamentals_v1
       constexpr const _Tp&
       value() const&
       {
-	return this->_M_is_engaged()
-	  ?  this->_M_get()
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
-	     this->_M_get());
+	if (this->_M_is_engaged())
+	  return this->_M_get();
+	__throw_bad_optional_access("Attempt to access value of a "
+				    "disengaged optional object");
       }
 
       constexpr _Tp&
       value()&
       {
-	return this->_M_is_engaged()
-	  ?  this->_M_get()
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
-	     this->_M_get());
+	if (this->_M_is_engaged())
+	  return this->_M_get();
+	__throw_bad_optional_access("Attempt to access value of a "
+				    "disengaged optional object");
       }
 
       constexpr _Tp&&
       value()&&
       {
-	return this->_M_is_engaged()
-	  ?  std::move(this->_M_get())
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
-	     std::move(this->_M_get()));
+	if (this->_M_is_engaged())
+	  return std::move(this->_M_get());
+	__throw_bad_optional_access("Attempt to access value of a "
+				    "disengaged optional object");
       }
 
       constexpr const _Tp&&
       value() const&&
       {
-	return this->_M_is_engaged()
-	  ?  std::move(this->_M_get())
-	  : (__throw_bad_optional_access("Attempt to access value of a "
-		                         "disengaged optional object"),
-	     std::move(this->_M_get()));
+	if (this->_M_is_engaged())
+	  return std::move(this->_M_get());
+	__throw_bad_optional_access("Attempt to access value of a "
+				    "disengaged optional object");
       }
 
       template<typename _Up>
@@ -719,9 +711,10 @@ inline namespace fundamentals_v1
 			       is_convertible<_Up&&, _Tp>>(),
 			"Cannot return value");
 
-	  return this->_M_is_engaged()
-	    ? this->_M_get()
-	    : static_cast<_Tp>(std::forward<_Up>(__u));
+	  if (this->_M_is_engaged())
+	    return this->_M_get();
+	  else
+	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
       template<typename _Up>
@@ -732,9 +725,10 @@ inline namespace fundamentals_v1
 			       is_convertible<_Up&&, _Tp>>(),
 			"Cannot return value" );
 
-	  return this->_M_is_engaged()
-	    ? std::move(this->_M_get())
-	    : static_cast<_Tp>(std::forward<_Up>(__u));
+	  if (this->_M_is_engaged())
+	    return std::move(this->_M_get());
+	  else
+	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
     };
 
