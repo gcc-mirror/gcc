@@ -550,14 +550,21 @@ struct GTY(()) ipa_param_descriptor
   tree decl_or_type;
   /* If all uses of the parameter are described by ipa-prop structures, this
      says how many there are.  If any use could not be described by means of
-     ipa-prop structures, this is IPA_UNDESCRIBED_USE.  */
+     ipa-prop structures (which include flag dereferenced below), this is
+     IPA_UNDESCRIBED_USE.  */
   int controlled_uses;
-  unsigned int move_cost : 28;
+  unsigned int move_cost : 27;
   /* The parameter is used.  */
   unsigned used : 1;
   unsigned used_by_ipa_predicates : 1;
   unsigned used_by_indirect_call : 1;
   unsigned used_by_polymorphic_call : 1;
+  /* Set to true when in addition to being used in call statements, the
+     parameter has also been used for loads (but not for writes, does not
+     escape, etc.).  This allows us to identify parameters p which are only
+     used as *p, and so when we propagate a constant to them, we can generate a
+     LOAD and not ADDR reference to them.  */
+  unsigned load_dereferenced : 1;
 };
 
 /* ipa_node_params stores information related to formal parameters of functions
@@ -793,6 +800,24 @@ ipa_set_controlled_uses (class ipa_node_params *info, int i, int val)
 {
   gcc_checking_assert (info->descriptors);
   (*info->descriptors)[i].controlled_uses = val;
+}
+
+/* Assuming a parameter does not have IPA_UNDESCRIBED_USE controlled uses,
+   return flag which indicates it has been dereferenced but only in a load.  */
+static inline int
+ipa_get_param_load_dereferenced (class ipa_node_params *info, int i)
+{
+  gcc_assert (ipa_get_controlled_uses (info, i) != IPA_UNDESCRIBED_USE);
+  return (*info->descriptors)[i].load_dereferenced;
+}
+
+/* Set the load_dereferenced flag of a given parameter.  */
+
+static inline void
+ipa_set_param_load_dereferenced (class ipa_node_params *info, int i, bool val)
+{
+  gcc_checking_assert (info->descriptors);
+  (*info->descriptors)[i].load_dereferenced = val;
 }
 
 /* Return the used flag corresponding to the Ith formal parameter of the

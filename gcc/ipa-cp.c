@@ -106,6 +106,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree.h"
 #include "gimple-expr.h"
+#include "gimple.h"
 #include "predict.h"
 #include "alloc-pool.h"
 #include "tree-pass.h"
@@ -4008,7 +4009,8 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 	    {
 	      ipa_node_params *info = ipa_node_params_sum->get (node);
 	      int c = ipa_get_controlled_uses (info, param_index);
-	      if (c != IPA_UNDESCRIBED_USE)
+	      if (c != IPA_UNDESCRIBED_USE
+		  && !ipa_get_param_load_dereferenced (info, param_index))
 		{
 		  struct ipa_ref *to_del;
 
@@ -4317,10 +4319,14 @@ gather_edges_for_value (ipcp_value<valtype> *val, cgraph_node *dest,
 }
 
 /* Construct a replacement map for a know VALUE for a formal parameter PARAM.
-   Return it or NULL if for some reason it cannot be created.  */
+   Return it or NULL if for some reason it cannot be created.  FORCE_LOAD_REF
+   should be set to true when the reference created for the constant should be
+   a load one and not an address one because the corresponding parameter p is
+   only used as *p.  */
 
 static struct ipa_replace_map *
-get_replacement_map (class ipa_node_params *info, tree value, int parm_num)
+get_replacement_map (class ipa_node_params *info, tree value, int parm_num,
+		     bool force_load_ref)
 {
   struct ipa_replace_map *replace_map;
 
@@ -4332,10 +4338,15 @@ get_replacement_map (class ipa_node_params *info, tree value, int parm_num)
 
       fprintf (dump_file, " with const ");
       print_generic_expr (dump_file, value);
-      fprintf (dump_file, "\n");
+
+      if (force_load_ref)
+	fprintf (dump_file, " - forcing load reference\n");
+      else
+	fprintf (dump_file, "\n");
     }
   replace_map->parm_num = parm_num;
   replace_map->new_tree = value;
+  replace_map->force_load_ref = force_load_ref;
   return replace_map;
 }
 
@@ -4488,6 +4499,113 @@ update_specialized_profile (struct cgraph_node *new_node,
     dump_profile_updates (orig_node, new_node);
 }
 
+static void adjust_references_in_caller (cgraph_edge *cs,
+					 symtab_node *symbol, int index);
+
+/* Simple structure to pass a symbol and index (with same meaning as parameters
+   of adjust_references_in_caller) through a void* parameter of a
+   call_for_symbol_thunks_and_aliases callback. */
+struct symbol_and_index_together
+{
+  symtab_node *symbol;
+  int index;
+};
+
+/* Worker callback of call_for_symbol_thunks_and_aliases to recursively call
+   adjust_references_in_caller on edges up in the call-graph, if necessary. */
+static bool
+adjust_refs_in_act_callers (struct cgraph_node *node, void *data)
+{
+  symbol_and_index_together *pack = (symbol_and_index_together *) data;
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    if (!cs->caller->thunk)
+      adjust_references_in_caller (cs, pack->symbol, pack->index);
+  return false;
+}
+
+/* At INDEX of a function being called by CS there is an ADDR_EXPR of a
+   variable which is only dereferenced and which is represented by SYMBOL.  See
+   if we can remove ADDR reference in callers assosiated witht the call. */
+
+static void
+adjust_references_in_caller (cgraph_edge *cs, symtab_node *symbol, int index)
+{
+  ipa_edge_args *args = ipa_edge_args_sum->get (cs);
+  ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, index);
+  if (jfunc->type == IPA_JF_CONST)
+    {
+      ipa_ref *to_del = cs->caller->find_reference (symbol, cs->call_stmt,
+						    cs->lto_stmt_uid);
+      if (!to_del)
+	return;
+      to_del->remove_reference ();
+      if (dump_file)
+	fprintf (dump_file, "    Removed a reference from %s to %s.\n",
+		 cs->caller->dump_name (), symbol->dump_name ());
+      return;
+    }
+
+  if (jfunc->type != IPA_JF_PASS_THROUGH
+      || ipa_get_jf_pass_through_operation (jfunc) != NOP_EXPR)
+    return;
+
+  int fidx = ipa_get_jf_pass_through_formal_id (jfunc);
+  cgraph_node *caller = cs->caller;
+  ipa_node_params *caller_info = ipa_node_params_sum->get (caller);
+  /* TODO: This consistency check may be too big and not really
+     that useful.  Consider removing it.  */
+  tree cst;
+  if (caller_info->ipcp_orig_node)
+    cst = caller_info->known_csts[fidx];
+  else
+    {
+      ipcp_lattice<tree> *lat = ipa_get_scalar_lat (caller_info, fidx);
+      gcc_assert (lat->is_single_const ());
+      cst = lat->values->value;
+    }
+  gcc_assert (TREE_CODE (cst) == ADDR_EXPR
+	      && (symtab_node::get (get_base_address (TREE_OPERAND (cst, 0)))
+		  == symbol));
+
+  int cuses = ipa_get_controlled_uses (caller_info, fidx);
+  if (cuses == IPA_UNDESCRIBED_USE)
+    return;
+  gcc_assert (cuses > 0);
+  cuses--;
+  ipa_set_controlled_uses (caller_info, fidx, cuses);
+  if (cuses)
+    return;
+
+  if (caller_info->ipcp_orig_node)
+    {
+      /* Cloning machinery has created a reference here, we need to either
+	 remove it or change it to a read one.  */
+      ipa_ref *to_del = caller->find_reference (symbol, NULL, 0);
+      if (to_del && to_del->use == IPA_REF_ADDR)
+	{
+	  to_del->remove_reference ();
+	  if (dump_file)
+	    fprintf (dump_file, "    Removed a reference from %s to %s.\n",
+		     cs->caller->dump_name (), symbol->dump_name ());
+	  if (ipa_get_param_load_dereferenced (caller_info, fidx))
+	    {
+	      caller->create_reference (symbol, IPA_REF_LOAD, NULL);
+	      if (dump_file)
+		fprintf (dump_file,
+			 "      ...and replaced it with LOAD one.\n");
+	    }
+	}
+    }
+
+  symbol_and_index_together pack;
+  pack.symbol = symbol;
+  pack.index = fidx;
+  if (caller->can_change_signature)
+    caller->call_for_symbol_thunks_and_aliases (adjust_refs_in_act_callers,
+						&pack, true);
+}
+
+
 /* Return true if we would like to remove a parameter from NODE when cloning it
    with KNOWN_CSTS scalar constants.  */
 
@@ -4595,15 +4713,31 @@ create_specialized_node (struct cgraph_node *node,
   for (i = 0; i < count; i++)
     {
       tree t = known_csts[i];
-      if (t)
-	{
-	  struct ipa_replace_map *replace_map;
+      if (!t)
+	continue;
 
-	  gcc_checking_assert (TREE_CODE (t) != TREE_BINFO);
-	  replace_map = get_replacement_map (info, t, i);
-	  if (replace_map)
-	    vec_safe_push (replace_trees, replace_map);
+      gcc_checking_assert (TREE_CODE (t) != TREE_BINFO);
+
+      bool load_ref = false;
+      symtab_node *ref_symbol;
+      if (TREE_CODE (t) == ADDR_EXPR)
+	{
+	  tree base = get_base_address (TREE_OPERAND (t, 0));
+	  if (TREE_CODE (base) == VAR_DECL
+	      && ipa_get_controlled_uses (info, i) == 0
+	      && ipa_get_param_load_dereferenced (info, i)
+	      && (ref_symbol = symtab_node::get (base)))
+	    {
+	      load_ref = true;
+	      if (node->can_change_signature)
+		for (cgraph_edge *caller : callers)
+		  adjust_references_in_caller (caller, ref_symbol, i);
+	    }
 	}
+
+      ipa_replace_map *replace_map = get_replacement_map (info, t, i, load_ref);
+      if (replace_map)
+	vec_safe_push (replace_trees, replace_map);
     }
   auto_vec<cgraph_edge *, 2> self_recursive_calls;
   for (i = callers.length () - 1; i >= 0; i--)

@@ -544,7 +544,9 @@ ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant,
   jfunc->value.constant.value = unshare_expr_without_location (constant);
 
   if (TREE_CODE (constant) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (constant, 0)) == FUNCTION_DECL)
+      && (TREE_CODE (TREE_OPERAND (constant, 0)) == FUNCTION_DECL
+	  || (TREE_CODE (TREE_OPERAND (constant, 0)) == VAR_DECL
+	      && TREE_STATIC (TREE_OPERAND (constant, 0)))))
     {
       struct ipa_cst_ref_desc *rdesc;
 
@@ -2876,6 +2878,16 @@ ipa_analyze_params_uses_in_bb (struct ipa_func_body_info *fbi, basic_block bb)
 				   visit_ref_for_mod_analysis);
 }
 
+/* Return true EXPR is a load from a dereference of SSA_NAME NAME.  */
+
+static bool
+load_from_dereferenced_name (tree expr, tree name)
+{
+  tree base = get_base_address (expr);
+  return (TREE_CODE (base) == MEM_REF
+	  && TREE_OPERAND (base, 0) == name);
+}
+
 /* Calculate controlled uses of parameters of NODE.  */
 
 static void
@@ -2886,7 +2898,8 @@ ipa_analyze_controlled_uses (struct cgraph_node *node)
   for (int i = 0; i < ipa_get_param_count (info); i++)
     {
       tree parm = ipa_get_param (info, i);
-      int controlled_uses = 0;
+      int call_uses = 0;
+      bool load_dereferenced = false;
 
       /* For SSA regs see if parameter is used.  For non-SSA we compute
 	 the flag during modification analysis.  */
@@ -2897,27 +2910,77 @@ ipa_analyze_controlled_uses (struct cgraph_node *node)
 	  if (ddef && !has_zero_uses (ddef))
 	    {
 	      imm_use_iterator imm_iter;
-	      use_operand_p use_p;
+	      gimple *stmt;
 
 	      ipa_set_param_used (info, i, true);
-	      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, ddef)
-		if (!is_gimple_call (USE_STMT (use_p)))
-		  {
-		    if (!is_gimple_debug (USE_STMT (use_p)))
-		      {
-			controlled_uses = IPA_UNDESCRIBED_USE;
-			break;
-		      }
-		  }
-		else
-		  controlled_uses++;
+	      FOR_EACH_IMM_USE_STMT (stmt, imm_iter, ddef)
+		{
+		  if (is_gimple_debug (stmt))
+		    continue;
+
+		  int all_stmt_uses = 0;
+		  use_operand_p use_p;
+		  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+		    all_stmt_uses++;
+
+		  if (is_gimple_call (stmt))
+		    {
+		      if (gimple_call_internal_p (stmt))
+			{
+			  call_uses = IPA_UNDESCRIBED_USE;
+			  break;
+			}
+		      int recognized_stmt_uses;
+		      if (gimple_call_fn (stmt) == ddef)
+			recognized_stmt_uses = 1;
+		      else
+			recognized_stmt_uses = 0;
+		      unsigned arg_count = gimple_call_num_args (stmt);
+		      for (unsigned i = 0; i < arg_count; i++)
+			{
+			  tree arg = gimple_call_arg (stmt, i);
+			  if (arg == ddef)
+			    recognized_stmt_uses++;
+			  else if (load_from_dereferenced_name (arg, ddef))
+			    {
+			      load_dereferenced = true;
+			      recognized_stmt_uses++;
+			    }
+			}
+
+		      if (recognized_stmt_uses != all_stmt_uses)
+			{
+			  call_uses = IPA_UNDESCRIBED_USE;
+			  break;
+			}
+		      if (call_uses >= 0)
+			call_uses += all_stmt_uses;
+		    }
+		  else if (gimple_assign_single_p (stmt))
+		    {
+		      tree rhs = gimple_assign_rhs1 (stmt);
+		      if (all_stmt_uses != 1
+			  || !load_from_dereferenced_name (rhs, ddef))
+			{
+			  call_uses = IPA_UNDESCRIBED_USE;
+			  break;
+			}
+		      load_dereferenced = true;
+		    }
+		  else
+		    {
+		      call_uses = IPA_UNDESCRIBED_USE;
+		      break;
+		    }
+		}
 	    }
 	  else
-	    controlled_uses = 0;
+	    call_uses = 0;
 	}
       else
-	controlled_uses = IPA_UNDESCRIBED_USE;
-      ipa_set_controlled_uses (info, i, controlled_uses);
+	call_uses = IPA_UNDESCRIBED_USE;
+      ipa_set_controlled_uses (info, i, call_uses);
+      ipa_set_param_load_dereferenced (info, i, load_dereferenced);
     }
 }
 
@@ -3640,16 +3703,17 @@ jfunc_rdesc_usable (struct ipa_jump_func *jfunc)
    declaration, return the associated call graph node.  Otherwise return
    NULL.  */
 
-static cgraph_node *
-cgraph_node_for_jfunc (struct ipa_jump_func *jfunc)
+static symtab_node *
+symtab_node_for_jfunc (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_CONST);
   tree cst = ipa_get_jf_constant (jfunc);
   if (TREE_CODE (cst) != ADDR_EXPR
-      || TREE_CODE (TREE_OPERAND (cst, 0)) != FUNCTION_DECL)
+      || (TREE_CODE (TREE_OPERAND (cst, 0)) != FUNCTION_DECL
+	  && TREE_CODE (TREE_OPERAND (cst, 0)) != VAR_DECL))
     return NULL;
 
-  return cgraph_node::get (TREE_OPERAND (cst, 0));
+  return symtab_node::get (TREE_OPERAND (cst, 0));
 }
 
 
@@ -3666,7 +3730,7 @@ try_decrement_rdesc_refcount (struct ipa_jump_func *jfunc)
       && (rdesc = jfunc_rdesc_usable (jfunc))
       && --rdesc->refcount == 0)
     {
-      symtab_node *symbol = cgraph_node_for_jfunc (jfunc);
+      symtab_node *symbol = symtab_node_for_jfunc (jfunc);
       if (!symbol)
 	return false;
 
@@ -3721,8 +3785,8 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
       gcc_checking_assert (cs->callee
 			   && (cs != ie
 			       || jfunc->type != IPA_JF_CONST
-			       || !cgraph_node_for_jfunc (jfunc)
-			       || cs->callee == cgraph_node_for_jfunc (jfunc)));
+			       || !symtab_node_for_jfunc (jfunc)
+			       || cs->callee == symtab_node_for_jfunc (jfunc)));
       ok = try_decrement_rdesc_refcount (jfunc);
       gcc_checking_assert (ok);
     }
@@ -4085,7 +4149,15 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 			       == NOP_EXPR || c == IPA_UNDESCRIBED_USE);
 	  c = combine_controlled_uses_counters (c, d);
 	  ipa_set_controlled_uses (new_root_info, src_idx, c);
-	  if (c == 0 && new_root_info->ipcp_orig_node)
+	  bool lderef = true;
+	  if (c != IPA_UNDESCRIBED_USE)
+	    {
+	      lderef = (ipa_get_param_load_dereferenced (new_root_info, src_idx)
+			|| ipa_get_param_load_dereferenced (old_root_info, i));
+	      ipa_set_param_load_dereferenced (new_root_info, src_idx, lderef);
+	    }
+
+	  if (c == 0 && !lderef && new_root_info->ipcp_orig_node)
 	    {
 	      struct cgraph_node *n;
 	      struct ipa_ref *ref;
@@ -4114,17 +4186,27 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	  if (rdesc->refcount == 0)
 	    {
 	      tree cst = ipa_get_jf_constant (jf);
-	      struct cgraph_node *n;
 	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
-				   && TREE_CODE (TREE_OPERAND (cst, 0))
-				   == FUNCTION_DECL);
-	      n = cgraph_node::get (TREE_OPERAND (cst, 0));
+				   && ((TREE_CODE (TREE_OPERAND (cst, 0))
+					== FUNCTION_DECL)
+				       || (TREE_CODE (TREE_OPERAND (cst, 0))
+					   == VAR_DECL)));
+
+	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      if (n)
 		{
 		  struct cgraph_node *clone;
-		  bool ok;
-		  ok = remove_described_reference (n, rdesc);
-		  gcc_checking_assert (ok);
+		  bool removed = remove_described_reference (n, rdesc);
+		  /* The reference might have been removed by IPA-CP.  */
+		  if (removed
+		      && ipa_get_param_load_dereferenced (old_root_info, i))
+		    {
+		      new_root->create_reference (n, IPA_REF_LOAD, NULL);
+		      if (dump_file)
+			fprintf (dump_file, "ipa-prop: ...replaced it with "
+				 " LOAD one from %s to %s.\n",
+				 new_root->dump_name (), n->dump_name ());
+		    }
 
 		  clone = cs->caller;
 		  while (clone->inlined_to
@@ -4347,7 +4429,7 @@ ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
 	  else if (src->caller == dst->caller)
 	    {
 	      struct ipa_ref *ref;
-	      symtab_node *n = cgraph_node_for_jfunc (src_jf);
+	      symtab_node *n = symtab_node_for_jfunc (src_jf);
 	      gcc_checking_assert (n);
 	      ref = src->caller->find_reference (n, src->call_stmt,
 						 src->lto_stmt_uid);
@@ -4574,7 +4656,9 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
       if (c == IPA_UNDESCRIBED_USE)
 	fprintf (f, " undescribed_use");
       else
-	fprintf (f, "  controlled_uses=%i", c);
+	fprintf (f, "  controlled_uses=%i %s", c,
+		 ipa_get_param_load_dereferenced (info, i)
+		 ? "(load_dereferenced)" : "");
       fprintf (f, "\n");
     }
 }
@@ -4969,7 +5053,13 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   gcc_assert (!info->node_enqueued);
   gcc_assert (!info->ipcp_orig_node);
   for (j = 0; j < ipa_get_param_count (info); j++)
-    bp_pack_value (&bp, ipa_is_param_used (info, j), 1);
+    {
+      /* TODO: We could just not stream the bit in the undescribed case. */
+      bool d = (ipa_get_controlled_uses (info, j) != IPA_UNDESCRIBED_USE)
+	? ipa_get_param_load_dereferenced (info, j) : true;
+      bp_pack_value (&bp, d, 1);
+      bp_pack_value (&bp, ipa_is_param_used (info, j), 1);
+    }
   streamer_write_bitpack (&bp);
   for (j = 0; j < ipa_get_param_count (info); j++)
     {
@@ -5095,10 +5185,14 @@ ipa_read_node_info (class lto_input_block *ib, struct cgraph_node *node,
   bp = streamer_read_bitpack (ib);
   for (k = 0; k < param_count; k++)
     {
+      bool load_dereferenced = bp_unpack_value (&bp, 1);
       bool used = bp_unpack_value (&bp, 1);
 
       if (prevails)
-        ipa_set_param_used (info, k, used);
+	{
+	  ipa_set_param_load_dereferenced (info, k, load_dereferenced);
+	  ipa_set_param_used (info, k, used);
+	}
     }
   for (k = 0; k < param_count; k++)
     {

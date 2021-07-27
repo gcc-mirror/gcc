@@ -700,6 +700,10 @@ struct GTY(()) ipa_replace_map
   tree new_tree;
   /* Parameter number to replace, when old_tree is NULL.  */
   int parm_num;
+  /* Set if the newly added reference should not be an address one, but a load
+     one from the operand of the ADDR_EXPR in NEW_TREE.  This is for cases when
+     the corresponding parameter p is used only as *p.  */
+  unsigned force_load_ref : 1;
 };
 
 enum cgraph_simd_clone_arg_type
