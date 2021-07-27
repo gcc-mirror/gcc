@@ -75,6 +75,28 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    supported for gcn.  */
 #define GOMP_SELF_SPECS ""
 
+#ifdef HAVE_GCN_SRAM_ECC_FIJI
+#define A_FIJI
+#else
+#define A_FIJI "!march=*:;march=fiji:;"
+#endif
+#ifdef HAVE_GCN_SRAM_ECC_GFX900
+#define A_900
+#else
+#define A_900 "march=gfx900:;"
+#endif
+#ifdef HAVE_GCN_SRAM_ECC_GFX906
+#define A_906
+#else
+#define A_906 "march=gfx906:;"
+#endif
+#ifdef HAVE_GCN_SRAM_ECC_GFX908
+#define A_908
+#else
+#define A_908 "march=gfx908:;"
+#endif
+
+/* These targets can't have SRAM-ECC, even if a broken assembler allows it.  */
 #define DRIVER_SELF_SPECS \
   "%{march=fiji|march=gfx900|march=gfx906:%{!msram-ecc=*:-msram-ecc=off}}"
 
@@ -83,7 +105,8 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 		  "%:last_arg(%{march=*:-mcpu=%*}) " \
 		  "-mattr=%{mxnack:+xnack;:-xnack} " \
 		  /* FIXME: support "any" when we move to HSACOv4.  */ \
-		  "-mattr=%{!msram-ecc=off:+sram-ecc;:-sram-ecc} " \
+		  "-mattr=%{" A_FIJI A_900 A_906 A_908 \
+			    "!msram-ecc=off:+sram-ecc;:-sram-ecc} " \
 		  "-filetype=obj"
 #define LINK_SPEC "--pie --export-dynamic"
 #define LIB_SPEC  "-lc"

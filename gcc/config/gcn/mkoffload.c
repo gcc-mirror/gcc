@@ -898,6 +898,9 @@ main (int argc, char **argv)
       case EF_AMDGPU_MACH_AMDGCN_GFX803:
       case EF_AMDGPU_MACH_AMDGCN_GFX900:
       case EF_AMDGPU_MACH_AMDGCN_GFX906:
+#ifndef HAVE_GCN_SRAM_ECC_GFX908
+      case EF_AMDGPU_MACH_AMDGCN_GFX908:
+#endif
 	break;
       default:
 	/* FIXME: change this when we move to HSACOv4.  */
