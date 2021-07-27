@@ -2800,7 +2800,10 @@ package body Sem_Aggr is
       --  Exp_Aggr.Convert_To_Positional, so we don't want to change those
       --  bounds.
 
-      if Present (Aggregate_Bounds (N)) and then not Others_Allowed then
+      if Present (Aggregate_Bounds (N))
+        and then not Others_Allowed
+        and then not Comes_From_Source (N)
+      then
          Aggr_Low  := Low_Bound  (Aggregate_Bounds (N));
          Aggr_High := High_Bound (Aggregate_Bounds (N));
       end if;
