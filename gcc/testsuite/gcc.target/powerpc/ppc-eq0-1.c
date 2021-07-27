@@ -7,4 +7,4 @@ int foo(int x)
   return x == 0;
 }
 
-/* { dg-final { scan-assembler "cntlzw|isel" } } */
+/* { dg-final { scan-assembler {\m(cntlzw|isel|setbc)\M} } } */
