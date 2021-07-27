@@ -162,7 +162,7 @@ class ExprVisitor : public Visitor
 	    eptype = type;
 	  }
 
-	ret = fold_build2 (code, eptype, arg0, arg1);
+	ret = build2 (code, eptype, arg0, arg1);
       }
 
     return d_convert (type, ret);
