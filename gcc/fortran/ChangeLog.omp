@@ -1,6 +1,15 @@
 2021-07-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-07-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* runtime/ISO_Fortran_binding.c (CFI_allocate): Don't use elem_len
+	for CFI_type_signed_char.
+	(CFI_select_part): Likewise.
+
+2021-07-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-04-21  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR fortran/96983

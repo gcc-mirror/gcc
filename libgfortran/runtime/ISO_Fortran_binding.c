@@ -229,10 +229,9 @@ CFI_allocate (CFI_cdesc_t *dv, const CFI_index_t lower_bounds[],
 	}
     }
 
-  /* If the type is a character, the descriptor's element length is replaced
-     by the elem_len argument. */
-  if (dv->type == CFI_type_char || dv->type == CFI_type_ucs4_char ||
-      dv->type == CFI_type_signed_char)
+  /* If the type is a Fortran character type, the descriptor's element
+     length is replaced by the elem_len argument. */
+  if (dv->type == CFI_type_char || dv->type == CFI_type_ucs4_char)
     dv->elem_len = elem_len;
 
   /* Dimension information and calculating the array length. */
@@ -731,9 +730,9 @@ int CFI_select_part (CFI_cdesc_t *result, const CFI_cdesc_t *source,
 	}
     }
 
-  /* Element length. */
-  if (result->type == CFI_type_char || result->type == CFI_type_ucs4_char ||
-      result->type == CFI_type_signed_char)
+  /* Element length is ignored unless result->type specifies a Fortran
+     character type.  */
+  if (result->type == CFI_type_char || result->type == CFI_type_ucs4_char)
     result->elem_len = elem_len;
 
   if (unlikely (compile_options.bounds_check))
