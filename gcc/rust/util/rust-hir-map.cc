@@ -263,7 +263,7 @@ void
 Mappings::insert_hir_trait_item (CrateNum crateNum, HirId id,
 				 HIR::TraitItem *item)
 {
-  rust_assert (lookup_hir_item (crateNum, id) == nullptr);
+  rust_assert (lookup_hir_trait_item (crateNum, id) == nullptr);
 
   hirTraitItemMappings[crateNum][id] = item;
   nodeIdToHirMappings[crateNum][item->get_mappings ().get_nodeid ()] = id;
