@@ -1,3 +1,14 @@
+2021-07-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-21  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR fortran/96983
+	* trans-intrinsic.c (build_round_expr): If int type is larger than
+	long long, do the round and convert to the integer type.  Do not
+	try to find a floating point type the exact size of the integer
+	type.
+
 2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
