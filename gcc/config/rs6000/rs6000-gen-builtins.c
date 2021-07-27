@@ -2519,6 +2519,58 @@ write_bif_static_init (void)
   fprintf (init_file, "  };\n\n");
 }
 
+/* Write the decls and initializers for rs6000_overload_info[] and
+   rs6000_instance_info[].  */
+static void
+write_ovld_static_init (void)
+{
+  fprintf (init_file,
+	   "ovldrecord rs6000_overload_info[RS6000_OVLD_MAX "
+	   "- RS6000_OVLD_NONE] =\n");
+  fprintf (init_file, "  {\n");
+  fprintf (init_file, "    { /* RS6000_OVLD_NONE: */\n");
+  fprintf (init_file, "      \"\", NULL\n");
+  fprintf (init_file, "    },\n");
+  for (int i = 0; i <= curr_ovld_stanza; i++)
+    {
+      fprintf (init_file, "    { /* RS6000_OVLD_%s: */\n",
+	       ovld_stanzas[i].stanza_id);
+      fprintf (init_file, "      /* ovld_name */\t\"%s\",\n",
+	       ovld_stanzas[i].intern_name);
+      /* First-instance must currently be instantiated at run time.  */
+      fprintf (init_file, "      /* first_instance */\tNULL\n");
+      fprintf (init_file, "    },\n");
+    }
+  fprintf (init_file, "  };\n\n");
+
+  fprintf (init_file, "ovlddata rs6000_instance_info[RS6000_INST_MAX] =\n");
+  fprintf (init_file, "  {\n");
+  fprintf (init_file, "    { /* RS6000_INST_NONE: */\n");
+  fprintf (init_file, "      \"\", RS6000_BIF_NONE, NULL_TREE, NULL\n");
+  fprintf (init_file, "    },\n");
+  for (int i = 0; i <= curr_ovld; i++)
+    {
+      fprintf (init_file, "    { /* RS6000_INST_%s: */\n",
+	       ovlds[i].ovld_id_name);
+      fprintf (init_file, "      /* bifname */\t\"%s\",\n",
+	       ovlds[i].proto.bifname);
+      fprintf (init_file, "      /* bifid */\tRS6000_BIF_%s,\n",
+	       ovlds[i].bif_id_name);
+      /* Type must be instantiated at run time.  */
+      fprintf (init_file, "      /* fntype */\t0,\n");
+      fprintf (init_file, "      /* next */\t");
+      if (i < curr_ovld
+	  && !strcmp (ovlds[i+1].proto.bifname, ovlds[i].proto.bifname))
+	fprintf (init_file,
+		 "&rs6000_instance_info[RS6000_INST_%s]\n",
+		 ovlds[i+1].ovld_id_name);
+      else
+	fprintf (init_file, "NULL\n");
+      fprintf (init_file, "    },\n");
+    }
+  fprintf (init_file, "  };\n\n");
+}
+
 /* Write code to initialize the built-in function table.  */
 static void
 write_init_bif_table (void)
@@ -2709,6 +2761,7 @@ write_init_file (void)
   fprintf (init_file, "tree rs6000_builtin_decls_x[RS6000_OVLD_MAX];\n\n");
 
   write_bif_static_init ();
+  write_ovld_static_init ();
 
   rbt_inorder_callback (&fntype_rbt, fntype_rbt.rbt_root, write_fntype);
   fprintf (init_file, "\n");
