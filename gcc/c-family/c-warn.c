@@ -3275,7 +3275,8 @@ warn_parm_ptrarray_mismatch (location_t origloc, tree curparms, tree newparms)
 	  /* Move on if the bounds look the same.  */
 	  if (!pcurbndpos && !pnewbndpos
 	      && curbnd && newbnd
-	      && operand_equal_p (curbnd, newbnd, OEP_LEXICOGRAPHIC))
+	      && operand_equal_p (curbnd, newbnd,
+				  OEP_DECL_NAME | OEP_LEXICOGRAPHIC))
 	    continue;
 
 	  if ((curbnd && TREE_CODE (curbnd) != INTEGER_CST)
