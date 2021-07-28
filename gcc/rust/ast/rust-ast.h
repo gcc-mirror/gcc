@@ -1128,12 +1128,13 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
+  virtual Location get_locus_slow () const = 0;
+
 protected:
   // Clone function implementation as pure virtual method
   virtual TypeParamBound *clone_type_param_bound_impl () const = 0;
 
-  TypeParamBound () : node_id (Analysis::Mappings::get ()->get_next_node_id ())
-  {}
+  TypeParamBound (NodeId node_id) : node_id (node_id) {}
 
   NodeId node_id;
 };
@@ -1159,8 +1160,14 @@ public:
   // Constructor
   Lifetime (LifetimeType type, std::string name = std::string (),
 	    Location locus = Location ())
-    : lifetime_type (type), lifetime_name (std::move (name)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+    : TypeParamBound (Analysis::Mappings::get ()->get_next_node_id ()),
+      lifetime_type (type), lifetime_name (std::move (name)), locus (locus)
+  {}
+
+  Lifetime (NodeId id, LifetimeType type, std::string name = std::string (),
+	    Location locus = Location ())
+    : TypeParamBound (id), lifetime_type (type),
+      lifetime_name (std::move (name)), locus (locus)
   {}
 
   // Creates an "error" lifetime.
@@ -1178,18 +1185,18 @@ public:
 
   LifetimeType get_lifetime_type () { return lifetime_type; }
 
-  Location get_locus () { return locus; }
+  Location get_locus () const { return locus; }
+
+  Location get_locus_slow () const override final { return get_locus (); }
 
   std::string get_lifetime_name () const { return lifetime_name; }
-
-  NodeId get_node_id () const { return node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   Lifetime *clone_type_param_bound_impl () const override
   {
-    return new Lifetime (*this);
+    return new Lifetime (node_id, lifetime_type, lifetime_name, locus);
   }
 };
 
