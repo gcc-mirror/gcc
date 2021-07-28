@@ -3648,8 +3648,10 @@ vect_optimize_slp (vec_info *vinfo)
       slp_tree node = vertices[idx].node;
 
       /* Handle externals and constants optimistically throughout the
-	 iteration.  */
-      if (SLP_TREE_DEF_TYPE (node) == vect_external_def
+	 iteration.  But treat existing vectors as fixed since we
+	 do not handle permuting them below.  */
+      if ((SLP_TREE_DEF_TYPE (node) == vect_external_def
+	   && !SLP_TREE_VEC_DEFS (node).exists ())
 	  || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
 	continue;
 
