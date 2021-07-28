@@ -2128,8 +2128,8 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 				  "array %s is null but "
 				  "the corresponding bound argument "
 				  "%i value is %s",
-				  sizidx + 1, argtypestr.c_str (),
-				  ptridx + 1, sizstr))
+				  ptridx + 1, argtypestr.c_str (),
+				  sizidx + 1, sizstr))
 		    arg_warned = OPT_Wnonnull;
 		}
 	      else if (warning_at (loc, OPT_Wnonnull,
