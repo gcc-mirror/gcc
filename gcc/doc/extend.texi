@@ -3228,15 +3228,18 @@ calls.
 This tells the compiler that a function is @code{malloc}-like, i.e.,
 that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
-pointers to valid objects occur in any storage addressed by @var{P}.
+pointers to valid objects occur in any storage addressed by @var{P}. In
+addition, GCC predicts that a function with the attribute returns
+non-null in most cases.
 
-Using this attribute can improve optimization.  Compiler predicts
-that a function with the attribute returns non-null in most cases.
-Functions like
-@code{malloc} and @code{calloc} have this property because they return
-a pointer to uninitialized or zeroed-out storage.  However, functions
-like @code{realloc} do not have this property, as they can return a
-pointer to storage containing pointers.
+Using the attribute is designed to improve optimization
+by relying on the aliasing property it implies.  Functions like @code{malloc}
+and @code{calloc} have this property because they return a pointer to
+uninitialized or zeroed-out, newly obtained storage.  However, functions
+like @code{realloc} do not have this property, as they may return pointers
+to storage containing pointers to existing objects.  Additionally, since
+all such functions are assumed to return null only infrequently, callers
+can be optimized based on that assumption.
 
 @item no_icf
 @cindex @code{no_icf} function attribute
