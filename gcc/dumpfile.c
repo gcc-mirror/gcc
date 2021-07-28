@@ -2098,14 +2098,14 @@ enable_rtl_dump_file (void)
 /* debug_dump_context's ctor.  Temporarily override the dump_context
    (to forcibly enable output to stderr).  */
 
-debug_dump_context::debug_dump_context ()
+debug_dump_context::debug_dump_context (FILE *f)
 : m_context (),
   m_saved (&dump_context::get ()),
   m_saved_flags (dump_flags),
   m_saved_pflags (pflags),
   m_saved_file (dump_file)
 {
-  set_dump_file (stderr);
+  set_dump_file (f);
   dump_context::s_current = &m_context;
   pflags = dump_flags = MSG_ALL_KINDS | MSG_ALL_PRIORITIES;
   dump_context::get ().refresh_dumps_are_enabled ();

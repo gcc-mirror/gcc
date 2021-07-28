@@ -8,7 +8,7 @@ extern int get (void);
 
 void test (void)
 {
-  void *p0, *p1, *p2, *p3;
+  void *p0 = NULL, *p1 = NULL, *p2 = NULL, *p3 = NULL;
   /* Due to not purging constraints on SSA names within loops
      (PR analyzer/101068), the analyzer effectively treats the original
      explode-2.c as this code.  */

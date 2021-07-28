@@ -1776,20 +1776,20 @@ pop_operand (rtx op, machine_mode mode)
   return XEXP (op, 0) == stack_pointer_rtx;
 }
 
-/* Return 1 if ADDR is a valid memory address
+/* Return true if ADDR is a valid memory address
    for mode MODE in address space AS.  */
 
-int
+bool
 memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
 			     rtx addr, addr_space_t as)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
-  return 0;
+  return false;
 
  win:
-  return 1;
+  return true;
 #else
   return targetm.addr_space.legitimate_address_p (mode, addr, 0, as);
 #endif
@@ -2361,18 +2361,16 @@ find_constant_term_loc (rtx *p)
   return 0;
 }
 
-/* Return 1 if OP is a memory reference
-   whose address contains no side effects
-   and remains valid after the addition
-   of a positive integer less than the
-   size of the object being referenced.
+/* Return true if OP is a memory reference whose address contains
+   no side effects and remains valid after the addition of a positive
+   integer less than the size of the object being referenced.
 
    We assume that the original address is valid and do not check it.
 
    This uses strict_memory_address_p as a subroutine, so
    don't use it before reload.  */
 
-int
+bool
 offsettable_memref_p (rtx op)
 {
   return ((MEM_P (op))
@@ -2383,7 +2381,7 @@ offsettable_memref_p (rtx op)
 /* Similar, but don't require a strictly valid mem ref:
    consider pseudo-regs valid as index or base regs.  */
 
-int
+bool
 offsettable_nonstrict_memref_p (rtx op)
 {
   return ((MEM_P (op))
@@ -2391,7 +2389,7 @@ offsettable_nonstrict_memref_p (rtx op)
 					       MEM_ADDR_SPACE (op)));
 }
 
-/* Return 1 if Y is a memory address which contains no side effects
+/* Return true if Y is a memory address which contains no side effects
    and would remain valid for address space AS after the addition of
    a positive integer less than the size of that mode.
 
@@ -2401,7 +2399,7 @@ offsettable_nonstrict_memref_p (rtx op)
    If STRICTP is nonzero, we require a strictly valid address,
    for the sake of use in reload.c.  */
 
-int
+bool
 offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
 				  addr_space_t as)
 {
@@ -2409,19 +2407,19 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
   rtx z;
   rtx y1 = y;
   rtx *y2;
-  int (*addressp) (machine_mode, rtx, addr_space_t) =
+  bool (*addressp) (machine_mode, rtx, addr_space_t) =
     (strictp ? strict_memory_address_addr_space_p
 	     : memory_address_addr_space_p);
   poly_int64 mode_sz = GET_MODE_SIZE (mode);
 
   if (CONSTANT_ADDRESS_P (y))
-    return 1;
+    return true;
 
   /* Adjusting an offsettable address involves changing to a narrower mode.
      Make sure that's OK.  */
 
   if (mode_dependent_address_p (y, as))
-    return 0;
+    return false;
 
   machine_mode address_mode = GET_MODE (y);
   if (address_mode == VOIDmode)
@@ -2442,7 +2440,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
 
   if ((ycode == PLUS) && (y2 = find_constant_term_loc (&y1)))
     {
-      int good;
+      bool good;
 
       y1 = *y2;
       *y2 = plus_constant (address_mode, *y2, mode_sz - 1);
@@ -2456,7 +2454,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
     }
 
   if (GET_RTX_CLASS (ycode) == RTX_AUTOINC)
-    return 0;
+    return false;
 
   /* The offset added here is chosen as the maximum offset that
      any instruction could need to add when operating on something
@@ -2486,7 +2484,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
   return (*addressp) (QImode, z, as);
 }
 
-/* Return 1 if ADDR is an address-expression whose effect depends
+/* Return true if ADDR is an address-expression whose effect depends
    on the mode of the memory reference it is used in.
 
    ADDRSPACE is the address space associated with the address.

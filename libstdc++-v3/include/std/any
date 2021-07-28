@@ -33,10 +33,11 @@
 
 #if __cplusplus >= 201703L
 
+#include <initializer_list>
 #include <typeinfo>
 #include <new>
-#include <utility>
 #include <type_traits>
+#include <bits/utility.h> // in_place_type_t
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -845,10 +845,19 @@ package GNAT.Sockets is
       -- IP_Protocol_For_TCP_Level --
       -------------------------------
 
-      No_Delay, -- TCP_NODELAY
+      No_Delay,            -- TCP_NODELAY
       --  Disable the Nagle algorithm. This means that output buffer content
       --  is always sent as soon as possible, even if there is only a small
       --  amount of data.
+
+      Keep_Alive_Count,    -- TCP_KEEPCNT
+      --  Maximum number of keepalive probes
+
+      Keep_Alive_Idle,     -- TCP_KEEPIDLE
+      --  Idle time before TCP starts sending keepalive probes
+
+      Keep_Alive_Interval, -- TCP_KEEPINTVL
+      --  Time between individual keepalive probes
 
       ------------------------------
       -- IP_Protocol_For_IP_Level --
@@ -923,26 +932,35 @@ package GNAT.Sockets is
             Enabled : Boolean;
 
             case Name is
-               when Linger    =>
+               when Linger =>
                   Seconds : Natural;
-               when others    =>
+               when others =>
                   null;
             end case;
 
-         when Busy_Polling    =>
+         when Keep_Alive_Count    =>
+            Count : Natural;
+
+         when Keep_Alive_Idle     =>
+            Idle_Seconds : Natural;
+
+         when Keep_Alive_Interval =>
+            Interval_Seconds : Natural;
+
+         when Busy_Polling        =>
             Microseconds : Natural;
 
-         when Send_Buffer     |
-              Receive_Buffer  =>
+         when Send_Buffer         |
+              Receive_Buffer      =>
             Size : Natural;
 
-         when Error           =>
+         when Error               =>
             Error : Error_Type;
 
-         when Add_Membership_V4  |
-              Add_Membership_V6  |
-              Drop_Membership_V4 |
-              Drop_Membership_V6 =>
+         when Add_Membership_V4   |
+              Add_Membership_V6   |
+              Drop_Membership_V4  |
+              Drop_Membership_V6  =>
             Multicast_Address : Inet_Addr_Type;
             case Name is
                when Add_Membership_V4  |
@@ -958,13 +976,13 @@ package GNAT.Sockets is
          when Multicast_If_V6 =>
             Outgoing_If_Index : Natural;
 
-         when Multicast_TTL  =>
+         when Multicast_TTL   =>
             Time_To_Live : Natural;
 
-         when Multicast_Hops =>
+         when Multicast_Hops  =>
             Hop_Limit : Integer range -1 .. 255;
 
-         when Send_Timeout |
+         when Send_Timeout    |
               Receive_Timeout =>
             Timeout : Timeval_Duration;
 

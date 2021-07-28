@@ -1032,12 +1032,21 @@ cfg_superedge::dump_label_to_pp (pretty_printer *pp,
   /* Otherwise, no label.  */
 }
 
+/* Get the index number for this edge for use in phi stmts
+   in its destination.  */
+
+size_t
+cfg_superedge::get_phi_arg_idx () const
+{
+  return m_cfg_edge->dest_idx;
+}
+
 /* Get the phi argument for PHI for this CFG edge.  */
 
 tree
 cfg_superedge::get_phi_arg (const gphi *phi) const
 {
-  size_t index = m_cfg_edge->dest_idx;
+  size_t index = get_phi_arg_idx ();
   return gimple_phi_arg_def (phi, index);
 }
 

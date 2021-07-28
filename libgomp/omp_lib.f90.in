@@ -653,6 +653,15 @@
           end function
         end interface
 
+        interface omp_display_env
+          subroutine omp_display_env (verbose)
+            logical (4),intent (in) :: verbose
+          end subroutine omp_display_env
+          subroutine omp_display_env_8 (verbose)
+            logical (8),intent (in) :: verbose
+          end subroutine omp_display_env_8
+        end interface
+
 #if _OPENMP >= 201811
 !GCC$ ATTRIBUTES DEPRECATED :: omp_get_nested, omp_set_nested
 #endif

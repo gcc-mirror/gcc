@@ -192,6 +192,8 @@ struct laststmt_struct
 
 static int get_stridx_plus_constant (strinfo *, unsigned HOST_WIDE_INT, tree);
 static void handle_builtin_stxncpy_strncat (bool, gimple_stmt_iterator *);
+static bool handle_assign (gimple_stmt_iterator *, tree, bool *,
+			   pointer_query &);
 
 /* Sets MINMAX to either the constant value or the range VAL is in
    and returns either the constant value or VAL on success or null
@@ -1929,12 +1931,15 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 /* Diagnose buffer overflow by a STMT writing LEN + PLUS_ONE bytes,
    either into a region allocated for the object SI when non-null,
    or into an object designated by the LHS of STMT otherwise.
+   For a call STMT, when CALL_LHS is set use its left hand side
+   as the destination, otherwise use argument zero.
    When nonnull uses RVALS to determine range information.
    RAWMEM may be set by memcpy and other raw memory functions
    to allow accesses across subobject boundaries.  */
 
 static void
-maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
+maybe_warn_overflow (gimple *stmt, bool call_lhs, tree len,
+		     pointer_query &ptr_qry,
 		     strinfo *si = NULL, bool plus_one = false,
 		     bool rawmem = false)
 {
@@ -1944,14 +1949,23 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
   /* The DECL of the function performing the write if it is done
      by one.  */
   tree writefn = NULL_TREE;
-  /* The destination expression involved in the store STMT.  */
+  /* The destination expression involved in the store or call STMT.  */
   tree dest = NULL_TREE;
 
   if (is_gimple_assign (stmt))
     dest = gimple_assign_lhs (stmt);
   else if (is_gimple_call (stmt))
     {
-      dest = gimple_call_arg (stmt, 0);
+      if (call_lhs)
+	dest = gimple_call_lhs (stmt);
+      else
+	{
+	  gcc_assert (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL));
+	  dest = gimple_call_arg (stmt, 0);
+	}
+
+      if (!dest)
+	return;
       writefn = gimple_call_fndecl (stmt);
     }
   else
@@ -2022,13 +2036,12 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
 
       warned = (writefn
 		? warning_at (loc, OPT_Wstringop_overflow_,
-			      "%G%qD writing one too many bytes into a region "
+			      "%qD writing one too many bytes into a region "
 			      "of a size that depends on %<strlen%>",
-			      stmt, writefn)
+			      writefn)
 		: warning_at (loc, OPT_Wstringop_overflow_,
-			      "%Gwriting one too many bytes into a region "
-			      "of a size that depends on %<strlen%>",
-			      stmt));
+			      "writing one too many bytes into a region "
+			      "of a size that depends on %<strlen%>"));
     }
   else if (lenrng[0] == lenrng[1])
     {
@@ -2036,65 +2049,65 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
 	warned = (writefn
 		  ? warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrng[0].to_uhwi (),
-			       "%G%qD writing %wu byte into a region "
+			       "%qD writing %wu byte into a region "
 			       "of size %wu",
-			       "%G%qD writing %wu bytes into a region "
+			       "%qD writing %wu bytes into a region "
 			       "of size %wu",
-			       stmt, writefn, lenrng[0].to_uhwi (),
+			       writefn, lenrng[0].to_uhwi (),
 			       spcrng[0].to_uhwi ())
 		  : warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrng[0].to_uhwi (),
-			       "%Gwriting %wu byte into a region "
+			       "writing %wu byte into a region "
 			       "of size %wu",
-			       "%Gwriting %wu bytes into a region "
+			       "writing %wu bytes into a region "
 			       "of size %wu",
-			       stmt, lenrng[0].to_uhwi (),
+			       lenrng[0].to_uhwi (),
 			       spcrng[0].to_uhwi ()));
       else
 	warned = (writefn
 		  ? warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrng[0].to_uhwi (),
-			       "%G%qD writing %wu byte into a region "
+			       "%qD writing %wu byte into a region "
 			       "of size between %wu and %wu",
-			       "%G%qD writing %wu bytes into a region "
+			       "%qD writing %wu bytes into a region "
 			       "of size between %wu and %wu",
-			       stmt, writefn, lenrng[0].to_uhwi (),
+			       writefn, lenrng[0].to_uhwi (),
 			       spcrng[0].to_uhwi (), spcrng[1].to_uhwi ())
 		  : warning_n (loc, OPT_Wstringop_overflow_,
 			       lenrng[0].to_uhwi (),
-			       "%Gwriting %wu byte into a region "
+			       "writing %wu byte into a region "
 			       "of size between %wu and %wu",
-			       "%Gwriting %wu bytes into a region "
+			       "writing %wu bytes into a region "
 			       "of size between %wu and %wu",
-			       stmt, lenrng[0].to_uhwi (),
+			       lenrng[0].to_uhwi (),
 			       spcrng[0].to_uhwi (), spcrng[1].to_uhwi ()));
     }
   else if (spcrng[0] == spcrng[1])
     warned = (writefn
 	      ? warning_at (loc, OPT_Wstringop_overflow_,
-			    "%G%qD writing between %wu and %wu bytes "
+			    "%qD writing between %wu and %wu bytes "
 			    "into a region of size %wu",
-			    stmt, writefn, lenrng[0].to_uhwi (),
+			    writefn, lenrng[0].to_uhwi (),
 			    lenrng[1].to_uhwi (),
 			    spcrng[0].to_uhwi ())
 	      : warning_at (loc, OPT_Wstringop_overflow_,
-			    "%Gwriting between %wu and %wu bytes "
+			    "writing between %wu and %wu bytes "
 			    "into a region of size %wu",
-			    stmt, lenrng[0].to_uhwi (),
+			    lenrng[0].to_uhwi (),
 			    lenrng[1].to_uhwi (),
 			    spcrng[0].to_uhwi ()));
   else
     warned = (writefn
 	      ? warning_at (loc, OPT_Wstringop_overflow_,
-			    "%G%qD writing between %wu and %wu bytes "
+			    "%qD writing between %wu and %wu bytes "
 			    "into a region of size between %wu and %wu",
-			    stmt, writefn, lenrng[0].to_uhwi (),
+			    writefn, lenrng[0].to_uhwi (),
 			    lenrng[1].to_uhwi (),
 			    spcrng[0].to_uhwi (), spcrng[1].to_uhwi ())
 	      : warning_at (loc, OPT_Wstringop_overflow_,
-			    "%Gwriting between %wu and %wu bytes "
+			    "writing between %wu and %wu bytes "
 			    "into a region of size between %wu and %wu",
-			    stmt, lenrng[0].to_uhwi (),
+			    lenrng[0].to_uhwi (),
 			    lenrng[1].to_uhwi (),
 			    spcrng[0].to_uhwi (), spcrng[1].to_uhwi ()));
 
@@ -2109,12 +2122,12 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
 /* Convenience wrapper for the above.  */
 
 static inline void
-maybe_warn_overflow (gimple *stmt, unsigned HOST_WIDE_INT len,
+maybe_warn_overflow (gimple *stmt, bool call_lhs, unsigned HOST_WIDE_INT len,
 		     pointer_query &ptr_qry, strinfo *si = NULL,
 		     bool plus_one = false, bool rawmem = false)
 {
-  maybe_warn_overflow (stmt, build_int_cst (size_type_node, len), ptr_qry,
-		       si, plus_one, rawmem);
+  tree tlen = build_int_cst (size_type_node, len);
+  maybe_warn_overflow (stmt, call_lhs, tlen, ptr_qry, si, plus_one, rawmem);
 }
 
 /* Handle a strlen call.  If strlen of the argument is known, replace
@@ -2444,7 +2457,7 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi,
   else if (idx < 0)
     srclen = build_int_cst (size_type_node, ~idx);
 
-  maybe_warn_overflow (stmt, srclen, ptr_qry, olddsi, true);
+  maybe_warn_overflow (stmt, false, srclen, ptr_qry, olddsi, true);
 
   if (olddsi != NULL)
     adjust_last_stmt (olddsi, stmt, false, ptr_qry);
@@ -2985,13 +2998,13 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
       if (lenrange[0] == cntrange[1] && cntrange[0] == cntrange[1])
 	return warning_n (callloc, OPT_Wstringop_truncation,
 			  cntrange[0].to_uhwi (),
-			  "%G%qD output truncated before terminating "
+			  "%qD output truncated before terminating "
 			  "nul copying %E byte from a string of the "
 			  "same length",
-			  "%G%qD output truncated before terminating nul "
+			  "%qD output truncated before terminating nul "
 			  "copying %E bytes from a string of the same "
 			  "length",
-			  stmt, func, cnt);
+			  func, cnt);
       else if (!cat_dstlen_bounded)
 	{
 	  if (wi::geu_p (lenrange[0], cntrange[1]))
@@ -3001,16 +3014,16 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 	      if (cntrange[0] == cntrange[1])
 		return warning_n (callloc, OPT_Wstringop_truncation,
 				  cntrange[0].to_uhwi (),
-				  "%G%qD output truncated copying %E byte "
+				  "%qD output truncated copying %E byte "
 				  "from a string of length %wu",
-				  "%G%qD output truncated copying %E bytes "
+				  "%qD output truncated copying %E bytes "
 				  "from a string of length %wu",
-				  stmt, func, cnt, lenrange[0].to_uhwi ());
+				  func, cnt, lenrange[0].to_uhwi ());
 
 	      return warning_at (callloc, OPT_Wstringop_truncation,
-				 "%G%qD output truncated copying between %wu "
+				 "%qD output truncated copying between %wu "
 				 "and %wu bytes from a string of length %wu",
-				 stmt, func, cntrange[0].to_uhwi (),
+				 func, cntrange[0].to_uhwi (),
 				 cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
 	    }
 	  else if (wi::geu_p (lenrange[1], cntrange[1]))
@@ -3020,16 +3033,16 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 	      if (cntrange[0] == cntrange[1])
 		return warning_n (callloc, OPT_Wstringop_truncation,
 				  cntrange[0].to_uhwi (),
-				  "%G%qD output may be truncated copying %E "
+				  "%qD output may be truncated copying %E "
 				  "byte from a string of length %wu",
-				  "%G%qD output may be truncated copying %E "
+				  "%qD output may be truncated copying %E "
 				  "bytes from a string of length %wu",
-				  stmt, func, cnt, lenrange[1].to_uhwi ());
+				  func, cnt, lenrange[1].to_uhwi ());
 
 	      return warning_at (callloc, OPT_Wstringop_truncation,
-				 "%G%qD output may be truncated copying between "
+				 "%qD output may be truncated copying between "
 				 "%wu and %wu bytes from a string of length %wu",
-				 stmt, func, cntrange[0].to_uhwi (),
+				 func, cntrange[0].to_uhwi (),
 				 cntrange[1].to_uhwi (), lenrange[1].to_uhwi ());
 	    }
 	}
@@ -3043,9 +3056,9 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 	     the lower bound of the specified count but shorter than the
 	     upper bound the copy may (but need not) be truncated.  */
 	  return warning_at (callloc, OPT_Wstringop_truncation,
-			     "%G%qD output may be truncated copying between "
+			     "%qD output may be truncated copying between "
 			     "%wu and %wu bytes from a string of length %wu",
-			     stmt, func, cntrange[0].to_uhwi (),
+			     func, cntrange[0].to_uhwi (),
 			     cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
 	}
     }
@@ -3072,8 +3085,8 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 
       if (cntrange[0] == cntrange[1])
 	return warning_at (callloc, OPT_Wstringop_truncation,
-			   "%G%qD specified bound %E equals destination size",
-			   stmt, func, cnt);
+			   "%qD specified bound %E equals destination size",
+			   func, cnt);
     }
 
   return false;
@@ -3197,9 +3210,9 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
       && sisrc == silen
       && is_strlen_related_p (src, len)
       && warning_at (callloc, OPT_Wstringop_truncation,
-		     "%G%qD output truncated before terminating nul "
+		     "%qD output truncated before terminating nul "
 		     "copying as many bytes from a string as its length",
-		     stmt, func))
+		     func))
     warned = true;
   else if ((append_p || !dstsize || len == dstlenp1)
 	   && silen && is_strlen_related_p (src, silen->ptr))
@@ -3210,9 +3223,9 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
       opt_code opt = (append_p || dstsize
 		      ? OPT_Wstringop_overflow_ : OPT_Wstringop_truncation);
       warned = warning_at (callloc, opt,
-			   "%G%qD specified bound depends on the length "
+			   "%qD specified bound depends on the length "
 			   "of the source argument",
-			   stmt, func);
+			   func);
     }
   if (warned)
     {
@@ -3249,7 +3262,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi,
   if (olddsi != NULL
       && !integer_zerop (len))
     {
-      maybe_warn_overflow (stmt, len, ptr_qry, olddsi, false, true);
+      maybe_warn_overflow (stmt, false, len, ptr_qry, olddsi, false, true);
       adjust_last_stmt (olddsi, stmt, false, ptr_qry);
     }
 
@@ -3714,7 +3727,8 @@ handle_builtin_memset (gimple_stmt_iterator *gsi, bool *zero_write,
   tree memset_size = gimple_call_arg (memset_stmt, 2);
 
   /* Check for overflow.  */
-  maybe_warn_overflow (memset_stmt, memset_size, ptr_qry, NULL, false, true);
+  maybe_warn_overflow (memset_stmt, false, memset_size, ptr_qry, NULL,
+		       false, true);
 
   /* Bail when there is no statement associated with the destination
      (the statement may be null even when SI1->ALLOC is not).  */
@@ -4141,24 +4155,24 @@ maybe_warn_pointless_strcmp (gimple *stmt, HOST_WIDE_INT bound,
   if (siz <= minlen && bound == -1)
     warned = warning_at (stmt_loc, OPT_Wstring_compare,
 			 (at_least
-			  ? G_("%G%qD of a string of length %wu or more and "
+			  ? G_("%qD of a string of length %wu or more and "
 			       "an array of size %wu evaluates to nonzero")
-			  : G_("%G%qD of a string of length %wu and an array "
+			  : G_("%qD of a string of length %wu and an array "
 			       "of size %wu evaluates to nonzero")),
-			 stmt, callee, minlen, siz);
+			 callee, minlen, siz);
   else if (!at_least && siz <= HOST_WIDE_INT_MAX)
     {
       if (len[0] != HOST_WIDE_INT_MAX && len[1] != HOST_WIDE_INT_MAX)
 	warned = warning_at (stmt_loc, OPT_Wstring_compare,
-			     "%G%qD of strings of length %wu and %wu "
+			     "%qD of strings of length %wu and %wu "
 			     "and bound of %wu evaluates to nonzero",
-			     stmt, callee, len[0], len[1], bound);
+			     callee, len[0], len[1], bound);
       else
 	warned = warning_at (stmt_loc, OPT_Wstring_compare,
-			     "%G%qD of a string of length %wu, an array "
+			     "%qD of a string of length %wu, an array "
 			     "of size %wu and bound of %wu evaluates to "
 			     "nonzero",
-			     stmt, callee, minlen, siz, bound);
+			     callee, minlen, siz, bound);
     }
 
   if (!warned)
@@ -4375,19 +4389,49 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
     }
 }
 
+/* Set LENRANGE to the number of nonzero bytes for a store of TYPE and
+   clear all flags.  Return true on success and false on failure.  */
+
+static bool
+nonzero_bytes_for_type (tree type, unsigned lenrange[3],
+			bool *nulterm, bool *allnul, bool *allnonnul)
+{
+  /* Use the size of the type of the expression as the size of the store,
+     and set the upper bound of the length range to that of the size.
+     Nothing is known about the contents so clear all flags.  */
+  tree typesize = TYPE_SIZE_UNIT (type);
+  if (!type)
+    return false;
+
+  if (!tree_fits_uhwi_p (typesize))
+    return false;
+
+  unsigned HOST_WIDE_INT sz = tree_to_uhwi (typesize);
+  if (sz > UINT_MAX)
+    return false;
+
+  lenrange[2] = sz;
+  lenrange[1] = lenrange[2] ? lenrange[2] - 1 : 0;
+  lenrange[0] = 0;
+  *nulterm = false;
+  *allnul = false;
+  *allnonnul = false;
+  return true;
+}
+
 static bool
 count_nonzero_bytes_addr (tree, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 			  unsigned [3], bool *, bool *, bool *,
 			  range_query *, ssa_name_limit_t &);
 
-/* Determines the minimum and maximum number of leading non-zero bytes
-   in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
+/* Recursively determine the minimum and maximum number of leading nonzero
+   bytes in the representation of EXP and set LENRANGE[0] and LENRANGE[1]
    to each.
    Sets LENRANGE[2] to the total size of the access (which may be less
    than LENRANGE[1] when what's being referenced by EXP is a pointer
    rather than an array).
-   Sets *NULTERM if the representation contains a zero byte, and sets
-   *ALLNUL if all the bytes are zero.
+   Sets *NULTERM if the representation contains a zero byte, sets *ALLNUL
+   if all the bytes are zero, and *ALLNONNUL is all are nonzero.
    OFFSET and NBYTES are the offset into the representation and
    the size of the access to it determined from an ADDR_EXPR (i.e.,
    a pointer) or MEM_REF or zero for other expressions.
@@ -4423,9 +4467,11 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
       if (gimple_assign_single_p (stmt))
 	{
 	  exp = gimple_assign_rhs1 (stmt);
-	  if (TREE_CODE (exp) != MEM_REF)
+	  if (!DECL_P (exp)
+	      && TREE_CODE (exp) != CONSTRUCTOR
+	      && TREE_CODE (exp) != MEM_REF)
 	    return false;
-	  /* Handle MEM_REF below.  */
+	  /* Handle DECLs, CONSTRUCTOR and MEM_REF below.  */
 	}
       else if (gimple_code (stmt) == GIMPLE_PHI)
 	{
@@ -4447,6 +4493,25 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 
 	  return true;
 	}
+    }
+
+  if (TREE_CODE (exp) == CONSTRUCTOR)
+    {
+      if (nbytes)
+	/* If NBYTES has already been determined by an outer MEM_REF
+	   fail rather than overwriting it (this shouldn't happen).  */
+	return false;
+
+      tree type = TREE_TYPE (exp);
+      tree size = TYPE_SIZE_UNIT (type);
+      if (!size || !tree_fits_uhwi_p (size))
+	return false;
+
+      unsigned HOST_WIDE_INT byte_size = tree_to_uhwi (size);
+      if (byte_size < offset)
+	return false;
+
+      nbytes = byte_size - offset;
     }
 
   if (TREE_CODE (exp) == MEM_REF)
@@ -4484,9 +4549,11 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
 
   if (VAR_P (exp) || TREE_CODE (exp) == CONST_DECL)
     {
-      exp = ctor_for_folding (exp);
-      if (!exp)
-	return false;
+      /* If EXP can be folded into a constant use the result.  Otherwise
+	 proceed to use EXP to determine a range of the result.  */
+      if (tree fold_exp = ctor_for_folding (exp))
+	if (fold_exp != error_mark_node)
+	  exp = fold_exp;
     }
 
   const char *prep = NULL;
@@ -4534,7 +4601,8 @@ count_nonzero_bytes (tree exp, unsigned HOST_WIDE_INT offset,
     }
 
   if (!nbytes)
-    return false;
+    return nonzero_bytes_for_type (TREE_TYPE (exp), lenrange,
+				   nulterm, allnul, allnonnul);
 
   /* Compute the number of leading nonzero bytes in the representation
      and update the minimum and maximum.  */
@@ -4697,14 +4765,19 @@ count_nonzero_bytes_addr (tree exp, unsigned HOST_WIDE_INT offset,
   return true;
 }
 
-/* Same as above except with an implicit SSA_NAME limit.  RVALS is used
-   to determine ranges of dynamically computed string lengths (the results
-   of strlen).  */
+/* Same as above except with an implicit SSA_NAME limit.  When EXPR_OR_TYPE
+   is a type rather than an expression use its size to compute the range.
+   RVALS is used to determine ranges of dynamically computed string lengths
+   (the results of strlen).  */
 
 static bool
-count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
+count_nonzero_bytes (tree expr_or_type, unsigned lenrange[3], bool *nulterm,
 		     bool *allnul, bool *allnonnul, range_query *rvals)
 {
+  if (TYPE_P (expr_or_type))
+    return nonzero_bytes_for_type (expr_or_type, lenrange,
+				   nulterm, allnul, allnonnul);
+
   /* Set to optimistic values so the caller doesn't have to worry about
      initializing these and to what.  On success, the function will clear
      these if it determines their values are different but being recursive
@@ -4715,7 +4788,8 @@ count_nonzero_bytes (tree exp, unsigned lenrange[3], bool *nulterm,
   *allnonnul = true;
 
   ssa_name_limit_t snlim;
-  return count_nonzero_bytes (exp, 0, 0, lenrange, nulterm, allnul, allnonnul,
+  tree expr = expr_or_type;
+  return count_nonzero_bytes (expr, 0, 0, lenrange, nulterm, allnul, allnonnul,
 			      rvals, snlim);
 }
 
@@ -4729,11 +4803,29 @@ static bool
 handle_store (gimple_stmt_iterator *gsi, bool *zero_write,
 	      pointer_query &ptr_qry)
 {
-  int idx = -1;
-  strinfo *si = NULL;
   gimple *stmt = gsi_stmt (*gsi);
-  tree ssaname = NULL_TREE, lhs = gimple_assign_lhs (stmt);
-  tree rhs = gimple_assign_rhs1 (stmt);
+  /* The LHS and RHS of the store.  The RHS is null if STMT is a function
+     call.  STORETYPE is the type of the store (determined from either
+     the RHS of the assignment statement or the LHS of a function call.  */
+  tree lhs, rhs, storetype;
+  if (is_gimple_assign (stmt))
+    {
+      lhs = gimple_assign_lhs (stmt);
+      rhs = gimple_assign_rhs1 (stmt);
+      storetype = TREE_TYPE (rhs);
+    }
+  else if (is_gimple_call (stmt))
+    {
+      lhs = gimple_call_lhs (stmt);
+      rhs = NULL_TREE;
+      storetype = TREE_TYPE (lhs);
+    }
+  else
+    return true;
+
+  tree ssaname = NULL_TREE;
+  strinfo *si = NULL;
+  int idx = -1;
 
   range_query *const rvals = ptr_qry.rvals;
 
@@ -4757,13 +4849,13 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write,
 	    ssaname = TREE_OPERAND (lhs, 0);
 	  else if (si == NULL || compare_nonzero_chars (si, offset, rvals) < 0)
 	    {
-	      *zero_write = initializer_zerop (rhs);
+	      *zero_write = rhs ? initializer_zerop (rhs) : false;
 
 	      bool dummy;
 	      unsigned lenrange[] = { UINT_MAX, 0, 0 };
-	      if (count_nonzero_bytes (rhs, lenrange, &dummy, &dummy, &dummy,
-				       rvals))
-		maybe_warn_overflow (stmt, lenrange[2], ptr_qry);
+	      if (count_nonzero_bytes (rhs ? rhs : storetype, lenrange,
+				       &dummy, &dummy, &dummy, rvals))
+		maybe_warn_overflow (stmt, true, lenrange[2], ptr_qry);
 
 	      return true;
 	    }
@@ -4794,16 +4886,17 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write,
   bool full_string_p;
 
   const bool ranges_valid
-    = count_nonzero_bytes (rhs, lenrange, &full_string_p,
+    = count_nonzero_bytes (rhs ? rhs : storetype, lenrange, &full_string_p,
 			   &storing_all_zeros_p, &storing_all_nonzero_p,
 			   rvals);
+
   if (ranges_valid)
     {
       rhs_minlen = lenrange[0];
       storing_nonzero_p = lenrange[1] > 0;
       *zero_write = storing_all_zeros_p;
 
-      maybe_warn_overflow (stmt, lenrange[2], ptr_qry);
+      maybe_warn_overflow (stmt, true, lenrange[2], ptr_qry);
     }
   else
     {
@@ -4865,7 +4958,7 @@ handle_store (gimple_stmt_iterator *gsi, bool *zero_write,
 	  && storing_nonzero_p
 	  && lenrange[0] == lenrange[1]
 	  && lenrange[0] == lenrange[2]
-	  && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE)
+	  && TREE_CODE (storetype) == INTEGER_TYPE)
 	{
 	  /* Handle a store of one or more non-nul characters that ends
 	     before the terminating nul of the destination and so does
@@ -5146,8 +5239,19 @@ strlen_check_and_optimize_call (gimple_stmt_iterator *gsi, bool *zero_write,
   if (!gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     {
       tree fntype = gimple_call_fntype (stmt);
-      if (fntype && lookup_attribute ("alloc_size", TYPE_ATTRIBUTES (fntype)))
-	handle_alloc_call (BUILT_IN_NONE, gsi);
+      if (!fntype)
+	return true;
+
+      if (lookup_attribute ("alloc_size", TYPE_ATTRIBUTES (fntype)))
+	{
+	  handle_alloc_call (BUILT_IN_NONE, gsi);
+	  return true;
+	}
+
+      if (tree lhs = gimple_call_lhs (stmt))
+	handle_assign (gsi, lhs, zero_write, ptr_qry);
+
+      /* Proceed to handle user-defined formatting functions.  */
     }
 
   /* When not optimizing we must be checking printf calls which
@@ -5363,6 +5467,48 @@ handle_integral_assign (gimple_stmt_iterator *gsi, bool *cleanup_eh,
     }
 }
 
+/* Handle assignment statement at *GSI to LHS.  Set *ZERO_WRITE if
+   the assignent stores all zero bytes..  */
+
+static bool
+handle_assign (gimple_stmt_iterator *gsi, tree lhs, bool *zero_write,
+	       pointer_query &ptr_qry)
+{
+  tree type = TREE_TYPE (lhs);
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  bool is_char_store = is_char_type (type);
+  if (!is_char_store && TREE_CODE (lhs) == MEM_REF)
+    {
+      /* To consider stores into char objects via integer types other
+	 than char but not those to non-character objects, determine
+	 the type of the destination rather than just the type of
+	 the access.  */
+      for (int i = 0; i != 2; ++i)
+	{
+	  tree ref = TREE_OPERAND (lhs, i);
+	  type = TREE_TYPE (ref);
+	  if (TREE_CODE (type) == POINTER_TYPE)
+	    type = TREE_TYPE (type);
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    type = TREE_TYPE (type);
+	  if (is_char_type (type))
+	    {
+	      is_char_store = true;
+	      break;
+	    }
+	}
+    }
+
+  /* Handle a single or multibyte assignment.  */
+  if (is_char_store && !handle_store (gsi, zero_write, ptr_qry))
+    return false;
+
+  return true;
+}
+
+
 /* Attempt to check for validity of the performed access a single statement
    at *GSI using string length knowledge, and to optimize it.
    If the given basic block needs clean-up of EH, CLEANUP_EH is set to
@@ -5408,38 +5554,8 @@ check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh,
 	/* Handle assignment to a character.  */
 	handle_integral_assign (gsi, cleanup_eh, ptr_qry.rvals);
       else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
-	{
-	  tree type = TREE_TYPE (lhs);
-	  if (TREE_CODE (type) == ARRAY_TYPE)
-	    type = TREE_TYPE (type);
-
-	bool is_char_store = is_char_type (type);
-	if (!is_char_store && TREE_CODE (lhs) == MEM_REF)
-	  {
-	    /* To consider stores into char objects via integer types
-	       other than char but not those to non-character objects,
-	       determine the type of the destination rather than just
-	       the type of the access.  */
-	    for (int i = 0; i != 2; ++i)
-	      {
-		tree ref = TREE_OPERAND (lhs, i);
-		type = TREE_TYPE (ref);
-		if (TREE_CODE (type) == POINTER_TYPE)
-		  type = TREE_TYPE (type);
-		if (TREE_CODE (type) == ARRAY_TYPE)
-		  type = TREE_TYPE (type);
-		if (is_char_type (type))
-		  {
-		    is_char_store = true;
-		    break;
-		  }
-	      }
-	  }
-
-	  /* Handle a single or multibyte assignment.  */
-	  if (is_char_store && !handle_store (gsi, &zero_write, ptr_qry))
-	    return false;
-	}
+	if (!handle_assign (gsi, lhs, &zero_write, ptr_qry))
+	  return false;
     }
   else if (gcond *cond = dyn_cast<gcond *> (stmt))
     {

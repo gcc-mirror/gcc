@@ -99,6 +99,9 @@ int goacc_default_dims[GOMP_DIM_MAX];
 
 #ifndef LIBGOMP_OFFLOADED_ONLY
 
+static int wait_policy;
+static unsigned long stacksize = GOMP_DEFAULT_STACKSIZE;
+
 /* Parse the OMP_SCHEDULE environment variable.  */
 
 static void
@@ -1210,45 +1213,10 @@ parse_gomp_openacc_dim (void)
     }
 }
 
-static void
-handle_omp_display_env (unsigned long stacksize, int wait_policy)
+void
+omp_display_env (int verbose)
 {
-  const char *env;
-  bool display = false;
-  bool verbose = false;
   int i;
-
-  env = getenv ("OMP_DISPLAY_ENV");
-  if (env == NULL)
-    return;
-
-  while (isspace ((unsigned char) *env))
-    ++env;
-  if (strncasecmp (env, "true", 4) == 0)
-    {
-      display = true;
-      env += 4;
-    }
-  else if (strncasecmp (env, "false", 5) == 0)
-    {
-      display = false;
-      env += 5;
-    }
-  else if (strncasecmp (env, "verbose", 7) == 0)
-    {
-      display = true;
-      verbose = true;
-      env += 7;
-    }
-  else
-    env = "X";
-  while (isspace ((unsigned char) *env))
-    ++env;
-  if (*env != '\0')
-    gomp_error ("Invalid value for environment variable OMP_DISPLAY_ENV");
-
-  if (!display)
-    return;
 
   fputs ("\nOPENMP DISPLAY ENVIRONMENT BEGIN\n", stderr);
 
@@ -1408,14 +1376,54 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
 
   fputs ("OPENMP DISPLAY ENVIRONMENT END\n", stderr);
 }
+ialias (omp_display_env)
+
+static void
+handle_omp_display_env (void)
+{
+  const char *env;
+  bool display = false;
+  bool verbose = false;
+
+  env = getenv ("OMP_DISPLAY_ENV");
+  if (env == NULL)
+    return;
+
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (strncasecmp (env, "true", 4) == 0)
+    {
+      display = true;
+      env += 4;
+    }
+  else if (strncasecmp (env, "false", 5) == 0)
+    {
+      display = false;
+      env += 5;
+    }
+  else if (strncasecmp (env, "verbose", 7) == 0)
+    {
+      display = true;
+      verbose = true;
+      env += 7;
+    }
+  else
+    env = "X";
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env != '\0')
+    gomp_error ("Invalid value for environment variable OMP_DISPLAY_ENV");
+
+  if (display)
+    omp_display_env (verbose);
+}
 
 
 static void __attribute__((constructor))
 initialize_env (void)
 {
-  unsigned long thread_limit_var, stacksize = GOMP_DEFAULT_STACKSIZE;
+  unsigned long thread_limit_var;
   unsigned long max_active_levels_var;
-  int wait_policy;
 
   /* Do a compile time check that mkomp_h.pl did good job.  */
   omp_check_defines ();
@@ -1546,7 +1554,7 @@ initialize_env (void)
 	gomp_error ("Stack size change failed: %s", strerror (err));
     }
 
-  handle_omp_display_env (stacksize, wait_policy);
+  handle_omp_display_env ();
 
   /* OpenACC.  */
 

@@ -2831,7 +2831,7 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent,
 	  if (bb->loop_father->header == bb)
 	    fprintf (outf, ",loop_header(%d)", bb->loop_father->num);
 	  if (bb->count.initialized_p ())
-	    fprintf (outf, ",%s(%d)",
+	    fprintf (outf, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
 		     bb->count.value ());
 	  fprintf (outf, "):\n");
@@ -3057,23 +3057,6 @@ gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
     }
   dump_implicit_edges (pp, bb, 0, dump_flags);
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
-}
-
-
-/* Handle the %G format for TEXT.  Same as %K in handle_K_format in
-   tree-pretty-print.c but with a Gimple statement as an argument.  */
-
-void
-percent_G_format (text_info *text)
-{
-  gimple *stmt = va_arg (*text->args_ptr, gimple*);
-
-  /* Fall back on the rich location if the statement doesn't have one.  */
-  location_t loc = gimple_location (stmt);
-  if (loc == UNKNOWN_LOCATION)
-    loc = text->m_richloc->get_loc ();
-  tree block = gimple_block (stmt);
-  percent_K_format (text, loc, block);
 }
 
 #if __GNUC__ >= 10

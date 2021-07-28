@@ -5865,6 +5865,7 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 
       /* Each variable VLA bound is represented by a dollar sign.  */
       spec += "$";
+      STRIP_NOPS (nelts);
       vbchain = tree_cons (NULL_TREE, nelts, vbchain);
     }
 

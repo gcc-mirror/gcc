@@ -522,6 +522,15 @@ it will also dump all of the states within the ``processed'' nodes.
 will dump the region_model's state to stderr.
 
 @smallexample
+__analyzer_dump_state ("malloc", ptr);
+@end smallexample
+
+will emit a warning describing the state of the 2nd argument
+(which can be of any type) with respect to the state machine with
+a name matching the 1st argument (which must be a string literal).
+This is for use when debugging, and may be of use in DejaGnu tests.
+
+@smallexample
 __analyzer_eval (expr);
 @end smallexample
 will emit a warning with text "TRUE", FALSE" or "UNKNOWN" based on the

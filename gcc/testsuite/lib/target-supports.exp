@@ -5694,6 +5694,43 @@ proc check_effective_target_arm_v8_2a_dotprod_neon_hw { } {
     } [add_options_for_arm_v8_2a_dotprod_neon ""]]
 }
 
+# Return 1 if the target supports executing AdvSIMD instructions from ARMv8.2
+# with the i8mm extension, 0 otherwise.  The test is valid for ARM and for
+# AArch64.
+
+proc check_effective_target_arm_v8_2a_i8mm_neon_hw { } {
+    if { ![check_effective_target_arm_v8_2a_i8mm_ok] } {
+        return 0;
+    }
+    return [check_runtime arm_v8_2a_i8mm_neon_hw_available {
+        #include "arm_neon.h"
+        int
+        main (void)
+        {
+
+	  uint32x2_t results = {0,0};
+	  uint8x8_t a = {1,1,1,1,2,2,2,2};
+	  int8x8_t b = {2,2,2,2,3,3,3,3};
+
+          #ifdef __ARM_ARCH_ISA_A64
+          asm ("usdot %0.2s, %1.8b, %2.8b"
+               : "=w"(results)
+               : "w"(a), "w"(b)
+               : /* No clobbers.  */);
+
+	  #else
+          asm ("vusdot.u8 %P0, %P1, %P2"
+               : "=w"(results)
+               : "w"(a), "w"(b)
+               : /* No clobbers.  */);
+          #endif
+
+          return (vget_lane_u32 (results, 0) == 8
+		  && vget_lane_u32 (results, 1) == 24) ? 1 : 0;
+        }
+    } [add_options_for_arm_v8_2a_i8mm ""]]
+}
+
 # Return 1 if this is a ARM target with NEON enabled.
 
 proc check_effective_target_arm_neon { } {
@@ -7058,6 +7095,19 @@ proc check_effective_target_vect_udot_qi { } {
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa]) }}]
 }
+
+# Return 1 if the target plus current options supports a vector
+# dot-product where one operand of the multiply is signed char
+# and the other unsigned chars, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_usdot_qi { } {
+    return [check_cached_effective_target_indexed vect_usdot_qi {
+      expr { [istarget aarch64*-*-*]
+	     || [istarget arm*-*-*] }}]
+}
+
 
 # Return 1 if the target plus current options supports a vector
 # dot-product of signed shorts, 0 otherwise.

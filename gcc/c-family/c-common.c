@@ -1115,8 +1115,8 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
    and have vector types, V0 has the same element type as V1, and the
    number of elements the result is that of MASK.  */
 tree
-c_build_shufflevector (location_t loc, tree v0, tree v1, vec<tree> mask,
-		       bool complain)
+c_build_shufflevector (location_t loc, tree v0, tree v1,
+		       const vec<tree> &mask, bool complain)
 {
   tree ret;
   bool wrap = true;
@@ -5798,7 +5798,7 @@ parse_optimize_options (tree args, bool attr_p)
 
       if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  char buffer[20];
+	  char buffer[HOST_BITS_PER_LONG / 3 + 4];
 	  sprintf (buffer, "-O%ld", (long) TREE_INT_CST_LOW (value));
 	  vec_safe_push (optimize_args, ggc_strdup (buffer));
 	}

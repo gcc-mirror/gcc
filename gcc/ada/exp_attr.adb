@@ -2799,10 +2799,9 @@ package body Exp_Attr is
                 Name                   =>
                   New_Occurrence_Of (RTE (RE_Callable), Loc),
                 Parameter_Associations => New_List (
-                  Make_Unchecked_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                    Expression   => Build_Disp_Get_Task_Id_Call (Pref)))));
+                  Unchecked_Convert_To
+                    (RTE (RO_ST_Task_Id),
+                     Build_Disp_Get_Task_Id_Call (Pref)))));
 
          else
             Rewrite (N, Build_Call_With_Task (Pref, RTE (RE_Callable)));
@@ -6746,10 +6745,9 @@ package body Exp_Attr is
                 Name                   =>
                   New_Occurrence_Of (RTE (RE_Terminated), Loc),
                 Parameter_Associations => New_List (
-                  Make_Unchecked_Type_Conversion (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                    Expression   => Build_Disp_Get_Task_Id_Call (Pref)))));
+                  Unchecked_Convert_To
+                    (RTE (RO_ST_Task_Id),
+                     Build_Disp_Get_Task_Id_Call (Pref)))));
 
          elsif Restricted_Profile then
             Rewrite (N,

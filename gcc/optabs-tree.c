@@ -127,7 +127,12 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ? usum_widen_optab : ssum_widen_optab;
 
     case DOT_PROD_EXPR:
-      return TYPE_UNSIGNED (type) ? udot_prod_optab : sdot_prod_optab;
+      {
+	if (subtype == optab_vector_mixed_sign)
+	  return usdot_prod_optab;
+
+	return (TYPE_UNSIGNED (type) ? udot_prod_optab : sdot_prod_optab);
+      }
 
     case SAD_EXPR:
       return TYPE_UNSIGNED (type) ? usad_optab : ssad_optab;

@@ -20128,7 +20128,8 @@ aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
   if (lane < low || lane >= high)
   {
     if (exp)
-      error ("%Klane %wd out of range %wd - %wd", exp, lane, low, high - 1);
+      error_at (EXPR_LOCATION (exp), "lane %wd out of range %wd - %wd",
+		lane, low, high - 1);
     else
       error ("lane %wd out of range %wd - %wd", lane, low, high - 1);
   }
@@ -22046,11 +22047,11 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 	  /* Expand the argument to a V16QI mode by duplicating it.  */
 	  rtx pair = gen_reg_rtx (V16QImode);
 	  emit_insn (gen_aarch64_combinev8qi (pair, op0, op0));
-	  emit_insn (gen_aarch64_tbl1v8qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl1v8qi (target, pair, sel));
 	}
       else
 	{
-	  emit_insn (gen_aarch64_tbl1v16qi (target, op0, sel));
+	  emit_insn (gen_aarch64_qtbl1v16qi (target, op0, sel));
 	}
     }
   else
@@ -22061,13 +22062,13 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 	{
 	  pair = gen_reg_rtx (V16QImode);
 	  emit_insn (gen_aarch64_combinev8qi (pair, op0, op1));
-	  emit_insn (gen_aarch64_tbl1v8qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl1v8qi (target, pair, sel));
 	}
       else
 	{
 	  pair = gen_reg_rtx (OImode);
 	  emit_insn (gen_aarch64_combinev16qi (pair, op0, op1));
-	  emit_insn (gen_aarch64_tbl2v16qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl2v16qi (target, pair, sel));
 	}
     }
 }
@@ -24440,8 +24441,16 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   for (int i = 0; i < 8; i ++)
     temp_operands[i] = operands[i];
 
-  /* Sort the operands.  */
-  qsort (temp_operands, 4, 2 * sizeof (rtx *), aarch64_ldrstr_offset_compare);
+  /* Sort the operands.  Note for cases as below:
+       [base + 0x310] = A
+       [base + 0x320] = B
+       [base + 0x330] = C
+       [base + 0x320] = D
+     We need stable sorting otherwise wrong data may be store to offset 0x320.
+     Also note the dead store in above case should be optimized away, but no
+     guarantees here.  */
+  gcc_stablesort(temp_operands, 4, 2 * sizeof (rtx *),
+		 aarch64_ldrstr_offset_compare);
 
   /* Copy the memory operands so that if we have to bail for some
      reason the original addresses are unchanged.  */

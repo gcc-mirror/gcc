@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
+#include "langhooks.h"
 #include "vr-values.h"
 #include "range.h"
 #include "value-query.h"
@@ -362,7 +363,7 @@ adjust_pointer_diff_expr (irange &res, const gimple *diff_stmt)
     {
       tree max = vrp_val_max (ptrdiff_type_node);
       wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
-      tree expr_type = gimple_expr_type (diff_stmt);
+      tree expr_type = gimple_range_type (diff_stmt);
       tree range_min = build_zero_cst (expr_type);
       tree range_max = wide_int_to_tree (expr_type, wmax - 1);
       int_range<2> r (range_min, range_max);
@@ -522,16 +523,8 @@ fold_using_range::fold_stmt (irange &r, gimple *s, fur_source &src, tree name)
 
   if (!res)
     {
-      // If no name is specified, try the expression kind.
-      if (!name)
-	{
-	  tree t = gimple_expr_type (s);
-	  if (!irange::supports_type_p (t))
-	    return false;
-	  r.set_varying (t);
-	  return true;
-	}
-      if (!gimple_range_ssa_p (name))
+      // If no name specified or range is unsupported, bail.
+      if (!name || !gimple_range_ssa_p (name))
 	return false;
       // We don't understand the stmt, so return the global range.
       r = gimple_range_global (name);
@@ -558,10 +551,11 @@ bool
 fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 {
   int_range_max range1, range2;
-  tree type = gimple_expr_type (s);
+  tree type = gimple_range_type (s);
+  if (!type)
+    return false;
   range_operator *handler = gimple_range_handler (s);
   gcc_checking_assert (handler);
-  gcc_checking_assert (irange::supports_type_p (type));
 
   tree lhs = gimple_get_lhs (s);
   tree op1 = gimple_range_operand1 (s);
@@ -719,11 +713,11 @@ bool
 fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
 {
   tree phi_def = gimple_phi_result (phi);
-  tree type = TREE_TYPE (phi_def);
+  tree type = gimple_range_type (phi);
   int_range_max arg_range;
   unsigned x;
 
-  if (!irange::supports_type_p (type))
+  if (!type)
     return false;
 
   // Start with an empty range, unioning in each argument's range.
@@ -780,12 +774,12 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
 bool
 fold_using_range::range_of_call (irange &r, gcall *call, fur_source &src)
 {
-  tree type = gimple_call_return_type (call);
+  tree type = gimple_range_type (call);
+  if (!type)
+    return false;
+
   tree lhs = gimple_call_lhs (call);
   bool strict_overflow_p;
-
-  if (!irange::supports_type_p (type))
-    return false;
 
   if (range_of_builtin_call (r, call, src))
     ;
@@ -817,7 +811,7 @@ fold_using_range::range_of_builtin_ubsan_call (irange &r, gcall *call,
 {
   gcc_checking_assert (code == PLUS_EXPR || code == MINUS_EXPR
 		       || code == MULT_EXPR);
-  tree type = gimple_call_return_type (call);
+  tree type = gimple_range_type (call);
   range_operator *op = range_op_handler (code, type);
   gcc_checking_assert (op);
   int_range_max ir0, ir1;
@@ -825,12 +819,14 @@ fold_using_range::range_of_builtin_ubsan_call (irange &r, gcall *call,
   tree arg1 = gimple_call_arg (call, 1);
   src.get_operand (ir0, arg0);
   src.get_operand (ir1, arg1);
+  // Check for any relation between arg0 and arg1.
+  relation_kind relation = src.query_relation (arg0, arg1);
 
   bool saved_flag_wrapv = flag_wrapv;
   // Pretend the arithmetic is wrapping.  If there is any overflow,
   // we'll complain, but will actually do wrapping operation.
   flag_wrapv = 1;
-  op->fold_range (r, type, ir0, ir1);
+  op->fold_range (r, type, ir0, ir1, relation);
   flag_wrapv = saved_flag_wrapv;
 
   // If for both arguments vrp_valueize returned non-NULL, this should
@@ -838,6 +834,28 @@ fold_using_range::range_of_builtin_ubsan_call (irange &r, gcall *call,
   // overflow.  Avoid removing the UBSAN_CHECK_* calls in that case.
   if (r.singleton_p ())
     r.set_varying (type);
+}
+
+// Return TRUE if we recognize the target character set and return the
+// range for lower case and upper case letters.
+
+static bool
+get_letter_range (tree type, irange &lowers, irange &uppers)
+{
+  // ASCII
+  int a = lang_hooks.to_target_charset ('a');
+  int z = lang_hooks.to_target_charset ('z');
+  int A = lang_hooks.to_target_charset ('A');
+  int Z = lang_hooks.to_target_charset ('Z');
+
+  if ((z - a == 25) && (Z - A == 25))
+    {
+      lowers = int_range<2> (build_int_cst (type, a), build_int_cst (type, z));
+      uppers = int_range<2> (build_int_cst (type, A), build_int_cst (type, Z));
+      return true;
+    }
+  // Unknown character set.
+  return false;
 }
 
 // For a builtin in CALL, return a range in R if known and return
@@ -851,7 +869,7 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
   if (func == CFN_LAST)
     return false;
 
-  tree type = gimple_call_return_type (call);
+  tree type = gimple_range_type (call);
   tree arg;
   int mini, maxi, zerov = 0, prec;
   scalar_int_mode mode;
@@ -872,6 +890,44 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
 	  return true;
 	}
       break;
+
+    case CFN_BUILT_IN_TOUPPER:
+      {
+	arg = gimple_call_arg (call, 0);
+	if (!src.get_operand (r, arg))
+	  return false;
+
+	int_range<3> lowers;
+	int_range<3> uppers;
+	if (!get_letter_range (type, lowers, uppers))
+	  return false;
+
+	// Return the range passed in without any lower case characters,
+	// but including all the upper case ones.
+	lowers.invert ();
+	r.intersect (lowers);
+	r.union_ (uppers);
+	return true;
+      }
+
+     case CFN_BUILT_IN_TOLOWER:
+      {
+	arg = gimple_call_arg (call, 0);
+	if (!src.get_operand (r, arg))
+	  return false;
+
+	int_range<3> lowers;
+	int_range<3> uppers;
+	if (!get_letter_range (type, lowers, uppers))
+	  return false;
+
+	// Return the range passed in without any upper case characters,
+	// but including all the lower case ones.
+	uppers.invert ();
+	r.intersect (uppers);
+	r.union_ (lowers);
+	return true;
+      }
 
     CASE_CFN_FFS:
     CASE_CFN_POPCOUNT:
@@ -1092,12 +1148,12 @@ fold_using_range::range_of_cond_expr  (irange &r, gassign *s, fur_source &src)
   tree op1 = gimple_assign_rhs2 (s);
   tree op2 = gimple_assign_rhs3 (s);
 
-  gcc_checking_assert (gimple_assign_rhs_code (s) == COND_EXPR);
-  gcc_checking_assert (useless_type_conversion_p  (TREE_TYPE (op1),
-						   TREE_TYPE (op2)));
-  if (!irange::supports_type_p (TREE_TYPE (op1)))
+  tree type = gimple_range_type (s);
+  if (!type)
     return false;
 
+  gcc_checking_assert (gimple_assign_rhs_code (s) == COND_EXPR);
+  gcc_checking_assert (range_compatible_p (TREE_TYPE (op1), TREE_TYPE (op2)));
   src.get_operand (cond_range, cond);
   src.get_operand (range1, op1);
   src.get_operand (range2, op2);
@@ -1116,6 +1172,8 @@ fold_using_range::range_of_cond_expr  (irange &r, gassign *s, fur_source &src)
       r = range1;
       r.union_ (range2);
     }
+  gcc_checking_assert (r.undefined_p ()
+		       || range_compatible_p (r.type (), type));
   return true;
 }
 

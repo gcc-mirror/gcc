@@ -39,6 +39,7 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package
 
 with Interfaces.C;
+with System.Parameters;
 with Unchecked_Conversion;
 
 package System.OS_Interface is
@@ -652,7 +653,8 @@ private
 
    type pid_t is new int;
 
-   type time_t is new long;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
 
    type timespec is record
       tv_sec  : time_t;

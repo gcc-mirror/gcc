@@ -198,6 +198,7 @@ private:
 
 class byte_range;
 class concrete_binding;
+class symbolic_binding;
 
 /* Abstract base class for describing ranges of bits within a binding_map
    that can have svalues bound to them.  */
@@ -219,6 +220,8 @@ public:
   static int cmp (const binding_key *, const binding_key *);
 
   virtual const concrete_binding *dyn_cast_concrete_binding () const
+  { return NULL; }
+  virtual const symbolic_binding *dyn_cast_symbolic_binding () const
   { return NULL; }
 };
 
@@ -420,6 +423,9 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
 
+  const symbolic_binding *dyn_cast_symbolic_binding () const FINAL OVERRIDE
+  { return this; }
+
   const region *get_region () const { return m_region; }
 
   static int cmp_ptr_ptr (const void *, const void *);
@@ -563,6 +569,8 @@ public:
   void zero_fill_region (store_manager *mgr, const region *reg);
   void mark_region_as_unknown (store_manager *mgr, const region *reg,
 			       uncertainty_t *uncertainty);
+  void purge_state_involving (const svalue *sval,
+			      region_model_manager *sval_mgr);
 
   const svalue *get_binding (store_manager *mgr, const region *reg) const;
   const svalue *get_binding_recursive (store_manager *mgr,
@@ -697,6 +705,8 @@ public:
   void zero_fill_region (store_manager *mgr, const region *reg);
   void mark_region_as_unknown (store_manager *mgr, const region *reg,
 			       uncertainty_t *uncertainty);
+  void purge_state_involving (const svalue *sval,
+			      region_model_manager *sval_mgr);
 
   const binding_cluster *get_cluster (const region *base_reg) const;
   binding_cluster *get_cluster (const region *base_reg);

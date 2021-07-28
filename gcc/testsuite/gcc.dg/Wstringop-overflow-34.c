@@ -112,7 +112,7 @@ void s2_warn_cstoff_cstidx (struct S2 *p)
 void s2_warn_varoff_cstdix (struct S2 *p, int i)
 {
   char *q = p->a + i;
-  q[2] = __LINE__;            // { dg-warning "\\\[-Wstringop-overflow" }
+  q[2] = __LINE__;            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" }
 }
 
 void s2_warn_cstoff_varidx (struct S2 *p, int i)
@@ -235,8 +235,8 @@ void si0_warn_cstoff_cstidx (struct Si0 *p)
 void si0_warn_varoff_cstdix (struct Si0 *p, int i)
 {
   char *q = p->a + i;
-  q[1] = __LINE__;            // { dg-warning "\\\[-Wstringop-overflow" }
-  q[9] = __LINE__;            // { dg-warning "\\\[-Wstringop-overflow" }
+  q[1] = __LINE__;            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" }
+  q[9] = __LINE__;            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" }
 }
 
 void si0_warn_cstoff_varidx (struct Si0 *p, int i)
@@ -248,5 +248,5 @@ void si0_warn_cstoff_varidx (struct Si0 *p, int i)
 void si0_warn_varoff_varidx (struct Si0 *p, int i, int j)
 {
   char *q = p->a + i;
-  q[j] = __LINE__;            // { dg-warning "\\\[-Wstringop-overflow" }
+  q[j] = __LINE__;            // { dg-warning "\\\[-Warray-bounds|-Wstringop-overflow" }
 }

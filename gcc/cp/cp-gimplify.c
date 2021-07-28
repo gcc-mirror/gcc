@@ -807,7 +807,7 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 struct cp_genericize_data
 {
   hash_set<tree> *p_set;
-  vec<tree> bind_expr_stack;
+  auto_vec<tree> bind_expr_stack;
   struct cp_genericize_omp_taskreg *omp_ctx;
   tree try_block;
   bool no_sanitize_p;
@@ -1582,7 +1582,6 @@ cp_genericize_tree (tree* t_p, bool handle_invisiref_parm_p)
   wtd.handle_invisiref_parm_p = handle_invisiref_parm_p;
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
   delete wtd.p_set;
-  wtd.bind_expr_stack.release ();
   if (sanitize_flags_p (SANITIZE_VPTR))
     cp_ubsan_instrument_member_accesses (t_p);
 }
@@ -2423,6 +2422,28 @@ cp_fold (tree x)
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
       op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
+
+      /* decltype(nullptr) has only one value, so optimize away all comparisons
+	 with that type right away, keeping them in the IL causes troubles for
+	 various optimizations.  */
+      if (COMPARISON_CLASS_P (org_x)
+	  && TREE_CODE (TREE_TYPE (op0)) == NULLPTR_TYPE
+	  && TREE_CODE (TREE_TYPE (op1)) == NULLPTR_TYPE)
+	{
+	  switch (code)
+	    {
+	    case EQ_EXPR:
+	      x = constant_boolean_node (true, TREE_TYPE (x));
+	      break;
+	    case NE_EXPR:
+	      x = constant_boolean_node (false, TREE_TYPE (x));
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  return omit_two_operands_loc (loc, TREE_TYPE (x), x,
+					op0, op1);
+	}
 
       if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
 	{

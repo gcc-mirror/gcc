@@ -48,6 +48,7 @@ with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch8;        use Sem_Ch8;
+with Sem_Cat;        use Sem_Cat;
 with Sem_Disp;       use Sem_Disp;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
@@ -84,7 +85,7 @@ package body Checks is
    --  such as Apply_Scalar_Range_Check that do not insert any code can be
    --  safely called even when the Expander is inactive (but Errors_Detected
    --  is 0). The benefit of executing this code when expansion is off, is
-   --  the ability to emit constraint error warning for static expressions
+   --  the ability to emit constraint error warnings for static expressions
    --  even when we are not generating code.
 
    --  The above is modified in gnatprove mode to ensure that proper check
@@ -3322,13 +3323,6 @@ package body Checks is
                      --  to deactivated code.
 
                      Bad_Value (Warn => SPARK_Mode = On);
-
-                     --  In GNATprove mode, we enable the range check so that
-                     --  GNATprove will issue a message if it cannot be proved.
-
-                     if GNATprove_Mode then
-                        Enable_Range_Check (Expr);
-                     end if;
 
                      return;
                   end if;
@@ -7831,10 +7825,8 @@ package body Checks is
                      New_Occurrence_Of (Target_Base_Type, Loc),
                    Constant_Present    => True,
                    Expression          =>
-                     Make_Unchecked_Type_Conversion (Loc,
-                       Subtype_Mark =>
-                         New_Occurrence_Of (Target_Base_Type, Loc),
-                       Expression   => Duplicate_Subexpr (N))),
+                     Unchecked_Convert_To
+                       (Target_Base_Type, Duplicate_Subexpr (N))),
 
                  Make_Raise_Constraint_Error (Loc,
                    Condition =>
@@ -8643,7 +8635,7 @@ package body Checks is
          return;
 
       --  Do not generate an elaboration check if the related subprogram is
-      --  not subjected to accessibility checks.
+      --  not subject to elaboration checks.
 
       elsif Elaboration_Checks_Suppressed (Subp_Id) then
          return;
@@ -8653,14 +8645,20 @@ package body Checks is
       elsif Restriction_Active (No_Elaboration_Code) then
          return;
 
+      --  If pragma Pure or Preelaborate applies, then these elaboration checks
+      --  cannot fail, so do not generate them.
+
+      elsif In_Preelaborated_Unit then
+         return;
+
       --  Do not generate an elaboration check if exceptions cannot be used,
       --  caught, or propagated.
 
       elsif not Exceptions_OK then
          return;
 
-      --  Do not consider subprograms which act as compilation units, because
-      --  they cannot be the target of a dispatching call.
+      --  Do not consider subprograms that are compilation units, because they
+      --  cannot be the target of a dispatching call.
 
       elsif Nkind (Context) = N_Compilation_Unit then
          return;
@@ -8690,10 +8688,10 @@ package body Checks is
       elsif Analyzed (Subp_Body) then
          return;
 
-      --  Do not consider primitives which occur within an instance that acts
-      --  as a compilation unit. Such an instance defines its spec and body out
-      --  of order (body is first) within the tree, which causes the reference
-      --  to the elaboration flag to appear as an undefined symbol.
+      --  Do not consider primitives that occur within an instance that is a
+      --  compilation unit. Such an instance defines its spec and body out of
+      --  order (body is first) within the tree, which causes the reference to
+      --  the elaboration flag to appear as an undefined symbol.
 
       elsif Within_Compilation_Unit_Instance (Subp_Id) then
          return;

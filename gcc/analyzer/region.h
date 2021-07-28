@@ -25,6 +25,18 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* An enum for identifying different spaces within memory.  */
+
+enum memory_space
+{
+  MEMSPACE_UNKNOWN,
+  MEMSPACE_CODE,
+  MEMSPACE_GLOBALS,
+  MEMSPACE_STACK,
+  MEMSPACE_HEAP,
+  MEMSPACE_READONLY_DATA
+};
+
 /* An enum for discriminating between the different concrete subclasses
    of region.  */
 
@@ -123,6 +135,8 @@ public:
   bool base_region_p () const;
   bool descendent_of_p (const region *elder) const;
   const frame_region *maybe_get_frame_region () const;
+  enum memory_space get_memory_space () const;
+  bool can_have_initial_svalue_p () const;
 
   tree maybe_get_decl () const;
 
@@ -140,6 +154,8 @@ public:
   bool non_null_p () const;
 
   static int cmp_ptr_ptr (const void *, const void *);
+
+  bool involves_p (const svalue *sval) const;
 
   region_offset get_offset () const;
 

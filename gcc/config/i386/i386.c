@@ -14093,6 +14093,18 @@ ix86_check_avx_upper_register (const_rtx exp)
 	  && GET_MODE_BITSIZE (GET_MODE (exp)) > 128);
 }
 
+/* Check if a 256bit or 512bit AVX register is referenced in stores.   */
+
+static void
+ix86_check_avx_upper_stores (rtx dest, const_rtx, void *data)
+ {
+   if (ix86_check_avx_upper_register (dest))
+    {
+      bool *used = (bool *) data;
+      *used = true;
+    }
+ }
+
 /* Return needed mode for entity in optimize_mode_switching pass.  */
 
 static int
@@ -14117,6 +14129,14 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	    }
 	}
 
+      /* Needed mode is set to AVX_U128_CLEAN if there are no 256bit
+	 nor 512bit registers used in the function return register.  */
+      bool avx_upper_reg_found = false;
+      note_stores (insn, ix86_check_avx_upper_stores,
+		   &avx_upper_reg_found);
+      if (avx_upper_reg_found)
+	return AVX_U128_DIRTY;
+
       /* If the function is known to preserve some SSE registers,
 	 RA and previous passes can legitimately rely on that for
 	 modes wider than 256 bits.  It's only safe to issue a
@@ -14127,6 +14147,94 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	return AVX_U128_ANY;
 
       return AVX_U128_CLEAN;
+    }
+
+  rtx set = single_set (insn);
+  if (set)
+    {
+      rtx dest = SET_DEST (set);
+      rtx src = SET_SRC (set);
+      if (ix86_check_avx_upper_register (dest))
+	{
+	  /* This is an YMM/ZMM load.  Return AVX_U128_DIRTY if the
+	     source isn't zero.  */
+	  if (standard_sse_constant_p (src, GET_MODE (dest)) != 1)
+	    return AVX_U128_DIRTY;
+	  else
+	    return AVX_U128_ANY;
+	}
+      else if (ix86_check_avx_upper_register (src))
+	{
+	  /* This is an YMM/ZMM store.  Check for the source operand
+	     of SRC DEFs in the same basic block before INSN.  */
+	  basic_block bb = BLOCK_FOR_INSN (insn);
+	  rtx_insn *end = BB_END (bb);
+
+	  /* Return AVX_U128_DIRTY if there is no DEF in the same basic
+	     block.  */
+	  int status = AVX_U128_DIRTY;
+
+	  for (df_ref def = DF_REG_DEF_CHAIN (REGNO (src));
+	       def; def = DF_REF_NEXT_REG (def))
+	    if (DF_REF_BB (def) == bb)
+	      {
+		/* Ignore DEF from different basic blocks.  */
+		rtx_insn *def_insn = DF_REF_INSN (def);
+
+		/* Check if DEF_INSN is before INSN.  */
+		rtx_insn *next;
+		for (next = NEXT_INSN (def_insn);
+		     next != nullptr && next != end && next != insn;
+		     next = NEXT_INSN (next))
+		  ;
+
+		/* Skip if DEF_INSN isn't before INSN.  */
+		if (next != insn)
+		  continue;
+
+		/* Return AVX_U128_DIRTY if the source operand of
+		   DEF_INSN isn't constant zero.  */
+
+		if (CALL_P (def_insn))
+		  {
+		    bool avx_upper_reg_found = false;
+		    note_stores (def_insn, ix86_check_avx_upper_stores,
+				 &avx_upper_reg_found);
+
+		    /* Return AVX_U128_DIRTY if call returns AVX.  */
+		    if (avx_upper_reg_found)
+		      return AVX_U128_DIRTY;
+
+		    continue;
+		  }
+
+		set = single_set (def_insn);
+		if (!set)
+		  return AVX_U128_DIRTY;
+
+		dest = SET_DEST (set);
+
+		/* Skip if DEF_INSN is not an AVX load.  */
+		if (ix86_check_avx_upper_register (dest))
+		  {
+		    src = SET_SRC (set);
+		    /* Return AVX_U128_DIRTY if the source operand isn't
+		       constant zero.  */
+		    if (standard_sse_constant_p (src, GET_MODE (dest))
+			!= 1)
+		      return AVX_U128_DIRTY;
+		  }
+
+		/* We get here only if all AVX loads are from constant
+		   zero.  */
+		status = AVX_U128_ANY;
+	      }
+
+	  return status;
+	}
+
+      /* This isn't YMM/ZMM load/store.  */
+      return AVX_U128_ANY;
     }
 
   /* Require DIRTY mode if a 256bit or 512bit AVX register is referenced.
@@ -14216,18 +14324,6 @@ ix86_mode_needed (int entity, rtx_insn *insn)
     }
   return 0;
 }
-
-/* Check if a 256bit or 512bit AVX register is referenced in stores.   */
- 
-static void
-ix86_check_avx_upper_stores (rtx dest, const_rtx, void *data)
- {
-   if (ix86_check_avx_upper_register (dest))
-    {
-      bool *used = (bool *) data;
-      *used = true;
-    }
- } 
 
 /* Calculate mode of upper 128bit AVX registers after the insn.  */
 
@@ -19535,11 +19631,8 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       return !can_create_pseudo_p ();
     }
   /* We handle both integer and floats in the general purpose registers.  */
-  else if (VALID_INT_MODE_P (mode))
-    return true;
-  else if (VALID_FP_MODE_P (mode))
-    return true;
-  else if (VALID_DFP_MODE_P (mode))
+  else if (VALID_INT_MODE_P (mode)
+	   || VALID_FP_MODE_P (mode))
     return true;
   /* Lots of MMX code casts 8 byte vector modes to DImode.  If we then go
      on to use that value in smaller contexts, this can easily force a
@@ -21596,7 +21689,7 @@ static rtx_insn *
 ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 		    vec<machine_mode> & /*input_modes*/,
 		    vec<const char *> &constraints, vec<rtx> &clobbers,
-		    HARD_REG_SET &clobbered_regs)
+		    HARD_REG_SET &clobbered_regs, location_t loc)
 {
   bool saw_asm_flag = false;
 
@@ -21609,7 +21702,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
       con += 4;
       if (strchr (con, ',') != NULL)
 	{
-	  error ("alternatives not allowed in %<asm%> flag output");
+	  error_at (loc, "alternatives not allowed in %<asm%> flag output");
 	  continue;
 	}
 
@@ -21673,7 +21766,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 	}
       if (code == UNKNOWN)
 	{
-	  error ("unknown %<asm%> flag output %qs", constraints[i]);
+	  error_at (loc, "unknown %<asm%> flag output %qs", constraints[i]);
 	  continue;
 	}
       if (invert)
@@ -21702,7 +21795,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
       machine_mode dest_mode = GET_MODE (dest);
       if (!SCALAR_INT_MODE_P (dest_mode))
 	{
-	  error ("invalid type for %<asm%> flag output");
+	  error_at (loc, "invalid type for %<asm%> flag output");
 	  continue;
 	}
 
@@ -22046,7 +22139,11 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case vec_construct:
 	{
 	  /* N element inserts into SSE vectors.  */
-	  int cost = TYPE_VECTOR_SUBPARTS (vectype) * ix86_cost->sse_op;
+	  int cost
+	    = TYPE_VECTOR_SUBPARTS (vectype) * (fp ?
+						ix86_cost->sse_op
+						: ix86_cost->integer_to_sse);
+
 	  /* One vinserti128 for combining two SSE vectors for AVX256.  */
 	  if (GET_MODE_BITSIZE (mode) == 256)
 	    cost += ix86_vec_cost (mode, ix86_cost->addss);
@@ -22562,6 +22659,9 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	stmt_cost = ix86_vec_cost (mode,
 				   mode == SFmode ? ix86_cost->fmass
 				   : ix86_cost->fmasd);
+	break;
+      case CFN_MULH:
+	stmt_cost = ix86_multiplication_cost (ix86_cost, mode);
 	break;
       default:
 	break;
@@ -23172,7 +23272,7 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
 rtx
 ix86_gen_scratch_sse_rtx (machine_mode mode)
 {
-  if (TARGET_SSE)
+  if (TARGET_SSE && !lra_in_progress)
     return gen_rtx_REG (mode, (TARGET_64BIT
 			       ? LAST_REX_SSE_REG
 			       : LAST_SSE_REG));

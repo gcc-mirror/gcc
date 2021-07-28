@@ -35,6 +35,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
+#include "tristate.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
+#include "analyzer/svalue.h"
 
 #if ENABLE_ANALYZER
 
@@ -48,6 +53,15 @@ any_pointer_p (tree var)
   return POINTER_TYPE_P (TREE_TYPE (var));
 }
 
+/* Return true if SVAL has pointer or reference type.  */
+
+bool
+any_pointer_p (const svalue *sval)
+{
+  if (!sval->get_type ())
+    return false;
+  return POINTER_TYPE_P (sval->get_type ());
+}
 
 /* class state_machine::state.  */
 

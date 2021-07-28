@@ -1435,8 +1435,8 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 	  if (tree_int_cst_lt (args[i], integer_zero_node))
 	    {
 	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
-				   "%Kargument %i value %qE is negative",
-				   exp, idx[i] + 1, args[i]);
+				   "argument %i value %qE is negative",
+				   idx[i] + 1, args[i]);
 	    }
 	  else if (integer_zerop (args[i]))
 	    {
@@ -1452,8 +1452,8 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 		  : !lookup_attribute ("returns_nonnull",
 				       TYPE_ATTRIBUTES (fntype)))
 		warned = warning_at (loc, OPT_Walloc_zero,
-				     "%Kargument %i value is zero",
-				     exp, idx[i] + 1);
+				     "argument %i value is zero",
+				     idx[i] + 1);
 	    }
 	  else if (tree_int_cst_lt (maxobjsize, args[i]))
 	    {
@@ -1470,9 +1470,9 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 		continue;
 
 	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
-				   "%Kargument %i value %qE exceeds "
+				   "argument %i value %qE exceeds "
 				   "maximum object size %E",
-				   exp, idx[i] + 1, args[i], maxobjsize);
+				   idx[i] + 1, args[i], maxobjsize);
 	    }
 	}
       else if (TREE_CODE (args[i]) == SSA_NAME
@@ -1484,16 +1484,16 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 	      && tree_int_cst_le (argrange[i][1], integer_zero_node))
 	    {
 	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
-				   "%Kargument %i range [%E, %E] is negative",
-				   exp, idx[i] + 1,
+				   "argument %i range [%E, %E] is negative",
+				   idx[i] + 1,
 				   argrange[i][0], argrange[i][1]);
 	    }
 	  else if (tree_int_cst_lt (maxobjsize, argrange[i][0]))
 	    {
 	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
-				   "%Kargument %i range [%E, %E] exceeds "
+				   "argument %i range [%E, %E] exceeds "
 				   "maximum object size %E",
-				   exp, idx[i] + 1,
+				   idx[i] + 1,
 				   argrange[i][0], argrange[i][1],
 				   maxobjsize);
 	    }
@@ -1521,15 +1521,15 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 
       if (vflow)
 	warned = warning_at (loc, OPT_Walloc_size_larger_than_,
-			     "%Kproduct %<%E * %E%> of arguments %i and %i "
+			     "product %<%E * %E%> of arguments %i and %i "
 			     "exceeds %<SIZE_MAX%>",
-			     exp, argrange[0][0], argrange[1][0],
+			     argrange[0][0], argrange[1][0],
 			     idx[0] + 1, idx[1] + 1);
       else if (wi::ltu_p (wi::to_wide (maxobjsize, szprec), prod))
 	warned = warning_at (loc, OPT_Walloc_size_larger_than_,
-			     "%Kproduct %<%E * %E%> of arguments %i and %i "
+			     "product %<%E * %E%> of arguments %i and %i "
 			     "exceeds maximum object size %E",
-			     exp, argrange[0][0], argrange[1][0],
+			     argrange[0][0], argrange[1][0],
 			     idx[0] + 1, idx[1] + 1,
 			     maxobjsize);
 
@@ -1729,14 +1729,14 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	  bool warned = false;
 	  if (tree_int_cst_equal (bndrng[0], bndrng[1]))
 	    warned = warning_at (loc, OPT_Wstringop_overread,
-				 "%K%qD specified bound %E "
+				 "%qD specified bound %E "
 				 "exceeds maximum object size %E",
-				 exp, fndecl, bndrng[0], maxobjsize);
+				 fndecl, bndrng[0], maxobjsize);
 	  else
 	    warned = warning_at (loc, OPT_Wstringop_overread,
-				 "%K%qD specified bound [%E, %E] "
+				 "%qD specified bound [%E, %E] "
 				 "exceeds maximum object size %E",
-				 exp, fndecl, bndrng[0], bndrng[1],
+				 fndecl, bndrng[0], bndrng[1],
 				 maxobjsize);
 	  if (warned)
 	    suppress_warning (exp, OPT_Wstringop_overread);
@@ -2068,16 +2068,16 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 		= access.second.array_as_string (ptrtype);
 
 	      if (warning_at (loc, OPT_Wstringop_overflow_,
-			      "%Kbound argument %i value %s is "
+			      "bound argument %i value %s is "
 			      "negative for a variable length array "
 			      "argument %i of type %s",
-			      exp, sizidx + 1, sizstr,
+			      sizidx + 1, sizstr,
 			      ptridx + 1, argtypestr.c_str ()))
 		arg_warned = OPT_Wstringop_overflow_;
 	    }
 	  else if (warning_at (loc, OPT_Wstringop_overflow_,
-			       "%Kargument %i value %s is negative",
-			       exp, sizidx + 1, sizstr))
+			       "argument %i value %s is negative",
+			       sizidx + 1, sizstr))
 	    arg_warned = OPT_Wstringop_overflow_;
 
 	  if (arg_warned != no_warning)
@@ -2124,20 +2124,19 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 		    = access.second.array_as_string (ptrtype);
 
 		  if (warning_at (loc, OPT_Wnonnull,
-				  "%Kargument %i of variable length "
+				  "argument %i of variable length "
 				  "array %s is null but "
 				  "the corresponding bound argument "
 				  "%i value is %s",
-				  exp, sizidx + 1, argtypestr.c_str (),
-				  ptridx + 1, sizstr))
+				  ptridx + 1, argtypestr.c_str (),
+				  sizidx + 1, sizstr))
 		    arg_warned = OPT_Wnonnull;
 		}
 	      else if (warning_at (loc, OPT_Wnonnull,
-				   "%Kargument %i is null but "
+				   "argument %i is null but "
 				   "the corresponding size argument "
 				   "%i value is %s",
-				   exp, ptridx + 1, sizidx + 1,
-				   sizstr))
+				   ptridx + 1, sizidx + 1, sizstr))
 		arg_warned = OPT_Wnonnull;
 	    }
 	  else if (access_size && access.second.static_p)
@@ -2145,10 +2144,9 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	      /* Warn about null pointers for [static N] array arguments
 		 but do not warn for ordinary (i.e., nonstatic) arrays.  */
 	      if (warning_at (loc, OPT_Wnonnull,
-			      "%Kargument %i to %<%T[static %E]%> "
+			      "argument %i to %<%T[static %E]%> "
 			      "is null where non-null expected",
-			      exp, ptridx + 1, argtype,
-			      access_size))
+			      ptridx + 1, argtype, access_size))
 		arg_warned = OPT_Wnonnull;		
 	    }
 

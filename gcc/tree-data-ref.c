@@ -2643,7 +2643,7 @@ create_intersect_range_checks (class loop *loop, tree *cond_expr,
 
 void
 create_runtime_alias_checks (class loop *loop,
-			     vec<dr_with_seg_len_pair_t> *alias_pairs,
+			     const vec<dr_with_seg_len_pair_t> *alias_pairs,
 			     tree * cond_expr)
 {
   tree part_cond_expr;
@@ -5635,9 +5635,9 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
    is small enough to be handled.  */
 
 bool
-compute_all_dependences (vec<data_reference_p> datarefs,
+compute_all_dependences (const vec<data_reference_p> &datarefs,
 			 vec<ddr_p> *dependence_relations,
-			 vec<loop_p> loop_nest,
+			 const vec<loop_p> &loop_nest,
 			 bool compute_self_and_rr)
 {
   struct data_dependence_relation *ddr;
@@ -6208,7 +6208,7 @@ free_dependence_relation (struct data_dependence_relation *ddr)
    DEPENDENCE_RELATIONS.  */
 
 void
-free_dependence_relations (vec<ddr_p> dependence_relations)
+free_dependence_relations (vec<ddr_p>& dependence_relations)
 {
   for (data_dependence_relation *ddr : dependence_relations)
     if (ddr)
@@ -6220,7 +6220,7 @@ free_dependence_relations (vec<ddr_p> dependence_relations)
 /* Free the memory used by the data references from DATAREFS.  */
 
 void
-free_data_refs (vec<data_reference_p> datarefs)
+free_data_refs (vec<data_reference_p>& datarefs)
 {
   for (data_reference *dr : datarefs)
     free_data_ref (dr);

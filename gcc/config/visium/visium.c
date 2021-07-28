@@ -190,7 +190,7 @@ static tree visium_build_builtin_va_list (void);
 static rtx_insn *visium_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				       vec<machine_mode> &,
 				       vec<const char *> &, vec<rtx> &,
-				       HARD_REG_SET &);
+				       HARD_REG_SET &, location_t);
 
 static bool visium_legitimate_constant_p (machine_mode, rtx);
 
@@ -795,7 +795,7 @@ static rtx_insn *
 visium_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
 		      vec<machine_mode> & /*input_modes*/,
 		      vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
-		      HARD_REG_SET &clobbered_regs)
+		      HARD_REG_SET &clobbered_regs, location_t /*loc*/)
 {
   clobbers.safe_push (gen_rtx_REG (CCmode, FLAGS_REGNUM));
   SET_HARD_REG_BIT (clobbered_regs, FLAGS_REGNUM);

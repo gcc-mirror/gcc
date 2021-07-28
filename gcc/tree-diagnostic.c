@@ -36,9 +36,9 @@ void
 diagnostic_report_current_function (diagnostic_context *context,
 				    diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_module (context, diagnostic_location (diagnostic));
-  lang_hooks.print_error_function (context, LOCATION_FILE (input_location),
-				   diagnostic);
+  location_t loc = diagnostic_location (diagnostic);
+  diagnostic_report_current_module (context, loc);
+  lang_hooks.print_error_function (context, LOCATION_FILE (loc), diagnostic);
 }
 
 static void
@@ -275,15 +275,6 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'T':
       t = va_arg (*text->args_ptr, tree);
       break;
-
-    case 'G':
-      percent_G_format (text);
-      return true;
-
-    case 'K':
-      t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
-      return true;
 
     default:
       return false;

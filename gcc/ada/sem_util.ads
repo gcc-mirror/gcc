@@ -161,13 +161,14 @@ package Sem_Util is
    --  part of the current package.
 
    procedure Apply_Compile_Time_Constraint_Error
-     (N      : Node_Id;
-      Msg    : String;
-      Reason : RT_Exception_Code;
-      Ent    : Entity_Id  := Empty;
-      Typ    : Entity_Id  := Empty;
-      Loc    : Source_Ptr := No_Location;
-      Warn   : Boolean    := False);
+     (N            : Node_Id;
+      Msg          : String;
+      Reason       : RT_Exception_Code;
+      Ent          : Entity_Id  := Empty;
+      Typ          : Entity_Id  := Empty;
+      Loc          : Source_Ptr := No_Location;
+      Warn         : Boolean    := False;
+      Emit_Message : Boolean    := True);
    --  N is a subexpression that will raise Constraint_Error when evaluated
    --  at run time. Msg is a message that explains the reason for raising the
    --  exception. The last character is ? if the message is always a warning,
@@ -189,6 +190,7 @@ package Sem_Util is
    --  when the caller wants to parameterize whether an error or warning is
    --  given), or when the message should be treated as a warning even when
    --  SPARK_Mode is On (which otherwise would force an error).
+   --  If Emit_Message is False, then do not emit any message.
 
    function Async_Readers_Enabled (Id : Entity_Id) return Boolean;
    --  Id should be the entity of a state abstraction, an object, or a type.
@@ -1516,6 +1518,12 @@ package Sem_Util is
    --  integer for use in compile-time checking. Note: Level is restricted to
    --  be non-dynamic.
 
+   function Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post
+     (Subp : Entity_Id) return Boolean;
+   --  Return True if Subp is a primitive of an abstract type, where the
+   --  primitive has a class-wide pre- or postcondition whose expression
+   --  is nonstatic.
+
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
    --  Initialize primitive (and, in Ada 2012, whether that primitive is
@@ -1634,9 +1642,11 @@ package Sem_Util is
    function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean;
    --  Returns true if the expression N occurs within a pragma with name Nam
 
-   function In_Pre_Post_Condition (N : Node_Id) return Boolean;
+   function In_Pre_Post_Condition
+     (N : Node_Id; Class_Wide_Only : Boolean := False) return Boolean;
    --  Returns True if node N appears within a pre/postcondition pragma. Note
-   --  the pragma Check equivalents are NOT considered.
+   --  the pragma Check equivalents are NOT considered. If Class_Wide_Only is
+   --  True, then tests for N appearing within a class-wide pre/postcondition.
 
    function In_Quantified_Expression (N : Node_Id) return Boolean;
    --  Returns true if the expression N occurs within a quantified expression
@@ -3257,11 +3267,16 @@ package Sem_Util is
 
    function Type_Access_Level
      (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean := True) return Uint;
+      Allow_Alt_Model : Boolean   := True;
+      Assoc_Ent       : Entity_Id := Empty) return Uint;
    --  Return the accessibility level of Typ
 
    --  The Allow_Alt_Model parameter allows the alternative level calculation
    --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
+
+   --  Assoc_Ent allows for the optional specification of the entity associated
+   --  with Typ. This gets utilized mostly for anonymous access type
+   --  processing, where context matters in interpreting Typ's level.
 
    function Type_Without_Stream_Operation
      (T  : Entity_Id;

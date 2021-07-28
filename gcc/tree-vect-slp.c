@@ -2552,6 +2552,44 @@ debug (slp_tree node)
 		       node);
 }
 
+/* Recursive helper for the dot producer below.  */
+
+static void
+dot_slp_tree (FILE *f, slp_tree node, hash_set<slp_tree> &visited)
+{
+  if (visited.add (node))
+    return;
+
+  fprintf (f, "\"%p\" [label=\"", (void *)node);
+  vect_print_slp_tree (MSG_NOTE,
+		       dump_location_t::from_location_t (UNKNOWN_LOCATION),
+		       node);
+  fprintf (f, "\"];\n");
+
+
+  for (slp_tree child : SLP_TREE_CHILDREN (node))
+    fprintf (f, "\"%p\" -> \"%p\";", (void *)node, (void *)child);
+
+  for (slp_tree child : SLP_TREE_CHILDREN (node))
+    dot_slp_tree (f, child, visited);
+}
+
+DEBUG_FUNCTION void
+dot_slp_tree (const char *fname, slp_tree node)
+{
+  FILE *f = fopen (fname, "w");
+  fprintf (f, "digraph {\n");
+  fflush (f);
+    {
+      debug_dump_context ctx (f);
+      hash_set<slp_tree> visited;
+      dot_slp_tree (f, node, visited);
+    }
+  fflush (f);
+  fprintf (f, "}\n");
+  fclose (f);
+}
+
 /* Dump a slp tree NODE using flags specified in DUMP_KIND.  */
 
 static void
@@ -3316,7 +3354,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
   else if (kind == slp_inst_kind_reduc_group)
     {
       /* Collect reduction statements.  */
-      vec<stmt_vec_info> reductions = as_a <loop_vec_info> (vinfo)->reductions;
+      const vec<stmt_vec_info> &reductions
+	= as_a <loop_vec_info> (vinfo)->reductions;
       scalar_stmts.create (reductions.length ());
       for (i = 0; reductions.iterate (i, &next_info); i++)
 	if (STMT_VINFO_RELEVANT_P (next_info)
@@ -3609,8 +3648,10 @@ vect_optimize_slp (vec_info *vinfo)
       slp_tree node = vertices[idx].node;
 
       /* Handle externals and constants optimistically throughout the
-	 iteration.  */
-      if (SLP_TREE_DEF_TYPE (node) == vect_external_def
+	 iteration.  But treat existing vectors as fixed since we
+	 do not handle permuting them below.  */
+      if ((SLP_TREE_DEF_TYPE (node) == vect_external_def
+	   && !SLP_TREE_VEC_DEFS (node).exists ())
 	  || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
 	continue;
 
@@ -3673,6 +3714,18 @@ vect_optimize_slp (vec_info *vinfo)
       vertices[idx].perm_in = perms.length () - 1;
       vertices[idx].perm_out = perms.length () - 1;
     }
+
+  /* In addition to the above we have to mark outgoing permutes facing
+     non-reduction graph entries that are not represented as to be
+     materialized.  */
+  for (slp_instance instance : vinfo->slp_instances)
+    if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_ctor)
+      {
+	/* Just setting perm_out isn't enough for the propagation to
+	   pick this up.  */
+	vertices[SLP_INSTANCE_TREE (instance)->vertex].perm_in = 0;
+	vertices[SLP_INSTANCE_TREE (instance)->vertex].perm_out = 0;
+      }
 
   /* Propagate permutes along the graph and compute materialization points.  */
   bool changed;
@@ -4134,7 +4187,8 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
 {
   unsigned int i;
   poly_uint64 unrolling_factor = 1;
-  vec<slp_instance> slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
+  const vec<slp_instance> &slp_instances
+    = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
   slp_instance instance;
   int decided_to_slp = 0;
 
@@ -5901,7 +5955,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
    true if anything in the basic-block was vectorized.  */
 
 static bool
-vect_slp_bbs (vec<basic_block> bbs)
+vect_slp_bbs (const vec<basic_block> &bbs)
 {
   vec<data_reference_p> datarefs = vNULL;
   auto_vec<int> dataref_groups;
@@ -6046,7 +6100,7 @@ vect_slp_function (function *fun)
 
 void
 duplicate_and_interleave (vec_info *vinfo, gimple_seq *seq, tree vector_type,
-			  vec<tree> elts, unsigned int nresults,
+			  const vec<tree> &elts, unsigned int nresults,
 			  vec<tree> &results)
 {
   unsigned int nelts = elts.length ();
@@ -6402,7 +6456,7 @@ vect_get_slp_defs (vec_info *,
 
 bool
 vect_transform_slp_perm_load (vec_info *vinfo,
-			      slp_tree node, vec<tree> dr_chain,
+			      slp_tree node, const vec<tree> &dr_chain,
 			      gimple_stmt_iterator *gsi, poly_uint64 vf,
 			      bool analyze_only, unsigned *n_perms,
 			      unsigned int *n_loads, bool dce_chain)
@@ -7431,7 +7485,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 /* Generate vector code for SLP_INSTANCES in the loop/basic block.  */
 
 void
-vect_schedule_slp (vec_info *vinfo, vec<slp_instance> slp_instances)
+vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances)
 {
   slp_instance instance;
   unsigned int i;

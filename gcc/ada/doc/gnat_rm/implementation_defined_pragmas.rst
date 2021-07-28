@@ -2237,8 +2237,7 @@ of GNAT specific extensions are recognized as follows:
   some restrictions (described below). Aggregate syntax is used for choices
   of such a case statement; however, in cases where a "normal" aggregate would
   require a discrete value, a discrete subtype may be used instead; box
-  notation can also be used to match all values (but currently only
-  for discrete subcomponents).
+  notation can also be used to match all values.
 
   Consider this example:
 
@@ -2269,10 +2268,10 @@ of GNAT specific extensions are recognized as follows:
   set shall be a proper subset of the second (and the later alternative
   will not be executed if the earlier alternative "matches"). All possible
   values of the composite type shall be covered. The composite type of the
-  selector shall be a nonlimited untagged undiscriminated record type, all
-  of whose subcomponent subtypes are either static discrete subtypes or
-  record types that meet the same restrictions. Support for arrays is
-  planned, but not yet implemented.
+  selector shall be a nonlimited untagged (but possibly discriminated)
+  record type, all of whose subcomponent subtypes are either static discrete
+  subtypes or record types that meet the same restrictions. Support for arrays
+  is planned, but not yet implemented.
 
   In addition, pattern bindings are supported. This is a mechanism
   for binding a name to a component of a matching value for use within

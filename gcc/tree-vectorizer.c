@@ -694,6 +694,8 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
   STMT_VINFO_SLP_VECT_ONLY_PATTERN (res) = false;
   STMT_VINFO_VEC_STMTS (res) = vNULL;
+  res->reduc_initial_values = vNULL;
+  res->reduc_scalar_results = vNULL;
 
   if (is_a <loop_vec_info> (this)
       && gimple_code (stmt) == GIMPLE_PHI
@@ -755,6 +757,8 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
 	release_ssa_name (lhs);
     }
 
+  stmt_info->reduc_initial_values.release ();
+  stmt_info->reduc_scalar_results.release ();
   STMT_VINFO_SIMD_CLONE_INFO (stmt_info).release ();
   STMT_VINFO_VEC_STMTS (stmt_info).release ();
   free (stmt_info);

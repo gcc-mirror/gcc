@@ -340,7 +340,10 @@ package Tbuild is
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id;
    --  Like Convert_To, but if a conversion is actually needed, constructs an
-   --  N_Unchecked_Type_Conversion node to do the required conversion.
+   --  N_Unchecked_Type_Conversion node to do the required conversion. Unlike
+   --  Convert_To, a new node is not required if Expr is already of the correct
+   --  BASE type, and if a new node is created, the Parent of Expr is copied to
+   --  it.
 
    -------------------------------------
    -- Subprograms for Use by Gnat1drv --

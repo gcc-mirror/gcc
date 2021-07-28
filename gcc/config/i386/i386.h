@@ -165,6 +165,7 @@ struct processor_costs {
   const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
 	    zmm_move;
   const int sse_to_integer;	/* cost of moving SSE register to integer.  */
+  const int integer_to_sse;	/* cost of moving integer to SSE register.  */
   const int gather_static, gather_per_elt; /* Cost of gather load is computed
 				   as static + per_item * nelts. */
   const int scatter_static, scatter_per_elt; /* Cost of gather store is
@@ -576,10 +577,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1
 #else
+#define ARCH_ARG "%{" OPT_ARCH64 ":64;:32}"
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1 \
-"%{march=native:%>march=native %:local_cpu_detect(arch) \
-  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune)}} \
-%{mtune=native:%>mtune=native %:local_cpu_detect(tune)}"
+"%{march=native:%>march=native %:local_cpu_detect(arch " ARCH_ARG ") \
+  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}} \
+%{mtune=native:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}"
 #endif
 #endif
 
@@ -1016,13 +1018,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
-   || (MODE) == V4QImode || (MODE) == V2HImode				\
+   || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (MODE) == V2DImode || (MODE) == DFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
    || (MODE) == V4SFmode || (MODE) == V4SImode				\
-   || (MODE) == SFmode || (MODE) == TFmode)
+   || (MODE) == SFmode || (MODE) == TFmode || (MODE) == TDmode)
 
 #define VALID_MMX_REG_MODE_3DNOW(MODE) \
   ((MODE) == V2SFmode || (MODE) == SFmode)
@@ -1036,9 +1038,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
-#define VALID_DFP_MODE_P(MODE) \
-  ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
-
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
    || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)		\
@@ -1048,12 +1047,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == SImode || (MODE) == DImode				\
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
-   || (MODE) == V4QImode || (MODE) == V2HImode				\
+   || (MODE) == SDmode || (MODE) == DDmode				\
+   || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\
 	   || (MODE) == TFmode || (MODE) == TCmode			\
 	   || (MODE) == V8QImode || (MODE) == V4HImode			\
-	   || (MODE) == V2SImode)))
+	   || (MODE) == V2SImode || (MODE) == TDmode)))
 
 /* Return true for modes passed in SSE registers.  */
 #define SSE_REG_MODE_P(MODE)						\

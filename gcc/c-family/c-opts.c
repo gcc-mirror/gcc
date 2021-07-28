@@ -1015,6 +1015,10 @@ c_common_post_options (const char **pfilename)
   SET_OPTION_IF_UNSET (&global_options, &global_options_set, flag_finite_loops,
 		       optimize >= 2 && cxx_dialect >= cxx11);
 
+  /* It's OK to discard calls to pure/const functions that might throw.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_delete_dead_exceptions, true);
+
   if (cxx_dialect >= cxx11)
     {
       /* If we're allowing C++0x constructs, don't warn about C++98

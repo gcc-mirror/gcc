@@ -219,6 +219,70 @@ struct check_defs_data
   bool found_may_defs;
 };
 
+/* Return true if STMT is a call to built-in function all of whose
+   by-reference arguments are const-qualified (i.e., the function can
+   be assumed not to modify them).  */
+
+static bool
+builtin_call_nomodifying_p (gimple *stmt)
+{
+  if (!gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    return false;
+
+  tree fndecl = gimple_call_fndecl (stmt);
+  if (!fndecl)
+    return false;
+
+  tree fntype = TREE_TYPE (fndecl);
+  if (!fntype)
+    return false;
+
+  /* Check the called function's signature for non-constc pointers.
+     If one is found, return false.  */
+  unsigned argno = 0;
+  tree argtype;
+  function_args_iterator it;
+  FOREACH_FUNCTION_ARGS (fntype, argtype, it)
+    {
+      if (VOID_TYPE_P (argtype))
+	return true;
+
+      ++argno;
+
+      if (!POINTER_TYPE_P (argtype))
+	continue;
+
+      if (TYPE_READONLY (TREE_TYPE (argtype)))
+	continue;
+
+      return false;
+    }
+
+  /* If the number of actual arguments to the call is less than or
+     equal to the number of parameters, return false.  */
+  unsigned nargs = gimple_call_num_args (stmt);
+  if (nargs <= argno)
+    return false;
+
+  /* Check arguments passed through the ellipsis in calls to variadic
+     functions for pointers.  If one is found that's a non-constant
+     pointer, return false.  */
+  for (; argno < nargs; ++argno)
+    {
+      tree arg = gimple_call_arg (stmt, argno);
+      argtype = TREE_TYPE (arg);
+      if (!POINTER_TYPE_P (argtype))
+	continue;
+
+      if (TYPE_READONLY (TREE_TYPE (argtype)))
+	continue;
+
+      return false;
+    }
+
+  return true;
+}
+
 /* Callback for walk_aliased_vdefs.  */
 
 static bool
@@ -228,9 +292,26 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
   gimple *def_stmt = SSA_NAME_DEF_STMT (vdef);
 
   /* The ASAN_MARK intrinsic doesn't modify the variable.  */
-  if (is_gimple_call (def_stmt)
-      && gimple_call_internal_p (def_stmt, IFN_ASAN_MARK))
-    return false;
+  if (is_gimple_call (def_stmt))
+    {
+      if (gimple_call_internal_p (def_stmt)
+	  && gimple_call_internal_fn (def_stmt) == IFN_ASAN_MARK)
+       return false;
+
+      if (tree fndecl = gimple_call_fndecl (def_stmt))
+       {
+	 /* Some sanitizer calls pass integer arguments to built-ins
+	    that expect pointers.  Avoid using gimple_call_builtin_p()
+	    which fails for such calls.  */
+	 if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	   {
+	     built_in_function fncode = DECL_FUNCTION_CODE (fndecl);
+	     if (fncode > BEGIN_SANITIZER_BUILTINS
+		 && fncode < END_SANITIZER_BUILTINS)
+	       return false;
+	   }
+       }
+    }
 
   /* End of VLA scope is not a kill.  */
   if (gimple_call_builtin_p (def_stmt, BUILT_IN_STACK_RESTORE))
@@ -243,6 +324,9 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
 	return true;
       return false;
     }
+
+  if (builtin_call_nomodifying_p (def_stmt))
+    return false;
 
   /* Found a may-def on this path.  */
   data->found_may_defs = true;
@@ -444,7 +528,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
   if (wlims.always_executed)
     {
       if (warning_at (location, OPT_Wuninitialized,
-		      "%G%qE is used uninitialized", stmt, rhs))
+		      "%qE is used uninitialized", rhs))
 	{
 	  /* ???  This is only effective for decls as in
 	     gcc.dg/uninit-B-O0.c.  Avoid doing this for maybe-uninit
@@ -457,7 +541,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
     }
   else if (wlims.wmaybe_uninit)
     warned = warning_at (location, OPT_Wmaybe_uninitialized,
-			 "%G%qE may be used uninitialized", stmt, rhs);
+			 "%qE may be used uninitialized", rhs);
 
   return warned ? base : NULL_TREE;
 }
@@ -621,6 +705,76 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
   wlims.always_executed = save_always_executed;
 }
 
+/* Warn about an uninitialized PHI argument on the fallthru path to
+   an always executed block BB.  */
+
+static void
+warn_uninit_phi_uses (basic_block bb)
+{
+  edge_iterator ei;
+  edge e, found = NULL, found_back = NULL;
+  /* Look for a fallthru and possibly a single backedge.  */
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      /* Ignore backedges.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
+	{
+	  if (found_back)
+	    {
+	      found = NULL;
+	      break;
+	    }
+	  found_back = e;
+	  continue;
+	}
+      if (found)
+	{
+	  found = NULL;
+	  break;
+	}
+      found = e;
+    }
+  if (!found)
+    return;
+
+  basic_block succ = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
+       gsi_next (&si))
+    {
+      gphi *phi = si.phi ();
+      tree def = PHI_ARG_DEF_FROM_EDGE (phi, found);
+      if (TREE_CODE (def) != SSA_NAME
+	  || !SSA_NAME_IS_DEFAULT_DEF (def)
+	  || virtual_operand_p (def))
+	continue;
+      /* If there's a default def on the fallthru edge PHI
+	 value and there's a use that post-dominates entry
+	 then that use is uninitialized and we can warn.  */
+      imm_use_iterator iter;
+      use_operand_p use_p;
+      gimple *use_stmt = NULL;
+      FOR_EACH_IMM_USE_FAST (use_p, iter, gimple_phi_result (phi))
+	{
+	  use_stmt = USE_STMT (use_p);
+	  if (gimple_location (use_stmt) != UNKNOWN_LOCATION
+	      && dominated_by_p (CDI_POST_DOMINATORS, succ,
+				 gimple_bb (use_stmt))
+	      /* If we found a non-fallthru edge make sure the
+		 use is inside the loop, otherwise the backedge
+		 can serve as initialization.  */
+	      && (!found_back
+		  || dominated_by_p (CDI_DOMINATORS, found_back->src,
+				     gimple_bb (use_stmt))))
+	    break;
+	  use_stmt = NULL;
+	}
+      if (use_stmt)
+	warn_uninit (OPT_Wuninitialized, def, SSA_NAME_VAR (def),
+		     SSA_NAME_VAR (def),
+		     "%qD is used uninitialized", use_stmt,
+		     UNKNOWN_LOCATION);
+    }
+}
 
 static unsigned int
 warn_uninitialized_vars (bool wmaybe_uninit)
@@ -635,6 +789,10 @@ warn_uninitialized_vars (bool wmaybe_uninit)
     {
       basic_block succ = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
       wlims.always_executed = dominated_by_p (CDI_POST_DOMINATORS, succ, bb);
+
+      if (wlims.always_executed)
+	warn_uninit_phi_uses (bb);
+
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -3118,6 +3276,7 @@ execute_early_warn_uninitialized (void)
      optimization we want to warn about possible uninitialized as late
      as possible, thus don't do it here.  However, without
      optimization we need to warn here about "may be uninitialized".  */
+  calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
   warn_uninitialized_vars (/*warn_maybe_uninitialized=*/!optimize);

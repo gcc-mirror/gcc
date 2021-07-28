@@ -636,29 +636,8 @@ B Known_Static_Normalized_Position_Max  (Entity_Id E);
 #define Known_Static_RM_Size einfo__utils__known_static_rm_size
 B Known_Static_RM_Size                  (Entity_Id E);
 
-#define Unknown_Alignment einfo__utils__unknown_alignment
-B Unknown_Alignment                     (Entity_Id E);
-
-#define Unknown_Component_Bit_Offset einfo__utils__unknown_component_bit_offset
-B Unknown_Component_Bit_Offset          (Entity_Id E);
-
-#define Unknown_Component_Size einfo__utils__unknown_component_size
-B Unknown_Component_Size                (Entity_Id E);
-
-#define Unknown_Esize einfo__utils__unknown_esize
-B Unknown_Esize                         (Entity_Id E);
-
-#define Unknown_Normalized_First_Bit einfo__utils__unknown_normalized_first_bit
-B Unknown_Normalized_First_Bit          (Entity_Id E);
-
-#define Unknown_Normalized_Position einfo__utils__unknown_normalized_position
-B Unknown_Normalized_Position           (Entity_Id E);
-
-#define Unknown_Normalized_Position_Max einfo__utils__unknown_normalized_position_max
-B Unknown_Normalized_Position_Max       (Entity_Id E);
-
-#define Unknown_RM_Size einfo__utils__unknown_rm_size
-B Unknown_RM_Size                       (Entity_Id E);
+#define Copy_Alignment einfo__utils__copy_alignment
+B Copy_Alignment(Entity_Id To, Entity_Id From);
 
 #define Is_Discrete_Or_Fixed_Point_Type einfo__utils__is_discrete_or_fixed_point_type
 B Is_Discrete_Or_Fixed_Point_Type     (E Id);

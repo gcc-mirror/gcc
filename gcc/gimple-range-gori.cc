@@ -1104,6 +1104,21 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
 
   fur_stmt src (stmt, &q);
 
+  // If this edge is never taken, return undefined.
+  gcond *gc = dyn_cast<gcond *> (stmt);
+  if (gc)
+    {
+      if (((e->flags & EDGE_TRUE_VALUE) && gimple_cond_false_p (gc))
+	  || ((e->flags & EDGE_FALSE_VALUE) && gimple_cond_true_p (gc)))
+	{
+	  r.set_undefined ();
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file, "Outgoing edge %d->%d unexecutable.\n",
+		       e->src->index, e->dest->index);
+	  return true;
+	}
+    }
+
   // If NAME can be calculated on the edge, use that.
   if (is_export_p (name, e->src))
     {

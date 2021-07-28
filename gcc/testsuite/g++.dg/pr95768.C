@@ -1,6 +1,6 @@
 /* PR c++/95768 - pretty-printer ICE on -Wuninitialized with allocated storage
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" } */
 
 extern "C" void *malloc (__SIZE_TYPE__);
 

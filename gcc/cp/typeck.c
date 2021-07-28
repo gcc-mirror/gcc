@@ -5483,7 +5483,9 @@ cp_build_binary_op (const op_location_t &location,
 	result_type = composite_pointer_type (location,
 					      type0, type1, op0, op1,
 					      CPO_COMPARISON, complain);
-      else if (code0 == POINTER_TYPE && null_ptr_cst_p (orig_op1))
+      else if ((code0 == POINTER_TYPE && null_ptr_cst_p (orig_op1))
+	       || (code1 == POINTER_TYPE && null_ptr_cst_p (orig_op0))
+	       || (null_ptr_cst_p (orig_op0) && null_ptr_cst_p (orig_op1)))
 	{
 	  /* Core Issue 1512 made this ill-formed.  */
 	  if (complain & tf_error)
@@ -5491,17 +5493,6 @@ cp_build_binary_op (const op_location_t &location,
 		      "integer zero (%qT and %qT)", type0, type1);
 	  return error_mark_node;
 	}
-      else if (code1 == POINTER_TYPE && null_ptr_cst_p (orig_op0))
-	{
-	  /* Core Issue 1512 made this ill-formed.  */
-	  if (complain & tf_error)
-	    error_at (location, "ordered comparison of pointer with "
-		      "integer zero (%qT and %qT)", type0, type1);
-	  return error_mark_node;
-	}
-      else if (null_ptr_cst_p (orig_op0) && null_ptr_cst_p (orig_op1))
-	/* One of the operands must be of nullptr_t type.  */
-        result_type = TREE_TYPE (nullptr_node);
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;

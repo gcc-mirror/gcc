@@ -4200,6 +4200,18 @@ DotTemplateExp::DotTemplateExp(Loc loc, Expression *e, TemplateDeclaration *td)
     this->td = td;
 }
 
+bool DotTemplateExp::checkType()
+{
+    error("%s %s has no type", td->kind(), toChars());
+    return true;
+}
+
+bool DotTemplateExp::checkValue()
+{
+    error("%s %s has no value", td->kind(), toChars());
+    return true;
+}
+
 /************************************************************/
 
 DotVarExp::DotVarExp(Loc loc, Expression *e, Declaration *var, bool hasOverloads)
@@ -5608,7 +5620,7 @@ Expression *FuncInitExp::resolveLoc(Loc loc, Scope *sc)
         s = "";
     Expression *e = new StringExp(loc, const_cast<char *>(s));
     e = expressionSemantic(e, sc);
-    e = e->castTo(sc, type);
+    e->type = Type::tstring;
     return e;
 }
 
@@ -5642,7 +5654,7 @@ Expression *PrettyFuncInitExp::resolveLoc(Loc loc, Scope *sc)
 
     Expression *e = new StringExp(loc, const_cast<char *>(s));
     e = expressionSemantic(e, sc);
-    e = e->castTo(sc, type);
+    e->type = Type::tstring;
     return e;
 }
 

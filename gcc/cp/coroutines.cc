@@ -82,11 +82,13 @@ static bool coro_promise_type_found_p (tree, location_t);
 struct GTY((for_user)) coroutine_info
 {
   tree function_decl; /* The original function decl.  */
-  tree promise_type; /* The cached promise type for this function.  */
-  tree handle_type;  /* The cached coroutine handle for this function.  */
-  tree self_h_proxy; /* A handle instance that is used as the proxy for the
-			one that will eventually be allocated in the coroutine
-			frame.  */
+  tree actor_decl;    /* The synthesized actor function.  */
+  tree destroy_decl;  /* The synthesized destroy function.  */
+  tree promise_type;  /* The cached promise type for this function.  */
+  tree handle_type;   /* The cached coroutine handle for this function.  */
+  tree self_h_proxy;  /* A handle instance that is used as the proxy for the
+			 one that will eventually be allocated in the coroutine
+			 frame.  */
   tree promise_proxy; /* Likewise, a proxy promise instance.  */
   tree return_void;   /* The expression for p.return_void() if it exists.  */
   location_t first_coro_keyword; /* The location of the keyword that made this
@@ -524,6 +526,46 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
     }
 
   return true;
+}
+
+/* Map from actor or destroyer to ramp.  */
+static GTY(()) hash_map<tree, tree> *to_ramp;
+
+/* Given a tree that is an actor or destroy, find the ramp function.  */
+
+tree
+coro_get_ramp_function (tree decl)
+{
+  if (!to_ramp)
+    return NULL_TREE;
+  tree *p = to_ramp->get (decl);
+  if (p)
+    return *p;
+  return NULL_TREE;
+}
+
+/* Given the DECL for a ramp function (the user's original declaration) return
+   the actor function if it has been defined.  */
+
+tree
+coro_get_actor_function (tree decl)
+{
+  if (coroutine_info *info = get_coroutine_info (decl))
+    return info->actor_decl;
+
+  return NULL_TREE;
+}
+
+/* Given the DECL for a ramp function (the user's original declaration) return
+   the destroy function if it has been defined.  */
+
+tree
+coro_get_destroy_function (tree decl)
+{
+  if (coroutine_info *info = get_coroutine_info (decl))
+    return info->destroy_decl;
+
+  return NULL_TREE;
 }
 
 /* These functions assumes that the caller has verified that the state for
@@ -2155,13 +2197,6 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   /* One param, the coro frame pointer.  */
   tree actor_fp = DECL_ARGUMENTS (actor);
 
-  /* A void return.  */
-  tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
-  DECL_ARTIFICIAL (resdecl) = 1;
-  DECL_IGNORED_P (resdecl) = 1;
-  DECL_RESULT (actor) = resdecl;
-  DECL_COROUTINE_P (actor) = 1;
-
   /* We have a definition here.  */
   TREE_STATIC (actor) = 1;
 
@@ -2532,15 +2567,8 @@ build_destroy_fn (location_t loc, tree coro_frame_type, tree destroy,
   /* One param, the coro frame pointer.  */
   tree destr_fp = DECL_ARGUMENTS (destroy);
 
-  /* A void return.  */
-  tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
-  DECL_ARTIFICIAL (resdecl) = 1;
-  DECL_IGNORED_P (resdecl) = 1;
-  DECL_RESULT (destroy) = resdecl;
-
   /* We have a definition here.  */
   TREE_STATIC (destroy) = 1;
-  DECL_COROUTINE_P (destroy) = 1;
 
   tree destr_outer = push_stmt_list ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 1;
@@ -3095,7 +3123,7 @@ process_conditional (var_nest_node *n, tree& vlist)
 {
   tree init = n->init;
   hash_map<tree, tree> var_flags;
-  vec<tree> var_list = vNULL;
+  auto_vec<tree> var_list;
   tree new_then = push_stmt_list ();
   handle_nested_conditionals (n->then_cl, var_list, var_flags);
   new_then = pop_stmt_list (new_then);
@@ -3993,22 +4021,34 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
   return NULL_TREE;
 }
 
-/* Build, return FUNCTION_DECL node with its coroutine frame pointer argument
-   for either actor or destroy functions.  */
+/* Build, return FUNCTION_DECL node based on ORIG with a type FN_TYPE which has
+   a single argument of type CORO_FRAME_PTR.  Build the actor function if
+   ACTOR_P is true, otherwise the destroy. */
 
 static tree
-act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
+coro_build_actor_or_destroy_function (tree orig, tree fn_type,
+				      tree coro_frame_ptr, bool actor_p)
 {
-  tree fn_name = get_fn_local_identifier (orig, name);
-  tree fn = build_lang_decl (FUNCTION_DECL, fn_name, fn_type);
+  location_t loc = DECL_SOURCE_LOCATION (orig);
+  tree fn
+    = build_lang_decl (FUNCTION_DECL, copy_node (DECL_NAME (orig)), fn_type);
+
+  /* Allow for locating the ramp (original) function from this one.  */
+  if (!to_ramp)
+    to_ramp = hash_map<tree, tree>::create_ggc (10);
+  to_ramp->put (fn, orig);
+
   DECL_CONTEXT (fn) = DECL_CONTEXT (orig);
+  DECL_SOURCE_LOCATION (fn) = loc;
   DECL_ARTIFICIAL (fn) = true;
   DECL_INITIAL (fn) = error_mark_node;
+
   tree id = get_identifier ("frame_ptr");
   tree fp = build_lang_decl (PARM_DECL, id, coro_frame_ptr);
   DECL_CONTEXT (fp) = fn;
   DECL_ARG_TYPE (fp) = type_passed_as (coro_frame_ptr);
   DECL_ARGUMENTS (fn) = fp;
+
   /* Copy selected attributes from the original function.  */
   TREE_USED (fn) = TREE_USED (orig);
   if (DECL_SECTION_NAME (orig))
@@ -4020,6 +4060,28 @@ act_des_fn (tree orig, tree fn_type, tree coro_frame_ptr, const char* name)
   DECL_USER_ALIGN (fn) = DECL_USER_ALIGN (orig);
   /* Apply attributes from the original fn.  */
   DECL_ATTRIBUTES (fn) = copy_list (DECL_ATTRIBUTES (orig));
+
+  /* A void return.  */
+  tree resdecl = build_decl (loc, RESULT_DECL, 0, void_type_node);
+  DECL_CONTEXT (resdecl) = fn;
+  DECL_ARTIFICIAL (resdecl) = 1;
+  DECL_IGNORED_P (resdecl) = 1;
+  DECL_RESULT (fn) = resdecl;
+
+  /* This is a coroutine component.  */
+  DECL_COROUTINE_P (fn) = 1;
+
+  /* Set up a means to find out if a decl is one of the helpers and, if so,
+     which one.  */
+  if (coroutine_info *info = get_coroutine_info (orig))
+    {
+      gcc_checking_assert ((actor_p && info->actor_decl == NULL_TREE)
+			   || info->destroy_decl == NULL_TREE);
+      if (actor_p)
+	info->actor_decl = fn;
+      else
+	info->destroy_decl = fn;
+    }
   return fn;
 }
 
@@ -4055,8 +4117,8 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
       BIND_EXPR_BLOCK (first) = replace_blk;
       /* The top block has one child, so far, and we have now got a 
 	 superblock.  */
-      BLOCK_SUPERCONTEXT (block) = top_block;
-      BLOCK_SUBBLOCKS (top_block) = block;
+      BLOCK_SUPERCONTEXT (replace_blk) = top_block;
+      BLOCK_SUBBLOCKS (top_block) = replace_blk;
     }
 
   /* Wrap the function body in a try {} catch (...) {} block, if exceptions
@@ -4328,8 +4390,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
 
   /* Declare the actor and destroyer function.  */
-  tree actor = act_des_fn (orig, act_des_fn_type, coro_frame_ptr, "actor");
-  tree destroy = act_des_fn (orig, act_des_fn_type, coro_frame_ptr, "destroy");
+  tree actor = coro_build_actor_or_destroy_function (orig, act_des_fn_type,
+						     coro_frame_ptr, true);
+  tree destroy = coro_build_actor_or_destroy_function (orig, act_des_fn_type,
+						       coro_frame_ptr, false);
 
   /* Construct the wrapped function body; we will analyze this to determine
      the requirements for the coroutine frame.  */

@@ -3745,7 +3745,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
 }
 
 
-/* Based on the memory reference REF call WALKER for each vdef which
+/* Based on the memory reference REF call WALKER for each vdef whose
    defining statement may clobber REF, starting with VDEF.  If REF
    is NULL_TREE, each defining statement is visited.
 
@@ -3755,8 +3755,8 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
    If function entry is reached, FUNCTION_ENTRY_REACHED is set to true.
    The pointer may be NULL and then we do not track this information.
 
-   At PHI nodes walk_aliased_vdefs forks into one walk for reach
-   PHI argument (but only one walk continues on merge points), the
+   At PHI nodes walk_aliased_vdefs forks into one walk for each
+   PHI argument (but only one walk continues at merge points), the
    return value is true if any of the walks was successful.
 
    The function returns the number of statements walked or -1 if
@@ -3895,7 +3895,7 @@ attr_fnspec::verify ()
 		    && str[idx] != 'w' && str[idx] != 'W'
 		    && str[idx] != 'o' && str[idx] != 'O')
 		  err = true;
-		if (str[idx] != 't'
+		if (str[idx + 1] != 't'
 		    /* Size specified is scalar, so it should be described
 		       by ". " if specified at all.  */
 		    && (arg_specified_p (str[idx + 1] - '1')

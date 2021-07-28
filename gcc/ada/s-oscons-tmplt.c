@@ -1463,13 +1463,7 @@ CND(MSG_PEEK, "Peek at incoming data")
 CND(MSG_EOR, "Send end of record")
 
 #ifndef MSG_WAITALL
-#ifdef __MINWGW32__
-/* The value of MSG_WAITALL is 8.  Nevertheless winsock.h doesn't
-   define it, but it is still usable as we link to winsock2 API.  */
-# define MSG_WAITALL (1 << 3)
-#else
 # define MSG_WAITALL -1
-#endif
 #endif
 CND(MSG_WAITALL, "Wait for full reception")
 
@@ -1502,17 +1496,35 @@ CNS(MSG_Forced_Flags, "")
 CND(TCP_NODELAY, "Do not coalesce packets")
 
 #ifndef TCP_KEEPCNT
+#ifdef __MINGW32__
+/* Windows headers can be too old to have all available constants.
+ * We know this one. */
+# define TCP_KEEPCNT 16
+#else
 # define TCP_KEEPCNT -1
+#endif
 #endif
 CND(TCP_KEEPCNT, "Maximum number of keepalive probes")
 
 #ifndef TCP_KEEPIDLE
+#ifdef __MINGW32__
+/* Windows headers can be too old to have all available constants.
+ * We know this one. */
+# define TCP_KEEPIDLE 3
+#else
 # define TCP_KEEPIDLE -1
+#endif
 #endif
 CND(TCP_KEEPIDLE, "Idle time before TCP starts sending keepalive probes")
 
 #ifndef TCP_KEEPINTVL
+#ifdef __MINGW32__
+/* Windows headers can be too old to have all available constants.
+ * We know this one. */
+# define TCP_KEEPINTVL 17
+#else
 # define TCP_KEEPINTVL -1
+#endif
 #endif
 CND(TCP_KEEPINTVL, "Time between individual keepalive probes")
 
@@ -1677,7 +1689,13 @@ CND(IPV6_DSTOPTS, "Set the destination options delivery")
 CND(IPV6_HOPOPTS, "Set the hop options delivery")
 
 #ifndef IPV6_FLOWINFO
+#ifdef __linux__
+/* The IPV6_FLOWINFO is defined in linux/in6.h, but we can't include it because
+ * of conflicts with other headers. */
+# define IPV6_FLOWINFO 11
+#else
 # define IPV6_FLOWINFO -1
+#endif
 #endif
 CND(IPV6_FLOWINFO, "Set the flow ID delivery")
 

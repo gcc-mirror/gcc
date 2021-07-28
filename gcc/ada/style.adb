@@ -265,11 +265,15 @@ package body Style is
       --  indicators were introduced in Ada 2005. We apply Comes_From_Source
       --  to Original_Node to catch the case of a procedure body declared with
       --  "is null" that has been rewritten as a normal empty body.
+      --  We do not emit a warning on an inherited operation that comes from
+      --  a type derivation.
 
       if Style_Check_Missing_Overriding
         and then (Comes_From_Source (Original_Node (N))
                    or else Is_Generic_Instance (E))
         and then Ada_Version_Explicit >= Ada_2005
+        and then Present (Parent (E))
+        and then Nkind (Parent (E)) /= N_Full_Type_Declaration
       then
          --  If the subprogram is an instantiation,  its declaration appears
          --  within a wrapper package that precedes the instance node. Place

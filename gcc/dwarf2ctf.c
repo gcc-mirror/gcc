@@ -100,13 +100,13 @@ ctf_get_AT_data_member_location (dw_die_ref die)
 	  gcc_assert (!descr->dw_loc_oprnd2.v.val_unsigned);
 	  gcc_assert (descr->dw_loc_oprnd2.val_class
 		      == dw_val_class_unsigned_const);
-	  field_location = descr->dw_loc_oprnd1.v.val_unsigned;
+	  field_location = descr->dw_loc_oprnd1.v.val_unsigned * 8;
 	}
       else
 	{
 	  attr = get_AT (die, DW_AT_data_member_location);
 	  if (attr && AT_class (attr) == dw_val_class_const)
-	    field_location = AT_int (attr);
+	    field_location = AT_int (attr) * 8;
 	  else
 	    field_location = (get_AT_unsigned (die,
 					   DW_AT_data_member_location)

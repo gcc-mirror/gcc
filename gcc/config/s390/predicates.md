@@ -101,10 +101,13 @@
 
 (define_special_predicate "bras_sym_operand"
   (ior (and (match_code "symbol_ref")
-	    (match_test "!flag_pic || SYMBOL_REF_LOCAL_P (op)"))
+	    (ior (match_test "!flag_pic")
+		 (match_test "SYMBOL_REF_LOCAL_P (op)")
+		 (and (match_test "TARGET_64BIT")
+		      (match_test "SYMBOL_REF_FUNCTION_P (op)"))))
        (and (match_code "const")
 	    (and (match_test "GET_CODE (XEXP (op, 0)) == UNSPEC")
-		 (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_PLT")))))
+		 (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_PLT31")))))
 
 ;; Return true if OP is a PLUS that is not a legitimate
 ;; operand for the LA instruction.
@@ -197,7 +200,7 @@
       && XINT (op, 1) == UNSPEC_GOTENT)
     return true;
   if (GET_CODE (op) == UNSPEC
-      && XINT (op, 1) == UNSPEC_PLT)
+      && XINT (op, 1) == UNSPEC_PLT31)
     return true;
   if (GET_CODE (op) == UNSPEC
       && XINT (op, 1) == UNSPEC_INDNTPOFF)

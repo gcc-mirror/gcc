@@ -3499,11 +3499,26 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 
     case tcc_declaration:
       /* Consider __builtin_sqrt equal to sqrt.  */
-      return (TREE_CODE (arg0) == FUNCTION_DECL
-	      && fndecl_built_in_p (arg0) && fndecl_built_in_p (arg1)
-	      && DECL_BUILT_IN_CLASS (arg0) == DECL_BUILT_IN_CLASS (arg1)
-	      && (DECL_UNCHECKED_FUNCTION_CODE (arg0)
-		  == DECL_UNCHECKED_FUNCTION_CODE (arg1)));
+      if (TREE_CODE (arg0) == FUNCTION_DECL)
+	return (fndecl_built_in_p (arg0) && fndecl_built_in_p (arg1)
+		&& DECL_BUILT_IN_CLASS (arg0) == DECL_BUILT_IN_CLASS (arg1)
+		&& (DECL_UNCHECKED_FUNCTION_CODE (arg0)
+		    == DECL_UNCHECKED_FUNCTION_CODE (arg1)));
+
+      if (DECL_P (arg0)
+	  && (flags & OEP_DECL_NAME)
+	  && (flags & OEP_LEXICOGRAPHIC))
+	{
+	  /* Consider decls with the same name equal.  The caller needs
+	     to make sure they refer to the same entity (such as a function
+	     formal parameter).  */
+	  tree a0name = DECL_NAME (arg0);
+	  tree a1name = DECL_NAME (arg1);
+	  const char *a0ns = a0name ? IDENTIFIER_POINTER (a0name) : NULL;
+	  const char *a1ns = a1name ? IDENTIFIER_POINTER (a1name) : NULL;
+	  return a0ns && a1ns && strcmp (a0ns, a1ns) == 0;
+	}
+      return false;
 
     case tcc_exceptional:
       if (TREE_CODE (arg0) == CONSTRUCTOR)
@@ -3914,14 +3929,14 @@ bool
 operand_compare::verify_hash_value (const_tree arg0, const_tree arg1,
 				    unsigned int flags, bool *ret)
 {
-  /* When checking, verify at the outermost operand_equal_p call that
-     if operand_equal_p returns non-zero then ARG0 and ARG1 has the same
-     hash value.  */
+  /* When checking and unless comparing DECL names, verify that if
+     the outermost operand_equal_p call returns non-zero then ARG0
+     and ARG1 have the same hash value.  */
   if (flag_checking && !(flags & OEP_NO_HASH_CHECK))
     {
       if (operand_equal_p (arg0, arg1, flags | OEP_NO_HASH_CHECK))
 	{
-	  if (arg0 != arg1)
+	  if (arg0 != arg1 && !(flags & OEP_DECL_NAME))
 	    {
 	      inchash::hash hstate0 (0), hstate1 (0);
 	      hash_operand (arg0, hstate0, flags | OEP_HASH_CHECK);

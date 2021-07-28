@@ -4226,7 +4226,8 @@ DEFHOOK
  "This target hook may add @dfn{clobbers} to @var{clobbers} and\n\
 @var{clobbered_regs} for any hard regs the port wishes to automatically\n\
 clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected\n\
-to avoid clobbering a register that is already used by the asm.\n\
+to avoid clobbering a register that is already used by the asm.  @var{loc}\n\
+is the source location of the asm.\n\
 \n\
 It may modify the @var{outputs}, @var{inputs}, @var{input_modes}, and\n\
 @var{constraints} as necessary for other pre-processing.  In this case the\n\
@@ -4236,7 +4237,7 @@ to @var{input_modes}.",
  rtx_insn *,
  (vec<rtx>& outputs, vec<rtx>& inputs, vec<machine_mode>& input_modes,
   vec<const char *>& constraints, vec<rtx>& clobbers,
-  HARD_REG_SET& clobbered_regs),
+  HARD_REG_SET& clobbered_regs, location_t loc),
  NULL)
 
 /* This target hook allows the backend to specify a calling convention

@@ -1568,11 +1568,6 @@ csky-*-*)
 		tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} csky/csky-linux-elf.h"
 		tmake_file="${tmake_file} csky/t-csky csky/t-csky-linux"
 
-		if test "x${enable_multilib}" = xyes ; then
-		    tm_file="$tm_file ./sysroot-suffix.h"
-		    tmake_file="${tmake_file} csky/t-sysroot-suffix"
-		fi
-
 		case ${target} in
 		    csky-*-linux-gnu*)
 			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"

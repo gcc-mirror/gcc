@@ -423,7 +423,7 @@ static unsigned int vn_nary_length_from_stmt (gimple *);
 static vn_nary_op_t alloc_vn_nary_op_noinit (unsigned int, obstack *);
 static vn_nary_op_t vn_nary_op_insert_into (vn_nary_op_t,
 					    vn_nary_op_table_type *, bool);
-static void init_vn_nary_op_from_stmt (vn_nary_op_t, gimple *);
+static void init_vn_nary_op_from_stmt (vn_nary_op_t, gassign *);
 static void init_vn_nary_op_from_pieces (vn_nary_op_t, unsigned int,
 					 enum tree_code, tree, tree *);
 static tree vn_lookup_simplify_result (gimple_match_op *);
@@ -764,14 +764,18 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
   if (vr1->operands == vr2->operands)
     return true;
 
-  if (COMPLETE_TYPE_P (vr1->type) != COMPLETE_TYPE_P (vr2->type)
-      || (COMPLETE_TYPE_P (vr1->type)
-	  && !expressions_equal_p (TYPE_SIZE (vr1->type),
-				   TYPE_SIZE (vr2->type))))
+  if (!vr1->type || !vr2->type)
+    {
+      if (vr1->type != vr2->type)
+	return false;
+    }
+  else if (COMPLETE_TYPE_P (vr1->type) != COMPLETE_TYPE_P (vr2->type)
+	   || (COMPLETE_TYPE_P (vr1->type)
+	       && !expressions_equal_p (TYPE_SIZE (vr1->type),
+					TYPE_SIZE (vr2->type))))
     return false;
-
-  if (INTEGRAL_TYPE_P (vr1->type)
-      && INTEGRAL_TYPE_P (vr2->type))
+  else if (INTEGRAL_TYPE_P (vr1->type)
+	   && INTEGRAL_TYPE_P (vr2->type))
     {
       if (TYPE_PRECISION (vr1->type) != TYPE_PRECISION (vr2->type))
 	return false;
@@ -925,12 +929,10 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 			 + (wi::to_offset (bit_offset) >> LOG2_BITS_PER_UNIT));
 		    /* Probibit value-numbering zero offset components
 		       of addresses the same before the pass folding
-		       __builtin_object_size had a chance to run
-		       (checking cfun->after_inlining does the
-		       trick here).  */
+		       __builtin_object_size had a chance to run.  */
 		    if (TREE_CODE (orig) != ADDR_EXPR
 			|| maybe_ne (off, 0)
-			|| cfun->after_inlining)
+			|| (cfun->curr_properties & PROP_objsz))
 		      off.to_shwi (&temp.off);
 		  }
 	      }
@@ -1040,9 +1042,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 bool
 ao_ref_init_from_vn_reference (ao_ref *ref,
 			       alias_set_type set, alias_set_type base_set,
-			       tree type, vec<vn_reference_op_s> ops)
+			       tree type, const vec<vn_reference_op_s> &ops)
 {
-  vn_reference_op_t op;
   unsigned i;
   tree base = NULL_TREE;
   tree *op0_p = &base;
@@ -1050,6 +1051,10 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
   poly_offset_int max_size;
   poly_offset_int size = -1;
   tree size_tree = NULL_TREE;
+
+  /* We don't handle calls.  */
+  if (!type)
+    return false;
 
   machine_mode mode = TYPE_MODE (type);
   if (mode == BLKmode)
@@ -1061,7 +1066,10 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
     size = wi::to_poly_offset (size_tree);
 
   /* Lower the final access size from the outermost expression.  */
-  op = &ops[0];
+  const_vn_reference_op_t cst_op = &ops[0];
+  /* Cast away constness for the sake of the const-unsafe
+     FOR_EACH_VEC_ELT().  */
+  vn_reference_op_t op = const_cast<vn_reference_op_t>(cst_op);
   size_tree = NULL_TREE;
   if (op->opcode == COMPONENT_REF)
     size_tree = DECL_SIZE (op->op0);
@@ -1092,7 +1100,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      && op->op0
 	      && DECL_P (TREE_OPERAND (op->op0, 0)))
 	    {
-	      vn_reference_op_t pop = &ops[i-1];
+	      const_vn_reference_op_t pop = &ops[i-1];
 	      base = TREE_OPERAND (op->op0, 0);
 	      if (known_eq (pop->off, -1))
 		{
@@ -1480,6 +1488,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 
   /* Simplify reads from constants or constant initializers.  */
   else if (BITS_PER_UNIT == 8
+	   && ref->type
 	   && COMPLETE_TYPE_P (ref->type)
 	   && is_gimple_reg_type (ref->type))
     {
@@ -2379,7 +2388,7 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
 	  vno1->length = length;
 	  vno1->predicated_values = 0;
 	  vno1->u.result = result;
-	  init_vn_nary_op_from_stmt (vno1, new_stmt);
+	  init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (new_stmt));
 	  vn_nary_op_insert_into (vno1, valid_info->nary, true);
 	  /* Also do not link it into the undo chain.  */
 	  last_inserted_nary = vno1->next;
@@ -3673,7 +3682,10 @@ vn_reference_lookup_call (gcall *call, vn_reference_t *vnresult,
 
   vr->vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr->operands = valueize_shared_reference_ops_from_call (call);
-  vr->type = gimple_expr_type (call);
+  tree lhs = gimple_call_lhs (call);
+  /* For non-SSA return values the referece ops contain the LHS.  */
+  vr->type = ((lhs && TREE_CODE (lhs) == SSA_NAME)
+	      ? TREE_TYPE (lhs) : NULL_TREE);
   vr->punned = false;
   vr->set = 0;
   vr->base_set = 0;
@@ -3884,12 +3896,12 @@ vn_nary_length_from_stmt (gimple *stmt)
 /* Initialize VNO from STMT.  */
 
 static void
-init_vn_nary_op_from_stmt (vn_nary_op_t vno, gimple *stmt)
+init_vn_nary_op_from_stmt (vn_nary_op_t vno, gassign *stmt)
 {
   unsigned i;
 
   vno->opcode = gimple_assign_rhs_code (stmt);
-  vno->type = gimple_expr_type (stmt);
+  vno->type = TREE_TYPE (gimple_assign_lhs (stmt));
   switch (vno->opcode)
     {
     case REALPART_EXPR:
@@ -3970,7 +3982,7 @@ vn_nary_op_lookup_stmt (gimple *stmt, vn_nary_op_t *vnresult)
   vn_nary_op_t vno1
     = XALLOCAVAR (struct vn_nary_op_s,
 		  sizeof_vn_nary_op (vn_nary_length_from_stmt (stmt)));
-  init_vn_nary_op_from_stmt (vno1, stmt);
+  init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (stmt));
   return vn_nary_op_lookup_1 (vno1, vnresult);
 }
 
@@ -4223,7 +4235,7 @@ vn_nary_op_insert_stmt (gimple *stmt, tree result)
   vn_nary_op_t vno1
     = alloc_vn_nary_op (vn_nary_length_from_stmt (stmt),
 			result, VN_INFO (result)->value_id);
-  init_vn_nary_op_from_stmt (vno1, stmt);
+  init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (stmt));
   return vn_nary_op_insert_into (vno1, valid_info->nary, true);
 }
 

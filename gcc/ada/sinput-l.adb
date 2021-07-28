@@ -551,19 +551,10 @@ package body Sinput.L is
             Set_Source_File_Index_Table (X);
 
             if Opt.List_Preprocessing_Symbols then
-               Get_Name_String (N);
-
                declare
-                  Foreword : String (1 .. Foreword_Start'Length +
-                                          Name_Len + Foreword_End'Length);
-
+                  Foreword : constant String :=
+                    Foreword_Start & Get_Name_String (N) & Foreword_End;
                begin
-                  Foreword (1 .. Foreword_Start'Length) := Foreword_Start;
-                  Foreword (Foreword_Start'Length + 1 ..
-                              Foreword_Start'Length + Name_Len) :=
-                    Name_Buffer (1 .. Name_Len);
-                  Foreword (Foreword'Last - Foreword_End'Length + 1 ..
-                              Foreword'Last) := Foreword_End;
                   Prep.List_Symbols (Foreword);
                end;
             end if;
@@ -654,14 +645,13 @@ package body Sinput.L is
                         NB     : Integer;
                         Status : Boolean;
 
+                        Prep_Filename : constant String :=
+                          Get_Name_String (N) & Prep_Suffix;
+
                      begin
-                        Get_Name_String (N);
-                        Add_Str_To_Name_Buffer (Prep_Suffix);
+                        Delete_File (Prep_Filename, Status);
 
-                        Delete_File (Name_Buffer (1 .. Name_Len), Status);
-
-                        FD :=
-                          Create_New_File (Name_Buffer (1 .. Name_Len), Text);
+                        FD := Create_New_File (Prep_Filename, Text);
 
                         Status := FD /= Invalid_FD;
 

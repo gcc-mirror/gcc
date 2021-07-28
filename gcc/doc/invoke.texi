@@ -428,6 +428,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes @gol
 -fdump-analyzer-exploded-nodes-2 @gol
 -fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-exploded-paths @gol
 -fdump-analyzer-feasibility @gol
 -fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
@@ -9233,6 +9234,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
+-Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wanalyzer-write-to-const @gol
 -Wanalyzer-write-to-string-literal @gol
@@ -9477,6 +9479,15 @@ detects an attempt to write through a pointer to a string literal.
 However, the analyzer does not prioritize detection of such paths, so
 false negatives are more likely relative to other warnings.
 
+@item -Wno-analyzer-use-of-uninitialized-value
+@opindex Wanalyzer-use-of-uninitialized-value
+@opindex Wno-analyzer-use-of-uninitialized-value
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-use-of-uninitialized-value} to disable it.
+
+This diagnostic warns for paths through the code in which an uninitialized
+value is used.
+
 @end table
 
 Pertinent parameters for controlling the exploration are:
@@ -9650,6 +9661,11 @@ Dump a textual representation of the ``exploded graph'' to
 Dump a textual representation of the ``exploded graph'' to
 one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
 This is typically a large number of dump files.
+
+@item -fdump-analyzer-exploded-paths
+@opindex fdump-analyzer-exploded-paths
+Dump a textual representation of the ``exploded path'' for each
+diagnostic to @file{@var{file}.@var{idx}.@var{kind}.epath.txt}.
 
 @item -fdump-analyzer-feasibility
 @opindex dump-analyzer-feasibility
@@ -16335,8 +16351,10 @@ arbitrary signal handlers such as @code{SIGALRM}.
 @opindex fdelete-dead-exceptions
 Consider that instructions that may throw exceptions but don't otherwise
 contribute to the execution of the program can be optimized away.
-This option is enabled by default for the Ada compiler, as permitted by
-the Ada language specification.
+This does not affect calls to functions except those with the
+@code{pure} or @code{const} attributes.
+This option is enabled by default for the Ada and C++ compilers, as permitted by
+the language specifications.
 Optimization passes that cause dead exceptions to be removed are enabled independently at different optimization levels.
 
 @item -funwind-tables
@@ -18829,6 +18847,15 @@ Compile for GCN5 Vega 20 devices (gfx906).
 
 @end table
 
+@item -msram-ecc=on
+@itemx -msram-ecc=off
+@itemx -msram-ecc=any
+@opindex msram-ecc
+Compile binaries suitable for devices with the SRAM-ECC feature enabled,
+disabled, or either mode.  This feature can be enabled per-process on some
+devices.  The compiled code must match the device mode. The default is
+@samp{any}, for devices that support it.
+
 @item -mstack-size=@var{bytes}
 @opindex mstack-size
 Specify how many @var{bytes} of stack space will be requested for each GPU
@@ -18836,6 +18863,14 @@ thread (wave-front).  Beware that there may be many threads and limited memory
 available.  The size of the stack allocation may also have an impact on
 run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
 1MB otherwise.
+
+@item -mxnack
+@opindex mxnack
+Compile binaries suitable for devices with the XNACK feature enabled.  Some
+devices always require XNACK and some allow the user to configure XNACK.  The
+compiled code must match the device mode.  The default is @samp{-mno-xnack}.
+At present this option is a placeholder for support that is not yet
+implemented.
 
 @end table
 

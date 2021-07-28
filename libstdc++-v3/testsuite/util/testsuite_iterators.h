@@ -175,10 +175,14 @@ namespace __gnu_test
 #if __cplusplus >= 201103L
     template<typename U>
       void operator,(const U&) const = delete;
+
+    void operator&() const = delete;
 #else
   private:
     template<typename U>
       void operator,(const U&) const;
+
+    void operator&() const;
 #endif
   };
 
@@ -288,10 +292,14 @@ namespace __gnu_test
 #if __cplusplus >= 201103L
     template<typename U>
       void operator,(const U&) const = delete;
+
+    void operator&() const = delete;
 #else
   private:
     template<typename U>
       void operator,(const U&) const;
+
+    void operator&() const;
 #endif
   };
 

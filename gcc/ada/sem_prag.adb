@@ -7562,7 +7562,7 @@ package body Sem_Prag is
             end if;
 
             if not Has_Alignment_Clause (Ent) then
-               Set_Alignment (Ent, Uint_0);
+               Init_Alignment (Ent);
             end if;
          end Set_Atomic_VFA;
 
@@ -14738,7 +14738,6 @@ package body Sem_Prag is
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
          when Pragma_CPP_Constructor => CPP_Constructor : declare
-            Elmt    : Elmt_Id;
             Id      : Entity_Id;
             Def_Id  : Entity_Id;
             Tag_Typ : Entity_Id;
@@ -14805,12 +14804,7 @@ package body Sem_Prag is
                then
                   Tag_Typ := Etype (Def_Id);
 
-                  Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
-                  while Present (Elmt) and then Node (Elmt) /= Def_Id loop
-                     Next_Elmt (Elmt);
-                  end loop;
-
-                  Remove_Elmt (Primitive_Operations (Tag_Typ), Elmt);
+                  Remove (Primitive_Operations (Tag_Typ), Def_Id);
                   Set_Is_Dispatching_Operation (Def_Id, False);
                end if;
 

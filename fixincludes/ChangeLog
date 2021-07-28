@@ -1,3 +1,9 @@
+2021-07-06  Clément Chigot  <clement.chigot@atos.net>
+
+	* inclhack.def (aix_externcpp1): Improve select regexp.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/socket.h: Update.
+
 2021-06-30  Xi Ruoyao  <xry111@mengyan1223.wang>
 
 	PR other/91085

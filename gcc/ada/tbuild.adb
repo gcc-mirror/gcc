@@ -919,10 +919,15 @@ package body Tbuild is
       --  All other cases
 
       else
-         Result :=
-           Make_Unchecked_Type_Conversion (Loc,
-             Subtype_Mark => New_Occurrence_Of (Typ, Loc),
-             Expression   => Relocate_Node (Expr));
+         declare
+            Expr_Parent : constant Node_Id := Parent (Expr);
+         begin
+            Result :=
+              Make_Unchecked_Type_Conversion (Loc,
+                Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                Expression   => Relocate_Node (Expr));
+            Set_Parent (Result, Expr_Parent);
+         end;
       end if;
 
       Set_Etype (Result, Typ);

@@ -2266,7 +2266,8 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
   /* A requires-expression is an unevaluated context.  */
   cp_unevaluated u;
 
-  args = add_extra_args (REQUIRES_EXPR_EXTRA_ARGS (t), args);
+  args = add_extra_args (REQUIRES_EXPR_EXTRA_ARGS (t), args,
+			 info.complain, info.in_decl);
   if (processing_template_decl)
     {
       /* We're partially instantiating a generic lambda.  Substituting into

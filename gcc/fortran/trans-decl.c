@@ -1473,6 +1473,14 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
       tree dims = oacc_build_routine_dims (clauses);
       list = oacc_replace_fn_attrib_attr (list, dims);
     }
+
+  if (sym_attr.oacc_routine_nohost)
+    {
+      tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_NOHOST);
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
+    }
+
   if (sym_attr.omp_device_type != OMP_DEVICE_TYPE_UNSET)
     {
       tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEVICE_TYPE);
@@ -4531,22 +4539,28 @@ convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
       gfc_add_expr_to_block (&outer_block, incoming);
       incoming = gfc_finish_block (&outer_block);
 
-
       /* Convert the gfc descriptor back to the CFI type before going
 	 out of scope, if the CFI type was present at entry.  */
-      gfc_init_block (&outer_block);
-      gfc_init_block (&tmpblock);
+      outgoing = NULL_TREE;
+      if ((sym->attr.pointer || sym->attr.allocatable)
+	  && !sym->attr.value
+	  && sym->attr.intent != INTENT_IN)
+	{
+	  gfc_init_block (&outer_block);
+	  gfc_init_block (&tmpblock);
 
-      tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
-      outgoing = build_call_expr_loc (input_location,
-			gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
-      gfc_add_expr_to_block (&tmpblock, outgoing);
+	  tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
+	  outgoing = build_call_expr_loc (input_location,
+					  gfor_fndecl_gfc_to_cfi, 2,
+					  tmp, gfc_desc_ptr);
+	  gfc_add_expr_to_block (&tmpblock, outgoing);
 
-      outgoing = build3_v (COND_EXPR, present,
-			   gfc_finish_block (&tmpblock),
-			   build_empty_stmt (input_location));
-      gfc_add_expr_to_block (&outer_block, outgoing);
-      outgoing = gfc_finish_block (&outer_block);
+	  outgoing = build3_v (COND_EXPR, present,
+			       gfc_finish_block (&tmpblock),
+			       build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&outer_block, outgoing);
+	  outgoing = gfc_finish_block (&outer_block);
+	}
 
       /* Add the lot to the procedure init and finally blocks.  */
       gfc_add_init_cleanup (block, incoming, outgoing);

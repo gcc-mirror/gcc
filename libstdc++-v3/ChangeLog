@@ -1,3 +1,333 @@
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/optional (__throw_bad_optional_access):
+	Replace GNU attribute with C++11 attribute.
+	(optional::value, optional::value_or): Use if statements
+	instead of conditional expressions.
+	* include/std/optional (__throw_bad_optional_access)
+	(optional::value, optional::value_or): Likewise.
+
+2021-07-27  Marek Polacek  <polacek@redhat.com>
+
+	DR 1512
+	PR c++/99701
+	* testsuite/20_util/tuple/comparison_operators/overloaded.cc:
+	Move a line...
+	* testsuite/20_util/tuple/comparison_operators/overloaded2.cc:
+	...here.  New test.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h: Consistently use tab for
+	indentation.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string): Move definition of Copy-on-Write string to
+	new file.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/cow_string.h: New file.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/algorithm: Do not include <utility>.
+	* include/std/functional: Likewise.
+	* include/std/regex: Include <bits/stl_pair.h> instead of
+	<utility>.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/vector: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/bits/unique_ptr.h: Do not include <utility>.
+	* include/experimental/any: Likewise.
+	* include/experimental/executor: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/optional: Likewise.
+	* include/experimental/socket: Use __exchange instead
+	of std::exchange.
+	* src/filesystem/ops-common.h: Likewise.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust expected
+	errors to not use a hardcoded line number.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/constrained.cc:
+	Include <utility> for std::as_const.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_construct/constrained.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/constrained.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct/constrained.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Adjust dg-error line number.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add bits/utility.h header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/utility.h: New file.
+	* include/std/utility (tuple_size, tuple_element): Move
+	to new header.
+	* include/std/type_traits (__is_tuple_like_impl<tuple<T...>>):
+	Move to <tuple>.
+	(_Index_tuple, _Build_index_tuple, integer_sequence): Likewise.
+	(in_place_t, in_place_index_t, in_place_type_t): Likewise.
+	* include/bits/ranges_util.h: Include new header instead of
+	<utility>.
+	* include/bits/stl_pair.h (tuple_size, tuple_element): Move
+	partial specializations for std::pair here.
+	(get): Move overloads for std::pair here.
+	* include/std/any: Include new header instead of <utility>.
+	* include/std/array: Likewise.
+	* include/std/memory_resource: Likewise.
+	* include/std/optional: Likewise.
+	* include/std/variant: Likewise.
+	* include/std/tuple: Likewise.
+	(__is_tuple_like_impl<tuple<T...>>): Move here.
+	(get) Declare overloads for std::array.
+	* include/std/version (__cpp_lib_tuples_by_type): Change type
+	to long.
+	* testsuite/20_util/optional/84601.cc: Include <utility>.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/constrained.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/std/ranges/access/cbegin.cc: Include <utility>.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/single_view.cc: Likewise.
+
+2021-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future: Include <bits/atomic_base.h> instead of
+	<atomic>.
+
+2021-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_relops.h: Update documentation comments.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101583
+	* include/bits/hashtable.h (_Hashtable): Replace mixin with
+	_Enable_default_ctor. Construct it explicitly in all
+	non-forwarding, non-defaulted constructors.
+	* testsuite/23_containers/unordered_map/cons/default.cc: Check
+	non-default constructors can be used.
+	* testsuite/23_containers/unordered_set/cons/default.cc:
+	Likewise.
+
+2021-07-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/os/aix/os_defines.h (__LIBC_NO_CPP_MATH_OVERLOADS__): Define.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94295
+	* include/ext/new_allocator.h (_GLIBCXX_OPERATOR_NEW)
+	(_GLIBCXX_OPERATOR_DELETE, _GLIBCXX_SIZED_DEALLOC): Define.
+	(allocator::allocate, allocator::deallocate): Use new macros.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101571
+	* include/bits/ranges_uninitialized.h (_DestroyGuard): Change
+	constructor parameter to reference and use addressof.
+	* testsuite/util/testsuite_iterators.h: Define deleted operator&
+	overloads for test iterators.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_Function_base): Add
+	default member initializers and define constructor as defaulted.
+	(function::_M_invoker): Add default member initializer.
+
+2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100682
+	* doc/xml/manual/debug_mode.xml: Update documentation about
+	debug capability of std::array.
+	* doc/html/*: Regenerate.
+	* include/debug/array: New file.
+
+2021-07-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101542
+	* include/ext/rope (sequence_buffer): Add move constructor and
+	move assignment operator.
+	* testsuite/ext/rope/101542.cc: New test.
+
+2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101510
+	* src/c++17/fs_ops.cc (fs::create_directories): Use status
+	instead of symlink_status.
+	* src/filesystem/ops.cc (fs::create_directories): Likewise.
+	* testsuite/27_io/filesystem/operations/create_directories.cc:
+	* testsuite/27_io/filesystem/operations/create_directory.cc: Do
+	not test with symlinks on Windows.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Do not test with symlinks on Windows.
+
+2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100863
+	* include/bits/hashtable.h (_Hashtable): Conditionally delete
+	default constructor by deriving from _Enable_special_members.
+	* testsuite/23_containers/unordered_map/cons/default.cc: New test.
+	* testsuite/23_containers/unordered_set/cons/default.cc: New test.
+
+2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101510
+	* src/c++17/fs_ops.cc (create_dir): Adjust whitespace.
+	* testsuite/27_io/filesystem/operations/create_directory.cc:
+	Test creating directory with name of existing symlink to
+	directory.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Likewise.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (get<I>): Add deleted overload for bad
+	index.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust
+	expected errors.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/max_size_type.h (numeric_limits<__max_size_type>):
+	Use __int_traits unconditionally.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (_Shift::__value): Use constexpr.
+	(_Select_uint_least_t::type): Use using-declaration.
+	(_Mod): Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__INT_N): Use __extension__
+	instead of diagnostic pragmas.
+	* include/bits/functional_hash.h: Likewise.
+	* include/bits/iterator_concepts.h (__is_signed_int128)
+	(__is_unsigned_int128): Likewise.
+	* include/bits/max_size_type.h (__max_size_type): Likewise.
+	(numeric_limits<__max_size_type>): Likewise.
+	* include/bits/std_abs.h (abs): Likewise.
+	* include/bits/stl_algobase.h (__size_to_integer): Likewise.
+	* include/bits/uniform_int_dist.h (uniform_int_distribution):
+	Likewise.
+	* include/ext/numeric_traits.h (_GLIBCXX_INT_N_TRAITS):
+	Likewise.
+	* include/std/type_traits (__is_integral_helper<INT_N>)
+	(__is_signed_integer, __is_unsigned_integer)
+	(__make_unsigned<INT_N>, __make_signed<INT_N>): Likewise.
+	* include/std/limits (__INT_N): Add __extension__ keyword.
+	* include/bits/random.h (_Select_uint_least_t)
+	(random_device): Likewise.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/101231
+	* include/std/ranges (_CachedPosition::_M_get): For non-forward
+	ranges, just call __builtin_unreachable.
+	* testsuite/std/ranges/istream_view.cc (test05): New test.
+
+2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/101214
+	* include/std/ranges (split_view::split_view): Use std::move.
+	(split_view::_Iterator::_Iterator): Remove redundant
+	default_initializable constraint.
+	(split_view::_Sentinel::_Sentinel): Declare.
+	* testsuite/std/ranges/adaptors/split.cc (test02): New test.
+
+2021-07-16  Marek Polacek  <polacek@redhat.com>
+
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Add
+	dg-error.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h: Adjust doxygen markup.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101307
+	* include/std/type_traits: Adjust doxygen markup.
+
+2021-07-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h: Add diagnostic pragmas around
+	uses of non-standard integer types.
+	* include/bits/functional_hash.h: Likewise.
+	* include/bits/iterator_concepts.h: Likewise.
+	* include/bits/max_size_type.h: Likewise.
+	* include/bits/std_abs.h: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/uniform_int_dist.h: Likewise.
+	* include/ext/numeric_traits.h: Likewise.
+	* include/std/type_traits: Likewise.
+
+2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101427
+	* include/std/tuple (tuple_element): Improve static_assert text.
+	(__get_helper): Add deleted overload.
+	(get<i>(tuple<T...>&&), get<i>(const tuple<T...>&&)): Use
+	__get_helper directly.
+	(__get_helper2): Remove.
+	(__find_uniq_type_in_pack): New constexpr helper function.
+	(get<T>): Use __find_uniq_type_in_pack and __get_helper instead
+	of __get_helper2.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust
+	expected errors.
+	* testsuite/20_util/tuple/element_access/101427.cc: New test.
+
+2021-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101429
+	* include/bits/c++config (__replacement_assert): Add noexcept.
+	[!_GLIBCXX_VERBOSE] (__glibcxx_assert_impl): Use __builtin_abort
+	instead of __replacement_assert.
+
+2021-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view(It, End)): Add
+	noexcept-specifier.
+	* testsuite/21_strings/basic_string_view/cons/char/range.cc:
+	Check noexcept-specifier. Also check construction without CTAD.
+
+2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/101361
+	* include/std/string_view (ends_with): Use traits_type::compare
+	directly.
+
+2021-07-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view: Only include <bits/ranges_base.h>
+	once, and only for C++20 and later.
+
+2021-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101411
+	* include/std/span (as_writable_bytes): Add requires-clause.
+	* testsuite/23_containers/span/101411.cc: New test.
+
+2021-07-09  Matheus Castanho  <msc@linux.ibm.com>
+
+	* include/std/mutex (__lock_impl): Check
+	_GLIBCXX_HAS_GTHREADS before using __gthread_yield.
+
 2021-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101271

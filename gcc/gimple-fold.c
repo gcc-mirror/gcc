@@ -2115,13 +2115,13 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
 	  tree slen = get_maxval_strlen (src, SRK_STRLEN);
 	  if (slen && !integer_zerop (slen))
 	    warning_at (loc, OPT_Wstringop_truncation,
-			"%G%qD destination unchanged after copying no bytes "
+			"%qD destination unchanged after copying no bytes "
 			"from a string of length %E",
-			stmt, fndecl, slen);
+			fndecl, slen);
 	  else
 	    warning_at (loc, OPT_Wstringop_truncation,
-			"%G%qD destination unchanged after copying no bytes",
-			stmt, fndecl);
+			"%qD destination unchanged after copying no bytes",
+			fndecl);
 	}
 
       replace_call_with_value (gsi, dest);
@@ -2498,11 +2498,11 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 	  location_t loc = gimple_location (stmt);
 	  nowarn = warning_at (loc, OPT_Wstringop_overflow_,
 			       cmpdst == 0
-			       ? G_("%G%qD specified bound %E equals "
+			       ? G_("%qD specified bound %E equals "
 				    "destination size")
-			       : G_("%G%qD specified bound %E exceeds "
+			       : G_("%qD specified bound %E exceeds "
 				    "destination size %wu"),
-			       stmt, fndecl, len, dstsize);
+			       fndecl, len, dstsize);
 	  if (nowarn)
 	    suppress_warning (stmt, OPT_Wstringop_overflow_);
 	}
@@ -2518,8 +2518,8 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 	 of the destination is unknown (it's not an uncommon mistake
 	 to specify as the bound to strncpy the length of the source).  */
       if (warning_at (loc, OPT_Wstringop_overflow_,
-		      "%G%qD specified bound %E equals source length",
-		      stmt, fndecl, len))
+		      "%qD specified bound %E equals source length",
+		      fndecl, len))
 	suppress_warning (stmt, OPT_Wstringop_overflow_);
     }
 
@@ -4697,6 +4697,8 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 		if (fldsz == 0)
 		  continue;
 		HOST_WIDE_INT pos = int_byte_position (field);
+		if (pos >= sz)
+		  continue;
 		HOST_WIDE_INT bpos
 		  = tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field));
 		bpos %= BITS_PER_UNIT;
@@ -4772,6 +4774,8 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 	    else
 	      {
 		HOST_WIDE_INT pos = int_byte_position (field);
+		if (pos >= sz)
+		  continue;
 		HOST_WIDE_INT fldsz = tree_to_shwi (DECL_SIZE_UNIT (field));
 		gcc_assert (pos >= 0 && fldsz >= 0 && pos >= cur_pos);
 		clear_padding_add_padding (buf, pos - cur_pos);
@@ -7507,7 +7511,8 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
               tree op1 = (*valueize) (gimple_assign_rhs2 (stmt));
               tree op2 = (*valueize) (gimple_assign_rhs3 (stmt));
               return fold_ternary_loc (loc, subcode,
-				       gimple_expr_type (stmt), op0, op1, op2);
+				       TREE_TYPE (gimple_assign_lhs (stmt)),
+				       op0, op1, op2);
             }
 
           default:
@@ -8901,16 +8906,17 @@ gimple_assign_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
 				   int depth)
 {
   enum tree_code code = gimple_assign_rhs_code (stmt);
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   switch (get_gimple_rhs_class (code))
     {
     case GIMPLE_UNARY_RHS:
       return tree_unary_nonnegative_warnv_p (gimple_assign_rhs_code (stmt),
-					     gimple_expr_type (stmt),
+					     type,
 					     gimple_assign_rhs1 (stmt),
 					     strict_overflow_p, depth);
     case GIMPLE_BINARY_RHS:
       return tree_binary_nonnegative_warnv_p (gimple_assign_rhs_code (stmt),
-					      gimple_expr_type (stmt),
+					      type,
 					      gimple_assign_rhs1 (stmt),
 					      gimple_assign_rhs2 (stmt),
 					      strict_overflow_p, depth);
@@ -8938,12 +8944,12 @@ gimple_call_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
     gimple_call_arg (stmt, 0) : NULL_TREE;
   tree arg1 = gimple_call_num_args (stmt) > 1 ?
     gimple_call_arg (stmt, 1) : NULL_TREE;
-
-  return tree_call_nonnegative_warnv_p (gimple_expr_type (stmt),
-					gimple_call_combined_fn (stmt),
-					arg0,
-					arg1,
-					strict_overflow_p, depth);
+  tree lhs = gimple_call_lhs (stmt);
+  return (lhs
+	  && tree_call_nonnegative_warnv_p (TREE_TYPE (lhs),
+					    gimple_call_combined_fn (stmt),
+					    arg0, arg1,
+					    strict_overflow_p, depth));
 }
 
 /* Return true if return value of call STMT is known to be non-negative.

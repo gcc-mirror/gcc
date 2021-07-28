@@ -919,7 +919,7 @@ proper position among the other output files.  */
    than in ASM_DEBUG_SPEC, so that it applies to both .s and .c etc.
    compilations.  */
 #  define ASM_DEBUG_DWARF_OPTION ""
-# elif defined(HAVE_AS_GDWARF_5_DEBUG_FLAG)
+# elif defined(HAVE_AS_GDWARF_5_DEBUG_FLAG) && !defined(HAVE_LD_BROKEN_PE_DWARF5)
 #  define ASM_DEBUG_DWARF_OPTION "%{%:dwarf-version-gt(4):--gdwarf-5;" \
 	"%:dwarf-version-gt(3):--gdwarf-4;"				\
 	"%:dwarf-version-gt(2):--gdwarf-3;"				\
@@ -4077,7 +4077,6 @@ check_offload_target_name (const char *target, ptrdiff_t len)
     }
   if (!c)
     {
-      char *s;
       auto_vec<const char*> candidates;
       size_t olen = strlen (OFFLOAD_TARGETS) + 1;
       char *cand = XALLOCAVEC (char, olen);
@@ -4091,15 +4090,19 @@ check_offload_target_name (const char *target, ptrdiff_t len)
 
       error ("GCC is not configured to support %qs as offload target", target2);
 
-      const char *hint = candidates_list_and_hint (target2, s, candidates);
       if (candidates.is_empty ())
 	inform (UNKNOWN_LOCATION, "no offloading targets configured");
-      else if (hint)
-	inform (UNKNOWN_LOCATION,
-		"valid offload targets are: %s; did you mean %qs?", s, hint);
       else
-	inform (UNKNOWN_LOCATION, "valid offload targets are: %s", s);
-      XDELETEVEC (s);
+	{
+	  char *s;
+	  const char *hint = candidates_list_and_hint (target2, s, candidates);
+	  if (hint)
+	    inform (UNKNOWN_LOCATION,
+		    "valid offload targets are: %s; did you mean %qs?", s, hint);
+	  else
+	    inform (UNKNOWN_LOCATION, "valid offload targets are: %s", s);
+	  XDELETEVEC (s);
+	}
       return false;
     }
   return true;
@@ -5035,6 +5038,16 @@ process_command (unsigned int decoded_options_count,
 #if OFFLOAD_DEFAULTED
       offload_targets_default = true;
 #endif
+    }
+
+  /* Handle -gtoggle as it would later in toplev.c:process_options to
+     make the debug-level-gt spec function work as expected.  */
+  if (flag_gtoggle)
+    {
+      if (debug_info_level == DINFO_LEVEL_NONE)
+	debug_info_level = DINFO_LEVEL_NORMAL;
+      else
+	debug_info_level = DINFO_LEVEL_NONE;
     }
 
   if (output_file

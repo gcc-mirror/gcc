@@ -1,3 +1,12 @@
+2021-07-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* asan/libtool-version: Bump version.
+	* tsan/libtool-version: Likewise.
+
+2021-07-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
 2021-05-21  Tamar Christina  <tamar.christina@arm.com>
 
 	PR sanitizer/100379

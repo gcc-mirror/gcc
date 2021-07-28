@@ -333,7 +333,7 @@ static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
 static rtx_insn *thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				       vec<machine_mode> &,
 				       vec<const char *> &, vec<rtx> &,
-				       HARD_REG_SET &);
+				       HARD_REG_SET &, location_t);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -13244,8 +13244,8 @@ bounds_check (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
   if (lane < low || lane >= high)
     {
       if (exp)
-	error ("%K%s %wd out of range %wd - %wd",
-	       exp, desc, lane, low, high - 1);
+	error_at (EXPR_LOCATION (exp),
+		  "%s %wd out of range %wd - %wd", desc, lane, low, high - 1);
       else
 	error ("%s %wd out of range %wd - %wd", desc, lane, low, high - 1);
     }
@@ -34105,7 +34105,7 @@ rtx_insn *
 thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 		      vec<machine_mode> & /*input_modes*/,
 		      vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
-		      HARD_REG_SET & /*clobbered_regs*/)
+		      HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
 {
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
     if (startswith (constraints[i], "=@cc"))

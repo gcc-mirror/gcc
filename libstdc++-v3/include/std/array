@@ -35,10 +35,14 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <utility>
+#include <compare>
+#include <initializer_list>
+
+#include <type_traits>
 #include <bits/functexcept.h>
 #include <bits/stl_algobase.h>
-#include <bits/range_access.h>
+#include <bits/range_access.h> // std::begin, std::end etc.
+#include <bits/utility.h>      // std::index_sequence, std::tuple_size
 #include <debug/assertions.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -428,28 +432,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Tuple interface to class template array.
 
-  /// tuple_size
-  template<typename _Tp>
-    struct tuple_size;
-
   /// Partial specialization for std::array
-  template<typename _Tp, std::size_t _Nm>
+  template<typename _Tp, size_t _Nm>
     struct tuple_size<array<_Tp, _Nm>>
-    : public integral_constant<std::size_t, _Nm> { };
-
-  /// tuple_element
-  template<std::size_t _Int, typename _Tp>
-    struct tuple_element;
+    : public integral_constant<size_t, _Nm> { };
 
   /// Partial specialization for std::array
-  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    struct tuple_element<_Int, array<_Tp, _Nm>>
+  template<size_t _Ind, typename _Tp, size_t _Nm>
+    struct tuple_element<_Ind, array<_Tp, _Nm>>
     {
-      static_assert(_Int < _Nm, "index is out of bounds");
-      typedef _Tp type;
+      static_assert(_Ind < _Nm, "array index is in range");
+      using type = _Tp;
     };
 
-  template<typename _Tp, std::size_t _Nm>
+  template<typename _Tp, size_t _Nm>
     struct __is_tuple_like_impl<array<_Tp, _Nm>> : true_type
     { };
 

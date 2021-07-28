@@ -1915,7 +1915,8 @@ package body Osint is
       begin
          if Opt.Look_In_Primary_Dir then
             Locate_File
-              (N, Source, Primary_Directory, File_Name, File, Attr'Access);
+              (N, Source, Primary_Directory, File_Name, File,
+               Attr'Unchecked_Access);
 
             if File /= No_File and then T = File_Stamp (N) then
                return File;
@@ -1925,7 +1926,7 @@ package body Osint is
          Last_Dir := Src_Search_Directories.Last;
 
          for D in Primary_Directory + 1 .. Last_Dir loop
-            Locate_File (N, Source, D, File_Name, File, Attr'Access);
+            Locate_File (N, Source, D, File_Name, File, Attr'Unchecked_Access);
 
             if File /= No_File and then T = File_Stamp (File) then
                return File;

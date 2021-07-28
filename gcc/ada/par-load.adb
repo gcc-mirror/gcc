@@ -129,8 +129,8 @@ begin
    Save_Style_Check_Options (Save_Style_Checks);
    Save_Style_Check := Opt.Style_Check;
 
-   --  If main unit, set Main_Unit_Entity (this will get overwritten if
-   --  the main unit has a separate spec, that happens later on in Load)
+   --  If main unit, set Main_Unit_Entity (this will get overwritten if the
+   --  main unit has a separate spec, that happens later on in Load).
 
    if Cur_Unum = Main_Unit then
       Main_Unit_Entity := Cunit_Entity (Main_Unit);
@@ -234,9 +234,10 @@ begin
          Error_Msg ("\\found unit $!", Loc);
       end if;
 
-      --  In both cases, remove the unit so that it is out of the way later
+      --  In both cases, flag the fatal error and give up
 
-      Remove_Unit (Cur_Unum);
+      Set_Fatal_Error (Cur_Unum, Error_Detected);
+      return;
    end if;
 
    --  If current unit is a body, load its corresponding spec
@@ -265,6 +266,12 @@ begin
          --  and this is also where we generate the SCO's for this spec.
 
          if Cur_Unum = Main_Unit then
+
+            --  We generate code for the main unit body, so we need to generate
+            --  code for its spec too.
+
+            Set_Generate_Code (Unum, True);
+
             Main_Unit_Entity := Cunit_Entity (Unum);
 
             if Generate_SCO then

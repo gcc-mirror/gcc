@@ -1,3 +1,53 @@
+2021-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101585
+	* c-warn.c (warn_parm_ptrarray_mismatch): Use OEP_DECL_NAME.
+
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Call canonicalize_attr_name also
+	on attr_id.  Return 1 for omp::directive or omp::sequence in C++11
+	and later.
+
+2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP__START_ and
+	PRAGMA_OMP__LAST_ enumerators.
+
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add 'PRAGMA_OACC_CLAUSE_NOHOST'.
+
+2021-07-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-common.c (c_build_shufflevector): Adjust by-value argument to
+	by-const-reference.
+	* c-common.h (c_build_shufflevector): Same.
+
+2021-07-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/101453
+	* c-common.c (parse_optimize_options): Use the correct
+	size for buffer.
+
+2021-07-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101289
+	PR c/97548
+	* c-warn.c (warn_parm_array_mismatch): Use OEP_DECL_NAME.
+
+2021-07-14  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.c (c_common_post_options): Set -fdelete-dead-exceptions.
+
+2021-07-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-format.c (gcc_tdiag_char_table): Remove support for %G and %K.
+	 (gcc_cdiag_char_table): Same.
+	 (gcc_cxxdiag_char_table): Same.
+
 2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (enum c_omp_directive_kind): New enum.

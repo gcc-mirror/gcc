@@ -1,0 +1,199 @@
+; Built-in functions for PowerPC.
+; Copyright (C) 2020-21 Free Software Foundation, Inc.
+; Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+
+; Built-in functions in this file are organized into "stanzas", where
+; all built-ins in a given stanza are enabled together.  Each stanza
+; starts with a line identifying the circumstances in which the group of
+; functions is permitted, with the gating predicate in square brackets.
+; For example, this could be
+;
+;     [altivec]
+;
+;   or it could be
+;
+;     [power9]
+;
+; The bracketed gating predicate is the only information allowed on
+; the stanza header line, other than whitespace.
+;
+; Following the stanza header are two lines for each function: the
+; prototype line and the attributes line.  The prototype line has
+; this format, where the square brackets indicate optional
+; information and angle brackets indicate required information:
+;
+;   [kind] <return-type> <bif-name> (<argument-list>);
+;
+; Here [kind] can be one of "const", "pure", or "fpmath";
+; <return-type> is a legal type for a built-in function result;
+; <bif-name> is the name by which the function can be called;
+; and <argument-list> is a comma-separated list of legal types
+; for built-in function arguments.  The argument list may be
+; empty, but the parentheses and semicolon are required.
+;
+; A legal type is of the form:
+;
+;   [const] [[signed|unsigned] <basetype> | <vectype>] [*]
+;
+; where "const" applies only to a <basetype> of "int".  Legal values
+; of <basetype> are (for now):
+;
+;   char
+;   short
+;   int
+;   long
+;   long double
+;   long long
+;   float
+;   double
+;   __int128
+;   _Float128
+;   bool
+;   string
+;   _Decimal32
+;   _Decimal64
+;   _Decimal128
+;   __ibm128
+;
+; Legal values of <vectype> are as follows, and are shorthand for
+; the associated meaning:
+;
+;   vsc		vector signed char
+;   vuc		vector unsigned char
+;   vbc		vector bool char
+;   vss		vector signed short
+;   vus		vector unsigned short
+;   vbs		vector bool short
+;   vsi		vector signed int
+;   vui		vector unsigned int
+;   vbi		vector bool int
+;   vsll	vector signed long long
+;   vull	vector unsigned long long
+;   vbll	vector bool long long
+;   vsq		vector signed __int128
+;   vuq		vector unsigned __int128
+;   vbq		vector bool __int128
+;   vp		vector pixel
+;   vf		vector float
+;   vd		vector double
+;   v256	__vector_pair
+;   v512	__vector_quad
+;
+; For simplicity, We don't support "short int" and "long long int".
+; We don't currently support a <basetype> of "_Float16".  "signed"
+; and "unsigned" only apply to integral base types.  The optional *
+; indicates a pointer type.
+;
+; The attributes line looks like this:
+;
+;   <bif-id> <bif-pattern> {<attribute-list>}
+;
+; Here <bif-id> is a unique internal identifier for the built-in
+; function that will be used as part of an enumeration of all
+; built-in functions; <bif-pattern> is the define_expand or
+; define_insn that will be invoked when the call is expanded;
+; and <attribute-list> is a comma-separated list of special
+; conditions that apply to the built-in function.  The attribute
+; list may be empty, but the braces are required.
+;
+; Attributes are strings, and the allowed ones are listed below.
+;
+;   init     Process as a vec_init function
+;   set      Process as a vec_set function
+;   extract  Process as a vec_extract function
+;   nosoft   Not valid with -msoft-float
+;   ldvec    Needs special handling for vec_ld semantics
+;   stvec    Needs special handling for vec_st semantics
+;   reve     Needs special handling for element reversal
+;   pred     Needs special handling for comparison predicates
+;   htm      Needs special handling for transactional memory
+;   htmspr   HTM function using an SPR
+;   htmcr    HTM function using a CR
+;   mma      Needs special handling for MMA
+;   quad     MMA instruction using a register quad as an input operand
+;   pair     MMA instruction using a register pair as an input operand
+;   no32bit  Not valid for TARGET_32BIT
+;   32bit    Requires different handling for TARGET_32BIT
+;   cpu      This is a "cpu_is" or "cpu_supports" builtin
+;   ldstmask Altivec mask for load or store
+;   lxvrse   Needs special handling for load-rightmost, sign-extended
+;   lxvrze   Needs special handling for load-rightmost, zero-extended
+;   endian   Needs special handling for endianness
+;
+; Each attribute corresponds to extra processing required when
+; the built-in is expanded.  All such special processing should
+; be controlled by an attribute from now on.
+;
+; It is important to note that each entry's <bif-name> must be
+; unique.  The code generated from this file will call def_builtin
+; for each entry, and this can only happen once per name.
+;
+; The type signature for the builtin must match the modes of the RTL
+; pattern <bif-pattern>.  When a builtin is used only as a basis for
+; overloading, you can use an arbitrary type for each mode (for example,
+; for V8HImode, you could use vp, vss, vus, or vbs).  The overloading
+; machinery takes care of adding appropriate casts between vectors to
+; satisfy impedance matching.  The overloaded prototypes are the ones
+; that must match what users expect.  Thus you will often have a small
+; number of entries in this file that correspond to a much greater
+; number of entries in rs6000-overload.def.
+;
+; However, builtins in this file that are expected to be directly called
+; by users must have one version for each expected type combination.
+;
+; Eventually we want to automatically generate built-in documentation
+; from the entries in this file.  Documenting of built-ins with more
+; than one acceptable prototype can be done by cross-referencing
+; against rs6000-overload.def and picking up the allowable prototypes
+; from there.
+;
+; Blank lines may be used as desired in this file between the lines as
+; defined above; that is, you can introduce as many extra newlines as you
+; like after a required newline, but nowhere else.  Lines beginning with
+; a semicolon are also treated as blank lines.
+;
+; A const int argument may be restricted to certain values.  This is
+; indicated by one of the following occurring after the "int" token:
+;
+;    <x>   restricts the constant to x bits, interpreted as unsigned
+;    <x,y> restricts the constant to the inclusive range [x,y]
+;    [x,y] restricts the constant to the inclusive range [x,y],
+;	   but only applies if the argument is constant.
+;    {x,y} restricts the constant to one of two values, x or y.
+;
+; Here x and y are integer tokens.  Note that the "const" token is a
+; lie when the restriction is [x,y], but this simplifies the parsing
+; significantly and is hopefully forgivable.
+
+
+
+; AltiVec builtins.
+[altivec]
+  const vsc __builtin_altivec_abs_v16qi (vsc);
+    ABS_V16QI absv16qi2 {}
+
+  const vf __builtin_altivec_abs_v4sf (vf);
+    ABS_V4SF absv4sf2 {}
+
+  const vsi __builtin_altivec_abs_v4si (vsi);
+    ABS_V4SI absv4si2 {}
+
+  const vss __builtin_altivec_abs_v8hi (vss);
+    ABS_V8HI absv8hi2 {}

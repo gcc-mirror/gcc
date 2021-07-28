@@ -144,6 +144,10 @@ gcn_option_override (void)
 	/* 1MB total.  */
 	stack_size_opt = 1048576;
     }
+
+  /* The xnack option is a placeholder, for now.  */
+  if (flag_xnack)
+    sorry ("XNACK support");
 }
 
 /* }}}  */
@@ -5177,16 +5181,42 @@ static void
 output_file_start (void)
 {
   const char *cpu;
+  bool use_sram = flag_sram_ecc;
   switch (gcn_arch)
     {
-    case PROCESSOR_FIJI: cpu = "gfx803"; break;
-    case PROCESSOR_VEGA10: cpu = "gfx900"; break;
-    case PROCESSOR_VEGA20: cpu = "gfx906"; break;
-    case PROCESSOR_GFX908: cpu = "gfx908+sram-ecc"; break;
+    case PROCESSOR_FIJI:
+      cpu = "gfx803";
+#ifndef HAVE_GCN_SRAM_ECC_FIJI
+      use_sram = false;
+#endif
+      break;
+    case PROCESSOR_VEGA10:
+      cpu = "gfx900";
+#ifndef HAVE_GCN_SRAM_ECC_GFX900
+      use_sram = false;
+#endif
+      break;
+    case PROCESSOR_VEGA20:
+      cpu = "gfx906";
+#ifndef HAVE_GCN_SRAM_ECC_GFX906
+      use_sram = false;
+#endif
+      break;
+    case PROCESSOR_GFX908:
+      cpu = "gfx908";
+#ifndef HAVE_GCN_SRAM_ECC_GFX908
+      use_sram = false;
+#endif
+      break;
     default: gcc_unreachable ();
     }
 
-  fprintf(asm_out_file, "\t.amdgcn_target \"amdgcn-unknown-amdhsa--%s\"\n", cpu);
+  const char *xnack = (flag_xnack ? "+xnack" : "");
+  /* FIXME: support "any" when we move to HSACOv4.  */
+  const char *sram_ecc = (use_sram ? "+sram-ecc" : "");
+
+  fprintf(asm_out_file, "\t.amdgcn_target \"amdgcn-unknown-amdhsa--%s%s%s\"\n",
+	  cpu, xnack, sram_ecc);
 }
 
 /* Implement ASM_DECLARE_FUNCTION_NAME via gcn-hsa.h.

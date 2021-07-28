@@ -46,7 +46,7 @@ class impl_region_model_context : public region_model_context
 			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
-  void warn (pending_diagnostic *d) FINAL OVERRIDE;
+  bool warn (pending_diagnostic *d) FINAL OVERRIDE;
   void on_svalue_leak (const svalue *) OVERRIDE;
   void on_liveness_change (const svalue_set &live_svalues,
 			   const region_model *model) FINAL OVERRIDE;
@@ -59,7 +59,9 @@ class impl_region_model_context : public region_model_context
 		      const svalue *sval,
 		      state_machine::state_t state);
 
-  void on_condition (tree lhs, enum tree_code op, tree rhs) FINAL OVERRIDE;
+  void on_condition (const svalue *lhs,
+		     enum tree_code op,
+		     const svalue *rhs) FINAL OVERRIDE;
 
   void on_unknown_change (const svalue *sval, bool is_mutable) FINAL OVERRIDE;
 
@@ -71,6 +73,8 @@ class impl_region_model_context : public region_model_context
   void on_escaped_function (tree fndecl) FINAL OVERRIDE;
 
   uncertainty_t *get_uncertainty () FINAL OVERRIDE;
+
+  void purge_state_involving (const svalue *sval) FINAL OVERRIDE;
 
   exploded_graph *m_eg;
   log_user m_logger;
@@ -221,6 +225,17 @@ class exploded_node : public dnode<eg_traits>
 			 const gimple *stmt,
 			 program_state *state,
 			 uncertainty_t *uncertainty);
+  void on_stmt_pre (exploded_graph &eg,
+		    const gimple *stmt,
+		    program_state *state,
+		    bool *out_terminate_path,
+		    bool *out_unknown_side_effects,
+		    region_model_context *ctxt);
+  void on_stmt_post (const gimple *stmt,
+		     program_state *state,
+		     bool unknown_side_effects,
+		     region_model_context *ctxt);
+
   bool on_edge (exploded_graph &eg,
 		const superedge *succ,
 		program_point *next_point,
@@ -893,9 +908,12 @@ public:
 
   exploded_node *get_final_enode () const;
 
-  void dump_to_pp (pretty_printer *pp) const;
-  void dump (FILE *fp) const;
-  void dump () const;
+  void dump_to_pp (pretty_printer *pp,
+		   const extrinsic_state *ext_state) const;
+  void dump (FILE *fp, const extrinsic_state *ext_state) const;
+  void dump (const extrinsic_state *ext_state = NULL) const;
+  void dump_to_file (const char *filename,
+		     const extrinsic_state &ext_state) const;
 
   bool feasible_p (logger *logger, feasibility_problem **out,
 		    engine *eng, const exploded_graph *eg) const;

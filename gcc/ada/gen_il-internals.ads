@@ -174,6 +174,27 @@ package Gen_IL.Internals is
    --  Table mapping from enumeration literals representing fields to
    --  information about the field.
 
+   --  Getters for fields of types Elist_Id and Uint need special treatment of
+   --  defaults. In particular, if the field has its initial 0 value, getters
+   --  need to return the appropriate default value. Note that these defaults
+   --  have nothing to do with the defaults mentioned above for Nmake
+   --  functions.
+
+   function Field_Has_Special_Default
+     (Field_Type : Type_Enum) return Boolean is
+      (Field_Type in Elist_Id | Uint);
+   --  These are the field types that have a default value that is not
+   --  represented as zero.
+
+   function Special_Default
+     (Field_Type : Type_Enum) return String is
+      (if Field_Type = Elist_Id then "No_Elist" else "Uint_0");
+
+   function Invalid_Val
+     (Field_Type : Uint_Subtype) return String is
+      ("No_Uint");
+   --  We could generalize this to other than Uint at some point
+
    ----------------
 
    subtype Node_Field is

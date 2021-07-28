@@ -3398,7 +3398,7 @@ insert_init_stmt (copy_body_data *id, basic_block bb, gimple *init_stmt)
 	  && gimple_assign_rhs_class (init_stmt) == GIMPLE_UNARY_RHS)
 	{
 	  tree rhs = build1 (gimple_assign_rhs_code (init_stmt),
-			     gimple_expr_type (init_stmt),
+			     TREE_TYPE (gimple_assign_lhs (init_stmt)),
 			     gimple_assign_rhs1 (init_stmt));
 	  rhs = force_gimple_operand_gsi (&si, rhs, true, NULL_TREE, false,
 					  GSI_NEW_STMT);

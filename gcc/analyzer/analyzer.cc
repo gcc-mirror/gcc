@@ -63,6 +63,51 @@ get_stmt_location (const gimple *stmt, function *fun)
 static tree
 fixup_tree_for_diagnostic_1 (tree expr, hash_set<tree> *visited);
 
+/* Attemp to generate a tree for the LHS of ASSIGN_STMT.
+   VISITED must be non-NULL; it is used to ensure termination.  */
+
+static tree
+get_diagnostic_tree_for_gassign_1 (const gassign *assign_stmt,
+				   hash_set<tree> *visited)
+{
+  enum tree_code code = gimple_assign_rhs_code (assign_stmt);
+
+  /* Reverse the effect of extract_ops_from_tree during
+     gimplification.  */
+  switch (get_gimple_rhs_class (code))
+    {
+    default:
+    case GIMPLE_INVALID_RHS:
+      gcc_unreachable ();
+    case GIMPLE_TERNARY_RHS:
+    case GIMPLE_BINARY_RHS:
+    case GIMPLE_UNARY_RHS:
+      {
+	tree t = make_node (code);
+	TREE_TYPE (t) = TREE_TYPE (gimple_assign_lhs (assign_stmt));
+	unsigned num_rhs_args = gimple_num_ops (assign_stmt) - 1;
+	for (unsigned i = 0; i < num_rhs_args; i++)
+	  {
+	    tree op = gimple_op (assign_stmt, i + 1);
+	    if (op)
+	      {
+		op = fixup_tree_for_diagnostic_1 (op, visited);
+		if (op == NULL_TREE)
+		  return NULL_TREE;
+	      }
+	    TREE_OPERAND (t, i) = op;
+	  }
+	return t;
+      }
+    case GIMPLE_SINGLE_RHS:
+      {
+	tree op = gimple_op (assign_stmt, 1);
+	op = fixup_tree_for_diagnostic_1 (op, visited);
+	return op;
+      }
+    }
+}
+
 /*  Subroutine of fixup_tree_for_diagnostic_1, called on SSA names.
     Attempt to reconstruct a a tree expression for SSA_NAME
     based on its def-stmt.
@@ -91,45 +136,8 @@ maybe_reconstruct_from_def_stmt (tree ssa_name,
       /* Can't handle these.  */
       return NULL_TREE;
     case GIMPLE_ASSIGN:
-      {
-	enum tree_code code = gimple_assign_rhs_code (def_stmt);
-
-	/* Reverse the effect of extract_ops_from_tree during
-	   gimplification.  */
-	switch (get_gimple_rhs_class (code))
-	  {
-	  default:
-	  case GIMPLE_INVALID_RHS:
-	    gcc_unreachable ();
-	  case GIMPLE_TERNARY_RHS:
-	  case GIMPLE_BINARY_RHS:
-	  case GIMPLE_UNARY_RHS:
-	    {
-	      tree t = make_node (code);
-	      TREE_TYPE (t) = TREE_TYPE (ssa_name);
-	      unsigned num_rhs_args = gimple_num_ops (def_stmt) - 1;
-	      for (unsigned i = 0; i < num_rhs_args; i++)
-		{
-		  tree op = gimple_op (def_stmt, i + 1);
-		  if (op)
-		    {
-		      op = fixup_tree_for_diagnostic_1 (op, visited);
-		      if (op == NULL_TREE)
-			return NULL_TREE;
-		    }
-		  TREE_OPERAND (t, i) = op;
-		}
-	      return t;
-	    }
-	  case GIMPLE_SINGLE_RHS:
-	    {
-	      tree op = gimple_op (def_stmt, 1);
-	      op = fixup_tree_for_diagnostic_1 (op, visited);
-	      return op;
-	    }
-	  }
-      }
-      break;
+      return get_diagnostic_tree_for_gassign_1
+	(as_a <const gassign *> (def_stmt), visited);
     case GIMPLE_CALL:
       {
 	gcall *call_stmt = as_a <gcall *> (def_stmt);
@@ -165,8 +173,13 @@ fixup_tree_for_diagnostic_1 (tree expr, hash_set<tree> *visited)
       && TREE_CODE (expr) == SSA_NAME
       && (SSA_NAME_VAR (expr) == NULL_TREE
 	  || DECL_ARTIFICIAL (SSA_NAME_VAR (expr))))
-    if (tree expr2 = maybe_reconstruct_from_def_stmt (expr, visited))
-      return expr2;
+    {
+      if (tree var = SSA_NAME_VAR (expr))
+	if (VAR_P (var) && DECL_HAS_DEBUG_EXPR_P (var))
+	  return DECL_DEBUG_EXPR (var);
+      if (tree expr2 = maybe_reconstruct_from_def_stmt (expr, visited))
+	return expr2;
+    }
   return expr;
 }
 
@@ -186,6 +199,15 @@ fixup_tree_for_diagnostic (tree expr)
 {
   hash_set<tree> visited;
   return fixup_tree_for_diagnostic_1 (expr, &visited);
+}
+
+/* Attempt to generate a tree for the LHS of ASSIGN_STMT.  */
+
+tree
+get_diagnostic_tree_for_gassign (const gassign *assign_stmt)
+{
+  hash_set<tree> visited;
+  return get_diagnostic_tree_for_gassign_1 (assign_stmt, &visited);
 }
 
 } // namespace ana
@@ -218,7 +240,7 @@ is_special_named_call_p (const gcall *call, const char *funcname,
    Compare with special_function_p in calls.c.  */
 
 bool
-is_named_call_p (tree fndecl, const char *funcname)
+is_named_call_p (const_tree fndecl, const char *funcname)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -270,7 +292,7 @@ is_std_function_p (const_tree fndecl)
 /* Like is_named_call_p, but look for std::FUNCNAME.  */
 
 bool
-is_std_named_call_p (tree fndecl, const char *funcname)
+is_std_named_call_p (const_tree fndecl, const char *funcname)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -292,7 +314,7 @@ is_std_named_call_p (tree fndecl, const char *funcname)
    arguments?  */
 
 bool
-is_named_call_p (tree fndecl, const char *funcname,
+is_named_call_p (const_tree fndecl, const char *funcname,
 		 const gcall *call, unsigned int num_args)
 {
   gcc_assert (fndecl);
@@ -310,7 +332,7 @@ is_named_call_p (tree fndecl, const char *funcname,
 /* Like is_named_call_p, but check for std::FUNCNAME.  */
 
 bool
-is_std_named_call_p (tree fndecl, const char *funcname,
+is_std_named_call_p (const_tree fndecl, const char *funcname,
 		     const gcall *call, unsigned int num_args)
 {
   gcc_assert (fndecl);

@@ -24,5 +24,5 @@ int main()
 {
   A<void>::B::f(0);
   A<void>::C<int>::f(0);
-  // A<void>::C<int>::g();
+  A<void>::C<int>::g();
 }

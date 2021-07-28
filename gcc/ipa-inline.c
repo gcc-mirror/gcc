@@ -1774,7 +1774,7 @@ compute_max_insns (cgraph_node *node, int insns)
 /* Compute badness of all edges in NEW_EDGES and add them to the HEAP.  */
 
 static void
-add_new_edges_to_heap (edge_heap_t *heap, vec<cgraph_edge *> new_edges)
+add_new_edges_to_heap (edge_heap_t *heap, vec<cgraph_edge *> &new_edges)
 {
   while (new_edges.length () > 0)
     {

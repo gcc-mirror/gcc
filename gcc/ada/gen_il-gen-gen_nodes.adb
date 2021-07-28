@@ -193,7 +193,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Character_Literal, N_Direct_Name,
        (Sy (Chars, Name_Id, Default_No_Name),
-        Sy (Char_Literal_Value, Uint)));
+        Sy (Char_Literal_Value, Unat)));
 
    Ab (N_Op, N_Has_Entity,
        (Sm (Do_Overflow_Check, Flag),
@@ -412,26 +412,26 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Raise_Constraint_Error, N_Raise_xxx_Error,
        (Sy (Condition, Node_Id, Default_Empty),
-        Sy (Reason, Uint)));
+        Sy (Reason, Unat)));
 
    Cc (N_Raise_Program_Error, N_Raise_xxx_Error,
        (Sy (Condition, Node_Id, Default_Empty),
-        Sy (Reason, Uint)));
+        Sy (Reason, Unat)));
 
    Cc (N_Raise_Storage_Error, N_Raise_xxx_Error,
        (Sy (Condition, Node_Id, Default_Empty),
-        Sy (Reason, Uint)));
+        Sy (Reason, Unat)));
 
    Ab (N_Numeric_Or_String_Literal, N_Subexpr);
 
    Cc (N_Integer_Literal, N_Numeric_Or_String_Literal,
-       (Sy (Intval, Uint),
+       (Sy (Intval, Valid_Uint),
         Sm (Original_Entity, Node_Id),
         Sm (Print_In_Hex, Flag)));
 
    Cc (N_Real_Literal, N_Numeric_Or_String_Literal,
        (Sy (Realval, Ureal),
-        Sm (Corresponding_Integer_Value, Uint),
+        Sm (Corresponding_Integer_Value, Valid_Uint),
         Sm (Is_Machine_Number, Flag),
         Sm (Original_Entity, Node_Id)));
 

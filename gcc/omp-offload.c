@@ -1981,6 +1981,42 @@ execute_oacc_device_lower ()
 	gcc_unreachable ();
     }
 
+  if (is_oacc_routine)
+    {
+      tree attr = lookup_attribute ("omp declare target",
+				    DECL_ATTRIBUTES (current_function_decl));
+      gcc_checking_assert (attr);
+      tree clauses = TREE_VALUE (attr);
+      gcc_checking_assert (clauses);
+
+      /* Should this OpenACC routine be discarded?  */
+      bool discard = false;
+
+      tree clause_nohost = omp_find_clause (clauses, OMP_CLAUSE_NOHOST);
+      if (dump_file)
+	fprintf (dump_file,
+		 "OpenACC routine '%s' %s '%s' clause.\n",
+		 lang_hooks.decl_printable_name (current_function_decl, 2),
+		 clause_nohost ? "has" : "doesn't have",
+		 omp_clause_code_name[OMP_CLAUSE_NOHOST]);
+      /* Host compiler, 'nohost' clause?  */
+#ifndef ACCEL_COMPILER
+      if (clause_nohost)
+	discard = true;
+#endif
+
+      if (dump_file)
+	fprintf (dump_file,
+		 "OpenACC routine '%s' %sdiscarded.\n",
+		 lang_hooks.decl_printable_name (current_function_decl, 2),
+		 discard ? "" : "not ");
+      if (discard)
+	{
+	  TREE_ASM_WRITTEN (current_function_decl) = 1;
+	  return TODO_discard_function;
+	}
+    }
+
   /* Unparallelized OpenACC kernels constructs must get launched as 1 x 1 x 1
      kernels, so remove the parallelism dimensions function attributes
      potentially set earlier on.  */

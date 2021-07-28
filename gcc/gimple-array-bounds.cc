@@ -43,9 +43,9 @@ along with GCC; see the file COPYING3.  If not see
 // break the dependency on equivalences for this pass.
 
 const value_range *
-array_bounds_checker::get_value_range (const_tree op)
+array_bounds_checker::get_value_range (const_tree op, gimple *stmt)
 {
-  return ranges->get_value_range (op);
+  return ranges->get_value_range (op, stmt);
 }
 
 /* Try to determine the DECL that REF refers to.  Return the DECL or
@@ -173,7 +173,7 @@ trailing_array (tree arg, tree *pref)
 
 bool
 array_bounds_checker::check_array_ref (location_t location, tree ref,
-				       bool ignore_off_by_one)
+				       gimple *stmt, bool ignore_off_by_one)
 {
   if (warning_suppressed_p (ref, OPT_Warray_bounds))
     /* Return true to have the caller prevent warnings for enclosing
@@ -287,7 +287,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   const value_range *vr = NULL;
   if (TREE_CODE (low_sub) == SSA_NAME)
     {
-      vr = get_value_range (low_sub);
+      vr = get_value_range (low_sub, stmt);
       if (!vr->undefined_p () && !vr->varying_p ())
 	{
 	  low_sub = vr->kind () == VR_RANGE ? vr->max () : vr->min ();
@@ -414,262 +414,11 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
   if (warning_suppressed_p (ref, OPT_Warray_bounds))
     return false;
 
-  tree arg = TREE_OPERAND (ref, 0);
-  /* The constant and variable offset of the reference.  */
-  tree cstoff = TREE_OPERAND (ref, 1);
-  tree varoff = NULL_TREE;
-
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
-
-  /* The zero-based array or string constant bounds in bytes.  Initially
-     set to [-MAXOBJSIZE - 1, MAXOBJSIZE]  until a tighter bound is
-     determined.  */
-  offset_int arrbounds[2] = { -maxobjsize - 1, maxobjsize };
-
-  /* The minimum and maximum intermediate offset.  For a reference
-     to be valid, not only does the final offset/subscript must be
-     in bounds but all intermediate offsets should be as well.
-     GCC may be able to deal gracefully with such out-of-bounds
-     offsets so the checking is only enabled at -Warray-bounds=2
-     where it may help detect bugs in uses of the intermediate
-     offsets that could otherwise not be detectable.  */
-  offset_int ioff = wi::to_offset (fold_convert (ptrdiff_type_node, cstoff));
-  offset_int extrema[2] = { 0, wi::abs (ioff) };
-
-  /* The range of the byte offset into the reference.  */
-  offset_int offrange[2] = { 0, 0 };
-
   /* The statement used to allocate the array or null.  */
   gimple *alloc_stmt = NULL;
   /* For an allocation statement, the low bound of the size range.  */
   offset_int minbound = 0;
-
-  /* Determine the offsets and increment OFFRANGE for the bounds of each.
-     The loop computes the range of the final offset for expressions such
-     as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs in
-     some range.  */
-  const unsigned limit = param_ssa_name_def_chain_limit;
-  for (unsigned n = 0; TREE_CODE (arg) == SSA_NAME && n < limit; ++n)
-    {
-      gimple *def = SSA_NAME_DEF_STMT (arg);
-      if (is_gimple_call (def))
-	{
-	  /* Determine the byte size of the array from an allocation call.  */
-	  wide_int sizrng[2];
-	  if (gimple_call_alloc_size (def, sizrng))
-	    {
-	      arrbounds[0] = 0;
-	      arrbounds[1] = offset_int::from (sizrng[1], UNSIGNED);
-	      minbound = offset_int::from (sizrng[0], UNSIGNED);
-	      alloc_stmt = def;
-	    }
-	  break;
-	}
-
-      if (gimple_nop_p (def))
-	{
-	  /* For a function argument try to determine the byte size
-	     of the array from the current function declaratation
-	     (e.g., attribute access or related).  */
-	  wide_int wr[2];
-	  tree ref = gimple_parm_array_size (arg, wr);
-	  if (!ref)
-	    break;
-	  arrbounds[0] = offset_int::from (wr[0], UNSIGNED);
-	  arrbounds[1] = offset_int::from (wr[1], UNSIGNED);
-	  arg = ref;
-	  break;
-	}
-
-      if (!is_gimple_assign (def))
-	break;
-
-      tree_code code = gimple_assign_rhs_code (def);
-      if (code == POINTER_PLUS_EXPR)
-	{
-	  arg = gimple_assign_rhs1 (def);
-	  varoff = gimple_assign_rhs2 (def);
-	}
-      else if (code == ASSERT_EXPR)
-	{
-	  arg = TREE_OPERAND (gimple_assign_rhs1 (def), 0);
-	  continue;
-	}
-      else
-	return false;
-
-      /* VAROFF should always be a SSA_NAME here (and not even
-	 INTEGER_CST) but there's no point in taking chances.  */
-      if (TREE_CODE (varoff) != SSA_NAME)
-	break;
-
-      const value_range* const vr = get_value_range (varoff);
-      if (!vr || vr->undefined_p () || vr->varying_p ())
-	break;
-
-      if (!vr->constant_p ())
-	break;
-
-      if (vr->kind () == VR_RANGE)
-	{
-	  offset_int min
-	    = wi::to_offset (fold_convert (ptrdiff_type_node, vr->min ()));
-	  offset_int max
-	    = wi::to_offset (fold_convert (ptrdiff_type_node, vr->max ()));
-	  if (min < max)
-	    {
-	      offrange[0] += min;
-	      offrange[1] += max;
-	    }
-	  else
-	    {
-	      /* When MIN >= MAX, the offset is effectively in a union
-		 of two ranges: [-MAXOBJSIZE -1, MAX] and [MIN, MAXOBJSIZE].
-		 Since there is no way to represent such a range across
-		 additions, conservatively add [-MAXOBJSIZE -1, MAXOBJSIZE]
-		 to OFFRANGE.  */
-	      offrange[0] += arrbounds[0];
-	      offrange[1] += arrbounds[1];
-	    }
-	}
-      else
-	{
-	  /* For an anti-range, analogously to the above, conservatively
-	     add [-MAXOBJSIZE -1, MAXOBJSIZE] to OFFRANGE.  */
-	  offrange[0] += arrbounds[0];
-	  offrange[1] += arrbounds[1];
-	}
-
-      /* Keep track of the minimum and maximum offset.  */
-      if (offrange[1] < 0 && offrange[1] < extrema[0])
-	extrema[0] = offrange[1];
-      if (offrange[0] > 0 && offrange[0] > extrema[1])
-	extrema[1] = offrange[0];
-
-      if (offrange[0] < arrbounds[0])
-	offrange[0] = arrbounds[0];
-
-      if (offrange[1] > arrbounds[1])
-	offrange[1] = arrbounds[1];
-    }
-
-  tree reftype = NULL_TREE;
-  offset_int eltsize = -1;
-  if (arrbounds[0] >= 0)
-    {
-      /* The byte size of the array has already been determined above
-	 based on a pointer ARG.  Set ELTSIZE to the size of the type
-	 it points to and REFTYPE to the array with the size, rounded
-	 down as necessary.  */
-      reftype = TREE_TYPE (TREE_TYPE (arg));
-      if (TREE_CODE (reftype) == ARRAY_TYPE)
-	reftype = TREE_TYPE (reftype);
-      if (tree refsize = TYPE_SIZE_UNIT (reftype))
-	if (TREE_CODE (refsize) == INTEGER_CST)
-	  eltsize = wi::to_offset (refsize);
-
-      if (eltsize < 0)
-	return false;
-
-      offset_int nelts = arrbounds[1] / eltsize;
-      reftype = build_printable_array_type (reftype, nelts.to_uhwi ());
-    }
-  else if (TREE_CODE (arg) == ADDR_EXPR)
-    {
-      arg = TREE_OPERAND (arg, 0);
-      if (TREE_CODE (arg) != STRING_CST
-	  && TREE_CODE (arg) != PARM_DECL
-	  && TREE_CODE (arg) != VAR_DECL)
-	return false;
-
-      /* The type of the object being referred to.  It can be an array,
-	 string literal, or a non-array type when the MEM_REF represents
-	 a reference/subscript via a pointer to an object that is not
-	 an element of an array.  Incomplete types are excluded as well
-	 because their size is not known.  */
-      reftype = TREE_TYPE (arg);
-      if (POINTER_TYPE_P (reftype)
-	  || !COMPLETE_TYPE_P (reftype)
-	  || TREE_CODE (TYPE_SIZE_UNIT (reftype)) != INTEGER_CST)
-	return false;
-
-      /* Except in declared objects, references to trailing array members
-	 of structs and union objects are excluded because MEM_REF doesn't
-	 make it possible to identify the member where the reference
-	 originated.  */
-      if (RECORD_OR_UNION_TYPE_P (reftype)
-	  && (!VAR_P (arg)
-	      || (DECL_EXTERNAL (arg) && array_at_struct_end_p (ref))))
-	return false;
-
-      /* FIXME: Should this be 1 for Fortran?  */
-      arrbounds[0] = 0;
-
-      if (TREE_CODE (reftype) == ARRAY_TYPE)
-	{
-	  /* Set to the size of the array element (and adjust below).  */
-	  eltsize = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (reftype)));
-	  /* Use log2 of size to convert the array byte size in to its
-	     upper bound in elements.  */
-	  const offset_int eltsizelog2 = wi::floor_log2 (eltsize);
-	  if (tree dom = TYPE_DOMAIN (reftype))
-	    {
-	      tree bnds[] = { TYPE_MIN_VALUE (dom), TYPE_MAX_VALUE (dom) };
-	      if (TREE_CODE (arg) == COMPONENT_REF)
-		{
-		  offset_int size = maxobjsize;
-		  if (tree fldsize = component_ref_size (arg))
-		    size = wi::to_offset (fldsize);
-		  arrbounds[1] = wi::lrshift (size, eltsizelog2);
-		}
-	      else if (array_at_struct_end_p (arg) || !bnds[0] || !bnds[1])
-		arrbounds[1] = wi::lrshift (maxobjsize, eltsizelog2);
-	      else
-		arrbounds[1] = (wi::to_offset (bnds[1]) - wi::to_offset (bnds[0])
-				+ 1) * eltsize;
-	    }
-	  else
-	    arrbounds[1] = wi::lrshift (maxobjsize, eltsizelog2);
-
-	  /* Determine a tighter bound of the non-array element type.  */
-	  tree eltype = TREE_TYPE (reftype);
-	  while (TREE_CODE (eltype) == ARRAY_TYPE)
-	    eltype = TREE_TYPE (eltype);
-	  eltsize = wi::to_offset (TYPE_SIZE_UNIT (eltype));
-	}
-      else
-	{
-	  eltsize = 1;
-	  tree size = TYPE_SIZE_UNIT (reftype);
-	  if (VAR_P (arg))
-	    if (tree initsize = DECL_SIZE_UNIT (arg))
-	      if (tree_int_cst_lt (size, initsize))
-		size = initsize;
-
-	  arrbounds[1] = wi::to_offset (size);
-	}
-    }
-  else
-    return false;
-
-  offrange[0] += ioff;
-  offrange[1] += ioff;
-
-  /* Compute the more permissive upper bound when IGNORE_OFF_BY_ONE
-     is set (when taking the address of the one-past-last element
-     of an array) but always use the stricter bound in diagnostics. */
-  offset_int ubound = arrbounds[1];
-  if (ignore_off_by_one)
-    ubound += eltsize;
-
-  bool warned = false;
-  /* Set if the lower bound of the subscript is out of bounds.  */
-  const bool lboob = (arrbounds[0] == arrbounds[1]
-		      || offrange[0] >= ubound
-		      || offrange[1] < arrbounds[0]);
-  /* Set if only the upper bound of the subscript is out of bounds.
-     This can happen when using a bigger type to index into an array
-     of a smaller type, as is common with unsigned char.  */
+  /* The type and size of the access.  */
   tree axstype = TREE_TYPE (ref);
   offset_int axssize = 0;
   if (TREE_CODE (axstype) != UNION_TYPE)
@@ -677,6 +426,60 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
       if (TREE_CODE (access_size) == INTEGER_CST)
 	axssize = wi::to_offset (access_size);
 
+  access_ref aref;
+  if (!compute_objsize (ref, 0, &aref, ranges))
+    return false;
+
+  if (aref.offset_in_range (axssize))
+    return false;
+
+  if (TREE_CODE (aref.ref) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (aref.ref);
+      if (is_gimple_call (def))
+	{
+	  /* Save the allocation call and the low bound on the size.  */
+	  alloc_stmt = def;
+	  minbound = aref.sizrng[0];
+	}
+    }
+			
+  /* The range of the byte offset into the reference.  Adjusted below.  */
+  offset_int offrange[2] = { aref.offrng[0], aref.offrng[1] };
+
+  /* The type of the referenced object.  */
+  tree reftype = TREE_TYPE (aref.ref);
+  /* The size of the referenced array element.  */
+  offset_int eltsize = 1;
+  /* The byte size of the array has already been determined above
+     based on a pointer ARG.  Set ELTSIZE to the size of the type
+     it points to and REFTYPE to the array with the size, rounded
+     down as necessary.  */
+  if (POINTER_TYPE_P (reftype))
+    reftype = TREE_TYPE (reftype);
+  if (TREE_CODE (reftype) == ARRAY_TYPE)
+    reftype = TREE_TYPE (reftype);
+  if (tree refsize = TYPE_SIZE_UNIT (reftype))
+    if (TREE_CODE (refsize) == INTEGER_CST)
+      eltsize = wi::to_offset (refsize);
+
+  const offset_int nelts = aref.sizrng[1] / eltsize;
+  reftype = build_printable_array_type (reftype, nelts.to_uhwi ());
+
+  /* Compute the more permissive upper bound when IGNORE_OFF_BY_ONE
+     is set (when taking the address of the one-past-last element
+     of an array) but always use the stricter bound in diagnostics. */
+  offset_int ubound = aref.sizrng[1];
+  if (ignore_off_by_one)
+    ubound += eltsize;
+
+  /* Set if the lower bound of the subscript is out of bounds.  */
+  const bool lboob = (aref.sizrng[1] == 0
+		      || offrange[0] >= ubound
+		      || offrange[1] < 0);
+  /* Set if only the upper bound of the subscript is out of bounds.
+     This can happen when using a bigger type to index into an array
+     of a smaller type, as is common with unsigned char.  */
   const bool uboob = !lboob && offrange[0] + axssize > ubound;
   if (lboob || uboob)
     {
@@ -689,9 +492,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	 to compute the index to print in the diagnostic; arrays
 	 in MEM_REF don't mean anything.  A type with no size like
 	 void is as good as having a size of 1.  */
-      tree type = TREE_TYPE (ref);
-      while (TREE_CODE (type) == ARRAY_TYPE)
-	type = TREE_TYPE (type);
+      tree type = strip_array_types (TREE_TYPE (ref));
       if (tree size = TYPE_SIZE_UNIT (type))
 	{
 	  offrange[0] = offrange[0] / wi::to_offset (size);
@@ -699,6 +500,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	}
     }
 
+  bool warned = false;
   if (lboob)
     {
       if (offrange[0] == offrange[1])
@@ -720,7 +522,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	/* If the memory was dynamically allocated refer to it as if
 	   it were an untyped array of bytes.  */
 	backtype = build_array_type_nelts (unsigned_char_type_node,
-					   arrbounds[1].to_uhwi ());
+					   aref.sizrng[1].to_uhwi ());
 
       warned = warning_at (location, OPT_Warray_bounds,
 			   "array subscript %<%T[%wi]%> is partly "
@@ -730,46 +532,8 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 
   if (warned)
     {
-      if (DECL_P (arg))
-	inform (DECL_SOURCE_LOCATION (arg), "while referencing %qD", arg);
-      else if (alloc_stmt)
-	{
-	  location_t loc = gimple_location (alloc_stmt);
-	  if (gimple_call_builtin_p (alloc_stmt, BUILT_IN_ALLOCA_WITH_ALIGN))
-	    {
-	      if (minbound == arrbounds[1])
-		inform (loc, "referencing a variable length array "
-			"of size %wu", minbound.to_uhwi ());
-	      else
-		inform (loc, "referencing a variable length array "
-			"of size between %wu and %wu",
-			minbound.to_uhwi (), arrbounds[1].to_uhwi ());
-	    }
-	  else if (tree fndecl = gimple_call_fndecl (alloc_stmt))
-	    {
-	      if (minbound == arrbounds[1])
-		inform (loc, "referencing an object of size %wu "
-			"allocated by %qD",
-			minbound.to_uhwi (), fndecl);
-	      else
-		inform (loc, "referencing an object of size between "
-			"%wu and %wu allocated by %qD",
-			minbound.to_uhwi (), arrbounds[1].to_uhwi (), fndecl);
-	    }
-	  else
-	    {
-	      tree fntype = gimple_call_fntype (alloc_stmt);
-	      if (minbound == arrbounds[1])
-		inform (loc, "referencing an object of size %wu "
-			"allocated by %qT",
-			minbound.to_uhwi (), fntype);
-	      else
-		inform (loc, "referencing an object of size between "
-			"%wu and %wu allocated by %qT",
-			minbound.to_uhwi (), arrbounds[1].to_uhwi (), fntype);
-	    }
-	}
-
+      /* TODO: Determine the access from the statement and use it.  */
+      aref.inform_access (access_none);
       suppress_warning (ref, OPT_Warray_bounds);
       return true;
     }
@@ -779,9 +543,9 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 
   /* At level 2 check also intermediate offsets.  */
   int i = 0;
-  if (extrema[i] < -arrbounds[1] || extrema[i = 1] > ubound)
+  if (aref.offmax[i] < -aref.sizrng[1] || aref.offmax[i = 1] > ubound)
     {
-      HOST_WIDE_INT tmpidx = extrema[i].to_shwi () / eltsize.to_shwi ();
+      HOST_WIDE_INT tmpidx = aref.offmax[i].to_shwi () / eltsize.to_shwi ();
 
       if (warning_at (location, OPT_Warray_bounds,
 		      "intermediate array offset %wi is outside array bounds "
@@ -799,7 +563,8 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
    address of an ARRAY_REF, and call check_array_ref on it.  */
 
 void
-array_bounds_checker::check_addr_expr (location_t location, tree t)
+array_bounds_checker::check_addr_expr (location_t location, tree t,
+				       gimple *stmt)
 {
   /* For the most significant subscript only, accept taking the address
      of the just-past-the-end element.  */
@@ -811,7 +576,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t)
       bool warned = false;
       if (TREE_CODE (t) == ARRAY_REF)
 	{
-	  warned = check_array_ref (location, t, ignore_off_by_one);
+	  warned = check_array_ref (location, t, stmt, ignore_off_by_one);
 	  ignore_off_by_one = false;
 	}
       else if (TREE_CODE (t) == MEM_REF)
@@ -964,14 +729,14 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
   bool warned = false;
   array_bounds_checker *checker = (array_bounds_checker *) wi->info;
   if (TREE_CODE (t) == ARRAY_REF)
-    warned = checker->check_array_ref (location, t,
+    warned = checker->check_array_ref (location, t, wi->stmt,
 				       false/*ignore_off_by_one*/);
   else if (TREE_CODE (t) == MEM_REF)
     warned = checker->check_mem_ref (location, t,
 				     false /*ignore_off_by_one*/);
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
-      checker->check_addr_expr (location, t);
+      checker->check_addr_expr (location, t, wi->stmt);
       *walk_subtree = false;
     }
   else if (inbounds_memaccess_p (t))

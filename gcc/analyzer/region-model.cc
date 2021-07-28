@@ -221,6 +221,23 @@ region_to_value_map::can_merge_with_p (const region_to_value_map &other,
   return true;
 }
 
+/* Purge any state involving SVAL.  */
+
+void
+region_to_value_map::purge_state_involving (const svalue *sval)
+{
+  auto_vec<const region *> to_purge;
+  for (auto iter : *this)
+    {
+      const region *iter_reg = iter.first;
+      const svalue *iter_sval = iter.second;
+      if (iter_reg->involves_p (sval) || iter_sval->involves_p (sval))
+	to_purge.safe_push (iter_reg);
+    }
+  for (auto iter : to_purge)
+    m_hash_map.remove (iter);
+}
+
 /* class region_model.  */
 
 /* Ctor for region_model: construct an "empty" model.  */
@@ -442,6 +459,11 @@ public:
 
   const char *get_kind () const FINAL OVERRIDE { return "poisoned_value_diagnostic"; }
 
+  bool use_of_uninit_p () const FINAL OVERRIDE
+  {
+    return m_pkind == POISON_KIND_UNINIT;
+  }
+
   bool operator== (const poisoned_value_diagnostic &other) const
   {
     return m_expr == other.m_expr;
@@ -453,6 +475,16 @@ public:
       {
       default:
 	gcc_unreachable ();
+      case POISON_KIND_UNINIT:
+	{
+	  diagnostic_metadata m;
+	  m.add_cwe (457); /* "CWE-457: Use of Uninitialized Variable".  */
+	  return warning_meta (rich_loc, m,
+			       OPT_Wanalyzer_use_of_uninitialized_value,
+			       "use of uninitialized value %qE",
+			       m_expr);
+	}
+	break;
       case POISON_KIND_FREED:
 	{
 	  diagnostic_metadata m;
@@ -482,6 +514,9 @@ public:
       {
       default:
 	gcc_unreachable ();
+      case POISON_KIND_UNINIT:
+	return ev.formatted_print ("use of uninitialized value %qE here",
+				   m_expr);
       case POISON_KIND_FREED:
 	return ev.formatted_print ("use after %<free%> of %qE here",
 				   m_expr);
@@ -782,6 +817,41 @@ region_model::get_gassign_result (const gassign *assign,
     }
 }
 
+/* Check for SVAL being poisoned, adding a warning to CTXT.
+   Return SVAL, or, if a warning is added, another value, to avoid
+   repeatedly complaining about the same poisoned value in followup code.  */
+
+const svalue *
+region_model::check_for_poison (const svalue *sval,
+				tree expr,
+				region_model_context *ctxt) const
+{
+  if (!ctxt)
+    return sval;
+
+  if (const poisoned_svalue *poisoned_sval = sval->dyn_cast_poisoned_svalue ())
+    {
+      /* If we have an SSA name for a temporary, we don't want to print
+	 '<unknown>'.
+	 Poisoned values are shared by type, and so we can't reconstruct
+	 the tree other than via the def stmts, using
+	 fixup_tree_for_diagnostic.  */
+      tree diag_arg = fixup_tree_for_diagnostic (expr);
+      enum poison_kind pkind = poisoned_sval->get_poison_kind ();
+      if (ctxt->warn (new poisoned_value_diagnostic (diag_arg, pkind)))
+	{
+	  /* We only want to report use of a poisoned value at the first
+	     place it gets used; return an unknown value to avoid generating
+	     a chain of followup warnings.  */
+	  sval = m_mgr->get_or_create_unknown_svalue (sval->get_type ());
+	}
+
+      return sval;
+    }
+
+  return sval;
+}
+
 /* Update this model for the ASSIGN stmt, using CTXT to report any
    diagnostics.  */
 
@@ -798,6 +868,8 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
      for some SVALUE.  */
   if (const svalue *sval = get_gassign_result (assign, ctxt))
     {
+      tree expr = get_diagnostic_tree_for_gassign (assign);
+      check_for_poison (sval, expr, ctxt);
       set_value (lhs_reg, sval, ctxt);
       return;
     }
@@ -863,6 +935,109 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
     }
 }
 
+/* A pending_diagnostic subclass for implementing "__analyzer_dump_path".  */
+
+class dump_path_diagnostic
+  : public pending_diagnostic_subclass<dump_path_diagnostic>
+{
+public:
+  bool emit (rich_location *richloc) FINAL OVERRIDE
+  {
+    inform (richloc, "path");
+    return true;
+  }
+
+  const char *get_kind () const FINAL OVERRIDE { return "dump_path_diagnostic"; }
+
+  bool operator== (const dump_path_diagnostic &) const
+  {
+    return true;
+  }
+};
+
+/* Handle the pre-sm-state part of STMT, modifying this object in-place.
+   Write true to *OUT_TERMINATE_PATH if the path should be terminated.
+   Write true to *OUT_UNKNOWN_SIDE_EFFECTS if the stmt has unknown
+   side effects.  */
+
+void
+region_model::on_stmt_pre (const gimple *stmt,
+			   bool *out_terminate_path,
+			   bool *out_unknown_side_effects,
+			   region_model_context *ctxt)
+{
+  switch (gimple_code (stmt))
+    {
+    default:
+      /* No-op for now.  */
+      break;
+
+    case GIMPLE_ASSIGN:
+      {
+	const gassign *assign = as_a <const gassign *> (stmt);
+	on_assignment (assign, ctxt);
+      }
+      break;
+
+    case GIMPLE_ASM:
+      /* No-op for now.  */
+      break;
+
+    case GIMPLE_CALL:
+      {
+	/* Track whether we have a gcall to a function that's not recognized by
+	   anything, for which we don't have a function body, or for which we
+	   don't know the fndecl.  */
+	const gcall *call = as_a <const gcall *> (stmt);
+
+	/* Debugging/test support.  */
+	if (is_special_named_call_p (call, "__analyzer_describe", 2))
+	  impl_call_analyzer_describe (call, ctxt);
+	else if (is_special_named_call_p (call, "__analyzer_dump_capacity", 1))
+	  impl_call_analyzer_dump_capacity (call, ctxt);
+	else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
+	  {
+	    /* Handle the builtin "__analyzer_dump_path" by queuing a
+	       diagnostic at this exploded_node.  */
+	    ctxt->warn (new dump_path_diagnostic ());
+	  }
+	else if (is_special_named_call_p (call, "__analyzer_dump_region_model",
+					  0))
+	  {
+	    /* Handle the builtin "__analyzer_dump_region_model" by dumping
+	       the region model's state to stderr.  */
+	    dump (false);
+	  }
+	else if (is_special_named_call_p (call, "__analyzer_eval", 1))
+	  impl_call_analyzer_eval (call, ctxt);
+	else if (is_special_named_call_p (call, "__analyzer_break", 0))
+	  {
+	    /* Handle the builtin "__analyzer_break" by triggering a
+	       breakpoint.  */
+	    /* TODO: is there a good cross-platform way to do this?  */
+	    raise (SIGINT);
+	  }
+	else if (is_special_named_call_p (call,
+					  "__analyzer_dump_exploded_nodes",
+					  1))
+	  {
+	    /* This is handled elsewhere.  */
+	  }
+	else
+	  *out_unknown_side_effects = on_call_pre (call, ctxt,
+						   out_terminate_path);
+      }
+      break;
+
+    case GIMPLE_RETURN:
+      {
+	const greturn *return_ = as_a <const greturn *> (stmt);
+	on_return (return_, ctxt);
+      }
+      break;
+    }
+}
+
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -881,12 +1056,36 @@ bool
 region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 			   bool *out_terminate_path)
 {
+  call_details cd (call, this, ctxt);
+
   bool unknown_side_effects = false;
+
+  /* Some of the cases below update the lhs of the call based on the
+     return value, but not all.  Provide a default value, which may
+     get overwritten below.  */
+  if (tree lhs = gimple_call_lhs (call))
+    {
+      const region *lhs_region = get_lvalue (lhs, ctxt);
+      const svalue *sval
+	= m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
+						lhs_region);
+      purge_state_involving (sval, ctxt);
+      set_value (lhs_region, sval, ctxt);
+    }
+
+  if (gimple_call_internal_p (call))
+    {
+      switch (gimple_call_internal_fn (call))
+       {
+       default:
+	 break;
+       case IFN_BUILTIN_EXPECT:
+	 return impl_call_builtin_expect (cd);
+       }
+    }
 
   if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
     {
-      call_details cd (call, this, ctxt);
-
       /* The various impl_call_* member functions are implemented
 	 in region-model-impl-calls.cc.
 	 Having them split out into separate functions makes it easier
@@ -958,16 +1157,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       on the return value.  */
 	    break;
 	  }
-      else if (gimple_call_internal_p (call))
-	switch (gimple_call_internal_fn (call))
-	  {
-	  default:
-	    if (!DECL_PURE_P (callee_fndecl))
-	      unknown_side_effects = true;
-	    break;
-	  case IFN_BUILTIN_EXPECT:
-	    return impl_call_builtin_expect (cd);
-	  }
       else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
 	return impl_call_malloc (cd);
       else if (is_named_call_p (callee_fndecl, "calloc", call, 2))
@@ -992,6 +1181,17 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    return false;
 	  else
 	    unknown_side_effects = true;
+	}
+      else if (is_named_call_p (callee_fndecl, "fgets", call, 3)
+	       || is_named_call_p (callee_fndecl, "fgets_unlocked", call, 3))
+	{
+	  impl_call_fgets (cd);
+	  return false;
+	}
+      else if (is_named_call_p (callee_fndecl, "fread", call, 4))
+	{
+	  impl_call_fread (cd);
+	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "getchar", call, 0))
 	{
@@ -1027,19 +1227,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
     }
   else
     unknown_side_effects = true;
-
-  /* Some of the above cases update the lhs of the call based on the
-     return value.  If we get here, it hasn't been done yet, so do that
-     now.  */
-  if (tree lhs = gimple_call_lhs (call))
-    {
-      const region *lhs_region = get_lvalue (lhs, ctxt);
-      if (TREE_CODE (lhs) == SSA_NAME)
-	{
-	  const svalue *sval = m_mgr->get_or_create_initial_value (lhs_region);
-	  set_value (lhs_region, sval, ctxt);
-	}
-    }
 
   return unknown_side_effects;
 }
@@ -1089,6 +1276,40 @@ region_model::on_call_post (const gcall *call,
     handle_unrecognized_call (call, ctxt);
 }
 
+/* Purge state involving SVAL from this region_model, using CTXT
+   (if non-NULL) to purge other state in a program_state.
+
+   For example, if we're at the def-stmt of an SSA name, then we need to
+   purge any state for svalues that involve that SSA name.  This avoids
+   false positives in loops, since a symbolic value referring to the
+   SSA name will be referring to the previous value of that SSA name.
+
+   For example, in:
+     while ((e = hashmap_iter_next(&iter))) {
+       struct oid2strbuf *e_strbuf = (struct oid2strbuf *)e;
+       free (e_strbuf->value);
+     }
+   at the def-stmt of e_8:
+     e_8 = hashmap_iter_next (&iter);
+   we should purge the "freed" state of:
+     INIT_VAL(CAST_REG(‘struct oid2strbuf’, (*INIT_VAL(e_8))).value)
+   which is the "e_strbuf->value" value from the previous iteration,
+   or we will erroneously report a double-free - the "e_8" within it
+   refers to the previous value.  */
+
+void
+region_model::purge_state_involving (const svalue *sval,
+				     region_model_context *ctxt)
+{
+  if (!sval->can_have_associated_state_p ())
+    return;
+  m_store.purge_state_involving (sval, m_mgr);
+  m_constraints->purge_state_involving (sval);
+  m_dynamic_extents.purge_state_involving (sval);
+  if (ctxt)
+    ctxt->purge_state_involving (sval);
+}
+
 /* Handle a call CALL to a function with unknown behavior.
 
    Traverse the regions in this model, determining what regions are
@@ -1134,7 +1355,7 @@ region_model::handle_unrecognized_call (const gcall *call,
       }
   }
 
-  uncertainty_t *uncertainty = ctxt->get_uncertainty ();
+  uncertainty_t *uncertainty = ctxt ? ctxt->get_uncertainty () : NULL;
 
   /* Purge sm-state for the svalues that were reachable,
      both in non-mutable and mutable form.  */
@@ -1143,14 +1364,16 @@ region_model::handle_unrecognized_call (const gcall *call,
        iter != reachable_regs.end_reachable_svals (); ++iter)
     {
       const svalue *sval = (*iter);
-      ctxt->on_unknown_change (sval, false);
+      if (ctxt)
+	ctxt->on_unknown_change (sval, false);
     }
   for (svalue_set::iterator iter
 	 = reachable_regs.begin_mutable_svals ();
        iter != reachable_regs.end_mutable_svals (); ++iter)
     {
       const svalue *sval = (*iter);
-      ctxt->on_unknown_change (sval, true);
+      if (ctxt)
+	ctxt->on_unknown_change (sval, true);
       if (uncertainty)
 	uncertainty->on_mutable_sval_at_unknown_call (sval);
     }
@@ -1327,11 +1550,14 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
 
 /* Update this region_model for a phi stmt of the form
      LHS = PHI <...RHS...>.
-   where RHS is for the appropriate edge.  */
+   where RHS is for the appropriate edge.
+   Get state from OLD_STATE so that all of the phi stmts for a basic block
+   are effectively handled simultaneously.  */
 
 void
 region_model::handle_phi (const gphi *phi,
 			  tree lhs, tree rhs,
+			  const region_model &old_state,
 			  region_model_context *ctxt)
 {
   /* For now, don't bother tracking the .MEM SSA names.  */
@@ -1340,9 +1566,10 @@ region_model::handle_phi (const gphi *phi,
       if (VAR_DECL_IS_VIRTUAL_OPERAND (var))
 	return;
 
-  const svalue *rhs_sval = get_rvalue (rhs, ctxt);
+  const svalue *src_sval = old_state.get_rvalue (rhs, ctxt);
+  const region *dst_reg = old_state.get_lvalue (lhs, ctxt);
 
-  set_value (get_lvalue (lhs, ctxt), rhs_sval, ctxt);
+  set_value (dst_reg, src_sval, ctxt);
 
   if (ctxt)
     ctxt->on_phi (phi, rhs);
@@ -1519,7 +1746,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
 	gcc_assert (TREE_CODE (first_bit_offset) == INTEGER_CST);
 	bit_range bits (TREE_INT_CST_LOW (first_bit_offset),
 			TREE_INT_CST_LOW (num_bits));
-	return get_rvalue_for_bits (TREE_TYPE (expr), reg, bits);
+	return get_rvalue_for_bits (TREE_TYPE (expr), reg, bits, ctxt);
       }
 
     case SSA_NAME:
@@ -1529,7 +1756,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
     case ARRAY_REF:
       {
 	const region *reg = get_lvalue (pv, ctxt);
-	return get_store_value (reg);
+	return get_store_value (reg, ctxt);
       }
 
     case REALPART_EXPR:
@@ -1584,7 +1811,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
     case MEM_REF:
       {
 	const region *ref_reg = get_lvalue (pv, ctxt);
-	return get_store_value (ref_reg);
+	return get_store_value (ref_reg, ctxt);
       }
     }
 }
@@ -1601,6 +1828,8 @@ region_model::get_rvalue (path_var pv, region_model_context *ctxt) const
   const svalue *result_sval = get_rvalue_1 (pv, ctxt);
 
   assert_compat_types (result_sval->get_type (), TREE_TYPE (pv.m_tree));
+
+  result_sval = check_for_poison (result_sval, pv.m_tree, ctxt);
 
   return result_sval;
 }
@@ -1687,11 +1916,15 @@ region_model::get_initial_value_for_global (const region *reg) const
 }
 
 /* Get a value for REG, looking it up in the store, or otherwise falling
-   back to "initial" or "unknown" values.  */
+   back to "initial" or "unknown" values.
+   Use CTXT to report any warnings associated with reading from REG. */
 
 const svalue *
-region_model::get_store_value (const region *reg) const
+region_model::get_store_value (const region *reg,
+			       region_model_context *ctxt) const
 {
+  check_region_for_read (reg, ctxt);
+
   /* Special-case: handle var_decls in the constant pool.  */
   if (const decl_region *decl_reg = reg->dyn_cast_decl_region ())
     if (const svalue *sval = decl_reg->maybe_get_constant_value (m_mgr))
@@ -1851,14 +2084,16 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 /* Attempt to get BITS within any value of REG, as TYPE.
    In particular, extract values from compound_svalues for the case
    where there's a concrete binding at BITS.
-   Return an unknown svalue if we can't handle the given case.  */
+   Return an unknown svalue if we can't handle the given case.
+   Use CTXT to report any warnings associated with reading from REG.  */
 
 const svalue *
 region_model::get_rvalue_for_bits (tree type,
 				   const region *reg,
-				   const bit_range &bits) const
+				   const bit_range &bits,
+				   region_model_context *ctxt) const
 {
-  const svalue *sval = get_store_value (reg);
+  const svalue *sval = get_store_value (reg, ctxt);
   return m_mgr->get_or_create_bits_within (type, bits, sval);
 }
 
@@ -2014,8 +2249,52 @@ region_model::get_capacity (const region *reg) const
   return m_mgr->get_or_create_unknown_svalue (sizetype);
 }
 
+/* If CTXT is non-NULL, use it to warn about any problems accessing REG,
+   using DIR to determine if this access is a read or write.  */
+
+void
+region_model::check_region_access (const region *reg,
+				   enum access_direction dir,
+				   region_model_context *ctxt) const
+{
+  /* Fail gracefully if CTXT is NULL.  */
+  if (!ctxt)
+    return;
+
+  switch (dir)
+    {
+    default:
+      gcc_unreachable ();
+    case DIR_READ:
+      /* Currently a no-op.  */
+      break;
+    case DIR_WRITE:
+      check_for_writable_region (reg, ctxt);
+      break;
+    }
+}
+
+/* If CTXT is non-NULL, use it to warn about any problems writing to REG.  */
+
+void
+region_model::check_region_for_write (const region *dest_reg,
+				      region_model_context *ctxt) const
+{
+  check_region_access (dest_reg, DIR_WRITE, ctxt);
+}
+
+/* If CTXT is non-NULL, use it to warn about any problems reading from REG.  */
+
+void
+region_model::check_region_for_read (const region *src_reg,
+				     region_model_context *ctxt) const
+{
+  check_region_access (src_reg, DIR_READ, ctxt);
+}
+
 /* Set the value of the region given by LHS_REG to the value given
-   by RHS_SVAL.  */
+   by RHS_SVAL.
+   Use CTXT to report any warnings associated with writing to LHS_REG.  */
 
 void
 region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
@@ -2024,7 +2303,7 @@ region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
   gcc_assert (lhs_reg);
   gcc_assert (rhs_sval);
 
-  check_for_writable_region (lhs_reg, ctxt);
+  check_region_for_write (lhs_reg, ctxt);
 
   m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
 		     ctxt ? ctxt->get_uncertainty () : NULL);
@@ -2251,6 +2530,123 @@ region_model::compare_initial_and_pointer (const initial_svalue *init,
   return tristate::TS_UNKNOWN;
 }
 
+/* Handle various constraints of the form:
+     LHS: ((bool)INNER_LHS INNER_OP INNER_RHS))
+     OP : == or !=
+     RHS: zero
+   and (with a cast):
+     LHS: CAST([long]int, ((bool)INNER_LHS INNER_OP INNER_RHS))
+     OP : == or !=
+     RHS: zero
+   by adding constraints for INNER_LHS INNEROP INNER_RHS.
+
+   Return true if this function can fully handle the constraint; if
+   so, add the implied constraint(s) and write true to *OUT if they
+   are consistent with existing constraints, or write false to *OUT
+   if they contradicts existing constraints.
+
+   Return false for cases that this function doeesn't know how to handle.
+
+   For example, if we're checking a stored conditional, we'll have
+   something like:
+     LHS: CAST(long int, (&HEAP_ALLOCATED_REGION(8)!=(int *)0B))
+     OP : NE_EXPR
+     RHS: zero
+   which this function can turn into an add_constraint of:
+     (&HEAP_ALLOCATED_REGION(8) != (int *)0B)
+
+   Similarly, optimized && and || conditionals lead to e.g.
+     if (p && q)
+   becoming gimple like this:
+     _1 = p_6 == 0B;
+     _2 = q_8 == 0B
+     _3 = _1 | _2
+   On the "_3 is false" branch we can have constraints of the form:
+     ((&HEAP_ALLOCATED_REGION(8)!=(int *)0B)
+      | (&HEAP_ALLOCATED_REGION(10)!=(int *)0B))
+     == 0
+   which implies that both _1 and _2 are false,
+   which this function can turn into a pair of add_constraints of
+     (&HEAP_ALLOCATED_REGION(8)!=(int *)0B)
+   and:
+     (&HEAP_ALLOCATED_REGION(10)!=(int *)0B).  */
+
+bool
+region_model::add_constraints_from_binop (const svalue *outer_lhs,
+					  enum tree_code outer_op,
+					  const svalue *outer_rhs,
+					  bool *out,
+					  region_model_context *ctxt)
+{
+  while (const svalue *cast = outer_lhs->maybe_undo_cast ())
+    outer_lhs = cast;
+  const binop_svalue *binop_sval = outer_lhs->dyn_cast_binop_svalue ();
+  if (!binop_sval)
+    return false;
+  if (!outer_rhs->all_zeroes_p ())
+    return false;
+
+  const svalue *inner_lhs = binop_sval->get_arg0 ();
+  enum tree_code inner_op = binop_sval->get_op ();
+  const svalue *inner_rhs = binop_sval->get_arg1 ();
+
+  if (outer_op != NE_EXPR && outer_op != EQ_EXPR)
+    return false;
+
+  /* We have either
+     - "OUTER_LHS != false" (i.e. OUTER is true), or
+     - "OUTER_LHS == false" (i.e. OUTER is false).  */
+  bool is_true = outer_op == NE_EXPR;
+
+  switch (inner_op)
+    {
+    default:
+      return false;
+
+    case EQ_EXPR:
+    case NE_EXPR:
+      {
+	/* ...and "(inner_lhs OP inner_rhs) == 0"
+	   then (inner_lhs OP inner_rhs) must have the same
+	   logical value as LHS.  */
+	if (!is_true)
+	  inner_op = invert_tree_comparison (inner_op, false /* honor_nans */);
+	*out = add_constraint (inner_lhs, inner_op, inner_rhs, ctxt);
+	return true;
+      }
+      break;
+
+    case BIT_AND_EXPR:
+      if (is_true)
+	{
+	  /* ...and "(inner_lhs & inner_rhs) != 0"
+	     then both inner_lhs and inner_rhs must be true.  */
+	  const svalue *false_sval
+	    = m_mgr->get_or_create_constant_svalue (boolean_false_node);
+	  bool sat1 = add_constraint (inner_lhs, NE_EXPR, false_sval, ctxt);
+	  bool sat2 = add_constraint (inner_rhs, NE_EXPR, false_sval, ctxt);
+	  *out = sat1 && sat2;
+	  return true;
+	}
+      return false;
+
+    case BIT_IOR_EXPR:
+      if (!is_true)
+	{
+	  /* ...and "(inner_lhs | inner_rhs) == 0"
+	     i.e. "(inner_lhs | inner_rhs)" is false
+	     then both inner_lhs and inner_rhs must be false.  */
+	  const svalue *false_sval
+	    = m_mgr->get_or_create_constant_svalue (boolean_false_node);
+	  bool sat1 = add_constraint (inner_lhs, EQ_EXPR, false_sval, ctxt);
+	  bool sat2 = add_constraint (inner_rhs, EQ_EXPR, false_sval, ctxt);
+	  *out = sat1 && sat2;
+	  return true;
+	}
+      return false;
+    }
+}
+
 /* Attempt to add the constraint "LHS OP RHS" to this region_model.
    If it is consistent with existing constraints, add it, and return true.
    Return false if it contradicts existing constraints.
@@ -2268,7 +2664,21 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   const svalue *lhs_sval = get_rvalue (lhs, ctxt);
   const svalue *rhs_sval = get_rvalue (rhs, ctxt);
 
-  tristate t_cond = eval_condition (lhs_sval, op, rhs_sval);
+  return add_constraint (lhs_sval, op, rhs_sval, ctxt);
+}
+
+/* Attempt to add the constraint "LHS OP RHS" to this region_model.
+   If it is consistent with existing constraints, add it, and return true.
+   Return false if it contradicts existing constraints.
+   Use CTXT for reporting any diagnostics associated with the accesses.  */
+
+bool
+region_model::add_constraint (const svalue *lhs,
+			      enum tree_code op,
+			      const svalue *rhs,
+			      region_model_context *ctxt)
+{
+  tristate t_cond = eval_condition (lhs, op, rhs);
 
   /* If we already have the condition, do nothing.  */
   if (t_cond.is_true ())
@@ -2279,10 +2689,12 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   if (t_cond.is_false ())
     return false;
 
-  /* Store the constraint.  */
-  m_constraints->add_constraint (lhs_sval, op, rhs_sval);
+  bool out;
+  if (add_constraints_from_binop (lhs, op, rhs, &out, ctxt))
+    return out;
 
-  add_any_constraints_from_ssa_def_stmt (lhs, op, rhs, ctxt);
+  /* Store the constraint.  */
+  m_constraints->add_constraint (lhs, op, rhs);
 
   /* Notify the context, if any.  This exists so that the state machines
      in a program_state can be notified about the condition, and so can
@@ -2293,9 +2705,10 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 
   /* If we have &REGION == NULL, then drop dynamic extents for REGION (for
      the case where REGION is heap-allocated and thus could be NULL).  */
-  if (op == EQ_EXPR && zerop (rhs))
-    if (const region_svalue *region_sval = lhs_sval->dyn_cast_region_svalue ())
-      unset_dynamic_extents (region_sval->get_pointee ());
+  if (tree rhs_cst = rhs->maybe_get_constant ())
+    if (op == EQ_EXPR && zerop (rhs_cst))
+      if (const region_svalue *region_sval = lhs->dyn_cast_region_svalue ())
+	unset_dynamic_extents (region_sval->get_pointee ());
 
   return true;
 }
@@ -2312,137 +2725,6 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
   if (!sat && out)
     *out = new rejected_constraint (*this, lhs, op, rhs);
   return sat;
-}
-
-/* Subroutine of region_model::add_constraint for handling optimized
-   && and || conditionals.
-
-   If we have an SSA_NAME for a boolean compared against 0,
-   look at anything implied by the def stmt and call add_constraint
-   for it (which could recurse).
-
-   For example, if we have
-      _1 = p_6 == 0B;
-      _2 = p_8 == 0B
-      _3 = _1 | _2
-    and add the constraint
-      (_3 == 0),
-    then the def stmt for _3 implies that _1 and _2 are both false,
-    and hence we can add the constraints:
-      p_6 != 0B
-      p_8 != 0B.  */
-
-void
-region_model::add_any_constraints_from_ssa_def_stmt (tree lhs,
-						     enum tree_code op,
-						     tree rhs,
-						     region_model_context *ctxt)
-{
-  if (TREE_CODE (lhs) != SSA_NAME)
-    return;
-
-  if (!zerop (rhs))
-    return;
-
-  if (op != NE_EXPR && op != EQ_EXPR)
-    return;
-
-  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs);
-  if (const gassign *assign = dyn_cast<gassign *> (def_stmt))
-    add_any_constraints_from_gassign (op, rhs, assign, ctxt);
-  else if (gcall *call = dyn_cast<gcall *> (def_stmt))
-    add_any_constraints_from_gcall (op, rhs, call, ctxt);
-}
-
-/* Add any constraints for an SSA_NAME defined by ASSIGN
-   where the result OP RHS.  */
-
-void
-region_model::add_any_constraints_from_gassign (enum tree_code op,
-						tree rhs,
-						const gassign *assign,
-						region_model_context *ctxt)
-{
-  /* We have either
-     - "LHS != false" (i.e. LHS is true), or
-     - "LHS == false" (i.e. LHS is false).  */
-  bool is_true = op == NE_EXPR;
-
-  enum tree_code rhs_code = gimple_assign_rhs_code (assign);
-
-  switch (rhs_code)
-    {
-    default:
-      break;
-
-    case NOP_EXPR:
-    case VIEW_CONVERT_EXPR:
-      {
-	add_constraint (gimple_assign_rhs1 (assign), op, rhs, ctxt);
-      }
-      break;
-
-    case BIT_AND_EXPR:
-      {
-	if (is_true)
-	  {
-	    /* ...and "LHS == (rhs1 & rhs2) i.e. "(rhs1 & rhs2)" is true
-	       then both rhs1 and rhs2 must be true.  */
-	    tree rhs1 = gimple_assign_rhs1 (assign);
-	    tree rhs2 = gimple_assign_rhs2 (assign);
-	    add_constraint (rhs1, NE_EXPR, boolean_false_node, ctxt);
-	    add_constraint (rhs2, NE_EXPR, boolean_false_node, ctxt);
-	  }
-      }
-      break;
-
-    case BIT_IOR_EXPR:
-      {
-	if (!is_true)
-	  {
-	    /* ...and "LHS == (rhs1 | rhs2)
-	       i.e. "(rhs1 | rhs2)" is false
-	       then both rhs1 and rhs2 must be false.  */
-	    tree rhs1 = gimple_assign_rhs1 (assign);
-	    tree rhs2 = gimple_assign_rhs2 (assign);
-	    add_constraint (rhs1, EQ_EXPR, boolean_false_node, ctxt);
-	    add_constraint (rhs2, EQ_EXPR, boolean_false_node, ctxt);
-	  }
-      }
-      break;
-
-    case EQ_EXPR:
-    case NE_EXPR:
-      {
-	/* ...and "LHS == (rhs1 OP rhs2)"
-	   then rhs1 OP rhs2 must have the same logical value as LHS.  */
-	tree rhs1 = gimple_assign_rhs1 (assign);
-	tree rhs2 = gimple_assign_rhs2 (assign);
-	if (!is_true)
-	  rhs_code
-	    = invert_tree_comparison (rhs_code, false /* honor_nans */);
-	add_constraint (rhs1, rhs_code, rhs2, ctxt);
-      }
-      break;
-    }
-}
-
-/* Add any constraints for an SSA_NAME defined by CALL
-   where the result OP RHS.  */
-
-void
-region_model::add_any_constraints_from_gcall (enum tree_code op,
-					      tree rhs,
-					      const gcall *call,
-					      region_model_context *ctxt)
-{
-  if (gimple_call_builtin_p (call, BUILT_IN_EXPECT)
-      || gimple_call_builtin_p (call, BUILT_IN_EXPECT_WITH_PROBABILITY)
-      || gimple_call_internal_p (call, IFN_BUILTIN_EXPECT))
-    {
-      /* __builtin_expect's return value is its initial argument.  */
-      add_constraint (gimple_call_arg (call, 0), op, rhs, ctxt);
-    }
 }
 
 /* Determine what is known about the condition "LHS OP RHS" within
@@ -2755,6 +3037,10 @@ region_model::update_for_phis (const supernode *snode,
 {
   gcc_assert (last_cfg_superedge);
 
+  /* Copy this state and pass it to handle_phi so that all of the phi stmts
+     are effectively handled simultaneously.  */
+  const region_model old_state (*this);
+
   for (gphi_iterator gpi = const_cast<supernode *>(snode)->start_phis ();
        !gsi_end_p (gpi); gsi_next (&gpi))
     {
@@ -2763,8 +3049,8 @@ region_model::update_for_phis (const supernode *snode,
       tree src = last_cfg_superedge->get_phi_arg (phi);
       tree lhs = gimple_phi_result (phi);
 
-      /* Update next_state based on phi.  */
-      handle_phi (phi, lhs, src, ctxt);
+      /* Update next_state based on phi and old_state.  */
+      handle_phi (phi, lhs, src, old_state, ctxt);
     }
 }
 
@@ -4303,7 +4589,7 @@ test_stack_frames ()
 
   /* Verify that p (which was pointing at the local "x" in the popped
      frame) has been poisoned.  */
-  const svalue *new_p_sval = model.get_rvalue (p, &ctxt);
+  const svalue *new_p_sval = model.get_rvalue (p, NULL);
   ASSERT_EQ (new_p_sval->get_kind (), SK_POISONED);
   ASSERT_EQ (new_p_sval->dyn_cast_poisoned_svalue ()->get_poison_kind (),
 	     POISON_KIND_POPPED_STACK);
@@ -4312,7 +4598,7 @@ test_stack_frames ()
      renumbering.  */
   const svalue *new_q_sval = model.get_rvalue (q, &ctxt);
   ASSERT_EQ (new_q_sval->get_kind (), SK_REGION);
-  ASSERT_EQ (new_q_sval->dyn_cast_region_svalue ()->get_pointee (),
+  ASSERT_EQ (new_q_sval->maybe_get_region (),
 	     model.get_lvalue (p, &ctxt));
 
   /* Verify that top of stack has been updated.  */
@@ -4841,8 +5127,7 @@ test_state_merging ()
     model0.set_value (q_in_first_frame, sval_ptr, NULL);
 
     /* Verify that it's pointing at the newer frame.  */
-    const region *reg_pointee
-      = sval_ptr->dyn_cast_region_svalue ()->get_pointee ();
+    const region *reg_pointee = sval_ptr->maybe_get_region ();
     ASSERT_EQ (reg_pointee->get_parent_region (), reg_2nd_frame);
 
     model0.canonicalize ();
@@ -5393,7 +5678,7 @@ test_alloca ()
   /* Verify that the pointers to the alloca region are replaced by
      poisoned values when the frame is popped.  */
   model.pop_frame (NULL, NULL, &ctxt);
-  ASSERT_EQ (model.get_rvalue (p, &ctxt)->get_kind (), SK_POISONED);
+  ASSERT_EQ (model.get_rvalue (p, NULL)->get_kind (), SK_POISONED);
 }
 
 /* Verify that svalue::involves_p works.  */

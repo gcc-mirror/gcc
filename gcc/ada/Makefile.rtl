@@ -1043,7 +1043,7 @@ EXTRA_GNATRTL_NONTASKING_OBJS=
 EXTRA_GNATRTL_TASKING_OBJS=
 
 # Subsets of extra libgnat sources that always go together
-VX_SIGTRAMP_EXTRA_SRCS=sigtramp.h sigtramp-vxworks-target.inc
+VX_SIGTRAMP_EXTRA_SRCS=sigtramp.h sigtramp-vxworks-target.h
 
 # Additional object files that should go in the same directory as libgnat,
 # aside the library itself. Typically useful for crtbegin/crtend kind of files.
@@ -2162,6 +2162,7 @@ ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
 
   ifeq ($(strip $(filter-out lynxos178e,$(target_os))),)
     LIBGNAT_TARGET_PAIRS += \
+    s-parame.ads<libgnat/s-parame__posix2008.ads \
     s-osinte.ads<libgnarl/s-osinte__lynxos178e.ads \
     s-osprim.adb<libgnat/s-osprim__posix2008.adb \
     s-tracon.adb<hie/s-tracon__ppc-eabi.adb
@@ -2181,6 +2182,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-osinte.ads<libgnarl/s-osinte__rtems.ads \
   s-osprim.adb<libgnat/s-osprim__rtems.adb \
   s-parame.adb<libgnat/s-parame__rtems.adb \
+  s-parame.ads<libgnat/s-parame__posix2008.ads \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
@@ -2193,7 +2195,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
     EH_MECHANISM=-gcc
   endif
 
-  ifeq ($(strip $(filter-out riscv%,$(target_cpu))),)
+  ifeq ($(strip $(filter-out aarch64% riscv%,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += a-nallfl.ads<libgnat/a-nallfl__wraplf.ads
   endif
 endif
@@ -2760,6 +2762,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-osinte.ads<libgnarl/s-osinte__linux.ads \
   s-osinte.adb<libgnarl/s-osinte__x32.adb \
   s-osprim.adb<libgnat/s-osprim__x32.adb \
+  s-parame.ads<libgnat/s-parame__posix2008.ads \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \

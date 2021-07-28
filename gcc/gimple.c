@@ -241,7 +241,7 @@ gimple_build_call_1 (tree fn, unsigned nargs)
    specified in vector ARGS.  */
 
 gcall *
-gimple_build_call_vec (tree fn, vec<tree> args)
+gimple_build_call_vec (tree fn, const vec<tree> &args)
 {
   unsigned i;
   unsigned nargs = args.length ();
@@ -338,7 +338,7 @@ gimple_build_call_internal (enum internal_fn fn, unsigned nargs, ...)
    specified in vector ARGS.  */
 
 gcall *
-gimple_build_call_internal_vec (enum internal_fn fn, vec<tree> args)
+gimple_build_call_internal_vec (enum internal_fn fn, const vec<tree> &args)
 {
   unsigned i, nargs;
   gcall *call;
@@ -802,7 +802,7 @@ gimple_build_switch_nlabels (unsigned nlabels, tree index, tree default_label)
    ARGS is a vector of labels excluding the default.  */
 
 gswitch *
-gimple_build_switch (tree index, tree default_label, vec<tree> args)
+gimple_build_switch (tree index, tree default_label, const vec<tree> &args)
 {
   unsigned i, nlabels = args.length ();
 
@@ -2129,7 +2129,7 @@ gimple_has_side_effects (const gimple *s)
    S is a GIMPLE_ASSIGN, the LHS of the assignment is also checked.  */
 
 bool
-gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
+gimple_could_trap_p_1 (const gimple *s, bool include_mem, bool include_stores)
 {
   tree t, div = NULL_TREE;
   enum tree_code op;
@@ -2146,11 +2146,13 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
   switch (gimple_code (s))
     {
     case GIMPLE_ASM:
-      return gimple_asm_volatile_p (as_a <gasm *> (s));
+      return gimple_asm_volatile_p (as_a <const gasm *> (s));
 
     case GIMPLE_CALL:
+      if (gimple_call_internal_p (s))
+	return false;
       t = gimple_call_fndecl (s);
-      /* Assume that calls to weak functions may trap.  */
+      /* Assume that indirect and calls to weak functions may trap.  */
       if (!t || !DECL_P (t) || DECL_WEAK (t))
 	return true;
       return false;
@@ -2162,12 +2164,12 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
       if (op == COND_EXPR)
 	return tree_could_trap_p (gimple_assign_rhs1 (s));
 
-      /* For comparisons we need to check rhs operand types instead of rhs type
+      /* For comparisons we need to check rhs operand types instead of lhs type
          (which is BOOLEAN_TYPE).  */
       if (TREE_CODE_CLASS (op) == tcc_comparison)
 	t = TREE_TYPE (gimple_assign_rhs1 (s));
       else
-	t = gimple_expr_type (s);
+	t = TREE_TYPE (gimple_assign_lhs (s));
 
       if (get_gimple_rhs_class (op) == GIMPLE_BINARY_RHS)
 	div = gimple_assign_rhs2 (s);
@@ -2192,7 +2194,7 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
 /* Return true if statement S can trap.  */
 
 bool
-gimple_could_trap_p (gimple *s)
+gimple_could_trap_p (const gimple *s)
 {
   return gimple_could_trap_p_1 (s, true, true);
 }
@@ -3049,7 +3051,7 @@ compare_case_labels (const void *p1, const void *p2)
 /* Sort the case labels in LABEL_VEC in place in ascending order.  */
 
 void
-sort_case_labels (vec<tree> label_vec)
+sort_case_labels (vec<tree> &label_vec)
 {
   label_vec.qsort (compare_case_labels);
 }
@@ -3074,7 +3076,7 @@ sort_case_labels (vec<tree> label_vec)
    found or not.  */
 
 void
-preprocess_case_label_vec_for_gimple (vec<tree> labels,
+preprocess_case_label_vec_for_gimple (vec<tree> &labels,
 				      tree index_type,
 				      tree *default_casep)
 {

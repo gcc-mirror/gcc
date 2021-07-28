@@ -955,7 +955,9 @@ static bool
 function_requirements_equivalent_p (tree newfn, tree oldfn)
 {
   /* In the concepts TS, the combined constraints are compared.  */
-  if (cxx_dialect < cxx20)
+  if (cxx_dialect < cxx20
+      && (DECL_TEMPLATE_SPECIALIZATION (newfn)
+	  <= DECL_TEMPLATE_SPECIALIZATION (oldfn)))
     {
       tree ci1 = get_constraints (oldfn);
       tree ci2 = get_constraints (newfn);
@@ -10040,12 +10042,6 @@ grokfndecl (tree ctype,
 
   if (deduction_guide_p (decl))
     {
-      if (!DECL_NAMESPACE_SCOPE_P (decl))
-	{
-	  error_at (location, "deduction guide %qD must be declared at "
-		    "namespace scope", decl);
-	  return NULL_TREE;
-	}
       tree type = TREE_TYPE (DECL_NAME (decl));
       if (in_namespace == NULL_TREE
 	  && CP_DECL_CONTEXT (decl) != CP_TYPE_CONTEXT (type))
@@ -10054,6 +10050,13 @@ grokfndecl (tree ctype,
 			      "same scope as %qT", decl, type);
 	  inform (location_of (type), "  declared here");
 	  return NULL_TREE;
+	}
+      if (DECL_CLASS_SCOPE_P (decl)
+	  && current_access_specifier != declared_access (TYPE_NAME (type)))
+	{
+	  error_at (location, "deduction guide %qD must have the same access "
+			      "as %qT", decl, type);
+	  inform (location_of (type), "  declared here");
 	}
       if (funcdef_flag)
 	error_at (location,
@@ -12035,6 +12038,10 @@ grokdeclarator (const cp_declarator *declarator,
   storage_class = declspecs->storage_class;
   if (storage_class == sc_static)
     staticp = 1 + (decl_context == FIELD);
+  else if (decl_context == FIELD && sfk == sfk_deduction_guide)
+    /* Treat class-scope deduction guides as static member functions
+       so that they get a FUNCTION_TYPE instead of a METHOD_TYPE.  */
+    staticp = 2;
 
   if (virtualp)
     {

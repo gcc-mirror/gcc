@@ -590,16 +590,18 @@ class dom_jump_threader_simplifier : public jump_threader_simplifier
 public:
   dom_jump_threader_simplifier (vr_values *v,
 				avail_exprs_stack *avails)
-    : jump_threader_simplifier (v, avails) {}
+    : jump_threader_simplifier (v), m_avail_exprs_stack (avails) { }
 
 private:
-  tree simplify (gimple *, gimple *, basic_block);
+  tree simplify (gimple *, gimple *, basic_block, jt_state *) override;
+  avail_exprs_stack *m_avail_exprs_stack;
 };
 
 tree
 dom_jump_threader_simplifier::simplify (gimple *stmt,
 					gimple *within_stmt,
-					basic_block bb)
+					basic_block bb,
+					jt_state *state)
 {
   /* First see if the conditional is in the hash table.  */
   tree cached_lhs =  m_avail_exprs_stack->lookup_avail_expr (stmt,
@@ -607,7 +609,7 @@ dom_jump_threader_simplifier::simplify (gimple *stmt,
   if (cached_lhs)
     return cached_lhs;
 
-  return jump_threader_simplifier::simplify (stmt, within_stmt, bb);
+  return jump_threader_simplifier::simplify (stmt, within_stmt, bb, state);
 }
 
 class dom_opt_dom_walker : public dom_walker
@@ -615,12 +617,14 @@ class dom_opt_dom_walker : public dom_walker
 public:
   dom_opt_dom_walker (cdi_direction direction,
 		      jump_threader *threader,
+		      jt_state *state,
 		      evrp_range_analyzer *analyzer,
 		      const_and_copies *const_and_copies,
 		      avail_exprs_stack *avail_exprs_stack)
     : dom_walker (direction, REACHABLE_BLOCKS)
     {
       m_evrp_range_analyzer = analyzer;
+      m_state = state;
       m_dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
 					integer_zero_node, NULL, NULL);
       m_const_and_copies = const_and_copies;
@@ -651,6 +655,7 @@ private:
 
   jump_threader *m_threader;
   evrp_range_analyzer *m_evrp_range_analyzer;
+  jt_state *m_state;
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -748,10 +753,11 @@ pass_dominator::execute (function *fun)
   /* Recursively walk the dominator tree optimizing statements.  */
   evrp_range_analyzer analyzer (true);
   dom_jump_threader_simplifier simplifier (&analyzer, avail_exprs_stack);
-  jump_threader threader (const_and_copies, avail_exprs_stack,
-			  &simplifier, &analyzer);
+  jt_state state (const_and_copies, avail_exprs_stack, &analyzer);
+  jump_threader threader (&simplifier, &state);
   dom_opt_dom_walker walker (CDI_DOMINATORS,
 			     &threader,
+			     &state,
 			     &analyzer,
 			     const_and_copies,
 			     avail_exprs_stack);
@@ -1419,8 +1425,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 	  continue;
 	}
 
-      /* Compute range information and optimize the stmt.  */
-      m_evrp_range_analyzer->record_ranges_from_stmt (gsi_stmt (gsi), false);
+      m_state->record_ranges_from_stmt (gsi_stmt (gsi), false);
       bool removed_p = false;
       taken_edge = this->optimize_stmt (bb, &gsi, &removed_p);
       if (!removed_p)

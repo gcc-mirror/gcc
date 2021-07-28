@@ -458,15 +458,6 @@
   [(set_attr "type" "neon_store1_one_lane_q,neon_to_gp_q")]
 )
 
-(define_expand "vec_init<mode><V_elem_l>"
-  [(match_operand:VDQ 0 "s_register_operand")
-   (match_operand 1 "" "")]
-  "TARGET_NEON || TARGET_HAVE_MVE"
-{
-  neon_expand_vector_init (operands[0], operands[1]);
-  DONE;
-})
-
 ;; Doubleword and quadword arithmetic.
 
 ;; NOTE: some other instructions also support 64-bit integer
@@ -2977,6 +2968,18 @@
   emit_insn (gen_rtx_SET (operands[0], operands[3]));
   DONE;
 })
+
+;; Auto-vectorizer pattern for usdot
+(define_expand "usdot_prod<vsi2qi>"
+  [(set (match_operand:VCVTI 0 "register_operand")
+	(plus:VCVTI (unspec:VCVTI [(match_operand:<VSI2QI> 1
+							"register_operand")
+				   (match_operand:<VSI2QI> 2
+							"register_operand")]
+		     UNSPEC_DOT_US)
+		    (match_operand:VCVTI 3 "register_operand")))]
+  "TARGET_I8MM"
+)
 
 (define_expand "neon_copysignf<mode>"
   [(match_operand:VCVTF 0 "register_operand")

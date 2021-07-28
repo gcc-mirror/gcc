@@ -217,7 +217,8 @@ static void set_reverse_storage_order_on_array_type (tree);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (tree, Entity_Id);
 static bool compile_time_known_address_p (Node_Id);
-static bool cannot_be_superflat (Node_Id);
+static bool flb_cannot_be_superflat (Node_Id);
+static bool range_cannot_be_superflat (Node_Id);
 static bool constructor_address_p (tree);
 static bool allocatable_size_p (tree, bool);
 static bool initial_value_needs_conversion (tree, tree);
@@ -444,7 +445,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
   /* The RM size must be specified for all discrete and fixed-point types.  */
   gcc_assert (!(Is_In_Discrete_Or_Fixed_Point_Kind (kind)
-		&& Unknown_RM_Size (gnat_entity)));
+		&& !Known_RM_Size (gnat_entity)));
 
   /* If we get here, it means we have not yet done anything with this entity.
      If we are not defining it, it must be a type or an entity that is defined
@@ -1997,10 +1998,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     so we use an intermediate step for standard DWARF.  */
 	  if (debug_info_p)
 	    {
-	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
-	      else if (DECL_PARALLEL_TYPE (t))
+	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		add_parallel_type (gnu_type, DECL_PARALLEL_TYPE (t));
+	      else
+		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
 	    }
 	}
 
@@ -2209,11 +2210,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   implementation type.  But, in any case, mark it as artificial so
 	   the debugger can skip it.  */
 	const Entity_Id gnat_name
-	  = Present (PAT) && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+	  = Present (PAT) && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL
 	    ? PAT
 	    : gnat_entity;
 	tree xup_name
-	  = gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+	  = gnat_encodings == DWARF_GNAT_ENCODINGS_ALL
 	    ? create_concat_name (gnat_name, "XUP")
 	    : gnu_entity_name;
 	create_type_decl (xup_name, gnu_fat_type, true, debug_info_p,
@@ -2238,13 +2239,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     index += (convention_fortran_p ? - 1 : 1),
 	     gnat_index = Next_Index (gnat_index))
 	  {
-	    char field_name[16];
+	    const bool is_flb
+	      = Is_Fixed_Lower_Bound_Index_Subtype (Etype (gnat_index));
 	    tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
 	    tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
 	    tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
 	    tree gnu_index_base_type = get_base_type (gnu_index_type);
 	    tree gnu_lb_field, gnu_hb_field;
 	    tree gnu_min, gnu_max, gnu_high;
+	    char field_name[16];
 
 	    /* Update the maximum size of the array in elements.  */
 	    if (gnu_max_size)
@@ -2278,25 +2281,38 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	    /* We can't use build_component_ref here since the template type
 	       isn't complete yet.  */
-	    gnu_orig_min = build3 (COMPONENT_REF, TREE_TYPE (gnu_lb_field),
-				   gnu_template_reference, gnu_lb_field,
-				   NULL_TREE);
+	    if (!is_flb)
+	      {
+		gnu_orig_min = build3 (COMPONENT_REF, TREE_TYPE (gnu_lb_field),
+				       gnu_template_reference, gnu_lb_field,
+				       NULL_TREE);
+		TREE_READONLY (gnu_orig_min) = 1;
+	      }
+
 	    gnu_orig_max = build3 (COMPONENT_REF, TREE_TYPE (gnu_hb_field),
 				   gnu_template_reference, gnu_hb_field,
 				   NULL_TREE);
-	    TREE_READONLY (gnu_orig_min) = TREE_READONLY (gnu_orig_max) = 1;
+	    TREE_READONLY (gnu_orig_max) = 1;
 
 	    gnu_min = convert (sizetype, gnu_orig_min);
 	    gnu_max = convert (sizetype, gnu_orig_max);
 
 	    /* Compute the size of this dimension.  See the E_Array_Subtype
 	       case below for the rationale.  */
-	    gnu_high
-	      = build3 (COND_EXPR, sizetype,
-			build2 (GE_EXPR, boolean_type_node,
-				gnu_orig_max, gnu_orig_min),
-			gnu_max,
-			size_binop (MINUS_EXPR, gnu_min, size_one_node));
+	    if (is_flb
+		&& Nkind (gnat_index) == N_Subtype_Indication
+	        && flb_cannot_be_superflat (gnat_index))
+	      gnu_high = gnu_max;
+
+	    else
+	      gnu_high
+		= build3 (COND_EXPR, sizetype,
+			  build2 (GE_EXPR, boolean_type_node,
+				  gnu_orig_max, gnu_orig_min),
+			  gnu_max,
+			  TREE_CODE (gnu_min) == INTEGER_CST
+			  ? int_const_binop (MINUS_EXPR, gnu_min, size_one_node)
+			  : size_binop (MINUS_EXPR, gnu_min, size_one_node));
 
 	    /* Make a range type with the new range in the Ada base type.
 	       Then make an index type with the size range in sizetype.  */
@@ -2324,7 +2340,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* If Component_Size is not already specified, annotate it with the
 	   size of the component.  */
-	if (Unknown_Component_Size (gnat_entity))
+	if (!Known_Component_Size (gnat_entity))
 	  Set_Component_Size (gnat_entity,
                               annotate_value (TYPE_SIZE (comp_type)));
 
@@ -2404,11 +2420,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   template at a negative offset, but this was somewhat of a kludge; we
 	   now shift thin pointer values explicitly but only those which have a
 	   TYPE_UNCONSTRAINED_ARRAY attached to the designated RECORD_TYPE.
-	   Note that GDB can handle standard DWARF information for them, so we
-	   don't have to name them as a GNAT encoding, except if specifically
-	   asked to.  */
+	   If the GNAT encodings are used, give it a name.  */
 	tree xut_name
-	  = (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	  = (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 	    ? create_concat_name (gnat_name, "XUT")
 	    : gnu_entity_name;
 	obj = build_unc_object_type (gnu_template_type, tem, xut_name,
@@ -2595,7 +2609,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 this.  If we can prove that the array can never be superflat,
 		 we can just use the high bound of the index type.  */
 	      else if ((Nkind (gnat_index) == N_Range
-		        && cannot_be_superflat (gnat_index))
+		        && range_cannot_be_superflat (gnat_index))
 		       /* Bit-Packed Array Impl. Types are never superflat.  */
 		       || (Is_Packed_Array_Impl_Type (gnat_entity)
 			   && Is_Bit_Packed_Array
@@ -2657,7 +2671,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		       && TREE_CODE (TREE_TYPE (gnu_index_type))
 			  != INTEGER_TYPE)
 		   || TYPE_BIASED_REPRESENTATION_P (gnu_index_type))
-		  && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+		  && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		need_index_type_struct = true;
 	    }
 
@@ -2834,7 +2848,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    gnu_entity_name = gnu_name;
 		}
 
-	      else if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	      else if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		{
 		  tree gnu_base_decl
 		    = gnat_to_gnu_entity (Etype (gnat_entity), NULL_TREE,
@@ -2881,7 +2895,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	      /* Set the ___XP suffix for GNAT encodings.  */
-	      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		gnu_entity_name = DECL_NAME (TYPE_NAME (gnu_type));
 
 	      tree gnu_inner = gnu_type;
@@ -3356,14 +3370,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      = build_subst_list (gnat_entity, gnat_parent_type, definition);
 
 	    /* Set the layout of the type to match that of the parent type,
-	       doing required substitutions.  If we are in minimal GNAT
-	       encodings mode, we don't need debug info for the inner record
+	       doing required substitutions.  Note that, if we do not use the
+	       GNAT encodings, we don't need debug info for the inner record
 	       types, as they will be part of the embedding variant record's
 	       debug info.  */
 	    copy_and_substitute_in_layout
 	      (gnat_entity, gnat_parent_type, gnu_type, gnu_parent_type,
 	       gnu_subst_list,
-	       debug_info_p && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL);
+	       debug_info_p && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL);
 	  }
 	else
 	  {
@@ -3502,11 +3516,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      annotate_rep (gnat_entity, gnu_type);
 
 	      /* If debugging information is being written for the type and if
-		 we are asked to output such encodings, write a record that
+		 we are asked to output GNAT encodings, write a record that
 		 shows what we are a subtype of and also make a variable that
 		 indicates our size, if still variable.  */
 	      if (debug_info_p
-		  && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+		  && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		{
 		  tree gnu_subtype_marker = make_node (RECORD_TYPE);
 		  tree gnu_unpad_base_name
@@ -3537,11 +3551,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					 true, true, NULL, gnat_entity, false);
 		}
 
-	      /* Or else, if the subtype is artificial and encodings are not
-		 used, use the base record type as the debug type.  */
+	      /* Or else, if the subtype is artificial and GNAT encodings are
+		 not used, use the base record type as the debug type.  */
 	      else if (debug_info_p
 		       && artificial_p
-		       && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+		       && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
 		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_unpad_base_type);
 	    }
 
@@ -4369,7 +4383,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       set_rm_size (RM_Size (gnat_entity), gnu_type, gnat_entity);
 
       /* Back-annotate the alignment of the type if not already set.  */
-      if (Unknown_Alignment (gnat_entity))
+      if (!Known_Alignment (gnat_entity))
 	{
 	  unsigned int double_align, align;
 	  bool is_capped_double, align_clause;
@@ -4395,7 +4409,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	}
 
       /* Likewise for the size, if any.  */
-      if (Unknown_Esize (gnat_entity) && TYPE_SIZE (gnu_type))
+      if (!Known_Esize (gnat_entity) && TYPE_SIZE (gnu_type))
 	{
 	  tree gnu_size = TYPE_SIZE (gnu_type);
 
@@ -4417,9 +4431,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      const bool derived_p = Is_Derived_Type (gnat_entity);
 	      const Entity_Id gnat_parent
 		= derived_p ? Etype (Base_Type (gnat_entity)) : Empty;
+	      /* The following test for Known_Alignment preserves the old behavior,
+		 but is probably wrong. */
 	      const unsigned int inherited_align
 		= derived_p
-		  ? UI_To_Int (Alignment (gnat_parent)) * BITS_PER_UNIT
+		  ? (Known_Alignment (gnat_parent)
+		     ? UI_To_Int (Alignment (gnat_parent)) * BITS_PER_UNIT
+		     : 0)
 		  : POINTER_SIZE;
 	      const unsigned int align
 		= MAX (TYPE_ALIGN (gnu_type), inherited_align);
@@ -4428,7 +4446,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	      /* If there is neither size clause nor representation clause, the
 		 sizes need to be adjusted.  */
-	      if (Unknown_RM_Size (gnat_entity)
+	      if (!Known_RM_Size (gnat_entity)
 		  && !VOID_TYPE_P (gnu_type)
 		  && (!TYPE_FIELDS (gnu_type)
 		      || integer_zerop (bit_position (TYPE_FIELDS (gnu_type)))))
@@ -4448,7 +4466,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      Set_Esize (gnat_entity, annotate_value (gnu_size));
 
 	      /* Tagged types are Strict_Alignment so RM_Size = Esize.  */
-	      if (Unknown_RM_Size (gnat_entity))
+	      if (!Known_RM_Size (gnat_entity))
 		Set_RM_Size (gnat_entity, Esize (gnat_entity));
 	    }
 
@@ -4458,7 +4476,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	}
 
       /* Likewise for the RM size, if any.  */
-      if (Unknown_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
+      if (!Known_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
 	Set_RM_Size (gnat_entity, annotate_value (rm_size (gnu_type)));
 
       /* If we are at global level, GCC applied variable_size to the size but
@@ -4723,11 +4741,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl))
 	   && Present (gnat_annotate_type))
     {
-      if (Unknown_Alignment (gnat_entity))
-	Set_Alignment (gnat_entity, Alignment (gnat_annotate_type));
-      if (Unknown_Esize (gnat_entity))
+      if (!Known_Alignment (gnat_entity))
+	Copy_Alignment (gnat_entity, gnat_annotate_type);
+      if (!Known_Esize (gnat_entity))
 	Set_Esize (gnat_entity, Esize (gnat_annotate_type));
-      if (Unknown_RM_Size (gnat_entity))
+      if (!Known_RM_Size (gnat_entity))
 	Set_RM_Size (gnat_entity, RM_Size (gnat_annotate_type));
     }
 
@@ -6410,33 +6428,81 @@ compile_time_known_address_p (Node_Id gnat_address)
   return Compile_Time_Known_Value (gnat_address);
 }
 
-/* Return true if GNAT_RANGE, a N_Range node, cannot be superflat, i.e. if the
-   inequality HB >= LB-1 is true.  LB and HB are the low and high bounds.  */
+/* Return true if GNAT_INDIC, a N_Subtype_Indication node for the index of a
+   FLB, cannot yield superflat objects, i.e. if the inequality HB >= LB - 1
+   is true for these objects.  LB and HB are the low and high bounds.  */
 
 static bool
-cannot_be_superflat (Node_Id gnat_range)
+flb_cannot_be_superflat (Node_Id gnat_indic)
+{
+  const Entity_Id gnat_type = Entity (Subtype_Mark (gnat_indic));
+  const Entity_Id gnat_subtype = Etype (gnat_indic);
+  Node_Id gnat_scalar_range, gnat_lb, gnat_hb;
+  tree gnu_lb, gnu_hb, gnu_lb_minus_one;
+
+  /* This is a FLB so LB is fixed.  */
+  if ((Ekind (gnat_subtype) == E_Signed_Integer_Subtype
+       || Ekind (gnat_subtype) == E_Modular_Integer_Subtype)
+      && (gnat_scalar_range = Scalar_Range (gnat_subtype)))
+    {
+      gnat_lb = Low_Bound (gnat_scalar_range);
+      gcc_assert (Nkind (gnat_lb) == N_Integer_Literal);
+    }
+  else
+    return false;
+
+  /* The low bound of the type is a lower bound for HB.  */
+  if ((Ekind (gnat_type) == E_Signed_Integer_Subtype
+       || Ekind (gnat_type) == E_Modular_Integer_Subtype)
+      && (gnat_scalar_range = Scalar_Range (gnat_type)))
+    {
+      gnat_hb = Low_Bound (gnat_scalar_range);
+      gcc_assert (Nkind (gnat_hb) == N_Integer_Literal);
+    }
+  else
+    return false;
+
+  /* We need at least a signed 64-bit type to catch most cases.  */
+  gnu_lb = UI_To_gnu (Intval (gnat_lb), sbitsizetype);
+  gnu_hb = UI_To_gnu (Intval (gnat_hb), sbitsizetype);
+  if (TREE_OVERFLOW (gnu_lb) || TREE_OVERFLOW (gnu_hb))
+    return false;
+
+  /* If the low bound is the smallest integer, nothing can be smaller.  */
+  gnu_lb_minus_one = size_binop (MINUS_EXPR, gnu_lb, sbitsize_one_node);
+  if (TREE_OVERFLOW (gnu_lb_minus_one))
+    return true;
+
+  return !tree_int_cst_lt (gnu_hb, gnu_lb_minus_one);
+}
+
+/* Return true if GNAT_RANGE, a N_Range node, cannot be superflat, i.e. if the
+   inequality HB >= LB - 1 is true.  LB and HB are the low and high bounds.  */
+
+static bool
+range_cannot_be_superflat (Node_Id gnat_range)
 {
   Node_Id gnat_lb = Low_Bound (gnat_range), gnat_hb = High_Bound (gnat_range);
-  Node_Id scalar_range;
+  Node_Id gnat_scalar_range;
   tree gnu_lb, gnu_hb, gnu_lb_minus_one;
 
   /* If the low bound is not constant, try to find an upper bound.  */
   while (Nkind (gnat_lb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_lb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_lb)) == E_Modular_Integer_Subtype)
-	 && (scalar_range = Scalar_Range (Etype (gnat_lb)))
-	 && (Nkind (scalar_range) == N_Signed_Integer_Type_Definition
-	     || Nkind (scalar_range) == N_Range))
-    gnat_lb = High_Bound (scalar_range);
+	 && (gnat_scalar_range = Scalar_Range (Etype (gnat_lb)))
+	 && (Nkind (gnat_scalar_range) == N_Signed_Integer_Type_Definition
+	     || Nkind (gnat_scalar_range) == N_Range))
+    gnat_lb = High_Bound (gnat_scalar_range);
 
   /* If the high bound is not constant, try to find a lower bound.  */
   while (Nkind (gnat_hb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_hb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_hb)) == E_Modular_Integer_Subtype)
-	 && (scalar_range = Scalar_Range (Etype (gnat_hb)))
-	 && (Nkind (scalar_range) == N_Signed_Integer_Type_Definition
-	     || Nkind (scalar_range) == N_Range))
-    gnat_hb = Low_Bound (scalar_range);
+	 && (gnat_scalar_range = Scalar_Range (Etype (gnat_hb)))
+	 && (Nkind (gnat_scalar_range) == N_Signed_Integer_Type_Definition
+	     || Nkind (gnat_scalar_range) == N_Range))
+    gnat_hb = Low_Bound (gnat_scalar_range);
 
   /* If we have failed to find constant bounds, punt.  */
   if (Nkind (gnat_lb) != N_Integer_Literal
@@ -6824,7 +6890,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
      we must be careful because we do not generate debug info for external
      variables so DECL_IGNORED_P is not stable across units.  */
   if (need_for_debug
-      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
+      && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL
       && (TREE_CONSTANT (gnu_expr)
 	  || (!expr_public_p
 	      && DECL_P (gnu_expr)
@@ -7709,7 +7775,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 		      tree *p_gnu_rep_list)
 {
   const bool needs_xv_encodings
-    = debug_info && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL;
+    = debug_info && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL;
   bool all_rep_and_size = all_rep && TYPE_SIZE (gnu_record_type);
   bool variants_have_rep = all_rep;
   bool layout_with_rep = false;
@@ -8686,7 +8752,7 @@ annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
 	gnu_type = TREE_TYPE (gnu_type);
     }
 
-  if (Unknown_Esize (gnat_entity))
+  if (!Known_Esize (gnat_entity))
     {
       if (TREE_CODE (gnu_type) == RECORD_TYPE
 	  && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
@@ -8698,7 +8764,7 @@ annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
 	Set_Esize (gnat_entity, annotate_value (size));
     }
 
-  if (Unknown_Alignment (gnat_entity))
+  if (!Known_Alignment (gnat_entity))
     Set_Alignment (gnat_entity,
 		   UI_From_Int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT));
 }
@@ -10173,7 +10239,12 @@ associate_original_type_to_packed_array (tree gnu_type, Entity_Id gnat_entity)
 
   gcc_assert (TYPE_IMPL_PACKED_ARRAY_P (gnu_type));
 
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
+    {
+      add_parallel_type (gnu_type, gnu_original_array_type);
+      return NULL_TREE;
+    }
+  else
     {
       SET_TYPE_ORIGINAL_PACKED_ARRAY (gnu_type, gnu_original_array_type);
 
@@ -10181,11 +10252,6 @@ associate_original_type_to_packed_array (tree gnu_type, Entity_Id gnat_entity)
       if (TREE_CODE (original_name) == TYPE_DECL)
 	original_name = DECL_NAME (original_name);
       return original_name;
-    }
-  else
-    {
-      add_parallel_type (gnu_type, gnu_original_array_type);
-      return NULL_TREE;
     }
 }
 

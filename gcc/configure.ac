@@ -5431,6 +5431,35 @@ EOF
     ;;
 esac
 
+case "$target" in
+  amdgcn-* | gcn-*)
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+sram-ecc for fiji],
+      gcc_cv_as_gcn_sram_ecc_fiji,,
+      [-triple=amdgcn--amdhsa -mcpu=fiji -mattr=-xnack -mattr=+sram-ecc],
+      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx803+sram-ecc"],,
+      [AC_DEFINE(HAVE_GCN_SRAM_ECC_FIJI, 1,
+       [Define if your assembler allows -mattr=+sram-ecc for fiji.])])
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+sram-ecc for gfx900],
+      gcc_cv_as_gcn_sram_ecc_gfx900,,
+      [-triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=-xnack -mattr=+sram-ecc],
+      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx900+sram-ecc"],,
+      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX900, 1,
+       [Define if your assembler allows -mattr=+sram-ecc for gfx900.])])
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+sram-ecc for gfx906],
+      gcc_cv_as_gcn_sram_ecc_gfx906,,
+      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=-xnack -mattr=+sram-ecc],
+      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx906+sram-ecc"],,
+      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX906, 1,
+       [Define if your assembler allows -mattr=+sram-ecc for gfx906.])])
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+sram-ecc for gfx908],
+      gcc_cv_as_gcn_sram_ecc_gfx908,,
+      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=-xnack -mattr=+sram-ecc],
+      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx908+sram-ecc"],,
+      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX908, 1,
+       [Define if your assembler allows -mattr=+sram-ecc for gfx908.])])
+    ;;
+esac
+
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
 # info to the output file.  So, as supported targets are added to gas 2.11,

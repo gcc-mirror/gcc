@@ -37,6 +37,8 @@ with Namet;          use Namet;
 with Nmake;          use Nmake;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
 with Rtsfind;        use Rtsfind;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Res;        use Sem_Res;
@@ -160,6 +162,8 @@ package body Exp_Imgv is
              Expression          => Make_Aggregate (Loc, Expressions => V)));
       end Append_Table_To;
 
+   --  Start of Build_Enumeration_Image_Tables
+
    begin
       --  Nothing to do for types other than a root enumeration type
 
@@ -247,7 +251,7 @@ package body Exp_Imgv is
       Append_Table_To (Act, Eind, Nlit, Ityp, Ind);
 
       --  If the number of literals is not greater than Threshold, then we are
-      --  done. Otherwise we compute a (perfect) hash function for use by the
+      --  done. Otherwise we generate a (perfect) hash function for use by the
       --  Value attribute.
 
       if Nlit > Threshold then
@@ -283,11 +287,12 @@ package body Exp_Imgv is
 
          --  If the unit where the type is declared is the main unit, and the
          --  number of literals is greater than Threshold_For_Size when we are
-         --  optimizing for size, and -gnatd_h is not specified, try to compute
-         --  the hash function.
+         --  optimizing for size, and the restriction No_Implicit_Loops is not
+         --  active, and -gnatd_h is not specified, generate the hash function.
 
          if In_Main_Unit
            and then (Optimize_Size = 0 or else Nlit > Threshold_For_Size)
+           and then not Restriction_Active (No_Implicit_Loops)
            and then not Debug_Flag_Underscore_H
          then
             declare
@@ -1039,6 +1044,15 @@ package body Exp_Imgv is
          return;
       end if;
 
+      --  If Image should be transformed using Put_Image, then do so. See
+      --  Exp_Put_Image for details.
+
+      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
+         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
+         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
+         return;
+      end if;
+
       Ptyp := Underlying_Type (Entity (Pref));
 
       --  Ada 2022 allows 'Image on private types, so fetch the underlying
@@ -1058,15 +1072,7 @@ package body Exp_Imgv is
 
       Enum_Case := False;
 
-      --  If this is a case where Image should be transformed using Put_Image,
-      --  then do so. See Exp_Put_Image for details.
-
-      if Exp_Put_Image.Image_Should_Call_Put_Image (N) then
-         Rewrite (N, Exp_Put_Image.Build_Image_Call (N));
-         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
-         return;
-
-      elsif Rtyp = Standard_Boolean then
+      if Rtyp = Standard_Boolean then
          --  Use inline expansion if the -gnatd_x switch is not passed to the
          --  compiler. Otherwise expand into a call to the runtime.
 

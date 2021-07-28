@@ -2208,7 +2208,7 @@ insert_gimplified_predicates (loop_p loop)
    mask if it was created for given SIZE and -1 otherwise.  */
 
 static int
-mask_exists (int size, vec<int> vec)
+mask_exists (int size, const vec<int> &vec)
 {
   unsigned int ix;
   int v;

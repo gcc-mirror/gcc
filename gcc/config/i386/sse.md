@@ -1755,6 +1755,20 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
+(define_split
+  [(set (match_operand:SWI1248_AVX512BW 0 "mask_reg_operand")
+	(any_lshift:SWI1248_AVX512BW
+	  (match_operand:SWI1248_AVX512BW 1 "mask_reg_operand")
+	  (match_operand 2 "const_int_operand")))
+   (clobber (reg:CC FLAGS_REG))]
+  "TARGET_AVX512F && reload_completed"
+  [(parallel
+     [(set (match_dup 0)
+	   (any_lshift:SWI1248_AVX512BW
+	     (match_dup 1)
+	     (match_dup 2)))
+      (unspec [(const_int 0)] UNSPEC_MASKOP)])])
+
 (define_insn "ktest<mode>"
   [(set (reg:CC FLAGS_REG)
 	(unspec:CC
@@ -8486,10 +8500,24 @@
    (set_attr "mode" "DF")])
 
 (define_expand "vec_set<mode>"
-  [(match_operand:V 0 "register_operand")
+  [(match_operand:V_128 0 "register_operand")
    (match_operand:<ssescalarmode> 1 "register_operand")
-   (match_operand 2 "vec_setm_operand")]
+   (match_operand 2 "vec_setm_sse41_operand")]
   "TARGET_SSE"
+{
+  if (CONST_INT_P (operands[2]))
+    ix86_expand_vector_set (false, operands[0], operands[1],
+			    INTVAL (operands[2]));
+  else
+    ix86_expand_vector_set_var (operands[0], operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "vec_set<mode>"
+  [(match_operand:V_256_512 0 "register_operand")
+   (match_operand:<ssescalarmode> 1 "register_operand")
+   (match_operand 2 "vec_setm_avx2_operand")]
+  "TARGET_AVX"
 {
   if (CONST_INT_P (operands[2]))
     ix86_expand_vector_set (false, operands[0], operands[1],
@@ -20471,12 +20499,33 @@
 	  (match_operand:VI48_256 2 "nonimmediate_operand")))]
   "TARGET_AVX2")
 
-(define_expand "vashr<mode>3"
-  [(set (match_operand:VI8_256_512 0 "register_operand")
-	(ashiftrt:VI8_256_512
-	  (match_operand:VI8_256_512 1 "register_operand")
-	  (match_operand:VI8_256_512 2 "nonimmediate_operand")))]
+(define_expand "vashrv8di3"
+  [(set (match_operand:V8DI 0 "register_operand")
+	(ashiftrt:V8DI
+	  (match_operand:V8DI 1 "register_operand")
+	  (match_operand:V8DI 2 "nonimmediate_operand")))]
   "TARGET_AVX512F")
+
+(define_expand "vashrv4di3"
+  [(set (match_operand:V4DI 0 "register_operand")
+	(ashiftrt:V4DI
+	  (match_operand:V4DI 1 "register_operand")
+	  (match_operand:V4DI 2 "nonimmediate_operand")))]
+  "TARGET_AVX2"
+{
+  if (!TARGET_AVX512VL)
+    {
+      rtx mask = ix86_build_signbit_mask (V4DImode, 1, 0);
+      rtx t1 = gen_reg_rtx (V4DImode);
+      rtx t2 = gen_reg_rtx (V4DImode);
+      rtx t3 = gen_reg_rtx (V4DImode);
+      emit_insn (gen_vlshrv4di3 (t1, operands[1], operands[2]));
+      emit_insn (gen_vlshrv4di3 (t2, mask, operands[2]));
+      emit_insn (gen_xorv4di3 (t3, t1, t2));
+      emit_insn (gen_subv4di3 (operands[0], t3, t2));
+      DONE;
+    }
+})
 
 (define_expand "vashr<mode>3"
   [(set (match_operand:VI12_128 0 "register_operand")
@@ -20499,18 +20548,30 @@
     }
 })
 
-(define_expand "vashrv2di3<mask_name>"
+(define_expand "vashrv2di3"
   [(set (match_operand:V2DI 0 "register_operand")
 	(ashiftrt:V2DI
 	  (match_operand:V2DI 1 "register_operand")
 	  (match_operand:V2DI 2 "nonimmediate_operand")))]
-  "TARGET_XOP || TARGET_AVX512VL"
+  "TARGET_XOP || TARGET_AVX2"
 {
   if (TARGET_XOP)
     {
       rtx neg = gen_reg_rtx (V2DImode);
       emit_insn (gen_negv2di2 (neg, operands[2]));
       emit_insn (gen_xop_shav2di3 (operands[0], operands[1], neg));
+      DONE;
+    }
+  if (!TARGET_AVX512VL)
+    {
+      rtx mask = ix86_build_signbit_mask (V2DImode, 1, 0);
+      rtx t1 = gen_reg_rtx (V2DImode);
+      rtx t2 = gen_reg_rtx (V2DImode);
+      rtx t3 = gen_reg_rtx (V2DImode);
+      emit_insn (gen_vlshrv2di3 (t1, operands[1], operands[2]));
+      emit_insn (gen_vlshrv2di3 (t2, mask, operands[2]));
+      emit_insn (gen_xorv2di3 (t3, t1, t2));
+      emit_insn (gen_subv2di3 (operands[0], t3, t2));
       DONE;
     }
 })

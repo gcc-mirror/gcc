@@ -362,7 +362,7 @@ package body GNAT.Debug_Pools is
    --  These procedures are used as markers when computing the stacktraces,
    --  so that addresses in the debug pool itself are not reported to the user.
 
-   Code_Address_For_Allocate_End    : System.Address;
+   Code_Address_For_Allocate_End    : System.Address := System.Null_Address;
    Code_Address_For_Deallocate_End  : System.Address;
    Code_Address_For_Dereference_End : System.Address;
    --  Taking the address of the above procedures will not work on some

@@ -425,6 +425,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Type, size_t _Extent>
+    requires (!is_const_v<_Type>)
     inline
     span<byte, _Extent == dynamic_extent
        ? dynamic_extent : _Extent * sizeof(_Type)>

@@ -1463,8 +1463,15 @@ process_options (void)
     debug_hooks = &xcoff_debug_hooks;
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-  else if (dwarf_debuginfo_p ()
-	   || dwarf_based_debuginfo_p ())
+  else if (dwarf_debuginfo_p ())
+    debug_hooks = &dwarf2_debug_hooks;
+#endif
+#ifdef CTF_DEBUGGING_INFO
+  else if (ctf_debuginfo_p ())
+    debug_hooks = &dwarf2_debug_hooks;
+#endif
+#ifdef BTF_DEBUGGING_INFO
+  else if (btf_debuginfo_p ())
     debug_hooks = &dwarf2_debug_hooks;
 #endif
 #ifdef VMS_DEBUGGING_INFO

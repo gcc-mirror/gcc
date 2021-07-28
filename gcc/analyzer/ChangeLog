@@ -1,3 +1,381 @@
+2021-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_call_pre): Always set conjured
+	LHS, not just for SSA names.
+
+2021-07-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc
+	(class auto_disable_complexity_checks): New.
+	(epath_finder::explore_feasible_paths): Use it to disable
+	complexity checks whilst processing the worklist.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Initialize
+	m_check_complexity.
+	(region_model_manager::reject_if_too_complex): Bail if
+	m_check_complexity is false.
+	* region-model.h
+	(region_model_manager::enable_complexity_check): New.
+	(region_model_manager::disable_complexity_check): New.
+	(region_model_manager::m_check_complexity): New.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101547
+	* sm-file.cc (file_leak::emit): Handle m_arg being NULL.
+	(file_leak::describe_final_event): Handle ev.m_expr being NULL.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101522
+	* store.cc (binding_cluster::purge_state_involving): Don't change
+	m_map whilst iterating through it.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::handle_phi): Add "old_state"
+	param and use it.
+	(region_model::update_for_phis): Update so that all of the phi
+	stmts are effectively handled simultaneously, rather than in
+	order.
+	* region-model.h (region_model::handle_phi): Add "old_state"
+	param.
+	* state-purge.cc (self_referential_phi_p): Replace with...
+	(name_used_by_phis_p): ...this new function.
+	(state_purge_per_ssa_name::process_point): Update to use the
+	above, so that all phi stmts at a basic block are effectively
+	considered simultaneously, and only consider the phi arguments for
+	the pertinent in-edge.
+	* supergraph.cc (cfg_superedge::get_phi_arg_idx): New.
+	(cfg_superedge::get_phi_arg): Use the above.
+	* supergraph.h (cfg_superedge::get_phi_arg_idx): New decl.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* state-purge.cc (state_purge_annotator::add_node_annotations):
+	Rather than erroneously always using the NULL in-edge, determine
+	each relevant in-edge, and print the appropriate data for each
+	in-edge.  Use print_needed to print the data as comma-separated
+	lists of SSA names.
+	(print_vec_of_names): Add "within_table" param and use it.
+	(state_purge_annotator::add_stmt_annotations): Factor out
+	collation and printing code into...
+	(state_purge_annotator::print_needed): ...this new function.
+	* state-purge.h (state_purge_annotator::print_needed): New decl.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-point.cc (function_point::print): Show src BB index at
+	BEFORE_SUPERNODE.
+
+2021-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.cc (infix_p): New.
+	(binop_svalue::dump_to_pp): Use it to print MIN_EXPR and MAX_EXPR
+	in prefix form, rather than infix.
+
+2021-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101503
+	* constraint-manager.cc (constraint_manager::add_constraint): Use
+	can_have_associated_state_p rather than testing for unknown.
+	(constraint_manager::get_or_add_equiv_class): Likewise.
+	* program-state.cc (sm_state_map::set_state): Likewise.
+	(sm_state_map::impl_set_state): Add assertion.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Handle poisoned
+	values.
+	(region_model_manager::maybe_fold_binop): Move handling of unknown
+	values...
+	(region_model_manager::get_or_create_binop): ...to here, and
+	generalize to use can_have_associated_state_p.
+	(region_model_manager::maybe_fold_sub_svalue): Use
+	can_have_associated_state_p rather than testing for unknown.
+	(region_model_manager::maybe_fold_repeated_svalue): Use unknown
+	when the size or repeated value is "unknown"/"poisoned".
+	* region-model.cc (region_model::purge_state_involving): Reject
+	attempts to purge unknown/poisoned svalues, as these svalues
+	should not have state associated with them.
+	* svalue.cc (sub_svalue::sub_svalue): Assert that we're building
+	on top of an svalue with can_have_associated_state_p.
+	(repeated_svalue::repeated_svalue): Likewise.
+	(bits_within_svalue::bits_within_svalue): Likewise.
+	* svalue.h (svalue::can_have_associated_state_p): New.
+	(unknown_svalue::can_have_associated_state_p): New.
+	(poisoned_svalue::can_have_associated_state_p): New.
+	(unaryop_svalue::unaryop_svalue): Assert that we're building on
+	top of an svalue with can_have_associated_state_p.
+	(binop_svalue::binop_svalue): Likewise.
+	(widening_svalue::widening_svalue): Likewise.
+
+2021-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (enum access_direction): New.
+	* engine.cc (exploded_node::on_longjmp): Update for new param of
+	get_store_value.
+	* program-state.cc (program_state::prune_for_point): Likewise.
+	* region-model-impl-calls.cc (region_model::impl_call_memcpy):
+	Replace call to check_for_writable_region with call to
+	check_region_for_write.
+	(region_model::impl_call_memset): Likewise.
+	(region_model::impl_call_strcpy): Likewise.
+	* region-model-reachability.cc (reachable_regions::add): Update
+	for new param of get_store_value.
+	* region-model.cc (region_model::get_rvalue_1): Likewise, also for
+	get_rvalue_for_bits.
+	(region_model::get_store_value): Add ctxt param and use it to call
+	check_region_for_read.
+	(region_model::get_rvalue_for_bits): Add ctxt param and use it to
+	call get_store_value.
+	(region_model::check_region_access): New.
+	(region_model::check_region_for_write): New.
+	(region_model::check_region_for_read): New.
+	(region_model::set_value): Update comment.  Replace call to
+	check_for_writable_region with call to check_region_for_write.
+	* region-model.h (region_model::get_rvalue_for_bits): Add ctxt
+	param.
+	(region_model::get_store_value): Add ctxt param.
+	(region_model::check_region_access): New decl.
+	(region_model::check_region_for_write): New decl.
+	(region_model::check_region_for_read): New decl.
+	* region.cc (region_model::copy_region): Update call to
+	get_store_value.
+	* svalue.cc (initial_svalue::implicitly_live_p): Likewise.
+
+2021-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::on_stmt_pre): Handle
+	__analyzer_dump_state.
+	* program-state.cc (extrinsic_state::get_sm_idx_by_name): New.
+	(program_state::impl_call_analyzer_dump_state): New.
+	* program-state.h (extrinsic_state::get_sm_idx_by_name): New decl.
+	(program_state::impl_call_analyzer_dump_state): New decl.
+	* region-model-impl-calls.cc
+	(call_details::get_arg_string_literal): New.
+	* region-model.h (call_details::get_arg_string_literal): New decl.
+
+2021-07-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (program_state::detect_leaks): Simplify using
+	svalue::maybe_get_region.
+	* region-model-impl-calls.cc (region_model::impl_call_fgets): Likewise.
+	(region_model::impl_call_fread): Likewise.
+	(region_model::impl_call_free): Likewise.
+	(region_model::impl_call_operator_delete): Likewise.
+	* region-model.cc (selftest::test_stack_frames): Likewise.
+	(selftest::test_state_merging): Likewise.
+	* svalue.cc (svalue::maybe_get_region): New.
+	* svalue.h (svalue::maybe_get_region): New decl.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.h (is_a_helper <placeholder_svalue *>::test): Make
+	param and template param const.
+	(is_a_helper <widening_svalue *>::test): Likewise.
+	(is_a_helper <compound_svalue *>::test): Likewise.
+	(is_a_helper <conjured_svalue *>::test): Likewise.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/95006
+	PR analyzer/94713
+	PR analyzer/94714
+	* analyzer.cc (maybe_reconstruct_from_def_stmt): Split out
+	GIMPLE_ASSIGN case into...
+	(get_diagnostic_tree_for_gassign_1): New.
+	(get_diagnostic_tree_for_gassign): New.
+	* analyzer.h (get_diagnostic_tree_for_gassign): New decl.
+	* analyzer.opt (Wanalyzer-write-to-string-literal): New.
+	* constraint-manager.cc (class svalue_purger): New.
+	(constraint_manager::purge_state_involving): New.
+	* constraint-manager.h
+	(constraint_manager::purge_state_involving): New.
+	* diagnostic-manager.cc (saved_diagnostic::supercedes_p): New.
+	(dedupe_winners::handle_interactions): New.
+	(diagnostic_manager::emit_saved_diagnostics): Call it.
+	* diagnostic-manager.h (saved_diagnostic::supercedes_p): New decl.
+	* engine.cc (impl_region_model_context::warn): Convert return type
+	to bool.  Return false if the diagnostic isn't saved.
+	(impl_region_model_context::purge_state_involving): New.
+	(impl_sm_context::get_state): Use NULL ctxt when querying old
+	rvalue.
+	(impl_sm_context::set_next_state): Use new sval when querying old
+	state.
+	(class dump_path_diagnostic): Move to region-model.cc
+	(exploded_node::on_stmt): Move to on_stmt_pre and on_stmt_post.
+	Remove call to purge_state_involving.
+	(exploded_node::on_stmt_pre): New, based on the above.  Move most
+	of it to region_model::on_stmt_pre.
+	(exploded_node::on_stmt_post): Likewise, moving to
+	region_model::on_stmt_post.
+	(class stale_jmp_buf): Fix parent class to use curiously recurring
+	template pattern.
+	(feasibility_state::maybe_update_for_edge): Call on_call_pre and
+	on_call_post on gcalls.
+	* exploded-graph.h (impl_region_model_context::warn): Return bool.
+	(impl_region_model_context::purge_state_involving): New decl.
+	(exploded_node::on_stmt_pre): New decl.
+	(exploded_node::on_stmt_post): New decl.
+	* pending-diagnostic.h (pending_diagnostic::use_of_uninit_p): New.
+	(pending_diagnostic::supercedes_p): New.
+	* program-state.cc (sm_state_map::get_state): Inherit state for
+	conjured_svalue as well as initial_svalue.
+	(sm_state_map::purge_state_involving): Also support SK_CONJURED.
+	* region-model-impl-calls.cc (call_details::get_uncertainty):
+	Handle m_ctxt being NULL.
+	(call_details::get_or_create_conjured_svalue): New.
+	(region_model::impl_call_fgets): New.
+	(region_model::impl_call_fread): New.
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_initial_value): Return an
+	uninitialized poisoned value for regions that can't have initial
+	values.
+	* region-model-reachability.cc
+	(reachable_regions::mark_escaped_clusters): Handle ctxt being
+	NULL.
+	* region-model.cc (region_to_value_map::purge_state_involving): New.
+	(poisoned_value_diagnostic::use_of_uninit_p): New.
+	(poisoned_value_diagnostic::emit): Handle POISON_KIND_UNINIT.
+	(poisoned_value_diagnostic::describe_final_event): Likewise.
+	(region_model::check_for_poison): New.
+	(region_model::on_assignment): Call it.
+	(class dump_path_diagnostic): Move here from engine.cc.
+	(region_model::on_stmt_pre): New, based on exploded_node::on_stmt.
+	(region_model::on_call_pre): Move the setting of the LHS to a
+	conjured svalue to before the checks for specific functions.
+	Handle "fgets", "fgets_unlocked", and "fread".
+	(region_model::purge_state_involving): New.
+	(region_model::handle_unrecognized_call): Handle ctxt being NULL.
+	(region_model::get_rvalue): Call check_for_poison.
+	(selftest::test_stack_frames): Use NULL for context when getting
+	uninitialized rvalue.
+	(selftest::test_alloca): Likewise.
+	* region-model.h (region_to_value_map::purge_state_involving): New
+	decl.
+	(call_details::get_or_create_conjured_svalue): New decl.
+	(region_model::on_stmt_pre): New decl.
+	(region_model::purge_state_involving): New decl.
+	(region_model::impl_call_fgets): New decl.
+	(region_model::impl_call_fread): New decl.
+	(region_model::check_for_poison): New decl.
+	(region_model_context::warn): Return bool.
+	(region_model_context::purge_state_involving): New.
+	(noop_region_model_context::warn): Return bool.
+	(noop_region_model_context::purge_state_involving): New.
+	(test_region_model_context:: warn): Return bool.
+	* region.cc (region::get_memory_space): New.
+	(region::can_have_initial_svalue_p): New.
+	(region::involves_p): New.
+	* region.h (enum memory_space): New.
+	(region::get_memory_space): New decl.
+	(region::can_have_initial_svalue_p): New decl.
+	(region::involves_p): New decl.
+	* sm-malloc.cc (use_after_free::supercedes_p): New.
+	* store.cc (binding_cluster::purge_state_involving): New.
+	(store::purge_state_involving): New.
+	* store.h (class symbolic_binding): New forward decl.
+	(binding_key::dyn_cast_symbolic_binding): New.
+	(symbolic_binding::dyn_cast_symbolic_binding): New.
+	(binding_cluster::purge_state_involving): New.
+	(store::purge_state_involving): New.
+	* svalue.cc (svalue::can_merge_p): Reject attempts to merge
+	poisoned svalues with other svalues, so that we identify
+	paths in which a variable is conditionally uninitialized.
+	(involvement_visitor::visit_conjured_svalue): New.
+	(svalue::involves_p): Also handle SK_CONJURED.
+	(poison_kind_to_str): Handle POISON_KIND_UNINIT.
+	(poisoned_svalue::maybe_fold_bits_within): New.
+	* svalue.h (enum poison_kind): Add POISON_KIND_UNINIT.
+	(poisoned_svalue::maybe_fold_bits_within): New decl.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (fdump-analyzer-exploded-paths): New.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Implement it.
+	* engine.cc (exploded_path::dump_to_pp): Add ext_state param and
+	use it to dump states if non-NULL.
+	(exploded_path::dump): Likewise.
+	(exploded_path::dump_to_file): New.
+	* exploded-graph.h (exploded_path::dump_to_pp): Add ext_state
+	param.
+	(exploded_path::dump): Likewise.
+	(exploded_path::dump): Likewise.
+	(exploded_path::dump_to_file): New.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc (fixup_tree_for_diagnostic_1): Use DECL_DEBUG_EXPR
+	if it's available.
+	* engine.cc (readability): Likewise.
+
+2021-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* state-purge.cc (self_referential_phi_p): New.
+	(state_purge_per_ssa_name::process_point): Don't purge an SSA name
+	at its def-stmt if the def-stmt is self-referential.
+
+2021-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (null_assignment_sm_context::get_state):
+	New overload.
+	(null_assignment_sm_context::set_next_state): New overload.
+	(null_assignment_sm_context::get_diagnostic_tree): New.
+	* engine.cc (impl_sm_context::get_state): New overload.
+	(impl_sm_context::set_next_state): New overload.
+	(impl_sm_context::get_diagnostic_tree): New overload.
+	(impl_region_model_context::on_condition): Convert params from
+	tree to const svalue *.
+	* exploded-graph.h (impl_region_model_context::on_condition):
+	Likewise.
+	* region-model.cc (region_model::on_call_pre): Move handling of
+	internal calls to before checking for get_fndecl_for_call.
+	(region_model::add_constraints_from_binop): New.
+	(region_model::add_constraint): Split out into a new overload
+	working on const svalue * rather than tree.  Call
+	add_constraints_from_binop.  Drop call to
+	add_any_constraints_from_ssa_def_stmt.
+	(region_model::add_any_constraints_from_ssa_def_stmt): Delete.
+	(region_model::add_any_constraints_from_gassign): Delete.
+	(region_model::add_any_constraints_from_gcall): Delete.
+	* region-model.h
+	(region_model::add_any_constraints_from_ssa_def_stmt): Delete.
+	(region_model::add_any_constraints_from_gassign): Delete.
+	(region_model::add_any_constraints_from_gcall): Delete.
+	(region_model::add_constraint): Add overload decl.
+	(region_model::add_constraints_from_binop): New decl.
+	(region_model_context::on_condition): Convert params from tree to
+	const svalue *.
+	(noop_region_model_context::on_condition): Likewise.
+	* sm-file.cc (fileptr_state_machine::condition): Likewise.
+	* sm-malloc.cc (malloc_state_machine::on_condition): Likewise.
+	* sm-pattern-test.cc: Include tristate.h, selftest.h,
+	analyzer/call-string.h, analyzer/program-point.h,
+	analyzer/store.h, and analyzer/region-model.h.
+	(pattern_test_state_machine::on_condition): Convert params from tree to
+	const svalue *.
+	* sm-sensitive.cc (sensitive_state_machine::on_condition): Delete.
+	* sm-signal.cc (signal_state_machine::on_condition): Delete.
+	* sm-taint.cc (taint_state_machine::on_condition): Convert params
+	from tree to const svalue *.
+	* sm.cc: Include tristate.h, selftest.h, analyzer/call-string.h,
+	analyzer/program-point.h, analyzer/store.h, and
+	analyzer/region-model.h.
+	(any_pointer_p): Add overload taking const svalue *sval.
+	* sm.h (any_pointer_p): Add overload taking const svalue *sval.
+	(state_machine::on_condition): Convert params from tree to
+	const svalue *.  Provide no-op default implementation.
+	(sm_context::get_state): Add overload taking const svalue *sval.
+	(sm_context::set_next_state): Likewise.
+	(sm_context::on_transition): Likewise.
+	(sm_context::get_diagnostic_tree): Likewise.
+	* svalue.cc (svalue::all_zeroes_p): New.
+	(constant_svalue::all_zeroes_p): New.
+	(repeated_svalue::all_zeroes_p): Convert to vfunc.
+	* svalue.h (svalue::all_zeroes_p): New decl.
+	(constant_svalue::all_zeroes_p): New decl.
+	(repeated_svalue::all_zeroes_p): Convert decl to vfunc.
+
 2021-06-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/95006

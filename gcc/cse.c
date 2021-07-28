@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "regs.h"
 #include "function-abi.h"
+#include "rtlanal.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -3171,6 +3172,19 @@ fold_rtx (rtx x, rtx_insn *insn)
       if (NO_FUNCTION_CSE && CONSTANT_P (XEXP (XEXP (x, 0), 0)))
 	return x;
       break;
+    case VEC_SELECT:
+      {
+	rtx trueop0 = XEXP (x, 0);
+	mode = GET_MODE (trueop0);
+	rtx trueop1 = XEXP (x, 1);
+	/* If we select a low-part subreg, return that.  */
+	if (vec_series_lowpart_p (GET_MODE (x), mode, trueop1))
+	  {
+	    rtx new_rtx = lowpart_subreg (GET_MODE (x), trueop0, mode);
+	    if (new_rtx != NULL_RTX)
+	      return new_rtx;
+	  }
+      }
 
     /* Anything else goes through the loop below.  */
     default:

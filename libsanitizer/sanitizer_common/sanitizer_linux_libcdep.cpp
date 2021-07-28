@@ -203,7 +203,7 @@ void InitTlsSize() {
   g_use_dlpi_tls_data =
       GetLibcVersion(&major, &minor, &patch) && major == 2 && minor >= 25;
 
-#if defined(__x86_64__) || defined(__powerpc64__)
+#if defined(__aarch64__) || defined(__x86_64__) || defined(__powerpc64__)
   void *get_tls_static_info = dlsym(RTLD_NEXT, "_dl_get_tls_static_info");
   size_t tls_align;
   ((void (*)(size_t *, size_t *))get_tls_static_info)(&g_tls_size, &tls_align);
@@ -317,21 +317,44 @@ struct TlsBlock {
 };
 }  // namespace
 
+#ifdef __s390__
+extern "C" uptr __tls_get_offset(void *arg);
+
+static uptr TlsGetOffset(uptr ti_module, uptr ti_offset) {
+  // The __tls_get_offset ABI requires %r12 to point to GOT and %r2 to be an
+  // offset of a struct tls_index inside GOT. We don't possess either of the
+  // two, so violate the letter of the "ELF Handling For Thread-Local
+  // Storage" document and assume that the implementation just dereferences
+  // %r2 + %r12.
+  uptr tls_index[2] = {ti_module, ti_offset};
+  register uptr r2 asm("2") = 0;
+  register void *r12 asm("12") = tls_index;
+  asm("basr %%r14, %[__tls_get_offset]"
+      : "+r"(r2)
+      : [__tls_get_offset] "r"(__tls_get_offset), "r"(r12)
+      : "memory", "cc", "0", "1", "3", "4", "5", "14");
+  return r2;
+}
+#else
 extern "C" void *__tls_get_addr(size_t *);
+#endif
 
 static int CollectStaticTlsBlocks(struct dl_phdr_info *info, size_t size,
                                   void *data) {
   if (!info->dlpi_tls_modid)
     return 0;
   uptr begin = (uptr)info->dlpi_tls_data;
-#ifndef __s390__
   if (!g_use_dlpi_tls_data) {
     // Call __tls_get_addr as a fallback. This forces TLS allocation on glibc
     // and FreeBSD.
+#ifdef __s390__
+    begin = (uptr)__builtin_thread_pointer() +
+            TlsGetOffset(info->dlpi_tls_modid, 0);
+#else
     size_t mod_and_off[2] = {info->dlpi_tls_modid, 0};
     begin = (uptr)__tls_get_addr(mod_and_off);
-  }
 #endif
+  }
   for (unsigned i = 0; i != info->dlpi_phnum; ++i)
     if (info->dlpi_phdr[i].p_type == PT_TLS) {
       static_cast<InternalMmapVector<TlsBlock> *>(data)->push_back(
@@ -427,12 +450,16 @@ static void GetTls(uptr *addr, uptr *size) {
     *size = 0;
   }
 #elif SANITIZER_GLIBC && defined(__x86_64__)
-  // For x86-64, use an O(1) approach which requires precise
-  // ThreadDescriptorSize. g_tls_size was initialized in InitTlsSize.
+  // For aarch64 and x86-64, use an O(1) approach which requires relatively
+  // precise ThreadDescriptorSize. g_tls_size was initialized in InitTlsSize.
   asm("mov %%fs:16,%0" : "=r"(*addr));
   *size = g_tls_size;
   *addr -= *size;
   *addr += ThreadDescriptorSize();
+#elif SANITIZER_GLIBC && defined(__aarch64__)
+  *addr = reinterpret_cast<uptr>(__builtin_thread_pointer()) -
+          ThreadDescriptorSize();
+  *size = g_tls_size + ThreadDescriptorSize();
 #elif SANITIZER_GLIBC && defined(__powerpc64__)
   // Workaround for glibc<2.25(?). 2.27 is known to not need this.
   uptr tp;

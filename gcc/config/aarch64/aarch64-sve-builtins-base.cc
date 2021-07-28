@@ -2366,7 +2366,7 @@ public:
        Hence we do the same rotation on arguments as svdot_impl does.  */
     e.rotate_inputs_left (0, 3);
     machine_mode mode = e.vector_mode (0);
-    insn_code icode = code_for_aarch64_dot_prod (UNSPEC_USDOT, mode);
+    insn_code icode = code_for_dot_prod (UNSPEC_USDOT, mode);
     return e.use_exact_insn (icode);
   }
 

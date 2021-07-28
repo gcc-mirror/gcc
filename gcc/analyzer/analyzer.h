@@ -112,6 +112,7 @@ extern void print_quoted_type (pretty_printer *pp, tree t);
 extern int readability_comparator (const void *p1, const void *p2);
 extern int tree_cmp (const void *p1, const void *p2);
 extern tree fixup_tree_for_diagnostic (tree);
+extern tree get_diagnostic_tree_for_gassign (const gassign *);
 
 /* A tree, extended with stack frame information for locals, so that
    we can distinguish between different values of locals within a potentially
@@ -207,15 +208,23 @@ public:
   virtual logger *get_logger () const = 0;
 };
 
+/* An enum for describing the direction of an access to memory.  */
+
+enum access_direction
+{
+  DIR_READ,
+  DIR_WRITE
+};
+
 } // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,
 				     unsigned int num_args);
-extern bool is_named_call_p (tree fndecl, const char *funcname);
-extern bool is_named_call_p (tree fndecl, const char *funcname,
+extern bool is_named_call_p (const_tree fndecl, const char *funcname);
+extern bool is_named_call_p (const_tree fndecl, const char *funcname,
 			     const gcall *call, unsigned int num_args);
-extern bool is_std_named_call_p (tree fndecl, const char *funcname);
-extern bool is_std_named_call_p (tree fndecl, const char *funcname,
+extern bool is_std_named_call_p (const_tree fndecl, const char *funcname);
+extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);

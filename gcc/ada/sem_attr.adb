@@ -11499,6 +11499,25 @@ package body Sem_Attr is
                Error_Msg_F ("context requires a non-protected subprogram", P);
             end if;
 
+            --  AI12-0412: The rule in RM 6.1.1(18.2/5) disallows applying
+            --  attribute Access to a primitive of an abstract type when the
+            --  primitive has any Pre'Class or Post'Class aspects specified
+            --  with nonstatic expressions.
+
+            if Attr_Id = Attribute_Access
+              and then Ekind (Btyp) in E_Access_Subprogram_Type
+                                     | E_Anonymous_Access_Subprogram_Type
+              and then Is_Entity_Name (P)
+              and then Is_Dispatching_Operation (Entity (P))
+              and then
+                Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post (Entity (P))
+            then
+               Error_Msg_N
+                 ("attribute not allowed for primitive of abstract type with "
+                   & "nonstatic class-wide pre/postconditions",
+                  N);
+            end if;
+
             --  The context cannot be a pool-specific type, but this is a
             --  legality rule, not a resolution rule, so it must be checked
             --  separately, after possibly disambiguation (see AI-245).

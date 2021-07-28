@@ -721,6 +721,12 @@ package body Treepr is
    function Get_Uint is new Get_32_Bit_Field_With_Default
      (Uint, Uint_0) with Inline;
 
+   function Get_Valid_Uint is new Get_32_Bit_Field
+     (Uint) with Inline;
+   --  Used for both Valid_Uint and other subtypes of Uint. Note that we don't
+   --  instantiate Get_Valid_32_Bit_Field; we don't want to blow up if the
+   --  value is wrong.
+
    function Get_Ureal is new Get_32_Bit_Field
      (Ureal) with Inline;
 
@@ -893,13 +899,36 @@ package body Treepr is
                Val : constant Uint := Get_Uint (N, FD.Offset);
                function Cast is new Unchecked_Conversion (Uint, Int);
             begin
-               if Val /= No_Uint then
-                  Print_Initial;
-                  UI_Write (Val, Format);
-                  Write_Str (" (Uint = ");
-                  Write_Int (Cast (Val));
-                  Write_Char (')');
-               end if;
+               --  Do this even if Val = No_Uint, because Uint fields default
+               --  to Uint_0.
+
+               Print_Initial;
+               UI_Write (Val, Format);
+               Write_Str (" (Uint = ");
+               Write_Int (Cast (Val));
+               Write_Char (')');
+            end;
+
+         when Valid_Uint_Field | Unat_Field | Upos_Field
+            | Nonzero_Uint_Field =>
+            declare
+               Val : constant Uint := Get_Valid_Uint (N, FD.Offset);
+               function Cast is new Unchecked_Conversion (Uint, Int);
+            begin
+               Print_Initial;
+               UI_Write (Val, Format);
+
+               case FD.Kind is
+                  when Valid_Uint_Field => Write_Str (" v");
+                  when Unat_Field => Write_Str (" n");
+                  when Upos_Field => Write_Str (" p");
+                  when Nonzero_Uint_Field => Write_Str (" nz");
+                  when others => raise Program_Error;
+               end case;
+
+               Write_Str (" (Uint = ");
+               Write_Int (Cast (Val));
+               Write_Char (')');
             end;
 
          when Ureal_Field =>

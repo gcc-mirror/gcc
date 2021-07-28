@@ -244,11 +244,16 @@ package body Comperr is
             end if;
 
             End_Line;
+
          else
             Write_Str ("| Error detected at ");
             Write_Location (Sloc (Current_Error_Node));
             End_Line;
          end if;
+
+         Write_Str ("| Compiling ");
+         Write_Str (Get_First_Main_File_Name);
+         End_Line;
 
          --  There are two cases now. If the file gnat_bug.box exists,
          --  we use the contents of this file at this point.
@@ -404,6 +409,7 @@ package body Comperr is
          Set_Standard_Output;
 
          Tree_Dump;
+         Sinput.Unlock; -- so Source_Dump can modify it
          Source_Dump;
          raise Unrecoverable_Error;
       end if;

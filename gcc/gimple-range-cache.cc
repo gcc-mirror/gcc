@@ -81,6 +81,34 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
   return false;
 }
 
+// If NAME has a non-null dereference in block BB, adjust R with the
+// non-zero information from non_null_deref_p, and return TRUE.  If
+// SEARCH_DOM is true, non_null_deref_p should search the dominator tree.
+
+bool
+non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
+			    bool search_dom)
+{
+  // Non-call exceptions mean we could throw in the middle of the
+  // block, so just punt on those for now.
+  if (cfun->can_throw_non_call_exceptions)
+    return false;
+
+  // We only care about the null / non-null property of pointers.
+  if (!POINTER_TYPE_P (TREE_TYPE (name)) || r.zero_p () || r.nonzero_p ())
+    return false;
+
+  // Check if pointers have any non-null dereferences.
+  if (non_null_deref_p (name, bb, search_dom))
+    {
+      int_range<2> nz;
+      nz.set_nonzero (TREE_TYPE (name));
+      r.intersect (nz);
+      return true;
+    }
+  return false;
+}
+
 // Allocate an populate the bitmap for NAME.  An ON bit for a block
 // index indicates there is a non-null reference in that block.  In
 // order to populate the bitmap, a quick run of all the immediate uses
@@ -857,9 +885,8 @@ ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
 	r = gimple_range_global (name);
     }
 
-  if (bb && r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
-      !cfun->can_throw_non_call_exceptions)
-    r = range_nonzero (TREE_TYPE (name));
+  if (bb)
+    m_non_null.adjust_range (r, name, bb, false);
 }
 
 // Get the range of NAME as it occurs on entry to block BB.
@@ -878,12 +905,7 @@ ranger_cache::entry_range (irange &r, tree name, basic_block bb)
   if (!m_on_entry.get_bb_range (r, name, bb))
     range_of_def (r, name);
 
-  // Check if pointers have any non-null dereferences.  Non-call
-  // exceptions mean we could throw in the middle of the block, so just
-  // punt for now on those.
-  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
-      !cfun->can_throw_non_call_exceptions)
-    r = range_nonzero (TREE_TYPE (name));
+  m_non_null.adjust_range (r, name, bb, false);
 }
 
 // Get the range of NAME as it occurs on exit from block BB.

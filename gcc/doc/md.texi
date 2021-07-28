@@ -3536,6 +3536,9 @@ A 5-bit unsigned immediate for CSR access instructions.
 @item A
 An address that is held in a general-purpose register.
 
+@item S
+A constraint that matches an absolute symbolic address.
+
 @end table
 
 @item RX---@file{config/rx/constraints.md}
@@ -5446,13 +5449,53 @@ Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
 
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
+
+Compute the sum of the products of two signed elements.
+Operand 1 and operand 2 are of the same mode. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+sdot<signed op0, signed op1, signed op2, signed op3> ==
+   op0 = sign-ext (op1) * sign-ext (op2) + op3
+@dots{}
+@end smallexample
+
 @cindex @code{udot_prod@var{m}} instruction pattern
-@itemx @samp{udot_prod@var{m}}
-Compute the sum of the products of two signed/unsigned elements.
-Operand 1 and operand 2 are of the same mode. Their product, which is of a
-wider mode, is computed and added to operand 3. Operand 3 is of a mode equal or
-wider than the mode of the product. The result is placed in operand 0, which
-is of the same mode as operand 3.
+@item @samp{udot_prod@var{m}}
+
+Compute the sum of the products of two unsigned elements.
+Operand 1 and operand 2 are of the same mode. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+udot<unsigned op0, unsigned op1, unsigned op2, unsigned op3> ==
+   op0 = zero-ext (op1) * zero-ext (op2) + op3
+@dots{}
+@end smallexample
+
+@cindex @code{usdot_prod@var{m}} instruction pattern
+@item @samp{usdot_prod@var{m}}
+Compute the sum of the products of elements of different signs.
+Operand 1 must be unsigned and operand 2 signed. Their
+product, which is of a wider mode, is computed and added to operand 3.
+Operand 3 is of a mode equal or wider than the mode of the product. The
+result is placed in operand 0, which is of the same mode as operand 3.
+
+Semantically the expressions perform the multiplication in the following signs
+
+@smallexample
+usdot<signed op0, unsigned op1, signed op2, signed op3> ==
+   op0 = ((signed-conv) zero-ext (op1)) * sign-ext (op2) + op3
+@dots{}
+@end smallexample
 
 @cindex @code{ssad@var{m}} instruction pattern
 @item @samp{ssad@var{m}}
@@ -8455,8 +8498,6 @@ list of operands, such as this example:
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:SI 1 "register_operand" "")
    (match_operand:SI 2 "register_operand" "")]
-@end group
-@group
   ""
   "
 @{
@@ -8473,17 +8514,10 @@ Here is an example, the definition of left-shift for the SPUR chip:
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
         (ashift:SI
-@end group
-@group
           (match_operand:SI 1 "register_operand" "")
           (match_operand:SI 2 "nonmemory_operand" "")))]
   ""
   "
-@end group
-@end smallexample
-
-@smallexample
-@group
 @{
   if (GET_CODE (operands[2]) != CONST_INT
       || (unsigned) INTVAL (operands[2]) > 3)
@@ -9937,7 +9971,7 @@ Lengths are measured in addressable storage units (bytes).
 Note that it is possible to call functions via the @code{symbol_ref}
 mechanism to compute the length of an insn.  However, if you use this
 mechanism you must provide dummy clauses to express the maximum length
-without using the function call.  You can an example of this in the
+without using the function call.  You can see an example of this in the
 @code{pa} machine description for the @code{call_symref} pattern.
 
 The following macros can be used to refine the length computation:

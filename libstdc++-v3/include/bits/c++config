@@ -500,6 +500,7 @@ namespace std
 // Assert.
 #if defined(_GLIBCXX_ASSERTIONS) \
   || defined(_GLIBCXX_PARALLEL) || defined(_GLIBCXX_PARALLEL_ASSERTIONS)
+# if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 namespace std
 {
   // Avoid the use of assert, because we're trying to keep the <cassert>
@@ -508,6 +509,7 @@ namespace std
   inline void
   __replacement_assert(const char* __file, int __line,
 		       const char* __function, const char* __condition)
+  _GLIBCXX_NOEXCEPT
   {
     __builtin_printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
 		     __function, __condition);
@@ -517,10 +519,18 @@ namespace std
 #define __glibcxx_assert_impl(_Condition)			       \
   if (__builtin_expect(!bool(_Condition), false))		       \
   {								       \
-    __glibcxx_constexpr_assert(_Condition);			       \
+    __glibcxx_constexpr_assert(false);				       \
     std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
 			      #_Condition);			       \
   }
+# else // ! VERBOSE
+# define __glibcxx_assert_impl(_Condition)		\
+  if (__builtin_expect(!bool(_Condition), false))	\
+  {							\
+    __glibcxx_constexpr_assert(false);			\
+    __builtin_abort();					\
+  }
+#endif
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)

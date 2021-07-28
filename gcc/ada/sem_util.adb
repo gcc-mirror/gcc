@@ -410,17 +410,18 @@ package body Sem_Util is
               and then No_Dynamic_Accessibility_Checks_Enabled (N)
               and then Is_Anonymous_Access_Type (Etype (N))
             then
-               --  In the alternative model the level is that of the subprogram
+               --  In the alternative model the level is that of the
+               --  designated type.
 
                if Debug_Flag_Underscore_B then
+                  return Make_Level_Literal (Typ_Access_Level (Etype (N)));
+
+               --  Otherwise the level is that of the subprogram
+
+               else
                   return Make_Level_Literal
-                           (Subprogram_Access_Level (Current_Subprogram));
+                           (Subprogram_Access_Level (Entity (Name (N))));
                end if;
-
-               --  Otherwise the level is that of the designated type
-
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (N)));
             end if;
 
             if Nkind (N) = N_Function_Call then
@@ -659,24 +660,22 @@ package body Sem_Util is
                if Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
                then
-                  --  In the alternative model the level depends on the
-                  --  entity's context.
+                  --  In the alternative model the level is that of the
+                  --  designated type entity's context.
 
                   if Debug_Flag_Underscore_B then
-                     if Is_Formal (E) then
-                        return Make_Level_Literal
-                                 (Subprogram_Access_Level
-                                   (Enclosing_Subprogram (E)));
-                     end if;
+                     return Make_Level_Literal (Typ_Access_Level (Etype (E)));
 
+                  --  Otherwise the level depends on the entity's context
+
+                  elsif Is_Formal (E) then
+                     return Make_Level_Literal
+                              (Subprogram_Access_Level
+                                (Enclosing_Subprogram (E)));
+                  else
                      return Make_Level_Literal
                               (Scope_Depth (Enclosing_Dynamic_Scope (E)));
                   end if;
-
-                  --  Otherwise the level is that of the designated type
-
-                  return Make_Level_Literal
-                           (Typ_Access_Level (Etype (E)));
                end if;
 
                --  Return the dynamic level in the normal case
@@ -701,10 +700,11 @@ package body Sem_Util is
 
             elsif Is_Type (E) then
                --  When restriction No_Dynamic_Accessibility_Checks is active
+               --  along with -gnatd_b.
 
                if Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then not Debug_Flag_Underscore_B
+                 and then Debug_Flag_Underscore_B
                then
                   return Make_Level_Literal (Typ_Access_Level (E));
                end if;
@@ -791,19 +791,29 @@ package body Sem_Util is
             --  is an anonymous access type means that its associated
             --  level is that of the containing type - see RM 3.10.2 (16).
 
+            --  Note that when restriction No_Dynamic_Accessibility_Checks is
+            --  in effect we treat discriminant components as regular
+            --  components.
+
             elsif Nkind (E) = N_Selected_Component
               and then Ekind (Etype (E))   =  E_Anonymous_Access_Type
               and then Ekind (Etype (Pre)) /= E_Anonymous_Access_Type
-              and then not (Nkind (Selector_Name (E)) in N_Has_Entity
-                             and then Ekind (Entity (Selector_Name (E)))
-                                        = E_Discriminant)
+              and then (not (Nkind (Selector_Name (E)) in N_Has_Entity
+                              and then Ekind (Entity (Selector_Name (E)))
+                                         = E_Discriminant)
+
+                        --  The alternative accessibility models both treat
+                        --  discriminants as regular components.
+
+                        or else (No_Dynamic_Accessibility_Checks_Enabled (E)
+                                  and then Allow_Alt_Model))
             then
                --  When restriction No_Dynamic_Accessibility_Checks is active
-               --  the level is that of the designated type.
+               --  and -gnatd_b set, the level is that of the designated type.
 
                if Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then not Debug_Flag_Underscore_B
+                 and then Debug_Flag_Underscore_B
                then
                   return Make_Level_Literal
                            (Typ_Access_Level (Etype (E)));
@@ -825,11 +835,11 @@ package body Sem_Util is
                          = E_Anonymous_Access_Type
             then
                --  When restriction No_Dynamic_Accessibility_Checks is active
-               --  the level is that of the designated type.
+               --  and -gnatd_b set, the level is that of the designated type.
 
                if Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then not Debug_Flag_Underscore_B
+                 and then Debug_Flag_Underscore_B
                then
                   return Make_Level_Literal
                            (Typ_Access_Level (Etype (E)));
@@ -1510,13 +1520,14 @@ package body Sem_Util is
    -----------------------------------------
 
    procedure Apply_Compile_Time_Constraint_Error
-     (N      : Node_Id;
-      Msg    : String;
-      Reason : RT_Exception_Code;
-      Ent    : Entity_Id  := Empty;
-      Typ    : Entity_Id  := Empty;
-      Loc    : Source_Ptr := No_Location;
-      Warn   : Boolean    := False)
+     (N            : Node_Id;
+      Msg          : String;
+      Reason       : RT_Exception_Code;
+      Ent          : Entity_Id  := Empty;
+      Typ          : Entity_Id  := Empty;
+      Loc          : Source_Ptr := No_Location;
+      Warn         : Boolean    := False;
+      Emit_Message : Boolean    := True)
    is
       Stat   : constant Boolean := Is_Static_Expression (N);
       R_Stat : constant Node_Id :=
@@ -1530,18 +1541,9 @@ package body Sem_Util is
          Rtyp := Typ;
       end if;
 
-      Discard_Node
-        (Compile_Time_Constraint_Error (N, Msg, Ent, Loc, Warn => Warn));
-
-      --  In GNATprove mode, do not replace the node with an exception raised.
-      --  In such a case, either the call to Compile_Time_Constraint_Error
-      --  issues an error which stops analysis, or it issues a warning in
-      --  a few cases where a suitable check flag is set for GNATprove to
-      --  generate a check message.
-
-      if GNATprove_Mode then
-         Set_Raises_Constraint_Error (N);
-         return;
+      if Emit_Message then
+         Discard_Node
+           (Compile_Time_Constraint_Error (N, Msg, Ent, Loc, Warn => Warn));
       end if;
 
       --  Now we replace the node by an N_Raise_Constraint_Error node
@@ -7223,7 +7225,6 @@ package body Sem_Util is
 
          if Allow_Alt_Model
            and then No_Dynamic_Accessibility_Checks_Enabled (Typ)
-           and then Debug_Flag_Underscore_B
          then
             return Type_Access_Level (Typ, Allow_Alt_Model);
          end if;
@@ -11833,7 +11834,7 @@ package body Sem_Util is
             if Default = Known_Compatible
               or else
                 (Etype (Obj) = Etype (Expr)
-                  and then (Unknown_Alignment (Obj)
+                  and then (not Known_Alignment (Obj)
                              or else
                                Alignment (Obj) = Alignment (Etype (Obj))))
             then
@@ -12078,7 +12079,7 @@ package body Sem_Util is
       --  do it when there is an address clause since we can do more if the
       --  alignment is known.
 
-      if Unknown_Alignment (Obj) then
+      if not Known_Alignment (Obj) and then Known_Alignment (Etype (Obj)) then
          Set_Alignment (Obj, Alignment (Etype (Obj)));
       end if;
 
@@ -13306,6 +13307,44 @@ package body Sem_Util is
           and then Nkind (Node (First_Elmt (Constits))) = N_Null;
    end Has_Null_Refinement;
 
+   ------------------------------------------
+   -- Has_Nonstatic_Class_Wide_Pre_Or_Post --
+   ------------------------------------------
+
+   function Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post
+     (Subp : Entity_Id) return Boolean
+   is
+      Disp_Type  : constant Entity_Id := Find_Dispatching_Type (Subp);
+      Prag       : Node_Id;
+      Pragma_Arg : Node_Id;
+
+   begin
+      if Present (Disp_Type)
+        and then Is_Abstract_Type (Disp_Type)
+        and then Present (Contract (Subp))
+      then
+         Prag := Pre_Post_Conditions (Contract (Subp));
+
+         while Present (Prag) loop
+            if Pragma_Name (Prag) in Name_Precondition | Name_Postcondition
+              and then Class_Present (Prag)
+            then
+               Pragma_Arg :=
+                 Nlists.First
+                   (Pragma_Argument_Associations (Prag));
+
+               if not Is_Static_Expression (Expression (Pragma_Arg)) then
+                  return True;
+               end if;
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+      end if;
+
+      return False;
+   end Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post;
+
    -------------------------------
    -- Has_Overriding_Initialize --
    -------------------------------
@@ -14442,7 +14481,9 @@ package body Sem_Util is
    -- In_Pre_Post_Condition --
    ---------------------------
 
-   function In_Pre_Post_Condition (N : Node_Id) return Boolean is
+   function In_Pre_Post_Condition
+     (N : Node_Id; Class_Wide_Only : Boolean := False) return Boolean
+   is
       Par     : Node_Id;
       Prag    : Node_Id := Empty;
       Prag_Id : Pragma_Id;
@@ -14468,13 +14509,24 @@ package body Sem_Util is
       if Present (Prag) then
          Prag_Id := Get_Pragma_Id (Prag);
 
-         return
-           Prag_Id = Pragma_Post
-             or else Prag_Id = Pragma_Post_Class
-             or else Prag_Id = Pragma_Postcondition
-             or else Prag_Id = Pragma_Pre
-             or else Prag_Id = Pragma_Pre_Class
-             or else Prag_Id = Pragma_Precondition;
+         if Class_Wide_Only then
+            return
+              Prag_Id = Pragma_Post_Class
+                or else Prag_Id = Pragma_Pre_Class
+                or else (Class_Present (Prag)
+                          and then (Prag_Id = Pragma_Post
+                                     or else Prag_Id = Pragma_Postcondition
+                                     or else Prag_Id = Pragma_Pre
+                                     or else Prag_Id = Pragma_Precondition));
+         else
+            return
+              Prag_Id = Pragma_Post
+                or else Prag_Id = Pragma_Post_Class
+                or else Prag_Id = Pragma_Postcondition
+                or else Prag_Id = Pragma_Pre
+                or else Prag_Id = Pragma_Pre_Class
+                or else Prag_Id = Pragma_Precondition;
+         end if;
 
       --  Otherwise the node is not enclosed by a pre/postcondition pragma
 
@@ -28314,7 +28366,7 @@ package body Sem_Util is
          Set_Is_Unsigned_Type       (T1, Is_Unsigned_Type          (T2));
       end if;
 
-      Set_Alignment                 (T1, Alignment                 (T2));
+      Copy_Alignment (To => T1, From => T2);
    end Set_Size_Info;
 
    ------------------------------
@@ -29114,7 +29166,8 @@ package body Sem_Util is
 
    function Type_Access_Level
      (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean := True) return Uint
+      Allow_Alt_Model : Boolean   := True;
+      Assoc_Ent       : Entity_Id := Empty) return Uint
    is
       Btyp    : Entity_Id := Base_Type (Typ);
       Def_Ent : Entity_Id;
@@ -29136,16 +29189,28 @@ package body Sem_Util is
             if Allow_Alt_Model
               and then No_Dynamic_Accessibility_Checks_Enabled (Btyp)
             then
-               --  In the normal model, the level of an anonymous access
+               --  In the -gnatd_b model, the level of an anonymous access
                --  type is always that of the designated type.
 
-               if not Debug_Flag_Underscore_B then
+               if Debug_Flag_Underscore_B then
                   return Type_Access_Level
                            (Designated_Type (Btyp), Allow_Alt_Model);
                end if;
 
-               --  Otherwise the secondary model dictates special handling
-               --  depending on the context of the anonymous access type.
+               --  When an anonymous access type's Assoc_Ent is specifiedi,
+               --  calculate the result based on the general accessibility
+               --  level routine.
+
+               --  We would like to use Associated_Node_For_Itype here instead,
+               --  but in some cases it is not fine grained enough ???
+
+               if Present (Assoc_Ent) then
+                  return Static_Accessibility_Level
+                           (Assoc_Ent, Object_Decl_Level);
+               end if;
+
+               --  Otherwise take the context of the anonymous access type into
+               --  account.
 
                --  Obtain the defining entity for the internally generated
                --  anonymous access type.

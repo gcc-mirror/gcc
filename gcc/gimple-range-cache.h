@@ -34,6 +34,8 @@ public:
   non_null_ref ();
   ~non_null_ref ();
   bool non_null_deref_p (tree name, basic_block bb, bool search_dom = true);
+  bool adjust_range (irange &r, tree name, basic_block bb,
+		     bool search_dom = true);
 private:
   vec <bitmap> m_nn;
   void process_name (tree name);

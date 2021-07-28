@@ -137,7 +137,8 @@ package body Lib.Writ is
    ------------------------------
 
    procedure Ensure_System_Dependency is
-      System_Uname : Unit_Name_Type;
+      System_Uname : constant Unit_Name_Type :=
+        Name_To_Unit_Name (Name_System);
       --  Unit name for system spec if needed for dummy entry
 
       System_Fname : File_Name_Type;
@@ -146,11 +147,9 @@ package body Lib.Writ is
    begin
       --  Nothing to do if we already compiled System
 
-      for Unum in Units.First .. Last_Unit loop
-         if Source_Index (Unum) = System_Source_File_Index then
-            return;
-         end if;
-      end loop;
+      if Is_Loaded (System_Uname) then
+         return;
+      end if;
 
       --  If no entry for system.ads in the units table, then add a entry
       --  to the units table for system.ads, which will be referenced when
@@ -158,7 +157,6 @@ package body Lib.Writ is
       --  on system as a result of Targparm scanning the system.ads file to
       --  determine the target dependent parameters for the compilation.
 
-      System_Uname := Name_To_Unit_Name (Name_System);
       System_Fname := File_Name (System_Source_File_Index);
 
       Units.Increment_Last;
@@ -1253,9 +1251,10 @@ package body Lib.Writ is
       --  for which we have generated code
 
       for Unit in Units.First .. Last_Unit loop
-         if Units.Table (Unit).Generate_Code or else Unit = Main_Unit then
+         if Units.Table (Unit).Generate_Code then
             if not Has_No_Elaboration_Code (Cunit (Unit)) then
                Main_Restrictions.Violated (No_Elaboration_Code) := True;
+               exit;
             end if;
          end if;
       end loop;

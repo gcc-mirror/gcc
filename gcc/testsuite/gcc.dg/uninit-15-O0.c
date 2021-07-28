@@ -15,6 +15,6 @@ void baz();
 void bar()
 {
     int j;           /* { dg-message "was declared here" {} { xfail *-*-* } } */
-    for (; foo(j); ++j)
+    for (; foo(j); ++j) /* { dg-warning "is used uninitialized" } */
         baz();
 }

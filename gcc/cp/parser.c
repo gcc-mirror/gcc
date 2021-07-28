@@ -11665,6 +11665,7 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
   auto_vec<cp_omp_attribute_data, 16> vec;
   int cnt = 0;
   int tokens = 0;
+  bool bad = false;
   for (tree *pa = &attrs; *pa; )
     if (get_attribute_namespace (*pa) == omp_identifier
 	&& is_attribute_p ("directive", get_attribute_name (*pa)))
@@ -11676,6 +11677,14 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
 	    gcc_assert (TREE_CODE (d) == DEFERRED_PARSE);
 	    cp_token *first = DEFPARSE_TOKENS (d)->first;
 	    cp_token *last = DEFPARSE_TOKENS (d)->last;
+	    if (parser->omp_attrs_forbidden_p)
+	      {
+		error_at (first->location,
+			  "mixing OpenMP directives with attribute and pragma "
+			  "syntax on the same statement");
+		parser->omp_attrs_forbidden_p = false;
+		bad = true;
+	      }
 	    const char *directive[3] = {};
 	    for (int i = 0; i < 3; i++)
 	      {
@@ -11731,6 +11740,9 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
     else
       pa = &TREE_CHAIN (*pa);
 
+  if (bad)
+    return attrs;
+
   unsigned int i;
   cp_omp_attribute_data *v;
   cp_omp_attribute_data *construct_seen = nullptr;
@@ -11779,6 +11791,18 @@ cp_parser_handle_statement_omp_attributes (cp_parser *parser, tree attrs)
 		"standalone OpenMP directives in %<omp::directive%> attribute"
 		" can only appear on an empty statement");
       return attrs;
+    }
+  if (cnt && cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA))
+    {
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      enum pragma_kind kind = cp_parser_pragma_kind (token);
+      if (kind >= PRAGMA_OMP__START_ && kind <= PRAGMA_OMP__LAST_)
+	{
+	  error_at (token->location,
+		    "mixing OpenMP directives with attribute and pragma "
+		    "syntax on the same statement");
+	  return attrs;
+	}
     }
 
   if (!tokens)
@@ -11877,10 +11901,9 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   tree statement, std_attrs = NULL_TREE;
   cp_token *token;
   location_t statement_location, attrs_loc;
-  bool in_omp_attribute_pragma;
+  bool in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
 
  restart:
-  in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
   if (if_p != NULL)
     *if_p = false;
   /* There is no statement yet.  */
@@ -11904,6 +11927,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
   if (std_attrs && (flag_openmp || flag_openmp_simd))
     std_attrs = cp_parser_handle_statement_omp_attributes (parser, std_attrs);
+  parser->omp_attrs_forbidden_p = false;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -11926,6 +11950,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	     the statement.  */
 	  cp_parser_label_for_labeled_statement (parser, std_attrs);
 	  in_compound = false;
+	  in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
 	  goto restart;
 
 	case RID_IF:
@@ -12009,6 +12034,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	  cp_parser_label_for_labeled_statement (parser, std_attrs);
 	  in_compound = false;
+	  in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
 	  goto restart;
 	}
     }
@@ -12033,13 +12059,28 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	cp_parser_pragma (parser, pragma_compound, if_p);
       else if (!cp_parser_pragma (parser, pragma_stmt, if_p))
 	do_restart = true;
-      if (lexer->in_omp_attribute_pragma && !in_omp_attribute_pragma)
+      if (parser->lexer != lexer
+	  && lexer->in_omp_attribute_pragma
+	  && (!in_omp_attribute_pragma || lexer->orphan_p))
 	{
-	  gcc_assert (parser->lexer != lexer);
+	  if (saved_tokens.lexer == lexer)
+	    {
+	      if (saved_tokens.commit)
+		cp_lexer_commit_tokens (lexer);
+	      gcc_assert (lexer->saved_tokens.length () == saved_tokens.len);
+	      saved_tokens.lexer = parser->lexer;
+	      saved_tokens.commit = false;
+	      saved_tokens.len = parser->lexer->saved_tokens.length ();
+	    }
 	  cp_lexer_destroy (lexer);
+	  lexer = parser->lexer;
 	}
       if (do_restart)
 	goto restart;
+      if (parser->lexer == lexer
+	  && lexer->in_omp_attribute_pragma
+	  && !in_omp_attribute_pragma)
+	parser->lexer->orphan_p = true;
       return;
     }
   else if (token->type == CPP_EOF)
@@ -35247,7 +35288,7 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
   /* Parse the optional attribute list.
 
      A list of parsed, but not verified, attributes.  */
-  vec<property_attribute_info *> prop_attr_list = vNULL;
+  auto_delete_vec<property_attribute_info> prop_attr_list;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
   cp_lexer_consume_token (parser->lexer);  /* Eat '@property'.  */
@@ -35423,10 +35464,6 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
     }
 
   cp_parser_consume_semicolon_at_end_of_statement (parser);
-
-  while (!prop_attr_list.is_empty())
-    delete prop_attr_list.pop ();
-  prop_attr_list.release ();
 }
 
 /* Parse an Objective-C++ @synthesize declaration.  The syntax is:
@@ -35660,6 +35697,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OACC_CLAUSE_NO_CREATE;
 	  else if (!strcmp ("nogroup", p))
 	    result = PRAGMA_OMP_CLAUSE_NOGROUP;
+	  else if (!strcmp ("nohost", p))
+	    result = PRAGMA_OACC_CLAUSE_NOHOST;
 	  else if (!strcmp ("nontemporal", p))
 	    result = PRAGMA_OMP_CLAUSE_NONTEMPORAL;
 	  else if (!strcmp ("notinbranch", p))
@@ -38883,6 +38922,11 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_oacc_data_clause (parser, c_kind, clauses);
 	  c_name = "no_create";
 	  break;
+	case PRAGMA_OACC_CLAUSE_NOHOST:
+	  clauses = cp_parser_oacc_simple_clause (here, OMP_CLAUSE_NOHOST,
+						  clauses);
+	  c_name = "nohost";
+	  break;
 	case PRAGMA_OACC_CLAUSE_NUM_GANGS:
 	  code = OMP_CLAUSE_NUM_GANGS;
 	  c_name = "num_gangs";
@@ -39388,11 +39432,14 @@ cp_parser_end_omp_structured_block (cp_parser *parser, unsigned save)
 }
 
 static tree
-cp_parser_omp_structured_block (cp_parser *parser, bool *if_p)
+cp_parser_omp_structured_block (cp_parser *parser, bool *if_p,
+				bool disallow_omp_attrs = true)
 {
   tree stmt = begin_omp_structured_block ();
   unsigned int save = cp_parser_begin_omp_structured_block (parser);
 
+  if (disallow_omp_attrs)
+    parser->omp_attrs_forbidden_p = true;
   cp_parser_statement (parser, NULL_TREE, false, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
@@ -40744,6 +40791,77 @@ cp_finish_omp_range_for (tree orig, tree begin)
     cp_finish_decomp (decl, decomp_first_name, decomp_cnt);
 }
 
+/* Return true if next tokens contain a standard attribute that contains
+   omp::directive (DIRECTIVE).  */
+
+static bool
+cp_parser_omp_section_scan (cp_parser *parser, const char *directive,
+			    bool tentative)
+{
+  size_t n = cp_parser_skip_attributes_opt (parser, 1), i;
+  if (n < 10)
+    return false;
+  for (i = 5; i < n - 4; i++)
+    if (cp_lexer_nth_token_is (parser->lexer, i, CPP_NAME)
+	&& cp_lexer_nth_token_is (parser->lexer, i + 1, CPP_OPEN_PAREN)
+	&& cp_lexer_nth_token_is (parser->lexer, i + 2, CPP_NAME))
+      {
+	tree first = cp_lexer_peek_nth_token (parser->lexer, i)->u.value;
+	tree second = cp_lexer_peek_nth_token (parser->lexer, i + 2)->u.value;
+	if (strcmp (IDENTIFIER_POINTER (first), "directive"))
+	  continue;
+	if (strcmp (IDENTIFIER_POINTER (second), directive) == 0)
+	  break;
+      }
+  if (i == n - 4)
+    return false;
+  cp_parser_parse_tentatively (parser);
+  location_t first_loc = cp_lexer_peek_token (parser->lexer)->location;
+  location_t last_loc
+    = cp_lexer_peek_nth_token (parser->lexer, n - 1)->location;
+  location_t middle_loc = UNKNOWN_LOCATION;
+  tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  int cnt = 0;
+  bool seen = false;
+  for (tree attr = std_attrs; attr; attr = TREE_CHAIN (attr))
+    if (get_attribute_namespace (attr) == omp_identifier
+	&& is_attribute_p ("directive", get_attribute_name (attr)))
+      {
+	for (tree a = TREE_VALUE (attr); a; a = TREE_CHAIN (a))
+	  {
+	    tree d = TREE_VALUE (a);
+	    gcc_assert (TREE_CODE (d) == DEFERRED_PARSE);
+	    cp_token *first = DEFPARSE_TOKENS (d)->first;
+	    cnt++;
+	    if (first->type == CPP_NAME
+		&& strcmp (IDENTIFIER_POINTER (first->u.value),
+			   directive) == 0)
+	      {
+		seen = true;
+		if (middle_loc == UNKNOWN_LOCATION)
+		  middle_loc = first->location;
+	      }
+	  }
+      }
+  if (!seen || tentative)
+    {
+      cp_parser_abort_tentative_parse (parser);
+      return seen;
+    }
+  if (cnt != 1 || TREE_CHAIN (std_attrs))
+    {
+      error_at (make_location (first_loc, last_loc, middle_loc),
+		"%<[[omp::directive(%s)]]%> must be the only specified "
+		"attribute on a statement", directive);
+      cp_parser_abort_tentative_parse (parser);
+      return false;
+    }
+  if (!cp_parser_parse_definitely (parser))
+    return false;
+  cp_parser_handle_statement_omp_attributes (parser, std_attrs);
+  return true;
+}
+
 /* OpenMP 5.0:
 
    scan-loop-body:
@@ -40758,16 +40876,21 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
   if (!braces.require_open (parser))
     return;
 
-  substmt = cp_parser_omp_structured_block (parser, NULL);
+  substmt = cp_parser_omp_structured_block (parser, NULL, false);
   substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
   add_stmt (substmt);
 
+  cp_parser_omp_section_scan (parser, "scan", false);
   cp_token *tok = cp_lexer_peek_token (parser->lexer);
   if (cp_parser_pragma_kind (tok) == PRAGMA_OMP_SCAN)
     {
       enum omp_clause_code clause = OMP_CLAUSE_ERROR;
 
       cp_lexer_consume_token (parser->lexer);
+
+      if (parser->lexer->in_omp_attribute_pragma
+	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
 
       if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	{
@@ -40793,7 +40916,7 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
     error ("expected %<#pragma omp scan%>");
 
   clauses = finish_omp_clauses (clauses, C_ORT_OMP);
-  substmt = cp_parser_omp_structured_block (parser, NULL);
+  substmt = cp_parser_omp_structured_block (parser, NULL, false);
   substmt = build2_loc (tok->location, OMP_SCAN, void_type_node, substmt,
 			clauses);
   add_stmt (substmt);
@@ -41592,9 +41715,10 @@ cp_parser_omp_sections_scope (cp_parser *parser)
   stmt = push_stmt_list ();
 
   if (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
-      != PRAGMA_OMP_SECTION)
+      != PRAGMA_OMP_SECTION
+      && !cp_parser_omp_section_scan (parser, "section", true))
     {
-      substmt = cp_parser_omp_structured_block (parser, NULL);
+      substmt = cp_parser_omp_structured_block (parser, NULL, false);
       substmt = build1 (OMP_SECTION, void_type_node, substmt);
       add_stmt (substmt);
     }
@@ -41607,6 +41731,8 @@ cp_parser_omp_sections_scope (cp_parser *parser)
       if (tok->type == CPP_EOF)
 	break;
 
+      if (cp_parser_omp_section_scan (parser, "section", false))
+	tok = cp_lexer_peek_token (parser->lexer);
       if (cp_parser_pragma_kind (tok) == PRAGMA_OMP_SECTION)
 	{
 	  cp_lexer_consume_token (parser->lexer);
@@ -41619,7 +41745,7 @@ cp_parser_omp_sections_scope (cp_parser *parser)
 	  error_suppress = true;
 	}
 
-      substmt = cp_parser_omp_structured_block (parser, NULL);
+      substmt = cp_parser_omp_structured_block (parser, NULL, false);
       substmt = build1 (OMP_SECTION, void_type_node, substmt);
       add_stmt (substmt);
     }
@@ -41839,6 +41965,7 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 
   block = begin_omp_parallel ();
   save = cp_parser_begin_omp_structured_block (parser);
+  parser->omp_attrs_forbidden_p = true;
   cp_parser_statement (parser, NULL_TREE, false, if_p);
   cp_parser_end_omp_structured_block (parser, save);
   stmt = finish_omp_parallel (clauses, block);
@@ -41901,6 +42028,7 @@ cp_parser_omp_task (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 				       "#pragma omp task", pragma_tok);
   block = begin_omp_task ();
   save = cp_parser_begin_omp_structured_block (parser);
+  parser->omp_attrs_forbidden_p = true;
   cp_parser_statement (parser, NULL_TREE, false, if_p);
   cp_parser_end_omp_structured_block (parser, save);
   return finish_omp_task (clauses, block);
@@ -44870,8 +44998,8 @@ cp_parser_omp_taskloop (cp_parser *parser, cp_token *pragma_tok,
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_GANG)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_WORKER)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_VECTOR)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SEQ))
-
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_SEQ)			\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OACC_CLAUSE_NOHOST) )
 
 /* Parse the OpenACC routine pragma.  This has an optional '( name )'
    component, which must resolve to a declared namespace-scope

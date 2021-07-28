@@ -377,8 +377,10 @@
    (clobber (reg:CC CC_REG))]
   "epilogue_completed
    && find_regno_note (insn, REG_DEAD, REGNO (operands[1]))"
-  [(set (pc)
-        (if_then_else (le (match_dup 1) (const_int 0))
+  [(set (reg:CCZN CC_REG)
+        (compare:CCZN (match_dup 1) (const_int 0)))
+   (set (pc)
+        (if_then_else (le (reg:CCZN CC_REG)  (const_int 0))
 		      (label_ref (match_dup 5))
 		      (pc)))
    (match_dup 4)
@@ -411,10 +413,12 @@
    (clobber (reg:CC CC_REG))]
   "epilogue_completed
    && !find_regno_note (insn, REG_DEAD, REGNO (operands[1]))"
-  [(set (match_dup 3)
-	(match_dup 1))
+  [(parallel
+     [(set (reg:CCZN CC_REG)
+	   (compare:CCZN (match_dup 1) (const_int 0)))
+      (set (match_dup 3) (match_dup 1))])
    (set (pc)
-        (if_then_else (le (match_dup 3) (const_int 0))
+        (if_then_else (le (reg:CCZN CC_REG) (const_int 0))
 		      (label_ref (match_dup 5))
 		      (pc)))
    (match_dup 4)

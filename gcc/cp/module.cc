@@ -274,7 +274,14 @@ static inline cpp_hashnode *cpp_node (tree id)
 
 static inline tree identifier (const cpp_hashnode *node)
 {
+  /* HT_NODE() expands to node->ident that HT_IDENT_TO_GCC_IDENT()
+     then subtracts a nonzero constant, deriving a pointer to
+     a different member than ident.  That's strictly undefined
+     and detected by -Warray-bounds.  Suppress it.  See PR 101372.  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
   return HT_IDENT_TO_GCC_IDENT (HT_NODE (const_cast<cpp_hashnode *> (node)));
+#pragma GCC diagnostic pop
 }
 
 /* Id for dumping module information.  */

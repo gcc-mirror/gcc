@@ -587,33 +587,8 @@
   DONE;
 })
 
-;; These instructions map to the __builtins for the Dot Product operations.
-(define_insn "aarch64_<sur>dot<vsi2qi>"
-  [(set (match_operand:VS 0 "register_operand" "=w")
-	(plus:VS (match_operand:VS 1 "register_operand" "0")
-		(unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
-			    (match_operand:<VSI2QI> 3 "register_operand" "w")]
-		DOTPROD)))]
-  "TARGET_DOTPROD"
-  "<sur>dot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
-  [(set_attr "type" "neon_dot<q>")]
-)
-
-;; These instructions map to the __builtins for the armv8.6a I8MM usdot
-;; (vector) Dot Product operation.
-(define_insn "aarch64_usdot<vsi2qi>"
-  [(set (match_operand:VS 0 "register_operand" "=w")
-	(plus:VS
-	  (unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
-		      (match_operand:<VSI2QI> 3 "register_operand" "w")]
-	  UNSPEC_USDOT)
-	  (match_operand:VS 1 "register_operand" "0")))]
-  "TARGET_I8MM"
-  "usdot\\t%0.<Vtype>, %2.<Vdottype>, %3.<Vdottype>"
-  [(set_attr "type" "neon_dot<q>")]
-)
-
-;; These expands map to the Dot Product optab the vectorizer checks for.
+;; These expands map to the Dot Product optab the vectorizer checks for
+;; and to the intrinsics patttern.
 ;; The auto-vectorizer expects a dot product builtin that also does an
 ;; accumulation into the provided register.
 ;; Given the following pattern
@@ -633,30 +608,42 @@
 ;; ...
 ;;
 ;; and so the vectorizer provides r, in which the result has to be accumulated.
-(define_expand "<sur>dot_prod<vsi2qi>"
-  [(set (match_operand:VS 0 "register_operand")
-	(plus:VS (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand")
-			    (match_operand:<VSI2QI> 2 "register_operand")]
-		 DOTPROD)
-		(match_operand:VS 3 "register_operand")))]
+(define_insn "<sur>dot_prod<vsi2qi>"
+  [(set (match_operand:VS 0 "register_operand" "=w")
+	(plus:VS
+	  (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand" "w")
+		      (match_operand:<VSI2QI> 2 "register_operand" "w")]
+		      DOTPROD)
+	  (match_operand:VS 3 "register_operand" "0")))]
   "TARGET_DOTPROD"
-{
-  emit_insn (
-    gen_aarch64_<sur>dot<vsi2qi> (operands[3], operands[3], operands[1],
-				    operands[2]));
-  emit_insn (gen_rtx_SET (operands[0], operands[3]));
-  DONE;
-})
+  "<sur>dot\\t%0.<Vtype>, %1.<Vdottype>, %2.<Vdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+;; These instructions map to the __builtins for the Armv8.6-a I8MM usdot
+;; (vector) Dot Product operation and the vectorized optab.
+(define_insn "usdot_prod<vsi2qi>"
+  [(set (match_operand:VS 0 "register_operand" "=w")
+	(plus:VS
+	  (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand" "w")
+		      (match_operand:<VSI2QI> 2 "register_operand" "w")]
+	  UNSPEC_USDOT)
+	  (match_operand:VS 3 "register_operand" "0")))]
+  "TARGET_I8MM"
+  "usdot\\t%0.<Vtype>, %1.<Vdottype>, %2.<Vdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
 
 ;; These instructions map to the __builtins for the Dot Product
 ;; indexed operations.
 (define_insn "aarch64_<sur>dot_lane<vsi2qi>"
   [(set (match_operand:VS 0 "register_operand" "=w")
-	(plus:VS (match_operand:VS 1 "register_operand" "0")
-		(unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
-			    (match_operand:V8QI 3 "register_operand" "<h_con>")
-			    (match_operand:SI 4 "immediate_operand" "i")]
-		DOTPROD)))]
+	(plus:VS
+	  (unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
+		      (match_operand:V8QI 3 "register_operand" "<h_con>")
+		      (match_operand:SI 4 "immediate_operand" "i")]
+		      DOTPROD)
+	  (match_operand:VS 1 "register_operand" "0")))]
   "TARGET_DOTPROD"
   {
     operands[4] = aarch64_endian_lane_rtx (V8QImode, INTVAL (operands[4]));
@@ -667,11 +654,12 @@
 
 (define_insn "aarch64_<sur>dot_laneq<vsi2qi>"
   [(set (match_operand:VS 0 "register_operand" "=w")
-	(plus:VS (match_operand:VS 1 "register_operand" "0")
-		(unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
-			    (match_operand:V16QI 3 "register_operand" "<h_con>")
-			    (match_operand:SI 4 "immediate_operand" "i")]
-		DOTPROD)))]
+	(plus:VS
+	  (unspec:VS [(match_operand:<VSI2QI> 2 "register_operand" "w")
+		      (match_operand:V16QI 3 "register_operand" "<h_con>")
+		      (match_operand:SI 4 "immediate_operand" "i")]
+		      DOTPROD)
+	  (match_operand:VS 1 "register_operand" "0")))]
   "TARGET_DOTPROD"
   {
     operands[4] = aarch64_endian_lane_rtx (V16QImode, INTVAL (operands[4]));
@@ -944,8 +932,7 @@
 	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
 	rtx abd = gen_reg_rtx (V16QImode);
 	emit_insn (gen_aarch64_<sur>abdv16qi (abd, operands[1], operands[2]));
-	emit_insn (gen_aarch64_udotv16qi (operands[0], operands[3],
-					  abd, ones));
+	emit_insn (gen_udot_prodv16qi (operands[0], abd, ones, operands[3]));
 	DONE;
       }
     rtx reduc = gen_reg_rtx (V8HImode);
@@ -2092,14 +2079,16 @@
 
 (define_insn "aarch64_<su>mlal_hi_n<mode>_insn"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (plus:<VWIDE>
-          (mult:<VWIDE>
-              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-                 (match_operand:VQ_HSI 2 "register_operand" "w")
-                 (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
-              (ANY_EXTEND:<VWIDE> (vec_duplicate:<VCOND>
-	               (match_operand:<VEL> 4 "register_operand" "<h_con>"))))
-          (match_operand:<VWIDE> 1 "register_operand" "0")))]
+	(plus:<VWIDE>
+	  (mult:<VWIDE>
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQ_HSI 2 "register_operand" "w")
+		(match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
+		(match_operand:<VEL> 4 "register_operand" "<h_con>"))))
+	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
   "<su>mlal2\t%0.<Vwtype>, %2.<Vtype>, %4.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_long")]
@@ -2167,14 +2156,16 @@
 
 (define_insn "aarch64_<su>mlsl_hi_n<mode>_insn"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (minus:<VWIDE>
-          (match_operand:<VWIDE> 1 "register_operand" "0")
-          (mult:<VWIDE>
-            (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-              (match_operand:VQ_HSI 2 "register_operand" "w")
-              (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
-            (ANY_EXTEND:<VWIDE> (vec_duplicate:<VCOND>
-	            (match_operand:<VEL> 4 "register_operand" "<h_con>"))))))]
+	(minus:<VWIDE>
+	  (match_operand:<VWIDE> 1 "register_operand" "0")
+	  (mult:<VWIDE>
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQ_HSI 2 "register_operand" "w")
+		(match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
+		(match_operand:<VEL> 4 "register_operand" "<h_con>"))))))]
   "TARGET_SIMD"
   "<su>mlsl2\t%0.<Vwtype>, %2.<Vtype>, %4.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_long")]
@@ -2210,14 +2201,14 @@
 
 (define_insn "aarch64_<su>mlal_n<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (plus:<VWIDE>
-          (mult:<VWIDE>
-            (ANY_EXTEND:<VWIDE>
-              (match_operand:VD_HSI 2 "register_operand" "w"))
-            (ANY_EXTEND:<VWIDE>
-              (vec_duplicate:VD_HSI
-	              (match_operand:<VEL> 3 "register_operand" "<h_con>"))))
-          (match_operand:<VWIDE> 1 "register_operand" "0")))]
+	(plus:<VWIDE>
+	  (mult:<VWIDE>
+	    (ANY_EXTEND:<VWIDE>
+	      (match_operand:VD_HSI 2 "register_operand" "w"))
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
+		(match_operand:<VEL> 3 "register_operand" "<h_con>"))))
+	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
   "<su>mlal\t%0.<Vwtype>, %2.<Vtype>, %3.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_long")]
@@ -2239,14 +2230,14 @@
 
 (define_insn "aarch64_<su>mlsl_n<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (minus:<VWIDE>
-          (match_operand:<VWIDE> 1 "register_operand" "0")
-          (mult:<VWIDE>
-            (ANY_EXTEND:<VWIDE>
-              (match_operand:VD_HSI 2 "register_operand" "w"))
-            (ANY_EXTEND:<VWIDE>
-              (vec_duplicate:VD_HSI
-	              (match_operand:<VEL> 3 "register_operand" "<h_con>"))))))]
+	(minus:<VWIDE>
+	  (match_operand:<VWIDE> 1 "register_operand" "0")
+	  (mult:<VWIDE>
+	    (ANY_EXTEND:<VWIDE>
+	      (match_operand:VD_HSI 2 "register_operand" "w"))
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
+		(match_operand:<VEL> 3 "register_operand" "<h_con>"))))))]
   "TARGET_SIMD"
   "<su>mlsl\t%0.<Vwtype>, %2.<Vtype>, %3.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_long")]
@@ -2324,8 +2315,8 @@
 	(mult:<VWIDE>
 	  (ANY_EXTEND:<VWIDE>
 	    (match_operand:<VCOND> 1 "register_operand" "w"))
-	  (ANY_EXTEND:<VWIDE>
-	    (vec_duplicate:<VCOND>
+	  (vec_duplicate:<VWIDE>
+	    (ANY_EXTEND:<VWIDE_S>
 	      (vec_select:<VEL>
 		(match_operand:VDQHS 2 "register_operand" "<vwx>")
 		(parallel [(match_operand:SI 3 "immediate_operand" "i")]))))))]
@@ -2340,13 +2331,15 @@
 (define_insn "aarch64_<su>mull_hi_lane<mode>_insn"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(mult:<VWIDE>
-	  (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-	    (match_operand:VQ_HSI 1 "register_operand" "w")
-	    (match_operand:VQ_HSI 2 "vect_par_cnst_hi_half" "")))
-	  (ANY_EXTEND:<VWIDE> (vec_duplicate:<VHALF>
-	    (vec_select:<VEL>
-	      (match_operand:<VCOND> 3 "register_operand" "<vwx>")
-	      (parallel [(match_operand:SI 4 "immediate_operand" "i")]))))))]
+	  (ANY_EXTEND:<VWIDE>
+	    (vec_select:<VHALF>
+	      (match_operand:VQ_HSI 1 "register_operand" "w")
+	      (match_operand:VQ_HSI 2 "vect_par_cnst_hi_half" "")))
+	  (vec_duplicate:<VWIDE>
+	    (ANY_EXTEND:<VWIDE_S>
+	      (vec_select:<VEL>
+		(match_operand:<VCOND> 3 "register_operand" "<vwx>")
+		(parallel [(match_operand:SI 4 "immediate_operand" "i")]))))))]
   "TARGET_SIMD"
   {
     operands[4] = aarch64_endian_lane_rtx (<VCOND>mode, INTVAL (operands[4]));
@@ -2372,13 +2365,15 @@
 (define_insn "aarch64_<su>mull_hi_laneq<mode>_insn"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(mult:<VWIDE>
-	  (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-	    (match_operand:VQ_HSI 1 "register_operand" "w")
-	    (match_operand:VQ_HSI 2 "vect_par_cnst_hi_half" "")))
-	  (ANY_EXTEND:<VWIDE> (vec_duplicate:<VHALF>
-	    (vec_select:<VEL>
-	      (match_operand:<VCONQ> 3 "register_operand" "<vwx>")
-	      (parallel [(match_operand:SI 4 "immediate_operand" "i")]))))))]
+	  (ANY_EXTEND:<VWIDE>
+	    (vec_select:<VHALF>
+	      (match_operand:VQ_HSI 1 "register_operand" "w")
+	      (match_operand:VQ_HSI 2 "vect_par_cnst_hi_half" "")))
+	  (vec_duplicate:<VWIDE>
+	    (ANY_EXTEND:<VWIDE_S>
+	      (vec_select:<VEL>
+		(match_operand:<VCONQ> 3 "register_operand" "<vwx>")
+		(parallel [(match_operand:SI 4 "immediate_operand" "i")]))))))]
   "TARGET_SIMD"
   {
     operands[4] = aarch64_endian_lane_rtx (<VCONQ>mode, INTVAL (operands[4]));
@@ -2403,11 +2398,11 @@
 
 (define_insn "aarch64_<su>mull_n<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (mult:<VWIDE>
-          (ANY_EXTEND:<VWIDE>
-            (match_operand:VD_HSI 1 "register_operand" "w"))
-          (ANY_EXTEND:<VWIDE>
-            (vec_duplicate:<VCOND>
+	(mult:<VWIDE>
+	  (ANY_EXTEND:<VWIDE>
+	    (match_operand:VD_HSI 1 "register_operand" "w"))
+	  (vec_duplicate:<VWIDE>
+	    (ANY_EXTEND:<VWIDE_S>
 	      (match_operand:<VEL> 2 "register_operand" "<h_con>")))))]
   "TARGET_SIMD"
   "<su>mull\t%0.<Vwtype>, %1.<Vtype>, %2.<Vetype>[0]"
@@ -2417,11 +2412,12 @@
 (define_insn "aarch64_<su>mull_hi_n<mode>_insn"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(mult:<VWIDE>
-	  (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-	    (match_operand:VQ_HSI 1 "register_operand" "w")
-	    (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
 	  (ANY_EXTEND:<VWIDE>
-	    (vec_duplicate:<VCOND>
+	    (vec_select:<VHALF>
+	      (match_operand:VQ_HSI 1 "register_operand" "w")
+	      (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	  (vec_duplicate:<VWIDE>
+	    (ANY_EXTEND:<VWIDE_S>
 	      (match_operand:<VEL> 2 "register_operand" "<h_con>")))))]
   "TARGET_SIMD"
   "<su>mull2\\t%0.<Vwtype>, %1.<Vtype>, %2.<Vetype>[0]"
@@ -2448,8 +2444,8 @@
 	  (mult:<VWIDE>
 	    (ANY_EXTEND:<VWIDE>
 	      (match_operand:<VCOND> 2 "register_operand" "w"))
-	    (ANY_EXTEND:<VWIDE>
-	      (vec_duplicate:<VCOND>
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
 		(vec_select:<VEL>
 		  (match_operand:VDQHS 3 "register_operand" "<vwx>")
 		  (parallel [(match_operand:SI 4 "immediate_operand" "i")])))))
@@ -2466,13 +2462,15 @@
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(plus:<VWIDE>
 	  (mult:<VWIDE>
-	    (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-	      (match_operand:VQ_HSI 2 "register_operand" "w")
-	      (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
-	    (ANY_EXTEND:<VWIDE> (vec_duplicate:<VHALF>
-	      (vec_select:<VEL>
-		(match_operand:<VCOND> 4 "register_operand" "<vwx>")
-		(parallel [(match_operand:SI 5 "immediate_operand" "i")])))))
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQ_HSI 2 "register_operand" "w")
+		(match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
+		(vec_select:<VEL>
+		  (match_operand:<VCOND> 4 "register_operand" "<vwx>")
+		  (parallel [(match_operand:SI 5 "immediate_operand" "i")])))))
 	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
   {
@@ -2501,13 +2499,15 @@
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(plus:<VWIDE>
 	  (mult:<VWIDE>
-	    (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-	      (match_operand:VQ_HSI 2 "register_operand" "w")
-	      (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
-	    (ANY_EXTEND:<VWIDE> (vec_duplicate:<VHALF>
-	      (vec_select:<VEL>
-		(match_operand:<VCONQ> 4 "register_operand" "<vwx>")
-		(parallel [(match_operand:SI 5 "immediate_operand" "i")])))))
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQ_HSI 2 "register_operand" "w")
+		(match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
+		(vec_select:<VEL>
+		  (match_operand:<VCONQ> 4 "register_operand" "<vwx>")
+		  (parallel [(match_operand:SI 5 "immediate_operand" "i")])))))
 	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
   {
@@ -2539,8 +2539,8 @@
      (mult:<VWIDE>
        (ANY_EXTEND:<VWIDE>
 	 (match_operand:<VCOND> 2 "register_operand" "w"))
-       (ANY_EXTEND:<VWIDE>
-	 (vec_duplicate:<VCOND>
+       (vec_duplicate:<VWIDE>
+	 (ANY_EXTEND:<VWIDE_S>
 	   (vec_select:<VEL>
 	     (match_operand:VDQHS 3 "register_operand" "<vwx>")
 	     (parallel [(match_operand:SI 4 "immediate_operand" "i")])))))))]
@@ -2557,13 +2557,15 @@
 	(minus:<VWIDE>
 	  (match_operand:<VWIDE> 1 "register_operand" "0")
 	  (mult:<VWIDE>
-	    (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-	      (match_operand:VQ_HSI 2 "register_operand" "w")
-	      (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
-	    (ANY_EXTEND:<VWIDE> (vec_duplicate:<VHALF>
-	      (vec_select:<VEL>
-		(match_operand:<VCOND> 4 "register_operand" "<vwx>")
-		(parallel [(match_operand:SI 5 "immediate_operand" "i")]))))
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQ_HSI 2 "register_operand" "w")
+		(match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
+		(vec_select:<VEL>
+		  (match_operand:<VCOND> 4 "register_operand" "<vwx>")
+		  (parallel [(match_operand:SI 5 "immediate_operand" "i")]))))
 	  )))]
   "TARGET_SIMD"
   {
@@ -2593,13 +2595,15 @@
 	(minus:<VWIDE>
 	  (match_operand:<VWIDE> 1 "register_operand" "0")
 	  (mult:<VWIDE>
-	    (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
-	      (match_operand:VQ_HSI 2 "register_operand" "w")
-	      (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
-	    (ANY_EXTEND:<VWIDE> (vec_duplicate:<VHALF>
-	      (vec_select:<VEL>
-		(match_operand:<VCONQ> 4 "register_operand" "<vwx>")
-		(parallel [(match_operand:SI 5 "immediate_operand" "i")]))))
+	    (ANY_EXTEND:<VWIDE>
+	      (vec_select:<VHALF>
+		(match_operand:VQ_HSI 2 "register_operand" "w")
+		(match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	    (vec_duplicate:<VWIDE>
+	      (ANY_EXTEND:<VWIDE_S>
+		(vec_select:<VEL>
+		  (match_operand:<VCONQ> 4 "register_operand" "<vwx>")
+		  (parallel [(match_operand:SI 5 "immediate_operand" "i")]))))
 	  )))]
   "TARGET_SIMD"
   {
@@ -5326,12 +5330,12 @@
 	    (mult:<VWIDE>
 	      (sign_extend:<VWIDE>
 		(match_operand:VD_HSI 2 "register_operand" "w"))
-	      (sign_extend:<VWIDE>
-		(vec_duplicate:VD_HSI
+	      (vec_duplicate:<VWIDE>
+		(sign_extend:<VWIDE_S>
 		  (vec_select:<VEL>
 		    (match_operand:<VCOND> 3 "register_operand" "<vwx>")
 		    (parallel [(match_operand:SI 4 "immediate_operand" "i")])))
-              ))
+	      ))
 	    (const_int 1))
 	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
@@ -5351,12 +5355,12 @@
 	    (mult:<VWIDE>
 	      (sign_extend:<VWIDE>
 		(match_operand:VD_HSI 2 "register_operand" "w"))
-	      (sign_extend:<VWIDE>
-		(vec_duplicate:VD_HSI
+	      (vec_duplicate:<VWIDE>
+		(sign_extend:<VWIDE_S>
 		  (vec_select:<VEL>
 		    (match_operand:<VCOND> 3 "register_operand" "<vwx>")
 		    (parallel [(match_operand:SI 4 "immediate_operand" "i")])))
-              ))
+	      ))
 	    (const_int 1))))]
   "TARGET_SIMD"
   {
@@ -5376,12 +5380,12 @@
 	    (mult:<VWIDE>
 	      (sign_extend:<VWIDE>
 		(match_operand:VD_HSI 2 "register_operand" "w"))
-	      (sign_extend:<VWIDE>
-		(vec_duplicate:VD_HSI
+	      (vec_duplicate:<VWIDE>
+		(sign_extend:<VWIDE_S>
 		  (vec_select:<VEL>
 		    (match_operand:<VCONQ> 3 "register_operand" "<vwx>")
 		    (parallel [(match_operand:SI 4 "immediate_operand" "i")])))
-              ))
+	      ))
 	    (const_int 1))))]
   "TARGET_SIMD"
   {
@@ -5399,12 +5403,12 @@
 	    (mult:<VWIDE>
 	      (sign_extend:<VWIDE>
 		(match_operand:VD_HSI 2 "register_operand" "w"))
-	      (sign_extend:<VWIDE>
-		(vec_duplicate:VD_HSI
+	      (vec_duplicate:<VWIDE>
+		(sign_extend:<VWIDE_S>
 		  (vec_select:<VEL>
 		    (match_operand:<VCONQ> 3 "register_operand" "<vwx>")
 		    (parallel [(match_operand:SI 4 "immediate_operand" "i")])))
-              ))
+	      ))
 	    (const_int 1))
 	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
@@ -5520,8 +5524,8 @@
 	      (mult:<VWIDE>
 		(sign_extend:<VWIDE>
 		      (match_operand:VD_HSI 2 "register_operand" "w"))
-		(sign_extend:<VWIDE>
-		  (vec_duplicate:VD_HSI
+		(vec_duplicate:<VWIDE>
+		  (sign_extend:<VWIDE_S>
 		    (match_operand:<VEL> 3 "register_operand" "<vwx>"))))
 	      (const_int 1))))]
   "TARGET_SIMD"
@@ -5536,8 +5540,8 @@
 	      (mult:<VWIDE>
 		(sign_extend:<VWIDE>
 		      (match_operand:VD_HSI 2 "register_operand" "w"))
-		(sign_extend:<VWIDE>
-		  (vec_duplicate:VD_HSI
+		(vec_duplicate:<VWIDE>
+		  (sign_extend:<VWIDE_S>
 		    (match_operand:<VEL> 3 "register_operand" "<vwx>"))))
 	      (const_int 1))
 	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
@@ -5614,11 +5618,11 @@
 	  (ss_ashift:<VWIDE>
 	      (mult:<VWIDE>
 		(sign_extend:<VWIDE>
-                  (vec_select:<VHALF>
-                    (match_operand:VQ_HSI 2 "register_operand" "w")
-                    (match_operand:VQ_HSI 5 "vect_par_cnst_hi_half" "")))
-		(sign_extend:<VWIDE>
-                  (vec_duplicate:<VHALF>
+		  (vec_select:<VHALF>
+		    (match_operand:VQ_HSI 2 "register_operand" "w")
+		    (match_operand:VQ_HSI 5 "vect_par_cnst_hi_half" "")))
+		(vec_duplicate:<VWIDE>
+		  (sign_extend:<VWIDE_S>
 		    (vec_select:<VEL>
 		      (match_operand:<VCOND> 3 "register_operand" "<vwx>")
 		      (parallel [(match_operand:SI 4 "immediate_operand" "i")])
@@ -5635,15 +5639,15 @@
 
 (define_insn "aarch64_sqdmlal2_lane<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_plus:<VWIDE>
+	(ss_plus:<VWIDE>
 	  (ss_ashift:<VWIDE>
 	      (mult:<VWIDE>
 		(sign_extend:<VWIDE>
-                  (vec_select:<VHALF>
-                    (match_operand:VQ_HSI 2 "register_operand" "w")
-                    (match_operand:VQ_HSI 5 "vect_par_cnst_hi_half" "")))
-		(sign_extend:<VWIDE>
-                  (vec_duplicate:<VHALF>
+		  (vec_select:<VHALF>
+		    (match_operand:VQ_HSI 2 "register_operand" "w")
+		    (match_operand:VQ_HSI 5 "vect_par_cnst_hi_half" "")))
+		(vec_duplicate:<VWIDE>
+		  (sign_extend:<VWIDE_S>
 		    (vec_select:<VEL>
 		      (match_operand:<VCOND> 3 "register_operand" "<vwx>")
 		      (parallel [(match_operand:SI 4 "immediate_operand" "i")])
@@ -5661,16 +5665,16 @@
 
 (define_insn "aarch64_sqdmlsl2_laneq<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_minus:<VWIDE>
+	(ss_minus:<VWIDE>
 	  (match_operand:<VWIDE> 1 "register_operand" "0")
 	  (ss_ashift:<VWIDE>
 	      (mult:<VWIDE>
 		(sign_extend:<VWIDE>
-                  (vec_select:<VHALF>
-                    (match_operand:VQ_HSI 2 "register_operand" "w")
-                    (match_operand:VQ_HSI 5 "vect_par_cnst_hi_half" "")))
-		(sign_extend:<VWIDE>
-                  (vec_duplicate:<VHALF>
+		  (vec_select:<VHALF>
+		    (match_operand:VQ_HSI 2 "register_operand" "w")
+		    (match_operand:VQ_HSI 5 "vect_par_cnst_hi_half" "")))
+		(vec_duplicate:<VWIDE>
+		  (sign_extend:<VWIDE_S>
 		    (vec_select:<VEL>
 		      (match_operand:<VCONQ> 3 "register_operand" "<vwx>")
 		      (parallel [(match_operand:SI 4 "immediate_operand" "i")])
@@ -5687,15 +5691,15 @@
 
 (define_insn "aarch64_sqdmlal2_laneq<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_plus:<VWIDE>
+	(ss_plus:<VWIDE>
 	  (ss_ashift:<VWIDE>
 	      (mult:<VWIDE>
 		(sign_extend:<VWIDE>
-                  (vec_select:<VHALF>
-                    (match_operand:VQ_HSI 2 "register_operand" "w")
-                    (match_operand:VQ_HSI 5 "vect_par_cnst_hi_half" "")))
-		(sign_extend:<VWIDE>
-                  (vec_duplicate:<VHALF>
+		  (vec_select:<VHALF>
+		    (match_operand:VQ_HSI 2 "register_operand" "w")
+		    (match_operand:VQ_HSI 5 "vect_par_cnst_hi_half" "")))
+		(vec_duplicate:<VWIDE>
+		  (sign_extend:<VWIDE_S>
 		    (vec_select:<VEL>
 		      (match_operand:<VCONQ> 3 "register_operand" "<vwx>")
 		      (parallel [(match_operand:SI 4 "immediate_operand" "i")])
@@ -5747,16 +5751,16 @@
 
 (define_insn "aarch64_sqdmlsl2_n<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_minus:<VWIDE>
+	(ss_minus:<VWIDE>
 	  (match_operand:<VWIDE> 1 "register_operand" "0")
 	  (ss_ashift:<VWIDE>
 	    (mult:<VWIDE>
 	      (sign_extend:<VWIDE>
-                (vec_select:<VHALF>
-                  (match_operand:VQ_HSI 2 "register_operand" "w")
-                  (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
-	      (sign_extend:<VWIDE>
-                (vec_duplicate:<VHALF>
+		(vec_select:<VHALF>
+		  (match_operand:VQ_HSI 2 "register_operand" "w")
+		  (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
+	      (vec_duplicate:<VWIDE>
+		(sign_extend:<VWIDE_S>
 		  (match_operand:<VEL> 3 "register_operand" "<vwx>"))))
 	    (const_int 1))))]
   "TARGET_SIMD"
@@ -5766,15 +5770,15 @@
 
 (define_insn "aarch64_sqdmlal2_n<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_plus:<VWIDE>
+	(ss_plus:<VWIDE>
 	  (ss_ashift:<VWIDE>
 	    (mult:<VWIDE>
 	      (sign_extend:<VWIDE>
-                (vec_select:<VHALF>
-                  (match_operand:VQ_HSI 2 "register_operand" "w")
-                  (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
-	      (sign_extend:<VWIDE>
-                (vec_duplicate:<VHALF>
+		(vec_select:<VHALF>
+		  (match_operand:VQ_HSI 2 "register_operand" "w")
+		  (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
+	      (vec_duplicate:<VWIDE>
+		(sign_extend:<VWIDE_S>
 		  (match_operand:<VEL> 3 "register_operand" "<vwx>"))))
 	    (const_int 1))
 	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
@@ -5819,13 +5823,13 @@
 
 (define_insn "aarch64_sqdmull_lane<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_ashift:<VWIDE>
+	(ss_ashift:<VWIDE>
 	     (mult:<VWIDE>
 	       (sign_extend:<VWIDE>
 		 (match_operand:VD_HSI 1 "register_operand" "w"))
-	       (sign_extend:<VWIDE>
-                 (vec_duplicate:VD_HSI
-                   (vec_select:<VEL>
+	       (vec_duplicate:<VWIDE>
+		 (sign_extend:<VWIDE_S>
+		   (vec_select:<VEL>
 		     (match_operand:<VCOND> 2 "register_operand" "<vwx>")
 		     (parallel [(match_operand:SI 3 "immediate_operand" "i")])))
 	       ))
@@ -5840,13 +5844,13 @@
 
 (define_insn "aarch64_sqdmull_laneq<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_ashift:<VWIDE>
+	(ss_ashift:<VWIDE>
 	     (mult:<VWIDE>
 	       (sign_extend:<VWIDE>
 		 (match_operand:VD_HSI 1 "register_operand" "w"))
-	       (sign_extend:<VWIDE>
-                 (vec_duplicate:VD_HSI
-                   (vec_select:<VEL>
+	       (vec_duplicate:<VWIDE>
+		 (sign_extend:<VWIDE_S>
+		   (vec_select:<VEL>
 		     (match_operand:<VCONQ> 2 "register_operand" "<vwx>")
 		     (parallel [(match_operand:SI 3 "immediate_operand" "i")])))
 	       ))
@@ -5903,13 +5907,13 @@
 
 (define_insn "aarch64_sqdmull_n<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_ashift:<VWIDE>
+	(ss_ashift:<VWIDE>
 	     (mult:<VWIDE>
 	       (sign_extend:<VWIDE>
 		 (match_operand:VD_HSI 1 "register_operand" "w"))
-	       (sign_extend:<VWIDE>
-                 (vec_duplicate:VD_HSI
-                   (match_operand:<VEL> 2 "register_operand" "<vwx>")))
+	       (vec_duplicate:<VWIDE>
+		 (sign_extend:<VWIDE_S>
+		   (match_operand:<VEL> 2 "register_operand" "<vwx>")))
 	       )
 	     (const_int 1)))]
   "TARGET_SIMD"
@@ -5918,8 +5922,6 @@
 )
 
 ;; vqdmull2
-
-
 
 (define_insn "aarch64_sqdmull2<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
@@ -5956,15 +5958,15 @@
 
 (define_insn "aarch64_sqdmull2_lane<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_ashift:<VWIDE>
+	(ss_ashift:<VWIDE>
 	     (mult:<VWIDE>
 	       (sign_extend:<VWIDE>
 		 (vec_select:<VHALF>
-                   (match_operand:VQ_HSI 1 "register_operand" "w")
-                   (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
-	       (sign_extend:<VWIDE>
-                 (vec_duplicate:<VHALF>
-                   (vec_select:<VEL>
+		   (match_operand:VQ_HSI 1 "register_operand" "w")
+		   (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
+	       (vec_duplicate:<VWIDE>
+		 (sign_extend:<VWIDE_S>
+		   (vec_select:<VEL>
 		     (match_operand:<VCOND> 2 "register_operand" "<vwx>")
 		     (parallel [(match_operand:SI 3 "immediate_operand" "i")])))
 	       ))
@@ -5979,15 +5981,15 @@
 
 (define_insn "aarch64_sqdmull2_laneq<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_ashift:<VWIDE>
+	(ss_ashift:<VWIDE>
 	     (mult:<VWIDE>
 	       (sign_extend:<VWIDE>
 		 (vec_select:<VHALF>
-                   (match_operand:VQ_HSI 1 "register_operand" "w")
-                   (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
-	       (sign_extend:<VWIDE>
-                 (vec_duplicate:<VHALF>
-                   (vec_select:<VEL>
+		   (match_operand:VQ_HSI 1 "register_operand" "w")
+		   (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
+	       (vec_duplicate:<VWIDE>
+		 (sign_extend:<VWIDE_S>
+		   (vec_select:<VEL>
 		     (match_operand:<VCONQ> 2 "register_operand" "<vwx>")
 		     (parallel [(match_operand:SI 3 "immediate_operand" "i")])))
 	       ))
@@ -6032,15 +6034,15 @@
 
 (define_insn "aarch64_sqdmull2_n<mode>_internal"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-        (ss_ashift:<VWIDE>
+	(ss_ashift:<VWIDE>
 	     (mult:<VWIDE>
 	       (sign_extend:<VWIDE>
 		 (vec_select:<VHALF>
-                   (match_operand:VQ_HSI 1 "register_operand" "w")
-                   (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
-	       (sign_extend:<VWIDE>
-                 (vec_duplicate:<VHALF>
-                   (match_operand:<VEL> 2 "register_operand" "<vwx>")))
+		   (match_operand:VQ_HSI 1 "register_operand" "w")
+		   (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
+	       (vec_duplicate:<VWIDE>
+		 (sign_extend:<VWIDE_S>
+		   (match_operand:<VEL> 2 "register_operand" "<vwx>")))
 	       )
 	     (const_int 1)))]
   "TARGET_SIMD"
@@ -6948,7 +6950,7 @@
     {
       rtx op0 = gen_rtx_REG (V16QImode, REGNO (operands[0]) + i);
       rtx op1 = gen_rtx_REG (V16QImode, REGNO (operands[1]) + i);
-      emit_insn (gen_aarch64_tbl1v16qi (op0, op1, operands[2]));
+      emit_insn (gen_aarch64_qtbl1v16qi (op0, op1, operands[2]));
     }
   DONE;
 }
@@ -7425,7 +7427,7 @@
   DONE;
 })
 
-(define_insn "aarch64_tbl1<mode>"
+(define_insn "aarch64_qtbl1<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:V16QI 1 "register_operand" "w")
 		    (match_operand:VB 2 "register_operand" "w")]
@@ -7435,7 +7437,7 @@
   [(set_attr "type" "neon_tbl1<q>")]
 )
 
-(define_insn "aarch64_tbx1<mode>"
+(define_insn "aarch64_qtbx1<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
 		    (match_operand:V16QI 2 "register_operand" "w")
@@ -7448,27 +7450,17 @@
 
 ;; Two source registers.
 
-(define_insn "aarch64_tbl2v16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=w")
-	(unspec:V16QI [(match_operand:OI 1 "register_operand" "w")
-		       (match_operand:V16QI 2 "register_operand" "w")]
-		      UNSPEC_TBL))]
-  "TARGET_SIMD"
-  "tbl\\t%0.16b, {%S1.16b - %T1.16b}, %2.16b"
-  [(set_attr "type" "neon_tbl2_q")]
-)
-
-(define_insn "aarch64_tbl3<mode>"
+(define_insn "aarch64_qtbl2<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:OI 1 "register_operand" "w")
 		      (match_operand:VB 2 "register_operand" "w")]
 		      UNSPEC_TBL))]
   "TARGET_SIMD"
   "tbl\\t%S0.<Vbtype>, {%S1.16b - %T1.16b}, %S2.<Vbtype>"
-  [(set_attr "type" "neon_tbl3")]
+  [(set_attr "type" "neon_tbl2")]
 )
 
-(define_insn "aarch64_tbx4<mode>"
+(define_insn "aarch64_qtbx2<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
 		      (match_operand:OI 2 "register_operand" "w")
@@ -7476,7 +7468,7 @@
 		      UNSPEC_TBX))]
   "TARGET_SIMD"
   "tbx\\t%S0.<Vbtype>, {%S2.16b - %T2.16b}, %S3.<Vbtype>"
-  [(set_attr "type" "neon_tbl4")]
+  [(set_attr "type" "neon_tbl2")]
 )
 
 ;; Three source registers.
