@@ -6199,6 +6199,16 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	  if (!pointer)
 	    check_intentin = false;
 	}
+      if (ref->type == REF_INQUIRY
+	  && (ref->u.i == INQUIRY_KIND || ref->u.i == INQUIRY_LEN))
+	{
+	  if (context)
+	    gfc_error ("%qs parameter inquiry for %qs in "
+		       "variable definition context (%s) at %L",
+		       ref->u.i == INQUIRY_KIND ? "KIND" : "LEN",
+		       sym->name, context, &e->where);
+	  return false;
+	}
     }
 
   if (check_intentin

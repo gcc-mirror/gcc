@@ -8155,16 +8155,21 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   /* Check the stat variable.  */
   if (stat)
     {
-      gfc_check_vardef_context (stat, false, false, false,
-				_("STAT variable"));
+      if (!gfc_check_vardef_context (stat, false, false, false,
+				     _("STAT variable")))
+	  goto done_stat;
 
-      if ((stat->ts.type != BT_INTEGER
-	   && !(stat->ref && (stat->ref->type == REF_ARRAY
-			      || stat->ref->type == REF_COMPONENT)))
+      if (stat->ts.type != BT_INTEGER
 	  || stat->rank > 0)
 	gfc_error ("Stat-variable at %L must be a scalar INTEGER "
 		   "variable", &stat->where);
 
+      if (stat->expr_type == EXPR_CONSTANT || stat->symtree == NULL)
+	goto done_stat;
+
+      /* F2018:9.7.4: The stat-variable shall not be allocated or deallocated
+       * within the ALLOCATE or DEALLOCATE statement in which it appears ...
+       */
       for (p = code->ext.alloc.list; p; p = p->next)
 	if (p->expr->symtree->n.sym->name == stat->symtree->n.sym->name)
 	  {
@@ -8192,6 +8197,8 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 	  }
     }
 
+done_stat:
+
   /* Check the errmsg variable.  */
   if (errmsg)
     {
@@ -8199,22 +8206,26 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 	gfc_warning (0, "ERRMSG at %L is useless without a STAT tag",
 		     &errmsg->where);
 
-      gfc_check_vardef_context (errmsg, false, false, false,
-				_("ERRMSG variable"));
+      if (!gfc_check_vardef_context (errmsg, false, false, false,
+				     _("ERRMSG variable")))
+	  goto done_errmsg;
 
       /* F18:R928  alloc-opt             is ERRMSG = errmsg-variable
 	 F18:R930  errmsg-variable       is scalar-default-char-variable
 	 F18:R906  default-char-variable is variable
 	 F18:C906  default-char-variable shall be default character.  */
-      if ((errmsg->ts.type != BT_CHARACTER
-	   && !(errmsg->ref
-		&& (errmsg->ref->type == REF_ARRAY
-		    || errmsg->ref->type == REF_COMPONENT)))
+      if (errmsg->ts.type != BT_CHARACTER
 	  || errmsg->rank > 0
 	  || errmsg->ts.kind != gfc_default_character_kind)
 	gfc_error ("ERRMSG variable at %L shall be a scalar default CHARACTER "
 		   "variable", &errmsg->where);
 
+      if (errmsg->expr_type == EXPR_CONSTANT || errmsg->symtree == NULL)
+	goto done_errmsg;
+
+      /* F2018:9.7.5: The errmsg-variable shall not be allocated or deallocated
+       * within the ALLOCATE or DEALLOCATE statement in which it appears ...
+       */
       for (p = code->ext.alloc.list; p; p = p->next)
 	if (p->expr->symtree->n.sym->name == errmsg->symtree->n.sym->name)
 	  {
@@ -8241,6 +8252,8 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 	      }
 	  }
     }
+
+done_errmsg:
 
   /* Check that an allocate-object appears only once in the statement.  */
 
