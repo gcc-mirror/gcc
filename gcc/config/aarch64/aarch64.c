@@ -13089,6 +13089,21 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	op1 = XEXP (x, 1);
 
 cost_minus:
+	if (VECTOR_MODE_P (mode))
+	  {
+	    /* SUBL2 and SUBW2.  */
+	    unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+	    if (vec_flags & VEC_ADVSIMD)
+	      {
+		/* The select-operand-high-half versions of the sub instruction
+		   have the same cost as the regular three vector version -
+		   don't add the costs of the select into the costs of the sub.
+		   */
+		op0 = aarch64_strip_extend_vec_half (op0);
+		op1 = aarch64_strip_extend_vec_half (op1);
+	      }
+	  }
+
 	*cost += rtx_cost (op0, mode, MINUS, 0, speed);
 
 	/* Detect valid immediates.  */
