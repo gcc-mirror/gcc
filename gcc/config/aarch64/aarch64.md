@@ -1874,13 +1874,15 @@
 )
 
 (define_insn "*extend<SHORT:mode><GPI:mode>2_aarch64"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r")
-        (sign_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:GPI 0 "register_operand" "=r,r,r")
+        (sign_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand" "r,m,w")))]
   ""
   "@
    sxt<SHORT:size>\t%<GPI:w>0, %w1
-   ldrs<SHORT:size>\t%<GPI:w>0, %1"
-  [(set_attr "type" "extend,load_4")]
+   ldrs<SHORT:size>\t%<GPI:w>0, %1
+   smov\t%w0, %1.<SHORT:size>[0]"
+  [(set_attr "type" "extend,load_4,neon_to_gp")
+   (set_attr "arch" "*,*,fp")]
 )
 
 (define_insn "*zero_extend<SHORT:mode><GPI:mode>2_aarch64"
