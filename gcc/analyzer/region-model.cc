@@ -1082,6 +1082,8 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
        case IFN_BUILTIN_EXPECT:
 	 impl_call_builtin_expect (cd);
 	 return false;
+       case IFN_UBSAN_BOUNDS:
+	 return false;
        }
     }
 
@@ -1135,6 +1137,10 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    return false;
 	  case BUILT_IN_STRLEN:
 	    impl_call_strlen (cd);
+	    return false;
+
+	  case BUILT_IN_STACK_SAVE:
+	  case BUILT_IN_STACK_RESTORE:
 	    return false;
 
 	  /* Stdio builtins.  */
