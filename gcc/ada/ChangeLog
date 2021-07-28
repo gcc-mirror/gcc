@@ -1,3 +1,7 @@
+2021-07-28  Release Manager
+
+	* GCC 11.2.0 released.
+
 2021-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (finish_subprog_decl): Remove obsolete line.
