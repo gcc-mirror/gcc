@@ -675,7 +675,7 @@ GM2-COMP-BOOT-DEFS = FifoQueue.def   M2Debug.def     M2Optimize.def  M2Defaults.
                      PCBuild.def     M2Const.def     M2DebugStack.def \
                      M2DriverOptions.def             ObjectFiles.def \
                      M2ColorString.def               M2Emit.def      M2Check.def \
-                     M2SSA.def
+                     M2SSA.def       Output.def
 
 GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
                      M2AsmUtil.mod   M2Optimize.mod  M2StackWord.mod \
@@ -698,7 +698,7 @@ GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
                      M2DriverOptions.mod \
                      SymbolKey.mod   NameKey.mod     Lists.mod       ObjectFiles.mod \
                      M2ColorString.mod               M2Emit.mod      M2Check.mod \
-                     M2SSA.mod
+                     M2SSA.mod       Output.mod
 
 GM2-GCC-DEFS      =  m2builtins.def  m2except.def    m2convert.def   m2decl.def \
                      m2except.def    m2expr.def      m2misc.def      m2block.def \
@@ -781,7 +781,7 @@ GM2-COMP-MODS      = FifoQueue.mod     M2AsmUtil.mod                   M2Optimiz
                      M2Swig.mod        M2MetaError.mod Sets.mod        M2CaseList.mod  \
                      PCSymBuild.mod    M2Const.mod     M2DebugStack.mod \
                      M2DriverOptions.mod               ObjectFiles.mod M2ColorString.mod \
-                     M2Emit.mod        M2Check.mod     M2SSA.mod
+                     M2Emit.mod        M2Check.mod     M2SSA.mod       Output.mod
 
 GM2-TOOLS-MOD      = gm2l.mod          gm2lcc.mod      gm2lgen.mod     gm2lorder.mod   \
                      gm2m.mod          ppg.mod
@@ -808,7 +808,7 @@ GM2-VERIFY-MODS    = FifoQueue.mod     M2AsmUtil.mod                   M2Optimiz
                      M2Students.mod  \
                      M2BasicBlock.mod  M2Code.mod      M2GenGCC.mod    M2GCCDeclare.mod\
                      M2ALU.mod         M2System.mod    M2Base.mod      Lists.mod       \
-                     M2Search.mod      bnflex.mod      ppg.mod         \
+                     M2Search.mod      bnflex.mod      ppg.mod         Output.mod      \
                      SymbolConversion.mod \
                      M2Preprocess.mod  M2Printf.mod    M2LexBuf.mod    M2Quiet.mod     \
                      M2Bitset.mod      M2Size.mod      CLexBuf.mod     M2Scope.mod     \
@@ -1862,16 +1862,16 @@ PPG-INTERFACE-C = libc.c mcrts.c UnixArgs.c Selective.c termios.c \
                   SysExceptions.c ldtoa.c dtoa.c wrapc.c \
                   SYSTEM.c errno.c
 
-PPG-MODS         =  SymbolKey.mod   NameKey.mod  Lists.mod  bnflex.mod
+PPG-MODS         =  SymbolKey.mod   NameKey.mod  Lists.mod  bnflex.mod  Output.mod
 
 
 PPG-LIB-DEFS     = ASCII.def Args.def Indexing.def FIO.def \
-                   StrIO.def StrLib.def M2RTS.def Indexing.def FIO.def \
+                   StrIO.def StrLib.def M2RTS.def Indexing.def FIO.def SFIO.def \
                    Storage.def Debug.def IO.def StdIO.def M2EXCEPTION.def \
                    StrCase.def NumberIO.def Assertion.def PushBackInput.def \
                    SysStorage.def DynamicStrings.def M2RTS.def RTExceptions.def
 
-PPG-LIB-MODS     = ASCII.mod Args.mod FIO.mod StrIO.mod StrLib.mod \
+PPG-LIB-MODS     = ASCII.mod Args.mod FIO.mod SFIO.mod StrIO.mod StrLib.mod \
                    Indexing.mod Storage.mod Debug.mod IO.mod \
                    StdIO.mod M2EXCEPTION.mod StrCase.mod NumberIO.mod \
                    Assertion.mod PushBackInput.mod SysStorage.mod \
@@ -1999,7 +1999,7 @@ BUILD-PGE-O = $(PPG-INTERFACE-C:%.c=m2/gm2-pge-boot/$(SRC_PREFIX)%.o) \
 
 m2/gm2-auto/pge.mod: m2/pg$(exeext)
 	sh $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod pge > m2/gm2-auto/pge.bnf
-	./m2/pg$(exeext) -l m2/gm2-auto/pge.bnf > m2/gm2-auto/pge.mod
+	./m2/pg$(exeext) -l m2/gm2-auto/pge.bnf -o m2/gm2-auto/pge.mod
 
 m2/gm2-pge-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
 	$(MCC) -o=$@ $(srcdir)/m2/gm2-libs/$*.def
@@ -2061,8 +2061,8 @@ m2/pge$(exeext): m2/boot-bin/mc \
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PGE-O) \
          m2/gm2-pge-boot/main.o m2/gm2-libs-boot/RTcodummy.o -lm
 	sh $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod t > m2/gm2-auto/t.bnf
-	./m2/pge$(exeext) m2/gm2-auto/t.bnf > m2/gm2-auto/t1.mod
-	./m2/pg$(exeext) m2/gm2-auto/t.bnf > m2/gm2-auto/t2.mod
+	./m2/pge$(exeext) m2/gm2-auto/t.bnf -o m2/gm2-auto/t1.mod
+	./m2/pg$(exeext) m2/gm2-auto/t.bnf -o m2/gm2-auto/t2.mod
 	$(QUIAT)if ! diff m2/gm2-auto/t1.mod m2/gm2-auto/t2.mod > /dev/null ; then \
            echo "failure: pg (with error recovery) failed" ; \
            $(RM) m2/pge$(exeext) ; \
@@ -2079,76 +2079,76 @@ m2/gm2-pge-boot/main.o: m2/gm2-auto/pgeinit $(M2LINK)
 	$(CC) -g -c -o $@ m2/gm2-pge-boot/main.c
 
 $(objdir)/m2/gm2-compiler-paranoid/P0SyntaxCheck.mod: $(srcdir)/m2/bnf/m2.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-paranoid/P1Build.mod: $(srcdir)/m2/bnf/m2-1.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-paranoid/P2Build.mod: $(srcdir)/m2/bnf/m2-2.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-paranoid/PCBuild.mod: $(srcdir)/m2/bnf/m2-c.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k -l $< > $@
+	./m2/pge$(exeext) -k -l $< -o $@
 
 $(objdir)/m2/gm2-compiler-paranoid/P3Build.mod: $(srcdir)/m2/bnf/m2-3.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-paranoid/PHBuild.mod: $(srcdir)/m2/bnf/m2-h.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-paranoid/gm2l.mod: $(srcdir)/m2/bnf/gm2l.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) $< > $@
+	./m2/pge$(exeext) $< -o $@
 
 $(objdir)/m2/gm2-compiler-paranoid/gm2m.mod: $(srcdir)/m2/bnf/gm2m.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) $< > $@
+	./m2/pge$(exeext) $< -o $@
 
 $(objdir)/m2/gm2-compiler/P0SyntaxCheck.mod: $(srcdir)/m2/bnf/m2.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler/P1Build.mod: $(srcdir)/m2/bnf/m2-1.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler/P2Build.mod: $(srcdir)/m2/bnf/m2-2.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler/PCBuild.mod: $(srcdir)/m2/bnf/m2-c.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k -l $< > $@
+	./m2/pge$(exeext) -k -l $< -o $@
 
 $(objdir)/m2/gm2-compiler/P3Build.mod: $(srcdir)/m2/bnf/m2-3.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler/PHBuild.mod: $(srcdir)/m2/bnf/m2-h.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler/gm2l.mod: $(srcdir)/m2/bnf/gm2l.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) $< > $@
+	./m2/pge$(exeext) $< -o $@
 
 $(objdir)/m2/gm2-compiler/gm2m.mod: $(srcdir)/m2/bnf/gm2m.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) $< > $@
+	./m2/pge$(exeext) $< -o $@
 
 $(objdir)/m2/gm2-compiler-boot/P0SyntaxCheck.mod: $(srcdir)/m2/bnf/m2.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-boot/P1Build.mod: $(srcdir)/m2/bnf/m2-1.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-boot/P2Build.mod: $(srcdir)/m2/bnf/m2-2.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-boot/PCBuild.mod: $(srcdir)/m2/bnf/m2-c.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k -l $< > $@
+	./m2/pge$(exeext) -k -l $< -o $@
 
 $(objdir)/m2/gm2-compiler-boot/P3Build.mod: $(srcdir)/m2/bnf/m2-3.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-boot/PHBuild.mod: $(srcdir)/m2/bnf/m2-h.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) -k $< > $@
+	./m2/pge$(exeext) -k $< -o $@
 
 $(objdir)/m2/gm2-compiler-boot/gm2l.mod: $(srcdir)/m2/bnf/gm2l.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) $< > $@
+	./m2/pge$(exeext) $< -o $@
 
 $(objdir)/m2/gm2-compiler-boot/gm2m.mod: $(srcdir)/m2/bnf/gm2m.bnf m2/pge$(exeext)
-	./m2/pge$(exeext) $< > $@
+	./m2/pge$(exeext) $< -o $@
 
 
 # gm2.verifyparanoid diffs the output of all three compilers with the compiler source code

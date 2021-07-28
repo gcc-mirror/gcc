@@ -31,7 +31,7 @@ DEFINITION MODULE M2Depth ;
 *)
 
 FROM NameKey IMPORT Name ;
-EXPORT QUALIFIED GetDepth, MakeDependant ;
+EXPORT QUALIFIED GetDepth, MakeDependant, DisplayGraph ;
 
 
 (*
@@ -47,6 +47,13 @@ PROCEDURE MakeDependant (ModuleName, DependantName: Name) ;
 
 PROCEDURE GetDepth (ModuleName: Name) : CARDINAL ;
 
+
+(*
+   DisplayGraph - display the source filename and the list of dependants
+                  in debugging text form.
+*)
+
+PROCEDURE DisplayGraph ;
 
 
 END M2Depth.

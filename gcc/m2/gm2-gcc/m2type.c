@@ -219,9 +219,7 @@ gm2_finish_build_array_type (tree arrayType, tree elt_type, tree index_type,
 
   arrayType = gm2_canonicalize_array (index_type, type);
   if (arrayType != old)
-    internal_error (
-        "[%s:%d]:array declaration canonicalization has failed",
-        __FILE__, __LINE__);
+    internal_error ("array declaration canonicalization has failed");
 
   if (!COMPLETE_TYPE_P (arrayType))
     layout_type (arrayType);
@@ -1010,12 +1008,14 @@ build_bitset_type (location_t location)
       m2decl_BuildIntegerConstant (m2decl_GetBitsPerBitset () - 1), FALSE);
 }
 
-/* BuildSetTypeFromSubrange - constructs a set type from a
-   subrangeType.  */
+/* BuildSetTypeFromSubrange constructs a set type from a
+   subrangeType.  --fixme-- revisit once gdb/gcc supports dwarf-5 set type.  */
 
 tree
-m2type_BuildSetTypeFromSubrange (location_t location, char *name,
-                                 tree subrangeType, tree lowval, tree highval, int ispacked)
+m2type_BuildSetTypeFromSubrange (location_t location,
+				 char *name __attribute__ ((unused)),
+                                 tree subrangeType __attribute__ ((unused)),
+				 tree lowval, tree highval, int ispacked)
 {
   m2assert_AssertLocation (location);
   lowval = m2expr_FoldAndStrip (lowval);
@@ -2060,7 +2060,7 @@ gm2_finish_enum (location_t location, tree enumtype, tree values)
   if (TYPE_PRECISION (enumtype))
     {
       if (precision > TYPE_PRECISION (enumtype))
-        error ("specified mode too small for enumeral values");
+        error ("specified mode too small for enumerated values");
     }
   else
     TYPE_PRECISION (enumtype) = TYPE_PRECISION (tem);
@@ -2277,7 +2277,8 @@ m2type_BuildSetConstructorElement (void *p, tree value)
 
   if (value == NULL_TREE)
     {
-      internal_error ("set type cannot be initialized with a NULL_TREE");
+      internal_error ("set type cannot be initialized with a %qs",
+		      "NULL_TREE");
       return;
     }
 
@@ -2408,7 +2409,7 @@ m2type_BuildArrayConstructorElement (void *p, tree value, tree indice)
 
   if (value == NULL_TREE)
     {
-      internal_error ("array cannot be initialized with a NULL_TREE");
+      internal_error ("array cannot be initialized with a %qs", "NULL_TREE");
       return;
     }
 
@@ -2772,7 +2773,7 @@ m2type_SetAlignment (tree node, tree align)
 {
   tree type = NULL_TREE;
   tree decl = NULL_TREE;
-  int is_type;
+  int is_type = FALSE;
   int i;
 
   if (DECL_P (node))
@@ -2819,7 +2820,7 @@ m2type_SetAlignment (tree node, tree align)
         }
     }
   else if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FIELD_DECL)
-    error ("alignment may not be specified for %q+D", decl);
+    error ("alignment may not be specified for %qD", decl);
   else
     {
       SET_DECL_ALIGN (decl, (1 << i) * BITS_PER_UNIT);

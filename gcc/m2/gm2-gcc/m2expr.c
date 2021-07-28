@@ -4111,7 +4111,7 @@ m2expr_GetSizeOfInBits (tree type)
 
   if (code == VOID_TYPE)
     {
-      error ("sizeof applied to a void type");
+      error ("%qs applied to a void type", "sizeof");
       return size_one_node;
     }
 
@@ -4132,7 +4132,7 @@ m2expr_GetSizeOfInBits (tree type)
 
   if (!COMPLETE_TYPE_P (type))
     {
-      error ("sizeof applied to an incomplete type");
+      error ("%qs applied to an incomplete type", "sizeof");
       return size_zero_node;
     }
 
@@ -4176,7 +4176,7 @@ m2expr_GetSizeOf (location_t location, tree type)
 
   if (!COMPLETE_TYPE_P (type))
     {
-      error_at (location, "sizeof applied to an incomplete type");
+      error_at (location, "%qs applied to an incomplete type", "sizeof");
       return size_zero_node;
     }
 

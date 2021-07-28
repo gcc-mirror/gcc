@@ -1,3 +1,114 @@
+2021-07-28       Gaius Mulley <gaius.mulley@southwales.ac.uk>
+
+	* Make-lang.in:  Added Output.mod to the list of ppg
+	modules.
+	* Make-lang.in:  Added Output.def to the list of ppg
+	modules.
+	* gm2-compiler/Output.def: (New file).
+	* gm2-compiler/Output.mod: (New file).
+	* bnf/gm2l.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/gm2m.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-1.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-2.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-3.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-c.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2-h.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/m2.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-1.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-2.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-3.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-4.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* bnf/mc-5.bnf: (DescribeError) no longer has any parameters.
+	Removed unused rules.
+	* gm2-compiler/M2ALU.mod: (InitialiseArrayOfCharWithString)
+	isChar set to FALSE.
+	* gm2-compiler/M2ALU.def: (DisplayModules) exported.
+	* gm2-compiler/M2Depth.def: (DisplayGraph) exported.
+	* gm2-compiler/M2Depth.mod: (DisplayGraph) added comment.
+	* gm2-compiler/M2Options.mod: (SetProfiling) commented out.
+	* gm2-compiler/M2Quads.mod: (BuildAddAdrFunction) vartok removed.
+	(BuildAbsFunction) combinedtok removed. (BuildRotateFunction)
+	paramtok removed.
+	* gm2-compiler/P0SymBuild.mod: (pc) commented out.
+	(FlushImports) removed sym and reformatted.  (DeclareModules)
+	reformatted.  (MoveNext) commented out.
+	* gm2-compiler/SymbolKey.mod: (stop) commented out.
+	* gm2-compiler/ppg.mod: (Output) imported.  (ArgName)
+	declared.  (ParametersUsed) declared.  (PrettyFollow)
+	use the Output module to delay emitting text.  (WriteCodeHunkList)
+	use the Output module to delay emitting text.  (WriteIndent)
+	use the Output module to delay emitting text.  (WriteIndent)
+	(CheckWrite) use the Output module to delay emitting text.
+	(WriteIndent) use the Output module to delay emitting text.
+	(NewLine) use the Output module to delay emitting text.
+	(IndentString) use the Output module to delay emitting text.
+	(DescribeError) remove parameters.  (SyntaxError) call
+	DescribeError without parameters.  (KeyWord) use the
+	Output module to delay emitting text.  (PrettyPara)
+	use the Output module to delay emitting text.  (WriteKeyTexinfo)
+	use the Output module to delay emitting text.
+	(PrettyCommentFactor) use the Output module to delay emitting
+	text.  (PrettyCommentTerm) use the Output module to delay emitting
+	text.  (PrettyCommentProduction) use the Output module to delay emitting
+	text.  (PrettyPrintProduction) use the Output module to delay emitting
+	text.  (EmitFileLineTag) use the Output module to delay emitting
+	text.  (CodeThenDo) use the Output module to delay emitting
+	text.  (CodeElseEnd) use the Output module to delay emitting
+	text.  (EmitNonVarCode) use the Output module to delay emitting
+	text.  (FlushCode) use the Output module to delay emitting
+	text.  (CodeFactor) use the Output module to delay emitting
+	text.  (CodeProduction) use the Output module to delay emitting
+	text.  (WriteElement) use the Output module to delay emitting
+	text.  (EmitIsInSet) use the Output module to delay emitting
+	text.  (EmitIsInSubSet) use the Output module to delay emitting
+	text.  (EmitIsInFirst) use the Output module to delay emitting
+	text.  (RecoverFactor) use the Output module to delay emitting
+	text.  (RecoverTerm) use the Output module to delay emitting
+	text.  (EmitUsed) use the Output module to delay emitting
+	text.  (EmitStopParameters) use the Output module to delay emitting
+	text.  (EmitSet) use the Output module to delay emitting
+	text.  (EmitSetName) use the Output module to delay emitting
+	text.  (EmitStopParametersAndSet) use the Output module to delay emitting
+	text.  (EmitSetAsParameters) use the Output module to delay emitting
+	text.  (EmitStopParametersAndFollow) use the Output module to delay emitting
+	text.  (RecoverProduction) use the Output module to delay emitting
+	text.  (WriteUpto) use the Output module to delay emitting
+	text.  (CheckForVar) use the Output module to delay emitting
+	text.  (EmitFDLNotice) use the Output module to delay emitting
+	text.  (DescribeElement) use the Output module to delay emitting
+	text.  (EmitInTestStop) use the Output module to delay emitting
+	text.  (DescribeStopElement) use the Output module to delay emitting
+	text.  (EmitDescribeStop) use the Output module to delay emitting
+	text.  (EmitDescribeError) use the Output module to delay emitting
+	text.  (EmitSetTypes) use the Output module to delay emitting
+	text.  (ParseArgs) open output filename.
+	* gm2-gcc/m2decl.c: (m2decl_DeclareKnownVariable) change format
+	specifier to generate quoted declaration.  Call internal_error
+	and use quoted format specifier.
+	* gm2-gcc/m2except.c:  (ASSERT) removed.  (ERROR) removed.
+	(m2except_BuildThrow) rewritten.
+	* gm2-gcc/m2expr.c: (m2expr_GetSizeOfInBits) use quoted format
+	specifier for error.  (m2type_BuildSetTypeFromSubrange) add
+	attribute unused for the name of the subrange and add comment
+	about dwarf-5 set type.
+	* gm2-libs/StrLib.def: (StrLen) renamed parameters.
+	* gm2-libs/StrLib.mod: (StrLen) renamed parameters.
+	* init/ppginit: Add SFIO and Output to the list of modules.
+	* gm2-compiler/Output.def: (New file).
+	* gm2-compiler/Output.mod: (New file).
+
 2021-07-02       Gaius Mulley <gaius.mulley@southwales.ac.uk>
 
 	* doc/gm2.texi (Obtaining):  added.  (Obtaining) New using

@@ -120,10 +120,12 @@ END DisplayBlock ;
    pc - an interactive debugging aid callable from gdb.
 *)
 
+(*
 PROCEDURE pc ;
 BEGIN
    DisplayB(curBP)
 END pc ;
+*)
 
 
 (*
@@ -252,15 +254,15 @@ PROCEDURE FlushImports (b: BlockInfoPtr) ;
 VAR
    i, n   : CARDINAL ;
    modname: Name ;
-   sym    : CARDINAL ;
 BEGIN
    WITH b^ DO
       i := 1 ;
-      n := NoOfItemsInList(ImportedModules) ;
+      n := NoOfItemsInList (ImportedModules) ;
       WHILE i<=n DO
-         modname := GetItemFromList(ImportedModules, i) ;
-         sym := MakeDefinitionSource(GetTokenNo(), modname) ;
-         INC(i)
+         modname := GetItemFromList (ImportedModules, i) ;
+         sym := MakeDefinitionSource (GetTokenNo (), modname) ;
+         Assert (sym # NulSym) ;
+         INC (i)
       END
    END
 END FlushImports ;
@@ -548,20 +550,22 @@ VAR
    s: CARDINAL ;
 BEGIN
    b := curBP^.toDown ;
-   WHILE b#NIL DO
-      IF b^.kind=inner
+   WHILE b # NIL DO
+      IF b^.kind = inner
       THEN
          IF Debugging
          THEN
-            printf1("***  declaring inner module %a\n", b^.name)
+            printf1 ("***  declaring inner module %a\n", b^.name)
          END ;
-         s := MakeInnerModule(curBP^.token, b^.name)
+         s := MakeInnerModule (curBP^.token, b^.name) ;
+         Assert (s # NulSym)
       END ;
       b := b^.toNext
    END
 END DeclareModules ;
 
 
+(****
 (*
    MoveNext -
 *)
@@ -606,6 +610,7 @@ BEGIN
    (* move up to the outer scope *)
    curBP := curBP^.toUp ;
 END MoveUp ;
+***** *)
 
 
 (*

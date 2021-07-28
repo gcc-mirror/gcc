@@ -60,10 +60,12 @@ PROCEDURE StrLen (a: ARRAY OF CHAR) : CARDINAL ;
 
 
 (*
-   StrCopy - effectively performs b := a with two strings.
+   StrCopy - copy string src into string dest providing dest is large enough.
+             If dest is smaller than a then src then the string is truncated when
+             dest is full.  Add a nul character if there is room in dest.
 *)
 
-PROCEDURE StrCopy (a: ARRAY OF CHAR ; VAR b: ARRAY OF CHAR) ;
+PROCEDURE StrCopy (src: ARRAY OF CHAR ; VAR dest: ARRAY OF CHAR) ;
 
 
 (*

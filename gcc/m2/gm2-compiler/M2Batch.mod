@@ -233,6 +233,10 @@ BEGIN
 END Pop ;
 
 
+(*
+   DisplayModules - a debugging routine to textually emit the names of modules in the DoneQ.
+*)
+
 PROCEDURE DisplayModules ;
 VAR
    m   : Module ;
