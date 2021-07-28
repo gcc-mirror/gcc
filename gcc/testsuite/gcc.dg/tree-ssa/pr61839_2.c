@@ -45,9 +45,8 @@ int bar2 ()
   return 0;
 }
 
-
 /* Dont optimize 972195717 / 0 in function foo.  */
-/* { dg-final { scan-tree-dump-times "972195717 / " 1  "evrp" } } */
+/* { dg-final { scan-tree-dump-times "972195717 / " 0  "evrp" } } */
 /* Dont optimize 972195717 % 0 in function bar.  */
 /* { dg-final { scan-tree-dump-times "972195717 % " 1 "evrp" } } */
 /* May optimize in function bar2, but EVRP doesn't perform this yet.  */

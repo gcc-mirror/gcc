@@ -1785,13 +1785,6 @@ operator_div::wi_fold (irange &r, tree type,
 		       const wide_int &lh_lb, const wide_int &lh_ub,
 		       const wide_int &rh_lb, const wide_int &rh_ub) const
 {
-  // If we know we will divide by zero...
-  if (rh_lb == 0 && rh_ub == 0)
-    {
-      r.set_varying (type);
-      return;
-    }
-
   const wide_int dividend_min = lh_lb;
   const wide_int dividend_max = lh_ub;
   const wide_int divisor_min = rh_lb;
@@ -1818,7 +1811,7 @@ operator_div::wi_fold (irange &r, tree type,
   // If we're definitely dividing by zero, there's nothing to do.
   if (wi_zero_p (type, divisor_min, divisor_max))
     {
-      r.set_varying (type);
+      r.set_undefined ();
       return;
     }
 
