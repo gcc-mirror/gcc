@@ -13161,6 +13161,21 @@ cost_minus:
 	op1 = XEXP (x, 1);
 
 cost_plus:
+	if (VECTOR_MODE_P (mode))
+	  {
+	    /* ADDL2 and ADDW2.  */
+	    unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+	    if (vec_flags & VEC_ADVSIMD)
+	      {
+		/* The select-operand-high-half versions of the add instruction
+		   have the same cost as the regular three vector version -
+		   don't add the costs of the select into the costs of the add.
+		   */
+		op0 = aarch64_strip_extend_vec_half (op0);
+		op1 = aarch64_strip_extend_vec_half (op1);
+	      }
+	  }
+
 	if (GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMPARE
 	    || GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMM_COMPARE)
 	  {
