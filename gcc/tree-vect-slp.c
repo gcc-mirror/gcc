@@ -3165,6 +3165,13 @@ vect_optimize_slp (vec_info *vinfo)
       n_perm[idx] = perms.length () - 1;
     }
 
+  /* In addition to the above we have to mark outgoing permutes facing
+     non-reduction graph entries that are not represented as to be
+     materialized.  */
+  for (slp_instance instance : vinfo->slp_instances)
+    if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_ctor)
+      bitmap_set_bit (n_materialize, SLP_INSTANCE_TREE (instance)->vertex);
+
   /* Propagate permutes along the graph and compute materialization points.  */
   bool changed;
   unsigned iteration = 0;
