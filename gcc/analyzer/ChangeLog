@@ -1,3 +1,7 @@
+2021-07-28  Release Manager
+
+	* GCC 11.2.0 released.
+
 2021-07-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* store.cc (binding_cluster::get_any_binding): Make symbolic reads
