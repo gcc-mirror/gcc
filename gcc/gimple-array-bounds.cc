@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-cfg.h"
 #include "attribs.h"
-#include "builtins.h"
+#include "pointer-query.h"
 
 // This purposely returns a value_range, not a value_range_equiv, to
 // break the dependency on equivalences for this pass.
