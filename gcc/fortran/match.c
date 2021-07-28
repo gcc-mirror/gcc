@@ -1109,7 +1109,8 @@ gfc_match_char (char c)
    %t  Matches end of statement.
    %o  Matches an intrinsic operator, returned as an INTRINSIC enum.
    %l  Matches a statement label
-   %v  Matches a variable expression (an lvalue)
+   %v  Matches a variable expression (an lvalue, except function references
+   having a data pointer result)
    %   Matches a required space (in free form) and optional spaces.  */
 
 match
@@ -4405,7 +4406,7 @@ gfc_match_allocate (void)
 
 alloc_opt_list:
 
-      m = gfc_match (" stat = %v", &tmp);
+      m = gfc_match (" stat = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
@@ -4434,7 +4435,7 @@ alloc_opt_list:
 	    goto alloc_opt_list;
 	}
 
-      m = gfc_match (" errmsg = %v", &tmp);
+      m = gfc_match (" errmsg = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
@@ -4777,7 +4778,7 @@ gfc_match_deallocate (void)
 
 dealloc_opt_list:
 
-      m = gfc_match (" stat = %v", &tmp);
+      m = gfc_match (" stat = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
@@ -4799,7 +4800,7 @@ dealloc_opt_list:
 	    goto dealloc_opt_list;
 	}
 
-      m = gfc_match (" errmsg = %v", &tmp);
+      m = gfc_match (" errmsg = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
