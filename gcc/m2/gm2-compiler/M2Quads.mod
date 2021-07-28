@@ -7218,7 +7218,6 @@ END BuildPseudoFunctionCall ;
 PROCEDURE BuildAddAdrFunction ;
 VAR
    combinedtok,
-   vartok,
    functok,
    optok      : CARDINAL ;
    ReturnVar,
@@ -7231,7 +7230,6 @@ BEGIN
    IF NoOfParam=2
    THEN
       VarSym := OperandT (2) ;
-      vartok := OperandTtok (2) ;
       OperandSym := OperandT (1) ;
       optok := OperandTok (1) ;
       combinedtok := MakeVirtualTok (functok, functok, optok) ;
@@ -7863,8 +7861,7 @@ END BuildOddFunction ;
 PROCEDURE BuildAbsFunction ;
 VAR
    functok,
-   combinedtok,
-   optok      : CARDINAL ;
+   combinedtok: CARDINAL ;
    NoOfParam,
    ProcSym,
    Res, Var : CARDINAL ;
@@ -7874,7 +7871,6 @@ BEGIN
    IF NoOfParam = 1
    THEN
       Var := OperandT (1) ;
-      optok := OperandTok (1) ;
       combinedtok := MakeVirtualTok (functok, functok, vartok) ;
       IF IsVar(Var) OR IsConst(Var)
       THEN
@@ -8372,7 +8368,6 @@ END BuildShiftFunction ;
 
 PROCEDURE BuildRotateFunction ;
 VAR
-   paramtok,
    combinedtok,
    functok,
    vartok,
@@ -8386,7 +8381,6 @@ VAR
    varSet     : CARDINAL ;
 BEGIN
    PopT (NoOfParam) ;
-   paramtok := OperandTok (1) ;
    functok := OperandTok (NoOfParam + 1) ;
    IF NoOfParam = 2
    THEN

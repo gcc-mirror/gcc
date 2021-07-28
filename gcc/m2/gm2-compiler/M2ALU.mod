@@ -4729,7 +4729,8 @@ BEGIN
    THEN
       isChar := TRUE
    ELSE
-      MetaError1 ('cannot build a string using {%1Ead}', el)
+      MetaError1 ('cannot build a string using {%1Ead}', el) ;
+      isChar := FALSE
    END ;
    i := 0 ;
    REPEAT

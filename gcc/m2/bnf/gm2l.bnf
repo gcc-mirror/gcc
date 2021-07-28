@@ -344,7 +344,7 @@ END ErrorString ;
 
 PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
 BEGIN
-   DescribeError (stopset0, stopset1, stopset2) ;
+   DescribeError ;
    IF Debugging
    THEN
       printf0 ('\nskipping token *** ')
@@ -1103,10 +1103,6 @@ ConstAttributeExpression := Ident | "<" Qualident ',' Ident ">" =:
 
 ByteAlignment := '<*' AttributeExpression '*>' =:
 
-OptAlignmentExpression := [ AlignmentExpression ] =:
-
-AlignmentExpression := "(" ConstExpression ")" =:
-
 Alignment := [ ByteAlignment ] =:
 
 TypeDeclaration := ( Ident "=" Type Alignment ) =:
@@ -1257,11 +1253,6 @@ ProcedureHeading := "PROCEDURE" DefineBuiltinProcedure
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:
 
-Builtin := "__BUILTIN__" | "__INLINE__" | % (* epsilon *) % =:
-
-DefProcedureHeading := "PROCEDURE" Builtin ( Ident
-                                             [ DefFormalParameters ] AttributeNoReturn ) =:
-
 -- introduced procedure block so we can produce more informative
 -- error messages
 
@@ -1289,19 +1280,12 @@ Declaration := "CONST" { ConstantDeclaration ";" } |
                ProcedureDeclaration ";" |
                ModuleDeclaration ";" =:
 
-DefFormalParameters := "(" [ DefMultiFPSection ] ")" FormalReturn =:
-
-DefMultiFPSection := DefExtendedFP |
-                     FPSection [ ";" DefMultiFPSection ] =:
-
 FormalParameters := "(" [ MultiFPSection ] ")" FormalReturn =:
 
 MultiFPSection := ExtendedFP |
                   FPSection [ ";" MultiFPSection ] =:
 
 FPSection := NonVarFPSection | VarFPSection =:
-
-DefExtendedFP := DefOptArg | "..." =:
 
 ExtendedFP := OptArg | "..." =:
 
@@ -1310,8 +1294,6 @@ VarFPSection := "VAR" IdentList ":" FormalType =:
 NonVarFPSection := IdentList ":" FormalType =:
 
 OptArg := "[" Ident ":" FormalType [ "=" ConstExpression ] "]" =:
-
-DefOptArg := "[" Ident ":" FormalType "=" ConstExpression "]" =:
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 

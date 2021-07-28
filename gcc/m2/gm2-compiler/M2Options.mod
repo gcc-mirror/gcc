@@ -474,7 +474,7 @@ BEGIN
    GenerateDebugging := value
 END SetDebugging ;
 
-
+(*
 (*
    SetProfiling - dummy procedure, as profiling is implemented in the gcc backend.
 *)
@@ -483,6 +483,7 @@ PROCEDURE SetProfiling (value: BOOLEAN) ;
 BEGIN
    (* nothing to do *)
 END SetProfiling ;
+*)
 
 
 (*

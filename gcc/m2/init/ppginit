@@ -43,9 +43,11 @@ PushBackInput
 SymbolKey
 UnixArgs
 FIO
+SFIO
 StrCase
 bnflex
 Lists
 Args
+Output
 ppg
 mod_init

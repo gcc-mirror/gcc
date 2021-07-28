@@ -39,7 +39,7 @@ EXPORT QUALIFIED MakeDefinitionSource,
                  AssociateDefinition, GetDefinitionModuleFile,
                  AssociateModule, GetModuleFile,
                  ForeachSourceModuleDo, IsSourceSeen, IsModuleSeen,
-                 LookupModule, LookupOuterModule ;
+                 LookupModule, LookupOuterModule, DisplayModules ;
 
 TYPE
    DoProcedure = PROCEDURE (CARDINAL) ;
@@ -175,6 +175,13 @@ PROCEDURE LookupModule (tok: CARDINAL; n: Name) : CARDINAL ;
 *)
 
 PROCEDURE LookupOuterModule (tok: CARDINAL; n: Name) : CARDINAL ;
+
+
+(*
+   DisplayModules - a debugging routine to textually emit the names of modules in the DoneQ.
+*)
+
+PROCEDURE DisplayModules ;
 
 
 END M2Batch.

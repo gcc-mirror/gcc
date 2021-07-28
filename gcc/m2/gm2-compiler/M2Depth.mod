@@ -403,6 +403,11 @@ BEGIN
 END DisplayTreeFile ;
 
 
+(*
+   DisplayGraph - display the source filename and the list of dependants
+                  in debugging text form.
+*)
+
 PROCEDURE DisplayGraph ;
 VAR
    i   : CARDINAL ;

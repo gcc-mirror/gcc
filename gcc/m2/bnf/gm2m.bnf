@@ -146,6 +146,7 @@ VAR
    op             : File ;
    ExitValue      : INTEGER ;
    pBlock         : BlockInfoPtr ;
+   EnableRuntimeDebugging: BOOLEAN ;
 
 
 (*
@@ -628,7 +629,7 @@ END ErrorString ;
 
 PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
 BEGIN
-   DescribeError(stopset0, stopset1, stopset2) ;
+   DescribeError ;
    IF Debugging
    THEN
       printf0('\nskipping token *** ')
@@ -973,6 +974,7 @@ END ParseSource ;
          exists.
 *)
 
+(*
 PROCEDURE Obj (ModuleName: Name; son: PtrToNode; Level: CARDINAL) ;
 BEGIN
    IF ModExists(ModuleName)
@@ -982,6 +984,7 @@ BEGIN
       fprintf1(op, 'warning no matching %a.mod\n', ModuleName)
    END
 END Obj ;
+*)
 
 
 (*
@@ -1221,9 +1224,10 @@ END DefExists ;
 
 
 (*
-   DisplayTree - dumps the tree in english, used for debugging only.
+   DisplayTree - dumps the tree in text, used for debugging only.
 *)
 
+(*
 PROCEDURE DisplayTree (n: PtrToNode) ;
 VAR
    i, j   : CARDINAL ;
@@ -1243,6 +1247,7 @@ BEGIN
    END ;
    fprintf0(op, ')\n')
 END DisplayTree ;
+*)
 
 
 (*
@@ -1779,6 +1784,9 @@ BEGIN
             THEN
                SetModExtension(Slice(s, 6, 0)) ;
                ModExtn := makekey(string(Slice(s, 6, 0)))
+            ELSIF EqualArray(Mark(Slice(s, 0, 6)), '--debug')
+            THEN
+               EnableRuntimeDebugging := TRUE
             END
          END ;
          INC(i)
@@ -1888,6 +1896,10 @@ BEGIN
                   e := CalculateFileName(s, Mark(InitString('exe'))) ;
                   MakeExe(ModName, main, 0) ;
                   UnixMake(main) ;
+                  IF EnableRuntimeDebugging
+                  THEN
+                     DisplaySource
+                  END ;
                   e := KillString(e)
                END
             ELSE
@@ -1934,6 +1946,7 @@ BEGIN
    op := StdOut ;
    ExitValue := 0 ;
    Verbose := FALSE ;
+   EnableRuntimeDebugging := Debugging ;
    ParseArgs
 END Init ;
 
@@ -2134,10 +2147,6 @@ ConstAttributeExpression := Ident | "<" Qualident ',' Ident ">" =:
 
 ByteAlignment := '<*' AttributeExpression '*>' =:
 
-OptAlignmentExpression := [ AlignmentExpression ] =:
-
-AlignmentExpression := "(" ConstExpression ")" =:
-
 Alignment := [ ByteAlignment ] =:
 
 TypeDeclaration := ( Ident "=" Type Alignment ) =:
@@ -2288,10 +2297,7 @@ ProcedureHeading := "PROCEDURE" DefineBuiltinProcedure
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:
 
-Builtin := "__BUILTIN__" | "__INLINE__" | % (* epsilon *) % =:
-
-DefProcedureHeading := "PROCEDURE" Builtin ( Ident
-                                             [ DefFormalParameters ] AttributeNoReturn ) =:
+-- Builtin := "__BUILTIN__" | "__INLINE__" | % (* epsilon *) % =:
 
 -- introduced procedure block so we can produce more informative
 -- error messages
@@ -2320,7 +2326,7 @@ Declaration := "CONST" { ConstantDeclaration ";" } |
                ProcedureDeclaration ";" |
                ModuleDeclaration ";" =:
 
-DefFormalParameters := "(" [ DefMultiFPSection ] ")" FormalReturn =:
+-- DefFormalParameters := "(" [ DefMultiFPSection ] ")" FormalReturn =:
 
 DefMultiFPSection := DefExtendedFP |
                      FPSection [ ";" DefMultiFPSection ] =:

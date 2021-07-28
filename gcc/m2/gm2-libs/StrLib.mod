@@ -120,22 +120,28 @@ BEGIN
 END StrLen ;
 
 
-PROCEDURE StrCopy (a: ARRAY OF CHAR ; VAR b: ARRAY OF CHAR) ;
+(*
+   StrCopy - copy string src into string dest providing dest is large enough.
+             If dest is smaller than a then src then the string is truncated when
+             dest is full.  Add a nul character if there is room in dest.
+*)
+
+PROCEDURE StrCopy (src: ARRAY OF CHAR ; VAR dest: ARRAY OF CHAR) ;
 VAR
-   Higha,
-   Highb,
-   n    : CARDINAL ;
+   HighSrc,
+   HighDest,
+   n       : CARDINAL ;
 BEGIN
    n := 0 ;
-   Higha := StrLen(a) ;
-   Highb := HIGH(b) ;
-   WHILE (n<Higha) AND (n<=Highb) DO
-      b[n] := a[n] ;
-      INC(n)
+   HighSrc := StrLen (src) ;
+   HighDest := HIGH (dest) ;
+   WHILE (n < HighSrc) AND (n <= HighDest) DO
+      dest[n] := src[n] ;
+      INC (n)
    END ;
-   IF n<=Highb
+   IF n <= HighDest
    THEN
-      b[n] := nul
+      dest[n] := nul
    END
 END StrCopy ;
 

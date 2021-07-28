@@ -40,6 +40,7 @@ FROM Debug IMPORT Halt ;
 FROM Args IMPORT GetArg, Narg ;
 FROM SYSTEM IMPORT WORD ;
 FROM libc IMPORT exit ;
+IMPORT Output ;
 
 
 CONST
@@ -196,6 +197,7 @@ VAR
    TokenTypeProc,                    (* the name of the function which yields the current token type *)
    ErrorProcArray,
    ErrorProcString    : Name ;       (* the name of the error procedures *)
+   ArgName,
    FileName           : ARRAY [0..MaxFileName] OF CHAR ;
    OnLineStart,
    BeginningOfLine    : BOOLEAN ;
@@ -205,6 +207,8 @@ VAR
    LargestValue       : CARDINAL ;   (* the number of tokens we are using.         *)
    InitialElement     : BOOLEAN ;    (* used to determine whether we are writing   *)
                                      (* the first element of a case statement.     *)
+   ParametersUsed     : BITSET ;     (* which parameters have been used?           *)
+
 
 (* % declaration *)
 
@@ -300,34 +304,34 @@ PROCEDURE PrettyFollow (start, end: ARRAY OF CHAR; f: FollowDesc) ;
 BEGIN
    IF Debugging
    THEN
-      WriteString(start) ;
+      Output.WriteString(start) ;
       IF f#NIL
       THEN
          WITH f^ DO
             IF calcfollow
             THEN
-               WriteString('followset defined as:') ;
+               Output.WriteString('followset defined as:') ;
                EmitSet(follow, 0, 0)
             END ;
             CASE reachend OF
 
-            true :   WriteString(' [E]') |
-            false:   WriteString(' [C]') |
-            unknown: WriteString(' [U]')
+            true :   Output.WriteString(' [E]') |
+            false:   Output.WriteString(' [C]') |
+            unknown: Output.WriteString(' [U]')
 
             ELSE
             END ;
             CASE epsilon OF
 
-            true   : WriteString(' [e]') |
+            true   : Output.WriteString(' [e]') |
             false  : |
-            unknown: WriteString(' [u]')
+            unknown: Output.WriteString(' [u]')
 
             ELSE
             END
          END
       END ;
-      WriteString(end)
+      Output.WriteString(end)
    END
 END PrettyFollow ;
 
@@ -680,7 +684,7 @@ BEGIN
       (* recursion *)
       WITH l^ DO
          WriteCodeHunkList(next) ;
-         WriteString(codetext)
+         Output.WriteString(codetext)
       END
    END
 END WriteCodeHunkList ;
@@ -693,7 +697,7 @@ END WriteCodeHunkList ;
 PROCEDURE WriteIndent (n: CARDINAL) ;
 BEGIN
    WHILE n>0 DO
-      Write(' ') ;
+      Output.Write(' ') ;
       DEC(n)
    END ;
    OnLineStart := FALSE
@@ -712,7 +716,7 @@ BEGIN
       curpos := 0 ;
       seentext := FALSE
    ELSE
-      Write(ch) ;
+      Output.Write(ch) ;
       INC(curpos)
    END
 END CheckWrite ;
@@ -999,7 +1003,7 @@ TYPE
 
 PROCEDURE SyntaxError (stop: SetOfStop) ;
 BEGIN
-   DescribeError(stop) ;
+   DescribeError ;
    IF Debugging
    THEN
       WriteLn ;
@@ -1176,7 +1180,7 @@ END DoDeclaration ;
 
 (* this code below will be recreated by ppg *)
 
-PROCEDURE DescribeError (stop: SetOfStop) ;
+PROCEDURE DescribeError ;
 BEGIN
    WarnError('syntax error')
 END DescribeError ;
@@ -2072,11 +2076,11 @@ END WhileNotCompleteDo ;
 
 PROCEDURE NewLine (Left: CARDINAL) ;
 BEGIN
-   WriteLn ;
+   Output.WriteLn ;
    BeginningOfLine := TRUE ;
    Indent := 0 ;
    WHILE Indent<Left DO
-      Write(' ') ;
+      Output.Write(' ') ;
       INC(Indent)
    END
 END NewLine ;
@@ -2109,10 +2113,10 @@ VAR
 BEGIN
    i := 0 ;
    WHILE i<Indent DO
-      Write(' ') ;
+      Output.Write(' ') ;
       INC(i)
    END ;
-   WriteString(a) ;
+   Output.WriteString(a) ;
    LastLineNo := 0
 END IndentString ;
 
@@ -2125,15 +2129,15 @@ PROCEDURE KeyWord (n: Name) ;
 BEGIN
    IF KeywordFormatting
    THEN
-      WriteString('{%K') ;
+      Output.WriteString('{%K') ;
       IF (n = MakeKey('}')) OR (n = MakeKey('{')) OR (n = MakeKey('%'))
       THEN
-         Write('%')   (* escape }, { or % *)
+         Output.Write('%')   (* escape }, { or % *)
       END ;
-      WriteKey(n) ;
-      Write('}')
+      Output.WriteKey(n) ;
+      Output.Write('}')
    ELSE
-      WriteKey(n)
+      Output.WriteKey(n)
    END
 END KeyWord ;
 
@@ -2144,11 +2148,11 @@ END KeyWord ;
 
 PROCEDURE PrettyPara (c1, c2: ARRAY OF CHAR; e: ExpressionDesc; Left: CARDINAL) ;
 BEGIN
-   WriteString(c1) ;
+   Output.WriteString(c1) ;
    INC(Indent, StrLen(c1)) ;
    Left := Indent ;
    PrettyCommentExpression(e, Left) ;
-   WriteString(c2) ;
+   Output.WriteString(c2) ;
    INC(Indent, StrLen(c2))
 END PrettyPara ;
 
@@ -2172,13 +2176,13 @@ BEGIN
          ch := char(ds, i) ;
          IF (ch='{') OR (ch='}')
          THEN
-            Write('@')
+            Output.Write('@')
          END ;
-         Write(ch) ;
+         Output.Write(ch) ;
          INC(i)
       END
    ELSE
-      WriteKey(s)
+      Output.WriteKey(s)
    END
 END WriteKeyTexinfo ;
 
@@ -2197,13 +2201,13 @@ BEGIN
       WITH f^ DO
          CASE type OF
 
-         id  :  WriteKey(ident^.name) ; WriteString(' ') ;
+         id  :  Output.WriteKey(ident^.name) ; Output.WriteString(' ') ;
                 INC(Indent, LengthKey(ident^.name)+1) |
          lit :  IF MakeKey("'")=string
                 THEN
-                   Write('"') ; WriteKeyTexinfo(string) ; WriteString('" ')
+                   Output.Write('"') ; WriteKeyTexinfo(string) ; Output.WriteString('" ')
                 ELSE
-                   Write("'") ; WriteKeyTexinfo(string) ; WriteString("' ")
+                   Output.Write("'") ; WriteKeyTexinfo(string) ; Output.WriteString("' ")
                 END ;
                 INC(Indent, LengthKey(string)+3) |
          sub:   PrettyPara('( ', ' ) ', expr, Left) |
@@ -2216,11 +2220,11 @@ BEGIN
                 END |
          m2 :   IF EmitCode
                 THEN
-                   NewLine(Left) ; WriteString('% ') ;
+                   NewLine(Left) ; Output.WriteString('% ') ;
                    seentext := FALSE ;
                    curpos := 0 ;
                    WriteCodeHunkListIndent(code^.code, code^.indent, curpos, Left+2, seentext) ;
-                   WriteString(' %') ;
+                   Output.WriteString(' %') ;
                    NewLine(Left)
                 END
 
@@ -2309,7 +2313,7 @@ BEGIN
       PrettyCommentFactor(t^.factor, Left) ;
       IF t^.next#NIL
       THEN
-         WriteString(' | ') ;
+         Output.WriteString(' | ') ;
          INC(Indent, 3) ;
          IF PeepFactor(t^.factor)+Indent>BaseRightMargin
          THEN
@@ -2362,31 +2366,31 @@ BEGIN
    THEN
       BeginningOfLine := TRUE ;
       Indent          := 0 ;
-      WriteString('(*') ; NewLine(3) ;
-      WriteKey(GetDefinitionName(p)) ;
-      WriteString(' := ') ;
+      Output.WriteString('(*') ; NewLine(3) ;
+      Output.WriteKey(GetDefinitionName(p)) ;
+      Output.WriteString(' := ') ;
       INC(Indent, LengthKey(GetDefinitionName(p))+4) ;
       PrettyCommentStatement(p^.statement, Indent) ;
       NewLine(0) ;
       IF ErrorRecovery
       THEN
          NewLine(3) ;
-         WriteString('first  symbols:') ;
+         Output.WriteString('first  symbols:') ;
          EmitSet(p^.first, 0, 0) ;
          NewLine(3) ;
          PrettyFollow('<p:', ':p>', p^.followinfo) ;
          NewLine(3) ;
          CASE GetReachEnd(p^.followinfo) OF
 
-         true   :  WriteString('reachend') |
-         false  :  WriteString('cannot reachend') |
-         unknown:  WriteString('unknown...')
+         true   :  Output.WriteString('reachend') |
+         false  :  Output.WriteString('cannot reachend') |
+         unknown:  Output.WriteString('unknown...')
 
          ELSE
          END ;
          NewLine(0)
       END ;
-      WriteString('*)') ; NewLine(0) ;
+      Output.WriteString('*)') ; NewLine(0) ;
    END
 END PrettyCommentProduction ;
 
@@ -2405,24 +2409,24 @@ BEGIN
       Indent          := 0 ;
       IF Texinfo
       THEN
-         WriteString('@example') ; NewLine(0)
+         Output.WriteString('@example') ; NewLine(0)
       END ;
-      WriteKey(GetDefinitionName(p)) ;
-      WriteString(' := ') ;
+      Output.WriteKey(GetDefinitionName(p)) ;
+      Output.WriteString(' := ') ;
       INC(Indent, LengthKey(GetDefinitionName(p))+4) ;
       PrettyCommentStatement(p^.statement, Indent) ;
       IF p^.description#NulName
       THEN
-         WriteKey(p^.description)
+         Output.WriteKey(p^.description)
       END ;
       NewLine(0) ;
       WriteIndent(LengthKey(GetDefinitionName(p))+1) ;
-      WriteString(' =: ') ;
+      Output.WriteString(' =: ') ;
       NewLine(0) ;
       IF Texinfo
       THEN
-         WriteString('@findex ') ; WriteKey(GetDefinitionName(p)) ; WriteString(' (ebnf)') ; NewLine(0) ;
-         WriteString('@end example') ; NewLine(0)
+         Output.WriteString('@findex ') ; Output.WriteKey(GetDefinitionName(p)) ; Output.WriteString(' (ebnf)') ; NewLine(0) ;
+         Output.WriteString('@end example') ; NewLine(0)
       END ;
       NewLine(0)
    END
@@ -2440,10 +2444,10 @@ BEGIN
       LastLineNo := line ;
       IF NOT OnLineStart
       THEN
-         WriteLn
+         Output.WriteLn
       END ;
-      WriteString('# ') ; WriteCard(line, 0) ; WriteString(' "') ; WriteString(FileName) ; Write('"') ;
-      WriteLn ;
+      Output.WriteString('# ') ; Output.WriteCard(line, 0) ; Output.WriteString(' "') ; Output.WriteString(FileName) ; Output.Write('"') ;
+      Output.WriteLn ;
       OnLineStart := TRUE
    END
 END EmitFileLineTag ;
@@ -2501,12 +2505,12 @@ BEGIN
    m2none,
    m2elsif:  IF LastLineNo=0
              THEN
-                WriteLn
+                Output.WriteLn
              END ;
              IndentString('THEN') ;
-             WriteLn |
-   m2while:  WriteString(' DO') ;
-             WriteLn
+             Output.WriteLn |
+   m2while:  Output.WriteString(' DO') ;
+             Output.WriteLn
 
    ELSE
       Halt('unrecognised m2condition', __LINE__, __FILE__)
@@ -2521,7 +2525,7 @@ END CodeThenDo ;
 
 PROCEDURE CodeElseEnd (end: ARRAY OF CHAR; consumed: BOOLEAN; f: FactorDesc; inopt: BOOLEAN) ;
 BEGIN
-   WriteLn ;
+   Output.WriteLn ;
    OnLineStart := TRUE ;
    EmitFileLineTag(f^.line) ;
    IF NOT inopt
@@ -2531,37 +2535,37 @@ BEGIN
       IF consumed
       THEN
          IndentString('') ;
-         WriteKey(ErrorProcArray) ;
-         Write('(') ;
+         Output.WriteKey(ErrorProcArray) ;
+         Output.Write('(') ;
          WITH f^ DO
             CASE type OF
 
-            id  :  Write("'") ; WriteKey(ident^.name) ; WriteString(' - expected') ; WriteString("') ;") |
+            id  :  Output.Write("'") ; Output.WriteKey(ident^.name) ; Output.WriteString(' - expected') ; Output.WriteString("') ;") |
             lit :  IF MakeKey("'")=string
                    THEN
-                      Write('"') ;
+                      Output.Write('"') ;
                       KeyWord(string) ;
-                      WriteString(' - expected') ; WriteString('") ;')
+                      Output.WriteString(' - expected') ; Output.WriteString('") ;')
                    ELSIF MakeKey('"')=string
                    THEN
-                      Write("'") ; KeyWord(string) ;
-                      WriteString(' - expected') ; WriteString("') ;")
+                      Output.Write("'") ; KeyWord(string) ;
+                      Output.WriteString(' - expected') ; Output.WriteString("') ;")
                    ELSE
-                      Write('"') ; Write("'") ; KeyWord(string) ; WriteString("' - expected") ;
-                      WriteString('") ;')
+                      Output.Write('"') ; Output.Write("'") ; KeyWord(string) ; Output.WriteString("' - expected") ;
+                      Output.WriteString('") ;')
                    END
 
             ELSE
             END
          END ;
-         WriteLn
+         Output.WriteLn
       END ;
       IndentString('RETURN( FALSE )') ;
       DEC(Indent, 3) ;
-      WriteLn
+      Output.WriteLn
    END ;
    IndentString(end) ;
-   WriteLn ;
+   Output.WriteLn ;
    OnLineStart := TRUE
 END CodeElseEnd ;
 
@@ -2573,7 +2577,7 @@ END CodeElseEnd ;
 PROCEDURE CodeEnd (m: m2condition; t: TermDesc; consumed: BOOLEAN; f: FactorDesc; inopt: BOOLEAN) ;
 BEGIN
    DEC(Indent, 3) ;
-   WriteLn ;
+   Output.WriteLn ;
    OnLineStart := TRUE ;
    CASE m OF
 
@@ -2616,8 +2620,8 @@ BEGIN
       EmitFileLineTag(code^.line) ;
       IndentString('') ;
       WriteCodeHunkListIndent(code^.code, code^.indent, curpos, left, seentext) ;
-      WriteString(' ;') ;
-      WriteLn ;
+      Output.WriteString(' ;') ;
+      Output.WriteLn ;
       OnLineStart := TRUE
    END
 END EmitNonVarCode ;
@@ -2654,19 +2658,19 @@ PROCEDURE FlushCode (VAR codeStack: FactorDesc) ;
 BEGIN
    IF codeStack#NIL
    THEN
-      NewLine(Indent) ; WriteString('(* begin flushing code *)') ;
+      NewLine(Indent) ; Output.WriteString('(* begin flushing code *)') ;
       OnLineStart := FALSE ;
       WHILE codeStack#NIL DO
          NewLine(Indent) ; EmitNonVarCode(codeStack^.code, 0, Indent) ; NewLine(Indent) ;
          codeStack := codeStack^.pushed ;
          IF codeStack#NIL
          THEN
-            WriteString(' (* again flushing code *)') ; WriteLn ;
+            Output.WriteString(' (* again flushing code *)') ; Output.WriteLn ;
             OnLineStart := TRUE
          END
       END ;
       NewLine(Indent) ;
-      WriteString('(* end flushing code *)') ;
+      Output.WriteString('(* end flushing code *)') ;
       OnLineStart := FALSE
    END
 END FlushCode ;
@@ -2682,7 +2686,7 @@ BEGIN
    THEN
       IF (* ((l=m2elsif) OR (l=m2if) OR (l=m2none)) AND *) (NOT inwhile) AND (NOT inopt)
       THEN
-         WriteLn ;
+         Output.WriteLn ;
          IndentString('RETURN( TRUE )') ;
          OnLineStart := FALSE
       END
@@ -2693,15 +2697,15 @@ BEGIN
 
          id  :  FlushCode(codeStack) ;
                 CodeCondition(n) ;
-                WriteKey(ident^.name) ; WriteString('()') ;
+                Output.WriteKey(ident^.name) ; Output.WriteString('()') ;
                 CodeThenDo(n) ;
                 INC(Indent, 3) ;
                 CodeFactor(f^.next, NIL, n, m2none, inopt, inwhile, TRUE, NIL) ;
                 CodeEnd(n, t, consumed, f, inopt) |
          lit :  FlushCode(codeStack) ;
                 CodeCondition(n) ;
-                WriteKey(SymIsProc) ; Write('(') ;
-                WriteKey(GetSymKey(Aliases, string)) ; Write(')') ;
+                Output.WriteKey(SymIsProc) ; Output.Write('(') ;
+                Output.WriteKey(GetSymKey(Aliases, string)) ; Output.Write(')') ;
                 CodeThenDo(n) ;
                 INC(Indent, 3) ;
                 CodeFactor(f^.next, NIL, n, m2none, inopt, inwhile, TRUE, NIL) ;
@@ -2750,12 +2754,12 @@ BEGIN
       IF (t^.factor^.type=m2) AND (m=m2elsif)
       THEN
          m := m2if ;
-         IndentString('ELSE') ; WriteLn ;
+         IndentString('ELSE') ; Output.WriteLn ;
          OnLineStart := TRUE ;
          INC(Indent, 3) ;
          CodeFactor(t^.factor, t^.next, m2none, m2none, inopt, inwhile, consumed, codeStack) ;
          DEC(Indent, 3) ;
-         IndentString('END ;') ; WriteLn ;
+         IndentString('END ;') ; Output.WriteLn ;
          OnLineStart := TRUE
       ELSE
          CodeFactor(t^.factor, t^.next, m2none, m, inopt, inwhile, consumed, codeStack)
@@ -2808,13 +2812,13 @@ BEGIN
    THEN
       BeginningOfLine := TRUE ;
       Indent          := 0 ;
-      WriteLn ;
+      Output.WriteLn ;
       EmitFileLineTag(p^.line) ;
       IndentString('PROCEDURE ') ;
-      WriteKey(GetDefinitionName(p)) ;
-      WriteString(' () : BOOLEAN ;') ;
+      Output.WriteKey(GetDefinitionName(p)) ;
+      Output.WriteString(' () : BOOLEAN ;') ;
       VarProduction(p) ;
-      WriteLn ;
+      Output.WriteLn ;
       OnLineStart := TRUE ;
       EmitFileLineTag(p^.line) ;
       IndentString('BEGIN') ; WriteLn ;
@@ -2822,12 +2826,12 @@ BEGIN
       EmitFileLineTag(p^.line) ;
       Indent := 3 ;
       CodeStatement(p^.statement, m2none) ;
-      WriteLn ;
+      Output.WriteLn ;
       Indent := 0 ;
-      IndentString('END ') ; WriteKey(GetDefinitionName(p)) ; WriteString(' ;') ;
-      WriteLn ;
-      WriteLn ;
-      WriteLn
+      IndentString('END ') ; WriteKey(GetDefinitionName(p)) ; Output.WriteString(' ;') ;
+      Output.WriteLn ;
+      Output.WriteLn ;
+      Output.WriteLn
    END
 END CodeProduction ;
 
@@ -2879,7 +2883,7 @@ END ConditionIndent ;
 
 PROCEDURE WriteGetTokenType ;
 BEGIN
-   WriteKey(TokenTypeProc)
+   Output.WriteKey(TokenTypeProc)
 END WriteGetTokenType ;
 
 
@@ -2924,7 +2928,7 @@ END NumberOfElements ;
 
 PROCEDURE WriteElement (e: WORD) ;
 BEGIN
-   WriteKey(GetSymKey(ReverseValues, e))
+   Output.WriteKey(GetSymKey(ReverseValues, e))
 END WriteElement ;
 
 
@@ -2936,15 +2940,15 @@ PROCEDURE EmitIsInSet (to: SetDesc; low, high: Name) ;
 BEGIN
    IF NumberOfElements(to, low, high)=1
    THEN
-      WriteGetTokenType ; Write('=') ; EmitSet(to, low, high)
+      WriteGetTokenType ; Output.Write('=') ; EmitSet(to, low, high)
    ELSE
       WriteGetTokenType ;
-      WriteString(' IN SetOfStop') ;
+      Output.WriteString(' IN SetOfStop') ;
       IF LargestValue > MaxElementsInSet
       THEN
-         WriteCard(CARDINAL(low) DIV MaxElementsInSet, 0)
+         Output.WriteCard(CARDINAL(low) DIV MaxElementsInSet, 0)
       END ;
-      WriteString(' {') ; EmitSet(to, low, high) ; WriteString('}')
+      Output.WriteString(' {') ; EmitSet(to, low, high) ; Output.WriteString('}')
    END
 END EmitIsInSet ;
 
@@ -2957,22 +2961,22 @@ PROCEDURE EmitIsInSubSet (to: SetDesc; low, high: WORD) ;
 BEGIN
    IF NumberOfElements(to, low, high)=1
    THEN
-      Write('(') ; EmitIsInSet(to, low, high) ; Write(')')
+      Output.Write('(') ; EmitIsInSet(to, low, high) ; Output.Write(')')
    ELSIF low=0
    THEN
       (* no need to check whether GetTokenType > low *)
-      WriteString('((') ; WriteGetTokenType ; Write('<') ; WriteElement(INTEGER(high)+1) ;
-      WriteString(') AND (') ; EmitIsInSet(to, low, high) ; WriteString('))')
+      Output.WriteString('((') ; WriteGetTokenType ; Output.Write('<') ; WriteElement(INTEGER(high)+1) ;
+      Output.WriteString(') AND (') ; EmitIsInSet(to, low, high) ; Output.WriteString('))')
    ELSIF CARDINAL(high)>LargestValue
    THEN
       (* no need to check whether GetTokenType < high *)
-      WriteString('((') ; WriteGetTokenType ; WriteString('>=') ; WriteElement(low) ;
-      WriteString(') AND (') ; EmitIsInSet(to, low, high) ; WriteString('))')
+      Output.WriteString('((') ; WriteGetTokenType ; Output.WriteString('>=') ; WriteElement(low) ;
+      Output.WriteString(') AND (') ; EmitIsInSet(to, low, high) ; Output.WriteString('))')
    ELSE
-      WriteString('((') ; WriteGetTokenType ; WriteString('>=') ; WriteElement(low) ;
-      WriteString(') AND (') ; WriteGetTokenType ; Write('<') ; WriteElement(INTEGER(high)+1) ;
-      WriteString(') AND (') ; EmitIsInSet(to, low, high) ;
-      WriteString('))')
+      Output.WriteString('((') ; WriteGetTokenType ; Output.WriteString('>=') ; WriteElement(low) ;
+      Output.WriteString(') AND (') ; WriteGetTokenType ; Output.Write('<') ; WriteElement(INTEGER(high)+1) ;
+      Output.WriteString(') AND (') ; EmitIsInSet(to, low, high) ;
+      Output.WriteString('))')
    END
 END EmitIsInSubSet ;
 
@@ -2990,12 +2994,12 @@ BEGIN
    THEN
       (* only one element *)
       WriteGetTokenType ;
-      Write('=') ;
+      Output.Write('=') ;
       EmitSet(to, 0, 0)
    ELSE
       IF LargestValue<=MaxElementsInSet
       THEN
-         Write('(') ; WriteGetTokenType ; WriteString(' IN ') ; EmitSetAsParameters(to) ; WriteString(')')
+         Output.Write('(') ; WriteGetTokenType ; Output.WriteString(' IN ') ; EmitSetAsParameters(to) ; Output.WriteString(')')
       ELSE
          i     := 0 ;
          first := TRUE ;
@@ -3004,7 +3008,7 @@ BEGIN
             THEN
                IF NOT first
                THEN
-                  WriteString(' OR') ;
+                  Output.WriteString(' OR') ;
                   NewLine(Indent+ConditionIndent(m)) ;
                   DEC(Indent, ConditionIndent(m))
                END ;
@@ -3060,8 +3064,8 @@ BEGIN
                 END ;
                 FlushRecoverCode(codeStack) ;
                 IndentString('') ;
-                WriteKey(ident^.name) ; Write('(') ;
-                EmitStopParametersAndFollow(f, m) ; WriteString(') ;') ; WriteLn ;
+                Output.WriteKey(ident^.name) ; Output.Write('(') ;
+                EmitStopParametersAndFollow(f, m) ; Output.WriteString(') ;') ; Output.WriteLn ;
                 RecoverFactor(f^.next, m2none, codeStack) ;
                 IF (to#NIL) AND (m#m2none)
                 THEN
@@ -3071,20 +3075,20 @@ BEGIN
                 THEN
                    FlushRecoverCode(codeStack) ;
                    IndentString('Expect(') ;
-                   WriteKey(GetSymKey(Aliases, string)) ; WriteString(', ') ;
-                   EmitStopParametersAndFollow(f, m) ; WriteString(') ;') ; WriteLn ;
+                   Output.WriteKey(GetSymKey(Aliases, string)) ; Output.WriteString(', ') ;
+                   EmitStopParametersAndFollow(f, m) ; Output.WriteString(') ;') ; Output.WriteLn ;
                    RecoverFactor(f^.next, m2none, codeStack)
                 ELSE
                    RecoverCondition(m) ;
                    WriteGetTokenType ;
-                   Write('=') ;
-                   WriteKey(GetSymKey(Aliases, string)) ;
+                   Output.Write('=') ;
+                   Output.WriteKey(GetSymKey(Aliases, string)) ;
                    CodeThenDo(m) ;
                    INC(Indent, 3) ;
                    IndentString('Expect(') ;
-                   WriteKey(GetSymKey(Aliases, string)) ; WriteString(', ') ;
-                   EmitStopParametersAndFollow(f, m) ; WriteString(') ;') ;
-                   WriteLn ;
+                   Output.WriteKey(GetSymKey(Aliases, string)) ; Output.WriteString(', ') ;
+                   EmitStopParametersAndFollow(f, m) ; Output.WriteString(') ;') ;
+                   Output.WriteLn ;
                    FlushRecoverCode(codeStack) ;
                    RecoverFactor(f^.next, m2none, codeStack) ;
                    DEC(Indent, 3)
@@ -3101,12 +3105,12 @@ BEGIN
                    EmitIsInFirst(to, m) ;
                    CodeThenDo(m) ;
                    INC(Indent, 3) ;
-                   IndentString('(* seen optional [ | ] expression *)') ; WriteLn ;
+                   IndentString('(* seen optional [ | ] expression *)') ; Output.WriteLn ;
                    stop();
                    RecoverExpression(expr, m2none, m2if) ;
-                   IndentString('(* end of optional [ | ] expression *)') ; WriteLn ;
+                   IndentString('(* end of optional [ | ] expression *)') ; Output.WriteLn ;
                    DEC(Indent, 3) ;
-                   IndentString('END ;') ; WriteLn
+                   IndentString('END ;') ; Output.WriteLn
                 ELSE
                    RecoverExpression(expr, m2if, m)
                 END ;
@@ -3120,19 +3124,19 @@ BEGIN
                    EmitIsInFirst(to, m) ;
                    CodeThenDo(m) ;
                    INC(Indent, 3) ;
-                   IndentString('(* seen optional { | } expression *)') ; WriteLn ;
+                   IndentString('(* seen optional { | } expression *)') ; Output.WriteLn ;
                    RecoverCondition(m2while) ;
                    EmitIsInFirst(to, m2while) ;
                    CodeThenDo(m2while) ;
                    INC(Indent, 3) ;
                    RecoverExpression(expr, m2none, m2while) ;
-                   IndentString('(* end of optional { | } expression *)') ; WriteLn ;
+                   IndentString('(* end of optional { | } expression *)') ; Output.WriteLn ;
                    DEC(Indent, 3) ;
-                   IndentString('END ;') ; WriteLn ;
+                   IndentString('END ;') ; Output.WriteLn ;
                    DEC(Indent, 3) ;
                    IF m=m2none
                    THEN
-                      IndentString('END ;') ; WriteLn ;
+                      IndentString('END ;') ; Output.WriteLn ;
                       DEC(Indent, 3)
                    END
                 ELSE
@@ -3210,7 +3214,7 @@ BEGIN
       IF (t^.factor^.type=m2) AND (new=m2elsif)
       THEN
          new := m2if ;
-         IndentString('ELSE') ; WriteLn ;
+         IndentString('ELSE') ; Output.WriteLn ;
          INC(Indent, 3) ;
          RecoverFactor(t^.factor, m2none, NIL) ;
          alternative := FALSE
@@ -3228,23 +3232,23 @@ BEGIN
    THEN
       IF alternative AND (old#m2while)
       THEN
-         IndentString('ELSE') ; WriteLn ;
+         IndentString('ELSE') ; Output.WriteLn ;
          INC(Indent, 3) ;
          IndentString('') ;
-         WriteKey(ErrorProcArray) ;
-         WriteString("('expecting one of: ") ;
+         Output.WriteKey(ErrorProcArray) ;
+         Output.WriteString("('expecting one of: ") ;
          EmitSetName(to, 0, 0) ;
-         WriteString("')") ;
-         WriteLn ;
+         Output.WriteString("')") ;
+         Output.WriteLn ;
          DEC(Indent, 3)
       ELSIF LastWasM2Only
       THEN
          DEC(Indent, 3)
       END ;
-      IndentString('END ;') ; WriteLn
+      IndentString('END ;') ; Output.WriteLn
    ELSIF new=m2while
    THEN
-      IndentString('END (* while *) ;') ; WriteLn
+      IndentString('END (* while *) ;') ; Output.WriteLn
    ELSIF LastWasM2Only
    THEN
       DEC(Indent, 3)
@@ -3291,6 +3295,19 @@ END EmitFirstFactor ;
 
 
 (*
+   EmitUsed -
+*)
+
+PROCEDURE EmitUsed (wordno: CARDINAL) ;
+BEGIN
+   IF NOT (wordno IN ParametersUsed)
+   THEN
+      Output.WriteString (" (* <* unused *> *) ")
+   END
+END EmitUsed ;
+
+
+(*
    EmitStopParameters - generate the stop set.
 *)
 
@@ -3300,27 +3317,33 @@ VAR
 BEGIN
    IF LargestValue<=MaxElementsInSet
    THEN
-      WriteString('stopset') ;
+      Output.WriteString('stopset') ;
       IF FormalParameters
       THEN
-         WriteString(': SetOfStop')
+         Output.WriteString(': SetOfStop') ;
+         EmitUsed (0)
+      ELSE
+         INCL (ParametersUsed, 0)
       END
    ELSE
       i := 0 ;
       REPEAT
-         WriteString('stopset') ; WriteCard(i, 0) ;
+         Output.WriteString('stopset') ; Output.WriteCard(i, 0) ;
          IF FormalParameters
          THEN
-            WriteString(': SetOfStop') ; WriteCard(i, 0)
+            Output.WriteString(': SetOfStop') ; Output.WriteCard(i, 0) ;
+            EmitUsed (i)
+         ELSE
+            INCL (ParametersUsed, i)
          END ;
-         INC(i) ;
+         INC (i) ;
          IF i*MaxElementsInSet<LargestValue
          THEN
             IF FormalParameters
             THEN
-               WriteString('; ')
+               Output.WriteString('; ')
             ELSE
-               WriteString(', ')
+               Output.WriteString(', ')
             END
          END
       UNTIL i*MaxElementsInSet>=LargestValue ;
@@ -3388,18 +3411,18 @@ BEGIN
                  THEN
                     IF NOT first
                     THEN
-                       WriteString(', ')
+                       Output.WriteString(', ')
                     END ;
-                    WriteKey(string) ;
+                    Output.WriteKey(string) ;
                     first := FALSE
                  END |
          litel:  IF (high=0) OR IsBetween(GetSymKey(Aliases, string), low, high)
                  THEN
                     IF NOT first
                     THEN
-                       WriteString(', ')
+                       Output.WriteString(', ')
                     END ;
-                    WriteKey(GetSymKey(Aliases, string)) ;
+                    Output.WriteKey(GetSymKey(Aliases, string)) ;
                     first := FALSE
                  END |
          idel :  WarnError('not expecting ident in first symbol list') ;
@@ -3430,14 +3453,14 @@ BEGIN
                  THEN
                     IF MakeKey("'")=GetSymKey(ReverseAliases, string)
                     THEN
-                       WriteString('single quote')
+                       Output.WriteString('single quote')
                     ELSE
                        KeyWord(GetSymKey(ReverseAliases, string))
                     END
                  END |
          litel:  IF (high=0) OR IsBetween(GetSymKey(Aliases, string), low, high)
                  THEN
-                    WriteKey(string)
+                    Output.WriteKey(string)
                  END |
          idel :  WarnError('not expecting ident in first symbol list') ;
                  WasNoError := FALSE
@@ -3450,7 +3473,7 @@ BEGIN
       to := to^.next ;
       IF to#NIL
       THEN
-         Write(' ')
+         Output.Write(' ')
       END
    END
 END EmitSetName ;
@@ -3467,29 +3490,31 @@ VAR
 BEGIN
    IF LargestValue<=MaxElementsInSet
    THEN
-      WriteString('stopset') ;
+      Output.WriteString('stopset') ;
+      INCL (ParametersUsed, 0) ;
       IF (to#NIL) AND (NumberOfElements(to, 0, MaxElementsInSet-1)>0)
       THEN
-         WriteString(' + SetOfStop') ;
-         Write('{') ;
+         Output.WriteString(' + SetOfStop') ;
+         Output.Write('{') ;
          EmitSet(to, 0, MaxElementsInSet-1) ;
-         Write('}')
+         Output.Write('}')
       END
    ELSE
       i := 0 ;
       REPEAT
-         WriteString('stopset') ; WriteCard(i, 0) ;
+         Output.WriteString('stopset') ; Output.WriteCard(i, 0) ;
+         INCL (ParametersUsed, i) ;
          IF (to#NIL) AND (NumberOfElements(to, i*MaxElementsInSet, (i+1)*MaxElementsInSet-1)>0)
          THEN
-            WriteString(' + SetOfStop') ; WriteCard(i, 0) ;
-            Write('{') ;
+            Output.WriteString(' + SetOfStop') ; Output.WriteCard(i, 0) ;
+            Output.Write('{') ;
             EmitSet(to, i*MaxElementsInSet, (i+1)*MaxElementsInSet-1) ;
-            Write('}')
+            Output.Write('}')
          END ;
          INC(i) ;
          IF i*MaxElementsInSet<LargestValue
          THEN
-            WriteString(', ')
+            Output.WriteString(', ')
          END
       UNTIL i*MaxElementsInSet>=LargestValue
    END
@@ -3506,21 +3531,21 @@ VAR
 BEGIN
    IF LargestValue<=MaxElementsInSet
    THEN
-      Write('{') ;
+      Output.Write('{') ;
       EmitSet(to, 0, MaxElementsInSet-1)
    ELSE
       i := 0 ;
       REPEAT
-         Write('{') ;
+         Output.Write('{') ;
          EmitSet(to, i*MaxElementsInSet, (i+1)*MaxElementsInSet-1) ;
          INC(i) ;
          IF (i+1)*MaxElementsInSet>LargestValue
          THEN
-            WriteString('}, ')
+            Output.WriteString('}, ')
          END
       UNTIL (i+1)*MaxElementsInSet>=LargestValue ;
    END ;
-   Write('}')
+   Output.Write('}')
 END EmitSetAsParameters ;
 
 
@@ -3545,13 +3570,13 @@ BEGIN
    EmitStopParametersAndSet(to) ;
    IF Debugging
    THEN
-      WriteLn ;
-      WriteString('factor is: ') ;
+      Output.WriteLn ;
+      Output.WriteString('factor is: ') ;
       PrettyCommentFactor(f, StrLen('factor is: ')) ;
-      WriteLn ;
-      WriteString('follow set:') ;
+      Output.WriteLn ;
+      Output.WriteString('follow set:') ;
       EmitSet(to, 0, 0) ;
-      WriteLn
+      Output.WriteLn
    END
 END EmitStopParametersAndFollow ;
 
@@ -3576,34 +3601,40 @@ END EmitFirstAsParameters ;
 *)
 
 PROCEDURE RecoverProduction (p: ProductionDesc) ;
+VAR
+   s: String ;
 BEGIN
    IF (p#NIL) AND ((NOT p^.firstsolved) OR ((p^.statement#NIL) AND (p^.statement^.expr#NIL)))
    THEN
       BeginningOfLine := TRUE ;
       Indent := 0 ;
-      WriteLn ;
+      Output.WriteLn ;
       OnLineStart := FALSE ;
       EmitFileLineTag(p^.line) ;
       IndentString('PROCEDURE ') ;
-      WriteKey(GetDefinitionName(p)) ;
-      WriteString(' (') ;
-      EmitStopParameters(TRUE) ;
-      WriteString(') ;') ;
+      Output.WriteKey(GetDefinitionName(p)) ;
+      Output.WriteString(' (') ;
+      ParametersUsed := {} ;
+      Output.StartBuffer ;
+      Output.WriteString(') ;') ;
       VarProduction(p) ;
-      WriteLn ;
+      Output.WriteLn ;
       OnLineStart := FALSE ;
       EmitFileLineTag(p^.line) ;
       Indent := 0 ;
-      IndentString('BEGIN') ; WriteLn ;
+      IndentString('BEGIN') ; Output.WriteLn ;
       OnLineStart := FALSE ;
       EmitFileLineTag(p^.line) ;
       Indent := 3 ;
       RecoverStatement(p^.statement, m2none) ;
       Indent := 0 ;
-      IndentString('END ') ; WriteKey(GetDefinitionName(p)) ; WriteString(' ;') ;
-      WriteLn ;
-      WriteLn ;
-      WriteLn
+      IndentString('END ') ; Output.WriteKey(GetDefinitionName(p)) ; Output.WriteString(' ;') ;
+      Output.WriteLn ;
+      Output.WriteLn ;
+      Output.WriteLn ;
+      s := Output.EndBuffer () ;
+      EmitStopParameters (TRUE) ;
+      Output.KillWriteS (s)
    END
 END RecoverProduction ;
 
@@ -3683,10 +3714,10 @@ BEGIN
    IF code#upto
    THEN
       WriteUpto(code^.next, upto, limit) ;
-      WriteString(code^.codetext)
+      Output.WriteString(code^.codetext)
    ELSE
       WHILE (limit<=MaxCodeHunkLength) AND (code^.codetext[limit]#nul) DO
-         Write(code^.codetext[limit]) ;
+         Output.Write(code^.codetext[limit]) ;
          INC(limit)
       END
    END
@@ -3708,11 +3739,11 @@ BEGIN
    THEN
       IF NOT EmittedVar
       THEN
-         WriteLn ;
+         Output.WriteLn ;
          Indent := 0 ;
          IndentString('VAR') ;
          INC(Indent, 3) ;
-         WriteLn ;
+         Output.WriteLn ;
          EmittedVar := TRUE ;
       END ;
       WriteUpto(code, t, i)
@@ -4636,12 +4667,12 @@ END EmptyProduction ;
 
 PROCEDURE EmitFDLNotice ;
 BEGIN
-   WriteString('@c Copyright (C) 2000-2019 Free Software Foundation, Inc.') ; WriteLn ;
-   WriteLn ;
-   WriteString('@c This file is part of GCC.') ; WriteLn ;
-   WriteString('@c Permission is granted to copy, distribute and/or modify this document') ; WriteLn ;
-   WriteString('@c under the terms of the GNU Free Documentation License, Version 1.2 or') ; WriteLn ;
-   WriteString('@c any later version published by the Free Software Foundation.') ; WriteLn
+   Output.WriteString('@c Copyright (C) 2000-2019 Free Software Foundation, Inc.') ; Output.WriteLn ;
+   Output.WriteLn ;
+   Output.WriteString('@c This file is part of GCC.') ; Output.WriteLn ;
+   Output.WriteString('@c Permission is granted to copy, distribute and/or modify this document') ; Output.WriteLn ;
+   Output.WriteString('@c under the terms of the GNU Free Documentation License, Version 1.2 or') ; Output.WriteLn ;
+   Output.WriteString('@c any later version published by the Free Software Foundation.') ; Output.WriteLn
 END EmitFDLNotice ;
 
 
@@ -4671,29 +4702,29 @@ BEGIN
    THEN
       InitialElement := FALSE
    ELSE
-      WriteString(' |')
+      Output.WriteString(' |')
    END ;
-   WriteLn ;
+   Output.WriteLn ;
    Indent := 3 ;
    IndentString('') ;
-   WriteKey(name) ;
-   WriteString(': ') ;
+   Output.WriteKey(name) ;
+   Output.WriteString(': ') ;
    lit := GetSymKey(ReverseAliases, name) ;
    IF MakeKey('"')=lit
    THEN
-      WriteString('str := ConCat(ConCatChar(ConCatChar(InitString("syntax error, found ') ;
-      Write("'") ; WriteString('"), ') ;
-      Write("'") ; Write('"') ; Write("'") ; WriteString("), ") ;
-      Write('"') ; Write("'") ; Write('"') ; WriteString("), Mark(str))")
+      Output.WriteString('str := ConCat(ConCatChar(ConCatChar(InitString("syntax error, found ') ;
+      Output.Write("'") ; Output.WriteString('"), ') ;
+      Output.Write("'") ; Output.Write('"') ; Output.Write("'") ; Output.WriteString("), ") ;
+      Output.Write('"') ; Output.Write("'") ; Output.Write('"') ; Output.WriteString("), Mark(str))")
    ELSIF MakeKey("'")=lit
    THEN
-      WriteString("str := ConCat(ConCatChar(ConCatChar(InitString('syntax error, found ") ;
-      Write('"') ; WriteString("'), ") ;
-      Write('"') ; Write("'") ; Write('"') ; WriteString('), ') ;
-      Write("'") ; Write('"') ; Write("'") ; WriteString('), Mark(str))')
+     Output.WriteString("str := ConCat(ConCatChar(ConCatChar(InitString('syntax error, found ") ;
+     Output.Write('"') ; Output.WriteString("'), ") ;
+     Output.Write('"') ; Output.Write("'") ; Output.Write('"') ; Output.WriteString('), ') ;
+     Output.Write("'") ; Output.Write('"') ; Output.Write("'") ; Output.WriteString('), Mark(str))')
    ELSE
-      WriteString("str := ConCat(InitString(") ; Write('"') ;
-      WriteString("syntax error, found ") ; KeyWord(lit) ; WriteString('"), Mark(str))')
+     Output.WriteString("str := ConCat(InitString(") ; Output.Write('"') ;
+     Output.WriteString("syntax error, found ") ; KeyWord(lit) ; Output.WriteString('"), Mark(str))')
    END
 END DescribeElement ;
 
@@ -4708,11 +4739,13 @@ VAR
 BEGIN
    IF LargestValue<=MaxElementsInSet
    THEN
-      WriteKey(name) ; WriteString(' IN stopset')
+      Output.WriteKey(name) ; Output.WriteString(' IN stopset') ;
+      INCL (ParametersUsed, 0)
    ELSE
       value := GetSymKey(Values, name) ;
       i := value DIV MaxElementsInSet ;
-      WriteKey(name) ; WriteString(' IN stopset') ; WriteCard(i, 0)
+      Output.WriteKey(name) ; Output.WriteString(' IN stopset') ; Output.WriteCard(i, 0) ;
+      INCL (ParametersUsed, i)
    END
 END EmitInTestStop ;
 
@@ -4726,37 +4759,37 @@ VAR
    lit: Name ;
 BEGIN
    Indent := 3 ;
-   IndentString('IF ') ; EmitInTestStop(name) ; WriteLn ;
-   IndentString('THEN') ; WriteLn ;
+   IndentString('IF ') ; EmitInTestStop(name) ; Output.WriteLn ;
+   IndentString('THEN') ; Output.WriteLn ;
    Indent := 6 ;
    lit := GetSymKey(ReverseAliases, name) ;
    IF (lit=NulName) OR (lit=MakeKey(''))
    THEN
       IndentString('(* ') ;
-      WriteKey(name) ;
-      WriteString(' has no token name (needed to generate error messages) *)')
+      Output.WriteKey(name) ;
+      Output.WriteString(' has no token name (needed to generate error messages) *)')
    ELSIF MakeKey("'")=lit
    THEN
       IndentString('message := ConCatChar(ConCatChar(ConCatChar(ConCatChar(ConCatChar(message, ') ;
-      WriteString("' '), ") ;
-      Write("'") ; Write('"') ; WriteString("'), ") ;
-      Write('"') ; Write("'") ; WriteString('"), ') ;
-      Write("'") ; Write('"') ; WriteString("'), ',') ; INC(n) ; ")
+      Output.WriteString("' '), ") ;
+      Output.Write("'") ; Output.Write('"') ; Output.WriteString("'), ") ;
+      Output.Write('"') ; Output.Write("'") ; Output.WriteString('"), ') ;
+      Output.Write("'") ; Output.Write('"') ; Output.WriteString("'), ',') ; INC(n) ; ")
    ELSIF MakeKey('"')=lit
    THEN
       IndentString("message := ConCatChar(ConCatChar(ConCatChar(ConCatChar(ConCatChar(message, ") ;
-      WriteString('" "), ') ;
-      Write('"') ; Write("`") ; WriteString('"), ') ;
-      Write("'") ; Write('"') ; WriteString("'), ") ;
-      Write('"') ; Write("'") ; WriteString('"), ",") ; INC(n) ; ')
+      Output.WriteString('" "), ') ;
+      Output.Write('"') ; Output.Write("`") ; Output.WriteString('"), ') ;
+      Output.Write("'") ; Output.Write('"') ; Output.WriteString("'), ") ;
+      Output.Write('"') ; Output.Write("'") ; Output.WriteString('"), ",") ; INC(n) ; ')
    ELSE
-      IndentString("message := ConCat(ConCatChar(message, ' ") ; WriteString("'), ") ;
-      WriteString('Mark(InitString("') ; KeyWord(lit) ; Write('"') ;
-      WriteString('))) ; INC(n)')
+      IndentString("message := ConCat(ConCatChar(message, ' ") ; Output.WriteString("'), ") ;
+      Output.WriteString('Mark(InitString("') ; KeyWord(lit) ; Output.Write('"') ;
+      Output.WriteString('))) ; INC(n)')
    END ;
-   WriteLn ;
+   Output.WriteLn ;
    Indent := 3 ;
-   IndentString('END ;') ; WriteLn
+   IndentString('END ;') ; Output.WriteLn
 END DescribeStopElement ;
 
 
@@ -4765,54 +4798,62 @@ END DescribeStopElement ;
 *)
 
 PROCEDURE EmitDescribeStop ;
+VAR
+   s: String ;
 BEGIN
-   WriteLn ;
+   Output.WriteLn ;
    Indent := 0 ;
    IndentString('(*') ;
    Indent := 3 ;
-   WriteLn ;
+   Output.WriteLn ;
    IndentString('DescribeStop - issues a message explaining what tokens were expected') ;
-   WriteLn ;
-   WriteString('*)') ;
-   WriteLn ;
-   WriteLn ;
+   Output.WriteLn ;
+   Output.WriteString('*)') ;
+   Output.WriteLn ;
+   Output.WriteLn ;
    Indent := 0 ;
-   IndentString('PROCEDURE DescribeStop (') ; EmitStopParameters(TRUE) ; WriteString(') : String ;') ;
-   WriteLn ;
-   IndentString('VAR') ; WriteLn ;
+   IndentString('PROCEDURE DescribeStop (') ;
+   ParametersUsed := {} ;
+   Output.StartBuffer ;
+   Output.WriteString(') : String ;') ;
+   Output.WriteLn ;
+   IndentString('VAR') ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString('n      : CARDINAL ;') ; WriteLn ;
-   IndentString('str,') ; WriteLn ;
-   IndentString('message: String ;') ; WriteLn ;
+   IndentString('n      : CARDINAL ;') ; Output.WriteLn ;
+   IndentString('str,') ; Output.WriteLn ;
+   IndentString('message: String ;') ; Output.WriteLn ;
    Indent := 0 ;
-   IndentString('BEGIN') ; WriteLn ;
+   IndentString('BEGIN') ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString('n := 0 ;') ; WriteLn ;
+   IndentString('n := 0 ;') ; Output.WriteLn ;
    IndentString("message := InitString('') ;") ;
-   WriteLn ;
-   ForeachNodeDo(Aliases, DescribeStopElement) ; WriteLn ;
+   Output.WriteLn ;
+   ForeachNodeDo(Aliases, DescribeStopElement) ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString('IF n=0') ; WriteLn ;
-   IndentString('THEN') ; WriteLn ;
+   IndentString('IF n=0') ; Output.WriteLn ;
+   IndentString('THEN') ; Output.WriteLn ;
    Indent := 6 ;
-   IndentString("str := InitString(' syntax error') ; ") ; WriteLn ;
-   IndentString('message := KillString(message) ; ') ; WriteLn ;
+   IndentString("str := InitString(' syntax error') ; ") ; Output.WriteLn ;
+   IndentString('message := KillString(message) ; ') ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString('ELSIF n=1') ; WriteLn ;
-   IndentString('THEN') ; WriteLn ;
+   IndentString('ELSIF n=1') ; Output.WriteLn ;
+   IndentString('THEN') ; Output.WriteLn ;
    Indent := 6 ;
-   IndentString("str := ConCat(message, Mark(InitString(' missing '))) ;") ; WriteLn ;
+   IndentString("str := ConCat(message, Mark(InitString(' missing '))) ;") ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString('ELSE') ; WriteLn ;
+   IndentString('ELSE') ; Output.WriteLn ;
    Indent := 6 ;
-   IndentString("str := ConCat(InitString(' expecting one of'), message) ;") ; WriteLn ;
-   IndentString("message := KillString(message) ;") ; WriteLn ;
+   IndentString("str := ConCat(InitString(' expecting one of'), message) ;") ; Output.WriteLn ;
+   IndentString("message := KillString(message) ;") ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString('END ;') ; WriteLn ;
-   IndentString('RETURN( str )') ; WriteLn ;
+   IndentString('END ;') ; Output.WriteLn ;
+   IndentString('RETURN( str )') ; Output.WriteLn ;
    Indent := 0 ;
-   IndentString('END DescribeStop ;') ; WriteLn ;
-   WriteLn
+   IndentString('END DescribeStop ;') ; Output.WriteLn ;
+   Output.WriteLn ;
+   s := Output.EndBuffer () ;
+   EmitStopParameters(TRUE) ;
+   Output.KillWriteS (s)
 END EmitDescribeStop ;
 
 
@@ -4822,38 +4863,38 @@ END EmitDescribeStop ;
 
 PROCEDURE EmitDescribeError ;
 BEGIN
-   WriteLn ;
+   Output.WriteLn ;
    Indent := 0 ;
-   IndentString('(*') ; WriteLn ;
+   IndentString('(*') ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString('DescribeError - issues a message explaining what tokens were expected') ; WriteLn ;
+   IndentString('DescribeError - issues a message explaining what tokens were expected') ; Output.WriteLn ;
    Indent := 0 ;
    IndentString('*)') ;
-   WriteLn ;
-   WriteLn ;
-   IndentString('PROCEDURE DescribeError (') ; EmitStopParameters(TRUE) ; WriteString(') ;') ;
-   WriteLn ;
-   IndentString('VAR') ; WriteLn ;
+   Output.WriteLn ;
+   Output.WriteLn ;
+   IndentString('PROCEDURE DescribeError ;') ;
+   Output.WriteLn ;
+   IndentString('VAR') ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString('str: String ;') ; WriteLn ;
+   IndentString('str: String ;') ; Output.WriteLn ;
    Indent := 0 ;
-   IndentString('BEGIN') ; WriteLn ;
+   IndentString('BEGIN') ; Output.WriteLn ;
    Indent := 3 ;
-   IndentString("str := InitString('') ;") ; WriteLn ;
+   IndentString("str := InitString('') ;") ; Output.WriteLn ;
    (* was
-   IndentString('str := DescribeStop(') ; EmitStopParameters(FALSE) ; WriteString(') ;') ; WriteLn ;
+   IndentString('str := DescribeStop(') ; EmitStopParameters(FALSE) ; Output.WriteString(') ;') ; Output.WriteLn ;
    *)
-   IndentString('CASE ') ; WriteGetTokenType ; WriteString(' OF') ; NewLine(3) ;
+   IndentString('CASE ') ; WriteGetTokenType ; Output.WriteString(' OF') ; NewLine(3) ;
    InitialElement := TRUE ;
    ForeachNodeDo(Aliases, DescribeElement) ;
-   WriteLn ;
+   Output.WriteLn ;
    Indent := 3 ;
-   IndentString('ELSE') ; WriteLn ;
-   IndentString('END ;') ; WriteLn ;
+   IndentString('ELSE') ; Output.WriteLn ;
+   IndentString('END ;') ; Output.WriteLn ;
    IndentString('') ;
-   WriteKey(ErrorProcString) ; WriteString('(str) ;') ; WriteLn ;
+   Output.WriteKey(ErrorProcString) ; Output.WriteString('(str) ;') ; Output.WriteLn ;
    Indent := 0 ;
-   IndentString('END DescribeError ;') ; WriteLn
+   IndentString('END DescribeError ;') ; Output.WriteLn
 END EmitDescribeError ;
 
 
@@ -4865,21 +4906,21 @@ PROCEDURE EmitSetTypes ;
 VAR
    i, j, m, n: CARDINAL ;
 BEGIN
-   WriteString('(*') ; NewLine(3) ;
-   WriteString('expecting token set defined as an enumerated type') ; NewLine(3) ;
-   WriteString('(') ;
+   Output.WriteString('(*') ; NewLine(3) ;
+   Output.WriteString('expecting token set defined as an enumerated type') ; NewLine(3) ;
+   Output.WriteString('(') ;
    i := 0 ;
    WHILE i<LargestValue DO
-      WriteKey(GetSymKey(ReverseValues, WORD(i))) ;
+      Output.WriteKey(GetSymKey(ReverseValues, WORD(i))) ;
       INC(i) ;
       IF i<LargestValue
       THEN
-         WriteString(', ')
+         Output.WriteString(', ')
       END
    END ;
-   WriteString(') ;') ; NewLine(0) ;
-   WriteString('*)') ; NewLine(0) ;
-   WriteString('TYPE') ; NewLine(3) ;
+   Output.WriteString(') ;') ; NewLine(0) ;
+   Output.WriteString('*)') ; NewLine(0) ;
+   Output.WriteString('TYPE') ; NewLine(3) ;
    IF LargestValue>MaxElementsInSet
    THEN
       i := 0 ;
@@ -4892,26 +4933,26 @@ BEGIN
          ELSE
             m := (i+1)*MaxElementsInSet-1
          END ;
-         WriteString('stop') ; WriteCard(i, 0) ;
-         WriteString(' = [') ;
-         WriteKey(GetSymKey(ReverseValues, WORD(j))) ;
-         WriteString('..') ;
-         WriteKey(GetSymKey(ReverseValues, WORD(m))) ;
-         WriteString('] ;') ;
+         Output.WriteString('stop') ; Output.WriteCard(i, 0) ;
+         Output.WriteString(' = [') ;
+         Output.WriteKey(GetSymKey(ReverseValues, WORD(j))) ;
+         Output.WriteString('..') ;
+         Output.WriteKey(GetSymKey(ReverseValues, WORD(m))) ;
+         Output.WriteString('] ;') ;
          NewLine(3) ;
-         WriteString('SetOfStop') ; WriteCard(i, 0) ;
-         WriteString(' = SET OF stop') ; WriteCard(i, 0) ;
-         WriteString(' ;') ;
+         Output.WriteString('SetOfStop') ; Output.WriteCard(i, 0) ;
+         Output.WriteString(' = SET OF stop') ; Output.WriteCard(i, 0) ;
+         Output.WriteString(' ;') ;
          NewLine(3) ;
          INC(i)
       END
    ELSE
-      WriteString('SetOfStop') ;
-      WriteString(' = SET OF [') ;
-      WriteKey(GetSymKey(ReverseValues, WORD(0))) ;
-      WriteString('..') ;
-      WriteKey(GetSymKey(ReverseValues, WORD(LargestValue-1))) ;
-      WriteString('] ;')
+      Output.WriteString('SetOfStop') ;
+      Output.WriteString(' = SET OF [') ;
+      Output.WriteKey(GetSymKey(ReverseValues, WORD(0))) ;
+      Output.WriteString('..') ;
+      Output.WriteKey(GetSymKey(ReverseValues, WORD(LargestValue-1))) ;
+      Output.WriteString('] ;')
    END ;
    NewLine(0)
 END EmitSetTypes ;
@@ -5300,7 +5341,7 @@ END PostProcessRules ;
 
 PROCEDURE DisplayHelp ;
 BEGIN
-   WriteString('Usage: ppg [-l] [-c] [-d] [-e] [-k] [-t] [-k] [-p] [-t] [-f] filename') ; WriteLn ;
+   WriteString('Usage: ppg [-l] [-c] [-d] [-e] [-k] [-t] [-k] [-p] [-t] [-f] [-o outputfile] filename') ; WriteLn ;
    WriteString('   -l             suppress file and line source information') ; WriteLn ;
    WriteString('   -c             do not generate any Modula-2 code within the parser rules') ; WriteLn ;
    WriteString('   -h or --help   generate this help message') ; WriteLn ;
@@ -5310,9 +5351,9 @@ BEGIN
    WriteString('   -p             only display the ebnf rules') ; WriteLn ;
    WriteString('   -t             generate texinfo formating for pretty printing (-p)') ; WriteLn ;
    WriteString('   -f             generate GNU Free Documentation header before pretty printing in texinfo') ; WriteLn ;
+   WriteString('   -o             write output to filename') ; WriteLn ;
    exit (0)
 END DisplayHelp ;
-
 
 
 (*
@@ -5330,41 +5371,56 @@ BEGIN
    i := 1 ;
    n := Narg() ;
    WHILE i<n DO
-      IF GetArg(FileName, i)
+      IF GetArg(ArgName, i)
       THEN
-         IF StrEqual(FileName, '-e')
+         IF StrEqual(ArgName, '-e')
          THEN
             ErrorRecovery := FALSE
-         ELSIF StrEqual(FileName, '-d')
+         ELSIF StrEqual(ArgName, '-d')
          THEN
             Debugging := TRUE ;
             SetDebugging(TRUE)
-         ELSIF StrEqual(FileName, '-c')
+         ELSIF StrEqual(ArgName, '-c')
          THEN
             EmitCode := FALSE
-         ELSIF StrEqual(FileName, '-k')
+         ELSIF StrEqual(ArgName, '-k')
          THEN
             KeywordFormatting := TRUE
-         ELSIF StrEqual(FileName, '-l')
+         ELSIF StrEqual(ArgName, '-l')
          THEN
             SuppressFileLineTag := TRUE
-         ELSIF StrEqual(FileName, '-h') OR StrEqual(FileName, '--help')
+         ELSIF StrEqual(ArgName, '-h') OR StrEqual(ArgName, '--help')
          THEN
             DisplayHelp
-         ELSIF StrEqual(FileName, '-p')
+         ELSIF StrEqual(ArgName, '-p')
          THEN
             PrettyPrint := TRUE
-         ELSIF StrEqual(FileName, '-t')
+         ELSIF StrEqual(ArgName, '-t')
          THEN
             Texinfo := TRUE
-         ELSIF StrEqual(FileName, '-f')
+         ELSIF StrEqual(ArgName, '-f')
          THEN
             FreeDocLicense := TRUE
-         ELSIF OpenSource(FileName)
+         ELSIF StrEqual(ArgName, '-o')
          THEN
+            INC (i) ;
+            IF GetArg(ArgName, i)
+            THEN
+               IF NOT Output.Open (ArgName)
+               THEN
+                  WriteString('cannot open ') ; WriteString(ArgName) ;
+                  WriteString(' for writing') ; WriteLn ;
+                  exit (1)
+               END
+            END
+         ELSIF OpenSource(ArgName)
+         THEN
+            StrCopy (ArgName, FileName) ;
             AdvanceToken
          ELSE
-            WriteString('cannot open ') ; WriteString(FileName) ; WriteString(' for reading') ; WriteLn
+            WriteString('cannot open ') ; WriteString(ArgName) ;
+            WriteString(' for reading') ; WriteLn ;
+            exit (1)
          END
       END ;
       INC (i)
@@ -5416,8 +5472,8 @@ BEGIN
          THEN
             EmitRules
          ELSE
-            WriteString('(* it is advisable not to edit this file as it was automatically generated from the grammer file ') ;
-            WriteString(FileName) ; WriteString(' *)') ; WriteLn ;
+            Output.WriteString('(* it is advisable not to edit this file as it was automatically generated from the grammer file ') ;
+            Output.WriteString(FileName) ; Output.WriteString(' *)') ; Output.WriteLn ;
             OnLineStart := FALSE ;
             EmitFileLineTag(LinePrologue) ;
             BeginningOfLine := TRUE ;
@@ -5431,7 +5487,8 @@ BEGIN
             WriteCodeHunkList(CodeEpilogue)
          END
       END
-   END
+   END ;
+   Output.Close
 END Init ;
 
 

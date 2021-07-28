@@ -26,21 +26,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define GM2
 #define GM2_BUG_REPORT                                                        \
   "Please report this crash to the GNU Modula-2 mailing list "                \
-  "<gm2@glam.ac.uk>\n"
-
-#define ASSERT(X, Y)                                                          \
-  {                                                                           \
-    if (!(X))                                                                 \
-      {                                                                       \
-        debug_tree (Y);                                                       \
-        internal_error ("[%s:%d]:condition `%s' failed", __FILE__, __LINE__,  \
-                        #X);                                                  \
-      }                                                                       \
-  }
-#define ERROR(X)                                                              \
-  {                                                                           \
-    internal_error ("[%s:%d]:%s", __FILE__, __LINE__, X);                     \
-  }
+  "<gm2@nongnu.org>\n"
 
 /* external functions.  */
 
@@ -447,11 +433,7 @@ gm2_build_throw (location_t location, tree exp)
 tree
 m2except_BuildThrow (location_t location, tree expr)
 {
-  expr = gm2_build_throw (location, expr);
-
-  ASSERT ((TREE_CODE (expr) != CLEANUP_POINT_EXPR), expr);
-
-  return expr;
+  return gm2_build_throw (location, expr);
 }
 
 /* Build up a call to __cxa_begin_catch, to tell the runtime that the

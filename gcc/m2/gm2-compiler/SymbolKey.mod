@@ -39,10 +39,6 @@ TYPE
                 END ;
 
 
-PROCEDURE stop ;
-BEGIN
-END stop ;
-
 PROCEDURE InitTree (VAR t: SymbolTree) ;
 BEGIN
    NEW(t) ;

@@ -206,7 +206,7 @@ END ErrorArray ;
 
 PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
 BEGIN
-   DescribeError(stopset0, stopset1, stopset2) ;
+   DescribeError ;
    IF Debugging
    THEN
       printf0('\nskipping token *** ')
@@ -764,10 +764,6 @@ ByteAlignment := '<*'                                                      % Pus
                                           '*>'                             % PopAuto %
                =:
 
-OptAlignmentExpression := [ AlignmentExpression ] =:
-
-AlignmentExpression := "(" ConstExpression ")" =:
-
 Alignment := [ ByteAlignment ] =:
 
 TypeDeclaration := Ident "=" Type Alignment
@@ -927,8 +923,6 @@ SilentConstructor := '{'                                                   % Sil
 
 SilentConstSetOrQualidentOrFunction := SilentConstructor | Qualident
                                        [ SilentConstructor | SilentActualParameters ] =:
-
-SilentElement := SilentConstExpression [ ".." SilentConstExpression ] =:
 
 SilentActualParameters := "(" [ SilentExpList ] ")" =:
 

@@ -114,7 +114,7 @@ END checkEndName ;
 
 PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
 BEGIN
-   DescribeError(stopset0, stopset1, stopset2) ;
+   DescribeError ;
    IF Debugging
    THEN
       printf0('\nskipping token *** ')
