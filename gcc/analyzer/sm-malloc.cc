@@ -1511,7 +1511,8 @@ malloc_state_machine::get_or_create_deallocator (tree deallocator_fndecl)
   /* Reuse "free".  */
   deallocator *d;
   if (is_named_call_p (deallocator_fndecl, "free")
-      || is_std_named_call_p (deallocator_fndecl, "free"))
+      || is_std_named_call_p (deallocator_fndecl, "free")
+      || is_named_call_p (deallocator_fndecl, "__builtin_free"))
     d = &m_free.m_deallocator;
   else
     {
