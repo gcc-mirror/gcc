@@ -45,8 +45,6 @@ package Ada.Strings.Bounded with SPARK_Mode is
       --  Maximum length of a Bounded_String
 
    package Generic_Bounded_Length with SPARK_Mode,
-     Initializes       => (Null_Bounded_String => Max,
-                           Max_Length          => Max),
      Initial_Condition => Length (Null_Bounded_String) = 0,
      Abstract_State    => null
    is
