@@ -1717,22 +1717,35 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
       && vec_duplicate_p (op, &elt)
       && code != VEC_DUPLICATE)
     {
-      /* Try applying the operator to ELT and see if that simplifies.
-	 We can duplicate the result if so.
+      if (code == SIGN_EXTEND || code == ZERO_EXTEND)
+	/* Enforce a canonical order of VEC_DUPLICATE wrt other unary
+	   operations by promoting VEC_DUPLICATE to the root of the expression
+	   (as far as possible).  */
+	temp = simplify_gen_unary (code, GET_MODE_INNER (mode),
+				   elt, GET_MODE_INNER (GET_MODE (op)));
+      else
+	/* Try applying the operator to ELT and see if that simplifies.
+	   We can duplicate the result if so.
 
-	 The reason we don't use simplify_gen_unary is that it isn't
-	 necessarily a win to convert things like:
+	   The reason we traditionally haven't used simplify_gen_unary
+	   for these codes is that it didn't necessarily seem to be a
+	   win to convert things like:
 
-	   (neg:V (vec_duplicate:V (reg:S R)))
+	     (neg:V (vec_duplicate:V (reg:S R)))
 
-	 to:
+	   to:
 
-	   (vec_duplicate:V (neg:S (reg:S R)))
+	     (vec_duplicate:V (neg:S (reg:S R)))
 
-	 The first might be done entirely in vector registers while the
-	 second might need a move between register files.  */
-      temp = simplify_unary_operation (code, GET_MODE_INNER (mode),
-				       elt, GET_MODE_INNER (GET_MODE (op)));
+	   The first might be done entirely in vector registers while the
+	   second might need a move between register files.
+
+	   However, there also cases where promoting the vec_duplicate is
+	   more efficient, and there is definite value in having a canonical
+	   form when matching instruction patterns.  We should consider
+	   extending the simplify_gen_unary code above to more cases.  */
+	temp = simplify_unary_operation (code, GET_MODE_INNER (mode),
+					 elt, GET_MODE_INNER (GET_MODE (op)));
       if (temp)
 	return gen_vec_duplicate (mode, temp);
     }

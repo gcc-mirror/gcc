@@ -1,3 +1,15 @@
+2021-07-26  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93308
+	PR fortran/93963
+	PR fortran/94327
+	PR fortran/94331
+	PR fortran/97046
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc): Add code
+	to verify the descriptor. Correct bounds calculation.
+	(gfc_desc_to_cfi_desc): Add code to verify the descriptor.
+
 2021-07-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* runtime/ISO_Fortran_binding.c (CFI_allocate): Don't use elem_len

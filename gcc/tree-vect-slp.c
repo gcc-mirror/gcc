@@ -3648,8 +3648,10 @@ vect_optimize_slp (vec_info *vinfo)
       slp_tree node = vertices[idx].node;
 
       /* Handle externals and constants optimistically throughout the
-	 iteration.  */
-      if (SLP_TREE_DEF_TYPE (node) == vect_external_def
+	 iteration.  But treat existing vectors as fixed since we
+	 do not handle permuting them below.  */
+      if ((SLP_TREE_DEF_TYPE (node) == vect_external_def
+	   && !SLP_TREE_VEC_DEFS (node).exists ())
 	  || SLP_TREE_DEF_TYPE (node) == vect_constant_def)
 	continue;
 
@@ -3712,6 +3714,18 @@ vect_optimize_slp (vec_info *vinfo)
       vertices[idx].perm_in = perms.length () - 1;
       vertices[idx].perm_out = perms.length () - 1;
     }
+
+  /* In addition to the above we have to mark outgoing permutes facing
+     non-reduction graph entries that are not represented as to be
+     materialized.  */
+  for (slp_instance instance : vinfo->slp_instances)
+    if (SLP_INSTANCE_KIND (instance) == slp_inst_kind_ctor)
+      {
+	/* Just setting perm_out isn't enough for the propagation to
+	   pick this up.  */
+	vertices[SLP_INSTANCE_TREE (instance)->vertex].perm_in = 0;
+	vertices[SLP_INSTANCE_TREE (instance)->vertex].perm_out = 0;
+      }
 
   /* Propagate permutes along the graph and compute materialization points.  */
   bool changed;

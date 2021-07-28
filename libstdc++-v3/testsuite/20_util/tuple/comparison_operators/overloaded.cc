@@ -48,4 +48,3 @@ TwistedLogic operator<(const Compares&, const Compares&) { return {false}; }
 
 auto a = std::make_tuple(nullptr, Compares{}, 2, 'U');
 auto b = a == a;
-auto c = a < a;

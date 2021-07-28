@@ -220,11 +220,11 @@ enum access_direction
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,
 				     unsigned int num_args);
-extern bool is_named_call_p (tree fndecl, const char *funcname);
-extern bool is_named_call_p (tree fndecl, const char *funcname,
+extern bool is_named_call_p (const_tree fndecl, const char *funcname);
+extern bool is_named_call_p (const_tree fndecl, const char *funcname,
 			     const gcall *call, unsigned int num_args);
-extern bool is_std_named_call_p (tree fndecl, const char *funcname);
-extern bool is_std_named_call_p (tree fndecl, const char *funcname,
+extern bool is_std_named_call_p (const_tree fndecl, const char *funcname);
+extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
 extern bool is_longjmp_call_p (const gcall *call);

@@ -1986,7 +1986,7 @@ vect_recog_mulhs_pattern (vec_info *vinfo,
 
   stmt_vec_info mulh_stmt_info;
   tree scale_term;
-  internal_fn ifn;
+  bool rounding_p = false;
 
   /* Check for the presence of the rounding term.  */
   if (gimple_assign_rhs_code (rshift_input_stmt) == PLUS_EXPR)
@@ -2035,36 +2035,17 @@ vect_recog_mulhs_pattern (vec_info *vinfo,
 
       /* Get the scaling term.  */
       scale_term = gimple_assign_rhs2 (plus_input_stmt);
-      /* Check that the scaling factor is correct.  */
-      if (TREE_CODE (scale_term) != INTEGER_CST)
-	return NULL;
-
-      /* Check pattern 2).  */
-      if (wi::to_widest (scale_term) + target_precision + 2
-	  != TYPE_PRECISION (lhs_type))
-	return NULL;
-
-      ifn = IFN_MULHRS;
+      rounding_p = true;
     }
   else
     {
       mulh_stmt_info = rshift_input_stmt_info;
       scale_term = gimple_assign_rhs2 (last_stmt);
-      /* Check that the scaling factor is correct.  */
-      if (TREE_CODE (scale_term) != INTEGER_CST)
-	return NULL;
-
-      /* Check for pattern 1).  */
-      if (wi::to_widest (scale_term) + target_precision + 1
-	  == TYPE_PRECISION (lhs_type))
-	ifn = IFN_MULHS;
-      /* Check for pattern 3).  */
-      else if (wi::to_widest (scale_term) + target_precision
-	       == TYPE_PRECISION (lhs_type))
-	ifn = IFN_MULH;
-      else
-	return NULL;
     }
+
+  /* Check that the scaling factor is constant.  */
+  if (TREE_CODE (scale_term) != INTEGER_CST)
+    return NULL;
 
   /* Check whether the scaling input term can be seen as two widened
      inputs multiplied together.  */
@@ -2076,12 +2057,40 @@ vect_recog_mulhs_pattern (vec_info *vinfo,
   if (nops != 2)
     return NULL;
 
-  vect_pattern_detected ("vect_recog_mulhs_pattern", last_stmt);
-
   /* Adjust output precision.  */
   if (TYPE_PRECISION (new_type) < target_precision)
     new_type = build_nonstandard_integer_type
       (target_precision, TYPE_UNSIGNED (new_type));
+
+  unsigned mult_precision = TYPE_PRECISION (new_type);
+  internal_fn ifn;
+  /* Check that the scaling factor is expected.  Instead of
+     target_precision, we should use the one that we actually
+     use for internal function.  */
+  if (rounding_p)
+    {
+      /* Check pattern 2).  */
+      if (wi::to_widest (scale_term) + mult_precision + 2
+	  != TYPE_PRECISION (lhs_type))
+	return NULL;
+
+      ifn = IFN_MULHRS;
+    }
+  else
+    {
+      /* Check for pattern 1).  */
+      if (wi::to_widest (scale_term) + mult_precision + 1
+	  == TYPE_PRECISION (lhs_type))
+	ifn = IFN_MULHS;
+      /* Check for pattern 3).  */
+      else if (wi::to_widest (scale_term) + mult_precision
+	       == TYPE_PRECISION (lhs_type))
+	ifn = IFN_MULH;
+      else
+	return NULL;
+    }
+
+  vect_pattern_detected ("vect_recog_mulhs_pattern", last_stmt);
 
   /* Check for target support.  */
   tree new_vectype = get_vectype_for_scalar_type (vinfo, new_type);

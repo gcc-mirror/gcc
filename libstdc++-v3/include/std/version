@@ -94,7 +94,7 @@
 # define __cpp_lib_string_udls 201304
 # define __cpp_lib_transparent_operators 201510
 # define __cpp_lib_tuple_element_t 201402L
-# define __cpp_lib_tuples_by_type 201304
+# define __cpp_lib_tuples_by_type 201304L
 #endif
 
 #if __cplusplus >= 201703L

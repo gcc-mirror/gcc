@@ -71,7 +71,7 @@
    end block blk2
 end
 
-! { dg-output "CFI_address: subscripts\\\[0\\\] is out of bounds. For dimension = 0, subscripts = -1, lower_bound = 0, upper bound = 4, extend = 4(\n|\r\n|\r)" }
-! { dg-output "CFI_address: subscripts\\\[0\\\] is out of bounds. For dimension = 0, subscripts = 5, lower_bound = 0, upper bound = 4, extend = 4(\n|\r\n|\r).*" }
-! { dg-output "CFI_address: subscripts\\\[0\\\] is out of bounds. For dimension = 0, subscripts = -3, lower_bound = -2, upper bound = 6, extend = 4(\n|\r\n|\r)" }
-! { dg-output "CFI_address: subscripts\\\[0\\\] is out of bounds. For dimension = 0, subscripts = 2, lower_bound = -2, upper bound = 6, extend = 4(\n|\r\n|\r)" }
+! { dg-output "CFI_address: subscripts\\\[0\\\] is out of bounds. For dimension = 0, subscripts = -1, lower_bound = 0, upper bound = 4, extent = 4(\n|\r\n|\r)" }
+! { dg-output "CFI_address: subscripts\\\[0\\\] is out of bounds. For dimension = 0, subscripts = 5, lower_bound = 0, upper bound = 4, extent = 4(\n|\r\n|\r).*" }
+! { dg-output "CFI_address: subscripts\\\[0\\\] is out of bounds. For dimension = 0, subscripts = -3, lower_bound = -2, upper bound = 6, extent = 4(\n|\r\n|\r)" }
+! { dg-output "CFI_address: subscripts\\\[0\\\] is out of bounds. For dimension = 0, subscripts = 2, lower_bound = -2, upper bound = 6, extent = 4(\n|\r\n|\r)" }

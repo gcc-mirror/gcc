@@ -429,16 +429,16 @@ inline namespace v1
 
     __socket_impl(__socket_impl&& __rhs)
     : _M_ctx(__rhs._M_ctx),
-      _M_sockfd(std::exchange(__rhs._M_sockfd, -1)),
-      _M_bits(std::exchange(__rhs._M_bits, {}))
+      _M_sockfd(std::__exchange(__rhs._M_sockfd, -1)),
+      _M_bits(std::__exchange(__rhs._M_bits, {}))
     { }
 
     __socket_impl&
     operator=(__socket_impl&& __rhs)
     {
       _M_ctx = __rhs._M_ctx;
-      _M_sockfd = std::exchange(__rhs._M_sockfd, -1);
-      _M_bits = std::exchange(__rhs._M_bits, {});
+      _M_sockfd = std::__exchange(__rhs._M_sockfd, -1);
+      _M_bits = std::__exchange(__rhs._M_bits, {});
       return *this;
     }
 
@@ -615,7 +615,7 @@ inline namespace v1
       {
 	__glibcxx_assert(is_open());
 	cancel(__ec);
-	return std::exchange(_M_sockfd, -1);
+	return std::__exchange(_M_sockfd, -1);
       }
 
       template<typename _SettableSocketOption>

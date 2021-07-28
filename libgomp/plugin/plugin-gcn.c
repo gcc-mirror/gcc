@@ -292,7 +292,6 @@ struct copy_data
   void *dst;
   const void *src;
   size_t len;
-  bool free_src;
   struct goacc_asyncqueue *aq;
 };
 
@@ -2914,8 +2913,6 @@ copy_data (void *data_)
 	     data->aq->agent->device_id, data->aq->id, data->len, data->src,
 	     data->dst);
   hsa_memory_copy_wrapper (data->dst, data->src, data->len);
-  if (data->free_src)
-    free ((void *) data->src);
   free (data);
 }
 
@@ -2929,12 +2926,11 @@ gomp_offload_free (void *ptr)
 }
 
 /* Request an asynchronous data copy, to or from a device, on a given queue.
-   The event will be registered as a callback.  If FREE_SRC is true
-   then the source data will be freed following the copy.  */
+   The event will be registered as a callback.  */
 
 static void
 queue_push_copy (struct goacc_asyncqueue *aq, void *dst, const void *src,
-		 size_t len, bool free_src)
+		 size_t len)
 {
   if (DEBUG_QUEUES)
     GCN_DEBUG ("queue_push_copy %d:%d: %zu bytes from (%p) to (%p)\n",
@@ -2944,7 +2940,6 @@ queue_push_copy (struct goacc_asyncqueue *aq, void *dst, const void *src,
   data->dst = dst;
   data->src = src;
   data->len = len;
-  data->free_src = free_src;
   data->aq = aq;
   queue_push_callback (aq, copy_data, data);
 }
@@ -3646,7 +3641,7 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst, const void *src, size_t n)
     {
       struct agent_info *agent = get_agent_info (device);
       maybe_init_omp_async (agent);
-      queue_push_copy (agent->omp_async_queue, dst, src, n, false);
+      queue_push_copy (agent->omp_async_queue, dst, src, n);
       return true;
     }
 
@@ -3916,15 +3911,7 @@ GOMP_OFFLOAD_openacc_async_host2dev (int device, void *dst, const void *src,
 {
   struct agent_info *agent = get_agent_info (device);
   assert (agent == aq->agent);
-  /* The source data does not necessarily remain live until the deferred
-     copy happens.  Taking a snapshot of the data here avoids reading
-     uninitialised data later, but means that (a) data is copied twice and
-     (b) modifications to the copied data between the "spawning" point of
-     the asynchronous kernel and when it is executed will not be seen.
-     But, that is probably correct.  */
-  void *src_copy = GOMP_PLUGIN_malloc (n);
-  memcpy (src_copy, src, n);
-  queue_push_copy (aq, dst, src_copy, n, true);
+  queue_push_copy (aq, dst, src, n);
   return true;
 }
 
@@ -3936,7 +3923,7 @@ GOMP_OFFLOAD_openacc_async_dev2host (int device, void *dst, const void *src,
 {
   struct agent_info *agent = get_agent_info (device);
   assert (agent == aq->agent);
-  queue_push_copy (aq, dst, src, n, false);
+  queue_push_copy (aq, dst, src, n);
   return true;
 }
 

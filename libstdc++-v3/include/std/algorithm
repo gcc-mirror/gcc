@@ -57,7 +57,6 @@
 
 #pragma GCC system_header
 
-#include <utility> // UK-300.
 #include <bits/stl_algobase.h>
 #include <bits/stl_algo.h>
 #if __cplusplus > 201703L

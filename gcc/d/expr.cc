@@ -157,7 +157,7 @@ binary_op (tree_code code, tree type, tree arg0, tree arg1)
 	  eptype = type;
 	}
 
-      ret = fold_build2 (code, eptype, arg0, arg1);
+      ret = build2 (code, eptype, arg0, arg1);
     }
 
   return d_convert (type, ret);

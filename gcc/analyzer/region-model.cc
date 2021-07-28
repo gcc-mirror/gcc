@@ -1066,14 +1066,11 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
   if (tree lhs = gimple_call_lhs (call))
     {
       const region *lhs_region = get_lvalue (lhs, ctxt);
-      if (TREE_CODE (lhs) == SSA_NAME)
-	{
-	  const svalue *sval
-	    = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
-						    lhs_region);
-	  purge_state_involving (sval, ctxt);
-	  set_value (lhs_region, sval, ctxt);
-	}
+      const svalue *sval
+	= m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
+						lhs_region);
+      purge_state_involving (sval, ctxt);
+      set_value (lhs_region, sval, ctxt);
     }
 
   if (gimple_call_internal_p (call))

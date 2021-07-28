@@ -4165,16 +4165,18 @@ class vrp_jump_threader_simplifier : public jump_threader_simplifier
 {
 public:
   vrp_jump_threader_simplifier (vr_values *v, avail_exprs_stack *avails)
-    : jump_threader_simplifier (v, avails) {}
+    : jump_threader_simplifier (v), m_avail_exprs_stack (avails) { }
 
 private:
-  tree simplify (gimple *, gimple *, basic_block) OVERRIDE;
+  tree simplify (gimple *, gimple *, basic_block, jt_state *) OVERRIDE;
+  avail_exprs_stack *m_avail_exprs_stack;
 };
 
 tree
 vrp_jump_threader_simplifier::simplify (gimple *stmt,
 					gimple *within_stmt,
-					basic_block bb)
+					basic_block bb,
+					jt_state *state)
 {
   /* First see if the conditional is in the hash table.  */
   tree cached_lhs = m_avail_exprs_stack->lookup_avail_expr (stmt, false, true);
@@ -4206,7 +4208,7 @@ vrp_jump_threader_simplifier::simplify (gimple *stmt,
       return find_case_label_range (switch_stmt, vr);
     }
 
-  return jump_threader_simplifier::simplify (stmt, within_stmt, bb);
+  return jump_threader_simplifier::simplify (stmt, within_stmt, bb, state);
 }
 
 /* Blocks which have more than one predecessor and more than
@@ -4257,6 +4259,7 @@ private:
   hash_table<expr_elt_hasher> *m_avail_exprs;
   vrp_jump_threader_simplifier *m_simplifier;
   jump_threader *m_threader;
+  jt_state *m_state;
 };
 
 vrp_jump_threader::vrp_jump_threader (struct function *fun, vr_values *v)
@@ -4282,11 +4285,11 @@ vrp_jump_threader::vrp_jump_threader (struct function *fun, vr_values *v)
   m_vr_values = v;
   m_avail_exprs = new hash_table<expr_elt_hasher> (1024);
   m_avail_exprs_stack = new avail_exprs_stack (m_avail_exprs);
+  m_state = new jt_state (m_const_and_copies, m_avail_exprs_stack, NULL);
 
   m_simplifier = new vrp_jump_threader_simplifier (m_vr_values,
 						   m_avail_exprs_stack);
-  m_threader = new jump_threader (m_const_and_copies, m_avail_exprs_stack,
-				  m_simplifier);
+  m_threader = new jump_threader (m_simplifier, m_state);
 }
 
 vrp_jump_threader::~vrp_jump_threader ()
@@ -4299,6 +4302,7 @@ vrp_jump_threader::~vrp_jump_threader ()
   delete m_avail_exprs_stack;
   delete m_simplifier;
   delete m_threader;
+  delete m_state;
 }
 
 /* Called before processing dominator children of BB.  We want to look

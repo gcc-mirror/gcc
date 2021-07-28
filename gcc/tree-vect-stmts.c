@@ -836,20 +836,24 @@ vect_model_simple_cost (vec_info *,
    one if two-step promotion/demotion is required, and so on.  NCOPIES
    is the number of vector results (and thus number of instructions)
    for the narrowest end of the operation chain.  Each additional
-   step doubles the number of instructions required.  */
+   step doubles the number of instructions required.  If WIDEN_ARITH
+   is true the stmt is doing widening arithmetic.  */
 
 static void
 vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
 				    enum vect_def_type *dt,
 				    unsigned int ncopies, int pwr,
-				    stmt_vector_for_cost *cost_vec)
+				    stmt_vector_for_cost *cost_vec,
+				    bool widen_arith)
 {
   int i;
   int inside_cost = 0, prologue_cost = 0;
 
   for (i = 0; i < pwr + 1; i++)
     {
-      inside_cost += record_stmt_cost (cost_vec, ncopies, vec_promote_demote,
+      inside_cost += record_stmt_cost (cost_vec, ncopies,
+				       widen_arith
+				       ? vector_stmt : vec_promote_demote,
 				       stmt_info, 0, vect_body);
       ncopies *= 2;
     }
@@ -4690,6 +4694,10 @@ vectorizable_conversion (vec_info *vinfo,
       && code != WIDEN_LSHIFT_EXPR)
     return false;
 
+  bool widen_arith = (code == WIDEN_PLUS_EXPR
+		      || code == WIDEN_MINUS_EXPR
+		      || code == WIDEN_MULT_EXPR
+		      || code == WIDEN_LSHIFT_EXPR);
   op_type = TREE_CODE_LENGTH (code);
 
   /* Check types of lhs and rhs.  */
@@ -4779,10 +4787,7 @@ vectorizable_conversion (vec_info *vinfo,
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (known_eq (nunits_out, nunits_in))
-    if (code == WIDEN_MINUS_EXPR
-	|| code == WIDEN_PLUS_EXPR
-	|| code == WIDEN_LSHIFT_EXPR
-	|| code == WIDEN_MULT_EXPR)
+    if (widen_arith)
       modifier = WIDEN;
     else
       modifier = NONE;
@@ -4959,7 +4964,8 @@ vectorizable_conversion (vec_info *vinfo,
 	  unsigned int nvectors
 	    = (slp_node ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies);
 	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
-					      multi_step_cvt, cost_vec);
+					      multi_step_cvt, cost_vec,
+					      widen_arith);
 	}
       else
 	{
@@ -4972,7 +4978,8 @@ vectorizable_conversion (vec_info *vinfo,
 	       ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) >> multi_step_cvt
 	       : ncopies * 2);
 	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
-					      multi_step_cvt, cost_vec);
+					      multi_step_cvt, cost_vec,
+					      widen_arith);
 	}
       interm_types.release ();
       return true;

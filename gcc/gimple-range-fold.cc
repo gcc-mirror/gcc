@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
+#include "langhooks.h"
 #include "vr-values.h"
 #include "range.h"
 #include "value-query.h"
@@ -835,6 +836,28 @@ fold_using_range::range_of_builtin_ubsan_call (irange &r, gcall *call,
     r.set_varying (type);
 }
 
+// Return TRUE if we recognize the target character set and return the
+// range for lower case and upper case letters.
+
+static bool
+get_letter_range (tree type, irange &lowers, irange &uppers)
+{
+  // ASCII
+  int a = lang_hooks.to_target_charset ('a');
+  int z = lang_hooks.to_target_charset ('z');
+  int A = lang_hooks.to_target_charset ('A');
+  int Z = lang_hooks.to_target_charset ('Z');
+
+  if ((z - a == 25) && (Z - A == 25))
+    {
+      lowers = int_range<2> (build_int_cst (type, a), build_int_cst (type, z));
+      uppers = int_range<2> (build_int_cst (type, A), build_int_cst (type, Z));
+      return true;
+    }
+  // Unknown character set.
+  return false;
+}
+
 // For a builtin in CALL, return a range in R if known and return
 // TRUE.  Otherwise return FALSE.
 
@@ -873,13 +896,16 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
 	arg = gimple_call_arg (call, 0);
 	if (!src.get_operand (r, arg))
 	  return false;
+
+	int_range<3> lowers;
+	int_range<3> uppers;
+	if (!get_letter_range (type, lowers, uppers))
+	  return false;
+
 	// Return the range passed in without any lower case characters,
 	// but including all the upper case ones.
-	int_range<2> exclude (build_int_cst (type, 'a'),
-			      build_int_cst (type, 'z'), VR_ANTI_RANGE);
-	r.intersect (exclude);
-	int_range<2> uppers (build_int_cst (type, 'A'),
-			      build_int_cst (type, 'Z'));
+	lowers.invert ();
+	r.intersect (lowers);
 	r.union_ (uppers);
 	return true;
       }
@@ -889,13 +915,16 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
 	arg = gimple_call_arg (call, 0);
 	if (!src.get_operand (r, arg))
 	  return false;
+
+	int_range<3> lowers;
+	int_range<3> uppers;
+	if (!get_letter_range (type, lowers, uppers))
+	  return false;
+
 	// Return the range passed in without any upper case characters,
 	// but including all the lower case ones.
-	int_range<2> exclude (build_int_cst (type, 'A'),
-			      build_int_cst (type, 'Z'), VR_ANTI_RANGE);
-	r.intersect (exclude);
-	int_range<2> lowers (build_int_cst (type, 'a'),
-			      build_int_cst (type, 'z'));
+	uppers.invert ();
+	r.intersect (uppers);
 	r.union_ (lowers);
 	return true;
       }

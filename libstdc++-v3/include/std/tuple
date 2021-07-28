@@ -35,10 +35,10 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <utility>
-#include <array>
-#include <bits/uses_allocator.h>
-#include <bits/invoke.h>
+#include <bits/stl_pair.h>		// for std::pair
+#include <bits/uses_allocator.h>	// for std::allocator_arg_t
+#include <bits/utility.h>		// for std::get, std::tuple_size etc.
+#include <bits/invoke.h>		// for std::__invoke
 #if __cplusplus > 201703L
 # include <compare>
 # define __cpp_lib_constexpr_tuple 201811L
@@ -1415,7 +1415,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201402L
 
-#define __cpp_lib_tuples_by_type 201304
+#define __cpp_lib_tuples_by_type 201304L
 
   // Return the index of _Tp in _Types, if it occurs exactly once.
   // Otherwise, return sizeof...(_Types).
@@ -1613,6 +1613,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
+  // Declarations of std::array and its std::get overloads, so that
+  // std::tuple_cat can use them if <tuple> is included before <array>.
+
+  template<typename _Tp, size_t _Nm> struct array;
+
+  template<size_t _Int, typename _Tp, size_t _Nm>
+    constexpr _Tp&
+    get(array<_Tp, _Nm>&) noexcept;
+
+  template<size_t _Int, typename _Tp, size_t _Nm>
+    constexpr _Tp&&
+    get(array<_Tp, _Nm>&&) noexcept;
+
+  template<size_t _Int, typename _Tp, size_t _Nm>
+    constexpr const _Tp&
+    get(const array<_Tp, _Nm>&) noexcept;
+
+  template<size_t _Int, typename _Tp, size_t _Nm>
+    constexpr const _Tp&&
+    get(const array<_Tp, _Nm>&&) noexcept;
+
+
   template<size_t, typename, typename, size_t>
     struct __make_tuple_impl;
 
@@ -1720,6 +1742,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _Ret(std::forward<_Us>(__us)...);
 	}
     };
+
+  template<typename... _Tps>
+    struct __is_tuple_like_impl<tuple<_Tps...>> : true_type
+    { };
 
   /// tuple_cat
   template<typename... _Tpls, typename = typename

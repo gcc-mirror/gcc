@@ -1,3 +1,8 @@
+2021-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_call_pre): Always set conjured
+	LHS, not just for SSA names.
+
 2021-07-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-manager.cc

@@ -1,3 +1,110 @@
+2021-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/101584
+	* gcc.dg/uninit-38.c: Remove assertions.
+	* gcc.dg/uninit-41.c: New test.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/101646
+	* g++.dg/coroutines/pr99047.C:
+	* g++.dg/pr71655.C:
+
+2021-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101585
+	* gcc.dg/Wvla-parameter-13.c: New test.
+
+2021-07-27  Jeff Law  <jlaw@localhost.localdomain>
+
+	* g++.dg/gcov/gcov-threads-1.C: Fix argument to pthread_join.
+
+2021-07-27  Marek Polacek  <polacek@redhat.com>
+
+	DR 1512
+	PR c++/99701
+	* g++.dg/cpp0x/nullptr11.C: Remove invalid tests.
+	* g++.dg/cpp0x/nullptr46.C: Add dg-error.
+	* g++.dg/cpp2a/spaceship-err7.C: New test.
+	* g++.dg/expr/ptr-comp4.C: New test.
+
+2021-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101573
+	* gcc.dg/uninit-pr101573.c: New testcase.
+	* gcc.dg/uninit-15-O0.c: Adjust.
+	* gcc.dg/uninit-15.c: Likewise.
+	* gcc.dg/uninit-23.c: Likewise.
+	* c-c++-common/uninit-17.c: Likewise.
+
+2021-07-27  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/remref-3.c: New test.
+	* gcc.dg/ipa/remref-4.c: Likewise.
+	* gcc.dg/ipa/remref-5.c: Likewise.
+	* gcc.dg/ipa/remref-6.c: Likewise.
+
+2021-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101586
+	* g++.dg/torture/builtin-clear-padding-4.C: New test.
+
+2021-07-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR testsuite/100170
+	* gcc.target/powerpc/ppc-eq0-1.c: Adjust insn counts if power10
+	code is generated.
+	* gcc.target/powerpc/ppc-ne0-1.c: (ne0): Adjust insn counts if
+	power10 code is generated.
+	(plus_ne0): Move to ppc-ne0-2.c.
+	(cmp_plus_ne): Likewise.
+	(plus_ne0_cmp): Likewise.
+	* gcc.target/powerpc/ppc-ne0-2.c: New file.
+
+2021-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/sock-1.c: New test.
+	* gcc.dg/analyzer/sock-2.c: New test.
+
+2021-07-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr78888.c: New.
+
+2021-07-26  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-eqrotate-1.c: New test case.
+	* gcc.dg/fold-eqbswap-1.c: New test case.
+
+2021-07-26  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93308
+	PR fortran/93963
+	PR fortran/94327
+	PR fortran/94331
+	PR fortran/97046
+	* gfortran.dg/ISO_Fortran_binding_1.f90: Add pointer attribute,
+	this test is still erroneous but now it compiles.
+	* gfortran.dg/bind_c_array_params_2.f90: Update regex to match
+	code changes.
+	* gfortran.dg/PR93308.f90: New test.
+	* gfortran.dg/PR93963.f90: New test.
+	* gfortran.dg/PR94327.c: New test.
+	* gfortran.dg/PR94327.f90: New test.
+	* gfortran.dg/PR94331.c: New test.
+	* gfortran.dg/PR94331.f90: New test.
+	* gfortran.dg/PR97046.f90: New test.
+
+2021-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-1.C: Use attribute syntax even for section
+	and scan directives.
+	* g++.dg/gomp/attrs-2.C: Likewise.
+	* g++.dg/gomp/attrs-6.C: New test.
+	* g++.dg/gomp/attrs-7.C: New test.
+	* g++.dg/gomp/attrs-8.C: New test.
+
 2021-07-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101536

@@ -1511,7 +1511,8 @@ malloc_state_machine::get_or_create_deallocator (tree deallocator_fndecl)
   /* Reuse "free".  */
   deallocator *d;
   if (is_named_call_p (deallocator_fndecl, "free")
-      || is_std_named_call_p (deallocator_fndecl, "free"))
+      || is_std_named_call_p (deallocator_fndecl, "free")
+      || is_named_call_p (deallocator_fndecl, "__builtin_free"))
     d = &m_free.m_deallocator;
   else
     {
@@ -1525,6 +1526,38 @@ malloc_state_machine::get_or_create_deallocator (tree deallocator_fndecl)
   return d;
 }
 
+/* Try to identify the function declaration either by name or as a known malloc
+   builtin.  */
+
+static bool
+known_allocator_p (const_tree fndecl, const gcall *call)
+{
+  /* Either it is a function we know by name and number of arguments... */
+  if (is_named_call_p (fndecl, "malloc", call, 1)
+      || is_named_call_p (fndecl, "calloc", call, 2)
+      || is_std_named_call_p (fndecl, "malloc", call, 1)
+      || is_std_named_call_p (fndecl, "calloc", call, 2)
+      || is_named_call_p (fndecl, "strdup", call, 1)
+      || is_named_call_p (fndecl, "strndup", call, 2))
+    return true;
+
+  /* ... or it is a builtin allocator that allocates objects freed with
+     __builtin_free.  */
+  if (fndecl_built_in_p (fndecl))
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+      case BUILT_IN_MALLOC:
+      case BUILT_IN_CALLOC:
+      case BUILT_IN_STRDUP:
+      case BUILT_IN_STRNDUP:
+	return true;
+      default:
+	break;
+      }
+
+  return false;
+}
+
 /* Implementation of state_machine::on_stmt vfunc for malloc_state_machine.  */
 
 bool
@@ -1535,14 +1568,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
     if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
       {
-	if (is_named_call_p (callee_fndecl, "malloc", call, 1)
-	    || is_named_call_p (callee_fndecl, "calloc", call, 2)
-	    || is_std_named_call_p (callee_fndecl, "malloc", call, 1)
-	    || is_std_named_call_p (callee_fndecl, "calloc", call, 2)
-	    || is_named_call_p (callee_fndecl, "__builtin_malloc", call, 1)
-	    || is_named_call_p (callee_fndecl, "__builtin_calloc", call, 2)
-	    || is_named_call_p (callee_fndecl, "strdup", call, 1)
-	    || is_named_call_p (callee_fndecl, "strndup", call, 2))
+	if (known_allocator_p (callee_fndecl, call))
 	  {
 	    on_allocator_call (sm_ctxt, call, &m_free);
 	    return true;

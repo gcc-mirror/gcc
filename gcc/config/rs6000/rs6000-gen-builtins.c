@@ -464,6 +464,108 @@ static rbt_strings fntype_rbt;
    identifiers to the order in which they were encountered.  */
 static rbt_strings bifo_rbt;
 
+/* Mapping from type tokens to type node names.  */
+struct typemap
+{
+  const char *key;
+  const char *value;
+};
+
+/* This table must be kept in alphabetical order, as we use binary
+   search for table lookups in map_token_to_type_node.  The table
+   maps tokens from a fntype string to a tree type.  For example,
+   in "si_ftype_hi" we would map "si" to "intSI_type_node" and
+   map "hi" to "intHI_type_node".  */
+#define TYPE_MAP_SIZE 86
+static typemap type_map[TYPE_MAP_SIZE] =
+  {
+    { "bi",		"bool_int" },
+    { "bv16qi",		"bool_V16QI" },
+    { "bv1ti",		"bool_V1TI" },
+    { "bv2di",		"bool_V2DI" },
+    { "bv4si",		"bool_V4SI" },
+    { "bv8hi",		"bool_V8HI" },
+    { "ci",		"integer" },
+    { "dd",		"dfloat64" },
+    { "df",		"double" },
+    { "di",		"long_long_integer" },
+    { "hi",		"intHI" },
+    { "if",		"ibm128_float" },
+    { "ld",		"long_double" },
+    { "lg",		"long_integer" },
+    { "pbv16qi",	"ptr_bool_V16QI" },
+    { "pbv1ti",		"ptr_bool_V1TI" },
+    { "pbv2di",		"ptr_bool_V2DI" },
+    { "pbv4si",		"ptr_bool_V4SI" },
+    { "pbv8hi",		"ptr_bool_V8HI" },
+    { "pcvoid",		"pcvoid" },
+    { "pdd",		"ptr_dfloat64" },
+    { "pdf",		"ptr_double" },
+    { "pdi",		"ptr_long_long_integer" },
+    { "phi",		"ptr_intHI" },
+    { "pif",		"ptr_ibm128_float" },
+    { "pld",		"ptr_long_double" },
+    { "plg",		"ptr_long_integer" },
+    { "pqi",		"ptr_intQI" },
+    { "psf",		"ptr_float" },
+    { "psi",		"ptr_intSI" },
+    { "ptd",		"ptr_dfloat128" },
+    { "ptf",		"ptr_float128" },
+    { "pti",		"ptr_intTI" },
+    { "pudi",		"ptr_long_long_unsigned" },
+    { "puhi",		"ptr_uintHI" },
+    { "pulg",		"ptr_long_unsigned" },
+    { "puqi",		"ptr_uintQI" },
+    { "pusi",		"ptr_uintSI" },
+    { "puti",		"ptr_uintTI" },
+    { "puv16qi",	"ptr_unsigned_V16QI" },
+    { "puv1ti",		"ptr_unsigned_V1TI" },
+    { "puv2di",		"ptr_unsigned_V2DI" },
+    { "puv4si",		"ptr_unsigned_V4SI" },
+    { "puv8hi",		"ptr_unsigned_V8HI" },
+    { "pv",		"ptr" },
+    { "pv16qi",		"ptr_V16QI" },
+    { "pv1poi",		"ptr_vector_pair" },
+    { "pv1pxi",		"ptr_vector_quad" },
+    { "pv1ti",		"ptr_V1TI" },
+    { "pv2df",		"ptr_V2DF" },
+    { "pv2di",		"ptr_V2DI" },
+    { "pv4sf",		"ptr_V4SF" },
+    { "pv4si",		"ptr_V4SI" },
+    { "pv8hi",		"ptr_V8HI" },
+    { "pvp8hi",		"ptr_pixel_V8HI" },
+    { "qi",		"intQI" },
+    { "sd",		"dfloat32" },
+    { "sf",		"float" },
+    { "si",		"intSI" },
+    { "st",		"const_str" },
+    { "td",		"dfloat128" },
+    { "tf",		"float128" },
+    { "ti",		"intTI" },
+    { "udi",		"long_long_unsigned" },
+    { "uhi",		"unsigned_intHI" },
+    { "ulg",		"long_unsigned" },
+    { "uqi",		"unsigned_intQI" },
+    { "usi",		"unsigned_intSI" },
+    { "uti",		"unsigned_intTI" },
+    { "uv16qi",		"unsigned_V16QI" },
+    { "uv1ti",		"unsigned_V1TI" },
+    { "uv2di",		"unsigned_V2DI" },
+    { "uv4si",		"unsigned_V4SI" },
+    { "uv8hi",		"unsigned_V8HI" },
+    { "v",		"void" },
+    { "v16qi",		"V16QI" },
+    { "v1poi",		"vector_pair" },
+    { "v1pxi",		"vector_quad" },
+    { "v1ti",		"V1TI" },
+    { "v2df",		"V2DF" },
+    { "v2di",		"V2DI" },
+    { "v4sf",		"V4SF" },
+    { "v4si",		"V4SI" },
+    { "v8hi",		"V8HI" },
+    { "vp8hi",		"pixel_V8HI" },
+  };
+
 /* Pointer to a diagnostic function.  */
 static void (*diag) (const char *, ...)
   __attribute__ ((format (printf, 1, 2)));
@@ -2219,10 +2321,71 @@ write_fntype (char *str)
   fprintf (init_file, "tree %s;\n", str);
 }
 
+/* Comparator for bsearch on the type map.  */
+int
+typemap_cmp (const void *key, const void *entry)
+{
+  return strcmp ((const char *)key, ((const typemap *)entry)->key);
+}
+
+/* Write the type node corresponding to TOK.  */
+static void
+write_type_node (char *tok, bool indent)
+{
+  if (indent)
+    fprintf (init_file, "  ");
+  typemap *entry = (typemap *) bsearch (tok, type_map, TYPE_MAP_SIZE,
+					sizeof (typemap), typemap_cmp);
+  if (!entry)
+    fatal ("Type map is inconsistent.");
+  fprintf (init_file, "%s_type_node", entry->value);
+}
+
 /* Write an initializer for a function type identified by STR.  */
 void
 write_fntype_init (char *str)
 {
+  char *tok;
+
+  /* Check whether we have a "tf" token in this string, representing
+     a float128_type_node.  It's possible that float128_type_node is
+     undefined (occurs for -maltivec -mno-vsx, for example), so we
+     must guard against that.  */
+  int tf_found = strstr (str, "tf") != NULL;
+
+  /* Similarly, look for decimal float tokens.  */
+  int dfp_found = (strstr (str, "dd") != NULL
+		   || strstr (str, "td") != NULL
+		   || strstr (str, "sd") != NULL);
+
+  /* Avoid side effects of strtok on the original string by using a copy.  */
+  char *buf = strdup (str);
+
+  if (tf_found)
+    fprintf (init_file, "  if (float128_type_node)\n  ");
+  else if (dfp_found)
+    fprintf (init_file, "  if (dfloat64_type_node)\n  ");
+
+  fprintf (init_file, "  %s\n    = build_function_type_list (", buf);
+  tok = strtok (buf, "_");
+  write_type_node (tok, tf_found || dfp_found);
+  tok = strtok (0, "_");
+  assert (tok);
+  assert (!strcmp (tok, "ftype"));
+
+  tok = strtok (0, "_");
+  if (tok)
+    fprintf (init_file, ",\n\t\t\t\t");
+
+  /* Note:  A function with no arguments ends with '_ftype_v'.  */
+  while (tok && strcmp (tok, "v"))
+    {
+      write_type_node (tok, tf_found || dfp_found);
+      tok = strtok (0, "_");
+      fprintf (init_file, ",\n\t\t\t\t");
+    }
+  fprintf (init_file, "NULL_TREE);\n");
+  free (buf);
 }
 
 /* Write everything to the header file (rs6000-builtins.h).  Return
@@ -2244,6 +2407,168 @@ write_header_file (void)
   fprintf (header_file, "\n#endif\n");
 
   return 1;
+}
+
+/* Write the decl and initializer for rs6000_builtin_info_x[].  */
+static void
+write_bif_static_init (void)
+{
+  const char *res[3];
+  fprintf (init_file, "bifdata rs6000_builtin_info_x[RS6000_BIF_MAX] =\n");
+  fprintf (init_file, "  {\n");
+  fprintf (init_file, "    { /* RS6000_BIF_NONE: */\n");
+  fprintf (init_file, "      \"\", ENB_ALWAYS, 0, CODE_FOR_nothing, 0,\n");
+  fprintf (init_file, "      0, {0, 0, 0}, {RES_NONE, RES_NONE, RES_NONE},\n");
+  fprintf (init_file, "      {0, 0, 0}, {0, 0, 0}, \"\", RS6000_BIF_NONE\n");
+  fprintf (init_file, "    },\n");
+  for (int i = 0; i <= curr_bif; i++)
+    {
+      bifdata *bifp = &bifs[bif_order[i]];
+      fprintf (init_file, "    { /* RS6000_BIF_%s: */\n", bifp->idname);
+      fprintf (init_file, "      /* bifname */\t\"%s\",\n",
+	       bifp->proto.bifname);
+      fprintf (init_file, "      /* enable*/\t%s,\n",
+	       enable_string[bifp->stanza]);
+      /* Type must be instantiated at run time.  */
+      fprintf (init_file, "      /* fntype */\t0,\n");
+      fprintf (init_file, "      /* icode */\tCODE_FOR_%s,\n",
+	       bifp->patname);
+      fprintf (init_file, "      /* nargs */\t%d,\n",
+	       bifp->proto.nargs);
+      fprintf (init_file, "      /* bifattrs */\t0");
+      if (bifp->attrs.isinit)
+	fprintf (init_file, " | bif_init_bit");
+      if (bifp->attrs.isset)
+	fprintf (init_file, " | bif_set_bit");
+      if (bifp->attrs.isextract)
+	fprintf (init_file, " | bif_extract_bit");
+      if (bifp->attrs.isnosoft)
+	fprintf (init_file, " | bif_nosoft_bit");
+      if (bifp->attrs.isldvec)
+	fprintf (init_file, " | bif_ldvec_bit");
+      if (bifp->attrs.isstvec)
+	fprintf (init_file, " | bif_stvec_bit");
+      if (bifp->attrs.isreve)
+	fprintf (init_file, " | bif_reve_bit");
+      if (bifp->attrs.ispred)
+	fprintf (init_file, " | bif_pred_bit");
+      if (bifp->attrs.ishtm)
+	fprintf (init_file, " | bif_htm_bit");
+      if (bifp->attrs.ishtmspr)
+	fprintf (init_file, " | bif_htmspr_bit");
+      if (bifp->attrs.ishtmcr)
+	fprintf (init_file, " | bif_htmcr_bit");
+      if (bifp->attrs.ismma)
+	fprintf (init_file, " | bif_mma_bit");
+      if (bifp->attrs.isquad)
+	fprintf (init_file, " | bif_quad_bit");
+      if (bifp->attrs.ispair)
+	fprintf (init_file, " | bif_pair_bit");
+      if (bifp->attrs.isno32bit)
+	fprintf (init_file, " | bif_no32bit_bit");
+      if (bifp->attrs.is32bit)
+	fprintf (init_file, " | bif_32bit_bit");
+      if (bifp->attrs.iscpu)
+	fprintf (init_file, " | bif_cpu_bit");
+      if (bifp->attrs.isldstmask)
+	fprintf (init_file, " | bif_ldstmask_bit");
+      if (bifp->attrs.islxvrse)
+	fprintf (init_file, " | bif_lxvrse_bit");
+      if (bifp->attrs.islxvrze)
+	fprintf (init_file, " | bif_lxvrze_bit");
+      if (bifp->attrs.isendian)
+	fprintf (init_file, " | bif_endian_bit");
+      fprintf (init_file, ",\n");
+      fprintf (init_file, "      /* restr_opnd */\t{%d, %d, %d},\n",
+	       bifp->proto.restr_opnd[0], bifp->proto.restr_opnd[1],
+	       bifp->proto.restr_opnd[2]);
+      for (int j = 0; j < 3; j++)
+	if (!bifp->proto.restr_opnd[j])
+	  res[j] = "RES_NONE";
+	else if (bifp->proto.restr[j] == RES_BITS)
+	  res[j] = "RES_BITS";
+	else if (bifp->proto.restr[j] == RES_RANGE)
+	  res[j] = "RES_RANGE";
+	else if (bifp->proto.restr[j] == RES_VALUES)
+	  res[j] = "RES_VALUES";
+	else if (bifp->proto.restr[j] == RES_VAR_RANGE)
+	  res[j] = "RES_VAR_RANGE";
+	else
+	  res[j] = "ERROR";
+      fprintf (init_file, "      /* restr */\t{%s, %s, %s},\n",
+	       res[0], res[1], res[2]);
+      fprintf (init_file, "      /* restr_val1 */\t{%s, %s, %s},\n",
+	       bifp->proto.restr_val1[0] ? bifp->proto.restr_val1[0] : "0",
+	       bifp->proto.restr_val1[1] ? bifp->proto.restr_val1[1] : "0",
+	       bifp->proto.restr_val1[2] ? bifp->proto.restr_val1[2] : "0");
+      fprintf (init_file, "      /* restr_val2 */\t{%s, %s, %s},\n",
+	       bifp->proto.restr_val2[0] ? bifp->proto.restr_val2[0] : "0",
+	       bifp->proto.restr_val2[1] ? bifp->proto.restr_val2[1] : "0",
+	       bifp->proto.restr_val2[2] ? bifp->proto.restr_val2[2] : "0");
+      fprintf (init_file, "      /* attr_string */\t\"%s\",\n",
+	       (bifp->kind == FNK_CONST ? "= const"
+		: (bifp->kind == FNK_PURE ? "= pure"
+		   : (bifp->kind == FNK_FPMATH ? "= fp, const"
+		      : ""))));
+      bool no_icode = !strcmp (bifp->patname, "nothing");
+      fprintf (init_file, "      /* assoc_bif */\tRS6000_BIF_%s%s\n",
+	       bifp->attrs.ismma && no_icode ? bifp->idname : "NONE",
+	       bifp->attrs.ismma && no_icode ? "_INTERNAL" : "");
+      fprintf (init_file, "    },\n");
+    }
+  fprintf (init_file, "  };\n\n");
+}
+
+/* Write the decls and initializers for rs6000_overload_info[] and
+   rs6000_instance_info[].  */
+static void
+write_ovld_static_init (void)
+{
+  fprintf (init_file,
+	   "ovldrecord rs6000_overload_info[RS6000_OVLD_MAX "
+	   "- RS6000_OVLD_NONE] =\n");
+  fprintf (init_file, "  {\n");
+  fprintf (init_file, "    { /* RS6000_OVLD_NONE: */\n");
+  fprintf (init_file, "      \"\", NULL\n");
+  fprintf (init_file, "    },\n");
+  for (int i = 0; i <= curr_ovld_stanza; i++)
+    {
+      fprintf (init_file, "    { /* RS6000_OVLD_%s: */\n",
+	       ovld_stanzas[i].stanza_id);
+      fprintf (init_file, "      /* ovld_name */\t\"%s\",\n",
+	       ovld_stanzas[i].intern_name);
+      /* First-instance must currently be instantiated at run time.  */
+      fprintf (init_file, "      /* first_instance */\tNULL\n");
+      fprintf (init_file, "    },\n");
+    }
+  fprintf (init_file, "  };\n\n");
+
+  fprintf (init_file, "ovlddata rs6000_instance_info[RS6000_INST_MAX] =\n");
+  fprintf (init_file, "  {\n");
+  fprintf (init_file, "    { /* RS6000_INST_NONE: */\n");
+  fprintf (init_file, "      \"\", RS6000_BIF_NONE, NULL_TREE, NULL\n");
+  fprintf (init_file, "    },\n");
+  for (int i = 0; i <= curr_ovld; i++)
+    {
+      fprintf (init_file, "    { /* RS6000_INST_%s: */\n",
+	       ovlds[i].ovld_id_name);
+      fprintf (init_file, "      /* bifname */\t\"%s\",\n",
+	       ovlds[i].proto.bifname);
+      fprintf (init_file, "      /* bifid */\tRS6000_BIF_%s,\n",
+	       ovlds[i].bif_id_name);
+      /* Type must be instantiated at run time.  */
+      fprintf (init_file, "      /* fntype */\t0,\n");
+      fprintf (init_file, "      /* next */\t");
+      if (i < curr_ovld
+	  && !strcmp (ovlds[i+1].proto.bifname, ovlds[i].proto.bifname))
+	fprintf (init_file,
+		 "&rs6000_instance_info[RS6000_INST_%s]\n",
+		 ovlds[i+1].ovld_id_name);
+      else
+	fprintf (init_file, "NULL\n");
+      fprintf (init_file, "    },\n");
+    }
+  fprintf (init_file, "  };\n\n");
 }
 
 /* Write code to initialize the built-in function table.  */
@@ -2434,6 +2759,9 @@ write_init_file (void)
   fprintf (init_file, "int new_builtins_are_live = 0;\n\n");
 
   fprintf (init_file, "tree rs6000_builtin_decls_x[RS6000_OVLD_MAX];\n\n");
+
+  write_bif_static_init ();
+  write_ovld_static_init ();
 
   rbt_inorder_callback (&fntype_rbt, fntype_rbt.rbt_root, write_fntype);
   fprintf (init_file, "\n");

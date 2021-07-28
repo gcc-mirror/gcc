@@ -240,7 +240,7 @@ is_special_named_call_p (const gcall *call, const char *funcname,
    Compare with special_function_p in calls.c.  */
 
 bool
-is_named_call_p (tree fndecl, const char *funcname)
+is_named_call_p (const_tree fndecl, const char *funcname)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -292,7 +292,7 @@ is_std_function_p (const_tree fndecl)
 /* Like is_named_call_p, but look for std::FUNCNAME.  */
 
 bool
-is_std_named_call_p (tree fndecl, const char *funcname)
+is_std_named_call_p (const_tree fndecl, const char *funcname)
 {
   gcc_assert (fndecl);
   gcc_assert (funcname);
@@ -314,7 +314,7 @@ is_std_named_call_p (tree fndecl, const char *funcname)
    arguments?  */
 
 bool
-is_named_call_p (tree fndecl, const char *funcname,
+is_named_call_p (const_tree fndecl, const char *funcname,
 		 const gcall *call, unsigned int num_args)
 {
   gcc_assert (fndecl);
@@ -332,7 +332,7 @@ is_named_call_p (tree fndecl, const char *funcname,
 /* Like is_named_call_p, but check for std::FUNCNAME.  */
 
 bool
-is_std_named_call_p (tree fndecl, const char *funcname,
+is_std_named_call_p (const_tree fndecl, const char *funcname,
 		     const gcall *call, unsigned int num_args)
 {
   gcc_assert (fndecl);

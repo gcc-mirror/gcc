@@ -24441,8 +24441,16 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   for (int i = 0; i < 8; i ++)
     temp_operands[i] = operands[i];
 
-  /* Sort the operands.  */
-  qsort (temp_operands, 4, 2 * sizeof (rtx *), aarch64_ldrstr_offset_compare);
+  /* Sort the operands.  Note for cases as below:
+       [base + 0x310] = A
+       [base + 0x320] = B
+       [base + 0x330] = C
+       [base + 0x320] = D
+     We need stable sorting otherwise wrong data may be store to offset 0x320.
+     Also note the dead store in above case should be optimized away, but no
+     guarantees here.  */
+  gcc_stablesort(temp_operands, 4, 2 * sizeof (rtx *),
+		 aarch64_ldrstr_offset_compare);
 
   /* Copy the memory operands so that if we have to bail for some
      reason the original addresses are unchanged.  */

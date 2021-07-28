@@ -20499,12 +20499,33 @@
 	  (match_operand:VI48_256 2 "nonimmediate_operand")))]
   "TARGET_AVX2")
 
-(define_expand "vashr<mode>3"
-  [(set (match_operand:VI8_256_512 0 "register_operand")
-	(ashiftrt:VI8_256_512
-	  (match_operand:VI8_256_512 1 "register_operand")
-	  (match_operand:VI8_256_512 2 "nonimmediate_operand")))]
+(define_expand "vashrv8di3"
+  [(set (match_operand:V8DI 0 "register_operand")
+	(ashiftrt:V8DI
+	  (match_operand:V8DI 1 "register_operand")
+	  (match_operand:V8DI 2 "nonimmediate_operand")))]
   "TARGET_AVX512F")
+
+(define_expand "vashrv4di3"
+  [(set (match_operand:V4DI 0 "register_operand")
+	(ashiftrt:V4DI
+	  (match_operand:V4DI 1 "register_operand")
+	  (match_operand:V4DI 2 "nonimmediate_operand")))]
+  "TARGET_AVX2"
+{
+  if (!TARGET_AVX512VL)
+    {
+      rtx mask = ix86_build_signbit_mask (V4DImode, 1, 0);
+      rtx t1 = gen_reg_rtx (V4DImode);
+      rtx t2 = gen_reg_rtx (V4DImode);
+      rtx t3 = gen_reg_rtx (V4DImode);
+      emit_insn (gen_vlshrv4di3 (t1, operands[1], operands[2]));
+      emit_insn (gen_vlshrv4di3 (t2, mask, operands[2]));
+      emit_insn (gen_xorv4di3 (t3, t1, t2));
+      emit_insn (gen_subv4di3 (operands[0], t3, t2));
+      DONE;
+    }
+})
 
 (define_expand "vashr<mode>3"
   [(set (match_operand:VI12_128 0 "register_operand")
@@ -20527,18 +20548,30 @@
     }
 })
 
-(define_expand "vashrv2di3<mask_name>"
+(define_expand "vashrv2di3"
   [(set (match_operand:V2DI 0 "register_operand")
 	(ashiftrt:V2DI
 	  (match_operand:V2DI 1 "register_operand")
 	  (match_operand:V2DI 2 "nonimmediate_operand")))]
-  "TARGET_XOP || TARGET_AVX512VL"
+  "TARGET_XOP || TARGET_AVX2"
 {
   if (TARGET_XOP)
     {
       rtx neg = gen_reg_rtx (V2DImode);
       emit_insn (gen_negv2di2 (neg, operands[2]));
       emit_insn (gen_xop_shav2di3 (operands[0], operands[1], neg));
+      DONE;
+    }
+  if (!TARGET_AVX512VL)
+    {
+      rtx mask = ix86_build_signbit_mask (V2DImode, 1, 0);
+      rtx t1 = gen_reg_rtx (V2DImode);
+      rtx t2 = gen_reg_rtx (V2DImode);
+      rtx t3 = gen_reg_rtx (V2DImode);
+      emit_insn (gen_vlshrv2di3 (t1, operands[1], operands[2]));
+      emit_insn (gen_vlshrv2di3 (t2, mask, operands[2]));
+      emit_insn (gen_xorv2di3 (t3, t1, t2));
+      emit_insn (gen_subv2di3 (operands[0], t3, t2));
       DONE;
     }
 })

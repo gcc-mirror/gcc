@@ -38,13 +38,13 @@
 #include <shared_mutex>			// shared_mutex
 #include <bits/align.h>			// align
 #include <bits/functexcept.h>		// __throw_bad_array_new_length
-#include <bits/uses_allocator.h>	// __use_alloc
+#include <bits/uses_allocator.h>	// allocator_arg_t, __use_alloc
 #include <bits/uses_allocator_args.h>	// uninitialized_construct_using_alloc
 #include <ext/numeric_traits.h>
 #include <debug/assertions.h>
 
 #if ! __cpp_lib_make_obj_using_allocator
-# include <utility>			// pair, index_sequence
+# include <bits/utility.h>		// index_sequence
 # include <tuple>			// tuple, forward_as_tuple
 #endif
 
@@ -338,10 +338,10 @@ namespace pmr
       { return _M_resource; }
 
     private:
+#if ! __cpp_lib_make_obj_using_allocator
       using __uses_alloc1_ = __uses_alloc1<polymorphic_allocator>;
       using __uses_alloc2_ = __uses_alloc2<polymorphic_allocator>;
 
-#if ! __cpp_lib_make_obj_using_allocator
       template<typename _Ind, typename... _Args>
 	static tuple<_Args&&...>
 	_S_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)

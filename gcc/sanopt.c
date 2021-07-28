@@ -492,7 +492,10 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
 				  &unsignedp, &reversep, &volatilep);
       if ((offset == NULL_TREE || TREE_CODE (offset) == INTEGER_CST)
 	  && DECL_P (base)
-	  && !DECL_REGISTER (base)
+	  && ((!VAR_P (base)
+	       && TREE_CODE (base) != PARM_DECL
+	       && TREE_CODE (base) != RESULT_DECL)
+	      || !DECL_REGISTER (base))
 	  && pbitpos.is_constant (&bitpos))
 	{
 	  offset_int expr_offset;
