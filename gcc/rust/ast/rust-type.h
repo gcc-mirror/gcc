@@ -65,6 +65,9 @@ public:
   TypePath &get_type_path () { return type_path; }
   const TypePath &get_type_path () const { return type_path; }
 
+  bool is_in_parens () const { return in_parens; }
+  bool has_opening_question_mark () const { return opening_question_mark; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

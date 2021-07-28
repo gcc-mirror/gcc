@@ -403,5 +403,11 @@ ASTLoweringBase::lower_type_no_bounds (AST::TypeNoBounds *type)
   return ASTLoweringType::translate (type);
 }
 
+HIR::TypeParamBound *
+ASTLoweringBase::lower_bound (AST::TypeParamBound *bound)
+{
+  return ASTLoweringTypeBounds::translate (bound);
+}
+
 } // namespace HIR
 } // namespace Rust

@@ -245,20 +245,6 @@ protected:
 
   HIR::Lifetime lower_lifetime (AST::Lifetime &lifetime)
   {
-    HIR::Lifetime::LifetimeType type = HIR::Lifetime::LifetimeType::NAMED;
-    switch (lifetime.get_lifetime_type ())
-      {
-      case AST::Lifetime::LifetimeType::NAMED:
-	type = HIR::Lifetime::LifetimeType::NAMED;
-	break;
-      case AST::Lifetime::LifetimeType::STATIC:
-	type = HIR::Lifetime::LifetimeType::STATIC;
-	break;
-      case AST::Lifetime::LifetimeType::WILDCARD:
-	type = HIR::Lifetime::LifetimeType::WILDCARD;
-	break;
-      }
-
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, lifetime.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
@@ -266,8 +252,8 @@ protected:
     mappings->insert_node_to_hir (mapping.get_crate_num (),
 				  mapping.get_nodeid (), mapping.get_hirid ());
 
-    return HIR::Lifetime (mapping, type, lifetime.get_lifetime_name (),
-			  lifetime.get_locus ());
+    return HIR::Lifetime (mapping, lifetime.get_lifetime_type (),
+			  lifetime.get_lifetime_name (), lifetime.get_locus ());
   }
 
   HIR::LoopLabel lower_loop_label (AST::LoopLabel &loop_label)
@@ -296,6 +282,8 @@ protected:
   HIR::SelfParam lower_self (AST::SelfParam &self);
 
   HIR::Type *lower_type_no_bounds (AST::TypeNoBounds *type);
+
+  HIR::TypeParamBound *lower_bound (AST::TypeParamBound *bound);
 };
 
 } // namespace HIR

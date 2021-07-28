@@ -1126,9 +1126,16 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  NodeId get_node_id () const { return node_id; }
+
 protected:
   // Clone function implementation as pure virtual method
   virtual TypeParamBound *clone_type_param_bound_impl () const = 0;
+
+  TypeParamBound () : node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  {}
+
+  NodeId node_id;
 };
 
 // Represents a lifetime (and is also a kind of type param bound)
@@ -1144,14 +1151,8 @@ public:
 
 private:
   LifetimeType lifetime_type;
-
-  // TODO: LIFETIME_OR_LABEL (aka lifetime token) is only field
-  // find way of enclosing token or something
   std::string lifetime_name;
-  // only applies for NAMED lifetime_type
-
   Location locus;
-
   NodeId node_id;
 
 public:

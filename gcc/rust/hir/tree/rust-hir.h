@@ -406,6 +406,12 @@ protected:
 class TypeParamBound
 {
 public:
+  enum BoundType
+  {
+    LIFETIME,
+    TRAITBOUND
+  };
+
   virtual ~TypeParamBound () {}
 
   // Unique pointer custom clone function
@@ -418,6 +424,12 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
+  virtual Analysis::NodeMapping get_mappings () const = 0;
+
+  virtual Location get_locus_slow () const = 0;
+
+  virtual BoundType get_bound_type () const = 0;
+
 protected:
   // Clone function implementation as pure virtual method
   virtual TypeParamBound *clone_type_param_bound_impl () const = 0;
@@ -426,30 +438,16 @@ protected:
 // Represents a lifetime (and is also a kind of type param bound)
 class Lifetime : public TypeParamBound
 {
-public:
-  enum LifetimeType
-  {
-    NAMED,   // corresponds to LIFETIME_OR_LABEL
-    STATIC,  // corresponds to 'static
-    WILDCARD // corresponds to '_
-  };
-
 private:
-  LifetimeType lifetime_type;
-
-  // TODO: LIFETIME_OR_LABEL (aka lifetime token) is only field
-  // find way of enclosing token or something
+  AST::Lifetime::LifetimeType lifetime_type;
   std::string lifetime_name;
-  // only applies for NAMED lifetime_type
-
   Location locus;
-
   Analysis::NodeMapping mappings;
 
 public:
   // Constructor
-  Lifetime (Analysis::NodeMapping mapping, LifetimeType type, std::string name,
-	    Location locus)
+  Lifetime (Analysis::NodeMapping mapping, AST::Lifetime::LifetimeType type,
+	    std::string name, Location locus)
     : lifetime_type (type), lifetime_name (std::move (name)), locus (locus),
       mappings (mapping)
   {}
@@ -457,13 +455,14 @@ public:
   // Returns true if the lifetime is in an error state.
   bool is_error () const
   {
-    return lifetime_type == NAMED && lifetime_name.empty ();
+    return lifetime_type == AST::Lifetime::LifetimeType::NAMED
+	   && lifetime_name.empty ();
   }
 
   static Lifetime error ()
   {
-    return Lifetime (Analysis::NodeMapping::get_error (), LifetimeType::NAMED,
-		     "", Location ());
+    return Lifetime (Analysis::NodeMapping::get_error (),
+		     AST::Lifetime::LifetimeType::NAMED, "", Location ());
   }
 
   std::string as_string () const override;
@@ -472,11 +471,21 @@ public:
 
   std::string get_name () const { return lifetime_name; }
 
-  LifetimeType get_lifetime_type () const { return lifetime_type; }
+  AST::Lifetime::LifetimeType get_lifetime_type () const
+  {
+    return lifetime_type;
+  }
 
   Location get_locus () const { return locus; }
 
-  Analysis::NodeMapping get_mappings () const { return mappings; }
+  Analysis::NodeMapping get_mappings () const override final
+  {
+    return mappings;
+  }
+
+  Location get_locus_slow () const override final { return get_locus (); }
+
+  BoundType get_bound_type () const final override { return LIFETIME; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

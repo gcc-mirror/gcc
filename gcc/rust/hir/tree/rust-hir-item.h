@@ -333,7 +333,8 @@ public:
   SelfParam (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
 	     bool is_mut, Location locus)
     : self_kind (is_mut ? ImplicitSelfKind::MUT : ImplicitSelfKind::IMM),
-      lifetime (Lifetime (mappings, Lifetime::LifetimeType::NAMED, "", locus)),
+      lifetime (
+	Lifetime (mappings, AST::Lifetime::LifetimeType::NAMED, "", locus)),
       type (std::move (type)), locus (locus), mappings (mappings)
   {}
 
