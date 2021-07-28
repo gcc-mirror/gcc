@@ -1,3 +1,135 @@
+2021-07-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (write_ovld_static_init): New
+	function.
+	(write_init_file): Call write_ovld_static_init.
+
+2021-07-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (write_bif_static_init): New
+	function.
+	(write_init_file): Call write_bif_static_init.
+
+2021-07-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (typemap): New struct.
+	(TYPE_MAP_SIZE): New macro.
+	(type_map): New initialized variable.
+	(typemap_cmp): New function.
+	(write_type_node): Likewise.
+	(write_fntype_init): Implement.
+
+2021-07-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/101584
+	* tree-ssa-uninit.c (builtin_call_nomodifying_p): New function.
+	(check_defs): Call it.
+
+2021-07-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-dom.c (dom_jump_threader_simplifier):
+	Put avail_exprs_stack in the class, instead of passing it to
+	jump_threader_simplifier.
+	(dom_jump_threader_simplifier::simplify): Add state argument.
+	(dom_opt_dom_walker): Add state.
+	(pass_dominator::execute): Pass state to threader.
+	(dom_opt_dom_walker::before_dom_children): Use state.
+	* tree-ssa-threadedge.c (jump_threader::jump_threader): Replace
+	arguments by state.
+	(jump_threader::record_temporary_equivalences_from_phis):
+	Register equivalences through the state variable.
+	(jump_threader::record_temporary_equivalences_from_stmts_at_dest):
+	Record ranges in a statement through the state variable.
+	(jump_threader::simplify_control_stmt_condition): Pass state to
+	simplify.
+	(jump_threader::simplify_control_stmt_condition_1): Same.
+	(jump_threader::thread_around_empty_blocks): Remove obsolete
+	comment.
+	(jump_threader::thread_through_normal_block): Record equivalences
+	on edge through the state variable.
+	(jump_threader::thread_across_edge): Abstract state pushing.
+	(jt_state::jt_state): New.
+	(jt_state::push): New.
+	(jt_state::pop): New.
+	(jt_state::register_equiv): New.
+	(jt_state::record_ranges_from_stmt): New.
+	(jt_state::register_equivs_on_edge): New.
+	(jump_threader_simplifier::jump_threader_simplifier): Move from
+	header.
+	(jump_threader_simplifier::simplify): Add state argument.
+	* tree-ssa-threadedge.h (class jt_state): New.
+	(class jump_threader): Add state to constructor.
+	(class jump_threader_simplifier): Add state to simplify.  Remove
+	avail_exprs_stack from class.
+	* tree-vrp.c (vrp_jump_threader_simplifier::simplify): Add state
+	argument.
+	(vrp_jump_threader::vrp_jump_threader): Add state.
+	(vrp_jump_threader::~vrp_jump_threader): Cleanup state.
+
+2021-07-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-range-path.o.
+	* gimple-range-path.cc: New file.
+	* gimple-range-path.h: New file.
+
+2021-07-27  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd.md: Push sign/zero-extension
+	inside vec_duplicate for all patterns.
+	* simplify-rtx.c (simplify_context::simplify_unary_operation_1):
+	Push sign/zero-extension inside vec_duplicate.
+
+2021-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101573
+	* tree-ssa-uninit.c (warn_uninit_phi_uses): New function
+	looking at uninitialized PHI arg defs in some constrained cases.
+	(warn_uninitialized_vars): Call it.
+	(execute_early_warn_uninitialized): Calculate dominators.
+
+2021-07-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/39821
+	* tree-vect-stmts.c (vect_model_promotion_demotion_cost): Use
+	vector_stmt for widening arithmetic.
+	(vectorizable_conversion): Adjust.
+
+2021-07-27  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (ipa_replace_map): New field force_load_ref.
+	* ipa-prop.h (ipa_param_descriptor): Reduce precision of move_cost,
+	aded new flag load_dereferenced, adjusted comments.
+	(ipa_get_param_dereferenced): New function.
+	(ipa_set_param_dereferenced): Likewise.
+	* cgraphclones.c (cgraph_node::create_virtual_clone): Follow it.
+	* ipa-cp.c: Include gimple.h.
+	(ipcp_discover_new_direct_edges): Take into account dereferenced flag.
+	(get_replacement_map): New parameter force_load_ref, set the
+	appropriate flag in ipa_replace_map if set.
+	(struct symbol_and_index_together): New type.
+	(adjust_refs_in_act_callers): New function.
+	(adjust_references_in_caller): Likewise.
+	(create_specialized_node): When appropriate, call
+	adjust_references_in_caller and force only load references.
+	* ipa-prop.c (load_from_dereferenced_name): New function.
+	(ipa_analyze_controlled_uses): Also detect loads from a
+	dereference, harden testing of call statements.
+	(ipa_write_node_info): Stream the dereferenced flag.
+	(ipa_read_node_info): Likewise.
+	(ipa_set_jf_constant): Also create refdesc when jump function
+	references a variable.
+	(cgraph_node_for_jfunc): Rename to symtab_node_for_jfunc, work
+	also on references of variables and return a symtab_node.  Adjust
+	all callers.
+	(propagate_controlled_uses): Also remove references to VAR_DECLs.
+
+2021-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101586
+	* gimple-fold.c (clear_padding_type): Ignore FIELD_DECLs with byte
+	positions above or equal to sz except for diagnostics of flexible
+	array members.
+
 2021-07-26  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/78888

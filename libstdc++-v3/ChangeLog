@@ -1,3 +1,106 @@
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/optional (__throw_bad_optional_access):
+	Replace GNU attribute with C++11 attribute.
+	(optional::value, optional::value_or): Use if statements
+	instead of conditional expressions.
+	* include/std/optional (__throw_bad_optional_access)
+	(optional::value, optional::value_or): Likewise.
+
+2021-07-27  Marek Polacek  <polacek@redhat.com>
+
+	DR 1512
+	PR c++/99701
+	* testsuite/20_util/tuple/comparison_operators/overloaded.cc:
+	Move a line...
+	* testsuite/20_util/tuple/comparison_operators/overloaded2.cc:
+	...here.  New test.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h: Consistently use tab for
+	indentation.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
+	(basic_string): Move definition of Copy-on-Write string to
+	new file.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/cow_string.h: New file.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/algorithm: Do not include <utility>.
+	* include/std/functional: Likewise.
+	* include/std/regex: Include <bits/stl_pair.h> instead of
+	<utility>.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/vector: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/bits/unique_ptr.h: Do not include <utility>.
+	* include/experimental/any: Likewise.
+	* include/experimental/executor: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/optional: Likewise.
+	* include/experimental/socket: Use __exchange instead
+	of std::exchange.
+	* src/filesystem/ops-common.h: Likewise.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust expected
+	errors to not use a hardcoded line number.
+	* testsuite/20_util/default_delete/void_neg.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/constrained.cc:
+	Include <utility> for std::as_const.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_construct/constrained.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/constrained.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct/constrained.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/destructible_debug_neg.cc:
+	Adjust dg-error line number.
+
+2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add bits/utility.h header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/utility.h: New file.
+	* include/std/utility (tuple_size, tuple_element): Move
+	to new header.
+	* include/std/type_traits (__is_tuple_like_impl<tuple<T...>>):
+	Move to <tuple>.
+	(_Index_tuple, _Build_index_tuple, integer_sequence): Likewise.
+	(in_place_t, in_place_index_t, in_place_type_t): Likewise.
+	* include/bits/ranges_util.h: Include new header instead of
+	<utility>.
+	* include/bits/stl_pair.h (tuple_size, tuple_element): Move
+	partial specializations for std::pair here.
+	(get): Move overloads for std::pair here.
+	* include/std/any: Include new header instead of <utility>.
+	* include/std/array: Likewise.
+	* include/std/memory_resource: Likewise.
+	* include/std/optional: Likewise.
+	* include/std/variant: Likewise.
+	* include/std/tuple: Likewise.
+	(__is_tuple_like_impl<tuple<T...>>): Move here.
+	(get) Declare overloads for std::array.
+	* include/std/version (__cpp_lib_tuples_by_type): Change type
+	to long.
+	* testsuite/20_util/optional/84601.cc: Include <utility>.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/constrained.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/std/ranges/access/cbegin.cc: Include <utility>.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/end.cc: Likewise.
+	* testsuite/std/ranges/single_view.cc: Likewise.
+
 2021-07-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future: Include <bits/atomic_base.h> instead of

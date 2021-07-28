@@ -1,3 +1,12 @@
+2021-07-27  Marek Polacek  <polacek@redhat.com>
+
+	DR 1512
+	PR c++/99701
+	* cp-gimplify.c (cp_fold): Remove {LE,LT,GE,GT_EXPR} from
+	a switch.
+	* typeck.c (cp_build_binary_op): Reject ordered comparison
+	of two null pointers.
+
 2021-07-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.h (struct cp_lexer): Add orphan_p member.
