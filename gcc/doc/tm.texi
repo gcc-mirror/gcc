@@ -6125,7 +6125,7 @@ vectors of mode @var{mode} using the permutation vector @code{sel}, and
 also to emit such a permutation.  In the former case @var{in0}, @var{in1}
 and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are
 the source vectors and @var{out} is the destination vector; all three are
-registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if
+operands of mode @var{mode}.  @var{in1} is the same as @var{in0} if
 @var{sel} describes a permutation on one vector instead of two.
 
 Return true if the operation is possible, emitting instructions for it
