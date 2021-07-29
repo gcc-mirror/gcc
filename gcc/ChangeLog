@@ -1,3 +1,197 @@
+2021-07-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101494
+	* tree-ssa-uninit.c (maybe_warn_operand): Correct object offset
+	and size computation.
+
+2021-07-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101601
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref): Remove
+	a pointless test.
+	Handle pointers to functions.
+
+2021-07-28  Martin Sebor  <msebor@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-ssa-warn-access.o and pointer-query.o.
+	* attribs.h (fndecl_dealloc_argno): Move fndecl_dealloc_argno to tree.h.
+	* builtins.c (compute_objsize_r): Move to pointer-query.cc.
+	(access_ref::access_ref): Same.
+	(access_ref::phi): Same.
+	(access_ref::get_ref): Same.
+	(access_ref::size_remaining): Same.
+	(access_ref::offset_in_range): Same.
+	(access_ref::add_offset): Same.
+	(access_ref::inform_access): Same.
+	(ssa_name_limit_t::visit_phi): Same.
+	(ssa_name_limit_t::leave_phi): Same.
+	(ssa_name_limit_t::next): Same.
+	(ssa_name_limit_t::next_phi): Same.
+	(ssa_name_limit_t::~ssa_name_limit_t): Same.
+	(pointer_query::pointer_query): Same.
+	(pointer_query::get_ref): Same.
+	(pointer_query::put_ref): Same.
+	(pointer_query::flush_cache): Same.
+	(warn_string_no_nul): Move to gimple-ssa-warn-access.cc.
+	(check_nul_terminated_array): Same.
+	(unterminated_array): Same.
+	(maybe_warn_for_bound): Same.
+	(check_read_access): Same.
+	(warn_for_access): Same.
+	(get_size_range): Same.
+	(check_access): Same.
+	(gimple_call_alloc_size): Move to tree.c.
+	(gimple_parm_array_size): Move to pointer-query.cc.
+	(get_offset_range): Same.
+	(gimple_call_return_array): Same.
+	(handle_min_max_size): Same.
+	(handle_array_ref): Same.
+	(handle_mem_ref): Same.
+	(compute_objsize): Same.
+	(gimple_call_alloc_p): Move to gimple-ssa-warn-access.cc.
+	(call_dealloc_argno): Same.
+	(fndecl_dealloc_argno): Same.
+	(new_delete_mismatch_p): Same.
+	(matching_alloc_calls_p): Same.
+	(warn_dealloc_offset): Same.
+	(maybe_emit_free_warning): Same.
+	* builtins.h (check_nul_terminated_array): Move to
+	gimple-ssa-warn-access.h.
+	(check_nul_terminated_array): Same.
+	(warn_string_no_nul): Same.
+	(unterminated_array): Same.
+	(class ssa_name_limit_t): Same.
+	(class pointer_query): Same.
+	(struct access_ref): Same.
+	(class range_query): Same.
+	(struct access_data): Same.
+	(gimple_call_alloc_size): Same.
+	(gimple_parm_array_size): Same.
+	(compute_objsize): Same.
+	(class access_data): Same.
+	(maybe_emit_free_warning): Same.
+	* calls.c (initialize_argument_information): Remove call to
+	maybe_emit_free_warning.
+	* gimple-array-bounds.cc: Include new header..
+	* gimple-fold.c: Same.
+	* gimple-ssa-sprintf.c: Same.
+	* gimple-ssa-warn-restrict.c: Same.
+	* passes.def: Add pass_warn_access.
+	* tree-pass.h (make_pass_warn_access): Declare.
+	* tree-ssa-strlen.c: Include new headers.
+	* tree.c (fndecl_dealloc_argno): Move here from builtins.c.
+	* tree.h (fndecl_dealloc_argno): Move here from attribs.h.
+	* gimple-ssa-warn-access.cc: New file.
+	* gimple-ssa-warn-access.h: New file.
+	* pointer-query.cc: New file.
+	* pointer-query.h: New file.
+
+2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101624
+	* ubsan.c (maybe_instrument_pointer_overflow,
+	instrument_object_size): Only test DECL_REGISTER on VAR_DECLs,
+	PARM_DECLs or RESULT_DECLs.
+	* sanopt.c (maybe_optimize_ubsan_ptr_ifn): Likewise.
+
+2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101642
+	* match.pd (bswap16 (x) == bswap16 (y)): Cast both operands
+	to type of bswap16 for comparison.
+	(bswap16 (x) == cst): Cast bswap16 operand to type of cst.
+
+2021-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101615
+	* tree-vect-slp.c (vect_optimize_slp): Materialize permutes
+	at CTOR SLP graph entries.
+
+2021-07-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (*extend<SHORT:mode><GPI:mode>2_aarch64):
+	Add "r,w" alternative.
+
+2021-07-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101456
+	* config/i386/i386.c (ix86_avx_u128_mode_needed): Don't set
+	AVX_U128_DIRTY when all bits are zero.
+
+2021-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101615
+	* tree-vect-slp.c (vect_optimize_slp): Pre-existing vector
+	external nodes cannot be permuted so make them perm_out 0.
+
+2021-07-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/100208
+	* config.in: Regenerate.
+	* config/gcn/gcn-hsa.h (A_FIJI): New define.
+	(A_900): New define.
+	(A_906): New define.
+	(A_908): New define.
+	(ASM_SPEC): Use A_FIJI, A_900, A_906 and A_908.
+	* config/gcn/gcn.c (output_file_start): Adjust attributes according
+	to the assembler capabilities.
+	* config/gcn/mkoffload.c (main): Likewise.
+	* configure: Regenerate.
+	* configure.ac: Add tests for LLVM assembler attribute features.
+
+2021-07-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::outgoing_edge_range_p): Check for
+	cond_false and cond_true on branches.
+
+2021-07-28  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* config/aarch64/aarch64.c (aarch64_gen_adjusted_ldpstp): use
+	gcc_stablesort.
+
+2021-07-28  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* alias.c (init_alias_analysis): Don't skip prologue/epilogue.
+
+2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101611
+	* config/i386/sse.md (vashr<mode>3): Split into vashrv8di3 expander
+	and vashrv4di3 expander, where the latter requires just TARGET_AVX2
+	and has special !TARGET_AVX512VL expansion.
+	(vashrv2di3<mask_name>): Rename to ...
+	(vashrv2di3): ... this.  Change condition to TARGET_XOP || TARGET_AVX2
+	and add special !TARGET_XOP && !TARGET_AVX512VL expansion.
+
+2021-07-28  Martin Uecker  <muecker@gwdg.de>
+
+	* calls.c (maybe_warn_rdwr_sizes): Correct argument
+	numbers in warning that were switched.
+
+2021-07-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/101596
+	* tree-vect-patterns.c (vect_recog_mulhs_pattern): Fix wrong check
+	by using new_type's precision instead.
+
+2021-07-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/99881
+	* config/i386/i386.h (processor_costs): Add new member
+	integer_to_sse.
+	* config/i386/x86-tune-costs.h (ix86_size_cost, i386_cost,
+	i486_cost, pentium_cost, lakemont_cost, pentiumpro_cost,
+	geode_cost, k6_cost, athlon_cost, k8_cost, amdfam10_cost,
+	bdver_cost, znver1_cost, znver2_cost, znver3_cost,
+	btver1_cost, btver2_cost, btver3_cost, pentium4_cost,
+	nocona_cost, atom_cost, atom_cost, slm_cost, intel_cost,
+	generic_cost, core_cost): Initialize integer_to_sse same value
+	as sse_op.
+	(skylake_cost): Initialize integer_to_sse twice as much as sse_op.
+	* config/i386/i386.c (ix86_builtin_vectorization_cost):
+	Use integer_to_sse instead of sse_op to calculate the cost of
+	vec_construct.
+
 2021-07-27  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-gen-builtins.c (write_ovld_static_init): New

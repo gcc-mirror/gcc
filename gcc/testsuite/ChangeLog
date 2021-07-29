@@ -1,3 +1,159 @@
+2021-07-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101494
+	* gcc.dg/uninit-pr101494.c: New test.
+
+2021-07-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101601
+	* g++.dg/warn/Warray-bounds-25.C: New test.
+	* gcc.dg/Warray-bounds-85.c: New test.
+
+2021-07-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR testsuite/100168
+	* gcc.dg/pr56727-2.c: Add support for PC-relative calls.
+
+2021-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/torture/ubsan-1.c: New test.
+
+2021-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101564
+	* gfortran.dg/allocate_stat_3.f90: New test.
+	* gfortran.dg/allocate_stat.f90: Adjust error messages.
+	* gfortran.dg/implicit_11.f90: Likewise.
+	* gfortran.dg/inquiry_type_ref_3.f90: Likewise.
+
+2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101624
+	* gfortran.dg/ubsan/ubsan.exp: New file.
+	* gfortran.dg/ubsan/pr101624.f90: New test.
+
+2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101642
+	* gcc.c-torture/compile/pr101642.c: New test.
+
+2021-07-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/global-array-element-pic2.c: Add -mzarch, add
+	an expectation for 31-bit mode.
+	* gcc.target/s390/load-imm64-1.c: Use unsigned long long.
+	* gcc.target/s390/load-imm64-2.c: Likewise.
+	* gcc.target/s390/vector/long-double-vx-macro-off-on.c: Use
+	-mzarch.
+	* gcc.target/s390/vector/long-double-vx-macro-on-off.c:
+	Likewise.
+
+2021-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101615
+	* gcc.dg/vect/bb-slp-pr101615-2.c: New testcase.
+
+2021-07-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/smov_1.c: New test.
+	* gcc.target/aarch64/sve/clastb_4.c: Adjust clast scan-assembler.
+
+2021-07-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101456
+	* gcc.target/i386/pr101456-1.c: New test.
+	* gcc.target/i386/pr101456-2.c: Likewise.
+
+2021-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101615
+	* gcc.dg/vect/bb-slp-pr101615-1.c: New testcase.
+
+2021-07-28  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/analyzer/strdup-1.c (test_4, test_5, test_6): New
+	tests.
+
+2021-07-28  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/analyzer/attr-malloc-1.c (compatible_alloc,
+	compatible_alloc2): New extern allocator declarations.
+	(test_9, test_10): New tests.
+
+2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101640
+	* gdc.dg/pr96429.d: Update test.
+	* gdc.dg/pr101640.d: New test.
+
+2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101490
+	* gdc.dg/pr101490.d: New test.
+
+2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101127
+	* gdc.dg/pr101127a.d: New test.
+	* gdc.dg/pr101127b.d: New test.
+
+2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101611
+	* gcc.target/i386/avx2-pr101611-1.c: New test.
+	* gcc.target/i386/avx2-pr101611-2.c: New test.
+
+2021-07-28  Martin Uecker  <muecker@gwdg.de>
+
+	* gcc.dg/Wnonnull-4.c: Correct argument numbers in warnings.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101317
+	* gfortran.dg/ISO_Fortran_binding_17.f90: Fix typo in error
+	message patterns.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101310
+	* gfortran.dg/ISO_Fortran_binding_1.c (section_c): Remove
+	incorrect assertions.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101305
+	* gfortran.dg/ISO_Fortran_binding_1.c: Adjust include path.
+	* gfortran.dg/ISO_Fortran_binding_10.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_11.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_12.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_15.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_16.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_17.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_18.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_3.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_5.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_6.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_7.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_8.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_9.c: Likewise.
+	* gfortran.dg/PR94327.c: Likewise.
+	* gfortran.dg/PR94331.c: Likewise.
+	* gfortran.dg/bind_c_array_params_3_aux.c: Likewise.
+	* gfortran.dg/iso_fortran_binding_uint8_array_driver.c: Likewise.
+	* gfortran.dg/pr93524.c: Likewise.
+
+2021-07-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/101596
+	* gcc.target/powerpc/pr101596-1.c: New test.
+	* gcc.target/powerpc/pr101596-2.c: Likewise.
+	* gcc.target/powerpc/pr101596-3.c: Likewise.
+
+2021-07-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/99881
+	* gcc.target/i386/pr99881.c: New test.
+
 2021-07-27  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/101584
