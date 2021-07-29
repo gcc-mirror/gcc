@@ -1,3 +1,11 @@
+2021-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101084
+	* io.c (resolve_tag_format): Extend FORMAT check to unknown type.
+
 2021-07-16  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
