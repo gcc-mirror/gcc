@@ -852,9 +852,9 @@ c_common_post_options (const char **pfilename)
   else if (!flag_gnu89_inline && !flag_isoc99)
     error ("%<-fno-gnu89-inline%> is only supported in GNU99 or C99 mode");
 
-  /* Default to ObjC sjlj exception handling if NeXT runtime.  */
+  /* Default to ObjC sjlj exception handling if NeXT runtime < v2.  */
   if (flag_objc_sjlj_exceptions < 0)
-    flag_objc_sjlj_exceptions = flag_next_runtime;
+    flag_objc_sjlj_exceptions = (flag_next_runtime && flag_objc_abi < 2);
   if (flag_objc_exceptions && !flag_objc_sjlj_exceptions)
     flag_exceptions = 1;
 
