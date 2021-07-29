@@ -27,8 +27,8 @@ my1 (int8x8_t __a, int8x8_t __b)
   return __a + __b;
 }
 
-/* { dg-final { scan-assembler-times "\.fpu vfp" 1 } } */
-/* { dg-final { scan-assembler-times "\.fpu neon" 1 } } */
+/* { dg-final { scan-assembler {\.fpu\s+vfp\n} } } */
+/* { dg-final { scan-assembler {\.fpu\s+neon\n} } } */
 /* { dg-final { scan-assembler "vadd" } } */
 
 
