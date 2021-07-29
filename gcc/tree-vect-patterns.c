@@ -4811,7 +4811,7 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
      function for the gather/scatter operation.  */
   gather_scatter_info gs_info;
   if (!vect_check_gather_scatter (stmt_info, loop_vinfo, &gs_info)
-      || gs_info.decl)
+      || gs_info.ifn == IFN_LAST)
     return NULL;
 
   /* Convert the mask to the right form.  */
