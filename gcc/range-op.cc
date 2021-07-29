@@ -3240,6 +3240,18 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
       return;
     }
 
+  // Check for constant and try to fold.
+  if (lh_lb == lh_ub && rh_lb == rh_ub)
+    {
+      wi::overflow_type ov = wi::OVF_NONE;
+      tmp = wi::mod_trunc (lh_lb, rh_lb, sign, &ov);
+      if (ov == wi::OVF_NONE)
+	{
+	  r = int_range<2> (type, tmp, tmp);
+	  return;
+	}
+    }
+
   // ABS (A % B) < ABS (B) and either 0 <= A % B <= A or A <= A % B <= 0.
   new_ub = rh_ub - 1;
   if (sign == SIGNED)
