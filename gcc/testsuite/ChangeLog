@@ -1,3 +1,37 @@
+2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101640
+	* gdc.dg/pr101640.d: New test.
+
+2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101490
+	* gdc.dg/pr101490.d: New test.
+	* gdc.test/fail_compilation/fail22144.d: New test.
+
+2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101441
+	* gdc.test/compilable/b19002.d: New test.
+
+2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101127
+	* gdc.dg/pr101127a.d: New test.
+	* gdc.dg/pr101127b.d: New test.
+
 2021-07-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/100182
