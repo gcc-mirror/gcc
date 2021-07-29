@@ -1,0 +1,38 @@
+# Copyright (C) 2020-2021 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+$(srcdir)/config/loongarch/loongarch-tables.opt: $(srcdir)/config/loongarch/genopt.sh \
+  $(srcdir)/config/loongarch/loongarch-cpus.def
+	$(SHELL) $(srcdir)/config/loongarch/genopt.sh $(srcdir)/config/loongarch > \
+		$(srcdir)/config/loongarch/loongarch-tables.opt
+
+loongarch-c.o: $(srcdir)/config/loongarch/loongarch-c.c $(CONFIG_H) $(SYSTEM_H) \
+	coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H) $(TARGET_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/loongarch/loongarch-c.c
+
+loongarch-builtins.o: $(srcdir)/config/loongarch/loongarch-builtins.c $(CONFIG_H) \
+	$(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) $(RECOG_H) langhooks.h \
+	$(DIAGNOSTIC_CORE_H) $(OPTABS_H) $(srcdir)/config/loongarch/loongarch-ftypes.def \
+	$(srcdir)/config/loongarch/loongarch-modes.def
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/loongarch/loongarch-builtins.c
+
+comma=,
+MULTILIB_OPTIONS    = $(subst $(comma),/, $(patsubst %, mabi=%, $(subst $(comma),$(comma)mabi=,$(TM_MULTILIB_CONFIG))))
+MULTILIB_DIRNAMES   = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))

@@ -1,0 +1,144 @@
+
+;
+; Copyright (C) 2005-2018 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/loongarch/loongarch-opts.h
+
+mabi=
+Target RejectNegative Joined Enum(loongarch_abi) Var(loongarch_abi) Init(LARCH_ABI_DEFAULT)
+-mabi=ABI	Generate code that conforms to the given ABI.
+
+Enum
+Name(loongarch_abi) Type(int)
+Known Loongarch ABIs (for use with the -mabi= option):
+
+EnumValue
+Enum(loongarch_abi) String(lp32) Value(ABILP32)
+
+EnumValue
+Enum(loongarch_abi) String(lp64) Value(ABILP64)
+
+march=
+Target RejectNegative Joined Var(loongarch_arch_option) ToLower Enum(loongarch_arch_opt_value)
+-march=ISA     Generate code for the given ISA.
+
+mbranch-cost=
+Target RejectNegative Joined UInteger Var(loongarch_branch_cost)
+-mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
+
+mcheck-zero-division
+Target Mask(CHECK_ZERO_DIV)
+Trap on integer divide by zero.
+
+msingle-float
+Target RejectNegative Mask(SINGLE_FLOAT)
+Restrict the use of hardware floating-point instructions to 32-bit operations.
+
+mdouble-float
+Target RejectNegative InverseMask(SINGLE_FLOAT, DOUBLE_FLOAT)
+Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations.
+
+mcond-move-int
+Target Var(TARGET_COND_MOVE_INT) Init(1)
+Conditional moves for integral are enabled.
+
+mcond-move-float
+Target Var(TARGET_COND_MOVE_FLOAT) Init(1)
+Conditional moves for float are enabled.
+
+mflush-func=
+Target RejectNegative Joined Var(loongarch_cache_flush_func) Init(CACHE_FLUSH_FUNC)
+-mflush-func=FUNC	Use FUNC to flush the cache before calling stack trampolines.
+
+Mask(64BIT)
+
+Mask(FLOAT64)
+
+mno-float
+Target RejectNegative Var(TARGET_NO_FLOAT) Condition(TARGET_SUPPORTS_NO_FLOAT)
+Prevent the use of all floating-point operations.
+
+msoft-float
+Target RejectNegative Mask(SOFT_FLOAT_ABI)
+Prevent the use of all hardware floating-point instructions.
+
+mhard-float
+Target RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
+Allow the use of hardware floating-point ABI and instructions.
+
+mmemcpy
+Target Mask(MEMCPY)
+Don't optimize block moves.
+
+mno-flush-func
+Target RejectNegative
+Do not use a cache-flushing function before calling stack trampolines.
+
+mrelax-pic-calls
+Target Mask(RELAX_PIC_CALLS)
+Try to allow the linker to turn PIC calls into direct calls.
+
+mshared
+Target Var(TARGET_SHARED) Init(1)
+When generating -mabicalls code, make the code suitable for use in shared libraries.
+
+mlra
+Target Var(loongarch_lra_flag) Init(1) Save
+Use LRA instead of reload.
+
+mtune=
+Target RejectNegative Joined Var(loongarch_tune_option) ToLower Enum(loongarch_arch_opt_value)
+-mtune=PROCESSOR	Optimize the output for PROCESSOR.
+
+noasmopt
+Driver
+
+mmax-inline-memcpy-size=
+Target Joined RejectNegative UInteger Var(loongarch_max_inline_memcpy_size) Init(1024)
+-mmax-inline-memcpy-size=SIZE	Set the max size of memcpy to inline, default is 1024.
+
+mfix-loongson3-llsc
+Target Var(FIX_LOONGSON3_LLSC)
+Work around an Loongson3 llsc errata.
+
+; The code model option names for -mcmodel.
+
+Enum
+Name(cmodel) Type(enum loongarch_code_model)
+The code model option names for -mcmodel:
+
+EnumValue
+Enum(cmodel) String(normal) Value(LARCH_CMODEL_NORMAL)
+
+EnumValue
+Enum(cmodel) String(tiny) Value(LARCH_CMODEL_TINY)
+
+EnumValue
+Enum(cmodel) String(tiny-static) Value(LARCH_CMODEL_TINY_STATIC)
+
+EnumValue
+Enum(cmodel) String(large) Value(LARCH_CMODEL_LARGE)
+
+EnumValue
+Enum(cmodel) String(extreme) Value(LARCH_CMODEL_EXTREME)
+
+mcmodel=
+Target RejectNegative Joined Enum(cmodel) Var(loongarch_cmodel_var) Init(LARCH_CMODEL_NORMAL) Save
+Specify the code model.

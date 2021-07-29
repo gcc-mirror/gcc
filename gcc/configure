@@ -5277,6 +5277,9 @@ case "${target}" in
 	# sets the default TLS model and affects inlining.
 	PICFLAG_FOR_TARGET=-fPIC
 	;;
+    loongarch*-*-*)
+	PICFLAG_FOR_TARGET=-fpic
+	;;
     mips-sgi-irix6*)
 	# PIC is the default.
 	;;
@@ -7727,6 +7730,9 @@ else
       ;;
 
     mips*-*-*)
+      enable_fixed_point=yes
+      ;;
+    loongarch*-*-*)
       enable_fixed_point=yes
       ;;
     *)
@@ -19435,7 +19441,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19438 "configure"
+#line 19444 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19541,7 +19547,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19544 "configure"
+#line 19550 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -28713,6 +28719,47 @@ $as_echo "#define HAVE_AS_MARCH_ZIFENCEI 1" >>confdefs.h
 fi
 
     ;;
+  loongarch*-*-*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .dtprelword support" >&5
+$as_echo_n "checking assembler for .dtprelword support... " >&6; }
+if ${gcc_cv_as_loongarch_dtprelword+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_loongarch_dtprelword=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 18 \) \* 1000 + 0`
+  then gcc_cv_as_loongarch_dtprelword=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '.section .tdata,"awT",@progbits
+x:
+	.word 2
+	.text
+	.dtprelword x+0x8000' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_loongarch_dtprelword=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_loongarch_dtprelword" >&5
+$as_echo "$gcc_cv_as_loongarch_dtprelword" >&6; }
+if test $gcc_cv_as_loongarch_dtprelword = yes; then
+
+$as_echo "#define HAVE_AS_DTPRELWORD 1" >>confdefs.h
+
+fi
+
+    ;;
     s390*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
 $as_echo_n "checking assembler for .gnu_attribute support... " >&6; }
@@ -28892,11 +28939,11 @@ fi
     ;;
 esac
 
-# Mips and HP-UX need the GNU assembler.
+# Mips, LoongArch and HP-UX need the GNU assembler.
 # Linux on IA64 might be able to use the Intel assembler.
 
 case "$target" in
-  mips*-*-* | *-*-hpux* )
+  mips*-*-* | loongarch*-*-* | *-*-hpux* )
     if test x$gas_flag = xyes \
        || test x"$host" != x"$build" \
        || test ! -x "$gcc_cv_as" \
@@ -28916,8 +28963,8 @@ esac
 # ??? Once 2.11 is released, probably need to add first known working
 # version to the per-target configury.
 case "$cpu_type" in
-  aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | m32c | m68k \
-  | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
+  aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
+  | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
   | tilegx | tilepro | visium | xstormy16 | xtensa)
     insn="nop"
     ;;

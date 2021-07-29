@@ -1,0 +1,37 @@
+/* LoongArch CPU names.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* A table describing all the processors GCC knows about.  The first
+   mention of an ISA level is taken as the canonical name for that
+   ISA.
+
+   To ease comparison, please keep this table in the same order
+   as GAS's loongarch_cpu_info_table.
+
+   Before including this file, define a macro:
+
+   LARCH_CPU (NAME, CPU, ISA, FLAGS)
+
+   where the arguments are the fields of struct loongarch_cpu_info.  */
+
+/* Entries for generic ISAs.  */
+LARCH_CPU ("loongarch", PROCESSOR_LOONGARCH64, 65, 0)
+LARCH_CPU ("loongarch64", PROCESSOR_LOONGARCH64, 65, 0)
+LARCH_CPU ("gs464v", PROCESSOR_GS464V, 65, 0)
+

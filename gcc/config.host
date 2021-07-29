@@ -141,6 +141,14 @@ case ${host} in
       ;;
     esac
     ;;
+  loongarch*-*-linux*)
+    case ${target} in
+      loongarch*-*-linux*)
+	host_extra_gcc_objs="driver-native.o"
+	host_xmake_file="${host_xmake_file} loongarch/x-native"
+      ;;
+    esac
+    ;;
   rs6000-*-* \
   | powerpc*-*-* )
     case ${target} in

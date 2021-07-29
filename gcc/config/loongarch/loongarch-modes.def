@@ -1,0 +1,33 @@
+/* LoongArch extra machine modes.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+FLOAT_MODE (TF, 16, ieee_quad_format);
+
+VECTOR_MODES (FLOAT, 8);      /*       V4HF V2SF */
+
+/* For floating point conditions in FCC registers.  */
+CC_MODE (FCC);
+
+INT_MODE (OI, 32);
+
+/* Keep the OI modes from confusing the compiler into thinking
+   that these modes could actually be used for computation.  They are
+   only holders for vectors during data movement.  */
+#define MAX_BITSIZE_MODE_ANY_INT (128)
+

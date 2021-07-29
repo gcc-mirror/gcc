@@ -446,6 +446,12 @@ mips*-*-*)
 	extra_objs="frame-header-opt.o"
 	extra_options="${extra_options} g.opt fused-madd.opt mips/mips-tables.opt"
 	;;
+loongarch*-*-*)
+	cpu_type=loongarch
+	extra_headers="larchintrin.h"
+	extra_objs="loongarch-c.o loongarch-builtins.o"
+	extra_options="${extra_options} g.opt fused-madd.opt loongarch/loongarch-tables.opt"
+  ;;
 nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h nds32_isr.h nds32_init.inc"
@@ -2562,6 +2568,53 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	if test x$enable_mips_multilibs = xyes; then
 		tmake_file="${tmake_file} mips/t-linux64"
 	fi
+	;;
+loongarch*-*-linux*)
+	case ${with_abi} in
+	"")
+		echo "not specify ABI, default is lp64 for loongarch64"
+		with_abi=lp64 # for default
+		;;
+	lp32)
+		;;
+	lp64)
+		;;
+	*)
+		echo "Unknown ABI used in --with-abi=$with_abi"
+		exit 1
+	esac
+
+	enable_multilib="yes"
+	loongarch_multilibs="${with_multilib_list}"
+	if test "$loongarch_multilibs" = "default"; then
+		loongarch_multilibs="${with_abi}"
+	fi
+	loongarch_multilibs=`echo $loongarch_multilibs | sed -e 's/,/ /g'`
+	for loongarch_multilib in ${loongarch_multilibs}; do
+		case ${loongarch_multilib} in
+		lp64 | lp32 )
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${loongarch_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${loongarch_multilib} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
+
+	if test `for one_abi in ${loongarch_multilibs}; do if [ x\$one_abi = x$with_abi ]; then echo 1; exit 0; fi; done; echo 0;` = "0"; then
+		echo "--with-abi=${with_abi} must be one of --with-multilib-list=${with_multilib_list}"
+		exit 1
+	fi
+
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} loongarch/gnu-user.h loongarch/linux.h"
+	extra_options="${extra_options} linux-android.opt"
+	tmake_file="${tmake_file} loongarch/t-linux"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
 	;;
 mips*-mti-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
@@ -4879,6 +4932,45 @@ case "${target}" in
 		esac
 		;;
 
+	loongarch*-*-*)
+		supported_defaults="abi arch float fpu tune fix-loongson3-llsc"
+
+		case ${with_float} in
+		"" | soft | hard)
+			# OK
+			;;
+		*)
+			echo "Unknown floating point type used in --with-float=$with_float" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_fpu} in
+		"" | single | double)
+			# OK
+			;;
+		*)
+			echo "Unknown fpu type used in --with-fpu=$with_fpu" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_fix_loongson3_llsc} in
+		yes)
+			with_fix_loongson3_llsc=fix-loongson3-llsc
+			;;
+		no)
+			with_fix_loongson3_llsc=no-fix-loongson3-llsc
+			;;
+		"")
+			;;
+		*)
+			echo "Unknown fix-loongson3-llsc type used in --with-fix-loongson3-llsc" 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
 	nds32*-*-*)
 		supported_defaults="arch cpu nds32_lib float fpu_config"
 
@@ -5326,6 +5418,23 @@ case ${target} in
 		tmake_file="mips/t-mips $tmake_file"
 		;;
 
+	loongarch*-*-*)
+		if test x$with_arch != x; then
+			default_loongarch_arch=$with_arch
+		fi
+		if test x$with_abi != x; then
+			default_loongarch_abi=$with_abi
+		fi
+		case ${default_loongarch_arch} in
+		    loongarch | loongarch64) tm_defines="$tm_defines LARCH_ISA_DEFAULT=0" ;;
+		esac
+		case ${default_loongarch_abi} in
+		    lp64)   tm_defines="$tm_defines LARCH_ABI_DEFAULT=ABILP64" ;;
+		    lp32)   tm_defines="$tm_defines LARCH_ABI_DEFAULT=ABILP32" ;;
+		esac
+		tmake_file="loongarch/t-loongarch $tmake_file"
+		;;
+
 	powerpc*-*-* | rs6000-*-*)
 		# FIXME: The PowerPC port uses the value set at compile time,
 		# although it's only cosmetic.
@@ -5389,7 +5498,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 fix-loongson3-llsc"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`
