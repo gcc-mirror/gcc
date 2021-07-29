@@ -1,6 +1,6 @@
 /* PR target/92658 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mavx512bw -mprefer-vector-width=512" } */
+/* { dg-options "-O2 -mtune=icelake-server -ftree-vectorize -mavx512bw -mprefer-vector-width=512" } */
 
 typedef char v64qi __attribute__((vector_size (64)));
 typedef short v32hi __attribute__((vector_size (64)));

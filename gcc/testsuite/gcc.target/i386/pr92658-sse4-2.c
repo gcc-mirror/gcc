@@ -1,6 +1,6 @@
 /* PR target/92658 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -msse4.1" } */
+/* { dg-options "-O2 -mtune=icelake-server -ftree-vectorize -msse4.1" } */
 
 typedef char v16qi __attribute__((vector_size (16)));
 typedef short v8hi __attribute__((vector_size (16)));
