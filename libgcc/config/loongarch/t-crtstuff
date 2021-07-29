@@ -1,0 +1,2 @@
+# Don't let CTOR_LIST end up in sdata section.
+CRTSTUFF_T_CFLAGS = -G 0
