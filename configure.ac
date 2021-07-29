@@ -353,7 +353,7 @@ case "${ENABLE_GOLD}" in
       # Check for target supported by gold.
       case "${target}" in
         i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* \
-        | aarch64*-*-* | tilegx*-*-* | mips*-*-* | s390*-*-*)
+        | aarch64*-*-* | tilegx*-*-* | mips*-*-* | s390*-*-* | loongarch*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
@@ -899,6 +899,9 @@ case "${target}" in
   i[[3456789]]86-*-*)
     libgloss_dir=i386
     ;;
+  loongarch*-*-*)
+    libgloss_dir=loongarch
+    ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
     libgloss_dir=m68hc11
     ;;
@@ -1282,6 +1285,11 @@ case "${target}" in
     ;;
   wasm32-*-*)
     noconfigdirs="$noconfigdirs ld"
+    ;;
+  loongarch*-*-linux*)
+    ;;
+  loongarch*-*-*)
+    noconfigdirs="$noconfigdirs gprof"
     ;;
 esac
 

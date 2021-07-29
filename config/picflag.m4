@@ -44,6 +44,9 @@ case "${$2}" in
 	# sets the default TLS model and affects inlining.
 	$1=-fPIC
 	;;
+    loongarch*-*-*)
+	$1=-fpic
+	;;
     mips-sgi-irix6*)
 	# PIC is the default.
 	;;
