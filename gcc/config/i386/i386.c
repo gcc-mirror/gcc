@@ -19845,6 +19845,44 @@ ix86_vec_cost (machine_mode mode, int cost)
   return cost;
 }
 
+/* Return cost of vec_widen_<s>mult_hi/lo_<mode>,
+   vec_widen_<s>mul_hi/lo_<mode> is only available for VI124_AVX2.  */
+static int
+ix86_widen_mult_cost (const struct processor_costs *cost,
+		      enum machine_mode mode, bool uns_p)
+{
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
+  int extra_cost = 0;
+  int basic_cost = 0;
+  switch (mode)
+    {
+    case V8HImode:
+    case V16HImode:
+      if (!uns_p || mode == V16HImode)
+	extra_cost = cost->sse_op * 2;
+      basic_cost = cost->mulss * 2 + cost->sse_op * 4;
+      break;
+    case V4SImode:
+    case V8SImode:
+      /* pmulhw/pmullw can be used.  */
+      basic_cost = cost->mulss * 2 + cost->sse_op * 2;
+      break;
+    case V2DImode:
+      /* pmuludq under sse2, pmuldq under sse4.1, for sign_extend,
+	 require extra 4 mul, 4 add, 4 cmp and 2 shift.  */
+      if (!TARGET_SSE4_1 && !uns_p)
+	extra_cost = (cost->mulss + cost->addss + cost->sse_op) * 4
+		      + cost->sse_op * 2;
+      /* Fallthru.  */
+    case V4DImode:
+      basic_cost = cost->mulss * 2 + cost->sse_op * 4;
+      break;
+    default:
+      gcc_unreachable();
+    }
+  return ix86_vec_cost (mode, basic_cost + extra_cost);
+}
+
 /* Return cost of multiplication in MODE.  */
 
 static int
@@ -22575,10 +22613,18 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	  break;
 
 	case MULT_EXPR:
-	case WIDEN_MULT_EXPR:
+	  /* For MULT_HIGHPART_EXPR, x86 only supports pmulhw,
+	     take it as MULT_EXPR.  */
 	case MULT_HIGHPART_EXPR:
 	  stmt_cost = ix86_multiplication_cost (ix86_cost, mode);
 	  break;
+	  /* There's no direct instruction for WIDEN_MULT_EXPR,
+	     take emulation into account.  */
+	case WIDEN_MULT_EXPR:
+	  stmt_cost = ix86_widen_mult_cost (ix86_cost, mode,
+					    TYPE_UNSIGNED (vectype));
+	  break;
+
 	case NEGATE_EXPR:
 	  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	    stmt_cost = ix86_cost->sse_op;

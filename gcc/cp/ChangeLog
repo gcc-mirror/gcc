@@ -1,3 +1,7 @@
+2021-07-28  Martin Sebor  <msebor@redhat.com>
+
+	* init.c: Include new header.
+
 2021-07-27  Marek Polacek  <polacek@redhat.com>
 
 	DR 1512

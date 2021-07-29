@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fdisable-tree-thread1" } */
+
 #define N 1500
 
 int x[N][N], y[N];

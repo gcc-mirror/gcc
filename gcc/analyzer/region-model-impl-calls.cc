@@ -207,7 +207,7 @@ call_details::get_or_create_conjured_svalue (const region *reg) const
 
 /* Handle the on_call_pre part of "alloca".  */
 
-bool
+void
 region_model::impl_call_alloca (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
@@ -215,7 +215,6 @@ region_model::impl_call_alloca (const call_details &cd)
   const svalue *ptr_sval
     = m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
   cd.maybe_set_lhs (ptr_sval);
-  return true;
 }
 
 /* Handle a call to "__analyzer_describe".
@@ -274,18 +273,17 @@ region_model::impl_call_analyzer_eval (const gcall *call,
 
 /* Handle the on_call_pre part of "__builtin_expect" etc.  */
 
-bool
+void
 region_model::impl_call_builtin_expect (const call_details &cd)
 {
   /* __builtin_expect's return value is its initial argument.  */
   const svalue *sval = cd.get_arg_svalue (0);
   cd.maybe_set_lhs (sval);
-  return false;
 }
 
 /* Handle the on_call_pre part of "calloc".  */
 
-bool
+void
 region_model::impl_call_calloc (const call_details &cd)
 {
   const svalue *nmemb_sval = cd.get_arg_svalue (0);
@@ -302,7 +300,6 @@ region_model::impl_call_calloc (const call_details &cd)
 	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       cd.maybe_set_lhs (ptr_sval);
     }
-  return true;
 }
 
 /* Handle the on_call_pre part of "error" and "error_at_line" from
@@ -397,7 +394,7 @@ region_model::impl_call_free (const call_details &cd)
 
 /* Handle the on_call_pre part of "malloc".  */
 
-bool
+void
 region_model::impl_call_malloc (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
@@ -408,7 +405,6 @@ region_model::impl_call_malloc (const call_details &cd)
 	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       cd.maybe_set_lhs (ptr_sval);
     }
-  return true;
 }
 
 /* Handle the on_call_pre part of "memcpy" and "__builtin_memcpy".  */
@@ -439,7 +435,7 @@ region_model::impl_call_memcpy (const call_details &cd)
 
 /* Handle the on_call_pre part of "memset" and "__builtin_memset".  */
 
-bool
+void
 region_model::impl_call_memset (const call_details &cd)
 {
   const svalue *dest_sval = cd.get_arg_svalue (0);
@@ -457,12 +453,11 @@ region_model::impl_call_memset (const call_details &cd)
 							  num_bytes_sval);
   check_region_for_write (sized_dest_reg, cd.get_ctxt ());
   fill_region (sized_dest_reg, fill_value_u8);
-  return true;
 }
 
 /* Handle the on_call_pre part of "operator new".  */
 
-bool
+void
 region_model::impl_call_operator_new (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
@@ -473,14 +468,13 @@ region_model::impl_call_operator_new (const call_details &cd)
 	= m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       cd.maybe_set_lhs (ptr_sval);
     }
-  return false;
 }
 
 /* Handle the on_call_pre part of "operator delete", which comes in
    both sized and unsized variants (2 arguments and 1 argument
    respectively).  */
 
-bool
+void
 region_model::impl_call_operator_delete (const call_details &cd)
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
@@ -490,7 +484,6 @@ region_model::impl_call_operator_delete (const call_details &cd)
 	 poisoning pointers.  */
       unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
     }
-  return false;
 }
 
 /* Handle the on_call_pre part of "realloc".  */
@@ -521,10 +514,9 @@ region_model::impl_call_strcpy (const call_details &cd)
   mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
 }
 
-/* Handle the on_call_pre part of "strlen".
-   Return true if the LHS is updated.  */
+/* Handle the on_call_pre part of "strlen".  */
 
-bool
+void
 region_model::impl_call_strlen (const call_details &cd)
 {
   region_model_context *ctxt = cd.get_ctxt ();
@@ -543,11 +535,10 @@ region_model::impl_call_strlen (const call_details &cd)
 	  const svalue *result_sval
 	    = m_mgr->get_or_create_constant_svalue (t_cst);
 	  cd.maybe_set_lhs (result_sval);
-	  return true;
+	  return;
 	}
     }
-  /* Otherwise an unknown value.  */
-  return true;
+  /* Otherwise a conjured value.  */
 }
 
 /* Handle calls to functions referenced by

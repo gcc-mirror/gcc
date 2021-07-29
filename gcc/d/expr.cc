@@ -1491,7 +1491,7 @@ public:
     if (tbtype->ty == Tvoid)
       this->result_ = build_nop (build_ctype (tbtype), result);
     else
-      this->result_ = convert_expr (result, ebtype, tbtype);
+      this->result_ = convert_for_rvalue (result, ebtype, tbtype);
   }
 
   /* Build a delete expression.  */
@@ -1751,6 +1751,7 @@ public:
     tree callee = NULL_TREE;
     tree object = NULL_TREE;
     tree cleanup = NULL_TREE;
+    tree returnvalue = NULL_TREE;
     TypeFunction *tf = NULL;
 
     /* Calls to delegates can sometimes look like this.  */
@@ -1819,6 +1820,15 @@ public:
 		else
 		  fndecl = build_address (fndecl);
 
+		/* C++ constructors return void, even though front-end semantic
+		   treats them as implicitly returning `this'.  Set returnvalue
+		   to override the result of this expression.  */
+		if (fd->isCtorDeclaration () && fd->linkage == LINKcpp)
+		  {
+		    thisexp = d_save_expr (thisexp);
+		    returnvalue = thisexp;
+		  }
+
 		callee = build_method_call (fndecl, thisexp, fd->type);
 	      }
 	  }
@@ -1884,6 +1894,9 @@ public:
     /* Now we have the type, callee and maybe object reference,
        build the call expression.  */
     tree exp = d_build_call (tf, callee, object, e->arguments);
+
+    if (returnvalue != NULL_TREE)
+      exp = compound_expr (exp, returnvalue);
 
     if (tf->isref)
       exp = build_deref (exp);
@@ -3169,11 +3182,14 @@ build_return_dtor (Expression *e, Type *type, TypeFunction *tf)
   tree result = build_expr (e);
 
   /* Convert for initializing the DECL_RESULT.  */
-  result = convert_expr (result, e->type, type);
-
-  /* If we are returning a reference, take the address.  */
   if (tf->isref)
-    result = build_address (result);
+    {
+      /* If we are returning a reference, take the address.  */
+      result = convert_expr (result, e->type, type);
+      result = build_address (result);
+    }
+  else
+    result = convert_for_rvalue (result, e->type, type);
 
   /* The decl to store the return expression.  */
   tree decl = DECL_RESULT (cfun->decl);

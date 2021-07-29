@@ -1861,7 +1861,7 @@ vectors of mode @var{mode} using the permutation vector @code{sel}, and\n\
 also to emit such a permutation.  In the former case @var{in0}, @var{in1}\n\
 and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are\n\
 the source vectors and @var{out} is the destination vector; all three are\n\
-registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if\n\
+operands of mode @var{mode}.  @var{in1} is the same as @var{in0} if\n\
 @var{sel} describes a permutation on one vector instead of two.\n\
 \n\
 Return true if the operation is possible, emitting instructions for it\n\
@@ -4454,6 +4454,19 @@ By default, the RTL loop optimizer does not use a present doloop pattern for\n\
 loops containing function calls or branch on table instructions.",
  const char *, (const rtx_insn *insn),
  default_invalid_within_doloop)
+
+/* Returns the machine mode which the target prefers for doloop IV.  */
+DEFHOOK
+(preferred_doloop_mode,
+"This hook takes a @var{mode} for a doloop IV, where @code{mode} is the\n\
+original mode for the operation.  If the target prefers an alternate\n\
+@code{mode} for the operation, then this hook should return that mode;\n\
+otherwise the original @code{mode} should be returned.  For example, on a\n\
+64-bit target, @code{DImode} might be preferred over @code{SImode}.  Both the\n\
+original and the returned modes should be @code{MODE_INT}.",
+ machine_mode,
+ (machine_mode mode),
+ default_preferred_doloop_mode)
 
 /* Returns true for a legitimate combined insn.  */
 DEFHOOK

@@ -26,7 +26,7 @@
 #include "tree.h"
 #include "gimple.h"
 #include "tree-pass.h"
-#include "builtins.h"
+#include "pointer-query.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "gimple-ssa-warn-restrict.h"

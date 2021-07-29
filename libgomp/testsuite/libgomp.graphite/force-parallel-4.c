@@ -1,4 +1,5 @@
 /* Autopar with IF conditions.  */
+/* { dg-additional-options "-fdisable-tree-thread1" } */
 
 void abort();
 

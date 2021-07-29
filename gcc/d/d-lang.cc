@@ -1000,6 +1000,10 @@ d_parse_file (void)
 	}
     }
 
+  /* If an error occurs later during compilation, remember that we generated
+     the headers, so that they can be removed before exit.  */
+  bool dump_headers = false;
+
   if (global.errors)
     goto had_errors;
 
@@ -1019,6 +1023,8 @@ d_parse_file (void)
 
 	  genhdrfile (m);
 	}
+
+      dump_headers = true;
     }
 
   if (global.errors)
@@ -1242,6 +1248,19 @@ d_parse_file (void)
   /* Add the D frontend error count to the GCC error count to correctly
      exit with an error status.  */
   errorcount += (global.errors + global.warnings);
+
+  /* Remove generated .di files on error.  */
+  if (errorcount && dump_headers)
+    {
+      for (size_t i = 0; i < modules.length; i++)
+	{
+	  Module *m = modules[i];
+	  if (d_option.fonly && m != Module::rootModule)
+	    continue;
+
+	  remove (m->hdrfile->toChars ());
+	}
+    }
 
   /* Write out globals.  */
   d_finish_compilation (vec_safe_address (global_declarations),

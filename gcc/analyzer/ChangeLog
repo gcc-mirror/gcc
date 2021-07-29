@@ -1,3 +1,46 @@
+2021-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_call_pre): Treat
+	IFN_UBSAN_BOUNDS, BUILT_IN_STACK_SAVE, and BUILT_IN_STACK_RESTORE
+	as no-ops, rather than handling them as unknown functions.
+
+2021-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (region_model::impl_call_alloca):
+	Drop redundant return value.
+	(region_model::impl_call_builtin_expect): Likewise.
+	(region_model::impl_call_calloc): Likewise.
+	(region_model::impl_call_malloc): Likewise.
+	(region_model::impl_call_memset): Likewise.
+	(region_model::impl_call_operator_new): Likewise.
+	(region_model::impl_call_operator_delete): Likewise.
+	(region_model::impl_call_strlen): Likewise.
+	* region-model.cc (region_model::on_call_pre): Fix return value of
+	known functions that don't have unknown side-effects.
+	* region-model.h (region_model::impl_call_alloca): Drop redundant
+	return value.
+	(region_model::impl_call_builtin_expect): Likewise.
+	(region_model::impl_call_calloc): Likewise.
+	(region_model::impl_call_malloc): Likewise.
+	(region_model::impl_call_memset): Likewise.
+	(region_model::impl_call_strlen): Likewise.
+	(region_model::impl_call_operator_new): Likewise.
+	(region_model::impl_call_operator_delete): Likewise.
+
+2021-07-28  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* analyzer.cc (is_named_call_p, is_std_named_call_p): Make
+	first argument a const_tree.
+	* analyzer.h (is_named_call_p, -s_std_named_call_p): Likewise.
+	* sm-malloc.cc (known_allocator_p): New function.
+	(malloc_state_machine::on_stmt): Use it.
+
+2021-07-28  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* sm-malloc.cc
+	(malloc_state_machine::get_or_create_deallocator): Recognize
+	__builtin_free.
+
 2021-07-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc (region_model::on_call_pre): Always set conjured

@@ -6468,4 +6468,9 @@ extern void suppress_warning (tree, opt_code = all_warnings, bool = true)
 /* Copy warning disposition from one expression to another.  */
 extern void copy_warning (tree, const_tree);
 
+/* Return the zero-based number corresponding to the argument being
+   deallocated if FNDECL is a deallocation function or an out-of-bounds
+   value if it isn't.  */
+extern unsigned fndecl_dealloc_argno (tree);
+
 #endif  /* GCC_TREE_H  */

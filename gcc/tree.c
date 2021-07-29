@@ -14380,6 +14380,65 @@ valid_new_delete_pair_p (tree new_asm, tree delete_asm)
   return false;
 }
 
+/* Return the zero-based number corresponding to the argument being
+   deallocated if FNDECL is a deallocation function or an out-of-bounds
+   value if it isn't.  */
+
+unsigned
+fndecl_dealloc_argno (tree fndecl)
+{
+  /* A call to operator delete isn't recognized as one to a built-in.  */
+  if (DECL_IS_OPERATOR_DELETE_P (fndecl))
+    {
+      if (DECL_IS_REPLACEABLE_OPERATOR (fndecl))
+	return 0;
+
+      /* Avoid placement delete that's not been inlined.  */
+      tree fname = DECL_ASSEMBLER_NAME (fndecl);
+      if (id_equal (fname, "_ZdlPvS_")       // ordinary form
+	  || id_equal (fname, "_ZdaPvS_"))   // array form
+	return UINT_MAX;
+      return 0;
+    }
+
+  /* TODO: Handle user-defined functions with attribute malloc?  Handle
+     known non-built-ins like fopen?  */
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_FREE:
+	case BUILT_IN_REALLOC:
+	  return 0;
+	default:
+	  break;
+	}
+      return UINT_MAX;
+    }
+
+  tree attrs = DECL_ATTRIBUTES (fndecl);
+  if (!attrs)
+    return UINT_MAX;
+
+  for (tree atfree = attrs;
+       (atfree = lookup_attribute ("*dealloc", atfree));
+       atfree = TREE_CHAIN (atfree))
+    {
+      tree alloc = TREE_VALUE (atfree);
+      if (!alloc)
+	continue;
+
+      tree pos = TREE_CHAIN (alloc);
+      if (!pos)
+	return 0;
+
+      pos = TREE_VALUE (pos);
+      return TREE_INT_CST_LOW (pos) - 1;
+    }
+
+  return UINT_MAX;
+}
+
 #if CHECKING_P
 
 namespace selftest {

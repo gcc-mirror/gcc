@@ -546,28 +546,28 @@ class region_model
   void purge_state_involving (const svalue *sval, region_model_context *ctxt);
 
   /* Specific handling for on_call_pre.  */
-  bool impl_call_alloca (const call_details &cd);
+  void impl_call_alloca (const call_details &cd);
   void impl_call_analyzer_describe (const gcall *call,
 				    region_model_context *ctxt);
   void impl_call_analyzer_dump_capacity (const gcall *call,
 					 region_model_context *ctxt);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
-  bool impl_call_builtin_expect (const call_details &cd);
-  bool impl_call_calloc (const call_details &cd);
+  void impl_call_builtin_expect (const call_details &cd);
+  void impl_call_calloc (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,
 			bool *out_terminate_path);
   void impl_call_fgets (const call_details &cd);
   void impl_call_fread (const call_details &cd);
   void impl_call_free (const call_details &cd);
-  bool impl_call_malloc (const call_details &cd);
+  void impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
-  bool impl_call_memset (const call_details &cd);
+  void impl_call_memset (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
   void impl_call_strcpy (const call_details &cd);
-  bool impl_call_strlen (const call_details &cd);
-  bool impl_call_operator_new (const call_details &cd);
-  bool impl_call_operator_delete (const call_details &cd);
+  void impl_call_strlen (const call_details &cd);
+  void impl_call_operator_new (const call_details &cd);
+  void impl_call_operator_delete (const call_details &cd);
   void impl_deallocation_call (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,

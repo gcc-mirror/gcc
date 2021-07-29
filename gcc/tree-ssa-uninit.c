@@ -371,16 +371,20 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
       || get_no_uninit_warning (base))
     return NULL_TREE;
 
-  /* Do not warn if the access is fully outside of the variable.  */
+  /* Do not warn if the access is zero size or if it's fully outside
+     the object.  */
   poly_int64 decl_size;
+  if (known_size_p (ref.size)
+      && known_eq (ref.max_size, ref.size)
+      && (known_eq (ref.size, 0)
+	  || known_le (ref.offset + ref.size, 0)))
+    return NULL_TREE;
+
   if (DECL_P (base)
-      && ((known_size_p (ref.size)
-	   && known_eq (ref.max_size, ref.size)
-	   && known_le (ref.offset + ref.size, 0))
-	  || (known_ge (ref.offset, 0)
-	      && DECL_SIZE (base)
-	      && poly_int_tree_p (DECL_SIZE (base), &decl_size)
-	      && known_le (decl_size, ref.offset))))
+      && known_ge (ref.offset, 0)
+      && DECL_SIZE (base)
+      && poly_int_tree_p (DECL_SIZE (base), &decl_size)
+      && known_le (decl_size, ref.offset))
     return NULL_TREE;
 
   /* Do not warn if the result of the access is then used for

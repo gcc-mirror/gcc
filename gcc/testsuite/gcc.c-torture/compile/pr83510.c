@@ -3,6 +3,39 @@
    (PR tree-optimization/83510).  */
 
 /* { dg-options "-Warray-bounds" } */
+/* { dg-xfail-if "" { "*-*-*" } { "-Os" } } */
+
+
+/*  This test is XFAILed because thread1 threads a switch statement
+    such that the various cases have been split into different
+    independent blocks.  One of these blocks exposes an arr[i_27]
+    which is later propagated by VRP to be arr[10].  This is an
+    invalid access, but the array bounds code doesn't know it is an
+    unreachable path.
+
+    However, it is not until dom2 that we "know" that the value of the
+    switch index is such that the path to arr[10] is unreachable.  For
+    that matter, it is not until dom3 that we remove the unreachable
+    path.
+
+
+    See:
+    https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83510
+    https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83312
+
+    It's not until here that ranger "knows" that the path is
+    unreachable:
+
+    thread1
+    vrp1		<-- array bounds checking
+    dce2
+    stdarg
+    cdce
+    cselim
+    copyprop
+    ifcombine
+    mergephi3		<-- too late
+*/
 
 extern int get_flag (void);
 

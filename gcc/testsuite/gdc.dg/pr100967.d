@@ -1,7 +1,7 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100967
 // { dg-do compile }
 
-module object; // { dg-error "class object.TypeInfo missing or corrupt object.d" }
+module object;
 
 extern(C) int main()
 {
