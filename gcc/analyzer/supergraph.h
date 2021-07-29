@@ -268,6 +268,11 @@ class supernode : public dnode<supergraph_traits>
     return i;
   }
 
+  gcall *get_returning_call () const
+  {
+    return m_returning_call;
+  }
+
   gimple *get_last_stmt () const
   {
     if (m_stmts.length () == 0)
@@ -400,7 +405,7 @@ class callgraph_superedge : public superedge
   function *get_caller_function () const;
   tree get_callee_decl () const;
   tree get_caller_decl () const;
-  gcall *get_call_stmt () const { return m_cedge->call_stmt; }
+  gcall *get_call_stmt () const;
   tree get_arg_for_parm (tree parm, callsite_expr *out) const;
   tree get_parm_for_arg (tree arg, callsite_expr *out) const;
   tree map_expr_from_caller_to_callee (tree caller_expr,
