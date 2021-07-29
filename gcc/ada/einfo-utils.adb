@@ -364,7 +364,9 @@ package body Einfo.Utils is
 
    function Known_Alignment (E : Entity_Id) return B is
    begin
-      return not Field_Is_Initial_Zero (E, F_Alignment);
+      --  For some reason, Empty is passed to this sometimes
+
+      return No (E) or else not Field_Is_Initial_Zero (E, F_Alignment);
    end Known_Alignment;
 
    procedure Reinit_Alignment (Id : E) is

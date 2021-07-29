@@ -48,6 +48,7 @@ with Alloc;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Einfo.Entities; use Einfo.Entities;
 with Types;          use Types;
+with Seinfo;
 with System;         use System;
 with Table;
 with Unchecked_Conversion;
@@ -566,10 +567,9 @@ package Atree is
 
    type Entity_Field_Set is array (Entity_Field) of Boolean with Pack;
 
-   procedure Reinit_Field_To_Zero (N : Node_Id; Field : Node_Field);
-   procedure Reinit_Field_To_Zero (N : Node_Id; Field : Entity_Field);
+   procedure Reinit_Field_To_Zero (N : Node_Id; Field : Node_Or_Entity_Field);
    --  When a node is created, all fields are initialized to zero, even if zero
-   --  is not a valid value of the field type. These procedures put the field
+   --  is not a valid value of the field type. This procedure puts the field
    --  back to its initial zero value. Note that you can't just do something
    --  like Set_Some_Field (N, 0), if Some_Field is of (say) type Uintp,
    --  because Uintp is a subrange that does not include 0.
@@ -583,9 +583,7 @@ package Atree is
    --  this.
 
    function Field_Is_Initial_Zero
-     (N : Node_Id; Field : Node_Field) return Boolean;
-   function Field_Is_Initial_Zero
-     (N : Entity_Id; Field : Entity_Field) return Boolean;
+     (N : Node_Id; Field : Node_Or_Entity_Field) return Boolean;
    --  True if the field value is the initial zero value
 
    procedure Mutate_Nkind (N : Node_Id; Val : Node_Kind) with Inline;
@@ -611,10 +609,6 @@ package Atree is
    --  always the same; for example we change from E_Void, to E_Variable, to
    --  E_Void, to E_Constant.
 
-   procedure Print_Atree_Info (N : Node_Or_Entity_Id);
-   --  Called from Treepr to print out information about N that is private to
-   --  Atree.
-
    -----------------------------
    -- Private Part Subpackage --
    -----------------------------
@@ -639,7 +633,7 @@ package Atree is
       --  The nodes of the tree are stored in two tables (i.e. growable
       --  arrays).
 
-      --  A Node_Id points to an element of Nodes, which contains a
+      --  A Node_Id points to an element of Node_Offsets, which contains a
       --  Field_Offset that points to an element of Slots. Each slot can
       --  contain a single 32-bit field, or multiple smaller fields.
       --  An n-bit field is aligned on an n-bit boundary. The size of a node is
@@ -649,12 +643,21 @@ package Atree is
       --  The reason for the extra level of indirection is that Copy_Node,
       --  Exchange_Entities, and Rewrite all assume that nodes can be modified
       --  in place.
+      --
+      --  As an optimization, we store a few slots directly in the Node_Offsets
+      --  table (see type Node_Header) rather than requiring the extra level of
+      --  indirection for accessing those slots. N_Head is the number of slots
+      --  stored in the Node_Header. N_Head can be adjusted by modifying
+      --  Gen_IL.Gen. If N_Head is (say) 3, then a node containing 7 slots will
+      --  have slots 0..2 in the header, and 3..6 stored indirect in the Slots
+      --  table. We use zero-origin addressing, so the Offset into the Slots
+      --  table will point 3 slots before slot 3.
 
-      subtype Node_Offset is Field_Offset'Base
-        range 1 .. Field_Offset'Base'Last;
+      pragma Assert (Seinfo.N_Head <= Min_Node_Size);
+      pragma Assert (Seinfo.N_Head <= Min_Entity_Size);
 
       package Node_Offsets is new Table.Table
-        (Table_Component_Type => Node_Offset,
+        (Table_Component_Type => Seinfo.Node_Header,
          Table_Index_Type     => Node_Id'Base,
          Table_Low_Bound      => First_Node_Id,
          Table_Initial        => Alloc.Node_Offsets_Initial,
@@ -668,14 +671,11 @@ package Atree is
       --  Short names for use in gdb, not used in real code. Note that gdb
       --  can't find Node_Offsets.Table without a full expanded name.
 
-      --  We define the type Slot as a 32-bit modular integer. It is logically
-      --  split into the appropriate numbers of components of appropriate size,
-      --  but this splitting is not explicit because packed arrays cannot be
-      --  properly interfaced in C/C++ and packed records are way too slow.
-
-      Slot_Size : constant := 32;
-      type Slot is mod 2**Slot_Size;
-      for Slot'Size use Slot_Size;
+      --  The type Slot is defined in Types as a 32-bit modular integer. It
+      --  is logically split into the appropriate numbers of components of
+      --  appropriate size, but this splitting is not explicit because packed
+      --  arrays cannot be properly interfaced in C/C++ and packed records are
+      --  way too slow.
 
       function Shift_Left (S : Slot; V : Natural) return Slot;
       pragma Import (Intrinsic, Shift_Left);
@@ -855,6 +855,10 @@ package Atree is
 
       function Is_Valid_Node (U : Union_Id) return Boolean;
       --  True if U is within the range of Node_Offsets
+
+      procedure Print_Atree_Info (N : Node_Or_Entity_Id);
+      --  Called from Treepr to print out information about N that is private
+      --  to Atree.
 
    end Atree_Private_Part;
 

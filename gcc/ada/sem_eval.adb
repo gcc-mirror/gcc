@@ -118,7 +118,8 @@ package body Sem_Eval is
    subtype CV_Range is Nat range 0 .. CV_Cache_Size;
 
    type CV_Entry is record
-      N : Node_Id;
+      N : Node_Id'Base;
+      --  We use 'Base here, in case we want to add a predicate to Node_Id
       V : Uint;
    end record;
 

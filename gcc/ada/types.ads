@@ -991,6 +991,8 @@ package Types is
    --  Offset of a node field, in units of the size of the field, which is
    --  always a power of 2.
 
+   subtype Node_Offset is Field_Offset'Base range 1 .. Field_Offset'Base'Last;
+
    subtype Slot_Count is Field_Offset;
    --  Count of number of slots. Same type as Field_Offset to avoid
    --  proliferation of type conversions.
@@ -1004,5 +1006,9 @@ package Types is
    type Offset_Array_Index is new Nat;
    type Offset_Array is
      array (Offset_Array_Index range <>) of Opt_Field_Offset;
+
+   Slot_Size : constant := 32;
+   type Slot is mod 2**Slot_Size;
+   for Slot'Size use Slot_Size;
 
 end Types;

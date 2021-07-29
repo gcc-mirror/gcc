@@ -75,7 +75,7 @@
 #define ALLOCA_THRESHOLD 1000
 
 /* Pointers to front-end tables accessed through macros.  */
-Field_Offset *Node_Offsets_Ptr;
+Node_Header *Node_Offsets_Ptr;
 any_slot *Slots_Ptr;
 Node_Id *Next_Node_Ptr;
 Node_Id *Prev_Node_Ptr;
@@ -279,7 +279,7 @@ void
 gigi (Node_Id gnat_root,
       int max_gnat_node,
       int number_name ATTRIBUTE_UNUSED,
-      Field_Offset *node_offsets_ptr,
+      Node_Header *node_offsets_ptr,
       any_slot *slots_ptr,
       Node_Id *next_node_ptr,
       Node_Id *prev_node_ptr,

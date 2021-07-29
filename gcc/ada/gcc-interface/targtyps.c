@@ -35,6 +35,7 @@
 #include "ada.h"
 #include "types.h"
 #include "ada-tree.h"
+#include "sinfo.h"
 #include "gigi.h"
 
 /* If we don't have a specific size for Ada's equivalent of `long', use that

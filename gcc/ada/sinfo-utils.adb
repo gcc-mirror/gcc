@@ -55,7 +55,7 @@ package body Sinfo.Utils is
    --  The second method is much faster if the amount of Ada code being
    --  compiled is large.
 
-   ww : Node_Id'Base := Node_Id'First - 1;
+   ww : Node_Id'Base := Node_Low_Bound - 1;
    pragma Export (Ada, ww);
    Watch_Node : Node_Id'Base renames ww;
    --  Node to "watch"; that is, whenever a node is created, we check if it
@@ -72,8 +72,8 @@ package body Sinfo.Utils is
 
    procedure nnd (N : Node_Id);
    pragma Export (Ada, nnd);
-   --  For debugging. If debugging is turned on, New_Node and New_Entity call
-   --  this. If debug flag N is turned on, this prints out the new node.
+   --  For debugging. If debugging is turned on, New_Node and New_Entity (etc.)
+   --  call this. If debug flag N is turned on, this prints out the new node.
    --
    --  If Node = Watch_Node, this prints out the new node and calls
    --  New_Node_Breakpoint. Otherwise, does nothing.
@@ -265,7 +265,7 @@ package body Sinfo.Utils is
          if Fields (J) /= F_Link then -- Don't walk Parent!
             declare
                Desc : Field_Descriptor renames
-                 Node_Field_Descriptors (Fields (J));
+                 Field_Descriptors (Fields (J));
             begin
                if Is_In_Union_Id (Desc.Kind) then
                   Action (Get_Node_Field_Union (N, Desc.Offset));
@@ -290,7 +290,7 @@ package body Sinfo.Utils is
          if Fields (J) /= F_Link then -- Don't walk Parent!
             declare
                Desc : Field_Descriptor renames
-                 Node_Field_Descriptors (Fields (J));
+                 Field_Descriptors (Fields (J));
             begin
                if Is_In_Union_Id (Desc.Kind) then
                   Set_Node_Field_Union
