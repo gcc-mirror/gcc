@@ -49,6 +49,8 @@ extern void abort (void);
 # define PIC_REG "r20"
 #elif defined(__mips__)
 /* PIC register is $28, but is used even without -fpic.  */
+#elif defined(__loongarch__)
+/* PIC register is $r2, but is used even without -fpic.  */
 #elif defined(__MMIX__)
 /* No pic register.  */
 #elif defined(__mn10300__)

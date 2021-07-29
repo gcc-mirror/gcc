@@ -290,6 +290,10 @@ proc check_weak_available { } {
         return 1
     }
 
+    if { [ string first "loongarch" $target_cpu ] >= 0 } {
+        return 1
+    }
+
     # All AIX targets should support it
 
     if { [istarget *-*-aix*] } {
@@ -727,6 +731,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget m68k-*-elf]
 	     || [istarget m68k-*-uclinux*]
 	     || [istarget mips*-*-elf*]
+	     || [istarget loongarch*-*-elf*]
 	     || [istarget mmix-*-*]
 	     || [istarget mn10300-*-elf*]
 	     || [istarget moxie-*-elf*]
@@ -1299,6 +1304,14 @@ proc check_effective_target_hard_float { } {
 	return [check_no_compiler_messages hard_float assembly {
 		#if (defined __mips_soft_float || defined __mips16)
 		#error __mips_soft_float || __mips16
+		#endif
+	}]
+    }
+
+    if { [istarget loongarch*-*-*] } {
+	return [check_no_compiler_messages hard_float assembly {
+		#if (defined __loongarch_soft_float)
+		#error __loongarch_soft_float
 		#endif
 	}]
     }
@@ -6612,6 +6625,7 @@ proc check_effective_target_vect_float { } {
       expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [istarget mips-sde-elf]
+	     || [istarget loongarch-sde-elf]
 	     || [istarget mipsisa64*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget aarch64*-*-*]
@@ -8022,6 +8036,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget cris-*-*]
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
+       || [istarget loongarch*-*-*]
 	     || [check_effective_target_mips_llsc] }}]
 }
 
@@ -10093,6 +10108,7 @@ proc check_effective_target_branch_cost {} {
 	 || [istarget frv*-*-*]
 	 || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	 || [istarget mips*-*-*]
+	 || [istarget loongarch*-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget riscv*-*-*]
 	 || [istarget sh*-*-*] } {
