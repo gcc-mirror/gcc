@@ -496,10 +496,12 @@ public:
     std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
 
     std::vector<std::unique_ptr<HIR::TraitItem> > trait_items;
+    std::vector<HirId> trait_item_ids;
     for (auto &item : trait.get_trait_items ())
       {
 	HIR::TraitItem *lowered = ASTLowerTraitItem::translate (item.get ());
 	trait_items.push_back (std::unique_ptr<HIR::TraitItem> (lowered));
+	trait_item_ids.push_back (lowered->get_mappings ().get_hirid ());
       }
 
     auto crate_num = mappings->get_current_crate ();
@@ -507,17 +509,24 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated = new HIR::Trait (mapping, trait.get_identifier (),
-				 trait.is_unsafe (), std::move (generic_params),
-				 std::move (type_param_bounds), where_clause,
-				 std::move (trait_items), vis,
-				 trait.get_outer_attrs (), trait.get_locus ());
+    HIR::Trait *hir_trait
+      = new HIR::Trait (mapping, trait.get_identifier (), trait.is_unsafe (),
+			std::move (generic_params),
+			std::move (type_param_bounds), where_clause,
+			std::move (trait_items), vis, trait.get_outer_attrs (),
+			trait.get_locus ());
+    translated = hir_trait;
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
 			       translated);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       trait.get_locus ());
+
+    for (auto trait_item_id : trait_item_ids)
+      {
+	mappings->insert_trait_item_mapping (trait_item_id, hir_trait);
+      }
   }
 
   void visit (AST::TraitImpl &impl_block) override

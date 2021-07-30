@@ -284,6 +284,9 @@ public:
       resolver.translated->get_mappings ().get_crate_num (),
       resolver.translated->get_mappings ().get_hirid (),
       param->get_locus_slow ());
+    resolver.mappings->insert_hir_generic_param (
+      resolver.translated->get_mappings ().get_crate_num (),
+      resolver.translated->get_mappings ().get_hirid (), resolver.translated);
 
     return resolver.translated;
   }
