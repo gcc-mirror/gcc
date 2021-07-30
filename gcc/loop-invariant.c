@@ -2134,7 +2134,7 @@ calculate_loop_reg_pressure (void)
   basic_block bb;
   rtx_insn *insn;
   rtx link;
-  class loop *loop, *parent;
+  class loop *parent;
 
   for (auto loop : loops_list (cfun, 0))
     if (loop->aux == NULL)
@@ -2151,7 +2151,7 @@ calculate_loop_reg_pressure (void)
       if (curr_loop == current_loops->tree_root)
 	continue;
 
-      for (loop = curr_loop;
+      for (class loop *loop = curr_loop;
 	   loop != current_loops->tree_root;
 	   loop = loop_outer (loop))
 	bitmap_ior_into (&LOOP_DATA (loop)->regs_live, DF_LR_IN (bb));

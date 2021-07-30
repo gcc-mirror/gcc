@@ -1927,7 +1927,6 @@ predict_extra_loop_exits (edge exit_edge)
 static void
 predict_loops (void)
 {
-  class loop *loop;
   basic_block bb;
   hash_set <class loop *> with_recursion(10);
 
@@ -1941,7 +1940,7 @@ predict_loops (void)
 	    && (decl = gimple_call_fndecl (gsi_stmt (gsi))) != NULL
 	    && recursive_call_p (current_function_decl, decl))
 	  {
-	    loop = bb->loop_father;
+	    class loop *loop = bb->loop_father;
 	    while (loop && !with_recursion.add (loop))
 	      loop = loop_outer (loop);
 	  }

@@ -3737,7 +3737,6 @@ prepare_perfect_loop_nest (class loop *loop)
 unsigned int
 loop_distribution::execute (function *fun)
 {
-  class loop *loop;
   bool changed = false;
   basic_block bb;
   control_dependences *cd = NULL;
@@ -3845,6 +3844,7 @@ loop_distribution::execute (function *fun)
       /* Destroy loop bodies that could not be reused.  Do this late as we
 	 otherwise can end up refering to stale data in control dependences.  */
       unsigned i;
+      class loop *loop;
       FOR_EACH_VEC_ELT (loops_to_be_destroyed, i, loop)
 	destroy_loop (loop);
 

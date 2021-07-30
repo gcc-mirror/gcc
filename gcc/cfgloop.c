@@ -1398,7 +1398,6 @@ verify_loop_structure (void)
 {
   unsigned *sizes, i, j;
   basic_block bb, *bbs;
-  class loop *loop;
   int err = 0;
   edge e;
   unsigned num = number_of_loops (cfun);
@@ -1689,7 +1688,7 @@ verify_loop_structure (void)
 	      for (; exit; exit = exit->next_e)
 		eloops++;
 
-	      for (loop = bb->loop_father;
+	      for (class loop *loop = bb->loop_father;
 		   loop != e->dest->loop_father
 		   /* When a loop exit is also an entry edge which
 		      can happen when avoiding CFG manipulations
