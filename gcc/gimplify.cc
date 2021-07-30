@@ -8942,207 +8942,740 @@ extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
   return base;
 }
 
-/* Returns true if EXPR is or contains (as a sub-component) BASE_PTR.  */
+/* Used for topological sorting of mapping groups.  UNVISITED means we haven't
+   started processing the group yet.  The TEMPORARY mark is used when we first
+   encounter a group on a depth-first traversal, and the PERMANENT mark is used
+   when we have processed all the group's children (i.e. all the base pointers
+   referred to by the group's mapping nodes, recursively).  */
 
-static bool
-is_or_contains_p (tree expr, tree base_ptr)
+enum omp_tsort_mark {
+  UNVISITED,
+  TEMPORARY,
+  PERMANENT
+};
+
+/* A group of OMP_CLAUSE_MAP nodes that correspond to a single "map"
+   clause.  */
+
+struct omp_mapping_group {
+  tree *grp_start;
+  tree grp_end;
+  omp_tsort_mark mark;
+  struct omp_mapping_group *sibling;
+  struct omp_mapping_group *next;
+};
+
+DEBUG_FUNCTION void
+debug_mapping_group (omp_mapping_group *grp)
 {
-  if ((TREE_CODE (expr) == INDIRECT_REF && TREE_CODE (base_ptr) == MEM_REF)
-      || (TREE_CODE (expr) == MEM_REF && TREE_CODE (base_ptr) == INDIRECT_REF))
-    return operand_equal_p (TREE_OPERAND (expr, 0),
-			    TREE_OPERAND (base_ptr, 0));
-  while (!operand_equal_p (expr, base_ptr))
-    {
-      if (TREE_CODE (base_ptr) == COMPOUND_EXPR)
-	base_ptr = TREE_OPERAND (base_ptr, 1);
-      if (TREE_CODE (base_ptr) == COMPONENT_REF
-	  || TREE_CODE (base_ptr) == POINTER_PLUS_EXPR
-	  || TREE_CODE (base_ptr) == SAVE_EXPR)
-	base_ptr = TREE_OPERAND (base_ptr, 0);
-      else
-	break;
-    }
-  return operand_equal_p (expr, base_ptr);
+  tree tmp = OMP_CLAUSE_CHAIN (grp->grp_end);
+  OMP_CLAUSE_CHAIN (grp->grp_end) = NULL;
+  debug_generic_expr (*grp->grp_start);
+  OMP_CLAUSE_CHAIN (grp->grp_end) = tmp;
 }
 
-/* Implement OpenMP 5.x map ordering rules for target directives. There are
-   several rules, and with some level of ambiguity, hopefully we can at least
-   collect the complexity here in one place.  */
+/* Return the OpenMP "base pointer" of an expression EXPR, or NULL if there
+   isn't one.  */
 
-static void
-omp_target_reorder_clauses (tree *list_p)
+static tree
+omp_get_base_pointer (tree expr)
 {
-  /* Collect refs to alloc/release/delete maps.  */
-  auto_vec<tree, 32> ard;
-  tree *cp = list_p;
-  while (*cp != NULL_TREE)
-    if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_MAP
-	&& (OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_ALLOC
-	    || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_RELEASE
-	    || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_DELETE))
-      {
-	/* Unlink cp and push to ard.  */
-	tree c = *cp;
-	tree nc = OMP_CLAUSE_CHAIN (c);
-	*cp = nc;
-	ard.safe_push (c);
+  while (TREE_CODE (expr) == ARRAY_REF
+	 || TREE_CODE (expr) == COMPONENT_REF)
+    expr = TREE_OPERAND (expr, 0);
 
-	/* Any associated pointer type maps should also move along.  */
-	while (*cp != NULL_TREE
-	       && OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_MAP
-	       && (OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_FIRSTPRIVATE_REFERENCE
-		   || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_FIRSTPRIVATE_POINTER
-		   || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_ATTACH_DETACH
-		   || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_POINTER
-		   || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_ALWAYS_POINTER
-		   || OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_TO_PSET))
-	  {
-	    c = *cp;
-	    nc = OMP_CLAUSE_CHAIN (c);
-	    *cp = nc;
-	    ard.safe_push (c);
-	  }
-      }
-    else
-      cp = &OMP_CLAUSE_CHAIN (*cp);
-
-  /* Link alloc/release/delete maps to the end of list.  */
-  for (unsigned int i = 0; i < ard.length (); i++)
+  if (TREE_CODE (expr) == INDIRECT_REF
+      || (TREE_CODE (expr) == MEM_REF
+	  && integer_zerop (TREE_OPERAND (expr, 1))))
     {
-      *cp = ard[i];
-      cp = &OMP_CLAUSE_CHAIN (ard[i]);
+      expr = TREE_OPERAND (expr, 0);
+      while (TREE_CODE (expr) == COMPOUND_EXPR)
+	expr = TREE_OPERAND (expr, 1);
+      if (TREE_CODE (expr) == POINTER_PLUS_EXPR)
+	expr = TREE_OPERAND (expr, 0);
+      if (TREE_CODE (expr) == SAVE_EXPR)
+	expr = TREE_OPERAND (expr, 0);
+      STRIP_NOPS (expr);
+      return expr;
     }
-  *cp = NULL_TREE;
 
-  /* OpenMP 5.0 requires that pointer variables are mapped before
-     its use as a base-pointer.  */
-  auto_vec<tree *, 32> atf;
-  for (tree *cp = list_p; *cp; cp = &OMP_CLAUSE_CHAIN (*cp))
-    if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_MAP)
-      {
-	/* Collect alloc, to, from, to/from clause tree pointers.  */
-	gomp_map_kind k = OMP_CLAUSE_MAP_KIND (*cp);
-	if (k == GOMP_MAP_ALLOC
-	    || k == GOMP_MAP_TO
-	    || k == GOMP_MAP_FROM
-	    || k == GOMP_MAP_TOFROM
-	    || k == GOMP_MAP_ALWAYS_TO
-	    || k == GOMP_MAP_ALWAYS_FROM
-	    || k == GOMP_MAP_ALWAYS_TOFROM)
-	  atf.safe_push (cp);
-      }
+  return NULL_TREE;
+}
 
-  for (unsigned int i = 0; i < atf.length (); i++)
-    if (atf[i])
-      {
-	tree *cp = atf[i];
-	tree decl = OMP_CLAUSE_DECL (*cp);
-	if (TREE_CODE (decl) == INDIRECT_REF || TREE_CODE (decl) == MEM_REF)
+/* An attach or detach operation depends directly on the address being
+   attached/detached.  Return that address, or none if there are no
+   attachments/detachments.  */
+
+static tree
+omp_get_attachment (omp_mapping_group *grp)
+{
+  tree node = *grp->grp_start;
+
+  switch (OMP_CLAUSE_MAP_KIND (node))
+    {
+    case GOMP_MAP_TO:
+    case GOMP_MAP_FROM:
+    case GOMP_MAP_TOFROM:
+    case GOMP_MAP_ALWAYS_FROM:
+    case GOMP_MAP_ALWAYS_TO:
+    case GOMP_MAP_ALWAYS_TOFROM:
+    case GOMP_MAP_FORCE_FROM:
+    case GOMP_MAP_FORCE_TO:
+    case GOMP_MAP_FORCE_TOFROM:
+    case GOMP_MAP_FORCE_PRESENT:
+    case GOMP_MAP_ALLOC:
+    case GOMP_MAP_RELEASE:
+    case GOMP_MAP_DELETE:
+    case GOMP_MAP_FORCE_ALLOC:
+      if (node == grp->grp_end)
+	return NULL_TREE;
+
+      node = OMP_CLAUSE_CHAIN (node);
+      if (node && OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_TO_PSET)
+	{
+	  gcc_assert (node != grp->grp_end);
+	  node = OMP_CLAUSE_CHAIN (node);
+	}
+      if (node)
+	switch (OMP_CLAUSE_MAP_KIND (node))
 	  {
-	    tree base_ptr = TREE_OPERAND (decl, 0);
-	    STRIP_TYPE_NOPS (base_ptr);
-	    for (unsigned int j = i + 1; j < atf.length (); j++)
-	      if (atf[j])
-		{
-		  tree *cp2 = atf[j];
-		  tree decl2 = OMP_CLAUSE_DECL (*cp2);
+	  case GOMP_MAP_POINTER:
+	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
+	  case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
+	    return NULL_TREE;
 
-		  decl2 = OMP_CLAUSE_DECL (*cp2);
-		  if (is_or_contains_p (decl2, base_ptr))
-		    {
-		      /* Move *cp2 to before *cp.  */
-		      tree c = *cp2;
-		      *cp2 = OMP_CLAUSE_CHAIN (c);
-		      OMP_CLAUSE_CHAIN (c) = *cp;
-		      *cp = c;
+	  case GOMP_MAP_ATTACH_DETACH:
+	  case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+	    return OMP_CLAUSE_DECL (node);
 
-		      if (*cp2 != NULL_TREE
-			  && OMP_CLAUSE_CODE (*cp2) == OMP_CLAUSE_MAP
-			  && OMP_CLAUSE_MAP_KIND (*cp2) == GOMP_MAP_ALWAYS_POINTER)
-			{
-			  tree c2 = *cp2;
-			  *cp2 = OMP_CLAUSE_CHAIN (c2);
-			  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
-			  OMP_CLAUSE_CHAIN (c) = c2;
-			}
-
-		      atf[j] = NULL;
-		  }
-		}
+	  default:
+	    internal_error ("unexpected mapping node");
 	  }
-      }
+      return error_mark_node;
 
-  /* For attach_detach map clauses, if there is another map that maps the
-     attached/detached pointer, make sure that map is ordered before the
-     attach_detach.  */
-  atf.truncate (0);
-  for (tree *cp = list_p; *cp; cp = &OMP_CLAUSE_CHAIN (*cp))
-    if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_MAP)
-      {
-	/* Collect alloc, to, from, to/from clauses, and
-	   always_pointer/attach_detach clauses.  */
-	gomp_map_kind k = OMP_CLAUSE_MAP_KIND (*cp);
-	if (k == GOMP_MAP_ALLOC
-	    || k == GOMP_MAP_TO
-	    || k == GOMP_MAP_FROM
-	    || k == GOMP_MAP_TOFROM
-	    || k == GOMP_MAP_ALWAYS_TO
-	    || k == GOMP_MAP_ALWAYS_FROM
-	    || k == GOMP_MAP_ALWAYS_TOFROM
-	    || k == GOMP_MAP_ATTACH_DETACH
-	    || k == GOMP_MAP_ALWAYS_POINTER)
-	  atf.safe_push (cp);
-      }
+    case GOMP_MAP_TO_PSET:
+      gcc_assert (node != grp->grp_end);
+      node = OMP_CLAUSE_CHAIN (node);
+      if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_ATTACH
+	  || OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_DETACH)
+	return OMP_CLAUSE_DECL (node);
+      else
+	internal_error ("unexpected mapping node");
+      return error_mark_node;
 
-  for (unsigned int i = 0; i < atf.length (); i++)
-    if (atf[i])
-      {
-	tree *cp = atf[i];
-	tree ptr = OMP_CLAUSE_DECL (*cp);
-	STRIP_TYPE_NOPS (ptr);
-	if (OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_ATTACH_DETACH)
-	  for (unsigned int j = i + 1; j < atf.length (); j++)
+    case GOMP_MAP_ATTACH:
+    case GOMP_MAP_DETACH:
+      node = OMP_CLAUSE_CHAIN (node);
+      if (!node || *grp->grp_start == grp->grp_end)
+	return OMP_CLAUSE_DECL (*grp->grp_start);
+      if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_FIRSTPRIVATE_POINTER
+	  || OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+	return OMP_CLAUSE_DECL (*grp->grp_start);
+      else
+	internal_error ("unexpected mapping node");
+      return error_mark_node;
+
+    case GOMP_MAP_STRUCT:
+    case GOMP_MAP_FORCE_DEVICEPTR:
+    case GOMP_MAP_DEVICE_RESIDENT:
+    case GOMP_MAP_LINK:
+    case GOMP_MAP_IF_PRESENT:
+    case GOMP_MAP_FIRSTPRIVATE:
+    case GOMP_MAP_FIRSTPRIVATE_INT:
+    case GOMP_MAP_USE_DEVICE_PTR:
+    case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+      return NULL_TREE;
+
+    default:
+      internal_error ("unexpected mapping node");
+    }
+
+  return error_mark_node;
+}
+
+/* Given a pointer START_P to the start of a group of related (e.g. pointer)
+   mappings, return the chain pointer to the end of that group in the list.  */
+
+static tree *
+omp_group_last (tree *start_p)
+{
+  tree c = *start_p, nc, *grp_last_p = start_p;
+
+  gcc_assert (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP);
+
+  nc = OMP_CLAUSE_CHAIN (c);
+
+  if (!nc || OMP_CLAUSE_CODE (nc) != OMP_CLAUSE_MAP)
+    return grp_last_p;
+
+  switch (OMP_CLAUSE_MAP_KIND (c))
+    {
+    default:
+      while (nc
+	     && OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+	     && (OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_FIRSTPRIVATE_REFERENCE
+		 || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_FIRSTPRIVATE_POINTER
+		 || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_ATTACH_DETACH
+		 || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_POINTER
+		 || (OMP_CLAUSE_MAP_KIND (nc)
+		     == GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION)
+		 || (OMP_CLAUSE_MAP_KIND (nc)
+		     == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION)
+		 || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_ALWAYS_POINTER
+		 || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_TO_PSET))
+	{
+	  grp_last_p = &OMP_CLAUSE_CHAIN (c);
+	  c = nc;
+	  tree nc2 = OMP_CLAUSE_CHAIN (nc);
+	  if (nc2
+	      && OMP_CLAUSE_CODE (nc2) == OMP_CLAUSE_MAP
+	      && (OMP_CLAUSE_MAP_KIND (nc)
+		  == GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION)
+	      && OMP_CLAUSE_MAP_KIND (nc2) == GOMP_MAP_ATTACH)
 	    {
-	      tree *cp2 = atf[j];
-	      tree decl2 = OMP_CLAUSE_DECL (*cp2);
-	      if (OMP_CLAUSE_MAP_KIND (*cp2) != GOMP_MAP_ATTACH_DETACH
-		  && OMP_CLAUSE_MAP_KIND (*cp2) != GOMP_MAP_ALWAYS_POINTER
-		  && is_or_contains_p (decl2, ptr))
-		{
-		  /* Move *cp2 to before *cp.  */
-		  tree c = *cp2;
-		  *cp2 = OMP_CLAUSE_CHAIN (c);
-		  OMP_CLAUSE_CHAIN (c) = *cp;
-		  *cp = c;
-		  atf[j] = NULL;
-
-		  /* If decl2 is of the form '*decl2_opnd0', and followed by an
-		     ALWAYS_POINTER or ATTACH_DETACH of 'decl2_opnd0', move the
-		     pointer operation along with *cp2. This can happen for C++
-		     reference sequences.  */
-		  if (j + 1 < atf.length ()
-		      && (TREE_CODE (decl2) == INDIRECT_REF
-			  || TREE_CODE (decl2) == MEM_REF))
-		    {
-		      tree *cp3 = atf[j + 1];
-		      tree decl3 = OMP_CLAUSE_DECL (*cp3);
-		      tree decl2_opnd0 = TREE_OPERAND (decl2, 0);
-		      if ((OMP_CLAUSE_MAP_KIND (*cp3) == GOMP_MAP_ALWAYS_POINTER
-			   || OMP_CLAUSE_MAP_KIND (*cp3) == GOMP_MAP_ATTACH_DETACH)
-			  && operand_equal_p (decl3, decl2_opnd0))
-			{
-			  /* Also move *cp3 to before *cp.  */
-			  c = *cp3;
-			  *cp2 = OMP_CLAUSE_CHAIN (c);
-			  OMP_CLAUSE_CHAIN (c) = *cp;
-			  *cp = c;
-			  atf[j + 1] = NULL;
-			  j += 1;
-			}
-		    }
-		}
+	      grp_last_p = &OMP_CLAUSE_CHAIN (nc);
+	      c = nc2;
+	      nc2 = OMP_CLAUSE_CHAIN (nc2);
 	    }
-      }
+	   nc = nc2;
+	}
+      break;
+
+    case GOMP_MAP_ATTACH:
+    case GOMP_MAP_DETACH:
+      /* This is a weird artifact of how directives are parsed: bare attach or
+	 detach clauses get a subsequent (meaningless) FIRSTPRIVATE_POINTER or
+	 FIRSTPRIVATE_REFERENCE node.  FIXME.  */
+      if (nc
+	  && OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+	  && (OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_FIRSTPRIVATE_REFERENCE
+	      || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_FIRSTPRIVATE_POINTER))
+	grp_last_p = &OMP_CLAUSE_CHAIN (c);
+      break;
+
+    case GOMP_MAP_TO_PSET:
+      if (OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+	  && (OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_ATTACH
+	      || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_DETACH))
+	grp_last_p = &OMP_CLAUSE_CHAIN (c);
+      break;
+    }
+
+  return grp_last_p;
+}
+
+/* Walk through LIST_P, and return a list of groups of mappings found (e.g.
+   OMP_CLAUSE_MAP with GOMP_MAP_{TO/FROM/TOFROM} followed by one or two
+   associated GOMP_MAP_POINTER mappings).  Return a vector of omp_mapping_group
+   if we have more than one such group, else return NULL.  */
+
+static vec<omp_mapping_group> *
+omp_gather_mapping_groups (tree *list_p)
+{
+  vec<omp_mapping_group> *groups = new vec<omp_mapping_group> ();
+
+  for (tree *cp = list_p; *cp; cp = &OMP_CLAUSE_CHAIN (*cp))
+    {
+      if (OMP_CLAUSE_CODE (*cp) != OMP_CLAUSE_MAP)
+	continue;
+
+      tree *grp_last_p = omp_group_last (cp);
+      omp_mapping_group grp;
+
+      grp.grp_start = cp;
+      grp.grp_end = *grp_last_p;
+      grp.mark = UNVISITED;
+      grp.sibling = NULL;
+      grp.next = NULL;
+      groups->safe_push (grp);
+
+      cp = grp_last_p;
+    }
+
+  if (groups->length () > 0)
+    return groups;
+  else
+    {
+      delete groups;
+      return NULL;
+    }
+}
+
+/* A pointer mapping group GRP may define a block of memory starting at some
+   base address, and maybe also define a firstprivate pointer or firstprivate
+   reference that points to that block.  The return value is a node containing
+   the former, and the *FIRSTPRIVATE pointer is set if we have the latter.
+   If we define several base pointers, i.e. for a GOMP_MAP_STRUCT mapping,
+   return the number of consecutive chained nodes in CHAINED.  */
+
+static tree
+omp_group_base (omp_mapping_group *grp, unsigned int *chained,
+		tree *firstprivate)
+{
+  tree node = *grp->grp_start;
+
+  *firstprivate = NULL_TREE;
+  *chained = 1;
+
+  switch (OMP_CLAUSE_MAP_KIND (node))
+    {
+    case GOMP_MAP_TO:
+    case GOMP_MAP_FROM:
+    case GOMP_MAP_TOFROM:
+    case GOMP_MAP_ALWAYS_FROM:
+    case GOMP_MAP_ALWAYS_TO:
+    case GOMP_MAP_ALWAYS_TOFROM:
+    case GOMP_MAP_FORCE_FROM:
+    case GOMP_MAP_FORCE_TO:
+    case GOMP_MAP_FORCE_TOFROM:
+    case GOMP_MAP_FORCE_PRESENT:
+    case GOMP_MAP_ALLOC:
+    case GOMP_MAP_RELEASE:
+    case GOMP_MAP_DELETE:
+    case GOMP_MAP_FORCE_ALLOC:
+      if (node == grp->grp_end)
+	return node;
+
+      node = OMP_CLAUSE_CHAIN (node);
+      if (node && OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_TO_PSET)
+	{
+	  gcc_assert (node != grp->grp_end);
+	  node = OMP_CLAUSE_CHAIN (node);
+	}
+      if (node)
+	switch (OMP_CLAUSE_MAP_KIND (node))
+	  {
+	  case GOMP_MAP_POINTER:
+	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
+	  case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
+	    *firstprivate = OMP_CLAUSE_DECL (node);
+	    return *grp->grp_start;
+
+	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
+	  case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+	    return *grp->grp_start;
+
+	  default:
+	    internal_error ("unexpected mapping node");
+	  }
+      else
+	internal_error ("unexpected mapping node");
+      return error_mark_node;
+
+    case GOMP_MAP_TO_PSET:
+      gcc_assert (node != grp->grp_end);
+      node = OMP_CLAUSE_CHAIN (node);
+      if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_ATTACH
+	  || OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_DETACH)
+	return NULL_TREE;
+      else
+	internal_error ("unexpected mapping node");
+      return error_mark_node;
+
+    case GOMP_MAP_ATTACH:
+    case GOMP_MAP_DETACH:
+      node = OMP_CLAUSE_CHAIN (node);
+      if (!node || *grp->grp_start == grp->grp_end)
+	return NULL_TREE;
+      if (OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_FIRSTPRIVATE_POINTER
+	  || OMP_CLAUSE_MAP_KIND (node) == GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+	{
+	  /* We're mapping the base pointer itself in a bare attach or detach
+	     node.  This is a side effect of how parsing works, and the mapping
+	     will be removed anyway (at least for enter/exit data directives).
+	     We should ignore the mapping here.  FIXME.  */
+	  return NULL_TREE;
+	}
+      else
+	internal_error ("unexpected mapping node");
+      return error_mark_node;
+
+    case GOMP_MAP_FORCE_DEVICEPTR:
+    case GOMP_MAP_DEVICE_RESIDENT:
+    case GOMP_MAP_LINK:
+    case GOMP_MAP_IF_PRESENT:
+    case GOMP_MAP_FIRSTPRIVATE:
+    case GOMP_MAP_FIRSTPRIVATE_INT:
+    case GOMP_MAP_USE_DEVICE_PTR:
+    case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+      return NULL_TREE;
+
+    case GOMP_MAP_FIRSTPRIVATE_POINTER:
+    case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
+    case GOMP_MAP_POINTER:
+    case GOMP_MAP_ALWAYS_POINTER:
+    case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
+      /* These shouldn't appear by themselves.  */
+      if (!seen_error ())
+	internal_error ("unexpected pointer mapping node");
+      return error_mark_node;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return error_mark_node;
+}
+
+/* Given a vector of omp_mapping_groups, build a hash table so we can look up
+   nodes by tree_operand_hash.  */
+
+static hash_map<tree_operand_hash, omp_mapping_group *> *
+omp_index_mapping_groups (vec<omp_mapping_group> *groups)
+{
+  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap
+    = new hash_map<tree_operand_hash, omp_mapping_group *>;
+
+  omp_mapping_group *grp;
+  unsigned int i;
+
+  FOR_EACH_VEC_ELT (*groups, i, grp)
+    {
+      tree fpp;
+      unsigned int chained;
+      tree node = omp_group_base (grp, &chained, &fpp);
+
+      if (node == error_mark_node || (!node && !fpp))
+	continue;
+
+      for (unsigned j = 0;
+	   node && j < chained;
+	   node = OMP_CLAUSE_CHAIN (node), j++)
+	{
+	  tree decl = OMP_CLAUSE_DECL (node);
+
+	  /* Sometimes we see zero-offset MEM_REF instead of INDIRECT_REF,
+	     meaning node-hash lookups don't work.  This is a workaround for
+	     that, but ideally we should just create the INDIRECT_REF at
+	     source instead.  FIXME.  */
+	  if (TREE_CODE (decl) == MEM_REF
+	      && integer_zerop (TREE_OPERAND (decl, 1)))
+	    decl = build1 (INDIRECT_REF, TREE_TYPE (decl),
+			   TREE_OPERAND (decl, 0));
+
+	  omp_mapping_group **prev = grpmap->get (decl);
+
+	  if (prev && *prev == grp)
+	    /* Empty.  */;
+	  else if (prev)
+	    {
+	      /* Mapping the same thing twice is normally diagnosed as an error,
+		 but can happen under some circumstances, e.g. in pr99928-16.c,
+		 the directive:
+
+		 #pragma omp target simd reduction(+:a[:3]) \
+					 map(always, tofrom: a[:6])
+		 ...
+
+		 will result in two "a[0]" mappings (of different sizes).  */
+
+	      grp->sibling = (*prev)->sibling;
+	      (*prev)->sibling = grp;
+	    }
+	  else
+	    grpmap->put (decl, grp);
+	}
+
+      if (!fpp)
+	continue;
+
+      omp_mapping_group **prev = grpmap->get (fpp);
+      if (prev)
+	{
+	  grp->sibling = (*prev)->sibling;
+	  (*prev)->sibling = grp;
+	}
+      else
+	grpmap->put (fpp, grp);
+    }
+  return grpmap;
+}
+
+/* Find the immediately-containing struct for a component ref (etc.)
+   expression EXPR.  */
+
+static tree
+omp_containing_struct (tree expr)
+{
+  tree expr0 = expr;
+
+  STRIP_NOPS (expr);
+
+  /* Note: don't strip NOPs unless we're also stripping off array refs or a
+     component ref.  */
+  if (TREE_CODE (expr) != ARRAY_REF && TREE_CODE (expr) != COMPONENT_REF)
+    return expr0;
+
+  while (TREE_CODE (expr) == ARRAY_REF)
+    expr = TREE_OPERAND (expr, 0);
+
+  if (TREE_CODE (expr) == COMPONENT_REF)
+    expr = TREE_OPERAND (expr, 0);
+
+  return expr;
+}
+
+/* Helper function for omp_tsort_mapping_groups.  Returns TRUE on success, or
+   FALSE on error.  */
+
+static bool
+omp_tsort_mapping_groups_1 (omp_mapping_group ***outlist,
+			    vec<omp_mapping_group> *groups,
+			    hash_map<tree_operand_hash, omp_mapping_group *>
+			      *grpmap,
+			    omp_mapping_group *grp)
+{
+  if (grp->mark == PERMANENT)
+    return true;
+  if (grp->mark == TEMPORARY)
+    {
+      fprintf (stderr, "when processing group:\n");
+      debug_mapping_group (grp);
+      internal_error ("base pointer cycle detected");
+      return false;
+    }
+  grp->mark = TEMPORARY;
+
+  tree attaches_to = omp_get_attachment (grp);
+
+  if (attaches_to)
+    {
+      omp_mapping_group **basep = grpmap->get (attaches_to);
+
+      if (basep)
+	{
+	  gcc_assert (*basep != grp);
+	  for (omp_mapping_group *w = *basep; w; w = w->sibling)
+	    if (!omp_tsort_mapping_groups_1 (outlist, groups, grpmap, w))
+	      return false;
+	}
+    }
+
+  tree decl = OMP_CLAUSE_DECL (*grp->grp_start);
+
+  while (decl)
+    {
+      tree base = omp_get_base_pointer (decl);
+
+      if (!base)
+	break;
+
+      omp_mapping_group **innerp = grpmap->get (base);
+
+      /* We should treat whole-structure mappings as if all (pointer, in this
+	 case) members are mapped as individual list items.  Check if we have
+	 such a whole-structure mapping, if we don't have an explicit reference
+	 to the pointer member itself.  */
+      if (!innerp && TREE_CODE (base) == COMPONENT_REF)
+	{
+	  base = omp_containing_struct (base);
+	  innerp = grpmap->get (base);
+
+	  if (!innerp
+	      && TREE_CODE (base) == MEM_REF
+	      && integer_zerop (TREE_OPERAND (base, 1)))
+	    {
+	      tree ind = TREE_OPERAND (base, 0);
+	      ind = build1 (INDIRECT_REF, TREE_TYPE (base), ind);
+	      innerp = grpmap->get (ind);
+	    }
+	}
+
+      if (innerp && *innerp != grp)
+	{
+	  for (omp_mapping_group *w = *innerp; w; w = w->sibling)
+	    if (!omp_tsort_mapping_groups_1 (outlist, groups, grpmap, w))
+	      return false;
+	  break;
+	}
+
+      decl = base;
+    }
+
+  grp->mark = PERMANENT;
+
+  /* Emit grp to output list.  */
+
+  **outlist = grp;
+  *outlist = &grp->next;
+
+  return true;
+}
+
+/* Topologically sort GROUPS, so that OMP 5.0-defined base pointers come
+   before mappings that use those pointers.  This is an implementation of the
+   depth-first search algorithm, described e.g. at:
+
+     https://en.wikipedia.org/wiki/Topological_sorting
+*/
+
+static omp_mapping_group *
+omp_tsort_mapping_groups (vec<omp_mapping_group> *groups,
+			  hash_map<tree_operand_hash, omp_mapping_group *>
+			    *grpmap)
+{
+  omp_mapping_group *grp, *outlist = NULL, **cursor;
+  unsigned int i;
+
+  cursor = &outlist;
+
+  FOR_EACH_VEC_ELT (*groups, i, grp)
+    {
+      if (grp->mark != PERMANENT)
+	if (!omp_tsort_mapping_groups_1 (&cursor, groups, grpmap, grp))
+	  return NULL;
+    }
+
+  return outlist;
+}
+
+/* Split INLIST into two parts, moving groups corresponding to
+   ALLOC/RELEASE/DELETE mappings to one list, and other mappings to another.
+   The former list is then appended to the latter.  Each sub-list retains the
+   order of the original list.  */
+
+static omp_mapping_group *
+omp_segregate_mapping_groups (omp_mapping_group *inlist)
+{
+  omp_mapping_group *ard_groups = NULL, *tf_groups = NULL;
+  omp_mapping_group **ard_tail = &ard_groups, **tf_tail = &tf_groups;
+
+  for (omp_mapping_group *w = inlist; w;)
+    {
+      tree c = *w->grp_start;
+      omp_mapping_group *next = w->next;
+
+      gcc_assert (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP);
+
+      switch (OMP_CLAUSE_MAP_KIND (c))
+	{
+	case GOMP_MAP_ALLOC:
+	case GOMP_MAP_RELEASE:
+	case GOMP_MAP_DELETE:
+	  *ard_tail = w;
+	  w->next = NULL;
+	  ard_tail = &w->next;
+	  break;
+
+	default:
+	  *tf_tail = w;
+	  w->next = NULL;
+	  tf_tail = &w->next;
+	}
+
+      w = next;
+    }
+
+  /* Now splice the lists together...  */
+  *tf_tail = ard_groups;
+
+  return tf_groups;
+}
+
+/* Given a list LIST_P containing groups of mappings given by GROUPS, reorder
+   those groups based on the output list of omp_tsort_mapping_groups --
+   singly-linked, threaded through each element's NEXT pointer starting at
+   HEAD.  Each list element appears exactly once in that linked list.
+
+   Each element of GROUPS may correspond to one or several mapping nodes.
+   Node groups are kept together, and in the reordered list, the positions of
+   the original groups are reused for the positions of the reordered list.
+   Hence if we have e.g.
+
+     {to ptr ptr} firstprivate {tofrom ptr} ...
+      ^             ^           ^
+      first group  non-"map"    second group
+
+   and say the second group contains a base pointer for the first so must be
+   moved before it, the resulting list will contain:
+
+     {tofrom ptr} firstprivate {to ptr ptr} ...
+      ^ prev. second group      ^ prev. first group
+*/
+
+static tree *
+omp_reorder_mapping_groups (vec<omp_mapping_group> *groups,
+			    omp_mapping_group *head,
+			    tree *list_p)
+{
+  omp_mapping_group *grp;
+  unsigned int i;
+  unsigned numgroups = groups->length ();
+  auto_vec<tree> old_heads (numgroups);
+  auto_vec<tree *> old_headps (numgroups);
+  auto_vec<tree> new_heads (numgroups);
+  auto_vec<tree> old_succs (numgroups);
+  bool map_at_start = (list_p == (*groups)[0].grp_start);
+
+  tree *new_grp_tail = NULL;
+
+  /* Stash the start & end nodes of each mapping group before we start
+     modifying the list.  */
+  FOR_EACH_VEC_ELT (*groups, i, grp)
+    {
+      old_headps.quick_push (grp->grp_start);
+      old_heads.quick_push (*grp->grp_start);
+      old_succs.quick_push (OMP_CLAUSE_CHAIN (grp->grp_end));
+    }
+
+  /* And similarly, the heads of the groups in the order we want to rearrange
+     the list to.  */
+  for (omp_mapping_group *w = head; w; w = w->next)
+    new_heads.quick_push (*w->grp_start);
+
+  FOR_EACH_VEC_ELT (*groups, i, grp)
+    {
+      gcc_assert (head);
+
+      if (new_grp_tail && old_succs[i - 1] == old_heads[i])
+	{
+	  /* a {b c d} {e f g} h i j   (original)
+	     -->
+	     a {k l m} {e f g} h i j   (inserted new group on last iter)
+	     -->
+	     a {k l m} {n o p} h i j   (this time, chain last group to new one)
+		      ^new_grp_tail
+	  */
+	  *new_grp_tail = new_heads[i];
+	}
+      else if (new_grp_tail)
+	{
+	  /* a {b c d} e {f g h} i j k   (original)
+	     -->
+	     a {l m n} e {f g h} i j k   (gap after last iter's group)
+	     -->
+	     a {l m n} e {o p q} h i j   (chain last group to old successor)
+		      ^new_grp_tail
+	   */
+	  *new_grp_tail = old_succs[i - 1];
+	  *old_headps[i] = new_heads[i];
+	}
+      else
+	{
+	  /* The first inserted group -- point to new group, and leave end
+	     open.
+	     a {b c d} e f
+	     -->
+	     a {g h i...
+	  */
+	  *grp->grp_start = new_heads[i];
+	}
+
+      new_grp_tail = &OMP_CLAUSE_CHAIN (head->grp_end);
+
+      head = head->next;
+    }
+
+  if (new_grp_tail)
+    *new_grp_tail = old_succs[numgroups - 1];
+
+  gcc_assert (!head);
+
+  return map_at_start ? (*groups)[0].grp_start : list_p;
 }
 
 /* DECL is supposed to have lastprivate semantics in the outer contexts
@@ -9267,11 +9800,29 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	break;
       }
 
-  if (code == OMP_TARGET
-      || code == OMP_TARGET_DATA
-      || code == OMP_TARGET_ENTER_DATA
-      || code == OMP_TARGET_EXIT_DATA)
-    omp_target_reorder_clauses (list_p);
+  /* Topological sorting may fail if we have duplicate nodes, which
+     we should have detected and shown an error for already.  Skip
+     sorting in that case.  */
+  if (!seen_error ()
+      && (code == OMP_TARGET
+	  || code == OMP_TARGET_DATA
+	  || code == OMP_TARGET_ENTER_DATA
+	  || code == OMP_TARGET_EXIT_DATA))
+    {
+      vec<omp_mapping_group> *groups;
+      groups = omp_gather_mapping_groups (list_p);
+      if (groups)
+	{
+	  hash_map<tree_operand_hash, omp_mapping_group *> *grpmap;
+	  grpmap = omp_index_mapping_groups (groups);
+	  omp_mapping_group *outlist
+	    = omp_tsort_mapping_groups (groups, grpmap);
+	  outlist = omp_segregate_mapping_groups (outlist);
+	  list_p = omp_reorder_mapping_groups (groups, outlist, list_p);
+	  delete grpmap;
+	  delete groups;
+	}
+    }
 
   while ((c = *list_p) != NULL)
     {
