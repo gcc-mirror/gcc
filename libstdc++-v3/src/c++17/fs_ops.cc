@@ -1591,7 +1591,8 @@ fs::symlink_status(const fs::path& p)
   return result;
 }
 
-fs::path fs::temp_directory_path()
+fs::path
+fs::temp_directory_path()
 {
   error_code ec;
   path tmp = temp_directory_path(ec);
@@ -1600,32 +1601,10 @@ fs::path fs::temp_directory_path()
   return tmp;
 }
 
-fs::path fs::temp_directory_path(error_code& ec)
+fs::path
+fs::temp_directory_path(error_code& ec)
 {
-  path p;
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  unsigned len = 1024;
-  std::wstring buf;
-  do
-    {
-      buf.resize(len);
-      len = GetTempPathW(buf.size(), buf.data());
-    } while (len > buf.size());
-
-  if (len == 0)
-    {
-      ec.assign((int)GetLastError(), std::system_category());
-      return p;
-    }
-  buf.resize(len);
-  p = std::move(buf);
-#else
-  const char* tmpdir = nullptr;
-  const char* env[] = { "TMPDIR", "TMP", "TEMP", "TEMPDIR", nullptr };
-  for (auto e = env; tmpdir == nullptr && *e != nullptr; ++e)
-    tmpdir = ::getenv(*e);
-  p = tmpdir ? tmpdir : "/tmp";
-#endif
+  path p = fs::get_temp_directory_from_env();
   auto st = status(p, ec);
   if (ec)
     p.clear();

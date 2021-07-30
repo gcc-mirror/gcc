@@ -21,6 +21,7 @@
 
 #include <experimental/filesystem>
 #include <stdlib.h>
+#include <stdio.h>
 #include <testsuite_hooks.h>
 #include <testsuite_fs.h>
 
@@ -59,7 +60,10 @@ test01()
   clean_env();
 
   if (!fs::exists("/tmp"))
+  {
+    puts("/tmp doesn't exist, not testing it for temp_directory_path");
     return; // just give up
+  }
 
   std::error_code ec = make_error_code(std::errc::invalid_argument);
   fs::path p1 = fs::temp_directory_path(ec);
@@ -75,8 +79,11 @@ test02()
 {
   clean_env();
 
-  if (set_env("TMPDIR", __gnu_test::nonexistent_path().string()))
+  if (!set_env("TMP", __gnu_test::nonexistent_path().string()))
+  {
+    puts("Cannot set environment variables, not testing temp_directory_path");
     return; // just give up
+  }
 
   std::error_code ec;
   fs::path p = fs::temp_directory_path(ec);

@@ -28228,6 +28228,17 @@ _ACEOF
 fi
 done
 
+  for ac_func in secure_getenv
+do :
+  ac_fn_c_check_func "$LINENO" "secure_getenv" "ac_cv_func_secure_getenv"
+if test "x$ac_cv_func_secure_getenv" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SECURE_GETENV 1
+_ACEOF
+
+fi
+done
+
 
   # C11 functions for C++17 library
   for ac_func in timespec_get

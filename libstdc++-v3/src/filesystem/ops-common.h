@@ -568,6 +568,46 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
 
+  // Find OS-specific name of temporary directory from the environment,
+  // Caller must check that the path is an accessible directory.
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  inline wstring
+  get_temp_directory_from_env()
+  {
+    unsigned len = 1024;
+    std::wstring buf;
+    do
+      {
+	buf.resize(len);
+	len = GetTempPathW(buf.size(), buf.data());
+      } while (len > buf.size());
+
+    if (len == 0)
+      {
+	ec.assign((int)GetLastError(), std::system_category());
+	return p;
+      }
+    buf.resize(len);
+    return buf;
+  }
+#else
+  inline const char*
+  get_temp_directory_from_env() noexcept
+  {
+    for (auto env : { "TMPDIR", "TMP", "TEMP", "TEMPDIR" })
+      {
+#if _GLIBCXX_HAVE_SECURE_GETENV
+	auto tmpdir = ::secure_getenv(env);
+#else
+	auto tmpdir = ::getenv(env);
+#endif
+	if (tmpdir)
+	  return tmpdir;
+      }
+    return "/tmp";
+  }
+#endif
+
 _GLIBCXX_END_NAMESPACE_FILESYSTEM
 
 _GLIBCXX_END_NAMESPACE_VERSION
