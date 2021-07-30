@@ -90,11 +90,10 @@ static tree get_vop_from_header (class loop *);
 unsigned int
 tree_ssa_unswitch_loops (void)
 {
-  class loop *loop;
   bool changed = false;
 
   /* Go through all loops starting from innermost.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       if (!loop->inner)
 	/* Unswitch innermost loop.  */

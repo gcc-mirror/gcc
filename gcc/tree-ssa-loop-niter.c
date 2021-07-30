@@ -4559,13 +4559,11 @@ estimated_stmt_executions (class loop *loop, widest_int *nit)
 void
 estimate_numbers_of_iterations (function *fn)
 {
-  class loop *loop;
-
   /* We don't want to issue signed overflow warnings while getting
      loop iteration estimates.  */
   fold_defer_overflow_warnings ();
 
-  FOR_EACH_LOOP_FN (fn, loop, 0)
+  for (auto loop : loops_list (fn, 0))
     estimate_numbers_of_iterations (loop);
 
   fold_undefer_and_ignore_overflow_warnings ();
@@ -5031,9 +5029,7 @@ free_numbers_of_iterations_estimates (class loop *loop)
 void
 free_numbers_of_iterations_estimates (function *fn)
 {
-  class loop *loop;
-
-  FOR_EACH_LOOP_FN (fn, loop, 0)
+  for (auto loop : loops_list (fn, 0))
     free_numbers_of_iterations_estimates (loop);
 }
 

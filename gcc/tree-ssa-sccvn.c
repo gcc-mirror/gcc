@@ -7651,9 +7651,8 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
      loops and the outermost one optimistically.  */
   if (iterate)
     {
-      loop_p loop;
       unsigned max_depth = param_rpo_vn_max_loop_depth;
-      FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+      for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
 	if (loop_depth (loop) > max_depth)
 	  for (unsigned i = 2;
 	       i < loop_depth (loop) - max_depth; ++i)

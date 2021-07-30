@@ -1428,8 +1428,7 @@ loop_versioning::analyze_blocks ()
      versioning at that level could be useful in some cases.  */
   get_loop_info (get_loop (m_fn, 0)).rejected_p = true;
 
-  class loop *loop;
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       loop_info &linfo = get_loop_info (loop);
 
@@ -1650,8 +1649,7 @@ loop_versioning::make_versioning_decisions ()
   AUTO_DUMP_SCOPE ("make_versioning_decisions",
 		   dump_user_location_t::from_function_decl (m_fn->decl));
 
-  class loop *loop;
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       loop_info &linfo = get_loop_info (loop);
       if (decide_whether_loop_is_versionable (loop))

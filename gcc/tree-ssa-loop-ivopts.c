@@ -8131,14 +8131,13 @@ finish:
 void
 tree_ssa_iv_optimize (void)
 {
-  class loop *loop;
   struct ivopts_data data;
   auto_bitmap toremove;
 
   tree_ssa_iv_optimize_init (&data);
 
   /* Optimize the loops starting with the innermost ones.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       if (!dbg_cnt (ivopts_loop))
 	continue;

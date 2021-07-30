@@ -2562,7 +2562,6 @@ jump_thread_path_registry::thread_through_all_blocks
 {
   bool retval = false;
   unsigned int i;
-  class loop *loop;
   auto_bitmap threaded_blocks;
   hash_set<edge> visited_starting_edges;
 
@@ -2703,7 +2702,7 @@ jump_thread_path_registry::thread_through_all_blocks
   /* Then perform the threading through loop headers.  We start with the
      innermost loop, so that the changes in cfg we perform won't affect
      further threading.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       if (!loop->header
 	  || !bitmap_bit_p (threaded_blocks, loop->header->index))

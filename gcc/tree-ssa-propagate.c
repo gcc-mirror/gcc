@@ -1262,7 +1262,6 @@ clean_up_loop_closed_phi (function *fun)
   tree rhs;
   tree lhs;
   gphi_iterator gsi;
-  struct loop *loop;
 
   /* Avoid possibly quadratic work when scanning for loop exits across
    all loops of a nest.  */
@@ -1274,7 +1273,7 @@ clean_up_loop_closed_phi (function *fun)
   calculate_dominance_info  (CDI_DOMINATORS);
 
   /* Walk over loop in function.  */
-  FOR_EACH_LOOP_FN (fun, loop, 0)
+  for (auto loop : loops_list (fun, 0))
     {
       /* Check each exit edege of loop.  */
       auto_vec<edge> exits = get_loop_exit_edges (loop);

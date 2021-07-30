@@ -214,10 +214,8 @@ report_unroll (class loop *loop, dump_location_t locus)
 static void
 decide_unrolling (int flags)
 {
-  class loop *loop;
-
   /* Scan the loops, inner ones first.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       loop->lpt_decision.decision = LPT_NONE;
       dump_user_location_t locus = get_loop_location (loop);
@@ -278,14 +276,13 @@ decide_unrolling (int flags)
 void
 unroll_loops (int flags)
 {
-  class loop *loop;
   bool changed = false;
 
   /* Now decide rest of unrolling.  */
   decide_unrolling (flags);
 
   /* Scan the loops, inner ones first.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       /* And perform the appropriate transformations.  */
       switch (loop->lpt_decision.decision)

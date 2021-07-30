@@ -1598,18 +1598,17 @@ split_loop_on_cond (struct loop *loop)
 static unsigned int
 tree_ssa_split_loops (void)
 {
-  class loop *loop;
   bool changed = false;
 
   gcc_assert (scev_initialized_p ());
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
-  FOR_EACH_LOOP (loop, LI_INCLUDE_ROOT)
+  for (auto loop : loops_list (cfun, LI_INCLUDE_ROOT))
     loop->aux = NULL;
 
   /* Go through all loops starting from innermost.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       if (loop->aux)
 	{
@@ -1630,7 +1629,7 @@ tree_ssa_split_loops (void)
 	}
     }
 
-  FOR_EACH_LOOP (loop, LI_INCLUDE_ROOT)
+  for (auto loop : loops_list (cfun, LI_INCLUDE_ROOT))
     loop->aux = NULL;
 
   clear_aux_for_blocks ();

@@ -658,55 +658,141 @@ enum li_flags
   LI_ONLY_INNERMOST = 4		/* Iterate only over innermost loops.  */
 };
 
-/* The iterator for loops.  */
+/* Provide the functionality of std::as_const to support range-based for
+   to use const iterator.  (We can't use std::as_const itself because it's
+   a C++17 feature.)  */
+template <typename T>
+constexpr const T &
+as_const (T &t)
+{
+  return t;
+}
 
-class loop_iterator
+/* A list for visiting loops, which contains the loop numbers instead of
+   the loop pointers.  The scope is restricted in function FN and the
+   visiting order is specified by FLAGS.  */
+
+class loops_list
 {
 public:
-  loop_iterator (function *fn, loop_p *loop, unsigned flags);
+  loops_list (function *fn, unsigned flags);
 
-  inline loop_p next ();
+  template <typename T> class Iter
+  {
+  public:
+    Iter (const loops_list &l, unsigned idx) : list (l), curr_idx (idx)
+    {
+      fill_curr_loop ();
+    }
 
+    T operator* () const { return curr_loop; }
+
+    Iter &
+    operator++ ()
+    {
+      if (curr_idx < list.to_visit.length ())
+	{
+	  /* Bump the index and fill a new one.  */
+	  curr_idx++;
+	  fill_curr_loop ();
+	}
+      else
+	gcc_assert (!curr_loop);
+
+      return *this;
+    }
+
+    bool
+    operator!= (const Iter &rhs) const
+    {
+      return this->curr_idx != rhs.curr_idx;
+    }
+
+  private:
+    /* Fill the current loop starting from the current index.  */
+    void fill_curr_loop ();
+
+    /* Reference to the loop list to visit.  */
+    const loops_list &list;
+
+    /* The current index in the list to visit.  */
+    unsigned curr_idx;
+
+    /* The loop implied by the current index.  */
+    class loop *curr_loop;
+  };
+
+  using iterator = Iter<class loop *>;
+  using const_iterator = Iter<const class loop *>;
+
+  iterator
+  begin ()
+  {
+    return iterator (*this, 0);
+  }
+
+  iterator
+  end ()
+  {
+    return iterator (*this, to_visit.length ());
+  }
+
+  const_iterator
+  begin () const
+  {
+    return const_iterator (*this, 0);
+  }
+
+  const_iterator
+  end () const
+  {
+    return const_iterator (*this, to_visit.length ());
+  }
+
+private:
   /* The function we are visiting.  */
   function *fn;
 
   /* The list of loops to visit.  */
   auto_vec<int, 16> to_visit;
-
-  /* The index of the actual loop.  */
-  unsigned idx;
 };
 
-inline loop_p
-loop_iterator::next ()
+/* Starting from current index CURR_IDX (inclusive), find one index
+   which stands for one valid loop and fill the found loop as CURR_LOOP,
+   if we can't find one, set CURR_LOOP as null.  */
+
+template <typename T>
+inline void
+loops_list::Iter<T>::fill_curr_loop ()
 {
   int anum;
 
-  while (this->to_visit.iterate (this->idx, &anum))
+  while (this->list.to_visit.iterate (this->curr_idx, &anum))
     {
-      this->idx++;
-      loop_p loop = get_loop (fn, anum);
+      class loop *loop = get_loop (this->list.fn, anum);
       if (loop)
-	return loop;
+	{
+	  curr_loop = loop;
+	  return;
+	}
+      this->curr_idx++;
     }
 
-  return NULL;
+  curr_loop = nullptr;
 }
 
-inline
-loop_iterator::loop_iterator (function *fn, loop_p *loop, unsigned flags)
+/* Set up the loops list to visit according to the specified
+   function scope FN and iterating order FLAGS.  */
+
+inline loops_list::loops_list (function *fn, unsigned flags)
 {
   class loop *aloop;
   unsigned i;
   int mn;
 
-  this->idx = 0;
   this->fn = fn;
   if (!loops_for_fn (fn))
-    {
-      *loop = NULL;
-      return;
-    }
+    return;
 
   this->to_visit.reserve_exact (number_of_loops (fn));
   mn = (flags & LI_INCLUDE_ROOT) ? 0 : 1;
@@ -766,19 +852,7 @@ loop_iterator::loop_iterator (function *fn, loop_p *loop, unsigned flags)
 	    }
 	}
     }
-
-  *loop = this->next ();
 }
-
-#define FOR_EACH_LOOP(LOOP, FLAGS) \
-  for (loop_iterator li(cfun, &(LOOP), FLAGS); \
-       (LOOP); \
-       (LOOP) = li.next ())
-
-#define FOR_EACH_LOOP_FN(FN, LOOP, FLAGS) \
-  for (loop_iterator li(FN, &(LOOP), FLAGS); \
-       (LOOP); \
-       (LOOP) = li.next ())
 
 /* The properties of the target.  */
 struct target_cfgloop {

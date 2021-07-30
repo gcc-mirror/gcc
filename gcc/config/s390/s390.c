@@ -14479,15 +14479,13 @@ s390_adjust_loop_scan_osc (struct loop* loop)
 static void
 s390_adjust_loops ()
 {
-  struct loop *loop = NULL;
-
   df_analyze ();
   compute_bb_for_insn ();
 
   /* Find the loops.  */
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       if (dump_file)
 	{
