@@ -22,10 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_RANGE_H
 #define GCC_GIMPLE_RANGE_H
 
-
 #include "range.h"
 #include "value-query.h"
 #include "range-op.h"
+#include "gimple-range-trace.h"
 #include "gimple-range-edge.h"
 #include "gimple-range-fold.h"
 #include "gimple-range-gori.h"
@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 // type is not supported, then false is returned.  Non-statement
 // related methods return whatever the current global value is.
 
-
 class gimple_ranger : public range_query
 {
 public:
@@ -51,8 +50,8 @@ public:
   virtual bool range_of_stmt (irange &r, gimple *, tree name = NULL) OVERRIDE;
   virtual bool range_of_expr (irange &r, tree name, gimple * = NULL) OVERRIDE;
   virtual bool range_on_edge (irange &r, edge e, tree name) OVERRIDE;
-  virtual void range_on_entry (irange &r, basic_block bb, tree name);
-  virtual void range_on_exit (irange &r, basic_block bb, tree name);
+  void range_on_entry (irange &r, basic_block bb, tree name);
+  void range_on_exit (irange &r, basic_block bb, tree name);
   void export_global_ranges ();
   inline gori_compute &gori ()  { return m_cache.m_gori; }
   virtual void dump (FILE *f) OVERRIDE;
@@ -60,33 +59,8 @@ public:
 protected:
   bool fold_range_internal (irange &r, gimple *s, tree name);
   ranger_cache m_cache;
+  range_tracer tracer;
 };
-
-
-// This class overloads the ranger routines to provide tracing facilties
-// Entry and exit values to each of the APIs is placed in the dumpfile.
-
-class trace_ranger : public gimple_ranger
-{
-public:
-  trace_ranger ();
-  virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
-  virtual bool range_of_expr (irange &r, tree name, gimple *s = NULL);
-  virtual bool range_on_edge (irange &r, edge e, tree name);
-  virtual void range_on_entry (irange &r, basic_block bb, tree name);
-  virtual void range_on_exit (irange &r, basic_block bb, tree name);
-private:
-  static const unsigned bump = 2;
-  unsigned indent;
-  unsigned trace_count;		// Current trace index count.
-
-  bool dumping (unsigned counter, bool trailing = false);
-  bool trailer (unsigned counter, const char *caller, bool result, tree name,
-		const irange &r);
-};
-
-// Flag to enable debugging the various internal Caches.
-#define DEBUG_RANGE_CACHE (dump_file && (param_evrp_mode & EVRP_MODE_DEBUG))
 
 extern gimple_ranger *enable_ranger (struct function *);
 extern void disable_ranger (struct function *);

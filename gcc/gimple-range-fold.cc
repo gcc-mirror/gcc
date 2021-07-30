@@ -42,9 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "value-query.h"
 #include "range-op.h"
-#include "gimple-range-fold.h"
-#include "gimple-range-edge.h"
-#include "gimple-range-gori.h"
+#include "gimple-range.h"
 // Construct a fur_source, and set the m_query field.
 
 fur_source::fur_source (range_query *q)
