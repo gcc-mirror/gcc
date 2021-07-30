@@ -3261,6 +3261,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
       break;
 
     case FIX:
+    case UNSIGNED_FIX:
       /* Conversion of floating point might trap.  */
       if (flag_trapping_math && HONOR_NANS (XEXP (x, 0)))
 	return 1;
