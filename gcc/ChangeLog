@@ -1,3 +1,27 @@
+2021-07-28  Martin Uecker  <muecker@gwdg.de>
+
+	* calls.c (maybe_warn_rdwr_sizes): Correct argument
+	numbers in warning that were switched.
+
+2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101586
+	* gimple-fold.c (clear_padding_type): Ignore FIELD_DECLs with byte
+	positions above or equal to sz except for diagnostics of flexible
+	array members.
+
+2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101562
+	* expmed.c (store_integral_bit_field): Only use movstrict_optab
+	if the operand isn't paradoxical.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.
