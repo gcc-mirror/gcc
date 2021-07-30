@@ -3,6 +3,15 @@
 	Backported from master:
 	2021-07-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_statement): Rollback attributes not just
+	when std_attrs is non-NULL, but whenever
+	cp_parser_std_attribute_spec_seq parsed any tokens.
+
+2021-07-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/101582
 	* parser.c (cp_parser_skip_std_attribute_spec_seq): Add a forward
 	declaration.

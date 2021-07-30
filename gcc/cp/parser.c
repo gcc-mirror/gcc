@@ -11878,6 +11878,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   cp_token *token;
   location_t statement_location, attrs_loc;
   bool in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
+  bool has_std_attrs;
 
  restart:
   if (if_p != NULL)
@@ -11886,7 +11887,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   statement = NULL_TREE;
 
   saved_token_sentinel saved_tokens (parser->lexer);
-  attrs_loc = cp_lexer_peek_token (parser->lexer)->location;
+  token = cp_lexer_peek_token (parser->lexer);
+  attrs_loc = token->location;
   if (c_dialect_objc ())
     /* In obj-c++, seeing '[[' might be the either the beginning of
        c++11 attributes, or a nested objc-message-expression.  So
@@ -11900,6 +11902,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
       if (!cp_parser_parse_definitely (parser))
 	std_attrs = NULL_TREE;
     }
+  has_std_attrs = cp_lexer_peek_token (parser->lexer) != token;
 
   if (std_attrs && (flag_openmp || flag_openmp_simd))
     std_attrs = cp_parser_handle_statement_omp_attributes (parser, std_attrs);
@@ -11968,7 +11971,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	case RID_NAMESPACE:
 	  /* This must be a namespace alias definition.  */
-	  if (std_attrs != NULL_TREE)
+	  if (has_std_attrs)
 	    {
 	      /* Attributes should be parsed as part of the
 		 declaration, so let's un-parse them.  */
@@ -12073,7 +12076,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     {
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
 	{
-	  if (std_attrs != NULL_TREE)
+	  if (has_std_attrs)
 	    /* Attributes should be parsed as part of the declaration,
 	       so let's un-parse them.  */
 	    saved_tokens.rollback();
@@ -12085,7 +12088,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  if (cp_parser_parse_definitely (parser))
 	    return;
 	  /* It didn't work, restore the post-attribute position.  */
-	  if (std_attrs)
+	  if (has_std_attrs)
 	    cp_lexer_set_token_position (parser->lexer, statement_token);
 	}
       /* All preceding labels have been parsed at this point.  */

@@ -3,6 +3,13 @@
 	Backported from master:
 	2021-07-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp0x/gen-attrs-76.C: New test.
+
+2021-07-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/101582
 	* g++.dg/cpp0x/gen-attrs-45.C: Expect a warning about ignored
 	attributes instead of error.
