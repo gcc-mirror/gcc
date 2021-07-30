@@ -1,6 +1,14 @@
 2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-06-29  Thomas Schwinge  <thomas@codesourcery.com>
+		    Ulrich Drepper  <drepper@redhat.com>
+	* fortran.c (omp_display_env_, omp_display_env_8_): Only
+	'#ifndef LIBGOMP_OFFLOADED_ONLY'.
+
+2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-06-29  Ulrich Drepper  <drepper@gmail.com>
 
 	* env.c (wait_policy, stacksize): New static variables,
