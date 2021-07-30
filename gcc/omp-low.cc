@@ -621,21 +621,6 @@ omp_copy_decl_1 (tree var, omp_context *ctx)
   return omp_copy_decl_2 (var, DECL_NAME (var), TREE_TYPE (var), ctx);
 }
 
-/* Build COMPONENT_REF and set TREE_THIS_VOLATILE and TREE_READONLY on it
-   as appropriate.  */
-/* See also 'gcc/omp-oacc-neuter-broadcast.cc:oacc_build_component_ref'.  */
-
-static tree
-omp_build_component_ref (tree obj, tree field)
-{
-  tree ret = build3 (COMPONENT_REF, TREE_TYPE (field), obj, field, NULL);
-  if (TREE_THIS_VOLATILE (field))
-    TREE_THIS_VOLATILE (ret) |= 1;
-  if (TREE_READONLY (field))
-    TREE_READONLY (ret) |= 1;
-  return ret;
-}
-
 /* Build tree nodes to access the field for VAR on the receiver side.  */
 
 static tree
