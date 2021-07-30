@@ -3,8 +3,6 @@
    (PR tree-optimization/83510).  */
 
 /* { dg-options "-Warray-bounds" } */
-/* { dg-xfail-if "" { "*-*-*" } { "-Os" } } */
-
 
 /*  This test is XFAILed because thread1 threads a switch statement
     such that the various cases have been split into different
@@ -70,19 +68,6 @@ int g(struct xyz * ctx) {
   return 0;
 }
 
-static unsigned int f_signed(struct xyz * ctx, int number)
-{
-  switch (number) {
-  case 0x9:
-    return ctx->a0;
-  case 0xA: case 0xB:
-  case 0xC: case 0xD: case 0xE: case 0xF:
-  case 0x10: case 0x11: case 0x12: case 0x13:
-    return arr[number];
-  }
-  return 0;
-}
-
 int g_signed(struct xyz * ctx) {
   int i;
 
@@ -100,16 +85,6 @@ void test_2 (struct xyz * ctx)
   for (i = 0; i < 10; i++) {
     if (get_flag ())
       wfm(ctx, i, f(ctx, i));
-  }
-}
-
-void test_2_signed (struct xyz * ctx)
-{
-  int i;
-
-  for (i = 0; i < 10; i++) {
-    if (get_flag ())
-      wfm(ctx, i, f_signed(ctx, i));
   }
 }
 
