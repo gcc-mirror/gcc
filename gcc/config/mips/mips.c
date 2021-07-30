@@ -22418,12 +22418,12 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree get_fcsr = mips_builtin_decls[MIPS_GET_FCSR];
   tree set_fcsr = mips_builtin_decls[MIPS_SET_FCSR];
   tree get_fcsr_hold_call = build_call_expr (get_fcsr, 0);
-  tree hold_assign_orig = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
-				  fcsr_orig_var, get_fcsr_hold_call);
+  tree hold_assign_orig = build4 (TARGET_EXPR, MIPS_ATYPE_USI,
+				  fcsr_orig_var, get_fcsr_hold_call, NULL, NULL);
   tree hold_mod_val = build2 (BIT_AND_EXPR, MIPS_ATYPE_USI, fcsr_orig_var,
 			      build_int_cst (MIPS_ATYPE_USI, 0xfffff003));
-  tree hold_assign_mod = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
-				 fcsr_mod_var, hold_mod_val);
+  tree hold_assign_mod = build4 (TARGET_EXPR, MIPS_ATYPE_USI,
+				 fcsr_mod_var, hold_mod_val, NULL, NULL);
   tree set_fcsr_hold_call = build_call_expr (set_fcsr, 1, fcsr_mod_var);
   tree hold_all = build2 (COMPOUND_EXPR, MIPS_ATYPE_USI,
 			  hold_assign_orig, hold_assign_mod);
@@ -22433,8 +22433,8 @@ mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   *clear = build_call_expr (set_fcsr, 1, fcsr_mod_var);
 
   tree get_fcsr_update_call = build_call_expr (get_fcsr, 0);
-  *update = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
-		    exceptions_var, get_fcsr_update_call);
+  *update = build4 (TARGET_EXPR, MIPS_ATYPE_USI,
+		    exceptions_var, get_fcsr_update_call, NULL, NULL);
   tree set_fcsr_update_call = build_call_expr (set_fcsr, 1, fcsr_orig_var);
   *update = build2 (COMPOUND_EXPR, void_type_node, *update,
 		    set_fcsr_update_call);
