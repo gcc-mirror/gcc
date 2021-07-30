@@ -738,6 +738,8 @@ omp_get_default_allocator_ ()
   return (intptr_t) omp_get_default_allocator ();
 }
 
+#ifndef LIBGOMP_OFFLOADED_ONLY
+
 void
 omp_display_env_ (const int32_t *verbose)
 {
@@ -749,3 +751,5 @@ omp_display_env_8_ (const int64_t *verbose)
 {
   omp_display_env (!!*verbose);
 }
+
+#endif /* LIBGOMP_OFFLOADED_ONLY */
