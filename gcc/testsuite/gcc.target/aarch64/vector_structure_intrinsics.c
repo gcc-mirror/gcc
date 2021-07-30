@@ -95,6 +95,7 @@ TEST_STX (vst4q, int16x8x4_t, int16_t*, s16);
 TEST_STX (vst4q, uint16x8x4_t, uint16_t*, u16);
 TEST_STX (vst4q, poly16x8x4_t, poly16_t*, p16);
 TEST_STX (vst4q, float16x8x4_t, float16_t*, f16);
+TEST_STX (vst4q, bfloat16x8x4_t, bfloat16_t*, bf16);
 TEST_STX (vst4q, int32x4x4_t, int32_t*, s32);
 TEST_STX (vst4q, uint32x4x4_t, uint32_t*, u32);
 TEST_STX (vst4q, float32x4x4_t, float32_t*, f32);
@@ -110,6 +111,7 @@ TEST_STX (vst2q, int16x8x2_t, int16_t*, s16);
 TEST_STX (vst2q, uint16x8x2_t, uint16_t*, u16);
 TEST_STX (vst2q, poly16x8x2_t, poly16_t*, p16);
 TEST_STX (vst2q, float16x8x2_t, float16_t*, f16);
+TEST_STX (vst2q, bfloat16x8x2_t, bfloat16_t*, bf16);
 TEST_STX (vst2q, int32x4x2_t, int32_t*, s32);
 TEST_STX (vst2q, uint32x4x2_t, uint32_t*, u32);
 TEST_STX (vst2q, float32x4x2_t, float32_t*, f32);
@@ -131,6 +133,7 @@ TEST_ST3 (vst3q, int16x8x3_t, int16_t*, s16);
 TEST_ST3 (vst3q, uint16x8x3_t, uint16_t*, u16);
 TEST_ST3 (vst3q, poly16x8x3_t, poly16_t*, p16);
 TEST_ST3 (vst3q, float16x8x3_t, float16_t*, f16);
+TEST_ST3 (vst3q, bfloat16x8x3_t, bfloat16_t*, bf16);
 TEST_ST3 (vst3q, int32x4x3_t, int32_t*, s32);
 TEST_ST3 (vst3q, uint32x4x3_t, uint32_t*, u32);
 TEST_ST3 (vst3q, float32x4x3_t, float32_t*, f32);
@@ -212,6 +215,7 @@ TEST_ST1xN (vst1q, int16x8x4_t, int16_t*, s16, x4);
 TEST_ST1xN (vst1q, uint16x8x4_t, uint16_t*, u16, x4);
 TEST_ST1xN (vst1q, poly16x8x4_t, poly16_t*, p16, x4);
 TEST_ST1xN (vst1q, float16x8x4_t, float16_t*, f16, x4);
+TEST_ST1xN (vst1q, bfloat16x8x4_t, bfloat16_t*, bf16, x4);
 TEST_ST1xN (vst1q, int32x4x4_t, int32_t*, s32, x4);
 TEST_ST1xN (vst1q, uint32x4x4_t, uint32_t*, u32, x4);
 TEST_ST1xN (vst1q, float32x4x4_t, float32_t*, f32, x4);
@@ -227,6 +231,7 @@ TEST_ST1xN (vst1q, int16x8x2_t, int16_t*, s16, x2);
 TEST_ST1xN (vst1q, uint16x8x2_t, uint16_t*, u16, x2);
 TEST_ST1xN (vst1q, poly16x8x2_t, poly16_t*, p16, x2);
 TEST_ST1xN (vst1q, float16x8x2_t, float16_t*, f16, x2);
+TEST_ST1xN (vst1q, bfloat16x8x2_t, bfloat16_t*, bf16, x2);
 TEST_ST1xN (vst1q, int32x4x2_t, int32_t*, s32, x2);
 TEST_ST1xN (vst1q, uint32x4x2_t, uint32_t*, u32, x2);
 TEST_ST1xN (vst1q, float32x4x2_t, float32_t*, f32, x2);
@@ -249,6 +254,7 @@ TEST_ST1x3 (vst1q, int16x8x3_t, int16_t*, s16, x3);
 TEST_ST1x3 (vst1q, uint16x8x3_t, uint16_t*, u16, x3);
 TEST_ST1x3 (vst1q, poly16x8x3_t, poly16_t*, p16, x3);
 TEST_ST1x3 (vst1q, float16x8x3_t, float16_t*, f16, x3);
+TEST_ST1x3 (vst1q, bfloat16x8x3_t, bfloat16_t*, bf16, x3);
 TEST_ST1x3 (vst1q, int32x4x3_t, int32_t*, s32, x3);
 TEST_ST1x3 (vst1q, uint32x4x3_t, uint32_t*, u32, x3);
 TEST_ST1x3 (vst1q, float32x4x3_t, float32_t*, f32, x3);
@@ -261,7 +267,7 @@ TEST_ST1x3 (vst1q, float64x2x3_t, float64_t*, f64, x3);
 
 /* { dg-final { scan-assembler-times "tbl\\t" 18} }  */
 /* { dg-final { scan-assembler-times "tbx\\t" 18} }  */
-/* { dg-final { scan-assembler-times "st4\\t" 29} }  */
-/* { dg-final { scan-assembler-times "st3\\t" 29} }  */
-/* { dg-final { scan-assembler-times "st2\\t" 29} }  */
-/* { dg-final { scan-assembler-times "st1\\t" 42} }  */
+/* { dg-final { scan-assembler-times "st4\\t" 30} }  */
+/* { dg-final { scan-assembler-times "st3\\t" 30} }  */
+/* { dg-final { scan-assembler-times "st2\\t" 30} }  */
+/* { dg-final { scan-assembler-times "st1\\t" 45} }  */
