@@ -1036,6 +1036,13 @@ package body Gen_IL.Gen is
             Append (All_Fields, F);
          end loop;
 
+         --  Force Homonym to be at offset zero, which speeds up the
+         --  compiler. The Sort below will place Homonym first in
+         --  All_Fields.
+
+         Num_Concrete_Have_Field (Homonym) :=
+           Num_Concrete_Have_Field (Nkind) + 1;
+
          --  Sort All_Fields based on how many concrete types have the field.
          --  This is for efficiency; we want to choose the offsets of the most
          --  common fields first, so they get low numbers.
