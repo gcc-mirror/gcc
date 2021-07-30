@@ -199,6 +199,13 @@ OMP_5.0.1 {
 	omp_fulfill_event_;
 } OMP_5.0;
 
+OMP_5.1 {
+  global:
+	omp_display_env;
+	omp_display_env_;
+	omp_display_env_8_;
+} OMP_5.0.1;
+
 GOMP_1.0 {
   global:
 	GOMP_atomic_end;

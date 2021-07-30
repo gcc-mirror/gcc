@@ -1,3 +1,25 @@
+2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-29  Ulrich Drepper  <drepper@gmail.com>
+
+	* env.c (wait_policy, stacksize): New static variables,
+	move out of handle_omp_display_env.
+	(omp_display_env): New function.  The meat of the old
+	handle_omp_display_env function.
+	(handle_omp_display_env): Change to not take parameters
+	and instead use the global variables.  Only perform
+	parsing, defer to omp_display_env for the implementation.
+	(initialize_env): Remove local variables wait_policy and
+	stacksize.  Don't pass parameters to handle_omp_display_env.
+	* fortran.c: Add ialias_redirect for omp_display_env.
+	(omp_display_env_, omp_display_env_8_): New functions.
+	* libgomp.map (OMP_5.1): New version.  Add omp_display_env,
+	omp_display_env_, and omp_display_env_8_.
+	* omp.h.in: Declare omp_display_env.
+	* omp_lib.f90.in: Likewise.
+	* omp_lib.h.in: Likewise.
+
 2021-06-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
