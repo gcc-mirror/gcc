@@ -366,6 +366,7 @@ toolexeclibgoregexp_DATA = \
 toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 
 toolexeclibgoruntime_DATA = \
+	runtime/cgo.gox \
 	runtime/debug.gox \
 	runtime/metrics.gox \
 	runtime/pprof.gox \
@@ -428,7 +429,9 @@ noinst_DATA = \
 	internal/testenv.gox \
 	internal/trace.gox \
 	net/internal/socktest.gox \
-	os/signal/internal/pty.gox
+	os/signal/internal/pty.gox \
+	reflect/internal/example1.gox \
+	reflect/internal/example2.gox
 
 if LIBGO_IS_RTEMS
 rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
@@ -480,14 +483,10 @@ version.go: s-version; @true
 s-version: Makefile
 	rm -f version.go.tmp
 	echo "package sys" > version.go.tmp
-	echo 'func init() { DefaultGoroot = "$(prefix)" }' >> version.go.tmp
-	echo 'const TheVersion = "'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'"' >> version.go.tmp
-	echo 'const Goexperiment = ``' >> version.go.tmp
 	echo 'const GOARCH = "'$(GOARCH)'"' >> version.go.tmp
 	echo 'const GOOS = "'$(GOOS)'"' >> version.go.tmp
 	echo 'const GccgoToolDir = "$(libexecsubdir)"' >> version.go.tmp
-	echo >> version.go.tmp
-	echo "type ArchFamilyType int" >> version.go.tmp
+	echo 'const StackGuardMultiplierDefault = 1' >> version.go.tmp
 	echo >> version.go.tmp
 	echo "const (" >> version.go.tmp
 	echo "	UNKNOWN ArchFamilyType = iota" >> version.go.tmp
@@ -507,13 +506,13 @@ s-version: Makefile
 	done
 	echo >> version.go.tmp
 	echo "const (" >> version.go.tmp
-	echo "  ArchFamily = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) family`" >> version.go.tmp
-	echo "  BigEndian = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) bigendian`" >> version.go.tmp
-	echo "  CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> version.go.tmp
-	echo "  DefaultPhysPageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) defaultphyspagesize`" >> version.go.tmp
-	echo "  Int64Align = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) int64align`" >> version.go.tmp
-	echo "  MinFrameSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) minframesize`" >> version.go.tmp
-	echo "  PCQuantum = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) pcquantum`" >> version.go.tmp
+	echo "  _ArchFamily = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) family`" >> version.go.tmp
+	echo "  _BigEndian = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) bigendian`" >> version.go.tmp
+	echo "  _DefaultPhysPageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) defaultphyspagesize`" >> version.go.tmp
+	echo "  _Int64Align = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) int64align`" >> version.go.tmp
+	echo "  _MinFrameSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) minframesize`" >> version.go.tmp
+	echo "  _PCQuantum = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) pcquantum`" >> version.go.tmp
+	echo "  _StackAlign = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) stackalign`" >> version.go.tmp
 	echo ")" >> version.go.tmp
 	echo >> version.go.tmp
 	for a in $(ALLGOOS); do \
@@ -526,7 +525,6 @@ s-version: Makefile
 	  fi; \
 	done
 	echo >> version.go.tmp
-	echo "type Uintreg uintptr" >> version.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
 	$(STAMP) $@
 
@@ -547,24 +545,31 @@ s-gcpu: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh gcpugen.go.tmp gcpugen.go
 	$(STAMP) $@
 
+buildcfg.go: s-buildcfg; @true
+s-buildcfg: Makefile
+	rm -f buildcfg.go.tmp
+	echo "package buildcfg" > buildcfg.go.tmp
+	echo "import \"runtime\"" >> buildcfg.go.tmp
+	echo 'func defaultGOROOTValue() string { return `$(prefix)` }' >> buildcfg.go.tmp
+	echo 'const defaultGO386 = `sse2`' >> buildcfg.go.tmp
+	echo 'const defaultGOARM = `5`' >> buildcfg.go.tmp
+	echo 'const defaultGOMIPS = `hardfloat`' >> buildcfg.go.tmp
+	echo 'const defaultGOMIPS64 = `hardfloat`' >> buildcfg.go.tmp
+	echo 'const defaultGOPPC64 = `power8`' >> buildcfg.go.tmp
+	echo 'const defaultGOEXPERIMENT = `fieldtrack`' >> buildcfg.go.tmp
+	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> buildcfg.go.tmp
+	echo 'const defaultGO_LDSO = ``' >> buildcfg.go.tmp
+	echo 'const version = `'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'`' >> buildcfg.go.tmp
+	echo 'const defaultGOOS = runtime.GOOS' >> buildcfg.go.tmp
+	echo 'const defaultGOARCH = runtime.GOARCH' >> buildcfg.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh buildcfg.go.tmp buildcfg.go
+	$(STAMP) $@
+
 objabi.go: s-objabi; @true
 s-objabi: Makefile
 	rm -f objabi.go.tmp
 	echo "package objabi" > objabi.go.tmp
-	echo "import \"runtime\"" >> objabi.go.tmp
-	echo 'func defaultGOROOTValue() string { return `$(prefix)` }' >> objabi.go.tmp
-	echo 'const defaultGO386 = `sse2`' >> objabi.go.tmp
-	echo 'const defaultGOARM = `5`' >> objabi.go.tmp
-	echo 'const defaultGOMIPS = `hardfloat`' >> objabi.go.tmp
-	echo 'const defaultGOMIPS64 = `hardfloat`' >> objabi.go.tmp
-	echo 'const defaultGOPPC64 = `power8`' >> objabi.go.tmp
-	echo 'const defaultGOOS = runtime.GOOS' >> objabi.go.tmp
-	echo 'const defaultGOARCH = runtime.GOARCH' >> objabi.go.tmp
-	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> objabi.go.tmp
-	echo 'const defaultGO_LDSO = ``' >> objabi.go.tmp
-	echo 'const version = `'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'`' >> objabi.go.tmp
 	echo 'const stackGuardMultiplierDefault = 1' >> objabi.go.tmp
-	echo 'const goexperiment = ``' >> objabi.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh objabi.go.tmp objabi.go
 	$(STAMP) $@
 
@@ -671,7 +676,7 @@ s-zstdpkglist: Makefile libgo-packages.txt
 	echo 'package goroot' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
-	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_./]*_c\.lo||g' | sed 's|golang\.org/[a-z0-9_./]*\.lo||g' | sed 's|\([a-z0-9_./]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
+	echo $(libgo_go_objs) 'unsafe.lo' | sed 's|[a-z0-9_./]*_c\.lo||g' | sed 's|golang\.org/[a-z0-9_./]*\.lo||g' | sed 's|\([a-z0-9_./]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
 	echo '}' >> zstdpkglist.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh zstdpkglist.go.tmp zstdpkglist.go
 	$(STAMP) $@
@@ -1053,6 +1058,9 @@ internal/cpu.lo.dep: $(extra_go_files_internal_cpu)
 
 extra_go_files_golang_org_x_sys_cpu = gcpugen.go
 golang.org/x/sys/cpu.lo.dep: $(extra_go_files_golang_org_x_sys_cpu)
+
+extra_go_files_internal_buildcfg = buildcfg.go
+cmd/internal/buildcfg.lo.dep: $(extra_go_files_internal_buildcfg)
 
 extra_go_files_internal_goroot = zstdpkglist.go
 internal/goroot.lo.dep: $(extra_go_files_internal_goroot)

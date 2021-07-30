@@ -5,6 +5,7 @@
 package reflect
 
 import (
+	"internal/itoa"
 	"internal/unsafeheader"
 	"math"
 	"runtime"
@@ -350,6 +351,8 @@ func (v Value) CallSlice(in []Value) []Value {
 
 var callGC bool // for testing; see TestCallMethodJump
 
+const debugReflectCall = false
+
 func (v Value) call(op string, in []Value) []Value {
 	// Get function pointer, type.
 	t := (*funcType)(unsafe.Pointer(v.typ))
@@ -372,8 +375,9 @@ func (v Value) call(op string, in []Value) []Value {
 
 	isSlice := op == "CallSlice"
 	n := t.NumIn()
+	isVariadic := t.IsVariadic()
 	if isSlice {
-		if !t.IsVariadic() {
+		if !isVariadic {
 			panic("reflect: CallSlice of non-variadic function")
 		}
 		if len(in) < n {
@@ -383,13 +387,13 @@ func (v Value) call(op string, in []Value) []Value {
 			panic("reflect: CallSlice with too many input arguments")
 		}
 	} else {
-		if t.IsVariadic() {
+		if isVariadic {
 			n--
 		}
 		if len(in) < n {
 			panic("reflect: Call with too few input arguments")
 		}
-		if !t.IsVariadic() && len(in) > n {
+		if !isVariadic && len(in) > n {
 			panic("reflect: Call with too many input arguments")
 		}
 	}
@@ -403,7 +407,7 @@ func (v Value) call(op string, in []Value) []Value {
 			panic("reflect: " + op + " using " + xt.String() + " as type " + targ.String())
 		}
 	}
-	if !isSlice && t.IsVariadic() {
+	if !isSlice && isVariadic {
 		// prepare slice for remaining values
 		m := len(in) - n
 		slice := MakeSlice(t.In(n), m, m)
@@ -857,10 +861,16 @@ func valueInterface(v Value, safe bool) interface{} {
 	return packEface(v)
 }
 
-// InterfaceData returns the interface v's value as a uintptr pair.
+// InterfaceData returns a pair of unspecified uintptr values.
 // It panics if v's Kind is not Interface.
+//
+// In earlier versions of Go, this function returned the interface's
+// value as a uintptr pair. As of Go 1.4, the implementation of
+// interface values precludes any defined use of InterfaceData.
+//
+// Deprecated: The memory representation of interface values is not
+// compatible with InterfaceData.
 func (v Value) InterfaceData() [2]uintptr {
-	// TODO: deprecate this
 	v.mustBe(Interface)
 	// We treat this as a read operation, so we allow
 	// it even for unexported data, because the caller
@@ -2200,9 +2210,14 @@ func New(typ Type) Value {
 		panic("reflect: New(nil)")
 	}
 	t := typ.(*rtype)
+	pt := t.ptrTo()
+	if ifaceIndir(pt) {
+		// This is a pointer to a go:notinheap type.
+		panic("reflect: New of type that may not be allocated in heap (possibly undefined cgo C type)")
+	}
 	ptr := unsafe_New(t)
 	fl := flag(Ptr)
-	return Value{t.ptrTo(), ptr, fl}
+	return Value{pt, ptr, fl}
 }
 
 // NewAt returns a Value representing a pointer to a value of the
@@ -2255,7 +2270,7 @@ func (v Value) assignTo(context string, dst *rtype, target unsafe.Pointer) Value
 
 // Convert returns the value v converted to type t.
 // If the usual Go conversion rules do not allow conversion
-// of the value v to type t, Convert panics.
+// of the value v to type t, or if converting v to type t panics, Convert panics.
 func (v Value) Convert(t Type) Value {
 	if v.flag&flagMethod != 0 {
 		v = makeMethodValue("Convert", v)
@@ -2265,6 +2280,26 @@ func (v Value) Convert(t Type) Value {
 		panic("reflect.Value.Convert: value of type " + v.typ.String() + " cannot be converted to type " + t.String())
 	}
 	return op(v, t)
+}
+
+// CanConvert reports whether the value v can be converted to type t.
+// If v.CanConvert(t) returns true then v.Convert(t) will not panic.
+func (v Value) CanConvert(t Type) bool {
+	vt := v.Type()
+	if !vt.ConvertibleTo(t) {
+		return false
+	}
+	// Currently the only conversion that is OK in terms of type
+	// but that can panic depending on the value is converting
+	// from slice to pointer-to-array.
+	if vt.Kind() == Slice && t.Kind() == Ptr && t.Elem().Kind() == Array {
+		n := t.Elem().Len()
+		h := (*unsafeheader.Slice)(v.ptr)
+		if n > h.Len {
+			return false
+		}
+	}
+	return true
 }
 
 // convertOp returns the function to convert a value of type src
@@ -2325,6 +2360,11 @@ func convertOp(dst, src *rtype) func(Value, Type) Value {
 			case Int32:
 				return cvtRunesString
 			}
+		}
+		// "x is a slice, T is a pointer-to-array type,
+		// and the slice and array types have identical element types."
+		if dst.Kind() == Ptr && dst.Elem().Kind() == Array && src.Elem() == dst.Elem().Elem() {
+			return cvtSliceArrayPtr
 		}
 
 	case Chan:
@@ -2517,6 +2557,16 @@ func cvtRunesString(v Value, t Type) Value {
 // convertOp: string -> []rune
 func cvtStringRunes(v Value, t Type) Value {
 	return makeRunes(v.flag.ro(), []rune(v.String()), t)
+}
+
+// convertOp: []T -> *[N]T
+func cvtSliceArrayPtr(v Value, t Type) Value {
+	n := t.Elem().Len()
+	h := (*unsafeheader.Slice)(v.ptr)
+	if n > h.Len {
+		panic("reflect: cannot convert slice with length " + itoa.Itoa(h.Len) + " to pointer to array with length " + itoa.Itoa(n))
+	}
+	return Value{t.common(), h.Data, v.flag&^(flagIndir|flagAddr|flagKindMask) | flag(Ptr)}
 }
 
 // convertOp: direct copy

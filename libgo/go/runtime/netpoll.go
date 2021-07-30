@@ -26,6 +26,9 @@ import (
 //     Arm edge-triggered notifications for fd. The pd argument is to pass
 //     back to netpollready when fd is ready. Return an errno value.
 //
+// func netpollclose(fd uintptr) int32
+//     Disable notifications for fd. Return an errno value.
+//
 // func netpoll(delta int64) gList
 //     Poll the network. If delta < 0, block indefinitely. If delta == 0,
 //     poll without blocking. If delta > 0, block for up to delta nanoseconds.
@@ -165,9 +168,12 @@ func poll_runtime_pollOpen(fd uintptr) (uintptr, int) {
 	pd.self = pd
 	unlock(&pd.lock)
 
-	var errno int32
-	errno = netpollopen(fd, pd)
-	return uintptr(unsafe.Pointer(pd)), int(errno)
+	errno := netpollopen(fd, pd)
+	if errno != 0 {
+		pollcache.free(pd)
+		return 0, int(errno)
+	}
+	return uintptr(unsafe.Pointer(pd)), 0
 }
 
 //go:linkname poll_runtime_pollClose internal_1poll.runtime__pollClose

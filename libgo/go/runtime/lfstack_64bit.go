@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build amd64 || arm64 || mips64 || mips64le || ppc64 || ppc64le || riscv64 || s390x || wasm || arm64be || alpha || sparc64 || ia64
 // +build amd64 arm64 mips64 mips64le ppc64 ppc64le riscv64 s390x wasm arm64be alpha sparc64 ia64
 
 package runtime
