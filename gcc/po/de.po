@@ -8,10 +8,10 @@
 # Roland Illig <roland.illig@gmx.de>, 2015, 2017-2021.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 11.1.0\n"
+"Project-Id-Version: gcc 11.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-07-26 15:21+0000\n"
-"PO-Revision-Date: 2021-04-28 15:04+0200\n"
+"PO-Revision-Date: 2021-07-30 00:33+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4.3\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-Bookmarks: -1,-1,-1,6017,-1,-1,-1,-1,-1,-1\n"
 
 #: cfgrtl.c:2797
@@ -3470,10 +3470,8 @@ msgid "address offset not a constant"
 msgstr "Adressversatz ist keine Konstante"
 
 #: c/c-objc-common.c:190
-#, fuzzy
-#| msgid "{anonymous}"
 msgid "{erroneous}"
-msgstr "{anonym}"
+msgstr "{fehlerhaft}"
 
 #: c/c-objc-common.c:231
 msgid "aka"
@@ -11626,7 +11624,7 @@ msgstr "Stapelzeiger ändern, ohne Unterbrechungen (Interrupts) auszuschalten."
 #: config/avr/avr.opt:65
 #, no-c-format
 msgid "Set the branch costs for conditional branch instructions.  Reasonable values are small, non-negative integers.  The default branch cost is 0."
-msgstr "Sprungkosten für bedingte Sprungbefehle setzen. Angemessene Werte sind kleine, nicht-negative Ganzzahlen. Vorgabewert: 0"
+msgstr "Sprungkosten für bedingte Sprungbefehle festlegen. Angemessene Werte sind kleine, nicht-negative Ganzzahlen. Vorgabewert ist 0."
 
 #: config/avr/avr.opt:69
 #, no-c-format
@@ -12840,28 +12838,24 @@ msgid "Fuse certain integer operations together for better performance on power1
 msgstr "Bestimmte Ganzzahloperationen verschmelzen, um die Performance auf power10 zu steigern."
 
 #: config/rs6000/rs6000.opt:503
-#, fuzzy, no-c-format
-#| msgid "Fuse certain operations together for better performance on power9."
+#, no-c-format
 msgid "Fuse pairs of scalar or vector logical operations together for better performance on power10."
-msgstr "Bestimmte Operationen verschmelzen, um die Performance auf power9 zu steigern."
+msgstr "Paare von skalaren oder logischen Vektoroperationen verschmelzen, um die Performance auf power10 zu steigern."
 
 #: config/rs6000/rs6000.opt:507
-#, fuzzy, no-c-format
-#| msgid "Fuse certain operations together for better performance on power9."
+#, no-c-format
 msgid "Fuse scalar logical op with add/subf for better performance on power10."
-msgstr "Bestimmte Operationen verschmelzen, um die Performance auf power9 zu steigern."
+msgstr "Skalare logische Operationen mit add/subf verschmelzen, um die Performance auf power10 zu steigern."
 
 #: config/rs6000/rs6000.opt:511
-#, fuzzy, no-c-format
-#| msgid "Fuse certain integer operations together for better performance on power10."
+#, no-c-format
 msgid "Fuse scalar add/subf with logical op for better performance on power10."
-msgstr "Bestimmte Ganzzahloperationen verschmelzen, um die Performance auf power10 zu steigern."
+msgstr "Skalares add/subf mit logischen Operationen verschmelzen, um die Performance auf power10 zu steigern."
 
 #: config/rs6000/rs6000.opt:515
-#, fuzzy, no-c-format
-#| msgid "Fuse certain operations together for better performance on power9."
+#, no-c-format
 msgid "Fuse dependent pairs of add or vaddudm instructions for better performance on power10."
-msgstr "Bestimmte Operationen verschmelzen, um die Performance auf power9 zu steigern."
+msgstr "Abhängige Paare von add oder vaddudm verschmelzen, um die Performance auf power10 zu steigern."
 
 #: config/rs6000/rs6000.opt:519
 #, no-c-format
@@ -12956,13 +12950,12 @@ msgstr "MMA-Befehle erzeugen (oder auch nicht)."
 #: config/rs6000/rs6000.opt:637
 #, no-c-format
 msgid "Enable instructions that guard against return-oriented programming attacks."
-msgstr ""
+msgstr "Befehle einschalten, die Angriffe über return-orientierte Programmierung vereiteln."
 
 #: config/rs6000/rs6000.opt:641
-#, fuzzy, no-c-format
-#| msgid "Generate code in 32 bit ARM state."
+#, no-c-format
 msgid "Generate code that will run in privileged state."
-msgstr "Code im 32-Bit-ARM-Zustand erzeugen."
+msgstr "Code erzeugen, der im privilegierten Zustand läuft."
 
 #: config/rs6000/sysv4.opt:24
 #, no-c-format
@@ -19104,10 +19097,9 @@ msgid "Maximal estimated growth of function body caused by early inlining of sin
 msgstr "Größtes durch frühes »inline« eines einzelnen Aufrufs abgeschätztes Wachstum des Funktionskörpers."
 
 #: params.opt:131
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite."
+#, no-c-format
 msgid "Maximum number of basic blocks before EVRP uses a sparse cache."
-msgstr "Höchstzahl der Basis-Blöcke pro Funktion, die von Graphite analysiert werden."
+msgstr "Höchstzahl der Basis-Blöcke, bevor EVRP einen spärlich gefüllten Cache verwendet."
 
 #: params.opt:135
 #, no-c-format
@@ -35901,7 +35893,7 @@ msgstr "Geschachtelte Trampolin-Funktionen werden auf dem CK801 nicht unterstüt
 #: config/csky/csky.c:6086
 #, gcc-internal-format
 msgid "%qE attribute ignored without %<-mistack%>"
-msgstr "Attribut %qE ignoriert, da die Option %<-mistack%> nicht angegeben ist."
+msgstr "Attribut %qE ignoriert, da die Option %<-mistack%> nicht angegeben ist"
 
 #: config/epiphany/epiphany.c:499
 #, gcc-internal-format
@@ -38895,10 +38887,9 @@ msgstr "internal error: builtin function %qs, argument %d had unexpected argumen
 #. We can't check this in rs6000_option_override_internal since
 #. DEFAULT_ABI isn't established yet.
 #: config/rs6000/rs6000-logue.c:732
-#, fuzzy, gcc-internal-format
-#| msgid "Use the ELFv2 ABI."
+#, gcc-internal-format
 msgid "%qs requires the ELFv2 ABI"
-msgstr "ELFv2-ABI verwenden."
+msgstr "%qs erfordert das ELFv2-ABI."
 
 #: config/rs6000/rs6000-logue.c:1719
 #, gcc-internal-format
@@ -39061,7 +39052,7 @@ msgstr "das Layout von Aggregaten, die Vektoren mit %d-Byte-Ausrichtung enthalte
 #: config/rs6000/rs6000.c:10694
 #, gcc-internal-format
 msgid "%qs is an opaque type, and you cannot set it to other values"
-msgstr "%qs ist ein undurchsichtiger Typ, und Sie können ihn nicht auf andere Werte setzen."
+msgstr "%qs ist ein undurchsichtiger Typ, und Sie können ihn nicht auf andere Werte setzen"
 
 #: config/rs6000/rs6000.c:17844
 #, gcc-internal-format
@@ -41948,7 +41939,7 @@ msgstr "%<,%> oder %<;%> erwartet"
 #: c/c-parser.c:2429 c/c-parser.c:2470
 #, gcc-internal-format
 msgid "expected %<=%>, %<,%>, %<;%>, %<asm%> or %<__attribute__%>"
-msgstr " %<=%>, %<,%>, %<;%>, %<asm%> oder %<__attribute__%> erwartet"
+msgstr "%<=%>, %<,%>, %<;%>, %<asm%> oder %<__attribute__%> erwartet"
 
 #: c/c-parser.c:2437
 #, gcc-internal-format
@@ -46700,7 +46691,7 @@ msgstr "umschließende Klasse der %<constexpr%> nicht-statischen Elementfunktion
 #: cp/class.c:5949
 #, gcc-internal-format
 msgid "%q+T is not literal because:"
-msgstr "%q+T ist kein Literal, denn: "
+msgstr "%q+T ist kein Literal, denn:"
 
 #: cp/class.c:5952
 #, gcc-internal-format
@@ -53868,10 +53859,9 @@ msgid "unnamed scoped enum is not allowed"
 msgstr "unbenanntes »enum« mit Gültigkeitsbereich ist nicht erlaubt"
 
 #: cp/parser.c:19954
-#, fuzzy, gcc-internal-format
-#| msgid "types may not be defined in casts"
+#, gcc-internal-format
 msgid "types may not be defined in enum-base"
-msgstr "Typen dürfen nicht in Typumwandlungen definiert werden"
+msgstr "Typen dürfen nicht in enum-base definiert werden"
 
 #: cp/parser.c:19999
 #, gcc-internal-format
@@ -60654,10 +60644,9 @@ msgid "%qs argument of %qs intrinsic at %L is not a valid dimension index"
 msgstr "Argument %qs des intrinsischen %qs bei %L ist kein gültiger Dimensionsindex"
 
 #: fortran/check.c:5704
-#, fuzzy, gcc-internal-format
-#| msgid "%qs argument of %qs intrinsic at %L must be default real"
+#, gcc-internal-format
 msgid "%qs argument of %qs intrinsic at %L must have length at least 1"
-msgstr "Argument %qs des intrinsischen %qs bei %L muss ein Standard-Real sein"
+msgstr "Argument %qs des intrinsischen %qs bei %L muss mindestens die Länge 1 haben"
 
 #: fortran/check.c:5968
 #, gcc-internal-format, gfc-internal-format
@@ -63227,7 +63216,7 @@ msgstr "Bei %L darf kein Schritt vorhanden sein"
 #: fortran/expr.c:3896 fortran/expr.c:3916
 #, gcc-internal-format
 msgid "Rank remapping requires a list of %<lower-bound : upper-bound%> specifications at %L"
-msgstr "das Umordnen des Rangs erfordert eine Liste von %<untere-Grenze : obere-Grenze%>-Angaben bei %L"
+msgstr "Das Umordnen des Rangs erfordert eine Liste von %<untere-Grenze : obere-Grenze%>-Angaben bei %L"
 
 #: fortran/expr.c:3904 fortran/expr.c:3923
 #, gcc-internal-format
@@ -65110,7 +65099,7 @@ msgstr "END-Tag bei %C in Ausgabe-Anweisung nicht erlaubt"
 #: fortran/io.c:3312
 #, gcc-internal-format, gfc-internal-format
 msgid "UNIT not specified at %L"
-msgstr "bei %L wurde kein UNIT angegeben"
+msgstr "Bei %L wurde kein UNIT angegeben"
 
 #: fortran/io.c:3319
 #, gcc-internal-format, gfc-internal-format
@@ -70438,10 +70427,9 @@ msgid "Alternate RETURN statement at %L requires a SCALAR-INTEGER return specifi
 msgstr "Alternative RETURN-Anweisung bei %L erfordert einen SCALAR-INTEGER-Spezifizierer als Rückgabe"
 
 #: fortran/resolve.c:11943
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected initialization expression in CASE at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected intrinsic assignment in OMP WORKSHARE at %L"
-msgstr "Erwarteter Initialisierungsausdruck in CASE bei %C"
+msgstr "Erwarteter intrinsischer Initialisierungsausdruck OMP WORKSHARE bei %L"
 
 #: fortran/resolve.c:11977
 #, gcc-internal-format, gfc-internal-format
