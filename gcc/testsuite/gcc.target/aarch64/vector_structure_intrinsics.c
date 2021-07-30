@@ -161,6 +161,28 @@ TEST_STX_LANE (vst4q_lane, uint64x2x4_t, uint64_t*, u64);
 TEST_STX_LANE (vst4q_lane, float64x2x4_t, float64_t*, f64);
 TEST_STX_LANE (vst4q_lane, poly64x2x4_t, poly64_t*, p64);
 
+#define TEST_ST3_LANE(name, tbltype, ptrtype, ts) \
+  void test_ ## name ## _ ## ts (ptrtype a, int8x8_t dummy, tbltype b) \
+	{ \
+		name ## _ ## ts (a, b, 1); \
+	}
+
+TEST_ST3_LANE (vst3q_lane, int8x16x3_t, int8_t*, s8);
+TEST_ST3_LANE (vst3q_lane, uint8x16x3_t, uint8_t*, u8);
+TEST_ST3_LANE (vst3q_lane, poly8x16x3_t, poly8_t*, p8);
+TEST_ST3_LANE (vst3q_lane, int16x8x3_t, int16_t*, s16);
+TEST_ST3_LANE (vst3q_lane, uint16x8x3_t, uint16_t*, u16);
+TEST_ST3_LANE (vst3q_lane, poly16x8x3_t, poly16_t*, p16);
+TEST_ST3_LANE (vst3q_lane, float16x8x3_t, float16_t*, f16);
+TEST_ST3_LANE (vst3q_lane, bfloat16x8x3_t, bfloat16_t*, bf16);
+TEST_ST3_LANE (vst3q_lane, int32x4x3_t, int32_t*, s32);
+TEST_ST3_LANE (vst3q_lane, uint32x4x3_t, uint32_t*, u32);
+TEST_ST3_LANE (vst3q_lane, float32x4x3_t, float32_t*, f32);
+TEST_ST3_LANE (vst3q_lane, int64x2x3_t, int64_t*, s64);
+TEST_ST3_LANE (vst3q_lane, uint64x2x3_t, uint64_t*, u64);
+TEST_ST3_LANE (vst3q_lane, float64x2x3_t, float64_t*, f64);
+TEST_ST3_LANE (vst3q_lane, poly64x2x3_t, poly64_t*, p64);
+
 #define TEST_ST1xN(name, tbltype, ptrtype, ts, xn) \
   void test_ ## name ## _ ## ts ## _ ## xn (ptrtype a, tbltype b) \
 	{ \
@@ -224,6 +246,6 @@ TEST_ST1x3 (vst1q, float64x2x3_t, float64_t*, f64, x3);
 /* { dg-final { scan-assembler-times "tbl\\t" 18} }  */
 /* { dg-final { scan-assembler-times "tbx\\t" 18} }  */
 /* { dg-final { scan-assembler-times "st4\\t" 29} }  */
-/* { dg-final { scan-assembler-times "st3\\t" 14} }  */
+/* { dg-final { scan-assembler-times "st3\\t" 29} }  */
 /* { dg-final { scan-assembler-times "st2\\t" 14} }  */
 /* { dg-final { scan-assembler-times "st1\\t" 42} }  */
