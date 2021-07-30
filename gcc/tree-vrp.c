@@ -3337,8 +3337,7 @@ vrp_asserts::find_assert_locations (void)
   /* Pre-seed loop latch liveness from loop header PHI nodes.  Due to
      the order we compute liveness and insert asserts we otherwise
      fail to insert asserts into the loop latch.  */
-  loop_p loop;
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       i = loop->latch->index;
       unsigned int j = single_succ_edge (loop->latch)->dest_idx;

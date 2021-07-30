@@ -1,6 +1,5 @@
 /* { dg-do compile { target { { { i?86-*-* x86_64-*-* } && lp64 } || { arm_thumb2 } } } } */
 /* { dg-options "-O2 -fdump-rtl-pro_and_epilogue"  } */
-// { dg-additional-options "-fdisable-tree-ethread" }
 
 /*
 Our new threader is threading things a bit too early, and causing the
@@ -69,4 +68,4 @@ test (int *p1, int *p2)
 
   return 1;
 }
-/* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue"  } } */
+/* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue" { xfail *-*-* } } } */

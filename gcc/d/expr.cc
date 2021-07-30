@@ -101,8 +101,6 @@ binary_op (tree_code code, tree type, tree arg0, tree arg1)
   tree t1 = TREE_TYPE (arg1);
   tree ret = NULL_TREE;
 
-  bool unsignedp = TYPE_UNSIGNED (t0) || TYPE_UNSIGNED (t1);
-
   /* Deal with float mod expressions immediately.  */
   if (code == FLOAT_MOD_EXPR)
     return build_float_modulus (type, arg0, arg1);
@@ -129,12 +127,6 @@ binary_op (tree_code code, tree type, tree arg0, tree arg1)
 			   d_convert (ptrtype, arg1));
       else
 	ret = fold_build2 (POINTER_DIFF_EXPR, ptrtype, arg0, arg1);
-    }
-  else if (INTEGRAL_TYPE_P (type) && (TYPE_UNSIGNED (type) != unsignedp))
-    {
-      tree inttype = (unsignedp)
-	? d_unsigned_type (type) : d_signed_type (type);
-      ret = fold_build2 (code, inttype, arg0, arg1);
     }
   else
     {
@@ -1163,9 +1155,9 @@ public:
 	bool destructor = needs_dtor (etype);
 	bool lvalue = lvalue_p (e->e2);
 
-	/* Even if the elements in rhs are all rvalues and don't have
-	   to call postblits, this assignment should call dtors on old
-	   assigned elements.  */
+	/* Optimize static array assignment with array literal.  Even if the
+	   elements in rhs are all rvalues and don't have to call postblits,
+	   this assignment should call dtors on old assigned elements.  */
 	if ((!postblit && !destructor)
 	    || (e->op == TOKconstruct && e->e2->op == TOKarrayliteral)
 	    || (e->op == TOKconstruct && !lvalue && postblit)
@@ -2085,15 +2077,9 @@ public:
       }
     else
       {
-	/* Assert contracts are turned off, if the contract condition has no
-	   side effects can still use it as a predicate for the optimizer.  */
-	if (TREE_SIDE_EFFECTS (arg))
-	  {
-	    this->result_ = void_node;
-	    return;
-	  }
-
-	assert_fail = build_predict_expr (PRED_NORETURN, NOT_TAKEN);
+	/* Assert contracts are turned off.  */
+	this->result_ = void_node;
+	return;
       }
 
     /* Build condition that we are asserting in this contract.  */

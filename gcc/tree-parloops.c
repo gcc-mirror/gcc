@@ -3990,7 +3990,6 @@ parallelize_loops (bool oacc_kernels_p)
 {
   unsigned n_threads;
   bool changed = false;
-  class loop *loop;
   class loop *skip_loop = NULL;
   class tree_niter_desc niter_desc;
   struct obstack parloop_obstack;
@@ -4021,7 +4020,7 @@ parallelize_loops (bool oacc_kernels_p)
 
   calculate_dominance_info (CDI_DOMINATORS);
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       if (loop == skip_loop)
 	{

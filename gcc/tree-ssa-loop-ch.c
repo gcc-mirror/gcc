@@ -348,7 +348,6 @@ protected:
 unsigned int
 ch_base::copy_headers (function *fun)
 {
-  class loop *loop;
   basic_block header;
   edge exit, entry;
   basic_block *bbs, *copied_bbs;
@@ -365,7 +364,7 @@ ch_base::copy_headers (function *fun)
 
   auto_vec<std::pair<edge, loop_p> > copied;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       int initial_limit = param_max_loop_header_insns;
       int remaining_limit = initial_limit;

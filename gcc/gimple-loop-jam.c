@@ -487,13 +487,12 @@ adjust_unroll_factor (class loop *inner, struct data_dependence_relation *ddr,
 static unsigned int
 tree_loop_unroll_and_jam (void)
 {
-  class loop *loop;
   unsigned int todo = 0;
 
   gcc_assert (scev_initialized_p ());
 
   /* Go through all innermost loops.  */
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       class loop *outer = loop_outer (loop);
 

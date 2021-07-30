@@ -1353,7 +1353,6 @@ sms_schedule (void)
   int maxii, max_asap;
   partial_schedule_ptr ps;
   basic_block bb = NULL;
-  class loop *loop;
   basic_block condition_bb = NULL;
   edge latch_edge;
   HOST_WIDE_INT trip_count, max_trip_count;
@@ -1397,7 +1396,7 @@ sms_schedule (void)
 
   /* Build DDGs for all the relevant loops and hold them in G_ARR
      indexed by the loop index.  */
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       rtx_insn *head, *tail;
       rtx count_reg;
@@ -1543,7 +1542,7 @@ sms_schedule (void)
   }
 
   /* We don't want to perform SMS on new loops - created by versioning.  */
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       rtx_insn *head, *tail;
       rtx count_reg;

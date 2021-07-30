@@ -1087,9 +1087,8 @@ end:
 	    }
 	  else
 	    {
-	      class loop *loop;
 	      scev_initialize ();
-	      FOR_EACH_LOOP (loop, 0)
+	      for (auto loop : loops_list (cfun, 0))
 		if (!finite_loop_p (loop))
 		  {
 		    if (dump_file)

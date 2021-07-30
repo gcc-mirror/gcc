@@ -423,7 +423,8 @@ class TypeInfoVisitor : public Visitor
     else
       this->layout_field (null_pointer_node);
 
-    this->layout_field (null_pointer_node);
+    if (cd->hasMonitor ())
+      this->layout_field (null_pointer_node);
   }
 
   /* Write out the interfaces field of class CD.
@@ -933,6 +934,8 @@ public:
 	  this->layout_field (build_expr (cd->getRTInfo, true));
 	else if (!(flags & ClassFlags::noPointers))
 	  this->layout_field (size_one_node);
+	else
+	  this->layout_field (null_pointer_node);
       }
     else
       {
@@ -1457,9 +1460,17 @@ layout_cpp_typeinfo (ClassDeclaration *cd)
   /* Use the vtable of __cpp_type_info_ptr, the EH personality routine
      expects this, as it uses .classinfo identity comparison to test for
      C++ catch handlers.  */
-  tree vptr = get_vtable_decl (ClassDeclaration::cpp_type_info_ptr);
-  CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, build_address (vptr));
-  CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, null_pointer_node);
+  ClassDeclaration *cppti = ClassDeclaration::cpp_type_info_ptr;
+  if (have_typeinfo_p (cppti))
+    {
+      tree vptr = get_vtable_decl (cppti);
+      CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, build_address (vptr));
+    }
+  else
+    CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, null_pointer_node);
+
+  if (cppti->hasMonitor ())
+    CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, null_pointer_node);
 
   /* Let C++ do the RTTI generation, and just reference the symbol as
      extern, knowing the underlying type is not required.  */
@@ -1471,9 +1482,7 @@ layout_cpp_typeinfo (ClassDeclaration *cd)
 
   /* Build the initializer and emit.  */
   DECL_INITIAL (decl) = build_struct_literal (TREE_TYPE (decl), init);
-  DECL_EXTERNAL (decl) = 0;
-  d_pushdecl (decl);
-  rest_of_decl_compilation (decl, 1, 0);
+  d_finish_decl (decl);
 }
 
 /* Get the VAR_DECL of the __cpp_type_info_ptr for DECL.  If this does not yet

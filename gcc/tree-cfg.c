@@ -312,12 +312,11 @@ replace_loop_annotate_in_block (basic_block bb, class loop *loop)
 static void
 replace_loop_annotate (void)
 {
-  class loop *loop;
   basic_block bb;
   gimple_stmt_iterator gsi;
   gimple *stmt;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       /* First look into the header.  */
       replace_loop_annotate_in_block (loop->header, loop);
@@ -2027,12 +2026,8 @@ replace_uses_by (tree name, tree val)
   /* Also update the trees stored in loop structures.  */
   if (current_loops)
     {
-      class loop *loop;
-
-      FOR_EACH_LOOP (loop, 0)
-	{
+      for (auto loop : loops_list (cfun, 0))
 	  substitute_in_loop_info (loop, name, val);
-	}
     }
 }
 
@@ -7752,9 +7747,9 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* Fix up orig_loop_num.  If the block referenced in it has been moved
      to dest_cfun, update orig_loop_num field, otherwise clear it.  */
-  class loop *dloop;
+  class loop *dloop = NULL;
   signed char *moved_orig_loop_num = NULL;
-  FOR_EACH_LOOP_FN (dest_cfun, dloop, 0)
+  for (class loop *dloop : loops_list (dest_cfun, 0))
     if (dloop->orig_loop_num)
       {
 	if (moved_orig_loop_num == NULL)

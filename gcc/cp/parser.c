@@ -2507,6 +2507,8 @@ static tree cp_parser_std_attribute_spec
   (cp_parser *);
 static tree cp_parser_std_attribute_spec_seq
   (cp_parser *);
+static size_t cp_parser_skip_std_attribute_spec_seq
+  (cp_parser *, size_t);
 static size_t cp_parser_skip_attributes_opt
   (cp_parser *, size_t);
 static bool cp_parser_extension_opt
@@ -11902,6 +11904,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   cp_token *token;
   location_t statement_location, attrs_loc;
   bool in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
+  bool has_std_attrs;
 
  restart:
   if (if_p != NULL)
@@ -11910,7 +11913,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   statement = NULL_TREE;
 
   saved_token_sentinel saved_tokens (parser->lexer);
-  attrs_loc = cp_lexer_peek_token (parser->lexer)->location;
+  token = cp_lexer_peek_token (parser->lexer);
+  attrs_loc = token->location;
   if (c_dialect_objc ())
     /* In obj-c++, seeing '[[' might be the either the beginning of
        c++11 attributes, or a nested objc-message-expression.  So
@@ -11924,6 +11928,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
       if (!cp_parser_parse_definitely (parser))
 	std_attrs = NULL_TREE;
     }
+  has_std_attrs = cp_lexer_peek_token (parser->lexer) != token;
 
   if (std_attrs && (flag_openmp || flag_openmp_simd))
     std_attrs = cp_parser_handle_statement_omp_attributes (parser, std_attrs);
@@ -11992,7 +11997,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	case RID_NAMESPACE:
 	  /* This must be a namespace alias definition.  */
-	  if (std_attrs != NULL_TREE)
+	  if (has_std_attrs)
 	    {
 	      /* Attributes should be parsed as part of the
 		 declaration, so let's un-parse them.  */
@@ -12097,7 +12102,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     {
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
 	{
-	  if (std_attrs != NULL_TREE)
+	  if (has_std_attrs)
 	    /* Attributes should be parsed as part of the declaration,
 	       so let's un-parse them.  */
 	    saved_tokens.rollback();
@@ -12109,7 +12114,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  if (cp_parser_parse_definitely (parser))
 	    return;
 	  /* It didn't work, restore the post-attribute position.  */
-	  if (std_attrs)
+	  if (has_std_attrs)
 	    cp_lexer_set_token_position (parser->lexer, statement_token);
 	}
       /* All preceding labels have been parsed at this point.  */
@@ -14405,6 +14410,30 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
   cp_token *token2 = (token1->type == CPP_EOF
 		      ? token1 : cp_lexer_peek_nth_token (parser->lexer, 2));
 
+  if (token1->type == CPP_SEMICOLON)
+    {
+      cp_lexer_consume_token (parser->lexer);
+      /* A declaration consisting of a single semicolon is invalid
+       * before C++11.  Allow it unless we're being pedantic.  */
+      if (cxx_dialect < cxx11)
+	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
+      return;
+    }
+  else if (cp_lexer_nth_token_is (parser->lexer,
+				  cp_parser_skip_std_attribute_spec_seq (parser,
+									 1),
+				  CPP_SEMICOLON))
+    {
+      location_t attrs_loc = token1->location;
+      tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+      if (std_attrs != NULL_TREE)
+	warning_at (make_location (attrs_loc, attrs_loc, parser->lexer),
+		    OPT_Wattributes, "attribute ignored");
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	cp_lexer_consume_token (parser->lexer);
+      return;
+    }
+
   /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
   void *p = obstack_alloc (&declarator_obstack, 0);
 
@@ -14555,14 +14584,6 @@ cp_parser_toplevel_declaration (cp_parser* parser)
        cp_parser_declaration.  (A #pragma at block scope is
        handled in cp_parser_statement.)  */
     cp_parser_pragma (parser, pragma_external, NULL);
-  else if (token->type == CPP_SEMICOLON)
-    {
-      cp_lexer_consume_token (parser->lexer);
-      /* A declaration consisting of a single semicolon is invalid
-       * before C++11.  Allow it unless we're being pedantic.  */
-      if (cxx_dialect < cxx11)
-	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
-    }
   else
     /* Parse the declaration itself.  */
     cp_parser_declaration (parser, NULL_TREE);

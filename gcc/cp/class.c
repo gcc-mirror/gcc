@@ -3072,8 +3072,7 @@ finish_struct_anon_r (tree field)
     }
 }
 
-/* Check for things that are invalid.  There are probably plenty of other
-   things we should check for also.  */
+/* Fix up any anonymous union/struct members of T.  */
 
 static void
 finish_struct_anon (tree t)

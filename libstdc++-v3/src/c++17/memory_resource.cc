@@ -29,7 +29,7 @@
 #include <new>
 #if ATOMIC_POINTER_LOCK_FREE != 2
 # include <bits/std_mutex.h>	// std::mutex, std::lock_guard
-# include <bits/move.h>		// std::exchange
+# include <bits/move.h>		// std::__exchange
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -117,7 +117,7 @@ namespace pmr
       memory_resource* exchange(memory_resource* r)
       {
 	lock_guard<mutex> lock(mx);
-	return std::exchange(val, r);
+	return std::__exchange(val, r);
       }
     };
 #else
@@ -137,7 +137,7 @@ namespace pmr
 
       memory_resource* exchange(memory_resource* r)
       {
-	return std::exchange(val, r);
+	return std::__exchange(val, r);
       }
     };
 #endif // ATOMIC_POINTER_LOCK_FREE == 2

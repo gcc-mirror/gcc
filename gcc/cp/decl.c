@@ -5084,6 +5084,9 @@ fixup_anonymous_aggr (tree t)
     {
       tree field, type;
 
+      if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)))
+	error_at (location_of (t), "anonymous struct with base classes");
+
       for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {

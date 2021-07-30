@@ -2977,16 +2977,12 @@ gather_stats_on_scev_database (void)
 void
 scev_initialize (void)
 {
-  class loop *loop;
-
   gcc_assert (! scev_initialized_p ());
 
   scalar_evolution_info = hash_table<scev_info_hasher>::create_ggc (100);
 
-  FOR_EACH_LOOP (loop, 0)
-    {
-      loop->nb_iterations = NULL_TREE;
-    }
+  for (auto loop : loops_list (cfun, 0))
+    loop->nb_iterations = NULL_TREE;
 }
 
 /* Return true if SCEV is initialized.  */
@@ -3015,14 +3011,10 @@ scev_reset_htab (void)
 void
 scev_reset (void)
 {
-  class loop *loop;
-
   scev_reset_htab ();
 
-  FOR_EACH_LOOP (loop, 0)
-    {
-      loop->nb_iterations = NULL_TREE;
-    }
+  for (auto loop : loops_list (cfun, 0))
+    loop->nb_iterations = NULL_TREE;
 }
 
 /* Return true if the IV calculation in TYPE can overflow based on the knowledge
