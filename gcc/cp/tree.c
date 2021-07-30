@@ -450,11 +450,16 @@ builtin_valid_in_constant_expr_p (const_tree decl)
     return false;
   if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL)
     {
-      if (fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-			     BUILT_IN_FRONTEND)
-	  || fndecl_built_in_p (decl, CP_BUILT_IN_SOURCE_LOCATION,
-				BUILT_IN_FRONTEND))
-	return true;
+      if (fndecl_built_in_p (decl, BUILT_IN_FRONTEND))
+	switch (DECL_FE_FUNCTION_CODE (decl))
+	  {
+	  case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
+	  case CP_BUILT_IN_SOURCE_LOCATION:
+	  case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+	    return true;
+	  default:
+	    break;
+	  }
       /* Not a built-in.  */
       return false;
     }

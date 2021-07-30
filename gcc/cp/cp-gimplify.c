@@ -648,14 +648,23 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (ret != GS_ERROR)
 	{
 	  tree decl = cp_get_callee_fndecl_nofold (*expr_p);
-	  if (decl
-	      && fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-				    BUILT_IN_FRONTEND))
-	    *expr_p = boolean_false_node;
-	  else if (decl
-		   && fndecl_built_in_p (decl, CP_BUILT_IN_SOURCE_LOCATION,
-					 BUILT_IN_FRONTEND))
-	    *expr_p = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
+	  if (decl && fndecl_built_in_p (decl, BUILT_IN_FRONTEND))
+	    switch (DECL_FE_FUNCTION_CODE (decl))
+	      {
+	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
+		*expr_p = boolean_false_node;
+		break;
+	      case CP_BUILT_IN_SOURCE_LOCATION:
+		*expr_p
+		  = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
+		break;
+	      case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+		*expr_p
+		  = fold_builtin_is_pointer_inverconvertible_with_class
+			(EXPR_LOCATION (*expr_p), call_expr_nargs (*expr_p),
+			 &CALL_EXPR_ARG (*expr_p, 0));
+		break;
+	      }
 	}
       break;
 
@@ -2560,11 +2569,26 @@ cp_fold (tree x)
 	    && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
 	  nw = 1;
 
-	/* Defer folding __builtin_is_constant_evaluated.  */
-	if (callee
-	    && fndecl_built_in_p (callee, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-				  BUILT_IN_FRONTEND))
-	  break;
+	if (callee && fndecl_built_in_p (callee, BUILT_IN_FRONTEND))
+	  {
+	    switch (DECL_FE_FUNCTION_CODE (callee))
+	      {
+		/* Defer folding __builtin_is_constant_evaluated.  */
+	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
+		break;
+	      case CP_BUILT_IN_SOURCE_LOCATION:
+		x = fold_builtin_source_location (EXPR_LOCATION (x));
+		break;
+	      case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+                x = fold_builtin_is_pointer_inverconvertible_with_class
+			(EXPR_LOCATION (x), call_expr_nargs (x),
+			 &CALL_EXPR_ARG (x, 0));
+		break;
+	      default:
+		break;
+	      }
+	    break;
+	  }
 
 	if (callee
 	    && fndecl_built_in_p (callee, CP_BUILT_IN_SOURCE_LOCATION,

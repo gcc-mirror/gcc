@@ -1427,8 +1427,20 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
       && ctx->call
       && ctx->call->fundef)
     current_function_decl = ctx->call->fundef->decl;
-  new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
-				      CALL_EXPR_FN (t), nargs, args);
+  if (fndecl_built_in_p (fun,
+			 CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
+			 BUILT_IN_FRONTEND))
+    {
+      location_t loc = EXPR_LOCATION (t);
+      if (nargs >= 1)
+	VERIFY_CONSTANT (args[0]);
+      new_call
+	= fold_builtin_is_pointer_inverconvertible_with_class (loc, nargs,
+							       args);
+    }
+  else
+    new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
+					CALL_EXPR_FN (t), nargs, args);
   current_function_decl = save_cur_fn;
   force_folding_builtin_constant_p = save_ffbcp;
   if (new_call == NULL)
