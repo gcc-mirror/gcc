@@ -1,3 +1,15 @@
+2021-07-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101582
+	* parser.c (cp_parser_skip_std_attribute_spec_seq): Add a forward
+	declaration.
+	(cp_parser_declaration): Parse empty-declaration and
+	attribute-declaration.
+	(cp_parser_toplevel_declaration): Don't parse empty-declaration here.
+
 2021-07-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

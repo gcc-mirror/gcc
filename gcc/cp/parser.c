@@ -2507,6 +2507,8 @@ static tree cp_parser_std_attribute_spec
   (cp_parser *);
 static tree cp_parser_std_attribute_spec_seq
   (cp_parser *);
+static size_t cp_parser_skip_std_attribute_spec_seq
+  (cp_parser *, size_t);
 static size_t cp_parser_skip_attributes_opt
   (cp_parser *, size_t);
 static bool cp_parser_extension_opt
@@ -14279,6 +14281,30 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
   cp_token *token2 = (token1->type == CPP_EOF
 		      ? token1 : cp_lexer_peek_nth_token (parser->lexer, 2));
 
+  if (token1->type == CPP_SEMICOLON)
+    {
+      cp_lexer_consume_token (parser->lexer);
+      /* A declaration consisting of a single semicolon is invalid
+       * before C++11.  Allow it unless we're being pedantic.  */
+      if (cxx_dialect < cxx11)
+	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
+      return;
+    }
+  else if (cp_lexer_nth_token_is (parser->lexer,
+				  cp_parser_skip_std_attribute_spec_seq (parser,
+									 1),
+				  CPP_SEMICOLON))
+    {
+      location_t attrs_loc = token1->location;
+      tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+      if (std_attrs != NULL_TREE)
+	warning_at (make_location (attrs_loc, attrs_loc, parser->lexer),
+		    OPT_Wattributes, "attribute ignored");
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	cp_lexer_consume_token (parser->lexer);
+      return;
+    }
+
   /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
   void *p = obstack_alloc (&declarator_obstack, 0);
 
@@ -14429,14 +14455,6 @@ cp_parser_toplevel_declaration (cp_parser* parser)
        cp_parser_declaration.  (A #pragma at block scope is
        handled in cp_parser_statement.)  */
     cp_parser_pragma (parser, pragma_external, NULL);
-  else if (token->type == CPP_SEMICOLON)
-    {
-      cp_lexer_consume_token (parser->lexer);
-      /* A declaration consisting of a single semicolon is invalid
-       * before C++11.  Allow it unless we're being pedantic.  */
-      if (cxx_dialect < cxx11)
-	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
-    }
   else
     /* Parse the declaration itself.  */
     cp_parser_declaration (parser, NULL_TREE);
