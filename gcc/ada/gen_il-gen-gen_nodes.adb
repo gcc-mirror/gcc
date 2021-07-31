@@ -1649,4 +1649,17 @@ begin -- Gen_IL.Gen.Gen_Nodes
              N_Terminate_Alternative));
    --  Nodes with condition fields (does not include N_Raise_xxx_Error)
 
+   Union (N_Has_Bounds,
+          Children =>
+            (N_Range,
+             N_Real_Range_Specification,
+             N_Signed_Integer_Type_Definition));
+   --  Nodes that have Low_Bound and High_Bound defined
+
+   Union (N_Is_Index,
+          Children =>
+            (N_Has_Bounds,
+             N_Has_Entity,
+             N_Subtype_Indication));
+   --  Nodes that can be an index of an array
 end Gen_IL.Gen.Gen_Nodes;

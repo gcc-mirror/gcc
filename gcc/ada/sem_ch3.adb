@@ -6254,7 +6254,7 @@ package body Sem_Ch3 is
 
          --  Move to next index
 
-         Next_Index (Index);
+         Next (Index);
          Nb_Index := Nb_Index + 1;
       end loop;
 

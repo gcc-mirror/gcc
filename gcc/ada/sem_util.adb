@@ -7445,7 +7445,7 @@ package body Sem_Util is
                      return False;
                   end if;
 
-                  Next_Index (Indx);
+                  Next (Indx);
                end loop;
             end;
 

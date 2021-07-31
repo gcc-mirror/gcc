@@ -1976,6 +1976,8 @@ package body Einfo.Utils is
 
    function Next_Index (Id : Node_Id) return Node_Id is
    begin
+      pragma Assert (Nkind (Id) in N_Is_Index);
+      pragma Assert (No (Next (Id)) or else Nkind (Next (Id)) in N_Is_Index);
       return Next (Id);
    end Next_Index;
 
