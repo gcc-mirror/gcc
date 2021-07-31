@@ -3866,11 +3866,12 @@ Type_conversion_expression::do_traverse(Traverse* traverse)
   return TRAVERSE_CONTINUE;
 }
 
-// Convert to a constant at lowering time.
+// Convert to a constant at lowering time.  Also lower conversions
+// from slice to pointer-to-array, as they can panic.
 
 Expression*
 Type_conversion_expression::do_lower(Gogo*, Named_object*,
-				     Statement_inserter*, int)
+				     Statement_inserter* inserter, int)
 {
   Type* type = this->type_;
   Expression* val = this->expr_;
@@ -3956,6 +3957,54 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 							      location);
 	    }
 	}
+    }
+
+  if (type->points_to() != NULL
+      && type->points_to()->array_type() != NULL
+      && !type->points_to()->is_slice_type()
+      && val->type()->is_slice_type())
+    {
+      Temporary_statement* val_temp = NULL;
+      if (!val->is_multi_eval_safe())
+	{
+	  val_temp = Statement::make_temporary(val->type(), NULL, location);
+	  inserter->insert(val_temp);
+	  val = Expression::make_set_and_use_temporary(val_temp, val,
+						       location);
+	}
+
+      Type* int_type = Type::lookup_integer_type("int");
+      Temporary_statement* vallen_temp =
+	Statement::make_temporary(int_type, NULL, location);
+      inserter->insert(vallen_temp);
+
+      Expression* arrlen = type->points_to()->array_type()->length();
+      Expression* vallen =
+	Expression::make_slice_info(val, Expression::SLICE_INFO_LENGTH,
+				    location);
+      vallen = Expression::make_set_and_use_temporary(vallen_temp, vallen,
+						      location);
+      Expression* cond = Expression::make_binary(OPERATOR_GT, arrlen, vallen,
+						 location);
+
+      vallen = Expression::make_temporary_reference(vallen_temp, location);
+      Expression* panic = Runtime::make_call(Runtime::PANIC_SLICE_CONVERT,
+					     location, 2, arrlen, vallen);
+
+      Expression* nil = Expression::make_nil(location);
+      Expression* check = Expression::make_conditional(cond, panic, nil,
+						       location);
+
+      if (val_temp == NULL)
+	val = val->copy();
+      else
+	val = Expression::make_temporary_reference(val_temp, location);
+      Expression* ptr =
+	Expression::make_slice_info(val, Expression::SLICE_INFO_VALUE_POINTER,
+				    location);
+      ptr = Expression::make_unsafe_cast(type, ptr, location);
+
+      return Expression::make_compound(check, ptr, location);
     }
 
   return this;
