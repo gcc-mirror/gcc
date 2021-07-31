@@ -7085,7 +7085,7 @@ Parser<ManagedTokenSource>::parse_expr_with_block (AST::AttrVec outer_attrs)
       break;
       case WHILE: {
 	// while or while let, so more lookahead to find out
-	if (lexer.peek_token ()->get_id () == LET)
+	if (lexer.peek_token (1)->get_id () == LET)
 	  {
 	    // while let loop expr
 	    expr_parsed = parse_while_let_loop_expr (std::move (outer_attrs));
