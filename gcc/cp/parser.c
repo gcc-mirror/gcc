@@ -14431,6 +14431,25 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
     {
       location_t attrs_loc = token1->location;
       tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+
+      if (std_attrs && (flag_openmp || flag_openmp_simd))
+	{
+	  gcc_assert (!parser->lexer->in_omp_attribute_pragma);
+	  std_attrs = cp_parser_handle_statement_omp_attributes (parser,
+								 std_attrs);
+	  if (parser->lexer->in_omp_attribute_pragma)
+	    {
+	      cp_lexer *lexer = parser->lexer;
+	      while (parser->lexer->in_omp_attribute_pragma)
+		{
+		  gcc_assert (cp_lexer_next_token_is (parser->lexer,
+						      CPP_PRAGMA));
+		  cp_parser_pragma (parser, pragma_external, NULL);
+		}
+	      cp_lexer_destroy (lexer);
+	    }
+	}
+
       if (std_attrs != NULL_TREE)
 	warning_at (make_location (attrs_loc, attrs_loc, parser->lexer),
 		    OPT_Wattributes, "attribute ignored");
