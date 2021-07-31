@@ -4799,6 +4799,15 @@ foo:	nop
 	fi
 	;;
     esac
+    case $target_os in
+       darwin2[[0-9]]* | darwin19*)
+        gcc_GAS_CHECK_FEATURE([llvm assembler x86-pad-for-align option],
+          gcc_cv_as_mllvm_x86_pad_for_align,,
+          [-mllvm -x86-pad-for-align=false], [.text],,
+          [AC_DEFINE(HAVE_AS_MLLVM_X86_PAD_FOR_ALIGN, 1,
+	    [Define if your Mac OS X assembler supports -mllvm -x86-pad-for-align=false.])])
+       ;;
+    esac
 
     gcc_GAS_CHECK_FEATURE([-xbrace_comment], gcc_cv_as_ix86_xbrace_comment,,
       [-xbrace_comment=no], [.text],,

@@ -27082,6 +27082,41 @@ $as_echo "$as_me: WARNING: LTO for $target requires binutils >= 2.20.1, but vers
 	fi
 	;;
     esac
+    case $target_os in
+       darwin2[0-9]* | darwin19*)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for llvm assembler x86-pad-for-align option" >&5
+$as_echo_n "checking assembler for llvm assembler x86-pad-for-align option... " >&6; }
+if ${gcc_cv_as_mllvm_x86_pad_for_align+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_mllvm_x86_pad_for_align=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mllvm -x86-pad-for-align=false -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_mllvm_x86_pad_for_align=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_mllvm_x86_pad_for_align" >&5
+$as_echo "$gcc_cv_as_mllvm_x86_pad_for_align" >&6; }
+if test $gcc_cv_as_mllvm_x86_pad_for_align = yes; then
+
+$as_echo "#define HAVE_AS_MLLVM_X86_PAD_FOR_ALIGN 1" >>confdefs.h
+
+fi
+
+       ;;
+    esac
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -xbrace_comment" >&5
 $as_echo_n "checking assembler for -xbrace_comment... " >&6; }

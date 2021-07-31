@@ -125,10 +125,18 @@ along with GCC; see the file COPYING3.  If not see
   %{mfentry*:%eDarwin does not support -mfentry or associated options}" \
   DARWIN_CC1_SPEC
 
+/* This is a workaround for a tool bug: see PR100340.  */
+
+#ifdef HAVE_AS_MLLVM_X86_PAD_FOR_ALIGN
+#define EXTRA_ASM_OPTS " -mllvm -x86-pad-for-align=false"
+#else
+#define EXTRA_ASM_OPTS ""
+#endif
+
 #undef ASM_SPEC
 #define ASM_SPEC "-arch %(darwin_arch) \
   " ASM_OPTIONS " -force_cpusubtype_ALL \
-  %{static}" ASM_MMACOSX_VERSION_MIN_SPEC
+  %{static}" ASM_MMACOSX_VERSION_MIN_SPEC EXTRA_ASM_OPTS
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
