@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-additional-options "-march=pentiumpro -mregparm=3" { target ia32 } } */
+/* { dg-additional-options "-march=core2 -mregparm=3" { target ia32 } } */
 
 int foo(int x)
 {
