@@ -97,10 +97,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 11.1.0\n"
+"Project-Id-Version: gcc 11.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-07-26 15:21+0000\n"
-"PO-Revision-Date: 2021-04-29 11:08+0200\n"
+"PO-Revision-Date: 2021-07-31 10:57+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -3546,10 +3546,8 @@ msgid "address offset not a constant"
 msgstr "le décalage d'adresse n'est pas une constante"
 
 #: c/c-objc-common.c:190
-#, fuzzy
-#| msgid "{anonymous}"
 msgid "{erroneous}"
-msgstr "{anonyme}"
+msgstr "{erroné}"
 
 #: c/c-objc-common.c:231
 msgid "aka"
@@ -12918,28 +12916,24 @@ msgid "Fuse certain integer operations together for better performance on power1
 msgstr "Fusionner certaines opérations sur des entiers pour une meilleure performance sur un power10."
 
 #: config/rs6000/rs6000.opt:503
-#, fuzzy, no-c-format
-#| msgid "Fuse certain operations together for better performance on power9."
+#, no-c-format
 msgid "Fuse pairs of scalar or vector logical operations together for better performance on power10."
-msgstr "Fusionner certaines opérations pour une meilleure performance sur un power9."
+msgstr "Fusionner les paires de scalaires ou les opérations logiques vectorielles pour une meilleure performance sur un power10."
 
 #: config/rs6000/rs6000.opt:507
-#, fuzzy, no-c-format
-#| msgid "Fuse certain operations together for better performance on power9."
+#, no-c-format
 msgid "Fuse scalar logical op with add/subf for better performance on power10."
-msgstr "Fusionner certaines opérations pour une meilleure performance sur un power9."
+msgstr "Fusionner les opérations logiques scalaires avec add/subf pour une meilleure performance sur un power10."
 
 #: config/rs6000/rs6000.opt:511
-#, fuzzy, no-c-format
-#| msgid "Fuse certain integer operations together for better performance on power10."
+#, no-c-format
 msgid "Fuse scalar add/subf with logical op for better performance on power10."
-msgstr "Fusionner certaines opérations sur des entiers pour une meilleure performance sur un power10."
+msgstr "Fusionner add/subf scalaires avec une opération logique pour une meilleure performance sur un power10."
 
 #: config/rs6000/rs6000.opt:515
-#, fuzzy, no-c-format
-#| msgid "Fuse certain operations together for better performance on power9."
+#, no-c-format
 msgid "Fuse dependent pairs of add or vaddudm instructions for better performance on power10."
-msgstr "Fusionner certaines opérations pour une meilleure performance sur un power9."
+msgstr "Fusionner les paires dépendantes des instructions add ou vaddudm pour une meilleure performance sur un power10."
 
 #: config/rs6000/rs6000.opt:519
 #, no-c-format
@@ -13034,14 +13028,12 @@ msgstr "Générer (ne pas générer) les instructions MMA."
 #: config/rs6000/rs6000.opt:637
 #, no-c-format
 msgid "Enable instructions that guard against return-oriented programming attacks."
-msgstr ""
+msgstr "Activer les instructions qui protègent contre les attaques de type « Return-Oriented Programming »"
 
-# L'état ARM 32 bits (jeu d'instruction complet) est l'état opposé à Thumb (jeu d'instructions réduit et plus compact).
 #: config/rs6000/rs6000.opt:641
-#, fuzzy, no-c-format
-#| msgid "Generate code in 32 bit ARM state."
+#, no-c-format
 msgid "Generate code that will run in privileged state."
-msgstr "Générer du code dans l'état ARM 32 bits."
+msgstr "Générer du code qui s'exécutera dans l'état privilégié."
 
 #: config/rs6000/sysv4.opt:24
 #, no-c-format
@@ -19190,10 +19182,9 @@ msgid "Maximal estimated growth of function body caused by early inlining of sin
 msgstr "Croissance maximale estimée du corps d'une fonction causée par la première vague de mises en ligne des appels uniques."
 
 #: params.opt:131
-#, fuzzy, no-c-format
-#| msgid "maximum number of basic blocks per function to be analyzed by Graphite."
+#, no-c-format
 msgid "Maximum number of basic blocks before EVRP uses a sparse cache."
-msgstr "le nombre maximum de blocs de base par fonction à analyser par Graphite."
+msgstr "Le nombre maximum de blocs de base avant que EVRP utilise une cache peu dense."
 
 #: params.opt:135
 #, no-c-format
@@ -38895,10 +38886,9 @@ msgstr "erreur interne: pour la fonction interne %qs, l'argument %d a le type %q
 #. We can't check this in rs6000_option_override_internal since
 #. DEFAULT_ABI isn't established yet.
 #: config/rs6000/rs6000-logue.c:732
-#, fuzzy, gcc-internal-format
-#| msgid "Use the ELFv2 ABI."
+#, gcc-internal-format
 msgid "%qs requires the ELFv2 ABI"
-msgstr "Utiliser l'ABI ELFv2."
+msgstr "%qs exige l'ABI ELFv2"
 
 #: config/rs6000/rs6000-logue.c:1719
 #, gcc-internal-format
@@ -53864,10 +53854,9 @@ msgid "unnamed scoped enum is not allowed"
 msgstr "un enum fortement typé sans nom n'est pas permis"
 
 #: cp/parser.c:19954
-#, fuzzy, gcc-internal-format
-#| msgid "types may not be defined in casts"
+#, gcc-internal-format
 msgid "types may not be defined in enum-base"
-msgstr "les types ne peuvent pas être définis dans les transtypages"
+msgstr "les types ne peuvent pas être définis dans la base d'un enum"
 
 #: cp/parser.c:19999
 #, gcc-internal-format
@@ -60626,10 +60615,9 @@ msgid "%qs argument of %qs intrinsic at %L is not a valid dimension index"
 msgstr "L'argument %qs de l'intrinsèque %qs à %L n'est pas un index de dimension valide"
 
 #: fortran/check.c:5704
-#, fuzzy, gcc-internal-format
-#| msgid "%qs argument of %qs intrinsic at %L must be default real"
+#, gcc-internal-format
 msgid "%qs argument of %qs intrinsic at %L must have length at least 1"
-msgstr "L'argument %qs de l'intrinsèque %qs à %L doit être un réel par défaut"
+msgstr "L'argument %qs de l'intrinsèque %qs à %L doit avoir une longueur d'au moins 1"
 
 #: fortran/check.c:5968
 #, gcc-internal-format, gfc-internal-format
@@ -70350,10 +70338,9 @@ msgid "Alternate RETURN statement at %L requires a SCALAR-INTEGER return specifi
 msgstr "L'instruction RETURN alternatif à %L requiert un spécificateur de retour SCALAR-INTEGER"
 
 #: fortran/resolve.c:11943
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected initialization expression in CASE at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected intrinsic assignment in OMP WORKSHARE at %L"
-msgstr "Expression d'initialisation attendue dans CASE à %C"
+msgstr "Assignation intrinsèque attendue dans OMP WORKSHARE à %L"
 
 #: fortran/resolve.c:11977
 #, gcc-internal-format, gfc-internal-format
