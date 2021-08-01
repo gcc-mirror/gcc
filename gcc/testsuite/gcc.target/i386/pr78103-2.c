@@ -4,7 +4,7 @@
 /* { dg-final { scan-assembler-not {\mmovl\M} } } */
 /* { dg-final { scan-assembler-not {\mxor[lq]\M} } } */
 /* { dg-final { scan-assembler-not {\msubl\M} } } */
-/* { dg-final { scan-assembler {\m(leal|addl)\M} } } */
+/* { dg-final { scan-assembler {\m(leal|addl|incl)\M} } } */
 
 unsigned int
 foo (unsigned int x)

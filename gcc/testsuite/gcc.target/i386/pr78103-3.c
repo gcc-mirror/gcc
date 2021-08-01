@@ -5,7 +5,8 @@
 /* { dg-final { scan-assembler-not {\mmovslq\M} } } */
 /* { dg-final { scan-assembler-not {\mxor[lq]\M} } } */
 /* { dg-final { scan-assembler-not {\msubq\M} } } */
-/* { dg-final { scan-assembler {\m(leaq|addq)\M} } } */
+/* { dg-final { scan-assembler {\m(leaq|addq|incq)\M} { target { ! x32 } } } } */
+/* { dg-final { scan-assembler {\m(leal|addl|incl)\M} { target x32 } } } */
 
 unsigned long long
 foo (unsigned int x)
