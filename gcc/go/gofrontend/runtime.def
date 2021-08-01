@@ -489,6 +489,12 @@ DEF_GO_RUNTIME(ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1",
                P3(POINTER, UINT8, INT32),
                R1(UINT8))
 
+// Check the length of an unsafe slice.
+DEF_GO_RUNTIME(UNSAFESLICE, "runtime.unsafeslice",
+	       P3(TYPE, POINTER, INT), R0())
+DEF_GO_RUNTIME(UNSAFESLICE64, "runtime.unsafeslice64",
+	       P3(TYPE, POINTER, INT64), R0())
+
 // Panic reporting a division by zero.
 DEF_GO_RUNTIME(PANIC_DIVIDE, "runtime.panicdivide", P0(), R0())
 

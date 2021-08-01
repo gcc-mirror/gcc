@@ -8252,12 +8252,16 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
     this->code_ = BUILTIN_REAL;
   else if (name == "recover")
     this->code_ = BUILTIN_RECOVER;
+  else if (name == "Add")
+    this->code_ = BUILTIN_ADD;
   else if (name == "Alignof")
     this->code_ = BUILTIN_ALIGNOF;
   else if (name == "Offsetof")
     this->code_ = BUILTIN_OFFSETOF;
   else if (name == "Sizeof")
     this->code_ = BUILTIN_SIZEOF;
+  else if (name == "Slice")
+    this->code_ = BUILTIN_SLICE;
   else
     go_unreachable();
 }
@@ -8693,6 +8697,119 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
           }
 
         return Runtime::make_call(code, loc, 3, e1, e2, e3);
+      }
+
+    case BUILTIN_ADD:
+      {
+	Expression* ptr = this->args()->front();
+	Type* uintptr_type = Type::lookup_integer_type("uintptr");
+	ptr = Expression::make_cast(uintptr_type, ptr, loc);
+	Expression* len = this->args()->back();
+	len = Expression::make_cast(uintptr_type, len, loc);
+	Expression* add = Expression::make_binary(OPERATOR_PLUS, ptr, len,
+						  loc);
+	return Expression::make_cast(this->args()->front()->type(), add, loc);
+      }
+
+    case BUILTIN_SLICE:
+      {
+	Expression* ptr = this->args()->front();
+	Temporary_statement* ptr_temp = NULL;
+	if (!ptr->is_multi_eval_safe())
+	  {
+	    ptr_temp = Statement::make_temporary(NULL, ptr, loc);
+	    inserter->insert(ptr_temp);
+	    ptr = Expression::make_temporary_reference(ptr_temp, loc);
+	  }
+
+	Expression* len = this->args()->back();
+	Temporary_statement* len_temp = NULL;
+	if (!len->is_multi_eval_safe())
+	  {
+	    len_temp = Statement::make_temporary(NULL, len, loc);
+	    inserter->insert(len_temp);
+	    len = Expression::make_temporary_reference(len_temp, loc);
+	  }
+
+	bool fits_in_int;
+	Numeric_constant nc;
+	if (this->args()->back()->numeric_constant_value(&nc))
+	  {
+	    // We gave an error for constants that don't fit in int in
+	    // check_types.
+	    fits_in_int = true;
+	  }
+	else
+	  {
+	    Integer_type* itype = this->args()->back()->type()->integer_type();
+	    go_assert(itype != NULL);
+	    int ebits = itype->bits();
+	    int intbits =
+	      Type::lookup_integer_type("int")->integer_type()->bits();
+
+	    // We can treat ebits == intbits as small even for an
+	    // unsigned integer type, because we will convert the
+	    // value to int and then reject it in the runtime if it is
+	    // negative.
+
+	    fits_in_int = ebits <= intbits;
+	  }
+
+	Runtime::Function code = (fits_in_int
+				  ? Runtime::UNSAFESLICE
+				  : Runtime::UNSAFESLICE64);
+	Expression* td =
+	  Expression::make_type_descriptor(ptr->type()->points_to(), loc);
+	Expression* check = Runtime::make_call(code, loc, 3,
+					       td, ptr, len);
+
+	if (ptr_temp == NULL)
+	  ptr = ptr->copy();
+	else
+	  ptr = Expression::make_temporary_reference(ptr_temp, loc);
+	Expression* nil = Expression::make_nil(loc);
+	nil = Expression::make_cast(ptr->type(), nil, loc);
+	Expression* is_nil = Expression::make_binary(OPERATOR_EQEQ, ptr, nil,
+						     loc);
+
+	if (len_temp == NULL)
+	  len = len->copy();
+	else
+	  len = Expression::make_temporary_reference(len_temp, loc);
+	Expression* zero = Expression::make_integer_ul(0, len->type(), loc);
+	Expression* is_zero = Expression::make_binary(OPERATOR_EQEQ, len, zero,
+						      loc);
+
+	Expression* cond = Expression::make_binary(OPERATOR_ANDAND, is_nil,
+						   is_zero, loc);
+
+	Type* slice_type = Type::make_array_type(ptr->type()->points_to(),
+						 NULL);
+	nil = Expression::make_nil(loc);
+	Expression* nil_slice = Expression::make_cast(slice_type, nil, loc);
+
+	if (ptr_temp == NULL)
+	  ptr = ptr->copy();
+	else
+	  ptr = Expression::make_temporary_reference(ptr_temp, loc);
+
+	if (len_temp == NULL)
+	  len = len->copy();
+	else
+	  len = Expression::make_temporary_reference(len_temp, loc);
+
+	Expression* cap;
+	if (len_temp == NULL)
+	  cap = len->copy();
+	else
+	  cap = Expression::make_temporary_reference(len_temp, loc);
+
+	Expression* slice = Expression::make_slice_value(slice_type, ptr,
+							 len, cap, loc);
+
+	slice = Expression::make_conditional(cond, nil_slice, slice, loc);
+
+	return Expression::make_compound(check, slice, loc);
       }
     }
 
@@ -9781,9 +9898,11 @@ Builtin_call_expression::do_discarding_value()
     case BUILTIN_MAKE:
     case BUILTIN_NEW:
     case BUILTIN_REAL:
+    case BUILTIN_ADD:
     case BUILTIN_ALIGNOF:
     case BUILTIN_OFFSETOF:
     case BUILTIN_SIZEOF:
+    case BUILTIN_SLICE:
       this->unused_value_error();
       return false;
 
@@ -9890,6 +10009,18 @@ Builtin_call_expression::do_type()
 	  t = Type::make_error_type();
 	return t;
       }
+
+    case BUILTIN_ADD:
+      return Type::make_pointer_type(Type::make_void_type());
+
+    case BUILTIN_SLICE:
+      const Expression_list* args = this->args();
+      if (args == NULL || args->size() != 2)
+	return Type::make_error_type();
+      Type* pt = args->front()->type()->points_to();
+      if (pt == NULL)
+	return Type::make_error_type();
+      return Type::make_array_type(pt, NULL);
     }
 }
 
@@ -9951,6 +10082,28 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 	  && args->front()->type()->is_slice_type())
 	trailing_arg_types =
 	  args->front()->type()->array_type()->element_type();
+      is_print = false;
+      break;
+
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
+      // Both unsafe.Add and unsafe.Slice take two arguments, and the
+      // second arguments defaults to "int".
+      if (args != NULL && args->size() == 2)
+	{
+	  if (this->code_ == BUILTIN_SLICE)
+	    args->front()->determine_type_no_context();
+	  else
+	    {
+	      Type* pointer = Type::make_pointer_type(Type::make_void_type());
+	      Type_context subcontext(pointer, false);
+	      args->front()->determine_type(&subcontext);
+	    }
+	  Type* int_type = Type::lookup_integer_type("int");
+	  Type_context subcontext(int_type, false);
+	  args->back()->determine_type(&subcontext);
+	  return;
+	}
       is_print = false;
       break;
 
@@ -10353,6 +10506,78 @@ Builtin_call_expression::do_check_types(Gogo*)
       }
       break;
 
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
+      {
+	Numeric_constant nc;
+	unsigned long v;
+	const Expression_list* args = this->args();
+	if (args == NULL || args->size() < 2)
+	  this->report_error(_("not enough arguments"));
+	else if (args->size() > 2)
+	  this->report_error(_("too many arguments"));
+	else if (args->front()->is_error_expression()
+		 || args->front()->type()->is_error()
+		 || args->back()->is_error_expression()
+		 || args->back()->type()->is_error())
+	  this->set_is_error();
+	else if (args->back()->type()->integer_type() == NULL
+		 && (!args->back()->type()->is_abstract()
+		     || !args->back()->numeric_constant_value(&nc)
+		     || (nc.to_unsigned_long(&v)
+			 == Numeric_constant::NC_UL_NOTINT)))
+	  {
+	    if (this->code_ == BUILTIN_ADD)
+	      go_error_at(args->back()->location(), "non-integer offset");
+	    else
+	      go_error_at(args->back()->location(), "non-integer size");
+	  }
+	else if (this->code_ == BUILTIN_ADD)
+	  {
+	    Type* pointer_type =
+	      Type::make_pointer_type(Type::make_void_type());
+	    std::string reason;
+	    if (!Type::are_assignable(pointer_type, args->front()->type(),
+				      &reason))
+	      {
+		if (reason.empty())
+		  go_error_at(args->front()->location(),
+			      "argument 1 has incompatible type");
+		else
+		  go_error_at(args->front()->location(),
+			      "argument 1 has incompatible type (%s)",
+			      reason.c_str());
+		this->set_is_error();
+	      }
+	  }
+	else
+	  {
+	    if (args->front()->type()->points_to() == NULL)
+	      {
+		go_error_at(args->front()->location(),
+			    "argument 1 must be a pointer");
+		this->set_is_error();
+	      }
+
+	    unsigned int int_bits =
+	      Type::lookup_integer_type("int")->integer_type()->bits();
+
+	    mpz_t ival;
+	    if (args->back()->numeric_constant_value(&nc) && nc.to_int(&ival))
+	      {
+		if (mpz_sgn(ival) < 0
+		    || mpz_sizeinbase(ival, 2) >= int_bits)
+		  {
+		    go_error_at(args->back()->location(),
+				"slice length out of range");
+		    this->set_is_error();
+		  }
+		mpz_clear(ival);
+	      }
+	  }
+      }
+      break;
+
     default:
       go_unreachable();
     }
@@ -10397,6 +10622,8 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
     case BUILTIN_INVALID:
     case BUILTIN_NEW:
     case BUILTIN_MAKE:
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
       go_unreachable();
 
     case BUILTIN_LEN:
