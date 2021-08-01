@@ -1,3 +1,11 @@
+2021-08-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_declaration): Handle OpenMP directives
+	in attribute-declaration.
+
 2021-07-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
