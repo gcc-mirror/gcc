@@ -111,12 +111,10 @@ public:
 				     mappings->get_next_localdef_id (
 				       crate_num));
 
-      // FIXME
-      // AST::TupleField is missing Location info
-      Location field_locus;
       HIR::TupleField translated_field (mapping,
 					std::unique_ptr<HIR::Type> (type), vis,
-					field_locus, field.get_outer_attrs ());
+					field.get_locus (),
+					field.get_outer_attrs ());
       fields.push_back (std::move (translated_field));
       return true;
     });
