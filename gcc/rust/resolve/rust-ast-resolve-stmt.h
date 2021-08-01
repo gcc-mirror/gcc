@@ -131,6 +131,38 @@ public:
     resolver->get_type_scope ().pop ();
   }
 
+  void visit (AST::Union &union_decl) override
+  {
+    auto path = CanonicalPath::new_seg (union_decl.get_node_id (),
+					union_decl.get_identifier ());
+    resolver->get_type_scope ().insert (
+      path, union_decl.get_node_id (), union_decl.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (union_decl.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    NodeId scope_node_id = union_decl.get_node_id ();
+    resolver->get_type_scope ().push (scope_node_id);
+
+    if (union_decl.has_generics ())
+      {
+	for (auto &generic : union_decl.get_generic_params ())
+	  {
+	    ResolveGenericParam::go (generic.get (), union_decl.get_node_id ());
+	  }
+      }
+
+    union_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
+      ResolveType::go (field.get_field_type ().get (),
+		       union_decl.get_node_id ());
+      return true;
+    });
+
+    resolver->get_type_scope ().pop ();
+  }
+
   void visit (AST::Function &function) override
   {
     auto path = ResolveFunctionItemToCanonicalPath::resolve (function);

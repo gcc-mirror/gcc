@@ -159,7 +159,8 @@ public:
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
-			   struct_decl.get_identifier (), true,
+			   struct_decl.get_identifier (),
+			   TyTy::ADTType::ADTKind::TUPLE_STRUCT,
 			   std::move (fields), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
@@ -209,10 +210,63 @@ public:
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
-			   struct_decl.get_identifier (), false,
+			   struct_decl.get_identifier (),
+			   TyTy::ADTType::ADTKind::STRUCT_STRUCT,
 			   std::move (fields), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
+    infered = type;
+  }
+
+  void visit (HIR::Union &union_decl) override
+  {
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
+    if (union_decl.has_generics ())
+      {
+	for (auto &generic_param : union_decl.get_generic_params ())
+	  {
+	    switch (generic_param.get ()->get_kind ())
+	      {
+	      case HIR::GenericParam::GenericKind::LIFETIME:
+		// Skipping Lifetime completely until better handling.
+		break;
+
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  auto param_type
+		    = TypeResolveGenericParam::Resolve (generic_param.get ());
+		  context->insert_type (generic_param->get_mappings (),
+					param_type);
+
+		  substitutions.push_back (TyTy::SubstitutionParamMapping (
+		    static_cast<HIR::TypeParam &> (*generic_param),
+		    param_type));
+		}
+		break;
+	      }
+	  }
+      }
+
+    std::vector<TyTy::StructFieldType *> variants;
+    union_decl.iterate ([&] (HIR::StructField &variant) mutable -> bool {
+      TyTy::BaseType *variant_type
+	= TypeCheckType::Resolve (variant.get_field_type ().get ());
+      TyTy::StructFieldType *ty_variant
+	= new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
+				     variant.get_field_name (), variant_type);
+      variants.push_back (ty_variant);
+      context->insert_type (variant.get_mappings (),
+			    ty_variant->get_field_type ());
+      return true;
+    });
+
+    TyTy::BaseType *type
+      = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),
+			   mappings->get_next_hir_id (),
+			   union_decl.get_identifier (),
+			   TyTy::ADTType::ADTKind::UNION, std::move (variants),
+			   std::move (substitutions));
+
+    context->insert_type (union_decl.get_mappings (), type);
     infered = type;
   }
 

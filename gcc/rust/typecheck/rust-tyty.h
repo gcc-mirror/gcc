@@ -855,7 +855,15 @@ protected:
 class ADTType : public BaseType, public SubstitutionRef
 {
 public:
-  ADTType (HirId ref, std::string identifier, bool is_tuple,
+  enum ADTKind
+  {
+    STRUCT_STRUCT,
+    TUPLE_STRUCT,
+    UNION,
+    // ENUM ?
+  };
+
+  ADTType (HirId ref, std::string identifier, ADTKind adt_kind,
 	   std::vector<StructFieldType *> fields,
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
@@ -863,10 +871,10 @@ public:
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ADT, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
-      identifier (identifier), fields (fields), is_tuple (is_tuple)
+      identifier (identifier), fields (fields), adt_kind (adt_kind)
   {}
 
-  ADTType (HirId ref, HirId ty_ref, std::string identifier, bool is_tuple,
+  ADTType (HirId ref, HirId ty_ref, std::string identifier, ADTKind adt_kind,
 	   std::vector<StructFieldType *> fields,
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
@@ -874,10 +882,12 @@ public:
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ADT, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
-      identifier (identifier), fields (fields), is_tuple (is_tuple)
+      identifier (identifier), fields (fields), adt_kind (adt_kind)
   {}
 
-  bool get_is_tuple () { return is_tuple; }
+  ADTKind get_adt_kind () { return adt_kind; }
+  bool is_tuple_struct () { return adt_kind == TUPLE_STRUCT; }
+  bool is_union () { return adt_kind == UNION; }
 
   bool is_unit () const override { return this->fields.empty (); }
 
@@ -964,7 +974,7 @@ public:
 private:
   std::string identifier;
   std::vector<StructFieldType *> fields;
-  bool is_tuple;
+  ADTType::ADTKind adt_kind;
 };
 
 class FnType : public BaseType, public SubstitutionRef

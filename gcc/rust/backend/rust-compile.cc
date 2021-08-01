@@ -79,7 +79,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
       });
 
       translated
-	= ctx->get_backend ()->constructor_expression (type, vals,
+	= ctx->get_backend ()->constructor_expression (type, vals, -1,
 						       expr.get_locus ());
     }
   else

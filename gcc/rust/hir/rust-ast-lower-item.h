@@ -193,6 +193,57 @@ public:
 			       struct_decl.get_locus ());
   }
 
+  void visit (AST::Union &union_decl) override
+  {
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (union_decl.has_generics ())
+      {
+	generic_params
+	  = lower_generic_params (union_decl.get_generic_params ());
+      }
+
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    std::vector<HIR::StructField> variants;
+    union_decl.iterate ([&] (AST::StructField &variant) mutable -> bool {
+      HIR::Visibility vis = HIR::Visibility::create_public ();
+      HIR::Type *type
+	= ASTLoweringType::translate (variant.get_field_type ().get ());
+
+      auto crate_num = mappings->get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, variant.get_node_id (),
+				     mappings->get_next_hir_id (crate_num),
+				     mappings->get_next_localdef_id (
+				       crate_num));
+
+      HIR::StructField translated_variant (mapping, variant.get_field_name (),
+					   std::unique_ptr<HIR::Type> (type),
+					   vis, variant.get_locus (),
+					   variant.get_outer_attrs ());
+      variants.push_back (std::move (translated_variant));
+      return true;
+    });
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, union_decl.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated
+      = new HIR::Union (mapping, union_decl.get_identifier (), vis,
+			std::move (generic_params), std::move (where_clause),
+			std::move (variants), union_decl.get_outer_attrs (),
+			union_decl.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       union_decl.get_locus ());
+  }
+
   void visit (AST::StaticItem &var) override
   {
     HIR::Visibility vis = HIR::Visibility::create_public ();
