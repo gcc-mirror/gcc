@@ -180,7 +180,17 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
   // check the arguments are all assigned and fix up the ordering
   if (fields_assigned.size () != struct_path_resolved->num_fields ())
     {
-      if (!struct_expr.has_struct_base ())
+      if (struct_def->is_union ())
+	{
+	  if (fields_assigned.size () != 1 || struct_expr.has_struct_base ())
+	    {
+	      rust_error_at (
+		struct_expr.get_locus (),
+		"union must have exactly one field variant assigned");
+	      return;
+	    }
+	}
+      else if (!struct_expr.has_struct_base ())
 	{
 	  rust_error_at (struct_expr.get_locus (),
 			 "constructor is missing fields");
@@ -236,23 +246,40 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	}
     }
 
-  // everything is ok, now we need to ensure all field values are ordered
-  // correctly. The GIMPLE backend uses a simple algorithm that assumes each
-  // assigned field in the constructor is in the same order as the field in
-  // the type
-
-  std::vector<std::unique_ptr<HIR::StructExprField> > expr_fields
-    = struct_expr.get_fields_as_owner ();
-  for (auto &f : expr_fields)
-    f.release ();
-
-  std::vector<std::unique_ptr<HIR::StructExprField> > ordered_fields;
-  for (size_t i = 0; i < adtFieldIndexToField.size (); i++)
+  if (struct_def->is_union ())
     {
-      ordered_fields.push_back (
-	std::unique_ptr<HIR::StructExprField> (adtFieldIndexToField[i]));
+      // There is exactly one field in this constructor, we need to
+      // figure out the field index to make sure we initialize the
+      // right union field.
+      for (size_t i = 0; i < adtFieldIndexToField.size (); i++)
+	{
+	  if (adtFieldIndexToField[i])
+	    {
+	      struct_expr.union_index = i;
+	      break;
+	    }
+	}
+      rust_assert (struct_expr.union_index != -1);
     }
-  struct_expr.set_fields_as_owner (std::move (ordered_fields));
+  else
+    {
+      // everything is ok, now we need to ensure all field values are ordered
+      // correctly. The GIMPLE backend uses a simple algorithm that assumes each
+      // assigned field in the constructor is in the same order as the field in
+      // the type
+      std::vector<std::unique_ptr<HIR::StructExprField> > expr_fields
+	= struct_expr.get_fields_as_owner ();
+      for (auto &f : expr_fields)
+	f.release ();
+
+      std::vector<std::unique_ptr<HIR::StructExprField> > ordered_fields;
+      for (size_t i = 0; i < adtFieldIndexToField.size (); i++)
+	{
+	  ordered_fields.push_back (
+	    std::unique_ptr<HIR::StructExprField> (adtFieldIndexToField[i]));
+	}
+      struct_expr.set_fields_as_owner (std::move (ordered_fields));
+    }
 
   resolved = struct_def;
 }

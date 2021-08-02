@@ -178,6 +178,9 @@ public:
   // Get a struct type.
   virtual Btype *struct_type (const std::vector<Btyped_identifier> &fields) = 0;
 
+  // Get a union type.
+  virtual Btype *union_type (const std::vector<Btyped_identifier> &fields) = 0;
+
   // Get an array type.
   virtual Btype *array_type (Btype *element_type, Bexpression *length) = 0;
 
@@ -424,7 +427,7 @@ public:
   // corresponding fields in BTYPE.
   virtual Bexpression *
   constructor_expression (Btype *btype, const std::vector<Bexpression *> &vals,
-			  Location)
+			  int, Location)
     = 0;
 
   // Return an expression that constructs an array of BTYPE with INDEXES and

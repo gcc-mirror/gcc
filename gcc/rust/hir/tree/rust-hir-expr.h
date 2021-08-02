@@ -1449,6 +1449,10 @@ public:
   // FIXME make unique_ptr
   StructBase *struct_base;
 
+  // For unions there is just one field, the index
+  // is set when type checking
+  int union_index = -1;
+
   std::string as_string () const override;
 
   bool has_struct_base () const { return struct_base != nullptr; }
@@ -1467,7 +1471,8 @@ public:
 
   // copy constructor with vector clone
   StructExprStructFields (StructExprStructFields const &other)
-    : StructExprStruct (other), struct_base (other.struct_base)
+    : StructExprStruct (other), struct_base (other.struct_base),
+      union_index (other.union_index)
   {
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)
@@ -1479,6 +1484,7 @@ public:
   {
     StructExprStruct::operator= (other);
     struct_base = other.struct_base;
+    union_index = other.union_index;
 
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)

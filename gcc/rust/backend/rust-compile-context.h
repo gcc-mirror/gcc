@@ -417,9 +417,13 @@ public:
 	fields.push_back (std::move (f));
       }
 
-    Btype *struct_type_record = ctx->get_backend ()->struct_type (fields);
+    Btype *type_record;
+    if (type.is_union ())
+      type_record = ctx->get_backend ()->union_type (fields);
+    else
+      type_record = ctx->get_backend ()->struct_type (fields);
     Btype *named_struct
-      = ctx->get_backend ()->named_type (type.get_name (), struct_type_record,
+      = ctx->get_backend ()->named_type (type.get_name (), type_record,
 					 ctx->get_mappings ()->lookup_location (
 					   type.get_ty_ref ()));
 

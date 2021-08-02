@@ -80,7 +80,7 @@ public:
       }
 
     translated
-      = ctx->get_backend ()->constructor_expression (tuple_type, vals,
+      = ctx->get_backend ()->constructor_expression (tuple_type, vals, -1,
 						     expr.get_locus ());
   }
 
@@ -595,6 +595,7 @@ public:
 
     translated
       = ctx->get_backend ()->constructor_expression (type, vals,
+						     struct_expr.union_index,
 						     struct_expr.get_locus ());
   }
 

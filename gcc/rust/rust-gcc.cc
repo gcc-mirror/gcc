@@ -265,6 +265,8 @@ public:
 
   Btype *struct_type (const std::vector<Btyped_identifier> &);
 
+  Btype *union_type (const std::vector<Btyped_identifier> &);
+
   Btype *array_type (Btype *, Bexpression *);
 
   Btype *placeholder_pointer_type (const std::string &, Location, bool);
@@ -377,7 +379,7 @@ public:
 					Location);
 
   Bexpression *constructor_expression (Btype *,
-				       const std::vector<Bexpression *> &,
+				       const std::vector<Bexpression *> &, int,
 				       Location);
 
   Bexpression *array_constructor_expression (Btype *,
@@ -531,7 +533,7 @@ private:
 
   Bfunction *make_function (tree t) { return new Bfunction (t); }
 
-  Btype *fill_in_struct (Btype *, const std::vector<Btyped_identifier> &);
+  Btype *fill_in_fields (Btype *, const std::vector<Btyped_identifier> &);
 
   Btype *fill_in_array (Btype *, Btype *, Bexpression *);
 
@@ -1145,14 +1147,23 @@ Gcc_backend::function_ptr_type (Btype *result_type,
 Btype *
 Gcc_backend::struct_type (const std::vector<Btyped_identifier> &fields)
 {
-  return this->fill_in_struct (this->make_type (make_node (RECORD_TYPE)),
+  return this->fill_in_fields (this->make_type (make_node (RECORD_TYPE)),
 			       fields);
 }
 
-// Fill in the fields of a struct type.
+// Make a union type.
 
 Btype *
-Gcc_backend::fill_in_struct (Btype *fill,
+Gcc_backend::union_type (const std::vector<Btyped_identifier> &fields)
+{
+  return this->fill_in_fields (this->make_type (make_node (UNION_TYPE)),
+			       fields);
+}
+
+// Fill in the fields of a struct or union type.
+
+Btype *
+Gcc_backend::fill_in_fields (Btype *fill,
 			     const std::vector<Btyped_identifier> &fields)
 {
   tree fill_tree = fill->get_tree ();
@@ -1311,7 +1322,7 @@ Gcc_backend::set_placeholder_struct_type (
 {
   tree t = placeholder->get_tree ();
   gcc_assert (TREE_CODE (t) == RECORD_TYPE && TYPE_FIELDS (t) == NULL_TREE);
-  Btype *r = this->fill_in_struct (placeholder, fields);
+  Btype *r = this->fill_in_fields (placeholder, fields);
 
   if (TYPE_NAME (t) != NULL_TREE)
     {
@@ -1321,7 +1332,7 @@ Gcc_backend::set_placeholder_struct_type (
       DECL_ORIGINAL_TYPE (TYPE_NAME (t)) = copy;
       TYPE_SIZE (copy) = NULL_TREE;
       Btype *bc = this->make_type (copy);
-      this->fill_in_struct (bc, fields);
+      this->fill_in_fields (bc, fields);
       delete bc;
     }
 
@@ -1758,7 +1769,8 @@ Gcc_backend::struct_field_expression (Bexpression *bstruct, size_t index,
   if (struct_tree == error_mark_node
       || TREE_TYPE (struct_tree) == error_mark_node)
     return this->error_expression ();
-  gcc_assert (TREE_CODE (TREE_TYPE (struct_tree)) == RECORD_TYPE);
+  gcc_assert (TREE_CODE (TREE_TYPE (struct_tree)) == RECORD_TYPE
+	      || TREE_CODE (TREE_TYPE (struct_tree)) == UNION_TYPE);
   tree field = TYPE_FIELDS (TREE_TYPE (struct_tree));
   if (field == NULL_TREE)
     {
@@ -2041,7 +2053,7 @@ Gcc_backend::lazy_boolean_expression (LazyBooleanOperator op, Bexpression *left,
 Bexpression *
 Gcc_backend::constructor_expression (Btype *btype,
 				     const std::vector<Bexpression *> &vals,
-				     Location location)
+				     int union_index, Location location)
 {
   tree type_tree = btype->get_tree ();
   if (type_tree == error_mark_node)
@@ -2053,11 +2065,15 @@ Gcc_backend::constructor_expression (Btype *btype,
   tree sink = NULL_TREE;
   bool is_constant = true;
   tree field = TYPE_FIELDS (type_tree);
-  for (std::vector<Bexpression *>::const_iterator p = vals.begin ();
-       p != vals.end (); ++p, field = DECL_CHAIN (field))
+  if (union_index != -1)
     {
-      gcc_assert (field != NULL_TREE);
-      tree val = (*p)->get_tree ();
+      gcc_assert (TREE_CODE (type_tree) == UNION_TYPE);
+      tree val = vals.front ()->get_tree ();
+      for (int i = 0; i < union_index; i++)
+	{
+	  gcc_assert (field != NULL_TREE);
+	  field = DECL_CHAIN (field);
+	}
       if (TREE_TYPE (field) == error_mark_node || val == error_mark_node
 	  || TREE_TYPE (val) == error_mark_node)
 	return this->error_expression ();
@@ -2070,17 +2086,49 @@ Gcc_backend::constructor_expression (Btype *btype,
 	  // would have been added as a map element for its
 	  // side-effects and construct an empty map.
 	  append_to_statement_list (val, &sink);
-	  continue;
 	}
-
-      constructor_elt empty = {NULL, NULL};
-      constructor_elt *elt = init->quick_push (empty);
-      elt->index = field;
-      elt->value = this->convert_tree (TREE_TYPE (field), val, location);
-      if (!TREE_CONSTANT (elt->value))
-	is_constant = false;
+      else
+	{
+	  constructor_elt empty = {NULL, NULL};
+	  constructor_elt *elt = init->quick_push (empty);
+	  elt->index = field;
+	  elt->value = this->convert_tree (TREE_TYPE (field), val, location);
+	  if (!TREE_CONSTANT (elt->value))
+	    is_constant = false;
+	}
     }
-  gcc_assert (field == NULL_TREE);
+  else
+    {
+      gcc_assert (TREE_CODE (type_tree) == RECORD_TYPE);
+      for (std::vector<Bexpression *>::const_iterator p = vals.begin ();
+	   p != vals.end (); ++p, field = DECL_CHAIN (field))
+	{
+	  gcc_assert (field != NULL_TREE);
+	  tree val = (*p)->get_tree ();
+	  if (TREE_TYPE (field) == error_mark_node || val == error_mark_node
+	      || TREE_TYPE (val) == error_mark_node)
+	    return this->error_expression ();
+
+	  if (int_size_in_bytes (TREE_TYPE (field)) == 0)
+	    {
+	      // GIMPLE cannot represent indices of zero-sized types so
+	      // trying to construct a map with zero-sized keys might lead
+	      // to errors.  Instead, we evaluate each expression that
+	      // would have been added as a map element for its
+	      // side-effects and construct an empty map.
+	      append_to_statement_list (val, &sink);
+	      continue;
+	    }
+
+	  constructor_elt empty = {NULL, NULL};
+	  constructor_elt *elt = init->quick_push (empty);
+	  elt->index = field;
+	  elt->value = this->convert_tree (TREE_TYPE (field), val, location);
+	  if (!TREE_CONSTANT (elt->value))
+	    is_constant = false;
+	}
+      gcc_assert (field == NULL_TREE);
+    }
   tree ret = build_constructor (type_tree, init);
   if (is_constant)
     TREE_CONSTANT (ret) = 1;
@@ -2781,6 +2829,7 @@ Gcc_backend::convert_tree (tree type_tree, tree expr_tree, Location location)
       || SCALAR_FLOAT_TYPE_P (type_tree) || COMPLEX_FLOAT_TYPE_P (type_tree))
     return fold_convert_loc (location.gcc_location (), type_tree, expr_tree);
   else if (TREE_CODE (type_tree) == RECORD_TYPE
+	   || TREE_CODE (type_tree) == UNION_TYPE
 	   || TREE_CODE (type_tree) == ARRAY_TYPE)
     {
       gcc_assert (int_size_in_bytes (type_tree)

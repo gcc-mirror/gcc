@@ -1989,9 +1989,25 @@ public:
   Union (Union &&other) = default;
   Union &operator= (Union &&other) = default;
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+
+  Identifier get_identifier () const { return union_name; }
+
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  void iterate (std::function<bool (StructField &)> cb)
+  {
+    for (auto &variant : variants)
+      {
+	if (!cb (variant))
+	  return;
+      }
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

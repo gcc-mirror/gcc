@@ -537,7 +537,7 @@ ADTType::clone ()
   for (auto &f : fields)
     cloned_fields.push_back ((StructFieldType *) f->clone ());
 
-  return new ADTType (get_ref (), get_ty_ref (), identifier, get_is_tuple (),
+  return new ADTType (get_ref (), get_ty_ref (), identifier, get_adt_kind (),
 		      cloned_fields, clone_substs (), used_arguments,
 		      get_combined_refs ());
 }
@@ -1999,7 +1999,7 @@ PlaceholderType::clone ()
 void
 TypeCheckCallExpr::visit (ADTType &type)
 {
-  if (!type.get_is_tuple ())
+  if (!type.is_tuple_struct ())
     {
       rust_error_at (
 	call.get_locus (),

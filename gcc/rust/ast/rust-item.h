@@ -2489,6 +2489,15 @@ public:
   std::vector<StructField> &get_variants () { return variants; }
   const std::vector<StructField> &get_variants () const { return variants; }
 
+  void iterate (std::function<bool (StructField &)> cb)
+  {
+    for (auto &variant : variants)
+      {
+	if (!cb (variant))
+	  return;
+      }
+  }
+
   std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
   {
     return generic_params;
@@ -2504,6 +2513,8 @@ public:
     rust_assert (has_where_clause ());
     return where_clause;
   }
+
+  Identifier get_identifier () const { return union_name; }
 
 protected:
   /* Use covariance to implement clone function as returning this object

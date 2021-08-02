@@ -48,6 +48,12 @@ public:
 	    + "\n";
   }
 
+  void visit (HIR::Union &union_decl) override
+  {
+    dump
+      += indent () + "union " + type_string (union_decl.get_mappings ()) + "\n";
+  }
+
   void visit (HIR::ImplBlock &impl_block) override
   {
     dump += indent () + "impl "
