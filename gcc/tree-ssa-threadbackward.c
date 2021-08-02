@@ -1342,24 +1342,10 @@ pass_thread_jumps::execute (function *fun)
 {
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
 
-  // Iterative mode is a testing construct and is not meant for public
-  // consumption.  It is OFF by default.
-  bool iterative = param_threader_iterative;
-
-  bool changed = false;
-  while (try_thread_blocks (fun))
-    {
-      changed = true;
-
-      if (!iterative)
-	break;
-
-      if ((param_threader_mode & THREADER_MODE_RANGER) == 0)
-	break;
-      cleanup_tree_cfg (TODO_update_ssa);
-    }
+  bool changed = try_thread_blocks (fun);
 
   loop_optimizer_finalize ();
+
   return changed ? TODO_cleanup_cfg : 0;
 }
 
