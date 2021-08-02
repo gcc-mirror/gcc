@@ -1160,7 +1160,8 @@ On x86 targets with SSE2 enabled, without @option{-mavx512fp16},
 software emulation and the @code{float} instructions. The default behavior
 for @code{FLT_EVAL_METHOD} is to keep the intermediate result of the operation
 as 32-bit precision. This may lead to inconsistent behavior between software
-emulation and AVX512-FP16 instructions.
+emulation and AVX512-FP16 instructions. Using @option{-fexcess-precision=16}
+will force round back after each operation.
 
 @node Decimal Float
 @section Decimal Floating Types

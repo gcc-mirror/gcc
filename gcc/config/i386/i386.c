@@ -23599,6 +23599,11 @@ ix86_get_excess_precision (enum excess_precision_type type)
 	return (type == EXCESS_PRECISION_TYPE_STANDARD
 		? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT
 		: FLT_EVAL_METHOD_UNPREDICTABLE);
+      case EXCESS_PRECISION_TYPE_FLOAT16:
+	if (TARGET_80387
+	    && !(TARGET_SSE_MATH && TARGET_SSE))
+	  error ("%<-fexcess-precision=16%> is not compatible with %<-mfpmath=387%>");
+	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
       default:
 	gcc_unreachable ();
     }

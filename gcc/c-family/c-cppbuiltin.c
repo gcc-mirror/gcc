@@ -753,7 +753,7 @@ cpp_atomic_builtins (cpp_reader *pfile)
 /* Return TRUE if the implicit excess precision in which the back-end will
    compute floating-point calculations is not more than the explicit
    excess precision that the front-end will apply under
-   -fexcess-precision=[standard|fast].
+   -fexcess-precision=[standard|fast|16].
 
    More intuitively, return TRUE if the excess precision proposed by the
    front-end is the excess precision that will actually be used.  */
@@ -764,7 +764,9 @@ c_cpp_flt_eval_method_iec_559 (void)
   enum excess_precision_type front_end_ept
     = (flag_excess_precision == EXCESS_PRECISION_STANDARD
        ? EXCESS_PRECISION_TYPE_STANDARD
-       : EXCESS_PRECISION_TYPE_FAST);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16
+	  : EXCESS_PRECISION_TYPE_FAST));
 
   enum flt_eval_method back_end
     = targetm.c.excess_precision (EXCESS_PRECISION_TYPE_IMPLICIT);

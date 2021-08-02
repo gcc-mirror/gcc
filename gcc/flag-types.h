@@ -202,7 +202,8 @@ enum excess_precision
 {
   EXCESS_PRECISION_DEFAULT,
   EXCESS_PRECISION_FAST,
-  EXCESS_PRECISION_STANDARD
+  EXCESS_PRECISION_STANDARD,
+  EXCESS_PRECISION_FLOAT16
 };
 
 /* The options for which values of FLT_EVAL_METHOD are permissible.  */

@@ -1518,7 +1518,7 @@ Perform a number of minor, expensive optimizations.
 
 fexcess-precision=
 Common Joined RejectNegative Enum(excess_precision) Var(flag_excess_precision) Init(EXCESS_PRECISION_DEFAULT) Optimization SetByCombined
--fexcess-precision=[fast|standard]	Specify handling of excess floating-point precision.
+-fexcess-precision=[fast|standard|16]	Specify handling of excess floating-point precision.
 
 Enum
 Name(excess_precision) Type(enum excess_precision) UnknownError(unknown excess precision style %qs)
@@ -1528,6 +1528,9 @@ Enum(excess_precision) String(fast) Value(EXCESS_PRECISION_FAST)
 
 EnumValue
 Enum(excess_precision) String(standard) Value(EXCESS_PRECISION_STANDARD)
+
+EnumValue
+Enum(excess_precision) String(16) Value(EXCESS_PRECISION_FLOAT16)
 
 ; Whether we permit the extended set of values for FLT_EVAL_METHOD
 ; introduced in ISO/IEC TS 18661-3, or limit ourselves to those in C99/C11.

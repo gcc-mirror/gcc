@@ -7637,7 +7637,8 @@ excess_precision_type (tree type)
   enum excess_precision_type requested_type
     = (flag_excess_precision == EXCESS_PRECISION_FAST
        ? EXCESS_PRECISION_TYPE_FAST
-       : EXCESS_PRECISION_TYPE_STANDARD);
+       : (flag_excess_precision == EXCESS_PRECISION_FLOAT16
+	  ? EXCESS_PRECISION_TYPE_FLOAT16 :EXCESS_PRECISION_TYPE_STANDARD));
 
   enum flt_eval_method target_flt_eval_method
     = targetm.c.excess_precision (requested_type);

@@ -982,20 +982,26 @@ Do not define this macro if it would never modify @var{m}.
 Return a value, with the same meaning as the C99 macro
 @code{FLT_EVAL_METHOD} that describes which excess precision should be
 applied.  @var{type} is either @code{EXCESS_PRECISION_TYPE_IMPLICIT},
-@code{EXCESS_PRECISION_TYPE_FAST}, or
-@code{EXCESS_PRECISION_TYPE_STANDARD}.  For
+@code{EXCESS_PRECISION_TYPE_FAST},
+@code{EXCESS_PRECISION_TYPE_STANDARD}, or
+@code{EXCESS_PRECISION_TYPE_FLOAT16}.  For
 @code{EXCESS_PRECISION_TYPE_IMPLICIT}, the target should return which
 precision and range operations will be implictly evaluated in regardless
 of the excess precision explicitly added.  For
-@code{EXCESS_PRECISION_TYPE_STANDARD} and
+@code{EXCESS_PRECISION_TYPE_STANDARD}, 
+@code{EXCESS_PRECISION_TYPE_FLOAT16}, and
 @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the
 explicit excess precision that should be added depending on the
 value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.
 Note that unpredictable explicit excess precision does not make sense,
 so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE}
-when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD} or
+when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},
+@code{EXCESS_PRECISION_TYPE_FLOAT16} or
 @code{EXCESS_PRECISION_TYPE_FAST}.
 @end deftypefn
+Return a value, with the same meaning as the C99 macro
+@code{FLT_EVAL_METHOD} that describes which excess precision should be
+applied.
 
 @deftypefn {Target Hook} machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or

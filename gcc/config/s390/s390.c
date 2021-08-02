@@ -16549,6 +16549,9 @@ s390_excess_precision (enum excess_precision_type type)
 	   ensure consistency with the implementation in glibc, report that
 	   float is evaluated to the range and precision of double.  */
 	return FLT_EVAL_METHOD_PROMOTE_TO_DOUBLE;
+      case EXCESS_PRECISION_TYPE_FLOAT16:
+	error ("%<-fexcess-precision=16%> is not supported on this target");
+	break;
       default:
 	gcc_unreachable ();
     }
