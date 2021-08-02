@@ -96,15 +96,12 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
 CONST
    Debugging = FALSE ;
 
-VAR
-   CheckProcedure: BOOLEAN ;  (* Set if currently implementing a defined *)
-                              (* procedure.                              *)
-
 
 (*
-   CheckName - checks to see that the module name matches the file name.
+   CheckFileName - checks to see that the module name matches the file name.
 *)
 
+(*
 PROCEDURE CheckFileName (tok: CARDINAL; name: Name; ModuleType: ARRAY OF CHAR) ;
 VAR
    ext,
@@ -133,6 +130,7 @@ BEGIN
       MetaErrorString2 (s, MakeError (tok, name), MakeErrorS (tok, FileName))
    END
 END CheckFileName ;
+*)
 
 
 (*
@@ -888,12 +886,11 @@ PROCEDURE BuildHiddenType ;
 VAR
    name : Name ;
    tokno: CARDINAL ;
-   Sym  : CARDINAL ;
 BEGIN
-   PopTtok(name, tokno) ;
+   PopTtok (name, tokno) ;
    (* WriteString('Hidden type encountered: ') ; *)
    (* WriteKey(Name) ; WriteLn ; *)
-   Sym := MakeHiddenType(tokno, name)
+   Assert (MakeHiddenType (tokno, name) # NulSym)
 END BuildHiddenType ;
 
 

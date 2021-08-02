@@ -2212,8 +2212,8 @@ END divFloorOverflowNegNeg ;
 
 (*
    divFloorOverflowNegPos - precondition:  i, j are in range values.  i < 0, j >= 0.
-                           postcondition:  TRUE is returned if i divfloor will
-                                           result in an overflow/underflow.
+                            postcondition:  TRUE is returned if i divfloor will
+                                            result in an overflow/underflow.
 *)
 
 PROCEDURE divFloorOverflowNegPos (i, j: INTEGER) : BOOLEAN ;
@@ -2252,8 +2252,7 @@ END divFloorOverflowPosNeg ;
    RETURN i < j_mult_min.  */
 
 static tree
-divFloorOverflowPosPos (location_t location, tree i, tree j, tree lowest,
-		       tree min, tree max)
+divFloorOverflowPosPos (location_t location, tree i, tree j, tree min)
 {
   tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
   tree i_lt_j_mult_min = m2expr_BuildLessThan (location, i, j_mult_min);
@@ -2316,7 +2315,7 @@ divFloorOverflowNegNeg (location_t location, tree i, tree j, tree lowest,
    return i_ge_j_mult_min_sub_j.  */
 
 static tree
-divFloorOverflowPosNeg (location_t location, tree i, tree j, tree lowest, tree min, tree max)
+divFloorOverflowPosNeg (location_t location, tree i, tree j, tree min)
 {
   tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
   tree j_mult_min_sub_j = m2expr_BuildSub (location, j_mult_min, j, FALSE);
@@ -2337,7 +2336,7 @@ divFloorOverflowPosNeg (location_t location, tree i, tree j, tree lowest, tree m
    RETURN i < j_mult_min.  */
 
 static tree
-divFloorOverflowNegPos (location_t location, tree i, tree j, tree lowest, tree min, tree max)
+divFloorOverflowNegPos (location_t location, tree i, tree j, tree min)
 {
   tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
   tree i_lt_j_mult_min = m2expr_BuildLessThan (location, i, j_mult_min);
@@ -2372,13 +2371,13 @@ divFloorOverflowCases (location_t location, tree i, tree j, tree lowest,
   tree i_lt_zero = m2expr_BuildLessThanZero (location, i, lowest, min, max);
   tree j_lt_zero = m2expr_BuildLessThanZero (location, j, lowest, min, max);
   tree a = m2expr_Build3TruthAndIf (location, i_gt_zero, j_gt_zero,
-				    divFloorOverflowPosPos (location, i, j, lowest, min, max));
+				    divFloorOverflowPosPos (location, i, j, min));
   tree b = m2expr_Build3TruthAndIf (location, i_lt_zero, j_lt_zero,
 				    divFloorOverflowNegNeg (location, i, j, lowest, min, max));
   tree c = m2expr_Build3TruthAndIf (location, i_gt_zero, j_lt_zero,
-				    divFloorOverflowPosNeg (location, i, j, lowest, min, max));
+				    divFloorOverflowPosNeg (location, i, j, min));
   tree d = m2expr_Build3TruthAndIf (location, i_lt_zero, j_gt_zero,
-				    divFloorOverflowNegPos (location, i, j, lowest, min, max));
+				    divFloorOverflowNegPos (location, i, j, min));
   return m2expr_Build4TruthOrIf (location, a, b, c, d);
 }
 

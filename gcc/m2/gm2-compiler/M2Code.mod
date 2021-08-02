@@ -178,6 +178,7 @@ END DoModuleDeclare ;
    PrintModule -
 *)
 
+(*
 PROCEDURE PrintModule (sym: CARDINAL) ;
 VAR
    n: Name ;
@@ -185,6 +186,7 @@ BEGIN
    n := GetSymName (sym) ;
    printf1 ('module %a\n', n)
 END PrintModule ;
+*)
 
 
 (*
@@ -388,12 +390,14 @@ END BasicBlockVariableAnalysis ;
    DisplayQuadsInScope -
 *)
 
+(*
 PROCEDURE DisplayQuadsInScope (sb: ScopeBlock) ;
 BEGIN
    printf0 ('Quads in scope\n') ;
    ForeachScopeBlockDo (sb, DisplayQuadRange) ;
    printf0 ('===============\n')
 END DisplayQuadsInScope ;
+*)
 
 
 (*
@@ -425,6 +429,7 @@ END OptimizeScopeBlock ;
    DisplayQuadNumbers - the range, start..end.
 *)
 
+(*
 PROCEDURE DisplayQuadNumbers (start, end: CARDINAL) ;
 BEGIN
    IF DisplayQuadruples
@@ -432,6 +437,7 @@ BEGIN
       printf2 ('Coding [%d..%d]\n', start, end)
    END
 END DisplayQuadNumbers ;
+*)
 
 
 (*

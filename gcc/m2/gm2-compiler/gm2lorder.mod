@@ -62,15 +62,13 @@ VAR
 PROCEDURE InitRuntimeModules (s: String) ;
 VAR
    a   : CARDINAL ;
-   i, l,
-   j   : INTEGER ;
+   i, j: INTEGER ;
 BEGIN
    IF runTime # NIL
    THEN
       runTime := KillIndex (runTime)
    END ;
    runTime := InitIndex (0) ;
-   l := Length (s) ;
    i := 0 ;
    a := 0 ;
    REPEAT
@@ -252,7 +250,7 @@ END ScanArgs ;
 
 
 (*
-   Init - 
+   Init -
 *)
 
 PROCEDURE Init ;

@@ -33,10 +33,12 @@ FROM NameKey IMPORT Name, KeyToCharStar ;
    IsDigit - returns TRUE if, ch, is a character 0..9
 *)
 
+(*
 PROCEDURE IsDigit (ch: CHAR) : BOOLEAN ;
 BEGIN
    RETURN (ch>='0') AND (ch<='9')
 END IsDigit ;
+*)
 
 
 (*

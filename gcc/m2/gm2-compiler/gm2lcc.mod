@@ -63,7 +63,6 @@ VAR
    ProfileFound  : BOOLEAN ;
    LibrariesFound: BOOLEAN ;
    TargetFound   : BOOLEAN ;
-   PathFound     : BOOLEAN ;
    ExecCommand   : BOOLEAN ;    (* should we execute the final cmd *)
    UseAr         : BOOLEAN ;    (* use 'ar' and create archive     *)
    UseRanlib     : BOOLEAN ;    (* use 'ranlib' to index archive   *)
@@ -333,8 +332,7 @@ END FindModulesInFileList ;
 PROCEDURE CollectObjects (Command: String) : String ;
 VAR
    i, h: CARDINAL ;
-   name,
-   s   : String ;
+   name: String ;
 BEGIN
    i := 1 ;
    h := HighIndice (CmdLineObjects) ;
@@ -438,6 +436,7 @@ END GenCC ;
                      after the string.
 *)
 
+(*
 PROCEDURE WriteModuleName (ModuleName: String) ;
 BEGIN
    ModuleName := WriteS (fo, ModuleName) ;
@@ -445,6 +444,7 @@ BEGIN
    THEN
    END
 END WriteModuleName ;
+*)
 
 
 (*
@@ -641,7 +641,7 @@ END AdditionalFOptions ;
 
 
 (*
-   DisplayHelp - 
+   DisplayHelp -
 *)
 
 PROCEDURE DisplayHelp ;

@@ -21,7 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 IMPLEMENTATION MODULE M2Error ;
 
-FROM NameKey IMPORT Name, KeyToCharStar ;
+FROM NameKey IMPORT NulName, Name, KeyToCharStar ;
 FROM DynamicStrings IMPORT String, InitString, InitStringCharStar, ConCat, ConCatChar, Mark, string, KillString, Dup ;
 FROM FIO IMPORT StdOut, WriteNBytes, Close, FlushBuffer ;
 FROM StrLib IMPORT StrLen, StrEqual ;
@@ -196,6 +196,7 @@ VAR
    s: String ;
    n: Name ;
 BEGIN
+   n := NulName ;
    IF TranslateNameToCharStar(a, 1)
    THEN
       Cast(n, w) ;
@@ -250,6 +251,7 @@ VAR
    b     : BITSET ;
 BEGIN
    b := {} ;
+   n := NulName ;
    IF TranslateNameToCharStar(a, 1)
    THEN
       Cast(n, w1) ;
@@ -298,6 +300,7 @@ VAR
    b            : BITSET ;
 BEGIN
    b := {} ;
+   n := NulName ;
    IF TranslateNameToCharStar(a, 1)
    THEN
       Cast(n, w1) ;

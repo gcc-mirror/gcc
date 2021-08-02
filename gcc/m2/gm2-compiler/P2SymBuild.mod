@@ -70,7 +70,7 @@ FROM SymbolTable IMPORT NulSym,
                         GetExported,
                         PutExported, PutExportQualified, PutExportUnQualified,
                         PutExportUnImplemented,
-                        PutFieldVarient, GCFieldVarient, PutVarientTag,
+                        PutFieldVarient, PutVarientTag,
                         IsFieldVarient, IsVarient,
                         CheckForEnumerationInCurrentModule,
                         CheckForExportedImplementation,
@@ -734,19 +734,18 @@ END BuildConst ;
 
 PROCEDURE StartBuildEnumeration ;
 VAR
-   name: Name ;
    n,
    Type: CARDINAL ;
    tok : CARDINAL ;
 BEGIN
-   PopT(n) ;       (* n := # *)
-   name := OperandT(n+1) ;
-   tok := OperandTok(n+1) ;
-   GetEnumerationFromFifoQueue(Type) ;
-   CheckForExportedImplementation(Type) ;   (* May be an exported hidden type *)
-   PopN(n) ;
-   PushTtok(Type, tok) ;
-   Annotate("%1s(%1d)|%3d||enumerated type")
+   PopT (n) ;       (* n := # *)
+   (* name is in OperandT(n+1) but we dont need it here.  *)
+   tok := OperandTok (n+1) ;
+   GetEnumerationFromFifoQueue (Type) ;
+   CheckForExportedImplementation (Type) ;   (* May be an exported hidden type *)
+   PopN (n) ;
+   PushTtok (Type, tok) ;
+   Annotate ("%1s(%1d)|%3d||enumerated type")
 END StartBuildEnumeration ;
 
 
@@ -1795,8 +1794,8 @@ BEGIN
    THEN
       FirstModule := InitString('implementation module') ;
       SecondModule := InitString('definition module')
-   ELSIF CompilingProgramModule()
-   THEN
+   ELSE
+      Assert (CompilingProgramModule ()) ;
       FirstModule := InitString('program module') ;
       SecondModule := InitString('definition module')
    END ;
@@ -1981,24 +1980,6 @@ BEGIN
 *)
    PushT(ProcSym)
 END BuildOptFunction ;
-
-
-(*
-   BuildNulParam - Builds a nul parameter on the stack.
-                   The Stack:
-
-                   Entry             Exit
-
-                                                    <- Ptr
-                   Empty             +------------+
-                                     | 0          |
-                                     |------------|
-*)
-
-PROCEDURE BuildNulParam ;
-BEGIN
-   PushT(0)
-END BuildNulParam ;
 
 
 (*
@@ -2205,7 +2186,7 @@ END HandleRecordFieldPragmas ;
 
 PROCEDURE BuildFieldRecord ;
 VAR
-   name, n1   : Name ;
+   n1         : Name ;
    tok,
    fsym,
    Field,
@@ -2219,7 +2200,7 @@ VAR
 BEGIN
    PopT(NoOfPragmas) ;
    Type := OperandT(NoOfPragmas*2+1) ;
-   name := OperandF(NoOfPragmas*2+1) ;
+   (* name := OperandF(NoOfPragmas*2+1) ;  *)
    NoOfFields := OperandT(NoOfPragmas*2+2) ;
    Record := OperandT(NoOfPragmas*2+NoOfFields+3) ;
    IF IsRecord(Record)
@@ -2243,6 +2224,7 @@ BEGIN
          WriteKey(n1) ; WriteLn
       END
    END ;
+   Field := NulSym ;
    i := 1 ;
    WHILE i<=NoOfFields DO
       IF Debugging
@@ -2265,7 +2247,7 @@ BEGIN
       END ;
       (* adjust the location of declaration to the one on the stack (rather than GetTokenNo).  *)
       tok := OperandTok(NoOfPragmas*2+NoOfFields+3-i) ;
-      IF tok # UnknownTokenNo
+      IF (tok # UnknownTokenNo) AND (Field # NulSym)
       THEN
          PutDeclared (tok, Field)
       END ;
@@ -2308,7 +2290,6 @@ VAR
    Field,
    Type,
    Varient,
-   Parent,
    VarField,
    Record    : CARDINAL ;
 BEGIN
@@ -2317,7 +2298,6 @@ BEGIN
    Record := OperandT(1) ;
    IF IsRecord(Record)
    THEN
-      Parent := Record ;
       Varient := NulSym ;
       InternalError ('not expecting a record symbol')
    ELSIF IsVarient(Record)
@@ -2341,7 +2321,6 @@ BEGIN
       END
    ELSE
       (* Record maybe FieldVarient *)
-      Parent := GetParent(Record) ;
       Assert(IsFieldVarient(Record)) ;
       Varient := OperandT(1+2) ;
       Assert(IsVarient(Varient)) ;
@@ -2687,7 +2666,7 @@ BEGIN
    name := OperandT (1) ;
    tok := OperandTok (1) ;
    ProcTypeSym := MakeProcType (tok, name) ;
-   CheckForExportedImplementation (ProcTypeSym) ;   (* May be an exported hidden type *)   
+   CheckForExportedImplementation (ProcTypeSym) ;   (* May be an exported hidden type *)
    Annotate ("%1n||procedure type name") ;
    PushTtok (ProcTypeSym, tok) ;
    Annotate ("%1s(%1d)|%3d||proc type|token no")
@@ -2848,7 +2827,7 @@ END SeenCast ;
    SeenBoolean - sets the operand type to a BOOLEAN.
 *)
 
-PROCEDURE SeenBoolean (sym: CARDINAL) ;
+PROCEDURE SeenBoolean ;
 BEGIN
    type := boolean
 END SeenBoolean ;
@@ -2858,7 +2837,7 @@ END SeenBoolean ;
    SeenZType - sets the operand type to a Z type.
 *)
 
-PROCEDURE SeenZType (sym: CARDINAL) ;
+PROCEDURE SeenZType ;
 BEGIN
    type := ztype
 END SeenZType ;
@@ -2868,7 +2847,7 @@ END SeenZType ;
    SeenRType - sets the operand type to a R type.
 *)
 
-PROCEDURE SeenRType (sym: CARDINAL) ;
+PROCEDURE SeenRType ;
 BEGIN
    type := rtype
 END SeenRType ;
@@ -2878,7 +2857,7 @@ END SeenRType ;
    SeenCType - sets the operand type to a C type.
 *)
 
-PROCEDURE SeenCType (sym: CARDINAL) ;
+PROCEDURE SeenCType ;
 BEGIN
    type := ctype
 END SeenCType ;

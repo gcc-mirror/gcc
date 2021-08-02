@@ -5903,25 +5903,6 @@ END GetVarient ;
 
 
 (*
-   GCFieldVarient - garbage collect the field varient symbol, Sym.
-                    This must only be called once per Sym.
-*)
-
-PROCEDURE GCFieldVarient (Sym: CARDINAL) ;
-BEGIN
-(*
-   IF IsItemInList(UsedFVarientList, Sym)
-   THEN
-      RemoveItemFromList(UsedFVarientList, Sym)
-   ELSE
-      RemoveItemFromList(UsedFVarientList, Sym) ;
-      PutItemIntoList(FreeFVarientList, Sym)
-   END
-*)
-END GCFieldVarient ;
-
-
-(*
    EnsureOrder - providing that both symbols, a, and, b, exist in
                  list, l.  Ensure that, b, is placed after a.
 *)
@@ -10282,7 +10263,6 @@ PROCEDURE FillInUnboundedFields (tok: CARDINAL;
                                  sym: CARDINAL; SimpleType: CARDINAL; ndim: CARDINAL) ;
 VAR
    pSym    : PtrToSymbol ;
-   field   : CARDINAL ;
    Contents: CARDINAL ;
    i       : CARDINAL ;
 BEGIN
@@ -10302,15 +10282,15 @@ BEGIN
             FillInPointerFields(Contents, NulName, GetScope(SimpleType), NulSym) ;
             PutPointer(Contents, SimpleType) ;
 	    (* create the contents field for the unbounded array.  *)
-            field := PutFieldRecord(RecordType,
-                                    MakeKey(UnboundedAddressName),
-                                    Contents, NulSym) ;
+            Assert (PutFieldRecord(RecordType,
+                                   MakeKey(UnboundedAddressName),
+                                   Contents, NulSym) # NulSym) ;
 	    (* create all the high fields for the unbounded array.  *)
             i := 1 ;
             WHILE i<=ndim DO
-               field := PutFieldRecord(RecordType,
-                                       makekey(string(Mark(Sprintf1(Mark(InitString(UnboundedHighName)), i)))),
-                                       Cardinal, NulSym) ;
+               Assert (PutFieldRecord(RecordType,
+                                      makekey(string(Mark(Sprintf1(Mark(InitString(UnboundedHighName)), i)))),
+                                      Cardinal, NulSym) # NulSym) ;
                INC(i)
             END ;
             Dimensions := ndim

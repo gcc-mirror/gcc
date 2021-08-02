@@ -58,6 +58,8 @@ VAR
    ForcedLocationValue: location_t ;
 
 
+(* String garbage collection debugging routines.
+
 (*
    doDSdbEnter -
 *)
@@ -94,7 +96,7 @@ END DSdbEnter ;
 PROCEDURE DSdbExit (s: String) ;
 BEGIN
 END DSdbExit ;
-
+*)
 
 (*
 #define DSdbEnter doDSdbEnter
@@ -466,6 +468,7 @@ END SetUnboundedByReference ;
 
 
 (*
+(*
    SetDebugging - sets the debugging flag to, v.
 *)
 
@@ -474,7 +477,7 @@ BEGIN
    GenerateDebugging := value
 END SetDebugging ;
 
-(*
+
 (*
    SetProfiling - dummy procedure, as profiling is implemented in the gcc backend.
 *)

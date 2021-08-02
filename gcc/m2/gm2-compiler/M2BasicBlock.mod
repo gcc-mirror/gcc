@@ -175,6 +175,7 @@ BEGIN
       since they will never be executed.
    *)
    LastBB := NIL ;
+   CurrentBB := NIL ;
    Quad := Start ;
    LastQuadConditional := TRUE ;  (* Force Rule (i) *)
    LastQuadCall := FALSE ;
@@ -299,6 +300,7 @@ END Add ;
    Sub deletes an element from the specified queue.
 *)
 
+(*
 PROCEDURE Sub (VAR Head: BasicBlock;
                b: BasicBlock) ;
 BEGIN
@@ -314,12 +316,14 @@ BEGIN
       b^.Right^.Left := b^.Left
    END
 END Sub ;
+*)
 
 
 (*
    DisplayBasicBlocks - displays the basic block data structure.
 *)
 
+(*
 PROCEDURE DisplayBasicBlocks (bb: BasicBlock) ;
 VAR
    b: BasicBlock ;
@@ -343,6 +347,7 @@ BEGIN
       WriteString(' end   ') ; WriteCard(EndQuad, 6) ;
    END
 END DisplayBlock ;
+*)
 
 
 BEGIN

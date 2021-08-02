@@ -175,7 +175,7 @@ libm2pim_la_LIBADD =
 @BUILD_PIMLIB_TRUE@	libm2pim_la-termios.lo \
 @BUILD_PIMLIB_TRUE@	libm2pim_la-SysExceptions.lo \
 @BUILD_PIMLIB_TRUE@	libm2pim_la-target.lo libm2pim_la-wrapc.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-getopt.lo
+@BUILD_PIMLIB_TRUE@	libm2pim_la-cgetopt.lo
 libm2pim_la_OBJECTS = $(am_libm2pim_la_OBJECTS)
 @BUILD_PIMLIB_TRUE@am_libm2pim_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -196,9 +196,9 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/libm2pim_la-Selective.Plo \
 	./$(DEPDIR)/libm2pim_la-SysExceptions.Plo \
 	./$(DEPDIR)/libm2pim_la-UnixArgs.Plo \
+	./$(DEPDIR)/libm2pim_la-cgetopt.Plo \
 	./$(DEPDIR)/libm2pim_la-dtoa.Plo \
 	./$(DEPDIR)/libm2pim_la-errno.Plo \
-	./$(DEPDIR)/libm2pim_la-getopt.Plo \
 	./$(DEPDIR)/libm2pim_la-ldtoa.Plo \
 	./$(DEPDIR)/libm2pim_la-sckt.Plo \
 	./$(DEPDIR)/libm2pim_la-target.Plo \
@@ -516,7 +516,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@         termios.def  TimeString.def \
 @BUILD_PIMLIB_TRUE@         UnixArgs.def  wrapc.def  \
 @BUILD_PIMLIB_TRUE@         GetOpt.def OptLib.def \
-@BUILD_PIMLIB_TRUE@         getopt.def
+@BUILD_PIMLIB_TRUE@         cgetopt.def
 
 @BUILD_PIMLIB_TRUE@libm2pim_la_SOURCES = $(M2MODS) \
 @BUILD_PIMLIB_TRUE@                      UnixArgs.c \
@@ -524,7 +524,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@                      errno.c dtoa.c \
 @BUILD_PIMLIB_TRUE@                      ldtoa.c termios.c \
 @BUILD_PIMLIB_TRUE@                      SysExceptions.c target.c \
-@BUILD_PIMLIB_TRUE@                      wrapc.c getopt.c
+@BUILD_PIMLIB_TRUE@                      wrapc.c cgetopt.c
 
 @BUILD_PIMLIB_TRUE@libm2pimdir = libm2pim
 @BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def
@@ -616,9 +616,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-Selective.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-SysExceptions.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-UnixArgs.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-cgetopt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-dtoa.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-errno.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-getopt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-ldtoa.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-sckt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-target.Plo@am__quote@ # am--include-marker
@@ -722,12 +722,12 @@ libm2pim_la-wrapc.lo: wrapc.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-wrapc.lo `test -f 'wrapc.c' || echo '$(srcdir)/'`wrapc.c
 
-libm2pim_la-getopt.lo: getopt.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-getopt.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-getopt.Tpo -c -o libm2pim_la-getopt.lo `test -f 'getopt.c' || echo '$(srcdir)/'`getopt.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-getopt.Tpo $(DEPDIR)/libm2pim_la-getopt.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='getopt.c' object='libm2pim_la-getopt.lo' libtool=yes @AMDEPBACKSLASH@
+libm2pim_la-cgetopt.lo: cgetopt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-cgetopt.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-cgetopt.Tpo -c -o libm2pim_la-cgetopt.lo `test -f 'cgetopt.c' || echo '$(srcdir)/'`cgetopt.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-cgetopt.Tpo $(DEPDIR)/libm2pim_la-cgetopt.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cgetopt.c' object='libm2pim_la-cgetopt.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-getopt.lo `test -f 'getopt.c' || echo '$(srcdir)/'`getopt.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-cgetopt.lo `test -f 'cgetopt.c' || echo '$(srcdir)/'`cgetopt.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -837,9 +837,9 @@ distclean: distclean-am
 		-rm -f ./$(DEPDIR)/libm2pim_la-Selective.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-SysExceptions.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-UnixArgs.Plo
+	-rm -f ./$(DEPDIR)/libm2pim_la-cgetopt.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-dtoa.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-errno.Plo
-	-rm -f ./$(DEPDIR)/libm2pim_la-getopt.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-ldtoa.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-sckt.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-target.Plo
@@ -893,9 +893,9 @@ maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/libm2pim_la-Selective.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-SysExceptions.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-UnixArgs.Plo
+	-rm -f ./$(DEPDIR)/libm2pim_la-cgetopt.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-dtoa.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-errno.Plo
-	-rm -f ./$(DEPDIR)/libm2pim_la-getopt.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-ldtoa.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-sckt.Plo
 	-rm -f ./$(DEPDIR)/libm2pim_la-target.Plo

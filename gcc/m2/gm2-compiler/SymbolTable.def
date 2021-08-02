@@ -149,7 +149,6 @@ EXPORT QUALIFIED NulSym,
                  PutFieldRecord,
                  PutFieldVarient,
                  GetVarient,
-                 GCFieldVarient,
                  GetVarientTag,
 
                  PutVarientTag,
@@ -1349,14 +1348,6 @@ PROCEDURE PutFieldVarient (Field, Sym: CARDINAL) ;
 *)
 
 PROCEDURE GetVarient (Field: CARDINAL) : CARDINAL ;
-
-
-(*
-   GCFieldVarient - garbage collect the field varient symbol, Sym.
-                    This must only be called once per Sym.
-*)
-
-PROCEDURE GCFieldVarient (Sym: CARDINAL) ;
 
 
 (*

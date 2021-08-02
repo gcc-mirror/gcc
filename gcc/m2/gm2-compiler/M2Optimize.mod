@@ -220,7 +220,7 @@ BEGIN
          From := GetNextQuad (From)
       END
    END ;
-   RETURN TRUE 
+   RETURN TRUE
 END IsBasicBlock ;
 
 
@@ -383,6 +383,7 @@ END KnownReach ;
    DeleteUnReachableProcedures - Deletes all procedures that are unreachable.
 *)
 
+(*
 PROCEDURE DeleteUnReachableProcedures ;
 VAR
    ProcName: Name ;
@@ -464,6 +465,7 @@ BEGIN
       END
    END
 END Delete ;
+*)
 
 
 (*

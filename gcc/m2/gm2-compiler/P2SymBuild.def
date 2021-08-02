@@ -1216,28 +1216,28 @@ PROCEDURE SeenString ;
    SeenBoolean - sets the operand type to a BOOLEAN.
 *)
 
-PROCEDURE SeenBoolean (sym: CARDINAL) ;
+PROCEDURE SeenBoolean ;
 
 
 (*
    SeenZType - sets the operand type to a Z type.
 *)
 
-PROCEDURE SeenZType (sym: CARDINAL) ;
+PROCEDURE SeenZType ;
 
 
 (*
    SeenRType - sets the operand type to a R type.
 *)
 
-PROCEDURE SeenRType (sym: CARDINAL) ;
+PROCEDURE SeenRType ;
 
 
 (*
    SeenCType - sets the operand type to a C type.
 *)
 
-PROCEDURE SeenCType (sym: CARDINAL) ;
+PROCEDURE SeenCType ;
 
 
 (*
