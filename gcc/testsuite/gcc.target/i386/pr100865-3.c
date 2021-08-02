@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -march=skylake-avx512" } */
 
 extern char *dst;
