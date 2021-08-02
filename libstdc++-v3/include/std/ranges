@@ -2588,7 +2588,7 @@ namespace views::__adaptor
 	    requires _Const
 	      && convertible_to<iterator_t<_Vp>, _Outer_iter>
 	      && convertible_to<iterator_t<_InnerRange>, _Inner_iter>
-	    : _M_outer(std::move(__i._M_outer)), _M_inner(__i._M_inner),
+	    : _M_outer(std::move(__i._M_outer)), _M_inner(std::move(__i._M_inner)),
 	      _M_parent(__i._M_parent)
 	  { }
 
