@@ -3962,7 +3962,10 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
   if (type->points_to() != NULL
       && type->points_to()->array_type() != NULL
       && !type->points_to()->is_slice_type()
-      && val->type()->is_slice_type())
+      && val->type()->is_slice_type()
+      && Type::are_identical(type->points_to()->array_type()->element_type(),
+			     val->type()->array_type()->element_type(),
+			     0, NULL))
     {
       Temporary_statement* val_temp = NULL;
       if (!val->is_multi_eval_safe())
