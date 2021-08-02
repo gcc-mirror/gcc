@@ -26,6 +26,7 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
+with Contracts;      use Contracts;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
@@ -4444,6 +4445,38 @@ package body Sem_Ch13 is
                         & "operation of a tagged type", Aspect);
 
                      goto Continue;
+                  end if;
+
+                  --  Remember class-wide conditions; they will be merged
+                  --  with inherited conditions.
+
+                  if Class_Present (Aspect)
+                    and then A_Id in Aspect_Pre | Aspect_Post
+                    and then Is_Subprogram (E)
+                    and then not Is_Ignored_Ghost_Entity (E)
+                  then
+                     if A_Id = Aspect_Pre then
+                        if Is_Ignored (Aspect) then
+                           Set_Ignored_Class_Preconditions (E,
+                             New_Copy_Tree (Expr));
+                        else
+                           Set_Class_Preconditions (E, New_Copy_Tree (Expr));
+                        end if;
+
+                     --  Postconditions may split into separate aspects, and we
+                     --  remember the expression before such split (i.e. when
+                     --  the first postcondition is processed).
+
+                     elsif No (Class_Postconditions (E))
+                       and then No (Ignored_Class_Postconditions (E))
+                     then
+                        if Is_Ignored (Aspect) then
+                           Set_Ignored_Class_Postconditions (E,
+                             New_Copy_Tree (Expr));
+                        else
+                           Set_Class_Postconditions (E, New_Copy_Tree (Expr));
+                        end if;
+                     end if;
                   end if;
 
                   --  If the expressions is of the form A and then B, then
@@ -13168,6 +13201,13 @@ package body Sem_Ch13 is
                end if;
             end if;
          end Check_Variant_Part;
+      end if;
+
+      if not In_Generic_Scope (E)
+        and then Ekind (E) = E_Record_Type
+        and then Is_Tagged_Type (E)
+      then
+         Process_Class_Conditions_At_Freeze_Point (E);
       end if;
    end Freeze_Entity_Checks;
 

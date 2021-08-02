@@ -2216,6 +2216,20 @@ package body Exp_Attr is
             if Is_Access_Protected_Subprogram_Type (Btyp) then
                Expand_Access_To_Protected_Op (N, Pref, Typ);
 
+            --  If prefix is a subprogram that has class-wide preconditions and
+            --  an indirect-call wrapper (ICW) of such subprogram is available
+            --  then replace the prefix by the ICW.
+
+            elsif Is_Access_Subprogram_Type (Btyp)
+              and then Is_Entity_Name (Pref)
+              and then Present (Class_Preconditions (Entity (Pref)))
+              and then Present (Indirect_Call_Wrapper (Entity (Pref)))
+            then
+               Rewrite (Pref,
+                 New_Occurrence_Of
+                   (Indirect_Call_Wrapper (Entity (Pref)), Loc));
+               Analyze_And_Resolve (N, Typ);
+
             --  If prefix is a type name, this is a reference to the current
             --  instance of the type, within its initialization procedure.
 

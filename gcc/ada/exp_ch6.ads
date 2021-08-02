@@ -121,6 +121,9 @@ package Exp_Ch6 is
    --  The returned node is the root of the procedure body which will replace
    --  the original function body, which is not needed for the C program.
 
+   procedure Install_Class_Preconditions_Check (Call_Node : Node_Id);
+   --  Install check of class-wide preconditions on the caller.
+
    function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if E is a BIP entity.
 

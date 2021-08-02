@@ -25896,23 +25896,6 @@ package body Sem_Prag is
                        ("operation in class-wide condition must be primitive "
                         & "of &", Nod, Disp_Typ);
                   end if;
-
-               --  Otherwise we have a call to an overridden primitive, and we
-               --  will create a common class-wide clone for the body of
-               --  original operation and its eventual inherited versions. If
-               --  the original operation dispatches on result it is never
-               --  inherited and there is no need for a clone. There is not
-               --  need for a clone either in GNATprove mode, as cases that
-               --  would require it are rejected (when an inherited primitive
-               --  calls an overridden operation in a class-wide contract), and
-               --  the clone would make proof impossible in some cases.
-
-               elsif not Is_Abstract_Subprogram (Spec_Id)
-                 and then No (Class_Wide_Clone (Spec_Id))
-                 and then not Has_Controlling_Result (Spec_Id)
-                 and then not GNATprove_Mode
-               then
-                  Build_Class_Wide_Clone_Decl (Spec_Id);
                end if;
             end;
 
@@ -26031,15 +26014,6 @@ package body Sem_Prag is
 
       if Restore_Scope then
          End_Scope;
-      end if;
-
-      --  If analysis of the condition indicates that a class-wide clone
-      --  has been created, build and analyze its declaration.
-
-      if Is_Subprogram (Spec_Id)
-        and then Present (Class_Wide_Clone (Spec_Id))
-      then
-         Analyze (Unit_Declaration_Node (Class_Wide_Clone (Spec_Id)));
       end if;
 
       --  Currently it is not possible to inline pre/postconditions on a
@@ -29528,9 +29502,6 @@ package body Sem_Prag is
       Msg_Arg    : Node_Id;
       Nam        : Name_Id;
 
-      Needs_Wrapper : Boolean;
-      pragma Unreferenced (Needs_Wrapper);
-
    --  Start of processing for Build_Pragma_Check_Equivalent
 
    begin
@@ -29557,11 +29528,10 @@ package body Sem_Prag is
          --  Build the inherited class-wide condition
 
          Build_Class_Wide_Expression
-           (Prag          => Check_Prag,
-            Subp          => Subp_Id,
-            Par_Subp      => Inher_Id,
-            Adjust_Sloc   => True,
-            Needs_Wrapper => Needs_Wrapper);
+           (Pragma_Or_Expr => Check_Prag,
+            Subp           => Subp_Id,
+            Par_Subp       => Inher_Id,
+            Adjust_Sloc    => True);
 
       --  If not an inherited condition simply copy the original pragma
 

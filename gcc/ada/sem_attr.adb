@@ -1339,6 +1339,16 @@ package body Sem_Attr is
          Legal   := False;
          Spec_Id := Empty;
 
+         --  Skip processing during preanalysis of class-wide preconditions and
+         --  postconditions since at this stage the expression is not installed
+         --  yet on its definite context.
+
+         if Inside_Class_Condition_Preanalysis then
+            Legal   := True;
+            Spec_Id := Current_Scope;
+            return;
+         end if;
+
          --  Traverse the parent chain to find the aspect or pragma where the
          --  attribute resides.
 

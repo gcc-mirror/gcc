@@ -270,28 +270,16 @@ package Exp_Util is
    --  not install a call to Abort_Defer.
 
    procedure Build_Class_Wide_Expression
-     (Prag          : Node_Id;
-      Subp          : Entity_Id;
-      Par_Subp      : Entity_Id;
-      Adjust_Sloc   : Boolean;
-      Needs_Wrapper : out Boolean);
-   --  Build the expression for an inherited class-wide condition. Prag is
-   --  the pragma constructed from the corresponding aspect of the parent
-   --  subprogram, and Subp is the overriding operation, and Par_Subp is
-   --  the overridden operation that has the condition. Adjust_Sloc is True
-   --  when the sloc of nodes traversed should be adjusted for the inherited
-   --  pragma. The routine is also called to check whether an inherited
-   --  operation that is not overridden but has inherited conditions needs
-   --  a wrapper, because the inherited condition includes calls to other
-   --  primitives that have been overridden. In that case the first argument
-   --  is the expression of the original class-wide aspect. In SPARK_Mode, such
-   --  operation which are just inherited but have modified pre/postconditions
-   --  are illegal.
-   --  If there are calls to overridden operations in the condition, and the
-   --  pragma applies to an inherited operation, a wrapper must be built for
-   --  it to capture the new inherited condition. The flag Needs_Wrapper is
-   --  set in that case so that the wrapper can be built, when the controlling
-   --  type is frozen.
+     (Pragma_Or_Expr : Node_Id;
+      Subp           : Entity_Id;
+      Par_Subp       : Entity_Id;
+      Adjust_Sloc    : Boolean);
+   --  Build the expression for an inherited class-wide condition. Pragma_Or_
+   --  _Expr is either the pragma constructed from the corresponding aspect of
+   --  the parent subprogram or the class-wide pre/postcondition built from the
+   --  parent, Subp is the overriding operation, and Par_Subp is the overridden
+   --  operation that has the condition. Adjust_Sloc is True when the sloc of
+   --  nodes traversed should be adjusted for the inherited pragma.
 
    function Build_DIC_Call
      (Loc      : Source_Ptr;
@@ -612,7 +600,7 @@ package Exp_Util is
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not
-   --  directly visible. If T is a class wide type, then the reference is to an
+   --  directly visible. If T is a class-wide type, then the reference is to an
    --  operation of the corresponding root type. It is an error if no primitive
    --  operation with the given name is found.
 
@@ -738,6 +726,10 @@ package Exp_Util is
    function Get_Index_Subtype (N : Node_Id) return Entity_Id;
    --  Used for First, Last, and Length, when the prefix is an array type.
    --  Obtains the corresponding index subtype.
+
+   function Get_Mapped_Entity (E : Entity_Id) return Entity_Id;
+   --  Return the mapped entity of E; used to check inherited class-wide
+   --  pre/postconditions.
 
    function Get_Stream_Size (E : Entity_Id) return Uint;
    --  Return the stream size value of the subtype E
@@ -917,6 +909,15 @@ package Exp_Util is
    --  Subsidiary to the expansion of pragmas Loop_Variant and
    --  Subprogram_Variant. Generate a comparison between Curr_Val and Old_Val
    --  depending on the variant mode (Increases / Decreases).
+
+   procedure Map_Formals
+     (Parent_Subp  : Entity_Id;
+      Derived_Subp : Entity_Id;
+      Force_Update : Boolean := False);
+   --  Establish the mapping from the formals of Parent_Subp to the formals
+   --  of Derived_Subp; if Force_Update is True then mapping of Parent_Subp to
+   --  Derived_Subp is also updated; used to update mapping of late-overriding
+   --  primitives of a tagged type.
 
    procedure Map_Types (Parent_Type : Entity_Id; Derived_Type : Entity_Id);
    --  Establish the following mapping between the attributes of tagged parent
@@ -1205,5 +1206,6 @@ package Exp_Util is
 private
    pragma Inline (Duplicate_Subexpr);
    pragma Inline (Force_Evaluation);
+   pragma Inline (Get_Mapped_Entity);
    pragma Inline (Is_Library_Level_Tagged_Type);
 end Exp_Util;

@@ -4891,10 +4891,15 @@ package body Sem_Res is
 
             --  Apply legality rule 3.9.2  (9/1)
 
+            --  Skip this check on helpers and indirect-call wrappers built to
+            --  support class-wide preconditions.
+
             if (Is_Class_Wide_Type (A_Typ) or else Is_Dynamically_Tagged (A))
               and then not Is_Class_Wide_Type (F_Typ)
               and then not Is_Controlling_Formal (F)
               and then not In_Instance
+              and then (not Is_Subprogram (Nam)
+                         or else No (Class_Preconditions_Subprogram (Nam)))
             then
                Error_Msg_N ("class-wide argument not allowed here!", A);
 
@@ -4992,9 +4997,13 @@ package body Sem_Res is
             --  "False" cannot act as an actual in a subprogram with value
             --  "True" (SPARK RM 6.1.7(3)).
 
+            --  No check needed for helpers and indirect-call wrappers built to
+            --  support class-wide preconditions.
+
             if Is_EVF_Expression (A)
               and then Extensions_Visible_Status (Nam) =
                        Extensions_Visible_True
+              and then No (Class_Preconditions_Subprogram (Current_Scope))
             then
                Error_Msg_N
                  ("formal parameter cannot act as actual parameter when "
