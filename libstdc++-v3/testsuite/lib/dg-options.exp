@@ -316,6 +316,11 @@ proc add_options_for_libatomic { flags } {
     return $flags
 }
 
+# Add options to enable use of deprecated features.
+proc add_options_for_using-deprecated { flags } {
+    return "$flags -U_GLIBCXX_USE_DEPRECATED -D_GLIBCXX_USE_DEPRECATED=1"
+}
+
 # Like dg-options, but adds to the default options rather than replacing them.
 
 proc dg-additional-options { args } {

@@ -1,4 +1,5 @@
 // { dg-options "-Wno-deprecated" }
+// { dg-add-options using-deprecated }
 // { dg-do run { target c++11 } }
 
 // Copyright (C) 2010-2021 Free Software Foundation, Inc.
@@ -25,7 +26,7 @@
 
 struct A { };
 
-// 20.9.10.2.1 unique_ptr constructors [unique.ptr.single.ctor] 
+// 20.9.10.2.1 unique_ptr constructors [unique.ptr.single.ctor]
 
 // Construction from auto_ptr
 void

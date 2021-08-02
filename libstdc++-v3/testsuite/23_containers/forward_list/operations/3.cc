@@ -22,8 +22,6 @@
 #include <forward_list>
 #include <testsuite_hooks.h>
 
-#include <algorithm>
-
 // This test verifies the following:
 //   remove_if
 void
@@ -31,7 +29,7 @@ test01()
 {
   std::forward_list<int> fl ={0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-  fl.remove_if(std::bind2nd(std::less<int>(),5));
+  fl.remove_if([](int i) { return i < 5; });
 
   std::forward_list<int>::const_iterator pos = fl.cbegin();
   VERIFY(*pos == 5);
