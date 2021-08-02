@@ -2737,12 +2737,14 @@ common_handle_option (struct gcc_options *opts,
       /* Deferred.  */
       break;
 
-#ifndef ACCEL_COMPILER
     case OPT_foffload_abi_:
+#ifdef ACCEL_COMPILER
+      /* Handled in the 'mkoffload's.  */
+#else
       error_at (loc, "%<-foffload-abi%> option can be specified only for "
 		"offload compiler");
-      break;
 #endif
+      break;
 
     case OPT_fpack_struct_:
       if (value <= 0 || (value & (value - 1)) || value > 16)
