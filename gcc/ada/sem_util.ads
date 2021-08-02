@@ -638,6 +638,13 @@ package Sem_Util is
    --  attribute, except in the case of formal private and derived types.
    --  Possible optimization???
 
+   function Corresponding_Primitive_Op
+       (Ancestor_Op     : Entity_Id;
+        Descendant_Type : Entity_Id) return Entity_Id;
+   --  Given a primitive subprogram of a tagged type and a (distinct)
+   --  descendant type of that type, find the corresponding primitive
+   --  subprogram of the descendant type.
+
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
    --  Find the currently visible definition for a given identifier, that is to

@@ -2920,6 +2920,16 @@ package body Sem_Res is
                   Expr   : Node_Id;
 
                begin
+                  if Is_Derived_Type (Typ)
+                    and then Is_Tagged_Type (Typ)
+                    and then Base_Type (Etype (Callee)) /= Base_Type (Typ)
+                  then
+                     Callee :=
+                       Corresponding_Primitive_Op
+                         (Ancestor_Op     => Callee,
+                          Descendant_Type => Base_Type (Typ));
+                  end if;
+
                   if Nkind (N) = N_Identifier then
                      Expr := Expression (Declaration_Node (Entity (N)));
 
@@ -2990,16 +3000,23 @@ package body Sem_Res is
 
                   Set_Etype (Call, Etype (Callee));
 
-                  --  Conversion needed in case of an inherited aspect
-                  --  of a derived type.
-                  --
-                  --  ??? Need to do something different here for downward
-                  --  tagged conversion case (which is only possible in the
-                  --  case of a null extension); the current call to
-                  --  Convert_To results in an error message about an illegal
-                  --  downward conversion.
+                  if Base_Type (Etype (Call)) /= Base_Type (Typ) then
+                     --  Conversion may be needed in case of an inherited
+                     --  aspect of a derived type. For a null extension, we
+                     --  use a null extension aggregate instead because the
+                     --  downward type conversion would be illegal.
 
-                  Call := Convert_To (Typ, Call);
+                     if Is_Null_Extension_Of
+                          (Descendant => Typ,
+                           Ancestor   => Etype (Call))
+                     then
+                        Call := Make_Extension_Aggregate (Loc,
+                                  Ancestor_Part       => Call,
+                                  Null_Record_Present => True);
+                     else
+                        Call := Convert_To (Typ, Call);
+                     end if;
+                  end if;
 
                   Rewrite (N, Call);
                end;

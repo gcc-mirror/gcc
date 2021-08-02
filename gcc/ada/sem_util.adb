@@ -7073,6 +7073,79 @@ package body Sem_Util is
       end if;
    end Corresponding_Generic_Type;
 
+   --------------------------------
+   -- Corresponding_Primitive_Op --
+   --------------------------------
+
+   function Corresponding_Primitive_Op
+     (Ancestor_Op     : Entity_Id;
+      Descendant_Type : Entity_Id) return Entity_Id
+   is
+      Typ  : constant Entity_Id := Find_Dispatching_Type (Ancestor_Op);
+      Elmt : Elmt_Id;
+      Subp : Entity_Id;
+      Prim : Entity_Id;
+   begin
+      pragma Assert (Is_Dispatching_Operation (Ancestor_Op));
+      pragma Assert (Is_Ancestor (Typ, Descendant_Type)
+                      or else Is_Progenitor (Typ, Descendant_Type));
+
+      Elmt := First_Elmt (Primitive_Operations (Descendant_Type));
+
+      while Present (Elmt) loop
+         Subp := Node (Elmt);
+
+         --  For regular primitives we only need to traverse the chain of
+         --  ancestors when the name matches the name of Ancestor_Op, but
+         --  for predefined dispatching operations we cannot rely on the
+         --  name of the primitive to identify a candidate since their name
+         --  is internally built adding a suffix to the name of the tagged
+         --  type.
+
+         if Chars (Subp) = Chars (Ancestor_Op)
+           or else Is_Predefined_Dispatching_Operation (Subp)
+         then
+            --  Handle case where Ancestor_Op is a primitive of a progenitor.
+            --  We rely on internal entities that map interface primitives:
+            --  their attribute Interface_Alias references the interface
+            --  primitive, and their Alias attribute references the primitive
+            --  of Descendant_Type implementing that interface primitive.
+
+            if Present (Interface_Alias (Subp)) then
+               if Interface_Alias (Subp) = Ancestor_Op then
+                  return Alias (Subp);
+               end if;
+
+            --  Traverse the chain of ancestors searching for Ancestor_Op.
+            --  Overridden primitives have attribute Overridden_Operation;
+            --  inherited primitives have attribute Alias.
+
+            else
+               Prim := Subp;
+
+               while Present (Overridden_Operation (Prim))
+                 or else Present (Alias (Prim))
+               loop
+                  if Present (Overridden_Operation (Prim)) then
+                     Prim := Overridden_Operation (Prim);
+                  else
+                     Prim := Alias (Prim);
+                  end if;
+
+                  if Prim = Ancestor_Op then
+                     return Subp;
+                  end if;
+               end loop;
+            end if;
+         end if;
+
+         Next_Elmt (Elmt);
+      end loop;
+
+      pragma Assert (False);
+      return Empty;
+   end Corresponding_Primitive_Op;
+
    --------------------
    -- Current_Entity --
    --------------------
