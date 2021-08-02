@@ -107,6 +107,11 @@ public:
       }
   }
 
+  void visit (HIR::UnsafeBlockExpr &expr) override
+  {
+    expr.get_block_expr ()->accept_vis (*this);
+  }
+
   void visit (HIR::LoopExpr &expr) override
   {
     expr.get_loop_block ()->accept_vis (*this);

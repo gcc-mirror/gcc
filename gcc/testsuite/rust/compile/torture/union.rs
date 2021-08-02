@@ -1,6 +1,3 @@
-// { dg-do compile }
-// { dg-options "-w" }
-
 union U
 {
   f1: u8
