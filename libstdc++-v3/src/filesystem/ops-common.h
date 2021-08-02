@@ -572,7 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
   // Caller must check that the path is an accessible directory.
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
   inline wstring
-  get_temp_directory_from_env()
+  get_temp_directory_from_env(error_code& ec)
   {
     unsigned len = 1024;
     std::wstring buf;
@@ -583,17 +583,18 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       } while (len > buf.size());
 
     if (len == 0)
-      {
-	ec.assign((int)GetLastError(), std::system_category());
-	return p;
-      }
+      ec.assign((int)GetLastError(), std::system_category());
+    else
+      ec.clear();
+
     buf.resize(len);
     return buf;
   }
 #else
   inline const char*
-  get_temp_directory_from_env() noexcept
+  get_temp_directory_from_env(error_code& ec) noexcept
   {
+    ec.clear();
     for (auto env : { "TMPDIR", "TMP", "TEMP", "TEMPDIR" })
       {
 #if _GLIBCXX_HAVE_SECURE_GETENV

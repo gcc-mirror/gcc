@@ -1302,7 +1302,9 @@ fs::temp_directory_path()
 fs::path
 fs::temp_directory_path(error_code& ec)
 {
-  path p = fs::get_temp_directory_from_env();
+  path p = fs::get_temp_directory_from_env(ec);
+  if (ec)
+    return p;
   auto st = status(p, ec);
   if (ec)
     p.clear();
