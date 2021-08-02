@@ -4295,6 +4295,8 @@ Parser<ManagedTokenSource>::parse_tuple_field ()
   // parse visibility if it exists
   AST::Visibility vis = parse_visibility ();
 
+  Location locus = lexer.peek_token ()->get_locus ();
+
   // parse type, which is required
   std::unique_ptr<AST::Type> field_type = parse_type ();
   if (field_type == nullptr)
@@ -4308,7 +4310,7 @@ Parser<ManagedTokenSource>::parse_tuple_field ()
       return AST::TupleField::create_error ();
     }
 
-  return AST::TupleField (std::move (field_type), std::move (vis),
+  return AST::TupleField (std::move (field_type), std::move (vis), locus,
 			  std::move (outer_attrs));
 }
 

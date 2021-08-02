@@ -187,12 +187,10 @@ public:
 				     mappings->get_next_localdef_id (
 				       crate_num));
 
-      // FIXME
-      // AST::StructField is missing Location info
-      Location field_locus;
       HIR::StructField translated_field (mapping, field.get_field_name (),
 					 std::unique_ptr<HIR::Type> (type), vis,
-					 field_locus, field.get_outer_attrs ());
+					 field.get_locus (),
+					 field.get_outer_attrs ());
       fields.push_back (std::move (translated_field));
       return true;
     });
@@ -240,12 +238,9 @@ public:
 				     mappings->get_next_localdef_id (
 				       crate_num));
 
-      // FIXME
-      // AST::StructField is missing Location info
-      Location variant_locus;
       HIR::StructField translated_variant (mapping, variant.get_field_name (),
 					   std::unique_ptr<HIR::Type> (type),
-					   vis, variant_locus,
+					   vis, variant.get_locus (),
 					   variant.get_outer_attrs ());
       variants.push_back (std::move (translated_variant));
       return true;

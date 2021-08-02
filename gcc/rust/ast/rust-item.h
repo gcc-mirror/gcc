@@ -2002,8 +2002,9 @@ private:
 
   std::unique_ptr<Type> field_type;
 
-  // should this store location info?
   NodeId node_id;
+
+  Location locus;
 
 public:
   // Returns whether tuple field has outer attributes.
@@ -2014,17 +2015,17 @@ public:
   bool has_visibility () const { return !visibility.is_error (); }
 
   // Complete constructor
-  TupleField (std::unique_ptr<Type> field_type, Visibility vis,
+  TupleField (std::unique_ptr<Type> field_type, Visibility vis, Location locus,
 	      std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       field_type (std::move (field_type)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
 
   // Copy constructor with clone
   TupleField (TupleField const &other)
     : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      node_id (other.node_id)
+      node_id (other.node_id), locus (other.locus)
   {
     // guard to prevent null dereference (only required if error)
     if (other.field_type != nullptr)
@@ -2039,6 +2040,7 @@ public:
     visibility = other.visibility;
     outer_attrs = other.outer_attrs;
     node_id = other.node_id;
+    locus = other.locus;
 
     // guard to prevent null dereference (only required if error)
     if (other.field_type != nullptr)
@@ -2059,12 +2061,14 @@ public:
   // Creates an error state tuple field.
   static TupleField create_error ()
   {
-    return TupleField (nullptr, Visibility::create_error ());
+    return TupleField (nullptr, Visibility::create_error (), Location ());
   }
 
   std::string as_string () const;
 
-  NodeId get_node_id () const { return node_id; };
+  NodeId get_node_id () const { return node_id; }
+
+  Location get_locus () const { return locus; }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
