@@ -1343,7 +1343,7 @@ namespace ranges
 	    *__result = *__tail;
 	    ++__result;
 	  }
-	return {__i, __result};
+	return {__i, std::move(__result)};
       }
 
     template<bidirectional_range _Range, weakly_incrementable _Out>
@@ -2423,14 +2423,14 @@ namespace ranges
   struct __partition_copy_fn
   {
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
-	     weakly_incrementable _Out1, weakly_incrementable _O2,
+	     weakly_incrementable _Out1, weakly_incrementable _Out2,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
       requires indirectly_copyable<_Iter, _Out1>
-	&& indirectly_copyable<_Iter, _O2>
-      constexpr partition_copy_result<_Iter, _Out1, _O2>
+	&& indirectly_copyable<_Iter, _Out2>
+      constexpr partition_copy_result<_Iter, _Out1, _Out2>
       operator()(_Iter __first, _Sent __last,
-		 _Out1 __out_true, _O2 __out_false,
+		 _Out1 __out_true, _Out2 __out_false,
 		 _Pred __pred, _Proj __proj = {}) const
       {
 	for (; __first != __last; ++__first)
@@ -2450,18 +2450,18 @@ namespace ranges
       }
 
     template<input_range _Range, weakly_incrementable _Out1,
-	     weakly_incrementable _O2,
+	     weakly_incrementable _Out2,
 	     typename _Proj = identity,
 	     indirect_unary_predicate<projected<iterator_t<_Range>, _Proj>>
 	       _Pred>
       requires indirectly_copyable<iterator_t<_Range>, _Out1>
-	&& indirectly_copyable<iterator_t<_Range>, _O2>
-      constexpr partition_copy_result<borrowed_iterator_t<_Range>, _Out1, _O2>
-      operator()(_Range&& __r, _Out1 out_true, _O2 out_false,
+	&& indirectly_copyable<iterator_t<_Range>, _Out2>
+      constexpr partition_copy_result<borrowed_iterator_t<_Range>, _Out1, _Out2>
+      operator()(_Range&& __r, _Out1 __out_true, _Out2 __out_false,
 		 _Pred __pred, _Proj __proj = {}) const
       {
 	return (*this)(ranges::begin(__r), ranges::end(__r),
-		       std::move(out_true), std::move(out_false),
+		       std::move(__out_true), std::move(__out_false),
 		       std::move(__pred), std::move(__proj));
       }
   };
