@@ -2726,6 +2726,15 @@ DEFHOOK
  rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, int cmp_code, tree op0, tree op1, int bit_code),
  NULL)
 
+DEFHOOK
+(gen_memset_scratch_rtx,
+ "This hook should return an rtx for a scratch register in @var{mode} to\n\
+be used when expanding memset calls.  The backend can use a hard scratch\n\
+register to avoid stack realignment when expanding memset.  The default\n\
+is @code{gen_reg_rtx}.",
+ rtx, (machine_mode mode),
+ gen_reg_rtx)
+
 /* Return a new value for loop unroll size.  */
 DEFHOOK
 (loop_unroll_adjust,

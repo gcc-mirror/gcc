@@ -273,6 +273,7 @@ if $GLIBCXX_IS_NATIVE; then
   AC_CHECK_FUNCS(__cxa_thread_atexit_impl __cxa_thread_atexit)
   AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
   AC_CHECK_FUNCS(_wfopen)
+  AC_CHECK_FUNCS(secure_getenv)
 
   # C11 functions for C++17 library
   AC_CHECK_FUNCS(timespec_get)

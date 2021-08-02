@@ -10566,6 +10566,110 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
   return saw_copy;
 }
 
+/* Return true if DERIVED is pointer interconvertible base of BASE.  */
+
+static bool
+pointer_interconvertible_base_of_p (tree base, tree derived)
+{
+  if (base == error_mark_node || derived == error_mark_node)
+    return false;
+  base = TYPE_MAIN_VARIANT (base);
+  derived = TYPE_MAIN_VARIANT (derived);
+  if (!NON_UNION_CLASS_TYPE_P (base)
+      || !NON_UNION_CLASS_TYPE_P (derived))
+    return false;
+    
+  if (same_type_p (base, derived))
+    return true;
+
+  if (!std_layout_type_p (derived))
+    return false;
+
+  return uniquely_derived_from_p (base, derived);
+}
+
+/* Helper function for fold_builtin_is_pointer_inverconvertible_with_class,
+   return true if MEMBERTYPE is the type of the first non-static data member
+   of TYPE or for unions of any members.  */
+static bool
+first_nonstatic_data_member_p (tree type, tree membertype)
+{
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+      if (DECL_FIELD_IS_BASE (field) && is_empty_field (field))
+	continue;
+      if (DECL_FIELD_IS_BASE (field))
+	return first_nonstatic_data_member_p (TREE_TYPE (field), membertype);
+      if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	{
+	  if ((TREE_CODE (TREE_TYPE (field)) == UNION_TYPE
+	       || std_layout_type_p (TREE_TYPE (field)))
+	      && first_nonstatic_data_member_p (TREE_TYPE (field), membertype))
+	    return true;
+	}
+      else if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field),
+							  membertype))
+	return true;
+      if (TREE_CODE (type) != UNION_TYPE)
+	return false;
+    }
+  return false;
+}
+
+/* Fold __builtin_is_pointer_interconvertible_with_class call.  */
+
+tree
+fold_builtin_is_pointer_inverconvertible_with_class (location_t loc, int nargs,
+						     tree *args)
+{
+  /* Unless users call the builtin directly, the following 3 checks should be
+     ensured from std::is_pointer_interconvertible_with_class function
+     template.  */
+  if (nargs != 1)
+    {
+      error_at (loc, "%<__builtin_is_pointer_interconvertible_with_class%> "
+		     "needs a single argument");
+      return boolean_false_node;
+    }
+  tree arg = args[0];
+  if (error_operand_p (arg))
+    return boolean_false_node;
+  if (!TYPE_PTRMEM_P (TREE_TYPE (arg)))
+    {
+      error_at (loc, "%<__builtin_is_pointer_interconvertible_with_class%> "
+		     "argument is not pointer to member");
+      return boolean_false_node;
+    }
+
+  if (!TYPE_PTRDATAMEM_P (TREE_TYPE (arg)))
+    return boolean_false_node;
+
+  tree membertype = TREE_TYPE (TREE_TYPE (arg));
+  tree basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg));
+  if (!complete_type_or_else (basetype, NULL_TREE))
+    return boolean_false_node;
+
+  if (TREE_CODE (basetype) != UNION_TYPE
+      && !std_layout_type_p (basetype))
+    return boolean_false_node;
+
+  if (!first_nonstatic_data_member_p (basetype, membertype))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg) == PTRMEM_CST)
+    arg = cplus_expand_constant (arg);
+
+  if (integer_nonzerop (arg))
+    return boolean_false_node;
+  if (integer_zerop (arg))
+    return boolean_true_node;
+
+  return fold_build2 (EQ_EXPR, boolean_type_node, arg,
+		      build_zero_cst (TREE_TYPE (arg)));
+}
+
 /* Actually evaluates the trait.  */
 
 static bool
@@ -10658,6 +10762,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_LITERAL_TYPE:
       return literal_type_p (type1);
+
+    case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
+      return pointer_interconvertible_base_of_p (type1, type2);
 
     case CPTK_IS_POD:
       return pod_type_p (type1);
@@ -10786,6 +10893,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
       break;
 
     case CPTK_IS_BASE_OF:
+    case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       if (NON_UNION_CLASS_TYPE_P (type1) && NON_UNION_CLASS_TYPE_P (type2)
 	  && !same_type_ignoring_top_level_qualifiers_p (type1, type2)
 	  && !complete_type_or_else (type2, NULL_TREE))
@@ -10803,9 +10911,9 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
       gcc_unreachable ();
     }
 
-tree val = (trait_expr_value (kind, type1, type2)
-	    ? boolean_true_node : boolean_false_node);
- return maybe_wrap_with_location (val, loc);
+  tree val = (trait_expr_value (kind, type1, type2)
+	      ? boolean_true_node : boolean_false_node);
+  return maybe_wrap_with_location (val, loc);
 }
 
 /* Do-nothing variants of functions to handle pragma FLOAT_CONST_DECIMAL64,

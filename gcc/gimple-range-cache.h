@@ -52,9 +52,9 @@ public:
   block_range_cache ();
   ~block_range_cache ();
 
-  bool set_bb_range (tree name, const basic_block bb, const irange &r);
-  bool get_bb_range (irange &r, tree name, const basic_block bb);
-  bool bb_range_p (tree name, const basic_block bb);
+  bool set_bb_range (tree name, const_basic_block bb, const irange &r);
+  bool get_bb_range (irange &r, tree name, const_basic_block bb);
+  bool bb_range_p (tree name, const_basic_block bb);
 
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb, bool print_varying = true);

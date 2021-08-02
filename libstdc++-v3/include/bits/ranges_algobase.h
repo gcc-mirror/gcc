@@ -244,7 +244,7 @@ namespace ranges
       else if constexpr (__is_normal_iterator<_Out>)
 	{
 	  auto [__in,__out]
-	    = ranges::__copy_or_move<_IsMove>(__first, __last, __result.base());
+	    = ranges::__copy_or_move<_IsMove>(std::move(__first), __last, __result.base());
 	  return {std::move(__in), decltype(__result){__out}};
 	}
       else if constexpr (sized_sentinel_for<_Sent, _Iter>)

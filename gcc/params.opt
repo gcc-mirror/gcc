@@ -1010,10 +1010,6 @@ Maximum depth of DFS walk used by modref escape analysis.
 Common Joined UInteger Var(param_modref_max_escape_points) Init(256) Param Optimization
 Maximum number of escape points tracked by modref per SSA-name.
 
--param=threader-iterative=
-Common Joined UInteger Var(param_threader_iterative) Init(0) Param Optimization
-Run backwards threader in iterative mode.
-
 -param=threader-mode=
 Common Joined Var(param_threader_mode) Enum(threader_mode) Init(THREADER_MODE_RANGER) Param Optimization
 --param=threader-mode=[legacy|ranger] Specifies the mode the backwards threader should run in.

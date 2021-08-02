@@ -3261,6 +3261,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
       break;
 
     case FIX:
+    case UNSIGNED_FIX:
       /* Conversion of floating point might trap.  */
       if (flag_trapping_math && HONOR_NANS (XEXP (x, 0)))
 	return 1;
@@ -4323,6 +4324,17 @@ simplify_subreg_regno (unsigned int xregno, machine_mode xmode,
     return -1;
 
   return (int) yregno;
+}
+
+/* A wrapper around simplify_subreg_regno that uses subreg_lowpart_offset
+   (xmode, ymode) as the offset.  */
+
+int
+lowpart_subreg_regno (unsigned int regno, machine_mode xmode,
+		      machine_mode ymode)
+{
+  poly_uint64 offset = subreg_lowpart_offset (xmode, ymode);
+  return simplify_subreg_regno (regno, xmode, offset, ymode);
 }
 
 /* Return the final regno that a subreg expression refers to.  */

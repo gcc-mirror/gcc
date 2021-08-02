@@ -421,6 +421,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_enum",	RID_IS_ENUM,	D_CXXONLY },
   { "__is_final",	RID_IS_FINAL,	D_CXXONLY },
   { "__is_literal_type", RID_IS_LITERAL_TYPE, D_CXXONLY },
+  { "__is_pointer_interconvertible_base_of",
+			RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF, D_CXXONLY },
   { "__is_pod",		RID_IS_POD,	D_CXXONLY },
   { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
   { "__is_same",     RID_IS_SAME_AS, D_CXXONLY },

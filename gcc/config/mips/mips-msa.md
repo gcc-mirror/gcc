@@ -435,6 +435,28 @@
   DONE;
 })
 
+(define_expand "vec_cmp<MSA:mode><mode_i>"
+  [(match_operand:<VIMODE> 0 "register_operand")
+   (match_operator 1 ""
+     [(match_operand:MSA 2 "register_operand")
+      (match_operand:MSA 3 "register_operand")])]
+  "ISA_HAS_MSA"
+{
+  mips_expand_vec_cmp_expr (operands);
+  DONE;
+})
+
+(define_expand "vec_cmpu<IMSA:mode><mode_i>"
+  [(match_operand:<VIMODE> 0 "register_operand")
+   (match_operator 1 ""
+     [(match_operand:IMSA 2 "register_operand")
+      (match_operand:IMSA 3 "register_operand")])]
+  "ISA_HAS_MSA"
+{
+  mips_expand_vec_cmp_expr (operands);
+  DONE;
+})
+
 (define_insn "msa_insert_<msafmt_f>"
   [(set (match_operand:MSA 0 "register_operand" "=f,f")
 	(vec_merge:MSA

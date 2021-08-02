@@ -163,8 +163,8 @@
 2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR testsuite/101646
-	* g++.dg/coroutines/pr99047.C:
-	* g++.dg/pr71655.C:
+	* g++.dg/coroutines/pr99047.C: Fix includes.
+	* g++.dg/pr71655.C: Likewise.
 
 2021-07-27  Martin Sebor  <msebor@redhat.com>
 

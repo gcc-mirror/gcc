@@ -108,13 +108,13 @@ enum block_op_methods
 };
 
 typedef rtx (*by_pieces_constfn) (void *, void *, HOST_WIDE_INT,
-				  scalar_int_mode);
+				  fixed_size_mode);
 
 /* The second pointer passed to by_pieces_constfn.  */
 struct by_pieces_prev
 {
   rtx data;
-  scalar_int_mode mode;
+  fixed_size_mode mode;
 };
 
 extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);

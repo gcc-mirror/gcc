@@ -625,7 +625,9 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       && !register_operand (op0, mode)
       && !register_operand (op1, mode))
     {
-      emit_move_insn (op0, force_reg (GET_MODE (op0), op1));
+      rtx tmp = ix86_gen_scratch_sse_rtx (GET_MODE (op0));
+      emit_move_insn (tmp, op1);
+      emit_move_insn (op0, tmp);
       return;
     }
 

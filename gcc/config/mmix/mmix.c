@@ -1624,6 +1624,12 @@ mmix_print_operand (FILE *stream, rtx x, int code)
       fprintf (stream, "%d", MMIX_POP_ARGUMENT ());
       return;
 
+    case '!':
+      /* The number of registers we want to save.  This was setup by the
+	 prologue.  */
+      fprintf (stream, "%d", cfun->machine->highest_saved_stack_register + 1);
+      return;
+
     case 'B':
       if (GET_CODE (x) != CONST_INT)
 	fatal_insn ("MMIX Internal: Expected a CONST_INT, not this", x);
@@ -1710,15 +1716,6 @@ mmix_print_operand (FILE *stream, rtx x, int code)
 	}
       fprintf (stream, "%" PRId64,
 	       (int64_t) (mmix_intval (x) - 1));
-      return;
-
-    case 'p':
-      /* Store the number of registers we want to save.  This was setup
-	 by the prologue.  The actual operand contains the number of
-	 registers to pass, but we don't use it currently.  Anyway, we
-	 need to output the number of saved registers here.  */
-      fprintf (stream, "%d",
-	       cfun->machine->highest_saved_stack_register + 1);
       return;
 
     case 'r':
@@ -1830,7 +1827,10 @@ mmix_print_operand_punct_valid_p (unsigned char code)
   /* A '+' is used for branch prediction, similar to other ports.  */
   return code == '+'
     /* A '.' is used for the %d in the POP %d,0 return insn.  */
-    || code == '.';
+    || code == '.'
+    /* A '!' is used for the number of saved registers, like when outputting
+       PUSHJ and PUSHGO. */
+    || code == '!';
 }
 
 /* TARGET_PRINT_OPERAND_ADDRESS.  */

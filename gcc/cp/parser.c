@@ -5799,6 +5799,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_ENUM:
 	case RID_IS_FINAL:
 	case RID_IS_LITERAL_TYPE:
+	case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
 	case RID_IS_POD:
 	case RID_IS_POLYMORPHIC:
 	case RID_IS_SAME_AS:
@@ -10688,6 +10689,10 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     case RID_IS_LITERAL_TYPE:
       kind = CPTK_IS_LITERAL_TYPE;
       break;
+    case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
+      kind = CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF;
+      binary = true;
+      break;
     case RID_IS_POD:
       kind = CPTK_IS_POD;
       break;
@@ -14426,6 +14431,25 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
     {
       location_t attrs_loc = token1->location;
       tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+
+      if (std_attrs && (flag_openmp || flag_openmp_simd))
+	{
+	  gcc_assert (!parser->lexer->in_omp_attribute_pragma);
+	  std_attrs = cp_parser_handle_statement_omp_attributes (parser,
+								 std_attrs);
+	  if (parser->lexer->in_omp_attribute_pragma)
+	    {
+	      cp_lexer *lexer = parser->lexer;
+	      while (parser->lexer->in_omp_attribute_pragma)
+		{
+		  gcc_assert (cp_lexer_next_token_is (parser->lexer,
+						      CPP_PRAGMA));
+		  cp_parser_pragma (parser, pragma_external, NULL);
+		}
+	      cp_lexer_destroy (lexer);
+	    }
+	}
+
       if (std_attrs != NULL_TREE)
 	warning_at (make_location (attrs_loc, attrs_loc, parser->lexer),
 		    OPT_Wattributes, "attribute ignored");

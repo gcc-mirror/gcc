@@ -12158,6 +12158,13 @@ This function prepares to emit a conditional comparison within a sequence
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.
 @end deftypefn
 
+@deftypefn {Target Hook} rtx TARGET_GEN_MEMSET_SCRATCH_RTX (machine_mode @var{mode})
+This hook should return an rtx for a scratch register in @var{mode} to
+be used when expanding memset calls.  The backend can use a hard scratch
+register to avoid stack realignment when expanding memset.  The default
+is @code{gen_reg_rtx}.
+@end deftypefn
+
 @deftypefn {Target Hook} unsigned TARGET_LOOP_UNROLL_ADJUST (unsigned @var{nunroll}, class loop *@var{loop})
 This target hook returns a new value for the number of times @var{loop}
 should be unrolled. The parameter @var{nunroll} is the number of times

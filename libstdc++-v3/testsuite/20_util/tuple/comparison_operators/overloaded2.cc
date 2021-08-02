@@ -50,3 +50,4 @@ auto a = std::make_tuple(nullptr, Compares{}, 2, 'U');
 auto b = a < a;
 
 // { dg-error "ordered comparison" "" { target *-*-* } 0 }
+// { dg-error "not a return-statement" "" { target c++11_only } 0 }
