@@ -318,6 +318,7 @@ namespace std
     _OIter 
     rotate_copy (_FIter, _FIter, _FIter, _OIter);
 
+#if __cplusplus <= 201103L
   template<typename _RAIter>
     void 
     random_shuffle(_RAIter, _RAIter);
@@ -325,6 +326,13 @@ namespace std
   template<typename _RAIter, typename _Generator>
     void 
     random_shuffle(_RAIter, _RAIter, _Generator&);
+#endif
+
+#if __cplusplus >= 201103L
+  template<typename _RAIter, typename _UniformRandomBitGenerator>
+    void
+    shuffle(_RAIter, _RAIter, _UniformRandomBitGenerator&);
+#endif
 
   // 25.2.12, partitions:
   template<typename _BIter, typename _Predicate>

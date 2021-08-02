@@ -56,7 +56,6 @@
 #ifndef _STL_ALGO_H
 #define _STL_ALGO_H 1
 
-#include <cstdlib>	     // for rand
 #include <bits/algorithmfwd.h>
 #include <bits/stl_heap.h>
 #include <bits/stl_tempbuf.h>  // for _Temporary_buffer
@@ -64,6 +63,10 @@
 
 #if __cplusplus >= 201103L
 #include <bits/uniform_int_dist.h>
+#endif
+
+#if _GLIBCXX_HOSTED && (__cplusplus <= 201103L || _GLIBCXX_USE_DEPRECATED)
+#include <cstdlib>	     // for rand
 #endif
 
 // See concept_check.h for the __glibcxx_*_requires macros.
@@ -4551,6 +4554,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 				std::__iterator_category(__result));
     }
 
+#if __cplusplus <= 201103L || _GLIBCXX_USE_DEPRECATED
 #if _GLIBCXX_HOSTED
   /**
    *  @brief Randomly shuffle the elements of a sequence.
@@ -4564,6 +4568,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  equally likely.
   */
   template<typename _RandomAccessIterator>
+    _GLIBCXX14_DEPRECATED_SUGGEST("std::shuffle")
     inline void
     random_shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
@@ -4599,6 +4604,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  range [0,N).
   */
   template<typename _RandomAccessIterator, typename _RandomNumberGenerator>
+    _GLIBCXX14_DEPRECATED_SUGGEST("std::shuffle")
     void
     random_shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last,
 #if __cplusplus >= 201103L
@@ -4621,7 +4627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    std::iter_swap(__i, __j);
 	}
     }
-
+#endif // C++11 || USE_DEPRECATED
 
   /**
    *  @brief Move elements for which a predicate is true to the beginning
