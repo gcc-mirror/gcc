@@ -3103,8 +3103,8 @@ namespace views::__adaptor
 	    : _M_i(std::move(__i))
 	  { }
 
-	  constexpr iterator_t<_Base>
-	  base() const& requires copyable<iterator_t<_Base>>
+	  constexpr const iterator_t<_Base>&
+	  base() const& noexcept
 	  { return _M_i_current(); }
 
 	  constexpr iterator_t<_Base>
@@ -3786,8 +3786,8 @@ namespace views::__adaptor
 	: _M_base(std::move(base))
       { }
 
-      constexpr const _Vp&
-      base() const & noexcept
+      constexpr _Vp
+      base() const& requires copy_constructible<_Vp>
       { return _M_base; }
 
       constexpr _Vp
@@ -3913,9 +3913,8 @@ namespace views::__adaptor
 	    : _M_current(std::move(i._M_current))
 	  { }
 
-	  constexpr iterator_t<_Base>
-	  base() const&
-	    requires copyable<iterator_t<_Base>>
+	  constexpr const iterator_t<_Base>&
+	  base() const& noexcept
 	  { return _M_current; }
 
 	  constexpr iterator_t<_Base>
