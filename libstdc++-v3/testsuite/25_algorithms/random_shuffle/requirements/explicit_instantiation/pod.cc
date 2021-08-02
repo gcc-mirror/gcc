@@ -33,6 +33,6 @@ namespace std
   typedef std::pointer_to_unary_function<int, int>  generator_type;
 
   template void random_shuffle(iterator_type, iterator_type);
-  template void random_shuffle(iterator_type, iterator_type, 
+  template void random_shuffle(iterator_type, iterator_type,
 			       generator_type&);
-} 
+}

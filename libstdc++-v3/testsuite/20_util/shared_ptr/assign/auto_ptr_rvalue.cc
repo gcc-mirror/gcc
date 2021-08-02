@@ -44,7 +44,7 @@ test02()
   a = std::move(au);
 }
 
-int 
+int
 main()
 {
   test01();
