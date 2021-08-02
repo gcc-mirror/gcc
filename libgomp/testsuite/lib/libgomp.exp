@@ -374,11 +374,6 @@ proc check_effective_target_offload_target_amdgcn { } {
     return [libgomp_check_effective_target_offload_target "amdgcn"]
 }
 
-# Return 1 if compiling for offload target intelmic
-proc check_effective_target_offload_target_intelmic { } {
-    return [libgomp_check_effective_target_offload_target "*-intelmic"]
-}
-
 # Return 1 if offload device is available.
 proc check_effective_target_offload_device { } {
     return [check_runtime_nocache offload_device_available_ {
@@ -451,6 +446,18 @@ proc check_effective_target_openacc_nvidia_accel_selected { } {
     }
     global openacc_device_type
     return [string match "nvidia" $openacc_device_type]
+}
+
+# Return 1 if using Intel MIC offload device.
+proc check_effective_target_offload_device_intel_mic { } {
+    return [check_runtime_nocache offload_device_intel_mic {
+      #include <omp.h>
+      #include "testsuite/libgomp.c-c++-common/on_device_arch.h"
+      int main ()
+	{
+	  return !on_device_arch_intel_mic ();
+	}
+    } ]
 }
 
 # Return 1 if the OpenACC 'host' device type is selected.
