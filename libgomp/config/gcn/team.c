@@ -189,6 +189,10 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   if (nthreads == 1)
     return;
 
+  unsigned actual_thread_count = __builtin_gcn_dim_size (1);
+  if (nthreads > actual_thread_count)
+    nthreads = actual_thread_count;
+
   /* Release existing idle threads.  */
   for (unsigned i = 1; i < nthreads; ++i)
     {
