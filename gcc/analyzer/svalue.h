@@ -126,6 +126,7 @@ public:
   dyn_cast_conjured_svalue () const { return NULL; }
 
   tree maybe_get_constant () const;
+  const region *maybe_get_region () const;
   const svalue *maybe_undo_cast () const;
   const svalue *unwrap_any_unmergeable () const;
 
@@ -158,6 +159,11 @@ public:
 			  region_model_manager *mgr) const;
 
   virtual bool all_zeroes_p () const;
+
+  /* Can this svalue be involved in constraints and sm-state?
+     Most can, but UNKNOWN and POISONED svalues are singletons
+     per-type and thus it's meaningless for them to "have state".  */
+  virtual bool can_have_associated_state_p () const { return true; }
 
  protected:
   svalue (complexity c, tree type)
@@ -318,12 +324,18 @@ public:
   maybe_fold_bits_within (tree type,
 			  const bit_range &subrange,
 			  region_model_manager *mgr) const FINAL OVERRIDE;
+
+  /* Unknown values are singletons per-type, so can't have state.  */
+  bool can_have_associated_state_p () const FINAL OVERRIDE { return false; }
 };
 
 /* An enum describing a particular kind of "poisoned" value.  */
 
 enum poison_kind
 {
+  /* For use to describe uninitialized memory.  */
+  POISON_KIND_UNINIT,
+
   /* For use to describe freed memory.  */
   POISON_KIND_FREED,
 
@@ -378,7 +390,15 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
   void accept (visitor *v) const FINAL OVERRIDE;
 
+  const svalue *
+  maybe_fold_bits_within (tree type,
+			  const bit_range &subrange,
+			  region_model_manager *mgr) const FINAL OVERRIDE;
+
   enum poison_kind get_poison_kind () const { return m_kind; }
+
+  /* Poisoned svalues are singletons per-type, so can't have state.  */
+  bool can_have_associated_state_p () const FINAL OVERRIDE { return false; }
 
  private:
   enum poison_kind m_kind;
@@ -593,6 +613,7 @@ public:
   unaryop_svalue (tree type, enum tree_code op, const svalue *arg)
   : svalue (complexity (arg), type), m_op (op), m_arg (arg)
   {
+    gcc_assert (arg->can_have_associated_state_p ());
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_UNARYOP; }
@@ -685,6 +706,8 @@ public:
 	     type),
     m_op (op), m_arg0 (arg0), m_arg1 (arg1)
   {
+    gcc_assert (arg0->can_have_associated_state_p ());
+    gcc_assert (arg1->can_have_associated_state_p ());
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_BINOP; }
@@ -1055,7 +1078,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <placeholder_svalue *>::test (svalue *sval)
+is_a_helper <const placeholder_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_PLACEHOLDER;
 }
@@ -1126,6 +1149,8 @@ public:
     m_point (point.get_function_point ()),
     m_base_sval (base_sval), m_iter_sval (iter_sval)
   {
+    gcc_assert (base_sval->can_have_associated_state_p ());
+    gcc_assert (iter_sval->can_have_associated_state_p ());
   }
 
   enum svalue_kind get_kind () const FINAL OVERRIDE { return SK_WIDENING; }
@@ -1157,7 +1182,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <widening_svalue *>::test (svalue *sval)
+is_a_helper <const widening_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_WIDENING;
 }
@@ -1258,7 +1283,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <compound_svalue *>::test (svalue *sval)
+is_a_helper <const compound_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_COMPOUND;
 }
@@ -1358,7 +1383,7 @@ public:
 template <>
 template <>
 inline bool
-is_a_helper <conjured_svalue *>::test (svalue *sval)
+is_a_helper <const conjured_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_CONJURED;
 }

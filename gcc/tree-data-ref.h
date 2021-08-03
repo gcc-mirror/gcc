@@ -534,9 +534,9 @@ extern void debug (vec<ddr_p> &ref);
 extern void debug (vec<ddr_p> *ptr);
 extern void debug_data_dependence_relations (vec<ddr_p> );
 extern void free_dependence_relation (struct data_dependence_relation *);
-extern void free_dependence_relations (vec<ddr_p> );
+extern void free_dependence_relations (vec<ddr_p>& );
 extern void free_data_ref (data_reference_p);
-extern void free_data_refs (vec<data_reference_p> );
+extern void free_data_refs (vec<data_reference_p>& );
 extern opt_result find_data_references_in_stmt (class loop *, gimple *,
 						vec<data_reference_p> *);
 extern bool graphite_find_data_references_in_stmt (edge, loop_p, gimple *,
@@ -551,9 +551,9 @@ extern struct data_dependence_relation *initialize_data_dependence_relation
 extern void compute_affine_dependence (struct data_dependence_relation *,
 				       loop_p);
 extern void compute_self_dependence (struct data_dependence_relation *);
-extern bool compute_all_dependences (vec<data_reference_p> ,
+extern bool compute_all_dependences (const vec<data_reference_p> &,
 				     vec<ddr_p> *,
-				     vec<loop_p>, bool);
+				     const vec<loop_p> &, bool);
 extern tree find_data_references_in_bb (class loop *, basic_block,
                                         vec<data_reference_p> *);
 extern unsigned int dr_alignment (innermost_loop_behavior *);
@@ -578,7 +578,8 @@ extern int data_ref_compare_tree (tree, tree);
 extern void prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *,
 					   poly_uint64);
 extern void create_runtime_alias_checks (class loop *,
-					 vec<dr_with_seg_len_pair_t> *, tree*);
+					 const vec<dr_with_seg_len_pair_t> *,
+					 tree*);
 extern tree dr_direction_indicator (struct data_reference *);
 extern tree dr_zero_step_indicator (struct data_reference *);
 extern bool dr_known_forward_stride_p (struct data_reference *);
@@ -666,7 +667,7 @@ ddr_dependence_level (ddr_p ddr)
 /* Return the index of the variable VAR in the LOOP_NEST array.  */
 
 static inline int
-index_in_loop_nest (int var, vec<loop_p> loop_nest)
+index_in_loop_nest (int var, const vec<loop_p> &loop_nest)
 {
   class loop *loopi;
   int var_index;

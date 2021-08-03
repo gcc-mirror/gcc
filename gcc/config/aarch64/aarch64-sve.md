@@ -6870,7 +6870,7 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
-(define_insn "@aarch64_<sur>dot_prod<vsi2qi>"
+(define_insn "@<sur>dot_prod<vsi2qi>"
   [(set (match_operand:VNx4SI_ONLY 0 "register_operand" "=w, ?&w")
         (plus:VNx4SI_ONLY
 	  (unspec:VNx4SI_ONLY

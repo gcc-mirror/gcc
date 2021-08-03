@@ -1537,7 +1537,8 @@ compute_hash_table_work (struct gcse_hash_table_d *table)
 		record_last_reg_set_info (insn, regno);
 
 	      if (! RTL_CONST_OR_PURE_CALL_P (insn)
-		  || RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
+		  || RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
+		  || can_throw_external (insn))
 		record_last_mem_set_info (insn);
 	    }
 

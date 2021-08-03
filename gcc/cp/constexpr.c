@@ -1427,8 +1427,20 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
       && ctx->call
       && ctx->call->fundef)
     current_function_decl = ctx->call->fundef->decl;
-  new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
-				      CALL_EXPR_FN (t), nargs, args);
+  if (fndecl_built_in_p (fun,
+			 CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
+			 BUILT_IN_FRONTEND))
+    {
+      location_t loc = EXPR_LOCATION (t);
+      if (nargs >= 1)
+	VERIFY_CONSTANT (args[0]);
+      new_call
+	= fold_builtin_is_pointer_inverconvertible_with_class (loc, nargs,
+							       args);
+    }
+  else
+    new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
+					CALL_EXPR_FN (t), nargs, args);
   current_function_decl = save_cur_fn;
   force_folding_builtin_constant_p = save_ffbcp;
   if (new_call == NULL)
@@ -3851,16 +3863,23 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
     {
       tree empty_ctor = build_constructor (init_list_type_node, NULL);
       val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
-      new_ctx = *ctx;
-      new_ctx.object = t;
-      new_ctx.ctor = build_constructor (elem_type, NULL);
-      ctx = &new_ctx;
     }
   else
     val = build_value_init (elem_type, tf_warning_or_error);
+
+  if (!SCALAR_TYPE_P (elem_type))
+    {
+      new_ctx = *ctx;
+      if (ctx->object)
+	/* If there was no object, don't add one: it could confuse us
+	   into thinking we're modifying a const object.  */
+	new_ctx.object = t;
+      new_ctx.ctor = build_constructor (elem_type, NULL);
+      ctx = &new_ctx;
+    }
   t = cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
 				    overflow_p);
-  if (CP_AGGREGATE_TYPE_P (elem_type) && t != ctx->ctor)
+  if (!SCALAR_TYPE_P (elem_type) && t != ctx->ctor)
     free_constructor (ctx->ctor);
   return t;
 }

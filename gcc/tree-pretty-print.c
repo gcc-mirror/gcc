@@ -1303,6 +1303,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_FINALIZE:
       pp_string (pp, "finalize");
       break;
+    case OMP_CLAUSE_NOHOST:
+      pp_string (pp, "nohost");
+      break;
     case OMP_CLAUSE_DETACH:
       pp_string (pp, "detach(");
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause), spc, flags,

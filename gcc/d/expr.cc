@@ -101,8 +101,6 @@ binary_op (tree_code code, tree type, tree arg0, tree arg1)
   tree t1 = TREE_TYPE (arg1);
   tree ret = NULL_TREE;
 
-  bool unsignedp = TYPE_UNSIGNED (t0) || TYPE_UNSIGNED (t1);
-
   /* Deal with float mod expressions immediately.  */
   if (code == FLOAT_MOD_EXPR)
     return build_float_modulus (type, arg0, arg1);
@@ -130,12 +128,6 @@ binary_op (tree_code code, tree type, tree arg0, tree arg1)
       else
 	ret = fold_build2 (POINTER_DIFF_EXPR, ptrtype, arg0, arg1);
     }
-  else if (INTEGRAL_TYPE_P (type) && (TYPE_UNSIGNED (type) != unsignedp))
-    {
-      tree inttype = (unsignedp)
-	? d_unsigned_type (type) : d_signed_type (type);
-      ret = fold_build2 (code, inttype, arg0, arg1);
-    }
   else
     {
       /* If the operation needs excess precision.  */
@@ -157,7 +149,7 @@ binary_op (tree_code code, tree type, tree arg0, tree arg1)
 	  eptype = type;
 	}
 
-      ret = fold_build2 (code, eptype, arg0, arg1);
+      ret = build2 (code, eptype, arg0, arg1);
     }
 
   return d_convert (type, ret);
@@ -1163,9 +1155,9 @@ public:
 	bool destructor = needs_dtor (etype);
 	bool lvalue = lvalue_p (e->e2);
 
-	/* Even if the elements in rhs are all rvalues and don't have
-	   to call postblits, this assignment should call dtors on old
-	   assigned elements.  */
+	/* Optimize static array assignment with array literal.  Even if the
+	   elements in rhs are all rvalues and don't have to call postblits,
+	   this assignment should call dtors on old assigned elements.  */
 	if ((!postblit && !destructor)
 	    || (e->op == TOKconstruct && e->e2->op == TOKarrayliteral)
 	    || (e->op == TOKconstruct && !lvalue && postblit)
@@ -1491,7 +1483,7 @@ public:
     if (tbtype->ty == Tvoid)
       this->result_ = build_nop (build_ctype (tbtype), result);
     else
-      this->result_ = convert_expr (result, ebtype, tbtype);
+      this->result_ = convert_for_rvalue (result, ebtype, tbtype);
   }
 
   /* Build a delete expression.  */
@@ -1751,6 +1743,7 @@ public:
     tree callee = NULL_TREE;
     tree object = NULL_TREE;
     tree cleanup = NULL_TREE;
+    tree returnvalue = NULL_TREE;
     TypeFunction *tf = NULL;
 
     /* Calls to delegates can sometimes look like this.  */
@@ -1819,6 +1812,15 @@ public:
 		else
 		  fndecl = build_address (fndecl);
 
+		/* C++ constructors return void, even though front-end semantic
+		   treats them as implicitly returning `this'.  Set returnvalue
+		   to override the result of this expression.  */
+		if (fd->isCtorDeclaration () && fd->linkage == LINKcpp)
+		  {
+		    thisexp = d_save_expr (thisexp);
+		    returnvalue = thisexp;
+		  }
+
 		callee = build_method_call (fndecl, thisexp, fd->type);
 	      }
 	  }
@@ -1884,6 +1886,9 @@ public:
     /* Now we have the type, callee and maybe object reference,
        build the call expression.  */
     tree exp = d_build_call (tf, callee, object, e->arguments);
+
+    if (returnvalue != NULL_TREE)
+      exp = compound_expr (exp, returnvalue);
 
     if (tf->isref)
       exp = build_deref (exp);
@@ -2072,15 +2077,9 @@ public:
       }
     else
       {
-	/* Assert contracts are turned off, if the contract condition has no
-	   side effects can still use it as a predicate for the optimizer.  */
-	if (TREE_SIDE_EFFECTS (arg))
-	  {
-	    this->result_ = void_node;
-	    return;
-	  }
-
-	assert_fail = build_predict_expr (PRED_NORETURN, NOT_TAKEN);
+	/* Assert contracts are turned off.  */
+	this->result_ = void_node;
+	return;
       }
 
     /* Build condition that we are asserting in this contract.  */
@@ -3169,11 +3168,14 @@ build_return_dtor (Expression *e, Type *type, TypeFunction *tf)
   tree result = build_expr (e);
 
   /* Convert for initializing the DECL_RESULT.  */
-  result = convert_expr (result, e->type, type);
-
-  /* If we are returning a reference, take the address.  */
   if (tf->isref)
-    result = build_address (result);
+    {
+      /* If we are returning a reference, take the address.  */
+      result = convert_expr (result, e->type, type);
+      result = build_address (result);
+    }
+  else
+    result = convert_for_rvalue (result, e->type, type);
 
   /* The decl to store the return expression.  */
   tree decl = DECL_RESULT (cfun->decl);

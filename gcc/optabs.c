@@ -262,6 +262,11 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   bool sbool = false;
 
   oprnd0 = ops->op0;
+  if (nops >= 2)
+    oprnd1 = ops->op1;
+  if (nops >= 3)
+    oprnd2 = ops->op2;
+
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
   if (ops->code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
       || ops->code == VEC_UNPACK_FIX_TRUNC_LO_EXPR)
@@ -285,6 +290,27 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
 	   ? vec_unpacks_sbool_hi_optab : vec_unpacks_sbool_lo_optab);
       sbool = true;
     }
+  else if (ops->code == DOT_PROD_EXPR)
+    {
+      enum optab_subtype subtype = optab_default;
+      signop sign1 = TYPE_SIGN (TREE_TYPE (oprnd0));
+      signop sign2 = TYPE_SIGN (TREE_TYPE (oprnd1));
+      if (sign1 == sign2)
+	;
+      else if (sign1 == SIGNED && sign2 == UNSIGNED)
+	{
+	  subtype = optab_vector_mixed_sign;
+	  /* Same as optab_vector_mixed_sign but flip the operands.  */
+	  std::swap (op0, op1);
+	}
+      else if (sign1 == UNSIGNED && sign2 == SIGNED)
+	subtype = optab_vector_mixed_sign;
+      else
+	gcc_unreachable ();
+
+      widen_pattern_optab
+	= optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), subtype);
+    }
   else
     widen_pattern_optab
       = optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
@@ -298,10 +324,7 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   gcc_assert (icode != CODE_FOR_nothing);
 
   if (nops >= 2)
-    {
-      oprnd1 = ops->op1;
-      tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
-    }
+    tmode1 = TYPE_MODE (TREE_TYPE (oprnd1));
   else if (sbool)
     {
       nops = 2;
@@ -316,7 +339,6 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
     {
       gcc_assert (tmode1 == tmode0);
       gcc_assert (op1);
-      oprnd2 = ops->op2;
       wmode = TYPE_MODE (TREE_TYPE (oprnd2));
     }
 

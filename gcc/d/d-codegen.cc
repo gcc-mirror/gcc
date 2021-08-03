@@ -1639,21 +1639,9 @@ build_array_index (tree ptr, tree index)
   /* Array element size.  */
   tree size_exp = size_in_bytes (target_type);
 
-  if (integer_zerop (size_exp))
+  if (integer_zerop (size_exp) || integer_onep (size_exp))
     {
-      /* Test for array of void.  */
-      if (TYPE_MODE (target_type) == TYPE_MODE (void_type_node))
-	index = fold_convert (type, index);
-      else
-	{
-	  /* Should catch this earlier.  */
-	  error ("invalid use of incomplete type %qD", TYPE_NAME (target_type));
-	  ptr_type = error_mark_node;
-	}
-    }
-  else if (integer_onep (size_exp))
-    {
-      /* Array of bytes -- No need to multiply.  */
+      /* Array of void or bytes -- No need to multiply.  */
       index = fold_convert (type, index);
     }
   else
@@ -2366,40 +2354,23 @@ get_frame_for_symbol (Dsymbol *sym)
   return null_pointer_node;
 }
 
-/* Return the parent function of a nested class CD.  */
+/* Return the parent function of a nested class or struct AD.  */
 
 static FuncDeclaration *
-d_nested_class (ClassDeclaration *cd)
+get_outer_function (AggregateDeclaration *ad)
 {
   FuncDeclaration *fd = NULL;
-  while (cd && cd->isNested ())
+  while (ad && ad->isNested ())
     {
-      Dsymbol *dsym = cd->toParent2 ();
+      Dsymbol *dsym = ad->toParent2 ();
       if ((fd = dsym->isFuncDeclaration ()))
 	return fd;
       else
-	cd = dsym->isClassDeclaration ();
+	ad = dsym->isAggregateDeclaration ();
     }
+
   return NULL;
 }
-
-/* Return the parent function of a nested struct SD.  */
-
-static FuncDeclaration *
-d_nested_struct (StructDeclaration *sd)
-{
-  FuncDeclaration *fd = NULL;
-  while (sd && sd->isNested ())
-    {
-      Dsymbol *dsym = sd->toParent2 ();
-      if ((fd = dsym->isFuncDeclaration ()))
-	return fd;
-      else
-	sd = dsym->isStructDeclaration ();
-    }
-  return NULL;
-}
-
 
 /* Starting from the current function FD, try to find a suitable value of
    `this' in nested function instances.  A suitable `this' value is an
@@ -2423,18 +2394,17 @@ find_this_tree (ClassDeclaration *ocd)
 	    return convert_expr (get_decl_tree (fd->vthis),
 				 cd->type, ocd->type);
 
-	  fd = d_nested_class (cd);
+	  fd = get_outer_function (cd);
+	  continue;
 	}
-      else
-	{
-	  if (fd->isNested ())
-	    {
-	      fd = fd->toParent2 ()->isFuncDeclaration ();
-	      continue;
-	    }
 
-	  fd = NULL;
+      if (fd->isNested ())
+	{
+	  fd = fd->toParent2 ()->isFuncDeclaration ();
+	  continue;
 	}
+
+      fd = NULL;
     }
 
   return NULL_TREE;
@@ -2772,10 +2742,6 @@ get_framedecl (FuncDeclaration *inner, FuncDeclaration *outer)
 
   while (fd && fd != outer)
     {
-      AggregateDeclaration *ad;
-      ClassDeclaration *cd;
-      StructDeclaration *sd;
-
       /* Parent frame link is the first field.  */
       if (FRAMEINFO_CREATES_FRAME (get_frameinfo (fd)))
 	result = indirect_ref (ptr_type_node, result);
@@ -2785,12 +2751,8 @@ get_framedecl (FuncDeclaration *inner, FuncDeclaration *outer)
       /* The frame/closure record always points to the outer function's
 	 frame, even if there are intervening nested classes or structs.
 	 So, we can just skip over these.  */
-      else if ((ad = fd->isThis ()) && (cd = ad->isClassDeclaration ()))
-	fd = d_nested_class (cd);
-      else if ((ad = fd->isThis ()) && (sd = ad->isStructDeclaration ()))
-	fd = d_nested_struct (sd);
       else
-	break;
+	fd = get_outer_function (fd->isThis ());
     }
 
   if (fd != outer)

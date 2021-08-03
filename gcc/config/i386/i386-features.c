@@ -2136,81 +2136,6 @@ make_pass_insert_endbr_and_patchable_area (gcc::context *ctxt)
   return new pass_insert_endbr_and_patchable_area (ctxt);
 }
 
-/* Replace all one-value const vector that are referenced by SYMBOL_REFs in x
-   with embedded broadcast. i.e.transform
-
-     vpaddq .LC0(%rip), %zmm0, %zmm0
-     ret
-  .LC0:
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-    .quad 3
-
-    to
-
-     vpaddq .LC0(%rip){1to8}, %zmm0, %zmm0
-     ret
-  .LC0:
-    .quad 3  */
-static void
-replace_constant_pool_with_broadcast (rtx_insn *insn)
-{
-  subrtx_ptr_iterator::array_type array;
-  FOR_EACH_SUBRTX_PTR (iter, array, &PATTERN (insn), ALL)
-    {
-      rtx *loc = *iter;
-      rtx x = *loc;
-      rtx broadcast_mem, vec_dup, constant, first;
-      machine_mode mode;
-
-      /* Constant pool.  */
-      if (!MEM_P (x)
-	  || !SYMBOL_REF_P (XEXP (x, 0))
-	  || !CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
-	continue;
-
-      /* Const vector.  */
-      mode = GET_MODE (x);
-      if (!VECTOR_MODE_P (mode))
-	return;
-      constant = get_pool_constant (XEXP (x, 0));
-      if (GET_CODE (constant) != CONST_VECTOR)
-	return;
-
-      /* There could be some rtx like
-	 (mem/u/c:V16QI (symbol_ref/u:DI ("*.LC1")))
-	 but with "*.LC1" refer to V2DI constant vector.  */
-      if (GET_MODE (constant) != mode)
-	{
-	  constant = simplify_subreg (mode, constant, GET_MODE (constant), 0);
-	  if (constant == NULL_RTX || GET_CODE (constant) != CONST_VECTOR)
-	    return;
-	}
-      first = XVECEXP (constant, 0, 0);
-
-      for (int i = 1; i < GET_MODE_NUNITS (mode); ++i)
-	{
-	  rtx tmp = XVECEXP (constant, 0, i);
-	  /* Vector duplicate value.  */
-	  if (!rtx_equal_p (tmp, first))
-	    return;
-	}
-
-      /* Replace with embedded broadcast.  */
-      broadcast_mem = force_const_mem (GET_MODE_INNER (mode), first);
-      vec_dup = gen_rtx_VEC_DUPLICATE (mode, broadcast_mem);
-      validate_change (insn, loc, vec_dup, 0);
-
-      /* At most 1 memory_operand in an insn.  */
-      return;
-    }
-}
-
 /* At entry of the nearest common dominator for basic blocks with
    conversions, generate a single
 	vxorps %xmmN, %xmmN, %xmmN
@@ -2248,10 +2173,6 @@ remove_partial_avx_dependency (void)
 	{
 	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
-
-	  /* Handle AVX512 embedded broadcast here to save compile time.  */
-	  if (TARGET_AVX512F)
-	    replace_constant_pool_with_broadcast (insn);
 
 	  set = single_set (insn);
 	  if (!set)
@@ -2384,16 +2305,6 @@ remove_partial_avx_dependency (void)
   return 0;
 }
 
-static bool
-remove_partial_avx_dependency_gate ()
-{
-  return (TARGET_AVX
-	  && TARGET_SSE_PARTIAL_REG_DEPENDENCY
-	  && TARGET_SSE_MATH
-	  && optimize
-	  && optimize_function_for_speed_p (cfun));
-}
-
 namespace {
 
 const pass_data pass_data_remove_partial_avx_dependency =
@@ -2419,7 +2330,11 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return remove_partial_avx_dependency_gate ();
+      return (TARGET_AVX
+	      && TARGET_SSE_PARTIAL_REG_DEPENDENCY
+	      && TARGET_SSE_MATH
+	      && optimize
+	      && optimize_function_for_speed_p (cfun));
     }
 
   virtual unsigned int execute (function *)
@@ -2434,68 +2349,6 @@ rtl_opt_pass *
 make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
 {
   return new pass_remove_partial_avx_dependency (ctxt);
-}
-
-/* For const vector having one duplicated value, there's no need to put
-   whole vector in the constant pool when target supports embedded broadcast. */
-static unsigned int
-constant_pool_broadcast (void)
-{
-  timevar_push (TV_MACH_DEP);
-  rtx_insn *insn;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	replace_constant_pool_with_broadcast (insn);
-    }
-  timevar_pop (TV_MACH_DEP);
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_constant_pool_broadcast =
-{
-  RTL_PASS, /* type */
-  "cpb", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_MACH_DEP, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  TODO_df_finish, /* todo_flags_finish */
-};
-
-class pass_constant_pool_broadcast : public rtl_opt_pass
-{
-public:
-  pass_constant_pool_broadcast (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_constant_pool_broadcast, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *)
-    {
-      /* Return false if rpad pass gate is true.
-	 replace_constant_pool_with_broadcast is called
-	 from both this pass and rpad pass.  */
-      return (TARGET_AVX512F && !remove_partial_avx_dependency_gate ());
-    }
-
-  virtual unsigned int execute (function *)
-    {
-      return constant_pool_broadcast ();
-    }
-}; // class pass_cpb
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_constant_pool_broadcast (gcc::context *ctxt)
-{
-  return new pass_constant_pool_broadcast (ctxt);
 }
 
 /* This compares the priority of target features in function DECL1

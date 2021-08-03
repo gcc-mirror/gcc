@@ -165,6 +165,7 @@ struct processor_costs {
   const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
 	    zmm_move;
   const int sse_to_integer;	/* cost of moving SSE register to integer.  */
+  const int integer_to_sse;	/* cost of moving integer to SSE register.  */
   const int gather_static, gather_per_elt; /* Cost of gather load is computed
 				   as static + per_item * nelts. */
   const int scatter_static, scatter_per_elt; /* Cost of gather store is
@@ -576,10 +577,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1
 #else
+#define ARCH_ARG "%{" OPT_ARCH64 ":64;:32}"
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1 \
-"%{march=native:%>march=native %:local_cpu_detect(arch) \
-  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune)}} \
-%{mtune=native:%>mtune=native %:local_cpu_detect(tune)}"
+"%{march=native:%>march=native %:local_cpu_detect(arch " ARCH_ARG ") \
+  %{!mtune=*:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}} \
+%{mtune=native:%>mtune=native %:local_cpu_detect(tune " ARCH_ARG ")}"
 #endif
 #endif
 
@@ -1022,7 +1024,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
    || (MODE) == V4SFmode || (MODE) == V4SImode				\
-   || (MODE) == SFmode || (MODE) == TFmode)
+   || (MODE) == SFmode || (MODE) == TFmode || (MODE) == TDmode)
 
 #define VALID_MMX_REG_MODE_3DNOW(MODE) \
   ((MODE) == V2SFmode || (MODE) == SFmode)
@@ -1036,9 +1038,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
-#define VALID_DFP_MODE_P(MODE) \
-  ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
-
 #define VALID_FP_MODE_P(MODE)						\
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
    || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)		\
@@ -1048,12 +1047,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == SImode || (MODE) == DImode				\
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
+   || (MODE) == SDmode || (MODE) == DDmode				\
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\
 	   || (MODE) == TFmode || (MODE) == TCmode			\
 	   || (MODE) == V8QImode || (MODE) == V4HImode			\
-	   || (MODE) == V2SImode)))
+	   || (MODE) == V2SImode || (MODE) == TDmode)))
 
 /* Return true for modes passed in SSE registers.  */
 #define SSE_REG_MODE_P(MODE)						\
@@ -1757,24 +1757,41 @@ typedef struct ix86_args {
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* Max number of bytes we can move from memory to memory
-   in one reasonably fast instruction.  */
-#define MOVE_MAX 16
+/* The constant maximum number of bytes that a single instruction can
+   move quickly between memory and registers or between two memory
+   locations.  */
+#define MAX_MOVE_MAX 64
 
-/* MOVE_MAX_PIECES is the number of bytes at a time which we can
-   move efficiently, as opposed to  MOVE_MAX which is the maximum
-   number of bytes we can move with a single instruction.
+/* Max number of bytes we can move from memory to memory in one
+   reasonably fast instruction, as opposed to MOVE_MAX_PIECES which
+   is the number of bytes at a time which we can move efficiently.
+   MOVE_MAX_PIECES defaults to MOVE_MAX.  */
 
-   ??? We should use TImode in 32-bit mode and use OImode or XImode
-   if they are available.  But since by_pieces_ninsns determines the
-   widest mode with MAX_FIXED_MODE_SIZE, we can only use TImode in
-   64-bit mode.  */
-#define MOVE_MAX_PIECES \
-  ((TARGET_64BIT \
-    && TARGET_SSE2 \
-    && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
-    && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
-   ? GET_MODE_SIZE (TImode) : UNITS_PER_WORD)
+#define MOVE_MAX \
+  ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+   ? 64 \
+   : ((TARGET_AVX \
+       && !TARGET_PREFER_AVX128 \
+       && !TARGET_AVX256_SPLIT_UNALIGNED_LOAD \
+       && !TARGET_AVX256_SPLIT_UNALIGNED_STORE) \
+      ? 32 \
+      : ((TARGET_SSE2 \
+	  && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
+	  && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	 ? 16 : UNITS_PER_WORD)))
+
+/* STORE_MAX_PIECES is the number of bytes at a time that we can
+   store efficiently.  */
+#define STORE_MAX_PIECES \
+  ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+   ? 64 \
+   : ((TARGET_AVX \
+       && !TARGET_PREFER_AVX128 \
+       && !TARGET_AVX256_SPLIT_UNALIGNED_STORE) \
+      ? 32 \
+      : ((TARGET_SSE2 \
+	  && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	 ? 16 : UNITS_PER_WORD)))
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a cpymem or libcall instead.

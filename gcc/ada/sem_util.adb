@@ -12079,7 +12079,7 @@ package body Sem_Util is
       --  do it when there is an address clause since we can do more if the
       --  alignment is known.
 
-      if not Known_Alignment (Obj) then
+      if not Known_Alignment (Obj) and then Known_Alignment (Etype (Obj)) then
          Set_Alignment (Obj, Alignment (Etype (Obj)));
       end if;
 
@@ -28366,7 +28366,7 @@ package body Sem_Util is
          Set_Is_Unsigned_Type       (T1, Is_Unsigned_Type          (T2));
       end if;
 
-      Set_Alignment                 (T1, Alignment                 (T2));
+      Copy_Alignment (To => T1, From => T2);
    end Set_Size_Info;
 
    ------------------------------

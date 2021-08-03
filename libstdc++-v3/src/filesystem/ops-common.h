@@ -26,6 +26,7 @@
 #define _GLIBCXX_OPS_COMMON_H 1
 
 #include <chrono>
+#include <bits/move.h> // std::__exchange
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
@@ -407,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 
     struct CloseFD {
       ~CloseFD() { if (fd != -1) posix::close(fd); }
-      bool close() { return posix::close(std::exchange(fd, -1)) == 0; }
+      bool close() { return posix::close(std::__exchange(fd, -1)) == 0; }
       int fd;
     };
 
@@ -566,6 +567,47 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 #endif // NEED_DO_SPACE
 
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
+
+  // Find OS-specific name of temporary directory from the environment,
+  // Caller must check that the path is an accessible directory.
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  inline wstring
+  get_temp_directory_from_env(error_code& ec)
+  {
+    unsigned len = 1024;
+    std::wstring buf;
+    do
+      {
+	buf.resize(len);
+	len = GetTempPathW(buf.size(), buf.data());
+      } while (len > buf.size());
+
+    if (len == 0)
+      ec.assign((int)GetLastError(), std::system_category());
+    else
+      ec.clear();
+
+    buf.resize(len);
+    return buf;
+  }
+#else
+  inline const char*
+  get_temp_directory_from_env(error_code& ec) noexcept
+  {
+    ec.clear();
+    for (auto env : { "TMPDIR", "TMP", "TEMP", "TEMPDIR" })
+      {
+#if _GLIBCXX_HAVE_SECURE_GETENV
+	auto tmpdir = ::secure_getenv(env);
+#else
+	auto tmpdir = ::getenv(env);
+#endif
+	if (tmpdir)
+	  return tmpdir;
+      }
+    return "/tmp";
+  }
+#endif
 
 _GLIBCXX_END_NAMESPACE_FILESYSTEM
 

@@ -441,12 +441,12 @@ package Scans is
    --  scanned literal.
 
    Real_Literal_Value : Ureal;
-   --  Valid only when Token is Tok_Real_Literal, contains the value of the
+   --  Valid only when Token is Tok_Real_Literal. Contains the value of the
    --  scanned literal.
 
    Int_Literal_Value : Uint;
-   --  Valid only when Token = Tok_Integer_Literal, contains the value of the
-   --  scanned literal.
+   --  Valid only when Token = Tok_Integer_Literal, and we are not in
+   --  syntax-only mode. Contains the value of the scanned literal.
 
    Based_Literal_Uses_Colon : Boolean;
    --  Valid only when Token = Tok_Integer_Literal or Tok_Real_Literal. Set

@@ -80,7 +80,8 @@ build_frontend_type (tree type)
     mod |= MODshared;
 
   /* If we've seen the type before, re-use the converted decl.  */
-  for (size_t i = 0; i < builtin_converted_decls.length (); ++i)
+  unsigned saved_builtin_decls_length = builtin_converted_decls.length ();
+  for (size_t i = 0; i < saved_builtin_decls_length; ++i)
     {
       tree t = builtin_converted_decls[i].ctype;
       if (TYPE_MAIN_VARIANT (t) == TYPE_MAIN_VARIANT (type))
@@ -240,8 +241,8 @@ build_frontend_type (tree type)
       sdecl->type->merge2 ();
 
       /* Add both named and anonymous fields as members of the struct.
-	 Anonymous fields still need a name in D, so call them "__pad%d".  */
-      int anonfield_id = 0;
+	 Anonymous fields still need a name in D, so call them "__pad%u".  */
+      unsigned anonfield_id = 0;
       sdecl->members = new Dsymbols;
 
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
@@ -249,13 +250,20 @@ build_frontend_type (tree type)
 	  Type *ftype = build_frontend_type (TREE_TYPE (field));
 	  if (!ftype)
 	    {
+	      /* Drop any field types that got cached before the conversion
+		 of this record type failed.  */
+	      builtin_converted_decls.truncate (saved_builtin_decls_length);
 	      delete sdecl->members;
 	      return NULL;
 	    }
 
 	  Identifier *fident;
 	  if (DECL_NAME (field) == NULL_TREE)
-	    fident = Identifier::generateId ("__pad", anonfield_id++);
+	    {
+	      char name[16];
+	      snprintf (name, sizeof (name), "__pad%u", anonfield_id++);
+	      fident = Identifier::idPool (name);
+	    }
 	  else
 	    {
 	      const char *name = IDENTIFIER_POINTER (DECL_NAME (field));
@@ -307,6 +315,9 @@ build_frontend_type (tree type)
 	      Type *targ = build_frontend_type (argtype);
 	      if (!targ)
 		{
+		  /* Drop any parameter types that got cached before the
+		     conversion of this function type failed.  */
+		  builtin_converted_decls.truncate (saved_builtin_decls_length);
 		  delete args;
 		  return NULL;
 		}
@@ -1204,5 +1215,20 @@ d_builtin_function (tree decl)
   return decl;
 }
 
+/* Same as d_builtin_function, but used to delay putting in back-end builtin
+   functions until the ISA that defines the builtin has been declared.
+   However in D, there is no global namespace.  All builtins get pushed into the
+   `gcc.builtins' module, which is constructed during the semantic analysis
+   pass, which has already finished by the time target attributes are evaluated.
+   So builtins are not pushed because they would be ultimately ignored.
+   The purpose of having this function then is to improve compile-time
+   reflection support to allow user-code to determine whether a given back end
+   function is enabled by the ISA.  */
+
+tree
+d_builtin_function_ext_scope (tree decl)
+{
+  return decl;
+}
 
 #include "gt-d-d-builtins.h"

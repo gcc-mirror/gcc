@@ -12424,7 +12424,7 @@ file_name_acquire (dwarf_file_data **slot, file_name_acquire_data *fnad)
 
   fi = fnad->files + fnad->used_files++;
 
-  f = remap_debug_filename (d->filename);
+  f = d->filename;
 
   /* Skip all leading "./".  */
   while (f[0] == '.' && IS_DIR_SEPARATOR (f[1]))
@@ -27460,13 +27460,13 @@ dwarf2out_ignore_block (const_tree block)
 bool
 dwarf_file_hasher::equal (dwarf_file_data *p1, const char *p2)
 {
-  return filename_cmp (p1->filename, p2) == 0;
+  return filename_cmp (p1->key, p2) == 0;
 }
 
 hashval_t
 dwarf_file_hasher::hash (dwarf_file_data *p)
 {
-  return htab_hash_string (p->filename);
+  return htab_hash_string (p->key);
 }
 
 /* Lookup FILE_NAME (in the list of filenames that we know about here in
@@ -27496,7 +27496,8 @@ lookup_filename (const char *file_name)
     return *slot;
 
   created = ggc_alloc<dwarf_file_data> ();
-  created->filename = file_name;
+  created->key = file_name;
+  created->filename = remap_debug_filename (file_name);
   created->emitted_number = 0;
   *slot = created;
   return created;
@@ -27522,8 +27523,7 @@ maybe_emit_file (struct dwarf_file_data * fd)
       if (output_asm_line_debug_info ())
 	{
 	  fprintf (asm_out_file, "\t.file %u ", fd->emitted_number);
-	  output_quoted_string (asm_out_file,
-				remap_debug_filename (fd->filename));
+	  output_quoted_string (asm_out_file, fd->filename);
 	  fputc ('\n', asm_out_file);
 	}
     }

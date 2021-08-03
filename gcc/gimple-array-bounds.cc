@@ -37,15 +37,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-cfg.h"
 #include "attribs.h"
-#include "builtins.h"
+#include "pointer-query.h"
 
 // This purposely returns a value_range, not a value_range_equiv, to
 // break the dependency on equivalences for this pass.
 
 const value_range *
-array_bounds_checker::get_value_range (const_tree op)
+array_bounds_checker::get_value_range (const_tree op, gimple *stmt)
 {
-  return ranges->get_value_range (op);
+  return ranges->get_value_range (op, stmt);
 }
 
 /* Try to determine the DECL that REF refers to.  Return the DECL or
@@ -173,7 +173,7 @@ trailing_array (tree arg, tree *pref)
 
 bool
 array_bounds_checker::check_array_ref (location_t location, tree ref,
-				       bool ignore_off_by_one)
+				       gimple *stmt, bool ignore_off_by_one)
 {
   if (warning_suppressed_p (ref, OPT_Warray_bounds))
     /* Return true to have the caller prevent warnings for enclosing
@@ -287,7 +287,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   const value_range *vr = NULL;
   if (TREE_CODE (low_sub) == SSA_NAME)
     {
-      vr = get_value_range (low_sub);
+      vr = get_value_range (low_sub, stmt);
       if (!vr->undefined_p () && !vr->varying_p ())
 	{
 	  low_sub = vr->kind () == VR_RANGE ? vr->max () : vr->min ();
@@ -421,10 +421,9 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
   /* The type and size of the access.  */
   tree axstype = TREE_TYPE (ref);
   offset_int axssize = 0;
-  if (TREE_CODE (axstype) != UNION_TYPE)
-    if (tree access_size = TYPE_SIZE_UNIT (axstype))
-      if (TREE_CODE (access_size) == INTEGER_CST)
-	axssize = wi::to_offset (access_size);
+  if (tree access_size = TYPE_SIZE_UNIT (axstype))
+    if (TREE_CODE (access_size) == INTEGER_CST)
+      axssize = wi::to_offset (access_size);
 
   access_ref aref;
   if (!compute_objsize (ref, 0, &aref, ranges))
@@ -451,20 +450,28 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
   tree reftype = TREE_TYPE (aref.ref);
   /* The size of the referenced array element.  */
   offset_int eltsize = 1;
-  /* The byte size of the array has already been determined above
-     based on a pointer ARG.  Set ELTSIZE to the size of the type
-     it points to and REFTYPE to the array with the size, rounded
-     down as necessary.  */
   if (POINTER_TYPE_P (reftype))
     reftype = TREE_TYPE (reftype);
-  if (TREE_CODE (reftype) == ARRAY_TYPE)
-    reftype = TREE_TYPE (reftype);
-  if (tree refsize = TYPE_SIZE_UNIT (reftype))
-    if (TREE_CODE (refsize) == INTEGER_CST)
-      eltsize = wi::to_offset (refsize);
 
-  const offset_int nelts = aref.sizrng[1] / eltsize;
-  reftype = build_printable_array_type (reftype, nelts.to_uhwi ());
+  if (TREE_CODE (reftype) == FUNCTION_TYPE)
+    /* Restore the original (pointer) type and avoid trying to create
+       an array of functions (done below).  */
+    reftype = TREE_TYPE (aref.ref);
+  else
+    {
+      /* The byte size of the array has already been determined above
+	 based on a pointer ARG.  Set ELTSIZE to the size of the type
+	 it points to and REFTYPE to the array with the size, rounded
+	 down as necessary.  */
+      if (TREE_CODE (reftype) == ARRAY_TYPE)
+	reftype = TREE_TYPE (reftype);
+      if (tree refsize = TYPE_SIZE_UNIT (reftype))
+	if (TREE_CODE (refsize) == INTEGER_CST)
+	  eltsize = wi::to_offset (refsize);
+
+      const offset_int nelts = aref.sizrng[1] / eltsize;
+      reftype = build_printable_array_type (reftype, nelts.to_uhwi ());
+    }
 
   /* Compute the more permissive upper bound when IGNORE_OFF_BY_ONE
      is set (when taking the address of the one-past-last element
@@ -563,7 +570,8 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
    address of an ARRAY_REF, and call check_array_ref on it.  */
 
 void
-array_bounds_checker::check_addr_expr (location_t location, tree t)
+array_bounds_checker::check_addr_expr (location_t location, tree t,
+				       gimple *stmt)
 {
   /* For the most significant subscript only, accept taking the address
      of the just-past-the-end element.  */
@@ -575,7 +583,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t)
       bool warned = false;
       if (TREE_CODE (t) == ARRAY_REF)
 	{
-	  warned = check_array_ref (location, t, ignore_off_by_one);
+	  warned = check_array_ref (location, t, stmt, ignore_off_by_one);
 	  ignore_off_by_one = false;
 	}
       else if (TREE_CODE (t) == MEM_REF)
@@ -728,14 +736,14 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
   bool warned = false;
   array_bounds_checker *checker = (array_bounds_checker *) wi->info;
   if (TREE_CODE (t) == ARRAY_REF)
-    warned = checker->check_array_ref (location, t,
+    warned = checker->check_array_ref (location, t, wi->stmt,
 				       false/*ignore_off_by_one*/);
   else if (TREE_CODE (t) == MEM_REF)
     warned = checker->check_mem_ref (location, t,
 				     false /*ignore_off_by_one*/);
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
-      checker->check_addr_expr (location, t);
+      checker->check_addr_expr (location, t, wi->stmt);
       *walk_subtree = false;
     }
   else if (inbounds_memaccess_p (t))

@@ -94,6 +94,7 @@ ialias_redirect (omp_init_allocator)
 ialias_redirect (omp_destroy_allocator)
 ialias_redirect (omp_set_default_allocator)
 ialias_redirect (omp_get_default_allocator)
+ialias_redirect (omp_display_env)
 #endif
 
 #ifndef LIBGOMP_GNU_SYMBOL_VERSIONING
@@ -736,3 +737,19 @@ omp_get_default_allocator_ ()
 {
   return (intptr_t) omp_get_default_allocator ();
 }
+
+#ifndef LIBGOMP_OFFLOADED_ONLY
+
+void
+omp_display_env_ (const int32_t *verbose)
+{
+  omp_display_env (*verbose);
+}
+
+void
+omp_display_env_8_ (const int64_t *verbose)
+{
+  omp_display_env (!!*verbose);
+}
+
+#endif /* LIBGOMP_OFFLOADED_ONLY */

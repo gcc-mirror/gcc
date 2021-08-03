@@ -20,6 +20,27 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_THREADEDGE_H
 #define GCC_TREE_SSA_THREADEDGE_H
 
+// Class used to maintain path state in the jump threader and pass it
+// to the jump threader simplifier.
+
+class jt_state
+{
+public:
+  jt_state (class const_and_copies *,
+	    class avail_exprs_stack *,
+	    class evrp_range_analyzer *);
+  void push (edge);
+  void pop ();
+  void register_equiv (tree dest, tree src, bool update_range = false);
+  void register_equivs_on_edge (edge e);
+  void record_ranges_from_stmt (gimple *stmt, bool temporary);
+
+private:
+  const_and_copies *m_copies;
+  avail_exprs_stack *m_exprs;
+  evrp_range_analyzer *m_evrp;
+};
+
 // This is the high level threader.  The entry point is
 // thread_outgoing_edges(), which calculates and registers paths to be
 // threaded.  When all candidates have been registered,
@@ -28,10 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 class jump_threader
 {
 public:
-  jump_threader (class const_and_copies *,
-		 avail_exprs_stack *,
-		 class jump_threader_simplifier *,
-		 class evrp_range_analyzer * = NULL);
+  jump_threader (class jump_threader_simplifier *, class jt_state *);
   ~jump_threader ();
   void thread_outgoing_edges (basic_block);
   void remove_jump_threads_including (edge_def *);
@@ -57,11 +75,9 @@ private:
   // Dummy condition to avoid creating lots of throw away statements.
   gcond *dummy_cond;
 
-  const_and_copies *m_const_and_copies;
-  avail_exprs_stack *m_avail_exprs_stack;
   class jump_thread_path_registry *m_registry;
   jump_threader_simplifier *m_simplifier;
-  evrp_range_analyzer *m_evrp_range_analyzer;
+  jt_state *m_state;
 };
 
 // Statement simplifier callback for the jump threader.
@@ -69,20 +85,16 @@ private:
 class jump_threader_simplifier
 {
 public:
-  jump_threader_simplifier (class vr_values *v,
-			    avail_exprs_stack *avails)
-    : m_vr_values (v),
-      m_avail_exprs_stack (avails)
-  { }
+  jump_threader_simplifier (class vr_values *v);
   virtual ~jump_threader_simplifier () { }
-  virtual tree simplify (gimple *, gimple *, basic_block);
+  virtual tree simplify (gimple *, gimple *, basic_block, jt_state *);
 
 protected:
   vr_values *m_vr_values;
-  avail_exprs_stack *m_avail_exprs_stack;
 };
 
 extern void propagate_threaded_block_debug_into (basic_block, basic_block);
+extern bool single_succ_to_potentially_threadable_block (basic_block);
 
 // ?? All this ssa_name_values stuff is the store of values for
 // avail_exprs_stack and const_and_copies, so it really belongs in the

@@ -908,8 +908,7 @@ remove_unused_locals (void)
 
   if (cfun->has_simduid_loops)
     {
-      class loop *loop;
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	if (loop->simduid && !is_used_p (loop->simduid))
 	  loop->simduid = NULL_TREE;
     }

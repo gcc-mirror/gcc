@@ -111,6 +111,18 @@ svalue::maybe_get_constant () const
     return NULL_TREE;
 }
 
+/* If this svalue is a region_svalue, return the region it points to.
+   Otherwise return NULL.  */
+
+const region *
+svalue::maybe_get_region () const
+{
+  if (const region_svalue *region_sval = dyn_cast_region_svalue ())
+    return region_sval->get_pointee ();
+  else
+    return NULL;
+}
+
 /* If this svalue is a cast (i.e a unaryop NOP_EXPR or VIEW_CONVERT_EXPR),
    return the underlying svalue.
    Otherwise return NULL.  */
@@ -156,6 +168,13 @@ svalue::can_merge_p (const svalue *other,
   /* Reject attempts to merge unmergeable svalues.  */
   if ((get_kind () == SK_UNMERGEABLE)
       || (other->get_kind () == SK_UNMERGEABLE))
+    return NULL;
+
+  /* Reject attempts to merge poisoned svalues with other svalues
+     (either non-poisoned, or other kinds of poison), so that e.g.
+     we identify paths in which a variable is conditionally uninitialized.  */
+  if (get_kind () == SK_POISONED
+      || other->get_kind () == SK_POISONED)
     return NULL;
 
   /* Reject attempts to merge NULL pointers with not-NULL-pointers.  */
@@ -516,6 +535,12 @@ public:
       m_found = true;
   }
 
+  void visit_conjured_svalue (const conjured_svalue *candidate)
+  {
+    if (candidate == m_needle)
+      m_found = true;
+  }
+
   bool found_p () const { return m_found; }
 
 private:
@@ -528,8 +553,9 @@ private:
 bool
 svalue::involves_p (const svalue *other) const
 {
-  /* Currently only implemented for initial_svalue.  */
-  gcc_assert (other->get_kind () == SK_INITIAL);
+  /* Currently only implemented for these kinds.  */
+  gcc_assert (other->get_kind () == SK_INITIAL
+	      || other->get_kind () == SK_CONJURED);
 
   involvement_visitor v (other);
   accept (&v);
@@ -811,6 +837,8 @@ poison_kind_to_str (enum poison_kind kind)
     {
     default:
       gcc_unreachable ();
+    case POISON_KIND_UNINIT:
+      return "uninit";
     case POISON_KIND_FREED:
       return "freed";
     case POISON_KIND_POPPED_STACK:
@@ -845,6 +873,18 @@ void
 poisoned_svalue::accept (visitor *v) const
 {
   v->visit_poisoned_svalue (this);
+}
+
+/* Implementation of svalue::maybe_fold_bits_within vfunc
+   for poisoned_svalue.  */
+
+const svalue *
+poisoned_svalue::maybe_fold_bits_within (tree type,
+					 const bit_range &,
+					 region_model_manager *mgr) const
+{
+  /* Bits within a poisoned value are also poisoned.  */
+  return mgr->get_or_create_poisoned_svalue (m_kind, type);
 }
 
 /* class setjmp_svalue's implementation is in engine.cc, so that it can use
@@ -896,7 +936,7 @@ initial_svalue::implicitly_live_p (const svalue_set *,
      a popped stack frame.  */
   if (model->region_exists_p (m_reg))
     {
-      const svalue *reg_sval = model->get_store_value (m_reg);
+      const svalue *reg_sval = model->get_store_value (m_reg, NULL);
       if (reg_sval == this)
 	return true;
     }
@@ -1013,6 +1053,21 @@ unaryop_svalue::maybe_fold_bits_within (tree type,
 
 /* class binop_svalue : public svalue.  */
 
+/* Return whether OP be printed as an infix operator.  */
+
+static bool
+infix_p (enum tree_code op)
+{
+  switch (op)
+    {
+    default:
+      return true;
+    case MAX_EXPR:
+    case MIN_EXPR:
+      return false;
+    }
+}
+
 /* Implementation of svalue::dump_to_pp vfunc for binop_svalue.  */
 
 void
@@ -1020,11 +1075,25 @@ binop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   if (simple)
     {
-      pp_character (pp, '(');
-      m_arg0->dump_to_pp (pp, simple);
-      pp_string (pp, op_symbol_code (m_op));
-      m_arg1->dump_to_pp (pp, simple);
-      pp_character (pp, ')');
+      if (infix_p (m_op))
+	{
+	  /* Print "(A OP B)".  */
+	  pp_character (pp, '(');
+	  m_arg0->dump_to_pp (pp, simple);
+	  pp_string (pp, op_symbol_code (m_op));
+	  m_arg1->dump_to_pp (pp, simple);
+	  pp_character (pp, ')');
+	}
+      else
+	{
+	  /* Print "OP(A, B)".  */
+	  pp_string (pp, op_symbol_code (m_op));
+	  pp_character (pp, '(');
+	  m_arg0->dump_to_pp (pp, simple);
+	  pp_string (pp, ", ");
+	  m_arg1->dump_to_pp (pp, simple);
+	  pp_character (pp, ')');
+	}
     }
   else
     {
@@ -1069,6 +1138,7 @@ sub_svalue::sub_svalue (tree type, const svalue *parent_svalue,
 	  type),
   m_parent_svalue (parent_svalue), m_subregion (subregion)
 {
+  gcc_assert (parent_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for sub_svalue.  */
@@ -1125,6 +1195,8 @@ repeated_svalue::repeated_svalue (tree type,
   m_outer_size (outer_size),
   m_inner_svalue (inner_svalue)
 {
+  gcc_assert (outer_size->can_have_associated_state_p ());
+  gcc_assert (inner_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for repeated_svalue.  */
@@ -1250,6 +1322,7 @@ bits_within_svalue::bits_within_svalue (tree type,
   m_bits (bits),
   m_inner_svalue (inner_svalue)
 {
+  gcc_assert (inner_svalue->can_have_associated_state_p ());
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for bits_within_svalue.  */

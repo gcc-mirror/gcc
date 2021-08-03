@@ -54,7 +54,7 @@ truncqb (v8qi * dst, v8di * __restrict src)
 void
 truncdw (v16hi * dst, v16si * __restrict src)
 {
-  unsigned short tem[8];
+  unsigned short tem[16];
   tem[0] = (*src)[0];
   tem[1] = (*src)[1];
   tem[2] = (*src)[2];
@@ -78,7 +78,7 @@ truncdw (v16hi * dst, v16si * __restrict src)
 void
 truncdb (v16qi * dst, v16si * __restrict src)
 {
-  unsigned char tem[8];
+  unsigned char tem[16];
   tem[0] = (*src)[0];
   tem[1] = (*src)[1];
   tem[2] = (*src)[2];

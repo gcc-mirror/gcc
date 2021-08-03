@@ -836,20 +836,24 @@ vect_model_simple_cost (vec_info *,
    one if two-step promotion/demotion is required, and so on.  NCOPIES
    is the number of vector results (and thus number of instructions)
    for the narrowest end of the operation chain.  Each additional
-   step doubles the number of instructions required.  */
+   step doubles the number of instructions required.  If WIDEN_ARITH
+   is true the stmt is doing widening arithmetic.  */
 
 static void
 vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
 				    enum vect_def_type *dt,
 				    unsigned int ncopies, int pwr,
-				    stmt_vector_for_cost *cost_vec)
+				    stmt_vector_for_cost *cost_vec,
+				    bool widen_arith)
 {
   int i;
   int inside_cost = 0, prologue_cost = 0;
 
   for (i = 0; i < pwr + 1; i++)
     {
-      inside_cost += record_stmt_cost (cost_vec, ncopies, vec_promote_demote,
+      inside_cost += record_stmt_cost (cost_vec, ncopies,
+				       widen_arith
+				       ? vector_stmt : vec_promote_demote,
 				       stmt_info, 0, vect_body);
       ncopies *= 2;
     }
@@ -4690,6 +4694,10 @@ vectorizable_conversion (vec_info *vinfo,
       && code != WIDEN_LSHIFT_EXPR)
     return false;
 
+  bool widen_arith = (code == WIDEN_PLUS_EXPR
+		      || code == WIDEN_MINUS_EXPR
+		      || code == WIDEN_MULT_EXPR
+		      || code == WIDEN_LSHIFT_EXPR);
   op_type = TREE_CODE_LENGTH (code);
 
   /* Check types of lhs and rhs.  */
@@ -4779,10 +4787,7 @@ vectorizable_conversion (vec_info *vinfo,
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (known_eq (nunits_out, nunits_in))
-    if (code == WIDEN_MINUS_EXPR
-	|| code == WIDEN_PLUS_EXPR
-	|| code == WIDEN_LSHIFT_EXPR
-	|| code == WIDEN_MULT_EXPR)
+    if (widen_arith)
       modifier = WIDEN;
     else
       modifier = NONE;
@@ -4959,7 +4964,8 @@ vectorizable_conversion (vec_info *vinfo,
 	  unsigned int nvectors
 	    = (slp_node ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies);
 	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
-					      multi_step_cvt, cost_vec);
+					      multi_step_cvt, cost_vec,
+					      widen_arith);
 	}
       else
 	{
@@ -4972,7 +4978,8 @@ vectorizable_conversion (vec_info *vinfo,
 	       ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) >> multi_step_cvt
 	       : ncopies * 2);
 	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
-					      multi_step_cvt, cost_vec);
+					      multi_step_cvt, cost_vec,
+					      widen_arith);
 	}
       interm_types.release ();
       return true;
@@ -9759,6 +9766,9 @@ vectorizable_load (vec_info *vinfo,
 		  poly_wide_int bump_val
 		    = (wi::to_wide (TYPE_SIZE_UNIT (elem_type))
 		       * group_gap_adj);
+		  if (tree_int_cst_sgn
+			(vect_dr_behavior (vinfo, dr_info)->step) == -1)
+		    bump_val = -bump_val;
 		  tree bump = wide_int_to_tree (sizetype, bump_val);
 		  dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr,
 						 gsi, stmt_info, bump);
@@ -9772,6 +9782,9 @@ vectorizable_load (vec_info *vinfo,
 	      poly_wide_int bump_val
 		= (wi::to_wide (TYPE_SIZE_UNIT (elem_type))
 		   * group_gap_adj);
+	      if (tree_int_cst_sgn
+		    (vect_dr_behavior (vinfo, dr_info)->step) == -1)
+		bump_val = -bump_val;
 	      tree bump = wide_int_to_tree (sizetype, bump_val);
 	      dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr, gsi,
 					     stmt_info, bump);
@@ -10796,8 +10809,6 @@ vect_analyze_stmt (vec_info *vinfo,
 
   if (STMT_VINFO_RELEVANT_P (stmt_info))
     {
-      tree type = gimple_expr_type (stmt_info->stmt);
-      gcc_assert (!VECTOR_MODE_P (TYPE_MODE (type)));
       gcall *call = dyn_cast <gcall *> (stmt_info->stmt);
       gcc_assert (STMT_VINFO_VECTYPE (stmt_info)
 		  || (call && gimple_call_lhs (call) == NULL_TREE));
@@ -11978,22 +11989,29 @@ supportable_narrowing_operation (enum tree_code code,
   return false;
 }
 
-/* Generate and return a statement that sets vector mask MASK such that
-   MASK[I] is true iff J + START_INDEX < END_INDEX for all J <= I.  */
+/* Generate and return a vector mask of MASK_TYPE such that
+   mask[I] is true iff J + START_INDEX < END_INDEX for all J <= I.
+   Add the statements to SEQ.  */
 
-gcall *
-vect_gen_while (tree mask, tree start_index, tree end_index)
+tree
+vect_gen_while (gimple_seq *seq, tree mask_type, tree start_index,
+		tree end_index, const char *name)
 {
   tree cmp_type = TREE_TYPE (start_index);
-  tree mask_type = TREE_TYPE (mask);
   gcc_checking_assert (direct_internal_fn_supported_p (IFN_WHILE_ULT,
 						       cmp_type, mask_type,
 						       OPTIMIZE_FOR_SPEED));
   gcall *call = gimple_build_call_internal (IFN_WHILE_ULT, 3,
 					    start_index, end_index,
 					    build_zero_cst (mask_type));
-  gimple_call_set_lhs (call, mask);
-  return call;
+  tree tmp;
+  if (name)
+    tmp = make_temp_ssa_name (mask_type, NULL, name);
+  else
+    tmp = make_ssa_name (mask_type);
+  gimple_call_set_lhs (call, tmp);
+  gimple_seq_add_stmt (seq, call);
+  return tmp;
 }
 
 /* Generate a vector mask of type MASK_TYPE for which index I is false iff
@@ -12003,9 +12021,7 @@ tree
 vect_gen_while_not (gimple_seq *seq, tree mask_type, tree start_index,
 		    tree end_index)
 {
-  tree tmp = make_ssa_name (mask_type);
-  gcall *call = vect_gen_while (tmp, start_index, end_index);
-  gimple_seq_add_stmt (seq, call);
+  tree tmp = vect_gen_while (seq, mask_type, start_index, end_index);
   return gimple_build (seq, BIT_NOT_EXPR, mask_type, tmp);
 }
 
@@ -12065,11 +12081,6 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
 				     "not vectorized: irregular stmt.%G", stmt);
     }
 
-  if (VECTOR_MODE_P (TYPE_MODE (gimple_expr_type (stmt))))
-    return opt_result::failure_at (stmt,
-				   "not vectorized: vector stmt in loop:%G",
-				   stmt);
-
   tree vectype;
   tree scalar_type = NULL_TREE;
   if (group_size == 0 && STMT_VINFO_VECTYPE (stmt_info))
@@ -12119,6 +12130,12 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location, "vectype: %T\n", vectype);
     }
+
+  if (scalar_type && VECTOR_MODE_P (TYPE_MODE (scalar_type)))
+    return opt_result::failure_at (stmt,
+				   "not vectorized: vector stmt in loop:%G",
+				   stmt);
+
   *stmt_vectype_out = vectype;
 
   /* Don't try to compute scalar types if the stmt produces a boolean
@@ -12129,8 +12146,8 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
       /* The number of units is set according to the smallest scalar
 	 type (or the largest vector size, but we only support one
 	 vector size per vectorization).  */
-      HOST_WIDE_INT dummy;
-      scalar_type = vect_get_smallest_scalar_type (stmt_info, &dummy, &dummy);
+      scalar_type = vect_get_smallest_scalar_type (stmt_info,
+						   TREE_TYPE (vectype));
       if (scalar_type != TREE_TYPE (vectype))
 	{
 	  if (dump_enabled_p ())

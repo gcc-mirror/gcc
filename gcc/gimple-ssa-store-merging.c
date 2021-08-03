@@ -313,7 +313,7 @@ verify_symbolic_number_p (struct symbolic_number *n, gimple *stmt)
 {
   tree lhs_type;
 
-  lhs_type = gimple_expr_type (stmt);
+  lhs_type = TREE_TYPE (gimple_get_lhs (stmt));
 
   if (TREE_CODE (lhs_type) != INTEGER_TYPE
       && TREE_CODE (lhs_type) != ENUMERAL_TYPE)
@@ -702,7 +702,7 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 	    int i, type_size, old_type_size;
 	    tree type;
 
-	    type = gimple_expr_type (stmt);
+	    type = TREE_TYPE (gimple_assign_lhs (stmt));
 	    type_size = TYPE_PRECISION (type);
 	    if (type_size % BITS_PER_UNIT != 0)
 	      return NULL;
@@ -851,7 +851,7 @@ find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
 gimple *
 find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
 {
-  tree type_size = TYPE_SIZE_UNIT (gimple_expr_type (stmt));
+  tree type_size = TYPE_SIZE_UNIT (TREE_TYPE (gimple_get_lhs (stmt)));
   if (!tree_fits_uhwi_p (type_size))
     return NULL;
 
@@ -2654,7 +2654,8 @@ gather_bswap_load_refs (vec<tree> *refs, tree val)
    go after the = _5 store and thus change behavior.  */
 
 static bool
-check_no_overlap (vec<store_immediate_info *> m_store_info, unsigned int i,
+check_no_overlap (const vec<store_immediate_info *> &m_store_info,
+		  unsigned int i,
 		  bool all_integer_cst_p, unsigned int first_order,
 		  unsigned int last_order, unsigned HOST_WIDE_INT start,
 		  unsigned HOST_WIDE_INT end, unsigned int first_earlier,

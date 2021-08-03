@@ -304,7 +304,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		// __urng produces values that use exactly 64-bits,
 		// so use 128-bit integers to downscale to desired range.
 		__UINT64_TYPE__ __u64erange = __uerange;
-		__ret = _S_nd<unsigned __int128>(__urng, __u64erange);
+		__ret = __extension__ _S_nd<unsigned __int128>(__urng,
+							       __u64erange);
 	      }
 	    else
 #endif

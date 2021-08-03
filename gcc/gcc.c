@@ -4927,6 +4927,16 @@ process_command (unsigned int decoded_options_count,
 #endif
     }
 
+  /* Handle -gtoggle as it would later in toplev.c:process_options to
+     make the debug-level-gt spec function work as expected.  */
+  if (flag_gtoggle)
+    {
+      if (debug_info_level == DINFO_LEVEL_NONE)
+	debug_info_level = DINFO_LEVEL_NORMAL;
+      else
+	debug_info_level = DINFO_LEVEL_NONE;
+    }
+
   if (output_file
       && strcmp (output_file, "-") != 0
       && strcmp (output_file, HOST_BIT_BUCKET) != 0)

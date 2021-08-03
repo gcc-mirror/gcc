@@ -514,6 +514,7 @@ class cfg_superedge : public superedge
   int false_value_p () const { return get_flags () & EDGE_FALSE_VALUE; }
   int back_edge_p () const { return get_flags () & EDGE_DFS_BACK; }
 
+  size_t get_phi_arg_idx () const;
   tree get_phi_arg (const gphi *phi) const;
 
  private:

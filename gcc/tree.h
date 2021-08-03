@@ -4475,7 +4475,7 @@ extern tree build_int_cst (tree, poly_int64);
 extern tree build_int_cstu (tree type, poly_uint64);
 extern tree build_int_cst_type (tree, poly_int64);
 extern tree make_vector (unsigned, unsigned CXX_MEM_STAT_INFO);
-extern tree build_vector_from_ctor (tree, vec<constructor_elt, va_gc> *);
+extern tree build_vector_from_ctor (tree, const vec<constructor_elt, va_gc> *);
 extern tree build_vector_from_val (tree, tree);
 extern tree build_uniform_cst (tree, tree);
 extern tree build_vec_series (tree, tree, tree);
@@ -6467,5 +6467,10 @@ extern void suppress_warning (tree, opt_code = all_warnings, bool = true)
   ATTRIBUTE_NONNULL (1);
 /* Copy warning disposition from one expression to another.  */
 extern void copy_warning (tree, const_tree);
+
+/* Return the zero-based number corresponding to the argument being
+   deallocated if FNDECL is a deallocation function or an out-of-bounds
+   value if it isn't.  */
+extern unsigned fndecl_dealloc_argno (tree);
 
 #endif  /* GCC_TREE_H  */

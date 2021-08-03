@@ -4297,6 +4297,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  gcc_unreachable ();
 	}
     }
+  /* OpenACC 'nohost' clauses cannot appear here.  */
+  gcc_checking_assert (!clauses->nohost);
 
   return nreverse (omp_clauses);
 }

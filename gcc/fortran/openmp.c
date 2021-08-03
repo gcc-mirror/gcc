@@ -880,6 +880,7 @@ enum omp_mask2
   OMP_CLAUSE_IF_PRESENT,
   OMP_CLAUSE_FINALIZE,
   OMP_CLAUSE_ATTACH,
+  OMP_CLAUSE_NOHOST,
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -2083,6 +2084,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      c->nogroup = needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_NOHOST)
+	      && !c->nohost
+	      && gfc_match ("nohost") == MATCH_YES)
+	    {
+	      c->nohost = needs_space = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_NOTEMPORAL)
 	      && gfc_match_omp_variable_list ("nontemporal (",
 					      &c->lists[OMP_LIST_NONTEMPORAL],
@@ -2607,7 +2615,8 @@ end:
   omp_mask (OMP_CLAUSE_ASYNC)
 #define OACC_ROUTINE_CLAUSES \
   (omp_mask (OMP_CLAUSE_GANG) | OMP_CLAUSE_WORKER | OMP_CLAUSE_VECTOR	      \
-   | OMP_CLAUSE_SEQ)
+   | OMP_CLAUSE_SEQ							      \
+   | OMP_CLAUSE_NOHOST)
 
 
 static match
@@ -2936,6 +2945,7 @@ gfc_match_oacc_routine (void)
   gfc_omp_clauses *c = NULL;
   gfc_oacc_routine_name *n = NULL;
   oacc_routine_lop lop = OACC_ROUTINE_LOP_NONE;
+  bool nohost;
 
   old_loc = gfc_current_locus;
 
@@ -3012,6 +3022,7 @@ gfc_match_oacc_routine (void)
       gfc_error ("Multiple loop axes specified for routine at %C");
       goto cleanup;
     }
+  nohost = c ? c->nohost : false;
 
   if (isym != NULL)
     {
@@ -3022,6 +3033,13 @@ gfc_match_oacc_routine (void)
 	  gfc_error ("Intrinsic symbol specified in !$ACC ROUTINE ( NAME )"
 		     " at %C marked with incompatible GANG, WORKER, or VECTOR"
 		     " clause");
+	  goto cleanup;
+	}
+      /* ..., and no 'nohost' clause.  */
+      if (nohost)
+	{
+	  gfc_error ("Intrinsic symbol specified in !$ACC ROUTINE ( NAME )"
+		     " at %C marked with incompatible NOHOST clause");
 	  goto cleanup;
 	}
     }
@@ -3037,7 +3055,9 @@ gfc_match_oacc_routine (void)
 	if (n_p->sym == sym)
 	  {
 	    add = false;
-	    if (lop != gfc_oacc_routine_lop (n_p->clauses))
+	    bool nohost_p = n_p->clauses ? n_p->clauses->nohost : false;
+	    if (lop != gfc_oacc_routine_lop (n_p->clauses)
+		|| nohost != nohost_p)
 	      {
 		gfc_error ("!$ACC ROUTINE already applied at %C");
 		goto cleanup;
@@ -3047,6 +3067,7 @@ gfc_match_oacc_routine (void)
       if (add)
 	{
 	  sym->attr.oacc_routine_lop = lop;
+	  sym->attr.oacc_routine_nohost = nohost;
 
 	  n = gfc_get_oacc_routine_name ();
 	  n->sym = sym;
@@ -3061,8 +3082,10 @@ gfc_match_oacc_routine (void)
       /* For a repeated OpenACC 'routine' directive, diagnose if it doesn't
 	 match the first one.  */
       oacc_routine_lop lop_p = gfc_current_ns->proc_name->attr.oacc_routine_lop;
+      bool nohost_p = gfc_current_ns->proc_name->attr.oacc_routine_nohost;
       if (lop_p != OACC_ROUTINE_LOP_NONE
-	  && lop != lop_p)
+	  && (lop != lop_p
+	      || nohost != nohost_p))
 	{
 	  gfc_error ("!$ACC ROUTINE already applied at %C");
 	  goto cleanup;
@@ -3073,6 +3096,7 @@ gfc_match_oacc_routine (void)
 				       &old_loc))
 	goto cleanup;
       gfc_current_ns->proc_name->attr.oacc_routine_lop = lop;
+      gfc_current_ns->proc_name->attr.oacc_routine_nohost = nohost;
     }
   else
     /* Something has gone wrong, possibly a syntax error.  */

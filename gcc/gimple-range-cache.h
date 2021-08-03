@@ -34,6 +34,8 @@ public:
   non_null_ref ();
   ~non_null_ref ();
   bool non_null_deref_p (tree name, basic_block bb, bool search_dom = true);
+  bool adjust_range (irange &r, tree name, basic_block bb,
+		     bool search_dom = true);
 private:
   vec <bitmap> m_nn;
   void process_name (tree name);
@@ -50,9 +52,9 @@ public:
   block_range_cache ();
   ~block_range_cache ();
 
-  bool set_bb_range (tree name, const basic_block bb, const irange &r);
-  bool get_bb_range (irange &r, tree name, const basic_block bb);
-  bool bb_range_p (tree name, const basic_block bb);
+  bool set_bb_range (tree name, const_basic_block bb, const irange &r);
+  bool get_bb_range (irange &r, tree name, const_basic_block bb);
+  bool bb_range_p (tree name, const_basic_block bb);
 
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb, bool print_varying = true);

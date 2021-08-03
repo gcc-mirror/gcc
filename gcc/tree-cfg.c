@@ -312,12 +312,11 @@ replace_loop_annotate_in_block (basic_block bb, class loop *loop)
 static void
 replace_loop_annotate (void)
 {
-  class loop *loop;
   basic_block bb;
   gimple_stmt_iterator gsi;
   gimple *stmt;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       /* First look into the header.  */
       replace_loop_annotate_in_block (loop->header, loop);
@@ -1481,6 +1480,7 @@ cleanup_dead_labels_eh (label_record *label_for_bb)
 	if (lab != lp->post_landing_pad)
 	  {
 	    EH_LANDING_PAD_NR (lp->post_landing_pad) = 0;
+	    lp->post_landing_pad = lab;
 	    EH_LANDING_PAD_NR (lab) = lp->index;
 	  }
       }
@@ -1707,7 +1707,10 @@ cleanup_dead_labels (void)
 	      || FORCED_LABEL (label))
 	    gsi_next (&i);
 	  else
-	    gsi_remove (&i, true);
+	    {
+	      gcc_checking_assert (EH_LANDING_PAD_NR (label) == 0);
+	      gsi_remove (&i, true);
+	    }
 	}
     }
 
@@ -2023,12 +2026,8 @@ replace_uses_by (tree name, tree val)
   /* Also update the trees stored in loop structures.  */
   if (current_loops)
     {
-      class loop *loop;
-
-      FOR_EACH_LOOP (loop, 0)
-	{
+      for (auto loop : loops_list (cfun, 0))
 	  substitute_in_loop_info (loop, name, val);
-	}
     }
 }
 
@@ -4434,7 +4433,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 		  && !SCALAR_FLOAT_TYPE_P (rhs1_type))
 		 || (!INTEGRAL_TYPE_P (lhs_type)
 		     && !SCALAR_FLOAT_TYPE_P (lhs_type))))
-	    || !types_compatible_p (rhs1_type, rhs2_type)
+	    /* rhs1_type and rhs2_type may differ in sign.  */
+	    || !tree_nop_conversion_p (rhs1_type, rhs2_type)
 	    || !useless_type_conversion_p (lhs_type, rhs3_type)
 	    || maybe_lt (GET_MODE_SIZE (element_mode (rhs3_type)),
 			 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
@@ -7747,9 +7747,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* Fix up orig_loop_num.  If the block referenced in it has been moved
      to dest_cfun, update orig_loop_num field, otherwise clear it.  */
-  class loop *dloop;
   signed char *moved_orig_loop_num = NULL;
-  FOR_EACH_LOOP_FN (dest_cfun, dloop, 0)
+  for (auto dloop : loops_list (dest_cfun, 0))
     if (dloop->orig_loop_num)
       {
 	if (moved_orig_loop_num == NULL)
@@ -7787,11 +7786,10 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 	      /* If we have moved both loops with this orig_loop_num into
 		 dest_cfun and the LOOP_DIST_ALIAS call is being moved there
 		 too, update the first argument.  */
-	      gcc_assert ((*larray)[dloop->orig_loop_num] != NULL
-			  && (get_loop (saved_cfun, dloop->orig_loop_num)
-			      == NULL));
+	      gcc_assert ((*larray)[orig_loop_num] != NULL
+			  && (get_loop (saved_cfun, orig_loop_num) == NULL));
 	      tree t = build_int_cst (integer_type_node,
-				      (*larray)[dloop->orig_loop_num]->num);
+				      (*larray)[orig_loop_num]->num);
 	      gimple_call_set_arg (g, 0, t);
 	      update_stmt (g);
 	      /* Make sure the following loop will not update it.  */
@@ -8081,7 +8079,7 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	{
 	  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 	  if (bb->count.initialized_p ())
-	    fprintf (file, ",%s(%d)",
+	    fprintf (file, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
 		     bb->count.value ());
 	  fprintf (file, ")\n%s (", function_name (fun));

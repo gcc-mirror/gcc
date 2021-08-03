@@ -162,14 +162,12 @@ flow_loop_dump (const class loop *loop, FILE *file,
 void
 flow_loops_dump (FILE *file, void (*loop_dump_aux) (const class loop *, FILE *, int), int verbose)
 {
-  class loop *loop;
-
   if (!current_loops || ! file)
     return;
 
   fprintf (file, ";; %d loops found\n", number_of_loops (cfun));
 
-  FOR_EACH_LOOP (loop, LI_INCLUDE_ROOT)
+  for (auto loop : loops_list (cfun, LI_INCLUDE_ROOT))
     {
       flow_loop_dump (loop, file, loop_dump_aux, verbose);
     }
@@ -559,8 +557,7 @@ sort_sibling_loops (function *fn)
   free (rc_order);
 
   auto_vec<loop_p, 3> siblings;
-  loop_p loop;
-  FOR_EACH_LOOP_FN (fn, loop, LI_INCLUDE_ROOT)
+  for (auto loop : loops_list (fn, LI_INCLUDE_ROOT))
     if (loop->inner && loop->inner->next)
       {
 	loop_p sibling = loop->inner;
@@ -836,9 +833,7 @@ disambiguate_multiple_latches (class loop *loop)
 void
 disambiguate_loops_with_multiple_latches (void)
 {
-  class loop *loop;
-
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       if (!loop->latch)
 	disambiguate_multiple_latches (loop);
@@ -1457,7 +1452,7 @@ verify_loop_structure (void)
   auto_sbitmap visited (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
   bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       unsigned n;
 
@@ -1503,7 +1498,7 @@ verify_loop_structure (void)
   free (bbs);
 
   /* Check headers and latches.  */
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       i = loop->num;
       if (loop->header == NULL)
@@ -1629,7 +1624,7 @@ verify_loop_structure (void)
     }
 
   /* Check the recorded loop exits.  */
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       if (!loop->exits || loop->exits->e != NULL)
 	{
@@ -1723,7 +1718,7 @@ verify_loop_structure (void)
 	  err = 1;
 	}
 
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	{
 	  eloops = 0;
 	  for (exit = loop->exits->next; exit->e; exit = exit->next)

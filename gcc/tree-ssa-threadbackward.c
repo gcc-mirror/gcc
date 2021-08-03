@@ -36,6 +36,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "tree-inline.h"
 #include "tree-vectorizer.h"
+#include "value-range.h"
+#include "gimple-range.h"
+#include "tree-ssa-threadedge.h"
+#include "gimple-range-path.h"
+#include "ssa.h"
+#include "tree-cfgcleanup.h"
 
 // Path registry for the backwards threader.  After all paths have been
 // registered with register_path(), thread_through_all_blocks() is called
@@ -71,13 +77,415 @@ private:
   const bool m_speed_p;
 };
 
+// Ranger based backwards threader.
+
+class back_threader
+{
+  // Temporary until we remove old code.
+  friend bool path_is_unreachable_p (const vec<jump_thread_edge *> &);
+
+public:
+  back_threader (back_threader_profitability &, back_threader_registry &);
+  ~back_threader ();
+  void find_paths (basic_block bb, tree name);
+
+private:
+  void maybe_register_path (edge taken_edge);
+  bool find_paths_to_names (basic_block bb, bitmap imports);
+  bool resolve_def (tree name, bitmap interesting, vec<tree> worklist);
+  bool resolve_phi (gphi *phi, bitmap imports);
+  edge find_taken_edge (const vec<basic_block> &path);
+  edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
+  edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
+
+  back_threader_registry &m_registry;
+  back_threader_profitability &m_profit;
+  gimple_ranger m_ranger;
+  path_range_query m_solver;
+
+  // Current path being analyzed.
+  auto_vec<basic_block> m_path;
+  // Hash to mark visited BBs while analyzing a path.
+  hash_set<basic_block> m_visited_bbs;
+  // The set of SSA names, any of which could potentially change the
+  // value of the final conditional in a path.
+  bitmap m_imports;
+  // The last statement in the path.
+  gimple *m_last_stmt;
+  // This is a bit of a wart.  It's used to pass the LHS SSA name to
+  // the profitability engine.
+  tree m_name;
+  // Marker to differentiate unreachable edges.
+  static const edge UNREACHABLE_EDGE;
+};
+
+// Used to differentiate unreachable edges, so we may stop the search
+// in a the given direction.
+const edge back_threader::UNREACHABLE_EDGE = (edge) -1;
+
+back_threader::back_threader (back_threader_profitability &profit,
+			      back_threader_registry &registry)
+  : m_registry (registry),
+    m_profit (profit),
+    m_solver (m_ranger)
+{
+  m_last_stmt = NULL;
+  m_imports = BITMAP_ALLOC (NULL);
+}
+
+back_threader::~back_threader ()
+{
+  m_path.release ();
+  BITMAP_FREE (m_imports);
+}
+
+// Register the current path for jump threading if it's profitable to
+// do so.  TAKEN_EDGE is the known edge out of the path.
+
+void
+back_threader::maybe_register_path (edge taken_edge)
+{
+  bool irreducible = false;
+  bool profitable
+    = m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
+
+  if (profitable)
+    {
+      m_registry.register_path (m_path, taken_edge);
+
+      if (irreducible)
+	vect_free_loop_info_assumptions (m_path[0]->loop_father);
+    }
+}
+
+// Return the known taken edge out of a path.  If the path can be
+// determined to be unreachable, return UNREACHABLE_EDGE.  If no
+// outgoing edge can be calculated, return NULL.
+
+edge
+back_threader::find_taken_edge (const vec<basic_block> &path)
+{
+  gcc_checking_assert (path.length () > 1);
+  switch (gimple_code (m_last_stmt))
+    {
+    case GIMPLE_COND:
+      return find_taken_edge_cond (path, as_a<gcond *> (m_last_stmt));
+
+    case GIMPLE_SWITCH:
+      return find_taken_edge_switch (path, as_a<gswitch *> (m_last_stmt));
+
+    default:
+      return NULL;
+    }
+}
+
+// Same as find_taken_edge, but for paths ending in a switch.
+
+edge
+back_threader::find_taken_edge_switch (const vec<basic_block> &path,
+				       gswitch *sw)
+{
+  tree name = gimple_switch_index (sw);
+  int_range_max r;
+
+  m_solver.precompute_ranges (path, m_imports);
+  m_solver.range_of_expr (r, name, sw);
+
+  if (r.undefined_p ())
+    return UNREACHABLE_EDGE;
+
+  if (r.varying_p ())
+    return NULL;
+
+  tree val;
+  if (r.singleton_p (&val))
+    return ::find_taken_edge (gimple_bb (sw), val);
+
+  return NULL;
+}
+
+// Same as find_taken_edge, but for paths ending in a GIMPLE_COND.
+
+edge
+back_threader::find_taken_edge_cond (const vec<basic_block> &path,
+				     gcond *cond)
+{
+  m_solver.precompute_ranges (path, m_imports);
+
+  // Check if either operand is unreachable since this knowledge could
+  // help the caller cut down the search space.
+  int_range_max r;
+  m_solver.range_of_expr (r, gimple_cond_lhs (cond));
+  if (r.undefined_p ())
+    return UNREACHABLE_EDGE;
+  m_solver.range_of_expr (r, gimple_cond_rhs (cond));
+  if (r.undefined_p ())
+    return UNREACHABLE_EDGE;
+
+  m_solver.range_of_stmt (r, cond);
+
+  int_range<2> true_range (boolean_true_node, boolean_true_node);
+  int_range<2> false_range (boolean_false_node, boolean_false_node);
+
+  if (r == true_range || r == false_range)
+    {
+      edge e_true, e_false;
+      basic_block bb = gimple_bb (cond);
+      extract_true_false_edges_from_block (bb, &e_true, &e_false);
+      return r == true_range ? e_true : e_false;
+    }
+  return NULL;
+}
+
+// Populate a vector of trees from a bitmap.
+
+static inline void
+populate_worklist (vec<tree> worklist, bitmap bits)
+{
+  bitmap_iterator bi;
+  unsigned i;
+
+  EXECUTE_IF_SET_IN_BITMAP (bits, 0, i, bi)
+    {
+      tree name = ssa_name (i);
+      worklist.quick_push (name);
+    }
+}
+
+// If taking any of the incoming edges to a PHI causes the final
+// conditional of the current path to be constant, register the
+// path(s), and return TRUE.
+
+bool
+back_threader::resolve_phi (gphi *phi, bitmap interesting)
+{
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (phi)))
+    return true;
+
+  bool done = false;
+  for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
+    {
+      edge e = gimple_phi_arg_edge (phi, i);
+
+      // This is like path_crosses_loops in profitable_path_p but more
+      // restrictive, since profitable_path_p allows threading the
+      // first block because it would be redirected anyhow.
+      //
+      // If we loosened the restriction and used profitable_path_p()
+      // here instead, we would peel off the first iterations of loops
+      // in places like tree-ssa/pr14341.c.
+      bool profitable_p = m_path[0]->loop_father == e->src->loop_father;
+      if (!profitable_p)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "  FAIL: path through PHI in bb%d (incoming bb:%d) crosses loop\n",
+		     e->dest->index, e->src->index);
+	  continue;
+	}
+
+      tree arg = gimple_phi_arg_def (phi, i);
+      if (TREE_CODE (arg) == SSA_NAME)
+	{
+	  unsigned v = SSA_NAME_VERSION (arg);
+
+	  // Avoid loops as in: x_5 = PHI <x_5(2), ...>.
+	  if (bitmap_bit_p (interesting, v))
+	    continue;
+
+	  bitmap_set_bit (interesting, v);
+	  bitmap_set_bit (m_imports, v);
+	  done |= find_paths_to_names (e->src, interesting);
+	  bitmap_clear_bit (interesting, v);
+	}
+      else if (TREE_CODE (arg) == INTEGER_CST)
+	{
+	  m_path.safe_push (e->src);
+	  edge taken_edge = find_taken_edge (m_path);
+	  if (taken_edge && taken_edge != UNREACHABLE_EDGE)
+	    {
+	      maybe_register_path (taken_edge);
+	      done = true;
+	    }
+	  m_path.pop ();
+	}
+    }
+  return done;
+}
+
+// If the definition of NAME causes the final conditional of the
+// current path to be constant, register the path, and return TRUE.
+
+bool
+back_threader::resolve_def (tree name, bitmap interesting, vec<tree> worklist)
+{
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+
+  // Handle PHIs.
+  if (is_a<gphi *> (def_stmt)
+      && resolve_phi (as_a<gphi *> (def_stmt), interesting))
+    return true;
+
+  // Defer copies of SSAs by adding the source to the worklist.
+  if (gimple_assign_single_p (def_stmt)
+      && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
+    {
+      tree rhs = gimple_assign_rhs1 (def_stmt);
+      bitmap_set_bit (m_imports, SSA_NAME_VERSION (rhs));
+      bitmap_set_bit (interesting, SSA_NAME_VERSION (rhs));
+      worklist.safe_push (rhs);
+    }
+  return false;
+}
+
+// Find jump threading paths to any of the SSA names in the
+// INTERESTING bitmap, and register any such paths.
+//
+// Return TRUE if no further processing past this block is necessary.
+// This is because we've either registered a path, or because there is
+// nothing of interesting beyond this block.
+//
+// BB is the current path being processed.
+
+bool
+back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
+{
+  if (m_visited_bbs.add (bb))
+    return true;
+
+  m_path.safe_push (bb);
+
+  if (m_path.length () > 1
+      && !m_profit.profitable_path_p (m_path, m_name, NULL))
+    {
+      m_path.pop ();
+      m_visited_bbs.remove (bb);
+      return false;
+    }
+
+  auto_bitmap processed;
+  unsigned i;
+  bool done = false;
+
+  // We use a worklist instead of iterating through the bitmap,
+  // because we may add new items in-flight.
+  auto_vec<tree> worklist (bitmap_count_bits (interesting));
+  populate_worklist (worklist, interesting);
+  while (!worklist.is_empty ())
+    {
+      tree name = worklist.pop ();
+      unsigned i = SSA_NAME_VERSION (name);
+      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+
+      // Process any names defined in this block.
+      if (def_bb == bb)
+	{
+	  bitmap_set_bit (processed, i);
+
+	  if (resolve_def (name, interesting, worklist))
+	    {
+	      done = true;
+	      goto leave_bb;
+	    }
+	}
+      // Examine blocks that define or export an interesting SSA,
+      // since they may compute a range which resolve this path.
+      if ((def_bb == bb
+	   || bitmap_bit_p (m_ranger.gori ().exports (bb), i))
+	  && m_path.length () > 1)
+	{
+	  edge taken_edge = find_taken_edge (m_path);
+	  if (taken_edge)
+	    {
+	      if (taken_edge != UNREACHABLE_EDGE)
+		maybe_register_path (taken_edge);
+
+	      done = true;
+	      goto leave_bb;
+	    }
+	}
+    }
+
+  // If there are interesting names not yet processed, keep looking.
+  bitmap_and_compl_into (interesting, processed);
+  if (!bitmap_empty_p (interesting))
+    {
+      edge_iterator iter;
+      edge e;
+      FOR_EACH_EDGE (e, iter, bb->preds)
+	if ((e->flags & EDGE_ABNORMAL) == 0)
+	  done |= find_paths_to_names (e->src, interesting);
+    }
+
+ leave_bb:
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (processed, 0, i, bi)
+    bitmap_set_bit (interesting, i);
+
+  m_path.pop ();
+  m_visited_bbs.remove (bb);
+  return done;
+}
+
+// Search backwards from BB looking for paths where the final
+// conditional out of BB can be determined.  NAME is the LHS of the
+// final conditional.  Register such paths for jump threading.
+
+void
+back_threader::find_paths (basic_block bb, tree name)
+{
+  gimple *stmt = last_stmt (bb);
+  if (!stmt
+      || (gimple_code (stmt) != GIMPLE_COND
+	  && gimple_code (stmt) != GIMPLE_SWITCH))
+    return;
+
+  if (EDGE_COUNT (bb->succs) > 1
+      || single_succ_to_potentially_threadable_block (bb))
+    {
+      m_last_stmt = stmt;
+      m_visited_bbs.empty ();
+      m_path.truncate (0);
+      m_name = name;
+      bitmap_clear (m_imports);
+
+      auto_bitmap interesting;
+      bitmap_copy (m_imports, m_ranger.gori ().imports (bb));
+      bitmap_copy (interesting, m_imports);
+      find_paths_to_names (bb, interesting);
+    }
+}
+
+// Dump a sequence of BBs through the CFG.
+
+DEBUG_FUNCTION void
+dump_path (FILE *dump_file, const vec<basic_block> &path)
+{
+  for (size_t i = 0; i < path.length (); ++i)
+    {
+      fprintf (dump_file, "BB%d", path[i]->index);
+      if (i + 1 < path.length ())
+	fprintf (dump_file, " <- ");
+    }
+  fprintf (dump_file, "\n");
+}
+
+DEBUG_FUNCTION void
+debug (const vec <basic_block> &path)
+{
+  dump_path (stderr, path);
+}
+
 class thread_jumps
 {
 public:
   thread_jumps (bool speed_p = true)
-    : m_profit (speed_p), m_registry (param_max_fsm_thread_paths)
+    : m_profit (speed_p),
+      m_registry (param_max_fsm_thread_paths),
+      m_back_threader (m_profit, m_registry)
   { }
   void find_jump_threads_backwards (basic_block bb);
+  void find_jump_threads_backwards_with_ranger (basic_block bb);
   bool thread_through_all_blocks ();
 
 private:
@@ -102,6 +510,7 @@ private:
   tree m_name;
   back_threader_profitability m_profit;
   back_threader_registry m_registry;
+  back_threader m_back_threader;
 };
 
 // Perform the actual jump threading for the all queued paths.
@@ -548,8 +957,8 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
 						EDGE_NO_COPY_SRC_BLOCK);
   jump_thread_path->safe_push (x);
 
-  m_lowlevel_registry.register_jump_thread (jump_thread_path);
-  ++m_threaded_paths;
+  if (m_lowlevel_registry.register_jump_thread (jump_thread_path))
+    ++m_threaded_paths;
   return true;
 }
 
@@ -818,6 +1227,12 @@ thread_jumps::fsm_find_control_statement_thread_paths (tree name)
 void
 thread_jumps::find_jump_threads_backwards (basic_block bb)
 {
+  if (param_threader_mode & THREADER_MODE_RANGER)
+    {
+      find_jump_threads_backwards_with_ranger (bb);
+      return;
+    }
+
   gimple *stmt = get_gimple_control_stmt (bb);
   if (!stmt)
     return;
@@ -848,6 +1263,28 @@ thread_jumps::find_jump_threads_backwards (basic_block bb)
   m_name = name;
 
   fsm_find_control_statement_thread_paths (name);
+}
+
+// Like find_jump_threads_backwards(), but using ranger.
+
+void
+thread_jumps::find_jump_threads_backwards_with_ranger (basic_block bb)
+{
+  gimple *stmt = get_gimple_control_stmt (bb);
+  if (!stmt)
+    return;
+
+  enum gimple_code code = gimple_code (stmt);
+  tree name = NULL;
+  if (code == GIMPLE_SWITCH)
+    name = gimple_switch_index (as_a <gswitch *> (stmt));
+  else if (code == GIMPLE_GOTO)
+    name = gimple_goto_dest (stmt);
+  else if (code == GIMPLE_COND)
+    name = gimple_cond_lhs (stmt);
+
+  m_name = name;
+  m_back_threader.find_paths (bb, name);
 }
 
 namespace {
@@ -883,12 +1320,12 @@ pass_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
   return flag_expensive_optimizations;
 }
 
+// Try to thread blocks in FUN.  Return TRUE if any jump thread paths were
+// registered.
 
-unsigned int
-pass_thread_jumps::execute (function *fun)
+static bool
+try_thread_blocks (function *fun)
 {
-  loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
-
   /* Try to thread each block with more than one successor.  */
   thread_jumps threader;
   basic_block bb;
@@ -897,9 +1334,18 @@ pass_thread_jumps::execute (function *fun)
       if (EDGE_COUNT (bb->succs) > 1)
 	threader.find_jump_threads_backwards (bb);
     }
-  bool changed = threader.thread_through_all_blocks ();
+  return threader.thread_through_all_blocks ();
+}
+
+unsigned int
+pass_thread_jumps::execute (function *fun)
+{
+  loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
+
+  bool changed = try_thread_blocks (fun);
 
   loop_optimizer_finalize ();
+
   return changed ? TODO_cleanup_cfg : 0;
 }
 

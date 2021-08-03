@@ -2416,9 +2416,9 @@ extern void get_full_rtx_cost (rtx, machine_mode, enum rtx_code, int,
 			       struct full_rtx_costs *);
 extern bool native_encode_rtx (machine_mode, rtx, vec<target_unit> &,
 			       unsigned int, unsigned int);
-extern rtx native_decode_rtx (machine_mode, vec<target_unit>,
+extern rtx native_decode_rtx (machine_mode, const vec<target_unit> &,
 			      unsigned int);
-extern rtx native_decode_vector_rtx (machine_mode, vec<target_unit>,
+extern rtx native_decode_vector_rtx (machine_mode, const vec<target_unit> &,
 				     unsigned int, unsigned int, unsigned int);
 extern poly_uint64 subreg_lsb (const_rtx);
 extern poly_uint64 subreg_size_lsb (poly_uint64, poly_uint64, poly_uint64);
@@ -2460,6 +2460,8 @@ extern bool subreg_offset_representable_p (unsigned int, machine_mode,
 extern unsigned int subreg_regno (const_rtx);
 extern int simplify_subreg_regno (unsigned int, machine_mode,
 				  poly_uint64, machine_mode);
+extern int lowpart_subreg_regno (unsigned int, machine_mode,
+				 machine_mode);
 extern unsigned int subreg_nregs (const_rtx);
 extern unsigned int subreg_nregs_with_regno (unsigned int, const_rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (const_rtx, machine_mode);
@@ -2996,6 +2998,7 @@ extern unsigned int rtx_size (const_rtx);
 extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 extern int rtx_equal_p (const_rtx, const_rtx);
 extern bool rtvec_all_equal_p (const_rtvec);
+extern bool rtvec_series_p (rtvec, int);
 
 /* Return true if X is a vector constant with a duplicated element value.  */
 

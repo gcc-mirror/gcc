@@ -1572,12 +1572,10 @@ create_preheader (class loop *loop, int flags)
 void
 create_preheaders (int flags)
 {
-  class loop *loop;
-
   if (!current_loops)
     return;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     create_preheader (loop, flags);
   loops_state_set (LOOPS_HAVE_PREHEADERS);
 }
@@ -1587,10 +1585,9 @@ create_preheaders (int flags)
 void
 force_single_succ_latches (void)
 {
-  class loop *loop;
   edge e;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       if (loop->latch != loop->header && single_succ_p (loop->latch))
 	continue;

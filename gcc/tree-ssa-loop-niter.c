@@ -3018,7 +3018,7 @@ get_val_for (tree x, tree base)
   else if (gimple_assign_rhs_class (stmt) == GIMPLE_UNARY_RHS
 	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
     return fold_build1 (gimple_assign_rhs_code (stmt),
-			gimple_expr_type (stmt),
+			TREE_TYPE (gimple_assign_lhs (stmt)),
 			get_val_for (gimple_assign_rhs1 (stmt), base));
   else if (gimple_assign_rhs_class (stmt) == GIMPLE_BINARY_RHS)
     {
@@ -3031,7 +3031,7 @@ get_val_for (tree x, tree base)
       else
 	gcc_unreachable ();
       return fold_build2 (gimple_assign_rhs_code (stmt),
-			  gimple_expr_type (stmt), rhs1, rhs2);
+			  TREE_TYPE (gimple_assign_lhs (stmt)), rhs1, rhs2);
     }
   else
     gcc_unreachable ();
@@ -3929,7 +3929,7 @@ wide_int_cmp (const void *p1, const void *p2)
    Lookup by binary search.  */
 
 static int
-bound_index (vec<widest_int> bounds, const widest_int &bound)
+bound_index (const vec<widest_int> &bounds, const widest_int &bound)
 {
   unsigned int end = bounds.length ();
   unsigned int begin = 0;
@@ -4559,13 +4559,11 @@ estimated_stmt_executions (class loop *loop, widest_int *nit)
 void
 estimate_numbers_of_iterations (function *fn)
 {
-  class loop *loop;
-
   /* We don't want to issue signed overflow warnings while getting
      loop iteration estimates.  */
   fold_defer_overflow_warnings ();
 
-  FOR_EACH_LOOP_FN (fn, loop, 0)
+  for (auto loop : loops_list (fn, 0))
     estimate_numbers_of_iterations (loop);
 
   fold_undefer_and_ignore_overflow_warnings ();
@@ -5031,9 +5029,7 @@ free_numbers_of_iterations_estimates (class loop *loop)
 void
 free_numbers_of_iterations_estimates (function *fn)
 {
-  class loop *loop;
-
-  FOR_EACH_LOOP_FN (fn, loop, 0)
+  for (auto loop : loops_list (fn, 0))
     free_numbers_of_iterations_estimates (loop);
 }
 

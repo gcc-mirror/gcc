@@ -2208,7 +2208,7 @@ insert_gimplified_predicates (loop_p loop)
    mask if it was created for given SIZE and -1 otherwise.  */
 
 static int
-mask_exists (int size, vec<int> vec)
+mask_exists (int size, const vec<int> &vec)
 {
   unsigned int ix;
   int v;
@@ -3300,14 +3300,13 @@ pass_if_conversion::gate (function *fun)
 unsigned int
 pass_if_conversion::execute (function *fun)
 {
-  class loop *loop;
   unsigned todo = 0;
 
   if (number_of_loops (fun) <= 1)
     return 0;
 
   auto_vec<gimple *> preds;
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     if (flag_tree_loop_if_convert == 1
 	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
 	    && !loop->dont_vectorize))

@@ -443,7 +443,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       BLOCK_OUTER_CURLY_BRACE_P (in BLOCK)
       FOLD_EXPR_MODOP_P (*_FOLD_EXPR)
       IF_STMT_CONSTEXPR_P (IF_STMT)
-      TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
       DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
       SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
       REINTERPRET_CAST_P (in NOP_EXPR)
@@ -1367,6 +1366,7 @@ enum cp_trait_kind
   CPTK_IS_ENUM,
   CPTK_IS_FINAL,
   CPTK_IS_LITERAL_TYPE,
+  CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF,
   CPTK_IS_POD,
   CPTK_IS_POLYMORPHIC,
   CPTK_IS_SAME_AS,
@@ -5167,6 +5167,21 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define DECL_COROUTINE_P(NODE) \
   (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->coroutine_p)
 
+/* For a FUNCTION_DECL of a coroutine, this holds the ACTOR helper function
+   decl.  */
+#define DECL_ACTOR_FN(NODE) \
+  (coro_get_actor_function ((NODE)))
+
+/* For a FUNCTION_DECL of a coroutine, this holds the DESTROY helper function
+  decl.  */
+#define DECL_DESTROY_FN(NODE) \
+  (coro_get_destroy_function ((NODE)))
+
+/* For a FUNCTION_DECL of a coroutine helper (ACTOR or DESTROY), this points
+   back to the original (ramp) function.  */
+#define DECL_RAMP_FN(NODE) \
+  (coro_get_ramp_function (NODE))
+
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
    as an expr in operand 1, and integer_zero_node or clauses in operand 0.  */
 #define OMP_ATOMIC_DEPENDENT_P(NODE) \
@@ -5585,6 +5600,7 @@ extern GTY(()) vec<tree, va_gc> *keyed_classes;
 #ifndef NO_DOT_IN_LABEL
 
 #define JOINER '.'
+#define JOIN_STR "."
 
 #define AUTO_TEMP_NAME "_.tmp_"
 #define VFIELD_BASE ".vf"
@@ -5596,6 +5612,7 @@ extern GTY(()) vec<tree, va_gc> *keyed_classes;
 #ifndef NO_DOLLAR_IN_LABEL
 
 #define JOINER '$'
+#define JOIN_STR "$"
 
 #define AUTO_TEMP_NAME "_$tmp_"
 #define VFIELD_BASE "$vf"
@@ -5603,6 +5620,8 @@ extern GTY(()) vec<tree, va_gc> *keyed_classes;
 #define VFIELD_NAME_FORMAT "_vptr$%s"
 
 #else /* NO_DOLLAR_IN_LABEL */
+
+#define JOIN_STR "_"
 
 #define VTABLE_NAME "__vt_"
 #define VTABLE_NAME_P(ID_NODE) \
@@ -5862,11 +5881,6 @@ enum auto_deduction_context
   adc_requirement,   /* Argument deduction constraint */
   adc_decomp_type    /* Decomposition declaration initializer deduction */
 };
-
-/* True if this type-parameter belongs to a class template, used by C++17
-   class template argument deduction.  */
-#define TEMPLATE_TYPE_PARM_FOR_CLASS(NODE) \
-  (TREE_LANG_FLAG_0 (TEMPLATE_TYPE_PARM_CHECK (NODE)))
 
 /* True iff this TEMPLATE_TYPE_PARM represents decltype(auto).  */
 #define AUTO_IS_DECLTYPE(NODE) \
@@ -6342,6 +6356,7 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
 enum cp_built_in_function {
   CP_BUILT_IN_IS_CONSTANT_EVALUATED,
   CP_BUILT_IN_INTEGER_PACK,
+  CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
   CP_BUILT_IN_SOURCE_LOCATION,
   CP_BUILT_IN_LAST
 };
@@ -7557,6 +7572,7 @@ extern tree baselink_for_fns                    (tree);
 extern void finish_static_assert                (tree, tree, location_t,
 						 bool, bool);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
+extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
 extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
 extern tree build_lambda_expr                   (void);
 extern tree build_lambda_object			(tree);
@@ -8298,6 +8314,9 @@ extern tree finish_co_yield_expr		(location_t, tree);
 extern tree coro_validate_builtin_call		(tree,
 						 tsubst_flags_t = tf_warning_or_error);
 extern bool morph_fn_to_coro			(tree, tree *, tree *);
+extern tree coro_get_actor_function		(tree);
+extern tree coro_get_destroy_function		(tree);
+extern tree coro_get_ramp_function		(tree);
 
 /* Inline bodies.  */
   

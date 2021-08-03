@@ -560,6 +560,7 @@ out_file=$(srcdir)/config/@out_file@
 out_object_file=@out_object_file@
 common_out_file=$(srcdir)/common/config/@common_out_file@
 common_out_object_file=@common_out_object_file@
+EXTRA_GTYPE_DEPS=
 md_file=$(srcdir)/common.md $(srcdir)/config/@md_file@
 tm_file_list=@tm_file_list@
 tm_include_list=@tm_include_list@
@@ -1413,6 +1414,7 @@ OBJS = \
 	gimple-ssa-store-merging.o \
 	gimple-ssa-strength-reduction.o \
 	gimple-ssa-sprintf.o \
+	gimple-ssa-warn-access.o \
 	gimple-ssa-warn-alloca.o \
 	gimple-ssa-warn-restrict.o \
 	gimple-streamer-in.o \
@@ -1523,6 +1525,7 @@ OBJS = \
 	ordered-hash-map-tests.o \
 	passes.o \
 	plugin.o \
+	pointer-query.o \
 	postreload-gcse.o \
 	postreload.o \
 	predict.o \
@@ -1649,6 +1652,7 @@ OBJS = \
 	tree-ssa-loop.o \
 	tree-ssa-math-opts.o \
 	tree-ssa-operands.o \
+	gimple-range-path.o \
 	tree-ssa-phiopt.o \
 	tree-ssa-phiprop.o \
 	tree-ssa-pre.o \
@@ -2746,8 +2750,8 @@ s-gtyp-input: Makefile
 	$(SHELL) $(srcdir)/../move-if-change tmp-gi.list gtyp-input.list
 	$(STAMP) s-gtyp-input
 
-s-gtype: build/gengtype$(build_exeext) $(filter-out [%], $(GTFILES)) \
-	 gtyp-input.list
+s-gtype: $(EXTRA_GTYPE_DEPS) build/gengtype$(build_exeext) \
+	$(filter-out [%], $(GTFILES)) gtyp-input.list
 # First, parse all files and save a state file.
 	$(RUN_GEN) build/gengtype$(build_exeext) $(GENGTYPE_FLAGS) \
                     -S $(srcdir) -I gtyp-input.list -w tmp-gtype.state

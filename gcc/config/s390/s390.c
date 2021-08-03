@@ -3291,7 +3291,7 @@ s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
   if (GET_CODE (addr) == SYMBOL_REF
       || (GET_CODE (addr) == UNSPEC
 	  && (XINT (addr, 1) == UNSPEC_GOTENT
-	      || XINT (addr, 1) == UNSPEC_PLT)))
+	      || XINT (addr, 1) == UNSPEC_PLT31)))
     {
       if (symref)
 	*symref = addr;
@@ -4964,7 +4964,7 @@ legitimize_pic_address (rtx orig, rtx reg)
        || (SYMBOL_REF_P (addr) && s390_rel_address_ok_p (addr))
        || (GET_CODE (addr) == UNSPEC &&
 	   (XINT (addr, 1) == UNSPEC_GOTENT
-	    || XINT (addr, 1) == UNSPEC_PLT)))
+	    || XINT (addr, 1) == UNSPEC_PLT31)))
       && GET_CODE (addend) == CONST_INT)
     {
       /* This can be locally addressed.  */
@@ -5125,7 +5125,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 
 	  /* For @PLT larl is used.  This is handled like local
 	     symbol refs.  */
-	case UNSPEC_PLT:
+	case UNSPEC_PLT31:
 	  gcc_unreachable ();
 	  break;
 
@@ -5191,7 +5191,10 @@ s390_emit_tls_call_insn (rtx result_reg, rtx tls_call)
     emit_insn (s390_load_got ());
 
   if (!s390_tls_symbol)
-    s390_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_offset");
+    {
+      s390_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_offset");
+      SYMBOL_REF_FLAGS (s390_tls_symbol) |= SYMBOL_FLAG_FUNCTION;
+    }
 
   insn = s390_emit_call (s390_tls_symbol, tls_call, result_reg,
 			 gen_rtx_REG (Pmode, RETURN_REGNUM));
@@ -7596,7 +7599,7 @@ s390_delegitimize_address (rtx orig_x)
       y = XEXP (x, 0);
       if (GET_CODE (y) == UNSPEC
 	  && (XINT (y, 1) == UNSPEC_GOTENT
-	      || XINT (y, 1) == UNSPEC_PLT))
+	      || XINT (y, 1) == UNSPEC_PLT31))
 	y = XVECEXP (y, 0, 0);
       else
 	return orig_x;
@@ -7849,7 +7852,7 @@ s390_output_addr_const_extra (FILE *file, rtx x)
 	output_addr_const (file, XVECEXP (x, 0, 0));
 	fprintf (file, "@GOTOFF");
 	return true;
-      case UNSPEC_PLT:
+      case UNSPEC_PLT31:
 	output_addr_const (file, XVECEXP (x, 0, 0));
 	fprintf (file, "@PLT");
 	return true;
@@ -7943,6 +7946,7 @@ print_operand_address (FILE *file, rtx addr)
     'E': print opcode suffix for branch on index instruction.
     'G': print the size of the operand in bytes.
     'J': print tls_load/tls_gdcall/tls_ldcall suffix
+    'K': print @PLT suffix for call targets and load address values.
     'M': print the second word of a TImode operand.
     'N': print the second word of a DImode operand.
     'O': print only the displacement of a memory reference or address.
@@ -8128,6 +8132,29 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'Y':
       print_shift_count_operand (file, x);
+      return;
+
+    case 'K':
+      /* Append @PLT to both local and non-local symbols in order to support
+	 Linux Kernel livepatching: patches contain individual functions and
+	 are loaded further than 2G away from vmlinux, and therefore they must
+	 call even static functions via PLT.  ld will optimize @PLT away for
+	 normal code, and keep it for patches.
+
+	 Do not indiscriminately add @PLT in 31-bit mode due to the %r12
+	 restriction, use UNSPEC_PLT31 instead.
+
+	 @PLT only makes sense for functions, data is taken care of by
+	 -mno-pic-data-is-text-relative.
+
+	 Adding @PLT interferes with handling of weak symbols in non-PIC code,
+	 since their addresses are loaded with larl, which then always produces
+	 a non-NULL result, so skip them here as well.  */
+      if (TARGET_64BIT
+	  && GET_CODE (x) == SYMBOL_REF
+	  && SYMBOL_REF_FUNCTION_P (x)
+	  && !(SYMBOL_REF_WEAK (x) && !flag_pic))
+	fprintf (file, "@PLT");
       return;
     }
 
@@ -13125,9 +13152,10 @@ s390_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   op[3] = GEN_INT (UNITS_PER_LONG);
 
   op[2] = gen_rtx_SYMBOL_REF (Pmode, flag_fentry ? "__fentry__" : "_mcount");
-  if (flag_pic)
+  SYMBOL_REF_FLAGS (op[2]) |= SYMBOL_FLAG_FUNCTION;
+  if (flag_pic && !TARGET_64BIT)
     {
-      op[2] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[2]), UNSPEC_PLT);
+      op[2] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[2]), UNSPEC_PLT31);
       op[2] = gen_rtx_CONST (Pmode, op[2]);
     }
 
@@ -13142,7 +13170,7 @@ s390_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	warning (OPT_Wcannot_profile, "nested functions cannot be profiled "
 		 "with %<-mfentry%> on s390");
       else
-	output_asm_insn ("brasl\t0,%2", op);
+	output_asm_insn ("brasl\t0,%2%K2", op);
     }
   else if (TARGET_64BIT)
     {
@@ -13154,7 +13182,7 @@ s390_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	  output_asm_insn ("stg\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
 	    output_asm_insn (".cfi_rel_offset\t%0,%3", op);
-	  output_asm_insn ("brasl\t%0,%2", op);
+	  output_asm_insn ("brasl\t%0,%2%K2", op);
 	  output_asm_insn ("lg\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
 	    output_asm_insn (".cfi_restore\t%0", op);
@@ -13170,7 +13198,7 @@ s390_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	  output_asm_insn ("st\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
 	    output_asm_insn (".cfi_rel_offset\t%0,%3", op);
-	  output_asm_insn ("brasl\t%0,%2", op);
+	  output_asm_insn ("brasl\t%0,%2%K2", op);
 	  output_asm_insn ("l\t%0,%1", op);
 	  if (flag_dwarf2_cfi_asm)
 	    output_asm_insn (".cfi_restore\t%0", op);
@@ -13246,9 +13274,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   if (flag_pic && !SYMBOL_REF_LOCAL_P (op[0]))
     {
       nonlocal = 1;
-      op[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[0]),
-			      TARGET_64BIT ? UNSPEC_PLT : UNSPEC_GOT);
-      op[0] = gen_rtx_CONST (Pmode, op[0]);
+      if (!TARGET_64BIT)
+	{
+	  op[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[0]), UNSPEC_GOT);
+	  op[0] = gen_rtx_CONST (Pmode, op[0]);
+	}
     }
 
   /* Operand 1 is the 'this' pointer.  */
@@ -13338,7 +13368,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	}
 
       /* Jump to target.  */
-      output_asm_insn ("jg\t%0", op);
+      output_asm_insn ("jg\t%0%K0", op);
 
       /* Output literal pool if required.  */
       if (op[5])
@@ -13729,7 +13759,7 @@ rtx_insn *
 s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 		rtx retaddr_reg)
 {
-  bool plt_call = false;
+  bool plt31_call_p = false;
   rtx_insn *insn;
   rtx vec[4] = { NULL_RTX };
   int elts = 0;
@@ -13744,15 +13774,15 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
     {
       /* When calling a global routine in PIC mode, we must
 	 replace the symbol itself with the PLT stub.  */
-      if (flag_pic && !SYMBOL_REF_LOCAL_P (addr_location))
+      if (flag_pic && !SYMBOL_REF_LOCAL_P (addr_location) && !TARGET_64BIT)
 	{
-	  if (TARGET_64BIT || retaddr_reg != NULL_RTX)
+	  if (retaddr_reg != NULL_RTX)
 	    {
 	      addr_location = gen_rtx_UNSPEC (Pmode,
 					      gen_rtvec (1, addr_location),
-					      UNSPEC_PLT);
+					      UNSPEC_PLT31);
 	      addr_location = gen_rtx_CONST (Pmode, addr_location);
-	      plt_call = true;
+	      plt31_call_p = true;
 	    }
 	  else
 	    /* For -fpic code the PLT entries might use r12 which is
@@ -13773,7 +13803,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
      register 1.  */
   if (retaddr_reg == NULL_RTX
       && GET_CODE (addr_location) != SYMBOL_REF
-      && !plt_call)
+      && !plt31_call_p)
     {
       emit_move_insn (gen_rtx_REG (Pmode, SIBCALL_REGNUM), addr_location);
       addr_location = gen_rtx_REG (Pmode, SIBCALL_REGNUM);
@@ -13781,7 +13811,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
 
   if (TARGET_INDIRECT_BRANCH_NOBP_CALL
       && GET_CODE (addr_location) != SYMBOL_REF
-      && !plt_call)
+      && !plt31_call_p)
     {
       /* Indirect branch thunks require the target to be a single GPR.  */
       addr_location = force_reg (Pmode, addr_location);
@@ -13833,7 +13863,7 @@ s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg,
   insn = emit_call_insn (*call);
 
   /* 31-bit PLT stubs and tls calls use the GOT register implicitly.  */
-  if ((!TARGET_64BIT && plt_call) || tls_call != NULL_RTX)
+  if (plt31_call_p || tls_call != NULL_RTX)
     {
       /* s390_function_ok_for_sibcall should
 	 have denied sibcalls in this case.  */
@@ -13889,7 +13919,10 @@ s390_emit_tpf_eh_return (rtx target)
   rtx reg, orig_ra;
 
   if (!s390_tpf_eh_return_symbol)
-    s390_tpf_eh_return_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tpf_eh_return");
+    {
+      s390_tpf_eh_return_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tpf_eh_return");
+      SYMBOL_REF_FLAGS (s390_tpf_eh_return_symbol) |= SYMBOL_FLAG_FUNCTION;
+    }
 
   reg = gen_rtx_REG (Pmode, 2);
   orig_ra = gen_rtx_REG (Pmode, 3);
@@ -14446,15 +14479,13 @@ s390_adjust_loop_scan_osc (struct loop* loop)
 static void
 s390_adjust_loops ()
 {
-  struct loop *loop = NULL;
-
   df_analyze ();
   compute_bb_for_insn ();
 
   /* Find the loops.  */
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       if (dump_file)
 	{
@@ -16771,7 +16802,7 @@ static rtx_insn *
 s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 		    vec<machine_mode> &input_modes,
 		    vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
-		    HARD_REG_SET & /*clobbered_regs*/)
+		    HARD_REG_SET & /*clobbered_regs*/, location_t /*loc*/)
 {
   if (!TARGET_VXE)
     /* Long doubles are stored in FPR pairs - nothing to do.  */

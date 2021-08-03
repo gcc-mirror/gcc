@@ -1662,7 +1662,7 @@ analyze_memory_references (bool store_motion)
 {
   gimple_stmt_iterator bsi;
   basic_block bb, *bbs;
-  class loop *loop, *outer;
+  class loop *outer;
   unsigned i, n;
 
   /* Collect all basic-blocks in loops and sort them after their
@@ -1706,7 +1706,7 @@ analyze_memory_references (bool store_motion)
 
   /* Propagate the information about accessed memory references up
      the loop hierarchy.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       /* Finalize the overall touched references (including subloops).  */
       bitmap_ior_into (&memory_accesses.all_refs_stored_in_loop[loop->num],
@@ -2557,7 +2557,7 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
 
 static void
 hoist_memory_references (class loop *loop, bitmap mem_refs,
-			 vec<edge> exits)
+			 const vec<edge> &exits)
 {
   im_mem_ref *ref;
   unsigned  i;
@@ -2970,7 +2970,7 @@ find_refs_for_sm (class loop *loop, bitmap sm_executed, bitmap refs_to_sm)
 
 static bool
 loop_suitable_for_sm (class loop *loop ATTRIBUTE_UNUSED,
-		      vec<edge> exits)
+		      const vec<edge> &exits)
 {
   unsigned i;
   edge ex;
@@ -3133,7 +3133,6 @@ fill_always_executed_in (void)
 static void
 tree_ssa_lim_initialize (bool store_motion)
 {
-  class loop *loop;
   unsigned i;
 
   bitmap_obstack_initialize (&lim_bitmap_obstack);
@@ -3177,7 +3176,7 @@ tree_ssa_lim_initialize (bool store_motion)
      its postorder index.  */
   i = 0;
   bb_loop_postorder = XNEWVEC (unsigned, number_of_loops (cfun));
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     bb_loop_postorder[loop->num] = i++;
 }
 

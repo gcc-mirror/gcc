@@ -81,6 +81,34 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
   return false;
 }
 
+// If NAME has a non-null dereference in block BB, adjust R with the
+// non-zero information from non_null_deref_p, and return TRUE.  If
+// SEARCH_DOM is true, non_null_deref_p should search the dominator tree.
+
+bool
+non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
+			    bool search_dom)
+{
+  // Non-call exceptions mean we could throw in the middle of the
+  // block, so just punt on those for now.
+  if (cfun->can_throw_non_call_exceptions)
+    return false;
+
+  // We only care about the null / non-null property of pointers.
+  if (!POINTER_TYPE_P (TREE_TYPE (name)) || r.zero_p () || r.nonzero_p ())
+    return false;
+
+  // Check if pointers have any non-null dereferences.
+  if (non_null_deref_p (name, bb, search_dom))
+    {
+      int_range<2> nz;
+      nz.set_nonzero (TREE_TYPE (name));
+      r.intersect (nz);
+      return true;
+    }
+  return false;
+}
+
 // Allocate an populate the bitmap for NAME.  An ON bit for a block
 // index indicates there is a non-null reference in that block.  In
 // order to populate the bitmap, a quick run of all the immediate uses
@@ -132,9 +160,9 @@ non_null_ref::process_name (tree name)
 class ssa_block_ranges
 {
 public:
-  virtual bool set_bb_range (const basic_block bb, const irange &r) = 0;
-  virtual bool get_bb_range (irange &r, const basic_block bb) = 0;
-  virtual bool bb_range_p (const basic_block bb) = 0;
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) = 0;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) = 0;
+  virtual bool bb_range_p (const_basic_block bb) = 0;
 
   void dump(FILE *f);
 };
@@ -165,9 +193,9 @@ class sbr_vector : public ssa_block_ranges
 public:
   sbr_vector (tree t, irange_allocator *allocator);
 
-  virtual bool set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
-  virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
-  virtual bool bb_range_p (const basic_block bb) OVERRIDE;
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const_basic_block bb) OVERRIDE;
 protected:
   irange **m_tab;	// Non growing vector.
   int m_tab_size;
@@ -197,7 +225,7 @@ sbr_vector::sbr_vector (tree t, irange_allocator *allocator)
 // Set the range for block BB to be R.
 
 bool
-sbr_vector::set_bb_range (const basic_block bb, const irange &r)
+sbr_vector::set_bb_range (const_basic_block bb, const irange &r)
 {
   irange *m;
   gcc_checking_assert (bb->index < m_tab_size);
@@ -215,7 +243,7 @@ sbr_vector::set_bb_range (const basic_block bb, const irange &r)
 // there is no range.
 
 bool
-sbr_vector::get_bb_range (irange &r, const basic_block bb)
+sbr_vector::get_bb_range (irange &r, const_basic_block bb)
 {
   gcc_checking_assert (bb->index < m_tab_size);
   irange *m = m_tab[bb->index];
@@ -230,7 +258,7 @@ sbr_vector::get_bb_range (irange &r, const basic_block bb)
 // Return true if a range is present.
 
 bool
-sbr_vector::bb_range_p (const basic_block bb)
+sbr_vector::bb_range_p (const_basic_block bb)
 {
   gcc_checking_assert (bb->index < m_tab_size);
   return m_tab[bb->index] != NULL;
@@ -253,9 +281,9 @@ class sbr_sparse_bitmap : public ssa_block_ranges
 {
 public:
   sbr_sparse_bitmap (tree t, irange_allocator *allocator, bitmap_obstack *bm);
-  virtual bool set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
-  virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
-  virtual bool bb_range_p (const basic_block bb) OVERRIDE;
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const_basic_block bb) OVERRIDE;
 private:
   void bitmap_set_quad (bitmap head, int quad, int quad_value);
   int bitmap_get_quad (const_bitmap head, int quad);
@@ -314,7 +342,7 @@ sbr_sparse_bitmap::bitmap_get_quad (const_bitmap head, int quad)
 // Set the range on entry to basic block BB to R.
 
 bool
-sbr_sparse_bitmap::set_bb_range (const basic_block bb, const irange &r)
+sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
 {
   if (r.undefined_p ())
     {
@@ -340,7 +368,7 @@ sbr_sparse_bitmap::set_bb_range (const basic_block bb, const irange &r)
 // there is no range.
 
 bool
-sbr_sparse_bitmap::get_bb_range (irange &r, const basic_block bb)
+sbr_sparse_bitmap::get_bb_range (irange &r, const_basic_block bb)
 {
   int value = bitmap_get_quad (bitvec, bb->index);
 
@@ -358,7 +386,7 @@ sbr_sparse_bitmap::get_bb_range (irange &r, const basic_block bb)
 // Return true if a range is present.
 
 bool
-sbr_sparse_bitmap::bb_range_p (const basic_block bb)
+sbr_sparse_bitmap::bb_range_p (const_basic_block bb)
 {
   return (bitmap_get_quad (bitvec, bb->index) != 0);
 }
@@ -389,7 +417,7 @@ block_range_cache::~block_range_cache ()
 // If it has not been accessed yet, allocate it first.
 
 bool
-block_range_cache::set_bb_range (tree name, const basic_block bb,
+block_range_cache::set_bb_range (tree name, const_basic_block bb,
 				 const irange &r)
 {
   unsigned v = SSA_NAME_VERSION (name);
@@ -436,7 +464,7 @@ block_range_cache::query_block_ranges (tree name)
 // is one.
 
 bool
-block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
+block_range_cache::get_bb_range (irange &r, tree name, const_basic_block bb)
 {
   ssa_block_ranges *ptr = query_block_ranges (name);
   if (ptr)
@@ -447,7 +475,7 @@ block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 // Return true if NAME has a range set in block BB.
 
 bool
-block_range_cache::bb_range_p (tree name, const basic_block bb)
+block_range_cache::bb_range_p (tree name, const_basic_block bb)
 {
   ssa_block_ranges *ptr = query_block_ranges (name);
   if (ptr)
@@ -857,9 +885,8 @@ ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
 	r = gimple_range_global (name);
     }
 
-  if (bb && r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
-      !cfun->can_throw_non_call_exceptions)
-    r = range_nonzero (TREE_TYPE (name));
+  if (bb)
+    m_non_null.adjust_range (r, name, bb, false);
 }
 
 // Get the range of NAME as it occurs on entry to block BB.
@@ -878,12 +905,7 @@ ranger_cache::entry_range (irange &r, tree name, basic_block bb)
   if (!m_on_entry.get_bb_range (r, name, bb))
     range_of_def (r, name);
 
-  // Check if pointers have any non-null dereferences.  Non-call
-  // exceptions mean we could throw in the middle of the block, so just
-  // punt for now on those.
-  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
-      !cfun->can_throw_non_call_exceptions)
-    r = range_nonzero (TREE_TYPE (name));
+  m_non_null.adjust_range (r, name, bb, false);
 }
 
 // Get the range of NAME as it occurs on exit from block BB.

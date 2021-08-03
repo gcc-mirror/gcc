@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-dom2-details -w --param logical-op-non-short-circuit=1" } */
+/* { dg-additional-options "-fdisable-tree-thread1 -fdisable-tree-ethread -fdisable-tree-thread2" } */
 
 enum optab_methods
 {

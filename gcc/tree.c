@@ -361,6 +361,7 @@ unsigned const char omp_clause_num_ops[] =
   3, /* OMP_CLAUSE_TILE  */
   0, /* OMP_CLAUSE_IF_PRESENT */
   0, /* OMP_CLAUSE_FINALIZE */
+  0, /* OMP_CLAUSE_NOHOST */
 };
 
 const char * const omp_clause_code_name[] =
@@ -448,6 +449,7 @@ const char * const omp_clause_code_name[] =
   "tile",
   "if_present",
   "finalize",
+  "nohost",
 };
 
 
@@ -2047,7 +2049,7 @@ make_vector (unsigned log2_npatterns,
    are extracted from V, a vector of CONSTRUCTOR_ELT.  */
 
 tree
-build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
+build_vector_from_ctor (tree type, const vec<constructor_elt, va_gc> *v)
 {
   if (vec_safe_length (v) == 0)
     return build_zero_cst (type);
@@ -11165,6 +11167,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE__SIMT_:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_NOHOST:
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_LASTPRIVATE:
@@ -14377,6 +14380,65 @@ valid_new_delete_pair_p (tree new_asm, tree delete_asm)
   return false;
 }
 
+/* Return the zero-based number corresponding to the argument being
+   deallocated if FNDECL is a deallocation function or an out-of-bounds
+   value if it isn't.  */
+
+unsigned
+fndecl_dealloc_argno (tree fndecl)
+{
+  /* A call to operator delete isn't recognized as one to a built-in.  */
+  if (DECL_IS_OPERATOR_DELETE_P (fndecl))
+    {
+      if (DECL_IS_REPLACEABLE_OPERATOR (fndecl))
+	return 0;
+
+      /* Avoid placement delete that's not been inlined.  */
+      tree fname = DECL_ASSEMBLER_NAME (fndecl);
+      if (id_equal (fname, "_ZdlPvS_")       // ordinary form
+	  || id_equal (fname, "_ZdaPvS_"))   // array form
+	return UINT_MAX;
+      return 0;
+    }
+
+  /* TODO: Handle user-defined functions with attribute malloc?  Handle
+     known non-built-ins like fopen?  */
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_FREE:
+	case BUILT_IN_REALLOC:
+	  return 0;
+	default:
+	  break;
+	}
+      return UINT_MAX;
+    }
+
+  tree attrs = DECL_ATTRIBUTES (fndecl);
+  if (!attrs)
+    return UINT_MAX;
+
+  for (tree atfree = attrs;
+       (atfree = lookup_attribute ("*dealloc", atfree));
+       atfree = TREE_CHAIN (atfree))
+    {
+      tree alloc = TREE_VALUE (atfree);
+      if (!alloc)
+	continue;
+
+      tree pos = TREE_CHAIN (alloc);
+      if (!pos)
+	return 0;
+
+      pos = TREE_VALUE (pos);
+      return TREE_INT_CST_LOW (pos) - 1;
+    }
+
+  return UINT_MAX;
+}
+
 #if CHECKING_P
 
 namespace selftest {
@@ -14428,7 +14490,7 @@ test_labels ()
    are given by VALS.  */
 
 static tree
-build_vector (tree type, vec<tree> vals MEM_STAT_DECL)
+build_vector (tree type, const vec<tree> &vals MEM_STAT_DECL)
 {
   gcc_assert (known_eq (vals.length (), TYPE_VECTOR_SUBPARTS (type)));
   tree_vector_builder builder (type, vals.length (), 1);
@@ -14439,7 +14501,7 @@ build_vector (tree type, vec<tree> vals MEM_STAT_DECL)
 /* Check that VECTOR_CST ACTUAL contains the elements in EXPECTED.  */
 
 static void
-check_vector_cst (vec<tree> expected, tree actual)
+check_vector_cst (const vec<tree> &expected, tree actual)
 {
   ASSERT_KNOWN_EQ (expected.length (),
 		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (actual)));
@@ -14452,7 +14514,7 @@ check_vector_cst (vec<tree> expected, tree actual)
    and that its elements match EXPECTED.  */
 
 static void
-check_vector_cst_duplicate (vec<tree> expected, tree actual,
+check_vector_cst_duplicate (const vec<tree> &expected, tree actual,
 			    unsigned int npatterns)
 {
   ASSERT_EQ (npatterns, VECTOR_CST_NPATTERNS (actual));
@@ -14468,7 +14530,7 @@ check_vector_cst_duplicate (vec<tree> expected, tree actual,
    EXPECTED.  */
 
 static void
-check_vector_cst_fill (vec<tree> expected, tree actual,
+check_vector_cst_fill (const vec<tree> &expected, tree actual,
 		       unsigned int npatterns)
 {
   ASSERT_EQ (npatterns, VECTOR_CST_NPATTERNS (actual));
@@ -14483,7 +14545,7 @@ check_vector_cst_fill (vec<tree> expected, tree actual,
    and that its elements match EXPECTED.  */
 
 static void
-check_vector_cst_stepped (vec<tree> expected, tree actual,
+check_vector_cst_stepped (const vec<tree> &expected, tree actual,
 			  unsigned int npatterns)
 {
   ASSERT_EQ (npatterns, VECTOR_CST_NPATTERNS (actual));

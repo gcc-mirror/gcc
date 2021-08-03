@@ -174,6 +174,7 @@ enum rid
   RID_IS_BASE_OF,              RID_IS_CLASS,
   RID_IS_EMPTY,                RID_IS_ENUM,
   RID_IS_FINAL,                RID_IS_LITERAL_TYPE,
+  RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF,
   RID_IS_POD,                  RID_IS_POLYMORPHIC,
   RID_IS_SAME_AS,
   RID_IS_STD_LAYOUT,           RID_IS_TRIVIAL,
@@ -1049,7 +1050,7 @@ extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree, bool = true);
 extern tree c_build_shufflevector (location_t, tree, tree,
-				   vec<tree>, bool = true);
+				   const vec<tree> &, bool = true);
 extern tree c_build_vec_convert (location_t, tree, location_t, tree, bool = true);
 
 extern void init_c_lex (void);

@@ -4467,6 +4467,15 @@ cxx_init_decl_processing (void)
 			       BUILT_IN_FRONTEND, NULL, NULL_TREE);
   set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
+  tree bool_vaftype = build_varargs_function_type_list (boolean_type_node,
+							NULL_TREE);
+  decl
+    = add_builtin_function ("__builtin_is_pointer_interconvertible_with_class",
+			    bool_vaftype,
+			    CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
+			    BUILT_IN_FRONTEND, NULL, NULL_TREE);
+  set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+
   integer_two_node = build_int_cst (NULL_TREE, 2);
 
   /* Guess at the initial static decls size.  */
@@ -5083,6 +5092,13 @@ fixup_anonymous_aggr (tree t)
   if (TREE_CODE (t) != UNION_TYPE)
     {
       tree field, type;
+
+      if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)))
+	{
+	  error_at (location_of (t), "anonymous struct with base classes");
+	  /* Avoid ICE after error on anon-struct9.C.  */
+	  TYPE_NEEDS_CONSTRUCTING (t) = false;
+	}
 
       for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
@@ -10042,12 +10058,6 @@ grokfndecl (tree ctype,
 
   if (deduction_guide_p (decl))
     {
-      if (!DECL_NAMESPACE_SCOPE_P (decl))
-	{
-	  error_at (location, "deduction guide %qD must be declared at "
-		    "namespace scope", decl);
-	  return NULL_TREE;
-	}
       tree type = TREE_TYPE (DECL_NAME (decl));
       if (in_namespace == NULL_TREE
 	  && CP_DECL_CONTEXT (decl) != CP_TYPE_CONTEXT (type))
@@ -10056,6 +10066,13 @@ grokfndecl (tree ctype,
 			      "same scope as %qT", decl, type);
 	  inform (location_of (type), "  declared here");
 	  return NULL_TREE;
+	}
+      if (DECL_CLASS_SCOPE_P (decl)
+	  && current_access_specifier != declared_access (TYPE_NAME (type)))
+	{
+	  error_at (location, "deduction guide %qD must have the same access "
+			      "as %qT", decl, type);
+	  inform (location_of (type), "  declared here");
 	}
       if (funcdef_flag)
 	error_at (location,
@@ -12037,6 +12054,10 @@ grokdeclarator (const cp_declarator *declarator,
   storage_class = declspecs->storage_class;
   if (storage_class == sc_static)
     staticp = 1 + (decl_context == FIELD);
+  else if (decl_context == FIELD && sfk == sfk_deduction_guide)
+    /* Treat class-scope deduction guides as static member functions
+       so that they get a FUNCTION_TYPE instead of a METHOD_TYPE.  */
+    staticp = 2;
 
   if (virtualp)
     {

@@ -38,9 +38,10 @@
 #include <mutex>	      // call_once
 #include <condition_variable> // __at_thread_exit_elt
 #include <system_error>
-#include <atomic>
+#include <bits/atomic_base.h> // atomic_flag
 #include <bits/allocated_ptr.h>
 #include <bits/atomic_futex.h>
+#include <bits/exception_defines.h>
 #include <bits/invoke.h>
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>

@@ -29046,6 +29046,135 @@ $as_echo "$gcc_cv_as_gcn_global_load_fixed" >&6; }
     ;;
 esac
 
+case "$target" in
+  amdgcn-* | gcn-*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=+sram-ecc for fiji" >&5
+$as_echo_n "checking assembler for assembler accepts -mattr=+sram-ecc for fiji... " >&6; }
+if ${gcc_cv_as_gcn_sram_ecc_fiji+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_gcn_sram_ecc_fiji=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.amdgcn_target "amdgcn-unknown-amdhsa--gfx803+sram-ecc"' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=fiji -mattr=-xnack -mattr=+sram-ecc -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_gcn_sram_ecc_fiji=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_sram_ecc_fiji" >&5
+$as_echo "$gcc_cv_as_gcn_sram_ecc_fiji" >&6; }
+if test $gcc_cv_as_gcn_sram_ecc_fiji = yes; then
+
+$as_echo "#define HAVE_GCN_SRAM_ECC_FIJI 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=+sram-ecc for gfx900" >&5
+$as_echo_n "checking assembler for assembler accepts -mattr=+sram-ecc for gfx900... " >&6; }
+if ${gcc_cv_as_gcn_sram_ecc_gfx900+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_gcn_sram_ecc_gfx900=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.amdgcn_target "amdgcn-unknown-amdhsa--gfx900+sram-ecc"' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=-xnack -mattr=+sram-ecc -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_gcn_sram_ecc_gfx900=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_sram_ecc_gfx900" >&5
+$as_echo "$gcc_cv_as_gcn_sram_ecc_gfx900" >&6; }
+if test $gcc_cv_as_gcn_sram_ecc_gfx900 = yes; then
+
+$as_echo "#define HAVE_GCN_SRAM_ECC_GFX900 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=+sram-ecc for gfx906" >&5
+$as_echo_n "checking assembler for assembler accepts -mattr=+sram-ecc for gfx906... " >&6; }
+if ${gcc_cv_as_gcn_sram_ecc_gfx906+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_gcn_sram_ecc_gfx906=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.amdgcn_target "amdgcn-unknown-amdhsa--gfx906+sram-ecc"' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=-xnack -mattr=+sram-ecc -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_gcn_sram_ecc_gfx906=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_sram_ecc_gfx906" >&5
+$as_echo "$gcc_cv_as_gcn_sram_ecc_gfx906" >&6; }
+if test $gcc_cv_as_gcn_sram_ecc_gfx906 = yes; then
+
+$as_echo "#define HAVE_GCN_SRAM_ECC_GFX906 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=+sram-ecc for gfx908" >&5
+$as_echo_n "checking assembler for assembler accepts -mattr=+sram-ecc for gfx908... " >&6; }
+if ${gcc_cv_as_gcn_sram_ecc_gfx908+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_gcn_sram_ecc_gfx908=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.amdgcn_target "amdgcn-unknown-amdhsa--gfx908+sram-ecc"' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=-xnack -mattr=+sram-ecc -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_gcn_sram_ecc_gfx908=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_sram_ecc_gfx908" >&5
+$as_echo "$gcc_cv_as_gcn_sram_ecc_gfx908" >&6; }
+if test $gcc_cv_as_gcn_sram_ecc_gfx908 = yes; then
+
+$as_echo "#define HAVE_GCN_SRAM_ECC_GFX908 1" >>confdefs.h
+
+fi
+
+    ;;
+esac
+
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
 # info to the output file.  So, as supported targets are added to gas 2.11,

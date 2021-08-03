@@ -6476,7 +6476,7 @@ vectors of mode @var{mode} using the permutation vector @code{sel}, and
 also to emit such a permutation.  In the former case @var{in0}, @var{in1}
 and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are
 the source vectors and @var{out} is the destination vector; all three are
-registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if
+operands of mode @var{mode}.  @var{in1} is the same as @var{in0} if
 @var{sel} describes a permutation on one vector instead of two.
 
 Return true if the operation is possible, emitting instructions for it
@@ -10617,6 +10617,8 @@ This describes how to specify debugging information.
 * File Names and DBX:: Macros controlling output of file names in DBX format.
 * DWARF::              Macros for DWARF format.
 * VMS Debug::          Macros for VMS debug format.
+* CTF Debug::          Macros for CTF debug format.
+* BTF Debug::          Macros for BTF debug format.
 @end menu
 
 @node All Debuggers
@@ -11058,6 +11060,30 @@ is to generate minimal debug info for a traceback in the absence of
 @option{-g} unless explicitly overridden with @option{-g0}.  This
 behavior is controlled by @code{TARGET_OPTION_OPTIMIZATION} and
 @code{TARGET_OPTION_OVERRIDE}.
+@end defmac
+
+@need 2000
+@node CTF Debug
+@subsection Macros for CTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for CTF debug format.
+
+@defmac CTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in CTF debug
+format in response to the @option{-gctf} option.
+@end defmac
+
+@need 2000
+@node BTF Debug
+@subsection Macros for BTF Debug Format
+
+@c prevent bad page break with this line
+Here are macros for BTF debug format.
+
+@defmac BTF_DEBUGGING_INFO
+Define this macro if GCC should produce debugging output in BTF debug
+format in response to the @option{-gbtf} option.
 @end defmac
 
 @node Floating Point
@@ -12558,12 +12584,13 @@ from shared libraries (DLLs).
 You need not define this macro if it would always evaluate to zero.
 @end defmac
 
-@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs})
+@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs}, location_t @var{loc})
 @c hook-start:TARGET_MD_ASM_ADJUST
 This target hook may add @dfn{clobbers} to @var{clobbers} and
 @var{clobbered_regs} for any hard regs the port wishes to automatically
 clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected
-to avoid clobbering a register that is already used by the asm.
+to avoid clobbering a register that is already used by the asm.  @var{loc}
+is the source location of the asm.
 
 It may modify the @var{outputs}, @var{inputs}, @var{input_modes}, and
 @var{constraints} as necessary for other pre-processing.  In this case the
@@ -12870,6 +12897,15 @@ loops containing function calls or branch on table instructions.
 @end deftypefn
 @c hook-end
 
+@deftypefn {Target Hook} machine_mode TARGET_PREFERRED_DOLOOP_MODE (machine_mode @var{mode})
+This hook takes a @var{mode} for a doloop IV, where @code{mode} is the
+original mode for the operation.  If the target prefers an alternate
+@code{mode} for the operation, then this hook should return that mode;
+otherwise the original @code{mode} should be returned.  For example, on a
+64-bit target, @code{DImode} might be preferred over @code{SImode}.  Both the
+original and the returned modes should be @code{MODE_INT}.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx_insn *@var{insn})
 @c hook-start:TARGET_LEGITIMATE_COMBINED_INSN
 Take an instruction in @var{insn} and return @code{false} if the instruction
@@ -13027,6 +13063,13 @@ This function prepares to emit a conditional comparison within a sequence
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.
 @end deftypefn
 @c hook-end
+
+@deftypefn {Target Hook} rtx TARGET_GEN_MEMSET_SCRATCH_RTX (machine_mode @var{mode})
+This hook should return an rtx for a scratch register in @var{mode} to
+be used when expanding memset calls.  The backend can use a hard scratch
+register to avoid stack realignment when expanding memset.  The default
+is @code{gen_reg_rtx}.
+@end deftypefn
 
 @deftypefn {Target Hook} unsigned TARGET_LOOP_UNROLL_ADJUST (unsigned @var{nunroll}, class loop *@var{loop})
 @c hook-start:TARGET_LOOP_UNROLL_ADJUST

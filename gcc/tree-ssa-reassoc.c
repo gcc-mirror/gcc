@@ -4486,7 +4486,7 @@ get_ops (tree var, enum tree_code code, vec<operand_entry *> *ops,
    stmts.  */
 
 static tree
-update_ops (tree var, enum tree_code code, vec<operand_entry *> ops,
+update_ops (tree var, enum tree_code code, const vec<operand_entry *> &ops,
 	    unsigned int *pidx, class loop *loop)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (var);
@@ -5033,7 +5033,7 @@ remove_visited_stmt_chain (tree var)
    cases, but it is unlikely to be worth it.  */
 
 static void
-swap_ops_for_binary_stmt (vec<operand_entry *> ops,
+swap_ops_for_binary_stmt (const vec<operand_entry *> &ops,
 			  unsigned int opindex, gimple *stmt)
 {
   operand_entry *oe1, *oe2, *oe3;
@@ -5104,7 +5104,8 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
 
 static tree
 rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
-		   vec<operand_entry *> ops, bool changed, bool next_changed)
+		   const vec<operand_entry *> &ops, bool changed,
+		   bool next_changed)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
@@ -5326,7 +5327,7 @@ get_reassociation_width (int ops_num, enum tree_code opc,
 
 static void
 rewrite_expr_tree_parallel (gassign *stmt, int width,
-			    vec<operand_entry *> ops)
+			    const vec<operand_entry *> &ops)
 {
   enum tree_code opcode = gimple_assign_rhs_code (stmt);
   int op_num = ops.length ();

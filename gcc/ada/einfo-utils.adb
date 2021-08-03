@@ -364,7 +364,7 @@ package body Einfo.Utils is
 
    procedure Init_Alignment (Id : E) is
    begin
-      Set_Alignment (Id, Uint_0);
+      Reinit_Field_To_Zero (Id, F_Alignment);
    end Init_Alignment;
 
    procedure Init_Alignment (Id : E; V : Int) is
@@ -452,6 +452,15 @@ package body Einfo.Utils is
       Set_RM_Size (Id, UI_From_Int (V));
    end Init_RM_Size;
 
+   procedure Copy_Alignment (To, From : E) is
+   begin
+      if Known_Alignment (From) then
+         Set_Alignment (To, Alignment (From));
+      else
+         Init_Alignment (To);
+      end if;
+   end Copy_Alignment;
+
    -----------------------------
    -- Init_Component_Location --
    -----------------------------
@@ -471,8 +480,8 @@ package body Einfo.Utils is
 
    procedure Init_Object_Size_Align (Id : E) is
    begin
-      Set_Esize (Id, Uint_0);
-      Set_Alignment (Id, Uint_0);
+      Init_Esize (Id);
+      Init_Alignment (Id);
    end Init_Object_Size_Align;
 
    ---------------
@@ -499,9 +508,9 @@ package body Einfo.Utils is
    procedure Init_Size_Align (Id : E) is
    begin
       pragma Assert (Ekind (Id) in Type_Kind | E_Void);
-      Set_Esize (Id, Uint_0);
-      Set_RM_Size (Id, Uint_0);
-      Set_Alignment (Id, Uint_0);
+      Init_Esize (Id);
+      Init_RM_Size (Id);
+      Init_Alignment (Id);
    end Init_Size_Align;
 
    ----------------------------------------------
@@ -509,9 +518,9 @@ package body Einfo.Utils is
    ----------------------------------------------
 
    function Known_Alignment                       (E : Entity_Id) return B is
+      Result : constant B := not Field_Is_Initial_Zero (E, F_Alignment);
    begin
-      return Alignment (E) /= Uint_0
-        and then Alignment (E) /= No_Uint;
+      return Result;
    end Known_Alignment;
 
    function Known_Component_Bit_Offset            (E : Entity_Id) return B is

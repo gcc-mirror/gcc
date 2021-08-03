@@ -57,8 +57,8 @@ test_vaddv##SUFFIX##_##TYPE##x##LANES##_t (void)			\
   /* Calculate linearly.  */						\
   for (i = 0; i < moves; i++)						\
     {									\
-      out_l[i] = input_##TYPE[i];					\
-      for (j = 1; j < LANES; j++)					\
+      asm ("" : "=r" (out_l[i]) : "0" (0));				\
+      for (j = 0; j < LANES; j++)					\
 	out_l[i] += input_##TYPE[i + j];				\
     }									\
 									\

@@ -1,3 +1,9 @@
+2021-07-18  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95498
+	* jit-playback.c (convert): Add support to handle truncation and
+	extension in the convert function.
+
 2021-05-19  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/100658

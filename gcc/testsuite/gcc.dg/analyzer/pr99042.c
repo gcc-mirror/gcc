@@ -29,8 +29,8 @@ int test_3 (void)
   if ((p->file = fopen("test.txt", "w")) == NULL)
     return 1;
   unknown_fn ();
-  return 0; /* { dg-warning "leak" } */
-}
+  return 0;
+} /* { dg-warning "leak" } */
 
 int test_4 (void)
 {
@@ -38,8 +38,8 @@ int test_4 (void)
   struct foo *p = &f;
   if ((p->file = fopen("test.txt", "w")) == NULL)
     return 1;
-  return 0; /* { dg-warning "leak" } */
-}
+  return 0;
+} /* { dg-warning "leak" } */
 
 int test_5 (void)
 {

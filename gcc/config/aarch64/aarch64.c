@@ -20,8 +20,9 @@
 
 #define IN_TARGET_CODE 1
 
-#include "config.h"
 #define INCLUDE_STRING
+#define INCLUDE_ALGORITHM
+#include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -76,6 +77,7 @@
 #include "function-abi.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-loop-niter.h"
+#include "fractional-cost.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -673,6 +675,8 @@ static const sve_vec_cost generic_sve_vector_cost =
   2, /* fadda_f16_cost  */
   2, /* fadda_f32_cost  */
   2, /* fadda_f64_cost  */
+  4, /* gather_load_x32_cost  */
+  2, /* gather_load_x64_cost  */
   1 /* scatter_store_elt_cost  */
 };
 
@@ -742,6 +746,8 @@ static const sve_vec_cost a64fx_sve_vector_cost =
   13, /* fadda_f16_cost  */
   13, /* fadda_f32_cost  */
   13, /* fadda_f64_cost  */
+  64, /* gather_load_x32_cost  */
+  32, /* gather_load_x64_cost  */
   1 /* scatter_store_elt_cost  */
 };
 
@@ -1737,6 +1743,8 @@ static const sve_vec_cost neoversev1_sve_vector_cost =
   19, /* fadda_f16_cost  */
   11, /* fadda_f32_cost  */
   8, /* fadda_f64_cost  */
+  32, /* gather_load_x32_cost  */
+  16, /* gather_load_x64_cost  */
   3 /* scatter_store_elt_cost  */
 };
 
@@ -1815,6 +1823,136 @@ static const struct tune_params neoversev1_tunings =
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_256, /* sve_width  */
+  4, /* memmov_cost  */
+  3, /* issue_rate  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  "32:16",	/* function_align.  */
+  "4",		/* jump_align.  */
+  "32:16",	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  2,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
+   | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
+   | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
+  &generic_prefetch_tune
+};
+
+static const sve_vec_cost neoverse512tvb_sve_vector_cost =
+{
+  {
+    2, /* int_stmt_cost  */
+    2, /* fp_stmt_cost  */
+    4, /* ld2_st2_permute_cost  */
+    5, /* ld3_st3_permute_cost  */
+    5, /* ld4_st4_permute_cost  */
+    3, /* permute_cost  */
+    /* Theoretically, a reduction involving 15 scalar ADDs could
+       complete in ~5 cycles and would have a cost of 15.  Assume that
+       [SU]ADDV completes in 11 cycles and so give it a cost of 15 + 6.  */
+    21, /* reduc_i8_cost  */
+    /* Likewise for 7 scalar ADDs (~3 cycles) vs. 9: 7 + 6.  */
+    13, /* reduc_i16_cost  */
+    /* Likewise for 3 scalar ADDs (~2 cycles) vs. 8: 3 + 6.  */
+    9, /* reduc_i32_cost  */
+    /* Likewise for 1 scalar ADD (1 cycle) vs. 8: 1 + 7.  */
+    8, /* reduc_i64_cost  */
+    /* Theoretically, a reduction involving 7 scalar FADDs could
+       complete in ~6 cycles and would have a cost of 14.  Assume that
+       FADDV completes in 8 cycles and so give it a cost of 14 + 2.  */
+    16, /* reduc_f16_cost  */
+    /* Likewise for 3 scalar FADDs (~4 cycles) vs. 6: 6 + 2.  */
+    8, /* reduc_f32_cost  */
+    /* Likewise for 1 scalar FADD (2 cycles) vs. 4: 2 + 2.  */
+    4, /* reduc_f64_cost  */
+    2, /* store_elt_extra_cost  */
+    /* This value is just inherited from the Cortex-A57 table.  */
+    8, /* vec_to_scalar_cost  */
+    /* This depends very much on what the scalar value is and
+       where it comes from.  E.g. some constants take two dependent
+       instructions or a load, while others might be moved from a GPR.
+       4 seems to be a reasonable compromise in practice.  */
+    4, /* scalar_to_vec_cost  */
+    4, /* align_load_cost  */
+    4, /* unalign_load_cost  */
+    /* Although stores generally have a latency of 2 and compete for the
+       vector pipes, in practice it's better not to model that.  */
+    1, /* unalign_store_cost  */
+    1  /* store_cost  */
+  },
+  3, /* clast_cost  */
+  10, /* fadda_f16_cost  */
+  6, /* fadda_f32_cost  */
+  4, /* fadda_f64_cost  */
+  /* A strided Advanced SIMD x64 load would take two parallel FP loads
+     (6 cycles) plus an insertion (2 cycles).  Assume a 64-bit SVE gather
+     is 1 cycle more.  The Advanced SIMD version is costed as 2 scalar loads
+     (cost 8) and a vec_construct (cost 2).  Add a full vector operation
+     (cost 2) to that, to avoid the difference being lost in rounding.
+
+     There is no easy comparison between a strided Advanced SIMD x32 load
+     and an SVE 32-bit gather, but cost an SVE 32-bit gather as 1 vector
+     operation more than a 64-bit gather.  */
+  14, /* gather_load_x32_cost  */
+  12, /* gather_load_x64_cost  */
+  3 /* scatter_store_elt_cost  */
+};
+
+static const aarch64_sve_vec_issue_info neoverse512tvb_sve_issue_info =
+{
+  {
+    {
+      3, /* loads_per_cycle  */
+      2, /* stores_per_cycle  */
+      4, /* general_ops_per_cycle  */
+      0, /* fp_simd_load_general_ops  */
+      1 /* fp_simd_store_general_ops  */
+    },
+    2, /* ld2_st2_general_ops  */
+    2, /* ld3_st3_general_ops  */
+    3 /* ld4_st4_general_ops  */
+  },
+  2, /* pred_ops_per_cycle  */
+  2, /* while_pred_ops  */
+  2, /* int_cmp_pred_ops  */
+  1, /* fp_cmp_pred_ops  */
+  1, /* gather_scatter_pair_general_ops  */
+  1 /* gather_scatter_pair_pred_ops  */
+};
+
+static const aarch64_vec_issue_info neoverse512tvb_vec_issue_info =
+{
+  &neoversev1_scalar_issue_info,
+  &neoversev1_advsimd_issue_info,
+  &neoverse512tvb_sve_issue_info
+};
+
+static const struct cpu_vector_cost neoverse512tvb_vector_cost =
+{
+  1, /* scalar_int_stmt_cost  */
+  2, /* scalar_fp_stmt_cost  */
+  4, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  1, /* cond_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &neoversev1_advsimd_vector_cost, /* advsimd  */
+  &neoverse512tvb_sve_vector_cost, /* sve  */
+  &neoverse512tvb_vec_issue_info /* issue_info  */
+};
+
+static const struct tune_params neoverse512tvb_tunings =
+{
+  &cortexa76_extra_costs,
+  &neoversev1_addrcost_table,
+  &generic_regmove_cost,
+  &neoverse512tvb_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  SVE_128 | SVE_256, /* sve_width  */
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
@@ -14614,6 +14752,18 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
+/* Return true if an operaton of kind KIND for STMT_INFO represents
+   the extraction of an element from a vector in preparation for
+   storing the element to memory.  */
+static bool
+aarch64_is_store_elt_extraction (vect_cost_for_stmt kind,
+				 stmt_vec_info stmt_info)
+{
+  return (kind == vec_to_scalar
+	  && STMT_VINFO_DATA_REF (stmt_info)
+	  && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)));
+}
+
 /* Return true if STMT_INFO represents part of a reduction.  */
 static bool
 aarch64_is_reduction (stmt_vec_info stmt_info)
@@ -14747,9 +14897,12 @@ aarch64_integer_truncation_p (stmt_vec_info stmt_info)
 
 /* Return true if STMT_INFO is the second part of a two-statement multiply-add
    or multiply-subtract sequence that might be suitable for fusing into a
-   single instruction.  */
+   single instruction.  If VEC_FLAGS is zero, analyze the operation as
+   a scalar one, otherwise analyze it as an operation on vectors with those
+   VEC_* flags.  */
 static bool
-aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info)
+aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
+			unsigned int vec_flags)
 {
   gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
   if (!assign)
@@ -14776,6 +14929,22 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info)
       gassign *rhs_assign = dyn_cast<gassign *> (def_stmt_info->stmt);
       if (!rhs_assign || gimple_assign_rhs_code (rhs_assign) != MULT_EXPR)
 	continue;
+
+      if (vec_flags & VEC_ADVSIMD)
+	{
+	  /* Scalar and SVE code can tie the result to any FMLA input (or none,
+	     although that requires a MOVPRFX for SVE).  However, Advanced SIMD
+	     only supports MLA forms, so will require a move if the result
+	     cannot be tied to the accumulator.  The most important case in
+	     which this is true is when the accumulator input is invariant.  */
+	  rhs = gimple_op (assign, 3 - i);
+	  if (TREE_CODE (rhs) != SSA_NAME)
+	    return false;
+	  def_stmt_info = vinfo->lookup_def (rhs);
+	  if (!def_stmt_info
+	      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_external_def)
+	    return false;
+	}
 
       return true;
     }
@@ -14912,10 +15081,10 @@ aarch64_in_loop_reduction_latency (vec_info *vinfo, stmt_vec_info stmt_info,
    for STMT_INFO, which has cost kind KIND.  If this is a scalar operation,
    try to subdivide the target-independent categorization provided by KIND
    to get a more accurate cost.  */
-static unsigned int
+static fractional_cost
 aarch64_detect_scalar_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
 				    stmt_vec_info stmt_info,
-				    unsigned int stmt_cost)
+				    fractional_cost stmt_cost)
 {
   /* Detect an extension of a loaded value.  In general, we'll be able to fuse
      the extension with the load.  */
@@ -14931,11 +15100,11 @@ aarch64_detect_scalar_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
    the target-independent categorization provided by KIND to get a more
    accurate cost.  WHERE specifies where the cost associated with KIND
    occurs.  */
-static unsigned int
+static fractional_cost
 aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
 				    stmt_vec_info stmt_info, tree vectype,
 				    enum vect_cost_model_location where,
-				    unsigned int stmt_cost)
+				    fractional_cost stmt_cost)
 {
   const simd_vec_cost *simd_costs = aarch64_simd_vec_costs (vectype);
   const sve_vec_cost *sve_costs = nullptr;
@@ -14951,10 +15120,21 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
   /* Detect cases in which vec_to_scalar is describing the extraction of a
      vector element in preparation for a scalar store.  The store itself is
      costed separately.  */
-  if (kind == vec_to_scalar
-      && STMT_VINFO_DATA_REF (stmt_info)
-      && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
+  if (aarch64_is_store_elt_extraction (kind, stmt_info))
     return simd_costs->store_elt_extra_cost;
+
+  /* Detect SVE gather loads, which are costed as a single scalar_load
+     for each element.  We therefore need to divide the full-instruction
+     cost by the number of elements in the vector.  */
+  if (kind == scalar_load
+      && sve_costs
+      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+    {
+      unsigned int nunits = vect_nunits_for_cost (vectype);
+      if (GET_MODE_UNIT_BITSIZE (TYPE_MODE (vectype)) == 64)
+	return { sve_costs->gather_load_x64_cost, nunits };
+      return { sve_costs->gather_load_x32_cost, nunits };
+    }
 
   /* Detect cases in which a scalar_store is really storing one element
      in a scatter operation.  */
@@ -15016,10 +15196,10 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
    for STMT_INFO, which has cost kind KIND and which when vectorized would
    operate on vector type VECTYPE.  Adjust the cost as necessary for SVE
    targets.  */
-static unsigned int
+static fractional_cost
 aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
 			      stmt_vec_info stmt_info, tree vectype,
-			      unsigned int stmt_cost)
+			      fractional_cost stmt_cost)
 {
   /* Unlike vec_promote_demote, vector_stmt conversions do not change the
      vector register size or number of units.  Integer promotions of this
@@ -15083,9 +15263,9 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
 /* STMT_COST is the cost calculated for STMT_INFO, which has cost kind KIND
    and which when vectorized would operate on vector type VECTYPE.  Add the
    cost of any embedded operations.  */
-static unsigned int
+static fractional_cost
 aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
-			  tree vectype, unsigned int stmt_cost)
+			  tree vectype, fractional_cost stmt_cost)
 {
   if (vectype)
     {
@@ -15201,7 +15381,7 @@ aarch64_count_ops (class vec_info *vinfo, aarch64_vector_costs *costs,
     }
 
   /* Assume that multiply-adds will become a single operation.  */
-  if (stmt_info && aarch64_multiply_add_p (vinfo, stmt_info))
+  if (stmt_info && aarch64_multiply_add_p (vinfo, stmt_info, vec_flags))
     return;
 
   /* When costing scalar statements in vector code, the count already
@@ -15339,8 +15519,12 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 
   if (flag_vect_cost_model)
     {
-      int stmt_cost
+      fractional_cost stmt_cost
 	= aarch64_builtin_vectorization_cost (kind, vectype, misalign);
+
+      bool in_inner_loop_p = (where == vect_body
+			      && stmt_info
+			      && stmt_in_inner_loop_p (vinfo, stmt_info));
 
       /* Do one-time initialization based on the vinfo.  */
       loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
@@ -15360,6 +15544,12 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	{
 	  if (vectype && aarch64_sve_only_stmt_p (stmt_info, vectype))
 	    costs->saw_sve_only_op = true;
+
+	  /* If we scalarize a strided store, the vectorizer costs one
+	     vec_to_scalar for each element.  However, we can store the first
+	     element using an FP store without a separate extract step.  */
+	  if (aarch64_is_store_elt_extraction (kind, stmt_info))
+	    count -= 1;
 
 	  stmt_cost = aarch64_detect_scalar_stmt_subtype
 	    (vinfo, kind, stmt_info, stmt_cost);
@@ -15382,14 +15572,15 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	  stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
 						stmt_cost);
 
-	  /* If we're recording a nonzero vector loop body cost, also estimate
-	     the operations that would need to be issued by all relevant
-	     implementations of the loop.  */
+	  /* If we're recording a nonzero vector loop body cost for the
+	     innermost loop, also estimate the operations that would need
+	     to be issued by all relevant implementations of the loop.  */
 	  auto *issue_info = aarch64_tune_params.vec_costs->issue_info;
 	  if (loop_vinfo
 	      && issue_info
 	      && costs->vec_flags
 	      && where == vect_body
+	      && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
 	      && vectype
 	      && stmt_cost != 0)
 	    {
@@ -15433,14 +15624,13 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
-      if (where == vect_body && stmt_info
-	  && stmt_in_inner_loop_p (vinfo, stmt_info))
+      if (in_inner_loop_p)
 	{
 	  gcc_assert (loop_vinfo);
 	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /*  FIXME  */
 	}
 
-      retval = (unsigned) (count * stmt_cost);
+      retval = (count * stmt_cost).ceil ();
       costs->region[where] += retval;
     }
 
@@ -15472,18 +15662,163 @@ aarch64_sve_op_count::dump () const
 
 /* Use ISSUE_INFO to estimate the minimum number of cycles needed to issue
    the operations described by OPS.  This is a very simplistic model!  */
-static unsigned int
+static fractional_cost
 aarch64_estimate_min_cycles_per_iter
   (const aarch64_vec_op_count *ops,
    const aarch64_base_vec_issue_info *issue_info)
 {
-  unsigned int cycles = MAX (ops->reduction_latency, 1);
-  cycles = MAX (cycles, CEIL (ops->stores, issue_info->stores_per_cycle));
-  cycles = MAX (cycles, CEIL (ops->loads + ops->stores,
-			      issue_info->loads_stores_per_cycle));
-  cycles = MAX (cycles, CEIL (ops->general_ops,
-			      issue_info->general_ops_per_cycle));
+  fractional_cost cycles = MAX (ops->reduction_latency, 1);
+  cycles = std::max (cycles, { ops->stores, issue_info->stores_per_cycle });
+  cycles = std::max (cycles, { ops->loads + ops->stores,
+			       issue_info->loads_stores_per_cycle });
+  cycles = std::max (cycles, { ops->general_ops,
+			       issue_info->general_ops_per_cycle });
   return cycles;
+}
+
+/* Subroutine of aarch64_adjust_body_cost for handling SVE.
+   Use ISSUE_INFO to work out how fast the SVE code can be issued and compare
+   it to the equivalent value for scalar code (SCALAR_CYCLES_PER_ITER).
+   If COULD_USE_ADVSIMD is true, also compare it to the issue rate of
+   Advanced SIMD code (ADVSIMD_CYCLES_PER_ITER).
+
+   COSTS is as for aarch64_adjust_body_cost.  ORIG_BODY_COST is the cost
+   originally passed to aarch64_adjust_body_cost and *BODY_COST is the current
+   value of the adjusted cost.  *SHOULD_DISPARAGE is true if we think the loop
+   body is too expensive.  */
+
+static fractional_cost
+aarch64_adjust_body_cost_sve (const aarch64_vector_costs *costs,
+			      const aarch64_vec_issue_info *issue_info,
+			      fractional_cost scalar_cycles_per_iter,
+			      fractional_cost advsimd_cycles_per_iter,
+			      bool could_use_advsimd,
+			      unsigned int orig_body_cost,
+			      unsigned int *body_cost,
+			      bool *should_disparage)
+{
+  /* Estimate the minimum number of cycles per iteration needed to issue
+     non-predicate operations.  */
+  fractional_cost sve_nonpred_issue_cycles_per_iter
+    = aarch64_estimate_min_cycles_per_iter (&costs->sve_ops,
+					    issue_info->sve);
+
+  /* Estimate the minimum number of cycles per iteration needed to rename
+     SVE instructions.
+
+     ??? For now this is done inline rather than via cost tables, since it
+     isn't clear how it should be parameterized for the general case.  */
+  fractional_cost sve_rename_cycles_per_iter = 0;
+  if (issue_info == &neoverse512tvb_vec_issue_info)
+    /* + 1 for an addition.  We've already counted a general op for each
+       store, so we don't need to account for stores separately.  The branch
+       reads no registers and so does not need to be counted either.
+
+       ??? This value is very much on the pessimistic side, but seems to work
+       pretty well in practice.  */
+    sve_rename_cycles_per_iter
+      = { costs->sve_ops.general_ops
+	  + costs->sve_ops.loads
+	  + costs->sve_ops.pred_ops + 1, 5 };
+
+  /* Combine the rename and non-predicate issue limits into a single value.  */
+  fractional_cost sve_nonpred_cycles_per_iter
+    = std::max (sve_nonpred_issue_cycles_per_iter, sve_rename_cycles_per_iter);
+
+  /* Separately estimate the minimum number of cycles per iteration needed
+     to issue the predicate operations.  */
+  fractional_cost sve_pred_issue_cycles_per_iter
+    = { costs->sve_ops.pred_ops, issue_info->sve->pred_ops_per_cycle };
+
+  /* Calculate the overall limit on the number of cycles per iteration.  */
+  fractional_cost sve_cycles_per_iter
+    = std::max (sve_nonpred_cycles_per_iter, sve_pred_issue_cycles_per_iter);
+
+  if (dump_enabled_p ())
+    {
+      costs->sve_ops.dump ();
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "  estimated cycles per iteration = %f\n",
+		       sve_cycles_per_iter.as_double ());
+      if (costs->sve_ops.pred_ops)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "    predicate issue = %f\n",
+			 sve_pred_issue_cycles_per_iter.as_double ());
+      if (costs->sve_ops.pred_ops || sve_rename_cycles_per_iter)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "    non-predicate issue = %f\n",
+			 sve_nonpred_issue_cycles_per_iter.as_double ());
+      if (sve_rename_cycles_per_iter)
+	dump_printf_loc (MSG_NOTE, vect_location, "    rename = %f\n",
+			 sve_rename_cycles_per_iter.as_double ());
+    }
+
+  /* If the scalar version of the loop could issue at least as
+     quickly as the predicate parts of the SVE loop, make the SVE loop
+     prohibitively expensive.  In this case vectorization is adding an
+     overhead that the original scalar code didn't have.
+
+     This is mostly intended to detect cases in which WHILELOs dominate
+     for very tight loops, which is something that normal latency-based
+     costs would not model.  Adding this kind of cliffedge would be
+     too drastic for scalar_cycles_per_iter vs. sve_cycles_per_iter;
+     code in the caller handles that case in a more conservative way.  */
+  fractional_cost sve_estimate = sve_pred_issue_cycles_per_iter + 1;
+  if (scalar_cycles_per_iter < sve_estimate)
+    {
+      unsigned int min_cost
+	= orig_body_cost * estimated_poly_value (BYTES_PER_SVE_VECTOR);
+      if (*body_cost < min_cost)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Increasing body cost to %d because the"
+			     " scalar code could issue within the limit"
+			     " imposed by predicate operations\n",
+			     min_cost);
+	  *body_cost = min_cost;
+	  *should_disparage = true;
+	}
+    }
+
+  /* If it appears that the Advanced SIMD version of a loop could issue
+     more quickly than the SVE one, increase the SVE cost in proportion
+     to the difference.  The intention is to make Advanced SIMD preferable
+     in cases where an Advanced SIMD version exists, without increasing
+     the costs so much that SVE won't be used at all.
+
+     The reasoning is similar to the scalar vs. predicate comparison above:
+     if the issue rate of the SVE code is limited by predicate operations
+     (i.e. if sve_pred_issue_cycles_per_iter > sve_nonpred_cycles_per_iter),
+     and if the Advanced SIMD code could issue within the limit imposed
+     by the predicate operations, the predicate operations are adding an
+     overhead that the original code didn't have and so we should prefer
+     the Advanced SIMD version.  However, if the predicate operations
+     do not dominate in this way, we should only increase the cost of
+     the SVE code if sve_cycles_per_iter is strictly greater than
+     advsimd_cycles_per_iter.  Given rounding effects, this should mean
+     that Advanced SIMD is either better or at least no worse.  */
+  if (sve_nonpred_cycles_per_iter >= sve_pred_issue_cycles_per_iter)
+    sve_estimate = sve_cycles_per_iter;
+  if (could_use_advsimd && advsimd_cycles_per_iter < sve_estimate)
+    {
+      /* This ensures that min_cost > orig_body_cost * 2.  */
+      unsigned int factor = fractional_cost::scale (1, sve_estimate,
+						    advsimd_cycles_per_iter);
+      unsigned int min_cost = orig_body_cost * factor + 1;
+      if (*body_cost < min_cost)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Increasing body cost to %d because Advanced"
+			     " SIMD code could issue as quickly\n",
+			     min_cost);
+	  *body_cost = min_cost;
+	  *should_disparage = true;
+	}
+    }
+
+  return sve_cycles_per_iter;
 }
 
 /* BODY_COST is the cost of a vector loop body recorded in COSTS.
@@ -15536,12 +15871,14 @@ aarch64_adjust_body_cost (aarch64_vector_costs *costs, unsigned int body_cost)
   if (!issue_info)
     return body_cost;
 
-  unsigned int scalar_cycles_per_iter
+  fractional_cost scalar_cycles_per_iter
     = aarch64_estimate_min_cycles_per_iter (&costs->scalar_ops,
 					    issue_info->scalar);
-  unsigned int advsimd_cycles_per_iter
+
+  fractional_cost advsimd_cycles_per_iter
     = aarch64_estimate_min_cycles_per_iter (&costs->advsimd_ops,
 					    issue_info->advsimd);
+
   bool could_use_advsimd
     = ((costs->vec_flags & VEC_ADVSIMD)
        || (aarch64_autovec_preference != 2
@@ -15558,116 +15895,50 @@ aarch64_adjust_body_cost (aarch64_vector_costs *costs, unsigned int body_cost)
       dump_printf_loc (MSG_NOTE, vect_location, "Scalar issue estimate:\n");
       costs->scalar_ops.dump ();
       dump_printf_loc (MSG_NOTE, vect_location,
-		       "  estimated cycles per iteration = %d\n",
-		       scalar_cycles_per_iter);
+		       "  estimated cycles per iteration = %f\n",
+		       scalar_cycles_per_iter.as_double ());
       if (could_use_advsimd)
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "Advanced SIMD issue estimate:\n");
 	  costs->advsimd_ops.dump ();
 	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "  estimated cycles per iteration = %d\n",
-			   advsimd_cycles_per_iter);
+			   "  estimated cycles per iteration = %f\n",
+			   advsimd_cycles_per_iter.as_double ());
 	}
       else
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Loop could not use Advanced SIMD\n");
     }
 
-  uint64_t vector_cycles_per_iter = advsimd_cycles_per_iter;
+  fractional_cost vector_cycles_per_iter = advsimd_cycles_per_iter;
   unsigned int vector_reduction_latency = costs->advsimd_ops.reduction_latency;
+
   if ((costs->vec_flags & VEC_ANY_SVE) && issue_info->sve)
     {
-      /* Estimate the minimum number of cycles per iteration needed to issue
-	 non-predicate operations.  */
-      unsigned int sve_cycles_per_iter
-	= aarch64_estimate_min_cycles_per_iter (&costs->sve_ops,
-						issue_info->sve);
-
-      /* Separately estimate the minimum number of cycles per iteration needed
-	 to issue the predicate operations.  */
-      unsigned int pred_cycles_per_iter
-	= CEIL (costs->sve_ops.pred_ops, issue_info->sve->pred_ops_per_cycle);
-
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location, "SVE issue estimate:\n");
-	  costs->sve_ops.dump ();
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "  estimated cycles per iteration for non-predicate"
-			   " operations = %d\n", sve_cycles_per_iter);
-	  if (costs->sve_ops.pred_ops)
-	    dump_printf_loc (MSG_NOTE, vect_location, "  estimated cycles per"
-			     " iteration for predicate operations = %d\n",
-			     pred_cycles_per_iter);
-	}
-
-      vector_cycles_per_iter = MAX (sve_cycles_per_iter, pred_cycles_per_iter);
+	dump_printf_loc (MSG_NOTE, vect_location, "SVE issue estimate:\n");
       vector_reduction_latency = costs->sve_ops.reduction_latency;
+      vector_cycles_per_iter
+	= aarch64_adjust_body_cost_sve (costs, issue_info,
+					scalar_cycles_per_iter,
+					advsimd_cycles_per_iter,
+					could_use_advsimd, orig_body_cost,
+					&body_cost, &should_disparage);
 
-      /* If the scalar version of the loop could issue at least as
-	 quickly as the predicate parts of the SVE loop, make the SVE loop
-	 prohibitively expensive.  In this case vectorization is adding an
-	 overhead that the original scalar code didn't have.
-
-	 This is mostly intended to detect cases in which WHILELOs dominate
-	 for very tight loops, which is something that normal latency-based
-	 costs would not model.  Adding this kind of cliffedge would be
-	 too drastic for scalar_cycles_per_iter vs. sve_cycles_per_iter;
-	 code later in the function handles that case in a more
-	 conservative way.  */
-      uint64_t sve_estimate = pred_cycles_per_iter + 1;
-      if (scalar_cycles_per_iter < sve_estimate)
+      if (aarch64_tune_params.vec_costs == &neoverse512tvb_vector_cost)
 	{
-	  unsigned int min_cost
-	    = orig_body_cost * estimated_poly_value (BYTES_PER_SVE_VECTOR);
-	  if (body_cost < min_cost)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Increasing body cost to %d because the"
-				 " scalar code could issue within the limit"
-				 " imposed by predicate operations\n",
-				 min_cost);
-	      body_cost = min_cost;
-	      should_disparage = true;
-	    }
-	}
-
-      /* If it appears that the Advanced SIMD version of a loop could issue
-	 more quickly than the SVE one, increase the SVE cost in proportion
-	 to the difference.  The intention is to make Advanced SIMD preferable
-	 in cases where an Advanced SIMD version exists, without increasing
-	 the costs so much that SVE won't be used at all.
-
-	 The reasoning is similar to the scalar vs. predicate comparison above:
-	 if the issue rate of the SVE code is limited by predicate operations
-	 (i.e. if pred_cycles_per_iter > sve_cycles_per_iter), and if the
-	 Advanced SIMD code could issue within the limit imposed by the
-	 predicate operations, the predicate operations are adding an
-	 overhead that the original code didn't have and so we should prefer
-	 the Advanced SIMD version.  However, if the predicate operations
-	 do not dominate in this way, we should only increase the cost of
-	 the SVE code if sve_cycles_per_iter is strictly greater than
-	 advsimd_cycles_per_iter.  Given rounding effects, this should mean
-	 that Advanced SIMD is either better or at least no worse.  */
-      if (sve_cycles_per_iter >= pred_cycles_per_iter)
-	sve_estimate = sve_cycles_per_iter;
-      if (could_use_advsimd && advsimd_cycles_per_iter < sve_estimate)
-	{
-	  /* This ensures that min_cost > orig_body_cost * 2.  */
-	  unsigned int min_cost
-	    = orig_body_cost * CEIL (sve_estimate, advsimd_cycles_per_iter) + 1;
-	  if (body_cost < min_cost)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Increasing body cost to %d because Advanced"
-				 " SIMD code could issue as quickly\n",
-				 min_cost);
-	      body_cost = min_cost;
-	      should_disparage = true;
-	    }
+	  /* Also take Neoverse V1 tuning into account, doubling the
+	     scalar and Advanced SIMD estimates to account for the
+	     doubling in SVE vector length.  */
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Neoverse V1 estimate:\n");
+	  aarch64_adjust_body_cost_sve (costs, &neoversev1_vec_issue_info,
+					scalar_cycles_per_iter * 2,
+					advsimd_cycles_per_iter * 2,
+					could_use_advsimd, orig_body_cost,
+					&body_cost, &should_disparage);
 	}
     }
 
@@ -15690,8 +15961,8 @@ aarch64_adjust_body_cost (aarch64_vector_costs *costs, unsigned int body_cost)
      so minor differences should only result in minor changes.  */
   else if (scalar_cycles_per_iter < vector_cycles_per_iter)
     {
-      body_cost = CEIL (body_cost * vector_cycles_per_iter,
-			scalar_cycles_per_iter);
+      body_cost = fractional_cost::scale (body_cost, vector_cycles_per_iter,
+					  scalar_cycles_per_iter);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Increasing body cost to %d because scalar code"
@@ -15716,8 +15987,8 @@ aarch64_adjust_body_cost (aarch64_vector_costs *costs, unsigned int body_cost)
 	   && scalar_cycles_per_iter > vector_cycles_per_iter
 	   && !should_disparage)
     {
-      body_cost = CEIL (body_cost * vector_cycles_per_iter,
-			scalar_cycles_per_iter);
+      body_cost = fractional_cost::scale (body_cost, vector_cycles_per_iter,
+					  scalar_cycles_per_iter);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Decreasing body cost to %d account for smaller"
@@ -19144,14 +19415,12 @@ aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
   bool prefer_asimd = aarch64_autovec_preference == 3;
   bool prefer_sve = aarch64_autovec_preference == 4;
 
-  aarch64_sve_vector_bits_enum tune_width = aarch64_tune_params.sve_width;
-
   poly_int64 nunits_sve = GET_MODE_NUNITS (sve_m);
   poly_int64 nunits_asimd = GET_MODE_NUNITS (asimd_m);
   /* If the CPU information does not have an SVE width registered use the
      generic poly_int comparison that prefers SVE.  If a preference is
      explicitly requested avoid this path.  */
-  if (tune_width == SVE_SCALABLE
+  if (aarch64_tune_params.sve_width == SVE_SCALABLE
       && !prefer_asimd
       && !prefer_sve)
     return maybe_gt (nunits_sve, nunits_asimd);
@@ -22047,11 +22316,11 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 	  /* Expand the argument to a V16QI mode by duplicating it.  */
 	  rtx pair = gen_reg_rtx (V16QImode);
 	  emit_insn (gen_aarch64_combinev8qi (pair, op0, op0));
-	  emit_insn (gen_aarch64_tbl1v8qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl1v8qi (target, pair, sel));
 	}
       else
 	{
-	  emit_insn (gen_aarch64_tbl1v16qi (target, op0, sel));
+	  emit_insn (gen_aarch64_qtbl1v16qi (target, op0, sel));
 	}
     }
   else
@@ -22062,13 +22331,13 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 	{
 	  pair = gen_reg_rtx (V16QImode);
 	  emit_insn (gen_aarch64_combinev8qi (pair, op0, op1));
-	  emit_insn (gen_aarch64_tbl1v8qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl1v8qi (target, pair, sel));
 	}
       else
 	{
 	  pair = gen_reg_rtx (OImode);
 	  emit_insn (gen_aarch64_combinev16qi (pair, op0, op1));
-	  emit_insn (gen_aarch64_tbl2v16qi (target, pair, sel));
+	  emit_insn (gen_aarch64_qtbl2v16qi (target, pair, sel));
 	}
     }
 }
@@ -24441,8 +24710,16 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   for (int i = 0; i < 8; i ++)
     temp_operands[i] = operands[i];
 
-  /* Sort the operands.  */
-  qsort (temp_operands, 4, 2 * sizeof (rtx *), aarch64_ldrstr_offset_compare);
+  /* Sort the operands.  Note for cases as below:
+       [base + 0x310] = A
+       [base + 0x320] = B
+       [base + 0x330] = C
+       [base + 0x320] = D
+     We need stable sorting otherwise wrong data may be store to offset 0x320.
+     Also note the dead store in above case should be optimized away, but no
+     guarantees here.  */
+  gcc_stablesort(temp_operands, 4, 2 * sizeof (rtx *),
+		 aarch64_ldrstr_offset_compare);
 
   /* Copy the memory operands so that if we have to bail for some
      reason the original addresses are unchanged.  */
@@ -24972,8 +25249,7 @@ aarch64_estimated_poly_value (poly_int64 val,
 			      poly_value_estimate_kind kind
 				= POLY_VALUE_LIKELY)
 {
-  enum aarch64_sve_vector_bits_enum width_source
-    = aarch64_tune_params.sve_width;
+  unsigned int width_source = aarch64_tune_params.sve_width;
 
   /* If there is no core-specific information then the minimum and likely
      values are based on 128-bit vectors and the maximum is based on
@@ -24987,6 +25263,14 @@ aarch64_estimated_poly_value (poly_int64 val,
       case POLY_VALUE_MAX:
 	  return val.coeffs[0] + val.coeffs[1] * 15;
       }
+
+  /* Allow sve_width to be a bitmask of different VL, treating the lowest
+     as likely.  This could be made more general if future -mtune options
+     need it to be.  */
+  if (kind == POLY_VALUE_MAX)
+    width_source = 1 << floor_log2 (width_source);
+  else
+    width_source = least_bit_hwi (width_source);
 
   /* If the core provides width information, use that.  */
   HOST_WIDE_INT over_128 = width_source - 128;
@@ -25576,12 +25860,106 @@ aarch64_test_loading_full_dump ()
   ASSERT_EQ (SImode, GET_MODE (crtl->return_rtx));
 }
 
+/* Test the fractional_cost class.  */
+
+static void
+aarch64_test_fractional_cost ()
+{
+  using cf = fractional_cost;
+
+  ASSERT_EQ (cf (0, 20), 0);
+
+  ASSERT_EQ (cf (4, 2), 2);
+  ASSERT_EQ (3, cf (9, 3));
+
+  ASSERT_NE (cf (5, 2), 2);
+  ASSERT_NE (3, cf (8, 3));
+
+  ASSERT_EQ (cf (7, 11) + cf (15, 11), 2);
+  ASSERT_EQ (cf (2, 3) + cf (3, 5), cf (19, 15));
+  ASSERT_EQ (cf (2, 3) + cf (1, 6) + cf (1, 6), 1);
+
+  ASSERT_EQ (cf (14, 15) - cf (4, 15), cf (2, 3));
+  ASSERT_EQ (cf (1, 4) - cf (1, 2), 0);
+  ASSERT_EQ (cf (3, 5) - cf (1, 10), cf (1, 2));
+  ASSERT_EQ (cf (11, 3) - 3, cf (2, 3));
+  ASSERT_EQ (3 - cf (7, 3), cf (2, 3));
+  ASSERT_EQ (3 - cf (10, 3), 0);
+
+  ASSERT_EQ (cf (2, 3) * 5, cf (10, 3));
+  ASSERT_EQ (14 * cf (11, 21), cf (22, 3));
+
+  ASSERT_TRUE (cf (4, 15) < cf (5, 15));
+  ASSERT_FALSE (cf (5, 15) < cf (5, 15));
+  ASSERT_FALSE (cf (6, 15) < cf (5, 15));
+  ASSERT_TRUE (cf (1, 3) < cf (2, 5));
+  ASSERT_TRUE (cf (1, 12) < cf (1, 6));
+  ASSERT_FALSE (cf (5, 3) < cf (5, 3));
+  ASSERT_TRUE (cf (239, 240) < 1);
+  ASSERT_FALSE (cf (240, 240) < 1);
+  ASSERT_FALSE (cf (241, 240) < 1);
+  ASSERT_FALSE (2 < cf (207, 104));
+  ASSERT_FALSE (2 < cf (208, 104));
+  ASSERT_TRUE (2 < cf (209, 104));
+
+  ASSERT_TRUE (cf (4, 15) < cf (5, 15));
+  ASSERT_FALSE (cf (5, 15) < cf (5, 15));
+  ASSERT_FALSE (cf (6, 15) < cf (5, 15));
+  ASSERT_TRUE (cf (1, 3) < cf (2, 5));
+  ASSERT_TRUE (cf (1, 12) < cf (1, 6));
+  ASSERT_FALSE (cf (5, 3) < cf (5, 3));
+  ASSERT_TRUE (cf (239, 240) < 1);
+  ASSERT_FALSE (cf (240, 240) < 1);
+  ASSERT_FALSE (cf (241, 240) < 1);
+  ASSERT_FALSE (2 < cf (207, 104));
+  ASSERT_FALSE (2 < cf (208, 104));
+  ASSERT_TRUE (2 < cf (209, 104));
+
+  ASSERT_FALSE (cf (4, 15) >= cf (5, 15));
+  ASSERT_TRUE (cf (5, 15) >= cf (5, 15));
+  ASSERT_TRUE (cf (6, 15) >= cf (5, 15));
+  ASSERT_FALSE (cf (1, 3) >= cf (2, 5));
+  ASSERT_FALSE (cf (1, 12) >= cf (1, 6));
+  ASSERT_TRUE (cf (5, 3) >= cf (5, 3));
+  ASSERT_FALSE (cf (239, 240) >= 1);
+  ASSERT_TRUE (cf (240, 240) >= 1);
+  ASSERT_TRUE (cf (241, 240) >= 1);
+  ASSERT_TRUE (2 >= cf (207, 104));
+  ASSERT_TRUE (2 >= cf (208, 104));
+  ASSERT_FALSE (2 >= cf (209, 104));
+
+  ASSERT_FALSE (cf (4, 15) > cf (5, 15));
+  ASSERT_FALSE (cf (5, 15) > cf (5, 15));
+  ASSERT_TRUE (cf (6, 15) > cf (5, 15));
+  ASSERT_FALSE (cf (1, 3) > cf (2, 5));
+  ASSERT_FALSE (cf (1, 12) > cf (1, 6));
+  ASSERT_FALSE (cf (5, 3) > cf (5, 3));
+  ASSERT_FALSE (cf (239, 240) > 1);
+  ASSERT_FALSE (cf (240, 240) > 1);
+  ASSERT_TRUE (cf (241, 240) > 1);
+  ASSERT_TRUE (2 > cf (207, 104));
+  ASSERT_FALSE (2 > cf (208, 104));
+  ASSERT_FALSE (2 > cf (209, 104));
+
+  ASSERT_EQ (cf (1, 2).ceil (), 1);
+  ASSERT_EQ (cf (11, 7).ceil (), 2);
+  ASSERT_EQ (cf (20, 1).ceil (), 20);
+  ASSERT_EQ ((cf (0xfffffffd) + 1).ceil (), 0xfffffffe);
+  ASSERT_EQ ((cf (0xfffffffd) + 2).ceil (), 0xffffffff);
+  ASSERT_EQ ((cf (0xfffffffd) + 3).ceil (), 0xffffffff);
+  ASSERT_EQ ((cf (0x7fffffff) * 2).ceil (), 0xfffffffe);
+  ASSERT_EQ ((cf (0x80000000) * 2).ceil (), 0xffffffff);
+
+  ASSERT_EQ (cf (1, 2).as_double (), 0.5);
+}
+
 /* Run all target-specific selftests.  */
 
 static void
 aarch64_run_selftests (void)
 {
   aarch64_test_loading_full_dump ();
+  aarch64_test_fractional_cost ();
 }
 
 } // namespace selftest

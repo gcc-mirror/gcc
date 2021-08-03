@@ -3631,6 +3631,10 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_LITERAL_TYPE:
       inform (loc, "  %qT is not a literal type", t1);
       break;
+    case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
+      inform (loc, "  %qT is not pointer-interconvertible base of %qT",
+	      t1, t2);
+      break;
     case CPTK_IS_POD:
       inform (loc, "  %qT is not a POD type", t1);
       break;

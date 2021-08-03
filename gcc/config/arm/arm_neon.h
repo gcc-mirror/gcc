@@ -8384,21 +8384,25 @@ __extension__ extern __inline float32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmul_n_f32 (float32x2_t __a, float32_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a * __b;
+#else
   return (float32x2_t)__builtin_neon_vmul_nv2sf (__a, (__builtin_neon_sf) __b);
+#endif
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmul_n_u16 (uint16x4_t __a, uint16_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vmul_nv4hi ((int16x4_t) __a, (__builtin_neon_hi) __b);
+  return __a * __b;
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmul_n_u32 (uint32x2_t __a, uint32_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vmul_nv2si ((int32x2_t) __a, (__builtin_neon_si) __b);
+  return __a * __b;
 }
 
 __extension__ extern __inline int16x8_t
@@ -8419,21 +8423,25 @@ __extension__ extern __inline float32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmulq_n_f32 (float32x4_t __a, float32_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a * __b;
+#else
   return (float32x4_t)__builtin_neon_vmul_nv4sf (__a, (__builtin_neon_sf) __b);
+#endif
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmulq_n_u16 (uint16x8_t __a, uint16_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vmul_nv8hi ((int16x8_t) __a, (__builtin_neon_hi) __b);
+  return __a * __b;
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmulq_n_u32 (uint32x4_t __a, uint32_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vmul_nv4si ((int32x4_t) __a, (__builtin_neon_si) __b);
+  return __a * __b;
 }
 
 __extension__ extern __inline int32x4_t
@@ -10293,7 +10301,7 @@ __extension__ extern __inline poly64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p64 (const poly64_t * __a)
 {
-  return (poly64x1_t)__builtin_neon_vld1di ((const __builtin_neon_di *) __a);
+  return (poly64x1_t) { *__a };
 }
 
 #pragma GCC pop_options
@@ -10322,7 +10330,7 @@ __extension__ extern __inline int64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s64 (const int64_t * __a)
 {
-  return (int64x1_t)__builtin_neon_vld1di ((const __builtin_neon_di *) __a);
+  return (int64x1_t) { *__a };
 }
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
@@ -10366,7 +10374,7 @@ __extension__ extern __inline uint64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u64 (const uint64_t * __a)
 {
-  return (uint64x1_t)__builtin_neon_vld1di ((const __builtin_neon_di *) __a);
+  return (uint64x1_t) { *__a };
 }
 
 __extension__ extern __inline poly8x8_t
@@ -17740,7 +17748,11 @@ __extension__ extern __inline float16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmul_n_f16 (float16x4_t __a, float16_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a * __b;
+#else
   return __builtin_neon_vmul_nv4hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline float16x8_t
@@ -17765,7 +17777,11 @@ __extension__ extern __inline float16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vmulq_n_f16 (float16x8_t __a, float16_t __b)
 {
+#ifdef __FAST_MATH__
+  return __a * __b;
+#else
   return __builtin_neon_vmul_nv8hf (__a, __b);
+#endif
 }
 
 __extension__ extern __inline float16x4_t

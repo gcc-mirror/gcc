@@ -790,7 +790,8 @@ is_eq_or_top (complex_perm_kinds_t perm, complex_perm_kinds_t kind)
 
 static inline bool
 vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
-			     vec<slp_tree> left_op, vec<slp_tree> right_op,
+			      const vec<slp_tree> &left_op,
+			      const vec<slp_tree> &right_op,
 			     bool neg_first, bool *conj_first_operand,
 			     bool fms)
 {
@@ -862,7 +863,8 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
 
 static inline bool
 vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
-			     vec<slp_tree> op, complex_perm_kinds_t permKind)
+			      const vec<slp_tree> &op,
+			      complex_perm_kinds_t permKind)
 {
   /* The left node is the more common case, test it first.  */
   if (!is_eq_or_top (linear_loads_p (perm_cache, op[0]), permKind))

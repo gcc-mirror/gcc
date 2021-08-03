@@ -417,7 +417,6 @@ find_obviously_necessary_stmts (bool aggressive)
   /* Prevent the empty possibly infinite loops from being removed.  */
   if (aggressive)
     {
-      class loop *loop;
       if (mark_irreducible_loops ())
 	FOR_EACH_BB_FN (bb, cfun)
 	  {
@@ -433,7 +432,7 @@ find_obviously_necessary_stmts (bool aggressive)
 		}
 	  }
 
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	if (!finite_loop_p (loop))
 	  {
 	    if (dump_file)

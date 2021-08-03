@@ -25,6 +25,7 @@
 #include <span>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>

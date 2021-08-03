@@ -2867,7 +2867,7 @@ create_parallel_loop (class loop *loop, tree loop_fn, tree data,
   /* Emit GIMPLE_OMP_FOR.  */
   if (oacc_kernels_p)
     /* Parallelized OpenACC kernels constructs use gang parallelism.  See also
-       omp-offload.c:execute_oacc_device_lower.  */
+       omp-offload.c:execute_oacc_loop_designation.  */
     t = build_omp_clause (loc, OMP_CLAUSE_GANG);
   else
     {
@@ -3713,7 +3713,7 @@ ref_conflicts_with_region (gimple_stmt_iterator gsi, ao_ref *ref,
    reduction results in REDUCTION_STORES.  */
 
 static bool
-oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
+oacc_entry_exit_ok_1 (bitmap in_loop_bbs, const vec<basic_block> &region_bbs,
 		      reduction_info_table_type *reduction_list,
 		      bitmap reduction_stores)
 {
@@ -3828,7 +3828,8 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
    if any changes were made.  */
 
 static bool
-oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
+oacc_entry_exit_single_gang (bitmap in_loop_bbs,
+			     const vec<basic_block> &region_bbs,
 			     bitmap reduction_stores)
 {
   tree gang_pos = NULL_TREE;
@@ -3989,7 +3990,6 @@ parallelize_loops (bool oacc_kernels_p)
 {
   unsigned n_threads;
   bool changed = false;
-  class loop *loop;
   class loop *skip_loop = NULL;
   class tree_niter_desc niter_desc;
   struct obstack parloop_obstack;
@@ -4020,7 +4020,7 @@ parallelize_loops (bool oacc_kernels_p)
 
   calculate_dominance_info (CDI_DOMINATORS);
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       if (loop == skip_loop)
 	{

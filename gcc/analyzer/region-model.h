@@ -171,6 +171,8 @@ public:
   bool can_merge_with_p (const region_to_value_map &other,
 			 region_to_value_map *out) const;
 
+  void purge_state_involving (const svalue *sval);
+
 private:
   hash_map_t m_hash_map;
 };
@@ -321,6 +323,9 @@ public:
 
   void log_stats (logger *logger, bool show_objs) const;
 
+  void enable_complexity_check (void) { m_check_complexity = true; }
+  void disable_complexity_check (void) { m_check_complexity = false; }
+
 private:
   bool too_complex_p (const complexity &c) const;
   bool reject_if_too_complex (svalue *sval);
@@ -405,6 +410,8 @@ private:
 		   conjured_svalue *> conjured_values_map_t;
   conjured_values_map_t m_conjured_values_map;
 
+  bool m_check_complexity;
+
   /* Maximum complexity of svalues that weren't rejected.  */
   complexity m_max_complexity;
 
@@ -466,9 +473,12 @@ public:
   tree get_arg_tree (unsigned idx) const;
   tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
+  const char *get_arg_string_literal (unsigned idx) const;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;
   void dump (bool simple) const;
+
+  const svalue *get_or_create_conjured_svalue (const region *) const;
 
 private:
   const gcall *m_call;
@@ -518,6 +528,12 @@ class region_model
   void canonicalize ();
   bool canonicalized_p () const;
 
+  void
+  on_stmt_pre (const gimple *stmt,
+	       bool *out_terminate_path,
+	       bool *out_unknown_side_effects,
+	       region_model_context *ctxt);
+
   void on_assignment (const gassign *stmt, region_model_context *ctxt);
   const svalue *get_gassign_result (const gassign *assign,
 				    region_model_context *ctxt);
@@ -527,27 +543,31 @@ class region_model
 		     bool unknown_side_effects,
 		     region_model_context *ctxt);
 
+  void purge_state_involving (const svalue *sval, region_model_context *ctxt);
+
   /* Specific handling for on_call_pre.  */
-  bool impl_call_alloca (const call_details &cd);
+  void impl_call_alloca (const call_details &cd);
   void impl_call_analyzer_describe (const gcall *call,
 				    region_model_context *ctxt);
   void impl_call_analyzer_dump_capacity (const gcall *call,
 					 region_model_context *ctxt);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
-  bool impl_call_builtin_expect (const call_details &cd);
-  bool impl_call_calloc (const call_details &cd);
+  void impl_call_builtin_expect (const call_details &cd);
+  void impl_call_calloc (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,
 			bool *out_terminate_path);
+  void impl_call_fgets (const call_details &cd);
+  void impl_call_fread (const call_details &cd);
   void impl_call_free (const call_details &cd);
-  bool impl_call_malloc (const call_details &cd);
+  void impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
-  bool impl_call_memset (const call_details &cd);
+  void impl_call_memset (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
   void impl_call_strcpy (const call_details &cd);
-  bool impl_call_strlen (const call_details &cd);
-  bool impl_call_operator_new (const call_details &cd);
-  bool impl_call_operator_delete (const call_details &cd);
+  void impl_call_strlen (const call_details &cd);
+  void impl_call_operator_new (const call_details &cd);
+  void impl_call_operator_delete (const call_details &cd);
   void impl_deallocation_call (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,
@@ -567,6 +587,7 @@ class region_model
 			region_model_context *ctxt);
 
   void handle_phi (const gphi *phi, tree lhs, tree rhs,
+		   const region_model &old_state,
 		   region_model_context *ctxt);
 
   bool maybe_update_for_edge (const superedge &edge,
@@ -594,7 +615,8 @@ class region_model
 
   const svalue *get_rvalue_for_bits (tree type,
 				     const region *reg,
-				     const bit_range &bits) const;
+				     const bit_range &bits,
+				     region_model_context *ctxt) const;
 
   void set_value (const region *lhs_reg, const svalue *rhs_sval,
 		  region_model_context *ctxt);
@@ -672,7 +694,8 @@ class region_model
   static void append_ssa_names_cb (const region *base_reg,
 				   struct append_ssa_names_cb_data *data);
 
-  const svalue *get_store_value (const region *reg) const;
+  const svalue *get_store_value (const region *reg,
+				 region_model_context *ctxt) const;
 
   bool region_exists_p (const region *reg) const;
 
@@ -727,8 +750,19 @@ class region_model
   bool called_from_main_p () const;
   const svalue *get_initial_value_for_global (const region *reg) const;
 
+  const svalue *check_for_poison (const svalue *sval,
+				  tree expr,
+				  region_model_context *ctxt) const;
+
   void check_for_writable_region (const region* dest_reg,
 				  region_model_context *ctxt) const;
+  void check_region_access (const region *reg,
+			    enum access_direction dir,
+			    region_model_context *ctxt) const;
+  void check_region_for_write (const region *dest_reg,
+			       region_model_context *ctxt) const;
+  void check_region_for_read (const region *src_reg,
+			      region_model_context *ctxt) const;
 
   /* Storing this here to avoid passing it around everywhere.  */
   region_model_manager *const m_mgr;
@@ -757,7 +791,9 @@ class region_model
 class region_model_context
 {
  public:
-  virtual void warn (pending_diagnostic *d) = 0;
+  /* Hook for clients to store pending diagnostics.
+     Return true if the diagnostic was stored, or false if it was deleted.  */
+  virtual bool warn (pending_diagnostic *d) = 0;
 
   /* Hook for clients to be notified when an SVAL that was reachable
      in a previous state is no longer live, so that clients can emit warnings
@@ -799,6 +835,9 @@ class region_model_context
   virtual void on_escaped_function (tree fndecl) = 0;
 
   virtual uncertainty_t *get_uncertainty () = 0;
+
+  /* Hook for clients to purge state involving SVAL.  */
+  virtual void purge_state_involving (const svalue *sval) = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -806,7 +845,7 @@ class region_model_context
 class noop_region_model_context : public region_model_context
 {
 public:
-  void warn (pending_diagnostic *) OVERRIDE {}
+  bool warn (pending_diagnostic *) OVERRIDE { return false; }
   void on_svalue_leak (const svalue *) OVERRIDE {}
   void on_liveness_change (const svalue_set &,
 			   const region_model *) OVERRIDE {}
@@ -829,6 +868,8 @@ public:
   void on_escaped_function (tree) OVERRIDE {}
 
   uncertainty_t *get_uncertainty () OVERRIDE { return NULL; }
+
+  void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) OVERRIDE {}
 };
 
 /* A subclass of region_model_context for determining if operations fail
@@ -931,9 +972,10 @@ using namespace ::selftest;
 class test_region_model_context : public noop_region_model_context
 {
 public:
-  void warn (pending_diagnostic *d) FINAL OVERRIDE
+  bool warn (pending_diagnostic *d) FINAL OVERRIDE
   {
     m_diagnostics.safe_push (d);
+    return true;
   }
 
   unsigned get_num_diagnostics () const { return m_diagnostics.length (); }

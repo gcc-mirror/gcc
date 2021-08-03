@@ -32,7 +32,7 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_container.h>
 #include <debug/safe_iterator.h>
-#include <utility>
+#include <bits/stl_pair.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

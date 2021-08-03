@@ -2923,7 +2923,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
       scev_initialize ();
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	{
 	  predicate loop_iterations = true;
 	  sreal header_freq;
@@ -3967,8 +3967,8 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 		      class ipa_fn_summary *info,
 		      class ipa_node_params *params_summary,
 		      class ipa_fn_summary *callee_info,
-		      vec<int> operand_map,
-		      vec<HOST_WIDE_INT> offset_map,
+		      const vec<int> &operand_map,
+		      const vec<HOST_WIDE_INT> &offset_map,
 		      clause_t possible_truths,
 		      predicate *toplev_predicate)
 {
@@ -4028,8 +4028,8 @@ remap_freqcounting_predicate (class ipa_fn_summary *info,
 			      class ipa_node_params *params_summary,
 			      class ipa_fn_summary *callee_info,
 			      vec<ipa_freqcounting_predicate, va_gc> *v,
-			      vec<int> operand_map,
-			      vec<HOST_WIDE_INT> offset_map,
+			      const vec<int> &operand_map,
+			      const vec<HOST_WIDE_INT> &offset_map,
 			      clause_t possible_truths,
 			      predicate *toplev_predicate)
 

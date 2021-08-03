@@ -5181,7 +5181,9 @@ package body Sem_Ch13 is
       --  This routine checks if the aspect for U_Ent being given by attribute
       --  definition clause N is for an aspect that has already been specified,
       --  and if so gives an error message. If there is a duplicate, True is
-      --  returned, otherwise if there is no error, False is returned.
+      --  returned, otherwise there is no error, and False is returned. Size
+      --  and Value_Size are considered to conflict, but for compatibility,
+      --  this is merely a warning.
 
       procedure Check_Indexing_Functions;
       --  Check that the function in Constant_Indexing or Variable_Indexing
@@ -6007,7 +6009,47 @@ package body Sem_Ch13 is
       ----------------------
 
       function Duplicate_Clause return Boolean is
-         A : Node_Id;
+
+         function Check_One_Attr (Attr_1, Attr_2 : Name_Id) return Boolean;
+         --  Check for one attribute; Attr_1 is the attribute_designator we are
+         --  looking for. Attr_2 is the attribute_designator of the current
+         --  node. Normally, this is called just once by Duplicate_Clause, with
+         --  Attr_1 = Attr_2. However, it needs to be called twice for Size and
+         --  Value_Size, because these mean the same thing. For compatibility,
+         --  we allow specifying both Size and Value_Size, but only if the two
+         --  sizes are equal.
+
+         --------------------
+         -- Check_One_Attr --
+         --------------------
+
+         function Check_One_Attr (Attr_1, Attr_2 : Name_Id) return Boolean is
+            A : constant Node_Id :=
+              Get_Rep_Item (U_Ent, Attr_1, Check_Parents => False);
+         begin
+            if Present (A) then
+               if Attr_1 = Attr_2 then
+                  Error_Msg_Name_1 := Attr_1;
+                  Error_Msg_Sloc := Sloc (A);
+                  Error_Msg_NE ("aspect% for & previously given#", N, U_Ent);
+
+               else
+                  pragma Assert (Attr_1 in Name_Size | Name_Value_Size);
+                  pragma Assert (Attr_2 in Name_Size | Name_Value_Size);
+
+                  Error_Msg_Name_1 := Attr_2;
+                  Error_Msg_Name_2 := Attr_1;
+                  Error_Msg_Sloc := Sloc (A);
+                  Error_Msg_NE ("?% for & conflicts with % #", N, U_Ent);
+               end if;
+
+               return True;
+            end if;
+
+            return False;
+         end Check_One_Attr;
+
+      --  Start of processing for Duplicate_Clause
 
       begin
          --  Nothing to do if this attribute definition clause comes from
@@ -6019,21 +6061,20 @@ package body Sem_Ch13 is
             return False;
          end if;
 
-         --  Otherwise current clause may duplicate previous clause, or a
-         --  previously given pragma or aspect specification for the same
-         --  aspect.
+         --  Special cases for Size and Value_Size
 
-         A := Get_Rep_Item (U_Ent, Chars (N), Check_Parents => False);
-
-         if Present (A) then
-            Error_Msg_Name_1 := Chars (N);
-            Error_Msg_Sloc := Sloc (A);
-
-            Error_Msg_NE ("aspect% for & previously given#", N, U_Ent);
+         if (Chars (N) = Name_Size
+               and then Check_One_Attr (Name_Value_Size, Name_Size))
+           or else
+            (Chars (N) = Name_Value_Size
+               and then Check_One_Attr (Name_Size, Name_Value_Size))
+         then
             return True;
          end if;
 
-         return False;
+         --  Normal case (including Size and Value_Size)
+
+         return Check_One_Attr (Chars (N), Chars (N));
       end Duplicate_Clause;
 
    --  Start of processing for Analyze_Attribute_Definition_Clause
@@ -8060,10 +8101,12 @@ package body Sem_Ch13 is
             elsif Val < Lo or else Hi < Val then
                Error_Msg_N ("value outside permitted range", Expr);
                Err := True;
+
+            else
+               Set_Enumeration_Rep (Elit, Val);
+               Set_Enumeration_Rep_Expr (Elit, Expr);
             end if;
 
-            Set_Enumeration_Rep (Elit, Val);
-            Set_Enumeration_Rep_Expr (Elit, Expr);
             Next (Expr);
             Next (Elit);
          end loop;
@@ -8137,9 +8180,10 @@ package body Sem_Ch13 is
                         elsif Val < Lo or else Hi < Val then
                            Error_Msg_N ("value outside permitted range", Expr);
                            Err := True;
-                        end if;
 
-                        Set_Enumeration_Rep (Elit, Val);
+                        else
+                           Set_Enumeration_Rep (Elit, Val);
+                        end if;
                      end if;
                   end if;
                end if;
@@ -8233,9 +8277,10 @@ package body Sem_Ch13 is
                Set_Enum_Esize (Enumtype);
             end if;
 
-            Set_RM_Size   (Base_Type (Enumtype), RM_Size   (Enumtype));
-            Set_Esize     (Base_Type (Enumtype), Esize     (Enumtype));
-            Set_Alignment (Base_Type (Enumtype), Alignment (Enumtype));
+            Set_RM_Size (Base_Type (Enumtype), RM_Size   (Enumtype));
+            Set_Esize   (Base_Type (Enumtype), Esize     (Enumtype));
+
+            Copy_Alignment (To => Base_Type (Enumtype), From => Enumtype);
          end;
       end if;
 
@@ -16258,9 +16303,13 @@ package body Sem_Ch13 is
             X_Offs : Uint;
 
          begin
-            --  Skip processing of this entry if warning already posted
+            --  Skip processing of this entry if warning already posted, or if
+            --  alignments are not set.
 
-            if not Address_Warning_Posted (ACCR.N) then
+            if not Address_Warning_Posted (ACCR.N)
+              and then Known_Alignment (ACCR.X)
+              and then Known_Alignment (ACCR.Y)
+            then
                Expr := Original_Node (Expression (ACCR.N));
 
                --  Get alignments, sizes and offset, if any

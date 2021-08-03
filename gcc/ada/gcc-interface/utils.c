@@ -1277,7 +1277,7 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
 
   finish_record_type (new_type, nreverse (new_field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
     SET_TYPE_DEBUG_TYPE (new_type, TYPE_DEBUG_TYPE (type));
   else if (TYPE_STUB_DECL (type))
     SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
@@ -1610,7 +1610,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   /* Make the inner type the debug type of the padded type.  */
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
     SET_TYPE_DEBUG_TYPE (record, maybe_debug_type (type));
 
   /* Unless debugging information isn't being written for the input type,
@@ -1645,7 +1645,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
       /* There is no need to show what we are a subtype of when outputting as
 	 few encodings as possible: regular debugging infomation makes this
 	 redundant.  */
-      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 	{
 	  tree marker = make_node (RECORD_TYPE);
 	  tree orig_name = TYPE_IDENTIFIER (type);
@@ -2274,7 +2274,7 @@ rest_of_record_type_compilation (tree record_type)
 
   /* If this record type is of variable size, make a parallel record type that
      will tell the debugger how the former is laid out (see exp_dbug.ads).  */
-  if (var_size && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (var_size && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
     {
       tree new_record_type
 	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE

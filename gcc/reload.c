@@ -262,8 +262,8 @@ static bool alternative_allows_const_pool_ref (rtx, const char *, int);
 static rtx find_reloads_toplev (rtx, int, enum reload_type, int, int,
 				rtx_insn *, int *);
 static rtx make_memloc (rtx, int);
-static int maybe_memory_address_addr_space_p (machine_mode, rtx,
-					      addr_space_t, rtx *);
+static bool maybe_memory_address_addr_space_p (machine_mode, rtx,
+					       addr_space_t, rtx *);
 static int find_reloads_address (machine_mode, rtx *, rtx, rtx *,
 				 int, enum reload_type, int, rtx_insn *);
 static rtx subst_reg_equivs (rtx, rtx_insn *);
@@ -2156,21 +2156,21 @@ hard_reg_set_here_p (unsigned int beg_regno, unsigned int end_regno, rtx x)
   return 0;
 }
 
-/* Return 1 if ADDR is a valid memory address for mode MODE
+/* Return true if ADDR is a valid memory address for mode MODE
    in address space AS, and check that each pseudo reg has the
    proper kind of hard reg.  */
 
-int
+bool
 strict_memory_address_addr_space_p (machine_mode mode ATTRIBUTE_UNUSED,
 				    rtx addr, addr_space_t as)
 {
 #ifdef GO_IF_LEGITIMATE_ADDRESS
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
-  return 0;
+  return false;
 
  win:
-  return 1;
+  return true;
 #else
   return targetm.addr_space.legitimate_address_p (mode, addr, 1, as);
 #endif
@@ -4829,11 +4829,11 @@ make_memloc (rtx ad, int regno)
    to mode MODE in address space AS by reloading the part pointed to
    by PART into a register.  */
 
-static int
+static bool
 maybe_memory_address_addr_space_p (machine_mode mode, rtx ad,
 				   addr_space_t as, rtx *part)
 {
-  int retv;
+  bool retv;
   rtx tem = *part;
   rtx reg = gen_rtx_REG (GET_MODE (tem), max_reg_num ());
 

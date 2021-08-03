@@ -1741,8 +1741,9 @@ gfc_trans_class_init_assign (gfc_code *code)
 	}
     }
 
-  if (code->expr1->symtree->n.sym->attr.optional
-      || code->expr1->symtree->n.sym->ns->proc_name->attr.entry_master)
+  if (code->expr1->symtree->n.sym->attr.dummy
+      && (code->expr1->symtree->n.sym->attr.optional
+	  || code->expr1->symtree->n.sym->ns->proc_name->attr.entry_master))
     {
       tree present = gfc_conv_expr_present (code->expr1->symtree->n.sym);
       tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp),
@@ -5501,13 +5502,12 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	attribute = 1;
     }
 
-  /* If the formal argument is assumed shape and neither a pointer nor
-     allocatable, it is unconditionally CFI_attribute_other.  */
-  if (fsym->as->type == AS_ASSUMED_SHAPE
-      && !fsym->attr.pointer && !fsym->attr.allocatable)
-   cfi_attribute = 2;
+  if (fsym->attr.pointer)
+    cfi_attribute = 0;
+  else if (fsym->attr.allocatable)
+    cfi_attribute = 1;
   else
-   cfi_attribute = attribute;
+    cfi_attribute = 2;
 
   if (e->rank != 0)
     {
@@ -5615,10 +5615,15 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
   gfc_prepend_expr_to_block (&parmse->post, tmp);
 
   /* Transfer values back to gfc descriptor.  */
-  tmp = gfc_build_addr_expr (NULL_TREE, parmse->expr);
-  tmp = build_call_expr_loc (input_location,
-			     gfor_fndecl_cfi_to_gfc, 2, gfc_desc_ptr, tmp);
-  gfc_prepend_expr_to_block (&parmse->post, tmp);
+  if (cfi_attribute != 2  /* CFI_attribute_other.  */
+      && !fsym->attr.value
+      && fsym->attr.intent != INTENT_IN)
+    {
+      tmp = gfc_build_addr_expr (NULL_TREE, parmse->expr);
+      tmp = build_call_expr_loc (input_location,
+				 gfor_fndecl_cfi_to_gfc, 2, gfc_desc_ptr, tmp);
+      gfc_prepend_expr_to_block (&parmse->post, tmp);
+    }
 
   /* Deal with an optional dummy being passed to an optional formal arg
      by finishing the pre and post blocks and making their execution
@@ -5756,18 +5761,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
        arg = arg->next, formal = formal ? formal->next : NULL, ++argc)
     {
       bool finalized = false;
-      bool non_unity_length_string = false;
+      bool assumed_length_string = false;
       tree derived_array = NULL_TREE;
 
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
       parm_kind = MISSING;
 
-      if (fsym && fsym->ts.type == BT_CHARACTER && fsym->ts.u.cl
-	  && (!fsym->ts.u.cl->length
-	      || fsym->ts.u.cl->length->expr_type != EXPR_CONSTANT
-	      || mpz_cmp_si (fsym->ts.u.cl->length->value.integer, 1) != 0))
-	non_unity_length_string = true;
+      if (fsym && fsym->ts.type == BT_CHARACTER
+	  && (!fsym->ts.u.cl || !fsym->ts.u.cl->length))
+	assumed_length_string = true;
 
       /* If the procedure requires an explicit interface, the actual
 	 argument is passed according to the corresponding formal
@@ -6001,8 +6004,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      else if (sym->attr.is_bind_c && e
 		       && (is_CFI_desc (fsym, NULL)
-			   || non_unity_length_string))
-		/* Implement F2018, C.12.6.1: paragraph (2).  */
+			   || assumed_length_string))
+		/* Implement F2018, 18.3.6, list item (5), bullet point 2.  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
 
 	      else if (fsym && fsym->attr.value)
@@ -6446,8 +6449,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 
 	      if (sym->attr.is_bind_c && e
-		  && (is_CFI_desc (fsym, NULL) || non_unity_length_string))
-		/* Implement F2018, C.12.6.1: paragraph (2).  */
+		  && (is_CFI_desc (fsym, NULL) || assumed_length_string))
+		/* Implement F2018, 18.3.6, list item (5), bullet point 2.  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
 
 	      else if (e->expr_type == EXPR_VARIABLE

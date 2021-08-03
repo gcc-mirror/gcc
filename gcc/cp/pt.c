@@ -154,8 +154,8 @@ static void tsubst_enum	(tree, tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int check_non_deducible_conversion (tree, tree, int, int,
 					   struct conversion **, bool);
-static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*,
-					     tree);
+static int maybe_adjust_types_for_deduction (tree, unification_kind_t,
+					     tree*, tree*, tree);
 static int type_unification_real (tree, tree, tree, const tree *,
 				  unsigned int, int, unification_kind_t,
 				  vec<deferred_access_check, va_gc> **,
@@ -5801,18 +5801,7 @@ push_template_decl (tree decl, bool is_friend)
 	}
       else if (DECL_IMPLICIT_TYPEDEF_P (decl)
 	       && CLASS_TYPE_P (TREE_TYPE (decl)))
-	{
-	  /* Class template, set TEMPLATE_TYPE_PARM_FOR_CLASS.  */
-	  tree parms = INNERMOST_TEMPLATE_PARMS (current_template_parms);
-	  for (int i = 0; i < TREE_VEC_LENGTH (parms); ++i)
-	    {
-	      tree t = TREE_VALUE (TREE_VEC_ELT (parms, i));
-	      if (TREE_CODE (t) == TYPE_DECL)
-		t = TREE_TYPE (t);
-	      if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-		TEMPLATE_TYPE_PARM_FOR_CLASS (t) = true;
-	    }
-	}
+	/* Class template.  */;
       else if (TREE_CODE (decl) == TYPE_DECL
 	       && TYPE_DECL_ALIAS_P (decl))
 	/* alias-declaration */
@@ -6292,9 +6281,6 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	  gcc_assert (DECL_CONTEXT (parm) == NULL_TREE);
 	  DECL_CONTEXT (parm) = tmpl;
 	}
-
-      if (TREE_CODE (parm) == TYPE_DECL)
-	TEMPLATE_TYPE_PARM_FOR_CLASS (TREE_TYPE (parm)) = true;
     }
 
   tree ci = get_constraints (tmpl);
@@ -17493,6 +17479,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_NOHOST:
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -21709,6 +21696,41 @@ fn_type_unification (tree fn,
   return r;
 }
 
+/* Returns true iff PARM is a forwarding reference in the context of
+   template argument deduction for TMPL.  */
+
+static bool
+forwarding_reference_p (tree parm, tree tmpl)
+{
+  /* [temp.deduct.call], "A forwarding reference is an rvalue reference to a
+     cv-unqualified template parameter ..."  */
+  if (TYPE_REF_P (parm)
+      && TYPE_REF_IS_RVALUE (parm)
+      && TREE_CODE (TREE_TYPE (parm)) == TEMPLATE_TYPE_PARM
+      && cp_type_quals (TREE_TYPE (parm)) == TYPE_UNQUALIFIED)
+    {
+      parm = TREE_TYPE (parm);
+      /* [temp.deduct.call], "... that does not represent a template parameter
+	 of a class template (during class template argument deduction)."  */
+      if (tmpl
+	  && deduction_guide_p (tmpl)
+	  && DECL_ARTIFICIAL (tmpl))
+	{
+	  /* Since the template parameters of a synthesized guide consist of
+	     the template parameters of the class template followed by those of
+	     the constructor (if any), we can tell if PARM represents a template
+	     parameter of the class template by comparing its index with the
+	     arity of the class template.  */
+	  tree ctmpl = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (TREE_TYPE (tmpl)));
+	  if (TEMPLATE_TYPE_IDX (parm)
+	      < TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (ctmpl)))
+	    return false;
+	}
+      return true;
+    }
+  return false;
+}
+
 /* Adjust types before performing type deduction, as described in
    [temp.deduct.call] and [temp.deduct.conv].  The rules in these two
    sections are symmetric.  PARM is the type of a function parameter
@@ -21718,7 +21740,8 @@ fn_type_unification (tree fn,
    ARG_EXPR is the original argument expression, which may be null.  */
 
 static int
-maybe_adjust_types_for_deduction (unification_kind_t strict,
+maybe_adjust_types_for_deduction (tree tparms,
+				  unification_kind_t strict,
 				  tree* parm,
 				  tree* arg,
 				  tree arg_expr)
@@ -21741,10 +21764,7 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
       /* Core issue #873: Do the DR606 thing (see below) for these cases,
 	 too, but here handle it by stripping the reference from PARM
 	 rather than by adding it to ARG.  */
-      if (TYPE_REF_P (*parm)
-	  && TYPE_REF_IS_RVALUE (*parm)
-	  && TREE_CODE (TREE_TYPE (*parm)) == TEMPLATE_TYPE_PARM
-	  && cp_type_quals (TREE_TYPE (*parm)) == TYPE_UNQUALIFIED
+      if (forwarding_reference_p (*parm, TPARMS_PRIMARY_TEMPLATE (tparms))
 	  && TYPE_REF_P (*arg)
 	  && !TYPE_REF_IS_RVALUE (*arg))
 	*parm = TREE_TYPE (*parm);
@@ -21781,17 +21801,10 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
 	*arg = TYPE_MAIN_VARIANT (*arg);
     }
 
-  /* [14.8.2.1/3 temp.deduct.call], "A forwarding reference is an rvalue
-     reference to a cv-unqualified template parameter that does not represent a
-     template parameter of a class template (during class template argument
-     deduction (13.3.1.8)). If P is a forwarding reference and the argument is
-     an lvalue, the type "lvalue reference to A" is used in place of A for type
-     deduction. */
-  if (TYPE_REF_P (*parm)
-      && TYPE_REF_IS_RVALUE (*parm)
-      && TREE_CODE (TREE_TYPE (*parm)) == TEMPLATE_TYPE_PARM
-      && !TEMPLATE_TYPE_PARM_FOR_CLASS (TREE_TYPE (*parm))
-      && cp_type_quals (TREE_TYPE (*parm)) == TYPE_UNQUALIFIED
+  /* [temp.deduct.call], "If P is a forwarding reference and the argument is
+     an lvalue, the type 'lvalue reference to A' is used in place of A for
+     type deduction."  */
+  if (forwarding_reference_p (*parm, TPARMS_PRIMARY_TEMPLATE (tparms))
       && (arg_expr ? lvalue_p (arg_expr)
 	  /* try_one_overload doesn't provide an arg_expr, but
 	     functions are always lvalues.  */
@@ -22080,8 +22093,8 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
 	    return unify_invalid (explain_p);
 	}
 
-      arg_strict |=
-	maybe_adjust_types_for_deduction (strict, &parm, &arg, arg_expr);
+      arg_strict |= maybe_adjust_types_for_deduction (tparms, strict,
+						      &parm, &arg, arg_expr);
     }
   else
     if ((TYPE_P (parm) || TREE_CODE (parm) == TEMPLATE_DECL)
@@ -22750,7 +22763,8 @@ try_one_overload (tree tparms,
   else if (addr_p)
     arg = build_pointer_type (arg);
 
-  sub_strict |= maybe_adjust_types_for_deduction (strict, &parm, &arg, NULL);
+  sub_strict |= maybe_adjust_types_for_deduction (tparms, strict,
+						  &parm, &arg, NULL_TREE);
 
   /* We don't copy orig_targs for this because if we have already deduced
      some template args from previous args, unify would complain when we
@@ -23449,7 +23463,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 		/* It should only be possible to get here for a call.  */
 		gcc_assert (elt_strict & UNIFY_ALLOW_OUTER_LEVEL);
 		elt_strict |= maybe_adjust_types_for_deduction
-		  (DEDUCE_CALL, &elttype, &type, elt);
+		  (tparms, DEDUCE_CALL, &elttype, &type, elt);
 		elt = type;
 	      }
 
@@ -28495,9 +28509,6 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
       tree oldtype = TREE_TYPE (olddecl);
       newtype = cxx_make_type (TREE_CODE (oldtype));
       TYPE_MAIN_VARIANT (newtype) = newtype;
-      if (TREE_CODE (oldtype) == TEMPLATE_TYPE_PARM)
-	TEMPLATE_TYPE_PARM_FOR_CLASS (newtype)
-	  = TEMPLATE_TYPE_PARM_FOR_CLASS (oldtype);
     }
   else
     {
@@ -29087,7 +29098,13 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  /* Substitute the deduced arguments plus the rewritten template
 	     parameters into f to get g.  This covers the type, copyness,
 	     guideness, and explicit-specifier.  */
-	  tree g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain);
+	  tree g;
+	    {
+	      /* Parms are to have DECL_CHAIN tsubsted, which would be skipped
+		 if cp_unevaluated_operand.  */
+	      cp_evaluated ev;
+	      g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain);
+	    }
 	  if (g == error_mark_node)
 	    continue;
 	  DECL_USE_TEMPLATE (g) = 0;

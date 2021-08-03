@@ -868,7 +868,6 @@ package Gen_IL.Fields is
       Relative_Deadline_Variable,
       Renamed_In_Spec,
       Renamed_Or_Alias, -- Shared among Alias, Renamed_Entity, Renamed_Object
-      Renaming_Map,
       Requires_Overriding,
       Return_Applies_To,
       Return_Present,

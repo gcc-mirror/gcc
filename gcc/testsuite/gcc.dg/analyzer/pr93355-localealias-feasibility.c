@@ -30,6 +30,7 @@ typedef __SIZE_TYPE__ size_t;
 typedef struct _IO_FILE FILE;
 extern FILE *fopen (const char *__restrict __filename,
 		    const char *__restrict __modes);
+extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 extern int fclose (FILE *__stream);
 
 extern int isspace (int) __attribute__((__nothrow__, __leaf__));
@@ -49,6 +50,12 @@ read_alias_file (const char *fname, int fname_len)
   fp = fopen (fname, "r"); /* { dg-message "opened here" } */
   if (fp == NULL)
     return 0;
+
+  if (fread (buf, sizeof buf, 1, fp) != 1)
+    {
+      fclose (fp);
+      return 0;
+    }
 
   cp = buf;
 

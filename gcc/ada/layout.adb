@@ -433,7 +433,7 @@ package body Layout is
                   Set_RM_Size   (E, RM_Size   (PAT));
                end if;
 
-               if not Known_Alignment (E) then
+               if not Known_Alignment (E) and then Known_Alignment (PAT) then
                   Set_Alignment (E, Alignment (PAT));
                end if;
             end;

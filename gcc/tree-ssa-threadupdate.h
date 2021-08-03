@@ -63,7 +63,7 @@ class jump_thread_path_registry
 public:
   jump_thread_path_registry ();
   ~jump_thread_path_registry ();
-  void register_jump_thread (vec<jump_thread_edge *> *);
+  bool register_jump_thread (vec<jump_thread_edge *> *);
   void remove_jump_threads_including (edge);
   bool thread_through_all_blocks (bool);
   jump_thread_edge *allocate_thread_edge (edge e, jump_thread_edge_type t);

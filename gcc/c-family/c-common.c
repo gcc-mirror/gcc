@@ -421,6 +421,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_enum",	RID_IS_ENUM,	D_CXXONLY },
   { "__is_final",	RID_IS_FINAL,	D_CXXONLY },
   { "__is_literal_type", RID_IS_LITERAL_TYPE, D_CXXONLY },
+  { "__is_pointer_interconvertible_base_of",
+			RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF, D_CXXONLY },
   { "__is_pod",		RID_IS_POD,	D_CXXONLY },
   { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
   { "__is_same",     RID_IS_SAME_AS, D_CXXONLY },
@@ -1115,8 +1117,8 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
    and have vector types, V0 has the same element type as V1, and the
    number of elements the result is that of MASK.  */
 tree
-c_build_shufflevector (location_t loc, tree v0, tree v1, vec<tree> mask,
-		       bool complain)
+c_build_shufflevector (location_t loc, tree v0, tree v1,
+		       const vec<tree> &mask, bool complain)
 {
   tree ret;
   bool wrap = true;
@@ -5798,7 +5800,7 @@ parse_optimize_options (tree args, bool attr_p)
 
       if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  char buffer[20];
+	  char buffer[HOST_BITS_PER_LONG / 3 + 4];
 	  sprintf (buffer, "-O%ld", (long) TREE_INT_CST_LOW (value));
 	  vec_safe_push (optimize_args, ggc_strdup (buffer));
 	}
@@ -6894,10 +6896,13 @@ complete_flexible_array_elts (tree init)
 void 
 c_common_mark_addressable_vec (tree t)
 {   
-  if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
-    t = C_MAYBE_CONST_EXPR_EXPR (t);
-  while (handled_component_p (t))
-    t = TREE_OPERAND (t, 0);
+  while (handled_component_p (t) || TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+    {
+      if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+	t = C_MAYBE_CONST_EXPR_EXPR (t);
+      else
+	t = TREE_OPERAND (t, 0);
+    }
   if (!VAR_P (t)
       && TREE_CODE (t) != PARM_DECL
       && TREE_CODE (t) != COMPOUND_LITERAL_EXPR)

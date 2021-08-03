@@ -648,14 +648,23 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (ret != GS_ERROR)
 	{
 	  tree decl = cp_get_callee_fndecl_nofold (*expr_p);
-	  if (decl
-	      && fndecl_built_in_p (decl, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-				    BUILT_IN_FRONTEND))
-	    *expr_p = boolean_false_node;
-	  else if (decl
-		   && fndecl_built_in_p (decl, CP_BUILT_IN_SOURCE_LOCATION,
-					 BUILT_IN_FRONTEND))
-	    *expr_p = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
+	  if (decl && fndecl_built_in_p (decl, BUILT_IN_FRONTEND))
+	    switch (DECL_FE_FUNCTION_CODE (decl))
+	      {
+	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
+		*expr_p = boolean_false_node;
+		break;
+	      case CP_BUILT_IN_SOURCE_LOCATION:
+		*expr_p
+		  = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
+		break;
+	      case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+		*expr_p
+		  = fold_builtin_is_pointer_inverconvertible_with_class
+			(EXPR_LOCATION (*expr_p), call_expr_nargs (*expr_p),
+			 &CALL_EXPR_ARG (*expr_p, 0));
+		break;
+	      }
 	}
       break;
 
@@ -807,7 +816,7 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 struct cp_genericize_data
 {
   hash_set<tree> *p_set;
-  vec<tree> bind_expr_stack;
+  auto_vec<tree> bind_expr_stack;
   struct cp_genericize_omp_taskreg *omp_ctx;
   tree try_block;
   bool no_sanitize_p;
@@ -1582,7 +1591,6 @@ cp_genericize_tree (tree* t_p, bool handle_invisiref_parm_p)
   wtd.handle_invisiref_parm_p = handle_invisiref_parm_p;
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
   delete wtd.p_set;
-  wtd.bind_expr_stack.release ();
   if (sanitize_flags_p (SANITIZE_VPTR))
     cp_ubsan_instrument_member_accesses (t_p);
 }
@@ -2424,6 +2432,28 @@ cp_fold (tree x)
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);
       op1 = cp_fold_rvalue (TREE_OPERAND (x, 1));
 
+      /* decltype(nullptr) has only one value, so optimize away all comparisons
+	 with that type right away, keeping them in the IL causes troubles for
+	 various optimizations.  */
+      if (COMPARISON_CLASS_P (org_x)
+	  && TREE_CODE (TREE_TYPE (op0)) == NULLPTR_TYPE
+	  && TREE_CODE (TREE_TYPE (op1)) == NULLPTR_TYPE)
+	{
+	  switch (code)
+	    {
+	    case EQ_EXPR:
+	      x = constant_boolean_node (true, TREE_TYPE (x));
+	      break;
+	    case NE_EXPR:
+	      x = constant_boolean_node (false, TREE_TYPE (x));
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  return omit_two_operands_loc (loc, TREE_TYPE (x), x,
+					op0, op1);
+	}
+
       if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
 	{
 	  if (op0 == error_mark_node || op1 == error_mark_node)
@@ -2539,11 +2569,26 @@ cp_fold (tree x)
 	    && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
 	  nw = 1;
 
-	/* Defer folding __builtin_is_constant_evaluated.  */
-	if (callee
-	    && fndecl_built_in_p (callee, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
-				  BUILT_IN_FRONTEND))
-	  break;
+	if (callee && fndecl_built_in_p (callee, BUILT_IN_FRONTEND))
+	  {
+	    switch (DECL_FE_FUNCTION_CODE (callee))
+	      {
+		/* Defer folding __builtin_is_constant_evaluated.  */
+	      case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
+		break;
+	      case CP_BUILT_IN_SOURCE_LOCATION:
+		x = fold_builtin_source_location (EXPR_LOCATION (x));
+		break;
+	      case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+                x = fold_builtin_is_pointer_inverconvertible_with_class
+			(EXPR_LOCATION (x), call_expr_nargs (x),
+			 &CALL_EXPR_ARG (x, 0));
+		break;
+	      default:
+		break;
+	      }
+	    break;
+	  }
 
 	if (callee
 	    && fndecl_built_in_p (callee, CP_BUILT_IN_SOURCE_LOCATION,

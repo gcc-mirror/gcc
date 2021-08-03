@@ -3483,17 +3483,37 @@ my_memcpy (void *dest, const void *src, size_t len)
 @end smallexample
 
 @noindent
-causes the compiler to check that, in calls to @code{my_memcpy},
-arguments @var{dest} and @var{src} are non-null.  If the compiler
-determines that a null pointer is passed in an argument slot marked
-as non-null, and the @option{-Wnonnull} option is enabled, a warning
-is issued.  @xref{Warning Options}.  Unless disabled by
-the @option{-fno-delete-null-pointer-checks} option the compiler may
-also perform optimizations based on the knowledge that certain function
-arguments cannot be null. In addition,
-the @option{-fisolate-erroneous-paths-attribute} option can be specified
-to have GCC transform calls with null arguments to non-null functions
-into traps. @xref{Optimize Options}.
+informs the compiler that, in calls to @code{my_memcpy}, arguments
+@var{dest} and @var{src} must be non-null.
+
+The attribute has an effect both on functions calls and function definitions.
+
+For function calls:
+@itemize @bullet
+@item If the compiler determines that a null pointer is
+passed in an argument slot marked as non-null, and the
+@option{-Wnonnull} option is enabled, a warning is issued.
+@xref{Warning Options}.
+@item The @option{-fisolate-erroneous-paths-attribute} option can be
+specified to have GCC transform calls with null arguments to non-null
+functions into traps.  @xref{Optimize Options}.
+@item The compiler may also perform optimizations based on the
+knowledge that certain function arguments cannot be null.  These
+optimizations can be disabled by the
+@option{-fno-delete-null-pointer-checks} option. @xref{Optimize Options}.
+@end itemize
+
+For function definitions:
+@itemize @bullet
+@item If the compiler determines that a function parameter that is
+marked with nonnull is compared with null, and
+@option{-Wnonnull-compare} option is enabled, a warning is issued.
+@xref{Warning Options}.
+@item The compiler may also perform optimizations based on the
+knowledge that @code{nonnul} parameters cannot be null.  This can
+currently not be disabled other than by removing the nonnull
+attribute.
+@end itemize
 
 If no @var{arg-index} is given to the @code{nonnull} attribute,
 all pointer arguments are marked as non-null.  To illustrate, the

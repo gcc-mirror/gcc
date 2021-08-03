@@ -660,6 +660,14 @@ default_predict_doloop_p (class loop *loop ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* By default, just use the input MODE itself.  */
+
+machine_mode
+default_preferred_doloop_mode (machine_mode mode)
+{
+  return mode;
+}
+
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns
    an error message.
 

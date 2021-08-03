@@ -1847,7 +1847,7 @@ vectors of mode @var{mode} using the permutation vector @code{sel}, and\n\
 also to emit such a permutation.  In the former case @var{in0}, @var{in1}\n\
 and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are\n\
 the source vectors and @var{out} is the destination vector; all three are\n\
-registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if\n\
+operands of mode @var{mode}.  @var{in1} is the same as @var{in0} if\n\
 @var{sel} describes a permutation on one vector instead of two.\n\
 \n\
 Return true if the operation is possible, emitting instructions for it\n\
@@ -2711,6 +2711,15 @@ DEFHOOK
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.",
  rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, int cmp_code, tree op0, tree op1, int bit_code),
  NULL)
+
+DEFHOOK
+(gen_memset_scratch_rtx,
+ "This hook should return an rtx for a scratch register in @var{mode} to\n\
+be used when expanding memset calls.  The backend can use a hard scratch\n\
+register to avoid stack realignment when expanding memset.  The default\n\
+is @code{gen_reg_rtx}.",
+ rtx, (machine_mode mode),
+ gen_reg_rtx)
 
 /* Return a new value for loop unroll size.  */
 DEFHOOK
@@ -4212,7 +4221,8 @@ DEFHOOK
  "This target hook may add @dfn{clobbers} to @var{clobbers} and\n\
 @var{clobbered_regs} for any hard regs the port wishes to automatically\n\
 clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected\n\
-to avoid clobbering a register that is already used by the asm.\n\
+to avoid clobbering a register that is already used by the asm.  @var{loc}\n\
+is the source location of the asm.\n\
 \n\
 It may modify the @var{outputs}, @var{inputs}, @var{input_modes}, and\n\
 @var{constraints} as necessary for other pre-processing.  In this case the\n\
@@ -4222,7 +4232,7 @@ to @var{input_modes}.",
  rtx_insn *,
  (vec<rtx>& outputs, vec<rtx>& inputs, vec<machine_mode>& input_modes,
   vec<const char *>& constraints, vec<rtx>& clobbers,
-  HARD_REG_SET& clobbered_regs),
+  HARD_REG_SET& clobbered_regs, location_t loc),
  NULL)
 
 /* This target hook allows the backend to specify a calling convention
@@ -4439,6 +4449,19 @@ By default, the RTL loop optimizer does not use a present doloop pattern for\n\
 loops containing function calls or branch on table instructions.",
  const char *, (const rtx_insn *insn),
  default_invalid_within_doloop)
+
+/* Returns the machine mode which the target prefers for doloop IV.  */
+DEFHOOK
+(preferred_doloop_mode,
+"This hook takes a @var{mode} for a doloop IV, where @code{mode} is the\n\
+original mode for the operation.  If the target prefers an alternate\n\
+@code{mode} for the operation, then this hook should return that mode;\n\
+otherwise the original @code{mode} should be returned.  For example, on a\n\
+64-bit target, @code{DImode} might be preferred over @code{SImode}.  Both the\n\
+original and the returned modes should be @code{MODE_INT}.",
+ machine_mode,
+ (machine_mode mode),
+ default_preferred_doloop_mode)
 
 /* Returns true for a legitimate combined insn.  */
 DEFHOOK

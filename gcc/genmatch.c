@@ -1632,8 +1632,9 @@ public:
 
   void gen_kids (FILE *, int, bool, int);
   void gen_kids_1 (FILE *, int, bool, int,
-		   vec<dt_operand *>, vec<dt_operand *>, vec<dt_operand *>,
-		   vec<dt_operand *>, vec<dt_operand *>, vec<dt_node *>);
+		   const vec<dt_operand *> &, const vec<dt_operand *> &,
+		   const vec<dt_operand *> &, const vec<dt_operand *> &,
+		   const vec<dt_operand *> &, const vec<dt_node *> &);
 
   void analyze (sinfo_map_t &);
 };
@@ -2983,12 +2984,12 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
 
 void
 dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
-		     vec<dt_operand *> gimple_exprs,
-		     vec<dt_operand *> generic_exprs,
-		     vec<dt_operand *> fns,
-		     vec<dt_operand *> generic_fns,
-		     vec<dt_operand *> preds,
-		     vec<dt_node *> others)
+		     const vec<dt_operand *> &gimple_exprs,
+		     const vec<dt_operand *> &generic_exprs,
+		     const vec<dt_operand *> &fns,
+		     const vec<dt_operand *> &generic_fns,
+		     const vec<dt_operand *> &preds,
+		     const vec<dt_node *> &others)
 {
   char buf[128];
   char *kid_opname = buf;
@@ -5031,7 +5032,7 @@ parser::parse_pattern ()
    recursively.  */
 
 static void
-walk_captures (operand *op, vec<vec<capture *> > cpts)
+walk_captures (operand *op, vec<vec<capture *> > &cpts)
 {
   if (! op)
     return;

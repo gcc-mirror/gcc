@@ -306,19 +306,19 @@ typedef struct chain
   struct chain *ch1, *ch2;
 
   /* The references in the chain.  */
-  vec<dref> refs;
+  auto_vec<dref> refs;
 
   /* The maximum distance of the reference in the chain from the root.  */
   unsigned length;
 
   /* The variables used to copy the value throughout iterations.  */
-  vec<tree> vars;
+  auto_vec<tree> vars;
 
   /* Initializers for the variables.  */
-  vec<tree> inits;
+  auto_vec<tree> inits;
 
   /* Finalizers for the eliminated stores.  */
-  vec<tree> finis;
+  auto_vec<tree> finis;
 
   /* gimple stmts intializing the initial variables of the chain.  */
   gimple_seq init_seq;
@@ -362,7 +362,7 @@ enum ref_step_type
 struct component
 {
   /* The references in the component.  */
-  vec<dref> refs;
+  auto_vec<dref> refs;
 
   /* What we know about the step of the references in the component.  */
   enum ref_step_type comp_step;
@@ -381,17 +381,13 @@ struct component
 class pcom_worker
 {
 public:
-  pcom_worker (loop_p l) : loop (l), chains (vNULL), cache (NULL)
-  {
-    dependences.create (10);
-    datarefs.create (10);
-  }
+  pcom_worker (loop_p l) : m_loop (l), m_cache (NULL) {}
 
   ~pcom_worker ()
   {
-    free_data_refs (datarefs);
-    free_dependence_relations (dependences);
-    free_affine_expand_cache (&cache);
+    free_data_refs (m_datarefs);
+    free_dependence_relations (m_dependences);
+    free_affine_expand_cache (&m_cache);
     release_chains ();
   }
 
@@ -407,23 +403,24 @@ public:
 
 private:
   /* The pointer to the given loop.  */
-  loop_p loop;
+  loop_p m_loop;
 
   /* All data references.  */
-  vec<data_reference_p> datarefs;
+  auto_vec<data_reference_p, 10> m_datarefs;
 
   /* All data dependences.  */
-  vec<ddr_p> dependences;
+  auto_vec<ddr_p, 10> m_dependences;
 
   /* All chains.  */
-  vec<chain_p> chains;
+  auto_vec<chain_p> m_chains;
 
   /* Bitmap of ssa names defined by looparound phi nodes covered by chains.  */
-  auto_bitmap looparound_phis;
+  auto_bitmap m_looparound_phis;
 
   typedef hash_map<tree, name_expansion *> tree_expand_map_t;
   /* Cache used by tree_to_aff_combination_expand.  */
-  tree_expand_map_t *cache;
+  tree_expand_map_t *m_cache;
+
   /* Splits dependence graph to components.  */
   struct component *split_data_refs_to_components ();
 
@@ -695,13 +692,9 @@ pcom_worker::release_chain (chain_p chain)
   FOR_EACH_VEC_ELT (chain->refs, i, ref)
     free (ref);
 
-  chain->refs.release ();
-  chain->vars.release ();
-  chain->inits.release ();
   if (chain->init_seq)
     gimple_seq_discard (chain->init_seq);
 
-  chain->finis.release ();
   if (chain->fini_seq)
     gimple_seq_discard (chain->fini_seq);
 
@@ -716,18 +709,8 @@ pcom_worker::release_chains ()
   unsigned i;
   chain_p chain;
 
-  FOR_EACH_VEC_ELT (chains, i, chain)
+  FOR_EACH_VEC_ELT (m_chains, i, chain)
     release_chain (chain);
-  chains.release ();
-}
-
-/* Frees a component COMP.  */
-
-static void
-release_component (struct component *comp)
-{
-  comp->refs.release ();
-  free (comp);
 }
 
 /* Frees list of components COMPS.  */
@@ -740,7 +723,7 @@ release_components (struct component *comps)
   for (act = comps; act; act = next)
     {
       next = act->next;
-      release_component (act);
+      XDELETE (act);
     }
 }
 
@@ -748,7 +731,7 @@ release_components (struct component *comps)
    shortening.  */
 
 static unsigned
-component_of (unsigned fathers[], unsigned a)
+component_of (vec<unsigned> &fathers, unsigned a)
 {
   unsigned root, n;
 
@@ -768,7 +751,8 @@ component_of (unsigned fathers[], unsigned a)
    components, A and B are components to merge.  */
 
 static void
-merge_comps (unsigned fathers[], unsigned sizes[], unsigned a, unsigned b)
+merge_comps (vec<unsigned> &fathers, vec<unsigned> &sizes,
+	     unsigned a, unsigned b)
 {
   unsigned ca = component_of (fathers, a);
   unsigned cb = component_of (fathers, b);
@@ -822,7 +806,7 @@ pcom_worker::aff_combination_dr_offset (struct data_reference *dr,
   tree type = TREE_TYPE (DR_OFFSET (dr));
   aff_tree delta;
 
-  tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset, &cache);
+  tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset, &m_cache);
   aff_combination_const (&delta, type, wi::to_poly_widest (DR_INIT (dr)));
   aff_combination_add (offset, &delta);
 }
@@ -869,7 +853,7 @@ pcom_worker::determine_offset (struct data_reference *a,
   aff_combination_add (&diff, &baseb);
 
   tree_to_aff_combination_expand (DR_STEP (a), TREE_TYPE (DR_STEP (a)),
-				  &step, &cache);
+				  &step, &m_cache);
   return aff_combination_constant_multiple_p (&diff, &step, off);
 }
 
@@ -890,50 +874,28 @@ last_always_executed_block (class loop *loop)
   return last;
 }
 
-/* RAII class for comp_father and comp_size usage.  */
-
-class comp_ptrs
-{
-public:
-  unsigned *comp_father;
-  unsigned *comp_size;
-
-  comp_ptrs (unsigned n)
-  {
-    comp_father = XNEWVEC (unsigned, n + 1);
-    comp_size = XNEWVEC (unsigned, n + 1);
-  }
-
-  ~comp_ptrs ()
-  {
-    free (comp_father);
-    free (comp_size);
-  }
-
-  comp_ptrs (const comp_ptrs &) = delete;
-  comp_ptrs &operator= (const comp_ptrs &) = delete;
-};
-
 /* Splits dependence graph on DATAREFS described by DEPENDENCES to
    components.  */
 
 struct component *
 pcom_worker::split_data_refs_to_components ()
 {
-  unsigned i, n = datarefs.length ();
+  unsigned i, n = m_datarefs.length ();
   unsigned ca, ia, ib, bad;
-  comp_ptrs ptrs (n);
-  struct component **comps;
   struct data_reference *dr, *dra, *drb;
   struct data_dependence_relation *ddr;
   struct component *comp_list = NULL, *comp;
   dref dataref;
   /* Don't do store elimination if loop has multiple exit edges.  */
-  bool eliminate_store_p = single_exit (loop) != NULL;
-  basic_block last_always_executed = last_always_executed_block (loop);
+  bool eliminate_store_p = single_exit (m_loop) != NULL;
+  basic_block last_always_executed = last_always_executed_block (m_loop);
   auto_bitmap no_store_store_comps;
+  auto_vec<unsigned> comp_father (n + 1);
+  auto_vec<unsigned> comp_size (n + 1);
+  comp_father.quick_grow (n + 1);
+  comp_size.quick_grow (n + 1);
 
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
+  FOR_EACH_VEC_ELT (m_datarefs, i, dr)
     {
       if (!DR_REF (dr))
 	  /* A fake reference for call or asm_expr that may clobber memory;
@@ -943,26 +905,26 @@ pcom_worker::split_data_refs_to_components ()
       if (is_gimple_call (DR_STMT (dr)))
 	return NULL;
       dr->aux = (void *) (size_t) i;
-      ptrs.comp_father[i] = i;
-      ptrs.comp_size[i] = 1;
+      comp_father[i] = i;
+      comp_size[i] = 1;
     }
 
   /* A component reserved for the "bad" data references.  */
-  ptrs.comp_father[n] = n;
-  ptrs.comp_size[n] = 1;
+  comp_father[n] = n;
+  comp_size[n] = 1;
 
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
+  FOR_EACH_VEC_ELT (m_datarefs, i, dr)
     {
       enum ref_step_type dummy;
 
       if (!suitable_reference_p (dr, &dummy))
 	{
 	  ia = (unsigned) (size_t) dr->aux;
-	  merge_comps (ptrs.comp_father, ptrs.comp_size, n, ia);
+	  merge_comps (comp_father, comp_size, n, ia);
 	}
     }
 
-  FOR_EACH_VEC_ELT (dependences, i, ddr)
+  FOR_EACH_VEC_ELT (m_dependences, i, ddr)
     {
       poly_widest_int dummy_off;
 
@@ -979,12 +941,12 @@ pcom_worker::split_data_refs_to_components ()
 	      || DDR_NUM_DIST_VECTS (ddr) == 0))
 	eliminate_store_p = false;
 
-      ia = component_of (ptrs.comp_father, (unsigned) (size_t) dra->aux);
-      ib = component_of (ptrs.comp_father, (unsigned) (size_t) drb->aux);
+      ia = component_of (comp_father, (unsigned) (size_t) dra->aux);
+      ib = component_of (comp_father, (unsigned) (size_t) drb->aux);
       if (ia == ib)
 	continue;
 
-      bad = component_of (ptrs.comp_father, n);
+      bad = component_of (comp_father, n);
 
       /* If both A and B are reads, we may ignore unsuitable dependences.  */
       if (DR_IS_READ (dra) && DR_IS_READ (drb))
@@ -1008,7 +970,7 @@ pcom_worker::split_data_refs_to_components ()
 	  else if (!determine_offset (dra, drb, &dummy_off))
 	    {
 	      bitmap_set_bit (no_store_store_comps, ib);
-	      merge_comps (ptrs.comp_father, ptrs.comp_size, bad, ia);
+	      merge_comps (comp_father, comp_size, bad, ia);
 	      continue;
 	    }
 	}
@@ -1022,7 +984,7 @@ pcom_worker::split_data_refs_to_components ()
 	  else if (!determine_offset (dra, drb, &dummy_off))
 	    {
 	      bitmap_set_bit (no_store_store_comps, ia);
-	      merge_comps (ptrs.comp_father, ptrs.comp_size, bad, ib);
+	      merge_comps (comp_father, comp_size, bad, ib);
 	      continue;
 	    }
 	}
@@ -1030,17 +992,17 @@ pcom_worker::split_data_refs_to_components ()
 	       && ia != bad && ib != bad
 	       && !determine_offset (dra, drb, &dummy_off))
 	{
-	  merge_comps (ptrs.comp_father, ptrs.comp_size, bad, ia);
-	  merge_comps (ptrs.comp_father, ptrs.comp_size, bad, ib);
+	  merge_comps (comp_father, comp_size, bad, ia);
+	  merge_comps (comp_father, comp_size, bad, ib);
 	  continue;
 	}
 
-      merge_comps (ptrs.comp_father, ptrs.comp_size, ia, ib);
+      merge_comps (comp_father, comp_size, ia, ib);
     }
 
   if (eliminate_store_p)
     {
-      tree niters = number_of_latch_executions (loop);
+      tree niters = number_of_latch_executions (m_loop);
 
       /* Don't do store elimination if niters info is unknown because stores
 	 in the last iteration can't be eliminated and we need to recover it
@@ -1048,12 +1010,13 @@ pcom_worker::split_data_refs_to_components ()
       eliminate_store_p = (niters != NULL_TREE && niters != chrec_dont_know);
     }
 
-  comps = XCNEWVEC (struct component *, n);
-  bad = component_of (ptrs.comp_father, n);
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
+  auto_vec<struct component *> comps;
+  comps.safe_grow_cleared (n, true);
+  bad = component_of (comp_father, n);
+  FOR_EACH_VEC_ELT (m_datarefs, i, dr)
     {
       ia = (unsigned) (size_t) dr->aux;
-      ca = component_of (ptrs.comp_father, ia);
+      ca = component_of (comp_father, ia);
       if (ca == bad)
 	continue;
 
@@ -1061,7 +1024,7 @@ pcom_worker::split_data_refs_to_components ()
       if (!comp)
 	{
 	  comp = XCNEW (struct component);
-	  comp->refs.create (ptrs.comp_size[ca]);
+	  comp->refs.create (comp_size[ca]);
 	  comp->eliminate_store_p = eliminate_store_p;
 	  comps[ca] = comp;
 	}
@@ -1084,7 +1047,7 @@ pcom_worker::split_data_refs_to_components ()
       bitmap_iterator bi;
       EXECUTE_IF_SET_IN_BITMAP (no_store_store_comps, 0, ia, bi)
 	{
-	  ca = component_of (ptrs.comp_father, ia);
+	  ca = component_of (comp_father, ia);
 	  if (ca != bad)
 	    comps[ca]->eliminate_store_p = false;
 	}
@@ -1099,7 +1062,6 @@ pcom_worker::split_data_refs_to_components ()
 	  comp_list = comp;
 	}
     }
-  free (comps);
   return comp_list;
 }
 
@@ -1111,14 +1073,14 @@ pcom_worker::suitable_component_p (struct component *comp)
 {
   unsigned i;
   dref a, first;
-  basic_block ba, bp = loop->header;
+  basic_block ba, bp = m_loop->header;
   bool ok, has_write = false;
 
   FOR_EACH_VEC_ELT (comp->refs, i, a)
     {
       ba = gimple_bb (a->stmt);
 
-      if (!just_once_each_iteration_p (loop, ba))
+      if (!just_once_each_iteration_p (m_loop, ba))
 	return false;
 
       gcc_assert (dominated_by_p (CDI_DOMINATORS, ba, bp));
@@ -1180,7 +1142,7 @@ pcom_worker::filter_suitable_components (struct component *comps)
 	  *comp = act->next;
 	  FOR_EACH_VEC_ELT (act->refs, i, ref)
 	    free (ref);
-	  release_component (act);
+	  XDELETE (act);
 	}
     }
 
@@ -1392,7 +1354,7 @@ pcom_worker::valid_initializer_p (struct data_reference *ref, unsigned distance,
   aff_combination_add (&diff, &base);
 
   tree_to_aff_combination_expand (DR_STEP (root), TREE_TYPE (DR_STEP (root)),
-				  &step, &cache);
+				  &step, &m_cache);
   if (!aff_combination_constant_multiple_p (&diff, &step, &off))
     return false;
 
@@ -1413,7 +1375,7 @@ pcom_worker::find_looparound_phi (dref ref, dref root)
   tree name, init, init_ref;
   gphi *phi = NULL;
   gimple *init_stmt;
-  edge latch = loop_latch_edge (loop);
+  edge latch = loop_latch_edge (m_loop);
   struct data_reference init_dr;
   gphi_iterator psi;
 
@@ -1429,7 +1391,7 @@ pcom_worker::find_looparound_phi (dref ref, dref root)
   if (!name)
     return NULL;
 
-  for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
+  for (psi = gsi_start_phis (m_loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
       phi = psi.phi ();
       if (PHI_ARG_DEF_FROM_EDGE (phi, latch) == name)
@@ -1439,7 +1401,7 @@ pcom_worker::find_looparound_phi (dref ref, dref root)
   if (gsi_end_p (psi))
     return NULL;
 
-  init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
+  init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (m_loop));
   if (TREE_CODE (init) != SSA_NAME)
     return NULL;
   init_stmt = SSA_NAME_DEF_STMT (init);
@@ -1457,7 +1419,7 @@ pcom_worker::find_looparound_phi (dref ref, dref root)
   memset (&init_dr, 0, sizeof (struct data_reference));
   DR_REF (&init_dr) = init_ref;
   DR_STMT (&init_dr) = phi;
-  if (!dr_analyze_innermost (&DR_INNERMOST (&init_dr), init_ref, loop,
+  if (!dr_analyze_innermost (&DR_INNERMOST (&init_dr), init_ref, m_loop,
 			     init_stmt))
     return NULL;
 
@@ -1512,7 +1474,7 @@ pcom_worker::add_looparound_copies (chain_p chain)
       if (!phi)
 	continue;
 
-      bitmap_set_bit (looparound_phis, SSA_NAME_VERSION (PHI_RESULT (phi)));
+      bitmap_set_bit (m_looparound_phis, SSA_NAME_VERSION (PHI_RESULT (phi)));
       insert_looparound_copy (chain, ref, phi);
     }
 }
@@ -1533,7 +1495,7 @@ pcom_worker::determine_roots_comp (struct component *comp)
   if (comp->comp_step == RS_INVARIANT)
     {
       chain = make_invariant_chain (comp);
-      chains.safe_push (chain);
+      m_chains.safe_push (chain);
       return;
     }
 
@@ -1578,7 +1540,7 @@ pcom_worker::determine_roots_comp (struct component *comp)
 	  if (nontrivial_chain_p (chain))
 	    {
 	      add_looparound_copies (chain);
-	      chains.safe_push (chain);
+	      m_chains.safe_push (chain);
 	    }
 	  else
 	    release_chain (chain);
@@ -1599,7 +1561,7 @@ pcom_worker::determine_roots_comp (struct component *comp)
   if (nontrivial_chain_p (chain))
     {
       add_looparound_copies (chain);
-      chains.safe_push (chain);
+      m_chains.safe_push (chain);
     }
   else
     release_chain (chain);
@@ -2196,7 +2158,7 @@ pcom_worker::single_nonlooparound_use (tree name)
 	{
 	  /* Ignore uses in looparound phi nodes.  Uses in other phi nodes
 	     could not be processed anyway, so just fail for them.  */
-	  if (bitmap_bit_p (looparound_phis,
+	  if (bitmap_bit_p (m_looparound_phis,
 			    SSA_NAME_VERSION (PHI_RESULT (stmt))))
 	    continue;
 
@@ -2305,14 +2267,14 @@ pcom_worker::execute_pred_commoning_chain (chain_p chain,
 	      /* If dead stores in this chain store loop variant values,
 		 we need to set up the variables by loading from memory
 		 before loop and propagating it with PHI nodes.  */
-	      initialize_root_vars_store_elim_2 (loop, chain, tmp_vars);
+	      initialize_root_vars_store_elim_2 (m_loop, chain, tmp_vars);
 	    }
 
 	  /* For inter-iteration store elimination chain, stores at each
 	     distance in loop's last (chain->length - 1) iterations can't
 	     be eliminated, because there is no following killing store.
 	     We need to generate these stores after loop.  */
-	  finalize_eliminated_stores (loop, chain);
+	  finalize_eliminated_stores (m_loop, chain);
 	}
 
       bool last_store_p = true;
@@ -2342,7 +2304,7 @@ pcom_worker::execute_pred_commoning_chain (chain_p chain,
   else
     {
       /* For non-combined chains, set up the variables that hold its value.  */
-      initialize_root_vars (loop, chain, tmp_vars);
+      initialize_root_vars (m_loop, chain, tmp_vars);
       a = get_chain_root (chain);
       in_lhs = (chain->type == CT_STORE_LOAD
 		|| chain->type == CT_COMBINATION);
@@ -2411,15 +2373,15 @@ pcom_worker::execute_pred_commoning (bitmap tmp_vars)
   chain_p chain;
   unsigned i;
 
-  FOR_EACH_VEC_ELT (chains, i, chain)
+  FOR_EACH_VEC_ELT (m_chains, i, chain)
     {
       if (chain->type == CT_INVARIANT)
-	execute_load_motion (loop, chain, tmp_vars);
+	execute_load_motion (m_loop, chain, tmp_vars);
       else
 	execute_pred_commoning_chain (chain, tmp_vars);
     }
 
-  FOR_EACH_VEC_ELT (chains, i, chain)
+  FOR_EACH_VEC_ELT (m_chains, i, chain)
     {
       if (chain->type == CT_INVARIANT)
 	;
@@ -2979,7 +2941,7 @@ pcom_worker::try_combine_chains ()
   auto_vec<chain_p> worklist;
   bool combined_p = false;
 
-  FOR_EACH_VEC_ELT (chains, i, ch1)
+  FOR_EACH_VEC_ELT (m_chains, i, ch1)
     if (chain_can_be_combined_p (ch1))
       worklist.safe_push (ch1);
 
@@ -2989,7 +2951,7 @@ pcom_worker::try_combine_chains ()
       if (!chain_can_be_combined_p (ch1))
 	continue;
 
-      FOR_EACH_VEC_ELT (chains, j, ch2)
+      FOR_EACH_VEC_ELT (m_chains, j, ch2)
 	{
 	  if (!chain_can_be_combined_p (ch2))
 	    continue;
@@ -2998,7 +2960,7 @@ pcom_worker::try_combine_chains ()
 	  if (cch)
 	    {
 	      worklist.safe_push (cch);
-	      chains.safe_push (cch);
+	      m_chains.safe_push (cch);
 	      combined_p = true;
 	      break;
 	    }
@@ -3008,8 +2970,8 @@ pcom_worker::try_combine_chains ()
     return;
 
   /* Setup UID for all statements in dominance order.  */
-  basic_block *bbs = get_loop_body_in_dom_order (loop);
-  renumber_gimple_stmt_uids_in_blocks (bbs, loop->num_nodes);
+  basic_block *bbs = get_loop_body_in_dom_order (m_loop);
+  renumber_gimple_stmt_uids_in_blocks (bbs, m_loop->num_nodes);
   free (bbs);
 
   /* Re-association in combined chains may generate statements different to
@@ -3022,7 +2984,7 @@ pcom_worker::try_combine_chains ()
 
      We first update position information for all combined chains.  */
   dref ref;
-  for (i = 0; chains.iterate (i, &ch1); ++i)
+  for (i = 0; m_chains.iterate (i, &ch1); ++i)
     {
       if (ch1->type != CT_COMBINATION || ch1->combined)
 	continue;
@@ -3033,7 +2995,7 @@ pcom_worker::try_combine_chains ()
       update_pos_for_combined_chains (ch1);
     }
   /* Then sort references according to newly updated position information.  */
-  for (i = 0; chains.iterate (i, &ch1); ++i)
+  for (i = 0; m_chains.iterate (i, &ch1); ++i)
     {
       if (ch1->type != CT_COMBINATION && !ch1->combined)
 	continue;
@@ -3155,10 +3117,10 @@ pcom_worker::prepare_initializers_chain (chain_p chain)
   struct data_reference *dr = get_chain_root (chain)->ref;
   tree init;
   dref laref;
-  edge entry = loop_preheader_edge (loop);
+  edge entry = loop_preheader_edge (m_loop);
 
   if (chain->type == CT_STORE_STORE)
-    return prepare_initializers_chain_store_elim (loop, chain);
+    return prepare_initializers_chain_store_elim (m_loop, chain);
 
   /* Find the initializers for the variables, and check that they cannot
      trap.  */
@@ -3210,15 +3172,15 @@ pcom_worker::prepare_initializers ()
   chain_p chain;
   unsigned i;
 
-  for (i = 0; i < chains.length (); )
+  for (i = 0; i < m_chains.length (); )
     {
-      chain = chains[i];
+      chain = m_chains[i];
       if (prepare_initializers_chain (chain))
 	i++;
       else
 	{
 	  release_chain (chain);
-	  chains.unordered_remove (i);
+	  m_chains.unordered_remove (i);
 	}
     }
 }
@@ -3231,7 +3193,7 @@ pcom_worker::prepare_finalizers_chain (chain_p chain)
 {
   unsigned i, n = chain->length;
   struct data_reference *dr = get_chain_root (chain)->ref;
-  tree fini, niters = number_of_latch_executions (loop);
+  tree fini, niters = number_of_latch_executions (m_loop);
 
   /* For now we can't eliminate stores if some of them are conditional
      executed.  */
@@ -3281,9 +3243,9 @@ pcom_worker::prepare_finalizers ()
   unsigned i;
   bool loop_closed_ssa = false;
 
-  for (i = 0; i < chains.length ();)
+  for (i = 0; i < m_chains.length ();)
     {
-      chain = chains[i];
+      chain = m_chains[i];
 
       /* Finalizer is only necessary for inter-iteration store elimination
 	 chains.  */
@@ -3305,7 +3267,7 @@ pcom_worker::prepare_finalizers ()
       else
 	{
 	  release_chain (chain);
-	  chains.unordered_remove (i);
+	  m_chains.unordered_remove (i);
 	}
     }
   return loop_closed_ssa;
@@ -3341,10 +3303,10 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
   bool unroll = false, loop_closed_ssa = false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Processing loop %d\n", loop->num);
+    fprintf (dump_file, "Processing loop %d\n", m_loop->num);
 
   /* Nothing for predicitive commoning if loop only iterates 1 time.  */
-  if (get_max_loop_iterations_int (loop) == 0)
+  if (get_max_loop_iterations_int (m_loop) == 0)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Loop iterates only 1 time, nothing to do.\n");
@@ -3355,8 +3317,8 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
   /* Find the data references and split them into components according to their
      dependence relations.  */
   auto_vec<loop_p, 3> loop_nest;
-  if (!compute_data_dependences_for_loop (loop, true, &loop_nest, &datarefs,
-					  &dependences))
+  if (!compute_data_dependences_for_loop (m_loop, true, &loop_nest, &m_datarefs,
+					  &m_dependences))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Cannot analyze data dependencies\n");
@@ -3364,7 +3326,7 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_data_dependence_relations (dump_file, dependences);
+    dump_data_dependence_relations (dump_file, m_dependences);
 
   components = split_data_refs_to_components ();
 
@@ -3385,7 +3347,7 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
   determine_roots (components);
   release_components (components);
 
-  if (!chains.exists ())
+  if (!m_chains.exists ())
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -3399,21 +3361,21 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
   /* Try to combine the chains that are always worked with together.  */
   try_combine_chains ();
 
-  insert_init_seqs (loop, chains);
+  insert_init_seqs (m_loop, m_chains);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Before commoning:\n\n");
-      dump_chains (dump_file, chains);
+      dump_chains (dump_file, m_chains);
     }
 
   if (allow_unroll_p)
     /* Determine the unroll factor, and if the loop should be unrolled, ensure
        that its number of iterations is divisible by the factor.  */
-    unroll_factor = determine_unroll_factor (chains);
+    unroll_factor = determine_unroll_factor (m_chains);
 
   if (unroll_factor > 1)
-    unroll = can_unroll_loop_p (loop, unroll_factor, &desc);
+    unroll = can_unroll_loop_p (m_loop, unroll_factor, &desc);
 
   /* Execute the predictive commoning transformations, and possibly unroll the
      loop.  */
@@ -3425,7 +3387,7 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
 	fprintf (dump_file, "Unrolling %u times.\n", unroll_factor);
 
       dta.tmp_vars = tmp_vars;
-      dta.chains = chains;
+      dta.chains = m_chains;
       dta.worker = this;
 
       /* Cfg manipulations performed in tree_transform_and_unroll_loop before
@@ -3434,12 +3396,12 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
 	 statements.  To fix this, we store the ssa names defined by the
 	 phi nodes here instead of the phi nodes themselves, and restore
 	 the phi nodes in execute_pred_commoning_cbck.  A bit hacky.  */
-      replace_phis_by_defined_names (chains);
+      replace_phis_by_defined_names (m_chains);
 
-      edge exit = single_dom_exit (loop);
-      tree_transform_and_unroll_loop (loop, unroll_factor, exit, &desc,
+      edge exit = single_dom_exit (m_loop);
+      tree_transform_and_unroll_loop (m_loop, unroll_factor, exit, &desc,
 				      execute_pred_commoning_cbck, &dta);
-      eliminate_temp_copies (loop, tmp_vars);
+      eliminate_temp_copies (m_loop, tmp_vars);
     }
   else
     {
@@ -3457,11 +3419,10 @@ pcom_worker::tree_predictive_commoning_loop (bool allow_unroll_p)
 unsigned
 tree_predictive_commoning (bool allow_unroll_p)
 {
-  class loop *loop;
   unsigned ret = 0, changed = 0;
 
   initialize_original_copy_tables ();
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     if (optimize_loop_for_speed_p (loop))
       {
 	pcom_worker w(loop);
@@ -3554,5 +3515,3 @@ make_pass_predcom (gcc::context *ctxt)
 {
   return new pass_predcom (ctxt);
 }
-
-

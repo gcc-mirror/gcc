@@ -90,6 +90,11 @@ package Uintp is
    Uint_Minus_127 : constant Uint;
    Uint_Minus_128 : constant Uint;
 
+   subtype Valid_Uint is Uint with Predicate => Valid_Uint /= No_Uint;
+   subtype Unat is Valid_Uint with Predicate => Unat >= Uint_0;
+   subtype Upos is Valid_Uint with Predicate => Upos >= Uint_0;
+   subtype Nonzero_Uint is Valid_Uint with Predicate => Nonzero_Uint /= Uint_0;
+
    type UI_Vector is array (Pos range <>) of Int;
    --  Vector containing the integer values of a Uint value
 

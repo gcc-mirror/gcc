@@ -3275,7 +3275,8 @@ warn_parm_ptrarray_mismatch (location_t origloc, tree curparms, tree newparms)
 	  /* Move on if the bounds look the same.  */
 	  if (!pcurbndpos && !pnewbndpos
 	      && curbnd && newbnd
-	      && operand_equal_p (curbnd, newbnd, OEP_LEXICOGRAPHIC))
+	      && operand_equal_p (curbnd, newbnd,
+				  OEP_DECL_NAME | OEP_LEXICOGRAPHIC))
 	    continue;
 
 	  if ((curbnd && TREE_CODE (curbnd) != INTEGER_CST)
@@ -3646,7 +3647,8 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	      /* The VLA bounds don't refer to other function parameters.
 		 Compare them lexicographically to detect gross mismatches
 		 such as between T[foo()] and T[bar()].  */
-	      if (operand_equal_p (newbnd, curbnd, OEP_LEXICOGRAPHIC))
+	      if (operand_equal_p (newbnd, curbnd,
+				   OEP_DECL_NAME | OEP_LEXICOGRAPHIC))
 		continue;
 
 	      if (warning_at (newloc, OPT_Wvla_parameter,

@@ -1484,13 +1484,13 @@ register_edge_assert_for_2 (tree name, edge e,
 	}
 
       /* Extract NAME2 from the (optional) sign-changing cast.  */
-      if (gimple_assign_cast_p (def_stmt))
+      if (gassign *ass = dyn_cast <gassign *> (def_stmt))
 	{
-	  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))
-	      && ! TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
-	      && (TYPE_PRECISION (gimple_expr_type (def_stmt))
-		  == TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))))
-	    name3 = gimple_assign_rhs1 (def_stmt);
+	  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (ass))
+	      && ! TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (ass)))
+	      && (TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (ass)))
+		  == TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (ass)))))
+	    name3 = gimple_assign_rhs1 (ass);
 	}
 
       /* If name3 is used later, create an ASSERT_EXPR for it.  */
@@ -3337,8 +3337,7 @@ vrp_asserts::find_assert_locations (void)
   /* Pre-seed loop latch liveness from loop header PHI nodes.  Due to
      the order we compute liveness and insert asserts we otherwise
      fail to insert asserts into the loop latch.  */
-  loop_p loop;
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       i = loop->latch->index;
       unsigned int j = single_succ_edge (loop->latch)->dest_idx;
@@ -4119,7 +4118,7 @@ vrp_folder::fold_predicate_in (gimple_stmt_iterator *si)
   if (val)
     {
       if (assignment_p)
-        val = fold_convert (gimple_expr_type (stmt), val);
+	val = fold_convert (TREE_TYPE (gimple_assign_lhs (stmt)), val);
 
       if (dump_file)
 	{
@@ -4165,16 +4164,18 @@ class vrp_jump_threader_simplifier : public jump_threader_simplifier
 {
 public:
   vrp_jump_threader_simplifier (vr_values *v, avail_exprs_stack *avails)
-    : jump_threader_simplifier (v, avails) {}
+    : jump_threader_simplifier (v), m_avail_exprs_stack (avails) { }
 
 private:
-  tree simplify (gimple *, gimple *, basic_block) OVERRIDE;
+  tree simplify (gimple *, gimple *, basic_block, jt_state *) OVERRIDE;
+  avail_exprs_stack *m_avail_exprs_stack;
 };
 
 tree
 vrp_jump_threader_simplifier::simplify (gimple *stmt,
 					gimple *within_stmt,
-					basic_block bb)
+					basic_block bb,
+					jt_state *state)
 {
   /* First see if the conditional is in the hash table.  */
   tree cached_lhs = m_avail_exprs_stack->lookup_avail_expr (stmt, false, true);
@@ -4206,7 +4207,7 @@ vrp_jump_threader_simplifier::simplify (gimple *stmt,
       return find_case_label_range (switch_stmt, vr);
     }
 
-  return jump_threader_simplifier::simplify (stmt, within_stmt, bb);
+  return jump_threader_simplifier::simplify (stmt, within_stmt, bb, state);
 }
 
 /* Blocks which have more than one predecessor and more than
@@ -4257,6 +4258,7 @@ private:
   hash_table<expr_elt_hasher> *m_avail_exprs;
   vrp_jump_threader_simplifier *m_simplifier;
   jump_threader *m_threader;
+  jt_state *m_state;
 };
 
 vrp_jump_threader::vrp_jump_threader (struct function *fun, vr_values *v)
@@ -4282,11 +4284,11 @@ vrp_jump_threader::vrp_jump_threader (struct function *fun, vr_values *v)
   m_vr_values = v;
   m_avail_exprs = new hash_table<expr_elt_hasher> (1024);
   m_avail_exprs_stack = new avail_exprs_stack (m_avail_exprs);
+  m_state = new jt_state (m_const_and_copies, m_avail_exprs_stack, NULL);
 
   m_simplifier = new vrp_jump_threader_simplifier (m_vr_values,
 						   m_avail_exprs_stack);
-  m_threader = new jump_threader (m_const_and_copies, m_avail_exprs_stack,
-				  m_simplifier);
+  m_threader = new jump_threader (m_simplifier, m_state);
 }
 
 vrp_jump_threader::~vrp_jump_threader ()
@@ -4299,6 +4301,7 @@ vrp_jump_threader::~vrp_jump_threader ()
   delete m_avail_exprs_stack;
   delete m_simplifier;
   delete m_threader;
+  delete m_state;
 }
 
 /* Called before processing dominator children of BB.  We want to look
@@ -4359,7 +4362,7 @@ vrp_jump_threader::after_dom_children (basic_block bb)
    subsequent passes.  */
 
 static void
-vrp_simplify_cond_using_ranges (vr_values *query, gcond *stmt)
+vrp_simplify_cond_using_ranges (range_query *query, gcond *stmt)
 {
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
@@ -4420,6 +4423,27 @@ vrp_simplify_cond_using_ranges (vr_values *query, gcond *stmt)
 		}
 	    }
 	}
+    }
+}
+
+/* A comparison of an SSA_NAME against a constant where the SSA_NAME
+   was set by a type conversion can often be rewritten to use the RHS
+   of the type conversion.  Do this optimization for all conditionals
+   in FUN.
+
+   However, doing so inhibits jump threading through the comparison.
+   So that transformation is not performed until after jump threading
+   is complete.  */
+
+static void
+simplify_casted_conds (function *fun, range_query *query)
+{
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      gimple *last = last_stmt (bb);
+      if (last && gimple_code (last) == GIMPLE_COND)
+	vrp_simplify_cond_using_ranges (query, as_a <gcond *> (last));
     }
 }
 
@@ -4519,21 +4543,7 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
   vrp_jump_threader threader (fun, &vrp_vr_values);
   threader.thread_jumps ();
 
-  /* A comparison of an SSA_NAME against a constant where the SSA_NAME
-     was set by a type conversion can often be rewritten to use the
-     RHS of the type conversion.
-
-     However, doing so inhibits jump threading through the comparison.
-     So that transformation is not performed until after jump threading
-     is complete.  */
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      gimple *last = last_stmt (bb);
-      if (last && gimple_code (last) == GIMPLE_COND)
-	vrp_simplify_cond_using_ranges (&vrp_vr_values,
-					as_a <gcond *> (last));
-    }
+  simplify_casted_conds (fun, &vrp_vr_values);
 
   free_numbers_of_iterations_estimates (fun);
 

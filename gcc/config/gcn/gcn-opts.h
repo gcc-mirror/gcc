@@ -34,4 +34,11 @@ extern int gcn_isa;
 #define TARGET_GCN5 (gcn_isa == 5)
 #define TARGET_GCN5_PLUS (gcn_isa >= 5)
 
+enum sram_ecc_type
+{
+  SRAM_ECC_OFF,
+  SRAM_ECC_ON,
+  SRAM_ECC_ANY
+};
+
 #endif

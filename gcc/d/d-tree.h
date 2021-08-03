@@ -502,6 +502,7 @@ extern const attribute_spec d_langhook_common_attribute_table[];
 extern Type *build_frontend_type (tree);
 
 extern tree d_builtin_function (tree);
+extern tree d_builtin_function_ext_scope (tree);
 extern void d_init_builtins (void);
 extern void d_register_builtin_type (tree, const char *);
 extern void d_build_builtins_module (Module *);
@@ -597,6 +598,7 @@ extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree d_truthvalue_conversion (tree);
 extern tree d_convert (tree, tree);
 extern tree convert_expr (tree, Type *, Type *);
+extern tree convert_for_rvalue (tree, Type *, Type *);
 extern tree convert_for_assignment (tree, Type *, Type *);
 extern tree convert_for_argument (tree, Parameter *);
 extern tree convert_for_condition (tree, Type *);

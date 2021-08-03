@@ -1,3 +1,78 @@
+2021-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101564
+	* expr.c (gfc_check_vardef_context): Add check for KIND and LEN
+	parameter inquiries.
+	* match.c (gfc_match): Fix comment for %v code.
+	(gfc_match_allocate, gfc_match_deallocate): Replace use of %v code
+	by %e in gfc_match to allow for function references as STAT and
+	ERRMSG arguments.
+	* resolve.c (resolve_allocate_deallocate): Avoid NULL pointer
+	dereferences and shortcut for bad STAT and ERRMSG argument to
+	(DE)ALLOCATE.  Remove bogus parts of checks for STAT and ERRMSG.
+
+2021-07-26  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93308
+	PR fortran/93963
+	PR fortran/94327
+	PR fortran/94331
+	PR fortran/97046
+	* trans-decl.c (convert_CFI_desc): Only copy out the descriptor
+	if necessary.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Updated attribute
+	handling which reflect a previous intermediate version of the
+	standard. Only copy out the descriptor if necessary.
+
+2021-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101536
+	* check.c (array_check): Adjust check for the case of CLASS
+	arrays.
+
+2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* dump-parse-tree.c (show_attr): Update.
+	* gfortran.h (symbol_attribute): Add 'oacc_routine_nohost' member.
+	(gfc_omp_clauses): Add 'nohost' member.
+	* module.c (ab_attribute): Add 'AB_OACC_ROUTINE_NOHOST'.
+	(attr_bits, mio_symbol_attribute): Update.
+	* openmp.c (omp_mask2): Add 'OMP_CLAUSE_NOHOST'.
+	(gfc_match_omp_clauses): Handle 'OMP_CLAUSE_NOHOST'.
+	(OACC_ROUTINE_CLAUSES): Add 'OMP_CLAUSE_NOHOST'.
+	(gfc_match_oacc_routine): Update.
+	* trans-decl.c (add_attributes_to_decl): Update.
+	* trans-openmp.c (gfc_trans_omp_clauses): Likewise.
+
+2021-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101514
+	* target-memory.c (gfc_interpret_derived): Size of array component
+	of derived type can only be computed here for explicit shape.
+	* trans-types.c (gfc_get_nodesc_array_type): Do not dereference
+	NULL pointers.
+
+2021-07-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* decl.c (gfc_verify_c_interop_param): Update for F2008 + F2018
+	changes; reject unsupported bits with 'Error: Sorry,'.
+	* trans-expr.c (gfc_conv_procedure_call): Fix condition to
+	For using CFI descriptor with characters.
+
+2021-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101084
+	* io.c (resolve_tag_format): Extend FORMAT check to unknown type.
+
+2021-07-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100949
+	* trans-expr.c (gfc_trans_class_init_assign): Call
+	gfc_conv_expr_present only for dummy variables.
+
 2021-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/100227

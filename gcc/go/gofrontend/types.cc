@@ -842,6 +842,13 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 	return true;
     }
 
+  // A slice may be converted to a pointer-to-array.
+  if (rhs->is_slice_type()
+      && lhs->points_to() != NULL
+      && lhs->points_to()->array_type() != NULL
+      && !lhs->points_to()->is_slice_type())
+    return true;
+
   // An unsafe.Pointer type may be converted to any pointer type or to
   // a type whose underlying type is uintptr, and vice-versa.
   if (lhs->is_unsafe_pointer_type()
@@ -10414,6 +10421,57 @@ Named_type::finalize_methods(Gogo* gogo)
       delete this->local_methods_;
       this->local_methods_ = NULL;
       return;
+    }
+
+  // Remove any aliases in the local method receiver types.
+  Bindings* methods = this->local_methods_;
+  if (methods != NULL)
+    {
+      for (Bindings::const_declarations_iterator p =
+	     methods->begin_declarations();
+	   p != methods->end_declarations();
+	   ++p)
+	{
+	  Named_object* no = p->second;
+	  Function_type* fntype;
+	  if (no->is_function())
+	    fntype = no->func_value()->type();
+	  else if (no->is_function_declaration())
+	    fntype = no->func_declaration_value()->type();
+	  else
+	    {
+	      go_assert(saw_errors());
+	      continue;
+	    }
+
+	  Type* rtype = fntype->receiver()->type();
+	  bool is_pointer = false;
+	  Type* pt = rtype->points_to();
+	  if (pt != NULL)
+	    {
+	      rtype = pt;
+	      is_pointer = true;
+	    }
+	  if (rtype->named_type() != this)
+	    {
+	      if (rtype->unalias() != this)
+		{
+		  go_assert(saw_errors());
+		  continue;
+		}
+
+	      rtype = this;
+	      if (is_pointer)
+		rtype = Type::make_pointer_type(rtype);
+
+	      if (no->is_function())
+		no->func_value()->set_receiver_type(rtype);
+	      else if (no->is_function_declaration())
+		no->func_declaration_value()->set_receiver_type(rtype);
+	      else
+		go_unreachable();
+	    }
+	}
     }
 
   Type::finalize_methods(gogo, this, this->location_, &this->all_methods_);

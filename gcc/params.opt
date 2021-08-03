@@ -131,7 +131,7 @@ Common Joined UInteger Var(param_evrp_sparse_threshold) Init(800) Optimization P
 Maximum number of basic blocks before EVRP uses a sparse cache.
 
 -param=evrp-mode=
-Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_EVRP_FIRST) Param Optimization
+Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
 --param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in.
 
 Enum
@@ -1009,6 +1009,19 @@ Maximum depth of DFS walk used by modref escape analysis.
 -param=modref-max-escape-points=
 Common Joined UInteger Var(param_modref_max_escape_points) Init(256) Param Optimization
 Maximum number of escape points tracked by modref per SSA-name.
+
+-param=threader-mode=
+Common Joined Var(param_threader_mode) Enum(threader_mode) Init(THREADER_MODE_RANGER) Param Optimization
+--param=threader-mode=[legacy|ranger] Specifies the mode the backwards threader should run in.
+
+Enum
+Name(threader_mode) Type(enum threader_mode) UnknownError(unknown threader mode %qs)
+
+EnumValue
+Enum(threader_mode) String(legacy) Value(THREADER_MODE_LEGACY)
+
+EnumValue
+Enum(threader_mode) String(ranger) Value(THREADER_MODE_RANGER)
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization

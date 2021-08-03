@@ -46,6 +46,16 @@ test01()
   VERIFY( ranges::equal(ints, (int[]){1,2,3,4}) );
 }
 
+void
+test02()
+{
+  // PR libstdc++/101214
+  auto v = views::iota(0) | views::take(5) | views::split(0);
+  static_assert(!ranges::common_range<decltype(v)>);
+  static_assert(std::default_initializable<decltype(v.end())>);
+  static_assert(std::sentinel_for<decltype(v.end()), decltype(v.begin())>);
+}
+
 // The following testcases are adapted from lazy_split.cc.
 namespace from_lazy_split_cc
 {
@@ -189,6 +199,7 @@ int
 main()
 {
   test01();
+  test02();
 
   from_lazy_split_cc::test01();
   from_lazy_split_cc::test02();

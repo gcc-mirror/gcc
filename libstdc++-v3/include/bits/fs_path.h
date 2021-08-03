@@ -32,7 +32,6 @@
 
 #if __cplusplus >= 201703L
 
-#include <utility>
 #include <type_traits>
 #include <locale>
 #include <iosfwd>
@@ -41,6 +40,7 @@
 #include <string_view>
 #include <system_error>
 #include <bits/stl_algobase.h>
+#include <bits/stl_pair.h>
 #include <bits/locale_conv.h>
 #include <ext/concurrence.h>
 #include <bits/shared_ptr.h>

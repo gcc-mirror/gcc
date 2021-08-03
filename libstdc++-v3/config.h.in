@@ -301,6 +301,9 @@
 /* Define if readlink is available in <unistd.h>. */
 #undef HAVE_READLINK
 
+/* Define to 1 if you have the `secure_getenv' function. */
+#undef HAVE_SECURE_GETENV
+
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
 

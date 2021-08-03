@@ -331,4 +331,7 @@ inline vec_rtx_properties_base::~vec_rtx_properties_base ()
    collecting the references a second time.  */
 using vec_rtx_properties = growing_rtx_properties<vec_rtx_properties_base>;
 
+bool
+vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel);
+
 #endif

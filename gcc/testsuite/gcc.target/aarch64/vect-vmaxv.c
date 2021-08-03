@@ -36,7 +36,7 @@ test_v##MAXMIN##v##SUFFIX##_##TYPE##x##LANES##_t (void)			\
   /* Calculate linearly.  */						\
   for (i = 0; i < moves; i++)						\
     {									\
-      out_l[i] = input_##TYPE[i];					\
+      asm ("" : "=r" (out_l[i]) : "0" (input_##TYPE[i]));		\
       for (j = 0; j < LANES; j++)					\
 	out_l[i] = input_##TYPE[i + j] CMP_OP out_l[i]  ?		\
 	  input_##TYPE[i + j] : out_l[i];				\

@@ -1,10 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-mabicalls -fpic -mno-mips16 -mno-micromips -fipa-ra -mcompact-branches=never" } */
+/* { dg-options "-mabicalls -fpic -mno-mips16 -mno-micromips -fno-inline -fipa-ra -mcompact-branches=never" } */
 /* { dg-skip-if "needs codesize optimization" { *-*-* } { "-O0" "-O1" "-O2" "-O3" } { "" } } */
 
-__attribute__((noinline)) static int foo (void* p) { return 0; }
+static int foo (void* p) { return 0; }
 
-__attribute__((noinline)) static int bar (void* p) { return 1; }
+static int bar (void* p) { return 1; }
 
 int
 test (void* p)

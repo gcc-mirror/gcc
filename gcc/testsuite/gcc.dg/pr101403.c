@@ -2,7 +2,7 @@
 /* { dg-options "-O2" } */
 unsigned int foo (unsigned int a)
 {
-  unsigned int u;
+  unsigned int u = 0;
   unsigned short b = __builtin_bswap16 (a);
   return b >> (u, 12);
 }

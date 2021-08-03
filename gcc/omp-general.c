@@ -2576,6 +2576,7 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
 			     const char *routine_str)
 {
   tree c_level = NULL_TREE;
+  tree c_nohost = NULL_TREE;
   tree c_p = NULL_TREE;
   for (tree c = *clauses; c; c_p = c, c = OMP_CLAUSE_CHAIN (c))
     switch (OMP_CLAUSE_CODE (c))
@@ -2607,6 +2608,10 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
 	    OMP_CLAUSE_CHAIN (c_p) = OMP_CLAUSE_CHAIN (c);
 	    c = c_p;
 	  }
+	break;
+      case OMP_CLAUSE_NOHOST:
+	/* Don't worry about duplicate clauses here.  */
+	c_nohost = c;
 	break;
       default:
 	gcc_unreachable ();
@@ -2642,6 +2647,7 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
 	 this one for compatibility.  */
       /* Collect previous directive's clauses.  */
       tree c_level_p = NULL_TREE;
+      tree c_nohost_p = NULL_TREE;
       for (tree c = TREE_VALUE (attr); c; c = OMP_CLAUSE_CHAIN (c))
 	switch (OMP_CLAUSE_CODE (c))
 	  {
@@ -2651,6 +2657,10 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
 	  case OMP_CLAUSE_SEQ:
 	    gcc_checking_assert (c_level_p == NULL_TREE);
 	    c_level_p = c;
+	    break;
+	  case OMP_CLAUSE_NOHOST:
+	    gcc_checking_assert (c_nohost_p == NULL_TREE);
+	    c_nohost_p = c;
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -2665,6 +2675,13 @@ oacc_verify_routine_clauses (tree fndecl, tree *clauses, location_t loc,
 	{
 	  c_diag = c_level;
 	  c_diag_p = c_level_p;
+	  goto incompatible;
+	}
+      /* Matching 'nohost' clauses?  */
+      if ((c_nohost == NULL_TREE) != (c_nohost_p == NULL_TREE))
+	{
+	  c_diag = c_nohost;
+	  c_diag_p = c_nohost_p;
 	  goto incompatible;
 	}
       /* Compatible.  */

@@ -391,6 +391,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes @gol
 -fdump-analyzer-exploded-nodes-2 @gol
 -fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-exploded-paths @gol
 -fdump-analyzer-feasibility @gol
 -fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
@@ -9196,6 +9197,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-array-index @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
+-Wanalyzer-use-of-uninitialized-value @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wanalyzer-write-to-const @gol
 -Wanalyzer-write-to-string-literal @gol
@@ -9440,6 +9442,15 @@ detects an attempt to write through a pointer to a string literal.
 However, the analyzer does not prioritize detection of such paths, so
 false negatives are more likely relative to other warnings.
 
+@item -Wno-analyzer-use-of-uninitialized-value
+@opindex Wanalyzer-use-of-uninitialized-value
+@opindex Wno-analyzer-use-of-uninitialized-value
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-use-of-uninitialized-value} to disable it.
+
+This diagnostic warns for paths through the code in which an uninitialized
+value is used.
+
 @end table
 
 Pertinent parameters for controlling the exploration are:
@@ -9613,6 +9624,11 @@ Dump a textual representation of the ``exploded graph'' to
 Dump a textual representation of the ``exploded graph'' to
 one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
 This is typically a large number of dump files.
+
+@item -fdump-analyzer-exploded-paths
+@opindex fdump-analyzer-exploded-paths
+Dump a textual representation of the ``exploded path'' for each
+diagnostic to @file{@var{file}.@var{idx}.@var{kind}.epath.txt}.
 
 @item -fdump-analyzer-feasibility
 @opindex dump-analyzer-feasibility
@@ -16298,8 +16314,10 @@ arbitrary signal handlers such as @code{SIGALRM}.
 @opindex fdelete-dead-exceptions
 Consider that instructions that may throw exceptions but don't otherwise
 contribute to the execution of the program can be optimized away.
-This option is enabled by default for the Ada compiler, as permitted by
-the Ada language specification.
+This does not affect calls to functions except those with the
+@code{pure} or @code{const} attributes.
+This option is enabled by default for the Ada and C++ compilers, as permitted by
+the language specifications.
 Optimization passes that cause dead exceptions to be removed are enabled independently at different optimization levels.
 
 @item -funwind-tables
@@ -18352,10 +18370,10 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a65}, @samp{cortex-a65ae}, @samp{cortex-a34},
 @samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c},
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
-@samp{neoverse-e1}, @samp{neoverse-n1}, @samp{neoverse-n2},
-@samp{neoverse-v1}, @samp{qdf24xx}, @samp{saphira},
-@samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
-@samp{octeontx81},  @samp{octeontx83},
+@samp{neoverse-512tvb}, @samp{neoverse-e1}, @samp{neoverse-n1},
+@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{qdf24xx},
+@samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
+@samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
 @samp{octeontx2f95mm},
@@ -18372,6 +18390,15 @@ The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55} specify that GCC
 should tune for a big.LITTLE system.
+
+The value @samp{neoverse-512tvb} specifies that GCC should tune
+for Neoverse cores that (a) implement SVE and (b) have a total vector
+bandwidth of 512 bits per cycle.  In other words, the option tells GCC to
+tune for Neoverse cores that can execute 4 128-bit Advanced SIMD arithmetic
+instructions a cycle and that can execute an equivalent number of SVE
+arithmetic instructions per cycle (2 for 256-bit SVE, 4 for 128-bit SVE).
+This is more general than tuning for a specific core like Neoverse V1
+but is more specific than the default tuning described below.
 
 Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} tunes performance to the host system.  This option has no effect
@@ -18401,6 +18428,16 @@ the target processor for which to tune for performance (as if
 by @option{-mtune}).  Where this option is used in conjunction
 with @option{-march} or @option{-mtune}, those options take precedence
 over the appropriate part of this option.
+
+@option{-mcpu=neoverse-512tvb} is special in that it does not refer
+to a specific core, but instead refers to all Neoverse cores that
+(a) implement SVE and (b) have a total vector bandwidth of 512 bits
+a cycle.  Unless overridden by @option{-march},
+@option{-mcpu=neoverse-512tvb} generates code that can run on a
+Neoverse V1 core, since Neoverse V1 is the first Neoverse core with
+these properties.  Unless overridden by @option{-mtune},
+@option{-mcpu=neoverse-512tvb} tunes code in the same way as for
+@option{-mtune=neoverse-512tvb}.
 
 @item -moverride=@var{string}
 @opindex moverride
@@ -18792,6 +18829,15 @@ Compile for GCN5 Vega 20 devices (gfx906).
 
 @end table
 
+@item -msram-ecc=on
+@itemx -msram-ecc=off
+@itemx -msram-ecc=any
+@opindex msram-ecc
+Compile binaries suitable for devices with the SRAM-ECC feature enabled,
+disabled, or either mode.  This feature can be enabled per-process on some
+devices.  The compiled code must match the device mode. The default is
+@samp{any}, for devices that support it.
+
 @item -mstack-size=@var{bytes}
 @opindex mstack-size
 Specify how many @var{bytes} of stack space will be requested for each GPU
@@ -18799,6 +18845,14 @@ thread (wave-front).  Beware that there may be many threads and limited memory
 available.  The size of the stack allocation may also have an impact on
 run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
 1MB otherwise.
+
+@item -mxnack
+@opindex mxnack
+Compile binaries suitable for devices with the XNACK feature enabled.  Some
+devices always require XNACK and some allow the user to configure XNACK.  The
+compiled code must match the device mode.  The default is @samp{-mno-xnack}.
+At present this option is a placeholder for support that is not yet
+implemented.
 
 @end table
 
