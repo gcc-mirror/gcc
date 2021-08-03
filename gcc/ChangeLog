@@ -1,3 +1,32 @@
+2021-08-02  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2021-07-23  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100952
+	* config/rs6000/rs6000.md (cstore<mode>4): Fix wrong fall through.
+
+2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	Backported from master:
+	2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/94780
+	* config/mips/mips.c (mips_atomic_assign_expand_fenv): Use
+	  TARGET_EXPR instead of MODIFY_EXPR.
+
+2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	Backported from master:
+	2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/101132
+	* config/mips/mips-protos.h (mips_expand_vec_cmp_expr): Declare.
+	* config/mips/mips.c (mips_expand_vec_cmp_expr): New function.
+	* config/mips/mips-msa.md (vec_cmp<MSA:mode><mode_i>): New
+	  expander.
+	  (vec_cmpu<IMSA:mode><mode_i>): New expander.
+
 2021-07-28  Martin Uecker  <muecker@gwdg.de>
 
 	* calls.c (maybe_warn_rdwr_sizes): Correct argument
