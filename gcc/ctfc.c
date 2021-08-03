@@ -132,7 +132,7 @@ ctf_dtd_insert (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 
 /* Lookup CTF type given a DWARF die for the type.  */
 
-static ctf_dtdef_ref
+ctf_dtdef_ref
 ctf_dtd_lookup (const ctf_container_ref ctfc, const dw_die_ref type)
 {
   ctf_dtdef_t entry;

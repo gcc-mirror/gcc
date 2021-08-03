@@ -388,7 +388,10 @@ extern bool ctf_type_exists (ctf_container_ref, dw_die_ref, ctf_id_t *);
 
 extern void ctf_add_cuname (ctf_container_ref, const char *);
 
-extern ctf_dvdef_ref ctf_dvd_lookup (const ctf_container_ref, dw_die_ref);
+extern ctf_dtdef_ref ctf_dtd_lookup (const ctf_container_ref ctfc,
+				     dw_die_ref die);
+extern ctf_dvdef_ref ctf_dvd_lookup (const ctf_container_ref ctfc,
+				     dw_die_ref die);
 
 extern const char * ctf_add_string (ctf_container_ref, const char *,
 				    uint32_t *, int);
