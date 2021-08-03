@@ -1842,6 +1842,136 @@ static const struct tune_params neoversev1_tunings =
   &generic_prefetch_tune
 };
 
+static const sve_vec_cost neoverse512tvb_sve_vector_cost =
+{
+  {
+    2, /* int_stmt_cost  */
+    2, /* fp_stmt_cost  */
+    4, /* ld2_st2_permute_cost  */
+    5, /* ld3_st3_permute_cost  */
+    5, /* ld4_st4_permute_cost  */
+    3, /* permute_cost  */
+    /* Theoretically, a reduction involving 15 scalar ADDs could
+       complete in ~5 cycles and would have a cost of 15.  Assume that
+       [SU]ADDV completes in 11 cycles and so give it a cost of 15 + 6.  */
+    21, /* reduc_i8_cost  */
+    /* Likewise for 7 scalar ADDs (~3 cycles) vs. 9: 7 + 6.  */
+    13, /* reduc_i16_cost  */
+    /* Likewise for 3 scalar ADDs (~2 cycles) vs. 8: 3 + 6.  */
+    9, /* reduc_i32_cost  */
+    /* Likewise for 1 scalar ADD (1 cycle) vs. 8: 1 + 7.  */
+    8, /* reduc_i64_cost  */
+    /* Theoretically, a reduction involving 7 scalar FADDs could
+       complete in ~6 cycles and would have a cost of 14.  Assume that
+       FADDV completes in 8 cycles and so give it a cost of 14 + 2.  */
+    16, /* reduc_f16_cost  */
+    /* Likewise for 3 scalar FADDs (~4 cycles) vs. 6: 6 + 2.  */
+    8, /* reduc_f32_cost  */
+    /* Likewise for 1 scalar FADD (2 cycles) vs. 4: 2 + 2.  */
+    4, /* reduc_f64_cost  */
+    2, /* store_elt_extra_cost  */
+    /* This value is just inherited from the Cortex-A57 table.  */
+    8, /* vec_to_scalar_cost  */
+    /* This depends very much on what the scalar value is and
+       where it comes from.  E.g. some constants take two dependent
+       instructions or a load, while others might be moved from a GPR.
+       4 seems to be a reasonable compromise in practice.  */
+    4, /* scalar_to_vec_cost  */
+    4, /* align_load_cost  */
+    4, /* unalign_load_cost  */
+    /* Although stores generally have a latency of 2 and compete for the
+       vector pipes, in practice it's better not to model that.  */
+    1, /* unalign_store_cost  */
+    1  /* store_cost  */
+  },
+  3, /* clast_cost  */
+  10, /* fadda_f16_cost  */
+  6, /* fadda_f32_cost  */
+  4, /* fadda_f64_cost  */
+  /* A strided Advanced SIMD x64 load would take two parallel FP loads
+     (6 cycles) plus an insertion (2 cycles).  Assume a 64-bit SVE gather
+     is 1 cycle more.  The Advanced SIMD version is costed as 2 scalar loads
+     (cost 8) and a vec_construct (cost 2).  Add a full vector operation
+     (cost 2) to that, to avoid the difference being lost in rounding.
+
+     There is no easy comparison between a strided Advanced SIMD x32 load
+     and an SVE 32-bit gather, but cost an SVE 32-bit gather as 1 vector
+     operation more than a 64-bit gather.  */
+  14, /* gather_load_x32_cost  */
+  12, /* gather_load_x64_cost  */
+  3 /* scatter_store_elt_cost  */
+};
+
+static const aarch64_sve_vec_issue_info neoverse512tvb_sve_issue_info =
+{
+  {
+    {
+      3, /* loads_per_cycle  */
+      2, /* stores_per_cycle  */
+      4, /* general_ops_per_cycle  */
+      0, /* fp_simd_load_general_ops  */
+      1 /* fp_simd_store_general_ops  */
+    },
+    2, /* ld2_st2_general_ops  */
+    2, /* ld3_st3_general_ops  */
+    3 /* ld4_st4_general_ops  */
+  },
+  2, /* pred_ops_per_cycle  */
+  2, /* while_pred_ops  */
+  2, /* int_cmp_pred_ops  */
+  1, /* fp_cmp_pred_ops  */
+  1, /* gather_scatter_pair_general_ops  */
+  1 /* gather_scatter_pair_pred_ops  */
+};
+
+static const aarch64_vec_issue_info neoverse512tvb_vec_issue_info =
+{
+  &neoversev1_scalar_issue_info,
+  &neoversev1_advsimd_issue_info,
+  &neoverse512tvb_sve_issue_info
+};
+
+static const struct cpu_vector_cost neoverse512tvb_vector_cost =
+{
+  1, /* scalar_int_stmt_cost  */
+  2, /* scalar_fp_stmt_cost  */
+  4, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  1, /* cond_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &neoversev1_advsimd_vector_cost, /* advsimd  */
+  &neoverse512tvb_sve_vector_cost, /* sve  */
+  &neoverse512tvb_vec_issue_info /* issue_info  */
+};
+
+static const struct tune_params neoverse512tvb_tunings =
+{
+  &cortexa76_extra_costs,
+  &neoversev1_addrcost_table,
+  &generic_regmove_cost,
+  &neoverse512tvb_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  SVE_128 | SVE_256, /* sve_width  */
+  4, /* memmov_cost  */
+  3, /* issue_rate  */
+  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  "32:16",	/* function_align.  */
+  "4",		/* jump_align.  */
+  "32:16",	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  2,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
+   | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
+   | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
+  &generic_prefetch_tune
+};
+
 static const struct tune_params neoversen2_tunings =
 {
   &cortexa76_extra_costs,
@@ -15569,9 +15699,31 @@ aarch64_adjust_body_cost_sve (const aarch64_vector_costs *costs,
 {
   /* Estimate the minimum number of cycles per iteration needed to issue
      non-predicate operations.  */
-  fractional_cost sve_nonpred_cycles_per_iter
+  fractional_cost sve_nonpred_issue_cycles_per_iter
     = aarch64_estimate_min_cycles_per_iter (&costs->sve_ops,
 					    issue_info->sve);
+
+  /* Estimate the minimum number of cycles per iteration needed to rename
+     SVE instructions.
+
+     ??? For now this is done inline rather than via cost tables, since it
+     isn't clear how it should be parameterized for the general case.  */
+  fractional_cost sve_rename_cycles_per_iter = 0;
+  if (issue_info == &neoverse512tvb_vec_issue_info)
+    /* + 1 for an addition.  We've already counted a general op for each
+       store, so we don't need to account for stores separately.  The branch
+       reads no registers and so does not need to be counted either.
+
+       ??? This value is very much on the pessimistic side, but seems to work
+       pretty well in practice.  */
+    sve_rename_cycles_per_iter
+      = { costs->sve_ops.general_ops
+	  + costs->sve_ops.loads
+	  + costs->sve_ops.pred_ops + 1, 5 };
+
+  /* Combine the rename and non-predicate issue limits into a single value.  */
+  fractional_cost sve_nonpred_cycles_per_iter
+    = std::max (sve_nonpred_issue_cycles_per_iter, sve_rename_cycles_per_iter);
 
   /* Separately estimate the minimum number of cycles per iteration needed
      to issue the predicate operations.  */
@@ -15588,14 +15740,17 @@ aarch64_adjust_body_cost_sve (const aarch64_vector_costs *costs,
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "  estimated cycles per iteration = %f\n",
 		       sve_cycles_per_iter.as_double ());
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "  estimated cycles per iteration for non-predicate"
-		       " operations = %f\n",
-		       sve_nonpred_cycles_per_iter.as_double ());
       if (costs->sve_ops.pred_ops)
-	dump_printf_loc (MSG_NOTE, vect_location, "  estimated cycles per"
-			 " iteration for predicate operations = %d\n",
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "    predicate issue = %f\n",
 			 sve_pred_issue_cycles_per_iter.as_double ());
+      if (costs->sve_ops.pred_ops || sve_rename_cycles_per_iter)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "    non-predicate issue = %f\n",
+			 sve_nonpred_issue_cycles_per_iter.as_double ());
+      if (sve_rename_cycles_per_iter)
+	dump_printf_loc (MSG_NOTE, vect_location, "    rename = %f\n",
+			 sve_rename_cycles_per_iter.as_double ());
     }
 
   /* If the scalar version of the loop could issue at least as
@@ -15770,6 +15925,21 @@ aarch64_adjust_body_cost (aarch64_vector_costs *costs, unsigned int body_cost)
 					advsimd_cycles_per_iter,
 					could_use_advsimd, orig_body_cost,
 					&body_cost, &should_disparage);
+
+      if (aarch64_tune_params.vec_costs == &neoverse512tvb_vector_cost)
+	{
+	  /* Also take Neoverse V1 tuning into account, doubling the
+	     scalar and Advanced SIMD estimates to account for the
+	     doubling in SVE vector length.  */
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Neoverse V1 estimate:\n");
+	  aarch64_adjust_body_cost_sve (costs, &neoversev1_vec_issue_info,
+					scalar_cycles_per_iter * 2,
+					advsimd_cycles_per_iter * 2,
+					could_use_advsimd, orig_body_cost,
+					&body_cost, &should_disparage);
+	}
     }
 
   /* Decide whether to stick to latency-based costs or whether to try to
