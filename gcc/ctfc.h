@@ -431,6 +431,7 @@ extern int ctf_add_variable (ctf_container_ref, const char *, ctf_id_t,
 			     dw_die_ref, unsigned int);
 
 extern ctf_id_t ctf_lookup_tree_type (ctf_container_ref, const tree);
+extern ctf_id_t get_btf_id (ctf_id_t);
 
 /* CTF section does not emit location information; at this time, location
    information is needed for BTF CO-RE use-cases.  */
