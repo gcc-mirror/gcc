@@ -15392,6 +15392,10 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       fractional_cost stmt_cost
 	= aarch64_builtin_vectorization_cost (kind, vectype, misalign);
 
+      bool in_inner_loop_p = (where == vect_body
+			      && stmt_info
+			      && stmt_in_inner_loop_p (vinfo, stmt_info));
+
       /* Do one-time initialization based on the vinfo.  */
       loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
       bb_vec_info bb_vinfo = dyn_cast<bb_vec_info> (vinfo);
@@ -15438,14 +15442,15 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	  stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
 						stmt_cost);
 
-	  /* If we're recording a nonzero vector loop body cost, also estimate
-	     the operations that would need to be issued by all relevant
-	     implementations of the loop.  */
+	  /* If we're recording a nonzero vector loop body cost for the
+	     innermost loop, also estimate the operations that would need
+	     to be issued by all relevant implementations of the loop.  */
 	  auto *issue_info = aarch64_tune_params.vec_costs->issue_info;
 	  if (loop_vinfo
 	      && issue_info
 	      && costs->vec_flags
 	      && where == vect_body
+	      && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
 	      && vectype
 	      && stmt_cost != 0)
 	    {
@@ -15489,8 +15494,7 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
-      if (where == vect_body && stmt_info
-	  && stmt_in_inner_loop_p (vinfo, stmt_info))
+      if (in_inner_loop_p)
 	{
 	  gcc_assert (loop_vinfo);
 	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /*  FIXME  */
