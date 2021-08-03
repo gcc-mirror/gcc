@@ -3382,11 +3382,6 @@ Gcc_backend::function (Btype *fntype, const std::string &name,
     }
   if ((flags & function_is_inlinable) == 0)
     DECL_UNINLINABLE (decl) = 1;
-  if ((flags & function_no_split_stack) != 0)
-    {
-      tree attr = get_identifier ("no_split_stack");
-      DECL_ATTRIBUTES (decl) = tree_cons (attr, NULL_TREE, NULL_TREE);
-    }
   if ((flags & function_does_not_return) != 0)
     TREE_THIS_VOLATILE (decl) = 1;
   if ((flags & function_in_unique_section) != 0)
