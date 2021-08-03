@@ -1,3 +1,68 @@
+2021-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/101599
+	* include/bits/ranges_algo.h (__reverse_copy_fn::operator()):
+	Add missing std::move in return statement.
+	(__partition_copy_fn::operator()): Rename templtae parameter
+	_O2 to _Out2.  Uglify function parameters out_true and out_false.
+	* include/bits/ranges_algobase.h (__copy_or_move): Add missing
+	std::move to recursive call that unwraps a __normal_iterator
+	output iterator.
+	* testsuite/25_algorithms/copy/constrained.cc (test06): New test.
+	* testsuite/25_algorithms/move/constrained.cc (test05): New test.
+
+2021-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/101589
+	* include/std/ranges (lazy_split_view::_InnerIter::base): Make
+	the const& overload unconstrained and return a const reference
+	as per LWG 3533.  Make unconditionally noexcept.
+	(elements_view::base): Revert accidental r12-569 change.
+	(elements_view::_Iterator::base): Make the const& overload
+	unconstrained and return a const reference as per LWG 3533.
+	Make unconditionally noexcept.
+
+2021-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/101483
+	* include/std/ranges (join_view::_Iterator::_Iterator): Add
+	missing std::move.
+
+2021-08-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101709
+	* src/filesystem/ops-common.h (get_temp_directory_from_env):
+	Add error_code parameter.
+	* src/c++17/fs_ops.cc (fs::temp_directory_path): Pass error_code
+	argument to get_temp_directory_from_env and check it.
+	* src/filesystem/ops.cc (fs::temp_directory_path): Likewise.
+
+2021-08-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/comparison_operators/overloaded2.cc:
+	Add dg-error for c++11_only target.
+
+2021-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65018
+	* configure.ac: Check for secure_getenv.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/filesystem/ops-common.h (get_temp_directory_from_env): New
+	helper function to obtain path from the environment.
+	* src/c++17/fs_ops.cc (fs::temp_directory_path): Use new helper.
+	* src/filesystem/ops.cc (fs::temp_directory_path): Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc:
+	Print messages if test cannot be run.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise. Fix incorrect condition. Use "TMP" to work with
+	Windows as well as POSIX.
+
+2021-07-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* src/c++17/memory_resource.cc: Use __exchange instead
+	of std::exchange.
+
 2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/optional (__throw_bad_optional_access):

@@ -1,3 +1,35 @@
+2021-07-30  Thomas Schwinge  <thomas@codesourcery.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+
+	* fortran.c (omp_display_env_, omp_display_env_8_): Only
+	'#ifndef LIBGOMP_OFFLOADED_ONLY'.
+
+2021-07-29  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-2.c:
+	's%oaccdevlow%oaccloops%g'.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-7.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-nohost-1.f90: Likewise.
+
 2021-07-27  Ulrich Drepper  <drepper@gmail.com>
 
 	* env.c (wait_policy, stacksize): New static variables,
