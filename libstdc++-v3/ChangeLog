@@ -1,3 +1,19 @@
+2021-08-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/c++17/fs_ops.cc (fs::symlink_status): Re-enable workaround.
+
+2021-08-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/c++17/fs_ops.cc (fs::status): Re-enable workaround.
+
 2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/ext/profile/mutex_extensions_neg.cc: Prune

@@ -1,3 +1,12 @@
+2021-07-31  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	Backported from master:
+	2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/94780
+	* config/mips/mips.c (mips_atomic_assign_expand_fenv): Use
+	  TARGET_EXPR instead of MODIFY_EXPR.
+
 2021-07-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/100182
