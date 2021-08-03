@@ -57,7 +57,7 @@ class TypeParam : public GenericParam
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
+  std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
 
   // bool has_type;
@@ -78,8 +78,8 @@ public:
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
 
   TypeParam (Identifier type_representation, Location locus = Location (),
-	     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds
-	     = std::vector<std::unique_ptr<TypeParamBound> > (),
+	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
+	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
 	     Attribute outer_attr = Attribute::create_empty ())
     : GenericParam (Analysis::Mappings::get ()->get_next_node_id ()),
@@ -144,11 +144,11 @@ public:
   }
 
   // TODO: mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
   }
-  const std::vector<std::unique_ptr<TypeParamBound> > &
+  const std::vector<std::unique_ptr<TypeParamBound>> &
   get_type_param_bounds () const
   {
     return type_param_bounds;
@@ -224,7 +224,7 @@ class TypeBoundWhereClauseItem : public WhereClauseItem
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
+  std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
 
   // should this store location info?
@@ -238,7 +238,7 @@ public:
 
   TypeBoundWhereClauseItem (
     std::vector<LifetimeParam> for_lifetimes, std::unique_ptr<Type> bound_type,
-    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds)
+    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds)
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
       type_param_bounds (std::move (type_param_bounds))
@@ -284,11 +284,11 @@ public:
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
   }
-  const std::vector<std::unique_ptr<TypeParamBound> > &
+  const std::vector<std::unique_ptr<TypeParamBound>> &
   get_type_param_bounds () const
   {
     return type_param_bounds;
@@ -306,13 +306,12 @@ protected:
 struct WhereClause
 {
 private:
-  std::vector<std::unique_ptr<WhereClauseItem> > where_clause_items;
+  std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items;
 
   // should this store location info?
 
 public:
-  WhereClause (
-    std::vector<std::unique_ptr<WhereClauseItem> > where_clause_items)
+  WhereClause (std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items)
     : where_clause_items (std::move (where_clause_items))
   {}
 
@@ -341,7 +340,7 @@ public:
   // Creates a WhereClause with no items.
   static WhereClause create_empty ()
   {
-    return WhereClause (std::vector<std::unique_ptr<WhereClauseItem> > ());
+    return WhereClause (std::vector<std::unique_ptr<WhereClauseItem>> ());
   }
 
   // Returns whether the WhereClause has no items.
@@ -350,11 +349,11 @@ public:
   std::string as_string () const;
 
   // TODO: this mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<WhereClauseItem> > &get_items ()
+  std::vector<std::unique_ptr<WhereClauseItem>> &get_items ()
   {
     return where_clause_items;
   }
-  const std::vector<std::unique_ptr<WhereClauseItem> > &get_items () const
+  const std::vector<std::unique_ptr<WhereClauseItem>> &get_items () const
   {
     return where_clause_items;
   }
@@ -698,7 +697,7 @@ class Method : public InherentImplItem, public TraitImplItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   SelfParam self_param;
 
@@ -731,7 +730,7 @@ public:
   static Method create_error ()
   {
     return Method ("", FunctionQualifiers (FunctionQualifiers::NONE, true),
-		   std::vector<std::unique_ptr<GenericParam> > (),
+		   std::vector<std::unique_ptr<GenericParam>> (),
 		   SelfParam::create_error (), std::vector<FunctionParam> (),
 		   nullptr, WhereClause::create_empty (), nullptr,
 		   Visibility::create_error (), std::vector<Attribute> (), {});
@@ -754,7 +753,7 @@ public:
 
   // Mega-constructor with all possible fields
   Method (Identifier method_name, FunctionQualifiers qualifiers,
-	  std::vector<std::unique_ptr<GenericParam> > generic_params,
+	  std::vector<std::unique_ptr<GenericParam>> generic_params,
 	  SelfParam self_param, std::vector<FunctionParam> function_params,
 	  std::unique_ptr<Type> return_type, WhereClause where_clause,
 	  std::unique_ptr<BlockExpr> function_body, Visibility vis,
@@ -853,11 +852,11 @@ public:
     return function_params;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -961,81 +960,94 @@ public:
 // Rust module item - abstract base class
 class Module : public VisItem
 {
+public:
+  // Type of the current module. A module can be either loaded or unloaded,
+  // meaning that the items of the module can already be present or not. For
+  // example, the following module would be loaded: `mod foo { fn bar() {} }`.
+  // However, the module would be unloaded if it refers to an external file (i.e
+  // `mod foo;`) and then become loaded upon expansion.
+  enum ModuleKind
+  {
+    LOADED,
+    UNLOADED,
+  };
+
+private:
   Identifier module_name;
   Location locus;
+  ModuleKind kind;
 
-protected:
-  // Protected constructor
-  Module (Identifier module_name, Visibility visibility, Location locus,
-	  std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
-    : VisItem (std::move (visibility), std::move (outer_attrs)),
-      module_name (module_name), locus (locus)
-  {}
-
-public:
-  std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
-
-  // Invalid if name is empty, so base stripping on that.
-  void mark_for_strip () override { module_name = ""; }
-  bool is_marked_for_strip () const override { return module_name.empty (); }
-};
-
-// Module with a body, defined in file
-class ModuleBodied : public Module
-{
   // bool has_inner_attrs;
   std::vector<Attribute> inner_attrs;
   // bool has_items;
-  std::vector<std::unique_ptr<Item> > items;
+  std::vector<std::unique_ptr<Item>> items;
+
+  void clone_items (const std::vector<std::unique_ptr<Item>> &other_items)
+  {
+    items.reserve (other_items.size ());
+    for (const auto &e : other_items)
+      items.push_back (e->clone_item ());
+  }
 
 public:
-  std::string as_string () const override;
-
   // Returns whether the module has items in its body.
   bool has_items () const { return !items.empty (); }
 
   // Returns whether the module has any inner attributes.
   bool has_inner_attrs () const { return !inner_attrs.empty (); }
 
-  // Full constructor
-  ModuleBodied (Identifier name, Location locus,
-		std::vector<std::unique_ptr<Item> > items
-		= std::vector<std::unique_ptr<Item> > (),
-		Visibility visibility = Visibility::create_error (),
-		std::vector<Attribute> inner_attrs = std::vector<Attribute> (),
-		std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
-    : Module (std::move (name), std::move (visibility), locus,
-	      std::move (outer_attrs)),
+  // Unloaded module constructor
+  Module (Identifier module_name, Visibility visibility,
+	  std::vector<Attribute> outer_attrs, Location locus)
+    : VisItem (std::move (visibility), std::move (outer_attrs)),
+      module_name (module_name), locus (locus), kind (ModuleKind::UNLOADED),
+      inner_attrs (std::vector<Attribute> ()),
+      items (std::vector<std::unique_ptr<Item>> ())
+  {}
+
+  // Loaded module constructor, with items
+  Module (Identifier name, Location locus,
+	  std::vector<std::unique_ptr<Item>> items,
+	  Visibility visibility = Visibility::create_error (),
+	  std::vector<Attribute> inner_attrs = std::vector<Attribute> (),
+	  std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
+    : VisItem (std::move (visibility), std::move (outer_attrs)),
+      module_name (name), locus (locus), kind (ModuleKind::LOADED),
       inner_attrs (std::move (inner_attrs)), items (std::move (items))
   {}
 
   // Copy constructor with vector clone
-  ModuleBodied (ModuleBodied const &other)
-    : Module (other), inner_attrs (other.inner_attrs)
+  Module (Module const &other)
+    : VisItem (other), module_name (other.module_name), locus (other.locus),
+      kind (other.kind), inner_attrs (other.inner_attrs)
   {
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_item ());
+    // We need to check whether we are copying a loaded module or an unloaded
+    // one. In the second case, clear the `items` vector.
+    if (other.kind == LOADED)
+      clone_items (other.items);
+    else
+      items.clear ();
   }
 
   // Overloaded assignment operator with vector clone
-  ModuleBodied &operator= (ModuleBodied const &other)
+  Module &operator= (Module const &other)
   {
-    Module::operator= (other);
+    VisItem::operator= (other);
+
+    module_name = other.module_name;
+    locus = other.locus;
+    kind = other.kind;
     inner_attrs = other.inner_attrs;
 
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_item ());
+    // Likewise, we need to clear the `items` vector in case the other module is
+    // unloaded
+    if (kind == LOADED)
+      clone_items (other.items);
+    else
+      items.clear ();
 
     return *this;
   }
-
-  // move constructors
-  ModuleBodied (ModuleBodied &&other) = default;
-  ModuleBodied &operator= (ModuleBodied &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1043,52 +1055,32 @@ public:
    * the module. */
   void add_crate_name (std::vector<std::string> &names) const override;
 
+  // Returns the kind of the module
+  enum ModuleKind get_kind () const { return kind; }
+
   // TODO: think of better way to do this - mutable getter seems dodgy
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  const std::vector<std::unique_ptr<Item> > &get_items () const
-  {
-    return items;
-  }
-  std::vector<std::unique_ptr<Item> > &get_items () { return items; }
+  const std::vector<std::unique_ptr<Item>> &get_items () const { return items; }
+  std::vector<std::unique_ptr<Item>> &get_items () { return items; }
 
-protected:
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  ModuleBodied *clone_item_impl () const override
-  {
-    return new ModuleBodied (*this);
-  }
-};
+  // move constructors
+  Module (Module &&other) = default;
+  Module &operator= (Module &&other) = default;
 
-// Module without a body, loaded from external file
-class ModuleNoBody : public Module
-{
-  /* TODO: are modules loaded from file unique? As in, can you load the same
-   * file into two different other files? Because this may make the difference
-   * between simply replacing this with the module
-   * "definition" (as loaded from another file) vs this having to "reference" a
-   * module with body. */
-public:
   std::string as_string () const override;
 
-  // Full constructor
-  ModuleNoBody (Identifier name, Visibility visibility,
-		std::vector<Attribute> outer_attrs, Location locus)
-    : Module (std::move (name), std::move (visibility), locus,
-	      std::move (outer_attrs))
-  {}
+  Location get_locus () const { return locus; }
 
-  void accept_vis (ASTVisitor &vis) override;
+  // Invalid if name is empty, so base stripping on that.
+  void mark_for_strip () override { module_name = ""; }
+  bool is_marked_for_strip () const override { return module_name.empty (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  ModuleNoBody *clone_item_impl () const override
-  {
-    return new ModuleNoBody (*this);
-  }
+  Module *clone_item_impl () const override { return new Module (*this); }
 };
 
 // Rust extern crate declaration AST node
@@ -1242,11 +1234,11 @@ private:
   PathType path_type;
   SimplePath path;
 
-  std::vector<std::unique_ptr<UseTree> > trees;
+  std::vector<std::unique_ptr<UseTree>> trees;
 
 public:
   UseTreeList (PathType path_type, SimplePath path,
-	       std::vector<std::unique_ptr<UseTree> > trees, Location locus)
+	       std::vector<std::unique_ptr<UseTree>> trees, Location locus)
     : UseTree (locus), path_type (path_type), path (std::move (path)),
       trees (std::move (trees))
   {
@@ -1430,7 +1422,7 @@ class Function : public VisItem, public InherentImplItem, public TraitImplItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_function_params;
   // FunctionParams function_params;
@@ -1463,7 +1455,7 @@ public:
 
   // Mega-constructor with all possible fields
   Function (Identifier function_name, FunctionQualifiers qualifiers,
-	    std::vector<std::unique_ptr<GenericParam> > generic_params,
+	    std::vector<std::unique_ptr<GenericParam>> generic_params,
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
@@ -1554,11 +1546,11 @@ public:
     return function_params;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -1615,7 +1607,7 @@ class TypeAlias : public VisItem, public TraitImplItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -1635,7 +1627,7 @@ public:
 
   // Mega-constructor with all possible fields
   TypeAlias (Identifier new_type_name,
-	     std::vector<std::unique_ptr<GenericParam> > generic_params,
+	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     WhereClause where_clause, std::unique_ptr<Type> existing_type,
 	     Visibility vis, std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -1697,11 +1689,11 @@ public:
     return existing_type == nullptr;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -1744,7 +1736,7 @@ protected:
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -1769,11 +1761,11 @@ public:
 
   Identifier get_struct_name () const { return struct_name; }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -1789,7 +1781,7 @@ public:
 
 protected:
   Struct (Identifier struct_name,
-	  std::vector<std::unique_ptr<GenericParam> > generic_params,
+	  std::vector<std::unique_ptr<GenericParam>> generic_params,
 	  WhereClause where_clause, Visibility vis, Location locus,
 	  std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -1941,7 +1933,7 @@ public:
 
   // Mega-constructor with all possible fields
   StructStruct (std::vector<StructField> fields, Identifier struct_name,
-		std::vector<std::unique_ptr<GenericParam> > generic_params,
+		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		WhereClause where_clause, bool is_unit, Visibility vis,
 		std::vector<Attribute> outer_attrs, Location locus)
     : Struct (std::move (struct_name), std::move (generic_params),
@@ -1952,7 +1944,7 @@ public:
 
   // Unit struct constructor
   StructStruct (Identifier struct_name,
-		std::vector<std::unique_ptr<GenericParam> > generic_params,
+		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		WhereClause where_clause, Visibility vis,
 		std::vector<Attribute> outer_attrs, Location locus)
     : Struct (std::move (struct_name), std::move (generic_params),
@@ -2092,7 +2084,7 @@ public:
 
   // Mega-constructor with all possible fields
   TupleStruct (std::vector<TupleField> fields, Identifier struct_name,
-	       std::vector<std::unique_ptr<GenericParam> > generic_params,
+	       std::vector<std::unique_ptr<GenericParam>> generic_params,
 	       WhereClause where_clause, Visibility vis,
 	       std::vector<Attribute> outer_attrs, Location locus)
     : Struct (std::move (struct_name), std::move (generic_params),
@@ -2304,12 +2296,12 @@ class Enum : public VisItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
 
-  std::vector<std::unique_ptr<EnumItem> > items;
+  std::vector<std::unique_ptr<EnumItem>> items;
 
   Location locus;
 
@@ -2328,8 +2320,8 @@ public:
 
   // Mega-constructor
   Enum (Identifier enum_name, Visibility vis,
-	std::vector<std::unique_ptr<GenericParam> > generic_params,
-	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem> > items,
+	std::vector<std::unique_ptr<GenericParam>> generic_params,
+	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem>> items,
 	std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       enum_name (std::move (enum_name)),
@@ -2386,17 +2378,17 @@ public:
   bool is_marked_for_strip () const override { return enum_name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  std::vector<std::unique_ptr<EnumItem> > &get_variants () { return items; }
-  const std::vector<std::unique_ptr<EnumItem> > &get_variants () const
+  std::vector<std::unique_ptr<EnumItem>> &get_variants () { return items; }
+  const std::vector<std::unique_ptr<EnumItem>> &get_variants () const
   {
     return items;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -2421,7 +2413,7 @@ class Union : public VisItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_where_clause;
   WhereClause where_clause;
@@ -2440,7 +2432,7 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   Union (Identifier union_name, Visibility vis,
-	 std::vector<std::unique_ptr<GenericParam> > generic_params,
+	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 WhereClause where_clause, std::vector<StructField> variants,
 	 std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -2502,11 +2494,11 @@ public:
       }
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -2757,7 +2749,7 @@ private:
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_params;
   // FunctionParams function_params;
@@ -2788,7 +2780,7 @@ public:
 
   // Mega-constructor
   TraitFunctionDecl (Identifier function_name, FunctionQualifiers qualifiers,
-		     std::vector<std::unique_ptr<GenericParam> > generic_params,
+		     std::vector<std::unique_ptr<GenericParam>> generic_params,
 		     std::vector<FunctionParam> function_params,
 		     std::unique_ptr<Type> return_type,
 		     WhereClause where_clause)
@@ -2854,11 +2846,11 @@ public:
     return function_params;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -2979,7 +2971,7 @@ private:
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   SelfParam self_param;
 
@@ -3012,7 +3004,7 @@ public:
 
   // Mega-constructor
   TraitMethodDecl (Identifier function_name, FunctionQualifiers qualifiers,
-		   std::vector<std::unique_ptr<GenericParam> > generic_params,
+		   std::vector<std::unique_ptr<GenericParam>> generic_params,
 		   SelfParam self_param,
 		   std::vector<FunctionParam> function_params,
 		   std::unique_ptr<Type> return_type, WhereClause where_clause)
@@ -3081,11 +3073,11 @@ public:
     return function_params;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -3315,7 +3307,7 @@ class TraitItemType : public TraitItem
 
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
+  std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
 
   Location locus;
@@ -3324,10 +3316,9 @@ public:
   // Returns whether trait item type has type param bounds.
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
-  TraitItemType (
-    Identifier name,
-    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
-    std::vector<Attribute> outer_attrs, Location locus)
+  TraitItemType (Identifier name,
+		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
+		 std::vector<Attribute> outer_attrs, Location locus)
     : TraitItem (), outer_attrs (std::move (outer_attrs)),
       name (std::move (name)),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
@@ -3378,11 +3369,11 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
   }
-  const std::vector<std::unique_ptr<TypeParamBound> > &
+  const std::vector<std::unique_ptr<TypeParamBound>> &
   get_type_param_bounds () const
   {
     return type_param_bounds;
@@ -3403,11 +3394,11 @@ class Trait : public VisItem
 {
   bool has_unsafe;
   Identifier name;
-  std::vector<std::unique_ptr<GenericParam> > generic_params;
-  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
+  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   WhereClause where_clause;
   std::vector<Attribute> inner_attrs;
-  std::vector<std::unique_ptr<TraitItem> > trait_items;
+  std::vector<std::unique_ptr<TraitItem>> trait_items;
   Location locus;
 
 public:
@@ -3434,10 +3425,10 @@ public:
 
   // Mega-constructor
   Trait (Identifier name, bool is_unsafe,
-	 std::vector<std::unique_ptr<GenericParam> > generic_params,
-	 std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
+	 std::vector<std::unique_ptr<GenericParam>> generic_params,
+	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 	 WhereClause where_clause,
-	 std::vector<std::unique_ptr<TraitItem> > trait_items, Visibility vis,
+	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
 	 std::vector<Attribute> outer_attrs, std::vector<Attribute> inner_attrs,
 	 Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)),
@@ -3509,29 +3500,29 @@ public:
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  const std::vector<std::unique_ptr<TraitItem> > &get_trait_items () const
+  const std::vector<std::unique_ptr<TraitItem>> &get_trait_items () const
   {
     return trait_items;
   }
-  std::vector<std::unique_ptr<TraitItem> > &get_trait_items ()
+  std::vector<std::unique_ptr<TraitItem>> &get_trait_items ()
   {
     return trait_items;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
 
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
   }
-  const std::vector<std::unique_ptr<TypeParamBound> > &
+  const std::vector<std::unique_ptr<TypeParamBound>> &
   get_type_param_bounds () const
   {
     return type_param_bounds;
@@ -3561,7 +3552,7 @@ class Impl : public VisItem
 protected:
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   std::unique_ptr<Type> trait_type;
 
@@ -3595,11 +3586,11 @@ public:
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -3620,7 +3611,7 @@ public:
 
 protected:
   // Mega-constructor
-  Impl (std::vector<std::unique_ptr<GenericParam> > generic_params,
+  Impl (std::vector<std::unique_ptr<GenericParam>> generic_params,
 	std::unique_ptr<Type> trait_type, WhereClause where_clause,
 	Visibility vis, std::vector<Attribute> inner_attrs,
 	std::vector<Attribute> outer_attrs, Location locus)
@@ -3675,7 +3666,7 @@ protected:
 class InherentImpl : public Impl
 {
   // bool has_impl_items;
-  std::vector<std::unique_ptr<InherentImplItem> > impl_items;
+  std::vector<std::unique_ptr<InherentImplItem>> impl_items;
 
 public:
   std::string as_string () const override;
@@ -3684,8 +3675,8 @@ public:
   bool has_impl_items () const { return !impl_items.empty (); }
 
   // Mega-constructor
-  InherentImpl (std::vector<std::unique_ptr<InherentImplItem> > impl_items,
-		std::vector<std::unique_ptr<GenericParam> > generic_params,
+  InherentImpl (std::vector<std::unique_ptr<InherentImplItem>> impl_items,
+		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		std::unique_ptr<Type> trait_type, WhereClause where_clause,
 		Visibility vis, std::vector<Attribute> inner_attrs,
 		std::vector<Attribute> outer_attrs, Location locus)
@@ -3722,11 +3713,11 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: think of better way to do this
-  const std::vector<std::unique_ptr<InherentImplItem> > &get_impl_items () const
+  const std::vector<std::unique_ptr<InherentImplItem>> &get_impl_items () const
   {
     return impl_items;
   }
-  std::vector<std::unique_ptr<InherentImplItem> > &get_impl_items ()
+  std::vector<std::unique_ptr<InherentImplItem>> &get_impl_items ()
   {
     return impl_items;
   }
@@ -3748,7 +3739,7 @@ class TraitImpl : public Impl
   TypePath trait_path;
 
   // bool has_impl_items;
-  std::vector<std::unique_ptr<TraitImplItem> > impl_items;
+  std::vector<std::unique_ptr<TraitImplItem>> impl_items;
 
 public:
   std::string as_string () const override;
@@ -3758,8 +3749,8 @@ public:
 
   // Mega-constructor
   TraitImpl (TypePath trait_path, bool is_unsafe, bool has_exclam,
-	     std::vector<std::unique_ptr<TraitImplItem> > impl_items,
-	     std::vector<std::unique_ptr<GenericParam> > generic_params,
+	     std::vector<std::unique_ptr<TraitImplItem>> impl_items,
+	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     std::unique_ptr<Type> trait_type, WhereClause where_clause,
 	     Visibility vis, std::vector<Attribute> inner_attrs,
 	     std::vector<Attribute> outer_attrs, Location locus)
@@ -3805,11 +3796,11 @@ public:
   bool is_exclam () const { return has_exclam; }
 
   // TODO: think of better way to do this
-  const std::vector<std::unique_ptr<TraitImplItem> > &get_impl_items () const
+  const std::vector<std::unique_ptr<TraitImplItem>> &get_impl_items () const
   {
     return impl_items;
   }
-  std::vector<std::unique_ptr<TraitImplItem> > &get_impl_items ()
+  std::vector<std::unique_ptr<TraitImplItem>> &get_impl_items ()
   {
     return impl_items;
   }
@@ -4116,7 +4107,7 @@ class ExternalFunctionItem : public ExternalItem
 
   // bool has_generics;
   // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam> > generic_params; // inlined
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
 
   // bool has_return_type;
   // FunctionReturnType return_type;
@@ -4158,7 +4149,7 @@ public:
 
   ExternalFunctionItem (
     Identifier item_name,
-    std::vector<std::unique_ptr<GenericParam> > generic_params,
+    std::vector<std::unique_ptr<GenericParam>> generic_params,
     std::unique_ptr<Type> return_type, WhereClause where_clause,
     std::vector<NamedFunctionParam> function_params, bool has_variadics,
     std::vector<Attribute> variadic_outer_attrs, Visibility vis,
@@ -4246,11 +4237,11 @@ public:
     return function_params;
   }
 
-  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
   }
-  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
   {
     return generic_params;
   }
@@ -4290,7 +4281,7 @@ class ExternBlock : public VisItem
   std::vector<Attribute> inner_attrs;
 
   // bool has_extern_items;
-  std::vector<std::unique_ptr<ExternalItem> > extern_items;
+  std::vector<std::unique_ptr<ExternalItem>> extern_items;
 
   Location locus;
 
@@ -4312,7 +4303,7 @@ public:
   std::string get_abi () const { return abi; }
 
   ExternBlock (std::string abi,
-	       std::vector<std::unique_ptr<ExternalItem> > extern_items,
+	       std::vector<std::unique_ptr<ExternalItem>> extern_items,
 	       Visibility vis, std::vector<Attribute> inner_attrs,
 	       std::vector<Attribute> outer_attrs, Location locus)
     : VisItem (std::move (vis), std::move (outer_attrs)), abi (std::move (abi)),
@@ -4359,11 +4350,11 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: think of better way to do this
-  const std::vector<std::unique_ptr<ExternalItem> > &get_extern_items () const
+  const std::vector<std::unique_ptr<ExternalItem>> &get_extern_items () const
   {
     return extern_items;
   }
-  std::vector<std::unique_ptr<ExternalItem> > &get_extern_items ()
+  std::vector<std::unique_ptr<ExternalItem>> &get_extern_items ()
   {
     return extern_items;
   }
