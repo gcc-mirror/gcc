@@ -1110,8 +1110,8 @@ class op_by_pieces_d
   }
 
  public:
-  op_by_pieces_d (rtx, bool, rtx, bool, by_pieces_constfn, void *,
-		  unsigned HOST_WIDE_INT, unsigned int, bool,
+  op_by_pieces_d (unsigned int, rtx, bool, rtx, bool, by_pieces_constfn,
+		  void *, unsigned HOST_WIDE_INT, unsigned int, bool,
 		  bool = false);
   void run ();
 };
@@ -1120,10 +1120,12 @@ class op_by_pieces_d
    objects named TO and FROM, which are identified as loads or stores
    by TO_LOAD and FROM_LOAD.  If FROM is a load, the optional FROM_CFN
    and its associated FROM_CFN_DATA can be used to replace loads with
-   constant values.  LEN describes the length of the operation.  */
+   constant values.  MAX_PIECES describes the maximum number of bytes
+   at a time which can be moved efficiently.  LEN describes the length
+   of the operation.  */
 
-op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
-				rtx from, bool from_load,
+op_by_pieces_d::op_by_pieces_d (unsigned int max_pieces, rtx to,
+				bool to_load, rtx from, bool from_load,
 				by_pieces_constfn from_cfn,
 				void *from_cfn_data,
 				unsigned HOST_WIDE_INT len,
@@ -1131,7 +1133,7 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
 				bool qi_vector_mode)
   : m_to (to, to_load, NULL, NULL),
     m_from (from, from_load, from_cfn, from_cfn_data),
-    m_len (len), m_max_size (MOVE_MAX_PIECES + 1),
+    m_len (len), m_max_size (max_pieces + 1),
     m_push (push), m_qi_vector_mode (qi_vector_mode)
 {
   int toi = m_to.get_addr_inc ();
@@ -1324,8 +1326,8 @@ class move_by_pieces_d : public op_by_pieces_d
  public:
   move_by_pieces_d (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 		    unsigned int align)
-    : op_by_pieces_d (to, false, from, true, NULL, NULL, len, align,
-		      PUSHG_P (to))
+    : op_by_pieces_d (MOVE_MAX_PIECES, to, false, from, true, NULL,
+		      NULL, len, align, PUSHG_P (to))
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1421,8 +1423,8 @@ class store_by_pieces_d : public op_by_pieces_d
   store_by_pieces_d (rtx to, by_pieces_constfn cfn, void *cfn_data,
 		     unsigned HOST_WIDE_INT len, unsigned int align,
 		     bool qi_vector_mode)
-    : op_by_pieces_d (to, false, NULL_RTX, true, cfn, cfn_data, len,
-		      align, false, qi_vector_mode)
+    : op_by_pieces_d (STORE_MAX_PIECES, to, false, NULL_RTX, true, cfn,
+		      cfn_data, len, align, false, qi_vector_mode)
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1618,8 +1620,8 @@ class compare_by_pieces_d : public op_by_pieces_d
   compare_by_pieces_d (rtx op0, rtx op1, by_pieces_constfn op1_cfn,
 		       void *op1_cfn_data, HOST_WIDE_INT len, int align,
 		       rtx_code_label *fail_label)
-    : op_by_pieces_d (op0, true, op1, true, op1_cfn, op1_cfn_data, len,
-		      align, false)
+    : op_by_pieces_d (COMPARE_MAX_PIECES, op0, true, op1, true, op1_cfn,
+		      op1_cfn_data, len, align, false)
   {
     m_fail_label = fail_label;
   }
