@@ -8256,6 +8256,7 @@ attributes.
 * Common Type Attributes::
 * ARC Type Attributes::
 * ARM Type Attributes::
+* BPF Type Attributes::
 * MeP Type Attributes::
 * PowerPC Type Attributes::
 * x86 Type Attributes::
@@ -8829,6 +8830,17 @@ In this code, @code{C::C} is exported from the current DLL, but the
 virtual table for @code{C} is not exported.  (You can use
 @code{__attribute__} instead of @code{__declspec} if you prefer, but
 most Symbian OS code uses @code{__declspec}.)
+
+@node BPF Type Attributes
+@subsection BPF Type Attributes
+
+@cindex @code{preserve_access_index} type attribute, BPF
+BPF Compile Once - Run Everywhere (CO-RE) support. When attached to a
+@code{struct} or @code{union} type definition, indicates that CO-RE
+relocation information should be generated for any access to a variable
+of that type. The behavior is equivalent to the programmer manually
+wrapping every such access with @code{__builtin_preserve_access_index}.
+
 
 @node MeP Type Attributes
 @subsection MeP Type Attributes
@@ -15465,6 +15477,10 @@ Load 16-bits from the @code{struct sk_buff} packet data pointed by the register 
 
 @deftypefn {Built-in Function} unsigned long long __builtin_bpf_load_word (unsigned long long @var{offset})
 Load 32-bits from the @code{struct sk_buff} packet data pointed by the register @code{%r6} and return it.
+@end deftypefn
+
+@deftypefn {Built-in Function} void * __builtin_preserve_access_index (@var{expr})
+BPF Compile Once-Run Everywhere (CO-RE) support. Instruct GCC to generate CO-RE relocation records for any accesses to aggregate data structures (struct, union, array types) in @var{expr}. This builtin is otherwise transparent, the return value is whatever @var{expr} evaluates to. It is also overloaded: @var{expr} may be of any type (not necessarily a pointer), the return type is the same. Has no effect if @code{-mco-re} is not in effect (either specified or implied).
 @end deftypefn
 
 @node FR-V Built-in Functions

@@ -904,7 +904,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{eBPF Options}
 @gccoptlist{-mbig-endian -mlittle-endian -mkernel=@var{version}
--mframe-limit=@var{bytes} -mxbpf}
+-mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -22634,6 +22634,17 @@ Generate code for a big-endian target.
 @item -mlittle-endian
 @opindex mlittle-endian
 Generate code for a little-endian target.  This is the default.
+
+@item -mco-re
+@opindex mco-re
+Enable BPF Compile Once - Run Everywhere (CO-RE) support. Requires and
+is implied by @option{-gbtf}.
+
+@item -mno-co-re
+@opindex mno-co-re
+Disable BPF Compile Once - Run Everywhere (CO-RE) support. BPF CO-RE
+support is enabled by default when generating BTF debug information for
+the BPF target.
 
 @item -mxbpf
 Generate code for an expanded version of BPF, which relaxes some of
