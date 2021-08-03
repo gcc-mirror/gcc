@@ -333,6 +333,14 @@
   [V16SI (V8SI  "TARGET_AVX512VL") (V4SI  "TARGET_AVX512VL")
    V8DI  (V4DI  "TARGET_AVX512VL") (V2DI  "TARGET_AVX512VL")])
 
+(define_mode_iterator VI1248_AVX512VLBW
+  [(V64QI "TARGET_AVX512BW") (V32QI "TARGET_AVX512VL && TARGET_AVX512BW")
+   (V16QI "TARGET_AVX512VL && TARGET_AVX512BW")
+   (V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX512VL && TARGET_AVX512BW")
+   (V8HI "TARGET_AVX512VL && TARGET_AVX512BW")
+   V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
+   V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
+
 (define_mode_iterator VF_AVX512VL
   [V16SF (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
    V8DF (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
@@ -11803,6 +11811,24 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
+(define_expand "cond_<insn><mode>"
+  [(set (match_operand:VI1248_AVX512VLBW 0 "register_operand")
+	(vec_merge:VI1248_AVX512VLBW
+	  (plusminus:VI1248_AVX512VLBW
+	    (match_operand:VI1248_AVX512VLBW 2 "nonimmediate_operand")
+	    (match_operand:VI1248_AVX512VLBW 3 "nonimmediate_operand"))
+	  (match_operand:VI1248_AVX512VLBW 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  emit_insn (gen_<insn><mode>3_mask (operands[0],
+				     operands[2],
+				     operands[3],
+				     operands[4],
+				     operands[1]));
+  DONE;
+})
+
 (define_expand "<insn><mode>3_mask"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand")
 	(vec_merge:VI48_AVX512VL
@@ -11926,6 +11952,24 @@
   "TARGET_SSE2"
 {
   ix86_expand_vecop_qihi (MULT, operands[0], operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "cond_mul<mode>"
+  [(set (match_operand:VI2_AVX512VL 0 "register_operand")
+	(vec_merge:VI2_AVX512VL
+	  (mult:VI2_AVX512VL
+	    (match_operand:VI2_AVX512VL 2 "vector_operand")
+	    (match_operand:VI2_AVX512VL 3 "vector_operand"))
+	  (match_operand:VI2_AVX512VL 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512BW"
+{
+  emit_insn (gen_mul<mode>3_mask (operands[0],
+				  operands[2],
+				  operands[3],
+				  operands[4],
+				  operands[1]));
   DONE;
 })
 
@@ -12363,6 +12407,24 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
+(define_expand "cond_mul<mode>"
+  [(set (match_operand:VI8_AVX512VL 0 "register_operand")
+	(vec_merge:VI8_AVX512VL
+	  (mult:VI8_AVX512VL
+	    (match_operand:VI8_AVX512VL 2 "vector_operand")
+	    (match_operand:VI8_AVX512VL 3 "vector_operand"))
+	  (match_operand:VI8_AVX512VL 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512DQ"
+{
+  emit_insn (gen_avx512dq_mul<mode>3_mask (operands[0],
+					   operands[2],
+					   operands[3],
+					   operands[4],
+					   operands[1]));
+  DONE;
+})
+
 (define_insn "avx512dq_mul<mode>3<mask_name>"
   [(set (match_operand:VI8_AVX512VL 0 "register_operand" "=v")
 	(mult:VI8_AVX512VL
@@ -12374,6 +12436,24 @@
   [(set_attr "type" "sseimul")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "cond_mul<mode>"
+  [(set (match_operand:VI4_AVX512VL 0 "register_operand")
+	(vec_merge:VI4_AVX512VL
+	  (mult:VI4_AVX512VL
+	    (match_operand:VI4_AVX512VL 2 "vector_operand")
+	    (match_operand:VI4_AVX512VL 3 "vector_operand"))
+	  (match_operand:VI4_AVX512VL 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  emit_insn (gen_mul<mode>3_mask (operands[0],
+				  operands[2],
+				  operands[3],
+				  operands[4],
+				  operands[1]));
+  DONE;
+})
 
 (define_expand "mul<mode>3<mask_name>"
   [(set (match_operand:VI4_AVX512F 0 "register_operand")
@@ -14042,14 +14122,6 @@
 		 (const_string "V4SF")
 	      ]
 	      (const_string "<sseinsnmode>")))])
-
-(define_mode_iterator VI1248_AVX512VLBW
-  [(V64QI "TARGET_AVX512BW") (V32QI "TARGET_AVX512VL && TARGET_AVX512BW")
-   (V16QI "TARGET_AVX512VL && TARGET_AVX512BW")
-   (V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX512VL && TARGET_AVX512BW")
-   (V8HI "TARGET_AVX512VL && TARGET_AVX512BW")
-   V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
-   V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
 
 (define_mode_iterator AVX512ZEXTMASK
   [(DI "TARGET_AVX512BW") (SI "TARGET_AVX512BW") HI])
