@@ -14622,6 +14622,18 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
+/* Return true if an operaton of kind KIND for STMT_INFO represents
+   the extraction of an element from a vector in preparation for
+   storing the element to memory.  */
+static bool
+aarch64_is_store_elt_extraction (vect_cost_for_stmt kind,
+				 stmt_vec_info stmt_info)
+{
+  return (kind == vec_to_scalar
+	  && STMT_VINFO_DATA_REF (stmt_info)
+	  && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)));
+}
+
 /* Return true if STMT_INFO represents part of a reduction.  */
 static bool
 aarch64_is_reduction (stmt_vec_info stmt_info)
@@ -14959,9 +14971,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
   /* Detect cases in which vec_to_scalar is describing the extraction of a
      vector element in preparation for a scalar store.  The store itself is
      costed separately.  */
-  if (kind == vec_to_scalar
-      && STMT_VINFO_DATA_REF (stmt_info)
-      && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
+  if (aarch64_is_store_elt_extraction (kind, stmt_info))
     return simd_costs->store_elt_extra_cost;
 
   /* Detect SVE gather loads, which are costed as a single scalar_load
@@ -15381,6 +15391,12 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	{
 	  if (vectype && aarch64_sve_only_stmt_p (stmt_info, vectype))
 	    costs->saw_sve_only_op = true;
+
+	  /* If we scalarize a strided store, the vectorizer costs one
+	     vec_to_scalar for each element.  However, we can store the first
+	     element using an FP store without a separate extract step.  */
+	  if (aarch64_is_store_elt_extraction (kind, stmt_info))
+	    count -= 1;
 
 	  stmt_cost = aarch64_detect_scalar_stmt_subtype
 	    (vinfo, kind, stmt_info, stmt_cost);
