@@ -506,10 +506,10 @@ struct tune_params
   const struct cpu_vector_cost *vec_costs;
   const struct cpu_branch_cost *branch_costs;
   const struct cpu_approx_modes *approx_modes;
-  /* Width of the SVE registers or SVE_NOT_IMPLEMENTED if not applicable.
-     Only used for tuning decisions, does not disable VLA
-     vectorization.  */
-  enum aarch64_sve_vector_bits_enum sve_width;
+  /* A bitmask of the possible SVE register widths in bits,
+     or SVE_NOT_IMPLEMENTED if not applicable.  Only used for tuning
+     decisions, does not disable VLA vectorization.  */
+  unsigned int sve_width;
   int memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
