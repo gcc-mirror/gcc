@@ -1525,6 +1525,9 @@ bpf-*-*)
         use_collect2=no
         extra_headers="bpf-helpers.h"
         use_gcc_stdint=provide
+        extra_headers="coreout.h"
+        extra_objs="coreout.o"
+        target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.c"
         ;;
 cr16-*-elf)
         tm_file="elfos.h ${tm_file} newlib-stdint.h"

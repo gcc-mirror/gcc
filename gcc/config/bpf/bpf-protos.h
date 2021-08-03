@@ -30,4 +30,6 @@ extern void bpf_print_operand_address (FILE *, rtx);
 extern void bpf_expand_prologue (void);
 extern void bpf_expand_epilogue (void);
 
+rtl_opt_pass * make_pass_bpf_core_attr (gcc::context *);
+
 #endif /* ! GCC_BPF_PROTOS_H */
