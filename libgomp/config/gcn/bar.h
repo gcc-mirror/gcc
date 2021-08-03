@@ -55,6 +55,9 @@ typedef unsigned int gomp_barrier_state_t;
 
 static inline void gomp_barrier_init (gomp_barrier_t *bar, unsigned count)
 {
+  unsigned actual_thread_count = __builtin_gcn_dim_size (1);
+  if (count > actual_thread_count)
+    count = actual_thread_count;
   bar->total = count;
   bar->awaited = count;
   bar->awaited_final = count;
