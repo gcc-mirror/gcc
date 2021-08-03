@@ -22,7 +22,7 @@ int
 main (void)
 {
   int i, val = 0;
-  for (i = 0; i < 100000; i++)
+  for (i = 0; i < 10000000; i++)
     {
       val = do_op (val, add1);
       val = do_op (val, sub1);
