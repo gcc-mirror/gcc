@@ -379,22 +379,20 @@ VisItem::as_string () const
 std::string
 Module::as_string () const
 {
-  std::string vis_item = VisItem::as_string ();
+  std::string str = VisItem::as_string () + "mod " + module_name;
 
-  return vis_item + "mod " + module_name;
-}
-
-std::string
-ModuleBodied::as_string () const
-{
-  // get module string for "[vis] mod [name]"
-  std::string str = Module::as_string ();
+  // Return early if we're dealing with an unloaded module as their body resides
+  // in a different file
+  if (kind == ModuleKind::UNLOADED)
+    return str + "\n no body (reference to external file)\n";
 
   // inner attributes
   str += append_attributes (inner_attrs, INNER);
 
   // items
   str += "\n items: ";
+
+  // This can still happen if the module is loaded but empty, i.e. `mod foo {}`
   if (items.empty ())
     {
       str += "none";
@@ -414,16 +412,6 @@ ModuleBodied::as_string () const
 	  str += "\n  " + item->as_string ();
 	}
     }
-
-  return str + "\n";
-}
-
-std::string
-ModuleNoBody::as_string () const
-{
-  std::string str = Module::as_string ();
-
-  str += "\n no body (reference to external file)";
 
   return str + "\n";
 }
@@ -4053,7 +4041,7 @@ AttrInputMetaItemContainer::as_string () const
 /* Override that calls the function recursively on all items contained within
  * the module. */
 void
-ModuleBodied::add_crate_name (std::vector<std::string> &names) const
+Module::add_crate_name (std::vector<std::string> &names) const
 {
   /* TODO: test whether module has been 'cfg'-ed out to determine whether to
    * exclude it from search */
@@ -5381,13 +5369,7 @@ Method::accept_vis (ASTVisitor &vis)
 }
 
 void
-ModuleBodied::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ModuleNoBody::accept_vis (ASTVisitor &vis)
+Module::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
