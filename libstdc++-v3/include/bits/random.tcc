@@ -91,6 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace __detail
   /// @endcond
 
+#if ! __cpp_inline_variables
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     constexpr _UIntType
     linear_congruential_engine<_UIntType, __a, __c, __m>::multiplier;
@@ -106,6 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     constexpr _UIntType
     linear_congruential_engine<_UIntType, __a, __c, __m>::default_seed;
+#endif
 
   /**
    * Seeds the LCR with integral value @p __s, adjusted so that the
