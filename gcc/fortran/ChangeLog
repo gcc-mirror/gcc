@@ -1,3 +1,23 @@
+2021-07-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-07-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101514
+	* target-memory.c (gfc_interpret_derived): Size of array component
+	of derived type can only be computed here for explicit shape.
+	* trans-types.c (gfc_get_nodesc_array_type): Do not dereference
+	NULL pointers.
+
+2021-07-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101536
+	* check.c (array_check): Adjust check for the case of CLASS
+	arrays.
+
 2021-07-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
