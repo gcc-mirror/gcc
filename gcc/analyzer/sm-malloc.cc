@@ -1543,7 +1543,7 @@ known_allocator_p (const_tree fndecl, const gcall *call)
 
   /* ... or it is a builtin allocator that allocates objects freed with
      __builtin_free.  */
-  if (fndecl_built_in_p (fndecl))
+  if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (fndecl))
       {
       case BUILT_IN_MALLOC:
