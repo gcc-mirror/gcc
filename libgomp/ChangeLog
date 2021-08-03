@@ -30,6 +30,12 @@
 	Likewise.
 	* testsuite/libgomp.oacc-fortran/routine-nohost-1.f90: Likewise.
 
+2021-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/libgomp.graphite/force-parallel-4.c: Adjust for
+	threader.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Same.
+
 2021-07-27  Ulrich Drepper  <drepper@gmail.com>
 
 	* env.c (wait_policy, stacksize): New static variables,

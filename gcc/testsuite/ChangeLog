@@ -348,6 +348,58 @@
 	conditions.
 	* gcc.target/powerpc/pr81348.c: Likewise.
 
+2021-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/debug/dwarf2/deallocator.C: Adjust for threader.
+	* gcc.c-torture/compile/pr83510.c: Same.
+	* gcc.dg/analyzer/pr94851-2.c: Same.
+	* gcc.dg/loop-unswitch-2.c: Same.
+	* gcc.dg/old-style-asm-1.c: Same.
+	* gcc.dg/pr68317.c: Same.
+	* gcc.dg/pr97567-2.c: Same.
+	* gcc.dg/predict-9.c: Same.
+	* gcc.dg/shrink-wrap-loop.c: Same.
+	* gcc.dg/sibcall-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-3.c: Same.
+	* gcc.dg/tree-ssa/pr21001.c: Same.
+	* gcc.dg/tree-ssa/pr21294.c: Same.
+	* gcc.dg/tree-ssa/pr21417.c: Same.
+	* gcc.dg/tree-ssa/pr21458-2.c: Same.
+	* gcc.dg/tree-ssa/pr21563.c: Same.
+	* gcc.dg/tree-ssa/pr49039.c: Same.
+	* gcc.dg/tree-ssa/pr61839_1.c: Same.
+	* gcc.dg/tree-ssa/pr61839_3.c: Same.
+	* gcc.dg/tree-ssa/pr77445-2.c: Same.
+	* gcc.dg/tree-ssa/split-path-4.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-11.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-12.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-14.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-18.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Same.
+	* gcc.dg/tree-ssa/ssa-fre-48.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-14.c: Same.
+	* gcc.dg/tree-ssa/vrp02.c: Same.
+	* gcc.dg/tree-ssa/vrp03.c: Same.
+	* gcc.dg/tree-ssa/vrp05.c: Same.
+	* gcc.dg/tree-ssa/vrp06.c: Same.
+	* gcc.dg/tree-ssa/vrp07.c: Same.
+	* gcc.dg/tree-ssa/vrp09.c: Same.
+	* gcc.dg/tree-ssa/vrp19.c: Same.
+	* gcc.dg/tree-ssa/vrp20.c: Same.
+	* gcc.dg/tree-ssa/vrp33.c: Same.
+	* gcc.dg/uninit-pred-9_b.c: Same.
+	* gcc.dg/uninit-pr61112.c: Same.
+	* gcc.dg/vect/bb-slp-16.c: Same.
+	* gcc.target/i386/avx2-vect-aggressive.c: Same.
+	* gcc.dg/tree-ssa/ranger-threader-1.c: New test.
+	* gcc.dg/tree-ssa/ranger-threader-2.c: New test.
+	* gcc.dg/tree-ssa/ranger-threader-3.c: New test.
+	* gcc.dg/tree-ssa/ranger-threader-4.c: New test.
+	* gcc.dg/tree-ssa/ranger-threader-5.c: New test.
+
 2021-07-29  Richard Biener  <rguenther@suse.de>
 
 	PR c/101512

@@ -347,6 +347,37 @@
 	* tree-parloops.c (create_parallel_loop): Adjust.
 	* tree-pass.h (make_pass_oacc_loop_designation): New.
 
+2021-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* flag-types.h (enum threader_mode): New.
+	* params.opt: Add entry for --param=threader-mode.
+	* tree-ssa-threadbackward.c (THREADER_ITERATIVE_MODE): New.
+	(class back_threader): New.
+	(back_threader::back_threader): New.
+	(back_threader::~back_threader): New.
+	(back_threader::maybe_register_path): New.
+	(back_threader::find_taken_edge): New.
+	(back_threader::find_taken_edge_switch): New.
+	(back_threader::find_taken_edge_cond): New.
+	(back_threader::resolve_def): New.
+	(back_threader::resolve_phi): New.
+	(back_threader::find_paths_to_names): New.
+	(back_threader::find_paths): New.
+	(dump_path): New.
+	(debug): New.
+	(thread_jumps::find_jump_threads_backwards): Call ranger threader.
+	(thread_jumps::find_jump_threads_backwards_with_ranger): New.
+	(pass_thread_jumps::execute): Abstract out code...
+	(try_thread_blocks): ...here.
+	* tree-ssa-threadedge.c (jump_threader::thread_outgoing_edges):
+	Abstract out threading candidate code to...
+	(single_succ_to_potentially_threadable_block): ...here.
+	* tree-ssa-threadedge.h (single_succ_to_potentially_threadable_block):
+	New.
+	* tree-ssa-threadupdate.c (register_jump_thread): Return boolean.
+	* tree-ssa-threadupdate.h (class jump_thread_path_registry):
+	Return bool from register_jump_thread.
+
 2021-07-29  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* target.def: in0 and in1 do not need to be registers.
