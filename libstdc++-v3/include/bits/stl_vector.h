@@ -807,6 +807,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element in the %vector.  Iteration is done in ordinary
        *  element order.
        */
+      _GLIBCXX_NODISCARD
       iterator
       begin() _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_impl._M_start); }
@@ -816,6 +817,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element in the %vector.  Iteration is done in ordinary
        *  element order.
        */
+      _GLIBCXX_NODISCARD
       const_iterator
       begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(this->_M_impl._M_start); }
@@ -825,6 +827,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element in the %vector.  Iteration is done in ordinary
        *  element order.
        */
+      _GLIBCXX_NODISCARD
       iterator
       end() _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_impl._M_finish); }
@@ -834,6 +837,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the last element in the %vector.  Iteration is done in
        *  ordinary element order.
        */
+      _GLIBCXX_NODISCARD
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
       { return const_iterator(this->_M_impl._M_finish); }
@@ -843,6 +847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  last element in the %vector.  Iteration is done in reverse
        *  element order.
        */
+      _GLIBCXX_NODISCARD
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
@@ -852,6 +857,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to the last element in the %vector.  Iteration is done in
        *  reverse element order.
        */
+      _GLIBCXX_NODISCARD
       const_reverse_iterator
       rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
@@ -861,6 +867,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  before the first element in the %vector.  Iteration is done
        *  in reverse element order.
        */
+      _GLIBCXX_NODISCARD
       reverse_iterator
       rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
@@ -870,6 +877,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to one before the first element in the %vector.  Iteration
        *  is done in reverse element order.
        */
+      _GLIBCXX_NODISCARD
       const_reverse_iterator
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
@@ -880,6 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element in the %vector.  Iteration is done in ordinary
        *  element order.
        */
+      [[__nodiscard__]]
       const_iterator
       cbegin() const noexcept
       { return const_iterator(this->_M_impl._M_start); }
@@ -889,6 +898,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the last element in the %vector.  Iteration is done in
        *  ordinary element order.
        */
+      [[__nodiscard__]]
       const_iterator
       cend() const noexcept
       { return const_iterator(this->_M_impl._M_finish); }
@@ -898,6 +908,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to the last element in the %vector.  Iteration is done in
        *  reverse element order.
        */
+      [[__nodiscard__]]
       const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
@@ -907,6 +918,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to one before the first element in the %vector.  Iteration
        *  is done in reverse element order.
        */
+      [[__nodiscard__]]
       const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
@@ -914,11 +926,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // [23.2.4.2] capacity
       /**  Returns the number of elements in the %vector.  */
+      _GLIBCXX_NODISCARD
       size_type
       size() const _GLIBCXX_NOEXCEPT
       { return size_type(this->_M_impl._M_finish - this->_M_impl._M_start); }
 
       /**  Returns the size() of the largest possible %vector.  */
+      _GLIBCXX_NODISCARD
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
       { return _S_max_size(_M_get_Tp_allocator()); }
@@ -994,6 +1008,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns the total number of elements that the %vector can
        *  hold before needing to allocate more memory.
        */
+      _GLIBCXX_NODISCARD
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
       { return size_type(this->_M_impl._M_end_of_storage
@@ -1039,6 +1054,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  out_of_range lookups are not defined. (For checked lookups
        *  see at().)
        */
+      _GLIBCXX_NODISCARD
       reference
       operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
@@ -1057,6 +1073,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  out_of_range lookups are not defined. (For checked lookups
        *  see at().)
        */
+      _GLIBCXX_NODISCARD
       const_reference
       operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
@@ -1117,6 +1134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read/write reference to the data at the first
        *  element of the %vector.
        */
+      _GLIBCXX_NODISCARD
       reference
       front() _GLIBCXX_NOEXCEPT
       {
@@ -1128,6 +1146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %vector.
        */
+      _GLIBCXX_NODISCARD
       const_reference
       front() const _GLIBCXX_NOEXCEPT
       {
@@ -1139,6 +1158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read/write reference to the data at the last
        *  element of the %vector.
        */
+      _GLIBCXX_NODISCARD
       reference
       back() _GLIBCXX_NOEXCEPT
       {
@@ -1150,6 +1170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read-only (constant) reference to the data at the
        *  last element of the %vector.
        */
+      _GLIBCXX_NODISCARD
       const_reference
       back() const _GLIBCXX_NOEXCEPT
       {
@@ -1164,10 +1185,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *   Returns a pointer such that [data(), data() + size()) is a valid
        *   range.  For a non-empty %vector, data() == &front().
        */
+      _GLIBCXX_NODISCARD
       _Tp*
       data() _GLIBCXX_NOEXCEPT
       { return _M_data_ptr(this->_M_impl._M_start); }
 
+      _GLIBCXX_NODISCARD
       const _Tp*
       data() const _GLIBCXX_NOEXCEPT
       { return _M_data_ptr(this->_M_impl._M_start); }
