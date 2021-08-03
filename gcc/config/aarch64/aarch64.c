@@ -675,6 +675,8 @@ static const sve_vec_cost generic_sve_vector_cost =
   2, /* fadda_f16_cost  */
   2, /* fadda_f32_cost  */
   2, /* fadda_f64_cost  */
+  4, /* gather_load_x32_cost  */
+  2, /* gather_load_x64_cost  */
   1 /* scatter_store_elt_cost  */
 };
 
@@ -744,6 +746,8 @@ static const sve_vec_cost a64fx_sve_vector_cost =
   13, /* fadda_f16_cost  */
   13, /* fadda_f32_cost  */
   13, /* fadda_f64_cost  */
+  64, /* gather_load_x32_cost  */
+  32, /* gather_load_x64_cost  */
   1 /* scatter_store_elt_cost  */
 };
 
@@ -1739,6 +1743,8 @@ static const sve_vec_cost neoversev1_sve_vector_cost =
   19, /* fadda_f16_cost  */
   11, /* fadda_f32_cost  */
   8, /* fadda_f64_cost  */
+  32, /* gather_load_x32_cost  */
+  16, /* gather_load_x64_cost  */
   3 /* scatter_store_elt_cost  */
 };
 
@@ -14957,6 +14963,19 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
       && STMT_VINFO_DATA_REF (stmt_info)
       && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
     return simd_costs->store_elt_extra_cost;
+
+  /* Detect SVE gather loads, which are costed as a single scalar_load
+     for each element.  We therefore need to divide the full-instruction
+     cost by the number of elements in the vector.  */
+  if (kind == scalar_load
+      && sve_costs
+      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+    {
+      unsigned int nunits = vect_nunits_for_cost (vectype);
+      if (GET_MODE_UNIT_BITSIZE (TYPE_MODE (vectype)) == 64)
+	return { sve_costs->gather_load_x64_cost, nunits };
+      return { sve_costs->gather_load_x32_cost, nunits };
+    }
 
   /* Detect cases in which a scalar_store is really storing one element
      in a scatter operation.  */
