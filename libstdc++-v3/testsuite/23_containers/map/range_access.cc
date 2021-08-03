@@ -25,6 +25,6 @@ void
 test01()
 {
   std::map<int, double> m{{1, 1.0}, {2, 2.0}, {3, 3.0}};
-  std::begin(m);
-  std::end(m);
+  (void) std::begin(m);
+  (void) std::end(m);
 }

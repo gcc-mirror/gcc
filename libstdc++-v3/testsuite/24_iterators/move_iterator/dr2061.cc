@@ -23,6 +23,6 @@
 void test01()
 {
   int a[] = { 1, 2, 3, 4 };
-  std::make_move_iterator(a + 4);
-  std::make_move_iterator(a);
+  (void) std::make_move_iterator(a + 4);
+  (void) std::make_move_iterator(a);
 }

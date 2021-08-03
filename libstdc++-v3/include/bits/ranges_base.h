@@ -110,6 +110,7 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires is_array_v<remove_reference_t<_Tp>> || __member_begin<_Tp>
 	  || __adl_begin<_Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
@@ -161,6 +162,7 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_end<_Tp> || __adl_end<_Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
@@ -192,6 +194,7 @@ namespace ranges
     struct _CBegin
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
 	noexcept(noexcept(_Begin{}(__cust_access::__as_const<_Tp>(__e))))
@@ -204,6 +207,7 @@ namespace ranges
     struct _CEnd final
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
 	noexcept(noexcept(_End{}(__cust_access::__as_const<_Tp>(__e))))
@@ -263,6 +267,7 @@ namespace ranges
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_rbegin<_Tp> || __adl_rbegin<_Tp> || __reversable<_Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __t) const
 	noexcept(_S_noexcept<_Tp&>())
@@ -321,6 +326,7 @@ namespace ranges
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __t) const
 	noexcept(_S_noexcept<_Tp&>())
@@ -337,6 +343,7 @@ namespace ranges
     struct _CRBegin
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
 	noexcept(noexcept(_RBegin{}(__cust_access::__as_const<_Tp>(__e))))
@@ -349,6 +356,7 @@ namespace ranges
     struct _CREnd
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
 	noexcept(noexcept(_REnd{}(__cust_access::__as_const<_Tp>(__e))))
@@ -408,6 +416,7 @@ namespace ranges
       template<typename _Tp>
 	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_size<_Tp> || __adl_size<_Tp> || __sentinel_size<_Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
@@ -428,6 +437,7 @@ namespace ranges
       // 3403. Domain of ranges::ssize(E) doesn't match ranges::size(E)
       template<typename _Tp>
 	requires requires (_Tp& __t) { _Size{}(__t); }
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __t) const noexcept(noexcept(_Size{}(__t)))
 	{
@@ -487,6 +497,7 @@ namespace ranges
       template<typename _Tp>
 	requires __member_empty<_Tp> || __size0_empty<_Tp>
 	  || __eq_iter_empty<_Tp>
+	[[nodiscard]]
 	constexpr bool
 	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
@@ -528,6 +539,7 @@ namespace ranges
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_data<_Tp> || __begin_data<_Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
 	{
@@ -541,6 +553,7 @@ namespace ranges
     struct _CData
     {
       template<typename _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Tp&& __e) const
 	noexcept(noexcept(_Data{}(__cust_access::__as_const<_Tp>(__e))))
@@ -782,6 +795,7 @@ namespace ranges
   struct __distance_fn final
   {
     template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      [[nodiscard]]
       constexpr iter_difference_t<_It>
       operator()(_It __first, _Sent __last) const
       {
@@ -800,6 +814,7 @@ namespace ranges
       }
 
     template<range _Range>
+      [[nodiscard]]
       constexpr range_difference_t<_Range>
       operator()(_Range&& __r) const
       {
@@ -817,6 +832,7 @@ namespace ranges
   struct __next_fn final
   {
     template<input_or_output_iterator _It>
+      [[nodiscard]]
       constexpr _It
       operator()(_It __x) const
       {
@@ -825,6 +841,7 @@ namespace ranges
       }
 
     template<input_or_output_iterator _It>
+      [[nodiscard]]
       constexpr _It
       operator()(_It __x, iter_difference_t<_It> __n) const
       {
@@ -833,6 +850,7 @@ namespace ranges
       }
 
     template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      [[nodiscard]]
       constexpr _It
       operator()(_It __x, _Sent __bound) const
       {
@@ -841,6 +859,7 @@ namespace ranges
       }
 
     template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+      [[nodiscard]]
       constexpr _It
       operator()(_It __x, iter_difference_t<_It> __n, _Sent __bound) const
       {
@@ -856,6 +875,7 @@ namespace ranges
   struct __prev_fn final
   {
     template<bidirectional_iterator _It>
+      [[nodiscard]]
       constexpr _It
       operator()(_It __x) const
       {
@@ -864,6 +884,7 @@ namespace ranges
       }
 
     template<bidirectional_iterator _It>
+      [[nodiscard]]
       constexpr _It
       operator()(_It __x, iter_difference_t<_It> __n) const
       {
@@ -872,6 +893,7 @@ namespace ranges
       }
 
     template<bidirectional_iterator _It>
+      [[nodiscard]]
       constexpr _It
       operator()(_It __x, iter_difference_t<_It> __n, _It __bound) const
       {

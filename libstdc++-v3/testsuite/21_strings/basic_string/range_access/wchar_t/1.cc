@@ -26,7 +26,7 @@ test01()
 {
 #ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring ws(L"Hello, World!");
-  std::begin(ws);
-  std::end(ws);
+  (void) std::begin(ws);
+  (void) std::end(ws);
 #endif
 }

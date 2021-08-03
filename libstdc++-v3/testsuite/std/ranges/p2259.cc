@@ -64,7 +64,7 @@ test01()
 
   // Verify the changes to common_iterator.
   only_cxx20_input_range auto v6 = v0 | views::common;
-  *(v6.begin()++);
+  (void) *(v6.begin()++);
 
   // Verify the changes to iota_view.
   only_cxx20_input_range auto v8 = ranges::iota_view{v0.begin()};
@@ -77,7 +77,7 @@ test01()
   static_assert(std::contiguous_iterator<decltype(i10)>);
   static_assert(std::same_as<std::iterator_traits<decltype(i10)>::iterator_category,
 			     std::random_access_iterator_tag>);
-  i10.operator->();
+  (void) i10.operator->();
   __iter_without_category auto i11 = std::counted_iterator{v0.begin(), 5};
 }
 

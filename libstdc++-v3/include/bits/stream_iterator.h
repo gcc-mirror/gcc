@@ -89,6 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~istream_iterator() = default;
 #endif
 
+      _GLIBCXX_NODISCARD
       const _Tp&
       operator*() const
       {
@@ -98,6 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_value;
       }
 
+      _GLIBCXX_NODISCARD
       const _Tp*
       operator->() const { return std::__addressof((operator*())); }
 
@@ -143,17 +145,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Return true if the iterators refer to the same stream,
       /// or are both at end-of-stream.
+      _GLIBCXX_NODISCARD
       friend bool
       operator==(const istream_iterator& __x, const istream_iterator& __y)
       { return __x._M_equal(__y); }
 
+#if __cpp_impl_three_way_comparison < 201907L
       /// Return true if the iterators refer to different streams,
       /// or if one is at end-of-stream and the other is not.
+      _GLIBCXX_NODISCARD
       friend bool
       operator!=(const istream_iterator& __x, const istream_iterator& __y)
       { return !__x._M_equal(__y); }
+#endif
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
+      [[nodiscard]]
       friend bool
       operator==(const istream_iterator& __i, default_sentinel_t)
       { return !__i._M_stream; }
@@ -231,6 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX_NODISCARD
       ostream_iterator&
       operator*()
       { return *this; }

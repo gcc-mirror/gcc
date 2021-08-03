@@ -25,8 +25,8 @@ void
 test01()
 {
   int arr[3] = {1, 2, 3};
-  std::begin(arr);
-  std::end(arr);
+  (void) std::begin(arr);
+  (void) std::end(arr);
 
   static_assert( noexcept(std::begin(arr)), "LWG 2280" );
   static_assert( noexcept(std::end(arr)), "LWG 2280" );

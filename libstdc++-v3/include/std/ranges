@@ -645,6 +645,7 @@ namespace views
   struct _Single
   {
     template<typename _Tp>
+      [[nodiscard]]
       constexpr auto
       operator()(_Tp&& __e) const
       noexcept(noexcept(single_view<decay_t<_Tp>>(std::forward<_Tp>(__e))))
@@ -656,11 +657,13 @@ namespace views
   struct _Iota
   {
     template<typename _Tp>
+      [[nodiscard]]
       constexpr auto
       operator()(_Tp&& __e) const
       { return iota_view(std::forward<_Tp>(__e)); }
 
     template<typename _Tp, typename _Up>
+      [[nodiscard]]
       constexpr auto
       operator()(_Tp&& __e, _Up&& __f) const
       { return iota_view(std::forward<_Tp>(__e), std::forward<_Up>(__f)); }
@@ -1123,6 +1126,7 @@ namespace views::__adaptor
 	requires view<decay_t<_Range>>
 	  || __detail::__can_ref_view<_Range>
 	  || __detail::__can_subrange<_Range>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r) const
 	noexcept(_S_noexcept<_Range>())
@@ -1549,6 +1553,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range, typename _Pred>
 	requires __detail::__can_filter_view<_Range, _Pred>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r, _Pred&& __p) const
 	{
@@ -1926,6 +1931,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range, typename _Fp>
 	requires __detail::__can_transform_view<_Range, _Fp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r, _Fp&& __f) const
 	{
@@ -2107,6 +2113,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range, typename _Tp>
 	requires __detail::__can_take_view<_Range, _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r, _Tp&& __n) const
 	{
@@ -2234,6 +2241,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range, typename _Pred>
 	requires __detail::__can_take_while_view<_Range, _Pred>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r, _Pred&& __p) const
 	{
@@ -2354,6 +2362,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range, typename _Tp>
 	requires __detail::__can_drop_view<_Range, _Tp>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r, _Tp&& __n) const
 	{
@@ -2442,6 +2451,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range, typename _Pred>
 	requires __detail::__can_drop_while_view<_Range, _Pred>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r, _Pred&& __p) const
 	{
@@ -2804,6 +2814,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range>
 	requires __detail::__can_join_view<_Range>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r) const
 	{
@@ -3255,6 +3266,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range, typename _Pattern>
 	requires __detail::__can_lazy_split_view<_Range, _Pattern>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r, _Pattern&& __f) const
 	{
@@ -3463,6 +3475,7 @@ namespace views::__adaptor
     {
       template<viewable_range _Range, typename _Pattern>
 	requires __detail::__can_split_view<_Range, _Pattern>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r, _Pattern&& __f) const
 	{
@@ -3484,6 +3497,7 @@ namespace views::__adaptor
     struct _Counted
     {
       template<input_or_output_iterator _Iter>
+      [[nodiscard]]
       constexpr auto
       operator()(_Iter __i, iter_difference_t<_Iter> __n) const
       {
@@ -3605,6 +3619,7 @@ namespace views::__adaptor
       template<viewable_range _Range>
 	requires __detail::__already_common<_Range>
 	  || __detail::__can_common_view<_Range>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r) const
 	{
@@ -3727,6 +3742,7 @@ namespace views::__adaptor
 	requires __detail::__is_reverse_view<remove_cvref_t<_Range>>
 	  || __detail::__is_reversible_subrange<remove_cvref_t<_Range>>
 	  || __detail::__can_reverse_view<_Range>
+	[[nodiscard]]
 	constexpr auto
 	operator()(_Range&& __r) const
 	{
@@ -4125,6 +4141,7 @@ namespace views::__adaptor
       {
 	template<viewable_range _Range>
 	  requires __detail::__can_elements_view<_Nm, _Range>
+	  [[nodiscard]]
 	  constexpr auto
 	  operator()(_Range&& __r) const
 	  {
