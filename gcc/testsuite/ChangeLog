@@ -1,3 +1,430 @@
+2021-08-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/80566
+	* g++.target/i386/pr80566-1.C: New test.
+	* g++.target/i386/pr80566-2.C: Likewise.
+
+2021-08-03  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cond_op_addsubmuldiv_double-1.c: New test.
+	* gcc.target/i386/cond_op_addsubmuldiv_double-2.c: New test.
+	* gcc.target/i386/cond_op_addsubmuldiv_float-1.c: New test.
+	* gcc.target/i386/cond_op_addsubmuldiv_float-2.c: New test.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/vect8-ret.c: Also pass -mno-sse.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/incoming-11.c: Expect no stack realignment.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/sw-1.c: Also pass -mno-avx for ia32.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/cold-attribute-1.c: Also pass -mno-avx.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr72839.c: Also pass -mno-avx.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pieces-memcpy-10.c: New test.
+	* gcc.target/i386/pieces-memcpy-11.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-12.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-13.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-14.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-15.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-16.c: Likewise.
+	* gcc.target/i386/pieces-memset-1.c: Likewise.
+	* gcc.target/i386/pieces-memset-2.c: Likewise.
+	* gcc.target/i386/pieces-memset-3.c: Likewise.
+	* gcc.target/i386/pieces-memset-4.c: Likewise.
+	* gcc.target/i386/pieces-memset-5.c: Likewise.
+	* gcc.target/i386/pieces-memset-6.c: Likewise.
+	* gcc.target/i386/pieces-memset-7.c: Likewise.
+	* gcc.target/i386/pieces-memset-8.c: Likewise.
+	* gcc.target/i386/pieces-memset-9.c: Likewise.
+	* gcc.target/i386/pieces-memset-10.c: Likewise.
+	* gcc.target/i386/pieces-memset-11.c: Likewise.
+	* gcc.target/i386/pieces-memset-12.c: Likewise.
+	* gcc.target/i386/pieces-memset-13.c: Likewise.
+	* gcc.target/i386/pieces-memset-14.c: Likewise.
+	* gcc.target/i386/pieces-memset-15.c: Likewise.
+	* gcc.target/i386/pieces-memset-16.c: Likewise.
+	* gcc.target/i386/pieces-memset-17.c: Likewise.
+	* gcc.target/i386/pieces-memset-18.c: Likewise.
+	* gcc.target/i386/pieces-memset-19.c: Likewise.
+	* gcc.target/i386/pieces-memset-20.c: Likewise.
+	* gcc.target/i386/pieces-memset-21.c: Likewise.
+	* gcc.target/i386/pieces-memset-22.c: Likewise.
+	* gcc.target/i386/pieces-memset-23.c: Likewise.
+	* gcc.target/i386/pieces-memset-24.c: Likewise.
+	* gcc.target/i386/pieces-memset-25.c: Likewise.
+	* gcc.target/i386/pieces-memset-26.c: Likewise.
+	* gcc.target/i386/pieces-memset-27.c: Likewise.
+	* gcc.target/i386/pieces-memset-28.c: Likewise.
+	* gcc.target/i386/pieces-memset-29.c: Likewise.
+	* gcc.target/i386/pieces-memset-30.c: Likewise.
+	* gcc.target/i386/pieces-memset-31.c: Likewise.
+	* gcc.target/i386/pieces-memset-32.c: Likewise.
+	* gcc.target/i386/pieces-memset-33.c: Likewise.
+	* gcc.target/i386/pieces-memset-34.c: Likewise.
+	* gcc.target/i386/pieces-memset-35.c: Likewise.
+	* gcc.target/i386/pieces-memset-36.c: Likewise.
+	* gcc.target/i386/pieces-memset-37.c: Likewise.
+	* gcc.target/i386/pieces-memset-38.c: Likewise.
+	* gcc.target/i386/pieces-memset-39.c: Likewise.
+	* gcc.target/i386/pieces-memset-40.c: Likewise.
+	* gcc.target/i386/pieces-memset-41.c: Likewise.
+	* gcc.target/i386/pieces-memset-42.c: Likewise.
+	* gcc.target/i386/pieces-memset-43.c: Likewise.
+	* gcc.target/i386/pieces-memset-44.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-7.c: New file.
+	* gcc.target/i386/pieces-memcpy-8.c: New file.
+	* gcc.target/i386/pieces-memcpy-9.c: New file.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* gcc.target/i386/pr90773-20.c: New test.
+	* gcc.target/i386/pr90773-21.c: Likewise.
+	* gcc.target/i386/pr90773-22.c: Likewise.
+	* gcc.target/i386/pr90773-23.c: Likewise.
+	* gcc.target/i386/pr90773-26.c: Likewise.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr90773-1.c: Adjust to expect movq for 32-bit.
+	* gcc.target/i386/pr90773-4.c: Also run for 32-bit.
+	* gcc.target/i386/pr90773-15.c: Likewise.
+	* gcc.target/i386/pr90773-16.c: Likewise.
+	* gcc.target/i386/pr90773-17.c: Likewise.
+	* gcc.target/i386/pr90773-24.c: Likewise.
+	* gcc.target/i386/pr90773-25.c: Likewise.
+	* gcc.target/i386/pr100865-1.c: Likewise.
+	* gcc.target/i386/pr100865-2.c: Likewise.
+	* gcc.target/i386/pr100865-3.c: Likewise.
+	* gcc.target/i386/pr90773-14.c: Also run for 32-bit and expect
+	XMM movd to store 4 bytes.
+	* gcc.target/i386/pr100865-4a.c: Also run for 32-bit and expect
+	YMM registers.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-10a.c: Expect YMM registers.
+	* gcc.target/i386/pr100865-10b.c: Likewise.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/eh_return-1.c: New test.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* gcc.target/i386/pr90773-5.c: Updated to expect XMM register.
+	* gcc.target/i386/pr90773-14.c: Likewise.
+	* gcc.target/i386/pr90773-15.c: New test.
+	* gcc.target/i386/pr90773-16.c: Likewise.
+	* gcc.target/i386/pr90773-17.c: Likewise.
+	* gcc.target/i386/pr90773-18.c: Likewise.
+	* gcc.target/i386/pr90773-19.c: Likewise.
+
+2021-08-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/tree-ssa/phi-opt-25.c: New test case.
+
+2021-08-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/78103
+	* gcc.target/i386/pr78103-2.c: Also scan incl.
+	* gcc.target/i386/pr78103-3.c: Scan leal|addl|incl for x32.  Also
+	scan incq.
+
+2021-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96636
+	* g++.dg/ext/anon-struct9.C: New test.
+
+2021-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/dec-cmov-2.c: Require -march=core2 with -m32.
+
+2021-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-9.C: New test.
+
+2021-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78103
+	* gcc.target/i386/pr78103-1.c: New test.
+	* gcc.target/i386/pr78103-2.c: New test.
+	* gcc.target/i386/pr78103-3.c: New test.
+
+2021-07-31  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Skip on mmix-knuth-mmixware.
+
+2021-07-31  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/101674
+	* gcc.dg/uninit-pred-9_b.c: Xfail for mmix-*-* too.
+
+2021-07-30  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-floorpd.c: New.
+	* gcc.target/powerpc/sse4_1-floorps.c: New.
+	* gcc.target/powerpc/sse4_1-floorsd.c: New.
+	* gcc.target/powerpc/sse4_1-floorss.c: New.
+	* gcc.target/powerpc/sse4_1-roundpd-2.c: Copy from
+	gcc/testsuite/gcc.target/i386 and adjust dg directives to suit.
+
+2021-07-30  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-ceilpd.c: New.
+	* gcc.target/powerpc/sse4_1-ceilps.c: New.
+	* gcc.target/powerpc/sse4_1-ceilsd.c: New.
+	* gcc.target/powerpc/sse4_1-ceilss.c: New.
+	* gcc.target/powerpc/sse4_1-round-data.h: New.
+	* gcc.target/powerpc/sse4_1-round.h: New.
+	* gcc.target/powerpc/sse4_1-round2.h: New.
+	* gcc.target/powerpc/sse4_1-roundpd-3.c: Copy from gcc.target/i386
+	and adjust dg directives to suit.
+	* gcc.target/powerpc/sse4_1-check.h (__VSX_SSE2__): Define.
+
+2021-07-30  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-blendpd.c: Copy from gcc.target/i386
+	and adjust dg directives to suit.
+	* gcc.target/powerpc/sse4_1-blendps-2.c: Likewise.
+	* gcc.target/powerpc/sse4_1-blendps.c: Likewise.
+	* gcc.target/powerpc/sse4_1-blendvpd.c: Likewise.
+
+2021-07-30  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/dec-cmov-1.c: New test.
+	* gcc.target/i386/dec-cmov-2.c: New test.
+
+2021-07-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/pr61839_2.c: Adjust.  Add new const fold test.
+
+2021-07-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/pr61839_2.c: Adjust.
+
+2021-07-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101671
+	* gcc.c-torture/compile/pr83510.c: Move test functions...
+	* gcc.dg/Warray-bounds-87.c: ...to this file.
+
+2021-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr100865-3.c: Expect vmovdqu8 instead of
+	vmovdqu.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+
+2021-07-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR testsuite/101517
+	* g++.dg/warn/Wunused-18.C: New test.
+	* gcc.c-torture/compile/20030405-2.c: New test.
+	* gcc.c-torture/compile/20040304-2.c: New test.
+	* gcc.dg/20030612-2.c: New test.
+
+2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/101132
+	* gcc.target/mips/pr101132.c: New test.
+
+2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101539
+	* g++.dg/cpp2a/is-pointer-interconvertible-base-of1.C: New test.
+	* g++.dg/cpp2a/is-pointer-interconvertible-with-class1.C: New test.
+	* g++.dg/cpp2a/is-pointer-interconvertible-with-class2.C: New test.
+	* g++.dg/cpp2a/is-pointer-interconvertible-with-class3.C: New test.
+	* g++.dg/cpp2a/is-pointer-interconvertible-with-class4.C: New test.
+	* g++.dg/cpp2a/is-pointer-interconvertible-with-class5.C: New test.
+	* g++.dg/cpp2a/is-pointer-interconvertible-with-class6.C: New test.
+
+2021-07-30  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/anon-struct8.C: New test.
+
+2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp0x/gen-attrs-76.C: New test.
+
+2021-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101685
+	* gcc.target/i386/pr101685.c: New test.
+
+2021-07-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/shrink-wrap-loop.c: Enable early jump threading.  Mark as
+	XFAIL.
+
+2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101582
+	* g++.dg/cpp0x/gen-attrs-45.C: Expect a warning about ignored
+	attributes instead of error.
+	* g++.dg/cpp0x/gen-attrs-75.C: New test.
+	* g++.dg/modules/pr101582-1.C: New test.
+
+2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR ipa/101396
+	* g++.dg/lto/pr101396_0.C: New test.
+	* g++.dg/lto/pr101396_1.C: New test.
+
+2021-07-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101674
+	* gcc.dg/uninit-pred-9_b.c: Xfail just the failing assertion and
+	correct target.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101672
+	* gdc.dg/pr100967.d: Update test.
+	* gdc.dg/pr101672.d: New test.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101664
+	* gdc.dg/extern-c++/extern-c++.exp: New.
+	* gdc.dg/extern-c++/pr101664.d: New test.
+	* gdc.dg/extern-c++/pr101664_1.cc: New test.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96435
+	* gdc.dg/torture/pr96435.d: New test.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101657
+	* gdc.dg/pr101657.d: New test.
+
+2021-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/101647
+	* g++.dg/pr71389.C: Include <array> instead of <functional>.
+	* g++.dg/cpp0x/initlist48.C: Include also <initializer_list>.
+
+2021-07-29  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c:
+	's%oaccdevlow%oaccloops%g'.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine-nohost.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* c-c++-common/goacc/classify-serial.c: Likewise.
+	* c-c++-common/goacc/routine-nohost-1.c: Likewise.
+	* g++.dg/goacc/template.C: Likewise.
+	* gcc.dg/goacc/loop-processing-1.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine-nohost.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+	* gfortran.dg/goacc/classify-serial.f95: Likewise.
+	* gfortran.dg/goacc/routine-multiple-directives-1.f90: Likewise.
+
+2021-07-29  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100952
+	* gcc.target/powerpc/pr56605.c: Change matching
+	conditions.
+	* gcc.target/powerpc/pr81348.c: Likewise.
+
+2021-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/debug/dwarf2/deallocator.C: Adjust for threader.
+	* gcc.c-torture/compile/pr83510.c: Same.
+	* gcc.dg/analyzer/pr94851-2.c: Same.
+	* gcc.dg/loop-unswitch-2.c: Same.
+	* gcc.dg/old-style-asm-1.c: Same.
+	* gcc.dg/pr68317.c: Same.
+	* gcc.dg/pr97567-2.c: Same.
+	* gcc.dg/predict-9.c: Same.
+	* gcc.dg/shrink-wrap-loop.c: Same.
+	* gcc.dg/sibcall-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-3.c: Same.
+	* gcc.dg/tree-ssa/pr21001.c: Same.
+	* gcc.dg/tree-ssa/pr21294.c: Same.
+	* gcc.dg/tree-ssa/pr21417.c: Same.
+	* gcc.dg/tree-ssa/pr21458-2.c: Same.
+	* gcc.dg/tree-ssa/pr21563.c: Same.
+	* gcc.dg/tree-ssa/pr49039.c: Same.
+	* gcc.dg/tree-ssa/pr61839_1.c: Same.
+	* gcc.dg/tree-ssa/pr61839_3.c: Same.
+	* gcc.dg/tree-ssa/pr77445-2.c: Same.
+	* gcc.dg/tree-ssa/split-path-4.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-11.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-12.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-14.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-18.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Same.
+	* gcc.dg/tree-ssa/ssa-fre-48.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-14.c: Same.
+	* gcc.dg/tree-ssa/vrp02.c: Same.
+	* gcc.dg/tree-ssa/vrp03.c: Same.
+	* gcc.dg/tree-ssa/vrp05.c: Same.
+	* gcc.dg/tree-ssa/vrp06.c: Same.
+	* gcc.dg/tree-ssa/vrp07.c: Same.
+	* gcc.dg/tree-ssa/vrp09.c: Same.
+	* gcc.dg/tree-ssa/vrp19.c: Same.
+	* gcc.dg/tree-ssa/vrp20.c: Same.
+	* gcc.dg/tree-ssa/vrp33.c: Same.
+	* gcc.dg/uninit-pred-9_b.c: Same.
+	* gcc.dg/uninit-pr61112.c: Same.
+	* gcc.dg/vect/bb-slp-16.c: Same.
+	* gcc.target/i386/avx2-vect-aggressive.c: Same.
+	* gcc.dg/tree-ssa/ranger-threader-1.c: New test.
+	* gcc.dg/tree-ssa/ranger-threader-2.c: New test.
+	* gcc.dg/tree-ssa/ranger-threader-3.c: New test.
+	* gcc.dg/tree-ssa/ranger-threader-4.c: New test.
+	* gcc.dg/tree-ssa/ranger-threader-5.c: New test.
+
+2021-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR c/101512
+	* gcc.dg/torture/pr101512.c: New testcase.
+
+2021-07-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/99881
+	* gcc.target/i386/pr91446.c:
+	* gcc.target/i386/pr92658-avx512bw-2.c:
+	* gcc.target/i386/pr92658-sse4-2.c:
+	* gcc.target/i386/pr92658-sse4.c:
+	* gcc.target/i386/pr99881.c:
+
+2021-07-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/39821
+	* gcc.target/i386/sse2-pr39821.c: New test.
+	* gcc.target/i386/sse4-pr39821.c: New test.
+
+2021-07-29  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/61837
+	* gcc.target/powerpc/pr61837.c: New test.
+
 2021-07-28  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/101494

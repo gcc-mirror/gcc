@@ -86,6 +86,22 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
   if (add_to_globals)
     this->add_dot_import_object(no);
 
+  // Add.
+  results = new Typed_identifier_list;
+  results->push_back(Typed_identifier("", pointer_type, bloc));
+  fntype = Type::make_function_type(NULL, NULL, results, bloc);
+  fntype->set_is_builtin();
+  no = bindings->add_function_declaration("Add", package, fntype, bloc);
+  if (add_to_globals)
+    this->add_dot_import_object(no);
+
+  // Slice.
+  fntype = Type::make_function_type(NULL, NULL, NULL, bloc);
+  fntype->set_is_builtin();
+  no = bindings->add_function_declaration("Slice", package, fntype, bloc);
+  if (add_to_globals)
+    this->add_dot_import_object(no);
+
   if (!this->imported_unsafe_)
     {
       go_imported_unsafe();

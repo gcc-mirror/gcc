@@ -1,3 +1,101 @@
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (binary_op): Remove dead code.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* typeinfo.cc (TypeInfoVisitor::visit (TypeInfoClassDeclaration *)):
+	Always layout initializer for the m_RTInfo field.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit (AssertExp *)): Don't generate
+	PREDICT_EXPR.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Clarify comment
+	  for generating static array assignment with literal.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (enum_initializer_decl): Only handle named enums.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (make_thunk): Set COMDAT and visibility of thunks only if
+	they are public.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit (StructDeclaration *)): Don't use sinit
+	for declaration directly.
+	(DeclVisitor::visit (ClassDeclaration *)): Likewise.
+	(aggregate_initializer_decl): Likewise.  Set sinit after creating.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_frontend_type): Use Identifier::idPool to
+	generate anonymous field name.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* types.cc (layout_aggregate_type): Call hasMonitor.
+	* typeinfo.cc (TypeInfoVisitor::layout_base): Likewise.
+	(layout_cpp_typeinfo): Likewise.  Don't emit vtable unless
+	have_typeinfo_p.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (deps_add_target): Insert null terminator in buffer.
+	(deps_write): Likewise.
+	(d_parse_file): Likewise.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (build_frontend_type): Restore builtin_converted_decls
+	length on conversion failure.
+
+2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (d_nested_class): Rename to ...
+	(get_outer_function): ... this.  Handle all aggregate declarations.
+	(d_nested_struct): Remove.
+	(find_this_tree): Use get_outer_function.
+	(get_framedecl): Likewise.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101672
+	* typeinfo.cc (make_frontend_typeinfo): Generate Object class if it
+	doesn't exist.
+	(check_typeinfo_type): Don't warn if there's no location.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101664
+	* expr.cc (ExprVisitor::visit (CallExp *)): Use object expression as
+	result for C++ constructor calls.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/96435
+	* d-convert.cc (convert_for_rvalue): New function.
+	* d-tree.h (convert_for_rvalue): Declare.
+	* expr.cc (ExprVisitor::visit (CastExp *)): Use convert_for_rvalue.
+	(build_return_dtor): Likewise.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101657
+	* d-lang.cc (d_parse_file): Remove generated D header files on error.
+
+2021-07-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/101656
+	* d-diagnostic.cc (escape_d_format): Don't escape quoted format
+	strings.
+
 2021-07-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/101640

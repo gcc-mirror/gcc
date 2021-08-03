@@ -195,6 +195,11 @@ namespace __detail
 	  : _M_visited_states(new bool[__n]()), _M_start(__start)
 	  { }
 
+	  ~_State_info() { delete[] _M_visited_states; }
+
+	  _State_info(const _State_info&) = delete;
+	  _State_info& operator=(const _State_info&) = delete;
+
 	  bool _M_visited(_StateIdT __i)
 	  {
 	    if (_M_visited_states[__i])
@@ -212,7 +217,7 @@ namespace __detail
 	  // Saves states that need to be considered for the next character.
 	  vector<pair<_StateIdT, _ResultsVec>>	_M_match_queue;
 	  // Indicates which states are already visited.
-	  unique_ptr<bool[]>			_M_visited_states;
+	  bool*     _M_visited_states;
 	  // To record current solution.
 	  _StateIdT _M_start;
 	};

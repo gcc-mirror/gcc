@@ -1,3 +1,409 @@
+2021-08-03  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-cfg.c (move_sese_region_to_fn): Fix typos on dloop.
+
+2021-08-03  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (cond_<insn><mode>):New expander.
+	(cond_mul<mode>): Ditto.
+	(cond_div<mode>): Ditto.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Also
+	check stack_realign_needed for stack realignment.
+	(ix86_legitimate_constant_p): Always allow CONST_WIDE_INT smaller
+	than the largest integer supported by vector register.
+	* config/i386/i386.h (MAX_MOVE_MAX): New.  Set to 64.
+	(MOVE_MAX): Set to bytes of the largest integer supported by
+	vector register.
+	(STORE_MAX_PIECES): New.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_vector_move): Call
+	ix86_gen_scratch_sse_rtx to get a scratch SSE register to copy
+	data from one memory location to another.
+
+2021-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* config/i386/i386.c (TARGET_GEN_MEMSET_SCRATCH_RTX): New.
+
+2021-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/101724
+	* params.opt: Remove --param=threader-iterative.
+	* tree-ssa-threadbackward.c (pass_thread_jumps::execute): Remove
+	iterative mode.
+
+2021-08-02  Tom de Vries  <tdevries@suse.de>
+
+	PR middle-end/101665
+	* doc/extend.texi (nonnull attribute): Improve documentation.
+
+2021-08-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR rtl-optimization/101683
+	* rtlanal.c (may_trap_p_1): Handle UNSIGNED_FIX.
+
+2021-08-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-ssa-phiopt.c (cond_removal_in_builtin_zero_pattern):
+	Renamed from cond_removal_in_popcount_clz_ctz_pattern.
+	Add support for BSWAP, FFS, PARITY and CLRSB builtins.
+	(tree_ssa_phiop_worker): Update call to function above.
+
+2021-08-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/78103
+	* config/i386/i386.md (bsr_rex64_1_zext): New.
+	(combine splitter for constant - clzll): Replace gen_bsr_rex64_1
+	with gen_bsr_rex64_1_zext.
+
+2021-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/78103
+	* config/i386/i386.md (bsr_rex64_1, bsr_1, bsr_zext_1): New
+	define_insn patterns.
+	(*bsr_rex64_2, *bsr_2): New define_insn_and_split patterns.
+	Add combine splitters for constant - clz.
+	(clz<mode>2): Use a temporary pseudo for bsr result.
+
+2021-07-30  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_floor_pd, _mm_floor_ps,
+	_mm_floor_sd, _mm_floor_ss): New.
+
+2021-07-30  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_ceil_pd, _mm_ceil_ps,
+	_mm_ceil_sd, _mm_ceil_ss): New.
+
+2021-07-30  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_blend_pd, _mm_blendv_pd,
+	_mm_blend_ps, _mm_blendv_ps): New.
+
+2021-07-30  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*dec_cmov<mode>): New define_insn_and_split
+	to generate a conditional move using the carry flag after sub $1.
+	(peephole2): Eliminate a register-to-register move by inverting
+	the condition of a conditional move.
+
+2021-07-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("call", "call_value", "*call_real")
+	("*call_value_real"): Don't generate rtx mentioning the generic
+	operands 1 and 2 to "call", and similarly for "call_value".
+	* config/mmix/mmix.c (mmix_print_operand_punct_valid_p)
+	(mmix_print_operand): Use '!' instead of 'p'.
+
+2021-07-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* doc/md.texi (call): Correct information about operand 2.
+	* config/mmix/mmix.md ("call", "call_value"): Remove fixed FIXMEs.
+
+2021-07-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_trunc_mod::wi_fold): Fold constants.
+
+2021-07-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_div::wi_fold): Return UNDEFINED for [0, 0] divisor.
+
+2021-07-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (*::set_bb_range): Change const basic_block to
+	const_basic_block..
+	(*::get_bb_range): Ditto.
+	(*::bb_range_p): Ditto.
+	* gimple-range-cache.h: Change prototypes.
+
+2021-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* builtins.c (builtin_memcpy_read_str): Change the mode argument
+	from scalar_int_mode to fixed_size_mode.
+	(builtin_strncpy_read_str): Likewise.
+	(gen_memset_value_from_prev): New function.
+	(builtin_memset_read_str): Change the mode argument from
+	scalar_int_mode to fixed_size_mode.  Use gen_memset_value_from_prev
+	and support CONST_VECTOR.
+	(builtin_memset_gen_str): Likewise.
+	(try_store_by_multiple_pieces): Use by_pieces_constfn to declare
+	constfun.
+	* builtins.h (builtin_strncpy_read_str): Replace scalar_int_mode
+	with fixed_size_mode.
+	(builtin_memset_read_str): Likewise.
+	* expr.c (widest_int_mode_for_size): Renamed to ...
+	(widest_fixed_size_mode_for_size): Add a bool argument to
+	indicate if QI vector mode can be used.
+	(by_pieces_ninsns): Call widest_fixed_size_mode_for_size
+	instead of widest_int_mode_for_size.
+	(pieces_addr::adjust): Change the mode argument from
+	scalar_int_mode to fixed_size_mode.
+	(op_by_pieces_d): Make m_len read-only.  Add a bool member,
+	m_qi_vector_mode, to indicate that QI vector mode can be used.
+	(op_by_pieces_d::op_by_pieces_d): Add a bool argument to
+	initialize m_qi_vector_mode.  Call widest_fixed_size_mode_for_size
+	instead of widest_int_mode_for_size.
+	(op_by_pieces_d::get_usable_mode): Change the mode argument from
+	scalar_int_mode to fixed_size_mode.  Call
+	widest_fixed_size_mode_for_size instead of
+	widest_int_mode_for_size.
+	(op_by_pieces_d::smallest_fixed_size_mode_for_size): New member
+	function to return the smallest integer or QI vector mode.
+	(op_by_pieces_d::run): Call widest_fixed_size_mode_for_size
+	instead of widest_int_mode_for_size.  Call
+	smallest_fixed_size_mode_for_size instead of
+	smallest_int_mode_for_size.
+	(store_by_pieces_d::store_by_pieces_d): Add a bool argument to
+	indicate that QI vector mode can be used and pass it to
+	op_by_pieces_d::op_by_pieces_d.
+	(can_store_by_pieces): Call widest_fixed_size_mode_for_size
+	instead of widest_int_mode_for_size.  Pass memsetp to
+	widest_fixed_size_mode_for_size to support QI vector mode.
+	Allow all CONST_VECTORs for memset if vec_duplicate is supported.
+	(store_by_pieces): Pass memsetp to
+	store_by_pieces_d::store_by_pieces_d.
+	(clear_by_pieces_1): Removed.
+	(clear_by_pieces): Replace clear_by_pieces_1 with
+	builtin_memset_read_str and pass true to store_by_pieces_d to
+	support vector mode broadcast.
+	(string_cst_read_str): Change the mode argument from
+	scalar_int_mode to fixed_size_mode.
+	* expr.h (by_pieces_constfn): Change scalar_int_mode to
+	fixed_size_mode.
+	(by_pieces_prev): Likewise.
+	* rtl.h (lowpart_subreg_regno): New.
+	* rtlanal.c (lowpart_subreg_regno): New.  A wrapper around
+	simplify_subreg_regno.
+	* target.def (gen_memset_scratch_rtx): New hook.
+	* doc/tm.texi.in: Add TARGET_GEN_MEMSET_SCRATCH_RTX.
+	* doc/tm.texi: Regenerated.
+
+2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/94780
+	* config/mips/mips.c (mips_atomic_assign_expand_fenv): Use
+	  TARGET_EXPR instead of MODIFY_EXPR.
+
+2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/101132
+	* config/mips/mips-protos.h (mips_expand_vec_cmp_expr): Declare.
+	* config/mips/mips.c (mips_expand_vec_cmp_expr): New function.
+	* config/mips/mips-msa.md (vec_cmp<MSA:mode><mode_i>): New
+	  expander.
+	  (vec_cmpu<IMSA:mode><mode_i>): New expander.
+
+2021-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101685
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Don't enable LZCNT/POPCNT if they have been disabled explicitly.
+
+2021-07-30  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h (vld1_p64): Replace call to builtin by
+	explicitly dereferencing __a.
+	(vld1_s64): Likewise.
+	(vld1_u64): Likewise.
+	* config/arm/arm_neon_builtins.def (vld1): Remove entry for di
+	and change to VAR13.
+
+2021-07-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-loop-versioning.cc (lv_dom_walker::lv_dom_walker): Remove
+	use of m_range_analyzer.
+	(loop_versioning::lv_dom_walker::before_dom_children): Same.
+	(loop_versioning::lv_dom_walker::after_dom_children): Remove.
+	(loop_versioning::prune_loop_conditions): Replace vr_values use
+	with range_query interface.
+	(pass_loop_versioning::execute): Use ranger.
+
+2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR ipa/101396
+	* ipa-devirt.c (ipa_odr_read_section): Compare the precision of
+	  enum values, and emit a warning if they mismatch.
+
+2021-07-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	* cfgloop.h (as_const): New function.
+	(class loop_iterator): Rename to ...
+	(class loops_list): ... this.
+	(loop_iterator::next): Rename to ...
+	(loops_list::Iter::fill_curr_loop): ... this and adjust.
+	(loop_iterator::loop_iterator): Rename to ...
+	(loops_list::loops_list): ... this and adjust.
+	(loops_list::Iter): New class.
+	(loops_list::iterator): New type.
+	(loops_list::const_iterator): New type.
+	(loops_list::begin): New function.
+	(loops_list::end): Likewise.
+	(loops_list::begin const): Likewise.
+	(loops_list::end const): Likewise.
+	(FOR_EACH_LOOP): Remove.
+	(FOR_EACH_LOOP_FN): Remove.
+	* cfgloop.c (flow_loops_dump): Adjust FOR_EACH_LOOP* with range-based
+	for loop with loops_list instance.
+	(sort_sibling_loops): Likewise.
+	(disambiguate_loops_with_multiple_latches): Likewise.
+	(verify_loop_structure): Likewise.
+	* cfgloopmanip.c (create_preheaders): Likewise.
+	(force_single_succ_latches): Likewise.
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(execute_tag_collision_avoidance): Likewise.
+	* config/mn10300/mn10300.c (mn10300_scan_for_setlb_lcc): Likewise.
+	* config/s390/s390.c (s390_adjust_loops): Likewise.
+	* doc/loop.texi: Likewise.
+	* gimple-loop-interchange.cc (pass_linterchange::execute): Likewise.
+	* gimple-loop-jam.c (tree_loop_unroll_and_jam): Likewise.
+	* gimple-loop-versioning.cc (loop_versioning::analyze_blocks): Likewise.
+	(loop_versioning::make_versioning_decisions): Likewise.
+	* gimple-ssa-split-paths.c (split_paths): Likewise.
+	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl): Likewise.
+	* graphite.c (canonicalize_loop_form): Likewise.
+	(graphite_transform_loops): Likewise.
+	* ipa-fnsummary.c (analyze_function_body): Likewise.
+	* ipa-pure-const.c (analyze_function): Likewise.
+	* loop-doloop.c (doloop_optimize_loops): Likewise.
+	* loop-init.c (loop_optimizer_finalize): Likewise.
+	(fix_loop_structure): Likewise.
+	* loop-invariant.c (calculate_loop_reg_pressure): Likewise.
+	(move_loop_invariants): Likewise.
+	* loop-unroll.c (decide_unrolling): Likewise.
+	(unroll_loops): Likewise.
+	* modulo-sched.c (sms_schedule): Likewise.
+	* predict.c (predict_loops): Likewise.
+	(pass_profile::execute): Likewise.
+	* profile.c (branch_prob): Likewise.
+	* sel-sched-ir.c (sel_finish_pipelining): Likewise.
+	(sel_find_rgns): Likewise.
+	* tree-cfg.c (replace_loop_annotate): Likewise.
+	(replace_uses_by): Likewise.
+	(move_sese_region_to_fn): Likewise.
+	* tree-if-conv.c (pass_if_conversion::execute): Likewise.
+	* tree-loop-distribution.c (loop_distribution::execute): Likewise.
+	* tree-parloops.c (parallelize_loops): Likewise.
+	* tree-predcom.c (tree_predictive_commoning): Likewise.
+	* tree-scalar-evolution.c (scev_initialize): Likewise.
+	(scev_reset): Likewise.
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): Likewise.
+	* tree-ssa-live.c (remove_unused_locals): Likewise.
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Likewise.
+	* tree-ssa-loop-im.c (analyze_memory_references): Likewise.
+	(tree_ssa_lim_initialize): Likewise.
+	* tree-ssa-loop-ivcanon.c (canonicalize_induction_variables): Likewise.
+	* tree-ssa-loop-ivopts.c (tree_ssa_iv_optimize): Likewise.
+	* tree-ssa-loop-manip.c (get_loops_exits): Likewise.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations): Likewise.
+	(free_numbers_of_iterations_estimates): Likewise.
+	* tree-ssa-loop-prefetch.c (tree_ssa_prefetch_arrays): Likewise.
+	* tree-ssa-loop-split.c (tree_ssa_split_loops): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Likewise.
+	* tree-ssa-loop.c (gate_oacc_kernels): Likewise.
+	(pass_scev_cprop::execute): Likewise.
+	* tree-ssa-propagate.c (clean_up_loop_closed_phi): Likewise.
+	* tree-ssa-sccvn.c (do_rpo_vn): Likewise.
+	* tree-ssa-threadupdate.c
+	(jump_thread_path_registry::thread_through_all_blocks): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Likewise.
+	* tree-vrp.c (vrp_asserts::find_assert_locations): Likewise.
+
+2021-07-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_function_arg_1): Avoid
+	generating a VOIDmode register for e.g the
+	function_arg_info::end_marker.
+
+2021-07-29  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300-modes.def: Add CCZ, CCV and CCC, drop CCZNV.
+	* config/h8300/h8300.md (H8cc mode iterator): Add CCZ.
+	(cc mode_attr): Similarly.
+	(ccz subst_attr): Similarly.
+	* config/h8300/jumpcall.md: Add new patterns for branch-on-bit.
+	* config/h8300/testcompare.md: Remove various cc0 based patterns
+	that had been commented out.  Add pattern to set CCZ from a bit
+	test.
+
+2021-07-29  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-offload.c (oacc_loop_xform_head_tail, oacc_loop_process):
+	'update_stmt' after modification.
+	(pass_oacc_loop_designation): New function, extracted out of...
+	(pass_oacc_device_lower): ... this.
+	(pass_data_oacc_loop_designation, pass_oacc_loop_designation)
+	(make_pass_oacc_loop_designation): New
+	* passes.def: Add it.
+	* tree-parloops.c (create_parallel_loop): Adjust.
+	* tree-pass.h (make_pass_oacc_loop_designation): New.
+
+2021-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* flag-types.h (enum threader_mode): New.
+	* params.opt: Add entry for --param=threader-mode.
+	* tree-ssa-threadbackward.c (THREADER_ITERATIVE_MODE): New.
+	(class back_threader): New.
+	(back_threader::back_threader): New.
+	(back_threader::~back_threader): New.
+	(back_threader::maybe_register_path): New.
+	(back_threader::find_taken_edge): New.
+	(back_threader::find_taken_edge_switch): New.
+	(back_threader::find_taken_edge_cond): New.
+	(back_threader::resolve_def): New.
+	(back_threader::resolve_phi): New.
+	(back_threader::find_paths_to_names): New.
+	(back_threader::find_paths): New.
+	(dump_path): New.
+	(debug): New.
+	(thread_jumps::find_jump_threads_backwards): Call ranger threader.
+	(thread_jumps::find_jump_threads_backwards_with_ranger): New.
+	(pass_thread_jumps::execute): Abstract out code...
+	(try_thread_blocks): ...here.
+	* tree-ssa-threadedge.c (jump_threader::thread_outgoing_edges):
+	Abstract out threading candidate code to...
+	(single_succ_to_potentially_threadable_block): ...here.
+	* tree-ssa-threadedge.h (single_succ_to_potentially_threadable_block):
+	New.
+	* tree-ssa-threadupdate.c (register_jump_thread): Return boolean.
+	* tree-ssa-threadupdate.h (class jump_thread_path_registry):
+	Return bool from register_jump_thread.
+
+2021-07-29  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* target.def: in0 and in1 do not need to be registers.
+	* doc/tm.texi: Regenerate.
+
+2021-07-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/39821
+	* config/i386/i386.c (ix86_widen_mult_cost): New function.
+	(ix86_add_stmt_cost): Use ix86_widen_mult_cost for
+	WIDEN_MULT_EXPR.
+
+2021-07-29  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/61837
+	* config/rs6000/rs6000.c (TARGET_PREFERRED_DOLOOP_MODE): New hook.
+	(rs6000_preferred_doloop_mode): New hook.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add hook preferred_doloop_mode.
+	* target.def (preferred_doloop_mode): New hook.
+	* targhooks.c (default_preferred_doloop_mode): New hook.
+	* targhooks.h (default_preferred_doloop_mode): New hook.
+	* tree-ssa-loop-ivopts.c (compute_doloop_base_on_mode): New function.
+	(add_iv_candidate_for_doloop): Call targetm.preferred_doloop_mode
+	and compute_doloop_base_on_mode.
+
 2021-07-28  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/101494

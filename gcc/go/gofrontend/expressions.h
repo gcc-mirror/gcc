@@ -2608,9 +2608,11 @@ class Builtin_call_expression : public Call_expression
       BUILTIN_RECOVER,
 
       // Builtin functions from the unsafe package.
+      BUILTIN_ADD,
       BUILTIN_ALIGNOF,
       BUILTIN_OFFSETOF,
-      BUILTIN_SIZEOF
+      BUILTIN_SIZEOF,
+      BUILTIN_SLICE
     };
 
   Builtin_function_code

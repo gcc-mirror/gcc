@@ -73,8 +73,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     };
 
+#if ! __cpp_inline_variables
   template<typename _Tp, _Tp __v>
     constexpr _Tp integral_constant<_Tp, __v>::value;
+#endif
 
   /// The type used as a compile-time boolean with true value.
   using true_type =  integral_constant<bool, true>;

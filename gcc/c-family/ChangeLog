@@ -1,3 +1,16 @@
+2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101539
+	* c-common.h (enum rid): Add RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF.
+	* c-common.c (c_common_reswords): Add
+	__is_pointer_interconvertible_base_of.
+
+2021-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR c/101512
+	* c-common.c (c_common_mark_addressable_vec): Look through
+	C_MAYBE_CONST_EXPR even if not at the toplevel.
+
 2021-07-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c/101585
