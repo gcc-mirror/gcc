@@ -3740,7 +3740,6 @@ static bool remove_AT (dw_die_ref, enum dwarf_attribute);
 static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
 static void add_child_die (dw_die_ref, dw_die_ref);
 static dw_die_ref new_die (enum dwarf_tag, dw_die_ref, tree);
-static dw_die_ref lookup_type_die (tree);
 static dw_die_ref strip_naming_typedef (tree, dw_die_ref);
 static dw_die_ref lookup_type_die_strip_naming_typedef (tree);
 static void equate_type_number_to_die (tree, dw_die_ref);
@@ -5838,7 +5837,7 @@ new_die (enum dwarf_tag tag_value, dw_die_ref parent_die, tree t)
 
 /* Return the DIE associated with the given type specifier.  */
 
-static inline dw_die_ref
+dw_die_ref
 lookup_type_die (tree type)
 {
   dw_die_ref die = TYPE_SYMTAB_DIE (type);
