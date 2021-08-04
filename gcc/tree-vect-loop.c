@@ -3064,7 +3064,16 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 			= opt_loop_vec_info::success (main_loop_vinfo);
 		    }
 		  else
-		    delete main_loop_vinfo;
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_NOTE, vect_location,
+					 "***** No longer preferring vector"
+					 " mode %s after reanalyzing the loop"
+					 " as a main loop\n",
+					 GET_MODE_NAME
+					   (main_loop_vinfo->vector_mode));
+		      delete main_loop_vinfo;
+		    }
 		}
 	    }
 
