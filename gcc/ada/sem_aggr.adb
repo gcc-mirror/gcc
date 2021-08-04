@@ -1605,7 +1605,7 @@ package body Sem_Aggr is
          Loc : constant Source_Ptr := Sloc (N);
          Id  : constant Entity_Id  := Defining_Identifier (N);
 
-         Id_Typ : Entity_Id;
+         Id_Typ : Entity_Id := Any_Type;
 
          -----------------------
          -- Remove_References --
