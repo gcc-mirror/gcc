@@ -1033,7 +1033,10 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	 only non-if-converted parts took part in BB vectorization.  */
       if (flag_tree_slp_vectorize != 0
 	  && loop_vectorized_call
-	  && ! loop->inner)
+	  && ! loop->inner
+	  /* This would purely be a workaround and should be removed
+	     once PR100089 is fixed.  */
+	  && flag_vect_cost_model != VECT_COST_MODEL_VERY_CHEAP)
 	{
 	  basic_block bb = loop->header;
 	  bool require_loop_vectorize = false;
