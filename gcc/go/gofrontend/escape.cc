@@ -1608,8 +1608,33 @@ Escape_analysis_assign::expression(Expression** pexpr)
                 }
                 break;
 
-              default:
+              case Builtin_call_expression::BUILTIN_CLOSE:
+              case Builtin_call_expression::BUILTIN_DELETE:
+              case Builtin_call_expression::BUILTIN_PRINT:
+              case Builtin_call_expression::BUILTIN_PRINTLN:
+              case Builtin_call_expression::BUILTIN_LEN:
+              case Builtin_call_expression::BUILTIN_CAP:
+              case Builtin_call_expression::BUILTIN_COMPLEX:
+              case Builtin_call_expression::BUILTIN_REAL:
+              case Builtin_call_expression::BUILTIN_IMAG:
+              case Builtin_call_expression::BUILTIN_RECOVER:
+              case Builtin_call_expression::BUILTIN_ALIGNOF:
+              case Builtin_call_expression::BUILTIN_OFFSETOF:
+              case Builtin_call_expression::BUILTIN_SIZEOF:
+                // these do not escape.
                 break;
+
+              case Builtin_call_expression::BUILTIN_ADD:
+              case Builtin_call_expression::BUILTIN_SLICE:
+                // handled in ::assign.
+                break;
+
+              case Builtin_call_expression::BUILTIN_MAKE:
+              case Builtin_call_expression::BUILTIN_NEW:
+                // should have been lowered to runtime calls at this point.
+                // fallthrough
+              default:
+                go_unreachable();
               }
             break;
           }
@@ -2372,8 +2397,35 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
                     }
                     break;
 
-                  default:
+                  case Builtin_call_expression::BUILTIN_LEN:
+                  case Builtin_call_expression::BUILTIN_CAP:
+                  case Builtin_call_expression::BUILTIN_COMPLEX:
+                  case Builtin_call_expression::BUILTIN_REAL:
+                  case Builtin_call_expression::BUILTIN_IMAG:
+                  case Builtin_call_expression::BUILTIN_RECOVER:
+                  case Builtin_call_expression::BUILTIN_ALIGNOF:
+                  case Builtin_call_expression::BUILTIN_OFFSETOF:
+                  case Builtin_call_expression::BUILTIN_SIZEOF:
+                    // these do not escape.
                     break;
+
+                  case Builtin_call_expression::BUILTIN_COPY:
+                    // handled in ::expression.
+                    break;
+
+                  case Builtin_call_expression::BUILTIN_CLOSE:
+                  case Builtin_call_expression::BUILTIN_DELETE:
+                  case Builtin_call_expression::BUILTIN_PRINT:
+                  case Builtin_call_expression::BUILTIN_PRINTLN:
+                  case Builtin_call_expression::BUILTIN_PANIC:
+                    // these do not have result.
+                    // fallthrough
+                  case Builtin_call_expression::BUILTIN_MAKE:
+                  case Builtin_call_expression::BUILTIN_NEW:
+                    // should have been lowered to runtime calls at this point.
+                    // fallthrough
+                  default:
+                    go_unreachable();
                   }
                 break;
               }
