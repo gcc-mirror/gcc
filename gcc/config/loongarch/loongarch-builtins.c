@@ -2,21 +2,21 @@
    Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
-This file is part of GCC.
+   This file is part of GCC.
 
-GCC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 3, or (at your option)
-any later version.
+   GCC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
 
-GCC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GCC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
 
 #define IN_TARGET_CODE 1
 
@@ -48,19 +48,19 @@ enum loongarch_function_type {
 #define DEF_LARCH_FTYPE(NARGS, LIST) LARCH_FTYPE_NAME##NARGS LIST,
 #include "config/loongarch/loongarch-ftypes.def"
 #undef DEF_LARCH_FTYPE
-  LARCH_MAX_FTYPE_MAX
+    LARCH_MAX_FTYPE_MAX
 };
 
 /* Specifies how a built-in function should be converted into rtl.  */
 enum loongarch_builtin_type {
-  /* The function corresponds directly to an .md pattern.  The return
-     value is mapped to operand 0 and the arguments are mapped to
-     operands 1 and above.  */
-  LARCH_BUILTIN_DIRECT,
+    /* The function corresponds directly to an .md pattern.  The return
+       value is mapped to operand 0 and the arguments are mapped to
+       operands 1 and above.  */
+    LARCH_BUILTIN_DIRECT,
 
-  /* The function corresponds directly to an .md pattern.  There is no return
-     value and the arguments are mapped to operands 0 and above.  */
-  LARCH_BUILTIN_DIRECT_NO_TARGET,
+    /* The function corresponds directly to an .md pattern.  There is no return
+       value and the arguments are mapped to operands 0 and above.  */
+    LARCH_BUILTIN_DIRECT_NO_TARGET,
 
 };
 
@@ -86,25 +86,25 @@ enum loongarch_builtin_type {
 /* Enumerates the codes above as LARCH_FP_COND_<X>.  */
 #define DECLARE_LARCH_COND(X) LARCH_FP_COND_ ## X
 enum loongarch_fp_condition {
-  LARCH_FP_CONDITIONS (DECLARE_LARCH_COND)
+    LARCH_FP_CONDITIONS (DECLARE_LARCH_COND)
 };
 #undef DECLARE_LARCH_COND
 
 /* Index X provides the string representation of LARCH_FP_COND_<X>.  */
 #define STRINGIFY(X) #X
 const char *const loongarch_fp_conditions[16] = {
-  LARCH_FP_CONDITIONS (STRINGIFY)
+    LARCH_FP_CONDITIONS (STRINGIFY)
 };
 #undef STRINGIFY
 
 /* Declare an availability predicate for built-in functions that require 
  * COND to be true.  NAME is the main part of the predicate's name.  */
 #define AVAIL_ALL(NAME, COND)						\
- static unsigned int							\
- loongarch_builtin_avail_##NAME (void)					\
- {									\
-   return (COND) ? 1 : 0;	\
- }
+  static unsigned int							\
+  loongarch_builtin_avail_##NAME (void)					\
+{									\
+  return (COND) ? 1 : 0;	\
+}
 
 static unsigned int
 loongarch_builtin_avail_default (void)
@@ -113,24 +113,24 @@ loongarch_builtin_avail_default (void)
 }
 /* This structure describes a single built-in function.  */
 struct loongarch_builtin_description {
-  /* The code of the main .md file instruction.  See loongarch_builtin_type
-     for more information.  */
-  enum insn_code icode;
+    /* The code of the main .md file instruction.  See loongarch_builtin_type
+       for more information.  */
+    enum insn_code icode;
 
-  /* The floating-point comparison code to use with ICODE, if any.  */
-  enum loongarch_fp_condition cond;
+    /* The floating-point comparison code to use with ICODE, if any.  */
+    enum loongarch_fp_condition cond;
 
-  /* The name of the built-in function.  */
-  const char *name;
+    /* The name of the built-in function.  */
+    const char *name;
 
-  /* Specifies how the function should be expanded.  */
-  enum loongarch_builtin_type builtin_type;
+    /* Specifies how the function should be expanded.  */
+    enum loongarch_builtin_type builtin_type;
 
-  /* The function's prototype.  */
-  enum loongarch_function_type function_type;
+    /* The function's prototype.  */
+    enum loongarch_function_type function_type;
 
-  /* Whether the function is available.  */
-  unsigned int (*avail) (void);
+    /* Whether the function is available.  */
+    unsigned int (*avail) (void);
 };
 
 AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
@@ -152,7 +152,7 @@ AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
    loongarch_builtin_avail_.  */
 #define LARCH_BUILTIN(INSN, COND, NAME, BUILTIN_TYPE,			\
 		     FUNCTION_TYPE, AVAIL)				\
-  { CODE_FOR_loongarch_ ## INSN, LARCH_FP_COND_ ## COND,			\
+  { CODE_FOR_loongarch_ ## INSN, LARCH_FP_COND_ ## COND,		\
     "__builtin_loongarch_" NAME, BUILTIN_TYPE, FUNCTION_TYPE,		\
     loongarch_builtin_avail_ ## AVAIL }
 
@@ -166,10 +166,10 @@ AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
    function mapped to instruction CODE_FOR_loongarch_<INSN>,  FUNCTION_TYPE
    and AVAIL are as for LARCH_BUILTIN.  */
 #define DIRECT_NO_TARGET_BUILTIN(INSN, FUNCTION_TYPE, AVAIL)		\
-  LARCH_BUILTIN (INSN, f, #INSN,	LARCH_BUILTIN_DIRECT_NO_TARGET,		\
-		FUNCTION_TYPE, AVAIL)
+  LARCH_BUILTIN (INSN, f, #INSN,	LARCH_BUILTIN_DIRECT_NO_TARGET,	\
+		 FUNCTION_TYPE, AVAIL)
 
-  /* Loongson support loongarch64r6 */
+/* Loongson support loongarch misc.  */
 #define	CODE_FOR_loongarch_fmax_sf	CODE_FOR_smaxsf3
 #define	CODE_FOR_loongarch_fmax_df	CODE_FOR_smaxdf3
 #define	CODE_FOR_loongarch_fmin_sf	CODE_FOR_sminsf3
@@ -180,14 +180,14 @@ AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
 #define	CODE_FOR_loongarch_fmina_df	CODE_FOR_sminadf3
 #define	CODE_FOR_loongarch_fclass_s	CODE_FOR_fclass_s
 #define	CODE_FOR_loongarch_fclass_d	CODE_FOR_fclass_d
-#define CODE_FOR_loongarch_frint_s   CODE_FOR_frint_s
-#define CODE_FOR_loongarch_frint_d   CODE_FOR_frint_d
+#define CODE_FOR_loongarch_frint_s      CODE_FOR_frint_s
+#define CODE_FOR_loongarch_frint_d      CODE_FOR_frint_d
 #define	CODE_FOR_loongarch_bytepick_w	CODE_FOR_bytepick_w
 #define	CODE_FOR_loongarch_bytepick_d	CODE_FOR_bytepick_d
 #define	CODE_FOR_loongarch_bitrev_4b	CODE_FOR_bitrev_4b
 #define	CODE_FOR_loongarch_bitrev_8b	CODE_FOR_bitrev_8b
 
-/* Loongson support crc */
+/* Loongson support crc.  */
 #define	CODE_FOR_loongarch_crc_w_b_w	CODE_FOR_crc_w_b_w
 #define	CODE_FOR_loongarch_crc_w_h_w	CODE_FOR_crc_w_h_w
 #define	CODE_FOR_loongarch_crc_w_w_w	CODE_FOR_crc_w_w_w
@@ -197,7 +197,7 @@ AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
 #define	CODE_FOR_loongarch_crcc_w_w_w	CODE_FOR_crcc_w_w_w
 #define	CODE_FOR_loongarch_crcc_w_d_w	CODE_FOR_crcc_w_d_w
 
-/* Privileged state instruction */
+/* Privileged state instruction.  */
 #define CODE_FOR_loongarch_cpucfg CODE_FOR_cpucfg
 #define CODE_FOR_loongarch_asrtle_d CODE_FOR_asrtle_d
 #define CODE_FOR_loongarch_asrtgt_d CODE_FOR_asrtgt_d
@@ -404,7 +404,7 @@ loongarch_builtin_decl (unsigned int code, bool initialize_p ATTRIBUTE_UNUSED)
 
 static void
 loongarch_prepare_builtin_arg (struct expand_operand *op, tree exp,
-			  unsigned int argno)
+			       unsigned int argno)
 {
   tree arg;
   rtx value;
@@ -423,7 +423,7 @@ loongarch_prepare_builtin_arg (struct expand_operand *op, tree exp,
 
 static rtx
 loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
-			  struct expand_operand *ops, bool has_target_p)
+			       struct expand_operand *ops, bool has_target_p)
 {
   if (!maybe_expand_insn (icode, nops, ops))
     {
@@ -440,7 +440,7 @@ loongarch_expand_builtin_insn (enum insn_code icode, unsigned int nops,
 
 static rtx
 loongarch_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
-			    bool has_target_p)
+				 bool has_target_p)
 {
   struct expand_operand ops[MAX_RECOG_OPERANDS];
   int opno, argno;
@@ -463,7 +463,8 @@ loongarch_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
 
 rtx
 loongarch_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		     machine_mode mode, int ignore)
+			  machine_mode mode ATTRIBUTE_UNUSED,
+			  int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl;
   unsigned int fcode, avail;

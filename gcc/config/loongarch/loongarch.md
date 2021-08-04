@@ -3244,7 +3244,10 @@
       else if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
         return "pcaddu18i\t$r12,(%%plt(%0)+0x20000)>>18\n\tjirl\t$r0,$r12,%%plt(%0)+4-((%%plt(%0)+(4+0x20000))>>18<<18)";
       else
-        sorry ("cmodel extreme and tiny static not support plt.");
+	{
+          sorry ("cmodel extreme and tiny static not support plt");
+	  return "";  /* GCC complains about may fall through.  */
+	}
     default:
       gcc_unreachable ();
     }
@@ -3312,7 +3315,10 @@
       else if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
         return "pcaddu18i\t$r12,(%%plt(%1)+0x20000)>>18\n\tjirl\t$r0,$r12,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
       else
-        sorry ("loongarch cmodel extreme and tiny-static not support plt.");
+	{
+          sorry ("loongarch cmodel extreme and tiny-static not support plt");
+	  return "";  /* GCC complains about may fall through.  */
+	}
     default:
       gcc_unreachable ();
   }
@@ -3357,7 +3363,10 @@
       else if (loongarch_cmodel_var == LARCH_CMODEL_LARGE)
         return "pcaddu18i\t$r12,(%%plt(%1)+0x20000)>>18\n\tjirl\t$r0,$r12,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
       else
-        sorry ("loongarch cmodel extreme and tiny-static not support plt.");
+	{
+          sorry ("loongarch cmodel extreme and tiny-static not support plt");
+	  return "";  /* GCC complains about may fall through.  */
+	}
     default:
       gcc_unreachable ();
   }
@@ -3412,7 +3421,10 @@
       else if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
         return "bl\t%%plt(%0)";
       else
-        sorry ("cmodel extreme and tiny-static not support plt.");
+	{
+          sorry ("cmodel extreme and tiny-static not support plt");
+	  return "";  /* GCC complains about may fall through.  */
+	}
     default:
       gcc_unreachable ();
     }
@@ -3480,7 +3492,10 @@
       else if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
         return "bl\t%%plt(%1)";
       else
-        sorry ("loongarch cmodel extreme and tiny-static not support plt.");
+	{
+          sorry ("loongarch cmodel extreme and tiny-static not support plt");
+	  return "";  /* GCC complains about may fall through.  */
+	}
     default:
       gcc_unreachable ();
     }
@@ -3528,7 +3543,10 @@
       else if (loongarch_cmodel_var == LARCH_CMODEL_NORMAL || loongarch_cmodel_var == LARCH_CMODEL_TINY)
         return "bl\t%%plt(%1)";
       else
-        sorry ("loongarch cmodel extreme and tiny-static not support plt.");
+	{
+          sorry ("loongarch cmodel extreme and tiny-static not support plt");
+	  return "";  /* GCC complains about may fall through.  */
+	}
     default:
       gcc_unreachable ();
     }

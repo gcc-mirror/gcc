@@ -3,21 +3,21 @@
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
 
-This file is part of GCC.
+   This file is part of GCC.
 
-GCC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 3, or (at your option)
-any later version.
+   GCC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
 
-GCC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GCC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
 
 #define IN_TARGET_CODE 1
 
@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* True if INSN is a loongarch.md pattern or asm statement.  */
 /* ???	This test exists through the compiler, perhaps it should be
-	moved to rtl.h.  */
+   moved to rtl.h.  */
 #define USEFUL_INSN_P(INSN)						\
   (NONDEBUG_INSN_P (INSN)						\
    && GET_CODE (PATTERN (INSN)) != USE					\
@@ -104,20 +104,20 @@ along with GCC; see the file COPYING3.  If not see
    ADDRESS_SYMBOLIC:
        A constant symbolic address.  */
 enum loongarch_address_type {
-  ADDRESS_REG,
-  ADDRESS_CONST_INT,
-  ADDRESS_SYMBOLIC
+    ADDRESS_REG,
+    ADDRESS_CONST_INT,
+    ADDRESS_SYMBOLIC
 };
 
 /* Tuning information that is automatically derived from other sources
    (such as the scheduler).  */
 static struct {
-  /* The architecture and tuning settings that this structure describes.  */
-  enum processor arch;
-  enum processor tune;
+    /* The architecture and tuning settings that this structure describes.  */
+    enum processor arch;
+    enum processor tune;
 
-  /* True if the structure has been initialized.  */
-  bool initialized_p;
+    /* True if the structure has been initialized.  */
+    bool initialized_p;
 
 } loongarch_tuning_info;
 
@@ -132,10 +132,10 @@ static struct {
    ADDRESS_SYMBOLIC
        SYMBOL_TYPE is the type of symbol that the address references.  */
 struct loongarch_address_info {
-  enum loongarch_address_type type;
-  rtx reg;
-  rtx offset;
-  enum loongarch_symbol_type symbol_type;
+    enum loongarch_address_type type;
+    rtx reg;
+    rtx offset;
+    enum loongarch_symbol_type symbol_type;
 };
 
 /* Method of loading instant numbers:
@@ -153,10 +153,10 @@ struct loongarch_address_info {
      immediate like 0xfff00000fffffxxx
    */
 enum loongarch_load_imm_method {
-  METHOD_NORMAL,
-  METHOD_LU32I,
-  METHOD_LU52I,
-  METHOD_INSV
+    METHOD_NORMAL,
+    METHOD_LU32I,
+    METHOD_LU52I,
+    METHOD_INSV
 };
 
 /* One stage in a constant building sequence.  These sequences have
@@ -170,9 +170,9 @@ enum loongarch_load_imm_method {
    where A is an accumulator, each CODE[i] is a binary rtl operation
    and each VALUE[i] is a constant integer.  CODE[0] is undefined.  */
 struct loongarch_integer_op {
-  enum rtx_code code;
-  unsigned HOST_WIDE_INT value;
-  enum loongarch_load_imm_method method;
+    enum rtx_code code;
+    unsigned HOST_WIDE_INT value;
+    enum loongarch_load_imm_method method;
 };
 
 /* The largest number of operations needed to load an integer constant.
@@ -249,45 +249,46 @@ static int cached_can_issue_more;
 
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class loongarch_regno_to_class[FIRST_PSEUDO_REGISTER] = {
-  GR_REGS,         GR_REGS,         GR_REGS,         GR_REGS,
-  JALR_REGS,       JALR_REGS,       JALR_REGS,       JALR_REGS,
-  JALR_REGS,       JALR_REGS,       JALR_REGS,       JALR_REGS,
-  SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,
-  SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,
-  SIBCALL_REGS,    GR_REGS,         GR_REGS,         JALR_REGS,
-  JALR_REGS,       JALR_REGS,       JALR_REGS,       JALR_REGS,
-  JALR_REGS,       JALR_REGS,       JALR_REGS,       JALR_REGS,
+    GR_REGS,	     GR_REGS,	      GR_REGS,	       GR_REGS,
+    JALR_REGS,       JALR_REGS,       JALR_REGS,       JALR_REGS,
+    JALR_REGS,       JALR_REGS,       JALR_REGS,       JALR_REGS,
+    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,
+    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,
+    SIBCALL_REGS,    GR_REGS,	      GR_REGS,	       JALR_REGS,
+    JALR_REGS,       JALR_REGS,       JALR_REGS,       JALR_REGS,
+    JALR_REGS,       JALR_REGS,       JALR_REGS,       JALR_REGS,
 
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  ST_REGS,	ST_REGS,	ST_REGS,	ST_REGS,
-  ST_REGS,	ST_REGS,	ST_REGS,	ST_REGS,
-  FRAME_REGS,	FRAME_REGS
+    FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+    FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+    FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+    FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+    FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+    FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+    FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+    FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+    ST_REGS,	ST_REGS,	ST_REGS,	ST_REGS,
+    ST_REGS,	ST_REGS,	ST_REGS,	ST_REGS,
+    FRAME_REGS,	FRAME_REGS
 };
 
 static tree loongarch_handle_interrupt_attr (tree *, tree, tree, int, bool *);
 
 /* The value of TARGET_ATTRIBUTE_TABLE.  */
 static const struct attribute_spec loongarch_attribute_table[] = {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+    /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
-  /* Allow functions to be specified as interrupt handlers */
-  { "interrupt",   0, 1, false, true,  true, false, loongarch_handle_interrupt_attr,
-    NULL },
-  { NULL,	   0, 0, false, false, false, false, NULL, NULL }
+    /* Allow functions to be specified as interrupt handlers */
+      { "interrupt", 0, 1, false, true, true, false,
+	 loongarch_handle_interrupt_attr, NULL },
+      { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
+
 
 /* A table describing all the processors GCC knows about; see
    loongarch-cpus.def for details.  */
 static const struct loongarch_cpu_info loongarch_cpu_info_table[] = {
 #define LARCH_CPU(NAME, CPU, ISA, FLAGS) \
-  { NAME, CPU, ISA, FLAGS },
+      { NAME, CPU, ISA, FLAGS },
 #include "loongarch-cpus.def"
 #undef LARCH_CPU
 };
@@ -316,50 +317,50 @@ static const struct loongarch_cpu_info loongarch_cpu_info_table[] = {
 
 /* Costs to use when optimizing for size.  */
 static const struct loongarch_rtx_cost_data loongarch_rtx_cost_optimize_size = {
-  COSTS_N_INSNS (1),            /* fp_add */
-  COSTS_N_INSNS (1),            /* fp_mult_sf */
-  COSTS_N_INSNS (1),            /* fp_mult_df */
-  COSTS_N_INSNS (1),            /* fp_div_sf */
-  COSTS_N_INSNS (1),            /* fp_div_df */
-  COSTS_N_INSNS (1),            /* int_mult_si */
-  COSTS_N_INSNS (1),            /* int_mult_di */
-  COSTS_N_INSNS (1),            /* int_div_si */
-  COSTS_N_INSNS (1),            /* int_div_di */
-		   2,           /* branch_cost */
-		   4            /* memory_latency */
+    COSTS_N_INSNS (1),		    /* fp_add */
+    COSTS_N_INSNS (1),		    /* fp_mult_sf */
+    COSTS_N_INSNS (1),		    /* fp_mult_df */
+    COSTS_N_INSNS (1),		    /* fp_div_sf */
+    COSTS_N_INSNS (1),		    /* fp_div_df */
+    COSTS_N_INSNS (1),		    /* int_mult_si */
+    COSTS_N_INSNS (1),		    /* int_mult_di */
+    COSTS_N_INSNS (1),		    /* int_div_si */
+    COSTS_N_INSNS (1),		    /* int_div_di */
+    2,				    /* branch_cost */
+    4				    /* memory_latency */
 };
 
 /* Costs to use when optimizing for speed, indexed by processor.  */
 static const struct loongarch_rtx_cost_data
-  loongarch_rtx_cost_data[NUM_PROCESSOR_VALUES] = {
-  { /* loongarch */
-    DEFAULT_COSTS
-  },
-  { /* loongarch64 */
-    DEFAULT_COSTS
-  },
-  { /* gs464v */
-    DEFAULT_COSTS
-  }
+loongarch_rtx_cost_data[NUM_PROCESSOR_VALUES] = {
+      { /* loongarch */
+	DEFAULT_COSTS
+      },
+      { /* loongarch64 */
+	DEFAULT_COSTS
+      },
+      { /* gs464v */
+	DEFAULT_COSTS
+      }
 };
 
 /* Information about a single argument.  */
 struct loongarch_arg_info {
-  /* True if the argument is at least partially passed on the stack.  */
-  bool stack_p;
+    /* True if the argument is at least partially passed on the stack.  */
+    bool stack_p;
 
-  /* The number of integer registers allocated to this argument.  */
-  unsigned int num_gprs;
+    /* The number of integer registers allocated to this argument.  */
+    unsigned int num_gprs;
 
-  /* The offset of the first register used, provided num_gprs is nonzero.
-     If passed entirely on the stack, the value is MAX_ARGS_IN_REGISTERS.  */
-  unsigned int gpr_offset;
+    /* The offset of the first register used, provided num_gprs is nonzero.
+       If passed entirely on the stack, the value is MAX_ARGS_IN_REGISTERS.  */
+    unsigned int gpr_offset;
 
-  /* The number of floating-point registers allocated to this argument.  */
-  unsigned int num_fprs;
+    /* The number of floating-point registers allocated to this argument.  */
+    unsigned int num_fprs;
 
-  /* The offset of the first register used, provided num_fprs is nonzero.  */
-  unsigned int fpr_offset;
+    /* The offset of the first register used, provided num_fprs is nonzero.  */
+    unsigned int fpr_offset;
 };
 
 
@@ -414,8 +415,8 @@ loongarch_pass_mode_in_fpr_p (machine_mode mode)
 }
 
 typedef struct {
-  const_tree type;
-  HOST_WIDE_INT offset;
+    const_tree type;
+    HOST_WIDE_INT offset;
 } loongarch_aggregate_field;
 
 /* Identify subfields of aggregates that are candidates for passing in
@@ -423,17 +424,17 @@ typedef struct {
 
 static int
 loongarch_flatten_aggregate_field (const_tree type,
-			       loongarch_aggregate_field fields[2],
-			       int n, HOST_WIDE_INT offset)
+				   loongarch_aggregate_field fields[2],
+				   int n, HOST_WIDE_INT offset)
 {
   switch (TREE_CODE (type))
     {
     case RECORD_TYPE:
-     /* Can't handle incomplete types nor sizes that are not fixed.  */
-     if (!COMPLETE_TYPE_P (type)
-	 || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-	 || !tree_fits_uhwi_p (TYPE_SIZE (type)))
-       return -1;
+      /* Can't handle incomplete types nor sizes that are not fixed.  */
+      if (!COMPLETE_TYPE_P (type)
+	  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+	  || !tree_fits_uhwi_p (TYPE_SIZE (type)))
+	return -1;
 
       for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
 	if (TREE_CODE (f) == FIELD_DECL)
@@ -442,70 +443,72 @@ loongarch_flatten_aggregate_field (const_tree type,
 	      return -1;
 
 	    HOST_WIDE_INT pos = offset + int_byte_position (f);
-	    n = loongarch_flatten_aggregate_field (TREE_TYPE (f), fields, n, pos);
+	    n = loongarch_flatten_aggregate_field (TREE_TYPE (f),
+						   fields, n, pos);
 	    if (n < 0)
 	      return -1;
 	  }
       return n;
 
     case ARRAY_TYPE:
-      {
-	HOST_WIDE_INT n_elts;
-	loongarch_aggregate_field subfields[2];
-	tree index = TYPE_DOMAIN (type);
-	tree elt_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
-	int n_subfields = loongarch_flatten_aggregate_field (TREE_TYPE (type),
-							 subfields, 0, offset);
+	{
+	  HOST_WIDE_INT n_elts;
+	  loongarch_aggregate_field subfields[2];
+	  tree index = TYPE_DOMAIN (type);
+	  tree elt_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
+	  int n_subfields = loongarch_flatten_aggregate_field (TREE_TYPE (type),
+							       subfields, 0,
+							       offset);
 
-	/* Can't handle incomplete types nor sizes that are not fixed.  */
-	if (n_subfields <= 0
-	    || !COMPLETE_TYPE_P (type)
-	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-	    || !index
-	    || !TYPE_MAX_VALUE (index)
-	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
-	    || !TYPE_MIN_VALUE (index)
-	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
-	    || !tree_fits_uhwi_p (elt_size))
-	  return -1;
+	  /* Can't handle incomplete types nor sizes that are not fixed.  */
+	  if (n_subfields <= 0
+	      || !COMPLETE_TYPE_P (type)
+	      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+	      || !index
+	      || !TYPE_MAX_VALUE (index)
+	      || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
+	      || !TYPE_MIN_VALUE (index)
+	      || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
+	      || !tree_fits_uhwi_p (elt_size))
+	    return -1;
 
-	n_elts = 1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
-		   - tree_to_uhwi (TYPE_MIN_VALUE (index));
-	gcc_assert (n_elts >= 0);
+	  n_elts = 1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
+	    - tree_to_uhwi (TYPE_MIN_VALUE (index));
+	  gcc_assert (n_elts >= 0);
 
-	for (HOST_WIDE_INT i = 0; i < n_elts; i++)
-	  for (int j = 0; j < n_subfields; j++)
-	    {
-	      if (n >= 2)
-		return -1;
+	  for (HOST_WIDE_INT i = 0; i < n_elts; i++)
+	    for (int j = 0; j < n_subfields; j++)
+	      {
+		if (n >= 2)
+		  return -1;
 
-	      fields[n] = subfields[j];
-	      fields[n++].offset += i * tree_to_uhwi (elt_size);
-	    }
+		fields[n] = subfields[j];
+		fields[n++].offset += i * tree_to_uhwi (elt_size);
+	      }
 
-	return n;
-      }
+	  return n;
+	}
 
     case COMPLEX_TYPE:
-      {
-	/* Complex type need consume 2 field, so n must be 0.  */
-	if (n != 0)
+	{
+	  /* Complex type need consume 2 field, so n must be 0.  */
+	  if (n != 0)
+	    return -1;
+
+	  HOST_WIDE_INT elt_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type)));
+
+	  if (elt_size <= UNITS_PER_FP_ARG)
+	    {
+	      fields[0].type = TREE_TYPE (type);
+	      fields[0].offset = offset;
+	      fields[1].type = TREE_TYPE (type);
+	      fields[1].offset = offset + elt_size;
+
+	      return 2;
+	    }
+
 	  return -1;
-
-	HOST_WIDE_INT elt_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type)));
-
-	if (elt_size <= UNITS_PER_FP_ARG)
-	  {
-	    fields[0].type = TREE_TYPE (type);
-	    fields[0].offset = offset;
-	    fields[1].type = TREE_TYPE (type);
-	    fields[1].offset = offset + elt_size;
-
-	    return 2;
-	  }
-
-	return -1;
-      }
+	}
 
     default:
       if (n < 2
@@ -528,7 +531,7 @@ loongarch_flatten_aggregate_field (const_tree type,
 
 static int
 loongarch_flatten_aggregate_argument (const_tree type,
-				  loongarch_aggregate_field fields[2])
+				      loongarch_aggregate_field fields[2])
 {
   if (!type || TREE_CODE (type) != RECORD_TYPE)
     return -1;
@@ -541,7 +544,7 @@ loongarch_flatten_aggregate_argument (const_tree type,
 
 static unsigned
 loongarch_pass_aggregate_in_fpr_pair_p (const_tree type,
-				    loongarch_aggregate_field fields[2])
+					loongarch_aggregate_field fields[2])
 {
   int n = loongarch_flatten_aggregate_argument (type, fields);
 
@@ -558,7 +561,7 @@ loongarch_pass_aggregate_in_fpr_pair_p (const_tree type,
 
 static bool
 loongarch_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
-				       loongarch_aggregate_field fields[2])
+					   loongarch_aggregate_field fields[2])
 {
   unsigned num_int = 0, num_float = 0;
   int n = loongarch_flatten_aggregate_argument (type, fields);
@@ -576,14 +579,14 @@ loongarch_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
    when the value has mode VALUE_MODE and the type has TYPE_MODE.  The
    two modes may be different for structures like:
 
-       struct __attribute__((packed)) foo { float f; }
+   struct __attribute__((packed)) foo { float f; }
 
-  where the SFmode value "f" is passed in REGNO but the struct itself
-  has mode BLKmode.  */
+   where the SFmode value "f" is passed in REGNO but the struct itself
+   has mode BLKmode.  */
 
 static rtx
 loongarch_pass_fpr_single (machine_mode type_mode, unsigned regno,
-		       machine_mode value_mode)
+			   machine_mode value_mode)
 {
   rtx x = gen_rtx_REG (value_mode, regno);
 
@@ -602,9 +605,9 @@ loongarch_pass_fpr_single (machine_mode type_mode, unsigned regno,
 
 static rtx
 loongarch_pass_fpr_pair (machine_mode mode, unsigned regno1,
-		     machine_mode mode1, HOST_WIDE_INT offset1,
-		     unsigned regno2, machine_mode mode2,
-		     HOST_WIDE_INT offset2)
+			 machine_mode mode1, HOST_WIDE_INT offset1,
+			 unsigned regno2, machine_mode mode2,
+			 HOST_WIDE_INT offset2)
 {
   return gen_rtx_PARALLEL
     (mode,
@@ -626,8 +629,8 @@ loongarch_pass_fpr_pair (machine_mode mode, unsigned regno1,
 
 static rtx
 loongarch_get_arg_info (struct loongarch_arg_info *info, const CUMULATIVE_ARGS *cum,
-		    machine_mode mode, const_tree type, bool named,
-		    bool return_p)
+			machine_mode mode, const_tree type, bool named,
+			bool return_p)
 {
   unsigned num_bytes, num_words;
   unsigned fpr_base = return_p ? FP_RETURN : FP_ARG_FIRST;
@@ -651,15 +654,15 @@ loongarch_get_arg_info (struct loongarch_arg_info *info, const CUMULATIVE_ARGS *
 	  {
 	  case 1:
 	    return loongarch_pass_fpr_single (mode, fregno,
-					  TYPE_MODE (fields[0].type));
+					      TYPE_MODE (fields[0].type));
 
 	  case 2:
 	    return loongarch_pass_fpr_pair (mode, fregno,
-					TYPE_MODE (fields[0].type),
-					fields[0].offset,
-					fregno + 1,
-					TYPE_MODE (fields[1].type),
-					fields[1].offset);
+					    TYPE_MODE (fields[0].type),
+					    fields[0].offset,
+					    fregno + 1,
+					    TYPE_MODE (fields[1].type),
+					    fields[1].offset);
 
 	  default:
 	    gcc_unreachable ();
@@ -675,8 +678,8 @@ loongarch_get_arg_info (struct loongarch_arg_info *info, const CUMULATIVE_ARGS *
 
 	  case MODE_COMPLEX_FLOAT:
 	    return loongarch_pass_fpr_pair (mode, fregno, GET_MODE_INNER (mode), 0,
-					fregno + 1, GET_MODE_INNER (mode),
-					GET_MODE_UNIT_SIZE (mode));
+					    fregno + 1, GET_MODE_INNER (mode),
+					    GET_MODE_UNIT_SIZE (mode));
 
 	  default:
 	    gcc_unreachable ();
@@ -694,9 +697,9 @@ loongarch_get_arg_info (struct loongarch_arg_info *info, const CUMULATIVE_ARGS *
 	    std::swap (fregno, gregno);
 
 	  return loongarch_pass_fpr_pair (mode, fregno, TYPE_MODE (fields[0].type),
-				      fields[0].offset,
-				      gregno, TYPE_MODE (fields[1].type),
-				      fields[1].offset);
+					  fields[0].offset,
+					  gregno, TYPE_MODE (fields[1].type),
+					  fields[1].offset);
 	}
     }
 
@@ -756,7 +759,7 @@ loongarch_function_arg_advance (cumulative_args_t cum_v,
 
 static int
 loongarch_arg_partial_bytes (cumulative_args_t cum,
-			const function_arg_info &generic_arg)
+			     const function_arg_info &generic_arg)
 {
   struct loongarch_arg_info arg;
 
@@ -833,8 +836,9 @@ loongarch_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 
 static void
 loongarch_setup_incoming_varargs (cumulative_args_t cum,
-			     const function_arg_info &arg,
-			     int *pretend_size ATTRIBUTE_UNUSED, int no_rtl)
+				  const function_arg_info &arg,
+				  int *pretend_size ATTRIBUTE_UNUSED,
+				  int no_rtl)
 {
   CUMULATIVE_ARGS local_cum;
   int gp_saved;
@@ -896,7 +900,7 @@ loongarch_save_reg_p (unsigned int regno)
 {
   bool call_saved = !global_regs[regno] && !call_used_regs[regno];
   bool might_clobber = crtl->saves_all_registers
-		       || df_regs_ever_live_p (regno);
+    || df_regs_ever_live_p (regno);
 
   if (call_saved && might_clobber)
     return true;
@@ -925,39 +929,39 @@ loongarch_save_libcall_count (unsigned mask)
 
    LoongArch stack frames grown downward.  High addresses are at the top.
 
-	+-------------------------------+
-	|                               |
-	|  incoming stack arguments     |
-	|                               |
-	+-------------------------------+ <-- incoming stack pointer
-	|                               |
-	|  callee-allocated save area   |
-	|  for arguments that are       |
-	|  split between registers and  |
-	|  the stack                    |
-	|                               |
-	+-------------------------------+ <-- arg_pointer_rtx
-	|                               |
-	|  callee-allocated save area   |
-	|  for register varargs         |
-	|                               |
-	+-------------------------------+ <-- hard_frame_pointer_rtx;
-	|                               |     stack_pointer_rtx + gp_sp_offset
-	|  GPR save area                |       + UNITS_PER_WORD
-	|                               |
-	+-------------------------------+ <-- stack_pointer_rtx + fp_sp_offset
-	|                               |       + UNITS_PER_HWVALUE
-	|  FPR save area                |
-	|                               |
-	+-------------------------------+ <-- frame_pointer_rtx (virtual)
-	|                               |
-	|  local variables              |
-	|                               |
-      P +-------------------------------+
-	|                               |
-	|  outgoing stack arguments     |
-	|                               |
-	+-------------------------------+ <-- stack_pointer_rtx
+   +-------------------------------+
+   |                               |
+   |  incoming stack arguments     |
+   |                               |
+   +-------------------------------+ <-- incoming stack pointer
+   |                               |
+   |  callee-allocated save area   |
+   |  for arguments that are       |
+   |  split between registers and  |
+   |  the stack                    |
+   |                               |
+   +-------------------------------+ <-- arg_pointer_rtx
+   |                               |
+   |  callee-allocated save area   |
+   |  for register varargs         |
+   |                               |
+   +-------------------------------+ <-- hard_frame_pointer_rtx;
+   |                               |     stack_pointer_rtx + gp_sp_offset
+   |  GPR save area                |       + UNITS_PER_WORD
+   |                               |
+   +-------------------------------+ <-- stack_pointer_rtx + fp_sp_offset
+   |                               |       + UNITS_PER_HWVALUE
+   |  FPR save area                |
+   |                               |
+   +-------------------------------+ <-- frame_pointer_rtx (virtual)
+   |                               |
+   |  local variables              |
+   |                               |
+   P +-------------------------------+
+   |                               |
+   |  outgoing stack arguments     |
+   |                               |
+   +-------------------------------+ <-- stack_pointer_rtx
 
    Dynamic stack allocations such as alloca insert data at point P.
    They decrease stack_pointer_rtx but leave frame_pointer_rtx and
@@ -1069,7 +1073,7 @@ typedef void (*loongarch_save_restore_fn) (rtx, rtx);
 
 static void
 loongarch_save_restore_reg (machine_mode mode, int regno,
-		       HOST_WIDE_INT offset, loongarch_save_restore_fn fn)
+			    HOST_WIDE_INT offset, loongarch_save_restore_fn fn)
 {
   rtx mem;
 
@@ -1241,15 +1245,15 @@ loongarch_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
 
       /* Step 3: the loop
 
-	do
-	  {
-	    TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
-	    probe at TEST_ADDR
-	  }
-	while (TEST_ADDR != LAST_ADDR)
+	 do
+	 {
+	 TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
+	 probe at TEST_ADDR
+	 }
+	 while (TEST_ADDR != LAST_ADDR)
 
-	probes at FIRST + N * PROBE_INTERVAL for values of N from 1
-	until it is equal to ROUNDED_SIZE.  */
+	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
+	 until it is equal to ROUNDED_SIZE.  */
 
       emit_insn (PMODE_INSN (gen_probe_stack_range, (r13, r13, r12)));
 
@@ -1309,6 +1313,7 @@ loongarch_expand_prologue (void)
 {
   struct loongarch_frame_info *frame = &cfun->machine->frame;
   HOST_WIDE_INT size = frame->total_size;
+  HOST_WIDE_INT tmp;
   unsigned mask = frame->mask;
   rtx insn;
 
@@ -1321,8 +1326,12 @@ loongarch_expand_prologue (void)
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
 	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
-	    loongarch_emit_probe_stack_range (get_stack_check_protect (),
-					 size - get_stack_check_protect ());
+	    {
+	      tmp = size - get_stack_check_protect ();
+	      loongarch_emit_probe_stack_range (get_stack_check_protect (),
+						tmp);
+
+	    }
 	}
       else if (size > 0)
 	loongarch_emit_probe_stack_range (get_stack_check_protect (), size);
@@ -1399,7 +1408,6 @@ loongarch_expand_epilogue (bool sibcall_p)
 
      Start off by assuming that no registers need to be restored.  */
   struct loongarch_frame_info *frame = &cfun->machine->frame;
-  unsigned mask = frame->mask;
   HOST_WIDE_INT step1 = frame->total_size;
   HOST_WIDE_INT step2 = 0;
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
@@ -1429,14 +1437,17 @@ loongarch_expand_epilogue (bool sibcall_p)
 	  adjust = LARCH_PROLOGUE_TEMP (Pmode);
 	}
 
-      insn = emit_insn (
-	       gen_add3_insn (stack_pointer_rtx, hard_frame_pointer_rtx,
-			      adjust));
+      insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
+				       hard_frame_pointer_rtx,
+				       adjust));
 
       rtx dwarf = NULL_RTX;
-      rtx cfa_adjust_value = gen_rtx_PLUS (
-			       Pmode, hard_frame_pointer_rtx,
-			       GEN_INT (-frame->hard_frame_pointer_offset));
+      rtx minus_offset = NULL_RTX;
+      minus_offset = GEN_INT (-frame->hard_frame_pointer_offset);
+      rtx cfa_adjust_value = gen_rtx_PLUS (Pmode,
+					   hard_frame_pointer_rtx,
+					   minus_offset);
+
       rtx cfa_adjust_rtx = gen_rtx_SET (stack_pointer_rtx, cfa_adjust_value);
       dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, cfa_adjust_rtx, dwarf);
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -1467,8 +1478,9 @@ loongarch_expand_epilogue (bool sibcall_p)
 	  adjust = LARCH_PROLOGUE_TEMP (Pmode);
 	}
 
-      insn = emit_insn (
-	       gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx, adjust));
+      insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       adjust));
 
       rtx dwarf = NULL_RTX;
       rtx cfa_adjust_rtx = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
@@ -1481,7 +1493,8 @@ loongarch_expand_epilogue (bool sibcall_p)
     }
 
   /* Restore the registers.  */
-  loongarch_for_each_saved_reg (frame->total_size - step2, loongarch_restore_reg);
+  loongarch_for_each_saved_reg (frame->total_size - step2,
+				loongarch_restore_reg);
 
   if (need_barrier_p)
     loongarch_emit_stack_tie ();
@@ -1489,7 +1502,8 @@ loongarch_expand_epilogue (bool sibcall_p)
   /* Deallocate the final bit of the frame.  */
   if (step2 > 0)
     {
-      insn = emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
+      insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
+				       stack_pointer_rtx,
 				       GEN_INT (step2)));
 
       rtx dwarf = NULL_RTX;
@@ -1513,7 +1527,7 @@ loongarch_expand_epilogue (bool sibcall_p)
 
 static rtx loongarch_find_pic_call_symbol (rtx_insn *, rtx, bool);
 static int loongarch_register_move_cost (machine_mode, reg_class_t,
-				    reg_class_t);
+					 reg_class_t);
 
 
 /* Check if the interrupt attribute is set for a function.  */
@@ -1567,7 +1581,7 @@ loongarch_can_inline_p (tree caller, tree callee)
 
 static tree
 loongarch_handle_interrupt_attr (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
-			    int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+				 int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
 {
   /* Check for an argument.  */
   if (is_attribute_p ("interrupt", name) && args != NULL)
@@ -1661,13 +1675,13 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
       codes[0].value = low_part & ~(IMM_REACH-1);
       cost++;
       HOST_WIDE_INT iorv = low_part & (IMM_REACH-1);
-	if (iorv != 0)
-	  {
-	    codes[1].code = IOR;
-	    codes[1].method = METHOD_NORMAL;
-	    codes[1].value = iorv;
-	    cost++;
-	  }
+      if (iorv != 0)
+	{
+	  codes[1].code = IOR;
+	  codes[1].method = METHOD_NORMAL;
+	  codes[1].value = iorv;
+	  cost++;
+	}
     }
 
   if (TARGET_64BIT)
@@ -1805,7 +1819,9 @@ loongarch_rtx_constant_in_small_data_p (machine_mode mode)
    LABEL_REF X in context CONTEXT.  */
 
 static enum loongarch_symbol_type
-loongarch_classify_symbol (const_rtx x, enum loongarch_symbol_context context)
+loongarch_classify_symbol (const_rtx x,
+			   enum loongarch_symbol_context context  \
+			   ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (x) == LABEL_REF)
     {
@@ -1819,6 +1835,8 @@ loongarch_classify_symbol (const_rtx x, enum loongarch_symbol_context context)
 
   if (GET_CODE (x) == SYMBOL_REF)
     return SYMBOL_GOT_DISP;
+
+  return SYMBOL_GOT_DISP;
 }
 
 /* Return true if X is a symbolic constant that can be used in context
@@ -1826,7 +1844,7 @@ loongarch_classify_symbol (const_rtx x, enum loongarch_symbol_context context)
 
 bool
 loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_context context,
-			  enum loongarch_symbol_type *symbol_type)
+			       enum loongarch_symbol_type *symbol_type)
 {
   rtx offset;
 
@@ -1946,7 +1964,8 @@ loongarch_cannot_force_const_mem (machine_mode mode, rtx x)
 	return false;
 
       /* The same optimization as for CONST_INT.  */
-      if (SMALL_INT (offset) && loongarch_symbol_insns (type, MAX_MACHINE_MODE) > 0)
+      if (SMALL_INT (offset)
+	  && loongarch_symbol_insns (type, MAX_MACHINE_MODE) > 0)
 	return true;
 
     }
@@ -1963,8 +1982,9 @@ loongarch_cannot_force_const_mem (machine_mode mode, rtx x)
    STRICT_P is true if REG_OK_STRICT is in effect.  */
 
 int
-loongarch_regno_mode_ok_for_base_p (int regno, machine_mode mode,
-			       bool strict_p)
+loongarch_regno_mode_ok_for_base_p (int regno,
+				    machine_mode mode ATTRIBUTE_UNUSED,
+				    bool strict_p)
 {
   if (!HARD_REGISTER_NUM_P (regno))
     {
@@ -2026,7 +2046,7 @@ loongarch_valid_offset_p (rtx x, machine_mode mode)
 
 static bool
 loongarch_classify_address (struct loongarch_address_info *info, rtx x,
-		       machine_mode mode, bool strict_p)
+			    machine_mode mode, bool strict_p)
 {
   switch (GET_CODE (x))
     {
@@ -2043,16 +2063,16 @@ loongarch_classify_address (struct loongarch_address_info *info, rtx x,
       info->offset = XEXP (x, 1);
       return (loongarch_valid_base_register_p (info->reg, mode, strict_p)
 	      && loongarch_valid_offset_p (info->offset, mode));
-    #if 0
+#if 0
     case LABEL_REF:
     case SYMBOL_REF:
       info->type = ADDRESS_SYMBOLIC;
       return (loongarch_symbolic_constant_p (x, SYMBOL_CONTEXT_MEM,
-					&info->symbol_type)
+					     &info->symbol_type)
 	      && loongarch_symbol_insns (info->symbol_type, mode) > 0
 	      && !loongarch_split_p[info->symbol_type]);
 
-    #endif
+#endif
     default:
       return false;
     }
@@ -2086,7 +2106,7 @@ loongarch_stack_address_p (rtx x, machine_mode mode)
    sense, because their use is so restricted.  */
 
 static bool
-loongarch_lx_address_p (rtx addr, machine_mode mode)
+loongarch_lx_address_p (rtx addr, machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (addr) != PLUS
       || !REG_P (XEXP (addr, 0))
@@ -2250,7 +2270,7 @@ loongarch_const_insns (rtx x)
     case SYMBOL_REF:
     case LABEL_REF:
       return loongarch_symbol_insns (loongarch_classify_symbol (x, SYMBOL_CONTEXT_LEA),
-				MAX_MACHINE_MODE);
+				     MAX_MACHINE_MODE);
 
     default:
       return 0;
@@ -2303,7 +2323,7 @@ loongarch_load_store_insns (rtx mem, rtx_insn *insn)
    assuming that BASE_INSN_LENGTH is the length of one instruction.  */
 
 int
-loongarch_idiv_insns (machine_mode mode)
+loongarch_idiv_insns (machine_mode mode ATTRIBUTE_UNUSED)
 {
   int count;
 
@@ -2358,7 +2378,7 @@ loongarch_force_temporary (rtx dest, rtx value)
 
 static rtx
 loongarch_unspec_address_offset (rtx base, rtx offset,
-			    enum loongarch_symbol_type symbol_type)
+				 enum loongarch_symbol_type symbol_type)
 {
   base = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, base),
 			 UNSPEC_ADDRESS_FIRST + symbol_type);
@@ -2520,10 +2540,10 @@ loongarch_legitimize_tls_address (rtx loc)
   rtx_insn *insn;
 
   /* Since we support TLS copy relocs, non-PIC TLS accesses may all use LE.  */
-  #if 0
+#if 0
   if (!flag_pic)
     model = TLS_MODEL_LOCAL_EXEC;
-  #endif
+#endif
 
   switch (model)
     {
@@ -2594,7 +2614,7 @@ loongarch_force_address (rtx x, machine_mode mode)
 
 static rtx
 loongarch_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			 machine_mode mode)
+			      machine_mode mode)
 {
   rtx base, addr;
   HOST_WIDE_INT offset;
@@ -2656,8 +2676,8 @@ loongarch_move_integer (rtx temp, rtx dest, unsigned HOST_WIDE_INT value)
 	  break;
 	case METHOD_LU52I:
 	  emit_insn (gen_lu52i_d (x, x,
-					GEN_INT (0xfffffffffffff),
-				    GEN_INT (codes[i].value)));
+				  GEN_INT (0xfffffffffffff),
+				  GEN_INT (codes[i].value)));
 	  break;
 	case METHOD_INSV:
 	  emit_insn (gen_rtx_SET
@@ -2753,7 +2773,9 @@ loongarch_legitimize_move (machine_mode mode, rtx dest, rtx src)
    a LO_SUM.  CONTEXT is the context in which X appears.  */
 
 static int
-loongarch_small_data_pattern_1 (rtx x, enum loongarch_symbol_context context)
+loongarch_small_data_pattern_1 (rtx x,
+				enum loongarch_symbol_context context \
+				ATTRIBUTE_UNUSED)
 {
   subrtx_var_iterator::array_type array;
   FOR_EACH_SUBRTX_VAR (iter, array, x, ALL)
@@ -2787,7 +2809,9 @@ loongarch_small_data_pattern_p (rtx op)
    relocations.  CONTEXT is the context in which *LOC appears.  */
 
 static void
-loongarch_rewrite_small_data_1 (rtx *loc, enum loongarch_symbol_context context)
+loongarch_rewrite_small_data_1 (rtx *loc,
+				enum loongarch_symbol_context context \
+				ATTRIBUTE_UNUSED)
 {
   subrtx_ptr_iterator::array_type array;
   FOR_EACH_SUBRTX_PTR (iter, array, loc, ALL)
@@ -2984,7 +3008,7 @@ loongarch_set_reg_reg_cost (machine_mode mode)
 
 static bool
 loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
-		int opno ATTRIBUTE_UNUSED, int *total, bool speed)
+		     int opno ATTRIBUTE_UNUSED, int *total, bool speed)
 {
   int code = GET_CODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
@@ -3103,7 +3127,7 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case XOR:
       /* Double-word operations use two single-word operations.  */
       *total = loongarch_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (2),
-				 speed);
+				      speed);
       return true;
 
     case ASHIFT:
@@ -3113,10 +3137,10 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case ROTATERT:
       if (CONSTANT_P (XEXP (x, 1)))
 	*total = loongarch_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (4),
-				   speed);
+					speed);
       else
 	*total = loongarch_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (12),
-				   speed);
+					speed);
       return true;
 
     case ABS:
@@ -3151,7 +3175,7 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  return false;
 	}
       *total = loongarch_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (4),
-				 speed);
+				      speed);
       return true;
 
     case MINUS:
@@ -3181,8 +3205,8 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
       /* Double-word operations require three single-word operations and
 	 an SLTU.  */
       *total = loongarch_binary_cost (x, COSTS_N_INSNS (1),
-				 COSTS_N_INSNS (4),
-				 speed);
+				      COSTS_N_INSNS (4),
+				      speed);
       return true;
 
     case NEG:
@@ -3265,7 +3289,7 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		      (const_int 32)
       */
       if ((GET_CODE (XEXP (x, 0)) == ASHIFTRT
-	      || GET_CODE (XEXP (x, 0)) == LSHIFTRT)
+	   || GET_CODE (XEXP (x, 0)) == LSHIFTRT)
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && ((INTVAL (XEXP (XEXP (x, 0), 1)) == 32
 	       && GET_MODE (XEXP (x, 0)) == DImode)
@@ -3330,8 +3354,8 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
 static int
 loongarch_address_cost (rtx addr, machine_mode mode,
-		   addr_space_t as ATTRIBUTE_UNUSED,
-		   bool speed ATTRIBUTE_UNUSED)
+			addr_space_t as ATTRIBUTE_UNUSED,
+			bool speed ATTRIBUTE_UNUSED)
 {
   return loongarch_address_insns (addr, mode, false);
 }
@@ -3373,7 +3397,8 @@ loongarch_subword (rtx op, bool high_p)
    SPLIT_TYPE describes the split condition.  */
 
 bool
-loongarch_split_move_p (rtx dest, rtx src, enum loongarch_split_type split_type)
+loongarch_split_move_p (rtx dest, rtx src,
+			enum loongarch_split_type split_type ATTRIBUTE_UNUSED)
 {
   /* FPR-to-FPR moves can be done in a single instruction, if they're
      allowed at all.  */
@@ -3509,7 +3534,6 @@ loongarch_output_move (rtx dest, rtx src)
   enum rtx_code src_code = GET_CODE (src);
   machine_mode mode = GET_MODE (dest);
   bool dbl_p = (GET_MODE_SIZE (mode) == 8);
-  enum loongarch_symbol_type symbol_type;
 
   if (loongarch_split_move_p (dest, src, SPLIT_IF_NECESSARY))
     return "#";
@@ -3532,20 +3556,20 @@ loongarch_output_move (rtx dest, rtx src)
 	    offset = XEXP(offset, 1);
 	  switch (GET_MODE_SIZE (mode))
 	    {
-	      case 1: return "st.b\t%z1,%0";
-	      case 2: return "st.h\t%z1,%0";
-	      case 4:
-		if (const_arith_operand (offset, Pmode))
-		  return "st.w\t%z1,%0";
-		else
-		  return "stptr.w\t%z1,%0";
-	      case 8:
-		if (const_arith_operand (offset, Pmode))
-		  return "st.d\t%z1,%0";
-		else
-		  return "stptr.d\t%z1,%0";
-	      default: gcc_unreachable ();
-	  }
+	    case 1: return "st.b\t%z1,%0";
+	    case 2: return "st.h\t%z1,%0";
+	    case 4:
+		    if (const_arith_operand (offset, Pmode))
+		      return "st.w\t%z1,%0";
+		    else
+		      return "stptr.w\t%z1,%0";
+	    case 8:
+		    if (const_arith_operand (offset, Pmode))
+		      return "st.d\t%z1,%0";
+		    else
+		      return "stptr.d\t%z1,%0";
+	    default: gcc_unreachable ();
+	    }
 	}
     }
   if (dest_code == REG && GP_REG_P (REGNO (dest)))
@@ -3561,19 +3585,19 @@ loongarch_output_move (rtx dest, rtx src)
 	    offset = XEXP(offset, 1);
 	  switch (GET_MODE_SIZE (mode))
 	    {
-	      case 1: return "ld.bu\t%0,%1";
-	      case 2: return "ld.hu\t%0,%1";
-	      case 4:
-		if (const_arith_operand (offset, Pmode))
-		  return "ld.w\t%0,%1";
-		else
-		  return "ldptr.w\t%0,%1";
-	      case 8:
-		if (const_arith_operand (offset, Pmode))
-		  return "ld.d\t%0,%1";
-		else
-		  return "ldptr.d\t%0,%1";
-	      default: gcc_unreachable ();
+	    case 1: return "ld.bu\t%0,%1";
+	    case 2: return "ld.hu\t%0,%1";
+	    case 4:
+		    if (const_arith_operand (offset, Pmode))
+		      return "ld.w\t%0,%1";
+		    else
+		      return "ldptr.w\t%0,%1";
+	    case 8:
+		    if (const_arith_operand (offset, Pmode))
+		      return "ld.d\t%0,%1";
+		    else
+		      return "ldptr.d\t%0,%1";
+	    default: gcc_unreachable ();
 	    }
 	}
 
@@ -3593,55 +3617,64 @@ loongarch_output_move (rtx dest, rtx src)
 
       if (symbolic_operand (src, VOIDmode))
 	{
-
-	  switch (loongarch_cmodel_var)
+	  if (loongarch_cmodel_var == LARCH_CMODEL_TINY
+	      || loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
 	    {
-	    case LARCH_CMODEL_TINY:
-	      do
+	      /* The symbol must be aligned to 4 byte.  */
+	      unsigned int align;
+
+	      if (GET_CODE (src) == LABEL_REF)
+		align = 128 /* whatever */;
+	      else if (CONSTANT_POOL_ADDRESS_P (src))
+		align = GET_MODE_ALIGNMENT (get_pool_mode (src));
+	      else if (TREE_CONSTANT_POOL_ADDRESS_P (src))
 		{
-		  if (loongarch_global_symbol_p (src)
-		      && !loongarch_symbol_binds_local_p (src))
-		    break;
-	    case LARCH_CMODEL_TINY_STATIC:
-		  if (loongarch_weak_symbol_p (src))
-		    break;
-
-		  /* The symbol must be aligned to 4 byte.  */
-		  unsigned int align;
-
-		  if (GET_CODE (src) == LABEL_REF)
-		    align = 128 /* whatever */;
-		  else if (CONSTANT_POOL_ADDRESS_P (src))
-		    align = GET_MODE_ALIGNMENT (get_pool_mode (src));
-		  else if (TREE_CONSTANT_POOL_ADDRESS_P (src))
-		    {
-		      tree exp = SYMBOL_REF_DECL (src);
-		      align = TYPE_ALIGN (TREE_TYPE (exp));
-		      align = loongarch_constant_alignment (exp, align);
-		    }
-		  else if (SYMBOL_REF_DECL (src))
-		    align = DECL_ALIGN (SYMBOL_REF_DECL (src));
-		  else if (SYMBOL_REF_HAS_BLOCK_INFO_P (src)
-			   && SYMBOL_REF_BLOCK (src) != NULL)
-		    align = SYMBOL_REF_BLOCK (src)->alignment;
-		  else
-		    align = BITS_PER_UNIT;
-
-		  if (align % (4 * 8) == 0)
-		    return "pcaddi\t%0,%%pcrel(%1)>>2";
+		  tree exp = SYMBOL_REF_DECL (src);
+		  align = TYPE_ALIGN (TREE_TYPE (exp));
+		  align = loongarch_constant_alignment (exp, align);
 		}
-	      while (0);
-	    case LARCH_CMODEL_NORMAL:
-	    case LARCH_CMODEL_LARGE:
+	      else if (SYMBOL_REF_DECL (src))
+		align = DECL_ALIGN (SYMBOL_REF_DECL (src));
+	      else if (SYMBOL_REF_HAS_BLOCK_INFO_P (src)
+		       && SYMBOL_REF_BLOCK (src) != NULL)
+		align = SYMBOL_REF_BLOCK (src)->alignment;
+	      else
+		align = BITS_PER_UNIT;
+
+	      if (loongarch_cmodel_var == LARCH_CMODEL_TINY)
+		{
+		  if (!loongarch_global_symbol_p (src)
+		      || loongarch_symbol_binds_local_p (src))
+		    {
+		      if (align % (4 * 8) == 0)
+			return "pcaddi\t%0,%%pcrel(%1)>>2";
+		    }
+		}
+	      if (loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC)
+		{
+		  if (!loongarch_weak_symbol_p (src))
+		    {
+		      if (align % (4 * 8) == 0)
+			return "pcaddi\t%0,%%pcrel(%1)>>2";
+		    }
+		}
+	    }
+	  if (loongarch_cmodel_var == LARCH_CMODEL_TINY
+	      || loongarch_cmodel_var == LARCH_CMODEL_TINY_STATIC
+	      || loongarch_cmodel_var == LARCH_CMODEL_NORMAL
+	      || loongarch_cmodel_var == LARCH_CMODEL_LARGE)
+	    {
 	      if (!loongarch_global_symbol_p (src)
 		  || loongarch_symbol_binds_local_p (src))
 		return "la.local\t%0,%1";
 	      else
 		return "la.global\t%0,%1";
-	    case LARCH_CMODEL_EXTREME:
+	    }
+	  if (loongarch_cmodel_var == LARCH_CMODEL_EXTREME)
+	    {
 	      sorry("Normal symbol loading not implemented in extreme mode.");
-	    default:
-	      gcc_unreachable ();
+	      /* GCC complains.  */
+	      /* return ""; */
 	    }
 	}
     }
@@ -3695,12 +3728,12 @@ loongarch_int_order_operand_ok_p (enum rtx_code code, rtx cmp1)
 /* Return true if *CMP1 (of mode MODE) is a valid second operand for
    integer ordering test *CODE, or if an equivalent combination can
    be formed by adjusting *CODE and *CMP1.  When returning true, update
-   *CODE and *CMP1 with the chosen code and operand, otherwise leave
-   them alone.  */
+ *CODE and *CMP1 with the chosen code and operand, otherwise leave
+ them alone.  */
 
 static bool
 loongarch_canonicalize_int_order_test (enum rtx_code *code, rtx *cmp1,
-				  machine_mode mode)
+				       machine_mode mode)
 {
   HOST_WIDE_INT plus_one;
 
@@ -3743,7 +3776,7 @@ loongarch_canonicalize_int_order_test (enum rtx_code *code, rtx *cmp1,
 
 static void
 loongarch_emit_int_order_test (enum rtx_code code, bool *invert_ptr,
-			  rtx target, rtx cmp0, rtx cmp1)
+			       rtx target, rtx cmp0, rtx cmp1)
 {
   machine_mode mode;
 
@@ -3766,7 +3799,7 @@ loongarch_emit_int_order_test (enum rtx_code code, bool *invert_ptr,
 	  rtx inv_target;
 
 	  inv_target = loongarch_force_binary (GET_MODE (target),
-					  inv_code, cmp0, cmp1);
+					       inv_code, cmp0, cmp1);
 	  loongarch_emit_binary (XOR, target, inv_target, const1_rtx);
 	}
       else
@@ -3862,14 +3895,14 @@ loongarch_emit_int_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 	  if (SMALL_OPERAND (-rhs))
 	    {
 	      *op0 = loongarch_force_binary (GET_MODE (*op0), PLUS, *op0,
-					 GEN_INT (-rhs));
+					     GEN_INT (-rhs));
 	      *op1 = const0_rtx;
 	    }
 	}
       else
 	{
 	  static const enum rtx_code mag_comparisons[][2] = {
-	    {LEU, LTU}, {GTU, GEU}, {LE, LT}, {GT, GE}
+		{LEU, LTU}, {GTU, GEU}, {LE, LT}, {GT, GE}
 	  };
 
 	  /* Convert e.g. (OP0 <= 0xFFF) into (OP0 < 0x1000).  */
@@ -3914,7 +3947,7 @@ loongarch_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
      then compare that register against zero.
 
      Set CMP_CODE to the code of the comparison instruction and
-     *CODE to the code that the branch or move should use.  */
+   *CODE to the code that the branch or move should use.  */
   enum rtx_code cmp_code = *code;
   /* Three FP conditions cannot be implemented by reversing the
      operands for FCMP.cond.fmt, instead a reversed condition code is
@@ -3998,16 +4031,16 @@ loongarch_expand_conditional_move (rtx *operands)
 	  op1 = const0_rtx;
 	}
       else /*see test-mask-2.c*/
-      {
-	/* The comparison needs a separate scc instruction.  Store the
-	   result of the scc in *OP0 and compare it against zero.  */
-	bool invert = false;
-	rtx target = gen_reg_rtx (GET_MODE (op0));
-	loongarch_emit_int_order_test (code, &invert, target, op0, op1);
-	code = invert ? EQ: NE;
-	op0 = target;
-	op1 = const0_rtx;
-      }
+	{
+	  /* The comparison needs a separate scc instruction.  Store the
+	     result of the scc in *OP0 and compare it against zero.  */
+	  bool invert = false;
+	  rtx target = gen_reg_rtx (GET_MODE (op0));
+	  loongarch_emit_int_order_test (code, &invert, target, op0, op1);
+	  code = invert ? EQ: NE;
+	  op0 = target;
+	  op1 = const0_rtx;
+	}
     }
 
   rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
@@ -4036,9 +4069,9 @@ loongarch_expand_conditional_move (rtx *operands)
       emit_insn (gen_rtx_SET (operands[0], gen_rtx_IOR (mode, temp, temp2)));
     }
   else
-      emit_insn (gen_rtx_SET (operands[0],
-	    gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]), cond,
-		operands[2], operands[3])));
+    emit_insn (gen_rtx_SET (operands[0],
+			    gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]), cond,
+						  operands[2], operands[3])));
 }
 
 
@@ -4067,7 +4100,8 @@ loongarch_start_function_definition (const char *name)
 /* Implement TARGET_FUNCTION_OK_FOR_SIBCALL.  */
 
 static bool
-loongarch_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
+loongarch_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
+				   tree exp ATTRIBUTE_UNUSED)
 {
   if (!TARGET_SIBCALLS)
     return false;
@@ -4085,9 +4119,9 @@ loongarch_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 
 bool
 loongarch_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
-				     unsigned int align,
-				     enum by_pieces_operation op,
-				     bool speed_p)
+					  unsigned int align,
+					  enum by_pieces_operation op,
+					  bool speed_p)
 {
   if (op == STORE_BY_PIECES)
     return loongarch_store_by_pieces_p (size, align);
@@ -4221,7 +4255,7 @@ loongarch_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
 
 static void
 loongarch_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
-		       rtx *loop_reg, rtx *loop_mem)
+			    rtx *loop_reg, rtx *loop_mem)
 {
   *loop_reg = copy_addr_to_reg (XEXP (mem, 0));
 
@@ -4237,7 +4271,7 @@ loongarch_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
 
 static void
 loongarch_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
-		      HOST_WIDE_INT bytes_per_iter)
+			   HOST_WIDE_INT bytes_per_iter)
 {
   rtx_code_label *label;
   rtx src_reg, dest_reg, final_src, test;
@@ -4300,7 +4334,7 @@ loongarch_expand_block_move (rtx dest, rtx src, rtx length)
       else if (optimize)
 	{
 	  loongarch_block_move_loop (dest, src, INTVAL (length),
-				LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER);
+				     LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER);
 	  return true;
 	}
     }
@@ -4332,7 +4366,6 @@ loongarch_expand_atomic_qihi (union loongarch_gen_fn_ptrs generator,
   rtx orig_addr, memsi_addr, memsi, shift, shiftsi, unshifted_mask;
   rtx unshifted_mask_reg, mask, inverted_mask, si_op;
   rtx res = NULL;
-  rtx tmp = NULL;
   machine_mode mode;
 
   mode = GET_MODE (mem);
@@ -4340,7 +4373,7 @@ loongarch_expand_atomic_qihi (union loongarch_gen_fn_ptrs generator,
   /* Compute the address of the containing SImode value.  */
   orig_addr = force_reg (Pmode, XEXP (mem, 0));
   memsi_addr = loongarch_force_binary (Pmode, AND, orig_addr,
-				  force_reg (Pmode, GEN_INT (-4)));
+				       force_reg (Pmode, GEN_INT (-4)));
 
   /* Create a memory reference for it.  */
   memsi = gen_rtx_MEM (SImode, memsi_addr);
@@ -4409,9 +4442,9 @@ loongarch_expand_atomic_qihi (union loongarch_gen_fn_ptrs generator,
    instruction.  OP must be a register operand and the following
    conditions must hold:
 
-     0 <= BITPOS < GET_MODE_BITSIZE (GET_MODE (op))
-     0 < WIDTH <= GET_MODE_BITSIZE (GET_MODE (op))
-     0 < BITPOS + WIDTH <= GET_MODE_BITSIZE (GET_MODE (op))
+   0 <= BITPOS < GET_MODE_BITSIZE (GET_MODE (op))
+   0 < WIDTH <= GET_MODE_BITSIZE (GET_MODE (op))
+   0 < BITPOS + WIDTH <= GET_MODE_BITSIZE (GET_MODE (op))
 
    Also reject lengths equal to a word as they are better handled
    by the move patterns.  */
@@ -4549,21 +4582,21 @@ loongarch_memmodel_needs_release_fence (enum memmodel model)
 {
   switch (model)
     {
-      case MEMMODEL_ACQ_REL:
-      case MEMMODEL_SEQ_CST:
-      case MEMMODEL_SYNC_SEQ_CST:
-      case MEMMODEL_RELEASE:
-      case MEMMODEL_SYNC_RELEASE:
-	return true;
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
+    case MEMMODEL_RELEASE:
+    case MEMMODEL_SYNC_RELEASE:
+      return true;
 
-      case MEMMODEL_ACQUIRE:
-      case MEMMODEL_CONSUME:
-      case MEMMODEL_SYNC_ACQUIRE:
-      case MEMMODEL_RELAXED:
-	return false;
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_SYNC_ACQUIRE:
+    case MEMMODEL_RELAXED:
+      return false;
 
-      default:
-	gcc_unreachable ();
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -4681,15 +4714,15 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
 
     case 'W':
       loongarch_print_float_branch_condition (file, reverse_condition (code),
-					 letter);
+					      letter);
       break;
 
     case 'T':
     case 't':
-      {
-	int truth = (code == NE) == (letter == 'T');
-	fputc ("zfnt"[truth * 2 + ST_REG_P (REGNO (XEXP (op, 0)))], file);
-      }
+	{
+	  int truth = (code == NE) == (letter == 'T');
+	  fputc ("zfnt"[truth * 2 + ST_REG_P (REGNO (XEXP (op, 0)))], file);
+	}
       break;
 
     case 'Y':
@@ -4724,12 +4757,12 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       switch (code)
 	{
 	case REG:
-	  {
-	    unsigned int regno = REGNO (op);
-	    if (letter && letter != 'z')
-	      output_operand_lossage ("invalid use of '%%%c'", letter);
-	    fprintf (file, "%s", reg_names[regno]);
-	  }
+	    {
+	      unsigned int regno = REGNO (op);
+	      if (letter && letter != 'z')
+		output_operand_lossage ("invalid use of '%%%c'", letter);
+	      fprintf (file, "%s", reg_names[regno]);
+	    }
 	  break;
 
 	case MEM:
@@ -4795,7 +4828,7 @@ loongarch_print_operand_address (FILE *file, machine_mode /*mode*/, rtx x)
 
 static section *
 loongarch_select_rtx_section (machine_mode mode, rtx x,
-			 unsigned HOST_WIDE_INT align)
+			      unsigned HOST_WIDE_INT align)
 {
   /* ??? Consider using mergeable small data sections.  */
   if (loongarch_rtx_constant_in_small_data_p (mode))
@@ -5008,7 +5041,7 @@ loongarch_output_ascii (FILE *stream, const char *string, size_t len)
 
 void
 loongarch_declare_object (FILE *stream, const char *name, const char *init_string,
-		     const char *final_string, ...)
+			  const char *final_string, ...)
 {
   va_list ap;
 
@@ -5029,30 +5062,32 @@ loongarch_declare_object (FILE *stream, const char *name, const char *init_strin
 
 void
 loongarch_declare_common_object (FILE *stream, const char *name,
-			    const char *init_string,
-			    unsigned HOST_WIDE_INT size,
-			    unsigned int align, bool takes_alignment_p)
+				 const char *init_string,
+				 unsigned HOST_WIDE_INT size,
+				 unsigned int align, bool takes_alignment_p)
 {
   if (!takes_alignment_p)
     {
       size += (align / BITS_PER_UNIT) - 1;
       size -= size % (align / BITS_PER_UNIT);
       loongarch_declare_object (stream, name, init_string,
-			   "," HOST_WIDE_INT_PRINT_UNSIGNED "\n", size);
+				"," HOST_WIDE_INT_PRINT_UNSIGNED "\n", size);
     }
   else
     loongarch_declare_object (stream, name, init_string,
-			 "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",
-			 size, align / BITS_PER_UNIT);
+			      "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",
+			      size, align / BITS_PER_UNIT);
 }
 
 /* Implement ASM_OUTPUT_ALIGNED_DECL_COMMON.  This is usually the same as the
    elfos.h version.  */
 
 void
-loongarch_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
-				 unsigned HOST_WIDE_INT size,
-				 unsigned int align)
+loongarch_output_aligned_decl_common (FILE *stream,
+				      tree decl ATTRIBUTE_UNUSED,
+				      const char *name,
+				      unsigned HOST_WIDE_INT size,
+				      unsigned int align)
 {
   loongarch_declare_common_object (stream, name, "\n\t.comm\t",
 				   size, align, true);
@@ -5066,7 +5101,7 @@ extern int size_directive_output;
 
 void
 loongarch_declare_object_name (FILE *stream, const char *name,
-			  tree decl ATTRIBUTE_UNUSED)
+			       tree decl ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
 #ifdef USE_GNU_UNIQUE_OBJECT
@@ -5122,9 +5157,9 @@ loongarch_finish_declare_object (FILE *stream, tree decl, int top_level, int at_
 
 void
 loongarch_set_text_contents_type (FILE *file ATTRIBUTE_UNUSED,
-			     const char *prefix ATTRIBUTE_UNUSED,
-			     unsigned long num ATTRIBUTE_UNUSED,
-			     bool function_p ATTRIBUTE_UNUSED)
+				  const char *prefix ATTRIBUTE_UNUSED,
+				  unsigned long num ATTRIBUTE_UNUSED,
+				  bool function_p ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
   char buf[(sizeof (num) * 10) / 4 + 2];
@@ -5209,7 +5244,7 @@ loongarch_set_return_address (rtx address, rtx scratch)
 
   gcc_assert (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM));
   slot_address = loongarch_add_offset (scratch, stack_pointer_rtx,
-				  cfun->machine->frame.gp_sp_offset);
+				       cfun->machine->frame.gp_sp_offset);
   loongarch_emit_move (gen_frame_mem (GET_MODE (address), slot_address), address);
 }
 
@@ -5228,7 +5263,7 @@ void loongarch_declare_function_name(FILE *stream ATTRIBUTE_UNUSED,
 static void
 loongarch_output_function_epilogue (FILE *)
 {
-  const char *fnname;
+  const char *fnname ATTRIBUTE_UNUSED;
 
   /* Get the function name the same way that toplev.c does before calling
      assemble_start_function.  This is needed so that the name used here
@@ -5286,7 +5321,7 @@ loongarch_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
 bool
 loongarch_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
-			   unsigned int new_reg)
+				unsigned int new_reg ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -5295,7 +5330,7 @@ loongarch_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
    in peephole2.  */
 
 bool
-loongarch_hard_regno_scratch_ok (unsigned int regno)
+loongarch_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -5351,7 +5386,7 @@ loongarch_class_max_nregs (enum reg_class rclass, machine_mode mode)
 
 static bool
 loongarch_can_change_mode_class (machine_mode from,
-			    machine_mode to, reg_class_t rclass)
+				 machine_mode to, reg_class_t rclass)
 {
   /* Allow conversions between different Loongson integer vectors,
      and between those vectors and DImode.  */
@@ -5363,7 +5398,7 @@ loongarch_can_change_mode_class (machine_mode from,
 }
 
 /* Return true if moves in mode MODE can use the FPU's fmov.fmt instruction,
-   */
+*/
 
 static bool
 loongarch_mode_ok_for_mov_fmt_p (machine_mode mode)
@@ -5474,7 +5509,7 @@ loongarch_move_from_gpr_cost (reg_class_t to)
 
 static int
 loongarch_register_move_cost (machine_mode mode,
-			 reg_class_t from, reg_class_t to)
+			      reg_class_t from, reg_class_t to)
 {
   reg_class_t dregs;
   int cost1, cost2;
@@ -5528,8 +5563,9 @@ loongarch_memory_move_cost (machine_mode mode, reg_class_t rclass, bool in)
    would have a significant impact on the backend.  */
 
 static bool
-loongarch_secondary_memory_needed (machine_mode mode, reg_class_t class1,
-			      reg_class_t class2)
+loongarch_secondary_memory_needed (machine_mode mode ATTRIBUTE_UNUSED,
+				   reg_class_t class1,
+				   reg_class_t class2)
 {
   /* Ignore spilled pseudos.  */
   if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
@@ -5546,7 +5582,7 @@ loongarch_secondary_memory_needed (machine_mode mode, reg_class_t class1,
 
 enum reg_class
 loongarch_secondary_reload_class (enum reg_class rclass,
-			     machine_mode mode, rtx x, bool)
+				  machine_mode mode, rtx x, bool)
 {
   int regno;
 
@@ -5609,7 +5645,7 @@ loongarch_scalar_mode_supported_p (scalar_mode mode)
 /* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 
 static machine_mode
-loongarch_preferred_simd_mode (scalar_mode mode)
+loongarch_preferred_simd_mode (scalar_mode mode ATTRIBUTE_UNUSED)
 {
   return word_mode;
 }
@@ -5667,8 +5703,8 @@ loongarch_adjust_insn_length (rtx_insn *insn, int length)
 
 const char *
 loongarch_output_conditional_branch (rtx_insn *insn, rtx *operands,
-				const char *branch_if_true,
-				const char *branch_if_false)
+				     const char *branch_if_true,
+				     const char *branch_if_false)
 {
   unsigned int length;
   rtx taken;
@@ -5736,7 +5772,7 @@ loongarch_output_conditional_branch (rtx_insn *insn, rtx *operands,
 
 const char *
 loongarch_output_equal_conditional_branch (rtx_insn* insn, rtx *operands,
-				      bool inverted_p)
+					   bool inverted_p)
 {
   const char *branch[2];
   if (operands[3] == const0_rtx)
@@ -5761,7 +5797,7 @@ loongarch_output_equal_conditional_branch (rtx_insn* insn, rtx *operands,
 
 const char *
 loongarch_output_order_conditional_branch (rtx_insn *insn, rtx *operands,
-				      bool inverted_p)
+					   bool inverted_p)
 {
   const char *branch[2];
 
@@ -5783,7 +5819,7 @@ loongarch_output_order_conditional_branch (rtx_insn *insn, rtx *operands,
 	      branch[!inverted_p] = LARCH_BRANCH ("b", "%0");
 	      branch[inverted_p] = "\t# branch never";
 	      break;
-	   default:
+	    default:
 	      gcc_unreachable ();
 	    }
 	}
@@ -5791,31 +5827,31 @@ loongarch_output_order_conditional_branch (rtx_insn *insn, rtx *operands,
 	{
 	  switch (GET_CODE (operands[1]))
 	    {
-	      case LE:
-		branch[!inverted_p] = LARCH_BRANCH ("bge", "%3,%2,%0");
-		branch[inverted_p] = LARCH_BRANCH ("blt", "%3,%2,%0");
-		break;
-	      case LEU:
-		branch[!inverted_p] = LARCH_BRANCH ("bgeu", "%3,%2,%0");
-		branch[inverted_p] = LARCH_BRANCH ("bltu", "%3,%2,%0");
-		break;
-	      case GT:
-		branch[!inverted_p] = LARCH_BRANCH ("blt", "%3,%2,%0");
-		branch[inverted_p] = LARCH_BRANCH ("bge", "%3,%2,%0");
-		break;
-	      case GTU:
-		branch[!inverted_p] = LARCH_BRANCH ("bltu", "%3,%2,%0");
-		branch[inverted_p] = LARCH_BRANCH ("bgeu", "%3,%2,%0");
-		break;
-	      case LT:
-	      case LTU:
-	      case GE:
-	      case GEU:
-		branch[!inverted_p] = LARCH_BRANCH ("b%C1", "%2,%3,%0");
-		branch[inverted_p] = LARCH_BRANCH ("b%N1", "%2,%3,%0");
-		break;
-	      default:
-		gcc_unreachable ();
+	    case LE:
+	      branch[!inverted_p] = LARCH_BRANCH ("bge", "%3,%2,%0");
+	      branch[inverted_p] = LARCH_BRANCH ("blt", "%3,%2,%0");
+	      break;
+	    case LEU:
+	      branch[!inverted_p] = LARCH_BRANCH ("bgeu", "%3,%2,%0");
+	      branch[inverted_p] = LARCH_BRANCH ("bltu", "%3,%2,%0");
+	      break;
+	    case GT:
+	      branch[!inverted_p] = LARCH_BRANCH ("blt", "%3,%2,%0");
+	      branch[inverted_p] = LARCH_BRANCH ("bge", "%3,%2,%0");
+	      break;
+	    case GTU:
+	      branch[!inverted_p] = LARCH_BRANCH ("bltu", "%3,%2,%0");
+	      branch[inverted_p] = LARCH_BRANCH ("bgeu", "%3,%2,%0");
+	      break;
+	    case LT:
+	    case LTU:
+	    case GE:
+	    case GEU:
+	      branch[!inverted_p] = LARCH_BRANCH ("b%C1", "%2,%3,%0");
+	      branch[inverted_p] = LARCH_BRANCH ("b%N1", "%2,%3,%0");
+	      break;
+	    default:
+	      gcc_unreachable ();
 	    }
 	}
     }
@@ -5865,7 +5901,7 @@ loongarch_output_order_conditional_branch (rtx_insn *insn, rtx *operands,
 
 /* Return the assembly code for DIV.{W/D} instruction DIVISION, which has
    the operands given by OPERANDS.  Add in a divide-by-zero check if needed.
-*/
+   */
 
 const char *
 loongarch_output_division (const char *division, rtx *operands)
@@ -5926,8 +5962,11 @@ loongarch_multipass_dfa_lookahead (void)
 /* Implement TARGET_SCHED_REORDER.  */
 
 static int
-loongarch_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		    rtx_insn **ready, int *nreadyp, int cycle ATTRIBUTE_UNUSED)
+loongarch_sched_reorder (FILE *file ATTRIBUTE_UNUSED,
+			 int verbose ATTRIBUTE_UNUSED,
+			 rtx_insn **ready ATTRIBUTE_UNUSED,
+			 int *nreadyp ATTRIBUTE_UNUSED,
+			 int cycle ATTRIBUTE_UNUSED)
 {
   return loongarch_issue_rate ();
 }
@@ -5935,8 +5974,11 @@ loongarch_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUS
 /* Implement TARGET_SCHED_REORDER2.  */
 
 static int
-loongarch_sched_reorder2 (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		     rtx_insn **ready, int *nreadyp, int cycle ATTRIBUTE_UNUSED)
+loongarch_sched_reorder2 (FILE *file ATTRIBUTE_UNUSED,
+			  int verbose ATTRIBUTE_UNUSED,
+			  rtx_insn **ready ATTRIBUTE_UNUSED,
+			  int *nreadyp ATTRIBUTE_UNUSED,
+			  int cycle ATTRIBUTE_UNUSED)
 {
   return cached_can_issue_more;
 }
@@ -5952,8 +5994,9 @@ loongarch_sched_init (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 /* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
 
 static int
-loongarch_variable_issue (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
-		     rtx_insn *insn, int more)
+loongarch_variable_issue (FILE *file ATTRIBUTE_UNUSED,
+			  int verbose ATTRIBUTE_UNUSED,
+			  rtx_insn *insn, int more)
 {
   /* Ignore USEs and CLOBBERs; don't count them against the issue rate.  */
   if (USEFUL_INSN_P (insn))
@@ -6080,21 +6123,21 @@ loongarch_pic_call_symbol_from_set (df_ref def, rtx reg, bool recurse_p)
       /* Follow at most one simple register copy.  Such copies are
 	 interesting in cases like:
 
-	     for (...)
-	       {
-	       locally_binding_fn (...);
-	       }
+	 for (...)
+	 {
+	 locally_binding_fn (...);
+	 }
 
-	 and:
+and:
 
-	     locally_binding_fn (...);
-	     ...
-	     locally_binding_fn (...);
+locally_binding_fn (...);
+...
+locally_binding_fn (...);
 
-	 where the load of locally_binding_fn can legitimately be
-	 hoisted or shared.  However, we do not expect to see complex
-	 chains of copies, so a full worklist solution to the problem
-	 would probably be overkill.  */
+where the load of locally_binding_fn can legitimately be
+hoisted or shared.  However, we do not expect to see complex
+chains of copies, so a full worklist solution to the problem
+would probably be overkill.  */
       if (recurse_p && REG_P (src))
 	return loongarch_find_pic_call_symbol (def_insn, src, false);
     }
@@ -6163,52 +6206,52 @@ loongarch_annotate_pic_calls (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
-    {
-      rtx call, reg, symbol, second_call;
+      {
+	rtx call, reg, symbol, second_call;
 
-      second_call = 0;
-      call = loongarch_call_expr_from_insn (insn, &second_call);
-      if (!call)
-	continue;
-      gcc_assert (MEM_P (XEXP (call, 0)));
-      reg = XEXP (XEXP (call, 0), 0);
-      if (!REG_P (reg))
-	continue;
+	second_call = 0;
+	call = loongarch_call_expr_from_insn (insn, &second_call);
+	if (!call)
+	  continue;
+	gcc_assert (MEM_P (XEXP (call, 0)));
+	reg = XEXP (XEXP (call, 0), 0);
+	if (!REG_P (reg))
+	  continue;
 
-      symbol = loongarch_find_pic_call_symbol (insn, reg, true);
-      if (symbol)
-	{
-	  loongarch_annotate_pic_call_expr (call, symbol);
-	  if (second_call)
-	    loongarch_annotate_pic_call_expr (second_call, symbol);
-	}
-    }
+	symbol = loongarch_find_pic_call_symbol (insn, reg, true);
+	if (symbol)
+	  {
+	    loongarch_annotate_pic_call_expr (call, symbol);
+	    if (second_call)
+	      loongarch_annotate_pic_call_expr (second_call, symbol);
+	  }
+      }
 }
 
 
 /* A structure representing the state of the processor pipeline.
    Used by the loongarch_sim_* family of functions.  */
 struct loongarch_sim {
-  /* The maximum number of instructions that can be issued in a cycle.
-     (Caches loongarch_issue_rate.)  */
-  unsigned int issue_rate;
+    /* The maximum number of instructions that can be issued in a cycle.
+       (Caches loongarch_issue_rate.)  */
+    unsigned int issue_rate;
 
-  /* The current simulation time.  */
-  unsigned int time;
-
-  /* How many more instructions can be issued in the current cycle.  */
-  unsigned int insns_left;
-
-  /* LAST_SET[X].INSN is the last instruction to set register X.
-     LAST_SET[X].TIME is the time at which that instruction was issued.
-     INSN is null if no instruction has yet set register X.  */
-  struct {
-    rtx_insn *insn;
+    /* The current simulation time.  */
     unsigned int time;
-  } last_set[FIRST_PSEUDO_REGISTER];
 
-  /* The pipeline's current DFA state.  */
-  state_t dfa_state;
+    /* How many more instructions can be issued in the current cycle.  */
+    unsigned int insns_left;
+
+    /* LAST_SET[X].INSN is the last instruction to set register X.
+       LAST_SET[X].TIME is the time at which that instruction was issued.
+       INSN is null if no instruction has yet set register X.  */
+    struct {
+	rtx_insn *insn;
+	unsigned int time;
+    } last_set[FIRST_PSEUDO_REGISTER];
+
+    /* The pipeline's current DFA state.  */
+    state_t dfa_state;
 };
 
 /* Reset STATE to the initial simulation state.  */
@@ -6286,8 +6329,8 @@ loongarch_expand_to_rtl_hook (void)
    involving SYMBOL_REF or LABEL_REF BASE and that MAX_OFFSET is
    the largest offset applied to BASE by all such LO_SUMs.  */
 struct loongarch_lo_sum_offset {
-  rtx base;
-  HOST_WIDE_INT offset;
+    rtx base;
+    HOST_WIDE_INT offset;
 };
 
 /* Return a hash value for SYMBOL_REF or LABEL_REF BASE.  */
@@ -6319,7 +6362,7 @@ loongarch_lo_sum_offset_hasher::hash (const loongarch_lo_sum_offset *entry)
 
 inline bool
 loongarch_lo_sum_offset_hasher::equal (const loongarch_lo_sum_offset *entry,
-				  const rtx_def *value)
+				       const rtx_def *value)
 {
   return rtx_equal_p (entry->base, value);
 }
@@ -6365,8 +6408,8 @@ loongarch_reorg (void)
 
 static void
 loongarch_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
-		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
-		      tree function)
+			   HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
+			   tree function)
 {
   const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_rtx, temp1, temp2, fnaddr;
@@ -6610,8 +6653,8 @@ loongarch_option_override (void)
 
   /* Set the small data limit.  */
   loongarch_small_data_threshold = (global_options_set.x_g_switch_value
-			       ? g_switch_value
-			       : LARCH_DEFAULT_GVALUE);
+				    ? g_switch_value
+				    : LARCH_DEFAULT_GVALUE);
 
   if (global_options_set.x_loongarch_arch_option)
     loongarch_set_architecture (loongarch_cpu_info_from_opt (loongarch_arch_option));
@@ -6738,7 +6781,7 @@ loongarch_conditional_register_usage (void)
 /* Implement EH_USES.  */
 
 bool
-loongarch_eh_uses (unsigned int regno)
+loongarch_eh_uses (unsigned int regno ATTRIBUTE_UNUSED)
 {
   return false;
 }
@@ -6847,7 +6890,7 @@ loongarch_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
      ld.[dw] $tmp,$static_chain,target_function_offset
      ld.[dw] $static_chain,$static_chain,static_chain_offset
      jirl $r0,$tmp,0
-  */
+     */
   trampoline[i++] = OP (0x18000000 | (STATIC_CHAIN_REGNUM - GP_REG_FIRST));
   trampoline[i++] = OP ((ptr_mode == DImode ? 0x28c00000 : 0x28800000)
 			| 19 /* $t7 */
@@ -6917,7 +6960,7 @@ struct expand_vec_perm_d
 
 static bool
 loongarch_expand_vselect (rtx target, rtx op0,
-		     const unsigned char *perm, unsigned nelt)
+			  const unsigned char *perm, unsigned nelt)
 {
   rtx rperm[MAX_VECT_LEN], x;
   rtx_insn *insn;
@@ -6943,7 +6986,7 @@ loongarch_expand_vselect (rtx target, rtx op0,
 
 static bool
 loongarch_expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
-			     const unsigned char *perm, unsigned nelt)
+				  const unsigned char *perm, unsigned nelt)
 {
   machine_mode v2mode;
   rtx x;
@@ -6972,7 +7015,7 @@ loongarch_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   else
     {
       if (loongarch_expand_vselect_vconcat (d->target, d->op0, d->op1,
-				       d->perm, nelt))
+					    d->perm, nelt))
 	return true;
 
       /* Try again with swapped operands.  */
@@ -6989,7 +7032,7 @@ loongarch_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 
 static bool
 loongarch_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-			       rtx op1, const vec_perm_indices &sel)
+				    rtx op1, const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
   int i, nelt, which;
@@ -7078,7 +7121,7 @@ loongarch_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
 
 static int
 loongarch_sched_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
-				machine_mode mode)
+				     machine_mode mode ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -7087,8 +7130,8 @@ loongarch_sched_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
 
 machine_mode
 loongarch_hard_regno_caller_save_mode (unsigned int regno,
-				  unsigned int nregs,
-				  machine_mode mode)
+				       unsigned int nregs,
+				       machine_mode mode)
 {
   /* For performance, avoid saving/restoring upper parts of a register
      by returning MODE as save mode when the mode is known.  */
@@ -7103,7 +7146,7 @@ loongarch_hard_regno_caller_save_mode (unsigned int regno,
 unsigned int
 loongarch_case_values_threshold (void)
 {
-    return default_case_values_threshold ();
+  return default_case_values_threshold ();
 }
 
 
@@ -7111,7 +7154,7 @@ loongarch_case_values_threshold (void)
 
 static reg_class_t
 loongarch_spill_class (reg_class_t rclass ATTRIBUTE_UNUSED,
-		  machine_mode mode ATTRIBUTE_UNUSED)
+		       machine_mode mode ATTRIBUTE_UNUSED)
 {
   return NO_REGS;
 }
@@ -7127,8 +7170,10 @@ loongarch_lra_p (void)
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.  */
 
 static reg_class_t
-loongarch_ira_change_pseudo_allocno_class (int regno, reg_class_t allocno_class,
-				      reg_class_t best_class ATTRIBUTE_UNUSED)
+loongarch_ira_change_pseudo_allocno_class (int regno,
+					   reg_class_t allocno_class,
+					   reg_class_t best_class     \
+					   ATTRIBUTE_UNUSED)
 {
   /* LRA will allocate an FPR for an integer mode pseudo instead of spilling
      to memory if an FPR is present in the allocno class.  It is rare that
