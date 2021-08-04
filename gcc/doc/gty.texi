@@ -628,7 +628,7 @@ header file that should be included in the source file you just changed.
 The file will be called @file{gt-@var{path}.h} where @var{path} is the
 pathname relative to the @file{gcc} directory with slashes replaced by
 @verb{|-|}, so for example the header file to be included in
-@file{cp/parser.c} is called @file{gt-cp-parser.c}.  The
+@file{cp/parser.c} is called @file{gt-cp-parser.h}.  The
 generated header file should be included after everything else in the
 source file.  Don't forget to mention this file as a dependency in the
 @file{Makefile}!
