@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
    where the arguments are the fields of struct loongarch_cpu_info.  */
 
 /* Entries for generic ISAs.  */
-LARCH_CPU ("loongarch", PROCESSOR_LOONGARCH64, 65, 0)
-LARCH_CPU ("loongarch64", PROCESSOR_LOONGARCH64, 65, 0)
-LARCH_CPU ("gs464v", PROCESSOR_GS464V, 65, 0)
+LARCH_CPU ("loongarch", PROCESSOR_LOONGARCH64, 0, 0)
+LARCH_CPU ("loongarch64", PROCESSOR_LOONGARCH64, 0, 0)
+LARCH_CPU ("gs464v", PROCESSOR_GS464V, 0, 0)
 
