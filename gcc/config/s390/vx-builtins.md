@@ -403,27 +403,21 @@
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
+; Incoming op3 is in vec_permi format and will we turned into a
+; permute vector consisting of op3 and op4.
 (define_expand "vec_permi<mode>"
-  [(set (match_operand:V_HW_64                  0 "register_operand"   "")
-	(unspec:V_HW_64 [(match_operand:V_HW_64 1 "register_operand"   "")
-			 (match_operand:V_HW_64 2 "register_operand"   "")
-			 (match_operand:QI      3 "const_mask_operand" "")]
-			UNSPEC_VEC_PERMI))]
+  [(set (match_operand:V_HW_2   0 "register_operand" "")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand" "")
+	  (match_operand:V_HW_2 2 "register_operand" ""))
+	 (parallel [(match_operand:QI 3 "const_mask_operand" "") (match_dup 4)])))]
   "TARGET_VX"
 {
   HOST_WIDE_INT val = INTVAL (operands[3]);
-  operands[3] = GEN_INT ((val & 1) | (val & 2) << 1);
+  operands[3] = GEN_INT ((val & 2) >> 1);
+  operands[4] = GEN_INT ((val & 1) + 2);
 })
-
-(define_insn "*vec_permi<mode>"
-  [(set (match_operand:V_HW_64                  0 "register_operand"  "=v")
-	(unspec:V_HW_64 [(match_operand:V_HW_64 1 "register_operand"   "v")
-			 (match_operand:V_HW_64 2 "register_operand"   "v")
-			 (match_operand:QI      3 "const_mask_operand" "C")]
-			UNSPEC_VEC_PERMI))]
-  "TARGET_VX && (UINTVAL (operands[3]) & 10) == 0"
-  "vpdi\t%v0,%v1,%v2,%b3"
-  [(set_attr "op_type" "VRR")])
 
 
 ; Vector replicate

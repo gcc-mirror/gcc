@@ -767,6 +767,32 @@
   "vperm\t%v0,%v1,%v2,%v3"
   [(set_attr "op_type" "VRR")])
 
+
+; First DW of op1 and second DW of op2
+(define_insn "*vpdi1<mode>"
+  [(set (match_operand:V_HW_2   0 "register_operand" "=v")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand"  "v")
+	  (match_operand:V_HW_2 2 "register_operand"  "v"))
+	 (parallel [(const_int 0) (const_int 3)])))]
+  "TARGET_VX"
+  "vpdi\t%v0,%v1,%v2,1"
+  [(set_attr "op_type" "VRR")])
+
+; Second DW of op1 and first of op2
+(define_insn "*vpdi4<mode>"
+  [(set (match_operand:V_HW_2   0 "register_operand" "=v")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand"  "v")
+	  (match_operand:V_HW_2 2 "register_operand"  "v"))
+	 (parallel [(const_int 1) (const_int 2)])))]
+  "TARGET_VX"
+  "vpdi\t%v0,%v1,%v2,4"
+  [(set_attr "op_type" "VRR")])
+
+
 (define_insn "*vmrhb"
   [(set (match_operand:V16QI                     0 "register_operand" "=v")
         (vec_select:V16QI
