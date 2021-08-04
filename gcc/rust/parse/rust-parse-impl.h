@@ -388,15 +388,12 @@ Parser<ManagedTokenSource>::done_end_of_file ()
   return lexer.peek_token ()->get_id () == END_OF_FILE;
 }
 
-// Parses a crate (compilation unit) - entry point
+// Parses a sequence of items within a module or the implicit top-level module
+// in a crate
 template <typename ManagedTokenSource>
-AST::Crate
-Parser<ManagedTokenSource>::parse_crate ()
+std::vector<std::unique_ptr<AST::Item>>
+Parser<ManagedTokenSource>::parse_items ()
 {
-  // parse inner attributes
-  AST::AttrVec inner_attrs = parse_inner_attributes ();
-
-  // parse items
   std::vector<std::unique_ptr<AST::Item>> items;
 
   const_TokenPtr t = lexer.peek_token ();
@@ -418,6 +415,20 @@ Parser<ManagedTokenSource>::parse_crate ()
 
       t = lexer.peek_token ();
     }
+
+  return items;
+}
+
+// Parses a crate (compilation unit) - entry point
+template <typename ManagedTokenSource>
+AST::Crate
+Parser<ManagedTokenSource>::parse_crate ()
+{
+  // parse inner attributes
+  AST::AttrVec inner_attrs = parse_inner_attributes ();
+
+  // parse items
+  std::vector<std::unique_ptr<AST::Item>> items = parse_items ();
 
   // emit all errors
   for (const auto &error : error_table)
@@ -990,37 +1001,6 @@ Parser<ManagedTokenSource>::parse_token_tree ()
       lexer.skip_token ();
       return std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
     }
-}
-
-/* Parses a sequence of items within a module or the implicit top-level module
- * in a crate. Note: this is not currently used as parsing an item sequence
- * individually is pretty simple and allows for better error diagnostics and
- * detection. */
-template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::Item>>
-Parser<ManagedTokenSource>::parse_items ()
-{
-  std::vector<std::unique_ptr<AST::Item>> items;
-
-  // TODO: replace with do-while loop?
-  // infinite loop to save on comparisons (may be a tight loop) - breaks when
-  // next item is null
-  while (true)
-    {
-      std::unique_ptr<AST::Item> item = parse_item (false);
-
-      if (item != nullptr)
-	{
-	  items.push_back (std::move (item));
-	}
-      else
-	{
-	  break;
-	}
-    }
-
-  items.shrink_to_fit ();
-  return items;
 }
 
 // Parses a single item
