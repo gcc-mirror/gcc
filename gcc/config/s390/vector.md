@@ -36,7 +36,6 @@
 (define_mode_iterator V_HW2 [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")
 			     (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
 
-(define_mode_iterator V_HW_64 [V2DI V2DF])
 (define_mode_iterator VT_HW_HSDT [V8HI V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
 (define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
 
@@ -1972,9 +1971,9 @@
 })
 
 (define_insn "*vec_load_pair<mode>"
-  [(set (match_operand:V_HW_64                       0 "register_operand" "=v,v")
-	(vec_concat:V_HW_64 (match_operand:<non_vec> 1 "register_operand"  "d,v")
-			    (match_operand:<non_vec> 2 "register_operand"  "d,v")))]
+  [(set (match_operand:V_HW_2                       0 "register_operand" "=v,v")
+	(vec_concat:V_HW_2 (match_operand:<non_vec> 1 "register_operand"  "d,v")
+			   (match_operand:<non_vec> 2 "register_operand"  "d,v")))]
   "TARGET_VX"
   "@
    vlvgp\t%v0,%1,%2

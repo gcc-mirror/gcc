@@ -452,17 +452,17 @@
 
 ; A 31 bit target address is generated from 64 bit elements
 ; vsceg
-(define_insn "vec_scatter_element<V_HW_64:mode>_SI"
+(define_insn "vec_scatter_element<V_HW_2:mode>_SI"
   [(set (mem:<non_vec>
 	 (plus:SI (subreg:SI
-		   (unspec:<non_vec_int> [(match_operand:V_HW_64 1 "register_operand"   "v")
-					  (match_operand:QI      3 "const_mask_operand" "C")]
+		   (unspec:<non_vec_int> [(match_operand:V_HW_2 1 "register_operand"   "v")
+					  (match_operand:QI     3 "const_mask_operand" "C")]
 					 UNSPEC_VEC_EXTRACT) 4)
-		  (match_operand:SI                              2 "address_operand"   "ZQ")))
-	(unspec:<non_vec> [(match_operand:V_HW_64                0 "register_operand"   "v")
+		  (match_operand:SI                             2 "address_operand"   "ZQ")))
+	(unspec:<non_vec> [(match_operand:V_HW_2                0 "register_operand"   "v")
 			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
-  "TARGET_VX && !TARGET_64BIT && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_64:MODE>mode)"
-  "vsce<V_HW_64:bhfgq>\t%v0,%O2(%v1,%R2),%3"
+  "TARGET_VX && !TARGET_64BIT && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_2:MODE>mode)"
+  "vsce<V_HW_2:bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
 
 ; Element size and target address size is the same
