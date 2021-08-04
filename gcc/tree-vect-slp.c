@@ -4847,15 +4847,17 @@ static bool
 vectorizable_bb_reduc_epilogue (slp_instance instance,
 				stmt_vector_for_cost *cost_vec)
 {
-  enum tree_code reduc_code
-    = gimple_assign_rhs_code (instance->root_stmts[0]->stmt);
+  gassign *stmt = as_a <gassign *> (instance->root_stmts[0]->stmt);
+  enum tree_code reduc_code = gimple_assign_rhs_code (stmt);
   if (reduc_code == MINUS_EXPR)
     reduc_code = PLUS_EXPR;
   internal_fn reduc_fn;
   tree vectype = SLP_TREE_VECTYPE (SLP_INSTANCE_TREE (instance));
   if (!reduction_fn_for_scalar_code (reduc_code, &reduc_fn)
       || reduc_fn == IFN_LAST
-      || !direct_internal_fn_supported_p (reduc_fn, vectype, OPTIMIZE_FOR_BOTH))
+      || !direct_internal_fn_supported_p (reduc_fn, vectype, OPTIMIZE_FOR_BOTH)
+      || !useless_type_conversion_p (TREE_TYPE (gimple_assign_lhs (stmt)),
+				     TREE_TYPE (vectype)))
     return false;
 
   /* There's no way to cost a horizontal vector reduction via REDUC_FN so
