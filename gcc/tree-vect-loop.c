@@ -2772,7 +2772,15 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
 
   /* Limit the VFs to what is likely to be the maximum number of iterations,
      to handle cases in which at least one loop_vinfo is fully-masked.  */
-  HOST_WIDE_INT estimated_max_niter = likely_max_stmt_executions_int (loop);
+  HOST_WIDE_INT estimated_max_niter;
+  loop_vec_info main_loop = LOOP_VINFO_ORIG_LOOP_INFO (old_loop_vinfo);
+  unsigned HOST_WIDE_INT main_vf;
+  if (main_loop
+      && LOOP_VINFO_NITERS_KNOWN_P (main_loop)
+      && LOOP_VINFO_VECT_FACTOR (main_loop).is_constant (&main_vf))
+    estimated_max_niter = LOOP_VINFO_INT_NITERS (main_loop) % main_vf;
+  else
+    estimated_max_niter = likely_max_stmt_executions_int (loop);
   if (estimated_max_niter != -1)
     {
       if (known_le (estimated_max_niter, new_vf))
