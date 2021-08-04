@@ -4438,6 +4438,29 @@
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "cond_fma<mode>"
+  [(set (match_operand:VF_AVX512VL 0 "register_operand")
+	(vec_merge:VF_AVX512VL
+	  (fma:VF_AVX512VL
+	    (match_operand:VF_AVX512VL 2 "vector_operand")
+	    (match_operand:VF_AVX512VL 3 "vector_operand")
+	    (match_operand:VF_AVX512VL 4 "vector_operand"))
+	  (match_operand:VF_AVX512VL 5 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_fma<mode>4 (tmp,
+			     operands[2],
+			     operands[3],
+			     operands[4]));
+  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (<MODE>mode,
+						  tmp,
+						  operands[5],
+						  operands[1]));
+  DONE;
+})
+
 (define_insn "<avx512>_fmadd_<mode>_mask<round_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v,v")
 	(vec_merge:VF_AVX512VL
@@ -4514,6 +4537,30 @@
    vfmsub231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
+
+(define_expand "cond_fms<mode>"
+  [(set (match_operand:VF_AVX512VL 0 "register_operand")
+	(vec_merge:VF_AVX512VL
+	  (fma:VF_AVX512VL
+	    (match_operand:VF_AVX512VL 2 "vector_operand")
+	    (match_operand:VF_AVX512VL 3 "vector_operand")
+	    (neg:VF_AVX512VL
+	      (match_operand:VF_AVX512VL 4 "vector_operand")))
+	  (match_operand:VF_AVX512VL 5 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_fms<mode>4 (tmp,
+			     operands[2],
+			     operands[3],
+			     operands[4]));
+  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (<MODE>mode,
+						  tmp,
+						  operands[5],
+						  operands[1]));
+  DONE;
+})
 
 (define_insn "<avx512>_fmsub_<mode>_mask<round_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v,v")
@@ -4593,6 +4640,30 @@
    vfnmadd231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
+
+(define_expand "cond_fnma<mode>"
+  [(set (match_operand:VF_AVX512VL 0 "register_operand")
+	(vec_merge:VF_AVX512VL
+	  (fma:VF_AVX512VL
+	    (neg:VF_AVX512VL
+	      (match_operand:VF_AVX512VL 2 "vector_operand"))
+	    (match_operand:VF_AVX512VL 3 "vector_operand")
+	    (match_operand:VF_AVX512VL 4 "vector_operand"))
+	  (match_operand:VF_AVX512VL 5 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_fnma<mode>4 (tmp,
+			      operands[2],
+			      operands[3],
+			      operands[4]));
+  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (<MODE>mode,
+						  tmp,
+						  operands[5],
+						  operands[1]));
+  DONE;
+})
 
 (define_insn "<avx512>_fnmadd_<mode>_mask<round_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v,v")
@@ -4674,6 +4745,31 @@
    vfnmsub231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
+
+(define_expand "cond_fnms<mode>"
+  [(set (match_operand:VF_AVX512VL 0 "register_operand")
+	(vec_merge:VF_AVX512VL
+	  (fma:VF_AVX512VL
+	    (neg:VF_AVX512VL
+	      (match_operand:VF_AVX512VL 2 "vector_operand"))
+	    (match_operand:VF_AVX512VL 3 "vector_operand")
+	    (neg:VF_AVX512VL
+	      (match_operand:VF_AVX512VL 4 "vector_operand")))
+	  (match_operand:VF_AVX512VL 5 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_fnms<mode>4 (tmp,
+			      operands[2],
+			      operands[3],
+			      operands[4]));
+  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (<MODE>mode,
+						  tmp,
+						  operands[5],
+						  operands[1]));
+  DONE;
+})
 
 (define_insn "<avx512>_fnmsub_<mode>_mask<round_name>"
   [(set (match_operand:VF_AVX512VL 0 "register_operand" "=v,v")
