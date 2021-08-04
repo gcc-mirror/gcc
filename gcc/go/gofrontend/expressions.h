@@ -62,6 +62,7 @@ class Type_guard_expression;
 class Heap_expression;
 class Receive_expression;
 class Slice_value_expression;
+class Slice_info_expression;
 class Conditional_expression;
 class Compound_expression;
 class Numeric_constant;
@@ -899,6 +900,14 @@ class Expression
   Compound_expression*
   compound_expression()
   { return this->convert<Compound_expression, EXPRESSION_COMPOUND>(); }
+
+  // If this is a slice info expression, return the
+  // Slice_info_expression structure.  Otherwise, return NULL.
+  Slice_info_expression*
+  slice_info_expression()
+  {
+    return this->convert<Slice_info_expression, EXPRESSION_SLICE_INFO>();
+  }
 
   // Return true if this is a composite literal.
   bool
@@ -4262,6 +4271,60 @@ class Slice_value_expression : public Expression
   Expression* cap_;
 };
 
+// An expression that evaluates to some characteristic of a slice.
+// This is used when indexing, bound-checking, or nil checking a slice.
+
+class Slice_info_expression : public Expression
+{
+ public:
+  Slice_info_expression(Expression* slice, Slice_info slice_info,
+                        Location location)
+    : Expression(EXPRESSION_SLICE_INFO, location),
+      slice_(slice), slice_info_(slice_info)
+  { }
+
+  // The slice operand of this slice info expression.
+  Expression*
+  slice() const
+  { return this->slice_; }
+
+  // The info this expression is about.
+  Slice_info
+  info() const
+  { return this->slice_info_; }
+
+ protected:
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  {
+    return new Slice_info_expression(this->slice_->copy(), this->slice_info_,
+                                     this->location());
+  }
+
+  Bexpression*
+  do_get_backend(Translate_context* context);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+  void
+  do_issue_nil_check()
+  { this->slice_->issue_nil_check(); }
+
+ private:
+  // The slice for which we are getting information.
+  Expression* slice_;
+  // What information we want.
+  Slice_info slice_info_;
+};
+
 // Conditional expressions.
 
 class Conditional_expression : public Expression
@@ -4276,6 +4339,14 @@ class Conditional_expression : public Expression
   Expression*
   condition() const
   { return this->cond_; }
+
+  Expression*
+  then_expr() const
+  { return this->then_; }
+
+  Expression*
+  else_expr() const
+  { return this->else_; }
 
  protected:
   int
@@ -4321,6 +4392,10 @@ class Compound_expression : public Expression
   Expression*
   init() const
   { return this->init_; }
+
+  Expression*
+  expr() const
+  { return this->expr_; }
 
  protected:
   int

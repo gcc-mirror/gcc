@@ -33,7 +33,6 @@ import (
 //go:linkname closechan
 //go:linkname selectnbsend
 //go:linkname selectnbrecv
-//go:linkname selectnbrecv2
 
 const (
 	maxAlign  = 8
@@ -712,28 +711,6 @@ func selectnbsend(c *hchan, elem unsafe.Pointer) (selected bool) {
 // compiler implements
 //
 //	select {
-//	case v = <-c:
-//		... foo
-//	default:
-//		... bar
-//	}
-//
-// as
-//
-//	if selectnbrecv(&v, c) {
-//		... foo
-//	} else {
-//		... bar
-//	}
-//
-func selectnbrecv(elem unsafe.Pointer, c *hchan) (selected bool) {
-	selected, _ = chanrecv(c, elem, false)
-	return
-}
-
-// compiler implements
-//
-//	select {
 //	case v, ok = <-c:
 //		... foo
 //	default:
@@ -742,16 +719,14 @@ func selectnbrecv(elem unsafe.Pointer, c *hchan) (selected bool) {
 //
 // as
 //
-//	if c != nil && selectnbrecv2(&v, &ok, c) {
+//	if selected, ok = selectnbrecv(&v, c); selected {
 //		... foo
 //	} else {
 //		... bar
 //	}
 //
-func selectnbrecv2(elem unsafe.Pointer, received *bool, c *hchan) (selected bool) {
-	// TODO(khr): just return 2 values from this function, now that it is in Go.
-	selected, *received = chanrecv(c, elem, false)
-	return
+func selectnbrecv(elem unsafe.Pointer, c *hchan) (selected, received bool) {
+	return chanrecv(c, elem, false)
 }
 
 //go:linkname reflect_chansend reflect.chansend

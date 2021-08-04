@@ -62,7 +62,7 @@ test03()
   int x[] = {0,1,2,3,4,5};
   auto is_odd = [] (int i) { return i%2 == 1; };
   auto v = x | views::filter(is_odd) | views::take(3);
-  ranges::begin(v);
+  (void) ranges::begin(v);
   using R = decltype(v);
   static_assert(ranges::view<R>);
   static_assert(!ranges::sized_range<R>);

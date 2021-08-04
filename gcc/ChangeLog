@@ -1,3 +1,104 @@
+2021-08-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (*vsx_le_perm_store_<mode>): Use && instead of &.
+
+2021-08-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md: Remove "e" from the list of available
+	constraint characters.
+
+2021-08-03  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR gcov-profile/71672
+	* auto-profile.c (afdo_indirect_call): Fix setup of the historgram value for indirect calls.
+
+2021-08-03  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_minpos_epu16): New.
+
+2021-08-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386.c (ix86_gen_scratch_sse_rtx): In 64-bit mode,
+	try XMM31 to avoid vzeroupper.
+
+2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Document -mtune=neoverse-512tvb and
+	-mcpu=neoverse-512tvb.
+	* config/aarch64/aarch64-cores.def (neoverse-512tvb): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.c (neoverse512tvb_sve_vector_cost)
+	(neoverse512tvb_sve_issue_info, neoverse512tvb_vec_issue_info)
+	(neoverse512tvb_vector_cost, neoverse512tvb_tunings): New structures.
+	(aarch64_adjust_body_cost_sve): Handle -mtune=neoverse-512tvb.
+	(aarch64_adjust_body_cost): Likewise.
+
+2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_add_stmt_cost): Only
+	record issue information for operations that occur in the
+	innermost loop.
+
+2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_multiply_add_p): Add a vec_flags
+	parameter.  Detect cases in which an Advanced SIMD MLA would almost
+	certainly require a MOV.
+	(aarch64_count_ops): Update accordingly.
+
+2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_is_store_elt_extraction): New
+	function, split out from...
+	(aarch64_detect_vector_stmt_subtype): ...here.
+	(aarch64_add_stmt_cost): Treat extracting element 0 as free.
+
+2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (sve_vec_cost):
+	Add gather_load_x32_cost and gather_load_x64_cost.
+	* config/aarch64/aarch64.c (generic_sve_vector_cost)
+	(a64fx_sve_vector_cost, neoversev1_sve_vector_cost): Update
+	accordingly, using the values given by the scalar_load * number
+	of elements calculation that we used previously.
+	(aarch64_detect_vector_stmt_subtype): Use the new fields.
+
+2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_adjust_body_cost_sve): New
+	function, split out from...
+	(aarch64_adjust_body_cost): ...here.
+
+2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/fractional-cost.h: New file.
+	* config/aarch64/aarch64.c: Include <algorithm> (indirectly)
+	and cost_fraction.h.
+	(vec_cost_fraction): New typedef.
+	(aarch64_detect_scalar_stmt_subtype): Use it for statement costs.
+	(aarch64_detect_vector_stmt_subtype): Likewise.
+	(aarch64_sve_adjust_stmt_cost, aarch64_adjust_stmt_cost): Likewise.
+	(aarch64_estimate_min_cycles_per_iter): Use vec_cost_fraction
+	for cycle counts.
+	(aarch64_adjust_body_cost): Likewise.
+	(aarch64_test_cost_fraction): New function.
+	(aarch64_run_selftests): Call it.
+
+2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (tune_params::sve_width): Turn
+	into a bitmask.
+	* config/aarch64/aarch64.c (aarch64_cmp_autovec_modes): Update
+	accordingly.
+	(aarch64_estimated_poly_value): Likewise.  Use the least significant
+	set bit for the minimum and likely values.  Use the most significant
+	set bit for the maximum value.
+
+2021-08-03  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (cond_<insn><mode>): New expander.
+	(cond_mul<mode>): Ditto.
+
 2021-08-03  Kewen Lin  <linkw@linux.ibm.com>
 
 	* tree-cfg.c (move_sese_region_to_fn): Fix typos on dloop.

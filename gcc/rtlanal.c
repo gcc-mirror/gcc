@@ -6957,6 +6957,25 @@ register_asm_p (const_rtx x)
 
      (vec_select:RESULT_MODE OP SEL)
 
+   is equivalent to the highpart RESULT_MODE of OP.  */
+
+bool
+vec_series_highpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel)
+{
+  int nunits;
+  if (GET_MODE_NUNITS (op_mode).is_constant (&nunits)
+      && targetm.can_change_mode_class (op_mode, result_mode, ALL_REGS))
+    {
+      int offset = BYTES_BIG_ENDIAN ? 0 : nunits - XVECLEN (sel, 0);
+      return rtvec_series_p (XVEC (sel, 0), offset);
+    }
+  return false;
+}
+
+/* Return true if, for all OP of mode OP_MODE:
+
+     (vec_select:RESULT_MODE OP SEL)
+
    is equivalent to the lowpart RESULT_MODE of OP.  */
 
 bool

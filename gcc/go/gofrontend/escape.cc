@@ -2325,19 +2325,55 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 	  }
 	  break;
 
+        case Expression::EXPRESSION_SLICE_INFO:
+          {
+            Slice_info_expression* sie = e->slice_info_expression();
+            if (sie->info() == Expression::SLICE_INFO_VALUE_POINTER)
+              {
+                Node* slice = Node::make_node(sie->slice());
+                this->assign(dst, slice);
+              }
+          }
+          break;
+
 	case Expression::EXPRESSION_CALL:
 	  {
 	    Call_expression* call = e->call_expression();
             if (call->is_builtin())
               {
                 Builtin_call_expression* bce = call->builtin_call_expression();
-                if (bce->code() == Builtin_call_expression::BUILTIN_APPEND)
+                switch (bce->code())
                   {
-                    // Append returns the first argument.
-                    // The subsequent arguments are already leaked because
-                    // they are operands to append.
-                    Node* appendee = Node::make_node(call->args()->front());
-                    this->assign(dst, appendee);
+                  case Builtin_call_expression::BUILTIN_APPEND:
+                    {
+                      // Append returns the first argument.
+                      // The subsequent arguments are already leaked because
+                      // they are operands to append.
+                      Node* appendee = Node::make_node(call->args()->front());
+                      this->assign(dst, appendee);
+                    }
+                    break;
+
+                  case Builtin_call_expression::BUILTIN_ADD:
+                    {
+                      // unsafe.Add(p, off).
+                      // Flow p to result.
+                      Node* arg = Node::make_node(call->args()->front());
+                      this->assign(dst, arg);
+                    }
+                    break;
+
+                  case Builtin_call_expression::BUILTIN_SLICE:
+                    {
+                      // unsafe.Slice(p, len).
+                      // The resulting slice has the same backing store as p. Flow p to result.
+                      Node* arg = Node::make_node(call->args()->front());
+                      this->assign(dst, arg);
+                    }
+                    break;
+
+                  default:
+                    break;
                   }
                 break;
               }
@@ -2591,6 +2627,21 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
             this->assign(dst, Node::make_node(temp));
 	  }
 	  break;
+
+        case Expression::EXPRESSION_CONDITIONAL:
+          {
+            Conditional_expression* ce = e->conditional_expression();
+            this->assign(dst, Node::make_node(ce->then_expr()));
+            this->assign(dst, Node::make_node(ce->else_expr()));
+          }
+          break;
+
+        case Expression::EXPRESSION_COMPOUND:
+          {
+            Compound_expression* ce = e->compound_expression();
+            this->assign(dst, Node::make_node(ce->expr()));
+          }
+          break;
 
 	default:
 	  // TODO(cmang): Add debug info here; this should not be reachable.

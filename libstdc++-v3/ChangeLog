@@ -1,3 +1,120 @@
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (linear_congruential_engine): Do not
+	define static constexpr members when they are implicitly inline.
+	* include/std/ratio (ratio, __ratio_multiply, __ratio_divide)
+	(__ratio_add, __ratio_subtract): Likewise.
+	* include/std/type_traits (integral_constant): Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_common_types.h: Replace uses of
+	tr1::unordered_map and tr1::unordered_set with their C++11
+	equivalents.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (polymorphic_allocator::delete_object):
+	Call destructor directly instead of using destroy.
+	(allocator_traits<polymorphic_allocator<T>>): Define partial
+	specialization.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/binders/3113.cc: Remove
+	trailing whitespace.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/creation/dr925.cc: Likewise.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc:
+	Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecation.
+	* doc/html/*: Regenerate.
+	* include/bits/c++config (_GLIBCXX14_DEPRECATED): Define.
+	(_GLIBCXX14_DEPRECATED_SUGGEST): Define.
+	* include/bits/stl_algo.h (random_shuffle): Deprecate for C++14
+	and later.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Adjust
+	for C++11 and C++14 changes to std::random_shuffle and
+	std::shuffle.
+	* testsuite/25_algorithms/random_shuffle/1.cc: Add options to
+	use deprecated algorithms.
+	* testsuite/25_algorithms/random_shuffle/59603.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/forward_list/operations/3.cc:
+	Use lambda instead of std::bind2nd.
+	* testsuite/20_util/function_objects/binders/3113.cc: Add
+	options for testing deprecated features.
+	* testsuite/20_util/pair/cons/99957.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/dr925.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/ext/pb_ds/example/priority_queue_erase_if.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/example/priority_queue_split_join.cc:
+	Likewise.
+	* testsuite/lib/dg-options.exp (dg_add_options_using-deprecated):
+	New proc.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_executor.h (_State_info): Replace
+	unique_ptr<bool[]> with array of bool.
+	* include/bits/regex_executor.tcc: Likewise.
+	* include/bits/regex_scanner.tcc: Replace std::strchr with
+	__builtin_strchr.
+	* include/std/regex: Replace standard headers with smaller
+	internal ones.
+	* testsuite/28_regex/traits/char/lookup_classname.cc: Include
+	<string.h> for strlen.
+	* testsuite/28_regex/traits/char/lookup_collatename.cc:
+	Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (__detail::_Scoped_ptr): Define new
+	RAII class template.
+	(wstring_convert, wbuffer_convert): Use __detail::_Scoped_ptr
+	instead of unique_ptr.
+
 2021-08-02  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/101599

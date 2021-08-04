@@ -23,7 +23,7 @@
 void test01()
 {
   std::array<int, 0> a;
-  a[0];
+  (void) a[0];
 }
 
 int main()

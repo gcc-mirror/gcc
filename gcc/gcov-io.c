@@ -199,7 +199,9 @@ gcov_close (void)
 {
   if (gcov_var.file)
     {
-      fclose (gcov_var.file);
+      if (fclose (gcov_var.file))
+	gcov_var.error = 1;
+
       gcov_var.file = 0;
     }
   gcov_var.mode = 0;

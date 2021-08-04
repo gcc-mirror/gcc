@@ -1084,6 +1084,7 @@ static void
 vect_model_load_cost (vec_info *vinfo,
 		      stmt_vec_info stmt_info, unsigned ncopies, poly_uint64 vf,
 		      vect_memory_access_type memory_access_type,
+		      gather_scatter_info *gs_info,
 		      slp_tree slp_node,
 		      stmt_vector_for_cost *cost_vec)
 {
@@ -1172,9 +1173,17 @@ vect_model_load_cost (vec_info *vinfo,
   if (memory_access_type == VMAT_ELEMENTWISE
       || memory_access_type == VMAT_GATHER_SCATTER)
     {
-      /* N scalar loads plus gathering them into a vector.  */
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
+      if (memory_access_type == VMAT_GATHER_SCATTER
+	  && gs_info->ifn == IFN_LAST && !gs_info->decl)
+	/* For emulated gathers N offset vector element extracts
+	   (we assume the scalar scaling and ptr + offset add is consumed by
+	   the load).  */
+	inside_cost += record_stmt_cost (cost_vec, ncopies * assumed_nunits,
+					 vec_to_scalar, stmt_info, 0,
+					 vect_body);
+      /* N scalar loads plus gathering them into a vector.  */
       inside_cost += record_stmt_cost (cost_vec,
 				       ncopies * assumed_nunits,
 				       scalar_load, stmt_info, 0, vect_body);
@@ -1184,7 +1193,9 @@ vect_model_load_cost (vec_info *vinfo,
 			&inside_cost, &prologue_cost, 
 			cost_vec, cost_vec, true);
   if (memory_access_type == VMAT_ELEMENTWISE
-      || memory_access_type == VMAT_STRIDED_SLP)
+      || memory_access_type == VMAT_STRIDED_SLP
+      || (memory_access_type == VMAT_GATHER_SCATTER
+	  && gs_info->ifn == IFN_LAST && !gs_info->decl))
     inside_cost += record_stmt_cost (cost_vec, ncopies, vec_construct,
 				     stmt_info, 0, vect_body);
 
@@ -1866,7 +1877,8 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
       tree memory_type = TREE_TYPE (DR_REF (dr));
       if (!vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr), masked_p,
 				     vectype, memory_type, offset_type, scale,
-				     &gs_info->ifn, &gs_info->offset_vectype))
+				     &gs_info->ifn, &gs_info->offset_vectype)
+	  || gs_info->ifn == IFN_LAST)
 	continue;
 
       gs_info->decl = NULL_TREE;
@@ -1901,7 +1913,7 @@ vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info,
 				    gather_scatter_info *gs_info)
 {
   if (!vect_check_gather_scatter (stmt_info, loop_vinfo, gs_info)
-      || gs_info->decl)
+      || gs_info->ifn == IFN_LAST)
     return vect_truncate_gather_scatter_offset (stmt_info, loop_vinfo,
 						masked_p, gs_info);
 
@@ -2354,6 +2366,27 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 			     "%s index use not simple.\n",
 			     vls_type == VLS_LOAD ? "gather" : "scatter");
 	  return false;
+	}
+      else if (gs_info->ifn == IFN_LAST && !gs_info->decl)
+	{
+	  if (vls_type != VLS_LOAD)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "unsupported emulated scatter.\n");
+	      return false;
+	    }
+	  else if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
+		   || !known_eq (TYPE_VECTOR_SUBPARTS (vectype),
+				 TYPE_VECTOR_SUBPARTS
+				   (gs_info->offset_vectype)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "unsupported vector types for emulated "
+				 "gather.\n");
+	      return false;
+	    }
 	}
       /* Gather-scatter accesses perform only component accesses, alignment
 	 is irrelevant for them.  */
@@ -8692,6 +8725,15 @@ vectorizable_load (vec_info *vinfo,
 			     "unsupported access type for masked load.\n");
 	  return false;
 	}
+      else if (memory_access_type == VMAT_GATHER_SCATTER
+	       && gs_info.ifn == IFN_LAST
+	       && !gs_info.decl)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "unsupported masked emulated gather.\n");
+	  return false;
+	}
     }
 
   if (!vec_stmt) /* transformation not required.  */
@@ -8725,7 +8767,7 @@ vectorizable_load (vec_info *vinfo,
 
       STMT_VINFO_TYPE (orig_stmt_info) = load_vec_info_type;
       vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
-			    slp_node, cost_vec);
+			    &gs_info, slp_node, cost_vec);
       return true;
     }
 
@@ -9438,7 +9480,8 @@ vectorizable_load (vec_info *vinfo,
 		    unsigned int misalign;
 		    unsigned HOST_WIDE_INT align;
 
-		    if (memory_access_type == VMAT_GATHER_SCATTER)
+		    if (memory_access_type == VMAT_GATHER_SCATTER
+			&& gs_info.ifn != IFN_LAST)
 		      {
 			tree zero = build_zero_cst (vectype);
 			tree scale = size_int (gs_info.scale);
@@ -9453,6 +9496,51 @@ vectorizable_load (vec_info *vinfo,
 			     vec_offset, scale, zero);
 			gimple_call_set_nothrow (call, true);
 			new_stmt = call;
+			data_ref = NULL_TREE;
+			break;
+		      }
+		    else if (memory_access_type == VMAT_GATHER_SCATTER)
+		      {
+			/* Emulated gather-scatter.  */
+			gcc_assert (!final_mask);
+			unsigned HOST_WIDE_INT const_nunits
+			  = nunits.to_constant ();
+			vec<constructor_elt, va_gc> *ctor_elts;
+			vec_alloc (ctor_elts, const_nunits);
+			gimple_seq stmts = NULL;
+			tree idx_type = TREE_TYPE (TREE_TYPE (vec_offset));
+			tree scale = size_int (gs_info.scale);
+			align
+			  = get_object_alignment (DR_REF (first_dr_info->dr));
+			tree ltype = build_aligned_type (TREE_TYPE (vectype),
+							 align);
+			for (unsigned k = 0; k < const_nunits; ++k)
+			  {
+			    tree boff = size_binop (MULT_EXPR,
+						    TYPE_SIZE (idx_type),
+						    bitsize_int (k));
+			    tree idx = gimple_build (&stmts, BIT_FIELD_REF,
+						     idx_type, vec_offset,
+						     TYPE_SIZE (idx_type),
+						     boff);
+			    idx = gimple_convert (&stmts, sizetype, idx);
+			    idx = gimple_build (&stmts, MULT_EXPR,
+						sizetype, idx, scale);
+			    tree ptr = gimple_build (&stmts, PLUS_EXPR,
+						     TREE_TYPE (dataref_ptr),
+						     dataref_ptr, idx);
+			    ptr = gimple_convert (&stmts, ptr_type_node, ptr);
+			    tree elt = make_ssa_name (TREE_TYPE (vectype));
+			    tree ref = build2 (MEM_REF, ltype, ptr,
+					       build_int_cst (ref_type, 0));
+			    new_stmt = gimple_build_assign (elt, ref);
+			    gimple_seq_add_stmt (&stmts, new_stmt);
+			    CONSTRUCTOR_APPEND_ELT (ctor_elts, NULL_TREE, elt);
+			  }
+			gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+			new_stmt = gimple_build_assign (NULL_TREE,
+							build_constructor
+							  (vectype, ctor_elts));
 			data_ref = NULL_TREE;
 			break;
 		      }

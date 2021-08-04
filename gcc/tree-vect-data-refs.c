@@ -4007,8 +4007,24 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	      continue;
 	    }
 
-	  if (TYPE_PRECISION (TREE_TYPE (op0))
-	      < TYPE_PRECISION (TREE_TYPE (off)))
+	  /* Include the conversion if it is widening and we're using
+	     the IFN path or the target can handle the converted from
+	     offset or the current size is not already the same as the
+	     data vector element size.  */
+	  if ((TYPE_PRECISION (TREE_TYPE (op0))
+	       < TYPE_PRECISION (TREE_TYPE (off)))
+	      && (use_ifn_p
+		  || (DR_IS_READ (dr)
+		      ? (targetm.vectorize.builtin_gather
+			 && targetm.vectorize.builtin_gather (vectype,
+							      TREE_TYPE (op0),
+							      scale))
+		      : (targetm.vectorize.builtin_scatter
+			 && targetm.vectorize.builtin_scatter (vectype,
+							       TREE_TYPE (op0),
+							       scale)))
+		  || !operand_equal_p (TYPE_SIZE (TREE_TYPE (off)),
+				       TYPE_SIZE (TREE_TYPE (vectype)), 0)))
 	    {
 	      off = op0;
 	      offtype = TREE_TYPE (off);
@@ -4036,7 +4052,8 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
       if (!vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr), masked_p,
 				     vectype, memory_type, offtype, scale,
 				     &ifn, &offset_vectype))
-	return false;
+	ifn = IFN_LAST;
+      decl = NULL_TREE;
     }
   else
     {
@@ -4050,10 +4067,6 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	  if (targetm.vectorize.builtin_scatter)
 	    decl = targetm.vectorize.builtin_scatter (vectype, offtype, scale);
 	}
-
-      if (!decl)
-	return false;
-
       ifn = IFN_LAST;
       /* The offset vector type will be read from DECL when needed.  */
       offset_vectype = NULL_TREE;
@@ -4283,9 +4296,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
         {
 	  bool maybe_gather
 	    = DR_IS_READ (dr)
-	      && !TREE_THIS_VOLATILE (DR_REF (dr))
-	      && (targetm.vectorize.builtin_gather != NULL
-		  || supports_vec_gather_load_p ());
+	      && !TREE_THIS_VOLATILE (DR_REF (dr));
 	  bool maybe_scatter
 	    = DR_IS_WRITE (dr)
 	      && !TREE_THIS_VOLATILE (DR_REF (dr))

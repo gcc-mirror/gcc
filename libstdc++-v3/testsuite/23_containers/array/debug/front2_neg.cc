@@ -23,7 +23,7 @@
 void test01()
 {
   constexpr std::array<int, 0> a;
-  a.front();
+  (void) a.front();
 }
 
 int main()

@@ -24488,6 +24488,8 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
      set correctly.  */
   saved_greater_than_is_operator_p = parser->greater_than_is_operator_p;
   parser->greater_than_is_operator_p = !template_parm_p;
+  auto odsd = make_temp_override (parser->omp_declare_simd, NULL);
+  auto ord = make_temp_override (parser->oacc_routine, NULL);
   /* Local variable names (and the `this' keyword) may not
      appear in a default argument.  */
   saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;

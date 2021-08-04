@@ -3962,7 +3962,10 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
   if (type->points_to() != NULL
       && type->points_to()->array_type() != NULL
       && !type->points_to()->is_slice_type()
-      && val->type()->is_slice_type())
+      && val->type()->is_slice_type()
+      && Type::are_identical(type->points_to()->array_type()->element_type(),
+			     val->type()->array_type()->element_type(),
+			     0, NULL))
     {
       Temporary_statement* val_temp = NULL;
       if (!val->is_multi_eval_safe())
@@ -18006,49 +18009,7 @@ Expression::make_type_info(Type* type, Type_info type_info)
   return new Type_info_expression(type, type_info);
 }
 
-// An expression that evaluates to some characteristic of a slice.
-// This is used when indexing, bound-checking, or nil checking a slice.
-
-class Slice_info_expression : public Expression
-{
- public:
-  Slice_info_expression(Expression* slice, Slice_info slice_info,
-                        Location location)
-    : Expression(EXPRESSION_SLICE_INFO, location),
-      slice_(slice), slice_info_(slice_info)
-  { }
-
- protected:
-  Type*
-  do_type();
-
-  void
-  do_determine_type(const Type_context*)
-  { }
-
-  Expression*
-  do_copy()
-  {
-    return new Slice_info_expression(this->slice_->copy(), this->slice_info_,
-                                     this->location());
-  }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
-  void
-  do_issue_nil_check()
-  { this->slice_->issue_nil_check(); }
-
- private:
-  // The slice for which we are getting information.
-  Expression* slice_;
-  // What information we want.
-  Slice_info slice_info_;
-};
+// Slice_info_expression.
 
 // Return the type of the slice info.
 
