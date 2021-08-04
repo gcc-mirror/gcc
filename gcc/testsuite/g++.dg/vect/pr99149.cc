@@ -11,7 +11,7 @@ public:
   a operator*(a d) { return a(b * b - c * c, b * c + c * d.b); }
 };
 int f, g;
-class {
+class mp {
   a *h;
   a *i;
 
