@@ -16979,6 +16979,50 @@ expand_perm_with_merge (const struct expand_vec_perm_d &d)
   return merge_lo_p || merge_hi_p;
 }
 
+/* Try to expand the vector permute operation described by D using the
+   vector permute doubleword immediate instruction vpdi.  Return true
+   if vpdi could be used.
+
+   VPDI allows 4 different immediate values (0, 1, 4, 5). The 0 and 5
+   cases are covered by vmrhg and vmrlg already.  So we only care
+   about the 1, 4 cases here.
+   1 - First element of src1 and second of src2
+   4 - Second element of src1 and first of src2  */
+static bool
+expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
+{
+  bool vpdi1_p = false;
+  bool vpdi4_p = false;
+  rtx op0_reg, op1_reg;
+
+  // Only V2DI and V2DF are supported here.
+  if (d.nelt != 2)
+    return false;
+
+  if (d.perm[0] == 0 && d.perm[1] == 3)
+    vpdi1_p = true;
+
+  if (d.perm[0] == 1 && d.perm[1] == 2)
+    vpdi4_p = true;
+
+  if (!vpdi1_p && !vpdi4_p)
+    return false;
+
+  if (d.testing_p)
+    return true;
+
+  op0_reg = force_reg (GET_MODE (d.op0), d.op0);
+  op1_reg = force_reg (GET_MODE (d.op1), d.op1);
+
+  if (vpdi1_p)
+    emit_insn (gen_vpdi1 (d.vmode, d.target, op0_reg, op1_reg));
+
+  if (vpdi4_p)
+    emit_insn (gen_vpdi4 (d.vmode, d.target, op0_reg, op1_reg));
+
+  return true;
+}
+
 /* Try to find the best sequence for the vector permute operation
    described by D.  Return true if the operation could be
    expanded.  */
@@ -16986,6 +17030,9 @@ static bool
 vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
 {
   if (expand_perm_with_merge (d))
+    return true;
+
+  if (expand_perm_with_vpdi (d))
     return true;
 
   return false;

@@ -768,7 +768,7 @@
 
 
 ; First DW of op1 and second DW of op2
-(define_insn "*vpdi1<mode>"
+(define_insn "@vpdi1<mode>"
   [(set (match_operand:V_HW_2   0 "register_operand" "=v")
 	(vec_select:V_HW_2
 	 (vec_concat:<vec_2x_nelts>
@@ -780,7 +780,7 @@
   [(set_attr "op_type" "VRR")])
 
 ; Second DW of op1 and first of op2
-(define_insn "*vpdi4<mode>"
+(define_insn "@vpdi4<mode>"
   [(set (match_operand:V_HW_2   0 "register_operand" "=v")
 	(vec_select:V_HW_2
 	 (vec_concat:<vec_2x_nelts>
@@ -926,7 +926,6 @@
   operands[5] = simplify_gen_subreg (DFmode, operands[1], TFmode, 8);
 })
 
-; vec_perm_const for V2DI using vpdi?
 
 ;;
 ;; Vector integer arithmetic instructions
