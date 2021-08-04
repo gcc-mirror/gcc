@@ -15032,7 +15032,7 @@ aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
      scalar operation.
 
    - If VEC_FLAGS & VEC_ADVSIMD, return the loop carry latency of the
-     the Advanced SIMD implementation.
+     Advanced SIMD implementation.
 
    - If VEC_FLAGS & VEC_ANY_SVE, return the loop carry latency of the
      SVE implementation.
