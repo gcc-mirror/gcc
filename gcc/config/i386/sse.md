@@ -2376,6 +2376,24 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "SF")])
 
+(define_expand "cond_<code><mode>"
+  [(set (match_operand:VF 0 "register_operand")
+	(vec_merge:VF
+	  (smaxmin:VF
+	    (match_operand:VF 2 "vector_operand")
+	    (match_operand:VF 3 "vector_operand"))
+	  (match_operand:VF 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "<MODE_SIZE> == 64 || TARGET_AVX512VL"
+{
+  emit_insn (gen_<code><mode>3_mask (operands[0],
+				     operands[2],
+				     operands[3],
+				     operands[4],
+				     operands[1]));
+  DONE;
+})
+
 (define_expand "<code><mode>3<mask_name><round_saeonly_name>"
   [(set (match_operand:VF 0 "register_operand")
 	(smaxmin:VF
