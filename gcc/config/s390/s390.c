@@ -7014,6 +7014,42 @@ s390_expand_vec_init (rtx target, rtx vals)
     }
 }
 
+/* Return a parallel of constant integers to be used as permutation
+   vector for a vector merge operation in MODE.  If HIGH_P is true the
+   left-most elements of the source vectors are merged otherwise the
+   right-most elements.  */
+rtx
+s390_expand_merge_perm_const (machine_mode mode, bool high_p)
+{
+  int nelts = GET_MODE_NUNITS (mode);
+  rtx perm[16];
+  int addend = high_p ? 0 : nelts;
+
+  for (int i = 0; i < nelts; i++)
+    perm[i] = GEN_INT ((i + addend) / 2 + (i % 2) * nelts);
+
+  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelts, perm));
+}
+
+/* Emit RTL to implement a vector merge operation of SRC1 and SRC2
+   which creates the result in TARGET. HIGH_P determines whether a
+   merge hi or lo will be generated.  */
+void
+s390_expand_merge (rtx target, rtx src1, rtx src2, bool high_p)
+{
+  machine_mode mode = GET_MODE (target);
+  opt_machine_mode opt_mode_2x = mode_for_vector (GET_MODE_INNER (mode),
+						  2 * GET_MODE_NUNITS (mode));
+  gcc_assert (opt_mode_2x.exists ());
+  machine_mode mode_double_nelts = opt_mode_2x.require ();
+  rtx constv = s390_expand_merge_perm_const (mode, high_p);
+  src1 = force_reg (GET_MODE (src1), src1);
+  src2 = force_reg (GET_MODE (src2), src2);
+  rtx x = gen_rtx_VEC_CONCAT (mode_double_nelts, src1, src2);
+  x = gen_rtx_VEC_SELECT (mode, x, constv);
+  emit_insn (gen_rtx_SET (target, x));
+}
+
 /* Emit a vector constant that contains 1s in each element's sign bit position
    and 0s in other positions.  MODE is the desired constant's mode.  */
 extern rtx

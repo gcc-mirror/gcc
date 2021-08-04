@@ -22,7 +22,7 @@
 
 (define_mode_iterator V_HW_32_64 [V4SI V2DI V2DF (V4SF "TARGET_VXE")])
 (define_mode_iterator VI_HW_SD [V4SI V2DI])
-(define_mode_iterator V_HW_4 [V4SI V4SF])
+
 ; Full size vector modes with more than one element which are directly supported in vector registers by the hardware.
 (define_mode_iterator VEC_HW  [V16QI V8HI V4SI V2DI V2DF (V4SF "TARGET_VXE")])
 (define_mode_iterator VECF_HW [(V4SF "TARGET_VXE") V2DF])
@@ -232,28 +232,27 @@
   [(set_attr "op_type" "VRS,VRX,VSI")])
 
 
-; FIXME: The following two patterns might using vec_merge. But what is
-; the canonical form: (vec_select (vec_merge op0 op1)) or (vec_merge
-; (vec_select op0) (vec_select op1)
 ; vmrhb, vmrhh, vmrhf, vmrhg
-(define_insn "vec_mergeh<mode>"
-  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
-	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
-			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
-		       UNSPEC_VEC_MERGEH))]
+(define_expand "vec_mergeh<mode>"
+  [(match_operand:V_128_NOSINGLE 0 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 1 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 2 "register_operand" "")]
   "TARGET_VX"
-  "vmrh<bhfgq>\t%v0,%1,%2"
-  [(set_attr "op_type" "VRR")])
+{
+  s390_expand_merge (operands[0], operands[1], operands[2], true);
+  DONE;
+})
 
 ; vmrlb, vmrlh, vmrlf, vmrlg
-(define_insn "vec_mergel<mode>"
-  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
-	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
-			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
-		     UNSPEC_VEC_MERGEL))]
+(define_expand "vec_mergel<mode>"
+  [(match_operand:V_128_NOSINGLE 0 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 1 "register_operand" "")
+   (match_operand:V_128_NOSINGLE 2 "register_operand" "")]
   "TARGET_VX"
-  "vmrl<bhfgq>\t%v0,%1,%2"
-  [(set_attr "op_type" "VRR")])
+{
+  s390_expand_merge (operands[0], operands[1], operands[2], false);
+  DONE;
+})
 
 
 ; Vector pack
