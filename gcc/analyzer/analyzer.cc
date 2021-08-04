@@ -131,6 +131,7 @@ maybe_reconstruct_from_def_stmt (tree ssa_name,
     {
     default:
       gcc_unreachable ();
+    case GIMPLE_ASM:
     case GIMPLE_NOP:
     case GIMPLE_PHI:
       /* Can't handle these.  */

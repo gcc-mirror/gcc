@@ -53,6 +53,7 @@ class svalue;
   class widening_svalue;
   class compound_svalue;
   class conjured_svalue;
+  class asm_output_svalue;
 typedef hash_set<const svalue *> svalue_set;
 class region;
   class frame_region;
@@ -77,6 +78,7 @@ class call_details;
 struct rejected_constraint;
 class constraint_manager;
 class equiv_class;
+class reachable_regions;
 
 class pending_diagnostic;
 class state_change_event;
