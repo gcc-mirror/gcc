@@ -1,3 +1,65 @@
+2021-08-03  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* lib/profopt.exp: Pass gdwarf-4 when compiling test to profile; pass -gcov_version=2.
+	* lib/target-supports.exp: Remove unnecessary -o perf.data passed to gcc-auto-profile.
+
+2021-08-03  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* gcc.dg/tree-prof/indir-call-prof-2.c: Fix dg-final-use-autofdo.
+	* lib/profopt.exp: Pass -fearly-inlining when compiling with AutoFDO.
+
+2021-08-03  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* g++.dg/tree-prof/indir-call-prof.C: Fix options, increase the number of iterations.
+	* g++.dg/tree-prof/morefunc.C: Fix options, increase the number of iterations.
+	* g++.dg/tree-prof/reorder.C: Fix options, increase the number of iterations.
+	* gcc.dg/tree-prof/indir-call-prof-2.c: Fix options, increase the number of iterations.
+	* gcc.dg/tree-prof/indir-call-prof.c: Fix options.
+
+2021-08-03  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/101688
+	* g++.dg/warn/Wstringop-overflow-4.C: Disable a test case in ILP32.
+
+2021-08-03  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-phminposuw.c: Copy from
+	gcc/testsuite/gcc.target/i386, adjust dg directives to suit,
+	make more robust.
+
+2021-08-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/avx-vzeroupper-14.c: Pass -mno-avx512f to
+	disable XMM31.
+	* gcc.target/i386/avx-vzeroupper-15.c: Likewise.
+	* gcc.target/i386/pr82941-1.c: Updated.  Check for vzeroupper.
+	* gcc.target/i386/pr82942-1.c: Likewise.
+	* gcc.target/i386/pr82990-1.c: Likewise.
+	* gcc.target/i386/pr82990-3.c: Likewise.
+	* gcc.target/i386/pr82990-5.c: Likewise.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-6b.c: Likewise.
+	* gcc.target/i386/pr100865-7b.c: Likewise.
+	* gcc.target/i386/pr100865-10b.c: Likewise.
+	* gcc.target/i386/pr100865-8b.c: Updated.
+	* gcc.target/i386/pr100865-9b.c: Likewise.
+	* gcc.target/i386/pr100865-11b.c: Likewise.
+	* gcc.target/i386/pr100865-12b.c: Likewise.
+
+2021-08-03  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cond_op_addsubmul_d-1.c: New test.
+	* gcc.target/i386/cond_op_addsubmul_d-2.c: New test.
+	* gcc.target/i386/cond_op_addsubmul_q-1.c: New test.
+	* gcc.target/i386/cond_op_addsubmul_q-2.c: New test.
+	* gcc.target/i386/cond_op_addsubmul_w-1.c: New test.
+	* gcc.target/i386/cond_op_addsubmul_w-2.c: New test.
+
+2021-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/101721
+	* gcc.dg/analyzer/pr101721.c: New test.
+
 2021-08-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/80566

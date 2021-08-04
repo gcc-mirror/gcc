@@ -1,3 +1,9 @@
+2021-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/101721
+	* sm-malloc.cc (known_allocator_p): Only check DECL_FUNCTION_CODE on
+	BUILT_IN_NORMAL builtins.
+
 2021-07-29  Ankur Saini  <arsenic@sourceware.org>
 
 	* call-string.cc (call_string::element_t::operator==): New operator.
