@@ -2121,10 +2121,10 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
     case SEMICOLON:
       lexer.skip_token ();
 
-      return std::unique_ptr<AST::ModuleNoBody> (
-	new AST::ModuleNoBody (std::move (name), std::move (vis),
-			       std::move (outer_attrs),
-			       locus)); // module name?
+      return std::unique_ptr<AST::Module> (
+	new AST::Module (std::move (name), std::move (vis),
+			 std::move (outer_attrs),
+			 locus)); // module name?
       case LEFT_CURLY: {
 	lexer.skip_token ();
 
@@ -2157,10 +2157,10 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
 	    return nullptr;
 	  }
 
-	return std::unique_ptr<AST::ModuleBodied> (
-	  new AST::ModuleBodied (std::move (name), locus, std::move (items),
-				 std::move (vis), std::move (inner_attrs),
-				 std::move (outer_attrs))); // module name?
+	return std::unique_ptr<AST::Module> (
+	  new AST::Module (std::move (name), locus, std::move (items),
+			   std::move (vis), std::move (inner_attrs),
+			   std::move (outer_attrs))); // module name?
       }
     default:
       add_error (

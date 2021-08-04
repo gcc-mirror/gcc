@@ -182,8 +182,6 @@ struct Visibility;
 class Method;
 class VisItem;
 class Module;
-class ModuleBodied;
-class ModuleNoBody;
 class ExternCrate;
 class UseTree;
 class UseTreeGlob;

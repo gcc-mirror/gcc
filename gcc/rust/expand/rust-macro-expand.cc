@@ -2015,7 +2015,7 @@ public:
 		     "cannot strip block expression in this position - outer "
 		     "attributes not allowed");
   }
-  void visit (AST::ModuleBodied &module) override
+  void visit (AST::Module &module) override
   {
     // strip test based on outer attrs
     expander.expand_cfg_attrs (module.get_outer_attrs ());
@@ -2025,26 +2025,20 @@ public:
 	return;
       }
 
-    // strip test based on inner attrs
-    expander.expand_cfg_attrs (module.get_inner_attrs ());
-    if (expander.fails_cfg_with_expand (module.get_inner_attrs ()))
+    // A loaded module might have inner attributes
+    if (module.get_kind () == AST::Module::ModuleKind::LOADED)
       {
-	module.mark_for_strip ();
-	return;
+	// strip test based on inner attrs
+	expander.expand_cfg_attrs (module.get_inner_attrs ());
+	if (expander.fails_cfg_with_expand (module.get_inner_attrs ()))
+	  {
+	    module.mark_for_strip ();
+	    return;
+	  }
       }
 
     // strip items if required
     expand_pointer_allow_strip (module.get_items ());
-  }
-  void visit (AST::ModuleNoBody &module) override
-  {
-    // strip test based on outer attrs
-    expander.expand_cfg_attrs (module.get_outer_attrs ());
-    if (expander.fails_cfg_with_expand (module.get_outer_attrs ()))
-      {
-	module.mark_for_strip ();
-	return;
-      }
   }
   void visit (AST::ExternCrate &crate) override
   {
