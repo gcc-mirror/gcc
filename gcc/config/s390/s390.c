@@ -16926,6 +16926,107 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
   return after_md_seq;
 }
 
+#define MAX_VECT_LEN	16
+
+struct expand_vec_perm_d
+{
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  machine_mode vmode;
+  unsigned char nelt;
+  bool testing_p;
+};
+
+/* Try to expand the vector permute operation described by D using the
+   vector merge instructions vml and vmh.  Return true if vector merge
+   could be used.  */
+static bool
+expand_perm_with_merge (const struct expand_vec_perm_d &d)
+{
+  bool merge_lo_p = true;
+  bool merge_hi_p = true;
+
+  if (d.nelt % 2)
+    return false;
+
+  // For V4SI this checks for: { 0, 4, 1, 5 }
+  for (int telt = 0; telt < d.nelt; telt++)
+    if (d.perm[telt] != telt / 2 + (telt % 2) * d.nelt)
+      {
+	merge_hi_p = false;
+	break;
+      }
+
+  if (!merge_hi_p)
+    {
+      // For V4SI this checks for: { 2, 6, 3, 7 }
+      for (int telt = 0; telt < d.nelt; telt++)
+	if (d.perm[telt] != (telt + d.nelt) / 2 + (telt % 2) * d.nelt)
+	  {
+	    merge_lo_p = false;
+	    break;
+	  }
+    }
+  else
+    merge_lo_p = false;
+
+  if (d.testing_p)
+    return merge_lo_p || merge_hi_p;
+
+  if (merge_lo_p || merge_hi_p)
+    s390_expand_merge (d.target, d.op0, d.op1, merge_hi_p);
+
+  return merge_lo_p || merge_hi_p;
+}
+
+/* Try to find the best sequence for the vector permute operation
+   described by D.  Return true if the operation could be
+   expanded.  */
+static bool
+vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
+{
+  if (expand_perm_with_merge (d))
+    return true;
+
+  return false;
+}
+
+/* Return true if we can emit instructions for the constant
+   permutation vector in SEL.  If OUTPUT, IN0, IN1 are non-null the
+   hook is supposed to emit the required INSNs.  */
+
+bool
+s390_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
+{
+  struct expand_vec_perm_d d;
+  unsigned int i, nelt;
+
+  if (!s390_vector_mode_supported_p (vmode) || GET_MODE_SIZE (vmode) != 16)
+    return false;
+
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
+
+  d.vmode = vmode;
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = target == NULL_RTX;
+
+  gcc_assert (target == NULL_RTX || REG_P (target));
+  gcc_assert (sel.length () == nelt);
+
+  for (i = 0; i < nelt; i++)
+    {
+      unsigned char e = sel[i];
+      gcc_assert (e < 2 * nelt);
+      d.perm[i] = e;
+    }
+
+  return vectorize_vec_perm_const_1 (d);
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -17235,6 +17336,10 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST s390_md_asm_adjust
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST s390_vectorize_vec_perm_const
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
