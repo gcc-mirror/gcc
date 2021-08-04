@@ -1898,6 +1898,9 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
 
   // get MacroFragSpec for macro
   const_TokenPtr t = expect_token (IDENTIFIER);
+  if (t == nullptr)
+    return nullptr;
+
   AST::MacroFragSpec frag = AST::get_frag_spec_from_str (t->get_str ());
   if (frag == AST::INVALID)
     {
@@ -4325,6 +4328,9 @@ Parser<ManagedTokenSource>::parse_enum (AST::Visibility vis,
 
   // parse enum name
   const_TokenPtr enum_name_tok = expect_token (IDENTIFIER);
+  if (enum_name_tok == nullptr)
+    return nullptr;
+
   Identifier enum_name = enum_name_tok->get_str ();
 
   // parse generic params (of enum container, not enum variants) if they exist
@@ -4650,6 +4656,9 @@ Parser<ManagedTokenSource>::parse_static_item (AST::Visibility vis,
     }
 
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+  if (ident_tok == nullptr)
+    return nullptr;
+
   Identifier ident = ident_tok->get_str ();
 
   if (!skip_token (COLON))
@@ -4700,6 +4709,9 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
 
   // parse trait name
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+  if (ident_tok == nullptr)
+    return nullptr;
+
   Identifier ident = ident_tok->get_str ();
 
   // parse generic parameters (if they exist)
@@ -4805,6 +4817,9 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 
 	// parse function or method name
 	const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+	if (ident_tok == nullptr)
+	  return nullptr;
+
 	Identifier ident = ident_tok->get_str ();
 
 	// parse generic params
@@ -4937,6 +4952,9 @@ Parser<ManagedTokenSource>::parse_trait_type (AST::AttrVec outer_attrs)
   skip_token (TYPE);
 
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+  if (ident_tok == nullptr)
+    return nullptr;
+
   Identifier ident = ident_tok->get_str ();
 
   std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
@@ -4973,6 +4991,9 @@ Parser<ManagedTokenSource>::parse_trait_const (AST::AttrVec outer_attrs)
 
   // parse constant item name
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+  if (ident_tok == nullptr)
+    return nullptr;
+
   Identifier ident = ident_tok->get_str ();
 
   if (!skip_token (COLON))
@@ -5338,6 +5359,9 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
 
   // parse function or method name
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+  if (ident_tok == nullptr)
+    return nullptr;
+
   Identifier ident = ident_tok->get_str ();
 
   // parse generic params
@@ -14210,6 +14234,9 @@ Parser<ManagedTokenSource>::parse_field_access_expr (
   /* get field name identifier (assume that this is a field access expr and not
    * await, for instance) */
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
+  if (ident_tok == nullptr)
+    return nullptr;
+
   Identifier ident = ident_tok->get_str ();
 
   Location locus = struct_expr->get_locus_slow ();
