@@ -205,15 +205,25 @@ public:
 	return;
       }
 
+    context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
+
     // https://doc.rust-lang.org/reference/expressions/method-call-expr.html
     // method resolution is complex in rust once we start handling generics and
     // traits. For now we only support looking up the valid name in impl blocks
     // which is simple. There will need to be adjustments to ensure we can turn
     // the receiver into borrowed references etc
 
+    bool reciever_is_generic
+      = receiver_tyty->get_kind () == TyTy::TypeKind::PARAM;
+    bool probe_bounds = true;
+    bool probe_impls = !reciever_is_generic;
+    bool ignore_mandatory_trait_items = !reciever_is_generic;
+
     auto candidates
       = PathProbeType::Probe (receiver_tyty,
-			      expr.get_method_name ().get_segment ());
+			      expr.get_method_name ().get_segment (),
+			      probe_impls, probe_bounds,
+			      ignore_mandatory_trait_items);
     if (candidates.size () == 0)
       {
 	rust_error_at (expr.get_locus (),
@@ -229,13 +239,18 @@ public:
       }
 
     auto resolved_candidate = candidates.at (0);
-    HIR::ImplItem *resolved_method = resolved_candidate.impl_item;
     TyTy::BaseType *lookup_tyty = resolved_candidate.ty;
+    NodeId resolved_node_id
+      = resolved_candidate.is_impl_candidate ()
+	  ? resolved_candidate.item.impl.impl_item->get_impl_mappings ()
+	      .get_nodeid ()
+	  : resolved_candidate.item.trait.item_ref.get_mappings ()
+	      .get_nodeid ();
 
     if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)
       {
 	RichLocation r (expr.get_method_name ().get_locus ());
-	r.add_range (resolved_method->get_impl_locus ());
+	r.add_range (resolved_candidate.locus);
 	rust_error_at (r, "associated impl item is not a method");
 	return;
       }
@@ -245,7 +260,7 @@ public:
     if (!fn->is_method ())
       {
 	RichLocation r (expr.get_method_name ().get_locus ());
-	r.add_range (resolved_method->get_impl_locus ());
+	r.add_range (resolved_candidate.locus);
 	rust_error_at (r, "associated function is not a method");
 	return;
       }
@@ -303,20 +318,25 @@ public:
 	  }
       }
 
-    // apply any remaining generic arguments
-    if (expr.get_method_name ().has_generic_args ())
+    if (!reciever_is_generic)
       {
-	HIR::GenericArgs &args = expr.get_method_name ().get_generic_args ();
-	lookup
-	  = SubstMapper::Resolve (lookup, expr.get_method_name ().get_locus (),
-				  &args);
-	if (lookup->get_kind () == TyTy::TypeKind::ERROR)
-	  return;
-      }
-    else if (lookup->needs_generic_substitutions ())
-      {
-	lookup = SubstMapper::InferSubst (lookup,
-					  expr.get_method_name ().get_locus ());
+	// apply any remaining generic arguments
+	if (expr.get_method_name ().has_generic_args ())
+	  {
+	    HIR::GenericArgs &args
+	      = expr.get_method_name ().get_generic_args ();
+	    lookup = SubstMapper::Resolve (lookup,
+					   expr.get_method_name ().get_locus (),
+					   &args);
+	    if (lookup->get_kind () == TyTy::TypeKind::ERROR)
+	      return;
+	  }
+	else if (lookup->needs_generic_substitutions ())
+	  {
+	    lookup
+	      = SubstMapper::InferSubst (lookup,
+					 expr.get_method_name ().get_locus ());
+	  }
       }
 
     TyTy::BaseType *function_ret_tyty
@@ -333,9 +353,8 @@ public:
     context->insert_type (expr.get_method_name ().get_mappings (), lookup);
 
     // set up the resolved name on the path
-    resolver->insert_resolved_name (
-      expr.get_mappings ().get_nodeid (),
-      resolved_method->get_impl_mappings ().get_nodeid ());
+    resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+				    resolved_node_id);
 
     // return the result of the function back
     infered = function_ret_tyty;
@@ -429,7 +448,7 @@ public:
     if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
 				       ref_node_id, &ref))
       {
-	rust_error_at (expr.get_locus (), "reverse lookup failure");
+	rust_error_at (expr.get_locus (), "123 reverse lookup failure");
 	return;
       }
 
@@ -937,8 +956,16 @@ public:
       {
 	HIR::PathExprSegment &seg = expr.get_segments ().at (i);
 
+	bool reciever_is_generic
+	  = prev_segment->get_kind () == TyTy::TypeKind::PARAM;
+	bool probe_bounds = true;
+	bool probe_impls = !reciever_is_generic;
+	bool ignore_mandatory_trait_items = !reciever_is_generic;
+
 	// probe the path
-	auto candidates = PathProbeType::Probe (tyseg, seg.get_segment ());
+	auto candidates
+	  = PathProbeType::Probe (tyseg, seg.get_segment (), probe_impls,
+				  probe_bounds, ignore_mandatory_trait_items);
 	if (candidates.size () == 0)
 	  {
 	    rust_error_at (
@@ -954,11 +981,21 @@ public:
 	    return;
 	  }
 
-	auto candidate = candidates.at (0);
+	auto &candidate = candidates.at (0);
 	prev_segment = tyseg;
 	tyseg = candidate.ty;
-	resolved_node_id
-	  = candidate.impl_item->get_impl_mappings ().get_nodeid ();
+
+	if (candidate.is_impl_candidate ())
+	  {
+	    resolved_node_id
+	      = candidate.item.impl.impl_item->get_impl_mappings ()
+		  .get_nodeid ();
+	  }
+	else
+	  {
+	    resolved_node_id
+	      = candidate.item.trait.item_ref.get_mappings ().get_nodeid ();
+	  }
 
 	if (seg.has_generic_args ())
 	  {
@@ -977,6 +1014,7 @@ public:
 	  }
       }
 
+    context->insert_receiver (expr.get_mappings ().get_hirid (), prev_segment);
     if (tyseg->needs_generic_substitutions ())
       {
 	Location locus = expr.get_segments ().back ().get_locus ();
@@ -984,8 +1022,9 @@ public:
 	  {
 	    auto used_args_in_prev_segment
 	      = GetUsedSubstArgs::From (prev_segment);
-	    tyseg
-	      = SubstMapperInternal::Resolve (tyseg, used_args_in_prev_segment);
+	    if (!used_args_in_prev_segment.is_error ())
+	      tyseg = SubstMapperInternal::Resolve (tyseg,
+						    used_args_in_prev_segment);
 	  }
 	else
 	  {
@@ -1214,7 +1253,13 @@ private:
 	  {
 	    if (is_root)
 	      {
-		rust_error_at (seg.get_locus (), "reverse lookup failure");
+		rust_error_at (seg.get_locus (), "456 reverse lookup failure");
+		rust_debug_loc (
+		  seg.get_locus (),
+		  "failure with [%s] mappings [%s] ref_node_id [%u]",
+		  seg.as_string ().c_str (),
+		  seg.get_mappings ().as_string ().c_str (), ref_node_id);
+
 		return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	      }
 	    return root_tyty;

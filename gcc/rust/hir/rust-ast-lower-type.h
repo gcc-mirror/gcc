@@ -284,6 +284,9 @@ public:
       resolver.translated->get_mappings ().get_crate_num (),
       resolver.translated->get_mappings ().get_hirid (),
       param->get_locus_slow ());
+    resolver.mappings->insert_hir_generic_param (
+      resolver.translated->get_mappings ().get_crate_num (),
+      resolver.translated->get_mappings ().get_hirid (), resolver.translated);
 
     return resolver.translated;
   }
@@ -294,24 +297,9 @@ public:
     Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
-    HIR::Lifetime::LifetimeType ltt;
 
-    switch (param.get_lifetime ().get_lifetime_type ())
-      {
-      case AST::Lifetime::LifetimeType::NAMED:
-	ltt = HIR::Lifetime::LifetimeType::NAMED;
-	break;
-      case AST::Lifetime::LifetimeType::STATIC:
-	ltt = HIR::Lifetime::LifetimeType::STATIC;
-	break;
-      case AST::Lifetime::LifetimeType::WILDCARD:
-	ltt = HIR::Lifetime::LifetimeType::WILDCARD;
-	break;
-      default:
-	gcc_unreachable ();
-      }
-
-    HIR::Lifetime lt (mapping, ltt, param.get_lifetime ().get_lifetime_name (),
+    HIR::Lifetime lt (mapping, param.get_lifetime ().get_lifetime_type (),
+		      param.get_lifetime ().get_lifetime_name (),
 		      param.get_lifetime ().get_locus ());
 
     translated = new HIR::LifetimeParam (mapping, lt, param.get_locus (),
@@ -322,6 +310,16 @@ public:
   {
     AST::Attribute outer_attr = AST::Attribute::create_empty ();
     std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
+    if (param.has_type_param_bounds ())
+      {
+	for (auto &bound : param.get_type_param_bounds ())
+	  {
+	    HIR::TypeParamBound *lowered_bound = lower_bound (bound.get ());
+	    type_param_bounds.push_back (
+	      std::unique_ptr<HIR::TypeParamBound> (lowered_bound));
+	  }
+      }
+
     HIR::Type *type = param.has_type ()
 			? ASTLoweringType::translate (param.get_type ().get ())
 			: nullptr;
@@ -342,6 +340,55 @@ private:
   ASTLowerGenericParam () : ASTLoweringBase (), translated (nullptr) {}
 
   HIR::GenericParam *translated;
+};
+
+class ASTLoweringTypeBounds : public ASTLoweringBase
+{
+  using Rust::HIR::ASTLoweringBase::visit;
+
+public:
+  static HIR::TypeParamBound *translate (AST::TypeParamBound *type)
+  {
+    ASTLoweringTypeBounds resolver;
+    type->accept_vis (resolver);
+
+    rust_assert (resolver.translated != nullptr);
+    resolver.mappings->insert_location (
+      resolver.translated->get_mappings ().get_crate_num (),
+      resolver.translated->get_mappings ().get_hirid (),
+      resolver.translated->get_locus_slow ());
+
+    return resolver.translated;
+  }
+
+  void visit (AST::TraitBound &bound) override
+  {
+    // FIXME
+    std::vector<HIR::LifetimeParam> lifetimes;
+
+    AST::TypePath &ast_trait_path = bound.get_type_path ();
+    HIR::TypePath *trait_path = ASTLowerTypePath::translate (ast_trait_path);
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, bound.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated = new HIR::TraitBound (mapping, *trait_path, bound.get_locus (),
+				      bound.is_in_parens (),
+				      bound.has_opening_question_mark ());
+  }
+
+  void visit (AST::Lifetime &bound) override
+  {
+    HIR::Lifetime lifetime = lower_lifetime (bound);
+    translated = new HIR::Lifetime (lifetime);
+  }
+
+private:
+  ASTLoweringTypeBounds () : ASTLoweringBase (), translated (nullptr) {}
+
+  HIR::TypeParamBound *translated;
 };
 
 } // namespace HIR

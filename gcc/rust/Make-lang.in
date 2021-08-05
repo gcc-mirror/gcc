@@ -79,6 +79,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check.o \
     rust/rust-tyty.o \
     rust/rust-tyctx.o \
+    rust/rust-tyty-bounds.o \
     rust/rust-hir-const-fold.o \
     rust/rust-lint-marklive.o \
     $(END)

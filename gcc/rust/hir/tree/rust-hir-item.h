@@ -124,6 +124,11 @@ public:
     return type->get_mappings ();
   }
 
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TypeParam *clone_generic_param_impl () const override
@@ -333,7 +338,8 @@ public:
   SelfParam (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
 	     bool is_mut, Location locus)
     : self_kind (is_mut ? ImplicitSelfKind::MUT : ImplicitSelfKind::IMM),
-      lifetime (Lifetime (mappings, Lifetime::LifetimeType::NAMED, "", locus)),
+      lifetime (
+	Lifetime (mappings, AST::Lifetime::LifetimeType::NAMED, "", locus)),
       type (std::move (type)), locus (locus), mappings (mappings)
   {}
 

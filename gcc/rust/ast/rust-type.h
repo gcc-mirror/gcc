@@ -50,7 +50,18 @@ public:
 	      bool opening_question_mark = false,
 	      std::vector<LifetimeParam> for_lifetimes
 	      = std::vector<LifetimeParam> ())
-    : in_parens (in_parens), opening_question_mark (opening_question_mark),
+    : TypeParamBound (Analysis::Mappings::get ()->get_next_node_id ()),
+      in_parens (in_parens), opening_question_mark (opening_question_mark),
+      for_lifetimes (std::move (for_lifetimes)),
+      type_path (std::move (type_path)), locus (locus)
+  {}
+
+  TraitBound (NodeId id, TypePath type_path, Location locus,
+	      bool in_parens = false, bool opening_question_mark = false,
+	      std::vector<LifetimeParam> for_lifetimes
+	      = std::vector<LifetimeParam> ())
+    : TypeParamBound (id), in_parens (in_parens),
+      opening_question_mark (opening_question_mark),
       for_lifetimes (std::move (for_lifetimes)),
       type_path (std::move (type_path)), locus (locus)
   {}
@@ -59,18 +70,24 @@ public:
 
   Location get_locus () const { return locus; }
 
+  Location get_locus_slow () const override final { return get_locus (); }
+
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: this mutable getter seems kinda dodgy
   TypePath &get_type_path () { return type_path; }
   const TypePath &get_type_path () const { return type_path; }
 
+  bool is_in_parens () const { return in_parens; }
+  bool has_opening_question_mark () const { return opening_question_mark; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
   TraitBound *clone_type_param_bound_impl () const override
   {
-    return new TraitBound (*this);
+    return new TraitBound (node_id, type_path, locus, in_parens,
+			   opening_question_mark, for_lifetimes);
   }
 };
 

@@ -2113,11 +2113,11 @@ Lifetime::as_string () const
 
   switch (lifetime_type)
     {
-    case NAMED:
+    case AST::Lifetime::LifetimeType::NAMED:
       return "'" + lifetime_name;
-    case STATIC:
+    case AST::Lifetime::LifetimeType::STATIC:
       return "'static";
-    case WILDCARD:
+    case AST::Lifetime::LifetimeType::WILDCARD:
       return "'_";
     default:
       return "ERROR-MARK-STRING: lifetime type failure";
@@ -2747,7 +2747,8 @@ TypePath::to_trait_bound (bool in_parens) const
   // create clone FIXME is this required? or is copy constructor automatically
   // called?
   TypePath copy (*this);
-  return new TraitBound (std::move (copy), copy.get_locus (), in_parens);
+  return new TraitBound (mappings, std::move (copy), copy.get_locus (),
+			 in_parens);
 }
 
 std::string

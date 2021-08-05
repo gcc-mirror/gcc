@@ -148,6 +148,14 @@ public:
   void insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr);
   HIR::Expr *lookup_hir_expr (CrateNum crateNum, HirId id);
 
+  void insert_hir_path_expr_seg (CrateNum crateNum, HirId id,
+				 HIR::PathExprSegment *expr);
+  HIR::PathExprSegment *lookup_hir_path_expr_seg (CrateNum crateNum, HirId id);
+
+  void insert_hir_generic_param (CrateNum crateNum, HirId id,
+				 HIR::GenericParam *expr);
+  HIR::GenericParam *lookup_hir_generic_param (CrateNum crateNum, HirId id);
+
   void insert_hir_type (CrateNum crateNum, HirId id, HIR::Type *type);
   HIR::Type *lookup_hir_type (CrateNum crateNum, HirId id);
 
@@ -215,6 +223,20 @@ public:
 	   != nullptr;
   }
 
+  void insert_trait_item_mapping (HirId trait_item_id, HIR::Trait *trait)
+  {
+    rust_assert (hirTraitItemsToTraitMappings.find (trait_item_id)
+		 == hirTraitItemsToTraitMappings.end ());
+    hirTraitItemsToTraitMappings[trait_item_id] = trait;
+  }
+
+  HIR::Trait *lookup_trait_item_mapping (HirId trait_item_id)
+  {
+    auto lookup = hirTraitItemsToTraitMappings.find (trait_item_id);
+    rust_assert (lookup != hirTraitItemsToTraitMappings.end ());
+    return lookup->second;
+  }
+
 private:
   Mappings ();
 
@@ -245,6 +267,11 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::TraitItem *> > hirTraitItemMappings;
   std::map<CrateNum, std::map<HirId, HIR::ExternalItem *> >
     hirExternItemMappings;
+  std::map<CrateNum, std::map<HirId, HIR::PathExprSegment *> >
+    hirPathSegMappings;
+  std::map<CrateNum, std::map<HirId, HIR::GenericParam *> >
+    hirGenericParamMappings;
+  std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;

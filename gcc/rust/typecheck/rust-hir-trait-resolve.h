@@ -121,8 +121,7 @@ private:
     if (!resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
 					 &ref))
       {
-	rust_fatal_error (path.get_locus (),
-			  "Failed to resolve path to node-id");
+	rust_error_at (path.get_locus (), "Failed to resolve path to node-id");
 	return error_node ();
       }
 
@@ -130,8 +129,7 @@ private:
     if (!mappings->lookup_node_to_hir (mappings->get_current_crate (), ref,
 				       &hir_node))
       {
-	rust_fatal_error (path.get_locus (),
-			  "Failed to resolve path to hir-id");
+	rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
 	return error_node ();
       }
 

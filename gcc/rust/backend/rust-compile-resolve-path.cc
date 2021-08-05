@@ -20,6 +20,8 @@
 #include "rust-backend.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-compile-item.h"
+#include "rust-hir-trait-resolve.h"
+#include "rust-hir-path-probe.h"
 
 namespace Rust {
 namespace Compile {
@@ -94,7 +96,76 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 	  HIR::ImplItem *resolved_item
 	    = ctx->get_mappings ()->lookup_hir_implitem (
 	      expr.get_mappings ().get_crate_num (), ref, &parent_impl_id);
-	  if (resolved_item != nullptr)
+
+	  if (resolved_item == nullptr)
+	    {
+	      // it might be resolved to a trait item
+	      HIR::TraitItem *trait_item
+		= ctx->get_mappings ()->lookup_hir_trait_item (
+		  expr.get_mappings ().get_crate_num (), ref);
+	      HIR::Trait *trait
+		= ctx->get_mappings ()->lookup_trait_item_mapping (
+		  trait_item->get_mappings ().get_hirid ());
+
+	      Resolver::TraitReference &trait_ref
+		= Resolver::TraitResolver::error_node ();
+	      bool ok = ctx->get_tyctx ()->lookup_trait_reference (
+		trait->get_mappings ().get_defid (), trait_ref);
+	      rust_assert (ok);
+
+	      TyTy::BaseType *receiver = nullptr;
+	      ok = ctx->get_tyctx ()->lookup_receiver (
+		expr.get_mappings ().get_hirid (), &receiver);
+	      rust_assert (ok);
+
+	      if (receiver->get_kind () == TyTy::TypeKind::PARAM)
+		{
+		  TyTy::ParamType *p
+		    = static_cast<TyTy::ParamType *> (receiver);
+		  receiver = p->resolve ();
+		}
+
+	      // the type resolver can only resolve type bounds to their trait
+	      // item so its up to us to figure out if this path should resolve
+	      // to an trait-impl-block-item or if it can be defaulted to the
+	      // trait-impl-item's definition
+	      std::vector<Resolver::PathProbeCandidate> candidates
+		= Resolver::PathProbeType::Probe (
+		  receiver, expr.get_final_segment ().get_segment (), true,
+		  false, true);
+
+	      if (candidates.size () == 0)
+		{
+		  // this means we are defaulting back to the trait_item if
+		  // possible
+		  // TODO
+		  gcc_unreachable ();
+		}
+	      else
+		{
+		  Resolver::PathProbeCandidate &candidate = candidates.at (0);
+		  rust_assert (candidate.is_impl_candidate ());
+
+		  HIR::ImplBlock *impl = candidate.item.impl.parent;
+		  HIR::ImplItem *impl_item = candidate.item.impl.impl_item;
+
+		  TyTy::BaseType *self = nullptr;
+		  bool ok = ctx->get_tyctx ()->lookup_type (
+		    impl->get_type ()->get_mappings ().get_hirid (), &self);
+		  rust_assert (ok);
+
+		  if (!lookup->has_subsititions_defined ())
+		    CompileInherentImplItem::Compile (self, impl_item, ctx,
+						      true);
+		  else
+		    CompileInherentImplItem::Compile (self, impl_item, ctx,
+						      true, lookup);
+
+		  lookup->set_ty_ref (
+		    impl_item->get_impl_mappings ().get_hirid ());
+		}
+	    }
+	  else
 	    {
 	      rust_assert (parent_impl_id != UNKNOWN_HIRID);
 	      HIR::Item *impl_ref = ctx->get_mappings ()->lookup_hir_item (
@@ -114,18 +185,13 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 		CompileInherentImplItem::Compile (self, resolved_item, ctx,
 						  true, lookup);
 	    }
-	  else
-	    {
-	      rust_error_at (expr.get_locus (),
-			     "failed to lookup definition declaration");
-	      return;
-	    }
 	}
 
       if (!ctx->lookup_function_decl (lookup->get_ty_ref (), &fn))
 	{
-	  rust_fatal_error (expr.get_locus (),
-			    "forward declaration was not compiled");
+	  resolved = ctx->get_backend ()->error_expression ();
+	  rust_error_at (expr.get_locus (),
+			 "forward declaration was not compiled");
 	  return;
 	}
     }

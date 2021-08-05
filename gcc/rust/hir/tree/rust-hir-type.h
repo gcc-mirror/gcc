@@ -33,26 +33,23 @@ class TraitBound : public TypeParamBound
 {
   bool in_parens;
   bool opening_question_mark;
-
-  // bool has_for_lifetimes;
-  // LifetimeParams for_lifetimes;
-  std::vector<LifetimeParam> for_lifetimes; // inlined LifetimeParams
-
+  std::vector<LifetimeParam> for_lifetimes;
   TypePath type_path;
-
   Location locus;
+
+  Analysis::NodeMapping mappings;
 
 public:
   // Returns whether trait bound has "for" lifetimes
   bool has_for_lifetimes () const { return !for_lifetimes.empty (); }
 
-  TraitBound (TypePath type_path, Location locus, bool in_parens = false,
-	      bool opening_question_mark = false,
+  TraitBound (Analysis::NodeMapping mapping, TypePath type_path, Location locus,
+	      bool in_parens = false, bool opening_question_mark = false,
 	      std::vector<LifetimeParam> for_lifetimes
 	      = std::vector<LifetimeParam> ())
     : in_parens (in_parens), opening_question_mark (opening_question_mark),
       for_lifetimes (std::move (for_lifetimes)),
-      type_path (std::move (type_path)), locus (locus)
+      type_path (std::move (type_path)), locus (locus), mappings (mapping)
   {}
 
   std::string as_string () const override;
@@ -60,6 +57,19 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_mappings () const override final
+  {
+    return mappings;
+  }
+
+  Location get_locus_slow () const override final { return get_locus (); }
+
+  BoundType get_bound_type () const final override { return TRAITBOUND; }
+
+  TypePath &get_path () { return type_path; }
+
+  const TypePath &get_path () const { return type_path; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

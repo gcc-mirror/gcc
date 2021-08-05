@@ -383,6 +383,56 @@ Mappings::lookup_hir_expr (CrateNum crateNum, HirId id)
 }
 
 void
+Mappings::insert_hir_path_expr_seg (CrateNum crateNum, HirId id,
+				    HIR::PathExprSegment *expr)
+{
+  rust_assert (lookup_hir_path_expr_seg (crateNum, id) == nullptr);
+
+  hirPathSegMappings[crateNum][id] = expr;
+  nodeIdToHirMappings[crateNum][expr->get_mappings ().get_nodeid ()] = id;
+  insert_location (crateNum, id, expr->get_locus ());
+}
+
+HIR::PathExprSegment *
+Mappings::lookup_hir_path_expr_seg (CrateNum crateNum, HirId id)
+{
+  auto it = hirPathSegMappings.find (crateNum);
+  if (it == hirPathSegMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
+Mappings::insert_hir_generic_param (CrateNum crateNum, HirId id,
+				    HIR::GenericParam *param)
+{
+  rust_assert (lookup_hir_generic_param (crateNum, id) == nullptr);
+
+  hirGenericParamMappings[crateNum][id] = param;
+  nodeIdToHirMappings[crateNum][param->get_mappings ().get_nodeid ()] = id;
+  insert_location (crateNum, id, param->get_locus_slow ());
+}
+
+HIR::GenericParam *
+Mappings::lookup_hir_generic_param (CrateNum crateNum, HirId id)
+{
+  auto it = hirGenericParamMappings.find (crateNum);
+  if (it == hirGenericParamMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
 Mappings::insert_hir_type (CrateNum crateNum, HirId id, HIR::Type *type)
 {
   rust_assert (lookup_hir_type (crateNum, id) == nullptr);

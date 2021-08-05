@@ -28,6 +28,8 @@
 namespace Rust {
 namespace Resolver {
 
+class TraitReference;
+
 // base class to allow derivatives to overload as needed
 class TypeCheckBase : public HIR::HIRVisitor
 {
@@ -199,6 +201,8 @@ protected:
     : mappings (Analysis::Mappings::get ()), resolver (Resolver::get ()),
       context (TypeCheckContext::get ())
   {}
+
+  TraitReference &resolve_trait_path (HIR::TypePath &);
 
   Analysis::Mappings *mappings;
   Resolver *resolver;

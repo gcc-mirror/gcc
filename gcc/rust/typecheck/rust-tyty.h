@@ -25,6 +25,10 @@
 #include "rust-diagnostics.h"
 
 namespace Rust {
+namespace Resolver {
+class TraitReference;
+}
+
 namespace TyTy {
 
 // https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
@@ -125,9 +129,56 @@ public:
   }
 };
 
+class TypeBoundPredicate
+{
+public:
+  TypeBoundPredicate (Resolver::TraitReference *reference)
+    : reference (reference)
+  {}
+
+  TypeBoundPredicate (const TypeBoundPredicate &other)
+    : reference (other.reference)
+  {}
+
+  TypeBoundPredicate &operator= (const TypeBoundPredicate &other)
+  {
+    reference = other.reference;
+    return *this;
+  }
+
+  std::string as_string () const;
+
+  const Resolver::TraitReference *get () const { return reference; }
+
+private:
+  Resolver::TraitReference *reference;
+};
+
+class TypeBoundsMappings
+{
+protected:
+  TypeBoundsMappings (std::vector<TypeBoundPredicate> specified_bounds)
+    : specified_bounds (specified_bounds)
+  {}
+
+public:
+  std::vector<TypeBoundPredicate> &get_specified_bounds ()
+  {
+    return specified_bounds;
+  }
+
+  const std::vector<TypeBoundPredicate> &get_specified_bounds () const
+  {
+    return specified_bounds;
+  }
+
+protected:
+  std::vector<TypeBoundPredicate> specified_bounds;
+};
+
 class TyVisitor;
 class TyConstVisitor;
-class BaseType
+class BaseType : public TypeBoundsMappings
 {
 public:
   virtual ~BaseType () {}
@@ -194,10 +245,10 @@ public:
 
   /* Returns a pointer to a clone of this. The caller is responsible for
    * releasing the memory of the returned ty. */
-  virtual BaseType *clone () = 0;
+  virtual BaseType *clone () const = 0;
 
   // get_combined_refs returns the chain of node refs involved in unification
-  std::set<HirId> get_combined_refs () { return combined; }
+  std::set<HirId> get_combined_refs () const { return combined; }
 
   void append_reference (HirId id) { combined.insert (id); }
 
@@ -240,8 +291,15 @@ public:
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,
 	    std::set<HirId> refs = std::set<HirId> ())
-    : kind (kind), ref (ref), ty_ref (ty_ref), combined (refs),
-      mappings (Analysis::Mappings::get ())
+    : TypeBoundsMappings ({}), kind (kind), ref (ref), ty_ref (ty_ref),
+      combined (refs), mappings (Analysis::Mappings::get ())
+  {}
+
+  BaseType (HirId ref, HirId ty_ref, TypeKind kind,
+	    std::vector<TypeBoundPredicate> specified_bounds,
+	    std::set<HirId> refs = std::set<HirId> ())
+    : TypeBoundsMappings (specified_bounds), kind (kind), ref (ref),
+      ty_ref (ty_ref), combined (refs), mappings (Analysis::Mappings::get ())
   {}
 
   TypeKind kind;
@@ -300,7 +358,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   InferTypeKind get_infer_kind () const { return infer_kind; }
 
@@ -337,7 +395,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   std::string get_name () const override final { return as_string (); }
 };
@@ -347,15 +405,18 @@ class ParamType : public BaseType
 {
 public:
   ParamType (std::string symbol, HirId ref, HIR::GenericParam &param,
+	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::PARAM, refs), symbol (symbol), param (param)
+    : BaseType (ref, ref, TypeKind::PARAM, specified_bounds, refs),
+      symbol (symbol), param (param)
   {}
 
   ParamType (std::string symbol, HirId ref, HirId ty_ref,
 	     HIR::GenericParam &param,
+	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::PARAM, refs), symbol (symbol),
-      param (param)
+    : BaseType (ref, ty_ref, TypeKind::PARAM, specified_bounds, refs),
+      symbol (symbol), param (param)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -368,7 +429,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   std::string get_symbol () const;
 
@@ -462,7 +523,7 @@ public:
 
   BaseType *get_field (size_t index) const;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   bool is_concrete () const override final
   {
@@ -527,7 +588,7 @@ public:
       }
   }
 
-  SubstitutionParamMapping clone ()
+  SubstitutionParamMapping clone () const
   {
     return SubstitutionParamMapping (generic, static_cast<ParamType *> (
 						param->clone ()));
@@ -728,7 +789,7 @@ public:
     return substitutions;
   }
 
-  std::vector<SubstitutionParamMapping> clone_substs ()
+  std::vector<SubstitutionParamMapping> clone_substs () const
   {
     std::vector<SubstitutionParamMapping> clone;
 
@@ -885,9 +946,9 @@ public:
       identifier (identifier), fields (fields), adt_kind (adt_kind)
   {}
 
-  ADTKind get_adt_kind () { return adt_kind; }
-  bool is_tuple_struct () { return adt_kind == TUPLE_STRUCT; }
-  bool is_union () { return adt_kind == UNION; }
+  ADTKind get_adt_kind () const { return adt_kind; }
+  bool is_tuple_struct () const { return adt_kind == TUPLE_STRUCT; }
+  bool is_union () const { return adt_kind == UNION; }
 
   bool is_unit () const override { return this->fields.empty (); }
 
@@ -942,7 +1003,7 @@ public:
     return nullptr;
   }
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   std::vector<StructFieldType *> &get_fields () { return fields; }
   const std::vector<StructFieldType *> &get_fields () const { return fields; }
@@ -986,7 +1047,7 @@ public:
 #define FNTYPE_IS_VARADIC_FLAG 0X04
 
   FnType (HirId ref, DefId id, std::string identifier, uint8_t flags,
-	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
+	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNDEF, refs),
@@ -1001,7 +1062,7 @@ public:
 
   FnType (HirId ref, HirId ty_ref, DefId id, std::string identifier,
 	  uint8_t flags,
-	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
+	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNDEF, refs),
@@ -1054,12 +1115,12 @@ public:
     return get_params ().at (0).second;
   }
 
-  std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params ()
+  std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params ()
   {
     return params;
   }
 
-  const std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params () const
+  const std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params () const
   {
     return params;
   }
@@ -1076,7 +1137,7 @@ public:
 
   BaseType *get_return_type () const { return type; }
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   bool needs_generic_substitutions () const override final
   {
@@ -1094,7 +1155,7 @@ public:
   handle_substitions (SubstitutionArgumentMappings mappings) override final;
 
 private:
-  std::vector<std::pair<HIR::Pattern *, BaseType *> > params;
+  std::vector<std::pair<HIR::Pattern *, BaseType *>> params;
   BaseType *type;
   uint8_t flags;
   std::string identifier;
@@ -1136,7 +1197,7 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   void iterate_params (std::function<bool (BaseType *)> cb) const
   {
@@ -1186,7 +1247,7 @@ public:
 
   BaseType *get_element_type () const;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   bool is_concrete () const final override
   {
@@ -1221,7 +1282,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 };
 
 class IntType : public BaseType
@@ -1259,7 +1320,7 @@ public:
 
   IntKind get_int_kind () const { return int_kind; }
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1302,7 +1363,7 @@ public:
 
   UintKind get_uint_kind () const { return uint_kind; }
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1343,7 +1404,7 @@ public:
 
   FloatKind get_float_kind () const { return float_kind; }
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1374,7 +1435,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 };
 
 class ISizeType : public BaseType
@@ -1400,7 +1461,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 };
 
 class CharType : public BaseType
@@ -1426,7 +1487,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 };
 
 class ReferenceType : public BaseType
@@ -1458,7 +1519,7 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   bool contains_type_parameters () const override final
   {
@@ -1504,7 +1565,7 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   bool contains_type_parameters () const override final
   {
@@ -1547,7 +1608,7 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 };
 
 // https://doc.rust-lang.org/std/primitive.never.html
@@ -1581,7 +1642,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   std::string get_name () const override final { return as_string (); }
 
@@ -1612,7 +1673,7 @@ public:
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
-  BaseType *clone () final override;
+  BaseType *clone () const final override;
 
   std::string get_name () const override final { return as_string (); }
 

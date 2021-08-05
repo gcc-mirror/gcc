@@ -263,6 +263,12 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
   std::vector<HIR::PathExprSegment> path_segments;
   expr.iterate_path_segments ([&] (AST::PathExprSegment &s) mutable -> bool {
     path_segments.push_back (lower_path_expr_seg (s));
+
+    // insert the mappings for the segment
+    HIR::PathExprSegment *lowered_seg = &path_segments.back ();
+    mappings->insert_hir_path_expr_seg (
+      lowered_seg->get_mappings ().get_crate_num (),
+      lowered_seg->get_mappings ().get_hirid (), lowered_seg);
     return true;
   });
 
@@ -401,6 +407,12 @@ HIR::Type *
 ASTLoweringBase::lower_type_no_bounds (AST::TypeNoBounds *type)
 {
   return ASTLoweringType::translate (type);
+}
+
+HIR::TypeParamBound *
+ASTLoweringBase::lower_bound (AST::TypeParamBound *bound)
+{
+  return ASTLoweringTypeBounds::translate (bound);
 }
 
 } // namespace HIR

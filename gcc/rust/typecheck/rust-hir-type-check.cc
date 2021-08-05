@@ -418,6 +418,7 @@ TraitItemReference::TraitItemReference (TraitItemReference const &other)
     type (other.type), hir_trait_item (other.hir_trait_item),
     locus (other.locus), self (other.self), context (TypeCheckContext::get ())
 {
+  inherited_substitutions.clear ();
   inherited_substitutions.reserve (other.inherited_substitutions.size ());
   for (size_t i = 0; i < other.inherited_substitutions.size (); i++)
     inherited_substitutions.push_back (other.inherited_substitutions.at (i));

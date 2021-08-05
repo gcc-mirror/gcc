@@ -297,6 +297,42 @@ private:
   bool ok;
 };
 
+class ResolveTypeBound : public ResolverBase
+{
+  using Rust::Resolver::ResolverBase::visit;
+
+public:
+  static NodeId go (AST::TypeParamBound *type, NodeId parent,
+		    bool canonicalize_type_with_generics = false)
+  {
+    ResolveTypeBound resolver (parent, canonicalize_type_with_generics);
+    type->accept_vis (resolver);
+    if (!resolver.ok)
+      rust_error_at (type->get_locus_slow (), "unresolved type bound");
+
+    return resolver.resolved_node;
+  };
+
+  void visit (AST::TraitBound &bound) override
+  {
+    resolved_node = ResolveType::go (&bound.get_type_path (), parent,
+				     canonicalize_type_with_generics);
+    ok = resolved_node != UNKNOWN_NODEID;
+  }
+
+  void visit (AST::Lifetime &bound) override { ok = true; }
+
+private:
+  ResolveTypeBound (NodeId parent, bool canonicalize_type_with_generics)
+    : ResolverBase (parent),
+      canonicalize_type_with_generics (canonicalize_type_with_generics),
+      ok (false)
+  {}
+
+  bool canonicalize_type_with_generics;
+  bool ok;
+};
+
 class ResolveGenericParam : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
@@ -325,6 +361,14 @@ public:
     // if it has a type lets resolve it
     if (param.has_type ())
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
+
+    if (param.has_type_param_bounds ())
+      {
+	for (auto &bound : param.get_type_param_bounds ())
+	  {
+	    ResolveTypeBound::go (bound.get (), param.get_node_id ());
+	  }
+      }
 
     // for now lets focus on handling the basics: like struct<T> { a:T, ....}
     resolver->get_type_scope ().insert (

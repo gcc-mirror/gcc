@@ -127,7 +127,7 @@ InferType::cast (BaseType *other)
 }
 
 BaseType *
-InferType::clone ()
+InferType::clone () const
 {
   return new InferType (get_ref (), get_ty_ref (), get_infer_kind (),
 			get_combined_refs ());
@@ -201,7 +201,7 @@ ErrorType::cast (BaseType *other)
 }
 
 BaseType *
-ErrorType::clone ()
+ErrorType::clone () const
 {
   return new ErrorType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
@@ -243,6 +243,7 @@ SubstitutionParamMapping::override_context ()
 
   auto mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
+
   context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
 					       UNKNOWN_NODEID,
 					       param->get_ref (),
@@ -531,7 +532,7 @@ ADTType::is_equal (const BaseType &other) const
 }
 
 BaseType *
-ADTType::clone ()
+ADTType::clone () const
 {
   std::vector<StructFieldType *> cloned_fields;
   for (auto &f : fields)
@@ -687,7 +688,7 @@ TupleType::is_equal (const BaseType &other) const
 }
 
 BaseType *
-TupleType::clone ()
+TupleType::clone () const
 {
   return new TupleType (get_ref (), get_ty_ref (), fields,
 			get_combined_refs ());
@@ -808,7 +809,7 @@ FnType::is_equal (const BaseType &other) const
 }
 
 BaseType *
-FnType::clone ()
+FnType::clone () const
 {
   std::vector<std::pair<HIR::Pattern *, BaseType *> > cloned_params;
   for (auto &p : params)
@@ -1011,7 +1012,7 @@ FnPtr::is_equal (const BaseType &other) const
 }
 
 BaseType *
-FnPtr::clone ()
+FnPtr::clone () const
 {
   std::vector<TyVar> cloned_params;
   for (auto &p : params)
@@ -1097,7 +1098,7 @@ ArrayType::get_element_type () const
 }
 
 BaseType *
-ArrayType::clone ()
+ArrayType::clone () const
 {
   return new ArrayType (get_ref (), get_ty_ref (), get_capacity (),
 			element_type, get_combined_refs ());
@@ -1150,7 +1151,7 @@ BoolType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-BoolType::clone ()
+BoolType::clone () const
 {
   return new BoolType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
@@ -1216,7 +1217,7 @@ IntType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-IntType::clone ()
+IntType::clone () const
 {
   return new IntType (get_ref (), get_ty_ref (), get_int_kind (),
 		      get_combined_refs ());
@@ -1293,7 +1294,7 @@ UintType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-UintType::clone ()
+UintType::clone () const
 {
   return new UintType (get_ref (), get_ty_ref (), get_uint_kind (),
 		       get_combined_refs ());
@@ -1364,7 +1365,7 @@ FloatType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-FloatType::clone ()
+FloatType::clone () const
 {
   return new FloatType (get_ref (), get_ty_ref (), get_float_kind (),
 			get_combined_refs ());
@@ -1427,7 +1428,7 @@ USizeType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-USizeType::clone ()
+USizeType::clone () const
 {
   return new USizeType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
@@ -1479,7 +1480,7 @@ ISizeType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-ISizeType::clone ()
+ISizeType::clone () const
 {
   return new ISizeType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
@@ -1531,7 +1532,7 @@ CharType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-CharType::clone ()
+CharType::clone () const
 {
   return new CharType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
@@ -1600,7 +1601,7 @@ ReferenceType::get_base () const
 }
 
 BaseType *
-ReferenceType::clone ()
+ReferenceType::clone () const
 {
   return new ReferenceType (get_ref (), get_ty_ref (), base, is_mutable (),
 			    get_combined_refs ());
@@ -1686,7 +1687,7 @@ PointerType::get_base () const
 }
 
 BaseType *
-PointerType::clone ()
+PointerType::clone () const
 {
   return new PointerType (get_ref (), get_ty_ref (), base, is_mutable (),
 			  get_combined_refs ());
@@ -1765,10 +1766,10 @@ ParamType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-ParamType::clone ()
+ParamType::clone () const
 {
-  return new ParamType (get_symbol (), get_ref (), get_ty_ref (),
-			get_generic_param (), get_combined_refs ());
+  return new ParamType (get_symbol (), get_ref (), get_ty_ref (), param,
+			get_specified_bounds (), get_combined_refs ());
 }
 
 std::string
@@ -1780,8 +1781,6 @@ ParamType::get_symbol () const
 BaseType *
 ParamType::resolve () const
 {
-  rust_assert (can_resolve ());
-
   TyVar var (get_ty_ref ());
   BaseType *r = var.get_tyty ();
 
@@ -1795,7 +1794,10 @@ ParamType::resolve () const
       r = v.get_tyty ();
     }
 
-  return TyVar (r->get_ty_ref ()).get_tyty ();
+  if (r->get_kind () == TypeKind::PARAM && (r->get_ref () == r->get_ty_ref ()))
+    return TyVar (r->get_ty_ref ()).get_tyty ();
+
+  return r;
 }
 
 bool
@@ -1833,7 +1835,7 @@ ParamType::handle_substitions (SubstitutionArgumentMappings mappings)
 }
 
 BaseType *
-StrType::clone ()
+StrType::clone () const
 {
   return new StrType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
@@ -1937,7 +1939,7 @@ NeverType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-NeverType::clone ()
+NeverType::clone () const
 {
   return new NeverType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
@@ -1989,7 +1991,7 @@ PlaceholderType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-PlaceholderType::clone ()
+PlaceholderType::clone () const
 {
   return new PlaceholderType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
