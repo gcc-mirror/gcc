@@ -1662,4 +1662,14 @@ begin -- Gen_IL.Gen.Gen_Nodes
              N_Has_Entity,
              N_Subtype_Indication));
    --  Nodes that can be an index of an array
+
+   Union (N_Entity_Name,
+          Children =>
+            (N_Expanded_Name,
+             N_Identifier,
+             N_Operator_Symbol));
+   --  Nodes that are definitely representing an entity.
+   --  Some N_Attribute_Reference nodes may also represent an entity. See
+   --  Is_Entity_Name.
+
 end Gen_IL.Gen.Gen_Nodes;

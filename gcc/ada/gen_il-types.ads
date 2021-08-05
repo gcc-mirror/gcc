@@ -84,6 +84,7 @@ package Gen_IL.Types is
       N_Delay_Statement,
       N_Direct_Name,
       N_Entity,
+      N_Entity_Name,
       N_Formal_Subprogram_Declaration,
       N_Generic_Declaration,
       N_Generic_Instantiation,
