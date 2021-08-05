@@ -29,6 +29,7 @@
 /* {{{ Includes and defines  */
 
 #include "config.h"
+#include "symcat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -3305,6 +3306,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   struct kernel_info *kernel;
   int kernel_count = image_desc->kernel_count;
   unsigned var_count = image_desc->global_variable_count;
+  int other_count = 1;
 
   agent = get_agent_info (ord);
   if (!agent)
@@ -3321,7 +3323,8 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
   GCN_DEBUG ("Encountered %d kernels in an image\n", kernel_count);
   GCN_DEBUG ("Encountered %u global variables in an image\n", var_count);
-  pair = GOMP_PLUGIN_malloc ((kernel_count + var_count - 2)
+  GCN_DEBUG ("Expect %d other variables in an image\n", other_count);
+  pair = GOMP_PLUGIN_malloc ((kernel_count + var_count + other_count - 2)
 			     * sizeof (struct addr_pair));
   *target_table = pair;
   module = (struct module_info *)
@@ -3396,6 +3399,37 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       pair++;
     }
 
+  GCN_DEBUG ("Looking for variable %s\n", STRINGX (GOMP_DEVICE_NUM_VAR));
+
+  hsa_status_t status;
+  hsa_executable_symbol_t var_symbol;
+  status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
+						 STRINGX (GOMP_DEVICE_NUM_VAR),
+						 agent->id, 0, &var_symbol);
+  if (status == HSA_STATUS_SUCCESS)
+    {
+      uint64_t device_num_varptr;
+      uint32_t device_num_varsize;
+
+      status = hsa_fns.hsa_executable_symbol_get_info_fn
+	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS,
+	 &device_num_varptr);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not extract a variable from its symbol", status);
+      status = hsa_fns.hsa_executable_symbol_get_info_fn
+	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_SIZE,
+	 &device_num_varsize);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Could not extract a variable size from its symbol", status);
+
+      pair->start = device_num_varptr;
+      pair->end = device_num_varptr + device_num_varsize;
+    }
+  else
+    /* The 'GOMP_DEVICE_NUM_VAR' variable was not in this image.  */
+    pair->start = pair->end = 0;
+  pair++;
+
   /* Ensure that constructors are run first.  */
   struct GOMP_kernel_launch_attributes kla =
     { 3,
@@ -3418,7 +3452,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   if (module->fini_array_func)
     kernel_count--;
 
-  return kernel_count + var_count;
+  return kernel_count + var_count + other_count;
 }
 
 /* Unload GCN object-code module described by struct gcn_image_desc in

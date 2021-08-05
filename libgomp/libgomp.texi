@@ -165,6 +165,7 @@ linkage, and do not throw exceptions.
 * omp_get_ancestor_thread_num:: Ancestor thread ID
 * omp_get_cancellation::        Whether cancellation support is enabled
 * omp_get_default_device::      Get the default device for target regions
+* omp_get_device_num::          Get device that current thread is running on
 * omp_get_dynamic::             Dynamic teams setting
 * omp_get_initial_device::      Device number of host device
 * omp_get_level::               Number of parallel regions
@@ -381,6 +382,34 @@ For OpenMP 5.1, this must be equal to the value returned by the
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.35.
+@end table
+
+
+
+@node omp_get_device_num
+@section @code{omp_get_device_num} -- Return device number of current device
+@table @asis
+@item @emph{Description}:
+This function returns a device number that represents the device that the
+current thread is executing on. For OpenMP 5.0, this must be equal to the
+value returned by the @code{omp_get_initial_device} function when called
+from the host.
+
+@item @emph{C/C++}
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_device_num(void);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_device_num()}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_initial_device}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.2.37.
 @end table
 
 
