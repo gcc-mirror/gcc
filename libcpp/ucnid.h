@@ -391,6 +391,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x07f1 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x07f2 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x07f3 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x07fc },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x07fd },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0815 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x0819 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x081a },
@@ -401,7 +403,11 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x082d },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0858 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x085b },
-{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x08e3 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x08d2 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x08d3 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x08e1 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x08e2 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x08e3 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x08e5 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x08e6 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x08e8 },
@@ -415,7 +421,7 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x08f6 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x08f8 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x08fa },
-{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x08fe },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x08ff },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0900 },
 { C99|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0903 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0904 },
@@ -476,6 +482,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x09e5 },
 { C99|N99|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x09ef },
 { C99|  0|CXX|C11|  0|CID|NFC|NKC|  0,   0, 0x09f1 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x09fd },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x09fe },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0a01 },
 { C99|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0a02 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0a04 },
@@ -683,6 +691,8 @@ static const struct ucnrange ucnranges[] = {
 { C99|  0|CXX|C11|  0|CID|NFC|NKC|  0,   0, 0x0d28 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0d29 },
 { C99|  0|CXX|C11|  0|CID|NFC|NKC|  0,   0, 0x0d39 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0d3a },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x0d3c },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0d3d },
 { C99|  0|  0|C11|  0|CID|NFC|NKC|CTX,   0, 0x0d3e },
 { C99|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0d43 },
@@ -754,7 +764,7 @@ static const struct ucnrange ucnranges[] = {
 { C99|  0|CXX|C11|  0|CID|NFC|  0|  0,   0, 0x0eb3 },
 { C99|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0eb7 },
 { C99|  0|  0|C11|  0|CID|NFC|NKC|  0, 118, 0x0eb9 },
-{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0eba },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x0eba },
 { C99|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0ebc },
 { C99|  0|CXX|C11|  0|CID|NFC|NKC|  0,   0, 0x0ebd },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x0ebf },
@@ -890,6 +900,13 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1a7c },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1a7e },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x1a7f },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1aaf },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1ab4 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x1aba },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1abc },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x1abd },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1abe },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x1ac0 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1b05 },
 {   0|  0|  0|C11|  0|  0|NFC|NKC|  0,   0, 0x1b06 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1b07 },
@@ -940,6 +957,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x1ced },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1cf3 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1cf4 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1cf7 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1cf9 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1d2b },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1d2e },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1d2f },
@@ -961,8 +980,12 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 214, 0x1dce },
 {   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 220, 0x1dcf },
 {   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 202, 0x1dd0 },
-{   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 230, 0x1de6 },
-{   0|  0|  0|C11|N11|CID|NFC|NKC|  0,   0, 0x1dfb },
+{   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 230, 0x1df5 },
+{   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 232, 0x1df6 },
+{   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 228, 0x1df8 },
+{   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 220, 0x1df9 },
+{   0|  0|  0|C11|N11|CID|NFC|NKC|  0,   0, 0x1dfa },
+{   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 230, 0x1dfb },
 {   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 233, 0x1dfc },
 {   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 220, 0x1dfd },
 {   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 230, 0x1dfe },
@@ -1302,8 +1325,6 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x324f },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x327e },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x327f },
-{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x32fe },
-{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x32ff },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x33ff },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x4dff },
 { C99|  0|CXX|C11|  0|CID|NFC|NKC|  0,   0, 0x9fa5 },
@@ -1311,7 +1332,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0xa66f },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xa673 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0xa67d },
-{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xa69e },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xa69b },
+{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0xa69d },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0xa69f },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xa6ef },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0xa6f1 },
@@ -1321,6 +1343,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0xa7f9 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xa805 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0xa806 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xa82b },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0xa82c },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xa8c3 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0xa8c4 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xa8df },
@@ -1346,6 +1370,10 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0xaac1 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xaaf5 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0xaaf6 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xab5b },
+{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0xab5f },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xab68 },
+{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0xab69 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xabec },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0xabed },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xabff },
@@ -1406,7 +1434,8 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0xfe19 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0xfe1f },
 {   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 230, 0xfe26 },
-{   0|  0|  0|C11|N11|CID|NFC|NKC|  0,   0, 0xfe2f },
+{   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 220, 0xfe2d },
+{   0|  0|  0|C11|N11|CID|NFC|NKC|  0, 230, 0xfe2f },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0xfe44 },
 {   0|  0|  0|  0|  0|CID|NFC|NKC|  0,   0, 0xfe46 },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0xfe52 },
@@ -1443,6 +1472,10 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|  0|  0|CID|NFC|NKC|  0,   0, 0xffff },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x101fc },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x101fd },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x102df },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x102e0 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x10375 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1037a },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x10a0c },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x10a0d },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x10a0e },
@@ -1453,8 +1486,23 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x10a3a },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x10a3e },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x10a3f },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x10ae4 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x10ae5 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x10ae6 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x10d23 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x10d27 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x10eaa },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x10eac },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x10f45 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x10f47 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x10f4a },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x10f4b },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x10f4c },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x10f50 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11045 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11046 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1107e },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x1107f },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11099 },
 {   0|  0|  0|C11|  0|  0|NFC|NKC|  0,   0, 0x1109a },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1109b },
@@ -1472,11 +1520,96 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|  0|NFC|NKC|  0,   0, 0x1112f },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11132 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11134 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11172 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x11173 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x111bf },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x111c0 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x111c9 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x111ca },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11234 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11235 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x11236 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x112e8 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x112e9 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x112ea },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1133a },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x1133c },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1133d },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|CTX,   0, 0x1133e },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1134a },
+{   0|  0|  0|C11|  0|  0|NFC|NKC|  0,   0, 0x1134c },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x1134d },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11356 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|CTX,   0, 0x11357 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11365 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1136c },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1136f },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x11374 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11441 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11442 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11445 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x11446 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1145d },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1145e },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x114af },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|CTX,   0, 0x114b0 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x114b9 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|CTX,   0, 0x114ba },
+{   0|  0|  0|C11|  0|  0|NFC|NKC|  0,   0, 0x114bc },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|CTX,   0, 0x114bd },
+{   0|  0|  0|C11|  0|  0|NFC|NKC|  0,   0, 0x114be },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x114c1 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x114c2 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x114c3 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x115ae },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|CTX,   0, 0x115af },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x115b9 },
+{   0|  0|  0|C11|  0|  0|NFC|NKC|  0,   0, 0x115bb },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x115be },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x115bf },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x115c0 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1163e },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x1163f },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x116b5 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x116b6 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x116b7 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1172a },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x1172b },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11838 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11839 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x1183a },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1192f },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|CTX,   0, 0x11930 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11937 },
+{   0|  0|  0|C11|  0|  0|NFC|NKC|  0,   0, 0x11938 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1193c },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x1193e },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11942 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x11943 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x119df },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x119e0 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11a33 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11a34 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11a46 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11a47 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11a98 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11a99 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11c3e },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11c3f },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11d41 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x11d42 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11d43 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11d45 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x11d96 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   9, 0x11d97 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x16aef },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   1, 0x16af4 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x16b2f },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x16b36 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x16fef },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   6, 0x16ff1 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1bc9d },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   1, 0x1bc9e },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1d15d },
 {   0|  0|  0|C11|  0|  0|  0|  0|  0,   0, 0x1d164 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 216, 0x1d166 },
@@ -1537,6 +1670,25 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1d7cb },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1d7cd },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1d7ff },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1dfff },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1e006 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1e007 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1e018 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1e01a },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1e021 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1e022 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1e024 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1e025 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1e02a },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1e12f },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1e136 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1e2eb },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1e2ef },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1e8cf },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 220, 0x1e8d6 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1e943 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0, 230, 0x1e949 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   7, 0x1e94a },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1edff },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1ee03 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1ee04 },
@@ -1610,17 +1762,19 @@ static const struct ucnrange ucnranges[] = {
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1f12f },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f14f },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1f169 },
-{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f16b },
+{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f16c },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1f18f },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f190 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1f1ff },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f202 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1f20f },
-{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f23a },
+{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f23b },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1f23f },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f248 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1f24f },
 {   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1f251 },
+{   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1fbef },
+{   0|  0|  0|C11|  0|CID|NFC|  0|  0,   0, 0x1fbf9 },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x1fffd },
 {   0|  0|  0|  0|  0|CID|NFC|NKC|  0,   0, 0x1ffff },
 {   0|  0|  0|C11|  0|CID|NFC|NKC|  0,   0, 0x2f7ff },
@@ -4257,6 +4411,70 @@ check_nfc (cpp_reader *pfile, cppchar_t c, cppchar_t p)
 	{
 	case 0x11131:
 	case 0x11132:
+	  return false;
+	default:
+	  return true;
+	}
+
+    case 0x1133e:
+      switch (p)
+	{
+	case 0x11347:
+	  return false;
+	default:
+	  return true;
+	}
+
+    case 0x11357:
+      switch (p)
+	{
+	case 0x11347:
+	  return false;
+	default:
+	  return true;
+	}
+
+    case 0x114b0:
+      switch (p)
+	{
+	case 0x114b9:
+	  return false;
+	default:
+	  return true;
+	}
+
+    case 0x114ba:
+      switch (p)
+	{
+	case 0x114b9:
+	  return false;
+	default:
+	  return true;
+	}
+
+    case 0x114bd:
+      switch (p)
+	{
+	case 0x114b9:
+	  return false;
+	default:
+	  return true;
+	}
+
+    case 0x115af:
+      switch (p)
+	{
+	case 0x115b8:
+	case 0x115b9:
+	  return false;
+	default:
+	  return true;
+	}
+
+    case 0x11930:
+      switch (p)
+	{
+	case 0x11935:
 	  return false;
 	default:
 	  return true;
