@@ -1,4 +1,4 @@
-# config-lang.in -- Top level configure fragment for gcc Go frontend.
+# config-lang.in -- Top level configure fragment for gcc Rust frontend.
 
 # Copyright (C) 2009-2019 Free Software Foundation, Inc.
 
