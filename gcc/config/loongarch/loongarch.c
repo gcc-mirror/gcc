@@ -271,15 +271,10 @@ const enum reg_class loongarch_regno_to_class[FIRST_PSEUDO_REGISTER] = {
     FRAME_REGS,	FRAME_REGS
 };
 
-static tree loongarch_handle_interrupt_attr (tree *, tree, tree, int, bool *);
-
 /* The value of TARGET_ATTRIBUTE_TABLE.  */
 static const struct attribute_spec loongarch_attribute_table[] = {
     /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
-    /* Allow functions to be specified as interrupt handlers */
-      { "interrupt", 0, 1, false, true, true, false,
-	 loongarch_handle_interrupt_attr, NULL },
       { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -1530,14 +1525,6 @@ static int loongarch_register_move_cost (machine_mode, reg_class_t,
 					 reg_class_t);
 
 
-/* Check if the interrupt attribute is set for a function.  */
-
-static bool
-loongarch_interrupt_type_p (tree type)
-{
-  return lookup_attribute ("interrupt", TYPE_ATTRIBUTES (type)) != NULL;
-}
-
 /* Return the compression mode that should be used for function DECL.
    Return the ambient setting if DECL is null.  */
 
@@ -1575,58 +1562,6 @@ loongarch_can_inline_p (tree caller, tree callee)
   if (loongarch_get_compress_mode (callee) != loongarch_get_compress_mode (caller))
     return false;
   return default_target_can_inline_p (caller, callee);
-}
-
-/* Handle an "interrupt" attribute with an optional argument.  */
-
-static tree
-loongarch_handle_interrupt_attr (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
-				 int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
-{
-  /* Check for an argument.  */
-  if (is_attribute_p ("interrupt", name) && args != NULL)
-    {
-      tree cst;
-
-      cst = TREE_VALUE (args);
-      if (TREE_CODE (cst) != STRING_CST)
-	{
-	  warning (OPT_Wattributes,
-		   "%qE attribute requires a string argument",
-		   name);
-	  *no_add_attrs = true;
-	}
-      else if (strcmp (TREE_STRING_POINTER (cst), "eic") != 0
-	       && strncmp (TREE_STRING_POINTER (cst), "vector=", 7) != 0)
-	{
-	  warning (OPT_Wattributes,
-		   "argument to %qE attribute is neither eic, nor "
-		   "vector=<line>", name);
-	  *no_add_attrs = true;
-	}
-      else if (strncmp (TREE_STRING_POINTER (cst), "vector=", 7) == 0)
-	{
-	  const char *arg = TREE_STRING_POINTER (cst) + 7;
-
-	  /* Acceptable names are: sw0,sw1,hw0,hw1,hw2,hw3,hw4,hw5.  */
-	  if (strlen (arg) != 3
-	      || (arg[0] != 's' && arg[0] != 'h')
-	      || arg[1] != 'w'
-	      || (arg[0] == 's' && arg[2] != '0' && arg[2] != '1')
-	      || (arg[0] == 'h' && (arg[2] < '0' || arg[2] > '5')))
-	    {
-	      warning (OPT_Wattributes,
-		       "interrupt vector to %qE attribute is not "
-		       "vector=(sw0|sw1|hw0|hw1|hw2|hw3|hw4|hw5)",
-		       name);
-	      *no_add_attrs = true;
-	    }
-	}
-
-      return NULL_TREE;
-    }
-
-  return NULL_TREE;
 }
 
 
@@ -4104,11 +4039,6 @@ loongarch_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 				   tree exp ATTRIBUTE_UNUSED)
 {
   if (!TARGET_SIBCALLS)
-    return false;
-
-  /* Interrupt handlers need special epilogue code and therefore can't
-     use sibcalls.  */
-  if (loongarch_interrupt_type_p (TREE_TYPE (current_function_decl)))
     return false;
 
   /* Otherwise OK.  */
