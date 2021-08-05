@@ -29,6 +29,7 @@ with Binderr;  use Binderr;
 with Butil;    use Butil;
 with Casing;   use Casing;
 with Fname;    use Fname;
+with Gnatvsn;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;
@@ -1324,11 +1325,78 @@ package body Bcheck is
            or else ALIs.Table (A).Ver          (1 .. VL) /=
                    ALIs.Table (ALIs.First).Ver (1 .. VL)
          then
-            Error_Msg_File_1 := ALIs.Table (A).Sfile;
-            Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;
+            declare
+               No_Version : constant Int := -1;
 
-            Consistency_Error_Msg
-               ("{ and { compiled with different GNAT versions");
+               function Extract_Version (S : String) return Int;
+               --  Attempts to extract and return a nonnegative library
+               --  version number from the given string; if unsuccessful,
+               --  then returns No_Version.
+
+               ---------------------
+               -- Extract_Version --
+               ---------------------
+
+               function Extract_Version (S : String) return Int is
+                  use Gnatvsn;
+
+                  Prefix : constant String :=
+                     Verbose_Library_Version
+                       (1 .. Verbose_Library_Version'Length
+                               - Library_Version'Length);
+               begin
+                  pragma Assert (S'First = 1);
+
+                  if S'Length > Prefix'Length
+                     and then S (1 .. Prefix'Length) = Prefix
+                  then
+                     declare
+                        Suffix : constant String :=
+                          S (1 + Prefix'Length .. S'Last);
+
+                        Result : Nat := 0;
+                     begin
+                        if Suffix'Length < 10
+                          and then (for all C of Suffix => C in '0' .. '9')
+                        then
+                           --  Using Int'Value leads to complications in
+                           --  building the binder, so DIY.
+
+                           for C of Suffix loop
+                              Result := (10 * Result) +
+                                (Character'Pos (C) - Character'Pos ('0'));
+                           end loop;
+                           return Result;
+                        end if;
+                     end;
+                  end if;
+                  return No_Version;
+               end Extract_Version;
+
+               V1_Text : constant String :=
+                 ALIs.Table (A).Ver (1 .. ALIs.Table (A).Ver_Len);
+               V2_Text : constant String :=
+                 ALIs.Table (ALIs.First).Ver (1 .. VL);
+               V1      : constant Int := Extract_Version (V1_Text);
+               V2      : constant Int := Extract_Version (V2_Text);
+
+               Include_Version_Numbers_In_Message : constant Boolean :=
+                 (V1 /= V2) and (V1 /= No_Version) and (V2 /= No_Version);
+            begin
+               Error_Msg_File_1 := ALIs.Table (A).Sfile;
+               Error_Msg_File_2 := ALIs.Table (ALIs.First).Sfile;
+
+               if Include_Version_Numbers_In_Message then
+                  Error_Msg_Nat_1 := V1;
+                  Error_Msg_Nat_2 := V2;
+                  Consistency_Error_Msg
+                    ("{ and { compiled with different GNAT versions"
+                     & ", v# and v#");
+               else
+                  Consistency_Error_Msg
+                    ("{ and { compiled with different GNAT versions");
+               end if;
+            end;
          end if;
       end loop;
    end Check_Versions;
