@@ -40,10 +40,44 @@
 # into the jit rule, but that needs a little bit of work
 # to do the right thing within all.cross.
 
-LIBGCCJIT_LINKER_NAME = libgccjit.so
 LIBGCCJIT_VERSION_NUM = 0
 LIBGCCJIT_MINOR_NUM = 0
 LIBGCCJIT_RELEASE_NUM = 1
+
+ifneq (,$(findstring darwin,$(host)))
+
+LIBGCCJIT_AGE = 1
+LIBGCCJIT_BASENAME = libgccjit
+
+LIBGCCJIT_SONAME = \
+  ${libdir}/$(LIBGCCJIT_BASENAME).$(LIBGCCJIT_VERSION_NUM).dylib
+LIBGCCJIT_FILENAME = $(LIBGCCJIT_BASENAME).$(LIBGCCJIT_VERSION_NUM).dylib
+LIBGCCJIT_LINKER_NAME = $(LIBGCCJIT_BASENAME).dylib
+
+# Conditionalize the use of the LD_VERSION_SCRIPT_OPTION and
+# LD_SONAME_OPTION depending if configure found them, using $(if)
+# We have to define a COMMA here, otherwise the commas in the "true"
+# result are treated as separators by the $(if).
+COMMA := ,
+LIBGCCJIT_VERSION_SCRIPT_OPTION = \
+	$(if $(LD_VERSION_SCRIPT_OPTION),\
+	  -Wl$(COMMA)$(LD_VERSION_SCRIPT_OPTION)$(COMMA)$(srcdir)/jit/libgccjit.map)
+
+LIBGCCJIT_SONAME_OPTION = \
+	$(if $(LD_SONAME_OPTION), \
+	     -Wl$(COMMA)$(LD_SONAME_OPTION)$(COMMA)$(LIBGCCJIT_SONAME))
+
+LIBGCCJIT_SONAME_SYMLINK = $(LIBGCCJIT_FILENAME)
+LIBGCCJIT_LINKER_NAME_SYMLINK = $(LIBGCCJIT_LINKER_NAME)
+
+jit: $(LIBGCCJIT_FILENAME) \
+	$(LIBGCCJIT_SYMLINK) \
+	$(LIBGCCJIT_LINKER_NAME_SYMLINK) \
+	$(FULL_DRIVER_NAME)
+
+else
+
+LIBGCCJIT_LINKER_NAME = libgccjit.so
 LIBGCCJIT_SONAME = $(LIBGCCJIT_LINKER_NAME).$(LIBGCCJIT_VERSION_NUM)
 LIBGCCJIT_FILENAME = \
   $(LIBGCCJIT_SONAME).$(LIBGCCJIT_MINOR_NUM).$(LIBGCCJIT_RELEASE_NUM)
@@ -69,6 +103,10 @@ jit: $(LIBGCCJIT_FILENAME) \
 	$(LIBGCCJIT_LINKER_NAME_SYMLINK) \
 	$(FULL_DRIVER_NAME)
 
+endif
+
+jit.serial = $(LIBGCCJIT_FILENAME)
+
 # Tell GNU make to ignore these if they exist.
 .PHONY: jit
 
@@ -87,6 +125,18 @@ jit_OBJS = attribs.o \
 # Use strict warnings for this front end.
 jit-warn = $(STRICT_WARN)
 
+ifneq (,$(findstring darwin,$(host)))
+# TODO : Construct a Darwin-style symbol export file.
+LIBGCCJIT_EXTRA_OPTS = -Wl,-compatibility_version,$(LIBGCCJIT_VERSION_NUM) \
+	-Wl,-current_version,$(LIBGCCJIT_VERSION_NUM).$(LIBGCCJIT_MINOR_NUM).$(LIBGCCJIT_AGE) \
+	$(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
+	$(LIBGCCJIT_SONAME_OPTION)
+else
+
+LIBGCCJIT_EXTRA_OPTS = $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
+	$(LIBGCCJIT_SONAME_OPTION)
+endif
+
 # We avoid using $(BACKEND) from Makefile.in in order to avoid pulling
 # in main.o
 $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
@@ -98,11 +148,15 @@ $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
 	     $(CPPLIB) $(LIBDECNUMBER) $(EXTRA_GCC_LIBS) $(LIBS) $(BACKENDLIBS) \
 	     $(EXTRA_GCC_OBJS) \
-	     $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
-	     $(LIBGCCJIT_SONAME_OPTION)
+	     $(LIBGCCJIT_EXTRA_OPTS)
 
+# Create symlinks
+
+ifeq (,$(findstring darwin,$(host)))
+# but only one level for Darwin, version info is embedded.
 $(LIBGCCJIT_SONAME_SYMLINK): $(LIBGCCJIT_FILENAME)
 	ln -sf $(LIBGCCJIT_FILENAME) $(LIBGCCJIT_SONAME_SYMLINK)
+endif
 
 $(LIBGCCJIT_LINKER_NAME_SYMLINK): $(LIBGCCJIT_SONAME_SYMLINK)
 	ln -sf $(LIBGCCJIT_SONAME_SYMLINK) $(LIBGCCJIT_LINKER_NAME_SYMLINK)
@@ -275,7 +329,26 @@ selftest-jit:
 
 #
 # Install hooks:
-jit.install-common: installdirs
+
+jit.install-headers: installdirs
+	$(INSTALL_DATA) $(srcdir)/jit/libgccjit.h \
+	  $(DESTDIR)$(includedir)/libgccjit.h
+	$(INSTALL_DATA) $(srcdir)/jit/libgccjit++.h \
+	  $(DESTDIR)$(includedir)/libgccjit++.h
+
+
+ifneq (,$(findstring darwin,$(host)))
+# but only one level for Darwin
+
+jit.install-common: installdirs jit.install-headers
+	$(INSTALL_PROGRAM) $(LIBGCCJIT_FILENAME) \
+	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_FILENAME)
+	ln -sf \
+	  $(LIBGCCJIT_SONAME_SYMLINK)\
+	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_LINKER_NAME_SYMLINK)
+
+else
+jit.install-common: installdirs jit.install-headers
 	$(INSTALL_PROGRAM) $(LIBGCCJIT_FILENAME) \
 	  $(DESTDIR)/$(libdir)/$(LIBGCCJIT_FILENAME)
 	ln -sf \
@@ -283,11 +356,8 @@ jit.install-common: installdirs
 	  $(DESTDIR)/$(libdir)/$(LIBGCCJIT_SONAME_SYMLINK)
 	ln -sf \
 	  $(LIBGCCJIT_SONAME_SYMLINK)\
-	  $(DESTDIR)/$(libdir)/$(LIBGCCJIT_LINKER_NAME_SYMLINK)
-	$(INSTALL_DATA) $(srcdir)/jit/libgccjit.h \
-	  $(DESTDIR)/$(includedir)/libgccjit.h
-	$(INSTALL_DATA) $(srcdir)/jit/libgccjit++.h \
-	  $(DESTDIR)/$(includedir)/libgccjit++.h
+	  $(DESTDIR)$(libdir)/$(LIBGCCJIT_LINKER_NAME_SYMLINK)
+endif
 
 jit.install-man:
 
