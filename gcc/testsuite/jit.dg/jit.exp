@@ -914,9 +914,14 @@ proc jit-verify-executable { args } {
     jit-run-executable $output_filename ${dg-output-text}
 }
 
+set DEFAULT_CFLAGS "-I$srcdir/../jit -lgccjit -g -Wall -Werror"
+
 # We need to link with --export-dynamic for test-calling-external-function.c
 # so that the JIT-built code can call into functions from the main program.
-set DEFAULT_CFLAGS "-I$srcdir/../jit -lgccjit -g -Wall -Werror -Wl,--export-dynamic"
+
+if { [check_effective_target_rdynamic] } {
+  set DEFAULT_CFLAGS "$DEFAULT_CFLAGS -rdynamic"
+}
 
 # Main loop.  This will invoke jig-dg-test on each test-*.c file.
 dg-runtest $tests "" $DEFAULT_CFLAGS

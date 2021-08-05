@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <stdlib.h>
 #include <string.h>
 
-#include <dejagnu.h>
+#include "jit-dejagnu.h"
 
 #include <libgccjit++.h>
 
