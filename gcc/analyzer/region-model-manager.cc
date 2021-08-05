@@ -1087,6 +1087,51 @@ region_model_manager::get_or_create_conjured_svalue (tree type,
   return conjured_sval;
 }
 
+/* Subroutine of region_model_manager::get_or_create_asm_output_svalue.
+   Return a folded svalue, or NULL.  */
+
+const svalue *
+region_model_manager::
+maybe_fold_asm_output_svalue (tree type,
+			      const vec<const svalue *> &inputs)
+{
+  /* Unknown inputs should lead to unknown results.  */
+  for (const auto &iter : inputs)
+    if (iter->get_kind () == SK_UNKNOWN)
+      return get_or_create_unknown_svalue (type);
+
+  return NULL;
+}
+
+/* Return the svalue * of type TYPE for OUTPUT_IDX of the deterministic
+   asm stmt ASM_STMT, given INPUTS as inputs.  */
+
+const svalue *
+region_model_manager::
+get_or_create_asm_output_svalue (tree type,
+				 const gasm *asm_stmt,
+				 unsigned output_idx,
+				 const vec<const svalue *> &inputs)
+{
+  gcc_assert (inputs.length () <= asm_output_svalue::MAX_INPUTS);
+
+  if (const svalue *folded
+	= maybe_fold_asm_output_svalue (type, inputs))
+    return folded;
+
+  const char *asm_string = gimple_asm_string (asm_stmt);
+  const unsigned noutputs = gimple_asm_noutputs (asm_stmt);
+
+  asm_output_svalue::key_t key (type, asm_string, output_idx, inputs);
+  if (asm_output_svalue **slot = m_asm_output_values_map.get (key))
+    return *slot;
+  asm_output_svalue *asm_output_sval
+    = new asm_output_svalue (type, asm_string, output_idx, noutputs, inputs);
+  RETURN_UNKNOWN_IF_TOO_COMPLEX (asm_output_sval);
+  m_asm_output_values_map.put (key, asm_output_sval);
+  return asm_output_sval;
+}
+
 /* Given STRING_CST, a STRING_CST and BYTE_OFFSET_CST a constant,
    attempt to get the character at that offset, returning either
    the svalue for the character constant, or NULL if unsuccessful.  */
@@ -1505,6 +1550,9 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   log_uniq_map (logger, show_objs, "widening_svalue", m_widening_values_map);
   log_uniq_map (logger, show_objs, "compound_svalue", m_compound_values_map);
   log_uniq_map (logger, show_objs, "conjured_svalue", m_conjured_values_map);
+  log_uniq_map (logger, show_objs, "asm_output_svalue",
+		m_asm_output_values_map);
+
   logger->log ("max accepted svalue num_nodes: %i",
 	       m_max_complexity.m_num_nodes);
   logger->log ("max accepted svalue max_depth: %i",

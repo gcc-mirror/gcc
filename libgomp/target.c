@@ -1974,6 +1974,9 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
   int num_funcs = host_funcs_end - host_func_table;
   int num_vars  = (host_vars_end - host_var_table) / 2;
 
+  /* Others currently is only 'device_num' */
+  int num_others = 1;
+
   /* Load image to device and get target addresses for the image.  */
   struct addr_pair *target_table = NULL;
   int i, num_target_entries;
@@ -1982,7 +1985,9 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
     = devicep->load_image_func (devicep->target_id, version,
 				target_data, &target_table);
 
-  if (num_target_entries != num_funcs + num_vars)
+  if (num_target_entries != num_funcs + num_vars
+      /* Others (device_num) are included as trailing entries in pair list.  */
+      && num_target_entries != num_funcs + num_vars + num_others)
     {
       gomp_mutex_unlock (&devicep->lock);
       if (is_register_lock)
@@ -2052,6 +2057,35 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
       array++;
+    }
+
+  /* Last entry is for the on-device 'device_num' variable. Tolerate case
+     where plugin does not return this entry.  */
+  if (num_funcs + num_vars < num_target_entries)
+    {
+      struct addr_pair *device_num_var = &target_table[num_funcs + num_vars];
+      /* Start address will be non-zero for last entry if GOMP_DEVICE_NUM_VAR
+	 was found in this image.  */
+      if (device_num_var->start != 0)
+	{
+	  /* The index of the devicep within devices[] is regarded as its
+	     'device number', which is different from the per-device type
+	     devicep->target_id.  */
+	  int device_num_val = (int) (devicep - &devices[0]);
+	  if (device_num_var->end - device_num_var->start != sizeof (int))
+	    {
+	      gomp_mutex_unlock (&devicep->lock);
+	      if (is_register_lock)
+		gomp_mutex_unlock (&register_lock);
+	      gomp_fatal ("offload plugin managed 'device_num' not of expected "
+			  "format");
+	    }
+
+	  /* Copy device_num value to place on device memory, hereby actually
+	     designating its device number into effect.  */
+	  gomp_copy_host2dev (devicep, NULL, (void *) device_num_var->start,
+			      &device_num_val, sizeof (int), false, NULL);
+	}
     }
 
   free (target_table);

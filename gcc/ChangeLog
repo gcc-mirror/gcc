@@ -1,3 +1,207 @@
+2021-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101570
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/region-model-asm.o.
+
+2021-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101742
+	* config/i386/i386.h (STORE_MAX_PIECES): Allow 16/32/64 bytes
+	only if TARGET_INTER_UNIT_MOVES_TO_VEC is true.
+
+2021-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101772
+	* config/i386/i386-expand.c (ix86_expand_vector_move): Call
+	ix86_gen_scratch_sse_rtx to get a scratch SSE register to copy
+	data with SSE register from one memory location to another.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (expand_perm_with_vpdi): New function.
+	(vectorize_vec_perm_const_1): Call expand_perm_with_vpdi.
+	* config/s390/vector.md (*vpdi1<mode>, @vpdi1<mode>): Enable a
+	parameterized expander.
+	(*vpdi4<mode>, @vpdi4<mode>): Likewise.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (MAX_VECT_LEN): Define macro.
+	(struct expand_vec_perm_d): Define struct.
+	(expand_perm_with_merge): New function.
+	(vectorize_vec_perm_const_1): New function.
+	(s390_vectorize_vec_perm_const): New function.
+	(TARGET_VECTORIZE_VEC_PERM_CONST): Define target macro.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md (V_HW_64): Remove mode iterator.
+	(*vec_load_pair<mode>): Use V_HW_2 instead of V_HW_64.
+	* config/s390/vx-builtins.md
+	(vec_scatter_element<V_HW_2:mode>_SI): Use V_HW_2 instead of
+	V_HW_64.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md (UNSPEC_VEC_PERMI): Remove constant
+	definition.
+	* config/s390/vector.md (*vpdi1<mode>, *vpdi4<mode>): New pattern
+	definitions.
+	* config/s390/vx-builtins.md (*vec_permi<mode>): Emit generic rtx
+	instead of an unspec.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-modes.def: Add more vector modes to support
+	concatenation of two vectors.
+	* config/s390/s390-protos.h (s390_expand_merge_perm_const): Add
+	prototype.
+	(s390_expand_merge): Likewise.
+	* config/s390/s390.c (s390_expand_merge_perm_const): New function.
+	(s390_expand_merge): New function.
+	* config/s390/s390.md (UNSPEC_VEC_MERGEH, UNSPEC_VEC_MERGEL):
+	Remove constant definitions.
+	* config/s390/vector.md (V_HW_2): Add mode iterators.
+	(VI_HW_4, V_HW_4): Rename VI_HW_4 to V_HW_4.
+	(vec_2x_nelts, vec_2x_wide): New mode attributes.
+	(*vmrhb, *vmrlb, *vmrhh, *vmrlh, *vmrhf, *vmrlf, *vmrhg, *vmrlg):
+	New pattern definitions.
+	(vec_widen_umult_lo_<mode>, vec_widen_umult_hi_<mode>)
+	(vec_widen_smult_lo_<mode>, vec_widen_smult_hi_<mode>)
+	(vec_unpacks_lo_v4sf, vec_unpacks_hi_v4sf, vec_unpacks_lo_v2df)
+	(vec_unpacks_hi_v2df): Adjust expanders to emit non-unspec RTX for
+	vec merge.
+	* config/s390/vx-builtins.md (V_HW_4): Remove mode iterator. Now
+	in vector.md.
+	(vec_mergeh<mode>, vec_mergel<mode>): Use s390_expand_merge to
+	emit vec merge pattern.
+
+2021-08-04  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_strip_extend_vec_half):
+	Define.
+	(aarch64_rtx_mult_cost): Traverse RTL tree to prevent cost of
+	vec_select high-half from being added into Neon multiply
+	cost.
+	* rtlanal.c (vec_series_highpart_p): Define.
+	* rtlanal.h (vec_series_highpart_p): Declare.
+
+2021-08-04  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_strip_duplicate_vec_elt):
+	Define.
+	(aarch64_rtx_mult_cost): Traverse RTL tree to prevent
+	vec_select cost from being added into Neon multiply cost.
+
+2021-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_better_loop_vinfo_p): Detect cases in
+	which old_loop_vinfo is an epilogue loop that handles a constant
+	number of iterations.
+
+2021-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop.c (vect_analyze_loop): Print a dump message
+	when a reanalyzed loop fails to be cheaper than the current
+	main loop.
+
+2021-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c: Fix a typo.
+
+2021-08-04  Vincent Lefèvre  <vincent-gcc@vinc17.net>
+
+	PR gcov-profile/101773
+	* gcov-io.c (gcov_close): Check return code of a fclose.
+
+2021-08-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ada/101575
+	* dwarf2out.c (dwarf2out_assembly_start): Emit a dummy
+	.file statement when needed.
+
+2021-08-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_check_gather_scatter):
+	Include widening conversions only when the result is
+	still handed by native gather or the current offset
+	size not already matches the data size.
+	Also succeed analysis in case there's no native support,
+	noted by a IFN_LAST ifn and a NULL decl.
+	(vect_analyze_data_refs): Always consider gathers.
+	* tree-vect-patterns.c (vect_recog_gather_scatter_pattern):
+	Test for no IFN gather rather than decl gather.
+	* tree-vect-stmts.c (vect_model_load_cost): Pass in the
+	gather-scatter info and cost emulated gathers accordingly.
+	(vect_truncate_gather_scatter_offset): Properly test for
+	no IFN gather.
+	(vect_use_strided_gather_scatters_p): Likewise.
+	(get_load_store_type): Handle emulated gathers and its
+	restrictions.
+	(vectorizable_load): Likewise.  Emulate them by extracting
+	scalar offsets, doing scalar loads and a vector construct.
+
+2021-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101742
+	* expr.c (op_by_pieces_d::op_by_pieces_d): Add a max_pieces
+	argument to set m_max_size.
+	(move_by_pieces_d): Pass MOVE_MAX_PIECES to op_by_pieces_d.
+	(store_by_pieces_d): Pass STORE_MAX_PIECES to op_by_pieces_d.
+	(compare_by_pieces_d): Pass COMPARE_MAX_PIECES to op_by_pieces_d.
+
+2021-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (bit_ior, bit_xor): Canonicalize (X*C1)|(X*C2) and
+	(X*C1)^(X*C2) as X*(C1+C2), and related variants, using
+	tree_nonzero_bits to ensure that operands are bit-wise disjoint.
+
+2021-08-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Split
+	out code to decompose vector loads ...
+	(optimize_vector_load): ... here.  Generalize it to
+	handle intermediate widening and TARGET_MEM_REF loads
+	and apply it to loads with a supported vector mode as well.
+
+2021-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101756
+	* tree-vect-slp.c (vectorizable_bb_reduc_epilogue): Make sure
+	the result of the reduction epilogue is compatible to the original
+	scalar result.
+
+2021-08-04  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101743
+	* config/i386/i386.md (peephole2): Refine predicate from
+	register_operand to general_reg_operand.
+
+2021-08-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.h (path_range_query::dump): Mark override.
+
+2021-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101769
+	* tree-tailcall.c (eliminate_tail_call): Add the created loop
+	for the first recursion and return it via the new output parameter.
+	(optimize_tail_call): Pass through new output param.
+	(tree_optimize_tail_calls_1): After creating all latches,
+	add the created loop to the loop tree.  Do not mark loops for fixup.
+
+2021-08-04  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document threader-mode param.
+
+2021-08-04  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (cond_fma<mode>): New expander.
+	(cond_fms<mode>): Ditto.
+	(cond_fnma<mode>): Ditto.
+	(cond_fnms<mode>): Ditto.
+
 2021-08-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/vsx.md (*vsx_le_perm_store_<mode>): Use && instead of &.

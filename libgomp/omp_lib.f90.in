@@ -551,6 +551,12 @@
         end interface
 
         interface
+          function omp_get_device_num ()
+            integer (4) :: omp_get_device_num
+          end function omp_get_device_num
+        end interface
+
+        interface
           function omp_get_max_task_priority ()
             integer (4) :: omp_get_max_task_priority
           end function omp_get_max_task_priority

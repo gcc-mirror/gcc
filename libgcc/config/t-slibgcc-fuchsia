@@ -18,5 +18,4 @@
 
 # Fuchsia-specific shared library overrides.
 
-SHLIB_LDFLAGS = -Wl,--soname=$(SHLIB_SONAME) \
-                $(LDFLAGS)
+SHLIB_LDFLAGS = -Wl,--soname=$(SHLIB_SONAME)

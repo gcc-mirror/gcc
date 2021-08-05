@@ -6921,6 +6921,9 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @cindex @code{cond_smax@var{mode}} instruction pattern
 @cindex @code{cond_umin@var{mode}} instruction pattern
 @cindex @code{cond_umax@var{mode}} instruction pattern
+@cindex @code{cond_ashl@var{mode}} instruction pattern
+@cindex @code{cond_ashr@var{mode}} instruction pattern
+@cindex @code{cond_lshr@var{mode}} instruction pattern
 @item @samp{cond_add@var{mode}}
 @itemx @samp{cond_sub@var{mode}}
 @itemx @samp{cond_mul@var{mode}}
@@ -6935,6 +6938,9 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @itemx @samp{cond_smax@var{mode}}
 @itemx @samp{cond_umin@var{mode}}
 @itemx @samp{cond_umax@var{mode}}
+@itemx @samp{cond_ashl@var{mode}}
+@itemx @samp{cond_ashr@var{mode}}
+@itemx @samp{cond_lshr@var{mode}}
 When operand 1 is true, perform an operation on operands 2 and 3 and
 store the result in operand 0, otherwise store operand 4 in operand 0.
 The operation works elementwise if the operands are vectors.
@@ -6961,6 +6967,11 @@ be in a normal C @samp{?:} condition.
 Operands 0, 2, 3 and 4 all have mode @var{m}.  Operand 1 is a scalar
 integer if @var{m} is scalar, otherwise it has the mode returned by
 @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
+@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+form of @samp{@var{op}@var{mode}3}.  As an exception, the vector forms
+of shifts correspond to patterns like @code{vashl@var{mode}3} rather
+than patterns like @code{ashl@var{mode}3}.
 
 @cindex @code{cond_fma@var{mode}} instruction pattern
 @cindex @code{cond_fms@var{mode}} instruction pattern

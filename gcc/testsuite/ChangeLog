@@ -1,3 +1,123 @@
+2021-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101570
+	* gcc.dg/analyzer/asm-x86-1.c: New test.
+	* gcc.dg/analyzer/asm-x86-lp64-1.c: New test.
+	* gcc.dg/analyzer/asm-x86-lp64-2.c: New test.
+	* gcc.dg/analyzer/pr101570.c: New test.
+	* gcc.dg/analyzer/torture/asm-x86-linux-array_index_mask_nospec.c:
+	New test.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid-paravirt-1.c: New
+	test.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid-paravirt-2.c: New
+	test.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid.c: New test.
+	* gcc.dg/analyzer/torture/asm-x86-linux-rdmsr-paravirt.c: New
+	test.
+	* gcc.dg/analyzer/torture/asm-x86-linux-rdmsr.c: New test.
+	* gcc.dg/analyzer/torture/asm-x86-linux-wfx_get_ps_timeout-full.c:
+	New test.
+	* gcc.dg/analyzer/torture/asm-x86-linux-wfx_get_ps_timeout-reduced.c:
+	New test.
+
+2021-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101742
+	* gcc.target/i386/pr101742a.c: New test.
+	* gcc.target/i386/pr101742b.c: Likewise.
+
+2021-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101772
+	* gcc.target/i386/eh_return-2.c: New test.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/vector/perm-vpdi.c: New test.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/vector/perm-merge.c: New test.
+	* gcc.target/s390/vector/vec-types.h: New test.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-permi.c: Removed.
+	* gcc.target/s390/zvector/vec_permi.c: New test.
+
+2021-08-04  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/vector/long-double-asm-in-out-hard-fp-reg.c:
+	Instead of vpdi with 0 and 5 vmrlg and vmrhg are used now.
+	* gcc.target/s390/vector/long-double-asm-inout-hard-fp-reg.c: Likewise.
+	* gcc.target/s390/zvector/vec-types.h: New test.
+	* gcc.target/s390/zvector/vec_merge.c: New test.
+
+2021-08-04  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vmul_high_cost.c: New test.
+
+2021-08-04  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vmul_element_cost.c: New test.
+
+2021-08-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_12.c: New test.
+
+2021-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/101750
+	* g++.dg/vect/pr99149.cc: Name class.
+
+2021-08-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-gather-1.c: New testcase.
+	* gfortran.dg/vect/vect-8.f90: Adjust.
+
+2021-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-ior-4.c: New test.
+
+2021-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101756
+	* gcc.dg/vect/bb-slp-pr101756.c: New testcase.
+
+2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101759
+	* g++.dg/gomp/pr101759.C: New test.
+	* g++.dg/goacc/pr101759.C: New test.
+
+2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/ieee/pr29302-1.x: Undo doubly applied patch.
+
+2021-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101769
+	* g++.dg/tree-ssa/pr101769.C: New testcase.
+
+2021-08-04  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cond_op_addsubmul_d-2.c: Add
+	dg-require-effective-target for avx512.
+	* gcc.target/i386/cond_op_addsubmul_q-2.c: Ditto.
+	* gcc.target/i386/cond_op_addsubmul_w-2.c: Ditto.
+	* gcc.target/i386/cond_op_addsubmuldiv_double-2.c: Ditto.
+	* gcc.target/i386/cond_op_addsubmuldiv_float-2.c: Ditto.
+	* gcc.target/i386/cond_op_fma_double-2.c: Ditto.
+	* gcc.target/i386/cond_op_fma_float-2.c: Ditto.
+
+2021-08-04  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cond_op_fma_double-1.c: New test.
+	* gcc.target/i386/cond_op_fma_double-2.c: New test.
+	* gcc.target/i386/cond_op_fma_float-1.c: New test.
+	* gcc.target/i386/cond_op_fma_float-2.c: New test.
+
 2021-08-03  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* lib/profopt.exp: Pass gdwarf-4 when compiling test to profile; pass -gcov_version=2.

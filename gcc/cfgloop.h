@@ -669,13 +669,15 @@ as_const (T &t)
 }
 
 /* A list for visiting loops, which contains the loop numbers instead of
-   the loop pointers.  The scope is restricted in function FN and the
-   visiting order is specified by FLAGS.  */
+   the loop pointers.  If the loop ROOT is offered (non-null), the visiting
+   will start from it, otherwise it would start from the tree_root of
+   loops_for_fn (FN) instead.  The scope is restricted in function FN and
+   the visiting order is specified by FLAGS.  */
 
 class loops_list
 {
 public:
-  loops_list (function *fn, unsigned flags);
+  loops_list (function *fn, unsigned flags, class loop *root = nullptr);
 
   template <typename T> class Iter
   {
@@ -750,6 +752,10 @@ public:
   }
 
 private:
+  /* Walk loop tree starting from ROOT as the visiting order specified
+     by FLAGS.  */
+  void walk_loop_tree (class loop *root, unsigned flags);
+
   /* The function we are visiting.  */
   function *fn;
 
@@ -782,76 +788,50 @@ loops_list::Iter<T>::fill_curr_loop ()
 }
 
 /* Set up the loops list to visit according to the specified
-   function scope FN and iterating order FLAGS.  */
+   function scope FN and iterating order FLAGS.  If ROOT is
+   not null, the visiting would start from it, otherwise it
+   will start from tree_root of loops_for_fn (FN).  */
 
-inline loops_list::loops_list (function *fn, unsigned flags)
+inline loops_list::loops_list (function *fn, unsigned flags, class loop *root)
 {
-  class loop *aloop;
-  unsigned i;
-  int mn;
+  struct loops *loops = loops_for_fn (fn);
+  gcc_assert (!root || loops);
+
+  /* Check mutually exclusive flags should not co-exist.  */
+  unsigned checked_flags = LI_ONLY_INNERMOST | LI_FROM_INNERMOST;
+  gcc_assert ((flags & checked_flags) != checked_flags);
 
   this->fn = fn;
-  if (!loops_for_fn (fn))
+  if (!loops)
     return;
 
-  this->to_visit.reserve_exact (number_of_loops (fn));
-  mn = (flags & LI_INCLUDE_ROOT) ? 0 : 1;
+  class loop *tree_root = root ? root : loops->tree_root;
 
-  if (flags & LI_ONLY_INNERMOST)
+  this->to_visit.reserve_exact (number_of_loops (fn));
+
+  /* When root is tree_root of loops_for_fn (fn) and the visiting
+     order is LI_ONLY_INNERMOST, we would like to use linear
+     search here since it has a more stable bound than the
+     walk_loop_tree.  */
+  if (flags & LI_ONLY_INNERMOST && tree_root == loops->tree_root)
     {
-      for (i = 0; vec_safe_iterate (loops_for_fn (fn)->larray, i, &aloop); i++)
-	if (aloop != NULL
-	    && aloop->inner == NULL
-	    && aloop->num >= mn)
+      gcc_assert (tree_root->num == 0);
+      if (tree_root->inner == NULL)
+	{
+	  if (flags & LI_INCLUDE_ROOT)
+	    this->to_visit.quick_push (0);
+
+	  return;
+	}
+
+      class loop *aloop;
+      unsigned int i;
+      for (i = 1; vec_safe_iterate (loops->larray, i, &aloop); i++)
+	if (aloop != NULL && aloop->inner == NULL)
 	  this->to_visit.quick_push (aloop->num);
     }
-  else if (flags & LI_FROM_INNERMOST)
-    {
-      /* Push the loops to LI->TO_VISIT in postorder.  */
-      for (aloop = loops_for_fn (fn)->tree_root;
-	   aloop->inner != NULL;
-	   aloop = aloop->inner)
-	continue;
-
-      while (1)
-	{
-	  if (aloop->num >= mn)
-	    this->to_visit.quick_push (aloop->num);
-
-	  if (aloop->next)
-	    {
-	      for (aloop = aloop->next;
-		   aloop->inner != NULL;
-		   aloop = aloop->inner)
-		continue;
-	    }
-	  else if (!loop_outer (aloop))
-	    break;
-	  else
-	    aloop = loop_outer (aloop);
-	}
-    }
   else
-    {
-      /* Push the loops to LI->TO_VISIT in preorder.  */
-      aloop = loops_for_fn (fn)->tree_root;
-      while (1)
-	{
-	  if (aloop->num >= mn)
-	    this->to_visit.quick_push (aloop->num);
-
-	  if (aloop->inner != NULL)
-	    aloop = aloop->inner;
-	  else
-	    {
-	      while (aloop != NULL && aloop->next == NULL)
-		aloop = loop_outer (aloop);
-	      if (aloop == NULL)
-		break;
-	      aloop = aloop->next;
-	    }
-	}
-    }
+    walk_loop_tree (tree_root, flags);
 }
 
 /* The properties of the target.  */

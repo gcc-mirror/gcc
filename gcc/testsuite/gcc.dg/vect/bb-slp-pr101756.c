@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* SIMD support can emit additional diagnostics.  */
+/* { dg-additional-options "-w" } */
 
 __attribute__ ((simd)) int
 tq (long int ea, int of, int kk)

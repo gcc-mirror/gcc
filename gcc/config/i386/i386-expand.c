@@ -613,7 +613,11 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
 	 arguments in memory.  */
       if (!register_operand (op0, mode)
 	  && !register_operand (op1, mode))
-	op1 = force_reg (mode, op1);
+	{
+	  rtx scratch = ix86_gen_scratch_sse_rtx (mode);
+	  emit_move_insn (scratch, op1);
+	  op1 = scratch;
+	}
 
       tmp[0] = op0; tmp[1] = op1;
       ix86_expand_vector_move_misalign (mode, tmp);
