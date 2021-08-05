@@ -29389,7 +29389,18 @@ dwarf2out_assembly_start (void)
       output_quoted_string (asm_out_file, remap_debug_filename (filename0));
       fputc ('\n', asm_out_file);
     }
+  else
 #endif
+  /* Work around for PR101575: output a dummy .file directive.  */
+  if (!last_emitted_file && dwarf_debuginfo_p ()
+      && debug_info_level >= DINFO_LEVEL_TERSE)
+    {
+      const char *filename0 = get_AT_string (comp_unit_die (), DW_AT_name);
+
+      if (filename0 == NULL)
+	filename0 = "<dummy>";
+      maybe_emit_file (lookup_filename (filename0));
+    }
 }
 
 /* A helper function for dwarf2out_finish called through

@@ -11,4 +11,5 @@ pr82941 ()
   z = y;
 }
 
-/* { dg-final { scan-assembler-times "vzeroupper" 1 } } */
+/* { dg-final { scan-assembler-times "vzeroupper" 1 { target ia32 } } } */
+/* { dg-final { scan-assembler-not "vzeroupper" { target { ! ia32 } } } } */

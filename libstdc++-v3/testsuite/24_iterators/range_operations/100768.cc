@@ -114,15 +114,15 @@ test01()
   // deleted overloads in namespace ns3 (because it is an associated namespace
   // and those functions are exact matches for the arguments).
   using namespace std::ranges;
-  advance(iter, 1);
-  advance(iter, 3, sentinel);
-  distance(iter, sentinel);
-  distance(range);
-  next(iter);
-  next(iter, -1);
-  next(iter, sentinel);
-  next(iter, 5, sentinel);
-  prev(iter);
-  prev(iter, 0);
-  prev(iter, 0, sentinel);
+  (void) advance(iter, 1);
+  (void) advance(iter, 3, sentinel);
+  (void) distance(iter, sentinel);
+  (void) distance(range);
+  (void) next(iter);
+  (void) next(iter, -1);
+  (void) next(iter, sentinel);
+  (void) next(iter, 5, sentinel);
+  (void) prev(iter);
+  (void) prev(iter, 0);
+  (void) prev(iter, 0, sentinel);
 }

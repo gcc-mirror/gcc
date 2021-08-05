@@ -25,12 +25,12 @@ void
 test01()
 {
   __gnu_cxx::__vstring s("Hello, World!");
-  std::begin(s);
-  std::end(s);
+  (void) std::begin(s);
+  (void) std::end(s);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   __gnu_cxx::__wvstring ws(L"Hello, World!");
-  std::begin(ws);
-  std::end(ws);
+  (void) std::begin(ws);
+  (void) std::end(ws);
 #endif
 }

@@ -1608,8 +1608,33 @@ Escape_analysis_assign::expression(Expression** pexpr)
                 }
                 break;
 
-              default:
+              case Builtin_call_expression::BUILTIN_CLOSE:
+              case Builtin_call_expression::BUILTIN_DELETE:
+              case Builtin_call_expression::BUILTIN_PRINT:
+              case Builtin_call_expression::BUILTIN_PRINTLN:
+              case Builtin_call_expression::BUILTIN_LEN:
+              case Builtin_call_expression::BUILTIN_CAP:
+              case Builtin_call_expression::BUILTIN_COMPLEX:
+              case Builtin_call_expression::BUILTIN_REAL:
+              case Builtin_call_expression::BUILTIN_IMAG:
+              case Builtin_call_expression::BUILTIN_RECOVER:
+              case Builtin_call_expression::BUILTIN_ALIGNOF:
+              case Builtin_call_expression::BUILTIN_OFFSETOF:
+              case Builtin_call_expression::BUILTIN_SIZEOF:
+                // these do not escape.
                 break;
+
+              case Builtin_call_expression::BUILTIN_ADD:
+              case Builtin_call_expression::BUILTIN_SLICE:
+                // handled in ::assign.
+                break;
+
+              case Builtin_call_expression::BUILTIN_MAKE:
+              case Builtin_call_expression::BUILTIN_NEW:
+                // should have been lowered to runtime calls at this point.
+                // fallthrough
+              default:
+                go_unreachable();
               }
             break;
           }
@@ -2325,19 +2350,82 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 	  }
 	  break;
 
+        case Expression::EXPRESSION_SLICE_INFO:
+          {
+            Slice_info_expression* sie = e->slice_info_expression();
+            if (sie->info() == Expression::SLICE_INFO_VALUE_POINTER)
+              {
+                Node* slice = Node::make_node(sie->slice());
+                this->assign(dst, slice);
+              }
+          }
+          break;
+
 	case Expression::EXPRESSION_CALL:
 	  {
 	    Call_expression* call = e->call_expression();
             if (call->is_builtin())
               {
                 Builtin_call_expression* bce = call->builtin_call_expression();
-                if (bce->code() == Builtin_call_expression::BUILTIN_APPEND)
+                switch (bce->code())
                   {
-                    // Append returns the first argument.
-                    // The subsequent arguments are already leaked because
-                    // they are operands to append.
-                    Node* appendee = Node::make_node(call->args()->front());
-                    this->assign(dst, appendee);
+                  case Builtin_call_expression::BUILTIN_APPEND:
+                    {
+                      // Append returns the first argument.
+                      // The subsequent arguments are already leaked because
+                      // they are operands to append.
+                      Node* appendee = Node::make_node(call->args()->front());
+                      this->assign(dst, appendee);
+                    }
+                    break;
+
+                  case Builtin_call_expression::BUILTIN_ADD:
+                    {
+                      // unsafe.Add(p, off).
+                      // Flow p to result.
+                      Node* arg = Node::make_node(call->args()->front());
+                      this->assign(dst, arg);
+                    }
+                    break;
+
+                  case Builtin_call_expression::BUILTIN_SLICE:
+                    {
+                      // unsafe.Slice(p, len).
+                      // The resulting slice has the same backing store as p. Flow p to result.
+                      Node* arg = Node::make_node(call->args()->front());
+                      this->assign(dst, arg);
+                    }
+                    break;
+
+                  case Builtin_call_expression::BUILTIN_LEN:
+                  case Builtin_call_expression::BUILTIN_CAP:
+                  case Builtin_call_expression::BUILTIN_COMPLEX:
+                  case Builtin_call_expression::BUILTIN_REAL:
+                  case Builtin_call_expression::BUILTIN_IMAG:
+                  case Builtin_call_expression::BUILTIN_RECOVER:
+                  case Builtin_call_expression::BUILTIN_ALIGNOF:
+                  case Builtin_call_expression::BUILTIN_OFFSETOF:
+                  case Builtin_call_expression::BUILTIN_SIZEOF:
+                    // these do not escape.
+                    break;
+
+                  case Builtin_call_expression::BUILTIN_COPY:
+                    // handled in ::expression.
+                    break;
+
+                  case Builtin_call_expression::BUILTIN_CLOSE:
+                  case Builtin_call_expression::BUILTIN_DELETE:
+                  case Builtin_call_expression::BUILTIN_PRINT:
+                  case Builtin_call_expression::BUILTIN_PRINTLN:
+                  case Builtin_call_expression::BUILTIN_PANIC:
+                    // these do not have result.
+                    // fallthrough
+                  case Builtin_call_expression::BUILTIN_MAKE:
+                  case Builtin_call_expression::BUILTIN_NEW:
+                    // should have been lowered to runtime calls at this point.
+                    // fallthrough
+                  default:
+                    go_unreachable();
                   }
                 break;
               }
@@ -2591,6 +2679,21 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
             this->assign(dst, Node::make_node(temp));
 	  }
 	  break;
+
+        case Expression::EXPRESSION_CONDITIONAL:
+          {
+            Conditional_expression* ce = e->conditional_expression();
+            this->assign(dst, Node::make_node(ce->then_expr()));
+            this->assign(dst, Node::make_node(ce->else_expr()));
+          }
+          break;
+
+        case Expression::EXPRESSION_COMPOUND:
+          {
+            Compound_expression* ce = e->compound_expression();
+            this->assign(dst, Node::make_node(ce->expr()));
+          }
+          break;
 
 	default:
 	  // TODO(cmang): Add debug info here; this should not be reachable.

@@ -150,10 +150,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Fwd_list_iterator(_Fwd_list_node_base* __n) noexcept
       : _M_node(__n) { }
 
+      [[__nodiscard__]]
       reference
       operator*() const noexcept
       { return *static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
+      [[__nodiscard__]]
       pointer
       operator->() const noexcept
       { return static_cast<_Node*>(this->_M_node)->_M_valptr(); }
@@ -176,6 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Forward list iterator equality comparison.
        */
+      [[__nodiscard__]]
       friend bool
       operator==(const _Self& __x, const _Self& __y) noexcept
       { return __x._M_node == __y._M_node; }
@@ -184,6 +187,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Forward list iterator inequality comparison.
        */
+      [[__nodiscard__]]
       friend bool
       operator!=(const _Self& __x, const _Self& __y) noexcept
       { return __x._M_node != __y._M_node; }
@@ -229,10 +233,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Fwd_list_const_iterator(const iterator& __iter) noexcept
       : _M_node(__iter._M_node) { }
 
+      [[__nodiscard__]]
       reference
       operator*() const noexcept
       { return *static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
+      [[__nodiscard__]]
       pointer
       operator->() const noexcept
       { return static_cast<_Node*>(this->_M_node)->_M_valptr(); }
@@ -255,6 +261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Forward list const_iterator equality comparison.
        */
+      [[__nodiscard__]]
       friend bool
       operator==(const _Self& __x, const _Self& __y) noexcept
       { return __x._M_node == __y._M_node; }
@@ -263,6 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Forward list const_iterator inequality comparison.
        */
+      [[__nodiscard__]]
       friend bool
       operator!=(const _Self& __x, const _Self& __y) noexcept
       { return __x._M_node != __y._M_node; }
@@ -698,6 +706,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read/write iterator that points before the first element
        *  in the %forward_list.  Iteration is done in ordinary element order.
        */
+      [[__nodiscard__]]
       iterator
       before_begin() noexcept
       { return iterator(&this->_M_impl._M_head); }
@@ -707,6 +716,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element in the %forward_list.  Iteration is done in ordinary
        *  element order.
        */
+      [[__nodiscard__]]
       const_iterator
       before_begin() const noexcept
       { return const_iterator(&this->_M_impl._M_head); }
@@ -715,6 +725,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read/write iterator that points to the first element
        *  in the %forward_list.  Iteration is done in ordinary element order.
        */
+      [[__nodiscard__]]
       iterator
       begin() noexcept
       { return iterator(this->_M_impl._M_head._M_next); }
@@ -724,6 +735,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element in the %forward_list.  Iteration is done in ordinary
        *  element order.
        */
+      [[__nodiscard__]]
       const_iterator
       begin() const noexcept
       { return const_iterator(this->_M_impl._M_head._M_next); }
@@ -733,6 +745,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element in the %forward_list.  Iteration is done in ordinary
        *  element order.
        */
+      [[__nodiscard__]]
       iterator
       end() noexcept
       { return iterator(nullptr); }
@@ -742,6 +755,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element in the %forward_list.  Iteration is done in ordinary
        *  element order.
        */
+      [[__nodiscard__]]
       const_iterator
       end() const noexcept
       { return const_iterator(nullptr); }
@@ -751,6 +765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element in the %forward_list.  Iteration is done in ordinary
        *  element order.
        */
+      [[__nodiscard__]]
       const_iterator
       cbegin() const noexcept
       { return const_iterator(this->_M_impl._M_head._M_next); }
@@ -760,6 +775,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element in the %forward_list.  Iteration is done in ordinary
        *  element order.
        */
+      [[__nodiscard__]]
       const_iterator
       cbefore_begin() const noexcept
       { return const_iterator(&this->_M_impl._M_head); }
@@ -769,6 +785,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the last element in the %forward_list.  Iteration is done in
        *  ordinary element order.
        */
+      [[__nodiscard__]]
       const_iterator
       cend() const noexcept
       { return const_iterator(nullptr); }
@@ -777,13 +794,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns true if the %forward_list is empty.  (Thus begin() would
        *  equal end().)
        */
-      _GLIBCXX_NODISCARD bool
+      [[__nodiscard__]]
+      bool
       empty() const noexcept
       { return this->_M_impl._M_head._M_next == nullptr; }
 
       /**
        *  Returns the largest possible number of elements of %forward_list.
        */
+      [[__nodiscard__]]
       size_type
       max_size() const noexcept
       { return _Node_alloc_traits::max_size(this->_M_get_Node_allocator()); }
@@ -794,6 +813,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read/write reference to the data at the first
        *  element of the %forward_list.
        */
+      [[__nodiscard__]]
       reference
       front()
       {
@@ -805,6 +825,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Returns a read-only (constant) reference to the data at the first
        *  element of the %forward_list.
        */
+      [[__nodiscard__]]
       const_reference
       front() const
       {
@@ -1425,6 +1446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  if corresponding elements compare equal.
    */
   template<typename _Tp, typename _Alloc>
+    [[__nodiscard__]]
     bool
     operator==(const forward_list<_Tp, _Alloc>& __lx,
 	       const forward_list<_Tp, _Alloc>& __ly);
@@ -1442,6 +1464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  `<` and `>=` etc.
   */
   template<typename _Tp, typename _Alloc>
+    [[nodiscard]]
     inline __detail::__synth3way_t<_Tp>
     operator<=>(const forward_list<_Tp, _Alloc>& __x,
 		const forward_list<_Tp, _Alloc>& __y)
@@ -1464,6 +1487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  See std::lexicographical_compare() for how the determination is made.
    */
   template<typename _Tp, typename _Alloc>
+    [[__nodiscard__]]
     inline bool
     operator<(const forward_list<_Tp, _Alloc>& __lx,
 	      const forward_list<_Tp, _Alloc>& __ly)
@@ -1472,6 +1496,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// Based on operator==
   template<typename _Tp, typename _Alloc>
+    [[__nodiscard__]]
     inline bool
     operator!=(const forward_list<_Tp, _Alloc>& __lx,
 	       const forward_list<_Tp, _Alloc>& __ly)
@@ -1479,6 +1504,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
+    [[__nodiscard__]]
     inline bool
     operator>(const forward_list<_Tp, _Alloc>& __lx,
 	      const forward_list<_Tp, _Alloc>& __ly)
@@ -1486,6 +1512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
+    [[__nodiscard__]]
     inline bool
     operator>=(const forward_list<_Tp, _Alloc>& __lx,
 	       const forward_list<_Tp, _Alloc>& __ly)
@@ -1493,6 +1520,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
+    [[__nodiscard__]]
     inline bool
     operator<=(const forward_list<_Tp, _Alloc>& __lx,
 	       const forward_list<_Tp, _Alloc>& __ly)

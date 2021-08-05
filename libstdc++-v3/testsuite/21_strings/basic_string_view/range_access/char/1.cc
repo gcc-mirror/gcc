@@ -25,10 +25,10 @@ void
 test01()
 {
   std::string_view s("Hello, World!");
-  std::begin(s);
-  std::end(s);
-  std::rbegin(s);
-  std::rend(s);
+  (void) std::begin(s);
+  (void) std::end(s);
+  (void) std::rbegin(s);
+  (void) std::rend(s);
 }
 
 void

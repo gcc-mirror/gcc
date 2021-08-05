@@ -35,26 +35,26 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <algorithm>
 #include <bitset>
-#ifdef _GLIBCXX_DEBUG
-# include <iosfwd>
-#endif
-#include <iterator>
 #include <locale>
-#include <memory>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>
-#include <vector>
-#include <map>
-#include <cstring>
 
 #include <ext/aligned_buffer.h>
 #include <ext/numeric_traits.h>
+#include <bits/shared_ptr.h>
 #include <bits/std_function.h>
+#include <bits/stl_algobase.h> // std::copy, std::fill_n
+#include <bits/stl_algo.h>     // std::sort, std::unique
+#include <bits/stl_iterator_base_types.h> // std::iterator_traits
 #include <bits/stl_pair.h>
+#include <bits/stl_tree.h>
+#include <bits/stl_map.h>
+#include <bits/stl_vector.h>
+#include <bits/stl_bvector.h>
+#include <bits/vector.tcc>
 #include <bits/regex_constants.h>
 #include <bits/regex_error.h>
 #include <bits/regex_automaton.h>

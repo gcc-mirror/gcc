@@ -554,7 +554,7 @@ ix86_can_inline_p (tree caller, tree callee)
 
   /* Changes of those flags can be tolerated for always inlines. Lets hope
      user knows what he is doing.  */
-  const unsigned HOST_WIDE_INT always_inline_safe_mask
+  unsigned HOST_WIDE_INT always_inline_safe_mask
 	 = (MASK_USE_8BIT_IDIV | MASK_ACCUMULATE_OUTGOING_ARGS
 	    | MASK_NO_ALIGN_STRINGOPS | MASK_AVX256_SPLIT_UNALIGNED_LOAD
 	    | MASK_AVX256_SPLIT_UNALIGNED_STORE | MASK_CLD
@@ -578,6 +578,10 @@ ix86_can_inline_p (tree caller, tree callee)
     = (DECL_DISREGARD_INLINE_LIMITS (callee)
        && lookup_attribute ("always_inline",
 			    DECL_ATTRIBUTES (callee)));
+
+  /* If callee only uses GPRs, ignore MASK_80387.  */
+  if (TARGET_GENERAL_REGS_ONLY_P (callee_opts->x_ix86_target_flags))
+    always_inline_safe_mask |= MASK_80387;
 
   cgraph_node *callee_node = cgraph_node::get (callee);
   /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
@@ -23335,9 +23339,21 @@ rtx
 ix86_gen_scratch_sse_rtx (machine_mode mode)
 {
   if (TARGET_SSE && !lra_in_progress)
-    return gen_rtx_REG (mode, (TARGET_64BIT
-			       ? LAST_REX_SSE_REG
-			       : LAST_SSE_REG));
+    {
+      unsigned int regno;
+      if (TARGET_64BIT)
+	{
+	  /* In 64-bit mode, use XMM31 to avoid vzeroupper and always
+	     use XMM31 for CSE.  */
+	  if (ix86_hard_regno_mode_ok (LAST_EXT_REX_SSE_REG, mode))
+	    regno = LAST_EXT_REX_SSE_REG;
+	  else
+	    regno = LAST_REX_SSE_REG;
+	}
+      else
+	regno = LAST_SSE_REG;
+      return gen_rtx_REG (mode, regno);
+    }
   else
     return gen_reg_rtx (mode);
 }

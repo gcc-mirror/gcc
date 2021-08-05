@@ -78,6 +78,7 @@
 #include "gimple-pretty-print.h"
 #include "tree-ssa-loop-niter.h"
 #include "fractional-cost.h"
+#include "rtlanal.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -12046,6 +12047,42 @@ aarch64_strip_extend (rtx x, bool strip_shift)
   return x;
 }
 
+/* Helper function for rtx cost calculation. Strip extension as well as any
+   inner VEC_SELECT high-half from X. Returns the inner vector operand if
+   successful, or the original expression on failure.  */
+static rtx
+aarch64_strip_extend_vec_half (rtx x)
+{
+  if (GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
+    {
+      x = XEXP (x, 0);
+      if (GET_CODE (x) == VEC_SELECT
+	  && vec_series_highpart_p (GET_MODE (x), GET_MODE (XEXP (x, 0)),
+				    XEXP (x, 1)))
+	x = XEXP (x, 0);
+    }
+  return x;
+}
+
+/* Helper function for rtx cost calculation. Strip VEC_DUPLICATE as well as
+   any subsequent extend and VEC_SELECT from X. Returns the inner scalar
+   operand if successful, or the original expression on failure.  */
+static rtx
+aarch64_strip_duplicate_vec_elt (rtx x)
+{
+  if (GET_CODE (x) == VEC_DUPLICATE
+      && is_a<scalar_mode> (GET_MODE (XEXP (x, 0))))
+    {
+      x = XEXP (x, 0);
+      if (GET_CODE (x) == VEC_SELECT)
+	x = XEXP (x, 0);
+      else if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
+	       && GET_CODE (XEXP (x, 0)) == VEC_SELECT)
+	x = XEXP (XEXP (x, 0), 0);
+    }
+  return x;
+}
+
 /* Return true iff CODE is a shift supported in combination
    with arithmetic instructions.  */
 
@@ -12113,16 +12150,17 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
       unsigned int vec_flags = aarch64_classify_vector_mode (mode);
       if (vec_flags & VEC_ADVSIMD)
 	{
+	  /* The select-operand-high-half versions of the instruction have the
+	     same cost as the three vector version - don't add the costs of the
+	     extension or selection into the costs of the multiply.  */
+	  op0 = aarch64_strip_extend_vec_half (op0);
+	  op1 = aarch64_strip_extend_vec_half (op1);
 	  /* The by-element versions of the instruction have the same costs as
-	     the normal 3-vector version.  So don't add the costs of the
-	     duplicate into the costs of the multiply.  We make an assumption
-	     that the input to the VEC_DUPLICATE is already on the FP & SIMD
-	     side.  This means costing of a MUL by element pre RA is a bit
-	     optimistic.  */
-	  if (GET_CODE (op0) == VEC_DUPLICATE)
-	    op0 = XEXP (op0, 0);
-	  else if (GET_CODE (op1) == VEC_DUPLICATE)
-	    op1 = XEXP (op1, 0);
+	     the normal 3-vector version.  We make an assumption that the input
+	     to the VEC_DUPLICATE is already on the FP & SIMD side.  This means
+	     costing of a MUL by element pre RA is a bit optimistic.  */
+	  op0 = aarch64_strip_duplicate_vec_elt (op0);
+	  op1 = aarch64_strip_duplicate_vec_elt (op1);
 	}
       cost += rtx_cost (op0, mode, MULT, 0, speed);
       cost += rtx_cost (op1, mode, MULT, 1, speed);
@@ -13051,6 +13089,21 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	op1 = XEXP (x, 1);
 
 cost_minus:
+	if (VECTOR_MODE_P (mode))
+	  {
+	    /* SUBL2 and SUBW2.  */
+	    unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+	    if (vec_flags & VEC_ADVSIMD)
+	      {
+		/* The select-operand-high-half versions of the sub instruction
+		   have the same cost as the regular three vector version -
+		   don't add the costs of the select into the costs of the sub.
+		   */
+		op0 = aarch64_strip_extend_vec_half (op0);
+		op1 = aarch64_strip_extend_vec_half (op1);
+	      }
+	  }
+
 	*cost += rtx_cost (op0, mode, MINUS, 0, speed);
 
 	/* Detect valid immediates.  */
@@ -13123,6 +13176,21 @@ cost_minus:
 	op1 = XEXP (x, 1);
 
 cost_plus:
+	if (VECTOR_MODE_P (mode))
+	  {
+	    /* ADDL2 and ADDW2.  */
+	    unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+	    if (vec_flags & VEC_ADVSIMD)
+	      {
+		/* The select-operand-high-half versions of the add instruction
+		   have the same cost as the regular three vector version -
+		   don't add the costs of the select into the costs of the add.
+		   */
+		op0 = aarch64_strip_extend_vec_half (op0);
+		op1 = aarch64_strip_extend_vec_half (op1);
+	      }
+	  }
+
 	if (GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMPARE
 	    || GET_RTX_CLASS (GET_CODE (op0)) == RTX_COMM_COMPARE)
 	  {
@@ -14752,40 +14820,6 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
-/* Return true if an operaton of kind KIND for STMT_INFO represents
-   the extraction of an element from a vector in preparation for
-   storing the element to memory.  */
-static bool
-aarch64_is_store_elt_extraction (vect_cost_for_stmt kind,
-				 stmt_vec_info stmt_info)
-{
-  return (kind == vec_to_scalar
-	  && STMT_VINFO_DATA_REF (stmt_info)
-	  && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)));
-}
-
-/* Return true if STMT_INFO represents part of a reduction.  */
-static bool
-aarch64_is_reduction (stmt_vec_info stmt_info)
-{
-  return (STMT_VINFO_REDUC_DEF (stmt_info)
-	  || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)));
-}
-
-/* If STMT_INFO describes a reduction, return the type of reduction
-   it describes, otherwise return -1.  */
-static int
-aarch64_reduc_type (vec_info *vinfo, stmt_vec_info stmt_info)
-{
-  if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo))
-    if (STMT_VINFO_REDUC_DEF (stmt_info))
-      {
-	stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
-	return int (STMT_VINFO_REDUC_TYPE (reduc_info));
-      }
-  return -1;
-}
-
 /* Return true if an access of kind KIND for STMT_INFO represents one
    vector of an LD[234] or ST[234] operation.  Return the total number of
    vectors (2, 3 or 4) if so, otherwise return a value outside that range.  */
@@ -14804,32 +14838,6 @@ aarch64_ld234_st234_vectors (vect_cost_for_stmt kind, stmt_vec_info stmt_info)
 	return DR_GROUP_SIZE (stmt_info);
     }
   return 0;
-}
-
-/* If STMT_INFO is a COND_EXPR that includes an embedded comparison, return the
-   scalar type of the values being compared.  Return null otherwise.  */
-static tree
-aarch64_embedded_comparison_type (stmt_vec_info stmt_info)
-{
-  if (auto *assign = dyn_cast<gassign *> (stmt_info->stmt))
-    if (gimple_assign_rhs_code (assign) == COND_EXPR)
-      {
-	tree cond = gimple_assign_rhs1 (assign);
-	if (COMPARISON_CLASS_P (cond))
-	  return TREE_TYPE (TREE_OPERAND (cond, 0));
-      }
-  return NULL_TREE;
-}
-
-/* If STMT_INFO is a comparison or contains an embedded comparison, return the
-   scalar type of the values being compared.  Return null otherwise.  */
-static tree
-aarch64_comparison_type (stmt_vec_info stmt_info)
-{
-  if (auto *assign = dyn_cast<gassign *> (stmt_info->stmt))
-    if (TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) == tcc_comparison)
-      return TREE_TYPE (gimple_assign_rhs1 (assign));
-  return aarch64_embedded_comparison_type (stmt_info);
 }
 
 /* Return true if creating multiple copies of STMT_INFO for Advanced SIMD
@@ -14856,43 +14864,6 @@ aarch64_advsimd_ldp_stp_p (enum vect_cost_for_stmt kind,
     return false;
 
   return is_gimple_assign (stmt_info->stmt);
-}
-
-/* Return true if STMT_INFO extends the result of a load.  */
-static bool
-aarch64_extending_load_p (class vec_info *vinfo, stmt_vec_info stmt_info)
-{
-  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
-  if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
-    return false;
-
-  tree rhs = gimple_assign_rhs1 (stmt_info->stmt);
-  tree lhs_type = TREE_TYPE (gimple_assign_lhs (assign));
-  tree rhs_type = TREE_TYPE (rhs);
-  if (!INTEGRAL_TYPE_P (lhs_type)
-      || !INTEGRAL_TYPE_P (rhs_type)
-      || TYPE_PRECISION (lhs_type) <= TYPE_PRECISION (rhs_type))
-    return false;
-
-  stmt_vec_info def_stmt_info = vinfo->lookup_def (rhs);
-  return (def_stmt_info
-	  && STMT_VINFO_DATA_REF (def_stmt_info)
-	  && DR_IS_READ (STMT_VINFO_DATA_REF (def_stmt_info)));
-}
-
-/* Return true if STMT_INFO is an integer truncation.  */
-static bool
-aarch64_integer_truncation_p (stmt_vec_info stmt_info)
-{
-  gassign *assign = dyn_cast <gassign *> (stmt_info->stmt);
-  if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
-    return false;
-
-  tree lhs_type = TREE_TYPE (gimple_assign_lhs (assign));
-  tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (assign));
-  return (INTEGRAL_TYPE_P (lhs_type)
-	  && INTEGRAL_TYPE_P (rhs_type)
-	  && TYPE_PRECISION (lhs_type) < TYPE_PRECISION (rhs_type));
 }
 
 /* Return true if STMT_INFO is the second part of a two-statement multiply-add
@@ -14997,7 +14968,7 @@ aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
 				       tree vectype,
 				       const sve_vec_cost *sve_costs)
 {
-  switch (aarch64_reduc_type (vinfo, stmt_info))
+  switch (vect_reduc_type (vinfo, stmt_info))
     {
     case EXTRACT_LAST_REDUCTION:
       return sve_costs->clast_cost;
@@ -15032,7 +15003,7 @@ aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
      scalar operation.
 
    - If VEC_FLAGS & VEC_ADVSIMD, return the loop carry latency of the
-     the Advanced SIMD implementation.
+     Advanced SIMD implementation.
 
    - If VEC_FLAGS & VEC_ANY_SVE, return the loop carry latency of the
      SVE implementation.
@@ -15088,7 +15059,7 @@ aarch64_detect_scalar_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
 {
   /* Detect an extension of a loaded value.  In general, we'll be able to fuse
      the extension with the load.  */
-  if (kind == scalar_stmt && aarch64_extending_load_p (vinfo, stmt_info))
+  if (kind == scalar_stmt && vect_is_extending_load (vinfo, stmt_info))
     return 0;
 
   return stmt_cost;
@@ -15120,7 +15091,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
   /* Detect cases in which vec_to_scalar is describing the extraction of a
      vector element in preparation for a scalar store.  The store itself is
      costed separately.  */
-  if (aarch64_is_store_elt_extraction (kind, stmt_info))
+  if (vect_is_store_elt_extraction (kind, stmt_info))
     return simd_costs->store_elt_extra_cost;
 
   /* Detect SVE gather loads, which are costed as a single scalar_load
@@ -15159,7 +15130,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
      instruction like FADDP or MAXV.  */
   if (kind == vec_to_scalar
       && where == vect_epilogue
-      && aarch64_is_reduction (stmt_info))
+      && vect_is_reduction (stmt_info))
     switch (GET_MODE_INNER (TYPE_MODE (vectype)))
       {
       case E_QImode:
@@ -15209,12 +15180,12 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
      on the fly.  Optimistically assume that a load followed by an extension
      will fold to this form during combine, and that the extension therefore
      comes for free.  */
-  if (kind == vector_stmt && aarch64_extending_load_p (vinfo, stmt_info))
+  if (kind == vector_stmt && vect_is_extending_load (vinfo, stmt_info))
     stmt_cost = 0;
 
   /* For similar reasons, vector_stmt integer truncations are a no-op,
      because we can just ignore the unused upper bits of the source.  */
-  if (kind == vector_stmt && aarch64_integer_truncation_p (stmt_info))
+  if (kind == vector_stmt && vect_is_integer_truncation (stmt_info))
     stmt_cost = 0;
 
   /* Advanced SIMD can load and store pairs of registers using LDP and STP,
@@ -15289,7 +15260,7 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
 	}
 
       if (kind == vector_stmt || kind == vec_to_scalar)
-	if (tree cmp_type = aarch64_embedded_comparison_type (stmt_info))
+	if (tree cmp_type = vect_embedded_comparison_type (stmt_info))
 	  {
 	    if (FLOAT_TYPE_P (cmp_type))
 	      stmt_cost += simd_costs->fp_stmt_cost;
@@ -15299,7 +15270,7 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
     }
 
   if (kind == scalar_stmt)
-    if (tree cmp_type = aarch64_embedded_comparison_type (stmt_info))
+    if (tree cmp_type = vect_embedded_comparison_type (stmt_info))
       {
 	if (FLOAT_TYPE_P (cmp_type))
 	  stmt_cost += aarch64_tune_params.vec_costs->scalar_fp_stmt_cost;
@@ -15349,12 +15320,12 @@ aarch64_count_ops (class vec_info *vinfo, aarch64_vector_costs *costs,
   /* Calculate the minimum cycles per iteration imposed by a reduction
      operation.  */
   if ((kind == vector_stmt || kind == vec_to_scalar)
-      && aarch64_is_reduction (stmt_info))
+      && vect_is_reduction (stmt_info))
     {
       unsigned int base
 	= aarch64_in_loop_reduction_latency (vinfo, stmt_info, vectype,
 					     vec_flags);
-      if (aarch64_reduc_type (vinfo, stmt_info) == FOLD_LEFT_REDUCTION)
+      if (vect_reduc_type (vinfo, stmt_info) == FOLD_LEFT_REDUCTION)
 	{
 	  if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
 	    {
@@ -15453,7 +15424,7 @@ aarch64_count_ops (class vec_info *vinfo, aarch64_vector_costs *costs,
 
   /* Add any embedded comparison operations.  */
   if ((kind == scalar_stmt || kind == vector_stmt || kind == vec_to_scalar)
-      && aarch64_embedded_comparison_type (stmt_info))
+      && vect_embedded_comparison_type (stmt_info))
     ops->general_ops += num_copies;
 
   /* Detect COND_REDUCTIONs and things that would need to become
@@ -15462,7 +15433,7 @@ aarch64_count_ops (class vec_info *vinfo, aarch64_vector_costs *costs,
      have only accounted for one.  */
   if (vec_flags && (kind == vector_stmt || kind == vec_to_scalar))
     {
-      int reduc_type = aarch64_reduc_type (vinfo, stmt_info);
+      int reduc_type = vect_reduc_type (vinfo, stmt_info);
       if ((reduc_type == EXTRACT_LAST_REDUCTION && (vec_flags & VEC_ADVSIMD))
 	  || reduc_type == COND_REDUCTION)
 	ops->general_ops += num_copies;
@@ -15470,7 +15441,7 @@ aarch64_count_ops (class vec_info *vinfo, aarch64_vector_costs *costs,
 
   /* Count the predicate operations needed by an SVE comparison.  */
   if (sve_issue && (kind == vector_stmt || kind == vec_to_scalar))
-    if (tree type = aarch64_comparison_type (stmt_info))
+    if (tree type = vect_comparison_type (stmt_info))
       {
 	unsigned int base = (FLOAT_TYPE_P (type)
 			     ? sve_issue->fp_cmp_pred_ops
@@ -15548,7 +15519,7 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	  /* If we scalarize a strided store, the vectorizer costs one
 	     vec_to_scalar for each element.  However, we can store the first
 	     element using an FP store without a separate extract step.  */
-	  if (aarch64_is_store_elt_extraction (kind, stmt_info))
+	  if (vect_is_store_elt_extraction (kind, stmt_info))
 	    count -= 1;
 
 	  stmt_cost = aarch64_detect_scalar_stmt_subtype

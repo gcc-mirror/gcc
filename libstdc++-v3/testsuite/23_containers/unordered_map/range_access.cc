@@ -25,6 +25,6 @@ void
 test01()
 {
   std::unordered_map<int, double> um{{1, 1.0}, {2, 2.0}, {3, 3.0}};
-  std::begin(um);
-  std::end(um);
+  (void) std::begin(um);
+  (void) std::end(um);
 }

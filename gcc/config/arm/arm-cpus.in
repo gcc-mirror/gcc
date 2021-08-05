@@ -1080,6 +1080,7 @@ begin cpu generic-armv7-a
  cname genericv7a
  tune flags LDSCHED
  architecture armv7-a+fp
+ isa quirk_no_asmcpu
  option mp add mp
  option sec add sec
  option vfpv3-d16 add VFPv3 FP_DBL

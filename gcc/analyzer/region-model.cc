@@ -980,7 +980,10 @@ region_model::on_stmt_pre (const gimple *stmt,
       break;
 
     case GIMPLE_ASM:
-      /* No-op for now.  */
+      {
+	const gasm *asm_stmt = as_a <const gasm *> (stmt);
+	on_asm_stmt (asm_stmt, ctxt);
+      }
       break;
 
     case GIMPLE_CALL:

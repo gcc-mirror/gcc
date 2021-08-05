@@ -1780,18 +1780,22 @@ typedef struct ix86_args {
 	  && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
 	 ? 16 : UNITS_PER_WORD)))
 
-/* STORE_MAX_PIECES is the number of bytes at a time that we can
-   store efficiently.  */
+/* STORE_MAX_PIECES is the number of bytes at a time that we can store
+   efficiently.  Allow 16/32/64 bytes only if inter-unit move is enabled
+   since vec_duplicate enabled by inter-unit move is used to implement
+   store_by_pieces of 16/32/64 bytes.  */
 #define STORE_MAX_PIECES \
-  ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
-   ? 64 \
-   : ((TARGET_AVX \
-       && !TARGET_PREFER_AVX128 \
-       && !TARGET_AVX256_SPLIT_UNALIGNED_STORE) \
-      ? 32 \
-      : ((TARGET_SSE2 \
-	  && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
-	 ? 16 : UNITS_PER_WORD)))
+  (TARGET_INTER_UNIT_MOVES_TO_VEC \
+   ? ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+      ? 64 \
+      : ((TARGET_AVX \
+	  && !TARGET_PREFER_AVX128 \
+	  && !TARGET_AVX256_SPLIT_UNALIGNED_STORE) \
+	  ? 32 \
+	  : ((TARGET_SSE2 \
+	      && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	      ? 16 : UNITS_PER_WORD))) \
+   : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a cpymem or libcall instead.

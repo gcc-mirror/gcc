@@ -2757,6 +2757,182 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 }
 
 
+/* Rewrite the vector load at *GSI to component-wise loads if the load
+   is only used in BIT_FIELD_REF extractions with eventual intermediate
+   widening.  */
+
+static void
+optimize_vector_load (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree lhs = gimple_assign_lhs (stmt);
+  tree rhs = gimple_assign_rhs1 (stmt);
+
+  /* Gather BIT_FIELD_REFs to rewrite, looking through
+     VEC_UNPACK_{LO,HI}_EXPR.  */
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  bool rewrite = true;
+  auto_vec<gimple *, 8> bf_stmts;
+  auto_vec<tree, 8> worklist;
+  worklist.quick_push (lhs);
+  do
+    {
+      tree def = worklist.pop ();
+      unsigned HOST_WIDE_INT def_eltsize
+	= TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (TREE_TYPE (def))));
+      FOR_EACH_IMM_USE_FAST (use_p, iter, def)
+	{
+	  gimple *use_stmt = USE_STMT (use_p);
+	  if (is_gimple_debug (use_stmt))
+	    continue;
+	  if (!is_gimple_assign (use_stmt))
+	    {
+	      rewrite = false;
+	      break;
+	    }
+	  enum tree_code use_code = gimple_assign_rhs_code (use_stmt);
+	  tree use_rhs = gimple_assign_rhs1 (use_stmt);
+	  if (use_code == BIT_FIELD_REF
+	      && TREE_OPERAND (use_rhs, 0) == def
+	      /* If its on the VEC_UNPACK_{HI,LO}_EXPR
+		 def need to verify it is element aligned.  */
+	      && (def == lhs
+		  || (known_eq (bit_field_size (use_rhs), def_eltsize)
+		      && constant_multiple_p (bit_field_offset (use_rhs),
+					      def_eltsize))))
+	    {
+	      bf_stmts.safe_push (use_stmt);
+	      continue;
+	    }
+	  /* Walk through one level of VEC_UNPACK_{LO,HI}_EXPR.  */
+	  if (def == lhs
+	      && (use_code == VEC_UNPACK_HI_EXPR
+		  || use_code == VEC_UNPACK_LO_EXPR)
+	      && use_rhs == lhs)
+	    {
+	      worklist.safe_push (gimple_assign_lhs (use_stmt));
+	      continue;
+	    }
+	  rewrite = false;
+	  break;
+	}
+      if (!rewrite)
+	break;
+    }
+  while (!worklist.is_empty ());
+
+  if (!rewrite)
+    {
+      gsi_next (gsi);
+      return;
+    }
+  /* We now have all ultimate uses of the load to rewrite in bf_stmts.  */
+
+  /* Prepare the original ref to be wrapped in adjusted BIT_FIELD_REFs.
+     For TARGET_MEM_REFs we have to separate the LEA from the reference.  */
+  tree load_rhs = rhs;
+  if (TREE_CODE (load_rhs) == TARGET_MEM_REF)
+    {
+      if (TREE_CODE (TREE_OPERAND (load_rhs, 0)) == ADDR_EXPR)
+	mark_addressable (TREE_OPERAND (TREE_OPERAND (load_rhs, 0), 0));
+      tree tem = make_ssa_name (TREE_TYPE (TREE_OPERAND (load_rhs, 0)));
+      gimple *new_stmt
+	= gimple_build_assign (tem, build1 (ADDR_EXPR, TREE_TYPE (tem),
+					    unshare_expr (load_rhs)));
+      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+      load_rhs = build2_loc (EXPR_LOCATION (load_rhs),
+			     MEM_REF, TREE_TYPE (load_rhs), tem,
+			     build_int_cst
+			       (TREE_TYPE (TREE_OPERAND (load_rhs, 1)), 0));
+    }
+
+  /* Rewrite the BIT_FIELD_REFs to be actual loads, re-emitting them at
+     the place of the original load.  */
+  for (gimple *use_stmt : bf_stmts)
+    {
+      tree bfr = gimple_assign_rhs1 (use_stmt);
+      tree new_rhs = unshare_expr (load_rhs);
+      if (TREE_OPERAND (bfr, 0) != lhs)
+	{
+	  /* When the BIT_FIELD_REF is on the promoted vector we have to
+	     adjust it and emit a conversion afterwards.  */
+	  gimple *def_stmt
+	      = SSA_NAME_DEF_STMT (TREE_OPERAND (bfr, 0));
+	  enum tree_code def_code
+	      = gimple_assign_rhs_code (def_stmt);
+
+	  /* The adjusted BIT_FIELD_REF is of the promotion source
+	     vector size and at half of the offset...  */
+	  new_rhs = fold_build3 (BIT_FIELD_REF,
+				 TREE_TYPE (TREE_TYPE (lhs)),
+				 new_rhs,
+				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (lhs))),
+				 size_binop (EXACT_DIV_EXPR,
+					     TREE_OPERAND (bfr, 2),
+					     bitsize_int (2)));
+	  /* ... and offsetted by half of the vector if VEC_UNPACK_HI_EXPR.  */
+	  if (def_code == (!BYTES_BIG_ENDIAN
+			   ? VEC_UNPACK_HI_EXPR : VEC_UNPACK_LO_EXPR))
+	    TREE_OPERAND (new_rhs, 2)
+	      = size_binop (PLUS_EXPR, TREE_OPERAND (new_rhs, 2),
+			    size_binop (EXACT_DIV_EXPR,
+					TYPE_SIZE (TREE_TYPE (lhs)),
+					bitsize_int (2)));
+	  tree tem = make_ssa_name (TREE_TYPE (TREE_TYPE (lhs)));
+	  gimple *new_stmt = gimple_build_assign (tem, new_rhs);
+	  location_t loc = gimple_location (use_stmt);
+	  gimple_set_location (new_stmt, loc);
+	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+	  /* Perform scalar promotion.  */
+	  new_stmt = gimple_build_assign (gimple_assign_lhs (use_stmt),
+					  NOP_EXPR, tem);
+	  gimple_set_location (new_stmt, loc);
+	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+	}
+      else
+	{
+	  /* When the BIT_FIELD_REF is on the original load result
+	     we can just wrap that.  */
+	  tree new_rhs = fold_build3 (BIT_FIELD_REF, TREE_TYPE (bfr),
+				      unshare_expr (load_rhs),
+				      TREE_OPERAND (bfr, 1),
+				      TREE_OPERAND (bfr, 2));
+	  gimple *new_stmt = gimple_build_assign (gimple_assign_lhs (use_stmt),
+						  new_rhs);
+	  location_t loc = gimple_location (use_stmt);
+	  gimple_set_location (new_stmt, loc);
+	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+	}
+      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+      unlink_stmt_vdef (use_stmt);
+      gsi_remove (&gsi2, true);
+    }
+
+  /* Finally get rid of the intermediate stmts.  */
+  gimple *use_stmt;
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+    {
+      if (is_gimple_debug (use_stmt))
+	{
+	  if (gimple_debug_bind_p (use_stmt))
+	    {
+	      gimple_debug_bind_reset_value (use_stmt);
+	      update_stmt (use_stmt);
+	    }
+	  continue;
+	}
+      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+      unlink_stmt_vdef (use_stmt);
+      release_defs (use_stmt);
+      gsi_remove (&gsi2, true);
+    }
+  /* And the original load.  */
+  release_defs (stmt);
+  gsi_remove (gsi, true);
+}
+
+
 /* Primitive "lattice" function for gimple_simplify.  */
 
 static tree
@@ -3007,71 +3183,15 @@ pass_forwprop::execute (function *fun)
 		gsi_next (&gsi);
 	    }
 	  else if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE
-		   && TYPE_MODE (TREE_TYPE (lhs)) == BLKmode
+		   && (TYPE_MODE (TREE_TYPE (lhs)) == BLKmode
+		       /* After vector lowering rewrite all loads, but
+			  initially do not since this conflicts with
+			  vector CONSTRUCTOR to shuffle optimization.  */
+		       || (fun->curr_properties & PROP_gimple_lvec))
 		   && gimple_assign_load_p (stmt)
 		   && !gimple_has_volatile_ops (stmt)
-		   && (TREE_CODE (gimple_assign_rhs1 (stmt))
-		       != TARGET_MEM_REF)
 		   && !stmt_can_throw_internal (cfun, stmt))
-	    {
-	      /* Rewrite loads used only in BIT_FIELD_REF extractions to
-	         component-wise loads.  */
-	      use_operand_p use_p;
-	      imm_use_iterator iter;
-	      bool rewrite = true;
-	      FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
-		{
-		  gimple *use_stmt = USE_STMT (use_p);
-		  if (is_gimple_debug (use_stmt))
-		    continue;
-		  if (!is_gimple_assign (use_stmt)
-		      || gimple_assign_rhs_code (use_stmt) != BIT_FIELD_REF
-		      || TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0) != lhs)
-		    {
-		      rewrite = false;
-		      break;
-		    }
-		}
-	      if (rewrite)
-		{
-		  gimple *use_stmt;
-		  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-		    {
-		      if (is_gimple_debug (use_stmt))
-			{
-			  if (gimple_debug_bind_p (use_stmt))
-			    {
-			      gimple_debug_bind_reset_value (use_stmt);
-			      update_stmt (use_stmt);
-			    }
-			  continue;
-			}
-
-		      tree bfr = gimple_assign_rhs1 (use_stmt);
-		      tree new_rhs = fold_build3 (BIT_FIELD_REF,
-						  TREE_TYPE (bfr),
-						  unshare_expr (rhs),
-						  TREE_OPERAND (bfr, 1),
-						  TREE_OPERAND (bfr, 2));
-		      gimple *new_stmt
-			= gimple_build_assign (gimple_assign_lhs (use_stmt),
-					       new_rhs);
-
-		      location_t loc = gimple_location (use_stmt);
-		      gimple_set_location (new_stmt, loc);
-		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
-		      unlink_stmt_vdef (use_stmt);
-		      gsi_remove (&gsi2, true);
-
-		      gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
-		    }
-
-		  release_defs (stmt);
-		  gsi_remove (&gsi, true);
-		}
-	      else
-		gsi_next (&gsi);
-	    }
+	    optimize_vector_load (&gsi);
 
 	  else if (code == COMPLEX_EXPR)
 	    {

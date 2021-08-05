@@ -3718,6 +3718,8 @@ feasibility_state::maybe_update_for_edge (logger *logger,
 
       if (const gassign *assign = dyn_cast <const gassign *> (stmt))
 	m_model.on_assignment (assign, NULL);
+      else if (const gasm *asm_stmt = dyn_cast <const gasm *> (stmt))
+	m_model.on_asm_stmt (asm_stmt, NULL);
       else if (const gcall *call = dyn_cast <const gcall *> (stmt))
 	{
 	  bool terminate_path;

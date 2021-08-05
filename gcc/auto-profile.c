@@ -1009,13 +1009,18 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
 
   histogram_value hist = gimple_alloc_histogram_value (
       cfun, HIST_TYPE_INDIR_CALL, stmt, callee);
-  hist->n_counters = 3;
+  hist->n_counters = 4;
   hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
   gimple_add_histogram_value (cfun, stmt, hist);
 
-  hist->hvalue.counters[0] = direct_call->profile_id;
-  hist->hvalue.counters[1] = max_iter->second;
-  hist->hvalue.counters[2] = total;
+  // Total counter
+  hist->hvalue.counters[0] = total;
+  // Number of value/counter pairs
+  hist->hvalue.counters[1] = 1;
+  // Value
+  hist->hvalue.counters[2] = direct_call->profile_id;
+  // Counter
+  hist->hvalue.counters[3] = max_iter->second;
 
   if (!transform)
     return;

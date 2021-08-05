@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx512vl -mprefer-vector-width=256" } */
+/* { dg-require-effective-target avx512vl } */
 
 #define AVX512VL
 #ifndef CHECK

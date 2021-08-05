@@ -2833,6 +2833,62 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (convert (mult (convert:t @0) { cst; })))))
 #endif
 
+/* Canonicalize (X*C1)|(X*C2) and (X*C1)^(X*C2) to (C1+C2)*X when
+   tree_nonzero_bits allows IOR and XOR to be treated like PLUS.
+   Likewise, handle (X<<C3) and X as legitimate variants of X*C.  */
+(for op (bit_ior bit_xor)
+ (simplify
+  (op (mult:s@0 @1 INTEGER_CST@2)
+      (mult:s@3 @1 INTEGER_CST@4))
+  (if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type)
+       && (tree_nonzero_bits (@0) & tree_nonzero_bits (@3)) == 0)
+   (mult @1
+	 { wide_int_to_tree (type, wi::to_wide (@2) + wi::to_wide (@4)); })))
+ (simplify
+  (op:c (mult:s@0 @1 INTEGER_CST@2)
+	(lshift:s@3 @1 INTEGER_CST@4))
+  (if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type)
+       && tree_int_cst_sgn (@4) > 0
+       && (tree_nonzero_bits (@0) & tree_nonzero_bits (@3)) == 0)
+   (with { wide_int wone = wi::one (TYPE_PRECISION (type));
+	   wide_int c = wi::add (wi::to_wide (@2),
+				 wi::lshift (wone, wi::to_wide (@4))); }
+    (mult @1 { wide_int_to_tree (type, c); }))))
+ (simplify
+  (op:c (mult:s@0 @1 INTEGER_CST@2)
+	@1)
+  (if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type)
+       && (tree_nonzero_bits (@0) & tree_nonzero_bits (@1)) == 0)
+   (mult @1
+	 { wide_int_to_tree (type,
+			     wi::add (wi::to_wide (@2), 1)); })))
+ (simplify
+  (op (lshift:s@0 @1 INTEGER_CST@2)
+      (lshift:s@3 @1 INTEGER_CST@4))
+  (if (INTEGRAL_TYPE_P (type)
+       && tree_int_cst_sgn (@2) > 0
+       && tree_int_cst_sgn (@4) > 0
+       && (tree_nonzero_bits (@0) & tree_nonzero_bits (@3)) == 0)
+   (with { tree t = type;
+	   if (!TYPE_OVERFLOW_WRAPS (t))
+	     t = unsigned_type_for (t);
+	   wide_int wone = wi::one (TYPE_PRECISION (t));
+	   wide_int c = wi::add (wi::lshift (wone, wi::to_wide (@2)),
+				 wi::lshift (wone, wi::to_wide (@4))); }
+    (convert (mult:t (convert:t @1) { wide_int_to_tree (t,c); })))))
+ (simplify
+  (op:c (lshift:s@0 @1 INTEGER_CST@2)
+	@1)
+  (if (INTEGRAL_TYPE_P (type)
+       && tree_int_cst_sgn (@2) > 0
+       && (tree_nonzero_bits (@0) & tree_nonzero_bits (@1)) == 0)
+   (with { tree t = type;
+	   if (!TYPE_OVERFLOW_WRAPS (t))
+	     t = unsigned_type_for (t);
+	   wide_int wone = wi::one (TYPE_PRECISION (t));
+	   wide_int c = wi::add (wi::lshift (wone, wi::to_wide (@2)), wone); }
+    (convert (mult:t (convert:t @1) { wide_int_to_tree (t, c); }))))))
+
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
 
 (for minmax (min max FMIN_ALL FMAX_ALL)

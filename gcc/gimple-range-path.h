@@ -41,7 +41,7 @@ public:
 			  const bitmap_head *imports);
   bool range_of_expr (irange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (irange &r, gimple *, tree name = NULL) override;
-  void dump (FILE *);
+  void dump (FILE *) override;
   void debug ();
 
 private:

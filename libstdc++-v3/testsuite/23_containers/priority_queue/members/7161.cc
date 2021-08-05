@@ -32,7 +32,7 @@ test03()
   for (int i = 0; i < 3; ++i)
     pq.push(data[i]);
 
-  pq.top();
+  (void) pq.top();
   for (int i = 0; i < 2; ++i)
     pq.pop();
 

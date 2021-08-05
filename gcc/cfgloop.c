@@ -2104,3 +2104,69 @@ mark_loop_for_removal (loop_p loop)
   loop->latch = NULL;
   loops_state_set (LOOPS_NEED_FIXUP);
 }
+
+/* Starting from loop tree ROOT, walk loop tree as the visiting
+   order specified by FLAGS.  The supported visiting orders
+   are:
+     - LI_ONLY_INNERMOST
+     - LI_FROM_INNERMOST
+     - Preorder (if neither of above is specified)  */
+
+void
+loops_list::walk_loop_tree (class loop *root, unsigned flags)
+{
+  bool only_innermost_p = flags & LI_ONLY_INNERMOST;
+  bool from_innermost_p = flags & LI_FROM_INNERMOST;
+  bool preorder_p = !(only_innermost_p || from_innermost_p);
+
+  /* Early handle root without any inner loops, make later
+     processing simpler, that is all loops processed in the
+     following while loop are impossible to be root.  */
+  if (!root->inner)
+    {
+      if (flags & LI_INCLUDE_ROOT)
+	this->to_visit.quick_push (root->num);
+      return;
+    }
+  else if (preorder_p && flags & LI_INCLUDE_ROOT)
+    this->to_visit.quick_push (root->num);
+
+  class loop *aloop;
+  for (aloop = root->inner;
+       aloop->inner != NULL;
+       aloop = aloop->inner)
+    {
+      if (preorder_p)
+	this->to_visit.quick_push (aloop->num);
+      continue;
+    }
+
+  while (1)
+    {
+      gcc_assert (aloop != root);
+      if (from_innermost_p || aloop->inner == NULL)
+	this->to_visit.quick_push (aloop->num);
+
+      if (aloop->next)
+	{
+	  for (aloop = aloop->next;
+	       aloop->inner != NULL;
+	       aloop = aloop->inner)
+	    {
+	      if (preorder_p)
+		this->to_visit.quick_push (aloop->num);
+	      continue;
+	    }
+	}
+      else if (loop_outer (aloop) == root)
+	break;
+      else
+	aloop = loop_outer (aloop);
+    }
+
+  /* When visiting from innermost, we need to consider root here
+     since the previous while loop doesn't handle it.  */
+  if (from_innermost_p && flags & LI_INCLUDE_ROOT)
+    this->to_visit.quick_push (root->num);
+}
+

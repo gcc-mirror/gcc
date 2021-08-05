@@ -27,6 +27,7 @@
 
 #include <regex>
 #include <forward_list>
+#include <string.h>
 #include <testsuite_hooks.h>
 
 void

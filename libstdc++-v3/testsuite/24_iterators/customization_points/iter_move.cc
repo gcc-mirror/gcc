@@ -51,7 +51,7 @@ constexpr bool
 test_X(int i, int j)
 {
   X x1{i}, x2{j};
-  std::ranges::iter_move(&x1); // no-op
+  (void) std::ranges::iter_move(&x1); // no-op
   x1 = std::ranges::iter_move(&x2);
   return x1.value == j &&  x2.value == -1;
 }

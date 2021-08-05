@@ -327,38 +327,47 @@ namespace __debug
 
       // iterators:
 
+      [[__nodiscard__]]
       iterator
       before_begin() noexcept
       { return { _Base::before_begin(), this }; }
 
+      [[__nodiscard__]]
       const_iterator
       before_begin() const noexcept
       { return { _Base::before_begin(), this }; }
 
+      [[__nodiscard__]]
       iterator
       begin() noexcept
       { return { _Base::begin(), this }; }
 
+      [[__nodiscard__]]
       const_iterator
       begin() const noexcept
       { return { _Base::begin(), this }; }
 
+      [[__nodiscard__]]
       iterator
       end() noexcept
       { return { _Base::end(), this }; }
 
+      [[__nodiscard__]]
       const_iterator
       end() const noexcept
       { return { _Base::end(), this }; }
 
+      [[__nodiscard__]]
       const_iterator
       cbegin() const noexcept
       { return { _Base::cbegin(), this }; }
 
+      [[__nodiscard__]]
       const_iterator
       cbefore_begin() const noexcept
       { return { _Base::cbefore_begin(), this }; }
 
+      [[__nodiscard__]]
       const_iterator
       cend() const noexcept
       { return { _Base::cend(), this }; }
@@ -368,6 +377,7 @@ namespace __debug
 
       // element access:
 
+      [[__nodiscard__]]
       reference
       front()
       {
@@ -375,6 +385,7 @@ namespace __debug
 	return _Base::front();
       }
 
+      [[__nodiscard__]]
       const_reference
       front() const
       {

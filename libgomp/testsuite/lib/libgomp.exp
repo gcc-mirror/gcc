@@ -374,6 +374,11 @@ proc check_effective_target_offload_target_amdgcn { } {
     return [libgomp_check_effective_target_offload_target "amdgcn"]
 }
 
+# Return 1 if compiling for offload target intelmic
+proc check_effective_target_offload_target_intelmic { } {
+    return [libgomp_check_effective_target_offload_target "*-intelmic"]
+}
+
 # Return 1 if offload device is available.
 proc check_effective_target_offload_device { } {
     return [check_runtime_nocache offload_device_available_ {

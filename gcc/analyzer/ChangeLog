@@ -1,3 +1,45 @@
+2021-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101570
+	* analyzer.cc (maybe_reconstruct_from_def_stmt): Add GIMPLE_ASM
+	case.
+	* analyzer.h (class asm_output_svalue): New forward decl.
+	(class reachable_regions): New forward decl.
+	* complexity.cc (complexity::from_vec_svalue): New.
+	* complexity.h (complexity::from_vec_svalue): New decl.
+	* engine.cc (feasibility_state::maybe_update_for_edge): Handle
+	asm stmts by calling on_asm_stmt.
+	* region-model-asm.cc: New file.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_asm_output_svalue): New.
+	(region_model_manager::get_or_create_asm_output_svalue): New.
+	(region_model_manager::log_stats): Log m_asm_output_values_map.
+	* region-model.cc (region_model::on_stmt_pre): Handle GIMPLE_ASM.
+	* region-model.h (visitor::visit_asm_output_svalue): New.
+	(region_model_manager::get_or_create_asm_output_svalue): New decl.
+	(region_model_manager::maybe_fold_asm_output_svalue): New decl.
+	(region_model_manager::asm_output_values_map_t): New typedef.
+	(region_model_manager::m_asm_output_values_map): New field.
+	(region_model::on_asm_stmt): New.
+	* store.cc (binding_cluster::on_asm): New.
+	* store.h (binding_cluster::on_asm): New decl.
+	* svalue.cc (svalue::cmp_ptr): Handle SK_ASM_OUTPUT.
+	(asm_output_svalue::dump_to_pp): New.
+	(asm_output_svalue::dump_input): New.
+	(asm_output_svalue::input_idx_to_asm_idx): New.
+	(asm_output_svalue::accept): New.
+	* svalue.h (enum svalue_kind): Add SK_ASM_OUTPUT.
+	(svalue::dyn_cast_asm_output_svalue): New.
+	(class asm_output_svalue): New.
+	(is_a_helper <const asm_output_svalue *>::test): New.
+	(struct default_hash_traits<asm_output_svalue::key_t>): New.
+
+2021-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/101721
+	* sm-malloc.cc (known_allocator_p): Only check DECL_FUNCTION_CODE on
+	BUILT_IN_NORMAL builtins.
+
 2021-07-29  Ankur Saini  <arsenic@sourceware.org>
 
 	* call-string.cc (call_string::element_t::operator==): New operator.

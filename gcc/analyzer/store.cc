@@ -1796,6 +1796,23 @@ binding_cluster::on_unknown_fncall (const gcall *call,
     }
 }
 
+/* Mark this cluster as having been clobbered by STMT.  */
+
+void
+binding_cluster::on_asm (const gasm *stmt,
+			 store_manager *mgr)
+{
+  m_map.empty ();
+
+  /* Bind it to a new "conjured" value using CALL.  */
+  const svalue *sval
+    = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
+    (m_base_region->get_type (), stmt, m_base_region);
+  bind (mgr, m_base_region, sval);
+
+  m_touched = true;
+}
+
 /* Return true if this binding_cluster has no information
    i.e. if there are no bindings, and it hasn't been marked as having
    escaped, or touched symbolically.  */

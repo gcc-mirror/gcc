@@ -1,3 +1,247 @@
+2021-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/forward_list.h: Add [[nodiscard]] to functions
+	with no side-effects.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_queue.h: Likewise.
+	* include/bits/stl_stack.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/forward_list: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/safe_iterator.h: Likewise.
+	* include/debug/vector: Likewise.
+	* include/std/array: Likewise.
+	* testsuite/23_containers/array/creation/3_neg.cc: Use
+	-Wno-unused-result.
+	* testsuite/23_containers/array/debug/back1_neg.cc: Cast result
+	to void.
+	* testsuite/23_containers/array/debug/back2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/front1_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/front2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/square_brackets_operator1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/debug/square_brackets_operator2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/deque/cons/clear_allocator.cc: Cast
+	result to void.
+	* testsuite/23_containers/deque/debug/invalidation/4.cc:
+	Likewise.
+	* testsuite/23_containers/deque/types/1.cc: Use
+	-Wno-unused-result.
+	* testsuite/23_containers/list/types/1.cc: Cast result to void.
+	* testsuite/23_containers/priority_queue/members/7161.cc:
+	Likewise.
+	* testsuite/23_containers/queue/members/7157.cc: Likewise.
+	* testsuite/23_containers/vector/59829.cc: Likewise.
+	* testsuite/23_containers/vector/ext_pointer/types/1.cc:
+	Likewise.
+	* testsuite/23_containers/vector/ext_pointer/types/2.cc:
+	Likewise.
+	* testsuite/23_containers/vector/types/1.cc: Use
+	-Wno-unused-result.
+
+2021-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (iter_move): Add
+	[[nodiscard]].
+	* include/bits/range_access.h (begin, end, cbegin, cend)
+	(rbegin, rend, crbegin, crend, size, data, ssize): Likewise.
+	* include/bits/ranges_base.h (ranges::begin, ranges::end)
+	(ranges::cbegin, ranges::cend, ranges::rbegin, ranges::rend)
+	(ranges::crbegin, ranges::crend, ranges::size, ranges::ssize)
+	(ranges::empty, ranges::data, ranges::cdata): Likewise.
+	* include/bits/stl_iterator.h (reverse_iterator, __normal_iterator)
+	(back_insert_iterator, front_insert_iterator, insert_iterator)
+	(move_iterator, move_sentinel, common_iterator)
+	(counted_iterator): Likewise.
+	* include/bits/stl_iterator_base_funcs.h (distance, next, prev):
+	Likewise.
+	* include/bits/stream_iterator.h (istream_iterator)
+	(ostream_iterartor): Likewise.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator)
+	(ostreambuf_iterator): Likewise.
+	* include/std/ranges (views::single, views::iota, views::all)
+	(views::filter, views::transform, views::take, views::take_while)
+	(views::drop, views::drop_while, views::join, views::lazy_split)
+	(views::split, views::counted, views::common, views::reverse)
+	(views::elements): Likewise.
+	* testsuite/20_util/rel_ops.cc: Use -Wno-unused-result.
+	* testsuite/24_iterators/move_iterator/greedy_ops.cc: Likewise.
+	* testsuite/24_iterators/normal_iterator/greedy_ops.cc:
+	Likewise.
+	* testsuite/24_iterators/reverse_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/reverse_iterator/greedy_ops.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/range_access/char/1.cc:
+	Cast result to void.
+	* testsuite/21_strings/basic_string/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/range_access/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/23_containers/array/range_access.cc: Likewise.
+	* testsuite/23_containers/deque/range_access.cc: Likewise.
+	* testsuite/23_containers/forward_list/range_access.cc:
+	Likewise.
+	* testsuite/23_containers/list/range_access.cc: Likewise.
+	* testsuite/23_containers/map/range_access.cc: Likewise.
+	* testsuite/23_containers/multimap/range_access.cc: Likewise.
+	* testsuite/23_containers/multiset/range_access.cc: Likewise.
+	* testsuite/23_containers/set/range_access.cc: Likewise.
+	* testsuite/23_containers/unordered_map/range_access.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/range_access.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/range_access.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/range_access.cc:
+	Likewise.
+	* testsuite/23_containers/vector/range_access.cc: Likewise.
+	* testsuite/24_iterators/customization_points/iter_move.cc:
+	Likewise.
+	* testsuite/24_iterators/istream_iterator/sentinel.cc:
+	Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/sentinel.cc:
+	Likewise.
+	* testsuite/24_iterators/move_iterator/dr2061.cc: Likewise.
+	* testsuite/24_iterators/operations/prev_neg.cc: Likewise.
+	* testsuite/24_iterators/ostreambuf_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/range_access/range_access.cc:
+	Likewise.
+	* testsuite/24_iterators/range_operations/100768.cc: Likewise.
+	* testsuite/26_numerics/valarray/range_access2.cc: Likewise.
+	* testsuite/28_regex/range_access.cc: Likewise.
+	* testsuite/experimental/string_view/range_access/char/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/ext/vstring/range_access.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take.cc: Likewise.
+	* testsuite/std/ranges/p2259.cc: Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (linear_congruential_engine): Do not
+	define static constexpr members when they are implicitly inline.
+	* include/std/ratio (ratio, __ratio_multiply, __ratio_divide)
+	(__ratio_add, __ratio_subtract): Likewise.
+	* include/std/type_traits (integral_constant): Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_common_types.h: Replace uses of
+	tr1::unordered_map and tr1::unordered_set with their C++11
+	equivalents.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (polymorphic_allocator::delete_object):
+	Call destructor directly instead of using destroy.
+	(allocator_traits<polymorphic_allocator<T>>): Define partial
+	specialization.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/binders/3113.cc: Remove
+	trailing whitespace.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/creation/dr925.cc: Likewise.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc:
+	Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecation.
+	* doc/html/*: Regenerate.
+	* include/bits/c++config (_GLIBCXX14_DEPRECATED): Define.
+	(_GLIBCXX14_DEPRECATED_SUGGEST): Define.
+	* include/bits/stl_algo.h (random_shuffle): Deprecate for C++14
+	and later.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Adjust
+	for C++11 and C++14 changes to std::random_shuffle and
+	std::shuffle.
+	* testsuite/25_algorithms/random_shuffle/1.cc: Add options to
+	use deprecated algorithms.
+	* testsuite/25_algorithms/random_shuffle/59603.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/forward_list/operations/3.cc:
+	Use lambda instead of std::bind2nd.
+	* testsuite/20_util/function_objects/binders/3113.cc: Add
+	options for testing deprecated features.
+	* testsuite/20_util/pair/cons/99957.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/creation/dr925.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/ext/pb_ds/example/priority_queue_erase_if.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/example/priority_queue_split_join.cc:
+	Likewise.
+	* testsuite/lib/dg-options.exp (dg_add_options_using-deprecated):
+	New proc.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_executor.h (_State_info): Replace
+	unique_ptr<bool[]> with array of bool.
+	* include/bits/regex_executor.tcc: Likewise.
+	* include/bits/regex_scanner.tcc: Replace std::strchr with
+	__builtin_strchr.
+	* include/std/regex: Replace standard headers with smaller
+	internal ones.
+	* testsuite/28_regex/traits/char/lookup_classname.cc: Include
+	<string.h> for strlen.
+	* testsuite/28_regex/traits/char/lookup_collatename.cc:
+	Likewise.
+
+2021-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (__detail::_Scoped_ptr): Define new
+	RAII class template.
+	(wstring_convert, wbuffer_convert): Use __detail::_Scoped_ptr
+	instead of unique_ptr.
+
 2021-08-02  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/101599

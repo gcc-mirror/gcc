@@ -1,3 +1,9 @@
+2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101759
+	* parser.c (cp_parser_default_argument): Temporarily override
+	parser->omp_declare_simd and parser->oacc_routine to NULL.
+
 2021-08-02  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100828

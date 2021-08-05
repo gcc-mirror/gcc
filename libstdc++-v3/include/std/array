@@ -127,65 +127,81 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { std::swap_ranges(begin(), end(), __other.begin()); }
 
       // Iterators.
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR iterator
       begin() noexcept
       { return iterator(data()); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_iterator
       begin() const noexcept
       { return const_iterator(data()); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR iterator
       end() noexcept
       { return iterator(data() + _Nm); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_iterator
       end() const noexcept
       { return const_iterator(data() + _Nm); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR reverse_iterator
       rbegin() noexcept
       { return reverse_iterator(end()); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_reverse_iterator
       rbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR reverse_iterator
       rend() noexcept
       { return reverse_iterator(begin()); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_reverse_iterator
       rend() const noexcept
       { return const_reverse_iterator(begin()); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_iterator
       cbegin() const noexcept
       { return const_iterator(data()); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_iterator
       cend() const noexcept
       { return const_iterator(data() + _Nm); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
 
       // Capacity.
+      [[__nodiscard__]]
       constexpr size_type
       size() const noexcept { return _Nm; }
 
+      [[__nodiscard__]]
       constexpr size_type
       max_size() const noexcept { return _Nm; }
 
-      _GLIBCXX_NODISCARD constexpr bool
+      [[__nodiscard__]]
+      constexpr bool
       empty() const noexcept { return size() == 0; }
 
       // Element access.
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR reference
       operator[](size_type __n) noexcept
       {
@@ -193,6 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _AT_Type::_S_ref(_M_elems, __n);
       }
 
+      [[__nodiscard__]]
       constexpr const_reference
       operator[](size_type __n) const noexcept
       {
@@ -224,6 +241,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR reference
       front() noexcept
       {
@@ -231,6 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *begin();
       }
 
+      [[__nodiscard__]]
       constexpr const_reference
       front() const noexcept
       {
@@ -240,6 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _AT_Type::_S_ref(_M_elems, 0);
       }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR reference
       back() noexcept
       {
@@ -247,6 +267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _Nm ? *(end() - 1) : *end();
       }
 
+      [[__nodiscard__]]
       constexpr const_reference
       back() const noexcept
       {
@@ -257,10 +278,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  	           : _AT_Type::_S_ref(_M_elems, 0);
       }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR pointer
       data() noexcept
       { return _AT_Type::_S_ptr(_M_elems); }
 
+      [[__nodiscard__]]
       _GLIBCXX17_CONSTEXPR const_pointer
       data() const noexcept
       { return _AT_Type::_S_ptr(_M_elems); }
@@ -275,6 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Array comparisons.
   template<typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
@@ -282,6 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_lib_three_way_comparison && __cpp_lib_concepts
   template<typename _Tp, size_t _Nm>
+    [[nodiscard]]
     constexpr __detail::__synth3way_t<_Tp>
     operator<=>(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
     {
@@ -304,12 +329,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #else
   template<typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     _GLIBCXX20_CONSTEXPR
     inline bool
     operator!=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one == __two); }
 
   template<typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     _GLIBCXX20_CONSTEXPR
     inline bool
     operator<(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
@@ -319,18 +346,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     _GLIBCXX20_CONSTEXPR
     inline bool
     operator>(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return __two < __one; }
 
   template<typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     _GLIBCXX20_CONSTEXPR
     inline bool
     operator<=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one > __two); }
 
   template<typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     _GLIBCXX20_CONSTEXPR
     inline bool
     operator>=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
@@ -361,6 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     constexpr _Tp&
     get(array<_Tp, _Nm>& __arr) noexcept
     {
@@ -369,6 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     constexpr _Tp&&
     get(array<_Tp, _Nm>&& __arr) noexcept
     {
@@ -377,6 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     constexpr const _Tp&
     get(const array<_Tp, _Nm>& __arr) noexcept
     {
@@ -385,6 +418,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    [[__nodiscard__]]
     constexpr const _Tp&&
     get(const array<_Tp, _Nm>&& __arr) noexcept
     {
@@ -406,6 +440,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, size_t _Nm>
+    [[nodiscard]]
     constexpr array<remove_cv_t<_Tp>, _Nm>
     to_array(_Tp (&__a)[_Nm])
     noexcept(is_nothrow_constructible_v<_Tp, _Tp&>)
@@ -418,6 +453,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, size_t _Nm>
+    [[nodiscard]]
     constexpr array<remove_cv_t<_Tp>, _Nm>
     to_array(_Tp (&&__a)[_Nm])
     noexcept(is_nothrow_move_constructible_v<_Tp>)

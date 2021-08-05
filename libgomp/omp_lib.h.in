@@ -244,6 +244,9 @@
       external omp_get_initial_device
       integer(4) omp_get_initial_device
 
+      external omp_get_device_num
+      integer(4) omp_get_device_num
+
       external omp_get_max_task_priority
       integer(4) omp_get_max_task_priority
 
