@@ -27,7 +27,7 @@
 #define note dejagnu_note
 #endif
 
-#include <dejagnu.h>
+#include "jit-dejagnu.h"
 
 #ifdef MAKE_DEJAGNU_H_THREADSAFE
 #undef pass
