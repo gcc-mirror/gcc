@@ -80,12 +80,12 @@ public:
 
   static CanonicalPath create_empty () { return CanonicalPath ({}); }
 
-  bool is_error () const { return segs.size () == 0; }
+  bool is_empty () const { return segs.size () == 0; }
 
   CanonicalPath append (const CanonicalPath &other) const
   {
-    rust_assert (!other.is_error ());
-    if (is_error ())
+    rust_assert (!other.is_empty ());
+    if (is_empty ())
       return CanonicalPath (other.segs);
 
     std::vector<std::pair<NodeId, std::string>> copy (segs);

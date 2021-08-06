@@ -193,7 +193,7 @@ public:
       = ResolveTypeToCanonicalPath::resolve (path,
 					     canonicalize_type_with_generics,
 					     true);
-    if (canonical_path.is_error ())
+    if (canonical_path.is_empty ())
       {
 	rust_error_at (path.get_locus (),
 		       "Failed to resolve canonical path for TypePath");
@@ -201,7 +201,7 @@ public:
       }
 
     CanonicalPath lookup = canonical_path;
-    if (!prefix.is_error ())
+    if (!prefix.is_empty ())
       lookup = prefix.append (canonical_path);
 
     auto resolver = Resolver::get ();
