@@ -1463,6 +1463,8 @@ execute_omp_oacc_neuter_broadcast ()
     gcc_checking_assert (!it);
   prop_set.release ();
 
+  delete par;
+
   /* This doesn't seem to make a difference.  */
   loops_state_clear (LOOP_CLOSED_SSA);
 
