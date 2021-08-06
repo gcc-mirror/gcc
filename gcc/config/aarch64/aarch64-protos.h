@@ -259,12 +259,16 @@ struct sve_vec_cost : simd_vec_cost
 			  unsigned int fadda_f16_cost,
 			  unsigned int fadda_f32_cost,
 			  unsigned int fadda_f64_cost,
+			  unsigned int gather_load_x32_cost,
+			  unsigned int gather_load_x64_cost,
 			  unsigned int scatter_store_elt_cost)
     : simd_vec_cost (base),
       clast_cost (clast_cost),
       fadda_f16_cost (fadda_f16_cost),
       fadda_f32_cost (fadda_f32_cost),
       fadda_f64_cost (fadda_f64_cost),
+      gather_load_x32_cost (gather_load_x32_cost),
+      gather_load_x64_cost (gather_load_x64_cost),
       scatter_store_elt_cost (scatter_store_elt_cost)
   {}
 
@@ -278,6 +282,11 @@ struct sve_vec_cost : simd_vec_cost
   const int fadda_f16_cost;
   const int fadda_f32_cost;
   const int fadda_f64_cost;
+
+  /* The cost of a gather load instruction.  The x32 value is for loads
+     of 32-bit elements and the x64 value is for loads of 64-bit elements.  */
+  const int gather_load_x32_cost;
+  const int gather_load_x64_cost;
 
   /* The per-element cost of a scatter store.  */
   const int scatter_store_elt_cost;
