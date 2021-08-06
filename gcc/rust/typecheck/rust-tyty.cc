@@ -27,12 +27,40 @@
 #include "rust-tyty-cast.h"
 #include "rust-hir-map.h"
 #include "rust-substitution-mapper.h"
+#include "rust-hir-trait-ref.h"
+#include "rust-hir-type-bounds.h"
 
 extern ::Backend *
 rust_get_backend ();
 
 namespace Rust {
 namespace TyTy {
+
+bool
+BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
+{
+  const Resolver::TraitReference *query = predicate.get ();
+  for (auto &bound : specified_bounds)
+    {
+      const Resolver::TraitReference *item = bound.get ();
+      bool found = item->get_mappings ().get_defid ()
+		   == query->get_mappings ().get_defid ();
+      if (found)
+	return true;
+    }
+
+  std::vector<std::reference_wrapper<Resolver::TraitReference>> probed
+    = Resolver::TypeBoundsProbe::Probe (this);
+  for (const Resolver::TraitReference &bound : probed)
+    {
+      bool found = bound.get_mappings ().get_defid ()
+		   == query->get_mappings ().get_defid ();
+      if (found)
+	return true;
+    }
+
+  return false;
+}
 
 TyVar::TyVar (HirId ref) : ref (ref)
 {
@@ -556,7 +584,7 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty ());
+	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
     }
 
   adt->iterate_fields ([&] (StructFieldType *field) mutable -> bool {
@@ -811,7 +839,7 @@ FnType::is_equal (const BaseType &other) const
 BaseType *
 FnType::clone () const
 {
-  std::vector<std::pair<HIR::Pattern *, BaseType *> > cloned_params;
+  std::vector<std::pair<HIR::Pattern *, BaseType *>> cloned_params;
   for (auto &p : params)
     cloned_params.push_back (
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
@@ -836,7 +864,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty ());
+	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
     }
 
   auto fty = fn->get_return_type ();

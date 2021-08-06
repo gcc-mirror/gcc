@@ -172,7 +172,21 @@ public:
     return specified_bounds;
   }
 
+  std::string bounds_as_string () const
+  {
+    std::string buf;
+    for (auto &b : specified_bounds)
+      buf += b.as_string () + ", ";
+
+    return "bounds:[" + buf + "]";
+  }
+
 protected:
+  void add_bound (TypeBoundPredicate predicate)
+  {
+    specified_bounds.push_back (predicate);
+  }
+
   std::vector<TypeBoundPredicate> specified_bounds;
 };
 
@@ -235,6 +249,37 @@ public:
   virtual bool is_equal (const BaseType &other) const
   {
     return get_kind () == other.get_kind ();
+  }
+
+  bool satisfies_bound (const TypeBoundPredicate &predicate) const;
+
+  bool bounds_compatible (const BaseType &other, Location locus) const
+  {
+    std::vector<std::reference_wrapper<const TypeBoundPredicate>>
+      unsatisfied_bounds;
+    for (auto &bound : get_specified_bounds ())
+      {
+	if (!other.satisfies_bound (bound))
+	  unsatisfied_bounds.push_back (bound);
+      }
+
+    if (unsatisfied_bounds.size () > 0)
+      {
+	RichLocation r (locus);
+	rust_error_at (r, "bounds not satisfied for %s",
+		       other.as_string ().c_str ());
+	return false;
+      }
+
+    return unsatisfied_bounds.size () == 0;
+  }
+
+  void inherit_bounds (const BaseType &other)
+  {
+    for (auto &bound : other.get_specified_bounds ())
+      {
+	add_bound (bound);
+      }
   }
 
   virtual bool is_unit () const { return false; }
@@ -575,8 +620,18 @@ public:
 
   std::string as_string () const { return param->as_string (); }
 
-  void fill_param_ty (BaseType *type)
+  void fill_param_ty (BaseType *type, Location locus)
   {
+    if (type->get_kind () == TyTy::TypeKind::INFER)
+      {
+	type->inherit_bounds (*param);
+      }
+    else
+      {
+	if (!param->bounds_compatible (*type, locus))
+	  return;
+      }
+
     if (type->get_kind () == TypeKind::PARAM)
       {
 	delete param;
