@@ -548,9 +548,8 @@ namespace std
     template<typename _Tp, typename _Up>
       requires three_way_comparable_with<_Tp, _Up>
       constexpr auto
-      operator()(_Tp&& __t, _Up&& __u) const
+      operator() [[nodiscard]] (_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Tp>() <=> std::declval<_Up>()))
-      [[nodiscard]]
       {
 	if constexpr (__detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
 	  {
@@ -672,9 +671,8 @@ namespace std
       template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __strongly_ordered<_Tp, _Up>
 	constexpr strong_ordering
-	operator()(_Tp&& __e, _Up&& __f) const
+	operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
-	[[nodiscard]]
 	{
 	  /* FIXME:
 	  if constexpr (floating_point<decay_t<_Tp>>)
@@ -720,9 +718,8 @@ namespace std
       template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __weakly_ordered<_Tp, _Up>
 	constexpr weak_ordering
-	operator()(_Tp&& __e, _Up&& __f) const
+	operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
-	[[nodiscard]]
 	{
 	  if constexpr (floating_point<decay_t<_Tp>>)
 	    return __cmp_cust::__fp_weak_ordering(__e, __f);
@@ -766,9 +763,8 @@ namespace std
       template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __partially_ordered<_Tp, _Up>
 	constexpr partial_ordering
-	operator()(_Tp&& __e, _Up&& __f) const
+	operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
-	[[nodiscard]]
 	{
 	  if constexpr (__adl_partial<_Tp, _Up>)
 	    return partial_ordering(partial_order(static_cast<_Tp&&>(__e),
@@ -808,9 +804,8 @@ namespace std
       template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __strongly_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
 	constexpr strong_ordering
-	operator()(_Tp&& __e, _Up&& __f) const
+	operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
-	[[nodiscard]]
 	{
 	  if constexpr (__strongly_ordered<_Tp, _Up>)
 	    return _Strong_order{}(static_cast<_Tp&&>(__e),
@@ -841,9 +836,8 @@ namespace std
       template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __weakly_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
 	constexpr weak_ordering
-	operator()(_Tp&& __e, _Up&& __f) const
+	operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
-	[[nodiscard]]
 	{
 	  if constexpr (__weakly_ordered<_Tp, _Up>)
 	    return _Weak_order{}(static_cast<_Tp&&>(__e),
@@ -884,9 +878,8 @@ namespace std
       template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __partially_ordered<_Tp, _Up> || __op_eq_lt_lt<_Tp, _Up>
 	constexpr partial_ordering
-	operator()(_Tp&& __e, _Up&& __f) const
+	operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
-	[[nodiscard]]
 	{
 	  if constexpr (__partially_ordered<_Tp, _Up>)
 	    return _Partial_order{}(static_cast<_Tp&&>(__e),
