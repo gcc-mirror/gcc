@@ -485,7 +485,7 @@ lhd_make_node (enum tree_code code)
    might be reusable elsewhere.  */
 tree
 lhd_simulate_enum_decl (location_t loc, const char *name,
-			vec<string_int_pair> values)
+			vec<string_int_pair> *values_ptr)
 {
   tree enumtype = lang_hooks.types.make_type (ENUMERAL_TYPE);
   tree enumdecl = build_decl (loc, TYPE_DECL, get_identifier (name), enumtype);
@@ -493,6 +493,7 @@ lhd_simulate_enum_decl (location_t loc, const char *name,
 
   tree value_chain = NULL_TREE;
   string_int_pair *value;
+  vec<string_int_pair> values = *values_ptr;
   unsigned int i;
   FOR_EACH_VEC_ELT (values, i, value)
     {
