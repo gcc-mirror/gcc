@@ -71,7 +71,14 @@ static void store_split_bit_field (rtx, opt_scalar_int_mode,
 static rtx extract_integral_bit_field (rtx, opt_scalar_int_mode,
 				       unsigned HOST_WIDE_INT,
 				       unsigned HOST_WIDE_INT, int, rtx,
-				       machine_mode, machine_mode, bool, bool);
+				       machine_mode, machine_mode,
+				       scalar_int_mode, bool, bool);
+static rtx extract_and_convert_fixed_bit_field (scalar_int_mode,
+						machine_mode, machine_mode,
+						rtx, opt_scalar_int_mode,
+						unsigned HOST_WIDE_INT,
+						unsigned HOST_WIDE_INT, rtx,
+						int, bool);
 static rtx extract_fixed_bit_field (machine_mode, rtx, opt_scalar_int_mode,
 				    unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, rtx, int, bool);
@@ -1632,6 +1639,7 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 {
   rtx op0 = str_rtx;
   machine_mode mode1;
+  scalar_int_mode int_tmode;
 
   if (tmode == VOIDmode)
     tmode = mode;
@@ -1853,10 +1861,46 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   /* It's possible we'll need to handle other cases here for
      polynomial bitnum and bitsize.  */
 
+  /* Make sure we are playing with integral modes.  Pun with subregs
+     if we aren't. When tmode is HFmode, op0 is SImode, there will be ICE
+     in extract_integral_bit_field.  */
+  opt_scalar_int_mode target_imode = int_mode_for_mode (tmode);
+  if (!target_imode.exists (&int_tmode) || int_tmode != tmode)
+    {
+      if (target_imode.exists (&int_tmode))
+	{
+	  rtx ret = extract_integral_bit_field (op0, op0_mode,
+						bitsize.to_constant (),
+						bitnum.to_constant (),
+						unsignedp, NULL, int_tmode,
+						int_tmode, int_tmode,
+						reverse, fallback_p);
+	  gcc_assert (ret);
+
+	  if (!REG_P (ret))
+	    ret = force_reg (int_tmode, ret);
+	  return gen_lowpart_SUBREG (tmode, ret);
+	}
+      else
+	{
+	  if (!fallback_p)
+	    return NULL;
+
+	  int_tmode = int_mode_for_mode (mode).require ();
+	  return extract_and_convert_fixed_bit_field (int_tmode, tmode, mode,
+						      op0, op0_mode,
+						      bitsize.to_constant (),
+						      bitnum.to_constant (),
+						      target, unsignedp,
+						      reverse);
+	}
+    }
+
   /* From here on we need to be looking at a fixed-size insertion.  */
   return extract_integral_bit_field (op0, op0_mode, bitsize.to_constant (),
 				     bitnum.to_constant (), unsignedp,
-				     target, mode, tmode, reverse, fallback_p);
+				     target, mode, tmode,
+				     int_tmode, reverse, fallback_p);
 }
 
 /* Subroutine of extract_bit_field_1, with the same arguments, except
@@ -1869,6 +1913,7 @@ extract_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 			    unsigned HOST_WIDE_INT bitsize,
 			    unsigned HOST_WIDE_INT bitnum, int unsignedp,
 			    rtx target, machine_mode mode, machine_mode tmode,
+			    scalar_int_mode int_tmode,
 			    bool reverse, bool fallback_p)
 {
   /* Handle fields bigger than a word.  */
@@ -2035,29 +2080,10 @@ extract_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
   if (!fallback_p)
     return NULL;
 
-  /* Find a correspondingly-sized integer field, so we can apply
-     shifts and masks to it.  */
-  scalar_int_mode int_mode;
-  if (!int_mode_for_mode (tmode).exists (&int_mode))
-    /* If this fails, we should probably push op0 out to memory and then
-       do a load.  */
-    int_mode = int_mode_for_mode (mode).require ();
-
-  target = extract_fixed_bit_field (int_mode, op0, op0_mode, bitsize,
-				    bitnum, target, unsignedp, reverse);
-
-  /* Complex values must be reversed piecewise, so we need to undo the global
-     reversal, convert to the complex mode and reverse again.  */
-  if (reverse && COMPLEX_MODE_P (tmode))
-    {
-      target = flip_storage_order (int_mode, target);
-      target = convert_extracted_bit_field (target, mode, tmode, unsignedp);
-      target = flip_storage_order (tmode, target);
-    }
-  else
-    target = convert_extracted_bit_field (target, mode, tmode, unsignedp);
-
-  return target;
+  return extract_and_convert_fixed_bit_field (int_tmode, tmode, mode,
+					      op0, op0_mode, bitsize,
+					      bitnum, target, unsignedp,
+					      reverse);
 }
 
 /* Generate code to extract a byte-field from STR_RTX
@@ -2129,6 +2155,33 @@ extract_bit_field (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   return extract_bit_field_1 (str_rtx, bitsize, bitnum, unsignedp,
 			      target, mode, tmode, reverse, true, alt_rtl);
 }
+
+/* Combination of extract_fixed_bit_field and convert_extracted_bit_field.  */
+static rtx
+extract_and_convert_fixed_bit_field (scalar_int_mode int_tmode,
+				     machine_mode tmode, machine_mode mode,
+				     rtx op0, opt_scalar_int_mode op0_mode,
+				     unsigned HOST_WIDE_INT bitsize,
+				     unsigned HOST_WIDE_INT bitnum,
+				     rtx target, int unsignedp, bool reverse)
+{
+  target = extract_fixed_bit_field (int_tmode, op0, op0_mode, bitsize,
+				    bitnum, target, unsignedp, reverse);
+
+  /* Complex values must be reversed piecewise, so we need to undo the global
+     reversal, convert to the complex mode and reverse again.  */
+  if (reverse && COMPLEX_MODE_P (tmode))
+    {
+      target = flip_storage_order (int_tmode, target);
+      target = convert_extracted_bit_field (target, mode, tmode, unsignedp);
+      target = flip_storage_order (tmode, target);
+    }
+  else
+    target = convert_extracted_bit_field (target, mode, tmode, unsignedp);
+
+  return target;
+}
+
 
 /* Use shifts and boolean operations to extract a field of BITSIZE bits
    from bit BITNUM of OP0.  If OP0_MODE is defined, it is the mode of OP0,
