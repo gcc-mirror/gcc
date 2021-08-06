@@ -20530,7 +20530,13 @@ tsubst_copy_and_build (tree t,
 	if (member == error_mark_node)
 	  RETURN (error_mark_node);
 
-	if (TREE_CODE (member) == FIELD_DECL)
+	if (object_type && TYPE_PTRMEMFUNC_P (object_type)
+	    && TREE_CODE (member) == FIELD_DECL)
+	  {
+	    r = build_ptrmemfunc_access_expr (object, DECL_NAME (member));
+	    RETURN (r);
+	  }
+	else if (TREE_CODE (member) == FIELD_DECL)
 	  {
 	    r = finish_non_static_data_member (member, object, NULL_TREE);
 	    if (TREE_CODE (r) == COMPONENT_REF)
