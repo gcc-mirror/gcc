@@ -114,13 +114,11 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define gcov_var __gcov_var
 #define gcov_open __gcov_open
 #define gcov_close __gcov_close
-#define gcov_write_tag_length __gcov_write_tag_length
 #define gcov_position __gcov_position
 #define gcov_seek __gcov_seek
 #define gcov_rewrite __gcov_rewrite
 #define gcov_is_error __gcov_is_error
 #define gcov_write_unsigned __gcov_write_unsigned
-#define gcov_write_counter __gcov_write_counter
 #define gcov_write_summary __gcov_write_summary
 #define gcov_read_unsigned __gcov_read_unsigned
 #define gcov_read_counter __gcov_read_counter
@@ -345,9 +343,6 @@ extern int __gcov_execve (const char *, char  *const [], char *const [])
 
 /* Functions that only available in libgcov.  */
 GCOV_LINKAGE int gcov_open (const char */*name*/) ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_write_counter (gcov_type) ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_write_tag_length (gcov_unsigned_t, gcov_unsigned_t)
-    ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
                                       const struct gcov_summary *)
     ATTRIBUTE_HIDDEN;

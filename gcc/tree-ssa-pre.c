@@ -3107,7 +3107,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 
 static bool
 insert_into_preds_of_block (basic_block block, unsigned int exprnum,
-			    vec<pre_expr> avail)
+			    vec<pre_expr> &avail)
 {
   pre_expr expr = expression_for_id (exprnum);
   pre_expr newphi;

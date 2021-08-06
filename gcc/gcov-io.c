@@ -229,6 +229,16 @@ gcov_magic (gcov_unsigned_t magic, gcov_unsigned_t expected)
 #endif
 
 #if !IN_GCOV
+/* Write DATA of LENGTH characters to coverage file.  */
+
+GCOV_LINKAGE void
+gcov_write (const void *data, unsigned length)
+{
+  gcov_unsigned_t r = fwrite (data, length, 1, gcov_var.file);
+  if (r != 1)
+    gcov_var.error = 1;
+}
+
 /* Write unsigned VALUE to coverage file.  */
 
 GCOV_LINKAGE void
@@ -238,21 +248,6 @@ gcov_write_unsigned (gcov_unsigned_t value)
   if (r != 1)
     gcov_var.error = 1;
 }
-
-/* Write counter VALUE to coverage file.  Sets error flag
-   appropriately.  */
-
-#if IN_LIBGCOV
-GCOV_LINKAGE void
-gcov_write_counter (gcov_type value)
-{
-  gcov_write_unsigned ((gcov_unsigned_t) value);
-  if (sizeof (value) > sizeof (gcov_unsigned_t))
-    gcov_write_unsigned ((gcov_unsigned_t) (value >> 32));
-  else
-    gcov_write_unsigned (0);
-}
-#endif /* IN_LIBGCOV */
 
 #if !IN_LIBGCOV
 /* Write STRING to coverage file.  Sets error flag on file
@@ -349,22 +344,13 @@ gcov_write_length (gcov_position_t position)
 
 #else /* IN_LIBGCOV */
 
-/* Write a tag TAG and length LENGTH.  */
-
-GCOV_LINKAGE void
-gcov_write_tag_length (gcov_unsigned_t tag, gcov_unsigned_t length)
-{
-  gcov_write_unsigned (tag);
-  gcov_write_unsigned (length);
-}
-
-/* Write a summary structure to the gcov file.  Return nonzero on
-   overflow.  */
+/* Write a summary structure to the gcov file.  */
 
 GCOV_LINKAGE void
 gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
 {
-  gcov_write_tag_length (tag, GCOV_TAG_SUMMARY_LENGTH);
+  gcov_write_unsigned (tag);
+  gcov_write_unsigned (GCOV_TAG_SUMMARY_LENGTH);
   gcov_write_unsigned (summary->runs);
   gcov_write_unsigned (summary->sum_max);
 }

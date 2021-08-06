@@ -367,6 +367,7 @@ char *mangle_path (char const *base);
 
 #if !IN_GCOV
 /* Available outside gcov */
+GCOV_LINKAGE void gcov_write (const void *, unsigned) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_write_unsigned (gcov_unsigned_t) ATTRIBUTE_HIDDEN;
 #endif
 

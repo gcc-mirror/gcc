@@ -1,3 +1,99 @@
+2021-08-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* config/i386/i386.c (ix86_can_inline_p): Ignore MASK_80387 if
+	callee only uses GPRs.
+	* config/i386/ia32intrin.h: Revert commit 5463cee2770.
+	* config/i386/serializeintrin.h: Revert commit 71958f740f1.
+	* config/i386/x86gprintrin.h: Add
+	#pragma GCC target("general-regs-only") and #pragma GCC pop_options
+	to disable non-GPR ISAs.
+
+2021-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/101787
+	* doc/md.texi (cond_ashl, cond_ashr, cond_lshr): Document.
+
+2021-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_is_store_elt_extraction, vect_is_reduction)
+	(vect_reduc_type, vect_embedded_comparison_type, vect_comparison_type)
+	(vect_is_extending_load, vect_is_integer_truncation): New functions,
+	moved from aarch64.c but given different names.
+	* config/aarch64/aarch64.c (aarch64_is_store_elt_extraction)
+	(aarch64_is_reduction, aarch64_reduc_type)
+	(aarch64_embedded_comparison_type, aarch64_comparison_type)
+	(aarch64_extending_load_p, aarch64_integer_truncation_p): Delete
+	in favor of the above.  Update callers accordingly.
+
+2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/101723
+	* config/arm/arm-cpus.in (generic-armv7-a): Add quirk to suppress
+	writing .cpu directive in asm output.
+	* config/arm/arm.c (arm_identify_fpu_from_isa): New variable.
+	(arm_last_printed_arch_string): Delete.
+	(arm_last-printed_fpu_string): Delete.
+	(arm_configure_build_target): If use of floating-point/SIMD is
+	disabled, remove all fp/simd related features from the target ISA.
+	(last_arm_targ_options): New variable.
+	(arm_print_asm_arch_directives): Add new parameters.  Change order
+	of emitted directives and handle all cases here.
+	(arm_file_start): Always call arm_print_asm_arch_directives, move
+	all generation of .arch/.arch_extension here.
+	(arm_file_end): Call arm_print_asm_arch.
+	(arm_declare_function_name): Call arm_print_asm_arch_directives
+	instead of printing .arch/.fpu directives directly.
+
+2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_configure_build_target): Don't call
+	arm_option_reconfigure_globals.
+	(arm_option_restore): Call arm_option_reconfigure_globals after
+	reconfiguring the target.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Likewise.
+
+2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_configure_build_target): Ensure the target's
+	arch_name is always set.
+
+2021-08-05  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64.c: Traverse RTL tree to prevent cost
+	of vec_select high-half from being added into Neon subtract
+	cost.
+
+2021-08-05  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64.c: Traverse RTL tree to prevent cost
+	of vec_select high-half from being added into Neon add cost.
+
+2021-08-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* cfgloop.h (loops_list::loops_list): Add one optional argument
+	root and adjust accordingly, update loop tree walking and factor
+	out to ...
+	* cfgloop.c (loops_list::walk_loop_tree): ... this.  New function.
+
+2021-08-05  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR tree-optimization/101626
+	* tree-sra.c (propagate_subaccesses_from_rhs): Do not set the
+	reverse scalar storage order on a pointer or vector component.
+
+2021-08-05  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (cond_<code><mode>): New expander.
+
+2021-08-05  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (cond_<code><mode>): New expander.
+
+2021-08-05  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (cond_<code><mode>): New expander.
+
 2021-08-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101570

@@ -38,16 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #endif
 
-/* vNULL is an empty type with a template cast operation that returns
-   a zero-initialized vec<T, A, L> instance.  Use this when you want
-   to assign nil values to new vec instances or pass a nil vector as
-   a function call argument.
-
-   We use this technique because vec<T, A, L> must be PODs (they are
-   stored in unions and passed in vararg functions), this means that
-   they cannot have ctors/dtors.  */
-vnull vNULL;
-
 /* Vector memory usage.  */
 class vec_usage: public mem_usage
 {
@@ -280,6 +270,42 @@ safe_push_range (vec <int>&v, int start, int limit)
 {
   for (int i = start; i < limit; i++)
     v.safe_push (i);
+}
+
+/* Verify forms of initialization.  */
+
+static void
+test_init ()
+{
+  {
+    vec<int> v1{ };
+    ASSERT_EQ (0, v1.length ());
+
+    vec<int> v2 (v1);
+    ASSERT_EQ (0, v2.length ());
+  }
+
+  {
+    vec<int> v1 = vec<int>();
+    ASSERT_EQ (0, v1.length ());
+
+    vec<int> v2 = v1;
+    ASSERT_EQ (0, v2.length ());
+  }
+
+  {
+    vec<int> v1 (vNULL);
+    ASSERT_EQ (0, v1.length ());
+    v1.safe_push (1);
+
+    vec<int> v2 (v1);
+    ASSERT_EQ (1, v1.length ());
+    v2.safe_push (1);
+
+    ASSERT_EQ (2, v1.length ());
+    ASSERT_EQ (2, v2.length ());
+    v1.release ();
+  }
 }
 
 /* Verify that vec::quick_push works correctly.  */
@@ -547,6 +573,7 @@ test_auto_delete_vec ()
 void
 vec_c_tests ()
 {
+  test_init ();
   test_quick_push ();
   test_safe_push ();
   test_truncate ();

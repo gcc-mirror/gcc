@@ -1,3 +1,50 @@
+2021-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101782
+	* include/bits/ranges_base.h (ranges::begin, ranges::end)
+	(ranges::rbegin, ranges::rend, ranges::size, ranges::ssize)
+	(ranges::empty, ranges::data): Move attribute after the
+	declarator-id instead of at the end of the declarator.
+	* include/bits/stl_iterator.h (__gnu_cxx::__normal_iterator):
+	Move attributes back to the start of the function declarator,
+	but move the requires-clause to the end.
+	(common_iterator): Move attribute after the declarator-id.
+	* include/bits/stl_queue.h (queue): Remove ill-formed attributes
+	from friend declaration that are not definitions.
+	* include/std/ranges (views::all, views::filter)
+	(views::transform, views::take, views::take_while,
+	views::drop) (views::drop_while, views::join,
+	views::lazy_split) (views::split, views::counted,
+	views::common, views::reverse) (views::elements): Move
+	attributes after the declarator-id.
+
+2021-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (partial_ordering, weak_ordering)
+	(strong_ordering, is_eq, is_neq, is_lt, is_lteq, is_gt, is_gteq)
+	(compare_three_way, strong_order, weak_order, partial_order)
+	(compare_strong_order_fallback, compare_weak_order_fallback)
+	(compare_partial_order_fallback, __detail::__synth3way): Add
+	nodiscard attribute.
+	* testsuite/18_support/comparisons/categories/zero_neg.cc: Add
+	-Wno-unused-result to options.
+
+2021-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101782
+	* include/bits/ranges_base.h (ranges::begin, ranges::end)
+	(ranges::rbegin, ranges::rend, ranges::size, ranges::ssize)
+	(ranges::empty, ranges::data): Move attribute to the end of
+	the declarator.
+	* include/bits/stl_iterator.h (__gnu_cxx::__normal_iterator)
+	(common_iterator): Likewise for non-member operator functions.
+	* include/std/ranges (views::all, views::filter)
+	(views::transform, views::take, views::take_while, views::drop)
+	(views::drop_while, views::join, views::lazy_split)
+	(views::split, views::counted, views::common, views::reverse)
+	(views::elements): Likewise.
+	* testsuite/std/ranges/access/101782.cc: New test.
+
 2021-08-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/forward_list.h: Add [[nodiscard]] to functions

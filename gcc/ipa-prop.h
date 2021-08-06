@@ -499,10 +499,10 @@ public:
      get reallocated, the member vectors and the underlying auto_vecs would get
      out of sync.  */
   ipa_call_arg_values (ipa_auto_call_arg_values *aavals)
-    : m_known_vals (aavals->m_known_vals),
-      m_known_contexts (aavals->m_known_contexts),
-      m_known_aggs (aavals->m_known_aggs),
-      m_known_value_ranges (aavals->m_known_value_ranges)
+    : m_known_vals (aavals->m_known_vals.to_vec_legacy ()),
+      m_known_contexts (aavals->m_known_contexts.to_vec_legacy ()),
+      m_known_aggs (aavals->m_known_aggs.to_vec_legacy ()),
+      m_known_value_ranges (aavals->m_known_value_ranges.to_vec_legacy ())
   {}
 
   /* If m_known_vals (vector of known "scalar" values) is sufficiantly long,

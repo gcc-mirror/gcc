@@ -1,3 +1,10 @@
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/t-slibgcc (SHLIB_LINK): Add $(LDFLAGS).
+	* config/t-slibgcc-darwin (SHLIB_LINK): Likewise.
+	* config/t-slibgcc-vms (SHLIB_LINK): Likewise.
+	* config/t-slibgcc-fuchsia (SHLIB_LDFLAGS): Remove $(LDFLAGS).
+
 2021-08-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/t-slibgcc-fuchsia: Undo doubly applied patch.

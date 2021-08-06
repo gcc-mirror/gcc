@@ -111,8 +111,7 @@ namespace ranges
 	requires is_array_v<remove_reference_t<_Tp>> || __member_begin<_Tp>
 	  || __adl_begin<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
-	[[nodiscard]]
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    {
@@ -163,8 +162,7 @@ namespace ranges
 	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_end<_Tp> || __adl_end<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
-	[[nodiscard]]
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    {
@@ -268,9 +266,8 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires __member_rbegin<_Tp> || __adl_rbegin<_Tp> || __reversable<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const
+	operator()[[nodiscard]](_Tp&& __t) const
 	noexcept(_S_noexcept<_Tp&>())
-	[[nodiscard]]
 	{
 	  if constexpr (__member_rbegin<_Tp>)
 	    return __t.rbegin();
@@ -327,9 +324,8 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const
+	operator()[[nodiscard]](_Tp&& __t) const
 	noexcept(_S_noexcept<_Tp&>())
-	[[nodiscard]]
 	{
 	  if constexpr (__member_rend<_Tp>)
 	    return __t.rend();
@@ -417,8 +413,7 @@ namespace ranges
 	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_size<_Tp> || __adl_size<_Tp> || __sentinel_size<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
-	[[nodiscard]]
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    return extent_v<remove_reference_t<_Tp>>;
@@ -438,8 +433,7 @@ namespace ranges
       template<typename _Tp>
 	requires requires (_Tp& __t) { _Size{}(__t); }
 	constexpr auto
-	operator()(_Tp&& __t) const noexcept(noexcept(_Size{}(__t)))
-	[[nodiscard]]
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(noexcept(_Size{}(__t)))
 	{
 	  auto __size = _Size{}(__t);
 	  using __size_type = decltype(__size);
@@ -498,8 +492,7 @@ namespace ranges
 	requires __member_empty<_Tp> || __size0_empty<_Tp>
 	  || __eq_iter_empty<_Tp>
 	constexpr bool
-	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
-	[[nodiscard]]
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (__member_empty<_Tp>)
 	    return bool(__t.empty());
@@ -540,8 +533,7 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires __member_data<_Tp> || __begin_data<_Tp>
 	constexpr auto
-	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
-	[[nodiscard]]
+	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (__member_data<_Tp>)
 	    return __t.data();

@@ -1,3 +1,85 @@
+2021-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.old-deja/g++.other/inline7.C: Cast nodiscard call to void.
+
+2021-08-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* gcc.target/i386/pr99744-3.c: New test.
+	* gcc.target/i386/pr99744-4.c: Likewise.
+	* gcc.target/i386/pr99744-5.c: Likewise.
+	* gcc.target/i386/pr99744-6.c: Likewise.
+	* gcc.target/i386/pr99744-7.c: Likewise.
+	* gcc.target/i386/pr99744-8.c: Likewise.
+
+2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/101723
+	* gcc.target/arm/cortex-m55-nofp-flag-hard.c: Update expected output.
+	* gcc.target/arm/cortex-m55-nofp-flag-softfp.c: Likewise.
+	* gcc.target/arm/cortex-m55-nofp-nomve-flag-softfp.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_fpu1.c: Convert to dg-do assemble.
+	Add a non-no-op function body.
+	* gcc.target/arm/mve/intrinsics/mve_fpu2.c: Likewise.
+	* gcc.target/arm/pr98636.c (dg-options): Add -mfloat-abi=softfp.
+	* gcc.target/arm/attr-neon.c: Tighten scan-assembler tests.
+	* gcc.target/arm/attr-neon2.c: Use -Ofast, convert test to use
+	check-function-bodies.
+	* gcc.target/arm/attr-neon3.c: Likewise.
+	* gcc.target/arm/pr69245.c: Tighten scan-assembler match, but allow
+	multiple instances.
+	* gcc.target/arm/pragma_fpu_attribute.c: Likewise.
+	* gcc.target/arm/pragma_fpu_attribute_2.c: Likewise.
+
+2021-08-05  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vsubX_high_cost.c: New test.
+
+2021-08-05  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vaddX_high_cost.c: New test.
+
+2021-08-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pr101756.c: Add -w.
+
+2021-08-05  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc.dg/sso-15.c: New test.
+
+2021-08-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cond_op_anylogic_d-1.c: New test.
+	* gcc.target/i386/cond_op_anylogic_d-2.c: New test.
+	* gcc.target/i386/cond_op_anylogic_q-1.c: New test.
+	* gcc.target/i386/cond_op_anylogic_q-2.c: New test.
+
+2021-08-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cond_op_maxmin_double-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_double-2.c: New test.
+	* gcc.target/i386/cond_op_maxmin_float-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_float-2.c: New test.
+
+2021-08-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/cond_op_maxmin_b-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_b-2.c: New test.
+	* gcc.target/i386/cond_op_maxmin_d-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_d-2.c: New test.
+	* gcc.target/i386/cond_op_maxmin_q-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_q-2.c: New test.
+	* gcc.target/i386/cond_op_maxmin_ub-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_ub-2.c: New test.
+	* gcc.target/i386/cond_op_maxmin_ud-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_ud-2.c: New test.
+	* gcc.target/i386/cond_op_maxmin_uq-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_uq-2.c: New test.
+	* gcc.target/i386/cond_op_maxmin_uw-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_uw-2.c: New test.
+	* gcc.target/i386/cond_op_maxmin_w-1.c: New test.
+	* gcc.target/i386/cond_op_maxmin_w-2.c: New test.
+
 2021-08-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101570
