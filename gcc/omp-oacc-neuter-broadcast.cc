@@ -538,12 +538,9 @@ typedef hash_map<tree, tree> field_map_t;
 
 typedef hash_map<tree, field_map_t *> record_field_map_t;
 
-static GTY(()) record_field_map_t *field_map;
-
 static void
-install_var_field (tree var, tree record_type)
+install_var_field (tree var, tree record_type, field_map_t *fields)
 {
-  field_map_t *fields = *field_map->get (record_type);
   tree name;
   char tmp[20];
 
@@ -959,9 +956,8 @@ oacc_build_component_ref (tree obj, tree field)
 }
 
 static tree
-build_receiver_ref (tree record_type, tree var, tree receiver_decl)
+build_receiver_ref (tree var, tree receiver_decl, field_map_t *fields)
 {
-  field_map_t *fields = *field_map->get (record_type);
   tree x = build_simple_mem_ref (receiver_decl);
   tree field = *fields->get (var);
   TREE_THIS_NOTRAP (x) = 1;
@@ -970,9 +966,8 @@ build_receiver_ref (tree record_type, tree var, tree receiver_decl)
 }
 
 static tree
-build_sender_ref (tree record_type, tree var, tree sender_decl)
+build_sender_ref (tree var, tree sender_decl, field_map_t *fields)
 {
-  field_map_t *fields = *field_map->get (record_type);
   tree field = *fields->get (var);
   return oacc_build_component_ref (sender_decl, field);
 }
@@ -1010,7 +1005,7 @@ static void
 worker_single_copy (basic_block from, basic_block to,
 		    hash_set<tree> *def_escapes_block,
 		    hash_set<tree> *worker_partitioned_uses,
-		    tree record_type)
+		    tree record_type, record_field_map_t *record_field_map)
 {
   /* If we only have virtual defs, we'll have no record type, but we still want
      to emit single_copy_start and (particularly) single_copy_end to act as
@@ -1147,7 +1142,7 @@ worker_single_copy (basic_block from, basic_block to,
 	gcc_assert (TREE_CODE (var) == VAR_DECL);
 
       /* If we had no record type, we will have no fields map.  */
-      field_map_t **fields_p = field_map->get (record_type);
+      field_map_t **fields_p = record_field_map->get (record_type);
       field_map_t *fields = fields_p ? *fields_p : NULL;
 
       if (worker_partitioned_uses->contains (var)
@@ -1158,8 +1153,7 @@ worker_single_copy (basic_block from, basic_block to,
 
 	  /* Receive definition from shared memory block.  */
 
-	  tree receiver_ref = build_receiver_ref (record_type, var,
-						  receiver_decl);
+	  tree receiver_ref = build_receiver_ref (var, receiver_decl, fields);
 	  gassign *recv = gimple_build_assign (neutered_def,
 					       receiver_ref);
 	  gsi_insert_after (&copyout_gsi, recv, GSI_CONTINUE_LINKING);
@@ -1189,7 +1183,7 @@ worker_single_copy (basic_block from, basic_block to,
 
 	  /* Send definition to shared memory block.  */
 
-	  tree sender_ref = build_sender_ref (record_type, var, sender_decl);
+	  tree sender_ref = build_sender_ref (var, sender_decl, fields);
 
 	  if (TREE_CODE (var) == SSA_NAME)
 	    {
@@ -1232,7 +1226,8 @@ static void
 neuter_worker_single (parallel_g *par, unsigned outer_mask,
 		      bitmap worker_single, bitmap vector_single,
 		      vec<propagation_set *> *prop_set,
-		      hash_set<tree> *partitioned_var_uses)
+		      hash_set<tree> *partitioned_var_uses,
+		      record_field_map_t *record_field_map)
 {
   unsigned mask = outer_mask | par->mask;
 
@@ -1322,7 +1317,8 @@ neuter_worker_single (parallel_g *par, unsigned outer_mask,
 
 	  if (has_defs)
 	    worker_single_copy (block, block, &def_escapes_block,
-				&worker_partitioned_uses, record_type);
+				&worker_partitioned_uses, record_type,
+				record_field_map);
 	  else
 	    worker_single_simple (block, block, &def_escapes_block);
 	}
@@ -1358,10 +1354,10 @@ neuter_worker_single (parallel_g *par, unsigned outer_mask,
 
   if (par->inner)
     neuter_worker_single (par->inner, mask, worker_single, vector_single,
-			  prop_set, partitioned_var_uses);
+			  prop_set, partitioned_var_uses, record_field_map);
   if (par->next)
     neuter_worker_single (par->next, outer_mask, worker_single, vector_single,
-			  prop_set, partitioned_var_uses);
+			  prop_set, partitioned_var_uses, record_field_map);
 }
 
 static int
@@ -1402,8 +1398,6 @@ execute_omp_oacc_neuter_broadcast ()
   FOR_ALL_BB_FN (bb, cfun)
     bb->aux = NULL;
 
-  field_map = record_field_map_t::create_ggc (40);
-
   vec<propagation_set *> prop_set;
   prop_set.create (last_basic_block_for_fn (cfun));
 
@@ -1420,6 +1414,8 @@ execute_omp_oacc_neuter_broadcast ()
   find_partitioned_var_uses (par, mask, &partitioned_var_uses);
   find_local_vars_to_propagate (par, mask, &partitioned_var_uses,
 				&gang_private_vars, &prop_set);
+
+  record_field_map_t record_field_map;
 
   FOR_ALL_BB_FN (bb, cfun)
     {
@@ -1441,12 +1437,16 @@ execute_omp_oacc_neuter_broadcast ()
 
 	  field_vec.qsort (sort_by_size_then_ssa_version_or_uid);
 
-	  field_map->put (record_type, field_map_t::create_ggc (17));
+	  field_map_t *fields = new field_map_t;
+
+	  bool existed;
+	  existed = record_field_map.put (record_type, fields);
+	  gcc_checking_assert (!existed);
 
 	  /* Insert var fields in reverse order, so the last inserted element
 	     is the first in the structure.  */
 	  for (int i = field_vec.length () - 1; i >= 0; i--)
-	    install_var_field (field_vec[i], record_type);
+	    install_var_field (field_vec[i], record_type, fields);
 
 	  layout_type (record_type);
 
@@ -1455,7 +1455,11 @@ execute_omp_oacc_neuter_broadcast ()
     }
 
   neuter_worker_single (par, mask, worker_single, vector_single, &prop_set,
-			&partitioned_var_uses);
+			&partitioned_var_uses, &record_field_map);
+
+  for (auto it : record_field_map)
+    delete it.second;
+  record_field_map.empty ();
 
   prop_set.release ();
 
