@@ -15487,6 +15487,126 @@ aarch64_estimate_min_cycles_per_iter
   return cycles;
 }
 
+/* Subroutine of aarch64_adjust_body_cost for handling SVE.
+   Use ISSUE_INFO to work out how fast the SVE code can be issued and compare
+   it to the equivalent value for scalar code (SCALAR_CYCLES_PER_ITER).
+   If COULD_USE_ADVSIMD is true, also compare it to the issue rate of
+   Advanced SIMD code (ADVSIMD_CYCLES_PER_ITER).
+
+   COSTS is as for aarch64_adjust_body_cost.  ORIG_BODY_COST is the cost
+   originally passed to aarch64_adjust_body_cost and *BODY_COST is the current
+   value of the adjusted cost.  *SHOULD_DISPARAGE is true if we think the loop
+   body is too expensive.  */
+
+static fractional_cost
+aarch64_adjust_body_cost_sve (const aarch64_vector_costs *costs,
+			      const aarch64_vec_issue_info *issue_info,
+			      fractional_cost scalar_cycles_per_iter,
+			      fractional_cost advsimd_cycles_per_iter,
+			      bool could_use_advsimd,
+			      unsigned int orig_body_cost,
+			      unsigned int *body_cost,
+			      bool *should_disparage)
+{
+  /* Estimate the minimum number of cycles per iteration needed to issue
+     non-predicate operations.  */
+  fractional_cost sve_nonpred_cycles_per_iter
+    = aarch64_estimate_min_cycles_per_iter (&costs->sve_ops,
+					    issue_info->sve);
+
+  /* Separately estimate the minimum number of cycles per iteration needed
+     to issue the predicate operations.  */
+  fractional_cost sve_pred_issue_cycles_per_iter
+    = { costs->sve_ops.pred_ops, issue_info->sve->pred_ops_per_cycle };
+
+  /* Calculate the overall limit on the number of cycles per iteration.  */
+  fractional_cost sve_cycles_per_iter
+    = std::max (sve_nonpred_cycles_per_iter, sve_pred_issue_cycles_per_iter);
+
+  if (dump_enabled_p ())
+    {
+      costs->sve_ops.dump ();
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "  estimated cycles per iteration = %f\n",
+		       sve_cycles_per_iter.as_double ());
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "  estimated cycles per iteration for non-predicate"
+		       " operations = %f\n",
+		       sve_nonpred_cycles_per_iter.as_double ());
+      if (costs->sve_ops.pred_ops)
+	dump_printf_loc (MSG_NOTE, vect_location, "  estimated cycles per"
+			 " iteration for predicate operations = %d\n",
+			 sve_pred_issue_cycles_per_iter.as_double ());
+    }
+
+  /* If the scalar version of the loop could issue at least as
+     quickly as the predicate parts of the SVE loop, make the SVE loop
+     prohibitively expensive.  In this case vectorization is adding an
+     overhead that the original scalar code didn't have.
+
+     This is mostly intended to detect cases in which WHILELOs dominate
+     for very tight loops, which is something that normal latency-based
+     costs would not model.  Adding this kind of cliffedge would be
+     too drastic for scalar_cycles_per_iter vs. sve_cycles_per_iter;
+     code in the caller handles that case in a more conservative way.  */
+  fractional_cost sve_estimate = sve_pred_issue_cycles_per_iter + 1;
+  if (scalar_cycles_per_iter < sve_estimate)
+    {
+      unsigned int min_cost
+	= orig_body_cost * estimated_poly_value (BYTES_PER_SVE_VECTOR);
+      if (*body_cost < min_cost)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Increasing body cost to %d because the"
+			     " scalar code could issue within the limit"
+			     " imposed by predicate operations\n",
+			     min_cost);
+	  *body_cost = min_cost;
+	  *should_disparage = true;
+	}
+    }
+
+  /* If it appears that the Advanced SIMD version of a loop could issue
+     more quickly than the SVE one, increase the SVE cost in proportion
+     to the difference.  The intention is to make Advanced SIMD preferable
+     in cases where an Advanced SIMD version exists, without increasing
+     the costs so much that SVE won't be used at all.
+
+     The reasoning is similar to the scalar vs. predicate comparison above:
+     if the issue rate of the SVE code is limited by predicate operations
+     (i.e. if sve_pred_issue_cycles_per_iter > sve_nonpred_cycles_per_iter),
+     and if the Advanced SIMD code could issue within the limit imposed
+     by the predicate operations, the predicate operations are adding an
+     overhead that the original code didn't have and so we should prefer
+     the Advanced SIMD version.  However, if the predicate operations
+     do not dominate in this way, we should only increase the cost of
+     the SVE code if sve_cycles_per_iter is strictly greater than
+     advsimd_cycles_per_iter.  Given rounding effects, this should mean
+     that Advanced SIMD is either better or at least no worse.  */
+  if (sve_nonpred_cycles_per_iter >= sve_pred_issue_cycles_per_iter)
+    sve_estimate = sve_cycles_per_iter;
+  if (could_use_advsimd && advsimd_cycles_per_iter < sve_estimate)
+    {
+      /* This ensures that min_cost > orig_body_cost * 2.  */
+      unsigned int factor = fractional_cost::scale (1, sve_estimate,
+						    advsimd_cycles_per_iter);
+      unsigned int min_cost = orig_body_cost * factor + 1;
+      if (*body_cost < min_cost)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Increasing body cost to %d because Advanced"
+			     " SIMD code could issue as quickly\n",
+			     min_cost);
+	  *body_cost = min_cost;
+	  *should_disparage = true;
+	}
+    }
+
+  return sve_cycles_per_iter;
+}
+
 /* BODY_COST is the cost of a vector loop body recorded in COSTS.
    Adjust the cost as necessary and return the new cost.  */
 static unsigned int
@@ -15582,101 +15702,15 @@ aarch64_adjust_body_cost (aarch64_vector_costs *costs, unsigned int body_cost)
 
   if ((costs->vec_flags & VEC_ANY_SVE) && issue_info->sve)
     {
-      /* Estimate the minimum number of cycles per iteration needed to issue
-	 non-predicate operations.  */
-      fractional_cost sve_cycles_per_iter
-	= aarch64_estimate_min_cycles_per_iter (&costs->sve_ops,
-						issue_info->sve);
-
-      /* Separately estimate the minimum number of cycles per iteration needed
-	 to issue the predicate operations.  */
-      fractional_cost pred_cycles_per_iter
-	= { costs->sve_ops.pred_ops, issue_info->sve->pred_ops_per_cycle };
-
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location, "SVE issue estimate:\n");
-	  costs->sve_ops.dump ();
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "  estimated cycles per iteration for non-predicate"
-			   " operations = %f\n",
-			   sve_cycles_per_iter.as_double ());
-	  if (costs->sve_ops.pred_ops)
-	    dump_printf_loc (MSG_NOTE, vect_location, "  estimated cycles per"
-			     " iteration for predicate operations = %d\n",
-			     pred_cycles_per_iter.as_double ());
-	}
-
-      vector_cycles_per_iter = std::max (sve_cycles_per_iter,
-					 pred_cycles_per_iter);
+	dump_printf_loc (MSG_NOTE, vect_location, "SVE issue estimate:\n");
       vector_reduction_latency = costs->sve_ops.reduction_latency;
-
-      /* If the scalar version of the loop could issue at least as
-	 quickly as the predicate parts of the SVE loop, make the SVE loop
-	 prohibitively expensive.  In this case vectorization is adding an
-	 overhead that the original scalar code didn't have.
-
-	 This is mostly intended to detect cases in which WHILELOs dominate
-	 for very tight loops, which is something that normal latency-based
-	 costs would not model.  Adding this kind of cliffedge would be
-	 too drastic for scalar_cycles_per_iter vs. sve_cycles_per_iter;
-	 code later in the function handles that case in a more
-	 conservative way.  */
-      fractional_cost sve_estimate = pred_cycles_per_iter + 1;
-      if (scalar_cycles_per_iter < sve_estimate)
-	{
-	  unsigned int min_cost
-	    = orig_body_cost * estimated_poly_value (BYTES_PER_SVE_VECTOR);
-	  if (body_cost < min_cost)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Increasing body cost to %d because the"
-				 " scalar code could issue within the limit"
-				 " imposed by predicate operations\n",
-				 min_cost);
-	      body_cost = min_cost;
-	      should_disparage = true;
-	    }
-	}
-
-      /* If it appears that the Advanced SIMD version of a loop could issue
-	 more quickly than the SVE one, increase the SVE cost in proportion
-	 to the difference.  The intention is to make Advanced SIMD preferable
-	 in cases where an Advanced SIMD version exists, without increasing
-	 the costs so much that SVE won't be used at all.
-
-	 The reasoning is similar to the scalar vs. predicate comparison above:
-	 if the issue rate of the SVE code is limited by predicate operations
-	 (i.e. if pred_cycles_per_iter > sve_cycles_per_iter), and if the
-	 Advanced SIMD code could issue within the limit imposed by the
-	 predicate operations, the predicate operations are adding an
-	 overhead that the original code didn't have and so we should prefer
-	 the Advanced SIMD version.  However, if the predicate operations
-	 do not dominate in this way, we should only increase the cost of
-	 the SVE code if sve_cycles_per_iter is strictly greater than
-	 advsimd_cycles_per_iter.  Given rounding effects, this should mean
-	 that Advanced SIMD is either better or at least no worse.  */
-      if (sve_cycles_per_iter >= pred_cycles_per_iter)
-	sve_estimate = sve_cycles_per_iter;
-      if (could_use_advsimd && advsimd_cycles_per_iter < sve_estimate)
-	{
-	  /* This ensures that min_cost > orig_body_cost * 2.  */
-	  unsigned int factor
-	    = fractional_cost::scale (1, sve_estimate,
-				      advsimd_cycles_per_iter);
-	  unsigned int min_cost = orig_body_cost * factor + 1;
-	  if (body_cost < min_cost)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Increasing body cost to %d because Advanced"
-				 " SIMD code could issue as quickly\n",
-				 min_cost);
-	      body_cost = min_cost;
-	      should_disparage = true;
-	    }
-	}
+      vector_cycles_per_iter
+	= aarch64_adjust_body_cost_sve (costs, issue_info,
+					scalar_cycles_per_iter,
+					advsimd_cycles_per_iter,
+					could_use_advsimd, orig_body_cost,
+					&body_cost, &should_disparage);
     }
 
   /* Decide whether to stick to latency-based costs or whether to try to
