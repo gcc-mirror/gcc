@@ -59,6 +59,14 @@
 #include "diagnostic-core.h" /* For error_at and friends.  */
 #include "intl.h"	     /* For _().  */
 
+// File separator to use based on whether or not the OS we're working with is
+// DOS-based
+#if defined(HAVE_DOS_BASED_FILE_SYSTEM)
+constexpr static const char *file_separator = "\\";
+#else
+constexpr static const char *file_separator = "/";
+#endif /* HAVE_DOS_BASED_FILE_SYSTEM */
+
 // When using gcc, rust_assert is just gcc_assert.
 #define rust_assert(EXPR) gcc_assert (EXPR)
 

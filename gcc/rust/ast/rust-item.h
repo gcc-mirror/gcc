@@ -1053,6 +1053,9 @@ public:
     return *this;
   }
 
+  // Search for the filename associated with an external module
+  std::string get_filename ();
+
   void accept_vis (ASTVisitor &vis) override;
 
   /* Override that runs the function recursively on all items contained within

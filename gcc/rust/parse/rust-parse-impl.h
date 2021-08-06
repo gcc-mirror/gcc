@@ -2101,6 +2101,7 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
     case SEMICOLON:
       lexer.skip_token ();
 
+      // Construct an external module
       return std::unique_ptr<AST::Module> (
 	new AST::Module (std::move (name), std::move (vis),
 			 std::move (outer_attrs), locus,
