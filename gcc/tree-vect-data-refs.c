@@ -212,7 +212,7 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 static void
 vect_check_nonzero_value (loop_vec_info loop_vinfo, tree value)
 {
-  vec<tree> checks = LOOP_VINFO_CHECK_NONZERO (loop_vinfo);
+  const vec<tree> &checks = LOOP_VINFO_CHECK_NONZERO (loop_vinfo);
   for (unsigned int i = 0; i < checks.length(); ++i)
     if (checks[i] == value)
       return;
@@ -2349,8 +2349,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   if (do_versioning)
     {
-      vec<stmt_vec_info> may_misalign_stmts
-        = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
+      const vec<stmt_vec_info> &may_misalign_stmts
+	= LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
       stmt_vec_info stmt_info;
 
       /* It can now be assumed that the data references in the statements
@@ -3364,7 +3364,8 @@ static void
 vect_check_lower_bound (loop_vec_info loop_vinfo, tree expr, bool unsigned_p,
 			poly_uint64 min_value)
 {
-  vec<vec_lower_bound> lower_bounds = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
+  vec<vec_lower_bound> &lower_bounds
+    = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
   for (unsigned int i = 0; i < lower_bounds.length (); ++i)
     if (operand_equal_p (lower_bounds[i].expr, expr, 0))
       {
@@ -3466,10 +3467,10 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   typedef pair_hash <tree_operand_hash, tree_operand_hash> tree_pair_hash;
   hash_set <tree_pair_hash> compared_objects;
 
-  vec<ddr_p> may_alias_ddrs = LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
+  const vec<ddr_p> &may_alias_ddrs = LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
   vec<dr_with_seg_len_pair_t> &comp_alias_ddrs
     = LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
-  vec<vec_object_pair> &check_unequal_addrs
+  const vec<vec_object_pair> &check_unequal_addrs
     = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
   poly_uint64 vect_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
@@ -5350,7 +5351,7 @@ vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
    I4:  6 14 22 30  7 15 23 31.  */
 
 void
-vect_permute_store_chain (vec_info *vinfo, vec<tree> dr_chain,
+vect_permute_store_chain (vec_info *vinfo, vec<tree> &dr_chain,
 			  unsigned int length,
 			  stmt_vec_info stmt_info,
 			  gimple_stmt_iterator *gsi,

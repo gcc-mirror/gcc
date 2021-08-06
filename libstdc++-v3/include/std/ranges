@@ -1127,9 +1127,8 @@ namespace views::__adaptor
 	  || __detail::__can_ref_view<_Range>
 	  || __detail::__can_subrange<_Range>
 	constexpr auto
-	operator()(_Range&& __r) const
+	operator() [[nodiscard]] (_Range&& __r) const
 	noexcept(_S_noexcept<_Range>())
-	[[nodiscard]]
 	{
 	  if constexpr (view<decay_t<_Range>>)
 	    return std::forward<_Range>(__r);
@@ -1554,8 +1553,7 @@ namespace views::__adaptor
       template<viewable_range _Range, typename _Pred>
 	requires __detail::__can_filter_view<_Range, _Pred>
 	constexpr auto
-	operator()(_Range&& __r, _Pred&& __p) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r, _Pred&& __p) const
 	{
 	  return filter_view(std::forward<_Range>(__r), std::forward<_Pred>(__p));
 	}
@@ -1932,8 +1930,7 @@ namespace views::__adaptor
       template<viewable_range _Range, typename _Fp>
 	requires __detail::__can_transform_view<_Range, _Fp>
 	constexpr auto
-	operator()(_Range&& __r, _Fp&& __f) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r, _Fp&& __f) const
 	{
 	  return transform_view(std::forward<_Range>(__r), std::forward<_Fp>(__f));
 	}
@@ -2114,8 +2111,7 @@ namespace views::__adaptor
       template<viewable_range _Range, typename _Tp>
 	requires __detail::__can_take_view<_Range, _Tp>
 	constexpr auto
-	operator()(_Range&& __r, _Tp&& __n) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r, _Tp&& __n) const
 	{
 	  return take_view(std::forward<_Range>(__r), std::forward<_Tp>(__n));
 	}
@@ -2242,8 +2238,7 @@ namespace views::__adaptor
       template<viewable_range _Range, typename _Pred>
 	requires __detail::__can_take_while_view<_Range, _Pred>
 	constexpr auto
-	operator()(_Range&& __r, _Pred&& __p) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r, _Pred&& __p) const
 	{
 	  return take_while_view(std::forward<_Range>(__r), std::forward<_Pred>(__p));
 	}
@@ -2363,8 +2358,7 @@ namespace views::__adaptor
       template<viewable_range _Range, typename _Tp>
 	requires __detail::__can_drop_view<_Range, _Tp>
 	constexpr auto
-	operator()(_Range&& __r, _Tp&& __n) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r, _Tp&& __n) const
 	{
 	  return drop_view(std::forward<_Range>(__r), std::forward<_Tp>(__n));
 	}
@@ -2452,8 +2446,7 @@ namespace views::__adaptor
       template<viewable_range _Range, typename _Pred>
 	requires __detail::__can_drop_while_view<_Range, _Pred>
 	constexpr auto
-	operator()(_Range&& __r, _Pred&& __p) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r, _Pred&& __p) const
 	{
 	  return drop_while_view(std::forward<_Range>(__r),
 				 std::forward<_Pred>(__p));
@@ -2815,8 +2808,7 @@ namespace views::__adaptor
       template<viewable_range _Range>
 	requires __detail::__can_join_view<_Range>
 	constexpr auto
-	operator()(_Range&& __r) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r) const
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 3474. Nesting join_views is broken because of CTAD
@@ -3267,8 +3259,7 @@ namespace views::__adaptor
       template<viewable_range _Range, typename _Pattern>
 	requires __detail::__can_lazy_split_view<_Range, _Pattern>
 	constexpr auto
-	operator()(_Range&& __r, _Pattern&& __f) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r, _Pattern&& __f) const
 	{
 	  return lazy_split_view(std::forward<_Range>(__r), std::forward<_Pattern>(__f));
 	}
@@ -3476,8 +3467,7 @@ namespace views::__adaptor
       template<viewable_range _Range, typename _Pattern>
 	requires __detail::__can_split_view<_Range, _Pattern>
 	constexpr auto
-	operator()(_Range&& __r, _Pattern&& __f) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r, _Pattern&& __f) const
 	{
 	  return split_view(std::forward<_Range>(__r), std::forward<_Pattern>(__f));
 	}
@@ -3498,8 +3488,7 @@ namespace views::__adaptor
     {
       template<input_or_output_iterator _Iter>
       constexpr auto
-      operator()(_Iter __i, iter_difference_t<_Iter> __n) const
-      [[nodiscard]]
+      operator() [[nodiscard]] (_Iter __i, iter_difference_t<_Iter> __n) const
       {
 	if constexpr (random_access_iterator<_Iter>)
 	  return subrange(__i, __i + __n);
@@ -3620,8 +3609,7 @@ namespace views::__adaptor
 	requires __detail::__already_common<_Range>
 	  || __detail::__can_common_view<_Range>
 	constexpr auto
-	operator()(_Range&& __r) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r) const
 	{
 	  if constexpr (__detail::__already_common<_Range>)
 	    return views::all(std::forward<_Range>(__r));
@@ -3743,8 +3731,7 @@ namespace views::__adaptor
 	  || __detail::__is_reversible_subrange<remove_cvref_t<_Range>>
 	  || __detail::__can_reverse_view<_Range>
 	constexpr auto
-	operator()(_Range&& __r) const
-	[[nodiscard]]
+	operator() [[nodiscard]] (_Range&& __r) const
 	{
 	  using _Tp = remove_cvref_t<_Range>;
 	  if constexpr (__detail::__is_reverse_view<_Tp>)
@@ -4142,8 +4129,7 @@ namespace views::__adaptor
 	template<viewable_range _Range>
 	  requires __detail::__can_elements_view<_Nm, _Range>
 	  constexpr auto
-	  operator()(_Range&& __r) const
-	  [[nodiscard]]
+	  operator() [[nodiscard]] (_Range&& __r) const
 	  {
 	    return elements_view<all_t<_Range>, _Nm>{std::forward<_Range>(__r)};
 	  }

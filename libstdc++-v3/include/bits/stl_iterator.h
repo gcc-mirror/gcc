@@ -1118,21 +1118,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_lib_three_way_comparison
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    requires requires (_IteratorL __lhs, _IteratorR __rhs)
-    { { __lhs == __rhs } -> std::convertible_to<bool>; }
+    [[nodiscard]]
     constexpr bool
     operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
     noexcept(noexcept(__lhs.base() == __rhs.base()))
-    [[nodiscard]]
+    requires requires {
+      { __lhs.base() == __rhs.base() } -> std::convertible_to<bool>;
+    }
     { return __lhs.base() == __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
+    [[nodiscard]]
     constexpr std::__detail::__synth3way_t<_IteratorR, _IteratorL>
     operator<=>(const __normal_iterator<_IteratorL, _Container>& __lhs,
 		const __normal_iterator<_IteratorR, _Container>& __rhs)
     noexcept(noexcept(std::__detail::__synth3way(__lhs.base(), __rhs.base())))
-    [[nodiscard]]
     { return std::__detail::__synth3way(__lhs.base(), __rhs.base()); }
 #else
    // Forward iterator requirements
@@ -1985,9 +1986,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _It2, sentinel_for<_It> _Sent2>
       requires sentinel_for<_Sent, _It2>
       friend bool
-      operator==(const common_iterator& __x,
-		 const common_iterator<_It2, _Sent2>& __y)
-      [[nodiscard]]
+      operator== [[nodiscard]] (const common_iterator& __x,
+				const common_iterator<_It2, _Sent2>& __y)
       {
 	switch(__x._M_index << 2 | __y._M_index)
 	  {
@@ -2008,9 +2008,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _It2, sentinel_for<_It> _Sent2>
       requires sentinel_for<_Sent, _It2> && equality_comparable_with<_It, _It2>
       friend bool
-      operator==(const common_iterator& __x,
-		 const common_iterator<_It2, _Sent2>& __y)
-      [[nodiscard]]
+      operator== [[nodiscard]] (const common_iterator& __x,
+				const common_iterator<_It2, _Sent2>& __y)
       {
 	switch(__x._M_index << 2 | __y._M_index)
 	  {
@@ -2032,9 +2031,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<sized_sentinel_for<_It> _It2, sized_sentinel_for<_It> _Sent2>
       requires sized_sentinel_for<_Sent, _It2>
       friend iter_difference_t<_It2>
-      operator-(const common_iterator& __x,
-		const common_iterator<_It2, _Sent2>& __y)
-      [[nodiscard]]
+      operator- [[nodiscard]] (const common_iterator& __x,
+			       const common_iterator<_It2, _Sent2>& __y)
       {
 	switch(__x._M_index << 2 | __y._M_index)
 	  {

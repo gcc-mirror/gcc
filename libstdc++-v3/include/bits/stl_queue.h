@@ -107,18 +107,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       template<typename _Tp1, typename _Seq1>
-	_GLIBCXX_NODISCARD
 	friend bool
 	operator==(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
 
       template<typename _Tp1, typename _Seq1>
-	_GLIBCXX_NODISCARD
 	friend bool
 	operator<(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
 
 #if __cpp_lib_three_way_comparison
       template<typename _Tp1, three_way_comparable _Seq1>
-	[[nodiscard]]
 	friend compare_three_way_result_t<_Seq1>
 	operator<=>(const queue<_Tp1, _Seq1>&, const queue<_Tp1, _Seq1>&);
 #endif

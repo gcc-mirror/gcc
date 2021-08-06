@@ -4499,7 +4499,7 @@ static void
 vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
 				       int multi_step_cvt,
 				       stmt_vec_info stmt_info,
-				       vec<tree> vec_dsts,
+				       vec<tree> &vec_dsts,
 				       gimple_stmt_iterator *gsi,
 				       slp_tree slp_node, enum tree_code code)
 {
@@ -5685,22 +5685,11 @@ vectorizable_shift (vec_info *vinfo,
       /* Check only during analysis.  */
       if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
 	  || (!vec_stmt
-	      && !vect_worthwhile_without_simd_p (vinfo, code)))
+	      && !vect_can_vectorize_without_simd_p (code)))
         return false;
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
                          "proceeding using word mode.\n");
-    }
-
-  /* Worthwhile without SIMD support?  Check only during analysis.  */
-  if (!vec_stmt
-      && !VECTOR_MODE_P (TYPE_MODE (vectype))
-      && !vect_worthwhile_without_simd_p (vinfo, code))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not worthwhile without SIMD support.\n");
-      return false;
     }
 
   if (!vec_stmt) /* transformation not required.  */
@@ -6094,22 +6083,11 @@ vectorizable_operation (vec_info *vinfo,
                          "op not supported by target.\n");
       /* Check only during analysis.  */
       if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
-	  || (!vec_stmt && !vect_worthwhile_without_simd_p (vinfo, code)))
+	  || (!vec_stmt && !vect_can_vectorize_without_simd_p (code)))
         return false;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "proceeding using word mode.\n");
-    }
-
-  /* Worthwhile without SIMD support?  Check only during analysis.  */
-  if (!VECTOR_MODE_P (vec_mode)
-      && !vec_stmt
-      && !vect_worthwhile_without_simd_p (vinfo, code))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not worthwhile without SIMD support.\n");
-      return false;
     }
 
   int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);

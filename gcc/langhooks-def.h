@@ -55,7 +55,7 @@ extern void lhd_set_decl_assembler_name (tree decl);
 extern void lhd_overwrite_decl_assembler_name (tree decl, tree name);
 extern bool lhd_warn_unused_global_decl (const_tree);
 extern tree lhd_simulate_enum_decl (location_t, const char *,
-				    vec<string_int_pair>);
+				    vec<string_int_pair> *);
 extern tree lhd_type_for_size (unsigned precision, int unsignedp);
 extern void lhd_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree lhd_type_promotes_to (tree);

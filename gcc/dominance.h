@@ -78,7 +78,7 @@ checking_verify_dominators (cdi_direction dir)
 
 basic_block recompute_dominator (enum cdi_direction, basic_block);
 extern void iterate_fix_dominators (enum cdi_direction,
-				    vec<basic_block> , bool);
+				    vec<basic_block> &, bool);
 extern void add_to_dominance_info (enum cdi_direction, basic_block);
 extern void delete_from_dominance_info (enum cdi_direction, basic_block);
 extern basic_block first_dom_son (enum cdi_direction, basic_block);

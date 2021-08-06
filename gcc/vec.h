@@ -541,18 +541,16 @@ vec_copy_construct (T *dst, const T *src, unsigned n)
     ::new (static_cast<void*>(dst)) T (*src);
 }
 
-/* Type to provide NULL values for vec<T, A, L>.  This is used to
-   provide nil initializers for vec instances.  Since vec must be
-   a POD, we cannot have proper ctor/dtor for it.  To initialize
-   a vec instance, you can assign it the value vNULL.  This isn't
-   needed for file-scope and function-local static vectors, which
-   are zero-initialized by default.  */
-struct vnull
-{
-  template <typename T, typename A, typename L>
-  CONSTEXPR operator vec<T, A, L> () const { return vec<T, A, L>(); }
-};
-extern vnull vNULL;
+/* Type to provide zero-initialized values for vec<T, A, L>.  This is
+   used to  provide nil initializers for vec instances.  Since vec must
+   be a trivially copyable type that can be copied by memcpy and zeroed
+   out by memset, it must have defaulted default and copy ctor and copy
+   assignment.  To initialize a vec either use value initialization
+   (e.g., vec() or vec v{ };) or assign it the value vNULL.  This isn't
+   needed for file-scope and function-local static vectors, which are
+   zero-initialized by default.  */
+struct vnull { };
+constexpr vnull vNULL{ };
 
 
 /* Embeddable vector.  These vectors are suitable to be embedded
@@ -1431,10 +1429,34 @@ gt_pch_nx (vec<T, A, vl_embed> *v, gt_pointer_operator op, void *cookie)
    As long as we use C++03, we cannot have constructors nor
    destructors in classes that are stored in unions.  */
 
+template<typename T, size_t N = 0>
+class auto_vec;
+
 template<typename T>
 struct vec<T, va_heap, vl_ptr>
 {
 public:
+  /* Default ctors to ensure triviality.  Use value-initialization
+     (e.g., vec() or vec v{ };) or vNULL to create a zero-initialized
+     instance.  */
+  vec () = default;
+  vec (const vec &) = default;
+  /* Initialization from the generic vNULL.  */
+  vec (vnull): m_vec () { }
+  /* Same as default ctor: vec storage must be released manually.  */
+  ~vec () = default;
+
+  /* Defaulted same as copy ctor.  */
+  vec& operator= (const vec &) = default;
+
+  /* Prevent implicit conversion from auto_vec.  Use auto_vec::to_vec()
+     instead.  */
+  template <size_t N>
+  vec (auto_vec<T, N> &) = delete;
+
+  template <size_t N>
+  void operator= (auto_vec<T, N> &) = delete;
+
   /* Memory allocation and deallocation for the embedded vector.
      Needed because we cannot have proper ctors/dtors defined.  */
   void create (unsigned nelems CXX_MEM_STAT_INFO);
@@ -1522,7 +1544,7 @@ public:
    want to ask for internal storage for vectors on the stack because if the
    size of the vector is larger than the internal storage that space is wasted.
    */
-template<typename T, size_t N = 0>
+template<typename T, size_t N /* = 0 */>
 class auto_vec : public vec<T, va_heap>
 {
 public:
@@ -1547,6 +1569,14 @@ public:
   ~auto_vec ()
   {
     this->release ();
+  }
+
+  /* Explicitly convert to the base class.  There is no conversion
+     from a const auto_vec because a copy of the returned vec can
+     be used to modify *THIS.
+     This is a legacy function not to be used in new code.  */
+  vec<T, va_heap> to_vec_legacy () {
+    return *static_cast<vec<T, va_heap> *>(this);
   }
 
 private:
@@ -1601,6 +1631,14 @@ public:
       r.m_vec = NULL;
       return *this;
     }
+
+  /* Explicitly convert to the base class.  There is no conversion
+     from a const auto_vec because a copy of the returned vec can
+     be used to modify *THIS.
+     This is a legacy function not to be used in new code.  */
+  vec<T, va_heap> to_vec_legacy () {
+    return *static_cast<vec<T, va_heap> *>(this);
+  }
 
   // You probably don't want to copy a vector, so these are deleted to prevent
   // unintentional use.  If you really need a copy of the vectors contents you
@@ -1781,7 +1819,7 @@ template<typename T>
 inline vec<T, va_heap, vl_ptr>
 vec<T, va_heap, vl_ptr>::copy (ALONE_MEM_STAT_DECL) const
 {
-  vec<T, va_heap, vl_ptr> new_vec = vNULL;
+  vec<T, va_heap, vl_ptr> new_vec{ };
   if (length ())
     new_vec.m_vec = m_vec->copy (ALONE_PASS_MEM_STAT);
   return new_vec;

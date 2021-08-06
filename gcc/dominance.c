@@ -1227,7 +1227,7 @@ recompute_dominator (enum cdi_direction dir, basic_block bb)
    from BBS.  */
 
 static void
-prune_bbs_to_update_dominators (vec<basic_block> bbs,
+prune_bbs_to_update_dominators (vec<basic_block> &bbs,
 				bool conservative)
 {
   unsigned i;
@@ -1379,7 +1379,7 @@ determine_dominators_for_sons (struct graph *g, vec<basic_block> bbs,
    a block of BBS in the current dominance tree dominate it.  */
 
 void
-iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
+iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> &bbs,
 			bool conservative)
 {
   unsigned i;

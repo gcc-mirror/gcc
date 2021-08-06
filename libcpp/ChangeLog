@@ -1,3 +1,14 @@
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* ucnid.h: Regenerated using Unicode 13.0.0 files.
+
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* makeucnid.c (write_table): Fix computation of last_combine.
+	* ucnid.h: Regenerated using Unicode 6.3.0 files.
+
 2021-06-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100796
