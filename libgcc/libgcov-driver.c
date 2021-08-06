@@ -26,8 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgcov.h"
 #include "gcov-io.h"
 
-#include <stdint.h>
-
 /* Return 1, if all counter values are zero, otherwise 0. */
 
 static inline int
@@ -453,7 +451,7 @@ write_topn_counters (const struct gcov_ctr_info *ci_ptr,
       gcov_type start = ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 2];
       unsigned sizes = 0;
 
-      for (struct gcov_kvp *node = (struct gcov_kvp *)(intptr_t)start;
+      for (struct gcov_kvp *node = (struct gcov_kvp *)(__INTPTR_TYPE__)start;
 	   node != NULL; node = node->next)
 	++sizes;
 
@@ -472,7 +470,7 @@ write_topn_counters (const struct gcov_ctr_info *ci_ptr,
       gcov_type start = ci_ptr->values[GCOV_TOPN_MEM_COUNTERS * i + 2];
 
       unsigned j = 0;
-      for (struct gcov_kvp *node = (struct gcov_kvp *)(intptr_t)start;
+      for (struct gcov_kvp *node = (struct gcov_kvp *)(__INTPTR_TYPE__)start;
 	   j < list_sizes[i]; node = node->next, j++)
 	{
 	  dump_counter (node->value, dump_fn, arg);
