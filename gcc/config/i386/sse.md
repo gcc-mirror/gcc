@@ -784,6 +784,15 @@
    (V4SF "V4SF") (V2DF "V2DF")
    (TI "TI")])
 
+;; SSE constant -1 constraint
+(define_mode_attr sseconstm1
+  [(V64QI "BC") (V32HI "BC") (V16SI "BC") (V8DI "BC") (V4TI "BC")
+   (V32QI "BC") (V16HI "BC") (V8SI "BC") (V4DI "BC") (V2TI "BC")
+   (V16QI "BC") (V8HI "BC") (V4SI "BC") (V2DI "BC") (V1TI "BC")
+   (V16SF "BF") (V8DF "BF")
+   (V8SF "BF") (V4DF "BF")
+   (V4SF "BF") (V2DF "BF")])
+
 ;; Mapping of vector modes to corresponding mask size
 (define_mode_attr avx512fmaskmode
   [(V64QI "DI") (V32QI "SI") (V16QI "HI")
@@ -1063,7 +1072,7 @@
   [(set (match_operand:VMOVE 0 "nonimmediate_operand"
 	 "=v,v ,v ,m")
 	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"
-	 " C,BC,vm,v"))]
+	 " C,<sseconstm1>,vm,v"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"

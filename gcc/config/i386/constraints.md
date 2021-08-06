@@ -166,7 +166,8 @@
 ;;  s  Sibcall memory operand, not valid for TARGET_X32
 ;;  w  Call memory operand, not valid for TARGET_X32
 ;;  z  Constant call address operand.
-;;  C  SSE constant operand.
+;;  C  Integer SSE constant with all bits set operand.
+;;  F  Floating-point SSE constant with all bits set operand.
 
 (define_constraint "Bf"
   "@internal Flags register operand."
@@ -216,10 +217,15 @@
   (match_operand 0 "constant_call_address_operand"))
 
 (define_constraint "BC"
-  "@internal SSE constant -1 operand."
+  "@internal integer SSE constant with all bits set operand."
   (and (match_test "TARGET_SSE")
        (ior (match_test "op == constm1_rtx")
 	    (match_operand 0 "vector_all_ones_operand"))))
+
+(define_constraint "BF"
+  "@internal floating-point SSE constant with all bits set operand."
+  (and (match_test "TARGET_SSE")
+       (match_operand 0 "float_vector_all_ones_operand")))
 
 ;; Integer constant constraints.
 (define_constraint "Wb"

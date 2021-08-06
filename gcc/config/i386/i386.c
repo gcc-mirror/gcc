@@ -5073,7 +5073,11 @@ standard_sse_constant_p (rtx x, machine_mode pred_mode)
   if (x == const0_rtx || const0_operand (x, mode))
     return 1;
 
-  if (x == constm1_rtx || vector_all_ones_operand (x, mode))
+  if (x == constm1_rtx
+      || vector_all_ones_operand (x, mode)
+      || ((GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	   || GET_MODE_CLASS (pred_mode) == MODE_VECTOR_FLOAT)
+	  && float_vector_all_ones_operand (x, mode)))
     {
       /* VOIDmode integer constant, get mode from the predicate.  */
       if (mode == VOIDmode)
@@ -5171,7 +5175,10 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	  gcc_unreachable ();
 	}
     }
-  else if (x == constm1_rtx || vector_all_ones_operand (x, mode))
+  else if (x == constm1_rtx
+	   || vector_all_ones_operand (x, mode)
+	   || (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	       && float_vector_all_ones_operand (x, mode)))
     {
       enum attr_mode insn_mode = get_attr_mode (insn);
       
