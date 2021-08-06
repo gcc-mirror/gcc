@@ -14769,9 +14769,12 @@ aarch64_integer_truncation_p (stmt_vec_info stmt_info)
 
 /* Return true if STMT_INFO is the second part of a two-statement multiply-add
    or multiply-subtract sequence that might be suitable for fusing into a
-   single instruction.  */
+   single instruction.  If VEC_FLAGS is zero, analyze the operation as
+   a scalar one, otherwise analyze it as an operation on vectors with those
+   VEC_* flags.  */
 static bool
-aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info)
+aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
+			unsigned int vec_flags)
 {
   gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
   if (!assign)
@@ -14798,6 +14801,22 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info)
       gassign *rhs_assign = dyn_cast<gassign *> (def_stmt_info->stmt);
       if (!rhs_assign || gimple_assign_rhs_code (rhs_assign) != MULT_EXPR)
 	continue;
+
+      if (vec_flags & VEC_ADVSIMD)
+	{
+	  /* Scalar and SVE code can tie the result to any FMLA input (or none,
+	     although that requires a MOVPRFX for SVE).  However, Advanced SIMD
+	     only supports MLA forms, so will require a move if the result
+	     cannot be tied to the accumulator.  The most important case in
+	     which this is true is when the accumulator input is invariant.  */
+	  rhs = gimple_op (assign, 3 - i);
+	  if (TREE_CODE (rhs) != SSA_NAME)
+	    return false;
+	  def_stmt_info = vinfo->lookup_def (rhs);
+	  if (!def_stmt_info
+	      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_external_def)
+	    return false;
+	}
 
       return true;
     }
@@ -15234,7 +15253,7 @@ aarch64_count_ops (class vec_info *vinfo, aarch64_vector_costs *costs,
     }
 
   /* Assume that multiply-adds will become a single operation.  */
-  if (stmt_info && aarch64_multiply_add_p (vinfo, stmt_info))
+  if (stmt_info && aarch64_multiply_add_p (vinfo, stmt_info, vec_flags))
     return;
 
   /* When costing scalar statements in vector code, the count already
