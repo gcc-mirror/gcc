@@ -19148,14 +19148,12 @@ aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
   bool prefer_asimd = aarch64_autovec_preference == 3;
   bool prefer_sve = aarch64_autovec_preference == 4;
 
-  aarch64_sve_vector_bits_enum tune_width = aarch64_tune_params.sve_width;
-
   poly_int64 nunits_sve = GET_MODE_NUNITS (sve_m);
   poly_int64 nunits_asimd = GET_MODE_NUNITS (asimd_m);
   /* If the CPU information does not have an SVE width registered use the
      generic poly_int comparison that prefers SVE.  If a preference is
      explicitly requested avoid this path.  */
-  if (tune_width == SVE_SCALABLE
+  if (aarch64_tune_params.sve_width == SVE_SCALABLE
       && !prefer_asimd
       && !prefer_sve)
     return maybe_gt (nunits_sve, nunits_asimd);
@@ -24975,8 +24973,7 @@ aarch64_estimated_poly_value (poly_int64 val,
 			      poly_value_estimate_kind kind
 				= POLY_VALUE_LIKELY)
 {
-  enum aarch64_sve_vector_bits_enum width_source
-    = aarch64_tune_params.sve_width;
+  unsigned int width_source = aarch64_tune_params.sve_width;
 
   /* If there is no core-specific information then the minimum and likely
      values are based on 128-bit vectors and the maximum is based on
@@ -24990,6 +24987,14 @@ aarch64_estimated_poly_value (poly_int64 val,
       case POLY_VALUE_MAX:
 	  return val.coeffs[0] + val.coeffs[1] * 15;
       }
+
+  /* Allow sve_width to be a bitmask of different VL, treating the lowest
+     as likely.  This could be made more general if future -mtune options
+     need it to be.  */
+  if (kind == POLY_VALUE_MAX)
+    width_source = 1 << floor_log2 (width_source);
+  else
+    width_source = least_bit_hwi (width_source);
 
   /* If the core provides width information, use that.  */
   HOST_WIDE_INT over_128 = width_source - 128;
