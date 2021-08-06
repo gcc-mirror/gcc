@@ -404,8 +404,7 @@ print_dist_vectors (FILE *outf, vec<lambda_vector> dist_vects,
 /* Dump function for a DATA_DEPENDENCE_RELATION structure.  */
 
 DEBUG_FUNCTION void
-dump_data_dependence_relation (FILE *outf,
-			       struct data_dependence_relation *ddr)
+dump_data_dependence_relation (FILE *outf, const data_dependence_relation *ddr)
 {
   struct data_reference *dra, *drb;
 
@@ -479,7 +478,7 @@ dump_data_dependence_relation (FILE *outf,
 /* Debug version.  */
 
 DEBUG_FUNCTION void
-debug_data_dependence_relation (struct data_dependence_relation *ddr)
+debug_data_dependence_relation (const struct data_dependence_relation *ddr)
 {
   dump_data_dependence_relation (stderr, ddr);
 }
@@ -487,10 +486,9 @@ debug_data_dependence_relation (struct data_dependence_relation *ddr)
 /* Dump into FILE all the dependence relations from DDRS.  */
 
 DEBUG_FUNCTION void
-dump_data_dependence_relations (FILE *file,
-				vec<ddr_p> ddrs)
+dump_data_dependence_relations (FILE *file, const vec<ddr_p> &ddrs)
 {
-  for (data_dependence_relation *ddr : ddrs)
+  for (auto ddr : ddrs)
     dump_data_dependence_relation (file, ddr);
 }
 

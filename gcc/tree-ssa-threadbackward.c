@@ -92,7 +92,7 @@ public:
 private:
   void maybe_register_path (edge taken_edge);
   bool find_paths_to_names (basic_block bb, bitmap imports);
-  bool resolve_def (tree name, bitmap interesting, vec<tree> worklist);
+  bool resolve_def (tree name, bitmap interesting, vec<tree> &worklist);
   bool resolve_phi (gphi *phi, bitmap imports);
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
@@ -240,7 +240,7 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
 // Populate a vector of trees from a bitmap.
 
 static inline void
-populate_worklist (vec<tree> worklist, bitmap bits)
+populate_worklist (vec<tree> &worklist, bitmap bits)
 {
   bitmap_iterator bi;
   unsigned i;
@@ -317,7 +317,7 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
 // current path to be constant, register the path, and return TRUE.
 
 bool
-back_threader::resolve_def (tree name, bitmap interesting, vec<tree> worklist)
+back_threader::resolve_def (tree name, bitmap interesting, vec<tree> &worklist)
 {
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 

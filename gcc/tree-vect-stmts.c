@@ -4499,7 +4499,7 @@ static void
 vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
 				       int multi_step_cvt,
 				       stmt_vec_info stmt_info,
-				       vec<tree> vec_dsts,
+				       vec<tree> &vec_dsts,
 				       gimple_stmt_iterator *gsi,
 				       slp_tree slp_node, enum tree_code code)
 {

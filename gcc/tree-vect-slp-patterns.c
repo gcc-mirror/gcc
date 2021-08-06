@@ -746,7 +746,7 @@ vect_match_call_complex_mla (slp_tree node, unsigned child,
    of the negate node.  */
 
 static inline bool
-vect_normalize_conj_loc (vec<slp_tree> args, bool *neg_first_p = NULL)
+vect_normalize_conj_loc (vec<slp_tree> &args, bool *neg_first_p = NULL)
 {
   gcc_assert (args.length () == 2);
   bool neg_found = false;
