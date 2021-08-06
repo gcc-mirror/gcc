@@ -221,9 +221,25 @@ struct Session
   Linemap *linemap;
 
 public:
-  /* Initialise compiler session. Corresponds to langhook grs_langhook_init().
-   * Note that this is called after option handling. */
+  /* Get a reference to the static session instance */
+  static Session &get_instance ()
+  {
+    static Session instance;
+
+    return instance;
+  }
+
+  ~Session () = default;
+
+  /* This initializes the compiler session. Corresponds to langhook
+   * grs_langhook_init(). Note that this is called after option handling. */
   void init ();
+
+  // delete those constructors so we don't access the singleton in any
+  // other way than via `get_instance()`
+  Session (Session const &) = delete;
+  void operator= (Session const &) = delete;
+
   bool handle_option (enum opt_code code, const char *arg, HOST_WIDE_INT value,
 		      int kind, location_t loc,
 		      const struct cl_option_handlers *handlers);
@@ -231,6 +247,7 @@ public:
   void init_options ();
 
 private:
+  Session () = default;
   void parse_file (const char *filename);
   bool enable_dump (std::string arg);
 
