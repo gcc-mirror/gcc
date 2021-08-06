@@ -3636,7 +3636,7 @@ case ${target} in
         ;;
 *-*-linux* | *-*-gnu*)
 	case ${target} in
-	aarch64*-* | arm*-* | i[34567]86-* | powerpc*-* | s390*-* | sparc*-* | x86_64-*)
+	aarch64*-* | arm*-* | i[34567]86-* | powerpc*-* | s390*-* | sparc*-* | x86_64-* | loongarch*-*)
 		default_gnu_indirect_function=yes
 		;;
 	esac
