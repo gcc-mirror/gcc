@@ -94,6 +94,7 @@ package Gen_IL.Types is
       N_Has_Condition,
       N_Has_Entity,
       N_Has_Etype,
+      N_Is_Decl,
       N_Is_Index,
       N_Multiplying_Operator,
       N_Later_Decl_Item,

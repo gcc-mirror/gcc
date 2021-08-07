@@ -577,7 +577,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Ab (N_Declaration, Node_Kind);
    --  Note: this includes all constructs normally thought of as declarations
-   --  except those that are separately grouped in N_Later_Decl_Item.
+   --  except those that are separately grouped in N_Later_Decl_Item. But
+   --  Declaration_Node may return yet more node types; see N_Is_Decl below.
 
    Cc (N_Component_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
@@ -1671,5 +1672,18 @@ begin -- Gen_IL.Gen.Gen_Nodes
    --  Nodes that are definitely representing an entity.
    --  Some N_Attribute_Reference nodes may also represent an entity. See
    --  Is_Entity_Name.
+
+   Union (N_Is_Decl,
+          Children =>
+            (N_Declaration,
+             N_Discriminant_Specification,
+             N_Enumeration_Type_Definition,
+             N_Exception_Handler,
+             N_Later_Decl_Item,
+             N_Package_Specification,
+             N_Parameter_Specification,
+             N_Renaming_Declaration,
+             N_Subprogram_Specification));
+   --  Nodes that can be returned by Declaration_Node
 
 end Gen_IL.Gen.Gen_Nodes;
