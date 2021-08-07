@@ -11,9 +11,15 @@
 # non-bootstrapped compiler), later stages will be built by GCC which supports
 # the required flags.
 
+# We cannot use mdynamic-no-pic when building shared host resources.
+
+ifeq (${host_shared},no)
 BOOTSTRAP_TOOL_CAN_USE_MDYNAMIC_NO_PIC := $(shell \
   $(CC) -S -xc /dev/null -o /dev/null -Werror -mno-dynamic-no-pic 2>/dev/null \
   && echo true)
+else
+BOOTSTRAP_TOOL_CAN_USE_MDYNAMIC_NO_PIC := false
+endif
 
 @if gcc-bootstrap
 ifeq (${BOOTSTRAP_TOOL_CAN_USE_MDYNAMIC_NO_PIC},true)
@@ -21,8 +27,10 @@ STAGE1_CFLAGS += -mdynamic-no-pic
 else
 STAGE1_CFLAGS += -fPIC
 endif
+ifeq (${host_shared},no)
 # Add -mdynamic-no-pic to later stages when we know it is built with GCC.
 BOOT_CFLAGS += -mdynamic-no-pic
+endif
 @endif gcc-bootstrap
 
 @unless gcc-bootstrap
