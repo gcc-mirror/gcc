@@ -408,7 +408,14 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
     {
       // We are assigning a non-pointer value to the interface; the
       // interface gets a copy of the value in the heap if it escapes.
-      if (rhs->is_constant())
+
+      // An exception is &global if global is notinheap, which is a
+      // pointer value but not a direct-iface type and we can't simply
+      // take its address.
+      bool is_address = (rhs->unary_expression() != NULL
+                         && rhs->unary_expression()->op() == OPERATOR_AND);
+
+      if (rhs->is_constant() && !is_address)
         obj = Expression::make_unary(OPERATOR_AND, rhs, location);
       else
         {
@@ -11331,6 +11338,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
       // We always pass a pointer when calling a method, except for
       // direct interface types when calling a value method.
       if (!first_arg->type()->is_error()
+          && first_arg->type()->points_to() == NULL
           && !first_arg->type()->is_direct_iface_type())
 	{
 	  first_arg = Expression::make_unary(OPERATOR_AND, first_arg, loc);
@@ -18630,12 +18638,20 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
       else
 	m = st->method_function(p->name(), &is_ambiguous);
       go_assert(m != NULL);
-      Named_object* no =
-        (this->is_pointer_
-         && this->type_->is_direct_iface_type()
-         && m->is_value_method()
-         ? m->iface_stub_object()
-         : m->named_object());
+
+      // See the comment in Type::method_constructor.
+      bool use_direct_iface_stub = false;
+      if (m->is_value_method()
+	  && this->is_pointer_
+	  && this->type_->is_direct_iface_type())
+	use_direct_iface_stub = true;
+      if (!m->is_value_method()
+	  && this->is_pointer_
+	  && !this->type_->in_heap())
+	use_direct_iface_stub = true;
+      Named_object* no = (use_direct_iface_stub
+			  ? m->iface_stub_object()
+			  : m->named_object());
 
       go_assert(no->is_function() || no->is_function_declaration());
 

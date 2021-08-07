@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build aix || darwin || dragonfly || freebsd || hurd || (js && wasm) || linux || netbsd || openbsd || solaris || windows
 // +build aix darwin dragonfly freebsd hurd js,wasm linux netbsd openbsd solaris windows
 
 package runtime
@@ -567,8 +568,7 @@ func (c *pollCache) alloc() *pollDesc {
 func (pd *pollDesc) makeArg() (i interface{}) {
 	x := (*eface)(unsafe.Pointer(&i))
 	x._type = pdType
-	// For gccgo, we still use pd.self here, not &pd.self.
-	x.data = unsafe.Pointer(pd.self)
+	x.data = unsafe.Pointer(&pd.self)
 	return
 }
 

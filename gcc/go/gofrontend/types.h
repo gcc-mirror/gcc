@@ -3605,8 +3605,7 @@ class Named_type : public Type
   do_needs_key_update();
 
   bool
-  do_in_heap() const
-  { return this->in_heap_ && this->type_->in_heap(); }
+  do_in_heap() const;
 
   unsigned int
   do_hash_for_method(Gogo*, int) const;
