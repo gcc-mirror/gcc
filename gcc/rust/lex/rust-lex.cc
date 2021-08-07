@@ -1827,7 +1827,8 @@ Lexer::parse_string (Location loc)
 	  else
 	    length += std::get<1> (utf8_escape_pair);
 
-	  if (current_char32 != Codepoint (0))
+	  if (current_char32 != Codepoint (0)
+	      || !std::get<2> (utf8_escape_pair))
 	    str += current_char32;
 
 	  // required as parsing utf8 escape only changes current_char
