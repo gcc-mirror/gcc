@@ -1,3 +1,19 @@
+2021-08-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101505
+	* gcc.dg/vect/pr101505.c: New testcase.
+
+2021-08-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR c/101512
+	* gcc.dg/torture/pr101512.c: New testcase.
+
 2021-07-30  Xi Ruoyao  <xry111@mengyan1223.wang>
 
 	Backported from master:
