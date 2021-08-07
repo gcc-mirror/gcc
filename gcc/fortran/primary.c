@@ -2779,7 +2779,7 @@ gfc_expr_attr (gfc_expr *e)
 	       && e->value.function.isym->transformational
 	       && e->ts.type == BT_CLASS)
 	attr = CLASS_DATA (e)->attr;
-      else
+      else if (e->symtree)
 	attr = gfc_variable_attr (e, NULL);
 
       /* TODO: NULL() returns pointers.  May have to take care of this
