@@ -1,3 +1,10 @@
+2021-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (compare_three_way, strong_order)
+	(weak_order, partial_order, compare_strong_order_fallback)
+	(compare_weak_order_fallback, compare_partial_order_fallback):
+	Move nodiscard attributes to correct location.
+
 2021-08-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101782
