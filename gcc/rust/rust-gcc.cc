@@ -1940,14 +1940,16 @@ Gcc_backend::negation_expression (NegationOperator op, Bexpression *expr,
   /* For negation operators, the resulting type should be the same as its
      operand. */
   auto tree_type = TREE_TYPE (expr_tree);
+  auto original_type = tree_type;
   auto tree_code = operator_to_tree_code (op);
 
   /* For floating point operations we may need to extend the precision of type.
      For example, a 64-bit machine may not support operations on float32. */
   bool floating_point = is_floating_point (expr_tree);
+  auto extended_type = NULL_TREE;
   if (floating_point)
     {
-      auto extended_type = excess_precision_type (tree_type);
+      extended_type = excess_precision_type (tree_type);
       if (extended_type != NULL_TREE)
 	{
 	  expr_tree = convert (extended_type, expr_tree);
@@ -1958,6 +1960,8 @@ Gcc_backend::negation_expression (NegationOperator op, Bexpression *expr,
   /* Construct a new tree and build an expression from it. */
   auto new_tree = fold_build1_loc (location.gcc_location (), tree_code,
 				   tree_type, expr_tree);
+  if (floating_point && extended_type != NULL_TREE)
+    new_tree = convert (original_type, expr_tree);
   return this->make_expression (new_tree);
 }
 
@@ -1982,13 +1986,15 @@ Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
   /* For arithmetic or logical operators, the resulting type should be the same
      as the lhs operand. */
   auto tree_type = TREE_TYPE (left_tree);
+  auto original_type = tree_type;
   auto tree_code = operator_to_tree_code (op, floating_point);
 
   /* For floating point operations we may need to extend the precision of type.
      For example, a 64-bit machine may not support operations on float32. */
+  auto extended_type = NULL_TREE;
   if (floating_point)
     {
-      auto extended_type = excess_precision_type (tree_type);
+      extended_type = excess_precision_type (tree_type);
       if (extended_type != NULL_TREE)
 	{
 	  left_tree = convert (extended_type, left_tree);
@@ -2000,6 +2006,8 @@ Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
   /* Construct a new tree and build an expression from it. */
   auto new_tree = fold_build2_loc (location.gcc_location (), tree_code,
 				   tree_type, left_tree, right_tree);
+  if (floating_point && extended_type != NULL_TREE)
+    new_tree = convert (original_type, new_tree);
   return this->make_expression (new_tree);
 }
 
