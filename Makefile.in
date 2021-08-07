@@ -56590,6 +56590,14 @@ check-gcc-d:
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-d);
 check-d: check-gcc-d check-target-libphobos
 
+.PHONY: check-gcc-jit check-jit
+check-gcc-jit:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-jit);
+check-jit: check-gcc-jit
+
 
 # The gcc part of install-no-fixedincludes, which relies on an intimate
 # knowledge of how a number of gcc internal targets (inter)operate.  Delegate.
