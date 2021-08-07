@@ -97,14 +97,12 @@ struct GTY (()) language_function
   int dummy;
 };
 
-// Kinda HACK-ish - store parsing session as static variable
-static Rust::Session session;
-
 // has to be in same compilation unit as session, so here for now
 void
 rust_add_target_info (const char *key, const char *value)
 {
-  session.options.target_data.insert_key_value_pair (key, value);
+  Rust::Session::get_instance ().options.target_data.insert_key_value_pair (
+    key, value);
 }
 
 /* Language hooks.  */
@@ -136,7 +134,7 @@ grs_langhook_init (void)
   using_eh_for_cleanups ();
 
   // initialise compiler session
-  session.init ();
+  Rust::Session::get_instance ().init ();
 
   return true;
 }
@@ -154,7 +152,7 @@ static void
 grs_langhook_init_options_struct (struct gcc_options * /* opts */)
 {
   // nothing yet - used by frontends to change specific options for the language
-  session.init_options ();
+  Rust::Session::get_instance ().init_options ();
 }
 
 /* Main entry point for front-end, apparently. Finds input file names in global
@@ -168,7 +166,7 @@ grs_langhook_parse_file (void)
 {
   rust_debug ("Preparing to parse files. ");
 
-  session.parse_files (num_in_fnames, in_fnames);
+  Rust::Session::get_instance ().parse_files (num_in_fnames, in_fnames);
 }
 
 /* Seems to get the exact type for a specific type - e.g. for scalar float with
@@ -294,7 +292,8 @@ grs_langhook_handle_option (
   // bool ret = true;
 
   // delegate to session manager
-  return session.handle_option (code, arg, value, kind, loc, handlers);
+  return Rust::Session::get_instance ().handle_option (code, arg, value, kind,
+						       loc, handlers);
 
   // Handles options as listed in lang.opt.
   /*switch (code) {
