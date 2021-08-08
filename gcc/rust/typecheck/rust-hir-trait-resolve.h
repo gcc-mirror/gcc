@@ -100,29 +100,23 @@ class TraitResolver : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static TraitReference &Resolve (HIR::TypePath &path)
+  static TraitReference *Resolve (HIR::TypePath &path)
   {
     TraitResolver resolver;
     return resolver.go (path);
   }
 
-  static TraitReference &error_node ()
-  {
-    static TraitReference trait_error_node = TraitReference::error ();
-    return trait_error_node;
-  }
-
 private:
   TraitResolver () : TypeCheckBase () {}
 
-  TraitReference &go (HIR::TypePath &path)
+  TraitReference *go (HIR::TypePath &path)
   {
     NodeId ref;
     if (!resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
 					 &ref))
       {
 	rust_error_at (path.get_locus (), "Failed to resolve path to node-id");
-	return error_node ();
+	return &TraitReference::error_node ();
       }
 
     HirId hir_node = UNKNOWN_HIRID;
@@ -130,7 +124,7 @@ private:
 				       &hir_node))
       {
 	rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
-	return error_node ();
+	return &TraitReference::error_node ();
       }
 
     HIR::Item *resolved_item
@@ -140,9 +134,9 @@ private:
     resolved_item->accept_vis (*this);
     rust_assert (trait_reference != nullptr);
 
-    TraitReference &tref = error_node ();
+    TraitReference *tref = &TraitReference::error_node ();
     if (context->lookup_trait_reference (
-	  trait_reference->get_mappings ().get_defid (), tref))
+	  trait_reference->get_mappings ().get_defid (), &tref))
       {
 	return tref;
       }
@@ -185,13 +179,13 @@ private:
 	item_refs.push_back (std::move (trait_item_ref));
       }
 
-    tref = TraitReference (trait_reference, item_refs);
+    TraitReference trait_object (trait_reference, item_refs);
     context->insert_trait_reference (
-      trait_reference->get_mappings ().get_defid (), std::move (tref));
+      trait_reference->get_mappings ().get_defid (), std::move (trait_object));
 
-    tref = error_node ();
+    tref = &TraitReference::error_node ();
     bool ok = context->lookup_trait_reference (
-      trait_reference->get_mappings ().get_defid (), tref);
+      trait_reference->get_mappings ().get_defid (), &tref);
     rust_assert (ok);
 
     return tref;

@@ -280,8 +280,11 @@ public:
 		case HIR::TypeParamBound::BoundType::TRAITBOUND: {
 		  HIR::TraitBound *b
 		    = static_cast<HIR::TraitBound *> (bound.get ());
+
+		  TraitReference *trait = resolve_trait_path (b->get_path ());
 		  TyTy::TypeBoundPredicate predicate (
-		    &resolve_trait_path (b->get_path ()));
+		    trait->get_mappings ().get_defid (), b->get_locus ());
+
 		  specified_bounds.push_back (std::move (predicate));
 		}
 		break;

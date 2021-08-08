@@ -49,8 +49,8 @@ struct PathProbeCandidate
 
   struct TraitItemCandidate
   {
-    const TraitReference &trait_ref;
-    const TraitItemReference &item_ref;
+    const TraitReference *trait_ref;
+    const TraitItemReference *item_ref;
   };
 
   CandidateType type;
@@ -128,18 +128,18 @@ public:
     if (!probe_bounds)
       return probe.candidates;
 
-    std::vector<std::reference_wrapper<TraitReference>> probed_bounds
+    std::vector<TraitReference *> probed_bounds
       = TypeBoundsProbe::Probe (receiver);
 
-    std::vector<std::reference_wrapper<const TraitReference>> specified_bounds;
+    std::vector<const TraitReference *> specified_bounds;
     for (const TyTy::TypeBoundPredicate &predicate :
 	 receiver->get_specified_bounds ())
       {
 	const TraitReference *trait_item = predicate.get ();
-	specified_bounds.push_back (*trait_item);
+	specified_bounds.push_back (trait_item);
       }
 
-    std::vector<std::reference_wrapper<const TraitReference>> union_type_bounds
+    std::vector<const TraitReference *> union_type_bounds
       = probe.union_bounds (probed_bounds, specified_bounds);
     probe.process_traits_for_candidates (union_type_bounds,
 					 ignore_mandatory_trait_items);
@@ -230,22 +230,22 @@ private:
   }
 
   void process_traits_for_candidates (
-    const std::vector<std::reference_wrapper<const TraitReference>> traits,
+    const std::vector<const TraitReference *> traits,
     bool ignore_mandatory_trait_items)
   {
-    for (const TraitReference &trait_ref : traits)
+    for (const TraitReference *trait_ref : traits)
       {
-	const TraitItemReference &trait_item_ref
-	  = trait_ref.lookup_trait_item (search.as_string ());
-	if (trait_item_ref.is_error ())
+	const TraitItemReference *trait_item_ref = nullptr;
+	if (!trait_ref->lookup_trait_item (search.as_string (),
+					   &trait_item_ref))
 	  continue;
 
-	bool trait_item_needs_implementation = !trait_item_ref.is_optional ();
+	bool trait_item_needs_implementation = !trait_item_ref->is_optional ();
 	if (ignore_mandatory_trait_items && trait_item_needs_implementation)
 	  continue;
 
 	PathProbeCandidate::CandidateType candidate_type;
-	switch (trait_item_ref.get_trait_item_type ())
+	switch (trait_item_ref->get_trait_item_type ())
 	  {
 	  case TraitItemReference::TraitItemType::FN:
 	    candidate_type = PathProbeCandidate::CandidateType::TRAIT_FUNC;
@@ -264,7 +264,7 @@ private:
 	    break;
 	  }
 
-	TyTy::BaseType *trait_item_tyty = trait_item_ref.get_tyty ();
+	TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ();
 
 	// we can substitute the Self with the receiver here
 	if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
@@ -298,7 +298,7 @@ private:
 	  trait_ref, trait_item_ref};
 	PathProbeCandidate candidate{candidate_type,
 				     trait_item_tyty,
-				     trait_ref.get_locus (),
+				     trait_ref->get_locus (),
 				     {trait_item_candidate}};
 	candidates.push_back (std::move (candidate));
       }
@@ -311,21 +311,21 @@ private:
       current_impl (nullptr)
   {}
 
-  std::vector<std::reference_wrapper<const TraitReference>> union_bounds (
-    const std::vector<std::reference_wrapper</*const*/ TraitReference>> a,
-    const std::vector<std::reference_wrapper<const TraitReference>> b) const
+  std::vector<const TraitReference *>
+  union_bounds (const std::vector</*const*/ TraitReference *> a,
+		const std::vector<const TraitReference *> b) const
   {
-    std::map<DefId, std::reference_wrapper<const TraitReference>> mapper;
-    for (const TraitReference &ref : a)
+    std::map<DefId, const TraitReference *> mapper;
+    for (const TraitReference *ref : a)
       {
-	mapper.insert ({ref.get_mappings ().get_defid (), ref});
+	mapper.insert ({ref->get_mappings ().get_defid (), ref});
       }
-    for (const TraitReference &ref : b)
+    for (const TraitReference *ref : b)
       {
-	mapper.insert ({ref.get_mappings ().get_defid (), ref});
+	mapper.insert ({ref->get_mappings ().get_defid (), ref});
       }
 
-    std::vector<std::reference_wrapper<const TraitReference>> union_set;
+    std::vector<const TraitReference *> union_set;
     for (auto it = mapper.begin (); it != mapper.end (); it++)
       {
 	union_set.push_back (it->second);
@@ -362,7 +362,7 @@ public:
 	  case PathProbeCandidate::CandidateType::TRAIT_ITEM_CONST:
 	  case PathProbeCandidate::CandidateType::TRAIT_TYPE_ALIAS:
 	  case PathProbeCandidate::CandidateType::TRAIT_FUNC:
-	    r.add_range (c.item.trait.item_ref.get_locus ());
+	    r.add_range (c.item.trait.item_ref->get_locus ());
 	    break;
 	  }
       }

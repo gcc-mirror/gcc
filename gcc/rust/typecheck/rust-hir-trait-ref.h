@@ -199,6 +199,12 @@ public:
 
   bool is_error () const { return hir_trait_ref == nullptr; }
 
+  static TraitReference &error_node ()
+  {
+    static TraitReference trait_error_node = TraitReference::error ();
+    return trait_error_node;
+  }
+
   Location get_locus () const { return hir_trait_ref->get_locus (); }
 
   std::string get_name () const
@@ -227,14 +233,18 @@ public:
     return hir_trait_ref->get_mappings ();
   }
 
-  const TraitItemReference &lookup_trait_item (const std::string &ident) const
+  bool lookup_trait_item (const std::string &ident,
+			  const TraitItemReference **ref) const
   {
     for (auto &item : item_refs)
       {
 	if (ident.compare (item.get_identifier ()) == 0)
-	  return item;
+	  {
+	    *ref = &item;
+	    return true;
+	  }
       }
-    return TraitItemReference::error_node ();
+    return false;
   }
 
   const TraitItemReference &

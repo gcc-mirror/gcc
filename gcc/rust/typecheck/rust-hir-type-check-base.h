@@ -202,7 +202,7 @@ protected:
       context (TypeCheckContext::get ())
   {}
 
-  TraitReference &resolve_trait_path (HIR::TypePath &);
+  TraitReference *resolve_trait_path (HIR::TypePath &);
 
   Analysis::Mappings *mappings;
   Resolver *resolver;

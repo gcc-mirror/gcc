@@ -31,8 +31,7 @@ class TypeBoundsProbe : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static std::vector<std::reference_wrapper<TraitReference>>
-  Probe (const TyTy::BaseType *receiver)
+  static std::vector<TraitReference *> Probe (const TyTy::BaseType *receiver)
   {
     TypeBoundsProbe probe (receiver);
     probe.scan ();
@@ -48,7 +47,7 @@ private:
   {}
 
   const TyTy::BaseType *receiver;
-  std::vector<std::reference_wrapper<TraitReference>> trait_references;
+  std::vector<TraitReference *> trait_references;
 };
 
 } // namespace Resolver

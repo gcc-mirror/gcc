@@ -53,8 +53,10 @@ class NodeMapping
 {
 public:
   NodeMapping (CrateNum crateNum, NodeId nodeId, HirId hirId,
-	       LocalDefId localDefId);
-  ~NodeMapping ();
+	       LocalDefId localDefId)
+    : crateNum (crateNum), nodeId (nodeId), hirId (hirId),
+      localDefId (localDefId)
+  {}
 
   static NodeMapping get_error ();
 
@@ -67,6 +69,14 @@ public:
   static DefId get_defid (CrateNum crate_num, LocalDefId local_defid);
 
   std::string as_string () const;
+
+  bool is_equal (const NodeMapping &other) const
+  {
+    return get_crate_num () == other.get_crate_num ()
+	   && get_nodeid () == other.get_nodeid ()
+	   && get_hirid () == other.get_hirid ()
+	   && get_local_defid () == other.get_local_defid ();
+  }
 
 private:
   CrateNum crateNum;

@@ -27,12 +27,83 @@
 #include "rust-tyty-cast.h"
 #include "rust-hir-map.h"
 #include "rust-substitution-mapper.h"
+#include "rust-hir-trait-ref.h"
+#include "rust-hir-type-bounds.h"
 
 extern ::Backend *
 rust_get_backend ();
 
 namespace Rust {
 namespace TyTy {
+
+bool
+BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
+{
+  const Resolver::TraitReference *query = predicate.get ();
+  for (auto &bound : specified_bounds)
+    {
+      const Resolver::TraitReference *item = bound.get ();
+      bool found = item->get_mappings ().get_defid ()
+		   == query->get_mappings ().get_defid ();
+      if (found)
+	return true;
+    }
+
+  std::vector<Resolver::TraitReference *> probed
+    = Resolver::TypeBoundsProbe::Probe (this);
+  for (const Resolver::TraitReference *bound : probed)
+    {
+      bool found = bound->get_mappings ().get_defid ()
+		   == query->get_mappings ().get_defid ();
+      if (found)
+	return true;
+    }
+
+  return false;
+}
+
+bool
+BaseType::bounds_compatible (const BaseType &other, Location locus) const
+{
+  std::vector<std::reference_wrapper<const TypeBoundPredicate>>
+    unsatisfied_bounds;
+  for (auto &bound : get_specified_bounds ())
+    {
+      if (!other.satisfies_bound (bound))
+	unsatisfied_bounds.push_back (bound);
+    }
+
+  // lets emit a single error for this
+  if (unsatisfied_bounds.size () > 0)
+    {
+      RichLocation r (locus);
+      std::string missing_preds;
+      for (size_t i = 0; i < unsatisfied_bounds.size (); i++)
+	{
+	  const TypeBoundPredicate &pred = unsatisfied_bounds.at (i);
+	  r.add_range (pred.get_locus ());
+	  missing_preds += pred.get_name ();
+
+	  bool have_next = (i + 1) < unsatisfied_bounds.size ();
+	  if (have_next)
+	    missing_preds += ", ";
+	}
+
+      rust_error_at (r, "bounds not satisfied for %s %<%s%> is not satisfied",
+		     other.get_name ().c_str (), missing_preds.c_str ());
+    }
+
+  return unsatisfied_bounds.size () == 0;
+}
+
+void
+BaseType::inherit_bounds (const BaseType &other)
+{
+  for (auto &bound : other.get_specified_bounds ())
+    {
+      add_bound (bound);
+    }
+}
 
 TyVar::TyVar (HirId ref) : ref (ref)
 {
@@ -556,7 +627,7 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty ());
+	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
     }
 
   adt->iterate_fields ([&] (StructFieldType *field) mutable -> bool {
@@ -811,7 +882,7 @@ FnType::is_equal (const BaseType &other) const
 BaseType *
 FnType::clone () const
 {
-  std::vector<std::pair<HIR::Pattern *, BaseType *> > cloned_params;
+  std::vector<std::pair<HIR::Pattern *, BaseType *>> cloned_params;
   for (auto &p : params)
     cloned_params.push_back (
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
@@ -836,7 +907,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty ());
+	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
     }
 
   auto fty = fn->get_return_type ();

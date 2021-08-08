@@ -132,26 +132,21 @@ public:
 class TypeBoundPredicate
 {
 public:
-  TypeBoundPredicate (Resolver::TraitReference *reference)
-    : reference (reference)
+  TypeBoundPredicate (DefId reference, Location locus)
+    : reference (reference), locus (locus)
   {}
-
-  TypeBoundPredicate (const TypeBoundPredicate &other)
-    : reference (other.reference)
-  {}
-
-  TypeBoundPredicate &operator= (const TypeBoundPredicate &other)
-  {
-    reference = other.reference;
-    return *this;
-  }
 
   std::string as_string () const;
 
-  const Resolver::TraitReference *get () const { return reference; }
+  const Resolver::TraitReference *get () const;
+
+  Location get_locus () const { return locus; }
+
+  std::string get_name () const;
 
 private:
-  Resolver::TraitReference *reference;
+  DefId reference;
+  Location locus;
 };
 
 class TypeBoundsMappings
@@ -172,7 +167,21 @@ public:
     return specified_bounds;
   }
 
+  std::string bounds_as_string () const
+  {
+    std::string buf;
+    for (auto &b : specified_bounds)
+      buf += b.as_string () + ", ";
+
+    return "bounds:[" + buf + "]";
+  }
+
 protected:
+  void add_bound (TypeBoundPredicate predicate)
+  {
+    specified_bounds.push_back (predicate);
+  }
+
   std::vector<TypeBoundPredicate> specified_bounds;
 };
 
@@ -236,6 +245,12 @@ public:
   {
     return get_kind () == other.get_kind ();
   }
+
+  bool satisfies_bound (const TypeBoundPredicate &predicate) const;
+
+  bool bounds_compatible (const BaseType &other, Location locus) const;
+
+  void inherit_bounds (const BaseType &other);
 
   virtual bool is_unit () const { return false; }
 
@@ -575,8 +590,18 @@ public:
 
   std::string as_string () const { return param->as_string (); }
 
-  void fill_param_ty (BaseType *type)
+  void fill_param_ty (BaseType *type, Location locus)
   {
+    if (type->get_kind () == TyTy::TypeKind::INFER)
+      {
+	type->inherit_bounds (*param);
+      }
+    else
+      {
+	if (!param->bounds_compatible (*type, locus))
+	  return;
+      }
+
     if (type->get_kind () == TypeKind::PARAM)
       {
 	delete param;

@@ -244,7 +244,7 @@ public:
       = resolved_candidate.is_impl_candidate ()
 	  ? resolved_candidate.item.impl.impl_item->get_impl_mappings ()
 	      .get_nodeid ()
-	  : resolved_candidate.item.trait.item_ref.get_mappings ()
+	  : resolved_candidate.item.trait.item_ref->get_mappings ()
 	      .get_nodeid ();
 
     if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)
@@ -994,7 +994,7 @@ public:
 	else
 	  {
 	    resolved_node_id
-	      = candidate.item.trait.item_ref.get_mappings ().get_nodeid ();
+	      = candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
 	  }
 
 	if (seg.has_generic_args ())
