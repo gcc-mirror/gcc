@@ -23,13 +23,6 @@
 namespace Rust {
 namespace Analysis {
 
-NodeMapping::NodeMapping (CrateNum crateNum, NodeId nodeId, HirId hirId,
-			  LocalDefId localDefId)
-  : crateNum (crateNum), nodeId (nodeId), hirId (hirId), localDefId (localDefId)
-{}
-
-NodeMapping::~NodeMapping () {}
-
 NodeMapping
 NodeMapping::get_error ()
 {
