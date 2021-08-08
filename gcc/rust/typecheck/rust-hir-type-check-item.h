@@ -43,12 +43,12 @@ public:
 
   void visit (HIR::ImplBlock &impl_block) override
   {
-    TraitReference &trait_reference = TraitReference::error_node ();
+    TraitReference *trait_reference = &TraitReference::error_node ();
     if (impl_block.has_trait_ref ())
       {
 	std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
 	trait_reference = TraitResolver::Resolve (*ref.get ());
-	rust_assert (!trait_reference.is_error ());
+	rust_assert (!trait_reference->is_error ());
       }
 
     TyTy::BaseType *self = nullptr;
@@ -60,7 +60,7 @@ public:
 	return;
       }
 
-    bool is_trait_impl_block = !trait_reference.is_error ();
+    bool is_trait_impl_block = !trait_reference->is_error ();
 
     std::vector<std::reference_wrapper<const TraitItemReference>>
       trait_item_refs;
@@ -72,20 +72,20 @@ public:
 	  {
 	    auto &trait_item_ref
 	      = TypeCheckImplItemWithTrait::Resolve (impl_item.get (), self,
-						     trait_reference);
+						     *trait_reference);
 	    trait_item_refs.push_back (trait_item_ref);
 	  }
       }
 
     bool impl_block_missing_trait_items
       = is_trait_impl_block
-	&& trait_reference.size () != trait_item_refs.size ();
+	&& trait_reference->size () != trait_item_refs.size ();
     if (impl_block_missing_trait_items)
       {
 	// filter the missing impl_items
 	std::vector<std::reference_wrapper<const TraitItemReference>>
 	  missing_trait_items;
-	for (auto &trait_item_ref : trait_reference.get_trait_items ())
+	for (auto &trait_item_ref : trait_reference->get_trait_items ())
 	  {
 	    bool found = false;
 	    for (const TraitItemReference &implemented_trait_item :
@@ -120,7 +120,7 @@ public:
 
 	    rust_error_at (r, "missing %s in implementation of trait %<%s%>",
 			   missing_items_buf.c_str (),
-			   trait_reference.get_name ().c_str ());
+			   trait_reference->get_name ().c_str ());
 	  }
       }
   }

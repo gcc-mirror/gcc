@@ -49,11 +49,11 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 	return true;
     }
 
-  std::vector<std::reference_wrapper<Resolver::TraitReference>> probed
+  std::vector<Resolver::TraitReference *> probed
     = Resolver::TypeBoundsProbe::Probe (this);
-  for (const Resolver::TraitReference &bound : probed)
+  for (const Resolver::TraitReference *bound : probed)
     {
-      bool found = bound.get_mappings ().get_defid ()
+      bool found = bound->get_mappings ().get_defid ()
 		   == query->get_mappings ().get_defid ();
       if (found)
 	return true;

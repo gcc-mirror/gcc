@@ -132,26 +132,14 @@ public:
 class TypeBoundPredicate
 {
 public:
-  TypeBoundPredicate (Resolver::TraitReference *reference)
-    : reference (reference)
-  {}
-
-  TypeBoundPredicate (const TypeBoundPredicate &other)
-    : reference (other.reference)
-  {}
-
-  TypeBoundPredicate &operator= (const TypeBoundPredicate &other)
-  {
-    reference = other.reference;
-    return *this;
-  }
+  TypeBoundPredicate (DefId reference) : reference (reference) {}
 
   std::string as_string () const;
 
-  const Resolver::TraitReference *get () const { return reference; }
+  const Resolver::TraitReference *get () const;
 
 private:
-  Resolver::TraitReference *reference;
+  DefId reference;
 };
 
 class TypeBoundsMappings

@@ -48,14 +48,14 @@ TypeBoundsProbe::scan ()
 
   for (auto &trait_path : possible_trait_paths)
     {
-      TraitReference &trait_ref = TraitResolver::Resolve (*trait_path);
+      TraitReference *trait_ref = TraitResolver::Resolve (*trait_path);
 
-      if (!trait_ref.is_error ())
+      if (!trait_ref->is_error ())
 	trait_references.push_back (trait_ref);
     }
 }
 
-TraitReference &
+TraitReference *
 TypeCheckBase::resolve_trait_path (HIR::TypePath &path)
 {
   return TraitResolver::Resolve (path);
@@ -68,7 +68,19 @@ namespace TyTy {
 std::string
 TypeBoundPredicate::as_string () const
 {
-  return reference->as_string ();
+  return get ()->as_string ();
+}
+
+const Resolver::TraitReference *
+TypeBoundPredicate::get () const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+
+  Resolver::TraitReference *ref = nullptr;
+  bool ok = context->lookup_trait_reference (reference, &ref);
+  rust_assert (ok);
+
+  return ref;
 }
 
 } // namespace TyTy

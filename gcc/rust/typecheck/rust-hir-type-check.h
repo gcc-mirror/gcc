@@ -92,13 +92,13 @@ public:
     trait_context.emplace (id, std::move (ref));
   }
 
-  bool lookup_trait_reference (DefId id, TraitReference &ref)
+  bool lookup_trait_reference (DefId id, TraitReference **ref)
   {
     auto it = trait_context.find (id);
     if (it == trait_context.end ())
       return false;
 
-    ref = it->second;
+    *ref = &it->second;
     return true;
   }
 
