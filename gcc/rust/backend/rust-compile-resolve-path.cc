@@ -108,7 +108,7 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 		  trait_item->get_mappings ().get_hirid ());
 
 	      Resolver::TraitReference &trait_ref
-		= Resolver::TraitResolver::error_node ();
+		= Resolver::TraitReference::error_node ();
 	      bool ok = ctx->get_tyctx ()->lookup_trait_reference (
 		trait->get_mappings ().get_defid (), trait_ref);
 	      rust_assert (ok);

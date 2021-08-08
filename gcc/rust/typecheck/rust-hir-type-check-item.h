@@ -43,7 +43,7 @@ public:
 
   void visit (HIR::ImplBlock &impl_block) override
   {
-    TraitReference &trait_reference = TraitResolver::error_node ();
+    TraitReference &trait_reference = TraitReference::error_node ();
     if (impl_block.has_trait_ref ())
       {
 	std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();

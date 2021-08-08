@@ -199,6 +199,12 @@ public:
 
   bool is_error () const { return hir_trait_ref == nullptr; }
 
+  static TraitReference &error_node ()
+  {
+    static TraitReference trait_error_node = TraitReference::error ();
+    return trait_error_node;
+  }
+
   Location get_locus () const { return hir_trait_ref->get_locus (); }
 
   std::string get_name () const
