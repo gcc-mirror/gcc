@@ -124,7 +124,8 @@ package body Exp_Aggr is
    --  constants that are done in place.
 
    function Must_Slide
-     (Obj_Type : Entity_Id;
+     (Aggr     : Node_Id;
+      Obj_Type : Entity_Id;
       Typ      : Entity_Id) return Boolean;
    --  A static array aggregate in an object declaration can in most cases be
    --  expanded in place. The one exception is when the aggregate is given
@@ -1776,7 +1777,7 @@ package body Exp_Aggr is
                if Nkind (Parent (N)) = N_Assignment_Statement
                  and then Is_Array_Type (Comp_Typ)
                  and then Present (Component_Associations (Expr_Q))
-                 and then Must_Slide (Comp_Typ, Etype (Expr_Q))
+                 and then Must_Slide (N, Comp_Typ, Etype (Expr_Q))
                then
                   Set_Expansion_Delayed (Expr_Q, False);
                   Set_Analyzed (Expr_Q, False);
@@ -6855,7 +6856,7 @@ package body Exp_Aggr is
         and then Parent_Kind = N_Object_Declaration
         and then Present (Expression (Parent_Node))
         and then not
-          Must_Slide (Etype (Defining_Identifier (Parent_Node)), Typ)
+          Must_Slide (N, Etype (Defining_Identifier (Parent_Node)), Typ)
         and then not Is_Bit_Packed_Array (Typ)
       then
          In_Place_Assign_OK_For_Declaration := True;
@@ -9616,13 +9617,16 @@ package body Exp_Aggr is
    ----------------
 
    function Must_Slide
-     (Obj_Type : Entity_Id;
+     (Aggr     : Node_Id;
+      Obj_Type : Entity_Id;
       Typ      : Entity_Id) return Boolean
    is
    begin
       --  No sliding if the type of the object is not established yet, if it is
       --  an unconstrained type whose actual subtype comes from the aggregate,
-      --  or if the two types are identical.
+      --  or if the two types are identical. If the aggregate contains only
+      --  an Others_Clause it gets its type from the context and no sliding
+      --  is involved either.
 
       if not Is_Array_Type (Obj_Type) then
          return False;
@@ -9633,8 +9637,13 @@ package body Exp_Aggr is
       elsif Typ = Obj_Type then
          return False;
 
+      elsif Is_Others_Aggregate (Aggr) then
+         return False;
+
       else
          --  Sliding can only occur along the first dimension
+         --  If any the bounds of non-static sliding is required
+         --  to force potential range checks.
 
          declare
             Bounds1 : constant Range_Nodes :=
@@ -9648,7 +9657,8 @@ package body Exp_Aggr is
                not Is_OK_Static_Expression (Bounds1.Last) or else
                not Is_OK_Static_Expression (Bounds2.Last)
             then
-               return False;
+               return True;
+
             else
                return Expr_Value (Bounds1.First) /= Expr_Value (Bounds2.First)
                         or else
