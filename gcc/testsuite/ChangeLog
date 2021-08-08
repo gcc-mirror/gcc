@@ -1,3 +1,13 @@
+2021-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/88531
+	* gcc.target/i386/pr88531-1a.c: New test.
+	* gcc.target/i386/pr88531-1b.c: Likewise.
+	* gcc.target/i386/pr88531-1c.c: Likewise.
+	* gcc.target/i386/pr88531-2a.c: Likewise.
+	* gcc.target/i386/pr88531-2b.c: Likewise.
+	* gcc.target/i386/pr88531-2c.c: Likewise.
+
 2021-08-06  Martin Sebor  <msebor@redhat.com>
 
 	* c-c++-common/Wsizeof-pointer-memaccess1.c: Also disable

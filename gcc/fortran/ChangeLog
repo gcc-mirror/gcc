@@ -1,3 +1,9 @@
+2021-08-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/68568
+	* primary.c (gfc_expr_attr): Variable attribute can only be
+	inquired when symtree is non-NULL.
+
 2021-07-28  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101564
