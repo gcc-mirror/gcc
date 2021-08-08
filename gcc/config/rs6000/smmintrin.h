@@ -274,6 +274,15 @@ _mm_floor_ss (__m128 __A, __m128 __B)
   return __r;
 }
 
+#ifdef _ARCH_PWR8
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmpeq_epi64 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_cmpeq ((__v2di) __X, (__v2di) __Y);
+}
+#endif
+
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_min_epi8 (__m128i __X, __m128i __Y)
@@ -331,6 +340,22 @@ _mm_max_epu32 (__m128i __X, __m128i __Y)
 }
 
 extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mullo_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_mul ((__v4su) __X, (__v4su) __Y);
+}
+
+#ifdef _ARCH_PWR8
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mul_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_mule ((__v4si) __X, (__v4si) __Y);
+}
+#endif
+
+__inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtepi8_epi16 (__m128i __A)
 {
@@ -494,5 +519,21 @@ _mm_minpos_epu16 (__m128i __A)
   __r.__uh[1] = __ridx;
   return __r.__m;
 }
+
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_packus_epi32 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_packsu ((__v4si) __X, (__v4si) __Y);
+}
+
+#ifdef _ARCH_PWR8
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmpgt_epi64 (__m128i __X, __m128i __Y)
+{
+  return (__m128i) vec_cmpgt ((__v2di) __X, (__v2di) __Y);
+}
+#endif
 
 #endif
