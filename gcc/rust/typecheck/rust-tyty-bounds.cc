@@ -83,5 +83,11 @@ TypeBoundPredicate::get () const
   return ref;
 }
 
+std::string
+TypeBoundPredicate::get_name () const
+{
+  return get ()->get_name ();
+}
+
 } // namespace TyTy
 } // namespace Rust

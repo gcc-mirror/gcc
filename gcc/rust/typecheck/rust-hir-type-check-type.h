@@ -283,7 +283,7 @@ public:
 
 		  TraitReference *trait = resolve_trait_path (b->get_path ());
 		  TyTy::TypeBoundPredicate predicate (
-		    trait->get_mappings ().get_defid ());
+		    trait->get_mappings ().get_defid (), b->get_locus ());
 
 		  specified_bounds.push_back (std::move (predicate));
 		}

@@ -132,14 +132,21 @@ public:
 class TypeBoundPredicate
 {
 public:
-  TypeBoundPredicate (DefId reference) : reference (reference) {}
+  TypeBoundPredicate (DefId reference, Location locus)
+    : reference (reference), locus (locus)
+  {}
 
   std::string as_string () const;
 
   const Resolver::TraitReference *get () const;
 
+  Location get_locus () const { return locus; }
+
+  std::string get_name () const;
+
 private:
   DefId reference;
+  Location locus;
 };
 
 class TypeBoundsMappings
@@ -241,34 +248,9 @@ public:
 
   bool satisfies_bound (const TypeBoundPredicate &predicate) const;
 
-  bool bounds_compatible (const BaseType &other, Location locus) const
-  {
-    std::vector<std::reference_wrapper<const TypeBoundPredicate>>
-      unsatisfied_bounds;
-    for (auto &bound : get_specified_bounds ())
-      {
-	if (!other.satisfies_bound (bound))
-	  unsatisfied_bounds.push_back (bound);
-      }
+  bool bounds_compatible (const BaseType &other, Location locus) const;
 
-    if (unsatisfied_bounds.size () > 0)
-      {
-	RichLocation r (locus);
-	rust_error_at (r, "bounds not satisfied for %s",
-		       other.as_string ().c_str ());
-	return false;
-      }
-
-    return unsatisfied_bounds.size () == 0;
-  }
-
-  void inherit_bounds (const BaseType &other)
-  {
-    for (auto &bound : other.get_specified_bounds ())
-      {
-	add_bound (bound);
-      }
-  }
+  void inherit_bounds (const BaseType &other);
 
   virtual bool is_unit () const { return false; }
 
