@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-early-inlining -fno-ipa-cp -fdump-tree-optimized"  }  */
+/* { dg-options "-O2 -fno-early-inlining -fno-ipa-cp -fdump-ipa-inline -fdump-tree-optimized"  }  */
 
 static double global = 0.0;
 
