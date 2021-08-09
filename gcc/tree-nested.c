@@ -933,6 +933,7 @@ get_frame_field (struct nesting_info *info, tree target_context,
     }
 
   x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
+  TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (field);
   return x;
 }
 
