@@ -1,15 +1,49 @@
-2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
+2021-08-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
-	2021-06-29  Thomas Schwinge  <thomas@codesourcery.com>
+	2021-08-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* icv-device.c (omp_get_device_num): New API function, host side.
+	* fortran.c (omp_get_device_num_): New interface function.
+	* libgomp-plugin.h (GOMP_DEVICE_NUM_VAR): Define macro symbol.
+	* libgomp.map (OMP_5.0.2): New version space with omp_get_device_num,
+	omp_get_device_num_.
+	* libgomp.texi (omp_get_device_num): Add documentation for new API
+	function.
+	* omp.h.in (omp_get_device_num): Add declaration.
+	* omp_lib.f90.in (omp_get_device_num): Likewise.
+	* omp_lib.h.in (omp_get_device_num): Likewise.
+	* target.c (gomp_load_image_to_device): If additional entry for device
+	number exists at end of returned entries from 'load_image_func' hook,
+	copy the assigned device number over to the device variable.
+	* config/gcn/icv-device.c (GOMP_DEVICE_NUM_VAR): Define static global.
+	(omp_get_device_num): New API function, device side.
+	* plugin/plugin-gcn.c ("symcat.h"): Add include.
+	(GOMP_OFFLOAD_load_image): Add addresses of device GOMP_DEVICE_NUM_VAR
+	at end of returned 'target_table' entries.
+	* config/nvptx/icv-device.c (GOMP_DEVICE_NUM_VAR): Define static global.
+	(omp_get_device_num): New API function, device side.
+	* plugin/plugin-nvptx.c ("symcat.h"): Add include.
+	(GOMP_OFFLOAD_load_image): Add addresses of device GOMP_DEVICE_NUM_VAR
+	at end of returned 'target_table' entries.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_intelmic): New function for
+	testing for intelmic offloading.
+	* testsuite/libgomp.c-c++-common/target-45.c: New test.
+	* testsuite/libgomp.fortran/target10.f90: New test.
+
+2021-07-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-07-29  Thomas Schwinge  <thomas@codesourcery.com>
 		    Ulrich Drepper  <drepper@redhat.com>
 	* fortran.c (omp_display_env_, omp_display_env_8_): Only
 	'#ifndef LIBGOMP_OFFLOADED_ONLY'.
 
-2021-06-30  Tobias Burnus  <tobias@codesourcery.com>
+2021-07-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
-	2021-06-29  Ulrich Drepper  <drepper@gmail.com>
+	2021-07-29  Ulrich Drepper  <drepper@gmail.com>
 
 	* env.c (wait_policy, stacksize): New static variables,
 	move out of handle_omp_display_env.

@@ -34,6 +34,7 @@
 #define _GNU_SOURCE
 #include "openacc.h"
 #include "config.h"
+#include "symcat.h"
 #include "libgomp-plugin.h"
 #include "oacc-plugin.h"
 #include "gomp-constants.h"
@@ -1280,7 +1281,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   CUmodule module;
   const char *const *var_names;
   const struct targ_fn_launch *fn_descs;
-  unsigned int fn_entries, var_entries, i, j;
+  unsigned int fn_entries, var_entries, other_entries, i, j;
   struct targ_fn_descriptor *targ_fns;
   struct addr_pair *targ_tbl;
   const nvptx_tdata_t *img_header = (const nvptx_tdata_t *) target_data;
@@ -1310,8 +1311,11 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   fn_entries = img_header->fn_num;
   fn_descs = img_header->fn_descs;
 
+  /* Currently, the only other entry kind is 'device number'.  */
+  other_entries = 1;
+
   targ_tbl = GOMP_PLUGIN_malloc (sizeof (struct addr_pair)
-				 * (fn_entries + var_entries));
+				 * (fn_entries + var_entries + other_entries));
   targ_fns = GOMP_PLUGIN_malloc (sizeof (struct targ_fn_descriptor)
 				 * fn_entries);
 
@@ -1360,9 +1364,24 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       targ_tbl->end = targ_tbl->start + bytes;
     }
 
+  CUdeviceptr device_num_varptr;
+  size_t device_num_varsize;
+  CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &device_num_varptr,
+				  &device_num_varsize, module,
+				  STRINGX (GOMP_DEVICE_NUM_VAR));
+  if (r == CUDA_SUCCESS)
+    {
+      targ_tbl->start = (uintptr_t) device_num_varptr;
+      targ_tbl->end = (uintptr_t) (device_num_varptr + device_num_varsize);
+    }
+  else
+    /* The 'GOMP_DEVICE_NUM_VAR' variable was not in this image.  */
+    targ_tbl->start = targ_tbl->end = 0;
+  targ_tbl++;
+
   nvptx_set_clocktick (module, dev);
 
-  return fn_entries + var_entries;
+  return fn_entries + var_entries + other_entries;
 }
 
 /* Unload the program described by TARGET_DATA.  DEV_DATA is the

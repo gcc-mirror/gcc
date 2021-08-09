@@ -102,6 +102,12 @@ struct addr_pair
   uintptr_t end;
 };
 
+/* This symbol is to name a target side variable that holds the designated
+   'device number' of the target device. The symbol needs to be available to
+   libgomp code and the offload plugin (which in the latter case must be
+   stringified).  */
+#define GOMP_DEVICE_NUM_VAR __gomp_device_num
+
 /* Miscellaneous functions.  */
 extern void *GOMP_PLUGIN_malloc (size_t) __attribute__ ((malloc));
 extern void *GOMP_PLUGIN_malloc_cleared (size_t) __attribute__ ((malloc));
