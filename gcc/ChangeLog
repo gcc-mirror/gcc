@@ -1,3 +1,291 @@
+2021-08-08  Sergei Trofimovich  <siarheit@google.com>
+
+	* lra-constraints.c: Fix s/otput/output/ typo.
+
+2021-08-06  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (expand_builtin_memchr): Move to gimple-ssa-warn-access.cc.
+	(expand_builtin_strcat): Same.
+	(expand_builtin_stpncpy): Same.
+	(expand_builtin_strncat): Same.
+	(check_read_access): Same.
+	(check_memop_access): Same.
+	(expand_builtin_strlen): Move checks to gimple-ssa-warn-access.cc.
+	(expand_builtin_strnlen): Same.
+	(expand_builtin_memcpy): Same.
+	(expand_builtin_memmove): Same.
+	(expand_builtin_mempcpy): Same.
+	(expand_builtin_strcpy): Same.
+	(expand_builtin_strcpy_args): Same.
+	(expand_builtin_stpcpy_1): Same.
+	(expand_builtin_strncpy): Same.
+	(expand_builtin_memset): Same.
+	(expand_builtin_bzero): Same.
+	(expand_builtin_strcmp): Same.
+	(expand_builtin_strncmp): Same.
+	(expand_builtin): Remove handlers.
+	(fold_builtin_strlen): Add a comment.
+	* builtins.h (check_access): Move to gimple-ssa-warn-access.cc.
+	* calls.c (maybe_warn_nonstring_arg): Same.
+	* diagnostic-spec.c (nowarn_spec_t::nowarn_spec_t): Add warning option.
+	* gimple-fold.c (gimple_fold_builtin_strcpy): Pass argument to callee.
+	(gimple_fold_builtin_stpcpy): Same.
+	* gimple-ssa-warn-access.cc (has_location): New function.
+	(get_location): Same.
+	(get_callee_fndecl): Same.
+	(call_nargs): Same.
+	(call_arg): Same.
+	(warn_string_no_nul): Define.
+	(unterminated_array): Same.
+	(check_nul_terminated_array): Same.
+	(maybe_warn_nonstring_arg): Same.
+	(maybe_warn_for_bound): Same.
+	(warn_for_access): Same.
+	(check_access): Same.
+	(check_memop_access): Same.
+	(check_read_access): Same.
+	(warn_dealloc_offset): Use helper functions.
+	(maybe_emit_free_warning): Same.
+	(class pass_waccess): Add members.
+	(check_strcat): New function.
+	(check_strncat): New function.
+	(check_stxcpy): New function.
+	(check_stxncpy): New function.
+	(check_strncmp): New function.
+	(pass_waccess::check_builtin): New function.
+	(pass_waccess::check): Call it.
+	* gimple-ssa-warn-access.h (warn_string_no_nul): Move here from
+	builtins.h.
+	(maybe_warn_for_bound): Same.
+	(check_access): Same.
+	(check_memop_access): Same.
+	(check_read_access): Same.
+	* pointer-query.h (struct access_data): Define a ctor overload.
+
+2021-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101801
+	* tree-vectorizer.h (vect_worthwhile_without_simd_p): Rename...
+	(vect_can_vectorize_without_simd_p): ... to this.
+	* tree-vect-loop.c (vect_worthwhile_without_simd_p): Rename...
+	(vect_can_vectorize_without_simd_p): ... to this and fold
+	in vect_min_worthwhile_factor.
+	(vect_min_worthwhile_factor): Remove.
+	(vectorizable_reduction): Adjust and remove the cost part.
+	* tree-vect-stmts.c (vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+
+2021-08-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101797
+	* config/i386/i386.md (cmove reg-to-reg move elimination peephole2s):
+	Add general_gr_operand predicate to operand 3.
+
+2021-08-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-ssa-phiopt.c (cond_removal_in_builtin_zero_pattern): Use
+	CFN_BUILT_IN_CLRSB* instead of BUILT_IN_CLRSB* for consistency.
+
+2021-08-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (register_svpattern,
+	register_svprfop): Pass vec<> by pointer.
+	* langhooks-def.h (lhd_simulate_enum_decl): Likewise.
+	* langhooks.c (lhd_simulate_enum_decl): Likewise.
+	* langhooks.h (struct lang_hooks_for_types): Likewise.
+
+2021-08-06  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vst1_bf16_x2): Use
+	__builtin_memcpy instead of constructing an additional
+	__builtin_aarch64_simd_oi one vector at a time.
+	(vst1q_bf16_x2): Likewise.
+	(vst1_bf16_x3): Use __builtin_memcpy instead of constructing
+	an additional __builtin_aarch64_simd_ci one vector at a time.
+	(vst1q_bf16_x3): Likewise.
+	(vst1_bf16_x4): Use __builtin_memcpy instead of a union.
+	(vst1q_bf16_x4): Likewise.
+	(vst2_bf16): Use __builtin_memcpy instead of constructing an
+	additional __builtin_aarch64_simd_oi one vector at a time.
+	(vst2q_bf16): Likewise.
+	(vst3_bf16): Use __builtin_memcpy instead of constructing an
+	additional __builtin_aarch64_simd_ci mode one vector at a
+	time.
+	(vst3q_bf16): Likewise.
+	(vst4_bf16): Use __builtin_memcpy instead of constructing an
+	additional __builtin_aarch64_simd_xi one vector at a time.
+	(vst4q_bf16): Likewise.
+
+2021-08-06  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (__ST2_LANE_FUNC): Delete.
+	(__ST2Q_LANE_FUNC): Delete.
+	(vst2_lane_f16): Use __builtin_memcpy to copy vector
+	structure instead of constructing __builtin_aarch64_simd_oi
+	one vector at a time.
+	(vst2_lane_f32): Likewise.
+	(vst2_lane_f64): Likewise.
+	(vst2_lane_p8): Likewise.
+	(vst2_lane_p16): Likewise.
+	(vst2_lane_p64): Likewise.
+	(vst2_lane_s8): Likewise.
+	(vst2_lane_s16): Likewise.
+	(vst2_lane_s32): Likewise.
+	(vst2_lane_s64): Likewise.
+	(vst2_lane_u8): Likewise.
+	(vst2_lane_u16): Likewise.
+	(vst2_lane_u32): Likewise.
+	(vst2_lane_u64): Likewise.
+	(vst2_lane_bf16): Likewise.
+	(vst2q_lane_f16): Use __builtin_memcpy to copy vector
+	structure instead of using a union.
+	(vst2q_lane_f32): Likewise.
+	(vst2q_lane_f64): Likewise.
+	(vst2q_lane_p8): Likewise.
+	(vst2q_lane_p16): Likewise.
+	(vst2q_lane_p64): Likewise.
+	(vst2q_lane_s8): Likewise.
+	(vst2q_lane_s16): Likewise.
+	(vst2q_lane_s32): Likewise.
+	(vst2q_lane_s64): Likewise.
+	(vst2q_lane_u8): Likewise.
+	(vst2q_lane_u16): Likewise.
+	(vst2q_lane_u32): Likewise.
+	(vst2q_lane_u64): Likewise.
+	(vst2q_lane_bf16): Likewise.
+
+2021-08-06  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (__ST3_LANE_FUNC): Delete.
+	(__ST3Q_LANE_FUNC): Delete.
+	(vst3_lane_f16): Use __builtin_memcpy to copy vector
+	structure instead of constructing __builtin_aarch64_simd_ci
+	one vector at a time.
+	(vst3_lane_f32): Likewise.
+	(vst3_lane_f64): Likewise.
+	(vst3_lane_p8): Likewise.
+	(vst3_lane_p16): Likewise.
+	(vst3_lane_p64): Likewise.
+	(vst3_lane_s8): Likewise.
+	(vst3_lane_s16): Likewise.
+	(vst3_lane_s32): Likewise.
+	(vst3_lane_s64): Likewise.
+	(vst3_lane_u8): Likewise.
+	(vst3_lane_u16): Likewise.
+	(vst3_lane_u32): Likewise.
+	(vst3_lane_u64): Likewise.
+	(vst3_lane_bf16): Likewise.
+	(vst3q_lane_f16): Use __builtin_memcpy to copy vector
+	structure instead of using a union.
+	(vst3q_lane_f32): Likewise.
+	(vst3q_lane_f64): Likewise.
+	(vst3q_lane_p8): Likewise.
+	(vst3q_lane_p16): Likewise.
+	(vst3q_lane_p64): Likewise.
+	(vst3q_lane_s8): Likewise.
+	(vst3q_lane_s16): Likewise.
+	(vst3q_lane_s32): Likewise.
+	(vst3q_lane_s64): Likewise.
+	(vst3q_lane_u8): Likewise.
+	(vst3q_lane_u16): Likewise.
+	(vst3q_lane_u32): Likewise.
+	(vst3q_lane_u64): Likewise.
+	(vst3q_lane_bf16): Likewise.
+
+2021-08-06  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (__ST4_LANE_FUNC): Delete.
+	(__ST4Q_LANE_FUNC): Delete.
+	(vst4_lane_f16): Use __builtin_memcpy to copy vector
+	structure instead of constructing __builtin_aarch64_simd_xi
+	one vector at a time.
+	(vst4_lane_f32): Likewise.
+	(vst4_lane_f64): Likewise.
+	(vst4_lane_p8): Likewise.
+	(vst4_lane_p16): Likewise.
+	(vst4_lane_p64): Likewise.
+	(vst4_lane_s8): Likewise.
+	(vst4_lane_s16): Likewise.
+	(vst4_lane_s32): Likewise.
+	(vst4_lane_s64): Likewise.
+	(vst4_lane_u8): Likewise.
+	(vst4_lane_u16): Likewise.
+	(vst4_lane_u32): Likewise.
+	(vst4_lane_u64): Likewise.
+	(vst4_lane_bf16): Likewise.
+	(vst4q_lane_f16): Use __builtin_memcpy to copy vector
+	structure instead of using a union.
+	(vst4q_lane_f32): Likewise.
+	(vst4q_lane_f64): Likewise.
+	(vst4q_lane_p8): Likewise.
+	(vst4q_lane_p16): Likewise.
+	(vst4q_lane_p64): Likewise.
+	(vst4q_lane_s8): Likewise.
+	(vst4q_lane_s16): Likewise.
+	(vst4q_lane_s32): Likewise.
+	(vst4q_lane_s64): Likewise.
+	(vst4q_lane_u8): Likewise.
+	(vst4q_lane_u16): Likewise.
+	(vst4q_lane_u32): Likewise.
+	(vst4q_lane_u64): Likewise.
+	(vst4q_lane_bf16): Likewise.
+
+2021-08-06  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): When
+	a target option is restored, it can have
+	rs6000_long_double_type_size set to FLOAT_PRECISION_TFmode
+	and error should not be emitted.
+
+2021-08-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcov-io.h (gcov_write): Declare.
+	* gcov-io.c (gcov_write): New.
+	(gcov_write_counter): Remove.
+	(gcov_write_tag_length): Likewise.
+	(gcov_write_summary): Replace gcov_write_tag_length() with calls to
+	gcov_write_unsigned().
+	* doc/invoke.texi (fprofile-info-section): Mention
+	__gcov_info_to_gdca().
+
+2021-08-06  Martin Sebor  <msebor@redhat.com>
+
+	* dominance.c (prune_bbs_to_update_dominators): Adjust by-value vec
+	arguments to by-reference.
+	(iterate_fix_dominators): Same.
+	* dominance.h (iterate_fix_dominators): Same.
+	* ipa-prop.h: Call auto_vec::to_vec_legacy.
+	* tree-data-ref.c (dump_data_dependence_relation): Adjust by-value vec
+	arguments to by-reference.
+	(debug_data_dependence_relation): Same.
+	(dump_data_dependence_relations): Same.
+	* tree-data-ref.h (debug_data_dependence_relation): Same.
+	(dump_data_dependence_relations): Same.
+	* tree-predcom.c (dump_chains): Same.
+	(initialize_root_vars_lm): Same.
+	(determine_unroll_factor): Same.
+	(replace_phis_by_defined_names): Same.
+	(insert_init_seqs): Same.
+	(pcom_worker::tree_predictive_commoning_loop): Call
+	 auto_vec::to_vec_legacy.
+	* tree-ssa-pre.c (insert_into_preds_of_block): Adjust by-value vec
+	arguments to by-reference.
+	* tree-ssa-threadbackward.c (populate_worklist): Same.
+	(back_threader::resolve_def): Same.
+	* tree-vect-data-refs.c (vect_check_nonzero_value): Same.
+	(vect_enhance_data_refs_alignment): Same.
+	(vect_check_lower_bound): Same.
+	(vect_prune_runtime_alias_test_list): Same.
+	(vect_permute_store_chain): Same.
+	* tree-vect-slp-patterns.c (vect_normalize_conj_loc): Same.
+	* tree-vect-stmts.c (vect_create_vectorized_demotion_stmts): Same.
+	* tree-vectorizer.h (vect_permute_store_chain): Same.
+	* vec.c (test_init): New function.
+	(vec_c_tests): Call new function.
+	* vec.h (vec): Declare ctors, dtor, and assignment.
+	(auto_vec::vec_to_legacy): New function.
+	(vec::copy): Adjust initialization.
+
 2021-08-05  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/99744

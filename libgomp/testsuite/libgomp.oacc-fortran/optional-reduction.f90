@@ -4,6 +4,9 @@
 
 ! { dg-do run }
 
+!TODO
+! { dg-xfail-run-if TODO { openacc_radeon_accel_selected && { ! __OPTIMIZE__ } } }
+
 program optional_reduction
   implicit none
 

@@ -184,6 +184,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_oacc_loop_designation);
+  NEXT_PASS (pass_omp_oacc_neuter_broadcast);
   NEXT_PASS (pass_oacc_device_lower);
   NEXT_PASS (pass_omp_device_lower);
   NEXT_PASS (pass_omp_target_link);

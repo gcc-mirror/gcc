@@ -47,5 +47,5 @@ test2()
 
 static_assert(test2()); // { dg-error "" }
 
-// { dg-prune-output "failed_assertion" }
+// { dg-prune-output "builtin_unreachable" }
 // { dg-prune-output "in 'constexpr'" }

@@ -1,3 +1,20 @@
+2021-08-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* c-decl.c (c_simulate_enum_decl): Pass vec<> by pointer.
+	* c-tree.h (c_simulate_enum_decl): Likewise.
+
+2021-08-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Adjust by-value function
+	vec arguments to by-reference.
+	(c_finish_omp_declare_simd): Same.
+	(c_parser_compound_statement_nostart): Same.
+	(c_parser_for_statement): Same.
+	(c_parser_objc_methodprotolist): Same.
+	(c_parser_oacc_routine): Same.
+	(c_parser_omp_for_loop): Same.
+	(c_parser_omp_declare_simd): Same.
+
 2021-07-21  Thomas Schwinge  <thomas@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>

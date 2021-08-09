@@ -1646,6 +1646,7 @@ Escape_analysis_assign::expression(Expression** pexpr)
 	      case Runtime::MAKECHAN:
 	      case Runtime::MAKECHAN64:
 	      case Runtime::MAKEMAP:
+	      case Runtime::MAKEMAP64:
 	      case Runtime::MAKESLICE:
 	      case Runtime::MAKESLICE64:
                 this->context_->track(n);
@@ -1705,8 +1706,52 @@ Escape_analysis_assign::expression(Expression** pexpr)
                 }
                 break;
 
+              case Runtime::MEMCMP:
+              case Runtime::DECODERUNE:
+              case Runtime::INTSTRING:
+              case Runtime::MAKEMAP_SMALL:
+              case Runtime::MAPACCESS1:
+              case Runtime::MAPACCESS1_FAST32:
+              case Runtime::MAPACCESS1_FAST64:
+              case Runtime::MAPACCESS1_FASTSTR:
+              case Runtime::MAPACCESS1_FAT:
+              case Runtime::MAPACCESS2:
+              case Runtime::MAPACCESS2_FAST32:
+              case Runtime::MAPACCESS2_FAST64:
+              case Runtime::MAPACCESS2_FASTSTR:
+              case Runtime::MAPACCESS2_FAT:
+              case Runtime::MAPASSIGN_FAST32:
+              case Runtime::MAPASSIGN_FAST64:
+              case Runtime::MAPITERINIT:
+              case Runtime::MAPITERNEXT:
+              case Runtime::MAPCLEAR:
+              case Runtime::CHANRECV2:
+              case Runtime::SELECTGO:
+              case Runtime::SELECTNBSEND:
+              case Runtime::SELECTNBRECV:
+              case Runtime::BLOCK:
+              case Runtime::IFACET2IP:
+              case Runtime::EQTYPE:
+              case Runtime::MEMCLRHASPTR:
+              case Runtime::FIELDTRACK:
+              case Runtime::BUILTIN_MEMSET:
+              case Runtime::PANIC_SLICE_CONVERT:
+                // these do not escape.
+                break;
+
+              case Runtime::IFACEE2E2:
+              case Runtime::IFACEI2E2:
+              case Runtime::IFACEE2I2:
+              case Runtime::IFACEI2I2:
+              case Runtime::IFACEE2T2P:
+              case Runtime::IFACEI2T2P:
+                // handled in ::assign.
+                break;
+
 	      default:
-		break;
+                // should not see other runtime calls. they are not yet
+                // lowered to runtime calls at this point.
+                go_unreachable();
 	      }
 	  }
         else

@@ -615,6 +615,8 @@ omp_copy_decl_1 (tree var, omp_context *ctx)
 
 /* Build COMPONENT_REF and set TREE_THIS_VOLATILE and TREE_READONLY on it
    as appropriate.  */
+/* See also 'gcc/omp-oacc-neuter-broadcast.cc:oacc_build_component_ref'.  */
+
 static tree
 omp_build_component_ref (tree obj, tree field)
 {

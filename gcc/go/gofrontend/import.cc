@@ -497,6 +497,9 @@ Import::read_one_import()
   p->set_package_name(package_name, this->location());
 
   this->packages_.push_back(p);
+
+  if (pkgpath == "unsafe")
+    this->gogo_->add_unsafe_bindings(p);
 }
 
 // Read an indirectimport line.
@@ -515,6 +518,9 @@ Import::read_one_indirect_import()
   p->set_package_name(package_name, this->location());
 
   this->packages_.push_back(p);
+
+  if (pkgpath == "unsafe")
+    this->gogo_->add_unsafe_bindings(p);
 }
 
 // Read the list of import control functions and/or init graph.

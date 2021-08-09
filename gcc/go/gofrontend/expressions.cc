@@ -11039,6 +11039,14 @@ Builtin_call_expression::do_export(Export_function_body* efb) const
       // A trailing space lets us reliably identify the end of the number.
       efb->write_c_string(" ");
     }
+  else if (this->code_ == BUILTIN_ADD || this->code_ == BUILTIN_SLICE)
+    {
+      char buf[50];
+      snprintf(buf, sizeof buf, "<p%d>%s", efb->unsafe_package_index(),
+	       (this->code_ == BUILTIN_ADD ? "Add" : "Slice"));
+      efb->write_c_string(buf);
+      this->export_arguments(efb);
+    }
   else
     {
       const char *s = NULL;

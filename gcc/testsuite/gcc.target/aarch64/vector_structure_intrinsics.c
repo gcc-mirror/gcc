@@ -263,7 +263,7 @@ TEST_ST1x3 (vst1q, uint64x2x3_t, uint64_t*, u64, x3);
 TEST_ST1x3 (vst1q, poly64x2x3_t, poly64_t*, p64, x3);
 TEST_ST1x3 (vst1q, float64x2x3_t, float64_t*, f64, x3);
 
-/* { dg-final { scan-assembler-not "mov\\t" } } */
+/* { dg-final { scan-assembler-not "mov\\t" { target aarch64_little_endian } } } */
 
 /* { dg-final { scan-assembler-times "tbl\\t" 18} }  */
 /* { dg-final { scan-assembler-times "tbx\\t" 18} }  */

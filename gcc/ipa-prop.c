@@ -4204,7 +4204,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 		      new_root->create_reference (n, IPA_REF_LOAD, NULL);
 		      if (dump_file)
 			fprintf (dump_file, "ipa-prop: ...replaced it with "
-				 " LOAD one from %s to %s.\n",
+				 "LOAD one from %s to %s.\n",
 				 new_root->dump_name (), n->dump_name ());
 		    }
 

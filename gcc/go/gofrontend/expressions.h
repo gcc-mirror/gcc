@@ -732,6 +732,10 @@ class Expression
   call_expression()
   { return this->convert<Call_expression, EXPRESSION_CALL>(); }
 
+  const Call_expression*
+  call_expression() const
+  { return this->convert<const Call_expression, EXPRESSION_CALL>(); }
+
   // If this is a call_result expression, return the Call_result_expression
   // structure.  Otherwise, return NULL.  This is a controlled dynamic
   // cast.
@@ -2460,12 +2464,15 @@ class Call_expression : public Expression
 
   // Whether this is a call to builtin function.
   virtual bool
-  is_builtin()
+  is_builtin() const
   { return false; }
 
   // Convert to a Builtin_call_expression, or return NULL.
   inline Builtin_call_expression*
   builtin_call_expression();
+
+  inline const Builtin_call_expression*
+  builtin_call_expression() const;
 
  protected:
   int
@@ -2625,12 +2632,12 @@ class Builtin_call_expression : public Call_expression
     };
 
   Builtin_function_code
-  code()
+  code() const
   { return this->code_; }
 
   // This overrides Call_expression::is_builtin.
   bool
-  is_builtin()
+  is_builtin() const
   { return true; }
 
   // Return whether EXPR, of array type, is a constant if passed to
@@ -2723,6 +2730,14 @@ Call_expression::builtin_call_expression()
 {
   return (this->is_builtin()
           ? static_cast<Builtin_call_expression*>(this)
+          : NULL);
+}
+
+inline const Builtin_call_expression*
+Call_expression::builtin_call_expression() const
+{
+  return (this->is_builtin()
+          ? static_cast<const Builtin_call_expression*>(this)
           : NULL);
 }
 
