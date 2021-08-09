@@ -952,7 +952,7 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "*mmx_<code>v2sf3"
+(define_insn "<code>v2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=x,x")
 	(any_logic:V2SF
 	  (match_operand:V2SF 1 "register_operand" "%0,x")
