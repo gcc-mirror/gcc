@@ -7234,6 +7234,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	      dump_printf (MSG_NOTE, "proceeding using word mode.\n");
         }
 
+      if (vect_emulated_vector_p (vectype_in)
+	  && !vect_can_vectorize_without_simd_p (code))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "using word mode not possible.\n");
+	  return false;
+	}
+
       /* lane-reducing operations have to go through vect_transform_reduction.
          For the other cases try without the single cycle optimization.  */
       if (!ok)
@@ -7936,6 +7944,16 @@ vectorizable_phi (vec_info *,
   return true;
 }
 
+/* Return true if VECTYPE represents a vector that requires lowering
+   by the vector lowering pass.  */
+
+bool
+vect_emulated_vector_p (tree vectype)
+{
+  return (!VECTOR_MODE_P (TYPE_MODE (vectype))
+	  && (!VECTOR_BOOLEAN_TYPE_P (vectype)
+	      || TYPE_PRECISION (TREE_TYPE (vectype)) != 1));
+}
 
 /* Return true if we can emulate CODE on an integer mode representation
    of a vector.  */

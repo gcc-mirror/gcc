@@ -5682,15 +5682,11 @@ vectorizable_shift (vec_info *vinfo,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                          "op not supported by target.\n");
-      /* Check only during analysis.  */
-      if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
-	  || (!vec_stmt
-	      && !vect_can_vectorize_without_simd_p (code)))
-        return false;
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "proceeding using word mode.\n");
+      return false;
     }
+  /* vector lowering cannot optimize vector shifts using word arithmetic.  */
+  if (vect_emulated_vector_p (vectype))
+    return false;
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -6076,6 +6072,7 @@ vectorizable_operation (vec_info *vinfo,
 			  != CODE_FOR_nothing);
     }
 
+  bool using_emulated_vectors_p = vect_emulated_vector_p (vectype);
   if (!target_support_p)
     {
       if (dump_enabled_p ())
@@ -6088,6 +6085,15 @@ vectorizable_operation (vec_info *vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "proceeding using word mode.\n");
+      using_emulated_vectors_p = true;
+    }
+
+  if (using_emulated_vectors_p
+      && !vect_can_vectorize_without_simd_p (code))
+    {
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "using word mode not possible.\n");
+      return false;
     }
 
   int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
@@ -6134,6 +6140,29 @@ vectorizable_operation (vec_info *vinfo,
       DUMP_VECT_SCOPE ("vectorizable_operation");
       vect_model_simple_cost (vinfo, stmt_info,
 			      ncopies, dt, ndts, slp_node, cost_vec);
+      if (using_emulated_vectors_p)
+	{
+	  /* The above vect_model_simple_cost call handles constants
+	     in the prologue and (mis-)costs one of the stmts as
+	     vector stmt.  See tree-vect-generic.c:do_plus_minus/do_negate
+	     for the actual lowering that will be applied.  */
+	  unsigned n
+	    = slp_node ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies;
+	  switch (code)
+	    {
+	    case PLUS_EXPR:
+	      n *= 5;
+	      break;
+	    case MINUS_EXPR:
+	      n *= 6;
+	      break;
+	    case NEGATE_EXPR:
+	      n *= 4;
+	      break;
+	    default:;
+	    }
+	  record_stmt_cost (cost_vec, n, scalar_stmt, stmt_info, 0, vect_body);
+	}
       return true;
     }
 
