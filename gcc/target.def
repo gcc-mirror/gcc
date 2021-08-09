@@ -7104,6 +7104,18 @@ DEFHOOK
  void, (void),
  NULL)
 
+DEFHOOK
+(gcov_type_size,
+ "Returns the gcov type size in bits.  This type is used for example for\n\
+counters incremented by profiling and code-coverage events.  The default\n\
+value is 64, if the type size of long long is greater than 32, otherwise the\n\
+default value is 32.  A 64-bit type is recommended to avoid overflows of the\n\
+counters.  If the @option{-fprofile-update=atomic} is used, then the\n\
+counters are incremented using atomic operations.  Targets not supporting\n\
+64-bit atomic operations may override the default value and request a 32-bit\n\
+type.",
+ HOST_WIDE_INT, (void), default_gcov_type_size)
+
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
 
