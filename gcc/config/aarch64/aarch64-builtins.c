@@ -75,6 +75,54 @@
 #define bf_UP    E_BFmode
 #define v4bf_UP  E_V4BFmode
 #define v8bf_UP  E_V8BFmode
+#define v2x8qi_UP  E_V2x8QImode
+#define v2x4hi_UP  E_V2x4HImode
+#define v2x4hf_UP  E_V2x4HFmode
+#define v2x4bf_UP  E_V2x4BFmode
+#define v2x2si_UP  E_V2x2SImode
+#define v2x2sf_UP  E_V2x2SFmode
+#define v2x1di_UP  E_V2x1DImode
+#define v2x1df_UP  E_V2x1DFmode
+#define v2x16qi_UP E_V2x16QImode
+#define v2x8hi_UP  E_V2x8HImode
+#define v2x8hf_UP  E_V2x8HFmode
+#define v2x8bf_UP  E_V2x8BFmode
+#define v2x4si_UP  E_V2x4SImode
+#define v2x4sf_UP  E_V2x4SFmode
+#define v2x2di_UP  E_V2x2DImode
+#define v2x2df_UP  E_V2x2DFmode
+#define v3x8qi_UP  E_V3x8QImode
+#define v3x4hi_UP  E_V3x4HImode
+#define v3x4hf_UP  E_V3x4HFmode
+#define v3x4bf_UP  E_V3x4BFmode
+#define v3x2si_UP  E_V3x2SImode
+#define v3x2sf_UP  E_V3x2SFmode
+#define v3x1di_UP  E_V3x1DImode
+#define v3x1df_UP  E_V3x1DFmode
+#define v3x16qi_UP E_V3x16QImode
+#define v3x8hi_UP  E_V3x8HImode
+#define v3x8hf_UP  E_V3x8HFmode
+#define v3x8bf_UP  E_V3x8BFmode
+#define v3x4si_UP  E_V3x4SImode
+#define v3x4sf_UP  E_V3x4SFmode
+#define v3x2di_UP  E_V3x2DImode
+#define v3x2df_UP  E_V3x2DFmode
+#define v4x8qi_UP  E_V4x8QImode
+#define v4x4hi_UP  E_V4x4HImode
+#define v4x4hf_UP  E_V4x4HFmode
+#define v4x4bf_UP  E_V4x4BFmode
+#define v4x2si_UP  E_V4x2SImode
+#define v4x2sf_UP  E_V4x2SFmode
+#define v4x1di_UP  E_V4x1DImode
+#define v4x1df_UP  E_V4x1DFmode
+#define v4x16qi_UP E_V4x16QImode
+#define v4x8hi_UP  E_V4x8HImode
+#define v4x8hf_UP  E_V4x8HFmode
+#define v4x8bf_UP  E_V4x8BFmode
+#define v4x4si_UP  E_V4x4SImode
+#define v4x4sf_UP  E_V4x4SFmode
+#define v4x2di_UP  E_V4x2DImode
+#define v4x2df_UP  E_V4x2DFmode
 #define UP(X) X##_UP
 
 #define SIMD_MAX_BUILTIN_ARGS 5
@@ -228,7 +276,6 @@ aarch64_types_binop_pppu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_poly, qualifier_poly, qualifier_poly, qualifier_unsigned };
 #define TYPES_TERNOP_PPPU (aarch64_types_binop_pppu_qualifiers)
 
-
 static enum aarch64_type_qualifiers
 aarch64_types_quadop_lane_pair_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none,
@@ -265,10 +312,6 @@ aarch64_types_quadopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_QUADOPUI (aarch64_types_quadopu_imm_qualifiers)
 
 static enum aarch64_type_qualifiers
-aarch64_types_binop_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_poly, qualifier_none, qualifier_immediate };
-#define TYPES_GETREGP (aarch64_types_binop_imm_p_qualifiers)
-static enum aarch64_type_qualifiers
 aarch64_types_binop_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_immediate };
 #define TYPES_GETREG (aarch64_types_binop_imm_qualifiers)
@@ -291,10 +334,6 @@ aarch64_types_shift2_to_unsigned_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_none, qualifier_immediate };
 #define TYPES_SHIFT2IMM_UUSS (aarch64_types_shift2_to_unsigned_qualifiers)
 
-static enum aarch64_type_qualifiers
-aarch64_types_ternop_s_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_poly, qualifier_immediate};
-#define TYPES_SETREGP (aarch64_types_ternop_s_imm_p_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_ternop_s_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate};
@@ -331,10 +370,29 @@ aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_LOAD1 (aarch64_types_load1_qualifiers)
 #define TYPES_LOADSTRUCT (aarch64_types_load1_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_load1_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_const_pointer_map_mode };
+#define TYPES_LOADSTRUCT_U (aarch64_types_load1_u_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_load1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_const_pointer_map_mode };
+#define TYPES_LOADSTRUCT_P (aarch64_types_load1_p_qualifiers)
+
+static enum aarch64_type_qualifiers
 aarch64_types_loadstruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_const_pointer_map_mode,
       qualifier_none, qualifier_struct_load_store_lane_index };
 #define TYPES_LOADSTRUCT_LANE (aarch64_types_loadstruct_lane_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_loadstruct_lane_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_const_pointer_map_mode,
+      qualifier_unsigned, qualifier_struct_load_store_lane_index };
+#define TYPES_LOADSTRUCT_LANE_U (aarch64_types_loadstruct_lane_u_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_loadstruct_lane_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_const_pointer_map_mode,
+      qualifier_poly, qualifier_struct_load_store_lane_index };
+#define TYPES_LOADSTRUCT_LANE_P (aarch64_types_loadstruct_lane_p_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_bsl_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -358,19 +416,35 @@ aarch64_types_bsl_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
    qualifier_map_mode | qualifier_pointer to build a pointer to the
    element type of the vector.  */
 static enum aarch64_type_qualifiers
-aarch64_types_store1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer_map_mode, qualifier_poly };
-#define TYPES_STORE1P (aarch64_types_store1_p_qualifiers)
-static enum aarch64_type_qualifiers
 aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
 #define TYPES_STORE1 (aarch64_types_store1_qualifiers)
 #define TYPES_STORESTRUCT (aarch64_types_store1_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_store1_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode, qualifier_unsigned };
+#define TYPES_STORESTRUCT_U (aarch64_types_store1_u_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_store1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode, qualifier_poly };
+#define TYPES_STORE1P (aarch64_types_store1_p_qualifiers)
+#define TYPES_STORESTRUCT_P (aarch64_types_store1_p_qualifiers)
+
+static enum aarch64_type_qualifiers
 aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode,
       qualifier_none, qualifier_struct_load_store_lane_index };
 #define TYPES_STORESTRUCT_LANE (aarch64_types_storestruct_lane_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_storestruct_lane_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode,
+      qualifier_unsigned, qualifier_struct_load_store_lane_index };
+#define TYPES_STORESTRUCT_LANE_U (aarch64_types_storestruct_lane_u_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_storestruct_lane_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_void, qualifier_pointer_map_mode,
+      qualifier_poly, qualifier_struct_load_store_lane_index };
+#define TYPES_STORESTRUCT_LANE_P (aarch64_types_storestruct_lane_p_qualifiers)
 
 #define CF0(N, X) CODE_FOR_aarch64_##N##X
 #define CF1(N, X) CODE_FOR_##N##X##1
@@ -644,6 +718,8 @@ static GTY(()) struct aarch64_simd_type_info aarch64_simd_types [] = {
 };
 #undef ENTRY
 
+static GTY(()) tree aarch64_simd_tuple_types[ARM_NEON_H_TYPES_LAST][3];
+
 static GTY(()) tree aarch64_simd_intOI_type_node = NULL_TREE;
 static GTY(()) tree aarch64_simd_intCI_type_node = NULL_TREE;
 static GTY(()) tree aarch64_simd_intXI_type_node = NULL_TREE;
@@ -764,9 +840,16 @@ aarch64_lookup_simd_builtin_type (machine_mode mode,
     return aarch64_simd_builtin_std_type (mode, q);
 
   for (i = 0; i < nelts; i++)
-    if (aarch64_simd_types[i].mode == mode
-	&& aarch64_simd_types[i].q == q)
-      return aarch64_simd_types[i].itype;
+    {
+      if (aarch64_simd_types[i].mode == mode
+	  && aarch64_simd_types[i].q == q)
+	return aarch64_simd_types[i].itype;
+      if (aarch64_simd_tuple_types[i][0] != NULL_TREE)
+	for (int j = 0; j < 3; j++)
+	  if (TYPE_MODE (aarch64_simd_tuple_types[i][j]) == mode
+	      && aarch64_simd_types[i].q == q)
+	    return aarch64_simd_tuple_types[i][j];
+    }
 
   return NULL_TREE;
 }
@@ -1173,7 +1256,17 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
 
       tree attrs = aarch64_get_attributes (d->flags, d->mode);
 
-      fndecl = aarch64_general_add_builtin (namebuf, ftype, fcode, attrs);
+      if (called_from_pragma)
+	{
+	  unsigned int raw_code
+		= (fcode << AARCH64_BUILTIN_SHIFT) | AARCH64_BUILTIN_GENERAL;
+	  fndecl = simulate_builtin_function_decl (input_location, namebuf,
+						   ftype, raw_code, NULL,
+						   attrs);
+	}
+      else
+	fndecl = aarch64_general_add_builtin (namebuf, ftype, fcode, attrs);
+
       aarch64_builtin_decls[fcode] = fndecl;
     }
 }
@@ -1195,6 +1288,16 @@ register_tuple_type (unsigned int num_vectors, unsigned int type_index)
 
   tree vector_type = type->itype;
   tree array_type = build_array_type_nelts (vector_type, num_vectors);
+  if (type->mode == DImode)
+    {
+      if (num_vectors == 2)
+	SET_TYPE_MODE (array_type, V2x1DImode);
+      else if (num_vectors == 3)
+	SET_TYPE_MODE (array_type, V3x1DImode);
+      else if (num_vectors == 4)
+	SET_TYPE_MODE (array_type, V4x1DImode);
+    }
+
   unsigned int alignment
 	= (known_eq (GET_MODE_SIZE (type->mode), 16) ? 128 : 64);
   gcc_assert (TYPE_MODE_RAW (array_type) == TYPE_MODE (array_type)
@@ -1209,6 +1312,13 @@ register_tuple_type (unsigned int num_vectors, unsigned int type_index)
 								    1));
   gcc_assert (TYPE_MODE_RAW (t) == TYPE_MODE (t)
 	      && TYPE_ALIGN (t) == alignment);
+
+  if (num_vectors == 2)
+    aarch64_simd_tuple_types[type_index][0] = t;
+  else if (num_vectors == 3)
+    aarch64_simd_tuple_types[type_index][1] = t;
+  else if (num_vectors == 4)
+    aarch64_simd_tuple_types[type_index][2] = t;
 }
 
 static bool

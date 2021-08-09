@@ -2863,14 +2863,6 @@ aarch64_estimated_sve_vq ()
   return estimated_poly_value (BITS_PER_SVE_VECTOR) / 128;
 }
 
-/* Return true if MODE is any of the Advanced SIMD structure modes.  */
-bool
-aarch64_advsimd_struct_mode_p (machine_mode mode)
-{
-  return (TARGET_SIMD
-	  && (mode == OImode || mode == CImode || mode == XImode));
-}
-
 /* Return true if MODE is an SVE predicate mode.  */
 static bool
 aarch64_sve_pred_mode_p (machine_mode mode)
@@ -2901,9 +2893,6 @@ const unsigned int VEC_ANY_DATA = VEC_ADVSIMD | VEC_SVE_DATA;
 static unsigned int
 aarch64_classify_vector_mode (machine_mode mode)
 {
-  if (aarch64_advsimd_struct_mode_p (mode))
-    return VEC_ADVSIMD | VEC_STRUCT;
-
   if (aarch64_sve_pred_mode_p (mode))
     return VEC_SVE_PRED;
 
@@ -2970,6 +2959,65 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_VNx8DFmode:
       return TARGET_SVE ? VEC_SVE_DATA | VEC_STRUCT : 0;
 
+    case E_OImode:
+    case E_CImode:
+    case E_XImode:
+      return TARGET_SIMD ? VEC_ADVSIMD | VEC_STRUCT : 0;
+
+    /* Structures of 64-bit Advanced SIMD vectors.  */
+    case E_V2x8QImode:
+    case E_V2x4HImode:
+    case E_V2x2SImode:
+    case E_V2x1DImode:
+    case E_V2x4BFmode:
+    case E_V2x4HFmode:
+    case E_V2x2SFmode:
+    case E_V2x1DFmode:
+    case E_V3x8QImode:
+    case E_V3x4HImode:
+    case E_V3x2SImode:
+    case E_V3x1DImode:
+    case E_V3x4BFmode:
+    case E_V3x4HFmode:
+    case E_V3x2SFmode:
+    case E_V3x1DFmode:
+    case E_V4x8QImode:
+    case E_V4x4HImode:
+    case E_V4x2SImode:
+    case E_V4x1DImode:
+    case E_V4x4BFmode:
+    case E_V4x4HFmode:
+    case E_V4x2SFmode:
+    case E_V4x1DFmode:
+      return TARGET_SIMD ? VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL : 0;
+
+    /* Structures of 128-bit Advanced SIMD vectors.  */
+    case E_V2x16QImode:
+    case E_V2x8HImode:
+    case E_V2x4SImode:
+    case E_V2x2DImode:
+    case E_V2x8BFmode:
+    case E_V2x8HFmode:
+    case E_V2x4SFmode:
+    case E_V2x2DFmode:
+    case E_V3x16QImode:
+    case E_V3x8HImode:
+    case E_V3x4SImode:
+    case E_V3x2DImode:
+    case E_V3x8BFmode:
+    case E_V3x8HFmode:
+    case E_V3x4SFmode:
+    case E_V3x2DFmode:
+    case E_V4x16QImode:
+    case E_V4x8HImode:
+    case E_V4x4SImode:
+    case E_V4x2DImode:
+    case E_V4x8BFmode:
+    case E_V4x8HFmode:
+    case E_V4x4SFmode:
+    case E_V4x2DFmode:
+      return TARGET_SIMD ? VEC_ADVSIMD | VEC_STRUCT : 0;
+
     /* 64-bit Advanced SIMD vectors.  */
     case E_V8QImode:
     case E_V4HImode:
@@ -2993,6 +3041,29 @@ aarch64_classify_vector_mode (machine_mode mode)
     default:
       return 0;
     }
+}
+
+/* Return true if MODE is any of the Advanced SIMD structure modes.  */
+bool
+aarch64_advsimd_struct_mode_p (machine_mode mode)
+{
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  return (vec_flags & VEC_ADVSIMD) && (vec_flags & VEC_STRUCT);
+}
+
+/* Return true if MODE is an Advanced SIMD D-register structure mode.  */
+static bool
+aarch64_advsimd_partial_struct_mode_p (machine_mode mode)
+{
+  return (aarch64_classify_vector_mode (mode)
+	  == (VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL));
+}
+
+/* Return true if MODE is an Advanced SIMD Q-register structure mode.  */
+static bool
+aarch64_advsimd_full_struct_mode_p (machine_mode mode)
+{
+  return (aarch64_classify_vector_mode (mode) == (VEC_ADVSIMD | VEC_STRUCT));
 }
 
 /* Return true if MODE is any of the data vector modes, including
@@ -3037,14 +3108,53 @@ aarch64_vl_bytes (machine_mode mode, unsigned int vec_flags)
   return BYTES_PER_SVE_PRED;
 }
 
+/* Given an Advanced SIMD vector mode MODE and a tuple size NELEMS, return the
+   corresponding vector structure mode.  */
+static opt_machine_mode
+aarch64_advsimd_vector_array_mode (machine_mode mode,
+				   unsigned HOST_WIDE_INT nelems)
+{
+  unsigned int flags = VEC_ADVSIMD | VEC_STRUCT;
+  if (known_eq (GET_MODE_SIZE (mode), 8))
+    flags |= VEC_PARTIAL;
+
+  machine_mode struct_mode;
+  FOR_EACH_MODE_IN_CLASS (struct_mode, GET_MODE_CLASS (mode))
+    if (aarch64_classify_vector_mode (struct_mode) == flags
+	&& GET_MODE_INNER (struct_mode) == GET_MODE_INNER (mode)
+	&& known_eq (GET_MODE_NUNITS (struct_mode),
+	     GET_MODE_NUNITS (mode) * nelems))
+      return struct_mode;
+  return opt_machine_mode ();
+}
+
+/* Return the SVE vector mode that has NUNITS elements of mode INNER_MODE.  */
+
+opt_machine_mode
+aarch64_sve_data_mode (scalar_mode inner_mode, poly_uint64 nunits)
+{
+  enum mode_class mclass = (is_a <scalar_float_mode> (inner_mode)
+			    ? MODE_VECTOR_FLOAT : MODE_VECTOR_INT);
+  machine_mode mode;
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
+    if (inner_mode == GET_MODE_INNER (mode)
+	&& known_eq (nunits, GET_MODE_NUNITS (mode))
+	&& aarch64_sve_data_mode_p (mode))
+      return mode;
+  return opt_machine_mode ();
+}
+
 /* Implement target hook TARGET_ARRAY_MODE.  */
 static opt_machine_mode
 aarch64_array_mode (machine_mode mode, unsigned HOST_WIDE_INT nelems)
 {
   if (aarch64_classify_vector_mode (mode) == VEC_SVE_DATA
       && IN_RANGE (nelems, 2, 4))
-    return mode_for_vector (GET_MODE_INNER (mode),
-			    GET_MODE_NUNITS (mode) * nelems);
+    return aarch64_sve_data_mode (GET_MODE_INNER (mode),
+				  GET_MODE_NUNITS (mode) * nelems);
+  if (aarch64_classify_vector_mode (mode) == VEC_ADVSIMD
+      && IN_RANGE (nelems, 2, 4))
+    return aarch64_advsimd_vector_array_mode (mode, nelems);
 
   return opt_machine_mode ();
 }
@@ -3119,22 +3229,6 @@ aarch64_get_mask_mode (machine_mode mode)
     return aarch64_sve_pred_mode (mode);
 
   return default_get_mask_mode (mode);
-}
-
-/* Return the SVE vector mode that has NUNITS elements of mode INNER_MODE.  */
-
-opt_machine_mode
-aarch64_sve_data_mode (scalar_mode inner_mode, poly_uint64 nunits)
-{
-  enum mode_class mclass = (is_a <scalar_float_mode> (inner_mode)
-			    ? MODE_VECTOR_FLOAT : MODE_VECTOR_INT);
-  machine_mode mode;
-  FOR_EACH_MODE_IN_CLASS (mode, mclass)
-    if (inner_mode == GET_MODE_INNER (mode)
-	&& known_eq (nunits, GET_MODE_NUNITS (mode))
-	&& aarch64_sve_data_mode_p (mode))
-      return mode;
-  return opt_machine_mode ();
 }
 
 /* Return the integer element mode associated with SVE mode MODE.  */
@@ -3261,6 +3355,8 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
 	if (vec_flags & VEC_SVE_DATA)
 	  return exact_div (GET_MODE_SIZE (mode),
 			    aarch64_vl_bytes (mode, vec_flags)).to_constant ();
+	if (vec_flags == (VEC_ADVSIMD | VEC_STRUCT | VEC_PARTIAL))
+	  return GET_MODE_SIZE (mode).to_constant () / 8;
 	return CEIL (lowest_size, UNITS_PER_VREG);
       }
     case PR_REGS:
@@ -9890,21 +9986,39 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     instruction (only big endian will get here).
 	     For ldp/stp instructions, the offset is scaled for the size of a
 	     single element of the pair.  */
-	  if (mode == OImode)
+	  if (aarch64_advsimd_partial_struct_mode_p (mode)
+	      && known_eq (GET_MODE_SIZE (mode), 16))
+	    return aarch64_offset_7bit_signed_scaled_p (DImode, offset);
+	  if (aarch64_advsimd_full_struct_mode_p (mode)
+	      && known_eq (GET_MODE_SIZE (mode), 32))
 	    return aarch64_offset_7bit_signed_scaled_p (TImode, offset);
 
 	  /* Three 9/12 bit offsets checks because CImode will emit three
 	     ldr/str instructions (only big endian will get here).  */
-	  if (mode == CImode)
+	  if (aarch64_advsimd_partial_struct_mode_p (mode)
+	      && known_eq (GET_MODE_SIZE (mode), 24))
+	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
+		    && (aarch64_offset_9bit_signed_unscaled_p (DImode,
+							       offset + 16)
+			|| offset_12bit_unsigned_scaled_p (DImode,
+							   offset + 16)));
+	  if (aarch64_advsimd_full_struct_mode_p (mode)
+	      && known_eq (GET_MODE_SIZE (mode), 48))
 	    return (aarch64_offset_7bit_signed_scaled_p (TImode, offset)
-		    && (aarch64_offset_9bit_signed_unscaled_p (V16QImode,
+		    && (aarch64_offset_9bit_signed_unscaled_p (TImode,
 							       offset + 32)
-			|| offset_12bit_unsigned_scaled_p (V16QImode,
+			|| offset_12bit_unsigned_scaled_p (TImode,
 							   offset + 32)));
 
 	  /* Two 7bit offsets checks because XImode will emit two ldp/stp
 	     instructions (only big endian will get here).  */
-	  if (mode == XImode)
+	  if (aarch64_advsimd_partial_struct_mode_p (mode)
+	      && known_eq (GET_MODE_SIZE (mode), 32))
+	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
+		    && aarch64_offset_7bit_signed_scaled_p (DImode,
+							    offset + 16));
+	  if (aarch64_advsimd_full_struct_mode_p (mode)
+	      && known_eq (GET_MODE_SIZE (mode), 64))
 	    return (aarch64_offset_7bit_signed_scaled_p (TImode, offset)
 		    && aarch64_offset_7bit_signed_scaled_p (TImode,
 							    offset + 32));
@@ -10991,7 +11105,10 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'R':
-      if (REG_P (x) && FP_REGNUM_P (REGNO (x)))
+      if (REG_P (x) && FP_REGNUM_P (REGNO (x))
+	  && (aarch64_advsimd_partial_struct_mode_p (GET_MODE (x))))
+	asm_fprintf (f, "d%d", REGNO (x) - V0_REGNUM + 1);
+      else if (REG_P (x) && FP_REGNUM_P (REGNO (x)))
 	asm_fprintf (f, "q%d", REGNO (x) - V0_REGNUM + 1);
       else if (REG_P (x) && GP_REGNUM_P (REGNO (x)))
 	asm_fprintf (f, "x%d", REGNO (x) - R0_REGNUM + 1);
@@ -22343,7 +22460,7 @@ aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
 	}
       else
 	{
-	  pair = gen_reg_rtx (OImode);
+	  pair = gen_reg_rtx (V2x16QImode);
 	  emit_insn (gen_aarch64_combinev16qi (pair, op0, op1));
 	  emit_insn (gen_aarch64_qtbl2v16qi (target, pair, sel));
 	}
@@ -23320,6 +23437,12 @@ aarch64_expand_sve_vcond (machine_mode data_mode, machine_mode cmp_mode,
 static bool
 aarch64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
+  if ((aarch64_advsimd_partial_struct_mode_p (mode1)
+       != aarch64_advsimd_partial_struct_mode_p (mode2))
+      && maybe_gt (GET_MODE_SIZE (mode1), 8)
+      && maybe_gt (GET_MODE_SIZE (mode2), 8))
+    return false;
+
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
     return true;
 
@@ -25175,6 +25298,10 @@ aarch64_can_change_mode_class (machine_mode from,
   bool from_pred_p = (from_flags & VEC_SVE_PRED);
   bool to_pred_p = (to_flags & VEC_SVE_PRED);
 
+  bool from_full_advsimd_struct_p = (from_flags == (VEC_ADVSIMD | VEC_STRUCT));
+  bool to_partial_advsimd_struct_p = (to_flags == (VEC_ADVSIMD | VEC_STRUCT
+						   | VEC_PARTIAL));
+
   /* Don't allow changes between predicate modes and other modes.
      Only predicate registers can hold predicate modes and only
      non-predicate registers can hold non-predicate modes, so any
@@ -25193,6 +25320,11 @@ aarch64_can_change_mode_class (machine_mode from,
   if (from_partial_sve_p
       && (aarch64_sve_container_bits (from) != aarch64_sve_container_bits (to)
 	  || GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to)))
+    return false;
+
+  /* Don't allow changes between partial and full Advanced SIMD structure
+     modes.  */
+  if (from_full_advsimd_struct_p && to_partial_advsimd_struct_p)
     return false;
 
   if (maybe_ne (BITS_PER_SVE_VECTOR, 128u))
