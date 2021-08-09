@@ -28,11 +28,18 @@ with Ada.Text_IO;
 
 package body Gen_IL.Gen is
 
+   Statistics_Enabled : constant Boolean := False;
+   --  Change to True or False to enable/disable statistics printed by
+   --  Atree. Should normally be False, for efficiency. Also compile with
+   --  -gnatd.A to get the statistics printed.  Enabling these statistics
+   --  makes the compiler about 20% slower.
+
    Num_Header_Slots : constant := 3;
    --  Number of header slots; the first Num_Header_Slots slots are stored in
    --  the header; the rest are dynamically allocated in the Slots table. We
    --  need to subtract this off when accessing dynamic slots. The constant
-   --  Seinfo.N_Head will contain this value.
+   --  Seinfo.N_Head will contain this value. Fields that are allocated in the
+   --  header slots are quicker to access.
    --
    --  This number can be adjusted for efficiency. We choose 3 because the
    --  minimum node size is 3 slots, and because that causes the size of type
@@ -326,7 +333,7 @@ package body Gen_IL.Gen is
             Pre => new String'(Pre),
             Pre_Get => new String'(Pre_Get),
             Pre_Set => new String'(Pre_Set),
-            Offset => <>); -- filled in later
+            Offset => Unknown_Offset);
 
       --  The Field_Table entry has already been created by the 'then' part
       --  above. Now we're seeing the same field being "created" again in a
@@ -938,8 +945,7 @@ package body Gen_IL.Gen is
            (F : Field_Enum; Offset : Field_Offset);
          --  Mark the offset as "in use"
 
-         function Choose_Offset
-           (F : Field_Enum) return Field_Offset;
+         procedure Choose_Offset (F : Field_Enum);
          --  Choose an offset for this field
 
          function Offset_OK
@@ -979,14 +985,14 @@ package body Gen_IL.Gen is
             end loop;
          end Set_Offset_In_Use;
 
-         function Choose_Offset
-           (F : Field_Enum) return Field_Offset is
+         procedure Choose_Offset (F : Field_Enum) is
          begin
             for Offset in Field_Offset loop
                if Offset_OK (F, Offset) then
                   Set_Offset_In_Use (F, Offset);
 
-                  return Offset;
+                  Field_Table (F).Offset := Offset;
+                  return;
                end if;
             end loop;
 
@@ -1059,8 +1065,18 @@ package body Gen_IL.Gen is
          --  complication compared to standard graph coloring is that fields
          --  are different sizes.
 
+         --  First choose offsets for some heavily-used fields, so they will
+         --  get low offsets, so they will wind up in the node header for
+         --  faster access.
+
+         Choose_Offset (Homonym);
+
+         --  Then loop through them all, skipping the ones we did above
+
          for F of All_Fields loop
-            Field_Table (F).Offset := Choose_Offset (F);
+            if Field_Table (F).Offset = Unknown_Offset then
+               Choose_Offset (F);
+            end if;
          end loop;
 
       end Compute_Field_Offsets;
@@ -1611,14 +1627,6 @@ package body Gen_IL.Gen is
          Put (S, LF & "subtype Flag is Boolean;" & LF & LF);
       end Put_Type_And_Subtypes;
 
-      function Low_Level_Getter_Name (T : Type_Enum) return String is
-        ("Get_" & Image (T));
-      function Low_Level_Setter_Name (T : Type_Enum) return String is
-        ("Set_" & Image (T));
-      function Low_Level_Setter_Name (F : Field_Enum) return String is
-        (Low_Level_Setter_Name (Field_Table (F).Field_Type) &
-           (if Setter_Needs_Parent (F) then "_With_Parent" else ""));
-
       -------------------------------------------
       -- Put_Casts --
       -------------------------------------------
@@ -1704,6 +1712,25 @@ package body Gen_IL.Gen is
       --  the predicate will check for the right Kind. Otherwise, we use
       --  Node_Id or Entity_Id, and the getter and setter will have
       --  preconditions.
+
+      procedure Put_Get_Set_Incr
+        (S : in out Sink; F : Field_Enum; Get_Or_Set : String)
+        with Pre => Get_Or_Set in "Get" | "Set";
+      --  If statistics are enabled, put the appropriate increment statement
+
+      ----------------------
+      -- Put_Get_Set_Incr --
+      ----------------------
+
+      procedure Put_Get_Set_Incr
+        (S : in out Sink; F : Field_Enum; Get_Or_Set : String) is
+      begin
+         if Statistics_Enabled then
+            Put (S, "Atree." & Get_Or_Set & "_Count (" & F_Image (F) &
+                   ") := Atree." & Get_Or_Set & "_Count (" &
+                   F_Image (F) & ") + 1;" & LF);
+         end if;
+      end Put_Get_Set_Incr;
 
       ------------------------
       -- Node_To_Fetch_From --
@@ -1831,7 +1858,8 @@ package body Gen_IL.Gen is
             pragma Assert (Field_Size (Rec.Field_Type) = 32);
             Put (S, LF);
             Increase_Indent (S, 2);
-            Put (S, "(if Raw = 0 then " & Special_Default (Rec.Field_Type) & " else " & "Cast (Raw));");
+            Put (S, "(if Raw = 0 then " & Special_Default (Rec.Field_Type) &
+                   " else " & "Cast (Raw));");
             Decrease_Indent (S, 2);
 
          else
@@ -1856,6 +1884,7 @@ package body Gen_IL.Gen is
             Put (S, "pragma Assert (" & Rec.Pre_Get.all & ");" & LF);
          end if;
 
+         Put_Get_Set_Incr (S, F, "Get");
          Put (S, "return Val;" & LF);
          Decrease_Indent (S, 3);
          Put (S, "end " & Image (F) & ";" & LF & LF);
@@ -1954,6 +1983,7 @@ package body Gen_IL.Gen is
             Put (S, "S := Slot (Raw);" & LF);
          end if;
 
+         Put_Get_Set_Incr (S, F, "Set");
          Decrease_Indent (S, 3);
          Put (S, "end Set_" & Image (F) & ";" & LF & LF);
       end Put_Setter_Body;
@@ -2310,6 +2340,40 @@ package body Gen_IL.Gen is
          if Root = Node_Kind then
             declare
                First_Time : Boolean := True;
+               FS, FB, LB : Bit_Offset;
+               --  Field size in bits, first bit, and last bit for the previous
+               --  time around the loop. Used to print a comment after ",".
+
+               procedure One_Comp (F : Field_Enum);
+
+               procedure One_Comp (F : Field_Enum) is
+                  Offset : constant Field_Offset :=  Field_Table (F).Offset;
+               begin
+                  if First_Time then
+                     First_Time := False;
+                  else
+                     Put (S, ",");
+
+                     --  Print comment showing field's bits, except for 1-bit
+                     --  fields.
+
+                     if FS /= 1 then
+                        Put (S, " -- *" & Image (FS) & " = bits " &
+                               Image (FB) & ".." & Image (LB));
+                     end if;
+
+                     Put (S, LF);
+                  end if;
+
+                  Put (S, F_Image (F) & " => (" &
+                       Image (Field_Table (F).Field_Type) & "_Field, " &
+                       Image (Offset) & ")");
+
+                  FS := Field_Size (F);
+                  FB := First_Bit (F, Offset);
+                  LB := Last_Bit (F, Offset);
+               end One_Comp;
+
             begin
                Put (S, LF & "--  Table mapping fields to kind and offset:" & LF & LF);
 
@@ -2321,22 +2385,11 @@ package body Gen_IL.Gen is
                Increase_Indent (S, 1);
 
                for F in Node_Field loop
-                  if First_Time then
-                     First_Time := False;
-                  else
-                     Put (S, "," & LF);
-                  end if;
-
-                  Put (S, F_Image (F) & " => (" &
-                       Image (Field_Table (F).Field_Type) & "_Field, " &
-                       Image (Field_Table (F).Offset) & ")");
+                  One_Comp (F);
                end loop;
 
                for F in Entity_Field loop
-                  Put (S, "," & LF);
-                  Put (S, F_Image (F) & " => (" &
-                       Image (Field_Table (F).Field_Type) & "_Field, " &
-                       Image (Field_Table (F).Offset) & ")");
+                  One_Comp (F);
                end loop;
 
                Decrease_Indent (S, 1);
@@ -2420,8 +2473,8 @@ package body Gen_IL.Gen is
          --  the base type, because we are using zero-origin addressing in
          --  Atree.
 
-         Put (S, "N_Head : constant Field_Offset := " & N_Head & ";" & LF);
          Put (S, "" & LF);
+         Put (S, "N_Head : constant Field_Offset := " & N_Head & ";" & LF);
          Put (S, "type Node_Header_Slots is" & LF);
          Put (S, "  array (Field_Offset range 0 .. N_Head - 1) of aliased Slot;" & LF);
          Put (S, "type Node_Header is record" & LF);
@@ -2956,6 +3009,7 @@ package body Gen_IL.Gen is
 
          declare
             First_Time : Boolean := True;
+
          begin
             for T in Concrete_Type loop
                if First_Time then
@@ -2977,40 +3031,45 @@ package body Gen_IL.Gen is
                declare
                   First_Time : Boolean := True;
                   First_Bit : Bit_Offset := 0;
+                  F : Opt_Field_Enum;
+
+                  function Node_Field_Of_Entity return String is
+                     (if T in Entity_Type and then F in Node_Field then
+                       " -- N" else "");
+                  --  A comment to put out for fields of entities that are
+                  --  shared with nodes, such as Chars.
+
                begin
                   while First_Bit < Type_Bit_Size_Aligned (T) loop
                      if First_Time then
                         First_Time := False;
                      else
-                        Put (B, "," & LF);
+                        Put (B, "," & Node_Field_Of_Entity & LF);
                      end if;
 
+                     F := Type_Layout (T) (First_Bit);
+
                      declare
-                        F : constant Opt_Field_Enum :=
-                          Type_Layout (T) (First_Bit);
+                        Last_Bit : constant Bit_Offset :=
+                          Get_Last_Bit (T, F, First_Bit);
                      begin
-                        declare
-                           Last_Bit : constant Bit_Offset :=
-                             Get_Last_Bit (T, F, First_Bit);
-                        begin
+                        pragma Assert
+                          (Type_Layout (T) (First_Bit .. Last_Bit) =
+                                           (First_Bit .. Last_Bit => F));
+
+                        if Last_Bit = First_Bit then
+                           Put (B, First_Bit_Image (First_Bit) & " => " &
+                                Image_Or_Waste (F));
+                        else
                            pragma Assert
-                             (Type_Layout (T) (First_Bit .. Last_Bit) =
-                                              (First_Bit .. Last_Bit => F));
+                             (if F /= No_Field then
+                               First_Bit mod Field_Size (F) = 0);
+                           Put (B, First_Bit_Image (First_Bit) & " .. " &
+                                Last_Bit_Image (Last_Bit) & " => " &
+                                Image_Or_Waste (F));
+                        end if;
 
-                           if Last_Bit = First_Bit then
-                              Put (B, First_Bit_Image (First_Bit) & " => " &
-                                   Image_Or_Waste (F));
-                           else
-                              pragma Assert
-                                (if F /= No_Field then
-                                  First_Bit mod Field_Size (F) = 0);
-                              Put (B, First_Bit_Image (First_Bit) & " .. " &
-                                   Last_Bit_Image (Last_Bit) & " => " &
-                                   Image_Or_Waste (F));
-                           end if;
-
-                           First_Bit := Last_Bit + 1;
-                        end;
+                        First_Bit := Last_Bit + 1;
                      end;
                   end loop;
                end;

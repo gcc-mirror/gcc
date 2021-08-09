@@ -147,6 +147,9 @@ package Gen_IL.Internals is
    --  The default is No_Type_Only, indicating the field is not one of
    --  these special "[... only]" ones.
 
+   Unknown_Offset : constant := -1;
+   --  Initial value of Offset, so we can tell whether it has been set
+
    type Field_Info is record
       Have_This_Field : Type_Vector;
       --  Types that have this field
@@ -162,7 +165,7 @@ package Gen_IL.Internals is
       --  Above record the information in the calls to Create_...Field.
       --  See Gen_IL.Gen for details.
 
-      Offset          : Field_Offset;
+      Offset : Field_Offset'Base range Unknown_Offset .. Field_Offset'Last;
       --  Offset of the field from the start of the node, in units of the field
       --  size. So if a field is 4 bits in size, it starts at bit number
       --  Offset*4 from the start of the node.

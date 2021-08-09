@@ -862,4 +862,14 @@ package Atree is
 
    end Atree_Private_Part;
 
+   --  Statistics:
+
+   subtype Call_Count is Nat_64;
+   Get_Count, Set_Count : array (Node_Or_Entity_Field) of Call_Count :=
+     (others => 0);
+   --  Number of calls to each getter and setter. See documentaton for
+   --  -gnatd.A.
+
+   procedure Print_Statistics;
+
 end Atree;

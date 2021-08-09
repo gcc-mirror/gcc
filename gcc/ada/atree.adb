@@ -211,6 +211,10 @@ package body Atree is
      (Old_N : Entity_Id; New_Kind : Entity_Kind);
    --  Above are the same as the ones for nodes, but for entities
 
+   procedure Update_Kind_Statistics (Field : Node_Or_Entity_Field);
+   --  Increment Set_Count (Field). This is in a procedure so we can put it in
+   --  pragma Debug for efficiency.
+
    procedure Init_Nkind (N : Node_Id; Val : Node_Kind);
    --  Initialize the Nkind field, which must not have been set already. This
    --  cannot be used to modify an already-initialized Nkind field. See also
@@ -905,7 +909,7 @@ package body Atree is
       Old_Kind : constant Node_Kind := Nkind (Old_N);
 
       --  If this fails, it means you need to call Reinit_Field_To_Zero before
-      --  calling Set_Nkind.
+      --  calling Mutate_Nkind.
 
    begin
       for J in Node_Field_Table (Old_Kind)'Range loop
@@ -970,11 +974,17 @@ package body Atree is
    Nkind_Offset : constant Field_Offset :=
      Field_Descriptors (F_Nkind).Offset;
 
+   procedure Update_Kind_Statistics (Field : Node_Or_Entity_Field) is
+   begin
+      Set_Count (Field) := Set_Count (Field) + 1;
+   end Update_Kind_Statistics;
+
    procedure Set_Node_Kind_Type is new Set_8_Bit_Field (Node_Kind) with Inline;
 
    procedure Init_Nkind (N : Node_Id; Val : Node_Kind) is
       pragma Assert (Field_Is_Initial_Zero (N, F_Nkind));
    begin
+      pragma Debug (Update_Kind_Statistics (F_Nkind));
       Set_Node_Kind_Type (N, Nkind_Offset, Val);
    end Init_Nkind;
 
@@ -1017,6 +1027,7 @@ package body Atree is
          Zero_Dynamic_Slots (Off_F (N) + Old_Size, Slots.Last);
       end if;
 
+      pragma Debug (Update_Kind_Statistics (F_Nkind));
       Set_Node_Kind_Type (N, Nkind_Offset, Val);
       pragma Debug (Validate_Node_Write (N));
 
@@ -1049,6 +1060,7 @@ package body Atree is
       --  For now, we are allocating all entities with the same size, so we
       --  don't need to reallocate slots here.
 
+      pragma Debug (Update_Kind_Statistics (F_Ekind));
       Set_Entity_Kind_Type (N, Ekind_Offset, Val);
       pragma Debug (Validate_Node_Write (N));
 
@@ -1535,8 +1547,7 @@ package body Atree is
       for J in Fields'Range loop
          declare
             use Seinfo;
-            Desc : Field_Descriptor renames
-              Field_Descriptors (Fields (J));
+            Desc : Field_Descriptor renames Field_Descriptors (Fields (J));
          begin
             if Desc.Kind in Node_Id_Field | List_Id_Field then
                Fix_Parent (Get_Node_Field_Union (Fix_Node, Desc.Offset));
@@ -2476,5 +2487,61 @@ package body Atree is
       Zero_Dynamic_Slots (Off_F (N), Off_L (N));
       Zero_Header_Slots (N);
    end Zero_Slots;
+
+   ----------------------
+   -- Print_Statistics --
+   ----------------------
+
+   procedure Print_Statistics is
+      Total, G_Total, S_Total : Call_Count := 0;
+   begin
+      Write_Line ("Frequency of field getter and setter calls:");
+
+      for Field in Node_Or_Entity_Field loop
+         G_Total := G_Total + Get_Count (Field);
+         S_Total := S_Total + Set_Count (Field);
+         Total := G_Total + S_Total;
+      end loop;
+
+      Write_Int_64 (Total);
+      Write_Str (" (100%) = ");
+      Write_Int_64 (G_Total);
+      Write_Str (" + ");
+      Write_Int_64 (S_Total);
+      Write_Line (" total getter and setter calls");
+
+      for Field in Node_Or_Entity_Field loop
+         declare
+            G : constant Call_Count := Get_Count (Field);
+            S : constant Call_Count := Set_Count (Field);
+            GS : constant Call_Count := G + S;
+
+            Percent : constant Int :=
+              Int ((Long_Float (GS) / Long_Float (Total)) * 100.0);
+
+            use Seinfo;
+            Desc : Field_Descriptor renames Field_Descriptors (Field);
+            Slot : constant Field_Offset :=
+              (Field_Size (Desc.Kind) * Desc.Offset) / Slot_Size;
+
+         begin
+            Write_Int_64 (GS);
+            Write_Str (" (");
+            Write_Int (Percent);
+            Write_Str ("%)");
+            Write_Str (" = ");
+            Write_Int_64 (G);
+            Write_Str (" + ");
+            Write_Int_64 (S);
+            Write_Str (" ");
+            Write_Str (Node_Or_Entity_Field'Image (Field));
+            Write_Str (" in slot ");
+            Write_Int (Int (Slot));
+            Write_Str (" size ");
+            Write_Int (Int (Field_Size (Desc.Kind)));
+            Write_Eol;
+         end;
+      end loop;
+   end Print_Statistics;
 
 end Atree;
