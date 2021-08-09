@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-diagnostics.h"
 #include "rust-ast-visitor.h"
 #include "rust-session-manager.h"
+#include "rust-lex.h"
+#include "rust-parse.h"
 #include "operator.h"
 
 /* Compilation unit used for various AST-related functions that would make
@@ -4080,6 +4082,37 @@ Module::get_filename ()
 
   return file_mod_found ? expected_file_path
 			: current_directory_name + expected_dir_path;
+}
+
+void
+Module::load_items ()
+{
+  std::string mod_file = get_filename ();
+
+  // We will already have errored out appropriately in the get_filename ()
+  // method
+  if (mod_file.empty ())
+    return;
+
+  RAIIFile file_wrap (mod_file.c_str ());
+  Linemap *linemap = Session::get_instance ().linemap;
+
+  if (file_wrap.get_raw () == nullptr)
+    rust_fatal_error (Location (), "cannot open module file %s: %m",
+		      mod_file.c_str ());
+
+  rust_debug ("Attempting to parse file %s", mod_file.c_str ());
+
+  Lexer lex (mod_file.c_str (), std::move (file_wrap), linemap);
+  Parser<Lexer> parser (std::move (lex));
+
+  auto items = parser.parse_items ();
+
+  for (const auto &error : parser.get_errors ())
+    error.emit_error ();
+
+  items = std::move(items);
+  kind = ModuleKind::LOADED;
 }
 
 void
