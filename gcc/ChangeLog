@@ -1,3 +1,7 @@
+2021-08-08  Sergei Trofimovich  <siarheit@google.com>
+
+	* lra-constraints.c: Fix s/otput/output/ typo.
+
 2021-08-06  Martin Sebor  <msebor@redhat.com>
 
 	* builtins.c (expand_builtin_memchr): Move to gimple-ssa-warn-access.cc.

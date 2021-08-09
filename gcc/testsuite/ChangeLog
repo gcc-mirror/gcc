@@ -1,3 +1,7 @@
+2021-08-08  Jeff Law  <jlaw@localhost.localdomain>
+
+	* gcc.target/tic6x/rotdi16-scan.c: Pull rotate into its own function.
+
 2021-08-07  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR tree-optimization/88531

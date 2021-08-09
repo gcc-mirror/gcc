@@ -1,3 +1,21 @@
+2021-08-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc: Replace 'failed_assertion'
+	dg-prune-output reason with 'builtin_unreachable'.
+	* testsuite/25_algorithms/copy_backward/debug/constexpr_neg.cc: Likewise.
+	* testsuite/25_algorithms/equal/debug/constexpr_neg.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_neg.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_pred_neg.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_valid_range_neg.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_neg.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_pred_neg.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_valid_range_neg.cc: Likewise.
+
+2021-08-08  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* testsuite/std/ranges/iota/max_size_type.cc: Set
+	dg-timeout-factor to 4.
+
 2021-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/compare (compare_three_way, strong_order)
