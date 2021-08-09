@@ -46,10 +46,10 @@ int main(void)
   int same;
 
   msg1 = malloc (sizeof (t_s12));
-  msg2 = malloc (sizeof (t_u12));
+  msg2 = malloc (sizeof (t_s12));
 
   memset (msg1, 0, sizeof (t_s12));
-  memcpy (msg2, &msg1, sizeof (t_s12));
+  memcpy (msg2, msg1, sizeof (t_s12));
   same = memcmp (msg1, msg2, sizeof (t_s12));
 
   return 0;

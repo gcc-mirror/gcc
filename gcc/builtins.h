@@ -151,8 +151,4 @@ extern internal_fn replacement_internal_fn (gcall *);
 
 extern bool builtin_with_linkage_p (tree);
 
-class access_data;
-extern bool check_access (tree, tree, tree, tree, tree,
-			  access_mode, const access_data * = NULL);
-
 #endif /* GCC_BUILTINS_H */

@@ -1,3 +1,78 @@
+2021-08-08  Jeff Law  <jlaw@localhost.localdomain>
+
+	* gcc.target/tic6x/rotdi16-scan.c: Pull rotate into its own function.
+
+2021-08-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/88531
+	* gcc.target/i386/pr88531-1a.c: New test.
+	* gcc.target/i386/pr88531-1b.c: Likewise.
+	* gcc.target/i386/pr88531-1c.c: Likewise.
+	* gcc.target/i386/pr88531-2a.c: Likewise.
+	* gcc.target/i386/pr88531-2b.c: Likewise.
+	* gcc.target/i386/pr88531-2c.c: Likewise.
+
+2021-08-06  Martin Sebor  <msebor@redhat.com>
+
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: Also disable
+	-Wstringop-overread.
+	* c-c++-common/attr-nonstring-3.c: Adjust pattern of expected message.
+	* gcc.dg/Warray-bounds-39.c: Add an xfail due to a known bug.
+	* gcc.dg/Wstring-compare-3.c: Also disable -Wstringop-overread.
+	* gcc.dg/attr-nonstring-2.c: Adjust pattern of expected message.
+	* gcc.dg/attr-nonstring-4.c: Same.
+	* gcc.dg/Wstringop-overread-6.c: New test.
+	* gcc.dg/sso-14.c: Fix typos to avoid buffer overflow.
+
+2021-08-06  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR target/101723
+	* gcc.target/arm/pr69245.c: Make sure to emit code for fn1, fix
+	typo.
+
+2021-08-06  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR target/101723
+	* gcc.target/arm/attr-neon3.c: Fix typo.
+	* gcc.target/arm/pragma_fpu_attribute_2.c: Fix typo.
+
+2021-08-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101797
+	* gcc.target/i386/pr101797.c: New test.
+
+2021-08-06  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-08-06  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-08-06  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-08-06  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Add new
+	tests.
+
+2021-08-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/powerpc/pragma-optimize.c: New test.
+
+2021-08-06  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/vect/vect-8.f90: Simplify aarch64 scanning.
+
+2021-08-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.dg/gcov-info-to-gcda.c: New test.
+
 2021-08-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.old-deja/g++.other/inline7.C: Cast nodiscard call to void.

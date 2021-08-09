@@ -84,6 +84,7 @@ nowarn_spec_t::nowarn_spec_t (opt_code opt)
     case OPT_Wformat_overflow_:
     case OPT_Wformat_truncation_:
     case OPT_Wrestrict:
+    case OPT_Wsizeof_pointer_memaccess:
     case OPT_Wstrict_aliasing_:
     case OPT_Wstringop_overflow_:
     case OPT_Wstringop_overread:

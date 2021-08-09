@@ -2583,13 +2583,13 @@ cond_removal_in_builtin_zero_pattern (basic_block cond_bb,
 	    }
 	}
       return false;
-    case BUILT_IN_CLRSB:
+    case CFN_BUILT_IN_CLRSB:
       val = TYPE_PRECISION (integer_type_node) - 1;
       break;
-    case BUILT_IN_CLRSBL:
+    case CFN_BUILT_IN_CLRSBL:
       val = TYPE_PRECISION (long_integer_type_node) - 1;
       break;
-    case BUILT_IN_CLRSBLL:
+    case CFN_BUILT_IN_CLRSBLL:
       val = TYPE_PRECISION (long_long_integer_type_node) - 1;
       break;
     default:

@@ -205,12 +205,22 @@ struct access_data
 {
   /* Set the access to at most MAXWRITE and MAXREAD bytes, and
      at least 1 when MINWRITE or MINREAD, respectively, is set.  */
+  access_data (gimple *stmt, access_mode mode,
+	       tree maxwrite = NULL_TREE, bool minwrite = false,
+	       tree maxread = NULL_TREE, bool minread = false)
+    : stmt (stmt), call (),
+      dst (maxwrite, minwrite), src (maxread, minread), mode (mode) { }
+
+  /* Set the access to at most MAXWRITE and MAXREAD bytes, and
+     at least 1 when MINWRITE or MINREAD, respectively, is set.  */
   access_data (tree expr, access_mode mode,
 	       tree maxwrite = NULL_TREE, bool minwrite = false,
 	       tree maxread = NULL_TREE, bool minread = false)
-    : call (expr),
+    : stmt (), call (expr),
       dst (maxwrite, minwrite), src (maxread, minread), mode (mode) { }
 
+  /* Access statement.  */
+  gimple *stmt;
   /* Built-in function call.  */
   tree call;
   /* Destination and source of the access.  */

@@ -37,4 +37,4 @@ test()
 static_assert(test()); // { dg-error "non-constant condition" }
 
 // { dg-prune-output "in 'constexpr' expansion" }
-// { dg-prune-output "failed_assertion" }
+// { dg-prune-output "builtin_unreachable" }
