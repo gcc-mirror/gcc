@@ -194,8 +194,8 @@ namespace __detail
     _StateSeq<_TraitsT>
     _StateSeq<_TraitsT>::_M_clone()
     {
-      std::map<_StateIdT, _StateIdT> __m;
-      std::stack<_StateIdT> __stack;
+      _GLIBCXX_STD_C::map<_StateIdT, _StateIdT> __m;
+      std::stack<_StateIdT, _GLIBCXX_STD_C::deque<_StateIdT>> __stack;
       __stack.push(_M_start);
       while (!__stack.empty())
 	{
