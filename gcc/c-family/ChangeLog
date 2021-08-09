@@ -1,3 +1,12 @@
+2021-08-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR c/101512
+	* c-common.c (c_common_mark_addressable_vec): Look through
+	C_MAYBE_CONST_EXPR even if not at the toplevel.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

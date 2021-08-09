@@ -1,3 +1,10 @@
+2021-08-05  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/101749
+	* sanitizer_common/sanitizer_posix_libcdep.cpp: Prevent
+	generation of dependency on _cxa_guard for static
+	initialization.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

@@ -5198,6 +5198,13 @@ vect_determine_precisions (vec_info *vinfo)
       for (unsigned int i = 0; i < nbbs; i++)
 	{
 	  basic_block bb = bbs[i];
+	  for (auto gsi = gsi_start_phis (bb);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi.phi ());
+	      if (stmt_info)
+		vect_determine_mask_precision (vinfo, stmt_info);
+	    }
 	  for (auto si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	    if (!is_gimple_debug (gsi_stmt (si)))
 	      vect_determine_mask_precision
@@ -5211,6 +5218,13 @@ vect_determine_precisions (vec_info *vinfo)
 	    if (!is_gimple_debug (gsi_stmt (si)))
 	      vect_determine_stmt_precisions
 		(vinfo, vinfo->lookup_stmt (gsi_stmt (si)));
+	  for (auto gsi = gsi_start_phis (bb);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi.phi ());
+	      if (stmt_info)
+		vect_determine_stmt_precisions (vinfo, stmt_info);
+	    }
 	}
     }
   else
