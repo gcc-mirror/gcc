@@ -20337,6 +20337,11 @@ expand_vec_perm_even_odd (struct expand_vec_perm_d *d)
     if (d->perm[i] != 2 * i + odd)
       return false;
 
+  if (d->vmode == E_V32HImode
+      && d->testing_p
+      && !TARGET_AVX512BW)
+    return false;
+
   return expand_vec_perm_even_odd_1 (d, odd);
 }
 
@@ -20877,16 +20882,16 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
 	return true;
       break;
     case E_V32HImode:
-      if (!TARGET_AVX512BW)
+      if (!TARGET_AVX512F)
 	return false;
-      if (d.testing_p)
+      if (d.testing_p && TARGET_AVX512BW)
 	/* All implementable with a single vperm[it]2 insn.  */
 	return true;
       break;
     case E_V64QImode:
-      if (!TARGET_AVX512BW)
+      if (!TARGET_AVX512F)
 	return false;
-      if (d.testing_p)
+      if (d.testing_p && TARGET_AVX512BW)
 	/* Implementable with 2 vperm[it]2, 2 vpshufb and 1 or insn.  */
 	return true;
       break;
