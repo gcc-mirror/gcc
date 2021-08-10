@@ -356,6 +356,11 @@ struct Definition
   NodeId node;
   NodeId parent;
   // add kind ?
+
+  bool is_equal (const Definition &other)
+  {
+    return node == other.node && parent == other.parent;
+  }
 };
 
 class Resolver
