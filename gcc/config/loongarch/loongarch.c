@@ -333,13 +333,13 @@ static const struct loongarch_rtx_cost_data loongarch_rtx_cost_optimize_size = {
 /* Costs to use when optimizing for speed, indexed by processor.  */
 static const struct loongarch_rtx_cost_data
 loongarch_rtx_cost_data[NUM_PROCESSOR_VALUES] = {
-      { /* loongarch */
+      { /* PROCESSOR_LOONGARCH64 */
 	DEFAULT_COSTS
       },
-      { /* loongarch64 */
+      { /* PROCESSOR_LOONGARCH32 */
 	DEFAULT_COSTS
       },
-      { /* gs464v */
+      { /* PROCESSOR_GS464V */
 	DEFAULT_COSTS
       }
 };
@@ -5938,6 +5938,7 @@ loongarch_issue_rate (void)
   switch (loongarch_tune)
     {
     case PROCESSOR_LOONGARCH64:
+    case PROCESSOR_LOONGARCH32:
     case PROCESSOR_GS464V:
       return 4;
 

@@ -2497,6 +2497,53 @@ riscv*-*-freebsd*)
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
 	;;
+loongarch*-*-linux*)
+	case ${with_abi} in
+	"")
+		echo "not specify ABI, default is lp64 for loongarch64"
+		with_abi=lp64 # for default
+		;;
+	lp32)
+		;;
+	lp64)
+		;;
+	*)
+		echo "Unknown ABI used in --with-abi=$with_abi"
+		exit 1
+	esac
+
+	enable_multilib="yes"
+	loongarch_multilibs="${with_multilib_list}"
+	if test "$loongarch_multilibs" = "default"; then
+		loongarch_multilibs="${with_abi}"
+	fi
+	loongarch_multilibs=`echo $loongarch_multilibs | sed -e 's/,/ /g'`
+	for loongarch_multilib in ${loongarch_multilibs}; do
+		case ${loongarch_multilib} in
+		lp64 | lp32 )
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${loongarch_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${loongarch_multilib} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
+
+	if test `for one_abi in ${loongarch_multilibs}; do if [ x\$one_abi = x$with_abi ]; then echo 1; exit 0; fi; done; echo 0;` = "0"; then
+		echo "--with-abi=${with_abi} must be one of --with-multilib-list=${with_multilib_list}"
+		exit 1
+	fi
+
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} loongarch/gnu-user.h loongarch/linux.h"
+	extra_options="${extra_options} linux-android.opt"
+	tmake_file="${tmake_file} loongarch/t-linux"
+	gnu_ld=yes
+	gas=yes
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h ${nbsd_tm_file} mips/netbsd.h"
@@ -2568,53 +2615,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	if test x$enable_mips_multilibs = xyes; then
 		tmake_file="${tmake_file} mips/t-linux64"
 	fi
-	;;
-loongarch*-*-linux*)
-	case ${with_abi} in
-	"")
-		echo "not specify ABI, default is lp64 for loongarch64"
-		with_abi=lp64 # for default
-		;;
-	lp32)
-		;;
-	lp64)
-		;;
-	*)
-		echo "Unknown ABI used in --with-abi=$with_abi"
-		exit 1
-	esac
-
-	enable_multilib="yes"
-	loongarch_multilibs="${with_multilib_list}"
-	if test "$loongarch_multilibs" = "default"; then
-		loongarch_multilibs="${with_abi}"
-	fi
-	loongarch_multilibs=`echo $loongarch_multilibs | sed -e 's/,/ /g'`
-	for loongarch_multilib in ${loongarch_multilibs}; do
-		case ${loongarch_multilib} in
-		lp64 | lp32 )
-			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${loongarch_multilib}"
-			;;
-		*)
-			echo "--with-multilib-list=${loongarch_multilib} not supported."
-			exit 1
-		esac
-	done
-	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
-
-	if test `for one_abi in ${loongarch_multilibs}; do if [ x\$one_abi = x$with_abi ]; then echo 1; exit 0; fi; done; echo 0;` = "0"; then
-		echo "--with-abi=${with_abi} must be one of --with-multilib-list=${with_multilib_list}"
-		exit 1
-	fi
-
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} loongarch/gnu-user.h loongarch/linux.h"
-	extra_options="${extra_options} linux-android.opt"
-	tmake_file="${tmake_file} loongarch/t-linux"
-	gnu_ld=yes
-	gas=yes
-	# Force .init_array support.  The configure script cannot always
-	# automatically detect that GAS supports it, yet we require it.
-	gcc_cv_initfini_array=yes
 	;;
 mips*-mti-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
@@ -4936,9 +4936,9 @@ case "${target}" in
 		supported_defaults="abi arch float fpu tune fix-loongson3-llsc"
 
 		case ${with_arch} in
-		loongarch | loongarch64)
+		loongarch64 | loongarch32)
 			# OK
-			default_loongarch_arch=loongarch64
+			default_loongarch_arch=$with_arch
 			;;
 		"")
 			# fallback
@@ -5451,6 +5451,7 @@ case ${target} in
 	loongarch*-*-*)
 		case ${default_loongarch_arch} in
 		    loongarch64) tm_defines="$tm_defines LARCH_ISA_DEFAULT=0" ;;
+		    loongarch32) tm_defines="$tm_defines LARCH_ISA_DEFAULT=1" ;;
 		esac
 		case ${default_loongarch_abi} in
 		    lp64)   tm_defines="$tm_defines LARCH_ABI_DEFAULT=ABILP64" ;;

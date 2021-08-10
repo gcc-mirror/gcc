@@ -18,8 +18,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_enum "processor" [
-  loongarch
   loongarch64
+  loongarch32
   gs464v
 ])
 
