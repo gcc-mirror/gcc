@@ -26651,8 +26651,9 @@ cp_parser_member_declaration (cp_parser* parser)
 
   parser->colon_corrects_to_scope_p = false;
 
+  cp_omp_declare_simd_data odsd;
   if (cp_parser_using_declaration (parser, /*access_declaration=*/true))
-      goto out;
+    goto out;
 
   /* Parse the decl-specifier-seq.  */
   decl_spec_token_start = cp_lexer_peek_token (parser->lexer);
@@ -26662,7 +26663,6 @@ cp_parser_member_declaration (cp_parser* parser)
 				&decl_specifiers,
 				&declares_class_or_enum);
 
-  cp_omp_declare_simd_data odsd;
   if (decl_specifiers.attributes && (flag_openmp || flag_openmp_simd))
     cp_parser_handle_directive_omp_attributes (parser,
 					       &decl_specifiers.attributes,
