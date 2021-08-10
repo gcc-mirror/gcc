@@ -1,3 +1,42 @@
+2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.h (struct cp_omp_declare_simd_data): Remove
+	in_omp_attribute_pragma and clauses members, add loc and attribs.
+	(struct cp_oacc_routine_data): Remove loc member, add clauses
+	member.
+	* parser.c (cp_finalize_omp_declare_simd): New function.
+	(cp_parser_handle_statement_omp_attributes): Mention in
+	function comment the function is used also for
+	attribute-declaration.
+	(cp_parser_handle_directive_omp_attributes): New function.
+	(cp_parser_statement): Don't call
+	cp_parser_handle_statement_omp_attributes if statement doesn't
+	have attribute-specifier-seq at the beginning at all or if
+	if those attributes don't appertain to the statement.
+	(cp_parser_simple_declaration): Call
+	cp_parser_handle_directive_omp_attributes and
+	cp_finalize_omp_declare_simd.
+	(cp_parser_explicit_instantiation): Likewise.
+	(cp_parser_init_declarator): Initialize prefix_attributes
+	only after parsing declarators.
+	(cp_parser_direct_declarator): Call
+	cp_parser_handle_directive_omp_attributes and
+	cp_finalize_omp_declare_simd.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_single_declaration): Likewise.
+	(cp_parser_omp_declare_simd): Don't initialize
+	data.in_omp_attribute_pragma, instead initialize
+	data.attribs[0] and data.attribs[1].
+	(cp_finish_omp_declare_variant): Remove
+	in_omp_attribute_pragma argument, instead use
+	parser->lexer->in_omp_attribute_pragma.
+	(cp_parser_late_parsing_omp_declare_simd): Adjust
+	cp_finish_omp_declare_variant caller.  Handle attribute-syntax
+	declare simd/variant.
+
 2021-08-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

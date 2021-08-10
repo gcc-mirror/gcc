@@ -1,3 +1,17 @@
+2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-1.C (bar): Add missing semicolon after
+	[[omp::directive (threadprivate (t2))]].  Add tests with
+	if/while/switch after parallel in attribute syntax.
+	(corge): Add missing omp:: before directive.
+	* g++.dg/gomp/attrs-2.C (bar): Add missing semicolon after
+	[[omp::directive (threadprivate (t2))]].
+	* g++.dg/gomp/attrs-10.C: New test.
+	* g++.dg/gomp/attrs-11.C: New test.
+
 2021-08-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
