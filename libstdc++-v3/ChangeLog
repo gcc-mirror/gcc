@@ -1,3 +1,31 @@
+2021-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex::transform_primary): Use
+	_GLIBCXX_STD_C::vector for local variable.
+	* include/bits/regex.tcc (__regex_algo_impl): Use reference to
+	_GLIBCXX_STD_C::vector base class of match_results.
+	* include/bits/regex_automaton.tcc (_StateSeq:_M_clone): Use
+	_GLIBCXX_STD_C::map and _GLIBCXX_STD_C::deque for local
+	variables.
+	* include/bits/regex_compiler.h (_BracketMatcher): Use
+	_GLIBCXX_STD_C::vector for data members.
+	* include/bits/regex_executor.h (_Executor): Likewise.
+	* include/std/regex [_GLIBCXX_DEBUG]: Include <debug/vector>.
+
+2021-08-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_container.h
+	(_Safe_container(_Safe_container&&, const _Alloc&, std::true_type)): New.
+	(_Safe_container(_Safe_container&&, const _Alloc&, std::false_type)): New.
+	(_Safe_container(_Safe_container&&, const _Alloc&)): Use latters.
+
+2021-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/cons/default.cc: Add
+	equality comparison operators to allocator.
+	* testsuite/23_containers/unordered_set/cons/default.cc:
+	Likewise.
+
 2021-08-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc: Replace 'failed_assertion'

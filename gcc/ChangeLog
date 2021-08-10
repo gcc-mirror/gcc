@@ -1,3 +1,126 @@
+2021-08-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101741
+	* gimple-range-fold.cc (fold_using_range::range_of_builtin_call): Check
+	type of parameter for toupper/tolower.
+
+2021-08-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/101654
+	* ipa-prop.c (propagate_controlled_uses): Removed a spurious space.
+
+2021-08-09  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (is_load_insn1): Verify destination is a
+	register.
+	(is_store_insn1): Verify source is a register.
+
+2021-08-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101812
+	* config/i386/mmx.md (<any_logic:code>v2sf3):
+	Rename from *mmx_<any_logic:code>v2sf3
+
+2021-08-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.c: Cross-reference parts adapted in
+	'gcc/omp-oacc-neuter-broadcast.cc'.
+	* omp-low.c: Likewise.
+	* omp-oacc-neuter-broadcast.cc: Cross-reference parts adapted from
+	the above files.
+
+2021-08-09  Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_init_builtins): Override decls for
+	BUILT_IN_GOACC_SINGLE_START, BUILT_IN_GOACC_SINGLE_COPY_START,
+	BUILT_IN_GOACC_SINGLE_COPY_END and BUILT_IN_GOACC_BARRIER.
+	(gcn_goacc_validate_dims): Turn on worker partitioning unconditionally.
+	(gcn_fork_join): Update comment.
+	* config/gcn/gcn.opt (flag_worker_partitioning): Remove.
+	(macc_experimental_workers): Remove unused option.
+
+2021-08-09  Julian Brown  <julian@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com> (via 'gcc/config/nvptx/nvptx.c' master)
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in (OBJS): Add omp-oacc-neuter-broadcast.o.
+	* doc/tm.texi.in (TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD):
+	Add documentation hook.
+	* doc/tm.texi: Regenerate.
+	* omp-oacc-neuter-broadcast.cc: New file.
+	* omp-builtins.def (BUILT_IN_GOACC_BARRIER)
+	(BUILT_IN_GOACC_SINGLE_START, BUILT_IN_GOACC_SINGLE_COPY_START)
+	(BUILT_IN_GOACC_SINGLE_COPY_END): New builtins.
+	* passes.def (pass_omp_oacc_neuter_broadcast): Add pass.
+	* target.def (goacc.create_worker_broadcast_record): Add target
+	hook.
+	* tree-pass.h (make_pass_omp_oacc_neuter_broadcast): Add
+	prototype.
+	* config/gcn/gcn-protos.h (gcn_goacc_adjust_propagation_record):
+	Rename prototype to...
+	(gcn_goacc_create_worker_broadcast_record): ... this.
+	* config/gcn/gcn-tree.c (gcn_goacc_adjust_propagation_record): Rename
+	function to...
+	(gcn_goacc_create_worker_broadcast_record): ... this.
+	* config/gcn/gcn.c (TARGET_GOACC_ADJUST_PROPAGATION_RECORD):
+	Rename to...
+	(TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD): ... this.
+
+2021-08-09  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR target/101609
+	* config/aarch64/aarch64-simd.md (vlshr<mode>3, vashr<mode>3): Use
+	the right iterator.
+
+2021-08-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in (GTFILES): Remove '$(srcdir)/omp-offload.c'.
+
+2021-08-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* builtins.def (DEF_GOACC_BUILTIN, DEF_GOMP_BUILTIN): Don't
+	consider '-foffload-abi'.
+	* common.opt (-foffload-abi): Remove 'Var', 'Init'.
+	* opts.c (common_handle_option) <-foffload-abi> [ACCEL_COMPILER]:
+	Ignore.
+
+2021-08-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* optc-gen.awk: Sanity check that 'Init' doesn't appear without
+	'Var'.
+
+2021-08-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-builtins.def (BUILT_IN_ACC_GET_DEVICE_TYPE): Remove.
+
+2021-08-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/gty.texi (Files): Update.
+
+2021-08-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/gty.texi (Files): Fix GTY header file example.
+
+2021-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-ssa-ccp.c (value_mask_to_min_max): Helper function to
+	determine the upper and lower bounds from a mask-value pair.
+	(bit_value_unop) [ABS_EXPR, ABSU_EXPR]: Add support for
+	absolute value and unsigned absolute value expressions.
+	(bit_value_binop):  Initialize *VAL's precision.
+	[LT_EXPR, LE_EXPR]: Use value_mask_to_min_max to determine
+	upper and lower bounds of operands.  Add LE_EXPR/GE_EXPR
+	support when the operands are unknown but potentially equal.
+	[MIN_EXPR, MAX_EXPR]: Support minimum/maximum expressions.
+
+2021-08-09  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	* config/aarch64/aarch64.md
+	(*extend<SHORT:mode><GPI:mode>2_aarch64): Use %<GPI:w>0.
+
 2021-08-08  Sergei Trofimovich  <siarheit@google.com>
 
 	* lra-constraints.c: Fix s/otput/output/ typo.
