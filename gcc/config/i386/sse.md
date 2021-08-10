@@ -15336,6 +15336,42 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "*avx512f_shuf_<shuffletype>64x2_1<mask_name>_1"
+  [(set (match_operand:V8FI 0 "register_operand" "=v")
+	(vec_select:V8FI
+	  (match_operand:V8FI 1 "register_operand" "v")
+	  (parallel [(match_operand 2 "const_0_to_7_operand")
+		     (match_operand 3 "const_0_to_7_operand")
+		     (match_operand 4 "const_0_to_7_operand")
+		     (match_operand 5 "const_0_to_7_operand")
+		     (match_operand 6 "const_0_to_7_operand")
+		     (match_operand 7 "const_0_to_7_operand")
+		     (match_operand 8 "const_0_to_7_operand")
+		     (match_operand 9 "const_0_to_7_operand")])))]
+  "TARGET_AVX512F
+   && (INTVAL (operands[2]) & 1) == 0
+   && INTVAL (operands[2]) == INTVAL (operands[3]) - 1
+   && (INTVAL (operands[4]) & 1) == 0
+   && INTVAL (operands[4]) == INTVAL (operands[5]) - 1
+   && (INTVAL (operands[6]) & 1) == 0
+   && INTVAL (operands[6]) == INTVAL (operands[7]) - 1
+   && (INTVAL (operands[8]) & 1) == 0
+   && INTVAL (operands[8]) == INTVAL (operands[9]) - 1"
+{
+  int mask;
+  mask = INTVAL (operands[2]) / 2;
+  mask |= INTVAL (operands[4]) / 2 << 2;
+  mask |= INTVAL (operands[6]) / 2 << 4;
+  mask |= INTVAL (operands[8]) / 2 << 6;
+  operands[2] = GEN_INT (mask);
+
+  return "vshuf<shuffletype>64x2\t{%2, %1, %1, %0<mask_operand10>|%0<mask_operand10>, %1, %1, %2}";
+}
+  [(set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_expand "avx512vl_shuf_<shuffletype>32x4_mask"
   [(match_operand:VI4F_256 0 "register_operand")
    (match_operand:VI4F_256 1 "register_operand")
@@ -15476,6 +15512,58 @@
   operands[3] = GEN_INT (mask);
 
   return "vshuf<shuffletype>32x4\t{%3, %2, %1, %0<mask_operand19>|%0<mask_operand19>, %1, %2, %3}";
+}
+  [(set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx512f_shuf_<shuffletype>32x4_1<mask_name>_1"
+  [(set (match_operand:V16FI 0 "register_operand" "=v")
+	(vec_select:V16FI
+	  (match_operand:V16FI 1 "register_operand" "v")
+	  (parallel [(match_operand 2 "const_0_to_15_operand")
+		     (match_operand 3 "const_0_to_15_operand")
+		     (match_operand 4 "const_0_to_15_operand")
+		     (match_operand 5 "const_0_to_15_operand")
+		     (match_operand 6 "const_0_to_15_operand")
+		     (match_operand 7 "const_0_to_15_operand")
+		     (match_operand 8 "const_0_to_15_operand")
+		     (match_operand 9 "const_0_to_15_operand")
+		     (match_operand 10 "const_0_to_15_operand")
+		     (match_operand 11 "const_0_to_15_operand")
+		     (match_operand 12 "const_0_to_15_operand")
+		     (match_operand 13 "const_0_to_15_operand")
+		     (match_operand 14 "const_0_to_15_operand")
+		     (match_operand 15 "const_0_to_15_operand")
+		     (match_operand 16 "const_0_to_15_operand")
+		     (match_operand 17 "const_0_to_15_operand")])))]
+  "TARGET_AVX512F
+   && (INTVAL (operands[2]) & 3) == 0
+   && INTVAL (operands[2]) == INTVAL (operands[3]) - 1
+   && INTVAL (operands[2]) == INTVAL (operands[4]) - 2
+   && INTVAL (operands[2]) == INTVAL (operands[5]) - 3
+   && (INTVAL (operands[6]) & 3) == 0
+   && INTVAL (operands[6]) == INTVAL (operands[7]) - 1
+   && INTVAL (operands[6]) == INTVAL (operands[8]) - 2
+   && INTVAL (operands[6]) == INTVAL (operands[9]) - 3
+   && (INTVAL (operands[10]) & 3) == 0
+   && INTVAL (operands[10]) == INTVAL (operands[11]) - 1
+   && INTVAL (operands[10]) == INTVAL (operands[12]) - 2
+   && INTVAL (operands[10]) == INTVAL (operands[13]) - 3
+   && (INTVAL (operands[14]) & 3) == 0
+   && INTVAL (operands[14]) == INTVAL (operands[15]) - 1
+   && INTVAL (operands[14]) == INTVAL (operands[16]) - 2
+   && INTVAL (operands[14]) == INTVAL (operands[17]) - 3"
+{
+  int mask;
+  mask = INTVAL (operands[2]) / 4;
+  mask |= INTVAL (operands[6]) / 4 << 2;
+  mask |= INTVAL (operands[10]) / 4 << 4;
+  mask |= INTVAL (operands[14]) / 4 << 6;
+  operands[2] = GEN_INT (mask);
+
+  return "vshuf<shuffletype>32x4\t{%2, %1, %1, %0<mask_operand18>|%0<mask_operand18>, %1, %1, %2}";
 }
   [(set_attr "type" "sselog")
    (set_attr "length_immediate" "1")
