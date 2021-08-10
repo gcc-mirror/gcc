@@ -1,7 +1,7 @@
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
 // { dg-options "-std=c++11 -O3 -march=ivybridge" }
 
-#include <functional>
+#include <array>
 
 extern int le_s6, le_s9, le_s11;
 long foo_v14[16][16];

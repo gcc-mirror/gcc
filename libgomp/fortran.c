@@ -83,6 +83,7 @@ ialias_redirect (omp_get_partition_place_nums)
 ialias_redirect (omp_set_default_device)
 ialias_redirect (omp_get_default_device)
 ialias_redirect (omp_get_num_devices)
+ialias_redirect (omp_get_device_num)
 ialias_redirect (omp_get_num_teams)
 ialias_redirect (omp_get_team_num)
 ialias_redirect (omp_is_initial_device)
@@ -600,6 +601,12 @@ omp_get_initial_device_ (void)
 }
 
 int32_t
+omp_get_device_num_ (void)
+{
+  return omp_get_device_num ();
+}
+
+int32_t
 omp_get_max_task_priority_ (void)
 {
   return omp_get_max_task_priority ();
@@ -738,6 +745,8 @@ omp_get_default_allocator_ ()
   return (intptr_t) omp_get_default_allocator ();
 }
 
+#ifndef LIBGOMP_OFFLOADED_ONLY
+
 void
 omp_display_env_ (const int32_t *verbose)
 {
@@ -749,3 +758,5 @@ omp_display_env_8_ (const int64_t *verbose)
 {
   omp_display_env (!!*verbose);
 }
+
+#endif /* LIBGOMP_OFFLOADED_ONLY */

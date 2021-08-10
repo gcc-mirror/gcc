@@ -2923,7 +2923,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
       scev_initialize ();
-      FOR_EACH_LOOP (loop, 0)
+      for (auto loop : loops_list (cfun, 0))
 	{
 	  predicate loop_iterations = true;
 	  sreal header_freq;

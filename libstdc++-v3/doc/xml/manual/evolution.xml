@@ -1019,4 +1019,14 @@ now defaults to zero.
 
 </section>
 
+<section xml:id="api.rel_121"><info><title><constant>12</constant></title></info>
+
+<para>
+The <function>std::random_shuffle</function> algorithms are deprecated
+for C++14 and later. The C++11 <function>std::shuffle</function> algorithm
+can be used instead.
+</para>
+
+</section>
+
 </section>

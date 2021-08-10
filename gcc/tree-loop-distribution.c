@@ -3315,7 +3315,7 @@ loop_distribution::execute (function *fun)
 
   /* We can at the moment only distribute non-nested loops, thus restrict
      walking to innermost loops.  */
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       /* Don't distribute multiple exit edges loop, or cold loop when
          not doing pattern detection.  */

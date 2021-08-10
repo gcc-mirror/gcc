@@ -2124,8 +2124,10 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_ABM) != 0)
 	    && !TARGET_EXPLICIT_ABM_P (opts))
 	  {
-	    SET_TARGET_LZCNT (opts);
-	    SET_TARGET_POPCNT (opts);
+	    if (!TARGET_EXPLICIT_LZCNT_P (opts))
+	      SET_TARGET_LZCNT (opts);
+	    if (!TARGET_EXPLICIT_POPCNT_P (opts))
+	      SET_TARGET_POPCNT (opts);
 	  }
 
 	if ((processor_alias_table[i].flags

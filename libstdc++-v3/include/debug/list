@@ -223,51 +223,63 @@ namespace __debug
       using _Base::get_allocator;
 
       // iterators:
+      _GLIBCXX_NODISCARD
       iterator
       begin() _GLIBCXX_NOEXCEPT
       { return iterator(_Base::begin(), this); }
 
+      _GLIBCXX_NODISCARD
       const_iterator
       begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_Base::begin(), this); }
 
+      _GLIBCXX_NODISCARD
       iterator
       end() _GLIBCXX_NOEXCEPT
       { return iterator(_Base::end(), this); }
 
+      _GLIBCXX_NODISCARD
       const_iterator
       end() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_Base::end(), this); }
 
+      _GLIBCXX_NODISCARD
       reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
 
+      _GLIBCXX_NODISCARD
       const_reverse_iterator
       rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
 
+      _GLIBCXX_NODISCARD
       reverse_iterator
       rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
 
+      _GLIBCXX_NODISCARD
       const_reverse_iterator
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
 #if __cplusplus >= 201103L
+      [[__nodiscard__]]
       const_iterator
       cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
+      [[__nodiscard__]]
       const_iterator
       cend() const noexcept
       { return const_iterator(_Base::end(), this); }
 
+      [[__nodiscard__]]
       const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
+      [[__nodiscard__]]
       const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
@@ -356,6 +368,7 @@ namespace __debug
 #endif
 
       // element access:
+      _GLIBCXX_NODISCARD
       reference
       front() _GLIBCXX_NOEXCEPT
       {
@@ -363,6 +376,7 @@ namespace __debug
 	return _Base::front();
       }
 
+      _GLIBCXX_NODISCARD
       const_reference
       front() const _GLIBCXX_NOEXCEPT
       {
@@ -370,6 +384,7 @@ namespace __debug
 	return _Base::front();
       }
 
+      _GLIBCXX_NODISCARD
       reference
       back() _GLIBCXX_NOEXCEPT
       {
@@ -377,6 +392,7 @@ namespace __debug
 	return _Base::back();
       }
 
+      _GLIBCXX_NODISCARD
       const_reference
       back() const _GLIBCXX_NOEXCEPT
       {

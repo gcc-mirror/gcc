@@ -212,7 +212,7 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 static void
 vect_check_nonzero_value (loop_vec_info loop_vinfo, tree value)
 {
-  vec<tree> checks = LOOP_VINFO_CHECK_NONZERO (loop_vinfo);
+  const vec<tree> &checks = LOOP_VINFO_CHECK_NONZERO (loop_vinfo);
   for (unsigned int i = 0; i < checks.length(); ++i)
     if (checks[i] == value)
       return;
@@ -2349,8 +2349,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   if (do_versioning)
     {
-      vec<stmt_vec_info> may_misalign_stmts
-        = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
+      const vec<stmt_vec_info> &may_misalign_stmts
+	= LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
       stmt_vec_info stmt_info;
 
       /* It can now be assumed that the data references in the statements
@@ -3364,7 +3364,8 @@ static void
 vect_check_lower_bound (loop_vec_info loop_vinfo, tree expr, bool unsigned_p,
 			poly_uint64 min_value)
 {
-  vec<vec_lower_bound> lower_bounds = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
+  vec<vec_lower_bound> &lower_bounds
+    = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
   for (unsigned int i = 0; i < lower_bounds.length (); ++i)
     if (operand_equal_p (lower_bounds[i].expr, expr, 0))
       {
@@ -3466,10 +3467,10 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   typedef pair_hash <tree_operand_hash, tree_operand_hash> tree_pair_hash;
   hash_set <tree_pair_hash> compared_objects;
 
-  vec<ddr_p> may_alias_ddrs = LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
+  const vec<ddr_p> &may_alias_ddrs = LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
   vec<dr_with_seg_len_pair_t> &comp_alias_ddrs
     = LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
-  vec<vec_object_pair> &check_unequal_addrs
+  const vec<vec_object_pair> &check_unequal_addrs
     = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
   poly_uint64 vect_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
@@ -4007,8 +4008,24 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	      continue;
 	    }
 
-	  if (TYPE_PRECISION (TREE_TYPE (op0))
-	      < TYPE_PRECISION (TREE_TYPE (off)))
+	  /* Include the conversion if it is widening and we're using
+	     the IFN path or the target can handle the converted from
+	     offset or the current size is not already the same as the
+	     data vector element size.  */
+	  if ((TYPE_PRECISION (TREE_TYPE (op0))
+	       < TYPE_PRECISION (TREE_TYPE (off)))
+	      && (use_ifn_p
+		  || (DR_IS_READ (dr)
+		      ? (targetm.vectorize.builtin_gather
+			 && targetm.vectorize.builtin_gather (vectype,
+							      TREE_TYPE (op0),
+							      scale))
+		      : (targetm.vectorize.builtin_scatter
+			 && targetm.vectorize.builtin_scatter (vectype,
+							       TREE_TYPE (op0),
+							       scale)))
+		  || !operand_equal_p (TYPE_SIZE (TREE_TYPE (off)),
+				       TYPE_SIZE (TREE_TYPE (vectype)), 0)))
 	    {
 	      off = op0;
 	      offtype = TREE_TYPE (off);
@@ -4036,7 +4053,8 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
       if (!vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr), masked_p,
 				     vectype, memory_type, offtype, scale,
 				     &ifn, &offset_vectype))
-	return false;
+	ifn = IFN_LAST;
+      decl = NULL_TREE;
     }
   else
     {
@@ -4050,10 +4068,6 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	  if (targetm.vectorize.builtin_scatter)
 	    decl = targetm.vectorize.builtin_scatter (vectype, offtype, scale);
 	}
-
-      if (!decl)
-	return false;
-
       ifn = IFN_LAST;
       /* The offset vector type will be read from DECL when needed.  */
       offset_vectype = NULL_TREE;
@@ -4283,9 +4297,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
         {
 	  bool maybe_gather
 	    = DR_IS_READ (dr)
-	      && !TREE_THIS_VOLATILE (DR_REF (dr))
-	      && (targetm.vectorize.builtin_gather != NULL
-		  || supports_vec_gather_load_p ());
+	      && !TREE_THIS_VOLATILE (DR_REF (dr));
 	  bool maybe_scatter
 	    = DR_IS_WRITE (dr)
 	      && !TREE_THIS_VOLATILE (DR_REF (dr))
@@ -5339,7 +5351,7 @@ vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
    I4:  6 14 22 30  7 15 23 31.  */
 
 void
-vect_permute_store_chain (vec_info *vinfo, vec<tree> dr_chain,
+vect_permute_store_chain (vec_info *vinfo, vec<tree> &dr_chain,
 			  unsigned int length,
 			  stmt_vec_info stmt_info,
 			  gimple_stmt_iterator *gsi,

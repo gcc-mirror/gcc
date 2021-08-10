@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-cfg.h"
 #include "attribs.h"
-#include "builtins.h"
+#include "pointer-query.h"
 
 // This purposely returns a value_range, not a value_range_equiv, to
 // break the dependency on equivalences for this pass.
@@ -421,10 +421,9 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
   /* The type and size of the access.  */
   tree axstype = TREE_TYPE (ref);
   offset_int axssize = 0;
-  if (TREE_CODE (axstype) != UNION_TYPE)
-    if (tree access_size = TYPE_SIZE_UNIT (axstype))
-      if (TREE_CODE (access_size) == INTEGER_CST)
-	axssize = wi::to_offset (access_size);
+  if (tree access_size = TYPE_SIZE_UNIT (axstype))
+    if (TREE_CODE (access_size) == INTEGER_CST)
+      axssize = wi::to_offset (access_size);
 
   access_ref aref;
   if (!compute_objsize (ref, 0, &aref, ranges))
@@ -451,20 +450,28 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
   tree reftype = TREE_TYPE (aref.ref);
   /* The size of the referenced array element.  */
   offset_int eltsize = 1;
-  /* The byte size of the array has already been determined above
-     based on a pointer ARG.  Set ELTSIZE to the size of the type
-     it points to and REFTYPE to the array with the size, rounded
-     down as necessary.  */
   if (POINTER_TYPE_P (reftype))
     reftype = TREE_TYPE (reftype);
-  if (TREE_CODE (reftype) == ARRAY_TYPE)
-    reftype = TREE_TYPE (reftype);
-  if (tree refsize = TYPE_SIZE_UNIT (reftype))
-    if (TREE_CODE (refsize) == INTEGER_CST)
-      eltsize = wi::to_offset (refsize);
 
-  const offset_int nelts = aref.sizrng[1] / eltsize;
-  reftype = build_printable_array_type (reftype, nelts.to_uhwi ());
+  if (TREE_CODE (reftype) == FUNCTION_TYPE)
+    /* Restore the original (pointer) type and avoid trying to create
+       an array of functions (done below).  */
+    reftype = TREE_TYPE (aref.ref);
+  else
+    {
+      /* The byte size of the array has already been determined above
+	 based on a pointer ARG.  Set ELTSIZE to the size of the type
+	 it points to and REFTYPE to the array with the size, rounded
+	 down as necessary.  */
+      if (TREE_CODE (reftype) == ARRAY_TYPE)
+	reftype = TREE_TYPE (reftype);
+      if (tree refsize = TYPE_SIZE_UNIT (reftype))
+	if (TREE_CODE (refsize) == INTEGER_CST)
+	  eltsize = wi::to_offset (refsize);
+
+      const offset_int nelts = aref.sizrng[1] / eltsize;
+      reftype = build_printable_array_type (reftype, nelts.to_uhwi ());
+    }
 
   /* Compute the more permissive upper bound when IGNORE_OFF_BY_ONE
      is set (when taking the address of the one-past-last element

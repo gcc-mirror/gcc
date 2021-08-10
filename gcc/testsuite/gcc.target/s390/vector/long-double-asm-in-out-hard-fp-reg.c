@@ -16,13 +16,13 @@ sqxbr (long double x)
   return out;
 }
 
-/* Ideally `vpdi %v3,%v1,%v3,5` should be optimized away, but the compiler
+/* Ideally `vmrlg %v3,%v1,%v3` should be optimized away, but the compiler
  * can't do it, because the UNSPEC pattern operates on the whole register.
  * Using the SUBREG pattern solves this problem, but it's fragile.
  */
-/* { dg-final { scan-assembler-times {\n\tvpdi\t%v2,%v0,%v2,5\n} 1 } } */
-/* { dg-final { scan-assembler-times {\n\tvpdi\t%v1,%v1,%v3,0\n} 2 } } */
-/* { dg-final { scan-assembler-times {\n\tvpdi\t%v3,%v1,%v3,5\n} 1 } } */
+/* { dg-final { scan-assembler-times {\n\tvmrlg\t%v2,%v0,%v2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\n\tvmrhg\t%v1,%v1,%v3\n} 2 } } */
+/* { dg-final { scan-assembler-times {\n\tvmrlg\t%v3,%v1,%v3\n} 1 } } */
 
 int
 main (void)

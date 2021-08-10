@@ -135,9 +135,20 @@ expand_d_format (const char *format)
 static char *
 escape_d_format (const char *format)
 {
+  bool quoted = false;
+  size_t format_len = 0;
   obstack buf;
 
   gcc_obstack_init (&buf);
+
+  /* If the format string is enclosed by two '`' characters, then don't escape
+     the first and last characters.  */
+  if (*format == '`')
+    {
+      format_len = strlen (format) - 1;
+      if (format_len && format[format_len] == '`')
+	quoted = true;
+    }
 
   for (const char *p = format; *p; p++)
     {
@@ -152,7 +163,8 @@ escape_d_format (const char *format)
 	case '`':
 	  /* Escape '`' characters so that expand_d_format does not confuse them
 	     for a quoted string.  */
-	  obstack_1grow (&buf, '\\');
+	  if (!quoted || (p != format && p != (format + format_len)))
+	    obstack_1grow (&buf, '\\');
 	  break;
 
 	default:

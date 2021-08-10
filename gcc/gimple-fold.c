@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "cgraph.h"
 #include "gimple-pretty-print.h"
+#include "gimple-ssa-warn-access.h"
 #include "gimple-ssa-warn-restrict.h"
 #include "fold-const.h"
 #include "stmt.h"
@@ -2072,7 +2073,7 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
     {
       /* Avoid folding calls with unterminated arrays.  */
       if (!warning_suppressed_p (stmt, OPT_Wstringop_overread))
-	warn_string_no_nul (loc, NULL_TREE, "strcpy", src, nonstr);
+	warn_string_no_nul (loc, stmt, "strcpy", src, nonstr);
       suppress_warning (stmt, OPT_Wstringop_overread);
       return false;
     }
@@ -3290,7 +3291,7 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
     {
       /* Avoid folding calls with unterminated arrays.  */
       if (!warning_suppressed_p (stmt, OPT_Wstringop_overread))
-	warn_string_no_nul (loc, NULL_TREE, "stpcpy", src, data.decl, size,
+	warn_string_no_nul (loc, stmt, "stpcpy", src, data.decl, size,
 			    exact);
       suppress_warning (stmt, OPT_Wstringop_overread);
       return false;

@@ -25,5 +25,8 @@ uint32_t restored ()
   return bar();
 }
 
-/* { dg-final { scan-assembler-times {\.fpu\s+vfpv4} 1 } } */
-/* { dg-final { scan-assembler-times {\.fpu\s+vfpv3-d16} 1 } } */
+/* We can't tell exactly how many times the following tests will match because
+   command-line options may cause additional instances to be generated, but
+   each must be present at least once.  */
+/* { dg-final { scan-assembler {\.fpu\s+vfpv4\n} } } */
+/* { dg-final { scan-assembler {\.fpu\s+vfpv3-d16\n} } } */

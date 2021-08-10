@@ -2772,7 +2772,15 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
 
   /* Limit the VFs to what is likely to be the maximum number of iterations,
      to handle cases in which at least one loop_vinfo is fully-masked.  */
-  HOST_WIDE_INT estimated_max_niter = likely_max_stmt_executions_int (loop);
+  HOST_WIDE_INT estimated_max_niter;
+  loop_vec_info main_loop = LOOP_VINFO_ORIG_LOOP_INFO (old_loop_vinfo);
+  unsigned HOST_WIDE_INT main_vf;
+  if (main_loop
+      && LOOP_VINFO_NITERS_KNOWN_P (main_loop)
+      && LOOP_VINFO_VECT_FACTOR (main_loop).is_constant (&main_vf))
+    estimated_max_niter = LOOP_VINFO_INT_NITERS (main_loop) % main_vf;
+  else
+    estimated_max_niter = likely_max_stmt_executions_int (loop);
   if (estimated_max_niter != -1)
     {
       if (known_le (estimated_max_niter, new_vf))
@@ -3064,7 +3072,16 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 			= opt_loop_vec_info::success (main_loop_vinfo);
 		    }
 		  else
-		    delete main_loop_vinfo;
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_NOTE, vect_location,
+					 "***** No longer preferring vector"
+					 " mode %s after reanalyzing the loop"
+					 " as a main loop\n",
+					 GET_MODE_NAME
+					   (main_loop_vinfo->vector_mode));
+		      delete main_loop_vinfo;
+		    }
 		}
 	    }
 
@@ -7210,23 +7227,20 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
           if (dump_enabled_p ())
             dump_printf (MSG_NOTE, "op not supported by target.\n");
 	  if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
-	      || !vect_worthwhile_without_simd_p (loop_vinfo, code))
+	      || !vect_can_vectorize_without_simd_p (code))
 	    ok = false;
 	  else
 	    if (dump_enabled_p ())
 	      dump_printf (MSG_NOTE, "proceeding using word mode.\n");
         }
 
-      /* Worthwhile without SIMD support?  */
-      if (ok
-	  && !VECTOR_MODE_P (TYPE_MODE (vectype_in))
-	  && !vect_worthwhile_without_simd_p (loop_vinfo, code))
-        {
-          if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not worthwhile without SIMD support.\n");
-	  ok = false;
-        }
+      if (vect_emulated_vector_p (vectype_in)
+	  && !vect_can_vectorize_without_simd_p (code))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "using word mode not possible.\n");
+	  return false;
+	}
 
       /* lane-reducing operations have to go through vect_transform_reduction.
          For the other cases try without the single cycle optimization.  */
@@ -7930,45 +7944,37 @@ vectorizable_phi (vec_info *,
   return true;
 }
 
+/* Return true if VECTYPE represents a vector that requires lowering
+   by the vector lowering pass.  */
 
-/* Function vect_min_worthwhile_factor.
+bool
+vect_emulated_vector_p (tree vectype)
+{
+  return (!VECTOR_MODE_P (TYPE_MODE (vectype))
+	  && (!VECTOR_BOOLEAN_TYPE_P (vectype)
+	      || TYPE_PRECISION (TREE_TYPE (vectype)) != 1));
+}
 
-   For a loop where we could vectorize the operation indicated by CODE,
-   return the minimum vectorization factor that makes it worthwhile
-   to use generic vectors.  */
-static unsigned int
-vect_min_worthwhile_factor (enum tree_code code)
+/* Return true if we can emulate CODE on an integer mode representation
+   of a vector.  */
+
+bool
+vect_can_vectorize_without_simd_p (tree_code code)
 {
   switch (code)
     {
     case PLUS_EXPR:
     case MINUS_EXPR:
     case NEGATE_EXPR:
-      return 4;
-
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_NOT_EXPR:
-      return 2;
+      return true;
 
     default:
-      return INT_MAX;
+      return false;
     }
-}
-
-/* Return true if VINFO indicates we are doing loop vectorization and if
-   it is worth decomposing CODE operations into scalar operations for
-   that loop's vectorization factor.  */
-
-bool
-vect_worthwhile_without_simd_p (vec_info *vinfo, tree_code code)
-{
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  unsigned HOST_WIDE_INT value;
-  return (loop_vinfo
-	  && LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&value)
-	  && value >= vect_min_worthwhile_factor (code));
 }
 
 /* Function vectorizable_induction

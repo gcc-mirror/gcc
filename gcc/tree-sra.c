@@ -2790,7 +2790,10 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	{
 	  /* We are about to change the access type from aggregate to scalar,
 	     so we need to put the reverse flag onto the access, if any.  */
-	  const bool reverse = TYPE_REVERSE_STORAGE_ORDER (lacc->type);
+	  const bool reverse
+	    = TYPE_REVERSE_STORAGE_ORDER (lacc->type)
+	      && !POINTER_TYPE_P (racc->type)
+	      && !VECTOR_TYPE_P (racc->type);
 	  tree t = lacc->base;
 
 	  lacc->type = racc->type;

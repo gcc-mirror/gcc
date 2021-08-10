@@ -157,8 +157,7 @@ gate_oacc_kernels (function *fn)
   if (!lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn->decl)))
     return false;
 
-  class loop *loop;
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     if (loop->in_oacc_kernels_region)
       return true;
 
@@ -455,12 +454,11 @@ public:
 unsigned
 pass_scev_cprop::execute (function *)
 {
-  class loop *loop;
   bool any = false;
 
   /* Perform final value replacement in loops, in case the replacement
      expressions are cheap.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     any |= final_value_replacement_loop (loop);
 
   return any ? TODO_cleanup_cfg | TODO_update_ssa_only_virtuals : 0;

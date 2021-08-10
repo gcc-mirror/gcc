@@ -1,3 +1,41 @@
+2021-08-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov-driver.c (#include <stdint.h>): Remove.
+	(write_topn_counters): Use __INTPTR_TYPE__ instead of intptr_t.
+
+2021-08-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* Makefile.in (LIBGCOV_DRIVER): Add _gcov_info_to_gcda.
+	* gcov.h (gcov_info): Declare.
+	(__gcov_info_to_gdca): Likewise.
+	* libgcov.h (gcov_write_counter): Remove.
+	(gcov_write_tag_length): Likewise.
+	* libgcov-driver.c (#include <stdint.h>): New.
+	(#include <string.h>): Remove.
+	(NEED_L_GCOV): Conditionally define.
+	(NEED_L_GCOV_INFO_TO_GCDA): Likewise.
+	(are_all_counters_zero): New.
+	(gcov_dump_handler): Likewise.
+	(gcov_allocate_handler): Likewise.
+	(dump_unsigned): Likewise.
+	(dump_counter): Likewise.
+	(write_topn_counters): Add dump_fn, allocate_fn, and arg parameters.
+	Use dump_unsigned() and dump_counter().
+	(write_one_data): Add dump_fn, allocate_fn, and arg parameters.  Use
+	dump_unsigned(), dump_counter(), and are_all_counters_zero().
+	(__gcov_info_to_gcda): New.
+
+2021-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/t-slibgcc (SHLIB_LINK): Add $(LDFLAGS).
+	* config/t-slibgcc-darwin (SHLIB_LINK): Likewise.
+	* config/t-slibgcc-vms (SHLIB_LINK): Likewise.
+	* config/t-slibgcc-fuchsia (SHLIB_LDFLAGS): Remove $(LDFLAGS).
+
+2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/t-slibgcc-fuchsia: Undo doubly applied patch.
+
 2021-07-15  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/morestack.S (R2_SAVE): Define.

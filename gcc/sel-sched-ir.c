@@ -6247,10 +6247,8 @@ make_regions_from_the_rest (void)
 /* Free data structures used in pipelining of loops.  */
 void sel_finish_pipelining (void)
 {
-  class loop *loop;
-
   /* Release aux fields so we don't free them later by mistake.  */
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     loop->aux = NULL;
 
   loop_optimizer_finalize ();
@@ -6271,11 +6269,11 @@ sel_find_rgns (void)
 
   if (current_loops)
     {
-      loop_p loop;
+      unsigned flags = flag_sel_sched_pipelining_outer_loops
+			 ? LI_FROM_INNERMOST
+			 : LI_ONLY_INNERMOST;
 
-      FOR_EACH_LOOP (loop, (flag_sel_sched_pipelining_outer_loops
-			    ? LI_FROM_INNERMOST
-			    : LI_ONLY_INNERMOST))
+      for (auto loop : loops_list (cfun, flags))
 	make_regions_from_loop_nest (loop);
     }
 

@@ -116,6 +116,66 @@ _mm_blendv_epi8 (__m128i __A, __m128i __B, __m128i __mask)
   return (__m128i) vec_sel ((__v16qu) __A, (__v16qu) __B, __lmask);
 }
 
+__inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_blend_ps (__m128 __A, __m128 __B, const int __imm8)
+{
+  __v16qu __pcv[] =
+    {
+      {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
+      { 16, 17, 18, 19,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
+      {  0,  1,  2,  3, 20, 21, 22, 23,  8,  9, 10, 11, 12, 13, 14, 15 },
+      { 16, 17, 18, 19, 20, 21, 22, 23,  8,  9, 10, 11, 12, 13, 14, 15 },
+      {  0,  1,  2,  3,  4,  5,  6,  7, 24, 25, 26, 27, 12, 13, 14, 15 },
+      { 16, 17, 18, 19,  4,  5,  6,  7, 24, 25, 26, 27, 12, 13, 14, 15 },
+      {  0,  1,  2,  3, 20, 21, 22, 23, 24, 25, 26, 27, 12, 13, 14, 15 },
+      { 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 12, 13, 14, 15 },
+      {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 28, 29, 30, 31 },
+      { 16, 17, 18, 19,  4,  5,  6,  7,  8,  9, 10, 11, 28, 29, 30, 31 },
+      {  0,  1,  2,  3, 20, 21, 22, 23,  8,  9, 10, 11, 28, 29, 30, 31 },
+      { 16, 17, 18, 19, 20, 21, 22, 23,  8,  9, 10, 11, 28, 29, 30, 31 },
+      {  0,  1,  2,  3,  4,  5,  6,  7, 24, 25, 26, 27, 28, 29, 30, 31 },
+      { 16, 17, 18, 19,  4,  5,  6,  7, 24, 25, 26, 27, 28, 29, 30, 31 },
+      {  0,  1,  2,  3, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 },
+      { 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 },
+    };
+  __v16qu __r = vec_perm ((__v16qu) __A, (__v16qu)__B, __pcv[__imm8]);
+  return (__m128) __r;
+}
+
+__inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_blendv_ps (__m128 __A, __m128 __B, __m128 __mask)
+{
+  const __v4si __zero = {0};
+  const __vector __bool int __boolmask = vec_cmplt ((__v4si) __mask, __zero);
+  return (__m128) vec_sel ((__v4su) __A, (__v4su) __B, (__v4su) __boolmask);
+}
+
+__inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_blend_pd (__m128d __A, __m128d __B, const int __imm8)
+{
+  __v16qu __pcv[] =
+    {
+      {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 },
+      { 16, 17, 18, 19, 20, 21, 22, 23,  8,  9, 10, 11, 12, 13, 14, 15 },
+      {  0,  1,  2,  3,  4,  5,  6,  7, 24, 25, 26, 27, 28, 29, 30, 31 },
+      { 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 }
+    };
+  __v16qu __r = vec_perm ((__v16qu) __A, (__v16qu)__B, __pcv[__imm8]);
+  return (__m128d) __r;
+}
+
+__inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_blendv_pd (__m128d __A, __m128d __B, __m128d __mask)
+{
+  const __v2di __zero = {0};
+  const __vector __bool long long __boolmask = vec_cmplt ((__v2di) __mask, __zero);
+  return (__m128d) vec_sel ((__v2du) __A, (__v2du) __B, (__v2du) __boolmask);
+}
+
 __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_testz_si128 (__m128i __A, __m128i __B)
@@ -170,6 +230,97 @@ _mm_test_mix_ones_zeros (__m128i __A, __m128i __mask)
   const __v16qu __notAmasked = vec_and ((__v16qu) __notA, (__v16qu) __mask);
   const int any_zeros = vec_any_ne (__notAmasked, __zero);
   return any_ones * any_zeros;
+}
+
+__inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_ceil_pd (__m128d __A)
+{
+  return (__m128d) vec_ceil ((__v2df) __A);
+}
+
+__inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_ceil_sd (__m128d __A, __m128d __B)
+{
+  __v2df __r = vec_ceil ((__v2df) __B);
+  __r[1] = ((__v2df) __A)[1];
+  return (__m128d) __r;
+}
+
+__inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_floor_pd (__m128d __A)
+{
+  return (__m128d) vec_floor ((__v2df) __A);
+}
+
+__inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_floor_sd (__m128d __A, __m128d __B)
+{
+  __v2df __r = vec_floor ((__v2df) __B);
+  __r[1] = ((__v2df) __A)[1];
+  return (__m128d) __r;
+}
+
+__inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_ceil_ps (__m128 __A)
+{
+  return (__m128) vec_ceil ((__v4sf) __A);
+}
+
+__inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_ceil_ss (__m128 __A, __m128 __B)
+{
+  __v4sf __r = (__v4sf) __A;
+  __r[0] = __builtin_ceil (((__v4sf) __B)[0]);
+  return __r;
+}
+
+__inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_floor_ps (__m128 __A)
+{
+  return (__m128) vec_floor ((__v4sf) __A);
+}
+
+__inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_floor_ss (__m128 __A, __m128 __B)
+{
+  __v4sf __r = (__v4sf) __A;
+  __r[0] = __builtin_floor (((__v4sf) __B)[0]);
+  return __r;
+}
+
+/* Return horizontal packed word minimum and its index in bits [15:0]
+   and bits [18:16] respectively.  */
+__inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_minpos_epu16 (__m128i __A)
+{
+  union __u
+    {
+      __m128i __m;
+      __v8hu __uh;
+    };
+  union __u __u = { .__m = __A }, __r = { .__m = {0} };
+  unsigned short __ridx = 0;
+  unsigned short __rmin = __u.__uh[__ridx];
+  for (unsigned long __i = 1; __i < 8; __i++)
+    {
+      if (__u.__uh[__i] < __rmin)
+	{
+	  __rmin = __u.__uh[__i];
+	  __ridx = __i;
+	}
+    }
+  __r.__uh[0] = __rmin;
+  __r.__uh[1] = __ridx;
+  return __r.__m;
 }
 
 #endif

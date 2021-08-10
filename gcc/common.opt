@@ -2112,7 +2112,7 @@ Common Driver Joined MissingArgError(options or targets=options missing after %q
 -foffload-options=<targets>=<options>	Specify options for the offloading targets.
 
 foffload-abi=
-Common Joined RejectNegative Enum(offload_abi) Var(flag_offload_abi) Init(OFFLOAD_ABI_UNSET)
+Common Joined RejectNegative Enum(offload_abi)
 -foffload-abi=[lp64|ilp32]	Set the ABI to use in an offload compiler.
 
 Enum

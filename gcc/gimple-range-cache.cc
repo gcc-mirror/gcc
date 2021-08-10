@@ -160,9 +160,9 @@ non_null_ref::process_name (tree name)
 class ssa_block_ranges
 {
 public:
-  virtual bool set_bb_range (const basic_block bb, const irange &r) = 0;
-  virtual bool get_bb_range (irange &r, const basic_block bb) = 0;
-  virtual bool bb_range_p (const basic_block bb) = 0;
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) = 0;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) = 0;
+  virtual bool bb_range_p (const_basic_block bb) = 0;
 
   void dump(FILE *f);
 };
@@ -193,9 +193,9 @@ class sbr_vector : public ssa_block_ranges
 public:
   sbr_vector (tree t, irange_allocator *allocator);
 
-  virtual bool set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
-  virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
-  virtual bool bb_range_p (const basic_block bb) OVERRIDE;
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const_basic_block bb) OVERRIDE;
 protected:
   irange **m_tab;	// Non growing vector.
   int m_tab_size;
@@ -225,7 +225,7 @@ sbr_vector::sbr_vector (tree t, irange_allocator *allocator)
 // Set the range for block BB to be R.
 
 bool
-sbr_vector::set_bb_range (const basic_block bb, const irange &r)
+sbr_vector::set_bb_range (const_basic_block bb, const irange &r)
 {
   irange *m;
   gcc_checking_assert (bb->index < m_tab_size);
@@ -243,7 +243,7 @@ sbr_vector::set_bb_range (const basic_block bb, const irange &r)
 // there is no range.
 
 bool
-sbr_vector::get_bb_range (irange &r, const basic_block bb)
+sbr_vector::get_bb_range (irange &r, const_basic_block bb)
 {
   gcc_checking_assert (bb->index < m_tab_size);
   irange *m = m_tab[bb->index];
@@ -258,7 +258,7 @@ sbr_vector::get_bb_range (irange &r, const basic_block bb)
 // Return true if a range is present.
 
 bool
-sbr_vector::bb_range_p (const basic_block bb)
+sbr_vector::bb_range_p (const_basic_block bb)
 {
   gcc_checking_assert (bb->index < m_tab_size);
   return m_tab[bb->index] != NULL;
@@ -281,9 +281,9 @@ class sbr_sparse_bitmap : public ssa_block_ranges
 {
 public:
   sbr_sparse_bitmap (tree t, irange_allocator *allocator, bitmap_obstack *bm);
-  virtual bool set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
-  virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
-  virtual bool bb_range_p (const basic_block bb) OVERRIDE;
+  virtual bool set_bb_range (const_basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const_basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const_basic_block bb) OVERRIDE;
 private:
   void bitmap_set_quad (bitmap head, int quad, int quad_value);
   int bitmap_get_quad (const_bitmap head, int quad);
@@ -342,7 +342,7 @@ sbr_sparse_bitmap::bitmap_get_quad (const_bitmap head, int quad)
 // Set the range on entry to basic block BB to R.
 
 bool
-sbr_sparse_bitmap::set_bb_range (const basic_block bb, const irange &r)
+sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const irange &r)
 {
   if (r.undefined_p ())
     {
@@ -368,7 +368,7 @@ sbr_sparse_bitmap::set_bb_range (const basic_block bb, const irange &r)
 // there is no range.
 
 bool
-sbr_sparse_bitmap::get_bb_range (irange &r, const basic_block bb)
+sbr_sparse_bitmap::get_bb_range (irange &r, const_basic_block bb)
 {
   int value = bitmap_get_quad (bitvec, bb->index);
 
@@ -386,7 +386,7 @@ sbr_sparse_bitmap::get_bb_range (irange &r, const basic_block bb)
 // Return true if a range is present.
 
 bool
-sbr_sparse_bitmap::bb_range_p (const basic_block bb)
+sbr_sparse_bitmap::bb_range_p (const_basic_block bb)
 {
   return (bitmap_get_quad (bitvec, bb->index) != 0);
 }
@@ -417,7 +417,7 @@ block_range_cache::~block_range_cache ()
 // If it has not been accessed yet, allocate it first.
 
 bool
-block_range_cache::set_bb_range (tree name, const basic_block bb,
+block_range_cache::set_bb_range (tree name, const_basic_block bb,
 				 const irange &r)
 {
   unsigned v = SSA_NAME_VERSION (name);
@@ -464,7 +464,7 @@ block_range_cache::query_block_ranges (tree name)
 // is one.
 
 bool
-block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
+block_range_cache::get_bb_range (irange &r, tree name, const_basic_block bb)
 {
   ssa_block_ranges *ptr = query_block_ranges (name);
   if (ptr)
@@ -475,7 +475,7 @@ block_range_cache::get_bb_range (irange &r, tree name, const basic_block bb)
 // Return true if NAME has a range set in block BB.
 
 bool
-block_range_cache::bb_range_p (tree name, const basic_block bb)
+block_range_cache::bb_range_p (tree name, const_basic_block bb)
 {
   ssa_block_ranges *ptr = query_block_ranges (name);
   if (ptr)

@@ -297,6 +297,7 @@ namespace __gnu_debug
        *  @brief Iterator dereference.
        *  @pre iterator is dereferenceable
        */
+      _GLIBCXX_NODISCARD
       reference
       operator*() const _GLIBCXX_NOEXCEPT
       {
@@ -310,6 +311,7 @@ namespace __gnu_debug
        *  @brief Iterator dereference.
        *  @pre iterator is dereferenceable
        */
+      _GLIBCXX_NODISCARD
       pointer
       operator->() const _GLIBCXX_NOEXCEPT
       {
@@ -463,6 +465,7 @@ namespace __gnu_debug
 
       typedef _Safe_iterator<_Iterator, _Sequence, iterator_category> _Self;
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator==(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -471,6 +474,7 @@ namespace __gnu_debug
       }
 
       template<typename _IteR>
+	_GLIBCXX_NODISCARD
 	friend bool
 	operator==(const _Self& __lhs,
 	  const _Safe_iterator<_IteR, _Sequence, iterator_category>& __rhs)
@@ -481,6 +485,7 @@ namespace __gnu_debug
 	}
 
 #if ! __cpp_lib_three_way_comparison
+      _GLIBCXX_NODISCARD
       friend bool
       operator!=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -489,6 +494,7 @@ namespace __gnu_debug
       }
 
       template<typename _IteR>
+	_GLIBCXX_NODISCARD
 	friend bool
 	operator!=(const _Self& __lhs,
 	  const _Safe_iterator<_IteR, _Sequence, iterator_category>& __rhs)
@@ -786,6 +792,7 @@ namespace __gnu_debug
       }
 
       // ------ Random access iterator requirements ------
+      _GLIBCXX_NODISCARD
       reference
       operator[](difference_type __n) const _GLIBCXX_NOEXCEPT
       {
@@ -819,6 +826,7 @@ namespace __gnu_debug
       }
 
 #if __cpp_lib_three_way_comparison
+      [[nodiscard]]
       friend auto
       operator<=>(const _Self& __lhs, const _Self& __rhs) noexcept
       {
@@ -826,6 +834,7 @@ namespace __gnu_debug
 	return __lhs.base() <=> __rhs.base();
       }
 
+      [[nodiscard]]
       friend auto
       operator<=>(const _Self& __lhs, const _OtherSelf& __rhs) noexcept
       {
@@ -833,6 +842,7 @@ namespace __gnu_debug
 	return __lhs.base() <=> __rhs.base();
       }
 #else
+      _GLIBCXX_NODISCARD
       friend bool
       operator<(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -840,6 +850,7 @@ namespace __gnu_debug
 	return __lhs.base() < __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator<(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -847,6 +858,7 @@ namespace __gnu_debug
 	return __lhs.base() < __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator<=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -854,6 +866,7 @@ namespace __gnu_debug
 	return __lhs.base() <= __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator<=(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -861,6 +874,7 @@ namespace __gnu_debug
 	return __lhs.base() <= __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator>(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -868,6 +882,7 @@ namespace __gnu_debug
 	return __lhs.base() > __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator>(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -875,6 +890,7 @@ namespace __gnu_debug
 	return __lhs.base() > __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator>=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -882,6 +898,7 @@ namespace __gnu_debug
 	return __lhs.base() >= __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend bool
       operator>=(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -894,6 +911,7 @@ namespace __gnu_debug
       // According to the resolution of DR179 not only the various comparison
       // operators but also operator- must accept mixed iterator/const_iterator
       // parameters.
+      _GLIBCXX_NODISCARD
       friend difference_type
       operator-(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -901,6 +919,7 @@ namespace __gnu_debug
 	return __lhs.base() - __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend difference_type
       operator-(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
@@ -908,6 +927,7 @@ namespace __gnu_debug
 	return __lhs.base() - __rhs.base();
       }
 
+      _GLIBCXX_NODISCARD
       friend _Self
       operator+(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
       {
@@ -917,6 +937,7 @@ namespace __gnu_debug
 	return _Safe_iterator(__x.base() + __n, __x._M_sequence);
       }
 
+      _GLIBCXX_NODISCARD
       friend _Self
       operator+(difference_type __n, const _Self& __x) _GLIBCXX_NOEXCEPT
       {
@@ -926,6 +947,7 @@ namespace __gnu_debug
 	return _Safe_iterator(__n + __x.base(), __x._M_sequence);
       }
 
+      _GLIBCXX_NODISCARD
       friend _Self
       operator-(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
       {

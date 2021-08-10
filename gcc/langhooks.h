@@ -66,7 +66,7 @@ struct lang_hooks_for_types
 
   /* Make an enum type with the given name and values, associating
      them all with the given source location.  */
-  tree (*simulate_enum_decl) (location_t, const char *, vec<string_int_pair>);
+  tree (*simulate_enum_decl) (location_t, const char *, vec<string_int_pair> *);
 
   /* Return what kind of RECORD_TYPE this is, mainly for purposes of
      debug information.  If not defined, record types are assumed to

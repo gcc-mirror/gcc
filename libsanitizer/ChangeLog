@@ -1,3 +1,13 @@
+2021-08-03  Mosè Giordano  <mose@gnu.org>
+
+	PR sanitizer/101111
+	* configure.tgt: Fix bashism in setting of `EXTRA_CXXFLAGS'.
+
+2021-07-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* configure.tgt (s390*-*-linux*): Enable LSan and TSan for
+	s390x.
+
 2021-07-20  H.J. Lu  <hjl.tools@gmail.com>
 
 	* asan/libtool-version: Bump version.

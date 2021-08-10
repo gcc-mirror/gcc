@@ -1194,7 +1194,7 @@ vectorize_loops (void)
   /* If some loop was duplicated, it gets bigger number
      than all previously defined loops.  This fact allows us to run
      only over initial loops skipping newly generated ones.  */
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     if (loop->dont_vectorize)
       {
 	any_ifcvt_loops = true;
@@ -1213,7 +1213,7 @@ vectorize_loops (void)
 		  loop4 (copy of loop2)
 		else
 		  loop5 (copy of loop4)
-	   If FOR_EACH_LOOP gives us loop3 first (which has
+	   If loops' iteration gives us loop3 first (which has
 	   dont_vectorize set), make sure to process loop1 before loop4;
 	   so that we can prevent vectorization of loop4 if loop1
 	   is successfully vectorized.  */

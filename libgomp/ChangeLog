@@ -1,3 +1,90 @@
+2021-08-09  Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-gcn.c (gcn_exec): Change default number of workers to
+	16.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c
+	[acc_device_radeon]: Update.
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c
+	[ACC_DEVICE_TYPE_radeon]: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c
+	[acc_device_radeon]: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c
+	[ACC_DEVICE_TYPE_radeon]: Likewise.
+	* testsuite/libgomp.oacc-fortran/optional-reduction.f90: XFAIL for
+	'openacc_radeon_accel_selected' and '-O0'.
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: Likewise.
+
+2021-08-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* icv-device.c (omp_get_device_num): New API function, host side.
+	* fortran.c (omp_get_device_num_): New interface function.
+	* libgomp-plugin.h (GOMP_DEVICE_NUM_VAR): Define macro symbol.
+	* libgomp.map (OMP_5.0.2): New version space with omp_get_device_num,
+	omp_get_device_num_.
+	* libgomp.texi (omp_get_device_num): Add documentation for new API
+	function.
+	* omp.h.in (omp_get_device_num): Add declaration.
+	* omp_lib.f90.in (omp_get_device_num): Likewise.
+	* omp_lib.h.in (omp_get_device_num): Likewise.
+	* target.c (gomp_load_image_to_device): If additional entry for device
+	number exists at end of returned entries from 'load_image_func' hook,
+	copy the assigned device number over to the device variable.
+	* config/gcn/icv-device.c (GOMP_DEVICE_NUM_VAR): Define static global.
+	(omp_get_device_num): New API function, device side.
+	* plugin/plugin-gcn.c ("symcat.h"): Add include.
+	(GOMP_OFFLOAD_load_image): Add addresses of device GOMP_DEVICE_NUM_VAR
+	at end of returned 'target_table' entries.
+	* config/nvptx/icv-device.c (GOMP_DEVICE_NUM_VAR): Define static global.
+	(omp_get_device_num): New API function, device side.
+	* plugin/plugin-nvptx.c ("symcat.h"): Add include.
+	(GOMP_OFFLOAD_load_image): Add addresses of device GOMP_DEVICE_NUM_VAR
+	at end of returned 'target_table' entries.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_intelmic): New function for
+	testing for intelmic offloading.
+	* testsuite/libgomp.c-c++-common/target-45.c: New test.
+	* testsuite/libgomp.fortran/target10.f90: New test.
+
+2021-07-30  Thomas Schwinge  <thomas@codesourcery.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+
+	* fortran.c (omp_display_env_, omp_display_env_8_): Only
+	'#ifndef LIBGOMP_OFFLOADED_ONLY'.
+
+2021-07-29  Thomas Schwinge  <thomas@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-2.c:
+	's%oaccdevlow%oaccloops%g'.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-7.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-nohost-1.f90: Likewise.
+
+2021-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/libgomp.graphite/force-parallel-4.c: Adjust for
+	threader.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Same.
+
 2021-07-27  Ulrich Drepper  <drepper@gmail.com>
 
 	* env.c (wait_policy, stacksize): New static variables,

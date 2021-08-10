@@ -1,3 +1,118 @@
+2021-08-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101570
+	* analyzer.cc (maybe_reconstruct_from_def_stmt): Add GIMPLE_ASM
+	case.
+	* analyzer.h (class asm_output_svalue): New forward decl.
+	(class reachable_regions): New forward decl.
+	* complexity.cc (complexity::from_vec_svalue): New.
+	* complexity.h (complexity::from_vec_svalue): New decl.
+	* engine.cc (feasibility_state::maybe_update_for_edge): Handle
+	asm stmts by calling on_asm_stmt.
+	* region-model-asm.cc: New file.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_asm_output_svalue): New.
+	(region_model_manager::get_or_create_asm_output_svalue): New.
+	(region_model_manager::log_stats): Log m_asm_output_values_map.
+	* region-model.cc (region_model::on_stmt_pre): Handle GIMPLE_ASM.
+	* region-model.h (visitor::visit_asm_output_svalue): New.
+	(region_model_manager::get_or_create_asm_output_svalue): New decl.
+	(region_model_manager::maybe_fold_asm_output_svalue): New decl.
+	(region_model_manager::asm_output_values_map_t): New typedef.
+	(region_model_manager::m_asm_output_values_map): New field.
+	(region_model::on_asm_stmt): New.
+	* store.cc (binding_cluster::on_asm): New.
+	* store.h (binding_cluster::on_asm): New decl.
+	* svalue.cc (svalue::cmp_ptr): Handle SK_ASM_OUTPUT.
+	(asm_output_svalue::dump_to_pp): New.
+	(asm_output_svalue::dump_input): New.
+	(asm_output_svalue::input_idx_to_asm_idx): New.
+	(asm_output_svalue::accept): New.
+	* svalue.h (enum svalue_kind): Add SK_ASM_OUTPUT.
+	(svalue::dyn_cast_asm_output_svalue): New.
+	(class asm_output_svalue): New.
+	(is_a_helper <const asm_output_svalue *>::test): New.
+	(struct default_hash_traits<asm_output_svalue::key_t>): New.
+
+2021-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/101721
+	* sm-malloc.cc (known_allocator_p): Only check DECL_FUNCTION_CODE on
+	BUILT_IN_NORMAL builtins.
+
+2021-07-29  Ankur Saini  <arsenic@sourceware.org>
+
+	* call-string.cc (call_string::element_t::operator==): New operator.
+	(call_String::element_t::operator!=): New operator.
+	(call_string::element_t::get_caller_function): New function.
+	(call_string::element_t::get_callee_function): New function.
+	(call_string::call_string): Refactor to Initialise m_elements.
+	(call_string::operator=): Refactor to work with m_elements.
+	(call_string::operator==): Likewise.
+	(call_string::to_json): Likewise.
+	(call_string::hash): Refactor to hash e.m_caller.
+	(call_string::push_call): Refactor to work with m_elements.
+	(call_string::push_call): New overload to push call via supernodes.
+	(call_string::pop): Refactor to work with m_elements.
+	(call_string::calc_recursion_depth): Likewise.
+	(call_string::cmp): Likewise.
+	(call_string::validate): Likewise.
+	(call_string::operator[]): Likewise.
+	* call-string.h (class supernode): New forward decl.
+	(struct call_string::element_t): New struct.
+	(call_string::call_string): Refactor to initialise m_elements.
+	(call_string::bool empty_p): Refactor to work with m_elements.
+	(call_string::get_callee_node): New decl.
+	(call_string::get_caller_node): New decl.
+	(m_elements): Replaces m_return_edges.
+	* program-point.cc (program_point::get_function_at_depth): Refactor to
+	work with new call-string format.
+	(program_point::validate): Likewise.
+	(program_point::on_edge): Likewise.
+
+2021-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_call_pre): Treat
+	IFN_UBSAN_BOUNDS, BUILT_IN_STACK_SAVE, and BUILT_IN_STACK_RESTORE
+	as no-ops, rather than handling them as unknown functions.
+
+2021-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (region_model::impl_call_alloca):
+	Drop redundant return value.
+	(region_model::impl_call_builtin_expect): Likewise.
+	(region_model::impl_call_calloc): Likewise.
+	(region_model::impl_call_malloc): Likewise.
+	(region_model::impl_call_memset): Likewise.
+	(region_model::impl_call_operator_new): Likewise.
+	(region_model::impl_call_operator_delete): Likewise.
+	(region_model::impl_call_strlen): Likewise.
+	* region-model.cc (region_model::on_call_pre): Fix return value of
+	known functions that don't have unknown side-effects.
+	* region-model.h (region_model::impl_call_alloca): Drop redundant
+	return value.
+	(region_model::impl_call_builtin_expect): Likewise.
+	(region_model::impl_call_calloc): Likewise.
+	(region_model::impl_call_malloc): Likewise.
+	(region_model::impl_call_memset): Likewise.
+	(region_model::impl_call_strlen): Likewise.
+	(region_model::impl_call_operator_new): Likewise.
+	(region_model::impl_call_operator_delete): Likewise.
+
+2021-07-28  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* analyzer.cc (is_named_call_p, is_std_named_call_p): Make
+	first argument a const_tree.
+	* analyzer.h (is_named_call_p, -s_std_named_call_p): Likewise.
+	* sm-malloc.cc (known_allocator_p): New function.
+	(malloc_state_machine::on_stmt): Use it.
+
+2021-07-28  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* sm-malloc.cc
+	(malloc_state_machine::get_or_create_deallocator): Recognize
+	__builtin_free.
+
 2021-07-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc (region_model::on_call_pre): Always set conjured

@@ -332,6 +332,10 @@ inline vec_rtx_properties_base::~vec_rtx_properties_base ()
 using vec_rtx_properties = growing_rtx_properties<vec_rtx_properties_base>;
 
 bool
+vec_series_highpart_p (machine_mode result_mode, machine_mode op_mode,
+		       rtx sel);
+
+bool
 vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel);
 
 #endif

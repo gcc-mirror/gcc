@@ -1757,24 +1757,45 @@ typedef struct ix86_args {
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* Max number of bytes we can move from memory to memory
-   in one reasonably fast instruction.  */
-#define MOVE_MAX 16
+/* The constant maximum number of bytes that a single instruction can
+   move quickly between memory and registers or between two memory
+   locations.  */
+#define MAX_MOVE_MAX 64
 
-/* MOVE_MAX_PIECES is the number of bytes at a time which we can
-   move efficiently, as opposed to  MOVE_MAX which is the maximum
-   number of bytes we can move with a single instruction.
+/* Max number of bytes we can move from memory to memory in one
+   reasonably fast instruction, as opposed to MOVE_MAX_PIECES which
+   is the number of bytes at a time which we can move efficiently.
+   MOVE_MAX_PIECES defaults to MOVE_MAX.  */
 
-   ??? We should use TImode in 32-bit mode and use OImode or XImode
-   if they are available.  But since by_pieces_ninsns determines the
-   widest mode with MAX_FIXED_MODE_SIZE, we can only use TImode in
-   64-bit mode.  */
-#define MOVE_MAX_PIECES \
-  ((TARGET_64BIT \
-    && TARGET_SSE2 \
-    && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
-    && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
-   ? GET_MODE_SIZE (TImode) : UNITS_PER_WORD)
+#define MOVE_MAX \
+  ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+   ? 64 \
+   : ((TARGET_AVX \
+       && !TARGET_PREFER_AVX128 \
+       && !TARGET_AVX256_SPLIT_UNALIGNED_LOAD \
+       && !TARGET_AVX256_SPLIT_UNALIGNED_STORE) \
+      ? 32 \
+      : ((TARGET_SSE2 \
+	  && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
+	  && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	 ? 16 : UNITS_PER_WORD)))
+
+/* STORE_MAX_PIECES is the number of bytes at a time that we can store
+   efficiently.  Allow 16/32/64 bytes only if inter-unit move is enabled
+   since vec_duplicate enabled by inter-unit move is used to implement
+   store_by_pieces of 16/32/64 bytes.  */
+#define STORE_MAX_PIECES \
+  (TARGET_INTER_UNIT_MOVES_TO_VEC \
+   ? ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+      ? 64 \
+      : ((TARGET_AVX \
+	  && !TARGET_PREFER_AVX128 \
+	  && !TARGET_AVX256_SPLIT_UNALIGNED_STORE) \
+	  ? 32 \
+	  : ((TARGET_SSE2 \
+	      && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
+	      ? 16 : UNITS_PER_WORD))) \
+   : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a cpymem or libcall instead.

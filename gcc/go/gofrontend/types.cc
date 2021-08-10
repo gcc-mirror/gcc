@@ -842,6 +842,15 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 	return true;
     }
 
+  // A slice may be converted to a pointer-to-array.
+  if (rhs->is_slice_type()
+      && lhs->points_to() != NULL
+      && lhs->points_to()->array_type() != NULL
+      && !lhs->points_to()->is_slice_type()
+      && Type::are_identical(lhs->points_to()->array_type()->element_type(),
+			     rhs->array_type()->element_type(), 0, reason))
+    return true;
+
   // An unsafe.Pointer type may be converted to any pointer type or to
   // a type whose underlying type is uintptr, and vice-versa.
   if (lhs->is_unsafe_pointer_type()

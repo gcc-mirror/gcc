@@ -2867,7 +2867,7 @@ create_parallel_loop (class loop *loop, tree loop_fn, tree data,
   /* Emit GIMPLE_OMP_FOR.  */
   if (oacc_kernels_p)
     /* Parallelized OpenACC kernels constructs use gang parallelism.  See also
-       omp-offload.c:execute_oacc_device_lower.  */
+       omp-offload.c:execute_oacc_loop_designation.  */
     t = build_omp_clause (loc, OMP_CLAUSE_GANG);
   else
     {
@@ -3990,7 +3990,6 @@ parallelize_loops (bool oacc_kernels_p)
 {
   unsigned n_threads;
   bool changed = false;
-  class loop *loop;
   class loop *skip_loop = NULL;
   class tree_niter_desc niter_desc;
   struct obstack parloop_obstack;
@@ -4021,7 +4020,7 @@ parallelize_loops (bool oacc_kernels_p)
 
   calculate_dominance_info (CDI_DOMINATORS);
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       if (loop == skip_loop)
 	{

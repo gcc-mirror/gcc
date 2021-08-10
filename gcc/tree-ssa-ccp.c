@@ -1293,6 +1293,28 @@ ccp_fold (gimple *stmt)
     }
 }
 
+/* Determine the minimum and maximum values, *MIN and *MAX respectively,
+   represented by the mask pair VAL and MASK with signedness SGN and
+   precision PRECISION.  */
+
+void
+value_mask_to_min_max (widest_int *min, widest_int *max,
+		       const widest_int &val, const widest_int &mask,
+		       signop sgn, int precision)
+{
+  *min = wi::bit_and_not (val, mask);
+  *max = val | mask;
+  if (sgn == SIGNED && wi::neg_p (mask))
+    {
+      widest_int sign_bit = wi::lshift (1, precision - 1);
+      *min ^= sign_bit;
+      *max ^= sign_bit;
+      /* MAX is zero extended, and MIN is sign extended.  */
+      *min = wi::ext (*min, precision, sgn);
+      *max = wi::ext (*max, precision, sgn);
+    }
+}
+
 /* Apply the operation CODE in type TYPE to the value, mask pair
    RVAL and RMASK representing a value of type RTYPE and set
    the value, mask pair *VAL and *MASK to the result.  */
@@ -1334,6 +1356,33 @@ bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
 	break;
       }
 
+    case ABS_EXPR:
+    case ABSU_EXPR:
+      if (wi::sext (rmask, rtype_precision) == -1)
+	*mask = -1;
+      else if (wi::neg_p (rmask))
+	{
+	  /* Result is either rval or -rval.  */
+	  widest_int temv, temm;
+	  bit_value_unop (NEGATE_EXPR, rtype_sgn, rtype_precision, &temv,
+			  &temm, type_sgn, type_precision, rval, rmask);
+	  temm |= (rmask | (rval ^ temv));
+	  /* Extend the result.  */
+	  *mask = wi::ext (temm, type_precision, type_sgn);
+	  *val = wi::ext (temv, type_precision, type_sgn);
+	}
+      else if (wi::neg_p (rval))
+	{
+	  bit_value_unop (NEGATE_EXPR, type_sgn, type_precision, val, mask,
+			  type_sgn, type_precision, rval, rmask);
+	}
+      else
+	{
+	  *mask = rmask;
+	  *val = rval;
+	}
+      break;
+
     default:
       *mask = -1;
       break;
@@ -1357,6 +1406,8 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
   /* Assume we'll get a constant result.  Use an initial non varying
      value, we fall back to varying in the end if necessary.  */
   *mask = -1;
+  /* Ensure that VAL is initialized (to any value).  */
+  *val = 0;
 
   switch (code)
     {
@@ -1527,6 +1578,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
     case LT_EXPR:
     case LE_EXPR:
       {
+	widest_int min1, max1, min2, max2;
 	int minmax, maxmin;
 
 	const widest_int &o1val = swap_p ? r2val : r1val;
@@ -1534,26 +1586,21 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	const widest_int &o2val = swap_p ? r1val : r2val;
 	const widest_int &o2mask = swap_p ? r1mask : r2mask;
 
-	/* If the most significant bits are not known we know nothing.  */
-	if (wi::neg_p (o1mask) || wi::neg_p (o2mask))
-	  break;
+	value_mask_to_min_max (&min1, &max1, o1val, o1mask,
+			       r1type_sgn, r1type_precision);
+	value_mask_to_min_max (&min2, &max2, o2val, o2mask,
+			       r1type_sgn, r1type_precision);
 
 	/* For comparisons the signedness is in the comparison operands.  */
-	sgn = r1type_sgn;
-
-	/* If we know the most significant bits we know the values
-	   value ranges by means of treating varying bits as zero
-	   or one.  Do a cross comparison of the max/min pairs.  */
-	maxmin = wi::cmp (o1val | o1mask,
-			  wi::bit_and_not (o2val, o2mask), sgn);
-	minmax = wi::cmp (wi::bit_and_not (o1val, o1mask),
-			  o2val | o2mask, sgn);
-	if (maxmin < 0)  /* o1 is less than o2.  */
+	/* Do a cross comparison of the max/min pairs.  */
+	maxmin = wi::cmp (max1, min2, r1type_sgn);
+	minmax = wi::cmp (min1, max2, r1type_sgn);
+	if (maxmin < (code == LE_EXPR ? 1: 0))  /* o1 < or <= o2.  */
 	  {
 	    *mask = 0;
 	    *val = 1;
 	  }
-	else if (minmax > 0)  /* o1 is not less or equal to o2.  */
+	else if (minmax > (code == LT_EXPR ? -1 : 0))  /* o1 >= or > o2.  */
 	  {
 	    *mask = 0;
 	    *val = 0;
@@ -1570,6 +1617,49 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	    /* We know the result of a comparison is always one or zero.  */
 	    *mask = 1;
 	    *val = 0;
+	  }
+	break;
+      }
+
+    case MIN_EXPR:
+    case MAX_EXPR:
+      {
+	widest_int min1, max1, min2, max2;
+
+	value_mask_to_min_max (&min1, &max1, r1val, r1mask, sgn, width);
+	value_mask_to_min_max (&min2, &max2, r2val, r2mask, sgn, width);
+
+	if (wi::cmp (max1, min2, sgn) <= 0)  /* r1 is less than r2.  */
+	  {
+	    if (code == MIN_EXPR)
+	      {
+		*mask = r1mask;
+		*val = r1val;
+	      }
+	    else
+	      {
+		*mask = r2mask;
+		*val = r2val;
+	      }
+	  }
+	else if (wi::cmp (min1, max2, sgn) >= 0)  /* r2 is less than r1.  */
+	  {
+	    if (code == MIN_EXPR)
+	      {
+		*mask = r2mask;
+		*val = r2val;
+	      }
+	    else
+	      {
+		*mask = r1mask;
+		*val = r1val;
+	      }
+	  }
+	else
+	  {
+	    /* The result is either r1 or r2.  */
+	    *mask = r1mask | r2mask | (r1val ^ r2val);
+	    *val = r1val;
 	  }
 	break;
       }

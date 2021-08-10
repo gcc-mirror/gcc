@@ -1,3 +1,46 @@
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101317
+	* runtime/ISO_Fortran_binding.c: Include <inttypes.h>.
+	(CFI_address): Tidy error messages and comments.
+	(CFI_allocate): Likewise.
+	(CFI_deallocate): Likewise.
+	(CFI_establish): Likewise.  Add new checks for validity of
+	elem_len when it's used, plus type argument and extents.
+	(CFI_is_contiguous): Tidy error messages and comments.
+	(CFI_section): Likewise.  Refactor some repetitive code to
+	make it more understandable.
+	(CFI_select_part): Likewise.
+	(CFI_setpointer): Likewise.  Check that source is not an
+	unallocated allocatable array or an assumed-size array.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101310
+	* runtime/ISO_Fortran_binding.c (CFI_section): Fix the base
+	address computation and simplify the code.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101305
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Special-case
+	CFI_type_cptr and CFI_type_cfunptr.  Correct size of long double
+	on targets where it has kind 10.
+
+2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	* ISO_Fortran_binding.h: Fix hard-coded sizes and split into...
+	* ISO_Fortran_binding-1-tmpl.h: New file.
+	* ISO_Fortran_binding-2-tmpl.h: New file.
+	* ISO_Fortran_binding-3-tmpl.h: New file.
+	* Makefile.am: Add rule for generating ISO_Fortran_binding.h.
+	Adjust pathnames to that file.
+	* Makefile.in: Regenerated.
+	* mk-kinds-h.sh: New file.
+	* runtime/ISO_Fortran_binding.c: Fix include path.
+
 2021-07-26  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

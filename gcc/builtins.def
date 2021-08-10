@@ -205,14 +205,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Builtin used by the implementation of OpenACC and OpenMP.  Few of these are
    actually implemented in the compiler; most are in libgomp.  */
-/* These builtins also need to be enabled in offloading compilers invoked from
-   mkoffload; for that purpose, we're checking the -foffload-abi flag here.  */
 #undef DEF_GOACC_BUILTIN
 #define DEF_GOACC_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
 	       false, true, true, ATTRS, false, \
-	       (flag_openacc \
-		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
+	       flag_openacc)
 #undef DEF_GOACC_BUILTIN_COMPILER
 #define DEF_GOACC_BUILTIN_COMPILER(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
@@ -227,8 +224,7 @@ along with GCC; see the file COPYING3.  If not see
                false, true, true, ATTRS, false, \
 	       (flag_openacc \
 		|| flag_openmp \
-		|| flag_tree_parallelize_loops > 1 \
-		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
+		|| flag_tree_parallelize_loops > 1))
 
 /* Builtin used by the implementation of GNU TM.  These
    functions are mapped to the actual implementation of the STM library. */

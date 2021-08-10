@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "stor-layout.h"
-#include "builtins.h"
+#include "pointer-query.h"
 
 static bool begin_init_stmts (tree *, tree *);
 static tree finish_init_stmts (bool, tree, tree);

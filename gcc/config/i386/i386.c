@@ -554,7 +554,7 @@ ix86_can_inline_p (tree caller, tree callee)
 
   /* Changes of those flags can be tolerated for always inlines. Lets hope
      user knows what he is doing.  */
-  const unsigned HOST_WIDE_INT always_inline_safe_mask
+  unsigned HOST_WIDE_INT always_inline_safe_mask
 	 = (MASK_USE_8BIT_IDIV | MASK_ACCUMULATE_OUTGOING_ARGS
 	    | MASK_NO_ALIGN_STRINGOPS | MASK_AVX256_SPLIT_UNALIGNED_LOAD
 	    | MASK_AVX256_SPLIT_UNALIGNED_STORE | MASK_CLD
@@ -578,6 +578,10 @@ ix86_can_inline_p (tree caller, tree callee)
     = (DECL_DISREGARD_INLINE_LIMITS (callee)
        && lookup_attribute ("always_inline",
 			    DECL_ATTRIBUTES (callee)));
+
+  /* If callee only uses GPRs, ignore MASK_80387.  */
+  if (TARGET_GENERAL_REGS_ONLY_P (callee_opts->x_ix86_target_flags))
+    always_inline_safe_mask |= MASK_80387;
 
   cgraph_node *callee_node = cgraph_node::get (callee);
   /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
@@ -5069,7 +5073,11 @@ standard_sse_constant_p (rtx x, machine_mode pred_mode)
   if (x == const0_rtx || const0_operand (x, mode))
     return 1;
 
-  if (x == constm1_rtx || vector_all_ones_operand (x, mode))
+  if (x == constm1_rtx
+      || vector_all_ones_operand (x, mode)
+      || ((GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	   || GET_MODE_CLASS (pred_mode) == MODE_VECTOR_FLOAT)
+	  && float_vector_all_ones_operand (x, mode)))
     {
       /* VOIDmode integer constant, get mode from the predicate.  */
       if (mode == VOIDmode)
@@ -5167,7 +5175,10 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 	  gcc_unreachable ();
 	}
     }
-  else if (x == constm1_rtx || vector_all_ones_operand (x, mode))
+  else if (x == constm1_rtx
+	   || vector_all_ones_operand (x, mode)
+	   || (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	       && float_vector_all_ones_operand (x, mode)))
     {
       enum attr_mode insn_mode = get_attr_mode (insn);
       
@@ -7953,8 +7964,17 @@ ix86_finalize_stack_frame_flags (void)
      assumed stack realignment might be needed or -fno-omit-frame-pointer
      is used, but in the end nothing that needed the stack alignment had
      been spilled nor stack access, clear frame_pointer_needed and say we
-     don't need stack realignment.  */
-  if ((stack_realign || (!flag_omit_frame_pointer && optimize))
+     don't need stack realignment.
+
+     When vector register is used for piecewise move and store, we don't
+     increase stack_alignment_needed as there is no register spill for
+     piecewise move and store.  Since stack_realign_needed is set to true
+     by checking stack_alignment_estimated which is updated by pseudo
+     vector register usage, we also need to check stack_realign_needed to
+     eliminate frame pointer.  */
+  if ((stack_realign
+       || (!flag_omit_frame_pointer && optimize)
+       || crtl->stack_realign_needed)
       && frame_pointer_needed
       && crtl->is_leaf
       && crtl->sp_is_unchanging
@@ -10418,7 +10438,13 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 	  /* FALLTHRU */
 	case E_OImode:
 	case E_XImode:
-	  if (!standard_sse_constant_p (x, mode))
+	  if (!standard_sse_constant_p (x, mode)
+	      && GET_MODE_SIZE (TARGET_AVX512F
+				? XImode
+				: (TARGET_AVX
+				   ? OImode
+				   : (TARGET_SSE2
+				      ? TImode : DImode))) < GET_MODE_SIZE (mode))
 	    return false;
 	default:
 	  break;
@@ -19845,6 +19871,44 @@ ix86_vec_cost (machine_mode mode, int cost)
   return cost;
 }
 
+/* Return cost of vec_widen_<s>mult_hi/lo_<mode>,
+   vec_widen_<s>mul_hi/lo_<mode> is only available for VI124_AVX2.  */
+static int
+ix86_widen_mult_cost (const struct processor_costs *cost,
+		      enum machine_mode mode, bool uns_p)
+{
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
+  int extra_cost = 0;
+  int basic_cost = 0;
+  switch (mode)
+    {
+    case V8HImode:
+    case V16HImode:
+      if (!uns_p || mode == V16HImode)
+	extra_cost = cost->sse_op * 2;
+      basic_cost = cost->mulss * 2 + cost->sse_op * 4;
+      break;
+    case V4SImode:
+    case V8SImode:
+      /* pmulhw/pmullw can be used.  */
+      basic_cost = cost->mulss * 2 + cost->sse_op * 2;
+      break;
+    case V2DImode:
+      /* pmuludq under sse2, pmuldq under sse4.1, for sign_extend,
+	 require extra 4 mul, 4 add, 4 cmp and 2 shift.  */
+      if (!TARGET_SSE4_1 && !uns_p)
+	extra_cost = (cost->mulss + cost->addss + cost->sse_op) * 4
+		      + cost->sse_op * 2;
+      /* Fallthru.  */
+    case V4DImode:
+      basic_cost = cost->mulss * 2 + cost->sse_op * 4;
+      break;
+    default:
+      gcc_unreachable();
+    }
+  return ix86_vec_cost (mode, basic_cost + extra_cost);
+}
+
 /* Return cost of multiplication in MODE.  */
 
 static int
@@ -22575,10 +22639,18 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	  break;
 
 	case MULT_EXPR:
-	case WIDEN_MULT_EXPR:
+	  /* For MULT_HIGHPART_EXPR, x86 only supports pmulhw,
+	     take it as MULT_EXPR.  */
 	case MULT_HIGHPART_EXPR:
 	  stmt_cost = ix86_multiplication_cost (ix86_cost, mode);
 	  break;
+	  /* There's no direct instruction for WIDEN_MULT_EXPR,
+	     take emulation into account.  */
+	case WIDEN_MULT_EXPR:
+	  stmt_cost = ix86_widen_mult_cost (ix86_cost, mode,
+					    TYPE_UNSIGNED (vectype));
+	  break;
+
 	case NEGATE_EXPR:
 	  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	    stmt_cost = ix86_cost->sse_op;
@@ -23267,15 +23339,28 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
     }
 }
 
-/* Return a scratch register in MODE for vector load and store.  */
+/* Implement the TARGET_GEN_MEMSET_SCRATCH_RTX hook.  Return a scratch
+   register in MODE for vector load and store.  */
 
 rtx
 ix86_gen_scratch_sse_rtx (machine_mode mode)
 {
   if (TARGET_SSE && !lra_in_progress)
-    return gen_rtx_REG (mode, (TARGET_64BIT
-			       ? LAST_REX_SSE_REG
-			       : LAST_SSE_REG));
+    {
+      unsigned int regno;
+      if (TARGET_64BIT)
+	{
+	  /* In 64-bit mode, use XMM31 to avoid vzeroupper and always
+	     use XMM31 for CSE.  */
+	  if (ix86_hard_regno_mode_ok (LAST_EXT_REX_SSE_REG, mode))
+	    regno = LAST_EXT_REX_SSE_REG;
+	  else
+	    regno = LAST_REX_SSE_REG;
+	}
+      else
+	regno = LAST_SSE_REG;
+      return gen_rtx_REG (mode, regno);
+    }
   else
     return gen_reg_rtx (mode);
 }
@@ -24185,6 +24270,9 @@ static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 
 #undef TARGET_LIBC_HAS_FAST_FUNCTION
 #define TARGET_LIBC_HAS_FAST_FUNCTION ix86_libc_has_fast_function
+
+#undef TARGET_GEN_MEMSET_SCRATCH_RTX
+#define TARGET_GEN_MEMSET_SCRATCH_RTX ix86_gen_scratch_sse_rtx
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

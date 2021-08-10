@@ -1285,14 +1285,13 @@ canonicalize_loop_induction_variables (class loop *loop,
 unsigned int
 canonicalize_induction_variables (void)
 {
-  class loop *loop;
   bool changed = false;
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
   estimate_numbers_of_iterations (cfun);
 
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       changed |= canonicalize_loop_induction_variables (loop,
 							true, UL_SINGLE_ITER,

@@ -10301,7 +10301,7 @@ __extension__ extern __inline poly64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p64 (const poly64_t * __a)
 {
-  return (poly64x1_t)__builtin_neon_vld1di ((const __builtin_neon_di *) __a);
+  return (poly64x1_t) { *__a };
 }
 
 #pragma GCC pop_options
@@ -10330,7 +10330,7 @@ __extension__ extern __inline int64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s64 (const int64_t * __a)
 {
-  return (int64x1_t)__builtin_neon_vld1di ((const __builtin_neon_di *) __a);
+  return (int64x1_t) { *__a };
 }
 
 #if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
@@ -10374,7 +10374,7 @@ __extension__ extern __inline uint64x1_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u64 (const uint64_t * __a)
 {
-  return (uint64x1_t)__builtin_neon_vld1di ((const __builtin_neon_di *) __a);
+  return (uint64x1_t) { *__a };
 }
 
 __extension__ extern __inline poly8x8_t

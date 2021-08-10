@@ -25,6 +25,6 @@ void
 test01()
 {
   std::set<int> s{1, 2, 3};
-  std::begin(s);
-  std::end(s);
+  (void) std::begin(s);
+  (void) std::end(s);
 }

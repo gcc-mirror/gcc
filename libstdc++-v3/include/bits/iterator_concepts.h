@@ -120,6 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using __type = typename __result<_Tp>::type;
 
 	template<std::__detail::__dereferenceable _Tp>
+	  [[nodiscard]]
 	  constexpr __type<_Tp>
 	  operator()(_Tp&& __e) const
 	  noexcept(_S_noexcept<_Tp>())

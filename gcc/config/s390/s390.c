@@ -7014,6 +7014,42 @@ s390_expand_vec_init (rtx target, rtx vals)
     }
 }
 
+/* Return a parallel of constant integers to be used as permutation
+   vector for a vector merge operation in MODE.  If HIGH_P is true the
+   left-most elements of the source vectors are merged otherwise the
+   right-most elements.  */
+rtx
+s390_expand_merge_perm_const (machine_mode mode, bool high_p)
+{
+  int nelts = GET_MODE_NUNITS (mode);
+  rtx perm[16];
+  int addend = high_p ? 0 : nelts;
+
+  for (int i = 0; i < nelts; i++)
+    perm[i] = GEN_INT ((i + addend) / 2 + (i % 2) * nelts);
+
+  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelts, perm));
+}
+
+/* Emit RTL to implement a vector merge operation of SRC1 and SRC2
+   which creates the result in TARGET. HIGH_P determines whether a
+   merge hi or lo will be generated.  */
+void
+s390_expand_merge (rtx target, rtx src1, rtx src2, bool high_p)
+{
+  machine_mode mode = GET_MODE (target);
+  opt_machine_mode opt_mode_2x = mode_for_vector (GET_MODE_INNER (mode),
+						  2 * GET_MODE_NUNITS (mode));
+  gcc_assert (opt_mode_2x.exists ());
+  machine_mode mode_double_nelts = opt_mode_2x.require ();
+  rtx constv = s390_expand_merge_perm_const (mode, high_p);
+  src1 = force_reg (GET_MODE (src1), src1);
+  src2 = force_reg (GET_MODE (src2), src2);
+  rtx x = gen_rtx_VEC_CONCAT (mode_double_nelts, src1, src2);
+  x = gen_rtx_VEC_SELECT (mode, x, constv);
+  emit_insn (gen_rtx_SET (target, x));
+}
+
 /* Emit a vector constant that contains 1s in each element's sign bit position
    and 0s in other positions.  MODE is the desired constant's mode.  */
 extern rtx
@@ -14479,15 +14515,13 @@ s390_adjust_loop_scan_osc (struct loop* loop)
 static void
 s390_adjust_loops ()
 {
-  struct loop *loop = NULL;
-
   df_analyze ();
   compute_bb_for_insn ();
 
   /* Find the loops.  */
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_ONLY_INNERMOST))
     {
       if (dump_file)
 	{
@@ -16892,6 +16926,154 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
   return after_md_seq;
 }
 
+#define MAX_VECT_LEN	16
+
+struct expand_vec_perm_d
+{
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  machine_mode vmode;
+  unsigned char nelt;
+  bool testing_p;
+};
+
+/* Try to expand the vector permute operation described by D using the
+   vector merge instructions vml and vmh.  Return true if vector merge
+   could be used.  */
+static bool
+expand_perm_with_merge (const struct expand_vec_perm_d &d)
+{
+  bool merge_lo_p = true;
+  bool merge_hi_p = true;
+
+  if (d.nelt % 2)
+    return false;
+
+  // For V4SI this checks for: { 0, 4, 1, 5 }
+  for (int telt = 0; telt < d.nelt; telt++)
+    if (d.perm[telt] != telt / 2 + (telt % 2) * d.nelt)
+      {
+	merge_hi_p = false;
+	break;
+      }
+
+  if (!merge_hi_p)
+    {
+      // For V4SI this checks for: { 2, 6, 3, 7 }
+      for (int telt = 0; telt < d.nelt; telt++)
+	if (d.perm[telt] != (telt + d.nelt) / 2 + (telt % 2) * d.nelt)
+	  {
+	    merge_lo_p = false;
+	    break;
+	  }
+    }
+  else
+    merge_lo_p = false;
+
+  if (d.testing_p)
+    return merge_lo_p || merge_hi_p;
+
+  if (merge_lo_p || merge_hi_p)
+    s390_expand_merge (d.target, d.op0, d.op1, merge_hi_p);
+
+  return merge_lo_p || merge_hi_p;
+}
+
+/* Try to expand the vector permute operation described by D using the
+   vector permute doubleword immediate instruction vpdi.  Return true
+   if vpdi could be used.
+
+   VPDI allows 4 different immediate values (0, 1, 4, 5). The 0 and 5
+   cases are covered by vmrhg and vmrlg already.  So we only care
+   about the 1, 4 cases here.
+   1 - First element of src1 and second of src2
+   4 - Second element of src1 and first of src2  */
+static bool
+expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
+{
+  bool vpdi1_p = false;
+  bool vpdi4_p = false;
+  rtx op0_reg, op1_reg;
+
+  // Only V2DI and V2DF are supported here.
+  if (d.nelt != 2)
+    return false;
+
+  if (d.perm[0] == 0 && d.perm[1] == 3)
+    vpdi1_p = true;
+
+  if (d.perm[0] == 1 && d.perm[1] == 2)
+    vpdi4_p = true;
+
+  if (!vpdi1_p && !vpdi4_p)
+    return false;
+
+  if (d.testing_p)
+    return true;
+
+  op0_reg = force_reg (GET_MODE (d.op0), d.op0);
+  op1_reg = force_reg (GET_MODE (d.op1), d.op1);
+
+  if (vpdi1_p)
+    emit_insn (gen_vpdi1 (d.vmode, d.target, op0_reg, op1_reg));
+
+  if (vpdi4_p)
+    emit_insn (gen_vpdi4 (d.vmode, d.target, op0_reg, op1_reg));
+
+  return true;
+}
+
+/* Try to find the best sequence for the vector permute operation
+   described by D.  Return true if the operation could be
+   expanded.  */
+static bool
+vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
+{
+  if (expand_perm_with_merge (d))
+    return true;
+
+  if (expand_perm_with_vpdi (d))
+    return true;
+
+  return false;
+}
+
+/* Return true if we can emit instructions for the constant
+   permutation vector in SEL.  If OUTPUT, IN0, IN1 are non-null the
+   hook is supposed to emit the required INSNs.  */
+
+bool
+s390_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
+{
+  struct expand_vec_perm_d d;
+  unsigned int i, nelt;
+
+  if (!s390_vector_mode_supported_p (vmode) || GET_MODE_SIZE (vmode) != 16)
+    return false;
+
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
+
+  d.vmode = vmode;
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = target == NULL_RTX;
+
+  gcc_assert (target == NULL_RTX || REG_P (target));
+  gcc_assert (sel.length () == nelt);
+
+  for (i = 0; i < nelt; i++)
+    {
+      unsigned char e = sel[i];
+      gcc_assert (e < 2 * nelt);
+      d.perm[i] = e;
+    }
+
+  return vectorize_vec_perm_const_1 (d);
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -17201,6 +17383,10 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST s390_md_asm_adjust
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST s390_vectorize_vec_perm_const
+
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

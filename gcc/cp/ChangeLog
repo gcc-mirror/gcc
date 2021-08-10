@@ -1,3 +1,108 @@
+2021-08-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* cp-objcp-common.h (cxx_simulate_enum_decl): Pass vec<> by pointer.
+	* decl.c (cxx_simulate_enum_decl): Likewise.
+
+2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101759
+	* parser.c (cp_parser_default_argument): Temporarily override
+	parser->omp_declare_simd and parser->oacc_routine to NULL.
+
+2021-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100828
+	* logic.cc (formula::formula): Use emplace_back instead of
+	push_back.
+	(formula::branch): Insert a copy of m_current directly after
+	m_current instead of at the end of the list.
+	(formula::erase): Define.
+	(decompose_formula): Remove.
+	(decompose_antecedents): Remove.
+	(decompose_consequents): Remove.
+	(derive_proofs): Remove.
+	(max_problem_size): Remove.
+	(diagnose_constraint_size): Remove.
+	(subsumes_constraints_nonnull): Rewrite directly in terms of
+	decompose_clause and derive_proof, interleaving decomposition
+	with implication checking.  Remove limit on constraint complexity.
+	Use formula::erase to free the current clause before moving on to
+	the next one.
+
+2021-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96636
+	* decl.c (fixup_anonymous_aggr): Clear TYPE_NEEDS_CONSTRUCTING
+	after error.
+
+2021-07-31  Jason Merrill  <jason@redhat.com>
+
+	* ptree.c (cxx_print_type) [TYPE_PACK_EXPANSION]: Also print
+	PACK_EXPANSION_PATTERN.
+
+2021-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_declaration): Handle OpenMP directives
+	in attribute-declaration.
+
+2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101539
+	* cp-tree.h (enum cp_trait_kind): Add
+	CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF.
+	(enum cp_built_in_function): Add
+	CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS.
+	(fold_builtin_is_pointer_inverconvertible_with_class): Declare.
+	* parser.c (cp_parser_primary_expression): Handle
+	RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF.
+	(cp_parser_trait_expr): Likewise.
+	* cp-objcp-common.c (names_builtin_p): Likewise.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF.
+	* decl.c (cxx_init_decl_processing): Register
+	__builtin_is_pointer_interconvertible_with_class builtin.
+	* constexpr.c (cxx_eval_builtin_function_call): Handle
+	CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS builtin.
+	* semantics.c (pointer_interconvertible_base_of_p,
+	first_nonstatic_data_member_p,
+	fold_builtin_is_pointer_inverconvertible_with_class): New functions.
+	(trait_expr_value): Handle CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF.
+	(finish_trait_expr): Likewise.  Formatting fix.
+	* cp-gimplify.c (cp_gimplify_expr): Fold
+	CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS.  Call
+	fndecl_built_in_p just once.
+	(cp_fold): Likewise.
+	* tree.c (builtin_valid_in_constant_expr_p): Handle
+	CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS.  Call
+	fndecl_built_in_p just once.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Handle
+	CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF.
+
+2021-07-30  Jason Merrill  <jason@redhat.com>
+
+	* class.c (finish_struct_anon): Improve comment.
+	* decl.c (fixup_anonymous_aggr): Reject anonymous struct
+	with bases.
+
+2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_statement): Rollback attributes not just
+	when std_attrs is non-NULL, but whenever
+	cp_parser_std_attribute_spec_seq parsed any tokens.
+
+2021-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101582
+	* parser.c (cp_parser_skip_std_attribute_spec_seq): Add a forward
+	declaration.
+	(cp_parser_declaration): Parse empty-declaration and
+	attribute-declaration.
+	(cp_parser_toplevel_declaration): Don't parse empty-declaration here.
+
+2021-07-28  Martin Sebor  <msebor@redhat.com>
+
+	* init.c: Include new header.
+
 2021-07-27  Marek Polacek  <polacek@redhat.com>
 
 	DR 1512

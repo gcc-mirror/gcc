@@ -1262,6 +1262,7 @@ ANALYZER_OBJS = \
 	analyzer/program-state.o \
 	analyzer/region.o \
 	analyzer/region-model.o \
+	analyzer/region-model-asm.o \
 	analyzer/region-model-impl-calls.o \
 	analyzer/region-model-manager.o \
 	analyzer/region-model-reachability.o \
@@ -1414,6 +1415,7 @@ OBJS = \
 	gimple-ssa-store-merging.o \
 	gimple-ssa-strength-reduction.o \
 	gimple-ssa-sprintf.o \
+	gimple-ssa-warn-access.o \
 	gimple-ssa-warn-alloca.o \
 	gimple-ssa-warn-restrict.o \
 	gimple-streamer-in.o \
@@ -1511,6 +1513,7 @@ OBJS = \
 	omp-general.o \
 	omp-low.o \
 	omp-oacc-kernels-decompose.o \
+	omp-oacc-neuter-broadcast.o \
 	omp-simd-clone.o \
 	opt-problem.o \
 	optabs.o \
@@ -1524,6 +1527,7 @@ OBJS = \
 	ordered-hash-map-tests.o \
 	passes.o \
 	plugin.o \
+	pointer-query.o \
 	postreload-gcse.o \
 	postreload.o \
 	predict.o \
@@ -2690,7 +2694,6 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/omp-offload.h \
-  $(srcdir)/omp-offload.c \
   $(srcdir)/omp-general.c \
   $(srcdir)/omp-low.c \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c \

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-cfg.h"
 #include "tree-vectorizer.h"
+#include "tree-pass.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
    one or more in-edges to B to instead reach the destination of an
@@ -2561,7 +2562,6 @@ jump_thread_path_registry::thread_through_all_blocks
 {
   bool retval = false;
   unsigned int i;
-  class loop *loop;
   auto_bitmap threaded_blocks;
   hash_set<edge> visited_starting_edges;
 
@@ -2702,7 +2702,7 @@ jump_thread_path_registry::thread_through_all_blocks
   /* Then perform the threading through loop headers.  We start with the
      innermost loop, so that the changes in cfg we perform won't affect
      further threading.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       if (!loop->header
 	  || !bitmap_bit_p (threaded_blocks, loop->header->index))
@@ -2741,15 +2741,17 @@ jump_thread_path_registry::thread_through_all_blocks
 
    E is the edge we can thread, E2 is the new target edge, i.e., we
    are effectively recording that E->dest can be changed to E2->dest
-   after fixing the SSA graph.  */
+   after fixing the SSA graph.
 
-void
+   Return TRUE if PATH was successfully threaded.  */
+
+bool
 jump_thread_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
 {
   if (!dbg_cnt (registered_jump_thread))
     {
       path->release ();
-      return;
+      return false;
     }
 
   /* First make sure there are no NULL outgoing edges on the jump threading
@@ -2766,7 +2768,7 @@ jump_thread_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
 	    }
 
 	  path->release ();
-	  return;
+	  return false;
 	}
 
       /* Only the FSM threader is allowed to thread across
@@ -2780,6 +2782,7 @@ jump_thread_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
     dump_jump_thread_path (dump_file, *path, true);
 
   m_paths.safe_push (path);
+  return true;
 }
 
 /* Return how many uses of T there are within BB, as long as there

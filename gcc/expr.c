@@ -769,14 +769,35 @@ alignment_for_piecewise_move (unsigned int max_pieces, unsigned int align)
   return align;
 }
 
-/* Return the widest integer mode that is narrower than SIZE bytes.  */
+/* Return the widest QI vector, if QI_MODE is true, or integer mode
+   that is narrower than SIZE bytes.  */
 
-static scalar_int_mode
-widest_int_mode_for_size (unsigned int size)
+static fixed_size_mode
+widest_fixed_size_mode_for_size (unsigned int size, bool qi_vector)
 {
-  scalar_int_mode result = NARROWEST_INT_MODE;
+  fixed_size_mode result = NARROWEST_INT_MODE;
 
   gcc_checking_assert (size > 1);
+
+  /* Use QI vector only if size is wider than a WORD.  */
+  if (qi_vector && size > UNITS_PER_WORD)
+    {
+      machine_mode mode;
+      fixed_size_mode candidate;
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
+	if (is_a<fixed_size_mode> (mode, &candidate)
+	    && GET_MODE_INNER (candidate) == QImode)
+	  {
+	    if (GET_MODE_SIZE (candidate) >= size)
+	      break;
+	    if (optab_handler (vec_duplicate_optab, candidate)
+		!= CODE_FOR_nothing)
+	      result = candidate;
+	  }
+
+      if (result != NARROWEST_INT_MODE)
+	return result;
+    }
 
   opt_scalar_int_mode tmode;
   FOR_EACH_MODE_IN_CLASS (tmode, MODE_INT)
@@ -815,13 +836,14 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 		  unsigned int max_size, by_pieces_operation op)
 {
   unsigned HOST_WIDE_INT n_insns = 0;
-  scalar_int_mode mode;
+  fixed_size_mode mode;
 
   if (targetm.overlap_op_by_pieces_p () && op != COMPARE_BY_PIECES)
     {
       /* NB: Round up L and ALIGN to the widest integer mode for
 	 MAX_SIZE.  */
-      mode = widest_int_mode_for_size (max_size);
+      mode = widest_fixed_size_mode_for_size (max_size,
+					      op == SET_BY_PIECES);
       if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
 	{
 	  unsigned HOST_WIDE_INT up = ROUND_UP (l, GET_MODE_SIZE (mode));
@@ -835,7 +857,8 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 
   while (max_size > 1 && l > 0)
     {
-      mode = widest_int_mode_for_size (max_size);
+      mode = widest_fixed_size_mode_for_size (max_size,
+					      op == SET_BY_PIECES);
       enum insn_code icode;
 
       unsigned int modesize = GET_MODE_SIZE (mode);
@@ -903,8 +926,7 @@ class pieces_addr
   void *m_cfndata;
 public:
   pieces_addr (rtx, bool, by_pieces_constfn, void *);
-  rtx adjust (scalar_int_mode, HOST_WIDE_INT,
-	      by_pieces_prev * = nullptr);
+  rtx adjust (fixed_size_mode, HOST_WIDE_INT, by_pieces_prev * = nullptr);
   void increment_address (HOST_WIDE_INT);
   void maybe_predec (HOST_WIDE_INT);
   void maybe_postinc (HOST_WIDE_INT);
@@ -1006,7 +1028,7 @@ pieces_addr::decide_autoinc (machine_mode ARG_UNUSED (mode), bool reverse,
    but we still modify the MEM's properties.  */
 
 rtx
-pieces_addr::adjust (scalar_int_mode mode, HOST_WIDE_INT offset,
+pieces_addr::adjust (fixed_size_mode mode, HOST_WIDE_INT offset,
 		     by_pieces_prev *prev)
 {
   if (m_constfn)
@@ -1060,11 +1082,14 @@ pieces_addr::maybe_postinc (HOST_WIDE_INT size)
 class op_by_pieces_d
 {
  private:
-  scalar_int_mode get_usable_mode (scalar_int_mode mode, unsigned int);
+  fixed_size_mode get_usable_mode (fixed_size_mode, unsigned int);
+  fixed_size_mode smallest_fixed_size_mode_for_size (unsigned int);
 
  protected:
   pieces_addr m_to, m_from;
-  unsigned HOST_WIDE_INT m_len;
+  /* Make m_len read-only so that smallest_fixed_size_mode_for_size can
+     use it to check the valid mode size.  */
+  const unsigned HOST_WIDE_INT m_len;
   HOST_WIDE_INT m_offset;
   unsigned int m_align;
   unsigned int m_max_size;
@@ -1073,6 +1098,8 @@ class op_by_pieces_d
   bool m_push;
   /* True if targetm.overlap_op_by_pieces_p () returns true.  */
   bool m_overlap_op_by_pieces;
+  /* True if QI vector mode can be used.  */
+  bool m_qi_vector_mode;
 
   /* Virtual functions, overriden by derived classes for the specific
      operation.  */
@@ -1083,8 +1110,9 @@ class op_by_pieces_d
   }
 
  public:
-  op_by_pieces_d (rtx, bool, rtx, bool, by_pieces_constfn, void *,
-		  unsigned HOST_WIDE_INT, unsigned int, bool);
+  op_by_pieces_d (unsigned int, rtx, bool, rtx, bool, by_pieces_constfn,
+		  void *, unsigned HOST_WIDE_INT, unsigned int, bool,
+		  bool = false);
   void run ();
 };
 
@@ -1092,18 +1120,21 @@ class op_by_pieces_d
    objects named TO and FROM, which are identified as loads or stores
    by TO_LOAD and FROM_LOAD.  If FROM is a load, the optional FROM_CFN
    and its associated FROM_CFN_DATA can be used to replace loads with
-   constant values.  LEN describes the length of the operation.  */
+   constant values.  MAX_PIECES describes the maximum number of bytes
+   at a time which can be moved efficiently.  LEN describes the length
+   of the operation.  */
 
-op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
-				rtx from, bool from_load,
+op_by_pieces_d::op_by_pieces_d (unsigned int max_pieces, rtx to,
+				bool to_load, rtx from, bool from_load,
 				by_pieces_constfn from_cfn,
 				void *from_cfn_data,
 				unsigned HOST_WIDE_INT len,
-				unsigned int align, bool push)
+				unsigned int align, bool push,
+				bool qi_vector_mode)
   : m_to (to, to_load, NULL, NULL),
     m_from (from, from_load, from_cfn, from_cfn_data),
-    m_len (len), m_max_size (MOVE_MAX_PIECES + 1),
-    m_push (push)
+    m_len (len), m_max_size (max_pieces + 1),
+    m_push (push), m_qi_vector_mode (qi_vector_mode)
 {
   int toi = m_to.get_addr_inc ();
   int fromi = m_from.get_addr_inc ();
@@ -1124,7 +1155,9 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
   if (by_pieces_ninsns (len, align, m_max_size, MOVE_BY_PIECES) > 2)
     {
       /* Find the mode of the largest comparison.  */
-      scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
+      fixed_size_mode mode
+	= widest_fixed_size_mode_for_size (m_max_size,
+					   m_qi_vector_mode);
 
       m_from.decide_autoinc (mode, m_reverse, len);
       m_to.decide_autoinc (mode, m_reverse, len);
@@ -1139,8 +1172,8 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
 /* This function returns the largest usable integer mode for LEN bytes
    whose size is no bigger than size of MODE.  */
 
-scalar_int_mode
-op_by_pieces_d::get_usable_mode (scalar_int_mode mode, unsigned int len)
+fixed_size_mode
+op_by_pieces_d::get_usable_mode (fixed_size_mode mode, unsigned int len)
 {
   unsigned int size;
   do
@@ -1148,11 +1181,40 @@ op_by_pieces_d::get_usable_mode (scalar_int_mode mode, unsigned int len)
       size = GET_MODE_SIZE (mode);
       if (len >= size && prepare_mode (mode, m_align))
 	break;
-      /* NB: widest_int_mode_for_size checks SIZE > 1.  */
-      mode = widest_int_mode_for_size (size);
+      /* widest_fixed_size_mode_for_size checks SIZE > 1.  */
+      mode = widest_fixed_size_mode_for_size (size, m_qi_vector_mode);
     }
   while (1);
   return mode;
+}
+
+/* Return the smallest integer or QI vector mode that is not narrower
+   than SIZE bytes.  */
+
+fixed_size_mode
+op_by_pieces_d::smallest_fixed_size_mode_for_size (unsigned int size)
+{
+  /* Use QI vector only for > size of WORD.  */
+  if (m_qi_vector_mode && size > UNITS_PER_WORD)
+    {
+      machine_mode mode;
+      fixed_size_mode candidate;
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
+	if (is_a<fixed_size_mode> (mode, &candidate)
+	    && GET_MODE_INNER (candidate) == QImode)
+	  {
+	    /* Don't return a mode wider than M_LEN.  */
+	    if (GET_MODE_SIZE (candidate) > m_len)
+	      break;
+
+	    if (GET_MODE_SIZE (candidate) >= size
+		&& (optab_handler (vec_duplicate_optab, candidate)
+		    != CODE_FOR_nothing))
+	      return candidate;
+	  }
+    }
+
+  return smallest_int_mode_for_size (size * BITS_PER_UNIT);
 }
 
 /* This function contains the main loop used for expanding a block
@@ -1166,9 +1228,12 @@ op_by_pieces_d::run ()
   if (m_len == 0)
     return;
 
-  /* NB: widest_int_mode_for_size checks M_MAX_SIZE > 1.  */
-  scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
-  mode = get_usable_mode (mode, m_len);
+  unsigned HOST_WIDE_INT length = m_len;
+
+  /* widest_fixed_size_mode_for_size checks M_MAX_SIZE > 1.  */
+  fixed_size_mode mode
+    = widest_fixed_size_mode_for_size (m_max_size, m_qi_vector_mode);
+  mode = get_usable_mode (mode, length);
 
   by_pieces_prev to_prev = { nullptr, mode };
   by_pieces_prev from_prev = { nullptr, mode };
@@ -1178,7 +1243,7 @@ op_by_pieces_d::run ()
       unsigned int size = GET_MODE_SIZE (mode);
       rtx to1 = NULL_RTX, from1;
 
-      while (m_len >= size)
+      while (length >= size)
 	{
 	  if (m_reverse)
 	    m_offset -= size;
@@ -1201,22 +1266,22 @@ op_by_pieces_d::run ()
 	  if (!m_reverse)
 	    m_offset += size;
 
-	  m_len -= size;
+	  length -= size;
 	}
 
       finish_mode (mode);
 
-      if (m_len == 0)
+      if (length == 0)
 	return;
 
       if (!m_push && m_overlap_op_by_pieces)
 	{
 	  /* NB: Generate overlapping operations if it is not a stack
 	     push since stack push must not overlap.  Get the smallest
-	     integer mode for M_LEN bytes.  */
-	  mode = smallest_int_mode_for_size (m_len * BITS_PER_UNIT);
+	     fixed size mode for M_LEN bytes.  */
+	  mode = smallest_fixed_size_mode_for_size (length);
 	  mode = get_usable_mode (mode, GET_MODE_SIZE (mode));
-	  int gap = GET_MODE_SIZE (mode) - m_len;
+	  int gap = GET_MODE_SIZE (mode) - length;
 	  if (gap > 0)
 	    {
 	      /* If size of MODE > M_LEN, generate the last operation
@@ -1226,20 +1291,21 @@ op_by_pieces_d::run ()
 		m_offset += gap;
 	      else
 		m_offset -= gap;
-	      m_len += gap;
+	      length += gap;
 	    }
 	}
       else
 	{
-	  /* NB: widest_int_mode_for_size checks SIZE > 1.  */
-	  mode = widest_int_mode_for_size (size);
-	  mode = get_usable_mode (mode, m_len);
+	  /* widest_fixed_size_mode_for_size checks SIZE > 1.  */
+	  mode = widest_fixed_size_mode_for_size (size,
+						  m_qi_vector_mode);
+	  mode = get_usable_mode (mode, length);
 	}
     }
   while (1);
 
   /* The code above should have handled everything.  */
-  gcc_assert (!m_len);
+  gcc_assert (!length);
 }
 
 /* Derived class from op_by_pieces_d, providing support for block move
@@ -1260,8 +1326,8 @@ class move_by_pieces_d : public op_by_pieces_d
  public:
   move_by_pieces_d (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 		    unsigned int align)
-    : op_by_pieces_d (to, false, from, true, NULL, NULL, len, align,
-		      PUSHG_P (to))
+    : op_by_pieces_d (MOVE_MAX_PIECES, to, false, from, true, NULL,
+		      NULL, len, align, PUSHG_P (to))
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1355,9 +1421,10 @@ class store_by_pieces_d : public op_by_pieces_d
 
  public:
   store_by_pieces_d (rtx to, by_pieces_constfn cfn, void *cfn_data,
-		     unsigned HOST_WIDE_INT len, unsigned int align)
-    : op_by_pieces_d (to, false, NULL_RTX, true, cfn, cfn_data, len,
-		      align, false)
+		     unsigned HOST_WIDE_INT len, unsigned int align,
+		     bool qi_vector_mode)
+    : op_by_pieces_d (STORE_MAX_PIECES, to, false, NULL_RTX, true, cfn,
+		      cfn_data, len, align, false, qi_vector_mode)
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1446,7 +1513,8 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
       max_size = STORE_MAX_PIECES + 1;
       while (max_size > 1 && l > 0)
 	{
-	  scalar_int_mode mode = widest_int_mode_for_size (max_size);
+	  fixed_size_mode mode
+	    = widest_fixed_size_mode_for_size (max_size, memsetp);
 
 	  icode = optab_handler (mov_optab, mode);
 	  if (icode != CODE_FOR_nothing
@@ -1460,7 +1528,11 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 		    offset -= size;
 
 		  cst = (*constfun) (constfundata, nullptr, offset, mode);
-		  if (!targetm.legitimate_constant_p (mode, cst))
+		  /* All CONST_VECTORs can be loaded for memset since
+		     vec_duplicate_optab is a precondition to pick a
+		     vector mode for the memset expander.  */
+		  if (!((memsetp && VECTOR_MODE_P (mode))
+			|| targetm.legitimate_constant_p (mode, cst)))
 		    return 0;
 
 		  if (!reverse)
@@ -1504,22 +1576,14 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 		 memsetp ? SET_BY_PIECES : STORE_BY_PIECES,
 		 optimize_insn_for_speed_p ()));
 
-  store_by_pieces_d data (to, constfun, constfundata, len, align);
+  store_by_pieces_d data (to, constfun, constfundata, len, align,
+			  memsetp);
   data.run ();
 
   if (retmode != RETURN_BEGIN)
     return data.finish_retmode (retmode);
   else
     return to;
-}
-
-/* Callback routine for clear_by_pieces.
-   Return const0_rtx unconditionally.  */
-
-static rtx
-clear_by_pieces_1 (void *, void *, HOST_WIDE_INT, scalar_int_mode)
-{
-  return const0_rtx;
 }
 
 /* Generate several move instructions to clear LEN bytes of block TO.  (A MEM
@@ -1531,7 +1595,10 @@ clear_by_pieces (rtx to, unsigned HOST_WIDE_INT len, unsigned int align)
   if (len == 0)
     return;
 
-  store_by_pieces_d data (to, clear_by_pieces_1, NULL, len, align);
+  /* Use builtin_memset_read_str to support vector mode broadcast.  */
+  char c = 0;
+  store_by_pieces_d data (to, builtin_memset_read_str, &c, len, align,
+			  true);
   data.run ();
 }
 
@@ -1553,8 +1620,8 @@ class compare_by_pieces_d : public op_by_pieces_d
   compare_by_pieces_d (rtx op0, rtx op1, by_pieces_constfn op1_cfn,
 		       void *op1_cfn_data, HOST_WIDE_INT len, int align,
 		       rtx_code_label *fail_label)
-    : op_by_pieces_d (op0, true, op1, true, op1_cfn, op1_cfn_data, len,
-		      align, false)
+    : op_by_pieces_d (COMPARE_MAX_PIECES, op0, true, op1, true, op1_cfn,
+		      op1_cfn_data, len, align, false)
   {
     m_fail_label = fail_label;
   }
@@ -5754,7 +5821,7 @@ emit_storent_insn (rtx to, rtx from)
 
 static rtx
 string_cst_read_str (void *data, void *, HOST_WIDE_INT offset,
-		     scalar_int_mode mode)
+		     fixed_size_mode mode)
 {
   tree str = (tree) data;
 
@@ -5769,10 +5836,13 @@ string_cst_read_str (void *data, void *, HOST_WIDE_INT offset,
       size_t l = TREE_STRING_LENGTH (str) - offset;
       memcpy (p, TREE_STRING_POINTER (str) + offset, l);
       memset (p + l, '\0', GET_MODE_SIZE (mode) - l);
-      return c_readstr (p, mode, false);
+      return c_readstr (p, as_a <scalar_int_mode> (mode), false);
     }
 
-  return c_readstr (TREE_STRING_POINTER (str) + offset, mode, false);
+  /* The by-pieces infrastructure does not try to pick a vector mode
+     for storing STRING_CST.  */
+  return c_readstr (TREE_STRING_POINTER (str) + offset,
+		    as_a <scalar_int_mode> (mode), false);
 }
 
 /* Generate code for computing expression EXP,

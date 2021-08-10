@@ -25,6 +25,6 @@ void
 test01()
 {
   std::unordered_set<int> us{1, 2, 3};
-  std::begin(us);
-  std::end(us);
+  (void) std::begin(us);
+  (void) std::end(us);
 }

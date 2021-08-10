@@ -18,6 +18,9 @@ template<typename T>
 
     void deallocate(T *p, std::size_t n)
     { std::allocator<T>().deallocate(p, n); }
+
+    bool operator==(const NoDefaultConsAlloc&) const { return true; }
+    bool operator!=(const NoDefaultConsAlloc&) const { return false; }
   };
 
 using Set = std::unordered_set<int, std::hash<int>, std::equal_to<int>,

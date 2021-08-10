@@ -980,7 +980,10 @@ region_model::on_stmt_pre (const gimple *stmt,
       break;
 
     case GIMPLE_ASM:
-      /* No-op for now.  */
+      {
+	const gasm *asm_stmt = as_a <const gasm *> (stmt);
+	on_asm_stmt (asm_stmt, ctxt);
+      }
       break;
 
     case GIMPLE_CALL:
@@ -1080,7 +1083,10 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
        default:
 	 break;
        case IFN_BUILTIN_EXPECT:
-	 return impl_call_builtin_expect (cd);
+	 impl_call_builtin_expect (cd);
+	 return false;
+       case IFN_UBSAN_BOUNDS:
+	 return false;
        }
     }
 
@@ -1101,17 +1107,21 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    break;
 	  case BUILT_IN_ALLOCA:
 	  case BUILT_IN_ALLOCA_WITH_ALIGN:
-	    return impl_call_alloca (cd);
+	    impl_call_alloca (cd);
+	    return false;
 	  case BUILT_IN_CALLOC:
-	    return impl_call_calloc (cd);
+	    impl_call_calloc (cd);
+	    return false;
 	  case BUILT_IN_EXPECT:
 	  case BUILT_IN_EXPECT_WITH_PROBABILITY:
-	    return impl_call_builtin_expect (cd);
+	    impl_call_builtin_expect (cd);
+	    return false;
 	  case BUILT_IN_FREE:
 	    /* Handle in "on_call_post".  */
 	    break;
 	  case BUILT_IN_MALLOC:
-	    return impl_call_malloc (cd);
+	    impl_call_malloc (cd);
+	    return false;
 	  case BUILT_IN_MEMCPY:
 	  case BUILT_IN_MEMCPY_CHK:
 	    impl_call_memcpy (cd);
@@ -1129,9 +1139,12 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    impl_call_strcpy (cd);
 	    return false;
 	  case BUILT_IN_STRLEN:
-	    if (impl_call_strlen (cd))
-	      return false;
-	    break;
+	    impl_call_strlen (cd);
+	    return false;
+
+	  case BUILT_IN_STACK_SAVE:
+	  case BUILT_IN_STACK_RESTORE:
+	    return false;
 
 	  /* Stdio builtins.  */
 	  case BUILT_IN_FPRINTF:
@@ -1158,11 +1171,20 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    break;
 	  }
       else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
-	return impl_call_malloc (cd);
+	{
+	  impl_call_malloc (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "calloc", call, 2))
-	return impl_call_calloc (cd);
+	{
+	  impl_call_calloc (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "alloca", call, 1))
-	return impl_call_alloca (cd);
+	{
+	  impl_call_alloca (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "realloc", call, 2))
 	{
 	  impl_call_realloc (cd);
@@ -1207,13 +1229,19 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
-	  if (impl_call_strlen (cd))
-	    return false;
+	  impl_call_strlen (cd);
+	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "operator new", call, 1))
-	return impl_call_operator_new (cd);
+	{
+	  impl_call_operator_new (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "operator new []", call, 1))
-	return impl_call_operator_new (cd);
+	{
+	  impl_call_operator_new (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "operator delete", call, 1)
 	       || is_named_call_p (callee_fndecl, "operator delete", call, 2)
 	       || is_named_call_p (callee_fndecl, "operator delete []", call, 1))

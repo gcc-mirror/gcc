@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "attribs.h"
 #include "builtins.h"
+#include "pointer-query.h"
 #include "stor-layout.h"
 
 #include "realmpfr.h"

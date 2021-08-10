@@ -312,12 +312,11 @@ replace_loop_annotate_in_block (basic_block bb, class loop *loop)
 static void
 replace_loop_annotate (void)
 {
-  class loop *loop;
   basic_block bb;
   gimple_stmt_iterator gsi;
   gimple *stmt;
 
-  FOR_EACH_LOOP (loop, 0)
+  for (auto loop : loops_list (cfun, 0))
     {
       /* First look into the header.  */
       replace_loop_annotate_in_block (loop->header, loop);
@@ -2027,12 +2026,8 @@ replace_uses_by (tree name, tree val)
   /* Also update the trees stored in loop structures.  */
   if (current_loops)
     {
-      class loop *loop;
-
-      FOR_EACH_LOOP (loop, 0)
-	{
+      for (auto loop : loops_list (cfun, 0))
 	  substitute_in_loop_info (loop, name, val);
-	}
     }
 }
 
@@ -7752,9 +7747,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* Fix up orig_loop_num.  If the block referenced in it has been moved
      to dest_cfun, update orig_loop_num field, otherwise clear it.  */
-  class loop *dloop;
   signed char *moved_orig_loop_num = NULL;
-  FOR_EACH_LOOP_FN (dest_cfun, dloop, 0)
+  for (auto dloop : loops_list (dest_cfun, 0))
     if (dloop->orig_loop_num)
       {
 	if (moved_orig_loop_num == NULL)
@@ -7792,11 +7786,10 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 	      /* If we have moved both loops with this orig_loop_num into
 		 dest_cfun and the LOOP_DIST_ALIAS call is being moved there
 		 too, update the first argument.  */
-	      gcc_assert ((*larray)[dloop->orig_loop_num] != NULL
-			  && (get_loop (saved_cfun, dloop->orig_loop_num)
-			      == NULL));
+	      gcc_assert ((*larray)[orig_loop_num] != NULL
+			  && (get_loop (saved_cfun, orig_loop_num) == NULL));
 	      tree t = build_int_cst (integer_type_node,
-				      (*larray)[dloop->orig_loop_num]->num);
+				      (*larray)[orig_loop_num]->num);
 	      gimple_call_set_arg (g, 0, t);
 	      update_stmt (g);
 	      /* Make sure the following loop will not update it.  */

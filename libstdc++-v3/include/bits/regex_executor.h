@@ -60,7 +60,7 @@ namespace __detail
     public:
       typedef typename iterator_traits<_BiIter>::value_type _CharT;
       typedef basic_regex<_CharT, _TraitsT>                 _RegexT;
-      typedef std::vector<sub_match<_BiIter>, _Alloc>       _ResultsVec;
+      typedef _GLIBCXX_STD_C::vector<sub_match<_BiIter>, _Alloc> _ResultsVec;
       typedef regex_constants::match_flag_type              _FlagT;
       typedef typename _TraitsT::char_class_type            _ClassT;
       typedef _NFA<_TraitsT>                                _NFAT;
@@ -195,6 +195,11 @@ namespace __detail
 	  : _M_visited_states(new bool[__n]()), _M_start(__start)
 	  { }
 
+	  ~_State_info() { delete[] _M_visited_states; }
+
+	  _State_info(const _State_info&) = delete;
+	  _State_info& operator=(const _State_info&) = delete;
+
 	  bool _M_visited(_StateIdT __i)
 	  {
 	    if (_M_visited_states[__i])
@@ -210,9 +215,9 @@ namespace __detail
 	  _BiIter* _M_get_sol_pos() { return nullptr; }
 
 	  // Saves states that need to be considered for the next character.
-	  vector<pair<_StateIdT, _ResultsVec>>	_M_match_queue;
+	  _GLIBCXX_STD_C::vector<pair<_StateIdT, _ResultsVec>> _M_match_queue;
 	  // Indicates which states are already visited.
-	  unique_ptr<bool[]>			_M_visited_states;
+	  bool*     _M_visited_states;
 	  // To record current solution.
 	  _StateIdT _M_start;
 	};
@@ -243,7 +248,7 @@ namespace __detail
       const _RegexT&                                        _M_re;
       const _NFAT&                                          _M_nfa;
       _ResultsVec&                                          _M_results;
-      vector<pair<_BiIter, int>>                            _M_rep_count;
+      _GLIBCXX_STD_C::vector<pair<_BiIter, int>>            _M_rep_count;
       _State_info<__search_mode, _ResultsVec>		    _M_states;
       _FlagT                                                _M_flags;
       // Do we have a solution so far?

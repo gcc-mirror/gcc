@@ -2645,6 +2645,9 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_FINAL:
       pp_cxx_ws_string (pp, "__is_final");
       break;
+    case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
+      pp_cxx_ws_string (pp, "__is_pointer_interconvertible_base_of");
+      break;
     case CPTK_IS_POD:
       pp_cxx_ws_string (pp, "__is_pod");
       break;
@@ -2695,7 +2698,9 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
   pp_cxx_left_paren (pp);
   pp->type_id (TRAIT_EXPR_TYPE1 (t));
 
-  if (kind == CPTK_IS_BASE_OF || kind == CPTK_IS_SAME_AS)
+  if (kind == CPTK_IS_BASE_OF
+      || kind == CPTK_IS_SAME_AS
+      || kind == CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF)
     {
       pp_cxx_separate_with (pp, ',');
       pp->type_id (TRAIT_EXPR_TYPE2 (t));

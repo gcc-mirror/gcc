@@ -137,7 +137,6 @@ loop_optimizer_init (unsigned flags)
 void
 loop_optimizer_finalize (struct function *fn, bool clean_loop_closed_phi)
 {
-  class loop *loop;
   basic_block bb;
 
   timevar_push (TV_LOOP_FINI);
@@ -167,7 +166,7 @@ loop_optimizer_finalize (struct function *fn, bool clean_loop_closed_phi)
       goto loop_fini_done;
     }
 
-  FOR_EACH_LOOP_FN (fn, loop, 0)
+  for (auto loop : loops_list (fn, 0))
     free_simple_loop_desc (loop);
 
   /* Clean up.  */
@@ -229,7 +228,7 @@ fix_loop_structure (bitmap changed_bbs)
      loops, so that when we remove the loops, we know that the loops inside
      are preserved, and do not waste time relinking loops that will be
      removed later.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       /* Detect the case that the loop is no longer present even though
          it wasn't marked for removal.

@@ -4223,6 +4223,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_GOACC_EXPAND_VAR_DECL
 
+@hook TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses
@@ -7943,6 +7945,8 @@ to by @var{ce_info}.
 
 @hook TARGET_INVALID_WITHIN_DOLOOP
 
+@hook TARGET_PREFERRED_DOLOOP_MODE
+
 @hook TARGET_LEGITIMATE_COMBINED_INSN
 
 @hook TARGET_CAN_FOLLOW_JUMP
@@ -7983,6 +7987,8 @@ lists.
 @hook TARGET_GEN_CCMP_FIRST
 
 @hook TARGET_GEN_CCMP_NEXT
+
+@hook TARGET_GEN_MEMSET_SCRATCH_RTX
 
 @hook TARGET_LOOP_UNROLL_ADJUST
 

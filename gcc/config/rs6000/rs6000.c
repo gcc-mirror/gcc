@@ -1700,6 +1700,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_DOLOOP_COST_FOR_ADDRESS
 #define TARGET_DOLOOP_COST_FOR_ADDRESS 1000000000
 
+#undef TARGET_PREFERRED_DOLOOP_MODE
+#define TARGET_PREFERRED_DOLOOP_MODE rs6000_preferred_doloop_mode
+
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV rs6000_atomic_assign_expand_fenv
 
@@ -4186,6 +4189,8 @@ rs6000_option_override_internal (bool global_init_p)
       else
 	rs6000_long_double_type_size = default_long_double_size;
     }
+  else if (rs6000_long_double_type_size == FLOAT_PRECISION_TFmode)
+    ; /* The option value can be seen when cl_target_option_restore is called.  */
   else if (rs6000_long_double_type_size == 128)
     rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
   else if (global_options_set.x_rs6000_ieeequad)
@@ -18358,7 +18363,12 @@ is_load_insn1 (rtx pat, rtx *load_mem)
     return false;
 
   if (GET_CODE (pat) == SET)
-    return find_mem_ref (SET_SRC (pat), load_mem);
+    {
+      if (REG_P (SET_DEST (pat)))
+	return find_mem_ref (SET_SRC (pat), load_mem);
+      else
+	return false;
+    }
 
   if (GET_CODE (pat) == PARALLEL)
     {
@@ -18395,7 +18405,12 @@ is_store_insn1 (rtx pat, rtx *str_mem)
     return false;
 
   if (GET_CODE (pat) == SET)
-    return find_mem_ref (SET_DEST (pat), str_mem);
+    {
+      if (REG_P (SET_SRC (pat)) || SUBREG_P (SET_SRC (pat)))
+	return find_mem_ref (SET_DEST (pat), str_mem);
+      else
+	return false;
+    }
 
   if (GET_CODE (pat) == PARALLEL)
     {
@@ -27933,6 +27948,14 @@ rs6000_predict_doloop_p (struct loop *loop)
     }
 
   return true;
+}
+
+/* Implement TARGET_PREFERRED_DOLOOP_MODE. */
+
+static machine_mode
+rs6000_preferred_doloop_mode (machine_mode)
+{
+  return word_mode;
 }
 
 /* Implement TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P.  */

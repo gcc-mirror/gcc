@@ -274,7 +274,7 @@ write_table (void)
 		combining_value[i - 1],
 		i - 1);
 	last_flag = flags[i];
-	last_combine = combining_value[0];
+	last_combine = combining_value[i];
 	really_safe = decomp[i][0] == 0;
       }
 

@@ -29,6 +29,8 @@
 // purpose. It is provided "as is" without express or implied
 // warranty.
 
+// { dg-add-options using-deprecated }
+
 /**
  * @file priority_queue_split_join_example.cpp
  * A basic example showing how to split and join priority queues.

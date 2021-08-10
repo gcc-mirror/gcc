@@ -4467,6 +4467,15 @@ cxx_init_decl_processing (void)
 			       BUILT_IN_FRONTEND, NULL, NULL_TREE);
   set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
+  tree bool_vaftype = build_varargs_function_type_list (boolean_type_node,
+							NULL_TREE);
+  decl
+    = add_builtin_function ("__builtin_is_pointer_interconvertible_with_class",
+			    bool_vaftype,
+			    CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
+			    BUILT_IN_FRONTEND, NULL, NULL_TREE);
+  set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+
   integer_two_node = build_int_cst (NULL_TREE, 2);
 
   /* Guess at the initial static decls size.  */
@@ -5083,6 +5092,13 @@ fixup_anonymous_aggr (tree t)
   if (TREE_CODE (t) != UNION_TYPE)
     {
       tree field, type;
+
+      if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)))
+	{
+	  error_at (location_of (t), "anonymous struct with base classes");
+	  /* Avoid ICE after error on anon-struct9.C.  */
+	  TYPE_NEEDS_CONSTRUCTING (t) = false;
+	}
 
       for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
@@ -16392,7 +16408,7 @@ lookup_enumerator (tree enumtype, tree name)
 
 tree
 cxx_simulate_enum_decl (location_t loc, const char *name,
-			vec<string_int_pair> values)
+			vec<string_int_pair> *values)
 {
   location_t saved_loc = input_location;
   input_location = loc;

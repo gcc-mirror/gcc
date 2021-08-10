@@ -1535,9 +1535,8 @@ graphite_regenerate_ast_isl (scop_p scop)
       if_region->false_region->region.entry->flags |= EDGE_FALLTHRU;
       /* remove_edge_and_dominated_blocks marks loops for removal but
 	 doesn't actually remove them (fix that...).  */
-      loop_p loop;
-      FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
-	if (! loop->header)
+      for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
+	if (!loop->header)
 	  delete_loop (loop);
     }
 

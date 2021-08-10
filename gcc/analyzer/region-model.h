@@ -221,6 +221,7 @@ public:
   virtual void visit_widening_svalue (const widening_svalue *) {}
   virtual void visit_compound_svalue (const compound_svalue *) {}
   virtual void visit_conjured_svalue (const conjured_svalue *) {}
+  virtual void visit_asm_output_svalue (const asm_output_svalue *) {}
 
   virtual void visit_region (const region *) {}
 };
@@ -274,6 +275,11 @@ public:
 					       const binding_map &map);
   const svalue *get_or_create_conjured_svalue (tree type, const gimple *stmt,
 					       const region *id_reg);
+  const svalue *
+  get_or_create_asm_output_svalue (tree type,
+				   const gasm *asm_stmt,
+				   unsigned output_idx,
+				   const vec<const svalue *> &inputs);
 
   const svalue *maybe_get_char_from_string_cst (tree string_cst,
 						tree byte_offset_cst);
@@ -346,6 +352,8 @@ private:
   const svalue *maybe_undo_optimize_bit_field_compare (tree type,
 						       const compound_svalue *compound_sval,
 						       tree cst, const svalue *arg1);
+  const svalue *maybe_fold_asm_output_svalue (tree type,
+					      const vec<const svalue *> &inputs);
 
   unsigned m_next_region_id;
   root_region m_root_region;
@@ -409,6 +417,10 @@ private:
   typedef hash_map<conjured_svalue::key_t,
 		   conjured_svalue *> conjured_values_map_t;
   conjured_values_map_t m_conjured_values_map;
+
+  typedef hash_map<asm_output_svalue::key_t,
+		   asm_output_svalue *> asm_output_values_map_t;
+  asm_output_values_map_t m_asm_output_values_map;
 
   bool m_check_complexity;
 
@@ -537,6 +549,7 @@ class region_model
   void on_assignment (const gassign *stmt, region_model_context *ctxt);
   const svalue *get_gassign_result (const gassign *assign,
 				    region_model_context *ctxt);
+  void on_asm_stmt (const gasm *asm_stmt, region_model_context *ctxt);
   bool on_call_pre (const gcall *stmt, region_model_context *ctxt,
 		    bool *out_terminate_path);
   void on_call_post (const gcall *stmt,
@@ -546,28 +559,28 @@ class region_model
   void purge_state_involving (const svalue *sval, region_model_context *ctxt);
 
   /* Specific handling for on_call_pre.  */
-  bool impl_call_alloca (const call_details &cd);
+  void impl_call_alloca (const call_details &cd);
   void impl_call_analyzer_describe (const gcall *call,
 				    region_model_context *ctxt);
   void impl_call_analyzer_dump_capacity (const gcall *call,
 					 region_model_context *ctxt);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
-  bool impl_call_builtin_expect (const call_details &cd);
-  bool impl_call_calloc (const call_details &cd);
+  void impl_call_builtin_expect (const call_details &cd);
+  void impl_call_calloc (const call_details &cd);
   bool impl_call_error (const call_details &cd, unsigned min_args,
 			bool *out_terminate_path);
   void impl_call_fgets (const call_details &cd);
   void impl_call_fread (const call_details &cd);
   void impl_call_free (const call_details &cd);
-  bool impl_call_malloc (const call_details &cd);
+  void impl_call_malloc (const call_details &cd);
   void impl_call_memcpy (const call_details &cd);
-  bool impl_call_memset (const call_details &cd);
+  void impl_call_memset (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
   void impl_call_strcpy (const call_details &cd);
-  bool impl_call_strlen (const call_details &cd);
-  bool impl_call_operator_new (const call_details &cd);
-  bool impl_call_operator_delete (const call_details &cd);
+  void impl_call_strlen (const call_details &cd);
+  void impl_call_operator_new (const call_details &cd);
+  void impl_call_operator_delete (const call_details &cd);
   void impl_deallocation_call (const call_details &cd);
 
   void handle_unrecognized_call (const gcall *call,

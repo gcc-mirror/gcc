@@ -94,6 +94,7 @@ protected:
 };
 
 extern void propagate_threaded_block_debug_into (basic_block, basic_block);
+extern bool single_succ_to_potentially_threadable_block (basic_block);
 
 // ?? All this ssa_name_values stuff is the store of values for
 // avail_exprs_stack and const_and_copies, so it really belongs in the

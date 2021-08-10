@@ -2460,6 +2460,8 @@ extern bool subreg_offset_representable_p (unsigned int, machine_mode,
 extern unsigned int subreg_regno (const_rtx);
 extern int simplify_subreg_regno (unsigned int, machine_mode,
 				  poly_uint64, machine_mode);
+extern int lowpart_subreg_regno (unsigned int, machine_mode,
+				 machine_mode);
 extern unsigned int subreg_nregs (const_rtx);
 extern unsigned int subreg_nregs_with_regno (unsigned int, const_rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (const_rtx, machine_mode);

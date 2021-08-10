@@ -3866,11 +3866,12 @@ Type_conversion_expression::do_traverse(Traverse* traverse)
   return TRAVERSE_CONTINUE;
 }
 
-// Convert to a constant at lowering time.
+// Convert to a constant at lowering time.  Also lower conversions
+// from slice to pointer-to-array, as they can panic.
 
 Expression*
 Type_conversion_expression::do_lower(Gogo*, Named_object*,
-				     Statement_inserter*, int)
+				     Statement_inserter* inserter, int)
 {
   Type* type = this->type_;
   Expression* val = this->expr_;
@@ -3956,6 +3957,57 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 							      location);
 	    }
 	}
+    }
+
+  if (type->points_to() != NULL
+      && type->points_to()->array_type() != NULL
+      && !type->points_to()->is_slice_type()
+      && val->type()->is_slice_type()
+      && Type::are_identical(type->points_to()->array_type()->element_type(),
+			     val->type()->array_type()->element_type(),
+			     0, NULL))
+    {
+      Temporary_statement* val_temp = NULL;
+      if (!val->is_multi_eval_safe())
+	{
+	  val_temp = Statement::make_temporary(val->type(), NULL, location);
+	  inserter->insert(val_temp);
+	  val = Expression::make_set_and_use_temporary(val_temp, val,
+						       location);
+	}
+
+      Type* int_type = Type::lookup_integer_type("int");
+      Temporary_statement* vallen_temp =
+	Statement::make_temporary(int_type, NULL, location);
+      inserter->insert(vallen_temp);
+
+      Expression* arrlen = type->points_to()->array_type()->length();
+      Expression* vallen =
+	Expression::make_slice_info(val, Expression::SLICE_INFO_LENGTH,
+				    location);
+      vallen = Expression::make_set_and_use_temporary(vallen_temp, vallen,
+						      location);
+      Expression* cond = Expression::make_binary(OPERATOR_GT, arrlen, vallen,
+						 location);
+
+      vallen = Expression::make_temporary_reference(vallen_temp, location);
+      Expression* panic = Runtime::make_call(Runtime::PANIC_SLICE_CONVERT,
+					     location, 2, arrlen, vallen);
+
+      Expression* nil = Expression::make_nil(location);
+      Expression* check = Expression::make_conditional(cond, panic, nil,
+						       location);
+
+      if (val_temp == NULL)
+	val = val->copy();
+      else
+	val = Expression::make_temporary_reference(val_temp, location);
+      Expression* ptr =
+	Expression::make_slice_info(val, Expression::SLICE_INFO_VALUE_POINTER,
+				    location);
+      ptr = Expression::make_unsafe_cast(type, ptr, location);
+
+      return Expression::make_compound(check, ptr, location);
     }
 
   return this;
@@ -8252,12 +8304,16 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
     this->code_ = BUILTIN_REAL;
   else if (name == "recover")
     this->code_ = BUILTIN_RECOVER;
+  else if (name == "Add")
+    this->code_ = BUILTIN_ADD;
   else if (name == "Alignof")
     this->code_ = BUILTIN_ALIGNOF;
   else if (name == "Offsetof")
     this->code_ = BUILTIN_OFFSETOF;
   else if (name == "Sizeof")
     this->code_ = BUILTIN_SIZEOF;
+  else if (name == "Slice")
+    this->code_ = BUILTIN_SLICE;
   else
     go_unreachable();
 }
@@ -8693,6 +8749,119 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
           }
 
         return Runtime::make_call(code, loc, 3, e1, e2, e3);
+      }
+
+    case BUILTIN_ADD:
+      {
+	Expression* ptr = this->args()->front();
+	Type* uintptr_type = Type::lookup_integer_type("uintptr");
+	ptr = Expression::make_cast(uintptr_type, ptr, loc);
+	Expression* len = this->args()->back();
+	len = Expression::make_cast(uintptr_type, len, loc);
+	Expression* add = Expression::make_binary(OPERATOR_PLUS, ptr, len,
+						  loc);
+	return Expression::make_cast(this->args()->front()->type(), add, loc);
+      }
+
+    case BUILTIN_SLICE:
+      {
+	Expression* ptr = this->args()->front();
+	Temporary_statement* ptr_temp = NULL;
+	if (!ptr->is_multi_eval_safe())
+	  {
+	    ptr_temp = Statement::make_temporary(NULL, ptr, loc);
+	    inserter->insert(ptr_temp);
+	    ptr = Expression::make_temporary_reference(ptr_temp, loc);
+	  }
+
+	Expression* len = this->args()->back();
+	Temporary_statement* len_temp = NULL;
+	if (!len->is_multi_eval_safe())
+	  {
+	    len_temp = Statement::make_temporary(NULL, len, loc);
+	    inserter->insert(len_temp);
+	    len = Expression::make_temporary_reference(len_temp, loc);
+	  }
+
+	bool fits_in_int;
+	Numeric_constant nc;
+	if (this->args()->back()->numeric_constant_value(&nc))
+	  {
+	    // We gave an error for constants that don't fit in int in
+	    // check_types.
+	    fits_in_int = true;
+	  }
+	else
+	  {
+	    Integer_type* itype = this->args()->back()->type()->integer_type();
+	    go_assert(itype != NULL);
+	    int ebits = itype->bits();
+	    int intbits =
+	      Type::lookup_integer_type("int")->integer_type()->bits();
+
+	    // We can treat ebits == intbits as small even for an
+	    // unsigned integer type, because we will convert the
+	    // value to int and then reject it in the runtime if it is
+	    // negative.
+
+	    fits_in_int = ebits <= intbits;
+	  }
+
+	Runtime::Function code = (fits_in_int
+				  ? Runtime::UNSAFESLICE
+				  : Runtime::UNSAFESLICE64);
+	Expression* td =
+	  Expression::make_type_descriptor(ptr->type()->points_to(), loc);
+	Expression* check = Runtime::make_call(code, loc, 3,
+					       td, ptr, len);
+
+	if (ptr_temp == NULL)
+	  ptr = ptr->copy();
+	else
+	  ptr = Expression::make_temporary_reference(ptr_temp, loc);
+	Expression* nil = Expression::make_nil(loc);
+	nil = Expression::make_cast(ptr->type(), nil, loc);
+	Expression* is_nil = Expression::make_binary(OPERATOR_EQEQ, ptr, nil,
+						     loc);
+
+	if (len_temp == NULL)
+	  len = len->copy();
+	else
+	  len = Expression::make_temporary_reference(len_temp, loc);
+	Expression* zero = Expression::make_integer_ul(0, len->type(), loc);
+	Expression* is_zero = Expression::make_binary(OPERATOR_EQEQ, len, zero,
+						      loc);
+
+	Expression* cond = Expression::make_binary(OPERATOR_ANDAND, is_nil,
+						   is_zero, loc);
+
+	Type* slice_type = Type::make_array_type(ptr->type()->points_to(),
+						 NULL);
+	nil = Expression::make_nil(loc);
+	Expression* nil_slice = Expression::make_cast(slice_type, nil, loc);
+
+	if (ptr_temp == NULL)
+	  ptr = ptr->copy();
+	else
+	  ptr = Expression::make_temporary_reference(ptr_temp, loc);
+
+	if (len_temp == NULL)
+	  len = len->copy();
+	else
+	  len = Expression::make_temporary_reference(len_temp, loc);
+
+	Expression* cap;
+	if (len_temp == NULL)
+	  cap = len->copy();
+	else
+	  cap = Expression::make_temporary_reference(len_temp, loc);
+
+	Expression* slice = Expression::make_slice_value(slice_type, ptr,
+							 len, cap, loc);
+
+	slice = Expression::make_conditional(cond, nil_slice, slice, loc);
+
+	return Expression::make_compound(check, slice, loc);
       }
     }
 
@@ -9781,9 +9950,11 @@ Builtin_call_expression::do_discarding_value()
     case BUILTIN_MAKE:
     case BUILTIN_NEW:
     case BUILTIN_REAL:
+    case BUILTIN_ADD:
     case BUILTIN_ALIGNOF:
     case BUILTIN_OFFSETOF:
     case BUILTIN_SIZEOF:
+    case BUILTIN_SLICE:
       this->unused_value_error();
       return false;
 
@@ -9890,6 +10061,18 @@ Builtin_call_expression::do_type()
 	  t = Type::make_error_type();
 	return t;
       }
+
+    case BUILTIN_ADD:
+      return Type::make_pointer_type(Type::make_void_type());
+
+    case BUILTIN_SLICE:
+      const Expression_list* args = this->args();
+      if (args == NULL || args->size() != 2)
+	return Type::make_error_type();
+      Type* pt = args->front()->type()->points_to();
+      if (pt == NULL)
+	return Type::make_error_type();
+      return Type::make_array_type(pt, NULL);
     }
 }
 
@@ -9951,6 +10134,28 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 	  && args->front()->type()->is_slice_type())
 	trailing_arg_types =
 	  args->front()->type()->array_type()->element_type();
+      is_print = false;
+      break;
+
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
+      // Both unsafe.Add and unsafe.Slice take two arguments, and the
+      // second arguments defaults to "int".
+      if (args != NULL && args->size() == 2)
+	{
+	  if (this->code_ == BUILTIN_SLICE)
+	    args->front()->determine_type_no_context();
+	  else
+	    {
+	      Type* pointer = Type::make_pointer_type(Type::make_void_type());
+	      Type_context subcontext(pointer, false);
+	      args->front()->determine_type(&subcontext);
+	    }
+	  Type* int_type = Type::lookup_integer_type("int");
+	  Type_context subcontext(int_type, false);
+	  args->back()->determine_type(&subcontext);
+	  return;
+	}
       is_print = false;
       break;
 
@@ -10353,6 +10558,78 @@ Builtin_call_expression::do_check_types(Gogo*)
       }
       break;
 
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
+      {
+	Numeric_constant nc;
+	unsigned long v;
+	const Expression_list* args = this->args();
+	if (args == NULL || args->size() < 2)
+	  this->report_error(_("not enough arguments"));
+	else if (args->size() > 2)
+	  this->report_error(_("too many arguments"));
+	else if (args->front()->is_error_expression()
+		 || args->front()->type()->is_error()
+		 || args->back()->is_error_expression()
+		 || args->back()->type()->is_error())
+	  this->set_is_error();
+	else if (args->back()->type()->integer_type() == NULL
+		 && (!args->back()->type()->is_abstract()
+		     || !args->back()->numeric_constant_value(&nc)
+		     || (nc.to_unsigned_long(&v)
+			 == Numeric_constant::NC_UL_NOTINT)))
+	  {
+	    if (this->code_ == BUILTIN_ADD)
+	      go_error_at(args->back()->location(), "non-integer offset");
+	    else
+	      go_error_at(args->back()->location(), "non-integer size");
+	  }
+	else if (this->code_ == BUILTIN_ADD)
+	  {
+	    Type* pointer_type =
+	      Type::make_pointer_type(Type::make_void_type());
+	    std::string reason;
+	    if (!Type::are_assignable(pointer_type, args->front()->type(),
+				      &reason))
+	      {
+		if (reason.empty())
+		  go_error_at(args->front()->location(),
+			      "argument 1 has incompatible type");
+		else
+		  go_error_at(args->front()->location(),
+			      "argument 1 has incompatible type (%s)",
+			      reason.c_str());
+		this->set_is_error();
+	      }
+	  }
+	else
+	  {
+	    if (args->front()->type()->points_to() == NULL)
+	      {
+		go_error_at(args->front()->location(),
+			    "argument 1 must be a pointer");
+		this->set_is_error();
+	      }
+
+	    unsigned int int_bits =
+	      Type::lookup_integer_type("int")->integer_type()->bits();
+
+	    mpz_t ival;
+	    if (args->back()->numeric_constant_value(&nc) && nc.to_int(&ival))
+	      {
+		if (mpz_sgn(ival) < 0
+		    || mpz_sizeinbase(ival, 2) >= int_bits)
+		  {
+		    go_error_at(args->back()->location(),
+				"slice length out of range");
+		    this->set_is_error();
+		  }
+		mpz_clear(ival);
+	      }
+	  }
+      }
+      break;
+
     default:
       go_unreachable();
     }
@@ -10397,6 +10674,8 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
     case BUILTIN_INVALID:
     case BUILTIN_NEW:
     case BUILTIN_MAKE:
+    case BUILTIN_ADD:
+    case BUILTIN_SLICE:
       go_unreachable();
 
     case BUILTIN_LEN:
@@ -10759,6 +11038,14 @@ Builtin_call_expression::do_export(Export_function_body* efb) const
 
       // A trailing space lets us reliably identify the end of the number.
       efb->write_c_string(" ");
+    }
+  else if (this->code_ == BUILTIN_ADD || this->code_ == BUILTIN_SLICE)
+    {
+      char buf[50];
+      snprintf(buf, sizeof buf, "<p%d>%s", efb->unsafe_package_index(),
+	       (this->code_ == BUILTIN_ADD ? "Add" : "Slice"));
+      efb->write_c_string(buf);
+      this->export_arguments(efb);
     }
   else
     {
@@ -11311,12 +11598,10 @@ Call_expression::intrinsify(Gogo* gogo,
       // sync/atomic functions and runtime/internal/atomic functions
       // are very similar. In order not to duplicate code, we just
       // redirect to the latter and let the code below to handle them.
-      // In case there is no equivalent functions (slight variance
-      // in types), we just make an artificial name (begin with '$').
       // Note: no StorePointer, SwapPointer, and CompareAndSwapPointer,
       // as they need write barriers.
       if (name == "LoadInt32")
-        name = "$Loadint32";
+        name = "Loadint32";
       else if (name == "LoadInt64")
         name = "Loadint64";
       else if (name == "LoadUint32")
@@ -11328,9 +11613,9 @@ Call_expression::intrinsify(Gogo* gogo,
       else if (name == "LoadPointer")
         name = "Loadp";
       else if (name == "StoreInt32")
-        name = "$Storeint32";
+        name = "Storeint32";
       else if (name == "StoreInt64")
-        name = "$Storeint64";
+        name = "Storeint64";
       else if (name == "StoreUint32")
         name = "Store";
       else if (name == "StoreUint64")
@@ -11338,7 +11623,7 @@ Call_expression::intrinsify(Gogo* gogo,
       else if (name == "StoreUintptr")
         name = "Storeuintptr";
       else if (name == "AddInt32")
-        name = "$Xaddint32";
+        name = "Xaddint32";
       else if (name == "AddInt64")
         name = "Xaddint64";
       else if (name == "AddUint32")
@@ -11348,9 +11633,9 @@ Call_expression::intrinsify(Gogo* gogo,
       else if (name == "AddUintptr")
         name = "Xadduintptr";
       else if (name == "SwapInt32")
-        name = "$Xchgint32";
+        name = "Xchgint32";
       else if (name == "SwapInt64")
-        name = "$Xchgint64";
+        name = "Xchgint64";
       else if (name == "SwapUint32")
         name = "Xchg";
       else if (name == "SwapUint64")
@@ -11358,9 +11643,9 @@ Call_expression::intrinsify(Gogo* gogo,
       else if (name == "SwapUintptr")
         name = "Xchguintptr";
       else if (name == "CompareAndSwapInt32")
-        name = "$Casint32";
+        name = "Casint32";
       else if (name == "CompareAndSwapInt64")
-        name = "$Casint64";
+        name = "Casint64";
       else if (name == "CompareAndSwapUint32")
         name = "Cas";
       else if (name == "CompareAndSwapUint64")
@@ -11596,7 +11881,7 @@ Call_expression::intrinsify(Gogo* gogo,
 
       if ((name == "Load" || name == "Load64" || name == "Loadint64" || name == "Loadp"
            || name == "Loaduint" || name == "Loaduintptr" || name == "LoadAcq"
-           || name == "$Loadint32")
+           || name == "Loadint32")
           && this->args_ != NULL && this->args_->size() == 1)
         {
           if (int_size < 8 && (name == "Load64" || name == "Loadint64"))
@@ -11616,7 +11901,7 @@ Call_expression::intrinsify(Gogo* gogo,
               code = Runtime::ATOMIC_LOAD_8;
               res_type = uint64_type;
             }
-          else if (name == "$Loadint32")
+          else if (name == "Loadint32")
             {
               code = Runtime::ATOMIC_LOAD_4;
               res_type = int32_type;
@@ -11663,10 +11948,10 @@ Call_expression::intrinsify(Gogo* gogo,
 
       if ((name == "Store" || name == "Store64" || name == "StorepNoWB"
            || name == "Storeuintptr" || name == "StoreRel"
-           || name == "$Storeint32" || name == "$Storeint64")
+           || name == "Storeint32" || name == "Storeint64")
           && this->args_ != NULL && this->args_->size() == 2)
         {
-          if (int_size < 8 && (name == "Store64" || name == "$Storeint64"))
+          if (int_size < 8 && (name == "Store64" || name == "Storeint64"))
             return NULL;
 
           Runtime::Function code;
@@ -11676,9 +11961,9 @@ Call_expression::intrinsify(Gogo* gogo,
             code = Runtime::ATOMIC_STORE_4;
           else if (name == "Store64")
             code = Runtime::ATOMIC_STORE_8;
-          else if (name == "$Storeint32")
+          else if (name == "Storeint32")
             code = Runtime::ATOMIC_STORE_4;
-          else if (name == "$Storeint64")
+          else if (name == "Storeint64")
             code = Runtime::ATOMIC_STORE_8;
           else if (name == "Storeuintptr")
             code = (ptr_size == 8 ? Runtime::ATOMIC_STORE_8 : Runtime::ATOMIC_STORE_4);
@@ -11700,7 +11985,7 @@ Call_expression::intrinsify(Gogo* gogo,
         }
 
       if ((name == "Xchg" || name == "Xchg64" || name == "Xchguintptr"
-           || name == "$Xchgint32" || name == "$Xchgint64")
+           || name == "Xchgint32" || name == "Xchgint64")
           && this->args_ != NULL && this->args_->size() == 2)
         {
           if (int_size < 8 && (name == "Xchg64" || name == "Xchgint64"))
@@ -11718,12 +12003,12 @@ Call_expression::intrinsify(Gogo* gogo,
               code = Runtime::ATOMIC_EXCHANGE_8;
               res_type = uint64_type;
             }
-          else if (name == "$Xchgint32")
+          else if (name == "Xchgint32")
             {
               code = Runtime::ATOMIC_EXCHANGE_4;
               res_type = int32_type;
             }
-          else if (name == "$Xchgint64")
+          else if (name == "Xchgint64")
             {
               code = Runtime::ATOMIC_EXCHANGE_8;
               res_type = int64_type;
@@ -11746,10 +12031,10 @@ Call_expression::intrinsify(Gogo* gogo,
 
       if ((name == "Cas" || name == "Cas64" || name == "Casuintptr"
            || name == "Casp1" || name == "CasRel"
-           || name == "$Casint32" || name == "$Casint64")
+           || name == "Casint32" || name == "Casint64")
           && this->args_ != NULL && this->args_->size() == 3)
         {
-          if (int_size < 8 && (name == "Cas64" || name == "$Casint64"))
+          if (int_size < 8 && (name == "Cas64" || name == "Casint64"))
             return NULL;
 
           Runtime::Function code;
@@ -11768,9 +12053,9 @@ Call_expression::intrinsify(Gogo* gogo,
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_4;
           else if (name == "Cas64")
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_8;
-          else if (name == "$Casint32")
+          else if (name == "Casint32")
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_4;
-          else if (name == "$Casint64")
+          else if (name == "Casint64")
             code = Runtime::ATOMIC_COMPARE_EXCHANGE_8;
           else if (name == "Casuintptr")
             code = (ptr_size == 8
@@ -11798,7 +12083,7 @@ Call_expression::intrinsify(Gogo* gogo,
         }
 
       if ((name == "Xadd" || name == "Xadd64" || name == "Xaddint64"
-           || name == "Xadduintptr" || name == "$Xaddint32")
+           || name == "Xadduintptr" || name == "Xaddint32")
           && this->args_ != NULL && this->args_->size() == 2)
         {
           if (int_size < 8 && (name == "Xadd64" || name == "Xaddint64"))
@@ -11816,7 +12101,7 @@ Call_expression::intrinsify(Gogo* gogo,
               code = Runtime::ATOMIC_ADD_FETCH_8;
               res_type = uint64_type;
             }
-          else if (name == "$Xaddint32")
+          else if (name == "Xaddint32")
             {
               code = Runtime::ATOMIC_ADD_FETCH_4;
               res_type = int32_type;
@@ -17730,49 +18015,7 @@ Expression::make_type_info(Type* type, Type_info type_info)
   return new Type_info_expression(type, type_info);
 }
 
-// An expression that evaluates to some characteristic of a slice.
-// This is used when indexing, bound-checking, or nil checking a slice.
-
-class Slice_info_expression : public Expression
-{
- public:
-  Slice_info_expression(Expression* slice, Slice_info slice_info,
-                        Location location)
-    : Expression(EXPRESSION_SLICE_INFO, location),
-      slice_(slice), slice_info_(slice_info)
-  { }
-
- protected:
-  Type*
-  do_type();
-
-  void
-  do_determine_type(const Type_context*)
-  { }
-
-  Expression*
-  do_copy()
-  {
-    return new Slice_info_expression(this->slice_->copy(), this->slice_info_,
-                                     this->location());
-  }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
-  void
-  do_issue_nil_check()
-  { this->slice_->issue_nil_check(); }
-
- private:
-  // The slice for which we are getting information.
-  Expression* slice_;
-  // What information we want.
-  Slice_info slice_info_;
-};
+// Slice_info_expression.
 
 // Return the type of the slice info.
 

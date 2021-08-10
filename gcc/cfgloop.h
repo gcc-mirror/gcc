@@ -658,127 +658,181 @@ enum li_flags
   LI_ONLY_INNERMOST = 4		/* Iterate only over innermost loops.  */
 };
 
-/* The iterator for loops.  */
+/* Provide the functionality of std::as_const to support range-based for
+   to use const iterator.  (We can't use std::as_const itself because it's
+   a C++17 feature.)  */
+template <typename T>
+constexpr const T &
+as_const (T &t)
+{
+  return t;
+}
 
-class loop_iterator
+/* A list for visiting loops, which contains the loop numbers instead of
+   the loop pointers.  If the loop ROOT is offered (non-null), the visiting
+   will start from it, otherwise it would start from the tree_root of
+   loops_for_fn (FN) instead.  The scope is restricted in function FN and
+   the visiting order is specified by FLAGS.  */
+
+class loops_list
 {
 public:
-  loop_iterator (function *fn, loop_p *loop, unsigned flags);
+  loops_list (function *fn, unsigned flags, class loop *root = nullptr);
 
-  inline loop_p next ();
+  template <typename T> class Iter
+  {
+  public:
+    Iter (const loops_list &l, unsigned idx) : list (l), curr_idx (idx)
+    {
+      fill_curr_loop ();
+    }
+
+    T operator* () const { return curr_loop; }
+
+    Iter &
+    operator++ ()
+    {
+      if (curr_idx < list.to_visit.length ())
+	{
+	  /* Bump the index and fill a new one.  */
+	  curr_idx++;
+	  fill_curr_loop ();
+	}
+      else
+	gcc_assert (!curr_loop);
+
+      return *this;
+    }
+
+    bool
+    operator!= (const Iter &rhs) const
+    {
+      return this->curr_idx != rhs.curr_idx;
+    }
+
+  private:
+    /* Fill the current loop starting from the current index.  */
+    void fill_curr_loop ();
+
+    /* Reference to the loop list to visit.  */
+    const loops_list &list;
+
+    /* The current index in the list to visit.  */
+    unsigned curr_idx;
+
+    /* The loop implied by the current index.  */
+    class loop *curr_loop;
+  };
+
+  using iterator = Iter<class loop *>;
+  using const_iterator = Iter<const class loop *>;
+
+  iterator
+  begin ()
+  {
+    return iterator (*this, 0);
+  }
+
+  iterator
+  end ()
+  {
+    return iterator (*this, to_visit.length ());
+  }
+
+  const_iterator
+  begin () const
+  {
+    return const_iterator (*this, 0);
+  }
+
+  const_iterator
+  end () const
+  {
+    return const_iterator (*this, to_visit.length ());
+  }
+
+private:
+  /* Walk loop tree starting from ROOT as the visiting order specified
+     by FLAGS.  */
+  void walk_loop_tree (class loop *root, unsigned flags);
 
   /* The function we are visiting.  */
   function *fn;
 
   /* The list of loops to visit.  */
   auto_vec<int, 16> to_visit;
-
-  /* The index of the actual loop.  */
-  unsigned idx;
 };
 
-inline loop_p
-loop_iterator::next ()
+/* Starting from current index CURR_IDX (inclusive), find one index
+   which stands for one valid loop and fill the found loop as CURR_LOOP,
+   if we can't find one, set CURR_LOOP as null.  */
+
+template <typename T>
+inline void
+loops_list::Iter<T>::fill_curr_loop ()
 {
   int anum;
 
-  while (this->to_visit.iterate (this->idx, &anum))
+  while (this->list.to_visit.iterate (this->curr_idx, &anum))
     {
-      this->idx++;
-      loop_p loop = get_loop (fn, anum);
+      class loop *loop = get_loop (this->list.fn, anum);
       if (loop)
-	return loop;
+	{
+	  curr_loop = loop;
+	  return;
+	}
+      this->curr_idx++;
     }
 
-  return NULL;
+  curr_loop = nullptr;
 }
 
-inline
-loop_iterator::loop_iterator (function *fn, loop_p *loop, unsigned flags)
-{
-  class loop *aloop;
-  unsigned i;
-  int mn;
+/* Set up the loops list to visit according to the specified
+   function scope FN and iterating order FLAGS.  If ROOT is
+   not null, the visiting would start from it, otherwise it
+   will start from tree_root of loops_for_fn (FN).  */
 
-  this->idx = 0;
+inline loops_list::loops_list (function *fn, unsigned flags, class loop *root)
+{
+  struct loops *loops = loops_for_fn (fn);
+  gcc_assert (!root || loops);
+
+  /* Check mutually exclusive flags should not co-exist.  */
+  unsigned checked_flags = LI_ONLY_INNERMOST | LI_FROM_INNERMOST;
+  gcc_assert ((flags & checked_flags) != checked_flags);
+
   this->fn = fn;
-  if (!loops_for_fn (fn))
-    {
-      *loop = NULL;
-      return;
-    }
+  if (!loops)
+    return;
+
+  class loop *tree_root = root ? root : loops->tree_root;
 
   this->to_visit.reserve_exact (number_of_loops (fn));
-  mn = (flags & LI_INCLUDE_ROOT) ? 0 : 1;
 
-  if (flags & LI_ONLY_INNERMOST)
+  /* When root is tree_root of loops_for_fn (fn) and the visiting
+     order is LI_ONLY_INNERMOST, we would like to use linear
+     search here since it has a more stable bound than the
+     walk_loop_tree.  */
+  if (flags & LI_ONLY_INNERMOST && tree_root == loops->tree_root)
     {
-      for (i = 0; vec_safe_iterate (loops_for_fn (fn)->larray, i, &aloop); i++)
-	if (aloop != NULL
-	    && aloop->inner == NULL
-	    && aloop->num >= mn)
+      gcc_assert (tree_root->num == 0);
+      if (tree_root->inner == NULL)
+	{
+	  if (flags & LI_INCLUDE_ROOT)
+	    this->to_visit.quick_push (0);
+
+	  return;
+	}
+
+      class loop *aloop;
+      unsigned int i;
+      for (i = 1; vec_safe_iterate (loops->larray, i, &aloop); i++)
+	if (aloop != NULL && aloop->inner == NULL)
 	  this->to_visit.quick_push (aloop->num);
     }
-  else if (flags & LI_FROM_INNERMOST)
-    {
-      /* Push the loops to LI->TO_VISIT in postorder.  */
-      for (aloop = loops_for_fn (fn)->tree_root;
-	   aloop->inner != NULL;
-	   aloop = aloop->inner)
-	continue;
-
-      while (1)
-	{
-	  if (aloop->num >= mn)
-	    this->to_visit.quick_push (aloop->num);
-
-	  if (aloop->next)
-	    {
-	      for (aloop = aloop->next;
-		   aloop->inner != NULL;
-		   aloop = aloop->inner)
-		continue;
-	    }
-	  else if (!loop_outer (aloop))
-	    break;
-	  else
-	    aloop = loop_outer (aloop);
-	}
-    }
   else
-    {
-      /* Push the loops to LI->TO_VISIT in preorder.  */
-      aloop = loops_for_fn (fn)->tree_root;
-      while (1)
-	{
-	  if (aloop->num >= mn)
-	    this->to_visit.quick_push (aloop->num);
-
-	  if (aloop->inner != NULL)
-	    aloop = aloop->inner;
-	  else
-	    {
-	      while (aloop != NULL && aloop->next == NULL)
-		aloop = loop_outer (aloop);
-	      if (aloop == NULL)
-		break;
-	      aloop = aloop->next;
-	    }
-	}
-    }
-
-  *loop = this->next ();
+    walk_loop_tree (tree_root, flags);
 }
-
-#define FOR_EACH_LOOP(LOOP, FLAGS) \
-  for (loop_iterator li(cfun, &(LOOP), FLAGS); \
-       (LOOP); \
-       (LOOP) = li.next ())
-
-#define FOR_EACH_LOOP_FN(FN, LOOP, FLAGS) \
-  for (loop_iterator li(FN, &(LOOP), FLAGS); \
-       (LOOP); \
-       (LOOP) = li.next ())
 
 /* The properties of the target.  */
 struct target_cfgloop {
