@@ -1,4 +1,4 @@
-/* { dg-do compile { target lp64 } } */
+/* { dg-do compile } */
 /* { dg-options "-O3 -march=x86-64 -mfpmath=sse" } */
 
 #include <stdint.h>
