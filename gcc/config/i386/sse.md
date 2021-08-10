@@ -506,6 +506,13 @@
    (V4DI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")
    (V4SI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
 
+(define_mode_iterator VI248_AVX512VLBW
+  [(V32HI "TARGET_AVX512BW")
+   (V16HI "TARGET_AVX512VL && TARGET_AVX512BW")
+   (V8HI "TARGET_AVX512VL && TARGET_AVX512BW")
+   V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
+   V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
+
 (define_mode_iterator VI48_AVX2
   [(V8SI "TARGET_AVX2") V4SI
    (V4DI "TARGET_AVX2") V2DI])
@@ -776,6 +783,15 @@
    (V8SF "V8SF") (V4DF "V4DF")
    (V4SF "V4SF") (V2DF "V2DF")
    (TI "TI")])
+
+;; SSE constant -1 constraint
+(define_mode_attr sseconstm1
+  [(V64QI "BC") (V32HI "BC") (V16SI "BC") (V8DI "BC") (V4TI "BC")
+   (V32QI "BC") (V16HI "BC") (V8SI "BC") (V4DI "BC") (V2TI "BC")
+   (V16QI "BC") (V8HI "BC") (V4SI "BC") (V2DI "BC") (V1TI "BC")
+   (V16SF "BF") (V8DF "BF")
+   (V8SF "BF") (V4DF "BF")
+   (V4SF "BF") (V2DF "BF")])
 
 ;; Mapping of vector modes to corresponding mask size
 (define_mode_attr avx512fmaskmode
@@ -1056,7 +1072,7 @@
   [(set (match_operand:VMOVE 0 "nonimmediate_operand"
 	 "=v,v ,v ,m")
 	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"
-	 " C,BC,vm,v"))]
+	 " C,<sseconstm1>,vm,v"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -22783,6 +22799,35 @@
   "TARGET_SSE"
 {
   ix86_expand_vector_init (false, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "cond_<insn><mode>"
+  [(set (match_operand:VI248_AVX512VLBW 0 "register_operand")
+	(vec_merge:VI248_AVX512VLBW
+	  (any_shift:VI248_AVX512VLBW
+	    (match_operand:VI248_AVX512VLBW 2 "register_operand")
+	    (match_operand:VI248_AVX512VLBW 3 "nonimmediate_or_const_vec_dup_operand"))
+	  (match_operand:VI248_AVX512VLBW 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  if (const_vec_duplicate_p (operands[3]))
+    {
+      operands[3] = unwrap_const_vec_duplicate (operands[3]);
+      operands[3] = lowpart_subreg (DImode, operands[3], <ssescalarmode>mode);
+      emit_insn (gen_<insn><mode>3_mask (operands[0],
+					 operands[2],
+					 operands[3],
+					 operands[4],
+					 operands[1]));
+    }
+  else
+    emit_insn (gen_<avx2_avx512>_<insn>v<mode>_mask (operands[0],
+						     operands[2],
+						     operands[3],
+						     operands[4],
+						     operands[1]));
   DONE;
 })
 

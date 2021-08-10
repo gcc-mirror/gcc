@@ -6815,6 +6815,15 @@ private variables at OpenACC device-lowering time using the
 @end deftypefn
 @c hook-end
 
+@deftypefn {Target Hook} tree TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD (tree @var{rec}, bool @var{sender}, const char *@var{name})
+Create a record used to propagate local-variable state from an active
+worker to other workers.  A possible implementation might adjust the type
+of REC to place the new variable in shared GPU memory.
+
+Presence of this target hook indicates that middle end neutering/broadcasting
+be used.
+@end deftypefn
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

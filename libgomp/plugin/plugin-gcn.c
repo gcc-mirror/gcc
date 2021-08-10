@@ -3038,8 +3038,7 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
      64 gangs matches a typical Fiji device.  */
 
   if (dims[0] == 0) dims[0] = get_cu_count (kernel->agent); /* Gangs.  */
-  /* NOTE: Until support for middle-end worker partitioning is merged, force 'num_workers (1)'.  */
-  if (/*TODO dims[1] == 0*/ true) dims[1] = 1;  /* Workers.  */
+  if (dims[1] == 0) dims[1] = 16; /* Workers.  */
 
   /* The incoming dimensions are expressed in terms of gangs, workers, and
      vectors.  The HSA dimensions are expressed in terms of "work-items",

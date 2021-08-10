@@ -93,9 +93,6 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
     }
   if (num_workers < 1)
     assert (event_info->launch_event.num_workers >= 1);
-  /* GCN currently enforces 'num_workers (1)'.  */
-  else if (acc_device_type == acc_device_radeon)
-    assert (event_info->launch_event.num_workers == 1);
   else
     {
 #ifdef __OPTIMIZE__

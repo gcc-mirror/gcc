@@ -1,3 +1,70 @@
+2021-08-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr101741.c: New.
+
+2021-08-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/101654
+	* gcc.dg/ipa/remref-6.c: Added missing -fdump-ipa-inline option.
+
+2021-08-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101812
+	* gcc.target/i386/pr101812.c: New test.
+
+2021-08-09  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/vect-shr-reg.c: New testcase.
+	* gcc.target/aarch64/vect-shr-reg-run.c: Likewise.
+
+2021-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/pr68217.c: Add -fno-tree-ccp option.
+	* gcc.dg/tree-ssa/vrp24.c: Add -fno-tree-ccp option.
+	* g++.dg/ipa/pure-const-3.C: Add -fno-tree-ccp option.
+
+2021-08-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	PR fortran/101660
+	* lib/gfortran.exp (gfortran_init): Add -I $specdir/libgfortran to
+	GFORTRAN_UNDER_TEST; update it when set by previous gfortran_init call.
+	* gfortran.dg/ISO_Fortran_binding_1.c: Use <...> not "..." for
+	ISO_Fortran_binding.h's #include.
+	* gfortran.dg/ISO_Fortran_binding_10.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_11.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_12.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_15.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_16.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_17.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_18.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_3.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_5.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_6.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_7.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_8.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_9.c: Likewise.
+	* gfortran.dg/PR94327.c: Likewise.
+	* gfortran.dg/PR94331.c: Likewise.
+	* gfortran.dg/bind_c_array_params_3_aux.c: Likewise.
+	* gfortran.dg/iso_fortran_binding_uint8_array_driver.c: Likewise.
+	* gfortran.dg/pr93524.c: Likewise.
+
+2021-08-09  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/sve/dup_lane_1.c: Don't split
+	scan-assembler tests over multiple lines. Expect 32-bit
+	result values in 'w' registers.
+	* gcc.target/aarch64/sve/extract_1.c: Likewise.
+	* gcc.target/aarch64/sve/extract_2.c: Likewise.
+	* gcc.target/aarch64/sve/extract_3.c: Likewise.
+	* gcc.target/aarch64/sve/extract_4.c: Likewise.
+
+2021-08-09  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: Restrict
+	tests to little-endian targets.
+
 2021-08-08  Jeff Law  <jlaw@localhost.localdomain>
 
 	* gcc.target/tic6x/rotdi16-scan.c: Pull rotate into its own function.

@@ -1,3 +1,21 @@
+2021-08-09  Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-gcn.c (gcn_exec): Change default number of workers to
+	16.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c
+	[acc_device_radeon]: Update.
+	* testsuite/libgomp.oacc-c-c++-common/loop-dim-default.c
+	[ACC_DEVICE_TYPE_radeon]: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c
+	[acc_device_radeon]: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c
+	[ACC_DEVICE_TYPE_radeon]: Likewise.
+	* testsuite/libgomp.oacc-fortran/optional-reduction.f90: XFAIL for
+	'openacc_radeon_accel_selected' and '-O0'.
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: Likewise.
+
 2021-08-05  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* icv-device.c (omp_get_device_num): New API function, host side.

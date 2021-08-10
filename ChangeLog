@@ -1,3 +1,7 @@
+2021-08-09  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* .dir-locals.el (bug-reference-url-format): Use https.
