@@ -173,24 +173,6 @@ AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
   LARCH_BUILTIN (INSN, f, #INSN, LARCH_BUILTIN_DIRECT_NO_TARGET, \
 		 FUNCTION_TYPE, AVAIL)
 
-/* Loongson support loongarch misc.  */
-#define CODE_FOR_loongarch_fmax_sf CODE_FOR_smaxsf3
-#define CODE_FOR_loongarch_fmax_df CODE_FOR_smaxdf3
-#define CODE_FOR_loongarch_fmin_sf CODE_FOR_sminsf3
-#define CODE_FOR_loongarch_fmin_df CODE_FOR_smindf3
-#define CODE_FOR_loongarch_fmaxa_sf CODE_FOR_smaxasf3
-#define CODE_FOR_loongarch_fmaxa_df CODE_FOR_smaxadf3
-#define CODE_FOR_loongarch_fmina_sf CODE_FOR_sminasf3
-#define CODE_FOR_loongarch_fmina_df CODE_FOR_sminadf3
-#define CODE_FOR_loongarch_fclass_s CODE_FOR_fclass_s
-#define CODE_FOR_loongarch_fclass_d CODE_FOR_fclass_d
-#define CODE_FOR_loongarch_frint_s CODE_FOR_frint_s
-#define CODE_FOR_loongarch_frint_d CODE_FOR_frint_d
-#define CODE_FOR_loongarch_bytepick_w CODE_FOR_bytepick_w
-#define CODE_FOR_loongarch_bytepick_d CODE_FOR_bytepick_d
-#define CODE_FOR_loongarch_bitrev_4b CODE_FOR_bitrev_4b
-#define CODE_FOR_loongarch_bitrev_8b CODE_FOR_bitrev_8b
-
 /* Loongson support crc.  */
 #define CODE_FOR_loongarch_crc_w_b_w CODE_FOR_crc_w_b_w
 #define CODE_FOR_loongarch_crc_w_h_w CODE_FOR_crc_w_h_w
@@ -239,22 +221,6 @@ static const struct loongarch_builtin_description loongarch_builtins[] = {
   DIRECT_NO_TARGET_BUILTIN (dbar, LARCH_VOID_FTYPE_USI, default),
   DIRECT_NO_TARGET_BUILTIN (ibar, LARCH_VOID_FTYPE_USI, default),
 
-  DIRECT_BUILTIN (fmax_sf, LARCH_SF_FTYPE_SF_SF, hard_float),
-  DIRECT_BUILTIN (fmax_df, LARCH_DF_FTYPE_DF_DF, hard_float),
-  DIRECT_BUILTIN (fmin_sf, LARCH_SF_FTYPE_SF_SF, hard_float),
-  DIRECT_BUILTIN (fmin_df, LARCH_DF_FTYPE_DF_DF, hard_float),
-  DIRECT_BUILTIN (fmaxa_sf, LARCH_SF_FTYPE_SF_SF, hard_float),
-  DIRECT_BUILTIN (fmaxa_df, LARCH_DF_FTYPE_DF_DF, hard_float),
-  DIRECT_BUILTIN (fmina_sf, LARCH_SF_FTYPE_SF_SF, hard_float),
-  DIRECT_BUILTIN (fmina_df, LARCH_DF_FTYPE_DF_DF, hard_float),
-  DIRECT_BUILTIN (fclass_s, LARCH_SF_FTYPE_SF, hard_float),
-  DIRECT_BUILTIN (fclass_d, LARCH_DF_FTYPE_DF, hard_float),
-  DIRECT_BUILTIN (frint_s, LARCH_SF_FTYPE_SF, hard_float),
-  DIRECT_BUILTIN (frint_d, LARCH_DF_FTYPE_DF, hard_float),
-  DIRECT_BUILTIN (bytepick_w, LARCH_SI_FTYPE_SI_SI_QI, default),
-  DIRECT_BUILTIN (bytepick_d, LARCH_DI_FTYPE_DI_DI_QI, default),
-  DIRECT_BUILTIN (bitrev_4b, LARCH_SI_FTYPE_SI, default),
-  DIRECT_BUILTIN (bitrev_8b, LARCH_DI_FTYPE_DI, default),
   DIRECT_BUILTIN (cpucfg, LARCH_USI_FTYPE_USI, default),
   DIRECT_BUILTIN (asrtle_d, LARCH_VOID_FTYPE_DI_DI, default),
   DIRECT_BUILTIN (asrtgt_d, LARCH_VOID_FTYPE_DI_DI, default),
