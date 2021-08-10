@@ -11202,12 +11202,23 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 {
   Location loc = this->location();
 
+  if (this->is_error_expression())
+    return Expression::make_error(loc);
+
   // A type cast can look like a function call.
   if (this->fn_->is_type_expression()
       && this->args_ != NULL
       && this->args_->size() == 1)
-    return Expression::make_cast(this->fn_->type(), this->args_->front(),
-				 loc);
+    {
+      if (this->expected_result_count_ != 0
+	  && this->expected_result_count_ != 1)
+	{
+	  this->report_error(_("type conversion result count mismatch"));
+	  return Expression::make_error(loc);
+	}
+      return Expression::make_cast(this->fn_->type(), this->args_->front(),
+				   loc);
+    }
 
   // Because do_type will return an error type and thus prevent future
   // errors, check for that case now to ensure that the error gets
