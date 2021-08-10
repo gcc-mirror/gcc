@@ -3,6 +3,15 @@
 	Backported from master:
 	2021-08-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_member_declaration): Move odsd declaration
+	before cp_parser_using_declaration call to avoid errors with
+	GCC 4.8 to 6.
+
+2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-10  Jakub Jelinek  <jakub@redhat.com>
+
 	* parser.h (struct cp_omp_declare_simd_data): Remove
 	in_omp_attribute_pragma and clauses members, add loc and attribs.
 	(struct cp_oacc_routine_data): Remove loc member, add clauses
