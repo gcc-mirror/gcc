@@ -894,6 +894,9 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
     case CFN_BUILT_IN_TOUPPER:
       {
 	arg = gimple_call_arg (call, 0);
+	// If the argument isn't compatible with the LHS, do nothing.
+	if (!range_compatible_p (type, TREE_TYPE (arg)))
+	  return false;
 	if (!src.get_operand (r, arg))
 	  return false;
 
@@ -913,6 +916,9 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
      case CFN_BUILT_IN_TOLOWER:
       {
 	arg = gimple_call_arg (call, 0);
+	// If the argument isn't compatible with the LHS, do nothing.
+	if (!range_compatible_p (type, TREE_TYPE (arg)))
+	  return false;
 	if (!src.get_operand (r, arg))
 	  return false;
 

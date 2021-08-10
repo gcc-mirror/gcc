@@ -55,6 +55,9 @@
 #include <bits/stl_vector.h>
 #include <bits/stl_bvector.h>
 #include <bits/vector.tcc>
+#ifdef _GLIBCXX_DEBUG
+# include <debug/vector>
+#endif
 #include <bits/regex_constants.h>
 #include <bits/regex_error.h>
 #include <bits/regex_automaton.h>

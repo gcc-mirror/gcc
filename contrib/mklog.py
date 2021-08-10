@@ -157,7 +157,11 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
     global firstpr
 
     if additional_prs:
-        prs = [pr for pr in additional_prs if pr not in prs]
+        for apr in additional_prs:
+            if not apr.startswith('PR ') and '/' in apr:
+                apr = 'PR ' + apr
+            if apr not in prs:
+                prs.append(apr)
     for file in diff:
         # skip files that can't be parsed
         if file.path == '/dev/null':

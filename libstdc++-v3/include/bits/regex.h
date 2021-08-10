@@ -257,7 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  // for details.
 	  typedef std::ctype<char_type> __ctype_type;
 	  const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
-	  std::vector<char_type> __s(__first, __last);
+	  _GLIBCXX_STD_C::vector<char_type> __s(__first, __last);
 	  __fctyp.tolower(__s.data(), __s.data() + __s.size());
 	  return this->transform(__s.data(), __s.data() + __s.size());
 	}
@@ -1697,6 +1697,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * [n+3] suffix
        */
       typedef std::vector<sub_match<_Bi_iter>, _Alloc>     _Base_type;
+      // In debug mode _Base_type is the debug vector, this is the unsafe one:
+      typedef _GLIBCXX_STD_C::vector<sub_match<_Bi_iter>, _Alloc> _Unchecked;
       typedef std::iterator_traits<_Bi_iter>   	   	   __iter_traits;
       typedef regex_constants::match_flag_type		   match_flag_type;
 
@@ -1773,7 +1775,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @retval true   The object has a fully-established result state.
        * @retval false  The object is not ready.
        */
-      bool ready() const noexcept { return !_Base_type::empty(); }
+      bool ready() const noexcept { return !_Unchecked::empty(); }
 
       /**
        * @name 28.10.2 Size
@@ -1791,11 +1793,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       size_type
       size() const noexcept
-      { return _Base_type::empty() ? 0 : _Base_type::size() - 3; }
+      { return _Unchecked::empty() ? 0 : _Unchecked::size() - 3; }
 
       size_type
       max_size() const noexcept
-      { return _Base_type::max_size() - 3; }
+      { return _Unchecked::max_size() - 3; }
 
       /**
        * @brief Indicates if the %match_results contains no results.
@@ -1869,7 +1871,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	__glibcxx_assert( ready() );
 	return __sub < size()
-	       ? _Base_type::operator[](__sub)
+	       ? _Unchecked::operator[](__sub)
 	       : _M_unmatched_sub();
       }
 
@@ -2045,7 +2047,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // (plus additional objects for prefix, suffix and unmatched sub).
       void
       _M_resize(unsigned int __size)
-      { _Base_type::assign(__size + 3, sub_match<_Bi_iter>{}); }
+      { _Unchecked::assign(__size + 3, sub_match<_Bi_iter>{}); }
 
       // Set state to a failed match for the given past-the-end iterator.
       void
@@ -2053,32 +2055,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	sub_match<_Bi_iter> __sm;
 	__sm.first = __sm.second = __end;
-	_Base_type::assign(3, __sm);
+	_Unchecked::assign(3, __sm);
       }
 
       const_reference
       _M_unmatched_sub() const
-      { return _Base_type::operator[](_Base_type::size() - 3); }
+      { return _Unchecked::operator[](_Unchecked::size() - 3); }
 
       sub_match<_Bi_iter>&
       _M_unmatched_sub()
-      { return _Base_type::operator[](_Base_type::size() - 3); }
+      { return _Unchecked::operator[](_Unchecked::size() - 3); }
 
       const_reference
       _M_prefix() const
-      { return _Base_type::operator[](_Base_type::size() - 2); }
+      { return _Unchecked::operator[](_Unchecked::size() - 2); }
 
       sub_match<_Bi_iter>&
       _M_prefix()
-      { return _Base_type::operator[](_Base_type::size() - 2); }
+      { return _Unchecked::operator[](_Unchecked::size() - 2); }
 
       const_reference
       _M_suffix() const
-      { return _Base_type::operator[](_Base_type::size() - 1); }
+      { return _Unchecked::operator[](_Unchecked::size() - 1); }
 
       sub_match<_Bi_iter>&
       _M_suffix()
-      { return _Base_type::operator[](_Base_type::size() - 1); }
+      { return _Unchecked::operator[](_Unchecked::size() - 1); }
 
       _Bi_iter _M_begin;
       /// @endcond

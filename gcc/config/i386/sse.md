@@ -506,6 +506,13 @@
    (V4DI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")
    (V4SI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
 
+(define_mode_iterator VI248_AVX512VLBW
+  [(V32HI "TARGET_AVX512BW")
+   (V16HI "TARGET_AVX512VL && TARGET_AVX512BW")
+   (V8HI "TARGET_AVX512VL && TARGET_AVX512BW")
+   V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
+   V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
+
 (define_mode_iterator VI48_AVX2
   [(V8SI "TARGET_AVX2") V4SI
    (V4DI "TARGET_AVX2") V2DI])
@@ -776,6 +783,15 @@
    (V8SF "V8SF") (V4DF "V4DF")
    (V4SF "V4SF") (V2DF "V2DF")
    (TI "TI")])
+
+;; SSE constant -1 constraint
+(define_mode_attr sseconstm1
+  [(V64QI "BC") (V32HI "BC") (V16SI "BC") (V8DI "BC") (V4TI "BC")
+   (V32QI "BC") (V16HI "BC") (V8SI "BC") (V4DI "BC") (V2TI "BC")
+   (V16QI "BC") (V8HI "BC") (V4SI "BC") (V2DI "BC") (V1TI "BC")
+   (V16SF "BF") (V8DF "BF")
+   (V8SF "BF") (V4DF "BF")
+   (V4SF "BF") (V2DF "BF")])
 
 ;; Mapping of vector modes to corresponding mask size
 (define_mode_attr avx512fmaskmode
@@ -1056,7 +1072,7 @@
   [(set (match_operand:VMOVE 0 "nonimmediate_operand"
 	 "=v,v ,v ,m")
 	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"
-	 " C,BC,vm,v"))]
+	 " C,<sseconstm1>,vm,v"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -15320,6 +15336,42 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "*avx512f_shuf_<shuffletype>64x2_1<mask_name>_1"
+  [(set (match_operand:V8FI 0 "register_operand" "=v")
+	(vec_select:V8FI
+	  (match_operand:V8FI 1 "register_operand" "v")
+	  (parallel [(match_operand 2 "const_0_to_7_operand")
+		     (match_operand 3 "const_0_to_7_operand")
+		     (match_operand 4 "const_0_to_7_operand")
+		     (match_operand 5 "const_0_to_7_operand")
+		     (match_operand 6 "const_0_to_7_operand")
+		     (match_operand 7 "const_0_to_7_operand")
+		     (match_operand 8 "const_0_to_7_operand")
+		     (match_operand 9 "const_0_to_7_operand")])))]
+  "TARGET_AVX512F
+   && (INTVAL (operands[2]) & 1) == 0
+   && INTVAL (operands[2]) == INTVAL (operands[3]) - 1
+   && (INTVAL (operands[4]) & 1) == 0
+   && INTVAL (operands[4]) == INTVAL (operands[5]) - 1
+   && (INTVAL (operands[6]) & 1) == 0
+   && INTVAL (operands[6]) == INTVAL (operands[7]) - 1
+   && (INTVAL (operands[8]) & 1) == 0
+   && INTVAL (operands[8]) == INTVAL (operands[9]) - 1"
+{
+  int mask;
+  mask = INTVAL (operands[2]) / 2;
+  mask |= INTVAL (operands[4]) / 2 << 2;
+  mask |= INTVAL (operands[6]) / 2 << 4;
+  mask |= INTVAL (operands[8]) / 2 << 6;
+  operands[2] = GEN_INT (mask);
+
+  return "vshuf<shuffletype>64x2\t{%2, %1, %1, %0<mask_operand10>|%0<mask_operand10>, %1, %1, %2}";
+}
+  [(set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_expand "avx512vl_shuf_<shuffletype>32x4_mask"
   [(match_operand:VI4F_256 0 "register_operand")
    (match_operand:VI4F_256 1 "register_operand")
@@ -15460,6 +15512,58 @@
   operands[3] = GEN_INT (mask);
 
   return "vshuf<shuffletype>32x4\t{%3, %2, %1, %0<mask_operand19>|%0<mask_operand19>, %1, %2, %3}";
+}
+  [(set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx512f_shuf_<shuffletype>32x4_1<mask_name>_1"
+  [(set (match_operand:V16FI 0 "register_operand" "=v")
+	(vec_select:V16FI
+	  (match_operand:V16FI 1 "register_operand" "v")
+	  (parallel [(match_operand 2 "const_0_to_15_operand")
+		     (match_operand 3 "const_0_to_15_operand")
+		     (match_operand 4 "const_0_to_15_operand")
+		     (match_operand 5 "const_0_to_15_operand")
+		     (match_operand 6 "const_0_to_15_operand")
+		     (match_operand 7 "const_0_to_15_operand")
+		     (match_operand 8 "const_0_to_15_operand")
+		     (match_operand 9 "const_0_to_15_operand")
+		     (match_operand 10 "const_0_to_15_operand")
+		     (match_operand 11 "const_0_to_15_operand")
+		     (match_operand 12 "const_0_to_15_operand")
+		     (match_operand 13 "const_0_to_15_operand")
+		     (match_operand 14 "const_0_to_15_operand")
+		     (match_operand 15 "const_0_to_15_operand")
+		     (match_operand 16 "const_0_to_15_operand")
+		     (match_operand 17 "const_0_to_15_operand")])))]
+  "TARGET_AVX512F
+   && (INTVAL (operands[2]) & 3) == 0
+   && INTVAL (operands[2]) == INTVAL (operands[3]) - 1
+   && INTVAL (operands[2]) == INTVAL (operands[4]) - 2
+   && INTVAL (operands[2]) == INTVAL (operands[5]) - 3
+   && (INTVAL (operands[6]) & 3) == 0
+   && INTVAL (operands[6]) == INTVAL (operands[7]) - 1
+   && INTVAL (operands[6]) == INTVAL (operands[8]) - 2
+   && INTVAL (operands[6]) == INTVAL (operands[9]) - 3
+   && (INTVAL (operands[10]) & 3) == 0
+   && INTVAL (operands[10]) == INTVAL (operands[11]) - 1
+   && INTVAL (operands[10]) == INTVAL (operands[12]) - 2
+   && INTVAL (operands[10]) == INTVAL (operands[13]) - 3
+   && (INTVAL (operands[14]) & 3) == 0
+   && INTVAL (operands[14]) == INTVAL (operands[15]) - 1
+   && INTVAL (operands[14]) == INTVAL (operands[16]) - 2
+   && INTVAL (operands[14]) == INTVAL (operands[17]) - 3"
+{
+  int mask;
+  mask = INTVAL (operands[2]) / 4;
+  mask |= INTVAL (operands[6]) / 4 << 2;
+  mask |= INTVAL (operands[10]) / 4 << 4;
+  mask |= INTVAL (operands[14]) / 4 << 6;
+  operands[2] = GEN_INT (mask);
+
+  return "vshuf<shuffletype>32x4\t{%2, %1, %1, %0<mask_operand18>|%0<mask_operand18>, %1, %1, %2}";
 }
   [(set_attr "type" "sselog")
    (set_attr "length_immediate" "1")
@@ -22783,6 +22887,35 @@
   "TARGET_SSE"
 {
   ix86_expand_vector_init (false, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "cond_<insn><mode>"
+  [(set (match_operand:VI248_AVX512VLBW 0 "register_operand")
+	(vec_merge:VI248_AVX512VLBW
+	  (any_shift:VI248_AVX512VLBW
+	    (match_operand:VI248_AVX512VLBW 2 "register_operand")
+	    (match_operand:VI248_AVX512VLBW 3 "nonimmediate_or_const_vec_dup_operand"))
+	  (match_operand:VI248_AVX512VLBW 4 "nonimm_or_0_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F"
+{
+  if (const_vec_duplicate_p (operands[3]))
+    {
+      operands[3] = unwrap_const_vec_duplicate (operands[3]);
+      operands[3] = lowpart_subreg (DImode, operands[3], <ssescalarmode>mode);
+      emit_insn (gen_<insn><mode>3_mask (operands[0],
+					 operands[2],
+					 operands[3],
+					 operands[4],
+					 operands[1]));
+    }
+  else
+    emit_insn (gen_<avx2_avx512>_<insn>v<mode>_mask (operands[0],
+						     operands[2],
+						     operands[3],
+						     operands[4],
+						     operands[1]));
   DONE;
 })
 
