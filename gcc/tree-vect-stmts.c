@@ -2377,9 +2377,11 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	      return false;
 	    }
 	  else if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
-		   || !known_eq (TYPE_VECTOR_SUBPARTS (vectype),
-				 TYPE_VECTOR_SUBPARTS
-				   (gs_info->offset_vectype)))
+		   || !TYPE_VECTOR_SUBPARTS
+			 (gs_info->offset_vectype).is_constant ()
+		   || !constant_multiple_p (TYPE_VECTOR_SUBPARTS
+					      (gs_info->offset_vectype),
+					    TYPE_VECTOR_SUBPARTS (vectype)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -2928,11 +2930,10 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
    containing loop.  */
 
 static void
-vect_get_gather_scatter_ops (vec_info *vinfo,
+vect_get_gather_scatter_ops (loop_vec_info loop_vinfo,
 			     class loop *loop, stmt_vec_info stmt_info,
 			     gather_scatter_info *gs_info,
-			     tree *dataref_ptr, vec<tree> *vec_offset,
-			     unsigned ncopies)
+			     tree *dataref_ptr, vec<tree> *vec_offset)
 {
   gimple_seq stmts = NULL;
   *dataref_ptr = force_gimple_operand (gs_info->base, &stmts, true, NULL_TREE);
@@ -2943,8 +2944,10 @@ vect_get_gather_scatter_ops (vec_info *vinfo,
       new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
       gcc_assert (!new_bb);
     }
-  vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies, gs_info->offset,
-				 vec_offset, gs_info->offset_vectype);
+  unsigned ncopies = vect_get_num_copies (loop_vinfo, gs_info->offset_vectype);
+  vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, ncopies,
+				 gs_info->offset, vec_offset,
+				 gs_info->offset_vectype);
 }
 
 /* Prepare to implement a grouped or strided load or store using
@@ -8072,8 +8075,9 @@ vectorizable_store (vec_info *vinfo,
 	    }
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	    {
-	      vect_get_gather_scatter_ops (vinfo, loop, stmt_info, &gs_info,
-					   &dataref_ptr, &vec_offsets, ncopies);
+	      vect_get_gather_scatter_ops (loop_vinfo, loop, stmt_info,
+					   &gs_info, &dataref_ptr,
+					   &vec_offsets);
 	      vec_offset = vec_offsets[0];
 	    }
 	  else
@@ -9376,9 +9380,9 @@ vectorizable_load (vec_info *vinfo,
 	    }
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	    {
-	      vect_get_gather_scatter_ops (vinfo, loop, stmt_info, &gs_info,
-					   &dataref_ptr, &vec_offsets, ncopies);
-	      vec_offset = vec_offsets[0];
+	      vect_get_gather_scatter_ops (loop_vinfo, loop, stmt_info,
+					   &gs_info, &dataref_ptr,
+					   &vec_offsets);
 	    }
 	  else
 	    dataref_ptr
@@ -9395,9 +9399,7 @@ vectorizable_load (vec_info *vinfo,
 	  if (dataref_offset)
 	    dataref_offset = int_const_binop (PLUS_EXPR, dataref_offset,
 					      bump);
-	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	    vec_offset = vec_offsets[j];
-	  else
+	  else if (!STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	    dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr, gsi,
 					   stmt_info, bump);
 	  if (mask)
@@ -9490,6 +9492,7 @@ vectorizable_load (vec_info *vinfo,
 		    if (memory_access_type == VMAT_GATHER_SCATTER
 			&& gs_info.ifn != IFN_LAST)
 		      {
+			vec_offset = vec_offsets[j];
 			tree zero = build_zero_cst (vectype);
 			tree scale = size_int (gs_info.scale);
 			gcall *call;
@@ -9512,9 +9515,18 @@ vectorizable_load (vec_info *vinfo,
 			gcc_assert (!final_mask);
 			unsigned HOST_WIDE_INT const_nunits
 			  = nunits.to_constant ();
+			unsigned HOST_WIDE_INT const_offset_nunits
+			  = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype)
+			      .to_constant ();
 			vec<constructor_elt, va_gc> *ctor_elts;
 			vec_alloc (ctor_elts, const_nunits);
 			gimple_seq stmts = NULL;
+			/* We support offset vectors with more elements
+			   than the data vector for now.  */
+			unsigned HOST_WIDE_INT factor
+			  = const_offset_nunits / const_nunits;
+			vec_offset = vec_offsets[j / factor];
+			unsigned elt_offset = (j % factor) * const_nunits;
 			tree idx_type = TREE_TYPE (TREE_TYPE (vec_offset));
 			tree scale = size_int (gs_info.scale);
 			align
@@ -9525,7 +9537,8 @@ vectorizable_load (vec_info *vinfo,
 			  {
 			    tree boff = size_binop (MULT_EXPR,
 						    TYPE_SIZE (idx_type),
-						    bitsize_int (k));
+						    bitsize_int
+						      (k + elt_offset));
 			    tree idx = gimple_build (&stmts, BIT_FIELD_REF,
 						     idx_type, vec_offset,
 						     TYPE_SIZE (idx_type),
