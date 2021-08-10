@@ -32,7 +32,7 @@ DEFINITION MODULE M2StackWord ;
 
 FROM SYSTEM IMPORT WORD ;
 EXPORT QUALIFIED StackOfWord, InitStackWord, KillStackWord, PushWord,
-                 ReduceWord, PopWord, PeepWord, IsEmptyWord,
+                 ReduceWord, RemoveTop, PopWord, PeepWord, IsEmptyWord,
                  NoOfItemsInStackWord ;
 
 TYPE
@@ -87,6 +87,13 @@ PROCEDURE PeepWord (s: StackOfWord; n: CARDINAL) : WORD ;
 *)
 
 PROCEDURE ReduceWord (s: StackOfWord; n: CARDINAL) ;
+
+
+(*
+   RemoveTop - throw away the top element of the stack.
+*)
+
+PROCEDURE RemoveTop (s: StackOfWord) ;
 
 
 (*

@@ -204,7 +204,7 @@ FROM M2StackAddress IMPORT StackOfAddress, InitStackAddress, KillStackAddress,
                            IsEmptyAddress, NoOfItemsInStackAddress ;
 
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
-                        PushWord, PopWord, PeepWord,
+                        PushWord, PopWord, PeepWord, RemoveTop,
                         IsEmptyWord, NoOfItemsInStackWord ;
 
 FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, InBounds ;
@@ -378,21 +378,23 @@ VAR
    doDSdbEnter -
 *)
 
+(*
 PROCEDURE doDSdbEnter ;
 BEGIN
    PushAllocation
 END doDSdbEnter ;
-
+*)
 
 (*
    doDSdbExit -
 *)
 
+(*
 PROCEDURE doDSdbExit (s: String) ;
 BEGIN
    s := PopAllocationExemption(TRUE, s)
 END doDSdbExit ;
-
+*)
 
 (*
    DSdbEnter -
@@ -407,7 +409,7 @@ END DSdbEnter ;
    DSdbExit -
 *)
 
-PROCEDURE DSdbExit (s: String) ;
+PROCEDURE DSdbExit ;
 BEGIN
 END DSdbExit ;
 
@@ -480,7 +482,7 @@ END SetOptionOptimizing ;
 
 PROCEDURE GetQF (q: CARDINAL) : QuadFrame ;
 BEGIN
-   RETURN( GetIndice(QuadArray, q) )
+   RETURN QuadFrame (GetIndice (QuadArray, q))
 END GetQF ;
 
 
@@ -1419,6 +1421,7 @@ END EraseQuad ;
    CheckAddVariableReadLeftValue -
 *)
 
+(*
 PROCEDURE CheckAddVariableReadLeftValue (sym: CARDINAL; q: CARDINAL) ;
 BEGIN
    IF IsVar(sym)
@@ -1426,12 +1429,14 @@ BEGIN
       PutReadQuad(sym, LeftValue, q)
    END
 END CheckAddVariableReadLeftValue ;
+*)
 
 
 (*
    CheckRemoveVariableReadLeftValue -
 *)
 
+(*
 PROCEDURE CheckRemoveVariableReadLeftValue (sym: CARDINAL; q: CARDINAL) ;
 BEGIN
    IF IsVar(sym)
@@ -1439,6 +1444,7 @@ BEGIN
       RemoveReadQuad(sym, LeftValue, q)
    END
 END CheckRemoveVariableReadLeftValue ;
+*)
 
 
 (*
@@ -2383,6 +2389,7 @@ END CheckForIndex ;
    GetCurrentFunctionName - returns the name for the current __FUNCTION__
 *)
 
+(*
 PROCEDURE GetCurrentFunctionName () : Name ;
 VAR
    s: String ;
@@ -2399,6 +2406,7 @@ BEGIN
       RETURN( GetSymName(CurrentProc) )
    END
 END GetCurrentFunctionName ;
+*)
 
 
 (*
@@ -4546,7 +4554,7 @@ BEGIN
       END
    END ;
    ManipulateParameters (IsForC) ;
-   CheckParameterOrdinals (IsForC) ;
+   CheckParameterOrdinals ;
    PopT(NoOfParameters) ;
    IF IsFunc
    THEN
@@ -4766,7 +4774,7 @@ END CheckProcedureParameters ;
    CheckProcTypeAndProcedure - checks the ProcType with the call.
 *)
 
-PROCEDURE CheckProcTypeAndProcedure (tokpos: CARDINAL; ProcType: CARDINAL; call: CARDINAL; TypeList: List) ;
+PROCEDURE CheckProcTypeAndProcedure (ProcType: CARDINAL; call: CARDINAL) ;
 VAR
    n1, n2          : Name ;
    i, n, t         : CARDINAL ;
@@ -5000,7 +5008,7 @@ BEGIN
          END
       END ;
       (* now to check each parameter of the proc type *)
-      CheckProcTypeAndProcedure(tokpos, FormalType, Actual, TypeList)
+      CheckProcTypeAndProcedure (FormalType, Actual)
    ELSIF (ActualType#FormalType) AND (ActualType#NulSym)
    THEN
       IF IsUnknown(FormalType)
@@ -5302,6 +5310,7 @@ END WarnParameter ;
                     If not then it generates an error message.
 *)
 
+(*
 PROCEDURE ExpectVariable (a: ARRAY OF CHAR; sym: CARDINAL) ;
 VAR
    e         : Error ;
@@ -5325,6 +5334,7 @@ BEGIN
       END
    END
 END ExpectVariable ;
+*)
 
 
 (*
@@ -5688,7 +5698,7 @@ END ManipulateParameters ;
    CheckParameterOrdinals - check that ordinal values are within type range.
 *)
 
-PROCEDURE CheckParameterOrdinals (IsForC: BOOLEAN) ;
+PROCEDURE CheckParameterOrdinals ;
 VAR
    Proc,
    ProcSym   : CARDINAL ;
@@ -5697,9 +5707,9 @@ VAR
    ParamTotal,
    pi, i     : CARDINAL ;
 BEGIN
-   PopT(ParamTotal) ;
-   PushT(ParamTotal) ;  (* Restore stack to origional state *)
-   ProcSym := OperandT(ParamTotal+1+1) ;
+   PopT (ParamTotal) ;
+   PushT (ParamTotal) ;  (* Restore stack to origional state *)
+   ProcSym := OperandT (ParamTotal+1+1) ;
    IF IsVar(ProcSym) AND IsProcType(GetDType(ProcSym))
    THEN
       (* Indirect procedure call.  *)
@@ -7919,9 +7929,9 @@ END BuildAbsFunction ;
 
 PROCEDURE BuildCapFunction ;
 VAR
+   optok,
    functok,
-   combinedtok,
-   optok      : CARDINAL ;
+   combinedtok: CARDINAL ;
    NoOfParam,
    ProcSym,
    Res, Var : CARDINAL ;
@@ -7937,7 +7947,7 @@ BEGIN
          ProcSym := OperandT (NoOfParam + 1) ;
          PopN (NoOfParam + 1) ;
 
-         combinedtok := MakeVirtualTok (functok, functok, vartok) ;
+         combinedtok := MakeVirtualTok (functok, functok, optok) ;
          Res := MakeTemporary (combinedtok, AreConstant (IsConst (Var))) ;
          PutVar (Res, Char) ;
          GenQuadO (combinedtok, StandardFunctionOp, Res, ProcSym, Var, FALSE) ;
@@ -8154,7 +8164,7 @@ BEGIN
          PushT (2) ;          (* Two parameters *)
          BuildConvertFunction
       ELSE
-         combinedtok := MakeVirtualTok (functok, vartok, vartok) ;
+         combinedtok := MakeVirtualTok (functok, optok, optok) ;
          MetaErrorT2 (combinedtok,
                       'the parameter to {%E1k%a} must be a variable or constant, seen {%2ad}',
                       Sym, Var) ;
@@ -9864,7 +9874,6 @@ END BuildProcedureBegin ;
 PROCEDURE BuildProcedureEnd ;
 VAR
    tok    : CARDINAL ;
-   t,
    ProcSym: CARDINAL ;
 BEGIN
    PopTtok(ProcSym, tok) ;
@@ -9886,8 +9895,8 @@ BEGIN
    GenQuad(ReturnOp, NulSym, NulSym, ProcSym) ;
    CheckFunctionReturn(ProcSym) ;
    CheckVariablesInBlock(ProcSym) ;
-   t := PopWord(CatchStack) ;
-   t := PopWord(TryStack) ;
+   RemoveTop (CatchStack) ;
+   RemoveTop (TryStack) ;
    PushT(ProcSym)
 END BuildProcedureEnd ;
 
@@ -9896,7 +9905,7 @@ END BuildProcedureEnd ;
    CheckReadBeforeInitialized -
 *)
 
-PROCEDURE CheckReadBeforeInitialized (ProcSym: CARDINAL; Start, End: CARDINAL) ;
+PROCEDURE CheckReadBeforeInitialized (ProcSym: CARDINAL; End: CARDINAL) ;
 VAR
    s1, s2              : String ;
    i, n, ParamNo,
@@ -9950,7 +9959,7 @@ BEGIN
       GetQuad(Start, Op, Op1, Op2, Op3) ;
       CASE Op OF
 
-      NewLocalVarOp:  CheckReadBeforeInitialized(Op3, Start, End)
+      NewLocalVarOp:  CheckReadBeforeInitialized(Op3, End)
 
       ELSE
       END
@@ -10422,12 +10431,11 @@ VAR
    Field,
    FieldType,
    RecordSym,
-   RecordType,
    Res        : CARDINAL ;
 BEGIN
    PopT(n) ;
    RecordSym := OperandT (n+1) ;
-   RecordType := SkipType (OperandF (n+1)) ;
+   (* RecordType could be found by:  SkipType (OperandF (n+1)).  *)
    RecordTok := OperandTok (n+1) ;
    rw := OperandMergeRW (n+1) ;
    Assert (IsLegal (rw)) ;
@@ -11579,17 +11587,17 @@ END RecordOp ;
 
 
 (*
-   CheckForLogicalOperator - returns a logical operator if the operands imply
-                             a logical operation should be performed.
+   CheckLogicalOperator - returns a logical operator if the operands imply
+                          a logical operation should be performed.
 *)
 
-PROCEDURE CheckForLogicalOperator (Tok: Name; e1, t1, e2, t2: CARDINAL) : Name ;
+PROCEDURE CheckLogicalOperator (Tok: Name; left, lefttype: CARDINAL) : Name ;
 BEGIN
    IF (Tok=PlusTok) OR (Tok=TimesTok) OR (Tok=DivideTok) OR (Tok=MinusTok)
    THEN
-      (* --fixme-- when we add complex arithmetic, we must check constructor is not a complex constant *)
-      IF ((t2#NulSym) AND IsSet(SkipType(t2))) OR
-         IsConstSet(e2) OR IsConstructor(e2)
+      (* --fixme-- when we add complex arithmetic, we must check constructor is not a complex constant.  *)
+      IF ((lefttype#NulSym) AND IsSet(SkipType(lefttype))) OR
+         IsConstSet(left) OR IsConstructor(left)
       THEN
          IF Tok=PlusTok
          THEN
@@ -11607,15 +11615,16 @@ BEGIN
       END
    END ;
    RETURN( Tok )
-END CheckForLogicalOperator ;
+END CheckLogicalOperator ;
 
 
 (*
-   CheckGenericNulSet - checks to see whether e1 is a generic nul set and if so it alters it
-                        to the nul set of t2.
+   doCheckGenericNulSet - checks to see whether e1 is a generic nul set and if so it alters it
+                          to the nul set of t2.
 *)
 
-PROCEDURE CheckGenericNulSet (e1: CARDINAL; VAR t1: CARDINAL; t2: CARDINAL) ;
+(*
+PROCEDURE doCheckGenericNulSet (e1: CARDINAL; VAR t1: CARDINAL; t2: CARDINAL) ;
 BEGIN
    IF IsConstSet (e1)
    THEN
@@ -11633,22 +11642,25 @@ BEGIN
       END ;
       PopValue (e1)
    END
-END CheckGenericNulSet ;
+END doCheckGenericNulSet ;
+*)
 
 
 (*
-   CheckForGenericNulSet - if e1 or e2 is the generic nul set then
-                           alter it to the nul set of the other operands type.
+   CheckGenericNulSet - if e1 or e2 is the generic nul set then
+                        alter it to the nul set of the other operands type.
 *)
 
-PROCEDURE CheckForGenericNulSet (e1, e2: CARDINAL; VAR t1, t2: CARDINAL) ;
+(*
+PROCEDURE CheckGenericNulSet (e1, e2: CARDINAL; VAR t1, t2: CARDINAL) ;
 BEGIN
    IF t1#t2
    THEN
-      CheckGenericNulSet(e1, t1, t2) ;
-      CheckGenericNulSet(e2, t2, t1)
+      doCheckGenericNulSet(e1, t1, t2) ;
+      doCheckGenericNulSet(e2, t2, t1)
    END
-END CheckForGenericNulSet ;
+END CheckGenericNulSet ;
+*)
 
 
 (*
@@ -11790,7 +11802,7 @@ BEGIN
       PopTFrwtok (left, lefttype, leftrw, leftpos) ;
       MarkAsRead (rightrw) ;
       MarkAsRead (leftrw) ;
-      NewOp := CheckForLogicalOperator (Operator, right, righttype, left, lefttype) ;
+      NewOp := CheckLogicalOperator (Operator, (* right, righttype, *) left, lefttype) ;
       IF NewOp = Operator
       THEN
          (*
@@ -12609,10 +12621,12 @@ END DisplayStack ;
    ds - tiny procedure name, useful for calling from the gdb shell.
 *)
 
+(*
 PROCEDURE ds ;
 BEGIN
    DisplayStack
 END ds ;
+*)
 
 
 (*
@@ -12623,7 +12637,7 @@ PROCEDURE DisplayQuad (QuadNo: CARDINAL) ;
 BEGIN
    DSdbEnter ;
    printf1('%4d  ', QuadNo) ; WriteQuad(QuadNo) ; printf0('\n') ;
-   DSdbExit(NIL)
+   DSdbExit
 END DisplayQuad ;
 
 
@@ -13417,14 +13431,14 @@ VAR
 BEGIN
    IF NextQuad#Head
    THEN
-      f := GetQF(NextQuad-1) ;
+      f := GetQF (NextQuad-1) ;
       i := offset ;
-      INC (i, GetTokenNo()) ;
+      INC (i, GetTokenNo ()) ;
       (* no need to have multiple notes at the same position.  *)
-      IF (f^.Operator#StatementNoteOp) OR (f^.Operand3#i)
+      IF (f^.Operator # StatementNoteOp) OR (f^.Operand3 # VAL (CARDINAL, i))
       THEN
-         filename := makekey(string(GetFileName())) ;
-         GenQuad(StatementNoteOp, WORD(filename), NulSym, i)
+         filename := makekey (string (GetFileName ())) ;
+         GenQuad (StatementNoteOp, WORD (filename), NulSym, i)
       END
    END
 END BuildStmtNote ;
@@ -13625,6 +13639,7 @@ END AddVarientEquality ;
                  at, pos, on the boolean stack.
 *)
 
+(*
 PROCEDURE IncOperandD (pos: CARDINAL) ;
 VAR
    f: BoolFrame ;
@@ -13632,6 +13647,7 @@ BEGIN
    f := PeepAddress(BoolStack, pos) ;
    INC(f^.Dimension)
 END IncOperandD ;
+*)
 
 
 (*
@@ -14001,6 +14017,7 @@ END PopTtok ;
    PushTrw - Push an item onto the True/False stack. The False value will be zero.
 *)
 
+(*
 PROCEDURE PushTrw (True: WORD; rw: WORD) ;
 VAR
    f: BoolFrame ;
@@ -14012,6 +14029,7 @@ BEGIN
    END ;
    PushAddress(BoolStack, f)
 END PushTrw ;
+*)
 
 
 (*
@@ -14290,6 +14308,7 @@ END MustCheckOverflow ;
    StressStack -
 *)
 
+(*
 PROCEDURE StressStack ;
 CONST
    Maxtries = 1000 ;
@@ -14328,6 +14347,7 @@ BEGIN
       END
    END
 END StressStack ;
+*)
 
 
 (*

@@ -264,6 +264,16 @@ END ReduceWord ;
 
 
 (*
+   RemoveTop - throw away the top element of the stack.
+*)
+
+PROCEDURE RemoveTop (s: StackOfWord) ;
+BEGIN
+   ReduceWord (s, 1)
+END RemoveTop ;
+
+
+(*
    NoOfItemsInStackWord - returns the number of items held in the stack, s.
 *)
 
