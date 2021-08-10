@@ -32,33 +32,35 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* The third parameter to the signal handler points to something with
  * this structure defined in asm/ucontext.h, but the name clashes with
  * struct ucontext from sys/ucontext.h so this private copy is used.  */
-typedef struct _sig_ucontext {
-    unsigned long         uc_flags;
-    struct _sig_ucontext  *uc_link;
-    stack_t               uc_stack;
-    struct sigcontext uc_mcontext;
-    sigset_t      uc_sigmask;
+typedef struct _sig_ucontext
+{
+  unsigned long uc_flags;
+  struct _sig_ucontext *uc_link;
+  stack_t uc_stack;
+  struct sigcontext uc_mcontext;
+  sigset_t uc_sigmask;
 } _sig_ucontext_t;
 
 #define MD_FALLBACK_FRAME_STATE_FOR loongarch_fallback_frame_state
 
 static _Unwind_Reason_Code
 loongarch_fallback_frame_state (struct _Unwind_Context *context,
-			   _Unwind_FrameState *fs)
+				_Unwind_FrameState *fs)
 {
   u_int32_t *pc = (u_int32_t *) context->ra;
   struct sigcontext *sc;
   _Unwind_Ptr new_cfa;
   int i;
 
-  /* 03822c0b dli a7, 0x8b (sigreturn) */
-  /* 002b0000 syscall 0 */
+  /* 03822c0b dli a7, 0x8b (sigreturn)  */
+  /* 002b0000 syscall 0  */
   if (pc[1] != 0x002b0000)
     return _URC_END_OF_STACK;
   if (pc[0] == 0x03822c0b)
     {
-      struct rt_sigframe {
-	u_int32_t ass[4];  /* Argument save space for o32.  */
+      struct rt_sigframe
+      {
+	u_int32_t ass[4]; /* Argument save space for o32.  */
 	u_int32_t trampoline[2];
 	siginfo_t info;
 	_sig_ucontext_t uc;
@@ -73,17 +75,17 @@ loongarch_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
   fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
-  for (i = 0; i < 32; i++) {
-    fs->regs.reg[i].how = REG_SAVED_OFFSET;
-    fs->regs.reg[i].loc.offset
-      = (_Unwind_Ptr)&(sc->sc_regs[i]) - new_cfa;
-  }
+  for (i = 0; i < 32; i++)
+    {
+      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.reg[i].loc.offset = (_Unwind_Ptr) & (sc->sc_regs[i]) - new_cfa;
+    }
 
   fs->signal_frame = 1;
   fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how
     = REG_SAVED_VAL_OFFSET;
   fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset
-    = (_Unwind_Ptr)(sc->sc_pc) - new_cfa;
+    = (_Unwind_Ptr) (sc->sc_pc) - new_cfa;
   fs->retaddr_column = __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__;
 
   return _URC_NO_REASON;

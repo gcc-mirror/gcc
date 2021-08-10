@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 
-
-int loongson_cpucfg (int arg)
+int
+loongson_cpucfg (int arg)
 {
   int ret;
   __asm__ __volatile__ ("cpucfg %0,%1\n\t"
@@ -73,7 +73,6 @@ host_detect_local_cpu (int argc, const char **argv)
       else
 	cpu = NULL;
     }
-
 
   if (cpu == NULL)
     return NULL;

@@ -1,6 +1,5 @@
 /* Subroutines used for expanding LoongArch builtins.
    Copyright (C) 2020-2021 Free Software Foundation, Inc.
-   Contributed by Andrew Waterman (andrew@sifive.com).
 
    This file is part of GCC.
 
@@ -41,26 +40,29 @@
 #define LARCH_FTYPE_NAME1(A, B) LARCH_##A##_FTYPE_##B
 #define LARCH_FTYPE_NAME2(A, B, C) LARCH_##A##_FTYPE_##B##_##C
 #define LARCH_FTYPE_NAME3(A, B, C, D) LARCH_##A##_FTYPE_##B##_##C##_##D
-#define LARCH_FTYPE_NAME4(A, B, C, D, E) LARCH_##A##_FTYPE_##B##_##C##_##D##_##E
+#define LARCH_FTYPE_NAME4(A, B, C, D, E) \
+  LARCH_##A##_FTYPE_##B##_##C##_##D##_##E
 
 /* Classifies the prototype of a built-in function.  */
-enum loongarch_function_type {
+enum loongarch_function_type
+{
 #define DEF_LARCH_FTYPE(NARGS, LIST) LARCH_FTYPE_NAME##NARGS LIST,
 #include "config/loongarch/loongarch-ftypes.def"
 #undef DEF_LARCH_FTYPE
-    LARCH_MAX_FTYPE_MAX
+  LARCH_MAX_FTYPE_MAX
 };
 
 /* Specifies how a built-in function should be converted into rtl.  */
-enum loongarch_builtin_type {
-    /* The function corresponds directly to an .md pattern.  The return
-       value is mapped to operand 0 and the arguments are mapped to
-       operands 1 and above.  */
-    LARCH_BUILTIN_DIRECT,
+enum loongarch_builtin_type
+{
+  /* The function corresponds directly to an .md pattern.  The return
+     value is mapped to operand 0 and the arguments are mapped to
+     operands 1 and above.  */
+  LARCH_BUILTIN_DIRECT,
 
-    /* The function corresponds directly to an .md pattern.  There is no return
-       value and the arguments are mapped to operands 0 and above.  */
-    LARCH_BUILTIN_DIRECT_NO_TARGET,
+  /* The function corresponds directly to an .md pattern.  There is no return
+     value and the arguments are mapped to operands 0 and above.  */
+  LARCH_BUILTIN_DIRECT_NO_TARGET,
 
 };
 
@@ -84,27 +86,27 @@ enum loongarch_builtin_type {
   MACRO (ngt)
 
 /* Enumerates the codes above as LARCH_FP_COND_<X>.  */
-#define DECLARE_LARCH_COND(X) LARCH_FP_COND_ ## X
-enum loongarch_fp_condition {
-    LARCH_FP_CONDITIONS (DECLARE_LARCH_COND)
+#define DECLARE_LARCH_COND(X) LARCH_FP_COND_##X
+enum loongarch_fp_condition
+{
+  LARCH_FP_CONDITIONS (DECLARE_LARCH_COND)
 };
 #undef DECLARE_LARCH_COND
 
 /* Index X provides the string representation of LARCH_FP_COND_<X>.  */
 #define STRINGIFY(X) #X
-const char *const loongarch_fp_conditions[16] = {
-    LARCH_FP_CONDITIONS (STRINGIFY)
-};
+const char *const loongarch_fp_conditions[16]
+  = {LARCH_FP_CONDITIONS (STRINGIFY)};
 #undef STRINGIFY
 
-/* Declare an availability predicate for built-in functions that require 
+/* Declare an availability predicate for built-in functions that require
  * COND to be true.  NAME is the main part of the predicate's name.  */
-#define AVAIL_ALL(NAME, COND)						\
-  static unsigned int							\
-  loongarch_builtin_avail_##NAME (void)					\
-{									\
-  return (COND) ? 1 : 0;	\
-}
+#define AVAIL_ALL(NAME, COND) \
+  static unsigned int \
+  loongarch_builtin_avail_##NAME (void) \
+  { \
+    return (COND) ? 1 : 0; \
+  }
 
 static unsigned int
 loongarch_builtin_avail_default (void)
@@ -112,25 +114,26 @@ loongarch_builtin_avail_default (void)
   return 1;
 }
 /* This structure describes a single built-in function.  */
-struct loongarch_builtin_description {
-    /* The code of the main .md file instruction.  See loongarch_builtin_type
-       for more information.  */
-    enum insn_code icode;
+struct loongarch_builtin_description
+{
+  /* The code of the main .md file instruction.  See loongarch_builtin_type
+     for more information.  */
+  enum insn_code icode;
 
-    /* The floating-point comparison code to use with ICODE, if any.  */
-    enum loongarch_fp_condition cond;
+  /* The floating-point comparison code to use with ICODE, if any.  */
+  enum loongarch_fp_condition cond;
 
-    /* The name of the built-in function.  */
-    const char *name;
+  /* The name of the built-in function.  */
+  const char *name;
 
-    /* Specifies how the function should be expanded.  */
-    enum loongarch_builtin_type builtin_type;
+  /* Specifies how the function should be expanded.  */
+  enum loongarch_builtin_type builtin_type;
 
-    /* The function's prototype.  */
-    enum loongarch_function_type function_type;
+  /* The function's prototype.  */
+  enum loongarch_function_type function_type;
 
-    /* Whether the function is available.  */
-    unsigned int (*avail) (void);
+  /* Whether the function is available.  */
+  unsigned int (*avail) (void);
 };
 
 AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
@@ -150,52 +153,53 @@ AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
 
    AVAIL is the name of the availability predicate, without the leading
    loongarch_builtin_avail_.  */
-#define LARCH_BUILTIN(INSN, COND, NAME, BUILTIN_TYPE,			\
-		     FUNCTION_TYPE, AVAIL)				\
-  { CODE_FOR_loongarch_ ## INSN, LARCH_FP_COND_ ## COND,		\
-    "__builtin_loongarch_" NAME, BUILTIN_TYPE, FUNCTION_TYPE,		\
-    loongarch_builtin_avail_ ## AVAIL }
+#define LARCH_BUILTIN(INSN, COND, NAME, BUILTIN_TYPE, FUNCTION_TYPE, AVAIL) \
+  { \
+    CODE_FOR_loongarch_##INSN, LARCH_FP_COND_##COND, \
+      "__builtin_loongarch_" NAME, BUILTIN_TYPE, FUNCTION_TYPE, \
+      loongarch_builtin_avail_##AVAIL \
+  }
 
 /* Define __builtin_loongarch_<INSN>, which is a LARCH_BUILTIN_DIRECT function
    mapped to instruction CODE_FOR_loongarch_<INSN>,  FUNCTION_TYPE and AVAIL
    are as for LARCH_BUILTIN.  */
-#define DIRECT_BUILTIN(INSN, FUNCTION_TYPE, AVAIL)			\
+#define DIRECT_BUILTIN(INSN, FUNCTION_TYPE, AVAIL) \
   LARCH_BUILTIN (INSN, f, #INSN, LARCH_BUILTIN_DIRECT, FUNCTION_TYPE, AVAIL)
 
 /* Define __builtin_loongarch_<INSN>, which is a LARCH_BUILTIN_DIRECT_NO_TARGET
    function mapped to instruction CODE_FOR_loongarch_<INSN>,  FUNCTION_TYPE
    and AVAIL are as for LARCH_BUILTIN.  */
-#define DIRECT_NO_TARGET_BUILTIN(INSN, FUNCTION_TYPE, AVAIL)		\
-  LARCH_BUILTIN (INSN, f, #INSN,	LARCH_BUILTIN_DIRECT_NO_TARGET,	\
+#define DIRECT_NO_TARGET_BUILTIN(INSN, FUNCTION_TYPE, AVAIL) \
+  LARCH_BUILTIN (INSN, f, #INSN, LARCH_BUILTIN_DIRECT_NO_TARGET, \
 		 FUNCTION_TYPE, AVAIL)
 
 /* Loongson support loongarch misc.  */
-#define	CODE_FOR_loongarch_fmax_sf	CODE_FOR_smaxsf3
-#define	CODE_FOR_loongarch_fmax_df	CODE_FOR_smaxdf3
-#define	CODE_FOR_loongarch_fmin_sf	CODE_FOR_sminsf3
-#define	CODE_FOR_loongarch_fmin_df	CODE_FOR_smindf3
-#define	CODE_FOR_loongarch_fmaxa_sf	CODE_FOR_smaxasf3
-#define	CODE_FOR_loongarch_fmaxa_df	CODE_FOR_smaxadf3
-#define	CODE_FOR_loongarch_fmina_sf	CODE_FOR_sminasf3
-#define	CODE_FOR_loongarch_fmina_df	CODE_FOR_sminadf3
-#define	CODE_FOR_loongarch_fclass_s	CODE_FOR_fclass_s
-#define	CODE_FOR_loongarch_fclass_d	CODE_FOR_fclass_d
-#define CODE_FOR_loongarch_frint_s      CODE_FOR_frint_s
-#define CODE_FOR_loongarch_frint_d      CODE_FOR_frint_d
-#define	CODE_FOR_loongarch_bytepick_w	CODE_FOR_bytepick_w
-#define	CODE_FOR_loongarch_bytepick_d	CODE_FOR_bytepick_d
-#define	CODE_FOR_loongarch_bitrev_4b	CODE_FOR_bitrev_4b
-#define	CODE_FOR_loongarch_bitrev_8b	CODE_FOR_bitrev_8b
+#define CODE_FOR_loongarch_fmax_sf CODE_FOR_smaxsf3
+#define CODE_FOR_loongarch_fmax_df CODE_FOR_smaxdf3
+#define CODE_FOR_loongarch_fmin_sf CODE_FOR_sminsf3
+#define CODE_FOR_loongarch_fmin_df CODE_FOR_smindf3
+#define CODE_FOR_loongarch_fmaxa_sf CODE_FOR_smaxasf3
+#define CODE_FOR_loongarch_fmaxa_df CODE_FOR_smaxadf3
+#define CODE_FOR_loongarch_fmina_sf CODE_FOR_sminasf3
+#define CODE_FOR_loongarch_fmina_df CODE_FOR_sminadf3
+#define CODE_FOR_loongarch_fclass_s CODE_FOR_fclass_s
+#define CODE_FOR_loongarch_fclass_d CODE_FOR_fclass_d
+#define CODE_FOR_loongarch_frint_s CODE_FOR_frint_s
+#define CODE_FOR_loongarch_frint_d CODE_FOR_frint_d
+#define CODE_FOR_loongarch_bytepick_w CODE_FOR_bytepick_w
+#define CODE_FOR_loongarch_bytepick_d CODE_FOR_bytepick_d
+#define CODE_FOR_loongarch_bitrev_4b CODE_FOR_bitrev_4b
+#define CODE_FOR_loongarch_bitrev_8b CODE_FOR_bitrev_8b
 
 /* Loongson support crc.  */
-#define	CODE_FOR_loongarch_crc_w_b_w	CODE_FOR_crc_w_b_w
-#define	CODE_FOR_loongarch_crc_w_h_w	CODE_FOR_crc_w_h_w
-#define	CODE_FOR_loongarch_crc_w_w_w	CODE_FOR_crc_w_w_w
-#define	CODE_FOR_loongarch_crc_w_d_w	CODE_FOR_crc_w_d_w
-#define	CODE_FOR_loongarch_crcc_w_b_w	CODE_FOR_crcc_w_b_w
-#define	CODE_FOR_loongarch_crcc_w_h_w	CODE_FOR_crcc_w_h_w
-#define	CODE_FOR_loongarch_crcc_w_w_w	CODE_FOR_crcc_w_w_w
-#define	CODE_FOR_loongarch_crcc_w_d_w	CODE_FOR_crcc_w_d_w
+#define CODE_FOR_loongarch_crc_w_b_w CODE_FOR_crc_w_b_w
+#define CODE_FOR_loongarch_crc_w_h_w CODE_FOR_crc_w_h_w
+#define CODE_FOR_loongarch_crc_w_w_w CODE_FOR_crc_w_w_w
+#define CODE_FOR_loongarch_crc_w_d_w CODE_FOR_crc_w_d_w
+#define CODE_FOR_loongarch_crcc_w_b_w CODE_FOR_crcc_w_b_w
+#define CODE_FOR_loongarch_crcc_w_h_w CODE_FOR_crcc_w_h_w
+#define CODE_FOR_loongarch_crcc_w_w_w CODE_FOR_crcc_w_w_w
+#define CODE_FOR_loongarch_crcc_w_d_w CODE_FOR_crcc_w_d_w
 
 /* Privileged state instruction.  */
 #define CODE_FOR_loongarch_cpucfg CODE_FOR_cpucfg
@@ -259,7 +263,7 @@ static const struct loongarch_builtin_description loongarch_builtins[] = {
   DIRECT_NO_TARGET_BUILTIN (dldpte, LARCH_VOID_FTYPE_DI_UQI, default),
   DIRECT_NO_TARGET_BUILTIN (ldpte, LARCH_VOID_FTYPE_SI_UQI, default),
 
- /* CRC Instrinsic */
+  /* CRC Instrinsic */
 
   DIRECT_BUILTIN (crc_w_b_w, LARCH_SI_FTYPE_QI_SI, default),
   DIRECT_BUILTIN (crc_w_h_w, LARCH_SI_FTYPE_HI_SI, default),
@@ -286,12 +290,12 @@ static const struct loongarch_builtin_description loongarch_builtins[] = {
   DIRECT_NO_TARGET_BUILTIN (iocsrwr_d, LARCH_VOID_FTYPE_UDI_USI, default),
 };
 
-/* Index I is the function declaration for loongarch_builtins[I], or null if the
-   function isn't defined on this target.  */
-static GTY(()) tree loongarch_builtin_decls[ARRAY_SIZE (loongarch_builtins)];
+/* Index I is the function declaration for loongarch_builtins[I], or null if
+   the function isn't defined on this target.  */
+static GTY (()) tree loongarch_builtin_decls[ARRAY_SIZE (loongarch_builtins)];
 /* Get the index I of the function declaration for loongarch_builtin_decls[I]
    using the instruction code or return null if not defined for the target.  */
-static GTY(()) int loongarch_get_builtin_decl_index[NUM_INSN_CODES];
+static GTY (()) int loongarch_get_builtin_decl_index[NUM_INSN_CODES];
 
 /* Return a type for 'const volatile void *'.  */
 
@@ -327,8 +331,7 @@ loongarch_build_cvpointer_type (void)
 
 /* LARCH_FTYPE_ATYPESN takes N LARCH_FTYPES-like type codes and lists
    their associated LARCH_ATYPEs.  */
-#define LARCH_FTYPE_ATYPES1(A, B) \
-  LARCH_ATYPE_##A, LARCH_ATYPE_##B
+#define LARCH_FTYPE_ATYPES1(A, B) LARCH_ATYPE_##A, LARCH_ATYPE_##B
 
 #define LARCH_FTYPE_ATYPES2(A, B, C) \
   LARCH_ATYPE_##A, LARCH_ATYPE_##B, LARCH_ATYPE_##C
@@ -350,11 +353,10 @@ loongarch_build_function_type (enum loongarch_function_type type)
   if (types[(int) type] == NULL_TREE)
     switch (type)
       {
-#define DEF_LARCH_FTYPE(NUM, ARGS)					\
-  case LARCH_FTYPE_NAME##NUM ARGS:					\
-    types[(int) type]							\
-      = build_function_type_list (LARCH_FTYPE_ATYPES##NUM ARGS,		\
-				  NULL_TREE);				\
+#define DEF_LARCH_FTYPE(NUM, ARGS) \
+  case LARCH_FTYPE_NAME##NUM ARGS: \
+    types[(int) type] \
+      = build_function_type_list (LARCH_FTYPE_ATYPES##NUM ARGS, NULL_TREE); \
     break;
 #include "config/loongarch/loongarch-ftypes.def"
 #undef DEF_LARCH_FTYPE
@@ -483,7 +485,6 @@ loongarch_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case LARCH_BUILTIN_DIRECT_NO_TARGET:
       return loongarch_expand_builtin_direct (d->icode, target, exp, false);
-
     }
   gcc_unreachable ();
 }
@@ -509,25 +510,24 @@ loongarch_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree hold_assign_mod = build2 (MODIFY_EXPR, LARCH_ATYPE_USI,
 				 fcsr_mod_var, hold_mod_val);
   tree set_fcsr_hold_call = build_call_expr (set_fcsr, 2, const0, fcsr_mod_var);
-  tree hold_all = build2 (COMPOUND_EXPR, LARCH_ATYPE_USI,
-			  hold_assign_orig, hold_assign_mod);
-  *hold = build2 (COMPOUND_EXPR, void_type_node, hold_all,
-		  set_fcsr_hold_call);
+  tree hold_all = build2 (COMPOUND_EXPR, LARCH_ATYPE_USI, hold_assign_orig,
+			  hold_assign_mod);
+  *hold = build2 (COMPOUND_EXPR, void_type_node, hold_all, set_fcsr_hold_call);
 
   *clear = build_call_expr (set_fcsr, 2, const0, fcsr_mod_var);
 
   tree get_fcsr_update_call = build_call_expr (get_fcsr, 1, const0);
-  *update = build2 (MODIFY_EXPR, LARCH_ATYPE_USI,
-		    exceptions_var, get_fcsr_update_call);
-  tree set_fcsr_update_call = build_call_expr (set_fcsr, 2, const0, fcsr_orig_var);
+  *update = build2 (MODIFY_EXPR, LARCH_ATYPE_USI, exceptions_var,
+		    get_fcsr_update_call);
+  tree set_fcsr_update_call = build_call_expr (set_fcsr, 2, const0,
+					       fcsr_orig_var);
   *update = build2 (COMPOUND_EXPR, void_type_node, *update,
 		    set_fcsr_update_call);
   tree atomic_feraiseexcept
     = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
-  tree int_exceptions_var = fold_convert (integer_type_node,
-					  exceptions_var);
-  tree atomic_feraiseexcept_call = build_call_expr (atomic_feraiseexcept,
-						    1, int_exceptions_var);
+  tree int_exceptions_var = fold_convert (integer_type_node, exceptions_var);
+  tree atomic_feraiseexcept_call = build_call_expr (atomic_feraiseexcept, 1,
+						    int_exceptions_var);
   *update = build2 (COMPOUND_EXPR, void_type_node, *update,
 		    atomic_feraiseexcept_call);
 }
@@ -539,4 +539,3 @@ loongarch_build_builtin_va_list (void)
 {
   return ptr_type_node;
 }
-

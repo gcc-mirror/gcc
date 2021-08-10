@@ -3263,7 +3263,7 @@
 {
   rtx target = loongarch_legitimize_call_address (XEXP (operands[1], 0));
 
- /*  Handle return values created by loongarch_return_fpr_pair. */
+ /*  Handle return values created by loongarch_return_fpr_pair.  */
   if (GET_CODE (operands[0]) == PARALLEL && XVECLEN (operands[0], 0) == 2)
     {
       emit_call_insn (gen_sibcall_value_multiple_internal (XEXP (XVECEXP (operands[0], 0, 0), 0),
@@ -3271,7 +3271,7 @@
     }
    else
     {
-      /*  Handle return values created by loongarch_return_fpr_single. */
+      /*  Handle return values created by loongarch_return_fpr_single.  */
       if (GET_CODE (operands[0]) == PARALLEL && XVECLEN (operands[0], 0) == 1)
       operands[0] = XEXP (XVECEXP (operands[0], 0, 0), 0);
 
@@ -3440,13 +3440,13 @@
   ""
 {
   rtx target = loongarch_legitimize_call_address (XEXP (operands[1], 0));
- /*  Handle return values created by loongarch_return_fpr_pair. */
+ /*  Handle return values created by loongarch_return_fpr_pair.  */
   if (GET_CODE (operands[0]) == PARALLEL && XVECLEN (operands[0], 0) == 2)
     emit_call_insn (gen_call_value_multiple_internal (XEXP (XVECEXP (operands[0], 0, 0), 0),
     target, operands[2], XEXP (XVECEXP (operands[0], 0, 1), 0)));
    else
     {
-      /*  Handle return values created by loongarch_return_fpr_single. */
+      /*  Handle return values created by loongarch_return_fpr_single.  */
       if (GET_CODE (operands[0]) == PARALLEL && XVECLEN (operands[0], 0) == 1)
       operands[0] = XEXP (XVECEXP (operands[0], 0, 0), 0);
 

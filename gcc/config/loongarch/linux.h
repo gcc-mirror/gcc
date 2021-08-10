@@ -17,37 +17,34 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef  TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()				\
-  do {								\
-    GNU_USER_TARGET_OS_CPP_BUILTINS();				\
-    /* The GNU C++ standard library requires this.  */		\
-    if (c_dialect_cxx ())					\
-      builtin_define ("_GNU_SOURCE");				\
-  } while (0)
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS() \
+  do \
+    { \
+      GNU_USER_TARGET_OS_CPP_BUILTINS (); \
+      /* The GNU C++ standard library requires this.  */ \
+      if (c_dialect_cxx ()) \
+	builtin_define ("_GNU_SOURCE"); \
+    } \
+  while (0)
 
 #define GNU_USER_LINK_EMULATION32 "elf32loongarch"
 #define GNU_USER_LINK_EMULATION64 "elf64loongarch"
 
-#define GLIBC_DYNAMIC_LINKERLP32 \
-  "/lib32/ld.so.1"
-#define GLIBC_DYNAMIC_LINKERLP64 \
-  "/lib64/ld.so.1"
+#define GLIBC_DYNAMIC_LINKERLP32 "/lib32/ld.so.1"
+#define GLIBC_DYNAMIC_LINKERLP64 "/lib64/ld.so.1"
 
 #define GNU_USER_DYNAMIC_LINKERLP32 GLIBC_DYNAMIC_LINKERLP32
 #define GNU_USER_DYNAMIC_LINKERLP64 GLIBC_DYNAMIC_LINKERLP64
 
-#undef  LINK_SPEC
-#define LINK_SPEC							\
-  GNU_USER_TARGET_LINK_SPEC
+#undef LINK_SPEC
+#define LINK_SPEC GNU_USER_TARGET_LINK_SPEC
 
-#undef  SUBTARGET_CC1_SPEC
-#define SUBTARGET_CC1_SPEC						\
-  GNU_USER_TARGET_CC1_SPEC
+#undef SUBTARGET_CC1_SPEC
+#define SUBTARGET_CC1_SPEC GNU_USER_TARGET_CC1_SPEC
 
-#undef  LIB_SPEC
-#define LIB_SPEC							\
-  GNU_USER_TARGET_LIB_SPEC
+#undef LIB_SPEC
+#define LIB_SPEC GNU_USER_TARGET_LIB_SPEC
 
 /* Define this to be nonzero if static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1

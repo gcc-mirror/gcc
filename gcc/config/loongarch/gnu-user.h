@@ -30,13 +30,15 @@ along with GCC; see the file COPYING3.  If not see
 /* #undef TARGET_DEFAULT */
 /* #define TARGET_DEFAULT MASK_ABICALLS */
 
-#define TARGET_OS_CPP_BUILTINS()				\
-  do {								\
-    GNU_USER_TARGET_OS_CPP_BUILTINS();				\
-    /* The GNU C++ standard library requires this.  */		\
-    if (c_dialect_cxx ())					\
-      builtin_define ("_GNU_SOURCE");				\
-  } while (0)
+#define TARGET_OS_CPP_BUILTINS() \
+  do \
+    { \
+      GNU_USER_TARGET_OS_CPP_BUILTINS (); \
+      /* The GNU C++ standard library requires this.  */ \
+      if (c_dialect_cxx ()) \
+	builtin_define ("_GNU_SOURCE"); \
+    } \
+  while (0)
 
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
@@ -82,19 +84,19 @@ along with GCC; see the file COPYING3.  If not see
    a LoongArch chip.  */
 #if defined(__loongarch__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
-# define EXTRA_SPEC_FUNCTIONS \
+#define EXTRA_SPEC_FUNCTIONS \
   { "local_cpu_detect", host_detect_local_cpu },
 
-# define MARCH_MTUNE_NATIVE_SPECS				\
-  " %{march=native:%<march=native %:local_cpu_detect(arch)}"	\
+#define MARCH_MTUNE_NATIVE_SPECS \
+  " %{march=native:%<march=native %:local_cpu_detect(arch)}" \
   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
 #else
-# define MARCH_MTUNE_NATIVE_SPECS ""
+#define MARCH_MTUNE_NATIVE_SPECS ""
 #endif
 
 #define LINUX_DRIVER_SELF_SPECS \
-  NO_SHARED_SPECS							\
-  MARCH_MTUNE_NATIVE_SPECS,						\
+  NO_SHARED_SPECS \
+  MARCH_MTUNE_NATIVE_SPECS, \
   "%{!mabi=*: -" MULTILIB_ABI_DEFAULT "}"
 
 #undef DRIVER_SELF_SPECS
@@ -103,10 +105,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   BASE_DRIVER_SELF_SPECS
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
-#undef	GNU_USER_TARGET_MATHFILE_SPEC
+#undef GNU_USER_TARGET_MATHFILE_SPEC
 #define GNU_USER_TARGET_MATHFILE_SPEC \
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
-#undef  ENDFILE_SPEC
+#undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
   GNU_USER_TARGET_MATHFILE_SPEC " " \
   GNU_USER_TARGET_ENDFILE_SPEC

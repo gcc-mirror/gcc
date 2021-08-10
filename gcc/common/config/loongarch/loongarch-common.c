@@ -30,9 +30,9 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool
 loongarch_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
+			 struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+			 const struct cl_decoded_option *decoded,
+			 location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
 

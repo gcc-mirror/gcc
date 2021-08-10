@@ -223,7 +223,7 @@ typedef rtx (*mulsidi3_gen_fn) (rtx, rtx, rtx);
 
 extern void loongarch_register_frame_header_opt (void);
 
-extern void loongarch_declare_function_name(FILE *, const char *, tree);
+extern void loongarch_declare_function_name (FILE *, const char *, tree);
 /* Routines implemented in loongarch-d.c  */
 extern void loongarch_d_target_versions (void);
 

@@ -1,5 +1,5 @@
 ;; Generic DFA-based pipeline description for LoongArch targets
-;;   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 

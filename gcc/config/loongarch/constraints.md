@@ -30,7 +30,7 @@
 ;; "i" "Matches a general integer constant." (Global non-architectural)
 ;; "j" SIBCALL_REGS
 ;; "k" <-----unused
-;; "l" "A signed 16-bit constant ."
+;; "l" "A signed 16-bit constant."
 ;; "m" "A memory operand whose address is formed by a base register and offset
 ;;      that is suitable for use in instructions with the same addressing mode
 ;;      as @code{st.w} and @code{ld.w}."
@@ -117,7 +117,7 @@
   "@internal")
 
 (define_constraint "l"
-"A signed 16-bit constant ."
+"A signed 16-bit constant."
 (and (match_code "const_int")
      (match_test "IMM16_OPERAND (ival)")))
 

@@ -24,7 +24,7 @@
 #ifdef __loongarch_hard_float
 
 /* Rounding control.  */
-#define _FPU_RC_NEAREST 0x000     /* RECOMMENDED */
+#define _FPU_RC_NEAREST 0x000     /* RECOMMENDED.  */
 #define _FPU_RC_ZERO    0x100
 #define _FPU_RC_UP      0x200
 #define _FPU_RC_DOWN    0x300
@@ -44,7 +44,7 @@ set_fast_math (void)
   /* Flush to zero, round to nearest, IEEE exceptions disabled.  */
   fcr = _FPU_RC_NEAREST;
 
-  _FPU_SETCW(fcr);
+  _FPU_SETCW (fcr);
 }
 
-#endif /* __loongarch_hard_float */
+#endif /* __loongarch_hard_float  */

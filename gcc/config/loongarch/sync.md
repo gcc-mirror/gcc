@@ -1,6 +1,5 @@
 ;; Machine description for LoongArch atomic operations.
 ;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
-;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on LoongArch target for GNU compiler.
 
 ;; This file is part of GCC.
@@ -179,7 +178,7 @@
   ""
 {
   /* We have no QImode atomics, so use the address LSBs to form a mask,
-     then use an aligned SImode atomic. */
+     then use an aligned SImode atomic.  */
   rtx result = operands[0];
   rtx mem = operands[1];
   rtx model = operands[2];

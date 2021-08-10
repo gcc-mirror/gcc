@@ -1,6 +1,5 @@
 /* LoongArch-specific code for C family languages.
    Copyright (C) 2020-2021 Free Software Foundation, Inc.
-   Contributed by Andrew Waterman (zhouyingkun@mail.loongson.cn).
 
    This file is part of GCC.
 
@@ -33,7 +32,8 @@
 
 /* TODO: what is the pfile technique ??? !!! */
 
-void loongarch_cpu_cpp_builtins (cpp_reader *pfile)
+void
+loongarch_cpu_cpp_builtins (cpp_reader *pfile)
 {
   builtin_assert ("machine=loongarch");
   builtin_assert ("cpu=loongarch");
@@ -46,7 +46,6 @@ void loongarch_cpu_cpp_builtins (cpp_reader *pfile)
 
   LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_ARCH", loongarch_arch_info);
   LARCH_CPP_SET_PROCESSOR ("_LOONGARCH_TUNE", loongarch_tune_info);
-
 
   switch (loongarch_abi)
     {
@@ -66,10 +65,8 @@ void loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("_LOONGARCH_SZINT", INT_TYPE_SIZE);
   builtin_define_with_int_value ("_LOONGARCH_SZLONG", LONG_TYPE_SIZE);
   builtin_define_with_int_value ("_LOONGARCH_SZPTR", POINTER_SIZE);
-  builtin_define_with_int_value ("_LOONGARCH_FPSET",
-				 32 / MAX_FPRS_PER_FMT);
-  builtin_define_with_int_value ("_LOONGARCH_SPFPSET",
-				 32);
+  builtin_define_with_int_value ("_LOONGARCH_FPSET", 32 / MAX_FPRS_PER_FMT);
+  builtin_define_with_int_value ("_LOONGARCH_SPFPSET", 32);
 
   /* These defines reflect the ABI in use, not whether the
      FPU is directly accessible.  */
