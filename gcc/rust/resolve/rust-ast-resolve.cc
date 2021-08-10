@@ -203,8 +203,11 @@ void
 Resolver::insert_new_definition (NodeId id, Definition def)
 {
   auto it = name_definitions.find (id);
-  rust_assert (it == name_definitions.end ());
-
+  if (it != name_definitions.end ())
+    {
+      rust_assert (it->second.is_equal (def));
+      return;
+    }
   name_definitions[id] = def;
 }
 
