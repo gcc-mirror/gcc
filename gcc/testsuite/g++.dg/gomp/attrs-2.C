@@ -501,7 +501,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     }
   }
   extern int t2;
-  [[omp::directive (threadprivate (t2))]]
+  [[omp::directive (threadprivate (t2))]];
   extern int t2;
   [[omp::directive (declare reduction (dr: int: omp_out += omp_in),initializer (omp_priv = 0))]]
   ;
