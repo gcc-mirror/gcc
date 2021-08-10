@@ -111,7 +111,7 @@ private:
   ResolveToplevelImplItem (const CanonicalPath &prefix)
     : ResolverBase (UNKNOWN_NODEID), prefix (prefix)
   {
-    rust_assert (!prefix.is_error ());
+    rust_assert (!prefix.is_empty ());
   }
 
   const CanonicalPath &prefix;
