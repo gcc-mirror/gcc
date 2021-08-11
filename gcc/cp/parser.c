@@ -24284,7 +24284,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, cp_parser_flags flags)
 	 and warn in grokparms if appropriate.  */
       deprecated_state = DEPRECATED_SUPPRESS;
 
-      if (parameter)
+      if (parameter && !cp_parser_error_occurred (parser))
 	{
 	  decl = grokdeclarator (parameter->declarator,
 				 &parameter->decl_specifiers,
@@ -24499,7 +24499,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
       parser->default_arg_ok_p = false;
 
       /* After seeing a decl-specifier-seq, if the next token is not a
-	 "(", there is no possibility that the code is a valid
+	 "(" or "{", there is no possibility that the code is a valid
 	 expression.  Therefore, if parsing tentatively, we commit at
 	 this point.  */
       if (!parser->in_template_argument_list_p
@@ -24512,9 +24512,18 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	     of some object of type "char" to "int".  */
 	  && !parser->in_type_id_in_expr_p
 	  && cp_parser_uncommitted_to_tentative_parse_p (parser)
-	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
-	cp_parser_commit_to_tentative_parse (parser);
+	{
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	    {
+	      if (decl_specifiers.type
+		  && template_placeholder_p (decl_specifiers.type))
+		/* This is a CTAD expression, not a parameter declaration.  */
+		cp_parser_simulate_error (parser);
+	    }
+	  else
+	    cp_parser_commit_to_tentative_parse (parser);
+	}
       /* Parse the declarator.  */
       declarator_token_start = token;
       declarator = cp_parser_declarator (parser,
