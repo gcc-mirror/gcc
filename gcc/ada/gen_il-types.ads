@@ -77,6 +77,7 @@ package Gen_IL.Types is
 
       Node_Kind, -- root of node type hierarchy
       N_Access_To_Subprogram_Definition,
+      N_Alternative,
       N_Array_Type_Definition,
       N_Binary_Op,
       N_Body_Stub,
@@ -94,8 +95,11 @@ package Gen_IL.Types is
       N_Has_Condition,
       N_Has_Entity,
       N_Has_Etype,
+      N_Is_Case_Choice,
       N_Is_Decl,
+      N_Is_Exception_Choice,
       N_Is_Index,
+      N_Is_Range,
       N_Multiplying_Operator,
       N_Later_Decl_Item,
       N_Membership_Test,

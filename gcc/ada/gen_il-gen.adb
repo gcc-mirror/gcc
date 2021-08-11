@@ -652,7 +652,7 @@ package body Gen_IL.Gen is
       --  Used by Put_C_Getters to print out one high-level getter.
 
       procedure Put_Union_Membership
-        (S : in out Sink; Root : Root_Type);
+        (S : in out Sink; Root : Root_Type; Only_Prototypes : Boolean);
       --  Used by Put_Sinfo_Dot_H and Put_Einfo_Dot_H to print out functions to
       --  test membership in a union type.
 
@@ -3175,6 +3175,8 @@ package body Gen_IL.Gen is
          end Put_Kind_Subtype;
 
       begin
+         Put_Union_Membership (S, Root, Only_Prototypes => True);
+
          Iterate_Types (Root, Pre => Put_Enum_Lit'Access);
 
          Put (S, "#define Number_" & Node_Or_Entity (Root) & "_Kinds " &
@@ -3182,7 +3184,7 @@ package body Gen_IL.Gen is
 
          Iterate_Types (Root, Pre => Put_Kind_Subtype'Access);
 
-         Put_Union_Membership (S, Root);
+         Put_Union_Membership (S, Root, Only_Prototypes => False);
       end Put_C_Type_And_Subtypes;
 
       ------------------
@@ -3269,7 +3271,7 @@ package body Gen_IL.Gen is
       --------------------------
 
       procedure Put_Union_Membership
-        (S : in out Sink; Root : Root_Type) is
+        (S : in out Sink; Root : Root_Type; Only_Prototypes : Boolean) is
 
          procedure Put_Ors (T : Abstract_Type);
          --  Print the "or" (i.e. "||") of tests whether kind is in each child
@@ -3303,22 +3305,27 @@ package body Gen_IL.Gen is
          end Put_Ors;
 
       begin
-         Put (S, LF & "// Membership tests for union types" & LF & LF);
+         if not Only_Prototypes then
+            Put (S, LF & "// Membership tests for union types" & LF & LF);
+         end if;
 
          for T in First_Abstract (Root) .. Last_Abstract (Root) loop
             if Type_Table (T) /= null and then Type_Table (T).Is_Union then
                Put (S, "INLINE Boolean" & LF);
                Put (S, "Is_In_" & Image (T) & " (" &
-                    Node_Or_Entity (Root) & "_Kind kind)" & LF);
+                    Node_Or_Entity (Root) & "_Kind kind)" &
+                    (if Only_Prototypes then ";" else "") & LF);
 
-               Put (S, "{" & LF);
-               Increase_Indent (S, 3);
-               Put (S, "return" & LF);
-               Increase_Indent (S, 3);
-               Put_Ors (T);
-               Decrease_Indent (S, 3);
-               Decrease_Indent (S, 3);
-               Put (S, ";" & LF & "}" & LF);
+               if not Only_Prototypes then
+                  Put (S, "{" & LF);
+                  Increase_Indent (S, 3);
+                  Put (S, "return" & LF);
+                  Increase_Indent (S, 3);
+                  Put_Ors (T);
+                  Decrease_Indent (S, 3);
+                  Decrease_Indent (S, 3);
+                  Put (S, ";" & LF & "}" & LF);
+               end if;
 
                Put (S, "" & LF);
             end if;

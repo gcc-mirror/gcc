@@ -1686,4 +1686,31 @@ begin -- Gen_IL.Gen.Gen_Nodes
              N_Subprogram_Specification));
    --  Nodes that can be returned by Declaration_Node
 
+   Union (N_Is_Range,
+          Children =>
+            (N_Character_Literal,
+             N_Entity_Name,
+             N_Has_Bounds,
+             N_Integer_Literal,
+             N_Subtype_Indication));
+   --  Nodes that can be used to specify a range
+
+   Union (N_Is_Case_Choice,
+          Children =>
+            (N_Is_Range,
+             N_Others_Choice));
+   --  Nodes that can be in the choices of a case statement
+
+   Union (N_Is_Exception_Choice,
+          Children =>
+            (N_Entity_Name,
+             N_Others_Choice));
+   --  Nodes that can be in the choices of an exception handler
+
+   Union (N_Alternative,
+          Children =>
+            (N_Case_Statement_Alternative,
+             N_Variant));
+   --  Nodes that can be alternatives in case contructs
+
 end Gen_IL.Gen.Gen_Nodes;
