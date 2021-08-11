@@ -2035,14 +2035,11 @@ package body Exp_Util is
                Stmts    => Stmts);
          end if;
 
-      --  Otherwise the "full" DIC procedure verifies the DICs of the full
-      --  view, well as DICs inherited from parent types. In addition, it
-      --  indirectly verifies the DICs of the partial view by calling the
-      --  "partial" DIC procedure.
+      --  Otherwise, the "full" DIC procedure verifies the DICs inherited from
+      --  parent types, as well as indirectly verifying the DICs of the partial
+      --  view by calling the "partial" DIC procedure.
 
       else
-         pragma Assert (Present (Full_Typ));
-
          --  Check the DIC of the partial view by calling the "partial" DIC
          --  procedure, unless the partial DIC body is empty. Generate:
 
@@ -2054,44 +2051,6 @@ package body Exp_Util is
                 Name                   => New_Occurrence_Of (Part_Proc, Loc),
                 Parameter_Associations => New_List (
                   New_Occurrence_Of (Obj_Id, Loc))));
-         end if;
-
-         --  Derived subtypes do not have a partial view
-
-         if Present (Priv_Typ) then
-
-            --  The processing of the "full" DIC procedure intentionally
-            --  skips the partial view because a) this may result in changes of
-            --  visibility and b) lead to duplicate checks. However, when the
-            --  full view is the underlying full view of an untagged derived
-            --  type whose parent type is private, partial DICs appear on
-            --  the rep item chain of the partial view only.
-
-            --    package Pack_1 is
-            --       type Root ... is private;
-            --    private
-            --       <full view of Root>
-            --    end Pack_1;
-
-            --    with Pack_1;
-            --    package Pack_2 is
-            --       type Child is new Pack_1.Root with Type_DIC => ...;
-            --       <underlying full view of Child>
-            --    end Pack_2;
-
-            --  As a result, the processing of the full view must also consider
-            --  all DICs of the partial view.
-
-            if Is_Untagged_Private_Derivation (Priv_Typ, Full_Typ) then
-               null;
-
-            --  Otherwise the DICs of the partial view are ignored
-
-            else
-               --  Ignore the DICs of the partial view by eliminating the view
-
-               Priv_Typ := Empty;
-            end if;
          end if;
 
          --  Process inherited Default_Initial_Conditions for all parent types
