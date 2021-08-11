@@ -70,6 +70,7 @@ GRS_OBJS = \
     rust/rust-ast-full-test.o \
     rust/rust-session-manager.o \
     rust/rust-compile.o \
+    rust/rust-mangle.o \
     rust/rust-compile-resolve-path.o \
     rust/rust-macro-expand.o \
     rust/rust-hir-full-test.o \
