@@ -21,32 +21,12 @@
 
 #include "rust-system.h"
 #include "rust-location.h"
+#include "rust-mapping-common.h"
 
 #include "rust-ast-full-decls.h"
 #include "rust-hir-full-decls.h"
 
 namespace Rust {
-
-// refers to a Crate
-typedef uint32_t CrateNum;
-// refers to any node in the AST in current Crate
-typedef uint32_t NodeId;
-// refers to any node in the HIR for the current crate
-typedef uint32_t HirId;
-// refers to any top-level decl in HIR
-typedef uint32_t LocalDefId;
-// refers to <Crate><DefId>
-typedef uint64_t DefId;
-
-#define DEF_ID_CRATE_MASK 0xFFFFFFFF00000000
-#define DEF_ID_LOCAL_DEF_MASK 0x00000000FFFFFFFF
-
-#define UNKNOWN_CREATENUM ((uint32_t) (0))
-#define UNKNOWN_NODEID ((uint32_t) (0))
-#define UNKNOWN_HIRID ((uint32_t) (0))
-#define UNKNOWN_LOCAL_DEFID ((uint32_t) (0))
-#define UNKNOWN_DEFID ((uint64_t) (0))
-
 namespace Analysis {
 
 class NodeMapping
