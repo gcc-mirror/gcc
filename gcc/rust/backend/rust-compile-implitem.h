@@ -52,7 +52,12 @@ public:
     ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
-    std::string ident = self->get_name () + "_" + constant.get_identifier ();
+    const Resolver::CanonicalPath *canonical_path = nullptr;
+    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+      constant.get_mappings ().get_crate_num (),
+      constant.get_mappings ().get_nodeid (), &canonical_path));
+
+    std::string ident = canonical_path->get ();
     Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
       type, constant.get_identifier (), value, constant.get_locus ());
 
@@ -121,13 +126,18 @@ public:
     if (function.has_visibility ())
       flags |= Backend::function_is_visible;
 
-    std::string fn_identifier
-      = self->get_name () + "_" + function.get_function_name ();
+    const Resolver::CanonicalPath *canonical_path = nullptr;
+    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+      function.get_mappings ().get_crate_num (),
+      function.get_mappings ().get_nodeid (), &canonical_path));
+
+    std::string ir_symbol_name
+      = canonical_path->get () + fntype->subst_as_string ();
     std::string asm_name
       = ctx->mangle_impl_item (self, fntype, function.get_function_name ());
 
     Bfunction *fndecl
-      = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
+      = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
     ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
 
