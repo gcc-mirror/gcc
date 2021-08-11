@@ -124,7 +124,7 @@ void t3()
     assert (n[i] == 2);
 
   for (i = 0; i < 1024; i++)
-    assert (arr[i] == ((i % 64) < 32) ? 1 : -1);
+    assert (arr[i] == (((i % 64) < 32) ? 1 : -1));
 }
 
 
@@ -356,7 +356,7 @@ void t9()
       }
 
       for (i = 0; i < 1024; i++)
-	assert (arr[i] == ((i % 3) == 0) ? 1 : 2);
+	assert (arr[i] == ((i % 3) == 0 ? 1 : 2));
     }
 }
 
@@ -960,7 +960,7 @@ void t23()
   }
 
   for (i = 0; i < 32; i++)
-    assert (arr[i] == ((i % 2) != 0) ? i + 1 : i + 2);
+    assert (arr[i] == (((i % 2) != 0) ? i + 1 : i + 2));
 }
 
 
