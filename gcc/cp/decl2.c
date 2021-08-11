@@ -3447,6 +3447,12 @@ set_guard (tree guard)
 static bool
 var_defined_without_dynamic_init (tree var)
 {
+  /* constinit vars are guaranteed to not have dynamic initializer,
+     but still registering the destructor counts as dynamic initialization.  */
+  if (DECL_DECLARED_CONSTINIT_P (var)
+      && COMPLETE_TYPE_P (TREE_TYPE (var))
+      && !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var)))
+    return true;
   /* If it's defined in another TU, we can't tell.  */
   if (DECL_EXTERNAL (var))
     return false;
