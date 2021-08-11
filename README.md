@@ -1,6 +1,6 @@
 ![C/C++ CI](https://github.com/Rust-GCC/gccrs/workflows/C/C++%20CI/badge.svg)
 [![GCC Bootstrap Build](https://github.com/Rust-GCC/gccrs/actions/workflows/bootstrap.yml/badge.svg)](https://github.com/Rust-GCC/gccrs/actions/workflows/bootstrap.yml)
-![Docker Build](https://img.shields.io/docker/cloud/build/philberty/gccrs)
+[![Build Docker image](https://github.com/Rust-GCC/gccrs/actions/workflows/docker.yml/badge.svg)](https://github.com/Rust-GCC/gccrs/actions/workflows/docker.yml)
 ![Docker Pulls](https://img.shields.io/docker/pulls/philberty/gccrs)
 [![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://gcc-rust.zulipchat.com/)
 [![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/32890)
