@@ -354,10 +354,12 @@ public:
 				 std::move (function_params),
 				 std::move (return_type),
 				 std::move (where_clause));
-    HIR::Expr *block_expr
-      = func.has_definition ()
-	  ? ASTLoweringExpr::translate (func.get_definition ().get ())
-	  : nullptr;
+    bool terminated = false;
+    std::unique_ptr<HIR::BlockExpr> block_expr
+      = func.has_definition () ? std::unique_ptr<HIR::BlockExpr> (
+	  ASTLoweringBlock::translate (func.get_definition ().get (),
+				       &terminated))
+			       : nullptr;
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, func.get_node_id (),
@@ -366,8 +368,8 @@ public:
 
     HIR::TraitItemFunc *trait_item
       = new HIR::TraitItemFunc (mapping, std::move (decl),
-				std::unique_ptr<HIR::Expr> (block_expr),
-				func.get_outer_attrs (), func.get_locus ());
+				std::move (block_expr), func.get_outer_attrs (),
+				func.get_locus ());
     translated = trait_item;
     mappings->insert_hir_trait_item (mapping.get_crate_num (),
 				     mapping.get_hirid (), translated);
@@ -423,10 +425,12 @@ public:
 				 std::move (function_params),
 				 std::move (return_type),
 				 std::move (where_clause));
-    HIR::Expr *block_expr
-      = method.has_definition ()
-	  ? ASTLoweringExpr::translate (method.get_definition ().get ())
-	  : nullptr;
+    bool terminated = false;
+    std::unique_ptr<HIR::BlockExpr> block_expr
+      = method.has_definition () ? std::unique_ptr<HIR::BlockExpr> (
+	  ASTLoweringBlock::translate (method.get_definition ().get (),
+				       &terminated))
+				 : nullptr;
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, method.get_node_id (),
@@ -435,7 +439,7 @@ public:
 
     HIR::TraitItemFunc *trait_item
       = new HIR::TraitItemFunc (mapping, std::move (decl),
-				std::unique_ptr<HIR::Expr> (block_expr),
+				std::move (block_expr),
 				method.get_outer_attrs (), method.get_locus ());
     translated = trait_item;
     mappings->insert_hir_trait_item (mapping.get_crate_num (),

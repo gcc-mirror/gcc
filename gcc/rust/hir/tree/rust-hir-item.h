@@ -2270,7 +2270,7 @@ class TraitItemFunc : public TraitItem
 {
   AST::AttrVec outer_attrs;
   TraitFunctionDecl decl;
-  std::unique_ptr<Expr> block_expr;
+  std::unique_ptr<BlockExpr> block_expr;
   Location locus;
 
 public:
@@ -2278,8 +2278,8 @@ public:
   bool has_definition () const { return block_expr != nullptr; }
 
   TraitItemFunc (Analysis::NodeMapping mappings, TraitFunctionDecl decl,
-		 std::unique_ptr<Expr> block_expr, AST::AttrVec outer_attrs,
-		 Location locus)
+		 std::unique_ptr<BlockExpr> block_expr,
+		 AST::AttrVec outer_attrs, Location locus)
     : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
       decl (std::move (decl)), block_expr (std::move (block_expr)),
       locus (locus)
@@ -2291,7 +2291,7 @@ public:
       decl (other.decl), locus (other.locus)
   {
     if (other.block_expr != nullptr)
-      block_expr = other.block_expr->clone_expr ();
+      block_expr = other.block_expr->clone_block_expr ();
   }
 
   // Overloaded assignment operator to clone
@@ -2303,7 +2303,7 @@ public:
     locus = other.locus;
     mappings = other.mappings;
     if (other.block_expr != nullptr)
-      block_expr = other.block_expr->clone_expr ();
+      block_expr = other.block_expr->clone_block_expr ();
 
     return *this;
   }
@@ -2322,10 +2322,15 @@ public:
 
   bool has_block_defined () const { return block_expr != nullptr; }
 
-  std::unique_ptr<Expr> &get_block_expr ()
+  std::unique_ptr<BlockExpr> &get_block_expr ()
   {
     rust_assert (has_block_defined ());
     return block_expr;
+  }
+
+  const std::string trait_identifier () const override final
+  {
+    return decl.get_function_name ();
   }
 
 protected:
@@ -2400,6 +2405,8 @@ public:
     return expr;
   }
 
+  const std::string trait_identifier () const override final { return name; }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemConst *clone_trait_item_impl () const override
@@ -2473,6 +2480,8 @@ public:
   {
     return type_param_bounds;
   }
+
+  const std::string trait_identifier () const override final { return name; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
