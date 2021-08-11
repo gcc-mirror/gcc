@@ -577,9 +577,11 @@
 	instead of symlink_status.
 	* src/filesystem/ops.cc (fs::create_directories): Likewise.
 	* testsuite/27_io/filesystem/operations/create_directories.cc:
+	Check symlink to existing directory.
 	* testsuite/27_io/filesystem/operations/create_directory.cc: Do
 	not test with symlinks on Windows.
 	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Check symlink to existing directory.
 	* testsuite/experimental/filesystem/operations/create_directory.cc:
 	Do not test with symlinks on Windows.
 
