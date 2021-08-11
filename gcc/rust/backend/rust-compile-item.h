@@ -53,7 +53,12 @@ public:
     Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (var.get_expr (), ctx);
 
-    std::string name = var.get_identifier ();
+    const Resolver::CanonicalPath *canonical_path = nullptr;
+    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+      var.get_mappings ().get_crate_num (), var.get_mappings ().get_nodeid (),
+      &canonical_path));
+
+    std::string name = canonical_path->get ();
     std::string asm_name = ctx->mangle_item (resolved_type, name);
 
     bool is_external = false;
@@ -81,8 +86,15 @@ public:
     ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
-    Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
-      type, constant.get_identifier (), value, constant.get_locus ());
+    const Resolver::CanonicalPath *canonical_path = nullptr;
+    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+      constant.get_mappings ().get_crate_num (),
+      constant.get_mappings ().get_nodeid (), &canonical_path));
+
+    std::string ident = canonical_path->get ();
+    Bexpression *const_expr
+      = ctx->get_backend ()->named_constant_expression (type, ident, value,
+							constant.get_locus ());
 
     ctx->push_const (const_expr);
     ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
@@ -149,7 +161,13 @@ public:
     if (is_main_fn || function.has_visibility ())
       flags |= Backend::function_is_visible;
 
-    std::string ir_symbol_name = function.get_function_name ();
+    const Resolver::CanonicalPath *canonical_path = nullptr;
+    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+      function.get_mappings ().get_crate_num (),
+      function.get_mappings ().get_nodeid (), &canonical_path));
+
+    std::string ir_symbol_name
+      = canonical_path->get () + fntype->subst_as_string ();
     std::string asm_name = function.get_function_name ();
 
     // we don't mangle the main fn since we haven't implemented the main shim

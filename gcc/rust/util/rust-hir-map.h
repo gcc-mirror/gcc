@@ -21,32 +21,13 @@
 
 #include "rust-system.h"
 #include "rust-location.h"
+#include "rust-mapping-common.h"
+#include "rust-canonical-path.h"
 
 #include "rust-ast-full-decls.h"
 #include "rust-hir-full-decls.h"
 
 namespace Rust {
-
-// refers to a Crate
-typedef uint32_t CrateNum;
-// refers to any node in the AST in current Crate
-typedef uint32_t NodeId;
-// refers to any node in the HIR for the current crate
-typedef uint32_t HirId;
-// refers to any top-level decl in HIR
-typedef uint32_t LocalDefId;
-// refers to <Crate><DefId>
-typedef uint64_t DefId;
-
-#define DEF_ID_CRATE_MASK 0xFFFFFFFF00000000
-#define DEF_ID_LOCAL_DEF_MASK 0x00000000FFFFFFFF
-
-#define UNKNOWN_CREATENUM ((uint32_t) (0))
-#define UNKNOWN_NODEID ((uint32_t) (0))
-#define UNKNOWN_HIRID ((uint32_t) (0))
-#define UNKNOWN_LOCAL_DEFID ((uint32_t) (0))
-#define UNKNOWN_DEFID ((uint64_t) (0))
-
 namespace Analysis {
 
 class NodeMapping
@@ -247,6 +228,42 @@ public:
     return lookup->second;
   }
 
+  void insert_canonical_path (CrateNum crate, NodeId id,
+			      const Resolver::CanonicalPath path)
+  {
+    const Resolver::CanonicalPath *p = nullptr;
+    if (lookup_canonical_path (crate, id, &p))
+      {
+	// if we have already stored a canonical path this is ok so long as this
+	// new path is equal or is smaller that the existing one but in that
+	// case we ignore it.
+	if (p->is_equal (path))
+	  return;
+	else
+	  {
+	    rust_assert (p->size () >= path.size ());
+	    return;
+	  }
+      }
+
+    paths[crate].emplace (id, std::move (path));
+  }
+
+  bool lookup_canonical_path (CrateNum crate, NodeId id,
+			      const Resolver::CanonicalPath **path)
+  {
+    auto it = paths.find (crate);
+    if (it == paths.end ())
+      return false;
+
+    auto iy = it->second.find (id);
+    if (iy == it->second.end ())
+      return false;
+
+    *path = &iy->second;
+    return true;
+  }
+
 private:
   Mappings ();
 
@@ -282,6 +299,9 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::GenericParam *> >
     hirGenericParamMappings;
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
+
+  // canonical paths
+  std::map<CrateNum, std::map<NodeId, const Resolver::CanonicalPath> > paths;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;
