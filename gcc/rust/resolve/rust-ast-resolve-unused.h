@@ -27,7 +27,7 @@ namespace Resolver {
 class ScanUnused
 {
 public:
-  static void ScanRib (Rib *r)
+  static bool ScanRib (Rib *r)
   {
     r->iterate_decls ([&] (NodeId decl_node_id, Location locus) -> bool {
       CanonicalPath ident = CanonicalPath::create_empty ();
@@ -43,14 +43,15 @@ public:
 	}
       return true;
     });
+    return true;
   }
 
   static void Scan ()
   {
     auto resolver = Resolver::get ();
-    resolver->iterate_name_ribs ([&] (Rib *r) -> void { ScanRib (r); });
-    resolver->iterate_type_ribs ([&] (Rib *r) -> void { ScanRib (r); });
-    resolver->iterate_label_ribs ([&] (Rib *r) -> void { ScanRib (r); });
+    resolver->iterate_name_ribs ([&] (Rib *r) -> bool { return ScanRib (r); });
+    resolver->iterate_type_ribs ([&] (Rib *r) -> bool { return ScanRib (r); });
+    resolver->iterate_label_ribs ([&] (Rib *r) -> bool { return ScanRib (r); });
   }
 };
 

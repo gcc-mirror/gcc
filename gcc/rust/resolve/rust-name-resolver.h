@@ -335,27 +335,30 @@ public:
     return it->second.size ();
   }
 
-  void iterate_name_ribs (std::function<void (Rib *)> cb)
+  void iterate_name_ribs (std::function<bool (Rib *)> cb)
   {
     for (auto it = name_ribs.begin (); it != name_ribs.end (); it++)
-      cb (it->second);
+      if (!cb (it->second))
+	break;
   }
 
-  void iterate_type_ribs (std::function<void (Rib *)> cb)
+  void iterate_type_ribs (std::function<bool (Rib *)> cb)
   {
     for (auto it = type_ribs.begin (); it != type_ribs.end (); it++)
       {
 	if (it->first == global_type_node_id)
 	  continue;
 
-	cb (it->second);
+	if (!cb (it->second))
+	  break;
       }
   }
 
-  void iterate_label_ribs (std::function<void (Rib *)> cb)
+  void iterate_label_ribs (std::function<bool (Rib *)> cb)
   {
     for (auto it = label_ribs.begin (); it != label_ribs.end (); it++)
-      cb (it->second);
+      if (!cb (it->second))
+	break;
   }
 
 private:
