@@ -121,8 +121,14 @@ private:
   AST::PathInExpression parse_path_in_expression ();
   AST::PathExprSegment parse_path_expr_segment ();
   AST::QualifiedPathInExpression
-  parse_qualified_path_in_expression (bool pratt_parse = false);
-  AST::QualifiedPathType parse_qualified_path_type (bool pratt_parse = false);
+  // When given a pratt_parsed_loc, use it as the location of the
+  // first token parsed in the expression (the parsing of that first
+  // token should be skipped).
+  parse_qualified_path_in_expression (Location pratt_parsed_loc
+				      = Linemap::unknown_location ());
+  AST::QualifiedPathType
+  parse_qualified_path_type (Location pratt_parsed_loc
+			     = Linemap::unknown_location ());
   AST::QualifiedPathInType parse_qualified_path_in_type ();
 
   // Token tree or macro related
@@ -469,32 +475,36 @@ private:
   parse_expr_with_block (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExprWithoutBlock>
   parse_expr_without_block (AST::AttrVec outer_attrs = AST::AttrVec ());
-  std::unique_ptr<AST::BlockExpr> parse_block_expr (AST::AttrVec outer_attrs
-						    = AST::AttrVec (),
-						    bool pratt_parse = false);
-  std::unique_ptr<AST::IfExpr> parse_if_expr (AST::AttrVec outer_attrs
-					      = AST::AttrVec (),
-					      bool pratt_parse = false);
-  std::unique_ptr<AST::IfLetExpr> parse_if_let_expr (AST::AttrVec outer_attrs
-						     = AST::AttrVec (),
-						     bool pratt_parse = false);
+  // When given a pratt_parsed_loc, use it as the location of the
+  // first token parsed in the expression (the parsing of that first
+  // token should be skipped).
+  std::unique_ptr<AST::BlockExpr>
+  parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		    Location pratt_parsed_loc = Linemap::unknown_location ());
+  std::unique_ptr<AST::IfExpr>
+  parse_if_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		 Location pratt_parsed_loc = Linemap::unknown_location ());
+  std::unique_ptr<AST::IfLetExpr>
+  parse_if_let_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		     Location pratt_parsed_loc = Linemap::unknown_location ());
   std::unique_ptr<AST::LoopExpr>
   parse_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		   AST::LoopLabel label = AST::LoopLabel::error (),
-		   bool pratt_parse = false);
+		   Location pratt_parsed_loc = Linemap::unknown_location ());
   std::unique_ptr<AST::WhileLoopExpr>
   parse_while_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 			 AST::LoopLabel label = AST::LoopLabel::error (),
-			 bool pratt_parse = false);
+			 Location pratt_parsed_loc
+			 = Linemap::unknown_location ());
   std::unique_ptr<AST::WhileLetLoopExpr>
   parse_while_let_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 			     AST::LoopLabel label = AST::LoopLabel::error ());
   std::unique_ptr<AST::ForLoopExpr>
   parse_for_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		       AST::LoopLabel label = AST::LoopLabel::error ());
-  std::unique_ptr<AST::MatchExpr> parse_match_expr (AST::AttrVec outer_attrs
-						    = AST::AttrVec (),
-						    bool pratt_parse = false);
+  std::unique_ptr<AST::MatchExpr>
+  parse_match_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		    Location pratt_parsed_loc = Linemap::unknown_location ());
   AST::MatchArm parse_match_arm ();
   std::vector<std::unique_ptr<AST::Pattern> >
   parse_match_arm_patterns (TokenId end_token_id);
@@ -510,24 +520,30 @@ private:
   AST::ClosureParam parse_closure_param ();
   std::unique_ptr<AST::LiteralExpr> parse_literal_expr (AST::AttrVec outer_attrs
 							= AST::AttrVec ());
-  std::unique_ptr<AST::ReturnExpr> parse_return_expr (AST::AttrVec outer_attrs
-						      = AST::AttrVec (),
-						      bool pratt_parse = false);
-  std::unique_ptr<AST::BreakExpr> parse_break_expr (AST::AttrVec outer_attrs
-						    = AST::AttrVec (),
-						    bool pratt_parse = false);
+  // When given a pratt_parsed_loc, use it as the location of the
+  // first token parsed in the expression (the parsing of that first
+  // token should be skipped).
+  std::unique_ptr<AST::ReturnExpr>
+  parse_return_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		     Location pratt_parsed_loc = Linemap::unknown_location ());
+  std::unique_ptr<AST::BreakExpr>
+  parse_break_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		    Location pratt_parsed_loc = Linemap::unknown_location ());
   std::unique_ptr<AST::ContinueExpr>
   parse_continue_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		       bool pratt_parse = false);
+		       Location pratt_parsed_loc
+		       = Linemap::unknown_location ());
   std::unique_ptr<AST::UnsafeBlockExpr>
   parse_unsafe_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-			   bool pratt_parse = false);
-  std::unique_ptr<AST::ArrayExpr> parse_array_expr (AST::AttrVec outer_attrs
-						    = AST::AttrVec (),
-						    bool pratt_parse = false);
+			   Location pratt_parsed_loc
+			   = Linemap::unknown_location ());
+  std::unique_ptr<AST::ArrayExpr>
+  parse_array_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		    Location pratt_parsed_loc = Linemap::unknown_location ());
   std::unique_ptr<AST::ExprWithoutBlock>
   parse_grouped_or_tuple_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-			       bool pratt_parse = false);
+			       Location pratt_parsed_loc
+			       = Linemap::unknown_location ());
   std::unique_ptr<AST::StructExprField> parse_struct_expr_field ();
   bool will_be_expr_with_block ();
 
