@@ -110,16 +110,20 @@ public:
       }
   }
 
+  size_t size () const { return segs.size (); }
+
   NodeId get_id () const
   {
     rust_assert (!segs.empty ());
     return segs.back ().first;
   }
 
-  bool operator== (const CanonicalPath &b) const
+  bool is_equal (const CanonicalPath &b) const
   {
     return get ().compare (b.get ()) == 0;
   }
+
+  bool operator== (const CanonicalPath &b) const { return is_equal (b); }
 
   bool operator< (const CanonicalPath &b) const { return get () < b.get (); }
 

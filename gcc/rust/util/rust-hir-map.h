@@ -22,6 +22,7 @@
 #include "rust-system.h"
 #include "rust-location.h"
 #include "rust-mapping-common.h"
+#include "rust-canonical-path.h"
 
 #include "rust-ast-full-decls.h"
 #include "rust-hir-full-decls.h"
@@ -227,6 +228,42 @@ public:
     return lookup->second;
   }
 
+  void insert_canonical_path (CrateNum crate, NodeId id,
+			      const Resolver::CanonicalPath path)
+  {
+    const Resolver::CanonicalPath *p = nullptr;
+    if (lookup_canonical_path (crate, id, &p))
+      {
+	// if we have already stored a canonical path this is ok so long as this
+	// new path is equal or is smaller that the existing one but in that
+	// case we ignore it.
+	if (p->is_equal (path))
+	  return;
+	else
+	  {
+	    rust_assert (p->size () >= path.size ());
+	    return;
+	  }
+      }
+
+    paths[crate].emplace (id, std::move (path));
+  }
+
+  bool lookup_canonical_path (CrateNum crate, NodeId id,
+			      const Resolver::CanonicalPath **path)
+  {
+    auto it = paths.find (crate);
+    if (it == paths.end ())
+      return false;
+
+    auto iy = it->second.find (id);
+    if (iy == it->second.end ())
+      return false;
+
+    *path = &iy->second;
+    return true;
+  }
+
 private:
   Mappings ();
 
@@ -262,6 +299,9 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::GenericParam *> >
     hirGenericParamMappings;
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
+
+  // canonical paths
+  std::map<CrateNum, std::map<NodeId, const Resolver::CanonicalPath> > paths;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;

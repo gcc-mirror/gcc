@@ -62,6 +62,9 @@ public:
     reverse_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
+
+    auto mappings = Analysis::Mappings::get ();
+    mappings->insert_canonical_path (mappings->get_current_crate (), id, path);
   }
 
   bool lookup_name (const CanonicalPath &ident, NodeId *id)
