@@ -6504,6 +6504,18 @@ package body Exp_Aggr is
                           Expressions =>
                             New_List (New_Occurrence_Of (Index_Id, Loc))));
 
+            --  Add guard to skip last increment when upper bound is reached.
+
+            Incr := Make_If_Statement (Loc,
+               Condition =>
+                  Make_Op_Ne (Loc,
+                  Left_Opnd  => New_Occurrence_Of (Index_Id, Loc),
+                  Right_Opnd =>
+                    Make_Attribute_Reference (Loc,
+                      Prefix => New_Occurrence_Of (Index_Type, Loc),
+                      Attribute_Name => Name_Last)),
+               Then_Statements => New_List (Incr));
+
             One_Loop := Make_Loop_Statement (Loc,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
@@ -6561,11 +6573,10 @@ package body Exp_Aggr is
          return;
 
       elsif Present (Component_Associations (N))
-         and then
-            Nkind (First (Component_Associations (N)))
-               = N_Iterated_Component_Association
-           and then Present
-             (Iterator_Specification (First (Component_Associations (N))))
+        and then Nkind (First (Component_Associations (N))) =
+                 N_Iterated_Component_Association
+        and then
+          Present (Iterator_Specification (First (Component_Associations (N))))
       then
          Two_Pass_Aggregate_Expansion (N);
          return;
@@ -7389,7 +7400,7 @@ package body Exp_Aggr is
          elsif Nkind (Comp) = N_Iterated_Element_Association then
             return -1;
 
-            --  TBD : Create code for a loop and add to generated code,
+            --  ??? Need to create code for a loop and add to generated code,
             --  as is done for array aggregates with iterated element
             --  associations, instead of using Append operations.
 
