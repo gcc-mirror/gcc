@@ -1398,11 +1398,8 @@ execute_omp_oacc_neuter_broadcast ()
   FOR_ALL_BB_FN (bb, cfun)
     bb->aux = NULL;
 
-  vec<propagation_set *> prop_set;
-  prop_set.create (last_basic_block_for_fn (cfun));
-
-  for (int i = 0; i < last_basic_block_for_fn (cfun); i++)
-    prop_set.quick_push (0);
+  vec<propagation_set *> prop_set (vNULL);
+  prop_set.safe_grow_cleared (last_basic_block_for_fn (cfun), true);
 
   find_ssa_names_to_propagate (par, mask, worker_single, vector_single,
 			       &prop_set);
@@ -1461,6 +1458,9 @@ execute_omp_oacc_neuter_broadcast ()
     delete it.second;
   record_field_map.empty ();
 
+  /* These are supposed to have been 'delete'd by 'neuter_worker_single'.  */
+  for (auto it : prop_set)
+    gcc_checking_assert (!it);
   prop_set.release ();
 
   /* This doesn't seem to make a difference.  */
