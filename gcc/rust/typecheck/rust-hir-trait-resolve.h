@@ -154,6 +154,11 @@ private:
       trait_reference->get_mappings ().get_defid (), &tref);
     rust_assert (ok);
 
+    // hook to allow the trait to resolve its optional item blocks, we cant
+    // resolve the blocks of functions etc because it can end up in a recursive
+    // loop of trying to resolve traits as required by the types
+    tref->on_resolved ();
+
     return tref;
   }
 

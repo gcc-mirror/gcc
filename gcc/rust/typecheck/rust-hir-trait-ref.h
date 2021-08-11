@@ -111,9 +111,11 @@ public:
 
   const HIR::TraitItem *get_hir_trait_item () const { return hir_trait_item; }
 
+  HIR::TraitItem *get_hir_trait_item () { return hir_trait_item; }
+
   Location get_locus () const { return locus; }
 
-  const Analysis::NodeMapping &get_mappings () const
+  const Analysis::NodeMapping get_mappings () const
   {
     return hir_trait_item->get_mappings ();
   }
@@ -146,6 +148,13 @@ public:
     return get_error ();
   }
 
+  // this is called when the trait is completed resolution and gives the items a
+  // chance to run their specific type resolution passes. If we call their
+  // resolution on construction it can lead to a case where the trait being
+  // resolved recursively trying to resolve the trait itself infinitely since
+  // the trait will not be stored in its own map yet
+  void on_resolved ();
+
 private:
   TyTy::ErrorType *get_error () const
   {
@@ -159,6 +168,11 @@ private:
   get_type_from_constant (/*const*/ HIR::TraitItemConst &constant) const;
 
   TyTy::BaseType *get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const;
+
+  bool is_item_resolved () const;
+  void resolve_item (HIR::TraitItemType &type);
+  void resolve_item (HIR::TraitItemConst &constant);
+  void resolve_item (HIR::TraitItemFunc &func);
 
   std::string identifier;
   bool optional_flag;
@@ -233,6 +247,31 @@ public:
     return hir_trait_ref->get_mappings ();
   }
 
+  bool lookup_hir_trait_item (const HIR::TraitItem &item,
+			      TraitItemReference **ref)
+  {
+    return lookup_trait_item (item.trait_identifier (), ref);
+  }
+
+  bool lookup_trait_item (const std::string &ident, TraitItemReference **ref)
+  {
+    for (auto &item : item_refs)
+      {
+	if (ident.compare (item.get_identifier ()) == 0)
+	  {
+	    *ref = &item;
+	    return true;
+	  }
+      }
+    return false;
+  }
+
+  bool lookup_hir_trait_item (const HIR::TraitItem &item,
+			      const TraitItemReference **ref) const
+  {
+    return lookup_trait_item (item.trait_identifier (), ref);
+  }
+
   bool lookup_trait_item (const std::string &ident,
 			  const TraitItemReference **ref) const
   {
@@ -267,6 +306,14 @@ public:
   const std::vector<TraitItemReference> &get_trait_items () const
   {
     return item_refs;
+  }
+
+  void on_resolved ()
+  {
+    for (auto &item : item_refs)
+      {
+	item.on_resolved ();
+      }
   }
 
 private:

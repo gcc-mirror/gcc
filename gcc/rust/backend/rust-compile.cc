@@ -181,8 +181,32 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	    {
 	      // this means we are defaulting back to the trait_item if
 	      // possible
-	      // TODO
-	      gcc_unreachable ();
+	      Resolver::TraitItemReference *trait_item_ref = nullptr;
+	      bool ok = trait_ref->lookup_hir_trait_item (*trait_item,
+							  &trait_item_ref);
+	      rust_assert (ok);				    // found
+	      rust_assert (trait_item_ref->is_optional ()); // has definition
+
+	      TyTy::BaseType *self_type = nullptr;
+	      if (!ctx->get_tyctx ()->lookup_type (
+		    expr.get_receiver ()->get_mappings ().get_hirid (),
+		    &self_type))
+		{
+		  rust_error_at (expr.get_locus (),
+				 "failed to resolve type for self param");
+		  return;
+		}
+
+	      CompileTraitItem::Compile (self_type,
+					 trait_item_ref->get_hir_trait_item (),
+					 ctx, fntype);
+	      if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
+		{
+		  translated = ctx->get_backend ()->error_expression ();
+		  rust_error_at (expr.get_locus (),
+				 "forward declaration was not compiled");
+		  return;
+		}
 	    }
 	  else
 	    {
