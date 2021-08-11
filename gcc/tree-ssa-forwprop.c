@@ -3190,7 +3190,8 @@ pass_forwprop::execute (function *fun)
 		       || (fun->curr_properties & PROP_gimple_lvec))
 		   && gimple_assign_load_p (stmt)
 		   && !gimple_has_volatile_ops (stmt)
-		   && !stmt_can_throw_internal (cfun, stmt))
+		   && !stmt_can_throw_internal (cfun, stmt)
+		   && (!VAR_P (rhs) || !DECL_HARD_REGISTER (rhs)))
 	    optimize_vector_load (&gsi);
 
 	  else if (code == COMPLEX_EXPR)
