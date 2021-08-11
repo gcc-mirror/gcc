@@ -184,6 +184,82 @@
 
 
 
+; Builtins that have been around since time immemorial or are just
+; considered available everywhere.
+[always]
+  void __builtin_cpu_init ();
+    CPU_INIT nothing {cpu}
+
+  bool __builtin_cpu_is (string);
+    CPU_IS nothing {cpu}
+
+  bool __builtin_cpu_supports (string);
+    CPU_SUPPORTS nothing {cpu}
+
+  unsigned long long __builtin_ppc_get_timebase ();
+    GET_TB rs6000_get_timebase {}
+
+  double __builtin_mffs ();
+    MFFS rs6000_mffs {}
+
+; This thing really assumes long double == __ibm128, and I'm told it has
+; been used as such within libgcc.  Given that __builtin_pack_ibm128
+; exists for the same purpose, this should really not be used at all.
+; TODO: Consider adding special handling for this to warn whenever
+; long double is not __ibm128.
+  const long double __builtin_pack_longdouble (double, double);
+    PACK_TF packtf {}
+
+  unsigned long __builtin_ppc_mftb ();
+    MFTB rs6000_mftb_di {32bit}
+
+  void __builtin_mtfsb0 (const int<5>);
+    MTFSB0 rs6000_mtfsb0 {}
+
+  void __builtin_mtfsb1 (const int<5>);
+    MTFSB1 rs6000_mtfsb1 {}
+
+  void __builtin_mtfsf (const int<8>, double);
+    MTFSF rs6000_mtfsf {}
+
+  const __ibm128 __builtin_pack_ibm128 (double, double);
+    PACK_IF packif {}
+
+  void __builtin_set_fpscr_rn (const int[0,3]);
+    SET_FPSCR_RN rs6000_set_fpscr_rn {}
+
+  const double __builtin_unpack_ibm128 (__ibm128, const int<1>);
+    UNPACK_IF unpackif {}
+
+; See above comments for __builtin_pack_longdouble.
+  const double __builtin_unpack_longdouble (long double, const int<1>);
+    UNPACK_TF unpacktf {}
+
+
+; Builtins that have been around just about forever, but not quite.
+[power5]
+  fpmath double __builtin_recipdiv (double, double);
+    RECIP recipdf3 {}
+
+  fpmath float __builtin_recipdivf (float, float);
+    RECIPF recipsf3 {}
+
+  fpmath double __builtin_rsqrt (double);
+    RSQRT rsqrtdf2 {}
+
+  fpmath float __builtin_rsqrtf (float);
+    RSQRTF rsqrtsf2 {}
+
+
+; Power6 builtins (ISA 2.05).
+[power6]
+  const signed long __builtin_p6_cmpb (signed long, signed long);
+    CMPB cmpbdi3 {}
+
+  const signed int __builtin_p6_cmpb_32 (signed int, signed int);
+    CMPB_32 cmpbsi3 {}
+
+
 ; AltiVec builtins.
 [altivec]
   const vsc __builtin_altivec_abs_v16qi (vsc);
