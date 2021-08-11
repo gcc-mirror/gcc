@@ -8656,6 +8656,10 @@ package body Sem_Util is
         and then Comes_From_Source (C)
         and then Comes_From_Source (Def_Id)
 
+        --  Don't warn within a generic instantiation
+
+        and then not In_Instance
+
         --  Don't warn unless entity in question is in extended main source
 
         and then In_Extended_Main_Source_Unit (Def_Id)
