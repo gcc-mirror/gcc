@@ -1,3 +1,13 @@
+2021-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100894
+	* include/std/type_traits (__common_ref_impl<X&, Y&>): Only
+	use the type if it's a reference.
+	* testsuite/20_util/common_reference/100894.cc: New test.
+
 2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
