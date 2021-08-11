@@ -375,6 +375,15 @@ public:
 				     mapping.get_hirid (), translated);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       trait_item->get_locus ());
+
+    // add the mappings for the function params at the end
+    for (auto &param : trait_item->get_decl ().get_function_params ())
+      {
+	mappings->insert_hir_param (mapping.get_crate_num (),
+				    param.get_mappings ().get_hirid (), &param);
+	mappings->insert_location (crate_num, mapping.get_hirid (),
+				   param.get_locus ());
+      }
   }
 
   void visit (AST::TraitItemMethod &method) override
@@ -446,6 +455,23 @@ public:
 				     mapping.get_hirid (), translated);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       trait_item->get_locus ());
+
+    // insert mappings for self
+    mappings->insert_hir_self_param (crate_num,
+				     self_param.get_mappings ().get_hirid (),
+				     &self_param);
+    mappings->insert_location (crate_num,
+			       self_param.get_mappings ().get_hirid (),
+			       self_param.get_locus ());
+
+    // add the mappings for the function params at the end
+    for (auto &param : trait_item->get_decl ().get_function_params ())
+      {
+	mappings->insert_hir_param (mapping.get_crate_num (),
+				    param.get_mappings ().get_hirid (), &param);
+	mappings->insert_location (crate_num, mapping.get_hirid (),
+				   param.get_locus ());
+      }
   }
 
   void visit (AST::TraitItemConst &constant) override
