@@ -1406,7 +1406,7 @@ modref_lattice::dump (FILE *out, int indent) const
 	  fprintf (out, "%*s  Arg %i (%s) min flags", indent, "",
 		   escape_points[i].arg,
 		   escape_points[i].direct ? "direct" : "indirect");
-	  dump_eaf_flags (out, flags, false);
+	  dump_eaf_flags (out, escape_points[i].min_flags, false);
 	  fprintf (out, " in call ");
 	  print_gimple_stmt (out, escape_points[i].call, 0);
 	}
@@ -1503,10 +1503,18 @@ modref_lattice::merge_deref (const modref_lattice &with, bool ignore_stores)
   if (!flags)
     return changed;
   for (unsigned int i = 0; i < with.escape_points.length (); i++)
-    changed |= add_escape_point (with.escape_points[i].call,
-				 with.escape_points[i].arg,
-				 with.escape_points[i].min_flags,
-				 false);
+    {
+      int min_flags = with.escape_points[i].min_flags;
+
+      if (with.escape_points[i].direct)
+	min_flags = deref_flags (min_flags, ignore_stores);
+      else if (ignore_stores)
+	min_flags |= EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NODIRECTESCAPE;
+      changed |= add_escape_point (with.escape_points[i].call,
+				   with.escape_points[i].arg,
+				   min_flags,
+				   false);
+    }
   return changed;
 }
 
@@ -3019,7 +3027,8 @@ struct escape_map
 
 static void
 update_escape_summary_1 (cgraph_edge *e,
-			 vec <vec <escape_map>> &map)
+			 vec <vec <escape_map>> &map,
+			 bool ignore_stores)
 {
   escape_summary *sum = escape_summaries->get (e);
   if (!sum)
@@ -3037,6 +3046,9 @@ update_escape_summary_1 (cgraph_edge *e,
 	continue;
       FOR_EACH_VEC_ELT (map[ee->parm_index], j, em)
 	{
+	  int min_flags = ee->min_flags;
+	  if (ee->direct && !em->direct)
+	    min_flags = deref_flags (min_flags, ignore_stores);
 	  struct escape_entry entry = {em->parm_index, ee->arg,
 	    			       ee->min_flags,
 				       ee->direct & em->direct};
@@ -3051,18 +3063,19 @@ update_escape_summary_1 (cgraph_edge *e,
 
 static void
 update_escape_summary (cgraph_node *node,
-		       vec <vec <escape_map>> &map)
+		       vec <vec <escape_map>> &map,
+		       bool ignore_stores)
 {
   if (!escape_summaries)
     return;
   for (cgraph_edge *e = node->indirect_calls; e; e = e->next_callee)
-    update_escape_summary_1 (e, map);
+    update_escape_summary_1 (e, map, ignore_stores);
   for (cgraph_edge *e = node->callees; e; e = e->next_callee)
     {
       if (!e->inline_failed)
-	update_escape_summary (e->callee, map);
+	update_escape_summary (e->callee, map, ignore_stores);
       else
-	update_escape_summary_1 (e, map);
+	update_escape_summary_1 (e, map, ignore_stores);
     }
 }
 
@@ -3187,7 +3200,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	if (needed)
 	  emap[ee->arg].safe_push (entry);
       }
-  update_escape_summary (edge->callee, emap);
+  update_escape_summary (edge->callee, emap, ignore_stores);
   for (i = 0; (int)i < max_escape + 1; i++)
     emap[i].release ();
   if (sum)

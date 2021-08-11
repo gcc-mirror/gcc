@@ -834,12 +834,7 @@ operands_scanner::get_expr_operands (tree *expr_p, int flags)
 	get_expr_operands (&TREE_OPERAND (expr, 0), flags);
 
 	if (code == COMPONENT_REF)
-	  {
-	    if (!(flags & opf_no_vops)
-		&& TREE_THIS_VOLATILE (TREE_OPERAND (expr, 1)))
-	      gimple_set_has_volatile_ops (stmt, true);
-	    get_expr_operands (&TREE_OPERAND (expr, 2), uflags);
-	  }
+	  get_expr_operands (&TREE_OPERAND (expr, 2), uflags);
 	else if (code == ARRAY_REF || code == ARRAY_RANGE_REF)
 	  {
 	    get_expr_operands (&TREE_OPERAND (expr, 1), uflags);

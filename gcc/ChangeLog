@@ -1,3 +1,70 @@
+2021-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80355
+	* config/i386/i386-expand.c (expand_vec_perm_even_odd): Return false
+	for V32HImode if !TARGET_AVX512BW.
+	(ix86_vectorize_vec_perm_const) <case E_V32HImode, case E_V64QImode>:
+	If !TARGET_AVX512BW and TARGET_AVX512F and d.testing_p, don't fail
+	early, but actually check the permutation.
+
+2021-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101809
+	* tree-vect-stmts.c (get_load_store_type): Allow emulated
+	gathers with offset vector nunits being a constant multiple
+	of the data vector nunits.
+	(vect_get_gather_scatter_ops): Use the appropriate nunits
+	for the offset vector defs.
+	(vectorizable_store): Adjust call to
+	vect_get_gather_scatter_ops.
+	(vectorizable_load): Likewise.  Handle the case of less
+	offset vectors than data vectors.
+
+2021-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80355
+	* config/i386/sse.md (*avx512f_shuf_<shuffletype>64x2_1<mask_name>_1,
+	*avx512f_shuf_<shuffletype>32x4_1<mask_name>_1): New define_insn
+	patterns.
+
+2021-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101801
+	PR tree-optimization/101819
+	* tree-vectorizer.h (vect_emulated_vector_p): Declare.
+	* tree-vect-loop.c (vect_emulated_vector_p): New function.
+	(vectorizable_reduction): Re-instantiate a check for emulated
+	operations.
+	* tree-vect-stmts.c (vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.  Cost emulated vector
+	operations according to the scalar sequence synthesized by
+	vector lowering.
+
+2021-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101824
+	* tree-nested.c (get_frame_field): Mark the COMPONENT_REF as
+	volatile in case the variable was.
+
+2021-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101804
+	* config/i386/constraints.md (BC): Document for integer SSE
+	constant all bits set operand.
+	(BF): New constraint for const floating-point all bits set
+	vectors.
+	* config/i386/i386.c (standard_sse_constant_p): Likewise.
+	(standard_sse_constant_opcode): Likewise.
+	* config/i386/sse.md (sseconstm1): New mode attribute.
+	(mov<mode>_internal): Replace BC with <sseconstm1>.
+
+2021-08-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (cond_<insn><mode>): New expander.
+	(VI248_AVX512VLBW): New mode iterator.
+	* config/i386/predicates.md
+	(nonimmediate_or_const_vec_dup_operand): New predicate.
+
 2021-08-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/101741

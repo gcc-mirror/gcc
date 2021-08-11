@@ -1,3 +1,9 @@
+2021-08-10  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/29970
+	* c-typeck.c (c_expr_sizeof_expr): Evaluate
+	size expressions for structs of variable size.
+
 2021-08-06  Tamar Christina  <tamar.christina@arm.com>
 
 	* c-decl.c (c_simulate_enum_decl): Pass vec<> by pointer.

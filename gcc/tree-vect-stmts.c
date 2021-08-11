@@ -9492,7 +9492,8 @@ vectorizable_load (vec_info *vinfo,
 		    if (memory_access_type == VMAT_GATHER_SCATTER
 			&& gs_info.ifn != IFN_LAST)
 		      {
-			vec_offset = vec_offsets[j];
+			if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+			  vec_offset = vec_offsets[j];
 			tree zero = build_zero_cst (vectype);
 			tree scale = size_int (gs_info.scale);
 			gcall *call;
