@@ -22078,6 +22078,37 @@ warn_about_ambiguous_parse (const cp_decl_specifier_seq *decl_specifiers,
     }
 }
 
+/* If DECLARATOR with DECL_SPECS is a function declarator that has
+   the form of a deduction guide, tag it as such.  CTOR_DTOR_OR_CONV_P
+   has the same meaning as in cp_parser_declarator.  */
+
+static void
+cp_parser_maybe_adjust_declarator_for_dguide (cp_parser *parser,
+					      cp_decl_specifier_seq *decl_specs,
+					      cp_declarator *declarator,
+					      int *ctor_dtor_or_conv_p)
+{
+  if (cxx_dialect >= cxx17
+      && *ctor_dtor_or_conv_p <= 0
+      && !decl_specs->type
+      && !decl_specs->any_type_specifiers_p
+      && function_declarator_p (declarator))
+    {
+      cp_declarator *id = get_id_declarator (declarator);
+      tree name = id->u.id.unqualified_name;
+      parser->scope = id->u.id.qualifying_scope;
+      tree tmpl = cp_parser_lookup_name_simple (parser, name, id->id_loc);
+      if (tmpl
+	  && (DECL_CLASS_TEMPLATE_P (tmpl)
+	      || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))
+	{
+	  id->u.id.unqualified_name = dguide_name (tmpl);
+	  id->u.id.sfk = sfk_deduction_guide;
+	  *ctor_dtor_or_conv_p = 1;
+	}
+    }
+}
+
 /* Declarators [gram.dcl.decl] */
 
 /* Parse an init-declarator.
@@ -22254,25 +22285,13 @@ cp_parser_init_declarator (cp_parser* parser,
 
   if (function_declarator_p (declarator))
     {
-      /* Handle C++17 deduction guides.  */
-      if (!decl_specifiers->type
-	  && !decl_specifiers->any_type_specifiers_p
-	  && ctor_dtor_or_conv_p <= 0
-	  && cxx_dialect >= cxx17)
-	{
-	  cp_declarator *id = get_id_declarator (declarator);
-	  tree name = id->u.id.unqualified_name;
-	  parser->scope = id->u.id.qualifying_scope;
-	  tree tmpl = cp_parser_lookup_name_simple (parser, name, id->id_loc);
-	  if (tmpl
-	      && (DECL_CLASS_TEMPLATE_P (tmpl)
-		  || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))
-	    {
-	      id->u.id.unqualified_name = dguide_name (tmpl);
-	      id->u.id.sfk = sfk_deduction_guide;
-	      ctor_dtor_or_conv_p = 1;
-	    }
-	}
+      /* Handle C++17 deduction guides.  Note that class-scope
+	 non-template deduction guides are instead handled in
+	 cp_parser_member_declaration.  */
+      cp_parser_maybe_adjust_declarator_for_dguide (parser,
+						    decl_specifiers,
+						    declarator,
+						    &ctor_dtor_or_conv_p);
 
       if (!member_p && !cp_parser_error_occurred (parser))
 	warn_about_ambiguous_parse (decl_specifiers, declarator);
@@ -26955,6 +26974,12 @@ cp_parser_member_declaration (cp_parser* parser)
 		    cp_lexer_consume_token (parser->lexer);
 		  goto out;
 		}
+
+	      /* Handle class-scope non-template C++17 deduction guides.  */
+	      cp_parser_maybe_adjust_declarator_for_dguide (parser,
+							    &decl_specifiers,
+							    declarator,
+							    &ctor_dtor_or_conv_p);
 
 	      if (declares_class_or_enum & 2)
 		cp_parser_check_for_definition_in_return_type
