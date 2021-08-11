@@ -10507,10 +10507,15 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
     case N_Package_Body:
     case N_Subprogram_Body:
     case N_Block_Statement:
-      gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      if (Present (Handled_Statement_Sequence (gnat_node)))
+	gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      else
+	gnat_end_label = Empty;
+
       break;
 
     case N_Package_Declaration:
+      gcc_checking_assert (Present (Specification (gnat_node)));
       gnat_end_label = End_Label (Specification (gnat_node));
       break;
 
