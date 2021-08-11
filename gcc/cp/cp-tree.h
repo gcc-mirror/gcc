@@ -8461,7 +8461,8 @@ unevaluated_p (tree_code code)
   return (code == DECLTYPE_TYPE
 	  || code == ALIGNOF_EXPR
 	  || code == SIZEOF_EXPR
-	  || code == NOEXCEPT_EXPR);
+	  || code == NOEXCEPT_EXPR
+	  || code == REQUIRES_EXPR);
 }
 
 /* RAII class to push/pop class scope T; if T is not a class, do nothing.  */

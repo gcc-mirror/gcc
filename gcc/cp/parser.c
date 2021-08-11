@@ -5948,7 +5948,10 @@ cp_parser_primary_expression (cp_parser *parser,
 	    /* Check to see if DECL is a local variable in a context
 	       where that is forbidden.  */
 	    if ((parser->local_variables_forbidden_p & LOCAL_VARS_FORBIDDEN)
-		&& local_variable_p (decl))
+		&& local_variable_p (decl)
+		/* DR 2082 permits local variables in unevaluated contexts
+		   within a default argument.  */
+		&& !cp_unevaluated_operand)
 	      {
 		const char *msg
 		  = (TREE_CODE (decl) == PARM_DECL
