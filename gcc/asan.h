@@ -255,8 +255,9 @@ static inline bool
 sanitize_coverage_p (const_tree fn = current_function_decl)
 {
   return (flag_sanitize_coverage
-	  && lookup_attribute ("no_sanitize_coverage",
-			       DECL_ATTRIBUTES (fn)) == NULL_TREE);
+	  && (fn == NULL_TREE
+	      || lookup_attribute ("no_sanitize_coverage",
+				   DECL_ATTRIBUTES (fn)) == NULL_TREE));
 }
 
 #endif /* TREE_ASAN */
