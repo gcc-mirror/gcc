@@ -43,8 +43,8 @@ extern "C" {
 #define CFI_attribute_other 2
 
 /* Error codes.
-   CFI_INVALID_STRIDE should be defined in the standard because they are useful to the implementation of the functions.
- */
+   Note that CFI_FAILURE and CFI_INVALID_STRIDE are specific to GCC
+   and not part of the Fortran standard   */
 #define CFI_SUCCESS 0
 #define CFI_FAILURE 1
 #define CFI_ERROR_BASE_ADDR_NULL 2
@@ -159,48 +159,38 @@ extern int CFI_setpointer (CFI_cdesc_t *, CFI_cdesc_t *, const CFI_index_t []);
 #define CFI_type_other -1
 
 /* Types with kind parameter.
-   The kind parameter represents the type's byte size. The exception is kind = 10, which has byte size of 64 but 80 bit precision. Complex variables are double the byte size of their real counterparts. The ucs4_char matches wchar_t if sizeof (wchar_t) == 4.
+   The kind parameter represents the type's byte size.  The exception is
+   real kind = 10, which has byte size of 128 bits but 80 bit precision.
+   Complex variables are double the byte size of their real counterparts.
+   The ucs4_char matches wchar_t if sizeof (wchar_t) == 4.
  */
 #define CFI_type_char (CFI_type_Character + (1 << CFI_type_kind_shift))
 #define CFI_type_ucs4_char (CFI_type_Character + (4 << CFI_type_kind_shift))
 
 /* C-Fortran Interoperability types. */
-#define CFI_type_signed_char (CFI_type_Integer + (1 << CFI_type_kind_shift))
-#define CFI_type_short (CFI_type_Integer + (2 << CFI_type_kind_shift))
-#define CFI_type_int (CFI_type_Integer + (4 << CFI_type_kind_shift))
-#define CFI_type_long (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_long_long (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_size_t (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_int8_t (CFI_type_Integer + (1 << CFI_type_kind_shift))
-#define CFI_type_int16_t (CFI_type_Integer + (2 << CFI_type_kind_shift))
-#define CFI_type_int32_t (CFI_type_Integer + (4 << CFI_type_kind_shift))
-#define CFI_type_int64_t (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_int_least8_t (CFI_type_Integer + (1 << CFI_type_kind_shift))
-#define CFI_type_int_least16_t (CFI_type_Integer + (2 << CFI_type_kind_shift))
-#define CFI_type_int_least32_t (CFI_type_Integer + (4 << CFI_type_kind_shift))
-#define CFI_type_int_least64_t (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_int_fast8_t (CFI_type_Integer + (1 << CFI_type_kind_shift))
-#define CFI_type_int_fast16_t (CFI_type_Integer + (2 << CFI_type_kind_shift))
-#define CFI_type_int_fast32_t (CFI_type_Integer + (4 << CFI_type_kind_shift))
-#define CFI_type_int_fast64_t (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_intmax_t (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_intptr_t (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_ptrdiff_t (CFI_type_Integer + (8 << CFI_type_kind_shift))
-#define CFI_type_int128_t (CFI_type_Integer + (16 << CFI_type_kind_shift))
-#define CFI_type_int_least128_t (CFI_type_Integer + (16 << CFI_type_kind_shift))
-#define CFI_type_int_fast128_t (CFI_type_Integer + (16 << CFI_type_kind_shift))
-#define CFI_type_Bool (CFI_type_Logical + (1 << CFI_type_kind_shift))
-#define CFI_type_float (CFI_type_Real + (4 << CFI_type_kind_shift))
-#define CFI_type_double (CFI_type_Real + (8 << CFI_type_kind_shift))
-#define CFI_type_long_double (CFI_type_Real + (10 << CFI_type_kind_shift))
-#define CFI_type_float128 (CFI_type_Real + (16 << CFI_type_kind_shift))
-#define CFI_type_float_Complex (CFI_type_Complex + (4 << CFI_type_kind_shift))
-#define CFI_type_double_Complex (CFI_type_Complex + (8 << CFI_type_kind_shift))
-#define CFI_type_long_double_Complex (CFI_type_Complex + (10 << CFI_type_kind_shift))
-#define CFI_type_float128_Complex (CFI_type_Complex + (16 << CFI_type_kind_shift))
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* ISO_FORTRAN_BINDING_H */
+#define CFI_type_signed_char (CFI_type_Integer + (sizeof (char) << CFI_type_kind_shift))
+#define CFI_type_short (CFI_type_Integer + (sizeof (short) << CFI_type_kind_shift))
+#define CFI_type_int (CFI_type_Integer + (sizeof (int) << CFI_type_kind_shift))
+#define CFI_type_long (CFI_type_Integer + (sizeof (long) << CFI_type_kind_shift))
+#define CFI_type_long_long (CFI_type_Integer + (sizeof (long long) << CFI_type_kind_shift))
+#define CFI_type_size_t (CFI_type_Integer + (sizeof (size_t) << CFI_type_kind_shift))
+#define CFI_type_int8_t (CFI_type_Integer + (sizeof (int8_t) << CFI_type_kind_shift))
+#define CFI_type_int16_t (CFI_type_Integer + (sizeof (int16_t) << CFI_type_kind_shift))
+#define CFI_type_int32_t (CFI_type_Integer + (sizeof (int32_t) << CFI_type_kind_shift))
+#define CFI_type_int64_t (CFI_type_Integer + (sizeof (int64_t) << CFI_type_kind_shift))
+#define CFI_type_int_least8_t (CFI_type_Integer + (sizeof (int_least8_t) << CFI_type_kind_shift))
+#define CFI_type_int_least16_t (CFI_type_Integer + (sizeof (int_least16_t) << CFI_type_kind_shift))
+#define CFI_type_int_least32_t (CFI_type_Integer + (sizeof (int_least32_t) << CFI_type_kind_shift))
+#define CFI_type_int_least64_t (CFI_type_Integer + (sizeof (int_least64_t) << CFI_type_kind_shift))
+#define CFI_type_int_fast8_t (CFI_type_Integer + (sizeof (int_fast8_t) << CFI_type_kind_shift))
+#define CFI_type_int_fast16_t (CFI_type_Integer + (sizeof (int_fast16_t) << CFI_type_kind_shift))
+#define CFI_type_int_fast32_t (CFI_type_Integer + (sizeof (int_fast32_t) << CFI_type_kind_shift))
+#define CFI_type_int_fast64_t (CFI_type_Integer + (sizeof (int_fast64_t) << CFI_type_kind_shift))
+#define CFI_type_intmax_t (CFI_type_Integer + (sizeof (intmax_t) << CFI_type_kind_shift))
+#define CFI_type_intptr_t (CFI_type_Integer + (sizeof (intptr_t) << CFI_type_kind_shift))
+#define CFI_type_ptrdiff_t (CFI_type_Integer + (sizeof (ptrdiff_t) << CFI_type_kind_shift))
+#define CFI_type_Bool (CFI_type_Logical + (sizeof (_Bool) << CFI_type_kind_shift))
+#define CFI_type_float (CFI_type_Real + (sizeof (float) << CFI_type_kind_shift))
+#define CFI_type_double (CFI_type_Real + (sizeof (double) << CFI_type_kind_shift))
+#define CFI_type_float_Complex (CFI_type_Complex + (sizeof (float) << CFI_type_kind_shift))
+#define CFI_type_double_Complex (CFI_type_Complex + (sizeof (double) << CFI_type_kind_shift))

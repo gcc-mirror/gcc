@@ -1,3 +1,21 @@
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+
+	2021-07-22  Sandra Loosemore  <sandra@codesourcery.com>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	* ISO_Fortran_binding.h: Fix hard-coded sizes and split into...
+	* ISO_Fortran_binding-1-tmpl.h: New file.
+	* ISO_Fortran_binding-2-tmpl.h: New file.
+	* ISO_Fortran_binding-3-tmpl.h: New file.
+	* Makefile.am: Add rule for generating ISO_Fortran_binding.h.
+	Adjust pathnames to that file.
+	* Makefile.in: Regenerated.
+	* mk-kinds-h.sh: New file.
+	* runtime/ISO_Fortran_binding.c: Fix include path.
+
 2021-07-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

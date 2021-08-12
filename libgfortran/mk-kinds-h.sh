@@ -35,8 +35,8 @@ for k in $possible_integer_kinds; do
     echo "typedef ${prefix}int${s}_t GFC_INTEGER_${k};"
     echo "typedef ${prefix}uint${s}_t GFC_UINTEGER_${k};"
     echo "typedef GFC_INTEGER_${k} GFC_LOGICAL_${k};"
-    echo "#define HAVE_GFC_LOGICAL_${k}"
-    echo "#define HAVE_GFC_INTEGER_${k}"
+    echo "#define HAVE_GFC_LOGICAL_${k} 1"
+    echo "#define HAVE_GFC_INTEGER_${k} 1"
     echo ""
   fi
   rm -f tmp$$.*
@@ -98,8 +98,8 @@ for k in $possible_real_kinds; do
     # Output the information we've gathered
     echo "typedef ${ctype} GFC_REAL_${k};"
     echo "typedef ${cplxtype} GFC_COMPLEX_${k};"
-    echo "#define HAVE_GFC_REAL_${k}"
-    echo "#define HAVE_GFC_COMPLEX_${k}"
+    echo "#define HAVE_GFC_REAL_${k} 1"
+    echo "#define HAVE_GFC_COMPLEX_${k} 1"
     echo "#define GFC_REAL_${k}_HUGE ${huge}${suffix}"
     echo "#define GFC_REAL_${k}_LITERAL_SUFFIX ${suffix}"
     if [ "x$suffix" = "x" ]; then
@@ -114,6 +114,23 @@ for k in $possible_real_kinds; do
   rm -f tmp$$.*
 done
 
+# For ISO_Fortran_binding.h
+for k in "C_LONG_DOUBLE" "C_FLOAT128" "C_INT128_T"; do
+  fname="tmp$$.val"
+  echo "use iso_c_binding, only: $k; end" > tmp$$.f90
+  if $compile -S -fdump-parse-tree tmp$$.f90 > "$fname"; then
+    kind=`grep "value:" "$fname" |grep value: | sed -e 's/.*value: *//'`
+    if [ "x$kind" = "x" ]; then
+      echo "ERROR: Failed to extract kind for $k" 1>&2
+      exit 1
+    fi
+    echo "#define GFC_${k}_KIND ${kind}"
+  else
+    echo "ERROR: Failed to extract kind for $k" 1>&2
+    exit 1
+  fi
+  rm -f tmp$$.*
+done
 
 # After this, we include a header that can override some of the
 # autodetected settings.

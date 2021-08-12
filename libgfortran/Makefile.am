@@ -30,8 +30,8 @@ version_arg =
 version_dep =
 endif
 
-gfor_c_HEADERS = $(srcdir)/ISO_Fortran_binding.h
-gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
+gfor_c_HEADERS = ISO_Fortran_binding.h
+gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
@@ -817,6 +817,7 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_pow_c) $(i_pack_c) $(i_unpack_c) $(i_matmulavx128_c) \
     $(i_spread_c) selected_int_kind.inc selected_real_kind.inc kinds.h \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
+    ISO_Fortran_binding.h \
     $(i_cshift1a_c) $(i_maxloc0s_c) $(i_minloc0s_c) $(i_maxloc1s_c) \
     $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
     $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
@@ -1074,6 +1075,16 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 	grep '^#define GFC_FPE_' < $(top_srcdir)/../gcc/fortran/libgfortran.h > $@ || true
 	grep '^#define GFC_FPE_' < $(srcdir)/libgfortran.h >> $@ || true
+
+ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding-1-tmpl.h \
+		       $(srcdir)/ISO_Fortran_binding-2-tmpl.h \
+		       $(srcdir)/ISO_Fortran_binding-3-tmpl.h \
+		       kinds.inc
+	-rm -f $@
+	cp $(srcdir)/ISO_Fortran_binding-1-tmpl.h $@
+	$(COMPILE) -E -dD $(srcdir)/ISO_Fortran_binding-2-tmpl.h \
+	| grep '^#define CFI_type' >> $@
+	cat $(srcdir)/ISO_Fortran_binding-3-tmpl.h >> $@
 
 ## A 'normal' build shouldn't need to regenerate these
 ## so we only include them in maintainer mode
