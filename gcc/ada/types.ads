@@ -1014,8 +1014,4 @@ package Types is
    type Offset_Array is
      array (Offset_Array_Index range <>) of Opt_Field_Offset;
 
-   Slot_Size : constant := 32;
-   type Slot is mod 2**Slot_Size;
-   for Slot'Size use Slot_Size;
-
 end Types;

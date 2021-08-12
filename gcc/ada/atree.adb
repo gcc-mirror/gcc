@@ -211,10 +211,6 @@ package body Atree is
      (Old_N : Entity_Id; New_Kind : Entity_Kind);
    --  Above are the same as the ones for nodes, but for entities
 
-   procedure Update_Kind_Statistics (Field : Node_Or_Entity_Field);
-   --  Increment Set_Count (Field). This is in a procedure so we can put it in
-   --  pragma Debug for efficiency.
-
    procedure Init_Nkind (N : Node_Id; Val : Node_Kind);
    --  Initialize the Nkind field, which must not have been set already. This
    --  cannot be used to modify an already-initialized Nkind field. See also
@@ -639,7 +635,7 @@ package body Atree is
       --  S is the slot at that offset. V is the amount to shift by.
 
       function In_NH (Slot_Off : Field_Offset) return Boolean is
-        (Slot_Off < Seinfo.N_Head);
+        (Slot_Off < N_Head);
       --  In_NH stands for "in Node_Header", not "in New Hampshire"
 
       function Get_Slot
@@ -648,8 +644,13 @@ package body Atree is
          (if In_NH (Slot_Off) then
             Node_Offsets.Table (N).Slots (Slot_Off)
           else Slots.Table (Node_Offsets.Table (N).Offset + Slot_Off));
-      --  Get the slot, either directly from the node header, or indirectly
-      --  from the Slots table.
+      --  Get the slot value, either directly from the node header, or
+      --  indirectly from the Slots table.
+
+      procedure Set_Slot
+        (N : Node_Or_Entity_Id; Slot_Off : Field_Offset; S : Slot);
+      --  Set the slot value, either directly from the node header, or
+      --  indirectly from the Slots table, to S.
 
       function Get_1_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Size_1_Bit
@@ -730,13 +731,15 @@ package body Atree is
          return Raw;
       end Get_32_Bit_Val;
 
-      type Slot_Ptr is access all Slot;
-      function Get_Slot_Ptr
-        (N : Node_Or_Entity_Id; Slot_Off : Field_Offset)
-         return Slot_Ptr is
-         (if In_NH (Slot_Off) then
-            Node_Offsets.Table (N).Slots (Slot_Off)'Access
-          else Slots.Table (Node_Offsets.Table (N).Offset + Slot_Off)'Access);
+      procedure Set_Slot
+        (N : Node_Or_Entity_Id; Slot_Off : Field_Offset; S : Slot) is
+      begin
+         if In_NH (Slot_Off) then
+            Node_Offsets.Table (N).Slots (Slot_Off) := S;
+         else
+            Slots.Table (Node_Offsets.Table (N).Offset + Slot_Off) := S;
+         end if;
+      end Set_Slot;
 
       procedure Set_1_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_1_Bit)
@@ -745,12 +748,13 @@ package body Atree is
          Mask : constant := 2**F_Size - 1;
          F_Per_Slot : constant Field_Offset := Slot_Size / F_Size;
          Slot_Off : constant Field_Offset := Offset / F_Per_Slot;
-         Ptr : constant Slot_Ptr := Get_Slot_Ptr (N, Slot_Off);
-         S : Slot renames Ptr.all;
+         S : constant Slot := Get_Slot (N, Slot_Off);
          V : constant Natural := Natural ((Offset mod F_Per_Slot) * F_Size);
          pragma Debug (Validate_Node_And_Offset_Write (N, Slot_Off));
       begin
-         S := (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Val), V);
+         Set_Slot
+           (N, Slot_Off,
+            (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Val), V));
       end Set_1_Bit_Val;
 
       procedure Set_2_Bit_Val
@@ -760,12 +764,13 @@ package body Atree is
          Mask : constant := 2**F_Size - 1;
          F_Per_Slot : constant Field_Offset := Slot_Size / F_Size;
          Slot_Off : constant Field_Offset := Offset / F_Per_Slot;
-         Ptr : constant Slot_Ptr := Get_Slot_Ptr (N, Slot_Off);
-         S : Slot renames Ptr.all;
+         S : constant Slot := Get_Slot (N, Slot_Off);
          V : constant Natural := Natural ((Offset mod F_Per_Slot) * F_Size);
          pragma Debug (Validate_Node_And_Offset_Write (N, Slot_Off));
       begin
-         S := (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Val), V);
+         Set_Slot
+           (N, Slot_Off,
+            (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Val), V));
       end Set_2_Bit_Val;
 
       procedure Set_4_Bit_Val
@@ -775,12 +780,13 @@ package body Atree is
          Mask : constant := 2**F_Size - 1;
          F_Per_Slot : constant Field_Offset := Slot_Size / F_Size;
          Slot_Off : constant Field_Offset := Offset / F_Per_Slot;
-         Ptr : constant Slot_Ptr := Get_Slot_Ptr (N, Slot_Off);
-         S : Slot renames Ptr.all;
+         S : constant Slot := Get_Slot (N, Slot_Off);
          V : constant Natural := Natural ((Offset mod F_Per_Slot) * F_Size);
          pragma Debug (Validate_Node_And_Offset_Write (N, Slot_Off));
       begin
-         S := (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Val), V);
+         Set_Slot
+           (N, Slot_Off,
+            (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Val), V));
       end Set_4_Bit_Val;
 
       procedure Set_8_Bit_Val
@@ -790,26 +796,25 @@ package body Atree is
          Mask : constant := 2**F_Size - 1;
          F_Per_Slot : constant Field_Offset := Slot_Size / F_Size;
          Slot_Off : constant Field_Offset := Offset / F_Per_Slot;
-         Ptr : constant Slot_Ptr := Get_Slot_Ptr (N, Slot_Off);
-         S : Slot renames Ptr.all;
+         S : constant Slot := Get_Slot (N, Slot_Off);
          V : constant Natural := Natural ((Offset mod F_Per_Slot) * F_Size);
          pragma Debug (Validate_Node_And_Offset_Write (N, Slot_Off));
       begin
-         S := (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Val), V);
+         Set_Slot
+           (N, Slot_Off,
+            (S and not Shift_Left (Mask, V)) or Shift_Left (Slot (Val), V));
       end Set_8_Bit_Val;
 
       procedure Set_32_Bit_Val
         (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Size_32_Bit)
       is
          F_Size : constant := 32;
-         --  No Mask needed
+         --  No Mask needed; this one doesn't do read-modify-write
          F_Per_Slot : constant Field_Offset := Slot_Size / F_Size;
          Slot_Off : constant Field_Offset := Offset / F_Per_Slot;
-         Ptr : constant Slot_Ptr := Get_Slot_Ptr (N, Slot_Off);
-         S : Slot renames Ptr.all;
          pragma Debug (Validate_Node_And_Offset_Write (N, Slot_Off));
       begin
-         S := Slot (Val);
+         Set_Slot (N, Slot_Off, Slot (Val));
       end Set_32_Bit_Val;
 
       ----------------------
@@ -836,9 +841,9 @@ package body Atree is
 
    end Atree_Private_Part;
 
-   ---------------
-   -- Set_Field --
-   ---------------
+   ---------------------
+   -- Get_Field_Value --
+   ---------------------
 
    function Get_Node_Field_Union is new Get_32_Bit_Field (Union_Id)
      with Inline;
@@ -848,10 +853,10 @@ package body Atree is
    function Get_Field_Value
      (N : Node_Id; Field : Node_Or_Entity_Field) return Field_Size_32_Bit
    is
-      Desc : Seinfo.Field_Descriptor renames Field_Descriptors (Field);
+      Desc : Field_Descriptor renames Field_Descriptors (Field);
 
    begin
-      case Seinfo.Field_Size (Desc.Kind) is
+      case Field_Size (Desc.Kind) is
          when 1 => return Field_Size_32_Bit (Get_1_Bit_Val (N, Desc.Offset));
          when 2 => return Field_Size_32_Bit (Get_2_Bit_Val (N, Desc.Offset));
          when 4 => return Field_Size_32_Bit (Get_4_Bit_Val (N, Desc.Offset));
@@ -860,13 +865,17 @@ package body Atree is
       end case;
    end Get_Field_Value;
 
+   ---------------------
+   -- Set_Field_Value --
+   ---------------------
+
    procedure Set_Field_Value
      (N : Node_Id; Field : Node_Or_Entity_Field; Val : Field_Size_32_Bit)
    is
-      Desc : Seinfo.Field_Descriptor renames Field_Descriptors (Field);
+      Desc : Field_Descriptor renames Field_Descriptors (Field);
 
    begin
-      case Seinfo.Field_Size (Desc.Kind) is
+      case Field_Size (Desc.Kind) is
          when 1 => Set_1_Bit_Val (N, Desc.Offset, Field_Size_1_Bit (Val));
          when 2 => Set_2_Bit_Val (N, Desc.Offset, Field_Size_2_Bit (Val));
          when 4 => Set_4_Bit_Val (N, Desc.Offset, Field_Size_4_Bit (Val));
@@ -974,17 +983,15 @@ package body Atree is
    Nkind_Offset : constant Field_Offset :=
      Field_Descriptors (F_Nkind).Offset;
 
-   procedure Update_Kind_Statistics (Field : Node_Or_Entity_Field) is
-   begin
-      Set_Count (Field) := Set_Count (Field) + 1;
-   end Update_Kind_Statistics;
-
    procedure Set_Node_Kind_Type is new Set_8_Bit_Field (Node_Kind) with Inline;
 
    procedure Init_Nkind (N : Node_Id; Val : Node_Kind) is
       pragma Assert (Field_Is_Initial_Zero (N, F_Nkind));
    begin
-      pragma Debug (Update_Kind_Statistics (F_Nkind));
+      if Atree_Statistics_Enabled then
+         Set_Count (F_Nkind) := Set_Count (F_Nkind) + 1;
+      end if;
+
       Set_Node_Kind_Type (N, Nkind_Offset, Val);
    end Init_Nkind;
 
@@ -1016,7 +1023,7 @@ package body Atree is
                declare
                   New_Off_F : constant Node_Offset := Alloc_Slots (New_Size);
                begin
-                  All_Node_Offsets (N).Offset := New_Off_F - Seinfo.N_Head;
+                  All_Node_Offsets (N).Offset := New_Off_F - N_Head;
                   Copy_Dynamic_Slots (Old_Off_F, New_Off_F, Old_Size);
                   pragma Debug
                     (Zero_Dynamic_Slots (Old_Off_F, Old_Off_F + Old_Size - 1));
@@ -1027,7 +1034,10 @@ package body Atree is
          Zero_Dynamic_Slots (Off_F (N) + Old_Size, Slots.Last);
       end if;
 
-      pragma Debug (Update_Kind_Statistics (F_Nkind));
+      if Atree_Statistics_Enabled then
+         Set_Count (F_Nkind) := Set_Count (F_Nkind) + 1;
+      end if;
+
       Set_Node_Kind_Type (N, Nkind_Offset, Val);
       pragma Debug (Validate_Node_Write (N));
 
@@ -1060,7 +1070,10 @@ package body Atree is
       --  For now, we are allocating all entities with the same size, so we
       --  don't need to reallocate slots here.
 
-      pragma Debug (Update_Kind_Statistics (F_Ekind));
+      if Atree_Statistics_Enabled then
+         Set_Count (F_Nkind) := Set_Count (F_Ekind) + 1;
+      end if;
+
       Set_Entity_Kind_Type (N, Ekind_Offset, Val);
       pragma Debug (Validate_Node_Write (N));
 
@@ -1078,7 +1091,7 @@ package body Atree is
             Sz : constant Slot_Count := Size_In_Slots_To_Alloc (Kind);
             Sl : constant Node_Offset := Alloc_Slots (Sz);
          begin
-            Node_Offsets.Table (Result).Offset := Sl - Seinfo.N_Head;
+            Node_Offsets.Table (Result).Offset := Sl - N_Head;
             Zero_Dynamic_Slots (Sl, Sl + Sz - 1);
             Zero_Header_Slots (Result);
          end;
@@ -1141,7 +1154,7 @@ package body Atree is
             New_Offset : constant Field_Offset := Alloc_Slots (New_Size);
          begin
             pragma Debug (Zero_Slots (N));
-            Node_Offsets.Table (N).Offset := New_Offset - Seinfo.N_Head;
+            Node_Offsets.Table (N).Offset := New_Offset - N_Head;
             Zero_Dynamic_Slots (New_Offset, New_Offset + New_Size - 1);
             Zero_Header_Slots (N);
          end;
@@ -1229,7 +1242,7 @@ package body Atree is
       if D_Size < S_Size then
          pragma Debug (Zero_Slots (Destination)); -- destroy old slots
          Node_Offsets.Table (Destination).Offset :=
-           Alloc_Slots (S_Size) - Seinfo.N_Head;
+           Alloc_Slots (S_Size) - N_Head;
       end if;
 
       Copy_Slots (Source, Destination);
@@ -1447,7 +1460,7 @@ package body Atree is
         (Is_Entity (E1) and then Is_Entity (E2)
            and then not In_List (E1) and then not In_List (E2));
 
-      Old_E1 : constant Seinfo.Node_Header := Node_Offsets.Table (E1);
+      Old_E1 : constant Node_Header := Node_Offsets.Table (E1);
 
    begin
       Node_Offsets.Table (E1) := Node_Offsets.Table (E2);
@@ -1546,7 +1559,6 @@ package body Atree is
    begin
       for J in Fields'Range loop
          declare
-            use Seinfo;
             Desc : Field_Descriptor renames Field_Descriptors (Fields (J));
          begin
             if Desc.Kind in Node_Id_Field | List_Id_Field then
@@ -1698,7 +1710,7 @@ package body Atree is
 
       return New_Id : constant Node_Id := Alloc_Node_Id do
          Node_Offsets.Table (New_Id).Offset :=
-           Alloc_Slots (S_Size) - Seinfo.N_Head;
+           Alloc_Slots (S_Size) - N_Head;
          Orig_Nodes.Append (New_Id);
          Copy_Slots (Source, New_Id);
 
@@ -1858,7 +1870,7 @@ package body Atree is
 
    function Off_F (N : Node_Id) return Node_Offset is
    begin
-      return Off_0 (N) + Seinfo.N_Head;
+      return Off_0 (N) + N_Head;
    end Off_F;
 
    -----------
@@ -1881,6 +1893,9 @@ package body Atree is
    function Original_Node (Node : Node_Id) return Node_Id is
    begin
       pragma Debug (Validate_Node (Node));
+      if Atree_Statistics_Enabled then
+         Get_Original_Node_Count := Get_Original_Node_Count + 1;
+      end if;
 
       return Orig_Nodes.Table (Node);
    end Original_Node;
@@ -2176,6 +2191,9 @@ package body Atree is
    procedure Set_Original_Node (N : Node_Id; Val : Node_Id) is
    begin
       pragma Debug (Validate_Node_Write (N));
+      if Atree_Statistics_Enabled then
+         Set_Original_Node_Count := Set_Original_Node_Count + 1;
+      end if;
 
       Orig_Nodes.Table (N) := Val;
    end Set_Original_Node;
@@ -2271,7 +2289,7 @@ package body Atree is
    begin
       return
         (if Kind in N_Entity then Einfo.Entities.Max_Entity_Size
-         else Sinfo.Nodes.Size (Kind)) - Seinfo.N_Head;
+         else Sinfo.Nodes.Size (Kind)) - N_Head;
       --  Unfortunately, we don't know the Entity_Kind, so we have to use the
       --  max.
    end Size_In_Slots_To_Alloc;
@@ -2300,7 +2318,7 @@ package body Atree is
 
    function Size_In_Slots_Dynamic (N : Node_Or_Entity_Id) return Slot_Count is
    begin
-      return Size_In_Slots (N) - Seinfo.N_Head;
+      return Size_In_Slots (N) - N_Head;
    end Size_In_Slots_Dynamic;
 
    -------------------
@@ -2492,9 +2510,104 @@ package body Atree is
    -- Print_Statistics --
    ----------------------
 
-   procedure Print_Statistics is
+   procedure Print_Node_Statistics;
+   procedure Print_Field_Statistics;
+   --  Helpers for Print_Statistics
+
+   procedure Write_Ratio (X : Nat_64; Y : Pos_64);
+   --  Write the value of (X/Y) without using 'Image (approximately)
+
+   procedure Write_Ratio (X : Nat_64; Y : Pos_64) is
+      pragma Assert (X <= Y);
+      Ratio : constant Nat := Nat ((Long_Float (X) / Long_Float (Y)) * 1000.0);
+   begin
+      Write_Str (" (");
+
+      if Ratio = 0 then
+         Write_Str ("0.000");
+      elsif Ratio in 1 .. 9 then
+         Write_Str ("0.00");
+         Write_Int (Ratio);
+      elsif Ratio in 10 .. 99 then
+         Write_Str ("0.0");
+         Write_Int (Ratio);
+      elsif Ratio in 100 .. 999 then
+         Write_Str ("0.");
+         Write_Int (Ratio);
+      else
+         Write_Int (Ratio / 1000);
+      end if;
+
+      Write_Str (")");
+   end Write_Ratio;
+
+   procedure Print_Node_Statistics is
+      subtype Count is Nat_64;
+      Node_Counts : array (Node_Kind) of Count := (others => 0);
+      Entity_Counts : array (Entity_Kind) of Count := (others => 0);
+
+      All_Node_Offsets : Node_Offsets.Table_Type renames
+        Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
+   begin
+      Write_Int (Int (Node_Offsets.Last));
+      Write_Line (" nodes (including entities)");
+      Write_Int (Int (Slots.Last));
+      Write_Line (" non-header slots");
+
+      for N in All_Node_Offsets'Range loop
+         declare
+            K : constant Node_Kind := Nkind (N);
+
+         begin
+            Node_Counts (K) := Node_Counts (K) + 1;
+
+            if K in N_Entity then
+               Entity_Counts (Ekind (N)) := Entity_Counts (Ekind (N)) + 1;
+            end if;
+         end;
+      end loop;
+
+      for K in Node_Kind loop
+         declare
+            Count : constant Nat_64 := Node_Counts (K);
+         begin
+            Write_Int_64 (Count);
+            Write_Ratio (Count, Int_64 (Node_Offsets.Last));
+            Write_Str (" ");
+            Write_Str (Node_Kind'Image (K));
+            Write_Str (" ");
+            Write_Int (Int (Sinfo.Nodes.Size (K)));
+            Write_Str (" slots");
+            Write_Eol;
+         end;
+      end loop;
+
+      for K in Entity_Kind loop
+         declare
+            Count : constant Nat_64 := Entity_Counts (K);
+         begin
+            Write_Int_64 (Count);
+            Write_Ratio (Count, Int_64 (Node_Offsets.Last));
+            Write_Str (" ");
+            Write_Str (Entity_Kind'Image (K));
+            Write_Str (" ");
+            Write_Int (Int (Einfo.Entities.Size (K)));
+            Write_Str (" slots");
+            Write_Eol;
+         end;
+      end loop;
+   end Print_Node_Statistics;
+
+   procedure Print_Field_Statistics is
       Total, G_Total, S_Total : Call_Count := 0;
    begin
+      Write_Int_64 (Get_Original_Node_Count);
+      Write_Str (" + ");
+      Write_Int_64 (Set_Original_Node_Count);
+      Write_Eol;
+      Write_Line (" Original_Node_Count getter and setter calls");
+      Write_Eol;
+
       Write_Line ("Frequency of field getter and setter calls:");
 
       for Field in Node_Or_Entity_Field loop
@@ -2520,19 +2633,13 @@ package body Atree is
             S : constant Call_Count := Set_Count (Field);
             GS : constant Call_Count := G + S;
 
-            Percent : constant Int :=
-              Int ((Long_Float (GS) / Long_Float (Total)) * 100.0);
-
-            use Seinfo;
             Desc : Field_Descriptor renames Field_Descriptors (Field);
             Slot : constant Field_Offset :=
               (Field_Size (Desc.Kind) * Desc.Offset) / Slot_Size;
 
          begin
             Write_Int_64 (GS);
-            Write_Str (" (");
-            Write_Int (Percent);
-            Write_Str ("%)");
+            Write_Ratio (GS, Total);
             Write_Str (" = ");
             Write_Int_64 (G);
             Write_Str (" + ");
@@ -2546,6 +2653,14 @@ package body Atree is
             Write_Eol;
          end;
       end loop;
+   end Print_Field_Statistics;
+
+   procedure Print_Statistics is
+   begin
+      Write_Eol;
+      Write_Eol;
+      Print_Node_Statistics;
+      Print_Field_Statistics;
    end Print_Statistics;
 
 end Atree;

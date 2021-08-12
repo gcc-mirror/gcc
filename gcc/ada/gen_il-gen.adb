@@ -503,8 +503,6 @@ package body Gen_IL.Gen is
       Min_Entity_Size : Field_Offset := Field_Offset'Last;
       Max_Entity_Size : Field_Offset := 0;
 
-      Average_Node_Size_In_Slots : Long_Float;
-
       Node_Field_Types_Used, Entity_Field_Types_Used : Type_Set;
 
       Setter_Needs_Parent : Field_Set :=
@@ -1001,16 +999,16 @@ package body Gen_IL.Gen is
               Image (Gen_IL.Internals.Bit_Offset'Last) & " is too small)";
          end Choose_Offset;
 
-         Num_Concrete_Have_Field : array (Field_Enum) of Type_Count :=
+         Weighted_Node_Frequency : array (Field_Enum) of Type_Count :=
            (others => 0);
          --  Number of concrete types that have each field
 
          function More_Types_Have_Field (F1, F2 : Field_Enum) return Boolean is
-           (Num_Concrete_Have_Field (F1) > Num_Concrete_Have_Field (F2));
+           (Weighted_Node_Frequency (F1) > Weighted_Node_Frequency (F2));
          --  True if F1 appears in more concrete types than F2
 
          function Sort_Less (F1, F2 : Field_Enum) return Boolean is
-           (if Num_Concrete_Have_Field (F1) = Num_Concrete_Have_Field (F2) then
+           (if Weighted_Node_Frequency (F1) = Weighted_Node_Frequency (F2) then
               F1 < F2
             else More_Types_Have_Field (F1, F2));
 
@@ -1019,15 +1017,18 @@ package body Gen_IL.Gen is
 
          All_Fields : Field_Vector;
 
+      --  Start of processing for Compute_Field_Offsets
+
       begin
 
-         --  Compute the number of types that have each field
+         --  Compute the number of types that have each field, weighted by the
+         --  frequency of such nodes.
 
          for T in Concrete_Type loop
             for F in Field_Enum loop
                if Fields_Per_Node (T) (F) then
-                  Num_Concrete_Have_Field (F) :=
-                    Num_Concrete_Have_Field (F) + 1;
+                  Weighted_Node_Frequency (F) :=
+                    Weighted_Node_Frequency (F) + Type_Frequency (T);
                end if;
             end loop;
          end loop;
@@ -1041,13 +1042,6 @@ package body Gen_IL.Gen is
          for F in Entity_Field loop
             Append (All_Fields, F);
          end loop;
-
-         --  Force Homonym to be at offset zero, which speeds up the
-         --  compiler. The Sort below will place Homonym first in
-         --  All_Fields.
-
-         Num_Concrete_Have_Field (Homonym) :=
-           Num_Concrete_Have_Field (Nkind) + 1;
 
          --  Sort All_Fields based on how many concrete types have the field.
          --  This is for efficiency; we want to choose the offsets of the most
@@ -1069,7 +1063,22 @@ package body Gen_IL.Gen is
          --  get low offsets, so they will wind up in the node header for
          --  faster access.
 
+         Choose_Offset (Nkind);
+         pragma Assert (Field_Table (Nkind).Offset = 0);
+         Choose_Offset (Ekind);
+         pragma Assert (Field_Table (Ekind).Offset = 1);
          Choose_Offset (Homonym);
+         pragma Assert (Field_Table (Homonym).Offset = 1);
+         Choose_Offset (Is_Immediately_Visible);
+         pragma Assert (Field_Table (Is_Immediately_Visible).Offset = 16);
+         Choose_Offset (From_Limited_With);
+         pragma Assert (Field_Table (From_Limited_With).Offset = 17);
+         Choose_Offset (Is_Potentially_Use_Visible);
+         pragma Assert (Field_Table (Is_Potentially_Use_Visible).Offset = 18);
+         Choose_Offset (Is_Generic_Instance);
+         pragma Assert (Field_Table (Is_Generic_Instance).Offset = 19);
+         Choose_Offset (Scope);
+         pragma Assert (Field_Table (Scope).Offset = 2);
 
          --  Then loop through them all, skipping the ones we did above
 
@@ -1086,231 +1095,6 @@ package body Gen_IL.Gen is
       ------------------------
 
       procedure Compute_Type_Sizes is
-         --  Node_Counts is the number of nodes of each kind created during
-         --  compilation of a large example. This is used purely to compute an
-         --  estimate of the average node size. New node types can default to
-         --  "others => 0". At some point we can instrument Atree to print out
-         --  accurate size statistics, and remove this code.
-
-         Node_Counts : constant array (Concrete_Node) of Natural :=
-           (N_Identifier => 429298,
-            N_Defining_Identifier => 231636,
-            N_Integer_Literal => 90892,
-            N_Parameter_Specification => 62811,
-            N_Attribute_Reference => 47150,
-            N_Expanded_Name => 37375,
-            N_Selected_Component => 30699,
-            N_Subprogram_Declaration => 20744,
-            N_Freeze_Entity => 20314,
-            N_Procedure_Specification => 18901,
-            N_Object_Declaration => 18023,
-            N_Function_Specification => 16570,
-            N_Range => 16216,
-            N_Explicit_Dereference => 12198,
-            N_Component_Association => 11188,
-            N_Unchecked_Type_Conversion => 11165,
-            N_Subtype_Indication => 10727,
-            N_Procedure_Call_Statement => 10056,
-            N_Subtype_Declaration => 8141,
-            N_Handled_Sequence_Of_Statements => 8078,
-            N_Null => 7288,
-            N_Aggregate => 7222,
-            N_String_Literal => 7152,
-            N_Function_Call => 6958,
-            N_Simple_Return_Statement => 6911,
-            N_And_Then => 6867,
-            N_Op_Eq => 6845,
-            N_Call_Marker => 6683,
-            N_Pragma_Argument_Association => 6525,
-            N_Component_Definition => 6487,
-            N_Assignment_Statement => 6483,
-            N_With_Clause => 6480,
-            N_Null_Statement => 5917,
-            N_Index_Or_Discriminant_Constraint => 5877,
-            N_Generic_Association => 5667,
-            N_Full_Type_Declaration => 5573,
-            N_If_Statement => 5553,
-            N_Subprogram_Body => 5455,
-            N_Op_Add => 5443,
-            N_Type_Conversion => 5260,
-            N_Component_Declaration => 5059,
-            N_Raise_Constraint_Error => 4840,
-            N_Formal_Concrete_Subprogram_Declaration => 4602,
-            N_Expression_With_Actions => 4598,
-            N_Op_Ne => 3854,
-            N_Indexed_Component => 3834,
-            N_Op_Subtract => 3777,
-            N_Package_Specification => 3490,
-            N_Subprogram_Renaming_Declaration => 3445,
-            N_Pragma => 3427,
-            N_Case_Statement_Alternative => 3272,
-            N_Block_Statement => 3239,
-            N_Parameter_Association => 3213,
-            N_Op_Lt => 3020,
-            N_Op_Not => 2926,
-            N_Character_Literal => 2914,
-            N_Others_Choice => 2769,
-            N_Or_Else => 2576,
-            N_Itype_Reference => 2511,
-            N_Defining_Operator_Symbol => 2487,
-            N_Component_List => 2470,
-            N_Formal_Object_Declaration => 2262,
-            N_Generic_Subprogram_Declaration => 2227,
-            N_Real_Literal => 2156,
-            N_Op_Gt => 2156,
-            N_Access_To_Object_Definition => 1984,
-            N_Op_Le => 1975,
-            N_Op_Ge => 1942,
-            N_Package_Renaming_Declaration => 1811,
-            N_Formal_Type_Declaration => 1756,
-            N_Qualified_Expression => 1746,
-            N_Package_Declaration => 1729,
-            N_Record_Definition => 1651,
-            N_Allocator => 1521,
-            N_Op_Concat => 1377,
-            N_Access_Definition => 1358,
-            N_Case_Statement => 1322,
-            N_Number_Declaration => 1316,
-            N_Generic_Package_Declaration => 1311,
-            N_Slice => 1078,
-            N_Constrained_Array_Definition => 1068,
-            N_Exception_Renaming_Declaration => 1011,
-            N_Implicit_Label_Declaration => 978,
-            N_Exception_Handler => 966,
-            N_Private_Type_Declaration => 898,
-            N_Operator_Symbol => 872,
-            N_Formal_Private_Type_Definition => 867,
-            N_Range_Constraint => 849,
-            N_Aspect_Specification => 837,
-            N_Variant => 834,
-            N_Discriminant_Specification => 746,
-            N_Loop_Statement => 744,
-            N_Derived_Type_Definition => 731,
-            N_Freeze_Generic_Entity => 702,
-            N_Iteration_Scheme => 686,
-            N_Package_Instantiation => 658,
-            N_Loop_Parameter_Specification => 632,
-            N_Attribute_Definition_Clause => 608,
-            N_Compilation_Unit_Aux => 599,
-            N_Compilation_Unit => 599,
-            N_Label => 572,
-            N_Goto_Statement => 572,
-            N_In => 564,
-            N_Enumeration_Type_Definition => 523,
-            N_Object_Renaming_Declaration => 482,
-            N_If_Expression => 476,
-            N_Exception_Declaration => 472,
-            N_Reference => 455,
-            N_Incomplete_Type_Declaration => 438,
-            N_Use_Package_Clause => 401,
-            N_Unconstrained_Array_Definition => 360,
-            N_Variant_Part => 340,
-            N_Defining_Program_Unit_Name => 336,
-            N_Op_And => 334,
-            N_Raise_Program_Error => 329,
-            N_Formal_Discrete_Type_Definition => 319,
-            N_Contract => 311,
-            N_Not_In => 305,
-            N_Designator => 285,
-            N_Component_Clause => 247,
-            N_Formal_Signed_Integer_Type_Definition => 244,
-            N_Raise_Statement => 214,
-            N_Op_Expon => 205,
-            N_Op_Minus => 202,
-            N_Op_Multiply => 158,
-            N_Exit_Statement => 130,
-            N_Function_Instantiation => 129,
-            N_Discriminant_Association => 123,
-            N_Private_Extension_Declaration => 119,
-            N_Extended_Return_Statement => 117,
-            N_Op_Divide => 107,
-            N_Op_Or => 103,
-            N_Signed_Integer_Type_Definition => 101,
-            N_Record_Representation_Clause => 76,
-            N_Unchecked_Expression => 70,
-            N_Op_Abs => 63,
-            N_Elsif_Part => 62,
-            N_Formal_Floating_Point_Definition => 59,
-            N_Formal_Package_Declaration => 58,
-            N_Modular_Type_Definition => 55,
-            N_Abstract_Subprogram_Declaration => 52,
-            N_Validate_Unchecked_Conversion => 49,
-            N_Defining_Character_Literal => 36,
-            N_Raise_Storage_Error => 33,
-            N_Compound_Statement => 29,
-            N_Procedure_Instantiation => 28,
-            N_Access_Procedure_Definition => 25,
-            N_Floating_Point_Definition => 20,
-            N_Use_Type_Clause => 19,
-            N_Op_Plus => 14,
-            N_Package_Body => 13,
-            N_Op_Rem => 13,
-            N_Enumeration_Representation_Clause => 13,
-            N_Access_Function_Definition => 11,
-            N_Extension_Aggregate => 11,
-            N_Formal_Ordinary_Fixed_Point_Definition => 10,
-            N_Op_Mod => 10,
-            N_Expression_Function => 9,
-            N_Delay_Relative_Statement => 9,
-            N_Quantified_Expression => 7,
-            N_Formal_Derived_Type_Definition => 7,
-            N_Free_Statement => 7,
-            N_Iterator_Specification => 5,
-            N_Op_Shift_Left => 5,
-            N_Formal_Modular_Type_Definition => 4,
-            N_Generic_Package_Renaming_Declaration => 1,
-            N_Empty => 1,
-            N_Real_Range_Specification => 1,
-            N_Ordinary_Fixed_Point_Definition => 1,
-            N_Op_Shift_Right => 1,
-            N_Error => 1,
-            N_Mod_Clause => 1,
-            others => 0);
-
-         Total_Node_Count : constant Long_Float := 1370676.0;
-
-         type Node_Frequency_Table is array (Concrete_Node) of Long_Float;
-
-         function Init_Node_Frequency return Node_Frequency_Table;
-         --  Compute the value of the Node_Frequency table
-
-         function Average_Type_Size_In_Slots return Long_Float;
-         --  Compute the average over all concrete node types of the size,
-         --  weighted by the frequency of that node type.
-
-         function Init_Node_Frequency return Node_Frequency_Table is
-            Result : Node_Frequency_Table := (others => 0.0);
-
-         begin
-            for T in Concrete_Node loop
-               Result (T) := Long_Float (Node_Counts (T)) / Total_Node_Count;
-            end loop;
-
-            return Result;
-         end Init_Node_Frequency;
-
-         Node_Frequency : constant Node_Frequency_Table := Init_Node_Frequency;
-         --  Table mapping concrete node types to the relative frequency of
-         --  that node, in our large example. The sum of these values should
-         --  add up to approximately 1.0. For example, if Node_Frequency(K) =
-         --  0.02, then that means that approximately 2% of all nodes are K
-         --  nodes.
-
-         function Average_Type_Size_In_Slots return Long_Float is
-            --  We don't have data on entities, so we leave those out
-
-            Result : Long_Float := 0.0;
-         begin
-            for T in Concrete_Node loop
-               Result := Result +
-                 Node_Frequency (T) * Long_Float (Type_Size_In_Slots (T));
-            end loop;
-
-            return Result;
-         end Average_Type_Size_In_Slots;
-
-      --  Start of processing for Compute_Type_Sizes
-
       begin
          for T in Concrete_Type loop
             declare
@@ -1351,8 +1135,6 @@ package body Gen_IL.Gen is
          Max_Node_Size := To_Size_In_Slots (Max_Node_Bit_Size);
          Min_Entity_Size := To_Size_In_Slots (Min_Entity_Bit_Size);
          Max_Entity_Size := To_Size_In_Slots (Max_Entity_Bit_Size);
-
-         Average_Node_Size_In_Slots := Average_Type_Size_In_Slots;
       end Compute_Type_Sizes;
 
       ----------------------------------------
@@ -1573,7 +1355,7 @@ package body Gen_IL.Gen is
          case Root is
             when Node_Kind =>
                Put_Getter_Decl (S, Nkind);
-               Put (S, "function K (N : Node_Id) return Node_Kind renames Nkind;" & LF);
+               Put (S, "function K (N : Node_Id) return Node_Kind renames " & Image (Nkind) & ";" & LF);
                Put (S, "--  Shorthand for use in predicates and preconditions below" & LF);
                Put (S, "--  There is no procedure Set_Nkind." & LF);
                Put (S, "--  See Init_Nkind and Mutate_Nkind in Atree." & LF & LF);
@@ -1767,7 +1549,6 @@ package body Gen_IL.Gen is
          Put (S, " with " & Inline);
          Increase_Indent (S, 2);
          Put_Precondition (S, F);
-
          Decrease_Indent (S, 2);
          Put (S, ";" & LF);
       end Put_Getter_Decl;
@@ -1781,8 +1562,8 @@ package body Gen_IL.Gen is
       is
          Rec : Field_Info renames Field_Table (F).all;
 
-         Off : constant Field_Offset := Rec.Offset;
          F_Size : constant Bit_Offset := Field_Size (Rec.Field_Type);
+         Off : constant Field_Offset := Rec.Offset;
          F_Per_Slot : constant Field_Offset :=
            SS / Field_Offset (Field_Size (Rec.Field_Type));
          Slot_Off : constant Field_Offset := Off / F_Per_Slot;
@@ -2215,8 +1996,7 @@ package body Gen_IL.Gen is
                     Image (Min_Node_Size) & ";" & LF);
                Put (S, "Max_Node_Size : constant Field_Offset := " &
                     Image (Max_Node_Size) & ";" & LF & LF);
-               Put (S, "Average_Node_Size_In_Slots : constant := " &
-                    Average_Node_Size_In_Slots'Img & ";" & LF & LF);
+
             when Entity_Kind =>
                Put (S, LF & "Min_Entity_Size : constant Field_Offset := " &
                     Image (Min_Entity_Size) & ";" & LF);
@@ -2468,22 +2248,16 @@ package body Gen_IL.Gen is
          Put (S, "Kind : Field_Kind;" & LF);
          Put (S, "Offset : Field_Offset;" & LF);
          Decrease_Indent (S, 3);
-         Put (S, "end record;" & LF);
+         Put (S, "end record;" & LF & LF);
 
          --  Print out the node header types. Note that the Offset field is of
          --  the base type, because we are using zero-origin addressing in
          --  Atree.
 
-         Put (S, "" & LF);
-         Put (S, "N_Head : constant Field_Offset := " & N_Head & ";" & LF);
-         Put (S, "type Node_Header_Slots is" & LF);
-         Put (S, "  array (Field_Offset range 0 .. N_Head - 1) of aliased Slot;" & LF);
-         Put (S, "type Node_Header is record" & LF);
-         Put (S, "   Slots : Node_Header_Slots;" & LF);
-         Put (S, "   Offset : Node_Offset'Base;" & LF);
-         Put (S, "end record;" & LF);
-         Put (S, "pragma Assert (Node_Header'Size = (" & N_Head &
-                " + 1) * " & SSS & ");" & LF);
+         Put (S, "N_Head : constant Field_Offset := " & N_Head & ";" & LF & LF);
+
+         Put (S, "Atree_Statistics_Enabled : constant Boolean := " &
+                Capitalize (Boolean'Image (Statistics_Enabled)) & ";" & LF);
 
          Decrease_Indent (S, 3);
          Put (S, LF & "end Seinfo;" & LF);

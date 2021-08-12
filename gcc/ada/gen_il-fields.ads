@@ -23,8 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Gen_IL.Types;
-
 package Gen_IL.Fields is
 
    --  The following is "optional field enumeration" -- i.e. it is Field_Enum
@@ -36,8 +34,7 @@ package Gen_IL.Fields is
    --  which might need to be kept in sync when modifying this.
 
    --  Be sure to put new fields in the appropriate subrange (Field_Enum,
-   --  Node_Header_Field, Node_Field, Entity_Field -- search for comments
-   --  below).
+   --  Node_Field, Entity_Field -- search for comments below).
 
    type Opt_Field_Enum is
      (No_Field,
@@ -942,14 +939,5 @@ package Gen_IL.Fields is
      range Opt_Field_Enum'Succ (No_Field) .. Opt_Field_Enum'Last;
    --  Enumeration of fields -- Opt_Field_Enum without the special null value
    --  No_Field.
-
-   subtype Node_Header_Field is Field_Enum with Predicate =>
-     Node_Header_Field in Nkind .. Link | Ekind;
-
-   use Gen_IL.Types;
-
-   subtype Node_Header_Type is Type_Enum range
-     Node_Kind_Type .. Union_Id;
-   --  Types of node header fields
 
 end Gen_IL.Fields;

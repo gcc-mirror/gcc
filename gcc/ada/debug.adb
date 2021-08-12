@@ -831,8 +831,9 @@ package body Debug is
    --       targets that do not use the GCC back end, this switch is ignored.
 
    --  d.A  Enable statistics printing in Atree. First set Statistics_Enabled
-   --       in gen_il-gen.adb to True, then rebuild, then run the compiler with
-   --       -gnatd.A. You might want to apply "sort -nr" to the output.
+   --       in gen_il-gen.adb to True, then rebuild, then run the compiler
+   --       with -gnatd.A. You might want to apply "sort -nr" to parts of the
+   --       output.
 
    --  d.B  Generate a bug box when we see an abort_statement, even though
    --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
