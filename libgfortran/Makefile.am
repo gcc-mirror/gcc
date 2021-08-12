@@ -1076,6 +1076,9 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 	grep '^#define GFC_FPE_' < $(top_srcdir)/../gcc/fortran/libgfortran.h > $@ || true
 	grep '^#define GFC_FPE_' < $(srcdir)/libgfortran.h >> $@ || true
 
+# Place ISO_Fortran_binding.h also under include/ in the build directory such
+# that it can be used for in-built-tree testsuite runs without interference of
+# other files in the build dir - like intrinsic .mod files or other .h files.
 ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding-1-tmpl.h \
 		       $(srcdir)/ISO_Fortran_binding-2-tmpl.h \
 		       $(srcdir)/ISO_Fortran_binding-3-tmpl.h \
@@ -1085,6 +1088,9 @@ ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding-1-tmpl.h \
 	$(COMPILE) -E -dD $(srcdir)/ISO_Fortran_binding-2-tmpl.h \
 	| grep '^#define CFI_type' >> $@
 	cat $(srcdir)/ISO_Fortran_binding-3-tmpl.h >> $@
+	$(MKDIR_P) include
+	-rm -f include/ISO_Fortran_binding.h
+	cp $@ include/ISO_Fortran_binding.h
 
 ## A 'normal' build shouldn't need to regenerate these
 ## so we only include them in maintainer mode
@@ -1244,6 +1250,9 @@ $(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $@
 ## end of maintainer mode only rules
 endif
+
+clean-local:
+	-rm -rf include
 
 EXTRA_DIST = $(m4_files)
 

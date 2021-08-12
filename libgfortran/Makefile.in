@@ -698,7 +698,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -7042,6 +7041,9 @@ fpu-target.inc: fpu-target.h $(srcdir)/libgfortran.h
 	grep '^#define GFC_FPE_' < $(top_srcdir)/../gcc/fortran/libgfortran.h > $@ || true
 	grep '^#define GFC_FPE_' < $(srcdir)/libgfortran.h >> $@ || true
 
+# Place ISO_Fortran_binding.h also under include/ in the build directory such
+# that it can be used for in-built-tree testsuite runs without interference of
+# other files in the build dir - like intrinsic .mod files or other .h files.
 ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding-1-tmpl.h \
 		       $(srcdir)/ISO_Fortran_binding-2-tmpl.h \
 		       $(srcdir)/ISO_Fortran_binding-3-tmpl.h \
@@ -7051,6 +7053,9 @@ ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding-1-tmpl.h \
 	$(COMPILE) -E -dD $(srcdir)/ISO_Fortran_binding-2-tmpl.h \
 	| grep '^#define CFI_type' >> $@
 	cat $(srcdir)/ISO_Fortran_binding-3-tmpl.h >> $@
+	$(MKDIR_P) include
+	-rm -f include/ISO_Fortran_binding.h
+	cp $@ include/ISO_Fortran_binding.h
 
 @MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@
@@ -7204,6 +7209,9 @@ ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding-1-tmpl.h \
 
 @MAINTAINER_MODE_TRUE@$(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $@
+
+clean-local:
+	-rm -rf include
 
 # target overrides
 -include $(tmake_file)

@@ -2,6 +2,19 @@
 
 	Backported from master:
 
+	2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	PR fortran/101660
+	PR testsuite/101847
+
+	* lib/gfortran.exp (gfortran_init): Remove -I$specpath/libgfortran
+	from the string used to set GFORTRAN_UNDER_TEST.
+
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+
 	2021-08-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libfortran/101305
