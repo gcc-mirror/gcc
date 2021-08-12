@@ -6643,7 +6643,9 @@ package body Sem_Attr is
          Initialize (CRC);
          Compute_Type_Key (Entity (P));
 
-         if not Is_Frozen (Entity (P)) then
+         if not Is_Frozen (Entity (P))
+           and then not Is_Generic_Type (Entity (P))
+         then
             Error_Msg_N ("premature usage of Type_Key?", N);
          end if;
 

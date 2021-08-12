@@ -1681,6 +1681,13 @@ package body Sem_Ch5 is
          Error_Msg_N
            ("(Ada 83) case expression cannot be of a generic type", Exp);
          return;
+
+      elsif not Extensions_Allowed
+        and then not Is_Discrete_Type (Exp_Type)
+      then
+         Error_Msg_N
+           ("expression in case statement must be of a discrete_Type", Exp);
+         return;
       end if;
 
       --  If the case expression is a formal object of mode in out, then treat
