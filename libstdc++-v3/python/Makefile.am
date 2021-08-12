@@ -29,6 +29,12 @@ else
 pythondir = $(datadir)/gcc-$(gcc_version)/python
 endif
 
+if GLIBCXX_BUILD_DEBUG
+debug_gdb_py = YES
+else
+debug_gdb_py =
+endif
+
 all-local: gdb.py
 
 nobase_python_DATA = \
@@ -61,4 +67,8 @@ install-data-local: gdb.py
 	  done; \
 	cd $$here; \
 	echo " $(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py"; \
-	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py
+	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py ; \
+	if [ -n "$(debug_gdb_py)" ]; then \
+	  sed "/^libdir = /s;'$$;/debug';" gdb.py > debug-gdb.py ; \
+	  $(INSTALL_DATA) debug-gdb.py $(DESTDIR)$(toolexeclibdir)/debug/$$libname-gdb.py ; \
+	fi
