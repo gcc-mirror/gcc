@@ -6222,6 +6222,23 @@ case $target_os in
 	        [Define if the PE linker has broken DWARF 5 support.])
     fi
     AC_MSG_RESULT($gcc_cv_ld_broken_pe_dwarf5)
+
+    AC_MSG_CHECKING(PE linker --disable-dynamicbase support)
+    gcc_cv_ld_disable_dynamicbase=no
+    if test $in_tree_ld = yes; then
+      if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 36 -o "$gcc_cv_gld_major_version" -gt 2; then \
+        gcc_cv_ld_disable_dynamicbase=yes
+      fi
+    else
+      if $gcc_cv_ld --help 2>&1 | grep -q 'disable\-]dynamicbase' > /dev/null; then
+        gcc_cv_ld_disable_dynamicbase=yes
+      fi
+    fi
+    if test x"$gcc_cv_ld_disable_dynamicbase" = xyes; then
+      AC_DEFINE(HAVE_LD_PE_DISABLE_DYNAMICBASE, 1,
+                [Define if the PE linker supports --disable-dynamicbase option.])
+    fi
+    AC_MSG_RESULT($gcc_cv_ld_disable_dynamicbase)
     ;;
 esac
 
