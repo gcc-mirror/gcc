@@ -58,7 +58,4 @@ range_tracer::header (const char *str)
     return do_header (str);
   return 0;
 }
-
-#define DEBUG_RANGE_CACHE (dump_file && (param_evrp_mode & EVRP_MODE_DEBUG))
-
 #endif // GCC_GIMPLE_RANGE_TRACE_H
