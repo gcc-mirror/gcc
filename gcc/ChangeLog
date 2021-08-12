@@ -1,3 +1,123 @@
+2021-08-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add always, power5, and
+	power6 stanzas.
+
+2021-08-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add vsx stanza.
+
+2021-08-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Finish altivec stanza.
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Move
+	initialization of pcvoid_type_node here...
+	(altivec_init_builtins): ...from here.
+	* config/rs6000/rs6000.h (rs6000_builtin_type_index): Add
+	RS6000_BTI_const_ptr_void.
+	(pcvoid_type_node): New macro.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR target/101877
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Do not decompose
+	hard-register accesses.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (operands_scanner::get_expr_operands):
+	Do not look at COMPONENT_REF FIELD_DECLs TREE_THIS_VOLATILE
+	to determine has_volatile_ops.
+
+2021-08-11  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* cfgexpand.c (expand_used_vars): Reuse attribs local variable.
+
+2021-08-11  Jan Hubicka  <hubicka@ucw.cz>
+	    Alexandre Oliva  <oliva@adacore.com>
+
+	* ipa-modref.c (modref_lattice::dump): Fix escape_point's min_flags
+	dumping.
+	(modref_lattice::merge_deref): Fix handling of indirect scape points.
+	(update_escape_summary_1): Likewise.
+	(update_escape_summary): Likewise.
+	(ipa_merge_modref_summary_after_inlining): Likewise.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101858
+	* fold-const.c (fold_binary_loc): Guard simplification
+	of  X < (cast) (1 << Y) to integer types.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101861
+	* tree-vect-stmts.c (vectorizable_load): Fix error in
+	previous change with regard to gather vectorization.
+
+2021-08-11  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h (vdup_n_s8): Replace call to builtin
+	with constructor.
+	(vdup_n_s16): Likewise.
+	(vdup_n_s32): Likewise.
+	(vdup_n_s64): Likewise.
+	(vdup_n_u8): Likewise.
+	(vdup_n_u16): Likewise.
+	(vdup_n_u32): Likewise.
+	(vdup_n_u64): Likewise.
+	(vdup_n_p8): Likewise.
+	(vdup_n_p16): Likewise.
+	(vdup_n_p64): Likewise.
+	(vdup_n_f16): Likewise.
+	(vdup_n_f32): Likewise.
+	(vdupq_n_s8): Likewise.
+	(vdupq_n_s16): Likewise.
+	(vdupq_n_s32): Likewise.
+	(vdupq_n_s64): Likewise.
+	(vdupq_n_u8): Likewise.
+	(vdupq_n_u16): Likewise.
+	(vdupq_n_u32): Likewise.
+	(vdupq_n_u64): Likewise.
+	(vdupq_n_p8): Likewise.
+	(vdupq_n_p16): Likewise.
+	(vdupq_n_p64): Likewise.
+	(vdupq_n_f16): Likewise.
+	(vdupq_n_f32): Likewise.
+	(vmov_n_s8): Replace call to builtin with call to corresponding
+	vdup_n intrinsic.
+	(vmov_n_s16): Likewise.
+	(vmov_n_s32): Likewise.
+	(vmov_n_s64): Likewise.
+	(vmov_n_u8): Likewise.
+	(vmov_n_u16): Likewise.
+	(vmov_n_u32): Likewise.
+	(vmov_n_u64): Likewise.
+	(vmov_n_p8): Likewise.
+	(vmov_n_p16): Likewise.
+	(vmov_n_f16): Likewise.
+	(vmov_n_f32): Likewise.
+	(vmovq_n_s8): Likewise.
+	(vmovq_n_s16): Likewise.
+	(vmovq_n_s32): Likewise.
+	(vmovq_n_s64): Likewise.
+	(vmovq_n_u8): Likewise.
+	(vmovq_n_u16): Likewise.
+	(vmovq_n_u32): Likewise.
+	(vmovq_n_u64): Likewise.
+	(vmovq_n_p8): Likewise.
+	(vmovq_n_p16): Likewise.
+	(vmovq_n_f16): Likewise.
+	(vmovq_n_f32): Likewise.
+	* config/arm/arm_neon_builtins.def: Remove entries for vdup_n.
+
+2021-08-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98309
+	* config/i386/i386.md (ldexp<mode>3): Extend to vscalefs[sd]
+	when TARGET_AVX512F and TARGET_SSE_MATH.
+
 2021-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80355

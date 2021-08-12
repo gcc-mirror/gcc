@@ -1,3 +1,55 @@
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101725
+	DR 2082
+	* g++.dg/DRs/dr2082.C: New test.
+	* g++.dg/cpp2a/concepts-uneval4.C: New test.
+
+2021-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101786
+	* g++.dg/cpp2a/constinit16.C: New test.
+
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79501
+	* g++.dg/cpp1z/class-deduction98.C: New test.
+
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89062
+	* g++.dg/cpp1z/class-deduction97.C: New test.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/lto/pr48622_1.c: Provide non-LTO definition
+	of ashift_qi_1.
+
+2021-08-11  Jan Hubicka  <jh@suse.cz>
+
+	* c-c++-common/modref-dse.c: New test.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101858
+	* gcc.dg/pr101858.c: New testcase.
+
+2021-08-11  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* gcc.target/arm/pr51534.c: Adjust test.
+
+2021-08-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98309
+	* gcc.target/i386/pr98309-1.c: New test.
+	* gcc.target/i386/pr98309-2.c: New test.
+
+2021-08-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/101674
+	* gcc.dg/uninit-pred-9_b.c: Xfail for cris-*-* too.
+
 2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libfortran/101305

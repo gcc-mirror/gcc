@@ -1,3 +1,15 @@
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* iso-c-binding.def (c_float128, c_float128_complex): Check
+	float128_type_node instead of gfc_float128_type_node.
+	* trans-types.c (gfc_init_kinds, gfc_build_real_type):
+	Update comments re supported 128-bit floating-point types.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	* trans-common.c (create_common): Set TREE_THIS_VOLATILE on the
+	COMPONENT_REF if the field is volatile.
+
 2021-08-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/68568
