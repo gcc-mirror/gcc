@@ -1,3 +1,43 @@
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101725
+	DR 2082
+	* cp-tree.h (unevaluated_p): Return true for REQUIRES_EXPR.
+	* decl.c (local_variable_p_walkfn): Don't walk into unevaluated
+	operands.
+	* parser.c (cp_parser_primary_expression) <case CPP_NAME>: Never
+	reject uses of local variables in unevaluated contexts.
+	* tree.c (cp_walk_subtrees) <case REQUIRES_EXPR>: Increment
+	cp_unevaluated_operand.  Use cp_walk_tree directly instead of
+	WALK_SUBTREE to avoid the goto.  Use REQUIRES_EXPR_REQS instead
+	of TREE_OPERAND directly.
+
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100828
+	* logic.cc (formula::formula): Use emplace_back instead of
+	push_back.
+	(formula::branch): Insert a copy of m_current directly after
+	m_current instead of at the end of the list.
+	(formula::erase): Define.
+	(decompose_formula): Remove.
+	(decompose_antecedents): Remove.
+	(decompose_consequents): Remove.
+	(derive_proofs): Remove.
+	(max_problem_size): Remove.
+	(diagnose_constraint_size): Remove.
+	(subsumes_constraints_nonnull): Rewrite directly in terms of
+	decompose_clause and derive_proof, interleaving decomposition
+	with implication checking.  Remove limit on constraint complexity.
+	Use formula::erase to free the current clause before moving on to
+	the next one.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.
