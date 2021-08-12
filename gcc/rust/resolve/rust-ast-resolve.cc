@@ -552,6 +552,10 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       auto s = ResolvePathSegmentToCanonicalPath::resolve (seg);
       path = path.append (s);
 
+      // reset state
+      segment_is_type = false;
+      resolved_node = UNKNOWN_NODEID;
+
       if (resolver->get_name_scope ().lookup (path, &resolved_node))
 	{
 	  resolver->insert_resolved_name (seg.get_node_id (), resolved_node);
@@ -562,6 +566,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       // check the type scope
       else if (resolver->get_type_scope ().lookup (path, &resolved_node))
 	{
+	  segment_is_type = true;
 	  resolver->insert_resolved_type (seg.get_node_id (), resolved_node);
 	  resolver->insert_new_definition (seg.get_node_id (),
 					   Definition{expr->get_node_id (),
@@ -610,6 +615,19 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	  // this
 	  return;
 	}
+    }
+
+  // its fully resolved lets mark it as such
+  if (resolved_node != UNKNOWN_NODEID)
+    {
+      if (segment_is_type)
+	resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
+      else
+	resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
+
+      resolver->insert_new_definition (expr->get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
     }
 }
 
