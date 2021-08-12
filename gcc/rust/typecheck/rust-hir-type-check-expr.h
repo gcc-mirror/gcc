@@ -21,6 +21,7 @@
 
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
+#include "rust-system.h"
 #include "rust-tyty.h"
 #include "rust-tyty-call.h"
 #include "rust-hir-type-check-struct-field.h"
@@ -931,6 +932,9 @@ public:
     size_t offset = -1;
     TyTy::BaseType *tyseg
       = resolve_root_path (expr, &offset, &resolved_node_id);
+
+    rust_assert (tyseg != nullptr);
+
     if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
@@ -1202,6 +1206,7 @@ private:
       folded_array_capacity (nullptr), inside_loop (inside_loop)
   {}
 
+  // Beware: currently returns Tyty::ErrorType or nullptr in case of error.
   TyTy::BaseType *resolve_root_path (HIR::PathInExpression &expr,
 				     size_t *offset,
 				     NodeId *root_resolved_node_id)
