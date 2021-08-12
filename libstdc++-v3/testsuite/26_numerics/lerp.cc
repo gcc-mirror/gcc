@@ -21,9 +21,9 @@
 #include <cmath>
 
 #ifndef __cpp_lib_interpolate
-# error "Feature-test macro for midpoint and lerp missing"
+# error "Feature-test macro for midpoint and lerp missing in <cmath>"
 #elif __cpp_lib_interpolate != 201902L
-# error "Feature-test macro for midpoint and lerp has wrong value"
+# error "Feature-test macro for midpoint and lerp has wrong value in <cmath>"
 #endif
 
 #include <limits>
