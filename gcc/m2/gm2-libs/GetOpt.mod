@@ -30,7 +30,7 @@ FROM DynamicStrings IMPORT string, InitStringCharStar ;
 FROM Storage IMPORT ALLOCATE, REALLOCATE, DEALLOCATE ;
 FROM MemUtils IMPORT MemCopy ;
 
-IMPORT getopt ;
+IMPORT cgetopt ;
 
 
 TYPE
@@ -61,10 +61,10 @@ PROCEDURE GetOpt (argc: INTEGER; argv: ADDRESS; optstring: String;
 VAR
    r: CHAR ;
 BEGIN
-   r := getopt.getopt (argc, argv, string (optstring)) ;
-   optarg := InitStringCharStar (getopt.optarg) ;
-   opterr := getopt.opterr ;
-   optopt := getopt.optopt ;
+   r := cgetopt.getopt (argc, argv, string (optstring)) ;
+   optarg := InitStringCharStar (cgetopt.optarg) ;
+   opterr := cgetopt.opterr ;
+   optopt := cgetopt.optopt ;
    RETURN r
 END GetOpt ;
 
@@ -189,7 +189,7 @@ PROCEDURE GetOptLong (argc: INTEGER; argv: ADDRESS; optstring: String;
 VAR
    r: INTEGER ;
 BEGIN
-   r := getopt.getopt_long (argc, argv, string (optstring), longopts^.cptr, longindex) ;
+   r := cgetopt.getopt_long (argc, argv, string (optstring), longopts^.cptr, longindex) ;
    RETURN r
 END GetOptLong ;
 
@@ -204,7 +204,7 @@ PROCEDURE GetOptLongOnly (argc: INTEGER; argv: ADDRESS; optstring: String;
 VAR
    r: INTEGER ;
 BEGIN
-   r := getopt.getopt_long_only (argc, argv, string (optstring),
+   r := cgetopt.getopt_long_only (argc, argv, string (optstring),
                                  longopts^.cptr, longindex) ;
    RETURN r
 END GetOptLongOnly ;
