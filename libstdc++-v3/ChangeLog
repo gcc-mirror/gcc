@@ -1,3 +1,43 @@
+2021-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101866
+	* testsuite/experimental/random/randint.cc: Loop and retry if
+	reseed() produces the same sequence.
+
+2021-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101510
+	* src/c++17/fs_ops.cc (fs::create_directories): Use status
+	instead of symlink_status.
+	* src/filesystem/ops.cc (fs::create_directories): Likewise.
+	* testsuite/27_io/filesystem/operations/create_directories.cc:
+	Check symlink to existing directory.
+	* testsuite/27_io/filesystem/operations/create_directory.cc: Do
+	not test with symlinks on Windows.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Check symlink to existing directory.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Do not test with symlinks on Windows.
+
+2021-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101510
+	* src/c++17/fs_ops.cc (create_dir): Adjust whitespace.
+	* testsuite/27_io/filesystem/operations/create_directory.cc:
+	Test creating directory with name of existing symlink to
+	directory.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Likewise.
+
 2021-08-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
