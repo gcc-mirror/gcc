@@ -325,6 +325,28 @@ Mappings::lookup_hir_impl_block (CrateNum crateNum, HirId id)
 }
 
 void
+Mappings::insert_module (CrateNum crateNum, HirId id, HIR::Module *module)
+{
+  rust_assert (lookup_module (crateNum, id) == nullptr);
+
+  hirModuleMappings[crateNum][id] = module;
+}
+
+HIR::Module *
+Mappings::lookup_module (CrateNum crateNum, HirId id)
+{
+  auto it = hirModuleMappings.find (crateNum);
+  if (it == hirModuleMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
 Mappings::insert_hir_implitem (CrateNum crateNum, HirId id,
 			       HirId parent_impl_id, HIR::ImplItem *item)
 {
