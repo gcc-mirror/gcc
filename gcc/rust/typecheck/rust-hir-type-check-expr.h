@@ -936,6 +936,10 @@ public:
     if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
+    // this is the case where the name resolver has already fully resolved the
+    // name, which means all the work is already done.
+    bool name_resolved_fully = offset >= expr.get_num_segments ();
+
     if (expr.get_num_segments () == 1)
       {
 	Location locus = expr.get_segments ().back ().get_locus ();
@@ -1052,7 +1056,7 @@ public:
       {
 	rust_assert (path_resolved_id == resolved_node_id);
       }
-    else
+    else if (!name_resolved_fully)
       {
 	resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
 					resolved_node_id);
@@ -1214,6 +1218,8 @@ private:
     for (size_t i = 0; i < expr.get_num_segments (); i++)
       {
 	HIR::PathExprSegment &seg = expr.get_segments ().at (i);
+
+	bool have_more_segments = (expr.get_num_segments () - 1 != i);
 	bool is_root = *offset == 0;
 	NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
 
@@ -1238,6 +1244,7 @@ private:
 	    resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
 	  }
 
+	// ref_node_id is the NodeId that the segments refers to.
 	if (ref_node_id == UNKNOWN_NODEID)
 	  {
 	    if (is_root)
@@ -1265,27 +1272,33 @@ private:
 
 		return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	      }
+
 	    return root_tyty;
 	  }
 
-	// FIXME
-	// modules are not going to have an explicit TyTy.In this case we
-	// can probably do some kind of check. By looking up if the HirId ref
-	// node is a module and continue. If the path expression is single
-	// segment of module we can error with expected value but found module
-	// or something.
-	//
-	// Something like this
-	//
-	// bool seg_is_module = mappings->lookup_module (ref);
-	// if (seg_is_module)
-	//   {
-	//     if (have_more_segments)
-	//       continue;
-	//
-	//     rust_error_at (seg.get_locus (), "expected value");
-	//     return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
-	//   }
+	auto seg_is_module
+	  = (nullptr
+	     != mappings->lookup_module (expr.get_mappings ().get_crate_num (),
+					 ref));
+
+	if (seg_is_module)
+	  {
+	    // A::B::C::this_is_a_module::D::E::F
+	    //          ^^^^^^^^^^^^^^^^
+	    //          Currently handling this.
+	    if (have_more_segments)
+	      {
+		(*offset)++;
+		continue;
+	      }
+
+	    // In the case of :
+	    // A::B::C::this_is_a_module
+	    //          ^^^^^^^^^^^^^^^^
+	    // This is an error, we are not expecting a module.
+	    rust_error_at (seg.get_locus (), "expected value");
+	    return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+	  }
 
 	TyTy::BaseType *lookup = nullptr;
 	if (!context->lookup_type (ref, &lookup))

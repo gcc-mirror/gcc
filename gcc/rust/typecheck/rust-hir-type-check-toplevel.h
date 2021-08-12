@@ -101,6 +101,12 @@ public:
     context->insert_type (struct_decl.get_mappings (), type);
   }
 
+  void visit (HIR::ModuleBodied &module) override
+  {
+    for (auto &item : module.get_items ())
+      TypeCheckTopLevel::Resolve (item.get ());
+  }
+
   void visit (HIR::StructStruct &struct_decl) override
   {
     std::vector<TyTy::SubstitutionParamMapping> substitutions;
