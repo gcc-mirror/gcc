@@ -44,6 +44,14 @@ with Urealp; use Urealp;
 
 package Checks is
 
+   type Bit_Vector is array (Pos range <>) of Boolean;
+   type Dimension_Set (Dimensions : Nat) is
+      record
+         Elements : Bit_Vector (1 .. Dimensions);
+      end record;
+   Empty_Dimension_Set : constant Dimension_Set
+     := (Dimensions => 0, Elements => (others => <>));
+
    procedure Initialize;
    --  Called for each new main source program, to initialize internal
    --  variables used in the package body of the Checks unit.
@@ -721,11 +729,16 @@ package Checks is
    --  Do_Range_Check flag, and if it is set, this routine is called, which
    --  turns the flag off in code-generation mode.
 
-   procedure Generate_Index_Checks (N : Node_Id);
+   procedure Generate_Index_Checks
+     (N                : Node_Id;
+      Checks_Generated : out Dimension_Set);
    --  This procedure is called to generate index checks on the subscripts for
    --  the indexed component node N. Each subscript expression is examined, and
    --  if the Do_Range_Check flag is set, an appropriate index check is
    --  generated and the flag is reset.
+   --  The out-mode parameter Checks_Generated indicates the dimensions for
+   --  which checks were generated. Checks_Generated.Dimensions must match
+   --  the number of dimensions of the array type.
 
    --  Similarly, we set the flag Do_Discriminant_Check in the semantic
    --  analysis to indicate that a discriminant check is required for selected
@@ -858,10 +871,14 @@ package Checks is
 
    --  The following procedures are used in handling validity checking
 
-   procedure Apply_Subscript_Validity_Checks (Expr : Node_Id);
+   procedure Apply_Subscript_Validity_Checks
+     (Expr            : Node_Id;
+      No_Check_Needed : Dimension_Set := Empty_Dimension_Set);
    --  Expr is the node for an indexed component. If validity checking and
-   --  range checking are enabled, all subscripts for this indexed component
-   --  are checked for validity.
+   --  range checking are enabled, each subscript for this indexed component
+   --  whose dimension does not belong to the No_Check_Needed set is checked
+   --  for validity. No_Check_Needed.Dimensions must match the number of
+   --  dimensions of the array type or be zero.
 
    procedure Check_Valid_Lvalue_Subscripts (Expr : Node_Id);
    --  Expr is a lvalue, i.e. an expression representing the target of an

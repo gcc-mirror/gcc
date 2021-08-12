@@ -3552,9 +3552,12 @@ package body Checks is
    -- Apply_Subscript_Validity_Checks --
    -------------------------------------
 
-   procedure Apply_Subscript_Validity_Checks (Expr : Node_Id) is
+   procedure Apply_Subscript_Validity_Checks
+     (Expr            : Node_Id;
+      No_Check_Needed : Dimension_Set := Empty_Dimension_Set) is
       Sub : Node_Id;
 
+      Dimension : Pos := 1;
    begin
       pragma Assert (Nkind (Expr) = N_Indexed_Component);
 
@@ -3568,11 +3571,16 @@ package body Checks is
          --  for the subscript, and that convert will do the necessary validity
          --  check.
 
-         Ensure_Valid (Sub, Holes_OK => True);
+         if (No_Check_Needed = Empty_Dimension_Set)
+           or else not No_Check_Needed.Elements (Dimension)
+         then
+            Ensure_Valid (Sub, Holes_OK => True);
+         end if;
 
          --  Move to next subscript
 
          Next (Sub);
+         Dimension := Dimension + 1;
       end loop;
    end Apply_Subscript_Validity_Checks;
 
@@ -7233,7 +7241,10 @@ package body Checks is
    -- Generate_Index_Checks --
    ---------------------------
 
-   procedure Generate_Index_Checks (N : Node_Id) is
+   procedure Generate_Index_Checks
+     (N                : Node_Id;
+      Checks_Generated : out Dimension_Set)
+   is
 
       function Entity_Of_Prefix return Entity_Id;
       --  Returns the entity of the prefix of N (or Empty if not found)
@@ -7268,6 +7279,8 @@ package body Checks is
    --  Start of processing for Generate_Index_Checks
 
    begin
+      Checks_Generated.Elements := (others => False);
+
       --  Ignore call if the prefix is not an array since we have a serious
       --  error in the sources. Ignore it also if index checks are suppressed
       --  for array object or type.
@@ -7330,6 +7343,8 @@ package body Checks is
                          Prefix         => New_Occurrence_Of (Etype (A), Loc),
                          Attribute_Name => Name_Range)),
                 Reason => CE_Index_Check_Failed));
+
+            Checks_Generated.Elements (1) := True;
          end if;
 
       --  General case
@@ -7416,6 +7431,8 @@ package body Checks is
                                Duplicate_Subexpr_Move_Checks (Sub)),
                            Right_Opnd => Range_N),
                       Reason => CE_Index_Check_Failed));
+
+                  Checks_Generated.Elements (Ind) := True;
                end if;
 
                Next_Index (A_Idx);
