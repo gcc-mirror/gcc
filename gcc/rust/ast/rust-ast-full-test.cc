@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+// FIXME: This does not work on Windows
+#include <unistd.h>
+
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
 #include "rust-ast-visitor.h"
@@ -4048,6 +4051,73 @@ Module::add_crate_name (std::vector<std::string> &names) const
 
   for (const auto &item : items)
     item->add_crate_name (names);
+}
+
+static bool
+file_exists (const std::string path)
+{
+  // Simply check if the file exists
+  // FIXME: This does not work on Windows
+  return access (path.c_str (), F_OK) != -1;
+}
+
+// FIXME: This function should also check if the module has a `path` outer
+// attribute and fetch the path from here in that case, i.e:
+// ```
+// #[path="<dir>/<subdir>/<file>.rs"]
+// mod <mod_name>;
+// ```
+std::string
+Module::get_filename ()
+{
+  rust_assert (kind == Module::ModuleKind::UNLOADED);
+
+  // This corresponds to the path of the file 'including' the module. So the
+  // file that contains the 'mod <file>;' directive
+  std::string including_fname (outer_filename);
+
+  std::string expected_file_path = module_name + ".rs";
+  std::string expected_dir_path = "mod.rs";
+
+  auto dir_slash_pos = including_fname.rfind (file_separator);
+  std::string current_directory_name;
+
+  // If we haven't found a file_separator, then we have to look for files in the
+  // current directory ('.')
+  if (dir_slash_pos == std::string::npos)
+    current_directory_name = std::string (".") + file_separator;
+  else
+    current_directory_name
+      = including_fname.substr (0, dir_slash_pos) + file_separator;
+
+  // FIXME: We also have to search for
+  // <directory>/<including_fname>/<module_name>.rs In rustc, this is done via
+  // the concept of `DirOwnernship`, which is based on whether or not the
+  // current file is titled `mod.rs`.
+
+  // First, we search for <directory>/<module_name>.rs
+  bool file_mod_found
+    = file_exists (current_directory_name + expected_file_path);
+
+  // Then, search for <directory>/<module_name>/mod.rs
+  current_directory_name += module_name + file_separator;
+  bool dir_mod_found = file_exists (current_directory_name + expected_dir_path);
+
+  bool multiple_candidates_found = file_mod_found && dir_mod_found;
+  bool no_candidates_found = !file_mod_found && !dir_mod_found;
+
+  if (multiple_candidates_found)
+    rust_error_at (locus,
+		   "two candidates found for module %s: %s.rs and %s%smod.rs",
+		   module_name.c_str (), module_name.c_str (),
+		   module_name.c_str (), file_separator);
+
+  if (no_candidates_found)
+    rust_error_at (locus, "no candidate found for module %s",
+		   module_name.c_str ());
+
+  return file_mod_found ? expected_file_path
+			: current_directory_name + expected_dir_path;
 }
 
 void

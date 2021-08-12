@@ -14,6 +14,7 @@ struct RAIIFile
 {
 private:
   FILE *file;
+  const char *filename;
 
   void close ()
   {
@@ -22,7 +23,7 @@ private:
   }
 
 public:
-  RAIIFile (const char *filename)
+  RAIIFile (const char *filename) : filename (filename)
   {
     if (strcmp (filename, "-") == 0)
       file = stdin;
@@ -47,6 +48,7 @@ public:
   ~RAIIFile () { close (); }
 
   FILE *get_raw () { return file; }
+  const char *get_filename () { return filename; }
 };
 
 class Lexer
@@ -136,6 +138,7 @@ public:
   void split_current_token (TokenId new_left, TokenId new_right);
 
   Linemap *get_line_map () { return line_map; }
+  std::string get_filename () { return std::string (input.get_filename ()); }
 
 private:
   // File for use as input.

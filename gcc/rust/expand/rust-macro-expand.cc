@@ -2036,6 +2036,10 @@ public:
 	    return;
 	  }
       }
+    else
+      {
+	std::string mod_file = module.get_filename ();
+      }
 
     // strip items if required
     expand_pointer_allow_strip (module.get_items ());
