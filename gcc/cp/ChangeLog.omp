@@ -1,6 +1,15 @@
 2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101759
+	* parser.c (cp_parser_default_argument): Temporarily override
+	parser->omp_declare_simd and parser->oacc_routine to NULL.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* name-lookup.c (finish_using_directive): Diagnose omp::directive

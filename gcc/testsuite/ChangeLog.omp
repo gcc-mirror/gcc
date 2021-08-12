@@ -1,6 +1,15 @@
 2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101759
+	* g++.dg/gomp/pr101759.C: New test.
+	* g++.dg/goacc/pr101759.C: New test.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/gomp/attrs-11.C: Adjust expected diagnostics.
