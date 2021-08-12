@@ -2347,6 +2347,7 @@ package body Gen_IL.Gen is
                procedure One_Comp (F : Field_Enum);
 
                procedure One_Comp (F : Field_Enum) is
+                  pragma Annotate (Codepeer, Modified, Field_Table);
                   Offset : constant Field_Offset :=  Field_Table (F).Offset;
                begin
                   if First_Time then

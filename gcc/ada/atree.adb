@@ -2503,6 +2503,10 @@ package body Atree is
          Total := G_Total + S_Total;
       end loop;
 
+      --  This assertion helps CodePeer understand that Total cannot be 0 (this
+      --  is true because GNAT does not attempt to compile empty files).
+      pragma Assert (Total > 0);
+
       Write_Int_64 (Total);
       Write_Str (" (100%) = ");
       Write_Int_64 (G_Total);
