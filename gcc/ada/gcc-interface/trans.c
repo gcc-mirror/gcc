@@ -3893,7 +3893,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* If the body comes from an expression function, arrange it to be inlined
      in almost all cases.  */
-  if (Was_Expression_Function (gnat_node))
+  if (Was_Expression_Function (gnat_node) && !Debug_Flag_Dot_8)
     DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
 
   /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
