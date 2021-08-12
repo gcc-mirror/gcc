@@ -709,26 +709,26 @@ public:
 struct QualifiedPathType
 {
 private:
-  std::unique_ptr<Type> type_to_invoke_on;
-
-  // bool has_as_clause;
-  TypePath trait_path;
-
+  std::unique_ptr<Type> type;
+  std::unique_ptr<TypePath> trait;
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   // Constructor
-  QualifiedPathType (std::unique_ptr<Type> invoke_on_type,
-		     Location locus = Location (),
-		     TypePath trait_path = TypePath::create_error ())
-    : type_to_invoke_on (std::move (invoke_on_type)),
-      trait_path (std::move (trait_path)), locus (locus)
+  QualifiedPathType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
+		     std::unique_ptr<TypePath> trait, Location locus)
+    : type (std::move (type)), trait (std::move (trait)), locus (locus),
+      mappings (mappings)
   {}
 
   // Copy constructor uses custom deep copy for Type to preserve polymorphism
   QualifiedPathType (QualifiedPathType const &other)
-    : type_to_invoke_on (other.type_to_invoke_on->clone_type ()),
-      trait_path (other.trait_path), locus (other.locus)
+    : type (other.type->clone_type ()),
+      trait (other.has_as_clause () ? std::unique_ptr<HIR::TypePath> (
+	       new HIR::TypePath (*other.trait))
+				    : nullptr),
+      locus (other.locus), mappings (other.mappings)
   {}
 
   // default destructor
@@ -737,9 +737,14 @@ public:
   // overload assignment operator to use custom clone method
   QualifiedPathType &operator= (QualifiedPathType const &other)
   {
-    type_to_invoke_on = other.type_to_invoke_on->clone_type ();
-    trait_path = other.trait_path;
+    type = other.type->clone_type ();
     locus = other.locus;
+    mappings = other.mappings;
+    trait
+      = other.has_as_clause ()
+	  ? std::unique_ptr<HIR::TypePath> (new HIR::TypePath (*other.trait))
+	  : nullptr;
+
     return *this;
   }
 
@@ -748,20 +753,21 @@ public:
   QualifiedPathType &operator= (QualifiedPathType &&other) = default;
 
   // Returns whether the qualified path type has a rebind as clause.
-  bool has_as_clause () const { return !trait_path.is_error (); }
-
-  // Returns whether the qualified path type is in an error state.
-  bool is_error () const { return type_to_invoke_on == nullptr; }
-
-  // Creates an error state qualified path type.
-  static QualifiedPathType create_error ()
-  {
-    return QualifiedPathType (nullptr);
-  }
+  bool has_as_clause () const { return trait != nullptr; }
 
   std::string as_string () const;
 
   Location get_locus () const { return locus; }
+
+  Analysis::NodeMapping get_mappings () const { return mappings; }
+
+  std::unique_ptr<Type> &get_type () { return type; }
+
+  std::unique_ptr<TypePath> &get_trait ()
+  {
+    rust_assert (has_as_clause ());
+    return trait;
+  }
 };
 
 /* HIR node representing a qualified path-in-expression pattern (path that
@@ -785,24 +791,14 @@ public:
       path_type (std::move (qual_path_type)), locus (locus)
   {}
 
-  /* TODO: maybe make a shortcut constructor that has QualifiedPathType elements
-   * as params */
-
-  // Returns whether qualified path in expression is in an error state.
-  bool is_error () const { return path_type.is_error (); }
-
-  // Creates an error qualified path in expression.
-  static QualifiedPathInExpression create_error ()
-  {
-    return QualifiedPathInExpression (Analysis::NodeMapping::get_error (),
-				      QualifiedPathType::create_error (),
-				      std::vector<PathExprSegment> ());
-  }
-
   Location get_locus () const { return locus; }
   Location get_locus_slow () const override { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  QualifiedPathType &get_path_type () { return path_type; }
+
+  Location get_locus () { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

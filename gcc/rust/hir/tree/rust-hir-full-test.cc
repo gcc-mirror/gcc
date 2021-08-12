@@ -1192,11 +1192,11 @@ std::string
 QualifiedPathType::as_string () const
 {
   std::string str ("<");
-  str += type_to_invoke_on->as_string ();
+  str += type->as_string ();
 
   if (has_as_clause ())
     {
-      str += " as " + trait_path.as_string ();
+      str += " as " + trait->as_string ();
     }
 
   return str + ">";

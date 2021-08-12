@@ -282,6 +282,55 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
 					  expr.opening_scope_resolution ());
 }
 
+HIR::QualifiedPathType
+ASTLoweringBase::lower_qual_path_type (AST::QualifiedPathType &qualified_type)
+{
+  HIR::Type *type
+    = ASTLoweringType::translate (qualified_type.get_type ().get ());
+  HIR::TypePath *trait
+    = qualified_type.has_as_clause ()
+	? ASTLowerTypePath::translate (qualified_type.get_as_type_path ())
+	: nullptr;
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, qualified_type.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  return HIR::QualifiedPathType (mapping, std::unique_ptr<HIR::Type> (type),
+				 std::unique_ptr<HIR::TypePath> (trait),
+				 qualified_type.get_locus ());
+}
+
+void
+ASTLowerQualPathInExpression::visit (AST::QualifiedPathInExpression &expr)
+{
+  HIR::QualifiedPathType qual_path_type
+    = lower_qual_path_type (expr.get_qualified_path_type ());
+
+  std::vector<HIR::PathExprSegment> path_segments;
+  expr.iterate_path_segments ([&] (AST::PathExprSegment &s) mutable -> bool {
+    path_segments.push_back (lower_path_expr_seg (s));
+
+    // insert the mappings for the segment
+    HIR::PathExprSegment *lowered_seg = &path_segments.back ();
+    mappings->insert_hir_path_expr_seg (
+      lowered_seg->get_mappings ().get_crate_num (),
+      lowered_seg->get_mappings ().get_hirid (), lowered_seg);
+    return true;
+  });
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated = new HIR::QualifiedPathInExpression (mapping, qual_path_type,
+						   std::move (path_segments),
+						   expr.get_locus (),
+						   expr.get_outer_attrs ());
+}
+
 // rust-ast-lower-base.h
 
 std::vector<std::unique_ptr<HIR::GenericParam> >
