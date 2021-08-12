@@ -1085,6 +1085,13 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE_FILTER:
+      pp_string (pp, "filter(");
+      dump_generic_node (pp, OMP_CLAUSE_FILTER_EXPR (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
+
     case OMP_CLAUSE_DEFAULTMAP:
       pp_string (pp, "defaultmap(");
       switch (OMP_CLAUSE_DEFAULTMAP_BEHAVIOR (clause))
@@ -3584,6 +3591,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_MASTER:
       pp_string (pp, "#pragma omp master");
+      goto dump_omp_body;
+
+    case OMP_MASKED:
+      pp_string (pp, "#pragma omp masked");
+      dump_omp_clauses (pp, OMP_MASKED_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
     case OMP_TASKGROUP:

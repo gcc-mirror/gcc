@@ -36004,7 +36004,9 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_DIST_SCHEDULE;
 	  break;
 	case 'f':
-	  if (!strcmp ("final", p))
+	  if (!strcmp ("filter", p))
+	    result = PRAGMA_OMP_CLAUSE_FILTER;
+	  else if (!strcmp ("final", p))
 	    result = PRAGMA_OMP_CLAUSE_FINAL;
 	  else if (!strcmp ("finalize", p))
 	    result = PRAGMA_OACC_CLAUSE_FINALIZE;
@@ -37335,6 +37337,34 @@ cp_parser_omp_clause_hint (cp_parser *parser, tree list, location_t location)
 
   c = build_omp_clause (location, OMP_CLAUSE_HINT);
   OMP_CLAUSE_HINT_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+
+  return c;
+}
+
+/* OpenMP 5.1:
+   filter ( integer-expression ) */
+
+static tree
+cp_parser_omp_clause_filter (cp_parser *parser, tree list, location_t location)
+{
+  tree t, c;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  t = cp_parser_assignment_expression (parser);
+
+  if (t == error_mark_node
+      || !parens.require_close (parser))
+    cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+  check_no_duplicate_clause (list, OMP_CLAUSE_FILTER, "filter", location);
+
+  c = build_omp_clause (location, OMP_CLAUSE_FILTER);
+  OMP_CLAUSE_FILTER_EXPR (c) = t;
   OMP_CLAUSE_CHAIN (c) = list;
 
   return c;
@@ -39448,6 +39478,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_default (parser, clauses,
 						  token->location, false);
 	  c_name = "default";
+	  break;
+	case PRAGMA_OMP_CLAUSE_FILTER:
+	  clauses = cp_parser_omp_clause_filter (parser, clauses,
+						 token->location);
+	  c_name = "filter";
 	  break;
 	case PRAGMA_OMP_CLAUSE_FINAL:
 	  clauses = cp_parser_omp_clause_final (parser, clauses, token->location);
@@ -41985,6 +42020,73 @@ cp_parser_omp_master (cp_parser *parser, cp_token *pragma_tok,
 			      cp_parser_omp_structured_block (parser, if_p));
 }
 
+/* OpenMP 5.1:
+   # pragma omp masked masked-clauses new-line
+     structured-block  */
+
+#define OMP_MASKED_CLAUSE_MASK					\
+	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FILTER)
+
+static tree
+cp_parser_omp_masked (cp_parser *parser, cp_token *pragma_tok,
+		      char *p_name, omp_clause_mask mask, tree *cclauses,
+		      bool *if_p)
+{
+  tree clauses, sb, ret;
+  unsigned int save;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  strcat (p_name, " masked");
+  mask |= OMP_MASKED_CLAUSE_MASK;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+
+      if (strcmp (p, "taskloop") == 0)
+	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  if (cclauses == NULL)
+	    cclauses = cclauses_buf;
+
+	  cp_lexer_consume_token (parser->lexer);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    return cp_parser_omp_taskloop (parser, pragma_tok, p_name, mask,
+					   cclauses, if_p);
+	  sb = begin_omp_structured_block ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  ret = cp_parser_omp_taskloop (parser, pragma_tok, p_name, mask,
+					cclauses, if_p);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  tree body = finish_omp_structured_block (sb);
+	  if (ret == NULL)
+	    return ret;
+	  ret = c_finish_omp_masked (loc, body,
+				     cclauses[C_OMP_CLAUSE_SPLIT_MASKED]);
+	  OMP_MASKED_COMBINED (ret) = 1;
+	  return ret;
+	}
+    }
+  if (!flag_openmp)  /* flag_openmp_simd  */
+    {
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return NULL_TREE;
+    }
+
+  clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
+				       cclauses == NULL);
+  if (cclauses)
+    {
+      cp_omp_split_clauses (loc, OMP_MASTER, mask, clauses, cclauses);
+      clauses = cclauses[C_OMP_CLAUSE_SPLIT_MASKED];
+    }
+
+  return c_finish_omp_masked (loc,
+			      cp_parser_omp_structured_block (parser, if_p),
+			      clauses);
+}
+
 /* OpenMP 2.5:
    # pragma omp ordered new-line
      structured-block
@@ -42238,7 +42340,37 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
-      if (cclauses == NULL && strcmp (p, "master") == 0)
+      if (cclauses == NULL && strcmp (p, "masked") == 0)
+	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  cclauses = cclauses_buf;
+
+	  cp_lexer_consume_token (parser->lexer);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    return cp_parser_omp_masked (parser, pragma_tok, p_name, mask,
+					 cclauses, if_p);
+	  block = begin_omp_parallel ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  tree ret = cp_parser_omp_masked (parser, pragma_tok, p_name, mask,
+					   cclauses, if_p);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  stmt = finish_omp_parallel (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
+				      block);
+	  if (ret == NULL_TREE)
+	    return ret;
+	  /* masked does have just filter clause, but during gimplification
+	     isn't represented by a gimplification omp context, so for
+	     #pragma omp parallel masked don't set OMP_PARALLEL_COMBINED,
+	     so that
+	     #pragma omp parallel masked
+	     #pragma omp taskloop simd lastprivate (x)
+	     isn't confused with
+	     #pragma omp parallel masked taskloop simd lastprivate (x)  */
+	  if (OMP_MASKED_COMBINED (ret))
+	    OMP_PARALLEL_COMBINED (stmt) = 1;
+	  return stmt;
+	}
+      else if (cclauses == NULL && strcmp (p, "master") == 0)
 	{
 	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
 	  cclauses = cclauses_buf;
@@ -45824,6 +45956,11 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       stmt = cp_parser_omp_loop (parser, pragma_tok, p_name, mask, NULL,
 				 if_p);
       break;
+    case PRAGMA_OMP_MASKED:
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_masked (parser, pragma_tok, p_name, mask, NULL,
+				   if_p);
+      break;
     case PRAGMA_OMP_MASTER:
       strcpy (p_name, "#pragma omp");
       stmt = cp_parser_omp_master (parser, pragma_tok, p_name, mask, NULL,
@@ -46464,6 +46601,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OMP_DISTRIBUTE:
     case PRAGMA_OMP_FOR:
     case PRAGMA_OMP_LOOP:
+    case PRAGMA_OMP_MASKED:
     case PRAGMA_OMP_MASTER:
     case PRAGMA_OMP_PARALLEL:
     case PRAGMA_OMP_SECTIONS:

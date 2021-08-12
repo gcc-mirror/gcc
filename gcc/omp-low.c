@@ -1466,6 +1466,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_NUM_WORKERS:
 	case OMP_CLAUSE_VECTOR_LENGTH:
 	case OMP_CLAUSE_DETACH:
+	case OMP_CLAUSE_FILTER:
 	  if (ctx->outer)
 	    scan_omp_op (&OMP_CLAUSE_OPERAND (c, 0), ctx->outer);
 	  break;
@@ -1868,6 +1869,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE__SIMT_:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE__CONDTEMP_:
 	  break;
 
@@ -3426,6 +3428,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  case GIMPLE_OMP_SINGLE:
 	  case GIMPLE_OMP_ORDERED:
 	  case GIMPLE_OMP_MASTER:
+	  case GIMPLE_OMP_MASKED:
 	  case GIMPLE_OMP_TASK:
 	  case GIMPLE_OMP_CRITICAL:
 	    if (is_gimple_call (stmt))
@@ -3436,14 +3439,15 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		error_at (gimple_location (stmt),
 			  "barrier region may not be closely nested inside "
 			  "of work-sharing, %<loop%>, %<critical%>, "
-			  "%<ordered%>, %<master%>, explicit %<task%> or "
-			  "%<taskloop%> region");
+			  "%<ordered%>, %<master%>, %<masked%>, explicit "
+			  "%<task%> or %<taskloop%> region");
 		return false;
 	      }
 	    error_at (gimple_location (stmt),
 		      "work-sharing region may not be closely nested inside "
 		      "of work-sharing, %<loop%>, %<critical%>, %<ordered%>, "
-		      "%<master%>, explicit %<task%> or %<taskloop%> region");
+		      "%<master%>, %<masked%>, explicit %<task%> or "
+		      "%<taskloop%> region");
 	    return false;
 	  case GIMPLE_OMP_PARALLEL:
 	  case GIMPLE_OMP_TEAMS:
@@ -3458,6 +3462,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  }
       break;
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
       for (; ctx != NULL; ctx = ctx->outer)
 	switch (gimple_code (ctx->stmt))
 	  {
@@ -3470,9 +3475,11 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  case GIMPLE_OMP_SINGLE:
 	  case GIMPLE_OMP_TASK:
 	    error_at (gimple_location (stmt),
-		      "%<master%> region may not be closely nested inside "
+		      "%qs region may not be closely nested inside "
 		      "of work-sharing, %<loop%>, explicit %<task%> or "
-		      "%<taskloop%> region");
+		      "%<taskloop%> region",
+		      gimple_code (stmt) == GIMPLE_OMP_MASTER
+		      ? "master" : "masked");
 	    return false;
 	  case GIMPLE_OMP_PARALLEL:
 	  case GIMPLE_OMP_TEAMS:
@@ -4076,6 +4083,12 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_CRITICAL:
       ctx = new_omp_context (stmt, ctx);
+      scan_omp (gimple_omp_body_ptr (stmt), ctx);
+      break;
+
+    case GIMPLE_OMP_MASKED:
+      ctx = new_omp_context (stmt, ctx);
+      scan_sharing_clauses (gimple_omp_masked_clauses (stmt), ctx);
       scan_omp (gimple_omp_body_ptr (stmt), ctx);
       break;
 
@@ -8675,7 +8688,7 @@ lower_omp_single (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 }
 
 
-/* Expand code for an OpenMP master directive.  */
+/* Expand code for an OpenMP master or masked directive.  */
 
 static void
 lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
@@ -8685,9 +8698,20 @@ lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gbind *bind;
   location_t loc = gimple_location (stmt);
   gimple_seq tseq;
+  tree filter = integer_zero_node;
 
   push_gimplify_context ();
 
+  if (gimple_code (stmt) == GIMPLE_OMP_MASKED)
+    {
+      filter = omp_find_clause (gimple_omp_masked_clauses (stmt),
+				OMP_CLAUSE_FILTER);
+      if (filter)
+	filter = fold_convert (integer_type_node,
+			       OMP_CLAUSE_FILTER_EXPR (filter));
+      else
+	filter = integer_zero_node;
+    }
   block = make_node (BLOCK);
   bind = gimple_build_bind (NULL, NULL, block);
   gsi_replace (gsi_p, bind, true);
@@ -8695,7 +8719,7 @@ lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   bfn_decl = builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM);
   x = build_call_expr_loc (loc, bfn_decl, 0);
-  x = build2 (EQ_EXPR, boolean_type_node, x, integer_zero_node);
+  x = build2 (EQ_EXPR, boolean_type_node, x, filter);
   x = build3 (COND_EXPR, void_type_node, x, NULL, build_and_jump (&lab));
   tseq = NULL;
   gimplify_and_add (x, &tseq);
@@ -13869,6 +13893,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       lower_omp_single (gsi_p, ctx);
       break;
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
       lower_omp_master (gsi_p, ctx);
@@ -14246,6 +14271,7 @@ diagnose_sb_1 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_CRITICAL:
@@ -14307,6 +14333,7 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_CRITICAL:

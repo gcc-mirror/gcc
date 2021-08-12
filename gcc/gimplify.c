@@ -5632,6 +5632,7 @@ is_gimple_stmt (tree t)
     case OMP_SECTION:
     case OMP_SINGLE:
     case OMP_MASTER:
+    case OMP_MASKED:
     case OMP_TASKGROUP:
     case OMP_ORDERED:
     case OMP_CRITICAL:
@@ -10102,6 +10103,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_PRIORITY:
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE_HINT:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
@@ -10110,9 +10112,20 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_VECTOR_LENGTH:
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
-	  if (gimplify_expr (&OMP_CLAUSE_OPERAND (c, 0), pre_p, NULL,
-			     is_gimple_val, fb_rvalue) == GS_ERROR)
-	    remove = true;
+	  if (OMP_CLAUSE_OPERAND (c, 0)
+	      && !is_gimple_min_invariant (OMP_CLAUSE_OPERAND (c, 0)))
+	    {
+	      if (error_operand_p (OMP_CLAUSE_OPERAND (c, 0)))
+		{
+		  remove = true;
+		  break;
+		}
+	      /* All these clauses care about value, not a particular decl,
+		 so try to force it into a SSA_NAME or fresh temporary.  */
+	      OMP_CLAUSE_OPERAND (c, 0)
+		= get_initialized_tmp_var (OMP_CLAUSE_OPERAND (c, 0),
+					   pre_p, NULL, true);
+	    }
 	  break;
 
 	case OMP_CLAUSE_GANG:
@@ -11222,6 +11235,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_NOGROUP:
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE_HINT:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_ORDER:
@@ -14766,6 +14780,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case OMP_SECTION:
 	case OMP_MASTER:
+	case OMP_MASKED:
 	case OMP_ORDERED:
 	case OMP_CRITICAL:
 	case OMP_SCAN:
@@ -14787,6 +14802,15 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		break;
 	      case OMP_ORDERED:
 		g = gimplify_omp_ordered (*expr_p, body);
+		break;
+	      case OMP_MASKED:
+		gimplify_scan_omp_clauses (&OMP_MASKED_CLAUSES (*expr_p),
+					   pre_p, ORT_WORKSHARE, OMP_MASKED);
+		gimplify_adjust_omp_clauses (pre_p, body,
+					     &OMP_MASKED_CLAUSES (*expr_p),
+					     OMP_MASKED);
+		g = gimple_build_omp_masked (body,
+					     OMP_MASKED_CLAUSES (*expr_p));
 		break;
 	      case OMP_CRITICAL:
 		gimplify_scan_omp_clauses (&OMP_CRITICAL_CLAUSES (*expr_p),
@@ -15161,6 +15185,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  && code != OMP_FOR
 		  && code != OACC_LOOP
 		  && code != OMP_MASTER
+		  && code != OMP_MASKED
 		  && code != OMP_TASKGROUP
 		  && code != OMP_ORDERED
 		  && code != OMP_PARALLEL
