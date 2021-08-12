@@ -5588,8 +5588,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	   argument, which has the derived type rather than the base type.  In
 	   this situation, just evaluate the initializer and return, since
 	   there's no actual data to store.  */
-	  gcc_assert (is_empty_class (TREE_TYPE (init)) && !lval);
-	  return init;
+	  gcc_assert (is_empty_class (TREE_TYPE (init)));
+	  return lval ? target : init;
 	}
       CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
       TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
