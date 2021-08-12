@@ -1391,6 +1391,23 @@ begin -- Gen_IL.Gen.Gen_Entities
             (E_Entry,
              E_Entry_Family));
 
+   Union (Evaluable_Kind,
+          Children =>
+            (Exception_Or_Object_Kind,
+             E_Enumeration_Literal,
+             E_Label,
+             Subprogram_Kind));
+   --  Kinds that represent values that can be evaluated
+
+   Union (Global_Name_Kind,
+          Children =>
+            (Constant_Or_Variable_Kind,
+             E_Exception,
+             E_Package,
+             Subprogram_Kind));
+   --  Kinds that can have an Interface_Name that corresponds to a global
+   --  (linker) name.
+
    Union (Named_Access_Kind,
           Children =>
             (E_Access_Type,
