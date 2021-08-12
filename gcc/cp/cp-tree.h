@@ -1789,6 +1789,10 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
 };
 
 
+struct GTY(()) omp_declare_target_attr {
+  bool attr_syntax;
+};
+
 /* Global state.  */
 
 struct GTY(()) saved_scope {
@@ -1826,9 +1830,6 @@ struct GTY(()) saved_scope {
   int unevaluated_operand;
   int inhibit_evaluation_warnings;
   int noexcept_operand;
-  /* If non-zero, implicit "omp declare target" attribute is added into the
-     attribute lists.  */
-  int omp_declare_target_attribute;
   int ref_temp_count;
 
   struct stmt_tree_s x_stmt_tree;
@@ -1837,6 +1838,7 @@ struct GTY(()) saved_scope {
   cp_binding_level *bindings;
 
   hash_map<tree, tree> *GTY((skip)) x_local_specializations;
+  vec<omp_declare_target_attr, va_gc> *omp_declare_target_attribute;
 
   struct saved_scope *prev;
 };
