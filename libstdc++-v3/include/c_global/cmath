@@ -1844,7 +1844,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // _GLIBCXX_USE_C99_MATH_TR1
 #endif // C++11
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 
   // [c.math.hypot3], three-dimensional hypotenuse
 #define __cpp_lib_hypot 201603
@@ -1877,10 +1877,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return std::__hypot3<long double>(__x, __y, __z); }
 
   template<typename _Tp, typename _Up, typename _Vp>
-    typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type
+    __gnu_cxx::__promoted_t<_Tp, _Up, _Vp>
     hypot(_Tp __x, _Up __y, _Vp __z)
     {
-      using __type = typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type;
+      using __type = __gnu_cxx::__promoted_t<_Tp, _Up, _Vp>;
       return std::__hypot3<__type>(__x, __y, __z);
     }
 #endif // C++17
@@ -1918,6 +1918,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr long double
   lerp(long double __a, long double __b, long double __t) noexcept
   { return std::__lerp(__a, __b, __t); }
+
+  template<typename _Tp, typename _Up, typename _Vp>
+    constexpr __gnu_cxx::__promoted_t<_Tp, _Up, _Vp>
+    lerp(_Tp __x, _Up __y, _Vp __z) noexcept
+    {
+      using __type = __gnu_cxx::__promoted_t<_Tp, _Up, _Vp>;
+      return std::__lerp<__type>(__x, __y, __z);
+    }
 #endif // C++20
 
 _GLIBCXX_END_NAMESPACE_VERSION

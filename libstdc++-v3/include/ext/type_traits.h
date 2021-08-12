@@ -163,7 +163,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return true; }
 #endif
 
-  // For complex and cmath
+  // For arithmetic promotions in <complex> and <cmath>
+
   template<typename _Tp, bool = std::__is_integer<_Tp>::__value>
     struct __promote
     { typedef double __type; };
@@ -186,6 +187,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __promote<float>
     { typedef float __type; };
+
+#if __cpp_fold_expressions
+  template<typename... _Tp>
+    using __promoted_t = decltype((typename __promote<_Tp>::__type(0) + ...));
+#endif
 
   template<typename _Tp, typename _Up,
            typename _Tp2 = typename __promote<_Tp>::__type,
