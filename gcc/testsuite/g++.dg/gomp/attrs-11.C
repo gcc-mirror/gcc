@@ -72,3 +72,15 @@ int f28 [[omp::directive (declare simd), omp::directive (foobar)]] (int);	// { d
 int f29 [[omp::directive (foobar), omp::directive (declare simd)]] (int);	// { dg-error "unknown OpenMP directive name" }
 int f30 [[omp::directive (threadprivate (t7)), omp::directive (declare simd)]] (int);	// { dg-error "OpenMP directive other than 'declare simd' or 'declare variant' appertains to a declaration" }
 int f31 [[omp::directive (declare simd), omp::directive (threadprivate (t8))]] (int);	// { dg-error "OpenMP directive other than 'declare simd' or 'declare variant' appertains to a declaration" }
+
+void
+baz ()
+{
+  #pragma omp parallel
+  [[omp::directive (declare simd)]] extern int f32 (int);	// { dg-error "mixing OpenMP directives with attribute and pragma syntax on the same statement" }
+  #pragma omp parallel
+  extern int f33 [[omp::directive (declare simd)]] (int);	// { dg-error "mixing OpenMP directives with attribute and pragma syntax on the same statement" }
+  [[omp::directive (parallel)]]
+  #pragma omp declare simd	// { dg-error "mixing OpenMP directives with attribute and pragma syntax on the same statement" }
+  extern int f34 (int);
+}

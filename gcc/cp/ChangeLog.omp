@@ -1,6 +1,23 @@
 2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_lambda_body): Add temp overrides
+	for parser->{omp_declare_simd,oacc_routine,omp_attrs_forbidden_p}.
+	(cp_parser_statement): Restore parser->omp_attrs_forbidden_p for
+	cp_parser_declaration_statement.
+	(cp_parser_default_argument): Add temp override for
+	parser->omp_attrs_forbidden_p.
+	(cp_parser_late_parsing_omp_declare_simd): Diagnose declare simd
+	or declare variant in attribute syntax on a declaration immediately
+	following an OpenMP construct in pragma syntax.
+
+	* g++.dg/gomp/attrs-11.C: Add new tests.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101759

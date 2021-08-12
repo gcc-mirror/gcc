@@ -1,6 +1,13 @@
 2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-11.C: Add new tests.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101759

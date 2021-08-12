@@ -11594,6 +11594,9 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
        middle of an expression.  */
     ++function_depth;
 
+  auto odsd = make_temp_override (parser->omp_declare_simd, NULL);
+  auto ord = make_temp_override (parser->oacc_routine, NULL);
+  auto oafp = make_temp_override (parser->omp_attrs_forbidden_p, false);
   vec<tree> omp_privatization_save;
   save_omp_privatization_clauses (omp_privatization_save);
   /* Clear this in case we're in the middle of a default argument.  */
@@ -12237,9 +12240,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	       so let's un-parse them.  */
 	    saved_tokens.rollback();
 
+	  parser->omp_attrs_forbidden_p = omp_attrs_forbidden_p;
 	  cp_parser_parse_tentatively (parser);
 	  /* Try to parse the declaration-statement.  */
 	  cp_parser_declaration_statement (parser);
+	  parser->omp_attrs_forbidden_p = false;
 	  /* If that worked, we're done.  */
 	  if (cp_parser_parse_definitely (parser))
 	    return;
@@ -24568,6 +24573,8 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
   parser->greater_than_is_operator_p = !template_parm_p;
   auto odsd = make_temp_override (parser->omp_declare_simd, NULL);
   auto ord = make_temp_override (parser->oacc_routine, NULL);
+  auto oafp = make_temp_override (parser->omp_attrs_forbidden_p, false);
+
   /* Local variable names (and the `this' keyword) may not
      appear in a default argument.  */
   saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
@@ -44292,6 +44299,14 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
 			      "or %<declare variant%> appertains to a "
 			      "declaration");
 		    continue;
+		  }
+
+		if (parser->omp_attrs_forbidden_p)
+		  {
+		    error_at (first->location,
+			      "mixing OpenMP directives with attribute and "
+			      "pragma syntax on the same statement");
+		    parser->omp_attrs_forbidden_p = false;
 		  }
 
 		if (!flag_openmp && strcmp (directive[1], "simd") != 0)
