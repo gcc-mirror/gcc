@@ -2,6 +2,16 @@
 
 	Backported from master:
 
+	2021-07-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101310
+	* gfortran.dg/ISO_Fortran_binding_1.c (section_c): Remove
+	incorrect assertions.
+
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+
 	2021-07-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libfortran/101305

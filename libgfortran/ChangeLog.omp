@@ -2,6 +2,16 @@
 
 	Backported from master:
 
+	2021-07-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101310
+	* runtime/ISO_Fortran_binding.c (CFI_section): Fix the base
+	address computation and simplify the code.
+
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+
 	2021-07-13  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libfortran/101305
