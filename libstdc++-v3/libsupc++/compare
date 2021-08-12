@@ -600,6 +600,9 @@ namespace std
 	  // FIXME: || floating_point<remove_reference_t<_Tp>>
 	  || __cmp3way<strong_ordering, _Tp, _Up>;
 
+    template<typename _Tp, typename _Up>
+      concept __decayed_same_as = same_as<decay_t<_Tp>, decay_t<_Up>>;
+
     class _Strong_order
     {
       template<typename _Tp, typename _Up>
@@ -620,14 +623,12 @@ namespace std
       friend class _Strong_fallback;
 
     public:
-      template<typename _Tp, typename _Up>
+      template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __strongly_ordered<_Tp, _Up>
 	constexpr strong_ordering
 	operator()(_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
 	{
-	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
-
 	  /* FIXME:
 	  if constexpr (floating_point<decay_t<_Tp>>)
 	    return __cmp_cust::__fp_strong_order(__e, __f);
@@ -669,14 +670,12 @@ namespace std
       friend class _Weak_fallback;
 
     public:
-      template<typename _Tp, typename _Up>
+      template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __weakly_ordered<_Tp, _Up>
 	constexpr weak_ordering
 	operator()(_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
 	{
-	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
-
 	  if constexpr (floating_point<decay_t<_Tp>>)
 	    return __cmp_cust::__fp_weak_ordering(__e, __f);
 	  else if constexpr (__adl_weak<_Tp, _Up>)
@@ -716,14 +715,12 @@ namespace std
       friend class _Partial_fallback;
 
     public:
-      template<typename _Tp, typename _Up>
+      template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __partially_ordered<_Tp, _Up>
 	constexpr partial_ordering
 	operator()(_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
 	{
-	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
-
 	  if constexpr (__adl_partial<_Tp, _Up>)
 	    return partial_ordering(partial_order(static_cast<_Tp&&>(__e),
 						  static_cast<_Up&&>(__f)));
@@ -759,18 +756,16 @@ namespace std
 	}
 
     public:
-      template<typename _Tp, typename _Up>
+      template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __strongly_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
-	constexpr decltype(auto)
+	constexpr strong_ordering
 	operator()(_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
 	{
-	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
-
 	  if constexpr (__strongly_ordered<_Tp, _Up>)
 	    return _Strong_order{}(static_cast<_Tp&&>(__e),
 				   static_cast<_Up&&>(__f));
-	  else if constexpr (__op_eq_lt<_Tp, _Up>)
+	  else // __op_eq_lt<_Tp, _Up>
 	    return static_cast<_Tp&&>(__e) == static_cast<_Up&&>(__f)
 	      ? strong_ordering::equal
 	      : static_cast<_Tp&&>(__e) < static_cast<_Up&&>(__f)
@@ -793,18 +788,16 @@ namespace std
 	}
 
     public:
-      template<typename _Tp, typename _Up>
+      template<typename _Tp, __decayed_same_as<_Tp> _Up>
 	requires __weakly_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
-	constexpr decltype(auto)
+	constexpr weak_ordering
 	operator()(_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
 	{
-	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
-
 	  if constexpr (__weakly_ordered<_Tp, _Up>)
 	    return _Weak_order{}(static_cast<_Tp&&>(__e),
 				 static_cast<_Up&&>(__f));
-	  else if constexpr (__op_eq_lt<_Tp, _Up>)
+	  else // __op_eq_lt<_Tp, _Up>
 	    return static_cast<_Tp&&>(__e) == static_cast<_Up&&>(__f)
 	      ? weak_ordering::equivalent
 	      : static_cast<_Tp&&>(__e) < static_cast<_Up&&>(__f)
@@ -812,6 +805,16 @@ namespace std
 	      : weak_ordering::greater;
 	}
     };
+
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3465. compare_partial_order_fallback requires F < E
+    template<typename _Tp, typename _Up>
+      concept __op_eq_lt_lt = __op_eq_lt<_Tp, _Up>
+	&& requires(_Tp&& __t, _Up&& __u)
+	{
+	  { static_cast<_Up&&>(__u) < static_cast<_Tp&&>(__t) }
+	    -> convertible_to<bool>;
+	};
 
     class _Partial_fallback
     {
@@ -827,18 +830,16 @@ namespace std
 	}
 
     public:
-      template<typename _Tp, typename _Up>
-	requires __partially_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
-	constexpr decltype(auto)
+      template<typename _Tp, __decayed_same_as<_Tp> _Up>
+	requires __partially_ordered<_Tp, _Up> || __op_eq_lt_lt<_Tp, _Up>
+	constexpr partial_ordering
 	operator()(_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
 	{
-	  static_assert(same_as<decay_t<_Tp>, decay_t<_Up>>);
-
 	  if constexpr (__partially_ordered<_Tp, _Up>)
 	    return _Partial_order{}(static_cast<_Tp&&>(__e),
 				    static_cast<_Up&&>(__f));
-	  else if constexpr (__op_eq_lt<_Tp, _Up>)
+	  else // __op_eq_lt_lt<_Tp, _Up>
 	    return static_cast<_Tp&&>(__e) == static_cast<_Up&&>(__f)
 	      ? partial_ordering::equivalent
 	      : static_cast<_Tp&&>(__e) < static_cast<_Up&&>(__f)

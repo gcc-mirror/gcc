@@ -14179,6 +14179,14 @@ static tree
 local_variable_p_walkfn (tree *tp, int *walk_subtrees,
 			 void * /*data*/)
 {
+  if (unevaluated_p (TREE_CODE (*tp)))
+    {
+      /* DR 2082 permits local variables in unevaluated contexts
+	 within a default argument.  */
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
   if (local_variable_p (*tp)
       && (!DECL_ARTIFICIAL (*tp) || DECL_NAME (*tp) == this_identifier))
     return *tp;

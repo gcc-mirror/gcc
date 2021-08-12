@@ -1,3 +1,24 @@
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101725
+	DR 2082
+	* g++.dg/DRs/dr2082.C: New test.
+	* g++.dg/cpp2a/concepts-uneval4.C: New test.
+
+2021-08-11  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-07-28  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101564
+	* gfortran.dg/allocate_stat_3.f90: New test.
+	* gfortran.dg/allocate_stat.f90: Adjust error messages.
+	* gfortran.dg/implicit_11.f90: Likewise.
+	* gfortran.dg/inquiry_type_ref_3.f90: Likewise.
+
 2021-08-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

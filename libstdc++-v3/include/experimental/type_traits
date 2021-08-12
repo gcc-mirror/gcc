@@ -24,7 +24,14 @@
 
 /** @file experimental/type_traits
  *  This is a TS C++ Library header.
+ *
+ *  This header defines variable templates for the C++14 type traits.
+ *
+ *  Equivalent variable templates are defined in namespace `std` since C++17.
+ *  @see variable_templates
+ *
  *  @ingroup libfund-ts
+ *  @since C++14
  */
 
 //
@@ -49,6 +56,14 @@ namespace experimental
 {
 inline namespace fundamentals_v1
 {
+/** @defgroup lfts_variable_templates Variable template for type traits
+ * @ingroup libfund-ts
+ * @since Library Fundamentals TS v1. C++14.
+ * @see variable_templates
+ */
+/** @ingroup lfts_variable_templates
+ * @{
+ */
 #define __cpp_lib_experimental_type_trait_variable_templates 201402
 
 // See C++14 20.10.4.1, primary type categories
@@ -213,7 +228,7 @@ template <typename _Base, typename _Derived>
   constexpr bool is_base_of_v = is_base_of<_Base, _Derived>::value;
 template <typename _From, typename _To>
   constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
-
+/// @}
 
   // 3.3.2, Other type transformations
   // invocation_type (still unimplemented)
@@ -224,14 +239,24 @@ template <typename _From, typename _To>
 
 inline namespace fundamentals_v2
 {
+/**
+ * @defgroup lfts_detect Detection idiom
+ * @ingroup libfund-ts
+ * @since Library Fundamentals TS v2. C++14.
+ */
+/** @ingroup lfts_detect
+ * @{
+ */
 #define __cpp_lib_experimental_detect 201505
 
 // [meta.detect]
 
+/// A metafunction that always yields void, used for detecting valid types.
 template<typename...> using void_t = void;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+/// @internal
 struct __nonesuchbase {};
 struct nonesuch : private __nonesuchbase
 {
@@ -272,7 +297,16 @@ template<typename _To, template<typename...> class _Op, typename... _Args>
 template<typename _To, template<typename...> class _Op, typename... _Args>
   constexpr bool is_detected_convertible_v
     = is_detected_convertible<_To, _Op, _Args...>::value;
+/// @}
 
+/**
+ * @defgroup lfts_logical Logical operator traits
+ * @ingroup libfund-ts
+ * @since Library Fundamentals TS v2. C++14.
+ */
+/** @ingroup lfts_logical
+ * @{
+ */
 #define __cpp_lib_experimental_logical_traits 201511
 
 template<typename... _Bn>
@@ -301,6 +335,7 @@ template<typename... _Bn>
 template<typename _Pp>
   constexpr bool negation_v
     = negation<_Pp>::value;
+/// @}
 } // namespace fundamentals_v2
 } // namespace experimental
 
