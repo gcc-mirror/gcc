@@ -2,6 +2,26 @@
 
 	Backported from master:
 
+	2021-07-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101317
+	* runtime/ISO_Fortran_binding.c: Include <inttypes.h>.
+	(CFI_address): Tidy error messages and comments.
+	(CFI_allocate): Likewise.
+	(CFI_deallocate): Likewise.
+	(CFI_establish): Likewise.  Add new checks for validity of
+	elem_len when it's used, plus type argument and extents.
+	(CFI_is_contiguous): Tidy error messages and comments.
+	(CFI_section): Likewise.  Refactor some repetitive code to
+	make it more understandable.
+	(CFI_select_part): Likewise.
+	(CFI_setpointer): Likewise.  Check that source is not an
+	unallocated allocatable array or an assumed-size array.
+
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+
 	2021-07-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libfortran/101310

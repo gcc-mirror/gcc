@@ -2,6 +2,16 @@
 
 	Backported from master:
 
+	2021-07-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+    	PR libfortran/101317
+	* gfortran.dg/ISO_Fortran_binding_17.f90: Fix typo in error
+	message patterns.
+
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+
 	2021-07-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libfortran/101310
