@@ -972,6 +972,8 @@ public:
     UNLOADED,
   };
 
+  Identifier get_name () const { return module_name; }
+
 private:
   Identifier module_name;
   Location locus;
