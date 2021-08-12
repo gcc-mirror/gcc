@@ -1,3 +1,11 @@
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* name-lookup.c (finish_using_directive): Diagnose omp::directive
+	or omp::sequence attributes on using-directive.
+
 2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
