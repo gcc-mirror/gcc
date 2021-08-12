@@ -2,6 +2,17 @@
 
 	Backported from master:
 
+	2021-07-13  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101305
+	* runtime/ISO_Fortran_binding.c (CFI_establish): Special-case
+	CFI_type_cptr and CFI_type_cfunptr.  Correct size of long double
+	on targets where it has kind 10.
+
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
+
 	2021-07-22  Sandra Loosemore  <sandra@codesourcery.com>
 		    Tobias Burnus  <tobias@codesourcery.com>
 
