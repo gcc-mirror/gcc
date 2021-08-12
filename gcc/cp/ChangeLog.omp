@@ -3,6 +3,27 @@
 	Backported from master:
 	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* cp-tree.h (omp_declare_target_attr): New type.
+	(struct saved_scope): Change type of omp_declare_target_attribute
+	from int to vec<omp_declare_target_attr, va_gc> * and move it.
+	* parser.c (cp_parser_omp_declare_target): Instead of
+	incrementing scope_chain->omp_declare_target_attribute, push
+	a struct containing parser->lexer->in_omp_attribute_pragma to
+	the vector.
+	(cp_parser_omp_end_declare_target): Instead of decrementing
+	scope_chain->omp_declare_target_attribute, pop a structure
+	from it.  Diagnose mismatching declare target vs.
+	end declare target syntax.
+	* semantics.c (finish_translation_unit): Use vec_safe_length
+	and vec_safe_truncate on scope_chain->omp_declare_target_attributes.
+	* decl2.c (cplus_decl_attributes): Use vec_safe_length
+	on scope_chain->omp_declare_target_attributes.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
 	* parser.c (cp_parser_lambda_body): Add temp overrides
 	for parser->{omp_declare_simd,oacc_routine,omp_attrs_forbidden_p}.
 	(cp_parser_statement): Restore parser->omp_attrs_forbidden_p for

@@ -44432,8 +44432,10 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
     }
   else
     {
+      struct omp_declare_target_attr a
+	= { parser->lexer->in_omp_attribute_pragma };
+      vec_safe_push (scope_chain->omp_declare_target_attribute, a);
       cp_parser_require_pragma_eol (parser, pragma_tok);
-      scope_chain->omp_declare_target_attribute++;
       return;
     }
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
@@ -44514,6 +44516,7 @@ static void
 cp_parser_omp_end_declare_target (cp_parser *parser, cp_token *pragma_tok)
 {
   const char *p = "";
+  bool in_omp_attribute_pragma = parser->lexer->in_omp_attribute_pragma;
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
@@ -44544,12 +44547,26 @@ cp_parser_omp_end_declare_target (cp_parser *parser, cp_token *pragma_tok)
       return;
     }
   cp_parser_require_pragma_eol (parser, pragma_tok);
-  if (!scope_chain->omp_declare_target_attribute)
+  if (!vec_safe_length (scope_chain->omp_declare_target_attribute))
     error_at (pragma_tok->location,
 	      "%<#pragma omp end declare target%> without corresponding "
 	      "%<#pragma omp declare target%>");
   else
-    scope_chain->omp_declare_target_attribute--;
+    {
+      omp_declare_target_attr
+	a = scope_chain->omp_declare_target_attribute->pop ();
+      if (a.attr_syntax != in_omp_attribute_pragma)
+	{
+	  if (a.attr_syntax)
+	    error_at (pragma_tok->location,
+		      "%<declare target%> in attribute syntax terminated "
+		      "with %<end declare target%> in pragma syntax");
+	  else
+	    error_at (pragma_tok->location,
+		      "%<declare target%> in pragma syntax terminated "
+		      "with %<end declare target%> in attribute syntax");
+	}
+    }
 }
 
 /* Helper function of cp_parser_omp_declare_reduction.  Parse the combiner

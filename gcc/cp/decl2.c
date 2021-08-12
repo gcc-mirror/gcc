@@ -1550,7 +1550,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
     return;
 
   /* Add implicit "omp declare target" attribute if requested.  */
-  if (scope_chain->omp_declare_target_attribute
+  if (vec_safe_length (scope_chain->omp_declare_target_attribute)
       && ((VAR_P (*decl)
 	   && (TREE_STATIC (*decl) || DECL_EXTERNAL (*decl)))
 	  || TREE_CODE (*decl) == FUNCTION_DECL))
