@@ -40,11 +40,13 @@
       parameter (omp_proc_bind_kind = 4)
       integer (omp_proc_bind_kind) omp_proc_bind_false
       integer (omp_proc_bind_kind) omp_proc_bind_true
+      integer (omp_proc_bind_kind) omp_proc_bind_primary
       integer (omp_proc_bind_kind) omp_proc_bind_master
       integer (omp_proc_bind_kind) omp_proc_bind_close
       integer (omp_proc_bind_kind) omp_proc_bind_spread
       parameter (omp_proc_bind_false = 0)
       parameter (omp_proc_bind_true = 1)
+      parameter (omp_proc_bind_primary = 2)
       parameter (omp_proc_bind_master = 2)
       parameter (omp_proc_bind_close = 3)
       parameter (omp_proc_bind_spread = 4)

@@ -39020,7 +39020,8 @@ cp_parser_omp_clause_dist_schedule (cp_parser *parser, tree list,
    proc_bind ( proc-bind-kind )
 
    proc-bind-kind:
-     master | close | spread  */
+     primary | master | close | spread
+   where OpenMP 5.1 added 'primary' and deprecated the alias 'master'.  */
 
 static tree
 cp_parser_omp_clause_proc_bind (cp_parser *parser, tree list,
@@ -39037,7 +39038,9 @@ cp_parser_omp_clause_proc_bind (cp_parser *parser, tree list,
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
 
-      if (strcmp ("master", p) == 0)
+      if (strcmp ("primary", p) == 0)
+	kind = OMP_CLAUSE_PROC_BIND_PRIMARY;
+      else if (strcmp ("master", p) == 0)
 	kind = OMP_CLAUSE_PROC_BIND_MASTER;
       else if (strcmp ("close", p) == 0)
 	kind = OMP_CLAUSE_PROC_BIND_CLOSE;

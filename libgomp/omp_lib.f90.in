@@ -49,6 +49,8 @@
         integer (omp_proc_bind_kind), &
                  parameter :: omp_proc_bind_true = 1
         integer (omp_proc_bind_kind), &
+                 parameter :: omp_proc_bind_primary = 2
+        integer (omp_proc_bind_kind), &
                  parameter :: omp_proc_bind_master = 2
         integer (omp_proc_bind_kind), &
                  parameter :: omp_proc_bind_close = 3
@@ -670,6 +672,10 @@
 
 #if _OPENMP >= 201811
 !GCC$ ATTRIBUTES DEPRECATED :: omp_get_nested, omp_set_nested
+#endif
+
+#if _OPENMP >= 202011
+!GCC$ ATTRIBUTES DEPRECATED :: omp_proc_bind_master
 #endif
 
       end module omp_lib
