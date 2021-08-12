@@ -127,6 +127,9 @@ scalar_int_mode rs6000_pmode;
 bool rs6000_passes_ieee128 = false;
 #endif
 
+/* Track use of r13 in 64bit AIX TLS.  */
+static bool xcoff_tls_exec_model_detected = false;
+
 /* Generate the manged name (i.e. U10__float128) used in GCC 8.1, and not the
    name used in current releases (i.e. u9__ieee128).  */
 static bool ieee128_mangling_gcc_8_1;
@@ -9397,7 +9400,10 @@ rs6000_legitimize_tls_address_aix (rtx addr, enum tls_model model)
       emit_insn (gen_tls_get_tpointer (tlsreg));
     }
   else
-    tlsreg = gen_rtx_REG (DImode, 13);
+    {
+      tlsreg = gen_rtx_REG (DImode, 13);
+      xcoff_tls_exec_model_detected = true;
+    }
 
   /* Load the TOC value into temporary register.  */
   tmpreg = gen_reg_rtx (Pmode);
@@ -21122,6 +21128,12 @@ rs6000_xcoff_file_end (void)
   fputs (TARGET_32BIT
 	 ? "\t.long _section_.text\n" : "\t.llong _section_.text\n",
 	 asm_out_file);
+
+  if (xcoff_tls_exec_model_detected)
+    {
+      /* Add a .ref to __tls_get_addr to force libpthread dependency.  */
+      fputs ("\t.extern __tls_get_addr\n\t.ref __tls_get_addr\n", asm_out_file);
+    }
 }
 
 struct declare_alias_data
