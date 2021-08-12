@@ -1,6 +1,33 @@
 2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
+
+	2021-07-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libfortran/101305
+	* gfortran.dg/ISO_Fortran_binding_1.c: Adjust include path.
+	* gfortran.dg/ISO_Fortran_binding_10.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_11.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_12.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_15.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_16.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_17.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_18.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_3.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_5.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_6.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_7.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_8.c: Likewise.
+	* gfortran.dg/ISO_Fortran_binding_9.c: Likewise.
+	* gfortran.dg/PR94327.c: Likewise.
+	* gfortran.dg/PR94331.c: Likewise.
+	* gfortran.dg/bind_c_array_params_3_aux.c: Likewise.
+	* gfortran.dg/iso_fortran_binding_uint8_array_driver.c: Likewise.
+	* gfortran.dg/pr93524.c: Likewise.
+
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from master:
 	2021-05-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/46691

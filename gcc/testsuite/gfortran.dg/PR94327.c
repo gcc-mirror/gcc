@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../../../libgfortran/ISO_Fortran_binding.h"
+#include "ISO_Fortran_binding.h"
 
 bool c_vrfy (const CFI_cdesc_t *restrict);
 
