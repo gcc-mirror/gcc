@@ -639,8 +639,10 @@ PROCEDURE checkThrow (p: pretty) ;
 BEGIN
    IF seenThrow
    THEN
-      print (p, '#   include "sys/cdefs.h"\n') ;
-      (* print (p, 'extern void throw (int);\n')  *)
+      (* print (p, '#   include "sys/cdefs.h"\n') ; *)
+      print (p, '#ifndef __cplusplus\n') ;
+      print (p, 'extern void throw (unsigned int);\n') ;
+      print (p, '#endif\n')
    END
 END checkThrow ;
 
@@ -725,7 +727,7 @@ BEGIN
    IF seenNull
    THEN
       print (p, '#if defined(__cplusplus)\n') ;
-      print (p, '#   undef NULL\n') ;      
+      print (p, '#   undef NULL\n') ;
       print (p, '#   define NULL 0\n') ;
       print (p, '#endif\n')
    END

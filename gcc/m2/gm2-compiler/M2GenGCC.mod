@@ -5134,7 +5134,7 @@ BEGIN
             END ;
             IF GetType(op1)=NulSym
             THEN
-               PutConst(op1, NegateType(GetType(op3), tokenno))
+               PutConst (op1, NegateType (GetType (op3) (* , tokenno *) ))
             END ;
             tv := unop(location, LValueToGenericPtrOrConvert(op3, ZConstToTypedConst), FALSE) ;
             CheckOrResetOverflow(tokenno, tv, MustCheckOverflow(quad)) ;
@@ -6259,7 +6259,7 @@ BEGIN
             t := BuildAssignmentTree(location, Mod2Gcc(op1), Mod2Gcc(op3))
          ELSE
             (* does not work t := BuildCoerce(Mod2Gcc(op1), Mod2Gcc(op2), Mod2Gcc(op3)) *)
-            checkDeclare (op1) ;            
+            checkDeclare (op1) ;
             AddStatement(location,
                          MaybeDebugBuiltinMemcpy(location, CurrentQuadToken,
                                                  BuildAddr(location, Mod2Gcc(op1), FALSE),

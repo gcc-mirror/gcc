@@ -257,7 +257,7 @@ static void dumpComment (mcComment_commentDesc cd)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/mcComment.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/mcComment.def", 20, 1);
         __builtin_unreachable ();
     }
   if (cd->used)

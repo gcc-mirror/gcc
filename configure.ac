@@ -3676,6 +3676,7 @@ AC_SUBST(stage2_werror_flag)
 compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 compare_exclusions="$compare_exclusions | gcc/m2/gm2-compiler-boot/M2Version*"
 compare_exclusions="$compare_exclusions | gcc/m2/gm2-compiler-boot/SYSTEM*"
+compare_exclusions="$compare_exclusions | gcc/m2/gm2version*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
   hppa*-*-hpux*) compare_exclusions="$compare_exclusions | */libgcc/lib2funcs* | gcc/function-tests.o" ;;

@@ -343,12 +343,11 @@ PROCEDURE MixTypes (t1, t2: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
 
 
 (*
-   NegateType - if the type, t, is unsigned then returns the
-                signed equivalent. NearTok is used to identify the
-                source position if a type incompatability occurs.
+   NegateType - if the type is unsigned then returns the
+                signed equivalent.
 *)
 
-PROCEDURE NegateType (t: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+PROCEDURE NegateType (type: CARDINAL (* ; sympos: CARDINAL *) ) : CARDINAL ;
 
 
 (*

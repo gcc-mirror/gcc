@@ -61,7 +61,14 @@ void StrLib_StrConCat (char *a_, unsigned int _a_high, char *b_, unsigned int _b
 unsigned int StrLib_StrLess (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
 unsigned int StrLib_StrEqual (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
 unsigned int StrLib_StrLen (char *a_, unsigned int _a_high);
-void StrLib_StrCopy (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+
+/*
+   StrCopy - copy string src into string dest providing dest is large enough.
+             If dest is smaller than a then src then the string is truncated when
+             dest is full.  Add a nul character if there is room in dest.
+*/
+
+void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high);
 
 /*
    IsSubString - returns true if b is a subcomponent of a.
@@ -217,27 +224,34 @@ unsigned int StrLib_StrLen (char *a_, unsigned int _a_high)
   __builtin_unreachable ();
 }
 
-void StrLib_StrCopy (char *a_, unsigned int _a_high, char *b, unsigned int _b_high)
+
+/*
+   StrCopy - copy string src into string dest providing dest is large enough.
+             If dest is smaller than a then src then the string is truncated when
+             dest is full.  Add a nul character if there is room in dest.
+*/
+
+void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high)
 {
-  unsigned int Higha;
-  unsigned int Highb;
+  unsigned int HighSrc;
+  unsigned int HighDest;
   unsigned int n;
-  char a[_a_high+1];
+  char src[_src_high+1];
 
   /* make a local copy of each unbounded array.  */
-  memcpy (a, a_, _a_high+1);
+  memcpy (src, src_, _src_high+1);
 
   n = 0;
-  Higha = StrLib_StrLen ((char *) a, _a_high);
-  Highb = _b_high;
-  while ((n < Higha) && (n <= Highb))
+  HighSrc = StrLib_StrLen ((char *) src, _src_high);
+  HighDest = _dest_high;
+  while ((n < HighSrc) && (n <= HighDest))
     {
-      b[n] = a[n];
+      dest[n] = src[n];
       n += 1;
     }
-  if (n <= Highb)
+  if (n <= HighDest)
     {
-      b[n] = ASCII_nul;
+      dest[n] = ASCII_nul;
     }
 }
 

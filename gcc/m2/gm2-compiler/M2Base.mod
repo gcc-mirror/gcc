@@ -1639,7 +1639,7 @@ END IsArraySame ;
    IsEnumerationSame -
 *)
 
-PROCEDURE IsEnumerationSame (t1, t2: CARDINAL; error: BOOLEAN) : BOOLEAN ;
+PROCEDURE IsEnumerationSame (t1, t2: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN( t1=t2 )
 END IsEnumerationSame ;
@@ -1677,7 +1677,7 @@ BEGIN
       RETURN( IsProcTypeSame(t1, t2, error) )
    ELSIF IsEnumeration(t1) AND IsEnumeration(t2)
    THEN
-      RETURN( IsEnumerationSame(t1, t2, error) )
+      RETURN( IsEnumerationSame(t1, t2 (* , error *) ) )
    ELSIF IsRecord(t1) AND IsRecord(t2)
    THEN
       RETURN( IsRecordSame(t1, t2, error) )
@@ -1793,7 +1793,7 @@ BEGIN
                      ELSE
                         RETURN( no )
                      END |
-         enum     :  IF IsEnumerationSame(t1, t2, FALSE)
+         enum     :  IF IsEnumerationSame(t1, t2 (* , FALSE *) )
                      THEN
                         RETURN( first )
                      ELSE
@@ -2046,27 +2046,29 @@ END MixTypes ;
 
 
 (*
-   NegateType - if the type, t, is unsigned then returns the
-                signed equivalent. NearTok is used to identify the
-                source position if a type incompatability occurs.
+   NegateType - if the type is unsigned then returns the
+                signed equivalent.
 *)
 
-PROCEDURE NegateType (t: CARDINAL; NearTok: CARDINAL) : CARDINAL ;
+PROCEDURE NegateType (type: CARDINAL (* ; sympos: CARDINAL *) ) : CARDINAL ;
 VAR
-   l: CARDINAL ;
+   lowType: CARDINAL ;
 BEGIN
-   IF t#NulSym
+   IF type#NulSym
    THEN
-      l := GetLowestType(t) ;
-      IF l=LongCard
+      lowType := GetLowestType (type) ;
+      IF lowType=LongCard
       THEN
-         RETURN( LongInt )
-      ELSIF (l=Cardinal)
+         RETURN LongInt
+      ELSIF lowType=Cardinal
       THEN
-         RETURN( Integer )
+         RETURN Integer
+(*      ELSE
+         MetaErrorT1 (sympos, 'the type {%1ad} does not have a negated equivalent and an unary minus cannot be used on an operand of this type', type)
+*)
       END
    END ;
-   RETURN( t )
+   RETURN type
 END NegateType ;
 
 

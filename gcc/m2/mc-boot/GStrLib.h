@@ -74,10 +74,12 @@ EXTERN unsigned int StrLib_StrEqual (char *a_, unsigned int _a_high, char *b_, u
 EXTERN unsigned int StrLib_StrLen (char *a_, unsigned int _a_high);
 
 /*
-   StrCopy - effectively performs b := a with two strings.
+   StrCopy - copy string src into string dest providing dest is large enough.
+             If dest is smaller than a then src then the string is truncated when
+             dest is full.  Add a nul character if there is room in dest.
 */
 
-EXTERN void StrLib_StrCopy (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+EXTERN void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high);
 
 /*
    IsSubString - returns true if b is a subcomponent of a.

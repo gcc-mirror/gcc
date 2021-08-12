@@ -39,7 +39,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #   include "GStorage.h"
 #   include "Gmcrts.h"
-#   include "sys/cdefs.h"
+#ifndef __cplusplus
+extern void throw (unsigned int);
+#endif
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
@@ -717,7 +719,7 @@ static void AddHandler (RTExceptions_EHBlock e, Handler h)
 
 static void indexf (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_indexException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 607, 9, "indexf", "array index out of bounds");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_indexException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 607, 9, "indexf", "array index out of bounds");
 }
 
 
@@ -727,7 +729,7 @@ static void indexf (void * a)
 
 static void range (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 619, 9, "range", "assignment out of range");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 619, 9, "range", "assignment out of range");
 }
 
 
@@ -737,7 +739,7 @@ static void range (void * a)
 
 static void casef (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_caseSelectException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 631, 9, "casef", "case selector out of range");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_caseSelectException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 631, 9, "casef", "case selector out of range");
 }
 
 
@@ -747,7 +749,7 @@ static void casef (void * a)
 
 static void invalidloc (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_invalidLocation)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 643, 9, "invalidloc", "invalid address referenced");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_invalidLocation)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 643, 9, "invalidloc", "invalid address referenced");
 }
 
 
@@ -757,7 +759,7 @@ static void invalidloc (void * a)
 
 static void function (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_functionException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 655, 9, "function", "... function ... ");  /* --fixme-- what has happened ?  */
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_functionException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 655, 9, "function", "... function ... ");  /* --fixme-- what has happened ?  */
 }
 
 
@@ -767,7 +769,7 @@ static void function (void * a)
 
 static void wholevalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeValueException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 667, 9, "wholevalue", "illegal whole value exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeValueException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 667, 9, "wholevalue", "illegal whole value exception");
 }
 
 
@@ -777,7 +779,7 @@ static void wholevalue (void * a)
 
 static void wholediv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeDivException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 679, 9, "wholediv", "illegal whole value exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeDivException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 679, 9, "wholediv", "illegal whole value exception");
 }
 
 
@@ -787,7 +789,7 @@ static void wholediv (void * a)
 
 static void realvalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realValueException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 691, 9, "realvalue", "illegal real value exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realValueException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 691, 9, "realvalue", "illegal real value exception");
 }
 
 
@@ -797,7 +799,7 @@ static void realvalue (void * a)
 
 static void realdiv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realDivException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 703, 9, "realdiv", "real number division by zero exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realDivException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 703, 9, "realdiv", "real number division by zero exception");
 }
 
 
@@ -807,7 +809,7 @@ static void realdiv (void * a)
 
 static void complexvalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexValueException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 715, 9, "complexvalue", "illegal complex value exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexValueException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 715, 9, "complexvalue", "illegal complex value exception");
 }
 
 
@@ -817,7 +819,7 @@ static void complexvalue (void * a)
 
 static void complexdiv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexDivException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 727, 9, "complexdiv", "complex number division by zero exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexDivException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 727, 9, "complexdiv", "complex number division by zero exception");
 }
 
 
@@ -827,7 +829,7 @@ static void complexdiv (void * a)
 
 static void protection (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_protException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 739, 9, "protection", "protection exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_protException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 739, 9, "protection", "protection exception");
 }
 
 
@@ -837,7 +839,7 @@ static void protection (void * a)
 
 static void systemf (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_sysException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 751, 9, "systemf", "system exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_sysException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 751, 9, "systemf", "system exception");
 }
 
 
@@ -847,7 +849,7 @@ static void systemf (void * a)
 
 static void coroutine (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_coException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 763, 9, "coroutine", "coroutine exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_coException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 763, 9, "coroutine", "coroutine exception");
 }
 
 
@@ -857,7 +859,7 @@ static void coroutine (void * a)
 
 static void exception (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 775, 9, "exception", "exception exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 775, 9, "exception", "exception exception");
 }
 
 
@@ -1171,13 +1173,13 @@ RTExceptions_EHBlock RTExceptions_GetBaseExceptionBlock (void)
 {
   if (currentEHB == NULL)
     {
-      M2RTS_Halt ((char *) "../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.mod", 51, 593, (char *) "GetBaseExceptionBlock", 21, (char *) "currentEHB has not been initialized yet", 39);
+      M2RTS_Halt ((char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 84, 593, (char *) "GetBaseExceptionBlock", 21, (char *) "currentEHB has not been initialized yet", 39);
     }
   else
     {
       return currentEHB;
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/gm2-libs/RTExceptions.def", 25, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.def", 25, 1);
   __builtin_unreachable ();
 }
 

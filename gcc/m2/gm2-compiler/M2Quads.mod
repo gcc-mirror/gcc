@@ -11922,7 +11922,7 @@ BEGIN
    IF Tok=MinusTok
    THEN
       MarkAsRead(r) ;
-      type := NegateType (GetSType(Sym), sympos) ;
+      type := NegateType (GetSType (Sym) (* , sympos *) ) ;
       tokpos := MakeVirtualTok (tokpos, tokpos, sympos) ;
 
       t := MakeTemporary (tokpos, AreConstant(IsConst(Sym))) ;

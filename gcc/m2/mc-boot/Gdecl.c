@@ -2969,7 +2969,7 @@ void StrLib_StrConCat (char *a_, unsigned int _a_high, char *b_, unsigned int _b
 unsigned int StrLib_StrLess (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
 unsigned int StrLib_StrEqual (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
 unsigned int StrLib_StrLen (char *a_, unsigned int _a_high);
-void StrLib_StrCopy (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high);
 unsigned int StrLib_IsSubString (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
 void StrLib_StrRemoveWhitePrefix (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
 
@@ -6553,7 +6553,7 @@ static decl_node newNode (nodeT k)
       d->at.firstUsed = 0;
       return d;
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -6913,7 +6913,7 @@ static decl_node addToScope (decl_node n)
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -6990,7 +6990,7 @@ static void setUnary (decl_node u, nodeT k, decl_node a, decl_node t)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7269,7 +7269,7 @@ static void putFieldVarient (decl_node f, decl_node v)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   switch (f->kind)
@@ -7280,7 +7280,7 @@ static void putFieldVarient (decl_node f, decl_node v)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7329,7 +7329,7 @@ static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, 
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* fill in, n.  */
@@ -7387,7 +7387,7 @@ static void putVarientTag (decl_node v, decl_node tag)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -7411,7 +7411,7 @@ static decl_node getParent (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7440,7 +7440,7 @@ static decl_node getRecord (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7556,7 +7556,7 @@ static decl_node doMakeEnumField (decl_node e, nameKey_Name n)
     {
       mcMetaError_metaErrors2 ((char *) "cannot create enumeration field {%1k} as the name is already in use", 67, (char *) "{%2DMad} was declared elsewhere", 31, (unsigned char *) &n, (sizeof (n)-1), (unsigned char *) &f, (sizeof (f)-1));
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -7618,7 +7618,7 @@ static unsigned int getConstExpComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7723,7 +7723,7 @@ static decl_node makeVal (decl_node params)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -7744,7 +7744,7 @@ static decl_node makeCast (decl_node c, decl_node p)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -8255,7 +8255,7 @@ static decl_node makeUnary (nodeT k, decl_node e, decl_node res)
 
 
           default:
-            CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -8306,7 +8306,7 @@ static DynamicStrings_String getStringContents (decl_node n)
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -8443,7 +8443,7 @@ static decl_node doMakeBinary (nodeT k, decl_node l, decl_node r, decl_node res)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return n;
@@ -9044,12 +9044,12 @@ static decl_node doGetExprType (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -9197,12 +9197,12 @@ static decl_node getSymScope (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -9475,7 +9475,7 @@ static unsigned int needsParen (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return TRUE;
@@ -9584,7 +9584,7 @@ static void doPolyBinary (mcPretty_pretty p, nodeT op, decl_node left, decl_node
 
 
           default:
-            CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -9610,7 +9610,7 @@ static void doPolyBinary (mcPretty_pretty p, nodeT op, decl_node left, decl_node
 
 
           default:
-            CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
     }
@@ -9888,7 +9888,7 @@ static decl_node doGetLastOp (decl_node a, decl_node b)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -10528,7 +10528,7 @@ static void doExprC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -10733,7 +10733,7 @@ static void doExprM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -10905,7 +10905,7 @@ static DynamicStrings_String replaceChar (DynamicStrings_String s, char ch, char
         return s;
       }
   }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -10965,7 +10965,7 @@ static unsigned int countChar (DynamicStrings_String s, char ch)
         return c;
       }
   }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -11980,7 +11980,7 @@ static decl_node doMin (decl_node n)
       M2RTS_HALT (-1);  /* finish the cacading elsif statement.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -12061,7 +12061,7 @@ static decl_node doMax (decl_node n)
       M2RTS_HALT (-1);  /* finish the cacading elsif statement.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -12339,7 +12339,7 @@ static void doBaseC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   mcPretty_setNeedSpace (p);
@@ -12429,7 +12429,7 @@ static void doSystemC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -15642,7 +15642,7 @@ static void doCreal (mcPretty_pretty p, decl_node t)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -15673,7 +15673,7 @@ static void doCimag (mcPretty_pretty p, decl_node t)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -15804,7 +15804,7 @@ static void doIntrinsicC (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   outText (p, (char *) ";", 1);
@@ -16961,7 +16961,7 @@ static void dbs (dependentState s, decl_node n)
 
 
           default:
-            CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
       if (n != NULL)
@@ -17854,10 +17854,10 @@ static dependentState doDependants (alists_alist l, decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -18922,7 +18922,7 @@ static void visitDependants (alists_alist v, decl_node n, nodeProcedure p)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -19269,12 +19269,12 @@ static DynamicStrings_String genKind (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -20294,7 +20294,7 @@ static void doBaseM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   mcPretty_setNeedSpace (p);
@@ -20320,7 +20320,7 @@ static void doSystemM2 (mcPretty_pretty p, decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -21531,10 +21531,10 @@ static decl_node doDupExpr (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -21864,7 +21864,7 @@ unsigned int decl_isVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -21894,7 +21894,7 @@ void decl_unsetVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -21922,7 +21922,7 @@ void decl_setVisited (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -21950,7 +21950,7 @@ void decl_setEnumsComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -21978,7 +21978,7 @@ unsigned int decl_getEnumsComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -22199,7 +22199,7 @@ decl_node decl_lookupInScope (decl_node scope, nameKey_Name n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -22574,12 +22574,12 @@ decl_node decl_getType (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -22973,7 +22973,7 @@ decl_node decl_getScope (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -23627,7 +23627,7 @@ decl_node decl_makeVarient (decl_node r)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   return n;
@@ -24094,7 +24094,7 @@ nameKey_Name decl_getSymName (decl_node n)
         __builtin_unreachable ();
         break;
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -24132,7 +24132,7 @@ decl_node decl_import (decl_node m, decl_node n)
 
 
           default:
-            CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+            CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
             __builtin_unreachable ();
         }
       importEnumFields (m, n);
@@ -24261,7 +24261,7 @@ void decl_setSource (decl_node n, nameKey_Name s)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -24289,7 +24289,7 @@ nameKey_Name decl_getSource (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -24727,7 +24727,7 @@ void decl_addParameter (decl_node proc, decl_node param)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -24820,7 +24820,7 @@ decl_node decl_makeBinaryTok (mcReserved_toktype op, decl_node l, decl_node r)
       M2RTS_HALT (-1);  /* most likely op needs a clause as above.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -24852,7 +24852,7 @@ decl_node decl_makeUnaryTok (mcReserved_toktype op, decl_node e)
       M2RTS_HALT (-1);  /* most likely op needs a clause as above.  */
       __builtin_unreachable ();
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -25290,7 +25290,7 @@ void decl_setConstExpComplete (decl_node n)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -25646,7 +25646,7 @@ void decl_putBegin (decl_node b, decl_node s)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -25673,7 +25673,7 @@ void decl_putFinally (decl_node b, decl_node s)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
 }
@@ -26301,7 +26301,7 @@ void decl_out (void)
 
 
       default:
-        CaseException ("../../gm2-floppsie/gcc/m2/mc/decl.def", 20, 1);
+        CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
         __builtin_unreachable ();
     }
   closeOutput ();

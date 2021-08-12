@@ -49,9 +49,11 @@ FROM SymbolTable IMPORT NulSym,
                         PutExportQualified,
                         GetSym, GetSymName,
                         GetCurrentModule, SetCurrentModule,
+                        IsLegal,
                         PopValue,
                         PopSize ;
 
+FROM Assertion IMPORT Assert ;
 FROM M2LexBuf IMPORT BuiltinTokenNo ;
 FROM M2Options IMPORT Iso, Pim2, Pedantic, DumpSystemExports ;
 FROM NameKey IMPORT Name, MakeKey, NulName ;
@@ -163,42 +165,54 @@ END MapType ;
 
 
 (*
-   AttemptToCreateType -
+   CreateType - create and return a frontend type which matches the GCC tree type.
 *)
 
-PROCEDURE AttemptToCreateType (name, min, max: ARRAY OF CHAR;
-                               needsExporting: BOOLEAN; t: Tree) : CARDINAL ;
+PROCEDURE CreateType (name, min, max: ARRAY OF CHAR;
+                      needsExporting: BOOLEAN; gccType: Tree) : CARDINAL ;
 VAR
    type: CARDINAL ;
 BEGIN
-   IF t=NIL
+   IF gccType=NIL
    THEN
-      (* GCC backend does not support this type *)
+      (* GCC backend does not support this type.  *)
       RETURN NulSym
    ELSE
-      (* create base type *)
+      (* Create base type.  *)
       type := MakeType (BuiltinTokenNo, MakeKey (name)) ;
       PutType (type, NulSym) ;  (* a Base Type *)
-      MapType (type, name, min, max, needsExporting, t) ;
+      MapType (type, name, min, max, needsExporting, gccType) ;
       RETURN type
    END
+END CreateType ;
+
+
+(*
+   AttemptToCreateType - attempts to create a frontend type which matches the
+                         GCC tree type.
+*)
+
+PROCEDURE AttemptToCreateType (name, min, max: ARRAY OF CHAR;
+                               needsExporting: BOOLEAN; gccType: Tree) ;
+BEGIN
+   Assert (IsLegal (CreateType (name, min, max, needsExporting, gccType)))
 END AttemptToCreateType ;
 
 
 (*
-   AttemptToCreateSetType - creates and returns a, SET OF [0..highBit], type.
-                            It maps this type onto the GCC type, t.
+   CreateSetType - creates and returns a, SET OF [0..highBit], type.
+                   It maps this type onto the GCC type.
 *)
 
-PROCEDURE AttemptToCreateSetType (name, highBit: ARRAY OF CHAR;
-                                  needsExporting: BOOLEAN; t: Tree) : CARDINAL ;
+PROCEDURE CreateSetType (name, highBit: ARRAY OF CHAR;
+                         needsExporting: BOOLEAN; gccType: Tree) : CARDINAL ;
 VAR
    low,
    high,
    subrange,
    type    : CARDINAL ;
 BEGIN
-   IF t=NIL
+   IF gccType=NIL
    THEN
       (* GCC backend does not support this type *)
       RETURN NulSym
@@ -210,9 +224,21 @@ BEGIN
       subrange := MakeSubrange (BuiltinTokenNo, NulName) ;
       PutSubrange (subrange, low, high, Cardinal) ;
       PutSet (type, subrange, FALSE) ;
-      MapType (type, name, '', '', needsExporting, t) ;
+      MapType (type, name, '', '', needsExporting, gccType) ;
       RETURN type
    END
+END CreateSetType ;
+
+
+(*
+   AttemptToCreateSetType - creates and returns a, SET OF [0..highBit], type.
+                            It maps this type onto the GCC type.
+*)
+
+PROCEDURE AttemptToCreateSetType (name, highBit: ARRAY OF CHAR;
+                                  needsExporting: BOOLEAN; gccType: Tree) ;
+BEGIN
+   Assert (IsLegal (CreateSetType (name, highBit, needsExporting, gccType)))
 END AttemptToCreateSetType ;
 
 
@@ -222,36 +248,34 @@ END AttemptToCreateSetType ;
 *)
 
 PROCEDURE MakeFixedSizedTypes ;
-VAR
-   type: CARDINAL ;
 BEGIN
-   type := AttemptToCreateType('INTEGER8', 'MinInteger8', 'MaxInteger8', TRUE, GetM2Integer8()) ;
-   type := AttemptToCreateType('INTEGER16', 'MinInteger16', 'MaxInteger16', TRUE, GetM2Integer16()) ;
-   type := AttemptToCreateType('INTEGER32', 'MinInteger32', 'MaxInteger32', TRUE, GetM2Integer32()) ;
-   type := AttemptToCreateType('INTEGER64', 'MinInteger64', 'MaxInteger64', TRUE, GetM2Integer64()) ;
+   AttemptToCreateType ('INTEGER8', 'MinInteger8', 'MaxInteger8', TRUE, GetM2Integer8 ()) ;
+   AttemptToCreateType ('INTEGER16', 'MinInteger16', 'MaxInteger16', TRUE, GetM2Integer16 ()) ;
+   AttemptToCreateType ('INTEGER32', 'MinInteger32', 'MaxInteger32', TRUE, GetM2Integer32 ()) ;
+   AttemptToCreateType ('INTEGER64', 'MinInteger64', 'MaxInteger64', TRUE, GetM2Integer64 ()) ;
 
-   type := AttemptToCreateType('CARDINAL8', 'MinCardinal8', 'MaxCardinal8', TRUE, GetM2Cardinal8()) ;
-   type := AttemptToCreateType('CARDINAL16', 'MinCardinal16', 'MaxCardinal16', TRUE, GetM2Cardinal16()) ;
-   type := AttemptToCreateType('CARDINAL32', 'MinCardinal32', 'MaxCardinal32', TRUE, GetM2Cardinal32()) ;
-   type := AttemptToCreateType('CARDINAL64', 'MinCardinal64', 'MaxCardinal64', TRUE, GetM2Cardinal64()) ;
+   AttemptToCreateType ('CARDINAL8', 'MinCardinal8', 'MaxCardinal8', TRUE, GetM2Cardinal8 ()) ;
+   AttemptToCreateType ('CARDINAL16', 'MinCardinal16', 'MaxCardinal16', TRUE, GetM2Cardinal16 ()) ;
+   AttemptToCreateType ('CARDINAL32', 'MinCardinal32', 'MaxCardinal32', TRUE, GetM2Cardinal32 ()) ;
+   AttemptToCreateType ('CARDINAL64', 'MinCardinal64', 'MaxCardinal64', TRUE, GetM2Cardinal64 ()) ;
 
-   type := AttemptToCreateType('WORD16', '', '', TRUE, GetM2Word16()) ;
-   type := AttemptToCreateType('WORD32', '', '', TRUE, GetM2Word32()) ;
-   type := AttemptToCreateType('WORD64', '', '', TRUE, GetM2Word64()) ;
+   AttemptToCreateType ('WORD16', '', '', TRUE, GetM2Word16 ()) ;
+   AttemptToCreateType ('WORD32', '', '', TRUE, GetM2Word32 ()) ;
+   AttemptToCreateType ('WORD64', '', '', TRUE, GetM2Word64 ()) ;
 
-   type := AttemptToCreateSetType('BITSET8' , '7' , TRUE, GetM2Bitset8()) ;
-   type := AttemptToCreateSetType('BITSET16', '15', TRUE, GetM2Bitset16()) ;
-   type := AttemptToCreateSetType('BITSET32', '31', TRUE, GetM2Bitset32()) ;
+   AttemptToCreateSetType ('BITSET8' , '7' , TRUE, GetM2Bitset8 ()) ;
+   AttemptToCreateSetType ('BITSET16', '15', TRUE, GetM2Bitset16 ()) ;
+   AttemptToCreateSetType ('BITSET32', '31', TRUE, GetM2Bitset32 ()) ;
 
-   type := AttemptToCreateType('REAL32', '', '', TRUE, GetM2Real32()) ;
-   type := AttemptToCreateType('REAL64', '', '', TRUE, GetM2Real64()) ;
-   type := AttemptToCreateType('REAL96', '', '', TRUE, GetM2Real96()) ;
-   type := AttemptToCreateType('REAL128', '', '', TRUE, GetM2Real128()) ;
+   AttemptToCreateType ('REAL32', '', '', TRUE, GetM2Real32 ()) ;
+   AttemptToCreateType ('REAL64', '', '', TRUE, GetM2Real64 ()) ;
+   AttemptToCreateType ('REAL96', '', '', TRUE, GetM2Real96 ()) ;
+   AttemptToCreateType ('REAL128', '', '', TRUE, GetM2Real128 ()) ;
 
-   type := AttemptToCreateType('COMPLEX32', '', '', TRUE, GetM2Complex32()) ;
-   type := AttemptToCreateType('COMPLEX64', '', '', TRUE, GetM2Complex64()) ;
-   type := AttemptToCreateType('COMPLEX96', '', '', TRUE, GetM2Complex96()) ;
-   type := AttemptToCreateType('COMPLEX128', '', '', TRUE, GetM2Complex128())
+   AttemptToCreateType ('COMPLEX32', '', '', TRUE, GetM2Complex32 ()) ;
+   AttemptToCreateType ('COMPLEX64', '', '', TRUE, GetM2Complex64 ()) ;
+   AttemptToCreateType ('COMPLEX96', '', '', TRUE, GetM2Complex96 ()) ;
+   AttemptToCreateType ('COMPLEX128', '', '', TRUE, GetM2Complex128 ())
 END MakeFixedSizedTypes ;
 
 
@@ -261,16 +285,16 @@ END MakeFixedSizedTypes ;
 
 PROCEDURE InitPIMTypes ;
 BEGIN
-   Loc := AttemptToCreateType('LOC', '', '', TRUE, GetISOLocType()) ;
+   Loc := CreateType ('LOC', '', '', TRUE, GetISOLocType()) ;
    InitSystemTypes(BuiltinsLocation(), Loc) ;
-   Word := AttemptToCreateType('WORD', '', '', TRUE, GetWordType()) ;
-   Byte := AttemptToCreateType('BYTE', '', '', TRUE, GetByteType()) ;
+   Word := CreateType ('WORD', '', '', TRUE, GetWordType()) ;
+   Byte := CreateType ('BYTE', '', '', TRUE, GetByteType()) ;
 
    (* ADDRESS = POINTER TO BYTE *)
 
-   Address := MakePointer(BuiltinTokenNo, MakeKey('ADDRESS')) ;
-   PutPointer(Address, Byte) ;                (* Base Type       *)
-   MapType(Address, 'ADDRESS', '', '', TRUE, GetPointerType())
+   Address := MakePointer (BuiltinTokenNo, MakeKey('ADDRESS')) ;
+   PutPointer (Address, Byte) ;                (* Base Type       *)
+   MapType (Address, 'ADDRESS', '', '', TRUE, GetPointerType())
 END InitPIMTypes ;
 
 
@@ -280,15 +304,15 @@ END InitPIMTypes ;
 
 PROCEDURE InitISOTypes ;
 BEGIN
-   Loc := AttemptToCreateType('LOC', 'MinLoc', 'MaxLoc', TRUE, GetISOLocType()) ;
-   InitSystemTypes(BuiltinsLocation(), Loc) ;
+   Loc := CreateType ('LOC', 'MinLoc', 'MaxLoc', TRUE, GetISOLocType ()) ;
+   InitSystemTypes (BuiltinsLocation (), Loc) ;
 
-   Address := MakePointer(BuiltinTokenNo, MakeKey('ADDRESS')) ;
-   PutPointer(Address, Loc) ;                (* Base Type       *)
-   MapType(Address, 'ADDRESS', '', '', TRUE, GetPointerType()) ;
+   Address := MakePointer (BuiltinTokenNo, MakeKey ('ADDRESS')) ;
+   PutPointer (Address, Loc) ;                (* Base Type       *)
+   MapType (Address, 'ADDRESS', '', '', TRUE, GetPointerType()) ;
 
-   Byte := AttemptToCreateType('BYTE', '', '', TRUE, GetISOByteType()) ;
-   Word := AttemptToCreateType('WORD', '', '', TRUE, GetISOWordType()) ;
+   Byte := CreateType ('BYTE', '', '', TRUE, GetISOByteType()) ;
+   Word := CreateType ('WORD', '', '', TRUE, GetISOWordType()) ;
 
    (* CreateMinMaxFor(Loc, 'MinLoc', 'MaxLoc', GetISOLocType()) *)
 END InitISOTypes ;
@@ -301,8 +325,8 @@ END InitISOTypes ;
 
 PROCEDURE MakeExtraSystemTypes ;
 BEGIN
-   CSizeT  := AttemptToCreateType ('CSIZE_T' , '', '', TRUE, GetCSizeTType ()) ;
-   CSSizeT := AttemptToCreateType ('CSSIZE_T', '', '', TRUE, GetCSSizeTType ())
+   CSizeT  := CreateType ('CSIZE_T' , '', '', TRUE, GetCSizeTType ()) ;
+   CSSizeT := CreateType ('CSSIZE_T', '', '', TRUE, GetCSSizeTType ())
 END MakeExtraSystemTypes ;
 
 

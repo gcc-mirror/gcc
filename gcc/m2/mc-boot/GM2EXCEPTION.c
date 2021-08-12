@@ -57,13 +57,13 @@ M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
   n = RTExceptions_GetNumber (e);
   if (n == (UINT_MAX))
     {
-      RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), "../../gm2-floppsie/gcc/m2/gm2-libs/M2EXCEPTION.mod", 47, 6, "M2Exception", "current coroutine is not in the exceptional execution state");
+      RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/M2EXCEPTION.mod", 47, 6, "M2Exception", "current coroutine is not in the exceptional execution state");
     }
   else
     {
       return (M2EXCEPTION_M2Exceptions) (n);
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/gm2-libs/M2EXCEPTION.def", 25, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/M2EXCEPTION.def", 25, 1);
   __builtin_unreachable ();
 }
 

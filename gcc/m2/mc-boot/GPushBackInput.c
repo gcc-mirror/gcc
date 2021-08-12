@@ -274,7 +274,7 @@ char PushBackInput_PutCh (char ch)
     }
   else
     {
-      Debug_Halt ((char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (char *) "../../gm2-floppsie/gcc/m2/gm2-libs/PushBackInput.mod", 52);
+      Debug_Halt ((char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
     }
   return ch;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -300,7 +300,7 @@ void PushBackInput_PutString (char *a_, unsigned int _a_high)
       l -= 1;
       if ((PushBackInput_PutCh (a[l])) != a[l])
         {
-          Debug_Halt ((char *) "assert failed", 13, 132, (char *) "../../gm2-floppsie/gcc/m2/gm2-libs/PushBackInput.mod", 52);
+          Debug_Halt ((char *) "assert failed", 13, 132, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
         }
     }
 }
@@ -321,7 +321,7 @@ void PushBackInput_PutStr (DynamicStrings_String s)
       i -= 1;
       if ((PushBackInput_PutCh (DynamicStrings_char (s, (int) i))) != (DynamicStrings_char (s, (int) i)))
         {
-          Debug_Halt ((char *) "assert failed", 13, 113, (char *) "../../gm2-floppsie/gcc/m2/gm2-libs/PushBackInput.mod", 52);
+          Debug_Halt ((char *) "assert failed", 13, 113, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
         }
     }
 }

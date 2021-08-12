@@ -173,11 +173,9 @@ TYPE
 
 
 VAR
-   stackPtr    : CARDINAL ;
    exprStack   : StackOfAddress ;
    constList   : Index ;
    constToken  : CARDINAL ;
-   currentConst: CARDINAL ;
    desStack    : StackOfWord ;
    inDesignator: BOOLEAN ;
 
@@ -751,6 +749,7 @@ END BuildConst ;
                        |--------------+        |--------------|
 *)
 
+(*
 PROCEDURE BuildVarAtAddress ;
 VAR
    name      : Name ;
@@ -769,6 +768,7 @@ BEGIN
       InternalError ('expecting lvalue for this variable which is declared at an explicit address')
    END
 END BuildVarAtAddress ;
+*)
 
 
 (*
@@ -782,6 +782,7 @@ END BuildVarAtAddress ;
                                    |------------|                      <- Ptr
 *)
 
+(*
 PROCEDURE BuildOptArgInitializer ;
 VAR
    const: CARDINAL ;
@@ -789,6 +790,7 @@ BEGIN
    PopT(const) ;
    PutOptArgInit(GetCurrentScope(), const)
 END BuildOptArgInitializer ;
+*)
 
 
 (*

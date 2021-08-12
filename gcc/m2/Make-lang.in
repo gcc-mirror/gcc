@@ -1299,7 +1299,7 @@ m2/gm2-compiler-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-compiler-boot/%.def $(MC
 # source of mc written in m2.
 # This reference is to an out of build tree copy of pge, as the in build tree is built by mc.
 
-PGE=${HOME}/GM2/graft-combine/build-gm2-master-enabled/gcc/m2/pge
+PGE=${HOME}/GM2/graft-combine/build-gaius-enabled/gcc/m2/pge
 BOOTGM2=gm2
 
 MCOPTIONS=-g -c -fsources -fsoft-check-all -fm2-g # -fauto-init
@@ -1307,7 +1307,7 @@ MCLINK=-g     # use -g -fmodules -c if you are debugging and wish to see missing
 
 # this is only needed in maintainer mode by 'make mc-maintainer' when regenerating the C version of mc.
 
-GM2SYS=${HOME}/opt/lib/gcc/x86_64-pc-linux-gnu/11.0.0/m2/m2pim
+GM2SYS=${HOME}/opt/lib/gcc/x86_64-pc-linux-gnu/12.0.0/m2/m2pim
 GM2PATH=$(srcdir)/m2/mc:$(GM2SYS):$(srcdir)/m2:m2/gm2-auto:$(srcdir)/m2/gm2-libs:$(srcdir)/m2/gm2-libs-iso
 
 mc:  mc-clean mc-devel
@@ -1434,19 +1434,19 @@ mcflex.c: $(srcdir)/m2/mc/mc.flex
 	flex -t $< > $@
 
 $(objdir)/m2/gm2-auto/mcp1.mod: $(srcdir)/m2/bnf/mc-1.bnf
-	$(PGE) -l $< > $@
+	$(PGE) -l $< -o $@
 
 $(objdir)/m2/gm2-auto/mcp2.mod: $(srcdir)/m2/bnf/mc-2.bnf
-	$(PGE) -l $< > $@
+	$(PGE) -l $< -o $@
 
 $(objdir)/m2/gm2-auto/mcp3.mod: $(srcdir)/m2/bnf/mc-3.bnf
-	$(PGE) -l $< > $@
+	$(PGE) -l $< -o $@
 
 $(objdir)/m2/gm2-auto/mcp4.mod: $(srcdir)/m2/bnf/mc-4.bnf
-	$(PGE) -l $< > $@
+	$(PGE) -l $< -o $@
 
 $(objdir)/m2/gm2-auto/mcp5.mod: $(srcdir)/m2/bnf/mc-5.bnf
-	$(PGE) -l $< > $@
+	$(PGE) -l $< -o $@
 
 gm2-bootstrap: mc-devel
 	for i in $(srcdir)/m2/gm2-libs/*.def ; do echo $$i ; ./mc --gcc-config-system -I$(srcdir)/m2/gm2-libs $$i ; done

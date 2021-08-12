@@ -753,10 +753,12 @@ static void checkThrow (mcPretty_pretty p)
 {
   if (seenThrow)
     {
-      mcPretty_print (p, (char *) "#   include \"sys/cdefs.h\"\\n", 27);
+      /* print (p, '#   include "sys/cdefs.h"
+      ') ;  */
+      mcPretty_print (p, (char *) "#ifndef __cplusplus\\n", 21);
+      mcPretty_print (p, (char *) "extern void throw (unsigned int);\\n", 35);
+      mcPretty_print (p, (char *) "#endif\\n", 8);
     }
-  /* print (p, 'extern void throw (int);
-  ')  */
 }
 
 
@@ -899,7 +901,7 @@ static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned 
         return TRUE;
       }
   }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/keyc.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/keyc.def", 20, 1);
   __builtin_unreachable ();
 }
 

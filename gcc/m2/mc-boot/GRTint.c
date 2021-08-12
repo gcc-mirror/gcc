@@ -595,7 +595,7 @@ static unsigned int activatePending (unsigned int untilInterrupt, RTint_Dispatch
 
 
               default:
-                CaseException ("../../gm2-floppsie/gcc/m2/gm2-libs/RTint.def", 25, 1);
+                CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.def", 25, 1);
                 __builtin_unreachable ();
             }
           v = v->pending;
@@ -708,7 +708,7 @@ unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
       RTco_signal (lock);
       return v->no;
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/gm2-libs/RTint.def", 25, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -765,7 +765,7 @@ void RTint_ReArmTimeVector (unsigned int vec, unsigned int micro, unsigned int s
   v = FindVectorNo (vec);
   if (v == NULL)
     {
-      M2RTS_Halt ((char *) "../../gm2-floppsie/gcc/m2/gm2-libs/RTint.mod", 44, 286, (char *) "ReArmTimeVector", 15, (char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 286, (char *) "ReArmTimeVector", 15, (char *) "cannot find vector supplied", 27);
     }
   else
     {
@@ -790,7 +790,7 @@ void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsigned int *s
   v = FindVectorNo (vec);
   if (v == NULL)
     {
-      M2RTS_Halt ((char *) "../../gm2-floppsie/gcc/m2/gm2-libs/RTint.mod", 44, 312, (char *) "GetTimeVector", 13, (char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 312, (char *) "GetTimeVector", 13, (char *) "cannot find vector supplied", 27);
     }
   else
     {
@@ -816,7 +816,7 @@ void * RTint_AttachVector (unsigned int vec, void * p)
   v = FindVectorNo (vec);
   if (v == NULL)
     {
-      M2RTS_Halt ((char *) "../../gm2-floppsie/gcc/m2/gm2-libs/RTint.mod", 44, 339, (char *) "AttachVector", 12, (char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 339, (char *) "AttachVector", 12, (char *) "cannot find vector supplied", 27);
     }
   else
     {
@@ -830,7 +830,7 @@ void * RTint_AttachVector (unsigned int vec, void * p)
       RTco_signal (lock);
       return l;
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/gm2-libs/RTint.def", 25, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -855,7 +855,7 @@ void RTint_IncludeVector (unsigned int vec)
       v = FindVectorNo (vec);
       if (v == NULL)
         {
-          M2RTS_Halt ((char *) "../../gm2-floppsie/gcc/m2/gm2-libs/RTint.mod", 44, 372, (char *) "IncludeVector", 13, (char *) "cannot find vector supplied", 27);
+          M2RTS_Halt ((char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 372, (char *) "IncludeVector", 13, (char *) "cannot find vector supplied", 27);
         }
       else
         {
@@ -902,7 +902,7 @@ void RTint_ExcludeVector (unsigned int vec)
   v = FindPendingVector (vec);
   if (v == NULL)
     {
-      M2RTS_Halt ((char *) "../../gm2-floppsie/gcc/m2/gm2-libs/RTint.mod", 44, 415, (char *) "ExcludeVector", 13, (char *) "cannot find pending vector supplied", 35);
+      M2RTS_Halt ((char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 415, (char *) "ExcludeVector", 13, (char *) "cannot find pending vector supplied", 35);
     }
   else
     {
@@ -1003,7 +1003,7 @@ void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector call, unsig
 
 
                   default:
-                    CaseException ("../../gm2-floppsie/gcc/m2/gm2-libs/RTint.def", 25, 1);
+                    CaseException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.def", 25, 1);
                     __builtin_unreachable ();
                 }
               v = v->pending;
@@ -1016,7 +1016,7 @@ void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector call, unsig
         }
       if (((untilInterrupt && (i == NULL)) && (o == NULL)) && ! found)
         {
-          M2RTS_Halt ((char *) "../../gm2-floppsie/gcc/m2/gm2-libs/RTint.mod", 44, 731, (char *) "Listen", 6, (char *) "deadlock found, no more processes to run and no interrupts active", 65);
+          M2RTS_Halt ((char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 731, (char *) "Listen", 6, (char *) "deadlock found, no more processes to run and no interrupts active", 65);
         }
       /* printf('}
       ') ;  */

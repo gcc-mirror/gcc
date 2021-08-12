@@ -222,7 +222,7 @@ unsigned int Indexing_InBounds (Indexing_Index i, unsigned int n)
     {
       return (n >= i->Low) && (n <= i->High);
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/Indexing.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/Indexing.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -242,7 +242,7 @@ unsigned int Indexing_HighIndice (Indexing_Index i)
     {
       return i->High;
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/Indexing.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/Indexing.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -262,7 +262,7 @@ unsigned int Indexing_LowIndice (Indexing_Index i)
     {
       return i->Low;
     }
-  ReturnException ("../../gm2-floppsie/gcc/m2/mc/Indexing.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/Indexing.def", 20, 1);
   __builtin_unreachable ();
 }
 

@@ -170,7 +170,7 @@ static DynamicStrings_String DescribeStop (SetOfStop0 stopset0, SetOfStop1 stops
    DescribeError - issues a message explaining what tokens were expected
 */
 
-static void DescribeError (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2);
+static void DescribeError (void);
 
 /*
    SyntaxError - after a syntax error we skip all tokens up until we reach
@@ -2827,7 +2827,7 @@ static DynamicStrings_String DescribeStop (SetOfStop0 stopset0, SetOfStop1 stops
    DescribeError - issues a message explaining what tokens were expected
 */
 
-static void DescribeError (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
+static void DescribeError (void)
 {
   DynamicStrings_String str;
 
@@ -3209,7 +3209,7 @@ static void DescribeError (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 
 static void SyntaxError (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 {
-  DescribeError (stopset0, stopset1, stopset2);
+  DescribeError ();
   if (Debugging)
     {
       mcPrintf_printf0 ((char *) "\\nskipping token *** ", 21);
