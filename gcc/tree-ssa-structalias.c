@@ -4063,8 +4063,14 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results)
       tree arg = gimple_call_arg (stmt, i);
       int flags = gimple_call_arg_flags (stmt, i);
 
-      /* If the argument is not used we can ignore it.  */
-      if (flags & EAF_UNUSED)
+      /* If the argument is not used we can ignore it.
+	 Similarly argument is invisile for us if it not clobbered, does not
+	 escape, is not read and can not be returned.  */
+      if ((flags & EAF_UNUSED)
+	  || ((flags & (EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NOREAD
+			| EAF_NOT_RETURNED))
+	      == (EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NOREAD
+		  | EAF_NOT_RETURNED)))
 	continue;
 
       /* As we compute ESCAPED context-insensitive we do not gain
@@ -4316,7 +4322,9 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
       int flags = gimple_call_arg_flags (stmt, i);
 
       /* If the argument is not used we can ignore it.  */
-      if (flags & EAF_UNUSED)
+      if ((flags & EAF_UNUSED)
+	  || (flags & (EAF_NOT_RETURNED | EAF_NOREAD))
+	     == (EAF_NOT_RETURNED | EAF_NOREAD))
 	continue;
       if (!uses)
 	{

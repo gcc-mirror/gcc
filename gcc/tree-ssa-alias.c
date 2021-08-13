@@ -2870,7 +2870,7 @@ process_args:
       tree op = gimple_call_arg (call, i);
       int flags = gimple_call_arg_flags (call, i);
 
-      if (flags & EAF_UNUSED)
+      if (flags & (EAF_UNUSED | EAF_NOREAD))
 	continue;
 
       if (TREE_CODE (op) == WITH_SIZE_EXPR)

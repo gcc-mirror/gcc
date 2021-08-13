@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define IPA_MODREF_H
 
 typedef modref_tree <alias_set_type> modref_records;
-typedef unsigned short eaf_flags_t;
+typedef unsigned char eaf_flags_t;
 
 /* Single function summary.  */
 
