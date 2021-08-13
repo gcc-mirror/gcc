@@ -96,6 +96,9 @@ func_checker::compare_ssa_name (const_tree t1, const_tree t2)
   unsigned i1 = SSA_NAME_VERSION (t1);
   unsigned i2 = SSA_NAME_VERSION (t2);
 
+  if (SSA_NAME_IS_DEFAULT_DEF (t1) != SSA_NAME_IS_DEFAULT_DEF (t2))
+    return false;
+
   if (m_source_ssa_names[i1] == -1)
     m_source_ssa_names[i1] = i2;
   else if (m_source_ssa_names[i1] != (int) i2)
