@@ -1,3 +1,43 @@
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101638
+	* gcc.dg/cpp/pr101638.c: New test.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101759
+	* g++.dg/gomp/pr101759.C: New test.
+	* g++.dg/goacc/pr101759.C: New test.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101624
+	* gfortran.dg/ubsan/ubsan.exp: New file.
+	* gfortran.dg/ubsan/pr101624.f90: New test.
+
+2021-08-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101663
+	* g++.dg/cpp2a/construct_at.h: New convenience header file that
+	defines minimal implementations of std::construct_at/destroy_at,
+	split out from ...
+	* g++.dg/cpp2a/constexpr-new5.C: ... here.
+	* g++.dg/cpp2a/constexpr-new6.C: Use the header.
+	* g++.dg/cpp2a/constexpr-new14.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new20.C: New test.
+
 2021-08-11  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

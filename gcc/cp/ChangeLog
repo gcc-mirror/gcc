@@ -1,3 +1,22 @@
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101759
+	* parser.c (cp_parser_default_argument): Temporarily override
+	parser->omp_declare_simd and parser->oacc_routine to NULL.
+
+2021-08-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-08-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101663
+	* constexpr.c (cxx_eval_store_expression): Handle the lval=true
+	case in the early exit code path for empty stores with mismatched
+	types.
+
 2021-08-11  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

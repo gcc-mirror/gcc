@@ -1,3 +1,24 @@
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101624
+	* ubsan.c (maybe_instrument_pointer_overflow,
+	instrument_object_size): Only test DECL_REGISTER on VAR_DECLs,
+	PARM_DECLs or RESULT_DECLs.
+	* sanopt.c (maybe_optimize_ubsan_ptr_ifn): Likewise.
+
+2021-08-12  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* configure.ac (PE linker --disable-dynamicbase support): New check.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* config/i386/mingw32.h (LINK_SPEC_DISABLE_DYNAMICBASE): New define.
+	(LINK_SPEC): Use it.
+	* config/i386/mingw-w64.h (LINK_SPEC_DISABLE_DYNAMICBASE): Likewise.
+	(LINK_SPEC): Likewise.
+
 2021-08-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
