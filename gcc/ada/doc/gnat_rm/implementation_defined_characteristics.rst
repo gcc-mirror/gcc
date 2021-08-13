@@ -147,12 +147,12 @@ Type                   Representation
                        IEEE 80-bit Extended on x86 architecture
 ====================== ===============================================
 
-The default rounding mode specified by the IEEE 754 Standard is assumed for
-static computations, i.e. round to nearest, ties to even. The input routines
-yield correctly rounded values for Short_Float, Float and Long_Float at least.
-The output routines can compute up to twice as many exact digits as the value
-of ``T'Digits`` for any type, for example 30 digits for Long_Float; if more
-digits are requested, zeros are printed.
+The default rounding mode specified by the IEEE 754 Standard is assumed both
+for static and dynamic computations (that is, round to nearest, ties to even).
+The input routines yield correctly rounded values for Short_Float, Float, and
+Long_Float at least. The output routines can compute up to twice as many exact
+digits as the value of ``T'Digits`` for any type, for example 30 digits for
+Long_Float; if more digits are requested, zeros are printed.
 
 *
   "The small of an ordinary fixed point type.  See 3.5.9(8)."
