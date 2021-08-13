@@ -3129,6 +3129,14 @@ darwin_file_end (void)
      re-arranging data.  */
   if (!DARWIN_SECTION_ANCHORS || !flag_section_anchors)
     fprintf (asm_out_file, "\t.subsections_via_symbols\n");
+
+  /* We rely on this being NULL at the start of compilation; reset it here
+     so that JIT can reuse a context.  */
+  if (dwarf_sect_names_table != NULL)
+    {
+      dwarf_sect_names_table->truncate (0);
+      dwarf_sect_names_table = NULL;
+    }
 }
 
 /* TODO: Add a language hook for identifying if a decl is a vtable.  */
