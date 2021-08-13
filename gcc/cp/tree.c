@@ -5386,7 +5386,9 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       // walk the parameter list. Doing so causes false
       // positives in the pack expansion checker since the
       // requires parameters are introduced as pack expansions.
-      WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+      ++cp_unevaluated_operand;
+      result = cp_walk_tree (&REQUIRES_EXPR_REQS (*tp), func, data, pset);
+      --cp_unevaluated_operand;
       *walk_subtrees_p = 0;
       break;
 

@@ -1712,6 +1712,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       const char *type;
       switch (omp_clauses->proc_bind)
 	{
+	case OMP_PROC_BIND_PRIMARY: type = "PRIMARY"; break;
 	case OMP_PROC_BIND_MASTER: type = "MASTER"; break;
 	case OMP_PROC_BIND_SPREAD: type = "SPREAD"; break;
 	case OMP_PROC_BIND_CLOSE: type = "CLOSE"; break;

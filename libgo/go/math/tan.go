@@ -79,13 +79,12 @@ var _tanQ = [...]float64{
 //	Tan(±0) = ±0
 //	Tan(±Inf) = NaN
 //	Tan(NaN) = NaN
-
-//extern tan
-func libc_tan(float64) float64
-
 func Tan(x float64) float64 {
 	return libc_tan(x)
 }
+
+//extern tan
+func libc_tan(float64) float64
 
 func tan(x float64) float64 {
 	const (

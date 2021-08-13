@@ -2231,7 +2231,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  if ((mask & OMP_CLAUSE_PROC_BIND)
 	      && c->proc_bind == OMP_PROC_BIND_UNKNOWN)
 	    {
-	      if (gfc_match ("proc_bind ( master )") == MATCH_YES)
+	      /* Primary is new and master is deprecated in OpenMP 5.1.  */
+	      if (gfc_match ("proc_bind ( primary )") == MATCH_YES)
+		c->proc_bind = OMP_PROC_BIND_MASTER;
+	      else if (gfc_match ("proc_bind ( master )") == MATCH_YES)
 		c->proc_bind = OMP_PROC_BIND_MASTER;
 	      else if (gfc_match ("proc_bind ( spread )") == MATCH_YES)
 		c->proc_bind = OMP_PROC_BIND_SPREAD;

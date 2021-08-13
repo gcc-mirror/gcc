@@ -8560,6 +8560,7 @@ finish_using_directive (tree target, tree attribs)
   add_using_namespace (current_binding_level->using_directives,
 		       ORIGINAL_NAMESPACE (target));
 
+  bool diagnosed = false;
   if (attribs != error_mark_node)
     for (tree a = attribs; a; a = TREE_CHAIN (a))
       {
@@ -8571,6 +8572,16 @@ finish_using_directive (tree target, tree attribs)
 		&& CP_DECL_CONTEXT (target) == current_namespace)
 	      inform (DECL_SOURCE_LOCATION (target),
 		      "you can use an inline namespace instead");
+	  }
+	else if ((flag_openmp || flag_openmp_simd)
+		 && get_attribute_namespace (a) == omp_identifier
+		 && (is_attribute_p ("directive", name)
+		     || is_attribute_p ("sequence", name)))
+	  {
+	    if (!diagnosed)
+	      error ("%<omp::%E%> not allowed to be specified in this "
+		     "context", name);
+	    diagnosed = true;
 	  }
 	else
 	  warning (OPT_Wattributes, "%qD attribute directive ignored", name);

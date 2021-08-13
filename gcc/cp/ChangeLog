@@ -1,3 +1,121 @@
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Parse filter clause name.
+	(cp_parser_omp_clause_filter): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_FILTER.
+	(OMP_MASKED_CLAUSE_MASK): Define.
+	(cp_parser_omp_masked): New function.
+	(cp_parser_omp_parallel): Handle parallel masked.
+	(cp_parser_omp_construct, cp_parser_pragma): Handle PRAGMA_OMP_MASKED.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_FILTER.
+	* pt.c (tsubst_omp_clauses): Likewise.
+	(tsubst_expr): Handle OMP_MASKED.
+
+2021-08-12  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/101219
+	* pt.c (tsubst_copy_and_build): Use build_ptrmemfunc_access_expr
+	to construct ptrmemfunc expression instantiation.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_proc_bind): Accept
+	'primary' as alias for 'master'.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (omp_declare_target_attr): New type.
+	(struct saved_scope): Change type of omp_declare_target_attribute
+	from int to vec<omp_declare_target_attr, va_gc> * and move it.
+	* parser.c (cp_parser_omp_declare_target): Instead of
+	incrementing scope_chain->omp_declare_target_attribute, push
+	a struct containing parser->lexer->in_omp_attribute_pragma to
+	the vector.
+	(cp_parser_omp_end_declare_target): Instead of decrementing
+	scope_chain->omp_declare_target_attribute, pop a structure
+	from it.  Diagnose mismatching declare target vs.
+	end declare target syntax.
+	* semantics.c (finish_translation_unit): Use vec_safe_length
+	and vec_safe_truncate on scope_chain->omp_declare_target_attributes.
+	* decl2.c (cplus_decl_attributes): Use vec_safe_length
+	on scope_chain->omp_declare_target_attributes.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_lambda_body): Add temp overrides
+	for parser->{omp_declare_simd,oacc_routine,omp_attrs_forbidden_p}.
+	(cp_parser_statement): Restore parser->omp_attrs_forbidden_p for
+	cp_parser_declaration_statement.
+	(cp_parser_default_argument): Add temp override for
+	parser->omp_attrs_forbidden_p.
+	(cp_parser_late_parsing_omp_declare_simd): Diagnose declare simd
+	or declare variant in attribute syntax on a declaration immediately
+	following an OpenMP construct in pragma syntax.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94162
+	* method.c (cat_tag_for): Return cc_last for !CLASS_TYPE_P
+	or for classes not in std namespace.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* name-lookup.c (finish_using_directive): Diagnose omp::directive
+	or omp::sequence attributes on using-directive.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_block_declaration): Call
+	cp_parser_using_directive for C++11 attributes followed by
+	using namespace tokens.
+	(cp_parser_using_directive): Parse C++11 attributes at the start
+	of the directive rather than at the end, only parse GNU attributes
+	at the end.
+
+2021-08-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101663
+	* constexpr.c (cxx_eval_store_expression): Handle the lval=true
+	case in the early exit code path for empty stores with mismatched
+	types.
+
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101725
+	DR 2082
+	* cp-tree.h (unevaluated_p): Return true for REQUIRES_EXPR.
+	* decl.c (local_variable_p_walkfn): Don't walk into unevaluated
+	operands.
+	* parser.c (cp_parser_primary_expression) <case CPP_NAME>: Never
+	reject uses of local variables in unevaluated contexts.
+	* tree.c (cp_walk_subtrees) <case REQUIRES_EXPR>: Increment
+	cp_unevaluated_operand.  Use cp_walk_tree directly instead of
+	WALK_SUBTREE to avoid the goto.  Use REQUIRES_EXPR_REQS instead
+	of TREE_OPERAND directly.
+
+2021-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101786
+	* decl2.c (var_defined_without_dynamic_init): Return true for
+	DECL_DECLARED_CONSTINIT_P with complete type and trivial destructor.
+
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/79501
+	* parser.c (maybe_adjust_declarator_for_dguide): New, split
+	out from ...
+	(cp_parser_init_declarator): ... here.
+	(cp_parser_member_declaration): Use it.
+
+2021-08-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89062
+	* parser.c (cp_parser_parameter_declaration_list): Don't call
+	grokdeclarator if cp_parser_error_occurred.
+	(cp_parser_parameter_declaration): Simulate an error if we see
+	the beginning of a CTAD form, i.e. if we see an opening brace
+	after the decl-specifier-seq and the type is a CTAD placeholder.
+
 2021-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_member_declaration): Move odsd declaration

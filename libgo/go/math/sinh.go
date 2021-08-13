@@ -23,6 +23,13 @@ package math
 //	Sinh(±Inf) = ±Inf
 //	Sinh(NaN) = NaN
 func Sinh(x float64) float64 {
+	if haveArchSinh {
+		return archSinh(x)
+	}
+	return sinh(x)
+}
+
+func sinh(x float64) float64 {
 	// The coefficients are #2029 from Hart & Cheney. (20.36D)
 	const (
 		P0 = -0.6307673640497716991184787251e+6
@@ -68,6 +75,13 @@ func Sinh(x float64) float64 {
 //	Cosh(±Inf) = +Inf
 //	Cosh(NaN) = NaN
 func Cosh(x float64) float64 {
+	if haveArchCosh {
+		return archCosh(x)
+	}
+	return cosh(x)
+}
+
+func cosh(x float64) float64 {
 	x = Abs(x)
 	if x > 21 {
 		return Exp(x) * 0.5

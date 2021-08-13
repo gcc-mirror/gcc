@@ -3271,12 +3271,12 @@ finish_translation_unit (void)
   /* Do file scope __FUNCTION__ et al.  */
   finish_fname_decls ();
 
-  if (scope_chain->omp_declare_target_attribute)
+  if (vec_safe_length (scope_chain->omp_declare_target_attribute))
     {
       if (!errorcount)
 	error ("%<#pragma omp declare target%> without corresponding "
 	       "%<#pragma omp end declare target%>");
-      scope_chain->omp_declare_target_attribute = 0;
+      vec_safe_truncate (scope_chain->omp_declare_target_attribute, 0);
     }
 }
 
@@ -8201,6 +8201,29 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		    }
 		}
 	      OMP_CLAUSE_HINT_EXPR (c) = t;
+	    }
+	  break;
+
+	case OMP_CLAUSE_FILTER:
+	  t = OMP_CLAUSE_FILTER_EXPR (c);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<filter%> expression must be integral");
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		{
+		  t = maybe_constant_value (t);
+		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		}
+	      OMP_CLAUSE_FILTER_EXPR (c) = t;
 	    }
 	  break;
 

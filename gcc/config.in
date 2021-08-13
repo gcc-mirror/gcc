@@ -1695,6 +1695,12 @@
 #endif
 
 
+/* Define if the PE linker supports --disable-dynamicbase option. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_PE_DISABLE_DYNAMICBASE
+#endif
+
+
 /* Define if your linker supports PIE option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_PIE

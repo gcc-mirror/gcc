@@ -8460,6 +8460,7 @@ expand_omp_synch (struct omp_region *region)
   si = gsi_last_nondebug_bb (entry_bb);
   gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_SINGLE
 	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_MASTER
+	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_MASKED
 	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_TASKGROUP
 	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_ORDERED
 	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_CRITICAL
@@ -9947,6 +9948,7 @@ expand_omp (struct omp_region *region)
 	  }
 	  /* FALLTHRU */
 	case GIMPLE_OMP_MASTER:
+	case GIMPLE_OMP_MASKED:
 	case GIMPLE_OMP_TASKGROUP:
 	case GIMPLE_OMP_CRITICAL:
 	case GIMPLE_OMP_TEAMS:
@@ -10266,6 +10268,7 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TEAMS:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_SECTION:

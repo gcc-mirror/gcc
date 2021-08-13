@@ -11,13 +11,12 @@ package math
 //	Exp(NaN) = NaN
 // Very large values overflow to 0 or +Inf.
 // Very small values underflow to 1.
-
-//extern exp
-func libc_exp(float64) float64
-
 func Exp(x float64) float64 {
 	return libc_exp(x)
 }
+
+//extern exp
+func libc_exp(float64) float64
 
 // The original C code, the long comment, and the constants
 // below are from FreeBSD's /usr/src/lib/msun/src/e_exp.c
@@ -139,6 +138,9 @@ func exp(x float64) float64 {
 //
 // Special cases are the same as Exp.
 func Exp2(x float64) float64 {
+	if haveArchExp2 {
+		return archExp2(x)
+	}
 	return exp2(x)
 }
 

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build linux && (arm64 || riscv64 || arm64be || nios2 || riscv)
 // +build linux
-// +build arm64 arm64be nios2 riscv riscv64
+// +build arm64 riscv64 arm64be nios2 riscv
 
 package unix
 

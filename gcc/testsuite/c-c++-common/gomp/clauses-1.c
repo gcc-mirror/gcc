@@ -273,10 +273,20 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) reduction(+:r) \
     num_threads (nth) proc_bind(spread) copyin(t) allocate (f)
     ;
+  #pragma omp parallel masked \
+    private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) reduction(+:r) \
+    num_threads (nth) proc_bind(spread) copyin(t) allocate (f) filter (d)
+    ;
   #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
   #pragma omp master taskloop \
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable priority (pp) \
     reduction(default, +:r) in_reduction(+:r2) allocate (f)
+  for (int i = 0; i < 64; i++)
+    ll++;
+  #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
+  #pragma omp masked taskloop \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable priority (pp) \
+    reduction(default, +:r) in_reduction(+:r2) allocate (f) filter (d)
   for (int i = 0; i < 64; i++)
     ll++;
   #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
@@ -286,15 +296,33 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     order(concurrent) allocate (f)
   for (int i = 0; i < 64; i++)
     ll++;
+  #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
+  #pragma omp masked taskloop simd \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp) \
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2) nontemporal(ntm) \
+    order(concurrent) allocate (f) filter (d)
+  for (int i = 0; i < 64; i++)
+    ll++;
   #pragma omp parallel master taskloop \
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable priority (pp) \
     reduction(default, +:r) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) allocate (f)
+  for (int i = 0; i < 64; i++)
+    ll++;
+  #pragma omp parallel masked taskloop \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable priority (pp) \
+    reduction(default, +:r) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) allocate (f) filter (d)
   for (int i = 0; i < 64; i++)
     ll++;
   #pragma omp parallel master taskloop simd \
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp) \
     safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) \
     order(concurrent) allocate (f)
+  for (int i = 0; i < 64; i++)
+    ll++;
+  #pragma omp parallel masked taskloop simd \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp) \
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) \
+    order(concurrent) allocate (f) filter (d)
   for (int i = 0; i < 64; i++)
     ll++;
   #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
@@ -304,10 +332,23 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (int i = 0; i < 64; i++)
     ll++;
   #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
+  #pragma omp mastked taskloop \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp) \
+    reduction(default, +:r) in_reduction(+:r2) filter (d)
+  for (int i = 0; i < 64; i++)
+    ll++;
+  #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
   #pragma omp master taskloop simd \
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp) \
     safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2) nontemporal(ntm) \
     order(concurrent) allocate (f)
+  for (int i = 0; i < 64; i++)
+    ll++;
+  #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
+  #pragma omp masked taskloop simd \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp) \
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2) nontemporal(ntm) \
+    order(concurrent) allocate (f) filter (d)
   for (int i = 0; i < 64; i++)
     ll++;
   #pragma omp parallel master taskloop \
@@ -315,10 +356,21 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     reduction(default, +:r) num_threads (nth) proc_bind(spread) copyin(t) allocate (f)
   for (int i = 0; i < 64; i++)
     ll++;
+  #pragma omp parallel masked taskloop \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp) \
+    reduction(default, +:r) num_threads (nth) proc_bind(spread) copyin(t) allocate (f) filter (d)
+  for (int i = 0; i < 64; i++)
+    ll++;
   #pragma omp parallel master taskloop simd \
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp) \
     safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) num_threads (nth) proc_bind(spread) copyin(t) \
     order(concurrent) allocate (f)
+  for (int i = 0; i < 64; i++)
+    ll++;
+  #pragma omp parallel masked taskloop simd \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp) \
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) num_threads (nth) proc_bind(spread) copyin(t) \
+    order(concurrent) allocate (f) filter (d)
   for (int i = 0; i < 64; i++)
     ll++;
   #pragma omp loop bind(thread) order(concurrent) \

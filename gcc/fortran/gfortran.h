@@ -1362,6 +1362,7 @@ enum gfc_omp_default_sharing
 enum gfc_omp_proc_bind_kind
 {
   OMP_PROC_BIND_UNKNOWN,
+  OMP_PROC_BIND_PRIMARY,
   OMP_PROC_BIND_MASTER,
   OMP_PROC_BIND_SPREAD,
   OMP_PROC_BIND_CLOSE

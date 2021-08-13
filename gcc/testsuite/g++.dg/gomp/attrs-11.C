@@ -11,7 +11,7 @@ foo ()
   [[omp::directive (parallel)]] __extension__ asm ("");		// { dg-error "expected" }
   __extension__ [[omp::directive (parallel)]] asm ("");		// { dg-error "expected" }
   [[omp::directive (parallel)]] namespace M = ::N;		// { dg-error "expected" }
-  [[omp::directive (parallel)]] using namespace N;		// { dg-bogus "expected" "" { xfail *-*-* } }
+  [[omp::directive (parallel)]] using namespace N;		// { dg-error "not allowed to be specified in this context" }
   [[omp::directive (parallel)]] using O::T;			// { dg-error "expected" }
   [[omp::directive (parallel)]] __label__ foo;			// { dg-error "expected" }
   [[omp::directive (parallel)]] static_assert (true, "");	// { dg-error "expected" }
@@ -72,3 +72,15 @@ int f28 [[omp::directive (declare simd), omp::directive (foobar)]] (int);	// { d
 int f29 [[omp::directive (foobar), omp::directive (declare simd)]] (int);	// { dg-error "unknown OpenMP directive name" }
 int f30 [[omp::directive (threadprivate (t7)), omp::directive (declare simd)]] (int);	// { dg-error "OpenMP directive other than 'declare simd' or 'declare variant' appertains to a declaration" }
 int f31 [[omp::directive (declare simd), omp::directive (threadprivate (t8))]] (int);	// { dg-error "OpenMP directive other than 'declare simd' or 'declare variant' appertains to a declaration" }
+
+void
+baz ()
+{
+  #pragma omp parallel
+  [[omp::directive (declare simd)]] extern int f32 (int);	// { dg-error "mixing OpenMP directives with attribute and pragma syntax on the same statement" }
+  #pragma omp parallel
+  extern int f33 [[omp::directive (declare simd)]] (int);	// { dg-error "mixing OpenMP directives with attribute and pragma syntax on the same statement" }
+  [[omp::directive (parallel)]]
+  #pragma omp declare simd	// { dg-error "mixing OpenMP directives with attribute and pragma syntax on the same statement" }
+  extern int f34 (int);
+}

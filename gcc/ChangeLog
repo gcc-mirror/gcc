@@ -1,3 +1,268 @@
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (OMP_MASKED): New tree code.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_FILTER.
+	* tree.h (OMP_MASKED_BODY, OMP_MASKED_CLAUSES, OMP_MASKED_COMBINED,
+	OMP_CLAUSE_FILTER_EXPR): Define.
+	* tree.c (omp_clause_num_ops): Add OMP_CLAUSE_FILTER entry.
+	(omp_clause_code_name): Likewise.
+	(walk_tree_1): Handle OMP_CLAUSE_FILTER.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_FILTER.
+	(convert_nonlocal_reference_stmt, convert_local_reference_stmt,
+	convert_gimple_call): Handle GIMPLE_OMP_MASTER.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_FILTER.
+	(dump_generic_node): Handle OMP_MASTER.
+	* gimple.def (GIMPLE_OMP_MASKED): New gimple code.
+	* gimple.c (gimple_build_omp_masked): New function.
+	(gimple_copy): Handle GIMPLE_OMP_MASKED.
+	* gimple.h (gimple_build_omp_masked): Declare.
+	(gimple_has_substatements): Handle GIMPLE_OMP_MASKED.
+	(gimple_omp_masked_clauses, gimple_omp_masked_clauses_ptr,
+	gimple_omp_masked_set_clauses): New inline functions.
+	(CASE_GIMPLE_OMP): Add GIMPLE_OMP_MASKED.
+	* gimple-pretty-print.c (dump_gimple_omp_masked): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_MASKED.
+	* gimple-walk.c (walk_gimple_stmt): Likewise.
+	* gimple-low.c (lower_stmt): Likewise.
+	* gimplify.c (is_gimple_stmt): Handle OMP_MASTER.
+	(gimplify_scan_omp_clauses): Handle OMP_CLAUSE_FILTER.  For clauses
+	that take one expression rather than decl or constant, force
+	gimplification of that into a SSA_NAME or temporary unless min
+	invariant.
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_FILTER.
+	(gimplify_expr): Handle OMP_MASKED.
+	* tree-inline.c (remap_gimple_stmt): Handle GIMPLE_OMP_MASKED.
+	(estimate_num_insns): Likewise.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_FILTER.
+	(check_omp_nesting_restrictions): Handle GIMPLE_OMP_MASKED.  Adjust
+	diagnostics for existence of masked construct.
+	(scan_omp_1_stmt, lower_omp_master, lower_omp_1, diagnose_sb_1,
+	diagnose_sb_2): Handle GIMPLE_OMP_MASKED.
+	* omp-expand.c (expand_omp_synch, expand_omp, omp_make_gimple_edges):
+	Likewise.
+
+2021-08-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98309
+	* config/i386/i386.md (avx512f_scalef<mode>2): New insn pattern.
+	(ldexp<mode>3): Use avx512f_scalef<mode>2.
+	(UNSPEC_SCALEF): Move from ...
+	* config/i386/sse.md (UNSPEC_SCALEF): ... here.
+
+2021-08-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-split.c (consider_split): Fix condition testing void functions.
+
+2021-08-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/invoke.texi: Remove docs for threader-mode param.
+	* flag-types.h (enum threader_mode): Remove.
+	* params.opt: Remove threader-mode param.
+	* tree-ssa-threadbackward.c (class back_threader): Remove
+	path_is_unreachable_p.
+	Make find_paths private.
+	Add maybe_thread and thread_through_all_blocks.
+	Remove reference marker for m_registry.
+	Remove reference marker for m_profit.
+	(back_threader::back_threader): Adjust for registry and profit not
+	being references.
+	(dump_path): Move down.
+	(debug): Move down.
+	(class thread_jumps): Remove.
+	(class back_threader_registry): Remove m_all_paths.
+	Remove destructor.
+	(thread_jumps::thread_through_all_blocks): Move to back_threader
+	class.
+	(fsm_find_thread_path): Remove
+	(back_threader::maybe_thread): New.
+	(back_threader::thread_through_all_blocks): Move from
+	thread_jumps.
+	(back_threader_registry::back_threader_registry): Remove
+	m_all_paths.
+	(back_threader_registry::~back_threader_registry): Remove.
+	(thread_jumps::find_taken_edge): Remove.
+	(thread_jumps::check_subpath_and_update_thread_path): Remove.
+	(thread_jumps::maybe_register_path): Remove.
+	(thread_jumps::handle_phi): Remove.
+	(handle_assignment_p): Remove.
+	(thread_jumps::handle_assignment): Remove.
+	(thread_jumps::fsm_find_control_statement_thread_paths): Remove.
+	(thread_jumps::find_jump_threads_backwards): Remove.
+	(thread_jumps::find_jump_threads_backwards_with_ranger): Remove.
+	(try_thread_blocks): Rename find_jump_threads_backwards to
+	maybe_thread.
+	(pass_early_thread_jumps::execute): Same.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* tree-core.h (omp_clause_proc_bind_kind): Add
+	OMP_CLAUSE_PROC_BIND_PRIMARY.
+	* tree-pretty-print.c (dump_omp_clause): Add TODO comment to
+	change 'master' to 'primary' in proc_bind for OpenMP 5.1.
+
+2021-08-12  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* common/config/arc/arc-common.c (arc_option_init_struct): Remove
+	fno-common reference.
+	* config/arc/arc.c (arc_override_options): Remove overriding of
+	flag_no_common.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101860
+	* config/i386/i386-expand.c (ix86_expand_vec_one_operand_perm_avx512):
+	If d->testing_p, return true after performing checks instead of
+	actually expanding the insn.
+	(expand_vec_perm_broadcast_1): Handle V32HImode - assert
+	!TARGET_AVX512BW and return false.
+
+2021-08-12  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* configure.ac (PE linker --disable-dynamicbase support): New check.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* config/i386/mingw32.h (LINK_SPEC_DISABLE_DYNAMICBASE): New define.
+	(LINK_SPEC): Use it.
+	* config/i386/mingw-w64.h (LINK_SPEC_DISABLE_DYNAMICBASE): Likewise.
+	(LINK_SPEC): Likewise.
+
+2021-08-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101846
+	* config/i386/sse.md (*avx2_zero_extendv16qiv16hi2_2): New
+	post_reload define_insn_and_split.
+	(*avx512bw_zero_extendv32qiv32hi2_2): Ditto.
+	(*sse4_1_zero_extendv8qiv8hi2_4): Ditto.
+	(*avx512f_zero_extendv16hiv16si2_2): Ditto.
+	(*avx2_zero_extendv8hiv8si2_2): Ditto.
+	(*sse4_1_zero_extendv4hiv4si2_4): Ditto.
+	(*avx512f_zero_extendv8siv8di2_2): Ditto.
+	(*avx2_zero_extendv4siv4di2_2): Ditto.
+	(*sse4_1_zero_extendv2siv2di2_4): Ditto.
+	(VI248_256, VI248_512, VI148_512, VI148_256, VI148_128): New
+	mode iterator.
+
+2021-08-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add always, power5, and
+	power6 stanzas.
+
+2021-08-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add vsx stanza.
+
+2021-08-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Finish altivec stanza.
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Move
+	initialization of pcvoid_type_node here...
+	(altivec_init_builtins): ...from here.
+	* config/rs6000/rs6000.h (rs6000_builtin_type_index): Add
+	RS6000_BTI_const_ptr_void.
+	(pcvoid_type_node): New macro.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR target/101877
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Do not decompose
+	hard-register accesses.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (operands_scanner::get_expr_operands):
+	Do not look at COMPONENT_REF FIELD_DECLs TREE_THIS_VOLATILE
+	to determine has_volatile_ops.
+
+2021-08-11  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* cfgexpand.c (expand_used_vars): Reuse attribs local variable.
+
+2021-08-11  Jan Hubicka  <hubicka@ucw.cz>
+	    Alexandre Oliva  <oliva@adacore.com>
+
+	* ipa-modref.c (modref_lattice::dump): Fix escape_point's min_flags
+	dumping.
+	(modref_lattice::merge_deref): Fix handling of indirect scape points.
+	(update_escape_summary_1): Likewise.
+	(update_escape_summary): Likewise.
+	(ipa_merge_modref_summary_after_inlining): Likewise.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101858
+	* fold-const.c (fold_binary_loc): Guard simplification
+	of  X < (cast) (1 << Y) to integer types.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101861
+	* tree-vect-stmts.c (vectorizable_load): Fix error in
+	previous change with regard to gather vectorization.
+
+2021-08-11  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h (vdup_n_s8): Replace call to builtin
+	with constructor.
+	(vdup_n_s16): Likewise.
+	(vdup_n_s32): Likewise.
+	(vdup_n_s64): Likewise.
+	(vdup_n_u8): Likewise.
+	(vdup_n_u16): Likewise.
+	(vdup_n_u32): Likewise.
+	(vdup_n_u64): Likewise.
+	(vdup_n_p8): Likewise.
+	(vdup_n_p16): Likewise.
+	(vdup_n_p64): Likewise.
+	(vdup_n_f16): Likewise.
+	(vdup_n_f32): Likewise.
+	(vdupq_n_s8): Likewise.
+	(vdupq_n_s16): Likewise.
+	(vdupq_n_s32): Likewise.
+	(vdupq_n_s64): Likewise.
+	(vdupq_n_u8): Likewise.
+	(vdupq_n_u16): Likewise.
+	(vdupq_n_u32): Likewise.
+	(vdupq_n_u64): Likewise.
+	(vdupq_n_p8): Likewise.
+	(vdupq_n_p16): Likewise.
+	(vdupq_n_p64): Likewise.
+	(vdupq_n_f16): Likewise.
+	(vdupq_n_f32): Likewise.
+	(vmov_n_s8): Replace call to builtin with call to corresponding
+	vdup_n intrinsic.
+	(vmov_n_s16): Likewise.
+	(vmov_n_s32): Likewise.
+	(vmov_n_s64): Likewise.
+	(vmov_n_u8): Likewise.
+	(vmov_n_u16): Likewise.
+	(vmov_n_u32): Likewise.
+	(vmov_n_u64): Likewise.
+	(vmov_n_p8): Likewise.
+	(vmov_n_p16): Likewise.
+	(vmov_n_f16): Likewise.
+	(vmov_n_f32): Likewise.
+	(vmovq_n_s8): Likewise.
+	(vmovq_n_s16): Likewise.
+	(vmovq_n_s32): Likewise.
+	(vmovq_n_s64): Likewise.
+	(vmovq_n_u8): Likewise.
+	(vmovq_n_u16): Likewise.
+	(vmovq_n_u32): Likewise.
+	(vmovq_n_u64): Likewise.
+	(vmovq_n_p8): Likewise.
+	(vmovq_n_p16): Likewise.
+	(vmovq_n_f16): Likewise.
+	(vmovq_n_f32): Likewise.
+	* config/arm/arm_neon_builtins.def: Remove entries for vdup_n.
+
+2021-08-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98309
+	* config/i386/i386.md (ldexp<mode>3): Extend to vscalefs[sd]
+	when TARGET_AVX512F and TARGET_SSE_MATH.
+
 2021-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/80355

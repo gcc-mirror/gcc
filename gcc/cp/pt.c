@@ -17394,6 +17394,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_PRIORITY:
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_HINT:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE_NUM_GANGS:
 	case OMP_CLAUSE_NUM_WORKERS:
 	case OMP_CLAUSE_VECTOR_LENGTH:
@@ -18786,6 +18787,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_SECTIONS:
+    case OMP_MASKED:
       omp_parallel_combined_clauses = NULL;
       /* FALLTHRU */
     case OMP_SINGLE:
@@ -20530,7 +20532,13 @@ tsubst_copy_and_build (tree t,
 	if (member == error_mark_node)
 	  RETURN (error_mark_node);
 
-	if (TREE_CODE (member) == FIELD_DECL)
+	if (object_type && TYPE_PTRMEMFUNC_P (object_type)
+	    && TREE_CODE (member) == FIELD_DECL)
+	  {
+	    r = build_ptrmemfunc_access_expr (object, DECL_NAME (member));
+	    RETURN (r);
+	  }
+	else if (TREE_CODE (member) == FIELD_DECL)
 	  {
 	    r = finish_non_static_data_member (member, object, NULL_TREE);
 	    if (TREE_CODE (r) == COMPONENT_REF)

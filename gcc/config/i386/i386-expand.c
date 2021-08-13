@@ -18116,6 +18116,9 @@ ix86_expand_vec_one_operand_perm_avx512 (struct expand_vec_perm_d *d)
       return false;
     }
 
+  if (d->testing_p)
+    return true;
+
   target = d->target;
   op0 = d->op0;
   for (int i = 0; i < d->nelt; ++i)
@@ -20479,6 +20482,10 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       /* For AVX2 broadcasts of the first element vpbroadcast* or
 	 vpermq should be used by expand_vec_perm_1.  */
       gcc_assert (!TARGET_AVX2 || d->perm[0]);
+      return false;
+
+    case E_V32HImode:
+      gcc_assert (!TARGET_AVX512BW);
       return false;
 
     default:

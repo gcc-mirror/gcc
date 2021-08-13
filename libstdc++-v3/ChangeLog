@@ -1,3 +1,49 @@
+2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101870
+	* include/c_global/cmath (hypot): Use __promoted_t.
+	(lerp): Add new overload accepting any arithmetic types.
+	* include/ext/type_traits.h (__promoted_t): New alias template.
+	* testsuite/26_numerics/lerp.cc: Moved to...
+	* testsuite/26_numerics/lerp/1.cc: ...here.
+	* testsuite/26_numerics/lerp/constexpr.cc: New test.
+	* testsuite/26_numerics/lerp/version.cc: New test.
+
+2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/lerp.cc: Add header name to #error.
+	* testsuite/26_numerics/midpoint/integral.cc: Likewise.
+	* testsuite/26_numerics/midpoint/version.cc: New test.
+
+2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/random (experimental::randint): Add
+	nodiscard attribute.
+
+2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale_init.cc: Require C++11.
+	* src/c++98/localename.cc: Likewise.
+	* src/c++98/misc-inst.cc: Require C++98.
+
+2021-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101866
+	* testsuite/experimental/random/randint.cc: Loop and retry if
+	reseed() produces the same sequence.
+
+2021-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__cpp_lib_is_pointer_interconvertible)
+	(is_pointer_interconvertible_base_of_v)
+	(is_pointer_interconvertible_base_of): Define for C++20.
+	* include/std/version (__cpp_lib_is_pointer_interconvertible):
+	Define.
+	* testsuite/23_containers/span/layout_compat.cc: Use correct
+	feature test macro for std::is_layout_compatible_v.
+	* testsuite/20_util/is_pointer_interconvertible/value.cc: New test.
+	* testsuite/20_util/is_pointer_interconvertible/version.cc: New test.
+
 2021-08-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.h (basic_regex::transform_primary): Use

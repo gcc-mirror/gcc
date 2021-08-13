@@ -30615,6 +30615,26 @@ $as_echo "#define HAVE_LD_BROKEN_PE_DWARF5 1" >>confdefs.h
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_broken_pe_dwarf5" >&5
 $as_echo "$gcc_cv_ld_broken_pe_dwarf5" >&6; }
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking PE linker --disable-dynamicbase support" >&5
+$as_echo_n "checking PE linker --disable-dynamicbase support... " >&6; }
+    gcc_cv_ld_disable_dynamicbase=no
+    if test $in_tree_ld = yes; then
+      if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 36 -o "$gcc_cv_gld_major_version" -gt 2; then \
+        gcc_cv_ld_disable_dynamicbase=yes
+      fi
+    else
+      if $gcc_cv_ld --help 2>&1 | grep -q 'disable\-]dynamicbase' > /dev/null; then
+        gcc_cv_ld_disable_dynamicbase=yes
+      fi
+    fi
+    if test x"$gcc_cv_ld_disable_dynamicbase" = xyes; then
+
+$as_echo "#define HAVE_LD_PE_DISABLE_DYNAMICBASE 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_disable_dynamicbase" >&5
+$as_echo "$gcc_cv_ld_disable_dynamicbase" >&6; }
     ;;
 esac
 

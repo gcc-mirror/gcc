@@ -3022,8 +3022,14 @@ c_expr_sizeof_type (location_t loc, struct c_type_name *t)
   c_last_sizeof_loc = loc;
   ret.original_code = SIZEOF_EXPR;
   ret.original_type = NULL;
+  if (type == error_mark_node)
+    {
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+    }
+  else
   if ((type_expr || TREE_CODE (ret.value) == INTEGER_CST)
-      && c_vla_type_p (type))
+      && C_TYPE_VARIABLE_SIZE (type))
     {
       /* If the type is a [*] array, it is a VLA but is represented as
 	 having a size of zero.  In such a case we must ensure that
@@ -15152,6 +15158,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_HINT:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_NUM_GANGS:

@@ -3116,7 +3116,8 @@ cpp_get_token_with_location (cpp_reader *pfile, location_t *loc)
 
 /* Returns true if we're expanding an object-like macro that was
    defined in a system header.  Just checks the macro at the top of
-   the stack.  Used for diagnostic suppression.  */
+   the stack.  Used for diagnostic suppression.
+   Also return true for builtin macros.  */
 int
 cpp_sys_macro_p (cpp_reader *pfile)
 {
@@ -3127,7 +3128,11 @@ cpp_sys_macro_p (cpp_reader *pfile)
   else
     node = pfile->context->c.macro;
 
-  return node && node->value.macro && node->value.macro->syshdr;
+  if (!node)
+    return false;
+  if (cpp_builtin_macro_p (node))
+    return true;
+  return node->value.macro && node->value.macro->syshdr;
 }
 
 /* Read each token in, until end of the current file.  Directives are

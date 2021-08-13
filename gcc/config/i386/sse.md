@@ -92,7 +92,6 @@
   UNSPEC_RCP14
   UNSPEC_RSQRT14
   UNSPEC_FIXUPIMM
-  UNSPEC_SCALEF
   UNSPEC_VTERNLOG
   UNSPEC_GETEXP
   UNSPEC_GETMANT
@@ -681,7 +680,12 @@
 (define_mode_iterator VI124_128 [V16QI V8HI V4SI])
 (define_mode_iterator VI24_128 [V8HI V4SI])
 (define_mode_iterator VI248_128 [V8HI V4SI V2DI])
+(define_mode_iterator VI248_256 [V16HI V8SI V4DI])
+(define_mode_iterator VI248_512 [V32HI V16SI V8DI])
 (define_mode_iterator VI48_128 [V4SI V2DI])
+(define_mode_iterator VI148_512 [V64QI V16SI V8DI])
+(define_mode_iterator VI148_256 [V32QI V8SI V4DI])
+(define_mode_iterator VI148_128 [V16QI V4SI V2DI])
 
 ;; Various 256bit and 512 vector integer mode combinations
 (define_mode_iterator VI124_256 [V32QI V16HI V8SI])
@@ -18603,6 +18607,26 @@
   operands[1] = lowpart_subreg (V16QImode, operands[1], V32QImode);
 })
 
+(define_insn_and_split "*avx2_zero_extendv16qiv16hi2_2"
+  [(set (match_operand:V32QI 0 "register_operand" "=v")
+	(vec_select:V32QI
+	  (vec_concat:V64QI
+	    (subreg:V32QI
+	      (vec_concat:VI248_256
+		(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "vm")
+		(match_operand:<ssehalfvecmode> 2 "const0_operand" "C")) 0)
+	    (match_operand:V32QI 3 "const0_operand" "C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n")])))]
+  "TARGET_AVX2"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V16HI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V16HImode, operands[0], V32QImode);
+  operands[1] = lowpart_subreg (V16QImode, operands[1], <ssehalfvecmode>mode);
+})
+
 (define_expand "<insn>v16qiv16hi2"
   [(set (match_operand:V16HI 0 "register_operand")
 	(any_extend:V16HI
@@ -18635,6 +18659,26 @@
 {
   operands[0] = lowpart_subreg (V32HImode, operands[0], V64QImode);
   operands[1] = lowpart_subreg (V32QImode, operands[1], V64QImode);
+})
+
+(define_insn_and_split "*avx512bw_zero_extendv32qiv32hi2_2"
+  [(set (match_operand:V64QI 0 "register_operand" "=v")
+	(vec_select:V64QI
+	  (vec_concat:V128QI
+	    (subreg:V64QI
+	      (vec_concat:VI248_512
+		(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "vm")
+		(match_operand:<ssehalfvecmode> 2 "const0_operand" "C")) 0)
+	    (match_operand:V64QI 3 "const0_operand" "C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n")])))]
+  "TARGET_AVX512BW"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V32HI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V32HImode, operands[0], V64QImode);
+  operands[1] = lowpart_subreg (V32QImode, operands[1], <ssehalfvecmode>mode);
 })
 
 (define_expand "<insn>v32qiv32hi2"
@@ -18720,6 +18764,41 @@
       emit_insn (gen_rtx_SET (operands[0], operands[1]));
       DONE;
     }
+}
+  [(set_attr "isa" "noavx,noavx,avx")])
+
+(define_insn_and_split "*sse4_1_zero_extendv8qiv8hi2_4"
+  [(set (match_operand:V16QI 0 "register_operand" "=Yr,*x,Yw")
+	(vec_select:V16QI
+	  (vec_concat:V32QI
+	    (subreg:V16QI
+	      (vec_concat:VI248_128
+		(match_operand:<ssehalfvecmode> 1 "vector_operand" "YrBm,*xBm,Ywm")
+		(match_operand:<ssehalfvecmode> 2 "const0_operand" "C,C,C")) 0)
+	    (match_operand:V16QI 3 "const0_operand" "C,C,C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n,n,n")])))]
+  "TARGET_SSE4_1"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(zero_extend:V8HI
+	  (vec_select:V8QI
+	    (match_dup 1)
+	    (parallel [(const_int 0) (const_int 1)
+		       (const_int 2) (const_int 3)
+		       (const_int 4) (const_int 5)
+		       (const_int 6) (const_int 7)]))))]
+{
+  operands[0] = lowpart_subreg (V8HImode, operands[0], V16QImode);
+  if (MEM_P (operands[1]))
+    {
+      operands[1] = lowpart_subreg (V8QImode, operands[1], <ssehalfvecmode>mode);
+      operands[1] = gen_rtx_ZERO_EXTEND (V8HImode, operands[1]);
+      emit_insn (gen_rtx_SET (operands[0], operands[1]));
+      DONE;
+    }
+  operands[1] = lowpart_subreg (V16QImode, operands[1], <ssehalfvecmode>mode);
 }
   [(set_attr "isa" "noavx,noavx,avx")])
 
@@ -18913,6 +18992,26 @@
   operands[1] = lowpart_subreg (V16HImode, operands[1], V32HImode);
 })
 
+(define_insn_and_split "*avx512f_zero_extendv16hiv16si2_2"
+  [(set (match_operand:V32HI 0 "register_operand" "=v")
+	(vec_select:V32HI
+	  (vec_concat:V64HI
+	    (subreg:V32HI
+	      (vec_concat:VI148_512
+	        (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "vm")
+		(match_operand:<ssehalfvecmode> 2 "const0_operand" "C")) 0)
+	    (match_operand:V32HI 3 "const0_operand" "C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n")])))]
+  "TARGET_AVX512F"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V16SI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V16SImode, operands[0], V32HImode);
+  operands[1] = lowpart_subreg (V16HImode, operands[1], <ssehalfvecmode>mode);
+})
+
 (define_insn "avx2_<code>v8hiv8si2<mask_name>"
   [(set (match_operand:V8SI 0 "register_operand" "=v")
 	(any_extend:V8SI
@@ -18946,6 +19045,27 @@
   operands[0] = lowpart_subreg (V8SImode, operands[0], V16HImode);
   operands[1] = lowpart_subreg (V8HImode, operands[1], V16HImode);
 })
+
+(define_insn_and_split "*avx2_zero_extendv8hiv8si2_2"
+  [(set (match_operand:V16HI 0 "register_operand" "=v")
+	(vec_select:V16HI
+	  (vec_concat:V32HI
+	    (subreg:V16HI
+	      (vec_concat:VI148_256
+		(match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "vm")
+		(match_operand:<ssehalfvecmode> 2 "const0_operand" "C")) 0)
+	    (match_operand:V16HI 3 "const0_operand" "C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n")])))]
+  "TARGET_AVX2"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V8SI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V8SImode, operands[0], V16HImode);
+  operands[1] = lowpart_subreg (V8HImode, operands[1], <ssehalfvecmode>mode);
+})
+
 
 (define_insn "sse4_1_<code>v4hiv4si2<mask_name>"
   [(set (match_operand:V4SI 0 "register_operand" "=Yr,*x,v")
@@ -19033,6 +19153,39 @@
       emit_insn (gen_rtx_SET (operands[0], operands[1]));
       DONE;
     }
+}
+  [(set_attr "isa" "noavx,noavx,avx")])
+
+(define_insn_and_split "*sse4_1_zero_extendv4hiv4si2_4"
+  [(set (match_operand:V8HI 0 "register_operand" "=Yr,*x,v")
+	(vec_select:V8HI
+	  (vec_concat:V16HI
+	    (subreg:V8HI
+	      (vec_concat:VI148_128
+		(match_operand:<ssehalfvecmode> 1 "vector_operand" "YrBm,*xBm,vm")
+		(match_operand:<ssehalfvecmode> 2 "const0_operand" "C,C,C")) 0)
+	    (match_operand:V8HI 3 "const0_operand" "C,C,C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n,n,n")])))]
+  "TARGET_SSE4_1"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(zero_extend:V4SI
+	  (vec_select:V4HI
+	    (match_dup 1)
+	    (parallel [(const_int 0) (const_int 1)
+		       (const_int 2) (const_int 3)]))))]
+{
+  operands[0] = lowpart_subreg (V4SImode, operands[0], V8HImode);
+  if (MEM_P (operands[1]))
+    {
+      operands[1] = lowpart_subreg (V4HImode, operands[1], <ssehalfvecmode>mode);
+      operands[1] = gen_rtx_ZERO_EXTEND (V4SImode, operands[1]);
+      emit_insn (gen_rtx_SET (operands[0], operands[1]));
+      DONE;
+    }
+  operands[1] = lowpart_subreg (V8HImode, operands[1], <ssehalfvecmode>mode);
 }
   [(set_attr "isa" "noavx,noavx,avx")])
 
@@ -19346,6 +19499,24 @@
   operands[1] = lowpart_subreg (V8SImode, operands[1], V16SImode);
 })
 
+(define_insn_and_split "*avx512f_zero_extendv8siv8di2_2"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+	(vec_select:V16SI
+	  (vec_concat:V32SI
+	    (vec_concat:V16SI
+	      (match_operand:V8SI 1 "nonimmediate_operand" "vm")
+	      (match_operand:V8SI 2 "const0_operand" "C"))
+	    (match_operand:V16SI 3 "const0_operand" "C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n")])))]
+  "TARGET_AVX512F"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V8DI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V8DImode, operands[0], V16SImode);
+})
+
 (define_expand "<insn>v8siv8di2"
   [(set (match_operand:V8DI 0 "register_operand" "=v")
 	(any_extend:V8DI
@@ -19378,6 +19549,24 @@
 {
   operands[0] = lowpart_subreg (V4DImode, operands[0], V8SImode);
   operands[1] = lowpart_subreg (V4SImode, operands[1], V8SImode);
+})
+
+(define_insn_and_split "*avx2_zero_extendv4siv4di2_2"
+  [(set (match_operand:V8SI 0 "register_operand" "=v")
+	(vec_select:V8SI
+	  (vec_concat:V16SI
+	    (vec_concat:V8SI
+	      (match_operand:V4SI 1 "nonimmediate_operand" "vm")
+	      (match_operand:V4SI 2 "const0_operand" "C"))
+	    (match_operand:V8SI 3 "const0_operand" "C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n")])))]
+  "TARGET_AVX2"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:V4DI (match_dup 1)))]
+{
+  operands[0] = lowpart_subreg (V4DImode, operands[0], V8SImode);
 })
 
 (define_expand "<insn>v4siv4di2"
@@ -19453,6 +19642,35 @@
       emit_insn (gen_rtx_SET (operands[0], operands[1]));
       DONE;
     }
+}
+  [(set_attr "isa" "noavx,noavx,avx")])
+
+(define_insn_and_split "*sse4_1_zero_extendv2siv2di2_4"
+  [(set (match_operand:V4SI 0 "register_operand" "=Yr,*x,v")
+	(vec_select:V4SI
+	  (vec_concat:V8SI
+	    (vec_concat:V4SI
+	      (match_operand:V2SI 1 "vector_operand" "YrBm, *xBm, vm")
+	      (match_operand:V2SI 2 "const0_operand" "C,C,C"))
+	    (match_operand:V4SI 3 "const0_operand" "C,C,C"))
+	  (match_parallel 4 "pmovzx_parallel"
+	    [(match_operand 5 "const_int_operand" "n,n,n")])))]
+  "TARGET_SSE4_1"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(zero_extend:V2DI
+	  (vec_select:V2SI (match_dup 1)
+			   (parallel [(const_int 0) (const_int 1)]))))]
+{
+  operands[0] = lowpart_subreg (V2DImode, operands[0], V4SImode);
+  if (MEM_P (operands[1]))
+    {
+      operands[1] = gen_rtx_ZERO_EXTEND (V2DImode, operands[1]);
+      emit_insn (gen_rtx_SET (operands[0], operands[1]));
+      DONE;
+    }
+  operands[1] = lowpart_subreg (V4SImode, operands[1], V2SImode);
 }
   [(set_attr "isa" "noavx,noavx,avx")])
 
