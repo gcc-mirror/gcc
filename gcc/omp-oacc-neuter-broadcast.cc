@@ -538,7 +538,7 @@ typedef hash_map<tree, tree> field_map_t;
    to propagate, to the field in the record type that should be used for
    transmission and reception.  */
 
-typedef hash_map<tree, field_map_t *> record_field_map_t;
+typedef hash_map<tree, field_map_t> record_field_map_t;
 
 static void
 install_var_field (tree var, tree record_type, field_map_t *fields)
@@ -1168,8 +1168,7 @@ worker_single_copy (basic_block from, basic_block to,
 	gcc_assert (TREE_CODE (var) == VAR_DECL);
 
       /* If we had no record type, we will have no fields map.  */
-      field_map_t **fields_p = record_field_map->get (record_type);
-      field_map_t *fields = fields_p ? *fields_p : NULL;
+      field_map_t *fields = record_field_map->get (record_type);
 
       if (worker_partitioned_uses->contains (var)
 	  && fields
@@ -1684,10 +1683,9 @@ oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
 
 	  field_vec.qsort (sort_by_size_then_ssa_version_or_uid);
 
-	  field_map_t *fields = new field_map_t;
-
 	  bool existed;
-	  existed = record_field_map.put (record_type, fields);
+	  field_map_t *fields
+	    = &record_field_map.get_or_insert (record_type, &existed);
 	  gcc_checking_assert (!existed);
 
 	  /* Insert var fields in reverse order, so the last inserted element
@@ -1818,8 +1816,6 @@ oacc_do_neutering (unsigned HOST_WIDE_INT bounds_lo,
 			&partitioned_var_uses, &record_field_map,
 			&blk_offset_map, writes_gang_private);
 
-  for (auto it : record_field_map)
-    delete it.second;
   record_field_map.empty ();
 
   /* These are supposed to have been 'delete'd by 'neuter_worker_single'.  */
