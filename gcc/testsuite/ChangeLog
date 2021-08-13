@@ -1,3 +1,122 @@
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-1.c (bar): Add tests for combined masked
+	constructs with clauses.
+	* c-c++-common/gomp/clauses-5.c (foo): Add testcase for filter clause.
+	* c-c++-common/gomp/clause-dups-1.c (f1): Likewise.
+	* c-c++-common/gomp/masked-1.c: New test.
+	* c-c++-common/gomp/masked-2.c: New test.
+	* c-c++-common/gomp/masked-combined-1.c: New test.
+	* c-c++-common/gomp/masked-combined-2.c: New test.
+	* c-c++-common/goacc/uninit-if-clause.c: Remove xfails.
+	* g++.dg/gomp/block-11.C: New test.
+	* g++.dg/gomp/tpl-masked-1.C: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add tests for masked construct and
+	combined masked constructs with clauses in attribute syntax.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* gcc.dg/gomp/nesting-1.c (f1, f2): Add tests for masked construct
+	nesting.
+	* gfortran.dg/goacc/host_data-tree.f95: Allow also SSA_NAMEs in if
+	clause.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101638
+	* gcc.dg/cpp/pr101638.c: New test.
+
+2021-08-12  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-char.c: Fix
+	typo in regular expression.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-double.c:
+	Likewise.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-float.c:
+	Likewise.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-int.c:
+	Likewise.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-longlong.c:
+	Likewise.
+	* gcc.target/powerpc/fold-vec-load-builtin_vec_xl-short.c:
+	Likewise.
+
+2021-08-12  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/101219
+	* g++.dg/warn/pr101219.C: New test.
+
+2021-08-12  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/101838
+	* gcc.dg/vla-stexp-2.c: New test.
+
+2021-08-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Remove call into the legacy
+	code and adjust for ranger threader.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/pr61486-2.c: Duplicate one proc_bind(master)
+	testcase and test proc_bind(primary) instead.
+	* gfortran.dg/gomp/affinity-1.f90: Likewise.
+
+2021-08-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/PR82376.f90: Robustify match.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101860
+	* gcc.target/i386/avx512f-pr101860.c: New test.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-12.C: New test.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-11.C: Add new tests.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99429
+	PR c++/94162
+	* g++.dg/cpp2a/spaceship-synth11.C: New test.
+	* g++.dg/cpp2a/spaceship-synth-neg6.C: New test.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/attrs-11.C: Adjust expected diagnostics.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/lookup/strong-using.C: Add test using [[gnu::strong]]
+	as well.
+	* g++.dg/lookup/strong-using2.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-58.C: Move alignas(int) before
+	using namespace.
+	* g++.dg/cpp0x/gen-attrs-59.C: Move alignas(X) before
+	using namespace, add tests for alignas before semicolon.
+	* g++.dg/cpp0x/gen-attrs-76.C: Remove xfails.  Add test for
+	C++11 attributes on using directive before semicolon.
+
+2021-08-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101846
+	* gcc.target/i386/pr101846-1.c: New test.
+
+2021-08-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101663
+	* g++.dg/cpp2a/construct_at.h: New convenience header file that
+	defines minimal implementations of std::construct_at/destroy_at,
+	split out from ...
+	* g++.dg/cpp2a/constexpr-new5.C: ... here.
+	* g++.dg/cpp2a/constexpr-new6.C: Use the header.
+	* g++.dg/cpp2a/constexpr-new14.C: Likewise.
+	* g++.dg/cpp2a/constexpr-new20.C: New test.
+
 2021-08-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101725

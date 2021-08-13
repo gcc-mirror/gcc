@@ -1,3 +1,31 @@
+2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101870
+	* include/c_global/cmath (hypot): Use __promoted_t.
+	(lerp): Add new overload accepting any arithmetic types.
+	* include/ext/type_traits.h (__promoted_t): New alias template.
+	* testsuite/26_numerics/lerp.cc: Moved to...
+	* testsuite/26_numerics/lerp/1.cc: ...here.
+	* testsuite/26_numerics/lerp/constexpr.cc: New test.
+	* testsuite/26_numerics/lerp/version.cc: New test.
+
+2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/lerp.cc: Add header name to #error.
+	* testsuite/26_numerics/midpoint/integral.cc: Likewise.
+	* testsuite/26_numerics/midpoint/version.cc: New test.
+
+2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/random (experimental::randint): Add
+	nodiscard attribute.
+
+2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale_init.cc: Require C++11.
+	* src/c++98/localename.cc: Likewise.
+	* src/c++98/misc-inst.cc: Require C++98.
+
 2021-08-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101866
