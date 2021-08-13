@@ -174,7 +174,7 @@ bool onCurrentStack(uintptr p)
 	nextsp2 = secondary_stack_pointer();
 	if (nextsp2 != nil) {
 		initialsp2 = (byte*)(void*)(gp->gcinitialsp2);
-		if (uintptr(initialsp2) < uintptr(nextsp2)) {
+		if ((uintptr)(initialsp2) < (uintptr)(nextsp2)) {
 			temp = initialsp2;
 			initialsp2 = nextsp2;
 			nextsp2 = temp;
