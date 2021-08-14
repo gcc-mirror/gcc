@@ -744,6 +744,10 @@ func TestTimePprof(t *testing.T) {
 
 // Test that runtime.abort does so.
 func TestAbort(t *testing.T) {
+	if runtime.Compiler == "gccgo" && runtime.GOOS == "solaris" {
+		t.Skip("not supported by gofrontend on Solaris")
+	}
+
 	// Pass GOTRACEBACK to ensure we get runtime frames.
 	output := runTestProg(t, "testprog", "Abort", "GOTRACEBACK=system")
 	if want := "runtime.abort"; !strings.Contains(output, want) {
@@ -805,6 +809,10 @@ func TestRuntimePanic(t *testing.T) {
 
 // Test that g0 stack overflows are handled gracefully.
 func TestG0StackOverflow(t *testing.T) {
+	if runtime.Compiler == "gccgo" {
+		t.Skip("g0 stack overflow not supported by gofrontend")
+	}
+
 	testenv.MustHaveExec(t)
 
 	switch runtime.GOOS {

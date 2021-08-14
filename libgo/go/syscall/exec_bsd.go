@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build dragonfly || freebsd || hurd || netbsd || (openbsd && mips64)
-// +build dragonfly freebsd hurd netbsd openbsd,mips64
+//go:build aix || darwin || dragonfly || freebsd || hurd || netbsd || openbsd || solaris
+// +build aix darwin dragonfly freebsd hurd netbsd openbsd solaris
 
 package syscall
 
