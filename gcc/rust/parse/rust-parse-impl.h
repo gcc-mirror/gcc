@@ -12547,6 +12547,8 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
       case MINUS: { // unary minus
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
+	if (!restrictions.can_be_struct_expr)
+	  entered_from_unary.can_be_struct_expr = false;
 	std::unique_ptr<AST::Expr> expr
 	  = parse_expr (LBP_UNARY_MINUS, {}, entered_from_unary);
 
@@ -12571,6 +12573,8 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
       case EXCLAM: { // logical or bitwise not
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
+	if (!restrictions.can_be_struct_expr)
+	  entered_from_unary.can_be_struct_expr = false;
 	std::unique_ptr<AST::Expr> expr
 	  = parse_expr (LBP_UNARY_EXCLAM, {}, entered_from_unary);
 
