@@ -1,3 +1,22 @@
+2021-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101734
+	* gcc.dg/uninit-42.c: New test.
+
+2021-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101261
+	* gcc.target/i386/pr101261.c: New test.
+
+2021-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-6.c: Update.
+
+2021-08-13  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/arm/simd/pr98435.c: Add dg-require-effective-target
+	arm_softfp_ok.
+
 2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/clauses-1.c (bar): Add tests for combined masked
