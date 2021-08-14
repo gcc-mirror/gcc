@@ -1,3 +1,8 @@
+2021-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100788
+	* gcc.dg/pr100788.c: New test.
+
 2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
