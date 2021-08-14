@@ -338,6 +338,8 @@ public:
 
   void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::ProjectionType &) override { gcc_unreachable (); }
+
   void visit (TyTy::ParamType &param) override
   {
     param.resolve ()->accept_vis (*this);

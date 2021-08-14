@@ -54,6 +54,7 @@ enum TypeKind
   ISIZE,
   NEVER,
   PLACEHOLDER,
+  PROJECTION,
   // there are more to add...
   ERROR
 };
@@ -121,6 +122,9 @@ public:
 
       case TypeKind::PLACEHOLDER:
 	return "Placeholder";
+
+      case TypeKind::PROJECTION:
+	return "Projection";
 
       case TypeKind::ERROR:
 	return "ERROR";
@@ -1703,6 +1707,44 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool is_unit () const override { return true; }
+};
+
+class ProjectionType : public BaseType
+{
+public:
+  ProjectionType (HirId ref, TyVar base, Resolver::TraitReference *trait,
+		  DefId item, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::PROJECTION, refs), base (base),
+      trait (trait), item (item)
+  {}
+
+  ProjectionType (HirId ref, HirId ty_ref, TyVar base,
+		  Resolver::TraitReference *trait, DefId item,
+		  std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::PROJECTION, refs), base (base),
+      trait (trait), item (item)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  BaseType *unify (BaseType *other) override;
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
+  BaseType *cast (BaseType *other) override;
+
+  BaseType *clone () const final override;
+
+  std::string get_name () const override final { return as_string (); }
+
+  bool is_unit () const override { return false; }
+
+private:
+  TyVar base;
+  Resolver::TraitReference *trait;
+  DefId item;
 };
 
 } // namespace TyTy

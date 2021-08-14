@@ -337,6 +337,22 @@ public:
       }
   }
 
+  virtual void visit (const ProjectionType &type) override
+  {
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
+  }
+
   virtual void visit (const PlaceholderType &type) override
   {
     // it is ok for types to can eq to a placeholder

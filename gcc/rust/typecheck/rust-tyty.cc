@@ -2015,6 +2015,8 @@ NeverType::clone () const
   return new NeverType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
+// placeholder type
+
 void
 PlaceholderType::accept_vis (TyVisitor &vis)
 {
@@ -2065,6 +2067,61 @@ BaseType *
 PlaceholderType::clone () const
 {
   return new PlaceholderType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
+// Projection type
+
+void
+ProjectionType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ProjectionType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
+std::string
+ProjectionType::as_string () const
+{
+  return "<Projection>";
+}
+
+BaseType *
+ProjectionType::unify (BaseType *other)
+{
+  gcc_unreachable ();
+  return nullptr;
+}
+
+BaseType *
+ProjectionType::coerce (BaseType *other)
+{
+  gcc_unreachable ();
+  return nullptr;
+}
+
+BaseType *
+ProjectionType::cast (BaseType *other)
+{
+  gcc_unreachable ();
+  return nullptr;
+}
+
+bool
+ProjectionType::can_eq (const BaseType *other, bool emit_errors) const
+{
+  gcc_unreachable ();
+  return false;
+}
+
+BaseType *
+ProjectionType::clone () const
+{
+  return new ProjectionType (get_ref (), get_ty_ref (), base, trait, item,
+			     get_combined_refs ());
 }
 
 // rust-tyty-call.h
