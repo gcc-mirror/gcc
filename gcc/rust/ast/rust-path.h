@@ -771,11 +771,9 @@ struct QualifiedPathType
 {
 private:
   std::unique_ptr<Type> type_to_invoke_on;
-
-  // bool has_as_clause;
   TypePath trait_path;
-
   Location locus;
+  NodeId node_id;
 
 public:
   // Constructor
@@ -783,13 +781,15 @@ public:
 		     Location locus = Location (),
 		     TypePath trait_path = TypePath::create_error ())
     : type_to_invoke_on (std::move (invoke_on_type)),
-      trait_path (std::move (trait_path)), locus (locus)
+      trait_path (std::move (trait_path)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor uses custom deep copy for Type to preserve polymorphism
   QualifiedPathType (QualifiedPathType const &other)
     : trait_path (other.trait_path), locus (other.locus)
   {
+    node_id = other.node_id;
     // guard to prevent null dereference
     if (other.type_to_invoke_on != nullptr)
       type_to_invoke_on = other.type_to_invoke_on->clone_type ();
@@ -801,6 +801,7 @@ public:
   // overload assignment operator to use custom clone method
   QualifiedPathType &operator= (QualifiedPathType const &other)
   {
+    node_id = other.node_id;
     trait_path = other.trait_path;
     locus = other.locus;
 
@@ -846,6 +847,8 @@ public:
     rust_assert (has_as_clause ());
     return trait_path;
   }
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 /* AST node representing a qualified path-in-expression pattern (path that
@@ -855,6 +858,7 @@ class QualifiedPathInExpression : public PathPattern, public PathExpr
   std::vector<Attribute> outer_attrs;
   QualifiedPathType path_type;
   Location locus;
+  NodeId _node_id;
 
 public:
   std::string as_string () const override;
@@ -864,7 +868,8 @@ public:
 			     std::vector<Attribute> outer_attrs, Location locus)
     : PathPattern (std::move (path_segments)),
       outer_attrs (std::move (outer_attrs)),
-      path_type (std::move (qual_path_type)), locus (locus)
+      path_type (std::move (qual_path_type)), locus (locus),
+      _node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   /* TODO: maybe make a shortcut constructor that has QualifiedPathType elements
@@ -906,6 +911,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  NodeId get_node_id () const override { return _node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
