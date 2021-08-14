@@ -20474,7 +20474,6 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       emit_move_insn (d->target, gen_lowpart (d->vmode, dest));
       return true;
 
-    case E_V64QImode:
     case E_V32QImode:
     case E_V16HImode:
     case E_V8SImode:
@@ -20482,6 +20481,10 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
       /* For AVX2 broadcasts of the first element vpbroadcast* or
 	 vpermq should be used by expand_vec_perm_1.  */
       gcc_assert (!TARGET_AVX2 || d->perm[0]);
+      return false;
+
+    case E_V64QImode:
+      gcc_assert (!TARGET_AVX512BW || d->perm[0]);
       return false;
 
     case E_V32HImode:
