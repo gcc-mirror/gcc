@@ -391,8 +391,7 @@ package body Sem_Util is
            and then (Is_Static_Coextension (N)
                       or else Is_Dynamic_Coextension (N))
          then
-            return Make_Level_Literal
-                     (Scope_Depth (Standard_Standard));
+            return Make_Level_Literal (Scope_Depth (Standard_Standard));
          end if;
 
          --  Named access types have a designated level
@@ -416,9 +415,14 @@ package body Sem_Util is
                if Debug_Flag_Underscore_B then
                   return Make_Level_Literal (Typ_Access_Level (Etype (N)));
 
-               --  Otherwise the level is that of the subprogram
+               --  For function calls the level is that of the subprogram,
+               --  otherwise (for allocators etc.) we get the level of the
+               --  corresponding anonymous access type which is calculated
+               --  through the normal path of execution.
 
-               else
+               elsif Nkind (N) = N_Function_Call
+                 and then Nkind (Name (N)) /= N_Explicit_Dereference
+               then
                   return Make_Level_Literal
                            (Subprogram_Access_Level (Entity (Name (N))));
                end if;
@@ -29287,7 +29291,7 @@ package body Sem_Util is
                            (Designated_Type (Btyp), Allow_Alt_Model);
                end if;
 
-               --  When an anonymous access type's Assoc_Ent is specifiedi,
+               --  When an anonymous access type's Assoc_Ent is specified,
                --  calculate the result based on the general accessibility
                --  level routine.
 
