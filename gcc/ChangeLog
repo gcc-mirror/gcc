@@ -1,3 +1,9 @@
+2021-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100788
+	* coverage.c (coverage_begin_function): Update function
+	  beginning when #line macro is used.
+
 2021-07-31  Xi Ruoyao  <xry111@mengyan1223.wang>
 
 	Backported from master:
