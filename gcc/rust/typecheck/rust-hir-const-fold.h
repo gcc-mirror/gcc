@@ -315,6 +315,36 @@ public:
 	}
 	return;
 
+	case HIR::Literal::BOOL: {
+	  bool bval = literal_value->as_string ().compare ("true") == 0;
+	  folded = ctx->get_backend ()->boolean_constant_expression (bval);
+	}
+	return;
+
+	case HIR::Literal::FLOAT: {
+	  mpfr_t fval;
+	  if (mpfr_init_set_str (fval, literal_value->as_string ().c_str (), 10,
+				 MPFR_RNDN)
+	      != 0)
+	    {
+	      rust_fatal_error (expr.get_locus (),
+				"bad floating-point number in literal");
+	      return;
+	    }
+
+	  TyTy::BaseType *tyty = nullptr;
+	  if (!tyctx->lookup_type (expr.get_mappings ().get_hirid (), &tyty))
+	    {
+	      rust_fatal_error (expr.get_locus (),
+				"did not resolve type for this literal expr");
+	      return;
+	    }
+
+	  Btype *type = ConstFoldType::fold (tyty, ctx->get_backend ());
+	  folded = ctx->get_backend ()->float_constant_expression (type, fval);
+	}
+	return;
+
 	/* handle other literals */
 
       default:
