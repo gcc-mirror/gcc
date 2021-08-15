@@ -1841,6 +1841,11 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
 	const region *ref_reg = get_lvalue (pv, ctxt);
 	return get_store_value (ref_reg, ctxt);
       }
+    case OBJ_TYPE_REF:
+      {
+        tree expr = OBJ_TYPE_REF_EXPR (pv.m_tree);
+        return get_rvalue (expr, ctxt);
+      }
     }
 }
 
