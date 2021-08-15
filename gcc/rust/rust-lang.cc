@@ -224,20 +224,6 @@ grs_langhook_type_for_mode (machine_mode mode, int unsignedp)
   return NULL;
 }
 
-/* This appears to be used for creating different types for different bit sizes
- * (e.g. int and long). Also, the Go frontend calls this from type_for_mode to
- * determine the type from a specific bitsize for integer types.
- * FIXME: change this when working on AST-GENERIC conversion to allow the full
- * range of Rust type sizes. */
-static tree
-grs_langhook_type_for_size (unsigned int bits ATTRIBUTE_UNUSED,
-			    int unsignedp ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-  return NULL_TREE;
-  // nothing at the moment, but change later
-}
-
 // Record a builtin function. We just ignore builtin functions.
 static tree
 grs_langhook_builtin_function (tree decl ATTRIBUTE_UNUSED)
@@ -420,7 +406,6 @@ rust_localize_identifier (const char *ident)
 #undef LANG_HOOKS_POST_OPTIONS
 #undef LANG_HOOKS_PARSE_FILE
 #undef LANG_HOOKS_TYPE_FOR_MODE
-#undef LANG_HOOKS_TYPE_FOR_SIZE
 #undef LANG_HOOKS_BUILTIN_FUNCTION
 #undef LANG_HOOKS_GLOBAL_BINDINGS_P
 #undef LANG_HOOKS_PUSHDECL
@@ -442,12 +427,10 @@ rust_localize_identifier (const char *ident)
  */
 #define LANG_HOOKS_PARSE_FILE grs_langhook_parse_file
 #define LANG_HOOKS_TYPE_FOR_MODE grs_langhook_type_for_mode
-#define LANG_HOOKS_TYPE_FOR_SIZE grs_langhook_type_for_size
 #define LANG_HOOKS_BUILTIN_FUNCTION grs_langhook_builtin_function
 #define LANG_HOOKS_GLOBAL_BINDINGS_P grs_langhook_global_bindings_p
 #define LANG_HOOKS_PUSHDECL grs_langhook_pushdecl
 #define LANG_HOOKS_GETDECLS grs_langhook_getdecls
-#define LANG_HOOKS_WRITE_GLOBALS grs_langhook_write_globals
 #define LANG_HOOKS_GIMPLIFY_EXPR grs_langhook_gimplify_expr
 #define LANG_HOOKS_EH_PERSONALITY grs_langhook_eh_personality
 
