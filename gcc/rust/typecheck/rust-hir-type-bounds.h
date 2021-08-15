@@ -38,6 +38,18 @@ public:
     return probe.trait_references;
   }
 
+  static bool is_bound_satisfied_for_type (TyTy::BaseType *receiver,
+					   TraitReference *ref)
+  {
+    std::vector<TraitReference *> bounds = Probe (receiver);
+    for (TraitReference *b : bounds)
+      {
+	if (b == ref)
+	  return true;
+      }
+    return false;
+  }
+
 private:
   void scan ();
 
