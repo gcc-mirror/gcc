@@ -1,3 +1,14 @@
+2021-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101791
+	* g++.dg/warn/Wmismatched-new-delete-6.C: New test.
+	* g++.dg/warn/Wmismatched-new-delete-7.C: New test.
+
+2021-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101896
+	* gcc.target/i386/avx512f-pr101896.c: New test.
+
 2021-08-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/101734

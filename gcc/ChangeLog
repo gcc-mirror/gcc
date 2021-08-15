@@ -1,3 +1,30 @@
+2021-08-14  Stafford Horne  <shorne@gmail.com>
+
+	PR target/99783
+	* config/or1k/or1k-opts.h: New file.
+	* config/or1k/or1k.c (or1k_legitimize_address_1, print_reloc):
+	Support generating gotha relocations if -mcmodel=large is
+	specified.
+	* config/or1k/or1k.h (TARGET_CMODEL_SMALL, TARGET_CMODEL_LARGE):
+	New macros.
+	* config/or1k/or1k.opt (mcmodel=): New option.
+	* doc/invoke.texi (OpenRISC Options): Document mcmodel.
+
+2021-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101791
+	* gimple-ssa-warn-access.cc (new_delete_mismatch_p): Use new argument
+	to valid_new_delete_pair_p.
+	* tree.c (valid_new_delete_pair_p): Add argument.
+	* tree.h (valid_new_delete_pair_p): Same.
+
+2021-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101896
+	* config/i386/i386-expand.c (expand_vec_perm_broadcast_1)
+	<case E_V64QImode>: For this mode assert
+	!TARGET_AVX512BW || d->perm[0] rather than !TARGET_AVX2 || d->perm[0].
+
 2021-08-13  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/99921
