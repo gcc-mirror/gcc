@@ -868,7 +868,7 @@ int EXPORT (GetFlag) (struct termios *t, Flag f, int *b)
       return 0;
 #endif
     case maxbaud:
-#if defined(MAX)
+#if defined(__MAX_BAUD)
       *b = ((t->c_cflag & __MAX_BAUD) == __MAX_BAUD);
       return 1;
 #else
