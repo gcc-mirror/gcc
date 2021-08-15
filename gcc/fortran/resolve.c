@@ -10237,19 +10237,27 @@ resolve_sync (gfc_code *code)
 
   /* Check STAT.  */
   gfc_resolve_expr (code->expr2);
-  if (code->expr2
-      && (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0
-	  || code->expr2->expr_type != EXPR_VARIABLE))
-    gfc_error ("STAT= argument at %L must be a scalar INTEGER variable",
-	       &code->expr2->where);
+  if (code->expr2)
+    {
+      if (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0)
+	gfc_error ("STAT= argument at %L must be a scalar INTEGER variable",
+		   &code->expr2->where);
+      else
+	gfc_check_vardef_context (code->expr2, false, false, false,
+				  _("STAT variable"));
+    }
 
   /* Check ERRMSG.  */
   gfc_resolve_expr (code->expr3);
-  if (code->expr3
-      && (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0
-	  || code->expr3->expr_type != EXPR_VARIABLE))
-    gfc_error ("ERRMSG= argument at %L must be a scalar CHARACTER variable",
-	       &code->expr3->where);
+  if (code->expr3)
+    {
+      if (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0)
+	gfc_error ("ERRMSG= argument at %L must be a scalar CHARACTER variable",
+		   &code->expr3->where);
+      else
+	gfc_check_vardef_context (code->expr3, false, false, false,
+				  _("ERRMSG variable"));
+    }
 }
 
 
