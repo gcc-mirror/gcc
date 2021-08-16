@@ -1,6 +1,15 @@
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/101931
+	* omp-low.c (omp_runtime_api_call): Update for routines
+	added in the meanwhile.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.def (OMP_MASKED): New tree code.
