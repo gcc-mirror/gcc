@@ -7255,11 +7255,15 @@ package body Exp_Ch4 is
       --  Generate index and validity checks
 
       declare
-         Dims_Checked : Dimension_Set (Dimensions => Number_Dimensions (T));
+         Dims_Checked : Dimension_Set (Dimensions =>
+                                         (if Is_Array_Type (T)
+                                          then Number_Dimensions (T)
+                                          else 1));
          --  Dims_Checked is used to avoid generating two checks (one in
          --  Generate_Index_Checks, one in Apply_Subscript_Validity_Checks)
          --  for the same index value in cases where the index check eliminates
-         --  the need for the validity check.
+         --  the need for the validity check. The Is_Array_Type test avoids
+         --  cascading errors.
 
       begin
          Generate_Index_Checks (N, Checks_Generated => Dims_Checked);
@@ -7284,6 +7288,27 @@ package body Exp_Ch4 is
                --  If Validity_Check_Subscripts is True then we need to
                --  ensure validity, so we adjust Dims_Checked accordingly.
                Dims_Checked.Elements := (others => False);
+
+            elsif Is_Array_Type (T) then
+               --  We are only adding extra validity checks here to
+               --  deal with uninitialized variables (but this includes
+               --  assigning one uninitialized variable to another). Other
+               --  ways of producing invalid objects imply erroneousness, so
+               --  the compiler can do whatever it wants for those cases.
+               --  If an index type has the Default_Value aspect specified,
+               --  then we don't have to worry about the possibility of an
+               --  uninitialized variable, so no need for these extra
+               --  validity checks.
+
+               declare
+                  Idx : Node_Id := First_Index (T);
+               begin
+                  for No_Check_Needed of Dims_Checked.Elements loop
+                     No_Check_Needed := No_Check_Needed
+                       or else Has_Aspect (Etype (Idx), Aspect_Default_Value);
+                     Next_Index (Idx);
+                  end loop;
+               end;
             end if;
 
             Apply_Subscript_Validity_Checks
