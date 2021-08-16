@@ -793,6 +793,7 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
       vn_reference_op_t vro1, vro2;
       vn_reference_op_s tem1, tem2;
       bool deref1 = false, deref2 = false;
+      bool reverse1 = false, reverse2 = false;
       for (; vr1->operands.iterate (i, &vro1); i++)
 	{
 	  if (vro1->opcode == MEM_REF)
@@ -800,6 +801,7 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 	  /* Do not look through a storage order barrier.  */
 	  else if (vro1->opcode == VIEW_CONVERT_EXPR && vro1->reverse)
 	    return false;
+	  reverse1 |= vro1->reverse;
 	  if (known_eq (vro1->off, -1))
 	    break;
 	  off1 += vro1->off;
@@ -811,11 +813,12 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 	  /* Do not look through a storage order barrier.  */
 	  else if (vro2->opcode == VIEW_CONVERT_EXPR && vro2->reverse)
 	    return false;
+	  reverse2 |= vro2->reverse;
 	  if (known_eq (vro2->off, -1))
 	    break;
 	  off2 += vro2->off;
 	}
-      if (maybe_ne (off1, off2))
+      if (maybe_ne (off1, off2) || reverse1 != reverse2)
 	return false;
       if (deref1 && vro1->opcode == ADDR_EXPR)
 	{
@@ -912,6 +915,9 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  temp.type = NULL_TREE;
 	  temp.op0 = TREE_OPERAND (ref, 1);
 	  temp.op1 = TREE_OPERAND (ref, 2);
+	  temp.reverse = (AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (ref, 0)))
+			  && TYPE_REVERSE_STORAGE_ORDER
+			       (TREE_TYPE (TREE_OPERAND (ref, 0))));
 	  {
 	    tree this_offset = component_ref_field_offset (ref);
 	    if (this_offset
@@ -960,6 +966,9 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 				       * vn_ref_op_align_unit (&temp));
 		off.to_shwi (&temp.off);
 	      }
+	    temp.reverse = (AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (ref, 0)))
+			    && TYPE_REVERSE_STORAGE_ORDER
+				 (TREE_TYPE (TREE_OPERAND (ref, 0))));
 	  }
 	  break;
 	case VAR_DECL:
@@ -1572,6 +1581,26 @@ contains_storage_order_barrier_p (vec<vn_reference_op_s> ops)
       return true;
 
   return false;
+}
+
+/* Return true if OPS represent an access with reverse storage order.  */
+
+static bool
+reverse_storage_order_for_component_p (vec<vn_reference_op_s> ops)
+{
+  unsigned i = 0;
+  if (ops[i].opcode == REALPART_EXPR || ops[i].opcode == IMAGPART_EXPR)
+    ++i;
+  switch (ops[i].opcode)
+    {
+    case ARRAY_REF:
+    case COMPONENT_REF:
+    case BIT_FIELD_REF:
+    case MEM_REF:
+      return ops[i].reverse;
+    default:
+      return false;
+    }
 }
 
 /* Transform any SSA_NAME's in a vector of vn_reference_op_s
@@ -2890,6 +2919,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
      routines to extract the assigned bits.  */
   else if (known_eq (ref->size, maxsize)
 	   && is_gimple_reg_type (vr->type)
+	   && !reverse_storage_order_for_component_p (vr->operands)
 	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
 	   && CHAR_BIT == 8
@@ -3041,6 +3071,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
      to access pieces from or we can combine to a larger entity.  */
   else if (known_eq (ref->size, maxsize)
 	   && is_gimple_reg_type (vr->type)
+	   && !reverse_storage_order_for_component_p (vr->operands)
 	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
 	   && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
