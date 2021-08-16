@@ -18,7 +18,7 @@
 import gdb
 import itertools
 import re
-import sys
+import sys, os, errno
 
 ### Python 2 + Python 3 compatibility code
 
@@ -1484,6 +1484,57 @@ class StdCmpCatPrinter:
             name = names[int(self.val)]
         return 'std::{}::{}'.format(self.typename, name)
 
+class StdErrorCatPrinter:
+    "Print an object derived from std::error_category"
+
+    def __init__ (self, typename, val):
+        self.val = val
+        self.typename = typename
+
+    def to_string (self):
+        gdb.set_convenience_variable('__cat', self.val)
+        name = gdb.parse_and_eval('$__cat->name()').string()
+        return 'error category = "{}"'.format(name)
+
+class StdErrorCodePrinter:
+    "Print a std::error_code or std::error_condition"
+
+    _errno_categories = None # List of categories that use errno values
+
+    def __init__ (self, typename, val):
+        self.val = val
+        self.typename = typename
+        # Do this only once ...
+        if StdErrorCodePrinter._errno_categories is None:
+            StdErrorCodePrinter._errno_categories = ['generic']
+            try:
+                import posix
+                StdErrorCodePrinter._errno_categories.append('system')
+            except ImportError:
+                pass
+
+    @staticmethod
+    def _category_name(cat):
+        "Call the virtual function that overrides std::error_category::name()"
+        gdb.set_convenience_variable('__cat', cat)
+        return gdb.parse_and_eval('$__cat->name()').string()
+
+    def to_string (self):
+        value = self.val['_M_value']
+        category = self._category_name(self.val['_M_cat'])
+        strval = str(value)
+        if value == 0:
+            default_cats = {'error_code':'system', 'error_condition':'generic'}
+            unqualified = self.typename.split('::')[-1]
+            if category == default_cats[unqualified]:
+                return self.typename + ' = { }' # default-constructed value
+        if value > 0 and category in StdErrorCodePrinter._errno_categories:
+            try:
+                strval = errno.errorcode[int(value)]
+            except:
+                pass
+        return '%s = {"%s": %s}' % (self.typename, category, strval)
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -1886,6 +1937,8 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::__cxx11::', 'basic_string', StdStringPrinter)
     libstdcxx_printer.add_container('std::', 'bitset', StdBitsetPrinter)
     libstdcxx_printer.add_container('std::', 'deque', StdDequePrinter)
+    libstdcxx_printer.add_version('std::', 'error_code', StdErrorCodePrinter)
+    libstdcxx_printer.add_version('std::', 'error_condition', StdErrorCodePrinter)
     libstdcxx_printer.add_container('std::', 'list', StdListPrinter)
     libstdcxx_printer.add_container('std::__cxx11::', 'list', StdListPrinter)
     libstdcxx_printer.add_container('std::', 'map', StdMapPrinter)
