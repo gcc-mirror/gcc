@@ -1,3 +1,19 @@
+2021-08-15  Clément Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/rs6000.c (xcoff_tls_exec_model_detected): New.
+	(rs6000_legitimize_tls_address_aix): Use it.
+	(rs6000_xcoff_file_end): Add ".ref __tls_get_addr" when
+	xcoff_tls_exec_model_detected is true.
+
+2021-08-15  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config/h8300/h8300.c (shift_alg_si): Retune H8/300H shifts
+	to allow a bit more code growth, saving many dozens of cycles.
+	(h8300_option_override): Adjus shift_alg_si if optimizing for
+	code size.
+	(get_shift_alg): Use special + inline shifts for residuals
+	in more cases.
+
 2021-08-14  Stafford Horne  <shorne@gmail.com>
 
 	PR target/99783
