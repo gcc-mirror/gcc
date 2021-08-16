@@ -920,6 +920,11 @@ decode_omp_directive (void)
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
+      matcho ("end masked taskloop simd", gfc_match_omp_eos_error,
+	      ST_OMP_END_MASKED_TASKLOOP_SIMD);
+      matcho ("end masked taskloop", gfc_match_omp_eos_error,
+	      ST_OMP_END_MASKED_TASKLOOP);
+      matcho ("end masked", gfc_match_omp_eos_error, ST_OMP_END_MASKED);
       matcho ("end master taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_MASTER_TASKLOOP_SIMD);
       matcho ("end master taskloop", gfc_match_omp_eos_error,
@@ -929,6 +934,12 @@ decode_omp_directive (void)
       matchs ("end parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
       matcho ("end parallel do", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel masked taskloop simd", gfc_match_omp_eos_error,
+	      ST_OMP_END_PARALLEL_MASKED_TASKLOOP_SIMD);
+      matcho ("end parallel masked taskloop", gfc_match_omp_eos_error,
+	      ST_OMP_END_PARALLEL_MASKED_TASKLOOP);
+      matcho ("end parallel masked", gfc_match_omp_eos_error,
+	      ST_OMP_END_PARALLEL_MASKED);
       matcho ("end parallel master taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_MASTER_TASKLOOP_SIMD);
       matcho ("end parallel master taskloop", gfc_match_omp_eos_error,
@@ -982,6 +993,11 @@ decode_omp_directive (void)
       matcho ("flush", gfc_match_omp_flush, ST_OMP_FLUSH);
       break;
     case 'm':
+      matcho ("masked taskloop simd", gfc_match_omp_masked_taskloop_simd,
+	      ST_OMP_MASKED_TASKLOOP_SIMD);
+      matcho ("masked taskloop", gfc_match_omp_masked_taskloop,
+	      ST_OMP_MASKED_TASKLOOP);
+      matcho ("masked", gfc_match_omp_masked, ST_OMP_MASKED);
       matcho ("master taskloop simd", gfc_match_omp_master_taskloop_simd,
 	      ST_OMP_MASTER_TASKLOOP_SIMD);
       matcho ("master taskloop", gfc_match_omp_master_taskloop,
@@ -1009,6 +1025,14 @@ decode_omp_directive (void)
       matcho ("parallel do", gfc_match_omp_parallel_do, ST_OMP_PARALLEL_DO);
       matcho ("parallel loop", gfc_match_omp_parallel_loop,
 	      ST_OMP_PARALLEL_LOOP);
+      matcho ("parallel masked taskloop simd",
+	      gfc_match_omp_parallel_masked_taskloop_simd,
+	      ST_OMP_PARALLEL_MASKED_TASKLOOP_SIMD);
+      matcho ("parallel masked taskloop",
+	      gfc_match_omp_parallel_masked_taskloop,
+	      ST_OMP_PARALLEL_MASKED_TASKLOOP);
+      matcho ("parallel masked", gfc_match_omp_parallel_masked,
+	      ST_OMP_PARALLEL_MASKED);
       matcho ("parallel master taskloop simd",
 	      gfc_match_omp_parallel_master_taskloop_simd,
 	      ST_OMP_PARALLEL_MASTER_TASKLOOP_SIMD);
@@ -1639,11 +1663,15 @@ next_statement (void)
 #define case_exec_markers case ST_DO: case ST_FORALL_BLOCK: \
   case ST_IF_BLOCK: case ST_BLOCK: case ST_ASSOCIATE: \
   case ST_WHERE_BLOCK: case ST_SELECT_CASE: case ST_SELECT_TYPE: \
-  case ST_SELECT_RANK: case ST_OMP_PARALLEL: case ST_OMP_PARALLEL_MASTER: \
+  case ST_SELECT_RANK: case ST_OMP_PARALLEL: case ST_OMP_PARALLEL_MASKED: \
+  case ST_OMP_PARALLEL_MASKED_TASKLOOP: \
+  case ST_OMP_PARALLEL_MASKED_TASKLOOP_SIMD: case ST_OMP_PARALLEL_MASTER: \
   case ST_OMP_PARALLEL_MASTER_TASKLOOP: \
   case ST_OMP_PARALLEL_MASTER_TASKLOOP_SIMD: \
   case ST_OMP_PARALLEL_SECTIONS: case ST_OMP_SECTIONS: case ST_OMP_ORDERED: \
-  case ST_OMP_CRITICAL: case ST_OMP_MASTER: case ST_OMP_MASTER_TASKLOOP: \
+  case ST_OMP_CRITICAL: case ST_OMP_MASKED: case ST_OMP_MASKED_TASKLOOP: \
+  case ST_OMP_MASKED_TASKLOOP_SIMD: \
+  case ST_OMP_MASTER: case ST_OMP_MASTER_TASKLOOP: \
   case ST_OMP_MASTER_TASKLOOP_SIMD: case ST_OMP_SINGLE: \
   case ST_OMP_DO: case ST_OMP_PARALLEL_DO: case ST_OMP_ATOMIC: \
   case ST_OMP_WORKSHARE: case ST_OMP_PARALLEL_WORKSHARE: \
@@ -2376,6 +2404,15 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_END_LOOP:
       p = "!$OMP END LOOP";
       break;
+    case ST_OMP_END_MASKED:
+      p = "!$OMP END MASKED";
+      break;
+    case ST_OMP_END_MASKED_TASKLOOP:
+      p = "!$OMP END MASKED TASKLOOP";
+      break;
+    case ST_OMP_END_MASKED_TASKLOOP_SIMD:
+      p = "!$OMP END MASKED TASKLOOP SIMD";
+      break;
     case ST_OMP_END_MASTER:
       p = "!$OMP END MASTER";
       break;
@@ -2399,6 +2436,15 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_END_PARALLEL_LOOP:
       p = "!$OMP END PARALLEL LOOP";
+      break;
+    case ST_OMP_END_PARALLEL_MASKED:
+      p = "!$OMP END PARALLEL MASKED";
+      break;
+    case ST_OMP_END_PARALLEL_MASKED_TASKLOOP:
+      p = "!$OMP END PARALLEL MASKED TASKLOOP";
+      break;
+    case ST_OMP_END_PARALLEL_MASKED_TASKLOOP_SIMD:
+      p = "!$OMP END PARALLEL MASKED TASKLOOP SIMD";
       break;
     case ST_OMP_END_PARALLEL_MASTER:
       p = "!$OMP END PARALLEL MASTER";
@@ -2499,6 +2545,15 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_LOOP:
       p = "!$OMP LOOP";
       break;
+    case ST_OMP_MASKED:
+      p = "!$OMP MASKED";
+      break;
+    case ST_OMP_MASKED_TASKLOOP:
+      p = "!$OMP MASKED TASKLOOP";
+      break;
+    case ST_OMP_MASKED_TASKLOOP_SIMD:
+      p = "!$OMP MASKED TASKLOOP SIMD";
+      break;
     case ST_OMP_MASTER:
       p = "!$OMP MASTER";
       break;
@@ -2523,6 +2578,15 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_PARALLEL_DO_SIMD:
       p = "!$OMP PARALLEL DO SIMD";
+      break;
+    case ST_OMP_PARALLEL_MASKED:
+      p = "!$OMP PARALLEL MASKED";
+      break;
+    case ST_OMP_PARALLEL_MASKED_TASKLOOP:
+      p = "!$OMP PARALLEL MASKED TASKLOOP";
+      break;
+    case ST_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+      p = "!$OMP PARALLEL MASKED TASKLOOP SIMD";
       break;
     case ST_OMP_PARALLEL_MASTER:
       p = "!$OMP PARALLEL MASTER";
@@ -5127,9 +5191,19 @@ parse_omp_do (gfc_statement omp_st)
       break;
     case ST_OMP_TASKLOOP: omp_end_st = ST_OMP_END_TASKLOOP; break;
     case ST_OMP_TASKLOOP_SIMD: omp_end_st = ST_OMP_END_TASKLOOP_SIMD; break;
+    case ST_OMP_MASKED_TASKLOOP: omp_end_st = ST_OMP_END_MASKED_TASKLOOP; break;
+    case ST_OMP_MASKED_TASKLOOP_SIMD:
+      omp_end_st = ST_OMP_END_MASKED_TASKLOOP_SIMD;
+      break;
     case ST_OMP_MASTER_TASKLOOP: omp_end_st = ST_OMP_END_MASTER_TASKLOOP; break;
     case ST_OMP_MASTER_TASKLOOP_SIMD:
       omp_end_st = ST_OMP_END_MASTER_TASKLOOP_SIMD;
+      break;
+    case ST_OMP_PARALLEL_MASKED_TASKLOOP:
+      omp_end_st = ST_OMP_END_PARALLEL_MASKED_TASKLOOP;
+      break;
+    case ST_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+      omp_end_st = ST_OMP_END_PARALLEL_MASKED_TASKLOOP_SIMD;
       break;
     case ST_OMP_PARALLEL_MASTER_TASKLOOP:
       omp_end_st = ST_OMP_END_PARALLEL_MASTER_TASKLOOP;
@@ -5380,6 +5454,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_PARALLEL:
       omp_end_st = ST_OMP_END_PARALLEL;
       break;
+    case ST_OMP_PARALLEL_MASKED:
+      omp_end_st = ST_OMP_END_PARALLEL_MASKED;
+      break;
     case ST_OMP_PARALLEL_MASTER:
       omp_end_st = ST_OMP_END_PARALLEL_MASTER;
       break;
@@ -5394,6 +5471,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       break;
     case ST_OMP_CRITICAL:
       omp_end_st = ST_OMP_END_CRITICAL;
+      break;
+    case ST_OMP_MASKED:
+      omp_end_st = ST_OMP_END_MASKED;
       break;
     case ST_OMP_MASTER:
       omp_end_st = ST_OMP_END_MASTER;
@@ -5477,6 +5557,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		  break;
 
 		case ST_OMP_PARALLEL:
+		case ST_OMP_PARALLEL_MASKED:
 		case ST_OMP_PARALLEL_MASTER:
 		case ST_OMP_PARALLEL_SECTIONS:
 		  parse_omp_structured_block (st, false);
@@ -5679,11 +5760,13 @@ parse_executable (gfc_statement st)
 	  break;
 
 	case ST_OMP_PARALLEL:
+	case ST_OMP_PARALLEL_MASKED:
 	case ST_OMP_PARALLEL_MASTER:
 	case ST_OMP_PARALLEL_SECTIONS:
 	case ST_OMP_SECTIONS:
 	case ST_OMP_ORDERED:
 	case ST_OMP_CRITICAL:
+	case ST_OMP_MASKED:
 	case ST_OMP_MASTER:
 	case ST_OMP_SINGLE:
 	case ST_OMP_TARGET:
@@ -5711,8 +5794,12 @@ parse_executable (gfc_statement st)
 	case ST_OMP_PARALLEL_DO:
 	case ST_OMP_PARALLEL_DO_SIMD:
 	case ST_OMP_PARALLEL_LOOP:
+	case ST_OMP_PARALLEL_MASKED_TASKLOOP:
+	case ST_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
 	case ST_OMP_PARALLEL_MASTER_TASKLOOP:
 	case ST_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+	case ST_OMP_MASKED_TASKLOOP:
+	case ST_OMP_MASKED_TASKLOOP_SIMD:
 	case ST_OMP_MASTER_TASKLOOP:
 	case ST_OMP_MASTER_TASKLOOP_SIMD:
 	case ST_OMP_SIMD:
