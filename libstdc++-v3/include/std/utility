@@ -91,6 +91,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX20_CONSTEXPR
     inline _Tp
     exchange(_Tp& __obj, _Up&& __new_val)
+    noexcept(__and_<is_nothrow_move_constructible<_Tp>,
+		    is_nothrow_assignable<_Tp&, _Up>>::value)
     { return std::__exchange(__obj, std::forward<_Up>(__new_val)); }
 
 #if __cplusplus >= 201703L
