@@ -779,6 +779,12 @@ public:
       }
   }
 
+  /* bools can be cast to any integer type (but not floats or chars).  */
+  void visit (IntType &type) override { resolved = type.clone (); }
+  void visit (UintType &type) override { resolved = type.clone (); }
+  void visit (USizeType &type) override { resolved = type.clone (); }
+  void visit (ISizeType &type) override { resolved = type.clone (); }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -1077,6 +1083,12 @@ public:
   }
 
   void visit (CharType &type) override { resolved = type.clone (); }
+
+  /* chars can be cast to any integer type (but not floats or bools).  */
+  void visit (IntType &type) override { resolved = type.clone (); }
+  void visit (UintType &type) override { resolved = type.clone (); }
+  void visit (USizeType &type) override { resolved = type.clone (); }
+  void visit (ISizeType &type) override { resolved = type.clone (); }
 
 private:
   BaseType *get_base () override { return base; }
