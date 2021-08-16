@@ -6024,8 +6024,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       { return __sv_type(this->data(), this->size()).ends_with(__x); }
 #endif // C++20
 
-#if __cplusplus >= 202011L \
-  || (__cplusplus == 202002L && !defined __STRICT_ANSI__)
+#if __cplusplus > 202011L
       bool
       contains(basic_string_view<_CharT, _Traits> __x) const noexcept
       { return __sv_type(this->data(), this->size()).contains(__x); }
