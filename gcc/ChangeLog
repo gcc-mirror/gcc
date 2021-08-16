@@ -1,3 +1,106 @@
+2021-08-15  Clément Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/rs6000.c (xcoff_tls_exec_model_detected): New.
+	(rs6000_legitimize_tls_address_aix): Use it.
+	(rs6000_xcoff_file_end): Add ".ref __tls_get_addr" when
+	xcoff_tls_exec_model_detected is true.
+
+2021-08-15  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config/h8300/h8300.c (shift_alg_si): Retune H8/300H shifts
+	to allow a bit more code growth, saving many dozens of cycles.
+	(h8300_option_override): Adjus shift_alg_si if optimizing for
+	code size.
+	(get_shift_alg): Use special + inline shifts for residuals
+	in more cases.
+
+2021-08-14  Stafford Horne  <shorne@gmail.com>
+
+	PR target/99783
+	* config/or1k/or1k-opts.h: New file.
+	* config/or1k/or1k.c (or1k_legitimize_address_1, print_reloc):
+	Support generating gotha relocations if -mcmodel=large is
+	specified.
+	* config/or1k/or1k.h (TARGET_CMODEL_SMALL, TARGET_CMODEL_LARGE):
+	New macros.
+	* config/or1k/or1k.opt (mcmodel=): New option.
+	* doc/invoke.texi (OpenRISC Options): Document mcmodel.
+
+2021-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101791
+	* gimple-ssa-warn-access.cc (new_delete_mismatch_p): Use new argument
+	to valid_new_delete_pair_p.
+	* tree.c (valid_new_delete_pair_p): Add argument.
+	* tree.h (valid_new_delete_pair_p): Same.
+
+2021-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101896
+	* config/i386/i386-expand.c (expand_vec_perm_broadcast_1)
+	<case E_V64QImode>: For this mode assert
+	!TARGET_AVX512BW || d->perm[0] rather than !TARGET_AVX2 || d->perm[0].
+
+2021-08-13  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/99921
+	* config/rs6000/altivec.md (xxeval): Use register_predicate
+	instead of altivec_register_predicate.
+
+2021-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101734
+	* tree-ssa-uninit.c (maybe_warn_read_write_only): New function.
+	(maybe_warn_operand): Call it.
+
+2021-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101354
+	* attribs.c (decl_attributes): Make naked functions "noipa"
+	  functions.
+
+2021-08-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101261
+	* symtab.c (symtab_node::noninterposable_alias): Do not create
+	  local aliases for target_clone functions as the clonning pass
+	  rejects aliases.
+
+2021-08-13  Martin Liska  <mliska@suse.cz>
+
+	* opts.c (LIVE_PATCHING_OPTION): Define.
+	(control_options_for_live_patching): Use it in error messages.
+
+2021-08-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (dump_eaf_flags): Dump EAF_NOREAD.
+	(implicit_const_eaf_flags, implicit_pure_eaf_flags,
+	 ignore_stores_eaf_flags): New constants.
+	(remove_useless_eaf_flags): New function.
+	(eaf_flags_useful_p): Use it.
+	(deref_flags): Add EAF_NOT_RETURNED if flag is unused;
+	handle EAF_NOREAD.
+	(modref_lattice::init): Add EAF_NOREAD.
+	(modref_lattice::add_escape_point): Do not reacord escape point if
+	result is unused.
+	(modref_lattice::merge): EAF_NOESCAPE implies EAF_NODIRECTESCAPE;
+	use remove_useless_eaf_flags.
+	(modref_lattice::merge_deref): Use ignore_stores_eaf_flags.
+	(modref_lattice::merge_direct_load): Add EAF_NOREAD
+	(analyze_ssa_name_flags): Fix handling EAF_NOT_RETURNED
+	(analyze_parms): Use remove_useless_eaf_flags.
+	(ipa_merge_modref_summary_after_inlining): Use ignore_stores_eaf_flags.
+	(modref_merge_call_site_flags): Add caller and ecf_flags parameter;
+	use remove_useless_eaf_flags.
+	(modref_propagate_flags_in_scc): Update.
+	* ipa-modref.h: Turn eaf_flags_t back to char.
+	* tree-core.h (EAF_NOT_RETURNED): Fix.
+	(EAF_NOREAD): New constant
+	* tree-ssa-alias.c: (ref_maybe_used_by_call_p_1): Check for
+	EAF_NOREAD.
+	* tree-ssa-structalias.c (handle_rhs_call): Handle new flags.
+	(handle_pure_call): Likewise.
+
 2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.def (OMP_MASKED): New tree code.

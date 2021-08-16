@@ -228,18 +228,18 @@ static enum shift_alg shift_alg_si[2][3][32] = {
     /*  8    9   10   11   12   13   14   15  */
     /* 16   17   18   19   20   21   22   23  */
     /* 24   25   26   27   28   29   30   31  */
-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+    { INL, INL, INL, INL, INL, INL, INL, LOP,
       SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, INL, LOP,
       SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, INL, LOP,
       SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
+      SPC, SPC, SPC, SPC, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
   },
   {
     /* TARGET_H8300S  */
@@ -342,6 +342,36 @@ h8300_option_override (void)
       shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][6] = SHIFT_LOOP;
       shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
       shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
+
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][5] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][6] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][20] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][21] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][22] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][23] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][25] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][26] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFT][27] = SHIFT_LOOP;
+
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][5] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][6] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][20] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][21] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][22] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][23] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][25] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][26] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_LSHIFTRT][27] = SHIFT_LOOP;
+
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][5] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][6] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][20] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][21] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][22] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][23] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][25] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][26] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][27] = SHIFT_LOOP;
 
       /* H8S */
       shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
@@ -3784,7 +3814,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      gcc_unreachable ();
 	    }
 	}
-      else if ((TARGET_H8300H && count >= 16 && count <= 19)
+      else if ((TARGET_H8300H && count >= 16 && count <= 23)
 	       || (TARGET_H8300S && count >= 16 && count <= 21))
 	{
 	  info->remainder = count - 16;
@@ -3804,7 +3834,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    }
 	}
-      else if ((TARGET_H8300H && count == 24)
+      else if ((TARGET_H8300H && count >= 24 || count <= 27)
 	       || (TARGET_H8300S && count >= 24 && count <= 25))
 	{
 	  info->remainder = count - 24;

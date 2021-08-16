@@ -7,11 +7,12 @@ package unix
 import (
 	"sync/atomic"
 	"syscall"
-	"unsafe"
 )
 
 //extern getrandom
 func libc_getrandom(*byte, uintptr, uint32) uintptr
+
+var getrandomUnsupported int32 // atomic
 
 // GetRandomFlag is a flag supported by the getrandom system call.
 type GetRandomFlag uintptr

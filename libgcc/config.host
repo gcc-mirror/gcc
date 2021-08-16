@@ -1119,12 +1119,12 @@ nios2-*-*)
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 or1k-*-linux*)
-	tmake_file="$tmake_file or1k/t-or1k"
+	tmake_file="$tmake_file or1k/t-or1k or1k/t-crtstuff"
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp"
 	md_unwind_header=or1k/linux-unwind.h
 	;;
 or1k-*-*)
-	tmake_file="$tmake_file or1k/t-or1k"
+	tmake_file="$tmake_file or1k/t-or1k or1k/t-crtstuff"
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp"
 	;;
 pdp11-*-*)

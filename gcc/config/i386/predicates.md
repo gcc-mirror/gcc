@@ -1713,6 +1713,96 @@
   return true;
 })
 
+;; Return true if OP is a constant pool in perm{w,d,b} which constains index
+;; match pmov{dw,wb,qd}.
+(define_predicate "permvar_truncate_operand"
+ (match_code "mem")
+{
+  int nelt = GET_MODE_NUNITS (mode);
+  int perm[128];
+  int id;
+
+  if (!INTEGRAL_MODE_P (mode) || !VECTOR_MODE_P (mode))
+    return false;
+
+  if (nelt < 2)
+    return false;
+
+  if (!ix86_extract_perm_from_pool_constant (&perm[0], op))
+    return false;
+
+  id = exact_log2 (nelt);
+
+  /* Check that the permutation is suitable for pmovz{bw,wd,dq}.
+     For example V16HImode to V8HImode
+     { 0 2 4 6 8 10 12 14 * * * * * * * * }.  */
+  for (int i = 0; i != nelt / 2; i++)
+    if ((perm[i] & ((1 << id) - 1)) != i * 2)
+      return false;
+
+  return true;
+})
+
+;; Return true if OP is a constant pool in shufb which constains index
+;; match pmovdw.
+(define_predicate "pshufb_truncv4siv4hi_operand"
+ (match_code "mem")
+{
+  int perm[128];
+
+  if (mode != E_V16QImode)
+    return false;
+
+  if (!ix86_extract_perm_from_pool_constant (&perm[0], op))
+    return false;
+
+  /* Check that the permutation is suitable for pmovdw.
+     For example V4SImode to V4HImode
+     { 0 1 4 5 8 9 12 13 * * * * * * * * }.
+     index = i % 2 + (i / 2) * 4.  */
+  for (int i = 0; i != 8; i++)
+    {
+      /* if (SRC2[(i * 8)+7] = 1) then DEST[(i*8)+7..(i*8)+0] := 0;  */
+      if (perm[i] & 128)
+	return false;
+
+      if ((perm[i] & 15) != ((i & 1) + (i & 0xFE) * 2))
+	return false;
+     }
+
+  return true;
+})
+
+;; Return true if OP is a constant pool in shufb which constains index
+;; match pmovdw.
+(define_predicate "pshufb_truncv8hiv8qi_operand"
+ (match_code "mem")
+{
+  int perm[128];
+
+  if (mode != E_V16QImode)
+    return false;
+
+  if (!ix86_extract_perm_from_pool_constant (&perm[0], op))
+    return false;
+
+  /* Check that the permutation is suitable for pmovwb.
+     For example V16QImode to V8QImode
+     { 0 2 4 6 8 10 12 14 * * * * * * * * }.
+     index = i % 2 + (i / 2) * 4.  */
+  for (int i = 0; i != 8; i++)
+    {
+      /* if (SRC2[(i * 8)+7] = 1) then DEST[(i*8)+7..(i*8)+0] := 0;  */
+      if (perm[i] & 128)
+	return false;
+
+      if ((perm[i] & 15) != i * 2)
+	 return false;
+    }
+
+  return true;
+})
+
 ;; Return true if OP is a parallel for an pmovz{bw,wd,dq} vec_select,
 ;; where one of the two operands of the vec_concat is const0_operand.
 (define_predicate "pmovzx_parallel"

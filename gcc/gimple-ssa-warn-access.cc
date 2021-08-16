@@ -1782,9 +1782,14 @@ new_delete_mismatch_p (tree new_decl, tree delete_decl)
 
   /* valid_new_delete_pair_p() returns a conservative result (currently
      it only handles global operators).  A true result is reliable but
-     a false result doesn't necessarily mean the operators don't match.  */
-  if (valid_new_delete_pair_p (new_name, delete_name))
+     a false result doesn't necessarily mean the operators don't match
+     unless CERTAIN is set.  */
+  bool certain;
+  if (valid_new_delete_pair_p (new_name, delete_name, &certain))
     return false;
+  /* CERTAIN is set when the negative result is certain.  */
+  if (certain)
+    return true;
 
   /* For anything not handled by valid_new_delete_pair_p() such as member
      operators compare the individual demangled components of the mangled

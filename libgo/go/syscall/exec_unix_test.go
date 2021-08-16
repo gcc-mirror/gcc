@@ -180,7 +180,7 @@ func TestForeground(t *testing.T) {
 
 	fpgrp := syscall.Pid_t(0)
 
-	errno := syscall.Ioctl(tty.Fd(), syscall.TIOCGPGRP, uintptr(unsafe.Pointer(&fpgrp)))
+	errno := syscall.Ioctl(tty.Fd(), syscall.TIOCGPGRP, unsafe.Pointer(&fpgrp))
 	if errno != 0 {
 		t.Fatalf("TIOCGPGRP failed with error code: %s", errno)
 	}
@@ -217,7 +217,7 @@ func TestForeground(t *testing.T) {
 
 	// This call fails on darwin/arm64. The failure doesn't matter, though.
 	// This is just best effort.
-	syscall.Ioctl(tty.Fd(), syscall.TIOCSPGRP, uintptr(unsafe.Pointer(&fpgrp)))
+	syscall.Ioctl(tty.Fd(), syscall.TIOCSPGRP, unsafe.Pointer(&fpgrp))
 }
 
 func TestForegroundSignal(t *testing.T) {
@@ -231,7 +231,7 @@ func TestForegroundSignal(t *testing.T) {
 	// equivalent.
 	fpgrp := int32(0)
 
-	errno := syscall.Ioctl(tty.Fd(), syscall.TIOCGPGRP, uintptr(unsafe.Pointer(&fpgrp)))
+	errno := syscall.Ioctl(tty.Fd(), syscall.TIOCGPGRP, unsafe.Pointer(&fpgrp))
 	if errno != 0 {
 		t.Fatalf("TIOCGPGRP failed with error code: %s", errno)
 	}
@@ -242,7 +242,7 @@ func TestForegroundSignal(t *testing.T) {
 
 	defer func() {
 		signal.Ignore(syscall.SIGTTIN, syscall.SIGTTOU)
-		syscall.Ioctl(tty.Fd(), syscall.TIOCSPGRP, uintptr(unsafe.Pointer(&fpgrp)))
+		syscall.Ioctl(tty.Fd(), syscall.TIOCSPGRP, unsafe.Pointer(&fpgrp))
 		signal.Reset()
 	}()
 

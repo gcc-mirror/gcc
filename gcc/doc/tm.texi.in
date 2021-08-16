@@ -8180,3 +8180,5 @@ maintainer is familiar with.
 @hook TARGET_MEMTAG_EXTRACT_TAG
 
 @hook TARGET_MEMTAG_UNTAGGED_POINTER
+
+@hook TARGET_GCOV_TYPE_SIZE

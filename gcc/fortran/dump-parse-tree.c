@@ -1808,6 +1808,12 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       show_expr (omp_clauses->grainsize);
       fputc (')', dumpfile);
     }
+  if (omp_clauses->filter)
+    {
+      fputs (" FILTER(", dumpfile);
+      show_expr (omp_clauses->filter);
+      fputc (')', dumpfile);
+    }
   if (omp_clauses->hint)
     {
       fputs (" HINT(", dumpfile);
@@ -1946,6 +1952,9 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_DO_SIMD: name = "DO SIMD"; break;
     case EXEC_OMP_LOOP: name = "LOOP"; break;
     case EXEC_OMP_FLUSH: name = "FLUSH"; break;
+    case EXEC_OMP_MASKED: name = "MASKED"; break;
+    case EXEC_OMP_MASKED_TASKLOOP: name = "MASKED TASKLOOP"; break;
+    case EXEC_OMP_MASKED_TASKLOOP_SIMD: name = "MASKED TASKLOOP SIMD"; break;
     case EXEC_OMP_MASTER: name = "MASTER"; break;
     case EXEC_OMP_MASTER_TASKLOOP: name = "MASTER TASKLOOP"; break;
     case EXEC_OMP_MASTER_TASKLOOP_SIMD: name = "MASTER TASKLOOP SIMD"; break;
@@ -1956,6 +1965,11 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO_SIMD: name = "PARALLEL DO SIMD"; break;
     case EXEC_OMP_PARALLEL_LOOP: name = "PARALLEL LOOP"; break;
     case EXEC_OMP_PARALLEL_MASTER: name = "PARALLEL MASTER"; break;
+    case EXEC_OMP_PARALLEL_MASKED: name = "PARALLEL MASK"; break;
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+      name = "PARALLEL MASK TASKLOOP"; break;
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+      name = "PARALLEL MASK TASKLOOP SIMD"; break;
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
       name = "PARALLEL MASTER TASKLOOP"; break;
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
@@ -2032,10 +2046,14 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_DO_SIMD:
     case EXEC_OMP_LOOP:
     case EXEC_OMP_ORDERED:
+    case EXEC_OMP_MASKED:
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_LOOP:
+    case EXEC_OMP_PARALLEL_MASKED:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
     case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
@@ -3250,6 +3268,9 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_DO_SIMD:
     case EXEC_OMP_FLUSH:
     case EXEC_OMP_LOOP:
+    case EXEC_OMP_MASKED:
+    case EXEC_OMP_MASKED_TASKLOOP:
+    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
     case EXEC_OMP_MASTER:
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
@@ -3258,6 +3279,9 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_LOOP:
+    case EXEC_OMP_PARALLEL_MASKED:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
     case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:

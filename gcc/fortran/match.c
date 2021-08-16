@@ -3855,7 +3855,7 @@ sync_statement (gfc_statement st)
 
   for (;;)
     {
-      m = gfc_match (" stat = %v", &tmp);
+      m = gfc_match (" stat = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto syntax;
       if (m == MATCH_YES)
@@ -3875,7 +3875,7 @@ sync_statement (gfc_statement st)
 	  break;
 	}
 
-      m = gfc_match (" errmsg = %v", &tmp);
+      m = gfc_match (" errmsg = %e", &tmp);
       if (m == MATCH_ERROR)
 	goto syntax;
       if (m == MATCH_YES)

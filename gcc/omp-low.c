@@ -3863,6 +3863,8 @@ omp_runtime_api_call (const_tree fndecl)
     {
       /* This array has 3 sections.  First omp_* calls that don't
 	 have any suffixes.  */
+      "omp_alloc",
+      "omp_free",
       "target_alloc",
       "target_associate_ptr",
       "target_disassociate_ptr",
@@ -3873,13 +3875,17 @@ omp_runtime_api_call (const_tree fndecl)
       NULL,
       /* Now omp_* calls that are available as omp_* and omp_*_.  */
       "capture_affinity",
+      "destroy_allocator",
       "destroy_lock",
       "destroy_nest_lock",
       "display_affinity",
+      "fulfill_event",
       "get_active_level",
       "get_affinity_format",
       "get_cancellation",
+      "get_default_allocator",
       "get_default_device",
+      "get_device_num",
       "get_dynamic",
       "get_initial_device",
       "get_level",
@@ -3895,6 +3901,7 @@ omp_runtime_api_call (const_tree fndecl)
       "get_partition_num_places",
       "get_place_num",
       "get_proc_bind",
+      "get_supported_active_levels",
       "get_team_num",
       "get_thread_limit",
       "get_thread_num",
@@ -3908,6 +3915,7 @@ omp_runtime_api_call (const_tree fndecl)
       "pause_resource",
       "pause_resource_all",
       "set_affinity_format",
+      "set_default_allocator",
       "set_lock",
       "set_nest_lock",
       "test_lock",
@@ -3916,7 +3924,9 @@ omp_runtime_api_call (const_tree fndecl)
       "unset_nest_lock",
       NULL,
       /* And finally calls available as omp_*, omp_*_ and omp_*_8_.  */
+      "display_env",
       "get_ancestor_thread_num",
+      "init_allocator",
       "get_partition_place_nums",
       "get_place_num_procs",
       "get_place_proc_ids",
