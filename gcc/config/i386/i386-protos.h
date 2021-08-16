@@ -260,6 +260,7 @@ extern void ix86_expand_sse2_mulvxdi3 (rtx, rtx, rtx);
 extern void ix86_expand_sse2_abs (rtx, rtx);
 extern bool ix86_expand_vector_init_duplicate (bool, machine_mode, rtx,
 					       rtx);
+extern bool ix86_extract_perm_from_pool_constant (int*, rtx);
 
 /* In i386-c.c  */
 extern void ix86_target_macros (void);

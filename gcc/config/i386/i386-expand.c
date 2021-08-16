@@ -4778,6 +4778,18 @@ ix86_expand_vec_perm_vpermt2 (rtx target, rtx mask, rtx op0, rtx op1,
 
   switch (mode)
     {
+    case E_V16QImode:
+      if (TARGET_AVX512VL && TARGET_AVX512VBMI)
+	gen = gen_avx512vl_vpermt2varv16qi3;
+      break;
+    case E_V32QImode:
+      if (TARGET_AVX512VL && TARGET_AVX512VBMI)
+	gen = gen_avx512vl_vpermt2varv32qi3;
+      break;
+    case E_V64QImode:
+      if (TARGET_AVX512VBMI)
+	gen = gen_avx512bw_vpermt2varv64qi3;
+      break;
     case E_V8HImode:
       if (TARGET_AVX512VL && TARGET_AVX512BW)
 	gen = gen_avx512vl_vpermt2varv8hi3;
@@ -4785,10 +4797,6 @@ ix86_expand_vec_perm_vpermt2 (rtx target, rtx mask, rtx op0, rtx op1,
     case E_V16HImode:
       if (TARGET_AVX512VL && TARGET_AVX512BW)
 	gen = gen_avx512vl_vpermt2varv16hi3;
-      break;
-    case E_V64QImode:
-      if (TARGET_AVX512VBMI)
-	gen = gen_avx512bw_vpermt2varv64qi3;
       break;
     case E_V32HImode:
       if (TARGET_AVX512BW)
@@ -5485,6 +5493,45 @@ ix86_expand_sse_unpack (rtx dest, rtx src, bool unsigned_p, bool high_p)
       emit_insn (unpack (tmp2, src, tmp));
       emit_move_insn (dest, gen_lowpart (GET_MODE (dest), tmp2));
     }
+}
+
+/* Return true if mem is pool constant which contains a const_vector
+   perm index, assign the index to PERM.  */
+bool
+ix86_extract_perm_from_pool_constant (int* perm, rtx mem)
+{
+  machine_mode mode = GET_MODE (mem);
+  int nelt = GET_MODE_NUNITS (mode);
+
+  if (!INTEGRAL_MODE_P (mode))
+    return false;
+
+    /* Needs to be constant pool.  */
+  if (!(MEM_P (mem))
+      || !SYMBOL_REF_P (XEXP (mem, 0))
+      || !CONSTANT_POOL_ADDRESS_P (XEXP (mem, 0)))
+   return false;
+
+  rtx constant = get_pool_constant (XEXP (mem, 0));
+
+  if (GET_CODE (constant) != CONST_VECTOR)
+    return false;
+
+  /* There could be some rtx like
+     (mem/u/c:V16QI (symbol_ref/u:DI ("*.LC1")))
+     but with "*.LC1" refer to V2DI constant vector.  */
+  if (GET_MODE (constant) != mode)
+    {
+      constant = simplify_subreg (mode, constant, GET_MODE (constant), 0);
+
+      if (constant == nullptr || GET_CODE (constant) != CONST_VECTOR)
+	return false;
+    }
+
+  for (int i = 0; i != nelt; i++)
+    perm[i] = UINTVAL (XVECEXP (constant, 0, i));
+
+  return true;
 }
 
 /* Split operands 0 and 1 into half-mode parts.  Similar to split_double_mode,
@@ -18086,6 +18133,7 @@ ix86_expand_vec_one_operand_perm_avx512 (struct expand_vec_perm_d *d)
 {
   machine_mode mode = GET_MODE (d->op0);
   machine_mode maskmode = mode;
+  unsigned inner_size = GET_MODE_SIZE (GET_MODE_INNER (mode));
   rtx (*gen) (rtx, rtx, rtx) = NULL;
   rtx target, op0, mask;
   rtx vec[64];
@@ -18094,6 +18142,18 @@ ix86_expand_vec_one_operand_perm_avx512 (struct expand_vec_perm_d *d)
     return false;
 
   if (!TARGET_AVX512F)
+    return false;
+
+  /* Accept VNxHImode and VNxQImode now.  */
+  if (!TARGET_AVX512VL && GET_MODE_SIZE (mode) < 64)
+    return false;
+
+  /* vpermw.  */
+  if (!TARGET_AVX512BW && inner_size == 2)
+    return false;
+
+  /* vpermb.  */
+  if (!TARGET_AVX512VBMI && inner_size == 1)
     return false;
 
   switch (mode)
@@ -18112,6 +18172,25 @@ ix86_expand_vec_one_operand_perm_avx512 (struct expand_vec_perm_d *d)
       gen = gen_avx512f_permvarv8df;
       maskmode = V8DImode;
       break;
+    case E_V32HImode:
+      gen = gen_avx512bw_permvarv32hi;
+      break;
+    case E_V16HImode:
+      gen = gen_avx512vl_permvarv16hi;
+      break;
+    case E_V8HImode:
+      gen = gen_avx512vl_permvarv8hi;
+      break;
+    case E_V64QImode:
+      gen = gen_avx512bw_permvarv64qi;
+      break;
+    case E_V32QImode:
+      gen = gen_avx512vl_permvarv32qi;
+      break;
+    case E_V16QImode:
+      gen = gen_avx512vl_permvarv16qi;
+      break;
+
     default:
       return false;
     }
@@ -18301,7 +18380,7 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
   if (expand_vec_perm_palignr (d, true))
     return true;
 
-  /* Try the AVX512F vperm{s,d} instructions.  */
+  /* Try the AVX512F vperm{w,b,s,d} instructions  */
   if (ix86_expand_vec_one_operand_perm_avx512 (d))
     return true;
 
