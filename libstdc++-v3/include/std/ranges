@@ -1057,7 +1057,7 @@ namespace views::__adaptor
       static void _S_fun(_Range&&) = delete;
 
     public:
-      template<__detail::__not_same_as<ref_view> _Tp>
+      template<__detail::__different_from<ref_view> _Tp>
 	requires convertible_to<_Tp, _Range&>
 	  && requires { _S_fun(declval<_Tp>()); }
 	constexpr
