@@ -1,3 +1,12 @@
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/pr61486-2.c: Duplicate one proc_bind(master)
+	testcase and test proc_bind(primary) instead.
+	* gfortran.dg/gomp/affinity-1.f90: Likewise.
+
 2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

@@ -1,3 +1,13 @@
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* tree-core.h (omp_clause_proc_bind_kind): Add
+	OMP_CLAUSE_PROC_BIND_PRIMARY.
+	* tree-pretty-print.c (dump_omp_clause): Add TODO comment to
+	change 'master' to 'primary' in proc_bind for OpenMP 5.1.
+
 2021-07-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

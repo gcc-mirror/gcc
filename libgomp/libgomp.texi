@@ -660,8 +660,9 @@ one thread per CPU online is used.
 @item @emph{Description}:
 This functions returns the currently active thread affinity policy, which is
 set via @env{OMP_PROC_BIND}.  Possible values are @code{omp_proc_bind_false},
-@code{omp_proc_bind_true}, @code{omp_proc_bind_master},
-@code{omp_proc_bind_close} and @code{omp_proc_bind_spread}.
+@code{omp_proc_bind_true}, @code{omp_proc_bind_primary},
+@code{omp_proc_bind_master}, @code{omp_proc_bind_close} and @code{omp_proc_bind_spread},
+where @code{omp_proc_bind_master} is an alias for @code{omp_proc_bind_primary}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -822,7 +823,7 @@ Returns a unique thread identification number within the current team.
 In a sequential parts of the program, @code{omp_get_thread_num}
 always returns 0.  In parallel regions the return value varies
 from 0 to @code{omp_get_num_threads}-1 inclusive.  The return
-value of the master thread of a team is always 0.
+value of the primary thread of a team is always 0.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1670,11 +1671,12 @@ nesting by default.  If undefined one thread per CPU is used.
 Specifies whether threads may be moved between processors.  If set to
 @code{TRUE}, OpenMP theads should not be moved; if set to @code{FALSE}
 they may be moved.  Alternatively, a comma separated list with the
-values @code{MASTER}, @code{CLOSE} and @code{SPREAD} can be used to specify
-the thread affinity policy for the corresponding nesting level.  With
-@code{MASTER} the worker threads are in the same place partition as the
-master thread.  With @code{CLOSE} those are kept close to the master thread
-in contiguous place partitions.  And with @code{SPREAD} a sparse distribution
+values @code{PRIMARY}, @code{MASTER}, @code{CLOSE} and @code{SPREAD} can
+be used to specify the thread affinity policy for the corresponding nesting
+level.  With @code{PRIMARY} and @code{MASTER} the worker threads are in the
+same place partition as the primary thread.  With @code{CLOSE} those are
+kept close to the primary thread in contiguous place partitions.  And
+with @code{SPREAD} a sparse distribution
 across the place partitions is used.  Specifying more than one item in the
 list will automatically enable nesting by default.
 
@@ -1951,23 +1953,23 @@ instance.
 @item @code{$<priority>} is an optional priority for the worker threads of a
 thread pool according to @code{pthread_setschedparam}.  In case a priority
 value is omitted, then a worker thread will inherit the priority of the OpenMP
-master thread that created it.  The priority of the worker thread is not
-changed after creation, even if a new OpenMP master thread using the worker has
+primary thread that created it.  The priority of the worker thread is not
+changed after creation, even if a new OpenMP primary thread using the worker has
 a different priority.
 @item @code{@@<scheduler-name>} is the scheduler instance name according to the
 RTEMS application configuration.
 @end itemize
 In case no thread pool configuration is specified for a scheduler instance,
-then each OpenMP master thread of this scheduler instance will use its own
+then each OpenMP primary thread of this scheduler instance will use its own
 dynamically allocated thread pool.  To limit the worker thread count of the
-thread pools, each OpenMP master thread must call @code{omp_set_num_threads}.
+thread pools, each OpenMP primary thread must call @code{omp_set_num_threads}.
 @item @emph{Example}:
 Lets suppose we have three scheduler instances @code{IO}, @code{WRK0}, and
 @code{WRK1} with @env{GOMP_RTEMS_THREAD_POOLS} set to
 @code{"1@@WRK0:3$4@@WRK1"}.  Then there are no thread pool restrictions for
 scheduler instance @code{IO}.  In the scheduler instance @code{WRK0} there is
 one thread pool available.  Since no priority is specified for this scheduler
-instance, the worker thread inherits the priority of the OpenMP master thread
+instance, the worker thread inherits the priority of the OpenMP primary thread
 that created it.  In the scheduler instance @code{WRK1} there are three thread
 pools available and their worker threads run at priority four.
 @end table
@@ -3876,7 +3878,7 @@ if (omp_get_thread_num () == 0)
 @end smallexample
 
 Alternately, we generate two copies of the parallel subfunction
-and only include this in the version run by the master thread.
+and only include this in the version run by the primary thread.
 Surely this is not worthwhile though...
 
 
@@ -4013,7 +4015,7 @@ broadcast would have to happen via SINGLE machinery instead.
 The private struct mentioned in the previous section should have 
 a pointer to an array of the type of the variable, indexed by the 
 thread's @var{team_id}.  The thread stores its final value into the 
-array, and after the barrier, the master thread iterates over the
+array, and after the barrier, the primary thread iterates over the
 array to collect the values.
 
 

@@ -216,6 +216,19 @@ test (int n, int o, int p, int q, int r, int s, int *pp)
 	  s = i * 10;
 	}
     #pragma omp target device (n + 1) if (n != 6)map(from:n) map(alloc:a[2:o-2])
+    #pragma omp teams distribute parallel for simd if (n != 6)default(shared) \
+    	private (p) firstprivate (q) shared (n) reduction (+: r) \
+    	thread_limit (n * 2) dist_schedule (static, 4) num_threads (n + 4) \
+    	proc_bind (primary) lastprivate (s) schedule (static, 8) \
+    	num_teams (n + 4) safelen(16) linear(i:1) aligned (pp:4)
+      for (i = 0; i < 10; i++)
+	{
+	  r = r + 1;
+	  p = q;
+	  a[2+i] = p + q;
+	  s = i * 10;
+	}
+    #pragma omp target device (n + 1) if (n != 6)map(from:n) map(alloc:a[2:o-2])
     #pragma omp teams distribute simd default(shared) \
     	private (p) firstprivate (q) shared (n) reduction (+: r) \
     	thread_limit (n * 2) dist_schedule (static, 4) collapse (2) \

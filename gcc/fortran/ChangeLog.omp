@@ -1,3 +1,18 @@
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (gfc_omp_proc_bind_kind): Add OMP_PROC_BIND_PRIMARY.
+	* dump-parse-tree.c (show_omp_clauses): Add TODO comment to
+	change 'master' to 'primary' in proc_bind for OpenMP 5.1.
+	* intrinsic.texi (OMP_LIB): Mention OpenMP 5.1; add
+	omp_proc_bind_primary.
+	* openmp.c (gfc_match_omp_clauses): Accept
+	'primary' as alias for 'master'.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle
+	OMP_PROC_BIND_PRIMARY.
+
 2021-07-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

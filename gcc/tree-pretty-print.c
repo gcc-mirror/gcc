@@ -1059,6 +1059,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       switch (OMP_CLAUSE_PROC_BIND_KIND (clause))
 	{
 	case OMP_CLAUSE_PROC_BIND_MASTER:
+	  /* Same enum value: case OMP_CLAUSE_PROC_BIND_PRIMARY: */
+	  /* TODO: Change to 'primary' for OpenMP 5.1.  */
 	  pp_string (pp, "master");
 	  break;
 	case OMP_CLAUSE_PROC_BIND_CLOSE:

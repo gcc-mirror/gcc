@@ -3890,6 +3890,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_PROC_BIND);
       switch (clauses->proc_bind)
 	{
+	case OMP_PROC_BIND_PRIMARY:
+	  OMP_CLAUSE_PROC_BIND_KIND (c) = OMP_CLAUSE_PROC_BIND_PRIMARY;
+	  break;
 	case OMP_PROC_BIND_MASTER:
 	  OMP_CLAUSE_PROC_BIND_KIND (c) = OMP_CLAUSE_PROC_BIND_MASTER;
 	  break;

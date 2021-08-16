@@ -32,6 +32,12 @@
 # define __GOMP_DEPRECATED_5_0
 #endif
 
+#if defined(__GNUC__) && _OPENMP >= 202011
+# define __GOMP_DEPRECATED_5_1 __attribute__((__deprecated__))
+#else
+# define __GOMP_DEPRECATED_5_1
+#endif
+
 #ifndef _LIBGOMP_OMP_LOCK_DEFINED
 #define _LIBGOMP_OMP_LOCK_DEFINED 1
 /* These two structures get edited by the libgomp build process to 
@@ -64,7 +70,9 @@ typedef enum omp_proc_bind_t
 {
   omp_proc_bind_false = 0,
   omp_proc_bind_true = 1,
-  omp_proc_bind_master = 2,
+  omp_proc_bind_primary = 2,
+  omp_proc_bind_master __GOMP_DEPRECATED_5_1
+    = omp_proc_bind_primary,
   omp_proc_bind_close = 3,
   omp_proc_bind_spread = 4
 } omp_proc_bind_t;
