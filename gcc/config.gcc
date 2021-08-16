@@ -3126,7 +3126,7 @@ rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	default_use_cxa_atexit=yes
 	;;
 rl78-*-elf*)
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
 	target_has_targetm_common=no
 	c_target_objs="rl78-c.o"
 	cxx_target_objs="rl78-c.o"
