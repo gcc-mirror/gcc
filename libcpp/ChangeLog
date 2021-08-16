@@ -1,3 +1,12 @@
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/101638
+	* macro.c (cpp_sys_macro_p): Return true instead of
+	crashing on builtin macros.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

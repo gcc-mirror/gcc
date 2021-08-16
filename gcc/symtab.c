@@ -1959,6 +1959,8 @@ symtab_node::noninterposable_alias (void)
   /* If aliases aren't supported by the assembler, fail.  */
   if (!TARGET_SUPPORTS_ALIASES)
     return NULL;
+  else if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (node->decl)))
+    return NULL;
 
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->decl);
