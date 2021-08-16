@@ -1,6 +1,17 @@
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/masked-1.f90: New test.
+	* gfortran.dg/gomp/masked-2.f90: New test.
+	* gfortran.dg/gomp/masked-3.f90: New test.
+	* gfortran.dg/gomp/masked-combined-1.f90: New test.
+	* gfortran.dg/gomp/masked-combined-2.f90: New test.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/clauses-1.c (bar): Add tests for combined masked

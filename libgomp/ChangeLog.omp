@@ -1,6 +1,13 @@
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/masked-1.f90: New test.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/masked-1.c: New test.
