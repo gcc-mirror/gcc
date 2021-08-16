@@ -1333,6 +1333,7 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
   { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "for", PRAGMA_OMP_FOR },
   { "loop", PRAGMA_OMP_LOOP },
+  { "masked", PRAGMA_OMP_MASKED },
   { "master", PRAGMA_OMP_MASTER },
   { "ordered", PRAGMA_OMP_ORDERED },
   { "parallel", PRAGMA_OMP_PARALLEL },

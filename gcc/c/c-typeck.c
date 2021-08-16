@@ -15271,6 +15271,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_HINT:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_NUM_GANGS:

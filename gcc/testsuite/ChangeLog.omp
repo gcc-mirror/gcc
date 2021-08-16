@@ -1,6 +1,31 @@
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-1.c (bar): Add tests for combined masked
+	constructs with clauses.
+	* c-c++-common/gomp/clauses-5.c (foo): Add testcase for filter clause.
+	* c-c++-common/gomp/clause-dups-1.c (f1): Likewise.
+	* c-c++-common/gomp/masked-1.c: New test.
+	* c-c++-common/gomp/masked-2.c: New test.
+	* c-c++-common/gomp/masked-combined-1.c: New test.
+	* c-c++-common/gomp/masked-combined-2.c: New test.
+	* c-c++-common/goacc/uninit-if-clause.c: Remove xfails.
+	* g++.dg/gomp/block-11.C: New test.
+	* g++.dg/gomp/tpl-masked-1.C: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add tests for masked construct and
+	combined masked constructs with clauses in attribute syntax.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* gcc.dg/gomp/nesting-1.c (f1, f2): Add tests for masked construct
+	nesting.
+	* gfortran.dg/goacc/host_data-tree.f95: Allow also SSA_NAMEs in if
+	clause.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-c++-common/gomp/pr61486-2.c: Duplicate one proc_bind(master)

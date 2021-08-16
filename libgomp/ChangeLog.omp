@@ -1,6 +1,13 @@
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/masked-1.c: New test.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* env.c (parse_bind_var): Accept 'primary' as alias for

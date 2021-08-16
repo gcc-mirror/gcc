@@ -1,6 +1,22 @@
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Parse filter clause name.
+	(cp_parser_omp_clause_filter): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_FILTER.
+	(OMP_MASKED_CLAUSE_MASK): Define.
+	(cp_parser_omp_masked): New function.
+	(cp_parser_omp_parallel): Handle parallel masked.
+	(cp_parser_omp_construct, cp_parser_pragma): Handle PRAGMA_OMP_MASKED.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_FILTER.
+	* pt.c (tsubst_omp_clauses): Likewise.
+	(tsubst_expr): Handle OMP_MASKED.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_proc_bind): Accept

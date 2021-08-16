@@ -351,6 +351,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_DEFAULTMAP  */
   0, /* OMP_CLAUSE_ORDER  */
   0, /* OMP_CLAUSE_BIND  */
+  1, /* OMP_CLAUSE_FILTER  */
   1, /* OMP_CLAUSE__SIMDUID_  */
   0, /* OMP_CLAUSE__SIMT_  */
   0, /* OMP_CLAUSE_INDEPENDENT  */
@@ -439,6 +440,7 @@ const char * const omp_clause_code_name[] =
   "defaultmap",
   "order",
   "bind",
+  "filter",
   "_simduid_",
   "_simt_",
   "independent",
@@ -12267,6 +12269,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
 	case OMP_CLAUSE_HINT:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE_TO_DECLARE:
 	case OMP_CLAUSE_LINK:
 	case OMP_CLAUSE_DETACH:

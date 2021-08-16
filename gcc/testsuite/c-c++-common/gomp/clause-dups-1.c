@@ -203,7 +203,8 @@ f1 (int *p)
   i = p[0]++;
   #pragma omp atomic capture hint(0) hint (0)			/* { dg-error "too many 'hint' clauses" } */
   i = p[0]++;
-  
+  #pragma omp masked filter (0) filter (0)			/* { dg-error "too many 'filter' clauses" } */
+  f0 ();
 }
 
 #pragma omp declare simd simdlen (4) simdlen (4)		/* { dg-error "too many 'simdlen' clauses" } */

@@ -1,6 +1,53 @@
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (OMP_MASKED): New tree code.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_FILTER.
+	* tree.h (OMP_MASKED_BODY, OMP_MASKED_CLAUSES, OMP_MASKED_COMBINED,
+	OMP_CLAUSE_FILTER_EXPR): Define.
+	* tree.c (omp_clause_num_ops): Add OMP_CLAUSE_FILTER entry.
+	(omp_clause_code_name): Likewise.
+	(walk_tree_1): Handle OMP_CLAUSE_FILTER.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_FILTER.
+	(convert_nonlocal_reference_stmt, convert_local_reference_stmt,
+	convert_gimple_call): Handle GIMPLE_OMP_MASTER.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_FILTER.
+	(dump_generic_node): Handle OMP_MASTER.
+	* gimple.def (GIMPLE_OMP_MASKED): New gimple code.
+	* gimple.c (gimple_build_omp_masked): New function.
+	(gimple_copy): Handle GIMPLE_OMP_MASKED.
+	* gimple.h (gimple_build_omp_masked): Declare.
+	(gimple_has_substatements): Handle GIMPLE_OMP_MASKED.
+	(gimple_omp_masked_clauses, gimple_omp_masked_clauses_ptr,
+	gimple_omp_masked_set_clauses): New inline functions.
+	(CASE_GIMPLE_OMP): Add GIMPLE_OMP_MASKED.
+	* gimple-pretty-print.c (dump_gimple_omp_masked): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_MASKED.
+	* gimple-walk.c (walk_gimple_stmt): Likewise.
+	* gimple-low.c (lower_stmt): Likewise.
+	* gimplify.c (is_gimple_stmt): Handle OMP_MASTER.
+	(gimplify_scan_omp_clauses): Handle OMP_CLAUSE_FILTER.  For clauses
+	that take one expression rather than decl or constant, force
+	gimplification of that into a SSA_NAME or temporary unless min
+	invariant.
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_FILTER.
+	(gimplify_expr): Handle OMP_MASKED.
+	* tree-inline.c (remap_gimple_stmt): Handle GIMPLE_OMP_MASKED.
+	(estimate_num_insns): Likewise.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_FILTER.
+	(check_omp_nesting_restrictions): Handle GIMPLE_OMP_MASKED.  Adjust
+	diagnostics for existence of masked construct.
+	(scan_omp_1_stmt, lower_omp_master, lower_omp_1, diagnose_sb_1,
+	diagnose_sb_2): Handle GIMPLE_OMP_MASKED.
+	* omp-expand.c (expand_omp_synch, expand_omp, omp_make_gimple_edges):
+	Likewise.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* tree-core.h (omp_clause_proc_bind_kind): Add
@@ -696,8 +743,8 @@
 	function to...
 	(gcn_goacc_create_propagation_record): This.  Adjust comment.
 	* config/gcn/gcn.c (gcn_init_builtins): Override decls for
-        BUILT_IN_GOACC_SINGLE_START, BUILT_IN_GOACC_SINGLE_COPY_START,
-        BUILT_IN_GOACC_SINGLE_COPY_END and BUILT_IN_GOACC_BARRIER.
+	BUILT_IN_GOACC_SINGLE_START, BUILT_IN_GOACC_SINGLE_COPY_START,
+	BUILT_IN_GOACC_SINGLE_COPY_END and BUILT_IN_GOACC_BARRIER.
 	(gcn_fork_join): Remove inaccurate comment.
 	(TARGET_GOACC_ADJUST_PROPAGATION_RECORD): Rename to...
 	(TARGET_GOACC_CREATE_PROPAGATION_RECORD): This.
@@ -706,7 +753,7 @@
 
 	* Makefile.in (OBJS): Add omp-sese.o.
 	* omp-builtins.def (BUILT_IN_GOACC_BARRIER, BUILT_IN_GOACC_SINGLE_START,
-        BUILT_IN_GOACC_SINGLE_COPY_START, BUILT_IN_GOACC_SINGLE_COPY_END): New
+	BUILT_IN_GOACC_SINGLE_COPY_START, BUILT_IN_GOACC_SINGLE_COPY_END): New
 	builtins.
 	* omp-offload.c (omp-sese.h): Include header.
 	(oacc_loop_xform_head_tail): Call update_stmt for modified builtin

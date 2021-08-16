@@ -1,3 +1,17 @@
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_MASKED.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_FILTER.
+	* c-pragma.c (omp_pragmas_simd): Add masked construct.
+	* c-common.h (enum c_omp_clause_split): Add C_OMP_CLAUSE_SPLIT_MASKED
+	enumerator.
+	(c_finish_omp_masked): Declare.
+	* c-omp.c (c_finish_omp_masked): New function.
+	(c_omp_split_clauses): Handle combined masked constructs.
+
 2021-07-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

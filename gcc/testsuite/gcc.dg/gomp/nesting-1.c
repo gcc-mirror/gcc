@@ -19,8 +19,10 @@ f1 (void)
       }
       #pragma omp single	/* { dg-error "may not be closely nested" } */
 	;
-    #pragma omp master		/* { dg-error "may not be closely nested" } */
-      ;
+      #pragma omp master	/* { dg-error "may not be closely nested" } */
+	;
+      #pragma omp masked	/* { dg-error "may not be closely nested" } */
+	;
       #pragma omp barrier	/* { dg-error "may not be closely nested" } */
     }
   #pragma omp sections
@@ -50,6 +52,11 @@ f1 (void)
   }
   #pragma omp sections
   {
+    #pragma omp masked		/* { dg-error "may not be closely nested" } */
+      ;
+  }
+  #pragma omp sections
+  {
     #pragma omp section
       ;
   }
@@ -80,6 +87,9 @@ f1 (void)
   {
     #pragma omp section
     #pragma omp master		/* { dg-error "may not be closely nested" } */
+      ;
+    #pragma omp section
+    #pragma omp masked		/* { dg-error "may not be closely nested" } */
       ;
   }
   #pragma omp single
@@ -97,9 +107,28 @@ f1 (void)
       ;
     #pragma omp master		/* { dg-error "may not be closely nested" } */
       ;
+    #pragma omp masked		/* { dg-error "may not be closely nested" } */
+      ;
     #pragma omp barrier		/* { dg-error "may not be closely nested" } */
   }
   #pragma omp master
+  {
+    #pragma omp for		/* { dg-error "may not be closely nested" } */
+    for (j = 0; j < 3; j++)
+      ;
+    #pragma omp sections	/* { dg-error "may not be closely nested" } */
+    {
+      ;
+    #pragma omp section
+      ;
+    }
+    #pragma omp single		/* { dg-error "may not be closely nested" } */
+      ;
+    #pragma omp master
+      ;
+    #pragma omp barrier		/* { dg-error "may not be closely nested" } */
+  }
+  #pragma omp masked filter (1)
   {
     #pragma omp for		/* { dg-error "may not be closely nested" } */
     for (j = 0; j < 3; j++)
@@ -131,6 +160,8 @@ f1 (void)
       ;
     #pragma omp master		/* { dg-error "may not be closely nested" } */
       ;
+    #pragma omp masked		/* { dg-error "may not be closely nested" } */
+      ;
     #pragma omp barrier		/* { dg-error "may not be closely nested" } */
   }
   #pragma omp parallel
@@ -147,6 +178,8 @@ f1 (void)
     #pragma omp single
       ;
     #pragma omp master
+      ;
+    #pragma omp masked
       ;
     #pragma omp barrier
   }
@@ -170,6 +203,8 @@ f2 (void)
     #pragma omp single		/* { dg-error "may not be closely nested" } */
       ;
     #pragma omp master
+      ;
+    #pragma omp masked
       ;
     #pragma omp barrier		/* { dg-error "may not be closely nested" } */
   }
