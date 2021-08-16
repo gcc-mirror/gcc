@@ -2503,9 +2503,8 @@ loongarch*-*-linux*)
 		echo "not specify ABI, default is lp64 for loongarch64"
 		with_abi=lp64 # for default
 		;;
-	lp32)
-		;;
-	lp64)
+	lp32|lp64)
+		# OK
 		;;
 	*)
 		echo "Unknown ABI used in --with-abi=$with_abi"
