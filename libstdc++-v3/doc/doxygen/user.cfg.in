@@ -2384,7 +2384,7 @@ INCLUDE_FILE_PATTERNS  =
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             = __cplusplus=201703L \
+PREDEFINED             = __cplusplus=202002L \
                          __GTHREADS \
                          _GLIBCXX_HAS_GTHREADS \
                          _GLIBCXX_HAVE_TLS \
@@ -2427,6 +2427,13 @@ PREDEFINED             = __cplusplus=201703L \
                          __cpp_exceptions \
                          __cpp_rtti \
                          __cpp_inline_variables \
+                         __cpp_constexpr_dynamic_alloc \
+                         __cpp_aligned_new \
+                         __cpp_sized_deallocation \
+                         __cpp_concepts=209900 \
+                         __cpp_deduction_guides=209900 \
+                         __cpp_impl_three_way_comparison=209900 \
+                         __cpp_impl_coroutine \
                          ATOMIC_INT_LOCK_FREE=2 \
                          PB_DS_DATA_TRUE_INDICATOR \
                          PB_DS_STATIC_ASSERT=// \
@@ -2448,8 +2455,15 @@ PREDEFINED             = __cplusplus=201703L \
                          "_GLIBCXX20_DEPRECATED(E)= " \
                          "_GLIBCXX20_DEPRECATED(E)= " \
                          _GLIBCXX17_INLINE=inline \
-			 _GLIBCXX_CHRONO_INT64_T=int64_t \
-			 _GLIBCXX_DEFAULT_ABI_TAG
+                         _GLIBCXX_CHRONO_INT64_T=int64_t \
+                         _GLIBCXX_DEFAULT_ABI_TAG \
+                         _GLIBCXX_USE_DEPRECATED \
+                         _GLIBCXX_HOSTED \
+                         "__has_builtin(x)=1" \
+                         _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP \
+                         _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE \
+                         _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED \
+                         _GLIBCXX_HAVE_BUILTIN_LAUNDER \
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

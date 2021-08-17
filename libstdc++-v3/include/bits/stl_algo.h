@@ -4545,6 +4545,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  Reorder the elements in the range @p [__first,__last) using a random
    *  distribution, so that every possible ordering of the sequence is
    *  equally likely.
+   *
+   *  @deprecated
+   *  Since C++14 `std::random_shuffle` is not part of the C++ standard.
+   *  Use `std::shuffle` instead, which was introduced in C++11.
   */
   template<typename _RandomAccessIterator>
     _GLIBCXX14_DEPRECATED_SUGGEST("std::shuffle")
@@ -4581,6 +4585,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  provide a random distribution. Calling @p __rand(N) for a positive
    *  integer @p N should return a randomly chosen integer from the
    *  range [0,N).
+   *
+   *  @deprecated
+   *  Since C++14 `std::random_shuffle` is not part of the C++ standard.
+   *  Use `std::shuffle` instead, which was introduced in C++11.
   */
   template<typename _RandomAccessIterator, typename _RandomNumberGenerator>
     _GLIBCXX14_DEPRECATED_SUGGEST("std::shuffle")

@@ -551,7 +551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// __is_nullptr_t (deprecated extension).
-  /// @deprecated Use `is_null_pointer` instead.
+  /// @deprecated Non-standard. Use `is_null_pointer` instead.
   template<typename _Tp>
     struct __is_nullptr_t
     : public is_null_pointer<_Tp>
@@ -732,8 +732,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	"template argument must be a complete class or an unbounded array");
     };
 
-  /** is_pod (deprecated in C++20)
-   * @deprecated Use `is_standard_layout && is_trivial` instead.
+  /** is_pod
+   * @deprecated Deprecated in C++20.
+   * Use `is_standard_layout && is_trivial` instead.
    */
   // Could use is_standard_layout && is_trivial instead of the builtin.
   template<typename _Tp>
@@ -747,7 +748,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /** is_literal_type
-   * @deprecated Deprecated in C++20. The idea of a literal type isn't useful.
+   * @deprecated Deprecated in C++17, removed in C++20.
+   * The idea of a literal type isn't useful.
    */
   template<typename _Tp>
     struct
@@ -3097,7 +3099,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Each variable `is_xxx_v<T>` is a boolean constant with the same value
    * as the `value` member of the corresponding type trait `is_xxx<T>`.
    *
-   * @since C++17
+   * @since C++17 unless noted otherwise.
    */
 
   /**
@@ -3286,6 +3288,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
   /// has_unique_object_representations
+  /// @since C++17
   template<typename _Tp>
     struct has_unique_object_representations
     : bool_constant<__has_unique_object_representations(
@@ -3305,6 +3308,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
 # define __cpp_lib_is_aggregate 201703
   /// is_aggregate
+  /// @since C++17
   template<typename _Tp>
     struct is_aggregate
     : bool_constant<__is_aggregate(remove_cv_t<_Tp>)>
@@ -3316,10 +3320,14 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #endif
 #endif // C++17
 
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
+
+  /** * Remove references and cv-qualifiers.
+   * @since C++20
+   * @{
+   */
 #define __cpp_lib_remove_cvref 201711L
 
-  /// Remove references and cv-qualifiers.
   template<typename _Tp>
     struct remove_cvref
     : remove_cv<_Tp>
@@ -3337,18 +3345,26 @@ template<typename _Ret, typename _Fn, typename... _Args>
 
   template<typename _Tp>
     using remove_cvref_t = typename remove_cvref<_Tp>::type;
+  /// @}
 
+  /** * Identity metafunction.
+   * @since C++20
+   * @{
+   */
 #define __cpp_lib_type_identity 201806L
-  /// Identity metafunction.
   template<typename _Tp>
     struct type_identity { using type = _Tp; };
 
   template<typename _Tp>
     using type_identity_t = typename type_identity<_Tp>::type;
+  /// @}
 
 #define __cpp_lib_unwrap_ref 201811L
 
-  /// Unwrap a reference_wrapper
+  /** Unwrap a reference_wrapper
+   * @since C++20
+   * @{
+   */
   template<typename _Tp>
     struct unwrap_reference { using type = _Tp; };
 
@@ -3357,34 +3373,43 @@ template<typename _Ret, typename _Fn, typename... _Args>
 
   template<typename _Tp>
     using unwrap_reference_t = typename unwrap_reference<_Tp>::type;
+  /// @}
 
-  /// Decay type and if it's a reference_wrapper, unwrap it
+  /** Decay type and if it's a reference_wrapper, unwrap it
+   * @since C++20
+   * @{
+   */
   template<typename _Tp>
     struct unwrap_ref_decay { using type = unwrap_reference_t<decay_t<_Tp>>; };
 
   template<typename _Tp>
     using unwrap_ref_decay_t = typename unwrap_ref_decay<_Tp>::type;
+  /// @}
 
 #define __cpp_lib_bounded_array_traits 201902L
 
   /// True for a type that is an array of known bound.
+  /// @since C++20
   template<typename _Tp>
     struct is_bounded_array
     : public __is_array_known_bounds<_Tp>
     { };
 
   /// True for a type that is an array of unknown bound.
+  /// @since C++20
   template<typename _Tp>
     struct is_unbounded_array
     : public __is_array_unknown_bounds<_Tp>
     { };
 
   /// @ingroup variable_templates
+  /// @since C++20
   template<typename _Tp>
     inline constexpr bool is_bounded_array_v
       = is_bounded_array<_Tp>::value;
 
   /// @ingroup variable_templates
+  /// @since C++20
   template<typename _Tp>
     inline constexpr bool is_unbounded_array_v
       = is_unbounded_array<_Tp>::value;
@@ -3419,8 +3444,8 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #if __cplusplus > 202002L
 #define __cpp_lib_is_scoped_enum 202011L
 
+  /// True if the type is a scoped enumeration type.
   /// @since C++23
-  //@{
 
   template<typename _Tp>
     struct is_scoped_enum
@@ -3443,11 +3468,11 @@ template<typename _Ret, typename _Fn, typename... _Args>
     : bool_constant<!requires(_Tp __t, void(*__f)(int)) { __f(__t); }>
     { };
 
-  /**
-   * @ingroup variable_templates
-   */
+  /// @ingroup variable_templates
+  /// @since C++23
   template<typename _Tp>
     inline constexpr bool is_scoped_enum_v = is_scoped_enum<_Tp>::value;
+
 #endif // C++23
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
@@ -3455,10 +3480,10 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #define __cpp_lib_is_constant_evaluated 201811L
 
   /// Returns true only when called during constant evaluation.
+  /// @since C++20
   constexpr inline bool
   is_constant_evaluated() noexcept
   { return __builtin_is_constant_evaluated(); }
-  /// @}
 #endif
 
   /// @cond undocumented
