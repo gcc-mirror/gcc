@@ -2510,14 +2510,6 @@ vect_check_scalar_mask (vec_info *vinfo, stmt_vec_info stmt_info,
       return false;
     }
 
-  if (TREE_CODE (*mask) != SSA_NAME)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "mask argument is not an SSA name.\n");
-      return false;
-    }
-
   /* If the caller is not prepared for adjusting an external/constant
      SLP mask vector type fail.  */
   if (slp_node
