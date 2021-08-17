@@ -1,3 +1,28 @@
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_node, show_code_node): Handle
+	EXEC_OMP_SCOPE.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_(END_)SCOPE.
+	(enum gfc_exec_op): Add EXEC_OMP_SCOPE.
+	* match.h (gfc_match_omp_scope): New.
+	* openmp.c (OMP_SCOPE_CLAUSES): Define
+	(gfc_match_omp_scope): New.
+	(gfc_match_omp_cancellation_point, gfc_match_omp_end_nowait):
+	Improve error diagnostic.
+	(omp_code_to_statement): Handle ST_OMP_SCOPE.
+	(gfc_resolve_omp_directive): Handle EXEC_OMP_SCOPE.
+	* parse.c (decode_omp_directive, next_statement,
+	gfc_ascii_statement, parse_omp_structured_block,
+	parse_executable): Handle OpenMP's scope construct.
+	* resolve.c (gfc_resolve_blocks): Likewise
+	* st.c (gfc_free_statement): Likewise
+	* trans-openmp.c (gfc_trans_omp_scope): New.
+	(gfc_trans_omp_directive): Call it.
+	* trans.c (trans_code): handle EXEC_OMP_SCOPE.
+
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

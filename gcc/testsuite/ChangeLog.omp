@@ -1,6 +1,26 @@
 2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/scan-1.f90:
+	* gfortran.dg/gomp/cancel-1.f90: New test.
+	* gfortran.dg/gomp/cancel-4.f90: New test.
+	* gfortran.dg/gomp/loop-4.f90: New test.
+	* gfortran.dg/gomp/nesting-1.f90: New test.
+	* gfortran.dg/gomp/nesting-2.f90: New test.
+	* gfortran.dg/gomp/nesting-3.f90: New test.
+	* gfortran.dg/gomp/nowait-1.f90: New test.
+	* gfortran.dg/gomp/reduction-task-1.f90: New test.
+	* gfortran.dg/gomp/reduction-task-2.f90: New test.
+	* gfortran.dg/gomp/reduction-task-2a.f90: New test.
+	* gfortran.dg/gomp/reduction-task-3.f90: New test.
+	* gfortran.dg/gomp/scope-1.f90: New test.
+	* gfortran.dg/gomp/scope-2.f90: New test.
+
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/nesting-2.c (foo): Add scope and masked
