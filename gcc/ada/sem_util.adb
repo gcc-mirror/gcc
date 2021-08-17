@@ -31510,7 +31510,12 @@ package body Sem_Util is
                   --    quantified_expression.
 
                   if Nkind (Par) = N_Quantified_Expression
-                     and then Trailer = Condition (Par)
+                    and then Trailer = Condition (Par)
+                  then
+                     return True;
+                  elsif Nkind (Par) = N_Expression_With_Actions
+                    and then
+                      Nkind (Original_Node (Par)) = N_Quantified_Expression
                   then
                      return True;
                   end if;
