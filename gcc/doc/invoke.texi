@@ -16994,8 +16994,9 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
 @samp{cortex-a65}, @samp{cortex-a65ae}, @samp{cortex-a34},
-@samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor}, @samp{neoverse-e1},
-@samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{qdf24xx},
+@samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
+@samp{neoverse-e1}, @samp{neoverse-n1}, @samp{neoverse-n2},
+@samp{neoverse-v1}, @samp{neoverse-512tvb}, @samp{qdf24xx},
 @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan}, @samp{octeontx},
 @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
@@ -17014,6 +17015,15 @@ The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55} specify that GCC
 should tune for a big.LITTLE system.
+
+The value @samp{neoverse-512tvb} specifies that GCC should tune
+for Neoverse cores that (a) implement SVE and (b) have a total vector
+bandwidth of 512 bits per cycle.  In other words, the option tells GCC to
+tune for Neoverse cores that can execute 4 128-bit Advanced SIMD arithmetic
+instructions a cycle and that can execute an equivalent number of SVE
+arithmetic instructions per cycle (2 for 256-bit SVE, 4 for 128-bit SVE).
+This is more general than tuning for a specific core like Neoverse V1
+but is more specific than the default tuning described below.
 
 Additionally on native AArch64 GNU/Linux systems the value
 @samp{native} tunes performance to the host system.  This option has no effect
@@ -17043,6 +17053,16 @@ the target processor for which to tune for performance (as if
 by @option{-mtune}).  Where this option is used in conjunction
 with @option{-march} or @option{-mtune}, those options take precedence
 over the appropriate part of this option.
+
+@option{-mcpu=neoverse-512tvb} is special in that it does not refer
+to a specific core, but instead refers to all Neoverse cores that
+(a) implement SVE and (b) have a total vector bandwidth of 512 bits
+a cycle.  Unless overridden by @option{-march},
+@option{-mcpu=neoverse-512tvb} generates code that can run on a
+Neoverse V1 core, since Neoverse V1 is the first Neoverse core with
+these properties.  Unless overridden by @option{-mtune},
+@option{-mcpu=neoverse-512tvb} tunes code in the same way as for
+@option{-mtune=neoverse-512tvb}.
 
 @item -moverride=@var{string}
 @opindex moverride
