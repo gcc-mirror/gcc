@@ -1,3 +1,13 @@
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (OMP_SCOPE_CLAUSE_MASK): Define.
+	(cp_parser_omp_scope): New function.
+	(cp_parser_omp_construct, cp_parser_pragma): Handle PRAGMA_OMP_SCOPE.
+	* pt.c (tsubst_expr): Handle OMP_SCOPE.
+
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

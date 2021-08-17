@@ -5669,6 +5669,7 @@ is_gimple_stmt (tree t)
     case OMP_LOOP:
     case OACC_LOOP:
     case OMP_SCAN:
+    case OMP_SCOPE:
     case OMP_SECTIONS:
     case OMP_SECTION:
     case OMP_SINGLE:
@@ -9632,7 +9633,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_TASK (c))
 	    {
-	      if (region_type == ORT_WORKSHARE)
+	      if (region_type == ORT_WORKSHARE || code == OMP_SCOPE)
 		{
 		  if (nowait == -1)
 		    nowait = omp_find_clause (*list_p,
@@ -9651,8 +9652,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "invalid %<task%> reduction modifier on construct "
-			    "other than %<parallel%>, %qs or %<sections%>",
-			    lang_GNU_Fortran () ? "do" : "for");
+			    "other than %<parallel%>, %qs, %<sections%> or "
+			    "%<scope%>", lang_GNU_Fortran () ? "do" : "for");
 		  OMP_CLAUSE_REDUCTION_TASK (c) = 0;
 		}
 	    }
@@ -9681,6 +9682,12 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%<inscan%> %<reduction%> clause on "
 			  "%qs construct", "taskloop");
+		OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
+		break;
+	      case OMP_SCOPE:
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%<inscan%> %<reduction%> clause on "
+			  "%qs construct", "scope");
 		OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
 		break;
 	      default:
@@ -11066,6 +11073,7 @@ omp_find_stores_stmt (gimple_stmt_iterator *gsi_p,
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_TARGET:
     case GIMPLE_OMP_TEAMS:
     case GIMPLE_OMP_CRITICAL:
@@ -14240,6 +14248,9 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
     case OMP_SINGLE:
       ort = ORT_WORKSHARE;
       break;
+    case OMP_SCOPE:
+      ort = ORT_TASKGROUP;
+      break;
     case OMP_TARGET:
       ort = OMP_TARGET_COMBINED (expr) ? ORT_COMBINED_TARGET : ORT_TARGET;
       break;
@@ -14356,6 +14367,9 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
       break;
     case OMP_SINGLE:
       stmt = gimple_build_omp_single (body, OMP_CLAUSES (expr));
+      break;
+    case OMP_SCOPE:
+      stmt = gimple_build_omp_scope (body, OMP_CLAUSES (expr));
       break;
     case OMP_TARGET:
       stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_REGION,
@@ -15626,6 +15640,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OACC_KERNELS:
 	case OACC_PARALLEL:
 	case OACC_SERIAL:
+	case OMP_SCOPE:
 	case OMP_SECTIONS:
 	case OMP_SINGLE:
 	case OMP_TARGET:
@@ -16058,7 +16073,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  && code != OMP_SCAN
 		  && code != OMP_SECTIONS
 		  && code != OMP_SECTION
-		  && code != OMP_SINGLE);
+		  && code != OMP_SINGLE
+		  && code != OMP_SCOPE);
     }
 #endif
 

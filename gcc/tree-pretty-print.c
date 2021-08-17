@@ -3708,6 +3708,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_omp_clauses (pp, OMP_SINGLE_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
+    case OMP_SCOPE:
+      pp_string (pp, "#pragma omp scope");
+      dump_omp_clauses (pp, OMP_SCOPE_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
     case OMP_CLAUSE:
       /* If we come here, we're dumping something that's not an OMP construct,
 	 for example, OMP clauses attached to a function's '__attribute__'.

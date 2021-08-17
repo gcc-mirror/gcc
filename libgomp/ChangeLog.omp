@@ -1,3 +1,16 @@
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add scope.c
+	* Makefile.in: Regenerated.
+	* libgomp_g.h (GOMP_scope_start): Declare.
+	* libgomp.map: Add GOMP_scope_start@@GOMP_5.1.
+	* scope.c: New file.
+	* testsuite/libgomp.c-c++-common/scope-1.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-16.c: New test.
+
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

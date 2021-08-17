@@ -1,3 +1,26 @@
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/nesting-2.c (foo): Add scope and masked
+	construct tests.
+	* c-c++-common/gomp/scan-1.c (f3): Add scope construct test..
+	* c-c++-common/gomp/cancel-1.c (f2): Add scope and masked
+	construct tests.
+	* c-c++-common/gomp/reduction-task-2.c (bar): Add scope construct
+	test.  Adjust diagnostics for the addition of scope.
+	* c-c++-common/gomp/loop-1.c (f5): Add master, masked and scope
+	construct tests.
+	* c-c++-common/gomp/clause-dups-1.c (f1): Add scope construct test.
+	* gcc.dg/gomp/nesting-1.c (f1, f2, f3): Add scope construct tests.
+	* c-c++-common/gomp/scope-1.c: New test.
+	* c-c++-common/gomp/scope-2.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add scope construct tests.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* gfortran.dg/gomp/reduction4.f90: Adjust expected diagnostics.
+	* gfortran.dg/gomp/reduction7.f90: Likewise.
+
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

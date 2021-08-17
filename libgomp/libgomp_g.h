@@ -332,6 +332,10 @@ extern bool GOMP_single_start (void);
 extern void *GOMP_single_copy_start (void);
 extern void GOMP_single_copy_end (void *);
 
+/* scope.c */
+
+extern void GOMP_scope_start (uintptr_t *);
+
 /* target.c */
 
 extern void GOMP_target (int, void (*) (void *), const void *,

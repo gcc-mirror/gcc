@@ -8464,7 +8464,7 @@ expand_omp_sections (struct omp_region *region)
   set_immediate_dominator (CDI_DOMINATORS, default_bb, l0_bb);
 }
 
-/* Expand code for an OpenMP single directive.  We've already expanded
+/* Expand code for an OpenMP single or scope directive.  We've already expanded
    much of the code, here we simply place the GOMP_barrier call.  */
 
 static void
@@ -8477,7 +8477,8 @@ expand_omp_single (struct omp_region *region)
   exit_bb = region->exit;
 
   si = gsi_last_nondebug_bb (entry_bb);
-  gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_SINGLE);
+  gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_SINGLE
+	      || gimple_code (gsi_stmt (si)) == GIMPLE_OMP_SCOPE);
   gsi_remove (&si, true);
   single_succ_edge (entry_bb)->flags = EDGE_FALLTHRU;
 
@@ -9991,6 +9992,7 @@ expand_omp (struct omp_region *region)
 	  break;
 
 	case GIMPLE_OMP_SINGLE:
+	case GIMPLE_OMP_SCOPE:
 	  expand_omp_single (region);
 	  break;
 
@@ -10331,6 +10333,7 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
     case GIMPLE_OMP_TEAMS:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_SECTION:

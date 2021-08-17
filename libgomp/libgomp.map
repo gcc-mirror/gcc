@@ -380,6 +380,11 @@ GOMP_5.0.1 {
 	GOMP_free;
 } GOMP_5.0;
 
+GOMP_5.1 {
+  global:
+	GOMP_scope_start;
+} GOMP_5.0.1;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

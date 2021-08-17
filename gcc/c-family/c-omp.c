@@ -3802,8 +3802,8 @@ static const struct c_omp_directive omp_directives[] = {
     C_OMP_DIR_INFORMATIONAL, false },
   { "scan", nullptr, nullptr, PRAGMA_OMP_SCAN,
     C_OMP_DIR_CONSTRUCT, true },
-  /* { "scope", nullptr, nullptr, PRAGMA_OMP_SCOPE,
-    C_OMP_DIR_CONSTRUCT, false },  */
+  { "scope", nullptr, nullptr, PRAGMA_OMP_SCOPE,
+    C_OMP_DIR_CONSTRUCT, false },
   { "section", nullptr, nullptr, PRAGMA_OMP_SECTION,
     C_OMP_DIR_CONSTRUCT, false },
   { "sections", nullptr, nullptr, PRAGMA_OMP_SECTIONS,

@@ -1,3 +1,12 @@
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_SCOPE.
+	* c-pragma.c (omp_pragmas): Add scope construct.
+	* c-omp.c (omp_directives): Uncomment scope directive entry.
+
 2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

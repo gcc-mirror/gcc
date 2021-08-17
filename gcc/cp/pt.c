@@ -18863,6 +18863,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       omp_parallel_combined_clauses = NULL;
       /* FALLTHRU */
     case OMP_SINGLE:
+    case OMP_SCOPE:
     case OMP_TEAMS:
     case OMP_CRITICAL:
     case OMP_TASKGROUP:

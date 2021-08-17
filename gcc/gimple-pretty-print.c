@@ -1686,6 +1686,35 @@ dump_gimple_omp_masked (pretty_printer *buffer, const gimple *gs,
     }
 }
 
+/* Dump a GIMPLE_OMP_SCOPE tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_scope (pretty_printer *buffer, const gimple *gs,
+		       int spc, dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
+		       gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_scope_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp scope");
+      dump_omp_clauses (buffer, gimple_omp_scope_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_left_brace (buffer);
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_right_brace (buffer);
+	}
+    }
+}
+
 /* Dump a GIMPLE_OMP_TARGET tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -2740,6 +2769,10 @@ pp_gimple_stmt_1 (pretty_printer *buffer, const gimple *gs, int spc,
 
     case GIMPLE_OMP_MASKED:
       dump_gimple_omp_masked (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_SCOPE:
+      dump_gimple_omp_scope (buffer, gs, spc, flags);
       break;
 
     case GIMPLE_OMP_MASTER:

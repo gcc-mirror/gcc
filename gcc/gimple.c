@@ -1185,6 +1185,24 @@ gimple_build_omp_single (gimple_seq body, tree clauses)
 }
 
 
+/* Build a GIMPLE_OMP_SCOPE statement.
+
+   BODY is the sequence of statements that will be executed once.
+   CLAUSES are any of the OMP scope construct's clauses: private, reduction,
+   nowait.  */
+
+gimple *
+gimple_build_omp_scope (gimple_seq body, tree clauses)
+{
+  gimple *p = gimple_alloc (GIMPLE_OMP_SCOPE, 0);
+  gimple_omp_scope_set_clauses (p, clauses);
+  if (body)
+    gimple_omp_set_body (p, body);
+
+  return p;
+}
+
+
 /* Build a GIMPLE_OMP_TARGET statement.
 
    BODY is the sequence of statements that will be executed.
@@ -2018,6 +2036,11 @@ gimple_copy (gimple *stmt)
 	    t = unshare_expr (gimple_omp_single_clauses (stmt));
 	    gimple_omp_single_set_clauses (omp_single_copy, t);
 	  }
+	  goto copy_omp_body;
+
+	case GIMPLE_OMP_SCOPE:
+	  t = unshare_expr (gimple_omp_scope_clauses (stmt));
+	  gimple_omp_scope_set_clauses (copy, t);
 	  goto copy_omp_body;
 
 	case GIMPLE_OMP_TARGET:
