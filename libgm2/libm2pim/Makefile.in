@@ -516,7 +516,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@                      wrapc.c cgetopt.c
 
 @BUILD_PIMLIB_TRUE@libm2pimdir = libm2pim
-@BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def
+@BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
 @BUILD_PIMLIB_TRUE@libm2pim_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../
 @BUILD_PIMLIB_TRUE@libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g
 @BUILD_PIMLIB_TRUE@libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION)

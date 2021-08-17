@@ -162,7 +162,7 @@ libm2pim_la_SOURCES = $(M2MODS) \
                       wrapc.c cgetopt.c
 
 libm2pimdir = libm2pim
-libm2pim_la_DEPENDENCIES = SYSTEM.def
+libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
 libm2pim_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../
 libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g
 libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION)

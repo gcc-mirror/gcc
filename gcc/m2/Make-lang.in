@@ -594,7 +594,8 @@ gm2-gcc/m2except.o : $(srcdir)/m2/gm2-gcc/m2except.c $(CONFIG_H) $(TREE_H) $(RTL
 
 m2/gm2-gcc/%.o: $(srcdir)/m2/gm2-gcc/%.c $(BUILD-BOOT-H) $(TIMEVAR_H) m2/gm2config.h $(CONFIG_H) \
                                          $(TREE_H) $(RTL_H) $(TARGET_H) $(PLUGIN_HEADERS) \
-                                         $(srcdir)/flags.h gtype-m2.h m2/gm2config.h
+                                         $(srcdir)/flags.h gtype-m2.h m2/gm2config.h \
+                                         $(generated_files)
 	$(COMPILER) -c -g $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) $(PLUGIN_HEADERS) \

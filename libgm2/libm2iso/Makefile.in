@@ -543,7 +543,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@                     wraptime.c RTco.c
 
 @BUILD_ISOLIB_TRUE@libm2isodir = libm2iso
-@BUILD_ISOLIB_TRUE@libm2iso_la_DEPENDENCIES = SYSTEM.def
+@BUILD_ISOLIB_TRUE@libm2iso_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2iso_la_SOURCES)))
 @BUILD_ISOLIB_TRUE@libm2iso_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include
 @BUILD_ISOLIB_TRUE@libm2iso_la_M2FLAGS = -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs -fiso -fextended-opaque -fm2-g -g
 @BUILD_ISOLIB_TRUE@libm2iso_la_LINK = $(LINK) -version-info $(libtool_VERSION)
@@ -648,7 +648,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-.c.lo:
+@BUILD_ISOLIB_FALSE@.c.lo:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
@@ -882,6 +882,9 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 @BUILD_ISOLIB_TRUE@.mod.lo:
 @BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_M2FLAGS) $< -o $@
+
+@BUILD_ISOLIB_TRUE@.c.lo:
+@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC --mode=compile $(CC_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 @BUILD_ISOLIB_TRUE@install-data-local: force
 @BUILD_ISOLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)

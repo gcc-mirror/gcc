@@ -112,7 +112,7 @@ libm2cor_la_SOURCES = $(M2MODS) KeyBoardLEDs.c
 nodist_EXTRA_libm2cor_la_SOURCES = dummy.c  ## forces automake to generate the LINK definition
 
 libm2cordir = libm2cor
-libm2cor_la_DEPENDENCIES = SYSTEM.def
+libm2cor_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2cor_la_SOURCES)))
 libm2cor_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs-coroutines -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g
 libm2cor_la_LINK = $(LINK) -version-info $(libtool_VERSION)
 BUILT_SOURCES = SYSTEM.def

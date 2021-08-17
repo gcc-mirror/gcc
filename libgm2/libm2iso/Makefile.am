@@ -183,7 +183,7 @@ libm2iso_la_SOURCES =  $(M2MODS) \
                      wraptime.c RTco.c
 
 libm2isodir = libm2iso
-libm2iso_la_DEPENDENCIES = SYSTEM.def
+libm2iso_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2iso_la_SOURCES)))
 libm2iso_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs -DBUILD_GM2_LIBS -I@srcdir@/../ -I../../../gcc -I$(GCC_DIR) -I$(GCC_DIR)/../include -I../../libgcc -I$(GCC_DIR)/../libgcc -I$(MULTIBUILDTOP)../../gcc/include
 libm2iso_la_M2FLAGS = -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs -fiso -fextended-opaque -fm2-g -g
 libm2iso_la_LINK = $(LINK) -version-info $(libtool_VERSION)
@@ -203,6 +203,9 @@ SYSTEM.def: Makefile
 
 .mod.lo:
 	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_M2FLAGS) $< -o $@
+
+.c.lo:
+	$(LIBTOOL) --tag=CC --mode=compile $(CC_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
