@@ -2184,7 +2184,7 @@ validate_free_objects (void)
 /* Top level mark-and-sweep routine.  */
 
 void
-ggc_collect (void)
+ggc_collect (bool force_collect)
 {
   /* Avoid frequent unnecessary work by skipping collection if the
      total allocations haven't expanded much since the last
@@ -2196,7 +2196,7 @@ ggc_collect (void)
   memory_block_pool::trim ();
 
   float min_expand = allocated_last_gc * param_ggc_min_expand / 100;
-  if (G.allocated < allocated_last_gc + min_expand && !ggc_force_collect)
+  if (G.allocated < allocated_last_gc + min_expand && !force_collect)
     return;
 
   timevar_push (TV_GC);

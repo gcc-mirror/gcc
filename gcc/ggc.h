@@ -262,8 +262,10 @@ extern const char *ggc_alloc_string (const char *contents, int length
 #define ggc_strdup(S) ggc_alloc_string ((S), -1 MEM_STAT_INFO)
 
 /* Invoke the collector.  Garbage collection occurs only when this
-   function is called, not during allocations.  */
-extern void ggc_collect	(void);
+   function is called, not during allocations.
+   Unless FORCE_COLLECT, an internal heuristic decides whether to actually
+   collect.  */
+extern void ggc_collect (bool force_collect = false);
 
 /* Return unused memory pages to the system.  */
 extern void ggc_trim (void);

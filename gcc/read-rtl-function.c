@@ -1861,7 +1861,7 @@ test_loading_labels ()
 
   /* Ensure that label names read from a dump are GC-managed
      and are found through the insn.  */
-  forcibly_ggc_collect ();
+  ggc_collect (true);
   ASSERT_TRUE (ggc_marked_p (insn_200));
   ASSERT_TRUE (ggc_marked_p (LABEL_NAME (insn_200)));
 }
