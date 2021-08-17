@@ -6488,4 +6488,10 @@ extern void copy_warning (tree, const_tree);
    value if it isn't.  */
 extern unsigned fndecl_dealloc_argno (tree);
 
+/* If an expression refers to a character array or pointer declared
+   attribute nonstring, return a decl for that array or pointer and
+   if nonnull, set the second argument to the referenced enclosing
+   object or pointer.  Otherwise return null.  */
+extern tree get_attr_nonstring_decl (tree, tree * = NULL);
+
 #endif  /* GCC_TREE_H  */

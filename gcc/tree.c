@@ -14464,6 +14464,60 @@ fndecl_dealloc_argno (tree fndecl)
   return UINT_MAX;
 }
 
+/* If EXPR refers to a character array or pointer declared attribute
+   nonstring, return a decl for that array or pointer and set *REF
+   to the referenced enclosing object or pointer.  Otherwise return
+   null.  */
+
+tree
+get_attr_nonstring_decl (tree expr, tree *ref)
+{
+  tree decl = expr;
+  tree var = NULL_TREE;
+  if (TREE_CODE (decl) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (decl);
+
+      if (is_gimple_assign (def))
+	{
+	  tree_code code = gimple_assign_rhs_code (def);
+	  if (code == ADDR_EXPR
+	      || code == COMPONENT_REF
+	      || code == VAR_DECL)
+	    decl = gimple_assign_rhs1 (def);
+	}
+      else
+	var = SSA_NAME_VAR (decl);
+    }
+
+  if (TREE_CODE (decl) == ADDR_EXPR)
+    decl = TREE_OPERAND (decl, 0);
+
+  /* To simplify calling code, store the referenced DECL regardless of
+     the attribute determined below, but avoid storing the SSA_NAME_VAR
+     obtained above (it's not useful for dataflow purposes).  */
+  if (ref)
+    *ref = decl;
+
+  /* Use the SSA_NAME_VAR that was determined above to see if it's
+     declared nonstring.  Otherwise drill down into the referenced
+     DECL.  */
+  if (var)
+    decl = var;
+  else if (TREE_CODE (decl) == ARRAY_REF)
+    decl = TREE_OPERAND (decl, 0);
+  else if (TREE_CODE (decl) == COMPONENT_REF)
+    decl = TREE_OPERAND (decl, 1);
+  else if (TREE_CODE (decl) == MEM_REF)
+    return get_attr_nonstring_decl (TREE_OPERAND (decl, 0), ref);
+
+  if (DECL_P (decl)
+      && lookup_attribute ("nonstring", DECL_ATTRIBUTES (decl)))
+    return decl;
+
+  return NULL_TREE;
+}
+
 #if CHECKING_P
 
 namespace selftest {
