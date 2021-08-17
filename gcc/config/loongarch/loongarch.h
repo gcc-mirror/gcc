@@ -197,11 +197,14 @@ struct loongarch_cpu_info
   "%{mabi=lp32:32}" \
   "%{mabi=lp64:64}"
 
-#define STARTFILE_PREFIX_SPEC \
-  "/lib" ABI_SPEC "/ " \
-  "/usr/lib" ABI_SPEC "/ " \
-  "/lib/ " \
-  "/usr/lib/ "
+/* Default system library search paths.  */
+#if LARCH_ABI_DEFAULT == ABILP32
+#define STANDARD_STARTFILE_PREFIX_1 "/lib32/"
+#define STANDARD_STARTFILE_PREFIX_2 "/usr/lib32/"
+#elif LARCH_ABI_DEFAULT == ABILP64
+#define STANDARD_STARTFILE_PREFIX_1 "/lib64/"
+#define STANDARD_STARTFILE_PREFIX_2 "/usr/lib64/"
+#endif
 
 /* This definition replaces the formerly used 'm' constraint with a
    different constraint letter in order to avoid changing semantics of
