@@ -327,6 +327,8 @@
   "@internal
    An address valid for loading or storing a 128-bit AdvSIMD register"
   (and (match_code "mem")
+       (match_test "aarch64_legitimate_address_p (GET_MODE (op),
+						  XEXP (op, 0), 1)")
        (match_test "aarch64_legitimate_address_p (V2DImode,
 						  XEXP (op, 0), 1)")))
 
