@@ -1518,7 +1518,6 @@ loongarch_expand_epilogue (bool sibcall_p)
 }
 
 
-static rtx loongarch_find_pic_call_symbol (rtx_insn *, rtx, bool);
 static int loongarch_register_move_cost (machine_mode, reg_class_t,
 					 reg_class_t);
 
@@ -2347,17 +2346,6 @@ loongarch_strip_unspec_address (rtx op)
 }
 
 
-/* If SRC is the RHS of a load_call<mode> insn, return the underlying symbol
-   reference.  Return NULL_RTX otherwise.  */
-
-static rtx
-loongarch_strip_unspec_call (rtx src)
-{
-  if (GET_CODE (src) == UNSPEC && XINT (src, 1) == UNSPEC_LOAD_CALL)
-    return loongarch_strip_unspec_address (XVECEXP (src, 0, 1));
-  return NULL_RTX;
-}
-
 /* Return a legitimate address for REG + OFFSET.  TEMP is as for
    loongarch_force_temporary; it is only needed when OFFSET is not a
    SMALL_OPERAND.  */
@@ -5972,200 +5960,6 @@ loongarch_prefetch_cookie (rtx write, rtx locality)
 }
 
 
-/* Return whether CFG is used in loongarch_reorg.  */
-
-static bool
-loongarch_cfg_in_reorg (void)
-{
-  return (TARGET_RELAX_PIC_CALLS);
-}
-
-/* If INSN is a call, return the underlying CALL expr.  Return NULL_RTX
-   otherwise.  If INSN has two call rtx, then store the second one in
-   SECOND_CALL.  */
-
-static rtx
-loongarch_call_expr_from_insn (rtx_insn *insn, rtx *second_call)
-{
-  rtx x;
-  rtx x2;
-
-  if (!CALL_P (insn))
-    return NULL_RTX;
-
-  x = PATTERN (insn);
-  if (GET_CODE (x) == PARALLEL)
-    {
-      /* Calls returning complex values have two CALL rtx.  Look for the second
-	 one here, and return it via the SECOND_CALL arg.  */
-      x2 = XVECEXP (x, 0, 1);
-      if (GET_CODE (x2) == SET)
-	x2 = XEXP (x2, 1);
-      if (GET_CODE (x2) == CALL)
-	*second_call = x2;
-
-      x = XVECEXP (x, 0, 0);
-    }
-  if (GET_CODE (x) == SET)
-    x = XEXP (x, 1);
-  gcc_assert (GET_CODE (x) == CALL);
-
-  return x;
-}
-
-/* REG is set in DEF.  See if the definition is one of the ways we load a
-   register with a symbol address for a loongarch_use_pic_fn_addr_reg_p call.
-   If it is, return the symbol reference of the function, otherwise return
-   NULL_RTX.
-
-   If RECURSE_P is true, use loongarch_find_pic_call_symbol to interpret
-   the values of source registers, otherwise treat such registers as
-   having an unknown value.  */
-
-static rtx
-loongarch_pic_call_symbol_from_set (df_ref def, rtx reg, bool recurse_p)
-{
-  rtx_insn *def_insn;
-  rtx set;
-
-  if (DF_REF_IS_ARTIFICIAL (def))
-    return NULL_RTX;
-
-  def_insn = DF_REF_INSN (def);
-  set = single_set (def_insn);
-  if (set && rtx_equal_p (SET_DEST (set), reg))
-    {
-      rtx note, src, symbol;
-
-      /* First see whether the source is a plain symbol.  This is used
-	 when calling symbols that are not lazily bound.  */
-      src = SET_SRC (set);
-      if (GET_CODE (src) == SYMBOL_REF)
-	return src;
-
-      /* Handle %call16 references.  */
-      symbol = loongarch_strip_unspec_call (src);
-      if (symbol)
-	{
-	  gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
-	  return symbol;
-	}
-
-      /* If we have something more complicated, look for a
-	 REG_EQUAL or REG_EQUIV note.  */
-      note = find_reg_equal_equiv_note (def_insn);
-      if (note && GET_CODE (XEXP (note, 0)) == SYMBOL_REF)
-	return XEXP (note, 0);
-
-      /* Follow at most one simple register copy.  Such copies are
-	 interesting in cases like:
-
-	 for (...)
-	 {
-	 locally_binding_fn (...);
-	 }
-
-and:
-
-locally_binding_fn (...);
-...
-locally_binding_fn (...);
-
-where the load of locally_binding_fn can legitimately be
-hoisted or shared.  However, we do not expect to see complex
-chains of copies, so a full worklist solution to the problem
-would probably be overkill.  */
-      if (recurse_p && REG_P (src))
-	return loongarch_find_pic_call_symbol (def_insn, src, false);
-    }
-
-  return NULL_RTX;
-}
-
-/* Find the definition of the use of REG in INSN.  See if the definition
-   is one of the ways we load a register with a symbol address for a
-   loongarch_use_pic_fn_addr_reg_p call.  If it is return the symbol reference
-   of the function, otherwise return NULL_RTX.  RECURSE_P is as for
-   loongarch_pic_call_symbol_from_set.  */
-
-static rtx
-loongarch_find_pic_call_symbol (rtx_insn *insn, rtx reg, bool recurse_p)
-{
-  df_ref use;
-  struct df_link *defs;
-  rtx symbol;
-
-  use = df_find_use (insn, regno_reg_rtx[REGNO (reg)]);
-  if (!use)
-    return NULL_RTX;
-  defs = DF_REF_CHAIN (use);
-  if (!defs)
-    return NULL_RTX;
-  symbol = loongarch_pic_call_symbol_from_set (defs->ref, reg, recurse_p);
-  if (!symbol)
-    return NULL_RTX;
-
-  /* If we have more than one definition, they need to be identical.  */
-  for (defs = defs->next; defs; defs = defs->next)
-    {
-      rtx other;
-
-      other = loongarch_pic_call_symbol_from_set (defs->ref, reg, recurse_p);
-      if (!rtx_equal_p (symbol, other))
-	return NULL_RTX;
-    }
-
-  return symbol;
-}
-
-/* Replace the args_size operand of the call expression CALL with the
-   call-attribute UNSPEC and fill in SYMBOL as the function symbol.  */
-
-static void
-loongarch_annotate_pic_call_expr (rtx call, rtx symbol)
-{
-  rtx args_size;
-
-  args_size = XEXP (call, 1);
-  XEXP (call, 1) = gen_rtx_UNSPEC (GET_MODE (args_size),
-				   gen_rtvec (2, args_size, symbol),
-				   UNSPEC_CALL_ATTR);
-}
-
-/* Use DF to annotate PIC indirect calls with the function symbol they
-   dispatch to.  */
-
-static void
-loongarch_annotate_pic_calls (void)
-{
-  basic_block bb;
-  rtx_insn *insn;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    FOR_BB_INSNS (bb, insn)
-      {
-	rtx call, reg, symbol, second_call;
-
-	second_call = 0;
-	call = loongarch_call_expr_from_insn (insn, &second_call);
-	if (!call)
-	  continue;
-	gcc_assert (MEM_P (XEXP (call, 0)));
-	reg = XEXP (XEXP (call, 0), 0);
-	if (!REG_P (reg))
-	  continue;
-
-	symbol = loongarch_find_pic_call_symbol (insn, reg, true);
-	if (symbol)
-	  {
-	    loongarch_annotate_pic_call_expr (call, symbol);
-	    if (second_call)
-	      loongarch_annotate_pic_call_expr (second_call, symbol);
-	  }
-      }
-}
-
-
 /* A structure representing the state of the processor pipeline.
    Used by the loongarch_sim_* family of functions.  */
 struct loongarch_sim
@@ -6260,84 +6054,6 @@ loongarch_expand_to_rtl_hook (void)
      could be called during gimple optimization).  */
   loongarch_set_tuning_info ();
 }
-
-/* This structure records that the current function has a LO_SUM
-   involving SYMBOL_REF or LABEL_REF BASE and that MAX_OFFSET is
-   the largest offset applied to BASE by all such LO_SUMs.  */
-struct loongarch_lo_sum_offset
-{
-  rtx base;
-  HOST_WIDE_INT offset;
-};
-
-/* Return a hash value for SYMBOL_REF or LABEL_REF BASE.  */
-
-static hashval_t
-loongarch_hash_base (rtx base)
-{
-  int do_not_record_p;
-
-  return hash_rtx (base, GET_MODE (base), &do_not_record_p, NULL, false);
-}
-
-/* Hashtable helpers.  */
-
-struct loongarch_lo_sum_offset_hasher : free_ptr_hash<loongarch_lo_sum_offset>
-{
-  typedef rtx_def *compare_type;
-  static inline hashval_t hash (const loongarch_lo_sum_offset *);
-  static inline bool equal (const loongarch_lo_sum_offset *, const rtx_def *);
-};
-
-/* Hash-table callbacks for loongarch_lo_sum_offsets.  */
-
-inline hashval_t
-loongarch_lo_sum_offset_hasher::hash (const loongarch_lo_sum_offset *entry)
-{
-  return loongarch_hash_base (entry->base);
-}
-
-inline bool
-loongarch_lo_sum_offset_hasher::equal (const loongarch_lo_sum_offset *entry,
-				       const rtx_def *value)
-{
-  return rtx_equal_p (entry->base, value);
-}
-
-typedef hash_table<loongarch_lo_sum_offset_hasher> loongarch_offset_table;
-
-/* Subroutine of loongarch_reorg to manage passes that require DF.  */
-
-static void
-loongarch_df_reorg (void)
-{
-  /* Create def-use chains.  */
-  df_set_flags (DF_EQ_NOTES);
-  df_chain_add_problem (DF_UD_CHAIN);
-  df_analyze ();
-
-  if (TARGET_RELAX_PIC_CALLS)
-    loongarch_annotate_pic_calls ();
-
-  df_finish_pass (false);
-}
-
-/* Implement TARGET_MACHINE_DEPENDENT_REORG.  */
-
-static void
-loongarch_reorg (void)
-{
-  /* Restore the BLOCK_FOR_INSN pointers, which are needed by DF.DF insn info
-     is only kept up to date if the CFG is available.  */
-  if (loongarch_cfg_in_reorg ())
-    compute_bb_for_insn ();
-  if (loongarch_cfg_in_reorg ())
-    {
-      loongarch_df_reorg ();
-      free_bb_for_insn ();
-    }
-}
-
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
    in order to avoid duplicating too much logic from elsewhere.  */
@@ -6564,10 +6280,6 @@ loongarch_option_override (void)
 {
   int i, start, regno, mode;
 
-#ifdef SUBTARGET_OVERRIDE_OPTIONS
-  SUBTARGET_OVERRIDE_OPTIONS;
-#endif
-
   /* Save the base compression state and process flags as though we
      were generating uncompressed code.  */
   loongarch_base_compression_flags = 0;
@@ -6679,7 +6391,6 @@ loongarch_option_override (void)
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &loongarch_init_machine_status;
-  target_flags &= ~MASK_RELAX_PIC_CALLS;
 
   /* Save base state of options.  */
   loongarch_base_target_flags = target_flags;
@@ -7062,9 +6773,6 @@ loongarch_starting_frame_offset (void)
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P loongarch_in_small_data_p
-
-#undef TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG loongarch_reorg
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS loongarch_preferred_reload_class

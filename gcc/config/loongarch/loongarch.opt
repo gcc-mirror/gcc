@@ -91,10 +91,6 @@ mno-flush-func
 Target RejectNegative
 Do not use a cache-flushing function before calling stack trampolines.
 
-mrelax-pic-calls
-Target Mask(RELAX_PIC_CALLS)
-Try to allow the linker to turn PIC calls into direct calls.
-
 mshared
 Target Var(TARGET_SHARED) Init(1)
 When generating -mabicalls code, make the code suitable for use in shared libraries.
