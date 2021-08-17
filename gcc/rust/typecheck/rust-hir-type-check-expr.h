@@ -630,10 +630,8 @@ public:
     if (result == nullptr || result->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
-    // we expect this to be
-    infered = new TyTy::BoolType (expr.get_mappings ().get_hirid ());
-    infered->append_reference (lhs->get_ref ());
-    infered->append_reference (rhs->get_ref ());
+    bool ok = context->lookup_builtin ("bool", &infered);
+    rust_assert (ok);
   }
 
   void visit (HIR::LazyBooleanExpr &expr) override
