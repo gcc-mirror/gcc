@@ -1,3 +1,22 @@
+2021-08-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99351
+	* gfortran.dg/coarray_sync.f90: New test.
+	* gfortran.dg/coarray_3.f90: Adjust error messages.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/100600
+	* gcc.dg/ipa/pr100600.c: New test.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101261
+	* gcc.target/i386/pr101261.c: New test.
+
 2021-08-13  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/100788

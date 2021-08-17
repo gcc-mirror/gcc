@@ -1,3 +1,16 @@
+2021-08-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-08-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99351
+	* match.c (sync_statement): Replace %v code by %e in gfc_match to
+	allow for function references as STAT and ERRMSG arguments.
+	* resolve.c (resolve_sync): Adjust checks of STAT= and ERRMSG= to
+	being definable arguments.  Function references with a data
+	pointer result are accepted.
+	* trans-stmt.c (gfc_trans_sync): Adjust assertion.
+
 2021-08-11  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

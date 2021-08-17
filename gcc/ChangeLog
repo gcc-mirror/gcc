@@ -1,3 +1,31 @@
+2021-08-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* dwarf2out.c (add_scalar_info): Deal with DW_AT_data_bit_offset.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/100600
+	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Do not
+	  consider equal SSA_NAMEs when one is a param.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101261
+	* symtab.c (symtab_node::noninterposable_alias): Do not create
+	  local aliases for target_clone functions as the clonning pass
+	  rejects aliases.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101726
+	* multiple_target.c (create_dispatcher_calls): Make default
+	  function local only if it is a definition.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR c/100150
+	* lto-streamer.h (LTO_minor_version): Bump.
+
 2021-08-13  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/100788
