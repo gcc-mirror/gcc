@@ -1458,7 +1458,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		 widest_int *val, widest_int *mask,
 		 signop r1type_sgn, int r1type_precision,
 		 const widest_int &r1val, const widest_int &r1mask,
-		 signop r2type_sgn, int r2type_precision,
+		 signop r2type_sgn, int r2type_precision ATTRIBUTE_UNUSED,
 		 const widest_int &r2val, const widest_int &r2mask)
 {
   bool swap_p = false;
@@ -1505,7 +1505,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	    }
 	  else
 	    {
-	      if (wi::neg_p (shift))
+	      if (wi::neg_p (shift, r2type_sgn))
 		{
 		  shift = -shift;
 		  if (code == RROTATE_EXPR)
@@ -1542,7 +1542,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	    }
 	  else
 	    {
-	      if (wi::neg_p (shift))
+	      if (wi::neg_p (shift, r2type_sgn))
 		break;
 	      if (code == RSHIFT_EXPR)
 		{
@@ -1582,13 +1582,16 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
       }
 
     case MINUS_EXPR:
+    case POINTER_DIFF_EXPR:
       {
-	widest_int temv, temm;
-	bit_value_unop (NEGATE_EXPR, r2type_sgn, r2type_precision, &temv, &temm,
-			  r2type_sgn, r2type_precision, r2val, r2mask);
-	bit_value_binop (PLUS_EXPR, sgn, width, val, mask,
-			 r1type_sgn, r1type_precision, r1val, r1mask,
-			 r2type_sgn, r2type_precision, temv, temm);
+	/* Subtraction is derived from the addition algorithm above.  */
+	widest_int lo = wi::bit_and_not (r1val, r1mask) - (r2val | r2mask);
+	lo = wi::ext (lo, width, sgn);
+	widest_int hi = (r1val | r1mask) - wi::bit_and_not (r2val, r2mask);
+	hi = wi::ext (hi, width, sgn);
+	*mask = r1mask | r2mask | (lo ^ hi);
+	*mask = wi::ext (*mask, width, sgn);
+	*val = lo;
 	break;
       }
 
