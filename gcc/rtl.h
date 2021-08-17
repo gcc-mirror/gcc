@@ -830,6 +830,9 @@ struct GTY(()) rtvec_def {
 #define CONST_DOUBLE_AS_FLOAT_P(X) \
   (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode)
 
+/* Predicate yielding nonzero iff X is an rtx for a constant vector.  */
+#define CONST_VECTOR_P(X) (GET_CODE (X) == CONST_VECTOR)
+
 /* Predicate yielding nonzero iff X is a label insn.  */
 #define LABEL_P(X) (GET_CODE (X) == CODE_LABEL)
 
