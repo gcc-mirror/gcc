@@ -128,7 +128,7 @@ selftest::run_tests ()
      issues.  For example, if any GC-managed items have buggy (or missing)
      finalizers, this last collection will ensure that things that were
      failed to be finalized can be detected by valgrind.  */
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   /* Finished running tests; the test_runner dtor will print a summary.  */
 }

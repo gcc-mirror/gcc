@@ -47,7 +47,7 @@ test_basic_struct ()
   root_test_struct = ggc_cleared_alloc <test_struct> ();
   root_test_struct->other = ggc_cleared_alloc <test_struct> ();
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   ASSERT_TRUE (ggc_marked_p (root_test_struct));
   ASSERT_TRUE (ggc_marked_p (root_test_struct->other));
@@ -77,7 +77,7 @@ test_length ()
   for (int i = 0; i < count; i++)
     root_test_of_length->elem[i] = ggc_cleared_alloc <test_of_length> ();
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   ASSERT_TRUE (ggc_marked_p (root_test_of_length));
   for (int i = 0; i < count; i++)
@@ -151,7 +151,7 @@ test_union ()
   test_struct *referenced_by_other = ggc_cleared_alloc <test_struct> ();
   other->m_ptr = referenced_by_other;
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   ASSERT_TRUE (ggc_marked_p (root_test_of_union_1));
   ASSERT_TRUE (ggc_marked_p (ts));
@@ -192,7 +192,7 @@ test_finalization ()
 
   test_struct_with_dtor::dtor_call_count = 0;
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   /* Verify that the destructor was run for each instance.  */
   ASSERT_EQ (count, test_struct_with_dtor::dtor_call_count);
@@ -210,7 +210,7 @@ test_deletable_global ()
   test_of_deletable = ggc_cleared_alloc <test_struct> ();
   ASSERT_TRUE (test_of_deletable != NULL);
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   ASSERT_EQ (NULL, test_of_deletable);
 }
@@ -283,7 +283,7 @@ test_inheritance ()
   test_some_subclass_as_base_ptr = new some_subclass ();
   test_some_other_subclass_as_base_ptr = new some_other_subclass ();
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   /* Verify that the roots and everything referenced by them got marked
      (both for fields in the base class and those in subclasses).  */
@@ -362,7 +362,7 @@ test_chain_next ()
       tail_node = new_node;
     }
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   /* If we got here, we survived.  */
 
@@ -429,7 +429,7 @@ test_user_struct ()
 
   num_calls_to_user_gt_ggc_mx = 0;
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   ASSERT_TRUE (ggc_marked_p (root_user_struct_ptr));
   ASSERT_TRUE (ggc_marked_p (referenced));
@@ -447,7 +447,7 @@ test_tree_marking ()
 {
   dummy_unittesting_tree = build_int_cst (integer_type_node, 1066);
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   ASSERT_TRUE (ggc_marked_p (dummy_unittesting_tree));
 }

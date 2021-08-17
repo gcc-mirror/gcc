@@ -962,7 +962,7 @@ dump_ggc_loc_statistics ()
   if (! GATHER_STATISTICS)
     return;
 
-  ggc_collect (true);
+  ggc_collect (GGC_COLLECT_FORCE);
 
   ggc_mem_desc.dump (GGC_ORIGIN);
 }
