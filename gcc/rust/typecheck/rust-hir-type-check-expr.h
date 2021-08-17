@@ -975,7 +975,6 @@ public:
       }
 
     // TODO self and generic arguments
-
     infered = trait_item_ref->get_tyty ();
     rust_debug_loc (expr.get_locus (), "resolved to:");
     infered->debug ();
@@ -1370,6 +1369,22 @@ private:
 	  {
 	    resolved_node_id
 	      = candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
+
+	    // lookup the associated-impl-trait
+	    HIR::ImplBlock *impl = candidate.item.trait.impl;
+	    if (impl != nullptr)
+	      {
+		AssociatedImplTrait *lookup_associated = nullptr;
+		bool found_impl_trait = context->lookup_associated_trait_impl (
+		  impl->get_mappings ().get_hirid (), &lookup_associated);
+		rust_assert (found_impl_trait);
+
+		lookup_associated->setup_associated_types ();
+
+		// we need a new ty_ref_id for this trait item
+		tyseg = tyseg->clone ();
+		tyseg->set_ty_ref (mappings->get_next_hir_id ());
+	      }
 	  }
 
 	if (seg.has_generic_args ())

@@ -319,15 +319,17 @@ public:
     // items can be forward compiled which means we may not need to invoke this
     // code. We might also have already compiled this generic function as well.
     Bfunction *lookup = nullptr;
-    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup, fntype))
+    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup))
       {
 	// has this been added to the list then it must be finished
 	if (ctx->function_completed (lookup))
 	  {
 	    Bfunction *dummy = nullptr;
 	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	      ctx->insert_function_decl (fntype->get_ty_ref (), lookup, fntype);
-
+	      {
+		ctx->insert_function_decl (fntype->get_ty_ref (), lookup,
+					   fntype);
+	      }
 	    return;
 	  }
       }

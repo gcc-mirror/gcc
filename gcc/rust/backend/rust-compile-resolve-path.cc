@@ -76,6 +76,7 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 					    &lookup);
   rust_assert (ok);
   rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
 
   Bfunction *fn = nullptr;
   if (!ctx->lookup_function_decl (lookup->get_ty_ref (), &fn))
@@ -145,28 +146,32 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 		  rust_assert (
 		    trait_item_ref->is_optional ()); // has definition
 
-		  // FIXME
-		  // TyTy::BaseType *self_type = nullptr;
-		  // if (!ctx->get_tyctx ()->lookup_type (
-		  //       expr.get_receiver ()->get_mappings ().get_hirid (),
-		  //       &self_type))
-		  //   {
-		  //     rust_error_at (expr.get_locus (),
-		  //       	     "failed to resolve type for self param");
-		  //     return;
-		  //   }
+		  Analysis::NodeMapping trait_mappings
+		    = trait_item_ref->get_parent_trait_mappings ();
+		  auto associated_impl_id
+		    = ctx->get_tyctx ()
+			->lookup_associated_impl_mapping_for_self (
+			  trait_mappings.get_hirid (), receiver);
+		  rust_assert (associated_impl_id != UNKNOWN_HIRID);
 
-		  // CompileTraitItem::Compile (
-		  //   self_type, trait_item_ref->get_hir_trait_item (), ctx,
-		  //   fntype);
-		  // if (!ctx->lookup_function_decl (fntype->get_ty_ref (),
-		  // &fn))
-		  //   {
-		  //     translated = ctx->get_backend ()->error_expression ();
-		  //     rust_error_at (expr.get_locus (),
-		  //       	     "forward declaration was not compiled");
-		  //     return;
-		  //   }
+		  Resolver::AssociatedImplTrait *associated = nullptr;
+		  bool found_associated_trait_impl
+		    = ctx->get_tyctx ()->lookup_associated_trait_impl (
+		      associated_impl_id, &associated);
+		  rust_assert (found_associated_trait_impl);
+		  associated->setup_associated_types ();
+
+		  CompileTraitItem::Compile (
+		    receiver, trait_item_ref->get_hir_trait_item (), ctx,
+		    fntype);
+
+		  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
+		    {
+		      resolved = ctx->get_backend ()->error_expression ();
+		      rust_error_at (expr.get_locus (),
+				     "forward declaration was not compiled");
+		      return;
+		    }
 		}
 	      else
 		{

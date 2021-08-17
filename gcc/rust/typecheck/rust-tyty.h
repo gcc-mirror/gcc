@@ -1683,13 +1683,15 @@ public:
 class PlaceholderType : public BaseType
 {
 public:
-  PlaceholderType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::PLACEHOLDER, refs)
+  PlaceholderType (std::string symbol, HirId ref,
+		   std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::PLACEHOLDER, refs), symbol (symbol)
+
   {}
 
-  PlaceholderType (HirId ref, HirId ty_ref,
+  PlaceholderType (std::string symbol, HirId ref, HirId ty_ref,
 		   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER, refs)
+    : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER, refs), symbol (symbol)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1707,6 +1709,21 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool is_unit () const override { return true; }
+
+  std::string get_symbol () const { return symbol; }
+
+  void set_associated_type (HirId ref);
+
+  void clear_associated_type ();
+
+  bool can_resolve () const;
+
+  BaseType *resolve () const;
+
+  bool is_equal (const BaseType &other) const override;
+
+private:
+  std::string symbol;
 };
 
 class ProjectionType : public BaseType

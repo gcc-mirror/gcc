@@ -21,6 +21,7 @@
 
 #include "rust-hir-full.h"
 #include "rust-tyty-visitor.h"
+#include "rust-hir-type-check-util.h"
 
 namespace Rust {
 namespace Resolver {
@@ -148,12 +149,18 @@ public:
     return get_error ();
   }
 
+  Analysis::NodeMapping get_parent_trait_mappings () const;
+
   // this is called when the trait is completed resolution and gives the items a
   // chance to run their specific type resolution passes. If we call their
   // resolution on construction it can lead to a case where the trait being
   // resolved recursively trying to resolve the trait itself infinitely since
   // the trait will not be stored in its own map yet
   void on_resolved ();
+
+  void associated_type_set (TyTy::BaseType *ty);
+
+  void associated_type_reset ();
 
 private:
   TyTy::ErrorType *get_error () const
@@ -186,6 +193,7 @@ private:
   Resolver::TypeCheckContext *context;
 };
 
+// this wraps up the HIR::Trait so we can do analysis on it
 class TraitReference
 {
 public:
@@ -316,9 +324,46 @@ public:
       }
   }
 
+  void clear_associated_types ()
+  {
+    for (auto &item : item_refs)
+      {
+	bool is_assoc_type = item.get_trait_item_type ()
+			     == TraitItemReference::TraitItemType::TYPE;
+	if (is_assoc_type)
+	  item.associated_type_reset ();
+      }
+  }
+
 private:
   const HIR::Trait *hir_trait_ref;
   std::vector<TraitItemReference> item_refs;
+};
+
+class AssociatedImplTrait
+{
+public:
+  AssociatedImplTrait (TraitReference *trait, HIR::ImplBlock *impl,
+		       TyTy::BaseType *self,
+		       Resolver::TypeCheckContext *context)
+    : trait (trait), impl (impl), self (self), context (context)
+  {}
+
+  TraitReference *get_trait () { return trait; }
+
+  HIR::ImplBlock *get_impl_block () { return impl; }
+
+  TyTy::BaseType *get_self () { return self; }
+
+  void setup_associated_types ();
+
+  void reset_associated_types ();
+
+private:
+  TraitReference *trait;
+  HIR::ImplBlock *impl;
+  TyTy::BaseType *self;
+  Resolver::TypeCheckContext *context;
 };
 
 } // namespace Resolver

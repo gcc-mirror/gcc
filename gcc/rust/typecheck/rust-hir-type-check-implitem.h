@@ -383,8 +383,7 @@ public:
 	  trait_reference.get_name ().c_str ());
       }
 
-    context->insert_type (resolved_trait_item.get_mappings (),
-			  lookup->clone ());
+    resolved_trait_item.associated_type_set (lookup);
   }
 
   void visit (HIR::Function &function) override

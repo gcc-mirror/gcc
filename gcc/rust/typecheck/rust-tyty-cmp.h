@@ -43,6 +43,16 @@ public:
 	    return ok;
 	  }
       }
+    else if (other->get_kind () == TypeKind::PLACEHOLDER)
+      {
+	const PlaceholderType *p = static_cast<const PlaceholderType *> (other);
+	if (p->can_resolve ())
+	  {
+	    const BaseType *resolved = p->resolve ();
+	    resolved->accept_vis (*this);
+	    return ok;
+	  }
+      }
 
     other->accept_vis (*this);
     return ok;
@@ -1165,43 +1175,55 @@ public:
     : BaseCmp (base, emit_errors), base (base)
   {}
 
-  virtual void visit (const TupleType &) override { ok = true; }
+  bool can_eq (const BaseType *other) override
+  {
+    if (!base->can_resolve ())
+      return BaseCmp::can_eq (other);
 
-  virtual void visit (const ADTType &) override { ok = true; }
+    BaseType *lookup = base->resolve ();
+    return lookup->can_eq (other, emit_error_flag);
+  }
 
-  virtual void visit (const InferType &) override { ok = true; }
+  void visit (const TupleType &) override { ok = true; }
 
-  virtual void visit (const FnType &) override { ok = true; }
+  void visit (const ADTType &) override { ok = true; }
 
-  virtual void visit (const FnPtr &) override { ok = true; }
+  void visit (const InferType &) override { ok = true; }
 
-  virtual void visit (const ArrayType &) override { ok = true; }
+  void visit (const FnType &) override { ok = true; }
 
-  virtual void visit (const BoolType &) override { ok = true; }
+  void visit (const FnPtr &) override { ok = true; }
 
-  virtual void visit (const IntType &) override { ok = true; }
+  void visit (const ArrayType &) override { ok = true; }
 
-  virtual void visit (const UintType &) override { ok = true; }
+  void visit (const BoolType &) override { ok = true; }
 
-  virtual void visit (const USizeType &) override { ok = true; }
+  void visit (const IntType &) override { ok = true; }
 
-  virtual void visit (const ISizeType &) override { ok = true; }
+  void visit (const UintType &) override { ok = true; }
 
-  virtual void visit (const FloatType &) override { ok = true; }
+  void visit (const USizeType &) override { ok = true; }
 
-  virtual void visit (const ErrorType &) override { ok = true; }
+  void visit (const ISizeType &) override { ok = true; }
 
-  virtual void visit (const CharType &) override { ok = true; }
+  void visit (const FloatType &) override { ok = true; }
 
-  virtual void visit (const ReferenceType &) override { ok = true; }
+  void visit (const ErrorType &) override { ok = true; }
 
-  virtual void visit (const ParamType &) override { ok = true; }
+  void visit (const CharType &) override { ok = true; }
 
-  virtual void visit (const StrType &) override { ok = true; }
+  void visit (const ReferenceType &) override { ok = true; }
 
-  virtual void visit (const NeverType &) override { ok = true; }
+  void visit (const ParamType &) override { ok = true; }
 
-  virtual void visit (const PlaceholderType &) override { ok = true; }
+  void visit (const StrType &) override { ok = true; }
+
+  void visit (const NeverType &) override { ok = true; }
+
+  void visit (const PlaceholderType &type) override
+  {
+    ok = base->get_symbol ().compare (type.get_symbol ()) == 0;
+  }
 
 private:
   const BaseType *get_base () const override { return base; }

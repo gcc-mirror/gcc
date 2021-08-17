@@ -117,6 +117,70 @@ public:
     return true;
   }
 
+  void insert_associated_trait_impl (HirId id, AssociatedImplTrait &&associated)
+  {
+    rust_assert (associated_impl_traits.find (id)
+		 == associated_impl_traits.end ());
+    associated_impl_traits.emplace (id, std::move (associated));
+  }
+
+  bool lookup_associated_trait_impl (HirId id, AssociatedImplTrait **associated)
+  {
+    auto it = associated_impl_traits.find (id);
+    if (it == associated_impl_traits.end ())
+      return false;
+
+    *associated = &it->second;
+    return true;
+  }
+
+  void insert_associated_type_mapping (HirId id, HirId mapping)
+  {
+    associated_type_mappings[id] = mapping;
+  }
+
+  void clear_associated_type_mapping (HirId id)
+  {
+    associated_type_mappings[id] = UNKNOWN_HIRID;
+  }
+
+  HirId lookup_associated_type_mapping (HirId id, HirId default_value)
+  {
+    auto it = associated_type_mappings.find (id);
+    if (it == associated_type_mappings.end ())
+      return default_value;
+
+    return it->second;
+  }
+
+  void insert_associated_impl_mapping (HirId trait_id,
+				       const TyTy::BaseType *impl_type,
+				       HirId impl_id)
+  {
+    auto it = associated_traits_to_impls.find (trait_id);
+    if (it == associated_traits_to_impls.end ())
+      {
+	associated_traits_to_impls[trait_id] = {};
+      }
+
+    associated_traits_to_impls[trait_id].push_back ({impl_type, impl_id});
+  }
+
+  HirId lookup_associated_impl_mapping_for_self (HirId trait_id,
+						 const TyTy::BaseType *self)
+  {
+    auto it = associated_traits_to_impls.find (trait_id);
+    if (it == associated_traits_to_impls.end ())
+      return UNKNOWN_HIRID;
+
+    for (auto &item : it->second)
+      {
+	if (item.first->can_eq (self, false))
+	  return item.second;
+      }
+    return UNKNOWN_HIRID;
+  }
+
 private:
   TypeCheckContext ();
 
@@ -127,6 +191,13 @@ private:
   std::vector<TyTy::BaseType *> loop_type_stack;
   std::map<DefId, TraitReference> trait_context;
   std::map<HirId, TyTy::BaseType *> receiver_context;
+  std::map<HirId, AssociatedImplTrait> associated_impl_traits;
+
+  // trait-id -> list of < self-tyty:impl-id>
+  std::map<HirId, std::vector<std::pair<const TyTy::BaseType *, HirId>>>
+    associated_traits_to_impls;
+
+  std::map<HirId, HirId> associated_type_mappings;
 };
 
 class TypeResolution

@@ -49,10 +49,10 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
 	return true;
     }
 
-  std::vector<Resolver::TraitReference *> probed
-    = Resolver::TypeBoundsProbe::Probe (this);
-  for (const Resolver::TraitReference *bound : probed)
+  auto probed = Resolver::TypeBoundsProbe::Probe (this);
+  for (auto &b : probed)
     {
+      const Resolver::TraitReference *bound = b.first;
       bool found = bound->get_mappings ().get_defid ()
 		   == query->get_mappings ().get_defid ();
       if (found)
@@ -2032,7 +2032,8 @@ PlaceholderType::accept_vis (TyConstVisitor &vis) const
 std::string
 PlaceholderType::as_string () const
 {
-  return "<placeholder>";
+  return "<placeholder:" + (can_resolve () ? resolve ()->as_string () : "")
+	 + ">";
 }
 
 BaseType *
@@ -2066,7 +2067,59 @@ PlaceholderType::can_eq (const BaseType *other, bool emit_errors) const
 BaseType *
 PlaceholderType::clone () const
 {
-  return new PlaceholderType (get_ref (), get_ty_ref (), get_combined_refs ());
+  return new PlaceholderType (get_symbol (), get_ref (), get_ty_ref (),
+			      get_combined_refs ());
+}
+
+void
+PlaceholderType::set_associated_type (HirId ref)
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  context->insert_associated_type_mapping (get_ty_ref (), ref);
+}
+
+void
+PlaceholderType::clear_associated_type ()
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  context->clear_associated_type_mapping (get_ty_ref ());
+}
+
+bool
+PlaceholderType::can_resolve () const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  HirId val
+    = context->lookup_associated_type_mapping (get_ty_ref (), UNKNOWN_HIRID);
+  return val != UNKNOWN_HIRID;
+}
+
+BaseType *
+PlaceholderType::resolve () const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+
+  rust_assert (can_resolve ());
+  HirId val
+    = context->lookup_associated_type_mapping (get_ty_ref (), UNKNOWN_HIRID);
+  rust_assert (val != UNKNOWN_HIRID);
+
+  return TyVar (val).get_tyty ();
+}
+
+bool
+PlaceholderType::is_equal (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    {
+      if (!can_resolve ())
+	return false;
+
+      return resolve ()->is_equal (other);
+    }
+
+  auto other2 = static_cast<const PlaceholderType &> (other);
+  return get_symbol ().compare (other2.get_symbol ()) == 0;
 }
 
 // Projection type
@@ -2241,6 +2294,17 @@ TypeCheckCallExpr::visit (FnType &type)
 		     "unexpected number of arguments %lu expected %lu", i,
 		     call.num_params ());
       return;
+    }
+
+  if (type.get_return_type ()->get_kind () == TyTy::TypeKind::PLACEHOLDER)
+    {
+      const TyTy::PlaceholderType *p
+	= static_cast<const TyTy::PlaceholderType *> (type.get_return_type ());
+      if (p->can_resolve ())
+	{
+	  resolved = p->resolve ()->clone ();
+	  return;
+	}
     }
 
   resolved = type.get_return_type ()->clone ();

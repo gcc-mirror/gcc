@@ -25,10 +25,6 @@ namespace Resolver {
 void
 ResolveTraitItemToRef::visit (HIR::TraitItemType &type)
 {
-  TyTy::BaseType *ty
-    = new TyTy::PlaceholderType (type.get_mappings ().get_hirid ());
-  context->insert_type (type.get_mappings (), ty);
-
   // create trait-item-ref
   Location locus = type.get_locus ();
   bool is_optional = false;
@@ -92,7 +88,10 @@ TraitItemReference::on_resolved ()
 void
 TraitItemReference::resolve_item (HIR::TraitItemType &type)
 {
-  // TODO
+  TyTy::BaseType *ty
+    = new TyTy::PlaceholderType (type.get_name (),
+				 type.get_mappings ().get_hirid ());
+  context->insert_type (type.get_mappings (), ty);
 }
 
 void
@@ -126,6 +125,72 @@ TraitItemReference::resolve_item (HIR::TraitItemFunc &func)
 
   if (block_expr_ty->get_kind () != TyTy::NEVER)
     expected_ret_tyty->unify (block_expr_ty);
+}
+
+void
+TraitItemReference::associated_type_set (TyTy::BaseType *ty)
+{
+  rust_assert (get_trait_item_type () == TraitItemType::TYPE);
+
+  TyTy::BaseType *item_ty = get_tyty ();
+  rust_assert (item_ty->get_kind () == TyTy::TypeKind::PLACEHOLDER);
+  TyTy::PlaceholderType *placeholder
+    = static_cast<TyTy::PlaceholderType *> (item_ty);
+
+  placeholder->set_associated_type (ty->get_ref ());
+}
+
+void
+TraitItemReference::associated_type_reset ()
+{
+  rust_assert (get_trait_item_type () == TraitItemType::TYPE);
+
+  TyTy::BaseType *item_ty = get_tyty ();
+  rust_assert (item_ty->get_kind () == TyTy::TypeKind::PLACEHOLDER);
+  TyTy::PlaceholderType *placeholder
+    = static_cast<TyTy::PlaceholderType *> (item_ty);
+
+  placeholder->clear_associated_type ();
+}
+
+void
+AssociatedImplTrait::setup_associated_types ()
+{
+  ImplTypeIterator iter (*impl, [&] (HIR::TypeAlias &type) {
+    TraitItemReference *resolved_trait_item = nullptr;
+    bool ok = trait->lookup_trait_item (type.get_new_type_name (),
+					&resolved_trait_item);
+    if (!ok)
+      return;
+    if (resolved_trait_item->get_trait_item_type ()
+	!= TraitItemReference::TraitItemType::TYPE)
+      return;
+
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
+      return;
+
+    resolved_trait_item->associated_type_set (lookup);
+  });
+  iter.go ();
+}
+
+void
+AssociatedImplTrait::reset_associated_types ()
+{
+  trait->clear_associated_types ();
+}
+
+Analysis::NodeMapping
+TraitItemReference::get_parent_trait_mappings () const
+{
+  auto mappings = Analysis::Mappings::get ();
+
+  HIR::Trait *trait
+    = mappings->lookup_trait_item_mapping (get_mappings ().get_hirid ());
+  rust_assert (trait != nullptr);
+
+  return trait->get_mappings ();
 }
 
 } // namespace Resolver

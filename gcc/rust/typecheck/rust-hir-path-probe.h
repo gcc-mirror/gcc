@@ -51,6 +51,7 @@ struct PathProbeCandidate
   {
     const TraitReference *trait_ref;
     const TraitItemReference *item_ref;
+    HIR::ImplBlock *impl;
   };
 
   CandidateType type;
@@ -128,19 +129,22 @@ public:
     if (!probe_bounds)
       return probe.candidates;
 
-    std::vector<TraitReference *> probed_bounds
+    std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> probed_bounds
       = TypeBoundsProbe::Probe (receiver);
 
-    std::vector<const TraitReference *> specified_bounds;
+    std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
+      specified_bounds;
     for (const TyTy::TypeBoundPredicate &predicate :
 	 receiver->get_specified_bounds ())
       {
 	const TraitReference *trait_item = predicate.get ();
-	specified_bounds.push_back (trait_item);
+
+	// FIXME lookup impl_block for this trait impl for this receiver
+	specified_bounds.push_back ({trait_item, nullptr});
       }
 
-    std::vector<const TraitReference *> union_type_bounds
-      = probe.union_bounds (probed_bounds, specified_bounds);
+    std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
+      union_type_bounds = probe.union_bounds (probed_bounds, specified_bounds);
     probe.process_traits_for_candidates (union_type_bounds,
 					 ignore_mandatory_trait_items);
     return probe.candidates;
@@ -230,11 +234,15 @@ private:
   }
 
   void process_traits_for_candidates (
-    const std::vector<const TraitReference *> traits,
+    const std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
+      traits,
     bool ignore_mandatory_trait_items)
   {
-    for (const TraitReference *trait_ref : traits)
+    for (auto &ref : traits)
       {
+	const TraitReference *trait_ref = ref.first;
+	HIR::ImplBlock *impl = ref.second;
+
 	const TraitItemReference *trait_item_ref = nullptr;
 	if (!trait_ref->lookup_trait_item (search.as_string (),
 					   &trait_item_ref))
@@ -296,7 +304,7 @@ private:
 	  }
 
 	PathProbeCandidate::TraitItemCandidate trait_item_candidate{
-	  trait_ref, trait_item_ref};
+	  trait_ref, trait_item_ref, impl};
 	PathProbeCandidate candidate{candidate_type,
 				     trait_item_tyty,
 				     trait_ref->get_locus (),
@@ -312,24 +320,27 @@ private:
       current_impl (nullptr)
   {}
 
-  std::vector<const TraitReference *>
-  union_bounds (const std::vector</*const*/ TraitReference *> a,
-		const std::vector<const TraitReference *> b) const
+  std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
+  union_bounds (
+    const std::vector<std::pair</*const*/ TraitReference *, HIR::ImplBlock *>>
+      a,
+    const std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>> b)
+    const
   {
-    std::map<DefId, const TraitReference *> mapper;
-    for (const TraitReference *ref : a)
+    std::map<DefId, std::pair<const TraitReference *, HIR::ImplBlock *>> mapper;
+    for (auto &ref : a)
       {
-	mapper.insert ({ref->get_mappings ().get_defid (), ref});
+	mapper.insert ({ref.first->get_mappings ().get_defid (), ref});
       }
-    for (const TraitReference *ref : b)
+    for (auto &ref : b)
       {
-	mapper.insert ({ref->get_mappings ().get_defid (), ref});
+	mapper.insert ({ref.first->get_mappings ().get_defid (), ref});
       }
 
-    std::vector<const TraitReference *> union_set;
+    std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>> union_set;
     for (auto it = mapper.begin (); it != mapper.end (); it++)
       {
-	union_set.push_back (it->second);
+	union_set.push_back ({it->second.first, it->second.second});
       }
     return union_set;
   }

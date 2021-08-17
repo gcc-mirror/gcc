@@ -68,6 +68,14 @@ public:
 	    other = p->resolve ();
 	  }
       }
+    else if (other->get_kind () == TypeKind::PLACEHOLDER)
+      {
+	PlaceholderType *p = static_cast<PlaceholderType *> (other);
+	if (p->can_resolve ())
+	  {
+	    other = p->resolve ();
+	  }
+      }
 
     other->accept_vis (*this);
     if (resolved->get_kind () == TyTy::TypeKind::ERROR)
@@ -1249,7 +1257,7 @@ class NeverRules : public BaseRules
 public:
   NeverRules (NeverType *base) : BaseRules (base), base (base) {}
 
-  virtual void visit (NeverType &type) override { resolved = type.clone (); }
+  void visit (NeverType &type) override { resolved = type.clone (); }
 
 private:
   BaseType *get_base () override { return base; }
@@ -1263,6 +1271,37 @@ class PlaceholderRules : public BaseRules
 
 public:
   PlaceholderRules (PlaceholderType *base) : BaseRules (base), base (base) {}
+
+  BaseType *unify (BaseType *other) override final
+  {
+    if (!base->can_resolve ())
+      return BaseRules::unify (other);
+
+    BaseType *lookup = base->resolve ();
+    return lookup->unify (other);
+  }
+
+  void visit (PlaceholderType &type) override
+  {
+    if (base->get_symbol ().compare (type.get_symbol ()) != 0)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = type.clone ();
+  }
+
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+  }
 
 private:
   BaseType *get_base () override { return base; }
