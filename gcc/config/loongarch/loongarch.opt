@@ -71,10 +71,6 @@ Mask(64BIT)
 
 Mask(FLOAT64)
 
-mno-float
-Target RejectNegative Var(TARGET_NO_FLOAT) Condition(TARGET_SUPPORTS_NO_FLOAT)
-Prevent the use of all floating-point operations.
-
 msoft-float
 Target RejectNegative Mask(SOFT_FLOAT_ABI)
 Prevent the use of all hardware floating-point instructions.

@@ -6284,13 +6284,6 @@ loongarch_option_override (void)
      were generating uncompressed code.  */
   loongarch_base_compression_flags = 0;
 
-  /* -mno-float overrides -mhard-float and -msoft-float.  */
-  if (TARGET_NO_FLOAT)
-    {
-      target_flags |= MASK_SOFT_FLOAT_ABI;
-      target_flags_explicit |= MASK_SOFT_FLOAT_ABI;
-    }
-
   /* Set the small data limit.  */
   loongarch_small_data_threshold = (global_options_set.x_g_switch_value
 				    ? g_switch_value

@@ -70,9 +70,7 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
 
   /* These defines reflect the ABI in use, not whether the
      FPU is directly accessible.  */
-  if (TARGET_NO_FLOAT)
-    builtin_define ("__loongarch_no_float");
-  else if (TARGET_HARD_FLOAT_ABI)
+  if (TARGET_HARD_FLOAT_ABI)
     builtin_define ("__loongarch_hard_float");
   else
     builtin_define ("__loongarch_soft_float");
