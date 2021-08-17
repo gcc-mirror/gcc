@@ -19488,6 +19488,33 @@ c_parser_omp_single (location_t loc, c_parser *parser, bool *if_p)
   return add_stmt (stmt);
 }
 
+/* OpenMP 5.1:
+   # pragma omp scope scope-clause[optseq] new-line
+     structured-block
+
+   LOC is the location of the #pragma.
+*/
+
+#define OMP_SCOPE_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
+
+static tree
+c_parser_omp_scope (location_t loc, c_parser *parser, bool *if_p)
+{
+  tree stmt = make_node (OMP_SCOPE);
+  SET_EXPR_LOCATION (stmt, loc);
+  TREE_TYPE (stmt) = void_type_node;
+
+  OMP_SCOPE_CLAUSES (stmt)
+    = c_parser_omp_all_clauses (parser, OMP_SCOPE_CLAUSE_MASK,
+				"#pragma omp scope");
+  OMP_SCOPE_BODY (stmt) = c_parser_omp_structured_block (parser, if_p);
+
+  return add_stmt (stmt);
+}
+
 /* OpenMP 3.0:
    # pragma omp task task-clause[optseq] new-line
 
@@ -21957,6 +21984,9 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
     case PRAGMA_OMP_PARALLEL:
       strcpy (p_name, "#pragma omp");
       stmt = c_parser_omp_parallel (loc, parser, p_name, mask, NULL, if_p);
+      break;
+    case PRAGMA_OMP_SCOPE:
+      stmt = c_parser_omp_scope (loc, parser, if_p);
       break;
     case PRAGMA_OMP_SECTIONS:
       strcpy (p_name, "#pragma omp");

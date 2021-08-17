@@ -554,6 +554,10 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
       [[omp::directive (cancellation point, parallel)]];
     }
   }
+  [[omp::directive (scope, private (p), reduction(+:r), nowait)]]
+    ;
+  [[using omp:directive (scope, private (p), reduction(task, +:r))]]
+    ;
   extern int t2;
   [[omp::directive (threadprivate (t2))]];
   extern int t2;
