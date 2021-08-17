@@ -1,3 +1,12 @@
+2021-08-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/mode-transitions.c: Address
+	'?:' issues.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/masked-1.f90: New test.
+
 2021-08-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/static-variable-1.c: Adjust.
