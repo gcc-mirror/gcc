@@ -6265,6 +6265,24 @@ gfc_trans_omp_parallel_workshare (gfc_code *code)
 }
 
 static tree
+gfc_trans_omp_scope (gfc_code *code)
+{
+  stmtblock_t block;
+  tree body = gfc_trans_code (code->block->next);
+  if (IS_EMPTY_STMT (body))
+    return body;
+  gfc_start_block (&block);
+  tree omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
+					    code->loc);
+  tree stmt = make_node (OMP_SCOPE);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_SCOPE_BODY (stmt) = body;
+  OMP_SCOPE_CLAUSES (stmt) = omp_clauses;
+  gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
+}
+
+static tree
 gfc_trans_omp_sections (gfc_code *code, gfc_omp_clauses *clauses)
 {
   stmtblock_t block, body;
@@ -7110,6 +7128,8 @@ gfc_trans_omp_directive (gfc_code *code)
       return gfc_trans_omp_parallel_sections (code);
     case EXEC_OMP_PARALLEL_WORKSHARE:
       return gfc_trans_omp_parallel_workshare (code);
+    case EXEC_OMP_SCOPE:
+      return gfc_trans_omp_scope (code);
     case EXEC_OMP_SECTIONS:
       return gfc_trans_omp_sections (code, code->ext.omp_clauses);
     case EXEC_OMP_SINGLE:

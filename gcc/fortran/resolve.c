@@ -10839,6 +10839,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_PARALLEL_WORKSHARE:
 	case EXEC_OMP_SECTIONS:
 	case EXEC_OMP_SIMD:
+	case EXEC_OMP_SCOPE:
 	case EXEC_OMP_SINGLE:
 	case EXEC_OMP_TARGET:
 	case EXEC_OMP_TARGET_DATA:
@@ -12262,6 +12263,7 @@ start:
 	case EXEC_OMP_MASKED_TASKLOOP_SIMD:
 	case EXEC_OMP_ORDERED:
 	case EXEC_OMP_SCAN:
+	case EXEC_OMP_SCOPE:
 	case EXEC_OMP_SECTIONS:
 	case EXEC_OMP_SIMD:
 	case EXEC_OMP_SINGLE:

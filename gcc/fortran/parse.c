@@ -951,6 +951,7 @@ decode_omp_directive (void)
       matcho ("end parallel workshare", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_WORKSHARE);
       matcho ("end parallel", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL);
+      matcho ("end scope", gfc_match_omp_end_nowait, ST_OMP_END_SCOPE);
       matcho ("end sections", gfc_match_omp_end_nowait, ST_OMP_END_SECTIONS);
       matcho ("end single", gfc_match_omp_end_single, ST_OMP_END_SINGLE);
       matcho ("end target data", gfc_match_omp_eos_error, ST_OMP_END_TARGET_DATA);
@@ -1052,6 +1053,7 @@ decode_omp_directive (void)
       break;
     case 's':
       matcho ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
+      matcho ("scope", gfc_match_omp_scope, ST_OMP_SCOPE);
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
       matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);
       matcho ("single", gfc_match_omp_single, ST_OMP_SINGLE);
@@ -1672,7 +1674,7 @@ next_statement (void)
   case ST_OMP_CRITICAL: case ST_OMP_MASKED: case ST_OMP_MASKED_TASKLOOP: \
   case ST_OMP_MASKED_TASKLOOP_SIMD: \
   case ST_OMP_MASTER: case ST_OMP_MASTER_TASKLOOP: \
-  case ST_OMP_MASTER_TASKLOOP_SIMD: case ST_OMP_SINGLE: \
+  case ST_OMP_MASTER_TASKLOOP_SIMD: case ST_OMP_SCOPE: case ST_OMP_SINGLE: \
   case ST_OMP_DO: case ST_OMP_PARALLEL_DO: case ST_OMP_ATOMIC: \
   case ST_OMP_WORKSHARE: case ST_OMP_PARALLEL_WORKSHARE: \
   case ST_OMP_TASK: case ST_OMP_TASKGROUP: case ST_OMP_SIMD: \
@@ -2608,6 +2610,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_SCAN:
       p = "!$OMP SCAN";
+      break;
+    case ST_OMP_SCOPE:
+      p = "!$OMP SCOPE";
       break;
     case ST_OMP_SECTIONS:
       p = "!$OMP SECTIONS";
@@ -5463,6 +5468,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_PARALLEL_SECTIONS:
       omp_end_st = ST_OMP_END_PARALLEL_SECTIONS;
       break;
+    case ST_OMP_SCOPE:
+      omp_end_st = ST_OMP_END_SCOPE;
+      break;
     case ST_OMP_SECTIONS:
       omp_end_st = ST_OMP_END_SECTIONS;
       break;
@@ -5763,11 +5771,12 @@ parse_executable (gfc_statement st)
 	case ST_OMP_PARALLEL_MASKED:
 	case ST_OMP_PARALLEL_MASTER:
 	case ST_OMP_PARALLEL_SECTIONS:
-	case ST_OMP_SECTIONS:
 	case ST_OMP_ORDERED:
 	case ST_OMP_CRITICAL:
 	case ST_OMP_MASKED:
 	case ST_OMP_MASTER:
+	case ST_OMP_SCOPE:
+	case ST_OMP_SECTIONS:
 	case ST_OMP_SINGLE:
 	case ST_OMP_TARGET:
 	case ST_OMP_TARGET_DATA:
