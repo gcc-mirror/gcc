@@ -4392,6 +4392,7 @@ package body Exp_Ch6 is
       --  the current subprogram is called.
 
       if Is_Subprogram (Subp)
+        and then not Is_Ignored_Ghost_Entity (Subp)
         and then Same_Or_Aliased_Subprograms (Subp, Current_Scope)
       then
          Check_Subprogram_Variant;
