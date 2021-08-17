@@ -851,8 +851,14 @@ case ${target} in
   tmake_file="${tmake_file} t-glibc"
   target_has_targetcm=yes
   target_has_targetdm=yes
-  # Linux targets always support .init_array.
-  gcc_cv_initfini_array=yes
+  case $target in
+    *-*-*uclibc* | *-*-uclinuxfdpiceabi)
+      ;;
+    *)
+      # Linux targets always support .init_array.
+      gcc_cv_initfini_array=yes
+      ;;
+  esac
   ;;
 *-*-netbsd*)
   tm_p_file="${tm_p_file} netbsd-protos.h"
