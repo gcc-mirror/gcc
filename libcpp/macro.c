@@ -118,6 +118,7 @@ class vaopt_state {
     m_arg (arg),
     m_variadic (is_variadic),
     m_last_was_paste (false),
+    m_stringify (false),
     m_state (0),
     m_paste_location (0),
     m_location (0),
@@ -145,6 +146,7 @@ class vaopt_state {
 	  }
 	++m_state;
 	m_location = token->src_loc;
+	m_stringify = (token->flags & STRINGIFY_ARG) != 0;
 	return BEGIN;
       }
     else if (m_state == 1)
@@ -234,6 +236,12 @@ class vaopt_state {
     return m_state == 0;
   }
 
+  /* Return true for # __VA_OPT__.  */
+  bool stringify () const
+  {
+    return m_stringify;
+  }
+
  private:
 
   /* The cpp_reader.  */
@@ -247,6 +255,8 @@ class vaopt_state {
   /* If true, the previous token was ##.  This is used to detect when
      a paste occurs at the end of the sequence.  */
   bool m_last_was_paste;
+  /* True for #__VA_OPT__.  */
+  bool m_stringify;
 
   /* The state variable:
      0 means not parsing
@@ -284,7 +294,8 @@ static _cpp_buff *collect_args (cpp_reader *, const cpp_hashnode *,
 static cpp_context *next_context (cpp_reader *);
 static const cpp_token *padding_token (cpp_reader *, const cpp_token *);
 static const cpp_token *new_string_token (cpp_reader *, uchar *, unsigned int);
-static const cpp_token *stringify_arg (cpp_reader *, macro_arg *);
+static const cpp_token *stringify_arg (cpp_reader *, const cpp_token **,
+				       unsigned int, bool);
 static void paste_all_tokens (cpp_reader *, const cpp_token *);
 static bool paste_tokens (cpp_reader *, location_t,
 			  const cpp_token **, const cpp_token *);
@@ -818,10 +829,11 @@ cpp_quote_string (uchar *dest, const uchar *src, unsigned int len)
   return dest;
 }
 
-/* Convert a token sequence ARG to a single string token according to
-   the rules of the ISO C #-operator.  */
+/* Convert a token sequence FIRST to FIRST+COUNT-1 to a single string token
+   according to the rules of the ISO C #-operator.  */
 static const cpp_token *
-stringify_arg (cpp_reader *pfile, macro_arg *arg)
+stringify_arg (cpp_reader *pfile, const cpp_token **first, unsigned int count,
+	       bool va_opt)
 {
   unsigned char *dest;
   unsigned int i, escape_it, backslash_count = 0;
@@ -834,9 +846,27 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
   *dest++ = '"';
 
   /* Loop, reading in the argument's tokens.  */
-  for (i = 0; i < arg->count; i++)
+  for (i = 0; i < count; i++)
     {
-      const cpp_token *token = arg->first[i];
+      const cpp_token *token = first[i];
+
+      if (va_opt && (token->flags & PASTE_LEFT))
+	{
+	  location_t virt_loc = pfile->invocation_location;
+	  const cpp_token *rhs;
+	  do
+	    {
+	      if (i == count)
+		abort ();
+	      rhs = first[++i];
+	      if (!paste_tokens (pfile, virt_loc, &token, rhs))
+		{
+		  --i;
+		  break;
+		}
+	    }
+	  while (rhs->flags & PASTE_LEFT);
+	}
 
       if (token->type == CPP_PADDING)
 	{
@@ -923,7 +953,7 @@ paste_tokens (cpp_reader *pfile, location_t location,
   cpp_token *lhs;
   unsigned int len;
 
-  len = cpp_token_len (*plhs) + cpp_token_len (rhs) + 1;
+  len = cpp_token_len (*plhs) + cpp_token_len (rhs) + 2;
   buf = (unsigned char *) alloca (len);
   end = lhsend = cpp_spell_token (pfile, *plhs, buf, true);
 
@@ -949,8 +979,10 @@ paste_tokens (cpp_reader *pfile, location_t location,
       location_t saved_loc = lhs->src_loc;
 
       _cpp_pop_buffer (pfile);
-      _cpp_backup_tokens (pfile, 1);
-      *lhsend = '\0';
+
+      unsigned char *rhsstart = lhsend;
+      if ((*plhs)->type == CPP_DIV && rhs->type != CPP_EQ)
+	rhsstart++;
 
       /* We have to remove the PASTE_LEFT flag from the old lhs, but
 	 we want to keep the new location.  */
@@ -962,8 +994,10 @@ paste_tokens (cpp_reader *pfile, location_t location,
       /* Mandatory error for all apart from assembler.  */
       if (CPP_OPTION (pfile, lang) != CLK_ASM)
 	cpp_error_with_line (pfile, CPP_DL_ERROR, location, 0,
-	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
-		   buf, cpp_token_as_text (pfile, rhs));
+			     "pasting \"%.*s\" and \"%.*s\" does not give "
+			     "a valid preprocessing token",
+			     (int) (lhsend - buf), buf,
+			     (int) (end - rhsstart), rhsstart);
       return false;
     }
 
@@ -1039,7 +1073,10 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
 	    abort ();
 	}
       if (!paste_tokens (pfile, virt_loc, &lhs, rhs))
-	break;
+	{
+	  _cpp_backup_tokens (pfile, 1);
+	  break;
+	}
     }
   while (rhs->flags & PASTE_LEFT);
 
@@ -1906,7 +1943,8 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	if (src->flags & STRINGIFY_ARG)
 	  {
 	    if (!arg->stringified)
-	      arg->stringified = stringify_arg (pfile, arg);
+	      arg->stringified = stringify_arg (pfile, arg->first, arg->count,
+						false);
 	  }
 	else if ((src->flags & PASTE_LEFT)
 		 || (src != macro->exp.tokens && (src[-1].flags & PASTE_LEFT)))
@@ -2029,7 +2067,24 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		  paste_flag = tokens_buff_last_token_ptr (buff);
 		}
 
-	      if (src->flags & PASTE_LEFT)
+	      if (vaopt_tracker.stringify ())
+		{
+		  unsigned int count
+		    = start ? paste_flag - start : tokens_buff_count (buff);
+		  const cpp_token *t
+		    = stringify_arg (pfile,
+				     start ? start + 1
+				     : (const cpp_token **) (buff->base),
+				     count, true);
+		  while (count--)
+		    tokens_buff_remove_last_token (buff);
+		  if (src->flags & PASTE_LEFT)
+		    copy_paste_flag (pfile, &t, src);
+		  tokens_buff_add_token (buff, virt_locs,
+					 t, t->src_loc, t->src_loc,
+					 NULL, 0);
+		}
+	      else if (src->flags & PASTE_LEFT)
 		{
 		  /* With a non-empty __VA_OPT__ on the LHS of ##, the last
 		     token should be flagged PASTE_LEFT.  */
@@ -3585,7 +3640,10 @@ create_iso_definition (cpp_reader *pfile)
 	 function-like macros when lexing the subsequent token.  */
       if (macro->count > 1 && token[-1].type == CPP_HASH && macro->fun_like)
 	{
-	  if (token->type == CPP_MACRO_ARG)
+	  if (token->type == CPP_MACRO_ARG
+	      || (macro->variadic
+		  && token->type == CPP_NAME
+		  && token->val.node.node == pfile->spec_nodes.n__VA_OPT__))
 	    {
 	      if (token->flags & PREV_WHITE)
 		token->flags |= SP_PREV_WHITE;

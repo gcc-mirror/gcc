@@ -89,6 +89,8 @@ f3 (int *c, int *d)
     #pragma omp section
     ;
   }
+  #pragma omp scope reduction (inscan, +: a)	/* { dg-error "'inscan' 'reduction' clause on 'scope' construct" } */
+  ;
   #pragma omp target parallel for reduction (inscan, +: a) map (c[:64], d[:64])	/* { dg-error "'inscan' 'reduction' clause on construct other than 'for', 'simd', 'for simd', 'parallel for', 'parallel for simd'" } */
   for (i = 0; i < 64; i++)
     {

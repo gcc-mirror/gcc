@@ -1,3 +1,8 @@
+2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (gcov_type): Define using __LIBGCC_GCOV_TYPE_SIZE.
+	(gcov_type_unsigned): Likewise.
+
 2021-08-14  Stafford Horne  <shorne@gmail.com>
 
 	PR target/99783

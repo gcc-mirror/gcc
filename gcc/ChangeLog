@@ -1,3 +1,120 @@
+2021-08-16  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config.gcc (rl78-*-elf*): Do not include dbxelf.h.
+
+2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/rtemself.h (SPARC_GCOV_TYPE_SIZE): Define.
+	* config/sparc/sparc.c (sparc_gcov_type_size): New.
+	(TARGET_GCOV_TYPE_SIZE): Redefine if SPARC_GCOV_TYPE_SIZE is defined.
+	* coverage.c (get_gcov_type): Use targetm.gcov_type_size().
+	* doc/tm.texi (TARGET_GCOV_TYPE_SIZE): Add hook under "Misc".
+	* doc/tm.texi.in: Regenerate.
+	* target.def (gcov_type_size): New target hook.
+	* targhooks.c (default_gcov_type_size): New.
+	* targhooks.h (default_gcov_type_size): Declare.
+	* tree-profile.c (gimple_gen_edge_profiler): Use precision of
+	gcov_type_node.
+	(gimple_gen_time_profiler): Likewise.
+
+2021-08-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* dwarf2out.c (add_scalar_info): Deal with DW_AT_data_bit_offset.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/101931
+	* omp-low.c (omp_runtime_api_call): Update for routines
+	added in the meanwhile.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/100393
+	* tree-switch-conversion.c (group_cluster::dump): Use
+	  get_comparison_count.
+	(jump_table_cluster::find_jump_tables): Pre-compute number of
+	comparisons and then decrement it. Cache also max_ratio.
+	(jump_table_cluster::can_be_handled): Change signature.
+	* tree-switch-conversion.h (get_comparison_count): New.
+
+2021-08-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* dwarf2out.c (add_data_member_location_attribute): Use GNAT
+	encodings only when -fgnat-encodings=all is specified.
+	(add_bound_info): Likewise.
+	(add_byte_size_attribute): Likewise.
+	(gen_member_die): Likewise.
+
+2021-08-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-neuter-broadcast.cc
+	(execute_omp_oacc_neuter_broadcast): Plug 'par' memory leak.
+
+2021-08-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-neuter-broadcast.cc
+	(execute_omp_oacc_neuter_broadcast): Clarify memory management for
+	'prop_set'.
+
+2021-08-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-neuter-broadcast.cc (field_map): Move variable into...
+	(execute_omp_oacc_neuter_broadcast): ... here.
+	(install_var_field, build_receiver_ref, build_sender_ref): Take
+	'field_map_t *' parameter.  Adjust all users.
+	(worker_single_copy, neuter_worker_single): Take a
+	'record_field_map_t *' parameter.  Adjust all users.
+
+2021-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101930
+	* config/i386/i386.md (ldexp<mode>3): Force operands[1] to
+	reg.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101726
+	* multiple_target.c (create_dispatcher_calls): Make default
+	  function local only if it is a definition.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/100600
+	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Do not
+	  consider equal SSA_NAMEs when one is a param.
+
+2021-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101846
+	* config/i386/i386-expand.c (ix86_expand_vec_perm_vpermt2):
+	Support vpermi2b for V32QI/V16QImode.
+	(ix86_extract_perm_from_pool_constant): New function.
+	(ix86_expand_vec_one_operand_perm_avx512): Support
+	vpermw/vpermb under TARGET_AVX512BW/TARGET_AVX512VBMI.
+	(expand_vec_perm_1): Adjust comments for upper.
+	* config/i386/i386-protos.h (ix86_extract_perm_from_pool_constant):
+	New declare.
+	* config/i386/predicates.md (permvar_truncate_operand): New predicate.
+	(pshufb_truncv4siv4hi_operand): Ditto.
+	(pshufb_truncv8hiv8qi_operand): Ditto.
+	* config/i386/sse.md (*avx512bw_permvar_truncv16siv16hi_1):
+	New pre_reload define_insn_and_split.
+	(*avx512f_permvar_truncv8siv8hi_1): Ditto.
+	(*avx512f_vpermvar_truncv8div8si_1): Ditto.
+	(*avx512f_permvar_truncv32hiv32qi_1): Ditto.
+	(*avx512f_permvar_truncv16hiv16qi_1): Ditto.
+	(*avx512f_permvar_truncv4div4si_1): Ditto.
+	(*avx512f_pshufb_truncv8hiv8qi_1): Ditto.
+	(*avx512f_pshufb_truncv4siv4hi_1): Ditto.
+	(*avx512f_pshufd_truncv2div2si_1): Ditto.
+
+2021-08-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/multilib-generator: Support code model option for
+	multi-lib.
+	* doc/install.texi: Add document of new option for
+	--with-multilib-generator.
+
 2021-08-15  Clément Chigot  <clement.chigot@atos.net>
 
 	* config/rs6000/rs6000.c (xcoff_tls_exec_model_detected): New.

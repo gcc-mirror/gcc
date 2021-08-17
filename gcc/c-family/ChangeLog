@@ -1,3 +1,8 @@
+2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__LIBGCC_GCOV_TYPE_SIZE if flag_building_libgcc is true.
+
 2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_MASKED.

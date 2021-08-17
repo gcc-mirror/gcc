@@ -1,3 +1,16 @@
+2021-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101937
+	* src/c++11/debug.cc (PrintContext::_M_indent): Replace with a
+	static data member.
+	(print_word): Use qualified-id to access it.
+
+2021-08-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/Makefile.am [GLIBCXX_BUILD_DEBUG] (install-data-local):
+	Install another copy of the GDB hook.
+	* python/Makefile.in: Regenerate.
+
 2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101870

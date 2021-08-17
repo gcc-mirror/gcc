@@ -4820,6 +4820,9 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
   if (mask)
     mask = vect_convert_mask_for_vectype (mask, gs_vectype, stmt_info,
 					  loop_vinfo);
+  else if (gs_info.ifn == IFN_MASK_SCATTER_STORE
+	   || gs_info.ifn == IFN_MASK_GATHER_LOAD)
+    mask = build_int_cst (TREE_TYPE (truth_type_for (gs_vectype)), -1);
 
   /* Get the invariant base and non-invariant offset, converting the
      latter to the same width as the vector elements.  */
@@ -4847,11 +4850,11 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
     {
       tree rhs = vect_get_store_rhs (stmt_info);
       if (mask != NULL)
-	pattern_stmt = gimple_build_call_internal (IFN_MASK_SCATTER_STORE, 5,
+	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 5,
 						   base, offset, scale, rhs,
 						   mask);
       else
-	pattern_stmt = gimple_build_call_internal (IFN_SCATTER_STORE, 4,
+	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 4,
 						   base, offset, scale, rhs);
     }
   gimple_call_set_nothrow (pattern_stmt, true);

@@ -3150,6 +3150,8 @@ cleanup:
 #define OMP_LOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_BIND) | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_ORDER	\
    | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
+#define OMP_SCOPE_CLAUSES \
+  (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_REDUCTION)
 #define OMP_SECTIONS_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
@@ -4488,6 +4490,13 @@ gfc_match_omp_scan (void)
 
 
 match
+gfc_match_omp_scope (void)
+{
+  return match_omp (EXEC_OMP_SCOPE, OMP_SCOPE_CLAUSES);
+}
+
+
+match
 gfc_match_omp_sections (void)
 {
   return match_omp (EXEC_OMP_SECTIONS, OMP_SECTIONS_CLAUSES);
@@ -4975,7 +4984,11 @@ gfc_match_omp_cancellation_point (void)
   gfc_omp_clauses *c;
   enum gfc_omp_cancel_kind kind = gfc_match_omp_cancel_kind ();
   if (kind == OMP_CANCEL_UNKNOWN)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Expected construct-type PARALLEL, SECTIONS, DO or TASKGROUP "
+		 "in $OMP CANCELLATION POINT statement at %C");
+      return MATCH_ERROR;
+    }
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP CANCELLATION POINT statement "
@@ -4998,7 +5011,10 @@ gfc_match_omp_end_nowait (void)
     nowait = true;
   if (gfc_match_omp_eos () != MATCH_YES)
     {
-      gfc_error ("Unexpected junk after NOWAIT clause at %C");
+      if (nowait)
+	gfc_error ("Unexpected junk after NOWAIT clause at %C");
+      else
+	gfc_error ("Unexpected junk at %C");
       return MATCH_ERROR;
     }
   new_st.op = EXEC_OMP_END_NOWAIT;
@@ -7448,6 +7464,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_DO_SIMD;
     case EXEC_OMP_SCAN:
       return ST_OMP_SCAN;
+    case EXEC_OMP_SCOPE:
+      return ST_OMP_SCOPE;
     case EXEC_OMP_SIMD:
       return ST_OMP_SIMD;
     case EXEC_OMP_TARGET:
@@ -7948,6 +7966,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_PARALLEL_MASKED:
     case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_SECTIONS:
+    case EXEC_OMP_SCOPE:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SINGLE:
     case EXEC_OMP_TARGET:

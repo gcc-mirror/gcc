@@ -54,7 +54,7 @@ namespace ranges
 	&& (is_pointer_v<_It> || requires(_It __it) { __it.operator->(); });
 
     template<typename _Tp, typename _Up>
-      concept __not_same_as
+      concept __different_from
 	= !same_as<remove_cvref_t<_Tp>, remove_cvref_t<_Up>>;
   } // namespace __detail
 
@@ -187,8 +187,8 @@ namespace ranges
     template<class _From, class _To>
       concept __convertible_to_non_slicing = convertible_to<_From, _To>
 	&& !(is_pointer_v<decay_t<_From>> && is_pointer_v<decay_t<_To>>
-	    && __not_same_as<remove_pointer_t<decay_t<_From>>,
-			     remove_pointer_t<decay_t<_To>>>);
+	    && __different_from<remove_pointer_t<decay_t<_From>>,
+				remove_pointer_t<decay_t<_To>>>);
 
     template<typename _Tp>
       concept __pair_like
@@ -264,7 +264,7 @@ namespace ranges
 	  _M_size._M_size = __n;
       }
 
-      template<__detail::__not_same_as<subrange> _Rng>
+      template<__detail::__different_from<subrange> _Rng>
 	requires borrowed_range<_Rng>
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
@@ -275,7 +275,7 @@ namespace ranges
 	: subrange(__r, ranges::size(__r))
 	{ }
 
-      template<__detail::__not_same_as<subrange> _Rng>
+      template<__detail::__different_from<subrange> _Rng>
 	requires borrowed_range<_Rng>
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
@@ -296,7 +296,7 @@ namespace ranges
 	: subrange{ranges::begin(__r), ranges::end(__r), __n}
 	{ }
 
-      template<__detail::__not_same_as<subrange> _PairLike>
+      template<__detail::__different_from<subrange> _PairLike>
 	requires __detail::__pair_like_convertible_from<_PairLike, const _It&,
 							const _Sent&>
 	constexpr

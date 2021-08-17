@@ -248,17 +248,17 @@ static enum shift_alg shift_alg_si[2][3][32] = {
     /* 16   17   18   19   20   21   22   23  */
     /* 24   25   26   27   28   29   30   31  */
     { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, SPC, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
+      INL, INL, INL, INL, INL, INL, INL, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
     { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, SPC, LOP, LOP, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
+      INL, INL, INL, INL, INL, INL, INL, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, SPC, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+      INL, INL, INL, INL, INL, INL, INL, LOP,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
   }
 };
 
@@ -375,6 +375,36 @@ h8300_option_override (void)
 
       /* H8S */
       shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
+
+      shift_alg_si[H8_S][SHIFT_ASHIFT][11] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFT][12] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFT][13] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFT][14] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFT][22] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFT][23] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFT][26] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFT][27] = SHIFT_LOOP;
+
+      shift_alg_si[H8_S][SHIFT_LSHIFTRT][11] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_LSHIFTRT][12] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_LSHIFTRT][13] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_LSHIFTRT][14] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_LSHIFTRT][22] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_LSHIFTRT][23] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_LSHIFTRT][26] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_LSHIFTRT][27] = SHIFT_LOOP;
+
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][11] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][12] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][22] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][23] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][26] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][27] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][28] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][29] = SHIFT_LOOP;
+      shift_alg_si[H8_S][SHIFT_ASHIFTRT][30] = SHIFT_LOOP;
     }
 
   /* Work out a value for MOVE_RATIO.  */
@@ -3814,8 +3844,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      gcc_unreachable ();
 	    }
 	}
-      else if ((TARGET_H8300H && count >= 16 && count <= 23)
-	       || (TARGET_H8300S && count >= 16 && count <= 21))
+      else if (count >= 16 && count <= 23)
 	{
 	  info->remainder = count - 16;
 
@@ -3834,8 +3863,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    }
 	}
-      else if ((TARGET_H8300H && count >= 24 || count <= 27)
-	       || (TARGET_H8300S && count >= 24 && count <= 25))
+      else if (count >= 24 && count <= 27)
 	{
 	  info->remainder = count - 24;
 
@@ -3874,7 +3902,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      gcc_unreachable ();
+	      info->remainder = count - 24;
+	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
+	      info->cc_special = OLD_CC_SET_ZNV;
+	      goto end;
 	    }
 	}
       else if (count == 29)
@@ -3900,7 +3931,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 		}
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      gcc_unreachable ();
+	      info->remainder = count - 24;
+	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
+	      info->cc_special = OLD_CC_SET_ZNV;
+	      goto end;
 	    }
 	}
       else if (count == 30)
@@ -3920,7 +3954,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      gcc_unreachable ();
+	      info->remainder = count - 24;
+	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
+	      info->cc_special = OLD_CC_SET_ZNV;
+	      goto end;
 	    }
 	}
       else if (count == 31)

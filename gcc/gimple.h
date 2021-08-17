@@ -742,7 +742,7 @@ struct GTY((tag("GSS_OMP_CONTINUE")))
 };
 
 /* GIMPLE_OMP_SINGLE, GIMPLE_OMP_ORDERED, GIMPLE_OMP_TASKGROUP,
-   GIMPLE_OMP_SCAN.  */
+   GIMPLE_OMP_SCAN, GIMPLE_OMP_MASKED, GIMPLE_OMP_SCOPE.  */
 
 struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
   gimple_statement_omp_single_layout : public gimple_statement_omp
@@ -1559,6 +1559,7 @@ gomp_parallel *gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
 gomp_task *gimple_build_omp_task (gimple_seq, tree, tree, tree, tree,
 				       tree, tree);
 gimple *gimple_build_omp_section (gimple_seq);
+gimple *gimple_build_omp_scope (gimple_seq, tree);
 gimple *gimple_build_omp_master (gimple_seq);
 gimple *gimple_build_omp_masked (gimple_seq, tree);
 gimple *gimple_build_omp_taskgroup (gimple_seq, tree);
@@ -1843,6 +1844,7 @@ gimple_has_substatements (gimple *g)
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TARGET:
@@ -5207,7 +5209,7 @@ gimple_omp_taskgroup_set_clauses (gimple *gs, tree clauses)
 }
 
 
-/* Return the clauses associated with OMP_MASTER statement GS.  */
+/* Return the clauses associated with OMP_MASKED statement GS.  */
 
 static inline tree
 gimple_omp_masked_clauses (const gimple *gs)
@@ -5236,6 +5238,40 @@ static inline void
 gimple_omp_masked_set_clauses (gimple *gs, tree clauses)
 {
   GIMPLE_CHECK (gs, GIMPLE_OMP_MASKED);
+  static_cast <gimple_statement_omp_single_layout *> (gs)->clauses
+    = clauses;
+}
+
+
+/* Return the clauses associated with OMP_SCOPE statement GS.  */
+
+static inline tree
+gimple_omp_scope_clauses (const gimple *gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_SCOPE);
+  return
+    static_cast <const gimple_statement_omp_single_layout *> (gs)->clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP scope statement
+   GS.  */
+
+static inline tree *
+gimple_omp_scope_clauses_ptr (gimple *gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_SCOPE);
+  return &static_cast <gimple_statement_omp_single_layout *> (gs)->clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP scope statement
+   GS.  */
+
+static inline void
+gimple_omp_scope_set_clauses (gimple *gs, tree clauses)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_SCOPE);
   static_cast <gimple_statement_omp_single_layout *> (gs)->clauses
     = clauses;
 }
@@ -6527,6 +6563,7 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_SINGLE:			\
     case GIMPLE_OMP_TARGET:			\
     case GIMPLE_OMP_TEAMS:			\
+    case GIMPLE_OMP_SCOPE:			\
     case GIMPLE_OMP_SECTION:			\
     case GIMPLE_OMP_MASTER:			\
     case GIMPLE_OMP_MASKED:			\

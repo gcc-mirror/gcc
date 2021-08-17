@@ -1,3 +1,28 @@
+2021-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101930
+	* gcc.target/i386/pr101930.c: New test.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/100600
+	* gcc.dg/ipa/pr100600.c: New test.
+
+2021-08-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101846
+	* gcc.target/i386/pr101846-2.c: New test.
+	* gcc.target/i386/pr101846-3.c: New test.
+	* gcc.target/i386/pr101846-4.c: New test.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/masked-1.f90: New test.
+	* gfortran.dg/gomp/masked-2.f90: New test.
+	* gfortran.dg/gomp/masked-3.f90: New test.
+	* gfortran.dg/gomp/masked-combined-1.f90: New test.
+	* gfortran.dg/gomp/masked-combined-2.f90: New test.
+
 2021-08-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/99351
