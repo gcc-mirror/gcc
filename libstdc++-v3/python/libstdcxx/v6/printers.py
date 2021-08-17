@@ -1484,18 +1484,6 @@ class StdCmpCatPrinter:
             name = names[int(self.val)]
         return 'std::{}::{}'.format(self.typename, name)
 
-class StdErrorCatPrinter:
-    "Print an object derived from std::error_category"
-
-    def __init__ (self, typename, val):
-        self.val = val
-        self.typename = typename
-
-    def to_string (self):
-        gdb.set_convenience_variable('__cat', self.val)
-        name = gdb.parse_and_eval('$__cat->name()').string()
-        return 'error category = "{}"'.format(name)
-
 class StdErrorCodePrinter:
     "Print a std::error_code or std::error_condition"
 
