@@ -3642,6 +3642,12 @@ operator_abs::op1_range (irange &r, tree type,
     r.union_ (int_range<1> (type,
 			    -positives.upper_bound (i),
 			    -positives.lower_bound (i)));
+  // With flag_wrapv, -TYPE_MIN_VALUE = TYPE_MIN_VALUE which is
+  // unrepresentable.  Add -TYPE_MIN_VALUE in this case.
+  wide_int min_value = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+  wide_int lb = lhs.lower_bound ();
+  if (!TYPE_OVERFLOW_UNDEFINED (type) && wi::eq_p (lb, min_value))
+    r.union_ (int_range<2> (type, lb, lb));
   return true;
 }
 
