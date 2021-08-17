@@ -4470,6 +4470,13 @@ cxx_init_decl_processing (void)
   tree bool_vaftype = build_varargs_function_type_list (boolean_type_node,
 							NULL_TREE);
   decl
+    = add_builtin_function ("__builtin_is_corresponding_member",
+			    bool_vaftype,
+			    CP_BUILT_IN_IS_CORRESPONDING_MEMBER,
+			    BUILT_IN_FRONTEND, NULL, NULL_TREE);
+  set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+
+  decl
     = add_builtin_function ("__builtin_is_pointer_interconvertible_with_class",
 			    bool_vaftype,
 			    CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,

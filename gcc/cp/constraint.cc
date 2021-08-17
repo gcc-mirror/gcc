@@ -3628,6 +3628,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_FINAL:
       inform (loc, "  %qT is not a final class", t1);
       break;
+    case CPTK_IS_LAYOUT_COMPATIBLE:
+      inform (loc, "  %qT is not layout compatible with %qT", t1, t2);
+      break;
     case CPTK_IS_LITERAL_TYPE:
       inform (loc, "  %qT is not a literal type", t1);
       break;

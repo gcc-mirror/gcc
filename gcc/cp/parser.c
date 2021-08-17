@@ -5816,6 +5816,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_EMPTY:
 	case RID_IS_ENUM:
 	case RID_IS_FINAL:
+	case RID_IS_LAYOUT_COMPATIBLE:
 	case RID_IS_LITERAL_TYPE:
 	case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
 	case RID_IS_POD:
@@ -10706,6 +10707,10 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_IS_FINAL:
       kind = CPTK_IS_FINAL;
+      break;
+    case RID_IS_LAYOUT_COMPATIBLE:
+      kind = CPTK_IS_LAYOUT_COMPATIBLE;
+      binary = true;
       break;
     case RID_IS_LITERAL_TYPE:
       kind = CPTK_IS_LITERAL_TYPE;

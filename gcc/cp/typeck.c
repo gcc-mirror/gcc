@@ -1621,6 +1621,176 @@ similar_type_p (tree type1, tree type2)
   return false;
 }
 
+/* Helper function for layout_compatible_type_p and
+   is_corresponding_member_aggr.  Advance to next members (NULL if
+   no further ones) and return true if those members are still part of
+   the common initial sequence.  */
+
+bool
+next_common_initial_seqence (tree &memb1, tree &memb2)
+{
+  while (memb1)
+    {
+      if (TREE_CODE (memb1) != FIELD_DECL
+	  || (DECL_FIELD_IS_BASE (memb1) && is_empty_field (memb1)))
+	{
+	  memb1 = DECL_CHAIN (memb1);
+	  continue;
+	}
+      if (DECL_FIELD_IS_BASE (memb1))
+	{
+	  memb1 = TYPE_FIELDS (TREE_TYPE (memb1));
+	  continue;
+	}
+      break;
+    }
+  while (memb2)
+    {
+      if (TREE_CODE (memb2) != FIELD_DECL
+	  || (DECL_FIELD_IS_BASE (memb2) && is_empty_field (memb2)))
+	{
+	  memb2 = DECL_CHAIN (memb2);
+	  continue;
+	}
+      if (DECL_FIELD_IS_BASE (memb2))
+	{
+	  memb2 = TYPE_FIELDS (TREE_TYPE (memb2));
+	  continue;
+	}
+      break;
+    }
+  if (memb1 == NULL_TREE && memb2 == NULL_TREE)
+    return true;
+  if (memb1 == NULL_TREE || memb2 == NULL_TREE)
+    return false;
+  if (DECL_BIT_FIELD_TYPE (memb1))
+    {
+      if (!DECL_BIT_FIELD_TYPE (memb2))
+	return false;
+      if (!layout_compatible_type_p (DECL_BIT_FIELD_TYPE (memb1),
+				     DECL_BIT_FIELD_TYPE (memb2)))
+	return false;
+      if (TYPE_PRECISION (TREE_TYPE (memb1))
+	  != TYPE_PRECISION (TREE_TYPE (memb2)))
+	return false;
+    }
+  else if (DECL_BIT_FIELD_TYPE (memb2))
+    return false;
+  else if (!layout_compatible_type_p (TREE_TYPE (memb1), TREE_TYPE (memb2)))
+    return false;
+  if ((!lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb1)))
+      != !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb2)))
+    return false;
+  if (!tree_int_cst_equal (bit_position (memb1), bit_position (memb2)))
+    return false;
+  return true;
+}
+
+/* Return true if TYPE1 and TYPE2 are layout-compatible types.  */
+
+bool
+layout_compatible_type_p (tree type1, tree type2)
+{
+  if (type1 == error_mark_node || type2 == error_mark_node)
+    return false;
+  if (type1 == type2)
+    return true;
+  if (TREE_CODE (type1) != TREE_CODE (type2))
+    return false;
+
+  type1 = cp_build_qualified_type (type1, TYPE_UNQUALIFIED);
+  type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
+
+  if (TREE_CODE (type1) == ENUMERAL_TYPE)
+    return (TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
+	    && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
+	    && same_type_p (finish_underlying_type (type1),
+			    finish_underlying_type (type2)));
+
+  if (CLASS_TYPE_P (type1)
+      && std_layout_type_p (type1)
+      && std_layout_type_p (type2)
+      && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
+      && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2)))
+    {
+      tree field1 = TYPE_FIELDS (type1);
+      tree field2 = TYPE_FIELDS (type2);
+      if (TREE_CODE (type1) == RECORD_TYPE)
+	{
+	  while (1)
+	    {
+	      if (!next_common_initial_seqence (field1, field2))
+		return false;
+	      if (field1 == NULL_TREE)
+		return true;
+	      field1 = DECL_CHAIN (field1);
+	      field2 = DECL_CHAIN (field2);
+	    }
+	}
+      /* Otherwise both types must be union types.
+	 The standard says:
+	 "Two standard-layout unions are layout-compatible if they have
+	 the same number of non-static data members and corresponding
+	 non-static data members (in any order) have layout-compatible
+	 types."
+	 but the code anticipates that bitfield vs. non-bitfield,
+	 different bitfield widths or presence/absence of
+	 [[no_unique_address]] should be checked as well.  */
+      auto_vec<tree, 16> vec;
+      unsigned int count = 0;
+      for (; field1; field1 = DECL_CHAIN (field1))
+	if (TREE_CODE (field1) == FIELD_DECL)
+	  count++;
+      for (; field2; field2 = DECL_CHAIN (field2))
+	if (TREE_CODE (field2) == FIELD_DECL)
+	  vec.safe_push (field2);
+      /* Discussions on core lean towards treating multiple union fields
+	 of the same type as the same field, so this might need changing
+	 in the future.  */
+      if (count != vec.length ())
+	return false;
+      for (field1 = TYPE_FIELDS (type1); field1; field1 = DECL_CHAIN (field1))
+	{
+	  if (TREE_CODE (field1) != FIELD_DECL)
+	    continue;
+	  unsigned int j;
+	  tree t1 = DECL_BIT_FIELD_TYPE (field1);
+	  if (t1 == NULL_TREE)
+	    t1 = TREE_TYPE (field1);
+	  FOR_EACH_VEC_ELT (vec, j, field2)
+	    {
+	      tree t2 = DECL_BIT_FIELD_TYPE (field2);
+	      if (t2 == NULL_TREE)
+		t2 = TREE_TYPE (field2);
+	      if (DECL_BIT_FIELD_TYPE (field1))
+		{
+		  if (!DECL_BIT_FIELD_TYPE (field2))
+		    continue;
+		  if (TYPE_PRECISION (TREE_TYPE (field1))
+		      != TYPE_PRECISION (TREE_TYPE (field2)))
+		    continue;
+		}
+	      else if (DECL_BIT_FIELD_TYPE (field2))
+		continue;
+	      if (!layout_compatible_type_p (t1, t2))
+		continue;
+	      if ((!lookup_attribute ("no_unique_address",
+				      DECL_ATTRIBUTES (field1)))
+		  != !lookup_attribute ("no_unique_address",
+					DECL_ATTRIBUTES (field2)))
+		continue;
+	      break;
+	    }
+	  if (j == vec.length ())
+	    return false;
+	  vec.unordered_remove (j);
+	}
+      return true;
+    }
+
+  return same_type_p (type1, type2);
+}
+
 /* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */
 
 bool
