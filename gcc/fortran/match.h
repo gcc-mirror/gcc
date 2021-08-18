@@ -175,6 +175,7 @@ match gfc_match_omp_masked_taskloop_simd (void);
 match gfc_match_omp_master (void);
 match gfc_match_omp_master_taskloop (void);
 match gfc_match_omp_master_taskloop_simd (void);
+match gfc_match_omp_nothing (void);
 match gfc_match_omp_ordered (void);
 match gfc_match_omp_ordered_depend (void);
 match gfc_match_omp_parallel (void);
