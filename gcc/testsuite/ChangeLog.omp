@@ -3,6 +3,16 @@
 	Backported from master:
 	2021-08-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/nothing-1.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add nothing directive test.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* g++.dg/gomp/attrs-9.C: Likewise.
+
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-c++-common/gomp/pr63326.c: Don't expect extra "before" errors
 	in C++.
 	* g++.dg/gomp/attrs-7.C: Don't expect one extra error.

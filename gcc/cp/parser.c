@@ -45353,6 +45353,16 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 }
 
 
+/* OpenMP 5.1:
+   #pragma omp nothing new-line  */
+
+static void
+cp_parser_omp_nothing (cp_parser *parser, cp_token *pragma_tok)
+{
+  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+}
+
+
 /* OpenMP 4.5:
    #pragma omp taskloop taskloop-clause[optseq] new-line
      for-loop
@@ -46461,6 +46471,10 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  break;
 	}
       return cp_parser_omp_requires (parser, pragma_tok);
+
+    case PRAGMA_OMP_NOTHING:
+      cp_parser_omp_nothing (parser, pragma_tok);
+      return false;
 
     case PRAGMA_OMP_ORDERED:
       if (context != pragma_stmt && context != pragma_compound)

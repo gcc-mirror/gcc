@@ -1577,6 +1577,7 @@ static tree c_parser_omp_for_loop (location_t, c_parser *, enum tree_code,
 static void c_parser_omp_taskwait (c_parser *);
 static void c_parser_omp_taskyield (c_parser *);
 static void c_parser_omp_cancel (c_parser *);
+static void c_parser_omp_nothing (c_parser *);
 
 enum pragma_context { pragma_external, pragma_struct, pragma_param,
 		      pragma_stmt, pragma_compound };
@@ -12444,6 +12445,10 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       c_parser_omp_requires (parser);
       return false;
 
+    case PRAGMA_OMP_NOTHING:
+      c_parser_omp_nothing (parser);
+      return false;
+
     case PRAGMA_OMP_ORDERED:
       return c_parser_omp_ordered (parser, context, if_p);
 
@@ -21927,6 +21932,16 @@ c_parser_omp_taskloop (location_t loc, c_parser *parser,
   add_stmt (block);
 
   return ret;
+}
+
+/* OpenMP 5.1
+   #pragma omp nothing new-line  */
+
+static void
+c_parser_omp_nothing (c_parser *parser)
+{
+  c_parser_consume_pragma (parser);
+  c_parser_skip_to_pragma_eol (parser);
 }
 
 /* Main entry point to parsing most OpenMP pragmas.  */

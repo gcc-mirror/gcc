@@ -111,6 +111,7 @@ void
 bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
      int nte, int tl, int nth, int g, int nta, int fi, int pp, int *q, int *dd, int ntm)
 {
+  [[omp::directive (nothing)]];
   [[omp::directive (for simd,
     private (p),firstprivate (f),lastprivate (l),linear (ll:1),reduction(+:r),schedule(static, 4),collapse(1),nowait,
     safelen(8),simdlen(4),aligned(q: 32),nontemporal(ntm),if(i1),order(concurrent),allocate (f))]]

@@ -2,6 +2,13 @@
 
 	Backported from master:
 	2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+	* c-parser.c (c_parser_omp_nothing): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_NOTHING.
+
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_statement_after_labels): Add restart label
 	near the start of the function.  If c_parser_pragma returns false,
