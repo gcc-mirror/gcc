@@ -3,5 +3,5 @@ pure subroutine foo
 end subroutine
 
 subroutine bar
-  !$omp nothing foo  ! { dg-error "Unexpected junk after $OMP NOTHING statement" }
+  !$omp nothing foo  ! { dg-error "Unexpected junk after .OMP NOTHING statement" }
 end
