@@ -1007,6 +1007,9 @@ decode_omp_directive (void)
 	      ST_OMP_MASTER_TASKLOOP);
       matcho ("master", gfc_match_omp_master, ST_OMP_MASTER);
       break;
+    case 'n':
+      matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
+      break;
     case 'l':
       matcho ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
       break;

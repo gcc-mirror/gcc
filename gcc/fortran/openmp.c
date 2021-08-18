@@ -4786,6 +4786,17 @@ gfc_match_omp_ordered (void)
   return match_omp (EXEC_OMP_ORDERED, OMP_ORDERED_CLAUSES);
 }
 
+match
+gfc_match_omp_nothing (void)
+{
+  if (gfc_match_omp_eos () != MATCH_YES)
+    {
+      gfc_error ("Unexpected junk after $OMP NOTHING statement at %C");
+      return MATCH_ERROR;
+    }
+  /* Will use ST_NONE; therefore, no EXEC_OMP_ is needed.  */
+  return MATCH_YES;
+}
 
 match
 gfc_match_omp_ordered_depend (void)

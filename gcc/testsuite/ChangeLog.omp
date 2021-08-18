@@ -1,6 +1,14 @@
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/nothing-1.f90: New test.
+	* gfortran.dg/nothing-2.f90: New test.
+
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/nothing-1.c: New test.

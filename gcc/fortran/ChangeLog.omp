@@ -1,3 +1,12 @@
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* match.h (gfc_match_omp_nothing): New.
+	* openmp.c (gfc_match_omp_nothing): New.
+	* parse.c (decode_omp_directive): Match 'nothing' directive.
+
 2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
