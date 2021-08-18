@@ -4503,6 +4503,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define CONSTRUCTOR_IS_PAREN_INIT(NODE) \
   (CONSTRUCTOR_CHECK(NODE)->base.private_flag)
 
+/* True if reshape_init built this CONSTRUCTOR to undo the brace elision
+   of another CONSTRUCTOR.  This flag is used during C++20 aggregate
+   CTAD.  */
+#define CONSTRUCTOR_BRACES_ELIDED_P(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.protected_flag)
+
 /* True if NODE represents a conversion for direct-initialization in a
    template.  Set by perform_implicit_conversion_flags.  */
 #define IMPLICIT_CONV_EXPR_DIRECT_INIT(NODE) \
