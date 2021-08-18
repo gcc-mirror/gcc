@@ -3007,8 +3007,8 @@ static const struct c_omp_directive omp_directives[] = {
     C_OMP_DIR_CONSTRUCT, true },
   /* { "metadirective", nullptr, nullptr, PRAGMA_OMP_METADIRECTIVE,
     C_OMP_DIR_???, ??? },  */
-  /* { "nothing", nullptr, nullptr, PRAGMA_OMP_NOTHING,
-    C_OMP_DIR_UTILITY, false },  */
+  { "nothing", nullptr, nullptr, PRAGMA_OMP_NOTHING,
+    C_OMP_DIR_UTILITY, false },
   /* ordered with depend clause is C_OMP_DIR_STANDALONE.  */
   { "ordered", nullptr, nullptr, PRAGMA_OMP_ORDERED,
     C_OMP_DIR_CONSTRUCT, true },
