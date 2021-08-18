@@ -220,20 +220,6 @@ const struct loongarch_cpu_info *loongarch_tune_info;
 /* Which cost information to use.  */
 static const struct loongarch_rtx_cost_data *loongarch_cost;
 
-/* The ambient target flags.  */
-static int loongarch_base_target_flags;
-
-/* The default compression mode.  */
-unsigned int loongarch_base_compression_flags;
-
-/* The ambient values of other global variables.  */
-static int loongarch_base_schedule_insns; /* flag_schedule_insns  */
-static int loongarch_base_reorder_blocks_and_partition; /* flag_reorder...  */
-static int loongarch_base_move_loop_invariants; /* flag_move_loop_invariants  */
-static int loongarch_base_align_loops;		/* align_loops  */
-static int loongarch_base_align_jumps;		/* align_jumps  */
-static int loongarch_base_align_functions;	/* align_functions  */
-
 /* Index [M][R] is true if register R is allowed to hold a value of mode M.  */
 static bool loongarch_hard_regno_mode_ok_p[MAX_MACHINE_MODE]
 					  [FIRST_PSEUDO_REGISTER];
@@ -1522,26 +1508,6 @@ static int loongarch_register_move_cost (machine_mode, reg_class_t,
 					 reg_class_t);
 
 
-/* Return the compression mode that should be used for function DECL.
-   Return the ambient setting if DECL is null.  */
-
-static unsigned int
-loongarch_get_compress_mode (tree decl)
-{
-  unsigned int flags;
-
-  flags = loongarch_base_compression_flags;
-  if (decl)
-    {
-      /* Nested functions must use the same frame pointer as their
-	 parent and must therefore use the same ISA mode.  */
-      tree parent = decl_function_context (decl);
-      if (parent)
-	decl = parent;
-    }
-  return flags;
-}
-
 /* Implement TARGET_MERGE_DECL_ATTRIBUTES.  */
 
 static tree
@@ -1556,9 +1522,6 @@ loongarch_merge_decl_attributes (tree olddecl, tree newdecl)
 static bool
 loongarch_can_inline_p (tree caller, tree callee)
 {
-  if (loongarch_get_compress_mode (callee)
-      != loongarch_get_compress_mode (caller))
-    return false;
   return default_target_can_inline_p (caller, callee);
 }
 
@@ -6146,56 +6109,6 @@ loongarch_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   reload_completed = 0;
 }
 
-
-/* The last argument passed to loongarch_set_compression_mode,
-   or negative if the function hasn't been called yet.  */
-static unsigned int old_compression_mode = -1;
-
-/* Set up the target-dependent global state for ISA mode COMPRESSION_MODE.  */
-
-static void
-loongarch_set_compression_mode (unsigned int compression_mode)
-{
-  if (compression_mode == old_compression_mode)
-    return;
-
-  /* Restore base settings of various flags.  */
-  target_flags = loongarch_base_target_flags;
-  flag_schedule_insns = loongarch_base_schedule_insns;
-  flag_reorder_blocks_and_partition
-    = loongarch_base_reorder_blocks_and_partition;
-  flag_move_loop_invariants = loongarch_base_move_loop_invariants;
-  flag_align_loops = loongarch_base_align_loops;
-  flag_align_jumps = loongarch_base_align_jumps;
-  flag_align_functions = loongarch_base_align_functions;
-  target_flags |= compression_mode;
-
-  /* Provide default values for align_* for 64-bit targets.  */
-  if (TARGET_64BIT)
-    {
-      if (flag_align_loops == 0)
-	flag_align_loops = 8;
-      if (flag_align_jumps == 0)
-	flag_align_jumps = 8;
-      if (flag_align_functions == 0)
-	flag_align_functions = 8;
-    }
-
-  targetm.min_anchor_offset = -32768;
-  targetm.max_anchor_offset = 32767;
-  targetm.const_anchor = 0x8000;
-  old_compression_mode = compression_mode;
-}
-
-/* Implement TARGET_SET_CURRENT_FUNCTION.  Decide whether the current
-   function should use switch modes accordingly.  */
-
-static void
-loongarch_set_current_function (tree fndecl)
-{
-  loongarch_set_compression_mode (loongarch_get_compress_mode (fndecl));
-}
-
 /* Allocate a chunk of memory for per-function machine-dependent data.  */
 
 static struct machine_function *
@@ -6279,10 +6192,6 @@ static void
 loongarch_option_override (void)
 {
   int i, start, regno, mode;
-
-  /* Save the base compression state and process flags as though we
-     were generating uncompressed code.  */
-  loongarch_base_compression_flags = 0;
 
   /* Set the small data limit.  */
   loongarch_small_data_threshold = (global_options_set.x_g_switch_value
@@ -6384,22 +6293,6 @@ loongarch_option_override (void)
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &loongarch_init_machine_status;
-
-  /* Save base state of options.  */
-  loongarch_base_target_flags = target_flags;
-  loongarch_base_schedule_insns = flag_schedule_insns;
-  loongarch_base_reorder_blocks_and_partition
-    = flag_reorder_blocks_and_partition;
-  loongarch_base_move_loop_invariants = flag_move_loop_invariants;
-  loongarch_base_align_loops = flag_align_loops;
-  loongarch_base_align_jumps = flag_align_jumps;
-  loongarch_base_align_functions = flag_align_functions;
-
-  /* Now select the ISA mode.
-
-     Do all CPP-sensitive stuff in uncompressed mode; we'll switch modes
-     later if required.  */
-  loongarch_set_compression_mode (0);
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
@@ -6564,13 +6457,6 @@ loongarch_shift_truncation_mask (machine_mode mode)
   return GET_MODE_BITSIZE (mode) - 1;
 }
 
-/* Implement TARGET_PREPARE_PCH_SAVE.  */
-
-static void
-loongarch_prepare_pch_save (void)
-{
-  loongarch_set_compression_mode (0);
-}
 
 /* Implement TARGET_SCHED_REASSOCIATION_WIDTH.  */
 
@@ -6750,8 +6636,6 @@ loongarch_starting_frame_offset (void)
 #define TARGET_MERGE_DECL_ATTRIBUTES loongarch_merge_decl_attributes
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P loongarch_can_inline_p
-#undef TARGET_SET_CURRENT_FUNCTION
-#define TARGET_SET_CURRENT_FUNCTION loongarch_set_current_function
 
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE loongarch_valid_pointer_mode
@@ -6876,9 +6760,6 @@ loongarch_starting_frame_offset (void)
 
 #undef TARGET_SHIFT_TRUNCATION_MASK
 #define TARGET_SHIFT_TRUNCATION_MASK loongarch_shift_truncation_mask
-
-#undef TARGET_PREPARE_PCH_SAVE
-#define TARGET_PREPARE_PCH_SAVE loongarch_prepare_pch_save
 
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH loongarch_sched_reassociation_width
