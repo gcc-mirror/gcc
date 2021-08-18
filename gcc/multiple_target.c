@@ -170,17 +170,20 @@ create_dispatcher_calls (struct cgraph_node *node)
 				      clone_function_name_numbered (
 					  node->decl, "default"));
 
-  /* FIXME: copy of cgraph_node::make_local that should be cleaned up
-	    in next stage1.  */
-  node->make_decl_local ();
-  node->set_section (NULL);
-  node->set_comdat_group (NULL);
-  node->externally_visible = false;
-  node->forced_by_abi = false;
-  node->set_section (NULL);
+  if (node->definition)
+    {
+      /* FIXME: copy of cgraph_node::make_local that should be cleaned up
+		in next stage1.  */
+      node->make_decl_local ();
+      node->set_section (NULL);
+      node->set_comdat_group (NULL);
+      node->externally_visible = false;
+      node->forced_by_abi = false;
+      node->set_section (NULL);
 
-  DECL_ARTIFICIAL (node->decl) = 1;
-  node->force_output = true;
+      DECL_ARTIFICIAL (node->decl) = 1;
+      node->force_output = true;
+    }
 }
 
 /* Return length of attribute names string,

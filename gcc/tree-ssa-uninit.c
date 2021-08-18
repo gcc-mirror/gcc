@@ -283,6 +283,64 @@ builtin_call_nomodifying_p (gimple *stmt)
   return true;
 }
 
+/* If ARG is a FNDECL parameter declared with attribute access none or
+   write_only issue a warning for its read access via PTR.  */
+
+static void
+maybe_warn_read_write_only (tree fndecl, gimple *stmt, tree arg, tree ptr)
+{
+  if (!fndecl)
+    return;
+
+  if (get_no_uninit_warning (arg))
+    return;
+
+  tree fntype = TREE_TYPE (fndecl);
+  if (!fntype)
+    return;
+
+  /* Initialize a map of attribute access specifications for arguments
+     to the function function call.  */
+  rdwr_map rdwr_idx;
+  init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
+
+  unsigned argno = 0;
+  tree parms = DECL_ARGUMENTS (fndecl);
+  for (tree parm = parms; parm; parm = TREE_CHAIN (parm), ++argno)
+    {
+      if (parm != arg)
+	continue;
+
+      const attr_access* access = rdwr_idx.get (argno);
+      if (!access)
+	break;
+
+      if (access->mode != access_none
+	  && access->mode != access_write_only)
+	continue;
+
+      location_t stmtloc
+	= linemap_resolve_location (line_table, gimple_location (stmt),
+				    LRK_SPELLING_LOCATION, NULL);
+
+      if (!warning_at (stmtloc, OPT_Wmaybe_uninitialized,
+		       "%qE may be used uninitialized", ptr))
+	break;
+
+      suppress_warning (arg, OPT_Wmaybe_uninitialized);
+
+      const char* const access_str =
+	TREE_STRING_POINTER (access->to_external_string ());
+
+      location_t parmloc = DECL_SOURCE_LOCATION (parm);
+      inform (parmloc, "accessing argument %u of a function declared with "
+	      "attribute %<%s%>",
+	      argno + 1, access_str);
+
+      break;
+    }
+}
+
 /* Callback for walk_aliased_vdefs.  */
 
 static bool
@@ -350,7 +408,9 @@ struct wlimits
 };
 
 /* Determine if REF references an uninitialized operand and diagnose
-   it if so.  */
+   it if so.  STMS is the referencing statement.  LHS is the result
+   of the access and may be null.  RHS is the variable referenced by
+   the access; it may not be null.  */
 
 static tree
 maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
@@ -497,14 +557,25 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
   /* Do not warn if it can be initialized outside this function.
      If we did not reach function entry then we found killing
      clobbers on all paths to entry.  */
-  if (!found_alloc
-      && fentry_reached
-      /* ???  We'd like to use ref_may_alias_global_p but that
-	 excludes global readonly memory and thus we get bogus
-	 warnings from p = cond ? "a" : "b" for example.  */
-      && (!VAR_P (base)
-	  || is_global_var (base)))
-    return NULL_TREE;
+  if (!found_alloc && fentry_reached)
+    {
+      if (TREE_CODE (base) == SSA_NAME)
+	{
+	  tree var = SSA_NAME_VAR (base);
+	  if (var && TREE_CODE (var) == PARM_DECL)
+	    {
+	      maybe_warn_read_write_only (cfun->decl, stmt, var, rhs);
+	      return NULL_TREE;
+	    }
+	}
+
+      if (!VAR_P (base)
+	  || is_global_var (base))
+	/* ???  We'd like to use ref_may_alias_global_p but that
+	   excludes global readonly memory and thus we get bogus
+	   warnings from p = cond ? "a" : "b" for example.  */
+	return NULL_TREE;
+    }
 
   /* Strip the address-of expression from arrays passed to functions. */
   if (TREE_CODE (rhs) == ADDR_EXPR)
@@ -641,7 +712,7 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
 	wlims.always_executed = false;
 
       /* Ignore args we are not going to read from.  */
-      if (gimple_call_arg_flags (stmt, argno - 1) & EAF_UNUSED)
+      if (gimple_call_arg_flags (stmt, argno - 1) & (EAF_UNUSED | EAF_NOREAD))
 	continue;
 
       tree arg = gimple_call_arg (stmt, argno - 1);

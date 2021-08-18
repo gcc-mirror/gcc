@@ -97,3 +97,11 @@ func setNonblock(fd int32) {
 		fcntlUintptr(uintptr(fd), _F_SETFL, flags|_O_NONBLOCK)
 	}
 }
+
+// For gccgo this is in the C code.
+func osyield()
+
+//go:nosplit
+func osyield_no_g() {
+	osyield()
+}

@@ -236,6 +236,10 @@
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_jthread 201911L
 #endif
+#if __has_builtin(__is_pointer_interconvertible_base_of) \
+ && __has_builtin(__builtin_is_pointer_interconvertible_with_class)
+# define __cpp_lib_is_pointer_interconvertible 201907L
+#endif
 #if __cpp_lib_atomic_wait
 # define __cpp_lib_latch 201907L
 #endif

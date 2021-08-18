@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build aix || darwin || dragonfly || freebsd || hurd || linux || netbsd || openbsd || solaris
 // +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package signal
@@ -17,6 +18,7 @@ import (
 	"runtime"
 	"runtime/trace"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"testing"
@@ -29,6 +31,11 @@ import (
 //
 // The current value is set based on flakes observed in the Go builders.
 var settleTime = 100 * time.Millisecond
+
+// fatalWaitingTime is an absurdly long time to wait for signals to be
+// delivered but, using it, we (hopefully) eliminate test flakes on the
+// build servers. See #46736 for discussion.
+var fatalWaitingTime = 30 * time.Second
 
 func init() {
 	if testenv.Builder() == "solaris-amd64-oraclerel" {
@@ -46,6 +53,13 @@ func init() {
 		//
 		// See https://golang.org/issue/33174.
 		settleTime = 11 * time.Second
+	} else if runtime.GOOS == "linux" && strings.HasPrefix(runtime.GOARCH, "ppc64") {
+		// Older linux kernels seem to have some hiccups delivering the signal
+		// in a timely manner on ppc64 and ppc64le. When running on a
+		// ppc64le/ubuntu 16.04/linux 4.4 host the time can vary quite
+		// substantially even on a idle system. 5 seconds is twice any value
+		// observed when running 10000 tests on such a system.
+		settleTime = 5 * time.Second
 	} else if s := os.Getenv("GO_TEST_TIMEOUT_SCALE"); s != "" {
 		if scale, err := strconv.Atoi(s); err == nil {
 			settleTime *= time.Duration(scale)
@@ -75,7 +89,7 @@ func waitSig1(t *testing.T, c <-chan os.Signal, sig os.Signal, all bool) {
 	// General user code should filter out all unexpected signals instead of just
 	// SIGURG, but since os/signal is tightly coupled to the runtime it seems
 	// appropriate to be stricter here.
-	for time.Since(start) < settleTime {
+	for time.Since(start) < fatalWaitingTime {
 		select {
 		case s := <-c:
 			if s == sig {
@@ -88,7 +102,7 @@ func waitSig1(t *testing.T, c <-chan os.Signal, sig os.Signal, all bool) {
 			timer.Reset(settleTime / 10)
 		}
 	}
-	t.Fatalf("timeout after %v waiting for %v", settleTime, sig)
+	t.Fatalf("timeout after %v waiting for %v", fatalWaitingTime, sig)
 }
 
 // quiesce waits until we can be reasonably confident that all pending signals

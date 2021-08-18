@@ -152,6 +152,18 @@ func unsafeslice64(et *_type, ptr unsafe.Pointer, len64 int64) {
 	unsafeslice(et, ptr, len)
 }
 
+func unsafeslicecheckptr(et *_type, ptr unsafe.Pointer, len64 int64) {
+	unsafeslice64(et, ptr, len64)
+
+	/* Commented out for gofrontend.
+	// Check that underlying array doesn't straddle multiple heap objects.
+	// unsafeslice64 has already checked for overflow.
+	if checkptrStraddles(ptr, uintptr(len64)*et.size) {
+		throw("checkptr: unsafe.Slice result straddles multiple allocations")
+	}
+	*/
+}
+
 func panicunsafeslicelen() {
 	panic(errorString("unsafe.Slice: len out of range"))
 }

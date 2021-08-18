@@ -1,3 +1,11 @@
+2021-08-17  Matt Jacobson  <mhjacobson@me.com>
+
+	* objc-next-runtime-abi-02.c
+	(objc_next_runtime_abi_02_init): Warn about and reset
+	flag_objc_sjlj_exceptions regardless of flag_objc_exceptions.
+	(next_runtime_02_initialize): Use a checking assert that
+	flag_objc_sjlj_exceptions is off.
+
 2021-06-28  Martin Sebor  <msebor@redhat.com>
 
 	* objc-act.c (objc_maybe_build_modify_expr): Replace direct uses

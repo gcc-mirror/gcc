@@ -740,7 +740,8 @@ supports_vec_gather_load_p ()
   this_fn_optabs->supports_vec_gather_load_cached = true;
 
   this_fn_optabs->supports_vec_gather_load
-    = supports_vec_convert_optab_p (gather_load_optab);
+    = (supports_vec_convert_optab_p (gather_load_optab)
+       || supports_vec_convert_optab_p (mask_gather_load_optab));
 
   return this_fn_optabs->supports_vec_gather_load;
 }
@@ -757,7 +758,8 @@ supports_vec_scatter_store_p ()
   this_fn_optabs->supports_vec_scatter_store_cached = true;
 
   this_fn_optabs->supports_vec_scatter_store
-    = supports_vec_convert_optab_p (scatter_store_optab);
+    = (supports_vec_convert_optab_p (scatter_store_optab)
+       || supports_vec_convert_optab_p (mask_scatter_store_optab));
 
   return this_fn_optabs->supports_vec_scatter_store;
 }

@@ -2654,4 +2654,11 @@ default_memtag_untagged_pointer (rtx tagged_pointer, rtx target)
   return untagged_base;
 }
 
+/* The default implementation of TARGET_GCOV_TYPE_SIZE.  */
+HOST_WIDE_INT
+default_gcov_type_size (void)
+{
+  return TYPE_PRECISION (long_long_integer_type_node) > 32 ? 64 : 32;
+}
+
 #include "gt-targhooks.h"

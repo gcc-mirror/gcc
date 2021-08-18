@@ -143,7 +143,7 @@ import (
 // See the package documentation for more details about initializing an FS.
 type FS struct {
 	// The compiler knows the layout of this struct.
-	// See cmd/compile/internal/gc's initEmbed.
+	// See cmd/compile/internal/staticdata's WriteEmbed.
 	//
 	// The files list is sorted by name but not by simple string comparison.
 	// Instead, each file's name takes the form "dir/elem" or "dir/elem/".
@@ -213,7 +213,7 @@ var (
 // It implements fs.FileInfo and fs.DirEntry.
 type file struct {
 	// The compiler knows the layout of this struct.
-	// See cmd/compile/internal/gc's initEmbed.
+	// See cmd/compile/internal/staticdata's WriteEmbed.
 	name string
 	data string
 	hash [16]byte // truncated SHA256 hash
@@ -386,14 +386,14 @@ func (d *openDir) Read([]byte) (int, error) {
 
 func (d *openDir) ReadDir(count int) ([]fs.DirEntry, error) {
 	n := len(d.files) - d.offset
-	if count > 0 && n > count {
-		n = count
-	}
 	if n == 0 {
 		if count <= 0 {
 			return nil, nil
 		}
 		return nil, io.EOF
+	}
+	if count > 0 && n > count {
+		n = count
 	}
 	list := make([]fs.DirEntry, n)
 	for i := range list {

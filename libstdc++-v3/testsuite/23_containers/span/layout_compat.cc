@@ -27,7 +27,7 @@
 struct iovec { void* iov_base; std::size_t iov_len; };
 #endif
 
-#if __cpp_lib_is_pointer_interconvertible
+#if __cpp_lib_is_layout_compatible
 using std::is_layout_compatible_v;
 #else
 // A poor substitute for is_layout_compatible_v

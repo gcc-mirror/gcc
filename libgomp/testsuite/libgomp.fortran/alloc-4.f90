@@ -3,22 +3,6 @@ program main
   use ISO_C_Binding
   implicit none (external, type)
 
-  interface
-    ! omp_alloc + omp_free part of OpenMP for C/C++
-    ! but not (yet) in the OpenMP spec for Fortran
-    type(c_ptr) function omp_alloc (size, handle) bind(C)
-      import
-      integer (c_size_t), value :: size
-      integer (omp_allocator_handle_kind), value :: handle
-    end function
-
-    subroutine omp_free (ptr, handle) bind(C)
-      import
-      type (c_ptr), value :: ptr
-      integer (omp_allocator_handle_kind), value :: handle
-    end subroutine
-  end interface
-
   type (omp_alloctrait) :: traits(3)
   integer (omp_allocator_handle_kind) :: a
 

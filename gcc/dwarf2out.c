@@ -19915,22 +19915,23 @@ add_data_member_location_attribute (dw_die_ref die,
     {
       loc_descr = field_byte_offset (decl, ctx, &offset);
 
-      /* If loc_descr is available then we know the field offset is dynamic.
-	 However, GDB does not handle dynamic field offsets very well at the
-	 moment.  */
-      if (loc_descr != NULL && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+      if (!loc_descr)
+	;
+
+      /* If loc_descr is available, then we know the offset is dynamic.  */
+      else if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 	{
 	  loc_descr = NULL;
 	  offset = 0;
 	}
 
-      /* Data member location evalutation starts with the base address on the
+      /* Data member location evaluation starts with the base address on the
 	 stack.  Compute the field offset and add it to this base address.  */
-      else if (loc_descr != NULL)
+      else
 	add_loc_descr (&loc_descr, new_loc_descr (DW_OP_plus, 0, 0));
     }
 
-  if (! loc_descr)
+  if (!loc_descr)
     {
       /* While DW_AT_data_bit_offset has been added already in DWARF4,
 	 e.g. GDB only added support to it in November 2016.  For DWARF5
@@ -21252,6 +21253,7 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	    {
 	      if (get_AT (decl_die, DW_AT_location)
 		  || get_AT (decl_die, DW_AT_data_member_location)
+		  || get_AT (decl_die, DW_AT_data_bit_offset)
 		  || get_AT (decl_die, DW_AT_const_value))
 		{
 		  add_AT_die_ref (die, attr, decl_die);
@@ -21389,12 +21391,9 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr,
 	/* FALLTHRU */
 
       default:
-	/* Because of the complex interaction there can be with other GNAT
-	   encodings, GDB isn't ready yet to handle proper DWARF description
-	   for self-referencial subrange bounds: let GNAT encodings do the
-	   magic in such a case.  */
+	/* Let GNAT encodings do the magic for self-referential bounds.  */
 	if (is_ada ()
-	    && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+	    && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL
 	    && contains_placeholder_p (bound))
 	  return;
 
@@ -21566,7 +21565,7 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
   /* Support for dynamically-sized objects was introduced in DWARF3.  */
   else if (TYPE_P (tree_node)
 	   && (dwarf_version >= 3 || !dwarf_strict)
-	   && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+	   && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
     {
       struct loc_descr_context ctx = {
 	const_cast<tree> (tree_node),	/* context_type */
@@ -25629,11 +25628,11 @@ gen_member_die (tree type, dw_die_ref context_die)
 	    splice_child_die (context_die, child);
 	}
 
-      /* Do not generate standard DWARF for variant parts if we are generating
-	 the corresponding GNAT encodings: DIEs generated for both would
-	 conflict in our mappings.  */
+      /* Do not generate DWARF for variant parts if we are generating the
+	 corresponding GNAT encodings: DIEs generated for the two schemes
+	 would conflict in our mappings.  */
       else if (is_variant_part (member)
-	       && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+	       && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
 	{
 	  vlr_ctx.variant_part_offset = byte_position (member);
 	  gen_variant_part (member, &vlr_ctx, context_die);

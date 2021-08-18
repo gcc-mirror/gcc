@@ -1,3 +1,99 @@
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_node, show_code_node): Handle
+	EXEC_OMP_SCOPE.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_(END_)SCOPE.
+	(enum gfc_exec_op): Add EXEC_OMP_SCOPE.
+	* match.h (gfc_match_omp_scope): New.
+	* openmp.c (OMP_SCOPE_CLAUSES): Define
+	(gfc_match_omp_scope): New.
+	(gfc_match_omp_cancellation_point, gfc_match_omp_end_nowait):
+	Improve error diagnostic.
+	(omp_code_to_statement): Handle ST_OMP_SCOPE.
+	(gfc_resolve_omp_directive): Handle EXEC_OMP_SCOPE.
+	* parse.c (decode_omp_directive, next_statement,
+	gfc_ascii_statement, parse_omp_structured_block,
+	parse_executable): Handle OpenMP's scope construct.
+	* resolve.c (gfc_resolve_blocks): Likewise
+	* st.c (gfc_free_statement): Likewise
+	* trans-openmp.c (gfc_trans_omp_scope): New.
+	(gfc_trans_omp_directive): Call it.
+	* trans.c (trans_code): handle EXEC_OMP_SCOPE.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle 'filter' clause.
+	(show_omp_node, show_code_node): Handle (combined) omp masked construct.
+	* frontend-passes.c (gfc_code_walker): Likewise.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_*_MASKED*.
+	(enum gfc_exec_op): Add EXEC_OMP_*_MASKED*.
+	* match.h (gfc_match_omp_masked, gfc_match_omp_masked_taskloop,
+	gfc_match_omp_masked_taskloop_simd, gfc_match_omp_parallel_masked,
+	gfc_match_omp_parallel_masked_taskloop,
+	gfc_match_omp_parallel_masked_taskloop_simd): New prototypes.
+	* openmp.c (enum omp_mask1): Add OMP_CLAUSE_FILTER.
+	(gfc_match_omp_clauses): Match it.
+	(OMP_MASKED_CLAUSES, gfc_match_omp_parallel_masked,
+	gfc_match_omp_parallel_masked_taskloop,
+	gfc_match_omp_parallel_masked_taskloop_simd,
+	gfc_match_omp_masked, gfc_match_omp_masked_taskloop,
+	gfc_match_omp_masked_taskloop_simd): New.
+	(resolve_omp_clauses): Resolve filter clause.
+	(gfc_resolve_omp_parallel_blocks, resolve_omp_do,
+	omp_code_to_statement, gfc_resolve_omp_directive): Handle
+	omp masked constructs.
+	* parse.c (decode_omp_directive, case_exec_markers,
+	gfc_ascii_statement, parse_omp_do, parse_omp_structured_block,
+	parse_executable): Likewise.
+	* resolve.c (gfc_resolve_blocks, gfc_resolve_code): Likewise.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle filter clause.
+	(GFC_OMP_SPLIT_MASKED, GFC_OMP_MASK_MASKED): New enum values.
+	(gfc_trans_omp_masked): New.
+	(gfc_split_omp_clauses): Handle combined masked directives.
+	(gfc_trans_omp_master_taskloop): Rename to ...
+	(gfc_trans_omp_master_masked_taskloop): ... this; handle also
+	combined masked directives.
+	(gfc_trans_omp_parallel_master): Rename to ...
+	(gfc_trans_omp_parallel_master_masked): ... this; handle
+	combined masked directives.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_*_MASKED*.
+	* trans.c (trans_code): Likewise.
+
+2021-08-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99351
+	* match.c (sync_statement): Replace %v code by %e in gfc_match to
+	allow for function references as STAT and ERRMSG arguments.
+	* resolve.c (resolve_sync): Adjust checks of STAT= and ERRMSG= to
+	being definable arguments.  Function references with a data
+	pointer result are accepted.
+	* trans-stmt.c (gfc_trans_sync): Adjust assertion.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (gfc_omp_proc_bind_kind): Add OMP_PROC_BIND_PRIMARY.
+	* dump-parse-tree.c (show_omp_clauses): Add TODO comment to
+	change 'master' to 'primary' in proc_bind for OpenMP 5.1.
+	* intrinsic.texi (OMP_LIB): Mention OpenMP 5.1; add
+	omp_proc_bind_primary.
+	* openmp.c (gfc_match_omp_clauses): Accept
+	'primary' as alias for 'master'.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle
+	OMP_PROC_BIND_PRIMARY.
+
+2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* iso-c-binding.def (c_float128, c_float128_complex): Check
+	float128_type_node instead of gfc_float128_type_node.
+	* trans-types.c (gfc_init_kinds, gfc_build_real_type):
+	Update comments re supported 128-bit floating-point types.
+
+2021-08-11  Richard Biener  <rguenther@suse.de>
+
+	* trans-common.c (create_common): Set TREE_THIS_VOLATILE on the
+	COMPONENT_REF if the field is volatile.
+
 2021-08-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/68568

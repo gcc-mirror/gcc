@@ -1,3 +1,8 @@
+2021-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_common_interceptors.inc: Cherry-pick
+	llvm-project revision faef0d042f523357fe5590e7cb6a8391cf0351a8.
+
 2021-08-03  Mosè Giordano  <mose@gnu.org>
 
 	PR sanitizer/101111

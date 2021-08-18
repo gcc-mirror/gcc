@@ -245,7 +245,7 @@ objc_next_runtime_abi_02_init (objc_runtime_hooks *rthooks)
 {
   extern_names = ggc_cleared_vec_alloc<hash> (SIZEHASHTABLE);
 
-  if (flag_objc_exceptions && flag_objc_sjlj_exceptions)
+  if (flag_objc_sjlj_exceptions)
     {
       inform (UNKNOWN_LOCATION,
 	      "%<-fobjc-sjlj-exceptions%> is ignored for "
@@ -507,7 +507,7 @@ static void next_runtime_02_initialize (void)
   objc_getPropertyStruct_decl = NULL_TREE;
   objc_setPropertyStruct_decl = NULL_TREE;
 
-  gcc_assert (!flag_objc_sjlj_exceptions);
+  gcc_checking_assert (!flag_objc_sjlj_exceptions);
 
   /* Although we warn that fobjc-exceptions is required for exceptions
      code, we carry on and create it anyway.  */

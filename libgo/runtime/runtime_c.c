@@ -199,10 +199,13 @@ getEnd()
 uintptr getText(void)
   __asm__ (GOSYM_PREFIX "runtime.getText");
 
+extern void main_main(void*)
+  __asm__(GOSYM_PREFIX "main.main");
+
 uintptr
 getText(void)
 {
-  return (uintptr)(const void *)(getText);
+  return (uintptr)(const void *)(main_main);
 }
 
 // Return the end of the text segment, assumed to come after the
@@ -221,6 +224,24 @@ getEtext(void)
     p = __etext;
   if (p == nil)
     p = _etext;
+  return (uintptr)(p);
+}
+
+// Return the start of the BSS section.
+
+uintptr getBSS(void)
+  __asm__ (GOSYM_PREFIX "runtime.getBSS");
+
+uintptr
+getBSS(void)
+{
+  const void *p;
+
+  p = __edata;
+  if (p == NULL)
+    p = _edata;
+  if (p == NULL)
+    p = __bss_start;
   return (uintptr)(p);
 }
 

@@ -517,14 +517,9 @@ decl_attributes (tree *node, tree attributes, int flags,
   if (TREE_CODE (*node) == FUNCTION_DECL
       && attributes
       && lookup_attribute ("naked", attributes) != NULL
-      && lookup_attribute_spec (get_identifier ("naked")))
-    {
-      if (lookup_attribute ("noinline", attributes) == NULL)
-	attributes = tree_cons (get_identifier ("noinline"), NULL, attributes);
-
-      if (lookup_attribute ("noclone", attributes) == NULL)
-	attributes = tree_cons (get_identifier ("noclone"),  NULL, attributes);
-    }
+      && lookup_attribute_spec (get_identifier ("naked"))
+      && lookup_attribute ("noipa", attributes) == NULL)
+	attributes = tree_cons (get_identifier ("noipa"), NULL, attributes);
 
   /* A "noipa" function attribute implies "noinline", "noclone" and "no_icf"
      for those targets that support it.  */

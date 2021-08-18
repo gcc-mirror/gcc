@@ -12497,6 +12497,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	 we can't optimize this.  E.g. (unsigned long long) (1 << Y) for Y
 	 31 might be 0xffffffff80000000.  */
       if ((code == LT_EXPR || code == GE_EXPR)
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	      || VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg0)))
 	  && TYPE_UNSIGNED (TREE_TYPE (arg0))
 	  && CONVERT_EXPR_P (arg1)
 	  && TREE_CODE (TREE_OPERAND (arg1, 0)) == LSHIFT_EXPR

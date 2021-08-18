@@ -13558,3 +13558,16 @@ Store the result in @var{target} if convenient.
 The default clears the top byte of the original pointer.
 @end deftypefn
 @c hook-end
+
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_GCOV_TYPE_SIZE (void)
+@c hook-start:TARGET_GCOV_TYPE_SIZE
+Returns the gcov type size in bits.  This type is used for example for
+counters incremented by profiling and code-coverage events.  The default
+value is 64, if the type size of long long is greater than 32, otherwise the
+default value is 32.  A 64-bit type is recommended to avoid overflows of the
+counters.  If the @option{-fprofile-update=atomic} is used, then the
+counters are incremented using atomic operations.  Targets not supporting
+64-bit atomic operations may override the default value and request a 32-bit
+type.
+@end deftypefn
+@c hook-end

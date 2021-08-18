@@ -1427,7 +1427,13 @@ class auto_suppress_location_wrappers
 #define OMP_SINGLE_BODY(NODE)	   TREE_OPERAND (OMP_SINGLE_CHECK (NODE), 0)
 #define OMP_SINGLE_CLAUSES(NODE)   TREE_OPERAND (OMP_SINGLE_CHECK (NODE), 1)
 
+#define OMP_SCOPE_BODY(NODE)	   TREE_OPERAND (OMP_SCOPE_CHECK (NODE), 0)
+#define OMP_SCOPE_CLAUSES(NODE)	   TREE_OPERAND (OMP_SCOPE_CHECK (NODE), 1)
+
 #define OMP_MASTER_BODY(NODE)	   TREE_OPERAND (OMP_MASTER_CHECK (NODE), 0)
+
+#define OMP_MASKED_BODY(NODE)	   TREE_OPERAND (OMP_MASKED_CHECK (NODE), 0)
+#define OMP_MASKED_CLAUSES(NODE)   TREE_OPERAND (OMP_MASKED_CHECK (NODE), 1)
 
 #define OMP_TASKGROUP_BODY(NODE)   TREE_OPERAND (OMP_TASKGROUP_CHECK (NODE), 0)
 #define OMP_TASKGROUP_CLAUSES(NODE) \
@@ -1507,6 +1513,11 @@ class auto_suppress_location_wrappers
    combined master constructs.  */
 #define OMP_MASTER_COMBINED(NODE) \
   (OMP_MASTER_CHECK (NODE)->base.private_flag)
+
+/* True on an OMP_MASKED statement if it represents an explicit
+   combined masked constructs.  */
+#define OMP_MASKED_COMBINED(NODE) \
+  (OMP_MASKED_CHECK (NODE)->base.private_flag)
 
 /* Memory order for OMP_ATOMIC*.  */
 #define OMP_ATOMIC_MEMORY_ORDER(NODE) \
@@ -1592,6 +1603,8 @@ class auto_suppress_location_wrappers
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TASKS), 0)
 #define OMP_CLAUSE_HINT_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_HINT), 0)
+#define OMP_CLAUSE_FILTER_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FILTER), 0)
 
 #define OMP_CLAUSE_GRAINSIZE_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_GRAINSIZE),0)
@@ -5396,7 +5409,9 @@ extern bool gimple_canonical_types_compatible_p (const_tree, const_tree,
 extern bool type_with_interoperable_signedness (const_tree);
 extern bitmap get_nonnull_args (const_tree);
 extern int get_range_pos_neg (tree);
-extern bool valid_new_delete_pair_p (tree, tree);
+
+/* Return true for a valid pair of new and delete operators.  */
+extern bool valid_new_delete_pair_p (tree, tree, bool * = NULL);
 
 /* Return simplified tree code of type that is used for canonical type
    merging.  */
@@ -6472,5 +6487,11 @@ extern void copy_warning (tree, const_tree);
    deallocated if FNDECL is a deallocation function or an out-of-bounds
    value if it isn't.  */
 extern unsigned fndecl_dealloc_argno (tree);
+
+/* If an expression refers to a character array or pointer declared
+   attribute nonstring, return a decl for that array or pointer and
+   if nonnull, set the second argument to the referenced enclosing
+   object or pointer.  Otherwise return null.  */
+extern tree get_attr_nonstring_decl (tree, tree * = NULL);
 
 #endif  /* GCC_TREE_H  */

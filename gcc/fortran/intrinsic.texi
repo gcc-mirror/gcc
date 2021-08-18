@@ -15277,8 +15277,9 @@ with the following options: @code{-fno-unsafe-math-optimizations
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
 @table @asis
 @item @emph{Standard}:
-OpenMP Application Program Interface v4.5 and
-OpenMP Application Program Interface v5.0 (partially supported).
+OpenMP Application Program Interface v4.5,
+OpenMP Application Program Interface v5.0 (partially supported) and
+OpenMP Application Program Interface v5.1 (partially supported).
 @end table
 
 The OpenMP Fortran runtime library routines are provided both in
@@ -15341,6 +15342,7 @@ kind @code{omp_proc_bind_kind}:
 @table @asis
 @item @code{omp_proc_bind_false}
 @item @code{omp_proc_bind_true}
+@item @code{omp_proc_bind_primary}
 @item @code{omp_proc_bind_master}
 @item @code{omp_proc_bind_close}
 @item @code{omp_proc_bind_spread}

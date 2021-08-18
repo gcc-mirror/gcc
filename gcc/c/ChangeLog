@@ -1,3 +1,38 @@
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (OMP_SCOPE_CLAUSE_MASK): Define.
+	(c_parser_omp_scope): New function.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_SCOPE.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Parse filter clause name.
+	(c_parser_omp_clause_filter): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_FILTER.
+	(OMP_MASKED_CLAUSE_MASK): Define.
+	(c_parser_omp_masked): New function.
+	(c_parser_omp_parallel): Handle parallel masked.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_MASKED.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_FILTER.
+
+2021-08-12  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/101838
+	PR c/29970
+	* c-typeck.c (c_expr_sizeof_type): Evaluate
+	size expressions for structs of variable size.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_proc_bind): Accept
+	'primary' as alias for 'master'.
+
+2021-08-10  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/29970
+	* c-typeck.c (c_expr_sizeof_expr): Evaluate
+	size expressions for structs of variable size.
+
 2021-08-06  Tamar Christina  <tamar.christina@arm.com>
 
 	* c-decl.c (c_simulate_enum_decl): Pass vec<> by pointer.

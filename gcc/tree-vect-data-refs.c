@@ -3735,11 +3735,17 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
     return false;
 
   /* Work out which function we need.  */
-  internal_fn ifn;
+  internal_fn ifn, alt_ifn;
   if (read_p)
-    ifn = masked_p ? IFN_MASK_GATHER_LOAD : IFN_GATHER_LOAD;
+    {
+      ifn = masked_p ? IFN_MASK_GATHER_LOAD : IFN_GATHER_LOAD;
+      alt_ifn = IFN_MASK_GATHER_LOAD;
+    }
   else
-    ifn = masked_p ? IFN_MASK_SCATTER_STORE : IFN_SCATTER_STORE;
+    {
+      ifn = masked_p ? IFN_MASK_SCATTER_STORE : IFN_SCATTER_STORE;
+      alt_ifn = IFN_MASK_SCATTER_STORE;
+    }
 
   for (;;)
     {
@@ -3752,6 +3758,16 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 						  offset_vectype, scale))
 	{
 	  *ifn_out = ifn;
+	  *offset_vectype_out = offset_vectype;
+	  return true;
+	}
+      else if (!masked_p
+	       && internal_gather_scatter_fn_supported_p (alt_ifn, vectype,
+							  memory_type,
+							  offset_vectype,
+							  scale))
+	{
+	  *ifn_out = alt_ifn;
 	  *offset_vectype_out = offset_vectype;
 	  return true;
 	}

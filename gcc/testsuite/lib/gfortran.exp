@@ -184,7 +184,7 @@ proc gfortran_init { args } {
 		    set specpath [get_multilibs]
 		}
 		set gfortran_init_set_GFORTRAN_UNDER_TEST 1
-		set GFORTRAN_UNDER_TEST [findfile $base_dir/../../gfortran "$base_dir/../../gfortran -B$base_dir/../../ -B$specpath/libgfortran/ -I$specpath/libgfortran" [findfile $base_dir/gfortran "$base_dir/gfortran -B$base_dir/" [transform gfortran]]]
+		set GFORTRAN_UNDER_TEST [findfile $base_dir/../../gfortran "$base_dir/../../gfortran -B$base_dir/../../ -B$specpath/libgfortran/" [findfile $base_dir/gfortran "$base_dir/gfortran -B$base_dir/" [transform gfortran]]]
 	    }
 	}
     }

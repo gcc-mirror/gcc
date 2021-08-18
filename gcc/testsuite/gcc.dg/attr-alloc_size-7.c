@@ -4,7 +4,7 @@
    of the maximum specified by -Walloc-size-larger-than=maximum.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target alloca } */
-/* { dg-options "-O2 -Wall -Walloc-size-larger-than=12345" } */
+/* { dg-options "-O1 -Wall -Walloc-size-larger-than=12345" } */
 
 #define SIZE_MAX   __SIZE_MAX__
 #define MAXOBJSZ   12345
@@ -13,15 +13,13 @@ typedef __SIZE_TYPE__ size_t;
 
 void sink (void*);
 
-static size_t maxobjsize (void)
-{
-  return MAXOBJSZ;
-}
+#pragma GCC push_options
+/* Verify that constant evaluation takes place even at -O0.  */
+#pragma GCC optimize ("0")
 
-
-void test_var (void *p)
+void test_cst (void *p)
 {
-  size_t max = maxobjsize ();
+  enum { max = MAXOBJSZ };
 
   sink (__builtin_aligned_alloc (1, max));
   sink (__builtin_aligned_alloc (1, max + 1));   /* { dg-warning "argument 2 value .12346\[lu\]*. exceeds maximum object size 12345" } */
@@ -43,7 +41,42 @@ void test_var (void *p)
 }
 
 
-void test_range (void *p, size_t range)
+/* Variable evaluation needs -O1.  */
+#pragma GCC pop_options
+
+__attribute__ ((noipa)) void test_var (void *p)
+{
+  size_t max = MAXOBJSZ;
+
+  sink (__builtin_aligned_alloc (1, max));
+  sink (__builtin_aligned_alloc (1, max + 1));   /* { dg-warning "argument 2 value .12346\[lu\]*. exceeds maximum object size 12345" } */
+
+  sink (__builtin_alloca (max));
+  sink (__builtin_alloca (max + 2));   /* { dg-warning "argument 1 value .12347\[lu\]*. exceeds maximum object size 12345" } */
+
+  sink (__builtin_calloc (1, max));
+  sink (__builtin_calloc (max, 1));
+
+  sink (__builtin_calloc (max / 2, 3));   /* { dg-warning "product .6172\[lu\]* \\* 3\[lu\]*. of arguments 1 and 2 exceeds maximum object size 12345" } */
+  sink (__builtin_calloc (4, max / 3));   /* { dg-warning "product .4\[lu\]* \\* 4115\[lu\]*. of arguments 1 and 2 exceeds maximum object size 12345" } */
+
+  sink (__builtin_malloc (max));
+  sink (__builtin_malloc (max + 3));   /* { dg-warning "argument 1 value .12348\[lu\]*. exceeds maximum object size 12345" } */
+
+  sink (__builtin_realloc (p, max));
+  sink (__builtin_realloc (p, max + 4));  /* { dg-warning "argument 2 value .12349\[lu\]*. exceeds maximum object size 12345" } */
+}
+
+
+/* Value range evaluation (apparently) needs -O2 here.  */
+#pragma GCC optimize ("2")
+
+static size_t maxobjsize (void)
+{
+  return MAXOBJSZ;
+}
+
+__attribute__ ((noipa)) void test_range (void *p, size_t range)
 {
   /* Make sure the variable is at least as large as the maximum object
      size but also make sure that it's guaranteed not to be too big to

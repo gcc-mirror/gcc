@@ -446,7 +446,7 @@ gfc_init_kinds (void)
       if (!targetm.scalar_mode_supported_p (mode))
 	continue;
 
-      /* Only let float, double, long double and __float128 go through.
+      /* Only let float, double, long double and TFmode go through.
 	 Runtime support for others is not provided, so they would be
 	 useless.  */
       if (!targetm.libgcc_floating_mode_supported_p (mode))
@@ -471,7 +471,14 @@ gfc_init_kinds (void)
 	 We round up so as to handle IA-64 __floatreg (RFmode), which is an
 	 82 bit type.  Not to be confused with __float80 (XFmode), which is
 	 an 80 bit type also supported by IA-64.  So XFmode should come out
-	 to be kind=10, and RFmode should come out to be kind=11.  Egads.  */
+	 to be kind=10, and RFmode should come out to be kind=11.  Egads.
+
+	 TODO: The kind calculation has to be modified to support all
+	 three 128-bit floating-point modes on PowerPC as IFmode, KFmode,
+	 and TFmode since the following line would all map to kind=16.
+	 However, currently only float, double, long double, and TFmode
+	 reach this code.
+      */
 
       kind = (GET_MODE_PRECISION (mode) + 7) / 8;
 
@@ -851,6 +858,7 @@ gfc_build_real_type (gfc_real_info *info)
     info->c_long_double = 1;
   if (mode_precision != LONG_DOUBLE_TYPE_SIZE && mode_precision == 128)
     {
+      /* TODO: see PR101835.  */
       info->c_float128 = 1;
       gfc_real16_is_float128 = true;
     }

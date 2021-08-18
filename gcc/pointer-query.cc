@@ -22,58 +22,21 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
-#include "target.h"
-#include "rtl.h"
 #include "tree.h"
-#include "memmodel.h"
 #include "gimple.h"
-#include "predict.h"
-#include "tm_p.h"
 #include "stringpool.h"
 #include "tree-vrp.h"
-#include "tree-ssanames.h"
-#include "expmed.h"
-#include "optabs.h"
-#include "emit-rtl.h"
-#include "recog.h"
 #include "diagnostic-core.h"
-#include "alias.h"
 #include "fold-const.h"
-#include "fold-const-call.h"
-#include "gimple-ssa-warn-restrict.h"
-#include "stor-layout.h"
-#include "calls.h"
-#include "varasm.h"
 #include "tree-object-size.h"
 #include "tree-ssa-strlen.h"
-#include "realmpfr.h"
-#include "cfgrtl.h"
-#include "except.h"
-#include "dojump.h"
-#include "explow.h"
-#include "stmt.h"
-#include "expr.h"
-#include "libfuncs.h"
-#include "output.h"
-#include "typeclass.h"
 #include "langhooks.h"
-#include "value-prof.h"
-#include "builtins.h"
 #include "stringpool.h"
 #include "attribs.h"
-#include "asan.h"
-#include "internal-fn.h"
-#include "case-cfn-macros.h"
 #include "gimple-fold.h"
 #include "intl.h"
-#include "tree-dfa.h"
-#include "gimple-iterator.h"
-#include "gimple-ssa.h"
-#include "tree-ssa-live.h"
-#include "tree-outof-ssa.h"
 #include "attr-fnspec.h"
 #include "gimple-range.h"
-
 #include "pointer-query.h"
 
 static bool compute_objsize_r (tree, int, access_ref *, ssa_name_limit_t &,
@@ -309,6 +272,164 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2], bool *past_end,
     }
 
   return NULL_TREE;
+}
+
+/* Return true when EXP's range can be determined and set RANGE[] to it
+   after adjusting it if necessary to make EXP a represents a valid size
+   of object, or a valid size argument to an allocation function declared
+   with attribute alloc_size (whose argument may be signed), or to a string
+   manipulation function like memset.
+   When ALLOW_ZERO is set in FLAGS, allow returning a range of [0, 0] for
+   a size in an anti-range [1, N] where N > PTRDIFF_MAX.  A zero range is
+   a (nearly) invalid argument to allocation functions like malloc but it
+   is a valid argument to functions like memset.
+   When USE_LARGEST is set in FLAGS set RANGE to the largest valid subrange
+   in a multi-range, otherwise to the smallest valid subrange.  */
+
+bool
+get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
+		int flags /* = 0 */)
+{
+  if (!exp)
+    return false;
+
+  if (tree_fits_uhwi_p (exp))
+    {
+      /* EXP is a constant.  */
+      range[0] = range[1] = exp;
+      return true;
+    }
+
+  tree exptype = TREE_TYPE (exp);
+  bool integral = INTEGRAL_TYPE_P (exptype);
+
+  wide_int min, max;
+  enum value_range_kind range_type;
+
+  if (!query)
+    query = get_global_range_query ();
+
+  if (integral)
+    {
+      value_range vr;
+
+      query->range_of_expr (vr, exp, stmt);
+
+      if (vr.undefined_p ())
+	vr.set_varying (TREE_TYPE (exp));
+      range_type = vr.kind ();
+      min = wi::to_wide (vr.min ());
+      max = wi::to_wide (vr.max ());
+    }
+  else
+    range_type = VR_VARYING;
+
+  if (range_type == VR_VARYING)
+    {
+      if (integral)
+	{	
+	  /* Use the full range of the type of the expression when
+	     no value range information is available.  */
+	  range[0] = TYPE_MIN_VALUE (exptype);
+	  range[1] = TYPE_MAX_VALUE (exptype);
+	  return true;
+	}
+
+      range[0] = NULL_TREE;
+      range[1] = NULL_TREE;
+      return false;
+    }
+
+  unsigned expprec = TYPE_PRECISION (exptype);
+
+  bool signed_p = !TYPE_UNSIGNED (exptype);
+
+  if (range_type == VR_ANTI_RANGE)
+    {
+      if (signed_p)
+	{
+	  if (wi::les_p (max, 0))
+	    {
+	      /* EXP is not in a strictly negative range.  That means
+		 it must be in some (not necessarily strictly) positive
+		 range which includes zero.  Since in signed to unsigned
+		 conversions negative values end up converted to large
+		 positive values, and otherwise they are not valid sizes,
+		 the resulting range is in both cases [0, TYPE_MAX].  */
+	      min = wi::zero (expprec);
+	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+	    }
+	  else if (wi::les_p (min - 1, 0))
+	    {
+	      /* EXP is not in a negative-positive range.  That means EXP
+		 is either negative, or greater than max.  Since negative
+		 sizes are invalid make the range [MAX + 1, TYPE_MAX].  */
+	      min = max + 1;
+	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+	    }
+	  else
+	    {
+	      max = min - 1;
+	      min = wi::zero (expprec);
+	    }
+	}
+      else
+	{
+	  wide_int maxsize = wi::to_wide (max_object_size ());
+	  min = wide_int::from (min, maxsize.get_precision (), UNSIGNED);
+	  max = wide_int::from (max, maxsize.get_precision (), UNSIGNED);
+	  if (wi::eq_p (0, min - 1))
+	    {
+	      /* EXP is unsigned and not in the range [1, MAX].  That means
+		 it's either zero or greater than MAX.  Even though 0 would
+		 normally be detected by -Walloc-zero, unless ALLOW_ZERO
+		 is set, set the range to [MAX, TYPE_MAX] so that when MAX
+		 is greater than the limit the whole range is diagnosed.  */
+	      wide_int maxsize = wi::to_wide (max_object_size ());
+	      if (flags & SR_ALLOW_ZERO)
+		{
+		  if (wi::leu_p (maxsize, max + 1)
+		      || !(flags & SR_USE_LARGEST))
+		    min = max = wi::zero (expprec);
+		  else
+		    {
+		      min = max + 1;
+		      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+		    }
+		}
+	      else
+		{
+		  min = max + 1;
+		  max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+		}
+	    }
+	  else if ((flags & SR_USE_LARGEST)
+		   && wi::ltu_p (max + 1, maxsize))
+	    {
+	      /* When USE_LARGEST is set and the larger of the two subranges
+		 is a valid size, use it...  */
+	      min = max + 1;
+	      max = maxsize;
+	    }
+	  else
+	    {
+	      /* ...otherwise use the smaller subrange.  */
+	      max = min - 1;
+	      min = wi::zero (expprec);
+	    }
+	}
+    }
+
+  range[0] = wide_int_to_tree (exptype, min);
+  range[1] = wide_int_to_tree (exptype, max);
+
+  return true;
+}
+
+bool
+get_size_range (tree exp, tree range[2], int flags /* = 0 */)
+{
+  return get_size_range (/*query=*/NULL, exp, /*stmt=*/NULL, range, flags);
 }
 
 /* If STMT is a call to an allocation function, returns the constant

@@ -1440,9 +1440,6 @@ arc_override_options (void)
   if (flag_pic)
     target_flags |= MASK_NO_SDATA_SET;
 
-  if (flag_no_common == 255)
-    flag_no_common = !TARGET_NO_SDATA_SET;
-
   /* Check for small data option */
   if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
     g_switch_value = TARGET_LL64 ? 8 : 4;

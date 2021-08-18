@@ -43,7 +43,10 @@ crypto/des
 crypto/dsa
 crypto/ecdsa
 crypto/ed25519
+crypto/ed25519/internal/edwards25519
+crypto/ed25519/internal/edwards25519/field
 crypto/elliptic
+crypto/elliptic/internal/fiat
 crypto/hmac
 crypto/internal/subtle
 crypto/md5
@@ -110,6 +113,7 @@ index/suffixarray
 internal/cpu
 internal/execabs
 internal/fmtsort
+internal/itoa
 internal/poll
 internal/profile
 internal/reflectlite
@@ -139,6 +143,7 @@ net/http/httptest
 net/http/httptrace
 net/http/httputil
 net/http/internal
+net/http/internal/ascii
 net/http/pprof
 net/internal/socktest
 net/mail
@@ -157,6 +162,7 @@ reflect
 regexp
 regexp/syntax
 runtime
+runtime/cgo
 runtime/debug
 runtime/internal/atomic
 runtime/internal/math

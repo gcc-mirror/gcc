@@ -4,7 +4,7 @@
    zero bytes.  For standard allocation functions the return value is
    implementation-defined and so relying on it may be a source of bugs.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -Walloc-zero" } */
+/* { dg-options "-O1 -Wall -Walloc-zero" } */
 
 #define SCHAR_MAX  __SCHAR_MAX__
 #define SCHAR_MIN  (-SCHAR_MAX - 1)

@@ -1,3 +1,13 @@
+2021-08-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libfortran/101305
+	PR fortran/101660
+	PR testsuite/101847
+	* Makefile.am (ISO_Fortran_binding.h): Create include/ in the build dir
+	and copy the include file to it.
+	(clean-local): Add for removing the 'include' directory.
+	* Makefile.in: Regenerate.
+
 2021-07-28  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libfortran/101317

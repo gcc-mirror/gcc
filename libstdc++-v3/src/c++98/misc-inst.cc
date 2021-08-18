@@ -26,6 +26,10 @@
 // ISO C++ 14882:
 //
 
+#if __cplusplus != 199711L
+# error This file must be compiled as C++98
+#endif
+
 #define _GLIBCXX_USE_CXX11_ABI 1
 #define _GLIBCXX_DISAMBIGUATE_REPLACE_INST 1
 #include <string>

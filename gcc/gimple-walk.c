@@ -682,12 +682,14 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
       /* FALL THROUGH.  */
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_TARGET:

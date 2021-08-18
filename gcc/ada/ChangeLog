@@ -1,3 +1,10 @@
+2021-08-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR debug/101598
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Set the
+	DECL_SOURCE_LOCATION of DECL_IGNORED_P gnu_subprog_decl to
+	UNKNOWN_LOCATION.
+
 2021-07-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/s-osprim__x32.adb: Add missing with clause.

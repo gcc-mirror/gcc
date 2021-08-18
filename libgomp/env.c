@@ -437,6 +437,7 @@ parse_bind_var (const char *name, char *p1stvalue,
     { "false", 5, omp_proc_bind_false },
     { "true", 4, omp_proc_bind_true },
     { "master", 6, omp_proc_bind_master },
+    { "primary", 7, omp_proc_bind_primary },
     { "close", 5, omp_proc_bind_close },
     { "spread", 6, omp_proc_bind_spread }
   };
@@ -450,14 +451,14 @@ parse_bind_var (const char *name, char *p1stvalue,
   if (*env == '\0')
     goto invalid;
 
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 6; i++)
     if (strncasecmp (env, kinds[i].name, kinds[i].len) == 0)
       {
 	value = kinds[i].kind;
 	env += kinds[i].len;
 	break;
       }
-  if (i == 5)
+  if (i == 6)
     goto invalid;
 
   while (isspace ((unsigned char) *env))
@@ -497,14 +498,14 @@ parse_bind_var (const char *name, char *p1stvalue,
 	      if (*env == '\0')
 		goto invalid;
 
-	      for (i = 2; i < 5; i++)
+	      for (i = 2; i < 6; i++)
 		if (strncasecmp (env, kinds[i].name, kinds[i].len) == 0)
 		  {
 		    value = kinds[i].kind;
 		    env += kinds[i].len;
 		    break;
 		  }
-	      if (i == 5)
+	      if (i == 6)
 		goto invalid;
 
 	      values[nvalues++] = value;
@@ -1277,7 +1278,7 @@ omp_display_env (int verbose)
       fputs ("TRUE", stderr);
       break;
     case omp_proc_bind_master:
-      fputs ("MASTER", stderr);
+      fputs ("MASTER", stderr); /* TODO: Change to PRIMARY for OpenMP 5.1.  */
       break;
     case omp_proc_bind_close:
       fputs ("CLOSE", stderr);
@@ -1290,7 +1291,7 @@ omp_display_env (int verbose)
     switch (gomp_bind_var_list[i])
       {
       case omp_proc_bind_master:
-	fputs (",MASTER", stderr);
+	fputs (",MASTER", stderr); /* TODO: Change to PRIMARY for OpenMP 5.1. */
 	break;
       case omp_proc_bind_close:
 	fputs (",CLOSE", stderr);

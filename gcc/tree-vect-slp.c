@@ -4861,11 +4861,13 @@ vectorizable_bb_reduc_epilogue (slp_instance instance,
     return false;
 
   /* There's no way to cost a horizontal vector reduction via REDUC_FN so
-     cost log2 vector operations plus shuffles.  */
+     cost log2 vector operations plus shuffles and one extraction.  */
   unsigned steps = floor_log2 (vect_nunits_for_cost (vectype));
   record_stmt_cost (cost_vec, steps, vector_stmt, instance->root_stmts[0],
 		    vectype, 0, vect_body);
   record_stmt_cost (cost_vec, steps, vec_perm, instance->root_stmts[0],
+		    vectype, 0, vect_body);
+  record_stmt_cost (cost_vec, 1, vec_to_scalar, instance->root_stmts[0],
 		    vectype, 0, vect_body);
   return true;
 }

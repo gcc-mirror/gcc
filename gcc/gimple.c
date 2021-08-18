@@ -1038,6 +1038,21 @@ gimple_build_omp_master (gimple_seq body)
   return p;
 }
 
+/* Build a GIMPLE_OMP_MASKED statement.
+
+   BODY is the sequence of statements to be executed by the selected thread(s).  */
+
+gimple *
+gimple_build_omp_masked (gimple_seq body, tree clauses)
+{
+  gimple *p = gimple_alloc (GIMPLE_OMP_MASKED, 0);
+  gimple_omp_masked_set_clauses (p, clauses);
+  if (body)
+    gimple_omp_set_body (p, body);
+
+  return p;
+}
+
 /* Build a GIMPLE_OMP_TASKGROUP statement.
 
    BODY is the sequence of statements to be executed by the taskgroup
@@ -1165,6 +1180,24 @@ gimple_build_omp_single (gimple_seq body, tree clauses)
   if (body)
     gimple_omp_set_body (p, body);
   gimple_omp_single_set_clauses (p, clauses);
+
+  return p;
+}
+
+
+/* Build a GIMPLE_OMP_SCOPE statement.
+
+   BODY is the sequence of statements that will be executed once.
+   CLAUSES are any of the OMP scope construct's clauses: private, reduction,
+   nowait.  */
+
+gimple *
+gimple_build_omp_scope (gimple_seq body, tree clauses)
+{
+  gimple *p = gimple_alloc (GIMPLE_OMP_SCOPE, 0);
+  gimple_omp_scope_set_clauses (p, clauses);
+  if (body)
+    gimple_omp_set_body (p, body);
 
   return p;
 }
@@ -2005,6 +2038,11 @@ gimple_copy (gimple *stmt)
 	  }
 	  goto copy_omp_body;
 
+	case GIMPLE_OMP_SCOPE:
+	  t = unshare_expr (gimple_omp_scope_clauses (stmt));
+	  gimple_omp_scope_set_clauses (copy, t);
+	  goto copy_omp_body;
+
 	case GIMPLE_OMP_TARGET:
 	  {
 	    gomp_target *omp_target_stmt = as_a <gomp_target *> (stmt);
@@ -2030,6 +2068,11 @@ gimple_copy (gimple *stmt)
 	  new_seq = gimple_seq_copy (gimple_omp_body (stmt));
 	  gimple_omp_set_body (copy, new_seq);
 	  break;
+
+	case GIMPLE_OMP_MASKED:
+	  t = unshare_expr (gimple_omp_masked_clauses (stmt));
+	  gimple_omp_masked_set_clauses (copy, t);
+	  goto copy_omp_body;
 
 	case GIMPLE_TRANSACTION:
 	  new_seq = gimple_seq_copy (gimple_transaction_body (

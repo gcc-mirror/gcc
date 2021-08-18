@@ -2645,6 +2645,9 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_FINAL:
       pp_cxx_ws_string (pp, "__is_final");
       break;
+    case CPTK_IS_LAYOUT_COMPATIBLE:
+      pp_cxx_ws_string (pp, "__is_layout_compatible");
+      break;
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       pp_cxx_ws_string (pp, "__is_pointer_interconvertible_base_of");
       break;
@@ -2700,6 +2703,7 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
 
   if (kind == CPTK_IS_BASE_OF
       || kind == CPTK_IS_SAME_AS
+      || kind == CPTK_IS_LAYOUT_COMPATIBLE
       || kind == CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF)
     {
       pp_cxx_separate_with (pp, ',');

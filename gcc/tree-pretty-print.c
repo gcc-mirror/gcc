@@ -1008,6 +1008,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       switch (OMP_CLAUSE_PROC_BIND_KIND (clause))
 	{
 	case OMP_CLAUSE_PROC_BIND_MASTER:
+	  /* Same enum value: case OMP_CLAUSE_PROC_BIND_PRIMARY: */
+	  /* TODO: Change to 'primary' for OpenMP 5.1.  */
 	  pp_string (pp, "master");
 	  break;
 	case OMP_CLAUSE_PROC_BIND_CLOSE:
@@ -1079,6 +1081,13 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_HINT:
       pp_string (pp, "hint(");
       dump_generic_node (pp, OMP_CLAUSE_HINT_EXPR (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
+
+    case OMP_CLAUSE_FILTER:
+      pp_string (pp, "filter(");
+      dump_generic_node (pp, OMP_CLAUSE_FILTER_EXPR (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
       break;
@@ -3584,6 +3593,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, "#pragma omp master");
       goto dump_omp_body;
 
+    case OMP_MASKED:
+      pp_string (pp, "#pragma omp masked");
+      dump_omp_clauses (pp, OMP_MASKED_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
     case OMP_TASKGROUP:
       pp_string (pp, "#pragma omp taskgroup");
       dump_omp_clauses (pp, OMP_TASKGROUP_CLAUSES (node), spc, flags);
@@ -3641,6 +3655,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case OMP_SINGLE:
       pp_string (pp, "#pragma omp single");
       dump_omp_clauses (pp, OMP_SINGLE_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    case OMP_SCOPE:
+      pp_string (pp, "#pragma omp scope");
+      dump_omp_clauses (pp, OMP_SCOPE_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
     case OMP_CLAUSE:

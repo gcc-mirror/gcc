@@ -3885,7 +3885,9 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   /* Set the line number in the decl to correspond to that of the body.  */
-  if (!Sloc_to_locus (Sloc (gnat_node), &locus, false, gnu_subprog_decl))
+  if (DECL_IGNORED_P (gnu_subprog_decl))
+    locus = UNKNOWN_LOCATION;
+  else if (!Sloc_to_locus (Sloc (gnat_node), &locus, false, gnu_subprog_decl))
     locus = input_location;
   DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
 

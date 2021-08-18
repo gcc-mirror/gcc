@@ -350,6 +350,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_DEFAULTMAP  */
   0, /* OMP_CLAUSE_ORDER  */
   0, /* OMP_CLAUSE_BIND  */
+  1, /* OMP_CLAUSE_FILTER  */
   1, /* OMP_CLAUSE__SIMDUID_  */
   0, /* OMP_CLAUSE__SIMT_  */
   0, /* OMP_CLAUSE_INDEPENDENT  */
@@ -438,6 +439,7 @@ const char * const omp_clause_code_name[] =
   "defaultmap",
   "order",
   "bind",
+  "filter",
   "_simduid_",
   "_simt_",
   "independent",
@@ -11126,6 +11128,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
 	case OMP_CLAUSE_HINT:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE_TO_DECLARE:
 	case OMP_CLAUSE_LINK:
 	case OMP_CLAUSE_DETACH:
@@ -14311,16 +14314,27 @@ verify_type_context (location_t loc, type_context_kind context,
 	  || targetm.verify_type_context (loc, context, type, silent_p));
 }
 
-/* Return that NEW_ASM and DELETE_ASM name a valid pair of new and
-   delete operators.  */
+/* Return true if NEW_ASM and DELETE_ASM name a valid pair of new and
+   delete operators.  Return false if they may or may not name such
+   a pair and, when nonnull, set *PCERTAIN to true if they certainly
+   do not.  */
 
 bool
-valid_new_delete_pair_p (tree new_asm, tree delete_asm)
+valid_new_delete_pair_p (tree new_asm, tree delete_asm,
+			 bool *pcertain /* = NULL */)
 {
+  bool certain;
+  if (!pcertain)
+    pcertain = &certain;
+
   const char *new_name = IDENTIFIER_POINTER (new_asm);
   const char *delete_name = IDENTIFIER_POINTER (delete_asm);
   unsigned int new_len = IDENTIFIER_LENGTH (new_asm);
   unsigned int delete_len = IDENTIFIER_LENGTH (delete_asm);
+
+  /* The following failures are due to invalid names so they're not
+     considered certain mismatches.  */
+  *pcertain = false;
 
   if (new_len < 5 || delete_len < 6)
     return false;
@@ -14334,11 +14348,19 @@ valid_new_delete_pair_p (tree new_asm, tree delete_asm)
     ++delete_name, --delete_len;
   if (new_len < 4 || delete_len < 5)
     return false;
+
+  /* The following failures are due to names of user-defined operators
+     so they're also not considered certain mismatches.  */
+
   /* *_len is now just the length after initial underscores.  */
   if (new_name[0] != 'Z' || new_name[1] != 'n')
     return false;
   if (delete_name[0] != 'Z' || delete_name[1] != 'd')
     return false;
+
+  /* The following failures are certain mismatches.  */
+  *pcertain = true;
+
   /* _Znw must match _Zdl, _Zna must match _Zda.  */
   if ((new_name[2] != 'w' || delete_name[2] != 'l')
       && (new_name[2] != 'a' || delete_name[2] != 'a'))
@@ -14377,6 +14399,9 @@ valid_new_delete_pair_p (tree new_asm, tree delete_asm)
 	  && !memcmp (delete_name + 5, "St11align_val_tRKSt9nothrow_t", 29))
 	return true;
     }
+
+  /* The negative result is conservative.  */
+  *pcertain = false;
   return false;
 }
 
@@ -14437,6 +14462,60 @@ fndecl_dealloc_argno (tree fndecl)
     }
 
   return UINT_MAX;
+}
+
+/* If EXPR refers to a character array or pointer declared attribute
+   nonstring, return a decl for that array or pointer and set *REF
+   to the referenced enclosing object or pointer.  Otherwise return
+   null.  */
+
+tree
+get_attr_nonstring_decl (tree expr, tree *ref)
+{
+  tree decl = expr;
+  tree var = NULL_TREE;
+  if (TREE_CODE (decl) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (decl);
+
+      if (is_gimple_assign (def))
+	{
+	  tree_code code = gimple_assign_rhs_code (def);
+	  if (code == ADDR_EXPR
+	      || code == COMPONENT_REF
+	      || code == VAR_DECL)
+	    decl = gimple_assign_rhs1 (def);
+	}
+      else
+	var = SSA_NAME_VAR (decl);
+    }
+
+  if (TREE_CODE (decl) == ADDR_EXPR)
+    decl = TREE_OPERAND (decl, 0);
+
+  /* To simplify calling code, store the referenced DECL regardless of
+     the attribute determined below, but avoid storing the SSA_NAME_VAR
+     obtained above (it's not useful for dataflow purposes).  */
+  if (ref)
+    *ref = decl;
+
+  /* Use the SSA_NAME_VAR that was determined above to see if it's
+     declared nonstring.  Otherwise drill down into the referenced
+     DECL.  */
+  if (var)
+    decl = var;
+  else if (TREE_CODE (decl) == ARRAY_REF)
+    decl = TREE_OPERAND (decl, 0);
+  else if (TREE_CODE (decl) == COMPONENT_REF)
+    decl = TREE_OPERAND (decl, 1);
+  else if (TREE_CODE (decl) == MEM_REF)
+    return get_attr_nonstring_decl (TREE_OPERAND (decl, 0), ref);
+
+  if (DECL_P (decl)
+      && lookup_attribute ("nonstring", DECL_ATTRIBUTES (decl)))
+    return decl;
+
+  return NULL_TREE;
 }
 
 #if CHECKING_P

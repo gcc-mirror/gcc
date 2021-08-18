@@ -474,14 +474,6 @@ func TestRecoverBeforePanicAfterGoexit2(t *testing.T) {
 }
 
 func TestNetpollDeadlock(t *testing.T) {
-	if os.Getenv("GO_BUILDER_NAME") == "darwin-amd64-10_12" {
-		// A suspected kernel bug in macOS 10.12 occasionally results in
-		// an apparent deadlock when dialing localhost. The errors have not
-		// been observed on newer versions of the OS, so we don't plan to work
-		// around them. See https://golang.org/issue/22019.
-		testenv.SkipFlaky(t, 22019)
-	}
-
 	t.Parallel()
 	output := runTestProg(t, "testprognet", "NetpollDeadlock")
 	want := "done\n"
@@ -752,6 +744,10 @@ func TestTimePprof(t *testing.T) {
 
 // Test that runtime.abort does so.
 func TestAbort(t *testing.T) {
+	if runtime.Compiler == "gccgo" && runtime.GOOS == "solaris" {
+		t.Skip("not supported by gofrontend on Solaris")
+	}
+
 	// Pass GOTRACEBACK to ensure we get runtime frames.
 	output := runTestProg(t, "testprog", "Abort", "GOTRACEBACK=system")
 	if want := "runtime.abort"; !strings.Contains(output, want) {
@@ -813,6 +809,10 @@ func TestRuntimePanic(t *testing.T) {
 
 // Test that g0 stack overflows are handled gracefully.
 func TestG0StackOverflow(t *testing.T) {
+	if runtime.Compiler == "gccgo" {
+		t.Skip("g0 stack overflow not supported by gofrontend")
+	}
+
 	testenv.MustHaveExec(t)
 
 	switch runtime.GOOS {

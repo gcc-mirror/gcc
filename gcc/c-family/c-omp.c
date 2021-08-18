@@ -86,6 +86,20 @@ c_finish_omp_master (location_t loc, tree stmt)
   return t;
 }
 
+/* Complete a #pragma omp masked construct.  BODY is the structured-block
+   that follows the pragma.  LOC is the location of the #pragma.  */
+
+tree
+c_finish_omp_masked (location_t loc, tree body, tree clauses)
+{
+  tree stmt = make_node (OMP_MASKED);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_MASKED_BODY (stmt) = body;
+  OMP_MASKED_CLAUSES (stmt) = clauses;
+  SET_EXPR_LOCATION (stmt, loc);
+  return add_stmt (stmt);
+}
+
 /* Complete a #pragma omp taskgroup construct.  BODY is the structured-block
    that follows the pragma.  LOC is the location of the #pragma.  */
 
@@ -1542,11 +1556,16 @@ c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses,
    #pragma omp distribute parallel for simd
    #pragma omp distribute simd
    #pragma omp for simd
+   #pragma omp masked taskloop
+   #pragma omp masked taskloop simd
    #pragma omp master taskloop
    #pragma omp master taskloop simd
    #pragma omp parallel for
    #pragma omp parallel for simd
    #pragma omp parallel loop
+   #pragma omp parallel masked
+   #pragma omp parallel masked taskloop
+   #pragma omp parallel masked taskloop simd
    #pragma omp parallel master
    #pragma omp parallel master taskloop
    #pragma omp parallel master taskloop simd
@@ -1651,6 +1670,9 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_BIND:
 	  s = C_OMP_CLAUSE_SPLIT_LOOP;
 	  break;
+	case OMP_CLAUSE_FILTER:
+	  s = C_OMP_CLAUSE_SPLIT_MASKED;
+	  break;
 	/* Duplicate this to all of taskloop, distribute, for, simd and
 	   loop.  */
 	case OMP_CLAUSE_COLLAPSE:
@@ -1700,10 +1722,10 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE;
 	  break;
-	/* Private clause is supported on all constructs but master,
-	   it is enough to put it on the innermost one other than master.  For
-	   #pragma omp {for,sections} put it on parallel though,
-	   as that's what we did for OpenMP 3.1.  */
+	/* Private clause is supported on all constructs but master/masked,
+	   it is enough to put it on the innermost one other than
+	   master/masked.  For #pragma omp {for,sections} put it on parallel
+	   though, as that's what we did for OpenMP 3.1.  */
 	case OMP_CLAUSE_PRIVATE:
 	  switch (code)
 	    {
@@ -1713,14 +1735,15 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    case OMP_DISTRIBUTE: s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE; break;
 	    case OMP_TEAMS: s = C_OMP_CLAUSE_SPLIT_TEAMS; break;
 	    case OMP_MASTER: s = C_OMP_CLAUSE_SPLIT_PARALLEL; break;
+	    case OMP_MASKED: s = C_OMP_CLAUSE_SPLIT_PARALLEL; break;
 	    case OMP_TASKLOOP: s = C_OMP_CLAUSE_SPLIT_TASKLOOP; break;
 	    case OMP_LOOP: s = C_OMP_CLAUSE_SPLIT_LOOP; break;
 	    default: gcc_unreachable ();
 	    }
 	  break;
 	/* Firstprivate clause is supported on all constructs but
-	   simd, master and loop.  Put it on the outermost of those and
-	   duplicate on teams and parallel.  */
+	   simd, master, masked and loop.  Put it on the outermost of those
+	   and duplicate on teams and parallel.  */
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP))
 	      != 0)
@@ -1773,7 +1796,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	      else if ((mask & (OMP_CLAUSE_MASK_1
 				<< PRAGMA_OMP_CLAUSE_NOGROUP)) != 0)
 		/* This must be
-		   #pragma omp parallel master taskloop{, simd}.  */
+		   #pragma omp parallel mas{ked,ter} taskloop{, simd}.  */
 		s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	      else
 		/* This must be
@@ -1805,9 +1828,10 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else if ((mask & (OMP_CLAUSE_MASK_1
 			    << PRAGMA_OMP_CLAUSE_NOGROUP)) != 0)
 	    {
-	      /* This must be #pragma omp {,{,parallel }master }taskloop simd
+	      /* This must be
+		 #pragma omp {,{,parallel }mas{ked,ter} }taskloop simd
 		 or
-		 #pragma omp {,parallel }master taskloop.  */
+		 #pragma omp {,parallel }mas{ked,ter} taskloop.  */
 	      gcc_assert (code == OMP_SIMD || code == OMP_TASKLOOP);
 	      s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	    }
@@ -2044,7 +2068,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    }
 	  else if (code == OMP_SECTIONS
 		   || code == OMP_PARALLEL
-		   || code == OMP_MASTER)
+		   || code == OMP_MASTER
+		   || code == OMP_MASKED)
 	    s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  else if (code == OMP_TASKLOOP)
 	    s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
@@ -2455,7 +2480,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_TARGET] == NULL_TREE);
   if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_TEAMS)) == 0)
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_TEAMS] == NULL_TREE);
-  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)) == 0)
+  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)) == 0
+      && (mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FILTER)) == 0)
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE] == NULL_TREE);
   if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS)) == 0)
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] == NULL_TREE);
@@ -2975,14 +3001,14 @@ static const struct c_omp_directive omp_directives[] = {
     C_OMP_DIR_STANDALONE, false },  */
   { "loop", nullptr, nullptr, PRAGMA_OMP_LOOP,
     C_OMP_DIR_CONSTRUCT, true },
-  /* { "masked", nullptr, nullptr, PRAGMA_OMP_MASKED,
-    C_OMP_DIR_CONSTRUCT, true },  */
+  { "masked", nullptr, nullptr, PRAGMA_OMP_MASKED,
+    C_OMP_DIR_CONSTRUCT, true },
   { "master", nullptr, nullptr, PRAGMA_OMP_MASTER,
     C_OMP_DIR_CONSTRUCT, true },
   /* { "metadirective", nullptr, nullptr, PRAGMA_OMP_METADIRECTIVE,
     C_OMP_DIR_???, ??? },  */
-  /* { "nothing", nullptr, nullptr, PRAGMA_OMP_NOTHING,
-    C_OMP_DIR_UTILITY, false },  */
+  { "nothing", nullptr, nullptr, PRAGMA_OMP_NOTHING,
+    C_OMP_DIR_UTILITY, false },
   /* ordered with depend clause is C_OMP_DIR_STANDALONE.  */
   { "ordered", nullptr, nullptr, PRAGMA_OMP_ORDERED,
     C_OMP_DIR_CONSTRUCT, true },
@@ -2992,8 +3018,8 @@ static const struct c_omp_directive omp_directives[] = {
     C_OMP_DIR_INFORMATIONAL, false },
   { "scan", nullptr, nullptr, PRAGMA_OMP_SCAN,
     C_OMP_DIR_CONSTRUCT, true },
-  /* { "scope", nullptr, nullptr, PRAGMA_OMP_SCOPE,
-    C_OMP_DIR_CONSTRUCT, false },  */
+  { "scope", nullptr, nullptr, PRAGMA_OMP_SCOPE,
+    C_OMP_DIR_CONSTRUCT, false },
   { "section", nullptr, nullptr, PRAGMA_OMP_SECTION,
     C_OMP_DIR_CONSTRUCT, false },
   { "sections", nullptr, nullptr, PRAGMA_OMP_SECTIONS,
