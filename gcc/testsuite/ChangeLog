@@ -1,3 +1,10 @@
+2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/pr78213.c: Restore testing.
+
 2021-07-29  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/101531
