@@ -143,7 +143,7 @@ public:
   void dump (FILE *f, basic_block bb) const;
   void dump (FILE *f) const;
 private:
-  bitmap m_tmp;
+  bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists
   vec <relation_chain_head> m_relations;  // Index by BB, list of relations.
   relation_kind find_relation_block (unsigned bb, const_bitmap b1,
@@ -153,7 +153,12 @@ private:
   relation_kind find_relation_block (int bb, unsigned v1, unsigned v2,
 				     relation_chain **obj = NULL);
   relation_kind find_relation_dom (basic_block bb, unsigned v1, unsigned v2);
-  void register_relation (basic_block bb, relation_kind k, tree op1, tree op2);
+  void register_relation (basic_block bb, relation_kind k, tree op1, tree op2,
+			  bool transitive_p = false);
+  void register_transitives (basic_block, const class value_relation &);
+  void register_transitives (basic_block, const value_relation &, const_bitmap,
+			     const_bitmap);
+
 };
 
 #endif  /* GCC_VALUE_RELATION_H */
