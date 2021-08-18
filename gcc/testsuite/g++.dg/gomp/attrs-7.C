@@ -11,8 +11,7 @@ foo ()
 									// { dg-error "#pragma omp section" "" { target *-*-* } .-1 }
 									// { dg-error "#pragma omp flush" "" { target *-*-* } .-2 }
     [[omp::sequence (directive (flush), omp::directive (section))]];	// { dg-error "must be the only specified attribute on a statement" }
-									// { dg-error "#pragma omp section" "" { target *-*-* } .-1 }
-									// { dg-error "#pragma omp flush" "" { target *-*-* } .-2 }
+									// { dg-error "#pragma omp flush" "" { target *-*-* } .-1 }
     [[gnu::cold, omp::directive (section)]];				// { dg-error "must be the only specified attribute on a statement" }
 									// { dg-error "#pragma omp section" "" { target *-*-* } .-1 }
     [[omp::directive (section)]] [[gnu::cold]];				// { dg-error "must be the only specified attribute on a statement" }

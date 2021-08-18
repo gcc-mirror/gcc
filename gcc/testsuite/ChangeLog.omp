@@ -1,3 +1,16 @@
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/pr63326.c: Don't expect extra "before" errors
+	in C++.
+	* g++.dg/gomp/attrs-7.C: Don't expect one extra error.
+	* g++.dg/gomp/barrier-2.C: Likewise.
+	* gcc.dg/gomp/declare-simd-5.c: Likewise.
+	* gcc.dg/gomp/barrier-2.c: Likewise.
+	* gcc.dg/gomp/declare-variant-2.c: Likewise.
+
 2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

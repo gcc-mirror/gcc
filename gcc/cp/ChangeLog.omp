@@ -1,3 +1,25 @@
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_ordered): Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+	(cp_parser_omp_target_update): Likewise.
+	(cp_parser_omp_cancellation_point): Change return type from void to
+	bool, return false if the directive should be ignored in pragma_stmt
+	contexts.
+	(cp_parser_omp_target_enter_data, cp_parser_omp_target_exit_data):
+	Change return type from tree to bool, return false if the
+	directive should be ignored in pragma_stmt contexts.
+	(cp_parser_omp_target): Adjust callers of cp_parser_omp_target_*_data,
+	return their result directly.
+	(cp_parser_pragma): For PRAGMA_OMP_CANCELLATION_POINT return what
+	cp_parser_omp_cancellation_point returned.  Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+
 2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
