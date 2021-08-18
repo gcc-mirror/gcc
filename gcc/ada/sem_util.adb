@@ -713,14 +713,24 @@ package body Sem_Util is
 
                return Make_Level_Literal (Typ_Access_Level (E) + 1);
 
-            --  Move up the renamed entity if it came from source since
-            --  expansion may have created a dummy renaming under certain
-            --  circumstances.
+            --  Move up the renamed entity or object if it came from source
+            --  since expansion may have created a dummy renaming under
+            --  certain circumstances.
+
+            --  Note: We check if the original node of the renaming comes
+            --  from source because the node may have been rewritten.
 
             elsif Present (Renamed_Object (E))
-              and then Comes_From_Source (Renamed_Object (E))
+              and then Comes_From_Source (Original_Node (Renamed_Object (E)))
             then
                return Accessibility_Level (Renamed_Object (E));
+
+            --  Move up renamed entities
+
+            elsif Present (Renamed_Entity (E))
+              and then Comes_From_Source (Original_Node (Renamed_Entity (E)))
+            then
+               return Accessibility_Level (Renamed_Entity (E));
 
             --  Named access types get their level from their associated type
 
