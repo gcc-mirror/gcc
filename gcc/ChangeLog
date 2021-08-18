@@ -1,3 +1,10 @@
+2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101373
+	PR tree-optimization/101868
+	* tree-ssa-pre.c (prune_clobbered_mems): Also prune trapping
+	references when the BB may not return.
+
 2021-08-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* dwarf2out.c (add_scalar_info): Deal with DW_AT_data_bit_offset.

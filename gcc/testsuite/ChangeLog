@@ -1,3 +1,19 @@
+2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/pr78213.c: Restore testing.
+
+2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101373
+	PR tree-optimization/101868
+	* gcc.dg/lto/pr101868_0.c: New testcase.
+	* gcc.dg/lto/pr101868_1.c: Likewise.
+	* gcc.dg/lto/pr101868_2.c: Likewise.
+	* gcc.dg/lto/pr101868_3.c: Likewise.
+
 2021-08-16  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
