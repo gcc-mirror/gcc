@@ -1,3 +1,20 @@
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* macro.c (vaopt_state): Add m_stringify member.
+	(vaopt_state::vaopt_state): Initialize it.
+	(vaopt_state::update): Overwrite it.
+	(vaopt_state::stringify): New method.
+	(stringify_arg): Replace arg argument with first, count arguments
+	and add va_opt argument.  Use first instead of arg->first and
+	count instead of arg->count, for va_opt add paste_tokens handling.
+	(paste_tokens): Fix up len calculation.  Don't spell rhs twice,
+	instead use %.*s to supply lhs and rhs spelling lengths.  Don't call
+	_cpp_backup_tokens here.
+	(paste_all_tokens): Call it here instead.
+	(replace_args): Adjust stringify_arg caller.  For vaopt_state::END
+	if stringify is true handle __VA_OPT__ stringification.
+	(create_iso_definition): Handle # __VA_OPT__ similarly to # macro_arg.
+
 2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/101638

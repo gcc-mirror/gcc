@@ -1,3 +1,18 @@
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/scope-1.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-16.f90: New test.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add scope.c
+	* Makefile.in: Regenerated.
+	* libgomp_g.h (GOMP_scope_start): Declare.
+	* libgomp.map: Add GOMP_scope_start@@GOMP_5.1.
+	* scope.c: New file.
+	* testsuite/libgomp.c-c++-common/scope-1.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-16.c: New test.
+
 2021-08-16  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/mode-transitions.c: Address

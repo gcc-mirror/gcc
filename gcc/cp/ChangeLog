@@ -1,3 +1,44 @@
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101539
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_IS_LAYOUT_COMPATIBLE.
+	(enum cp_built_in_function): Add CP_BUILT_IN_IS_CORRESPONDING_MEMBER.
+	(fold_builtin_is_corresponding_member, next_common_initial_seqence,
+	layout_compatible_type_p): Declare.
+	* parser.c (cp_parser_primary_expression): Handle
+	RID_IS_LAYOUT_COMPATIBLE.
+	(cp_parser_trait_expr): Likewise.
+	* cp-objcp-common.c (names_builtin_p): Likewise.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_LAYOUT_COMPATIBLE.
+	* decl.c (cxx_init_decl_processing): Register
+	__builtin_is_corresponding_member builtin.
+	* constexpr.c (cxx_eval_builtin_function_call): Handle
+	CP_BUILT_IN_IS_CORRESPONDING_MEMBER builtin.
+	* semantics.c (is_corresponding_member_union,
+	is_corresponding_member_aggr, fold_builtin_is_corresponding_member):
+	New functions.
+	(trait_expr_value): Handle CPTK_IS_LAYOUT_COMPATIBLE.
+	(finish_trait_expr): Likewise.
+	* typeck.c (next_common_initial_seqence, layout_compatible_type_p):
+	New functions.
+	* cp-gimplify.c (cp_gimplify_expr): Fold
+	CP_BUILT_IN_IS_CORRESPONDING_MEMBER.
+	(cp_fold): Likewise.
+	* tree.c (builtin_valid_in_constant_expr_p): Handle
+	CP_BUILT_IN_IS_CORRESPONDING_MEMBER.
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Handle
+	CPTK_IS_LAYOUT_COMPATIBLE.
+	* class.c (remove_zero_width_bit_fields): Remove.
+	(layout_class_type): Don't call it.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (OMP_SCOPE_CLAUSE_MASK): Define.
+	(cp_parser_omp_scope): New function.
+	(cp_parser_omp_construct, cp_parser_pragma): Handle PRAGMA_OMP_SCOPE.
+	* pt.c (tsubst_expr): Handle OMP_SCOPE.
+
 2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_name): Parse filter clause name.

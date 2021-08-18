@@ -1,3 +1,103 @@
+2021-08-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101854
+	* gcc.dg/attr-alloc_size-5.c: Adjust optimization to -O1.
+	* gcc.dg/attr-alloc_size-7.c: Use #pragmas to adjust optimization.
+	* gcc.dg/attr-alloc_size-8.c: Adjust optimization to -O1.
+	* gcc.dg/Wstringop-overflow-72.c: New test.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101539
+	* g++.dg/cpp2a/is-corresponding-member1.C: New test.
+	* g++.dg/cpp2a/is-corresponding-member2.C: New test.
+	* g++.dg/cpp2a/is-corresponding-member3.C: New test.
+	* g++.dg/cpp2a/is-corresponding-member4.C: New test.
+	* g++.dg/cpp2a/is-corresponding-member5.C: New test.
+	* g++.dg/cpp2a/is-corresponding-member6.C: New test.
+	* g++.dg/cpp2a/is-corresponding-member7.C: New test.
+	* g++.dg/cpp2a/is-corresponding-member8.C: New test.
+	* g++.dg/cpp2a/is-layout-compatible1.C: New test.
+	* g++.dg/cpp2a/is-layout-compatible2.C: New test.
+	* g++.dg/cpp2a/is-layout-compatible3.C: New test.
+
+2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/pr78213.c: Restore testing.
+
+2021-08-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/tree-ssa/ssa-ccp-40.c: New test case.
+
+2021-08-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/fold-ior-5.c: New test case.
+
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/scan-1.f90:
+	* gfortran.dg/gomp/cancel-1.f90: New test.
+	* gfortran.dg/gomp/cancel-4.f90: New test.
+	* gfortran.dg/gomp/loop-4.f90: New test.
+	* gfortran.dg/gomp/nesting-1.f90: New test.
+	* gfortran.dg/gomp/nesting-2.f90: New test.
+	* gfortran.dg/gomp/nesting-3.f90: New test.
+	* gfortran.dg/gomp/nowait-1.f90: New test.
+	* gfortran.dg/gomp/reduction-task-1.f90: New test.
+	* gfortran.dg/gomp/reduction-task-2.f90: New test.
+	* gfortran.dg/gomp/reduction-task-2a.f90: New test.
+	* gfortran.dg/gomp/reduction-task-3.f90: New test.
+	* gfortran.dg/gomp/scope-1.f90: New test.
+	* gfortran.dg/gomp/scope-2.f90: New test.
+
+2021-08-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101938
+	* gcc.dg/pr101938.c: New test.
+
+2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101868
+	* gcc.dg/lto/pr101868_0.c: New testcase.
+	* gcc.dg/lto/pr101868_1.c: Likewise.
+	* gcc.dg/lto/pr101868_2.c: Likewise.
+	* gcc.dg/lto/pr101868_3.c: Likewise.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/nesting-2.c (foo): Add scope and masked
+	construct tests.
+	* c-c++-common/gomp/scan-1.c (f3): Add scope construct test..
+	* c-c++-common/gomp/cancel-1.c (f2): Add scope and masked
+	construct tests.
+	* c-c++-common/gomp/reduction-task-2.c (bar): Add scope construct
+	test.  Adjust diagnostics for the addition of scope.
+	* c-c++-common/gomp/loop-1.c (f5): Add master, masked and scope
+	construct tests.
+	* c-c++-common/gomp/clause-dups-1.c (f1): Add scope construct test.
+	* gcc.dg/gomp/nesting-1.c (f1, f2, f3): Add scope construct tests.
+	* c-c++-common/gomp/scope-1.c: New test.
+	* c-c++-common/gomp/scope-2.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add scope construct tests.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* gfortran.dg/gomp/reduction4.f90: Adjust expected diagnostics.
+	* gfortran.dg/gomp/reduction7.f90: Likewise.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/va-opt-5.c: New test.
+	* c-c++-common/cpp/va-opt-6.c: New test.
+
+2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101925
+	* gcc.dg/sso-16.c: New testcase.
+
+2021-08-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr82460-2.c: Adjust testcase by adding
+	--param=vect-epilogues-nomask=0
+
 2021-08-16  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/101930

@@ -1,3 +1,377 @@
+2021-08-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::gori_compute): Enable tracing.
+	(gori_compute::compute_operand_range): Add tracing.
+	(gori_compute::logical_combine): Ditto.
+	(gori_compute::compute_logical_operands): Ditto.
+	(gori_compute::compute_operand1_range): Ditto.
+	(gori_compute::compute_operand2_range): Ditto.
+	(gori_compute::outgoing_edge_range_p): Ditto.
+	* gimple-range-gori.h (class gori_compute): Add range_tracer.
+
+2021-08-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* flag-types.h (enum evrp_mode): Adjust evrp-mode values.
+	* gimple-range-cache.cc (DEBUG_RANGE_CACHE): Relocate from.
+	* gimple-range-trace.h (DEBUG_RANGE_CACHE): Here.
+	* params.opt (--param=evrp-mode): Adjust options.
+
+2021-08-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* Makefile.in (OBJS): Add gimple-range-trace.o.
+	* gimple-range-cache.h (enable_new_values): Remove unused prototype.
+	* gimple-range-fold.cc: Adjust headers.
+	* gimple-range-trace.cc: New.
+	* gimple-range-trace.h: New.
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Enable tracer.
+	(gimple_ranger::range_of_expr): Add tracing.
+	(gimple_ranger::range_on_entry): Ditto.
+	(gimple_ranger::range_on_exit): Ditto.
+	(gimple_ranger::range_on_edge): Ditto.
+	(gimple_ranger::fold_range_internal): Ditto.
+	(gimple_ranger::dump_bb): Do not calculate edge range twice.
+	(trace_ranger::*): Remove.
+	(enable_ranger): Never create a trace_ranger.
+	(debug_seed_ranger): Move to gimple-range-trace.cc.
+	(dump_ranger): Ditto.
+	(debug_ranger): Ditto.
+	* gimple-range.h: Include gimple-range-trace.h.
+	(range_on_entry, range_on_exit): No longer virtual.
+	(class trace_ranger): Remove.
+	(DEBUG_RANGE_CACHE): Move to gimple-range-trace.h.
+
+2021-08-17  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101854
+	* builtins.c (expand_builtin_alloca): Move warning code to check_alloca
+	in gimple-ssa-warn-access.cc.
+	* calls.c (alloc_max_size): Move code to check_alloca.
+	(get_size_range): Move to pointer-query.cc.
+	(maybe_warn_alloc_args_overflow): Move to gimple-ssa-warn-access.cc.
+	(get_attr_nonstring_decl): Move to tree.c.
+	(fntype_argno_type): Move to gimple-ssa-warn-access.cc.
+	(append_attrname): Same.
+	(maybe_warn_rdwr_sizes): Same.
+	(initialize_argument_information): Move code to
+	gimple-ssa-warn-access.cc.
+	* calls.h (maybe_warn_alloc_args_overflow): Move to
+	gimple-ssa-warn-access.h.
+	(get_attr_nonstring_decl): Move to tree.h.
+	(maybe_warn_nonstring_arg):  Move to gimple-ssa-warn-access.h.
+	(enum size_range_flags): Move to pointer-query.h.
+	(get_size_range): Same.
+	* gimple-ssa-warn-access.cc (has_location): Remove unused overload
+	to avoid Clang -Wunused-function.
+	(get_size_range): Declare static.
+	(maybe_emit_free_warning): Rename...
+	(maybe_check_dealloc_call): ...to this for consistency.
+	(class pass_waccess): Add members.
+	(pass_waccess::~pass_waccess): Defined.
+	(alloc_max_size): Move here from calls.c.
+	(maybe_warn_alloc_args_overflow): Same.
+	(check_alloca): New function.
+	(check_alloc_size_call): New function.
+	(check_strncat): Handle another warning flag.
+	(pass_waccess::check_builtin): Handle alloca.
+	(fntype_argno_type): Move here from calls.c.
+	(append_attrname): Same.
+	(maybe_warn_rdwr_sizes): Same.
+	(pass_waccess::check_call): Define.
+	(check_nonstring_args): New function.
+	(pass_waccess::check): Call new member functions.
+	(pass_waccess::execute): Enable ranger.
+	* gimple-ssa-warn-access.h (get_size_range): Move here from calls.h.
+	(maybe_warn_nonstring_arg): Same.
+	* gimple-ssa-warn-restrict.c: Remove #include.
+	* pointer-query.cc (get_size_range): Move here from calls.c.
+	* pointer-query.h (enum size_range_flags): Same.
+	(get_size_range): Same.
+	* tree.c (get_attr_nonstring_decl): Move here from calls.c.
+	* tree.h (get_attr_nonstring_decl): Move here from calls.h.
+
+2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* ggc.h (ggc_collect): Add 'force_collect' parameter.
+	* ggc-page.c (ggc_collect): Use that one instead of global
+	'ggc_force_collect'.  Adjust all users.
+	* doc/gty.texi (Invoking the garbage collector): Update.
+	* ggc-internal.h (ggc_force_collect): Remove.
+	* ggc-common.c (ggc_force_collect): Likewise.
+	* selftest.h (forcibly_ggc_collect): Remove.
+	* ggc-tests.c (selftest::forcibly_ggc_collect): Likewise.
+	* read-rtl-function.c (test_loading_labels): Adjust.
+	* selftest-run-tests.c (run_tests): Likewise.
+
+2021-08-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_file_end): Reset and reclaim the
+	section names table at the end of compile.
+
+2021-08-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/100340
+	* config.in: Regenerate.
+	* config/i386/darwin.h (EXTRA_ASM_OPTS): New
+	(ASM_SPEC): Pass options to disable branch shortening where
+	needed.
+	* configure: Regenerate.
+	* configure.ac: Detect versions of 'as' that support the
+	optimisation which has the bug.
+
+2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	* optabs-query.c (supports_vec_gather_load_p): Also check
+	for masked optabs.
+	(supports_vec_scatter_store_p): Likewise.
+	* tree-vect-data-refs.c (vect_gather_scatter_fn_p): Fall
+	back to masked variants if non-masked are not supported.
+	* tree-vect-patterns.c (vect_recog_gather_scatter_pattern):
+	When we need to use masked gather/scatter but do not have
+	a mask set up a constant true one.
+	* tree-vect-stmts.c (vect_check_scalar_mask): Also allow
+	non-SSA_NAME masks.
+
+2021-08-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-ssa-ccp.c (bit_value_binop) [MINUS_EXPR]: Use same
+	algorithm as PLUS_EXPR to improve subtraction bit bounds.
+	[POINTER_DIFF_EXPR]: Treat as synonymous with MINUS_EXPR.
+
+2021-08-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-ssa-ccp.c (bit_value_mult_const): New helper function to
+	calculate the mask-value pair result of a multiplication by an
+	unsigned constant.
+	(bit_value_binop) [MULT_EXPR]:  Call it from here for
+	multiplications by (sparse) non-negative constants.
+
+2021-08-17  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR target/100896
+	* config.gcc (gcc_cv_initfini_array): Leave undefined for
+	uclinuxfdpiceabi targets.
+
+2021-08-17  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-inline.c (maybe_move_debug_stmts_to_successors): Don't
+	reverse debug stmts.
+
+2021-08-17  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-cfg.c (dump_function_to_file): Use fun, not cfun.
+
+2021-08-17  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (__LD4_LANE_FUNC): Delete.
+	(__LD4Q_LANE_FUNC): Likewise.
+	(vld4_lane_u8): Define without macro.
+	(vld4_lane_u16): Likewise.
+	(vld4_lane_u32): Likewise.
+	(vld4_lane_u64): Likewise.
+	(vld4_lane_s8): Likewise.
+	(vld4_lane_s16): Likewise.
+	(vld4_lane_s32): Likewise.
+	(vld4_lane_s64): Likewise.
+	(vld4_lane_f16): Likewise.
+	(vld4_lane_f32): Likewise.
+	(vld4_lane_f64): Likewise.
+	(vld4_lane_p8): Likewise.
+	(vld4_lane_p16): Likewise.
+	(vld4_lane_p64): Likewise.
+	(vld4q_lane_u8): Likewise.
+	(vld4q_lane_u16): Likewise.
+	(vld4q_lane_u32): Likewise.
+	(vld4q_lane_u64): Likewise.
+	(vld4q_lane_s8): Likewise.
+	(vld4q_lane_s16): Likewise.
+	(vld4q_lane_s32): Likewise.
+	(vld4q_lane_s64): Likewise.
+	(vld4q_lane_f16): Likewise.
+	(vld4q_lane_f32): Likewise.
+	(vld4q_lane_f64): Likewise.
+	(vld4q_lane_p8): Likewise.
+	(vld4q_lane_p16): Likewise.
+	(vld4q_lane_p64): Likewise.
+	(vld4_lane_bf16): Likewise.
+	(vld4q_lane_bf16): Likewise.
+
+2021-08-17  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (__LD3_LANE_FUNC): Delete.
+	(__LD3Q_LANE_FUNC): Delete.
+	(vld3_lane_u8): Define without macro.
+	(vld3_lane_u16): Likewise.
+	(vld3_lane_u32): Likewise.
+	(vld3_lane_u64): Likewise.
+	(vld3_lane_s8): Likewise.
+	(vld3_lane_s16): Likewise.
+	(vld3_lane_s32): Likewise.
+	(vld3_lane_s64): Likewise.
+	(vld3_lane_f16): Likewise.
+	(vld3_lane_f32): Likewise.
+	(vld3_lane_f64): Likewise.
+	(vld3_lane_p8): Likewise.
+	(vld3_lane_p16): Likewise.
+	(vld3_lane_p64): Likewise.
+	(vld3q_lane_u8): Likewise.
+	(vld3q_lane_u16): Likewise.
+	(vld3q_lane_u32): Likewise.
+	(vld3q_lane_u64): Likewise.
+	(vld3q_lane_s8): Likewise.
+	(vld3q_lane_s16): Likewise.
+	(vld3q_lane_s32): Likewise.
+	(vld3q_lane_s64): Likewise.
+	(vld3q_lane_f16): Likewise.
+	(vld3q_lane_f32): Likewise.
+	(vld3q_lane_f64): Likewise.
+	(vld3q_lane_p8): Likewise.
+	(vld3q_lane_p16): Likewise.
+	(vld3q_lane_p64): Likewise.
+	(vld3_lane_bf16): Likewise.
+	(vld3q_lane_bf16): Likewise.
+
+2021-08-17  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (__LD2_LANE_FUNC): Delete.
+	(__LD2Q_LANE_FUNC): Likewise.
+	(vld2_lane_u8): Define without macro.
+	(vld2_lane_u16): Likewise.
+	(vld2_lane_u32): Likewise.
+	(vld2_lane_u64): Likewise.
+	(vld2_lane_s8): Likewise.
+	(vld2_lane_s16): Likewise.
+	(vld2_lane_s32): Likewise.
+	(vld2_lane_s64): Likewise.
+	(vld2_lane_f16): Likewise.
+	(vld2_lane_f32): Likewise.
+	(vld2_lane_f64): Likewise.
+	(vld2_lane_p8): Likewise.
+	(vld2_lane_p16): Likewise.
+	(vld2_lane_p64): Likewise.
+	(vld2q_lane_u8): Likewise.
+	(vld2q_lane_u16): Likewise.
+	(vld2q_lane_u32): Likewise.
+	(vld2q_lane_u64): Likewise.
+	(vld2q_lane_s8): Likewise.
+	(vld2q_lane_s16): Likewise.
+	(vld2q_lane_s32): Likewise.
+	(vld2q_lane_s64): Likewise.
+	(vld2q_lane_f16): Likewise.
+	(vld2q_lane_f32): Likewise.
+	(vld2q_lane_f64): Likewise.
+	(vld2q_lane_p8): Likewise.
+	(vld2q_lane_p16): Likewise.
+	(vld2q_lane_p64): Likewise.
+	(vld2_lane_bf16): Likewise.
+	(vld2q_lane_bf16): Likewise.
+
+2021-08-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* haifa-sched.c (advance_one_cycle): Output more context-synchronization
+	lines for diff.
+
+2021-08-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* haifa-sched.c (enum rfs_decision, rfs_str): Add RFS_AUTOPREF.
+	(rank_for_schedule): Use it.
+
+2021-08-17  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	PR rtl-optimization/91598
+	* haifa-sched.c (autopref_rank_for_schedule): Prioritize "irrelevant"
+	insns after memory reads and before memory writes.
+
+2021-08-17  Alistair_Lee  <alistair.lee@arm.com>
+
+	* rtl.h (CONST_VECTOR_P): New macro.
+	* config/aarch64/aarch64.c (aarch64_get_sve_pred_bits): Use RTL
+	code testing macros.
+	(aarch64_ptrue_all_mode): Likewise.
+	(aarch64_expand_mov_immediate): Likewise.
+	(aarch64_const_vec_all_in_range_p): Likewise.
+	(aarch64_rtx_costs): Likewise.
+	(aarch64_legitimate_constant_p): Likewise.
+	(aarch64_simd_valid_immediate): Likewise.
+	(aarch64_simd_make_constant): Likewise.
+	(aarch64_convert_mult_to_shift): Likewise.
+	(aarch64_expand_sve_vec_perm): Likewise.
+	(aarch64_vec_fpconst_pow_of_2): Likewise.
+
+2021-08-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/101938
+	* range-op.cc (operator_abs::op1_range): Special case
+	-TYPE_MIN_VALUE for flag_wrapv.
+
+2021-08-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-slp.c (vectorizable_bb_reduc_epilogue): Add the cost for
+	value extraction.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (OMP_SCOPE): New tree code.
+	* tree.h (OMP_SCOPE_BODY, OMP_SCOPE_CLAUSES): Define.
+	* tree-nested.c (convert_nonlocal_reference_stmt,
+	convert_local_reference_stmt, convert_gimple_call): Handle
+	GIMPLE_OMP_SCOPE.
+	* tree-pretty-print.c (dump_generic_node): Handle OMP_SCOPE.
+	* gimple.def (GIMPLE_OMP_SCOPE): New gimple code.
+	* gimple.c (gimple_build_omp_scope): New function.
+	(gimple_copy): Handle GIMPLE_OMP_SCOPE.
+	* gimple.h (gimple_build_omp_scope): Declare.
+	(gimple_has_substatements): Handle GIMPLE_OMP_SCOPE.
+	(gimple_omp_scope_clauses, gimple_omp_scope_clauses_ptr,
+	gimple_omp_scope_set_clauses): New inline functions.
+	(CASE_GIMPLE_OMP): Add GIMPLE_OMP_SCOPE.
+	* gimple-pretty-print.c (dump_gimple_omp_scope): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_SCOPE.
+	* gimple-walk.c (walk_gimple_stmt): Likewise.
+	* gimple-low.c (lower_stmt): Likewise.
+	* gimplify.c (is_gimple_stmt): Handle OMP_MASTER.
+	(gimplify_scan_omp_clauses): For task reductions, handle OMP_SCOPE
+	like ORT_WORKSHARE constructs.  Adjust diagnostics for %<scope%>
+	allowing task reductions.  Reject inscan reductions on scope.
+	(omp_find_stores_stmt): Handle GIMPLE_OMP_SCOPE.
+	(gimplify_omp_workshare, gimplify_expr): Handle OMP_SCOPE.
+	* tree-inline.c (remap_gimple_stmt): Handle GIMPLE_OMP_SCOPE.
+	(estimate_num_insns): Likewise.
+	* omp-low.c (build_outer_var_ref): Look through GIMPLE_OMP_SCOPE
+	contexts if var isn't privatized there.
+	(check_omp_nesting_restrictions): Handle GIMPLE_OMP_SCOPE.
+	(scan_omp_1_stmt): Likewise.
+	(maybe_add_implicit_barrier_cancel): Look through outer
+	scope constructs.
+	(lower_omp_scope): New function.
+	(lower_omp_task_reductions): Handle OMP_SCOPE.
+	(lower_omp_1): Handle GIMPLE_OMP_SCOPE.
+	(diagnose_sb_1, diagnose_sb_2): Likewise.
+	* omp-expand.c (expand_omp_single): Support also GIMPLE_OMP_SCOPE.
+	(expand_omp): Handle GIMPLE_OMP_SCOPE.
+	(omp_make_gimple_edges): Likewise.
+	* omp-builtins.def (BUILT_IN_GOMP_SCOPE_START): New built-in.
+
+2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101925
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Set
+	reverse on COMPONENT_REF and ARRAY_REF according to
+	what reverse_storage_order_for_component_p does.
+	(vn_reference_eq): Compare reversed on reference ops.
+	(reverse_storage_order_for_component_p): New overload.
+	(vn_reference_lookup_3): Check reverse_storage_order_for_component_p
+	on the reference looked up.
+
+2021-08-17  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config/h8300/h8300.c (shift_alg_si): Avoid loops for most SImode
+	shifts on the H8/S.
+	(h8300_option_override): Use loops on H8/S more often when optimizing
+	for size.
+	(get_shift_alg): Handle new "special" cases on H8/S.  Simplify
+	accordingly.  Handle various arithmetic right shifts with special
+	sequences that we couldn't handle before.
+
 2021-08-16  Jeff Law  <jlaw@localhost.localdomain>
 
 	* config.gcc (rl78-*-elf*): Do not include dbxelf.h.
