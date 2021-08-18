@@ -3445,38 +3445,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   __gnu_cxx::__ops::__iter_comp_iter(__comp));
     }
 
-  // N2722 + DR 915.
-  template<typename _Tp>
-    _GLIBCXX14_CONSTEXPR
-    inline _Tp
-    min(initializer_list<_Tp> __l)
-    { return *std::min_element(__l.begin(), __l.end()); }
-
-  template<typename _Tp, typename _Compare>
-    _GLIBCXX14_CONSTEXPR
-    inline _Tp
-    min(initializer_list<_Tp> __l, _Compare __comp)
-    { return *std::min_element(__l.begin(), __l.end(), __comp); }
-
-  template<typename _Tp>
-    _GLIBCXX14_CONSTEXPR
-    inline _Tp
-    max(initializer_list<_Tp> __l)
-    { return *std::max_element(__l.begin(), __l.end()); }
-
-  template<typename _Tp, typename _Compare>
-    _GLIBCXX14_CONSTEXPR
-    inline _Tp
-    max(initializer_list<_Tp> __l, _Compare __comp)
-    { return *std::max_element(__l.begin(), __l.end(), __comp); }
-
   template<typename _Tp>
     _GLIBCXX14_CONSTEXPR
     inline pair<_Tp, _Tp>
     minmax(initializer_list<_Tp> __l)
     {
+      __glibcxx_requires_irreflexive(__l.begin(), __l.end());
       pair<const _Tp*, const _Tp*> __p =
-	std::minmax_element(__l.begin(), __l.end());
+	std::__minmax_element(__l.begin(), __l.end(),
+			      __gnu_cxx::__ops::__iter_less_iter());
       return std::make_pair(*__p.first, *__p.second);
     }
 
@@ -3485,8 +3462,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline pair<_Tp, _Tp>
     minmax(initializer_list<_Tp> __l, _Compare __comp)
     {
+      __glibcxx_requires_irreflexive_pred(__l.begin(), __l.end(), __comp);
       pair<const _Tp*, const _Tp*> __p =
-	std::minmax_element(__l.begin(), __l.end(), __comp);
+	std::__minmax_element(__l.begin(), __l.end(),
+			      __gnu_cxx::__ops::__iter_comp_iter(__comp));
       return std::make_pair(*__p.first, *__p.second);
     }
 
@@ -3793,7 +3772,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
 	std::iter_swap(__i, __first + __d(__g, __p_type(0, __i - __first)));
     }
-#endif
+#endif // USE C99_STDINT
 
 #endif // C++11
 
@@ -5745,6 +5724,49 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       return _GLIBCXX_STD_A::__max_element(__first, __last,
 				__gnu_cxx::__ops::__iter_comp_iter(__comp));
     }
+
+#if __cplusplus >= 201103L
+  // N2722 + DR 915.
+  template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
+    inline _Tp
+    min(initializer_list<_Tp> __l)
+    {
+      __glibcxx_requires_irreflexive(__l.begin(), __l.end());
+      return *_GLIBCXX_STD_A::__min_element(__l.begin(), __l.end(),
+	  __gnu_cxx::__ops::__iter_less_iter());
+    }
+
+  template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
+    inline _Tp
+    min(initializer_list<_Tp> __l, _Compare __comp)
+    {
+      __glibcxx_requires_irreflexive_pred(__l.begin(), __l.end(), __comp);
+      return *_GLIBCXX_STD_A::__min_element(__l.begin(), __l.end(),
+	  __gnu_cxx::__ops::__iter_comp_iter(__comp));
+    }
+
+  template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
+    inline _Tp
+    max(initializer_list<_Tp> __l)
+    {
+      __glibcxx_requires_irreflexive(__l.begin(), __l.end());
+      return *_GLIBCXX_STD_A::__max_element(__l.begin(), __l.end(),
+	  __gnu_cxx::__ops::__iter_less_iter());
+    }
+
+  template<typename _Tp, typename _Compare>
+    _GLIBCXX14_CONSTEXPR
+    inline _Tp
+    max(initializer_list<_Tp> __l, _Compare __comp)
+    {
+      __glibcxx_requires_irreflexive_pred(__l.begin(), __l.end(), __comp);
+      return *_GLIBCXX_STD_A::__max_element(__l.begin(), __l.end(),
+	  __gnu_cxx::__ops::__iter_comp_iter(__comp));
+    }
+#endif // C++11
 
 #if __cplusplus >= 201402L
   /// Reservoir sampling algorithm.
