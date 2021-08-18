@@ -1,3 +1,18 @@
+2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/pr78213.c: Restore testing.
+
+2021-08-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100305
+	* gcc.c-torture/compile/pr100305.c: New test.
+
 2021-08-13  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/100788

@@ -1,3 +1,22 @@
+2021-08-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-08-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Document -mtune=neoverse-512tvb and
+	-mcpu=neoverse-512tvb.
+	* config/aarch64/aarch64-cores.def (neoverse-512tvb): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2021-08-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100305
+	* config/aarch64/constraints.md (Utq): Require the address to
+	be valid for both the element mode and for V2DImode.
+
 2021-08-13  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/100788
