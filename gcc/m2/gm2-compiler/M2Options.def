@@ -36,7 +36,7 @@ FROM m2linemap IMPORT location_t ;
 
 EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetCheckAll, SetVerboseUnbounded, SetQuiet, SetCpp, GetCpp,
-                 SetMakeall, SetMakeall0, SetIncludePath, SetAutoInit,
+                 (* SetMakeall, SetMakeall0, SetIncludePath, *) SetAutoInit,
                  SetUnboundedByReference,
                  SetSearchPath, SetISO, SetPIM, SetPIM2, SetPIM3, SetPIM4,
                  SetPositiveModFloor, SetCompilerDebugging, SetExceptions,
@@ -264,23 +264,23 @@ PROCEDURE SetLowerCaseKeywords (value: BOOLEAN) : BOOLEAN ;
 
 (*
    SetMakeall -
-*)
 
 PROCEDURE SetMakeall (value: BOOLEAN) : BOOLEAN ;
+*)
 
 
 (*
    SetMakeall0 -
-*)
 
 PROCEDURE SetMakeall0 (value: BOOLEAN) : BOOLEAN ;
+*)
 
 
 (*
    SetIncludePath -
-*)
 
 PROCEDURE SetIncludePath (arg: ADDRESS) : BOOLEAN ;
+*)
 
 
 (*

@@ -426,34 +426,34 @@ END SetVerbose ;
 
 (*
    SetMakeall -
-*)
 
 PROCEDURE SetMakeall (value: BOOLEAN) : BOOLEAN ;
 BEGIN
    (* value is unused *)
    RETURN( TRUE )
 END SetMakeall ;
+*)
 
 
 (*
    SetMakeall0 -
-*)
 
 PROCEDURE SetMakeall0 (value: BOOLEAN) : BOOLEAN ;
 BEGIN
    (* value is unused *)
    RETURN( TRUE )
 END SetMakeall0 ;
+*)
 
 
 (*
    SetIncludePath -
-*)
 
 PROCEDURE SetIncludePath (arg: ADDRESS) : BOOLEAN ;
 BEGIN
    RETURN( TRUE )
 END SetIncludePath ;
+*)
 
 
 (*
@@ -987,11 +987,11 @@ END SetWholeValueCheck ;
 
 PROCEDURE SetWall (value: BOOLEAN) ;
 BEGIN
-   UnusedVariableChecking  := TRUE ;
-   UnusedParameterChecking := TRUE ;
-   PedanticCast := TRUE ;
-   PedanticParamNames := TRUE ;
-   StudentChecking := TRUE
+   UnusedVariableChecking  := value ;
+   UnusedParameterChecking := value ;
+   PedanticCast := value ;
+   PedanticParamNames := value ;
+   StudentChecking := value
 END SetWall ;
 
 

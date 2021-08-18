@@ -64,7 +64,7 @@ BEGIN
    IF i < ArgC
    THEN
       (* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ; *)
-      ppc := ADDRESS (ArgV + (i*TSIZE(PtrToChar))) ;
+      ppc := ADDRESS (PtrToChar (ArgV) + (i * TSIZE (PtrToChar))) ;
       s   := InitStringCharStar (ppc^) ;
 
       RETURN TRUE
