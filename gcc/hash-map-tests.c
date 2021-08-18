@@ -328,11 +328,22 @@ test_map_of_type_with_ctor_and_dtor_expand (bool remove_some_inline)
   size_t expand_c_expected = 4;
   size_t expand_c = 0;
 
-  void *a[N_elem];
-  for (size_t i = 0; i < N_elem; ++i)
-    a[i] = &a[i];
+  /* For stability of this testing, we need all Key values 'k' to produce
+     unique hash values 'Traits::hash (k)', as otherwise the dynamic
+     insert/remove behavior may diverge across different architectures.  This
+     is, for example, a problem when using the standard 'pointer_hash::hash',
+     which is simply doing a 'k >> 3' operation, which is fine on 64-bit
+     architectures, but on 32-bit architectures produces the same hash value
+     for subsequent 'a[i] = &a[i]' array elements.  Therefore, use an
+     'int_hash'.  */
 
-  typedef hash_map <void *, val_t> Map;
+  int a[N_elem];
+  for (size_t i = 0; i < N_elem; ++i)
+    a[i] = i;
+
+  const int EMPTY = -1;
+  const int DELETED = -2;
+  typedef hash_map<int_hash<int, EMPTY, DELETED>, val_t> Map;
 
   /* Note that we are starting with a fresh 'Map'.  Even if an existing one has
      been cleared out completely, there remain 'deleted' elements, and these
