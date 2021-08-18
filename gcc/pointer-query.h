@@ -230,6 +230,17 @@ struct access_data
   access_mode mode;
 };
 
+enum size_range_flags
+  {
+   /* Set to consider zero a valid range.  */
+   SR_ALLOW_ZERO = 1,
+   /* Set to use the largest subrange of a set of ranges as opposed
+      to the smallest.  */
+   SR_USE_LARGEST = 2
+  };
+extern bool get_size_range (tree, tree[2], int = 0);
+extern bool get_size_range (range_query *, tree, gimple *, tree[2], int = 0);
+
 class range_query;
 extern tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
 				    range_query * = NULL);

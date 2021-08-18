@@ -20,6 +20,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -36,6 +37,7 @@
 #include "fold-const.h"
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
+#include "langhooks.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-cfg.h"
@@ -49,14 +51,6 @@
 #include "attribs.h"
 #include "demangle.h"
 #include "pointer-query.h"
-
-/* Return true if STMT has an associated location.  */
-
-static inline location_t
-has_location (const gimple *stmt)
-{
-  return gimple_has_location (stmt);
-}
 
 /* Return true if tree node X has an associated location.  */
 
@@ -1177,7 +1171,7 @@ warn_for_access (location_t loc, tree func, tree expr, int opt,
 /* Helper to set RANGE to the range of BOUND if it's nonnull, bounded
    by BNDRNG if nonnull and valid.  */
 
-void
+static void
 get_size_range (tree bound, tree range[2], const offset_int bndrng[2])
 {
   if (bound)
@@ -2105,14 +2099,14 @@ warn_dealloc_offset (location_t loc, gimple *call, const access_ref &aref)
    form of C++ operatorn new.  */
 
 static void
-maybe_emit_free_warning (gcall *call)
+maybe_check_dealloc_call (gcall *call)
 {
   tree fndecl = gimple_call_fndecl (call);
   if (!fndecl)
     return;
 
   unsigned argno = fndecl_dealloc_argno (fndecl);
-  if ((unsigned) gimple_call_num_args (call) <= argno)
+  if ((unsigned) call_nargs (call) <= argno)
     return;
 
   tree ptr = gimple_call_arg (call, argno);
@@ -2246,9 +2240,9 @@ const pass_data pass_data_waccess = {
 class pass_waccess : public gimple_opt_pass
 {
  public:
-  pass_waccess (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_waccess, ctxt), m_ranger ()
-    { }
+  pass_waccess (gcc::context *);
+
+  ~pass_waccess ();
 
   opt_pass *clone () { return new pass_waccess (m_ctxt); }
 
@@ -2258,6 +2252,9 @@ class pass_waccess : public gimple_opt_pass
   /* Check a call to a built-in function.  */
   bool check_builtin (gcall *);
 
+  /* Check a call to an ordinary function.  */
+  bool check_call (gcall *);
+
   /* Check statements in a basic block.  */
   void check (basic_block);
 
@@ -2265,8 +2262,34 @@ class pass_waccess : public gimple_opt_pass
  void check (gcall *);
 
 private:
+  /* Not copyable or assignable.  */
+  pass_waccess (pass_waccess &) = delete;
+  void operator= (pass_waccess &) = delete;
+
+  /* A pointer_query object and its cache to store information about
+     pointers and their targets in.  */
+  pointer_query ptr_qry;
+  pointer_query::cache_type var_cache;
+
   gimple_ranger *m_ranger;
 };
+
+/* Construct the pass.  */
+
+pass_waccess::pass_waccess (gcc::context *ctxt)
+  : gimple_opt_pass (pass_data_waccess, ctxt),
+    ptr_qry (m_ranger, &var_cache),
+    var_cache (),
+    m_ranger ()
+{
+}
+
+/* Release pointer_query cache.  */
+
+pass_waccess::~pass_waccess ()
+{
+  ptr_qry.flush_cache ();
+}
 
 /* Return true when any checks performed by the pass are enabled.  */
 
@@ -2278,12 +2301,256 @@ pass_waccess::gate (function *)
 	  || warn_mismatched_new_delete);
 }
 
+/* Initialize ALLOC_OBJECT_SIZE_LIMIT based on the -Walloc-size-larger-than=
+   setting if the option is specified, or to the maximum object size if it
+   is not.  Return the initialized value.  */
+
+static tree
+alloc_max_size (void)
+{
+  HOST_WIDE_INT limit = warn_alloc_size_limit;
+  if (limit == HOST_WIDE_INT_MAX)
+    limit = tree_to_shwi (TYPE_MAX_VALUE (ptrdiff_type_node));
+
+  return build_int_cst (size_type_node, limit);
+}
+
+/* Diagnose a call EXP to function FN decorated with attribute alloc_size
+   whose argument numbers given by IDX with values given by ARGS exceed
+   the maximum object size or cause an unsigned oveflow (wrapping) when
+   multiplied.  FN is null when EXP is a call via a function pointer.
+   When ARGS[0] is null the function does nothing.  ARGS[1] may be null
+   for functions like malloc, and non-null for those like calloc that
+   are decorated with a two-argument attribute alloc_size.  */
+
+void
+maybe_warn_alloc_args_overflow (gimple *stmt, const tree args[2],
+				const int idx[2])
+{
+  /* The range each of the (up to) two arguments is known to be in.  */
+  tree argrange[2][2] = { { NULL_TREE, NULL_TREE }, { NULL_TREE, NULL_TREE } };
+
+  /* Maximum object size set by -Walloc-size-larger-than= or SIZE_MAX / 2.  */
+  tree maxobjsize = alloc_max_size ();
+
+  location_t loc = get_location (stmt);
+
+  tree fn = gimple_call_fndecl (stmt);
+  tree fntype = fn ? TREE_TYPE (fn) : gimple_call_fntype (stmt);
+  bool warned = false;
+
+  /* Validate each argument individually.  */
+  for (unsigned i = 0; i != 2 && args[i]; ++i)
+    {
+      if (TREE_CODE (args[i]) == INTEGER_CST)
+	{
+	  argrange[i][0] = args[i];
+	  argrange[i][1] = args[i];
+
+	  if (tree_int_cst_lt (args[i], integer_zero_node))
+	    {
+	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+				   "argument %i value %qE is negative",
+				   idx[i] + 1, args[i]);
+	    }
+	  else if (integer_zerop (args[i]))
+	    {
+	      /* Avoid issuing -Walloc-zero for allocation functions other
+		 than __builtin_alloca that are declared with attribute
+		 returns_nonnull because there's no portability risk.  This
+		 avoids warning for such calls to libiberty's xmalloc and
+		 friends.
+		 Also avoid issuing the warning for calls to function named
+		 "alloca".  */
+	      if (fn && fndecl_built_in_p (fn, BUILT_IN_ALLOCA)
+		  ? IDENTIFIER_LENGTH (DECL_NAME (fn)) != 6
+		  : !lookup_attribute ("returns_nonnull",
+				       TYPE_ATTRIBUTES (fntype)))
+		warned = warning_at (loc, OPT_Walloc_zero,
+				     "argument %i value is zero",
+				     idx[i] + 1);
+	    }
+	  else if (tree_int_cst_lt (maxobjsize, args[i]))
+	    {
+	      /* G++ emits calls to ::operator new[](SIZE_MAX) in C++98
+		 mode and with -fno-exceptions as a way to indicate array
+		 size overflow.  There's no good way to detect C++98 here
+		 so avoid diagnosing these calls for all C++ modes.  */
+	      if (i == 0
+		  && fn
+		  && !args[1]
+		  && lang_GNU_CXX ()
+		  && DECL_IS_OPERATOR_NEW_P (fn)
+		  && integer_all_onesp (args[i]))
+		continue;
+
+	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+				   "argument %i value %qE exceeds "
+				   "maximum object size %E",
+				   idx[i] + 1, args[i], maxobjsize);
+	    }
+	}
+      else if (TREE_CODE (args[i]) == SSA_NAME
+	       && get_size_range (args[i], argrange[i]))
+	{
+	  /* Verify that the argument's range is not negative (including
+	     upper bound of zero).  */
+	  if (tree_int_cst_lt (argrange[i][0], integer_zero_node)
+	      && tree_int_cst_le (argrange[i][1], integer_zero_node))
+	    {
+	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+				   "argument %i range [%E, %E] is negative",
+				   idx[i] + 1,
+				   argrange[i][0], argrange[i][1]);
+	    }
+	  else if (tree_int_cst_lt (maxobjsize, argrange[i][0]))
+	    {
+	      warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+				   "argument %i range [%E, %E] exceeds "
+				   "maximum object size %E",
+				   idx[i] + 1,
+				   argrange[i][0], argrange[i][1],
+				   maxobjsize);
+	    }
+	}
+    }
+
+  if (!argrange[0])
+    return;
+
+  /* For a two-argument alloc_size, validate the product of the two
+     arguments if both of their values or ranges are known.  */
+  if (!warned && tree_fits_uhwi_p (argrange[0][0])
+      && argrange[1][0] && tree_fits_uhwi_p (argrange[1][0])
+      && !integer_onep (argrange[0][0])
+      && !integer_onep (argrange[1][0]))
+    {
+      /* Check for overflow in the product of a function decorated with
+	 attribute alloc_size (X, Y).  */
+      unsigned szprec = TYPE_PRECISION (size_type_node);
+      wide_int x = wi::to_wide (argrange[0][0], szprec);
+      wide_int y = wi::to_wide (argrange[1][0], szprec);
+
+      wi::overflow_type vflow;
+      wide_int prod = wi::umul (x, y, &vflow);
+
+      if (vflow)
+	warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+			     "product %<%E * %E%> of arguments %i and %i "
+			     "exceeds %<SIZE_MAX%>",
+			     argrange[0][0], argrange[1][0],
+			     idx[0] + 1, idx[1] + 1);
+      else if (wi::ltu_p (wi::to_wide (maxobjsize, szprec), prod))
+	warned = warning_at (loc, OPT_Walloc_size_larger_than_,
+			     "product %<%E * %E%> of arguments %i and %i "
+			     "exceeds maximum object size %E",
+			     argrange[0][0], argrange[1][0],
+			     idx[0] + 1, idx[1] + 1,
+			     maxobjsize);
+
+      if (warned)
+	{
+	  /* Print the full range of each of the two arguments to make
+	     it clear when it is, in fact, in a range and not constant.  */
+	  if (argrange[0][0] != argrange [0][1])
+	    inform (loc, "argument %i in the range [%E, %E]",
+		    idx[0] + 1, argrange[0][0], argrange[0][1]);
+	  if (argrange[1][0] != argrange [1][1])
+	    inform (loc, "argument %i in the range [%E, %E]",
+		    idx[1] + 1, argrange[1][0], argrange[1][1]);
+	}
+    }
+
+  if (warned && fn)
+    {
+      location_t fnloc = DECL_SOURCE_LOCATION (fn);
+
+      if (DECL_IS_UNDECLARED_BUILTIN (fn))
+	inform (loc,
+		"in a call to built-in allocation function %qD", fn);
+      else
+	inform (fnloc,
+		"in a call to allocation function %qD declared here", fn);
+    }
+}
+
+/* Check a call to an alloca function for an excessive size.  */
+
+static void
+check_alloca (gimple *stmt)
+{
+  if ((warn_vla_limit >= HOST_WIDE_INT_MAX
+       && warn_alloc_size_limit < warn_vla_limit)
+      || (warn_alloca_limit >= HOST_WIDE_INT_MAX
+	  && warn_alloc_size_limit < warn_alloca_limit))
+    {
+      /* -Walloca-larger-than and -Wvla-larger-than settings of less
+	 than  HWI_MAX override the more general -Walloc-size-larger-than
+	 so unless either of the former options is smaller than the last
+	 one (wchich would imply that the call was already checked), check
+	 the alloca arguments for overflow.  */
+      const tree alloc_args[] = { call_arg (stmt, 0), NULL_TREE };
+      const int idx[] = { 0, -1 };
+      maybe_warn_alloc_args_overflow (stmt, alloc_args, idx);
+    }
+}
+
+/* Check a call to an allocation function for an excessive size.  */
+
+static void
+check_alloc_size_call (gimple *stmt)
+{
+  if (gimple_call_num_args (stmt) < 1)
+    /* Avoid invalid calls to functions without a prototype.  */
+    return;
+
+  tree fndecl = gimple_call_fndecl (stmt);
+  if (fndecl && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    {
+      /* Alloca is handled separately.  */
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_ALLOCA:
+	case BUILT_IN_ALLOCA_WITH_ALIGN:
+	case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX:
+	  return;
+	default:
+	  break;
+	}
+    }
+
+  tree fntype = gimple_call_fntype (stmt);
+  tree fntypeattrs = TYPE_ATTRIBUTES (fntype);
+
+  tree alloc_size = lookup_attribute ("alloc_size", fntypeattrs);
+  if (!alloc_size)
+    return;
+
+  /* Extract attribute alloc_size from the type of the called expression
+     (which could be a function or a function pointer) and if set, store
+     the indices of the corresponding arguments in ALLOC_IDX, and then
+     the actual argument(s) at those indices in ALLOC_ARGS.  */
+  int idx[2] = { -1, -1 };
+  tree alloc_args[] = { NULL_TREE, NULL_TREE };
+
+  tree args = TREE_VALUE (alloc_size);
+  idx[0] = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+  alloc_args[0] = call_arg (stmt, idx[0]);
+  if (TREE_CHAIN (args))
+    {
+      idx[1] = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+      alloc_args[1] = call_arg (stmt, idx[1]);
+    }
+
+  maybe_warn_alloc_args_overflow (stmt, alloc_args, idx);
+}
+
 /* Check a call STMT to strcat() for overflow and warn if it does.  */
 
 static void
 check_strcat (gimple *stmt)
 {
-  if (!warn_stringop_overflow)
+  if (!warn_stringop_overflow && !warn_stringop_overread)
     return;
 
   tree dest = call_arg (stmt, 0);
@@ -2308,7 +2575,7 @@ check_strcat (gimple *stmt)
 static void
 check_strncat (gimple *stmt)
 {
-  if (!warn_stringop_overflow)
+  if (!warn_stringop_overflow && !warn_stringop_overread)
     return;
 
   tree dest = call_arg (stmt, 0);
@@ -2537,6 +2804,12 @@ pass_waccess::check_builtin (gcall *stmt)
 
   switch (DECL_FUNCTION_CODE (callee))
     {
+    case BUILT_IN_ALLOCA:
+    case BUILT_IN_ALLOCA_WITH_ALIGN:
+    case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX:
+      check_alloca (stmt);
+      return true;
+
     case BUILT_IN_GETTEXT:
     case BUILT_IN_PUTS:
     case BUILT_IN_PUTS_UNLOCKED:
@@ -2639,16 +2912,384 @@ pass_waccess::check_builtin (gcall *stmt)
   return true;
 }
 
+/* Returns the type of the argument ARGNO to function with type FNTYPE
+   or null when the typoe cannot be determined or no such argument exists.  */
+
+static tree
+fntype_argno_type (tree fntype, unsigned argno)
+{
+  if (!prototype_p (fntype))
+    return NULL_TREE;
+
+  tree argtype;
+  function_args_iterator it;
+  FOREACH_FUNCTION_ARGS (fntype, argtype, it)
+    if (argno-- == 0)
+      return argtype;
+
+  return NULL_TREE;
+}
+
+/* Helper to append the "human readable" attribute access specification
+   described by ACCESS to the array ATTRSTR with size STRSIZE.  Used in
+   diagnostics.  */
+
+static inline void
+append_attrname (const std::pair<int, attr_access> &access,
+		 char *attrstr, size_t strsize)
+{
+  if (access.second.internal_p)
+    return;
+
+  tree str = access.second.to_external_string ();
+  gcc_assert (strsize >= (size_t) TREE_STRING_LENGTH (str));
+  strcpy (attrstr, TREE_STRING_POINTER (str));
+}
+
+/* Iterate over attribute access read-only, read-write, and write-only
+   arguments and diagnose past-the-end accesses and related problems
+   in the function call EXP.  */
+
+static void
+maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, gimple *stmt)
+{
+  auto_diagnostic_group adg;
+
+  /* Set if a warning has been issued for any argument (used to decide
+     whether to emit an informational note at the end).  */
+  opt_code opt_warned = no_warning;
+
+  /* A string describing the attributes that the warnings issued by this
+     function apply to.  Used to print one informational note per function
+     call, rather than one per warning.  That reduces clutter.  */
+  char attrstr[80];
+  attrstr[0] = 0;
+
+  for (rdwr_map::iterator it = rwm->begin (); it != rwm->end (); ++it)
+    {
+      std::pair<int, attr_access> access = *it;
+
+      /* Get the function call arguments corresponding to the attribute's
+	 positional arguments.  When both arguments have been specified
+	 there will be two entries in *RWM, one for each.  They are
+	 cross-referenced by their respective argument numbers in
+	 ACCESS.PTRARG and ACCESS.SIZARG.  */
+      const int ptridx = access.second.ptrarg;
+      const int sizidx = access.second.sizarg;
+
+      gcc_assert (ptridx != -1);
+      gcc_assert (access.first == ptridx || access.first == sizidx);
+
+      /* The pointer is set to null for the entry corresponding to
+	 the size argument.  Skip it.  It's handled when the entry
+	 corresponding to the pointer argument comes up.  */
+      if (!access.second.ptr)
+	continue;
+
+      tree ptrtype = fntype_argno_type (fntype, ptridx);
+      tree argtype = TREE_TYPE (ptrtype);
+
+      /* The size of the access by the call.  */
+      tree access_size;
+      if (sizidx == -1)
+	{
+	  /* If only the pointer attribute operand was specified and
+	     not size, set SIZE to the greater of MINSIZE or size of
+	     one element of the pointed to type to detect smaller
+	     objects (null pointers are diagnosed in this case only
+	     if the pointer is also declared with attribute nonnull.  */
+	  if (access.second.minsize
+	      && access.second.minsize != HOST_WIDE_INT_M1U)
+	    access_size = build_int_cstu (sizetype, access.second.minsize);
+	  else
+	    access_size = size_one_node;
+	}
+      else
+	access_size = rwm->get (sizidx)->size;
+
+      /* Format the value or range to avoid an explosion of messages.  */
+      char sizstr[80];
+      tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
+      if (get_size_range (access_size, sizrng, true))
+	{
+	  char *s0 = print_generic_expr_to_str (sizrng[0]);
+	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
+	    {
+	      gcc_checking_assert (strlen (s0) < sizeof sizstr);
+	      strcpy (sizstr, s0);
+	    }
+	  else
+	    {
+	      char *s1 = print_generic_expr_to_str (sizrng[1]);
+	      gcc_checking_assert (strlen (s0) + strlen (s1)
+				   < sizeof sizstr - 4);
+	      sprintf (sizstr, "[%s, %s]", s0, s1);
+	      free (s1);
+	    }
+	  free (s0);
+	}
+      else
+	*sizstr = '\0';
+
+      /* Set if a warning has been issued for the current argument.  */
+      opt_code arg_warned = no_warning;
+      location_t loc = get_location (stmt);
+      tree ptr = access.second.ptr;
+      if (*sizstr
+	  && tree_int_cst_sgn (sizrng[0]) < 0
+	  && tree_int_cst_sgn (sizrng[1]) < 0)
+	{
+	  /* Warn about negative sizes.  */
+	  if (access.second.internal_p)
+	    {
+	      const std::string argtypestr
+		= access.second.array_as_string (ptrtype);
+
+	      if (warning_at (loc, OPT_Wstringop_overflow_,
+			      "bound argument %i value %s is "
+			      "negative for a variable length array "
+			      "argument %i of type %s",
+			      sizidx + 1, sizstr,
+			      ptridx + 1, argtypestr.c_str ()))
+		arg_warned = OPT_Wstringop_overflow_;
+	    }
+	  else if (warning_at (loc, OPT_Wstringop_overflow_,
+			       "argument %i value %s is negative",
+			       sizidx + 1, sizstr))
+	    arg_warned = OPT_Wstringop_overflow_;
+
+	  if (arg_warned != no_warning)
+	    {
+	      append_attrname (access, attrstr, sizeof attrstr);
+	      /* Remember a warning has been issued and avoid warning
+		 again below for the same attribute.  */
+	      opt_warned = arg_warned;
+	      continue;
+	    }
+	}
+
+      if (tree_int_cst_sgn (sizrng[0]) >= 0)
+	{
+	  if (COMPLETE_TYPE_P (argtype))
+	    {
+	      /* Multiply ACCESS_SIZE by the size of the type the pointer
+		 argument points to.  If it's incomplete the size is used
+		 as is.  */
+	      if (tree argsize = TYPE_SIZE_UNIT (argtype))
+		if (TREE_CODE (argsize) == INTEGER_CST)
+		  {
+		    const int prec = TYPE_PRECISION (sizetype);
+		    wide_int minsize = wi::to_wide (sizrng[0], prec);
+		    minsize *= wi::to_wide (argsize, prec);
+		    access_size = wide_int_to_tree (sizetype, minsize);
+		  }
+	    }
+	}
+      else
+	access_size = NULL_TREE;
+
+      if (integer_zerop (ptr))
+	{
+	  if (sizidx >= 0 && tree_int_cst_sgn (sizrng[0]) > 0)
+	    {
+	      /* Warn about null pointers with positive sizes.  This is
+		 different from also declaring the pointer argument with
+		 attribute nonnull when the function accepts null pointers
+		 only when the corresponding size is zero.  */
+	      if (access.second.internal_p)
+		{
+		  const std::string argtypestr
+		    = access.second.array_as_string (ptrtype);
+
+		  if (warning_at (loc, OPT_Wnonnull,
+				  "argument %i of variable length "
+				  "array %s is null but "
+				  "the corresponding bound argument "
+				  "%i value is %s",
+				  ptridx + 1, argtypestr.c_str (),
+				  sizidx + 1, sizstr))
+		    arg_warned = OPT_Wnonnull;
+		}
+	      else if (warning_at (loc, OPT_Wnonnull,
+				   "argument %i is null but "
+				   "the corresponding size argument "
+				   "%i value is %s",
+				   ptridx + 1, sizidx + 1, sizstr))
+		arg_warned = OPT_Wnonnull;
+	    }
+	  else if (access_size && access.second.static_p)
+	    {
+	      /* Warn about null pointers for [static N] array arguments
+		 but do not warn for ordinary (i.e., nonstatic) arrays.  */
+	      if (warning_at (loc, OPT_Wnonnull,
+			      "argument %i to %<%T[static %E]%> "
+			      "is null where non-null expected",
+			      ptridx + 1, argtype, access_size))
+		arg_warned = OPT_Wnonnull;
+	    }
+
+	  if (arg_warned != no_warning)
+	    {
+	      append_attrname (access, attrstr, sizeof attrstr);
+	      /* Remember a warning has been issued and avoid warning
+		 again below for the same attribute.  */
+	      opt_warned = OPT_Wnonnull;
+	      continue;
+	    }
+	}
+
+      access_data data (ptr, access.second.mode, NULL_TREE, false,
+			NULL_TREE, false);
+      access_ref* const pobj = (access.second.mode == access_write_only
+				? &data.dst : &data.src);
+      tree objsize = compute_objsize (ptr, 1, pobj);
+
+      /* The size of the destination or source object.  */
+      tree dstsize = NULL_TREE, srcsize = NULL_TREE;
+      if (access.second.mode == access_read_only
+	  || access.second.mode == access_none)
+	{
+	  /* For a read-only argument there is no destination.  For
+	     no access, set the source as well and differentiate via
+	     the access flag below.  */
+	  srcsize = objsize;
+	  if (access.second.mode == access_read_only
+	      || access.second.mode == access_none)
+	    {
+	      /* For a read-only attribute there is no destination so
+		 clear OBJSIZE.  This emits "reading N bytes" kind of
+		 diagnostics instead of the "writing N bytes" kind,
+		 unless MODE is none.  */
+	      objsize = NULL_TREE;
+	    }
+	}
+      else
+	dstsize = objsize;
+
+      /* Clear the no-warning bit in case it was set by check_access
+	 in a prior iteration so that accesses via different arguments
+	 are diagnosed.  */
+      suppress_warning (stmt, OPT_Wstringop_overflow_, false);
+      access_mode mode = data.mode;
+      if (mode == access_deferred)
+	mode = TYPE_READONLY (argtype) ? access_read_only : access_read_write;
+      check_access (stmt, access_size, /*maxread=*/ NULL_TREE, srcsize,
+		    dstsize, mode, &data);
+
+      if (warning_suppressed_p (stmt, OPT_Wstringop_overflow_))
+	opt_warned = OPT_Wstringop_overflow_;
+      if (opt_warned != no_warning)
+	{
+	  if (access.second.internal_p)
+	    inform (loc, "referencing argument %u of type %qT",
+		    ptridx + 1, ptrtype);
+	  else
+	    /* If check_access issued a warning above, append the relevant
+	       attribute to the string.  */
+	    append_attrname (access, attrstr, sizeof attrstr);
+	}
+    }
+
+  if (*attrstr)
+    {
+      if (fndecl)
+	inform (get_location (fndecl),
+		"in a call to function %qD declared with attribute %qs",
+		fndecl, attrstr);
+      else
+	inform (get_location (stmt),
+		"in a call with type %qT and attribute %qs",
+		fntype, attrstr);
+    }
+  else if (opt_warned != no_warning)
+    {
+      if (fndecl)
+	inform (get_location (fndecl),
+		"in a call to function %qD", fndecl);
+      else
+	inform (get_location (stmt),
+		"in a call with type %qT", fntype);
+    }
+
+  /* Set the bit in case if was cleared and not set above.  */
+  if (opt_warned != no_warning)
+    suppress_warning (stmt, opt_warned);
+}
+
+/* Check call STMT to an ordinary (non-built-in) function for invalid
+   accesses.  Return true if a call has been handled.  */
+
+bool
+pass_waccess::check_call (gcall *stmt)
+{
+  tree fntype = gimple_call_fntype (stmt);
+  if (!fntype)
+    return false;
+
+  tree fntypeattrs = TYPE_ATTRIBUTES (fntype);
+  if (!fntypeattrs)
+    return false;
+
+  /* Map of attribute accewss specifications for function arguments.  */
+  rdwr_map rdwr_idx;
+  init_attr_rdwr_indices (&rdwr_idx, fntypeattrs);
+
+  unsigned nargs = call_nargs (stmt);
+  for (unsigned i = 0; i != nargs; ++i)
+    {
+      tree arg = call_arg (stmt, i);
+
+      /* Save the actual argument that corresponds to the access attribute
+	 operand for later processing.  */
+      if (attr_access *access = rdwr_idx.get (i))
+	{
+	  if (POINTER_TYPE_P (TREE_TYPE (arg)))
+	    {
+	      access->ptr = arg;
+	      // A nonnull ACCESS->SIZE contains VLA bounds.  */
+	    }
+	  else
+	    {
+	      access->size = arg;
+	      gcc_assert (access->ptr == NULL_TREE);
+	    }
+	}
+    }
+
+  /* Check attribute access arguments.  */
+  tree fndecl = gimple_call_fndecl (stmt);
+  maybe_warn_rdwr_sizes (&rdwr_idx, fndecl, fntype, stmt);
+
+  check_alloc_size_call (stmt);
+  return true;
+}
+
+/* Check arguments in a call STMT for attribute nonstring.  */
+
+static void
+check_nonstring_args (gcall *stmt)
+{
+  tree fndecl = gimple_call_fndecl (stmt);
+
+  /* Detect passing non-string arguments to functions expecting
+     nul-terminated strings.  */
+  maybe_warn_nonstring_arg (fndecl, stmt);
+}
+
 /* Check call STMT for invalid accesses.  */
 
 void
 pass_waccess::check (gcall *stmt)
 {
-  if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
-      && check_builtin (stmt))
-    return;
+  if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    check_builtin (stmt);
 
-  maybe_emit_free_warning (stmt);
+  if (is_gimple_call (stmt))
+    check_call (stmt);
+
+  maybe_check_dealloc_call (stmt);
+
+  check_nonstring_args (stmt);
 }
 
 /* Check basic block BB for invalid accesses.  */
@@ -2669,6 +3310,8 @@ pass_waccess::check (basic_block bb)
 unsigned
 pass_waccess::execute (function *fun)
 {
+  m_ranger = enable_ranger (fun);
+
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     check (bb);

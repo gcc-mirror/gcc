@@ -1,3 +1,61 @@
+2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp: Avoid illegal argument to verbose,
+	continued.
+
+2021-08-17  Luc Michel  <lmichel@kalray.eu>
+	    Marc Poulhies  <mpoulhies@kalrayinc.com>
+
+	* testsuite/lib/gdb-test.exp (gdb_version_check)
+	(gdb_version_check_xmethods): Only check the GDB version for
+	local native targets.
+
+2021-08-17  Antony Polukhin  <antoshkka@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (seed_seq::seed_seq): Reserve capacity
+	if distance is O(1).
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/seed_seq/cons/range.cc: Check
+	construction from input iterators.
+
+2021-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCatPrinter): Remove.
+
+2021-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101923
+	* include/bits/std_function.h (function(function&&)): Check for
+	non-empty parameter before doing any work.
+
+2021-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (basic_string::contains): Do not
+	define for -std=gnu++20.
+
+2021-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (__not_same_as): Rename to
+	__different_from.
+	* include/std/ranges (__not_same_as): Likewise.
+
+2021-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility (exchange): Add noexcept-specifier.
+	* testsuite/20_util/exchange/noexcept.cc: New test.
+
+2021-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Define.
+	(build_libstdcxx_dictionary): Register printer for
+	std::error_code and std::error_condition.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Test it.
+
 2021-08-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/101937

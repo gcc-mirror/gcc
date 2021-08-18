@@ -5816,6 +5816,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_EMPTY:
 	case RID_IS_ENUM:
 	case RID_IS_FINAL:
+	case RID_IS_LAYOUT_COMPATIBLE:
 	case RID_IS_LITERAL_TYPE:
 	case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
 	case RID_IS_POD:
@@ -10706,6 +10707,10 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       break;
     case RID_IS_FINAL:
       kind = CPTK_IS_FINAL;
+      break;
+    case RID_IS_LAYOUT_COMPATIBLE:
+      kind = CPTK_IS_LAYOUT_COMPATIBLE;
+      binary = true;
       break;
     case RID_IS_LITERAL_TYPE:
       kind = CPTK_IS_LITERAL_TYPE;
@@ -42132,7 +42137,7 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
 			"%<depend%> clause may only be used in compound "
 			"statements");
 	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-	      return false;
+	      return true;
 	    }
 	  tree clauses
 	    = cp_parser_omp_all_clauses (parser,
@@ -42656,7 +42661,7 @@ cp_parser_omp_cancel (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SECTIONS)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TASKGROUP))
 
-static void
+static bool
 cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok,
 				  enum pragma_context context)
 {
@@ -42678,7 +42683,7 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok,
     {
       cp_parser_error (parser, "expected %<point%>");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return;
+      return false;
     }
 
   if (context != pragma_compound)
@@ -42690,7 +42695,7 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok,
       else
 	cp_parser_error (parser, "expected declaration specifiers");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return;
+      return true;
     }
 
   clauses = cp_parser_omp_all_clauses (parser,
@@ -42698,6 +42703,7 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok,
 				       "#pragma omp cancellation point",
 				       pragma_tok);
   finish_omp_cancellation_point (clauses);
+  return true;
 }
 
 /* OpenMP 4.0:
@@ -42993,7 +42999,7 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
-static tree
+static bool
 cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 				 enum pragma_context context)
 {
@@ -43013,7 +43019,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
     {
       cp_parser_error (parser, "expected %<data%>");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return NULL_TREE;
+      return false;
     }
 
   if (context == pragma_stmt)
@@ -43022,7 +43028,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 		"%<#pragma %s%> may only be used in compound statements",
 		"omp target enter data");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return NULL_TREE;
+      return true;
     }
 
   tree clauses
@@ -43062,14 +43068,15 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 	error_at (pragma_tok->location,
 		  "%<#pragma omp target enter data%> must contain at least "
 		  "one %<map%> clause");
-      return NULL_TREE;
+      return true;
     }
 
   tree stmt = make_node (OMP_TARGET_ENTER_DATA);
   TREE_TYPE (stmt) = void_type_node;
   OMP_TARGET_ENTER_DATA_CLAUSES (stmt) = clauses;
   SET_EXPR_LOCATION (stmt, pragma_tok->location);
-  return add_stmt (stmt);
+  add_stmt (stmt);
+  return true;
 }
 
 /* OpenMP 4.5:
@@ -43083,7 +43090,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
-static tree
+static bool
 cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 				enum pragma_context context)
 {
@@ -43103,7 +43110,7 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
     {
       cp_parser_error (parser, "expected %<data%>");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return NULL_TREE;
+      return false;
     }
 
   if (context == pragma_stmt)
@@ -43112,7 +43119,7 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 		"%<#pragma %s%> may only be used in compound statements",
 		"omp target exit data");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return NULL_TREE;
+      return true;
     }
 
   tree clauses
@@ -43154,14 +43161,15 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 	error_at (pragma_tok->location,
 		  "%<#pragma omp target exit data%> must contain at least "
 		  "one %<map%> clause");
-      return NULL_TREE;
+      return true;
     }
 
   tree stmt = make_node (OMP_TARGET_EXIT_DATA);
   TREE_TYPE (stmt) = void_type_node;
   OMP_TARGET_EXIT_DATA_CLAUSES (stmt) = clauses;
   SET_EXPR_LOCATION (stmt, pragma_tok->location);
-  return add_stmt (stmt);
+  add_stmt (stmt);
+  return true;
 }
 
 /* OpenMP 4.0:
@@ -43185,7 +43193,7 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 		"%<#pragma %s%> may only be used in compound statements",
 		"omp target update");
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return false;
+      return true;
     }
 
   tree clauses
@@ -43197,7 +43205,7 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
       error_at (pragma_tok->location,
 		"%<#pragma omp target update%> must contain at least one "
 		"%<from%> or %<to%> clauses");
-      return false;
+      return true;
     }
 
   tree stmt = make_node (OMP_TARGET_UPDATE);
@@ -43205,7 +43213,7 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
   OMP_TARGET_UPDATE_CLAUSES (stmt) = clauses;
   SET_EXPR_LOCATION (stmt, pragma_tok->location);
   add_stmt (stmt);
-  return false;
+  return true;
 }
 
 /* OpenMP 4.0:
@@ -43359,14 +43367,12 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
       else if (strcmp (p, "enter") == 0)
 	{
 	  cp_lexer_consume_token (parser->lexer);
-	  cp_parser_omp_target_enter_data (parser, pragma_tok, context);
-	  return false;
+	  return cp_parser_omp_target_enter_data (parser, pragma_tok, context);
 	}
       else if (strcmp (p, "exit") == 0)
 	{
 	  cp_lexer_consume_token (parser->lexer);
-	  cp_parser_omp_target_exit_data (parser, pragma_tok, context);
-	  return false;
+	  return cp_parser_omp_target_exit_data (parser, pragma_tok, context);
 	}
       else if (strcmp (p, "update") == 0)
 	{
@@ -45558,6 +45564,16 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 }
 
 
+/* OpenMP 5.1:
+   #pragma omp nothing new-line  */
+
+static void
+cp_parser_omp_nothing (cp_parser *parser, cp_token *pragma_tok)
+{
+  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+}
+
+
 /* OpenMP 4.5:
    #pragma omp taskloop taskloop-clause[optseq] new-line
      for-loop
@@ -46427,7 +46443,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
   cp_token *pragma_tok;
   unsigned int id;
   tree stmt;
-  bool ret;
+  bool ret = false;
 
   pragma_tok = cp_lexer_consume_token (parser->lexer);
   gcc_assert (pragma_tok->type == CPP_PRAGMA);
@@ -46452,6 +46468,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	case pragma_stmt:
 	  error_at (pragma_tok->location, "%<#pragma %s%> may only be "
 		    "used in compound statements", "omp barrier");
+	  ret = true;
 	  break;
 	default:
 	  goto bad_stmt;
@@ -46467,6 +46484,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	case pragma_stmt:
 	  error_at (pragma_tok->location, "%<#pragma %s%> may only be "
 		    "used in compound statements", "omp depobj");
+	  ret = true;
 	  break;
 	default:
 	  goto bad_stmt;
@@ -46482,6 +46500,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	case pragma_stmt:
 	  error_at (pragma_tok->location, "%<#pragma %s%> may only be "
 		    "used in compound statements", "omp flush");
+	  ret = true;
 	  break;
 	default:
 	  goto bad_stmt;
@@ -46498,6 +46517,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  error_at (pragma_tok->location,
 		    "%<#pragma %s%> may only be used in compound statements",
 		    "omp taskwait");
+	  ret = true;
 	  break;
 	default:
 	  goto bad_stmt;
@@ -46514,6 +46534,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  error_at (pragma_tok->location,
 		    "%<#pragma %s%> may only be used in compound statements",
 		    "omp taskyield");
+	  ret = true;
 	  break;
 	default:
 	  goto bad_stmt;
@@ -46530,6 +46551,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  error_at (pragma_tok->location,
 		    "%<#pragma %s%> may only be used in compound statements",
 		    "omp cancel");
+	  ret = true;
 	  break;
 	default:
 	  goto bad_stmt;
@@ -46537,8 +46559,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       break;
 
     case PRAGMA_OMP_CANCELLATION_POINT:
-      cp_parser_omp_cancellation_point (parser, pragma_tok, context);
-      return false;
+      return cp_parser_omp_cancellation_point (parser, pragma_tok, context);
 
     case PRAGMA_OMP_THREADPRIVATE:
       cp_parser_omp_threadprivate (parser, pragma_tok);
@@ -46557,6 +46578,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  error_at (pragma_tok->location,
 		    "%<#pragma %s%> may only be used in compound statements",
 		    "acc enter data");
+	  ret = true;
 	  break;
 	}
       else if (context != pragma_compound)
@@ -46570,6 +46592,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  error_at (pragma_tok->location,
 		    "%<#pragma %s%> may only be used in compound statements",
 		    "acc exit data");
+	  ret = true;
 	  break;
 	}
       else if (context != pragma_compound)
@@ -46582,6 +46605,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	{
 	  error_at (pragma_tok->location,
 		    "%<#pragma acc routine%> must be at file scope");
+	  ret = true;
 	  break;
 	}
       cp_parser_oacc_routine (parser, pragma_tok, context);
@@ -46593,6 +46617,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  error_at (pragma_tok->location,
 		    "%<#pragma %s%> may only be used in compound statements",
 		    "acc update");
+	  ret = true;
 	  break;
 	}
       else if (context != pragma_compound)
@@ -46606,6 +46631,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  error_at (pragma_tok->location,
 		    "%<#pragma %s%> may only be used in compound statements",
 		    "acc wait");
+	  ret = true;
 	  break;
 	}
       else if (context != pragma_compound)
@@ -46652,9 +46678,14 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	  error_at (pragma_tok->location,
 		    "%<#pragma omp requires%> may only be used at file or "
 		    "namespace scope");
+	  ret = true;
 	  break;
 	}
       return cp_parser_omp_requires (parser, pragma_tok);
+
+    case PRAGMA_OMP_NOTHING:
+      cp_parser_omp_nothing (parser, pragma_tok);
+      return false;
 
     case PRAGMA_OMP_ORDERED:
       if (context != pragma_stmt && context != pragma_compound)
@@ -46764,7 +46795,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     }
 
   cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-  return false;
+  return ret;
 }
 
 /* The interface the pragma parsers have to the lexer.  */

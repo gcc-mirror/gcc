@@ -251,7 +251,7 @@ namespace __debug
       : _Base(__n, __al)
       { }
 
-      forward_list(size_type __n, const _Tp& __value,
+      forward_list(size_type __n, const __type_identity_t<_Tp>& __value,
 		   const allocator_type& __al = allocator_type())
       : _Base(__n, __value, __al)
       { }
@@ -854,6 +854,11 @@ namespace __debug
 	   typename = _RequireAllocator<_Allocator>>
     forward_list(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> forward_list<_ValT, _Allocator>;
+
+  template<typename _Tp, typename _Allocator = allocator<_Tp>,
+	   typename = _RequireAllocator<_Allocator>>
+    forward_list(size_t, _Tp, _Allocator = _Allocator())
+      -> forward_list<_Tp, _Allocator>;
 #endif
 
   template<typename _Tp, typename _Alloc>

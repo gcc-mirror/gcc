@@ -1438,6 +1438,18 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	= fold_builtin_is_pointer_inverconvertible_with_class (loc, nargs,
 							       args);
     }
+  else if (fndecl_built_in_p (fun,
+			      CP_BUILT_IN_IS_CORRESPONDING_MEMBER,
+			      BUILT_IN_FRONTEND))
+    {
+      location_t loc = EXPR_LOCATION (t);
+      if (nargs >= 2)
+	{
+	  VERIFY_CONSTANT (args[0]);
+	  VERIFY_CONSTANT (args[1]);
+	}
+      new_call = fold_builtin_is_corresponding_member (loc, nargs, args);
+    }
   else
     new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
 					CALL_EXPR_FN (t), nargs, args);

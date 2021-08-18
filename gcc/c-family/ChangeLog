@@ -1,3 +1,20 @@
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101539
+	* c-common.h (enum rid): Add RID_IS_LAYOUT_COMPATIBLE.
+	* c-common.c (c_common_reswords): Add __is_layout_compatible.
+
+2021-08-17  Matt Jacobson  <mhjacobson@me.com>
+
+	* c-opts.c (c_common_post_options): Default to
+	flag_objc_sjlj_exceptions = 1 only when flag_objc_abi < 2.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_SCOPE.
+	* c-pragma.c (omp_pragmas): Add scope construct.
+	* c-omp.c (omp_directives): Uncomment scope directive entry.
+
 2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Define

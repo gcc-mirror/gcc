@@ -1328,6 +1328,7 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "depobj", PRAGMA_OMP_DEPOBJ },
   { "end", PRAGMA_OMP_END_DECLARE_TARGET },
   { "flush", PRAGMA_OMP_FLUSH },
+  { "nothing", PRAGMA_OMP_NOTHING },
   { "requires", PRAGMA_OMP_REQUIRES },
   { "scope", PRAGMA_OMP_SCOPE },
   { "section", PRAGMA_OMP_SECTION },

@@ -1,3 +1,9 @@
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (OMP_SCOPE_CLAUSE_MASK): Define.
+	(c_parser_omp_scope): New function.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_SCOPE.
+
 2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_name): Parse filter clause name.

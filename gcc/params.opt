@@ -132,7 +132,7 @@ Maximum number of basic blocks before EVRP uses a sparse cache.
 
 -param=evrp-mode=
 Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
---param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in.
+--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|trace|gori|cache|tracegori|debug] Specifies the mode Early VRP should operate in.
 
 Enum
 Name(evrp_mode) Type(enum evrp_mode) UnknownError(unknown evrp mode %qs)
@@ -150,13 +150,16 @@ EnumValue
 Enum(evrp_mode) String(ranger-first) Value(EVRP_MODE_RVRP_FIRST)
 
 EnumValue
-Enum(evrp_mode) String(ranger-trace) Value(EVRP_MODE_RVRP_TRACE)
-
-EnumValue
-Enum(evrp_mode) String(ranger-debug) Value(EVRP_MODE_RVRP_DEBUG)
-
-EnumValue
 Enum(evrp_mode) String(trace) Value(EVRP_MODE_TRACE)
+
+EnumValue
+Enum(evrp_mode) String(cache) Value(EVRP_MODE_CACHE)
+
+EnumValue
+Enum(evrp_mode) String(gori) Value(EVRP_MODE_GORI)
+
+EnumValue
+Enum(evrp_mode) String(tracegori) Value(EVRP_MODE_TRACE_GORI)
 
 EnumValue
 Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)

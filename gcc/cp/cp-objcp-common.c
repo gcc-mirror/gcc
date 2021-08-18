@@ -413,6 +413,7 @@ names_builtin_p (const char *name)
     case RID_IS_EMPTY:
     case RID_IS_ENUM:
     case RID_IS_FINAL:
+    case RID_IS_LAYOUT_COMPATIBLE:
     case RID_IS_LITERAL_TYPE:
     case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
     case RID_IS_POD:

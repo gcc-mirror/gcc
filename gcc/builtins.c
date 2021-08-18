@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "fold-const.h"
 #include "fold-const-call.h"
-#include "gimple-ssa-warn-restrict.h"
+#include "gimple-ssa-warn-access.h"
 #include "stor-layout.h"
 #include "calls.h"
 #include "varasm.h"
@@ -81,7 +81,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "gimple-range.h"
 #include "pointer-query.h"
-#include "gimple-ssa-warn-access.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -4895,25 +4894,6 @@ expand_builtin_alloca (tree exp)
 
   if (!valid_arglist)
     return NULL_RTX;
-
-  if ((alloca_for_var
-       && warn_vla_limit >= HOST_WIDE_INT_MAX
-       && warn_alloc_size_limit < warn_vla_limit)
-      || (!alloca_for_var
-	  && warn_alloca_limit >= HOST_WIDE_INT_MAX
-	  && warn_alloc_size_limit < warn_alloca_limit
-	  ))
-    {
-      /* -Walloca-larger-than and -Wvla-larger-than settings of
-	 less than HOST_WIDE_INT_MAX override the more general
-	 -Walloc-size-larger-than so unless either of the former
-	 options is smaller than the last one (wchich would imply
-	 that the call was already checked), check the alloca
-	 arguments for overflow.  */
-      tree args[] = { CALL_EXPR_ARG (exp, 0), NULL_TREE };
-      int idx[] = { 0, -1 };
-      maybe_warn_alloc_args_overflow (fndecl, exp, args, idx);
-    }
 
   /* Compute the argument.  */
   op0 = expand_normal (CALL_EXPR_ARG (exp, 0));

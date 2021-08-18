@@ -634,11 +634,13 @@ debug (gori_map &g)
 
 // Construct a gori_compute object.
 
-gori_compute::gori_compute ()
+gori_compute::gori_compute () : tracer ("GORI ")
 {
   // Create a boolean_type true and false range.
   m_bool_zero = int_range<2> (boolean_false_node, boolean_false_node);
   m_bool_one = int_range<2> (boolean_true_node, boolean_true_node);
+  if (dump_file && (param_evrp_mode & EVRP_MODE_GORI))
+    tracer.enable_trace ();
 }
 
 // Given the switch S, return an evaluation in R for NAME when the lhs
@@ -712,29 +714,43 @@ gori_compute::compute_operand_range (irange &r, gimple *stmt,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
+  bool res;
   // Process logicals as they have special handling.
   if (is_gimple_logical_p (stmt))
     {
+      unsigned idx;
+      if ((idx = tracer.header ("compute_operand ")))
+	{
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fprintf (dump_file, " with LHS = ");
+	  lhs.dump (dump_file);
+	  fprintf (dump_file, " at stmt ");
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+
       int_range_max op1_trange, op1_frange;
       int_range_max op2_trange, op2_frange;
       compute_logical_operands (op1_trange, op1_frange, stmt, lhs,
 				name, src, op1, op1_in_chain);
       compute_logical_operands (op2_trange, op2_frange, stmt, lhs,
 				name, src, op2, op2_in_chain);
-      return logical_combine (r, gimple_expr_code (stmt), lhs,
-			      op1_trange, op1_frange, op2_trange, op2_frange);
+      res = logical_combine (r, gimple_expr_code (stmt), lhs,
+			     op1_trange, op1_frange, op2_trange, op2_frange);
+      if (idx)
+	tracer.trailer (idx, "compute_operand", res, name, r);
     }
-
   // Follow the appropriate operands now.
-  if (op1_in_chain && op2_in_chain)
-    return compute_operand1_and_operand2_range (r, stmt, lhs, name, src);
-  if (op1_in_chain)
-    return compute_operand1_range (r, stmt, lhs, name, src);
-  if (op2_in_chain)
-    return compute_operand2_range (r, stmt, lhs, name, src);
+  else if (op1_in_chain && op2_in_chain)
+    res = compute_operand1_and_operand2_range (r, stmt, lhs, name, src);
+  else if (op1_in_chain)
+    res = compute_operand1_range (r, stmt, lhs, name, src);
+  else if (op2_in_chain)
+    res = compute_operand2_range (r, stmt, lhs, name, src);
+  else
+    gcc_unreachable ();
 
   // If neither operand is derived, this statement tells us nothing.
-  return false;
+  return res;
 }
 
 
@@ -766,6 +782,38 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
   if (op1_true.varying_p () && op1_false.varying_p ()
       && op2_true.varying_p () && op2_false.varying_p ())
     return false;
+
+  unsigned idx;
+  if ((idx = tracer.header ("logical_combine")))
+    {
+      switch (code)
+        {
+	  case TRUTH_OR_EXPR:
+	  case BIT_IOR_EXPR:
+	    fprintf (dump_file, " || ");
+	    break;
+	  case TRUTH_AND_EXPR:
+	  case BIT_AND_EXPR:
+	    fprintf (dump_file, " && ");
+	    break;
+	  default:
+	    break;
+	}
+      fprintf (dump_file, " with LHS = ");
+      lhs.dump (dump_file);
+      fputc ('\n', dump_file);
+
+      tracer.print (idx, "op1_true = ");
+      op1_true.dump (dump_file);
+      fprintf (dump_file, "  op1_false = ");
+      op1_false.dump (dump_file);
+      fputc ('\n', dump_file);
+      tracer.print (idx, "op2_true = ");
+      op2_true.dump (dump_file);
+      fprintf (dump_file, "  op2_false = ");
+      op2_false.dump (dump_file);
+      fputc ('\n', dump_file);
+    }
 
   // This is not a simple fold of a logical expression, rather it
   // determines ranges which flow through the logical expression.
@@ -804,6 +852,7 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
   // would be lost.
   if (!range_is_either_true_or_false (lhs))
     {
+      bool res;
       int_range_max r1;
       if (logical_combine (r1, code, m_bool_zero, op1_true, op1_false,
 			   op2_true, op2_false)
@@ -811,9 +860,12 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 			      op2_true, op2_false))
 	{
 	  r.union_ (r1);
-	  return true;
+	  res = true;
 	}
-      return false;
+      else
+	res = false;
+      if (idx)
+	tracer.trailer (idx, "logical_combine", res, NULL_TREE, r);
     }
 
   switch (code)
@@ -873,6 +925,8 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
         gcc_unreachable ();
     }
 
+  if (idx)
+    tracer.trailer (idx, "logical_combine", true, NULL_TREE, r);
   return true;
 }
 
@@ -895,6 +949,13 @@ gori_compute::compute_logical_operands (irange &true_range, irange &false_range,
       // use its known value on entry to the block.
       src.get_operand (true_range, name);
       false_range = true_range;
+      unsigned idx;
+      if ((idx = tracer.header ("logical_operand")))
+	{
+	  print_generic_expr (dump_file, op, TDF_SLIM);
+	  fprintf (dump_file, " not in computation chain. Queried.\n");
+	  tracer.trailer (idx, "logical_operand", true, NULL_TREE, true_range);
+        }
       return;
     }
 
@@ -958,15 +1019,43 @@ gori_compute::compute_operand1_range (irange &r, gimple *stmt,
 	return false;
     }
 
+  unsigned idx;
+  if ((idx = tracer.header ("compute op 1 (")))
+    {
+      print_generic_expr (dump_file, op1, TDF_SLIM);
+      fprintf (dump_file, ") at ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      tracer.print (idx, "LHS =");
+      lhs.dump (dump_file);
+      if (op2 && TREE_CODE (op2) == SSA_NAME)
+	{
+	  fprintf (dump_file, ", ");
+	  print_generic_expr (dump_file, op2, TDF_SLIM);
+	  fprintf (dump_file, " = ");
+	  op2_range.dump (dump_file);
+	}
+      fprintf (dump_file, "\n");
+      tracer.print (idx, "Computes ");
+      print_generic_expr (dump_file, op1, TDF_SLIM);
+      fprintf (dump_file, " = ");
+      r.dump (dump_file);
+      fprintf (dump_file, " intersect Known range : ");
+      op1_range.dump (dump_file);
+      fputc ('\n', dump_file);
+    }
   // Intersect the calculated result with the known result and return if done.
   if (op1 == name)
     {
       r.intersect (op1_range);
+      if (idx)
+	tracer.trailer (idx, "produces ", true, name, r);
       return true;
     }
   // If the calculation continues, we're using op1_range as the new LHS.
   op1_range.intersect (r);
 
+  if (idx)
+    tracer.trailer (idx, "produces ", true, op1, op1_range);
   gimple *src_stmt = SSA_NAME_DEF_STMT (op1);
   gcc_checking_assert (src_stmt);
 
@@ -995,15 +1084,43 @@ gori_compute::compute_operand2_range (irange &r, gimple *stmt,
   if (!gimple_range_calc_op2 (r, stmt, lhs, op1_range))
     return false;
 
+  unsigned idx;
+  if ((idx = tracer.header ("compute op 2 (")))
+    {
+      print_generic_expr (dump_file, op2, TDF_SLIM);
+      fprintf (dump_file, ") at ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      tracer.print (idx, "LHS = ");
+      lhs.dump (dump_file);
+      if (TREE_CODE (op1) == SSA_NAME)
+	{
+	  fprintf (dump_file, ", ");
+	  print_generic_expr (dump_file, op1, TDF_SLIM);
+	  fprintf (dump_file, " = ");
+	  op1_range.dump (dump_file);
+	}
+      fprintf (dump_file, "\n");
+      tracer.print (idx, "Computes ");
+      print_generic_expr (dump_file, op2, TDF_SLIM);
+      fprintf (dump_file, " = ");
+      r.dump (dump_file);
+      fprintf (dump_file, " intersect Known range : ");
+      op2_range.dump (dump_file);
+      fputc ('\n', dump_file);
+    }
   // Intersect the calculated result with the known result and return if done.
   if (op2 == name)
     {
       r.intersect (op2_range);
+      if (idx)
+	tracer.trailer (idx, " produces ", true, NULL_TREE, r);
       return true;
     }
   // If the calculation continues, we're using op2_range as the new LHS.
   op2_range.intersect (r);
 
+  if (idx)
+    tracer.trailer (idx, " produces ", true, op2, op2_range);
   gimple *src_stmt = SSA_NAME_DEF_STMT (op2);
   gcc_checking_assert (src_stmt);
 //  gcc_checking_assert (!is_import_p (op2, find.bb));
@@ -1095,6 +1212,7 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
 				     range_query &q)
 {
   int_range_max lhs;
+  unsigned idx;
 
   gcc_checking_assert (gimple_range_ssa_p (name));
   // Determine if there is an outgoing edge.
@@ -1122,7 +1240,15 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
   // If NAME can be calculated on the edge, use that.
   if (is_export_p (name, e->src))
     {
-      if (compute_operand_range (r, stmt, lhs, name, src))
+      bool res;
+      if ((idx = tracer.header ("outgoing_edge")))
+	{
+	  fprintf (dump_file, " for ");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fprintf (dump_file, " on edge %d->%d\n",
+		   e->src->index, e->dest->index);
+	}
+      if ((res = compute_operand_range (r, stmt, lhs, name, src)))
 	{
 	  // Sometimes compatible types get interchanged. See PR97360.
 	  // Make sure we are returning the type of the thing we asked for.
@@ -1132,28 +1258,26 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
 						       TREE_TYPE (name)));
 	      range_cast (r, TREE_TYPE (name));
 	    }
-	  return true;
 	}
+      if (idx)
+	tracer.trailer (idx, "outgoing_edge", res, name, r);
+      return res;
     }
   // If NAME isn't exported, check if it can be recomputed.
   else if (may_recompute_p (name, e))
     {
       gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
+      if ((idx = tracer.header ("recomputation")))
 	{
-	  fprintf (dump_file, "recomputation attempt on edge %d->%d for ",
+	  fprintf (dump_file, " attempt on edge %d->%d for ",
 		   e->src->index, e->dest->index);
-	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  print_gimple_stmt (dump_file, def_stmt, 0, TDF_SLIM);
 	}
       // Simply calculate DEF_STMT on edge E using the range query Q.
       fold_range (r, def_stmt, e, &q);
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, " : Calculated :");
-	  r.dump (dump_file);
-	  fputc ('\n', dump_file);
-	}
+      if (idx)
+	tracer.trailer (idx, "recomputation", true, name, r);
       return true;
     }
   return false;

@@ -1365,6 +1365,7 @@ enum cp_trait_kind
   CPTK_IS_EMPTY,
   CPTK_IS_ENUM,
   CPTK_IS_FINAL,
+  CPTK_IS_LAYOUT_COMPATIBLE,
   CPTK_IS_LITERAL_TYPE,
   CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF,
   CPTK_IS_POD,
@@ -4502,6 +4503,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define CONSTRUCTOR_IS_PAREN_INIT(NODE) \
   (CONSTRUCTOR_CHECK(NODE)->base.private_flag)
 
+/* True if reshape_init built this CONSTRUCTOR to undo the brace elision
+   of another CONSTRUCTOR.  This flag is used during C++20 aggregate
+   CTAD.  */
+#define CONSTRUCTOR_BRACES_ELIDED_P(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.protected_flag)
+
 /* True if NODE represents a conversion for direct-initialization in a
    template.  Set by perform_implicit_conversion_flags.  */
 #define IMPLICIT_CONV_EXPR_DIRECT_INIT(NODE) \
@@ -6358,6 +6365,7 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
 enum cp_built_in_function {
   CP_BUILT_IN_IS_CONSTANT_EVALUATED,
   CP_BUILT_IN_INTEGER_PACK,
+  CP_BUILT_IN_IS_CORRESPONDING_MEMBER,
   CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
   CP_BUILT_IN_SOURCE_LOCATION,
   CP_BUILT_IN_LAST
@@ -7574,6 +7582,7 @@ extern tree baselink_for_fns                    (tree);
 extern void finish_static_assert                (tree, tree, location_t,
 						 bool, bool);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
+extern tree fold_builtin_is_corresponding_member (location_t, int, tree *);
 extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
 extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
 extern tree build_lambda_expr                   (void);
@@ -7800,6 +7809,8 @@ extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
 extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 extern bool similar_type_p			(tree, tree);
+extern bool next_common_initial_seqence		(tree &, tree &);
+extern bool layout_compatible_type_p		(tree, tree);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qualification		(int, int);

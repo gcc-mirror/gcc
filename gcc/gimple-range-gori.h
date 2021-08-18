@@ -180,6 +180,7 @@ private:
   int_range<2> m_bool_one;	// Boolean true cached.
 
   gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
+  range_tracer tracer;
 };
 
 // These routines provide a GIMPLE interface to the range-ops code.

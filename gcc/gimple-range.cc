@@ -35,46 +35,61 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "gimple-range.h"
 
-gimple_ranger::gimple_ranger ()
+gimple_ranger::gimple_ranger () : tracer ("")
 {
   // If the cache has a relation oracle, use it.
   m_oracle = m_cache.oracle ();
+  if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
+    tracer.enable_trace ();
 }
 
 bool
 gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
 {
+  unsigned idx;
   if (!gimple_range_ssa_p (expr))
     return get_tree_range (r, expr, stmt);
+
+  if ((idx = tracer.header ("range_of_expr(")))
+    {
+      print_generic_expr (dump_file, expr, TDF_SLIM);
+      fputs (")", dump_file);
+      if (stmt)
+	{
+	  fputs (" at stmt ", dump_file);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+      else
+	fputs ("\n", dump_file);
+    }
 
   // If there is no statement, just get the global value.
   if (!stmt)
     {
       if (!m_cache.get_global_range (r, expr))
         r = gimple_range_global (expr);
-      return true;
     }
-
   // For a debug stmt, pick the best value currently available, do not
   // trigger new value calculations.  PR 100781.
-  if (is_gimple_debug (stmt))
-    {
-      m_cache.range_of_expr (r, expr, stmt);
-      return true;
-    }
-  basic_block bb = gimple_bb (stmt);
-  gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
-
-  // If name is defined in this block, try to get an range from S.
-  if (def_stmt && gimple_bb (def_stmt) == bb)
-    {
-      range_of_stmt (r, def_stmt, expr);
-      m_cache.m_non_null.adjust_range (r, expr, bb, true);
-    }
+  else if (is_gimple_debug (stmt))
+    m_cache.range_of_expr (r, expr, stmt);
   else
-    // Otherwise OP comes from outside this block, use range on entry.
-    range_on_entry (r, bb, expr);
+    {
+      basic_block bb = gimple_bb (stmt);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
 
+      // If name is defined in this block, try to get an range from S.
+      if (def_stmt && gimple_bb (def_stmt) == bb)
+	{
+	  range_of_stmt (r, def_stmt, expr);
+	  m_cache.m_non_null.adjust_range (r, expr, bb, true);
+	}
+      // Otherwise OP comes from outside this block, use range on entry.
+      else
+	range_on_entry (r, bb, expr);
+    }
+  if (idx)
+    tracer.trailer (idx, "range_of_expr", true, expr, r);
   return true;
 }
 
@@ -86,6 +101,13 @@ gimple_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   int_range_max entry_range;
   gcc_checking_assert (gimple_range_ssa_p (name));
 
+  unsigned idx;
+  if ((idx = tracer.header ("range_on_entry (")))
+    {
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") to BB %d\n", bb->index);
+    }
+
   // Start with any known range
   range_of_stmt (r, SSA_NAME_DEF_STMT (name), name);
 
@@ -94,6 +116,9 @@ gimple_ranger::range_on_entry (irange &r, basic_block bb, tree name)
     r.intersect (entry_range);
 
   m_cache.m_non_null.adjust_range (r, name, bb, true);
+
+  if (idx)
+    tracer.trailer (idx, "range_on_entry", true, name, r);
 }
 
 // Calculate the range for NAME at the end of block BB and return it in R.
@@ -105,6 +130,13 @@ gimple_ranger::range_on_exit (irange &r, basic_block bb, tree name)
   // on-exit from the exit block?
   gcc_checking_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
   gcc_checking_assert (gimple_range_ssa_p (name));
+
+  unsigned idx;
+  if ((idx = tracer.header ("range_on_exit (")))
+    {
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") from BB %d\n", bb->index);
+    }
 
   gimple *s = SSA_NAME_DEF_STMT (name);
   basic_block def_bb = gimple_bb (s);
@@ -119,6 +151,9 @@ gimple_ranger::range_on_exit (irange &r, basic_block bb, tree name)
     range_on_entry (r, bb, name);
   gcc_checking_assert (r.undefined_p ()
 		       || range_compatible_p (r.type (), TREE_TYPE (name)));
+  
+  if (idx)
+    tracer.trailer (idx, "range_on_exit", true, name, r);
 }
 
 // Calculate a range for NAME on edge E and return it in R.
@@ -133,6 +168,13 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
   if (!gimple_range_ssa_p (name))
     return range_of_expr (r, name);
 
+  unsigned idx;
+  if ((idx = tracer.header ("range_on_edge (")))
+    {
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") on edge %d->%d\n", e->src->index, e->dest->index);
+    }
+
   range_on_exit (r, e->src, name);
   gcc_checking_assert  (r.undefined_p ()
 			|| range_compatible_p (r.type(), TREE_TYPE (name)));
@@ -141,6 +183,8 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
   if (m_cache.range_on_edge (edge_range, e, name))
     r.intersect (edge_range);
 
+  if (idx)
+    tracer.trailer (idx, "range_on_edge", true, name, r);
   return true;
 }
 
@@ -163,33 +207,50 @@ gimple_ranger::fold_range_internal (irange &r, gimple *s, tree name)
 bool
 gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 {
+  bool res;
   r.set_undefined ();
+
+  unsigned idx;
+  if ((idx = tracer.header ("range_of_stmt (")))
+    {
+      if (name)
+	print_generic_expr (dump_file, name, TDF_SLIM);
+      fputs (") at stmt ", dump_file);
+      print_gimple_stmt (dump_file, s, 0, TDF_SLIM);
+    }
 
   if (!name)
     name = gimple_get_lhs (s);
 
   // If no name, simply call the base routine.
   if (!name)
-    return fold_range_internal (r, s, NULL_TREE);
-
-  if (!gimple_range_ssa_p (name))
-    return false;
-
+    res = fold_range_internal (r, s, NULL_TREE);
+  else if (!gimple_range_ssa_p (name))
+    res = false;
   // Check if the stmt has already been processed, and is not stale.
-  if (m_cache.get_non_stale_global_range (r, name))
-    return true;
+  else if (m_cache.get_non_stale_global_range (r, name))
+    {
+      if (idx)
+	tracer.trailer (idx, " cached", true, name, r);
+      return true;
+    }
+  else
+    {
+      // Otherwise calculate a new value.
+      int_range_max tmp;
+      fold_range_internal (tmp, s, name);
 
-  // Otherwise calculate a new value.
-  int_range_max tmp;
-  fold_range_internal (tmp, s, name);
+      // Combine the new value with the old value.  This is required because
+      // the way value propagation works, when the IL changes on the fly we
+      // can sometimes get different results.  See PR 97741.
+      r.intersect (tmp);
+      m_cache.set_global_range (name, r);
+      res = true;
+    }
 
-  // Combine the new value with the old value.  This is required because
-  // the way value propagation works, when the IL changes on the fly we
-  // can sometimes get different results.  See PR 97741.
-  r.intersect (tmp);
-  m_cache.set_global_range (name, r);
-
-  return true;
+  if (idx)
+    tracer.trailer (idx, "range_of_stmt", res, name, r);
+  return res;
 }
 
 // This routine will export whatever global ranges are known to GCC
@@ -243,7 +304,7 @@ gimple_ranger::dump_bb (FILE *f, basic_block bb)
   unsigned x;
   edge_iterator ei;
   edge e;
-  int_range_max range;
+  int_range_max range, tmp_range;
   fprintf (f, "\n=========== BB %d ============\n", bb->index);
   m_cache.dump_bb (f, bb);
 
@@ -282,10 +343,9 @@ gimple_ranger::dump_bb (FILE *f, basic_block bb)
 	      // the on entry cache for either end of the edge is
 	      // set.
 	      if ((s && bb == gimple_bb (s)) ||
-		  m_cache.block_range (range, bb, name, false) ||
-		  m_cache.block_range (range, e->dest, name, false))
+		  m_cache.block_range (tmp_range, bb, name, false) ||
+		  m_cache.block_range (tmp_range, e->dest, name, false))
 		{
-		  m_cache.range_on_edge (range, e, name);
 		  if (!range.varying_p ())
 		    {
 		      fprintf (f, "%d->%d ", e->src->index,
@@ -321,182 +381,12 @@ gimple_ranger::dump (FILE *f)
   m_cache.dump (f);
 }
 
-// trace_ranger implementation.
-
-
-trace_ranger::trace_ranger ()
-{
-  indent = 0;
-  trace_count = 0;
-}
-
-// If dumping, return true and print the prefix for the next output line.
-
-bool
-trace_ranger::dumping (unsigned counter, bool trailing)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      // Print counter index as well as INDENT spaces.
-      if (!trailing)
-	fprintf (dump_file, " %-7u ", counter);
-      else
-	fprintf (dump_file, "         ");
-      unsigned x;
-      for (x = 0; x< indent; x++)
-	fputc (' ', dump_file);
-      return true;
-    }
-  return false;
-}
-
-// After calling a routine, if dumping, print the CALLER, NAME, and RESULT,
-// returning RESULT.
-
-bool
-trace_ranger::trailer (unsigned counter, const char *caller, bool result,
-		       tree name, const irange &r)
-{
-  if (dumping (counter, true))
-    {
-      indent -= bump;
-      fputs(result ? "TRUE : " : "FALSE : ", dump_file);
-      fprintf (dump_file, "(%u) ", counter);
-      fputs (caller, dump_file);
-      fputs (" (",dump_file);
-      if (name)
-	print_generic_expr (dump_file, name, TDF_SLIM);
-      fputs (") ",dump_file);
-      if (result)
-	{
-	  r.dump (dump_file);
-	  fputc('\n', dump_file);
-	}
-      else
-	fputc('\n', dump_file);
-      // Marks the end of a request.
-      if (indent == 0)
-	fputc('\n', dump_file);
-    }
-  return result;
-}
-
-// Tracing version of range_on_edge.  Call it with printing wrappers.
-
-bool
-trace_ranger::range_on_edge (irange &r, edge e, tree name)
-{
-  unsigned idx = ++trace_count;
-  if (dumping (idx))
-    {
-      fprintf (dump_file, "range_on_edge (");
-      print_generic_expr (dump_file, name, TDF_SLIM);
-      fprintf (dump_file, ") on edge %d->%d\n", e->src->index, e->dest->index);
-      indent += bump;
-    }
-
-  bool res = gimple_ranger::range_on_edge (r, e, name);
-  trailer (idx, "range_on_edge", true, name, r);
-  return res;
-}
-
-// Tracing version of range_on_entry.  Call it with printing wrappers.
-
-void
-trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
-{
-  unsigned idx = ++trace_count;
-  if (dumping (idx))
-    {
-      fprintf (dump_file, "range_on_entry (");
-      print_generic_expr (dump_file, name, TDF_SLIM);
-      fprintf (dump_file, ") to BB %d\n", bb->index);
-      indent += bump;
-    }
-
-  gimple_ranger::range_on_entry (r, bb, name);
-
-  trailer (idx, "range_on_entry", true, name, r);
-}
-
-// Tracing version of range_on_exit.  Call it with printing wrappers.
-
-void
-trace_ranger::range_on_exit (irange &r, basic_block bb, tree name)
-{
-  unsigned idx = ++trace_count;
-  if (dumping (idx))
-    {
-      fprintf (dump_file, "range_on_exit (");
-      print_generic_expr (dump_file, name, TDF_SLIM);
-      fprintf (dump_file, ") from BB %d\n", bb->index);
-      indent += bump;
-    }
-
-  gimple_ranger::range_on_exit (r, bb, name);
-
-  trailer (idx, "range_on_exit", true, name, r);
-}
-
-// Tracing version of range_of_stmt.  Call it with printing wrappers.
-
-bool
-trace_ranger::range_of_stmt (irange &r, gimple *s, tree name)
-{
-  bool res;
-  unsigned idx = ++trace_count;
-  if (dumping (idx))
-    {
-      fprintf (dump_file, "range_of_stmt (");
-      if (name)
-	print_generic_expr (dump_file, name, TDF_SLIM);
-      fputs (") at stmt ", dump_file);
-      print_gimple_stmt (dump_file, s, 0, TDF_SLIM);
-      indent += bump;
-    }
-
-  res = gimple_ranger::range_of_stmt (r, s, name);
-
-  return trailer (idx, "range_of_stmt", res, name, r);
-}
-
-// Tracing version of range_of_expr.  Call it with printing wrappers.
-
-bool
-trace_ranger::range_of_expr (irange &r, tree name, gimple *s)
-{
-  bool res;
-  unsigned idx = ++trace_count;
-  if (dumping (idx))
-    {
-      fprintf (dump_file, "range_of_expr(");
-      print_generic_expr (dump_file, name, TDF_SLIM);
-      fputs (")", dump_file);
-      if (s)
-	{
-	  fputs (" at stmt ", dump_file);
-	  print_gimple_stmt (dump_file, s, 0, TDF_SLIM);
-	}
-      else
-	fputs ("\n", dump_file);
-      indent += bump;
-    }
-
-  res = gimple_ranger::range_of_expr (r, name, s);
-
-  return trailer (idx, "range_of_expr", res, name, r);
-}
-
 gimple_ranger *
 enable_ranger (struct function *fun)
 {
   gimple_ranger *r;
 
-  if (param_evrp_mode & EVRP_MODE_TRACE)
-    r = new trace_ranger;
-  else
-    r = new gimple_ranger;
-
+  r = new gimple_ranger;
   fun->x_range_query = r;
 
   return r;
@@ -509,84 +399,3 @@ disable_ranger (struct function *fun)
 
   fun->x_range_query = &global_ranges;
 }
-
-// =========================================
-// Debugging helpers.
-// =========================================
-
-// Query all statements in the IL to precalculate computable ranges in RANGER.
-
-static DEBUG_FUNCTION void
-debug_seed_ranger (gimple_ranger &ranger)
-{
-  // Recalculate SCEV to make sure the dump lists everything.
-  if (scev_initialized_p ())
-    {
-      scev_finalize ();
-      scev_initialize ();
-    }
-
-  basic_block bb;
-  int_range_max r;
-  gimple_stmt_iterator gsi;
-  FOR_EACH_BB_FN (bb, cfun)
-    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      {
-	gimple *stmt = gsi_stmt (gsi);
-
-	if (is_gimple_debug (stmt))
-	  continue;
-
-	ranger.range_of_stmt (r, stmt);
-      }
-}
-
-// Dump all that ranger knows for the current function.
-
-DEBUG_FUNCTION void
-dump_ranger (FILE *out)
-{
-  gimple_ranger ranger;
-  debug_seed_ranger (ranger);
-  ranger.dump (out);
-}
-
-DEBUG_FUNCTION void
-debug_ranger ()
-{
-  dump_ranger (stderr);
-}
-
-// Dump all that ranger knows on a path of BBs.
-//
-// Note that the blocks are in reverse order, thus the exit block is
-// path[0].
-
-DEBUG_FUNCTION void
-dump_ranger (FILE *dump_file, const vec<basic_block> &path)
-{
-  if (path.length () == 0)
-    {
-      fprintf (dump_file, "empty\n");
-      return;
-    }
-
-  gimple_ranger ranger;
-  debug_seed_ranger (ranger);
-
-  unsigned i = path.length ();
-  do
-    {
-      i--;
-      ranger.dump_bb (dump_file, path[i]);
-    }
-  while (i > 0);
-}
-
-DEBUG_FUNCTION void
-debug_ranger (const vec<basic_block> &path)
-{
-  dump_ranger (stderr, path);
-}
-
-#include "gimple-range-tests.cc"

@@ -29,6 +29,7 @@
 #include "pointer-query.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
+#include "gimple-ssa-warn-access.h"
 #include "gimple-ssa-warn-restrict.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"

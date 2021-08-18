@@ -712,7 +712,7 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
 	wlims.always_executed = false;
 
       /* Ignore args we are not going to read from.  */
-      if (gimple_call_arg_flags (stmt, argno - 1) & EAF_UNUSED)
+      if (gimple_call_arg_flags (stmt, argno - 1) & (EAF_UNUSED | EAF_NOREAD))
 	continue;
 
       tree arg = gimple_call_arg (stmt, argno - 1);

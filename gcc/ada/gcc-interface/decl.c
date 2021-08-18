@@ -1998,10 +1998,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     so we use an intermediate step for standard DWARF.  */
 	  if (debug_info_p)
 	    {
-	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
-		add_parallel_type (gnu_type, DECL_PARALLEL_TYPE (t));
-	      else
+	      if (gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
 		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
+	      else if (DECL_PARALLEL_TYPE (t))
+		add_parallel_type (gnu_type, DECL_PARALLEL_TYPE (t));
 	    }
 	}
 

@@ -8486,7 +8486,8 @@ convert_template_argument (tree parm,
 	   can happen in the context of -fnew-ttp-matching.  */;
       else if (tree a = type_uses_auto (t))
 	{
-	  t = do_auto_deduction (t, arg, a, complain, adc_unify, args);
+	  t = do_auto_deduction (t, arg, a, complain, adc_unify, args,
+				 LOOKUP_IMPLICIT);
 	  if (t == error_mark_node)
 	    return error_mark_node;
 	}
@@ -28836,12 +28837,7 @@ collect_ctor_idx_types (tree ctor, tree list, tree elt = NULL_TREE)
     {
       tree ftype = elt ? elt : TREE_TYPE (idx);
       if (BRACE_ENCLOSED_INITIALIZER_P (val)
-	  && CONSTRUCTOR_NELTS (val)
-	  /* As in reshape_init_r, a non-aggregate or array-of-dependent-bound
-	     type gets a single initializer.  */
-	  && CP_AGGREGATE_TYPE_P (ftype)
-	  && !(TREE_CODE (ftype) == ARRAY_TYPE
-	       && uses_template_parms (TYPE_DOMAIN (ftype))))
+	  && CONSTRUCTOR_BRACES_ELIDED_P (val))
 	{
 	  tree subelt = NULL_TREE;
 	  if (TREE_CODE (ftype) == ARRAY_TYPE)

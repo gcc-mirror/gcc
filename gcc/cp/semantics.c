@@ -10693,6 +10693,258 @@ fold_builtin_is_pointer_inverconvertible_with_class (location_t loc, int nargs,
 		      build_zero_cst (TREE_TYPE (arg)));
 }
 
+/* Helper function for is_corresponding_member_aggr.  Return true if
+   MEMBERTYPE pointer-to-data-member ARG can be found in anonymous
+   union or structure BASETYPE.  */
+
+static bool
+is_corresponding_member_union (tree basetype, tree membertype, tree arg)
+{
+  for (tree field = TYPE_FIELDS (basetype); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) != FIELD_DECL || DECL_BIT_FIELD_TYPE (field))
+      continue;
+    else if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field),
+							membertype))
+      {
+	if (TREE_CODE (arg) != INTEGER_CST
+	    || tree_int_cst_equal (arg, byte_position (field)))
+	  return true;
+      }
+    else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+      {
+	tree narg = arg;
+	if (TREE_CODE (basetype) != UNION_TYPE
+	    && TREE_CODE (narg) == INTEGER_CST)
+	  narg = size_binop (MINUS_EXPR, arg, byte_position (field));
+	if (is_corresponding_member_union (TREE_TYPE (field),
+					   membertype, narg))
+	  return true;
+      }
+  return false;
+}
+
+/* Helper function for fold_builtin_is_corresponding_member call.
+   Return boolean_false_node if MEMBERTYPE1 BASETYPE1::*ARG1 and
+   MEMBERTYPE2 BASETYPE2::*ARG2 aren't corresponding members,
+   boolean_true_node if they are corresponding members, or for
+   non-constant ARG2 the highest member offset for corresponding
+   members.  */
+
+static tree
+is_corresponding_member_aggr (location_t loc, tree basetype1, tree membertype1,
+			      tree arg1, tree basetype2, tree membertype2,
+			      tree arg2)
+{
+  tree field1 = TYPE_FIELDS (basetype1);
+  tree field2 = TYPE_FIELDS (basetype2);
+  tree ret = boolean_false_node;
+  while (1)
+    {
+      bool r = next_common_initial_seqence (field1, field2);
+      if (field1 == NULL_TREE || field2 == NULL_TREE)
+	break;
+      if (r
+	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field1),
+							membertype1)
+	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field2),
+							membertype2))
+	{
+	  tree pos = byte_position (field1);
+	  if (TREE_CODE (arg1) == INTEGER_CST
+	      && tree_int_cst_equal (arg1, pos))
+	    {
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		return boolean_true_node;
+	      return pos;
+	    }
+	  else if (TREE_CODE (arg1) != INTEGER_CST)
+	    ret = pos;
+	}
+      else if (ANON_AGGR_TYPE_P (TREE_TYPE (field1))
+	       && ANON_AGGR_TYPE_P (TREE_TYPE (field2)))
+	{
+	  if ((!lookup_attribute ("no_unique_address",
+				  DECL_ATTRIBUTES (field1)))
+	      != !lookup_attribute ("no_unique_address",
+				    DECL_ATTRIBUTES (field2)))
+	    break;
+	  if (!tree_int_cst_equal (bit_position (field1),
+				   bit_position (field2)))
+	    break;
+	  bool overlap = true;
+	  tree pos = byte_position (field1);
+	  if (TREE_CODE (arg1) == INTEGER_CST)
+	    {
+	      tree off1 = fold_convert (sizetype, arg1);
+	      tree sz1 = TYPE_SIZE_UNIT (TREE_TYPE (field1));
+	      if (tree_int_cst_lt (off1, pos)
+		  || tree_int_cst_le (size_binop (PLUS_EXPR, pos, sz1), off1))
+		overlap = false;
+	    }
+	  if (TREE_CODE (arg2) == INTEGER_CST)
+	    {
+	      tree off2 = fold_convert (sizetype, arg2);
+	      tree sz2 = TYPE_SIZE_UNIT (TREE_TYPE (field2));
+	      if (tree_int_cst_lt (off2, pos)
+		  || tree_int_cst_le (size_binop (PLUS_EXPR, pos, sz2), off2))
+		overlap = false;
+	    }
+	  if (overlap
+	      && NON_UNION_CLASS_TYPE_P (TREE_TYPE (field1))
+	      && NON_UNION_CLASS_TYPE_P (TREE_TYPE (field2)))
+	    {
+	      tree narg1 = arg1;
+	      if (TREE_CODE (arg1) == INTEGER_CST)
+		narg1 = size_binop (MINUS_EXPR,
+				    fold_convert (sizetype, arg1), pos);
+	      tree narg2 = arg2;
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		narg2 = size_binop (MINUS_EXPR,
+				    fold_convert (sizetype, arg2), pos);
+	      tree t1 = TREE_TYPE (field1);
+	      tree t2 = TREE_TYPE (field2);
+	      tree nret = is_corresponding_member_aggr (loc, t1, membertype1,
+							narg1, t2, membertype2,
+							narg2);
+	      if (nret != boolean_false_node)
+		{
+		  if (nret == boolean_true_node)
+		    return nret;
+		  if (TREE_CODE (arg1) == INTEGER_CST)
+		    return size_binop (PLUS_EXPR, nret, pos);
+		  ret = size_binop (PLUS_EXPR, nret, pos);
+		}
+	    }
+	  else if (overlap
+		   && TREE_CODE (TREE_TYPE (field1)) == UNION_TYPE
+		   && TREE_CODE (TREE_TYPE (field2)) == UNION_TYPE)
+	    {
+	      tree narg1 = arg1;
+	      if (TREE_CODE (arg1) == INTEGER_CST)
+		narg1 = size_binop (MINUS_EXPR,
+				    fold_convert (sizetype, arg1), pos);
+	      tree narg2 = arg2;
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		narg2 = size_binop (MINUS_EXPR,
+				    fold_convert (sizetype, arg2), pos);
+	      if (is_corresponding_member_union (TREE_TYPE (field1),
+						 membertype1, narg1)
+		  && is_corresponding_member_union (TREE_TYPE (field2),
+						    membertype2, narg2))
+		{
+		  sorry_at (loc, "%<__builtin_is_corresponding_member%> "
+				 "not well defined for anonymous unions");
+		  return boolean_false_node;
+		}
+	    }
+	}
+      if (!r)
+	break;
+      field1 = DECL_CHAIN (field1);
+      field2 = DECL_CHAIN (field2);
+    }
+  return ret;
+}
+
+/* Fold __builtin_is_corresponding_member call.  */
+
+tree
+fold_builtin_is_corresponding_member (location_t loc, int nargs,
+				      tree *args)
+{
+  /* Unless users call the builtin directly, the following 3 checks should be
+     ensured from std::is_corresponding_member function template.  */
+  if (nargs != 2)
+    {
+      error_at (loc, "%<__builtin_is_corresponding_member%> "
+		     "needs two arguments");
+      return boolean_false_node;
+    }
+  tree arg1 = args[0];
+  tree arg2 = args[1];
+  if (error_operand_p (arg1) || error_operand_p (arg2))
+    return boolean_false_node;
+  if (!TYPE_PTRMEM_P (TREE_TYPE (arg1))
+      || !TYPE_PTRMEM_P (TREE_TYPE (arg2)))
+    {
+      error_at (loc, "%<__builtin_is_corresponding_member%> "
+		     "argument is not pointer to member");
+      return boolean_false_node;
+    }
+
+  if (!TYPE_PTRDATAMEM_P (TREE_TYPE (arg1))
+      || !TYPE_PTRDATAMEM_P (TREE_TYPE (arg2)))
+    return boolean_false_node;
+
+  tree membertype1 = TREE_TYPE (TREE_TYPE (arg1));
+  tree basetype1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg1));
+  if (!complete_type_or_else (basetype1, NULL_TREE))
+    return boolean_false_node;
+
+  tree membertype2 = TREE_TYPE (TREE_TYPE (arg2));
+  tree basetype2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg2));
+  if (!complete_type_or_else (basetype2, NULL_TREE))
+    return boolean_false_node;
+
+  if (!NON_UNION_CLASS_TYPE_P (basetype1)
+      || !NON_UNION_CLASS_TYPE_P (basetype2)
+      || !std_layout_type_p (basetype1)
+      || !std_layout_type_p (basetype2))
+    return boolean_false_node;
+
+  /* If the member types aren't layout compatible, then they
+     can't be corresponding members.  */
+  if (!layout_compatible_type_p (membertype1, membertype2))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg1) == PTRMEM_CST)
+    arg1 = cplus_expand_constant (arg1);
+  if (TREE_CODE (arg2) == PTRMEM_CST)
+    arg2 = cplus_expand_constant (arg2);
+
+  if (null_member_pointer_value_p (arg1)
+      || null_member_pointer_value_p (arg2))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg1) == INTEGER_CST
+      && TREE_CODE (arg2) == INTEGER_CST
+      && !tree_int_cst_equal (arg1, arg2))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg2) == INTEGER_CST
+      && TREE_CODE (arg1) != INTEGER_CST)
+    {
+      std::swap (arg1, arg2);
+      std::swap (membertype1, membertype2);
+      std::swap (basetype1, basetype2);
+    }
+
+  tree ret = is_corresponding_member_aggr (loc, basetype1, membertype1, arg1,
+					   basetype2, membertype2, arg2);
+  if (TREE_TYPE (ret) == boolean_type_node)
+    return ret;
+  /* If both arg1 and arg2 are INTEGER_CSTs, is_corresponding_member_aggr
+     already returns boolean_{true,false}_node whether those particular
+     members are corresponding members or not.  Otherwise, if only
+     one of them is INTEGER_CST (canonicalized to first being INTEGER_CST
+     above), it returns boolean_false_node if it is certainly not a
+     corresponding member and otherwise we need to do a runtime check that
+     those two OFFSET_TYPE offsets are equal.
+     If neither of the operands is INTEGER_CST, is_corresponding_member_aggr
+     returns the largest offset at which the members would be corresponding
+     members, so perform arg1 <= ret && arg1 == arg2 runtime check.  */
+  gcc_assert (TREE_CODE (arg2) != INTEGER_CST);
+  if (TREE_CODE (arg1) == INTEGER_CST)
+    return fold_build2 (EQ_EXPR, boolean_type_node, arg1,
+			fold_convert (TREE_TYPE (arg1), arg2));
+  ret = fold_build2 (LE_EXPR, boolean_type_node,
+		     fold_convert (pointer_sized_int_node, arg1),
+		     fold_convert (pointer_sized_int_node, ret));
+  return fold_build2 (TRUTH_AND_EXPR, boolean_type_node, ret,
+		      fold_build2 (EQ_EXPR, boolean_type_node, arg1,
+				   fold_convert (TREE_TYPE (arg1), arg2)));
+}
+
 /* Actually evaluates the trait.  */
 
 static bool
@@ -10782,6 +11034,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_FINAL:
       return CLASS_TYPE_P (type1) && CLASSTYPE_FINAL (type1);
+
+    case CPTK_IS_LAYOUT_COMPATIBLE:
+      return layout_compatible_type_p (type1, type2);
 
     case CPTK_IS_LITERAL_TYPE:
       return literal_type_p (type1);
@@ -10928,6 +11183,19 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_ENUM:
     case CPTK_IS_UNION:
     case CPTK_IS_SAME_AS:
+      break;
+
+    case CPTK_IS_LAYOUT_COMPATIBLE:
+      if (!array_of_unknown_bound_p (type1)
+	  && TREE_CODE (type1) != VOID_TYPE
+	  && !complete_type_or_else (type1, NULL_TREE))
+	/* We already issued an error.  */
+	return error_mark_node;
+      if (!array_of_unknown_bound_p (type2)
+	  && TREE_CODE (type2) != VOID_TYPE
+	  && !complete_type_or_else (type2, NULL_TREE))
+	/* We already issued an error.  */
+	return error_mark_node;
       break;
 
     default:

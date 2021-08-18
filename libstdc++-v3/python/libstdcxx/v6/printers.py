@@ -491,14 +491,14 @@ class StdBitIteratorPrinter:
         return bool(self.val['_M_p'].dereference() & (1 << self.val['_M_offset']))
 
 class StdBitReferencePrinter:
-    "Print std::_Bit_reference"
+    "Print std::vector<bool>::reference"
 
     def __init__(self, typename, val):
         self.val = val
 
     def to_string(self):
         if not self.val['_M_p']:
-            return 'invalid std::_Bit_reference'
+            return 'invalid std::vector<bool>::reference'
         return bool(self.val['_M_p'].dereference() & (self.val['_M_mask']))
 
 class StdTuplePrinter:
@@ -2052,11 +2052,11 @@ def build_libstdcxx_dictionary ():
                                         StdDequeIteratorPrinter)
         libstdcxx_printer.add_version('__gnu_cxx::', '__normal_iterator',
                                       StdVectorIteratorPrinter)
-        libstdcxx_printer.add_version('std::', '_Bit_iterator',
+        libstdcxx_printer.add_container('std::', '_Bit_iterator',
                                       StdBitIteratorPrinter)
-        libstdcxx_printer.add_version('std::', '_Bit_const_iterator',
+        libstdcxx_printer.add_container('std::', '_Bit_const_iterator',
                                       StdBitIteratorPrinter)
-        libstdcxx_printer.add_version('std::', '_Bit_reference',
+        libstdcxx_printer.add_container('std::', '_Bit_reference',
                                       StdBitReferencePrinter)
         libstdcxx_printer.add_version('__gnu_cxx::', '_Slist_iterator',
                                       StdSlistIteratorPrinter)

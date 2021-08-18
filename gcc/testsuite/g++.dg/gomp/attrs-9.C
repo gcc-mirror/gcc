@@ -13,3 +13,4 @@ int b, c;
 int d;
 [[omp::directive (end declare target)]];
 [[omp::directive (end declare target)]];
+[[omp::directive (nothing)]];
