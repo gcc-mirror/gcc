@@ -847,6 +847,7 @@ enum omp_mask1
   OMP_CLAUSE_DETACH,  /* OpenMP 5.0.  */
   OMP_CLAUSE_AFFINITY,  /* OpenMP 5.0.  */
   OMP_CLAUSE_BIND,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_FILTER,  /* OpenMP 5.1.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -1772,6 +1773,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  break;
 	case 'f':
+	  if ((mask & OMP_CLAUSE_FILTER)
+	      && c->filter == NULL
+	      && gfc_match ("filter ( %e )", &c->filter) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_FINAL)
 	      && c->final_expr == NULL
 	      && gfc_match ("final ( %e )", &c->final_expr) == MATCH_YES)
@@ -2231,7 +2236,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  if ((mask & OMP_CLAUSE_PROC_BIND)
 	      && c->proc_bind == OMP_PROC_BIND_UNKNOWN)
 	    {
-	      if (gfc_match ("proc_bind ( master )") == MATCH_YES)
+	      /* Primary is new and master is deprecated in OpenMP 5.1.  */
+	      if (gfc_match ("proc_bind ( primary )") == MATCH_YES)
+		c->proc_bind = OMP_PROC_BIND_MASTER;
+	      else if (gfc_match ("proc_bind ( master )") == MATCH_YES)
 		c->proc_bind = OMP_PROC_BIND_MASTER;
 	      else if (gfc_match ("proc_bind ( spread )") == MATCH_YES)
 		c->proc_bind = OMP_PROC_BIND_SPREAD;
@@ -3142,6 +3150,8 @@ cleanup:
 #define OMP_LOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_BIND) | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_ORDER	\
    | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
+#define OMP_SCOPE_CLAUSES \
+  (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_REDUCTION)
 #define OMP_SECTIONS_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
@@ -3196,6 +3206,8 @@ cleanup:
 #define OMP_ATOMIC_CLAUSES \
   (omp_mask (OMP_CLAUSE_ATOMIC) | OMP_CLAUSE_CAPTURE | OMP_CLAUSE_HINT	\
    | OMP_CLAUSE_MEMORDER)
+#define OMP_MASKED_CLAUSES \
+  (omp_mask (OMP_CLAUSE_FILTER))
 
 
 static match
@@ -4155,6 +4167,31 @@ gfc_match_omp_parallel_do_simd (void)
 
 
 match
+gfc_match_omp_parallel_masked (void)
+{
+  return match_omp (EXEC_OMP_PARALLEL_MASKED,
+		    OMP_PARALLEL_CLAUSES | OMP_MASKED_CLAUSES);
+}
+
+match
+gfc_match_omp_parallel_masked_taskloop (void)
+{
+  return match_omp (EXEC_OMP_PARALLEL_MASKED_TASKLOOP,
+		    (OMP_PARALLEL_CLAUSES | OMP_MASKED_CLAUSES
+		     | OMP_TASKLOOP_CLAUSES)
+		    & ~(omp_mask (OMP_CLAUSE_IN_REDUCTION)));
+}
+
+match
+gfc_match_omp_parallel_masked_taskloop_simd (void)
+{
+  return match_omp (EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
+		    (OMP_PARALLEL_CLAUSES | OMP_MASKED_CLAUSES
+		     | OMP_TASKLOOP_CLAUSES | OMP_SIMD_CLAUSES)
+		    & ~(omp_mask (OMP_CLAUSE_IN_REDUCTION)));
+}
+
+match
 gfc_match_omp_parallel_master (void)
 {
   return match_omp (EXEC_OMP_PARALLEL_MASTER, OMP_PARALLEL_CLAUSES);
@@ -4453,6 +4490,13 @@ gfc_match_omp_scan (void)
 
 
 match
+gfc_match_omp_scope (void)
+{
+  return match_omp (EXEC_OMP_SCOPE, OMP_SCOPE_CLAUSES);
+}
+
+
+match
 gfc_match_omp_sections (void)
 {
   return match_omp (EXEC_OMP_SECTIONS, OMP_SECTIONS_CLAUSES);
@@ -4701,6 +4745,27 @@ gfc_match_omp_workshare (void)
 
 
 match
+gfc_match_omp_masked (void)
+{
+  return match_omp (EXEC_OMP_MASKED, OMP_MASKED_CLAUSES);
+}
+
+match
+gfc_match_omp_masked_taskloop (void)
+{
+  return match_omp (EXEC_OMP_MASKED_TASKLOOP,
+		    OMP_MASKED_CLAUSES | OMP_TASKLOOP_CLAUSES);
+}
+
+match
+gfc_match_omp_masked_taskloop_simd (void)
+{
+  return match_omp (EXEC_OMP_MASKED_TASKLOOP_SIMD,
+		    (OMP_MASKED_CLAUSES | OMP_TASKLOOP_CLAUSES
+		     | OMP_SIMD_CLAUSES));
+}
+
+match
 gfc_match_omp_master (void)
 {
   if (gfc_match_omp_eos () != MATCH_YES)
@@ -4732,6 +4797,17 @@ gfc_match_omp_ordered (void)
   return match_omp (EXEC_OMP_ORDERED, OMP_ORDERED_CLAUSES);
 }
 
+match
+gfc_match_omp_nothing (void)
+{
+  if (gfc_match_omp_eos () != MATCH_YES)
+    {
+      gfc_error ("Unexpected junk after $OMP NOTHING statement at %C");
+      return MATCH_ERROR;
+    }
+  /* Will use ST_NONE; therefore, no EXEC_OMP_ is needed.  */
+  return MATCH_YES;
+}
 
 match
 gfc_match_omp_ordered_depend (void)
@@ -4919,7 +4995,11 @@ gfc_match_omp_cancellation_point (void)
   gfc_omp_clauses *c;
   enum gfc_omp_cancel_kind kind = gfc_match_omp_cancel_kind ();
   if (kind == OMP_CANCEL_UNKNOWN)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Expected construct-type PARALLEL, SECTIONS, DO or TASKGROUP "
+		 "in $OMP CANCELLATION POINT statement at %C");
+      return MATCH_ERROR;
+    }
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP CANCELLATION POINT statement "
@@ -4942,7 +5022,10 @@ gfc_match_omp_end_nowait (void)
     nowait = true;
   if (gfc_match_omp_eos () != MATCH_YES)
     {
-      gfc_error ("Unexpected junk after NOWAIT clause at %C");
+      if (nowait)
+	gfc_error ("Unexpected junk after NOWAIT clause at %C");
+      else
+	gfc_error ("Unexpected junk at %C");
       return MATCH_ERROR;
     }
   new_st.op = EXEC_OMP_END_NOWAIT;
@@ -5251,6 +5334,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
+	    case EXEC_OMP_PARALLEL_MASKED:
 	    case EXEC_OMP_PARALLEL_MASTER:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 	    case EXEC_OMP_PARALLEL_WORKSHARE:
@@ -5265,10 +5349,12 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      ok = ifc == OMP_IF_PARALLEL || ifc == OMP_IF_SIMD;
 	      break;
 
+	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
 	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
 	      ok = ifc == OMP_IF_PARALLEL || ifc == OMP_IF_TASKLOOP;
 	      break;
 
+	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
 	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
 	      ok = (ifc == OMP_IF_PARALLEL
 		    || ifc == OMP_IF_TASKLOOP
@@ -5287,11 +5373,13 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      break;
 
 	    case EXEC_OMP_TASKLOOP:
+	    case EXEC_OMP_MASKED_TASKLOOP:
 	    case EXEC_OMP_MASTER_TASKLOOP:
 	      ok = ifc == OMP_IF_TASKLOOP;
 	      break;
 
 	    case EXEC_OMP_TASKLOOP_SIMD:
+	    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
 	    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
 	      ok = ifc == OMP_IF_TASKLOOP || ifc == OMP_IF_SIMD;
 	      break;
@@ -6057,9 +6145,13 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			&& (code->op == EXEC_OMP_LOOP
 			    || code->op == EXEC_OMP_TASKLOOP
 			    || code->op == EXEC_OMP_TASKLOOP_SIMD
+			    || code->op == EXEC_OMP_MASKED_TASKLOOP
+			    || code->op == EXEC_OMP_MASKED_TASKLOOP_SIMD
 			    || code->op == EXEC_OMP_MASTER_TASKLOOP
 			    || code->op == EXEC_OMP_MASTER_TASKLOOP_SIMD
 			    || code->op == EXEC_OMP_PARALLEL_LOOP
+			    || code->op == EXEC_OMP_PARALLEL_MASKED_TASKLOOP
+			    || code->op == EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD
 			    || code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP
 			    || code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD
 			    || code->op == EXEC_OMP_TARGET_PARALLEL_LOOP
@@ -6319,6 +6411,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     resolve_positive_int_expr (omp_clauses->num_teams, "NUM_TEAMS");
   if (omp_clauses->device)
     resolve_nonnegative_int_expr (omp_clauses->device, "DEVICE");
+  if (omp_clauses->filter)
+    resolve_nonnegative_int_expr (omp_clauses->filter, "FILTER");
   if (omp_clauses->hint)
     {
       resolve_scalar_int_expr (omp_clauses->hint, "HINT");
@@ -6981,8 +7075,12 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+    case EXEC_OMP_MASKED_TASKLOOP:
+    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_TARGET_PARALLEL_DO:
@@ -7130,11 +7228,23 @@ resolve_omp_do (gfc_code *code)
       is_simd = true;
       break;
     case EXEC_OMP_PARALLEL_LOOP: name = "!$OMP PARALLEL LOOP"; break;
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+      name = "!$OMP PARALLEL MASKED TASKLOOP";
+      break;
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+      name = "!$OMP PARALLEL MASKED TASKLOOP SIMD";
+      is_simd = true;
+      break;
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
       name = "!$OMP PARALLEL MASTER TASKLOOP";
       break;
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
       name = "!$OMP PARALLEL MASTER TASKLOOP SIMD";
+      is_simd = true;
+      break;
+    case EXEC_OMP_MASKED_TASKLOOP: name = "!$OMP MASKED TASKLOOP"; break;
+    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+      name = "!$OMP MASKED TASKLOOP SIMD";
       is_simd = true;
       break;
     case EXEC_OMP_MASTER_TASKLOOP: name = "!$OMP MASTER TASKLOOP"; break;
@@ -7299,6 +7409,12 @@ omp_code_to_statement (gfc_code *code)
     {
     case EXEC_OMP_PARALLEL:
       return ST_OMP_PARALLEL;
+    case EXEC_OMP_PARALLEL_MASKED:
+      return ST_OMP_PARALLEL_MASKED;
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+      return ST_OMP_PARALLEL_MASKED_TASKLOOP;
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+      return ST_OMP_PARALLEL_MASKED_TASKLOOP_SIMD;
     case EXEC_OMP_PARALLEL_MASTER:
       return ST_OMP_PARALLEL_MASTER;
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
@@ -7313,6 +7429,12 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_ORDERED;
     case EXEC_OMP_CRITICAL:
       return ST_OMP_CRITICAL;
+    case EXEC_OMP_MASKED:
+      return ST_OMP_MASKED;
+    case EXEC_OMP_MASKED_TASKLOOP:
+      return ST_OMP_MASKED_TASKLOOP;
+    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+      return ST_OMP_MASKED_TASKLOOP_SIMD;
     case EXEC_OMP_MASTER:
       return ST_OMP_MASTER;
     case EXEC_OMP_MASTER_TASKLOOP:
@@ -7353,6 +7475,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_DO_SIMD;
     case EXEC_OMP_SCAN:
       return ST_OMP_SCAN;
+    case EXEC_OMP_SCOPE:
+      return ST_OMP_SCOPE;
     case EXEC_OMP_SIMD:
       return ST_OMP_SIMD;
     case EXEC_OMP_TARGET:
@@ -7819,8 +7943,12 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_LOOP:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+    case EXEC_OMP_MASKED_TASKLOOP:
+    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_SIMD:
@@ -7843,10 +7971,13 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
       resolve_omp_do (code);
       break;
     case EXEC_OMP_CANCEL:
+    case EXEC_OMP_MASKED:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_PARALLEL:
+    case EXEC_OMP_PARALLEL_MASKED:
     case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_SECTIONS:
+    case EXEC_OMP_SCOPE:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SINGLE:
     case EXEC_OMP_TARGET:

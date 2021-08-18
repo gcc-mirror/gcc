@@ -1,3 +1,8 @@
+2021-08-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Switch mdynamic-no-pic to fPIC.
+	* Makefile.in: Regenerated.
+
 2021-06-28  Martin Sebor  <msebor@redhat.com>
 
 	* libcp1plugin.cc (record_decl_address): Replace a direct use

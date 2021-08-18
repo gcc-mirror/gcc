@@ -40,6 +40,7 @@ from unidiff import PatchSet
 
 LINE_LIMIT = 100
 TAB_WIDTH = 8
+CO_AUTHORED_BY_PREFIX = 'co-authored-by: '
 
 pr_regex = re.compile(r'(\/(\/|\*)|[Cc*!])\s+(?P<pr>PR [a-z+-]+\/[0-9]+)')
 prnum_regex = re.compile(r'PR (?P<comp>[a-z+-]+)/(?P<num>[0-9]+)')
@@ -157,7 +158,11 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
     global firstpr
 
     if additional_prs:
-        prs = [pr for pr in additional_prs if pr not in prs]
+        for apr in additional_prs:
+            if not apr.startswith('PR ') and '/' in apr:
+                apr = 'PR ' + apr
+            if apr not in prs:
+                prs.append(apr)
     for file in diff:
         # skip files that can't be parsed
         if file.path == '/dev/null':
@@ -313,6 +318,12 @@ def update_copyright(data):
                 f.write(content)
 
 
+def skip_line_in_changelog(line):
+    if line.lower().startswith(CO_AUTHORED_BY_PREFIX) or line.startswith('#'):
+        return False
+    return True
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=help_message)
     parser.add_argument('input', nargs='?',
@@ -346,7 +357,7 @@ if __name__ == '__main__':
                                     args.fill_up_bug_titles, args.pr_numbers)
         if args.changelog:
             lines = open(args.changelog).read().split('\n')
-            start = list(takewhile(lambda l: not l.startswith('#'), lines))
+            start = list(takewhile(skip_line_in_changelog, lines))
             end = lines[len(start):]
             with open(args.changelog, 'w') as f:
                 if not start or not start[0]:

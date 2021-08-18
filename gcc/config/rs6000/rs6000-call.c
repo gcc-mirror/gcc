@@ -13493,6 +13493,9 @@ rs6000_init_builtins (void)
 					    intTI_type_node, 1);
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
+  pcvoid_type_node
+    = build_pointer_type (build_qualified_type (void_type_node,
+						TYPE_QUAL_CONST));
 
   /* Create Altivec, VSX and MMA builtins on machines with at least the
      general purpose extensions (970 and newer) to allow the use of
@@ -13651,10 +13654,6 @@ altivec_init_builtins (void)
   tree decl;
 
   tree pvoid_type_node = build_pointer_type (void_type_node);
-
-  tree pcvoid_type_node
-    = build_pointer_type (build_qualified_type (void_type_node,
-						TYPE_QUAL_CONST));
 
   tree int_ftype_opaque
     = build_function_type_list (integer_type_node,

@@ -1450,6 +1450,8 @@ c_cpp_builtins (cpp_reader *pfile)
       /* For libgcov.  */
       builtin_define_with_int_value ("__LIBGCC_VTABLE_USES_DESCRIPTORS__",
 				     TARGET_VTABLE_USES_DESCRIPTORS);
+      builtin_define_with_int_value ("__LIBGCC_GCOV_TYPE_SIZE",
+				     targetm.gcov_type_size());
     }
 
   /* For use in assembly language.  */

@@ -573,8 +573,8 @@ namespace
     : _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
     { get_max_length(_M_max_length); }
 
+    static constexpr int _S_indent = 4;
     std::size_t	_M_max_length;
-    enum { _M_indent = 4 } ;
     std::size_t	_M_column;
     bool	_M_first_line;
     bool	_M_wordwrap;
@@ -603,7 +603,7 @@ namespace
     if (length == 0)
       return;
 
-    // Consider first '\n' at begining cause it impacts column.
+    // First consider '\n' at the beginning because it impacts the column.
     if (word[0] == '\n')
       {
 	fprintf(stderr, "\n");
@@ -625,8 +625,8 @@ namespace
 	// If this isn't the first line, indent
 	if (ctx._M_column == 1 && !ctx._M_first_line)
 	  {
-	    const char spacing[ctx._M_indent + 1] = "    ";
-	    print_raw(ctx, spacing, ctx._M_indent);
+	    const char spacing[PrintContext::_S_indent + 1] = "    ";
+	    print_raw(ctx, spacing, PrintContext::_S_indent);
 	  }
 
 	int written = fprintf(stderr, "%.*s", (int)length, word);

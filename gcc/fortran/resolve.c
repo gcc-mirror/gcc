@@ -10236,19 +10236,27 @@ resolve_sync (gfc_code *code)
 
   /* Check STAT.  */
   gfc_resolve_expr (code->expr2);
-  if (code->expr2
-      && (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0
-	  || code->expr2->expr_type != EXPR_VARIABLE))
-    gfc_error ("STAT= argument at %L must be a scalar INTEGER variable",
-	       &code->expr2->where);
+  if (code->expr2)
+    {
+      if (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0)
+	gfc_error ("STAT= argument at %L must be a scalar INTEGER variable",
+		   &code->expr2->where);
+      else
+	gfc_check_vardef_context (code->expr2, false, false, false,
+				  _("STAT variable"));
+    }
 
   /* Check ERRMSG.  */
   gfc_resolve_expr (code->expr3);
-  if (code->expr3
-      && (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0
-	  || code->expr3->expr_type != EXPR_VARIABLE))
-    gfc_error ("ERRMSG= argument at %L must be a scalar CHARACTER variable",
-	       &code->expr3->where);
+  if (code->expr3)
+    {
+      if (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0)
+	gfc_error ("ERRMSG= argument at %L must be a scalar CHARACTER variable",
+		   &code->expr3->where);
+      else
+	gfc_check_vardef_context (code->expr3, false, false, false,
+				  _("ERRMSG variable"));
+    }
 }
 
 
@@ -10810,6 +10818,9 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_DO:
 	case EXEC_OMP_DO_SIMD:
 	case EXEC_OMP_LOOP:
+	case EXEC_OMP_MASKED:
+	case EXEC_OMP_MASKED_TASKLOOP:
+	case EXEC_OMP_MASKED_TASKLOOP_SIMD:
 	case EXEC_OMP_MASTER:
 	case EXEC_OMP_MASTER_TASKLOOP:
 	case EXEC_OMP_MASTER_TASKLOOP_SIMD:
@@ -10818,6 +10829,9 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_PARALLEL_DO:
 	case EXEC_OMP_PARALLEL_DO_SIMD:
 	case EXEC_OMP_PARALLEL_LOOP:
+	case EXEC_OMP_PARALLEL_MASKED:
+	case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+	case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
 	case EXEC_OMP_PARALLEL_MASTER:
 	case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
 	case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
@@ -10825,6 +10839,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_PARALLEL_WORKSHARE:
 	case EXEC_OMP_SECTIONS:
 	case EXEC_OMP_SIMD:
+	case EXEC_OMP_SCOPE:
 	case EXEC_OMP_SINGLE:
 	case EXEC_OMP_TARGET:
 	case EXEC_OMP_TARGET_DATA:
@@ -11785,6 +11800,9 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_PARALLEL_MASKED:
+	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
 	    case EXEC_OMP_PARALLEL_MASTER:
 	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
 	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
@@ -12240,8 +12258,12 @@ start:
 	case EXEC_OMP_MASTER:
 	case EXEC_OMP_MASTER_TASKLOOP:
 	case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+	case EXEC_OMP_MASKED:
+	case EXEC_OMP_MASKED_TASKLOOP:
+	case EXEC_OMP_MASKED_TASKLOOP_SIMD:
 	case EXEC_OMP_ORDERED:
 	case EXEC_OMP_SCAN:
+	case EXEC_OMP_SCOPE:
 	case EXEC_OMP_SECTIONS:
 	case EXEC_OMP_SIMD:
 	case EXEC_OMP_SINGLE:
@@ -12281,6 +12303,9 @@ start:
 	case EXEC_OMP_PARALLEL_DO:
 	case EXEC_OMP_PARALLEL_DO_SIMD:
 	case EXEC_OMP_PARALLEL_LOOP:
+	case EXEC_OMP_PARALLEL_MASKED:
+	case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
+	case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
 	case EXEC_OMP_PARALLEL_MASTER:
 	case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
 	case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:

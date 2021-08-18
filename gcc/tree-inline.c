@@ -1658,6 +1658,18 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  copy = gimple_build_omp_master (s1);
 	  break;
 
+	case GIMPLE_OMP_MASKED:
+	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
+	  copy = gimple_build_omp_masked
+		   (s1, gimple_omp_masked_clauses (stmt));
+	  break;
+
+	case GIMPLE_OMP_SCOPE:
+	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
+	  copy = gimple_build_omp_scope
+		   (s1, gimple_omp_scope_clauses (stmt));
+	  break;
+
 	case GIMPLE_OMP_TASKGROUP:
 	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
 	  copy = gimple_build_omp_taskgroup
@@ -2868,7 +2880,7 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 		  gimple_set_location (stmt, UNKNOWN_LOCATION);
 		}
 	      gsi_remove (&si, false);
-	      gsi_insert_before (&dsi, stmt, GSI_SAME_STMT);
+	      gsi_insert_before (&dsi, stmt, GSI_NEW_STMT);
 	      continue;
 	    }
 
@@ -2894,7 +2906,7 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 	    new_stmt = as_a <gdebug *> (gimple_copy (stmt));
 	  else
 	    gcc_unreachable ();
-	  gsi_insert_before (&dsi, new_stmt, GSI_SAME_STMT);
+	  gsi_insert_before (&dsi, new_stmt, GSI_NEW_STMT);
 	  id->debug_stmts.safe_push (new_stmt);
 	  gsi_prev (&ssi);
 	}
@@ -4544,6 +4556,8 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:

@@ -658,11 +658,19 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		*expr_p
 		  = fold_builtin_source_location (EXPR_LOCATION (*expr_p));
 		break;
+	      case CP_BUILT_IN_IS_CORRESPONDING_MEMBER:
+		*expr_p
+		  = fold_builtin_is_corresponding_member
+			(EXPR_LOCATION (*expr_p), call_expr_nargs (*expr_p),
+			 &CALL_EXPR_ARG (*expr_p, 0));
+		break;
 	      case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
 		*expr_p
 		  = fold_builtin_is_pointer_inverconvertible_with_class
 			(EXPR_LOCATION (*expr_p), call_expr_nargs (*expr_p),
 			 &CALL_EXPR_ARG (*expr_p, 0));
+		break;
+	      default:
 		break;
 	      }
 	}
@@ -2578,6 +2586,11 @@ cp_fold (tree x)
 		break;
 	      case CP_BUILT_IN_SOURCE_LOCATION:
 		x = fold_builtin_source_location (EXPR_LOCATION (x));
+		break;
+	      case CP_BUILT_IN_IS_CORRESPONDING_MEMBER:
+	        x = fold_builtin_is_corresponding_member
+			(EXPR_LOCATION (x), call_expr_nargs (x),
+			 &CALL_EXPR_ARG (x, 0));
 		break;
 	      case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
                 x = fold_builtin_is_pointer_inverconvertible_with_class

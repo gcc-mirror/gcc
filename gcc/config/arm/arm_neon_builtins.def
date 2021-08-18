@@ -211,9 +211,6 @@ VAR10 (GETLANE, vget_lane,
 VAR6 (GETLANE, vget_laneu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR10 (SETLANE, vset_lane,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR10 (UNOP, vdup_n,
-	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR4 (UNOP, vdup_n, v8hf, v4hf, v8bf, v4bf)
 VAR10 (GETLANE, vdup_lane,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
 VAR4 (GETLANE, vdup_lane, v8hf, v4hf, v8bf, v4bf)

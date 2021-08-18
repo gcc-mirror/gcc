@@ -2464,8 +2464,16 @@ Type::is_direct_iface_type() const
 bool
 Type::is_direct_iface_type_helper(Unordered_set(const Type*)* visited) const
 {
-  if (this->points_to() != NULL
-      || this->channel_type() != NULL
+  if (this->points_to() != NULL)
+    {
+      // Pointers to notinheap types must be stored indirectly.  See
+      // https://golang.org/issue/42076.
+      if (!this->points_to()->in_heap())
+	return false;
+      return true;
+    }
+
+  if (this->channel_type() != NULL
       || this->function_type() != NULL
       || this->map_type() != NULL)
     return true;
@@ -3597,10 +3605,36 @@ Type::method_constructor(Gogo*, Type* method_type,
       vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
     }
 
-  bool use_direct_iface_stub =
-    this->points_to() != NULL
-    && this->points_to()->is_direct_iface_type()
-    && m->is_value_method();
+  // The direct_iface_stub dereferences the value stored in the
+  // interface when calling the method.
+  //
+  // We need this for a value method if this type is a pointer to a
+  // direct-iface type.  For example, if we have "type C chan int" and M
+  // is a value method on C, then since a channel is a direct-iface type
+  // M expects a value of type C.  We are generating the method table
+  // for *C, so the value stored in the interface is *C.  We have to
+  // call the direct-iface stub to dereference *C to get C to pass to M.
+  //
+  // We also need this for a pointer method if the pointer itself is not
+  // a direct-iface type, as arises for notinheap types.  In this case
+  // we have "type NIH ..." where NIH is go:notinheap.  Since NIH is
+  // notinheap, *NIH is a pointer type that is not a direct-iface type,
+  // so the value stored in the interface is actually **NIH.  The method
+  // expects *NIH, so we have to call the direct-iface stub to
+  // dereference **NIH to get *NIH to pass to M.  (This case doesn't
+  // arise for value methods because pointer types can't have methods,
+  // so there is no such thing as a value method for type *NIH.)
+
+  bool use_direct_iface_stub = false;
+  if (m->is_value_method()
+      && this->points_to() != NULL
+      && this->points_to()->is_direct_iface_type())
+    use_direct_iface_stub = true;
+  if (!m->is_value_method()
+      && this->points_to() != NULL
+      && !this->is_direct_iface_type())
+    use_direct_iface_stub = true;
+
   Named_object* no = (use_direct_iface_stub
                       ? m->iface_stub_object()
                       : (m->needs_stub_method()
@@ -10902,6 +10936,20 @@ Named_type::do_needs_key_update()
   return ret;
 }
 
+// Return whether this type is permitted in the heap.
+bool
+Named_type::do_in_heap() const
+{
+  if (!this->in_heap_)
+    return false;
+  if (this->seen_)
+    return true;
+  this->seen_ = true;
+  bool ret = this->type_->in_heap();
+  this->seen_ = false;
+  return ret;
+}
+
 // Return a hash code.  This is used for method lookup.  We simply
 // hash on the name itself.
 
@@ -11434,7 +11482,7 @@ Type::finalize_methods(Gogo* gogo, const Type* type, Location location,
       *all_methods = NULL;
     }
   Type::build_stub_methods(gogo, type, *all_methods, location);
-  if (type->is_direct_iface_type())
+  if (type->is_direct_iface_type() || !type->in_heap())
     Type::build_direct_iface_stub_methods(gogo, type, *all_methods, location);
 }
 
@@ -11814,12 +11862,23 @@ Type::build_direct_iface_stub_methods(Gogo* gogo, const Type* type,
   if (methods == NULL)
     return;
 
+  bool is_direct_iface = type->is_direct_iface_type();
+  bool in_heap = type->in_heap();
   for (Methods::const_iterator p = methods->begin();
        p != methods->end();
        ++p)
     {
       Method* m = p->second;
-      if (!m->is_value_method())
+
+      // We need a direct-iface stub for a value method for a
+      // direct-iface type, and for a pointer method for a not-in-heap
+      // type.
+      bool need_stub = false;
+      if (is_direct_iface && m->is_value_method())
+        need_stub = true;
+      if (!in_heap && !m->is_value_method())
+        need_stub = true;
+      if (!need_stub)
         continue;
 
       Type* receiver_type = const_cast<Type*>(type);

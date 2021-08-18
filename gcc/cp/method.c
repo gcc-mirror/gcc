@@ -1029,6 +1029,8 @@ is_cat (tree type, comp_cat_tag tag)
 static comp_cat_tag
 cat_tag_for (tree type)
 {
+  if (!CLASS_TYPE_P (type) || !decl_in_std_namespace_p (TYPE_MAIN_DECL (type)))
+    return cc_last;
   for (int i = 0; i < cc_last; ++i)
     {
       comp_cat_tag tag = (comp_cat_tag)i;

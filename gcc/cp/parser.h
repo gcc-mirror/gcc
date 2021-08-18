@@ -216,15 +216,14 @@ struct cp_omp_declare_simd_data {
   bool error_seen; /* Set if error has been reported.  */
   bool fndecl_seen; /* Set if one fn decl/definition has been seen already.  */
   bool variant_p; /* Set for #pragma omp declare variant.  */
-  bool in_omp_attribute_pragma; /* True if declare simd/variant comes from
-				   C++11 attribute rather than pragma.  */
+  location_t loc;
   vec<cp_token_cache_ptr> tokens;
-  tree clauses;
+  tree *attribs[2];
 };
 
 /* Helper data structure for parsing #pragma acc routine.  */
 struct cp_oacc_routine_data : cp_omp_declare_simd_data {
-  location_t loc;
+  tree clauses;
 };
 
 /* The cp_parser structure represents the C++ parser.  */

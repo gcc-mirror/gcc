@@ -119,6 +119,11 @@ for f in $gofiles; do
 	386 | amd64 | amd64p32 | arm | armbe | arm64 | arm64be | alpha | ia64 | m68k | mips | mipsle | mips64 | mips64le | mips64p32 | mips64p32le | nios2 | ppc | ppc64 | ppc64le | riscv | riscv64 | s390 | s390x | sh | shbe | sparc | sparc64 | wasm)
 	    tag1=nonmatchingtag
 	    ;;
+	*)
+	    # File name like x_amd64_random.go, where tag1=random.
+	    # Don't match based on tag2.
+	    tag2=
+	    ;;
     esac
 
     case "$tag2" in
@@ -151,18 +156,18 @@ for f in $gofiles; do
 		    fi
 		    match=false
 		    ;;
-		$goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | go1.[0-9] | go1.[0-9][0-9])
+		$goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | "goexperiment.fieldtrack" | go1.[0-9] | go1.[0-9][0-9])
 		    match=true
 		    ;;
-		"!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!"go1.[0-9] | "!"go1.1[0-6])
+		"!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!goexperiment.fieldtrack" | "!"go1.[0-9] | "!"go1.1[0-7])
 		    ;;
 		*,*)
 		    cmatch=true
 		    for ctag in `echo $tag | sed -e 's/,/ /g'`; do
 			case $ctag in
-			    $goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | go1.[0-9] | go1.[0-9][0-9])
+			    $goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | "goexperiment.fieldtrack" | go1.[0-9] | go1.[0-9][0-9])
 				;;
-			    "!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!"go1.[0-9] | "!"go1.1[0-6])
+			    "!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!goexperiment.fieldtrack" | "!"go1.[0-9] | "!"go1.1[0-7])
 				cmatch=false
 				;;
 			    "!"*)

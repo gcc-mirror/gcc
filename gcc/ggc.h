@@ -263,7 +263,11 @@ extern const char *ggc_alloc_string (const char *contents, int length
 
 /* Invoke the collector.  Garbage collection occurs only when this
    function is called, not during allocations.  */
-extern void ggc_collect	(void);
+enum ggc_collect {
+  GGC_COLLECT_HEURISTIC,
+  GGC_COLLECT_FORCE
+};
+extern void ggc_collect (enum ggc_collect mode = GGC_COLLECT_HEURISTIC);
 
 /* Return unused memory pages to the system.  */
 extern void ggc_trim (void);

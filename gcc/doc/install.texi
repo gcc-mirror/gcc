@@ -1328,6 +1328,23 @@ rv64imac with lp64 and rv64imafc with lp64 will reuse this multi-lib set.
 rv64ima-lp64--f,c,fc
 @end smallexample
 
+@option{--with-multilib-generator} have an optional configuration argument
+@option{--cmodel=val} for code model, this option will expand with other
+config options, @var{val} is a comma separated list of possible code model,
+currently we support medlow and medany.
+
+Example 5: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+medlow code model
+@smallexample
+rv64ima-lp64--;--cmodel=medlow
+@end smallexample
+
+Example 6: Add multi-lib suppport for rv64ima with lp64; rv64ima with lp64 and
+medlow code model; rv64ima with lp64 and medany code model
+@smallexample
+rv64ima-lp64--;--cmodel=medlow,medany
+@end smallexample
+
 @item --with-endian=@var{endians}
 Specify what endians to use.
 Currently only implemented for sh*-*-*.

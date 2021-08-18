@@ -111,6 +111,7 @@ void
 bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
      int nte, int tl, int nth, int g, int nta, int fi, int pp, int *q, int *dd, int ntm)
 {
+  [[omp::directive (nothing)]];
   [[omp::directive (for simd
     private (p) firstprivate (f) lastprivate (l) linear (ll:1) reduction(+:r) schedule(static, 4) collapse(1) nowait
     safelen(8) simdlen(4) aligned(q: 32) nontemporal(ntm) if(i1) order(concurrent) allocate (f))]]
@@ -348,6 +349,10 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) reduction(+:r)
     num_threads (nth) proc_bind(spread) copyin(t) allocate (f))]]
     ;
+  [[omp::directive (parallel masked
+    private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) reduction(+:r)
+    num_threads (nth) proc_bind(spread) copyin(t) allocate (f) filter (d))]]
+    ;
   [[omp::directive (parallel
     private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) reduction(+:r)
     num_threads (nth) proc_bind(spread) copyin(t) allocate (f))]]
@@ -358,7 +363,15 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     reduction(default, +:r) in_reduction(+:r2) allocate (f)))]]
   for (int i = 0; i < 64; i++)
     ll++;
+  [[omp::sequence (directive (taskgroup task_reduction (+:r2) allocate (r2)),
+    omp::directive (masked taskloop
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable priority (pp)
+    reduction(default, +:r) in_reduction(+:r2) allocate (f) filter (d)))]]
+  for (int i = 0; i < 64; i++)
+    ll++;
   [[omp::directive (master)]];
+  [[omp::directive (masked)]];
+  [[omp::directive (masked filter (d))]];
   [[omp::sequence (omp::directive (taskgroup task_reduction (+:r2) allocate (r2)),
     directive (master taskloop simd
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp)
@@ -366,9 +379,21 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     order(concurrent) allocate (f)))]]
   for (int i = 0; i < 64; i++)
     ll++;
+  [[omp::sequence (omp::directive (taskgroup task_reduction (+:r2) allocate (r2)),
+    directive (masked taskloop simd
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp)
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2) nontemporal(ntm)
+    order(concurrent) allocate (f) filter (d)))]]
+  for (int i = 0; i < 64; i++)
+    ll++;
   [[omp::directive (parallel master taskloop
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable priority (pp)
     reduction(default, +:r) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) allocate (f))]]
+  for (int i = 0; i < 64; i++)
+    ll++;
+  [[omp::directive (parallel masked taskloop
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable priority (pp)
+    reduction(default, +:r) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) allocate (f) filter (d))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (parallel master taskloop simd
@@ -377,10 +402,22 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     order(concurrent) allocate (f))]]
   for (int i = 0; i < 64; i++)
     ll++;
+  [[omp::directive (parallel masked taskloop simd
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp)
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t)
+    order(concurrent) allocate (f) filter (d))]]
+  for (int i = 0; i < 64; i++)
+    ll++;
   [[omp::sequence (directive (taskgroup task_reduction (+:r2) allocate (r2)),
     directive (master taskloop
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp)
     reduction(default, +:r) in_reduction(+:r2)))]]
+  for (int i = 0; i < 64; i++)
+    ll++;
+  [[omp::sequence (directive (taskgroup task_reduction (+:r2) allocate (r2)),
+    directive (masked taskloop
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp)
+    reduction(default, +:r) in_reduction(+:r2) filter (d)))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::sequence (omp::directive (taskgroup task_reduction (+:r2) allocate (r2)),
@@ -390,15 +427,33 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     order(concurrent) allocate (f)))]]
   for (int i = 0; i < 64; i++)
     ll++;
+  [[omp::sequence (omp::directive (taskgroup task_reduction (+:r2) allocate (r2)),
+    omp::directive (masked taskloop simd
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp)
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2) nontemporal(ntm)
+    order(concurrent) allocate (f) filter (d)))]]
+  for (int i = 0; i < 64; i++)
+    ll++;
   [[omp::directive (parallel master taskloop
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp)
     reduction(default, +:r) num_threads (nth) proc_bind(spread) copyin(t) allocate (f))]]
+  for (int i = 0; i < 64; i++)
+    ll++;
+  [[omp::directive (parallel masked taskloop
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp)
+    reduction(default, +:r) num_threads (nth) proc_bind(spread) copyin(t) allocate (f) filter (d))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (parallel master taskloop simd
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp)
     safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) num_threads (nth) proc_bind(spread) copyin(t)
     order(concurrent) allocate (f))]]
+  for (int i = 0; i < 64; i++)
+    ll++;
+  [[omp::directive (parallel masked taskloop simd
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp)
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) num_threads (nth) proc_bind(spread) copyin(t)
+    order(concurrent) allocate (f) filter (d))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (loop bind(thread) order(concurrent)
@@ -500,11 +555,23 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
       [[omp::directive (cancellation point parallel)]];
     }
   }
+  [[omp::directive (scope private (p) reduction(+:r) nowait)]]
+    ;
+  [[omp::directive (scope private (p) reduction(task, +:r))]]
+    ;
   extern int t2;
-  [[omp::directive (threadprivate (t2))]]
+  [[omp::directive (threadprivate (t2))]];
   extern int t2;
   [[omp::directive (declare reduction (dr: int: omp_out += omp_in) initializer (omp_priv = 0))]]
   ;
+  [[omp::directive (parallel)]]
+  if (0)
+    ;
+  [[omp::directive (parallel)]]
+  while (0)
+    ;
+  [[omp::directive (parallel)]]
+  switch (0) { case 1: break; default: break; }
 }
 
 void corge1 ();
@@ -521,7 +588,7 @@ corge ()
     omp::directive (declare simd simdlen(8) notinbranch)]]
   extern int corge3 (int l, int *p);
   [[omp::directive (declare simd simdlen(4) linear(l) aligned(p:4) uniform(p) inbranch),
-    directive (declare simd simdlen(8) notinbranch)]]
+    omp::directive (declare simd simdlen(8) notinbranch)]]
   extern int corge4 (int l, int *p);
   [[omp::sequence (directive (declare simd simdlen(4) linear(l) aligned(p:4) uniform(p) inbranch),
     omp::directive (declare simd simdlen(8) notinbranch))]]

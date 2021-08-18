@@ -32,6 +32,6 @@ int test2()
 /* Flags for pure call.  */
 /* { dg-final { scan-tree-dump "parm 0 flags: direct not_returned" "modref1"  } } */
 /* Flags for const call.  */
-/* { dg-final { scan-tree-dump "parm 0 flags: unused not_returned" "modref1"  } } */
+/* { dg-final { scan-tree-dump "parm 0 flags: not_returned" "modref1"  } } */
 /* Overall we want to make "int a" non escaping.  */
 /* { dg-final { scan-tree-dump "return 42" "optimized"  } } */

@@ -418,6 +418,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_EMIT_VZEROUPPER]
 #define TARGET_EXPAND_ABS \
 	ix86_tune_features[X86_TUNE_EXPAND_ABS]
+#define TARGET_V2DF_REDUCTION_PREFER_HADDPD \
+	ix86_tune_features[X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {

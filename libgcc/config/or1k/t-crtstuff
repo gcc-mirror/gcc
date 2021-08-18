@@ -1,0 +1,2 @@
+# Compile crtbeginS.o and crtendS.o with -mcmodel=large
+CRTSTUFF_T_CFLAGS_S += -mcmodel=large

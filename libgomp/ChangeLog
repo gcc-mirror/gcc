@@ -1,3 +1,55 @@
+2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/scope-1.f90: New test.
+	* testsuite/libgomp.fortran/task-reduction-16.f90: New test.
+
+2021-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add scope.c
+	* Makefile.in: Regenerated.
+	* libgomp_g.h (GOMP_scope_start): Declare.
+	* libgomp.map: Add GOMP_scope_start@@GOMP_5.1.
+	* scope.c: New file.
+	* testsuite/libgomp.c-c++-common/scope-1.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-16.c: New test.
+
+2021-08-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/mode-transitions.c: Address
+	'?:' issues.
+
+2021-08-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/masked-1.f90: New test.
+
+2021-08-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/static-variable-1.c: Adjust.
+
+2021-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/masked-1.c: New test.
+
+2021-08-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* env.c (parse_bind_var): Accept 'primary' as alias for
+	'master'.
+	(omp_display_env): Add TODO comment to
+	change 'master' to 'primary' in proc_bind for OpenMP 5.1.
+	* libgomp.texi: Change 'master thread' to 'primary thread'
+	in line with OpenMP 5.1.
+	(omp_get_proc_bind): Add omp_proc_bind_primary and note that
+	omp_proc_bind_master is an alias of it.
+	(OMP_PROC_BIND): Mention 'PRIMARY'.
+	* omp.h.in (__GOMP_DEPRECATED_5_1): Define.
+	(omp_proc_bind_primary): Add.
+	(omp_proc_bind_master): Deprecate for OpenMP 5.1.
+	* omp_lib.f90.in (omp_proc_bind_primary): Add.
+	(omp_proc_bind_master): Deprecate for OpenMP 5.1.
+	* omp_lib.h.in (omp_proc_bind_primary): Add.
+	* testsuite/libgomp.c/affinity-1.c: Check that
+	'primary' works and is identical to 'master'.
+
 2021-08-09  Julian Brown  <julian@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>

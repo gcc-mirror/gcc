@@ -1,3 +1,14 @@
+2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* libgcov.h (gcov_type): Define using __LIBGCC_GCOV_TYPE_SIZE.
+	(gcov_type_unsigned): Likewise.
+
+2021-08-14  Stafford Horne  <shorne@gmail.com>
+
+	PR target/99783
+	* config.host (or1k-*, tmake_file): Add or1k/t-crtstuff.
+	* config/or1k/t-crtstuff: New file.
+
 2021-08-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* libgcov-driver.c (#include <stdint.h>): Remove.

@@ -8075,9 +8075,9 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	       : (fun->curr_properties & PROP_cfg) ? "cfg"
 	       : "");
 
-      if (cfun->cfg)
+      if (fun && fun->cfg)
 	{
-	  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+	  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (fun);
 	  if (bb->count.initialized_p ())
 	    fprintf (file, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
@@ -8163,8 +8163,8 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 
       tree name;
 
-      if (gimple_in_ssa_p (cfun))
-	FOR_EACH_SSA_NAME (ix, name, cfun)
+      if (gimple_in_ssa_p (fun))
+	FOR_EACH_SSA_NAME (ix, name, fun)
 	  {
 	    if (!SSA_NAME_VAR (name)
 		/* SSA name with decls without a name still get
@@ -8200,7 +8200,7 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 
       fprintf (file, "}\n");
     }
-  else if (fun->curr_properties & PROP_gimple_any)
+  else if (fun && (fun->curr_properties & PROP_gimple_any))
     {
       /* The function is now in GIMPLE form but the CFG has not been
 	 built yet.  Emit the single sequence of GIMPLE statements

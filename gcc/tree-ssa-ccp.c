@@ -1389,6 +1389,66 @@ bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
     }
 }
 
+/* Determine the mask pair *VAL and *MASK from multiplying the
+   argument mask pair RVAL, RMASK by the unsigned constant C.  */
+void
+bit_value_mult_const (signop sgn, int width,
+		      widest_int *val, widest_int *mask,
+		      const widest_int &rval, const widest_int &rmask,
+		      widest_int c)
+{
+  widest_int sum_mask = 0;
+
+  /* Ensure rval_lo only contains known bits.  */
+  widest_int rval_lo = wi::bit_and_not (rval, rmask);
+
+  if (rval_lo != 0)
+    {
+      /* General case (some bits of multiplicand are known set).  */
+      widest_int sum_val = 0;
+      while (c != 0)
+	{
+	  /* Determine the lowest bit set in the multiplier.  */
+	  int bitpos = wi::ctz (c);
+	  widest_int term_mask = rmask << bitpos;
+	  widest_int term_val = rval_lo << bitpos;
+
+	  /* sum += term.  */
+	  widest_int lo = sum_val + term_val;
+	  widest_int hi = (sum_val | sum_mask) + (term_val | term_mask);
+	  sum_mask |= term_mask | (lo ^ hi);
+	  sum_val = lo;
+
+	  /* Clear this bit in the multiplier.  */
+	  c ^= wi::lshift (1, bitpos);
+	}
+      /* Correctly extend the result value.  */
+      *val = wi::ext (sum_val, width, sgn);
+    }
+  else
+    {
+      /* Special case (no bits of multiplicand are known set).  */
+      while (c != 0)
+	{
+	  /* Determine the lowest bit set in the multiplier.  */
+	  int bitpos = wi::ctz (c);
+	  widest_int term_mask = rmask << bitpos;
+
+	  /* sum += term.  */
+	  widest_int hi = sum_mask + term_mask;
+	  sum_mask |= term_mask | hi;
+
+	  /* Clear this bit in the multiplier.  */
+	  c ^= wi::lshift (1, bitpos);
+	}
+      *val = 0;
+    }
+
+  /* Correctly extend the result mask.  */
+  *mask = wi::ext (sum_mask, width, sgn);
+}
+
+
 /* Apply the operation CODE in type TYPE to the value, mask pairs
    R1VAL, R1MASK and R2VAL, R2MASK representing a values of type R1TYPE
    and R2TYPE and set the value, mask pair *VAL and *MASK to the result.  */
@@ -1398,7 +1458,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		 widest_int *val, widest_int *mask,
 		 signop r1type_sgn, int r1type_precision,
 		 const widest_int &r1val, const widest_int &r1mask,
-		 signop r2type_sgn, int r2type_precision,
+		 signop r2type_sgn, int r2type_precision ATTRIBUTE_UNUSED,
 		 const widest_int &r2val, const widest_int &r2mask)
 {
   bool swap_p = false;
@@ -1445,7 +1505,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	    }
 	  else
 	    {
-	      if (wi::neg_p (shift))
+	      if (wi::neg_p (shift, r2type_sgn))
 		{
 		  shift = -shift;
 		  if (code == RROTATE_EXPR)
@@ -1482,7 +1542,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	    }
 	  else
 	    {
-	      if (wi::neg_p (shift))
+	      if (wi::neg_p (shift, r2type_sgn))
 		break;
 	      if (code == RSHIFT_EXPR)
 		{
@@ -1522,35 +1582,47 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
       }
 
     case MINUS_EXPR:
+    case POINTER_DIFF_EXPR:
       {
-	widest_int temv, temm;
-	bit_value_unop (NEGATE_EXPR, r2type_sgn, r2type_precision, &temv, &temm,
-			  r2type_sgn, r2type_precision, r2val, r2mask);
-	bit_value_binop (PLUS_EXPR, sgn, width, val, mask,
-			 r1type_sgn, r1type_precision, r1val, r1mask,
-			 r2type_sgn, r2type_precision, temv, temm);
+	/* Subtraction is derived from the addition algorithm above.  */
+	widest_int lo = wi::bit_and_not (r1val, r1mask) - (r2val | r2mask);
+	lo = wi::ext (lo, width, sgn);
+	widest_int hi = (r1val | r1mask) - wi::bit_and_not (r2val, r2mask);
+	hi = wi::ext (hi, width, sgn);
+	*mask = r1mask | r2mask | (lo ^ hi);
+	*mask = wi::ext (*mask, width, sgn);
+	*val = lo;
 	break;
       }
 
     case MULT_EXPR:
-      {
-	/* Just track trailing zeros in both operands and transfer
-	   them to the other.  */
-	int r1tz = wi::ctz (r1val | r1mask);
-	int r2tz = wi::ctz (r2val | r2mask);
-	if (r1tz + r2tz >= width)
-	  {
-	    *mask = 0;
-	    *val = 0;
-	  }
-	else if (r1tz + r2tz > 0)
-	  {
-	    *mask = wi::ext (wi::mask <widest_int> (r1tz + r2tz, true),
-			     width, sgn);
-	    *val = 0;
-	  }
-	break;
-      }
+      if (r2mask == 0
+	  && !wi::neg_p (r2val, sgn)
+	  && (flag_expensive_optimizations || wi::popcount (r2val) < 8))
+	bit_value_mult_const (sgn, width, val, mask, r1val, r1mask, r2val);
+      else if (r1mask == 0
+	       && !wi::neg_p (r1val, sgn)
+	       && (flag_expensive_optimizations || wi::popcount (r1val) < 8))
+	bit_value_mult_const (sgn, width, val, mask, r2val, r2mask, r1val);
+      else
+	{
+	  /* Just track trailing zeros in both operands and transfer
+	     them to the other.  */
+	  int r1tz = wi::ctz (r1val | r1mask);
+	  int r2tz = wi::ctz (r2val | r2mask);
+	  if (r1tz + r2tz >= width)
+	    {
+	      *mask = 0;
+	      *val = 0;
+	    }
+	  else if (r1tz + r2tz > 0)
+	    {
+	      *mask = wi::ext (wi::mask <widest_int> (r1tz + r2tz, true),
+			       width, sgn);
+	      *val = 0;
+	    }
+	}
+      break;
 
     case EQ_EXPR:
     case NE_EXPR:

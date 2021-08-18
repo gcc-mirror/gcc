@@ -1551,7 +1551,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
     return;
 
   /* Add implicit "omp declare target" attribute if requested.  */
-  if (scope_chain->omp_declare_target_attribute
+  if (vec_safe_length (scope_chain->omp_declare_target_attribute)
       && ((VAR_P (*decl)
 	   && (TREE_STATIC (*decl) || DECL_EXTERNAL (*decl)))
 	  || TREE_CODE (*decl) == FUNCTION_DECL))
@@ -3447,6 +3447,12 @@ set_guard (tree guard)
 static bool
 var_defined_without_dynamic_init (tree var)
 {
+  /* constinit vars are guaranteed to not have dynamic initializer,
+     but still registering the destructor counts as dynamic initialization.  */
+  if (DECL_DECLARED_CONSTINIT_P (var)
+      && COMPLETE_TYPE_P (TREE_TYPE (var))
+      && !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var)))
+    return true;
   /* If it's defined in another TU, we can't tell.  */
   if (DECL_EXTERNAL (var))
     return false;

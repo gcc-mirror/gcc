@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math" } */
+/* { dg-require-effective-target arm_softfp_ok } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
 /* { dg-add-options arm_v8_2a_bf16_neon } */
 /* { dg-additional-options "-mfloat-abi=softfp -march=armv8.2-a+bf16+fp16" } */

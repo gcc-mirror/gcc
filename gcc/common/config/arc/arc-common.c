@@ -30,10 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 
 static void
-arc_option_init_struct (struct gcc_options *opts)
+arc_option_init_struct (struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
-  opts->x_flag_no_common = 255; /* Mark as not user-initialized.  */
-
   /* Which cpu we're compiling for (ARC600, ARC601, ARC700, ARCv2).  */
   arc_cpu = PROCESSOR_NONE;
 }

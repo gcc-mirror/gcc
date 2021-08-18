@@ -663,8 +663,15 @@ build_outer_var_ref (tree var, omp_context *ctx,
 {
   tree x;
   omp_context *outer = ctx->outer;
-  while (outer && gimple_code (outer->stmt) == GIMPLE_OMP_TASKGROUP)
-    outer = outer->outer;
+  for (; outer; outer = outer->outer)
+    {
+      if (gimple_code (outer->stmt) == GIMPLE_OMP_TASKGROUP)
+	continue;
+      if (gimple_code (outer->stmt) == GIMPLE_OMP_SCOPE
+	  && !maybe_lookup_decl (var, outer))
+	continue;
+      break;
+    }
 
   if (is_global_var (maybe_lookup_decl_in_outer_ctx (var, ctx)))
     x = var;
@@ -1466,6 +1473,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_NUM_WORKERS:
 	case OMP_CLAUSE_VECTOR_LENGTH:
 	case OMP_CLAUSE_DETACH:
+	case OMP_CLAUSE_FILTER:
 	  if (ctx->outer)
 	    scan_omp_op (&OMP_CLAUSE_OPERAND (c, 0), ctx->outer);
 	  break;
@@ -1868,6 +1876,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE__SIMT_:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_FILTER:
 	case OMP_CLAUSE__CONDTEMP_:
 	  break;
 
@@ -3426,6 +3435,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  case GIMPLE_OMP_SINGLE:
 	  case GIMPLE_OMP_ORDERED:
 	  case GIMPLE_OMP_MASTER:
+	  case GIMPLE_OMP_MASKED:
 	  case GIMPLE_OMP_TASK:
 	  case GIMPLE_OMP_CRITICAL:
 	    if (is_gimple_call (stmt))
@@ -3436,14 +3446,15 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		error_at (gimple_location (stmt),
 			  "barrier region may not be closely nested inside "
 			  "of work-sharing, %<loop%>, %<critical%>, "
-			  "%<ordered%>, %<master%>, explicit %<task%> or "
-			  "%<taskloop%> region");
+			  "%<ordered%>, %<master%>, %<masked%>, explicit "
+			  "%<task%> or %<taskloop%> region");
 		return false;
 	      }
 	    error_at (gimple_location (stmt),
 		      "work-sharing region may not be closely nested inside "
 		      "of work-sharing, %<loop%>, %<critical%>, %<ordered%>, "
-		      "%<master%>, explicit %<task%> or %<taskloop%> region");
+		      "%<master%>, %<masked%>, explicit %<task%> or "
+		      "%<taskloop%> region");
 	    return false;
 	  case GIMPLE_OMP_PARALLEL:
 	  case GIMPLE_OMP_TEAMS:
@@ -3458,6 +3469,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  }
       break;
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
       for (; ctx != NULL; ctx = ctx->outer)
 	switch (gimple_code (ctx->stmt))
 	  {
@@ -3470,9 +3482,45 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  case GIMPLE_OMP_SINGLE:
 	  case GIMPLE_OMP_TASK:
 	    error_at (gimple_location (stmt),
-		      "%<master%> region may not be closely nested inside "
+		      "%qs region may not be closely nested inside "
 		      "of work-sharing, %<loop%>, explicit %<task%> or "
-		      "%<taskloop%> region");
+		      "%<taskloop%> region",
+		      gimple_code (stmt) == GIMPLE_OMP_MASTER
+		      ? "master" : "masked");
+	    return false;
+	  case GIMPLE_OMP_PARALLEL:
+	  case GIMPLE_OMP_TEAMS:
+	    return true;
+	  case GIMPLE_OMP_TARGET:
+	    if (gimple_omp_target_kind (ctx->stmt)
+		== GF_OMP_TARGET_KIND_REGION)
+	      return true;
+	    break;
+	  default:
+	    break;
+	  }
+      break;
+    case GIMPLE_OMP_SCOPE:
+      for (; ctx != NULL; ctx = ctx->outer)
+	switch (gimple_code (ctx->stmt))
+	  {
+	  case GIMPLE_OMP_FOR:
+	    if (gimple_omp_for_kind (ctx->stmt) != GF_OMP_FOR_KIND_FOR
+		&& gimple_omp_for_kind (ctx->stmt) != GF_OMP_FOR_KIND_TASKLOOP)
+	      break;
+	    /* FALLTHRU */
+	  case GIMPLE_OMP_SECTIONS:
+	  case GIMPLE_OMP_SINGLE:
+	  case GIMPLE_OMP_TASK:
+	  case GIMPLE_OMP_CRITICAL:
+	  case GIMPLE_OMP_ORDERED:
+	  case GIMPLE_OMP_MASTER:
+	  case GIMPLE_OMP_MASKED:
+	    error_at (gimple_location (stmt),
+		      "%<scope%> region may not be closely nested inside "
+		      "of work-sharing, %<loop%>, explicit %<task%>, "
+		      "%<taskloop%>, %<critical%>, %<ordered%>, %<master%>, "
+		      "or %<masked%> region");
 	    return false;
 	  case GIMPLE_OMP_PARALLEL:
 	  case GIMPLE_OMP_TEAMS:
@@ -3856,6 +3904,8 @@ omp_runtime_api_call (const_tree fndecl)
     {
       /* This array has 3 sections.  First omp_* calls that don't
 	 have any suffixes.  */
+      "omp_alloc",
+      "omp_free",
       "target_alloc",
       "target_associate_ptr",
       "target_disassociate_ptr",
@@ -3866,13 +3916,17 @@ omp_runtime_api_call (const_tree fndecl)
       NULL,
       /* Now omp_* calls that are available as omp_* and omp_*_.  */
       "capture_affinity",
+      "destroy_allocator",
       "destroy_lock",
       "destroy_nest_lock",
       "display_affinity",
+      "fulfill_event",
       "get_active_level",
       "get_affinity_format",
       "get_cancellation",
+      "get_default_allocator",
       "get_default_device",
+      "get_device_num",
       "get_dynamic",
       "get_initial_device",
       "get_level",
@@ -3888,6 +3942,7 @@ omp_runtime_api_call (const_tree fndecl)
       "get_partition_num_places",
       "get_place_num",
       "get_proc_bind",
+      "get_supported_active_levels",
       "get_team_num",
       "get_thread_limit",
       "get_thread_num",
@@ -3901,6 +3956,7 @@ omp_runtime_api_call (const_tree fndecl)
       "pause_resource",
       "pause_resource_all",
       "set_affinity_format",
+      "set_default_allocator",
       "set_lock",
       "set_nest_lock",
       "test_lock",
@@ -3909,7 +3965,9 @@ omp_runtime_api_call (const_tree fndecl)
       "unset_nest_lock",
       NULL,
       /* And finally calls available as omp_*, omp_*_ and omp_*_8_.  */
+      "display_env",
       "get_ancestor_thread_num",
+      "init_allocator",
       "get_partition_place_nums",
       "get_place_num_procs",
       "get_place_proc_ids",
@@ -4054,6 +4112,12 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	scan_omp_for (as_a <gomp_for *> (stmt), ctx);
       break;
 
+    case GIMPLE_OMP_SCOPE:
+      ctx = new_omp_context (stmt, ctx);
+      scan_sharing_clauses (gimple_omp_scope_clauses (stmt), ctx);
+      scan_omp (gimple_omp_body_ptr (stmt), ctx);
+      break;
+
     case GIMPLE_OMP_SECTIONS:
       scan_omp_sections (as_a <gomp_sections *> (stmt), ctx);
       break;
@@ -4076,6 +4140,12 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_CRITICAL:
       ctx = new_omp_context (stmt, ctx);
+      scan_omp (gimple_omp_body_ptr (stmt), ctx);
+      break;
+
+    case GIMPLE_OMP_MASKED:
+      ctx = new_omp_context (stmt, ctx);
+      scan_sharing_clauses (gimple_omp_masked_clauses (stmt), ctx);
       scan_omp (gimple_omp_body_ptr (stmt), ctx);
       break;
 
@@ -8336,7 +8406,8 @@ maybe_add_implicit_barrier_cancel (omp_context *ctx, gimple *omp_return,
 	gimple_seq_add_stmt (body, g);
 	gimple_seq_add_stmt (body, gimple_build_label (fallthru_label));
       }
-    else if (gimple_code (outer->stmt) != GIMPLE_OMP_TASKGROUP)
+    else if (gimple_code (outer->stmt) != GIMPLE_OMP_TASKGROUP
+	     && gimple_code (outer->stmt) != GIMPLE_OMP_SCOPE)
       return;
 }
 
@@ -8675,7 +8746,98 @@ lower_omp_single (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 }
 
 
-/* Expand code for an OpenMP master directive.  */
+/* Lower code for an OMP scope directive.  */
+
+static void
+lower_omp_scope (gimple_stmt_iterator *gsi_p, omp_context *ctx)
+{
+  tree block;
+  gimple *scope_stmt = gsi_stmt (*gsi_p);
+  gbind *bind;
+  gimple_seq bind_body, bind_body_tail = NULL, dlist;
+  gimple_seq tred_dlist = NULL;
+
+  push_gimplify_context ();
+
+  block = make_node (BLOCK);
+  bind = gimple_build_bind (NULL, NULL, block);
+  gsi_replace (gsi_p, bind, true);
+  bind_body = NULL;
+  dlist = NULL;
+
+  tree rclauses
+    = omp_task_reductions_find_first (gimple_omp_scope_clauses (scope_stmt),
+				      OMP_SCOPE, OMP_CLAUSE_REDUCTION);
+  if (rclauses)
+    {
+      tree type = build_pointer_type (pointer_sized_int_node);
+      tree temp = create_tmp_var (type);
+      tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__REDUCTEMP_);
+      OMP_CLAUSE_DECL (c) = temp;
+      OMP_CLAUSE_CHAIN (c) = gimple_omp_scope_clauses (scope_stmt);
+      gimple_omp_scope_set_clauses (scope_stmt, c);
+      lower_omp_task_reductions (ctx, OMP_SCOPE,
+				 gimple_omp_scope_clauses (scope_stmt),
+				 &bind_body, &tred_dlist);
+      rclauses = c;
+      tree fndecl = builtin_decl_explicit (BUILT_IN_GOMP_SCOPE_START);
+      gimple *stmt = gimple_build_call (fndecl, 1, temp);
+      gimple_seq_add_stmt (&bind_body, stmt);
+    }
+
+  lower_rec_input_clauses (gimple_omp_scope_clauses (scope_stmt),
+			   &bind_body, &dlist, ctx, NULL);
+  lower_omp (gimple_omp_body_ptr (scope_stmt), ctx);
+
+  gimple_seq_add_stmt (&bind_body, scope_stmt);
+
+  gimple_seq_add_seq (&bind_body, gimple_omp_body (scope_stmt));
+
+  gimple_omp_set_body (scope_stmt, NULL);
+
+  gimple_seq clist = NULL;
+  lower_reduction_clauses (gimple_omp_scope_clauses (scope_stmt),
+			   &bind_body, &clist, ctx);
+  if (clist)
+    {
+      tree fndecl = builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_START);
+      gcall *g = gimple_build_call (fndecl, 0);
+      gimple_seq_add_stmt (&bind_body, g);
+      gimple_seq_add_seq (&bind_body, clist);
+      fndecl = builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_END);
+      g = gimple_build_call (fndecl, 0);
+      gimple_seq_add_stmt (&bind_body, g);
+    }
+
+  gimple_seq_add_seq (&bind_body, dlist);
+
+  bind_body = maybe_catch_exception (bind_body);
+
+  bool nowait = omp_find_clause (gimple_omp_scope_clauses (scope_stmt),
+				 OMP_CLAUSE_NOWAIT) != NULL_TREE;
+  gimple *g = gimple_build_omp_return (nowait);
+  gimple_seq_add_stmt (&bind_body_tail, g);
+  gimple_seq_add_seq (&bind_body_tail, tred_dlist);
+  maybe_add_implicit_barrier_cancel (ctx, g, &bind_body_tail);
+  if (ctx->record_type)
+    {
+      gimple_stmt_iterator gsi = gsi_start (bind_body_tail);
+      tree clobber = build_clobber (ctx->record_type);
+      gsi_insert_after (&gsi, gimple_build_assign (ctx->sender_decl,
+						   clobber), GSI_SAME_STMT);
+    }
+  gimple_seq_add_seq (&bind_body, bind_body_tail);
+
+  gimple_bind_set_body (bind, bind_body);
+
+  pop_gimplify_context (bind);
+
+  gimple_bind_append_vars (bind, ctx->block_vars);
+  BLOCK_VARS (block) = ctx->block_vars;
+  if (BLOCK_VARS (block))
+    TREE_USED (block) = 1;
+}
+/* Expand code for an OpenMP master or masked directive.  */
 
 static void
 lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
@@ -8685,9 +8847,20 @@ lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gbind *bind;
   location_t loc = gimple_location (stmt);
   gimple_seq tseq;
+  tree filter = integer_zero_node;
 
   push_gimplify_context ();
 
+  if (gimple_code (stmt) == GIMPLE_OMP_MASKED)
+    {
+      filter = omp_find_clause (gimple_omp_masked_clauses (stmt),
+				OMP_CLAUSE_FILTER);
+      if (filter)
+	filter = fold_convert (integer_type_node,
+			       OMP_CLAUSE_FILTER_EXPR (filter));
+      else
+	filter = integer_zero_node;
+    }
   block = make_node (BLOCK);
   bind = gimple_build_bind (NULL, NULL, block);
   gsi_replace (gsi_p, bind, true);
@@ -8695,7 +8868,7 @@ lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   bfn_decl = builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM);
   x = build_call_expr_loc (loc, bfn_decl, 0);
-  x = build2 (EQ_EXPR, boolean_type_node, x, integer_zero_node);
+  x = build2 (EQ_EXPR, boolean_type_node, x, filter);
   x = build3 (COND_EXPR, void_type_node, x, NULL, build_and_jump (&lab));
   tseq = NULL;
   gimplify_and_add (x, &tseq);
@@ -8769,7 +8942,7 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
   clauses = omp_task_reductions_find_first (clauses, code, ccode);
   if (clauses == NULL_TREE)
     return;
-  if (code == OMP_FOR || code == OMP_SECTIONS)
+  if (code == OMP_FOR || code == OMP_SECTIONS || code == OMP_SCOPE)
     {
       for (omp_context *outer = ctx->outer; outer; outer = outer->outer)
 	if (gimple_code (outer->stmt) == GIMPLE_OMP_PARALLEL
@@ -8778,7 +8951,8 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	    cancellable = error_mark_node;
 	    break;
 	  }
-	else if (gimple_code (outer->stmt) != GIMPLE_OMP_TASKGROUP)
+	else if (gimple_code (outer->stmt) != GIMPLE_OMP_TASKGROUP
+		 && gimple_code (outer->stmt) != GIMPLE_OMP_SCOPE)
 	  break;
     }
   tree record_type = lang_hooks.types.make_type (RECORD_TYPE);
@@ -8894,11 +9068,11 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
   tree lab2 = create_artificial_label (UNKNOWN_LOCATION);
   tree lab3 = NULL_TREE, lab7 = NULL_TREE;
   gimple *g;
-  if (code == OMP_FOR || code == OMP_SECTIONS)
+  if (code == OMP_FOR || code == OMP_SECTIONS || code == OMP_SCOPE)
     {
-      /* For worksharing constructs, only perform it in the master thread,
-	 with the exception of cancelled implicit barriers - then only handle
-	 the current thread.  */
+      /* For worksharing constructs or scope, only perform it in the master
+	 thread, with the exception of cancelled implicit barriers - then only
+	 handle the current thread.  */
       tree lab4 = create_artificial_label (UNKNOWN_LOCATION);
       t = builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM);
       tree thr_num = create_tmp_var (integer_type_node);
@@ -8913,8 +9087,10 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	  lab3 = create_artificial_label (UNKNOWN_LOCATION);
 	  if (code == OMP_FOR)
 	    c = gimple_omp_for_clauses (ctx->stmt);
-	  else /* if (code == OMP_SECTIONS) */
+	  else if (code == OMP_SECTIONS)
 	    c = gimple_omp_sections_clauses (ctx->stmt);
+	  else /* if (code == OMP_SCOPE) */
+	    c = gimple_omp_scope_clauses (ctx->stmt);
 	  c = OMP_CLAUSE_DECL (omp_find_clause (c, OMP_CLAUSE__REDUCTEMP_));
 	  cancellable = c;
 	  g = gimple_build_cond (NE_EXPR, c, build_zero_cst (TREE_TYPE (c)),
@@ -9049,8 +9225,11 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 
 	  tree bfield = DECL_CHAIN (field);
 	  tree cond;
-	  if (code == OMP_PARALLEL || code == OMP_FOR || code == OMP_SECTIONS)
-	    /* In parallel or worksharing all threads unconditionally
+	  if (code == OMP_PARALLEL
+	      || code == OMP_FOR
+	      || code == OMP_SECTIONS
+	      || code == OMP_SCOPE)
+	    /* In parallel, worksharing or scope all threads unconditionally
 	       initialize all their task reduction private variables.  */
 	    cond = boolean_true_node;
 	  else if (TREE_TYPE (ptr) == ptr_type_node)
@@ -9291,6 +9470,8 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	c = gimple_omp_for_clauses (ctx->stmt);
       else if (code == OMP_SECTIONS)
 	c = gimple_omp_sections_clauses (ctx->stmt);
+      else if (code == OMP_SCOPE)
+	c = gimple_omp_scope_clauses (ctx->stmt);
       else
 	c = gimple_omp_taskreg_clauses (ctx->stmt);
       c = omp_find_clause (c, OMP_CLAUSE__REDUCTEMP_);
@@ -9305,7 +9486,7 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
   g = gimple_build_cond (NE_EXPR, idx, num_thr_sz, lab1, lab2);
   gimple_seq_add_stmt (end, g);
   gimple_seq_add_stmt (end, gimple_build_label (lab2));
-  if (code == OMP_FOR || code == OMP_SECTIONS)
+  if (code == OMP_FOR || code == OMP_SECTIONS || code == OMP_SCOPE)
     {
       enum built_in_function bfn
 	= BUILT_IN_GOMP_WORKSHARE_TASK_REDUCTION_UNREGISTER;
@@ -13863,12 +14044,18 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	ctx->cancel_label = create_artificial_label (UNKNOWN_LOCATION);
       lower_omp_sections (gsi_p, ctx);
       break;
+    case GIMPLE_OMP_SCOPE:
+      ctx = maybe_lookup_ctx (stmt);
+      gcc_assert (ctx);
+      lower_omp_scope (gsi_p, ctx);
+      break;
     case GIMPLE_OMP_SINGLE:
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
       lower_omp_single (gsi_p, ctx);
       break;
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
       lower_omp_master (gsi_p, ctx);
@@ -13973,6 +14160,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  if (gimple_code (up->stmt) == GIMPLE_OMP_ORDERED
 	      || gimple_code (up->stmt) == GIMPLE_OMP_CRITICAL
 	      || gimple_code (up->stmt) == GIMPLE_OMP_TASKGROUP
+	      || gimple_code (up->stmt) == GIMPLE_OMP_SCOPE
 	      || gimple_code (up->stmt) == GIMPLE_OMP_SECTION
 	      || gimple_code (up->stmt) == GIMPLE_OMP_SCAN
 	      || (gimple_code (up->stmt) == GIMPLE_OMP_TARGET
@@ -14242,10 +14430,12 @@ diagnose_sb_1 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_CRITICAL:
@@ -14303,10 +14493,12 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
+    case GIMPLE_OMP_SCOPE:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
+    case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_CRITICAL:

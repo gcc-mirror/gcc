@@ -52,7 +52,7 @@
 #if __CHAR_BIT__ == 8
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (SI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (SI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (DI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (DI)));
 #else
@@ -63,7 +63,7 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #if __CHAR_BIT__ == 16
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (HI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (HI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (SI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #else
@@ -73,7 +73,7 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (HI)));
 #else
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (QI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (QI)));
-#if LONG_LONG_TYPE_SIZE > 32
+#if __LIBGCC_GCOV_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (HI)));
 typedef unsigned gcov_type_unsigned __attribute__ ((mode (HI)));
 #else

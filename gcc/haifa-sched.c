@@ -2538,7 +2538,7 @@ model_set_excess_costs (rtx_insn **insns, int count)
 enum rfs_decision {
   RFS_LIVE_RANGE_SHRINK1, RFS_LIVE_RANGE_SHRINK2,
   RFS_SCHED_GROUP, RFS_PRESSURE_DELAY, RFS_PRESSURE_TICK,
-  RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_SPECULATION,
+  RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_AUTOPREF, RFS_SPECULATION,
   RFS_SCHED_RANK, RFS_LAST_INSN, RFS_PRESSURE_INDEX,
   RFS_DEP_COUNT, RFS_TIE, RFS_FUSION, RFS_COST, RFS_N };
 
@@ -2546,7 +2546,7 @@ enum rfs_decision {
 static const char *rfs_str[RFS_N] = {
   "RFS_LIVE_RANGE_SHRINK1", "RFS_LIVE_RANGE_SHRINK2",
   "RFS_SCHED_GROUP", "RFS_PRESSURE_DELAY", "RFS_PRESSURE_TICK",
-  "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_SPECULATION",
+  "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_AUTOPREF", "RFS_SPECULATION",
   "RFS_SCHED_RANK", "RFS_LAST_INSN", "RFS_PRESSURE_INDEX",
   "RFS_DEP_COUNT", "RFS_TIE", "RFS_FUSION", "RFS_COST" };
 
@@ -2715,7 +2715,7 @@ rank_for_schedule (const void *x, const void *y)
     {
       int autopref = autopref_rank_for_schedule (tmp, tmp2);
       if (autopref != 0)
-	return autopref;
+	return rfs_result (RFS_AUTOPREF, autopref, tmp, tmp2);
     }
 
   /* Prefer speculative insn with greater dependencies weakness.  */
@@ -3155,9 +3155,11 @@ advance_state (state_t state)
 HAIFA_INLINE static void
 advance_one_cycle (void)
 {
+  int i;
+
   advance_state (curr_state);
-  if (sched_verbose >= 4)
-    fprintf (sched_dump, ";;\tAdvance the current state.\n");
+  for (i = 4; i <= sched_verbose; ++i)
+    fprintf (sched_dump, ";;\tAdvance the current state: %d.\n", clock_var);
 }
 
 /* Update register pressure after scheduling INSN.  */
@@ -5683,9 +5685,16 @@ autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
       int irrel2 = data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
 
       if (!irrel1 && !irrel2)
+	/* Sort memory references from lowest offset to the largest.  */
 	r = data1->offset - data2->offset;
-      else
+      else if (write)
+	/* Schedule "irrelevant" insns before memory stores to resolve
+	   as many producer dependencies of stores as possible.  */
 	r = irrel2 - irrel1;
+      else
+	/* Schedule "irrelevant" insns after memory reads to avoid breaking
+	   memory read sequences.  */
+	r = irrel1 - irrel2;
     }
 
   return r;

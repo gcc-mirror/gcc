@@ -136,7 +136,6 @@ static bool check_field_decl (tree, tree, int *, int *);
 static void check_field_decls (tree, tree *, int *, int *);
 static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods (tree);
-static void remove_zero_width_bit_fields (tree);
 static bool accessible_nvdtor_p (tree);
 
 /* Used by find_flexarrays and related functions.  */
@@ -5754,31 +5753,6 @@ type_build_dtor_call (tree t)
   return false;
 }
 
-/* Remove all zero-width bit-fields from T.  */
-
-static void
-remove_zero_width_bit_fields (tree t)
-{
-  tree *fieldsp;
-
-  fieldsp = &TYPE_FIELDS (t);
-  while (*fieldsp)
-    {
-      if (TREE_CODE (*fieldsp) == FIELD_DECL
-	  && DECL_C_BIT_FIELD (*fieldsp)
-	  /* We should not be confused by the fact that grokbitfield
-	     temporarily sets the width of the bit field into
-	     DECL_BIT_FIELD_REPRESENTATIVE (*fieldsp).
-	     check_bitfield_decl eventually sets DECL_SIZE (*fieldsp)
-	     to that width.  */
-	  && (DECL_SIZE (*fieldsp) == NULL_TREE
-	      || integer_zerop (DECL_SIZE (*fieldsp))))
-	*fieldsp = DECL_CHAIN (*fieldsp);
-      else
-	fieldsp = &DECL_CHAIN (*fieldsp);
-    }
-}
-
 /* Returns TRUE iff we need a cookie when dynamically allocating an
    array whose elements have the indicated class TYPE.  */
 
@@ -6769,10 +6743,6 @@ layout_class_type (tree t, tree *virtuals_p)
       rli->bitpos = round_up_loc (input_location, rli->bitpos, BITS_PER_UNIT);
       normalize_rli (rli);
     }
-
-  /* Delete all zero-width bit-fields from the list of fields.  Now
-     that the type is laid out they are no longer important.  */
-  remove_zero_width_bit_fields (t);
 
   if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {

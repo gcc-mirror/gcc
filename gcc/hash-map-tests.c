@@ -278,6 +278,156 @@ test_map_of_type_with_ctor_and_dtor ()
 
     ASSERT_TRUE (val_t::ndefault + val_t::ncopy == val_t::ndtor);
   }
+
+
+  /* Verify basic construction and destruction of Value objects.  */
+  {
+    /* Configure, arbitrary.  */
+    const size_t N_init = 0;
+    const int N_elem = 28;
+
+    void *a[N_elem];
+    for (size_t i = 0; i < N_elem; ++i)
+      a[i] = &a[i];
+
+    val_t::ndefault = 0;
+    val_t::ncopy = 0;
+    val_t::nassign = 0;
+    val_t::ndtor = 0;
+    Map m (N_init);
+    ASSERT_EQ (val_t::ndefault
+	       + val_t::ncopy
+	       + val_t::nassign
+	       + val_t::ndtor, 0);
+
+    for (int i = 0; i < N_elem; ++i)
+      {
+	m.get_or_insert (a[i]);
+	ASSERT_EQ (val_t::ndefault, 1 + i);
+	ASSERT_EQ (val_t::ncopy, 0);
+	ASSERT_EQ (val_t::nassign, 0);
+	ASSERT_EQ (val_t::ndtor, i);
+
+	m.remove (a[i]);
+	ASSERT_EQ (val_t::ndefault, 1 + i);
+	ASSERT_EQ (val_t::ncopy, 0);
+	ASSERT_EQ (val_t::nassign, 0);
+	ASSERT_EQ (val_t::ndtor, 1 + i);
+      }
+  }
+}
+
+/* Verify aspects of 'hash_table::expand'.  */
+
+static void
+test_map_of_type_with_ctor_and_dtor_expand (bool remove_some_inline)
+{
+  /* Configure, so that hash table expansion triggers a few times.  */
+  const size_t N_init = 0;
+  const int N_elem = 70;
+  size_t expand_c_expected = 4;
+  size_t expand_c = 0;
+
+  void *a[N_elem];
+  for (size_t i = 0; i < N_elem; ++i)
+    a[i] = &a[i];
+
+  typedef hash_map <void *, val_t> Map;
+
+  /* Note that we are starting with a fresh 'Map'.  Even if an existing one has
+     been cleared out completely, there remain 'deleted' elements, and these
+     would disturb the following logic, where we don't have access to the
+     actual 'm_n_deleted' value.  */
+  size_t m_n_deleted = 0;
+
+  val_t::ndefault = 0;
+  val_t::ncopy = 0;
+  val_t::nassign = 0;
+  val_t::ndtor = 0;
+  Map m (N_init);
+
+  /* In the following, in particular related to 'expand', we're adapting from
+     the internal logic of 'hash_table', glossing over "some details" not
+     relevant for this testing here.  */
+
+  /* Per 'hash_table::hash_table'.  */
+  size_t m_size;
+  {
+    unsigned int size_prime_index_ = hash_table_higher_prime_index (N_init);
+    m_size = prime_tab[size_prime_index_].prime;
+  }
+
+  int n_expand_moved = 0;
+
+  for (int i = 0; i < N_elem; ++i)
+    {
+      size_t elts = m.elements ();
+
+      /* Per 'hash_table::find_slot_with_hash'.  */
+      size_t m_n_elements = elts + m_n_deleted;
+      bool expand = m_size * 3 <= m_n_elements * 4;
+
+      m.get_or_insert (a[i]);
+      if (expand)
+	{
+	  ++expand_c;
+
+	  /* Per 'hash_table::expand'.  */
+	  {
+	    unsigned int nindex = hash_table_higher_prime_index (elts * 2);
+	    m_size = prime_tab[nindex].prime;
+	  }
+	  m_n_deleted = 0;
+
+	  /* All non-deleted elements have been moved.  */
+	  n_expand_moved += i;
+	  if (remove_some_inline)
+	    n_expand_moved -= (i + 2) / 3;
+	}
+
+      ASSERT_EQ (val_t::ndefault, 1 + i);
+      ASSERT_EQ (val_t::ncopy, n_expand_moved);
+      ASSERT_EQ (val_t::nassign, 0);
+      if (remove_some_inline)
+	ASSERT_EQ (val_t::ndtor, (i + 2) / 3);
+      else
+	ASSERT_EQ (val_t::ndtor, 0);
+
+      /* Remove some inline.  This never triggers an 'expand' here, but via
+	 'm_n_deleted' does influence any following one.  */
+      if (remove_some_inline
+	  && !(i % 3))
+	{
+	  m.remove (a[i]);
+	  /* Per 'hash_table::remove_elt_with_hash'.  */
+	  m_n_deleted++;
+
+	  ASSERT_EQ (val_t::ndefault, 1 + i);
+	  ASSERT_EQ (val_t::ncopy, n_expand_moved);
+	  ASSERT_EQ (val_t::nassign, 0);
+	  ASSERT_EQ (val_t::ndtor, 1 + (i + 2) / 3);
+	}
+    }
+  ASSERT_EQ (expand_c, expand_c_expected);
+
+  int ndefault = val_t::ndefault;
+  int ncopy = val_t::ncopy;
+  int nassign = val_t::nassign;
+  int ndtor = val_t::ndtor;
+
+  for (int i = 0; i < N_elem; ++i)
+    {
+      if (remove_some_inline
+	  && !(i % 3))
+	continue;
+
+      m.remove (a[i]);
+      ++ndtor;
+      ASSERT_EQ (val_t::ndefault, ndefault);
+      ASSERT_EQ (val_t::ncopy, ncopy);
+      ASSERT_EQ (val_t::nassign, nassign);
+      ASSERT_EQ (val_t::ndtor, ndtor);
+    }
 }
 
 /* Test calling empty on a hash_map that has a key type with non-zero
@@ -309,6 +459,8 @@ hash_map_tests_c_tests ()
   test_map_of_strings_to_int ();
   test_map_of_int_to_strings ();
   test_map_of_type_with_ctor_and_dtor ();
+  test_map_of_type_with_ctor_and_dtor_expand (false);
+  test_map_of_type_with_ctor_and_dtor_expand (true);
   test_nonzero_empty_key ();
 }
 

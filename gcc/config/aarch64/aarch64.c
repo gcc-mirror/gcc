@@ -4174,7 +4174,7 @@ aarch64_force_temporary (machine_mode mode, rtx x, rtx value)
 static bool
 aarch64_get_sve_pred_bits (rtx_vector_builder &builder, rtx x)
 {
-  if (GET_CODE (x) != CONST_VECTOR)
+  if (!CONST_VECTOR_P (x))
     return false;
 
   unsigned int factor = vector_element_size (GET_MODE_NUNITS (VNx16BImode),
@@ -4230,7 +4230,7 @@ opt_machine_mode
 aarch64_ptrue_all_mode (rtx x)
 {
   gcc_assert (GET_MODE (x) == VNx16BImode);
-  if (GET_CODE (x) != CONST_VECTOR
+  if (!CONST_VECTOR_P (x)
       || !CONST_VECTOR_DUPLICATE_P (x)
       || !CONST_INT_P (CONST_VECTOR_ENCODED_ELT (x, 0))
       || INTVAL (CONST_VECTOR_ENCODED_ELT (x, 0)) == 0)
@@ -5930,7 +5930,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	  return;
 	}
 
-      if (GET_CODE (imm) == CONST_VECTOR && aarch64_sve_data_mode_p (mode))
+      if (CONST_VECTOR_P (imm) && aarch64_sve_data_mode_p (mode))
 	if (rtx res = aarch64_expand_sve_const_vector (dest, imm))
 	  {
 	    if (dest != res)
@@ -10634,7 +10634,7 @@ aarch64_const_vec_all_in_range_p (rtx vec,
 				  HOST_WIDE_INT minval,
 				  HOST_WIDE_INT maxval)
 {
-  if (GET_CODE (vec) != CONST_VECTOR
+  if (!CONST_VECTOR_P (vec)
       || GET_MODE_CLASS (GET_MODE (vec)) != MODE_VECTOR_INT)
     return false;
 
@@ -12771,7 +12771,7 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	case SIGN_EXTRACT:
 	  /* Bit-field insertion.  Strip any redundant widening of
 	     the RHS to meet the width of the target.  */
-	  if (GET_CODE (op1) == SUBREG)
+	  if (SUBREG_P (op1))
 	    op1 = SUBREG_REG (op1);
 	  if ((GET_CODE (op1) == ZERO_EXTEND
 	       || GET_CODE (op1) == SIGN_EXTEND)
@@ -13044,7 +13044,7 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
              But the integer MINUS logic expects the shift/extend
              operation in op1.  */
           if (! (REG_P (op0)
-                 || (GET_CODE (op0) == SUBREG && REG_P (SUBREG_REG (op0)))))
+		 || (SUBREG_P (op0) && REG_P (SUBREG_REG (op0)))))
           {
             op0 = XEXP (x, 1);
             op1 = XEXP (x, 0);
@@ -18239,7 +18239,7 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
 
   /* Otherwise, accept any CONST_VECTOR that, if all else fails, can at
      least be forced to memory and loaded from there.  */
-  if (GET_CODE (x) == CONST_VECTOR)
+  if (CONST_VECTOR_P (x))
     return !targetm.cannot_force_const_mem (mode, x);
 
   /* Do not allow vector struct mode constants for Advanced SIMD.
@@ -20044,7 +20044,7 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
   scalar_mode elt_mode = GET_MODE_INNER (mode);
   rtx base, step;
   unsigned int n_elts;
-  if (GET_CODE (op) == CONST_VECTOR
+  if (CONST_VECTOR_P (op)
       && CONST_VECTOR_DUPLICATE_P (op))
     n_elts = CONST_VECTOR_NPATTERNS (op);
   else if ((vec_flags & VEC_SVE_DATA)
@@ -20066,7 +20066,7 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
 	}
       return true;
     }
-  else if (GET_CODE (op) == CONST_VECTOR
+  else if (CONST_VECTOR_P (op)
 	   && CONST_VECTOR_NUNITS (op).is_constant (&n_elts))
     /* N_ELTS set above.  */;
   else
@@ -20666,7 +20666,7 @@ aarch64_simd_make_constant (rtx vals)
   int n_const = 0;
   int i;
 
-  if (GET_CODE (vals) == CONST_VECTOR)
+  if (CONST_VECTOR_P (vals))
     const_vec = vals;
   else if (GET_CODE (vals) == PARALLEL)
     {
@@ -21207,7 +21207,7 @@ aarch64_sve_expand_vector_init (rtx target, rtx vals)
 static rtx
 aarch64_convert_mult_to_shift (rtx value, rtx_code &code)
 {
-  if (GET_CODE (value) != CONST_VECTOR)
+  if (!CONST_VECTOR_P (value))
     return NULL_RTX;
 
   rtx_vector_builder builder;
@@ -22371,7 +22371,7 @@ aarch64_expand_sve_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   rtx sel_reg = force_reg (sel_mode, sel);
 
   /* Check if the sel only references the first values vector.  */
-  if (GET_CODE (sel) == CONST_VECTOR
+  if (CONST_VECTOR_P (sel)
       && aarch64_const_vec_all_in_range_p (sel, 0, nunits - 1))
     {
       emit_unspec2 (target, UNSPEC_TBL, op0, sel_reg);
@@ -22393,7 +22393,7 @@ aarch64_expand_sve_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   rtx res0 = gen_reg_rtx (data_mode);
   rtx res1 = gen_reg_rtx (data_mode);
   rtx neg_num_elems = aarch64_simd_gen_const_vector_dup (sel_mode, -nunits);
-  if (GET_CODE (sel) != CONST_VECTOR
+  if (!CONST_VECTOR_P (sel)
       || !aarch64_const_vec_all_in_range_p (sel, 0, 2 * nunits - 1))
     {
       rtx max_sel = aarch64_simd_gen_const_vector_dup (sel_mode,
@@ -24925,7 +24925,7 @@ int
 aarch64_vec_fpconst_pow_of_2 (rtx x)
 {
   int nelts;
-  if (GET_CODE (x) != CONST_VECTOR
+  if (!CONST_VECTOR_P (x)
       || !CONST_VECTOR_NUNITS (x).is_constant (&nelts))
     return -1;
 

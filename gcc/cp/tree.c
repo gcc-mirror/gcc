@@ -455,6 +455,7 @@ builtin_valid_in_constant_expr_p (const_tree decl)
 	  {
 	  case CP_BUILT_IN_IS_CONSTANT_EVALUATED:
 	  case CP_BUILT_IN_SOURCE_LOCATION:
+	  case CP_BUILT_IN_IS_CORRESPONDING_MEMBER:
 	  case CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
 	    return true;
 	  default:
@@ -5386,7 +5387,9 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       // walk the parameter list. Doing so causes false
       // positives in the pack expansion checker since the
       // requires parameters are introduced as pack expansions.
-      WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+      ++cp_unevaluated_operand;
+      result = cp_walk_tree (&REQUIRES_EXPR_REQS (*tp), func, data, pset);
+      --cp_unevaluated_operand;
       *walk_subtrees_p = 0;
       break;
 

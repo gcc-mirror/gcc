@@ -2294,22 +2294,19 @@ expand_used_vars (bitmap forced_stack_vars)
 	if (gen_stack_protect_signal
 	    || cfun->calls_alloca
 	    || has_protected_decls
-	    || lookup_attribute ("stack_protect",
-				 DECL_ATTRIBUTES (current_function_decl)))
+	    || lookup_attribute ("stack_protect", attribs))
 	  create_stack_guard ();
 	break;
 
       case SPCT_FLAG_DEFAULT:
 	if (cfun->calls_alloca
 	    || has_protected_decls
-	    || lookup_attribute ("stack_protect",
-				 DECL_ATTRIBUTES (current_function_decl)))
+	    || lookup_attribute ("stack_protect", attribs))
 	  create_stack_guard ();
 	break;
 
       case SPCT_FLAG_EXPLICIT:
-	if (lookup_attribute ("stack_protect",
-			      DECL_ATTRIBUTES (current_function_decl)))
+	if (lookup_attribute ("stack_protect", attribs))
 	  create_stack_guard ();
 	break;
 

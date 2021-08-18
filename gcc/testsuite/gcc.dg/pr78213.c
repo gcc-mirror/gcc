@@ -1,12 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fself-test" } */
-
-/* When this test was written -fself-test took no argument, but it
-   has subsequently gained a mandatory argument, giving the path
-   to selftest support files (within the srcdir).
-   It's not clear how to provide this path sanely from
-   within DejaGnu, so for now, this test is disabled.  */
-/* { dg-skip-if "" { *-*-* } } */
+/* { dg-options "-fself-test=$srcdir/selftests" } */
 
 /* Verify that -fself-test does not fail on a non empty source.  */
 

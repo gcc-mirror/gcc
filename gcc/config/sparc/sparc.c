@@ -944,6 +944,17 @@ char sparc_hard_reg_printed[8];
 #undef TARGET_ZERO_CALL_USED_REGS
 #define TARGET_ZERO_CALL_USED_REGS sparc_zero_call_used_regs
 
+#ifdef SPARC_GCOV_TYPE_SIZE
+static HOST_WIDE_INT
+sparc_gcov_type_size (void)
+{
+  return SPARC_GCOV_TYPE_SIZE;
+}
+
+#undef TARGET_GCOV_TYPE_SIZE
+#define TARGET_GCOV_TYPE_SIZE sparc_gcov_type_size
+#endif
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return the memory reference contained in X if any, zero otherwise.  */
