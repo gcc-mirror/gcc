@@ -21731,9 +21731,18 @@ c_parser_omp_requires (c_parser *parser)
 		      error_at (c_parser_peek_token (parser)->location,
 				"expected %<seq_cst%>, %<relaxed%> or "
 				"%<acq_rel%>");
-		      if (c_parser_peek_2nd_token (parser)->type
-			  == CPP_CLOSE_PAREN)
-			c_parser_consume_token (parser);
+		      switch (c_parser_peek_token (parser)->type)
+			{
+			case CPP_EOF:
+			case CPP_PRAGMA_EOL:
+			case CPP_CLOSE_PAREN:
+			  break;
+			default:
+			  if (c_parser_peek_2nd_token (parser)->type
+			      == CPP_CLOSE_PAREN)
+			    c_parser_consume_token (parser);
+			  break;
+			}
 		    }
 		  else
 		    c_parser_consume_token (parser);

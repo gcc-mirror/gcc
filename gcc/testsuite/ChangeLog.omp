@@ -3,6 +3,14 @@
 	Backported from master:
 	2021-08-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/requires-3.c: Add testcase for
+	atomic_default_mem_order ( at the end of line without corresponding ).
+
+2021-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-c++-common/gomp/nothing-2.c: New test.
 
 2021-08-19  Tobias Burnus  <tobias@codesourcery.com>

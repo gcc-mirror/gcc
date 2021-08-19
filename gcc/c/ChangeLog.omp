@@ -1,7 +1,17 @@
+2021-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_requires): Don't call
+	c_parser_peek_2nd_token and optionally consume token if current
+	token is CPP_EOF, CPP_PRAGMA_EOL or CPP_CLOSE_PAREN.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
 	2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-parser.c (c_parser_omp_nothing): New function.
 	(c_parser_pragma): Handle PRAGMA_OMP_NOTHING.
 
