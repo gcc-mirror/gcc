@@ -1,3 +1,11 @@
+2021-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_nothing): Use cp_parser_require_pragma_eol
+	instead of cp_parser_skip_to_pragma_eol.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
