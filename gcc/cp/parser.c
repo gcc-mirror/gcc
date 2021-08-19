@@ -45570,7 +45570,7 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 static void
 cp_parser_omp_nothing (cp_parser *parser, cp_token *pragma_tok)
 {
-  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+  cp_parser_require_pragma_eol (parser, pragma_tok);
 }
 
 
