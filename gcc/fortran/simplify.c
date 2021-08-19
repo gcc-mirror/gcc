@@ -4512,6 +4512,78 @@ gfc_simplify_leadz (gfc_expr *e)
 }
 
 
+/* Check for constant length of a substring.  */
+
+static bool
+substring_has_constant_len (gfc_expr *e)
+{
+  gfc_ref *ref;
+  HOST_WIDE_INT istart, iend, length;
+  bool equal_length = false;
+
+  if (e->ts.type != BT_CHARACTER)
+    return false;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type != REF_COMPONENT && ref->type != REF_ARRAY)
+      break;
+
+  if (!ref
+      || ref->type != REF_SUBSTRING
+      || !ref->u.ss.start
+      || ref->u.ss.start->expr_type != EXPR_CONSTANT
+      || !ref->u.ss.end
+      || ref->u.ss.end->expr_type != EXPR_CONSTANT
+      || !ref->u.ss.length)
+    return false;
+
+  /* For non-deferred strings the given length shall be constant.  */
+  if (!e->ts.deferred
+      && (!ref->u.ss.length->length
+	  || ref->u.ss.length->length->expr_type != EXPR_CONSTANT))
+    return false;
+
+  /* Basic checks on substring starting and ending indices.  */
+  if (!gfc_resolve_substring (ref, &equal_length))
+    return false;
+
+  istart = gfc_mpz_get_hwi (ref->u.ss.start->value.integer);
+  iend = gfc_mpz_get_hwi (ref->u.ss.end->value.integer);
+
+  if (istart <= iend)
+    {
+      if (istart < 1)
+	{
+	  gfc_error ("Substring start index (" HOST_WIDE_INT_PRINT_DEC
+		     ") at %L below 1",
+		     istart, &ref->u.ss.start->where);
+	  return false;
+	}
+
+      /* For deferred strings use end index as proxy for length.  */
+      if (e->ts.deferred)
+	length = iend;
+      else
+	length = gfc_mpz_get_hwi (ref->u.ss.length->length->value.integer);
+      if (iend > length)
+	{
+	  gfc_error ("Substring end index (" HOST_WIDE_INT_PRINT_DEC
+		     ") at %L exceeds string length",
+		     iend, &ref->u.ss.end->where);
+	  return false;
+	}
+      length = iend - istart + 1;
+    }
+  else
+    length = 0;
+
+  /* Fix substring length.  */
+  e->value.character.length = length;
+
+  return true;
+}
+
+
 gfc_expr *
 gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
 {
@@ -4521,7 +4593,8 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
   if (k == -1)
     return &gfc_bad_expr;
 
-  if (e->expr_type == EXPR_CONSTANT)
+  if (e->expr_type == EXPR_CONSTANT
+      || substring_has_constant_len (e))
     {
       result = gfc_get_constant_expr (BT_INTEGER, k, &e->where);
       mpz_set_si (result->value.integer, e->value.character.length);
