@@ -2600,6 +2600,82 @@ widen_leading (scalar_int_mode mode, rtx op0, rtx target, optab unoptab)
   return 0;
 }
 
+/* Attempt to emit (clrsb:mode op0) as
+   (plus:mode (clz:mode (xor:mode op0 (ashr:mode op0 (const_int prec-1))))
+	      (const_int -1))
+   if CLZ_DEFINED_VALUE_AT_ZERO (mode, val) is 2 and val is prec,
+   or as
+   (clz:mode (ior:mode (xor:mode (ashl:mode op0 (const_int 1))
+				 (ashr:mode op0 (const_int prec-1)))
+		       (const_int 1)))
+   otherwise.  */
+
+static rtx
+expand_clrsb_using_clz (scalar_int_mode mode, rtx op0, rtx target)
+{
+  if (optimize_insn_for_size_p ()
+      || optab_handler (clz_optab, mode) == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  start_sequence ();
+  HOST_WIDE_INT val = 0;
+  if (CLZ_DEFINED_VALUE_AT_ZERO (mode, val) != 2
+      || val != GET_MODE_PRECISION (mode))
+    val = 0;
+  else
+    val = 1;
+
+  rtx temp2 = op0;
+  if (!val)
+    {
+      temp2 = expand_binop (mode, ashl_optab, op0, const1_rtx,
+			    NULL_RTX, 0, OPTAB_DIRECT);
+      if (!temp2)
+	{
+	fail:
+	  end_sequence ();
+	  return NULL_RTX;
+	}
+    }
+
+  rtx temp = expand_binop (mode, ashr_optab, op0,
+			   GEN_INT (GET_MODE_PRECISION (mode) - 1),
+			   NULL_RTX, 0, OPTAB_DIRECT);
+  if (!temp)
+    goto fail;
+
+  temp = expand_binop (mode, xor_optab, temp2, temp, NULL_RTX, 0,
+		       OPTAB_DIRECT);
+  if (!temp)
+    goto fail;
+
+  if (!val)
+    {
+      temp = expand_binop (mode, ior_optab, temp, const1_rtx,
+			   NULL_RTX, 0, OPTAB_DIRECT);
+      if (!temp)
+	goto fail;
+    }
+  temp = expand_unop_direct (mode, clz_optab, temp, val ? NULL_RTX : target,
+			     true);
+  if (!temp)
+    goto fail;
+  if (val)
+    {
+      temp = expand_binop (mode, add_optab, temp, constm1_rtx,
+			   target, 0, OPTAB_DIRECT);
+      if (!temp)
+	goto fail;
+    }
+
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
+
+  add_equal_note (seq, temp, CLRSB, op0, NULL_RTX, mode);
+  emit_insn (seq);
+  return temp;
+}
+
 /* Try calculating clz of a double-word quantity as two clz's of word-sized
    quantities, choosing which based on whether the high word is nonzero.  */
 static rtx
@@ -3169,6 +3245,9 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       if (is_a <scalar_int_mode> (mode, &int_mode))
 	{
 	  temp = widen_leading (int_mode, op0, target, unoptab);
+	  if (temp)
+	    return temp;
+	  temp = expand_clrsb_using_clz (int_mode, op0, target);
 	  if (temp)
 	    return temp;
 	}
