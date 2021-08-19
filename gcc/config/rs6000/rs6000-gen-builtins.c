@@ -597,6 +597,13 @@ consume_whitespace (void)
 {
   while (pos < LINELEN && isspace(linebuf[pos]) && linebuf[pos] != '\n')
     pos++;
+
+  if (pos >= LINELEN)
+    {
+      diag ("line length overrun at %d.\n", pos);
+      exit (1);
+    }
+
   return;
 }
 
@@ -623,7 +630,7 @@ advance_line (FILE *file)
 static inline void
 safe_inc_pos (void)
 {
-  if (pos++ >= LINELEN)
+  if (++pos >= LINELEN)
     {
       (*diag) ("line length overrun.\n");
       exit (1);
@@ -636,8 +643,15 @@ static char *
 match_identifier (void)
 {
   int lastpos = pos - 1;
-  while (isalnum (linebuf[lastpos + 1]) || linebuf[lastpos + 1] == '_')
+  while (lastpos < LINELEN - 1
+	 && (isalnum (linebuf[lastpos + 1]) || linebuf[lastpos + 1] == '_'))
     ++lastpos;
+
+  if (lastpos >= LINELEN - 1)
+    {
+      diag ("line length overrun at %d.\n", lastpos);
+      exit (1);
+    }
 
   if (lastpos < pos)
     return 0;
@@ -660,8 +674,14 @@ match_integer (void)
     safe_inc_pos ();
 
   int lastpos = pos - 1;
-  while (isdigit (linebuf[lastpos + 1]))
+  while (lastpos < LINELEN - 1 && isdigit (linebuf[lastpos + 1]))
     ++lastpos;
+
+  if (lastpos >= LINELEN - 1)
+    {
+      diag ("line length overrun at %d.\n", lastpos);
+      exit (1);
+    }
 
   if (lastpos < pos)
     return NULL;
@@ -680,7 +700,7 @@ static const char *
 match_to_right_bracket (void)
 {
   int lastpos = pos - 1;
-  while (linebuf[lastpos + 1] != ']')
+  while (lastpos < LINELEN - 1 && linebuf[lastpos + 1] != ']')
     {
       if (linebuf[lastpos + 1] == '\n')
 	{
@@ -688,6 +708,12 @@ match_to_right_bracket (void)
 	  exit (1);
 	}
       ++lastpos;
+    }
+
+  if (lastpos >= LINELEN - 1)
+    {
+      diag ("line length overrun at %d.\n", lastpos);
+      exit (1);
     }
 
   if (lastpos < pos)
