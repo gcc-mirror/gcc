@@ -1,3 +1,8 @@
+2021-08-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* semantics.cc (handle_omp_array_sections_1): Robustify non-contiguous
+	array check and reject non-DECL base-pointer cases as unsupported.
+
 2021-03-03  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* decl2.cc (cp_omp_mappable_type_1): Allow fields with
