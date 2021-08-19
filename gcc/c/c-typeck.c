@@ -13431,25 +13431,36 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
 	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
 	{
-	  if (ort == C_ORT_ACC)
-	    /* Note that OpenACC does accept these kinds of non-contiguous
-	       pointer based arrays.  */
-	    non_contiguous = true;
-	  else
+	  /* If any prior dimension has a non-one length, then deem this
+	     array section as non-contiguous.  */
+	  for (tree d = TREE_CHAIN (t); TREE_CODE (d) == TREE_LIST;
+	       d = TREE_CHAIN (d))
 	    {
-	      /* If any prior dimension has a non-one length, then deem this
-		 array section as non-contiguous.  */
-	      for (tree d = TREE_CHAIN (t); TREE_CODE (d) == TREE_LIST;
-		   d = TREE_CHAIN (d))
+	      tree d_length = TREE_VALUE (d);
+	      if (d_length == NULL_TREE || !integer_onep (d_length))
 		{
-		  tree d_length = TREE_VALUE (d);
-		  if (d_length == NULL_TREE || !integer_onep (d_length))
+		  if (ort == C_ORT_ACC)
 		    {
+		      while (TREE_CODE (d) == TREE_LIST)
+			d = TREE_CHAIN (d);
+		      if (DECL_P (d))
+			{
+			  /* Note that OpenACC does accept these kinds of
+			     non-contiguous pointer based arrays.  */
+			  non_contiguous = true;
+			  break;
+			}
 		      error_at (OMP_CLAUSE_LOCATION (c),
-				"array section is not contiguous in %qs clause",
+				"base-pointer expression in %qs clause not "
+				"supported for non-contiguous arrays",
 				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		      return error_mark_node;
 		    }
+
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "array section is not contiguous in %qs clause",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  return error_mark_node;
 		}
 	    }
 	}
