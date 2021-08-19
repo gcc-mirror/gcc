@@ -1,3 +1,8 @@
+2021-08-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-typeck.cc (handle_omp_array_sections_1): Robustify non-contiguous
+	array check and reject non-DECL base-pointer cases as unsupported.
+
 2020-08-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Add a "combined" flag for "acc kernels loop" etc directives.

@@ -1,3 +1,8 @@
+2021-08-19  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* semantics.cc (handle_omp_array_sections_1): Robustify non-contiguous
+	array check and reject non-DECL base-pointer cases as unsupported.
+
 2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* semantics.cc (finish_omp_clauses):  Adjust to allow duplicate
