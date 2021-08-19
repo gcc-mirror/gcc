@@ -8,4 +8,5 @@ int i;                                                                          
   while (i--)
     bar();
 }
-/* { dg-message "fself\-test: " "-fself-test" { target *-*-* } 0 } */
+
+/* { dg-regexp {^-fself-test: [0-9]+ pass\(es\) in [.0-9]+ seconds$|.*: note: self-tests are not enabled in this build$} } */
