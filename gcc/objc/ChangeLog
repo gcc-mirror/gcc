@@ -1,3 +1,13 @@
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+	    Matt Jacobson   <mhjacobson@me.com>
+
+	PR objc/101666
+	* objc-act.c (objc_build_constructor): Handle empty constructor
+	lists.
+	* objc-next-runtime-abi-02.c (build_v2_objc_method_fixup_call):
+	Handle nil receivers.
+	(build_v2_build_objc_method_call): Likewise.
+
 2021-08-17  Matt Jacobson  <mhjacobson@me.com>
 
 	* objc-next-runtime-abi-02.c

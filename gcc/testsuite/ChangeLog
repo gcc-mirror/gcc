@@ -1,3 +1,77 @@
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR testsuite/101963
+	* gfortran.dg/nothing-1.f90: Moved to ...
+	* gfortran.dg/gomp/nothing-1.f90: ... here.
+	* gfortran.dg/nothing-2.f90: Moved to ...
+	* gfortran.dg/gomp/nothing-2.f90: ... here;
+	avoid $ issue in $OMP in dg-error.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+	    Matt Jacobson   <mhjacobson@me.com>
+
+	PR objc/101666
+	* obj-c++.dg/pr101666-0.mm: New test.
+	* obj-c++.dg/pr101666-1.mm: New test.
+	* obj-c++.dg/pr101666.inc: New.
+	* objc.dg/pr101666-0.m: New test.
+	* objc.dg/pr101666-1.m: New test.
+	* objc.dg/pr101666.inc: New.
+
+2021-08-18  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/97114
+	* g++.dg/analyzer/vfunc-2.C: New test.
+	* g++.dg/analyzer/vfunc-3.C: New test.
+	* g++.dg/analyzer/vfunc-4.C: New test.
+	* g++.dg/analyzer/vfunc-5.C: New test.
+
+2021-08-18  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/100546
+	* gcc.dg/analyzer/function-ptr-4.c: New test.
+	* gcc.dg/analyzer/pr100546.c: New test.
+
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/nothing-1.f90: New test.
+	* gfortran.dg/nothing-2.f90: New test.
+
+2021-08-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101344
+	PR c++/101820
+	* g++.dg/cpp2a/class-deduction-aggr11.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr12.C: New test.
+
+2021-08-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101883
+	* g++.dg/cpp2a/nontype-class49.C: New test.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/nothing-1.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add nothing directive test.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* g++.dg/gomp/attrs-9.C: Likewise.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/pr63326.c: Don't expect extra "before" errors
+	in C++.
+	* g++.dg/gomp/attrs-7.C: Don't expect one extra error.
+	* g++.dg/gomp/barrier-2.C: Likewise.
+	* gcc.dg/gomp/declare-simd-5.c: Likewise.
+	* gcc.dg/gomp/barrier-2.c: Likewise.
+	* gcc.dg/gomp/declare-variant-2.c: Likewise.
+
+2021-08-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/97147
+	* gcc.target/i386/pr54400.c: Adjust testcase.
+	* gcc.target/i386/pr94147.c: New test.
+
 2021-08-17  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/101854

@@ -1,3 +1,65 @@
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (default_delete): Add @since tag.
+	(unique_ptr, unique_ptr<T[]>): Likewise. Improve @brief.
+	(make_unique, make_unique_for_overwrite): Likewise. Add @tparam,
+	@param, and @returns.
+	(_MakeUniq): Move to __detail namespace. Add alias template
+	helpers.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_function.h: Improve doxygen comments.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Enable doxygen
+	processing for C++20 components and components that depend on
+	compiler features.
+	* include/bits/stl_algo.h (random_shuffle): Use @deprecated.
+	* include/std/type_traits: Improve doxygen comments for C++20
+	traits.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/type_traits.h (__promote_2, __promote_3)
+	(__promote_4): Redfine as alias templates using __promoted_t.
+	* include/std/complex (__promote_2): Remove partial
+	specializations for std::complex.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (min(initializer_list<T>))
+	(min(initializer_list<T>, Compare)): Call __min_element directly to
+	avoid redundant debug checks for valid ranges.
+	(max(initializer_list<T>), max(initializer_list<T>, Compare)):
+	Likewise, for __max_element.
+	(minmax(initializer_list<T>), minmax(initializer_list<T>, Compare)):
+	Likewise, for __minmax_element.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/deque (deque(size_type, const T&, const A&)):
+	Prevent class template argument deduction and replace with a
+	deduction guide.
+	* include/debug/forward_list (forward_list(size_type, const T&, const A&)):
+	Likewise.
+	* include/debug/list (list(size_type, const T&, const A&)):
+	Likewise.
+	* include/debug/vector (vector(size_type, const T&, const A&)):
+	Likewise.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdBitReferencePrinter): Use
+	'std::vector<bool>::reference' as type name, not _Bit_reference.
+	(build_libstdcxx_dictionary): Register printers for vector<bool>
+	types in debug mode too.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Adjust expected
+	output for invalid _Bit_reference. Use vector<bool>::reference
+	instead of _Bit_reference.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
 2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp: Avoid illegal argument to verbose,

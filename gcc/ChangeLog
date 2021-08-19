@@ -1,3 +1,54 @@
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc: Include rpath.opt for Darwin.
+	* config/darwin.h (DRIVER_SELF_SPECS): Handle -rpath.
+
+2021-08-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR bootstrap/101959
+	* hash-map-tests.c (test_map_of_type_with_ctor_and_dtor_expand):
+	Use an 'int_hash'.
+
+2021-08-18  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_neon.h (vld3_lane_f64): Use float RTL
+	pattern and type cast.
+	(vld4_lane_f32): Use float RTL pattern.
+	(vld4q_lane_f64): Use float type cast.
+
+2021-08-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Check also
+	EAF_NOREAD.
+
+2021-08-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* hash-map-tests.c (test_map_of_type_with_ctor_and_dtor): Extend.
+	(test_map_of_type_with_ctor_and_dtor_expand): Add function.
+	(hash_map_tests_c_tests): Call it.
+
+2021-08-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* ggc.h (enum ggc_collect): New.
+	(ggc_collect): Use it.
+	* ggc-page.c: Adjust.
+	* ggc-common.c: Likewise.
+	* ggc-tests.c: Likewise.
+	* read-rtl-function.c: Likewise.
+	* selftest-run-tests.c: Likewise.
+	* doc/gty.texi (Invoking the garbage collector): Likewise.
+
+2021-08-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/97147
+	* config/i386/i386.h (TARGET_V2DF_REDUCTION_PREFER_HADDPD):
+	New macro.
+	* config/i386/sse.md (*sse3_haddv2df3_low): Add
+	TARGET_V2DF_REDUCTION_PREFER_HADDPD.
+	(*sse3_hsubv2df3_low): Ditto.
+	* config/i386/x86-tune.def
+	(X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD): New tune.
+
 2021-08-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-gori.cc (gori_compute::gori_compute): Enable tracing.
