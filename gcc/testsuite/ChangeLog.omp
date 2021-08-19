@@ -1,3 +1,15 @@
+2021-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR testsuite/101963
+	* gfortran.dg/nothing-1.f90: Moved to ...
+	* gfortran.dg/gomp/nothing-1.f90: ... here.
+	* gfortran.dg/nothing-2.f90: Moved to ...
+	* gfortran.dg/gomp/nothing-2.f90: ... here;
+	avoid $ issue in $OMP in dg-error.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
