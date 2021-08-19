@@ -1,7 +1,7 @@
 2021-08-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101344
-	PR c++/101820
+	PR c++/101803
 	* cp-tree.h (CONSTRUCTOR_BRACES_ELIDED_P): Define.
 	* decl.c (reshape_init_r): Set it.
 	* pt.c (collect_ctor_idx_types): Recurse into a sub-CONSTRUCTOR

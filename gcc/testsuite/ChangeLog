@@ -40,7 +40,7 @@
 2021-08-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101344
-	PR c++/101820
+	PR c++/101803
 	* g++.dg/cpp2a/class-deduction-aggr11.C: New test.
 	* g++.dg/cpp2a/class-deduction-aggr12.C: New test.
 
