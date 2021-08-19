@@ -3310,11 +3310,15 @@ pass_waccess::check (basic_block bb)
 unsigned
 pass_waccess::execute (function *fun)
 {
+  /* Create a new ranger instance and associate it with FUN.  */
   m_ranger = enable_ranger (fun);
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     check (bb);
+
+  /* Release the ranger instance and replace it with a global ranger.  */
+  disable_ranger (fun);
 
   return 0;
 }
