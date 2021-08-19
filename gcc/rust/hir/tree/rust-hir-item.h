@@ -718,6 +718,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::vector<std::unique_ptr<Item> > &get_items () { return items; };
+
   /* Override that runs the function recursively on all items contained within
    * the module. */
   void add_crate_name (std::vector<std::string> &names) const override;

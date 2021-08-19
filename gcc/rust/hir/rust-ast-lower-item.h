@@ -29,6 +29,7 @@
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"
 #include "rust-ast-lower-extern.h"
+#include "rust-hir-full-decls.h"
 
 namespace Rust {
 namespace HIR {
@@ -52,6 +53,43 @@ public:
     //   }
 
     return resolver.translated;
+  }
+
+  void visit (AST::Module &module) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, module.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    // should be lowered from module.get_vis()
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    auto items = std::vector<std::unique_ptr<Item> > ();
+
+    for (auto &item : module.get_items ())
+      {
+	auto transitem = translate (item.get ());
+	items.push_back (std::unique_ptr<Item> (transitem));
+      }
+
+    // should be lowered/copied from module.get_in/outer_attrs()
+    AST::AttrVec inner_attrs;
+    AST::AttrVec outer_attrs;
+
+    translated
+      = new HIR::ModuleBodied (mapping, module.get_name (), module.get_locus (),
+			       std::move (items), std::move (vis),
+			       std::move (inner_attrs),
+			       std::move (outer_attrs));
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_module (mapping.get_crate_num (), mapping.get_hirid (),
+			     static_cast<Module *> (translated));
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       module.get_locus ());
   }
 
   void visit (AST::TypeAlias &alias) override

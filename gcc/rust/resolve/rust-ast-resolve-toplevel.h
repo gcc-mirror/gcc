@@ -23,6 +23,7 @@
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-implitem.h"
 #include "rust-ast-full.h"
+#include "rust-name-resolver.h"
 
 namespace Rust {
 namespace Resolver {
@@ -38,6 +39,26 @@ public:
     ResolveTopLevel resolver (prefix);
     item->accept_vis (resolver);
   };
+
+  void visit (AST::Module &module) override
+  {
+    auto path = prefix.append (
+      CanonicalPath::new_seg (module.get_node_id (), module.get_name ()));
+    resolver->get_name_scope ().insert (
+      path, module.get_node_id (), module.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (module.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    resolver->insert_new_definition (module.get_node_id (),
+				     Definition{module.get_node_id (),
+						module.get_node_id ()});
+
+    for (auto &item : module.get_items ())
+      ResolveTopLevel::go (item.get (), path);
+  }
 
   void visit (AST::TypeAlias &alias) override
   {

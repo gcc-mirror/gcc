@@ -88,6 +88,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
     {
       // must be a call to a function
       Bexpression *fn = CompileExpr::Compile (expr.get_fnexpr (), ctx);
+      rust_assert (fn != nullptr);
 
       std::vector<Bexpression *> args;
       expr.iterate_params ([&] (HIR::Expr *p) mutable -> bool {

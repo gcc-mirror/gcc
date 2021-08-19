@@ -206,6 +206,9 @@ public:
 
     auto resolver = Resolver::get ();
     NodeId resolved_node = UNKNOWN_NODEID;
+
+    // We may need to change how names are resolved, like described in :
+    // https://github.com/rust-lang/rust/blob/1f94abcda6884893d4723304102089198caa0839/compiler/rustc_resolve/src/lib.rs#L1722
     if (!resolver->get_type_scope ().lookup (canonical_path, &resolved_node))
       {
 	rust_error_at (path.get_locus_slow (), "failed to resolve TypePath: %s",

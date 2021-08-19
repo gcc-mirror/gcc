@@ -260,6 +260,7 @@ private:
 	    break;
 
 	  case TraitItemReference::TraitItemType::ERROR:
+	  default:
 	    gcc_unreachable ();
 	    break;
 	  }

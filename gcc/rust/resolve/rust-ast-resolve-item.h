@@ -19,8 +19,10 @@
 #ifndef RUST_AST_RESOLVE_ITEM_H
 #define RUST_AST_RESOLVE_ITEM_H
 
+#include "rust-ast-full-decls.h"
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-full.h"
+#include "rust-ast-resolve-toplevel.h"
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-stmt.h"
@@ -212,6 +214,27 @@ public:
     ResolveType::go (alias.get_type_aliased ().get (), alias.get_node_id ());
 
     resolver->get_type_scope ().pop ();
+  }
+
+  void visit (AST::Module &module) override
+  {
+    NodeId scope_node_id = module.get_node_id ();
+    resolver->get_name_scope ().push (scope_node_id);
+    resolver->get_type_scope ().push (scope_node_id);
+    resolver->get_label_scope ().push (scope_node_id);
+    resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+    resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+    resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+    for (auto &item : module.get_items ())
+      ResolveTopLevel::go (item.get ());
+
+    for (auto &item : module.get_items ())
+      ResolveItem::go (item.get ());
+
+    resolver->get_name_scope ().pop ();
+    resolver->get_type_scope ().pop ();
+    resolver->get_label_scope ().pop ();
   }
 
   void visit (AST::TupleStruct &struct_decl) override
