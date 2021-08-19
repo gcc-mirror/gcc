@@ -1,3 +1,8 @@
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR jit/100613
+	* Make-lang.in: Provide clauses for Darwin hosts.
+
 2021-07-18  Antoni Boucher  <bouanto@zoho.com>
 
 	PR target/95498

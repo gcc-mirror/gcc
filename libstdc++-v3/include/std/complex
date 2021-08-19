@@ -1557,35 +1557,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  // See ext/type_traits.h for the primary template.
-  template<typename _Tp, typename _Up>
-    struct __promote_2<std::complex<_Tp>, _Up>
-    {
-    public:
-      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
-    };
-
-  template<typename _Tp, typename _Up>
-    struct __promote_2<_Tp, std::complex<_Up> >
-    {
-    public:
-      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
-    };
-
-  template<typename _Tp, typename _Up>
-    struct __promote_2<std::complex<_Tp>, std::complex<_Up> >
-    {
-    public:
-      typedef std::complex<typename __promote_2<_Tp, _Up>::__type> __type;
-    };
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
 #if __cplusplus >= 201103L
 
 namespace std _GLIBCXX_VISIBILITY(default)

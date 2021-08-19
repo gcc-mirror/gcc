@@ -1,3 +1,9 @@
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Make the state of the configured host
+	shared flag available to makefile fragements.
+
 2021-08-09  Hongyu Wang  <hongyu.wang@intel.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

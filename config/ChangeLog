@@ -1,3 +1,8 @@
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mh-darwin: Require a non-shared host configuration to
+	enable  mdynamic-no-pic where that is supported.
+
 2021-07-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* mh-darwin: Make this specific to handling the

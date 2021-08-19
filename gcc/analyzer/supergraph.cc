@@ -183,11 +183,33 @@ supergraph::supergraph (logger *logger)
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
 	      m_stmt_uids.make_uid_unique (stmt);
 	      if (cgraph_edge *edge = supergraph_call_edge (fun, stmt))
-		{
-		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
-		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt), NULL);
-		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
-		}
+    		{
+    		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
+    		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt),
+    		   			     NULL);
+    		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
+    		}
+	       else
+	        {
+	          // maybe call is via a function pointer
+	          if (gcall *call = dyn_cast<gcall *> (stmt))
+	          {
+	            cgraph_edge *edge 
+		      = cgraph_node::get (fun->decl)->get_edge (stmt);
+	            if (!edge || !edge->callee)
+	            {
+	              supernode *old_node_for_stmts = node_for_stmts;
+	              node_for_stmts = add_node (fun, bb, call, NULL);
+
+	              superedge *sedge 
+	                = new callgraph_superedge (old_node_for_stmts,
+	                  			   node_for_stmts,
+	                  			   SUPEREDGE_INTRAPROCEDURAL_CALL,
+	                  			   NULL);
+	              add_edge (sedge);
+	            }
+	          }
+	        }
 	    }
 
 	  m_bb_to_final_node.put (bb, node_for_stmts);
@@ -1137,6 +1159,17 @@ tree
 callgraph_superedge::get_callee_decl () const
 {
   return get_callee_function ()->decl;
+}
+
+/* Get the gcall * of this interprocedural call/return edge.  */
+
+gcall *
+callgraph_superedge::get_call_stmt () const
+{
+  if (m_cedge)
+    return m_cedge->call_stmt;
+  
+  return m_src->get_final_call ();
 }
 
 /* Get the calling fndecl at this interprocedural call/return edge.  */

@@ -614,7 +614,11 @@ call_event::call_event (const exploded_edge &eedge,
 			location_t loc, tree fndecl, int depth)
 : superedge_event (EK_CALL_EDGE, eedge, loc, fndecl, depth)
 {
-  gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
+  if (eedge.m_sedge)
+    gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
+
+   m_src_snode = eedge.m_src->get_supernode ();
+   m_dest_snode = eedge.m_dest->get_supernode ();
 }
 
 /* Implementation of diagnostic_event::get_desc vfunc for
@@ -638,8 +642,8 @@ call_event::get_desc (bool can_colorize) const
       label_text custom_desc
 	= m_pending_diagnostic->describe_call_with_state
 	    (evdesc::call_with_state (can_colorize,
-				      m_sedge->m_src->m_fun->decl,
-				      m_sedge->m_dest->m_fun->decl,
+				      m_src_snode->m_fun->decl,
+				      m_dest_snode->m_fun->decl,
 				      var,
 				      m_critical_state));
       if (custom_desc.m_buffer)
@@ -648,8 +652,8 @@ call_event::get_desc (bool can_colorize) const
 
   return make_label_text (can_colorize,
 			  "calling %qE from %qE",
-			  m_sedge->m_dest->m_fun->decl,
-			  m_sedge->m_src->m_fun->decl);
+			  m_dest_snode->m_fun->decl,
+			  m_src_snode->m_fun->decl);
 }
 
 /* Override of checker_event::is_call_p for calls.  */
@@ -668,7 +672,11 @@ return_event::return_event (const exploded_edge &eedge,
 			    location_t loc, tree fndecl, int depth)
 : superedge_event (EK_RETURN_EDGE, eedge, loc, fndecl, depth)
 {
-  gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
+  if (eedge.m_sedge)
+    gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
+
+  m_src_snode = eedge.m_src->get_supernode ();
+  m_dest_snode = eedge.m_dest->get_supernode ();
 }
 
 /* Implementation of diagnostic_event::get_desc vfunc for
@@ -694,16 +702,16 @@ return_event::get_desc (bool can_colorize) const
       label_text custom_desc
 	= m_pending_diagnostic->describe_return_of_state
 	    (evdesc::return_of_state (can_colorize,
-				      m_sedge->m_dest->m_fun->decl,
-				      m_sedge->m_src->m_fun->decl,
+				      m_dest_snode->m_fun->decl,
+				      m_src_snode->m_fun->decl,
 				      m_critical_state));
       if (custom_desc.m_buffer)
 	return custom_desc;
     }
   return make_label_text (can_colorize,
 			  "returning to %qE from %qE",
-			  m_sedge->m_dest->m_fun->decl,
-			  m_sedge->m_src->m_fun->decl);
+			  m_dest_snode->m_fun->decl,
+			  m_src_snode->m_fun->decl);
 }
 
 /* Override of checker_event::is_return_p for returns.  */

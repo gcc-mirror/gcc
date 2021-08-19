@@ -135,7 +135,7 @@ namespace __debug
       list(size_type __n, const allocator_type& __a = allocator_type())
       : _Base(__n, __a) { }
 
-      list(size_type __n, const _Tp& __value,
+      list(size_type __n, const __type_identity_t<_Tp>& __value,
 	   const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) { }
 #else
@@ -921,6 +921,11 @@ namespace __debug
 	   typename = _RequireAllocator<_Allocator>>
     list(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> list<_ValT, _Allocator>;
+
+  template<typename _Tp, typename _Allocator = allocator<_Tp>,
+	   typename = _RequireAllocator<_Allocator>>
+    list(size_t, _Tp, _Allocator = _Allocator())
+      -> list<_Tp, _Allocator>;
 #endif
 
   template<typename _Tp, typename _Alloc>

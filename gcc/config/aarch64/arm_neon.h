@@ -20546,8 +20546,8 @@ vld3_lane_f64 (const float64_t * __ptr, float64x1x3_t __b, const int __c)
   __o = __builtin_aarch64_set_qregciv2df (__o, (float64x2_t) __temp.val[0], 0);
   __o = __builtin_aarch64_set_qregciv2df (__o, (float64x2_t) __temp.val[1], 1);
   __o = __builtin_aarch64_set_qregciv2df (__o, (float64x2_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
+  __o =	__builtin_aarch64_ld3_lanedf (
+	  (__builtin_aarch64_simd_df *) __ptr, __o, __c);
   __b.val[0] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
   __b.val[1] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
   __b.val[2] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
@@ -21077,7 +21077,7 @@ vld4_lane_f32 (const float32_t * __ptr, float32x2x4_t __b, const int __c)
   __o = __builtin_aarch64_set_qregxiv4sf (__o, (float32x4_t) __temp.val[1], 1);
   __o = __builtin_aarch64_set_qregxiv4sf (__o, (float32x4_t) __temp.val[2], 2);
   __o = __builtin_aarch64_set_qregxiv4sf (__o, (float32x4_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev2si (
+  __o =	__builtin_aarch64_ld4_lanev2sf (
 	  (__builtin_aarch64_simd_sf *) __ptr, __o, __c);
   __b.val[0] = (float32x2_t) __builtin_aarch64_get_dregxidi (__o, 0);
   __b.val[1] = (float32x2_t) __builtin_aarch64_get_dregxidi (__o, 1);
@@ -21381,7 +21381,7 @@ vld4q_lane_f64 (const float64_t * __ptr, float64x2x4_t __b, const int __c)
   __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
   __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
   __o = __builtin_aarch64_ld4_lanev2df (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
+	(__builtin_aarch64_simd_df *) __ptr, __o, __c);
   ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
   ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
   ret.val[2] = (float64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 2);

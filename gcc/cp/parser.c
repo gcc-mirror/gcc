@@ -45479,9 +45479,18 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 		      error_at (cp_lexer_peek_token (parser->lexer)->location,
 				"expected %<seq_cst%>, %<relaxed%> or "
 				"%<acq_rel%>");
-		      if (cp_lexer_nth_token_is (parser->lexer, 2,
-						 CPP_CLOSE_PAREN))
-			cp_lexer_consume_token (parser->lexer);
+		      switch (cp_lexer_peek_token (parser->lexer)->type)
+			{
+			case CPP_EOF:
+			case CPP_PRAGMA_EOL:
+			case CPP_CLOSE_PAREN:
+			  break;
+			default:
+			  if (cp_lexer_nth_token_is (parser->lexer, 2,
+						     CPP_CLOSE_PAREN))
+			    cp_lexer_consume_token (parser->lexer);
+			  break;
+			}
 		    }
 		  else
 		    cp_lexer_consume_token (parser->lexer);
@@ -45570,7 +45579,7 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 static void
 cp_parser_omp_nothing (cp_parser *parser, cp_token *pragma_tok)
 {
-  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+  cp_parser_require_pragma_eol (parser, pragma_tok);
 }
 
 

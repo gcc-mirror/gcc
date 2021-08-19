@@ -1,3 +1,23 @@
+2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp_lib.f90.in (omp_alloc, omp_free, omp_target_alloc,
+	omp_target_free. omp_target_is_present, omp_target_memcpy,
+	omp_target_memcpy_rect, omp_target_associate_ptr,
+	omp_target_disassociate_ptr): Add interface.
+	* omp_lib.h.in (omp_alloc, omp_free, omp_target_alloc,
+	omp_target_free. omp_target_is_present, omp_target_memcpy,
+	omp_target_memcpy_rect, omp_target_associate_ptr,
+	omp_target_disassociate_ptr): Add interface.
+	* testsuite/libgomp.fortran/alloc-1.F90: Remove local
+	interface block for omp_alloc + omp_free.
+	* testsuite/libgomp.fortran/alloc-4.f90: Likewise.
+	* testsuite/libgomp.fortran/refcount-1.f90: New test.
+	* testsuite/libgomp.fortran/target-12.f90: New test.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/nothing-1.c: New test.
+
 2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/scope-1.f90: New test.
