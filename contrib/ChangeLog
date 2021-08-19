@@ -1,3 +1,9 @@
+2021-08-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Wrap $@ in quotes.
+	* git-commit-mklog.py: Add new argument --co.
+	* mklog.py: Skip the Co-Authored-By lines.
+
 2021-08-10  Martin Liska  <mliska@suse.cz>
 
 	* mklog.py: Support additional PRs without PR prefix.

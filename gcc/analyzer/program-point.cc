@@ -330,6 +330,24 @@ program_point::to_json () const
   return point_obj;
 }
 
+/* Update the callstack to represent a call from caller to callee.
+
+   Generally used to push a custom call to a perticular program point 
+   where we don't have a superedge representing the call.  */
+void
+program_point::push_to_call_stack (const supernode *caller,
+				   const supernode *callee)
+{
+  m_call_string.push_call (callee, caller);
+}
+
+/* Pop the topmost call from the current callstack.  */
+void
+program_point::pop_from_call_stack ()
+{
+  m_call_string.pop ();
+}
+
 /* Generate a hash value for this program_point.  */
 
 hashval_t

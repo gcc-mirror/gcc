@@ -1,4 +1,4 @@
-// PR c++/101820
+// PR c++/101803
 // { dg-do compile { target c++20 } }
 
 struct Inner { int i = 0; };

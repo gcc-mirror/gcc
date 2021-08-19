@@ -322,7 +322,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       _Base_ptr _M_node;
-  };
+    };
 
   template<typename _Tp>
     struct _Rb_tree_const_iterator

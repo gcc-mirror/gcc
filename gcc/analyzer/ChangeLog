@@ -1,3 +1,54 @@
+2021-08-18  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/97114
+	* region-model.cc (region_model::get_rvalue_1): Add case for
+	OBJ_TYPE_REF.
+
+2021-08-18  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/100546
+	* analysis-plan.cc (analysis_plan::use_summary_p): Don't use call
+	summaries if there is no callgraph edge
+	* checker-path.cc (call_event::call_event): Handle calls events that
+	are not represented by a supergraph call edge
+	(return_event::return_event): Likewise.
+	(call_event::get_desc): Work with new call_event structure.
+	(return_event::get_desc): Likeise.
+	* checker-path.h (call_event::m_src_snode): New field.
+	(call_event::m_dest_snode): New field.
+	(return_event::m_src_snode): New field.
+	(return_event::m_dest_snode): New field.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_CALL_EDGE>:
+	Refactor to work with edges without callgraph edge.
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_RETURN_EDGE>:
+	Likewise.
+	* engine.cc (dynamic_call_info_t::update_model): New function.
+	(dynamic_call_info_t::add_events_to_path): New function.
+	(exploded_graph::create_dynamic_call): New function.
+	(exploded_graph::process_node): Work with dynamically discovered calls.
+	* exploded-graph.h (class dynamic_call_info_t): New class.
+	(exploded_graph::create_dynamic_call): New decl.
+	* program-point.cc (program_point::push_to_call_stack): New function.
+	(program_point::pop_from_call_stack): New function.
+	* program-point.h (program_point::push_to_call_stack): New decl.
+	(program_point::pop_from_call_stack): New decl.
+	* program-state.cc (program_state::push_call): New function.
+	(program_state::returning_call): New function.
+	* program-state.h (program_state::push_call): New decl.
+	(program_state::returning_call): New decl.
+	* region-model.cc (region_model::update_for_gcall) New function.
+	(region_model::update_for_return_gcall): New function.
+	(egion_model::update_for_call_superedge): Get the underlying gcall and
+	update for gcall.
+	(region_model::update_for_return_superedge): Likewise.
+	* region-model.h (region_model::update_for_gcall): New decl.
+	(region_model::update_for_return_gcall): New decl.
+	* state-purge.cc (state_purge_per_ssa_name::process_point): Update to
+	work with calls without underlying cgraph edge.
+	* supergraph.cc (supergraph::supergraph) Split snodes at every callsite.
+	* supergraph.h (supernode::get_returning_call) New accessor.
+
 2021-08-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101570

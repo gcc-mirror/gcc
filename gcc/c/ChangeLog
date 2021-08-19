@@ -1,3 +1,32 @@
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_nothing): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_NOTHING.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_statement_after_labels): Add restart label
+	near the start of the function.  If c_parser_pragma returns false,
+	goto restart.
+	(c_parser_pragma): For PRAGMA_OMP_CANCELLATION_POINT return what
+	c_parser_omp_cancellation_point returned.  For PRAGMA_OMP_DECLARE
+	return what c_parser_omp_declare returned.  Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+	(c_parser_omp_ordered): Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+	(c_parser_omp_target_update): Likewise.
+	(c_parser_omp_target_enter_data, c_parser_omp_target_exit_data):
+	Change return type from tree to bool, return false if the
+	directive should be ignored in pragma_stmt contexts.
+	(c_parser_omp_target): Adjust callers of c_parser_omp_target_*_data,
+	return their result directly.
+	(c_parser_omp_cancellation_point): Change return type from void to
+	bool, return false if the directive should be ignored in pragma_stmt
+	contexts.
+	(c_parser_omp_declare): Likewise.
+
 2021-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (OMP_SCOPE_CLAUSE_MASK): Define.

@@ -240,6 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 20.7.1.2 unique_ptr for single objects.
 
   /// A move-only smart pointer that manages unique ownership of a resource.
+  /// @headerfile memory
   /// @since C++11
   template <typename _Tp, typename _Dp = default_delete<_Tp>>
     class unique_ptr
@@ -478,6 +479,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // DR 740 - omit specialization for array objects with a compile time length
 
   /// A move-only smart pointer that manages unique ownership of an array.
+  /// @headerfile memory
   /// @since C++11
   template<typename _Tp, typename _Dp>
     class unique_ptr<_Tp[], _Dp>

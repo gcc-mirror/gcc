@@ -2093,18 +2093,13 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	case EK_CALL_EDGE:
 	  {
 	    call_event *event = (call_event *)base_event;
-	    const callgraph_superedge& cg_superedge
-	      = event->get_callgraph_superedge ();
 	    const region_model *callee_model
 	      = event->m_eedge.m_dest->get_state ().m_region_model;
+	    const region_model *caller_model
+	      = event->m_eedge.m_src->get_state ().m_region_model;
 	    tree callee_var = callee_model->get_representative_tree (sval);
-	    /* We could just use caller_model->get_representative_tree (sval);
-	       to get the caller_var, but for now use
-	       map_expr_from_callee_to_caller so as to only record critical
-	       state for parms and the like.  */
 	    callsite_expr expr;
-	    tree caller_var
-	      = cg_superedge.map_expr_from_callee_to_caller (callee_var, &expr);
+	    tree caller_var = caller_model->get_representative_tree (sval);
 	    if (caller_var)
 	      {
 		if (get_logger ())
@@ -2126,15 +2121,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	    if (sval)
 	      {
 		return_event *event = (return_event *)base_event;
-		const callgraph_superedge& cg_superedge
-		  = event->get_callgraph_superedge ();
-		const region_model *caller_model
-		  = event->m_eedge.m_dest->get_state ().m_region_model;
-		tree caller_var = caller_model->get_representative_tree (sval);
 		callsite_expr expr;
-		tree callee_var
-		  = cg_superedge.map_expr_from_caller_to_callee (caller_var,
-								 &expr);
+
+		const region_model *callee_model
+	      	  = event->m_eedge.m_src->get_state ().m_region_model;
+		tree callee_var = callee_model->get_representative_tree (sval);
 		if (callee_var)
 		  {
 		    if (get_logger ())

@@ -1034,6 +1034,50 @@ program_state::on_edge (exploded_graph &eg,
   return true;
 }
 
+/* Update this program_state to reflect a call to function
+   represented by CALL_STMT.
+   currently used only when the call doesn't have a superedge representing 
+   the call ( like call via a function pointer )  */
+void
+program_state::push_call (exploded_graph &eg,
+                          exploded_node *enode,
+                          const gcall *call_stmt,
+                          uncertainty_t *uncertainty)
+{
+  /* Update state.  */
+  const program_point &point = enode->get_point ();
+  const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
+
+  impl_region_model_context ctxt (eg, enode,
+                                  &enode->get_state (),
+                                  this,
+                                  uncertainty,
+                                  last_stmt);
+  m_region_model->update_for_gcall (call_stmt, &ctxt);
+}
+
+/* Update this program_state to reflect a return from function
+   call to which is represented by CALL_STMT.
+   currently used only when the call doesn't have a superedge representing 
+   the return */
+void
+program_state::returning_call (exploded_graph &eg,
+                               exploded_node *enode,
+                               const gcall *call_stmt,
+                               uncertainty_t *uncertainty)
+{
+  /* Update state.  */
+  const program_point &point = enode->get_point ();
+  const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
+
+  impl_region_model_context ctxt (eg, enode,
+                                  &enode->get_state (),
+                                  this,
+                                  uncertainty,
+                                  last_stmt);
+  m_region_model->update_for_return_gcall (call_stmt, &ctxt);
+}
+
 /* Generate a simpler version of THIS, discarding state that's no longer
    relevant at POINT.
    The idea is that we're more likely to be able to consolidate

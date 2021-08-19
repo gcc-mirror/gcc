@@ -438,6 +438,18 @@ verify_code_4 (gcc_jit_context *ctxt, gcc_jit_result *result)
 static void
 create_test_i386_basic_asm_5 (gcc_jit_context *ctxt)
 {
+#if __APPLE__
+  /* Darwin's assemblers do not support push/pop section, do not use .type
+     and external symbols should use __USER_LABEL_PREFIX__.  */
+  gcc_jit_context_add_top_level_asm (ctxt, NULL,
+                                     "\t.text\n"
+                                     "\t.globl _add_asm\n"
+                                     "_add_asm:\n"
+                                     "\tmovq %rdi, %rax\n"
+                                     "\tadd %rsi, %rax\n"
+                                     "\tret\n"
+                                     "\t# some asm here\n");
+#else
   /* Quote from here in docs/topics/asm.rst: example 5: jit.  */
   gcc_jit_context_add_top_level_asm (ctxt, NULL,
                                      "\t.pushsection .text\n"
@@ -450,6 +462,7 @@ create_test_i386_basic_asm_5 (gcc_jit_context *ctxt)
                                      "\t# some asm here\n"
                                      "\t.popsection\n");
   /* Quote up to here in docs/topics/asm.rst: example 5: jit.  */
+#endif
 }
 
 static void

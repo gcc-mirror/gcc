@@ -85,6 +85,10 @@ ifeq ($(strip $(filter-out linux%,$(host_os))),)
   STAGE1_LIBS=-ldl
 endif
 
+ifeq ($(strip $(filter-out hpux%,$(host_os))),)
+  STAGE1_LIBS=/usr/lib/libcl.a
+endif
+
 ifeq ($(STAGE1),True)
   ADA_INCLUDES=$(COMMON_ADA_INCLUDES)
   adalib=$(dir $(shell $(CC) -print-libgcc-file-name))adalib

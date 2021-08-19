@@ -383,18 +383,31 @@ state_purge_per_ssa_name::process_point (const function_point &point,
 	  {
 	    /* Add any intraprocedually edge for a call.  */
 	    if (snode->m_returning_call)
-	      {
-		cgraph_edge *cedge
+	    {
+	      gcall *returning_call = snode->m_returning_call;
+	      cgraph_edge *cedge
 		  = supergraph_call_edge (snode->m_fun,
-					  snode->m_returning_call);
-		gcc_assert (cedge);
-		superedge *sedge
-		  = map.get_sg ().get_intraprocedural_edge_for_call (cedge);
-		gcc_assert (sedge);
-		add_to_worklist
-		  (function_point::after_supernode (sedge->m_src),
-		   worklist, logger);
-	      }
+					  returning_call);
+	      if(cedge)
+	        {
+		  superedge *sedge
+		    = map.get_sg ().get_intraprocedural_edge_for_call (cedge);
+		  gcc_assert (sedge);
+		  add_to_worklist 
+		    (function_point::after_supernode (sedge->m_src),
+		     worklist, logger);
+	        }
+	      else
+	        {
+	          supernode *callernode 
+	            = map.get_sg ().get_supernode_for_stmt (returning_call);
+
+	          gcc_assert (callernode);
+	          add_to_worklist 
+	            (function_point::after_supernode (callernode),
+		     worklist, logger);
+	         }
+	    }
 	  }
       }
       break;
