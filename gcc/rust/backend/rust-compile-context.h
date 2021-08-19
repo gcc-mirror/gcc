@@ -287,7 +287,7 @@ public:
 
   // this needs to support Legacy and V0 see github #429 or #305
   std::string mangle_item (const TyTy::BaseType *ty,
-			   const std::string &name) const;
+			   const Resolver::CanonicalPath &path) const;
 
   std::string mangle_impl_item (const TyTy::BaseType *self,
 				const TyTy::BaseType *ty,

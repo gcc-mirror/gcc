@@ -359,6 +359,10 @@ public:
 
   void reset_associated_types ();
 
+  TyTy::BaseType *get_projected_type (const TraitItemReference *trait_item_ref,
+				      TyTy::BaseType *reciever, HirId ref,
+				      Location expr_locus);
+
 private:
   TraitReference *trait;
   HIR::ImplBlock *impl;

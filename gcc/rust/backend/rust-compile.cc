@@ -553,6 +553,17 @@ mangle_name (const std::string &name)
   return std::to_string (name.size ()) + name;
 }
 
+static std::string
+mangle_canonical_path (const Resolver::CanonicalPath &path)
+{
+  std::string buffer;
+  path.iterate_segs ([&] (const Resolver::CanonicalPath &p) -> bool {
+    buffer += mangle_name (p.get ());
+    return true;
+  });
+  return buffer;
+}
+
 // rustc uses a sip128 hash for legacy mangling, but an fnv 128 was quicker to
 // implement for now
 static std::string
@@ -603,17 +614,19 @@ mangle_self (const TyTy::BaseType *self)
 }
 
 std::string
-Context::mangle_item (const TyTy::BaseType *ty, const std::string &name) const
+Context::mangle_item (const TyTy::BaseType *ty,
+		      const Resolver::CanonicalPath &path) const
 {
   const std::string &crate_name = mappings->get_current_crate_name ();
 
   const std::string hash = legacy_hash (ty->as_string ());
   const std::string hash_sig = mangle_name (hash);
 
-  return kMangledSymbolPrefix + mangle_name (crate_name) + mangle_name (name)
-	 + hash_sig + kMangledSymbolDelim;
+  return kMangledSymbolPrefix + mangle_name (crate_name)
+	 + mangle_canonical_path (path) + hash_sig + kMangledSymbolDelim;
 }
 
+// FIXME this is a wee bit broken
 std::string
 Context::mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
 			   const std::string &name) const

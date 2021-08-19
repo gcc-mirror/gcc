@@ -352,8 +352,7 @@ public:
       &canonical_path));
 
     std::string fn_identifier = canonical_path->get ();
-    std::string asm_name
-      = ctx->mangle_impl_item (self, fntype, function.get_function_name ());
+    std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
 
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,

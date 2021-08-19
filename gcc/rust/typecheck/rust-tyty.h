@@ -27,7 +27,8 @@
 namespace Rust {
 namespace Resolver {
 class TraitReference;
-}
+class AssociatedImplTrait;
+} // namespace Resolver
 
 namespace TyTy {
 
@@ -1730,16 +1731,18 @@ class ProjectionType : public BaseType
 {
 public:
   ProjectionType (HirId ref, TyVar base, Resolver::TraitReference *trait,
-		  DefId item, std::set<HirId> refs = std::set<HirId> ())
+		  DefId item, Resolver::AssociatedImplTrait *associated,
+		  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::PROJECTION, refs), base (base),
-      trait (trait), item (item)
+      trait (trait), item (item), associated (associated)
   {}
 
   ProjectionType (HirId ref, HirId ty_ref, TyVar base,
 		  Resolver::TraitReference *trait, DefId item,
+		  Resolver::AssociatedImplTrait *associated,
 		  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::PROJECTION, refs), base (base),
-      trait (trait), item (item)
+      trait (trait), item (item), associated (associated)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1762,6 +1765,7 @@ private:
   TyVar base;
   Resolver::TraitReference *trait;
   DefId item;
+  Resolver::AssociatedImplTrait *associated;
 };
 
 } // namespace TyTy

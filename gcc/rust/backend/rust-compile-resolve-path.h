@@ -30,6 +30,14 @@ class ResolvePathRef : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
+  static Bexpression *Compile (HIR::QualifiedPathInExpression &expr,
+			       Context *ctx)
+  {
+    ResolvePathRef resolver (ctx);
+    expr.accept_vis (resolver);
+    return resolver.resolved;
+  }
+
   static Bexpression *Compile (HIR::PathInExpression &expr, Context *ctx)
   {
     ResolvePathRef resolver (ctx);
@@ -39,8 +47,16 @@ public:
 
   void visit (HIR::PathInExpression &expr) override;
 
+  void visit (HIR::QualifiedPathInExpression &expr) override;
+
 private:
-  ResolvePathRef (Context *ctx) : HIRCompileBase (ctx), resolved (nullptr) {}
+  ResolvePathRef (Context *ctx)
+    : HIRCompileBase (ctx), resolved (ctx->get_backend ()->error_expression ())
+  {}
+
+  void resolve (const HIR::PathIdentSegment &final_segment,
+		const Analysis::NodeMapping &mappings, Location locus,
+		bool is_qualified_path);
 
   Bexpression *resolved;
 };

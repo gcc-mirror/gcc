@@ -193,5 +193,39 @@ TraitItemReference::get_parent_trait_mappings () const
   return trait->get_mappings ();
 }
 
+TyTy::BaseType *
+AssociatedImplTrait::get_projected_type (
+  const TraitItemReference *trait_item_ref, TyTy::BaseType *receiver, HirId ref,
+  Location expr_locus)
+{
+  TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ()->clone ();
+
+  // we can substitute the Self with the receiver here
+  if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
+    {
+      TyTy::FnType *fn = static_cast<TyTy::FnType *> (trait_item_tyty);
+      TyTy::SubstitutionParamMapping *param = nullptr;
+      for (auto &param_mapping : fn->get_substs ())
+	{
+	  const HIR::TypeParam &type_param = param_mapping.get_generic_param ();
+	  if (type_param.get_type_representation ().compare ("Self") == 0)
+	    {
+	      param = &param_mapping;
+	      break;
+	    }
+	}
+      rust_assert (param != nullptr);
+
+      std::vector<TyTy::SubstitutionArg> mappings;
+      mappings.push_back (TyTy::SubstitutionArg (param, receiver->clone ()));
+
+      Location locus; // FIXME
+      TyTy::SubstitutionArgumentMappings args (std::move (mappings), locus);
+      trait_item_tyty = SubstMapperInternal::Resolve (trait_item_tyty, args);
+    }
+
+  return trait_item_tyty;
+}
+
 } // namespace Resolver
 } // namespace Rust

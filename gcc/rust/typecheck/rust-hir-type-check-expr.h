@@ -961,33 +961,92 @@ public:
     if (expr.get_segments ().empty ())
       return;
 
+    // we need resolve to the impl block
+    NodeId impl_resolved_id = UNKNOWN_NODEID;
+    bool ok = resolver->lookup_resolved_name (
+      qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
+    rust_assert (ok);
+
+    HirId impl_block_id;
+    ok = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+				       impl_resolved_id, &impl_block_id);
+    rust_assert (ok);
+
+    AssociatedImplTrait *lookup_associated = nullptr;
+    bool found_impl_trait
+      = context->lookup_associated_trait_impl (impl_block_id,
+					       &lookup_associated);
+    rust_assert (found_impl_trait);
+
     DefId resolved_item_id = UNKNOWN_DEFID;
     HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);
 
     const TraitItemReference *trait_item_ref = nullptr;
-    bool ok
-      = trait_ref->lookup_trait_item (item_seg.get_segment ().as_string (),
-				      &trait_item_ref);
+    ok = trait_ref->lookup_trait_item (item_seg.get_segment ().as_string (),
+				       &trait_item_ref);
     if (!ok)
       {
 	rust_error_at (item_seg.get_locus (), "unknown associated item");
 	return;
       }
+    resolved_item_id = trait_item_ref->get_mappings ().get_defid ();
 
-    // TODO self and generic arguments
-    infered = trait_item_ref->get_tyty ();
-    rust_debug_loc (expr.get_locus (), "resolved to:");
-    infered->debug ();
+    infered = lookup_associated->get_projected_type (
+      trait_item_ref, root, item_seg.get_mappings ().get_hirid (),
+      item_seg.get_locus ());
+
+    // turbo-fish segment path::<ty>
+    if (item_seg.has_generic_args ())
+      {
+	if (!infered->can_substitute ())
+	  {
+	    rust_error_at (item_seg.get_locus (),
+			   "substitutions not supported for %s",
+			   infered->as_string ().c_str ());
+	    infered = new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+	    return;
+	  }
+	infered = SubstMapper::Resolve (infered, expr.get_locus (),
+					&item_seg.get_generic_args ());
+      }
 
     TyTy::ProjectionType *projection
       = new TyTy::ProjectionType (qual_path_type.get_mappings ().get_hirid (),
 				  TyTy::TyVar (root->get_ref ()), trait_ref,
-				  resolved_item_id);
+				  resolved_item_id, lookup_associated);
     context->insert_type (qual_path_type.get_mappings (), projection);
 
     // continue on as a path-in-expression
     NodeId root_resolved_node_id
       = trait_item_ref->get_mappings ().get_nodeid ();
+    bool fully_resolved = expr.get_segments ().size () <= 1;
+
+    if (fully_resolved)
+      {
+	// lookup if the name resolver was able to canonically resolve this or
+	// not
+	NodeId path_resolved_id = UNKNOWN_NODEID;
+	if (resolver->lookup_resolved_name (expr.get_mappings ().get_nodeid (),
+					    &path_resolved_id))
+	  {
+	    rust_assert (path_resolved_id == root_resolved_node_id);
+	  }
+	// check the type scope
+	else if (resolver->lookup_resolved_type (
+		   expr.get_mappings ().get_nodeid (), &path_resolved_id))
+	  {
+	    rust_assert (path_resolved_id == root_resolved_node_id);
+	  }
+	else
+	  {
+	    resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+					    root_resolved_node_id);
+	  }
+
+	context->insert_receiver (expr.get_mappings ().get_hirid (), root);
+	return;
+      }
+
     resolve_segments (root_resolved_node_id, expr.get_segments (), 1, infered,
 		      expr.get_mappings (), expr.get_locus ());
   }

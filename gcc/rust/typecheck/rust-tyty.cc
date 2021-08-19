@@ -2174,7 +2174,7 @@ BaseType *
 ProjectionType::clone () const
 {
   return new ProjectionType (get_ref (), get_ty_ref (), base, trait, item,
-			     get_combined_refs ());
+			     associated, get_combined_refs ());
 }
 
 // rust-tyty-call.h

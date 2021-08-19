@@ -59,7 +59,7 @@ public:
       &canonical_path));
 
     std::string name = canonical_path->get ();
-    std::string asm_name = ctx->mangle_item (resolved_type, name);
+    std::string asm_name = ctx->mangle_item (resolved_type, *canonical_path);
 
     bool is_external = false;
     bool is_hidden = false;
@@ -168,12 +168,24 @@ public:
 
     std::string ir_symbol_name
       = canonical_path->get () + fntype->subst_as_string ();
+
     std::string asm_name = function.get_function_name ();
 
     // we don't mangle the main fn since we haven't implemented the main shim
     // yet
     if (!is_main_fn)
-      asm_name = ctx->mangle_item (fntype, ir_symbol_name);
+      {
+	std::string substs_str = fntype->subst_as_string ();
+
+	Resolver::CanonicalPath mangle_me
+	  = substs_str.empty ()
+	      ? *canonical_path
+	      : canonical_path->append (
+		Resolver::CanonicalPath::new_seg (0,
+						  fntype->subst_as_string ()));
+
+	asm_name = ctx->mangle_item (fntype, mangle_me);
+      }
 
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
