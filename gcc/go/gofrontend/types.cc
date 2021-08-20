@@ -5050,6 +5050,7 @@ Function_type::get_backend_fntype(Gogo* gogo)
 		  Struct_type* st = Type::make_struct_type(sfl,
 							   this->location());
 		  st->set_is_struct_incomparable();
+		  st->set_is_results_struct();
 		  ins.first->second = st->get_backend(gogo);
 		}
 	      bresult_struct = ins.first->second;
@@ -6458,7 +6459,7 @@ get_backend_struct_fields(Gogo* gogo, Struct_type* type, bool use_placeholder,
         saw_nonzero = true;
     }
   go_assert(i == fields->size());
-  if (saw_nonzero && lastsize == 0)
+  if (saw_nonzero && lastsize == 0 && !type->is_results_struct())
     {
       // For nonzero-sized structs which end in a zero-sized thing, we add
       // an extra byte of padding to the type. This padding ensures that
