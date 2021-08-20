@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attr-fnspec.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
-
+#include "dbgcnt.h"
 
 /* All the tuples have their operand vector (if present) at the very bottom
    of the structure.  Therefore, the offset required to find the
@@ -1601,7 +1601,8 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 	      if ((modref_flags & EAF_DIRECT) && !(flags & EAF_DIRECT))
 		modref_flags &= ~EAF_DIRECT;
 	    }
-	  flags |= modref_flags;
+	  if (dbg_cnt (ipa_mod_ref_pta))
+	    flags |= modref_flags;
 	}
     }
   return flags;
