@@ -59,7 +59,7 @@ package body System.VxWorks.Ext is
    ---------------
 
    function semDelete (Sem : SEM_ID) return STATUS is
-      function Os_Sem_Delete (Sem : SEM_ID) return int;
+      function Os_Sem_Delete (Sem : SEM_ID) return STATUS;
       pragma Import (C, Os_Sem_Delete, "semDelete");
    begin
       return Os_Sem_Delete (Sem);
