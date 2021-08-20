@@ -1,6 +1,15 @@
 2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/error-1.f90: New test.
+	* gfortran.dg/gomp/error-2.f90: New test.
+	* gfortran.dg/gomp/error-3.f90: New test.
+
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/error-1.c: New test.

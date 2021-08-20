@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "gomp-constants.h"
 #include "options.h"
+#include "target-memory.h"  /* For gfc_encode_character.  */
 
 /* Match an end of OpenMP directive.  End of OpenMP directive is optional
    whitespace, followed by '\n' or comment '!'.  */
@@ -849,6 +850,9 @@ enum omp_mask1
   OMP_CLAUSE_AFFINITY,  /* OpenMP 5.0.  */
   OMP_CLAUSE_BIND,  /* OpenMP 5.0.  */
   OMP_CLAUSE_FILTER,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_AT,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_MESSAGE,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_SEVERITY,  /* OpenMP 5.1.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -1294,6 +1298,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		       bool first = true, bool needs_space = true,
 		       bool openacc = false)
 {
+  bool error = false;
   gfc_omp_clauses *c = gfc_get_omp_clauses ();
   locus old_loc;
   /* Determine whether we're dealing with an OpenACC directive that permits
@@ -1390,6 +1395,22 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      n->u2.ns = ns_iter;
 		      ns_iter->refs++;
 		    }
+		}
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_AT)
+	      && c->at == OMP_AT_UNSET
+	      && gfc_match ("at ( ") == MATCH_YES)
+	    {
+	      if (gfc_match ("compilation )") == MATCH_YES)
+		c->at = OMP_AT_COMPILATION;
+	      else if (gfc_match ("execution )") == MATCH_YES)
+		c->at = OMP_AT_EXECUTION;
+	      else
+		{
+		  gfc_error ("Expected COMPILATION or EXECUTION in AT clause "
+			     "at %C");
+		  goto error;
 		}
 	      continue;
 	    }
@@ -1617,7 +1638,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		     else
 		      gfc_error ("DEFAULTMAP at %C but prior DEFAULTMAP for "
 				 "category %s", pcategory);
-		     goto end;
+		     goto error;
 		    }
 		}
 	      c->defaultmap[category] = behavior;
@@ -2075,6 +2096,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      c->mergeable = needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_MESSAGE)
+	      && !c->message
+	      && gfc_match ("message ( %e )", &c->message) == MATCH_YES)
+	    continue;
 	  break;
 	case 'n':
 	  if ((mask & OMP_CLAUSE_NO_CREATE)
@@ -2403,6 +2428,22 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      c->simd = needs_space = true;
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_SEVERITY)
+	      && c->severity == OMP_SEVERITY_UNSET
+	      && gfc_match ("severity ( ") == MATCH_YES)
+	    {
+	      if (gfc_match ("fatal )") == MATCH_YES)
+		c->severity = OMP_SEVERITY_FATAL;
+	      else if (gfc_match ("warning )") == MATCH_YES)
+		c->severity = OMP_SEVERITY_WARNING;
+	      else
+		{
+		  gfc_error ("Expected FATAL or WARNING in SEVERITY clause "
+			     "at %C");
+		  goto error;
+		}
+	      continue;
+	    }
 	  break;
 	case 't':
 	  if ((mask & OMP_CLAUSE_TASK_REDUCTION)
@@ -2554,7 +2595,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
     }
 
 end:
-  if (gfc_match_omp_eos () != MATCH_YES)
+  if (error || gfc_match_omp_eos () != MATCH_YES)
     {
       if (!gfc_error_flag_test ())
 	gfc_error ("Failed to match clause at %C");
@@ -2564,6 +2605,10 @@ end:
 
   *cp = c;
   return MATCH_YES;
+
+error:
+  error = true;
+  goto end;
 }
 
 
@@ -3196,6 +3241,9 @@ cleanup:
    | OMP_CLAUSE_MEMORDER)
 #define OMP_MASKED_CLAUSES \
   (omp_mask (OMP_CLAUSE_FILTER))
+#define OMP_ERROR_CLAUSES \
+  (omp_mask (OMP_CLAUSE_AT) | OMP_CLAUSE_MESSAGE | OMP_CLAUSE_SEVERITY)
+
 
 
 static match
@@ -3418,6 +3466,66 @@ gfc_match_omp_target_parallel_loop (void)
 		     | OMP_LOOP_CLAUSES));
 }
 
+
+match
+gfc_match_omp_error (void)
+{
+  locus loc = gfc_current_locus;
+  match m = match_omp (EXEC_OMP_ERROR, OMP_ERROR_CLAUSES);
+  if (m != MATCH_YES)
+    return m;
+
+  gfc_omp_clauses *c = new_st.ext.omp_clauses;
+  if (c->severity == OMP_SEVERITY_UNSET)
+    c->severity = OMP_SEVERITY_FATAL;
+  if (new_st.ext.omp_clauses->at == OMP_AT_EXECUTION)
+    return MATCH_YES;
+  if (c->message
+      && (!gfc_resolve_expr (c->message)
+	  || c->message->ts.type != BT_CHARACTER
+	  || c->message->ts.kind != gfc_default_character_kind
+	  || c->message->rank != 0))
+    {
+      gfc_error ("MESSAGE clause at %L requires a scalar default-kind "
+		   "CHARACTER expression",
+		 &new_st.ext.omp_clauses->message->where);
+      return MATCH_ERROR;
+    }
+  if (c->message && !gfc_is_constant_expr (c->message))
+    {
+      gfc_error ("Constant character expression required in MESSAGE clause "
+		 "at %L", &new_st.ext.omp_clauses->message->where);
+      return MATCH_ERROR;
+    }
+  if (c->message)
+    {
+      const char *msg = G_("$OMP ERROR encountered at %L: %s");
+      gcc_assert (c->message->expr_type == EXPR_CONSTANT);
+      gfc_charlen_t slen = c->message->value.character.length;
+      int i = gfc_validate_kind (BT_CHARACTER, gfc_default_character_kind,
+				 false);
+      size_t size = slen * gfc_character_kinds[i].bit_size / 8;
+      unsigned char *s = XCNEWVAR (unsigned char, size + 1);
+      gfc_encode_character (gfc_default_character_kind, slen,
+			    c->message->value.character.string,
+			    (unsigned char *) s, size);
+      s[size] = '\0';
+      if (c->severity == OMP_SEVERITY_WARNING)
+	gfc_warning_now (0, msg, &loc, s);
+      else
+	gfc_error_now (msg, &loc, s);
+      free (s);
+    }
+  else
+    {
+      const char *msg = G_("$OMP ERROR encountered at %L");
+      if (c->severity == OMP_SEVERITY_WARNING)
+	gfc_warning_now (0, msg, &loc);
+      else
+	gfc_error_now (msg, &loc);
+    }
+  return MATCH_YES;
+}
 
 match
 gfc_match_omp_flush (void)
@@ -6452,6 +6560,15 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->depend_source && code->op != EXEC_OMP_ORDERED)
     gfc_error ("SOURCE dependence type only allowed "
 	       "on ORDERED directive at %L", &code->loc);
+  if (omp_clauses->message)
+    {
+      gfc_expr *expr = omp_clauses->message;
+      if (!gfc_resolve_expr (expr)
+	  || expr->ts.kind != gfc_default_character_kind
+	  || expr->ts.type != BT_CHARACTER || expr->rank != 0)
+	gfc_error ("MESSAGE clause at %L requires a scalar default-kind "
+		   "CHARACTER expression", &expr->where);
+    }
   if (!openacc
       && code
       && omp_clauses->lists[OMP_LIST_MAP] == NULL
@@ -7474,6 +7591,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_CANCEL;
     case EXEC_OMP_CANCELLATION_POINT:
       return ST_OMP_CANCELLATION_POINT;
+    case EXEC_OMP_ERROR:
+      return ST_OMP_ERROR;
     case EXEC_OMP_FLUSH:
       return ST_OMP_FLUSH;
     case EXEC_OMP_DISTRIBUTE:
@@ -7996,6 +8115,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
       resolve_omp_do (code);
       break;
     case EXEC_OMP_CANCEL:
+    case EXEC_OMP_ERROR:
     case EXEC_OMP_MASKED:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_PARALLEL:

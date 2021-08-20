@@ -1,6 +1,13 @@
 2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/error-1.f90: New test.
+
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.map (GOMP_5.1): Add GOMP_error and GOMP_warning.
