@@ -241,22 +241,24 @@
 ;; the ldx{bhwdw} instructions to load the values in registers.
 
 (define_insn "zero_extendhidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r")
+	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "0,r,m")))]
   ""
   "@
    and\t%0,0xffff
+   mov\t%0,%1\;and\t%0,0xffff
    ldxh\t%0,%1"
-  [(set_attr "type" "alu,ldx")])
+  [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendqidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r")
+	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "0,r,m")))]
   ""
   "@
    and\t%0,0xff
+   mov\t%0,%1\;and\t%0,0xff
    ldxb\t%0,%1"
-  [(set_attr "type" "alu,ldx")])
+  [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
