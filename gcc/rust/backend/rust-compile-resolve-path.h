@@ -58,6 +58,12 @@ private:
 		const Analysis::NodeMapping &mappings, Location locus,
 		bool is_qualified_path);
 
+  Bexpression *
+  query_compile_function (HirId ref, TyTy::FnType *fntype,
+			  const HIR::PathIdentSegment &final_segment,
+			  const Analysis::NodeMapping &mappings,
+			  Location expr_locus, bool is_qualified_path);
+
   Bexpression *resolved;
 };
 
