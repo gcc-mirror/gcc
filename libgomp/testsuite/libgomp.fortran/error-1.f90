@@ -37,6 +37,11 @@ program main
   character(len=13) :: msg
   character(len=:), allocatable :: msg2, msg3
 
+  ! Initialize offloading early, so that any output this may produce doesn't
+  ! disturb the 'dg-output' scanning below.
+  !$omp target
+  !$omp end target
+
   msg = "my message"
   if (foo (5, 0) /= 15 .or. foo (7, 1) /= 16) &
     stop 1
@@ -47,6 +52,9 @@ program main
   !$omp error at (execution) severity (warning)
   !$omp error at (execution) severity (warning) message(trim(msg(4:)))
   !$omp error at (execution) severity (warning) message ("Farewell")
+  !$omp target
+  !$omp error at (execution) severity (warning) message ("ffrom a distanceee"(2:16))
+  !$omp end target
   !$omp error at (execution) severity (warning) message (msg2)
   !$omp error at (execution) severity (warning) message (msg(4:6))
   !$omp error at (execution) severity (fatal) message (msg)
@@ -73,6 +81,7 @@ end
 ! { dg-output "libgomp: error directive encountered(\n|\r|\n\r)(\n|\r|\n\r)" }
 ! { dg-output "libgomp: error directive encountered: message(\n|\r|\n\r)(\n|\r|\n\r)" }
 ! { dg-output "libgomp: error directive encountered: Farewell(\n|\r|\n\r)(\n|\r|\n\r)" }
+! { dg-output "libgomp: error directive encountered: from a distance(\n|\r|\n\r)(\n|\r|\n\r)" }
 ! { dg-output "libgomp: error directive encountered: Hello World(\n|\r|\n\r)(\n|\r|\n\r)" }
 ! { dg-output "libgomp: error directive encountered: mes(\n|\r|\n\r)(\n|\r|\n\r)" }
 ! { dg-output "libgomp: fatal error: error directive encountered: my message   (\n|\r|\n\r)" }
