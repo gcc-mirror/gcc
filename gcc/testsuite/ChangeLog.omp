@@ -1,3 +1,12 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sink-5.c: New test.
+	* c-c++-common/gomp/requires-3.c: Add test for spurious comma
+	at the end of pragma line.
+
 2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:
@@ -48,7 +57,7 @@
 
 	2021-07-24  Sandra Loosemore  <sandra@codesourcery.com>
 
-    	PR libfortran/101317
+	PR libfortran/101317
 	* gfortran.dg/ISO_Fortran_binding_17.f90: Fix typo in error
 	message patterns.
 
@@ -1024,7 +1033,7 @@
 	* gfortran.dg/goacc/loop-2-kernels.f95: Add XFAILs.
 
 2020-07-24  Kwok Cheung Yeung  <kcy@codesourcery.com>
-    
+
 	* gcc.dg/goacc/loop-processing-1.c: Remove erroneous line-break.
 	Specify correct tree pass for output.  Fix expected constant values.
 
@@ -1369,12 +1378,12 @@
             Nathan Sidwell  <nathan@acm.org>
             Julian Brown  <julian@codesourcery.com>
 
-        * c-c++-common/goacc/orphan-reductions-1.c: New test.
-        * c-c++-common/goacc/reduction-7.c: New test.
-        * c-c++-common/goacc/routine-4.c: Update.
-        * g++.dg/goacc/reductions-1.C: New test.
-        * gcc.dg/goacc/loop-processing-1.c: Update.
-        * gfortran.dg/goacc/orphan-reductions-1.f90: New test.
+	* c-c++-common/goacc/orphan-reductions-1.c: New test.
+	* c-c++-common/goacc/reduction-7.c: New test.
+	* c-c++-common/goacc/routine-4.c: Update.
+	* g++.dg/goacc/reductions-1.C: New test.
+	* gcc.dg/goacc/loop-processing-1.c: Update.
+	* gfortran.dg/goacc/orphan-reductions-1.f90: New test.
 
 2018-06-29  Cesar Philippidis  <cesar@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>

@@ -1,3 +1,12 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_depend_sink): Reject spurious
+	comma at the end of list.  Don't parse closing paren here...
+	(cp_parser_omp_clause_depend): ... but here instead.
+
 2021-08-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
