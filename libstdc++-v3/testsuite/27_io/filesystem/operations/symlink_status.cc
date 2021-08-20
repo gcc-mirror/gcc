@@ -69,6 +69,9 @@ test02()
 void
 test03()
 {
+  if (!__gnu_test::permissions_are_testable())
+    return;
+
   fs::path dir = __gnu_test::nonexistent_path();
   fs::create_directory(dir);
   __gnu_test::scoped_file d(dir, __gnu_test::scoped_file::adopt_file);

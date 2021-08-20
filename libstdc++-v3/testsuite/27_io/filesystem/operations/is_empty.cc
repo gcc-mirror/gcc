@@ -28,10 +28,8 @@ namespace fs = std::filesystem;
 void
 test01()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // filesystem permissions not supported
-  return;
-#endif
+  if (!__gnu_test::permissions_are_testable())
+    return;
 
   auto p = __gnu_test::nonexistent_path();
   create_directory(p);

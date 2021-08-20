@@ -78,19 +78,18 @@ test01()
   VERIFY( !n );
   VERIFY( exists(dir/"a/b") );
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No permissions support
-#else
-  permissions(dir, fs::perms::none, ec);
-  if (!ec)
+  if (__gnu_test::permissions_are_testable())
   {
-    ec.clear();
-    n = remove(dir/"a/b", ec);
-    VERIFY( ec );
-    VERIFY( !n );
-    permissions(dir, fs::perms::owner_all, ec);
+    permissions(dir, fs::perms::none, ec);
+    if (!ec)
+    {
+      ec.clear();
+      n = remove(dir/"a/b", ec);
+      VERIFY( ec );
+      VERIFY( !n );
+      permissions(dir, fs::perms::owner_all, ec);
+    }
   }
-#endif
 
   ec = bad_ec;
   n = remove(dir/"a/b", ec);

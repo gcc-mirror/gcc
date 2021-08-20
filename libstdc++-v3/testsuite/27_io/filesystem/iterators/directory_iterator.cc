@@ -57,24 +57,26 @@ test01()
   ++iter;
   VERIFY( iter == end(iter) );
 
-#if !(defined(__MINGW32__) || defined(__MINGW64__))
-  // Test inaccessible directory.
-  ec = bad_ec;
-  permissions(p, fs::perms::none, ec);
-  VERIFY( !ec );
-  iter = fs::directory_iterator(p, ec);
-  VERIFY( ec );
-  VERIFY( iter == end(iter) );
+  if (__gnu_test::permissions_are_testable())
+  {
+    // Test inaccessible directory.
+    ec = bad_ec;
+    permissions(p, fs::perms::none, ec);
+    VERIFY( !ec );
+    iter = fs::directory_iterator(p, ec);
+    VERIFY( ec );
+    VERIFY( iter == end(iter) );
 
-  // Test inaccessible directory, skipping permission denied.
-  const auto opts = fs::directory_options::skip_permission_denied;
-  ec = bad_ec;
-  iter = fs::directory_iterator(p, opts, ec);
-  VERIFY( !ec );
-  VERIFY( iter == end(iter) );
-#endif
+    // Test inaccessible directory, skipping permission denied.
+    const auto opts = fs::directory_options::skip_permission_denied;
+    ec = bad_ec;
+    iter = fs::directory_iterator(p, opts, ec);
+    VERIFY( !ec );
+    VERIFY( iter == end(iter) );
 
-  permissions(p, fs::perms::owner_all, ec);
+    permissions(p, fs::perms::owner_all, ec);
+  }
+
   remove_all(p, ec);
 }
 

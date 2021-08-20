@@ -56,10 +56,8 @@ test02()
 void
 test03()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No permissions support
-  return;
-#endif
+  if (!__gnu_test::permissions_are_testable())
+    return;
 
   fs::path dir = __gnu_test::nonexistent_path();
   fs::create_directory(dir);

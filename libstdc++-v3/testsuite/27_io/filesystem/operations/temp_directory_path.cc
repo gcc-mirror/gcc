@@ -95,10 +95,8 @@ test02()
 void
 test03()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No permissions support
-  return;
-#endif
+  if (!__gnu_test::permissions_are_testable())
+    return;
 
   clean_env();
 
