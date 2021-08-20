@@ -95,6 +95,9 @@ test02()
 void
 test03()
 {
+  if (!__gnu_test::permissions_are_testable())
+    return;
+
   auto p = __gnu_test::nonexistent_path();
   create_directories(p/"tmp");
   permissions(p, fs::perms::none);
