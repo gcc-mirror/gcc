@@ -1006,13 +1006,16 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      that will promote value of the attribute DECL_FUNCTION_SPECIFIC_TARGET
      of the declaration.
 
+     If VERSION_DECL is set true, use clone_function_name_numbered for the
+     function clone.  Otherwise, use clone_function_name.
+
      Return the new version's cgraph node.  */
   cgraph_node *create_version_clone_with_body
     (vec<cgraph_edge *> redirect_callers,
      vec<ipa_replace_map *, va_gc> *tree_map,
      ipa_param_adjustments *param_adjustments,
      bitmap bbs_to_copy, basic_block new_entry_block, const char *clone_name,
-     tree target_attributes = NULL_TREE);
+     tree target_attributes = NULL_TREE, bool version_decl = true);
 
   /* Insert a new cgraph_function_version_info node into cgraph_fnver_htab
      corresponding to cgraph_node.  */
