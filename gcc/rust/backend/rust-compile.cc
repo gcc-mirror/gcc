@@ -181,8 +181,32 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	    {
 	      // this means we are defaulting back to the trait_item if
 	      // possible
-	      // TODO
-	      gcc_unreachable ();
+	      Resolver::TraitItemReference *trait_item_ref = nullptr;
+	      bool ok = trait_ref->lookup_hir_trait_item (*trait_item,
+							  &trait_item_ref);
+	      rust_assert (ok);				    // found
+	      rust_assert (trait_item_ref->is_optional ()); // has definition
+
+	      TyTy::BaseType *self_type = nullptr;
+	      if (!ctx->get_tyctx ()->lookup_type (
+		    expr.get_receiver ()->get_mappings ().get_hirid (),
+		    &self_type))
+		{
+		  rust_error_at (expr.get_locus (),
+				 "failed to resolve type for self param");
+		  return;
+		}
+
+	      CompileTraitItem::Compile (self_type,
+					 trait_item_ref->get_hir_trait_item (),
+					 ctx, fntype);
+	      if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
+		{
+		  translated = ctx->get_backend ()->error_expression ();
+		  rust_error_at (expr.get_locus (),
+				 "forward declaration was not compiled");
+		  return;
+		}
 	    }
 	  else
 	    {
@@ -529,6 +553,17 @@ mangle_name (const std::string &name)
   return std::to_string (name.size ()) + name;
 }
 
+static std::string
+mangle_canonical_path (const Resolver::CanonicalPath &path)
+{
+  std::string buffer;
+  path.iterate_segs ([&] (const Resolver::CanonicalPath &p) -> bool {
+    buffer += mangle_name (p.get ());
+    return true;
+  });
+  return buffer;
+}
+
 // rustc uses a sip128 hash for legacy mangling, but an fnv 128 was quicker to
 // implement for now
 static std::string
@@ -579,17 +614,19 @@ mangle_self (const TyTy::BaseType *self)
 }
 
 std::string
-Context::mangle_item (const TyTy::BaseType *ty, const std::string &name) const
+Context::mangle_item (const TyTy::BaseType *ty,
+		      const Resolver::CanonicalPath &path) const
 {
   const std::string &crate_name = mappings->get_current_crate_name ();
 
   const std::string hash = legacy_hash (ty->as_string ());
   const std::string hash_sig = mangle_name (hash);
 
-  return kMangledSymbolPrefix + mangle_name (crate_name) + mangle_name (name)
-	 + hash_sig + kMangledSymbolDelim;
+  return kMangledSymbolPrefix + mangle_name (crate_name)
+	 + mangle_canonical_path (path) + hash_sig + kMangledSymbolDelim;
 }
 
+// FIXME this is a wee bit broken
 std::string
 Context::mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
 			   const std::string &name) const

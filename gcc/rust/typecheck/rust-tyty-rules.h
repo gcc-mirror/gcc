@@ -68,6 +68,14 @@ public:
 	    other = p->resolve ();
 	  }
       }
+    else if (other->get_kind () == TypeKind::PLACEHOLDER)
+      {
+	PlaceholderType *p = static_cast<PlaceholderType *> (other);
+	if (p->can_resolve ())
+	  {
+	    other = p->resolve ();
+	  }
+      }
 
     other->accept_vis (*this);
     if (resolved->get_kind () == TyTy::TypeKind::ERROR)
@@ -319,6 +327,17 @@ public:
   }
 
   virtual void visit (PlaceholderType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
+  virtual void visit (ProjectionType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
@@ -1238,7 +1257,7 @@ class NeverRules : public BaseRules
 public:
   NeverRules (NeverType *base) : BaseRules (base), base (base) {}
 
-  virtual void visit (NeverType &type) override { resolved = type.clone (); }
+  void visit (NeverType &type) override { resolved = type.clone (); }
 
 private:
   BaseType *get_base () override { return base; }
@@ -1252,6 +1271,37 @@ class PlaceholderRules : public BaseRules
 
 public:
   PlaceholderRules (PlaceholderType *base) : BaseRules (base), base (base) {}
+
+  BaseType *unify (BaseType *other) override final
+  {
+    if (!base->can_resolve ())
+      return BaseRules::unify (other);
+
+    BaseType *lookup = base->resolve ();
+    return lookup->unify (other);
+  }
+
+  void visit (PlaceholderType &type) override
+  {
+    if (base->get_symbol ().compare (type.get_symbol ()) != 0)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = type.clone ();
+  }
+
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+  }
 
 private:
   BaseType *get_base () override { return base; }

@@ -483,12 +483,13 @@ void
 ResolvePath::resolve_path (AST::PathInExpression *expr)
 {
   // resolve root segment first then apply segments in turn
-  AST::PathExprSegment &root_segment = expr->get_segments ().at (0);
+  std::vector<AST::PathExprSegment> &segs = expr->get_segments ();
+  AST::PathExprSegment &root_segment = segs.at (0);
   AST::PathIdentSegment &root_ident_seg = root_segment.get_ident_segment ();
 
   bool segment_is_type = false;
   CanonicalPath root_seg_path
-    = CanonicalPath::new_seg (expr->get_node_id (),
+    = CanonicalPath::new_seg (root_segment.get_node_id (),
 			      root_ident_seg.as_string ());
 
   // name scope first
@@ -515,7 +516,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
     {
       rust_error_at (expr->get_locus (),
 		     "Cannot find path %<%s%> in this scope",
-		     expr->as_string ().c_str ());
+		     root_segment.as_string ().c_str ());
       return;
     }
 
@@ -531,7 +532,8 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	}
     }
 
-  if (expr->is_single_segment ())
+  bool is_single_segment = segs.size () == 1;
+  if (is_single_segment)
     {
       if (segment_is_type)
 	resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
@@ -544,11 +546,97 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       return;
     }
 
-  // we can attempt to resolve this path fully
-  CanonicalPath path = root_seg_path;
-  for (size_t i = 1; i < expr->get_segments ().size (); i++)
+  resolve_segments (root_seg_path, 1, expr->get_segments (),
+		    expr->get_node_id (), expr->get_locus ());
+}
+
+void
+ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
+{
+  AST::QualifiedPathType &root_segment = expr->get_qualified_path_type ();
+
+  bool canonicalize_type_with_generics = false;
+  ResolveType::go (&root_segment.get_as_type_path (),
+		   root_segment.get_node_id (),
+		   canonicalize_type_with_generics);
+
+  ResolveType::go (root_segment.get_type ().get (), root_segment.get_node_id (),
+		   canonicalize_type_with_generics);
+
+  bool canonicalize_type_args = true;
+  bool type_resolve_generic_args = true;
+
+  CanonicalPath impl_type_seg
+    = ResolveTypeToCanonicalPath::resolve (*root_segment.get_type ().get (),
+					   canonicalize_type_args,
+					   type_resolve_generic_args);
+
+  CanonicalPath trait_type_seg
+    = ResolveTypeToCanonicalPath::resolve (root_segment.get_as_type_path (),
+					   canonicalize_type_args,
+					   type_resolve_generic_args);
+  CanonicalPath root_seg_path
+    = TraitImplProjection::resolve (root_segment.get_node_id (), trait_type_seg,
+				    impl_type_seg);
+  bool segment_is_type = false;
+
+  // name scope first
+  if (resolver->get_name_scope ().lookup (root_seg_path, &resolved_node))
     {
-      AST::PathExprSegment &seg = expr->get_segments ().at (i);
+      segment_is_type = false;
+      resolver->insert_resolved_name (root_segment.get_node_id (),
+				      resolved_node);
+      resolver->insert_new_definition (root_segment.get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+    }
+  // check the type scope
+  else if (resolver->get_type_scope ().lookup (root_seg_path, &resolved_node))
+    {
+      segment_is_type = true;
+      resolver->insert_resolved_type (root_segment.get_node_id (),
+				      resolved_node);
+      resolver->insert_new_definition (root_segment.get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+    }
+  else
+    {
+      rust_error_at (expr->get_locus (),
+		     "Cannot find path %<%s%> in this scope",
+		     root_segment.as_string ().c_str ());
+      return;
+    }
+
+  bool is_single_segment = expr->get_segments ().empty ();
+  if (is_single_segment)
+    {
+      if (segment_is_type)
+	resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
+      else
+	resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
+
+      resolver->insert_new_definition (expr->get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+      return;
+    }
+
+  resolve_segments (root_seg_path, 0, expr->get_segments (),
+		    expr->get_node_id (), expr->get_locus ());
+}
+
+void
+ResolvePath::resolve_segments (CanonicalPath prefix, size_t offs,
+			       std::vector<AST::PathExprSegment> &segs,
+			       NodeId expr_node_id, Location expr_locus)
+{
+  // we can attempt to resolve this path fully
+  CanonicalPath path = prefix;
+  bool segment_is_type = false;
+  for (size_t i = offs; i < segs.size (); i++)
+    {
+      AST::PathExprSegment &seg = segs.at (i);
       auto s = ResolvePathSegmentToCanonicalPath::resolve (seg);
       path = path.append (s);
 
@@ -560,8 +648,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	{
 	  resolver->insert_resolved_name (seg.get_node_id (), resolved_node);
 	  resolver->insert_new_definition (seg.get_node_id (),
-					   Definition{expr->get_node_id (),
-						      parent});
+					   Definition{expr_node_id, parent});
 	}
       // check the type scope
       else if (resolver->get_type_scope ().lookup (path, &resolved_node))
@@ -569,8 +656,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	  segment_is_type = true;
 	  resolver->insert_resolved_type (seg.get_node_id (), resolved_node);
 	  resolver->insert_new_definition (seg.get_node_id (),
-					   Definition{expr->get_node_id (),
-						      parent});
+					   Definition{expr_node_id, parent});
 	}
       else
 	{
@@ -621,13 +707,12 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
   if (resolved_node != UNKNOWN_NODEID)
     {
       if (segment_is_type)
-	resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
+	resolver->insert_resolved_type (expr_node_id, resolved_node);
       else
-	resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
+	resolver->insert_resolved_name (expr_node_id, resolved_node);
 
-      resolver->insert_new_definition (expr->get_node_id (),
-				       Definition{expr->get_node_id (),
-						  parent});
+      resolver->insert_new_definition (expr_node_id,
+				       Definition{expr_node_id, parent});
     }
 }
 

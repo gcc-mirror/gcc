@@ -646,7 +646,9 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
-  const Analysis::NodeMapping &get_mappings () const { return mappings; }
+  virtual const std::string trait_identifier () const = 0;
+
+  const Analysis::NodeMapping get_mappings () const { return mappings; }
 };
 
 class ImplItem

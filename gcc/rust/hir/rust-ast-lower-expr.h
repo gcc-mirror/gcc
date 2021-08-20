@@ -48,6 +48,28 @@ private:
   HIR::PathInExpression *translated;
 };
 
+class ASTLowerQualPathInExpression : public ASTLoweringBase
+{
+  using Rust::HIR::ASTLoweringBase::visit;
+
+public:
+  static HIR::QualifiedPathInExpression *
+  translate (AST::QualifiedPathInExpression *expr)
+  {
+    ASTLowerQualPathInExpression compiler;
+    expr->accept_vis (compiler);
+    rust_assert (compiler.translated);
+    return compiler.translated;
+  }
+
+  void visit (AST::QualifiedPathInExpression &expr) override;
+
+private:
+  ASTLowerQualPathInExpression () : translated (nullptr) {}
+
+  HIR::QualifiedPathInExpression *translated;
+};
+
 class ASTLoweringExpr : public ASTLoweringBase
 {
   using Rust::HIR::ASTLoweringBase::visit;
@@ -143,6 +165,11 @@ public:
   void visit (AST::PathInExpression &expr) override
   {
     translated = ASTLowerPathInExpression::translate (&expr);
+  }
+
+  void visit (AST::QualifiedPathInExpression &expr) override
+  {
+    translated = ASTLowerQualPathInExpression::translate (&expr);
   }
 
   void visit (AST::ReturnExpr &expr) override

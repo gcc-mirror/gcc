@@ -27,7 +27,8 @@
 namespace Rust {
 namespace Resolver {
 class TraitReference;
-}
+class AssociatedImplTrait;
+} // namespace Resolver
 
 namespace TyTy {
 
@@ -54,6 +55,7 @@ enum TypeKind
   ISIZE,
   NEVER,
   PLACEHOLDER,
+  PROJECTION,
   // there are more to add...
   ERROR
 };
@@ -121,6 +123,9 @@ public:
 
       case TypeKind::PLACEHOLDER:
 	return "Placeholder";
+
+      case TypeKind::PROJECTION:
+	return "Projection";
 
       case TypeKind::ERROR:
 	return "ERROR";
@@ -1679,13 +1684,15 @@ public:
 class PlaceholderType : public BaseType
 {
 public:
-  PlaceholderType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::PLACEHOLDER, refs)
+  PlaceholderType (std::string symbol, HirId ref,
+		   std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::PLACEHOLDER, refs), symbol (symbol)
+
   {}
 
-  PlaceholderType (HirId ref, HirId ty_ref,
+  PlaceholderType (std::string symbol, HirId ref, HirId ty_ref,
 		   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER, refs)
+    : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER, refs), symbol (symbol)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1703,6 +1710,62 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool is_unit () const override { return true; }
+
+  std::string get_symbol () const { return symbol; }
+
+  void set_associated_type (HirId ref);
+
+  void clear_associated_type ();
+
+  bool can_resolve () const;
+
+  BaseType *resolve () const;
+
+  bool is_equal (const BaseType &other) const override;
+
+private:
+  std::string symbol;
+};
+
+class ProjectionType : public BaseType
+{
+public:
+  ProjectionType (HirId ref, TyVar base, Resolver::TraitReference *trait,
+		  DefId item, Resolver::AssociatedImplTrait *associated,
+		  std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::PROJECTION, refs), base (base),
+      trait (trait), item (item), associated (associated)
+  {}
+
+  ProjectionType (HirId ref, HirId ty_ref, TyVar base,
+		  Resolver::TraitReference *trait, DefId item,
+		  Resolver::AssociatedImplTrait *associated,
+		  std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::PROJECTION, refs), base (base),
+      trait (trait), item (item), associated (associated)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  BaseType *unify (BaseType *other) override;
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
+  BaseType *cast (BaseType *other) override;
+
+  BaseType *clone () const final override;
+
+  std::string get_name () const override final { return as_string (); }
+
+  bool is_unit () const override { return false; }
+
+private:
+  TyVar base;
+  Resolver::TraitReference *trait;
+  DefId item;
+  Resolver::AssociatedImplTrait *associated;
 };
 
 } // namespace TyTy

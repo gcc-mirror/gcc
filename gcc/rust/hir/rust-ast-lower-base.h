@@ -284,6 +284,9 @@ protected:
   HIR::Type *lower_type_no_bounds (AST::TypeNoBounds *type);
 
   HIR::TypeParamBound *lower_bound (AST::TypeParamBound *bound);
+
+  HIR::QualifiedPathType
+  lower_qual_path_type (AST::QualifiedPathType &qual_path_type);
 };
 
 } // namespace HIR

@@ -50,6 +50,8 @@ public:
 
   void visit (TyTy::PlaceholderType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::ProjectionType &) override { gcc_unreachable (); }
+
   void visit (TyTy::TupleType &type) override
   {
     if (type.num_fields () == 0)

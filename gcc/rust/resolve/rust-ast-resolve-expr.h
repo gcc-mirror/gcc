@@ -39,10 +39,22 @@ public:
     resolver.resolve_path (expr);
   }
 
+  static void go (AST::QualifiedPathInExpression *expr, NodeId parent)
+  {
+    ResolvePath resolver (parent);
+    resolver.resolve_path (expr);
+  }
+
 private:
   ResolvePath (NodeId parent) : ResolverBase (parent) {}
 
   void resolve_path (AST::PathInExpression *expr);
+
+  void resolve_path (AST::QualifiedPathInExpression *expr);
+
+  void resolve_segments (CanonicalPath prefix, size_t offs,
+			 std::vector<AST::PathExprSegment> &segs,
+			 NodeId expr_node_id, Location expr_locus);
 };
 
 class ResolveExpr : public ResolverBase
@@ -71,6 +83,11 @@ public:
   }
 
   void visit (AST::PathInExpression &expr) override
+  {
+    ResolvePath::go (&expr, parent);
+  }
+
+  void visit (AST::QualifiedPathInExpression &expr) override
   {
     ResolvePath::go (&expr, parent);
   }

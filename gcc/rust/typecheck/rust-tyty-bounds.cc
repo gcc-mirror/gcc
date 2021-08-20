@@ -25,7 +25,8 @@ namespace Resolver {
 void
 TypeBoundsProbe::scan ()
 {
-  std::vector<HIR::TypePath *> possible_trait_paths;
+  std::vector<std::pair<HIR::TypePath *, HIR::ImplBlock *>>
+    possible_trait_paths;
   mappings->iterate_impl_blocks (
     [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
       // we are filtering for trait-impl-blocks
@@ -42,16 +43,17 @@ TypeBoundsProbe::scan ()
       if (!receiver->can_eq (impl_type, false))
 	return true;
 
-      possible_trait_paths.push_back (impl->get_trait_ref ().get ());
+      possible_trait_paths.push_back ({impl->get_trait_ref ().get (), impl});
       return true;
     });
 
-  for (auto &trait_path : possible_trait_paths)
+  for (auto &path : possible_trait_paths)
     {
+      HIR::TypePath *trait_path = path.first;
       TraitReference *trait_ref = TraitResolver::Resolve (*trait_path);
 
       if (!trait_ref->is_error ())
-	trait_references.push_back (trait_ref);
+	trait_references.push_back ({trait_ref, path.second});
     }
 }
 

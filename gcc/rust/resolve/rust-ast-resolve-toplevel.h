@@ -206,6 +206,19 @@ public:
 				      impl_type_seg);
     CanonicalPath impl_prefix = prefix.append (projection);
 
+    resolver->get_name_scope ().insert (
+      impl_prefix, impl_block.get_node_id (), impl_block.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (impl_block.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (impl_block.get_node_id (),
+				     Definition{impl_block.get_node_id (),
+						impl_block.get_node_id ()});
+    resolver->insert_resolved_name (impl_block.get_node_id (),
+				    impl_block.get_node_id ());
+
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
   }

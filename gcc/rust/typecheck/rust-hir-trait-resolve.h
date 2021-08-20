@@ -42,45 +42,11 @@ public:
     return resolver.resolved;
   }
 
-  void visit (HIR::TraitItemType &type) override
-  {
-    TyTy::BaseType *ty
-      = new TyTy::PlaceholderType (type.get_mappings ().get_hirid ());
-    context->insert_type (type.get_mappings (), ty);
+  void visit (HIR::TraitItemType &type) override;
 
-    // create trait-item-ref
-    Location locus = type.get_locus ();
-    bool is_optional = false;
-    std::string identifier = type.get_name ();
+  void visit (HIR::TraitItemConst &cst) override;
 
-    resolved = TraitItemReference (identifier, is_optional,
-				   TraitItemReference::TraitItemType::TYPE,
-				   &type, self, substitutions, locus);
-  }
-
-  void visit (HIR::TraitItemConst &cst) override
-  {
-    // create trait-item-ref
-    Location locus = cst.get_locus ();
-    bool is_optional = cst.has_expr ();
-    std::string identifier = cst.get_name ();
-
-    resolved = TraitItemReference (identifier, is_optional,
-				   TraitItemReference::TraitItemType::CONST,
-				   &cst, self, substitutions, locus);
-  }
-
-  void visit (HIR::TraitItemFunc &fn) override
-  {
-    // create trait-item-ref
-    Location locus = fn.get_locus ();
-    bool is_optional = fn.has_block_defined ();
-    std::string identifier = fn.get_decl ().get_function_name ();
-
-    resolved = TraitItemReference (identifier, is_optional,
-				   TraitItemReference::TraitItemType::FN, &fn,
-				   self, substitutions, locus);
-  }
+  void visit (HIR::TraitItemFunc &fn) override;
 
 private:
   ResolveTraitItemToRef (
@@ -187,6 +153,11 @@ private:
     bool ok = context->lookup_trait_reference (
       trait_reference->get_mappings ().get_defid (), &tref);
     rust_assert (ok);
+
+    // hook to allow the trait to resolve its optional item blocks, we cant
+    // resolve the blocks of functions etc because it can end up in a recursive
+    // loop of trying to resolve traits as required by the types
+    tref->on_resolved ();
 
     return tref;
   }

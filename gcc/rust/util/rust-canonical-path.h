@@ -110,6 +110,17 @@ public:
       }
   }
 
+  void iterate_segs (std::function<bool (const CanonicalPath &)> cb) const
+  {
+    for (auto &seg : segs)
+      {
+	std::vector<std::pair<NodeId, std::string>> buf;
+	buf.push_back ({seg.first, seg.second});
+	if (!cb (CanonicalPath (buf)))
+	  return;
+      }
+  }
+
   size_t size () const { return segs.size (); }
 
   NodeId get_id () const

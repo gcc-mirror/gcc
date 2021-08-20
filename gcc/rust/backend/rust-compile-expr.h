@@ -629,6 +629,11 @@ public:
 						      expr.get_locus ());
   }
 
+  void visit (HIR::QualifiedPathInExpression &expr) override
+  {
+    translated = ResolvePathRef::Compile (expr, ctx);
+  }
+
   void visit (HIR::PathInExpression &expr) override
   {
     translated = ResolvePathRef::Compile (expr, ctx);

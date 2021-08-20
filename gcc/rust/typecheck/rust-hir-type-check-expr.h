@@ -28,6 +28,8 @@
 #include "rust-hir-path-probe.h"
 #include "rust-substitution-mapper.h"
 #include "rust-hir-const-fold.h"
+#include "rust-hir-trait-resolve.h"
+#include "rust-hir-type-bounds.h"
 
 namespace Rust {
 namespace Resolver {
@@ -923,6 +925,132 @@ public:
     infered = resolved->get_field_type ();
   }
 
+  void visit (HIR::QualifiedPathInExpression &expr) override
+  {
+    HIR::QualifiedPathType qual_path_type = expr.get_path_type ();
+    TyTy::BaseType *root
+      = TypeCheckType::Resolve (qual_path_type.get_type ().get ());
+    if (root->get_kind () == TyTy::TypeKind::ERROR)
+      return;
+
+    if (!qual_path_type.has_as_clause ())
+      {
+	// then this is just a normal path-in-expression
+	NodeId root_resolved_node_id = UNKNOWN_NODEID;
+	bool ok = resolver->lookup_resolved_type (
+	  qual_path_type.get_type ()->get_mappings ().get_nodeid (),
+	  &root_resolved_node_id);
+	rust_assert (ok);
+
+	resolve_segments (root_resolved_node_id, expr.get_segments (), 0, root,
+			  expr.get_mappings (), expr.get_locus ());
+      }
+
+    // Resolve the trait now
+    TraitReference *trait_ref
+      = TraitResolver::Resolve (*qual_path_type.get_trait ().get ());
+    if (trait_ref->is_error ())
+      return;
+
+    // does this type actually implement this type-bound?
+    if (!TypeBoundsProbe::is_bound_satisfied_for_type (root, trait_ref))
+      return;
+
+    // then we need to look at the next segment to create perform the correct
+    // projection type
+    if (expr.get_segments ().empty ())
+      return;
+
+    // we need resolve to the impl block
+    NodeId impl_resolved_id = UNKNOWN_NODEID;
+    bool ok = resolver->lookup_resolved_name (
+      qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
+    rust_assert (ok);
+
+    HirId impl_block_id;
+    ok = mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+				       impl_resolved_id, &impl_block_id);
+    rust_assert (ok);
+
+    AssociatedImplTrait *lookup_associated = nullptr;
+    bool found_impl_trait
+      = context->lookup_associated_trait_impl (impl_block_id,
+					       &lookup_associated);
+    rust_assert (found_impl_trait);
+
+    DefId resolved_item_id = UNKNOWN_DEFID;
+    HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);
+
+    const TraitItemReference *trait_item_ref = nullptr;
+    ok = trait_ref->lookup_trait_item (item_seg.get_segment ().as_string (),
+				       &trait_item_ref);
+    if (!ok)
+      {
+	rust_error_at (item_seg.get_locus (), "unknown associated item");
+	return;
+      }
+    resolved_item_id = trait_item_ref->get_mappings ().get_defid ();
+
+    infered = lookup_associated->get_projected_type (
+      trait_item_ref, root, item_seg.get_mappings ().get_hirid (),
+      item_seg.get_locus ());
+
+    // turbo-fish segment path::<ty>
+    if (item_seg.has_generic_args ())
+      {
+	if (!infered->can_substitute ())
+	  {
+	    rust_error_at (item_seg.get_locus (),
+			   "substitutions not supported for %s",
+			   infered->as_string ().c_str ());
+	    infered = new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+	    return;
+	  }
+	infered = SubstMapper::Resolve (infered, expr.get_locus (),
+					&item_seg.get_generic_args ());
+      }
+
+    TyTy::ProjectionType *projection
+      = new TyTy::ProjectionType (qual_path_type.get_mappings ().get_hirid (),
+				  TyTy::TyVar (root->get_ref ()), trait_ref,
+				  resolved_item_id, lookup_associated);
+    context->insert_type (qual_path_type.get_mappings (), projection);
+
+    // continue on as a path-in-expression
+    NodeId root_resolved_node_id
+      = trait_item_ref->get_mappings ().get_nodeid ();
+    bool fully_resolved = expr.get_segments ().size () <= 1;
+
+    if (fully_resolved)
+      {
+	// lookup if the name resolver was able to canonically resolve this or
+	// not
+	NodeId path_resolved_id = UNKNOWN_NODEID;
+	if (resolver->lookup_resolved_name (expr.get_mappings ().get_nodeid (),
+					    &path_resolved_id))
+	  {
+	    rust_assert (path_resolved_id == root_resolved_node_id);
+	  }
+	// check the type scope
+	else if (resolver->lookup_resolved_type (
+		   expr.get_mappings ().get_nodeid (), &path_resolved_id))
+	  {
+	    rust_assert (path_resolved_id == root_resolved_node_id);
+	  }
+	else
+	  {
+	    resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+					    root_resolved_node_id);
+	  }
+
+	context->insert_receiver (expr.get_mappings ().get_hirid (), root);
+	return;
+      }
+
+    resolve_segments (root_resolved_node_id, expr.get_segments (), 1, infered,
+		      expr.get_mappings (), expr.get_locus ());
+  }
+
   void visit (HIR::PathInExpression &expr) override
   {
     NodeId resolved_node_id = UNKNOWN_NODEID;
@@ -931,14 +1059,14 @@ public:
     TyTy::BaseType *tyseg
       = resolve_root_path (expr, &offset, &resolved_node_id);
 
+    if (tyseg == nullptr)
+      {
+	rust_debug_loc (expr.get_locus (), "failed to resolve root_seg");
+      }
     rust_assert (tyseg != nullptr);
 
     if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
       return;
-
-    // this is the case where the name resolver has already fully resolved the
-    // name, which means all the work is already done.
-    bool name_resolved_fully = offset >= expr.get_num_segments ();
 
     if (expr.get_num_segments () == 1)
       {
@@ -957,112 +1085,8 @@ public:
 	return;
       }
 
-    TyTy::BaseType *prev_segment = tyseg;
-    for (size_t i = offset; i < expr.get_num_segments (); i++)
-      {
-	HIR::PathExprSegment &seg = expr.get_segments ().at (i);
-
-	bool reciever_is_generic
-	  = prev_segment->get_kind () == TyTy::TypeKind::PARAM;
-	bool probe_bounds = true;
-	bool probe_impls = !reciever_is_generic;
-	bool ignore_mandatory_trait_items = !reciever_is_generic;
-
-	// probe the path
-	auto candidates
-	  = PathProbeType::Probe (tyseg, seg.get_segment (), probe_impls,
-				  probe_bounds, ignore_mandatory_trait_items);
-	if (candidates.size () == 0)
-	  {
-	    rust_error_at (
-	      seg.get_locus (),
-	      "failed to resolve path segment using an impl Probe");
-	    return;
-	  }
-	else if (candidates.size () > 1)
-	  {
-	    ReportMultipleCandidateError::Report (candidates,
-						  seg.get_segment (),
-						  seg.get_locus ());
-	    return;
-	  }
-
-	auto &candidate = candidates.at (0);
-	prev_segment = tyseg;
-	tyseg = candidate.ty;
-
-	if (candidate.is_impl_candidate ())
-	  {
-	    resolved_node_id
-	      = candidate.item.impl.impl_item->get_impl_mappings ()
-		  .get_nodeid ();
-	  }
-	else
-	  {
-	    resolved_node_id
-	      = candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
-	  }
-
-	if (seg.has_generic_args ())
-	  {
-	    if (!tyseg->can_substitute ())
-	      {
-		rust_error_at (expr.get_locus (),
-			       "substitutions not supported for %s",
-			       tyseg->as_string ().c_str ());
-		return;
-	      }
-
-	    tyseg = SubstMapper::Resolve (tyseg, expr.get_locus (),
-					  &seg.get_generic_args ());
-	    if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
-	      return;
-	  }
-      }
-
-    context->insert_receiver (expr.get_mappings ().get_hirid (), prev_segment);
-    if (tyseg->needs_generic_substitutions ())
-      {
-	Location locus = expr.get_segments ().back ().get_locus ();
-	if (!prev_segment->needs_generic_substitutions ())
-	  {
-	    auto used_args_in_prev_segment
-	      = GetUsedSubstArgs::From (prev_segment);
-	    if (!used_args_in_prev_segment.is_error ())
-	      tyseg = SubstMapperInternal::Resolve (tyseg,
-						    used_args_in_prev_segment);
-	  }
-	else
-	  {
-	    tyseg = SubstMapper::InferSubst (tyseg, locus);
-	  }
-
-	if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
-	  return;
-      }
-
-    rust_assert (resolved_node_id != UNKNOWN_NODEID);
-
-    // lookup if the name resolver was able to canonically resolve this or not
-    NodeId path_resolved_id = UNKNOWN_NODEID;
-    if (resolver->lookup_resolved_name (expr.get_mappings ().get_nodeid (),
-					&path_resolved_id))
-      {
-	rust_assert (path_resolved_id == resolved_node_id);
-      }
-    // check the type scope
-    else if (resolver->lookup_resolved_type (expr.get_mappings ().get_nodeid (),
-					     &path_resolved_id))
-      {
-	rust_assert (path_resolved_id == resolved_node_id);
-      }
-    else if (!name_resolved_fully)
-      {
-	resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-					resolved_node_id);
-      }
-
-    infered = tyseg;
+    resolve_segments (resolved_node_id, expr.get_segments (), offset, tyseg,
+		      expr.get_mappings (), expr.get_locus ());
   }
 
   void visit (HIR::LoopExpr &expr) override
@@ -1351,6 +1375,136 @@ private:
       }
 
     return root_tyty;
+  }
+
+  void resolve_segments (NodeId root_resolved_node_id,
+			 std::vector<HIR::PathExprSegment> &segments,
+			 size_t offset, TyTy::BaseType *tyseg,
+			 const Analysis::NodeMapping &expr_mappings,
+			 Location expr_locus)
+  {
+    NodeId resolved_node_id = root_resolved_node_id;
+    TyTy::BaseType *prev_segment = tyseg;
+    for (size_t i = offset; i < segments.size (); i++)
+      {
+	HIR::PathExprSegment &seg = segments.at (i);
+
+	bool reciever_is_generic
+	  = prev_segment->get_kind () == TyTy::TypeKind::PARAM;
+	bool probe_bounds = true;
+	bool probe_impls = !reciever_is_generic;
+	bool ignore_mandatory_trait_items = !reciever_is_generic;
+
+	// probe the path
+	auto candidates
+	  = PathProbeType::Probe (prev_segment, seg.get_segment (), probe_impls,
+				  probe_bounds, ignore_mandatory_trait_items);
+	if (candidates.size () == 0)
+	  {
+	    rust_error_at (
+	      seg.get_locus (),
+	      "failed to resolve path segment using an impl Probe");
+	    return;
+	  }
+	else if (candidates.size () > 1)
+	  {
+	    ReportMultipleCandidateError::Report (candidates,
+						  seg.get_segment (),
+						  seg.get_locus ());
+	    return;
+	  }
+
+	auto &candidate = candidates.at (0);
+	prev_segment = tyseg;
+	tyseg = candidate.ty;
+
+	if (candidate.is_impl_candidate ())
+	  {
+	    resolved_node_id
+	      = candidate.item.impl.impl_item->get_impl_mappings ()
+		  .get_nodeid ();
+	  }
+	else
+	  {
+	    resolved_node_id
+	      = candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
+
+	    // lookup the associated-impl-trait
+	    HIR::ImplBlock *impl = candidate.item.trait.impl;
+	    if (impl != nullptr)
+	      {
+		AssociatedImplTrait *lookup_associated = nullptr;
+		bool found_impl_trait = context->lookup_associated_trait_impl (
+		  impl->get_mappings ().get_hirid (), &lookup_associated);
+		rust_assert (found_impl_trait);
+
+		lookup_associated->setup_associated_types ();
+
+		// we need a new ty_ref_id for this trait item
+		tyseg = tyseg->clone ();
+		tyseg->set_ty_ref (mappings->get_next_hir_id ());
+	      }
+	  }
+
+	if (seg.has_generic_args ())
+	  {
+	    if (!tyseg->can_substitute ())
+	      {
+		rust_error_at (expr_locus, "substitutions not supported for %s",
+			       tyseg->as_string ().c_str ());
+		return;
+	      }
+
+	    tyseg = SubstMapper::Resolve (tyseg, expr_locus,
+					  &seg.get_generic_args ());
+	    if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
+	      return;
+	  }
+      }
+
+    context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
+    if (tyseg->needs_generic_substitutions ())
+      {
+	Location locus = segments.back ().get_locus ();
+	if (!prev_segment->needs_generic_substitutions ())
+	  {
+	    auto used_args_in_prev_segment
+	      = GetUsedSubstArgs::From (prev_segment);
+	    if (!used_args_in_prev_segment.is_error ())
+	      tyseg = SubstMapperInternal::Resolve (tyseg,
+						    used_args_in_prev_segment);
+	  }
+	else
+	  {
+	    tyseg = SubstMapper::InferSubst (tyseg, locus);
+	  }
+
+	if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
+	  return;
+      }
+
+    rust_assert (resolved_node_id != UNKNOWN_NODEID);
+
+    // lookup if the name resolver was able to canonically resolve this or not
+    NodeId path_resolved_id = UNKNOWN_NODEID;
+    if (resolver->lookup_resolved_name (expr_mappings.get_nodeid (),
+					&path_resolved_id))
+      {
+	rust_assert (path_resolved_id == resolved_node_id);
+      }
+    // check the type scope
+    else if (resolver->lookup_resolved_type (expr_mappings.get_nodeid (),
+					     &path_resolved_id))
+      {
+	rust_assert (path_resolved_id == resolved_node_id);
+      }
+    else
+      {
+	resolver->insert_resolved_name (expr_mappings.get_nodeid (),
+					resolved_node_id);
+      }
+
+    infered = tyseg;
   }
 
   bool
