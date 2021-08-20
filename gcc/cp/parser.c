@@ -38465,13 +38465,14 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
 	    OMP_CLAUSE_DEPEND_SINK_NEGATIVE (vec) = 1;
 	}
 
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA)
+	  || !cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
 	break;
 
       cp_lexer_consume_token (parser->lexer);
     }
 
-  if (cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN) && vec)
+  if (vec)
     {
       tree u = build_omp_clause (clause_loc, OMP_CLAUSE_DEPEND);
       OMP_CLAUSE_DEPEND_KIND (u) = OMP_CLAUSE_DEPEND_SINK;
@@ -38791,7 +38792,13 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
     goto resync_fail;
 
   if (kind == OMP_CLAUSE_DEPEND_SINK)
-    nlist = cp_parser_omp_clause_depend_sink (parser, loc, list);
+    {
+      nlist = cp_parser_omp_clause_depend_sink (parser, loc, list);
+      if (!parens.require_close (parser))
+	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					       /*or_comma=*/false,
+					       /*consume_paren=*/true);
+    }
   else
     {
       nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_DEPEND,
