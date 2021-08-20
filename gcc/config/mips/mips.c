@@ -14459,6 +14459,27 @@ mips_msa_output_division (const char *division, rtx *operands)
     }
   return s;
 }
+
+/* Return the assembly code for MSA immediate shift instructions,
+   which has the operands given by OPERANDS.  Truncate the shift amount
+   to make GAS happy.  */
+
+const char *
+mips_msa_output_shift_immediate (const char *shift, rtx *operands)
+{
+  rtx amount = operands[2];
+  machine_mode mode = amount->mode;
+
+  unsigned val = UINTVAL (CONST_VECTOR_ELT (amount, 0));
+  val &= GET_MODE_UNIT_BITSIZE (mode) - 1;
+  if (!val)
+    return "";
+
+  rtx c = gen_int_mode (val, GET_MODE_INNER (mode));
+  operands[2] = gen_const_vec_duplicate (mode, c);
+
+  return shift;
+}
 
 /* Return true if destination of IN_INSN is used as add source in
    OUT_INSN. Both IN_INSN and OUT_INSN are of type fmadd. Example:
