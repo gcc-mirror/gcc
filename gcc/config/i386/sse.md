@@ -933,7 +933,9 @@
 ;; Mapping of vector modes to VPTERNLOG suffix
 (define_mode_attr ternlogsuffix
   [(V8DI "q") (V4DI "q") (V2DI "q")
+   (V8DF "q") (V4DF "q") (V2DF "q")
    (V16SI "d") (V8SI "d") (V4SI "d")
+   (V16SF "d") (V8SF "d") (V4SF "d")
    (V32HI "d") (V16HI "d") (V8HI "d")
    (V64QI "d") (V32QI "d") (V16QI "d")])
 
@@ -10040,6 +10042,238 @@
   [(set_attr "type" "sselog")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*<avx512>_vternlog<mode>_all"
+  [(set (match_operand:V 0 "register_operand" "=v")
+	(unspec:V
+	  [(match_operand:V 1 "register_operand" "0")
+	   (match_operand:V 2 "register_operand" "v")
+	   (match_operand:V 3 "nonimmediate_operand" "vm")
+	   (match_operand:SI 4 "const_0_to_255_operand")]
+	  UNSPEC_VTERNLOG))]
+  "TARGET_AVX512F"
+  "vpternlog<ternlogsuffix>\t{%4, %3, %2, %0|%0, %2, %3, %4}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+;; There must be lots of other combinations like
+;;
+;; (any_logic:V
+;;   (any_logic:V op1 op2)
+;;   (any_logic:V op1 op3))
+;;
+;; (any_logic:V
+;;   (any_logic:V
+;;     (any_logic:V op1, op2)
+;;     op3)
+;;   op1)
+;;
+;; and so on.
+
+(define_code_iterator any_logic1 [and ior xor])
+(define_code_iterator any_logic2 [and ior xor])
+(define_code_attr logic_op [(and "&") (ior "|") (xor "^")])
+
+(define_insn_and_split "*<avx512>_vpternlog<mode>_1"
+  [(set (match_operand:V 0 "register_operand")
+	(any_logic:V
+	  (any_logic1:V
+	    (match_operand:V 1 "reg_or_notreg_operand")
+	    (match_operand:V 2 "reg_or_notreg_operand"))
+	  (any_logic2:V
+	    (match_operand:V 3 "reg_or_notreg_operand")
+	    (match_operand:V 4 "reg_or_notreg_operand"))))]
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL)
+   && ix86_pre_reload_split ()
+   && (rtx_equal_p (STRIP_UNARY (operands[1]),
+		    STRIP_UNARY (operands[4]))
+       || rtx_equal_p (STRIP_UNARY (operands[2]),
+		       STRIP_UNARY (operands[4]))
+       || rtx_equal_p (STRIP_UNARY (operands[1]),
+		       STRIP_UNARY (operands[3]))
+       || rtx_equal_p (STRIP_UNARY (operands[2]),
+		       STRIP_UNARY (operands[3])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:V
+	  [(match_dup 6)
+	   (match_dup 2)
+	   (match_dup 1)
+	   (match_dup 5)]
+	  UNSPEC_VTERNLOG))]
+{
+  /* VPTERNLOGD reg6, reg2, reg1, imm8.  */
+  int reg6 = 0xF0;
+  int reg2 = 0xCC;
+  int reg1 = 0xAA;
+  int reg3 = 0;
+  int reg4 = 0;
+  int reg_mask, tmp1, tmp2;
+  if (rtx_equal_p (STRIP_UNARY (operands[1]),
+		   STRIP_UNARY (operands[4])))
+    {
+      reg4 = reg1;
+      reg3 = reg6;
+      operands[6] = operands[3];
+    }
+  else if (rtx_equal_p (STRIP_UNARY (operands[2]),
+		       STRIP_UNARY (operands[4])))
+    {
+      reg4 = reg2;
+      reg3 = reg6;
+      operands[6] = operands[3];
+    }
+  else if (rtx_equal_p (STRIP_UNARY (operands[1]),
+			STRIP_UNARY (operands[3])))
+    {
+      reg4 = reg6;
+      reg3 = reg1;
+      operands[6] = operands[4];
+    }
+  else
+    {
+      reg4 = reg6;
+      reg3 = reg2;
+      operands[6] = operands[4];
+    }
+
+  reg1 = UNARY_P (operands[1]) ? ~reg1 : reg1;
+  reg2 = UNARY_P (operands[2]) ? ~reg2 : reg2;
+  reg3 = UNARY_P (operands[3]) ? ~reg3 : reg3;
+  reg4 = UNARY_P (operands[4]) ? ~reg4 : reg4;
+
+  tmp1 = reg1 <any_logic1:logic_op> reg2;
+  tmp2 = reg3 <any_logic2:logic_op> reg4;
+  reg_mask = tmp1  <any_logic:logic_op> tmp2;
+  reg_mask &= 0xFF;
+
+  operands[1] = STRIP_UNARY (operands[1]);
+  operands[2] = STRIP_UNARY (operands[2]);
+  operands[6] = STRIP_UNARY (operands[6]);
+  operands[5] = GEN_INT (reg_mask);
+})
+
+(define_insn_and_split "*<avx512>_vpternlog<mode>_2"
+  [(set (match_operand:V 0 "register_operand")
+	(any_logic:V
+	  (any_logic1:V
+	    (any_logic2:V
+	      (match_operand:V 1 "reg_or_notreg_operand")
+	      (match_operand:V 2 "reg_or_notreg_operand"))
+	    (match_operand:V 3 "reg_or_notreg_operand"))
+	  (match_operand:V 4 "reg_or_notreg_operand")))]
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL)
+   && ix86_pre_reload_split ()
+   && (rtx_equal_p (STRIP_UNARY (operands[1]),
+		    STRIP_UNARY (operands[4]))
+       || rtx_equal_p (STRIP_UNARY (operands[2]),
+		       STRIP_UNARY (operands[4]))
+       || rtx_equal_p (STRIP_UNARY (operands[1]),
+		       STRIP_UNARY (operands[3]))
+       || rtx_equal_p (STRIP_UNARY (operands[2]),
+		       STRIP_UNARY (operands[3])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:V
+	  [(match_dup 6)
+	   (match_dup 2)
+	   (match_dup 1)
+	   (match_dup 5)]
+	  UNSPEC_VTERNLOG))]
+{
+  /* VPTERNLOGD reg6, reg2, reg1, imm8.  */
+  int reg6 = 0xF0;
+  int reg2 = 0xCC;
+  int reg1 = 0xAA;
+  int reg3 = 0;
+  int reg4 = 0;
+  int reg_mask, tmp1, tmp2;
+  if (rtx_equal_p (STRIP_UNARY (operands[1]),
+		   STRIP_UNARY (operands[4])))
+    {
+      reg4 = reg1;
+      reg3 = reg6;
+      operands[6] = operands[3];
+    }
+  else if (rtx_equal_p (STRIP_UNARY (operands[2]),
+		       STRIP_UNARY (operands[4])))
+    {
+      reg4 = reg2;
+      reg3 = reg6;
+      operands[6] = operands[3];
+    }
+  else if (rtx_equal_p (STRIP_UNARY (operands[1]),
+			STRIP_UNARY (operands[3])))
+    {
+      reg4 = reg6;
+      reg3 = reg1;
+      operands[6] = operands[4];
+    }
+  else
+    {
+      reg4 = reg6;
+      reg3 = reg2;
+      operands[6] = operands[4];
+    }
+
+  reg1 = UNARY_P (operands[1]) ? ~reg1 : reg1;
+  reg2 = UNARY_P (operands[2]) ? ~reg2 : reg2;
+  reg3 = UNARY_P (operands[3]) ? ~reg3 : reg3;
+  reg4 = UNARY_P (operands[4]) ? ~reg4 : reg4;
+
+  tmp1 = reg1 <any_logic2:logic_op> reg2;
+  tmp2 = tmp1 <any_logic1:logic_op> reg3;
+  reg_mask = tmp2 <any_logic:logic_op> reg4;
+  reg_mask &= 0xFF;
+
+  operands[1] = STRIP_UNARY (operands[1]);
+  operands[2] = STRIP_UNARY (operands[2]);
+  operands[6] = STRIP_UNARY (operands[6]);
+  operands[5] = GEN_INT (reg_mask);
+})
+
+(define_insn_and_split "*<avx512>_vpternlog<mode>_3"
+  [(set (match_operand:V 0 "register_operand")
+	(any_logic:V
+	  (any_logic1:V
+	    (match_operand:V 1 "reg_or_notreg_operand")
+	    (match_operand:V 2 "reg_or_notreg_operand"))
+	  (match_operand:V 3 "reg_or_notreg_operand")))]
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL)
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:V
+	  [(match_dup 3)
+	   (match_dup 2)
+	   (match_dup 1)
+	   (match_dup 4)]
+	  UNSPEC_VTERNLOG))]
+{
+  /* VPTERNLOGD reg3, reg2, reg1, imm8.  */
+  int reg3 = 0xF0;
+  int reg2 = 0xCC;
+  int reg1 = 0xAA;
+  int reg_mask, tmp1;
+
+  reg1 = UNARY_P (operands[1]) ? ~reg1 : reg1;
+  reg2 = UNARY_P (operands[2]) ? ~reg2 : reg2;
+  reg3 = UNARY_P (operands[3]) ? ~reg3 : reg3;
+
+  tmp1 = reg1 <any_logic1:logic_op> reg2;
+  reg_mask = tmp1 <any_logic:logic_op> reg3;
+  reg_mask &= 0xFF;
+
+  operands[1] = STRIP_UNARY (operands[1]);
+  operands[2] = STRIP_UNARY (operands[2]);
+  operands[3] = STRIP_UNARY (operands[3]);
+  operands[4] = GEN_INT (reg_mask);
+})
+
 
 (define_insn "<avx512>_vternlog<mode>_mask"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")

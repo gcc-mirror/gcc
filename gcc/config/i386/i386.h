@@ -1716,6 +1716,8 @@ typedef struct ix86_args {
 
 #define LEGITIMATE_PIC_OPERAND_P(X) legitimate_pic_operand_p (X)
 
+#define STRIP_UNARY(X) (UNARY_P (X) ? XEXP (X, 0) : X)
+
 #define SYMBOLIC_CONST(X)	\
   (GET_CODE (X) == SYMBOL_REF						\
    || GET_CODE (X) == LABEL_REF						\
