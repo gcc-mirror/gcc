@@ -1,3 +1,12 @@
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100139
+	* doc/xml/manual/status_cxx2020.xml: Add P1739R4 to status table.
+	* doc/html/manual/status.html: Regenerate.
+
 2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:

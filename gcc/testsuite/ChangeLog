@@ -1,3 +1,11 @@
+2021-08-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-08-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/101969
+	* gcc.dg/pr78213.c: Fix up for '--enable-checking=release' etc.
+
 2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from master:
