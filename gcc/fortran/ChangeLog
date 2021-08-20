@@ -1,3 +1,10 @@
+2021-08-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* simplify.c (substring_has_constant_len): New.
+	(gfc_simplify_len): Handle case of substrings with constant
+	bounds.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* match.h (gfc_match_omp_nothing): New.
