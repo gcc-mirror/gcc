@@ -175,16 +175,10 @@
    UNSPEC_VPEXTD
    UNSPEC_VCLRLB
    UNSPEC_VCLRRB
-   UNSPEC_XXEVAL
    UNSPEC_VSTRIR
    UNSPEC_VSTRIL
    UNSPEC_SLDB
    UNSPEC_SRDB
-   UNSPEC_XXSPLTIW
-   UNSPEC_XXSPLTID
-   UNSPEC_XXSPLTI32DX
-   UNSPEC_XXBLEND
-   UNSPEC_XXPERMX
 ])
 
 (define_c_enum "unspecv"
@@ -224,21 +218,6 @@
 			   V1TI
 			   (KF "FLOAT128_VECTOR_P (KFmode)")
 			   (TF "FLOAT128_VECTOR_P (TFmode)")])
-
-;; Like VM2, just do char, short, int, long, float and double
-(define_mode_iterator VM3 [V4SI
-			   V8HI
-			   V16QI
-			   V4SF
-			   V2DF
-			   V2DI])
-
-(define_mode_attr VM3_char [(V2DI "d")
-			   (V4SI "w")
-			   (V8HI "h")
-			   (V16QI "b")
-			   (V2DF  "d")
-			   (V4SF  "w")])
 
 ;; Map the Vector convert single precision to double precision for integer
 ;; versus floating point
@@ -858,170 +837,6 @@
   "TARGET_POWER10"
   "vs<SLDB_lr>dbi %0,%1,%2,%3"
   [(set_attr "type" "vecsimple")])
-
-(define_insn "xxspltiw_v4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=wa")
-	(unspec:V4SI [(match_operand:SI 1 "s32bit_cint_operand" "n")]
-		     UNSPEC_XXSPLTIW))]
- "TARGET_POWER10"
- "xxspltiw %x0,%1"
- [(set_attr "type" "vecsimple")
-  (set_attr "prefixed" "yes")])
-
-(define_expand "xxspltiw_v4sf"
-  [(set (match_operand:V4SF 0 "register_operand" "=wa")
-	(unspec:V4SF [(match_operand:SF 1 "const_double_operand" "n")]
-		     UNSPEC_XXSPLTIW))]
- "TARGET_POWER10"
-{
-  long value = rs6000_const_f32_to_i32 (operands[1]);
-  emit_insn (gen_xxspltiw_v4sf_inst (operands[0], GEN_INT (value)));
-  DONE;
-})
-
-(define_insn "xxspltiw_v4sf_inst"
-  [(set (match_operand:V4SF 0 "register_operand" "=wa")
-	(unspec:V4SF [(match_operand:SI 1 "c32bit_cint_operand" "n")]
-		     UNSPEC_XXSPLTIW))]
- "TARGET_POWER10"
- "xxspltiw %x0,%1"
- [(set_attr "type" "vecsimple")
-  (set_attr "prefixed" "yes")])
-
-(define_expand "xxspltidp_v2df"
-  [(set (match_operand:V2DF 0 "register_operand" )
-	(unspec:V2DF [(match_operand:SF 1 "const_double_operand")]
-		     UNSPEC_XXSPLTID))]
- "TARGET_POWER10"
-{
-  long value = rs6000_const_f32_to_i32 (operands[1]);
-  rs6000_emit_xxspltidp_v2df (operands[0], value);
-  DONE;
-})
-
-(define_insn "xxspltidp_v2df_inst"
-  [(set (match_operand:V2DF 0 "register_operand" "=wa")
-	(unspec:V2DF [(match_operand:SI 1 "c32bit_cint_operand" "n")]
-		     UNSPEC_XXSPLTID))]
-  "TARGET_POWER10"
-  "xxspltidp %x0,%1"
-  [(set_attr "type" "vecsimple")
-   (set_attr "prefixed" "yes")])
-
-(define_expand "xxsplti32dx_v4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=wa")
-	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
-		      (match_operand:QI 2 "u1bit_cint_operand" "n")
-		      (match_operand:SI 3 "s32bit_cint_operand" "n")]
-		     UNSPEC_XXSPLTI32DX))]
- "TARGET_POWER10"
-{
-  int index = INTVAL (operands[2]);
-
-  if (!BYTES_BIG_ENDIAN)
-    index = 1 - index;
-
-   emit_insn (gen_xxsplti32dx_v4si_inst (operands[0], operands[1],
-					 GEN_INT (index), operands[3]));
-   DONE;
-}
- [(set_attr "type" "vecsimple")])
-
-(define_insn "xxsplti32dx_v4si_inst"
-  [(set (match_operand:V4SI 0 "register_operand" "=wa")
-	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
-		      (match_operand:QI 2 "u1bit_cint_operand" "n")
-		      (match_operand:SI 3 "s32bit_cint_operand" "n")]
-		     UNSPEC_XXSPLTI32DX))]
-  "TARGET_POWER10"
-  "xxsplti32dx %x0,%2,%3"
-  [(set_attr "type" "vecsimple")
-   (set_attr "prefixed" "yes")])
-
-(define_expand "xxsplti32dx_v4sf"
-  [(set (match_operand:V4SF 0 "register_operand" "=wa")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "0")
-		      (match_operand:QI 2 "u1bit_cint_operand" "n")
-		      (match_operand:SF 3 "const_double_operand" "n")]
-		     UNSPEC_XXSPLTI32DX))]
-  "TARGET_POWER10"
-{
-  int index = INTVAL (operands[2]);
-  long value = rs6000_const_f32_to_i32 (operands[3]);
-  if (!BYTES_BIG_ENDIAN)
-    index = 1 - index;
-
-   emit_insn (gen_xxsplti32dx_v4sf_inst (operands[0], operands[1],
-					 GEN_INT (index), GEN_INT (value)));
-   DONE;
-})
-
-(define_insn "xxsplti32dx_v4sf_inst"
-  [(set (match_operand:V4SF 0 "register_operand" "=wa")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "0")
-		      (match_operand:QI 2 "u1bit_cint_operand" "n")
-		      (match_operand:SI 3 "s32bit_cint_operand" "n")]
-		     UNSPEC_XXSPLTI32DX))]
-  "TARGET_POWER10"
-  "xxsplti32dx %x0,%2,%3"
-  [(set_attr "type" "vecsimple")
-   (set_attr "prefixed" "yes")])
-
-(define_insn "xxblend_<mode>"
-  [(set (match_operand:VM3 0 "register_operand" "=wa")
-	(unspec:VM3 [(match_operand:VM3 1 "register_operand" "wa")
-		     (match_operand:VM3 2 "register_operand" "wa")
-		     (match_operand:VM3 3 "register_operand" "wa")]
-		    UNSPEC_XXBLEND))]
-  "TARGET_POWER10"
-  "xxblendv<VM3_char> %x0,%x1,%x2,%x3"
-  [(set_attr "type" "vecsimple")
-   (set_attr "prefixed" "yes")])
-
-(define_expand "xxpermx"
-  [(set (match_operand:V2DI 0 "register_operand" "+wa")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "wa")
-		      (match_operand:V2DI 2 "register_operand" "wa")
-		      (match_operand:V16QI 3 "register_operand" "wa")
-		      (match_operand:QI 4 "u8bit_cint_operand" "n")]
-		     UNSPEC_XXPERMX))]
-  "TARGET_POWER10"
-{
-  if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_xxpermx_inst (operands[0], operands[1],
-				 operands[2], operands[3],
-				 operands[4]));
-  else
-    {
-      /* Reverse value of byte element indexes by XORing with 0xFF.
-	 Reverse the 32-byte section identifier match by subracting bits [0:2]
-	 of elemet from 7.  */
-      int value = INTVAL (operands[4]);
-      rtx vreg = gen_reg_rtx (V16QImode);
-
-      emit_insn (gen_xxspltib_v16qi (vreg, GEN_INT (-1)));
-      emit_insn (gen_xorv16qi3 (operands[3], operands[3], vreg));
-      value = 7 - value;
-      emit_insn (gen_xxpermx_inst (operands[0], operands[2],
-				   operands[1], operands[3],
-				   GEN_INT (value)));
-    }
-
-  DONE;
-}
-  [(set_attr "type" "vecsimple")])
-
-(define_insn "xxpermx_inst"
-  [(set (match_operand:V2DI 0 "register_operand" "+v")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "v")
-		      (match_operand:V2DI 2 "register_operand" "v")
-		      (match_operand:V16QI 3 "register_operand" "v")
-		      (match_operand:QI 4 "u3bit_cint_operand" "n")]
-		     UNSPEC_XXPERMX))]
-  "TARGET_POWER10"
-  "xxpermx %x0,%x1,%x2,%x3,%4"
-  [(set_attr "type" "vecsimple")
-   (set_attr "prefixed" "yes")])
 
 (define_expand "vstrir_<mode>"
   [(set (match_operand:VIshort 0 "altivec_register_operand")
@@ -3872,18 +3687,6 @@
    vperm %0,%1,%2,%3"
   [(set_attr "type" "vecperm")
    (set_attr "isa" "p9v,*")])
-
-(define_insn "xxeval"
-  [(set (match_operand:V2DI 0 "register_operand" "=wa")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "wa")
-		      (match_operand:V2DI 2 "register_operand" "wa")
-		      (match_operand:V2DI 3 "register_operand" "wa")
-		      (match_operand:QI 4 "u8bit_cint_operand" "n")]
-		     UNSPEC_XXEVAL))]
-   "TARGET_POWER10"
-   "xxeval %0,%1,%2,%3,%4"
-   [(set_attr "type" "vecsimple")
-    (set_attr "prefixed" "yes")])
 
 (define_expand "vec_unpacku_hi_v16qi"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
