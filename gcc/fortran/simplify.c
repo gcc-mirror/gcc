@@ -4552,12 +4552,10 @@ substring_has_constant_len (gfc_expr *e)
 
   if (istart <= iend)
     {
-      char buffer[21];
       if (istart < 1)
 	{
-	  sprintf (buffer, HOST_WIDE_INT_PRINT_DEC, istart);
-	  gfc_error ("Substring start index (%s) at %L below 1",
-		     buffer, &ref->u.ss.start->where);
+	  gfc_error ("Substring start index (%wd) at %L below 1",
+		     istart, &ref->u.ss.start->where);
 	  return false;
 	}
 
@@ -4568,9 +4566,8 @@ substring_has_constant_len (gfc_expr *e)
 	length = gfc_mpz_get_hwi (ref->u.ss.length->length->value.integer);
       if (iend > length)
 	{
-	  sprintf (buffer, HOST_WIDE_INT_PRINT_DEC, iend);
-	  gfc_error ("Substring end index (%s) at %L exceeds string length",
-		     buffer, &ref->u.ss.end->where);
+	  gfc_error ("Substring end index (%wd) at %L exceeds string length",
+		     iend, &ref->u.ss.end->where);
 	  return false;
 	}
       length = iend - istart + 1;
