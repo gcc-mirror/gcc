@@ -908,6 +908,7 @@ decode_omp_directive (void)
       matcho ("do", gfc_match_omp_do, ST_OMP_DO);
       break;
     case 'e':
+      matcho ("error", gfc_match_omp_error, ST_OMP_ERROR);
       matcho ("end atomic", gfc_match_omp_eos_error, ST_OMP_END_ATOMIC);
       matcho ("end critical", gfc_match_omp_end_critical, ST_OMP_END_CRITICAL);
       matchs ("end distribute parallel do simd", gfc_match_omp_eos_error,
@@ -1183,6 +1184,9 @@ decode_omp_directive (void)
 	  prog_unit->omp_target_seen = true;
 	break;
       }
+    case ST_OMP_ERROR:
+      if (new_st.ext.omp_clauses->at != OMP_AT_EXECUTION)
+	return ST_NONE;
     default:
       break;
     }
@@ -1654,7 +1658,7 @@ next_statement (void)
   case ST_OMP_BARRIER: case ST_OMP_TASKWAIT: case ST_OMP_TASKYIELD: \
   case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: case ST_OMP_DEPOBJ: \
   case ST_OMP_TARGET_UPDATE: case ST_OMP_TARGET_ENTER_DATA: \
-  case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: \
+  case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: case ST_OMP_ERROR: \
   case ST_ERROR_STOP: case ST_OMP_SCAN: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
   case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
@@ -1715,7 +1719,6 @@ next_statement (void)
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
   case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
-
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -2543,6 +2546,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_END_WORKSHARE:
       p = "!$OMP END WORKSHARE";
+      break;
+    case ST_OMP_ERROR:
+      p = "!$OMP ERROR";
       break;
     case ST_OMP_FLUSH:
       p = "!$OMP FLUSH";

@@ -62,6 +62,9 @@ protected:
   range_tracer tracer;
 };
 
+/* Create a new ranger instance and associate it with a function.
+   Each call must be paired with a call to disable_ranger to release
+   resources.  */
 extern gimple_ranger *enable_ranger (struct function *);
 extern void disable_ranger (struct function *);
 

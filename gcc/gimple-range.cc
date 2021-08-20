@@ -381,6 +381,10 @@ gimple_ranger::dump (FILE *f)
   m_cache.dump (f);
 }
 
+/* Create a new ranger instance and associate it with function FUN.
+   Each call must be paired with a call to disable_ranger to release
+   resources.  */
+
 gimple_ranger *
 enable_ranger (struct function *fun)
 {
@@ -391,6 +395,9 @@ enable_ranger (struct function *fun)
 
   return r;
 }
+
+/* Destroy and release the ranger instance associated with function FUN
+   and replace it the global ranger.  */
 
 void
 disable_ranger (struct function *fun)

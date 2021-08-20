@@ -74,10 +74,8 @@ test03()
 void
 test04()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // filesystem permissions not supported
-  return;
-#endif
+  if (!__gnu_test::permissions_are_testable())
+    return;
 
   using perms = std::experimental::filesystem::perms;
   path p = __gnu_test::nonexistent_path();

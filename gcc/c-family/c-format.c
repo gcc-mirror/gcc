@@ -546,10 +546,11 @@ static const format_length_info strfmon_length_specs[] =
 };
 
 
-/* For now, the Fortran front-end routines only use l as length modifier.  */
+/* Length modifiers used by the fortran/error.c routines.  */
 static const format_length_info gcc_gfc_length_specs[] =
 {
-  { "l", FMT_LEN_l, STD_C89, NO_FMT, 0 },
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89, 0 },
+  { "w", FMT_LEN_w, STD_C89, NO_FMT, 0 },
   { NO_FMT, NO_FMT, 0 }
 };
 
@@ -821,10 +822,10 @@ static const format_char_info gcc_cxxdiag_char_table[] =
 static const format_char_info gcc_gfc_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q", "", NULL },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q", "", NULL },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q", "", NULL },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q", "cR", NULL },
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN, BADLEN, BADLEN, BADLEN }, "q", "", NULL },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL,  BADLEN,  BADLEN,  BADLEN,  BADLEN, BADLEN, BADLEN, BADLEN  }, "q", "", NULL },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN, BADLEN, BADLEN, BADLEN }, "q", "", NULL },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN, BADLEN, BADLEN, BADLEN }, "q", "cR", NULL },
 
   /* gfc conversion specifiers.  */
 
@@ -4843,12 +4844,73 @@ init_dynamic_asm_fprintf_info (void)
     }
 }
 
+static const format_length_info*
+get_init_dynamic_hwi (void)
+{
+  static tree hwi;
+  static format_length_info *diag_ls;
+
+  if (!hwi)
+    {
+      unsigned int i;
+
+      /* Find the underlying type for HOST_WIDE_INT.  For the 'w'
+	 length modifier to work, one must have issued: "typedef
+	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
+	 prior to using that modifier.  */
+      if ((hwi = maybe_get_identifier ("__gcc_host_wide_int__")))
+	{
+	  hwi = identifier_global_value (hwi);
+	  if (hwi)
+	    {
+	      if (TREE_CODE (hwi) != TYPE_DECL)
+		{
+		  error ("%<__gcc_host_wide_int__%> is not defined as a type");
+		  hwi = 0;
+		}
+	      else
+		{
+		  hwi = DECL_ORIGINAL_TYPE (hwi);
+		  gcc_assert (hwi);
+		  if (hwi != long_integer_type_node
+		      && hwi != long_long_integer_type_node)
+		    {
+		      error ("%<__gcc_host_wide_int__%> is not defined"
+			     " as %<long%> or %<long long%>");
+		      hwi = 0;
+		    }
+		}
+	    }
+	}
+      if (!diag_ls)
+	diag_ls = (format_length_info *)
+		  xmemdup (gcc_diag_length_specs,
+			   sizeof (gcc_diag_length_specs),
+			   sizeof (gcc_diag_length_specs));
+      if (hwi)
+	{
+	  /* HOST_WIDE_INT must be one of 'long' or 'long long'.  */
+	  i = find_length_info_modifier_index (diag_ls, 'w');
+	  if (hwi == long_integer_type_node)
+	    diag_ls[i].index = FMT_LEN_l;
+	  else if (hwi == long_long_integer_type_node)
+	    diag_ls[i].index = FMT_LEN_ll;
+	  else
+	    gcc_unreachable ();
+	}
+    }
+  return diag_ls;
+}
+
 /* Determine the type of a "locus" in the code being compiled for use
    in GCC's __gcc_gfc__ custom format attribute.  You must have set
    dynamic_format_types before calling this function.  */
 static void
 init_dynamic_gfc_info (void)
 {
+  dynamic_format_types[gcc_gfc_format_type].length_char_specs
+    = get_init_dynamic_hwi ();
+
   if (!locus)
     {
       static format_char_info *gfc_fci;
@@ -4985,67 +5047,13 @@ init_dynamic_diag_info (void)
       || local_event_ptr_node == void_type_node)
     local_event_ptr_node = get_named_type ("diagnostic_event_id_t");
 
-  static tree hwi;
-
-  if (!hwi)
-    {
-      static format_length_info *diag_ls;
-      unsigned int i;
-
-      /* Find the underlying type for HOST_WIDE_INT.  For the 'w'
-	 length modifier to work, one must have issued: "typedef
-	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
-	 prior to using that modifier.  */
-      if ((hwi = maybe_get_identifier ("__gcc_host_wide_int__")))
-	{
-	  hwi = identifier_global_value (hwi);
-	  if (hwi)
-	    {
-	      if (TREE_CODE (hwi) != TYPE_DECL)
-		{
-		  error ("%<__gcc_host_wide_int__%> is not defined as a type");
-		  hwi = 0;
-		}
-	      else
-		{
-		  hwi = DECL_ORIGINAL_TYPE (hwi);
-		  gcc_assert (hwi);
-		  if (hwi != long_integer_type_node
-		      && hwi != long_long_integer_type_node)
-		    {
-		      error ("%<__gcc_host_wide_int__%> is not defined"
-			     " as %<long%> or %<long long%>");
-		      hwi = 0;
-		    }
-		}
-	    }
-	}
-
-      /* Assign the new data for use.  */
-
-      /* All the GCC diag formats use the same length specs.  */
-      if (!diag_ls)
-	dynamic_format_types[gcc_diag_format_type].length_char_specs =
-	  dynamic_format_types[gcc_tdiag_format_type].length_char_specs =
-	  dynamic_format_types[gcc_cdiag_format_type].length_char_specs =
-	  dynamic_format_types[gcc_cxxdiag_format_type].length_char_specs =
-	  dynamic_format_types[gcc_dump_printf_format_type].length_char_specs =
-	  diag_ls = (format_length_info *)
-		    xmemdup (gcc_diag_length_specs,
-			     sizeof (gcc_diag_length_specs),
-			     sizeof (gcc_diag_length_specs));
-      if (hwi)
-	{
-	  /* HOST_WIDE_INT must be one of 'long' or 'long long'.  */
-	  i = find_length_info_modifier_index (diag_ls, 'w');
-	  if (hwi == long_integer_type_node)
-	    diag_ls[i].index = FMT_LEN_l;
-	  else if (hwi == long_long_integer_type_node)
-	    diag_ls[i].index = FMT_LEN_ll;
-	  else
-	    gcc_unreachable ();
-	}
-    }
+  /* All the GCC diag formats use the same length specs.  */
+  dynamic_format_types[gcc_diag_format_type].length_char_specs =
+    dynamic_format_types[gcc_tdiag_format_type].length_char_specs =
+    dynamic_format_types[gcc_cdiag_format_type].length_char_specs =
+    dynamic_format_types[gcc_cxxdiag_format_type].length_char_specs =
+    dynamic_format_types[gcc_dump_printf_format_type].length_char_specs
+    = get_init_dynamic_hwi ();
 
   /* It's safe to "re-initialize these to the same values.  */
   dynamic_format_types[gcc_diag_format_type].conversion_specs =

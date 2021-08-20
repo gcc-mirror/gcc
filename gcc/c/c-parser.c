@@ -1588,6 +1588,7 @@ static bool c_parser_omp_target (c_parser *, enum pragma_context, bool *);
 static void c_parser_omp_end_declare_target (c_parser *);
 static bool c_parser_omp_declare (c_parser *, enum pragma_context);
 static void c_parser_omp_requires (c_parser *);
+static bool c_parser_omp_error (c_parser *, enum pragma_context);
 static bool c_parser_omp_ordered (c_parser *, enum pragma_context, bool *);
 static void c_parser_oacc_routine (c_parser *, enum pragma_context);
 
@@ -12485,6 +12486,9 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       c_parser_omp_nothing (parser);
       return false;
 
+    case PRAGMA_OMP_ERROR:
+      return c_parser_omp_error (parser, context);
+
     case PRAGMA_OMP_ORDERED:
       return c_parser_omp_ordered (parser, context, if_p);
 
@@ -15481,7 +15485,9 @@ c_parser_omp_clause_depend_sink (c_parser *parser, location_t clause_loc,
 	    OMP_CLAUSE_DEPEND_SINK_NEGATIVE (vec) = 1;
 	}
 
-      if (c_parser_next_token_is_not (parser, CPP_COMMA))
+      if (c_parser_next_token_is_not (parser, CPP_COMMA)
+	  || c_parser_peek_2nd_token (parser)->type != CPP_NAME
+	  || c_parser_peek_2nd_token (parser)->id_kind != C_ID_ID)
 	break;
 
       c_parser_consume_token (parser);
@@ -21663,7 +21669,9 @@ c_parser_omp_requires (c_parser *parser)
   location_t loc = c_parser_peek_token (parser)->location;
   while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
     {
-      if (!first && c_parser_next_token_is (parser, CPP_COMMA))
+      if (!first
+	  && c_parser_next_token_is (parser, CPP_COMMA)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
 	c_parser_consume_token (parser);
 
       first = false;
@@ -21930,6 +21938,173 @@ c_parser_omp_nothing (c_parser *parser)
 {
   c_parser_consume_pragma (parser);
   c_parser_skip_to_pragma_eol (parser);
+}
+
+/* OpenMP 5.1
+   #pragma omp error clauses[optseq] new-line  */
+
+static bool
+c_parser_omp_error (c_parser *parser, enum pragma_context context)
+{
+  int at_compilation = -1;
+  int severity_fatal = -1;
+  tree message = NULL_TREE;
+  bool first = true;
+  bool bad = false;
+  location_t loc = c_parser_peek_token (parser)->location;
+
+  c_parser_consume_pragma (parser);
+
+  while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
+    {
+      if (!first
+	  && c_parser_next_token_is (parser, CPP_COMMA)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+	c_parser_consume_token (parser);
+
+      first = false;
+
+      if (!c_parser_next_token_is (parser, CPP_NAME))
+	break;
+
+      const char *p
+	= IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      location_t cloc = c_parser_peek_token (parser)->location;
+      static const char *args[] = {
+	"execution", "compilation", "warning", "fatal"
+      };
+      int *v = NULL;
+      int idx = 0, n = -1;
+      tree m = NULL_TREE;
+
+      if (!strcmp (p, "at"))
+	v = &at_compilation;
+      else if (!strcmp (p, "severity"))
+	{
+	  v = &severity_fatal;
+	  idx += 2;
+	}
+      else if (strcmp (p, "message"))
+	{
+	  error_at (cloc,
+		    "expected %<at%>, %<severity%> or %<message%> clause");
+	  c_parser_skip_to_pragma_eol (parser, false);
+	  return false;
+	}
+
+      c_parser_consume_token (parser);
+
+      matching_parens parens;
+      if (parens.require_open (parser))
+	{
+	  if (v == NULL)
+	    {
+	      location_t expr_loc = c_parser_peek_token (parser)->location;
+	      c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	      expr = convert_lvalue_to_rvalue (expr_loc, expr, true, true);
+	      m = convert (const_string_type_node, expr.value);
+	      m = c_fully_fold (m, false, NULL);
+	    }
+	  else
+	    {
+	      if (c_parser_next_token_is (parser, CPP_NAME))
+		{
+		  tree val = c_parser_peek_token (parser)->value;
+		  const char *q = IDENTIFIER_POINTER (val);
+
+		  if (!strcmp (q, args[idx]))
+		    n = 0;
+		  else if (!strcmp (q, args[idx + 1]))
+		    n = 1;
+		}
+	      if (n == -1)
+		{
+		  error_at (c_parser_peek_token (parser)->location,
+			    "expected %qs or %qs", args[idx], args[idx + 1]);
+		  bad = true;
+		  switch (c_parser_peek_token (parser)->type)
+		    {
+		    case CPP_EOF:
+		    case CPP_PRAGMA_EOL:
+		    case CPP_CLOSE_PAREN:
+		      break;
+		    default:
+		      if (c_parser_peek_2nd_token (parser)->type
+			  == CPP_CLOSE_PAREN)
+			c_parser_consume_token (parser);
+		      break;
+		    }
+		}
+	      else
+		c_parser_consume_token (parser);
+	    }
+
+	  parens.skip_until_found_close (parser);
+
+	  if (v == NULL)
+	    {
+	      if (message)
+		{
+		  error_at (cloc, "too many %qs clauses", p);
+		  bad = true;
+		}
+	      else
+		message = m;
+	    }
+	  else if (n != -1)
+	    {
+	      if (*v != -1)
+		{
+		  error_at (cloc, "too many %qs clauses", p);
+		  bad = true;
+		}
+	      else
+		*v = n;
+	    }
+	}
+      else
+	bad = true;
+    }
+  c_parser_skip_to_pragma_eol (parser);
+  if (bad)
+    return true;
+
+  if (at_compilation == -1)
+    at_compilation = 1;
+  if (severity_fatal == -1)
+    severity_fatal = 1;
+  if (!at_compilation)
+    {
+      if (context != pragma_compound)
+	{
+	  error_at (loc, "%<#pragma omp error%> with %<at(execution)%> clause "
+			 "may only be used in compound statements");
+	  return true;
+	}
+      tree fndecl
+	= builtin_decl_explicit (severity_fatal ? BUILT_IN_GOMP_ERROR
+						: BUILT_IN_GOMP_WARNING);
+      if (!message)
+	message = build_zero_cst (const_string_type_node);
+      tree stmt = build_call_expr_loc (loc, fndecl, 2, message,
+				       build_all_ones_cst (size_type_node));
+      add_stmt (stmt);
+      return true;
+    }
+  const char *msg = NULL;
+  if (message)
+    {
+      msg = c_getstr (message);
+      if (msg == NULL)
+	msg = _("<message unknown at compile time>");
+    }
+  if (msg)
+    emit_diagnostic (severity_fatal ? DK_ERROR : DK_WARNING, loc, 0,
+		     "%<pragma omp error%> encountered: %s", msg);
+  else
+    emit_diagnostic (severity_fatal ? DK_ERROR : DK_WARNING, loc, 0,
+		     "%<pragma omp error%> encountered");
+  return false;
 }
 
 /* Main entry point to parsing most OpenMP pragmas.  */

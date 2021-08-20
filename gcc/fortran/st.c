@@ -225,6 +225,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OMP_DISTRIBUTE_SIMD:
     case EXEC_OMP_DO:
     case EXEC_OMP_DO_SIMD:
+    case EXEC_OMP_ERROR:
     case EXEC_OMP_LOOP:
     case EXEC_OMP_END_SINGLE:
     case EXEC_OMP_MASKED_TASKLOOP:

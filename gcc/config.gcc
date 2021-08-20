@@ -1677,11 +1677,11 @@ moxie-*-moxiebox*)
 	;;
 h8300-*-elf*)
 	tmake_file="h8300/t-h8300"
-	tm_file="h8300/h8300.h dbxelf.h elfos.h newlib-stdint.h h8300/elf.h"
+	tm_file="h8300/h8300.h elfos.h newlib-stdint.h h8300/elf.h"
 	;;
 h8300-*-linux*)
 	tmake_file="${tmake_file} h8300/t-h8300 h8300/t-linux"
-	tm_file="h8300/h8300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h h8300/linux.h"
+	tm_file="h8300/h8300.h elfos.h gnu-user.h linux.h glibc-stdint.h h8300/linux.h"
 	;;
 hppa*64*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
@@ -3473,7 +3473,7 @@ tilepro*-*-linux*)
 	;;
 v850-*-rtems*)
 	target_cpu_default="TARGET_CPU_generic"
-	tm_file="dbxelf.h elfos.h v850/v850.h"
+	tm_file="elfos.h v850/v850.h"
 	tm_file="${tm_file} v850/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="${tmake_file} v850/t-v850"
 	tmake_file="${tmake_file} v850/t-rtems"
@@ -3502,11 +3502,7 @@ v850*-*-*)
 		target_cpu_default="TARGET_CPU_generic"
 		;;
 	esac
-	tm_file="dbxelf.h elfos.h newlib-stdint.h v850/v850.h"
-	if test x$stabs = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
+	tm_file="elfos.h newlib-stdint.h v850/v850.h"
 	use_collect2=no
 	c_target_objs="v850-c.o"
 	cxx_target_objs="v850-c.o"

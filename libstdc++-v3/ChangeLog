@@ -1,3 +1,45 @@
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Move row  earlier in table.
+	* doc/html/manual/status.html: Regenerate.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.9.2
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101965
+	* include/std/charconv (__to_chars_i): Remove redundant check.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101960
+	* include/std/tuple (_Tuple_impl(_Tuple_impl&&)): Use base
+	class' move constructor. Define as defaulted for versioned
+	namespace.
+	* testsuite/20_util/tuple/cons/101960.cc: New test.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100139
+	* doc/xml/manual/status_cxx2020.xml: Add P1739R4 to status table.
+	* doc/html/manual/status.html: Regenerate.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h: Add @since and @headerfile tags.
+	* include/bits/unique_ptr.h: Add @headerfile tags.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h (filesystem::file_time): Improve
+	overflow check by using system_clock::duration::max().
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h: Tweak whitespace.
+
 2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unique_ptr.h (default_delete): Add @since tag.
