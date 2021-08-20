@@ -1,3 +1,12 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ERROR.
+	* c-pragma.c (omp_pragmas): Add error directive.
+	* c-omp.c (omp_directives): Uncomment error directive entry.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* types.def (BT_FN_VOID_CONST_PTR_SIZE): New DEF_FUNCTION_TYPE_2.
+	* f95-lang.c (ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST): Define.
+
 2021-08-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from master:

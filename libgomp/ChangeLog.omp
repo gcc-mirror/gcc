@@ -1,3 +1,13 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.map (GOMP_5.1): Add GOMP_error and GOMP_warning.
+	* libgomp_g.h (GOMP_warning, GOMP_error): Declare.
+	* error.c (GOMP_warning, GOMP_error): New functions.
+	* testsuite/libgomp.c-c++-common/error-1.c: New test.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

@@ -3,6 +3,16 @@
 	Backported from master:
 	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_handle_statement_omp_attributes): Determine if
+	PRAGMA_OMP_ERROR directive is C_OMP_DIR_STANDALONE.
+	(cp_parser_omp_error): New function.
+	(cp_parser_pragma): Handle PRAGMA_OMP_ERROR.
+
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* parser.c (cp_parser_omp_clause_depend_sink): Reject spurious
 	comma at the end of list.  Don't parse closing paren here...
 	(cp_parser_omp_clause_depend): ... but here instead.

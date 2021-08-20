@@ -1,3 +1,11 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-builtins.def (BUILT_IN_GOMP_WARNING, BUILT_IN_GOMP_ERROR): New
+	builtins.
+
 2021-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

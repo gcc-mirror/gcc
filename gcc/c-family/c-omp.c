@@ -3775,8 +3775,8 @@ static const struct c_omp_directive omp_directives[] = {
   /* { "end", "metadirective", nullptr, PRAGMA_OMP_END,
     C_OMP_DIR_???, ??? },  */
   /* error with at(execution) is C_OMP_DIR_STANDALONE.  */
-  /* { "error", nullptr, nullptr, PRAGMA_OMP_ERROR,
-    C_OMP_DIR_UTILITY, false },  */
+  { "error", nullptr, nullptr, PRAGMA_OMP_ERROR,
+    C_OMP_DIR_UTILITY, false },
   { "flush", nullptr, nullptr, PRAGMA_OMP_FLUSH,
     C_OMP_DIR_STANDALONE, false },
   { "for", nullptr, nullptr, PRAGMA_OMP_FOR,

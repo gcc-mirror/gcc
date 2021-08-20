@@ -535,7 +535,7 @@ gfc_builtin_function (tree decl)
   return decl;
 }
 
-/* So far we need just these 8 attribute types.  */
+/* So far we need just these 10 attribute types.  */
 #define ATTR_NULL			0
 #define ATTR_LEAF_LIST			(ECF_LEAF)
 #define ATTR_NOTHROW_LEAF_LIST		(ECF_NOTHROW | ECF_LEAF)
@@ -546,6 +546,9 @@ gfc_builtin_function (tree decl)
 #define ATTR_CONST_NOTHROW_LIST		(ECF_NOTHROW | ECF_CONST)
 #define ATTR_ALLOC_WARN_UNUSED_RESULT_SIZE_2_NOTHROW_LIST \
 					(ECF_NOTHROW)
+#define ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST \
+					(ECF_COLD | ECF_NORETURN | \
+					 ECF_NOTHROW | ECF_LEAF)
 
 static void
 gfc_define_builtin (const char *name, tree type, enum built_in_function code,
