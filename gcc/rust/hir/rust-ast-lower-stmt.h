@@ -161,6 +161,25 @@ public:
 			       struct_decl.get_locus ());
   }
 
+  /* Checks whether the name of a field already exists.  Returns true
+     and produces an error if so.  */
+  static bool struct_field_name_exists (std::vector<HIR::StructField> &fields,
+					HIR::StructField &new_field)
+  {
+    for (auto &field : fields)
+      {
+	if (field.get_field_name ().compare (new_field.get_field_name ()) == 0)
+	  {
+	    RichLocation r (new_field.get_locus ());
+	    r.add_range (field.get_locus ());
+	    rust_error_at (r, "duplicate field name %qs",
+			   field.get_field_name ().c_str ());
+	    return true;
+	  }
+      }
+    return false;
+  }
+
   void visit (AST::StructStruct &struct_decl) override
   {
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
@@ -191,6 +210,10 @@ public:
 					 std::unique_ptr<HIR::Type> (type), vis,
 					 field.get_locus (),
 					 field.get_outer_attrs ());
+
+      if (struct_field_name_exists (fields, translated_field))
+	return false;
+
       fields.push_back (std::move (translated_field));
       return true;
     });
@@ -242,6 +265,10 @@ public:
 					   std::unique_ptr<HIR::Type> (type),
 					   vis, variant.get_locus (),
 					   variant.get_outer_attrs ());
+
+      if (struct_field_name_exists (variants, translated_variant))
+	return false;
+
       variants.push_back (std::move (translated_variant));
       return true;
     });
