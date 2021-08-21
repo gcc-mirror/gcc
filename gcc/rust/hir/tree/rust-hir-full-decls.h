@@ -162,8 +162,6 @@ struct FunctionParam;
 struct Visibility;
 class VisItem;
 class Module;
-class ModuleBodied;
-class ModuleNoBody;
 class ExternCrate;
 class UseTree;
 class UseTreeGlob;

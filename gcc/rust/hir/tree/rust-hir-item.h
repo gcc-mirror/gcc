@@ -644,26 +644,6 @@ class Module : public VisItem
 {
   Identifier module_name;
   Location locus;
-
-protected:
-  // Protected constructor
-  Module (Analysis::NodeMapping mappings, Identifier module_name,
-	  Visibility visibility, Location locus,
-	  AST::AttrVec outer_attrs = AST::AttrVec ())
-    : VisItem (std::move (mappings), std::move (visibility),
-	       std::move (outer_attrs)),
-      module_name (module_name), locus (locus)
-  {}
-
-public:
-  std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
-};
-
-// Module with a body, defined in file
-class ModuleBodied : public Module
-{
   // bool has_inner_attrs;
   AST::AttrVec inner_attrs;
   // bool has_items;
@@ -679,20 +659,20 @@ public:
   bool has_inner_attrs () const { return !inner_attrs.empty (); }
 
   // Full constructor
-  ModuleBodied (Analysis::NodeMapping mappings, Identifier name, Location locus,
-		std::vector<std::unique_ptr<Item> > items
-		= std::vector<std::unique_ptr<Item> > (),
-		Visibility visibility = Visibility::create_error (),
-		AST::AttrVec inner_attrs = AST::AttrVec (),
-		AST::AttrVec outer_attrs = AST::AttrVec ())
-    : Module (std::move (mappings), std::move (name), std::move (visibility),
-	      locus, std::move (outer_attrs)),
+  Module (Analysis::NodeMapping mappings, Identifier module_name,
+	  Location locus, std::vector<std::unique_ptr<Item> > items,
+	  Visibility visibility = Visibility::create_error (),
+	  AST::AttrVec inner_attrs = AST::AttrVec (),
+	  AST::AttrVec outer_attrs = AST::AttrVec ())
+    : VisItem (std::move (mappings), std::move (visibility),
+	       std::move (outer_attrs)),
+      module_name (module_name), locus (locus),
       inner_attrs (std::move (inner_attrs)), items (std::move (items))
   {}
 
   // Copy constructor with vector clone
-  ModuleBodied (ModuleBodied const &other)
-    : Module (other), inner_attrs (other.inner_attrs)
+  Module (Module const &other)
+    : VisItem (other), inner_attrs (other.inner_attrs)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -700,9 +680,9 @@ public:
   }
 
   // Overloaded assignment operator with vector clone
-  ModuleBodied &operator= (ModuleBodied const &other)
+  Module &operator= (Module const &other)
   {
-    Module::operator= (other);
+    VisItem::operator= (other);
     inner_attrs = other.inner_attrs;
 
     items.reserve (other.items.size ());
@@ -713,8 +693,8 @@ public:
   }
 
   // move constructors
-  ModuleBodied (ModuleBodied &&other) = default;
-  ModuleBodied &operator= (ModuleBodied &&other) = default;
+  Module (Module &&other) = default;
+  Module &operator= (Module &&other) = default;
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -724,48 +704,17 @@ public:
    * the module. */
   void add_crate_name (std::vector<std::string> &names) const override;
 
-protected:
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  ModuleBodied *clone_item_impl () const override
-  {
-    return new ModuleBodied (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object
-   * rather than base */
-  /*virtual ModuleBodied* clone_statement_impl() const override {
-      return new ModuleBodied(*this);
-  }*/
-};
-
-// Module without a body, loaded from external file
-class ModuleNoBody : public Module
-{
-public:
-  std::string as_string () const override;
-
-  // Full constructor
-  ModuleNoBody (Analysis::NodeMapping mappings, Identifier name,
-		Visibility visibility, AST::AttrVec outer_attrs, Location locus)
-    : Module (std::move (mappings), std::move (name), std::move (visibility),
-	      locus, std::move (outer_attrs))
-  {}
-
-  void accept_vis (HIRVisitor &vis) override;
+  Location get_locus () const { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  ModuleNoBody *clone_item_impl () const override
-  {
-    return new ModuleNoBody (*this);
-  }
+  Module *clone_item_impl () const override { return new Module (*this); }
 
   /* Use covariance to implement clone function as returning this object
    * rather than base */
-  /*virtual ModuleNoBody* clone_statement_impl() const override {
-      return new ModuleNoBody(*this);
+  /*virtual Module* clone_statement_impl() const override {
+      return new Module(*this);
   }*/
 };
 

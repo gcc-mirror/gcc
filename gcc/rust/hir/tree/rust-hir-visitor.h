@@ -102,8 +102,7 @@ public:
   virtual void visit (TypeParam &param) = 0;
   virtual void visit (LifetimeWhereClauseItem &item) = 0;
   virtual void visit (TypeBoundWhereClauseItem &item) = 0;
-  virtual void visit (ModuleBodied &module) = 0;
-  virtual void visit (ModuleNoBody &module) = 0;
+  virtual void visit (Module &module) = 0;
   virtual void visit (ExternCrate &crate) = 0;
   virtual void visit (UseTreeGlob &use_tree) = 0;
   virtual void visit (UseTreeList &use_tree) = 0;
