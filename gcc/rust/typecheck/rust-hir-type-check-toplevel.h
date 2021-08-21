@@ -101,7 +101,7 @@ public:
     context->insert_type (struct_decl.get_mappings (), type);
   }
 
-  void visit (HIR::ModuleBodied &module) override
+  void visit (HIR::Module &module) override
   {
     for (auto &item : module.get_items ())
       TypeCheckTopLevel::Resolve (item.get ());

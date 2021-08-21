@@ -78,10 +78,9 @@ public:
     AST::AttrVec outer_attrs;
 
     translated
-      = new HIR::ModuleBodied (mapping, module.get_name (), module.get_locus (),
-			       std::move (items), std::move (vis),
-			       std::move (inner_attrs),
-			       std::move (outer_attrs));
+      = new HIR::Module (mapping, module.get_name (), module.get_locus (),
+			 std::move (items), std::move (vis),
+			 std::move (inner_attrs), std::move (outer_attrs));
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),

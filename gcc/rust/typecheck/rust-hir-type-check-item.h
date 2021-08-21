@@ -169,7 +169,7 @@ public:
       expected_ret_tyty->unify (block_expr_ty);
   }
 
-  void visit (HIR::ModuleBodied &module) override
+  void visit (HIR::Module &module) override
   {
     for (auto &item : module.get_items ())
       TypeCheckItem::Resolve (item.get ());

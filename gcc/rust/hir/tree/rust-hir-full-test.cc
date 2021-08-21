@@ -170,16 +170,8 @@ Item::as_string () const
 std::string
 Module::as_string () const
 {
-  std::string vis_item = VisItem::as_string ();
-
-  return vis_item + "mod " + module_name;
-}
-
-std::string
-ModuleBodied::as_string () const
-{
   // get module string for "[vis] mod [name]"
-  std::string str = Module::as_string ();
+  std::string str = VisItem::as_string () + "mod " + module_name;
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -218,16 +210,6 @@ ModuleBodied::as_string () const
 	  str += "\n  " + item->as_string ();
 	}
     }
-
-  return str + "\n";
-}
-
-std::string
-ModuleNoBody::as_string () const
-{
-  std::string str = Module::as_string ();
-
-  str += "\n no body (reference to external file)";
 
   return str + "\n";
 }
@@ -3794,7 +3776,7 @@ MaybeNamedParam::as_string () const
 /* Override that calls the function recursively on all items contained within
  * the module. */
 void
-ModuleBodied::add_crate_name (std::vector<std::string> &names) const
+Module::add_crate_name (std::vector<std::string> &names) const
 {
   /* TODO: test whether module has been 'cfg'-ed out to determine whether to
    * exclude it from search */
@@ -4266,13 +4248,7 @@ TypeBoundWhereClauseItem::accept_vis (HIRVisitor &vis)
 }
 
 void
-ModuleBodied::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ModuleNoBody::accept_vis (HIRVisitor &vis)
+Module::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }
