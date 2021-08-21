@@ -1,3 +1,14 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/error-1.f90: New test.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.map (GOMP_5.1): Add GOMP_error and GOMP_warning.
+	* libgomp_g.h (GOMP_warning, GOMP_error): Declare.
+	* error.c (GOMP_warning, GOMP_error): New functions.
+	* testsuite/libgomp.c-c++-common/error-1.c: New test.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp_lib.f90.in (omp_alloc, omp_free, omp_target_alloc,

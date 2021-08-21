@@ -1,3 +1,25 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/error-1.f90: New test.
+	* gfortran.dg/gomp/error-2.f90: New test.
+	* gfortran.dg/gomp/error-3.f90: New test.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/error-1.c: New test.
+	* c-c++-common/gomp/error-2.c: New test.
+	* c-c++-common/gomp/error-3.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add error directive test.
+	* g++.dg/gomp/attrs-2.C (bar): Add error directive test.
+	* g++.dg/gomp/attrs-13.C: New test.
+	* g++.dg/gomp/error-1.C: New test.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sink-5.c: New test.
+	* c-c++-common/gomp/requires-3.c: Add test for spurious comma
+	at the end of pragma line.
+
 2021-08-19  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* c-c++-common/Wunused-var-16.c: Add an extra check that ~0

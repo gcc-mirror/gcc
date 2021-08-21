@@ -1,3 +1,19 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-format.c (gcc_gfc_length_specs): Add 'll' and 'w'.
+	(gcc_gfc_char_table): Add T9L_LL and T9L_ULL to
+	"di" and "u", respecitively; fill with BADLEN to match
+	size of 'types'.
+	(get_init_dynamic_hwi): Split off from ...
+	(init_dynamic_diag_info): ... here. Call it.
+	(init_dynamic_gfc_info): Call it.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ERROR.
+	* c-pragma.c (omp_pragmas): Add error directive.
+	* c-omp.c (omp_directives): Uncomment error directive entry.
+
 2021-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_NOTHING.

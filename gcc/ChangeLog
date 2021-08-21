@@ -1,3 +1,107 @@
+2021-08-20  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	* configure.ac (thread-local storage support): Remove tls_first_major
+	and tls_first_minor.  Use "$conftest_s" to check support.
+	* configure: Regenerate.
+
+2021-08-20  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	* configure.ac: Fixup formatting.
+
+2021-08-20  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	* acinclude.m4 (gcc_GAS_CHECK_FEATURE): Remove third argument and ...
+	* configure.ac: ... update all callers.
+
+2021-08-20  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	PR target/91602
+	* acinclude.m4 (_gcc_COMPUTE_GAS_VERSION, _gcc_GAS_VERSION_GTE_IFELSE)
+	(gcc_GAS_VERSION_GTE_IFELSE): Remove.
+	(gcc_GAS_CHECK_FEATURE): Do not handle in-tree case specially.
+	* configure.ac: Remove gcc_cv_gas_major_version, gcc_cv_gas_minor_version.
+	Remove remaining checks for in-tree assembler.
+	* configure: Regenerate.
+
+2021-08-20  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config/h8300/h8300.c (shift_alg_hi): Improve arithmetic shift right
+	by 15 bits for H8/300H and H8/S.  Improve logical shifts by 12
+	bits for H8/S.
+	(shift_alg_si): Improve arithmetic right shift by 28-30 bits for
+	H8/300H.  Improve arithmetic shift right by 15 bits for H8/S.
+	Improve logical shifts by 27 bits for H8/S.
+	(get_shift_alg): Corresponding changes.
+	(h8300_option_override): Revert to loops for -Os when profitable.
+
+2021-08-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Do not compare
+	BBs.
+	(vect_analyze_data_ref_accesses): Likewise.  Assign the BB
+	index as group_id when dataref_groups were not computed.
+	* tree-vect-slp.c (vect_slp_bbs): Bump current_group when
+	we advace to the next BB.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-builtins.def (BUILT_IN_GOMP_WARNING, BUILT_IN_GOMP_ERROR): New
+	builtins.
+
+2021-08-20  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/89961
+	* gcov.c (make_gcov_file_name): Rewrite using std::string.
+	(mangle_name): Simplify, do not used the second argument.
+	(strip_extention): New function.
+	(get_md5sum): Likewise.
+	(get_gcov_intermediate_filename): Handle properly -p and -x
+	options.
+	(output_gcov_file): Use string type.
+	(generate_results): Likewise.
+	(md5sum_to_hex): Remove.
+
+2021-08-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/altivec.md (UNSPEC_XXEVAL): Move to vsx.md.
+	(UNSPEC_XXSPLTIW): Move to vsx.md.
+	(UNSPEC_XXSPLTID): Move to vsx.md.
+	(UNSPEC_XXSPLTI32DX): Move to vsx.md.
+	(UNSPEC_XXBLEND): Move to vsx.md.
+	(UNSPEC_XXPERMX): Move to vsx.md.
+	(VM3): Move to vsx.md.
+	(VM3_char): Move to vsx.md.
+	(xxspltiw_v4si): Move to vsx.md.
+	(xxspltiw_v4sf): Move to vsx.md.
+	(xxspltiw_v4sf_inst): Move to vsx.md.
+	(xxspltidp_v2df): Move to vsx.md.
+	(xxspltidp_v2df_inst): Move to vsx.md.
+	(xxsplti32dx_v4si_inst): Move to vsx.md.
+	(xxsplti32dx_v4sf): Move to vsx.md.
+	(xxsplti32dx_v4sf_inst): Move to vsx.md.
+	(xxblend_<mode>): Move to vsx.md.
+	(xxpermx): Move to vsx.md.
+	(xxpermx_inst): Move to vsx.md.
+	* config/rs6000/vsx.md (UNSPEC_XXEVAL): Move from altivec.md.
+	(UNSPEC_XXSPLTIW): Move from altivec.md.
+	(UNSPEC_XXSPLTID): Move from altivec.md.
+	(UNSPEC_XXSPLTI32DX): Move from altivec.md.
+	(UNSPEC_XXBLEND): Move from altivec.md.
+	(UNSPEC_XXPERMX): Move from altivec.md.
+	(VM3): Move from altivec.md.
+	(VM3_char): Move from altivec.md.
+	(xxspltiw_v4si): Move from altivec.md.
+	(xxspltiw_v4sf): Move from altivec.md.
+	(xxspltiw_v4sf_inst): Move from altivec.md.
+	(xxspltidp_v2df): Move from altivec.md.
+	(xxspltidp_v2df_inst): Move from altivec.md.
+	(xxsplti32dx_v4si_inst): Move from altivec.md.
+	(xxsplti32dx_v4sf): Move from altivec.md.
+	(xxsplti32dx_v4sf_inst): Move from altivec.md.
+	(xxblend_<mode>): Move from altivec.md.
+	(xxpermx): Move from altivec.md.
+	(xxpermx_inst): Move from altivec.md.
+
 2021-08-19  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* tree-vect-generic.c (expand_vector_operations_1): Use either
