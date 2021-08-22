@@ -118,26 +118,8 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 
   if (fully_resolved)
     {
-      // lookup if the name resolver was able to canonically resolve this or
-      // not
-      NodeId path_resolved_id = UNKNOWN_NODEID;
-      if (resolver->lookup_resolved_name (expr.get_mappings ().get_nodeid (),
-					  &path_resolved_id))
-	{
-	  rust_assert (path_resolved_id == root_resolved_node_id);
-	}
-      // check the type scope
-      else if (resolver->lookup_resolved_type (
-		 expr.get_mappings ().get_nodeid (), &path_resolved_id))
-	{
-	  rust_assert (path_resolved_id == root_resolved_node_id);
-	}
-      else
-	{
-	  resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-					  root_resolved_node_id);
-	}
-
+      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+				      root_resolved_node_id);
       context->insert_receiver (expr.get_mappings ().get_hirid (), root);
       return;
     }
