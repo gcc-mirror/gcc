@@ -227,5 +227,27 @@ AssociatedImplTrait::get_projected_type (
   return trait_item_tyty;
 }
 
+// rust-hir-path-probe.h
+
+void
+PathProbeImplTrait::process_trait_impl_items_for_candidates ()
+{
+  mappings->iterate_impl_items (
+    [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
+      // just need to check if this is an impl block for this trait the next
+      // function checks the receiver
+      if (!impl->has_trait_ref ())
+	return true;
+
+      TraitReference *resolved
+	= TraitResolver::Lookup (*(impl->get_trait_ref ().get ()));
+      if (!trait_reference->is_equal (*resolved))
+	return true;
+
+      process_impl_item_candidate (id, item, impl);
+      return true;
+    });
+}
+
 } // namespace Resolver
 } // namespace Rust

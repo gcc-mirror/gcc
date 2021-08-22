@@ -54,9 +54,14 @@ private:
     : HIRCompileBase (ctx), resolved (ctx->get_backend ()->error_expression ())
   {}
 
-  void resolve (const HIR::PathIdentSegment &final_segment,
-		const Analysis::NodeMapping &mappings, Location locus,
-		bool is_qualified_path);
+  Bexpression *resolve (const HIR::PathIdentSegment &final_segment,
+			const Analysis::NodeMapping &mappings, Location locus,
+			bool is_qualified_path);
+
+  Bexpression *query_compile (HirId ref, TyTy::BaseType *lookup,
+			      const HIR::PathIdentSegment &final_segment,
+			      const Analysis::NodeMapping &mappings,
+			      Location expr_locus, bool is_qualified_path);
 
   Bexpression *resolved;
 };

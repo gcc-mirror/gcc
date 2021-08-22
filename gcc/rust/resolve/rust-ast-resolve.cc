@@ -225,9 +225,6 @@ Resolver::lookup_definition (NodeId id, Definition *def)
 void
 Resolver::insert_resolved_name (NodeId refId, NodeId defId)
 {
-  auto it = resolved_names.find (refId);
-  rust_assert (it == resolved_names.end ());
-
   resolved_names[refId] = defId;
   get_name_scope ().append_reference_for_def (refId, defId);
 }

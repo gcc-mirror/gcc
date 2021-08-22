@@ -84,6 +84,7 @@ GRS_OBJS = \
     rust/rust-hir-trait-resolve.o \
     rust/rust-hir-const-fold.o \
     rust/rust-lint-marklive.o \
+    rust/rust-hir-type-check-path.o \
     $(END)
 # removed object files from here
 

@@ -33,14 +33,28 @@ namespace Compile {
 
 class CompileItem : public HIRCompileBase
 {
+protected:
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static void compile (HIR::Item *item, Context *ctx, bool compile_fns = true,
-		       TyTy::BaseType *concrete = nullptr)
+  static Bexpression *compile (HIR::Item *item, Context *ctx,
+			       bool compile_fns = true,
+			       TyTy::BaseType *concrete = nullptr,
+			       bool is_query_mode = false,
+			       Location ref_locus = Location ())
   {
-    CompileItem compiler (ctx, compile_fns, concrete);
+    CompileItem compiler (ctx, compile_fns, concrete, ref_locus);
     item->accept_vis (compiler);
+
+    if (is_query_mode
+	&& ctx->get_backend ()->is_error_expression (compiler.reference))
+      {
+	rust_error_at (ref_locus, "failed to compile item: %s",
+		       item->as_string ().c_str ());
+	rust_assert (
+	  !ctx->get_backend ()->is_error_expression (compiler.reference));
+      }
+    return compiler.reference;
   }
 
   void visit (HIR::StaticItem &var) override
@@ -73,6 +87,8 @@ public:
 
     ctx->insert_var_decl (var.get_mappings ().get_hirid (), static_global);
     ctx->push_var (static_global);
+
+    reference = ctx->get_backend ()->var_expression (static_global, ref_locus);
   }
 
   void visit (HIR::ConstantItem &constant) override
@@ -98,6 +114,8 @@ public:
 
     ctx->push_const (const_expr);
     ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
+
+    reference = const_expr;
   }
 
   void visit (HIR::Function &function) override
@@ -139,8 +157,14 @@ public:
 	  {
 	    Bfunction *dummy = nullptr;
 	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	      ctx->insert_function_decl (fntype->get_ty_ref (), lookup, fntype);
+	      {
+		ctx->insert_function_decl (fntype->get_ty_ref (), lookup,
+					   fntype);
+	      }
 
+	    reference
+	      = ctx->get_backend ()->function_code_expression (lookup,
+							       ref_locus);
 	    return;
 	  }
       }
@@ -287,6 +311,9 @@ public:
 
     ctx->pop_fn ();
     ctx->push_function (fndecl);
+
+    reference
+      = ctx->get_backend ()->function_code_expression (fndecl, ref_locus);
   }
 
   void visit (HIR::ImplBlock &impl_block) override
@@ -319,13 +346,18 @@ public:
       CompileItem::compile (item.get (), ctx, compile_fns);
   }
 
-private:
-  CompileItem (Context *ctx, bool compile_fns, TyTy::BaseType *concrete)
-    : HIRCompileBase (ctx), compile_fns (compile_fns), concrete (concrete)
+protected:
+  CompileItem (Context *ctx, bool compile_fns, TyTy::BaseType *concrete,
+	       Location ref_locus)
+    : HIRCompileBase (ctx), compile_fns (compile_fns), concrete (concrete),
+      reference (ctx->get_backend ()->error_expression ()),
+      ref_locus (ref_locus)
   {}
 
   bool compile_fns;
   TyTy::BaseType *concrete;
+  Bexpression *reference;
+  Location ref_locus;
 };
 
 } // namespace Compile
