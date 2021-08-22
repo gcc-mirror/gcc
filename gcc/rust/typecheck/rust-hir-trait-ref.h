@@ -335,6 +335,13 @@ public:
       }
   }
 
+  bool is_equal (const TraitReference &other) const
+  {
+    DefId this_id = get_mappings ().get_defid ();
+    DefId other_id = other.get_mappings ().get_defid ();
+    return this_id == other_id;
+  }
+
 private:
   const HIR::Trait *hir_trait_ref;
   std::vector<TraitItemReference> item_refs;
