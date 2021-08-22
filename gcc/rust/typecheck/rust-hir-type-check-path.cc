@@ -348,17 +348,26 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
       bool probe_impls = !reciever_is_generic;
       bool ignore_mandatory_trait_items = !reciever_is_generic;
 
-      // probe the path
+      // probe the path is done in two parts one where we search impls if no
+      // candidate is found then we search extensions from traits
       auto candidates
 	= PathProbeType::Probe (prev_segment, seg.get_segment (), probe_impls,
-				probe_bounds, ignore_mandatory_trait_items);
+				false, ignore_mandatory_trait_items);
       if (candidates.size () == 0)
 	{
-	  rust_error_at (seg.get_locus (),
-			 "failed to resolve path segment using an impl Probe");
-	  return;
+	  candidates
+	    = PathProbeType::Probe (prev_segment, seg.get_segment (), false,
+				    probe_bounds, ignore_mandatory_trait_items);
+	  if (candidates.size () == 0)
+	    {
+	      rust_error_at (
+		seg.get_locus (),
+		"failed to resolve path segment using an impl Probe");
+	      return;
+	    }
 	}
-      else if (candidates.size () > 1)
+
+      if (candidates.size () > 1)
 	{
 	  ReportMultipleCandidateError::Report (candidates, seg.get_segment (),
 						seg.get_locus ());
