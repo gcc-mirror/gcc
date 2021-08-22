@@ -29,18 +29,18 @@ namespace Compile {
 void
 ResolvePathRef::visit (HIR::QualifiedPathInExpression &expr)
 {
-  resolve (expr.get_final_segment ().get_segment (), expr.get_mappings (),
-	   expr.get_locus (), true);
+  resolved = resolve (expr.get_final_segment ().get_segment (),
+		      expr.get_mappings (), expr.get_locus (), true);
 }
 
 void
 ResolvePathRef::visit (HIR::PathInExpression &expr)
 {
-  resolve (expr.get_final_segment ().get_segment (), expr.get_mappings (),
-	   expr.get_locus (), false);
+  resolved = resolve (expr.get_final_segment ().get_segment (),
+		      expr.get_mappings (), expr.get_locus (), false);
 }
 
-void
+Bexpression *
 ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 			 const Analysis::NodeMapping &mappings,
 			 Location expr_locus, bool is_qualified_path)
@@ -54,7 +54,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       if (!ctx->get_resolver ()->lookup_definition (ref_node_id, &def))
 	{
 	  rust_error_at (expr_locus, "unknown reference for resolved name");
-	  return;
+	  return ctx->get_backend ()->error_expression ();
 	}
       ref_node_id = def.parent;
     }
@@ -62,81 +62,65 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   // this can fail because it might be a Constructor for something
   // in that case the caller should attempt ResolvePathType::Compile
   if (ref_node_id == UNKNOWN_NODEID)
-    return;
+    {
+      rust_error_at (expr_locus, "unknown nodeid for path expr");
+      return ctx->get_backend ()->error_expression ();
+    }
 
   HirId ref;
   if (!ctx->get_mappings ()->lookup_node_to_hir (mappings.get_crate_num (),
 						 ref_node_id, &ref))
     {
       rust_error_at (expr_locus, "reverse call path lookup failure");
-      return;
+      return ctx->get_backend ()->error_expression ();
     }
 
   // might be a constant
-  if (ctx->lookup_const_decl (ref, &resolved))
-    return;
+  Bexpression *constant_expr;
+  if (ctx->lookup_const_decl (ref, &constant_expr))
+    return constant_expr;
 
   // this might be a variable reference or a function reference
   Bvariable *var = nullptr;
   if (ctx->lookup_var_decl (ref, &var))
-    {
-      resolved = ctx->get_backend ()->var_expression (var, expr_locus);
-      return;
-    }
+    return ctx->get_backend ()->var_expression (var, expr_locus);
 
-  // must be a function call but it might be a generic function which needs to
-  // be compiled first
+  // it might be a function call
   TyTy::BaseType *lookup = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
   rust_assert (ok);
   if (lookup->get_kind () == TyTy::TypeKind::FNDEF)
     {
       TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
-
       Bfunction *fn = nullptr;
       if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
-	  resolved
-	    = ctx->get_backend ()->function_code_expression (fn, expr_locus);
-	}
-      else
-	{
-	  resolved
-	    = query_compile_function (ref, fntype, final_segment, mappings,
-				      expr_locus, is_qualified_path);
+	  return ctx->get_backend ()->function_code_expression (fn, expr_locus);
 	}
     }
-  else
-    {
-      HIR::Item *resolved_item
-	= ctx->get_mappings ()->lookup_hir_item (mappings.get_crate_num (),
-						 ref);
-      HirId parent_impl_id = UNKNOWN_HIRID;
-      HIR::ImplItem *resolved_impl_item
-	= ctx->get_mappings ()->lookup_hir_implitem (mappings.get_crate_num (),
-						     ref, &parent_impl_id);
-      bool is_impl_item = resolved_impl_item != nullptr;
-      bool is_item = resolved_item != nullptr;
 
-      gcc_unreachable ();
-    }
+  // let the query system figure it out
+  return query_compile (ref, lookup, final_segment, mappings, expr_locus,
+			is_qualified_path);
 }
 
 Bexpression *
-ResolvePathRef::query_compile_function (
-  HirId ref, TyTy::FnType *fntype, const HIR::PathIdentSegment &final_segment,
-  const Analysis::NodeMapping &mappings, Location expr_locus,
-  bool is_qualified_path)
+ResolvePathRef::query_compile (HirId ref, TyTy::BaseType *lookup,
+			       const HIR::PathIdentSegment &final_segment,
+			       const Analysis::NodeMapping &mappings,
+			       Location expr_locus, bool is_qualified_path)
 {
   HIR::Item *resolved_item
     = ctx->get_mappings ()->lookup_hir_item (mappings.get_crate_num (), ref);
   bool is_hir_item = resolved_item != nullptr;
   if (is_hir_item)
     {
-      if (!fntype->has_subsititions_defined ())
-	CompileItem::compile (resolved_item, ctx);
+      if (!lookup->has_subsititions_defined ())
+	return CompileItem::compile (resolved_item, ctx, true, nullptr, true,
+				     expr_locus);
       else
-	CompileItem::compile (resolved_item, ctx, true, fntype);
+	return CompileItem::compile (resolved_item, ctx, true, lookup, true,
+				     expr_locus);
     }
   else
     {
@@ -159,11 +143,14 @@ ResolvePathRef::query_compile_function (
 	    impl->get_type ()->get_mappings ().get_hirid (), &self);
 	  rust_assert (ok);
 
-	  if (!fntype->has_subsititions_defined ())
-	    CompileInherentImplItem::Compile (self, resolved_item, ctx, true);
+	  if (!lookup->has_subsititions_defined ())
+	    return CompileInherentImplItem::Compile (self, resolved_item, ctx,
+						     true, nullptr, true,
+						     expr_locus);
 	  else
-	    CompileInherentImplItem::Compile (self, resolved_item, ctx, true,
-					      fntype);
+	    return CompileInherentImplItem::Compile (self, resolved_item, ctx,
+						     true, lookup, true,
+						     expr_locus);
 	}
       else
 	{
@@ -195,14 +182,9 @@ ResolvePathRef::query_compile_function (
 	  // item so its up to us to figure out if this path should resolve
 	  // to an trait-impl-block-item or if it can be defaulted to the
 	  // trait-impl-item's definition
-	  std::vector<Resolver::PathProbeCandidate> candidates;
-	  if (!is_qualified_path)
-	    {
-	      candidates
-		= Resolver::PathProbeType::Probe (receiver, final_segment, true,
-						  false, true);
-	    }
-
+	  std::vector<Resolver::PathProbeCandidate> candidates
+	    = Resolver::PathProbeImplTrait::Probe (receiver, final_segment,
+						   trait_ref);
 	  if (candidates.size () == 0)
 	    {
 	      // this means we are defaulting back to the trait_item if
@@ -228,9 +210,9 @@ ResolvePathRef::query_compile_function (
 	      rust_assert (found_associated_trait_impl);
 	      associated->setup_associated_types ();
 
-	      CompileTraitItem::Compile (receiver,
-					 trait_item_ref->get_hir_trait_item (),
-					 ctx, fntype);
+	      return CompileTraitItem::Compile (
+		receiver, trait_item_ref->get_hir_trait_item (), ctx, lookup,
+		true, expr_locus);
 	    }
 	  else
 	    {
@@ -245,25 +227,21 @@ ResolvePathRef::query_compile_function (
 		impl->get_type ()->get_mappings ().get_hirid (), &self);
 	      rust_assert (ok);
 
-	      if (!fntype->has_subsititions_defined ())
-		CompileInherentImplItem::Compile (self, impl_item, ctx, true);
+	      if (!lookup->has_subsititions_defined ())
+		return CompileInherentImplItem::Compile (self, impl_item, ctx,
+							 true, nullptr, true,
+							 expr_locus);
 	      else
-		CompileInherentImplItem::Compile (self, impl_item, ctx, true,
-						  fntype);
+		return CompileInherentImplItem::Compile (self, impl_item, ctx,
+							 true, lookup, true,
+							 expr_locus);
 
-	      fntype->set_ty_ref (impl_item->get_impl_mappings ().get_hirid ());
+	      lookup->set_ty_ref (impl_item->get_impl_mappings ().get_hirid ());
 	    }
 	}
     }
 
-  Bfunction *fn;
-  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
-    {
-      rust_error_at (expr_locus, "forward declaration was not compiled");
-      return ctx->get_backend ()->error_expression ();
-    }
-
-  return ctx->get_backend ()->function_code_expression (fn, expr_locus);
+  return ctx->get_backend ()->error_expression ();
 }
 
 } // namespace Compile

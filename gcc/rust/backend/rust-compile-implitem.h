@@ -34,11 +34,25 @@ class CompileInherentImplItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static void Compile (TyTy::BaseType *self, HIR::ImplItem *item, Context *ctx,
-		       bool compile_fns, TyTy::BaseType *concrete = nullptr)
+  static Bexpression *Compile (TyTy::BaseType *self, HIR::ImplItem *item,
+			       Context *ctx, bool compile_fns,
+			       TyTy::BaseType *concrete = nullptr,
+			       bool is_query_mode = false,
+			       Location ref_locus = Location ())
   {
-    CompileInherentImplItem compiler (self, ctx, compile_fns, concrete);
+    CompileInherentImplItem compiler (self, ctx, compile_fns, concrete,
+				      ref_locus);
     item->accept_vis (compiler);
+
+    if (is_query_mode
+	&& ctx->get_backend ()->is_error_expression (compiler.reference))
+      {
+	rust_error_at (ref_locus, "failed to compile impl item: %s",
+		       item->as_string ().c_str ());
+	rust_assert (
+	  !ctx->get_backend ()->is_error_expression (compiler.reference));
+      }
+    return compiler.reference;
   }
 
   void visit (HIR::ConstantItem &constant) override
@@ -63,6 +77,8 @@ public:
 
     ctx->push_const (const_expr);
     ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
+
+    reference = const_expr;
   }
 
   void visit (HIR::Function &function) override
@@ -104,8 +120,13 @@ public:
 	  {
 	    Bfunction *dummy = nullptr;
 	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	      ctx->insert_function_decl (fntype->get_ty_ref (), lookup, fntype);
-
+	      {
+		ctx->insert_function_decl (fntype->get_ty_ref (), lookup,
+					   fntype);
+	      }
+	    reference
+	      = ctx->get_backend ()->function_code_expression (lookup,
+							       ref_locus);
 	    return;
 	  }
       }
@@ -281,20 +302,25 @@ public:
       }
 
     ctx->pop_fn ();
-
     ctx->push_function (fndecl);
+
+    reference
+      = ctx->get_backend ()->function_code_expression (fndecl, ref_locus);
   }
 
 private:
   CompileInherentImplItem (TyTy::BaseType *self, Context *ctx, bool compile_fns,
-			   TyTy::BaseType *concrete)
+			   TyTy::BaseType *concrete, Location ref_locus)
     : HIRCompileBase (ctx), self (self), compile_fns (compile_fns),
-      concrete (concrete)
+      concrete (concrete), reference (ctx->get_backend ()->error_expression ()),
+      ref_locus (ref_locus)
   {}
 
   TyTy::BaseType *self;
   bool compile_fns;
   TyTy::BaseType *concrete;
+  Bexpression *reference;
+  Location ref_locus;
 };
 
 class CompileTraitItem : public HIRCompileBase
@@ -302,11 +328,47 @@ class CompileTraitItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static void Compile (TyTy::BaseType *self, HIR::TraitItem *item, Context *ctx,
-		       TyTy::BaseType *concrete)
+  static Bexpression *Compile (TyTy::BaseType *self, HIR::TraitItem *item,
+			       Context *ctx, TyTy::BaseType *concrete,
+			       bool is_query_mode = false,
+			       Location ref_locus = Location ())
   {
-    CompileTraitItem compiler (self, ctx, concrete);
+    CompileTraitItem compiler (self, ctx, concrete, ref_locus);
     item->accept_vis (compiler);
+
+    if (is_query_mode
+	&& ctx->get_backend ()->is_error_expression (compiler.reference))
+      {
+	rust_error_at (ref_locus, "failed to compile trait item: %s",
+		       item->as_string ().c_str ());
+	rust_assert (
+	  !ctx->get_backend ()->is_error_expression (compiler.reference));
+      }
+    return compiler.reference;
+  }
+
+  void visit (HIR::TraitItemConst &constant) override
+  {
+    rust_assert (concrete != nullptr);
+    TyTy::BaseType *resolved_type = concrete;
+
+    ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    Bexpression *value
+      = CompileExpr::Compile (constant.get_expr ().get (), ctx);
+
+    const Resolver::CanonicalPath *canonical_path = nullptr;
+    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+      constant.get_mappings ().get_crate_num (),
+      constant.get_mappings ().get_nodeid (), &canonical_path));
+
+    std::string ident = canonical_path->get ();
+    Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
+      type, constant.get_name (), value, constant.get_locus ());
+
+    ctx->push_const (const_expr);
+    ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
+
+    reference = const_expr;
   }
 
   void visit (HIR::TraitItemFunc &func) override
@@ -330,6 +392,9 @@ public:
 		ctx->insert_function_decl (fntype->get_ty_ref (), lookup,
 					   fntype);
 	      }
+	    reference
+	      = ctx->get_backend ()->function_code_expression (lookup,
+							       ref_locus);
 	    return;
 	  }
       }
@@ -499,16 +564,23 @@ public:
 
     ctx->pop_fn ();
     ctx->push_function (fndecl);
+
+    reference
+      = ctx->get_backend ()->function_code_expression (fndecl, ref_locus);
   }
 
 private:
   CompileTraitItem (TyTy::BaseType *self, Context *ctx,
-		    TyTy::BaseType *concrete)
-    : HIRCompileBase (ctx), self (self), concrete (concrete)
+		    TyTy::BaseType *concrete, Location ref_locus)
+    : HIRCompileBase (ctx), self (self), concrete (concrete),
+      reference (ctx->get_backend ()->error_expression ()),
+      ref_locus (ref_locus)
   {}
 
   TyTy::BaseType *self;
   TyTy::BaseType *concrete;
+  Bexpression *reference;
+  Location ref_locus;
 };
 
 } // namespace Compile
