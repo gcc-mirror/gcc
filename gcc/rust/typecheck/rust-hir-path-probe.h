@@ -114,6 +114,7 @@ struct PathProbeCandidate
 
 class PathProbeType : public TypeCheckBase
 {
+protected:
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
@@ -207,7 +208,7 @@ public:
       }
   }
 
-private:
+protected:
   void process_impl_items_for_candidates ()
   {
     mappings->iterate_impl_items ([&] (HirId id, HIR::ImplItem *item,
@@ -313,7 +314,7 @@ private:
       }
   }
 
-private:
+protected:
   PathProbeType (const TyTy::BaseType *receiver,
 		 const HIR::PathIdentSegment &query)
     : TypeCheckBase (), receiver (receiver), search (query),
@@ -402,6 +403,33 @@ private:
   ReportMultipleCandidateError (RichLocation &r) : TypeCheckBase (), r (r) {}
 
   RichLocation &r;
+};
+
+class PathProbeImplTrait : public PathProbeType
+{
+public:
+  static std::vector<PathProbeCandidate>
+  Probe (const TyTy::BaseType *receiver,
+	 const HIR::PathIdentSegment &segment_name,
+	 const TraitReference *trait_reference)
+  {
+    PathProbeImplTrait probe (receiver, segment_name, trait_reference);
+    // iterate all impls for this trait and receiver
+    // then search for possible candidates using base class behaviours
+    probe.process_trait_impl_items_for_candidates ();
+    return probe.candidates;
+  }
+
+private:
+  void process_trait_impl_items_for_candidates ();
+
+  PathProbeImplTrait (const TyTy::BaseType *receiver,
+		      const HIR::PathIdentSegment &query,
+		      const TraitReference *trait_reference)
+    : PathProbeType (receiver, query), trait_reference (trait_reference)
+  {}
+
+  const TraitReference *trait_reference;
 };
 
 } // namespace Resolver
