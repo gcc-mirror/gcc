@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* Origin: Martin Uecker <uecker@eecs.berkeley.edu> */
-/* { dg-options "" } */
+/* { dg-options "-std=c2x" } */
 void tvoid(void* x);
 void transpose0(double* out, const double* in) { }
 void transpose1(double out[2][2], const double in[2][2]) { }
@@ -97,8 +96,8 @@ void test(void)
 	(1 ? x1 : z1)[0][0] = 1; /* { dg-error "assignment of read-only location" } */
 	(1 ? x2 : z2)[0][0][0] = 1; /* { dg-error "assignment of read-only location" } */
 	v0p = (1 ? p : z0); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */
-	v1p = (1 ? p : z1); /* { dg-warning "pointer to array loses qualifier in conditional expression" } */
-	v2p = (1 ? p : z2); /* { dg-warning "pointer to array loses qualifier in conditional expression" } */
+	v1p = (1 ? p : z1); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */
+	v2p = (1 ? p : z2); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */
 	v0p = (1 ? pc : x0); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */
 	v1p = (1 ? pc : x1); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */
 	v2p = (1 ? pc : x2); /* { dg-warning "assignment discards 'const' qualifier from pointer target type" } */
