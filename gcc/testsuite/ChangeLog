@@ -1,3 +1,9 @@
+2021-08-21  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/101980
+	* gcc.dg/analyzer/function-ptr-2.c : Add issue for double 'free'.
+	* gcc.dg/analyzer/malloc-callbacks.c : Fix xfail testcase.
+
 2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/error-1.f90: New test.

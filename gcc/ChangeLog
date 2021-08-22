@@ -1,3 +1,12 @@
+2021-08-21  Dragan Mladjenovic  <OT_Dragan.Mladjenovic@mediatek.com>
+
+	* config/mips/mips.c (mips_function_rodata_section,
+	TARGET_ASM_FUNCTION_RODATA_SECTION): Removed.
+
+2021-08-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_asm_output_aligned_common): Remove warning.
+
 2021-08-20  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
 
 	* configure.ac (thread-local storage support): Remove tls_first_major
