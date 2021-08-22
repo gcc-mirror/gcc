@@ -72,6 +72,12 @@ public:
     return resolver.go (path);
   }
 
+  static TraitReference *Lookup (HIR::TypePath &path)
+  {
+    TraitResolver resolver;
+    return resolver.lookup_path (path);
+  }
+
 private:
   TraitResolver () : TypeCheckBase () {}
 
@@ -160,6 +166,40 @@ private:
     tref->on_resolved ();
 
     return tref;
+  }
+
+  TraitReference *lookup_path (HIR::TypePath &path)
+  {
+    NodeId ref;
+    if (!resolver->lookup_resolved_type (path.get_mappings ().get_nodeid (),
+					 &ref))
+      {
+	rust_error_at (path.get_locus (), "Failed to resolve path to node-id");
+	return &TraitReference::error_node ();
+      }
+
+    HirId hir_node = UNKNOWN_HIRID;
+    if (!mappings->lookup_node_to_hir (mappings->get_current_crate (), ref,
+				       &hir_node))
+      {
+	rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
+	return &TraitReference::error_node ();
+      }
+
+    HIR::Item *resolved_item
+      = mappings->lookup_hir_item (mappings->get_current_crate (), hir_node);
+
+    rust_assert (resolved_item != nullptr);
+    resolved_item->accept_vis (*this);
+    rust_assert (trait_reference != nullptr);
+
+    TraitReference *tref = &TraitReference::error_node ();
+    if (context->lookup_trait_reference (
+	  trait_reference->get_mappings ().get_defid (), &tref))
+      {
+	return tref;
+      }
+    return &TraitReference::error_node ();
   }
 
   HIR::Trait *trait_reference;
