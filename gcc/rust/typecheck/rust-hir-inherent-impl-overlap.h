@@ -109,6 +109,10 @@ public:
     // generate mappings
     pass.mappings->iterate_impl_items (
       [&] (HirId id, HIR::ImplItem *impl_item, HIR::ImplBlock *impl) -> bool {
+	// ignoring trait-impls might need thought later on
+	if (impl->has_trait_ref ())
+	  return true;
+
 	pass.process_impl_item (id, impl_item, impl);
 	return true;
       });
