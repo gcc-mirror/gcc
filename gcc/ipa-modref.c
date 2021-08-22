@@ -1700,6 +1700,15 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
       else if (gcall *call = dyn_cast <gcall *> (use_stmt))
 	{
 	  tree callee = gimple_call_fndecl (call);
+
+	  /* IPA PTA internally it treats calling a function as "writing" to
+	     the argument space of all functions the function pointer points to
+	     (PR101949).  We can not drop EAF_NOCLOBBER only when ipa-pta
+	     is on since that would allow propagation of this from -fno-ipa-pta
+	     to -fipa-pta functions.  */
+	  if (gimple_call_fn (use_stmt) == name)
+	    lattice[index].merge (~EAF_NOCLOBBER);
+
 	  /* Return slot optimization would require bit of propagation;
 	     give up for now.  */
 	  if (gimple_call_return_slot_opt_p (call)
