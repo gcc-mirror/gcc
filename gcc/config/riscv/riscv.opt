@@ -195,6 +195,9 @@ long riscv_stack_protector_guard_offset = 0
 TargetVariable
 int riscv_zi_subext
 
+TargetVariable
+int riscv_zb_subext
+
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)
 Supported ISA specs (for use with the -misa-spec= option):
