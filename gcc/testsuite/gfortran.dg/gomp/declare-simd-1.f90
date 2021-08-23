@@ -2,7 +2,7 @@
 
 subroutine fn1 (x)
   integer :: x
-!$omp declare simd (fn1) inbranch notinbranch uniform (x) ! { dg-error "Failed to match clause" }
+!$omp declare simd (fn1) inbranch notinbranch uniform (x) ! { dg-error "Duplicated 'notinbranch' clause" }
 end subroutine fn1
 subroutine fn2 (x)
 !$omp declare simd (fn100)	! { dg-error "should refer to containing procedure" }

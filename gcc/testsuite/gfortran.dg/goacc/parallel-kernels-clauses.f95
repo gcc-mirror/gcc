@@ -59,17 +59,17 @@ program test
   !$acc parallel default ( none )
   !$acc end parallel
 
-  !$acc kernels default { dg-error "Failed to match clause" }
-  !$acc parallel default { dg-error "Failed to match clause" }
+  !$acc kernels default { dg-error "Expected '\\(' after 'default'" }
+  !$acc parallel default { dg-error "Expected '\\(' after 'default'" }
 
-  !$acc kernels default() { dg-error "Failed to match clause" }
-  !$acc parallel default() { dg-error "Failed to match clause" }
+  !$acc kernels default() { dg-error "Expected NONE or PRESENT in DEFAULT clause" }
+  !$acc parallel default() { dg-error "Expected NONE or PRESENT in DEFAULT clause" }
 
-  !$acc kernels default(i) { dg-error "Failed to match clause" }
-  !$acc parallel default(i) { dg-error "Failed to match clause" }
+  !$acc kernels default(i) { dg-error "Expected NONE or PRESENT in DEFAULT clause" }
+  !$acc parallel default(i) { dg-error "Expected NONE or PRESENT in DEFAULT clause" }
 
-  !$acc kernels default(1) { dg-error "Failed to match clause" }
-  !$acc parallel default(1) { dg-error "Failed to match clause" }
+  !$acc kernels default(1) { dg-error "Expected NONE or PRESENT in DEFAULT clause" }
+  !$acc parallel default(1) { dg-error "Expected NONE or PRESENT in DEFAULT clause" }
 
   ! Wait
   !$acc kernels wait (l) ! { dg-error "INTEGER" }
