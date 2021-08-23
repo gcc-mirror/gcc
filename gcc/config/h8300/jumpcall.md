@@ -290,7 +290,7 @@
 (define_insn "call_insn_<mode>"
   [(call (mem:QI (match_operand 0 "call_insn_operand" "Cr"))
 	         (match_operand:P 1 "general_operand" "g"))]
-  ""
+  "!SIBLING_CALL_P (insn)"
 {
   rtx xoperands[1];
   xoperands[0] = gen_rtx_MEM (QImode, operands[0]);
@@ -328,7 +328,7 @@
   [(set (match_operand 0 "" "=r")
 	(call (mem:QI (match_operand 1 "call_insn_operand" "Cr"))
 		      (match_operand:P 2 "general_operand" "g")))]
-  ""
+  "!SIBLING_CALL_P (insn)"
 {
   rtx xoperands[2];
   gcc_assert (GET_MODE (operands[1]) == Pmode);
@@ -339,6 +339,76 @@
     output_asm_insn ("jsr\\t@%1:8", xoperands);
   else
     output_asm_insn ("jsr\\t%1", xoperands);
+  return "";
+}
+  [(set_attr "type" "call")
+   (set (attr "length")
+	(if_then_else (match_operand:QI 0 "small_call_insn_operand" "")
+		      (const_int 2)
+		      (const_int 4)))])
+
+(define_expand "sibcall"
+  [(call (match_operand:QI 0 "call_expander_operand" "")
+	 (match_operand 1 "general_operand" ""))]
+  ""
+  {
+    if (!register_operand (XEXP (operands[0], 0), Pmode)
+	&& GET_CODE (XEXP (operands[0], 0)) != SYMBOL_REF)
+      XEXP (operands[0], 0) = force_reg (Pmode, XEXP (operands[0], 0));
+  })
+
+(define_insn "sibcall_insn_<mode>"
+  [(call (mem:QI (match_operand 0 "call_insn_operand" "Cr"))
+	         (match_operand:P 1 "general_operand" "g"))]
+  "SIBLING_CALL_P (insn)"
+{
+  rtx xoperands[1];
+  xoperands[0] = gen_rtx_MEM (QImode, operands[0]);
+  gcc_assert (GET_MODE (operands[0]) == Pmode);
+  if (GET_CODE (XEXP (xoperands[0], 0)) == SYMBOL_REF
+      && (SYMBOL_REF_FLAGS (XEXP (xoperands[0], 0)) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
+    output_asm_insn ("jmp\\t@%0:8", xoperands);
+  else
+    output_asm_insn ("jmp\\t%0", xoperands);
+  return "";
+}
+  [(set_attr "type" "call")
+   (set (attr "length")
+	(if_then_else (match_operand:QI 0 "small_call_insn_operand" "")
+		      (const_int 2)
+		      (const_int 4)))])
+
+;; Call subroutine, returning value in operand 0
+;; (which must be a hard register).
+
+;; ??? Even though we use HImode here, this works on the H8/300H and H8S.
+
+(define_expand "sibcall_value"
+  [(set (match_operand 0 "" "")
+	(call (match_operand:QI 1 "call_expander_operand" "")
+	      (match_operand 2 "general_operand" "")))]
+  ""
+  {
+    if (!register_operand (XEXP (operands[1], 0), Pmode)
+	&& GET_CODE (XEXP (operands[1], 0)) != SYMBOL_REF)
+      XEXP (operands[1], 0) = force_reg (Pmode, XEXP (operands[1], 0));
+  })
+
+(define_insn "sibcall_value_insn_<mode>"
+  [(set (match_operand 0 "" "=r")
+	(call (mem:QI (match_operand 1 "call_insn_operand" "Cr"))
+		      (match_operand:P 2 "general_operand" "g")))]
+  "SIBLING_CALL_P (insn)"
+{
+  rtx xoperands[2];
+  gcc_assert (GET_MODE (operands[1]) == Pmode);
+  xoperands[0] = operands[0];
+  xoperands[1] = gen_rtx_MEM (QImode, operands[1]);
+  if (GET_CODE (XEXP (xoperands[1], 0)) == SYMBOL_REF
+      && (SYMBOL_REF_FLAGS (XEXP (xoperands[1], 0)) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
+    output_asm_insn ("jmp\\t@%1:8", xoperands);
+  else
+    output_asm_insn ("jmp\\t%1", xoperands);
   return "";
 }
   [(set_attr "type" "call")
