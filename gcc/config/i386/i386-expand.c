@@ -579,19 +579,10 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
 	{
 	  /* Broadcast to XMM/YMM/ZMM register from an integer
 	     constant or scalar mem.  */
-	  /* Hard registers are used for 2 purposes:
-	     1. Prevent stack realignment when the original code
-	     doesn't use vector registers, which is the same for
-	     memcpy and memset.
-	     2. Prevent combine to convert constant broadcast to
-	     load from constant pool.  */
-	  op1 = ix86_gen_scratch_sse_rtx (mode);
+	  op1 = gen_reg_rtx (mode);
 	  if (FLOAT_MODE_P (mode)
 	      || (!TARGET_64BIT && GET_MODE_INNER (mode) == DImode))
-	    {
-	      first = force_const_mem (GET_MODE_INNER (mode), first);
-	      op1 = gen_reg_rtx (mode);
-	    }
+	    first = force_const_mem (GET_MODE_INNER (mode), first);
 	  bool ok = ix86_expand_vector_init_duplicate (false, mode,
 						       op1, first);
 	  gcc_assert (ok);
