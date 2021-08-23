@@ -2488,34 +2488,51 @@ region_model::eval_condition_without_cm (const svalue *lhs,
     if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
       return constant_svalue::eval_condition (cst_lhs, op, cst_rhs);
 
-  /* Handle comparison of a region_svalue against zero.  */
+  /* Handle comparison against zero.  */
+  if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
+    if (zerop (cst_rhs->get_constant ()))
+      {
+	if (const region_svalue *ptr = lhs->dyn_cast_region_svalue ())
+	  {
+	    /* A region_svalue is a non-NULL pointer, except in certain
+	       special cases (see the comment for region::non_null_p).  */
+	    const region *pointee = ptr->get_pointee ();
+	    if (pointee->non_null_p ())
+	      {
+		switch (op)
+		  {
+		  default:
+		    gcc_unreachable ();
 
-  if (const region_svalue *ptr = lhs->dyn_cast_region_svalue ())
-    if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
-      if (zerop (cst_rhs->get_constant ()))
-	{
-	  /* A region_svalue is a non-NULL pointer, except in certain
-	     special cases (see the comment for region::non_null_p.  */
-	  const region *pointee = ptr->get_pointee ();
-	  if (pointee->non_null_p ())
-	    {
-	      switch (op)
-		{
-		default:
-		  gcc_unreachable ();
+		  case EQ_EXPR:
+		  case GE_EXPR:
+		  case LE_EXPR:
+		    return tristate::TS_FALSE;
 
-		case EQ_EXPR:
-		case GE_EXPR:
-		case LE_EXPR:
-		  return tristate::TS_FALSE;
-
-		case NE_EXPR:
-		case GT_EXPR:
-		case LT_EXPR:
-		  return tristate::TS_TRUE;
-		}
-	    }
-	}
+		  case NE_EXPR:
+		  case GT_EXPR:
+		  case LT_EXPR:
+		    return tristate::TS_TRUE;
+		  }
+	      }
+	  }
+	else if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
+	  {
+	    /* Treat offsets from a non-NULL pointer as being non-NULL.  This
+	       isn't strictly true, in that eventually ptr++ will wrap
+	       around and be NULL, but it won't occur in practise and thus
+	       can be used to suppress effectively false positives that we
+	       shouldn't warn for.  */
+	    if (binop->get_op () == POINTER_PLUS_EXPR)
+	      {
+		tristate lhs_ts
+		  = eval_condition_without_cm (binop->get_arg0 (),
+					       op, rhs);
+		if (lhs_ts.is_known ())
+		  return lhs_ts;
+	      }
+	  }
+      }
 
   /* Handle rejection of equality for comparisons of the initial values of
      "external" values (such as params) with the address of locals.  */
