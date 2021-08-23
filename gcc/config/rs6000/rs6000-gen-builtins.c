@@ -1794,8 +1794,9 @@ parse_bif_entry (void)
   /* Append a number representing the order in which this function
      was encountered to its name, and save in another lookup
      structure.  */
-  char *buf;
-  asprintf (&buf, "%s:%05d", bifs[curr_bif].idname, curr_bif);
+  int orig_len = strlen (bifs[curr_bif].idname);
+  char *buf = (char *) malloc (orig_len + 7);
+  sprintf (buf, "%s:%05d", bifs[curr_bif].idname, curr_bif);
 
   if (!rbt_insert (&bifo_rbt, buf))
     {
