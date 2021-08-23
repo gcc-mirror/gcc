@@ -1,6 +1,15 @@
 2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* taskloop.c (GOMP_taskloop): Handle GOMP_TASK_FLAG_STRICT.
+	* testsuite/libgomp.c-c++-common/taskloop-4.c (main): Fix up comment.
+	* testsuite/libgomp.c-c++-common/taskloop-5.c: New test.
+
+2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-07-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/nvptx/error.c (fwrite, exit): Override, too.

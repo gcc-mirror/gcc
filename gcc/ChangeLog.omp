@@ -1,3 +1,15 @@
+2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_GRAINSIZE_STRICT): Define.
+	(OMP_CLAUSE_NUM_TASKS_STRICT): Define.
+	* tree-pretty-print.c (dump_omp_clause) <case OMP_CLAUSE_GRAINSIZE,
+	case OMP_CLAUSE_NUM_TASKS>: Print strict: modifier.
+	* omp-expand.c (expand_task_call): Use GOMP_TASK_FLAG_STRICT in iflags
+	if either grainsize or num_tasks clause has the strict modifier.
+
 2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

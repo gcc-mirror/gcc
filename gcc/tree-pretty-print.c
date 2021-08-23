@@ -1117,6 +1117,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_GRAINSIZE:
       pp_string (pp, "grainsize(");
+      if (OMP_CLAUSE_GRAINSIZE_STRICT (clause))
+	pp_string (pp, "strict:");
       dump_generic_node (pp, OMP_CLAUSE_GRAINSIZE_EXPR (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
@@ -1124,6 +1126,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_NUM_TASKS:
       pp_string (pp, "num_tasks(");
+      if (OMP_CLAUSE_NUM_TASKS_STRICT (clause))
+	pp_string (pp, "strict:");
       dump_generic_node (pp, OMP_CLAUSE_NUM_TASKS_EXPR (clause),
 			 spc, flags, false);
       pp_right_paren (pp);

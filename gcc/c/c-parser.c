@@ -13802,7 +13802,10 @@ c_parser_omp_clause_num_threads (c_parser *parser, tree list)
 }
 
 /* OpenMP 4.5:
-   num_tasks ( expression ) */
+   num_tasks ( expression )
+
+   OpenMP 5.1:
+   num_tasks ( strict : expression ) */
 
 static tree
 c_parser_omp_clause_num_tasks (c_parser *parser, tree list)
@@ -13811,6 +13814,17 @@ c_parser_omp_clause_num_tasks (c_parser *parser, tree list)
   matching_parens parens;
   if (parens.require_open (parser))
     {
+      bool strict = false;
+      if (c_parser_next_token_is (parser, CPP_NAME)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_COLON
+	  && strcmp (IDENTIFIER_POINTER (c_parser_peek_token (parser)->value),
+		     "strict") == 0)
+	{
+	  strict = true;
+	  c_parser_consume_token (parser);
+	  c_parser_consume_token (parser);
+	}
+
       location_t expr_loc = c_parser_peek_token (parser)->location;
       c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
@@ -13840,6 +13854,7 @@ c_parser_omp_clause_num_tasks (c_parser *parser, tree list)
 
       c = build_omp_clause (num_tasks_loc, OMP_CLAUSE_NUM_TASKS);
       OMP_CLAUSE_NUM_TASKS_EXPR (c) = t;
+      OMP_CLAUSE_NUM_TASKS_STRICT (c) = strict;
       OMP_CLAUSE_CHAIN (c) = list;
       list = c;
     }
@@ -13848,7 +13863,10 @@ c_parser_omp_clause_num_tasks (c_parser *parser, tree list)
 }
 
 /* OpenMP 4.5:
-   grainsize ( expression ) */
+   grainsize ( expression )
+
+   OpenMP 5.1:
+   grainsize ( strict : expression ) */
 
 static tree
 c_parser_omp_clause_grainsize (c_parser *parser, tree list)
@@ -13857,6 +13875,17 @@ c_parser_omp_clause_grainsize (c_parser *parser, tree list)
   matching_parens parens;
   if (parens.require_open (parser))
     {
+      bool strict = false;
+      if (c_parser_next_token_is (parser, CPP_NAME)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_COLON
+	  && strcmp (IDENTIFIER_POINTER (c_parser_peek_token (parser)->value),
+		     "strict") == 0)
+	{
+	  strict = true;
+	  c_parser_consume_token (parser);
+	  c_parser_consume_token (parser);
+	}
+
       location_t expr_loc = c_parser_peek_token (parser)->location;
       c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
@@ -13886,6 +13915,7 @@ c_parser_omp_clause_grainsize (c_parser *parser, tree list)
 
       c = build_omp_clause (grainsize_loc, OMP_CLAUSE_GRAINSIZE);
       OMP_CLAUSE_GRAINSIZE_EXPR (c) = t;
+      OMP_CLAUSE_GRAINSIZE_STRICT (c) = strict;
       OMP_CLAUSE_CHAIN (c) = list;
       list = c;
     }

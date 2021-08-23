@@ -794,13 +794,19 @@ expand_task_call (struct omp_region *region, basic_block bb,
       tree tclauses = gimple_omp_for_clauses (g);
       num_tasks = omp_find_clause (tclauses, OMP_CLAUSE_NUM_TASKS);
       if (num_tasks)
-	num_tasks = OMP_CLAUSE_NUM_TASKS_EXPR (num_tasks);
+	{
+	  if (OMP_CLAUSE_NUM_TASKS_STRICT (num_tasks))
+	    iflags |= GOMP_TASK_FLAG_STRICT;
+	  num_tasks = OMP_CLAUSE_NUM_TASKS_EXPR (num_tasks);
+	}
       else
 	{
 	  num_tasks = omp_find_clause (tclauses, OMP_CLAUSE_GRAINSIZE);
 	  if (num_tasks)
 	    {
 	      iflags |= GOMP_TASK_FLAG_GRAINSIZE;
+	      if (OMP_CLAUSE_GRAINSIZE_STRICT (num_tasks))
+		iflags |= GOMP_TASK_FLAG_STRICT;
 	      num_tasks = OMP_CLAUSE_GRAINSIZE_EXPR (num_tasks);
 	    }
 	  else
