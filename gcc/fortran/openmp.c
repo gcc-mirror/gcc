@@ -1839,8 +1839,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  if ((mask & OMP_CLAUSE_GRAINSIZE)
 	      && c->grainsize == NULL
-	      && gfc_match ("grainsize ( %e )", &c->grainsize) == MATCH_YES)
-	    continue;
+	      && gfc_match ("grainsize ( ") == MATCH_YES)
+	    {
+	      if (gfc_match ("strict : ") == MATCH_YES)
+		c->grainsize_strict = true;
+	      if (gfc_match (" %e )", &c->grainsize) != MATCH_YES)
+		goto error;
+	      continue;
+	    }
 	  break;
 	case 'h':
 	  if ((mask & OMP_CLAUSE_HINT)
@@ -2148,8 +2154,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    continue;
 	  if ((mask & OMP_CLAUSE_NUM_TASKS)
 	      && c->num_tasks == NULL
-	      && gfc_match ("num_tasks ( %e )", &c->num_tasks) == MATCH_YES)
-	    continue;
+	      && gfc_match ("num_tasks ( ") == MATCH_YES)
+	    {
+	      if (gfc_match ("strict : ") == MATCH_YES)
+		c->num_tasks_strict = true;
+	      if (gfc_match (" %e )", &c->num_tasks) != MATCH_YES)
+		goto error;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_NUM_TEAMS)
 	      && c->num_teams == NULL
 	      && gfc_match ("num_teams ( %e )", &c->num_teams) == MATCH_YES)
