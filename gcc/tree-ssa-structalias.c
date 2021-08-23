@@ -8134,10 +8134,12 @@ ipa_pta_execute (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       varinfo_t vi;
-      /* Nodes without a body are not interesting.  Especially do not
-         visit clones at this point for now - we get duplicate decls
-	 there for inline clones at least.  */
-      if (!node->has_gimple_body_p () || node->inlined_to)
+      /* Nodes without a body in this partition are not interesting.
+	 Especially do not visit clones at this point for now - we
+	 get duplicate decls there for inline clones at least.  */
+      if (!node->has_gimple_body_p ()
+	  || node->in_other_partition
+	  || node->inlined_to)
 	continue;
       node->get_body ();
 
@@ -8215,8 +8217,10 @@ ipa_pta_execute (void)
       struct function *func;
       basic_block bb;
 
-      /* Nodes without a body are not interesting.  */
-      if (!node->has_gimple_body_p () || node->clone_of)
+      /* Nodes without a body in this partition are not interesting.  */
+      if (!node->has_gimple_body_p ()
+	  || node->in_other_partition
+	  || node->clone_of)
 	continue;
 
       if (dump_file)
@@ -8345,8 +8349,10 @@ ipa_pta_execute (void)
       unsigned i;
       basic_block bb;
 
-      /* Nodes without a body are not interesting.  */
-      if (!node->has_gimple_body_p () || node->clone_of)
+      /* Nodes without a body in this partition are not interesting.  */
+      if (!node->has_gimple_body_p ()
+	  || node->in_other_partition
+	  || node->clone_of)
 	continue;
 
       fn = DECL_STRUCT_FUNCTION (node->decl);
