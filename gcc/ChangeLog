@@ -1,3 +1,79 @@
+2021-08-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/101723
+	* config/arm/arm-cpus.in (generic-armv7-a): Add quirk to suppress
+	writing .cpu directive in asm output.
+	* config/arm/arm.c (arm_identify_fpu_from_isa): New variable.
+	(arm_last_printed_arch_string): Delete.
+	(arm_last-printed_fpu_string): Delete.
+	(arm_configure_build_target): If use of floating-point/SIMD is
+	disabled, remove all fp/simd related features from the target ISA.
+	(last_arm_targ_options): New variable.
+	(arm_print_asm_arch_directives): Add new parameters.  Change order
+	of emitted directives and handle all cases here.
+	(arm_file_start): Always call arm_print_asm_arch_directives, move
+	all generation of .arch/.arch_extension here.
+	(arm_file_end): Call arm_print_asm_arch.
+	(arm_declare_function_name): Call arm_print_asm_arch_directives
+	instead of printing .arch/.fpu directives directly.
+
+2021-08-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_configure_build_target): Don't call
+	arm_option_reconfigure_globals.
+	(arm_option_restore): Call arm_option_reconfigure_globals after
+	reconfiguring the target.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Likewise.
+
+2021-08-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_configure_build_target): Ensure the target's
+	arch_name is always set.
+
+2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101373
+	PR tree-optimization/101868
+	* tree-ssa-pre.c (prune_clobbered_mems): Also prune trapping
+	references when the BB may not return.
+
+2021-08-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* dwarf2out.c (add_scalar_info): Deal with DW_AT_data_bit_offset.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/100600
+	* ipa-icf-gimple.c (func_checker::compare_ssa_name): Do not
+	  consider equal SSA_NAMEs when one is a param.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101261
+	* symtab.c (symtab_node::noninterposable_alias): Do not create
+	  local aliases for target_clone functions as the clonning pass
+	  rejects aliases.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/101726
+	* multiple_target.c (create_dispatcher_calls): Make default
+	  function local only if it is a definition.
+
+2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR c/100150
+	* lto-streamer.h (LTO_minor_version): Bump.
+
 2021-08-13  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/100788
