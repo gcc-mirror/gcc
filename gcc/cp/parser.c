@@ -37237,7 +37237,10 @@ cp_parser_omp_clause_num_threads (cp_parser *parser, tree list,
 }
 
 /* OpenMP 4.5:
-   num_tasks ( expression ) */
+   num_tasks ( expression )
+
+   OpenMP 5.1:
+   num_tasks ( strict : expression ) */
 
 static tree
 cp_parser_omp_clause_num_tasks (cp_parser *parser, tree list,
@@ -37248,6 +37251,19 @@ cp_parser_omp_clause_num_tasks (cp_parser *parser, tree list,
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
+
+  bool strict = false;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      if (!strcmp (IDENTIFIER_POINTER (id), "strict"))
+	{
+	  strict = true;
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+    }
 
   t = cp_parser_assignment_expression (parser);
 
@@ -37262,13 +37278,17 @@ cp_parser_omp_clause_num_tasks (cp_parser *parser, tree list,
 
   c = build_omp_clause (location, OMP_CLAUSE_NUM_TASKS);
   OMP_CLAUSE_NUM_TASKS_EXPR (c) = t;
+  OMP_CLAUSE_NUM_TASKS_STRICT (c) = strict;
   OMP_CLAUSE_CHAIN (c) = list;
 
   return c;
 }
 
 /* OpenMP 4.5:
-   grainsize ( expression ) */
+   grainsize ( expression )
+
+   OpenMP 5.1:
+   grainsize ( strict : expression ) */
 
 static tree
 cp_parser_omp_clause_grainsize (cp_parser *parser, tree list,
@@ -37279,6 +37299,19 @@ cp_parser_omp_clause_grainsize (cp_parser *parser, tree list,
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
+
+  bool strict = false;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      if (!strcmp (IDENTIFIER_POINTER (id), "strict"))
+	{
+	  strict = true;
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+    }
 
   t = cp_parser_assignment_expression (parser);
 
@@ -37293,6 +37326,7 @@ cp_parser_omp_clause_grainsize (cp_parser *parser, tree list,
 
   c = build_omp_clause (location, OMP_CLAUSE_GRAINSIZE);
   OMP_CLAUSE_GRAINSIZE_EXPR (c) = t;
+  OMP_CLAUSE_GRAINSIZE_STRICT (c) = strict;
   OMP_CLAUSE_CHAIN (c) = list;
 
   return c;

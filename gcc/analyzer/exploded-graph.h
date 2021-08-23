@@ -816,13 +816,13 @@ public:
   bool maybe_process_run_of_before_supernode_enodes (exploded_node *node);
   void process_node (exploded_node *node);
 
-  void create_dynamic_call (const gcall *call,
-                            tree fn_decl,
-                            exploded_node *node,
-                            program_state next_state,
-                            program_point &next_point,
-                            uncertainty_t *uncertainty,
-                            logger *logger);
+  bool maybe_create_dynamic_call (const gcall *call,
+                                  tree fn_decl,
+                                  exploded_node *node,
+                                  program_state next_state,
+                                  program_point &next_point,
+                                  uncertainty_t *uncertainty,
+                                  logger *logger);
 
   exploded_node *get_or_create_node (const program_point &point,
 				     const program_state &state,

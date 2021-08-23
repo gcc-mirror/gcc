@@ -28,7 +28,7 @@ contains
   !$acc enter data
   !$acc enter data if (.false.)
   !$acc enter data if (l)
-  !$acc enter data if (.false.) if (l) ! { dg-error "Failed to match clause" }
+  !$acc enter data if (.false.) if (l) ! { dg-error "Duplicated 'if' clause" }
   !$acc enter data if (i) ! { dg-error "LOGICAL" }
   !$acc enter data if (1) ! { dg-error "LOGICAL" }
   !$acc enter data if (a) ! { dg-error "LOGICAL" }
@@ -63,7 +63,7 @@ contains
   !$acc exit data
   !$acc exit data if (.false.)
   !$acc exit data if (l)
-  !$acc exit data if (.false.) if (l) ! { dg-error "Failed to match clause" }
+  !$acc exit data if (.false.) if (l) ! { dg-error "Duplicated 'if' clause" }
   !$acc exit data if (i) ! { dg-error "LOGICAL" }
   !$acc exit data if (1) ! { dg-error "LOGICAL" }
   !$acc exit data if (a) ! { dg-error "LOGICAL" }

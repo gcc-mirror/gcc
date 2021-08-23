@@ -5518,6 +5518,24 @@ foreach { armfunc armflag armdef arminc } {
 	    global et_FUNC_flags
 	    return "$flags $et_FUNC_flags"
 	}
+
+	proc check_effective_target_FUNC_multilib { } {
+	    if { ! [check_effective_target_FUNC_ok] } {
+		return 0;
+	    }
+	    return [check_runtime FUNC_multilib {
+		#if !(DEF)
+		#error "DEF failed"
+		#endif
+		#include <arm_cde.h>
+		INC
+		int
+		main (void)
+		{
+		    return 0;
+		}
+	    } [add_options_for_FUNC ""]]
+        }
     }]
 }
 

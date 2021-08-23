@@ -1,3 +1,36 @@
+2021-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90787
+	* testsuite/27_io/filesystem/iterators/directory_iterator.cc:
+	Use new __gnu_test::permissions_are_testable() function.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/exists.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/status.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/exists.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/is_empty.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/remove.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/util/testsuite_fs.h (__gnu_test::permissions_are_testable):
+	New function to guess whether testing permissions will work.
+
 2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Move row  earlier in table.

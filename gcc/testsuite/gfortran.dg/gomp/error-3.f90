@@ -1,23 +1,23 @@
 module m
 !$omp error asdf			! { dg-error "Failed to match clause" }
-!$omp error at				! { dg-error "Failed to match clause" }
+!$omp error at				! { dg-error "Expected '\\(' after 'at'" }
 !$omp error at(				! { dg-error "Expected COMPILATION or EXECUTION in AT clause at" }
 !$omp error at(runtime)			! { dg-error "Expected COMPILATION or EXECUTION in AT clause at" }
 !$omp error at(+			! { dg-error "Expected COMPILATION or EXECUTION in AT clause at" }
 !$omp error at(compilation		! { dg-error "Expected COMPILATION or EXECUTION in AT clause at" }
-!$omp error severity			! { dg-error "Failed to match clause" }
+!$omp error severity			! { dg-error "Expected '\\(' after 'severity'" }
 !$omp error severity(			! { dg-error "Expected FATAL or WARNING in SEVERITY clause at" }
 !$omp error severity(error)		! { dg-error "Expected FATAL or WARNING in SEVERITY clause at" }
 !$omp error severity(-			! { dg-error "Expected FATAL or WARNING in SEVERITY clause at" }
 !$omp error severity(fatal		! { dg-error "Expected FATAL or WARNING in SEVERITY clause at" }
-!$omp error message			! { dg-error "Failed to match clause" }
-!$omp error message(			! { dg-error "Invalid character in name" }
-!$omp error message(0			! { dg-error "Failed to match clause" }
-!$omp error message("foo"		! { dg-error "Failed to match clause" }
+!$omp error message			! { dg-error "Expected '\\(' after 'message'" }
+!$omp error message(			! { dg-error "Invalid expression after 'message\\('" }
+!$omp error message(0			! { dg-error "Invalid expression after 'message\\('" }
+!$omp error message("foo"		! { dg-error "Invalid expression after 'message\\('" }
 
-!$omp error at(compilation) at(compilation)	! { dg-error "Failed to match clause at" }
-!$omp error severity(fatal) severity(warning)	! { dg-error "Failed to match clause at" }
-!$omp error message("foo") message("foo")	! { dg-error "Failed to match clause at" }
+!$omp error at(compilation) at(compilation)	! { dg-error "Duplicated 'at' clause at" }
+!$omp error severity(fatal) severity(warning)	! { dg-error "Duplicated 'severity' clause at" }
+!$omp error message("foo") message("foo")	! { dg-error "Duplicated 'message' clause at" }
 !$omp error message("foo"),at(compilation),severity(fatal),asdf	! { dg-error "Failed to match clause" }
 
 !$omp error at(execution)			! { dg-error "Unexpected !.OMP ERROR statement in MODULE" }

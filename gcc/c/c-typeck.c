@@ -1328,8 +1328,8 @@ comp_target_types (location_t location, tree ttl, tree ttr)
   val = comptypes_check_enum_int (mvl, mvr, &enum_and_int_p);
 
   if (val == 1 && val_ped != 1)
-    pedwarn (location, OPT_Wpedantic, "pointers to arrays with different qualifiers "
-                                      "are incompatible in ISO C");
+    pedwarn_c11 (location, OPT_Wpedantic, "invalid use of pointers to arrays with different qualifiers "
+					  "in ISO C before C2X");
 
   if (val == 2)
     pedwarn (location, OPT_Wpedantic, "types are not quite compatible");
@@ -5406,39 +5406,41 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 		    "used in conditional expression");
 	  return error_mark_node;
 	}
-      else if (VOID_TYPE_P (TREE_TYPE (type1))
-	       && !TYPE_ATOMIC (TREE_TYPE (type1)))
+      else if ((VOID_TYPE_P (TREE_TYPE (type1))
+		&& !TYPE_ATOMIC (TREE_TYPE (type1)))
+	       || (VOID_TYPE_P (TREE_TYPE (type2))
+		   && !TYPE_ATOMIC (TREE_TYPE (type2))))
 	{
-	  if ((TREE_CODE (TREE_TYPE (type2)) == ARRAY_TYPE)
-	      && (TYPE_QUALS (strip_array_types (TREE_TYPE (type2)))
-		  & ~TYPE_QUALS (TREE_TYPE (type1))))
-	    warning_at (colon_loc, OPT_Wdiscarded_array_qualifiers,
-			"pointer to array loses qualifier "
-			"in conditional expression");
-
-	  if (TREE_CODE (TREE_TYPE (type2)) == FUNCTION_TYPE)
+	  tree t1 = TREE_TYPE (type1);
+	  tree t2 = TREE_TYPE (type2);
+	  if (!(VOID_TYPE_P (t1)
+		&& !TYPE_ATOMIC (t1)))
+	   {
+	     /* roles are swapped */
+	     t1 = t2;
+	     t2 = TREE_TYPE (type1);
+	   }
+	  tree t2_stripped = strip_array_types (t2);
+	  if ((TREE_CODE (t2) == ARRAY_TYPE)
+	      && (TYPE_QUALS (t2_stripped) & ~TYPE_QUALS (t1)))
+	    {
+	      if (!flag_isoc2x)
+		warning_at (colon_loc, OPT_Wdiscarded_array_qualifiers,
+			    "pointer to array loses qualifier "
+			    "in conditional expression");
+	      else if (warn_c11_c2x_compat > 0)
+		warning_at (colon_loc, OPT_Wc11_c2x_compat,
+			    "pointer to array loses qualifier "
+			    "in conditional expression in ISO C before C2X");
+	    }
+	  if (TREE_CODE (t2) == FUNCTION_TYPE)
 	    pedwarn (colon_loc, OPT_Wpedantic,
 		     "ISO C forbids conditional expr between "
 		     "%<void *%> and function pointer");
-	  result_type = build_pointer_type (qualify_type (TREE_TYPE (type1),
-							  TREE_TYPE (type2)));
-	}
-      else if (VOID_TYPE_P (TREE_TYPE (type2))
-	       && !TYPE_ATOMIC (TREE_TYPE (type2)))
-	{
-	  if ((TREE_CODE (TREE_TYPE (type1)) == ARRAY_TYPE)
-	      && (TYPE_QUALS (strip_array_types (TREE_TYPE (type1)))
-		  & ~TYPE_QUALS (TREE_TYPE (type2))))
-	    warning_at (colon_loc, OPT_Wdiscarded_array_qualifiers,
-			"pointer to array loses qualifier "
-			"in conditional expression");
-
-	  if (TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE)
-	    pedwarn (colon_loc, OPT_Wpedantic,
-		     "ISO C forbids conditional expr between "
-		     "%<void *%> and function pointer");
-	  result_type = build_pointer_type (qualify_type (TREE_TYPE (type2),
-							  TREE_TYPE (type1)));
+	  /* for array, use qualifiers of element type */
+	  if (flag_isoc2x)
+	    t2 = t2_stripped;
+	  result_type = build_pointer_type (qualify_type (t1, t2));
 	}
       /* Objective-C pointer comparisons are a bit more lenient.  */
       else if (objc_have_common_type (type1, type2, -3, NULL_TREE))
@@ -6797,27 +6799,40 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
-     compile time.  It is the same as PEDWARN_FOR_ASSIGNMENT but with an
-     extra parameter to enumerate qualifiers.  */
-#define PEDWARN_FOR_QUALIFIERS(LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS) \
+     compile time.  It can be called with 'pedwarn' or 'warning_at'.  */
+#define WARNING_FOR_QUALIFIERS(PEDWARN, LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS) \
   do {                                                                   \
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-	{								\
-	auto_diagnostic_group d;						\
-	if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))		\
-	  inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
-	}								\
+	{								 \
+	  auto_diagnostic_group d;					 \
+	  if (PEDWARN) {						 \
+	    if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))          \
+	      inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);  \
+	  } else {							 \
+	    if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))	 \
+	      inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);  \
+	  }								 \
+	}								 \
         break;                                                           \
       case ic_assign:                                                    \
-        pedwarn (LOCATION, OPT, AS, QUALS);				 \
+	if (PEDWARN)							 \
+	  pedwarn (LOCATION, OPT, AS, QUALS);                            \
+	else								 \
+	  warning_at (LOCATION, OPT, AS, QUALS);                         \
         break;                                                           \
       case ic_init:                                                      \
-        pedwarn (LOCATION, OPT, IN, QUALS);				 \
+	if (PEDWARN)							 \
+	  pedwarn (LOCATION, OPT, IN, QUALS);                            \
+	else								 \
+	  warning_at (LOCATION, OPT, IN, QUALS);                         \
         break;                                                           \
       case ic_return:                                                    \
-        pedwarn (LOCATION, OPT, RE, QUALS);				 \
+	if (PEDWARN)							 \
+	  pedwarn (LOCATION, OPT, RE, QUALS);                            \
+	else								 \
+	  warning_at (LOCATION, OPT, RE, QUALS);                         \
         break;                                                           \
       default:                                                           \
         gcc_unreachable ();                                              \
@@ -6826,32 +6841,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
   /* This macro is used to emit diagnostics to ensure that all format
      strings are complete sentences, visible to gettext and checked at
-     compile time.  It is the same as PEDWARN_FOR_QUALIFIERS but uses
-     warning_at instead of pedwarn.  */
-#define WARNING_FOR_QUALIFIERS(LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS) \
-  do {                                                                   \
-    switch (errtype)                                                     \
-      {                                                                  \
-      case ic_argpass:                                                   \
-	{								\
-	  auto_diagnostic_group d;						\
-	  if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))	\
-	    inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype); \
-	}								\
-        break;                                                           \
-      case ic_assign:                                                    \
-        warning_at (LOCATION, OPT, AS, QUALS);                           \
-        break;                                                           \
-      case ic_init:                                                      \
-        warning_at (LOCATION, OPT, IN, QUALS);                           \
-        break;                                                           \
-      case ic_return:                                                    \
-        warning_at (LOCATION, OPT, RE, QUALS);                           \
-        break;                                                           \
-      default:                                                           \
-        gcc_unreachable ();                                              \
-      }                                                                  \
-  } while (0)
+     compile time.  It is the same as PEDWARN_FOR_ASSIGNMENT but with an
+     extra parameter to enumerate qualifiers.  */
+#define PEDWARN_FOR_QUALIFIERS(LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS) \
+   WARNING_FOR_QUALIFIERS (true, LOCATION, PLOC, OPT, AR, AS, IN, RE, QUALS)
+
 
   if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
@@ -7370,17 +7364,18 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
 	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
 		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
-		WARNING_FOR_QUALIFIERS (location, expr_loc,
-				        OPT_Wdiscarded_array_qualifiers,
-				        G_("passing argument %d of %qE discards "
+		WARNING_FOR_QUALIFIERS (flag_isoc2x,
+					location, expr_loc,
+					OPT_Wdiscarded_array_qualifiers,
+					G_("passing argument %d of %qE discards "
 					   "%qv qualifier from pointer target type"),
-				        G_("assignment discards %qv qualifier "
+					G_("assignment discards %qv qualifier "
 					   "from pointer target type"),
-				        G_("initialization discards %qv qualifier "
+					G_("initialization discards %qv qualifier "
 					   "from pointer target type"),
-				        G_("return discards %qv qualifier from "
+					G_("return discards %qv qualifier from "
 					   "pointer target type"),
-                                        TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
+					TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
             }
           else if (pedantic
 	      && ((VOID_TYPE_P (ttl) && TREE_CODE (ttr) == FUNCTION_TYPE)
@@ -7403,28 +7398,31 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  else if (TREE_CODE (ttr) != FUNCTION_TYPE
 		   && TREE_CODE (ttl) != FUNCTION_TYPE)
 	    {
+	       /* Assignments between atomic and non-atomic objects are OK.  */
+	       bool warn_quals_ped = TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
+				     & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl);
+	       bool warn_quals = TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
+				 & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (strip_array_types (ttl));
+
 	      /* Don't warn about loss of qualifier for conversions from
 		 qualified void* to pointers to arrays with corresponding
-		 qualifier on the element type. */
-	      if (!pedantic)
-	        ttl = strip_array_types (ttl);
+		 qualifier on the element type (except for pedantic before C23). */
+	      if (warn_quals || (warn_quals_ped && pedantic && !flag_isoc2x))
+		PEDWARN_FOR_QUALIFIERS (location, expr_loc,
+					OPT_Wdiscarded_qualifiers,
+					G_("passing argument %d of %qE discards "
+					   "%qv qualifier from pointer target type"),
+					G_("assignment discards %qv qualifier "
+					   "from pointer target type"),
+					G_("initialization discards %qv qualifier "
+					   "from pointer target type"),
+					G_("return discards %qv qualifier from "
+					   "pointer target type"),
+					TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
+	      else if (warn_quals_ped)
+		pedwarn_c11 (location, OPT_Wc11_c2x_compat,
+			     "array with qualifier on the element is not qualified before C2X");
 
-	      /* Assignments between atomic and non-atomic objects are OK.  */
-	      if (TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttr)
-		  & ~TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (ttl))
-		{
-		  PEDWARN_FOR_QUALIFIERS (location, expr_loc,
-				          OPT_Wdiscarded_qualifiers,
-				          G_("passing argument %d of %qE discards "
-					     "%qv qualifier from pointer target type"),
-				          G_("assignment discards %qv qualifier "
-					     "from pointer target type"),
-				          G_("initialization discards %qv qualifier "
-					     "from pointer target type"),
-				          G_("return discards %qv qualifier from "
-					     "pointer target type"),
-				          TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
-		}
 	      /* If this is not a case of ignoring a mismatch in signedness,
 		 no warning.  */
 	      else if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)

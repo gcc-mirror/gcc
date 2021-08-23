@@ -1,3 +1,24 @@
+2021-08-21  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/101980
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_CALL_EDGE>: Use
+	caller_model only when the supergraph_edge doesn't exixt.
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_RETURN_EDGE>:
+	Likewise.
+	* engine.cc (exploded_graph::create_dynamic_call): Rename to...
+	(exploded_graph::maybe_create_dynamic_call): ...this, return call
+	creation status.
+	(exploded_graph::process_node): Handle calls which were not dynamically
+	discovered.
+	* exploded-graph.h (exploded_graph::create_dynamic_call): Rename to...
+	(exploded_graph::maybe_create_dynamic_call): ...this.
+	* region-model.cc (region_model::update_for_gcall): New param, use it
+	to push call to frame.
+	(region_model::update_for_call_superedge): Pass callee function to
+	update_for_gcall.
+	* region-model.h (region_model::update_for_gcall): New param.
+
 2021-08-18  Ankur Saini  <arsenic@sourceware.org>
 
 	PR analyzer/97114

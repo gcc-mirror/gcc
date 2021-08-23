@@ -792,7 +792,7 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 
 void
 find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
-			    uint64_t *cmpnop)
+			    uint64_t *cmpnop, bool *cast64_to_32)
 {
   unsigned rsize;
   uint64_t tmpn, mask;
@@ -802,6 +802,7 @@ find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
      according to the size of the symbolic number before using it.  */
   *cmpxchg = CMPXCHG;
   *cmpnop = CMPNOP;
+  *cast64_to_32 = false;
 
   /* Find real size of result (highest non-zero byte).  */
   if (n->base_addr)
@@ -814,7 +815,27 @@ find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
   if (n->range < (int) sizeof (int64_t))
     {
       mask = ((uint64_t) 1 << (n->range * BITS_PER_MARKER)) - 1;
-      *cmpxchg >>= (64 / BITS_PER_MARKER - n->range) * BITS_PER_MARKER;
+      if (n->base_addr == NULL
+	  && n->range == 4
+	  && int_size_in_bytes (TREE_TYPE (n->src)) == 8)
+	{
+	  /* If all bytes in n->n are either 0 or in [5..8] range, this
+	     might be a candidate for (unsigned) __builtin_bswap64 (src).
+	     It is not worth it for (unsigned short) __builtin_bswap64 (src)
+	     or (unsigned short) __builtin_bswap32 (src).  */
+	  *cast64_to_32 = true;
+	  for (tmpn = n->n; tmpn; tmpn >>= BITS_PER_MARKER)
+	    if ((tmpn & MARKER_MASK)
+		&& ((tmpn & MARKER_MASK) <= 4 || (tmpn & MARKER_MASK) > 8))
+	      {
+		*cast64_to_32 = false;
+		break;
+	      }
+	}
+      if (*cast64_to_32)
+	*cmpxchg &= mask;
+      else
+	*cmpxchg >>= (64 / BITS_PER_MARKER - n->range) * BITS_PER_MARKER;
       *cmpnop &= mask;
     }
 
@@ -837,6 +858,8 @@ find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
       n->range = rsize;
     }
 
+  if (*cast64_to_32)
+    n->range = 8;
   n->range *= BITS_PER_UNIT;
 }
 
@@ -849,7 +872,8 @@ find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
    expression.  */
 
 gimple *
-find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
+find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
+		   bool *cast64_to_32, uint64_t *mask)
 {
   tree type_size = TYPE_SIZE_UNIT (TREE_TYPE (gimple_get_lhs (stmt)));
   if (!tree_fits_uhwi_p (type_size))
@@ -929,17 +953,30 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap)
     }
 
   uint64_t cmpxchg, cmpnop;
-  find_bswap_or_nop_finalize (n, &cmpxchg, &cmpnop);
+  find_bswap_or_nop_finalize (n, &cmpxchg, &cmpnop, cast64_to_32);
 
   /* A complete byte swap should make the symbolic number to start with
      the largest digit in the highest order byte. Unchanged symbolic
      number indicates a read with same endianness as target architecture.  */
+  *mask = ~(uint64_t) 0;
   if (n->n == cmpnop)
     *bswap = false;
   else if (n->n == cmpxchg)
     *bswap = true;
   else
-    return NULL;
+    {
+      int set = 0;
+      for (uint64_t msk = MARKER_MASK; msk; msk <<= BITS_PER_MARKER)
+	if ((n->n & msk) == 0)
+	  *mask &= ~msk;
+	else if ((n->n & msk) == (cmpxchg & msk))
+	  set++;
+	else
+	  return NULL;
+      if (set < 2)
+	return NULL;
+      *bswap = true;
+    }
 
   /* Useless bit manipulation performed by code.  */
   if (!n->base_addr && n->n == cmpnop && n->n_ops == 1)
@@ -1024,10 +1061,10 @@ bswap_view_convert (gimple_stmt_iterator *gsi, tree type, tree val)
 tree
 bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 	       tree bswap_type, tree load_type, struct symbolic_number *n,
-	       bool bswap)
+	       bool bswap, uint64_t mask)
 {
   tree src, tmp, tgt = NULL_TREE;
-  gimple *bswap_stmt;
+  gimple *bswap_stmt, *mask_stmt = NULL;
   tree_code conv_code = NOP_EXPR;
 
   gimple *cur_stmt = gsi_stmt (gsi);
@@ -1247,6 +1284,15 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
     tgt = make_ssa_name (bswap_type);
   tmp = tgt;
 
+  if (mask != ~(uint64_t) 0)
+    {
+      tree m = build_int_cst (bswap_type, mask);
+      tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
+      gimple_set_lhs (bswap_stmt, tmp);
+      mask_stmt = gimple_build_assign (tgt, BIT_AND_EXPR, tmp, m);
+      tmp = tgt;
+    }
+
   /* Convert the result if necessary.  */
   if (!useless_type_conversion_p (TREE_TYPE (tgt), bswap_type))
     {
@@ -1260,7 +1306,7 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
     }
 
-  gimple_set_lhs (bswap_stmt, tmp);
+  gimple_set_lhs (mask_stmt ? mask_stmt : bswap_stmt, tmp);
 
   if (dump_file)
     {
@@ -1277,11 +1323,17 @@ bswap_replace (gimple_stmt_iterator gsi, gimple *ins_stmt, tree fndecl,
 
   if (cur_stmt)
     {
+      if (mask_stmt)
+	gsi_insert_after (&gsi, mask_stmt, GSI_SAME_STMT);
       gsi_insert_after (&gsi, bswap_stmt, GSI_SAME_STMT);
       gsi_remove (&gsi, true);
     }
   else
-    gsi_insert_before (&gsi, bswap_stmt, GSI_SAME_STMT);
+    {
+      gsi_insert_before (&gsi, bswap_stmt, GSI_SAME_STMT);
+      if (mask_stmt)
+	gsi_insert_before (&gsi, mask_stmt, GSI_SAME_STMT);
+    }
   return tgt;
 }
 
@@ -1341,8 +1393,14 @@ maybe_optimize_vector_constructor (gimple *cur_stmt)
       return false;
     }
 
-  gimple *ins_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
-  if (!ins_stmt || n.range != (unsigned HOST_WIDE_INT) sz)
+  bool cast64_to_32;
+  uint64_t mask;
+  gimple *ins_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap,
+					&cast64_to_32, &mask);
+  if (!ins_stmt
+      || n.range != (unsigned HOST_WIDE_INT) sz
+      || cast64_to_32
+      || mask != ~(uint64_t) 0)
     return false;
 
   if (bswap && !fndecl && n.range != 16)
@@ -1351,7 +1409,7 @@ maybe_optimize_vector_constructor (gimple *cur_stmt)
   memset (&nop_stats, 0, sizeof (nop_stats));
   memset (&bswap_stats, 0, sizeof (bswap_stats));
   return bswap_replace (gsi_for_stmt (cur_stmt), ins_stmt, fndecl,
-			bswap_type, load_type, &n, bswap) != NULL_TREE;
+			bswap_type, load_type, &n, bswap, mask) != NULL_TREE;
 }
 
 /* Find manual byte swap implementations as well as load in a given
@@ -1405,7 +1463,8 @@ pass_optimize_bswap::execute (function *fun)
 	  tree fndecl = NULL_TREE, bswap_type = NULL_TREE, load_type;
 	  enum tree_code code;
 	  struct symbolic_number n;
-	  bool bswap;
+	  bool bswap, cast64_to_32;
+	  uint64_t mask;
 
 	  /* This gsi_prev (&gsi) is not part of the for loop because cur_stmt
 	     might be moved to a different basic block by bswap_replace and gsi
@@ -1442,7 +1501,8 @@ pass_optimize_bswap::execute (function *fun)
 	      continue;
 	    }
 
-	  ins_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap);
+	  ins_stmt = find_bswap_or_nop (cur_stmt, &n, &bswap,
+					&cast64_to_32, &mask);
 
 	  if (!ins_stmt)
 	    continue;
@@ -1479,7 +1539,7 @@ pass_optimize_bswap::execute (function *fun)
 	    continue;
 
 	  if (bswap_replace (gsi_for_stmt (cur_stmt), ins_stmt, fndecl,
-			     bswap_type, load_type, &n, bswap))
+			     bswap_type, load_type, &n, bswap, mask))
 	    changed = true;
 	}
     }
@@ -2820,12 +2880,17 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
     }
 
   uint64_t cmpxchg, cmpnop;
-  find_bswap_or_nop_finalize (&n, &cmpxchg, &cmpnop);
+  bool cast64_to_32;
+  find_bswap_or_nop_finalize (&n, &cmpxchg, &cmpnop, &cast64_to_32);
 
   /* A complete byte swap should make the symbolic number to start with
      the largest digit in the highest order byte.  Unchanged symbolic
      number indicates a read with same endianness as target architecture.  */
   if (n.n != cmpnop && n.n != cmpxchg)
+    return false;
+
+  /* For now.  */
+  if (cast64_to_32)
     return false;
 
   if (n.base_addr == NULL_TREE && !is_gimple_val (n.src))
@@ -4161,7 +4226,8 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	    n->vuse = gimple_vuse (ins_stmt);
 	}
       bswap_res = bswap_replace (gsi_start (seq), ins_stmt, fndecl,
-				 bswap_type, load_type, n, bswap);
+				 bswap_type, load_type, n, bswap,
+				 ~(uint64_t) 0);
       gcc_assert (bswap_res);
     }
 

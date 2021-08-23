@@ -1736,6 +1736,68 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	break;
       }
 
+    case TRUNC_MOD_EXPR:
+      {
+	widest_int r1max = r1val | r1mask;
+	widest_int r2max = r2val | r2mask;
+	if (sgn == UNSIGNED
+	    || (!wi::neg_p (r1max) && !wi::neg_p (r2max)))
+	  {
+	    /* Confirm R2 has some bits set, to avoid division by zero.  */
+	    widest_int r2min = wi::bit_and_not (r2val, r2mask);
+	    if (r2min != 0)
+	      {
+		/* R1 % R2 is R1 if R1 is always less than R2.  */
+		if (wi::ltu_p (r1max, r2min))
+		  {
+		    *mask = r1mask;
+		    *val = r1val;
+		  }
+		else
+		  {
+		    /* R1 % R2 is always less than the maximum of R2.  */
+		    unsigned int lzcount = wi::clz (r2max);
+		    unsigned int bits = wi::get_precision (r2max) - lzcount;
+		    if (r2max == wi::lshift (1, bits))
+		      bits--;
+		    *mask = wi::mask <widest_int> (bits, false);
+		    *val = 0;
+		  }
+	       }
+	    }
+	}
+      break;
+
+    case TRUNC_DIV_EXPR:
+      {
+	widest_int r1max = r1val | r1mask;
+	widest_int r2max = r2val | r2mask;
+	if (sgn == UNSIGNED
+	    || (!wi::neg_p (r1max) && !wi::neg_p (r2max)))
+	  {
+	    /* Confirm R2 has some bits set, to avoid division by zero.  */
+	    widest_int r2min = wi::bit_and_not (r2val, r2mask);
+	    if (r2min != 0)
+	      {
+		/* R1 / R2 is zero if R1 is always less than R2.  */
+		if (wi::ltu_p (r1max, r2min))
+		  {
+		    *mask = 0;
+		    *val = 0;
+		  }
+		else
+		  {
+		    widest_int upper = wi::udiv_trunc (r1max, r2min);
+		    unsigned int lzcount = wi::clz (upper);
+		    unsigned int bits = wi::get_precision (upper) - lzcount;
+		    *mask = wi::mask <widest_int> (bits, false);
+		    *val = 0;
+		  }
+	       }
+	    }
+	}
+      break;
+
     default:;
     }
 }

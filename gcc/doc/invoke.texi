@@ -24502,12 +24502,6 @@ Select application model @var{app-model}.  Valid models are
 @item executable
 normal executable (default), uses startup code @file{crt0.o}.
 
-@item -mpic-data-is-text-relative
-@opindex mpic-data-is-text-relative
-Assume that the displacement between the text and data segments is fixed
-at static link time.  This allows data to be referenced by offset from start of
-text address instead of GOT since PC-relative addressing is not supported.
-
 @item xmdstub
 for use with Xilinx Microprocessor Debugger (XMD) based
 software intrusive debug agent called xmdstub. This uses startup file
@@ -24527,6 +24521,12 @@ within a monitoring application. This model uses @file{crt3.o} as a startup file
 
 Option @option{-xl-mode-@var{app-model}} is a deprecated alias for
 @option{-mxl-mode-@var{app-model}}.
+
+@item -mpic-data-is-text-relative
+@opindex mpic-data-is-text-relative
+Assume that the displacement between the text and data segments is fixed
+at static link time.  This allows data to be referenced by offset from start of
+text address instead of GOT since PC-relative addressing is not supported.
 
 @end table
 

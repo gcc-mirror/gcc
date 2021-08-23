@@ -2099,7 +2099,22 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	      = event->m_eedge.m_src->get_state ().m_region_model;
 	    tree callee_var = callee_model->get_representative_tree (sval);
 	    callsite_expr expr;
-	    tree caller_var = caller_model->get_representative_tree (sval);
+
+	    tree caller_var;
+            if(event->m_sedge)
+              {
+                const callgraph_superedge& cg_superedge
+                  = event->get_callgraph_superedge ();
+                if (cg_superedge.m_cedge)
+	          caller_var
+	            = cg_superedge.map_expr_from_callee_to_caller (callee_var,
+                                                                   &expr);
+                else
+                  caller_var = caller_model->get_representative_tree (sval);
+              }
+            else
+	      caller_var = caller_model->get_representative_tree (sval);
+
 	    if (caller_var)
 	      {
 		if (get_logger ())
@@ -2121,11 +2136,28 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	    if (sval)
 	      {
 		return_event *event = (return_event *)base_event;
+                const region_model *caller_model
+                  = event->m_eedge.m_dest->get_state ().m_region_model;
+                tree caller_var = caller_model->get_representative_tree (sval);
+                const region_model *callee_model
+                  = event->m_eedge.m_src->get_state ().m_region_model;
 		callsite_expr expr;
 
-		const region_model *callee_model
-	      	  = event->m_eedge.m_src->get_state ().m_region_model;
-		tree callee_var = callee_model->get_representative_tree (sval);
+                tree callee_var;
+                if (event->m_sedge)
+                  {
+                    const callgraph_superedge& cg_superedge
+                      = event->get_callgraph_superedge ();
+                    if (cg_superedge.m_cedge)
+                      callee_var
+                        = cg_superedge.map_expr_from_caller_to_callee (caller_var,
+                                                                       &expr);
+                    else
+                      callee_var = callee_model->get_representative_tree (sval);
+                  }
+                else
+                  callee_var = callee_model->get_representative_tree (sval);
+
 		if (callee_var)
 		  {
 		    if (get_logger ())

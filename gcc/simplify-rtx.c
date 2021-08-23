@@ -813,23 +813,49 @@ simplify_context::simplify_truncation (machine_mode mode, rtx op,
     return simplify_gen_unary (GET_CODE (op), mode,
 			       XEXP (XEXP (op, 0), 0), mode);
 
-  /* (truncate:A (subreg:B (truncate:C X) 0)) is
-     (truncate:A X).  */
+  /* Simplifications of (truncate:A (subreg:B X 0)).  */
   if (GET_CODE (op) == SUBREG
       && is_a <scalar_int_mode> (mode, &int_mode)
       && SCALAR_INT_MODE_P (op_mode)
       && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (op)), &subreg_mode)
-      && GET_CODE (SUBREG_REG (op)) == TRUNCATE
       && subreg_lowpart_p (op))
     {
-      rtx inner = XEXP (SUBREG_REG (op), 0);
-      if (GET_MODE_PRECISION (int_mode) <= GET_MODE_PRECISION (subreg_mode))
-	return simplify_gen_unary (TRUNCATE, int_mode, inner,
-				   GET_MODE (inner));
-      else
-	/* If subreg above is paradoxical and C is narrower
-	   than A, return (subreg:A (truncate:C X) 0).  */
-	return simplify_gen_subreg (int_mode, SUBREG_REG (op), subreg_mode, 0);
+      /* (truncate:A (subreg:B (truncate:C X) 0)) is (truncate:A X).  */
+      if (GET_CODE (SUBREG_REG (op)) == TRUNCATE)
+	{
+	  rtx inner = XEXP (SUBREG_REG (op), 0);
+	  if (GET_MODE_PRECISION (int_mode)
+	      <= GET_MODE_PRECISION (subreg_mode))
+	    return simplify_gen_unary (TRUNCATE, int_mode, inner,
+				       GET_MODE (inner));
+	  else
+	    /* If subreg above is paradoxical and C is narrower
+	       than A, return (subreg:A (truncate:C X) 0).  */
+	    return simplify_gen_subreg (int_mode, SUBREG_REG (op),
+					subreg_mode, 0);
+	}
+
+      /* Simplifications of (truncate:A (subreg:B X:C 0)) with
+	 paradoxical subregs (B is wider than C).  */
+      if (is_a <scalar_int_mode> (op_mode, &int_op_mode))
+	{
+	  unsigned int int_op_prec = GET_MODE_PRECISION (int_op_mode);
+	  unsigned int subreg_prec = GET_MODE_PRECISION (subreg_mode);
+	  if (int_op_prec > subreg_mode)
+	    {
+	      if (int_mode == subreg_mode)
+		return SUBREG_REG (op);
+	      if (GET_MODE_PRECISION (int_mode) < subreg_prec)
+		return simplify_gen_unary (TRUNCATE, int_mode,
+					   SUBREG_REG (op), subreg_mode);
+	    }
+	  /* Simplification of (truncate:A (subreg:B X:C 0)) where
+ 	     A is narrower than B and B is narrower than C.  */
+	  else if (int_op_prec < subreg_mode
+		   && GET_MODE_PRECISION (int_mode) < int_op_prec)
+	    return simplify_gen_unary (TRUNCATE, int_mode,
+				       SUBREG_REG (op), subreg_mode);
+	}
     }
 
   /* (truncate:A (truncate:B X)) is (truncate:A X).  */
@@ -1242,9 +1268,16 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	    return temp;
 	}
 
+      /* Check for useless truncation.  */
+      if (GET_MODE (op) == mode)
+	return op;
       break;
 
     case FLOAT_TRUNCATE:
+      /* Check for useless truncation.  */
+      if (GET_MODE (op) == mode)
+	return op;
+
       if (DECIMAL_FLOAT_MODE_P (mode))
 	break;
 
@@ -1297,6 +1330,10 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
       break;
 
     case FLOAT_EXTEND:
+      /* Check for useless extension.  */
+      if (GET_MODE (op) == mode)
+	return op;
+
       if (DECIMAL_FLOAT_MODE_P (mode))
 	break;
 
@@ -1410,6 +1447,10 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
       break;
 
     case SIGN_EXTEND:
+      /* Check for useless extension.  */
+      if (GET_MODE (op) == mode)
+	return op;
+
       /* (sign_extend (truncate (minus (label_ref L1) (label_ref L2))))
 	 becomes just the MINUS if its mode is MODE.  This allows
 	 folding switch statements on machines using casesi (such as
@@ -1580,6 +1621,10 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
       break;
 
     case ZERO_EXTEND:
+      /* Check for useless extension.  */
+      if (GET_MODE (op) == mode)
+	return op;
+
       /* Check for a zero extension of a subreg of a promoted
 	 variable, where the promotion is zero-extended, and the
 	 target mode is the same as the variable's promotion.  */
@@ -7563,7 +7608,91 @@ test_scalar_int_ops (machine_mode mode)
 		 simplify_gen_binary (IOR, mode, and_op0_6, and_op1_6));
   ASSERT_RTX_EQ (simplify_gen_binary (AND, mode, and_op0_op1, six),
 		 simplify_gen_binary (AND, mode, and_op0_6, and_op1_6));
+
+  /* Test useless extensions are eliminated.  */
+  ASSERT_RTX_EQ (op0, simplify_gen_unary (TRUNCATE, mode, op0, mode));
+  ASSERT_RTX_EQ (op0, simplify_gen_unary (ZERO_EXTEND, mode, op0, mode));
+  ASSERT_RTX_EQ (op0, simplify_gen_unary (SIGN_EXTEND, mode, op0, mode));
+  ASSERT_RTX_EQ (op0, lowpart_subreg (mode, op0, mode));
 }
+
+/* Verify some simplifications of integer extension/truncation.
+   Machine mode BMODE is the guaranteed wider than SMODE.  */
+
+static void
+test_scalar_int_ext_ops (machine_mode bmode, machine_mode smode)
+{
+  rtx sreg = make_test_reg (smode);
+
+  /* Check truncation of extension.  */
+  ASSERT_RTX_EQ (simplify_gen_unary (TRUNCATE, smode,
+				     simplify_gen_unary (ZERO_EXTEND, bmode,
+							 sreg, smode),
+				     bmode),
+		 sreg);
+  ASSERT_RTX_EQ (simplify_gen_unary (TRUNCATE, smode,
+				     simplify_gen_unary (SIGN_EXTEND, bmode,
+							 sreg, smode),
+				     bmode),
+		 sreg);
+  ASSERT_RTX_EQ (simplify_gen_unary (TRUNCATE, smode,
+				     lowpart_subreg (bmode, sreg, smode),
+				     bmode),
+		 sreg);
+}
+
+/* Verify more simplifications of integer extension/truncation.
+   BMODE is wider than MMODE which is wider than SMODE.  */
+
+static void
+test_scalar_int_ext_ops2 (machine_mode bmode, machine_mode mmode,
+			  machine_mode smode)
+{
+  rtx breg = make_test_reg (bmode);
+  rtx mreg = make_test_reg (mmode);
+  rtx sreg = make_test_reg (smode);
+
+  /* Check truncate of truncate.  */
+  ASSERT_RTX_EQ (simplify_gen_unary (TRUNCATE, smode,
+				     simplify_gen_unary (TRUNCATE, mmode,
+							 breg, bmode),
+				     mmode),
+		 simplify_gen_unary (TRUNCATE, smode, breg, bmode));
+
+  /* Check extension of extension.  */
+  ASSERT_RTX_EQ (simplify_gen_unary (ZERO_EXTEND, bmode,
+				     simplify_gen_unary (ZERO_EXTEND, mmode,
+							 sreg, smode),
+				     mmode),
+		 simplify_gen_unary (ZERO_EXTEND, bmode, sreg, smode));
+  ASSERT_RTX_EQ (simplify_gen_unary (SIGN_EXTEND, bmode,
+				     simplify_gen_unary (SIGN_EXTEND, mmode,
+							 sreg, smode),
+				     mmode),
+		 simplify_gen_unary (SIGN_EXTEND, bmode, sreg, smode));
+  ASSERT_RTX_EQ (simplify_gen_unary (SIGN_EXTEND, bmode,
+				     simplify_gen_unary (ZERO_EXTEND, mmode,
+							 sreg, smode),
+				     mmode),
+		 simplify_gen_unary (ZERO_EXTEND, bmode, sreg, smode));
+
+  /* Check truncation of extension.  */
+  ASSERT_RTX_EQ (simplify_gen_unary (TRUNCATE, smode,
+				     simplify_gen_unary (ZERO_EXTEND, bmode,
+							 mreg, mmode),
+				     bmode),
+		 simplify_gen_unary (TRUNCATE, smode, mreg, mmode));
+  ASSERT_RTX_EQ (simplify_gen_unary (TRUNCATE, smode,
+				     simplify_gen_unary (SIGN_EXTEND, bmode,
+							 mreg, mmode),
+				     bmode),
+		 simplify_gen_unary (TRUNCATE, smode, mreg, mmode));
+  ASSERT_RTX_EQ (simplify_gen_unary (TRUNCATE, smode,
+				     lowpart_subreg (bmode, mreg, mmode),
+				     bmode),
+		 simplify_gen_unary (TRUNCATE, smode, mreg, mmode));
+}  
+
 
 /* Verify some simplifications involving scalar expressions.  */
 
@@ -7576,6 +7705,18 @@ test_scalar_ops ()
       if (SCALAR_INT_MODE_P (mode) && mode != BImode)
 	test_scalar_int_ops (mode);
     }
+
+  test_scalar_int_ext_ops (HImode, QImode);
+  test_scalar_int_ext_ops (SImode, QImode);
+  test_scalar_int_ext_ops (SImode, HImode);
+  test_scalar_int_ext_ops (DImode, QImode);
+  test_scalar_int_ext_ops (DImode, HImode);
+  test_scalar_int_ext_ops (DImode, SImode);
+
+  test_scalar_int_ext_ops2 (SImode, HImode, QImode);
+  test_scalar_int_ext_ops2 (DImode, HImode, QImode);
+  test_scalar_int_ext_ops2 (DImode, SImode, QImode);
+  test_scalar_int_ext_ops2 (DImode, SImode, HImode);
 }
 
 /* Test vector simplifications involving VEC_DUPLICATE in which the

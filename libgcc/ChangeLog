@@ -1,3 +1,7 @@
+2021-08-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.host: Remove extra_parts from hppa[12]*-*-hpux11* case.
+
 2021-08-16  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* libgcov.h (gcov_type): Define using __LIBGCC_GCOV_TYPE_SIZE.

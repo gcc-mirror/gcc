@@ -1,4 +1,5 @@
-! { dg-do run { target { ! offload_target_intelmic } } }
+! { dg-do run }
+! { dg-xfail-run-if TODO { offload_device_intel_mic } }
 
 program main
   use omp_lib

@@ -1,3 +1,24 @@
+2021-08-22  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98397
+	* c-typeck.c (comp_target_types): Change pedwarn to pedwarn_c11
+	for pointers to arrays with qualifiers.
+	(build_conditional_expr): For C23 don't lose qualifiers for pointers
+	to arrays when the other pointer is a void pointer. Update warnings.
+	(convert_for_assignment): Update warnings for C2X when converting from
+	void* with qualifiers to a pointer to array with the same qualifiers.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_error): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_ERROR.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_depend_sink): Reject spurious
+	comma at the end of list.
+	(c_parser_omp_requires): Likewise.
+
 2021-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_requires): Don't call

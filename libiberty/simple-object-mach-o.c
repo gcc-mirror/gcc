@@ -1228,7 +1228,7 @@ simple_object_mach_o_write_segment (simple_object_write *sobj, int descriptor,
       /* Swap the indices, if required.  */
 
       for (i = 0; i < (nsects_in * 4); ++i)
-	set_32 (&index[i], index[i]);
+	set_32 ((unsigned char *) &index[i], index[i]);
 
       sechdr_offset += sechdrsize;
 
