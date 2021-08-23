@@ -83,6 +83,15 @@ test04()
   static_assert(!std::forward_iterator<It>);
 }
 
+void
+test06()
+{
+  // Default template argument
+  using V = std::ranges::basic_istream_view<int, char>;
+  using W = std::ranges::basic_istream_view<int, char, std::char_traits<char>>;
+  static_assert( std::is_same_v<V, W> );
+}
+
 int
 main()
 {
@@ -90,4 +99,5 @@ main()
   test02();
   test03();
   test04();
+  test06();
 }
