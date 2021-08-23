@@ -2773,7 +2773,7 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 {
   bool sat = add_constraint (lhs, op, rhs, ctxt);
   if (!sat && out)
-    *out = new rejected_constraint (*this, lhs, op, rhs);
+    *out = new rejected_op_constraint (*this, lhs, op, rhs);
   return sat;
 }
 
@@ -3329,56 +3329,15 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 					     region_model_context *ctxt,
 					     rejected_constraint **out)
 {
+  bounded_ranges_manager *ranges_mgr = get_range_manager ();
+  const bounded_ranges *all_cases_ranges
+    = ranges_mgr->get_or_create_ranges_for_switch (&edge, switch_stmt);
   tree index  = gimple_switch_index (switch_stmt);
-  tree case_label = edge.get_case_label ();
-  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
-  tree lower_bound = CASE_LOW (case_label);
-  tree upper_bound = CASE_HIGH (case_label);
-  if (lower_bound)
-    {
-      if (upper_bound)
-	{
-	  /* Range.  */
-	  if (!add_constraint (index, GE_EXPR, lower_bound, ctxt, out))
-	    return false;
-	  return add_constraint (index, LE_EXPR, upper_bound, ctxt, out);
-	}
-      else
-	/* Single-value.  */
-	return add_constraint (index, EQ_EXPR, lower_bound, ctxt, out);
-    }
-  else
-    {
-      /* The default case.
-	 Add exclusions based on the other cases.  */
-      for (unsigned other_idx = 1;
-	   other_idx < gimple_switch_num_labels (switch_stmt);
-	   other_idx++)
-	{
-	  tree other_label = gimple_switch_label (switch_stmt,
-						  other_idx);
-	  tree other_lower_bound = CASE_LOW (other_label);
-	  tree other_upper_bound = CASE_HIGH (other_label);
-	  gcc_assert (other_lower_bound);
-	  if (other_upper_bound)
-	    {
-	      /* Exclude this range-valued case.
-		 For now, we just exclude the boundary values.
-		 TODO: exclude the values within the region.  */
-	      if (!add_constraint (index, NE_EXPR, other_lower_bound,
-				   ctxt, out))
-		return false;
-	      if (!add_constraint (index, NE_EXPR, other_upper_bound,
-				   ctxt, out))
-		return false;
-	    }
-	  else
-	    /* Exclude this single-valued case.  */
-	    if (!add_constraint (index, NE_EXPR, other_lower_bound, ctxt, out))
-	      return false;
-	}
-      return true;
-    }
+  const svalue *index_sval = get_rvalue (index, ctxt);
+  bool sat = m_constraints->add_bounded_ranges (index_sval, all_cases_ranges);
+  if (!sat && out)
+    *out = new rejected_ranges_constraint (*this, index, all_cases_ranges);
+  return sat;
 }
 
 /* Apply any constraints due to an exception being thrown at LAST_STMT.
@@ -3860,10 +3819,10 @@ debug (const region_model &rmodel)
   rmodel.dump (false);
 }
 
-/* struct rejected_constraint.  */
+/* class rejected_op_constraint : public rejected_constraint.  */
 
 void
-rejected_constraint::dump_to_pp (pretty_printer *pp) const
+rejected_op_constraint::dump_to_pp (pretty_printer *pp) const
 {
   region_model m (m_model);
   const svalue *lhs_sval = m.get_rvalue (m_lhs, NULL);
@@ -3871,6 +3830,18 @@ rejected_constraint::dump_to_pp (pretty_printer *pp) const
   lhs_sval->dump_to_pp (pp, true);
   pp_printf (pp, " %s ", op_symbol_code (m_op));
   rhs_sval->dump_to_pp (pp, true);
+}
+
+/* class rejected_ranges_constraint : public rejected_constraint.  */
+
+void
+rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
+{
+  region_model m (m_model);
+  const svalue *sval = m.get_rvalue (m_expr, NULL);
+  sval->dump_to_pp (pp, true);
+  pp_string (pp, " in ");
+  m_ranges->dump_to_pp (pp, true);
 }
 
 /* class engine.  */

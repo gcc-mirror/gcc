@@ -129,7 +129,7 @@ infeasible_node::dump_dot (graphviz_out *gv,
 
   pp_string (pp, "rejected constraint:");
   pp_newline (pp);
-  m_rc.dump_to_pp (pp);
+  m_rc->dump_to_pp (pp);
 
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 
@@ -178,12 +178,13 @@ feasible_graph::add_node (const exploded_node *enode,
 }
 
 /* Add an infeasible_node to this graph and an infeasible_edge connecting
-   to it from SRC_FNODE, capturing a failure of RC along EEDGE.  */
+   to it from SRC_FNODE, capturing a failure of RC along EEDGE.
+   Takes ownership of RC.  */
 
 void
 feasible_graph::add_feasibility_problem (feasible_node *src_fnode,
 					 const exploded_edge *eedge,
-					 const rejected_constraint &rc)
+					 rejected_constraint *rc)
 {
   infeasible_node *dst_fnode
     = new infeasible_node (eedge->m_dest, m_nodes.length (), rc);

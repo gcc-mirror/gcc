@@ -189,6 +189,7 @@ struct purge_stats
     m_num_regions (0),
     m_num_equiv_classes (0),
     m_num_constraints (0),
+    m_num_bounded_ranges_constraints (0),
     m_num_client_items (0)
   {}
 
@@ -196,6 +197,7 @@ struct purge_stats
   int m_num_regions;
   int m_num_equiv_classes;
   int m_num_constraints;
+  int m_num_bounded_ranges_constraints;
   int m_num_client_items;
 };
 
@@ -320,6 +322,7 @@ public:
   unsigned alloc_region_id () { return m_next_region_id++; }
 
   store_manager *get_store_manager () { return &m_store_mgr; }
+  bounded_ranges_manager *get_range_manager () const { return m_range_mgr; }
 
   /* Dynamically-allocated region instances.
      The number of these within the analysis can grow arbitrarily.
@@ -455,6 +458,8 @@ private:
   string_map_t m_string_map;
 
   store_manager m_store_mgr;
+
+  bounded_ranges_manager *m_range_mgr;
 
   /* "Dynamically-allocated" region instances.
      The number of these within the analysis can grow arbitrarily.
@@ -698,6 +703,10 @@ class region_model
   void unset_dynamic_extents (const region *reg);
 
   region_model_manager *get_manager () const { return m_mgr; }
+  bounded_ranges_manager *get_range_manager () const
+  {
+    return m_mgr->get_range_manager ();
+  }
 
   void unbind_region_and_descendents (const region *reg,
 				      enum poison_kind pkind);
@@ -945,19 +954,52 @@ struct model_merger
 /* A record that can (optionally) be written out when
    region_model::add_constraint fails.  */
 
-struct rejected_constraint
+class rejected_constraint
 {
-  rejected_constraint (const region_model &model,
-		     tree lhs, enum tree_code op, tree rhs)
-  : m_model (model), m_lhs (lhs), m_op (op), m_rhs (rhs)
+public:
+  virtual ~rejected_constraint () {}
+  virtual void dump_to_pp (pretty_printer *pp) const = 0;
+
+  const region_model &get_model () const { return m_model; }
+
+protected:
+  rejected_constraint (const region_model &model)
+  : m_model (model)
   {}
 
-  void dump_to_pp (pretty_printer *pp) const;
-
   region_model m_model;
+};
+
+class rejected_op_constraint : public rejected_constraint
+{
+public:
+  rejected_op_constraint (const region_model &model,
+			  tree lhs, enum tree_code op, tree rhs)
+  : rejected_constraint (model),
+    m_lhs (lhs), m_op (op), m_rhs (rhs)
+  {}
+
+  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+
   tree m_lhs;
   enum tree_code m_op;
   tree m_rhs;
+};
+
+class rejected_ranges_constraint : public rejected_constraint
+{
+public:
+  rejected_ranges_constraint (const region_model &model,
+			      tree expr, const bounded_ranges *ranges)
+  : rejected_constraint (model),
+    m_expr (expr), m_ranges (ranges)
+  {}
+
+  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+
+private:
+  tree m_expr;
+  const bounded_ranges *m_ranges;
 };
 
 /* A bundle of state.  */

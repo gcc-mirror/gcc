@@ -520,8 +520,7 @@ epath_finder::process_worklist_item (feasible_worklist *worklist,
 	  gcc_assert (rc);
 	  fg->add_feasibility_problem (fnode,
 				       succ_eedge,
-				       *rc);
-	  delete rc;
+				       rc);
 
 	  /* Give up if there have been too many infeasible edges.  */
 	  if (fg->get_num_infeasible ()
