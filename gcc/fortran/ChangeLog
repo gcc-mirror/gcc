@@ -1,3 +1,58 @@
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* error.c
+	(error_uinteger): Take 'long long unsigned' instead
+	of 'long unsigned' as argumpent.
+	(error_integer): Take 'long long' instead of 'long'.
+	(error_hwuint, error_hwint): New.
+	(error_print): Update to handle 'll' and 'w'
+	length modifiers.
+	* simplify.c (substring_has_constant_len): Use '%wd'
+	in gfc_error.
+
+2021-08-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* simplify.c (substring_has_constant_len): Fix format string of
+	gfc_error, pass HOST_WIDE_INT bounds values via char buffer.
+
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle 'at', 'severity'
+	and 'message' clauses.
+	(show_omp_node, show_code_node): Handle EXEC_OMP_ERROR.
+	* gfortran.h (gfc_statement): Add ST_OMP_ERROR.
+	(gfc_omp_severity_type, gfc_omp_at_type): New.
+	(gfc_omp_clauses): Add 'at', 'severity' and 'message' clause;
+	use more bitfields + ENUM_BITFIELD.
+	(gfc_exec_op): Add EXEC_OMP_ERROR.
+	* match.h (gfc_match_omp_error): New.
+	* openmp.c (enum omp_mask1): Add OMP_CLAUSE_(AT,SEVERITY,MESSAGE).
+	(gfc_match_omp_clauses): Handle new clauses.
+	(OMP_ERROR_CLAUSES, gfc_match_omp_error): New.
+	(resolve_omp_clauses): Resolve new clauses.
+	(omp_code_to_statement, gfc_resolve_omp_directive): Handle
+	EXEC_OMP_ERROR.
+	* parse.c (decode_omp_directive, next_statement,
+	gfc_ascii_statement): Handle 'omp error'.
+	* resolve.c (gfc_resolve_blocks): Likewise.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-openmp.c (gfc_trans_omp_error): Likewise.
+	(gfc_trans_omp_directive): Likewise.
+	* trans.c (trans_code): Likewise.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* types.def (BT_FN_VOID_CONST_PTR_SIZE): New DEF_FUNCTION_TYPE_2.
+	* f95-lang.c (ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST): Define.
+
+2021-08-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* simplify.c (substring_has_constant_len): New.
+	(gfc_simplify_len): Handle case of substrings with constant
+	bounds.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* match.h (gfc_match_omp_nothing): New.

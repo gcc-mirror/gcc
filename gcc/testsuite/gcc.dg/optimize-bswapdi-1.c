@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target bswap } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-options "-O2 -fdump-tree-bswap" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 /* { dg-additional-options "-mzarch" { target s390*-*-* } } */
 
 #include <stdint.h>
@@ -58,4 +58,4 @@ swap64_c (uint64_t x)
 }
 
 
-/* { dg-final { scan-tree-dump-times "64 bit bswap implementation found at" 3 "bswap" } } */
+/* { dg-final { scan-tree-dump-times "= __builtin_bswap64 \\\(" 3 "optimized" } } */

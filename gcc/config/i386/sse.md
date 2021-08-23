@@ -11256,7 +11256,7 @@
 	       (match_operand:V16QI 2 "pshufb_truncv8hiv8qi_operand")]
 	   UNSPEC_PSHUFB) 0)
 	  (parallel [(const_int 0)])))]
-  "TARGET_AVX512VL && ix86_pre_reload_split ()"
+  "TARGET_AVX512VL && TARGET_AVX512BW && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(const_int 0)]

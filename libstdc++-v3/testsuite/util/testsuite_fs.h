@@ -34,7 +34,7 @@ namespace test_fs = std::experimental::filesystem;
 #include <fstream>
 #include <string>
 #include <cstdio>
-#include <unistd.h> // unlink, close, getpid
+#include <unistd.h> // unlink, close, getpid, geteuid
 
 #if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
 #include <stdlib.h> // mkstemp
@@ -159,6 +159,22 @@ namespace __gnu_test
 
     path_type path;
   };
+
+  bool
+  permissions_are_testable(bool print_msg = true)
+  {
+    bool testable = false;
+#if !(defined __MINGW32__ || defined __MINGW64__)
+    if (geteuid() != 0)
+      testable = true;
+    // XXX on Linux the CAP_DAC_OVERRIDE and CAP_DAC_READ_SEARCH capabilities
+    // can give normal users extra permissions for files and directories.
+    // We ignore that possibility here.
+#endif
+    if (print_msg && !testable)
+      std::puts("Skipping tests that depend on filesystem permissions");
+    return testable;
+  }
 
 } // namespace __gnu_test
 #endif

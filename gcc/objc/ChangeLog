@@ -1,3 +1,8 @@
+2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init):
+	Default receiver nilchecks on.
+
 2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
 	    Matt Jacobson   <mhjacobson@me.com>
 

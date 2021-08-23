@@ -24476,7 +24476,26 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	      && DECL_RTL_SET_P (decl_or_origin))))
     {
       if (early_dwarf)
-	add_pubname (decl_or_origin, var_die);
+	{
+	  add_pubname (decl_or_origin, var_die);
+	  /* For global register variables, emit DW_AT_location if possible
+	     already during early_dwarf, as late_global_decl won't be usually
+	     called.  */
+	  if (DECL_HARD_REGISTER (decl_or_origin)
+	      && TREE_STATIC (decl_or_origin)
+	      && !decl_by_reference_p (decl_or_origin)
+	      && !get_AT (var_die, DW_AT_location)
+	      && !get_AT (var_die, DW_AT_const_value)
+	      && DECL_RTL_SET_P (decl_or_origin)
+	      && REG_P (DECL_RTL (decl_or_origin)))
+	    {
+	      dw_loc_descr_ref descr
+		= reg_loc_descriptor (DECL_RTL (decl_or_origin),
+				      VAR_INIT_STATUS_INITIALIZED);
+	      if (descr)
+		add_AT_loc (var_die, DW_AT_location, descr);
+	    }
+	}
       else
 	add_location_or_const_value_attribute (var_die, decl_or_origin,
 					       decl == NULL);

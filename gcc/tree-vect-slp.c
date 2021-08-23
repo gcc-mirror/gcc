@@ -5985,6 +5985,8 @@ vect_slp_bbs (const vec<basic_block> &bbs)
 					      &dataref_groups, current_group))
 	    ++current_group;
 	}
+      /* New BBs always start a new DR group.  */
+      ++current_group;
     }
 
   return vect_slp_region (bbs, datarefs, &dataref_groups, insns);

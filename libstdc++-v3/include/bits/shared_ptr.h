@@ -102,6 +102,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  A smart pointer with reference-counted copy semantics.
+   *  @headerfile memory
+   *  @since C++11
    *
    * A `shared_ptr` object is either empty or _owns_ a pointer passed
    * to the constructor. Copies of a `shared_ptr` share ownership of
@@ -139,6 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201703L
 # define __cpp_lib_shared_ptr_weak_type 201606
       /// The corresponding weak_ptr type for this shared_ptr
+      /// @since C++17
       using weak_type = weak_ptr<_Tp>;
 #endif
       /**
@@ -266,6 +269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __r  A `shared_ptr`.
        *  @param  __p  A pointer that will remain valid while `*__r` is valid.
        *  @post   `get() == __p && !__r.use_count() && !__r.get()`
+       *  @since C++17
        *
        *  This can be used to construct a `shared_ptr` to a sub-object
        *  of an object managed by an existing `shared_ptr`. The complete
@@ -607,6 +611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
   /// Convert type of `shared_ptr`, via `reinterpret_cast`
+  /// @since C++17
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     reinterpret_pointer_cast(const shared_ptr<_Up>& __r) noexcept
@@ -620,6 +625,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 2996. Missing rvalue overloads for shared_ptr operations
 
   /// Convert type of `shared_ptr` rvalue, via `static_cast`
+  /// @since C++20
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     static_pointer_cast(shared_ptr<_Up>&& __r) noexcept
@@ -630,6 +636,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /// Convert type of `shared_ptr` rvalue, via `const_cast`
+  /// @since C++20
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     const_pointer_cast(shared_ptr<_Up>&& __r) noexcept
@@ -640,6 +647,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /// Convert type of `shared_ptr` rvalue, via `dynamic_cast`
+  /// @since C++20
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     dynamic_pointer_cast(shared_ptr<_Up>&& __r) noexcept
@@ -651,6 +659,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /// Convert type of `shared_ptr` rvalue, via `reinterpret_cast`
+  /// @since C++20
   template<typename _Tp, typename _Up>
     inline shared_ptr<_Tp>
     reinterpret_pointer_cast(shared_ptr<_Up>&& __r) noexcept
@@ -666,6 +675,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @brief  A non-owning observer for a pointer owned by a shared_ptr
+   * @headerfile memory
+   * @since C++11
    *
    * A weak_ptr provides a safe alternative to a raw pointer when you want
    * a non-owning reference to an object that is managed by a shared_ptr.
@@ -786,7 +797,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /**
-   *  @brief Base class allowing use of member function shared_from_this.
+   * @brief Base class allowing use of the member function `shared_from_this`.
+   * @headerfile memory
+   * @since C++11
    */
   template<typename _Tp>
     class enable_shared_from_this
@@ -813,6 +826,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
 #define __cpp_lib_enable_shared_from_this 201603
+      /** @{
+       * Get a `weak_ptr` referring to the object that has `*this` as its base.
+       * @since C++17
+       */
       weak_ptr<_Tp>
       weak_from_this() noexcept
       { return this->_M_weak_this; }
@@ -820,6 +837,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       weak_ptr<const _Tp>
       weak_from_this() const noexcept
       { return this->_M_weak_this; }
+      /// @}
 #endif
 
     private:

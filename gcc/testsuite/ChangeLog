@@ -1,3 +1,110 @@
+2021-08-22  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98397
+	* gcc.dg/c11-qual-1.c: New test.
+	* gcc.dg/c2x-qual-1.c: New test.
+	* gcc.dg/c2x-qual-2.c: New test.
+	* gcc.dg/c2x-qual-3.c: New test.
+	* gcc.dg/c2x-qual-4.c: New test.
+	* gcc.dg/c2x-qual-5.c: New test.
+	* gcc.dg/c2x-qual-6.c: New test.
+	* gcc.dg/c2x-qual-7.c: New test.
+	* gcc.dg/pointer-array-quals-1.c: Remove unnecessary flag.
+	* gcc.dg/pointer-array-quals-2.c: Remove unnecessary flag.
+
+2021-08-22  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/lto/pr101949_0.c: New test.
+	* gcc.dg/lto/pr101949_1.c: New test.
+
+2021-08-21  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/101980
+	* gcc.dg/analyzer/function-ptr-2.c : Add issue for double 'free'.
+	* gcc.dg/analyzer/malloc-callbacks.c : Fix xfail testcase.
+
+2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/error-1.f90: New test.
+	* gfortran.dg/gomp/error-2.f90: New test.
+	* gfortran.dg/gomp/error-3.f90: New test.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/error-1.c: New test.
+	* c-c++-common/gomp/error-2.c: New test.
+	* c-c++-common/gomp/error-3.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add error directive test.
+	* g++.dg/gomp/attrs-2.C (bar): Add error directive test.
+	* g++.dg/gomp/attrs-13.C: New test.
+	* g++.dg/gomp/error-1.C: New test.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sink-5.c: New test.
+	* c-c++-common/gomp/requires-3.c: Add test for spurious comma
+	at the end of pragma line.
+
+2021-08-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* c-c++-common/Wunused-var-16.c: Add an extra check that ~0
+	is optimized away.
+
+2021-08-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101849
+	* gcc.target/powerpc/pr101849.c: New test.
+
+2021-08-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100950
+	* gfortran.dg/pr100950.f90: New test.
+
+2021-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101803
+	* g++.dg/cpp2a/class-deduction-aggr12.C: Fix PR number.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101950
+	* gcc.target/i386/pr101950-1.c: New test.
+	* gcc.target/i386/pr101950-2.c: New test.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/requires-3.c: Add testcase for
+	atomic_default_mem_order ( at the end of line without corresponding ).
+
+2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-asm.c: Provide Mach-O fragment.
+	* jit.dg/test-asm.cc: Likewise.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/nothing-2.c: New test.
+
+2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/harness.h: Include jit-dejagnu.h.
+	* jit.dg/jit.exp: Use -rdynamic conditionally on target
+	support, instead of unconditional -Wl,--export-dynamic.
+
+2021-08-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/101969
+	* gcc.dg/pr78213.c: Fix up for '--enable-checking=release' etc.
+
+2021-08-19  liuhongt  <hongtao.liu@intel.com>
+
+	Revert:
+	2021-08-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/99881
+	* gcc.target/i386/pr99881.c: New test.
+
 2021-08-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR testsuite/101963
@@ -40,7 +147,7 @@
 2021-08-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101344
-	PR c++/101820
+	PR c++/101803
 	* g++.dg/cpp2a/class-deduction-aggr11.C: New test.
 	* g++.dg/cpp2a/class-deduction-aggr12.C: New test.
 

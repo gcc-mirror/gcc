@@ -82,7 +82,7 @@ EnumValue
 Enum(arm_arch) String(native) Value(-1) DriverOnly
 
 ; Set to the name of target architecture which is required for
-; multilib linking.  This option is undocumented becuase it
+; multilib linking.  This option is undocumented because it
 ; should not be used by the users.
 mlibarch=
 Target RejectNegative JoinedOrMissing NoDWARFRecord DriverOnly Undocumented

@@ -3033,14 +3033,14 @@ state_change_requires_new_enode_p (const program_state &old_state,
    Some example such calls are dynamically dispatched calls to virtual
    functions or calls that happen via function pointer.  */
 
-void
-exploded_graph::create_dynamic_call (const gcall *call,
-                                     tree fn_decl,
-                                     exploded_node *node,
-                                     program_state next_state,
-                                     program_point &next_point,
-                                     uncertainty_t *uncertainty,
-                                     logger *logger)
+bool
+exploded_graph::maybe_create_dynamic_call (const gcall *call,
+                                           tree fn_decl,
+                                           exploded_node *node,
+                                           program_state next_state,
+                                           program_point &next_point,
+                                           uncertainty_t *uncertainty,
+                                           logger *logger)
 {
   LOG_FUNC (logger);
 
@@ -3049,8 +3049,8 @@ exploded_graph::create_dynamic_call (const gcall *call,
   if (fun)
     {
       const supergraph &sg = this->get_supergraph ();
-      supernode * sn_entry = sg.get_node_for_function_entry (fun);
-      supernode * sn_exit = sg.get_node_for_function_exit (fun);
+      supernode *sn_entry = sg.get_node_for_function_entry (fun);
+      supernode *sn_exit = sg.get_node_for_function_exit (fun);
 
       program_point new_point
         = program_point::before_supernode (sn_entry,
@@ -3075,8 +3075,10 @@ exploded_graph::create_dynamic_call (const gcall *call,
           if (enode)
             add_edge (node,enode, NULL,
                       new dynamic_call_info_t (call));
+          return true;
         }
-     }
+    }
+  return false;
 }
 
 /* The core of exploded_graph::process_worklist (the main analysis loop),
@@ -3338,22 +3340,23 @@ exploded_graph::process_node (exploded_node *node)
                                                 point.get_stmt());
 
                 region_model *model = state.m_region_model;
+                bool call_discovered = false;
 
                 if (tree fn_decl = model->get_fndecl_for_call(call,&ctxt))
-                  create_dynamic_call (call,
-                                       fn_decl,
-                                       node,
-                                       next_state,
-                                       next_point,
-                                       &uncertainty,
-                                       logger);
-                else
+                  call_discovered = maybe_create_dynamic_call (call,
+                                                               fn_decl,
+                                                               node,
+                                                               next_state,
+                                                               next_point,
+                                                               &uncertainty,
+                                                               logger);
+                if (!call_discovered)
                   {
-                     /* An unknown function was called at this point, in such
-                        case, don't terminate the analysis of the current
-                        function.
+                     /* An unknown function or a special function was called 
+                        at this point, in such case, don't terminate the 
+                        analysis of the current function.
 
-                        The analyzer handles calls to unknown functions while
+                        The analyzer handles calls to such functions while
                         analysing the stmt itself, so the the function call
                         must have been handled by the anlyzer till now.  */
                      exploded_node *next

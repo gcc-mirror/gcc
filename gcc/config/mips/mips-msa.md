@@ -870,9 +870,12 @@
 	  (match_operand:IMSA 1 "register_operand" "f,f")
 	  (match_operand:IMSA 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
   "ISA_HAS_MSA"
-  "@
-   srl.<msafmt>\t%w0,%w1,%w2
-   srli.<msafmt>\t%w0,%w1,%E2"
+{
+  if (which_alternative == 0)
+    return "srl.<msafmt>\t%w0,%w1,%w2";
+
+  return mips_msa_output_shift_immediate("srli.<msafmt>\t%w0,%w1,%E2", operands);
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -882,9 +885,12 @@
 	  (match_operand:IMSA 1 "register_operand" "f,f")
 	  (match_operand:IMSA 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
   "ISA_HAS_MSA"
-  "@
-   sra.<msafmt>\t%w0,%w1,%w2
-   srai.<msafmt>\t%w0,%w1,%E2"
+{
+  if (which_alternative == 0)
+    return "sra.<msafmt>\t%w0,%w1,%w2";
+
+  return mips_msa_output_shift_immediate("srai.<msafmt>\t%w0,%w1,%E2", operands);
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
@@ -894,9 +900,12 @@
 	  (match_operand:IMSA 1 "register_operand" "f,f")
 	  (match_operand:IMSA 2 "reg_or_vector_same_uimm6_operand" "f,Uuv6")))]
   "ISA_HAS_MSA"
-  "@
-   sll.<msafmt>\t%w0,%w1,%w2
-   slli.<msafmt>\t%w0,%w1,%E2"
+{
+  if (which_alternative == 0)
+    return "sll.<msafmt>\t%w0,%w1,%w2";
+
+  return mips_msa_output_shift_immediate("slli.<msafmt>\t%w0,%w1,%E2", operands);
+}
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 

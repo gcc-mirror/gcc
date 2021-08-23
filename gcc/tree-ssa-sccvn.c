@@ -914,9 +914,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  break;
 	case COMPONENT_REF:
 	  /* The field decl is enough to unambiguously specify the field,
-	     a matching type is not necessary and a mismatching type
-	     is always a spurious difference.  */
-	  temp.type = NULL_TREE;
+	     so use its type here.  */
+	  temp.type = TREE_TYPE (TREE_OPERAND (ref, 1));
 	  temp.op0 = TREE_OPERAND (ref, 1);
 	  temp.op1 = TREE_OPERAND (ref, 2);
 	  temp.reverse = (AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (ref, 0)))
@@ -5873,10 +5872,33 @@ vn_reference_may_trap (vn_reference_t ref)
 	    return true;
 	  break;
 	case ARRAY_RANGE_REF:
-	case ARRAY_REF:
 	  if (TREE_CODE (op->op0) == SSA_NAME)
 	    return true;
 	  break;
+	case ARRAY_REF:
+	  {
+	    if (TREE_CODE (op->op0) != INTEGER_CST)
+	      return true;
+
+	    /* !in_array_bounds   */
+	    tree domain_type = TYPE_DOMAIN (ref->operands[i+1].type);
+	    if (!domain_type)
+	      return true;
+
+	    tree min = op->op1;
+	    tree max = TYPE_MAX_VALUE (domain_type);
+	    if (!min
+		|| !max
+		|| TREE_CODE (min) != INTEGER_CST
+		|| TREE_CODE (max) != INTEGER_CST)
+	      return true;
+
+	    if (tree_int_cst_lt (op->op0, min)
+		|| tree_int_cst_lt (max, op->op0))
+	      return true;
+
+	    break;
+	  }
 	case MEM_REF:
 	  /* Nothing interesting in itself, the base is separate.  */
 	  break;

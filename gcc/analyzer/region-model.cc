@@ -3178,7 +3178,8 @@ region_model::maybe_update_for_edge (const superedge &edge,
 
 void
 region_model::update_for_gcall (const gcall *call_stmt,
-				region_model_context *ctxt)
+				region_model_context *ctxt,
+				function *callee)
 {
   /* Build a vec of argument svalues, using the current top
      frame for resolving tree expressions.  */
@@ -3190,10 +3191,14 @@ region_model::update_for_gcall (const gcall *call_stmt,
       arg_svals.quick_push (get_rvalue (arg, ctxt));
     }
 
-  /* Get the function * from the call.  */
-  tree fn_decl = get_fndecl_for_call (call_stmt,ctxt);
-  function *fun = DECL_STRUCT_FUNCTION (fn_decl);
-  push_frame (fun, &arg_svals, ctxt);
+  if(!callee)
+  {
+    /* Get the function * from the gcall.  */
+    tree fn_decl = get_fndecl_for_call (call_stmt,ctxt);
+    callee = DECL_STRUCT_FUNCTION (fn_decl);
+  }
+
+  push_frame (callee, &arg_svals, ctxt);
 }
 
 /* Pop the top-most frame_region from the stack, and copy the return
@@ -3228,7 +3233,7 @@ region_model::update_for_call_superedge (const call_superedge &call_edge,
 					 region_model_context *ctxt)
 {
   const gcall *call_stmt = call_edge.get_call_stmt ();
-  update_for_gcall (call_stmt,ctxt);
+  update_for_gcall (call_stmt, ctxt, call_edge.get_callee_function ());
 }
 
 /* Extract calling information from the return superedge and update the model 

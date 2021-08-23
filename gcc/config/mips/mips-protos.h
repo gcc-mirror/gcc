@@ -317,6 +317,7 @@ extern const char *mips_output_sync_loop (rtx_insn *, rtx *);
 extern unsigned int mips_sync_loop_insns (rtx_insn *, rtx *);
 extern const char *mips_output_division (const char *, rtx *);
 extern const char *mips_msa_output_division (const char *, rtx *);
+extern const char *mips_msa_output_shift_immediate (const char *, rtx *);
 extern const char *mips_output_probe_stack_range (rtx, rtx);
 extern bool mips_hard_regno_rename_ok (unsigned int, unsigned int);
 extern bool mips_linked_madd_p (rtx_insn *, rtx_insn *);

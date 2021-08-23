@@ -213,9 +213,9 @@ static enum shift_alg shift_alg_hi[2][3][16] = {
     /*  0    1    2    3    4    5    6    7  */
     /*  8    9   10   11   12   13   14   15  */
     { INL, INL, INL, INL, INL, INL, INL, INL,
-      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+      SPC, SPC, SPC, SPC, ROT, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
     { INL, INL, INL, INL, INL, INL, INL, INL,
-      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+      SPC, SPC, SPC, SPC, ROT, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, INL, INL, INL,
       SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
   }
@@ -237,9 +237,9 @@ static enum shift_alg shift_alg_si[2][3][32] = {
       SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, INL, INL, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
-      SPC, SPC, SPC, SPC, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
   },
   {
     /* TARGET_H8300S  */
@@ -256,7 +256,7 @@ static enum shift_alg shift_alg_si[2][3][32] = {
       SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, INL, INL, INL, INL, LOP,
+      INL, INL, INL, INL, INL, INL, INL, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
   }
@@ -372,6 +372,9 @@ h8300_option_override (void)
       shift_alg_si[H8_300H][SHIFT_ASHIFTRT][25] = SHIFT_LOOP;
       shift_alg_si[H8_300H][SHIFT_ASHIFTRT][26] = SHIFT_LOOP;
       shift_alg_si[H8_300H][SHIFT_ASHIFTRT][27] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][28] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][29] = SHIFT_LOOP;
+      shift_alg_si[H8_300H][SHIFT_ASHIFTRT][30] = SHIFT_LOOP;
 
       /* H8S */
       shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
@@ -3830,6 +3833,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	}
       else if (count == 15)
 	{
+	  /* The basic idea here is to use the shift-by-16 idiom to make things
+	     small and efficient.  Of course, that loses one bit that we need,
+	     so we stuff the bit into C, shift by 16, then rotate the bit
+	     back in.  */
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
@@ -3841,7 +3848,9 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      gcc_unreachable ();
+	      info->special = "shll.w\t%f0\n\tmov.w\t%e0,%f0\n\texts.l\t%S0\n\trotxl.l\t%S0";
+	      info->cc_special = OLD_CC_SET_ZNV;
+	      goto end;
 	    }
 	}
       else if (count >= 16 && count <= 23)
@@ -3859,6 +3868,23 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0";
+	      info->cc_special = OLD_CC_SET_ZNV;
+	      goto end;
+	    }
+	}
+      else if (TARGET_H8300S && count == 27)
+	{
+	  switch (shift_type)
+	    {
+	    case SHIFT_ASHIFT:
+	      info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\trotr.l\t#2,%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
+	      goto end;
+	    case SHIFT_LSHIFTRT:
+	      info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
+	      goto end;
+	    case SHIFT_ASHIFTRT:
+	      info->remainder = count - 24;
+	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
 	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    }

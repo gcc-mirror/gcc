@@ -1,7 +1,36 @@
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_handle_statement_omp_attributes): Determine if
+	PRAGMA_OMP_ERROR directive is C_OMP_DIR_STANDALONE.
+	(cp_parser_omp_error): New function.
+	(cp_parser_pragma): Handle PRAGMA_OMP_ERROR.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_depend_sink): Reject spurious
+	comma at the end of list.  Don't parse closing paren here...
+	(cp_parser_omp_clause_depend): ... but here instead.
+
+2021-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101803
+	* cp-tree.h (CONSTRUCTOR_IS_PAREN_INIT): Clarify comment.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_requires): Don't call cp_lexer_nth_token_is
+	and optionally consume token if current token is CPP_EOF,
+	CPP_PRAGMA_EOL or CPP_CLOSE_PAREN.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_nothing): Use cp_parser_require_pragma_eol
+	instead of cp_parser_skip_to_pragma_eol.
+
 2021-08-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101344
-	PR c++/101820
+	PR c++/101803
 	* cp-tree.h (CONSTRUCTOR_BRACES_ELIDED_P): Define.
 	* decl.c (reshape_init_r): Set it.
 	* pt.c (collect_ctor_idx_types): Recurse into a sub-CONSTRUCTOR
