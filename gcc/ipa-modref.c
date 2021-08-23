@@ -1709,19 +1709,8 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	  if (gimple_call_fn (use_stmt) == name)
 	    lattice[index].merge (~EAF_NOCLOBBER);
 
-	  /* Return slot optimization would require bit of propagation;
-	     give up for now.  */
-	  if (gimple_call_return_slot_opt_p (call)
-	      && gimple_call_lhs (call) != NULL_TREE
-	      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (call))))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "%*s  Unhandled return slot opt\n",
-			 depth * 4, "");
-	      lattice[index].merge (0);
-	    }
 	  /* Recursion would require bit of propagation; give up for now.  */
-	  else if (callee && !ipa && recursive_call_p (current_function_decl,
+	  if (callee && !ipa && recursive_call_p (current_function_decl,
 						  callee))
 	    lattice[index].merge (0);
 	  else
@@ -1735,7 +1724,15 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	      /* Handle *name = func (...).  */
 	      if (gimple_call_lhs (call)
 		  && memory_access_to (gimple_call_lhs (call), name))
-		lattice[index].merge_direct_store ();
+		{
+		  lattice[index].merge_direct_store ();
+		  /* Return slot optimization passes address of
+		     LHS to callee via hidden parameter and this
+		     may make LHS to escape.  See PR 98499.  */
+		  if (gimple_call_return_slot_opt_p (call)
+		      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (call))))
+		    lattice[index].merge (EAF_NOREAD | EAF_DIRECT);
+		}
 
 	      /* We do not track accesses to the static chain (we could)
 		 so give up.  */
