@@ -1268,6 +1268,9 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	    return temp;
 	}
 
+      /* Check for useless truncation.  */
+      if (GET_MODE (op) == mode)
+	return op;
       break;
 
     case FLOAT_TRUNCATE:
