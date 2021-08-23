@@ -5977,8 +5977,15 @@ vars="sys_errlist sys_nerr sys_siglist"
 
 checkfuncs="__fsetlocking canonicalize_file_name dup3 getrlimit getrusage \
  getsysinfo gettimeofday on_exit pipe2 psignal pstat_getdynamic pstat_getstatic \
- realpath setrlimit sbrk spawnve spawnvpe strerror strsignal sysconf sysctl \
+ realpath setrlimit spawnve spawnvpe strerror strsignal sysconf sysctl \
  sysmp table times wait3 wait4"
+
+# Darwin has sbrk, but it is deprecated and that produces build-time warnings
+# so do not check for it.
+case "${host}" in
+  *-*-darwin*) ;;
+  *) checkfuncs="$checkfuncs sbrk"
+esac
 
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
@@ -7192,7 +7199,10 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_REALLOC $ac_have_decl
 _ACEOF
-ac_fn_c_check_decl "$LINENO" "sbrk" "ac_cv_have_decl_sbrk" "$ac_includes_default"
+
+  case "${host}" in
+      *-*-darwin*) ;; # Darwin's sbrk implementation is deprecated.
+      *) ac_fn_c_check_decl "$LINENO" "sbrk" "ac_cv_have_decl_sbrk" "$ac_includes_default"
 if test "x$ac_cv_have_decl_sbrk" = xyes; then :
   ac_have_decl=1
 else
@@ -7202,7 +7212,8 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_SBRK $ac_have_decl
 _ACEOF
-
+;;
+  esac
   ac_fn_c_check_decl "$LINENO" "strtol" "ac_cv_have_decl_strtol" "$ac_includes_default"
 if test "x$ac_cv_have_decl_strtol" = xyes; then :
   ac_have_decl=1
