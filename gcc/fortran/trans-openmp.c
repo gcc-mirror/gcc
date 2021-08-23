@@ -4023,6 +4023,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_GRAINSIZE);
       OMP_CLAUSE_GRAINSIZE_EXPR (c) = grainsize;
+      if (clauses->grainsize_strict)
+	OMP_CLAUSE_GRAINSIZE_STRICT (c) = 1;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -4038,6 +4040,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_NUM_TASKS);
       OMP_CLAUSE_NUM_TASKS_EXPR (c) = num_tasks;
+      if (clauses->num_tasks_strict)
+	OMP_CLAUSE_NUM_TASKS_STRICT (c) = 1;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -6001,8 +6005,12 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->nogroup;
 	  clausesa[GFC_OMP_SPLIT_TASKLOOP].grainsize
 	    = code->ext.omp_clauses->grainsize;
+	  clausesa[GFC_OMP_SPLIT_TASKLOOP].grainsize_strict
+	    = code->ext.omp_clauses->grainsize_strict;
 	  clausesa[GFC_OMP_SPLIT_TASKLOOP].num_tasks
 	    = code->ext.omp_clauses->num_tasks;
+	  clausesa[GFC_OMP_SPLIT_TASKLOOP].num_tasks_strict
+	    = code->ext.omp_clauses->num_tasks_strict;
 	  clausesa[GFC_OMP_SPLIT_TASKLOOP].priority
 	    = code->ext.omp_clauses->priority;
 	  clausesa[GFC_OMP_SPLIT_TASKLOOP].final_expr

@@ -1803,6 +1803,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->grainsize)
     {
       fputs (" GRAINSIZE(", dumpfile);
+      if (omp_clauses->grainsize_strict)
+	fputs ("strict: ", dumpfile);
       show_expr (omp_clauses->grainsize);
       fputc (')', dumpfile);
     }
@@ -1821,6 +1823,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->num_tasks)
     {
       fputs (" NUM_TASKS(", dumpfile);
+      if (omp_clauses->num_tasks_strict)
+	fputs ("strict: ", dumpfile);
       show_expr (omp_clauses->num_tasks);
       fputc (')', dumpfile);
     }
