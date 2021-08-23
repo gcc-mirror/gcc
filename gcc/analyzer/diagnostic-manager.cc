@@ -2110,7 +2110,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	            = cg_superedge.map_expr_from_callee_to_caller (callee_var,
                                                                    &expr);
                 else
-                  callee_var = callee_model->get_representative_tree (sval);
+                  caller_var = caller_model->get_representative_tree (sval);
               }
             else
 	      caller_var = caller_model->get_representative_tree (sval);
