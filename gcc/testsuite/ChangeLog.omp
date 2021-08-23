@@ -1,3 +1,22 @@
+2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/asyncwait-1.f95: Update dg-error.
+	* gfortran.dg/goacc/default-2.f: Update dg-error.
+	* gfortran.dg/goacc/enter-exit-data.f95: Update dg-error.
+	* gfortran.dg/goacc/if.f95: Update dg-error.
+	* gfortran.dg/goacc/parallel-kernels-clauses.f95: Update dg-error.
+	* gfortran.dg/goacc/routine-6.f90: Update dg-error.
+	* gfortran.dg/goacc/sie.f95: Update dg-error.
+	* gfortran.dg/goacc/update-if_present-2.f90: Update dg-error.
+	* gfortran.dg/gomp/cancel-2.f90: Update dg-error.
+	* gfortran.dg/gomp/declare-simd-1.f90: Update dg-error.
+	* gfortran.dg/gomp/error-3.f90: Update dg-error.
+	* gfortran.dg/gomp/loop-2.f90: Update dg-error.
+	* gfortran.dg/gomp/masked-2.f90: Update dg-error.
+
 2021-08-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

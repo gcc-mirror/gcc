@@ -3,6 +3,17 @@
 	Backported from master:
 	2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
+	* openmp.c (gfc_match_dupl_check, gfc_match_dupl_memorder,
+	gfc_match_dupl_atomic): New.
+	(gfc_match_omp_clauses): Use them; remove duplicate
+	'release'/'relaxed' clause matching; improve error dignostic
+	for 'default'.
+
+2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
 	* dump-parse-tree.c (show_omp_clauses): Handle 'strict' modifier
 	on grainsize/num_tasks
 	* gfortran.h (gfc_omp_clauses): Add grainsize_strict
