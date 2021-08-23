@@ -217,6 +217,9 @@ const struct loongarch_cpu_info *loongarch_arch_info;
 enum processor loongarch_tune;
 const struct loongarch_cpu_info *loongarch_tune_info;
 
+/* The ISA level associated with loongarch_arch.  */
+int loongarch_isa;
+
 /* Which cost information to use.  */
 static const struct loongarch_rtx_cost_data *loongarch_cost;
 
@@ -6132,22 +6135,6 @@ loongarch_cpu_info_from_isa (int isa)
   return NULL;
 }
 
-/* Return a loongarch_cpu_info entry determined by an option valued
-   OPT.  */
-
-static const struct loongarch_cpu_info *
-loongarch_cpu_info_from_opt (int opt)
-{
-  switch (opt)
-    {
-    case LARCH_ARCH_OPTION_NATIVE:
-      gcc_unreachable ();
-
-    default:
-      return &loongarch_cpu_info_table[opt];
-    }
-}
-
 /* Return a default loongarch_cpu_info entry, given that no -march= option
    was explicitly specified.  */
 
@@ -6165,31 +6152,84 @@ loongarch_default_arch (void)
    described by INFO.  */
 
 static void
-loongarch_set_architecture (const struct loongarch_cpu_info *info)
+loongarch_set_architecture_and_tune (struct gcc_options *opts, struct gcc_options *opts_set)
 {
-  if (info != 0)
-    {
-      loongarch_arch_info = info;
-      loongarch_arch = info->cpu;
-    }
+  const struct loongarch_cpu_info *arch_info = NULL;
+  const struct loongarch_cpu_info *tune_info = NULL;
+
+  if (opts_set->x_loongarch_arch_option)
+    arch_info = &loongarch_cpu_info_table[opts->x_loongarch_arch_option];
+  else
+    arch_info = loongarch_default_arch ();
+
+  gcc_assert (arch_info);
+
+  if (opts_set->x_loongarch_tune_option)
+    tune_info = &loongarch_cpu_info_table[opts->x_loongarch_tune_option];
+  else
+    tune_info = arch_info;
+
+  gcc_assert (tune_info);
+
+  loongarch_arch_info = arch_info;
+  loongarch_arch = arch_info->cpu;
+  loongarch_isa = arch_info->isa;
+
+  /* ISA value:
+   * loongarch64 0
+   * loongarch32 1
+   * gs464v      2
+   * */
+
+  switch (loongarch_isa)
+  {
+  case 0:
+    target_flags |= MASK_64BIT;
+    if (TARGET_DOUBLE_FLOAT)
+      target_flags |= MASK_FLOAT64;
+    break;
+
+  case 1:
+    target_flags &= ~MASK_64BIT;
+    target_flags &= ~MASK_FLOAT64;
+    break;
+
+  case 2:
+    if (loongarch_abi == ABILP64)
+      {
+	target_flags |= MASK_64BIT;
+	if (TARGET_DOUBLE_FLOAT)
+	  target_flags |= MASK_FLOAT64;
+      }
+    else
+      {
+	target_flags &= ~MASK_64BIT;
+	target_flags &= ~MASK_FLOAT64;
+      }
+    break;
+
+  default:
+    gcc_unreachable ();
+  }
+
+  loongarch_tune_info = tune_info;
+  loongarch_tune = tune_info->cpu;
 }
-
-/* Likewise for tuning.  */
-
 static void
-loongarch_set_tune (const struct loongarch_cpu_info *info)
-{
-  if (info != 0)
-    {
-      loongarch_tune_info = info;
-      loongarch_tune = info->cpu;
-    }
-}
+loongarch_option_override_internal (struct gcc_options *opts,
+				    struct gcc_options *opts_set);
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
 static void
 loongarch_option_override (void)
+{
+  loongarch_option_override_internal (&global_options, &global_options_set);
+}
+
+static void
+loongarch_option_override_internal (struct gcc_options *opts,
+				    struct gcc_options *opts_set)
 {
   int i, start, regno, mode;
 
@@ -6198,44 +6238,7 @@ loongarch_option_override (void)
 				    ? g_switch_value
 				    : LARCH_DEFAULT_GVALUE);
 
-  if (global_options_set.x_loongarch_arch_option)
-    loongarch_set_architecture (
-      loongarch_cpu_info_from_opt (loongarch_arch_option));
-
-  if (loongarch_arch_info == 0)
-    loongarch_set_architecture (loongarch_default_arch ());
-
-  /* Optimize for loongarch_arch, unless -mtune selects a different processor.
-   */
-  if (global_options_set.x_loongarch_tune_option)
-    loongarch_set_tune (loongarch_cpu_info_from_opt (loongarch_tune_option));
-
-  if (loongarch_tune_info == 0)
-    loongarch_set_tune (loongarch_arch_info);
-
-  if ((target_flags_explicit & MASK_64BIT) == 0)
-    {
-      if (loongarch_abi == ABILP32)
-	target_flags &= ~MASK_64BIT;
-      else
-	target_flags |= MASK_64BIT;
-    }
-
-  if ((target_flags_explicit & MASK_FLOAT64) != 0)
-    {
-      if (TARGET_SINGLE_FLOAT && TARGET_FLOAT64)
-	error ("unsupported combination: %s", "-mfp64 -msingle-float");
-    }
-  else
-    {
-      /* -msingle-float selects 32-bit float registers.
-	 The float registers should be the same size as
-	 the integer ones.  */
-      if (TARGET_64BIT && TARGET_DOUBLE_FLOAT)
-	target_flags |= MASK_FLOAT64;
-      else
-	target_flags &= ~MASK_FLOAT64;
-    }
+  loongarch_set_architecture_and_tune (opts, opts_set);
 
   /* End of code shared with GAS.  */
 
@@ -6253,10 +6256,26 @@ loongarch_option_override (void)
   if (loongarch_branch_cost == 0)
     loongarch_branch_cost = loongarch_cost->branch_cost;
 
-  /* Prefer a call to memcpy over inline code when optimizing for size,
-     though see MOVE_RATIO in loongarch.h.  */
-  if (optimize_size && (target_flags_explicit & MASK_MEMCPY) == 0)
-    target_flags |= MASK_MEMCPY;
+  if (opts_set->x_loongarch_cmodel_var)
+    {
+      switch (opts->x_loongarch_cmodel_var)
+	{
+	  case LARCH_CMODEL_TINY_STATIC:
+	  case LARCH_CMODEL_EXTREME:
+	    if (opts->x_flag_plt)
+	      error ("code model %qs and %qs not support %s mode",
+		     "tiny-static", "extreme", "plt");
+	    break;
+
+	  case LARCH_CMODEL_NORMAL:
+	  case LARCH_CMODEL_TINY:
+	  case LARCH_CMODEL_LARGE:
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	}
+    }
 
   /* .cfi_* directives generate a read-only section, so fall back on
      manual .eh_frame creation if we need the section to be writable.  */

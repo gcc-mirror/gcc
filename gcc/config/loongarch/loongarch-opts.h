@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LARCH_ARCH_OPTION_NATIVE -1
 
 
-enum loongarch_code_model {
+enum cmodel {
   LARCH_CMODEL_NORMAL,
   LARCH_CMODEL_TINY,
   LARCH_CMODEL_TINY_STATIC,

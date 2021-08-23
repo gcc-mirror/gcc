@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
+#include "diagnostic-core.h"
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -35,11 +36,22 @@ loongarch_handle_option (struct gcc_options *opts,
 			 location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
+  int value = decoded->value;
 
   switch (code)
     {
     case OPT_mno_flush_func:
       opts->x_loongarch_cache_flush_func = NULL;
+      return true;
+
+    case OPT_mmemcpy:
+      if (value)
+	{
+	  if (opts->x_optimize_size)
+	    opts->x_target_flags |= MASK_MEMCPY;
+	}
+      else
+	opts->x_target_flags &= ~MASK_MEMCPY;
       return true;
 
     default:

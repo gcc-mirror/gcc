@@ -21,6 +21,10 @@
 HeaderInclude
 config/loongarch/loongarch-opts.h
 
+; Bit flags that specify the ISA we are compiling for.
+Variable
+HOST_WIDE_INT loongarch_isa_flags = 0
+
 mabi=
 Target RejectNegative Joined Enum(loongarch_abi) Var(loongarch_abi) Init(LARCH_ABI_DEFAULT)
 -mabi=ABI	Generate code that conforms to the given ABI.
@@ -47,6 +51,14 @@ mcheck-zero-division
 Target Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero.
 
+msoft-float
+Target RejectNegative Mask(SOFT_FLOAT_ABI)
+Prevent the use of all hardware floating-point instructions.
+
+mhard-float
+Target RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
+Allow the use of hardware floating-point ABI and instructions.
+
 msingle-float
 Target RejectNegative Mask(SINGLE_FLOAT)
 Restrict the use of hardware floating-point instructions to 32-bit operations.
@@ -70,14 +82,6 @@ Target RejectNegative Joined Var(loongarch_cache_flush_func) Init(CACHE_FLUSH_FU
 Mask(64BIT)
 
 Mask(FLOAT64)
-
-msoft-float
-Target RejectNegative Mask(SOFT_FLOAT_ABI)
-Prevent the use of all hardware floating-point instructions.
-
-mhard-float
-Target RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
-Allow the use of hardware floating-point ABI and instructions.
 
 mmemcpy
 Target Mask(MEMCPY)
@@ -110,10 +114,18 @@ mfix-loongson3-llsc
 Target Var(FIX_LOONGSON3_LLSC)
 Work around an Loongson3 llsc errata.
 
+; -mcmodel= model
+TargetVariable
+enum cmodel loongarch_cmodel_var = LARCH_CMODEL_NORMAL
+
 ; The code model option names for -mcmodel.
 
+mcmodel=
+Target RejectNegative Joined Enum(cmodel) Var(loongarch_cmodel_var) Init(LARCH_CMODEL_NORMAL)
+Specify the code model.
+
 Enum
-Name(cmodel) Type(enum loongarch_code_model)
+Name(cmodel) Type(enum cmodel)
 The code model option names for -mcmodel:
 
 EnumValue
@@ -130,7 +142,3 @@ Enum(cmodel) String(large) Value(LARCH_CMODEL_LARGE)
 
 EnumValue
 Enum(cmodel) String(extreme) Value(LARCH_CMODEL_EXTREME)
-
-mcmodel=
-Target RejectNegative Joined Enum(cmodel) Var(loongarch_cmodel_var) Init(LARCH_CMODEL_NORMAL) Save
-Specify the code model.

@@ -101,8 +101,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS \
-  LINUX_DRIVER_SELF_SPECS, \
-  BASE_DRIVER_SELF_SPECS
+  LINUX_DRIVER_SELF_SPECS
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
 #undef GNU_USER_TARGET_MATHFILE_SPEC

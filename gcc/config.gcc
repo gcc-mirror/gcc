@@ -4935,7 +4935,7 @@ case "${target}" in
 		supported_defaults="abi arch float fpu tune fix-loongson3-llsc"
 
 		case ${with_arch} in
-		loongarch64 | loongarch32)
+		loongarch64 | loongarch32 | gs464v)
 			# OK
 			default_loongarch_arch=$with_arch
 			;;
@@ -5451,6 +5451,7 @@ case ${target} in
 		case ${default_loongarch_arch} in
 		    loongarch64) tm_defines="$tm_defines LARCH_ISA_DEFAULT=0" ;;
 		    loongarch32) tm_defines="$tm_defines LARCH_ISA_DEFAULT=1" ;;
+		    gs464v) tm_defines="$tm_defines LARCH_ISA_DEFAULT=2" ;;
 		esac
 		case ${default_loongarch_abi} in
 		    lp64)   tm_defines="$tm_defines LARCH_ABI_DEFAULT=ABILP64" ;;

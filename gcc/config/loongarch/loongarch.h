@@ -147,6 +147,10 @@ struct loongarch_cpu_info
 #ifndef MULTILIB_ISA_DEFAULT
 #if LARCH_ISA_DEFAULT == 0
 #define MULTILIB_ISA_DEFAULT "loongarch64"
+#elif LARCH_ISA_DEFAULT == 1
+#define MULTILIB_ISA_DEFAULT "loongarch32"
+#elif LARCH_ISA_DEFAULT == 2
+#define MULTILIB_ISA_DEFAULT "gs464v"
 #endif
 #endif
 
@@ -188,10 +192,6 @@ struct loongarch_cpu_info
   {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}"}, \
   {"fix-loongson3-llsc", "%{!mfix-loongson3-llsc: \
     %{!mno-fix-loongson3-llsc:-m%(VALUE)}}" }
-
-#define BASE_DRIVER_SELF_SPECS ""
-
-#define DRIVER_SELF_SPECS BASE_DRIVER_SELF_SPECS
 
 #define ABI_SPEC \
   "%{mabi=lp32:32}" \

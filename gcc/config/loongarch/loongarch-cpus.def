@@ -33,5 +33,5 @@ along with GCC; see the file COPYING3.  If not see
 /* Entries for generic ISAs.  */
 LARCH_CPU ("loongarch64", PROCESSOR_LOONGARCH64, 0, 0)
 LARCH_CPU ("loongarch32", PROCESSOR_LOONGARCH32, 1, 0)
-LARCH_CPU ("gs464v", PROCESSOR_GS464V, 0, 0)
+LARCH_CPU ("gs464v", PROCESSOR_GS464V, 2, 0)
 
