@@ -34,11 +34,20 @@ foo (int i, int x)
 int
 main ()
 {
+  /* Initialize offloading early, so that any output this may produce doesn't
+     disturb the 'dg-output' scanning below.  */
+  #pragma omp target
+  ;
+
   if (foo (5, 0) != 13 || foo (6, 1) != 17)
     abort ();
   #pragma omp error at (execution) severity (warning)
   const char *msg = "my message" + 2;
   #pragma omp error at (execution) severity (warning) message (msg + 1)
+  #pragma omp target
+  {
+    #pragma omp error at (execution) severity (warning) message ("hello from a distance")
+  }
   #pragma omp error at (execution) severity (fatal) message (msg - 2)
   #pragma omp error at (execution) severity (warning) message ("foobar")
   return 0;
@@ -46,4 +55,5 @@ main ()
 
 /* { dg-output "libgomp: error directive encountered(\n|\r|\n\r)(\n|\r|\n\r)" } */
 /* { dg-output "libgomp: error directive encountered: message(\n|\r|\n\r)(\n|\r|\n\r)" } */
+/* { dg-output "libgomp: error directive encountered: hello from a distance(\n|\r|\n\r)(\n|\r|\n\r)" } */
 /* { dg-output "libgomp: fatal error: error directive encountered: my message" } */
