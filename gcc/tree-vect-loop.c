@@ -1519,6 +1519,13 @@ vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
       stmt_vec_info inner_loop_cond_info
 	= loop_vinfo->lookup_stmt (inner_loop_cond);
       STMT_VINFO_TYPE (inner_loop_cond_info) = loop_exit_ctrl_vec_info_type;
+      /* If we have an estimate on the number of iterations of the inner
+	 loop use that to limit the scale for costing, otherwise use
+	 --param vect-inner-loop-cost-factor literally.  */
+      widest_int nit;
+      if (estimated_stmt_executions (loop->inner, &nit))
+	LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo)
+	  = wi::smin (nit, param_vect_inner_loop_cost_factor).to_uhwi ();
     }
 
   gcc_assert (!loop->aux);
