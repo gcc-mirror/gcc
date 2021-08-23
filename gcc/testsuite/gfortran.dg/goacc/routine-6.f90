@@ -118,7 +118,7 @@ subroutine subr10 (x)
 end subroutine subr10
 
 subroutine subr20 (x)
-  !$acc routine (subr20) nohost nohost ! { dg-error "Failed to match clause" }
+  !$acc routine (subr20) nohost nohost ! { dg-error "Duplicated 'nohost' clause" }
   integer, intent(inout) :: x
   if (x < 1) then
      x = 1

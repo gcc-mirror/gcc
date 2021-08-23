@@ -67,7 +67,7 @@ program test
   !$acc end kernels
 
 
-  !$acc parallel num_gangs ! { dg-error "Failed to match clause" }
+  !$acc parallel num_gangs ! { dg-error "Expected '\\(' after 'num_gangs'" }
 
   !$acc parallel num_gangs(3)
   !$acc end parallel
@@ -95,7 +95,7 @@ program test
   !$acc parallel num_gangs("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
 
-  !$acc kernels num_gangs ! { dg-error "Failed to match clause" }
+  !$acc kernels num_gangs ! { dg-error "Expected '\\(' after 'num_gangs'" }
 
   !$acc kernels num_gangs(3)
   !$acc end kernels
@@ -124,7 +124,7 @@ program test
   !$acc end kernels
 
 
-  !$acc parallel num_workers ! { dg-error "Failed to match clause" }
+  !$acc parallel num_workers ! { dg-error "Expected '\\(' after 'num_workers'" }
 
   !$acc parallel num_workers(3)
   !$acc end parallel
@@ -141,7 +141,7 @@ program test
   !$acc parallel num_workers(0) ! { dg-warning "must be positive" }
   !$acc end parallel
 
-  !$acc parallel num_workers() ! { dg-error "Invalid character in name" }
+  !$acc parallel num_workers() ! { dg-error "Invalid expression after 'num_workers\\('" }
 
   !$acc parallel num_workers(1.5) ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
@@ -152,7 +152,7 @@ program test
   !$acc parallel num_workers("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
 
-  !$acc kernels num_workers ! { dg-error "Failed to match clause" }
+  !$acc kernels num_workers ! { dg-error "Expected '\\(' after 'num_workers'" }
 
   !$acc kernels num_workers(3)
   !$acc end kernels
@@ -169,7 +169,7 @@ program test
   !$acc kernels num_workers(0) ! { dg-warning "must be positive" }
   !$acc end kernels
 
-  !$acc kernels num_workers() ! { dg-error "Invalid character in name" }
+  !$acc kernels num_workers() ! { dg-error "Invalid expression after 'num_workers\\('" }
 
   !$acc kernels num_workers(1.5) ! { dg-error "scalar INTEGER expression" }
   !$acc end kernels
@@ -181,7 +181,7 @@ program test
   !$acc end kernels
 
 
-  !$acc parallel vector_length ! { dg-error "Failed to match clause" }
+  !$acc parallel vector_length ! { dg-error "Expected '\\(' after 'vector_length'" }
 
   !$acc parallel vector_length(3)
   !$acc end parallel
@@ -198,7 +198,7 @@ program test
   !$acc parallel vector_length(0) ! { dg-warning "must be positive" }
   !$acc end parallel
 
-  !$acc parallel vector_length() ! { dg-error "Invalid character in name" }
+  !$acc parallel vector_length() ! { dg-error "Invalid expression after 'vector_length\\('" }
 
   !$acc parallel vector_length(1.5) ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
@@ -209,7 +209,7 @@ program test
   !$acc parallel vector_length("1") ! { dg-error "scalar INTEGER expression" }
   !$acc end parallel
 
-  !$acc kernels vector_length ! { dg-error "Failed to match clause" }
+  !$acc kernels vector_length ! { dg-error "Expected '\\(' after 'vector_length'" }
 
   !$acc kernels vector_length(3)
   !$acc end kernels
@@ -226,7 +226,7 @@ program test
   !$acc kernels vector_length(0) ! { dg-warning "must be positive" }
   !$acc end kernels
 
-  !$acc kernels vector_length() ! { dg-error "Invalid character in name" }
+  !$acc kernels vector_length() ! { dg-error "Invalid expression after 'vector_length\\('" }
 
   !$acc kernels vector_length(1.5) ! { dg-error "scalar INTEGER expression" }
   !$acc end kernels
