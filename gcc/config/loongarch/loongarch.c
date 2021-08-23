@@ -4009,15 +4009,15 @@ loongarch_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 {
   if (op == STORE_BY_PIECES)
     return loongarch_store_by_pieces_p (size, align);
-  if (op == MOVE_BY_PIECES && HAVE_movmemsi)
+  if (op == MOVE_BY_PIECES && HAVE_cpymemsi)
     {
-      /* movmemsi is meant to generate code that is at least as good as
-	 move_by_pieces.  However, movmemsi effectively uses a by-pieces
+      /* cpymemsi is meant to generate code that is at least as good as
+	 move_by_pieces.  However, cpymemsi effectively uses a by-pieces
 	 implementation both for moves smaller than a word and for
 	 word-aligned moves of no more than LARCH_MAX_MOVE_BYTES_STRAIGHT
 	 bytes.  We should allow the tree-level optimisers to do such
 	 moves by pieces, as it often exposes other optimization
-	 opportunities.  We might as well continue to use movmemsi at
+	 opportunities.  We might as well continue to use cpymemsi at
 	 the rtl level though, as it produces better code when
 	 scheduling is disabled (such as at -O).  */
       if (currently_expanding_to_rtl)
@@ -4202,7 +4202,7 @@ loongarch_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
     emit_insn (gen_nop ());
 }
 
-/* Expand a movmemsi instruction, which copies LENGTH bytes from
+/* Expand a cpymemsi instruction, which copies LENGTH bytes from
    memory reference SRC to memory reference DEST.  */
 
 bool

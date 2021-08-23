@@ -1388,11 +1388,11 @@ typedef struct loongarch_args
 #define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
 
 /* The maximum number of bytes that can be copied by one iteration of
-   a movmemsi loop; see loongarch_block_move_loop.  */
+   a cpymemsi loop; see loongarch_block_move_loop.  */
 #define LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER (UNITS_PER_WORD * 4)
 
 /* The maximum number of bytes that can be copied by a straight-line
-   implementation of movmemsi; see loongarch_block_move_straight.  We want
+   implementation of cpymemsi; see loongarch_block_move_straight.  We want
    to make sure that any loop-based implementation will iterate at
    least twice.  */
 #define LARCH_MAX_MOVE_BYTES_STRAIGHT (LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER * 2)
@@ -1402,11 +1402,11 @@ typedef struct loongarch_args
 */
 #define LARCH_CALL_RATIO 8
 
-/* Any loop-based implementation of movmemsi will have at least
+/* Any loop-based implementation of cpymemsi will have at least
    LARCH_MAX_MOVE_BYTES_STRAIGHT / UNITS_PER_WORD memory-to-memory
    moves, so allow individual copies of fewer elements.
 
-   When movmemsi is not available, use a value approximating
+   When cpymemsi is not available, use a value approximating
    the length of a memcpy call sequence, so that move_by_pieces
    will generate inline code if it is shorter than a function call.
    Since move_by_pieces_ninsns counts memory-to-memory moves, but
@@ -1414,7 +1414,7 @@ typedef struct loongarch_args
    value of LARCH_CALL_RATIO to take that into account.  */
 
 #define MOVE_RATIO(speed) \
-  (HAVE_movmemsi ? LARCH_MAX_MOVE_BYTES_STRAIGHT / MOVE_MAX \
+  (HAVE_cpymemsi ? LARCH_MAX_MOVE_BYTES_STRAIGHT / MOVE_MAX \
 		 : LARCH_CALL_RATIO / 2)
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
