@@ -1,3 +1,23 @@
+2021-08-22  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98397
+	* gcc.dg/c11-qual-1.c: New test.
+	* gcc.dg/c2x-qual-1.c: New test.
+	* gcc.dg/c2x-qual-2.c: New test.
+	* gcc.dg/c2x-qual-3.c: New test.
+	* gcc.dg/c2x-qual-4.c: New test.
+	* gcc.dg/c2x-qual-5.c: New test.
+	* gcc.dg/c2x-qual-6.c: New test.
+	* gcc.dg/c2x-qual-7.c: New test.
+	* gcc.dg/pointer-array-quals-1.c: Remove unnecessary flag.
+	* gcc.dg/pointer-array-quals-2.c: Remove unnecessary flag.
+
+2021-08-22  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/lto/pr101949_0.c: New test.
+	* gcc.dg/lto/pr101949_1.c: New test.
+
 2021-08-21  Ankur Saini  <arsenic@sourceware.org>
 
 	PR analyzer/101980

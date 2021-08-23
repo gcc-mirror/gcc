@@ -1,3 +1,10 @@
+2021-08-22  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/101949
+	* ipa-modref.c (analyze_ssa_name_flags): Indirect call implies
+	~EAF_NOCLOBBER.
+
 2021-08-21  Dragan Mladjenovic  <OT_Dragan.Mladjenovic@mediatek.com>
 
 	* config/mips/mips.c (mips_function_rodata_section,
