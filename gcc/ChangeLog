@@ -1,3 +1,51 @@
+2021-08-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/101723
+	* config/arm/arm-cpus.in (generic-armv7-a): Add quirk to suppress
+	writing .cpu directive in asm output.
+	* config/arm/arm.c (arm_identify_fpu_from_isa): New variable.
+	(arm_last_printed_arch_string): Delete.
+	(arm_last-printed_fpu_string): Delete.
+	(arm_configure_build_target): If use of floating-point/SIMD is
+	disabled, remove all fp/simd related features from the target ISA.
+	(last_arm_targ_options): New variable.
+	(arm_print_asm_arch_directives): Add new parameters.  Change order
+	of emitted directives and handle all cases here.
+	(arm_file_start): Always call arm_print_asm_arch_directives, move
+	all generation of .arch/.arch_extension here.
+	(arm_file_end): Call arm_print_asm_arch.
+	(arm_declare_function_name): Call arm_print_asm_arch_directives
+	instead of printing .arch/.fpu directives directly.
+
+2021-08-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_configure_build_target): Don't call
+	arm_option_reconfigure_globals.
+	(arm_option_restore): Call arm_option_reconfigure_globals after
+	reconfiguring the target.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Likewise.
+
+2021-08-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.c (arm_configure_build_target): Ensure the target's
+	arch_name is always set.
+
+2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	Backported from master:
+	2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* config/arm/arm_mve.h: Fix __arm_vctp16q return type.
+
 2021-08-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
