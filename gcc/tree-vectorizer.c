@@ -1033,10 +1033,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	 only non-if-converted parts took part in BB vectorization.  */
       if (flag_tree_slp_vectorize != 0
 	  && loop_vectorized_call
-	  && ! loop->inner
-	  /* This would purely be a workaround and should be removed
-	     once PR100089 is fixed.  */
-	  && flag_vect_cost_model != VECT_COST_MODEL_VERY_CHEAP)
+	  && ! loop->inner)
 	{
 	  basic_block bb = loop->header;
 	  bool require_loop_vectorize = false;
@@ -1062,12 +1059,17 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	      gimple_set_uid (stmt, -1);
 	      gimple_set_visited (stmt, false);
 	    }
-	  if (!require_loop_vectorize && vect_slp_bb (bb))
+	  if (!require_loop_vectorize)
 	    {
-	      fold_loop_internal_call (loop_vectorized_call,
-				       boolean_true_node);
-	      loop_vectorized_call = NULL;
-	      ret |= TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
+	      tree arg = gimple_call_arg (loop_vectorized_call, 1);
+	      class loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
+	      if (vect_slp_if_converted_bb (bb, scalar_loop))
+		{
+		  fold_loop_internal_call (loop_vectorized_call,
+					   boolean_true_node);
+		  loop_vectorized_call = NULL;
+		  ret |= TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
+		}
 	    }
 	}
       /* If outer loop vectorization fails for LOOP_VECTORIZED guarded
