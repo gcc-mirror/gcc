@@ -1,3 +1,8 @@
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_num_tasks,
+	c_parser_omp_clause_grainsize): Parse the optional strict: modifier.
+
 2021-08-22  Martin Uecker  <muecker@gwdg.de>
 
 	PR c/98397

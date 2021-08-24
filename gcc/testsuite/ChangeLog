@@ -1,3 +1,129 @@
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/switch.c: Remove xfail.  Add various tests.
+	* gcc.dg/analyzer/torture/switch-2.c: New test.
+	* gcc.dg/analyzer/torture/switch-3.c: New test.
+	* gcc.dg/analyzer/torture/switch-4.c: New test.
+	* gcc.dg/analyzer/torture/switch-5.c: New test.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101875
+	* gcc.dg/analyzer/pr101875.c: New test.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101837
+	* gcc.dg/analyzer/pr101837.c: New test.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101962
+	* gcc.dg/analyzer/data-model-23.c: New test.
+	* gcc.dg/analyzer/pr101962.c: New test.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-22.c: New test.
+	* gcc.dg/analyzer/uninit-6.c: New test.
+	* gcc.dg/analyzer/uninit-6b.c: New test.
+
+2021-08-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-7.c: New test.
+
+2021-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/97565
+	* g++.dg/lto/pr97565_0.C: New testcase.
+	* g++.dg/lto/pr97565_1.C: Likewise.
+
+2021-08-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/modref-1.C: Fix template.
+
+2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/asyncwait-1.f95: Update dg-error.
+	* gfortran.dg/goacc/default-2.f: Update dg-error.
+	* gfortran.dg/goacc/enter-exit-data.f95: Update dg-error.
+	* gfortran.dg/goacc/if.f95: Update dg-error.
+	* gfortran.dg/goacc/parallel-kernels-clauses.f95: Update dg-error.
+	* gfortran.dg/goacc/routine-6.f90: Update dg-error.
+	* gfortran.dg/goacc/sie.f95: Update dg-error.
+	* gfortran.dg/goacc/update-if_present-2.f90: Update dg-error.
+	* gfortran.dg/gomp/cancel-2.f90: Update dg-error.
+	* gfortran.dg/gomp/declare-simd-1.f90: Update dg-error.
+	* gfortran.dg/gomp/error-3.f90: Update dg-error.
+	* gfortran.dg/gomp/loop-2.f90: Update dg-error.
+	* gfortran.dg/gomp/masked-2.f90: Update dg-error.
+
+2021-08-23  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/102020
+	* gcc.dg/analyzer/malloc-callbacks.c : Fix faulty test.
+
+2021-08-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/fold-convlshift-1.c: New test case.
+	* gcc.dg/fold-convlshift-2.c: New test case.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86723
+	* gcc.dg/pr86723.c: New test.
+	* gcc.target/i386/pr86723.c: New test.
+	* gcc.dg/optimize-bswapdi-1.c: Use -fdump-tree-optimized instead of
+	-fdump-tree-bswap and scan for number of __builtin_bswap64 calls.
+	* gcc.dg/optimize-bswapdi-2.c: Likewise.
+	* gcc.dg/optimize-bswapsi-1.c: Use -fdump-tree-optimized instead of
+	-fdump-tree-bswap and scan for number of __builtin_bswap32 calls.
+	* gcc.dg/optimize-bswapsi-5.c: Likewise.
+	* gcc.dg/optimize-bswapsi-3.c: Likewise.  Expect one __builtin_bswap32
+	call instead of zero.
+
+2021-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79334
+	* gcc.dg/torture/pr79334-0.c: New testcase.
+	* gcc.dg/torture/pr79334-1.c: Likewise.
+
+2021-08-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102016
+	* gcc.target/i386/pr102016.c: New test.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101905
+	* gcc.dg/guality/pr101905.c: New test.
+
+2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR target/100856
+	* gcc.target/arm/acle/pr100856.c: Use arm_v8m_main_cde_multilib
+	and arm_v8m_main_cde.
+	* lib/target-supports.exp: Add
+	check_effective_target_FUNC_multilib for ARM CDE.
+
+2021-08-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/modref-1.C: New test.
+
+2021-08-23  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/101922
+	* gcc.target/mips/pr101922.c: New test.
+
+2021-08-23  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.c-torture/execute/gcc_tmpnam.h: Fix tmpnam case on Windows
+	where it can return a filename with "\" to indicate current
+	directory.
+	* gcc.c-torture/execute/fprintf-2.c: Use wrapper.
+	* gcc.c-torture/execute/printf-2.c: Use wrapper.
+	* gcc.c-torture/execute/user-printf.c: Use wrapper.
+
 2021-08-22  Martin Uecker  <muecker@gwdg.de>
 
 	PR c/98397

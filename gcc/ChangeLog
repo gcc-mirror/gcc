@@ -1,3 +1,200 @@
+2021-08-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-gen-builtins.c (parse_bif_entry): Don't call
+	asprintf, which is not available on AIX.
+
+2021-08-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config.gcc (target_gtfiles): Add ./rs6000-builtins.h.
+	* config/rs6000/t-rs6000 (EXTRA_GTYPE_DEPS): Set.
+
+2021-08-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Add rs6000-builtins.o to extra_objs.
+	* config/rs6000/rs6000-gen-builtins.c (main): Close init_file
+	last.
+	* config/rs6000/t-rs6000 (rs6000-gen-builtins.o): New target.
+	(rbtree.o): Likewise.
+	(rs6000-gen-builtins): Likewise.
+	(rs6000-builtins.c): Likewise.
+	(rs6000-builtins.h): Likewise.
+	(rs6000.o): Add dependency.
+	(EXTRA_HEADERS): Add rs6000-vecdefines.h.
+	(rs6000-vecdefines.h): New target.
+	(rs6000-builtins.o): Likewise.
+	(rs6000-call.o): Add rs6000-builtins.h as a dependency.
+	(rs6000-c.o): Likewise.
+
+2021-08-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101830
+	* config/rs6000/rs6000-gen-builtins.c (consume_whitespace):
+	Diagnose buffer overrun.
+	(safe_inc_pos): Fix overrun detection.
+	(match_identifier): Diagnose buffer overrun.
+	(match_integer): Likewise.
+	(match_to_right_bracket): Likewise.
+
+2021-08-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (modref_access_node::range_info_useful_p):
+	Improve range compare.
+	(modref_access_node::contains): New member function.
+	(modref_access_node::search): Remove.
+	(modref_access_node::insert): Be smarter about subaccesses.
+
+2021-08-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/i386/i386-options.c (ix86_omp_device_kind_arch_isa)
+	<omp_device_arch> [ACCEL_COMPILER]: Match "intel_mic".
+	* config/i386/t-omp-device (omp-device-properties-i386) <arch>:
+	Add "intel_mic".
+
+2021-08-23  Jeff Law  <jlaw@localhost.localdomain>
+
+	* config/h8300/h8300-protos.h (h8300_expand_epilogue): Add new
+	argument.
+	* config/h8300/jumpcall.md (call, call_value): Restrict to
+	!SIBLING_CALL_P cases.
+	(subcall, sibcall_value): New patterns & expanders.
+	* config/h8300/proepi.md (epilogue): Pass new argument to
+	h8300_expand_epilogue.
+	(sibcall_epilogue): New expander.
+	* config/h8300/h8300.c (h8300_expand_epilogue): Handle sibcall
+	epilogues too.
+	(h8300_ok_for_sibcall_p): New function.
+	(TARGET_FUNCTION_OK_FOR_SIBCALL): define.
+
+2021-08-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1): [TRUNCATE]:
+	Handle case where the operand is already the desired mode.
+
+2021-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/97565
+	* tree-ssa-structalias.c (ipa_pta_execute): Check in_other_partition
+	in addition to has_gimple_body.
+
+2021-08-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/101949
+	* ipa-modref.c (analyze_ssa_name_flags): Fix merging of
+	EAF_NOCLOBBER
+
+2021-08-23  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Put the option out of -mxl-mode-app-model
+	table.
+
+2021-08-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Properly scale the inner loop cost only once.
+
+2021-08-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-ssa-ccp.c (bit_value_binop) [TRUNC_MOD_EXPR, TRUNC_DIV_EXPR]:
+	Provide bounds for unsigned (and signed with non-negative operands)
+	division and modulus.
+
+2021-08-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.c (simplify_truncation): Generalize simplification
+	of (truncate:A (subreg:B X)).
+	(simplify_unary_operation_1) [FLOAT_TRUNCATE, FLOAT_EXTEND,
+	SIGN_EXTEND, ZERO_EXTEND]: Handle cases where the operand
+	already has the desired machine mode.
+	(test_scalar_int_ops): Add tests that useless extensions and
+	truncations are optimized away.
+	(test_scalar_int_ext_ops): New self-test function to confirm
+	that truncations of extensions are correctly simplified.
+	(test_scalar_int_ext_ops2): New self-test function to check
+	truncations of truncations, extensions of extensions, and
+	truncations of extensions.
+	(test_scalar_ops): Call the above two functions with a
+	representative sampling of integer machine modes.
+
+2021-08-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* match.pd (shift transformations): Change the sign of an
+	LSHIFT_EXPR if it reduces the number of explicit conversions.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/86723
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_finalize): Add
+	cast64_to_32 argument, set *cast64_to_32 to false, unless n is
+	non-memory permutation of 64-bit src which only has bytes of
+	0 or [5..8] and n->range is 4.
+	(find_bswap_or_nop): Add cast64_to_32 and mask arguments, adjust
+	find_bswap_or_nop_finalize caller, support bswap with some bytes
+	zeroed, as long as at least two bytes are not zeroed.
+	(bswap_replace): Add mask argument and handle masking of bswap
+	result.
+	(maybe_optimize_vector_constructor): Adjust find_bswap_or_nop
+	caller, punt if cast64_to_32 or mask is not all ones.
+	(pass_optimize_bswap::execute): Adjust find_bswap_or_nop_finalize
+	caller, for now punt if cast64_to_32.
+
+2021-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79334
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Record
+	a type also for COMPONENT_REFs.
+	(vn_reference_may_trap): Check ARRAY_REF with constant index
+	against the array domain.
+
+2021-08-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102016
+	* config/i386/sse.md (*avx512f_pshufb_truncv8hiv8qi_1): Add
+	TARGET_AVX512BW to condition.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101905
+	* dwarf2out.c (gen_variable_die): Add DW_AT_location for global
+	register variables already during early_dwarf if possible.
+
+2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* config/arm/arm_mve.h: Fix __arm_vctp16q return type.
+
+2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR target/100856
+	* config/arm/arm.opt: Fix typo.
+	* config/arm/t-rmprofile: Fix typo.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_GRAINSIZE_STRICT): Define.
+	(OMP_CLAUSE_NUM_TASKS_STRICT): Define.
+	* tree-pretty-print.c (dump_omp_clause) <case OMP_CLAUSE_GRAINSIZE,
+	case OMP_CLAUSE_NUM_TASKS>: Print strict: modifier.
+	* omp-expand.c (expand_task_call): Use GOMP_TASK_FLAG_STRICT in iflags
+	if either grainsize or num_tasks clause has the strict modifier.
+
+2021-08-23  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.def (DEBUG_COUNTER): New counter.
+	* gimple.c (gimple_call_arg_flags): Use it in IPA PTA.
+
+2021-08-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (analyze_ssa_name_flags): Improve handling of return slot.
+
+2021-08-23  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR target/101922
+	* config/mips/mips-protos.h (mips_msa_output_shift_immediate):
+	  Declare.
+	* config/mips/mips.c (mips_msa_output_shift_immediate): New
+	  function.
+	* config/mips/mips-msa.md (vashl<mode>3, vashr<mode>3,
+	  vlshr<mode>3): Call it.
+
 2021-08-22  Jan Hubicka  <hubicka@ucw.cz>
 	    Martin Liska  <mliska@suse.cz>
 
