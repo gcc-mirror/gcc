@@ -10034,7 +10034,7 @@
 	(unspec:VI48_AVX512VL
 	  [(match_operand:VI48_AVX512VL 1 "register_operand" "0")
 	   (match_operand:VI48_AVX512VL 2 "register_operand" "v")
-	   (match_operand:VI48_AVX512VL 3 "nonimmediate_operand" "vm")
+	   (match_operand:VI48_AVX512VL 3 "bcst_vector_operand" "vmBr")
 	   (match_operand:SI 4 "const_0_to_255_operand")]
 	  UNSPEC_VTERNLOG))]
   "TARGET_AVX512F"
@@ -10048,7 +10048,7 @@
 	(unspec:V
 	  [(match_operand:V 1 "register_operand" "0")
 	   (match_operand:V 2 "register_operand" "v")
-	   (match_operand:V 3 "nonimmediate_operand" "vm")
+	   (match_operand:V 3 "bcst_vector_operand" "vmBr")
 	   (match_operand:SI 4 "const_0_to_255_operand")]
 	  UNSPEC_VTERNLOG))]
   "TARGET_AVX512F"
@@ -10281,7 +10281,7 @@
 	  (unspec:VI48_AVX512VL
 	    [(match_operand:VI48_AVX512VL 1 "register_operand" "0")
 	     (match_operand:VI48_AVX512VL 2 "register_operand" "v")
-	     (match_operand:VI48_AVX512VL 3 "nonimmediate_operand" "vm")
+	     (match_operand:VI48_AVX512VL 3 "bcst_vector_operand" "vmBr")
 	     (match_operand:SI 4 "const_0_to_255_operand")]
 	    UNSPEC_VTERNLOG)
 	  (match_dup 1)
