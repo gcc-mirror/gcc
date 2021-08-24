@@ -29,4 +29,4 @@ int test2()
   return b;
 }
 // ipa-modref should analyze parameter B of test as noescape.
-// { dg-final { scan-tree-dump "return 1234" } }
+// { dg-final { scan-tree-dump "return 1234" "optimized" } }

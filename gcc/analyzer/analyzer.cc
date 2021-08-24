@@ -145,6 +145,8 @@ maybe_reconstruct_from_def_stmt (tree ssa_name,
 	tree return_type = gimple_call_return_type (call_stmt);
 	tree fn = fixup_tree_for_diagnostic_1 (gimple_call_fn (call_stmt),
 					       visited);
+	if (fn == NULL_TREE)
+	  return NULL_TREE;
 	unsigned num_args = gimple_call_num_args (call_stmt);
 	auto_vec<tree> args (num_args);
 	for (unsigned i = 0; i < num_args; i++)
@@ -155,6 +157,7 @@ maybe_reconstruct_from_def_stmt (tree ssa_name,
 	      return NULL_TREE;
 	    args.quick_push (arg);
 	  }
+	gcc_assert (fn);
 	return build_call_array_loc (gimple_location (call_stmt),
 				     return_type, fn,
 				     num_args, args.address ());

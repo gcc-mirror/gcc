@@ -874,7 +874,7 @@ h8300_can_use_return_insn_p (void)
 /* Generate RTL code for the function epilogue.  */
 
 void
-h8300_expand_epilogue (void)
+h8300_expand_epilogue (bool sibcall_p)
 {
   int regno;
   int saved_regs;
@@ -919,6 +919,7 @@ h8300_expand_epilogue (void)
 	  /* See if this pop would be the last insn before the return.
 	     If so, use rte/l or rts/l instead of pop or ldm.l.  */
 	  if (TARGET_H8300SX
+	      && !sibcall_p
 	      && !frame_pointer_needed
 	      && frame_size == 0
 	      && (saved_regs & ((1 << (regno - n_regs + 1)) - 1)) == 0)
@@ -931,12 +932,12 @@ h8300_expand_epilogue (void)
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
     {
-      if (TARGET_H8300SX)
+      if (TARGET_H8300SX && !sibcall_p)
 	returned_p = true;
       h8300_push_pop (HARD_FRAME_POINTER_REGNUM, 1, true, returned_p);
     }
 
-  if (!returned_p)
+  if (!returned_p && !sibcall_p)
     emit_jump_insn (ret_rtx);
 }
 
@@ -5533,6 +5534,25 @@ h8300_push_rounding (poly_int64 bytes)
 {
   return ((bytes + PARM_BOUNDARY / 8 - 1) & (-PARM_BOUNDARY / 8));
 }
+
+static bool
+h8300_ok_for_sibcall_p (tree fndecl, tree)
+{
+  /* If either the caller or target are special, then assume sibling
+     calls are not OK.  */
+  if (!fndecl
+      || h8300_os_task_function_p (fndecl)
+      || h8300_monitor_function_p (fndecl)
+      || h8300_interrupt_function_p (fndecl)
+      || h8300_saveall_function_p (fndecl)
+      || h8300_os_task_function_p (current_function_decl)
+      || h8300_monitor_function_p (current_function_decl)
+      || h8300_interrupt_function_p (current_function_decl)
+      || h8300_saveall_function_p (current_function_decl))
+    return false;
+
+  return 1;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -5627,5 +5647,8 @@ h8300_push_rounding (poly_int64 bytes)
 
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM 12
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL h8300_ok_for_sibcall_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;

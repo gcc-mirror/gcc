@@ -42,12 +42,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "bitmap.h"
 #include "tristate.h"
+#include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/constraint-manager.h"
 #include "analyzer/analyzer-selftests.h"
+#include "tree-pretty-print.h"
 
 #if ENABLE_ANALYZER
 
@@ -63,6 +65,50 @@ compare_constants (tree lhs_const, enum tree_code op, tree rhs_const)
   if (comparison == boolean_false_node)
     return tristate (tristate::TS_FALSE);
   return tristate (tristate::TS_UNKNOWN);
+}
+
+/* Return true iff CST is below the maximum value for its type.  */
+
+static bool
+can_plus_one_p (tree cst)
+{
+  gcc_assert (CONSTANT_CLASS_P (cst));
+  return tree_int_cst_lt (cst, TYPE_MAX_VALUE (TREE_TYPE (cst)));
+}
+
+/* Return (CST + 1).  */
+
+static tree
+plus_one (tree cst)
+{
+  gcc_assert (CONSTANT_CLASS_P (cst));
+  gcc_assert (can_plus_one_p (cst));
+  tree result = fold_build2 (PLUS_EXPR, TREE_TYPE (cst),
+			     cst, integer_one_node);
+  gcc_assert (CONSTANT_CLASS_P (result));
+  return result;
+}
+
+/* Return true iff CST is above the minimum value for its type.  */
+
+static bool
+can_minus_one_p (tree cst)
+{
+  gcc_assert (CONSTANT_CLASS_P (cst));
+  return tree_int_cst_lt (TYPE_MIN_VALUE (TREE_TYPE (cst)), cst);
+}
+
+/* Return (CST - 1).  */
+
+static tree
+minus_one (tree cst)
+{
+  gcc_assert (CONSTANT_CLASS_P (cst));
+  gcc_assert (can_minus_one_p (cst));
+  tree result = fold_build2 (MINUS_EXPR, TREE_TYPE (cst),
+			     cst, integer_one_node);
+  gcc_assert (CONSTANT_CLASS_P (result));
+  return result;
 }
 
 /* struct bound.  */
@@ -253,6 +299,678 @@ range::above_upper_bound (tree rhs_const) const
   return compare_constants (rhs_const,
 			    m_upper_bound.m_closed ? GT_EXPR : GE_EXPR,
 			    m_upper_bound.m_constant).is_true ();
+}
+
+/* struct bounded_range.  */
+
+bounded_range::bounded_range (const_tree lower, const_tree upper)
+: m_lower (const_cast<tree> (lower)),
+  m_upper (const_cast<tree> (upper))
+{
+  if (lower && upper)
+    {
+      gcc_assert (TREE_CODE (m_lower) == INTEGER_CST);
+      gcc_assert (TREE_CODE (m_upper) == INTEGER_CST);
+      /* We should have lower <= upper.  */
+      gcc_assert (!tree_int_cst_lt (m_upper, m_lower));
+    }
+  else
+    {
+      /* Purely for pending on-stack values, for
+	 writing back to.  */
+      gcc_assert (m_lower == NULL_TREE);
+      gcc_assert (m_lower == NULL_TREE);
+    }
+}
+
+static void
+dump_cst (pretty_printer *pp, tree cst, bool show_types)
+{
+  gcc_assert (cst);
+  if (show_types)
+    {
+      pp_character (pp, '(');
+      dump_generic_node (pp, TREE_TYPE (cst), 0, (dump_flags_t)0, false);
+      pp_character (pp, ')');
+    }
+  dump_generic_node (pp, cst, 0, (dump_flags_t)0, false);
+}
+
+/* Dump this object to PP.  */
+
+void
+bounded_range::dump_to_pp (pretty_printer *pp, bool show_types) const
+{
+  if (tree_int_cst_equal (m_lower, m_upper))
+    dump_cst (pp, m_lower, show_types);
+  else
+    {
+      pp_character (pp, '[');
+      dump_cst (pp, m_lower, show_types);
+      pp_string (pp, ", ");
+      dump_cst (pp, m_upper, show_types);
+      pp_character (pp, ']');
+    }
+}
+
+/* Dump this object to stderr.  */
+
+void
+bounded_range::dump (bool show_types) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp, show_types);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
+json::object *
+bounded_range::to_json () const
+{
+  json::object *range_obj = new json::object ();
+  set_json_attr (range_obj, "lower", m_lower);
+  set_json_attr (range_obj, "upper", m_upper);
+  return range_obj;
+}
+
+/* Subroutine of bounded_range::to_json.  */
+
+void
+bounded_range::set_json_attr (json::object *obj, const char *name, tree value)
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_printf (&pp, "%E", value);
+  obj->set (name, new json::string (pp_formatted_text (&pp)));
+}
+
+
+/* Return true iff CST is within this range.  */
+
+bool
+bounded_range::contains_p (tree cst) const
+{
+  /* Reject if below lower bound.  */
+  if (tree_int_cst_lt (cst, m_lower))
+    return false;
+  /* Reject if above lower bound.  */
+  if (tree_int_cst_lt (m_upper, cst))
+    return false;
+  return true;
+}
+
+/* If this range intersects OTHER, return true, writing
+   the intersection to *OUT if OUT is non-NULL.
+   Return false if they do not intersect.  */
+
+bool
+bounded_range::intersects_p (const bounded_range &other,
+			     bounded_range *out) const
+{
+  const tree max_lower
+    = (tree_int_cst_le (m_lower, other.m_lower)
+       ? other.m_lower : m_lower);
+  gcc_assert (TREE_CODE (max_lower) == INTEGER_CST);
+  const tree min_upper
+    = (tree_int_cst_le (m_upper, other.m_upper)
+       ? m_upper : other.m_upper);
+  gcc_assert (TREE_CODE (min_upper) == INTEGER_CST);
+
+  if (tree_int_cst_le (max_lower, min_upper))
+    {
+      if (out)
+	*out = bounded_range (max_lower, min_upper);
+      return true;
+    }
+  else
+    return false;
+}
+
+bool
+bounded_range::operator== (const bounded_range &other) const
+{
+  return (tree_int_cst_equal (m_lower, other.m_lower)
+	  && tree_int_cst_equal (m_upper, other.m_upper));
+}
+
+int
+bounded_range::cmp (const bounded_range &br1, const bounded_range &br2)
+{
+  if (int cmp_lower = tree_int_cst_compare (br1.m_lower,
+					    br2.m_lower))
+    return cmp_lower;
+  return tree_int_cst_compare (br1.m_upper, br2.m_upper);
+}
+
+/* struct bounded_ranges.  */
+
+/* Construct a bounded_ranges instance from a single range.  */
+
+bounded_ranges::bounded_ranges (const bounded_range &range)
+: m_ranges (1)
+{
+  m_ranges.quick_push (range);
+  canonicalize ();
+  validate ();
+}
+
+/* Construct a bounded_ranges instance from multiple ranges.  */
+
+bounded_ranges::bounded_ranges (const vec<bounded_range> &ranges)
+: m_ranges (ranges.length ())
+{
+  m_ranges.safe_splice (ranges);
+  canonicalize ();
+  validate ();
+}
+
+/* Construct a bounded_ranges instance for values of LHS for which
+   (LHS OP RHS_CONST) is true (e.g. "(LHS > 3)".  */
+
+bounded_ranges::bounded_ranges (enum tree_code op, tree rhs_const)
+: m_ranges ()
+{
+  gcc_assert (TREE_CODE (rhs_const) == INTEGER_CST);
+  tree type = TREE_TYPE (rhs_const);
+  switch (op)
+    {
+    default:
+      gcc_unreachable ();
+    case EQ_EXPR:
+      m_ranges.safe_push (bounded_range (rhs_const, rhs_const));
+      break;
+
+    case GE_EXPR:
+      m_ranges.safe_push (bounded_range (rhs_const, TYPE_MAX_VALUE (type)));
+      break;
+
+    case LE_EXPR:
+      m_ranges.safe_push (bounded_range (TYPE_MIN_VALUE (type), rhs_const));
+      break;
+
+    case NE_EXPR:
+      if (tree_int_cst_lt (TYPE_MIN_VALUE (type), rhs_const))
+	m_ranges.safe_push (bounded_range (TYPE_MIN_VALUE (type),
+					   minus_one (rhs_const)));
+      if (tree_int_cst_lt (rhs_const, TYPE_MAX_VALUE (type)))
+	m_ranges.safe_push (bounded_range (plus_one (rhs_const),
+					   TYPE_MAX_VALUE (type)));
+      break;
+    case GT_EXPR:
+      if (tree_int_cst_lt (rhs_const, TYPE_MAX_VALUE (type)))
+	m_ranges.safe_push (bounded_range (plus_one (rhs_const),
+					   TYPE_MAX_VALUE (type)));
+      break;
+    case LT_EXPR:
+      if (tree_int_cst_lt (TYPE_MIN_VALUE (type), rhs_const))
+	m_ranges.safe_push (bounded_range (TYPE_MIN_VALUE (type),
+					   minus_one (rhs_const)));
+      break;
+    }
+  canonicalize ();
+  validate ();
+}
+
+/* Subroutine of ctors for fixing up m_ranges.
+   Also, initialize m_hash.  */
+
+void
+bounded_ranges::canonicalize ()
+{
+  /* Sort the ranges.  */
+  m_ranges.qsort ([](const void *p1, const void *p2) -> int
+		  {
+		    const bounded_range &br1 = *(const bounded_range *)p1;
+		    const bounded_range &br2 = *(const bounded_range *)p2;
+		    return bounded_range::cmp (br1, br2);
+		  });
+
+  /* Merge ranges that are touching or overlapping.  */
+  for (unsigned i = 1; i < m_ranges.length (); )
+    {
+      bounded_range *prev = &m_ranges[i - 1];
+      const bounded_range *next = &m_ranges[i];
+      if (prev->intersects_p (*next, NULL)
+	  || (can_plus_one_p (prev->m_upper)
+	      && tree_int_cst_equal (plus_one (prev->m_upper),
+				     next->m_lower)))
+	{
+	  prev->m_upper = next->m_upper;
+	  m_ranges.ordered_remove (i);
+	}
+      else
+	i++;
+    }
+
+  /* Initialize m_hash.  */
+  inchash::hash hstate (0);
+  for (const auto &iter : m_ranges)
+    {
+      inchash::add_expr (iter.m_lower, hstate);
+      inchash::add_expr (iter.m_upper, hstate);
+    }
+  m_hash = hstate.end ();
+}
+
+/* Assert that this object is valid.  */
+
+void
+bounded_ranges::validate () const
+{
+  /* Skip this in a release build.  */
+#if !CHECKING_P
+  return;
+#endif
+
+  for (unsigned i = 1; i < m_ranges.length (); i++)
+    {
+      const bounded_range &prev = m_ranges[i - 1];
+      const bounded_range &next = m_ranges[i];
+
+      /* Give up if we somehow have incompatible different types.  */
+      if (!types_compatible_p (TREE_TYPE (prev.m_upper),
+			       TREE_TYPE (next.m_lower)))
+	continue;
+
+      /* Verify sorted.  */
+      gcc_assert (tree_int_cst_lt (prev.m_upper, next.m_lower));
+
+      gcc_assert (can_plus_one_p (prev.m_upper));
+      /* otherwise there's no room for "next".  */
+
+      /* Verify no ranges touch each other.  */
+      gcc_assert (tree_int_cst_lt (plus_one (prev.m_upper), next.m_lower));
+    }
+}
+
+/* bounded_ranges equality operator.  */
+
+bool
+bounded_ranges::operator== (const bounded_ranges &other) const
+{
+  if (m_ranges.length () != other.m_ranges.length ())
+    return false;
+  for (unsigned i = 0; i < m_ranges.length (); i++)
+    {
+      if (m_ranges[i] != other.m_ranges[i])
+	return false;
+    }
+  return true;
+}
+
+/* Dump this object to PP.  */
+
+void
+bounded_ranges::dump_to_pp (pretty_printer *pp, bool show_types) const
+{
+  pp_character (pp, '{');
+  for (unsigned i = 0; i < m_ranges.length (); ++i)
+    {
+      if (i > 0)
+	pp_string (pp, ", ");
+      m_ranges[i].dump_to_pp (pp, show_types);
+    }
+  pp_character (pp, '}');
+}
+
+/* Dump this object to stderr.  */
+
+DEBUG_FUNCTION void
+bounded_ranges::dump (bool show_types) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp, show_types);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
+json::value *
+bounded_ranges::to_json () const
+{
+  json::array *arr_obj = new json::array ();
+
+  for (unsigned i = 0; i < m_ranges.length (); ++i)
+    arr_obj->append (m_ranges[i].to_json ());
+
+  return arr_obj;
+}
+
+/* Determine whether (X OP RHS_CONST) is known to be true or false
+   for all X in the ranges expressed by this object.  */
+
+tristate
+bounded_ranges::eval_condition (enum tree_code op,
+				tree rhs_const,
+				bounded_ranges_manager *mgr) const
+{
+  /* Convert (X OP RHS_CONST) to a bounded_ranges instance and find
+     the intersection of that with this object.  */
+  bounded_ranges other (op, rhs_const);
+  const bounded_ranges *intersection
+    = mgr->get_or_create_intersection (this, &other);
+
+  if (intersection->m_ranges.length () > 0)
+    {
+      /* We can use pointer equality to check for equality,
+	 due to instance consolidation.  */
+      if (intersection == this)
+	return tristate (tristate::TS_TRUE);
+      else
+	return tristate (tristate::TS_UNKNOWN);
+    }
+  else
+    /* No intersection.  */
+    return tristate (tristate::TS_FALSE);
+}
+
+/* Return true if CST is within any of the ranges.  */
+
+bool
+bounded_ranges::contain_p (tree cst) const
+{
+  gcc_assert (TREE_CODE (cst) == INTEGER_CST);
+  for (const auto &iter : m_ranges)
+    {
+      /* TODO: should we optimize this based on sorting?  */
+      if (iter.contains_p (cst))
+	return true;
+    }
+  return false;
+}
+
+int
+bounded_ranges::cmp (const bounded_ranges *a, const bounded_ranges *b)
+{
+  if (int cmp_length = ((int)a->m_ranges.length ()
+			- (int)b->m_ranges.length ()))
+    return cmp_length;
+  for (unsigned i = 0; i < a->m_ranges.length (); i++)
+    {
+      if (int cmp_range = bounded_range::cmp (a->m_ranges[i], b->m_ranges[i]))
+	return cmp_range;
+    }
+  /* They are equal.  They ought to have been consolidated, so we should
+     have two pointers to the same object.  */
+  gcc_assert (a == b);
+  return 0;
+}
+
+/* class bounded_ranges_manager.  */
+
+/* bounded_ranges_manager's dtor.  */
+
+bounded_ranges_manager::~bounded_ranges_manager ()
+{
+  /* Delete the managed objects.  */
+  for (const auto &iter : m_map)
+    delete iter.second;
+}
+
+/* Get the bounded_ranges instance for the empty set,  creating it if
+   necessary.  */
+
+const bounded_ranges *
+bounded_ranges_manager::get_or_create_empty ()
+{
+  auto_vec<bounded_range> empty_vec;
+
+  return consolidate (new bounded_ranges (empty_vec));
+}
+
+/* Get the bounded_ranges instance for {CST}, creating it if necessary.  */
+
+const bounded_ranges *
+bounded_ranges_manager::get_or_create_point (const_tree cst)
+{
+  gcc_assert (TREE_CODE (cst) == INTEGER_CST);
+
+  return get_or_create_range (cst, cst);
+}
+
+/* Get the bounded_ranges instance for {[LOWER_BOUND..UPPER_BOUND]},
+   creating it if necessary.  */
+
+const bounded_ranges *
+bounded_ranges_manager::get_or_create_range (const_tree lower_bound,
+					     const_tree upper_bound)
+{
+  gcc_assert (TREE_CODE (lower_bound) == INTEGER_CST);
+  gcc_assert (TREE_CODE (upper_bound) == INTEGER_CST);
+
+  return consolidate
+    (new bounded_ranges (bounded_range (lower_bound, upper_bound)));
+}
+
+/* Get the bounded_ranges instance for the union of OTHERS,
+   creating it if necessary.  */
+
+const bounded_ranges *
+bounded_ranges_manager::
+get_or_create_union (const vec <const bounded_ranges *> &others)
+{
+  auto_vec<bounded_range> ranges;
+  for (const auto &r : others)
+    ranges.safe_splice (r->m_ranges);
+  return consolidate (new bounded_ranges (ranges));
+}
+
+/* Get the bounded_ranges instance for the intersection of A and B,
+   creating it if necessary.  */
+
+const bounded_ranges *
+bounded_ranges_manager::get_or_create_intersection (const bounded_ranges *a,
+						    const bounded_ranges *b)
+{
+  auto_vec<bounded_range> ranges;
+  unsigned a_idx = 0;
+  unsigned b_idx = 0;
+  while (a_idx < a->m_ranges.length ()
+	 && b_idx < b->m_ranges.length ())
+    {
+      const bounded_range &r_a = a->m_ranges[a_idx];
+      const bounded_range &r_b = b->m_ranges[b_idx];
+
+      bounded_range intersection (NULL_TREE, NULL_TREE);
+      if (r_a.intersects_p (r_b, &intersection))
+	{
+	  ranges.safe_push (intersection);
+	}
+      if (tree_int_cst_lt (r_a.m_lower, r_b.m_lower))
+	{
+	  a_idx++;
+	}
+      else
+	{
+	  if (tree_int_cst_lt (r_a.m_upper, r_b.m_upper))
+	    a_idx++;
+	  else
+	    b_idx++;
+	}
+    }
+
+  return consolidate (new bounded_ranges (ranges));
+}
+
+/* Get the bounded_ranges instance for the inverse of OTHER relative
+   to TYPE, creating it if necessary.
+   This is for use when handling "default" in switch statements, where
+   OTHER represents all the other cases.  */
+
+const bounded_ranges *
+bounded_ranges_manager::get_or_create_inverse (const bounded_ranges *other,
+					       tree type)
+{
+  tree min_val = TYPE_MIN_VALUE (type);
+  tree max_val = TYPE_MAX_VALUE (type);
+  if (other->m_ranges.length () == 0)
+    return get_or_create_range (min_val, max_val);
+  auto_vec<bounded_range> ranges;
+  tree first_lb = other->m_ranges[0].m_lower;
+  if (tree_int_cst_lt (min_val, first_lb)
+      && can_minus_one_p (first_lb))
+    ranges.safe_push (bounded_range (min_val,
+				     minus_one (first_lb)));
+  for (unsigned i = 1; i < other->m_ranges.length (); i++)
+    {
+      tree prev_ub = other->m_ranges[i - 1].m_upper;
+      tree iter_lb = other->m_ranges[i].m_lower;
+      gcc_assert (tree_int_cst_lt (prev_ub, iter_lb));
+      if (can_plus_one_p (prev_ub) && can_minus_one_p (iter_lb))
+	ranges.safe_push (bounded_range (plus_one (prev_ub),
+					 minus_one (iter_lb)));
+    }
+  tree last_ub
+    = other->m_ranges[other->m_ranges.length () - 1].m_upper;
+  if (tree_int_cst_lt (last_ub, max_val)
+      && can_plus_one_p (last_ub))
+    ranges.safe_push (bounded_range (plus_one (last_ub), max_val));
+
+  return consolidate (new bounded_ranges (ranges));
+}
+
+/* If an object equal to INST is already present, delete INST and
+   return the existing object.
+   Otherwise add INST and return it.  */
+
+const bounded_ranges *
+bounded_ranges_manager::consolidate (bounded_ranges *inst)
+{
+  if (bounded_ranges **slot = m_map.get (inst))
+    {
+      delete inst;
+      return *slot;
+    }
+  m_map.put (inst, inst);
+  return inst;
+}
+
+/* Get the bounded_ranges instance for EDGE of SWITCH_STMT,
+   creating it if necessary, and caching it by edge.  */
+
+const bounded_ranges *
+bounded_ranges_manager::
+get_or_create_ranges_for_switch (const switch_cfg_superedge *edge,
+				 const gswitch *switch_stmt)
+{
+  /* Look in per-edge cache.  */
+  if (const bounded_ranges ** slot = m_edge_cache.get (edge))
+    return *slot;
+
+  /* Not yet in cache.  */
+  const bounded_ranges *all_cases_ranges
+    = create_ranges_for_switch (*edge, switch_stmt);
+  m_edge_cache.put (edge, all_cases_ranges);
+  return all_cases_ranges;
+}
+
+/* Get the bounded_ranges instance for EDGE of SWITCH_STMT,
+   creating it if necessary, for edges for which the per-edge
+   cache has not yet been populated.  */
+
+const bounded_ranges *
+bounded_ranges_manager::
+create_ranges_for_switch (const switch_cfg_superedge &edge,
+			  const gswitch *switch_stmt)
+{
+  /* Get the ranges for each case label.  */
+  auto_vec <const bounded_ranges *> case_ranges_vec
+    (gimple_switch_num_labels (switch_stmt));
+
+  for (tree case_label : edge.get_case_labels ())
+    {
+      /* Get the ranges for this case label.  */
+      const bounded_ranges *case_ranges
+	= make_case_label_ranges (switch_stmt, case_label);
+      case_ranges_vec.quick_push (case_ranges);
+    }
+
+  /* Combine all the ranges for each case label into a single collection
+     of ranges.  */
+  const bounded_ranges *all_cases_ranges
+    = get_or_create_union (case_ranges_vec);
+  return all_cases_ranges;
+}
+
+/* Get the bounded_ranges instance for CASE_LABEL within
+   SWITCH_STMT.  */
+
+const bounded_ranges *
+bounded_ranges_manager::
+make_case_label_ranges (const gswitch *switch_stmt,
+			tree case_label)
+{
+  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
+  tree lower_bound = CASE_LOW (case_label);
+  tree upper_bound = CASE_HIGH (case_label);
+  if (lower_bound)
+    {
+      if (upper_bound)
+	/* Range.  */
+	return get_or_create_range (lower_bound, upper_bound);
+      else
+	/* Single-value.  */
+	return get_or_create_point (lower_bound);
+    }
+  else
+    {
+      /* The default case.
+	 Add exclusions based on the other cases.  */
+      auto_vec <const bounded_ranges *> other_case_ranges
+	(gimple_switch_num_labels (switch_stmt));
+      for (unsigned other_idx = 1;
+	   other_idx < gimple_switch_num_labels (switch_stmt);
+	   other_idx++)
+	{
+	  tree other_label = gimple_switch_label (switch_stmt,
+						  other_idx);
+	  const bounded_ranges *other_ranges
+	    = make_case_label_ranges (switch_stmt, other_label);
+	  other_case_ranges.quick_push (other_ranges);
+	}
+      const bounded_ranges *other_cases_ranges
+	= get_or_create_union (other_case_ranges);
+      tree type = TREE_TYPE (gimple_switch_index (switch_stmt));
+      return get_or_create_inverse (other_cases_ranges, type);
+    }
+}
+
+/* Dump the number of objects of each class that were managed by this
+   manager to LOGGER.
+   If SHOW_OBJS is true, also dump the objects themselves.  */
+
+void
+bounded_ranges_manager::log_stats (logger *logger, bool show_objs) const
+{
+  LOG_SCOPE (logger);
+  logger->log ("  # %s: %li", "ranges", m_map.elements ());
+  if (!show_objs)
+    return;
+
+  auto_vec<const bounded_ranges *> vec_objs (m_map.elements ());
+  for (const auto &iter : m_map)
+    vec_objs.quick_push (iter.second);
+  vec_objs.qsort
+    ([](const void *p1, const void *p2) -> int
+     {
+       const bounded_ranges *br1 = *(const bounded_ranges * const *)p1;
+       const bounded_ranges *br2 = *(const bounded_ranges * const *)p2;
+       return bounded_ranges::cmp (br1, br2);
+     });
+
+  for (const auto &iter : vec_objs)
+    {
+      logger->start_log_line ();
+      pretty_printer *pp = logger->get_printer ();
+      pp_string (pp, "    ");
+      iter->dump_to_pp (pp, true);
+      logger->end_log_line ();
+    }
 }
 
 /* class equiv_class.  */
@@ -576,6 +1294,49 @@ constraint::implied_by (const constraint &other,
   return false;
 }
 
+/* class bounded_ranges_constraint.  */
+
+void
+bounded_ranges_constraint::print (pretty_printer *pp,
+				  const constraint_manager &cm) const
+{
+  m_ec_id.print (pp);
+  pp_string (pp, ": ");
+  m_ec_id.get_obj (cm).print (pp);
+  pp_string (pp, ": ");
+  m_ranges->dump_to_pp (pp, true);
+}
+
+json::object *
+bounded_ranges_constraint::to_json () const
+{
+  json::object *con_obj = new json::object ();
+
+  con_obj->set ("ec", new json::integer_number (m_ec_id.as_int ()));
+  con_obj->set ("ranges", m_ranges->to_json ());
+
+  return con_obj;
+}
+
+bool
+bounded_ranges_constraint::
+operator== (const bounded_ranges_constraint &other) const
+{
+  if (m_ec_id != other.m_ec_id)
+    return false;
+
+  /* We can compare by pointer, since the bounded_ranges_manager
+     consolidates instances.  */
+  return m_ranges == other.m_ranges;
+}
+
+void
+bounded_ranges_constraint::add_to_hash (inchash::hash *hstate) const
+{
+  hstate->add_int (m_ec_id.m_idx);
+  hstate->merge_hash (m_ranges->get_hash ());
+}
+
 /* class equiv_class_id.  */
 
 /* Get the underlying equiv_class for this ID from CM.  */
@@ -612,6 +1373,7 @@ equiv_class_id::print (pretty_printer *pp) const
 constraint_manager::constraint_manager (const constraint_manager &other)
 : m_equiv_classes (other.m_equiv_classes.length ()),
   m_constraints (other.m_constraints.length ()),
+  m_bounded_ranges_constraints (other.m_bounded_ranges_constraints.length ()),
   m_mgr (other.m_mgr)
 {
   int i;
@@ -621,6 +1383,8 @@ constraint_manager::constraint_manager (const constraint_manager &other)
   constraint *c;
   FOR_EACH_VEC_ELT (other.m_constraints, i, c)
     m_constraints.quick_push (*c);
+  for (const auto &iter : other.m_bounded_ranges_constraints)
+    m_bounded_ranges_constraints.quick_push (iter);
 }
 
 /* constraint_manager's assignment operator.  */
@@ -630,6 +1394,7 @@ constraint_manager::operator= (const constraint_manager &other)
 {
   gcc_assert (m_equiv_classes.length () == 0);
   gcc_assert (m_constraints.length () == 0);
+  gcc_assert (m_bounded_ranges_constraints.length () == 0);
 
   int i;
   equiv_class *ec;
@@ -640,6 +1405,8 @@ constraint_manager::operator= (const constraint_manager &other)
   m_constraints.reserve (other.m_constraints.length ());
   FOR_EACH_VEC_ELT (other.m_constraints, i, c)
     m_constraints.quick_push (*c);
+  for (const auto &iter : other.m_bounded_ranges_constraints)
+    m_bounded_ranges_constraints.quick_push (iter);
 
   return *this;
 }
@@ -658,6 +1425,8 @@ constraint_manager::hash () const
     hstate.merge_hash (ec->hash ());
   FOR_EACH_VEC_ELT (m_constraints, i, c)
     hstate.merge_hash (c->hash ());
+  for (const auto &iter : m_bounded_ranges_constraints)
+    iter.add_to_hash (&hstate);
   return hstate.end ();
 }
 
@@ -669,6 +1438,9 @@ constraint_manager::operator== (const constraint_manager &other) const
   if (m_equiv_classes.length () != other.m_equiv_classes.length ())
     return false;
   if (m_constraints.length () != other.m_constraints.length ())
+    return false;
+  if (m_bounded_ranges_constraints.length ()
+      != other.m_bounded_ranges_constraints.length ())
     return false;
 
   int i;
@@ -683,6 +1455,13 @@ constraint_manager::operator== (const constraint_manager &other) const
   FOR_EACH_VEC_ELT (m_constraints, i, c)
     if (!(*c == other.m_constraints[i]))
       return false;
+
+  for (unsigned i = 0; i < m_bounded_ranges_constraints.length (); i++)
+    {
+      if (m_bounded_ranges_constraints[i]
+	  != other.m_bounded_ranges_constraints[i])
+	return false;
+    }
 
   return true;
 }
@@ -710,6 +1489,18 @@ constraint_manager::print (pretty_printer *pp) const
       if (i > 0)
 	pp_string (pp, " && ");
       c->print (pp, *this);
+    }
+  if (m_bounded_ranges_constraints.length ())
+    {
+      pp_string (pp, "  |  ");
+      i = 0;
+      for (const auto &iter : m_bounded_ranges_constraints)
+	{
+	  if (i > 0)
+	    pp_string (pp, " && ");
+	  iter.print (pp, *this);
+	  i++;
+	}
     }
   pp_printf (pp, "}");
 }
@@ -762,6 +1553,30 @@ constraint_manager::dump_to_pp (pretty_printer *pp, bool multiline) const
     }
   if (!multiline)
     pp_string (pp, "}");
+  if (m_bounded_ranges_constraints.length ())
+    {
+      if (multiline)
+	pp_string (pp, "  ");
+      pp_string (pp, "ranges:");
+      if (multiline)
+	pp_newline (pp);
+      else
+	pp_string (pp, "{");
+      i = 0;
+      for (const auto &iter : m_bounded_ranges_constraints)
+	{
+	  if (multiline)
+	    pp_string (pp, "    ");
+	  else if (i > 0)
+	    pp_string (pp, " && ");
+	  iter.print (pp, *this);
+	  if (multiline)
+	    pp_newline (pp);
+	  i++;
+	}
+      if (!multiline)
+	pp_string (pp, "}");
+      }
 }
 
 /* Dump a multiline representation of this constraint_manager to FP.  */
@@ -816,6 +1631,14 @@ constraint_manager::to_json () const
     for (const constraint &c : m_constraints)
       con_arr->append (c.to_json ());
     cm_obj->set ("constraints", con_arr);
+  }
+
+  /* m_bounded_ranges_constraints.  */
+  {
+    json::array *con_arr = new json::array ();
+    for (const auto &c : m_bounded_ranges_constraints)
+      con_arr->append (c.to_json ());
+    cm_obj->set ("bounded_ranges_constraints", con_arr);
   }
 
   return cm_obj;
@@ -936,6 +1759,8 @@ constraint_manager::add_unknown_constraint (equiv_class_id lhs_ec_id,
 	if (final_ec != old_ec)
 	  m_equiv_classes[rhs_ec_id.m_idx] = final_ec;
 	delete old_ec;
+	if (lhs_ec_id == final_ec_id)
+	  lhs_ec_id = rhs_ec_id;
 
 	/* Update the constraints.  */
 	constraint *c;
@@ -954,6 +1779,14 @@ constraint_manager::add_unknown_constraint (equiv_class_id lhs_ec_id,
 	      c->m_lhs = rhs_ec_id;
 	    if (c->m_rhs == final_ec_id)
 	      c->m_rhs = rhs_ec_id;
+	  }
+	bounded_ranges_constraint *brc;
+	FOR_EACH_VEC_ELT (m_bounded_ranges_constraints, i, brc)
+	  {
+	    if (brc->m_ec_id == rhs_ec_id)
+	      brc->m_ec_id = lhs_ec_id;
+	    if (brc->m_ec_id == final_ec_id)
+	      brc->m_ec_id = rhs_ec_id;
 	  }
 
 	/* We may now have self-comparisons due to the merger; these
@@ -1007,6 +1840,8 @@ constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
 
   /* Add the constraint.  */
   m_constraints.safe_push (new_c);
+
+  /* We don't yet update m_bounded_ranges_constraints here yet.  */
 
   if (!flag_analyzer_transitivity)
     return;
@@ -1139,6 +1974,80 @@ constraint_manager::add_constraint_internal (equiv_class_id lhs_id,
 	    }
 	}
     }
+}
+
+/* Attempt to add the constraint that SVAL is within RANGES to this
+   constraint_manager.
+
+   Return true if the constraint was successfully added (or is already
+   known to be true).
+   Return false if the constraint contradicts existing knowledge.  */
+
+bool
+constraint_manager::add_bounded_ranges (const svalue *sval,
+					const bounded_ranges *ranges)
+{
+  sval = sval->unwrap_any_unmergeable ();
+
+  /* Nothing can be known about unknown/poisoned values.  */
+  if (!sval->can_have_associated_state_p ())
+    /* Not a contradiction.  */
+    return true;
+
+  /* If SVAL is a constant, then we can look at RANGES directly.  */
+  if (tree cst = sval->maybe_get_constant ())
+    {
+      /* If the ranges contain CST, then it's a successful no-op;
+	 otherwise it's a contradiction.  */
+      return ranges->contain_p (cst);
+    }
+
+  equiv_class_id ec_id = get_or_add_equiv_class (sval);
+
+  /* If the EC has a constant, it's either true or false.  */
+  const equiv_class &ec = ec_id.get_obj (*this);
+  if (tree ec_cst = ec.get_any_constant ())
+    {
+      if (ranges->contain_p (ec_cst))
+	/* We already have SVAL == EC_CST, within RANGES, so
+	   we can discard RANGES and succeed.  */
+	return true;
+      else
+	/* We already have SVAL == EC_CST, not within RANGES, so
+	   we can reject RANGES as a contradiction.  */
+	return false;
+    }
+
+  /* We have at most one per ec_id.  */
+  /* Iterate through each range in RANGES.  */
+  for (auto iter : m_bounded_ranges_constraints)
+    {
+      if (iter.m_ec_id == ec_id)
+	{
+	  /* Update with intersection, or fail if empty.  */
+	  bounded_ranges_manager *mgr = get_range_manager ();
+	  const bounded_ranges *intersection
+	    = mgr->get_or_create_intersection (iter.m_ranges, ranges);
+	  if (intersection->empty_p ())
+	    {
+	      /* No intersection; fail.  */
+	      return false;
+	    }
+	  else
+	    {
+	      /* Update with intersection; succeed.  */
+	      iter.m_ranges = intersection;
+	      validate ();
+	      return true;
+	    }
+	}
+    }
+  m_bounded_ranges_constraints.safe_push
+    (bounded_ranges_constraint (ec_id, ranges));
+
+  validate ();
+
+  return true;
 }
 
 /* Look for SVAL within the equivalence classes of this constraint_manager;
@@ -1279,6 +2188,8 @@ constraint_manager::eval_condition (equiv_class_id lhs_ec,
 	}
     }
 
+  /* We don't use m_bounded_ranges_constraints here yet.  */
+
   return tristate (tristate::TS_UNKNOWN);
 }
 
@@ -1404,6 +2315,12 @@ constraint_manager::eval_condition (equiv_class_id lhs_ec,
 	    }
 	}
     }
+
+  bounded_ranges_manager *mgr = get_range_manager ();
+  for (const auto &iter : m_bounded_ranges_constraints)
+    if (iter.m_ec_id == lhs_ec)
+      return iter.m_ranges->eval_condition (op, rhs_const, mgr);
+
   /* Look at existing bounds on LHS_EC.  */
   range lhs_bounds = get_ec_bounds (lhs_ec);
   return lhs_bounds.eval_condition (op, rhs_const);
@@ -1552,6 +2469,29 @@ constraint_manager::purge (const PurgeCriteria &p, purge_stats *stats)
 		  con_idx++;
 		}
 	    }
+
+	  /* Update bounded_ranges_constraint instances.  */
+	  for (unsigned r_idx = 0;
+	       r_idx < m_bounded_ranges_constraints.length (); )
+	    {
+	      bounded_ranges_constraint *brc
+		= &m_bounded_ranges_constraints[r_idx];
+
+	      /* Remove if it refers to the deleted EC.  */
+	      if (brc->m_ec_id == ec_idx)
+		{
+		  m_bounded_ranges_constraints.ordered_remove (r_idx);
+		  if (stats)
+		    stats->m_num_bounded_ranges_constraints++;
+		}
+	      else
+		{
+		  /* Renumber any EC ids that refer to ECs that have
+		     had their idx changed.  */
+		  brc->m_ec_id.update_for_removal (ec_idx);
+		  r_idx++;
+		}
+	    }
 	}
       else
 	ec_idx++;
@@ -1610,6 +2550,17 @@ constraint_manager::purge (const PurgeCriteria &p, purge_stats *stats)
 		  c->m_lhs.update_for_removal (ec_idx);
 		  c->m_rhs.update_for_removal (ec_idx);
 		}
+
+	      /* Likewise for m_bounded_ranges_constraints.  */
+	      for (unsigned r_idx = 0;
+		   r_idx < m_bounded_ranges_constraints.length ();
+		   r_idx++)
+		{
+		  bounded_ranges_constraint *brc
+		    = &m_bounded_ranges_constraints[r_idx];
+		  brc->m_ec_id.update_for_removal (ec_idx);
+		}
+
 	      continue;
 	    }
 	}
@@ -1751,6 +2702,9 @@ constraint_manager::canonicalize ()
       used_ecs.add (m_equiv_classes[c->m_rhs.as_int ()]);
     }
 
+  for (const auto &iter : m_bounded_ranges_constraints)
+    used_ecs.add (m_equiv_classes[iter.m_ec_id.as_int ()]);
+
   /* Purge unused ECs: those that aren't used by constraints and
      that effectively have only one svalue (either in m_constant
      or in m_vars).  */
@@ -1790,6 +2744,9 @@ constraint_manager::canonicalize ()
       ec_id_map.update (&c->m_lhs);
       ec_id_map.update (&c->m_rhs);
     }
+
+  for (auto &iter : m_bounded_ranges_constraints)
+    ec_id_map.update (&iter.m_ec_id);
 
   /* Finally, sort the constraints. */
   m_constraints.qsort (constraint_cmp);
@@ -1831,6 +2788,32 @@ public:
 	       during merging (PR analyzer/96650).
 	       Silently drop such constraints.  */
 	    gcc_assert (!flag_analyzer_transitivity);
+	  }
+      }
+  }
+
+  void on_ranges (const svalue *lhs_sval,
+		  const bounded_ranges *ranges) FINAL OVERRIDE
+  {
+    for (const auto &iter : m_cm_b->m_bounded_ranges_constraints)
+      {
+	const equiv_class &ec_rhs = iter.m_ec_id.get_obj (*m_cm_b);
+	for (unsigned i = 0; i < ec_rhs.m_vars.length (); i++)
+	  {
+	    const svalue *rhs_sval = ec_rhs.m_vars[i];
+	    if (lhs_sval == rhs_sval)
+	      {
+		/* Union of the two ranges.  */
+		auto_vec <const bounded_ranges *> pair (2);
+		pair.quick_push (ranges);
+		pair.quick_push (iter.m_ranges);
+		bounded_ranges_manager *ranges_mgr
+		  = m_cm_b->get_range_manager ();
+		const bounded_ranges *union_
+		  = ranges_mgr->get_or_create_union (pair);
+		bool sat = m_out->add_bounded_ranges (lhs_sval, union_);
+		gcc_assert (sat);
+	      }
 	  }
       }
   }
@@ -1908,6 +2891,16 @@ constraint_manager::for_each_fact (fact_visitor *visitor) const
 	    visitor->on_fact (ec_lhs.m_vars[i], code, ec_rhs.m_vars[j]);
 	}
     }
+
+  for (const auto &iter : m_bounded_ranges_constraints)
+    {
+      const equiv_class &ec_lhs = iter.m_ec_id.get_obj (*this);
+      for (unsigned i = 0; i < ec_lhs.m_vars.length (); i++)
+	{
+	  const svalue *lhs_sval = ec_lhs.m_vars[i];
+	  visitor->on_ranges (lhs_sval, iter.m_ranges);
+	}
+    }
 }
 
 /* Assert that this object is valid.  */
@@ -1945,10 +2938,22 @@ constraint_manager::validate () const
   FOR_EACH_VEC_ELT (m_constraints, i, c)
     {
       gcc_assert (!c->m_lhs.null_p ());
-      gcc_assert (c->m_lhs.as_int () <= (int)m_equiv_classes.length ());
+      gcc_assert (c->m_lhs.as_int () < (int)m_equiv_classes.length ());
       gcc_assert (!c->m_rhs.null_p ());
-      gcc_assert (c->m_rhs.as_int () <= (int)m_equiv_classes.length ());
+      gcc_assert (c->m_rhs.as_int () < (int)m_equiv_classes.length ());
     }
+
+  for (const auto &iter : m_bounded_ranges_constraints)
+    {
+      gcc_assert (!iter.m_ec_id.null_p ());
+      gcc_assert (iter.m_ec_id.as_int () < (int)m_equiv_classes.length ());
+    }
+}
+
+bounded_ranges_manager *
+constraint_manager::get_range_manager () const
+{
+  return m_mgr->get_range_manager ();
 }
 
 #if CHECKING_P
@@ -2696,6 +3701,318 @@ test_many_constants ()
     }
 }
 
+/* Implementation detail of ASSERT_DUMP_BOUNDED_RANGES_EQ.  */
+
+static void
+assert_dump_bounded_range_eq (const location &loc,
+			      const bounded_range &range,
+			      const char *expected)
+{
+  auto_fix_quotes sentinel;
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  range.dump_to_pp (&pp, false);
+  ASSERT_STREQ_AT (loc, pp_formatted_text (&pp), expected);
+}
+
+/* Assert that BR.dump (false) is EXPECTED.  */
+
+#define ASSERT_DUMP_BOUNDED_RANGE_EQ(BR, EXPECTED) \
+  SELFTEST_BEGIN_STMT							\
+  assert_dump_bounded_range_eq ((SELFTEST_LOCATION), (BR), (EXPECTED)); \
+  SELFTEST_END_STMT
+
+/* Verify that bounded_range works as expected.  */
+
+static void
+test_bounded_range ()
+{
+  tree u8_0 = build_int_cst (unsigned_char_type_node, 0);
+  tree u8_1 = build_int_cst (unsigned_char_type_node, 1);
+  tree u8_64 = build_int_cst (unsigned_char_type_node, 64);
+  tree u8_128 = build_int_cst (unsigned_char_type_node, 128);
+  tree u8_255 = build_int_cst (unsigned_char_type_node, 255);
+
+  tree s8_0 = build_int_cst (signed_char_type_node, 0);
+  tree s8_1 = build_int_cst (signed_char_type_node, 1);
+  tree s8_2 = build_int_cst (signed_char_type_node, 2);
+
+  bounded_range br_u8_0 (u8_0, u8_0);
+  ASSERT_DUMP_BOUNDED_RANGE_EQ (br_u8_0, "0");
+  ASSERT_TRUE (br_u8_0.contains_p (u8_0));
+  ASSERT_FALSE (br_u8_0.contains_p (u8_1));
+  ASSERT_TRUE (br_u8_0.contains_p (s8_0));
+  ASSERT_FALSE (br_u8_0.contains_p (s8_1));
+
+  bounded_range br_u8_0_1 (u8_0, u8_1);
+  ASSERT_DUMP_BOUNDED_RANGE_EQ (br_u8_0_1, "[0, 1]");
+
+  bounded_range tmp (NULL_TREE, NULL_TREE);
+  ASSERT_TRUE (br_u8_0.intersects_p (br_u8_0_1, &tmp));
+  ASSERT_DUMP_BOUNDED_RANGE_EQ (tmp, "0");
+
+  bounded_range br_u8_64_128 (u8_64, u8_128);
+  ASSERT_DUMP_BOUNDED_RANGE_EQ (br_u8_64_128, "[64, 128]");
+
+  ASSERT_FALSE (br_u8_0.intersects_p (br_u8_64_128, NULL));
+  ASSERT_FALSE (br_u8_64_128.intersects_p (br_u8_0, NULL));
+
+  bounded_range br_u8_128_255 (u8_128, u8_255);
+  ASSERT_DUMP_BOUNDED_RANGE_EQ (br_u8_128_255, "[128, 255]");
+  ASSERT_TRUE (br_u8_128_255.intersects_p (br_u8_64_128, &tmp));
+  ASSERT_DUMP_BOUNDED_RANGE_EQ (tmp, "128");
+
+  bounded_range br_s8_2 (s8_2, s8_2);
+  ASSERT_DUMP_BOUNDED_RANGE_EQ (br_s8_2, "2");
+  bounded_range br_s8_2_u8_255 (s8_2, u8_255);
+  ASSERT_DUMP_BOUNDED_RANGE_EQ (br_s8_2_u8_255, "[2, 255]");
+}
+
+/* Implementation detail of ASSERT_DUMP_BOUNDED_RANGES_EQ.  */
+
+static void
+assert_dump_bounded_ranges_eq (const location &loc,
+			       const bounded_ranges *ranges,
+			       const char *expected)
+{
+  auto_fix_quotes sentinel;
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  ranges->dump_to_pp (&pp, false);
+  ASSERT_STREQ_AT (loc, pp_formatted_text (&pp), expected);
+}
+
+/* Implementation detail of ASSERT_DUMP_BOUNDED_RANGES_EQ.  */
+
+static void
+assert_dump_bounded_ranges_eq (const location &loc,
+			       const bounded_ranges &ranges,
+			       const char *expected)
+{
+  auto_fix_quotes sentinel;
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  ranges.dump_to_pp (&pp, false);
+  ASSERT_STREQ_AT (loc, pp_formatted_text (&pp), expected);
+}
+
+/* Assert that BRS.dump (false) is EXPECTED.  */
+
+#define ASSERT_DUMP_BOUNDED_RANGES_EQ(BRS, EXPECTED) \
+  SELFTEST_BEGIN_STMT							\
+  assert_dump_bounded_ranges_eq ((SELFTEST_LOCATION), (BRS), (EXPECTED)); \
+  SELFTEST_END_STMT
+
+/* Verify that the bounded_ranges class works as expected.  */
+
+static void
+test_bounded_ranges ()
+{
+  bounded_ranges_manager mgr;
+
+  tree ch0 = build_int_cst (unsigned_char_type_node, 0);
+  tree ch1 = build_int_cst (unsigned_char_type_node, 1);
+  tree ch2 = build_int_cst (unsigned_char_type_node, 2);
+  tree ch3 = build_int_cst (unsigned_char_type_node, 3);
+  tree ch128 = build_int_cst (unsigned_char_type_node, 128);
+  tree ch129 = build_int_cst (unsigned_char_type_node, 129);
+  tree ch254 = build_int_cst (unsigned_char_type_node, 254);
+  tree ch255 = build_int_cst (unsigned_char_type_node, 255);
+
+  const bounded_ranges *empty = mgr.get_or_create_empty ();
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (empty, "{}");
+
+  const bounded_ranges *point0 = mgr.get_or_create_point (ch0);
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (point0, "{0}");
+
+  const bounded_ranges *point1 = mgr.get_or_create_point (ch1);
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (point1, "{1}");
+
+  const bounded_ranges *point2 = mgr.get_or_create_point (ch2);
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (point2, "{2}");
+
+  const bounded_ranges *range0_128 = mgr.get_or_create_range (ch0, ch128);
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (range0_128, "{[0, 128]}");
+
+  const bounded_ranges *range0_255 = mgr.get_or_create_range (ch0, ch255);
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (range0_255, "{[0, 255]}");
+
+  ASSERT_FALSE (empty->contain_p (ch0));
+  ASSERT_FALSE (empty->contain_p (ch1));
+  ASSERT_FALSE (empty->contain_p (ch255));
+
+  ASSERT_TRUE (point0->contain_p (ch0));
+  ASSERT_FALSE (point0->contain_p (ch1));
+  ASSERT_FALSE (point0->contain_p (ch255));
+
+  ASSERT_FALSE (point1->contain_p (ch0));
+  ASSERT_TRUE (point1->contain_p (ch1));
+  ASSERT_FALSE (point0->contain_p (ch255));
+
+  ASSERT_TRUE (range0_128->contain_p (ch0));
+  ASSERT_TRUE (range0_128->contain_p (ch1));
+  ASSERT_TRUE (range0_128->contain_p (ch128));
+  ASSERT_FALSE (range0_128->contain_p (ch129));
+  ASSERT_FALSE (range0_128->contain_p (ch254));
+  ASSERT_FALSE (range0_128->contain_p (ch255));
+
+  const bounded_ranges *inv0_128
+    = mgr.get_or_create_inverse (range0_128, unsigned_char_type_node);
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (inv0_128, "{[129, 255]}");
+
+  const bounded_ranges *range128_129 = mgr.get_or_create_range (ch128, ch129);
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (range128_129, "{[128, 129]}");
+
+  const bounded_ranges *inv128_129
+    = mgr.get_or_create_inverse (range128_129, unsigned_char_type_node);
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (inv128_129, "{[0, 127], [130, 255]}");
+
+  /* Intersection.  */
+  {
+    /* Intersection of disjoint ranges should be empty set.  */
+    const bounded_ranges *intersect0_1
+      = mgr.get_or_create_intersection (point0, point1);
+    ASSERT_DUMP_BOUNDED_RANGES_EQ (intersect0_1, "{}");
+  }
+
+  /* Various tests of "union of ranges".  */
+  {
+    {
+      /* Touching points should be merged into a range.  */
+      auto_vec <const bounded_ranges *> v;
+      v.safe_push (point0);
+      v.safe_push (point1);
+      const bounded_ranges *union_0_and_1 = mgr.get_or_create_union (v);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (union_0_and_1, "{[0, 1]}");
+    }
+
+    {
+      /* Overlapping and out-of-order.  */
+      auto_vec <const bounded_ranges *> v;
+      v.safe_push (inv0_128); // {[129, 255]}
+      v.safe_push (range128_129);
+      const bounded_ranges *union_129_255_and_128_129
+	= mgr.get_or_create_union (v);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (union_129_255_and_128_129, "{[128, 255]}");
+    }
+
+    {
+      /* Union of R and inverse(R) should be full range of type.  */
+      auto_vec <const bounded_ranges *> v;
+      v.safe_push (range128_129);
+      v.safe_push (inv128_129);
+      const bounded_ranges *union_ = mgr.get_or_create_union (v);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (union_, "{[0, 255]}");
+    }
+
+    /* Union with an endpoint.  */
+    {
+      const bounded_ranges *range2_to_255
+	= mgr.get_or_create_range (ch2, ch255);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (range2_to_255, "{[2, 255]}");
+      auto_vec <const bounded_ranges *> v;
+      v.safe_push (point0);
+      v.safe_push (point2);
+      v.safe_push (range2_to_255);
+      const bounded_ranges *union_ = mgr.get_or_create_union (v);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (union_, "{0, [2, 255]}");
+    }
+
+    /* Construct from vector of bounded_range.  */
+    {
+      auto_vec<bounded_range> v;
+      v.safe_push (bounded_range (ch2, ch2));
+      v.safe_push (bounded_range (ch0, ch0));
+      v.safe_push (bounded_range (ch2, ch255));
+      bounded_ranges br (v);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (&br, "{0, [2, 255]}");
+    }
+  }
+
+  /* Various tests of "inverse".  */
+  {
+    {
+      const bounded_ranges *range_1_to_3 = mgr.get_or_create_range (ch1, ch3);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (range_1_to_3, "{[1, 3]}");
+      const bounded_ranges *inv
+	= mgr.get_or_create_inverse (range_1_to_3, unsigned_char_type_node);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (inv, "{0, [4, 255]}");
+    }
+    {
+      const bounded_ranges *range_1_to_255
+	= mgr.get_or_create_range (ch1, ch255);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (range_1_to_255, "{[1, 255]}");
+      const bounded_ranges *inv
+	= mgr.get_or_create_inverse (range_1_to_255, unsigned_char_type_node);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (inv, "{0}");
+    }
+    {
+      const bounded_ranges *range_0_to_254
+	= mgr.get_or_create_range (ch0, ch254);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (range_0_to_254, "{[0, 254]}");
+      const bounded_ranges *inv
+	= mgr.get_or_create_inverse (range_0_to_254, unsigned_char_type_node);
+      ASSERT_DUMP_BOUNDED_RANGES_EQ (inv, "{255}");
+    }
+  }
+
+  /* "case 'a'-'z': case 'A-Z':" vs "default:", for ASCII.  */
+  {
+    tree ch65 = build_int_cst (unsigned_char_type_node, 65);
+    tree ch90 = build_int_cst (unsigned_char_type_node, 90);
+
+    tree ch97 = build_int_cst (unsigned_char_type_node, 97);
+    tree ch122 = build_int_cst (unsigned_char_type_node, 122);
+
+    const bounded_ranges *A_to_Z = mgr.get_or_create_range (ch65, ch90);
+    ASSERT_DUMP_BOUNDED_RANGES_EQ (A_to_Z, "{[65, 90]}");
+    const bounded_ranges *a_to_z = mgr.get_or_create_range (ch97, ch122);
+    ASSERT_DUMP_BOUNDED_RANGES_EQ (a_to_z, "{[97, 122]}");
+    auto_vec <const bounded_ranges *> v;
+    v.safe_push (A_to_Z);
+    v.safe_push (a_to_z);
+    const bounded_ranges *label_ranges = mgr.get_or_create_union (v);
+    ASSERT_DUMP_BOUNDED_RANGES_EQ (label_ranges, "{[65, 90], [97, 122]}");
+    const bounded_ranges *default_ranges
+      = mgr.get_or_create_inverse (label_ranges, unsigned_char_type_node);
+    ASSERT_DUMP_BOUNDED_RANGES_EQ (default_ranges,
+				   "{[0, 64], [91, 96], [123, 255]}");
+  }
+
+  /* Verify ranges from ops.  */
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (EQ_EXPR, ch128),
+				 "{128}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (NE_EXPR, ch128),
+				 "{[0, 127], [129, 255]}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (LT_EXPR, ch128),
+				 "{[0, 127]}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (LE_EXPR, ch128),
+				 "{[0, 128]}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (GE_EXPR, ch128),
+				 "{[128, 255]}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (GT_EXPR, ch128),
+				 "{[129, 255]}");
+  /* Ops at endpoints of type ranges.  */
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (LE_EXPR, ch0),
+				 "{0}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (LT_EXPR, ch0),
+				 "{}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (NE_EXPR, ch0),
+				 "{[1, 255]}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (GE_EXPR, ch255),
+				 "{255}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (GT_EXPR, ch255),
+				 "{}");
+  ASSERT_DUMP_BOUNDED_RANGES_EQ (bounded_ranges (NE_EXPR, ch255),
+				 "{[0, 254]}");
+
+  /* Verify that instances are consolidated by mgr.  */
+  ASSERT_EQ (mgr.get_or_create_point (ch0),
+	     mgr.get_or_create_point (ch0));
+  ASSERT_NE (mgr.get_or_create_point (ch0),
+	     mgr.get_or_create_point (ch1));
+}
+
 /* Run the selftests in this file, temporarily overriding
    flag_analyzer_transitivity with TRANSITIVITY.  */
 
@@ -2715,6 +4032,8 @@ run_constraint_manager_tests (bool transitivity)
   test_constraint_impl ();
   test_equality ();
   test_many_constants ();
+  test_bounded_range ();
+  test_bounded_ranges ();
 
   flag_analyzer_transitivity = saved_flag_analyzer_transitivity;
 }

@@ -66,7 +66,10 @@ struct GTY(()) modref_access_node
   /* Return true if range info is useful.  */
   bool range_info_useful_p () const
     {
-      return parm_index != -1 && parm_offset_known;
+      return parm_index != -1 && parm_offset_known
+	     && (known_size_p (size)
+		 || known_size_p (max_size)
+		 || known_ge (offset, 0));
     }
   /* Return true if both accesses are the same.  */
   bool operator == (modref_access_node &a) const
@@ -88,6 +91,35 @@ struct GTY(()) modref_access_node
 	return false;
       return true;
     }
+  /* Return true A is a subaccess.  */
+  bool contains (modref_access_node &a) const
+    {
+      if (parm_index != a.parm_index)
+	return false;
+      if (parm_index >= 0)
+	{
+	  if (parm_offset_known
+	      && (!a.parm_offset_known
+		  || !known_eq (parm_offset, a.parm_offset)))
+	    return false;
+	}
+      if (range_info_useful_p ())
+	{
+	  if (!a.range_info_useful_p ())
+	    return false;
+	  /* Sizes of stores are used to check that object is big enough
+	     to fit the store, so smaller or unknown sotre is more general
+	     than large store.  */
+	  if (known_size_p (size)
+	      && !known_le (size, a.size))
+	    return false;
+	  if (known_size_p (max_size))
+	    return known_subrange_p (a.offset, a.max_size, offset, max_size);
+	  else
+	    return known_le (offset, a.offset);
+	}
+      return true;
+    }
 };
 
 /* Access node specifying no useful info.  */
@@ -107,17 +139,6 @@ struct GTY((user)) modref_ref_node
     accesses (NULL)
   {}
 
-  /* Search REF; return NULL if failed.  */
-  modref_access_node *search (modref_access_node access)
-  {
-    size_t i;
-    modref_access_node *a;
-    FOR_EACH_VEC_SAFE_ELT (accesses, i, a)
-      if (*a == access)
-	return a;
-    return NULL;
-  }
-
   /* Collapse the tree.  */
   void collapse ()
   {
@@ -136,16 +157,36 @@ struct GTY((user)) modref_ref_node
       return false;
 
     /* Otherwise, insert a node for the ref of the access under the base.  */
-    modref_access_node *access_node = search (a);
-    if (access_node)
-      return false;
+    size_t i;
+    modref_access_node *a2;
+
+    if (!a.useful_p ())
+      {
+	if (!every_access)
+	  {
+	    collapse ();
+	    return true;
+	  }
+	return false;
+      }
+
+    FOR_EACH_VEC_SAFE_ELT (accesses, i, a2)
+      {
+	if (a2->contains (a))
+	  return false;
+	if (a.contains (*a2))
+	  {
+	    *a2 = a;
+	    return true;
+	  }
+	gcc_checking_assert (!(a == *a2));
+      }
 
     /* If this base->ref pair has too many accesses stored, we will clear
        all accesses and bail out.  */
-    if ((accesses && accesses->length () >= max_accesses)
-	|| !a.useful_p ())
+    if (accesses && accesses->length () >= max_accesses)
       {
-	if (dump_file && a.useful_p ())
+	if (dump_file)
 	  fprintf (dump_file,
 		   "--param param=modref-max-accesses limit reached\n");
 	collapse ();

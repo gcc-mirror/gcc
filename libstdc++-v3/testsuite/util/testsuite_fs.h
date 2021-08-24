@@ -160,7 +160,7 @@ namespace __gnu_test
     path_type path;
   };
 
-  bool
+  inline bool
   permissions_are_testable(bool print_msg = true)
   {
     bool testable = false;

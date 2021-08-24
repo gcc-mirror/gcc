@@ -253,6 +253,35 @@ bit_range::contains_p (const bit_range &other, bit_range *out) const
     return false;
 }
 
+/* If OTHER intersects this, return true and write
+   the relative range of OTHER within THIS to *OUT_THIS,
+   and the relative range of THIS within OTHER to *OUT_OTHER.
+   Otherwise return false.  */
+
+bool
+bit_range::intersects_p (const bit_range &other,
+			 bit_range *out_this,
+			 bit_range *out_other) const
+{
+  if (get_start_bit_offset () < other.get_next_bit_offset ()
+      && other.get_start_bit_offset () < get_next_bit_offset ())
+    {
+      bit_offset_t overlap_start
+	= MAX (get_start_bit_offset (),
+	       other.get_start_bit_offset ());
+      bit_offset_t overlap_next
+	= MIN (get_next_bit_offset (),
+	       other.get_next_bit_offset ());
+      gcc_assert (overlap_next > overlap_start);
+      bit_range abs_overlap_bits (overlap_start, overlap_next - overlap_start);
+      *out_this = abs_overlap_bits - get_start_bit_offset ();
+      *out_other = abs_overlap_bits - other.get_start_bit_offset ();
+      return true;
+    }
+  else
+    return false;
+}
+
 int
 bit_range::cmp (const bit_range &br1, const bit_range &br2)
 {
@@ -261,6 +290,14 @@ bit_range::cmp (const bit_range &br1, const bit_range &br2)
     return start_cmp;
 
   return wi::cmpu (br1.m_size_in_bits, br2.m_size_in_bits);
+}
+
+/* Offset this range by OFFSET.  */
+
+bit_range
+bit_range::operator- (bit_offset_t offset) const
+{
+  return bit_range (m_start_bit_offset - offset, m_size_in_bits);
 }
 
 /* If MASK is a contiguous range of set bits, write them
@@ -1570,9 +1607,29 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 	    }
 	  else
 	    {
-	      /* REG and the bound range partially overlap.
-		 We don't handle this case yet.  */
-	      return NULL;
+	      /* REG and the bound range partially overlap.  */
+	      bit_range reg_subrange (0, 0);
+	      bit_range bound_subrange (0, 0);
+	      reg_range.intersects_p (bound_range,
+				      &reg_subrange, &bound_subrange);
+
+	      /* Get the bits from the bound value for the bits at the
+		 intersection (relative to the bound value).  */
+	      const svalue *overlap_sval
+		= sval->extract_bit_range (NULL_TREE,
+					   bound_subrange,
+					   mgr->get_svalue_manager ());
+
+	      /* Get key for overlap, relative to the REG.  */
+	      const concrete_binding *overlap_concrete_key
+		= mgr->get_concrete_binding (reg_subrange);
+	      result_map.put (overlap_concrete_key, overlap_sval);
+
+	      /* Clobber default_map, removing/trimming/spliting where
+		 it overlaps with overlap_concrete_key.  */
+	      default_map.remove_overlapping_bindings (mgr,
+						       overlap_concrete_key,
+						       NULL);
 	    }
 	}
       else
@@ -2905,6 +2962,20 @@ test_bit_range_intersects_p ()
 
   ASSERT_FALSE (b3_to_5.intersects_p (b6_to_7));
   ASSERT_FALSE (b6_to_7.intersects_p (b3_to_5));
+
+  bit_range r1 (0,0);
+  bit_range r2 (0,0);
+  ASSERT_TRUE (b1_to_6.intersects_p (b0_to_7, &r1, &r2));
+  ASSERT_EQ (r1.get_start_bit_offset (), 0);
+  ASSERT_EQ (r1.m_size_in_bits, 6);
+  ASSERT_EQ (r2.get_start_bit_offset (), 1);
+  ASSERT_EQ (r2.m_size_in_bits, 6);
+
+  ASSERT_TRUE (b0_to_7.intersects_p (b1_to_6, &r1, &r2));
+  ASSERT_EQ (r1.get_start_bit_offset (), 1);
+  ASSERT_EQ (r1.m_size_in_bits, 6);
+  ASSERT_EQ (r2.get_start_bit_offset (), 0);
+  ASSERT_EQ (r2.m_size_in_bits, 6);
 }
 
 /* Implementation detail of ASSERT_BIT_RANGE_FROM_MASK_EQ.  */

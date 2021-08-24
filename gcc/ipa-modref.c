@@ -1707,7 +1707,7 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	     is on since that would allow propagation of this from -fno-ipa-pta
 	     to -fipa-pta functions.  */
 	  if (gimple_call_fn (use_stmt) == name)
-	    lattice[index].merge (~EAF_NOCLOBBER);
+	    lattice[index].merge (~(EAF_NOCLOBBER | EAF_UNUSED));
 
 	  /* Recursion would require bit of propagation; give up for now.  */
 	  if (callee && !ipa && recursive_call_p (current_function_decl,

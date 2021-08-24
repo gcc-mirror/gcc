@@ -125,11 +125,21 @@ public:
       return label_text::borrow ("opened here");
     if (change.m_old_state == m_sm.m_unchecked
 	&& change.m_new_state == m_sm.m_nonnull)
-      return change.formatted_print ("assuming %qE is non-NULL",
-				     change.m_expr);
+      {
+	if (change.m_expr)
+	  return change.formatted_print ("assuming %qE is non-NULL",
+					 change.m_expr);
+	else
+	  return change.formatted_print ("assuming FILE * is non-NULL");
+      }
     if (change.m_new_state == m_sm.m_null)
-      return change.formatted_print ("assuming %qE is NULL",
-				     change.m_expr);
+      {
+	if (change.m_expr)
+	  return change.formatted_print ("assuming %qE is NULL",
+					 change.m_expr);
+	else
+	  return change.formatted_print ("assuming FILE * is NULL");
+      }
     return label_text ();
   }
 

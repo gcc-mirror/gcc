@@ -3842,7 +3842,7 @@ feasibility_problem::dump_to_pp (pretty_printer *pp) const
       pp_string (pp, "; rejected constraint: ");
       m_rc->dump_to_pp (pp);
       pp_string (pp, "; rmodel: ");
-      m_rc->m_model.dump_to_pp (pp, true, false);
+      m_rc->get_model ().dump_to_pp (pp, true, false);
     }
 }
 

@@ -94,6 +94,15 @@ test05()
     ;
 }
 
+void
+test06()
+{
+  // Default template argument
+  using V = std::ranges::basic_istream_view<int, char>;
+  using W = std::ranges::basic_istream_view<int, char, std::char_traits<char>>;
+  static_assert( std::is_same_v<V, W> );
+}
+
 int
 main()
 {
@@ -102,4 +111,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }
