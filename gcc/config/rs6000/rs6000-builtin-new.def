@@ -2438,3 +2438,371 @@
 
   const double __builtin_vsx_xscvspdpn (vf);
     XSCVSPDPN vsx_xscvspdpn {}
+
+
+; Power9 vector builtins.
+[power9-vector]
+  const vss __builtin_altivec_convert_4f32_8f16 (vf, vf);
+    CONVERT_4F32_8F16 convert_4f32_8f16 {}
+
+  const vss __builtin_altivec_convert_4f32_8i16 (vf, vf);
+    CONVERT_4F32_8I16 convert_4f32_8i16 {}
+
+  const signed int __builtin_altivec_first_match_index_v16qi (vsc, vsc);
+    VFIRSTMATCHINDEX_V16QI first_match_index_v16qi {}
+
+  const signed int __builtin_altivec_first_match_index_v8hi (vss, vss);
+    VFIRSTMATCHINDEX_V8HI first_match_index_v8hi {}
+
+  const signed int __builtin_altivec_first_match_index_v4si (vsi, vsi);
+    VFIRSTMATCHINDEX_V4SI first_match_index_v4si {}
+
+  const signed int __builtin_altivec_first_match_or_eos_index_v16qi (vsc, vsc);
+    VFIRSTMATCHOREOSINDEX_V16QI first_match_or_eos_index_v16qi {}
+
+  const signed int __builtin_altivec_first_match_or_eos_index_v8hi (vss, vss);
+    VFIRSTMATCHOREOSINDEX_V8HI first_match_or_eos_index_v8hi {}
+
+  const signed int __builtin_altivec_first_match_or_eos_index_v4si (vsi, vsi);
+    VFIRSTMATCHOREOSINDEX_V4SI first_match_or_eos_index_v4si {}
+
+  const signed int __builtin_altivec_first_mismatch_index_v16qi (vsc, vsc);
+    VFIRSTMISMATCHINDEX_V16QI first_mismatch_index_v16qi {}
+
+  const signed int __builtin_altivec_first_mismatch_index_v8hi (vss, vss);
+    VFIRSTMISMATCHINDEX_V8HI first_mismatch_index_v8hi {}
+
+  const signed int __builtin_altivec_first_mismatch_index_v4si (vsi, vsi);
+    VFIRSTMISMATCHINDEX_V4SI first_mismatch_index_v4si {}
+
+  const signed int __builtin_altivec_first_mismatch_or_eos_index_v16qi (vsc, vsc);
+    VFIRSTMISMATCHOREOSINDEX_V16QI first_mismatch_or_eos_index_v16qi {}
+
+  const signed int __builtin_altivec_first_mismatch_or_eos_index_v8hi (vss, vss);
+    VFIRSTMISMATCHOREOSINDEX_V8HI first_mismatch_or_eos_index_v8hi {}
+
+  const signed int __builtin_altivec_first_mismatch_or_eos_index_v4si (vsi, vsi);
+    VFIRSTMISMATCHOREOSINDEX_V4SI first_mismatch_or_eos_index_v4si {}
+
+  const vsc __builtin_altivec_vadub (vsc, vsc);
+    VADUB vaduv16qi3 {}
+
+  const vss __builtin_altivec_vaduh (vss, vss);
+    VADUH vaduv8hi3 {}
+
+  const vsi __builtin_altivec_vaduw (vsi, vsi);
+    VADUW vaduv4si3 {}
+
+  const vsll __builtin_altivec_vbpermd (vsll, vsc);
+    VBPERMD altivec_vbpermd {}
+
+  const signed int __builtin_altivec_vclzlsbb_v16qi (vsc);
+    VCLZLSBB_V16QI vclzlsbb_v16qi {}
+
+  const signed int __builtin_altivec_vclzlsbb_v4si (vsi);
+    VCLZLSBB_V4SI vclzlsbb_v4si {}
+
+  const signed int __builtin_altivec_vclzlsbb_v8hi (vss);
+    VCLZLSBB_V8HI vclzlsbb_v8hi {}
+
+  const vsc __builtin_altivec_vctzb (vsc);
+    VCTZB ctzv16qi2 {}
+
+  const vsll __builtin_altivec_vctzd (vsll);
+    VCTZD ctzv2di2 {}
+
+  const vss __builtin_altivec_vctzh (vss);
+    VCTZH ctzv8hi2 {}
+
+  const vsi __builtin_altivec_vctzw (vsi);
+    VCTZW ctzv4si2 {}
+
+  const signed int __builtin_altivec_vctzlsbb_v16qi (vsc);
+    VCTZLSBB_V16QI vctzlsbb_v16qi {}
+
+  const signed int __builtin_altivec_vctzlsbb_v4si (vsi);
+    VCTZLSBB_V4SI vctzlsbb_v4si {}
+
+  const signed int __builtin_altivec_vctzlsbb_v8hi (vss);
+    VCTZLSBB_V8HI vctzlsbb_v8hi {}
+
+  const signed int __builtin_altivec_vcmpaeb_p (vsc, vsc);
+    VCMPAEB_P vector_ae_v16qi_p {}
+
+  const signed int __builtin_altivec_vcmpaed_p (vsll, vsll);
+    VCMPAED_P vector_ae_v2di_p {}
+
+  const signed int __builtin_altivec_vcmpaedp_p (vd, vd);
+    VCMPAEDP_P vector_ae_v2df_p {}
+
+  const signed int __builtin_altivec_vcmpaefp_p (vf, vf);
+    VCMPAEFP_P vector_ae_v4sf_p {}
+
+  const signed int __builtin_altivec_vcmpaeh_p (vss, vss);
+    VCMPAEH_P vector_ae_v8hi_p {}
+
+  const signed int __builtin_altivec_vcmpaew_p (vsi, vsi);
+    VCMPAEW_P vector_ae_v4si_p {}
+
+  const vsc __builtin_altivec_vcmpneb (vsc, vsc);
+    VCMPNEB vcmpneb {}
+
+  const signed int __builtin_altivec_vcmpneb_p (vsc, vsc);
+    VCMPNEB_P vector_ne_v16qi_p {}
+
+  const signed int __builtin_altivec_vcmpned_p (vsll, vsll);
+    VCMPNED_P vector_ne_v2di_p {}
+
+  const signed int __builtin_altivec_vcmpnedp_p (vd, vd);
+    VCMPNEDP_P vector_ne_v2df_p {}
+
+  const signed int __builtin_altivec_vcmpnefp_p (vf, vf);
+    VCMPNEFP_P vector_ne_v4sf_p {}
+
+  const vss __builtin_altivec_vcmpneh (vss, vss);
+    VCMPNEH vcmpneh {}
+
+  const signed int __builtin_altivec_vcmpneh_p (vss, vss);
+    VCMPNEH_P vector_ne_v8hi_p {}
+
+  const vsi __builtin_altivec_vcmpnew (vsi, vsi);
+    VCMPNEW vcmpnew {}
+
+  const signed int __builtin_altivec_vcmpnew_p (vsi, vsi);
+    VCMPNEW_P vector_ne_v4si_p {}
+
+  const vsc __builtin_altivec_vcmpnezb (vsc, vsc);
+    CMPNEZB vcmpnezb {}
+
+  const signed int __builtin_altivec_vcmpnezb_p (signed int, vsc, vsc);
+    VCMPNEZB_P vector_nez_v16qi_p {pred}
+
+  const vss __builtin_altivec_vcmpnezh (vss, vss);
+    CMPNEZH vcmpnezh {}
+
+  const signed int __builtin_altivec_vcmpnezh_p (signed int, vss, vss);
+    VCMPNEZH_P vector_nez_v8hi_p {pred}
+
+  const vsi __builtin_altivec_vcmpnezw (vsi, vsi);
+    CMPNEZW vcmpnezw {}
+
+  const signed int __builtin_altivec_vcmpnezw_p (signed int, vsi, vsi);
+    VCMPNEZW_P vector_nez_v4si_p {pred}
+
+  const signed int __builtin_altivec_vextublx (signed int, vsc);
+    VEXTUBLX vextublx {}
+
+  const signed int __builtin_altivec_vextubrx (signed int, vsc);
+    VEXTUBRX vextubrx {}
+
+  const signed int __builtin_altivec_vextuhlx (signed int, vss);
+    VEXTUHLX vextuhlx {}
+
+  const signed int __builtin_altivec_vextuhrx (signed int, vss);
+    VEXTUHRX vextuhrx {}
+
+  const signed int __builtin_altivec_vextuwlx (signed int, vsi);
+    VEXTUWLX vextuwlx {}
+
+  const signed int __builtin_altivec_vextuwrx (signed int, vsi);
+    VEXTUWRX vextuwrx {}
+
+  const vsq __builtin_altivec_vmsumudm (vsll, vsll, vsq);
+    VMSUMUDM altivec_vmsumudm {}
+
+  const vsll __builtin_altivec_vprtybd (vsll);
+    VPRTYBD parityv2di2 {}
+
+  const vsq __builtin_altivec_vprtybq (vsq);
+    VPRTYBQ parityv1ti2 {}
+
+  const vsi __builtin_altivec_vprtybw (vsi);
+    VPRTYBW parityv4si2 {}
+
+  const vsll __builtin_altivec_vrldmi (vsll, vsll, vsll);
+    VRLDMI altivec_vrldmi {}
+
+  const vsll __builtin_altivec_vrldnm (vsll, vsll);
+    VRLDNM altivec_vrldnm {}
+
+  const vsi __builtin_altivec_vrlwmi (vsi, vsi, vsi);
+    VRLWMI altivec_vrlwmi {}
+
+  const vsi __builtin_altivec_vrlwnm (vsi, vsi);
+    VRLWNM altivec_vrlwnm {}
+
+  const vsll __builtin_altivec_vsignextsb2d (vsc);
+    VSIGNEXTSB2D vsignextend_qi_v2di {}
+
+  const vsi __builtin_altivec_vsignextsb2w (vsc);
+    VSIGNEXTSB2W vsignextend_qi_v4si {}
+
+  const vsll __builtin_altivec_visgnextsh2d (vss);
+    VSIGNEXTSH2D vsignextend_hi_v2di {}
+
+  const vsi __builtin_altivec_vsignextsh2w (vss);
+    VSIGNEXTSH2W vsignextend_hi_v4si {}
+
+  const vsll __builtin_altivec_vsignextsw2d (vsi);
+    VSIGNEXTSW2D vsignextend_si_v2di {}
+
+  const vsc __builtin_altivec_vslv (vsc, vsc);
+    VSLV vslv {}
+
+  const vsc __builtin_altivec_vsrv (vsc, vsc);
+    VSRV vsrv {}
+
+  const signed int __builtin_scalar_byte_in_range (signed int, signed int);
+    CMPRB cmprb {}
+
+  const signed int __builtin_scalar_byte_in_either_range (signed int, signed int);
+    CMPRB2 cmprb2 {}
+
+  const vsll __builtin_vsx_extract4b (vsc, const int[0,12]);
+    EXTRACT4B extract4b {}
+
+  const vd __builtin_vsx_extract_exp_dp (vd);
+    VEEDP xvxexpdp {}
+
+  const vf __builtin_vsx_extract_exp_sp (vf);
+    VEESP xvxexpsp {}
+
+  const vd __builtin_vsx_extract_sig_dp (vd);
+    VESDP xvxsigdp {}
+
+  const vf __builtin_vsx_extract_sig_sp (vf);
+    VESSP xvxsigsp {}
+
+  const vsc __builtin_vsx_insert4b (vsi, vsc, const int[0,12]);
+    INSERT4B insert4b {}
+
+  const vd __builtin_vsx_insert_exp_dp (vd, vd);
+    VIEDP xviexpdp {}
+
+  const vf __builtin_vsx_insert_exp_sp (vf, vf);
+    VIESP xviexpsp {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_dp_eq (double, double);
+    VSCEDPEQ xscmpexpdp_eq {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_dp_gt (double, double);
+    VSCEDPGT xscmpexpdp_gt {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_dp_lt (double, double);
+    VSCEDPLT xscmpexpdp_lt {}
+
+  const signed int __builtin_vsx_scalar_cmp_exp_dp_unordered (double, double);
+    VSCEDPUO xscmpexpdp_unordered {}
+
+  const signed int __builtin_vsx_scalar_test_data_class_dp (double, const int<7>);
+    VSTDCDP xststdcdp {}
+
+  const signed int __builtin_vsx_scalar_test_data_class_sp (float, const int<7>);
+    VSTDCSP xststdcsp {}
+
+  const signed int __builtin_vsx_scalar_test_neg_dp (double);
+    VSTDCNDP xststdcnegdp {}
+
+  const signed int __builtin_vsx_scalar_test_neg_sp (float);
+    VSTDCNSP xststdcnegsp {}
+
+  const vsll __builtin_vsx_test_data_class_dp (vd, const int<7>);
+    VTDCDP xvtstdcdp {}
+
+  const vsi __builtin_vsx_test_data_class_sp (vf, const int<7>);
+    VTDCSP xvtstdcsp {}
+
+  const vf __builtin_vsx_vextract_fp_from_shorth (vss);
+    VEXTRACT_FP_FROM_SHORTH vextract_fp_from_shorth {}
+
+  const vf __builtin_vsx_vextract_fp_from_shortl (vss);
+    VEXTRACT_FP_FROM_SHORTL vextract_fp_from_shortl {}
+
+  const vd __builtin_vsx_xxbrd_v2df (vd);
+    XXBRD_V2DF p9_xxbrd_v2df {}
+
+  const vsll __builtin_vsx_xxbrd_v2di (vsll);
+    XXBRD_V2DI p9_xxbrd_v2di {}
+
+  const vss __builtin_vsx_xxbrh_v8hi (vss);
+    XXBRH_V8HI p9_xxbrh_v8hi {}
+
+  const vsc __builtin_vsx_xxbrq_v16qi (vsc);
+    XXBRQ_V16QI p9_xxbrq_v16qi {}
+
+  const vsq __builtin_vsx_xxbrq_v1ti (vsq);
+    XXBRQ_V1TI p9_xxbrq_v1ti {}
+
+  const vf __builtin_vsx_xxbrw_v4sf (vf);
+    XXBRW_V4SF p9_xxbrw_v4sf {}
+
+  const vsi __builtin_vsx_xxbrw_v4si (vsi);
+    XXBRW_V4SI p9_xxbrw_v4si {}
+
+
+; Miscellaneous P9 functions
+[power9]
+  signed long long __builtin_darn ();
+    DARN darn {}
+
+  signed int __builtin_darn_32 ();
+    DARN_32 darn_32 {}
+
+  signed long long __builtin_darn_raw ();
+    DARN_RAW darn_raw {}
+
+  double __builtin_mffsl ();
+    MFFSL rs6000_mffsl {}
+
+  const signed int __builtin_dtstsfi_eq_dd (const int<6>, _Decimal64);
+    TSTSFI_EQ_DD dfptstsfi_eq_dd {}
+
+  const signed int __builtin_dtstsfi_eq_td (const int<6>, _Decimal128);
+    TSTSFI_EQ_TD dfptstsfi_eq_td {}
+
+  const signed int __builtin_dtstsfi_gt_dd (const int<6>, _Decimal64);
+    TSTSFI_GT_DD dfptstsfi_gt_dd {}
+
+  const signed int __builtin_dtstsfi_gt_td (const int<6>, _Decimal128);
+    TSTSFI_GT_TD dfptstsfi_gt_td {}
+
+  const signed int __builtin_dtstsfi_lt_dd (const int<6>, _Decimal64);
+    TSTSFI_LT_DD dfptstsfi_lt_dd {}
+
+  const signed int __builtin_dtstsfi_lt_td (const int<6>, _Decimal128);
+    TSTSFI_LT_TD dfptstsfi_lt_td {}
+
+  const signed int __builtin_dtstsfi_ov_dd (const int<6>, _Decimal64);
+    TSTSFI_OV_DD dfptstsfi_unordered_dd {}
+
+  const signed int __builtin_dtstsfi_ov_td (const int<6>, _Decimal128);
+    TSTSFI_OV_TD dfptstsfi_unordered_td {}
+
+
+[power9-64]
+  void __builtin_altivec_xst_len_r (vsc, void *, long);
+    XST_LEN_R xst_len_r {}
+
+  void __builtin_altivec_stxvl (vsc, void *, long);
+    STXVL stxvl {}
+
+  const signed int __builtin_scalar_byte_in_set (signed int, signed long long);
+    CMPEQB cmpeqb {}
+
+  pure vsc __builtin_vsx_lxvl (const void *, signed long);
+    LXVL lxvl {}
+
+  const signed long __builtin_vsx_scalar_extract_exp (double);
+    VSEEDP xsxexpdp {}
+
+  const signed long __builtin_vsx_scalar_extract_sig (double);
+    VSESDP xsxsigdp {}
+
+  const double __builtin_vsx_scalar_insert_exp (unsigned long long, unsigned long long);
+    VSIEDP xsiexpdp {}
+
+  const double __builtin_vsx_scalar_insert_exp_dp (double, unsigned long long);
+    VSIEDPF xsiexpdpf {}
+
+  pure vsc __builtin_vsx_xl_len_r (void *, signed long);
+    XL_LEN_R xl_len_r {}
