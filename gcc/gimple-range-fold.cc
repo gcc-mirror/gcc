@@ -760,6 +760,10 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
   if (!type)
     return false;
 
+  // Track if all executable arguments are the same.
+  tree single_arg = NULL_TREE;
+  bool seen_arg = false;
+
   // Start with an empty range, unioning in each argument's range.
   r.set_undefined ();
   for (x = 0; x < gimple_phi_num_args (phi); x++)
@@ -767,18 +771,47 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       tree arg = gimple_phi_arg_def (phi, x);
       edge e = gimple_phi_arg_edge (phi, x);
 
-      // Register potential dependencies for stale value tracking.
-      if (gimple_range_ssa_p (arg) && src.gori ())
-	src.gori ()->register_dependency (phi_def, arg);
-
       // Get the range of the argument on its edge.
       src.get_phi_operand (arg_range, arg, e);
-      // If we're recomputing the argument elsewhere, try to refine it.
-      r.union_ (arg_range);
+
+      if (!arg_range.undefined_p ())
+	{
+	  // Register potential dependencies for stale value tracking.
+	  r.union_ (arg_range);
+	  if (gimple_range_ssa_p (arg) && src.gori ())
+	    src.gori ()->register_dependency (phi_def, arg);
+
+	  // Track if all arguments are the same.
+	  if (!seen_arg)
+	    {
+	      seen_arg = true;
+	      single_arg = arg;
+	    }
+	  else if (single_arg != arg)
+	    single_arg = NULL_TREE;
+	}
+
       // Once the value reaches varying, stop looking.
-      if (r.varying_p ())
+      if (r.varying_p () && single_arg == NULL_TREE)
 	break;
     }
+
+    // If the PHI boils down to a single effective argument, look at it.
+    if (single_arg)
+      {
+	// Symbolic arguments are equivalences.
+	if (gimple_range_ssa_p (single_arg))
+	  src.register_relation (phi, EQ_EXPR, phi_def, single_arg);
+	else if (src.get_operand (arg_range, single_arg)
+		 && arg_range.singleton_p ())
+	  {
+	    // Numerical arguments that are a constant can be returned as
+	    // the constant. This can help fold later cases where even this
+	    // constant might have been UNDEFINED via an unreachable edge.
+	    r = arg_range;
+	    return true;
+	  }
+      }
 
   // If SCEV is available, query if this PHI has any knonwn values.
   if (scev_initialized_p () && !POINTER_TYPE_P (TREE_TYPE (phi_def)))
