@@ -11275,10 +11275,20 @@ package body Sem_Res is
             end;
          end if;
 
+      --  In CodePeer mode the attribute Image is not expanded, so when it
+      --  acts as a prefix of a slice, we handle it like a call to function
+      --  returning an unconstrained string. Same for the Wide variants of
+      --  attribute Image.
+
       elsif Is_Entity_Name (Name)
         or else Nkind (Name) = N_Explicit_Dereference
         or else (Nkind (Name) = N_Function_Call
                   and then not Is_Constrained (Etype (Name)))
+        or else (CodePeer_Mode
+                  and then Nkind (Name) = N_Attribute_Reference
+                  and then Attribute_Name (Name) in Name_Image
+                                                  | Name_Wide_Image
+                                                  | Name_Wide_Wide_Image)
       then
          Array_Type := Get_Actual_Subtype (Name);
 
