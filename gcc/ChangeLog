@@ -1,3 +1,35 @@
+2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	Backported from master:
+	2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* config/arm/arm_mve.h: Fix __arm_vctp16q return type.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101905
+	* dwarf2out.c (gen_variable_die): Add DW_AT_location for global
+	register variables already during early_dwarf if possible.
+
+2021-08-23  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-08-20  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/89961
+	* gcov.c (make_gcov_file_name): Rewrite using std::string.
+	(mangle_name): Simplify, do not used the second argument.
+	(strip_extention): New function.
+	(get_md5sum): Likewise.
+	(get_gcov_intermediate_filename): Handle properly -p and -x
+	options.
+	(output_gcov_file): Use string type.
+	(generate_results): Likewise.
+	(md5sum_to_hex): Remove.
+
 2021-08-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
