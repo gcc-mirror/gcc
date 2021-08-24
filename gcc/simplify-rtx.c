@@ -841,7 +841,7 @@ simplify_context::simplify_truncation (machine_mode mode, rtx op,
 	{
 	  unsigned int int_op_prec = GET_MODE_PRECISION (int_op_mode);
 	  unsigned int subreg_prec = GET_MODE_PRECISION (subreg_mode);
-	  if (int_op_prec > subreg_mode)
+	  if (int_op_prec > subreg_prec)
 	    {
 	      if (int_mode == subreg_mode)
 		return SUBREG_REG (op);
@@ -851,7 +851,7 @@ simplify_context::simplify_truncation (machine_mode mode, rtx op,
 	    }
 	  /* Simplification of (truncate:A (subreg:B X:C 0)) where
  	     A is narrower than B and B is narrower than C.  */
-	  else if (int_op_prec < subreg_mode
+	  else if (int_op_prec < subreg_prec
 		   && GET_MODE_PRECISION (int_mode) < int_op_prec)
 	    return simplify_gen_unary (TRUNCATE, int_mode,
 				       SUBREG_REG (op), subreg_mode);
