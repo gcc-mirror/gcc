@@ -88,6 +88,11 @@ struct stringop_algs
   } size [MAX_STRINGOP_ALGS];
 };
 
+/* Analog of COSTS_N_INSNS when optimizing for size.  */
+#ifndef COSTS_N_BYTES
+#define COSTS_N_BYTES(N) ((N) * 2)
+#endif
+
 /* Define the specific costs for a given cpu.  NB: hard_register is used
    by TARGET_REGISTER_MOVE_COST and TARGET_MEMORY_MOVE_COST to compute
    hard register move costs by register allocator.  Relative costs of
@@ -1710,6 +1715,8 @@ typedef struct ix86_args {
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 #define LEGITIMATE_PIC_OPERAND_P(X) legitimate_pic_operand_p (X)
+
+#define STRIP_UNARY(X) (UNARY_P (X) ? XEXP (X, 0) : X)
 
 #define SYMBOLIC_CONST(X)	\
   (GET_CODE (X) == SYMBOL_REF						\

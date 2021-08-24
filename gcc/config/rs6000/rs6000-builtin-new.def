@@ -1961,3 +1961,480 @@
 
   const vsll __builtin_vsx_xxspltd_2di (vsll, const int<1>);
     XXSPLTD_V2DI vsx_xxspltd_v2di {}
+
+
+; Power7 builtins (ISA 2.06).
+[power7]
+  const unsigned int __builtin_addg6s (unsigned int, unsigned int);
+    ADDG6S addg6s {}
+
+  const signed long __builtin_bpermd (signed long, signed long);
+    BPERMD bpermd_di {}
+
+  const unsigned int __builtin_cbcdtd (unsigned int);
+    CBCDTD cbcdtd {}
+
+  const unsigned int __builtin_cdtbcd (unsigned int);
+    CDTBCD cdtbcd {}
+
+  const signed int __builtin_divwe (signed int, signed int);
+    DIVWE dive_si {}
+
+  const unsigned int __builtin_divweu (unsigned int, unsigned int);
+    DIVWEU diveu_si {}
+
+  const vsq __builtin_pack_vector_int128 (unsigned long long, unsigned long long);
+    PACK_V1TI packv1ti {}
+
+  void __builtin_ppc_speculation_barrier ();
+    SPECBARR speculation_barrier {}
+
+  const unsigned long __builtin_unpack_vector_int128 (vsq, const int<1>);
+    UNPACK_V1TI unpackv1ti {}
+
+
+; Power7 builtins requiring 64-bit GPRs (even with 32-bit addressing).
+[power7-64]
+  const signed long long __builtin_divde (signed long long, signed long long);
+    DIVDE dive_di {}
+
+  const unsigned long long __builtin_divdeu (unsigned long long, unsigned long long);
+    DIVDEU diveu_di {}
+
+
+; Power8 vector built-ins.
+[power8-vector]
+  const vsll __builtin_altivec_abs_v2di (vsll);
+    ABS_V2DI absv2di2 {}
+
+  const vsc __builtin_altivec_bcddiv10_v16qi (vsc);
+    BCDDIV10_V16QI bcddiv10_v16qi {}
+
+  const vsc __builtin_altivec_bcdmul10_v16qi (vsc);
+    BCDMUL10_V16QI bcdmul10_v16qi {}
+
+  const vsc __builtin_altivec_eqv_v16qi (vsc, vsc);
+    EQV_V16QI eqvv16qi3 {}
+
+  const vuc __builtin_altivec_eqv_v16qi_uns (vuc, vuc);
+    EQV_V16QI_UNS eqvv16qi3 {}
+
+  const vsq __builtin_altivec_eqv_v1ti (vsq, vsq);
+    EQV_V1TI eqvv1ti3 {}
+
+  const vuq __builtin_altivec_eqv_v1ti_uns (vuq, vuq);
+    EQV_V1TI_UNS eqvv1ti3 {}
+
+  const vd __builtin_altivec_eqv_v2df (vd, vd);
+    EQV_V2DF eqvv2df3 {}
+
+  const vsll __builtin_altivec_eqv_v2di (vsll, vsll);
+    EQV_V2DI eqvv2di3 {}
+
+  const vull __builtin_altivec_eqv_v2di_uns (vull, vull);
+    EQV_V2DI_UNS eqvv2di3 {}
+
+  const vf __builtin_altivec_eqv_v4sf (vf, vf);
+    EQV_V4SF eqvv4sf3 {}
+
+  const vsi __builtin_altivec_eqv_v4si (vsi, vsi);
+    EQV_V4SI eqvv4si3 {}
+
+  const vui __builtin_altivec_eqv_v4si_uns (vui, vui);
+    EQV_V4SI_UNS eqvv4si3 {}
+
+  const vss __builtin_altivec_eqv_v8hi (vss, vss);
+    EQV_V8HI eqvv8hi3 {}
+
+  const vus __builtin_altivec_eqv_v8hi_uns (vus, vus);
+    EQV_V8HI_UNS eqvv8hi3 {}
+
+  const vsc __builtin_altivec_nand_v16qi (vsc, vsc);
+    NAND_V16QI nandv16qi3 {}
+
+  const vuc __builtin_altivec_nand_v16qi_uns (vuc, vuc);
+    NAND_V16QI_UNS nandv16qi3 {}
+
+  const vsq __builtin_altivec_nand_v1ti (vsq, vsq);
+    NAND_V1TI nandv1ti3 {}
+
+  const vuq __builtin_altivec_nand_v1ti_uns (vuq, vuq);
+    NAND_V1TI_UNS nandv1ti3 {}
+
+  const vd __builtin_altivec_nand_v2df (vd, vd);
+    NAND_V2DF nandv2df3 {}
+
+  const vsll __builtin_altivec_nand_v2di (vsll, vsll);
+    NAND_V2DI nandv2di3 {}
+
+  const vull __builtin_altivec_nand_v2di_uns (vull, vull);
+    NAND_V2DI_UNS nandv2di3 {}
+
+  const vf __builtin_altivec_nand_v4sf (vf, vf);
+    NAND_V4SF nandv4sf3 {}
+
+  const vsi __builtin_altivec_nand_v4si (vsi, vsi);
+    NAND_V4SI nandv4si3 {}
+
+  const vui __builtin_altivec_nand_v4si_uns (vui, vui);
+    NAND_V4SI_UNS nandv4si3 {}
+
+  const vss __builtin_altivec_nand_v8hi (vss, vss);
+    NAND_V8HI nandv8hi3 {}
+
+  const vus __builtin_altivec_nand_v8hi_uns (vus, vus);
+    NAND_V8HI_UNS nandv8hi3 {}
+
+  const vsc __builtin_altivec_neg_v16qi (vsc);
+    NEG_V16QI negv16qi2 {}
+
+  const vd __builtin_altivec_neg_v2df (vd);
+    NEG_V2DF negv2df2 {}
+
+  const vsll __builtin_altivec_neg_v2di (vsll);
+    NEG_V2DI negv2di2 {}
+
+  const vf __builtin_altivec_neg_v4sf (vf);
+    NEG_V4SF negv4sf2 {}
+
+  const vsi __builtin_altivec_neg_v4si (vsi);
+    NEG_V4SI negv4si2 {}
+
+  const vss __builtin_altivec_neg_v8hi (vss);
+    NEG_V8HI negv8hi2 {}
+
+  const vsc __builtin_altivec_orc_v16qi (vsc, vsc);
+    ORC_V16QI orcv16qi3 {}
+
+  const vuc __builtin_altivec_orc_v16qi_uns (vuc, vuc);
+    ORC_V16QI_UNS orcv16qi3 {}
+
+  const vsq __builtin_altivec_orc_v1ti (vsq, vsq);
+    ORC_V1TI orcv1ti3 {}
+
+  const vuq __builtin_altivec_orc_v1ti_uns (vuq, vuq);
+    ORC_V1TI_UNS orcv1ti3 {}
+
+  const vd __builtin_altivec_orc_v2df (vd, vd);
+    ORC_V2DF orcv2df3 {}
+
+  const vsll __builtin_altivec_orc_v2di (vsll, vsll);
+    ORC_V2DI orcv2di3 {}
+
+  const vull __builtin_altivec_orc_v2di_uns (vull, vull);
+    ORC_V2DI_UNS orcv2di3 {}
+
+  const vf __builtin_altivec_orc_v4sf (vf, vf);
+    ORC_V4SF orcv4sf3 {}
+
+  const vsi __builtin_altivec_orc_v4si (vsi, vsi);
+    ORC_V4SI orcv4si3 {}
+
+  const vui __builtin_altivec_orc_v4si_uns (vui, vui);
+    ORC_V4SI_UNS orcv4si3 {}
+
+  const vss __builtin_altivec_orc_v8hi (vss, vss);
+    ORC_V8HI orcv8hi3 {}
+
+  const vus __builtin_altivec_orc_v8hi_uns (vus, vus);
+    ORC_V8HI_UNS orcv8hi3 {}
+
+  const vsc __builtin_altivec_vclzb (vsc);
+    VCLZB clzv16qi2 {}
+
+  const vsll __builtin_altivec_vclzd (vsll);
+    VCLZD clzv2di2 {}
+
+  const vss __builtin_altivec_vclzh (vss);
+    VCLZH clzv8hi2 {}
+
+  const vsi __builtin_altivec_vclzw (vsi);
+    VCLZW clzv4si2 {}
+
+  const vuc __builtin_altivec_vgbbd (vuc);
+    VGBBD p8v_vgbbd {}
+
+  const vsq __builtin_altivec_vaddcuq (vsq, vsq);
+    VADDCUQ altivec_vaddcuq {}
+
+  const vsq __builtin_altivec_vaddecuq (vsq, vsq, vsq);
+    VADDECUQ altivec_vaddecuq {}
+
+  const vsq __builtin_altivec_vaddeuqm (vsq, vsq, vsq);
+    VADDEUQM altivec_vaddeuqm {}
+
+  const vsll __builtin_altivec_vaddudm (vsll, vsll);
+    VADDUDM addv2di3 {}
+
+  const vsq __builtin_altivec_vadduqm (vsq, vsq);
+    VADDUQM altivec_vadduqm {}
+
+  const vsll __builtin_altivec_vbpermq (vsc, vsc);
+    VBPERMQ altivec_vbpermq {}
+
+  const vsc __builtin_altivec_vbpermq2 (vsc, vsc);
+    VBPERMQ2 altivec_vbpermq2 {}
+
+  const vsll __builtin_altivec_vmaxsd (vsll, vsll);
+    VMAXSD smaxv2di3 {}
+
+  const vull __builtin_altivec_vmaxud (vull, vull);
+    VMAXUD umaxv2di3 {}
+
+  const vsll __builtin_altivec_vminsd (vsll, vsll);
+    VMINSD sminv2di3 {}
+
+  const vull __builtin_altivec_vminud (vull, vull);
+    VMINUD uminv2di3 {}
+
+  const vd __builtin_altivec_vmrgew_v2df (vd, vd);
+    VMRGEW_V2DF p8_vmrgew_v2df {}
+
+  const vsll __builtin_altivec_vmrgew_v2di (vsll, vsll);
+    VMRGEW_V2DI p8_vmrgew_v2di {}
+
+  const vf __builtin_altivec_vmrgew_v4sf (vf, vf);
+    VMRGEW_V4SF p8_vmrgew_v4sf {}
+
+  const vsi __builtin_altivec_vmrgew_v4si (vsi, vsi);
+    VMRGEW_V4SI p8_vmrgew_v4si {}
+
+  const vd __builtin_altivec_vmrgow_v2df (vd, vd);
+    VMRGOW_V2DF p8_vmrgow_v2df {}
+
+  const vsll __builtin_altivec_vmrgow_v2di (vsll, vsll);
+    VMRGOW_V2DI p8_vmrgow_v2di {}
+
+  const vf __builtin_altivec_vmrgow_v4sf (vf, vf);
+    VMRGOW_V4SF p8_vmrgow_v4sf {}
+
+  const vsi __builtin_altivec_vmrgow_v4si (vsi, vsi);
+    VMRGOW_V4SI p8_vmrgow_v4si {}
+
+  const vsc __builtin_altivec_vpermxor (vsc, vsc, vsc);
+    VPERMXOR altivec_vpermxor {}
+
+  const vsi __builtin_altivec_vpksdss (vsll, vsll);
+    VPKSDSS altivec_vpksdss {}
+
+  const vsi __builtin_altivec_vpksdus (vsll, vsll);
+    VPKSDUS altivec_vpksdus {}
+
+  const vsi __builtin_altivec_vpkudum (vsll, vsll);
+    VPKUDUM altivec_vpkudum {}
+
+  const vsi __builtin_altivec_vpkudus (vsll, vsll);
+    VPKUDUS altivec_vpkudus {}
+
+  const vsc __builtin_altivec_vpmsumb (vsc, vsc);
+    VPMSUMB_A crypto_vpmsumb {}
+
+  const vsll __builtin_altivec_vpmsumd (vsll, vsll);
+    VPMSUMD_A crypto_vpmsumd {}
+
+  const vss __builtin_altivec_vpmsumh (vss, vss);
+    VPMSUMH_A crypto_vpmsumh {}
+
+  const vsi __builtin_altivec_vpmsumw (vsi, vsi);
+    VPMSUMW_A crypto_vpmsumw {}
+
+  const vsc __builtin_altivec_vpopcntb (vsc);
+    VPOPCNTB popcountv16qi2 {}
+
+  const vsll __builtin_altivec_vpopcntd (vsll);
+    VPOPCNTD popcountv2di2 {}
+
+  const vss __builtin_altivec_vpopcnth (vss);
+    VPOPCNTH popcountv8hi2 {}
+
+  const vsc __builtin_altivec_vpopcntub (vsc);
+    VPOPCNTUB popcountv16qi2 {}
+
+  const vsll __builtin_altivec_vpopcntud (vsll);
+    VPOPCNTUD popcountv2di2 {}
+
+  const vss __builtin_altivec_vpopcntuh (vss);
+    VPOPCNTUH popcountv8hi2 {}
+
+  const vsi __builtin_altivec_vpopcntuw (vsi);
+    VPOPCNTUW popcountv4si2 {}
+
+  const vsi __builtin_altivec_vpopcntw (vsi);
+    VPOPCNTW popcountv4si2 {}
+
+  const vsll __builtin_altivec_vrld (vsll, vsll);
+    VRLD vrotlv2di3 {}
+
+  const vsll __builtin_altivec_vsld (vsll, vsll);
+    VSLD vashlv2di3 {}
+
+  const vsll __builtin_altivec_vsrad (vsll, vsll);
+    VSRAD vashrv2di3 {}
+
+  const vsll __builtin_altivec_vsrd (vsll, vull);
+    VSRD vlshrv2di3 {}
+
+  const vsq __builtin_altivec_vsubcuq (vsq, vsq);
+    VSUBCUQ altivec_vsubcuq {}
+
+  const vsq __builtin_altivec_vsubecuq (vsq, vsq, vsq);
+    VSUBECUQ altivec_vsubecuq {}
+
+  const vsq __builtin_altivec_vsubeuqm (vsq, vsq, vsq);
+    VSUBEUQM altivec_vsubeuqm {}
+
+  const vsll __builtin_altivec_vsubudm (vsll, vsll);
+    VSUBUDM subv2di3 {}
+
+  const vsq __builtin_altivec_vsubuqm (vsq, vsq);
+    VSUBUQM altivec_vsubuqm {}
+
+  const vsll __builtin_altivec_vupkhsw (vsi);
+    VUPKHSW altivec_vupkhsw {}
+
+  const vsll __builtin_altivec_vupklsw (vsi);
+    VUPKLSW altivec_vupklsw {}
+
+  const vsq __builtin_bcdadd_v1ti (vsq, vsq, const int<1>);
+    BCDADD_V1TI bcdadd_v1ti {}
+
+  const vsc __builtin_bcdadd_v16qi (vsc, vsc, const int<1>);
+    BCDADD_V16QI bcdadd_v16qi {}
+
+  const signed int __builtin_bcdadd_eq_v1ti (vsq, vsq, const int<1>);
+    BCDADD_EQ_V1TI bcdadd_eq_v1ti {}
+
+  const signed int __builtin_bcdadd_eq_v16qi (vsc, vsc, const int<1>);
+    BCDADD_EQ_V16QI bcdadd_eq_v16qi {}
+
+  const signed int __builtin_bcdadd_gt_v1ti (vsq, vsq, const int<1>);
+    BCDADD_GT_V1TI bcdadd_gt_v1ti {}
+
+  const signed int __builtin_bcdadd_gt_v16qi (vsc, vsc, const int<1>);
+    BCDADD_GT_V16QI bcdadd_gt_v16qi {}
+
+  const signed int __builtin_bcdadd_lt_v1ti (vsq, vsq, const int<1>);
+    BCDADD_LT_V1TI bcdadd_lt_v1ti {}
+
+  const signed int __builtin_bcdadd_lt_v16qi (vsc, vsc, const int<1>);
+    BCDADD_LT_V16QI bcdadd_lt_v16qi {}
+
+  const signed int __builtin_bcdadd_ov_v1ti (vsq, vsq, const int<1>);
+    BCDADD_OV_V1TI bcdadd_unordered_v1ti {}
+
+  const signed int __builtin_bcdadd_ov_v16qi (vsc, vsc, const int<1>);
+    BCDADD_OV_V16QI bcdadd_unordered_v16qi {}
+
+  const signed int __builtin_bcdinvalid_v1ti (vsq);
+    BCDINVALID_V1TI bcdinvalid_v1ti {}
+
+  const signed int __builtin_bcdinvalid_v16qi (vsc);
+    BCDINVALID_V16QI bcdinvalid_v16qi {}
+
+  const vsq __builtin_bcdsub_v1ti (vsq, vsq, const int<1>);
+    BCDSUB_V1TI bcdsub_v1ti {}
+
+  const vsc __builtin_bcdsub_v16qi (vsc, vsc, const int<1>);
+    BCDSUB_V16QI bcdsub_v16qi {}
+
+  const signed int __builtin_bcdsub_eq_v1ti (vsq, vsq, const int<1>);
+    BCDSUB_EQ_V1TI bcdsub_eq_v1ti {}
+
+  const signed int __builtin_bcdsub_eq_v16qi (vsc, vsc, const int<1>);
+    BCDSUB_EQ_V16QI bcdsub_eq_v16qi {}
+
+  const signed int __builtin_bcdsub_ge_v1ti (vsq, vsq, const int<1>);
+    BCDSUB_GE_V1TI bcdsub_ge_v1ti {}
+
+  const signed int __builtin_bcdsub_ge_v16qi (vsc, vsc, const int<1>);
+    BCDSUB_GE_V16QI bcdsub_ge_v16qi {}
+
+  const signed int __builtin_bcdsub_gt_v1ti (vsq, vsq, const int<1>);
+    BCDSUB_GT_V1TI bcdsub_gt_v1ti {}
+
+  const signed int __builtin_bcdsub_gt_v16qi (vsc, vsc, const int<1>);
+    BCDSUB_GT_V16QI bcdsub_gt_v16qi {}
+
+  const signed int __builtin_bcdsub_le_v1ti (vsq, vsq, const int<1>);
+    BCDSUB_LE_V1TI bcdsub_le_v1ti {}
+
+  const signed int __builtin_bcdsub_le_v16qi (vsc, vsc, const int<1>);
+    BCDSUB_LE_V16QI bcdsub_le_v16qi {}
+
+  const signed int __builtin_bcdsub_lt_v1ti (vsq, vsq, const int<1>);
+    BCDSUB_LT_V1TI bcdsub_lt_v1ti {}
+
+  const signed int __builtin_bcdsub_lt_v16qi (vsc, vsc, const int<1>);
+    BCDSUB_LT_V16QI bcdsub_lt_v16qi {}
+
+  const signed int __builtin_bcdsub_ov_v1ti (vsq, vsq, const int<1>);
+    BCDSUB_OV_V1TI bcdsub_unordered_v1ti {}
+
+  const signed int __builtin_bcdsub_ov_v16qi (vsc, vsc, const int<1>);
+    BCDSUB_OV_V16QI bcdsub_unordered_v16qi {}
+
+  const vuc __builtin_crypto_vpermxor_v16qi (vuc, vuc, vuc);
+    VPERMXOR_V16QI crypto_vpermxor_v16qi {}
+
+  const vull __builtin_crypto_vpermxor_v2di (vull, vull, vull);
+    VPERMXOR_V2DI crypto_vpermxor_v2di {}
+
+  const vui __builtin_crypto_vpermxor_v4si (vui, vui, vui);
+    VPERMXOR_V4SI crypto_vpermxor_v4si {}
+
+  const vus __builtin_crypto_vpermxor_v8hi (vus, vus, vus);
+    VPERMXOR_V8HI crypto_vpermxor_v8hi {}
+
+  const vuc __builtin_crypto_vpmsumb (vuc, vuc);
+    VPMSUMB crypto_vpmsumb {}
+
+  const vull __builtin_crypto_vpmsumd (vull, vull);
+    VPMSUMD crypto_vpmsumd {}
+
+  const vus __builtin_crypto_vpmsumh (vus, vus);
+    VPMSUMH crypto_vpmsumh {}
+
+  const vui __builtin_crypto_vpmsumw (vui, vui);
+    VPMSUMW crypto_vpmsumw {}
+
+  const vf __builtin_vsx_float2_v2df (vd, vd);
+    FLOAT2_V2DF float2_v2df {}
+
+  const vf __builtin_vsx_float2_v2di (vsll, vsll);
+    FLOAT2_V2DI float2_v2di {}
+
+  const vsc __builtin_vsx_revb_v16qi (vsc);
+    REVB_V16QI revb_v16qi {}
+
+  const vsq __builtin_vsx_revb_v1ti (vsq);
+    REVB_V1TI revb_v1ti {}
+
+  const vd __builtin_vsx_revb_v2df (vd);
+    REVB_V2DF revb_v2df {}
+
+  const vsll __builtin_vsx_revb_v2di (vsll);
+    REVB_V2DI revb_v2di {}
+
+  const vf __builtin_vsx_revb_v4sf (vf);
+    REVB_V4SF revb_v4sf {}
+
+  const vsi __builtin_vsx_revb_v4si (vsi);
+    REVB_V4SI revb_v4si {}
+
+  const vss __builtin_vsx_revb_v8hi (vss);
+    REVB_V8HI revb_v8hi {}
+
+  const vf __builtin_vsx_uns_float2_v2di (vsll, vsll);
+    UNS_FLOAT2_V2DI uns_float2_v2di {}
+
+  const vsi __builtin_vsx_vsigned2_v2df (vd, vd);
+    VEC_VSIGNED2_V2DF vsigned2_v2df {}
+
+  const vsi __builtin_vsx_vunsigned2_v2df (vd, vd);
+    VEC_VUNSIGNED2_V2DF vunsigned2_v2df {}
+
+  const vf __builtin_vsx_xscvdpspn (double);
+    XSCVDPSPN vsx_xscvdpspn {}
+
+  const double __builtin_vsx_xscvspdpn (vf);
+    XSCVSPDPN vsx_xscvspdpn {}

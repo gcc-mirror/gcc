@@ -634,10 +634,10 @@ access_ref::phi () const
   return as_a <gphi *> (def_stmt);
 }
 
-/* Determine and return the largest object to which *THIS.  If *THIS
-   refers to a PHI and PREF is nonnull, fill *PREF with the details
-   of the object determined by compute_objsize(ARG, OSTYPE) for each
-   PHI argument ARG.  */
+/* Determine and return the largest object to which *THIS refers.  If
+   *THIS refers to a PHI and PREF is nonnull, fill *PREF with the details
+   of the object determined by compute_objsize(ARG, OSTYPE) for each PHI
+   argument ARG.  */
 
 tree
 access_ref::get_ref (vec<access_ref> *all_refs,
@@ -659,21 +659,25 @@ access_ref::get_ref (vec<access_ref> *all_refs,
   if (!psnlim->visit_phi (ref))
     return NULL_TREE;
 
-  /* Reflects the range of offsets of all PHI arguments refer to the same
-     object (i.e., have the same REF).  */
-  access_ref same_ref;
-  /* The conservative result of the PHI reflecting the offset and size
-     of the largest PHI argument, regardless of whether or not they all
-     refer to the same object.  */
   pointer_query empty_qry;
   if (!qry)
     qry = &empty_qry;
 
+  /* The conservative result of the PHI reflecting the offset and size
+     of the largest PHI argument, regardless of whether or not they all
+     refer to the same object.  */
   access_ref phi_ref;
   if (pref)
     {
+      /* The identity of the object has not been determined yet but
+	 PREF->REF is set by the caller to the PHI for convenience.
+	 The size is negative/invalid and the offset is zero (it's
+	 updated only after the identity of the object has been
+	 established).  */
+      gcc_assert (pref->sizrng[0] < 0);
+      gcc_assert (pref->offrng[0] == 0 && pref->offrng[1] == 0);
+
       phi_ref = *pref;
-      same_ref = *pref;
     }
 
   /* Set if any argument is a function array (or VLA) parameter not
@@ -682,8 +686,6 @@ access_ref::get_ref (vec<access_ref> *all_refs,
   /* The size of the smallest object referenced by the PHI arguments.  */
   offset_int minsize = 0;
   const offset_int maxobjsize = wi::to_offset (max_object_size ());
-  /* The offset of the PHI, not reflecting those of its arguments.  */
-  const offset_int orng[2] = { phi_ref.offrng[0], phi_ref.offrng[1] };
 
   const unsigned nargs = gimple_phi_num_args (phi_stmt);
   for (unsigned i = 0; i < nargs; ++i)
@@ -695,16 +697,11 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 	/* A PHI with all null pointer arguments.  */
 	return NULL_TREE;
 
-      /* Add PREF's offset to that of the argument.  */
-      phi_arg_ref.add_offset (orng[0], orng[1]);
       if (TREE_CODE (arg) == SSA_NAME)
 	qry->put_ref (arg, phi_arg_ref);
 
       if (all_refs)
 	all_refs->safe_push (phi_arg_ref);
-
-      const bool arg_known_size = (phi_arg_ref.sizrng[0] != 0
-				   || phi_arg_ref.sizrng[1] != maxobjsize);
 
       parmarray |= phi_arg_ref.parmarray;
 
@@ -712,11 +709,19 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 
       if (phi_ref.sizrng[0] < 0)
 	{
+	  /* If PHI_REF doesn't contain a meaningful result yet set it
+	     to the result for the first argument.  */
 	  if (!nullp)
-	    same_ref = phi_arg_ref;
-	  phi_ref = phi_arg_ref;
+	    phi_ref = phi_arg_ref;
+
+	  /* Set if the current argument refers to one or more objects of
+	     known size (or range of sizes), as opposed to referring to
+	     one or more unknown object(s).  */
+	  const bool arg_known_size = (phi_arg_ref.sizrng[0] != 0
+				       || phi_arg_ref.sizrng[1] != maxobjsize);
 	  if (arg_known_size)
 	    minsize = phi_arg_ref.sizrng[0];
+
 	  continue;
 	}
 
@@ -740,8 +745,10 @@ access_ref::get_ref (vec<access_ref> *all_refs,
       offset_int phirem[2];
       phirem[1] = phi_ref.size_remaining (phirem);
 
-      if (phi_arg_ref.ref != same_ref.ref)
-	same_ref.ref = NULL_TREE;
+      /* Reset the PHI's BASE0 flag if any of the nonnull arguments
+	 refers to an object at an unknown offset.  */
+      if (!phi_arg_ref.base0)
+	phi_ref.base0 = false;
 
       if (phirem[1] < argrem[1]
 	  || (phirem[1] == argrem[1]
@@ -749,32 +756,13 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 	/* Use the argument with the most space remaining as the result,
 	   or the larger one if the space is equal.  */
 	phi_ref = phi_arg_ref;
-
-      /* Set SAME_REF.OFFRNG to the maximum range of all arguments.  */
-      if (phi_arg_ref.offrng[0] < same_ref.offrng[0])
-	same_ref.offrng[0] = phi_arg_ref.offrng[0];
-      if (same_ref.offrng[1] < phi_arg_ref.offrng[1])
-	same_ref.offrng[1] = phi_arg_ref.offrng[1];
     }
 
-  if (!same_ref.ref && same_ref.offrng[0] != 0)
-    /* Clear BASE0 if not all the arguments refer to the same object and
-       if not all their offsets are zero-based.  This allows the final
-       PHI offset to out of bounds for some arguments but not for others
-       (or negative even of all the arguments are BASE0), which is overly
-       permissive.  */
-    phi_ref.base0 = false;
-
-  if (same_ref.ref)
-    phi_ref = same_ref;
-  else
-    {
-      /* Replace the lower bound of the largest argument with the size
-	 of the smallest argument, and set PARMARRAY if any argument
-	 was one.  */
-      phi_ref.sizrng[0] = minsize;
-      phi_ref.parmarray = parmarray;
-    }
+  /* Replace the lower bound of the largest argument with the size
+     of the smallest argument, and set PARMARRAY if any argument
+     was one.  */
+  phi_ref.sizrng[0] = minsize;
+  phi_ref.parmarray = parmarray;
 
   if (phi_ref.sizrng[0] < 0)
     {
@@ -803,6 +791,14 @@ access_ref::size_remaining (offset_int *pmin /* = NULL */) const
   offset_int minbuf;
   if (!pmin)
     pmin = &minbuf;
+
+  if (sizrng[0] < 0)
+    {
+      /* If the identity of the object hasn't been determined return
+	 the maximum size range.  */
+      *pmin = 0;
+      return wi::to_offset (max_object_size ());
+    }
 
   /* add_offset() ensures the offset range isn't inverted.  */
   gcc_checking_assert (offrng[0] <= offrng[1]);
@@ -1597,6 +1593,11 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
     {
       pref->ref = ptr;
 
+      /* Reset the offset in case it was set by a prior call and not
+	 cleared by the caller.  The offset is only adjusted after
+	 the identity of the object has been determined.  */
+      pref->offrng[0] = pref->offrng[1] = 0;
+
       if (!addr && POINTER_TYPE_P (TREE_TYPE (ptr)))
 	{
 	  /* Set the maximum size if the reference is to the pointer
@@ -1606,6 +1607,9 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
 	  pref->base0 = false;
 	  return true;
 	}
+
+      /* Valid offsets into the object are nonnegative.  */
+      pref->base0 = true;
 
       if (tree size = decl_init_size (ptr, false))
 	if (TREE_CODE (size) == INTEGER_CST)
@@ -1960,6 +1964,11 @@ compute_objsize (tree ptr, int ostype, access_ref *pref,
 {
   pointer_query qry;
   qry.rvals = rvals;
+
+  /* Clear and invalidate in case *PREF is being reused.  */
+  pref->offrng[0] = pref->offrng[1] = 0;
+  pref->sizrng[0] = pref->sizrng[1] = -1;
+
   ssa_name_limit_t snlim;
   if (!compute_objsize_r (ptr, ostype, pref, snlim, &qry))
     return NULL_TREE;
@@ -1981,6 +1990,10 @@ compute_objsize (tree ptr, int ostype, access_ref *pref, pointer_query *ptr_qry)
     ptr_qry->depth = 0;
   else
     ptr_qry = &qry;
+
+  /* Clear and invalidate in case *PREF is being reused.  */
+  pref->offrng[0] = pref->offrng[1] = 0;
+  pref->sizrng[0] = pref->sizrng[1] = -1;
 
   ssa_name_limit_t snlim;
   if (!compute_objsize_r (ptr, ostype, pref, snlim, ptr_qry))

@@ -1,3 +1,20 @@
+2021-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (basic_istream_view): Add default template
+	argument.
+	* testsuite/std/ranges/istream_view.cc: Check it.
+
+2021-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/dyncast.cc (__dynamic_cast): Add __builtin_expect to
+	precondition check.
+
+2021-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90787
+	* testsuite/util/testsuite_fs.h (permissions_are_testable):
+	Define as inline.
+
 2021-08-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90787

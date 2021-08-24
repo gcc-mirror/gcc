@@ -236,6 +236,10 @@
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_jthread 201911L
 #endif
+#if __has_builtin(__is_layout_compatible) \
+  && __has_builtin(__builtin_is_corresponding_member)
+# define __cpp_lib_is_layout_compatible 201907L
+#endif
 #if __has_builtin(__is_pointer_interconvertible_base_of) \
  && __has_builtin(__builtin_is_pointer_interconvertible_with_class)
 # define __cpp_lib_is_pointer_interconvertible 201907L

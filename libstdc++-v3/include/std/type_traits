@@ -3414,6 +3414,31 @@ template<typename _Ret, typename _Fn, typename... _Args>
     inline constexpr bool is_unbounded_array_v
       = is_unbounded_array<_Tp>::value;
 
+#if __has_builtin(__is_layout_compatible)
+
+  /// @since C++20
+  template<typename _Tp, typename _Up>
+    struct is_layout_compatible
+    : bool_constant<__is_layout_compatible(_Tp, _Up)>
+    { };
+
+  /// @ingroup variable_templates
+  /// @since C++20
+  template<typename _Tp, typename _Up>
+    constexpr bool is_layout_compatible_v
+      = __is_layout_compatible(_Tp, _Up);
+
+#if __has_builtin(__builtin_is_corresponding_member)
+#define __cpp_lib_is_layout_compatible 201907L
+
+  /// @since C++20
+  template<typename _S1, typename _S2, typename _M1, typename _M2>
+    constexpr bool
+    is_corresponding_member(_M1 _S1::*__m1, _M2 _S2::*__m2) noexcept
+    { return __builtin_is_corresponding_member(__m1, __m2); }
+#endif
+#endif
+
 #if __has_builtin(__is_pointer_interconvertible_base_of)
   /// True if `_Derived` is standard-layout and has a base class of type `_Base`
   /// @since C++20

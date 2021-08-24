@@ -3389,7 +3389,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    the form that minimizes the number of conversions.  */
 (simplify
  (convert (lshift:s@0 (convert:s@1 @2) INTEGER_CST@3))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+ (if (INTEGRAL_TYPE_P (type)
+      && !POINTER_TYPE_P (type)
+      && tree_nop_conversion_p (type, TREE_TYPE (@0))
       && INTEGRAL_TYPE_P (TREE_TYPE (@2))
       && TYPE_PRECISION (TREE_TYPE (@2)) <= TYPE_PRECISION (type))
   (lshift (convert @2) @3)))

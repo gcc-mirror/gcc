@@ -808,6 +808,7 @@ Objective-C and Objective-C++ Dialects}.
 -mverbose-cost-dump @gol
 -mpure-code @gol
 -mcmse @gol
+-mfix-cmse-cve-2021-35465 @gol
 -mfdpic}
 
 @emph{AVR Options}
@@ -14386,9 +14387,10 @@ The parameter only has an effect on targets that support partial
 vector loads and stores.
 
 @item vect-inner-loop-cost-factor
-The factor which the loop vectorizer applies to the cost of statements
-in an inner loop relative to the loop being vectorized.  The default
-value is 50.
+The maximum factor which the loop vectorizer applies to the cost of statements
+in an inner loop relative to the loop being vectorized.  The factor applied
+is the maximum of the estimated number of iterations of the inner loop and
+this parameter.  The default value of this parameter is 50.
 
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
@@ -20741,6 +20743,14 @@ is only available when generating non-pic code for M-profile targets.
 Generate secure code as per the "ARMv8-M Security Extensions: Requirements on
 Development Tools Engineering Specification", which can be found on
 @url{https://developer.arm.com/documentation/ecm0359818/latest/}.
+
+@item -mfix-cmse-cve-2021-35465
+@opindex mfix-cmse-cve-2021-35465
+Mitigate against a potential security issue with the @code{VLLDM} instruction
+in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
+enabled by default when the option @option{-mcpu=} is used with
+@code{cortex-m33}, @code{cortex-m35p} or @code{cortex-m55}.  The option
+@option{-mno-fix-cmse-cve-2021-35465} can be used to disable the mitigation.
 
 @item -mfdpic
 @itemx -mno-fdpic

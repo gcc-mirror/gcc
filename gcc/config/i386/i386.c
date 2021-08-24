@@ -19982,8 +19982,6 @@ ix86_division_cost (const struct processor_costs *cost,
     return cost->divide[MODE_INDEX (mode)];
 }
 
-#define COSTS_N_BYTES(N) ((N) * 2)
-
 /* Return cost of shift in MODE.
    If CONSTANT_OP1 is true, the op1 value is known and set in OP1_VAL.
    AND_IN_OP1 specify in op1 is result of and and SHIFT_AND_TRUNCATE
@@ -20544,6 +20542,11 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case UNSPEC:
       if (XINT (x, 1) == UNSPEC_TP)
 	*total = 0;
+      else if (XINT(x, 1) == UNSPEC_VTERNLOG)
+	{
+	  *total = cost->sse_op;
+	  return true;
+	}
       return false;
 
     case VEC_SELECT:

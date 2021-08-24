@@ -1,3 +1,8 @@
+2021-08-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* simple-object-mach-o.c (simple_object_mach_o_write_segment):
+	Cast the first argument to set_32 as needed.
+
 2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* simple-object-mach-o.c (simple_object_mach_o_write_segment):
