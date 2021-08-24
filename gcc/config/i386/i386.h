@@ -88,6 +88,11 @@ struct stringop_algs
   } size [MAX_STRINGOP_ALGS];
 };
 
+/* Analog of COSTS_N_INSNS when optimizing for size.  */
+#ifndef COSTS_N_BYTES
+#define COSTS_N_BYTES(N) ((N) * 2)
+#endif
+
 /* Define the specific costs for a given cpu.  NB: hard_register is used
    by TARGET_REGISTER_MOVE_COST and TARGET_MEMORY_MOVE_COST to compute
    hard register move costs by register allocator.  Relative costs of
