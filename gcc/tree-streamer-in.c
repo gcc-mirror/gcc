@@ -146,7 +146,9 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 	TYPE_REVERSE_STORAGE_ORDER (expr) = (unsigned) bp_unpack_value (bp, 1);
       else
 	TYPE_SATURATING (expr) = (unsigned) bp_unpack_value (bp, 1);
+#ifndef ACCEL_COMPILER
       TYPE_ADDR_SPACE (expr) = (unsigned) bp_unpack_value (bp, 8);
+#endif
     }
   else if (TREE_CODE (expr) == BIT_FIELD_REF || TREE_CODE (expr) == MEM_REF)
     {
