@@ -704,6 +704,15 @@ maybe_warn_for_bound (opt_code opt, location_t loc, GimpleOrTree exp, tree func,
   if (opt == OPT_Wstringop_overread)
     {
       bool maybe = pad && pad->src.phi ();
+      if (maybe)
+	{
+	  /* Issue a "maybe" warning only if the PHI refers to objects
+	     at least one of which has more space remaining than the bound.
+	     Otherwise, if the bound is greater, use the definitive form.  */
+	  offset_int remmax = pad->src.size_remaining ();
+	  if (remmax < wi::to_offset (bndrng[0]))
+	    maybe = false;
+	}
 
       if (tree_int_cst_lt (maxobjsize, bndrng[0]))
 	{
@@ -788,6 +797,15 @@ maybe_warn_for_bound (opt_code opt, location_t loc, GimpleOrTree exp, tree func,
     }
 
   bool maybe = pad && pad->dst.phi ();
+  if (maybe)
+    {
+      /* Issue a "maybe" warning only if the PHI refers to objects
+	 at least one of which has more space remaining than the bound.
+	 Otherwise, if the bound is greater, use the definitive form.  */
+      offset_int remmax = pad->dst.size_remaining ();
+      if (remmax < wi::to_offset (bndrng[0]))
+	maybe = false;
+    }
   if (tree_int_cst_lt (maxobjsize, bndrng[0]))
     {
       if (bndrng[0] == bndrng[1])
@@ -1418,7 +1436,7 @@ check_access (GimpleOrTree exp, tree dstwrite,
       location_t loc = get_location (exp);
       tree size = dstsize;
       if (pad && pad->mode == access_read_only)
-	size = wide_int_to_tree (sizetype, pad->src.sizrng[1]);
+	size = wide_int_to_tree (sizetype, pad->src.size_remaining ());
 
       if (range[0] && maxread && tree_fits_uhwi_p (size))
 	{
