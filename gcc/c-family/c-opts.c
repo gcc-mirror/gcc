@@ -188,6 +188,14 @@ c_common_diagnostics_set_defaults (diagnostic_context *context)
   context->opt_permissive = OPT_fpermissive;
 }
 
+/* Input charset configuration for diagnostics.  */
+static const char *
+c_common_input_charset_cb (const char * /*filename*/)
+{
+  const char *cs = cpp_opts->input_charset;
+  return cpp_input_conversion_is_trivial (cs) ? nullptr : cs;
+}
+
 /* Whether options from all C-family languages should be accepted
    quietly.  */
 static bool accept_all_c_family_options = false;
@@ -1136,6 +1144,11 @@ c_common_post_options (const char **pfilename)
   cpp_post_options (parse_in);
   init_global_opts_from_cpp (&global_options, cpp_get_options (parse_in));
 
+  /* Let diagnostics infrastructure know how to convert input files the same
+     way libcpp will do it, namely using the configured input charset and
+     skipping a UTF-8 BOM if present.  */
+  diagnostic_initialize_input_context (global_dc,
+				       c_common_input_charset_cb, true);
   input_location = UNKNOWN_LOCATION;
 
   *pfilename = this_input_filename

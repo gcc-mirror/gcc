@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "print-tree.h"
 #include "debug.h"
+#include "input.h"
 
 #include "d-tree.h"
 #include "id.h"
@@ -362,6 +363,19 @@ d_option_lang_mask (void)
   return CL_D;
 }
 
+/* Implements input charset and BOM skipping configuration for
+   diagnostics.  */
+static const char *d_input_charset_callback (const char * /*filename*/)
+{
+  /* TODO: The input charset is automatically determined by code in
+     dmd/dmodule.c based on the contents of the file.  If this detection
+     logic were factored out and could be reused here, then we would be able
+     to return UTF-16 or UTF-32 as needed here.  For now, we return always
+     NULL, which means no conversion is necessary, i.e. the input is assumed
+     to be UTF-8 when diagnostics read this file.  */
+  return nullptr;
+}
+
 /* Implements the lang_hooks.init routine for language D.  */
 
 static bool
@@ -372,6 +386,11 @@ d_init (void)
   Module::_init ();
   Expression::_init ();
   Objc::_init ();
+
+  /* Diagnostics input init, to enable BOM skipping and
+     input charset conversion.  */
+  diagnostic_initialize_input_context (global_dc,
+				       d_input_charset_callback, true);
 
   /* Back-end init.  */
   global_binding_level = ggc_cleared_alloc <binding_level> ();

@@ -22,13 +22,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "diagnostic.h"
-#include "diagnostic-core.h"
 #include "selftest.h"
 #include "cpplib.h"
 
 #ifndef HAVE_ICONV
 #define HAVE_ICONV 0
 #endif
+
+/* Input charset configuration.  */
+static const char *default_charset_callback (const char *)
+{
+  return nullptr;
+}
+
+void
+file_cache::initialize_input_context (diagnostic_input_charset_callback ccb,
+				      bool should_skip_bom)
+{
+  in_context.ccb = (ccb ? ccb : default_charset_callback);
+  in_context.should_skip_bom = should_skip_bom;
+}
 
 /* This is a cache used by get_next_line to store the content of a
    file to be searched for file lines.  */
@@ -51,7 +64,8 @@ public:
 
   void inc_use_count () { m_use_count++; }
 
-  void create (const char *file_path, FILE *fp, unsigned highest_use_count);
+  bool create (const file_cache::input_context &in_context,
+	       const char *file_path, FILE *fp, unsigned highest_use_count);
   void evict ();
 
  private:
@@ -110,6 +124,10 @@ public:
      far.  */
   char *m_data;
 
+  /* The allocated buffer to be freed may start a little earlier than DATA,
+     e.g. if a UTF8 BOM was skipped at the beginning.  */
+  int m_alloc_offset;
+
   /*  The size of the DATA array above.*/
   size_t m_size;
 
@@ -147,6 +165,17 @@ public:
      doesn't explode.  We thus scale total_lines down to
      line_record_size.  */
   vec<line_info, va_heap> m_line_record;
+
+  void offset_buffer (int offset)
+  {
+    gcc_assert (offset < 0 ? m_alloc_offset + offset >= 0
+		: (size_t) offset <= m_size);
+    gcc_assert (m_data);
+    m_alloc_offset += offset;
+    m_data += offset;
+    m_size -= offset;
+  }
+
 };
 
 /* Current position in real source file.  */
@@ -419,21 +448,25 @@ file_cache::add_file (const char *file_path)
 
   unsigned highest_use_count = 0;
   file_cache_slot *r = evicted_cache_tab_entry (&highest_use_count);
-  r->create (file_path, fp, highest_use_count);
+  if (!r->create (in_context, file_path, fp, highest_use_count))
+    return NULL;
   return r;
 }
 
 /* Populate this slot for use on FILE_PATH and FP, dropping any
    existing cached content within it.  */
 
-void
-file_cache_slot::create (const char *file_path, FILE *fp,
+bool
+file_cache_slot::create (const file_cache::input_context &in_context,
+			 const char *file_path, FILE *fp,
 			 unsigned highest_use_count)
 {
   m_file_path = file_path;
   if (m_fp)
     fclose (m_fp);
   m_fp = fp;
+  if (m_alloc_offset)
+    offset_buffer (-m_alloc_offset);
   m_nb_read = 0;
   m_line_start_idx = 0;
   m_line_num = 0;
@@ -443,6 +476,36 @@ file_cache_slot::create (const char *file_path, FILE *fp,
   m_use_count = ++highest_use_count;
   m_total_lines = total_lines_num (file_path);
   m_missing_trailing_newline = true;
+
+
+  /* Check the input configuration to determine if we need to do any
+     transformations, such as charset conversion or BOM skipping.  */
+  if (const char *input_charset = in_context.ccb (file_path))
+    {
+      /* Need a full-blown conversion of the input charset.  */
+      fclose (m_fp);
+      m_fp = NULL;
+      const cpp_converted_source cs
+	= cpp_get_converted_source (file_path, input_charset);
+      if (!cs.data)
+	return false;
+      if (m_data)
+	XDELETEVEC (m_data);
+      m_data = cs.data;
+      m_nb_read = m_size = cs.len;
+      m_alloc_offset = cs.data - cs.to_free;
+    }
+  else if (in_context.should_skip_bom)
+    {
+      if (read_data ())
+	{
+	  const int offset = cpp_check_utf8_bom (m_data, m_nb_read);
+	  offset_buffer (offset);
+	  m_nb_read -= offset;
+	}
+    }
+
+  return true;
 }
 
 /* file_cache's ctor.  */
@@ -450,6 +513,7 @@ file_cache_slot::create (const char *file_path, FILE *fp,
 file_cache::file_cache ()
 : m_file_slots (new file_cache_slot[num_file_slots])
 {
+  initialize_input_context (nullptr, false);
 }
 
 /* file_cache's dtor.  */
@@ -478,8 +542,8 @@ file_cache::lookup_or_add_file (const char *file_path)
 
 file_cache_slot::file_cache_slot ()
 : m_use_count (0), m_file_path (NULL), m_fp (NULL), m_data (0),
-  m_size (0), m_nb_read (0), m_line_start_idx (0), m_line_num (0),
-  m_total_lines (0), m_missing_trailing_newline (true)
+  m_alloc_offset (0), m_size (0), m_nb_read (0), m_line_start_idx (0),
+  m_line_num (0), m_total_lines (0), m_missing_trailing_newline (true)
 {
   m_line_record.create (0);
 }
@@ -495,6 +559,7 @@ file_cache_slot::~file_cache_slot ()
     }
   if (m_data)
     {
+      offset_buffer (-m_alloc_offset);
       XDELETEVEC (m_data);
       m_data = 0;
     }
@@ -509,7 +574,7 @@ file_cache_slot::~file_cache_slot ()
 bool
 file_cache_slot::needs_read_p () const
 {
-  return (m_nb_read == 0
+  return m_fp && (m_nb_read == 0
 	  || m_nb_read == m_size
 	  || (m_line_start_idx >= m_nb_read - 1));
 }
@@ -531,9 +596,20 @@ file_cache_slot::maybe_grow ()
   if (!needs_grow_p ())
     return;
 
-  size_t size = m_size == 0 ? buffer_size : m_size * 2;
-  m_data = XRESIZEVEC (char, m_data, size);
-  m_size = size;
+  if (!m_data)
+    {
+      gcc_assert (m_size == 0 && m_alloc_offset == 0);
+      m_size = buffer_size;
+      m_data = XNEWVEC (char, m_size);
+    }
+  else
+    {
+      const int offset = m_alloc_offset;
+      offset_buffer (-offset);
+      m_size *= 2;
+      m_data = XRESIZEVEC (char, m_data, m_size);
+      offset_buffer (offset);
+    }
 }
 
 /*  Read more data into the cache.  Extends the cache if need be.
@@ -632,7 +708,7 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
       m_missing_trailing_newline = false;
     }
 
-  if (ferror (m_fp))
+  if (m_fp && ferror (m_fp))
     return false;
 
   /* At this point, we've found the end of the of line.  It either
