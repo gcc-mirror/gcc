@@ -469,12 +469,13 @@ loongarch_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   tree get_fcsr = loongarch_builtin_decls[LARCH_MOVFCSR2GR];
   tree set_fcsr = loongarch_builtin_decls[LARCH_MOVGR2FCSR];
   tree get_fcsr_hold_call = build_call_expr (get_fcsr, 1, const0);
-  tree hold_assign_orig = build2 (MODIFY_EXPR, LARCH_ATYPE_USI,
-				  fcsr_orig_var, get_fcsr_hold_call);
+  tree hold_assign_orig = build4 (TARGET_EXPR, LARCH_ATYPE_USI,
+				  fcsr_orig_var, get_fcsr_hold_call,
+				  NULL, NULL);
   tree hold_mod_val = build2 (BIT_AND_EXPR, LARCH_ATYPE_USI, fcsr_orig_var,
 			      build_int_cst (LARCH_ATYPE_USI, 0xffe0ffe0));
-  tree hold_assign_mod = build2 (MODIFY_EXPR, LARCH_ATYPE_USI,
-				 fcsr_mod_var, hold_mod_val);
+  tree hold_assign_mod = build4 (TARGET_EXPR, LARCH_ATYPE_USI,
+				 fcsr_mod_var, hold_mod_val, NULL, NULL);
   tree set_fcsr_hold_call = build_call_expr (set_fcsr, 2, const0, fcsr_mod_var);
   tree hold_all = build2 (COMPOUND_EXPR, LARCH_ATYPE_USI, hold_assign_orig,
 			  hold_assign_mod);
@@ -483,8 +484,8 @@ loongarch_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
   *clear = build_call_expr (set_fcsr, 2, const0, fcsr_mod_var);
 
   tree get_fcsr_update_call = build_call_expr (get_fcsr, 1, const0);
-  *update = build2 (MODIFY_EXPR, LARCH_ATYPE_USI, exceptions_var,
-		    get_fcsr_update_call);
+  *update = build4 (TARGET_EXPR, LARCH_ATYPE_USI, exceptions_var,
+		    get_fcsr_update_call, NULL, NULL);
   tree set_fcsr_update_call = build_call_expr (set_fcsr, 2, const0,
 					       fcsr_orig_var);
   *update = build2 (COMPOUND_EXPR, void_type_node, *update,
