@@ -11,6 +11,8 @@ static const std::string kMangledSubstEnd = "$GT$";
 namespace Rust {
 namespace Compile {
 
+Mangler::MangleVersion Mangler::version = MangleVersion::LEGACY;
+
 static std::string
 legacy_mangle_name (const std::string &name)
 {
@@ -78,8 +80,9 @@ legacy_mangle_self (const TyTy::BaseType *self)
 }
 
 static std::string
-legacy_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
-			     const std::string &crate_name)
+legacy_mangle_item (const TyTy::BaseType *ty,
+		    const Resolver::CanonicalPath &path,
+		    const std::string &crate_name)
 {
   const std::string hash = legacy_hash (ty->as_string ());
   const std::string hash_sig = legacy_mangle_name (hash);
@@ -90,10 +93,8 @@ legacy_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &pat
 
 // FIXME this is a wee bit broken
 static std::string
-legacy_mangle_impl_item (const TyTy::BaseType *self,
-				  const TyTy::BaseType *ty,
-				  const std::string &name,
-				  const std::string &crate_name)
+legacy_mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
+			 const std::string &name, const std::string &crate_name)
 {
   const std::string hash = legacy_hash (ty->as_string ());
   const std::string hash_sig = legacy_mangle_name (hash);
@@ -116,7 +117,8 @@ legacy_mangle_impl_item (const TyTy::BaseType *self,
 // {}
 
 std::string
-Mangler::mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
+Mangler::mangle_item (const TyTy::BaseType *ty,
+		      const Resolver::CanonicalPath &path,
 		      const std::string &crate_name) const
 {
   switch (version)
@@ -145,5 +147,6 @@ Mangler::mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
       gcc_unreachable ();
     }
 }
+
 } // namespace Compile
 } // namespace Rust

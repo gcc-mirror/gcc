@@ -26,23 +26,33 @@ class Mangler
 public:
   enum MangleVersion
   {
-    LEGACY,
+    LEGACY = 0,
     V0,
   };
 
-  Mangler (MangleVersion version) : version (version) {}
-
   // this needs to support Legacy and V0 see github #429 or #305
-  std::string mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
+  std::string mangle_item (const TyTy::BaseType *ty,
+			   const Resolver::CanonicalPath &path,
 			   const std::string &crate_name) const;
 
   std::string mangle_impl_item (const TyTy::BaseType *self,
 				const TyTy::BaseType *ty,
 				const std::string &name,
-			   const std::string &crate_name) const;
+				const std::string &crate_name) const;
 
-private:
-  enum MangleVersion version;
+  static bool choose_mangling (std::string arg)
+  {
+    if (arg == "legacy")
+      version = MangleVersion::LEGACY;
+    else if (arg == "v0")
+      version = MangleVersion::V0;
+    else
+      return false;
+
+    return true;
+  }
+
+  static enum MangleVersion version;
 };
 } // namespace Compile
 } // namespace Rust

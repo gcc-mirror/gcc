@@ -370,6 +370,9 @@ Session::handle_option (
 	  ret = false;
 	}
       break;
+    case OPT_frust_mangling_:
+      if (arg != nullptr)
+	ret = Compile::Mangler::choose_mangling (std::string (arg));
     // no option handling for -o
     default:
       // return 1 to indicate option is valid

@@ -46,7 +46,7 @@ public:
     : backend (backend), resolver (Resolver::Resolver::get ()),
       tyctx (Resolver::TypeCheckContext::get ()),
       mappings (Analysis::Mappings::get ()),
-      const_ctx (ConstFold::Context::get ()), mangler (Mangler (Mangler::MangleVersion::LEGACY))
+      const_ctx (ConstFold::Context::get ()), mangler (Mangler ())
   {
     // insert the builtins
     auto builtins = resolver->get_builtin_types ();

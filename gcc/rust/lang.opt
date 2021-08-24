@@ -43,6 +43,10 @@ frust-dump-
 Rust Joined RejectNegative
 -frust-dump-<type>	Dump Rust frontend internal information.
 
+frust-mangling=
+Rust Joined RejectNegative
+-frust-mangling=<version> Choose which version to use for name mangling (legacy, v0)
+
 o
 Rust Joined Separate
 ; Documented in common.opt
