@@ -20542,6 +20542,11 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case UNSPEC:
       if (XINT (x, 1) == UNSPEC_TP)
 	*total = 0;
+      else if (XINT(x, 1) == UNSPEC_VTERNLOG)
+	{
+	  *total = cost->sse_op;
+	  return true;
+	}
       return false;
 
     case VEC_SELECT:
