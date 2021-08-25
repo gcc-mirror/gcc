@@ -427,6 +427,11 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 		      == NULL_TREE))
 		continue;
 
+	      /* Ignore unnamed zero-width bitfields.  */
+	      if (DECL_UNNAMED_BIT_FIELD (field)
+		  && integer_zerop (DECL_SIZE (field)))
+		continue;
+
 	      /* We could skip vfields and fields of types with
 		 user-defined constructors, but I think that won't improve
 		 performance at all; it should be simpler in general just
