@@ -257,7 +257,7 @@ public:
 
     if (resolver.resolved == nullptr)
       {
-	rust_error_at (param->get_locus_slow (),
+	rust_error_at (param->get_locus (),
 		       "failed to setup generic parameter");
 	return nullptr;
       }

@@ -130,9 +130,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override final { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -889,9 +887,7 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1080,7 +1076,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   // Invalid if name is empty, so base stripping on that.
   void mark_for_strip () override { module_name = ""; }
@@ -1127,7 +1123,7 @@ public:
       as_clause_name (std::move (as_clause_name)), locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1399,7 +1395,7 @@ public:
   UseDeclaration (UseDeclaration &&other) = default;
   UseDeclaration &operator= (UseDeclaration &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1536,9 +1532,7 @@ public:
   Function (Function &&other) = default;
   Function &operator= (Function &&other) = default;
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1687,7 +1681,7 @@ public:
   TypeAlias (TypeAlias &&other) = default;
   TypeAlias &operator= (TypeAlias &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1760,9 +1754,7 @@ public:
   // Returns whether struct has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const final { return get_locus (); };
+  Location get_locus () const override final { return locus; }
 
   // Invalid if name is empty, so base stripping on that.
   void mark_for_strip () override { struct_name = ""; }
@@ -2378,7 +2370,7 @@ public:
   Enum (Enum &&other) = default;
   Enum &operator= (Enum &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2482,7 +2474,7 @@ public:
   Union (Union &&other) = default;
   Union &operator= (Union &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2592,9 +2584,7 @@ public:
    * as identifier) constant. */
   bool is_unnamed () const { return identifier == "_"; }
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -2706,7 +2696,7 @@ public:
   StaticItem (StaticItem &&other) = default;
   StaticItem &operator= (StaticItem &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3497,7 +3487,7 @@ public:
   Trait (Trait &&other) = default;
   Trait &operator= (Trait &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -3585,7 +3575,7 @@ public:
   // Returns whether impl has inner attributes.
   bool has_inner_attrs () const { return !inner_attrs.empty (); }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   // Invalid if trait type is null, so base stripping on that.
   void mark_for_strip () override { trait_type = nullptr; }
@@ -3861,7 +3851,7 @@ public:
 
   virtual std::string as_string () const;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
@@ -4350,7 +4340,7 @@ public:
   ExternBlock (ExternBlock &&other) = default;
   ExternBlock &operator= (ExternBlock &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 

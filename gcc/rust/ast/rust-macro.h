@@ -345,6 +345,8 @@ public:
   std::vector<MacroRule> &get_macro_rules () { return rules; }
   const std::vector<MacroRule> &get_macro_rules () const { return rules; }
 
+  Location get_locus () const override final { return locus; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -373,8 +375,7 @@ public:
       invoc_data (std::move (invoc_data)), locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 

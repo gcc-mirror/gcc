@@ -66,7 +66,7 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
   bool block_did_terminate = false;
   expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
     if (block_did_terminate)
-      rust_warning_at (s->get_locus_slow (), 0, "unreachable statement");
+      rust_warning_at (s->get_locus (), 0, "unreachable statement");
 
     bool terminated = false;
     auto translated_stmt = ASTLoweringStmt::translate (s, &terminated);
@@ -78,7 +78,7 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
   if (expr.has_tail_expr () && block_did_terminate)
     {
       // warning unreachable tail expressions
-      rust_warning_at (expr.get_tail_expr ()->get_locus_slow (), 0,
+      rust_warning_at (expr.get_tail_expr ()->get_locus (), 0,
 		       "unreachable expression");
     }
 

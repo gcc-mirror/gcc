@@ -41,8 +41,7 @@ public:
       compiler.translated->get_mappings ().get_hirid (), compiler.translated);
     compiler.mappings->insert_location (
       compiler.translated->get_mappings ().get_crate_num (),
-      compiler.translated->get_mappings ().get_hirid (),
-      field->get_locus_slow ());
+      compiler.translated->get_mappings ().get_hirid (), field->get_locus ());
 
     return compiler.translated;
   }

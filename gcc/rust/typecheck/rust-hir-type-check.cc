@@ -97,7 +97,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
     auto resolved = TypeCheckStmt::Resolve (s, inside_loop);
     if (resolved == nullptr)
       {
-	rust_error_at (s->get_locus_slow (), "failure to resolve type");
+	rust_error_at (s->get_locus (), "failure to resolve type");
 	return false;
       }
 
@@ -145,9 +145,8 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	= (TyTy::ADTType *) struct_path_resolved->unify (base_resolved);
       if (struct_def == nullptr)
 	{
-	  rust_fatal_error (
-	    struct_expr.struct_base->base_struct->get_locus_slow (),
-	    "incompatible types for base struct reference");
+	  rust_fatal_error (struct_expr.struct_base->base_struct->get_locus (),
+			    "incompatible types for base struct reference");
 	  return;
 	}
     }
@@ -229,11 +228,11 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	      HIR::Expr *field_value = new HIR::FieldAccessExpr (
 		mapping, std::unique_ptr<HIR::Expr> (receiver), missing,
 		std::move (outer_attribs),
-		struct_expr.struct_base->base_struct->get_locus_slow ());
+		struct_expr.struct_base->base_struct->get_locus ());
 
 	      implicit_field = new HIR::StructExprFieldIdentifierValue (
 		mapping, missing, std::unique_ptr<HIR::Expr> (field_value),
-		struct_expr.struct_base->base_struct->get_locus_slow ());
+		struct_expr.struct_base->base_struct->get_locus ());
 
 	      size_t field_index;
 	      bool ok = struct_path_resolved->get_field (missing, &field_index);

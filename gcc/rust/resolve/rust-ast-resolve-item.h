@@ -400,9 +400,9 @@ public:
     auto Self
       = CanonicalPath::get_big_self (impl_block.get_type ()->get_node_id ());
 
-    resolver->get_type_scope ().insert (
-      Self, impl_block.get_type ()->get_node_id (),
-      impl_block.get_type ()->get_locus_slow ());
+    resolver->get_type_scope ().insert (Self,
+					impl_block.get_type ()->get_node_id (),
+					impl_block.get_type ()->get_locus ());
 
     for (auto &impl_item : impl_block.get_impl_items ())
       {
@@ -519,9 +519,9 @@ public:
     auto Self
       = CanonicalPath::get_big_self (impl_block.get_type ()->get_node_id ());
 
-    resolver->get_type_scope ().insert (
-      Self, impl_block.get_type ()->get_node_id (),
-      impl_block.get_type ()->get_locus_slow ());
+    resolver->get_type_scope ().insert (Self,
+					impl_block.get_type ()->get_node_id (),
+					impl_block.get_type ()->get_locus ());
 
     for (auto &impl_item : impl_block.get_impl_items ())
       {

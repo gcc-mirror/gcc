@@ -315,8 +315,7 @@ public:
     return convert_to_simple_path (has_opening_scope_resolution);
   }
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -791,8 +790,7 @@ public:
       path_type (std::move (qual_path_type)), locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 

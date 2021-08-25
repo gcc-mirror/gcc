@@ -611,7 +611,7 @@ public:
     if (!ctx->get_tyctx ()->lookup_type (
 	  expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver))
       {
-	rust_error_at (expr.get_receiver_expr ()->get_locus_slow (),
+	rust_error_at (expr.get_receiver_expr ()->get_locus (),
 		       "unresolved type for receiver");
 	return;
       }
@@ -772,7 +772,7 @@ public:
 
 	Bvariable *loop_result_holder = ctx->peek_loop_context ();
 	Bexpression *result_reference = ctx->get_backend ()->var_expression (
-	  loop_result_holder, expr.get_expr ()->get_locus_slow ());
+	  loop_result_holder, expr.get_expr ()->get_locus ());
 
 	Bstatement *assignment = ctx->get_backend ()->assignment_statement (
 	  fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());

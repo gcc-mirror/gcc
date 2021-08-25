@@ -47,7 +47,7 @@ public:
     // this is useful for debugging
     // if (resolver.translated == nullptr)
     //   {
-    //     rust_fatal_error (item->get_locus_slow (), "failed to lower: %s",
+    //     rust_fatal_error (item->get_locus (), "failed to lower: %s",
     //     		  item->as_string ().c_str ());
     //     return nullptr;
     //   }

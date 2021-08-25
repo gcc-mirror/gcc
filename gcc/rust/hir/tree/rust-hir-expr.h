@@ -90,8 +90,7 @@ public:
     return std::unique_ptr<LiteralExpr> (clone_literal_expr_impl ());
   }
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -163,8 +162,7 @@ protected:
   OperatorExpr &operator= (OperatorExpr &&other) = default;
 
 public:
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   std::unique_ptr<Expr> &get_expr () { return main_or_left_expr; }
 };
@@ -710,8 +708,7 @@ public:
   GroupedExpr (GroupedExpr &&other) = default;
   GroupedExpr &operator= (GroupedExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -915,8 +912,7 @@ public:
   ArrayExpr (ArrayExpr &&other) = default;
   ArrayExpr &operator= (ArrayExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -981,8 +977,7 @@ public:
   ArrayIndexExpr (ArrayIndexExpr &&other) = default;
   ArrayIndexExpr &operator= (ArrayIndexExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1060,8 +1055,7 @@ public:
   /* Note: syntactically, can disambiguate single-element tuple from parens with
    * comma, i.e. (0,) rather than (0) */
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1144,8 +1138,7 @@ public:
   TupleIndexExpr (TupleIndexExpr &&other) = default;
   TupleIndexExpr &operator= (TupleIndexExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1211,8 +1204,7 @@ public:
       inner_attrs (std::move (inner_attribs)), locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1640,8 +1632,7 @@ public:
   StructExprTuple (StructExprTuple &&other) = default;
   StructExprTuple &operator= (StructExprTuple &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1676,8 +1667,7 @@ public:
       locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1894,8 +1884,7 @@ public:
   EnumExprStruct (EnumExprStruct &&other) = default;
   EnumExprStruct &operator= (EnumExprStruct &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -1964,8 +1953,7 @@ public:
   EnumExprTuple (EnumExprTuple &&other) = default;
   EnumExprTuple &operator= (EnumExprTuple &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2005,8 +1993,7 @@ public:
       locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2082,8 +2069,7 @@ public:
   // Returns whether function call has parameters.
   bool has_params () const { return !params.empty (); }
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2172,8 +2158,7 @@ public:
   MethodCallExpr (MethodCallExpr &&other) = default;
   MethodCallExpr &operator= (MethodCallExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2257,8 +2242,7 @@ public:
   FieldAccessExpr (FieldAccessExpr &&other) = default;
   FieldAccessExpr &operator= (FieldAccessExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2361,8 +2345,7 @@ protected:
 public:
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 };
 
 // Represents a non-type-specified closure expression HIR node
@@ -2497,8 +2480,7 @@ public:
     return std::unique_ptr<BlockExpr> (clone_block_expr_impl ());
   }
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2518,7 +2500,7 @@ public:
     if (statements.size () == 0)
       return get_locus ();
 
-    return statements[statements.size () - 1]->get_locus_slow ();
+    return statements[statements.size () - 1]->get_locus ();
   }
 
   std::unique_ptr<Expr> &get_final_expr () { return expr; }
@@ -2632,8 +2614,7 @@ public:
       label (std::move (label)), locus (locus)
   {}
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2712,8 +2693,7 @@ public:
   BreakExpr (BreakExpr &&other) = default;
   BreakExpr &operator= (BreakExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2746,8 +2726,7 @@ protected:
   {}
 
 public:
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 };
 
 // Range from (inclusive) and to (exclusive) expression HIR node object
@@ -3089,8 +3068,7 @@ public:
   ReturnExpr (ReturnExpr &&other) = default;
   ReturnExpr &operator= (ReturnExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -3151,8 +3129,7 @@ public:
   UnsafeBlockExpr (UnsafeBlockExpr &&other) = default;
   UnsafeBlockExpr &operator= (UnsafeBlockExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -3250,8 +3227,7 @@ protected:
 public:
   bool has_loop_label () const { return !loop_label.is_error (); }
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   std::unique_ptr<HIR::BlockExpr> &get_loop_block () { return loop_block; };
 
@@ -3540,8 +3516,7 @@ public:
    * vector of else ifs - i.e. not like a switch statement. TODO - is this a
    * better approach? or does it not parse correctly and have downsides? */
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -3765,8 +3740,7 @@ public:
     return std::unique_ptr<IfLetExpr> (clone_if_let_expr_impl ());
   }
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -4341,8 +4315,7 @@ public:
   MatchExpr (MatchExpr &&other) = default;
   MatchExpr &operator= (MatchExpr &&other) = default;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -4396,8 +4369,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -4450,8 +4422,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
 

@@ -11431,7 +11431,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_with_block (
     return ExprOrStmt (std::move (expr));
 
   // internal block expr must either have semicolons followed, or evaluate to ()
-  auto locus = expr->get_locus_slow ();
+  auto locus = expr->get_locus ();
   std::unique_ptr<AST::ExprStmtWithBlock> stmt (
     new AST::ExprStmtWithBlock (std::move (expr), locus,
 				tok->get_id () == SEMICOLON));
@@ -12823,7 +12823,7 @@ Parser<ManagedTokenSource>::left_denotation (const_TokenPtr tok,
     {
       // FIXME: allow for outer attributes to be applied
       case QUESTION_MARK: {
-	Location left_locus = left->get_locus_slow ();
+	Location left_locus = left->get_locus ();
 	// error propagation expression - unary postfix
 	return std::unique_ptr<AST::ErrorPropagationExpr> (
 	  new AST::ErrorPropagationExpr (std::move (left),
@@ -13185,7 +13185,7 @@ Parser<ManagedTokenSource>::parse_arithmetic_or_logical_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13206,7 +13206,7 @@ Parser<ManagedTokenSource>::parse_binary_plus_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13227,7 +13227,7 @@ Parser<ManagedTokenSource>::parse_binary_minus_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13249,7 +13249,7 @@ Parser<ManagedTokenSource>::parse_binary_mult_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13271,7 +13271,7 @@ Parser<ManagedTokenSource>::parse_binary_div_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13293,7 +13293,7 @@ Parser<ManagedTokenSource>::parse_binary_mod_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13316,7 +13316,7 @@ Parser<ManagedTokenSource>::parse_bitwise_and_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13339,7 +13339,7 @@ Parser<ManagedTokenSource>::parse_bitwise_or_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13362,7 +13362,7 @@ Parser<ManagedTokenSource>::parse_bitwise_xor_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13384,7 +13384,7 @@ Parser<ManagedTokenSource>::parse_left_shift_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13406,7 +13406,7 @@ Parser<ManagedTokenSource>::parse_right_shift_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ArithmeticOrLogicalExpr> (
     new AST::ArithmeticOrLogicalExpr (std::move (left), std::move (right),
@@ -13458,7 +13458,7 @@ Parser<ManagedTokenSource>::parse_comparison_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ComparisonExpr> (
     new AST::ComparisonExpr (std::move (left), std::move (right), expr_type,
@@ -13479,7 +13479,7 @@ Parser<ManagedTokenSource>::parse_binary_equal_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ComparisonExpr> (
     new AST::ComparisonExpr (std::move (left), std::move (right),
@@ -13500,7 +13500,7 @@ Parser<ManagedTokenSource>::parse_binary_not_equal_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ComparisonExpr> (
     new AST::ComparisonExpr (std::move (left), std::move (right),
@@ -13521,7 +13521,7 @@ Parser<ManagedTokenSource>::parse_binary_greater_than_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ComparisonExpr> (
     new AST::ComparisonExpr (std::move (left), std::move (right),
@@ -13542,7 +13542,7 @@ Parser<ManagedTokenSource>::parse_binary_less_than_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ComparisonExpr> (
     new AST::ComparisonExpr (std::move (left), std::move (right),
@@ -13563,7 +13563,7 @@ Parser<ManagedTokenSource>::parse_binary_greater_equal_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ComparisonExpr> (
     new AST::ComparisonExpr (std::move (left), std::move (right),
@@ -13584,7 +13584,7 @@ Parser<ManagedTokenSource>::parse_binary_less_equal_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::ComparisonExpr> (
     new AST::ComparisonExpr (std::move (left), std::move (right),
@@ -13605,7 +13605,7 @@ Parser<ManagedTokenSource>::parse_lazy_or_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::LazyBooleanExpr> (
     new AST::LazyBooleanExpr (std::move (left), std::move (right),
@@ -13626,7 +13626,7 @@ Parser<ManagedTokenSource>::parse_lazy_and_expr (
     return nullptr;
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::LazyBooleanExpr> (
     new AST::LazyBooleanExpr (std::move (left), std::move (right),
@@ -13648,7 +13648,7 @@ Parser<ManagedTokenSource>::parse_type_cast_expr (
   // FIXME: how do I get precedence put in here?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = expr_to_cast->get_locus_slow ();
+  Location locus = expr_to_cast->get_locus ();
 
   return std::unique_ptr<AST::TypeCastExpr> (
     new AST::TypeCastExpr (std::move (expr_to_cast), std::move (type), locus));
@@ -13669,7 +13669,7 @@ Parser<ManagedTokenSource>::parse_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::AssignmentExpr> (
     new AST::AssignmentExpr (std::move (left), std::move (right), locus));
@@ -13728,7 +13728,7 @@ Parser<ManagedTokenSource>::parse_compound_assignment_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13750,7 +13750,7 @@ Parser<ManagedTokenSource>::parse_plus_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13772,7 +13772,7 @@ Parser<ManagedTokenSource>::parse_minus_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13795,7 +13795,7 @@ Parser<ManagedTokenSource>::parse_mult_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13818,7 +13818,7 @@ Parser<ManagedTokenSource>::parse_div_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13841,7 +13841,7 @@ Parser<ManagedTokenSource>::parse_mod_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13864,7 +13864,7 @@ Parser<ManagedTokenSource>::parse_and_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13887,7 +13887,7 @@ Parser<ManagedTokenSource>::parse_or_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13910,7 +13910,7 @@ Parser<ManagedTokenSource>::parse_xor_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13933,7 +13933,7 @@ Parser<ManagedTokenSource>::parse_left_shift_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13956,7 +13956,7 @@ Parser<ManagedTokenSource>::parse_right_shift_assig_expr (
   // FIXME: ensure right-associativity for this - 'LBP - 1' may do this?
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::CompoundAssignmentExpr> (
     new AST::CompoundAssignmentExpr (std::move (left), std::move (right),
@@ -13985,7 +13985,7 @@ Parser<ManagedTokenSource>::parse_await_expr (
     }
 
   // TODO: check inside async block in semantic analysis
-  Location locus = expr_to_await->get_locus_slow ();
+  Location locus = expr_to_await->get_locus ();
 
   return std::unique_ptr<AST::AwaitExpr> (
     new AST::AwaitExpr (std::move (expr_to_await), std::move (outer_attrs),
@@ -14008,7 +14008,7 @@ Parser<ManagedTokenSource>::parse_led_range_exclusive_expr (
   std::unique_ptr<AST::Expr> right
     = parse_expr (LBP_DOT_DOT, AST::AttrVec (), restrictions);
 
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   if (right == nullptr)
     {
@@ -14066,7 +14066,7 @@ Parser<ManagedTokenSource>::parse_range_inclusive_expr (
   // FIXME: make non-associative
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = left->get_locus_slow ();
+  Location locus = left->get_locus ();
 
   return std::unique_ptr<AST::RangeFromToInclExpr> (
     new AST::RangeFromToInclExpr (std::move (left), std::move (right), locus));
@@ -14114,7 +14114,7 @@ Parser<ManagedTokenSource>::parse_tuple_index_expr (
     }
   int index_int = atoi (index.c_str ());
 
-  Location locus = tuple_expr->get_locus_slow ();
+  Location locus = tuple_expr->get_locus ();
 
   return std::unique_ptr<AST::TupleIndexExpr> (
     new AST::TupleIndexExpr (std::move (tuple_expr), index_int,
@@ -14145,7 +14145,7 @@ Parser<ManagedTokenSource>::parse_index_expr (
     }
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = array_expr->get_locus_slow ();
+  Location locus = array_expr->get_locus ();
 
   return std::unique_ptr<AST::ArrayIndexExpr> (
     new AST::ArrayIndexExpr (std::move (array_expr), std::move (index_expr),
@@ -14167,7 +14167,7 @@ Parser<ManagedTokenSource>::parse_field_access_expr (
 
   Identifier ident = ident_tok->get_str ();
 
-  Location locus = struct_expr->get_locus_slow ();
+  Location locus = struct_expr->get_locus ();
 
   // TODO: check types. actually, do so during semantic analysis
   return std::unique_ptr<AST::FieldAccessExpr> (
@@ -14230,7 +14230,7 @@ Parser<ManagedTokenSource>::parse_method_call_expr (
     }
 
   // TODO: check types. actually do so in semantic analysis pass.
-  Location locus = receiver_expr->get_locus_slow ();
+  Location locus = receiver_expr->get_locus ();
 
   return std::unique_ptr<AST::MethodCallExpr> (
     new AST::MethodCallExpr (std::move (receiver_expr), std::move (segment),
@@ -14277,7 +14277,7 @@ Parser<ManagedTokenSource>::parse_function_call_expr (
     }
 
   // TODO: check types. actually, do so during semantic analysis
-  Location locus = function_expr->get_locus_slow ();
+  Location locus = function_expr->get_locus ();
 
   return std::unique_ptr<AST::CallExpr> (
     new AST::CallExpr (std::move (function_expr), std::move (params),
@@ -14772,7 +14772,7 @@ Parser<ManagedTokenSource>::parse_tuple_index_expr_float (
   // get int from string
   int index = atoi (index_str.c_str ());
 
-  Location locus = tuple_expr->get_locus_slow ();
+  Location locus = tuple_expr->get_locus ();
 
   return std::unique_ptr<AST::TupleIndexExpr> (
     new AST::TupleIndexExpr (std::move (tuple_expr), index,

@@ -816,9 +816,7 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
-  /* HACK: slow way of getting location from base expression through virtual
-   * methods. */
-  virtual Location get_locus_slow () const { return Location (); }
+  virtual Location get_locus () const = 0;
 
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
@@ -885,9 +883,7 @@ public:
 
   virtual ~Expr () {}
 
-  /* HACK: slow way of getting location from base expression through virtual
-   * methods. */
-  virtual Location get_locus_slow () const { return Location (); }
+  virtual Location get_locus () const = 0;
 
   // HACK: strictly not needed, but faster than full downcast clone
   virtual bool is_expr_without_block () const = 0;
@@ -966,8 +962,7 @@ public:
 
   std::string as_string () const override { return ident; }
 
-  Location get_locus () const { return locus; }
-  Location get_locus_slow () const final override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   Identifier get_ident () const { return ident; }
 
@@ -1026,9 +1021,7 @@ public:
   virtual void mark_for_strip () {}
   virtual bool is_marked_for_strip () const { return false; }
 
-  /* HACK: slow way of getting location from base expression through virtual
-   * methods. */
-  virtual Location get_locus_slow () const = 0;
+  virtual Location get_locus () const = 0;
 
   virtual NodeId get_node_id () const { return node_id; }
 
@@ -1071,7 +1064,7 @@ public:
   virtual void mark_for_strip () {}
   virtual bool is_marked_for_strip () const { return false; }
 
-  virtual Location get_locus_slow () const = 0;
+  virtual Location get_locus () const = 0;
 
   NodeId get_node_id () const { return node_id; }
 
@@ -1128,7 +1121,7 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
-  virtual Location get_locus_slow () const = 0;
+  virtual Location get_locus () const = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -1185,9 +1178,7 @@ public:
 
   LifetimeType get_lifetime_type () { return lifetime_type; }
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override final { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
   std::string get_lifetime_name () const { return lifetime_name; }
 
@@ -1217,7 +1208,7 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
-  virtual Location get_locus_slow () const = 0;
+  virtual Location get_locus () const = 0;
 
   NodeId get_node_id () { return node_id; }
 
@@ -1270,9 +1261,7 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override final { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1342,7 +1331,7 @@ public:
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
 
-  virtual Location get_locus_slow () const = 0;
+  virtual Location get_locus () const = 0;
 };
 
 // Abstract base class for items used in a trait impl
@@ -1517,9 +1506,7 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  Location get_locus () const { return locus; }
-
-  Location get_locus_slow () const override { return get_locus (); }
+  Location get_locus () const override final { return locus; }
 
 protected:
   MacroInvocationSemi *clone_macro_invocation_semi_impl () const

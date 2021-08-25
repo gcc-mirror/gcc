@@ -2207,7 +2207,7 @@ TypeCheckCallExpr::visit (ADTType &type)
     BaseType *arg = Resolver::TypeCheckExpr::Resolve (p, false);
     if (arg == nullptr)
       {
-	rust_error_at (p->get_locus_slow (), "failed to resolve argument type");
+	rust_error_at (p->get_locus (), "failed to resolve argument type");
 	return false;
       }
 
@@ -2262,7 +2262,7 @@ TypeCheckCallExpr::visit (FnType &type)
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
     if (argument_expr_tyty == nullptr)
       {
-	rust_error_at (param->get_locus_slow (),
+	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
 	return false;
       }
@@ -2276,7 +2276,7 @@ TypeCheckCallExpr::visit (FnType &type)
 	resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
 	if (resolved_argument_type == nullptr)
 	  {
-	    rust_error_at (param->get_locus_slow (),
+	    rust_error_at (param->get_locus (),
 			   "Type Resolution failure on parameter");
 	    return false;
 	  }
@@ -2327,7 +2327,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
     if (argument_expr_tyty == nullptr)
       {
-	rust_error_at (param->get_locus_slow (),
+	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
 	return false;
       }
@@ -2335,7 +2335,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
     auto resolved_argument_type = fnparam->unify (argument_expr_tyty);
     if (resolved_argument_type == nullptr)
       {
-	rust_error_at (param->get_locus_slow (),
+	rust_error_at (param->get_locus (),
 		       "Type Resolution failure on parameter");
 	return false;
       }
@@ -2378,7 +2378,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
     auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
     if (argument_expr_tyty == nullptr)
       {
-	rust_error_at (param->get_locus_slow (),
+	rust_error_at (param->get_locus (),
 		       "failed to resolve type for argument expr in CallExpr");
 	return false;
       }
@@ -2386,7 +2386,7 @@ TypeCheckMethodCallExpr::visit (FnType &type)
     auto resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
     if (resolved_argument_type == nullptr)
       {
-	rust_error_at (param->get_locus_slow (),
+	rust_error_at (param->get_locus (),
 		       "Type Resolution failure on parameter");
 	return false;
       }

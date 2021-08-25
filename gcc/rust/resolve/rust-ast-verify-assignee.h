@@ -35,7 +35,7 @@ public:
     VerifyAsignee checker (parent);
     assignee->accept_vis (checker);
     if (!checker.ok)
-      rust_error_at (assignee->get_locus_slow (),
+      rust_error_at (assignee->get_locus (),
 		     "invalid left-hand side of assignment");
     return checker.ok;
   }
