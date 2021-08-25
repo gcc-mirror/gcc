@@ -106,6 +106,7 @@
 #endif
 #define z (
 
+#define func (
 #define tmp (
 
 #if __cplusplus < 201103L
