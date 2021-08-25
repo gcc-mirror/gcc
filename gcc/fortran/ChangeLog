@@ -1,3 +1,10 @@
+2021-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98411
+	* trans-decl.c (gfc_finish_var_decl): Adjust check to handle
+	implicit SAVE as well as variables in the main program.  Improve
+	warning message text.
+
 2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.c (gfc_match_dupl_check, gfc_match_dupl_memorder,
