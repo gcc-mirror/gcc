@@ -13474,17 +13474,15 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 static tree
 build_range_temp (tree range_expr)
 {
-  tree range_type, range_temp;
-
   /* Find out the type deduced by the declaration
      `auto &&__range = range_expr'.  */
-  range_type = cp_build_reference_type (make_auto (), true);
-  range_type = do_auto_deduction (range_type, range_expr,
-				  type_uses_auto (range_type));
+  tree auto_node = make_auto ();
+  tree range_type = cp_build_reference_type (auto_node, true);
+  range_type = do_auto_deduction (range_type, range_expr, auto_node);
 
   /* Create the __range variable.  */
-  range_temp = build_decl (input_location, VAR_DECL, for_range__identifier,
-			   range_type);
+  tree range_temp = build_decl (input_location, VAR_DECL,
+				for_range__identifier, range_type);
   TREE_USED (range_temp) = 1;
   DECL_ARTIFICIAL (range_temp) = 1;
 
@@ -25910,7 +25908,8 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	     so that maybe_instantiate_noexcept can tsubst the NOEXCEPT_EXPR
 	     in the pattern.  */
 	  for (tree i : DEFPARSE_INSTANTIATIONS (def_parse))
-	    DEFERRED_NOEXCEPT_PATTERN (TREE_PURPOSE (i)) = TREE_PURPOSE (spec);
+	    DEFERRED_NOEXCEPT_PATTERN (TREE_PURPOSE (i))
+	      = spec ? TREE_PURPOSE (spec) : error_mark_node;
 
 	  /* Restore the state of local_variables_forbidden_p.  */
 	  parser->local_variables_forbidden_p = local_variables_forbidden_p;

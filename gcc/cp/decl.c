@@ -6563,8 +6563,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
     continue_:
       if (base_binfo)
 	{
-	  BINFO_BASE_ITERATE (binfo, ++binfo_idx, base_binfo);
-	  if (base_binfo)
+	  if (BINFO_BASE_ITERATE (binfo, ++binfo_idx, base_binfo))
 	    field = base_binfo;
 	  else
 	    field = next_initializable_field (TYPE_FIELDS (type));

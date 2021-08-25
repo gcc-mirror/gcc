@@ -2905,7 +2905,7 @@ flatten_await_stmt (var_nest_node *n, hash_set<tree> *promoted,
 	  tree else_cl = COND_EXPR_ELSE (old_expr);
 	  if (!VOID_TYPE_P (TREE_TYPE (else_cl)))
 	    {
-	      gcc_checking_assert (TREE_CODE (then_cl) != STATEMENT_LIST);
+	      gcc_checking_assert (TREE_CODE (else_cl) != STATEMENT_LIST);
 	      else_cl
 		= build2 (init_expr ? INIT_EXPR : MODIFY_EXPR, var_type,
 			  var, else_cl);
