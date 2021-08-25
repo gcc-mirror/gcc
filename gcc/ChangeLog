@@ -1,3 +1,66 @@
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* config/arm/arm.md (attribute arch): Add fix_vlldm.
+	(arch_enabled): Use it.
+	* config/arm/vfp.md (lazy_store_multiple_insn): Add alternative to
+	use when erratum mitigation is needed.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* config/arm/arm.opt (mfix-cmse-cve-2021-35465): New option.
+	* doc/invoke.texi (Arm Options): Document it.
+	* config/arm/arm-cpus.in (quirk_vlldm): New feature bit.
+	(ALL_QUIRKS): Add quirk_vlldm.
+	(cortex-m33): Add quirk_vlldm.
+	(cortex-m35p, cortex-m55): Likewise.
+	* config/arm/arm.c (arm_option_override): Enable fix_vlldm if
+	targetting an affected CPU and not explicitly controlled on
+	the command line.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/vfp.md (lazy_store_multiple_insn): Rewrite as valid RTL.
+	(lazy_load_multiple_insn): Likewise.
+
+2021-08-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2021-08-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/101949
+	* ipa-modref.c (analyze_ssa_name_flags): Fix merging of
+	EAF_NOCLOBBER
+
+2021-08-24  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-08-22  Jan Hubicka  <hubicka@ucw.cz>
+		    Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/101949
+	* ipa-modref.c (analyze_ssa_name_flags): Indirect call implies
+	~EAF_NOCLOBBER.
+
+2021-08-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/97565
+	* tree-ssa-structalias.c (ipa_pta_execute): Check in_other_partition
+	in addition to has_gimple_body.
+
 2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
 
 	Backported from master:
