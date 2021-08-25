@@ -259,16 +259,11 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 void
 gimple_ranger::export_global_ranges ()
 {
-  unsigned x;
-  int_range_max r;
-  if (dump_file)
+  /* Cleared after the table header has been printed.  */
+  bool print_header = true;
+  for (unsigned x = 1; x < num_ssa_names; x++)
     {
-      fprintf (dump_file, "Exported global range table\n");
-      fprintf (dump_file, "===========================\n");
-    }
-
-  for ( x = 1; x < num_ssa_names; x++)
-    {
+      int_range_max r;
       tree name = ssa_name (x);
       if (name && !SSA_NAME_IN_FREE_LIST (name)
 	  && gimple_range_ssa_p (name)
@@ -276,21 +271,29 @@ gimple_ranger::export_global_ranges ()
 	  && !r.varying_p())
 	{
 	  bool updated = update_global_range (r, name);
+	  if (!updated || !dump_file || !(dump_flags & TDF_DETAILS))
+	    continue;
 
-	  if (updated && dump_file)
+	  if (print_header)
 	    {
-	      value_range vr = r;
-	      print_generic_expr (dump_file, name , TDF_SLIM);
-	      fprintf (dump_file, " --> ");
-	      vr.dump (dump_file);
+	      /* Print the header only when there's something else
+		 to print below.  */
+	      fprintf (dump_file, "Exported global range table:\n");
+	      fprintf (dump_file, "============================\n");
+	      print_header = false;
+	    }
+
+	  value_range vr = r;
+	  print_generic_expr (dump_file, name , TDF_SLIM);
+	  fprintf (dump_file, "  : ");
+	  vr.dump (dump_file);
+	  fprintf (dump_file, "\n");
+	  int_range_max same = vr;
+	  if (same != r)
+	    {
+	      fprintf (dump_file, "         irange : ");
+	      r.dump (dump_file);
 	      fprintf (dump_file, "\n");
-	      int_range_max same = vr;
-	      if (same != r)
-		{
-		  fprintf (dump_file, "         irange : ");
-		  r.dump (dump_file);
-		  fprintf (dump_file, "\n");
-		}
 	    }
 	}
     }
