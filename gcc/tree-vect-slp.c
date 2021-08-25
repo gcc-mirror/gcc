@@ -2311,6 +2311,10 @@ out:
 	      }
 	  if (dump_enabled_p ())
 	    dump_printf (MSG_NOTE, "\n");
+	  /* After swapping some operands we lost track whether an
+	     operand has any pattern defs so be conservative here.  */
+	  if (oprnds_info[0]->any_pattern || oprnds_info[1]->any_pattern)
+	    oprnds_info[0]->any_pattern = oprnds_info[1]->any_pattern = true;
 	  /* And try again with scratch 'matches' ... */
 	  bool *tem = XALLOCAVEC (bool, group_size);
 	  if ((child = vect_build_slp_tree (vinfo, oprnd_info->def_stmts,
