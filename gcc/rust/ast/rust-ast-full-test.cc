@@ -4061,16 +4061,58 @@ file_exists (const std::string path)
   return access (path.c_str (), F_OK) != -1;
 }
 
-// FIXME: This function should also check if the module has a `path` outer
-// attribute and fetch the path from here in that case, i.e:
-// ```
-// #[path="<dir>/<subdir>/<file>.rs"]
-// mod <mod_name>;
-// ```
+static std::string
+filename_from_path_attribute (std::vector<Attribute> &outer_attrs)
+{
+  Attribute path_attr = Attribute::create_empty ();
+  for (auto attr : outer_attrs)
+    {
+      if (attr.get_path ().as_string () == "path")
+	{
+	  path_attr = attr;
+	  break;
+	}
+    }
+
+  // We didn't find a path attribute. This is not an error, there simply isn't
+  // one present
+  if (path_attr.is_empty ())
+    return "";
+
+  // Here, we found a path attribute, but it has no associated string. This is
+  // invalid
+  if (!path_attr.has_attr_input ())
+    {
+      rust_error_at (
+	path_attr.get_locus (),
+	// Split the format string so that -Wformat-diag does not complain...
+	"path attributes must contain a filename: '%s'", "#[path = \"file\"]");
+      return "";
+    }
+
+  auto path = path_attr.get_attr_input ().as_string ();
+
+  // On windows, the path might mix '/' and '\' separators. Replace the
+  // UNIX-like separators by MSDOS separators to make sure the path will resolve
+  // properly.
+  //
+  // Source: rustc compiler
+  // (https://github.com/rust-lang/rust/blob/9863bf51a52b8e61bcad312f81b5193d53099f9f/compiler/rustc_expand/src/module.rs#L174)
+#if defined(HAVE_DOS_BASED_FILE_SYSTEM)
+  path.replace ('/', '\\');
+#endif /* HAVE_DOS_BASED_FILE_SYSTEM */
+
+  return path_attr.get_attr_input ().as_string ();
+}
+
 std::string
 Module::get_filename ()
 {
   rust_assert (kind == Module::ModuleKind::UNLOADED);
+
+  auto path_string = filename_from_path_attribute (get_outer_attrs ());
+  if (!path_string.empty ())
+    return path_string;
 
   // This corresponds to the path of the file 'including' the module. So the
   // file that contains the 'mod <file>;' directive

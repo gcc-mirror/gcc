@@ -457,6 +457,8 @@ public:
 
   Location get_locus () const { return locus; }
 
+  AttrInput &get_attr_input () const { return *attr_input; }
+
   /* e.g.:
       #![crate_type = "lib"]
       #[test]
