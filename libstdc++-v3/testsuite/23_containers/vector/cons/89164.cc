@@ -36,5 +36,15 @@ void test01()
   // Should not be able to create vector using uninitialized_fill_n:
   std::vector<X> v2{2u, X{}};	// { dg-error "here" }
 }
-// { dg-error "constructible from value" "" { target *-*-* } 0 }
-// { dg-error "constructible from input" "" { target *-*-* } 0 }
+
+void test02()
+{
+#if __cplusplus >= 201703L
+  struct Y : X { };
+  // Can create initializer_list<Y> with C++17 guaranteed copy elision,
+  // but shouldn't be able to copy from it with uninitialized_copy:
+  std::vector<Y> v3{Y{}, Y{}, Y{}};   // { dg-error "here" "" { target c++17 } }
+#endif
+}
+
+// { dg-error "must be constructible from input type" "" { target *-*-* } 0 }
