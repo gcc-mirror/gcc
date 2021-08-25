@@ -106,6 +106,7 @@
 #define z (
 
 #define tmp (
+#define sz (
 
 #if __cplusplus < 201103L
 #define uses_allocator  (
