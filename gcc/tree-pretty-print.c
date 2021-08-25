@@ -1789,10 +1789,17 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	    }
 	  dump_generic_node (pp, TREE_VALUE (node), spc, flags, false);
 	  node = TREE_CHAIN (node);
-	  if (node && TREE_CODE (node) == TREE_LIST)
+	  if (node)
 	    {
 	      pp_comma (pp);
 	      pp_space (pp);
+	      if (TREE_CODE (node) == TREE_LIST)
+		continue;
+	      else
+		{
+		  dump_generic_node (pp, node, spc, flags, false);
+		  break;
+		}
 	    }
 	}
       break;

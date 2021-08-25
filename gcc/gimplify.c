@@ -10289,8 +10289,116 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  OMP_CLAUSE_SET_MAP_KIND (c, k);
 		}
 
-	      if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue, fb_lvalue)
-		  == GS_ERROR)
+	      if (code == OMP_TARGET && OMP_CLAUSE_MAP_IN_REDUCTION (c))
+		{
+		  /* Don't gimplify *pd fully at this point, as the base
+		     will need to be adjusted during omp lowering.  */
+		  auto_vec<tree, 10> expr_stack;
+		  tree *p = pd;
+		  while (handled_component_p (*p)
+			 || TREE_CODE (*p) == INDIRECT_REF
+			 || TREE_CODE (*p) == ADDR_EXPR
+			 || TREE_CODE (*p) == MEM_REF
+			 || TREE_CODE (*p) == NON_LVALUE_EXPR)
+		    {
+		      expr_stack.safe_push (*p);
+		      p = &TREE_OPERAND (*p, 0);
+		    }
+		  for (int i = expr_stack.length () - 1; i >= 0; i--)
+		    {
+		      tree t = expr_stack[i];
+		      if (TREE_CODE (t) == ARRAY_REF
+			  || TREE_CODE (t) == ARRAY_RANGE_REF)
+			{
+			  if (TREE_OPERAND (t, 2) == NULL_TREE)
+			    {
+			      tree low = unshare_expr (array_ref_low_bound (t));
+			      if (!is_gimple_min_invariant (low))
+				{
+				  TREE_OPERAND (t, 2) = low;
+				  if (gimplify_expr (&TREE_OPERAND (t, 2),
+						     pre_p, NULL,
+						     is_gimple_reg,
+						     fb_rvalue) == GS_ERROR)
+				    remove = true;
+				}
+			    }
+			  else if (gimplify_expr (&TREE_OPERAND (t, 2), pre_p,
+						  NULL, is_gimple_reg,
+						  fb_rvalue) == GS_ERROR)
+			    remove = true;
+			  if (TREE_OPERAND (t, 3) == NULL_TREE)
+			    {
+			      tree elmt_size = array_ref_element_size (t);
+			      if (!is_gimple_min_invariant (elmt_size))
+				{
+				  elmt_size = unshare_expr (elmt_size);
+				  tree elmt_type
+				    = TREE_TYPE (TREE_TYPE (TREE_OPERAND (t,
+									  0)));
+				  tree factor
+				    = size_int (TYPE_ALIGN_UNIT (elmt_type));
+				  elmt_size
+				    = size_binop (EXACT_DIV_EXPR, elmt_size,
+						  factor);
+				  TREE_OPERAND (t, 3) = elmt_size;
+				  if (gimplify_expr (&TREE_OPERAND (t, 3),
+						     pre_p, NULL,
+						     is_gimple_reg,
+						     fb_rvalue) == GS_ERROR)
+				    remove = true;
+				}
+			    }
+			  else if (gimplify_expr (&TREE_OPERAND (t, 3), pre_p,
+						  NULL, is_gimple_reg,
+						  fb_rvalue) == GS_ERROR)
+			    remove = true;
+			}
+		      else if (TREE_CODE (t) == COMPONENT_REF)
+			{
+			  if (TREE_OPERAND (t, 2) == NULL_TREE)
+			    {
+			      tree offset = component_ref_field_offset (t);
+			      if (!is_gimple_min_invariant (offset))
+				{
+				  offset = unshare_expr (offset);
+				  tree field = TREE_OPERAND (t, 1);
+				  tree factor
+				    = size_int (DECL_OFFSET_ALIGN (field)
+						/ BITS_PER_UNIT);
+				  offset = size_binop (EXACT_DIV_EXPR, offset,
+						       factor);
+				  TREE_OPERAND (t, 2) = offset;
+				  if (gimplify_expr (&TREE_OPERAND (t, 2),
+						     pre_p, NULL,
+						     is_gimple_reg,
+						     fb_rvalue) == GS_ERROR)
+				    remove = true;
+				}
+			    }
+			  else if (gimplify_expr (&TREE_OPERAND (t, 2), pre_p,
+						  NULL, is_gimple_reg,
+						  fb_rvalue) == GS_ERROR)
+			    remove = true;
+			}
+		    }
+		  for (; expr_stack.length () > 0; )
+		    {
+		      tree t = expr_stack.pop ();
+
+		      if (TREE_CODE (t) == ARRAY_REF
+			  || TREE_CODE (t) == ARRAY_RANGE_REF)
+			{
+			  if (!is_gimple_min_invariant (TREE_OPERAND (t, 1))
+			      && gimplify_expr (&TREE_OPERAND (t, 1), pre_p,
+						NULL, is_gimple_val,
+						fb_rvalue) == GS_ERROR)
+			    remove = true;
+			}
+		    }
+		}
+	      else if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue,
+				      fb_lvalue) == GS_ERROR)
 		{
 		  remove = true;
 		  break;
@@ -10507,17 +10615,21 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 	      && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	    {
-	      omp_add_variable (ctx, OMP_CLAUSE_REDUCTION_PLACEHOLDER (c),
-				GOVD_LOCAL | GOVD_SEEN);
-	      if (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
+	      struct gimplify_omp_ctx *pctx
+		= code == OMP_TARGET ? outer_ctx : ctx;
+	      if (pctx)
+		omp_add_variable (pctx, OMP_CLAUSE_REDUCTION_PLACEHOLDER (c),
+				  GOVD_LOCAL | GOVD_SEEN);
+	      if (pctx
+		  && OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
 		  && walk_tree (&OMP_CLAUSE_REDUCTION_INIT (c),
 				find_decl_expr,
 				OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c),
 				NULL) == NULL_TREE)
-		omp_add_variable (ctx,
+		omp_add_variable (pctx,
 				  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c),
 				  GOVD_LOCAL | GOVD_SEEN);
-	      gimplify_omp_ctxp = ctx;
+	      gimplify_omp_ctxp = pctx;
 	      push_gimplify_context ();
 
 	      OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c) = NULL;

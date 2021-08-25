@@ -13128,16 +13128,15 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		  return error_mark_node;
 		}
 	      t = TREE_OPERAND (t, 0);
-	      if (ort == C_ORT_ACC || ort == C_ORT_OMP)
-		while (TREE_CODE (t) == MEM_REF
-		       || TREE_CODE (t) == INDIRECT_REF
-		       || TREE_CODE (t) == ARRAY_REF)
-		  {
+	      while (TREE_CODE (t) == MEM_REF
+		     || TREE_CODE (t) == INDIRECT_REF
+		     || TREE_CODE (t) == ARRAY_REF)
+		{
+		  t = TREE_OPERAND (t, 0);
+		  STRIP_NOPS (t);
+		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
 		    t = TREE_OPERAND (t, 0);
-		    STRIP_NOPS (t);
-		    if (TREE_CODE (t) == POINTER_PLUS_EXPR)
-		      t = TREE_OPERAND (t, 0);
-		  }
+		}
 	      if (ort == C_ORT_ACC && TREE_CODE (t) == MEM_REF)
 		{
 		  if (maybe_ne (mem_ref_offset (t), 0))
@@ -13439,7 +13438,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	      tree d_length = TREE_VALUE (d);
 	      if (d_length == NULL_TREE || !integer_onep (d_length))
 		{
-		  if (ort == C_ORT_ACC)
+		  if (ort == C_ORT_ACC && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
 		    {
 		      while (TREE_CODE (d) == TREE_LIST)
 			d = TREE_CHAIN (d);
@@ -13719,32 +13718,29 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE))
 	return false;
       gcc_assert (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_DEVICEPTR);
-      if (ort == C_ORT_OMP || ort == C_ORT_ACC)
-	switch (OMP_CLAUSE_MAP_KIND (c))
-	  {
-	  case GOMP_MAP_ALLOC:
-	  case GOMP_MAP_IF_PRESENT:
-	  case GOMP_MAP_TO:
-	  case GOMP_MAP_FROM:
-	  case GOMP_MAP_TOFROM:
-	  case GOMP_MAP_ALWAYS_TO:
-	  case GOMP_MAP_ALWAYS_FROM:
-	  case GOMP_MAP_ALWAYS_TOFROM:
-	  case GOMP_MAP_RELEASE:
-	  case GOMP_MAP_DELETE:
-	  case GOMP_MAP_FORCE_TO:
-	  case GOMP_MAP_FORCE_FROM:
-	  case GOMP_MAP_FORCE_TOFROM:
-	  case GOMP_MAP_FORCE_PRESENT:
-	    OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
-	    break;
-	  default:
-	    break;
-	  }
+      switch (OMP_CLAUSE_MAP_KIND (c))
+	{
+	case GOMP_MAP_ALLOC:
+	case GOMP_MAP_IF_PRESENT:
+	case GOMP_MAP_TO:
+	case GOMP_MAP_FROM:
+	case GOMP_MAP_TOFROM:
+	case GOMP_MAP_ALWAYS_TO:
+	case GOMP_MAP_ALWAYS_FROM:
+	case GOMP_MAP_ALWAYS_TOFROM:
+	case GOMP_MAP_RELEASE:
+	case GOMP_MAP_DELETE:
+	case GOMP_MAP_FORCE_TO:
+	case GOMP_MAP_FORCE_FROM:
+	case GOMP_MAP_FORCE_TOFROM:
+	case GOMP_MAP_FORCE_PRESENT:
+	  OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
+	  break;
+	default:
+	  break;
+	}
       tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
-      if (ort != C_ORT_OMP && ort != C_ORT_ACC)
-	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_POINTER);
-      else if (TREE_CODE (t) == COMPONENT_REF)
+      if (TREE_CODE (t) == COMPONENT_REF)
 	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
       else
 	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
@@ -14043,6 +14039,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool allocate_seen = false;
   bool implicit_moved = false;
   bool oacc_gang_seen = false;
+  bool target_in_reduction_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -14054,7 +14051,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bitmap_initialize (&map_field_head, &bitmap_default_obstack);
   bitmap_initialize (&map_firstprivate_head, &bitmap_default_obstack);
   /* If ort == C_ORT_OMP used as nontemporal_head or use_device_xxx_head
-     instead.  */
+     instead and for ort == C_ORT_OMP_TARGET used as in_reduction_head.  */
   bitmap_initialize (&oacc_reduction_head, &bitmap_default_obstack);
 
   if (ort & C_ORT_ACC)
@@ -14462,8 +14459,22 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   || (ort == C_ORT_OMP
 		       && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR
 			   || (OMP_CLAUSE_CODE (c)
-			       == OMP_CLAUSE_USE_DEVICE_ADDR))))
+			       == OMP_CLAUSE_USE_DEVICE_ADDR)))
+		   || (ort == C_ORT_OMP_TARGET
+		       && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION))
 	    {
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
+		  && (bitmap_bit_p (&generic_head, DECL_UID (t))
+		      || bitmap_bit_p (&firstprivate_head, DECL_UID (t))))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qD appears more than once in data-sharing "
+			    "clauses", t);
+		  remove = true;
+		  break;
+		}
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION)
+		target_in_reduction_seen = true;
 	      if (bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
@@ -14478,7 +14489,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
-		   || bitmap_bit_p (&lastprivate_head, DECL_UID (t)))
+		   || bitmap_bit_p (&lastprivate_head, DECL_UID (t))
+		   || bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE appears more than once in data clauses", t);
@@ -14545,7 +14557,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   && bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
 	    remove = true;
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
-		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
+		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
+		   || bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE appears more than once in data clauses", t);
@@ -14926,8 +14939,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      STRIP_NOPS (t);
 	    }
 	  indir_component_ref_p = false;
-	  if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
-	      && TREE_CODE (t) == COMPONENT_REF
+	  if (TREE_CODE (t) == COMPONENT_REF
 	      && (TREE_CODE (TREE_OPERAND (t, 0)) == MEM_REF
 		  || TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
 		  || TREE_CODE (TREE_OPERAND (t, 0)) == ARRAY_REF))
@@ -14999,7 +15011,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
 		{
 		  if (bitmap_bit_p (&map_field_head, DECL_UID (t))
-		      || (ort == C_ORT_OMP
+		      || (ort != C_ORT_ACC
 			  && bitmap_bit_p (&map_head, DECL_UID (t))))
 		    break;
 		}
@@ -15057,7 +15069,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
 	    {
 	      if (bitmap_bit_p (&generic_head, DECL_UID (t))
-		  || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
+		  || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
+		  || bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qD appears more than once in data clauses", t);
@@ -15075,14 +15088,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  remove = true;
 		}
 	      else
-		{
-		  bitmap_set_bit (&generic_head, DECL_UID (t));
-		  bitmap_set_bit (&map_firstprivate_head, DECL_UID (t));
-		}
+		bitmap_set_bit (&map_firstprivate_head, DECL_UID (t));
 	    }
 	  else if (bitmap_bit_p (&map_head, DECL_UID (t))
 		   && !bitmap_bit_p (&map_field_head, DECL_UID (t))
-		   && ort != C_ORT_OMP)
+		   && ort == C_ORT_ACC)
 	    {
 	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
 		error_at (OMP_CLAUSE_LOCATION (c),
@@ -15095,8 +15105,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  "%qD appears more than once in map clauses", t);
 	      remove = true;
 	    }
-	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
-		   && ort == C_ORT_ACC)
+	  else if (ort == C_ORT_ACC
+		   && bitmap_bit_p (&generic_head, DECL_UID (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD appears more than once in data clauses", t);
@@ -15190,7 +15200,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
 	    {
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR
-		  && ort == C_ORT_OMP)
+		  && ort != C_ORT_ACC)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qs variable is not a pointer",
@@ -15477,7 +15487,10 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       reduction_seen = -2;
     }
 
-  if (linear_variable_step_check || reduction_seen == -2 || allocate_seen)
+  if (linear_variable_step_check
+      || reduction_seen == -2
+      || allocate_seen
+      || target_in_reduction_seen)
     for (pc = &clauses, c = clauses; c ; c = *pc)
       {
 	bool remove = false;
@@ -15525,6 +15538,20 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 		 && reduction_seen == -2)
 	  OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
+	if (target_in_reduction_seen
+	    && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
+	  {
+	    tree t = OMP_CLAUSE_DECL (c);
+	    while (handled_component_p (t)
+		   || TREE_CODE (t) == INDIRECT_REF
+		   || TREE_CODE (t) == ADDR_EXPR
+		   || TREE_CODE (t) == MEM_REF
+		   || TREE_CODE (t) == NON_LVALUE_EXPR)
+	      t = TREE_OPERAND (t, 0);
+	    if (DECL_P (t)
+		&& bitmap_bit_p (&oacc_reduction_head, DECL_UID (t)))
+	      OMP_CLAUSE_MAP_IN_REDUCTION (c) = 1;
+	  }
 
 	if (remove)
 	  *pc = OMP_CLAUSE_CHAIN (c);

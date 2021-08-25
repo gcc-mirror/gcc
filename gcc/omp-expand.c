@@ -9666,6 +9666,10 @@ expand_omp_target (struct omp_region *region)
 	}
 
       c = omp_find_clause (clauses, OMP_CLAUSE_NOWAIT);
+      /* FIXME: in_reduction(...) nowait is unimplemented yet, pretend
+	 nowait doesn't appear.  */
+      if (c && omp_find_clause (clauses, OMP_CLAUSE_IN_REDUCTION))
+	c = NULL;
       if (c)
 	flags_i |= GOMP_TARGET_FLAG_NOWAIT;
     }

@@ -2261,6 +2261,19 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	  break;
 	case OMP_CLAUSE_IN_REDUCTION:
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)) != 0)
+	    {
+	      /* When on target, map(always, tofrom: item) is added as
+		 well.  For non-combined target it is added in the FEs.  */
+	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+				    OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALWAYS_TOFROM);
+	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+	      cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = c;
+	      s = C_OMP_CLAUSE_SPLIT_TARGET;
+	      break;
+	    }
 	  /* in_reduction on taskloop simd becomes reduction on the simd
 	     and keeps being in_reduction on taskloop.  */
 	  if (code == OMP_SIMD)
