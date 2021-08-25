@@ -1,3 +1,71 @@
+2021-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98411
+	* gfortran.dg/pr98411.f90: Adjust testcase options to restrict to
+	F2008, and verify case of implicit SAVE.
+
+2021-08-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101600
+	PR middle-end/101977
+	* g++.dg/pr100574.C: Prune out valid warning.
+	* gcc.dg/pr20126.c: Same.
+	* gcc.dg/Wstringop-overread.c: Adjust text of expected warnings.
+	Add new instances.
+	* gcc.dg/warn-strnlen-no-nul.c: Same.
+	* g++.dg/warn/Warray-bounds-26.C: New test.
+	* gcc.dg/Warray-bounds-88.c: New test.
+
+2021-08-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/predict-1.c: Disable evrp.
+	* gcc.dg/tree-ssa/evrp-trans.c: New.
+
+2021-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102021
+	* gcc.target/i386/pr100865-10b.c: Expect vzeroupper.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-6b.c: Expect vmovdqu and vzeroupper.
+	* gcc.target/i386/pr100865-7b.c: Likewise.
+	* gcc.target/i386/pr102021.c: New test.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13a.c: New test.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8a.c: Likewise.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_cmse_hw):
+	Check the CMSE feature register, rather than relying on the
+	SG operation causing an execution fault.
+
+2021-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101989
+	* gcc.target/i386/pr101989-broadcast-1.c: New test.
+
+2021-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101989
+	* gcc.target/i386/pr101989-1.c: New test.
+	* gcc.target/i386/pr101989-2.c: New test.
+	* gcc.target/i386/avx512bw-shiftqihi-constant-1.c: Adjust testcase.
+
+2021-08-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102029
+	* gcc.dg/fold-convlshift-3.c: New test case.
+
 2021-08-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/switch.c: Remove xfail.  Add various tests.

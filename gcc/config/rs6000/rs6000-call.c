@@ -13294,6 +13294,7 @@ rs6000_init_builtins (void)
 {
   tree tdecl;
   tree ftype;
+  tree t;
   machine_mode mode;
 
   if (TARGET_DEBUG_BUILTIN)
@@ -13304,25 +13305,63 @@ rs6000_init_builtins (void)
   V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64 ? "__vector long"
 				       : "__vector long long",
 				       long_long_integer_type_node, 2);
+  ptr_V2DI_type_node
+    = build_pointer_type (build_qualified_type (V2DI_type_node,
+						TYPE_QUAL_CONST));
+
   V2DF_type_node = rs6000_vector_type ("__vector double", double_type_node, 2);
+  ptr_V2DF_type_node
+    = build_pointer_type (build_qualified_type (V2DF_type_node,
+						TYPE_QUAL_CONST));
+
   V4SI_type_node = rs6000_vector_type ("__vector signed int",
 				       intSI_type_node, 4);
+  ptr_V4SI_type_node
+    = build_pointer_type (build_qualified_type (V4SI_type_node,
+						TYPE_QUAL_CONST));
+
   V4SF_type_node = rs6000_vector_type ("__vector float", float_type_node, 4);
+  ptr_V4SF_type_node
+    = build_pointer_type (build_qualified_type (V4SF_type_node,
+						TYPE_QUAL_CONST));
+
   V8HI_type_node = rs6000_vector_type ("__vector signed short",
 				       intHI_type_node, 8);
+  ptr_V8HI_type_node
+    = build_pointer_type (build_qualified_type (V8HI_type_node,
+						TYPE_QUAL_CONST));
+
   V16QI_type_node = rs6000_vector_type ("__vector signed char",
 					intQI_type_node, 16);
+  ptr_V16QI_type_node
+    = build_pointer_type (build_qualified_type (V16QI_type_node,
+						TYPE_QUAL_CONST));
 
   unsigned_V16QI_type_node = rs6000_vector_type ("__vector unsigned char",
 					unsigned_intQI_type_node, 16);
+  ptr_unsigned_V16QI_type_node
+    = build_pointer_type (build_qualified_type (unsigned_V16QI_type_node,
+						TYPE_QUAL_CONST));
+
   unsigned_V8HI_type_node = rs6000_vector_type ("__vector unsigned short",
 				       unsigned_intHI_type_node, 8);
+  ptr_unsigned_V8HI_type_node
+    = build_pointer_type (build_qualified_type (unsigned_V8HI_type_node,
+						TYPE_QUAL_CONST));
+
   unsigned_V4SI_type_node = rs6000_vector_type ("__vector unsigned int",
 				       unsigned_intSI_type_node, 4);
+  ptr_unsigned_V4SI_type_node
+    = build_pointer_type (build_qualified_type (unsigned_V4SI_type_node,
+						TYPE_QUAL_CONST));
+
   unsigned_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
 				       ? "__vector unsigned long"
 				       : "__vector unsigned long long",
 				       long_long_unsigned_type_node, 2);
+  ptr_unsigned_V2DI_type_node
+    = build_pointer_type (build_qualified_type (unsigned_V2DI_type_node,
+						TYPE_QUAL_CONST));
 
   opaque_V4SI_type_node = build_opaque_vector_type (intSI_type_node, 4);
 
@@ -13336,9 +13375,15 @@ rs6000_init_builtins (void)
     {
       V1TI_type_node = rs6000_vector_type ("__vector __int128",
 					   intTI_type_node, 1);
+      ptr_V1TI_type_node
+	= build_pointer_type (build_qualified_type (V1TI_type_node,
+						    TYPE_QUAL_CONST));
       unsigned_V1TI_type_node
 	= rs6000_vector_type ("__vector unsigned __int128",
 			      unsigned_intTI_type_node, 1);
+      ptr_unsigned_V1TI_type_node
+	= build_pointer_type (build_qualified_type (unsigned_V1TI_type_node,
+						    TYPE_QUAL_CONST));
     }
 
   /* The 'vector bool ...' types must be kept distinct from 'vector unsigned ...'
@@ -13372,6 +13417,76 @@ rs6000_init_builtins (void)
   dfloat128_type_internal_node = dfloat128_type_node;
   void_type_internal_node = void_type_node;
 
+  ptr_intQI_type_node
+    = build_pointer_type (build_qualified_type (intQI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_uintQI_type_node
+    = build_pointer_type (build_qualified_type (uintQI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_intHI_type_node
+    = build_pointer_type (build_qualified_type (intHI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_uintHI_type_node
+    = build_pointer_type (build_qualified_type (uintHI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_intSI_type_node
+    = build_pointer_type (build_qualified_type (intSI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_uintSI_type_node
+    = build_pointer_type (build_qualified_type (uintSI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_intDI_type_node
+    = build_pointer_type (build_qualified_type (intDI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_uintDI_type_node
+    = build_pointer_type (build_qualified_type (uintDI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_intTI_type_node
+    = build_pointer_type (build_qualified_type (intTI_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_uintTI_type_node
+    = build_pointer_type (build_qualified_type (uintTI_type_internal_node,
+						TYPE_QUAL_CONST));
+
+  t = build_qualified_type (long_integer_type_internal_node, TYPE_QUAL_CONST);
+  ptr_long_integer_type_node = build_pointer_type (t);
+
+  t = build_qualified_type (long_unsigned_type_internal_node, TYPE_QUAL_CONST);
+  ptr_long_unsigned_type_node = build_pointer_type (t);
+
+  ptr_float_type_node
+    = build_pointer_type (build_qualified_type (float_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_double_type_node
+    = build_pointer_type (build_qualified_type (double_type_internal_node,
+						TYPE_QUAL_CONST));
+  ptr_long_double_type_node
+    = build_pointer_type (build_qualified_type (long_double_type_internal_node,
+						TYPE_QUAL_CONST));
+  if (dfloat64_type_node)
+    {
+      t = build_qualified_type (dfloat64_type_internal_node, TYPE_QUAL_CONST);
+      ptr_dfloat64_type_node = build_pointer_type (t);
+    }
+  else
+    ptr_dfloat64_type_node = NULL;
+
+  if (dfloat128_type_node)
+    {
+      t = build_qualified_type (dfloat128_type_internal_node, TYPE_QUAL_CONST);
+      ptr_dfloat128_type_node = build_pointer_type (t);
+    }
+  else
+    ptr_dfloat128_type_node = NULL;
+
+  t = build_qualified_type (long_long_integer_type_internal_node,
+			    TYPE_QUAL_CONST);
+  ptr_long_long_integer_type_node  = build_pointer_type (t);
+
+  t = build_qualified_type (long_long_unsigned_type_internal_node,
+			    TYPE_QUAL_CONST);
+  ptr_long_long_unsigned_type_node = build_pointer_type (t);
+
   /* 128-bit floating point support.  KFmode is IEEE 128-bit floating point.
      IFmode is the IBM extended 128-bit format that is a pair of doubles.
      TFmode will be either IEEE 128-bit floating point or the IBM double-double
@@ -13399,7 +13514,8 @@ rs6000_init_builtins (void)
 	  SET_TYPE_MODE (ibm128_float_type_node, IFmode);
 	  layout_type (ibm128_float_type_node);
 	}
-
+      t = build_qualified_type (ibm128_float_type_node, TYPE_QUAL_CONST);
+      ptr_ibm128_float_type_node = build_pointer_type (t);
       lang_hooks.types.register_builtin_type (ibm128_float_type_node,
 					      "__ibm128");
 
@@ -13407,7 +13523,8 @@ rs6000_init_builtins (void)
 	ieee128_float_type_node = long_double_type_node;
       else
 	ieee128_float_type_node = float128_type_node;
-
+      t = build_qualified_type (ieee128_float_type_node, TYPE_QUAL_CONST);
+      ptr_ieee128_float_type_node = build_pointer_type (t);
       lang_hooks.types.register_builtin_type (ieee128_float_type_node,
 					      "__ieee128");
     }
@@ -13427,6 +13544,8 @@ rs6000_init_builtins (void)
       TYPE_USER_ALIGN (vector_pair_type_node) = 0;
       lang_hooks.types.register_builtin_type (vector_pair_type_node,
 					      "__vector_pair");
+      t = build_qualified_type (vector_pair_type_node, TYPE_QUAL_CONST);
+      ptr_vector_pair_type_node = build_pointer_type (t);
 
       vector_quad_type_node = make_node (OPAQUE_TYPE);
       SET_TYPE_MODE (vector_quad_type_node, XOmode);
@@ -13437,6 +13556,8 @@ rs6000_init_builtins (void)
       TYPE_USER_ALIGN (vector_quad_type_node) = 0;
       lang_hooks.types.register_builtin_type (vector_quad_type_node,
 					      "__vector_quad");
+      t = build_qualified_type (vector_quad_type_node, TYPE_QUAL_CONST);
+      ptr_vector_quad_type_node = build_pointer_type (t);
     }
 
   /* Initialize the modes for builtin_function_type, mapping a machine mode to
@@ -13487,18 +13608,41 @@ rs6000_init_builtins (void)
 
   bool_V16QI_type_node = rs6000_vector_type ("__vector __bool char",
 					     bool_char_type_node, 16);
+  ptr_bool_V16QI_type_node
+    = build_pointer_type (build_qualified_type (bool_V16QI_type_node,
+						TYPE_QUAL_CONST));
+
   bool_V8HI_type_node = rs6000_vector_type ("__vector __bool short",
 					    bool_short_type_node, 8);
+  ptr_bool_V8HI_type_node
+    = build_pointer_type (build_qualified_type (bool_V8HI_type_node,
+						TYPE_QUAL_CONST));
+
   bool_V4SI_type_node = rs6000_vector_type ("__vector __bool int",
 					    bool_int_type_node, 4);
+  ptr_bool_V4SI_type_node
+    = build_pointer_type (build_qualified_type (bool_V4SI_type_node,
+						TYPE_QUAL_CONST));
+
   bool_V2DI_type_node = rs6000_vector_type (TARGET_POWERPC64
 					    ? "__vector __bool long"
 					    : "__vector __bool long long",
 					    bool_long_long_type_node, 2);
+  ptr_bool_V2DI_type_node
+    = build_pointer_type (build_qualified_type (bool_V2DI_type_node,
+						TYPE_QUAL_CONST));
+
   bool_V1TI_type_node = rs6000_vector_type ("__vector __bool __int128",
 					    intTI_type_node, 1);
+  ptr_bool_V1TI_type_node
+    = build_pointer_type (build_qualified_type (bool_V1TI_type_node,
+						TYPE_QUAL_CONST));
+
   pixel_V8HI_type_node = rs6000_vector_type ("__vector __pixel",
 					     pixel_type_node, 8);
+  ptr_pixel_V8HI_type_node
+    = build_pointer_type (build_qualified_type (pixel_V8HI_type_node,
+						TYPE_QUAL_CONST));
   pcvoid_type_node
     = build_pointer_type (build_qualified_type (void_type_node,
 						TYPE_QUAL_CONST));

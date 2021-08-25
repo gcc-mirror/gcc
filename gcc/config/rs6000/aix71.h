@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.1.
    Copyright (C) 2002-2021 Free Software Foundation, Inc.
@@ -267,6 +268,9 @@ extern long long int    atoll(const char *);
 #else
 #define SET_CMODEL(opt) do {} while (0)
 #endif
+
+/* System headers are not C++-aware.  */
+#define SYSTEM_IMPLICIT_EXTERN_C 1
 
 /* This target defines SUPPORTS_WEAK and TARGET_ASM_NAMED_SECTION,
    but does not have crtbegin/end.  */

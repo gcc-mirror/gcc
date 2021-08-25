@@ -134,10 +134,8 @@
    UNSPEC_VMULWLUH
    UNSPEC_VMULWHSH
    UNSPEC_VMULWLSH
-   UNSPEC_VUPKHUB
-   UNSPEC_VUPKHUH
-   UNSPEC_VUPKLUB
-   UNSPEC_VUPKLUH
+   UNSPEC_VUPKHU
+   UNSPEC_VUPKLU
    UNSPEC_VPERMSI
    UNSPEC_VPERMHI
    UNSPEC_INTERHI
@@ -3688,143 +3686,45 @@
   [(set_attr "type" "vecperm")
    (set_attr "isa" "p9v,*")])
 
-(define_expand "vec_unpacku_hi_v16qi"
-  [(set (match_operand:V8HI 0 "register_operand" "=v")
-        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v")]
-                     UNSPEC_VUPKHUB))]
-  "TARGET_ALTIVEC"      
-{  
-  rtx vzero = gen_reg_rtx (V8HImode);
-  rtx mask = gen_reg_rtx (V16QImode);
-  rtvec v = rtvec_alloc (16);
-  bool be = BYTES_BIG_ENDIAN;
-   
-  emit_insn (gen_altivec_vspltish (vzero, const0_rtx));
-   
-  RTVEC_ELT (v,  0) = gen_rtx_CONST_INT (QImode, be ? 16 :  7);
-  RTVEC_ELT (v,  1) = gen_rtx_CONST_INT (QImode, be ?  0 : 16);
-  RTVEC_ELT (v,  2) = gen_rtx_CONST_INT (QImode, be ? 16 :  6);
-  RTVEC_ELT (v,  3) = gen_rtx_CONST_INT (QImode, be ?  1 : 16);
-  RTVEC_ELT (v,  4) = gen_rtx_CONST_INT (QImode, be ? 16 :  5);
-  RTVEC_ELT (v,  5) = gen_rtx_CONST_INT (QImode, be ?  2 : 16);
-  RTVEC_ELT (v,  6) = gen_rtx_CONST_INT (QImode, be ? 16 :  4);
-  RTVEC_ELT (v,  7) = gen_rtx_CONST_INT (QImode, be ?  3 : 16);
-  RTVEC_ELT (v,  8) = gen_rtx_CONST_INT (QImode, be ? 16 :  3);
-  RTVEC_ELT (v,  9) = gen_rtx_CONST_INT (QImode, be ?  4 : 16);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, be ? 16 :  2);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, be ?  5 : 16);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, be ? 16 :  1);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, be ?  6 : 16);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 16 :  0);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ?  7 : 16);
+(define_expand "vec_unpacku_hi_<VP_small_lc>"
+  [(set (match_operand:VP 0 "register_operand" "=v")
+        (unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
+         UNSPEC_VUPKHU))]
+  "TARGET_ALTIVEC"
+{
+  rtx vzero = gen_reg_rtx (<VP_small>mode);
+  emit_insn (gen_altivec_vspltis<VU_char> (vzero, const0_rtx));
 
-  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_vperm_v16qiv8hi (operands[0], operands[1], vzero, mask));
+  rtx res = gen_reg_rtx (<VP_small>mode);
+  rtx op1 = operands[1];
+
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrgh<VU_char> (res, vzero, op1));
+  else
+    emit_insn (gen_altivec_vmrgl<VU_char> (res, op1, vzero));
+
+  emit_insn (gen_move_insn (operands[0], gen_lowpart (<MODE>mode, res)));
   DONE;
 })
 
-(define_expand "vec_unpacku_hi_v8hi"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")]
-                     UNSPEC_VUPKHUH))]
+(define_expand "vec_unpacku_lo_<VP_small_lc>"
+  [(set (match_operand:VP 0 "register_operand" "=v")
+        (unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
+         UNSPEC_VUPKLU))]
   "TARGET_ALTIVEC"
 {
-  rtx vzero = gen_reg_rtx (V4SImode);
-  rtx mask = gen_reg_rtx (V16QImode);
-  rtvec v = rtvec_alloc (16);
-  bool be = BYTES_BIG_ENDIAN;
+  rtx vzero = gen_reg_rtx (<VP_small>mode);
+  emit_insn (gen_altivec_vspltis<VU_char> (vzero, const0_rtx));
 
-  emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
- 
-  RTVEC_ELT (v,  0) = gen_rtx_CONST_INT (QImode, be ? 16 :  7);
-  RTVEC_ELT (v,  1) = gen_rtx_CONST_INT (QImode, be ? 17 :  6);
-  RTVEC_ELT (v,  2) = gen_rtx_CONST_INT (QImode, be ?  0 : 17);
-  RTVEC_ELT (v,  3) = gen_rtx_CONST_INT (QImode, be ?  1 : 16);
-  RTVEC_ELT (v,  4) = gen_rtx_CONST_INT (QImode, be ? 16 :  5);
-  RTVEC_ELT (v,  5) = gen_rtx_CONST_INT (QImode, be ? 17 :  4);
-  RTVEC_ELT (v,  6) = gen_rtx_CONST_INT (QImode, be ?  2 : 17);
-  RTVEC_ELT (v,  7) = gen_rtx_CONST_INT (QImode, be ?  3 : 16);
-  RTVEC_ELT (v,  8) = gen_rtx_CONST_INT (QImode, be ? 16 :  3);
-  RTVEC_ELT (v,  9) = gen_rtx_CONST_INT (QImode, be ? 17 :  2);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, be ?  4 : 17);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, be ?  5 : 16);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, be ? 16 :  1);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, be ? 17 :  0);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ?  6 : 17);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ?  7 : 16);
+  rtx res = gen_reg_rtx (<VP_small>mode);
+  rtx op1 = operands[1];
 
-  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_vperm_v8hiv4si (operands[0], operands[1], vzero, mask));
-  DONE;
-})
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrgl<VU_char> (res, vzero, op1));
+  else
+    emit_insn (gen_altivec_vmrgh<VU_char> (res, op1, vzero));
 
-(define_expand "vec_unpacku_lo_v16qi"
-  [(set (match_operand:V8HI 0 "register_operand" "=v")
-        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v")]
-                     UNSPEC_VUPKLUB))]
-  "TARGET_ALTIVEC"
-{
-  rtx vzero = gen_reg_rtx (V8HImode);
-  rtx mask = gen_reg_rtx (V16QImode);
-  rtvec v = rtvec_alloc (16);
-  bool be = BYTES_BIG_ENDIAN;
-
-  emit_insn (gen_altivec_vspltish (vzero, const0_rtx));
-
-  RTVEC_ELT (v,  0) = gen_rtx_CONST_INT (QImode, be ? 16 : 15);
-  RTVEC_ELT (v,  1) = gen_rtx_CONST_INT (QImode, be ?  8 : 16);
-  RTVEC_ELT (v,  2) = gen_rtx_CONST_INT (QImode, be ? 16 : 14);
-  RTVEC_ELT (v,  3) = gen_rtx_CONST_INT (QImode, be ?  9 : 16);
-  RTVEC_ELT (v,  4) = gen_rtx_CONST_INT (QImode, be ? 16 : 13);
-  RTVEC_ELT (v,  5) = gen_rtx_CONST_INT (QImode, be ? 10 : 16);
-  RTVEC_ELT (v,  6) = gen_rtx_CONST_INT (QImode, be ? 16 : 12);
-  RTVEC_ELT (v,  7) = gen_rtx_CONST_INT (QImode, be ? 11 : 16);
-  RTVEC_ELT (v,  8) = gen_rtx_CONST_INT (QImode, be ? 16 : 11);
-  RTVEC_ELT (v,  9) = gen_rtx_CONST_INT (QImode, be ? 12 : 16);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, be ? 16 : 10);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, be ? 13 : 16);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, be ? 16 :  9);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, be ? 14 : 16);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 16 :  8);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ? 15 : 16);
-
-  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_vperm_v16qiv8hi (operands[0], operands[1], vzero, mask));
-  DONE;
-})
-
-(define_expand "vec_unpacku_lo_v8hi"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")]
-                     UNSPEC_VUPKLUH))]
-  "TARGET_ALTIVEC"
-{
-  rtx vzero = gen_reg_rtx (V4SImode);
-  rtx mask = gen_reg_rtx (V16QImode);
-  rtvec v = rtvec_alloc (16);
-  bool be = BYTES_BIG_ENDIAN;
-
-  emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
- 
-  RTVEC_ELT (v,  0) = gen_rtx_CONST_INT (QImode, be ? 16 : 15);
-  RTVEC_ELT (v,  1) = gen_rtx_CONST_INT (QImode, be ? 17 : 14);
-  RTVEC_ELT (v,  2) = gen_rtx_CONST_INT (QImode, be ?  8 : 17);
-  RTVEC_ELT (v,  3) = gen_rtx_CONST_INT (QImode, be ?  9 : 16);
-  RTVEC_ELT (v,  4) = gen_rtx_CONST_INT (QImode, be ? 16 : 13);
-  RTVEC_ELT (v,  5) = gen_rtx_CONST_INT (QImode, be ? 17 : 12);
-  RTVEC_ELT (v,  6) = gen_rtx_CONST_INT (QImode, be ? 10 : 17);
-  RTVEC_ELT (v,  7) = gen_rtx_CONST_INT (QImode, be ? 11 : 16);
-  RTVEC_ELT (v,  8) = gen_rtx_CONST_INT (QImode, be ? 16 : 11);
-  RTVEC_ELT (v,  9) = gen_rtx_CONST_INT (QImode, be ? 17 : 10);
-  RTVEC_ELT (v, 10) = gen_rtx_CONST_INT (QImode, be ? 12 : 17);
-  RTVEC_ELT (v, 11) = gen_rtx_CONST_INT (QImode, be ? 13 : 16);
-  RTVEC_ELT (v, 12) = gen_rtx_CONST_INT (QImode, be ? 16 :  9);
-  RTVEC_ELT (v, 13) = gen_rtx_CONST_INT (QImode, be ? 17 :  8);
-  RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 14 : 17);
-  RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ? 15 : 16);
-
-  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_vperm_v8hiv4si (operands[0], operands[1], vzero, mask));
+  emit_insn (gen_move_insn (operands[0], gen_lowpart (<MODE>mode, res)));
   DONE;
 })
 

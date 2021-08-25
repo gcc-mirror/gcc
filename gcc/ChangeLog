@@ -1,3 +1,224 @@
+2021-08-24  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix.h (SYSTEM_IMPLICIT_EXTERN_C): Delete.
+	* config/rs6000/aix71.h (SYSTEM_IMPLICIT_EXTERN_C): Define.
+	* config/rs6000/aix72.h (SYSTEM_IMPLICIT_EXTERN_C): Define.
+	* config/rs6000/aix73.h (TARGET_AIX_VERSION): Increase to 73.
+
+2021-08-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/102031
+	* simplify-rtx.c (simplify_truncation): When comparing precisions
+	use "subreg_prec" variable, not "subreg_mode".
+
+2021-08-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add power10 and power10-64
+	stanzas.
+
+2021-08-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Initialize
+	various pointer type nodes.
+	* config/rs6000/rs6000.h (rs6000_builtin_type_index): Add enum
+	values for various pointer types.
+	(ptr_V16QI_type_node): New macro.
+	(ptr_V1TI_type_node): New macro.
+	(ptr_V2DI_type_node): New macro.
+	(ptr_V2DF_type_node): New macro.
+	(ptr_V4SI_type_node): New macro.
+	(ptr_V4SF_type_node): New macro.
+	(ptr_V8HI_type_node): New macro.
+	(ptr_unsigned_V16QI_type_node): New macro.
+	(ptr_unsigned_V1TI_type_node): New macro.
+	(ptr_unsigned_V8HI_type_node): New macro.
+	(ptr_unsigned_V4SI_type_node): New macro.
+	(ptr_unsigned_V2DI_type_node): New macro.
+	(ptr_bool_V16QI_type_node): New macro.
+	(ptr_bool_V8HI_type_node): New macro.
+	(ptr_bool_V4SI_type_node): New macro.
+	(ptr_bool_V2DI_type_node): New macro.
+	(ptr_bool_V1TI_type_node): New macro.
+	(ptr_pixel_type_node): New macro.
+	(ptr_intQI_type_node): New macro.
+	(ptr_uintQI_type_node): New macro.
+	(ptr_intHI_type_node): New macro.
+	(ptr_uintHI_type_node): New macro.
+	(ptr_intSI_type_node): New macro.
+	(ptr_uintSI_type_node): New macro.
+	(ptr_intDI_type_node): New macro.
+	(ptr_uintDI_type_node): New macro.
+	(ptr_intTI_type_node): New macro.
+	(ptr_uintTI_type_node): New macro.
+	(ptr_long_integer_type_node): New macro.
+	(ptr_long_unsigned_type_node): New macro.
+	(ptr_float_type_node): New macro.
+	(ptr_double_type_node): New macro.
+	(ptr_long_double_type_node): New macro.
+	(ptr_dfloat64_type_node): New macro.
+	(ptr_dfloat128_type_node): New macro.
+	(ptr_ieee128_type_node): New macro.
+	(ptr_ibm128_type_node): New macro.
+	(ptr_vector_pair_type_node): New macro.
+	(ptr_vector_quad_type_node): New macro.
+	(ptr_long_long_integer_type_node): New macro.
+	(ptr_long_long_unsigned_type_node): New macro.
+
+2021-08-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add power9-vector, power9,
+	and power9-64 stanzas.
+
+2021-08-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* config.gcc (nvptx-*-*): Define {c,c++}_target_objs.
+	* config/nvptx/nvptx-protos.h (nvptx_cpu_cpp_builtins): Prototype.
+	* config/nvptx/nvptx.h (TARGET_CPU_CPP_BUILTINS): Implement with
+	a call to the new nvptx_cpu_cpp_builtins function in nvptx-c.c.
+	* config/nvptx/t-nvptx (nvptx-c.o): New rule.
+	* config/nvptx/nvptx-c.c: New source file.
+	(nvptx_cpu_cpp_builtins): Move implementation here.
+
+2021-08-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101600
+	PR middle-end/101977
+	* gimple-ssa-warn-access.cc (maybe_warn_for_bound): Tighten up
+	the phrasing of a warning.
+	(check_access): Use the remaining size after subtracting any offset
+	rather than the whole object size.
+	* pointer-query.cc (access_ref::get_ref): Clear BASE0 flag if it's
+	clear for any nonnull PHI argument.
+	(compute_objsize): Clear argument.
+
+2021-08-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add power8-vector stanza.
+
+2021-08-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add power7 and power7-64
+	stanzas.
+
+2021-08-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (rr_transitive_table): New.
+	(relation_transitive): New.
+	(value_relation::swap): Remove.
+	(value_relation::apply_transitive): New.
+	(relation_oracle::relation_oracle): Allocate a new tmp bitmap.
+	(relation_oracle::register_relation): Call register_transitives.
+	(relation_oracle::register_transitives): New.
+	* value-relation.h (relation_oracle): Add new temporary bitmap and
+	methods.
+
+2021-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102021
+	* config/i386/i386-expand.c (ix86_expand_vector_move): Broadcast
+	from integer to a pseudo vector register.
+
+2021-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100089
+	* tree-vectorizer.h (vect_slp_bb): Rename to ...
+	(vect_slp_if_converted_bb): ... this and get the original
+	loop as new argument.
+	* tree-vectorizer.c (try_vectorize_loop_1): Revert previous fix,
+	pass original loop to vect_slp_if_converted_bb.
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p):
+	If orig_loop was passed scan the not vectorized stmts
+	for COND_EXPRs and force not profitable if found.
+	(vect_slp_region): Pass down all SLP instances to costing
+	if orig_loop was specified.
+	(vect_slp_bbs): Pass through orig_loop.
+	(vect_slp_bb): Rename to ...
+	(vect_slp_if_converted_bb): ... this and get the original
+	loop as new argument.
+	(vect_slp_function): Adjust.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* config/arm/arm.md (attribute arch): Add fix_vlldm.
+	(arch_enabled): Use it.
+	* config/arm/vfp.md (lazy_store_multiple_insn): Add alternative to
+	use when erratum mitigation is needed.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* config/arm/arm.opt (mfix-cmse-cve-2021-35465): New option.
+	* doc/invoke.texi (Arm Options): Document it.
+	* config/arm/arm-cpus.in (quirk_vlldm): New feature bit.
+	(ALL_QUIRKS): Add quirk_vlldm.
+	(cortex-m33): Add quirk_vlldm.
+	(cortex-m35p, cortex-m55): Likewise.
+	* config/arm/arm.c (arm_option_override): Enable fix_vlldm if
+	targetting an affected CPU and not explicitly controlled on
+	the command line.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/vfp.md (lazy_store_multiple_insn): Rewrite as valid RTL.
+	(lazy_load_multiple_insn): Likewise.
+
+2021-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101989
+	* config/i386/sse.md (<avx512>_vternlog<mode><sd_maskz_name>):
+	Enable avx512 embedded broadcast.
+	(*<avx512>_vternlog<mode>_all): Ditto.
+	(<avx512>_vternlog<mode>_mask): Ditto.
+
+2021-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101989
+	* config/i386/i386.c (ix86_rtx_costs): Define cost for
+	UNSPEC_VTERNLOG.
+	* config/i386/i386.h (STRIP_UNARY): New macro.
+	* config/i386/predicates.md (reg_or_notreg_operand): New
+	predicate.
+	* config/i386/sse.md (*<avx512>_vternlog<mode>_all): New define_insn.
+	(*<avx512>_vternlog<mode>_1): New pre_reload
+	define_insn_and_split.
+	(*<avx512>_vternlog<mode>_2): Ditto.
+	(*<avx512>_vternlog<mode>_3): Ditto.
+	(any_logic1,any_logic2): New code iterator.
+	(logic_op): New code attribute.
+	(ternlogsuffix): Extend to VNxDF and VNxSF.
+
+2021-08-24  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (vect-inner-loop-cost-factor): Adjust.
+	* params.opt (--param vect-inner-loop-cost-factor): Adjust
+	maximum value.
+	* tree-vect-loop.c (vect_analyze_loop_form): Initialize
+	inner_loop_cost_factor to the minimum of the estimated number
+	of iterations of the inner loop and vect-inner-loop-cost-factor.
+
+2021-08-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.c (compute_convert_gain): Provide
+	more accurate values for CONST_INT, when optimizing for size.
+	* config/i386/i386.c (COSTS_N_BYTES): Move definition from here...
+	* config/i386/i386.h (COSTS_N_BYTES): to here.
+
+2021-08-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102029
+	* match.pd (shift transformations): Add an additional check for
+	!POINTER_TYPE_P in the recently added left shift transformation.
+
+2021-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/100089
+	* tree-vectorizer.c (try_vectorize_loop_1): Disable slp in
+	loop vectorizer when cost model is very-cheap.
+
 2021-08-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-gen-builtins.c (parse_bif_entry): Don't call

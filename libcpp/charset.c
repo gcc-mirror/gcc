@@ -630,7 +630,11 @@ static const struct cpp_conversion conversion_tab[] = {
    cset_converter structure for conversion from FROM to TO.  If
    iconv_open() fails, issue an error and return an identity
    converter.  Silently return an identity converter if FROM and TO
-   are identical.  */
+   are identical.
+
+   PFILE is only used for generating diagnostics; setting it to NULL
+   suppresses diagnostics.  */
+
 static struct cset_converter
 init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
 {
@@ -672,25 +676,31 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
 
       if (ret.cd == (iconv_t) -1)
 	{
-	  if (errno == EINVAL)
-	    cpp_error (pfile, CPP_DL_ERROR, /* FIXME should be DL_SORRY */
-		       "conversion from %s to %s not supported by iconv",
-		       from, to);
-	  else
-	    cpp_errno (pfile, CPP_DL_ERROR, "iconv_open");
-
+	  if (pfile)
+	    {
+	      if (errno == EINVAL)
+		cpp_error (pfile, CPP_DL_ERROR, /* FIXME should be DL_SORRY */
+			   "conversion from %s to %s not supported by iconv",
+			   from, to);
+	      else
+		cpp_errno (pfile, CPP_DL_ERROR, "iconv_open");
+	    }
 	  ret.func = convert_no_conversion;
 	}
     }
   else
     {
-      cpp_error (pfile, CPP_DL_ERROR, /* FIXME: should be DL_SORRY */
-		 "no iconv implementation, cannot convert from %s to %s",
-		 from, to);
+      if (pfile)
+	{
+	  cpp_error (pfile, CPP_DL_ERROR, /* FIXME: should be DL_SORRY */
+		     "no iconv implementation, cannot convert from %s to %s",
+		     from, to);
+	}
       ret.func = convert_no_conversion;
       ret.cd = (iconv_t) -1;
       ret.width = -1;
     }
+
   return ret;
 }
 
@@ -2122,6 +2132,25 @@ _cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
 				  buf, bufp - buf, HT_ALLOC));
 }
 
+
+/* Utility to strip a UTF-8 byte order marking from the beginning
+   of a buffer.  Returns the number of bytes to skip, which currently
+   will be either 0 or 3.  */
+int
+cpp_check_utf8_bom (const char *data, size_t data_length)
+{
+
+#if HOST_CHARSET == HOST_CHARSET_ASCII
+  const unsigned char *udata = (const unsigned char *) data;
+  if (data_length >= 3 && udata[0] == 0xef && udata[1] == 0xbb
+      && udata[2] == 0xbf)
+    return 3;
+#endif
+
+  return 0;
+}
+
+
 /* Convert an input buffer (containing the complete contents of one
    source file) from INPUT_CHARSET to the source character set.  INPUT
    points to the input buffer, SIZE is its allocated size, and LEN is
@@ -2135,7 +2164,11 @@ _cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
    INPUT is expected to have been allocated with xmalloc.  This
    function will either set *BUFFER_START to INPUT, or free it and set
    *BUFFER_START to a pointer to another xmalloc-allocated block of
-   memory.  */
+   memory.
+
+   PFILE is only used to generate diagnostics; setting it to NULL suppresses
+   diagnostics, and causes a return of NULL if there was any error instead.  */
+
 uchar * 
 _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
 		    uchar *input, size_t size, size_t len,
@@ -2158,17 +2191,27 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
       to.text = XNEWVEC (uchar, to.asize);
       to.len = 0;
 
-      if (!APPLY_CONVERSION (input_cset, input, len, &to))
-	cpp_error (pfile, CPP_DL_ERROR,
-		   "failure to convert %s to %s",
-		   CPP_OPTION (pfile, input_charset), SOURCE_CHARSET);
-
+      const bool ok = APPLY_CONVERSION (input_cset, input, len, &to);
       free (input);
-    }
 
-  /* Clean up the mess.  */
-  if (input_cset.func == convert_using_iconv)
-    iconv_close (input_cset.cd);
+      /* Clean up the mess.  */
+      if (input_cset.func == convert_using_iconv)
+	iconv_close (input_cset.cd);
+
+      /* Handle conversion failure.  */
+      if (!ok)
+	{
+	  if (!pfile)
+	    {
+	      XDELETEVEC (to.text);
+	      *buffer_start = NULL;
+	      *st_size = 0;
+	      return NULL;
+	    }
+	  cpp_error (pfile, CPP_DL_ERROR, "failure to convert %s to %s",
+		     input_charset, SOURCE_CHARSET);
+	}
+    }
 
   /* Resize buffer if we allocated substantially too much, or if we
      haven't enough space for the \n-terminator or following
@@ -2192,19 +2235,14 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
 
   buffer = to.text;
   *st_size = to.len;
-#if HOST_CHARSET == HOST_CHARSET_ASCII
-  /* The HOST_CHARSET test just above ensures that the source charset
-     is UTF-8.  So, ignore a UTF-8 BOM if we see one.  Note that
-     glib'c UTF-8 iconv() provider (as of glibc 2.7) does not ignore a
+
+  /* Ignore a UTF-8 BOM if we see one and the source charset is UTF-8.  Note
+     that glib'c UTF-8 iconv() provider (as of glibc 2.7) does not ignore a
      BOM -- however, even if it did, we would still need this code due
      to the 'convert_no_conversion' case.  */
-  if (to.len >= 3 && to.text[0] == 0xef && to.text[1] == 0xbb
-      && to.text[2] == 0xbf)
-    {
-      *st_size -= 3;
-      buffer += 3;
-    }
-#endif
+  const int bom_len = cpp_check_utf8_bom ((const char *) to.text, to.len);
+  *st_size -= bom_len;
+  buffer += bom_len;
 
   *buffer_start = to.text;
   return buffer;
@@ -2242,6 +2280,13 @@ _cpp_default_encoding (void)
     current_encoding = SOURCE_CHARSET;
 
   return current_encoding;
+}
+
+/* Check if the configured input charset requires no conversion, other than
+   possibly stripping a UTF-8 BOM.  */
+bool cpp_input_conversion_is_trivial (const char *input_charset)
+{
+  return !strcasecmp (input_charset, SOURCE_CHARSET);
 }
 
 /* Implementation of class cpp_string_location_reader.  */

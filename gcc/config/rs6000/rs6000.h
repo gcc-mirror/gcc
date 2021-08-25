@@ -2461,6 +2461,47 @@ enum rs6000_builtin_type_index
   RS6000_BTI_vector_pair,	 /* unsigned 256-bit types (vector pair).  */
   RS6000_BTI_vector_quad,	 /* unsigned 512-bit types (vector quad).  */
   RS6000_BTI_const_ptr_void,     /* const pointer to void */
+  RS6000_BTI_ptr_V16QI,
+  RS6000_BTI_ptr_V1TI,
+  RS6000_BTI_ptr_V2DI,
+  RS6000_BTI_ptr_V2DF,
+  RS6000_BTI_ptr_V4SI,
+  RS6000_BTI_ptr_V4SF,
+  RS6000_BTI_ptr_V8HI,
+  RS6000_BTI_ptr_unsigned_V16QI,
+  RS6000_BTI_ptr_unsigned_V1TI,
+  RS6000_BTI_ptr_unsigned_V8HI,
+  RS6000_BTI_ptr_unsigned_V4SI,
+  RS6000_BTI_ptr_unsigned_V2DI,
+  RS6000_BTI_ptr_bool_V16QI,
+  RS6000_BTI_ptr_bool_V8HI,
+  RS6000_BTI_ptr_bool_V4SI,
+  RS6000_BTI_ptr_bool_V2DI,
+  RS6000_BTI_ptr_bool_V1TI,
+  RS6000_BTI_ptr_pixel_V8HI,
+  RS6000_BTI_ptr_INTQI,
+  RS6000_BTI_ptr_UINTQI,
+  RS6000_BTI_ptr_INTHI,
+  RS6000_BTI_ptr_UINTHI,
+  RS6000_BTI_ptr_INTSI,
+  RS6000_BTI_ptr_UINTSI,
+  RS6000_BTI_ptr_INTDI,
+  RS6000_BTI_ptr_UINTDI,
+  RS6000_BTI_ptr_INTTI,
+  RS6000_BTI_ptr_UINTTI,
+  RS6000_BTI_ptr_long_integer,
+  RS6000_BTI_ptr_long_unsigned,
+  RS6000_BTI_ptr_float,
+  RS6000_BTI_ptr_double,
+  RS6000_BTI_ptr_long_double,
+  RS6000_BTI_ptr_dfloat64,
+  RS6000_BTI_ptr_dfloat128,
+  RS6000_BTI_ptr_ieee128_float,
+  RS6000_BTI_ptr_ibm128_float,
+  RS6000_BTI_ptr_vector_pair,
+  RS6000_BTI_ptr_vector_quad,
+  RS6000_BTI_ptr_long_long,
+  RS6000_BTI_ptr_long_long_unsigned,
   RS6000_BTI_MAX
 };
 
@@ -2517,6 +2558,47 @@ enum rs6000_builtin_type_index
 #define vector_pair_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_pair])
 #define vector_quad_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_quad])
 #define pcvoid_type_node		 (rs6000_builtin_types[RS6000_BTI_const_ptr_void])
+#define ptr_V16QI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V16QI])
+#define ptr_V1TI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V1TI])
+#define ptr_V2DI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V2DI])
+#define ptr_V2DF_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V2DF])
+#define ptr_V4SI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V4SI])
+#define ptr_V4SF_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V4SF])
+#define ptr_V8HI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V8HI])
+#define ptr_unsigned_V16QI_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_unsigned_V16QI])
+#define ptr_unsigned_V1TI_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_unsigned_V1TI])
+#define ptr_unsigned_V8HI_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_unsigned_V8HI])
+#define ptr_unsigned_V4SI_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_unsigned_V4SI])
+#define ptr_unsigned_V2DI_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_unsigned_V2DI])
+#define ptr_bool_V16QI_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_bool_V16QI])
+#define ptr_bool_V8HI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_bool_V8HI])
+#define ptr_bool_V4SI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_bool_V4SI])
+#define ptr_bool_V2DI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_bool_V2DI])
+#define ptr_bool_V1TI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_bool_V1TI])
+#define ptr_pixel_V8HI_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_pixel_V8HI])
+#define ptr_intQI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_INTQI])
+#define ptr_uintQI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_UINTQI])
+#define ptr_intHI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_INTHI])
+#define ptr_uintHI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_UINTHI])
+#define ptr_intSI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_INTSI])
+#define ptr_uintSI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_UINTSI])
+#define ptr_intDI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_INTDI])
+#define ptr_uintDI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_UINTDI])
+#define ptr_intTI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_INTTI])
+#define ptr_uintTI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_UINTTI])
+#define ptr_long_integer_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_long_integer])
+#define ptr_long_unsigned_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_long_unsigned])
+#define ptr_float_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_float])
+#define ptr_double_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_double])
+#define ptr_long_double_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_long_double])
+#define ptr_dfloat64_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_dfloat64])
+#define ptr_dfloat128_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_dfloat128])
+#define ptr_ieee128_float_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_ieee128_float])
+#define ptr_ibm128_float_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_ibm128_float])
+#define ptr_vector_pair_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_vector_pair])
+#define ptr_vector_quad_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_vector_quad])
+#define ptr_long_long_integer_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_long_long])
+#define ptr_long_long_unsigned_type_node (rs6000_builtin_types[RS6000_BTI_ptr_long_long_unsigned])
 
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
