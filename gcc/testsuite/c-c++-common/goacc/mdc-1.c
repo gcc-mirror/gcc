@@ -5,6 +5,8 @@
    { dg-do compile { target { lp64 || llp64 } } } */
 /* { dg-additional-options "-fdump-tree-omplower" } */
 
+/* { dg-additional-options -Wuninitialized } */
+
 void
 t1 ()
 {
@@ -13,10 +15,12 @@ t1 ()
   } s;
 
   int *a, *z;
+  /* { dg-note {'z' was declared here} {} { target *-*-* } .-1 } */
 
 #pragma acc enter data copyin(s)
   {
 #pragma acc data copy(s.a[0:10]) copy(z[0:10])
+    /* { dg-warning {'z' is used uninitialized} {} { target *-*-* } .-1 } */
     {
       s.e = z;
 #pragma acc parallel loop attach(s.e)

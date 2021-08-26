@@ -2,6 +2,8 @@
 
 /* See also 'gfortran.dg/goacc/nested-reductions-2-routine.f90'. */
 
+/* { dg-additional-options -Wuninitialized } */
+
 #pragma acc routine gang
 void acc_routine (void)
 {
@@ -10,6 +12,7 @@ void acc_routine (void)
   {
     /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop reduction(+:sum)
+    /* { dg-warning {'sum' is used uninitialized} {} { target *-*-* } .-1 } */
     for (i = 0; i < 10; i++)
       #pragma acc loop // { dg-warning "nested loop in reduction needs reduction clause for .sum." }
       for (j = 0; j < 10; j++)
@@ -83,6 +86,7 @@ void acc_routine (void)
 
     /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop reduction(+:sum) reduction(-:diff)
+    /* { dg-warning {'diff' is used uninitialized} {} { target *-*-* } .-1 } */
     for (i = 0; i < 10; i++)
       {
         #pragma acc loop reduction(-:diff) // { dg-warning "nested loop in reduction needs reduction clause for .sum." }

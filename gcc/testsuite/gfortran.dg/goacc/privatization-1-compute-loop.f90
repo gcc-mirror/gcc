@@ -4,6 +4,8 @@
 ! { dg-additional-options "--param=openacc-privatization=noisy" } for
 ! testing/documenting aspects of that functionality.
 
+! { dg-additional-options -Wuninitialized }
+
 ! See also '../../c-c++-common/goacc/privatization-1-compute-loop.c'.
 !TODO More cases should be added here.
 
@@ -38,6 +40,7 @@ contains
           ! (See C/C++ example.)
 
           a = g (i, j, a, c)
+          ! { dg-warning {'a' is used uninitialized} TODO { xfail *-*-* } .-1 }
           x = a
           !$acc atomic write
           y = a
