@@ -7955,7 +7955,7 @@ rs6000_slow_unaligned_access (machine_mode mode, unsigned int align)
 unsigned int
 rs6000_special_adjust_field_align (tree type, unsigned int computed)
 {
-  if (computed <= 32)
+  if (computed <= 32 || TYPE_PACKED (type))
     return computed;
 
   /* Strip initial arrays.  */
