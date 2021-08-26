@@ -322,6 +322,20 @@ struct GTY((user)) modref_ref_node
     every_access = true;
   }
 
+  /* Verify that list does not contain redundant accesses.  */
+  void verify ()
+  {
+    size_t i, i2;
+    modref_access_node *a, *a2;
+
+    FOR_EACH_VEC_SAFE_ELT (accesses, i, a)
+      {
+	FOR_EACH_VEC_SAFE_ELT (accesses, i2, a2)
+	  if (i != i2)
+	    gcc_assert (!a->contains (*a2));
+      }
+  }
+
   /* Insert access with OFFSET and SIZE.
      Collapse tree if it has more than MAX_ACCESSES entries.
      If RECORD_ADJUSTMENTs is true avoid too many interval extensions.
@@ -336,6 +350,9 @@ struct GTY((user)) modref_ref_node
     /* Otherwise, insert a node for the ref of the access under the base.  */
     size_t i;
     modref_access_node *a2;
+
+    if (flag_checking)
+      verify ();
 
     if (!a.useful_p ())
       {
@@ -392,13 +409,15 @@ private:
     size_t i;
 
     FOR_EACH_VEC_SAFE_ELT (accesses, i, a2)
-      if (i != index)
-	if ((*accesses)[index].contains (*a2)
-	    || (*accesses)[index].merge (*a2, false))
+      if (i != index
+	  && ((*accesses)[index].contains (*a2)
+	      || (*accesses)[index].merge (*a2, false)))
 	{
-	  if (index == accesses->length () - 1)
-	    index = i;
 	  accesses->unordered_remove (i);
+	  if (index == accesses->length ())
+	    index = i;
+	  else
+	    i--;
 	}
   }
 };
