@@ -296,17 +296,7 @@ struct loongarch_cpu_info
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
-#define DBX_DEBUGGING_INFO 1 /* generate stabs (OSF/rose) */
 #define DWARF2_DEBUGGING_INFO 1 /* dwarf2 debugging info  */
-
-/* FIXME: ???
-   On Sun 4, this limit is 2048.  We use 1500 to be safe,
-   since the length can run past this up to a continuation point.  */
-#undef DBX_CONTIN_LENGTH
-#define DBX_CONTIN_LENGTH 1500
-
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) loongarch_dbx_regno[REGNO]
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
 #define DWARF_FRAME_REGNUM(REGNO) loongarch_dwarf_regno[REGNO]
@@ -330,17 +320,6 @@ struct loongarch_cpu_info
    SFmode register saves.  */
 #define DWARF_CIE_DATA_ALIGNMENT -4
 
-/* A C expression that returns the integer offset value for an automatic
-   variable having address x (an RTL expression). The default computation
-   assumes that x is based on the frame-pointer and gives the offset from
-   the frame-pointer. This is required for targets that produce debugging
-   output for DBX and allow the frame-pointer to be eliminated when the
-   '-g' option is used.  */
-
-#define DEBUGGER_AUTO_OFFSET(X) \
-  loongarch_debugger_offset (X, (HOST_WIDE_INT) 0)
-#define DEBUGGER_ARG_OFFSET(OFFSET, X) \
-  loongarch_debugger_offset (X, (HOST_WIDE_INT) OFFSET)
 
 /* Target machine storage layout.  */
 
@@ -561,12 +540,10 @@ struct loongarch_cpu_info
 #define GP_REG_FIRST 0
 #define GP_REG_LAST 31
 #define GP_REG_NUM (GP_REG_LAST - GP_REG_FIRST + 1)
-#define GP_DBX_FIRST 0
 
 #define FP_REG_FIRST 32
 #define FP_REG_LAST 63
 #define FP_REG_NUM (FP_REG_LAST - FP_REG_FIRST + 1)
-#define FP_DBX_FIRST ((write_symbols == DBX_DEBUG) ? 38 : 32)
 
 /* The DWARF 2 CFA column which tracks the return address from a
    signal handler context.  This means that to maintain backwards
@@ -1359,7 +1336,6 @@ typedef struct loongarch_args
 
 #ifndef USED_FOR_TARGET
 extern const enum reg_class loongarch_regno_to_class[];
-extern int loongarch_dbx_regno[];
 extern int loongarch_dwarf_regno[];
 extern enum processor loongarch_arch; /* Which cpu to codegen for.  */
 extern enum processor loongarch_tune; /* Which cpu to schedule for.  */

@@ -206,7 +206,6 @@ struct loongarch_rtx_cost_data
 static unsigned int loongarch_small_data_threshold;
 
 /* Arrays that map GCC register numbers to debugger register numbers.  */
-int loongarch_dbx_regno[FIRST_PSEUDO_REGISTER];
 int loongarch_dwarf_regno[FIRST_PSEUDO_REGISTER];
 
 /* The current instruction-set architecture.  */
@@ -6217,7 +6216,7 @@ static void
 loongarch_option_override_internal (struct gcc_options *opts,
 				    struct gcc_options *opts_set)
 {
-  int i, start, regno, mode;
+  int i, regno, mode;
 
   /* Set the small data limit.  */
   loongarch_small_data_threshold = (global_options_set.x_g_switch_value
@@ -6275,20 +6274,11 @@ loongarch_option_override_internal (struct gcc_options *opts,
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      loongarch_dbx_regno[i] = IGNORED_DWARF_REGNUM;
       if (GP_REG_P (i) || FP_REG_P (i))
 	loongarch_dwarf_regno[i] = i;
       else
 	loongarch_dwarf_regno[i] = INVALID_REGNUM;
     }
-
-  start = GP_DBX_FIRST - GP_REG_FIRST;
-  for (i = GP_REG_FIRST; i <= GP_REG_LAST; i++)
-    loongarch_dbx_regno[i] = i + start;
-
-  start = FP_DBX_FIRST - FP_REG_FIRST;
-  for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)
-    loongarch_dbx_regno[i] = i + start;
 
   /* Set up loongarch_hard_regno_mode_ok.  */
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
