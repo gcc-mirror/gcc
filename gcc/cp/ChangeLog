@@ -1,3 +1,15 @@
+2021-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR c++/66590
+	* cp-objcp-common.c (cxx_block_may_fallthru): Handle
+	CLEANUP_STMT for the case which will be try/finally.
+
+2021-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102019
+	* init.c (build_value_init_noctor): Ignore unnamed zero-width
+	bitfields.
+
 2021-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_num_tasks,

@@ -1,3 +1,90 @@
+2021-08-25  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp1.c: Add -details to dump option.
+	* gcc.dg/tree-ssa/evrp2.c: Same.
+	* gcc.dg/tree-ssa/evrp3.c: Same.
+	* gcc.dg/tree-ssa/evrp4.c: Same.
+	* gcc.dg/tree-ssa/evrp6.c: Same.
+	* gcc.dg/tree-ssa/pr64130.c: Same.
+
+2021-08-25  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/94630
+	* gcc.target/powerpc/pr70117.c: Specify that we need the long double
+	type to be IBM 128-bit.  Remove the code to use __ibm128.
+	* c-c++-common/dfp/convert-bfp-11.c: Specify that we need the long
+	double type to be IBM 128-bit.  Run the test at -O2 optimization.
+	* lib/target-supports.exp (add_options_for_long_double_ibm128): New
+	function.
+	(check_effective_target_long_double_ibm128): New function.
+	(add_options_for_long_double_ieee128): New function.
+	(check_effective_target_long_double_ieee128): New function.
+	(add_options_for_long_double_64bit): New function.
+	(check_effective_target_long_double_64bit): New function.
+
+2021-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR c++/66590
+	* g++.dg/warn/Wreturn-5.C: New test.
+
+2021-08-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/modref-1.c: Update testcase.
+	* gcc.dg/tree-ssa/modref-4.c: Update testcase.
+	* gcc.dg/tree-ssa/modref-8.c: New test.
+
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* gcc.dg/diagnostic-input-charset-1.c: New test.
+	* gcc.dg/diagnostic-input-utf8-bom.c: New test.
+
+2021-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102046
+	* gcc.dg/vect/pr102046.c: New testcase.
+
+2021-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/101716
+	* gcc.target/i386/pr101716.c: New test.
+
+2021-08-25  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/101145
+	* gcc.dg/vect/pr101145.c: New test.
+	* gcc.dg/vect/pr101145.inc: New test.
+	* gcc.dg/vect/pr101145_1.c: New test.
+	* gcc.dg/vect/pr101145_2.c: New test.
+	* gcc.dg/vect/pr101145_3.c: New test.
+	* gcc.dg/vect/pr101145inf.c: New test.
+	* gcc.dg/vect/pr101145inf.inc: New test.
+	* gcc.dg/vect/pr101145inf_1.c: New test.
+
+2021-08-25  konglin1  <lingling.kong@intel.com>
+
+	PR target/101471
+	* gcc.target/i386/avx512f-pr101471.c: New test.
+
+2021-08-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/unpack-vectorize-1.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-1.h: New test.
+	* gcc.target/powerpc/unpack-vectorize-2.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-2.h: New test.
+	* gcc.target/powerpc/unpack-vectorize-3.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-3.h: New test.
+	* gcc.target/powerpc/unpack-vectorize-run-1.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-run-2.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-run-3.c: New test.
+	* gcc.target/powerpc/unpack-vectorize.h: New test.
+
+2021-08-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101989
+	* gcc.target/i386/avx2-shiftqihi-constant-1.c: Add -mno-avx512f.
+	* gcc.target/i386/sse2-shiftqihi-constant-1.c: Add -mno-avx
+
 2021-08-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/98411

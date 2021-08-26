@@ -1,3 +1,9 @@
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* cpp.c (gfc_cpp_post_options): Call new function
+	diagnostic_initialize_input_context().
+
 2021-08-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/98411

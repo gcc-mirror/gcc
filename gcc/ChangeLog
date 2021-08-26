@@ -1,3 +1,124 @@
+2021-08-25  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-range-cache.cc (ssa_global_cache::dump): Avoid printing
+	range table header alone.
+	* gimple-range.cc (gimple_ranger::export_global_ranges): Same.
+
+2021-08-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi: Document --param modref-max-adjustments.
+	* ipa-modref-tree.c (test_insert_search_collapse): Update.
+	(test_merge): Update.
+	* ipa-modref-tree.h (struct modref_access_node): Add adjustments;
+	(modref_access_node::operator==): Fix handling of access ranges.
+	(modref_access_node::contains): Constify parameter; handle also
+	mismatched parm offsets.
+	(modref_access_node::update): New function.
+	(modref_access_node::merge): New function.
+	(unspecified_modref_access_node): Update constructor.
+	(modref_ref_node::insert_access): Add record_adjustments parameter;
+	handle merging.
+	(modref_ref_node::try_merge_with): New private function.
+	(modref_tree::insert): New record_adjustments parameter.
+	(modref_tree::merge): New record_adjustments parameter.
+	(modref_tree::copy_from): Update.
+	* ipa-modref.c (dump_access): Dump adjustments field.
+	(get_access): Update constructor.
+	(record_access): Update call of insert.
+	(record_access_lto): Update call of insert.
+	(merge_call_side_effects): Add record_adjustments parameter.
+	(get_access_for_fnspec): Update.
+	(process_fnspec): Update.
+	(analyze_call): Update.
+	(analyze_function): Update.
+	(read_modref_records): Update.
+	(ipa_merge_modref_summary_after_inlining): Update.
+	(propagate_unknown_call): Update.
+	(modref_propagate_in_scc): Update.
+	* params.opt (param-max-modref-adjustments=): New.
+
+2021-08-25  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/vsx.md (UNSPEC_XXSPLTIDP): Rename from
+	UNSPEC_XXSPLTID.
+	(xxspltiw_v4si): Use vecperm type attribute.
+	(xxspltiw_v4si_inst): Use vecperm type attribute.
+	(xxspltiw_v4sf_inst): Likewise.
+	(xxspltidp_v2df): Use vecperm type attribute.  Use
+	UNSPEC_XXSPLTIDP instead of UNSPEC_XXSPLTID.
+	(xxspltidp_v2df_inst): Likewise.
+	(xxsplti32dx_v4si): Use vecperm type attribute.
+	(xxsplti32dx_v4si_inst): Likewise.
+	(xxsplti32dx_v4sf_inst): Likewise.
+	(xxblend_<mode>): Likewise.
+	(xxpermx): Likewise.
+	(xxpermx_inst): Likewise.
+	(xxeval): Likewise.
+
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* coretypes.h (typedef diagnostic_input_charset_callback): Declare.
+	* diagnostic.c (diagnostic_initialize_input_context): New function.
+	* diagnostic.h (diagnostic_initialize_input_context): Declare.
+	* input.c (default_charset_callback): New function.
+	(file_cache::initialize_input_context): New function.
+	(file_cache_slot::create): Added ability to convert the input
+	according to the input context.
+	(file_cache::file_cache): Initialize the new input context.
+	(class file_cache_slot): Added new m_alloc_offset member.
+	(file_cache_slot::file_cache_slot): Initialize the new member.
+	(file_cache_slot::~file_cache_slot): Handle potentially offset buffer.
+	(file_cache_slot::maybe_grow): Likewise.
+	(file_cache_slot::needs_read_p): Handle NULL fp, which is now possible.
+	(file_cache_slot::get_next_line): Likewise.
+	* input.h (class file_cache): Added input context member.
+
+2021-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102046
+	* tree-vect-slp.c (vect_build_slp_tree_2): Conservatively
+	update ->any_pattern when swapping operands.
+
+2021-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/101716
+	* config/i386/i386.c (ix86_live_on_entry): Adjust comment.
+	(ix86_decompose_address): Remove retval check for ASHIFT,
+	allow non-canonical zero extend if AND mask covers ASHIFT
+	count.
+	(ix86_legitimate_address_p): Adjust condition for decompose.
+	(ix86_rtx_costs): Adjust cost for lea with non-canonical
+	zero-extend.
+	Co-Authored by: Uros Bizjak <ubizjak@gmail.com>
+
+2021-08-25  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/101145
+	* tree-ssa-loop-niter.c (number_of_iterations_until_wrap):
+	New function.
+	(number_of_iterations_lt): Invoke above function.
+	(adjust_cond_for_loop_until_wrap):
+	Merge to number_of_iterations_until_wrap.
+	(number_of_iterations_cond): Update invokes for
+	adjust_cond_for_loop_until_wrap and number_of_iterations_lt.
+
+2021-08-25  konglin1  <lingling.kong@intel.com>
+
+	PR target/101471
+	* config/i386/avx512dqintrin.h (_mm512_fpclass_ps_mask): Fix
+	macro define in O0.
+	(_mm512_mask_fpclass_ps_mask): Ditto.
+
+2021-08-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/altivec.md (vec_unpacku_hi_v16qi): Remove.
+	(vec_unpacku_hi_v8hi): Likewise.
+	(vec_unpacku_lo_v16qi): Likewise.
+	(vec_unpacku_lo_v8hi): Likewise.
+	(vec_unpacku_hi_<VP_small_lc>): New define_expand.
+	(vec_unpacku_lo_<VP_small_lc>): Likewise.
+
 2021-08-24  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix.h (SYSTEM_IMPLICIT_EXTERN_C): Delete.
