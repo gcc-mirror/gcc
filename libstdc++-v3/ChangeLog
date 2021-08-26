@@ -1,3 +1,44 @@
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Check 'sz'.
+
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Adjust for Windows.
+
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/valarray: Uglify 'func' parameters.
+	* testsuite/17_intro/names.cc: Add 'func' to checks.
+
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102064
+	* include/bits/stl_uninitialized.h (_GLIBCXX_USE_ASSIGN_FOR_INIT):
+	Define macro to check conditions for optimizing trivial cases.
+	(__check_constructible): New function to do static assert.
+	(uninitialized_copy, uninitialized_fill, uninitialized_fill_n):
+	Use new macro.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/1.cc:
+	Adjust dg-error pattern.
+	* testsuite/23_containers/vector/cons/89164.cc: Likewise. Add
+	C++17-specific checks from 89164_c++17.cc.
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: Removed.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/102064.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/102064.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/102064.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/102064.cc:
+	New test.
+
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102048
+	* include/ext/rope (rope::erase(size_type)): Remove broken
+	function.
+
 2021-08-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Update table.

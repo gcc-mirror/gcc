@@ -174,24 +174,28 @@ void test_option_types()
 
 void test_constants()
 {
-#if __has_include(<sys/socket.h>)
   static_assert( is_enum<S::shutdown_type>::value, "" );
+#if __has_include(<sys/socket.h>) && defined SHUT_RDWR
   static_assert( S::shutdown_receive != S::shutdown_send, "" );
   static_assert( S::shutdown_receive != S::shutdown_both, "" );
   static_assert( S::shutdown_send != S::shutdown_both, "" );
+#endif
 
   static_assert( is_enum<S::wait_type>::value, "" );
+#if __has_include(<poll.h>) && defined POLLIN
   static_assert( S::wait_read != S::wait_write, "");
   static_assert( S::wait_read != S::wait_error, "");
   static_assert( S::wait_write != S::wait_error, "");
+#endif
 
+  static_assert( is_enum<S::message_flags>::value, "" );
+#if __has_include(<sys/socket.h>) && defined MSG_OOB
   static_assert( __gnu_test::test_bitmask_values(
 	{S::message_peek, S::message_out_of_band, S::message_do_not_route}
 	), "each bitmask element is distinct" );
-
-  auto m = &S::max_listen_connections;
-  static_assert( is_same<decltype(m), const int*>::value, "" );
 #endif
+
+  static_assert( is_same<decltype(S::max_listen_connections), const int>::value, "" );
 }
 
 int main()

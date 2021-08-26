@@ -61,6 +61,10 @@
 # include <netdb.h>		// getaddrinfo etc.
 #endif
 
+#if defined _WIN32 && __has_include(<ws2tcpip.h>)
+# include <ws2tcpip.h>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -263,7 +267,11 @@ namespace ip
     _S_ntoh_32(uint32_t __n) { return __builtin_bswap32(__n); }
 #endif
 
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     in_addr_t _M_addr; // network byte order
+#else
+    uint32_t _M_addr;
+#endif
   };
 
   /// An IPv6 address.
@@ -705,7 +713,7 @@ namespace ip
   inline address_v4
   make_address_v4(string_view __str, error_code& __ec) noexcept
   {
-    char __buf[INET_ADDRSTRLEN];
+    char __buf[16]; // INET_ADDRSTRLEN isn't defined on Windows
     auto __len = __str.copy(__buf, sizeof(__buf));
     if (__len == sizeof(__buf))
       {
@@ -1686,9 +1694,15 @@ namespace ip
 #ifdef AI_NUMERICSERV
     static constexpr flags numeric_service	= (flags)AI_NUMERICSERV;
 #endif
+#ifdef AI_V4MAPPED
     static constexpr flags v4_mapped		= (flags)AI_V4MAPPED;
+#endif
+#ifdef AI_ALL
     static constexpr flags all_matching		= (flags)AI_ALL;
+#endif
+#ifdef AI_ADDRCONFIG
     static constexpr flags address_configured	= (flags)AI_ADDRCONFIG;
+#endif
 
     friend constexpr flags
     operator&(flags __f1, flags __f2) noexcept

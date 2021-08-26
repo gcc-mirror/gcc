@@ -106,7 +106,9 @@
 #endif
 #define z (
 
+#define func (
 #define tmp (
+#define sz (
 
 #if __cplusplus < 201103L
 #define uses_allocator  (
@@ -285,5 +287,15 @@
 #endif // VxWorks Major >= 7
 
 #endif // __VXWORKS__
+
+#ifdef _WIN32
+#undef Value
+// <stdlib.h> defines _CRT_FLOAT::f
+#undef f
+// <stdlib.h> defines _CRT_DOUBLE::x and _LONGDOUBLE::x
+#undef x
+// <math.h> defines _complex::x and _complex::y
+#undef y
+#endif
 
 #include <bits/stdc++.h>

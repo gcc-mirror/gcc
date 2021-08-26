@@ -1,3 +1,9 @@
+2021-08-25  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/101980
+	* engine.cc (exploded_graph::maybe_create_dynamic_call): Don't create
+	calls if max recursion limit is reached.
+
 2021-08-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.h (struct rejected_constraint): Convert to...

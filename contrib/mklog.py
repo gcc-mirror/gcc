@@ -148,6 +148,13 @@ def append_changelog_line(out, relative_path, text):
     return out
 
 
+def get_rel_path_if_prefixed(path, folder):
+    if path.startswith(folder):
+        return path[len(folder):].lstrip('/')
+    else:
+        return path
+
+
 def generate_changelog(data, no_functions=False, fill_pr_titles=False,
                        additional_prs=None):
     changelogs = {}
@@ -228,7 +235,7 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
         for file in sorted(files, key=sort_changelog_files):
             assert file.path.startswith(changelog)
             in_tests = 'testsuite' in changelog or 'testsuite' in file.path
-            relative_path = file.path[len(changelog):].lstrip('/')
+            relative_path = get_rel_path_if_prefixed(file.path, changelog)
             functions = []
             if file.is_added_file:
                 msg = 'New test.' if in_tests else 'New file.'
@@ -236,13 +243,17 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
             elif file.is_removed_file:
                 out = append_changelog_line(out, relative_path, 'Removed.')
             elif hasattr(file, 'is_rename') and file.is_rename:
-                out = append_changelog_line(out, relative_path, 'Moved to...')
-                new_path = file.target_file[2:]
                 # A file can be theoretically moved to a location that
                 # belongs to a different ChangeLog.  Let user fix it.
-                if new_path.startswith(changelog):
-                    new_path = new_path[len(changelog):].lstrip('/')
-                out += '\t* %s: ...here.\n' % (new_path)
+                #
+                # Since unidiff 0.7.0, path.file == path.target_file[2:],
+                # it used to be path.source_file[2:]
+                relative_path = get_rel_path_if_prefixed(file.source_file[2:],
+                                                         changelog)
+                out = append_changelog_line(out, relative_path, 'Moved to...')
+                new_path = get_rel_path_if_prefixed(file.target_file[2:],
+                                                    changelog)
+                out += f'\t* {new_path}: ...here.\n'
             elif os.path.basename(file.path) in generated_files:
                 out += '\t* %s: Regenerate.\n' % (relative_path)
                 append_changelog_line(out, relative_path, 'Regenerate.')
