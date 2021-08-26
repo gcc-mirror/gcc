@@ -1,3 +1,8 @@
+2021-08-25  konglin1  <lingling.kong@intel.com>
+
+	PR target/101471
+	* gcc.target/i386/avx512f-pr101471.c: New test.
+
 2021-08-23  Christophe Lyon  <christophe.lyon@foss.st.com>
 
 	Backported from master:

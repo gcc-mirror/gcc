@@ -1,3 +1,10 @@
+2021-08-25  konglin1  <lingling.kong@intel.com>
+
+	PR target/101471
+	* config/i386/avx512dqintrin.h (_mm512_fpclass_ps_mask): Fix
+	macro define in O0.
+	(_mm512_mask_fpclass_ps_mask): Ditto.
+
 2021-08-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
