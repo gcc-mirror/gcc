@@ -422,6 +422,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	function(_Functor __f)
 	: _Function_base()
 	{
+	  static_assert(is_copy_constructible<_Functor>::value,
+	      "std::function target must be copy-constructible");
+	  static_assert(is_constructible<_Functor, _Functor>::value,
+	      "std::function target must be constructible from the "
+	      "constructor argument");
+
 	  using _My_handler = _Function_handler<_Res(_ArgTypes...), _Functor>;
 
 	  if (_My_handler::_M_not_empty_function(__f))
