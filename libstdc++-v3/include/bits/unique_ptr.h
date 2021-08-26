@@ -1027,8 +1027,8 @@ namespace __detail
    */
   template<typename _Tp>
     inline __detail::__unique_ptr_array_t<_Tp>
-    make_unique_for_overwrite(size_t __n)
-    { return unique_ptr<_Tp>(new remove_extent_t<_Tp>[__n]); }
+    make_unique_for_overwrite(size_t __num)
+    { return unique_ptr<_Tp>(new remove_extent_t<_Tp>[__num]); }
 
   /** Disable std::make_unique_for_overwrite for arrays of known bound.
    *  @tparam _Tp An array type of known bound, such as `U[N]`.
