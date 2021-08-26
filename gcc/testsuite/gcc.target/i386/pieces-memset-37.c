@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-avx512f -mavx2 -mtune=generic" } */
+/* { dg-options "-O2 -mno-avx512f -mavx2 -mtune-ctrl=avx256_store_by_pieces" } */
 
 void
 foo (int a1, int a2, int a3, int a4, int a5, int a6, int x, char *dst)
