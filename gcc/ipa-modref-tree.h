@@ -405,20 +405,35 @@ private:
   void
   try_merge_with (size_t index)
   {
-    modref_access_node *a2;
     size_t i;
 
-    FOR_EACH_VEC_SAFE_ELT (accesses, i, a2)
-      if (i != index
-	  && ((*accesses)[index].contains (*a2)
-	      || (*accesses)[index].merge (*a2, false)))
+    for (i = 0; i < accesses->length ();)
+      if (i != index)
 	{
-	  accesses->unordered_remove (i);
-	  if (index == accesses->length ())
-	    index = i;
+	  bool found = false, restart = false;
+	  modref_access_node *a = &(*accesses)[i];
+	  modref_access_node *n = &(*accesses)[index];
+
+	  if (n->contains (*a))
+	    found = true;
+	  if (!found && n->merge (*a, false))
+	    found = restart = true;
+	  if (found)
+	    {
+	      accesses->unordered_remove (i);
+	      if (index == accesses->length ())
+		{
+		  index = i;
+		  i++;
+		}
+	      if (restart)
+		i = 0;
+	    }
 	  else
-	    i--;
+	    i++;
 	}
+      else
+	i++;
   }
 };
 
