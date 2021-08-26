@@ -14318,10 +14318,10 @@
 		(match_dup 2)))]
   "TARGET_SSE"
 {
+  operands[2] = CONSTM1_RTX (<MODE>mode);
+
   if (!TARGET_AVX512F)
-    operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
-  else
-    operands[2] = CONSTM1_RTX (<MODE>mode);
+    operands[2] = force_reg (<MODE>mode, operands[2]);
 })
 
 (define_insn "<mask_codefor>one_cmpl<mode>2<mask_name>"
