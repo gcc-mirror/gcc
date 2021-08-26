@@ -29,8 +29,12 @@ void exit  (int);
 
 void abort (int i)
 {
+  while (1)
+    ;
 }
 
 void exit (int i)
 {
+  while (1)
+    ;
 }

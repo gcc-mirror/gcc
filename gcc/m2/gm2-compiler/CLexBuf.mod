@@ -621,7 +621,6 @@ END DisplayToken ;
 
 PROCEDURE GetToken ;
 VAR
-   a: ADDRESS ;
    t: CARDINAL ;
    b: TokenBucket ;
    l: CARDINAL ;
@@ -648,7 +647,7 @@ BEGIN
    ELSE
       IF ListOfTokens.tail=NIL
       THEN
-         a := cflex.GetToken() ;
+         cflex.AdvanceToken ;
          IF ListOfTokens.tail=NIL
          THEN
             HALT
@@ -685,7 +684,7 @@ BEGIN
                END ;
                INC(CurrentTokNo)
             ELSE
-               a := cflex.GetToken() ;
+               cflex.AdvanceToken ;
                GetToken ;
                (* printf0('\n'); cflex.CError(string(InitString('current token'))) ; *)
             END
@@ -903,8 +902,6 @@ END GetFileName ;
 
 PROCEDURE AddTokToList (t: toktype; n: Name;
                         i: INTEGER; l: CARDINAL; f: SourceList) ;
-VAR
-   b: TokenBucket ;
 BEGIN
    IF ListOfTokens.head=NIL
    THEN
@@ -948,7 +945,6 @@ END AddTokToList ;
 
 PROCEDURE IsLastTokenEof () : BOOLEAN ;
 VAR
-   t: CARDINAL ;
    b: TokenBucket ;
 BEGIN
    IF ListOfTokens.tail#NIL

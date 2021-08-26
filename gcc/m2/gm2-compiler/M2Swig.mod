@@ -369,7 +369,7 @@ END TryDependents ;
    DoResolveOrder - resolves the declaration order for swig (C).
 *)
 
-PROCEDURE DoResolveOrder (main: CARDINAL) ;
+PROCEDURE DoResolveOrder ;
 VAR
    sym,
    i, n    : CARDINAL ;
@@ -589,7 +589,7 @@ END DoBasicBlock ;
    DetermineParameter -
 *)
 
-PROCEDURE DetermineParameter (procedure, param: CARDINAL; annotate: BOOLEAN) ;
+PROCEDURE DetermineParameter (procedure, param: CARDINAL) ;
 VAR
    sb: ScopeBlock ;
    bb: BasicBlock ;
@@ -643,7 +643,7 @@ BEGIN
    THEN
       InternalError ('why did we get here')
    ELSE
-      DetermineParameter(procedure, sym, annotate) ;
+      DetermineParameter(procedure, sym) ;
       IF annotate
       THEN
          DoParamName(sym) ;
@@ -931,14 +931,14 @@ END DoWriteFile ;
 PROCEDURE DoGenerateSwig (sym: CARDINAL) ;
 BEGIN
    Init ;
-   name := ConCat(InitStringCharStar(KeyToCharStar(GetSymName(sym))),
-                  Mark(InitString('.i'))) ;
-   f := OpenToWrite(name) ;
-   ForeachExportedDo(sym, DoExported) ;
-   DoResolveOrder(sym) ;
-   DoWriteFile(sym) ;
-   Close(f) ;
-   name := KillString(name) ;
+   name := ConCat (InitStringCharStar (KeyToCharStar (GetSymName (sym))),
+                   Mark (InitString ('.i'))) ;
+   f := OpenToWrite (name) ;
+   ForeachExportedDo (sym, DoExported) ;
+   DoResolveOrder ;
+   DoWriteFile (sym) ;
+   Close (f) ;
+   name := KillString (name) ;
    Kill
 END DoGenerateSwig ;
 

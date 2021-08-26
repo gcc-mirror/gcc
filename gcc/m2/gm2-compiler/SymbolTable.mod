@@ -47,7 +47,7 @@ FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3, MetaErrors1,
                         MetaErrorT0,
                         MetaErrorString1,
                         MetaErrorStringT0, MetaErrorStringT1,
-                        MetaErrorT1 ;
+                        MetaErrorT1, MetaErrorT2 ;
 
 FROM M2LexBuf IMPORT GetTokenNo ;
 FROM FormatStrings IMPORT Sprintf1 ;
@@ -1114,6 +1114,7 @@ END AlreadyDeclaredError ;
                           the places where the symbols was imported and also declared.
 *)
 
+(*
 PROCEDURE AlreadyImportedError (s: String; name: Name; OtherOccurance: CARDINAL) ;
 VAR
    e: Error ;
@@ -1129,6 +1130,7 @@ BEGIN
       ErrorFormat1(e, 'and symbol (%a) was also seen here', name)
    END
 END AlreadyImportedError ;
+*)
 
 
 (*
@@ -2579,6 +2581,7 @@ END CheckScopeForSym ;
                    a requested symbol.
 *)
 
+(*
 PROCEDURE DisplayScopes ;
 VAR
    pCall: PtrToCallFrame ;
@@ -2606,6 +2609,7 @@ BEGIN
    END ;
    printf0('\n')
 END DisplayScopes ;
+*)
 
 
 (*
@@ -3703,6 +3707,7 @@ END MakeHiddenType ;
                           NulSym is returned if the symbol is unknown.
 *)
 
+(*
 PROCEDURE GetConstFromTypeTree (constName: Name; constType: CARDINAL) : CARDINAL ;
 VAR
    pSym: PtrToSymbol ;
@@ -3726,6 +3731,7 @@ BEGIN
       END
    END
 END GetConstFromTypeTree ;
+*)
 
 
 (*
@@ -3733,6 +3739,7 @@ END GetConstFromTypeTree ;
                           constName is the name of constSym.
 *)
 
+(*
 PROCEDURE PutConstIntoTypeTree (constName: Name; constType: CARDINAL; constSym: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
@@ -3756,7 +3763,7 @@ BEGIN
       END
    END
 END PutConstIntoTypeTree ;
-
+*)
 
 (*
    MakeConstLit - returns a constant literal of type, constType, with a constName,
@@ -6795,6 +6802,7 @@ END IsReallyPointer ;
                     it does skip over hidden type.
 *)
 
+(*
 PROCEDURE SkipHiddenType (Sym: CARDINAL) : CARDINAL ;
 BEGIN
    IF (Sym#NulSym) AND IsType(Sym) AND (GetType(Sym)#NulSym)
@@ -6804,6 +6812,7 @@ BEGIN
       RETURN( Sym )
    END
 END SkipHiddenType ;
+*)
 
 
 (*
@@ -6858,6 +6867,7 @@ END CheckHiddenTypeAreAddress ;
    GetLastMainScopeId - returns the, id, containing the last main scope.
 *)
 
+(*
 PROCEDURE GetLastMainScopeId (id: CARDINAL) : CARDINAL ;
 VAR
    pCall: PtrToCallFrame ;
@@ -6878,6 +6888,7 @@ BEGIN
    END ;
    RETURN( 0 )
 END GetLastMainScopeId ;
+*)
 
 
 (*
@@ -8102,8 +8113,7 @@ END UndeclaredSymbolError ;
 
 PROCEDURE PutExportUnImplemented (tokenno: CARDINAL; Sym: CARDINAL) ;
 VAR
-   pSym  : PtrToSymbol ;
-   n1, n2: Name ;
+   pSym: PtrToSymbol ;
 BEGIN
    pSym := GetPsym (CurrentModule) ;
    WITH pSym^ DO
@@ -8111,10 +8121,14 @@ BEGIN
 
       DefImpSym: IF GetSymKey (DefImp.NeedToBeImplemented, GetSymName (Sym)) = Sym
                  THEN
+                    MetaErrorT2 (tokenno, 'symbol {%1a} is already exported from module {%2a}',
+                                 Sym, CurrentModule)
+                    (*
                     n1 := GetSymName (Sym) ;
                     n2 := GetSymName (CurrentModule) ;
                     WriteFormat2 ('symbol (%a) already exported from module (%a)', n1, n2)
-                ELSE
+                    *)
+                 ELSE
                     PutSymKey (DefImp.NeedToBeImplemented, GetSymName(Sym), Sym)
                  END
 
@@ -13213,6 +13227,7 @@ END GetDefaultRecordFieldAlignment ;
    DumpSymbols - display all symbol numbers and their type.
 *)
 
+(*
 PROCEDURE DumpSymbols ;
 VAR
    pSym: PtrToSymbol ;
@@ -13265,6 +13280,7 @@ BEGIN
       INC (sym)
    END
 END DumpSymbols ;
+*)
 
 
 (*

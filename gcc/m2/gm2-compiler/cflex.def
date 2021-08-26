@@ -31,7 +31,7 @@ DEFINITION MODULE cflex ;
 *)
 
 FROM SYSTEM IMPORT ADDRESS ;
-EXPORT QUALIFIED GetToken, CError, OpenSource, CloseSource, GetLineNo,
+EXPORT QUALIFIED GetToken, AdvanceToken, CError, OpenSource, CloseSource, GetLineNo,
                  ParsingOn, SetSearchPath, AddTypeDef ;
 
 
@@ -55,6 +55,13 @@ PROCEDURE OpenSource (s: ADDRESS) : BOOLEAN ;
 *)
 
 PROCEDURE GetToken () : ADDRESS ;
+
+
+(*
+   AdvanceToken - move onto the next token.
+*)
+
+PROCEDURE AdvanceToken ;
 
 
 (*

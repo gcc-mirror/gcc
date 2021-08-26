@@ -27,6 +27,7 @@ FROM M2Error IMPORT InternalError ;
 FROM Storage IMPORT ALLOCATE, REALLOCATE, DEALLOCATE ;
 FROM libc IMPORT memset, memcpy ;
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
+FROM Assertion IMPORT Assert ;
 
 
 CONST
@@ -68,7 +69,6 @@ VAR
    bits,
    o, j: CARDINAL ;
    b   : PtrToBitset ;
-   a   : ADDRESS ;
    v   : PtrToByte ;
 BEGIN
    WITH s^ DO
@@ -112,8 +112,8 @@ BEGIN
             (* a := memset(b, 0, bytes) ; *)
             v := PtrToByte(b) ;
             INC(v, o) ;
-            a := memset(v, 0, bytes-o) ;
-            a := memcpy(b, pb, o) ;
+            Assert (memset (v, 0, bytes-o) = v) ;
+            Assert (memcpy (b, pb, o) = b) ;
             IF Debugging
             THEN
                printf1("deallocating old bitset size %d bytes\n", o)
@@ -194,13 +194,12 @@ END KillSet ;
 PROCEDURE DuplicateSet (s: Set) : Set ;
 VAR
    t: Set ;
-   a: ADDRESS ;
 BEGIN
    NEW(t) ;
    t^ := s^ ;
    WITH t^ DO
       ALLOCATE(pb, bytes) ;
-      a := memcpy(pb, s^.pb, bytes)
+      Assert (memcpy (pb, s^.pb, bytes) = pb)
    END ;
    RETURN( t )
 END DuplicateSet ;

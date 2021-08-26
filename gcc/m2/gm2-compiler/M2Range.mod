@@ -1948,7 +1948,7 @@ BEGIN
    WITH p^ DO
       IF CaseBoundsResolved(tokenno, caseList)
       THEN
-         IF TypeCaseBounds(tokenno, caseList)
+         IF TypeCaseBounds (caseList)
          THEN
             (* nothing to do *)
          END ;
@@ -1982,7 +1982,7 @@ PROCEDURE CodeCaseBounds (tokenno: CARDINAL; caseList: CARDINAL; function, messa
 BEGIN
    IF CaseBoundsResolved(tokenno, caseList)
    THEN
-      IF TypeCaseBounds(tokenno, caseList)
+      IF TypeCaseBounds (caseList)
       THEN
          (* nothing to do *)
       END ;

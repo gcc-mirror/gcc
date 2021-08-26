@@ -43,27 +43,23 @@ FROM SymbolTable IMPORT NulSym, IsConst, IsFieldVarient, IsRecord, IsRecordField
                         ForeachLocalSymDo, GetSymName, IsEnumeration, SkipType ;
 
 TYPE
-   RangePair = POINTER TO rangePair ;
-   rangePair = RECORD
+   RangePair = POINTER TO RECORD
                   low, high: CARDINAL ;
                   tokenno  : CARDINAL ;
                END ;
 
-   ConflictingPair = POINTER TO conflictingPair ;
-   conflictingPair = RECORD
+   ConflictingPair = POINTER TO RECORD
                         a, b: RangePair ;
                      END ;
 
-   CaseList = POINTER TO caseList ;
-   caseList = RECORD
+   CaseList = POINTER TO RECORD
                  maxRangeId  : CARDINAL ;
                  rangeArray  : Index ;
                  currentRange: RangePair ;
                  varientField: CARDINAL ;
               END ;
 
-   CaseDescriptor = POINTER TO caseDescriptor ;
-   caseDescriptor = RECORD
+   CaseDescriptor = POINTER TO RECORD
                        elseClause   : BOOLEAN ;
                        elseField    : CARDINAL ;
                        record       : CARDINAL ;
@@ -74,8 +70,7 @@ TYPE
                        next         : CaseDescriptor ;
                     END ;
 
-   SetRange = POINTER TO setRange ;
-   setRange = RECORD
+   SetRange = POINTER TO RECORD
                  low, high: Tree ;
                  next     : SetRange ;
               END ;
@@ -373,7 +368,7 @@ END SeenBefore ;
    Overlaps -
 *)
 
-PROCEDURE Overlaps (tokenno: CARDINAL; r, s: RangePair) : BOOLEAN ;
+PROCEDURE Overlaps (r, s: RangePair) : BOOLEAN ;
 VAR
    a, b, c, d: CARDINAL ;
 BEGIN
@@ -389,8 +384,8 @@ BEGIN
          THEN
             IF NOT SeenBefore(r, s)
             THEN
-               MetaErrorT2(r^.tokenno, 'case label {%1ad} is a duplicate with {%2ad}', a, c) ;
-               MetaErrorT2(s^.tokenno, 'case label {%1ad} is a duplicate with {%2ad}', c, a)
+               MetaErrorT2 (r^.tokenno, 'case label {%1ad} is a duplicate with {%2ad}', a, c) ;
+               MetaErrorT2 (s^.tokenno, 'case label {%1ad} is a duplicate with {%2ad}', c, a)
             END ;
             RETURN( TRUE )
          END
@@ -398,10 +393,10 @@ BEGIN
          d := s^.high ;
          IF OverlapsRange(Mod2Gcc(a), Mod2Gcc(b), Mod2Gcc(c), Mod2Gcc(d))
          THEN
-            IF NOT SeenBefore(r, s)
+            IF NOT SeenBefore (r, s)
             THEN
-               MetaErrorT3(r^.tokenno, 'case label {%1ad} is a duplicate in the range {%2ad}..{%3ad}', a, c, d) ;
-               MetaErrorT3(s^.tokenno, 'case range {%2ad}..{%3ad} is a duplicate of case label {%1ad}', c, d, a)
+               MetaErrorT3 (r^.tokenno, 'case label {%1ad} is a duplicate in the range {%2ad}..{%3ad}', a, c, d) ;
+               MetaErrorT3 (s^.tokenno, 'case range {%2ad}..{%3ad} is a duplicate of case label {%1ad}', c, d, a)
             END ;
             RETURN( TRUE )
          END
@@ -411,12 +406,12 @@ BEGIN
       IF s^.high=NulSym
       THEN
          d := c ;
-         IF OverlapsRange(Mod2Gcc(a), Mod2Gcc(b), Mod2Gcc(c), Mod2Gcc(d))
+         IF OverlapsRange (Mod2Gcc(a), Mod2Gcc(b), Mod2Gcc(c), Mod2Gcc(d))
          THEN
             IF NOT SeenBefore(r, s)
             THEN
-               MetaErrorT3(r^.tokenno, 'case range {%1ad}..{%2ad} is a duplicate with case label {%3ad}', a, b, c) ;
-               MetaErrorT3(s^.tokenno, 'case label {%1ad} is a duplicate with case range %{2ad}..{%3ad}', c, a, b)
+               MetaErrorT3 (r^.tokenno, 'case range {%1ad}..{%2ad} is a duplicate with case label {%3ad}', a, b, c) ;
+               MetaErrorT3 (s^.tokenno, 'case label {%1ad} is a duplicate with case range %{2ad}..{%3ad}', c, a, b)
             END ;
             RETURN( TRUE )
          END
@@ -426,8 +421,8 @@ BEGIN
          THEN
             IF NOT SeenBefore(r, s)
             THEN
-               MetaErrorT4(r^.tokenno, 'case range {%1ad}..{%2ad} overlaps case range {%3ad}..{%4ad}', a, b, c, d) ;
-               MetaErrorT4(s^.tokenno, 'case range {%1ad}..{%2ad} overlaps case range {%3ad}..{%4ad}', c, d, a, b)
+               MetaErrorT4 (r^.tokenno, 'case range {%1ad}..{%2ad} overlaps case range {%3ad}..{%4ad}', a, b, c, d) ;
+               MetaErrorT4 (s^.tokenno, 'case range {%1ad}..{%2ad} overlaps case range {%3ad}..{%4ad}', c, d, a, b)
             END ;
             RETURN( TRUE )
          END
@@ -442,7 +437,7 @@ END Overlaps ;
                           case statement, c.
 *)
 
-PROCEDURE OverlappingCaseBound (tokenno: CARDINAL; r: RangePair; c: CARDINAL) : BOOLEAN ;
+PROCEDURE OverlappingCaseBound (r: RangePair; c: CARDINAL) : BOOLEAN ;
 VAR
    p      : CaseDescriptor ;
    q      : CaseList ;
@@ -450,22 +445,22 @@ VAR
    i, j   : CARDINAL ;
    overlap: BOOLEAN ;
 BEGIN
-   p := GetIndice(caseArray, c) ;
+   p := GetIndice (caseArray, c) ;
    overlap := FALSE ;
    WITH p^ DO
       i := 1 ;
       WHILE i<=maxCaseId DO
-         q := GetIndice(caseListArray, i) ;
+         q := GetIndice (caseListArray, i) ;
          j := 1 ;
          WHILE j<=q^.maxRangeId DO
-            s := GetIndice(q^.rangeArray, j) ;
-            IF (s#r) AND Overlaps(tokenno, r, s)
+            s := GetIndice (q^.rangeArray, j) ;
+            IF (s#r) AND Overlaps (r, s)
             THEN
                overlap := TRUE
             END ;
-            INC(j)
+            INC (j)
          END ;
-         INC(i)
+         INC (i)
       END
    END ;
    RETURN( overlap )
@@ -495,7 +490,7 @@ BEGIN
          j := 1 ;
          WHILE j<=q^.maxRangeId DO
             r := GetIndice(q^.rangeArray, j) ;
-            IF OverlappingCaseBound(tokenno, r, c)
+            IF OverlappingCaseBound (r, c)
             THEN
                overlap := TRUE
             END ;
@@ -865,7 +860,7 @@ END inRange ;
                     compatible with the tagged type.
 *)
 
-PROCEDURE TypeCaseBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+PROCEDURE TypeCaseBounds (c: CARDINAL) : BOOLEAN ;
 VAR
    p         : CaseDescriptor ;
    q         : CaseList ;

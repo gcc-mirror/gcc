@@ -140,7 +140,6 @@ TYPE
    CompatibilityArray = ARRAY MetaType, MetaType OF Compatible ;
 
 VAR
-   Param,
    Expr,
    Ass        : CompatibilityArray ;
    Ord,
@@ -1546,6 +1545,8 @@ VAR
    ga, gb: CARDINAL ;
 BEGIN
    i := 1 ;
+   ga := NulSym ;
+   gb := NulSym ;
    REPEAT
       fa := GetNth(a, i) ;
       fb := GetNth(b, i) ;

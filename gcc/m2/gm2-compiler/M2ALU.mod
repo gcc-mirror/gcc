@@ -964,6 +964,16 @@ END Push ;
 
 
 (*
+   Reduce - remove the top element of the stack.
+*)
+
+PROCEDURE Reduce ;
+BEGIN
+   Dispose (Pop ())
+END Reduce ;
+
+
+(*
    PrintValue - debugging procedure to display the value on the top of the stack.
 *)
 
@@ -2971,10 +2981,10 @@ BEGIN
    WHILE i#NIL DO
       PushValue(i^.low) ;
       PrintValue ;
-      t := PopIntegerTree() ;
+      Reduce ;
       PushValue(i^.high) ;
       PrintValue ;
-      t := PopIntegerTree() ;
+      Reduce ;
       i := i^.next
    END
 END DisplayElements ;

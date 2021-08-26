@@ -671,7 +671,7 @@ GM2-COMP-BOOT-DEFS = FifoQueue.def   M2Debug.def     M2Optimize.def  M2Defaults.
                      P0SyntaxCheck.def \
                      P1Build.def     P2Build.def     P3Build.def     PHBuild.def     \
                      M2Printf.def    bnflex.def      M2Quiet.def     M2Preprocess.def \
-                     cflex.def       CLexBuf.def     M2Bitset.def    M2Size.def      \
+                                                     M2Bitset.def    M2Size.def      \
                      M2Scope.def     M2Range.def     M2Swig.def      \
                      M2MetaError.def Sets.def        M2CaseList.def  PCSymBuild.def  \
                      PCBuild.def     M2Const.def     M2DebugStack.def \
@@ -693,7 +693,7 @@ GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
                      SymbolConversion.mod            M2Base.mod      \
                      M2ALU.mod       M2System.mod    Lists.mod       \
                      M2Printf.mod    bnflex.mod      M2Quiet.mod     M2Search.mod    \
-                     M2Preprocess.mod                CLexBuf.mod     M2Bitset.mod    \
+                     M2Preprocess.mod                                M2Bitset.mod    \
                      M2Size.mod      M2Scope.mod     M2Range.mod     \
                      M2Swig.mod      M2MetaError.mod Sets.mod        M2CaseList.mod  \
                      PCSymBuild.mod  M2Const.mod     M2DebugStack.mod \

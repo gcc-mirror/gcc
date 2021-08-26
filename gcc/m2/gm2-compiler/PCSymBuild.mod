@@ -2069,10 +2069,12 @@ END WalkDes ;
                is changed.
 *)
 
+(*
 PROCEDURE WalkConst (sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN( WalkDes(findConstDes(sym)) )
 END WalkConst ;
+*)
 
 
 (*
