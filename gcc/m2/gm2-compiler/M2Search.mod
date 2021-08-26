@@ -24,6 +24,7 @@ IMPLEMENTATION MODULE M2Search ;
 
 FROM SFIO IMPORT Exists ;
 FROM M2FileName IMPORT CalculateFileName ;
+FROM Assertion IMPORT Assert ;
 
 FROM DynamicStrings IMPORT InitString, InitStringChar,
                            KillString, ConCat, ConCatChar, Index, Slice,
@@ -34,12 +35,15 @@ FROM DynamicStrings IMPORT InitString, InitStringChar,
 
 
 CONST
-   Directory    =   '/' ;
+   Directory        =   '/' ;
+   GarbageDebugging = FALSE ;
 
 VAR
    Def, Mod,
    UserPath,
    InitialPath: String ;
+
+(* Internal garbage collection debugging routines.  *)
 
 (*
 #define InitString(X) InitStringDB(X, __FILE__, __LINE__)
@@ -52,27 +56,32 @@ VAR
 
 
 (*
-   doDSdbEnter -
-*)
+   doDSdbEnter - called when compiled with -fcpp to enable runtime garbage
+                 collection debugging.
 
 PROCEDURE doDSdbEnter ;
 BEGIN
    PushAllocation
 END doDSdbEnter ;
+*)
 
 
 (*
-   doDSdbExit -
-*)
+   doDSdbExit - called when compiled with -fcpp to enable runtime garbage
+                collection debugging.  The parameter string s is exempt from
+                garbage collection analysis.
 
 PROCEDURE doDSdbExit (s: String) ;
 BEGIN
-   s := PopAllocationExemption(TRUE, s)
+   (* Check to see whether no strings have been lost since the PushAllocation.  *)
+   Assert (PopAllocationExemption (TRUE, s) = s)
 END doDSdbExit ;
+*)
 
 
 (*
-   DSdbEnter -
+   DSdbEnter - dummy nop entry code which the preprocessor replaces by
+               doDSsbEnter when debugging garbage collection at runtime.
 *)
 
 PROCEDURE DSdbEnter ;
@@ -81,11 +90,16 @@ END DSdbEnter ;
 
 
 (*
-   DSdbExit -
+   DSdbExit - dummy nop exit code which the preprocessor replaces by
+              doDSsbExit when debugging garbage collection at runtime.
 *)
 
 PROCEDURE DSdbExit (s: String) ;
 BEGIN
+   IF GarbageDebugging
+   THEN
+      Assert (s # NIL)
+   END
 END DSdbExit ;
 
 
@@ -109,7 +123,7 @@ BEGIN
    ELSE
       UserPath := ConCat(ConCatChar(UserPath, ':'), path)
    END ;
-   DSdbExit(UserPath)
+   DSdbExit (UserPath)
 END PrependSearchPath ;
 
 

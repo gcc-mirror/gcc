@@ -78,14 +78,14 @@ TYPE
      ssize_t write (int d, void *buf, size_t nbytes)
 *)
 
-PROCEDURE write (d: INTEGER; buf: ADDRESS; nbytes: CSIZE_T) : CSSIZE_T ;
+PROCEDURE write (d: INTEGER; buf: ADDRESS; nbytes: CSIZE_T) : [ CSSIZE_T ] ;
 
 
 (*
      ssize_t read (int d, void *buf, size_t nbytes)
 *)
 
-PROCEDURE read (d: INTEGER; buf: ADDRESS; nbytes: CSIZE_T) : CSSIZE_T ;
+PROCEDURE read (d: INTEGER; buf: ADDRESS; nbytes: CSIZE_T) : [ CSSIZE_T ] ;
 
 
 (*
@@ -93,7 +93,7 @@ PROCEDURE read (d: INTEGER; buf: ADDRESS; nbytes: CSIZE_T) : CSSIZE_T ;
      char *string;
 *)
 
-PROCEDURE system (a: ADDRESS) : INTEGER ;
+PROCEDURE system (a: ADDRESS) : [ INTEGER ] ;
 
 
 (*
@@ -196,7 +196,7 @@ PROCEDURE dup (d: INTEGER) : INTEGER ;
    close - closes the file descriptor, d.
 *)
 
-PROCEDURE close (d: INTEGER) : INTEGER ;
+PROCEDURE close (d: INTEGER) : [ INTEGER ] ;
 
 
 (*
@@ -233,14 +233,14 @@ PROCEDURE perror (string: ARRAY OF CHAR);
    readv - reads an io vector of bytes.
 *)
 
-PROCEDURE readv (fd: INTEGER; v: ADDRESS; n: INTEGER) : INTEGER ;
+PROCEDURE readv (fd: INTEGER; v: ADDRESS; n: INTEGER) : [ INTEGER ] ;
 
 
 (*
    writev - writes an io vector of bytes.
 *)
 
-PROCEDURE writev (fd: INTEGER; v: ADDRESS; n: INTEGER) : INTEGER ;
+PROCEDURE writev (fd: INTEGER; v: ADDRESS; n: INTEGER) : [ INTEGER ] ;
 
 
 (*
@@ -271,7 +271,7 @@ PROCEDURE getcwd (buf: ADDRESS; size: CSIZE_T) : ADDRESS ;
            and errno is set appropriately.
 *)
 
-PROCEDURE chown (filename: ADDRESS; uid, gid: INTEGER) : INTEGER ;
+PROCEDURE chown (filename: ADDRESS; uid, gid: INTEGER) : [ INTEGER ] ;
 
 
 (*
@@ -286,7 +286,7 @@ PROCEDURE strlen (a: ADDRESS) : CSIZE_T ;
             It returns dest.
 *)
 
-PROCEDURE strcpy (dest, src: ADDRESS) : ADDRESS ;
+PROCEDURE strcpy (dest, src: ADDRESS) : [ ADDRESS ] ;
 
 
 (*
@@ -294,14 +294,14 @@ PROCEDURE strcpy (dest, src: ADDRESS) : ADDRESS ;
              It returns dest.
 *)
 
-PROCEDURE strncpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE strncpy (dest, src: ADDRESS; n: CARDINAL) : [ ADDRESS ] ;
 
 
 (*
    unlink - removes file and returns 0 if successful.
 *)
 
-PROCEDURE unlink (file: ADDRESS) : INTEGER ;
+PROCEDURE unlink (file: ADDRESS) : [ INTEGER ] ;
 
 
 (*
@@ -315,7 +315,7 @@ PROCEDURE unlink (file: ADDRESS) : INTEGER ;
    It returns dest.
 *)
 
-PROCEDURE memcpy (dest, src: ADDRESS; size: CSIZE_T) : ADDRESS ;
+PROCEDURE memcpy (dest, src: ADDRESS; size: CSIZE_T) : [ ADDRESS ] ;
 
 
 (*
@@ -326,9 +326,10 @@ PROCEDURE memcpy (dest, src: ADDRESS; size: CSIZE_T) : ADDRESS ;
    #include <string.h>
 
    void *memset(void *s, int c, size_t n);
+   It returns s.
 *)
 
-PROCEDURE memset (s: ADDRESS; c: INTEGER; size: CSIZE_T) : ADDRESS ;
+PROCEDURE memset (s: ADDRESS; c: INTEGER; size: CSIZE_T) : [ ADDRESS ] ;
 
 
 (*
@@ -342,7 +343,7 @@ PROCEDURE memset (s: ADDRESS; c: INTEGER; size: CSIZE_T) : ADDRESS ;
    It returns dest.
 *)
 
-PROCEDURE memmove (dest, src: ADDRESS; size: CSIZE_T) : ADDRESS ;
+PROCEDURE memmove (dest, src: ADDRESS; size: CSIZE_T) : [ ADDRESS ] ;
 
 
 (*
@@ -358,7 +359,7 @@ PROCEDURE printf (format: ARRAY OF CHAR; ...) : [ INTEGER ] ;
             is true.  It returns 0 on success and -1 for an error.
 *)
 
-PROCEDURE setenv (name: ADDRESS; value: ADDRESS; overwrite: INTEGER) : INTEGER ;
+PROCEDURE setenv (name: ADDRESS; value: ADDRESS; overwrite: INTEGER) : [ INTEGER ] ;
 
 
 (*
@@ -396,7 +397,7 @@ PROCEDURE localtime (VAR t: time_t) : ADDRESS ;
    ftime - return date and time.
 *)
 
-PROCEDURE ftime (VAR t: timeb) : INTEGER ;
+PROCEDURE ftime (VAR t: timeb) : [ INTEGER ] ;
 
 
 (*
@@ -406,14 +407,14 @@ PROCEDURE ftime (VAR t: timeb) : INTEGER ;
               if how = 2, then mo more reads or writes are allowed.
 *)
 
-PROCEDURE shutdown (s: INTEGER; how: INTEGER) : INTEGER ;
+PROCEDURE shutdown (s: INTEGER; how: INTEGER) : [ INTEGER ] ;
 
 
 (*
    rename - change the name or location of a file
 *)
 
-PROCEDURE rename (oldpath, newpath: ADDRESS) : INTEGER ;
+PROCEDURE rename (oldpath, newpath: ADDRESS) : [ INTEGER ] ;
 
 
 (*
@@ -441,7 +442,7 @@ PROCEDURE longjmp (env: ADDRESS; val: INTEGER) ;
    atexit - execute, proc, when the function exit is called.
 *)
 
-PROCEDURE atexit (proc: exitP) : INTEGER ;
+PROCEDURE atexit (proc: exitP) : [ INTEGER ] ;
 
 
 (*

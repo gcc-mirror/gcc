@@ -91,7 +91,7 @@ PROCEDURE CaseBoundsResolved (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
                     compatible with the tagged type.
 *)
 
-PROCEDURE TypeCaseBounds (tokenno: CARDINAL; c: CARDINAL) : BOOLEAN ;
+PROCEDURE TypeCaseBounds (c: CARDINAL) : BOOLEAN ;
 
 
 (*

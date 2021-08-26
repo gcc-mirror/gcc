@@ -32,6 +32,7 @@ FROM wrapc IMPORT fileinode ;
 FROM libc IMPORT open, close ;
 FROM M2Printf IMPORT fprintf1, fprintf0 ;
 FROM FIO IMPORT StdErr ;
+FROM Assertion IMPORT Assert ;
 
 
 CONST
@@ -56,7 +57,6 @@ TYPE
 PROCEDURE RegisterModuleObject (fo: FileObjects; location: String) : BOOLEAN ;
 VAR
    p: FileObject ;
-   r,
    f: INTEGER ;
 BEGIN
    IF Debugging
@@ -70,7 +70,7 @@ BEGIN
       f := open (string (location), UNIXREADONLY, 0) ;
       IF fileinode (f, p^.inodeLow, p^.inodeHigh) = 0
       THEN
-         r := close (f) ;
+         close (f) ;
          IncludeIndiceIntoIndex (fo^.objects, p) ;
          IF Debugging
          THEN
@@ -83,7 +83,7 @@ BEGIN
             fprintf0 (StdErr, " fileinode failed\n")
          END
       END ;
-      r := close (f) ;
+      close (f) ;
       DISPOSE (p)
    END ;
    IF Debugging
@@ -132,12 +132,12 @@ END isRegistered ;
 
 PROCEDURE IsRegistered (fo: FileObjects; location: String) : BOOLEAN ;
 VAR
-   f, r  : INTEGER ;
+   f     : INTEGER ;
    result: BOOLEAN ;
 BEGIN
    f := open (string (location), UNIXREADONLY, 0) ;
    result := isRegistered (fo, f) ;
-   r := close (f) ;
+   close (f) ;
    RETURN result
 END IsRegistered ;
 

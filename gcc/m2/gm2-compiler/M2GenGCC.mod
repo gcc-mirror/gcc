@@ -2114,6 +2114,7 @@ END ConvertRHS ;
    ConvertForComparison - converts, sym, into a tree which is type compatible with, with.
 *)
 
+(*
 PROCEDURE ConvertForComparison (tokenno: CARDINAL; sym, with: CARDINAL) : Tree ;
 VAR
    symType,
@@ -2145,6 +2146,7 @@ BEGIN
       RETURN( t )
    END
 END ConvertForComparison ;
+*)
 
 
 (*
@@ -3051,29 +3053,6 @@ BEGIN
                             Mod2Gcc(op1),
                             BuildConvert(location, GetPointerType(), Mod2Gcc(op3), FALSE))
 END CodeInitAddress ;
-
-
-(*
-   IsWord - return TRUE if type is SYSTEM.WORD, or any of the sized WORD,
-            (SYSTEM.WORD32 etc).
-*)
-
-PROCEDURE IsWord (type: CARDINAL) : BOOLEAN ;
-BEGIN
-   type := SkipType(type) ;
-   RETURN( (type=Word) OR IsWordN(type) )
-END IsWord ;
-
-
-(*
-   HaveDifferentTypes - returns TRUE if consts or variables, l, r,
-                        have different types.
-*)
-
-PROCEDURE HaveDifferentTypes (l, r: CARDINAL) : BOOLEAN ;
-BEGIN
-   RETURN( SkipType(GetType(l))#SkipType(GetType(r)) )
-END HaveDifferentTypes ;
 
 
 (*
@@ -4699,11 +4678,13 @@ END CodeSetRotate ;
    FoldSetLogicalDifference - check whether we can fold a logical difference.
 *)
 
+(*
 PROCEDURE FoldSetLogicalDifference (tokenno: CARDINAL; p: WalkAction;
                                     quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
    FoldBinarySet(tokenno, p, SetDifference, quad, op1, op2, op3)
 END FoldSetLogicalDifference ;
+*)
 
 
 (*
@@ -5417,6 +5398,7 @@ END CodeSize ;
                       We return the Varient symbol if sym was declared in the second method.
 *)
 
+(*
 PROCEDURE DetermineFieldOf (parent, sym: CARDINAL) : CARDINAL ;
 VAR
    varient: CARDINAL ;
@@ -5435,6 +5417,7 @@ BEGIN
       RETURN( sym )
    END
 END DetermineFieldOf ;
+*)
 
 
 (*
@@ -6408,35 +6391,6 @@ BEGIN
       END
    END
 END FoldCast ;
-
-
-(*
-   CodeMath - translates the MathOp into a GCC tree structure.
-              Op2 := Op1(Op3)
-
-              where:
-
-              Op1    function
-              Op2    return variable
-              Op3    parameter
-*)
-
-PROCEDURE CodeMath (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
-VAR
-   t       : Tree ;
-   location: location_t ;
-BEGIN
-   DeclareConstant(CurrentQuadToken, op3) ;  (* checks to see whether it is a constant literal and declares it *)
-   DeclareConstructor(CurrentQuadToken, quad, op3) ;
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   IF IsTrunc(op1)
-   THEN
-      t := BuildAssignmentTree(location, Mod2Gcc(op2), BuildTrunc(Mod2Gcc(op3)))
-   ELSE
-      InternalError ('unknown math operator')
-   END ;
-END CodeMath ;
 
 
 (*
