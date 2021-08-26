@@ -1,3 +1,61 @@
+2021-08-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Backported from master:
+	2021-05-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (plugin_init): Fix caret_max_with.
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.c
+	(plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c (plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c
+	(plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c
+	(plugin_init): Likewise.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-08-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* gcc.target/i386/pr99744-3.c: New test.
+	* gcc.target/i386/pr99744-4.c: Likewise.
+	* gcc.target/i386/pr99744-5.c: Likewise.
+	* gcc.target/i386/pr99744-6.c: Likewise.
+	* gcc.target/i386/pr99744-7.c: Likewise.
+	* gcc.target/i386/pr99744-8.c: Likewise.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101492
+	* gcc.target/i386/pr101492-1.c: New test.
+	* gcc.target/i386/pr101492-2.c: Likewise.
+	* gcc.target/i386/pr101492-3.c: Likewise.
+	* gcc.target/i386/pr101492-4.c: Likewise.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-07-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101549
+	* gcc.target/i386/crc32-6.c: New test.
+
+2021-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-04-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/monitor-2.c: New test.
+
+2021-08-25  konglin1  <lingling.kong@intel.com>
+
+	PR target/101471
+	* gcc.target/i386/avx512f-pr101471.c: New test.
+
 2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
