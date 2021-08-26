@@ -100,7 +100,6 @@ extern HOST_WIDE_INT loongarch_initial_elimination_offset (int, int);
 extern void loongarch_expand_prologue (void);
 extern void loongarch_expand_epilogue (bool);
 extern bool loongarch_can_use_return_insn (void);
-extern rtx loongarch_function_value (const_tree, const_tree, enum machine_mode);
 
 extern bool loongarch_symbolic_constant_p (rtx, enum loongarch_symbol_context,
 				      enum loongarch_symbol_type *);

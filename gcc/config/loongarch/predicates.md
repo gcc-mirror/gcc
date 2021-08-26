@@ -504,14 +504,6 @@
   return loongarch_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &type);
 })
 
-(define_predicate "force_to_mem_operand"
-  (match_code "const,symbol_ref,label_ref")
-{
-  enum loongarch_symbol_type symbol_type;
-  return (loongarch_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &symbol_type)
-	  && loongarch_use_pcrel_pool_p[(int) symbol_type]);
-})
-
 (define_predicate "got_disp_operand"
   (match_code "const,symbol_ref,label_ref")
 {

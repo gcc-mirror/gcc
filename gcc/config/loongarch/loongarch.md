@@ -3202,7 +3202,7 @@
 		    (match_operand 1 ""))
 	      (use (match_operand 2 ""))	;; next_arg_reg
 	      (use (match_operand 3 ""))])]	;; struct_value_size_rtx
-  "TARGET_SIBCALLS"
+  ""
 {
   rtx target = loongarch_legitimize_call_address (XEXP (operands[0], 0));
 
@@ -3213,7 +3213,7 @@
 (define_insn "sibcall_internal"
   [(call (mem:SI (match_operand 0 "call_insn_operand" "j,c,a,t,h"))
 	 (match_operand 1 "" ""))]
-  "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
+  "SIBLING_CALL_P (insn)"
 {
   switch (which_alternative)
     {
@@ -3259,7 +3259,7 @@
 		   (call (match_operand 1 "")
 			 (match_operand 2 "")))
 	      (use (match_operand 3 ""))])]		;; next_arg_reg
-  "TARGET_SIBCALLS"
+  ""
 {
   rtx target = loongarch_legitimize_call_address (XEXP (operands[1], 0));
 
@@ -3284,7 +3284,7 @@
   [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "j,c,a,t,h"))
               (match_operand 2 "" "")))]
-  "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
+  "SIBLING_CALL_P (insn)"
 {
   switch (which_alternative)
   {
@@ -3332,7 +3332,7 @@
    (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))]
-  "TARGET_SIBCALLS && SIBLING_CALL_P (insn)"
+  "SIBLING_CALL_P (insn)"
 {
   switch (which_alternative)
   {

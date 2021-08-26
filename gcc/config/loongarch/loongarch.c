@@ -231,10 +231,6 @@ static bool loongarch_hard_regno_mode_ok_p[MAX_MACHINE_MODE]
    character.  */
 static bool loongarch_print_operand_punct[256];
 
-/* loongarch_use_pcrel_pool_p[X] is true if symbols of type X should be
-   forced into a PC-relative constant pool.  */
-bool loongarch_use_pcrel_pool_p[NUM_SYMBOL_TYPES];
-
 /* Cached value of can_issue_more.  This is cached in loongarch_variable_issue
    hook and returned from loongarch_sched_reorder2.  */
 static int cached_can_issue_more;
@@ -760,8 +756,8 @@ loongarch_arg_partial_bytes (cumulative_args_t cum,
    VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
    VALTYPE is null and MODE is the mode of the return value.  */
 
-rtx
-loongarch_function_value (const_tree type, const_tree func, machine_mode mode)
+static rtx
+loongarch_function_value_1 (const_tree type, const_tree func, machine_mode mode)
 {
   struct loongarch_arg_info info;
   CUMULATIVE_ARGS args;
@@ -780,6 +776,25 @@ loongarch_function_value (const_tree type, const_tree func, machine_mode mode)
   memset (&args, 0, sizeof args);
   return loongarch_get_arg_info (&info, &args, mode, type, true, true);
 }
+
+
+/* Implement TARGET_FUNCTION_VALUE.  */
+
+static rtx
+loongarch_function_value (const_tree valtype, const_tree fn_decl_or_type,
+			  bool outgoing ATTRIBUTE_UNUSED)
+{
+  return loongarch_function_value_1 (valtype, fn_decl_or_type, VOIDmode);
+}
+
+/* Implement TARGET_LIBCALL_VALUE.  */
+
+static rtx
+loongarch_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return loongarch_function_value_1 (NULL_TREE, NULL_TREE, mode);
+}
+
 
 /* Implement TARGET_PASS_BY_REFERENCE.  */
 
@@ -1507,9 +1522,6 @@ loongarch_expand_epilogue (bool sibcall_p)
 }
 
 
-static int loongarch_register_move_cost (machine_mode, reg_class_t,
-					 reg_class_t);
-
 
 /* Implement TARGET_MERGE_DECL_ATTRIBUTES.  */
 
@@ -1782,12 +1794,6 @@ loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_context context,
 static int
 loongarch_symbol_insns_1 (enum loongarch_symbol_type type, machine_mode mode)
 {
-  if (loongarch_use_pcrel_pool_p[(int) type])
-    {
-      /* The constant must be loaded and then dereferenced.  */
-      return 0;
-    }
-
   switch (type)
     {
     case SYMBOL_GOT_DISP:
@@ -1855,10 +1861,6 @@ loongarch_cannot_force_const_mem (machine_mode mode, rtx x)
   split_const (x, &base, &offset);
   if (loongarch_symbolic_constant_p (base, SYMBOL_CONTEXT_LEA, &type))
     {
-      /* See whether we explicitly want these symbols in the pool.  */
-      if (loongarch_use_pcrel_pool_p[(int) type])
-	return false;
-
       /* The same optimization as for CONST_INT.  */
       if (SMALL_INT (offset)
 	  && loongarch_symbol_insns (type, MAX_MACHINE_MODE) > 0)
@@ -1957,16 +1959,7 @@ loongarch_classify_address (struct loongarch_address_info *info, rtx x,
       info->offset = XEXP (x, 1);
       return (loongarch_valid_base_register_p (info->reg, mode, strict_p)
 	      && loongarch_valid_offset_p (info->offset, mode));
-#if 0
-    case LABEL_REF:
-    case SYMBOL_REF:
-      info->type = ADDRESS_SYMBOLIC;
-      return (loongarch_symbolic_constant_p (x, SYMBOL_CONTEXT_MEM,
-					     &info->symbol_type)
-	      && loongarch_symbol_insns (info->symbol_type, mode) > 0
-	      && !loongarch_split_p[info->symbol_type]);
 
-#endif
     default:
       return false;
     }
@@ -2940,11 +2933,6 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
-      if (force_to_mem_operand (x, VOIDmode))
-	{
-	  *total = COSTS_N_INSNS (1);
-	  return true;
-	}
       cost = loongarch_const_insns (x);
       if (cost > 0)
 	{
@@ -3995,12 +3983,10 @@ static bool
 loongarch_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 				   tree exp ATTRIBUTE_UNUSED)
 {
-  if (!TARGET_SIBCALLS)
-    return false;
-
   /* Otherwise OK.  */
   return true;
 }
+
 
 /* Implement TARGET_USE_BY_PIECES_INFRASTRUCTURE_P.  */
 
@@ -5469,9 +5455,10 @@ loongarch_secondary_memory_needed (machine_mode mode ATTRIBUTE_UNUSED,
    is the destination.  Return NO_REGS if no secondary register is
    needed.  */
 
-enum reg_class
-loongarch_secondary_reload_class (enum reg_class rclass, machine_mode mode,
-				  rtx x, bool)
+static reg_class_t
+loongarch_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
+			    reg_class_t rclass, machine_mode mode,
+			    secondary_reload_info *sri ATTRIBUTE_UNUSED)
 {
   int regno;
 
@@ -6042,8 +6029,7 @@ loongarch_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Determine if we can use a sibcall to call FUNCTION directly.  */
   fnaddr = XEXP (DECL_RTL (function), 0);
-  use_sibcall_p = (loongarch_function_ok_for_sibcall (function, NULL)
-		   && const_call_insn_operand (fnaddr, Pmode));
+  use_sibcall_p = const_call_insn_operand (fnaddr, Pmode);
 
   /* We need two temporary registers in some cases.  */
   temp1 = gen_rtx_REG (Pmode, 12);
@@ -6690,6 +6676,11 @@ loongarch_starting_frame_offset (void)
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY loongarch_return_in_memory
 
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE loongarch_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE loongarch_libcall_value
+
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK loongarch_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
@@ -6734,8 +6725,11 @@ loongarch_starting_frame_offset (void)
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN loongarch_expand_builtin
 
+/* The generic ELF target does not always have TLS support.  */
+#ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS HAVE_AS_TLS
+#endif
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM loongarch_cannot_force_const_mem
@@ -6832,6 +6826,9 @@ loongarch_starting_frame_offset (void)
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET loongarch_starting_frame_offset
+
+#undef TARGET_SECONDARY_RELOAD
+#define TARGET_SECONDARY_RELOAD loongarch_secondary_reload
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

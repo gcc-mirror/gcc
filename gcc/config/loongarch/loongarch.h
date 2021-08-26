@@ -17,16 +17,9 @@
   along with GCC; see the file COPYING3.  If not see
   <http://www.gnu.org/licenses/>.  */
 
-#ifdef GENERATOR_FILE
-/* This is used in some insn conditions, so needs to be declared, but
-   does not need to be defined.  */
-extern int target_flags_explicit;
-#endif
-
 /* LoongArch external variables defined in loongarch.c.  */
 
-/* Which ABI to use.  ABILP32, ABILP64 are all defined by Loongson.
-   1 reserved for other ABIs.  */
+/* Which ABI to use.  ABILP64 is defined by Loongson.  */
 
 #define ABILP32 0
 #define ABILP64 2
@@ -58,25 +51,16 @@ struct loongarch_cpu_info
    C and unsigned in ISO C when compiled on 32-bit hosts.  */
 
 #define BITMASK_HIGH (((unsigned long) 1) << 31) /* 0x80000000  */
-#define BITMASK_UPPER16 ((unsigned long) 0xffff << 16) /* 0xffff0000  */
-#define BITMASK_LOWER16 ((unsigned long) 0xffff) /* 0x0000ffff  */
 
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
-
-/* True if we can optimize sibling calls.  */
-#define TARGET_SIBCALLS 1
 
 /* True if we can use the JIRL instructions.  */
 #define TARGET_ABSOLUTE_JUMPS (!flag_pic)
 
 /* True if the output must have a writable .eh_frame.
    See ASM_PREFERRED_EH_DATA_FORMAT for details.  */
-#ifdef HAVE_LD_PERSONALITY_RELAXATION
-#define TARGET_WRITABLE_EH_FRAME 0
-#else
 #define TARGET_WRITABLE_EH_FRAME (flag_pic && TARGET_SHARED)
-#endif
 
 /* Architecture target defines.  */
 #define TARGET_LOONGARCH64 (loongarch_arch == PROCESSOR_LOONGARCH64)
@@ -108,10 +92,7 @@ struct loongarch_cpu_info
 \
       macro = concat ((PREFIX), "_", (INFO)->name, NULL); \
       for (p = macro; *p != 0; p++) \
-	if (*p == '+') \
-	  *p = 'P'; \
-	else \
-	  *p = TOUPPER (*p); \
+	*p = TOUPPER (*p); \
 \
       builtin_define (macro); \
       builtin_define_with_value ((PREFIX), (INFO)->name, 1); \
@@ -155,11 +136,10 @@ struct loongarch_cpu_info
 #endif
 
 #ifndef LARCH_ABI_DEFAULT
-#define LARCH_ABI_DEFAULT ABILP32
+#define LARCH_ABI_DEFAULT ABILP64
 #endif
 
 /* Use the most portable ABI flag for the ASM specs.  */
-
 #if LARCH_ABI_DEFAULT == ABILP32
 #define MULTILIB_ABI_DEFAULT "mabi=lp32"
 #elif LARCH_ABI_DEFAULT == ABILP64
@@ -287,21 +267,6 @@ struct loongarch_cpu_info
 #ifndef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS
 #endif
-
-#define DBX_DEBUGGING_INFO 1 /* generate stabs (OSF/rose) */
-#define DWARF2_DEBUGGING_INFO 1 /* dwarf2 debugging info  */
-
-#ifndef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#endif
-
-/* The size of DWARF addresses should be the same as the size of symbols
-   in the target file format.
-*/
-#define DWARF2_ADDR_SIZE (TARGET_64BIT ? 8 : 4)
-
-/* By default, turn on GDB extensions.  */
-#define DEFAULT_GDB_EXTENSIONS 1
 
 /* Registers may have a prefix which can be ignored when matching
    user asm and register definitions.  */
@@ -318,6 +283,21 @@ struct loongarch_cpu_info
    prepended.  */
 
 #define USER_LABEL_PREFIX ""
+
+#ifndef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#endif
+
+/* The size of DWARF addresses should be the same as the size of symbols
+   in the target file format.
+*/
+#define DWARF2_ADDR_SIZE (TARGET_64BIT ? 8 : 4)
+
+/* By default, turn on GDB extensions.  */
+#define DEFAULT_GDB_EXTENSIONS 1
+
+#define DBX_DEBUGGING_INFO 1 /* generate stabs (OSF/rose) */
+#define DWARF2_DEBUGGING_INFO 1 /* dwarf2 debugging info  */
 
 /* FIXME: ???
    On Sun 4, this limit is 2048.  We use 1500 to be safe,
@@ -350,12 +330,12 @@ struct loongarch_cpu_info
    SFmode register saves.  */
 #define DWARF_CIE_DATA_ALIGNMENT -4
 
-/* Correct the offset of automatic variables and arguments.  Note that
-   the LoongArch debug format wants all automatic variables and arguments
-   to be in terms of the virtual frame pointer (stack pointer before
-   any adjustment in the function), while the LoongArch 3.0 linker wants
-   the frame pointer to be the stack pointer after the initial
-   adjustment.  */
+/* A C expression that returns the integer offset value for an automatic
+   variable having address x (an RTL expression). The default computation
+   assumes that x is based on the frame-pointer and gives the offset from
+   the frame-pointer. This is required for targets that produce debugging
+   output for DBX and allow the frame-pointer to be eliminated when the
+   '-g' option is used.  */
 
 #define DEBUGGER_AUTO_OFFSET(X) \
   loongarch_debugger_offset (X, (HOST_WIDE_INT) 0)
@@ -375,9 +355,6 @@ struct loongarch_cpu_info
 #ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
 #endif
-
-#define IMM_BITS 12
-#define IMM_REACH (1LL << IMM_BITS)
 
 /* For LARCH, width of a floating point register.  */
 #define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)
@@ -446,13 +423,12 @@ struct loongarch_cpu_info
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
 
-/* Every structure's size must be a multiple of this.  */
-/* 8 is observed right on a DECstation and on riscos 4.02.  */
+/* Number of bits which any structure or union's size must be a multiple of.
+   Each structure or union's size is rounded up to a multiple of this.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* There is no point aligning anything to a rounder boundary than
-   LONG_DOUBLE_TYPE_SIZE.
-*/
+   LONG_DOUBLE_TYPE_SIZE.  */
 #define BIGGEST_ALIGNMENT (LONG_DOUBLE_TYPE_SIZE)
 
 /* All accesses must be aligned.  */
@@ -775,6 +751,9 @@ enum reg_class
      registers.  */							\
   64, 65, 66, 67, 68, 69, 70, 71, 72, 73}
 
+#define IMM_BITS 12
+#define IMM_REACH (1LL << IMM_BITS)
+
 /* True if VALUE is an unsigned 6-bit number.  */
 
 #define UIMM6_OPERAND(VALUE) (((VALUE) & ~(unsigned HOST_WIDE_INT) 0x3f) == 0)
@@ -836,14 +815,6 @@ enum reg_class
 #define LARCH_16BIT_OFFSET_P(OFFSET) (IN_RANGE (OFFSET, -32768, 32767))
 #define LARCH_SHIFT_2_OFFSET_P(OFFSET) (((OFFSET) &0x3) == 0)
 
-/* Condition code registers can only be loaded to the
-   general registers, and from the floating point registers.  */
-
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X) \
-  loongarch_secondary_reload_class (CLASS, MODE, X, true)
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) \
-  loongarch_secondary_reload_class (CLASS, MODE, X, false)
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
@@ -896,7 +867,7 @@ enum reg_class
 #define GP_RETURN (GP_REG_FIRST + 4)
 #define FP_RETURN ((TARGET_SOFT_FLOAT) ? GP_RETURN : (FP_REG_FIRST + 0))
 
-#define MAX_ARGS_IN_REGISTERS (TARGET_LP32ABI ? 4 : 8)
+#define MAX_ARGS_IN_REGISTERS 8
 
 /* Symbolic macros for the first/last argument registers.  */
 
@@ -974,16 +945,7 @@ typedef struct loongarch_args
     } \
   while (0)
 
-/* The profiler preserves all interesting registers, including $r1.  */
-#define LARCH_SAVE_REG_FOR_PROFILING_P(REGNO) false
-
 #define NO_PROFILE_COUNTERS 1
-
-/* Define this macro if the code for function profiling should come
-   before the function prologue.  Normally, the profiling code comes
-   after.  */
-
-/* #define PROFILE_BEFORE_PROLOGUE  */
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
@@ -1037,16 +999,6 @@ typedef struct loongarch_args
 	asm_fprintf ((FILE), "%U%s", (NAME)); \
     } \
   while (0)
-
-/* Flag to mark a function decl symbol that requires a long call.  */
-#define SYMBOL_FLAG_LONG_CALL (SYMBOL_FLAG_MACH_DEP << 0)
-#define SYMBOL_REF_LONG_CALL_P(X) \
-  ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_LONG_CALL) != 0)
-
-/* This flag marks functions that cannot be lazily bound.  */
-#define SYMBOL_FLAG_BIND_NOW (SYMBOL_FLAG_MACH_DEP << 1)
-#define SYMBOL_REF_BIND_NOW_P(RTX) \
-  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_BIND_NOW) != 0)
 
 #define CASE_VECTOR_MODE Pmode
 
@@ -1289,31 +1241,7 @@ typedef struct loongarch_args
     } \
   while (0)
 
-/* Mark inline jump tables as data for the purpose of disassembly.  For
-   simplicity embed the jump table's label number in the local symbol
-   produced so that multiple jump tables within a single function end
-   up marked with unique symbols.  Retain the alignment setting from
-   `elfos.h' as we are replacing the definition from there.  */
-
-#undef ASM_OUTPUT_BEFORE_CASE_LABEL
-#define ASM_OUTPUT_BEFORE_CASE_LABEL(STREAM, PREFIX, NUM, TABLE) \
-  do \
-    { \
-      ASM_OUTPUT_ALIGN ((STREAM), 2); \
-      if (JUMP_TABLES_IN_TEXT_SECTION) \
-	loongarch_set_text_contents_type (STREAM, "__jump_", NUM, FALSE); \
-    } \
-  while (0)
-
-/* Reset text marking to code after an inline jump table.  Like with
-   the beginning of a jump table use the label number to keep symbols
-   unique.  */
-
-#define ASM_OUTPUT_CASE_END(STREAM, NUM, TABLE) \
-  do \
-    if (JUMP_TABLES_IN_TEXT_SECTION) \
-      loongarch_set_text_contents_type (STREAM, "__jend_", NUM, TRUE); \
-  while (0)
+#define JUMP_TABLES_IN_TEXT_SECTION 0
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -1321,6 +1249,8 @@ typedef struct loongarch_args
 
 #define ASM_OUTPUT_ALIGN(STREAM, LOG) fprintf (STREAM, "\t.align\t%d\n", (LOG))
 
+/* "nop" instruction 54525952 (andi $r0,$r0,0) is
+   used for padding. */
 #define ASM_OUTPUT_ALIGN_WITH_NOP(STREAM, LOG) \
   fprintf (STREAM, "\t.align\t%d,54525952,4\n", (LOG))
 
@@ -1364,7 +1294,6 @@ typedef struct loongarch_args
 #define ASM_OUTPUT_REG_POP(STREAM, REGNO) \
   do \
     { \
-      loongarch_push_asm_switch (&loongarch_noreorder); \
       fprintf (STREAM, "\t%s\t%s,%s,0\n\t%s\t%s,%s,8\n", \
 	       TARGET_64BIT ? "ld.d" : "ld.w", reg_names[REGNO], \
 	       reg_names[STACK_POINTER_REGNUM], \
@@ -1428,35 +1357,14 @@ typedef struct loongarch_args
 
 #define SET_RATIO(speed) ((speed) ? 15 : LARCH_CALL_RATIO - 2)
 
-/* Since the bits of the _init and _fini function is spread across
-   many object files.  We don't preserve $ra, since each init/fini
-   take care of preserving $ra.  */
-#if (defined _ABI64 && _LARCH_SIM == _ABI64)
-#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC) \
-  asm (SECTION_OP "\n\
-	la $r20, " USER_LABEL_PREFIX #FUNC "\n\
-	jirl $r1, $r20, 0\n\
-	" TEXT_SECTION_ASM_OP);
-#endif
-#ifndef HAVE_AS_TLS
-#define HAVE_AS_TLS 0
-#endif
-
-#ifndef HAVE_AS_NAN
-#define HAVE_AS_NAN 0
-#endif
-
 #ifndef USED_FOR_TARGET
 extern const enum reg_class loongarch_regno_to_class[];
 extern int loongarch_dbx_regno[];
 extern int loongarch_dwarf_regno[];
-extern bool loongarch_split_p[];
-extern bool loongarch_use_pcrel_pool_p[];
 extern enum processor loongarch_arch; /* Which cpu to codegen for.  */
 extern enum processor loongarch_tune; /* Which cpu to schedule for.  */
 extern const struct loongarch_cpu_info *loongarch_arch_info;
 extern const struct loongarch_cpu_info *loongarch_tune_info;
-extern unsigned int loongarch_base_compression_flags;
 
 /* Information about a function's frame layout.  */
 struct GTY (()) loongarch_frame_info
@@ -1565,15 +1473,5 @@ struct GTY (()) machine_function
 /* The largest type that can be passed in floating-point registers.  */
 /* TODO: according to mabi.  */
 #define UNITS_PER_FP_ARG (TARGET_HARD_FLOAT ? (TARGET_64BIT ? 8 : 4) : 0)
-
-/* Internal macros to classify an ISA register's type.  */
-
-#define LIBCALL_VALUE(MODE) \
-  loongarch_function_value (NULL_TREE, NULL_TREE, MODE)
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  loongarch_function_value (VALTYPE, FUNC, VOIDmode)
-
-#define FRAME_GROWS_DOWNWARD 1
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN)
