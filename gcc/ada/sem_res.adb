@@ -11360,7 +11360,11 @@ package body Sem_Res is
          Set_Parent (Dexpr, Parent (Drange));
          Set_Sloc   (Dexpr, Sloc   (Drange));
 
-      --  The discrete_range is a regular range. Resolve the bounds and remove
+      elsif Nkind (Drange) = N_Subtype_Indication then
+         Dexpr := Range_Expression (Constraint (Drange));
+
+      --  The discrete_range is a regular range (or a range attribute, which
+      --  will be resolved into a regular range). Resolve the bounds and remove
       --  their side effects.
 
       else
