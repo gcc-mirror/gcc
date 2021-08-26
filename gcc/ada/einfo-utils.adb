@@ -1425,26 +1425,19 @@ package body Einfo.Utils is
 
    function Is_Dynamic_Scope (Id : E) return B is
    begin
-      return
-        Ekind (Id) = E_Block
+      return Ekind (Id) in E_Block
+      --  Including an E_Block that came from an N_Expression_With_Actions
+                         | E_Entry
+                         | E_Entry_Family
+                         | E_Function
+                         | E_Procedure
+                         | E_Return_Statement
+                         | E_Subprogram_Body
+                         | E_Task_Type
           or else
-        Ekind (Id) = E_Function
-          or else
-        Ekind (Id) = E_Procedure
-          or else
-        Ekind (Id) = E_Subprogram_Body
-          or else
-        Ekind (Id) = E_Task_Type
-          or else
-       (Ekind (Id) = E_Limited_Private_Type
-         and then Present (Full_View (Id))
-         and then Ekind (Full_View (Id)) = E_Task_Type)
-          or else
-        Ekind (Id) = E_Entry
-          or else
-        Ekind (Id) = E_Entry_Family
-          or else
-        Ekind (Id) = E_Return_Statement;
+        (Ekind (Id) = E_Limited_Private_Type
+          and then Present (Full_View (Id))
+          and then Ekind (Full_View (Id)) = E_Task_Type);
    end Is_Dynamic_Scope;
 
    --------------------

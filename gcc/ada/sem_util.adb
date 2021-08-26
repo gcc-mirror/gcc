@@ -18107,6 +18107,19 @@ package body Sem_Util is
 
       if Is_Formal (E) then
          return False;
+
+      --  If we somehow got an empty value for Scope, the tree must be
+      --  malformed. Rather than blow up we return True in this case.
+
+      elsif No (Scope (E)) then
+         return True;
+
+      --  Handle loops since Enclosing_Dynamic_Scope skips them; required to
+      --  properly handle entities local to quantified expressions in library
+      --  level specifications.
+
+      elsif Ekind (Scope (E)) = E_Loop then
+         return False;
       end if;
 
       --  Normal test is simply that the enclosing dynamic scope is Standard
