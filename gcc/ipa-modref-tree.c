@@ -101,7 +101,7 @@ test_insert_search_collapse ()
   ASSERT_TRUE (base_node->every_ref);
 
   /* Insert base to trigger base list collapse.  */
-  t->insert (5, 6, a, false);
+  t->insert (5, 0, a, false);
   ASSERT_TRUE (t->every_base);
   ASSERT_EQ (t->bases, NULL);
   ASSERT_EQ (t->search (1), NULL);
