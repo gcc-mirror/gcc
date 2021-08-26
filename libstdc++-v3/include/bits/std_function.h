@@ -127,7 +127,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 && __alignof__(_Functor) <= _M_max_align
 	 && (_M_max_align % __alignof__(_Functor) == 0));
 
-	typedef integral_constant<bool, __stored_locally> _Local_storage;
+	using _Local_storage = integral_constant<bool, __stored_locally>;
 
 	// Retrieve a pointer to the function object
 	static _Functor*
@@ -142,32 +142,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __source._M_access<_Functor*>();
 	}
 
-	// Clone a location-invariant function object that fits within
+      private:
+	// Construct a location-invariant function object that fits within
 	// an _Any_data structure.
-	static void
-	_M_clone(_Any_data& __dest, const _Any_data& __source, true_type)
-	{
-	  ::new (__dest._M_access()) _Functor(__source._M_access<_Functor>());
-	}
+	template<typename _Fn>
+	  static void
+	  _M_create(_Any_data& __dest, _Fn&& __f, true_type)
+	  {
+	    ::new (__dest._M_access()) _Functor(std::forward<_Fn>(__f));
+	  }
 
-	// Clone a function object that is not location-invariant or
-	// that cannot fit into an _Any_data structure.
-	static void
-	_M_clone(_Any_data& __dest, const _Any_data& __source, false_type)
-	{
-	  __dest._M_access<_Functor*>() =
-	    new _Functor(*__source._M_access<const _Functor*>());
-	}
+	// Construct a function object on the heap and store a pointer.
+	template<typename _Fn>
+	  static void
+	  _M_create(_Any_data& __dest, _Fn&& __f, false_type)
+	  {
+	    __dest._M_access<_Functor*>()
+	      = new _Functor(std::forward<_Fn>(__f));
+	  }
 
-	// Destroying a location-invariant object may still require
-	// destruction.
+	// Destroy an object stored in the internal buffer.
 	static void
 	_M_destroy(_Any_data& __victim, true_type)
 	{
 	  __victim._M_access<_Functor>().~_Functor();
 	}
 
-	// Destroying an object located on the heap.
+	// Destroy an object located on the heap.
 	static void
 	_M_destroy(_Any_data& __victim, false_type)
 	{
@@ -188,12 +189,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __dest._M_access<const type_info*>() = nullptr;
 #endif
 	      break;
+
 	    case __get_functor_ptr:
 	      __dest._M_access<_Functor*>() = _M_get_pointer(__source);
 	      break;
 
 	    case __clone_functor:
-	      _M_clone(__dest, __source, _Local_storage());
+	      _M_init_functor(__dest,
+		  *const_cast<const _Functor*>(_M_get_pointer(__source)));
 	      break;
 
 	    case __destroy_functor:
@@ -203,9 +206,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
 	}
 
-	static void
-	_M_init_functor(_Any_data& __functor, _Functor&& __f)
-	{ _M_init_functor(__functor, std::move(__f), _Local_storage()); }
+	template<typename _Fn>
+	  static void
+	  _M_init_functor(_Any_data& __functor, _Fn&& __f)
+	  noexcept(__and_<_Local_storage,
+			  is_nothrow_constructible<_Functor, _Fn>>::value)
+	  {
+	    _M_create(__functor, std::forward<_Fn>(__f), _Local_storage());
+	  }
 
 	template<typename _Signature>
 	  static bool
@@ -226,15 +234,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static bool
 	  _M_not_empty_function(const _Tp&)
 	  { return true; }
-
-      private:
-	static void
-	_M_init_functor(_Any_data& __functor, _Functor&& __f, true_type)
-	{ ::new (__functor._M_access()) _Functor(std::move(__f)); }
-
-	static void
-	_M_init_functor(_Any_data& __functor, _Functor&& __f, false_type)
-	{ __functor._M_access<_Functor*>() = new _Functor(std::move(__f)); }
       };
 
     _Function_base() = default;
@@ -291,6 +290,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::__invoke_r<_Res>(*_Base::_M_get_pointer(__functor),
 				     std::forward<_ArgTypes>(__args)...);
       }
+
+      template<typename _Fn>
+	static constexpr bool
+	_S_nothrow_init() noexcept
+	{
+	  return __and_<typename _Base::_Local_storage,
+			is_nothrow_constructible<_Functor, _Fn>>::value;
+	}
     };
 
   // Specialization for invalid types
@@ -329,19 +336,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,
       private _Function_base
     {
+      // Equivalent to std::decay_t except that it produces an invalid type
+      // if the decayed type is the current specialization of std::function.
       template<typename _Func,
-	       typename _Res2 = __invoke_result<_Func&, _ArgTypes...>>
+	       bool _Self = is_same<__remove_cvref_t<_Func>, function>::value>
+	using _Decay_t
+	  = typename __enable_if_t<!_Self, decay<_Func>>::type;
+
+      template<typename _Func,
+	       typename _DFunc = _Decay_t<_Func>,
+	       typename _Res2 = __invoke_result<_DFunc&, _ArgTypes...>>
 	struct _Callable
 	: __is_invocable_impl<_Res2, _Res>::type
 	{ };
 
-      // Used so the return type convertibility checks aren't done when
-      // performing overload resolution for copy construction/assignment.
-      template<typename _Tp>
-	struct _Callable<function, _Tp> : false_type { };
+      template<typename _Cond, typename _Tp = void>
+	using _Requires = __enable_if_t<_Cond::value, _Tp>;
 
-      template<typename _Cond, typename _Tp>
-	using _Requires = typename enable_if<_Cond::value, _Tp>::type;
+      template<typename _Functor>
+	using _Handler
+	  = _Function_handler<_Res(_ArgTypes...), __decay_t<_Functor>>;
 
     public:
       typedef _Res result_type;
@@ -416,23 +430,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  If @a __f is a non-NULL function pointer or an object of type @c
        *  reference_wrapper<F>, this function will not throw.
        */
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2774. std::function construction vs assignment
       template<typename _Functor,
-	       typename = _Requires<__not_<is_same<_Functor, function>>, void>,
-	       typename = _Requires<_Callable<_Functor>, void>>
-	function(_Functor __f)
+	       typename = _Requires<_Callable<_Functor>>>
+	function(_Functor&& __f)
+	noexcept(_Handler<_Functor>::template _S_nothrow_init<_Functor>())
 	: _Function_base()
 	{
-	  static_assert(is_copy_constructible<_Functor>::value,
+	  static_assert(is_copy_constructible<__decay_t<_Functor>>::value,
 	      "std::function target must be copy-constructible");
-	  static_assert(is_constructible<_Functor, _Functor>::value,
+	  static_assert(is_constructible<__decay_t<_Functor>, _Functor>::value,
 	      "std::function target must be constructible from the "
 	      "constructor argument");
 
-	  using _My_handler = _Function_handler<_Res(_ArgTypes...), _Functor>;
+	  using _My_handler = _Handler<_Functor>;
 
 	  if (_My_handler::_M_not_empty_function(__f))
 	    {
-	      _My_handler::_M_init_functor(_M_functor, std::move(__f));
+	      _My_handler::_M_init_functor(_M_functor,
+					   std::forward<_Functor>(__f));
 	      _M_invoker = &_My_handler::_M_invoke;
 	      _M_manager = &_My_handler::_M_manager;
 	    }
@@ -511,8 +528,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  reference_wrapper<F>, this function will not throw.
        */
       template<typename _Functor>
-	_Requires<_Callable<typename decay<_Functor>::type>, function&>
+	_Requires<_Callable<_Functor>, function&>
 	operator=(_Functor&& __f)
+	noexcept(_Handler<_Functor>::template _S_nothrow_init<_Functor>())
 	{
 	  function(std::forward<_Functor>(__f)).swap(*this);
 	  return *this;
