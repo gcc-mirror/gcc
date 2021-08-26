@@ -34,17 +34,7 @@
    nvptx-as.  */
 #define ASM_SPEC "%{misa=*:-m %*; :-m sm_35}"
 
-#define TARGET_CPU_CPP_BUILTINS()		\
-  do						\
-    {						\
-      builtin_assert ("machine=nvptx");		\
-      builtin_assert ("cpu=nvptx");		\
-      builtin_define ("__nvptx__");		\
-      if (TARGET_SOFT_STACK)			\
-        builtin_define ("__nvptx_softstack__");	\
-      if (TARGET_UNIFORM_SIMT)			\
-        builtin_define ("__nvptx_unisimt__");	\
-    } while (0)
+#define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 
 /* Avoid the default in ../../gcc.c, which adds "-pthread", which is not
    supported for nvptx.  */

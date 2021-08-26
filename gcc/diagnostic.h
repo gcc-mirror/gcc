@@ -446,6 +446,25 @@ extern void diagnostic_show_locus (diagnostic_context *,
 				   diagnostic_t diagnostic_kind);
 extern void diagnostic_show_any_path (diagnostic_context *, diagnostic_info *);
 
+/* Because we read source files a second time after the frontend did it the
+   first time, we need to know how the frontend handled things like character
+   set conversion and UTF-8 BOM stripping, in order to make everything
+   consistent.  This function needs to be called by each frontend that requires
+   non-default behavior, to inform the diagnostics infrastructure how input is
+   to be processed.  The default behavior is to do no conversion and not to
+   strip a UTF-8 BOM.
+
+   The callback should return the input charset to be used to convert the given
+   file's contents to UTF-8, or it should return NULL if no conversion is needed
+   for this file.  SHOULD_SKIP_BOM only applies in case no conversion was
+   performed, and if true, it will cause a UTF-8 BOM to be skipped at the
+   beginning of the file.  (In case a conversion was performed, the BOM is
+   rather skipped as part of the conversion process.)  */
+
+void diagnostic_initialize_input_context (diagnostic_context *context,
+					  diagnostic_input_charset_callback ccb,
+					  bool should_skip_bom);
+
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,
 						    int /* optidx */,

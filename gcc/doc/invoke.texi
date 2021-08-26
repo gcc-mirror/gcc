@@ -13386,6 +13386,10 @@ Setting to 0 disables the analysis completely.
 @item modref-max-escape-points
 Specifies the maximum number of escape points tracked by modref per SSA-name.
 
+@item modref-max-adjustments
+Specifies the maximum number the access range is enlarged during modref dataflow
+analysis.
+
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
 database lookup. If the value is 0, the compiler uses an id that

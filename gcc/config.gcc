@@ -468,6 +468,8 @@ nios2-*-*)
 	;;
 nvptx-*-*)
 	cpu_type=nvptx
+	c_target_objs="nvptx-c.o"
+	cxx_target_objs="nvptx-c.o"
 	;;
 or1k*-*-*)
 	cpu_type=or1k

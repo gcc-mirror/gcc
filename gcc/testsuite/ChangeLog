@@ -1,3 +1,158 @@
+2021-08-25  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp1.c: Add -details to dump option.
+	* gcc.dg/tree-ssa/evrp2.c: Same.
+	* gcc.dg/tree-ssa/evrp3.c: Same.
+	* gcc.dg/tree-ssa/evrp4.c: Same.
+	* gcc.dg/tree-ssa/evrp6.c: Same.
+	* gcc.dg/tree-ssa/pr64130.c: Same.
+
+2021-08-25  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/94630
+	* gcc.target/powerpc/pr70117.c: Specify that we need the long double
+	type to be IBM 128-bit.  Remove the code to use __ibm128.
+	* c-c++-common/dfp/convert-bfp-11.c: Specify that we need the long
+	double type to be IBM 128-bit.  Run the test at -O2 optimization.
+	* lib/target-supports.exp (add_options_for_long_double_ibm128): New
+	function.
+	(check_effective_target_long_double_ibm128): New function.
+	(add_options_for_long_double_ieee128): New function.
+	(check_effective_target_long_double_ieee128): New function.
+	(add_options_for_long_double_64bit): New function.
+	(check_effective_target_long_double_64bit): New function.
+
+2021-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR c++/66590
+	* g++.dg/warn/Wreturn-5.C: New test.
+
+2021-08-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/modref-1.c: Update testcase.
+	* gcc.dg/tree-ssa/modref-4.c: Update testcase.
+	* gcc.dg/tree-ssa/modref-8.c: New test.
+
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* gcc.dg/diagnostic-input-charset-1.c: New test.
+	* gcc.dg/diagnostic-input-utf8-bom.c: New test.
+
+2021-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102046
+	* gcc.dg/vect/pr102046.c: New testcase.
+
+2021-08-25  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/101716
+	* gcc.target/i386/pr101716.c: New test.
+
+2021-08-25  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/101145
+	* gcc.dg/vect/pr101145.c: New test.
+	* gcc.dg/vect/pr101145.inc: New test.
+	* gcc.dg/vect/pr101145_1.c: New test.
+	* gcc.dg/vect/pr101145_2.c: New test.
+	* gcc.dg/vect/pr101145_3.c: New test.
+	* gcc.dg/vect/pr101145inf.c: New test.
+	* gcc.dg/vect/pr101145inf.inc: New test.
+	* gcc.dg/vect/pr101145inf_1.c: New test.
+
+2021-08-25  konglin1  <lingling.kong@intel.com>
+
+	PR target/101471
+	* gcc.target/i386/avx512f-pr101471.c: New test.
+
+2021-08-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/unpack-vectorize-1.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-1.h: New test.
+	* gcc.target/powerpc/unpack-vectorize-2.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-2.h: New test.
+	* gcc.target/powerpc/unpack-vectorize-3.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-3.h: New test.
+	* gcc.target/powerpc/unpack-vectorize-run-1.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-run-2.c: New test.
+	* gcc.target/powerpc/unpack-vectorize-run-3.c: New test.
+	* gcc.target/powerpc/unpack-vectorize.h: New test.
+
+2021-08-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101989
+	* gcc.target/i386/avx2-shiftqihi-constant-1.c: Add -mno-avx512f.
+	* gcc.target/i386/sse2-shiftqihi-constant-1.c: Add -mno-avx
+
+2021-08-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98411
+	* gfortran.dg/pr98411.f90: Adjust testcase options to restrict to
+	F2008, and verify case of implicit SAVE.
+
+2021-08-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101600
+	PR middle-end/101977
+	* g++.dg/pr100574.C: Prune out valid warning.
+	* gcc.dg/pr20126.c: Same.
+	* gcc.dg/Wstringop-overread.c: Adjust text of expected warnings.
+	Add new instances.
+	* gcc.dg/warn-strnlen-no-nul.c: Same.
+	* g++.dg/warn/Warray-bounds-26.C: New test.
+	* gcc.dg/Warray-bounds-88.c: New test.
+
+2021-08-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/predict-1.c: Disable evrp.
+	* gcc.dg/tree-ssa/evrp-trans.c: New.
+
+2021-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102021
+	* gcc.target/i386/pr100865-10b.c: Expect vzeroupper.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-6b.c: Expect vmovdqu and vzeroupper.
+	* gcc.target/i386/pr100865-7b.c: Likewise.
+	* gcc.target/i386/pr102021.c: New test.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-13a.c: New test.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-8a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-8a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-13a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-7a.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-8a.c: Likewise.
+
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_cmse_hw):
+	Check the CMSE feature register, rather than relying on the
+	SG operation causing an execution fault.
+
+2021-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101989
+	* gcc.target/i386/pr101989-broadcast-1.c: New test.
+
+2021-08-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101989
+	* gcc.target/i386/pr101989-1.c: New test.
+	* gcc.target/i386/pr101989-2.c: New test.
+	* gcc.target/i386/avx512bw-shiftqihi-constant-1.c: Adjust testcase.
+
+2021-08-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102029
+	* gcc.dg/fold-convlshift-3.c: New test case.
+
 2021-08-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/switch.c: Remove xfail.  Add various tests.

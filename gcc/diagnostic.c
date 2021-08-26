@@ -293,6 +293,17 @@ diagnostic_urls_init (diagnostic_context *context, int value /*= -1 */)
     = determine_url_format ((diagnostic_url_rule_t) value);
 }
 
+/* Create the file_cache, if not already created, and tell it how to
+   translate files on input.  */
+void diagnostic_initialize_input_context (diagnostic_context *context,
+					  diagnostic_input_charset_callback ccb,
+					  bool should_skip_bom)
+{
+  if (!context->m_file_cache)
+    context->m_file_cache = new file_cache;
+  context->m_file_cache->initialize_input_context (ccb, should_skip_bom);
+}
+
 /* Do any cleaning up required after the last diagnostic is emitted.  */
 
 void

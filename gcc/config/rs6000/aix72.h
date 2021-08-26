@@ -270,6 +270,9 @@ extern long long int    atoll(const char *);
 #define SET_CMODEL(opt) do {} while (0)
 #endif
 
+/* System headers are not C++-aware.  */
+#define SYSTEM_IMPLICIT_EXTERN_C 1
+
 /* This target defines SUPPORTS_WEAK and TARGET_ASM_NAMED_SECTION,
    but does not have crtbegin/end.  */
 

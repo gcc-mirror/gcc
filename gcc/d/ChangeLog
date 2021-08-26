@@ -1,3 +1,10 @@
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* d-lang.cc (d_input_charset_callback): New function.
+	(d_init): Call new function
+	diagnostic_initialize_input_context().
+
 2021-07-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* expr.cc (binary_op): Remove dead code.

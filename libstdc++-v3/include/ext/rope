@@ -2401,11 +2401,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->_M_tree_ptr = __result;
       }
 
-      // Erase, single character
-      void
-      erase(size_type __p)
-      { erase(__p, __p + 1); }
-
       // Insert, iterator variants.
       iterator
       insert(const iterator& __p, const rope& __r)

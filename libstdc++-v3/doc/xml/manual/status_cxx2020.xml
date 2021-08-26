@@ -294,13 +294,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Layout-compatibility and pointer-interconvertibility traits </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0466r5.pdf">
         P0466R5 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12 </entry>
       <entry>
         <informaltable colsep="0" rowsep="0" rowheader="norowheader" frame="none"><tgroup cols="1"><tbody>
         <row><entry> <code>__cpp_lib_is_layout_compatible &gt;= 201907L</code> </entry></row>

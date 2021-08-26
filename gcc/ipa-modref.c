@@ -426,6 +426,8 @@ dump_access (modref_access_node *a, FILE *out)
       print_dec ((poly_int64_pod)a->size, out, SIGNED);
       fprintf (out, " max_size:");
       print_dec ((poly_int64_pod)a->max_size, out, SIGNED);
+      if (a->adjustments)
+	fprintf (out, " adjusted %i times", a->adjustments);
     }
   fprintf (out, "\n");
 }
@@ -656,7 +658,7 @@ get_access (ao_ref *ref)
 
   base = ao_ref_base (ref);
   modref_access_node a = {ref->offset, ref->size, ref->max_size,
-			  0, -1, false};
+			  0, -1, false, 0};
   if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
     {
       tree memref = base;
@@ -708,7 +710,7 @@ record_access (modref_records *tt, ao_ref *ref)
        fprintf (dump_file, "   - Recording base_set=%i ref_set=%i parm=%i\n",
 		base_set, ref_set, a.parm_index);
     }
-  tt->insert (base_set, ref_set, a);
+  tt->insert (base_set, ref_set, a, false);
 }
 
 /* IPA version of record_access_tree.  */
@@ -774,7 +776,7 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
 	       a.parm_index);
     }
 
-  tt->insert (base_type, ref_type, a);
+  tt->insert (base_type, ref_type, a, false);
 }
 
 /* Returns true if and only if we should store the access to EXPR.
@@ -858,12 +860,15 @@ parm_map_for_arg (gimple *stmt, int i)
 
 /* Merge side effects of call STMT to function with CALLEE_SUMMARY
    int CUR_SUMMARY.  Return true if something changed.
-   If IGNORE_STORES is true, do not merge stores.  */
+   If IGNORE_STORES is true, do not merge stores.
+   If RECORD_ADJUSTMENTS is true cap number of adjustments to
+   a given access to make dataflow finite.  */
 
 bool
 merge_call_side_effects (modref_summary *cur_summary,
 			 gimple *stmt, modref_summary *callee_summary,
-			 bool ignore_stores, cgraph_node *callee_node)
+			 bool ignore_stores, cgraph_node *callee_node,
+			 bool record_adjustments)
 {
   auto_vec <modref_parm_map, 32> parm_map;
   bool changed = false;
@@ -902,11 +907,13 @@ merge_call_side_effects (modref_summary *cur_summary,
     fprintf (dump_file, "\n");
 
   /* Merge with callee's summary.  */
-  changed |= cur_summary->loads->merge (callee_summary->loads, &parm_map);
+  changed |= cur_summary->loads->merge (callee_summary->loads, &parm_map,
+					record_adjustments);
   if (!ignore_stores)
     {
       changed |= cur_summary->stores->merge (callee_summary->stores,
-					     &parm_map);
+					     &parm_map,
+					     record_adjustments);
       if (!cur_summary->writes_errno
 	  && callee_summary->writes_errno)
 	{
@@ -941,7 +948,7 @@ get_access_for_fnspec (gcall *call, attr_fnspec &fnspec,
     }
   modref_access_node a = {0, -1, -1,
 			  map.parm_offset, map.parm_index,
-			  map.parm_offset_known};
+			  map.parm_offset_known, 0};
   poly_int64 size_hwi;
   if (size
       && poly_int_tree_p (size, &size_hwi)
@@ -1044,12 +1051,14 @@ process_fnspec (modref_summary *cur_summary,
 	      cur_summary->loads->insert (0, 0,
 					  get_access_for_fnspec (call,
 								 fnspec, i,
-								 map));
+								 map),
+					  false);
 	    if (cur_summary_lto)
 	      cur_summary_lto->loads->insert (0, 0,
 					      get_access_for_fnspec (call,
 								     fnspec, i,
-								     map));
+								     map),
+					      false);
 	  }
     }
   if (ignore_stores)
@@ -1077,12 +1086,14 @@ process_fnspec (modref_summary *cur_summary,
 	      cur_summary->stores->insert (0, 0,
 					   get_access_for_fnspec (call,
 								  fnspec, i,
-								  map));
+								  map),
+					   false);
 	    if (cur_summary_lto)
 	      cur_summary_lto->stores->insert (0, 0,
 					       get_access_for_fnspec (call,
 								      fnspec, i,
-								      map));
+								      map),
+					       false);
 	  }
       if (fnspec.errno_maybe_written_p () && flag_errno_math)
 	{
@@ -1168,7 +1179,7 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
     }
 
   merge_call_side_effects (cur_summary, stmt, callee_summary, ignore_stores,
-			   callee_node);
+			   callee_node, false);
 
   return true;
 }
@@ -2134,6 +2145,7 @@ analyze_function (function *f, bool ipa)
   if (!ipa)
     {
       bool changed = true;
+      bool first = true;
       while (changed)
 	{
 	  changed = false;
@@ -2144,13 +2156,14 @@ analyze_function (function *f, bool ipa)
 			   ignore_stores_p (current_function_decl,
 					    gimple_call_flags
 						 (recursive_calls[i])),
-			   fnode);
+			   fnode, !first);
 	      if (!summary->useful_p (ecf_flags, false))
 		{
 		  remove_summary (lto, nolto, ipa);
 		  return;
 		}
 	    }
+	  first = false;
 	}
     }
   if (summary && !summary->useful_p (ecf_flags))
@@ -2501,11 +2514,11 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
 		    }
 		}
 	      modref_access_node a = {offset, size, max_size, parm_offset,
-				      parm_index, parm_offset_known};
+				      parm_index, parm_offset_known, false};
 	      if (nolto_ref_node)
-		nolto_ref_node->insert_access (a, max_accesses);
+		nolto_ref_node->insert_access (a, max_accesses, false);
 	      if (lto_ref_node)
-		lto_ref_node->insert_access (a, max_accesses);
+		lto_ref_node->insert_access (a, max_accesses, false);
 	    }
 	}
     }
@@ -3187,16 +3200,18 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
       if (!ignore_stores)
 	{
 	  if (to_info && callee_info)
-	    to_info->stores->merge (callee_info->stores, &parm_map);
+	    to_info->stores->merge (callee_info->stores, &parm_map, false);
 	  if (to_info_lto && callee_info_lto)
-	    to_info_lto->stores->merge (callee_info_lto->stores, &parm_map);
+	    to_info_lto->stores->merge (callee_info_lto->stores, &parm_map,
+					false);
 	}
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	{
 	  if (to_info && callee_info)
-	    to_info->loads->merge (callee_info->loads, &parm_map);
+	    to_info->loads->merge (callee_info->loads, &parm_map, false);
 	  if (to_info_lto && callee_info_lto)
-	    to_info_lto->loads->merge (callee_info_lto->loads, &parm_map);
+	    to_info_lto->loads->merge (callee_info_lto->loads, &parm_map,
+				       false);
 	}
     }
 
@@ -3346,7 +3361,7 @@ get_access_for_fnspec (cgraph_edge *e, attr_fnspec &fnspec,
     size = TYPE_SIZE_UNIT (get_parm_type (e->callee->decl, i));
   modref_access_node a = {0, -1, -1,
 			  map.parm_offset, map.parm_index,
-			  map.parm_offset_known};
+			  map.parm_offset_known, 0};
   poly_int64 size_hwi;
   if (size
       && poly_int_tree_p (size, &size_hwi)
@@ -3399,10 +3414,10 @@ propagate_unknown_call (cgraph_node *node,
 		}
 	      if (cur_summary)
 		changed |= cur_summary->loads->insert
-		  (0, 0, get_access_for_fnspec (e, fnspec, i, map));
+		  (0, 0, get_access_for_fnspec (e, fnspec, i, map), false);
 	      if (cur_summary_lto)
 		changed |= cur_summary_lto->loads->insert
-		  (0, 0, get_access_for_fnspec (e, fnspec, i, map));
+		  (0, 0, get_access_for_fnspec (e, fnspec, i, map), false);
 	    }
 	}
       if (ignore_stores_p (node->decl, ecf_flags))
@@ -3429,10 +3444,10 @@ propagate_unknown_call (cgraph_node *node,
 		}
 	      if (cur_summary)
 		changed |= cur_summary->stores->insert
-		  (0, 0, get_access_for_fnspec (e, fnspec, i, map));
+		  (0, 0, get_access_for_fnspec (e, fnspec, i, map), false);
 	      if (cur_summary_lto)
 		changed |= cur_summary_lto->stores->insert
-		  (0, 0, get_access_for_fnspec (e, fnspec, i, map));
+		  (0, 0, get_access_for_fnspec (e, fnspec, i, map), false);
 	    }
 	}
       if (fnspec.errno_maybe_written_p () && flag_errno_math)
@@ -3491,6 +3506,7 @@ static void
 modref_propagate_in_scc (cgraph_node *component_node)
 {
   bool changed = true;
+  bool first = true;
   int iteration = 0;
 
   while (changed)
@@ -3628,11 +3644,12 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      if (callee_summary)
 		{
 		  changed |= cur_summary->loads->merge
-				  (callee_summary->loads, &parm_map);
+				  (callee_summary->loads, &parm_map, !first);
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary->stores->merge
-				      (callee_summary->stores, &parm_map);
+				      (callee_summary->stores, &parm_map,
+				       !first);
 		      if (!cur_summary->writes_errno
 			  && callee_summary->writes_errno)
 			{
@@ -3644,11 +3661,13 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      if (callee_summary_lto)
 		{
 		  changed |= cur_summary_lto->loads->merge
-				  (callee_summary_lto->loads, &parm_map);
+				  (callee_summary_lto->loads, &parm_map,
+				   !first);
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary_lto->stores->merge
-				      (callee_summary_lto->stores, &parm_map);
+				      (callee_summary_lto->stores, &parm_map,
+				       !first);
 		      if (!cur_summary_lto->writes_errno
 			  && callee_summary_lto->writes_errno)
 			{
@@ -3674,6 +3693,7 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	    }
 	}
       iteration++;
+      first = false;
     }
   if (dump_file)
     fprintf (dump_file,

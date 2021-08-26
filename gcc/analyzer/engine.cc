@@ -3059,6 +3059,20 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
 
       new_point.push_to_call_stack (sn_exit,
                                     next_point.get_supernode());
+
+      /* Impose a maximum recursion depth and don't analyze paths
+         that exceed it further.
+         This is something of a blunt workaround, but it only
+         applies to recursion (and mutual recursion), not to
+         general call stacks.  */
+      if (new_point.get_call_string ().calc_recursion_depth ()
+          > param_analyzer_max_recursion_depth)
+      {
+        if (logger)
+          logger->log ("rejecting call edge: recursion limit exceeded");
+        return false;
+      }
+
       next_state.push_call (*this, node, call, uncertainty);
 
       if (next_state.m_valid)

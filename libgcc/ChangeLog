@@ -1,3 +1,9 @@
+2021-08-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102035
+	* config/arm/cmse_nonsecure_call.S (__gnu_cmse_nonsecure_call):
+	Add vlldm erratum work-around.
+
 2021-08-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.host: Remove extra_parts from hppa[12]*-*-hpux11* case.

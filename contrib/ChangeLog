@@ -1,3 +1,9 @@
+2021-08-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR other/82704
+	* download_prerequisites: Fix issues with --md5 and
+	--sha512 options.
+
 2021-08-18  Martin Liska  <mliska@suse.cz>
 
 	* gcc-git-customization.sh: Wrap $@ in quotes.

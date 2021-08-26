@@ -2360,6 +2360,134 @@ proc check_effective_target_ppc_ieee128_ok { } {
     }]
 }
 
+# Check if GCC and GLIBC supports explicitly specifying that the long double
+# format uses the IBM 128-bit extended double format.  Under little endian
+# PowerPC Linux, you need GLIBC 2.32 or later to be able to use a different
+# long double format for running a program than the system default.
+
+proc check_effective_target_long_double_ibm128 { } {
+    return [check_runtime_nocache long_double_ibm128 {
+	#include <string.h>
+	#include <stdio.h>
+	/* use volatile to prevent optimization.  */
+	volatile __ibm128 a = (__ibm128) 3.0;
+	volatile long double one = 1.0L;
+	volatile long double two = 2.0L;
+	volatile long double b;
+	char buffer[20];
+	int main()
+	{
+	  __ibm128 a2;
+	  long double b2;
+	  if (sizeof (long double) != 16)
+	    return 1;
+	  b = one + two;
+	  /* eliminate removing volatile cast warning.  */
+	  a2 = a;
+	  b2 = b;
+	  if (memcmp (&a2, &b2, 16) != 0)
+	    return 1;
+	  sprintf (buffer, "%lg", b);
+	  return strcmp (buffer, "3") != 0;
+	}
+    } [add_options_for_long_double_ibm128 ""]]
+}
+
+# Return the appropriate options to specify that long double uses the IBM
+# 128-bit format on PowerPC.
+
+proc add_options_for_long_double_ibm128 { flags } {
+    if { [istarget powerpc*-*-*] } {
+	return "$flags -mlong-double-128 -Wno-psabi -mabi=ibmlongdouble"
+    }
+    return "$flags"
+}
+
+# Check if GCC and GLIBC supports explicitly specifying that the long double
+# format uses the IEEE 128-bit format.  Under little endian PowerPC Linux, you
+# need GLIBC 2.32 or later to be able to use a different long double format for
+# running a program than the system default.
+
+proc check_effective_target_long_double_ieee128 { } {
+    return [check_runtime_nocache long_double_ieee128 {
+	#include <string.h>
+	#include <stdio.h>
+	/* use volatile to prevent optimization.  */
+	volatile _Float128 a = 3.0f128;
+	volatile long double one = 1.0L;
+	volatile long double two = 2.0L;
+	volatile long double b;
+	char buffer[20];
+	int main()
+	{
+	  _Float128 a2;
+	  long double b2;  
+	  if (sizeof (long double) != 16)
+	    return 1;
+	  b = one + two;
+	  /* eliminate removing volatile cast warning.  */
+	  a2 = a;
+	  b2 = b;
+	  if (memcmp (&a2, &b2, 16) != 0)
+	    return 1;
+	  sprintf (buffer, "%lg", b);
+	  return strcmp (buffer, "3") != 0;
+	}
+    }  [add_options_for_long_double_ieee128 ""]]
+}
+
+# Return the appropriate options to specify that long double uses the IBM
+# 128-bit format on PowerPC.
+proc add_options_for_long_double_ieee128 { flags } {
+    if { [istarget powerpc*-*-*] } {
+	return "$flags -mlong-double-128 -Wno-psabi -mabi=ieeelongdouble"
+    }
+    return "$flags"
+}
+
+# Check if GCC and GLIBC supports explicitly specifying that the long double
+# format uses the IEEE 64-bit.  Under little endian PowerPC Linux, you need
+# GLIBC 2.32 or later to be able to use a different long double format for
+# running a program than the system default.
+
+proc check_effective_target_long_double_64bit { } {
+    return [check_runtime_nocache long_double_64bit {
+	#include <string.h>
+	#include <stdio.h>
+	/* use volatile to prevent optimization.  */
+	volatile double a = 3.0;
+	volatile long double one = 1.0L;
+	volatile long double two = 2.0L;
+	volatile long double b;
+	char buffer[20];
+	int main()
+	{
+	  double a2;
+	  long double b2;
+	  if (sizeof (long double) != 8)
+	    return 1;
+	  b = one + two;
+	  /* eliminate removing volatile cast warning.  */
+	  a2 = a;
+	  b2 = b;
+	  if (memcmp (&a2, &b2, 16) != 0)
+	    return 1;
+	  sprintf (buffer, "%lg", b);
+	  return strcmp (buffer, "3") != 0;
+	}
+    }  [add_options_for_ppc_long_double_override_64bit ""]]
+}
+
+# Return the appropriate options to specify that long double uses the IEEE
+# 64-bit format on PowerPC.
+
+proc add_options_for_long_double_64bit { flags } {
+    if { [istarget powerpc*-*-*] } {
+	return "$flags -mlong-double-64"
+    }
+    return "$flags"
+}
+
 # Return 1 if the target supports executing VSX instructions, 0
 # otherwise.  Cache the result.
 
