@@ -19,7 +19,6 @@
 
 (define_enum "processor" [
   loongarch64
-  loongarch32
   gs464v
 ])
 

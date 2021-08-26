@@ -49,12 +49,6 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
 
   switch (loongarch_abi)
     {
-    case ABILP32:
-      builtin_define ("_ABILP32=1");
-      builtin_define ("_LOONGARCH_SIM=_ABILP32");
-      builtin_define ("__loongarch32");
-      break;
-
     case ABILP64:
       builtin_define ("_ABILP64=3");
       builtin_define ("_LOONGARCH_SIM=_ABILP64");

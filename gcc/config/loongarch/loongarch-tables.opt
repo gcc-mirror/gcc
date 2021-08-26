@@ -30,8 +30,5 @@ EnumValue
 Enum(loongarch_arch_opt_value) String(loongarch64) Value(0) Canonical
 
 EnumValue
-Enum(loongarch_arch_opt_value) String(loongarch32) Value(1) Canonical
-
-EnumValue
-Enum(loongarch_arch_opt_value) String(gs464v) Value(2) Canonical
+Enum(loongarch_arch_opt_value) String(gs464v) Value(1) Canonical
 

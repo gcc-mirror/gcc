@@ -2519,7 +2519,7 @@ loongarch*-*-linux*)
 	loongarch_multilibs=`echo $loongarch_multilibs | sed -e 's/,/ /g'`
 	for loongarch_multilib in ${loongarch_multilibs}; do
 		case ${loongarch_multilib} in
-		lp64 | lp32 )
+		lp64)
 			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${loongarch_multilib}"
 			;;
 		*)
@@ -4935,7 +4935,7 @@ case "${target}" in
 		supported_defaults="abi arch float fpu tune fix-loongson3-llsc"
 
 		case ${with_arch} in
-		loongarch64 | loongarch32 | gs464v)
+		loongarch64 | gs464v)
 			# OK
 			default_loongarch_arch=$with_arch
 			;;
@@ -4950,7 +4950,7 @@ case "${target}" in
 		esac
 
 		case ${with_abi} in
-		lp64 | lp32)
+		lp64)
 			# OK
 			default_loongarch_abi=$with_abi
 			;;
@@ -5450,12 +5450,10 @@ case ${target} in
 	loongarch*-*-*)
 		case ${default_loongarch_arch} in
 		    loongarch64) tm_defines="$tm_defines LARCH_ISA_DEFAULT=0" ;;
-		    loongarch32) tm_defines="$tm_defines LARCH_ISA_DEFAULT=1" ;;
-		    gs464v) tm_defines="$tm_defines LARCH_ISA_DEFAULT=2" ;;
+		    gs464v) tm_defines="$tm_defines LARCH_ISA_DEFAULT=1" ;;
 		esac
 		case ${default_loongarch_abi} in
 		    lp64)   tm_defines="$tm_defines LARCH_ABI_DEFAULT=ABILP64" ;;
-		    lp32)   tm_defines="$tm_defines LARCH_ABI_DEFAULT=ABILP32" ;;
 		esac
 		tmake_file="loongarch/t-loongarch $tmake_file"
 		;;

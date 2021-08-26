@@ -34,9 +34,6 @@ Name(loongarch_abi) Type(int)
 Known Loongarch ABIs (for use with the -mabi= option):
 
 EnumValue
-Enum(loongarch_abi) String(lp32) Value(ABILP32)
-
-EnumValue
 Enum(loongarch_abi) String(lp64) Value(ABILP64)
 
 march=

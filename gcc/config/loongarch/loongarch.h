@@ -21,8 +21,7 @@
 
 /* Which ABI to use.  ABILP64 is defined by Loongson.  */
 
-#define ABILP32 0
-#define ABILP64 2
+#define ABILP64 3
 
 /* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
@@ -68,7 +67,6 @@ struct loongarch_cpu_info
 #define TARGET_GS464V (loongarch_arch == PROCESSOR_GS464V)
 #define TUNE_GS464V (loongarch_tune == PROCESSOR_GS464V)
 
-#define TARGET_LP32ABI (loongarch_abi == ABILP32)
 #define TARGET_LP64ABI (loongarch_abi == ABILP64)
 
 /* TARGET_HARD_FLOAT and TARGET_SOFT_FLOAT reflect whether the FPU is
@@ -128,8 +126,6 @@ struct loongarch_cpu_info
 #ifndef MULTILIB_ISA_DEFAULT
 #if LARCH_ISA_DEFAULT == 0
 #define MULTILIB_ISA_DEFAULT "loongarch64"
-#elif LARCH_ISA_DEFAULT == 1
-#define MULTILIB_ISA_DEFAULT "loongarch32"
 #elif LARCH_ISA_DEFAULT == 2
 #define MULTILIB_ISA_DEFAULT "gs464v"
 #endif
@@ -140,9 +136,7 @@ struct loongarch_cpu_info
 #endif
 
 /* Use the most portable ABI flag for the ASM specs.  */
-#if LARCH_ABI_DEFAULT == ABILP32
-#define MULTILIB_ABI_DEFAULT "mabi=lp32"
-#elif LARCH_ABI_DEFAULT == ABILP64
+#if LARCH_ABI_DEFAULT == ABILP64
 #define MULTILIB_ABI_DEFAULT "mabi=lp64"
 #endif
 
@@ -174,14 +168,10 @@ struct loongarch_cpu_info
     %{!mno-fix-loongson3-llsc:-m%(VALUE)}}" }
 
 #define ABI_SPEC \
-  "%{mabi=lp32:32}" \
   "%{mabi=lp64:64}"
 
 /* Default system library search paths.  */
-#if LARCH_ABI_DEFAULT == ABILP32
-#define STANDARD_STARTFILE_PREFIX_1 "/lib32/"
-#define STANDARD_STARTFILE_PREFIX_2 "/usr/lib32/"
-#elif LARCH_ABI_DEFAULT == ABILP64
+#if LARCH_ABI_DEFAULT == ABILP64
 #define STANDARD_STARTFILE_PREFIX_1 "/lib64/"
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib64/"
 #endif

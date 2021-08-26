@@ -96,12 +96,7 @@ __builtin_loongarch_rdtimel_w (void)
 #define __movgr2fcsr(/*ui5*/ _1, _2) \
   __builtin_loongarch_movgr2fcsr ((unsigned short) _1, (unsigned int) _2);
 
-#ifdef __loongarch32
-/* Assembly instruction format:          ui5, rj, si12 */
-/* Data types in instruction templates:  VOID, USI, USI, SI */
-#define __cacop(/*ui5*/ _1, /*unsigned int*/ _2, /*si12*/ _3) \
-  ((void) __builtin_loongarch_cacop ((_1), (unsigned int) (_2), (_3)))
-#elif defined __loongarch64
+#if defined __loongarch64
 /* Assembly instruction format:          ui5, rj, si12 */
 /* Data types in instruction templates:  VOID, USI, UDI, SI */
 #define __dcacop(/*ui5*/ _1, /*unsigned long int*/ _2, /*si12*/ _3) \
@@ -139,12 +134,7 @@ __asrtgt_d (long int _1, long int _2)
 }
 #endif
 
-#ifdef __loongarch32
-/* Assembly instruction format:          rd, rj, ui5 */
-/* Data types in instruction templates:  SI, SI, UQI */
-#define __lddir(/*int*/ _1, /*ui5*/ _2) \
-  ((int) __builtin_loongarch_lddir ((int) (_1), (_2)))
-#elif defined __loongarch64
+#if defined __loongarch64
 /* Assembly instruction format:          rd, rj, ui5 */
 /* Data types in instruction templates:  DI, DI, UQI */
 #define __dlddir(/*long int*/ _1, /*ui5*/ _2) \
@@ -153,12 +143,7 @@ __asrtgt_d (long int _1, long int _2)
 #error "Don't support this ABI."
 #endif
 
-#ifdef __loongarch32
-/* Assembly instruction format:          rj, ui5 */
-/* Data types in instruction templates:  VOID, SI, UQI */
-#define __ldpte(/*int*/ _1, /*ui5*/ _2) \
-  ((void) __builtin_loongarch_ldpte ((int) (_1), (_2)))
-#elif defined __loongarch64
+#if defined __loongarch64
 /* Assembly instruction format:          rj, ui5 */
 /* Data types in instruction templates:  VOID, DI, UQI */
 #define __dldpte(/*long int*/ _1, /*ui5*/ _2) \

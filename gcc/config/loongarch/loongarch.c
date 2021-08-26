@@ -317,9 +317,6 @@ loongarch_rtx_cost_data[NUM_PROCESSOR_VALUES] = {
       { /* PROCESSOR_LOONGARCH64 */
 	DEFAULT_COSTS
       },
-      { /* PROCESSOR_LOONGARCH32 */
-	DEFAULT_COSTS
-      },
       { /* PROCESSOR_GS464V */
 	DEFAULT_COSTS
       }
@@ -4854,9 +4851,6 @@ loongarch_dwarf_frame_reg_mode (int regno)
 {
   machine_mode mode = default_dwarf_frame_reg_mode (regno);
 
-  if (FP_REG_P (regno) && loongarch_abi == ABILP32 && TARGET_FLOAT64)
-    mode = SImode;
-
   return mode;
 }
 
@@ -5815,7 +5809,6 @@ loongarch_issue_rate (void)
   switch (loongarch_tune)
     {
     case PROCESSOR_LOONGARCH64:
-    case PROCESSOR_LOONGARCH32:
     case PROCESSOR_GS464V:
       return 4;
 
@@ -6162,7 +6155,6 @@ loongarch_set_architecture_and_tune (struct gcc_options *opts, struct gcc_option
 
   /* ISA value:
    * loongarch64 0
-   * loongarch32 1
    * gs464v      2
    * */
 
@@ -6172,11 +6164,6 @@ loongarch_set_architecture_and_tune (struct gcc_options *opts, struct gcc_option
     target_flags |= MASK_64BIT;
     if (TARGET_DOUBLE_FLOAT)
       target_flags |= MASK_FLOAT64;
-    break;
-
-  case 1:
-    target_flags &= ~MASK_64BIT;
-    target_flags &= ~MASK_FLOAT64;
     break;
 
   case 2:
@@ -6227,7 +6214,7 @@ loongarch_option_override_internal (struct gcc_options *opts,
 
   /* End of code shared with GAS.  */
 
-  if (!TARGET_LP32ABI)
+  if (TARGET_LP64ABI)
     flag_pcc_struct_return = 0;
 
   /* Decide which rtx_costs structure to use.  */
