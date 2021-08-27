@@ -2312,7 +2312,7 @@ write_decls (void)
 	   "extern ovlddata rs6000_instance_info[RS6000_INST_MAX];\n");
   fprintf (header_file, "extern ovldrecord rs6000_overload_info[];\n\n");
 
-  fprintf (header_file, "extern void rs6000_autoinit_builtins ();\n\n");
+  fprintf (header_file, "extern void rs6000_init_generated_builtins ();\n\n");
   fprintf (header_file,
 	   "extern bool rs6000_new_builtin_is_supported_p "
 	   "(rs6000_gen_builtins);\n");
@@ -2794,7 +2794,7 @@ write_init_file (void)
   fprintf (init_file, "\n");
 
   fprintf (init_file, "void\n");
-  fprintf (init_file, "rs6000_autoinit_builtins ()\n");
+  fprintf (init_file, "rs6000_init_generated_builtins ()\n");
   fprintf (init_file, "{\n");
   fprintf (init_file, "  tree t;\n");
   rbt_inorder_callback (&fntype_rbt, fntype_rbt.rbt_root, write_fntype_init);
