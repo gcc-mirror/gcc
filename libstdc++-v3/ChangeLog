@@ -1,3 +1,222 @@
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Check 'sz'.
+
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Adjust for Windows.
+
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/valarray: Uglify 'func' parameters.
+	* testsuite/17_intro/names.cc: Add 'func' to checks.
+
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102064
+	* include/bits/stl_uninitialized.h (_GLIBCXX_USE_ASSIGN_FOR_INIT):
+	Define macro to check conditions for optimizing trivial cases.
+	(__check_constructible): New function to do static assert.
+	(uninitialized_copy, uninitialized_fill, uninitialized_fill_n):
+	Use new macro.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/1.cc:
+	Adjust dg-error pattern.
+	* testsuite/23_containers/vector/cons/89164.cc: Likewise. Add
+	C++17-specific checks from 89164_c++17.cc.
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: Removed.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/102064.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/102064.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/102064.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/102064.cc:
+	New test.
+
+2021-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102048
+	* include/ext/rope (rope::erase(size_type)): Remove broken
+	function.
+
+2021-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update table.
+	* doc/html/manual/status.html: Regenerate.
+
+2021-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_layout_compatible): Define.
+	(is_corresponding_member): Define.
+	* include/std/version (__cpp_lib_is_layout_compatible): Define.
+	* testsuite/20_util/is_layout_compatible/is_corresponding_member.cc:
+	New test.
+	* testsuite/20_util/is_layout_compatible/value.cc: New test.
+	* testsuite/20_util/is_layout_compatible/version.cc: New test.
+	* testsuite/20_util/is_pointer_interconvertible/with_class.cc:
+	New test.
+	* testsuite/23_containers/span/layout_compat.cc: Do not use real
+	std::is_layout_compatible trait if available.
+
+2021-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cxx11-shim_facets.cc: Fix mismatched class-key in
+	explicit instantiation definitions.
+
+2021-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (basic_istream_view): Add default template
+	argument.
+	* testsuite/std/ranges/istream_view.cc: Check it.
+
+2021-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/dyncast.cc (__dynamic_cast): Add __builtin_expect to
+	precondition check.
+
+2021-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90787
+	* testsuite/util/testsuite_fs.h (permissions_are_testable):
+	Define as inline.
+
+2021-08-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90787
+	* testsuite/27_io/filesystem/iterators/directory_iterator.cc:
+	Use new __gnu_test::permissions_are_testable() function.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/exists.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/status.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/exists.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/is_empty.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/remove.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/util/testsuite_fs.h (__gnu_test::permissions_are_testable):
+	New function to guess whether testing permissions will work.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Move row  earlier in table.
+	* doc/html/manual/status.html: Regenerate.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.9.2
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101965
+	* include/std/charconv (__to_chars_i): Remove redundant check.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101960
+	* include/std/tuple (_Tuple_impl(_Tuple_impl&&)): Use base
+	class' move constructor. Define as defaulted for versioned
+	namespace.
+	* testsuite/20_util/tuple/cons/101960.cc: New test.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100139
+	* doc/xml/manual/status_cxx2020.xml: Add P1739R4 to status table.
+	* doc/html/manual/status.html: Regenerate.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h: Add @since and @headerfile tags.
+	* include/bits/unique_ptr.h: Add @headerfile tags.
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops-common.h (filesystem::file_time): Improve
+	overflow check by using system_clock::duration::max().
+
+2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h: Tweak whitespace.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (default_delete): Add @since tag.
+	(unique_ptr, unique_ptr<T[]>): Likewise. Improve @brief.
+	(make_unique, make_unique_for_overwrite): Likewise. Add @tparam,
+	@param, and @returns.
+	(_MakeUniq): Move to __detail namespace. Add alias template
+	helpers.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_function.h: Improve doxygen comments.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Enable doxygen
+	processing for C++20 components and components that depend on
+	compiler features.
+	* include/bits/stl_algo.h (random_shuffle): Use @deprecated.
+	* include/std/type_traits: Improve doxygen comments for C++20
+	traits.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/type_traits.h (__promote_2, __promote_3)
+	(__promote_4): Redfine as alias templates using __promoted_t.
+	* include/std/complex (__promote_2): Remove partial
+	specializations for std::complex.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (min(initializer_list<T>))
+	(min(initializer_list<T>, Compare)): Call __min_element directly to
+	avoid redundant debug checks for valid ranges.
+	(max(initializer_list<T>), max(initializer_list<T>, Compare)):
+	Likewise, for __max_element.
+	(minmax(initializer_list<T>), minmax(initializer_list<T>, Compare)):
+	Likewise, for __minmax_element.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/deque (deque(size_type, const T&, const A&)):
+	Prevent class template argument deduction and replace with a
+	deduction guide.
+	* include/debug/forward_list (forward_list(size_type, const T&, const A&)):
+	Likewise.
+	* include/debug/list (list(size_type, const T&, const A&)):
+	Likewise.
+	* include/debug/vector (vector(size_type, const T&, const A&)):
+	Likewise.
+
+2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdBitReferencePrinter): Use
+	'std::vector<bool>::reference' as type name, not _Bit_reference.
+	(build_libstdcxx_dictionary): Register printers for vector<bool>
+	types in debug mode too.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Adjust expected
+	output for invalid _Bit_reference. Use vector<bool>::reference
+	instead of _Bit_reference.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
 2021-08-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp: Avoid illegal argument to verbose,

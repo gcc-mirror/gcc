@@ -132,6 +132,7 @@ extern GTY(()) int darwin_ms_struct;
 "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} \
    %<gsplit-dwarf",							\
 "%{gused:-g -feliminate-unused-debug-symbols} %<gused",			\
+"%{rpath*: -Xlinker -rpath -Xlinker %*}",					\
 "%{shared:-Zdynamiclib} %<shared",					\
 "%{static:%{Zdynamic:%e conflicting code gen style switches are used}}",\
 "%{y*:%nthe y option is obsolete and ignored} %<y*",			\
@@ -238,7 +239,7 @@ extern GTY(()) int darwin_ms_struct;
     DARWIN_NOPIE_SPEC \
     DARWIN_RDYNAMIC \
     DARWIN_NOCOMPACT_UNWIND \
-    "}}}}}}} %<pie %<no-pie %<rdynamic %<X "
+    "}}}}}}} %<pie %<no-pie %<rdynamic %<X %<rpath "
 
 /* Spec that controls whether the debug linker is run automatically for
    a link step.  This needs to be done if there is a source file on the

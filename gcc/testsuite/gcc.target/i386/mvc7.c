@@ -1,7 +1,11 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
-/* { dg-final { scan-assembler "foo.resolver" } } */
-/* { dg-final { scan-assembler "avx" } } */
+
+/* Verify that foo clones are not numbered.  */
+/* { dg-final { scan-assembler "foo.resolver," } } */
+/* { dg-final { scan-assembler "foo.default," } } */
+/* { dg-final { scan-assembler "foo.avx," } } */
+
 /* { dg-final { scan-assembler "slm" } } */
 /* { dg-final { scan-assembler "foo,foo.resolver" } } */
 

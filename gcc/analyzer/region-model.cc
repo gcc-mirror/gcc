@@ -1841,6 +1841,11 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
 	const region *ref_reg = get_lvalue (pv, ctxt);
 	return get_store_value (ref_reg, ctxt);
       }
+    case OBJ_TYPE_REF:
+      {
+        tree expr = OBJ_TYPE_REF_EXPR (pv.m_tree);
+        return get_rvalue (expr, ctxt);
+      }
     }
 }
 
@@ -2483,34 +2488,51 @@ region_model::eval_condition_without_cm (const svalue *lhs,
     if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
       return constant_svalue::eval_condition (cst_lhs, op, cst_rhs);
 
-  /* Handle comparison of a region_svalue against zero.  */
+  /* Handle comparison against zero.  */
+  if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
+    if (zerop (cst_rhs->get_constant ()))
+      {
+	if (const region_svalue *ptr = lhs->dyn_cast_region_svalue ())
+	  {
+	    /* A region_svalue is a non-NULL pointer, except in certain
+	       special cases (see the comment for region::non_null_p).  */
+	    const region *pointee = ptr->get_pointee ();
+	    if (pointee->non_null_p ())
+	      {
+		switch (op)
+		  {
+		  default:
+		    gcc_unreachable ();
 
-  if (const region_svalue *ptr = lhs->dyn_cast_region_svalue ())
-    if (const constant_svalue *cst_rhs = rhs->dyn_cast_constant_svalue ())
-      if (zerop (cst_rhs->get_constant ()))
-	{
-	  /* A region_svalue is a non-NULL pointer, except in certain
-	     special cases (see the comment for region::non_null_p.  */
-	  const region *pointee = ptr->get_pointee ();
-	  if (pointee->non_null_p ())
-	    {
-	      switch (op)
-		{
-		default:
-		  gcc_unreachable ();
+		  case EQ_EXPR:
+		  case GE_EXPR:
+		  case LE_EXPR:
+		    return tristate::TS_FALSE;
 
-		case EQ_EXPR:
-		case GE_EXPR:
-		case LE_EXPR:
-		  return tristate::TS_FALSE;
-
-		case NE_EXPR:
-		case GT_EXPR:
-		case LT_EXPR:
-		  return tristate::TS_TRUE;
-		}
-	    }
-	}
+		  case NE_EXPR:
+		  case GT_EXPR:
+		  case LT_EXPR:
+		    return tristate::TS_TRUE;
+		  }
+	      }
+	  }
+	else if (const binop_svalue *binop = lhs->dyn_cast_binop_svalue ())
+	  {
+	    /* Treat offsets from a non-NULL pointer as being non-NULL.  This
+	       isn't strictly true, in that eventually ptr++ will wrap
+	       around and be NULL, but it won't occur in practise and thus
+	       can be used to suppress effectively false positives that we
+	       shouldn't warn for.  */
+	    if (binop->get_op () == POINTER_PLUS_EXPR)
+	      {
+		tristate lhs_ts
+		  = eval_condition_without_cm (binop->get_arg0 (),
+					       op, rhs);
+		if (lhs_ts.is_known ())
+		  return lhs_ts;
+	      }
+	  }
+      }
 
   /* Handle rejection of equality for comparisons of the initial values of
      "external" values (such as params) with the address of locals.  */
@@ -2751,7 +2773,7 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 {
   bool sat = add_constraint (lhs, op, rhs, ctxt);
   if (!sat && out)
-    *out = new rejected_constraint (*this, lhs, op, rhs);
+    *out = new rejected_op_constraint (*this, lhs, op, rhs);
   return sat;
 }
 
@@ -3172,12 +3194,12 @@ region_model::maybe_update_for_edge (const superedge &edge,
    caller's frame.  */
 
 void
-region_model::update_for_call_superedge (const call_superedge &call_edge,
-					 region_model_context *ctxt)
+region_model::update_for_gcall (const gcall *call_stmt,
+				region_model_context *ctxt,
+				function *callee)
 {
   /* Build a vec of argument svalues, using the current top
      frame for resolving tree expressions.  */
-  const gcall *call_stmt = call_edge.get_call_stmt ();
   auto_vec<const svalue *> arg_svals (gimple_call_num_args (call_stmt));
 
   for (unsigned i = 0; i < gimple_call_num_args (call_stmt); i++)
@@ -3186,31 +3208,60 @@ region_model::update_for_call_superedge (const call_superedge &call_edge,
       arg_svals.quick_push (get_rvalue (arg, ctxt));
     }
 
-  push_frame (call_edge.get_callee_function (), &arg_svals, ctxt);
+  if(!callee)
+  {
+    /* Get the function * from the gcall.  */
+    tree fn_decl = get_fndecl_for_call (call_stmt,ctxt);
+    callee = DECL_STRUCT_FUNCTION (fn_decl);
+  }
+
+  push_frame (callee, &arg_svals, ctxt);
 }
 
 /* Pop the top-most frame_region from the stack, and copy the return
    region's values (if any) into the region for the lvalue of the LHS of
    the call (if any).  */
+
 void
-region_model::update_for_return_superedge (const return_superedge &return_edge,
-					   region_model_context *ctxt)
+region_model::update_for_return_gcall (const gcall *call_stmt,
+				       region_model_context *ctxt)
 {
   /* Get the region for the result of the call, within the caller frame.  */
   const region *result_dst_reg = NULL;
-  const gcall *call_stmt = return_edge.get_call_stmt ();
   tree lhs = gimple_call_lhs (call_stmt);
   if (lhs)
     {
       /* Normally we access the top-level frame, which is:
-	   path_var (expr, get_stack_depth () - 1)
-	 whereas here we need the caller frame, hence "- 2" here.  */
+         path_var (expr, get_stack_depth () - 1)
+         whereas here we need the caller frame, hence "- 2" here.  */
       gcc_assert (get_stack_depth () >= 2);
       result_dst_reg = get_lvalue (path_var (lhs, get_stack_depth () - 2),
-				   ctxt);
+           			   ctxt);
     }
 
   pop_frame (result_dst_reg, NULL, ctxt);
+}
+
+/* Extract calling information from the superedge and update the model for the 
+   call  */
+
+void
+region_model::update_for_call_superedge (const call_superedge &call_edge,
+					 region_model_context *ctxt)
+{
+  const gcall *call_stmt = call_edge.get_call_stmt ();
+  update_for_gcall (call_stmt, ctxt, call_edge.get_callee_function ());
+}
+
+/* Extract calling information from the return superedge and update the model 
+   for the returning call */
+
+void
+region_model::update_for_return_superedge (const return_superedge &return_edge,
+					   region_model_context *ctxt)
+{
+  const gcall *call_stmt = return_edge.get_call_stmt ();
+  update_for_return_gcall (call_stmt, ctxt);
 }
 
 /* Update this region_model with a summary of the effect of calling
@@ -3278,56 +3329,15 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
 					     region_model_context *ctxt,
 					     rejected_constraint **out)
 {
+  bounded_ranges_manager *ranges_mgr = get_range_manager ();
+  const bounded_ranges *all_cases_ranges
+    = ranges_mgr->get_or_create_ranges_for_switch (&edge, switch_stmt);
   tree index  = gimple_switch_index (switch_stmt);
-  tree case_label = edge.get_case_label ();
-  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
-  tree lower_bound = CASE_LOW (case_label);
-  tree upper_bound = CASE_HIGH (case_label);
-  if (lower_bound)
-    {
-      if (upper_bound)
-	{
-	  /* Range.  */
-	  if (!add_constraint (index, GE_EXPR, lower_bound, ctxt, out))
-	    return false;
-	  return add_constraint (index, LE_EXPR, upper_bound, ctxt, out);
-	}
-      else
-	/* Single-value.  */
-	return add_constraint (index, EQ_EXPR, lower_bound, ctxt, out);
-    }
-  else
-    {
-      /* The default case.
-	 Add exclusions based on the other cases.  */
-      for (unsigned other_idx = 1;
-	   other_idx < gimple_switch_num_labels (switch_stmt);
-	   other_idx++)
-	{
-	  tree other_label = gimple_switch_label (switch_stmt,
-						  other_idx);
-	  tree other_lower_bound = CASE_LOW (other_label);
-	  tree other_upper_bound = CASE_HIGH (other_label);
-	  gcc_assert (other_lower_bound);
-	  if (other_upper_bound)
-	    {
-	      /* Exclude this range-valued case.
-		 For now, we just exclude the boundary values.
-		 TODO: exclude the values within the region.  */
-	      if (!add_constraint (index, NE_EXPR, other_lower_bound,
-				   ctxt, out))
-		return false;
-	      if (!add_constraint (index, NE_EXPR, other_upper_bound,
-				   ctxt, out))
-		return false;
-	    }
-	  else
-	    /* Exclude this single-valued case.  */
-	    if (!add_constraint (index, NE_EXPR, other_lower_bound, ctxt, out))
-	      return false;
-	}
-      return true;
-    }
+  const svalue *index_sval = get_rvalue (index, ctxt);
+  bool sat = m_constraints->add_bounded_ranges (index_sval, all_cases_ranges);
+  if (!sat && out)
+    *out = new rejected_ranges_constraint (*this, index, all_cases_ranges);
+  return sat;
 }
 
 /* Apply any constraints due to an exception being thrown at LAST_STMT.
@@ -3809,10 +3819,10 @@ debug (const region_model &rmodel)
   rmodel.dump (false);
 }
 
-/* struct rejected_constraint.  */
+/* class rejected_op_constraint : public rejected_constraint.  */
 
 void
-rejected_constraint::dump_to_pp (pretty_printer *pp) const
+rejected_op_constraint::dump_to_pp (pretty_printer *pp) const
 {
   region_model m (m_model);
   const svalue *lhs_sval = m.get_rvalue (m_lhs, NULL);
@@ -3820,6 +3830,18 @@ rejected_constraint::dump_to_pp (pretty_printer *pp) const
   lhs_sval->dump_to_pp (pp, true);
   pp_printf (pp, " %s ", op_symbol_code (m_op));
   rhs_sval->dump_to_pp (pp, true);
+}
+
+/* class rejected_ranges_constraint : public rejected_constraint.  */
+
+void
+rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
+{
+  region_model m (m_model);
+  const svalue *sval = m.get_rvalue (m_expr, NULL);
+  sval->dump_to_pp (pp, true);
+  pp_string (pp, " in ");
+  m_ranges->dump_to_pp (pp, true);
 }
 
 /* class engine.  */

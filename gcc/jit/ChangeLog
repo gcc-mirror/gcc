@@ -1,3 +1,15 @@
+2021-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* docs/examples/tut04-toyvm/toyvm.c: Include jit-dejagnu.h.
+	* docs/examples/tut04-toyvm/toyvm.cc: Likewise.
+	* jit-dejagnu.h: New file, imported from dejagnu-1.6.2 and
+	patched for this application.
+
+2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR jit/100613
+	* Make-lang.in: Provide clauses for Darwin hosts.
+
 2021-07-18  Antoni Boucher  <bouanto@zoho.com>
 
 	PR target/95498

@@ -181,7 +181,7 @@ namespace __debug
       vector(size_type __n, const _Allocator& __a = _Allocator())
       : _Base(__n, __a), _Safe_vector(__n) { }
 
-      vector(size_type __n, const _Tp& __value,
+      vector(size_type __n, const __type_identity_t<_Tp>& __value,
 	     const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) { }
 #else
@@ -811,6 +811,11 @@ namespace __debug
 	   typename = _RequireAllocator<_Allocator>>
     vector(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> vector<_ValT, _Allocator>;
+
+  template<typename _Tp, typename _Allocator = allocator<_Tp>,
+	   typename = _RequireAllocator<_Allocator>>
+    vector(size_t, _Tp, _Allocator = _Allocator())
+      -> vector<_Tp, _Allocator>;
 #endif
 
 } // namespace __debug

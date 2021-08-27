@@ -304,6 +304,10 @@ ix86_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_kind:
       return strcmp (name, "cpu") == 0;
     case omp_device_arch:
+#ifdef ACCEL_COMPILER
+      if (strcmp (name, "intel_mic") == 0)
+	return 1;
+#endif
       if (strcmp (name, "x86") == 0)
 	return 1;
       if (TARGET_64BIT)

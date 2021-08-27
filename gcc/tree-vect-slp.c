@@ -2311,6 +2311,10 @@ out:
 	      }
 	  if (dump_enabled_p ())
 	    dump_printf (MSG_NOTE, "\n");
+	  /* After swapping some operands we lost track whether an
+	     operand has any pattern defs so be conservative here.  */
+	  if (oprnds_info[0]->any_pattern || oprnds_info[1]->any_pattern)
+	    oprnds_info[0]->any_pattern = oprnds_info[1]->any_pattern = true;
 	  /* And try again with scratch 'matches' ... */
 	  bool *tem = XALLOCAVEC (bool, group_size);
 	  if ((child = vect_build_slp_tree (vinfo, oprnd_info->def_stmts,
@@ -5233,7 +5237,8 @@ li_cost_vec_cmp (const void *a_, const void *b_)
 
 static bool
 vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
-				    vec<slp_instance> slp_instances)
+				    vec<slp_instance> slp_instances,
+				    loop_p orig_loop)
 {
   slp_instance instance;
   int i;
@@ -5270,6 +5275,30 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       vector_costs.safe_splice (instance->cost_vec);
       instance->cost_vec.release ();
     }
+  /* When we're vectorizing an if-converted loop body with the
+     very-cheap cost model make sure we vectorized all if-converted
+     code.  */
+  bool force_not_profitable = false;
+  if (orig_loop && flag_vect_cost_model == VECT_COST_MODEL_VERY_CHEAP)
+    {
+      gcc_assert (bb_vinfo->bbs.length () == 1);
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[0]);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  /* The costing above left us with DCEable vectorized scalar
+	     stmts having the visited flag set.  */
+	  if (gimple_visited_p (gsi_stmt (gsi)))
+	    continue;
+
+	  if (gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi)))
+	    if (gimple_assign_rhs_code (ass) == COND_EXPR)
+	      {
+		force_not_profitable = true;
+		break;
+	      }
+	}
+    }
+
   /* Unset visited flag.  */
   stmt_info_for_cost *cost;
   FOR_EACH_VEC_ELT (scalar_costs, i, cost)
@@ -5394,9 +5423,14 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       return false;
     }
 
+  if (dump_enabled_p () && force_not_profitable)
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "not profitable because of unprofitable if-converted "
+		     "scalar code\n");
+
   scalar_costs.release ();
   vector_costs.release ();
-  return true;
+  return !force_not_profitable;
 }
 
 /* qsort comparator for lane defs.  */
@@ -5810,7 +5844,8 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
 
 static bool
 vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
-		 vec<int> *dataref_groups, unsigned int n_stmts)
+		 vec<int> *dataref_groups, unsigned int n_stmts,
+		 loop_p orig_loop)
 {
   bb_vec_info bb_vinfo;
   auto_vector_modes vector_modes;
@@ -5859,7 +5894,9 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	      vect_location = instance->location ();
 	      if (!unlimited_cost_model (NULL)
 		  && !vect_bb_vectorization_profitable_p
-			(bb_vinfo, instance->subgraph_entries))
+			(bb_vinfo,
+			 orig_loop ? BB_VINFO_SLP_INSTANCES (bb_vinfo)
+			 : instance->subgraph_entries, orig_loop))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5877,7 +5914,9 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 				 "using SLP\n");
 	      vectorized = true;
 
-	      vect_schedule_slp (bb_vinfo, instance->subgraph_entries);
+	      vect_schedule_slp (bb_vinfo,
+				 orig_loop ? BB_VINFO_SLP_INSTANCES (bb_vinfo)
+				 : instance->subgraph_entries);
 
 	      unsigned HOST_WIDE_INT bytes;
 	      if (dump_enabled_p ())
@@ -5892,6 +5931,11 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 				     "basic block part vectorized using "
 				     "variable length vectors\n");
 		}
+
+	      /* When we're called from loop vectorization we're considering
+		 all subgraphs at once.  */
+	      if (orig_loop)
+		break;
 	    }
 	}
       else
@@ -5959,7 +6003,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
    true if anything in the basic-block was vectorized.  */
 
 static bool
-vect_slp_bbs (const vec<basic_block> &bbs)
+vect_slp_bbs (const vec<basic_block> &bbs, loop_p orig_loop)
 {
   vec<data_reference_p> datarefs = vNULL;
   auto_vec<int> dataref_groups;
@@ -5985,20 +6029,24 @@ vect_slp_bbs (const vec<basic_block> &bbs)
 					      &dataref_groups, current_group))
 	    ++current_group;
 	}
+      /* New BBs always start a new DR group.  */
+      ++current_group;
     }
 
-  return vect_slp_region (bbs, datarefs, &dataref_groups, insns);
+  return vect_slp_region (bbs, datarefs, &dataref_groups, insns, orig_loop);
 }
 
-/* Main entry for the BB vectorizer.  Analyze and transform BB, returns
-   true if anything in the basic-block was vectorized.  */
+/* Special entry for the BB vectorizer.  Analyze and transform a single
+   if-converted BB with ORIG_LOOPs body being the not if-converted
+   representation.  Returns true if anything in the basic-block was
+   vectorized.  */
 
 bool
-vect_slp_bb (basic_block bb)
+vect_slp_if_converted_bb (basic_block bb, loop_p orig_loop)
 {
   auto_vec<basic_block> bbs;
   bbs.safe_push (bb);
-  return vect_slp_bbs (bbs);
+  return vect_slp_bbs (bbs, orig_loop);
 }
 
 /* Main entry for the BB vectorizer.  Analyze and transform BB, returns
@@ -6049,7 +6097,7 @@ vect_slp_function (function *fun)
 
       if (split && !bbs.is_empty ())
 	{
-	  r |= vect_slp_bbs (bbs);
+	  r |= vect_slp_bbs (bbs, NULL);
 	  bbs.truncate (0);
 	  bbs.quick_push (bb);
 	}
@@ -6067,13 +6115,13 @@ vect_slp_function (function *fun)
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			       "splitting region at control altering "
 			       "definition %G", last);
-	    r |= vect_slp_bbs (bbs);
+	    r |= vect_slp_bbs (bbs, NULL);
 	    bbs.truncate (0);
 	  }
     }
 
   if (!bbs.is_empty ())
-    r |= vect_slp_bbs (bbs);
+    r |= vect_slp_bbs (bbs, NULL);
 
   free (rpo);
 

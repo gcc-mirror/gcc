@@ -6,8 +6,9 @@ typedef void (*fn_ptr_t) (void *);
 void
 calls_free (void *victim)
 {
-  free (victim);
+  free (victim); /* { dg-warning "double-'free' of 'victim'" } */
 }
+
 
 void
 no_op (void *ptr)
@@ -25,7 +26,6 @@ void test_1 (void *ptr)
   fn_ptr (ptr);
   fn_ptr (ptr);
 }
-// TODO: issue a double-'free' warning at 2nd call to fn_ptr.
 
 /* As above, but with an extra indirection to try to thwart
    the optimizer.  */
@@ -41,4 +41,3 @@ void test_2 (void *ptr, fn_ptr_t *fn_ptr)
   (*fn_ptr) (ptr);
   (*fn_ptr) (ptr);
 }
-// TODO: issue a double-'free' warning at 2nd call to fn_ptr.

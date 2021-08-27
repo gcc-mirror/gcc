@@ -173,7 +173,7 @@ static bool pch_open_file (cpp_reader *pfile, _cpp_file *file,
 static bool find_file_in_dir (cpp_reader *pfile, _cpp_file *file,
 			      bool *invalid_pch, location_t loc);
 static bool read_file_guts (cpp_reader *pfile, _cpp_file *file,
-			    location_t loc);
+			    location_t loc, const char *input_charset);
 static bool read_file (cpp_reader *pfile, _cpp_file *file,
 		       location_t loc);
 static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
@@ -671,9 +671,12 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
    Use LOC for any diagnostics.
 
+   PFILE may be NULL.  In this case, no diagnostics are issued.
+
    FIXME: Flush file cache and try again if we run out of memory.  */
 static bool
-read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
+read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc,
+		const char *input_charset)
 {
   ssize_t size, total, count;
   uchar *buf;
@@ -681,8 +684,9 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
 
   if (S_ISBLK (file->st.st_mode))
     {
-      cpp_error_at (pfile, CPP_DL_ERROR, loc,
-		    "%s is a block device", file->path);
+      if (pfile)
+	cpp_error_at (pfile, CPP_DL_ERROR, loc,
+		      "%s is a block device", file->path);
       return false;
     }
 
@@ -699,8 +703,9 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
 	 does not bite us.  */
       if (file->st.st_size > INTTYPE_MAXIMUM (ssize_t))
 	{
-	  cpp_error_at (pfile, CPP_DL_ERROR, loc,
-			"%s is too large", file->path);
+	  if (pfile)
+	    cpp_error_at (pfile, CPP_DL_ERROR, loc,
+			  "%s is too large", file->path);
 	  return false;
 	}
 
@@ -733,29 +738,29 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc)
 
   if (count < 0)
     {
-      cpp_errno_filename (pfile, CPP_DL_ERROR, file->path, loc);
+      if (pfile)
+	cpp_errno_filename (pfile, CPP_DL_ERROR, file->path, loc);
       free (buf);
       return false;
     }
 
-  if (regular && total != size && STAT_SIZE_RELIABLE (file->st))
+  if (pfile && regular && total != size && STAT_SIZE_RELIABLE (file->st))
     cpp_error_at (pfile, CPP_DL_WARNING, loc,
 	       "%s is shorter than expected", file->path);
 
   file->buffer = _cpp_convert_input (pfile,
-				     CPP_OPTION (pfile, input_charset),
+				     input_charset,
 				     buf, size + 16, total,
 				     &file->buffer_start,
 				     &file->st.st_size);
-  file->buffer_valid = true;
-
-  return true;
+  file->buffer_valid = file->buffer;
+  return file->buffer_valid;
 }
 
 /* Convenience wrapper around read_file_guts that opens the file if
    necessary and closes the file descriptor after reading.  FILE must
    have been passed through find_file() at some stage.  Use LOC for
-   any diagnostics.  */
+   any diagnostics.  Unlike read_file_guts(), PFILE may not be NULL.  */
 static bool
 read_file (cpp_reader *pfile, _cpp_file *file, location_t loc)
 {
@@ -773,7 +778,8 @@ read_file (cpp_reader *pfile, _cpp_file *file, location_t loc)
       return false;
     }
 
-  file->dont_read = !read_file_guts (pfile, file, loc);
+  file->dont_read = !read_file_guts (pfile, file, loc,
+				     CPP_OPTION (pfile, input_charset));
   close (file->fd);
   file->fd = -1;
 
@@ -2145,3 +2151,25 @@ _cpp_has_header (cpp_reader *pfile, const char *fname, int angle_brackets,
   return file->err_no != ENOENT;
 }
 
+/* Read a file and convert to input charset, the same as if it were being read
+   by a cpp_reader.  */
+
+cpp_converted_source
+cpp_get_converted_source (const char *fname, const char *input_charset)
+{
+  cpp_converted_source res = {};
+  _cpp_file file = {};
+  file.fd = -1;
+  file.name = lbasename (fname);
+  file.path = fname;
+  if (!open_file (&file))
+    return res;
+  const bool ok = read_file_guts (NULL, &file, 0, input_charset);
+  close (file.fd);
+  if (!ok)
+    return res;
+  res.to_free = (char *) file.buffer_start;
+  res.data = (char *) file.buffer;
+  res.len = file.st.st_size;
+  return res;
+}

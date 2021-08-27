@@ -112,6 +112,9 @@ RPATH_ENVVAR = @RPATH_ENVVAR@
 # executables in PATH.
 GCC_SHLIB_SUBDIR = @GCC_SHLIB_SUBDIR@
 
+# If the build should make suitable code for shared host resources.
+host_shared = @host_shared@
+
 # Build programs are put under this directory.
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring

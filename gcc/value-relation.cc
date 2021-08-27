@@ -112,7 +112,7 @@ relation_kind rr_intersect_table[VREL_COUNT][VREL_COUNT] = {
   { NE_EXPR, LT_EXPR, LT_EXPR, GT_EXPR, GT_EXPR, VREL_EMPTY, VREL_EMPTY, NE_EXPR } };
 
 
-// Intersect relation R! with relation R2 and return the resulting relation.
+// Intersect relation R1 with relation R2 and return the resulting relation.
 
 relation_kind
 relation_intersect (relation_kind r1, relation_kind r2)
@@ -154,6 +154,39 @@ relation_union (relation_kind r1, relation_kind r2)
   return rr_union_table[r1 - VREL_FIRST][r2 - VREL_FIRST];
 }
 
+
+// This table is used to determine transitivity between 2 relations.
+// (A relation0 B) and (B relation1 C) implies  (A result C)
+
+relation_kind rr_transitive_table[VREL_COUNT][VREL_COUNT] = {
+//   NONE, LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR, EMPTY, EQ_EXPR, NE_EXPR
+// VREL_NONE
+  { VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE },
+// LT_EXPR
+  { VREL_NONE, LT_EXPR, LT_EXPR, VREL_NONE, VREL_NONE, VREL_NONE, LT_EXPR, VREL_NONE },
+// LE_EXPR
+  { VREL_NONE, LT_EXPR, LE_EXPR, VREL_NONE, VREL_NONE, VREL_NONE, LE_EXPR, VREL_NONE },
+// GT_EXPR
+  { VREL_NONE, VREL_NONE, VREL_NONE, GT_EXPR, GT_EXPR, VREL_NONE, GT_EXPR, VREL_NONE },
+// GE_EXPR
+  { VREL_NONE, VREL_NONE, VREL_NONE, GT_EXPR, GE_EXPR, VREL_NONE, GE_EXPR, VREL_NONE },
+// VREL_EMPTY
+  { VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE },
+// EQ_EXPR
+  { VREL_NONE, LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR, VREL_NONE, EQ_EXPR, VREL_NONE },
+// NE_EXPR
+  { VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE, VREL_NONE } };
+
+// Apply transitive operation between relation R1 and relation R2, and
+// return the resulting relation, if any.
+
+relation_kind
+relation_transitive (relation_kind r1, relation_kind r2)
+{
+  vrel_range_assert (r1);
+  vrel_range_assert (r2);
+  return rr_transitive_table[r1 - VREL_FIRST][r2 - VREL_FIRST];
+}
 
 // -------------------------------------------------------------------------
 
@@ -472,7 +505,7 @@ public:
   bool union_ (value_relation &p);
   bool intersect (value_relation &p);
   void negate ();
-  void swap ();
+  bool apply_transitive (const value_relation &rel);
 
   void dump (FILE *f) const;
 private:
@@ -517,14 +550,6 @@ value_relation::negate ()
   related = relation_negate (related);
 }
 
-// Modify the relation as if the operands were being swapped.
-
-void
-value_relation::swap ()
-{
-  related = relation_swap (related);
-}
-
 // Perform an intersection between 2 relations. *this &&= p.
 
 bool
@@ -561,6 +586,73 @@ value_relation::union_ (value_relation &p)
   return old != related;
 }
 
+// Identify and apply any transitive relations between REL
+// and THIS.  Return true if there was a transformation.
+
+bool
+value_relation::apply_transitive (const value_relation &rel)
+{
+  relation_kind k = VREL_NONE;
+
+  // Idenity any common operand, and notrmalize the relations to
+  // the form : A < B  B < C produces A < C
+  if (rel.op1 () == name2)
+    {
+      // A < B   B < C
+      if (rel.op2 () == name1)
+	return false;
+      k = relation_transitive (kind (), rel.kind ());
+      if (k != VREL_NONE)
+	{
+	  related = k;
+	  name2 = rel.op2 ();
+	  return true;
+	}
+    }
+  else if (rel.op1 () == name1)
+    {
+      // B > A   B < C
+      if (rel.op2 () == name2)
+	return false;
+      k = relation_transitive (relation_swap (kind ()), rel.kind ());
+      if (k != VREL_NONE)
+	{
+	  related = k;
+	  name1 = name2;
+	  name2 = rel.op2 ();
+	  return true;
+	}
+    }
+  else if (rel.op2 () == name2)
+    {
+       // A < B   C > B
+       if (rel.op1 () == name1)
+	 return false;
+      k = relation_transitive (kind (), relation_swap (rel.kind ()));
+      if (k != VREL_NONE)
+	{
+	  related = k;
+	  name2 = rel.op1 ();
+	  return true;
+	}
+    }
+  else if (rel.op2 () == name1)
+    {
+      // B > A  C > B
+      if (rel.op1 () == name2)
+	return false;
+      k = relation_transitive (relation_swap (kind ()),
+			       relation_swap (rel.kind ()));
+      if (k != VREL_NONE)
+	{
+	  related = k;
+	  name1 = name2;
+	  name2 = rel.op1 ();
+	  return true;
+	}
+    }
+  return false;
+}
 
 // Dump the relation to file F.
 
@@ -597,6 +689,7 @@ relation_oracle::relation_oracle ()
   m_relations.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   m_relation_set = BITMAP_ALLOC (&m_bitmaps);
   m_tmp = BITMAP_ALLOC (&m_bitmaps);
+  m_tmp2 = BITMAP_ALLOC (&m_bitmaps);
 }
 
 // Destruct a relation oracle.
@@ -669,10 +762,12 @@ relation_oracle::register_relation (edge e, relation_kind k, tree op1,
 // Register relation K between OP! and OP2 in block BB.
 // This creates the record and searches for existing records in the dominator
 // tree to merge with.
+// TRANSITIVE_P is true if this is being registered as a transitive operation,
+// and should not try to register further transitives.
 
 void
 relation_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
-				    tree op2)
+				    tree op2, bool transitive_p)
 {
   gcc_checking_assert (k != VREL_NONE);
 
@@ -710,26 +805,160 @@ relation_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
 	  ptr->dump (dump_file);
 	  fprintf (dump_file, "\n");
 	}
-      return;
+    }
+  else
+    {
+      // Check for an existing relation further up the DOM chain.
+      // By including dominating relations, The first one found in any search
+      // will be the aggregate of all the previous ones.
+      curr = find_relation_dom (bb, v1, v2);
+      if (curr != VREL_NONE)
+	k = relation_intersect (curr, k);
+
+      bitmap_set_bit (bm, v1);
+      bitmap_set_bit (bm, v2);
+      bitmap_set_bit (m_relation_set, v1);
+      bitmap_set_bit (m_relation_set, v2);
+
+      ptr = (relation_chain *) obstack_alloc (&m_chain_obstack,
+					      sizeof (relation_chain));
+      ptr->set_relation (k, op1, op2);
+      ptr->m_next = m_relations[bbi].m_head;
+      m_relations[bbi].m_head = ptr;;
     }
 
-  // Check for an existing relation further up the DOM chain.
-  // By including dominating relations, The first one found in any search
-  // will be the aggregate of all the previous ones.
-  curr = find_relation_dom (bb, v1, v2);
-  if (curr != VREL_NONE)
-    k = relation_intersect (curr, k);
+  if (!transitive_p)
+    register_transitives (bb, *ptr);
+}
 
-  bitmap_set_bit (bm, v1);
-  bitmap_set_bit (bm, v2);
-  bitmap_set_bit (m_relation_set, v1);
-  bitmap_set_bit (m_relation_set, v2);
+// Starting at ROOT_BB search the DOM tree  looking for relations which
+// may produce transitive relations to RELATION.  EQUIV1 and EQUIV2 are
+// bitmaps for op1/op2 and any of their equivalences that should also be
+// considered.
 
-  ptr = (relation_chain *) obstack_alloc (&m_chain_obstack,
-					  sizeof (relation_chain));
-  ptr->set_relation (k, op1, op2);
-  ptr->m_next = m_relations[bbi].m_head;
-  m_relations[bbi].m_head = ptr;;
+void
+relation_oracle::register_transitives (basic_block root_bb,
+				       const value_relation &relation,
+				       const_bitmap equiv1,
+				       const_bitmap equiv2)
+{
+  basic_block bb;
+  for (bb = root_bb; bb; bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+    {
+      int bbi = bb->index;
+      if (bbi >= (int)m_relations.length())
+	continue;
+      const_bitmap bm = m_relations[bbi].m_names;
+      if (!bm)
+	continue;
+      if (!bitmap_intersect_p (bm, equiv1) && !bitmap_intersect_p (bm, equiv2))
+	continue;
+      // At least one of the 2 ops has a relation in this block.
+      relation_chain *ptr;
+      for (ptr = m_relations[bbi].m_head; ptr ; ptr = ptr->m_next)
+	{
+	  // In the presence of an equivalence, 2 operands may do not
+	  // naturally match. ie  with equivalence a_2 == b_3
+	  // given c_1 < a_2 && b_3 < d_4
+	  // convert the second relation (b_3 < d_4) to match any
+	  // equivalences to found in the first relation.
+	  // ie convert b_3 < d_4 to a_2 < d_4, which then exposes the
+	  // transitive operation:  c_1 < a_2 && a_2 < d_4 -> c_1 < d_4
+
+	  tree r1, r2;
+	  tree p1 = ptr->op1 ();
+	  tree p2 = ptr->op2 ();
+	  // Find which equivalence is in the first operand.
+	  if (bitmap_bit_p (equiv1, SSA_NAME_VERSION (p1)))
+	    r1 = p1;
+	  else if (bitmap_bit_p (equiv1, SSA_NAME_VERSION (p2)))
+	    r1 = p2;
+	  else
+	    r1 = NULL_TREE;
+
+	  // Find which equivalence is in the second operand.
+	  if (bitmap_bit_p (equiv2, SSA_NAME_VERSION (p1)))
+	    r2 = p1;
+	  else if (bitmap_bit_p (equiv2, SSA_NAME_VERSION (p2)))
+	    r2 = p2;
+	  else
+	    r2 = NULL_TREE;
+
+	  // Ignore if both NULL (not relevant relation) or the same,
+	  if (r1 == r2)
+	    continue;
+
+	  // Any operand not an equivalence, just take the real operand.
+	  if (!r1)
+	    r1 = relation.op1 ();
+	  if (!r2)
+	    r2 = relation.op2 ();
+
+	  value_relation nr (relation.kind (), r1, r2);
+	  if (nr.apply_transitive (*ptr))
+	    {
+	      register_relation (root_bb, nr.kind (), nr.op1 (), nr.op2 (),
+				 true);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "   Registering transitive relation ");
+		  nr.dump (dump_file);
+		  fputc ('\n', dump_file);
+		}
+	    }
+
+	}
+    }
+}
+
+// Find adn register any transitive relations implied by RELATION occuring
+// in block BB.
+
+void
+relation_oracle::register_transitives (basic_block bb,
+				       const value_relation &relation)
+{
+  // Only apply transitives to certain kinds of operations.
+  switch (relation.kind ())
+    {
+      case LE_EXPR:
+      case LT_EXPR:
+      case GT_EXPR:
+      case GE_EXPR:
+	break;
+      default:
+	return;
+    }
+
+  // Set up the bitmaps for op1 and op2, and if there are no equivalencies,
+  // set just op1 or op2 in their own bitmap.
+  const_bitmap equiv1 = equiv_set (relation.op1 (), bb);
+  const_bitmap equiv2 = equiv_set (relation.op2 (), bb);
+  if (equiv1)
+    {
+      if (equiv2)
+	register_transitives (bb, relation, equiv1, equiv2);
+      else
+	{
+	  bitmap_clear (m_tmp);
+	  bitmap_set_bit (m_tmp, SSA_NAME_VERSION (relation.op2 ()));
+	  register_transitives (bb, relation, equiv1, m_tmp);
+	}
+    }
+  else if (equiv2)
+    {
+      bitmap_clear (m_tmp);
+      bitmap_set_bit (m_tmp, SSA_NAME_VERSION (relation.op1 ()));
+      register_transitives (bb, relation, m_tmp, equiv2);
+    }
+  else
+    {
+      bitmap_clear (m_tmp);
+      bitmap_clear (m_tmp2);
+      bitmap_set_bit (m_tmp, SSA_NAME_VERSION (relation.op1 ()));
+      bitmap_set_bit (m_tmp2, SSA_NAME_VERSION (relation.op2 ()));
+      register_transitives (bb, relation, m_tmp, m_tmp2);
+    }
 }
 
 // Find the relation between any ssa_name in B1 and any name in B2 in block BB.

@@ -679,7 +679,8 @@ namespace views
 	= requires(basic_istream<_CharT, _Traits>& is, _Val& t) { is >> t; };
   } // namespace __detail
 
-  template<movable _Val, typename _CharT, typename _Traits>
+  template<movable _Val, typename _CharT,
+	   typename _Traits = char_traits<_CharT>>
     requires default_initializable<_Val>
       && __detail::__stream_extractable<_Val, _CharT, _Traits>
     class basic_istream_view

@@ -41,6 +41,6 @@ end
 end module
 
 subroutine bar
-  !$omp masked filter (0) filter (0)  ! { dg-error "27: Failed to match clause" }
+  !$omp masked filter (0) filter (0)  ! { dg-error "Duplicated 'filter' clause" }
     call foobar
 end

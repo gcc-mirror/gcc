@@ -222,6 +222,7 @@ enum gomp_map_kind
 #define GOMP_TASK_FLAG_NOGROUP		(1 << 11)
 #define GOMP_TASK_FLAG_REDUCTION	(1 << 12)
 #define GOMP_TASK_FLAG_DETACH		(1 << 13)
+#define GOMP_TASK_FLAG_STRICT		(1 << 14)
 
 /* GOMP_target{_ext,update_ext,enter_exit_data} flags argument.  */
 #define GOMP_TARGET_FLAG_NOWAIT		(1 << 0)

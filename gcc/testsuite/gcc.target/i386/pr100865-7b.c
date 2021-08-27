@@ -5,8 +5,6 @@
 
 /* { dg-final { scan-assembler-times "vpbroadcastq\[\\t \]+%r\[^\n\]*, %ymm\[0-9\]+" 1 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpbroadcastq\[\\t \]+\[^\n\]*, %ymm\[0-9\]+" 1 { target ia32 } } } */
-/* { dg-final { scan-assembler-times "vmovdqu\[\\t \]%ymm\[0-9\]+, " 16 { target ia32 } } } */
-/* { dg-final { scan-assembler-times "vmovdqu64\[\\t \]%ymm\[0-9\]+, " 16 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vzeroupper" 1 { target ia32 } } } */
-/* { dg-final { scan-assembler-not "vzeroupper" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[\\t \]%ymm\[0-9\]+, " 16 } } */
+/* { dg-final { scan-assembler-times "vzeroupper" 1 } } */
 /* { dg-final { scan-assembler-not "vmovdqa" } } */

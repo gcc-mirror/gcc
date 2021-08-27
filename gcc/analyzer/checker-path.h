@@ -338,6 +338,9 @@ public:
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
   bool is_call_p () const FINAL OVERRIDE;
+
+  const supernode *m_src_snode;
+  const supernode *m_dest_snode;
 };
 
 /* A concrete event subclass for an interprocedural return.  */
@@ -351,6 +354,9 @@ public:
   label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
 
   bool is_return_p () const FINAL OVERRIDE;
+
+  const supernode *m_src_snode;
+  const supernode *m_dest_snode;
 };
 
 /* A concrete event subclass for the start of a consolidated run of CFG

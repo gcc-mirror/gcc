@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
       Again ref is an template to allow LTO streaming.
    3) Access: this level represent info about individual accesses.  Presently
       we record whether access is through a dereference of a function parameter
+      and if so we record the access range.
 */
 
 #ifndef GCC_MODREF_TREE_H
@@ -57,6 +58,9 @@ struct GTY(()) modref_access_node
      a function parameter.  */
   int parm_index;
   bool parm_offset_known;
+  /* Number of times interval was extended during dataflow.
+     This has to be limited in order to keep dataflow finite.  */
+  unsigned char adjustments;
 
   /* Return true if access node holds no useful info.  */
   bool useful_p () const
@@ -66,7 +70,10 @@ struct GTY(()) modref_access_node
   /* Return true if range info is useful.  */
   bool range_info_useful_p () const
     {
-      return parm_index != -1 && parm_offset_known;
+      return parm_index != -1 && parm_offset_known
+	     && (known_size_p (size)
+		 || known_size_p (max_size)
+		 || known_ge (offset, 0));
     }
   /* Return true if both accesses are the same.  */
   bool operator == (modref_access_node &a) const
@@ -81,6 +88,8 @@ struct GTY(()) modref_access_node
 	      && !known_eq (parm_offset, a.parm_offset))
 	    return false;
 	}
+      if (range_info_useful_p () != a.range_info_useful_p ())
+	return false;
       if (range_info_useful_p ()
 	  && (!known_eq (a.offset, offset)
 	      || !known_eq (a.size, size)
@@ -88,11 +97,209 @@ struct GTY(()) modref_access_node
 	return false;
       return true;
     }
+  /* Return true A is a subaccess.  */
+  bool contains (const modref_access_node &a) const
+    {
+      poly_int64 aoffset_adj = 0;
+      if (parm_index >= 0)
+	{
+	  if (parm_index != a.parm_index)
+	    return false;
+	  if (parm_offset_known)
+	    {
+	       if (!a.parm_offset_known)
+		 return false;
+	       /* Accesses are never below parm_offset, so look
+		  for smaller offset.  */
+	       if (!known_le (parm_offset, a.parm_offset))
+		 return false;
+	       aoffset_adj = (a.parm_offset - parm_offset)
+			     << LOG2_BITS_PER_UNIT;
+	    }
+	}
+      if (range_info_useful_p ())
+	{
+	  if (!a.range_info_useful_p ())
+	    return false;
+	  /* Sizes of stores are used to check that object is big enough
+	     to fit the store, so smaller or unknown sotre is more general
+	     than large store.  */
+	  if (known_size_p (size)
+	      && (!known_size_p (a.size)
+		  || !known_le (size, a.size)))
+	    return false;
+	  if (known_size_p (max_size))
+	    return known_subrange_p (a.offset + aoffset_adj,
+				     a.max_size, offset, max_size);
+	  else
+	    return known_le (offset, a.offset + aoffset_adj);
+	}
+      return true;
+    }
+  /* Update access range to new parameters.
+     If RECORD_ADJUSTMENTS is true, record number of changes in the access
+     and if threshold is exceeded start dropping precision
+     so only constantly many updates are possible.  This makes dataflow
+     to converge.  */
+  void update (poly_int64 parm_offset1,
+	       poly_int64 offset1, poly_int64 size1, poly_int64 max_size1,
+	       bool record_adjustments)
+    {
+      if (known_eq (offset, offset1)
+	  && known_eq (size, size1)
+	  && known_eq (max_size, max_size1))
+	return;
+      if (!record_adjustments
+	  || (++adjustments) < param_modref_max_adjustments)
+	{
+	  parm_offset = parm_offset1;
+	  offset = offset1;
+	  size = size1;
+	  max_size = max_size1;
+	}
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "--param param=modref-max-adjustments limit reached:");
+	  if (!known_eq (parm_offset, parm_offset1))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, " parm_offset cleared");
+	      parm_offset_known = false;
+	    }
+	  if (!known_eq (size, size1))
+	    {
+	      size = -1;
+	      if (dump_file)
+		fprintf (dump_file, " size cleared");
+	    }
+	  if (!known_eq (max_size, max_size1))
+	    {
+	      max_size = -1;
+	      if (dump_file)
+		fprintf (dump_file, " max_size cleared");
+	    }
+	  if (!known_eq (offset, offset1))
+	    {
+	      offset = 0;
+	      if (dump_file)
+		fprintf (dump_file, " offset cleared");
+	    }
+	  if (dump_file)
+	    fprintf (dump_file, "\n");
+	}
+    }
+  /* Merge in access A if it is possible to do without losing
+     precision.  Return true if successful.
+     If RECORD_ADJUSTMENTs is true, remember how many interval
+     was prolonged and punt when there are too many.  */
+  bool merge (const modref_access_node &a, bool record_adjustments)
+    {
+      poly_int64 aoffset_adj = 0, offset_adj = 0;
+      poly_int64 new_parm_offset = parm_offset;
+
+      /* We assume that containment was tested earlier.  */
+      gcc_checking_assert (!contains (a) && !a.contains (*this));
+      if (parm_index >= 0)
+	{
+	  if (parm_index != a.parm_index)
+	    return false;
+	  if (parm_offset_known)
+	    {
+	      if (!a.parm_offset_known)
+		return false;
+	      if (known_le (a.parm_offset, parm_offset))
+		{
+		  offset_adj = (parm_offset - a.parm_offset)
+				<< LOG2_BITS_PER_UNIT;
+		  aoffset_adj = 0;
+		  new_parm_offset = a.parm_offset;
+		}
+	      else if (known_le (parm_offset, a.parm_offset))
+		{
+		  aoffset_adj = (a.parm_offset - parm_offset)
+				 << LOG2_BITS_PER_UNIT;
+		  offset_adj = 0;
+		}
+	      else
+		return false;
+	    }
+	}
+      /* See if we can merge ranges.  */
+      if (range_info_useful_p ())
+	{
+	  poly_int64 offset1 = offset + offset_adj;
+	  poly_int64 aoffset1 = a.offset + aoffset_adj;
+
+	  /* In this case we have containment that should be
+	     handled earlier.  */
+	  gcc_checking_assert (a.range_info_useful_p ());
+
+	  /* If a.size is less specified than size, merge only
+	     if intervals are otherwise equivalent.  */
+	  if (known_size_p (size)
+	      && (!known_size_p (a.size) || known_lt (a.size, size)))
+	    {
+	      if (((known_size_p (max_size) || known_size_p (a.max_size))
+		   && !known_eq (max_size, a.max_size))
+		   || !known_eq (offset1, aoffset1))
+		return false;
+	      update (new_parm_offset, offset1, a.size, max_size,
+		      record_adjustments);
+	      return true;
+	    }
+	  /* If sizes are same, we can extend the interval.  */
+	  if ((known_size_p (size) || known_size_p (a.size))
+	      && !known_eq (size, a.size))
+	    return false;
+	  if (known_le (offset1, aoffset1))
+	    {
+	      if (!known_size_p (max_size))
+		{
+		  update (new_parm_offset, offset1, size, max_size,
+			  record_adjustments);
+		  return true;
+		}
+	      else if (known_ge (offset1 + max_size, aoffset1))
+		{
+		  poly_int64 new_max_size = max_size;
+		  if (known_le (max_size, a.max_size + aoffset1 - offset1))
+		    new_max_size = a.max_size + aoffset1 - offset1;
+		  update (new_parm_offset, offset1, size, new_max_size,
+			  record_adjustments);
+		  return true;
+		}
+	    }
+	  else if (known_le (aoffset1, offset1))
+	    {
+	      if (!known_size_p (a.max_size))
+		{
+		  update (new_parm_offset, aoffset1, size, a.max_size,
+			  record_adjustments);
+		  return true;
+		}
+	      else if (known_ge (aoffset1 + a.max_size, offset1))
+		{
+		  poly_int64 new_max_size = a.max_size;
+		  if (known_le (a.max_size, max_size + offset1 - aoffset1))
+		    new_max_size = max_size + offset1 - aoffset1;
+		  update (new_parm_offset, aoffset1, size, new_max_size,
+			  record_adjustments);
+		  return true;
+		}
+	    }
+	  return false;
+	}
+      update (new_parm_offset, offset + offset_adj,
+	      size, max_size, record_adjustments);
+      return true;
+    }
 };
 
 /* Access node specifying no useful info.  */
 const modref_access_node unspecified_modref_access_node
-		 = {0, -1, -1, 0, -1, false};
+		 = {0, -1, -1, 0, -1, false, 0};
 
 template <typename T>
 struct GTY((user)) modref_ref_node
@@ -107,17 +314,6 @@ struct GTY((user)) modref_ref_node
     accesses (NULL)
   {}
 
-  /* Search REF; return NULL if failed.  */
-  modref_access_node *search (modref_access_node access)
-  {
-    size_t i;
-    modref_access_node *a;
-    FOR_EACH_VEC_SAFE_ELT (accesses, i, a)
-      if (*a == access)
-	return a;
-    return NULL;
-  }
-
   /* Collapse the tree.  */
   void collapse ()
   {
@@ -126,33 +322,103 @@ struct GTY((user)) modref_ref_node
     every_access = true;
   }
 
+  /* Verify that list does not contain redundant accesses.  */
+  void verify ()
+  {
+    size_t i, i2;
+    modref_access_node *a, *a2;
+
+    FOR_EACH_VEC_SAFE_ELT (accesses, i, a)
+      {
+	FOR_EACH_VEC_SAFE_ELT (accesses, i2, a2)
+	  if (i != i2)
+	    gcc_assert (!a->contains (*a2));
+      }
+  }
+
   /* Insert access with OFFSET and SIZE.
      Collapse tree if it has more than MAX_ACCESSES entries.
+     If RECORD_ADJUSTMENTs is true avoid too many interval extensions.
      Return true if record was changed.  */
-  bool insert_access (modref_access_node a, size_t max_accesses)
+  bool insert_access (modref_access_node a, size_t max_accesses,
+		      bool record_adjustments)
   {
     /* If this base->ref pair has no access information, bail out.  */
     if (every_access)
       return false;
 
     /* Otherwise, insert a node for the ref of the access under the base.  */
-    modref_access_node *access_node = search (a);
-    if (access_node)
-      return false;
+    size_t i;
+    modref_access_node *a2;
+
+    if (flag_checking)
+      verify ();
+
+    if (!a.useful_p ())
+      {
+	if (!every_access)
+	  {
+	    collapse ();
+	    return true;
+	  }
+	return false;
+      }
+
+    FOR_EACH_VEC_SAFE_ELT (accesses, i, a2)
+      {
+	if (a2->contains (a))
+	  return false;
+	if (a.contains (*a2))
+	  {
+	    a.adjustments = 0;
+	    a2->parm_index = a.parm_index;
+	    a2->parm_offset_known = a.parm_offset_known;
+	    a2->update (a.parm_offset, a.offset, a.size, a.max_size,
+			record_adjustments);
+	    try_merge_with (i);
+	    return true;
+	  }
+	if (a2->merge (a, record_adjustments))
+	  {
+	    try_merge_with (i);
+	    return true;
+	  }
+	gcc_checking_assert (!(a == *a2));
+      }
 
     /* If this base->ref pair has too many accesses stored, we will clear
        all accesses and bail out.  */
-    if ((accesses && accesses->length () >= max_accesses)
-	|| !a.useful_p ())
+    if (accesses && accesses->length () >= max_accesses)
       {
-	if (dump_file && a.useful_p ())
+	if (dump_file)
 	  fprintf (dump_file,
 		   "--param param=modref-max-accesses limit reached\n");
 	collapse ();
 	return true;
       }
+    a.adjustments = 0;
     vec_safe_push (accesses, a);
     return true;
+  }
+private:
+  /* Try to optimize the access list after entry INDEX was modified.  */
+  void
+  try_merge_with (size_t index)
+  {
+    modref_access_node *a2;
+    size_t i;
+
+    FOR_EACH_VEC_SAFE_ELT (accesses, i, a2)
+      if (i != index
+	  && ((*accesses)[index].contains (*a2)
+	      || (*accesses)[index].merge (*a2, false)))
+	{
+	  accesses->unordered_remove (i);
+	  if (index == accesses->length ())
+	    index = i;
+	  else
+	    i--;
+	}
   }
 };
 
@@ -197,17 +463,22 @@ struct GTY((user)) modref_base_node
     if (ref_node)
       return ref_node;
 
-    if (changed)
-      *changed = true;
-
-    /* Collapse the node if too full already.  */
-    if (refs && refs->length () >= max_refs)
+    /* We always allow inserting ref 0.  For non-0 refs there is upper
+       limit on number of entries and if exceeded,
+       drop ref conservatively to 0.  */
+    if (ref && refs && refs->length () >= max_refs)
       {
 	if (dump_file)
-	  fprintf (dump_file, "--param param=modref-max-refs limit reached\n");
-	collapse ();
-	return NULL;
+	  fprintf (dump_file, "--param param=modref-max-refs limit reached;"
+		   " using 0\n");
+	ref = 0;
+	ref_node = search (ref);
+	if (ref_node)
+	  return ref_node;
       }
+
+    if (changed)
+      *changed = true;
 
     ref_node = new (ggc_alloc <modref_ref_node <T> > ())modref_ref_node <T>
 								 (ref);
@@ -266,9 +537,10 @@ struct GTY((user)) modref_tree
 
   /* Insert BASE; collapse tree if there are more than MAX_REFS.
      Return inserted base and if CHANGED is non-null set it to true if
-     something changed.  */
+     something changed.
+     If table gets full, try to insert REF instead.  */
 
-  modref_base_node <T> *insert_base (T base, bool *changed = NULL)
+  modref_base_node <T> *insert_base (T base, T ref, bool *changed = NULL)
   {
     modref_base_node <T> *base_node;
 
@@ -281,17 +553,30 @@ struct GTY((user)) modref_tree
     if (base_node)
       return base_node;
 
+    /* We always allow inserting base 0.  For non-0 base there is upper
+       limit on number of entries and if exceeded,
+       drop base conservatively to ref and if it still does not fit to 0.  */
+    if (base && bases && bases->length () >= max_bases)
+      {
+	base_node = search (ref);
+	if (base_node)
+	  {
+	    if (dump_file)
+	      fprintf (dump_file, "--param param=modref-max-bases"
+		       " limit reached; using ref\n");
+	    return base_node;
+	  }
+	if (dump_file)
+	  fprintf (dump_file, "--param param=modref-max-bases"
+		   " limit reached; using 0\n");
+	base = 0;
+	base_node = search (base);
+	if (base_node)
+	  return base_node;
+      }
+
     if (changed)
       *changed = true;
-
-    /* Collapse the node if too full already.  */
-    if (bases && bases->length () >= max_bases)
-      {
-	if (dump_file)
-	  fprintf (dump_file, "--param param=modref-max-bases limit reached\n");
-	collapse ();
-	return NULL;
-      }
 
     base_node = new (ggc_alloc <modref_base_node <T> > ())
 			 modref_base_node <T> (base);
@@ -301,7 +586,8 @@ struct GTY((user)) modref_tree
 
   /* Insert memory access to the tree.
      Return true if something changed.  */
-  bool insert (T base, T ref, modref_access_node a)
+  bool insert (T base, T ref, modref_access_node a,
+	       bool record_adjustments)
   {
     if (every_base)
       return false;
@@ -315,8 +601,15 @@ struct GTY((user)) modref_tree
 	return true;
       }
 
-    modref_base_node <T> *base_node = insert_base (base, &changed);
-    if (!base_node || base_node->every_ref)
+    modref_base_node <T> *base_node = insert_base (base, ref, &changed);
+    base = base_node->base;
+    /* If table got full we may end up with useless base.  */
+    if (!base && !ref && !a.useful_p ())
+      {
+	collapse ();
+	return true;
+      }
+    if (base_node->every_ref)
       return changed;
     gcc_checking_assert (search (base) != NULL);
 
@@ -329,39 +622,26 @@ struct GTY((user)) modref_tree
 
     modref_ref_node <T> *ref_node = base_node->insert_ref (ref, max_refs,
 							   &changed);
+    ref = ref_node->ref;
 
-    /* If we failed to insert ref, just see if there is a cleanup possible.  */
-    if (!ref_node)
+    if (ref_node->every_access)
+      return changed;
+    changed |= ref_node->insert_access (a, max_accesses,
+					record_adjustments);
+    /* See if we failed to add useful access.  */
+    if (ref_node->every_access)
       {
-	/* No useful ref information and no useful base; collapse everything.  */
-	if (!base && base_node->every_ref)
+	/* Collapse everything if there is no useful base and ref.  */
+	if (!base && !ref)
 	  {
 	    collapse ();
 	    gcc_checking_assert (changed);
 	  }
-	else if (changed)
-	  cleanup ();
-      }
-    else
-      {
-	if (ref_node->every_access)
-	  return changed;
-	changed |= ref_node->insert_access (a, max_accesses);
-	/* See if we failed to add useful access.  */
-	if (ref_node->every_access)
+	/* Collapse base if there is no useful ref.  */
+	else if (!ref)
 	  {
-	    /* Collapse everything if there is no useful base and ref.  */
-	    if (!base && !ref)
-	      {
-		collapse ();
-		gcc_checking_assert (changed);
-	      }
-	    /* Collapse base if there is no useful ref.  */
-	    else if (!ref)
-	      {
-		base_node->collapse ();
-		gcc_checking_assert (changed);
-	      }
+	    base_node->collapse ();
+	    gcc_checking_assert (changed);
 	  }
       }
     return changed;
@@ -415,7 +695,8 @@ struct GTY((user)) modref_tree
      PARM_MAP, if non-NULL, maps parm indexes of callee to caller.  -2 is used
      to signalize that parameter is local and does not need to be tracked.
      Return true if something has changed.  */
-  bool merge (modref_tree <T> *other, vec <modref_parm_map> *parm_map)
+  bool merge (modref_tree <T> *other, vec <modref_parm_map> *parm_map,
+	      bool record_accesses)
   {
     if (!other || every_base)
       return false;
@@ -445,7 +726,7 @@ struct GTY((user)) modref_tree
       {
 	if (base_node->every_ref)
 	  {
-	    my_base_node = insert_base (base_node->base, &changed);
+	    my_base_node = insert_base (base_node->base, 0, &changed);
 	    if (my_base_node && !my_base_node->every_ref)
 	      {
 		my_base_node->collapse ();
@@ -460,7 +741,8 @@ struct GTY((user)) modref_tree
 		{
 		  changed |= insert (base_node->base,
 				     ref_node->ref,
-				     unspecified_modref_access_node);
+				     unspecified_modref_access_node,
+				     record_accesses);
 		}
 	      else
 		FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
@@ -484,7 +766,8 @@ struct GTY((user)) modref_tree
 				 = (*parm_map) [a.parm_index].parm_index;
 			  }
 		      }
-		    changed |= insert (base_node->base, ref_node->ref, a);
+		    changed |= insert (base_node->base, ref_node->ref, a,
+				       record_accesses);
 		  }
 	    }
       }
@@ -496,7 +779,7 @@ struct GTY((user)) modref_tree
   /* Copy OTHER to THIS.  */
   void copy_from (modref_tree <T> *other)
   {
-    merge (other, NULL);
+    merge (other, NULL, false);
   }
 
   /* Search BASE in tree; return NULL if failed.  */

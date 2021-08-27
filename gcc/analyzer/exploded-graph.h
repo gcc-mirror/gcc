@@ -362,6 +362,37 @@ private:
   DISABLE_COPY_AND_ASSIGN (exploded_edge);
 };
 
+/* Extra data for an exploded_edge that represents dynamic call info ( calls
+   that doesn't have an underlying superedge representing the call ).  */
+
+class dynamic_call_info_t : public exploded_edge::custom_info_t
+{
+public:
+  dynamic_call_info_t (const gcall *dynamic_call,
+  		       const bool is_returning_call = false)
+  : m_dynamic_call (dynamic_call), 
+    m_is_returning_call (is_returning_call)
+  {}
+
+  void print (pretty_printer *pp) FINAL OVERRIDE
+  {
+    if (m_is_returning_call)
+      pp_string (pp, "dynamic_return");
+    else
+      pp_string (pp, "dynamic_call");
+  }
+
+  void update_model (region_model *model,
+		     const exploded_edge &eedge) FINAL OVERRIDE;
+
+  void add_events_to_path (checker_path *emission_path,
+			   const exploded_edge &eedge) FINAL OVERRIDE;
+private:
+  const gcall *m_dynamic_call;
+  const bool m_is_returning_call;
+};
+
+
 /* Extra data for an exploded_edge that represents a rewind from a
    longjmp to a setjmp (or from a siglongjmp to a sigsetjmp).  */
 
@@ -784,6 +815,14 @@ public:
   void process_worklist ();
   bool maybe_process_run_of_before_supernode_enodes (exploded_node *node);
   void process_node (exploded_node *node);
+
+  bool maybe_create_dynamic_call (const gcall *call,
+                                  tree fn_decl,
+                                  exploded_node *node,
+                                  program_state next_state,
+                                  program_point &next_point,
+                                  uncertainty_t *uncertainty,
+                                  logger *logger);
 
   exploded_node *get_or_create_node (const program_point &point,
 				     const program_state &state,

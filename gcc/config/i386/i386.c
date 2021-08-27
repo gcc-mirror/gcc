@@ -10018,8 +10018,7 @@ ix86_live_on_entry (bitmap regs)
 
 /* Extract the parts of an RTL expression that is a valid memory address
    for an instruction.  Return 0 if the structure of the address is
-   grossly off.  Return -1 if the address contains ASHIFT, so it is not
-   strictly valid, but still used for computing length of lea instruction.  */
+   grossly off.  */
 
 int
 ix86_decompose_address (rtx addr, struct ix86_address *out)
@@ -10029,7 +10028,6 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   HOST_WIDE_INT scale = 1;
   rtx scale_rtx = NULL_RTX;
   rtx tmp;
-  int retval = 1;
   addr_space_t seg = ADDR_SPACE_GENERIC;
 
   /* Allow zero-extended SImode addresses,
@@ -10052,6 +10050,27 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 
 	  if (CONST_INT_P (addr))
 	    return 0;
+	}
+      else if (GET_CODE (addr) == AND)
+	{
+	  /* For ASHIFT inside AND, combine will not generate
+	     canonical zero-extend. Merge mask for AND and shift_count
+	     to check if it is canonical zero-extend.  */
+	  tmp = XEXP (addr, 0);
+	  rtx mask = XEXP (addr, 1);
+	  if (tmp && GET_CODE(tmp) == ASHIFT)
+	    {
+	      rtx shift_val = XEXP (tmp, 1);
+	      if (CONST_INT_P (mask) && CONST_INT_P (shift_val)
+		  && (((unsigned HOST_WIDE_INT) INTVAL(mask)
+		      | ((HOST_WIDE_INT_1U << INTVAL(shift_val)) - 1))
+		      == 0xffffffff))
+		{
+		  addr = lowpart_subreg (SImode, XEXP (addr, 0),
+					 DImode);
+		}
+	    }
+
 	}
     }
 
@@ -10179,7 +10198,6 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       if ((unsigned HOST_WIDE_INT) scale > 3)
 	return 0;
       scale = 1 << scale;
-      retval = -1;
     }
   else
     disp = addr;			/* displacement */
@@ -10252,7 +10270,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   out->scale = scale;
   out->seg = seg;
 
-  return retval;
+  return 1;
 }
 
 /* Return cost of the memory address x.
@@ -10765,7 +10783,7 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
   HOST_WIDE_INT scale;
   addr_space_t seg;
 
-  if (ix86_decompose_address (addr, &parts) <= 0)
+  if (ix86_decompose_address (addr, &parts) == 0)
     /* Decomposition failed.  */
     return false;
 
@@ -19982,8 +20000,6 @@ ix86_division_cost (const struct processor_costs *cost,
     return cost->divide[MODE_INDEX (mode)];
 }
 
-#define COSTS_N_BYTES(N) ((N) * 2)
-
 /* Return cost of shift in MODE.
    If CONSTANT_OP1 is true, the op1 value is known and set in OP1_VAL.
    AND_IN_OP1 specify in op1 is result of and and SHIFT_AND_TRUNCATE
@@ -20421,6 +20437,12 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	               << (GET_MODE (XEXP (x, 1)) != DImode)));
 	  return true;
 	}
+      else if (code == AND
+	       && address_no_seg_operand (x, mode))
+	{
+	  *total = cost->lea;
+	  return true;
+	}
       /* FALLTHRU */
 
     case NEG:
@@ -20544,6 +20566,11 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case UNSPEC:
       if (XINT (x, 1) == UNSPEC_TP)
 	*total = 0;
+      else if (XINT(x, 1) == UNSPEC_VTERNLOG)
+	{
+	  *total = cost->sse_op;
+	  return true;
+	}
       return false;
 
     case VEC_SELECT:
@@ -22203,11 +22230,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       case vec_construct:
 	{
 	  /* N element inserts into SSE vectors.  */
-	  int cost
-	    = TYPE_VECTOR_SUBPARTS (vectype) * (fp ?
-						ix86_cost->sse_op
-						: ix86_cost->integer_to_sse);
-
+	  int cost = TYPE_VECTOR_SUBPARTS (vectype) * ix86_cost->sse_op;
 	  /* One vinserti128 for combining two SSE vectors for AVX256.  */
 	  if (GET_MODE_BITSIZE (mode) == 256)
 	    cost += ix86_vec_cost (mode, ix86_cost->addss);

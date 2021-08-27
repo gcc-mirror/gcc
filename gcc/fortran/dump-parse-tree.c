@@ -1805,6 +1805,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->grainsize)
     {
       fputs (" GRAINSIZE(", dumpfile);
+      if (omp_clauses->grainsize_strict)
+	fputs ("strict: ", dumpfile);
       show_expr (omp_clauses->grainsize);
       fputc (')', dumpfile);
     }
@@ -1823,6 +1825,8 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->num_tasks)
     {
       fputs (" NUM_TASKS(", dumpfile);
+      if (omp_clauses->num_tasks_strict)
+	fputs ("strict: ", dumpfile);
       show_expr (omp_clauses->num_tasks);
       fputc (')', dumpfile);
     }
@@ -1908,6 +1912,26 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       fputc (' ', dumpfile);
       fputs (memorder, dumpfile);
     }
+  if (omp_clauses->at != OMP_AT_UNSET)
+    {
+      if (omp_clauses->at != OMP_AT_COMPILATION)
+	fputs (" AT (COMPILATION)", dumpfile);
+      else
+	fputs (" AT (EXECUTION)", dumpfile);
+    }
+  if (omp_clauses->severity != OMP_SEVERITY_UNSET)
+    {
+      if (omp_clauses->severity != OMP_SEVERITY_FATAL)
+	fputs (" SEVERITY (FATAL)", dumpfile);
+      else
+	fputs (" SEVERITY (WARNING)", dumpfile);
+    }
+  if (omp_clauses->message)
+    {
+      fputs (" ERROR (", dumpfile);
+      show_expr (omp_clauses->message);
+      fputc (')', dumpfile);
+    }
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -1950,8 +1974,9 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_DISTRIBUTE_SIMD: name = "DISTRIBUTE SIMD"; break;
     case EXEC_OMP_DO: name = "DO"; break;
     case EXEC_OMP_DO_SIMD: name = "DO SIMD"; break;
-    case EXEC_OMP_LOOP: name = "LOOP"; break;
+    case EXEC_OMP_ERROR: name = "ERROR"; break;
     case EXEC_OMP_FLUSH: name = "FLUSH"; break;
+    case EXEC_OMP_LOOP: name = "LOOP"; break;
     case EXEC_OMP_MASKED: name = "MASKED"; break;
     case EXEC_OMP_MASKED_TASKLOOP: name = "MASKED TASKLOOP"; break;
     case EXEC_OMP_MASKED_TASKLOOP_SIMD: name = "MASKED TASKLOOP SIMD"; break;
@@ -2045,6 +2070,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_DISTRIBUTE_SIMD:
     case EXEC_OMP_DO:
     case EXEC_OMP_DO_SIMD:
+    case EXEC_OMP_ERROR:
     case EXEC_OMP_LOOP:
     case EXEC_OMP_ORDERED:
     case EXEC_OMP_MASKED:
@@ -2135,7 +2161,7 @@ show_omp_node (int level, gfc_code *c)
       || c->op == EXEC_OACC_ENTER_DATA || c->op == EXEC_OACC_EXIT_DATA
       || c->op == EXEC_OMP_TARGET_UPDATE || c->op == EXEC_OMP_TARGET_ENTER_DATA
       || c->op == EXEC_OMP_TARGET_EXIT_DATA || c->op == EXEC_OMP_SCAN
-      || c->op == EXEC_OMP_DEPOBJ
+      || c->op == EXEC_OMP_DEPOBJ || c->op == EXEC_OMP_ERROR
       || (c->op == EXEC_OMP_ORDERED && c->block == NULL))
     return;
   if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
@@ -3268,6 +3294,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_DISTRIBUTE_SIMD:
     case EXEC_OMP_DO:
     case EXEC_OMP_DO_SIMD:
+    case EXEC_OMP_ERROR:
     case EXEC_OMP_FLUSH:
     case EXEC_OMP_LOOP:
     case EXEC_OMP_MASKED:

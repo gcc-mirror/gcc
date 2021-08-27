@@ -111,6 +111,15 @@ class file_cache
   file_cache_slot *lookup_or_add_file (const char *file_path);
   void forcibly_evict_file (const char *file_path);
 
+  /* See comments in diagnostic.h about the input conversion context.  */
+  struct input_context
+  {
+    diagnostic_input_charset_callback ccb;
+    bool should_skip_bom;
+  };
+  void initialize_input_context (diagnostic_input_charset_callback ccb,
+				 bool should_skip_bom);
+
  private:
   file_cache_slot *evicted_cache_tab_entry (unsigned *highest_use_count);
   file_cache_slot *add_file (const char *file_path);
@@ -119,6 +128,7 @@ class file_cache
  private:
   static const size_t num_file_slots = 16;
   file_cache_slot *m_file_slots;
+  input_context in_context;
 };
 
 extern expanded_location

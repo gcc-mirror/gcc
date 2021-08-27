@@ -1,3 +1,262 @@
+2021-08-25  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/101980
+	* engine.cc (exploded_graph::maybe_create_dynamic_call): Don't create
+	calls if max recursion limit is reached.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (struct rejected_constraint): Convert to...
+	(class rejected_constraint): ...this.
+	(class bounded_ranges): New forward decl.
+	(class bounded_ranges_manager): New forward decl.
+	* constraint-manager.cc: Include "analyzer/analyzer-logging.h" and
+	"tree-pretty-print.h".
+	(can_plus_one_p): New.
+	(plus_one): New.
+	(can_minus_one_p): New.
+	(minus_one): New.
+	(bounded_range::bounded_range): New.
+	(dump_cst): New.
+	(bounded_range::dump_to_pp): New.
+	(bounded_range::dump): New.
+	(bounded_range::to_json): New.
+	(bounded_range::set_json_attr): New.
+	(bounded_range::contains_p): New.
+	(bounded_range::intersects_p): New.
+	(bounded_range::operator==): New.
+	(bounded_range::cmp): New.
+	(bounded_ranges::bounded_ranges): New.
+	(bounded_ranges::bounded_ranges): New.
+	(bounded_ranges::bounded_ranges): New.
+	(bounded_ranges::canonicalize): New.
+	(bounded_ranges::validate): New.
+	(bounded_ranges::operator==): New.
+	(bounded_ranges::dump_to_pp): New.
+	(bounded_ranges::dump): New.
+	(bounded_ranges::to_json): New.
+	(bounded_ranges::eval_condition): New.
+	(bounded_ranges::contain_p): New.
+	(bounded_ranges::cmp): New.
+	(bounded_ranges_manager::~bounded_ranges_manager): New.
+	(bounded_ranges_manager::get_or_create_empty): New.
+	(bounded_ranges_manager::get_or_create_point): New.
+	(bounded_ranges_manager::get_or_create_range): New.
+	(bounded_ranges_manager::get_or_create_union): New.
+	(bounded_ranges_manager::get_or_create_intersection): New.
+	(bounded_ranges_manager::get_or_create_inverse): New.
+	(bounded_ranges_manager::consolidate): New.
+	(bounded_ranges_manager::get_or_create_ranges_for_switch): New.
+	(bounded_ranges_manager::create_ranges_for_switch): New.
+	(bounded_ranges_manager::make_case_label_ranges): New.
+	(bounded_ranges_manager::log_stats): New.
+	(bounded_ranges_constraint::print): New.
+	(bounded_ranges_constraint::to_json): New.
+	(bounded_ranges_constraint::operator==): New.
+	(bounded_ranges_constraint::add_to_hash): New.
+	(constraint_manager::constraint_manager): Update for new field
+	m_bounded_ranges_constraints.
+	(constraint_manager::operator=): Likewise.
+	(constraint_manager::hash): Likewise.
+	(constraint_manager::operator==): Likewise.
+	(constraint_manager::print): Likewise.
+	(constraint_manager::dump_to_pp): Likewise.
+	(constraint_manager::to_json): Likewise.
+	(constraint_manager::add_unknown_constraint): Update the lhs_ec_id
+	if necessary in existing constraints when combining equivalence
+	classes.  Add similar code for handling
+	m_bounded_ranges_constraints.
+	(constraint_manager::add_constraint_internal): Add comment.
+	(constraint_manager::add_bounded_ranges): New.
+	(constraint_manager::eval_condition): Use new field
+	m_bounded_ranges_constraints.
+	(constraint_manager::purge): Update bounded_ranges_constraint
+	instances.
+	(constraint_manager::canonicalize): Update for new field.
+	(merger_fact_visitor::on_ranges): New.
+	(constraint_manager::for_each_fact): Use new field
+	m_bounded_ranges_constraints.
+	(constraint_manager::validate):  Fix off-by-one error needed due
+	to bug fixed above in add_unknown_constraint.  Validate the EC IDs
+	in m_bounded_ranges_constraints.
+	(constraint_manager::get_range_manager): New.
+	(selftest::assert_dump_bounded_range_eq): New.
+	(ASSERT_DUMP_BOUNDED_RANGE_EQ): New.
+	(selftest::test_bounded_range): New.
+	(selftest::assert_dump_bounded_ranges_eq): New.
+	(ASSERT_DUMP_BOUNDED_RANGES_EQ): New.
+	(selftest::test_bounded_ranges): New.
+	(selftest::run_constraint_manager_tests): Call the new selftests.
+	* constraint-manager.h (struct bounded_range): New.
+	(struct bounded_ranges): New.
+	(template <> struct default_hash_traits<bounded_ranges::key_t>): New.
+	(class bounded_ranges_manager): New.
+	(fact_visitor::on_ranges): New pure virtual function.
+	(class bounded_ranges_constraint): New.
+	(constraint_manager::add_bounded_ranges): New decl.
+	(constraint_manager::get_range_manager): New decl.
+	(constraint_manager::m_bounded_ranges_constraints): New field.
+	* diagnostic-manager.cc (epath_finder::process_worklist_item):
+	Transfer ownership of rc to add_feasibility_problem.
+	* engine.cc (feasibility_problem::dump_to_pp): Use get_model.
+	* feasible-graph.cc (infeasible_node::dump_dot): Update for
+	conversion of m_rc to a pointer.
+	(feasible_graph::add_feasibility_problem): Pass RC by pointer and
+	take ownership.
+	* feasible-graph.h (infeasible_node::infeasible_node): Pass RC by
+	pointer and take ownership.
+	(infeasible_node::~infeasible_node): New.
+	(infeasible_node::m_rc): Convert to a pointer.
+	(feasible_graph::add_feasibility_problem): Pass RC by pointer and
+	take ownership.
+	* region-model-manager.cc: Include
+	"analyzer/constraint-manager.h".
+	(region_model_manager::region_model_manager): Initializer new
+	field m_range_mgr.
+	(region_model_manager::~region_model_manager): Delete it.
+	(region_model_manager::log_stats): Call log_stats on it.
+	* region-model.cc (region_model::add_constraint): Use new subclass
+	rejected_op_constraint.
+	(region_model::apply_constraints_for_gswitch): Reimplement using
+	bounded_ranges_manager.
+	(rejected_constraint::dump_to_pp): Convert to...
+	(rejected_op_constraint::dump_to_pp): ...this.
+	(rejected_ranges_constraint::dump_to_pp): New.
+	* region-model.h (struct purge_stats): Add field
+	m_num_bounded_ranges_constraints.
+	(region_model_manager::get_range_manager): New.
+	(region_model_manager::m_range_mgr): New.
+	(region_model::get_range_manager): New.
+	(struct rejected_constraint): Split into...
+	(class rejected_constraint):...this new abstract base class,
+	and...
+	(class rejected_op_constraint): ...this new concrete subclass.
+	(class rejected_ranges_constraint): New.
+	* supergraph.cc: Include "tree-cfg.h".
+	(supergraph::supergraph): Drop idx param from add_cfg_edge.
+	(supergraph::add_cfg_edge): Drop idx param.
+	(switch_cfg_superedge::switch_cfg_superedge): Move here from
+	header.  Populate m_case_labels with all cases which go to DST.
+	(switch_cfg_superedge::dump_label_to_pp): Reimplement to use
+	m_case_labels.
+	(switch_cfg_superedge::get_case_label): Delete.
+	* supergraph.h (supergraphadd_cfg_edge): Drop "idx" param.
+	(switch_cfg_superedge::switch_cfg_superedge): Drop idx param and
+	move implementation to supergraph.cc.
+	(switch_cfg_superedge::get_case_label): Delete.
+	(switch_cfg_superedge::get_case_labels): New.
+	(switch_cfg_superedge::m_idx): Delete.
+	(switch_cfg_superedge::m_case_labels): New field.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101875
+	* sm-file.cc (file_diagnostic::describe_state_change): Handle
+	change.m_expr being NULL.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101837
+	* analyzer.cc (maybe_reconstruct_from_def_stmt): Bail if fn is
+	NULL, and assert that it's non-NULL before passing it to
+	build_call_array_loc.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101962
+	* region-model.cc (region_model::eval_condition_without_cm):
+	Refactor comparison against zero, adding a check for
+	POINTER_PLUS_EXPR of non-NULL.
+
+2021-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (bit_range::intersects_p): New overload.
+	(bit_range::operator-): New.
+	(binding_cluster::maybe_get_compound_binding): Handle the partial
+	overlap case.
+	(selftest::test_bit_range_intersects_p): Add test coverage for
+	new overload of bit_range::intersects_p.
+	* store.h (bit_range::intersects_p): New overload.
+	(bit_range::operator-): New.
+
+2021-08-23  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/102020
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_CALL_EDGE>: Fix typo.
+
+2021-08-21  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/101980
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_CALL_EDGE>: Use
+	caller_model only when the supergraph_edge doesn't exixt.
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_RETURN_EDGE>:
+	Likewise.
+	* engine.cc (exploded_graph::create_dynamic_call): Rename to...
+	(exploded_graph::maybe_create_dynamic_call): ...this, return call
+	creation status.
+	(exploded_graph::process_node): Handle calls which were not dynamically
+	discovered.
+	* exploded-graph.h (exploded_graph::create_dynamic_call): Rename to...
+	(exploded_graph::maybe_create_dynamic_call): ...this.
+	* region-model.cc (region_model::update_for_gcall): New param, use it
+	to push call to frame.
+	(region_model::update_for_call_superedge): Pass callee function to
+	update_for_gcall.
+	* region-model.h (region_model::update_for_gcall): New param.
+
+2021-08-18  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/97114
+	* region-model.cc (region_model::get_rvalue_1): Add case for
+	OBJ_TYPE_REF.
+
+2021-08-18  Ankur Saini  <arsenic@sourceware.org>
+
+	PR analyzer/100546
+	* analysis-plan.cc (analysis_plan::use_summary_p): Don't use call
+	summaries if there is no callgraph edge
+	* checker-path.cc (call_event::call_event): Handle calls events that
+	are not represented by a supergraph call edge
+	(return_event::return_event): Likewise.
+	(call_event::get_desc): Work with new call_event structure.
+	(return_event::get_desc): Likeise.
+	* checker-path.h (call_event::m_src_snode): New field.
+	(call_event::m_dest_snode): New field.
+	(return_event::m_src_snode): New field.
+	(return_event::m_dest_snode): New field.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_CALL_EDGE>:
+	Refactor to work with edges without callgraph edge.
+	(diagnostic_manager::prune_for_sm_diagnostic)<case EK_RETURN_EDGE>:
+	Likewise.
+	* engine.cc (dynamic_call_info_t::update_model): New function.
+	(dynamic_call_info_t::add_events_to_path): New function.
+	(exploded_graph::create_dynamic_call): New function.
+	(exploded_graph::process_node): Work with dynamically discovered calls.
+	* exploded-graph.h (class dynamic_call_info_t): New class.
+	(exploded_graph::create_dynamic_call): New decl.
+	* program-point.cc (program_point::push_to_call_stack): New function.
+	(program_point::pop_from_call_stack): New function.
+	* program-point.h (program_point::push_to_call_stack): New decl.
+	(program_point::pop_from_call_stack): New decl.
+	* program-state.cc (program_state::push_call): New function.
+	(program_state::returning_call): New function.
+	* program-state.h (program_state::push_call): New decl.
+	(program_state::returning_call): New decl.
+	* region-model.cc (region_model::update_for_gcall) New function.
+	(region_model::update_for_return_gcall): New function.
+	(egion_model::update_for_call_superedge): Get the underlying gcall and
+	update for gcall.
+	(region_model::update_for_return_superedge): Likewise.
+	* region-model.h (region_model::update_for_gcall): New decl.
+	(region_model::update_for_return_gcall): New decl.
+	* state-purge.cc (state_purge_per_ssa_name::process_point): Update to
+	work with calls without underlying cgraph edge.
+	* supergraph.cc (supergraph::supergraph) Split snodes at every callsite.
+	* supergraph.h (supernode::get_returning_call) New accessor.
+
 2021-08-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/101570

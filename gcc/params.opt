@@ -1013,6 +1013,10 @@ Maximum depth of DFS walk used by modref escape analysis.
 Common Joined UInteger Var(param_modref_max_escape_points) Init(256) Param Optimization
 Maximum number of escape points tracked by modref per SSA-name.
 
+-param=modref-max-adjustments=
+Common Joined UInteger Var(param_modref_max_adjustments) Init(8) IntegerRange (0, 254) Param Optimization
+Maximum number of times a given range is adjusted during the dataflow.
+
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
 Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs.
@@ -1114,7 +1118,7 @@ Common Joined UInteger Var(param_vect_partial_vector_usage) Init(2) IntegerRange
 Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only for loops whose need to iterate can be removed, 2 means for all loops.  The default value is 2.
 
 -param=vect-inner-loop-cost-factor=
-Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 999999) Param Optimization
-The factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
+Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 10000) Param Optimization
+The maximum factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
 
 ; This comment is to ensure we retain the blank line above.

@@ -27,22 +27,23 @@
 struct iovec { void* iov_base; std::size_t iov_len; };
 #endif
 
-#if __cpp_lib_is_layout_compatible
-using std::is_layout_compatible_v;
-#else
-// A poor substitute for is_layout_compatible_v
+// std::span cannot possibly be layout-compatible with struct iovec because
+// iovec::iov_base is a void* and span<void> is ill-formed. Additionally,
+// the libstdc++ std::span uses [[no_unique_address]] on the second member,
+// so that it's not present for a span of static extent, and that affects
+// layout-compatibility too.
+// Use this to check the size and alignment are compatible.
 template<typename T, typename U>
-  constexpr bool is_layout_compatible_v
+  constexpr bool same_size_and_alignment
     = std::is_standard_layout_v<T> && std::is_standard_layout_v<U>
       && sizeof(T) == sizeof(U) && alignof(T) == alignof(U);
-#endif
 
 void
 test_pr95609()
 {
   using rbuf = std::span<const std::byte>;
-  using wbuf = std::span<std::byte>;
+  static_assert(same_size_and_alignment<rbuf, struct iovec>);
 
-  static_assert(is_layout_compatible_v<rbuf, struct iovec>);
-  static_assert(is_layout_compatible_v<wbuf, struct iovec>);
+  using wbuf = std::span<std::byte>;
+  static_assert(same_size_and_alignment<wbuf, struct iovec>);
 }

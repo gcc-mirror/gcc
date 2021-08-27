@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "cfg.h"
 #include "digraph.h"
+#include "tree-cfg.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
 
@@ -183,11 +184,33 @@ supergraph::supergraph (logger *logger)
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
 	      m_stmt_uids.make_uid_unique (stmt);
 	      if (cgraph_edge *edge = supergraph_call_edge (fun, stmt))
-		{
-		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
-		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt), NULL);
-		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
-		}
+    		{
+    		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
+    		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt),
+    		   			     NULL);
+    		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
+    		}
+	       else
+	        {
+	          // maybe call is via a function pointer
+	          if (gcall *call = dyn_cast<gcall *> (stmt))
+	          {
+	            cgraph_edge *edge 
+		      = cgraph_node::get (fun->decl)->get_edge (stmt);
+	            if (!edge || !edge->callee)
+	            {
+	              supernode *old_node_for_stmts = node_for_stmts;
+	              node_for_stmts = add_node (fun, bb, call, NULL);
+
+	              superedge *sedge 
+	                = new callgraph_superedge (old_node_for_stmts,
+	                  			   node_for_stmts,
+	                  			   SUPEREDGE_INTRAPROCEDURAL_CALL,
+	                  			   NULL);
+	              add_edge (sedge);
+	            }
+	          }
+	        }
 	    }
 
 	  m_bb_to_final_node.put (bb, node_for_stmts);
@@ -224,7 +247,7 @@ supergraph::supergraph (logger *logger)
 	      supernode *dest_supernode
 		= *m_bb_to_initial_node.get (dest_cfg_block);
 	      cfg_superedge *cfg_sedge
-		= add_cfg_edge (src_supernode, dest_supernode, cfg_edge, idx);
+		= add_cfg_edge (src_supernode, dest_supernode, cfg_edge);
 	      m_cfg_edge_to_cfg_superedge.put (cfg_edge, cfg_sedge);
 	    }
       }
@@ -483,17 +506,16 @@ supergraph::add_node (function *fun, basic_block bb, gcall *returning_call,
    adding it to this supergraph.
 
    If the edge is for a switch statement, create a switch_cfg_superedge
-   subclass using IDX (the index of E within the out-edges from SRC's
-   underlying basic block).  */
+   subclass.  */
 
 cfg_superedge *
-supergraph::add_cfg_edge (supernode *src, supernode *dest, ::edge e, int idx)
+supergraph::add_cfg_edge (supernode *src, supernode *dest, ::edge e)
 {
   /* Special-case switch edges.  */
   gimple *stmt = src->get_last_stmt ();
   cfg_superedge *new_edge;
   if (stmt && stmt->code == GIMPLE_SWITCH)
-    new_edge = new switch_cfg_superedge (src, dest, e, idx);
+    new_edge = new switch_cfg_superedge (src, dest, e);
   else
     new_edge = new cfg_superedge (src, dest, e);
   add_edge (new_edge);
@@ -1050,6 +1072,23 @@ cfg_superedge::get_phi_arg (const gphi *phi) const
   return gimple_phi_arg_def (phi, index);
 }
 
+switch_cfg_superedge::switch_cfg_superedge (supernode *src,
+					    supernode *dst,
+					    ::edge e)
+: cfg_superedge (src, dst, e)
+{
+  /* Populate m_case_labels with all cases which go to DST.  */
+  const gswitch *gswitch = get_switch_stmt ();
+  for (unsigned i = 0; i < gimple_switch_num_labels (gswitch); i++)
+    {
+      tree case_ = gimple_switch_label (gswitch, i);
+      basic_block bb = label_to_block (src->get_function (),
+				       CASE_LABEL (case_));
+      if (bb == dst->m_bb)
+	m_case_labels.safe_push (case_);
+    }
+}
+
 /* Implementation of superedge::dump_label_to_pp for CFG superedges for
    "switch" statements.
 
@@ -1059,31 +1098,63 @@ void
 switch_cfg_superedge::dump_label_to_pp (pretty_printer *pp,
 					bool user_facing ATTRIBUTE_UNUSED) const
 {
-  tree case_label = get_case_label ();
-  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
-  tree lower_bound = CASE_LOW (case_label);
-  tree upper_bound = CASE_HIGH (case_label);
-  if (lower_bound)
+  if (user_facing)
     {
-      pp_printf (pp, "case ");
-      dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0, false);
-      if (upper_bound)
+      for (unsigned i = 0; i < m_case_labels.length (); ++i)
 	{
-	  pp_printf (pp, " ... ");
-	  dump_generic_node (pp, upper_bound, 0, (dump_flags_t)0, false);
+	  if (i > 0)
+	    pp_string (pp, ", ");
+	  tree case_label = m_case_labels[i];
+	  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
+	  tree lower_bound = CASE_LOW (case_label);
+	  tree upper_bound = CASE_HIGH (case_label);
+	  if (lower_bound)
+	    {
+	      pp_printf (pp, "case ");
+	      dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0, false);
+	      if (upper_bound)
+		{
+		  pp_printf (pp, " ... ");
+		  dump_generic_node (pp, upper_bound, 0, (dump_flags_t)0,
+				     false);
+		}
+	      pp_printf (pp, ":");
+	    }
+	  else
+	    pp_printf (pp, "default:");
 	}
-      pp_printf (pp, ":");
     }
   else
-    pp_printf (pp, "default:");
-}
-
-/* Get the case label for this "switch" superedge.  */
-
-tree
-switch_cfg_superedge::get_case_label () const
-{
-  return gimple_switch_label (get_switch_stmt (), m_idx);
+    {
+      pp_character (pp, '{');
+      for (unsigned i = 0; i < m_case_labels.length (); ++i)
+	{
+	  if (i > 0)
+	    pp_string (pp, ", ");
+	  tree case_label = m_case_labels[i];
+	  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
+	  tree lower_bound = CASE_LOW (case_label);
+	  tree upper_bound = CASE_HIGH (case_label);
+	  if (lower_bound)
+	    {
+	      if (upper_bound)
+		{
+		  pp_character (pp, '[');
+		  dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0,
+				     false);
+		  pp_string (pp, ", ");
+		  dump_generic_node (pp, upper_bound, 0, (dump_flags_t)0,
+				     false);
+		  pp_character (pp, ']');
+		}
+	      else
+		dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0, false);
+	    }
+	  else
+	    pp_printf (pp, "default");
+	}
+      pp_character (pp, '}');
+    }
 }
 
 /* Implementation of superedge::dump_label_to_pp for interprocedural
@@ -1137,6 +1208,17 @@ tree
 callgraph_superedge::get_callee_decl () const
 {
   return get_callee_function ()->decl;
+}
+
+/* Get the gcall * of this interprocedural call/return edge.  */
+
+gcall *
+callgraph_superedge::get_call_stmt () const
+{
+  if (m_cedge)
+    return m_cedge->call_stmt;
+  
+  return m_src->get_final_call ();
 }
 
 /* Get the calling fndecl at this interprocedural call/return edge.  */

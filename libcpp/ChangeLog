@@ -1,3 +1,20 @@
+2021-08-25  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR other/93067
+	* charset.c (init_iconv_desc): Adapt to permit PFILE argument to
+	be NULL.
+	(_cpp_convert_input): Likewise. Also move UTF-8 BOM logic to...
+	(cpp_check_utf8_bom): ...here.  New function.
+	(cpp_input_conversion_is_trivial): New function.
+	* files.c (read_file_guts): Allow PFILE argument to be NULL.  Add
+	INPUT_CHARSET argument as an alternate source of this information.
+	(read_file): Pass the new argument to read_file_guts.
+	(cpp_get_converted_source): New function.
+	* include/cpplib.h (struct cpp_converted_source): Declare.
+	(cpp_get_converted_source): Declare.
+	(cpp_input_conversion_is_trivial): Declare.
+	(cpp_check_utf8_bom): Declare.
+
 2021-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* macro.c (vaopt_state): Add m_stringify member.

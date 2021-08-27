@@ -1474,6 +1474,93 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 }
 
 /* Determines number of iterations of loop whose ending condition
+   is IV0 < IV1 which likes:  {base, -C} < n,  or n < {base, C}.
+   The number of iterations is stored to NITER.  */
+
+static bool
+number_of_iterations_until_wrap (class loop *, tree type, affine_iv *iv0,
+				 affine_iv *iv1, class tree_niter_desc *niter)
+{
+  tree niter_type = unsigned_type_for (type);
+  tree step, num, assumptions, may_be_zero;
+  wide_int high, low, max, min;
+
+  may_be_zero = fold_build2 (LE_EXPR, boolean_type_node, iv1->base, iv0->base);
+  if (integer_onep (may_be_zero))
+    return false;
+
+  int prec = TYPE_PRECISION (type);
+  signop sgn = TYPE_SIGN (type);
+  min = wi::min_value (prec, sgn);
+  max = wi::max_value (prec, sgn);
+
+  /* n < {base, C}. */
+  if (integer_zerop (iv0->step) && !tree_int_cst_sign_bit (iv1->step))
+    {
+      step = iv1->step;
+      /* MIN + C - 1 <= n.  */
+      tree last = wide_int_to_tree (type, min + wi::to_wide (step) - 1);
+      assumptions = fold_build2 (LE_EXPR, boolean_type_node, last, iv0->base);
+      if (integer_zerop (assumptions))
+	return false;
+
+      num = fold_build2 (MINUS_EXPR, niter_type, wide_int_to_tree (type, max),
+			 iv1->base);
+      high = max;
+      if (TREE_CODE (iv1->base) == INTEGER_CST)
+	low = wi::to_wide (iv1->base) - 1;
+      else if (TREE_CODE (iv0->base) == INTEGER_CST)
+	low = wi::to_wide (iv0->base);
+      else
+	low = min;
+    }
+  /* {base, -C} < n.  */
+  else if (tree_int_cst_sign_bit (iv0->step) && integer_zerop (iv1->step))
+    {
+      step = fold_build1 (NEGATE_EXPR, TREE_TYPE (iv0->step), iv0->step);
+      /* MAX - C + 1 >= n.  */
+      tree last = wide_int_to_tree (type, max - wi::to_wide (step) + 1);
+      assumptions = fold_build2 (GE_EXPR, boolean_type_node, last, iv1->base);
+      if (integer_zerop (assumptions))
+	return false;
+
+      num = fold_build2 (MINUS_EXPR, niter_type, iv0->base,
+			 wide_int_to_tree (type, min));
+      low = min;
+      if (TREE_CODE (iv0->base) == INTEGER_CST)
+	high = wi::to_wide (iv0->base) + 1;
+      else if (TREE_CODE (iv1->base) == INTEGER_CST)
+	high = wi::to_wide (iv1->base);
+      else
+	high = max;
+    }
+  else
+    return false;
+
+  /* (delta + step - 1) / step */
+  step = fold_convert (niter_type, step);
+  num = fold_convert (niter_type, num);
+  num = fold_build2 (PLUS_EXPR, niter_type, num, step);
+  niter->niter = fold_build2 (FLOOR_DIV_EXPR, niter_type, num, step);
+
+  widest_int delta, s;
+  delta = widest_int::from (high, sgn) - widest_int::from (low, sgn);
+  s = wi::to_widest (step);
+  delta = delta + s - 1;
+  niter->max = wi::udiv_floor (delta, s);
+
+  niter->may_be_zero = may_be_zero;
+
+  if (!integer_nonzerop (assumptions))
+    niter->assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+				      niter->assumptions, assumptions);
+
+  niter->control.no_overflow = false;
+
+  return true;
+}
+
+/* Determines number of iterations of loop whose ending condition
    is IV0 < IV1.  TYPE is the type of the iv.  The number of
    iterations is stored to NITER.  BNDS bounds the difference
    IV1->base - IV0->base.  EXIT_MUST_BE_TAKEN is true if we know
@@ -1500,6 +1587,11 @@ number_of_iterations_lt (class loop *loop, tree type, affine_iv *iv0,
       niter->cmp = GT_EXPR;
       niter->bound = iv0->base;
     }
+
+  /* {base, -C} < n,  or n < {base, C} */
+  if (tree_int_cst_sign_bit (iv0->step)
+      || (!integer_zerop (iv1->step) && !tree_int_cst_sign_bit (iv1->step)))
+    return number_of_iterations_until_wrap (loop, type, iv0, iv1, niter);
 
   delta = fold_build2 (MINUS_EXPR, niter_type,
 		       fold_convert (niter_type, iv1->base),
@@ -1665,62 +1757,6 @@ dump_affine_iv (FILE *file, affine_iv *iv)
     }
 }
 
-/* Given exit condition IV0 CODE IV1 in TYPE, this function adjusts
-   the condition for loop-until-wrap cases.  For example:
-     (unsigned){8, -1}_loop < 10        => {0, 1} != 9
-     10 < (unsigned){0, max - 7}_loop   => {0, 1} != 8
-   Return true if condition is successfully adjusted.  */
-
-static bool
-adjust_cond_for_loop_until_wrap (tree type, affine_iv *iv0, tree_code *code,
-				 affine_iv *iv1)
-{
-  /* Only support simple cases for the moment.  */
-  if (TREE_CODE (iv0->base) != INTEGER_CST
-      || TREE_CODE (iv1->base) != INTEGER_CST)
-    return false;
-
-  tree niter_type = unsigned_type_for (type), high, low;
-  /* Case: i-- < 10.  */
-  if (integer_zerop (iv1->step))
-    {
-      /* TODO: Should handle case in which abs(step) != 1.  */
-      if (!integer_minus_onep (iv0->step))
-	return false;
-      /* Give up on infinite loop.  */
-      if (*code == LE_EXPR
-	  && tree_int_cst_equal (iv1->base, TYPE_MAX_VALUE (type)))
-	return false;
-      high = fold_build2 (PLUS_EXPR, niter_type,
-			  fold_convert (niter_type, iv0->base),
-			  build_int_cst (niter_type, 1));
-      low = fold_convert (niter_type, TYPE_MIN_VALUE (type));
-    }
-  else if (integer_zerop (iv0->step))
-    {
-      /* TODO: Should handle case in which abs(step) != 1.  */
-      if (!integer_onep (iv1->step))
-	return false;
-      /* Give up on infinite loop.  */
-      if (*code == LE_EXPR
-	  && tree_int_cst_equal (iv0->base, TYPE_MIN_VALUE (type)))
-	return false;
-      high = fold_convert (niter_type, TYPE_MAX_VALUE (type));
-      low = fold_build2 (MINUS_EXPR, niter_type,
-			 fold_convert (niter_type, iv1->base),
-			 build_int_cst (niter_type, 1));
-    }
-  else
-    gcc_unreachable ();
-
-  iv0->base = low;
-  iv0->step = fold_convert (niter_type, integer_one_node);
-  iv1->base = high;
-  iv1->step = build_int_cst (niter_type, 0);
-  *code = NE_EXPR;
-  return true;
-}
-
 /* Determine the number of iterations according to condition (for staying
    inside loop) which compares two induction variables using comparison
    operator CODE.  The induction variable on left side of the comparison
@@ -1854,15 +1890,6 @@ number_of_iterations_cond (class loop *loop,
       niter->max = 0;
       return true;
     }
-
-  /* Handle special case loops: while (i-- < 10) and while (10 < i++) by
-     adjusting iv0, iv1 and code.  */
-  if (code != NE_EXPR
-      && (tree_int_cst_sign_bit (iv0->step)
-	  || (!integer_zerop (iv1->step)
-	      && !tree_int_cst_sign_bit (iv1->step)))
-      && !adjust_cond_for_loop_until_wrap (type, iv0, &code, iv1))
-    return false;
 
   /* OK, now we know we have a senseful loop.  Handle several cases, depending
      on what comparison operator is used.  */

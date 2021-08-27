@@ -1,3 +1,64 @@
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_num_tasks,
+	c_parser_omp_clause_grainsize): Parse the optional strict: modifier.
+
+2021-08-22  Martin Uecker  <muecker@gwdg.de>
+
+	PR c/98397
+	* c-typeck.c (comp_target_types): Change pedwarn to pedwarn_c11
+	for pointers to arrays with qualifiers.
+	(build_conditional_expr): For C23 don't lose qualifiers for pointers
+	to arrays when the other pointer is a void pointer. Update warnings.
+	(convert_for_assignment): Update warnings for C2X when converting from
+	void* with qualifiers to a pointer to array with the same qualifiers.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_error): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_ERROR.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_depend_sink): Reject spurious
+	comma at the end of list.
+	(c_parser_omp_requires): Likewise.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_requires): Don't call
+	c_parser_peek_2nd_token and optionally consume token if current
+	token is CPP_EOF, CPP_PRAGMA_EOL or CPP_CLOSE_PAREN.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_nothing): New function.
+	(c_parser_pragma): Handle PRAGMA_OMP_NOTHING.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_statement_after_labels): Add restart label
+	near the start of the function.  If c_parser_pragma returns false,
+	goto restart.
+	(c_parser_pragma): For PRAGMA_OMP_CANCELLATION_POINT return what
+	c_parser_omp_cancellation_point returned.  For PRAGMA_OMP_DECLARE
+	return what c_parser_omp_declare returned.  Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+	(c_parser_omp_ordered): Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+	(c_parser_omp_target_update): Likewise.
+	(c_parser_omp_target_enter_data, c_parser_omp_target_exit_data):
+	Change return type from tree to bool, return false if the
+	directive should be ignored in pragma_stmt contexts.
+	(c_parser_omp_target): Adjust callers of c_parser_omp_target_*_data,
+	return their result directly.
+	(c_parser_omp_cancellation_point): Change return type from void to
+	bool, return false if the directive should be ignored in pragma_stmt
+	contexts.
+	(c_parser_omp_declare): Likewise.
+
 2021-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (OMP_SCOPE_CLAUSE_MASK): Define.

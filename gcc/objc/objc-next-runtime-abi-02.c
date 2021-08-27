@@ -254,6 +254,10 @@ objc_next_runtime_abi_02_init (objc_runtime_hooks *rthooks)
       flag_objc_sjlj_exceptions = 0;
     }
 
+  /* NeXT ABI 2 is intended to default to checking for nil receivers.  */
+  if (! global_options_set.x_flag_objc_nilcheck)
+    flag_objc_nilcheck = 1;
+
   rthooks->initialize = next_runtime_02_initialize;
   rthooks->default_constant_string_class_name = DEF_CONSTANT_STRING_CLASS_NAME;
   rthooks->tag_getclass = TAG_GETCLASS;
@@ -1675,13 +1679,8 @@ build_v2_objc_method_fixup_call (int super_flag, tree method_prototype,
 
       if (TREE_CODE (ret_type) == RECORD_TYPE
 	  || TREE_CODE (ret_type) == UNION_TYPE)
-	{
-	  vec<constructor_elt, va_gc> *rtt = NULL;
-	  /* ??? CHECKME. hmmm..... think we need something more
-	     here.  */
-	  CONSTRUCTOR_APPEND_ELT (rtt, NULL_TREE, NULL_TREE);
-	  ftree = objc_build_constructor (ret_type, rtt);
-	}
+	/* An empty constructor is zero-filled by the middle end.  */
+	ftree = objc_build_constructor (ret_type, NULL);
       else
 	ftree = fold_convert (ret_type, integer_zero_node);
 
@@ -1694,11 +1693,11 @@ build_v2_objc_method_fixup_call (int super_flag, tree method_prototype,
 					ifexp, ret_val, ftree,
 					tf_warning_or_error);
 #else
-     /* ??? CHECKME.   */
       ret_val = build_conditional_expr (input_location,
-					ifexp, 1,
+					ifexp, 0,
 					ret_val, NULL_TREE, input_location,
 					ftree, NULL_TREE, input_location);
+      ret_val = fold_convert (ret_type, ret_val);
 #endif
     }
   return ret_val;
@@ -1790,11 +1789,8 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
       if (TREE_CODE (ret_type) == RECORD_TYPE
 	  || TREE_CODE (ret_type) == UNION_TYPE)
 	{
-	  vec<constructor_elt, va_gc> *rtt = NULL;
-	  /* ??? CHECKME. hmmm..... think we need something more
-	     here.  */
-	  CONSTRUCTOR_APPEND_ELT (rtt, NULL_TREE, NULL_TREE);
-	  ftree = objc_build_constructor (ret_type, rtt);
+	/* An empty constructor is zero-filled by the middle end.  */
+	  ftree = objc_build_constructor (ret_type, NULL);
 	}
       else
 	ftree = fold_convert (ret_type, integer_zero_node);
@@ -1807,10 +1803,10 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
       ret_val = build_conditional_expr (loc, ifexp, ret_val, ftree,
 					tf_warning_or_error);
 #else
-     /* ??? CHECKME.   */
       ret_val = build_conditional_expr (loc, ifexp, 1,
 					ret_val, NULL_TREE, loc,
 					ftree, NULL_TREE, loc);
+      ret_val = fold_convert (ret_type, ret_val);
 #endif
     }
   return ret_val;

@@ -1284,6 +1284,8 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 	  else
             kind = scalar_stmt;
 
+	  /* We are using vect_prologue here to avoid scaling twice
+	     by the inner loop factor.  */
 	  record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
 			    factor, kind, stmt_info, 0, vect_prologue);
         }
@@ -1297,11 +1299,13 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 		    j, si)
     (void) add_stmt_cost (loop_vinfo, target_cost_data, si->count,
 			  si->kind, si->stmt_info, si->vectype,
-			  si->misalign, vect_body);
-  unsigned dummy, body_cost = 0;
-  finish_cost (target_cost_data, &dummy, &body_cost, &dummy);
+			  si->misalign, si->where);
+  unsigned prologue_cost = 0, body_cost = 0, epilogue_cost = 0;
+  finish_cost (target_cost_data, &prologue_cost, &body_cost,
+	       &epilogue_cost);
   destroy_cost_data (target_cost_data);
-  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo) = body_cost;
+  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
+    = prologue_cost + body_cost + epilogue_cost;
 }
 
 
@@ -1515,6 +1519,13 @@ vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
       stmt_vec_info inner_loop_cond_info
 	= loop_vinfo->lookup_stmt (inner_loop_cond);
       STMT_VINFO_TYPE (inner_loop_cond_info) = loop_exit_ctrl_vec_info_type;
+      /* If we have an estimate on the number of iterations of the inner
+	 loop use that to limit the scale for costing, otherwise use
+	 --param vect-inner-loop-cost-factor literally.  */
+      widest_int nit;
+      if (estimated_stmt_executions (loop->inner, &nit))
+	LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo)
+	  = wi::smin (nit, param_vect_inner_loop_cost_factor).to_uhwi ();
     }
 
   gcc_assert (!loop->aux);

@@ -317,6 +317,15 @@ cxx_block_may_fallthru (const_tree stmt)
 	return true;
       return block_may_fallthru (ELSE_CLAUSE (stmt));
 
+    case CLEANUP_STMT:
+      /* Just handle the try/finally cases.  */
+      if (!CLEANUP_EH_ONLY (stmt))
+	{
+	  return (block_may_fallthru (CLEANUP_BODY (stmt))
+		  && block_may_fallthru (CLEANUP_EXPR (stmt)));
+	}
+      return true;
+
     default:
       return c_block_may_fallthru (stmt);
     }

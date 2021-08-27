@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "analyzer/constraint-manager.h"
 
 #if ENABLE_ANALYZER
 
@@ -77,7 +78,8 @@ region_model_manager::region_model_manager ()
   m_fndecls_map (), m_labels_map (),
   m_globals_region (alloc_region_id (), &m_root_region),
   m_globals_map (),
-  m_store_mgr (this)
+  m_store_mgr (this),
+  m_range_mgr (new bounded_ranges_manager ())
 {
 }
 
@@ -142,6 +144,8 @@ region_model_manager::~region_model_manager ()
   for (string_map_t::iterator iter = m_string_map.begin ();
        iter != m_string_map.end (); ++iter)
     delete (*iter).second;
+
+  delete m_range_mgr;
 }
 
 /* Return true if C exceeds the complexity limit for svalues.  */
@@ -1574,6 +1578,7 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   logger->log ("  # managed dynamic regions: %i",
 	       m_managed_dynamic_regions.length ());
   m_store_mgr.log_stats (logger, show_objs);
+  m_range_mgr->log_stats (logger, show_objs);
 }
 
 /* Dump the number of objects of each class that were managed by this

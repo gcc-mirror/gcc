@@ -1,6 +1,6 @@
 /* PR target/95524 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse2 -mno-avx" } */
 /* { dg-final { scan-assembler-times "pand\[^\n\]*%xmm" 3 { xfail *-*-* } } } */
 typedef char v16qi  __attribute__ ((vector_size (16)));
 typedef unsigned char v16uqi  __attribute__ ((vector_size (16)));

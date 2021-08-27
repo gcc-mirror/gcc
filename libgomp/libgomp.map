@@ -382,7 +382,9 @@ GOMP_5.0.1 {
 
 GOMP_5.1 {
   global:
+	GOMP_error;
 	GOMP_scope_start;
+	GOMP_warning;
 } GOMP_5.0.1;
 
 OACC_2.0 {

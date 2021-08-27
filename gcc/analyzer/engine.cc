@@ -1627,6 +1627,50 @@ exploded_node::dump_succs_and_preds (FILE *outf) const
   }
 }
 
+/* class dynamic_call_info_t : public exploded_edge::custom_info_t.  */
+
+/* Implementation of exploded_edge::custom_info_t::update_model vfunc
+   for dynamic_call_info_t.
+
+   Update state for the dynamically discorverd calls */
+
+void
+dynamic_call_info_t::update_model (region_model *model,
+				   const exploded_edge &eedge)
+{
+  const program_state &dest_state = eedge.m_dest->get_state ();
+  *model = *dest_state.m_region_model;
+}
+
+/* Implementation of exploded_edge::custom_info_t::add_events_to_path vfunc
+   for dynamic_call_info_t.  */
+
+void
+dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
+				   const exploded_edge &eedge)
+{
+  const exploded_node *src_node = eedge.m_src;
+  const program_point &src_point = src_node->get_point ();
+  const int src_stack_depth = src_point.get_stack_depth ();
+  const exploded_node *dest_node = eedge.m_dest;
+  const program_point &dest_point = dest_node->get_point ();
+  const int dest_stack_depth = dest_point.get_stack_depth ();
+
+  if (m_is_returning_call)
+    emission_path->add_event (new return_event (eedge, (m_dynamic_call
+	                   			        ? m_dynamic_call->location
+	           	   		                : UNKNOWN_LOCATION),
+	          	      dest_point.get_fndecl (),
+	          	      dest_stack_depth));
+  else
+    emission_path->add_event (new call_event (eedge, (m_dynamic_call
+	                   			      ? m_dynamic_call->location
+	           	   		              : UNKNOWN_LOCATION),
+	          	      src_point.get_fndecl (),
+	          	      src_stack_depth));
+
+}
+
 /* class rewind_info_t : public exploded_edge::custom_info_t.  */
 
 /* Implementation of exploded_edge::custom_info_t::update_model vfunc
@@ -2980,6 +3024,77 @@ state_change_requires_new_enode_p (const program_state &old_state,
   return false;
 }
 
+/* Create enodes and eedges for the function calls that doesn't have an 
+   underlying call superedge.
+
+   Such case occurs when GCC's middle end didn't know which function to
+   call but the analyzer does (with the help of current state).
+
+   Some example such calls are dynamically dispatched calls to virtual
+   functions or calls that happen via function pointer.  */
+
+bool
+exploded_graph::maybe_create_dynamic_call (const gcall *call,
+                                           tree fn_decl,
+                                           exploded_node *node,
+                                           program_state next_state,
+                                           program_point &next_point,
+                                           uncertainty_t *uncertainty,
+                                           logger *logger)
+{
+  LOG_FUNC (logger);
+
+  const program_point *this_point = &node->get_point ();
+  function *fun = DECL_STRUCT_FUNCTION (fn_decl);
+  if (fun)
+    {
+      const supergraph &sg = this->get_supergraph ();
+      supernode *sn_entry = sg.get_node_for_function_entry (fun);
+      supernode *sn_exit = sg.get_node_for_function_exit (fun);
+
+      program_point new_point
+        = program_point::before_supernode (sn_entry,
+                                           NULL,
+                                           this_point->get_call_string ());
+
+      new_point.push_to_call_stack (sn_exit,
+                                    next_point.get_supernode());
+
+      /* Impose a maximum recursion depth and don't analyze paths
+         that exceed it further.
+         This is something of a blunt workaround, but it only
+         applies to recursion (and mutual recursion), not to
+         general call stacks.  */
+      if (new_point.get_call_string ().calc_recursion_depth ()
+          > param_analyzer_max_recursion_depth)
+      {
+        if (logger)
+          logger->log ("rejecting call edge: recursion limit exceeded");
+        return false;
+      }
+
+      next_state.push_call (*this, node, call, uncertainty);
+
+      if (next_state.m_valid)
+        {
+          if (logger)
+            logger->log ("Discovered call to %s [SN: %i -> SN: %i]",
+                          function_name(fun),
+                          this_point->get_supernode ()->m_index,
+                          sn_entry->m_index);
+
+          exploded_node *enode = get_or_create_node (new_point,
+                                                     next_state,
+                                                     node);
+          if (enode)
+            add_edge (node,enode, NULL,
+                      new dynamic_call_info_t (call));
+          return true;
+        }
+    }
+  return false;
+}
+
 /* The core of exploded_graph::process_worklist (the main analysis loop),
    handling one node in the worklist.
 
@@ -3174,10 +3289,13 @@ exploded_graph::process_node (exploded_node *node)
       break;
     case PK_AFTER_SUPERNODE:
       {
+        bool found_a_superedge = false;
+        bool is_an_exit_block = false;
 	/* If this is an EXIT BB, detect leaks, and potentially
 	   create a function summary.  */
 	if (point.get_supernode ()->return_p ())
 	  {
+	    is_an_exit_block = true;
 	    node->detect_leaks (*this);
 	    if (flag_analyzer_call_summaries
 		&& point.get_call_string ().empty_p ())
@@ -3205,6 +3323,7 @@ exploded_graph::process_node (exploded_node *node)
 	superedge *succ;
 	FOR_EACH_VEC_ELT (point.get_supernode ()->m_succs, i, succ)
 	  {
+	    found_a_superedge = true;
 	    if (logger)
 	      logger->log ("considering SN: %i -> SN: %i",
 			   succ->m_src->m_index, succ->m_dest->m_index);
@@ -3214,6 +3333,55 @@ exploded_graph::process_node (exploded_node *node)
 						 point.get_call_string ());
 	    program_state next_state (state);
 	    uncertainty_t uncertainty;
+
+            /* Make use the current state and try to discover and analyse
+               indirect function calls (a call that doesn't have an underlying
+               cgraph edge representing call).
+
+               Some examples of such calls are virtual function calls
+               and calls that happen via a function pointer.  */
+            if (succ->m_kind == SUPEREDGE_INTRAPROCEDURAL_CALL
+            	&& !(succ->get_any_callgraph_edge ()))
+              {
+                const gcall *call
+                  = point.get_supernode ()->get_final_call ();
+
+                impl_region_model_context ctxt (*this,
+                                                node,
+                                                &state,
+                                                &next_state,
+                                                &uncertainty,
+                                                point.get_stmt());
+
+                region_model *model = state.m_region_model;
+                bool call_discovered = false;
+
+                if (tree fn_decl = model->get_fndecl_for_call(call,&ctxt))
+                  call_discovered = maybe_create_dynamic_call (call,
+                                                               fn_decl,
+                                                               node,
+                                                               next_state,
+                                                               next_point,
+                                                               &uncertainty,
+                                                               logger);
+                if (!call_discovered)
+                  {
+                     /* An unknown function or a special function was called 
+                        at this point, in such case, don't terminate the 
+                        analysis of the current function.
+
+                        The analyzer handles calls to such functions while
+                        analysing the stmt itself, so the the function call
+                        must have been handled by the anlyzer till now.  */
+                     exploded_node *next
+                       = get_or_create_node (next_point,
+                                             next_state,
+                                             node);
+                     if (next)
+                       add_edge (node, next, succ);
+                  }
+              }
+
 	    if (!node->on_edge (*this, succ, &next_point, &next_state,
 				&uncertainty))
 	      {
@@ -3227,6 +3395,38 @@ exploded_graph::process_node (exploded_node *node)
 	    if (next)
 	      add_edge (node, next, succ);
 	  }
+
+        /* Return from the calls which doesn't have a return superedge.
+    	   Such case occurs when GCC's middle end didn't knew which function to
+    	   call but analyzer did.  */
+        if((is_an_exit_block && !found_a_superedge)
+           && (!point.get_call_string ().empty_p ()))
+          {
+            const call_string cs = point.get_call_string ();
+            program_point next_point
+              = program_point::before_supernode (cs.get_caller_node (),
+                                                 NULL,
+                                                 cs);
+            program_state next_state (state);
+            uncertainty_t uncertainty;
+
+            const gcall *call
+              = next_point.get_supernode ()->get_returning_call ();
+
+            if(call)
+              next_state.returning_call (*this, node, call, &uncertainty);
+
+            if (next_state.m_valid)
+              {
+                next_point.pop_from_call_stack ();
+                exploded_node *enode = get_or_create_node (next_point,
+                                                           next_state,
+                                                           node);
+                if (enode)
+                  add_edge (node, enode, NULL,
+                            new dynamic_call_info_t (call, true));
+              }
+          }
       }
       break;
     }
@@ -3656,7 +3856,7 @@ feasibility_problem::dump_to_pp (pretty_printer *pp) const
       pp_string (pp, "; rejected constraint: ");
       m_rc->dump_to_pp (pp);
       pp_string (pp, "; rmodel: ");
-      m_rc->m_model.dump_to_pp (pp, true, false);
+      m_rc->get_model ().dump_to_pp (pp, true, false);
     }
 }
 

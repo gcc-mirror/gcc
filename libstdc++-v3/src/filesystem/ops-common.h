@@ -229,7 +229,7 @@ namespace __gnu_posix
     // (This only applies to the C++17 Filesystem library, because for the
     // Filesystem TS we don't have a distinct __file_clock, we just use the
     // system clock for file timestamps).
-    if (s >= (nanoseconds::max().count() / 1e9))
+    if (seconds{s} >= floor<seconds>(system_clock::duration::max()))
       {
 	ec = std::make_error_code(std::errc::value_too_large); // EOVERFLOW
 	return system_clock::time_point::min();

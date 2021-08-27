@@ -987,6 +987,9 @@ cgraph_node::create_version_clone (tree new_decl,
    that will promote value of the attribute DECL_FUNCTION_SPECIFIC_TARGET
    of the declaration.
 
+   If VERSION_DECL is set true, use clone_function_name_numbered for the
+   function clone.  Otherwise, use clone_function_name.
+
    Return the new version's cgraph node.  */
 
 cgraph_node *
@@ -995,7 +998,7 @@ cgraph_node::create_version_clone_with_body
    vec<ipa_replace_map *, va_gc> *tree_map,
    ipa_param_adjustments *param_adjustments,
    bitmap bbs_to_copy, basic_block new_entry_block, const char *suffix,
-   tree target_attributes)
+   tree target_attributes, bool version_decl)
 {
   tree old_decl = decl;
   cgraph_node *new_version_node = NULL;
@@ -1016,8 +1019,10 @@ cgraph_node::create_version_clone_with_body
     new_decl = copy_node (old_decl);
 
   /* Generate a new name for the new version. */
-  DECL_NAME (new_decl) = clone_function_name_numbered (old_decl, suffix);
-  SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
+  tree fnname = (version_decl ? clone_function_name_numbered (old_decl, suffix)
+		: clone_function_name (old_decl, suffix));
+  DECL_NAME (new_decl) = fnname;
+  SET_DECL_ASSEMBLER_NAME (new_decl, fnname);
   SET_DECL_RTL (new_decl, NULL);
 
   DECL_VIRTUAL_P (new_decl) = 0;

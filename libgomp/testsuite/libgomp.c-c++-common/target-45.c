@@ -1,4 +1,4 @@
-/* { dg-do run { target { ! offload_target_intelmic } } } */
+/* { dg-xfail-run-if TODO { offload_device_intel_mic } } */
 
 #include <omp.h>
 #include <stdlib.h>

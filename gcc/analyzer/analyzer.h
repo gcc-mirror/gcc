@@ -75,10 +75,12 @@ class region_model;
 class region_model_context;
   class impl_region_model_context;
 class call_details;
-struct rejected_constraint;
+class rejected_constraint;
 class constraint_manager;
 class equiv_class;
 class reachable_regions;
+class bounded_ranges;
+class bounded_ranges_manager;
 
 class pending_diagnostic;
 class state_change_event;

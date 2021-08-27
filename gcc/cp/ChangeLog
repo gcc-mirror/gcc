@@ -1,3 +1,88 @@
+2021-08-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR c++/66590
+	* cp-objcp-common.c (cxx_block_may_fallthru): Handle
+	CLEANUP_STMT for the case which will be try/finally.
+
+2021-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102019
+	* init.c (build_value_init_noctor): Ignore unnamed zero-width
+	bitfields.
+
+2021-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_num_tasks,
+	cp_parser_omp_clause_grainsize): Parse the optional strict: modifier.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_handle_statement_omp_attributes): Determine if
+	PRAGMA_OMP_ERROR directive is C_OMP_DIR_STANDALONE.
+	(cp_parser_omp_error): New function.
+	(cp_parser_pragma): Handle PRAGMA_OMP_ERROR.
+
+2021-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_depend_sink): Reject spurious
+	comma at the end of list.  Don't parse closing paren here...
+	(cp_parser_omp_clause_depend): ... but here instead.
+
+2021-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101803
+	* cp-tree.h (CONSTRUCTOR_IS_PAREN_INIT): Clarify comment.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_requires): Don't call cp_lexer_nth_token_is
+	and optionally consume token if current token is CPP_EOF,
+	CPP_PRAGMA_EOL or CPP_CLOSE_PAREN.
+
+2021-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_nothing): Use cp_parser_require_pragma_eol
+	instead of cp_parser_skip_to_pragma_eol.
+
+2021-08-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101344
+	PR c++/101803
+	* cp-tree.h (CONSTRUCTOR_BRACES_ELIDED_P): Define.
+	* decl.c (reshape_init_r): Set it.
+	* pt.c (collect_ctor_idx_types): Recurse into a sub-CONSTRUCTOR
+	iff CONSTRUCTOR_BRACES_ELIDED_P.
+
+2021-08-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101883
+	* pt.c (convert_template_argument): Pass LOOKUP_IMPLICIT to
+	do_auto_deduction.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_nothing): New function.
+	(cp_parser_pragma): Handle PRAGMA_OMP_NOTHING.
+
+2021-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_ordered): Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+	(cp_parser_omp_target_update): Likewise.
+	(cp_parser_omp_cancellation_point): Change return type from void to
+	bool, return false if the directive should be ignored in pragma_stmt
+	contexts.
+	(cp_parser_omp_target_enter_data, cp_parser_omp_target_exit_data):
+	Change return type from tree to bool, return false if the
+	directive should be ignored in pragma_stmt contexts.
+	(cp_parser_omp_target): Adjust callers of cp_parser_omp_target_*_data,
+	return their result directly.
+	(cp_parser_pragma): For PRAGMA_OMP_CANCELLATION_POINT return what
+	cp_parser_omp_cancellation_point returned.  Return true instead of
+	false after emitting errors that the directive is not allowed in
+	pragma_stmt context.
+
 2021-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101539

@@ -89,3 +89,34 @@ gomp_fatal (const char *fmt, ...)
   gomp_vfatal (fmt, list);
   va_end (list);
 }
+
+void
+GOMP_warning (const char *msg, size_t msglen)
+{
+  if (msg && msglen == (size_t) -1)
+    gomp_error ("error directive encountered: %s", msg);
+  else if (msg)
+    {
+      fputs ("\nlibgomp: error directive encountered: ", stderr);
+      fwrite (msg, 1, msglen, stderr);
+      fputc ('\n', stderr);
+    }
+  else
+    gomp_error ("error directive encountered");
+}
+
+void
+GOMP_error (const char *msg, size_t msglen)
+{
+  if (msg && msglen == (size_t) -1)
+    gomp_fatal ("fatal error: error directive encountered: %s", msg);
+  else if (msg)
+    {
+      fputs ("\nlibgomp: fatal error: error directive encountered: ", stderr);
+      fwrite (msg, 1, msglen, stderr);
+      fputc ('\n', stderr);
+      exit (EXIT_FAILURE);
+    }
+  else
+    gomp_fatal ("fatal error: error directive encountered");
+}

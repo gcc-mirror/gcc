@@ -3385,6 +3385,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (integer_zerop (@2) || integer_all_onesp (@2))
      (cmp @0 @2)))))
 
+/* Both signed and unsigned lshift produce the same result, so use
+   the form that minimizes the number of conversions.  */
+(simplify
+ (convert (lshift:s@0 (convert:s@1 @2) INTEGER_CST@3))
+ (if (INTEGRAL_TYPE_P (type)
+      && !POINTER_TYPE_P (type)
+      && tree_nop_conversion_p (type, TREE_TYPE (@0))
+      && INTEGRAL_TYPE_P (TREE_TYPE (@2))
+      && TYPE_PRECISION (TREE_TYPE (@2)) <= TYPE_PRECISION (type))
+  (lshift (convert @2) @3)))
+
 /* Simplifications of conversions.  */
 
 /* Basic strip-useless-type-conversions / strip_nops.  */

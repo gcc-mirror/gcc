@@ -269,8 +269,13 @@ struct bit_range
     return (get_start_bit_offset () < other.get_next_bit_offset ()
 	    && other.get_start_bit_offset () < get_next_bit_offset ());
   }
+  bool intersects_p (const bit_range &other,
+		     bit_range *out_this,
+		     bit_range *out_other) const;
 
   static int cmp (const bit_range &br1, const bit_range &br2);
+
+  bit_range operator- (bit_offset_t offset) const;
 
   static bool from_mask (unsigned HOST_WIDE_INT mask, bit_range *out);
 

@@ -808,6 +808,7 @@ Objective-C and Objective-C++ Dialects}.
 -mverbose-cost-dump @gol
 -mpure-code @gol
 -mcmse @gol
+-mfix-cmse-cve-2021-35465 @gol
 -mfdpic}
 
 @emph{AVR Options}
@@ -13422,6 +13423,10 @@ Setting to 0 disables the analysis completely.
 @item modref-max-escape-points
 Specifies the maximum number of escape points tracked by modref per SSA-name.
 
+@item modref-max-adjustments
+Specifies the maximum number the access range is enlarged during modref dataflow
+analysis.
+
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
 database lookup. If the value is 0, the compiler uses an id that
@@ -14386,9 +14391,10 @@ The parameter only has an effect on targets that support partial
 vector loads and stores.
 
 @item vect-inner-loop-cost-factor
-The factor which the loop vectorizer applies to the cost of statements
-in an inner loop relative to the loop being vectorized.  The default
-value is 50.
+The maximum factor which the loop vectorizer applies to the cost of statements
+in an inner loop relative to the loop being vectorized.  The factor applied
+is the maximum of the estimated number of iterations of the inner loop and
+this parameter.  The default value of this parameter is 50.
 
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
@@ -20742,6 +20748,14 @@ Generate secure code as per the "ARMv8-M Security Extensions: Requirements on
 Development Tools Engineering Specification", which can be found on
 @url{https://developer.arm.com/documentation/ecm0359818/latest/}.
 
+@item -mfix-cmse-cve-2021-35465
+@opindex mfix-cmse-cve-2021-35465
+Mitigate against a potential security issue with the @code{VLLDM} instruction
+in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
+enabled by default when the option @option{-mcpu=} is used with
+@code{cortex-m33}, @code{cortex-m35p} or @code{cortex-m55}.  The option
+@option{-mno-fix-cmse-cve-2021-35465} can be used to disable the mitigation.
+
 @item -mfdpic
 @itemx -mno-fdpic
 @opindex mfdpic
@@ -24502,12 +24516,6 @@ Select application model @var{app-model}.  Valid models are
 @item executable
 normal executable (default), uses startup code @file{crt0.o}.
 
-@item -mpic-data-is-text-relative
-@opindex mpic-data-is-text-relative
-Assume that the displacement between the text and data segments is fixed
-at static link time.  This allows data to be referenced by offset from start of
-text address instead of GOT since PC-relative addressing is not supported.
-
 @item xmdstub
 for use with Xilinx Microprocessor Debugger (XMD) based
 software intrusive debug agent called xmdstub. This uses startup file
@@ -24527,6 +24535,12 @@ within a monitoring application. This model uses @file{crt3.o} as a startup file
 
 Option @option{-xl-mode-@var{app-model}} is a deprecated alias for
 @option{-mxl-mode-@var{app-model}}.
+
+@item -mpic-data-is-text-relative
+@opindex mpic-data-is-text-relative
+Assume that the displacement between the text and data segments is fixed
+at static link time.  This allows data to be referenced by offset from start of
+text address instead of GOT since PC-relative addressing is not supported.
 
 @end table
 

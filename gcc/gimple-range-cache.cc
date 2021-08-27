@@ -628,20 +628,32 @@ ssa_global_cache::clear ()
 void
 ssa_global_cache::dump (FILE *f)
 {
-  unsigned x;
-  int_range_max r;
-  fprintf (f, "Non-varying global ranges:\n");
-  fprintf (f, "=========================:\n");
-  for ( x = 1; x < num_ssa_names; x++)
-    if (gimple_range_ssa_p (ssa_name (x)) &&
-	get_global_range (r, ssa_name (x))  && !r.varying_p ())
-      {
-	print_generic_expr (f, ssa_name (x), TDF_NONE);
-	fprintf (f, "  : ");
-	r.dump (f);
-	fprintf (f, "\n");
-      }
-  fputc ('\n', f);
+  /* Cleared after the table header has been printed.  */
+  bool print_header = true;
+  for (unsigned x = 1; x < num_ssa_names; x++)
+    {
+      int_range_max r;
+      if (gimple_range_ssa_p (ssa_name (x)) &&
+	  get_global_range (r, ssa_name (x))  && !r.varying_p ())
+	{
+	  if (print_header)
+	    {
+	      /* Print the header only when there's something else
+		 to print below.  */
+	      fprintf (f, "Non-varying global ranges:\n");
+	      fprintf (f, "=========================:\n");
+	      print_header = false;
+	    }
+
+	  print_generic_expr (f, ssa_name (x), TDF_NONE);
+	  fprintf (f, "  : ");
+	  r.dump (f);
+	  fprintf (f, "\n");
+	}
+    }
+
+  if (!print_header)
+    fputc ('\n', f);
 }
 
 // --------------------------------------------------------------------------

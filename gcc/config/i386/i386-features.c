@@ -610,12 +610,40 @@ general_scalar_chain::compute_convert_gain ()
 
 	  case CONST_INT:
 	    if (REG_P (dst))
-	      /* DImode can be immediate for TARGET_64BIT and SImode always.  */
-	      igain += m * COSTS_N_INSNS (1);
+	      {
+		if (optimize_insn_for_size_p ())
+		  {
+		    /* xor (2 bytes) vs. xorps (3 bytes).  */
+		    if (src == const0_rtx)
+		      igain -= COSTS_N_BYTES (1);
+		    /* movdi_internal vs. movv2di_internal.  */
+		    /* => mov (5 bytes) vs. movaps (7 bytes).  */
+		    else if (x86_64_immediate_operand (src, SImode))
+		      igain -= COSTS_N_BYTES (2);
+		    else
+		      /* ??? Larger immediate constants are placed in the
+			 constant pool, where the size benefit/impact of
+			 STV conversion is affected by whether and how
+			 often each constant pool entry is shared/reused.
+			 The value below is empirically derived from the
+			 CSiBE benchmark (and the optimal value may drift
+			 over time).  */
+		      igain += COSTS_N_BYTES (0);
+		  }
+		else
+		  {
+		    /* DImode can be immediate for TARGET_64BIT
+		       and SImode always.  */
+		    igain += m * COSTS_N_INSNS (1);
+		    igain -= vector_const_cost (src);
+		  }
+	      }
 	    else if (MEM_P (dst))
-	      igain += (m * ix86_cost->int_store[2]
-			- ix86_cost->sse_store[sse_cost_idx]);
-	    igain -= vector_const_cost (src);
+	      {
+		igain += (m * ix86_cost->int_store[2]
+			  - ix86_cost->sse_store[sse_cost_idx]);
+		igain -= vector_const_cost (src);
+	      }
 	    break;
 
 	  default:

@@ -438,11 +438,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 2729. Missing SFINAE on std::pair::operator=
       _Tuple_impl& operator=(const _Tuple_impl&) = delete;
 
+#if _GLIBCXX_INLINE_VERSION
+      _Tuple_impl(_Tuple_impl&&) = default;
+#else
       constexpr
       _Tuple_impl(_Tuple_impl&& __in)
       noexcept(is_nothrow_move_constructible<_Head>::value)
-      : _Base(std::forward<_Head>(_M_head(__in)))
+      : _Base(static_cast<_Base&&>(__in))
       { }
+#endif
 
       template<typename _UHead>
 	constexpr

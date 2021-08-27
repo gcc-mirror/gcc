@@ -218,6 +218,17 @@ public:
   void push_frame (const extrinsic_state &ext_state, function *fun);
   function * get_current_function () const;
 
+  void push_call (exploded_graph &eg,
+		  exploded_node *enode,
+		  const gcall *call_stmt,
+		  uncertainty_t *uncertainty);
+
+  void returning_call (exploded_graph &eg,
+		       exploded_node *enode,
+		       const gcall *call_stmt,
+		       uncertainty_t *uncertainty);
+
+
   bool on_edge (exploded_graph &eg,
 		exploded_node *enode,
 		const superedge *succ,

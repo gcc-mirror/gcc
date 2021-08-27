@@ -181,7 +181,7 @@ public:
 private:
   supernode *add_node (function *fun, basic_block bb, gcall *returning_call,
 		       gimple_seq phi_nodes);
-  cfg_superedge *add_cfg_edge (supernode *src, supernode *dest, ::edge e, int idx);
+  cfg_superedge *add_cfg_edge (supernode *src, supernode *dest, ::edge e);
   call_superedge *add_call_superedge (supernode *src, supernode *dest,
 				      cgraph_edge *cedge);
   return_superedge *add_return_superedge (supernode *src, supernode *dest,
@@ -266,6 +266,11 @@ class supernode : public dnode<supergraph_traits>
     i.bb = i.ptr ? gimple_bb (i.ptr) : NULL;
 
     return i;
+  }
+
+  gcall *get_returning_call () const
+  {
+    return m_returning_call;
   }
 
   gimple *get_last_stmt () const
@@ -400,7 +405,7 @@ class callgraph_superedge : public superedge
   function *get_caller_function () const;
   tree get_callee_decl () const;
   tree get_caller_decl () const;
-  gcall *get_call_stmt () const { return m_cedge->call_stmt; }
+  gcall *get_call_stmt () const;
   tree get_arg_for_parm (tree parm, callsite_expr *out) const;
   tree get_parm_for_arg (tree arg, callsite_expr *out) const;
   tree map_expr_from_caller_to_callee (tree caller_expr,
@@ -534,15 +539,12 @@ is_a_helper <const cfg_superedge *>::test (const superedge *sedge)
 namespace ana {
 
 /* A subclass for edges from switch statements, retaining enough
-   information to identify the pertinent case, and for adding labels
+   information to identify the pertinent cases, and for adding labels
    when rendering via graphviz.  */
 
 class switch_cfg_superedge : public cfg_superedge {
  public:
-  switch_cfg_superedge (supernode *src, supernode *dst, ::edge e, int idx)
-  : cfg_superedge (src, dst, e),
-    m_idx (idx)
-  {}
+  switch_cfg_superedge (supernode *src, supernode *dst, ::edge e);
 
   const switch_cfg_superedge *dyn_cast_switch_cfg_superedge () const
     FINAL OVERRIDE
@@ -558,10 +560,10 @@ class switch_cfg_superedge : public cfg_superedge {
     return as_a <gswitch *> (m_src->get_last_stmt ());
   }
 
-  tree get_case_label () const;
+  const vec<tree> &get_case_labels () const { return m_case_labels; }
 
- private:
-  const int m_idx;
+private:
+  auto_vec<tree> m_case_labels;
 };
 
 } // namespace ana

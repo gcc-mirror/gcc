@@ -372,6 +372,12 @@
    UNSPEC_REPLACE_UN
    UNSPEC_VDIVES
    UNSPEC_VDIVEU
+   UNSPEC_XXEVAL
+   UNSPEC_XXSPLTIW
+   UNSPEC_XXSPLTIDP
+   UNSPEC_XXSPLTI32DX
+   UNSPEC_XXBLEND
+   UNSPEC_XXPERMX
   ])
 
 (define_int_iterator XVCVBF16	[UNSPEC_VSX_XVCVSPBF16
@@ -391,6 +397,22 @@
 				  (V2DI  "3") (V2DF "3")])
 (define_mode_attr REPLACE_ELT_max [(V4SI "12") (V4SF "12")
 				   (V2DI  "8") (V2DF "8")])
+
+;; Like VM2 in altivec.md, just do char, short, int, long, float and double
+(define_mode_iterator VM3 [V4SI
+			   V8HI
+			   V16QI
+			   V4SF
+			   V2DF
+			   V2DI])
+
+(define_mode_attr VM3_char [(V2DI "d")
+			   (V4SI "w")
+			   (V8HI "h")
+			   (V16QI "b")
+			   (V2DF  "d")
+			   (V4SF  "w")])
+
 
 ;; VSX moves
 
@@ -6383,3 +6405,187 @@
   "TARGET_POWER10"
   "vmulld %0,%1,%2"
   [(set_attr "type" "veccomplex")])
+
+
+;; XXSPLTIW built-in function support
+(define_insn "xxspltiw_v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=wa")
+	(unspec:V4SI [(match_operand:SI 1 "s32bit_cint_operand" "n")]
+		     UNSPEC_XXSPLTIW))]
+ "TARGET_POWER10"
+ "xxspltiw %x0,%1"
+ [(set_attr "type" "vecperm")
+  (set_attr "prefixed" "yes")])
+
+(define_expand "xxspltiw_v4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=wa")
+	(unspec:V4SF [(match_operand:SF 1 "const_double_operand" "n")]
+		     UNSPEC_XXSPLTIW))]
+ "TARGET_POWER10"
+{
+  long value = rs6000_const_f32_to_i32 (operands[1]);
+  emit_insn (gen_xxspltiw_v4sf_inst (operands[0], GEN_INT (value)));
+  DONE;
+})
+
+(define_insn "xxspltiw_v4sf_inst"
+  [(set (match_operand:V4SF 0 "register_operand" "=wa")
+	(unspec:V4SF [(match_operand:SI 1 "c32bit_cint_operand" "n")]
+		     UNSPEC_XXSPLTIW))]
+ "TARGET_POWER10"
+ "xxspltiw %x0,%1"
+ [(set_attr "type" "vecperm")
+  (set_attr "prefixed" "yes")])
+
+;; XXSPLTIDP built-in function support
+(define_expand "xxspltidp_v2df"
+  [(set (match_operand:V2DF 0 "register_operand" )
+	(unspec:V2DF [(match_operand:SF 1 "const_double_operand")]
+		     UNSPEC_XXSPLTIDP))]
+ "TARGET_POWER10"
+{
+  long value = rs6000_const_f32_to_i32 (operands[1]);
+  rs6000_emit_xxspltidp_v2df (operands[0], value);
+  DONE;
+})
+
+(define_insn "xxspltidp_v2df_inst"
+  [(set (match_operand:V2DF 0 "register_operand" "=wa")
+	(unspec:V2DF [(match_operand:SI 1 "c32bit_cint_operand" "n")]
+		     UNSPEC_XXSPLTIDP))]
+  "TARGET_POWER10"
+  "xxspltidp %x0,%1"
+  [(set_attr "type" "vecperm")
+   (set_attr "prefixed" "yes")])
+
+;; XXSPLTI32DX built-in function support
+(define_expand "xxsplti32dx_v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=wa")
+	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+		      (match_operand:QI 2 "u1bit_cint_operand" "n")
+		      (match_operand:SI 3 "s32bit_cint_operand" "n")]
+		     UNSPEC_XXSPLTI32DX))]
+ "TARGET_POWER10"
+{
+  int index = INTVAL (operands[2]);
+
+  if (!BYTES_BIG_ENDIAN)
+    index = 1 - index;
+
+   emit_insn (gen_xxsplti32dx_v4si_inst (operands[0], operands[1],
+					 GEN_INT (index), operands[3]));
+   DONE;
+}
+ [(set_attr "type" "vecperm")])
+
+(define_insn "xxsplti32dx_v4si_inst"
+  [(set (match_operand:V4SI 0 "register_operand" "=wa")
+	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+		      (match_operand:QI 2 "u1bit_cint_operand" "n")
+		      (match_operand:SI 3 "s32bit_cint_operand" "n")]
+		     UNSPEC_XXSPLTI32DX))]
+  "TARGET_POWER10"
+  "xxsplti32dx %x0,%2,%3"
+  [(set_attr "type" "vecperm")
+   (set_attr "prefixed" "yes")])
+
+(define_expand "xxsplti32dx_v4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=wa")
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "0")
+		      (match_operand:QI 2 "u1bit_cint_operand" "n")
+		      (match_operand:SF 3 "const_double_operand" "n")]
+		     UNSPEC_XXSPLTI32DX))]
+  "TARGET_POWER10"
+{
+  int index = INTVAL (operands[2]);
+  long value = rs6000_const_f32_to_i32 (operands[3]);
+  if (!BYTES_BIG_ENDIAN)
+    index = 1 - index;
+
+   emit_insn (gen_xxsplti32dx_v4sf_inst (operands[0], operands[1],
+					 GEN_INT (index), GEN_INT (value)));
+   DONE;
+})
+
+(define_insn "xxsplti32dx_v4sf_inst"
+  [(set (match_operand:V4SF 0 "register_operand" "=wa")
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "0")
+		      (match_operand:QI 2 "u1bit_cint_operand" "n")
+		      (match_operand:SI 3 "s32bit_cint_operand" "n")]
+		     UNSPEC_XXSPLTI32DX))]
+  "TARGET_POWER10"
+  "xxsplti32dx %x0,%2,%3"
+  [(set_attr "type" "vecperm")
+   (set_attr "prefixed" "yes")])
+
+;; XXBLEND built-in function support
+(define_insn "xxblend_<mode>"
+  [(set (match_operand:VM3 0 "register_operand" "=wa")
+	(unspec:VM3 [(match_operand:VM3 1 "register_operand" "wa")
+		     (match_operand:VM3 2 "register_operand" "wa")
+		     (match_operand:VM3 3 "register_operand" "wa")]
+		    UNSPEC_XXBLEND))]
+  "TARGET_POWER10"
+  "xxblendv<VM3_char> %x0,%x1,%x2,%x3"
+  [(set_attr "type" "vecperm")
+   (set_attr "prefixed" "yes")])
+
+;; XXPERMX built-in function support
+(define_expand "xxpermx"
+  [(set (match_operand:V2DI 0 "register_operand" "+wa")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "wa")
+		      (match_operand:V2DI 2 "register_operand" "wa")
+		      (match_operand:V16QI 3 "register_operand" "wa")
+		      (match_operand:QI 4 "u8bit_cint_operand" "n")]
+		     UNSPEC_XXPERMX))]
+  "TARGET_POWER10"
+{
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_xxpermx_inst (operands[0], operands[1],
+				 operands[2], operands[3],
+				 operands[4]));
+  else
+    {
+      /* Reverse value of byte element indexes by XORing with 0xFF.
+	 Reverse the 32-byte section identifier match by subracting bits [0:2]
+	 of elemet from 7.  */
+      int value = INTVAL (operands[4]);
+      rtx vreg = gen_reg_rtx (V16QImode);
+
+      emit_insn (gen_xxspltib_v16qi (vreg, GEN_INT (-1)));
+      emit_insn (gen_xorv16qi3 (operands[3], operands[3], vreg));
+      value = 7 - value;
+      emit_insn (gen_xxpermx_inst (operands[0], operands[2],
+				   operands[1], operands[3],
+				   GEN_INT (value)));
+    }
+
+  DONE;
+}
+  [(set_attr "type" "vecperm")])
+
+(define_insn "xxpermx_inst"
+  [(set (match_operand:V2DI 0 "register_operand" "+v")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "v")
+		      (match_operand:V2DI 2 "register_operand" "v")
+		      (match_operand:V16QI 3 "register_operand" "v")
+		      (match_operand:QI 4 "u3bit_cint_operand" "n")]
+		     UNSPEC_XXPERMX))]
+  "TARGET_POWER10"
+  "xxpermx %x0,%x1,%x2,%x3,%4"
+  [(set_attr "type" "vecperm")
+   (set_attr "prefixed" "yes")])
+
+;; XXEVAL built-in function support
+(define_insn "xxeval"
+  [(set (match_operand:V2DI 0 "register_operand" "=wa")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "wa")
+		      (match_operand:V2DI 2 "register_operand" "wa")
+		      (match_operand:V2DI 3 "register_operand" "wa")
+		      (match_operand:QI 4 "u8bit_cint_operand" "n")]
+		     UNSPEC_XXEVAL))]
+   "TARGET_POWER10"
+   "xxeval %0,%1,%2,%3,%4"
+   [(set_attr "type" "vecperm")
+    (set_attr "prefixed" "yes")])
+

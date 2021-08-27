@@ -3998,6 +3998,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_GRAINSIZE);
       OMP_CLAUSE_GRAINSIZE_EXPR (c) = grainsize;
+      if (clauses->grainsize_strict)
+	OMP_CLAUSE_GRAINSIZE_STRICT (c) = 1;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -4013,6 +4015,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_NUM_TASKS);
       OMP_CLAUSE_NUM_TASKS_EXPR (c) = num_tasks;
+      if (clauses->num_tasks_strict)
+	OMP_CLAUSE_NUM_TASKS_STRICT (c) = 1;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -5369,6 +5373,38 @@ gfc_trans_omp_depobj (gfc_code *code)
 }
 
 static tree
+gfc_trans_omp_error (gfc_code *code)
+{
+  stmtblock_t block;
+  gfc_se se;
+  tree len, message;
+  bool fatal = code->ext.omp_clauses->severity == OMP_SEVERITY_FATAL;
+  tree fndecl = builtin_decl_explicit (fatal ? BUILT_IN_GOMP_ERROR
+					     : BUILT_IN_GOMP_WARNING);
+  gfc_start_block (&block);
+  gfc_init_se (&se, NULL );
+  if (!code->ext.omp_clauses->message)
+    {
+      message = null_pointer_node;
+      len = build_int_cst (size_type_node, 0);
+    }
+  else
+    {
+      gfc_conv_expr (&se, code->ext.omp_clauses->message);
+      message = se.expr;
+      if (!POINTER_TYPE_P (TREE_TYPE (message)))
+	/* To ensure an ARRAY_TYPE is not passed as such.  */
+	message = gfc_build_addr_expr (NULL, message);
+      len = se.string_length;
+    }
+  gfc_add_block_to_block (&block, &se.pre);
+  gfc_add_expr_to_block (&block, build_call_expr_loc (input_location, fndecl,
+						      2, message, len));
+  gfc_add_block_to_block (&block, &se.post);
+  return gfc_finish_block (&block);
+}
+
+static tree
 gfc_trans_omp_flush (gfc_code *code)
 {
   tree call;
@@ -5932,8 +5968,12 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->nogroup;
 	  clausesa[GFC_OMP_SPLIT_TASKLOOP].grainsize
 	    = code->ext.omp_clauses->grainsize;
+	  clausesa[GFC_OMP_SPLIT_TASKLOOP].grainsize_strict
+	    = code->ext.omp_clauses->grainsize_strict;
 	  clausesa[GFC_OMP_SPLIT_TASKLOOP].num_tasks
 	    = code->ext.omp_clauses->num_tasks;
+	  clausesa[GFC_OMP_SPLIT_TASKLOOP].num_tasks_strict
+	    = code->ext.omp_clauses->num_tasks_strict;
 	  clausesa[GFC_OMP_SPLIT_TASKLOOP].priority
 	    = code->ext.omp_clauses->priority;
 	  clausesa[GFC_OMP_SPLIT_TASKLOOP].final_expr
@@ -7096,6 +7136,8 @@ gfc_trans_omp_directive (gfc_code *code)
       return gfc_trans_omp_distribute (code, NULL);
     case EXEC_OMP_DO_SIMD:
       return gfc_trans_omp_do_simd (code, NULL, NULL, NULL_TREE);
+    case EXEC_OMP_ERROR:
+      return gfc_trans_omp_error (code);
     case EXEC_OMP_FLUSH:
       return gfc_trans_omp_flush (code);
     case EXEC_OMP_MASKED:
